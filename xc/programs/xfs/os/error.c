@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.6 92/05/29 18:04:45 gildea Exp $ */
+/* $XConsortium: error.c,v 1.7 94/02/09 16:20:36 gildea Exp $ */
 /*
  * error message handling
  */
@@ -52,6 +52,8 @@
 #endif
 
 #include	"misc.h"
+
+extern char *progname;
 
 Bool        UseSyslog;
 char        ErrorFile[PATH_MAX];
@@ -139,7 +141,7 @@ NoticeF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
 #endif
 
     /* XXX should Notices just be ignored if not using syslog? */
-    fprintf(stderr, "xfs notice: ");
+    fprintf(stderr, "%s notice: ", progname);
     fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 
@@ -169,7 +171,7 @@ ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
     }
 #endif
 
-    fprintf(stderr, "xfs error: ");
+    fprintf(stderr, "%s error: ", progname);
     fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 
