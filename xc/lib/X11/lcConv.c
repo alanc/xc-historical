@@ -1,4 +1,4 @@
-/* $XConsortium: lcConv.c,v 1.4 94/01/20 18:06:24 rws Exp $ */
+/* $XConsortium: lcConv.c,v 1.5 94/03/29 22:51:51 rws Exp kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -229,9 +229,10 @@ open_indirect_converter(from_lcd, from, to_lcd, to)
     XlcConv lc_conv, from_conv, to_conv;
     Conv conv;
     XrmQuark from_type, to_type;
-    static XrmQuark QChar, QCharSet = (XrmQuark) 0;
+    static XrmQuark QChar, QCharSet, QCTCharSet = (XrmQuark) 0;
 
-    if (QCharSet == (XrmQuark) 0) {
+    if (QCTCharSet == (XrmQuark) 0) {
+	QCTCharSet = XrmStringToQuark(XlcNCTCharSet);
 	QCharSet = XrmStringToQuark(XlcNCharSet);
 	QChar = XrmStringToQuark(XlcNChar);
     }
@@ -255,16 +256,20 @@ open_indirect_converter(from_lcd, from, to_lcd, to)
     
     conv = (Conv) lc_conv->state;
 
-    from_conv = get_converter(from_lcd, from_type, from_lcd, QChar);
+    from_conv = get_converter(from_lcd, from_type, from_lcd, QCTCharSet);
     if (from_conv == NULL)
 	from_conv = get_converter(from_lcd, from_type, from_lcd, QCharSet);
     if (from_conv == NULL)
 	from_conv = get_converter((XLCd)NULL, from_type, (XLCd)NULL, QCharSet);
     if (from_conv == NULL)
+	from_conv = get_converter(from_lcd, from_type, from_lcd, QChar);
+    if (from_conv == NULL)
 	goto err;
     conv->from_conv = from_conv;
 
-    to_conv = get_converter(to_lcd, QCharSet, to_lcd, to_type);
+    to_conv = get_converter(to_lcd, QCTCharSet, to_lcd, to_type);
+    if (to_conv == NULL)
+	to_conv = get_converter(to_lcd, QCharSet, to_lcd, to_type);
     if (to_conv == NULL)
 	to_conv = get_converter((XLCd) NULL, QCharSet, (XLCd) NULL, to_type);
     if (to_conv == NULL)
