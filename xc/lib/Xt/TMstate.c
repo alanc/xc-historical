@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.100 90/06/04 15:06:51 kit Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.101 90/06/15 18:50:34 rws Exp $"; */
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 /*LINTLIBRARY*/
 
@@ -1282,7 +1282,7 @@ static int BindActions(tm, compiledActionTable, indexP)
     Cardinal *indexP;
 {
     XtTranslations stateTable=tm->translations;
-    int unbound = stateTable->numQuarks;
+    int unbound = stateTable->numQuarks - *indexP;
     CompiledAction* action;
     Cardinal index;
     Boolean savedIndex = False;
@@ -1322,7 +1322,7 @@ static int BindAccActions(widget, stateTable, compiledActionTable,
     XtBoundAccActions accBindings;
     Cardinal *indexP;
 {
-    int unbound = stateTable->accNumQuarks;
+    int unbound = stateTable->accNumQuarks - *indexP;
     int i;
     Cardinal index;
     Boolean savedIndex = False;
