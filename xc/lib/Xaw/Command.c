@@ -84,7 +84,7 @@ static XtResource resources[] = {
       XtOffset(CommandWidget,command.highlight_thickness), XrmRString,"2"},
    {XtNtranslations, XtCTranslations, XtRTranslationTable,
       sizeof(_XtTranslations),
-      XtOffset(CommandWidget, core.translations),XtRString,
+      XtOffset(CommandWidget, core.translations),XtRTranslationTable,
       (caddr_t)&defaultTranslations},
  };  
 
