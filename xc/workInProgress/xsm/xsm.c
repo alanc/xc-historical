@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.20 94/02/08 11:47:37 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.21 94/02/08 12:08:49 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -675,7 +675,8 @@ ListClientsXtProc (w, client_data, callData)
 	printf ("\n");
     }
     while (client) {
-	printf ("  %s\n", client->clientId);
+	printf ("  Host = %s, ID = %s\n",
+	    client->clientHostname, client->clientId);
 	client = client->next;
     }
     printf ("\n");
@@ -2175,7 +2176,7 @@ main(argc, argv)
     sprintf(p, "%s=%s", environment_name, networkIds);
     putenv(p);
 
-    if (app_resources.verbose)
+    if (app_resources.verbose || app_resources.debug)
 	printf ("setenv %s %s\n", environment_name, networkIds);
 
     read_save();
