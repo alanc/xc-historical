@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.95 90/12/13 18:38:59 converse Exp $ */
+/* $XConsortium: NextEvent.c,v 1.96 90/12/28 15:47:35 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -923,41 +923,37 @@ Boolean XtAppPeekEvent(app, event)
 {
 	int i, d;
 	Boolean foundCall = FALSE;
-
-	for (;;) {
-	    for (i = 1; i <= app->count; i++) {
-		d = (i + app->last) % app->count;
-		if (d == 0) foundCall = PeekOtherSources(app);
-		if (XEventsQueued(app->list[d], QueuedAfterReading))
-		    goto GotEvent;
-	    }
-	    for (i = 1; i <= app->count; i++) {
-		d = (i + app->last) % app->count;
-		if (XEventsQueued(app->list[d], QueuedAfterFlush))
-		    goto GotEvent;
-	    }
-
-	    if (foundCall) {
-		event->xany.type = 0;
-		event->xany.display = NULL;
-		event->xany.window = 0;
-		return FALSE;
-	    }
-
-	    d = _XtwaitForSomething(FALSE, FALSE, FALSE, TRUE,
-		    (unsigned long *) NULL, app);
-
-	    if (d != -1) {
-	      GotEvent:
-		XPeekEvent(app->list[d], event);
-		app->last = (d == 0 ? app->count : d) - 1;
-		return TRUE;
-	    }
-	    event->xany.type = 0;	/* Something else must be ready */
-	    event->xany.display = NULL;
-	    event->xany.window = NULL;
-	    return FALSE;
-
-	    /* Greater than 0 is number of dpys with input -- loop around */
+	
+	for (i = 1; i <= app->count; i++) {
+	    d = (i + app->last) % app->count;
+	    if (d == 0) foundCall = PeekOtherSources(app);
+	    if (XEventsQueued(app->list[d], QueuedAfterReading))
+		goto GotEvent;
 	}
+	for (i = 1; i <= app->count; i++) {
+	    d = (i + app->last) % app->count;
+	    if (XEventsQueued(app->list[d], QueuedAfterFlush))
+		goto GotEvent;
+	}
+	
+	if (foundCall) {
+	    event->xany.type = 0;
+	    event->xany.display = NULL;
+	    event->xany.window = 0;
+	    return FALSE;
+	}
+	
+	d = _XtwaitForSomething(FALSE, FALSE, FALSE, TRUE,
+				(unsigned long *) NULL, app);
+	
+	if (d != -1) {
+	  GotEvent:
+	    XPeekEvent(app->list[d], event);
+	    app->last = (d == 0 ? app->count : d) - 1;
+	    return TRUE;
+	}
+	event->xany.type = 0;	/* Something else must be ready */
+	event->xany.display = NULL;
+	event->xany.window = NULL;
+	return FALSE;
 }	
