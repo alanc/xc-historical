@@ -323,3 +323,10 @@ SetTimeSinceLastInputEvent()
     gettimeofday (&now, (struct timezone *)0);
     lastEventTime = TVTOMILLI(now);
 }
+
+/*
+ * DDX - specific abort routine.  Called by AbortServer().
+ */
+AbortDDX()
+{
+}
