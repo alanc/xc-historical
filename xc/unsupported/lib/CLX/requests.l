@@ -499,7 +499,9 @@
       (with-buffer-request (display *x-getselectionowner* :no-after)
 	(resource-id selection))
       (with-buffer-reply (display 12 :sizes 32)
-	(setq window (window-get 8))))
+	(setq window (resource-id-or-nil-get 8)))
+      (when window
+	(setq window (lookup-window display window))))
     (display-invoke-after-function display)
     window))
 
@@ -510,7 +512,7 @@
 	   (type timestamp time))
   (setq selection (intern-atom display selection))
   (with-buffer-request (display *x-setselectionowner*)
-    (window owner)
+    ((or null window) owner)
     (resource-id selection)
     ((or null card32) time))
   owner)
