@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.61 88/02/06 15:44:53 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.62 88/02/11 09:49:20 rws Exp $";
 #endif
 
 /*
@@ -517,50 +517,55 @@ _XEnq (dpy, event)
 	}
 	qelt->next = NULL;
 	/* go call through display to find proper event reformatter */
-	(*dpy->event_vec[event->u.u.type & 0177])(dpy, &qelt->event, event);
-
-	if (dpy->tail)	dpy->tail->next = qelt;
-	else 		dpy->head = qelt;
-
-	dpy->tail = qelt;
-	dpy->qlen++;
+	if ((*dpy->event_vec[event->u.u.type & 0177])(dpy, &qelt->event, event)) {
+	    if (dpy->tail)	dpy->tail->next = qelt;
+	    else 		dpy->head = qelt;
+    
+	    dpy->tail = qelt;
+	    dpy->qlen++;
+	} else {
+	    /* ignored, or stashed away for many-to-one compression */
+	    qelt->next = _qfree;
+	    _qfree = qelt;
+	}
 }
 /*
  * EventToWire in seperate file in that often not needed.
  */
 
 /*ARGSUSED*/
+Bool
 _XUnknownWireEvent(dpy, re, event)
 register Display *dpy;	/* pointer to display structure */
 register XEvent *re;	/* pointer to where event should be reformatted */
 register xEvent *event;	/* wire protocol event */
 {
-#ifdef lint
-	re = re;
-#endif
+#ifdef notdef
 	(void) fprintf(stderr, 
 	    "Xlib: unhandled wire event! event number = %d, display = %x\n.",
 			event->u.u.type, dpy);
-	exit(1);
+#endif
+	return(False);
 }
 
 /*ARGSUSED*/
+Status
 _XUnknownNativeEvent(dpy, re, event)
 register Display *dpy;	/* pointer to display structure */
 register XEvent *re;	/* pointer to where event should be reformatted */
 register xEvent *event;	/* wire protocol event */
 {
-#ifdef lint
-	event = event;
-#endif
+#ifdef notdef
 	(void) fprintf(stderr, 
  	   "Xlib: unhandled native event! event number = %d, display = %x\n.",
 			re->type, dpy);
-	exit(1);
+#endif
+	return(0);
 }
 /*
  * reformat a wire event into an XEvent structure of the right type.
  */
+Bool
 _XWireToEvent(dpy, re, event)
 register Display *dpy;	/* pointer to display structure */
 register XEvent *re;	/* pointer to where event should be reformatted */
@@ -924,9 +929,9 @@ register xEvent *event;	/* wire protocol event */
 		}
 		break;
 	      default:
-		/* XXX should do something about unknown event here */
-		break;
+		return(_XUnknownWireEvent(dpy, re, event));
 	}
+	return(True);
 }
 
 
@@ -970,7 +975,7 @@ int _XError (dpy, rep)
       	return ((*_XErrorFunction)(dpy, &event));
       }
     exit(1);
-    return(0);			/* stupid lint */
+    /*NOTREACHED*/
 }
     
 int _XDefaultError(dpy, event)
@@ -1009,7 +1014,7 @@ int _XDefaultError(dpy, event)
     fputs("\n  ", stderr);
     if (event->error_code == BadImplementation) return 0;
     exit(1);
-    return (0);			/* stupid lint */
+    /*NOTREACHED*/
 }
 
 int (*_XIOErrorFunction)() = _XIOError;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.55 88/02/07 12:03:00 jim Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.56 88/02/10 08:13:20 rws Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -23,9 +23,9 @@ static xReq _dummy_request = {
 /* head of the linked list of open displays */
 Display *_XHeadOfDisplayList = NULL;
 
-extern _XWireToEvent();
-extern _XUnknownNativeEvent();
-extern _XUnknownWireEvent();
+extern Bool _XWireToEvent();
+extern Status _XUnknownNativeEvent();
+extern Bool _XUnknownWireEvent();
 /* 
  * Connects to a server, creates a Display object and returns a pointer to
  * the newly created Display back to the caller.

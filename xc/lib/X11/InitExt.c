@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $Header: XInitExt.c,v 11.12 87/06/16 10:49:08 toddb Locked $ */
+/* $Header: XInitExt.c,v 11.13 87/08/28 13:35:22 toddb Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
 #include <stdio.h>
 
-extern _XUnknownWireEvent();
-extern _XUnknownNativeEvent();
+extern Bool _XUnknownWireEvent();
+extern Status _XUnknownNativeEvent();
 
 /*
  * This routine is used to link a extension in so it will be called
@@ -154,12 +154,12 @@ int (*XESetCloseDisplay(dpy, extension, proc))()
 
 	return (oldproc);
 }
-int (*XESetWireToEvent(dpy, event_number, proc))()
+Bool (*XESetWireToEvent(dpy, event_number, proc))()
 	Display *dpy;		/* display */
-	int (*proc)();		/* routine to call when converting event */
+	Bool (*proc)();		/* routine to call when converting event */
 	int event_number;	/* event routine to replace */
 {
-	register int (*oldproc)();
+	register Bool (*oldproc)();
 	if (proc == NULL) proc = _XUnknownWireEvent;
 	LockDisplay (dpy);
 	oldproc = dpy->event_vec[event_number];
@@ -168,12 +168,12 @@ int (*XESetWireToEvent(dpy, event_number, proc))()
 
 	return (oldproc);
 }
-int (*XESetEventToWire(dpy, event_number, proc))()
+Status (*XESetEventToWire(dpy, event_number, proc))()
 	Display *dpy;		/* display */
-	int (*proc)();		/* routine to call when converting event */
+	Status (*proc)();	/* routine to call when converting event */
 	int event_number;	/* event routine to replace */
 {
-	register int (*oldproc)();
+	register Status (*oldproc)();
 	if (proc == NULL) proc = _XUnknownNativeEvent;
 	LockDisplay (dpy);
 	oldproc = dpy->wire_vec[event_number];
