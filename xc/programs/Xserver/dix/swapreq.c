@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.32 91/06/01 12:08:44 rws Exp $ */
+/* $XConsortium: swapreq.c,v 1.33 91/06/01 12:49:35 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -889,7 +889,7 @@ SProcStoreColors               (client)
     register ClientPtr client;
 {
     register char n;
-    unsigned long count;
+    long count;
     xColorItem 	*pItem;
 
     REQUEST(xStoreColorsReq);
