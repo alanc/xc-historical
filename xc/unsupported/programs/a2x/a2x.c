@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: a2x.c,v 1.1 92/03/11 10:40:51 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -21,6 +21,7 @@ without express or implied warranty.
 #include <X11/Xos.h>
 #include <X11/keysym.h>
 #include <termios.h>
+#define _POSIX_SOURCE
 #include <signal.h>
 
 Display *dpy;
@@ -40,6 +41,7 @@ catch(sig)
     int	sig;
 {
     tcsetattr(0, TCSANOW, &oldterm);
+    fprintf(stderr, "a2x: interrupt received, exiting\n");
     exit(1);
 }
 
@@ -47,6 +49,7 @@ ioerror(Dpy)
     Display *Dpy;
 {
     tcsetattr(0, TCSANOW, &oldterm);
+    fprintf(stderr, "a2x: display connection lost, exiting\n");
     exit(1);
 }
 
@@ -160,6 +163,7 @@ main(argc, argv)
     int istty = 0;
     unsigned short mods = 0;
     char buf[1024];
+    XEvent ev;
 
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
@@ -200,6 +204,7 @@ main(argc, argv)
 	    term.c_lflag &= ~ECHO;
 	tcsetattr(0, TCSANOW, &term);
 	signal(SIGINT, catch);
+	signal(SIGTERM, catch);
 	XSetIOErrorHandler(ioerror);
     }
     reset_mapping(dpy);
@@ -207,6 +212,15 @@ main(argc, argv)
 	n = read(0, buf, sizeof(buf));
 	if (n < 0)
 	    break;
+	if (i = XEventsQueued(dpy, QueuedAfterReading)) {
+	    while (--i >= 0) {
+		XNextEvent(dpy, &ev);
+		if (ev.type == MappingNotify) {
+		    XRefreshKeyboardMapping(&ev.xmapping);
+		    reset_mapping(dpy);
+		}
+	    }
+	}
 	for (i = 0; i < n; i++)
 	    mods = dochar(buf[i], mods);
 	mods = quiesce(mods);
