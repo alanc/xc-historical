@@ -1,6 +1,9 @@
 .TH XMH 1
 .SH NAME
 \fIxmh\fR \- X window interface to the mh Mail Handler
+.SH SYNOPSIS
+.B xmh
+[-path \fImailpath\fR]
 .SH DESCRIPTION
 \fIXmh\fR is a program that provides a window-oriented front end to the mh
 Mail Handler. It is designed to take advantage of a large graphical
@@ -70,7 +73,7 @@ below the list of messages in this folder.  (Message-sequences are
 discussed below; if you don't know what they are, then you won't have any.)
 
 .SH XMH AND THE TOOLKIT
-\fIXmh\fR uses a preliminary version of the X Toolkit.  Many of the
+\fIXmh\fR uses the X Toolkit.  Many of the
 features described below (scrollbars, buttonboxes, etc.) are actually part
 of the Toolkit, and are described here only for completeness.  For more
 information, see the Toolkit documentation.
@@ -327,6 +330,11 @@ composition by opening your drafts folder, selecting the message, and
 using the ``Use as Composition'' command.
 
 .SH TEXT EDITING COMMANDS
+All of the text editing commands are actually defined by the Text widget
+in the X Toolkit.  The commands may be bound to different keys than the
+defaults described below through the standard X Toolkit key re-binding
+mechanisms.  See the X Toolkit documentation for more details.
+
 Whenever you are asked to enter any text, you will be using a standard
 text editing interface.  Various control and meta keystroke combinations
 are bound to a somewhat Emacs-like set of commands.  In addition, the
@@ -628,6 +636,12 @@ In this case, \fBInitialIncFile\fR should be specified as the empty string.
 What font to use for the title bars. (Default is ``timrom10i''.)
 .PP
 .TP 8
+.B MailPath
+The full path prefix for locating your mail folders.  May also be set
+with the command-line option, \fB-path\fR. (Default is the
+``Path'' component in $HOME/.mh_profile, or ``$HOME/Mail'' if none.)
+.PP
+.TP 8
 .B MhPath
 What directory in which to find the mh commands.  If a command isn't found
 here, then the directories in the user's path are searched.  (Default is
@@ -715,195 +729,10 @@ desired value.  Thus, to run \fIxmh\fR with terse button names,
 
 % xmh tersebuttonnames=on
 
-.SH CUSTOMIZING TEXT EDITING
-The binding of keys are described in a file called ``.Tkeys''.  \fIXmh\fR first
-looks for a .Tkeys file in the user's root directory.  If not found there,
-it will use the global one stored in /usr/athena/lib/.Tkeys.
-
-Each line of .Tkeys contains a description of a key, a colon, and then the
-function the key may perform.  In more detail, the line consists of:
-
-Any set of ``m'', ``s'', ``l'', ``c'', ``~m'', ``~s'', ``~l'', ``~c''.
-This describes the shift keys (meta, shift, lock, control) that need to be
-used for this key.  The tilde means ``no''. If a shift key is not
-mentioned, then it will work for either position of that key.
-Thus, ``c~m'' means that the control key must be pressed, and the meta key must
-not be pressed; the function will be performed regardless of the status of
-the shift and lock keys.
-
-Next comes the description of the key itself.  This can be either a single
-character, or a three digit number indicating the keycode.  To specify a
-key not in the main alphanumeric pad, you must use a keycode.  Note that
-the single character will describe an unshifted key, even if a shift key
-is usually used to type this key.  Thus, there is no difference between
-using ``+'' and ``='' here, since they are both on the same key.  Note
-that ``\\'' escapes a character here in the usual manner.
-
-This is followed by a ``:'', and any amount of whitespace.  Then comes a
-list of functions for that key.  Each function is either a character in
-single quotes, a string in double quotes, or an unquoted string.  Anything
-in quotes means insert the specified string into the file.  An unquoted
-string names a text subwindow function to be performed when this key is
-pressed.  
-
-Hopefully, an example will make this clearer:
-
-cq:	"abcdef" stuff 'q'
-
-When control-q is entered, the string "abcdef" will be inserted into the
-text, the current selection will then be stuffed, and then the character 'q'
-will be inserted.
-
-The legal functions are:
-.TP 8
-.B backward-character
-Move backward one character.
-.PP
-.TP 8
-.B backward-paragraph
-Move backward one paragraph.
-.PP
-.TP 8
-.B backward-word
-Move backward one word.
-.PP
-.TP 8
-.B beginning-of-file
-Move to the beginning of the text.
-.PP
-.TP 8
-.B beginning-of-line
-Move to the beginning of the current line.
-.PP
-.TP 8
-.B delete-next-character
-Delete the character after the insertion point.
-.PP
-.TP 8
-.B delete-next-word
-Delete the word after the insertion point.
-.PP
-.TP 8
-.B delete-previous-character
-Delete the character before the insertion point.
-.PP
-.TP 8
-.B delete-previous-word
-Delete the word before the insertion point.
-.PP
-.TP 8
-.B delete-selection
-Delete the selection.
-.PP
-.TP 8
-.B end-of-file
-Move to the end of the text.
-.PP
-.TP 8
-.B end-of-line
-Move to the end of the current line.
-.PP
-.TP 8
-.B forward-character
-Move forward one character.
-.PP
-.TP 8
-.B forward-paragraph
-Move forward one paragraph.
-.PP
-.TP 8
-.B forward-word
-Move forward one word.
-.PP
-.TP 8
-.B insert-file
-Insert a file into the text.
-.PP
-.TP 8
-.B kill-previous-word
-Kill the word before the insertion point.
-.PP
-.TP 8
-.B kill-selection
-Kill the selection.
-.PP
-.TP 8
-.B kill-to-end-of-line
-Kill from the insertion point to the end of the line.
-.PP
-.TP 8
-.B kill-to-end-of-paragraph
-Kill from the insertion point to the end of the paragraph.
-.PP
-.TP 8
-.B kill-word
-Kill the word after the insertion point.
-.PP
-.TP 8
-.B newline-and-backup
-Create a new paragraph, leaving the insertion point on the previous one.
-.PP
-.TP 8
-.B newline-and-indent
-Create a new paragraph with the same indentation as the current one.
-.PP
-.TP 8
-.B newline
-Create a new paragraph.
-.PP
-.TP 8
-.B next-line
-Move down one line.
-.PP
-.TP 8
-.B next-page
-Move to the next screenfull of text.
-.PP
-.TP 8
-.B previous-line
-Move up one line.
-.PP
-.TP 8
-.B previous-page
-Move to the previous screenfull of text.
-.PP
-.TP 8
-.B redraw-display
-Repaint the window.
-.PP
-.TP 8
-.B scroll-one-line-down
-Scroll the text down one line.
-.PP
-.TP 8
-.B scroll-one-line-up
-Scroll the text up one line.
-.PP
-.TP 8
-.B select-all
-Select all the text.
-.PP
-.TP 8
-.B select-word
-Select the word the insertion point is in.
-.PP
-.TP 8
-.B stuff
-Insert the text that was last selected in any window.
-.PP
-.TP 8
-.B unkill
-Insert the text that was last killed.  (Note there is no way to get back
-text that was deleted.)
-
 .SH FILES
 ~/Mail
 
 ~/.mh_profile
-
-~/.Tkeys
-
-/usr/athena/lib/.Tkeys
 
 .SH SEE ALSO
 mh (1) - the mh Mail Handler
@@ -923,11 +752,8 @@ Should handle the ``unseen'' message-sequence.
 Should determine by itself if the user hasn't used \fImh\fR before, and
 offer to set things up for him or her.
 
-Will bomb if the file /usr/athena/lib/.Tkeys doesn't exist.
-
-There need to be a lot more text functions.  In particular, searching
-would be very nice.
-
 Still a few commands missing (rename folder, remail message).
 
 The user should probably be able to customize the buttonboxes somewhat.
+
+Needs sub-folder support.
