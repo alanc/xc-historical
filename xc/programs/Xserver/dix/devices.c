@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.22 91/12/10 11:19:22 keith Exp $ */
+/* $XConsortium: devices.c,v 5.23 91/12/10 11:24:05 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -777,8 +777,8 @@ ProcSetModifierMapping(client)
     
     REQUEST_AT_LEAST_SIZE(xSetModifierMappingReq);
 
-    if (stuff->length != ((stuff->numKeyPerModifier<<1) +
-			  (sizeof (xSetModifierMappingReq)>>2)))
+    if (client->req_len != ((stuff->numKeyPerModifier<<1) +
+			    (sizeof (xSetModifierMappingReq)>>2)))
 	return BadLength;
 
     inputMapLen = 8*stuff->numKeyPerModifier;
@@ -899,7 +899,7 @@ ProcChangeKeyboardMapping(client)
     register KeySymsPtr curKeySyms = &inputInfo.keyboard->key->curKeySyms;
     REQUEST_AT_LEAST_SIZE(xChangeKeyboardMappingReq);
 
-    len = stuff->length - (sizeof(xChangeKeyboardMappingReq) >> 2);  
+    len = client->req_len - (sizeof(xChangeKeyboardMappingReq) >> 2);  
     if (len != (stuff->keyCodes * stuff->keySymsPerKeyCode))
             return BadLength;
     if ((stuff->firstKeyCode < curKeySyms->minKeyCode) ||
@@ -936,7 +936,7 @@ ProcSetPointerMapping(client)
     DeviceIntPtr mouse = inputInfo.pointer;
 
     REQUEST_AT_LEAST_SIZE(xSetPointerMappingReq);
-    if (stuff->length != (sizeof(xSetPointerMappingReq) + stuff->nElts + 3)>>2)
+    if (client->req_len != (sizeof(xSetPointerMappingReq)+stuff->nElts+3) >> 2)
 	return BadLength;
     rep.type = X_Reply;
     rep.length = 0;
@@ -1062,7 +1062,7 @@ ProcChangeKeyboardControl (client)
 
     REQUEST_AT_LEAST_SIZE(xChangeKeyboardControlReq);
     vmask = stuff->mask;
-    if (stuff->length !=(sizeof(xChangeKeyboardControlReq)>>2) + Ones(vmask))
+    if (client->req_len != (sizeof(xChangeKeyboardControlReq)>>2)+Ones(vmask))
 	return BadLength;
     vlist = (XID *)&stuff[1];		/* first word of values */
     ctrl = keybd->kbdfeed->ctrl;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.60 91/10/30 14:49:57 rws Exp $ */
+/* $XConsortium: dix.h,v 1.61 91/11/20 14:50:30 keith Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -39,16 +39,16 @@ SOFTWARE.
 
 
 #define REQUEST_SIZE_MATCH(req)\
-    if ((sizeof(req) >> 2) != stuff->length)\
+    if ((sizeof(req) >> 2) != client->req_len)\
          return(BadLength)
 
 #define REQUEST_AT_LEAST_SIZE(req) \
-    if ((sizeof(req) >> 2) > stuff->length )\
+    if ((sizeof(req) >> 2) > client->req_len )\
          return(BadLength)
 
 #define REQUEST_FIXED_SIZE(req, n)\
-    if (((sizeof(req) >> 2) > stuff->length) || \
-        (((sizeof(req) + (n) + 3) >> 2) != stuff->length)) \
+    if (((sizeof(req) >> 2) > client->req_len) || \
+        (((sizeof(req) + (n) + 3) >> 2) != client->req_len)) \
          return(BadLength)
 
 #define LEGAL_NEW_RESOURCE(id,client)\
