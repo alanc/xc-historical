@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ws_pm.c,v 5.1 91/02/16 09:50:36 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,7 +37,7 @@ SOFTWARE.
 #include <X11/Xaw/Command.h>
 
 
-static XtCallbackProc
+static void
 done_button( w, client_data, call_data )
     Widget      w;
     XtPointer   *client_data;
@@ -65,7 +65,7 @@ create_message_win( ws )
     /* Create the done button. */
     button = XtVaCreateManagedWidget( "button", commandWidgetClass, box,
 	NULL );
-    XtAddCallback( button, XtNcallback, done_button, ws );
+    XtAddCallback( button, XtNcallback, done_button, (XtPointer)ws );
  
     /* Create the label. */
     ws->msg_label = XtVaCreateManagedWidget( "label", labelWidgetClass, box,
