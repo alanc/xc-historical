@@ -44,6 +44,9 @@ SOFTWARE.
 #ifndef FollowKeyboardWin
 #define FollowKeyboardWin  ((WindowPtr) FollowKeyboard)
 #endif
+#ifndef RevertToFollowKeyboard
+#define RevertToFollowKeyboard	3
+#endif
 
 typedef unsigned long Leds;
 typedef struct _OtherClients *OtherClientsPtr;
