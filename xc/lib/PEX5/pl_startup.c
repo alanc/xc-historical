@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.1 92/05/08 15:13:55 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.2 92/05/20 20:25:15 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -628,7 +628,7 @@ INPUT	int		nbytes;
 	 * Set up the default message for XGetErrorDatabaseText.
 	 */
 
-	defaultp = pexErrorList[code];
+	defaultp = PEXErrorList[code];
 
 
 	/*
@@ -697,8 +697,8 @@ INPUT XExtCodes	*codes;
      * Free the pick path cache (if it's not in use)
      */
 
-    if (PickCache && !PickCacheInUse)
-	PEXFreeBuf ((char *) PickCache);
+    if (PEXPickCache && !PEXPickCacheInUse)
+	PEXFreeBuf ((char *) PEXPickCache);
 
     return (1);
 }
