@@ -246,6 +246,8 @@
 
 (defmacro index-plusp (number) `(plusp (the array-index ,number)))
 (defmacro index-zerop (number) `(zerop (the array-index ,number)))
+(defmacro index-evenp (number) `(evenp (the array-index ,number)))
+(defmacro index-oddp  (number) `(oddp  (the array-index ,number)))
 
 (defmacro index> (&rest numbers)
   `(> ,@(mapcar #'make-index-typed numbers)))
