@@ -1,4 +1,4 @@
-/* $XConsortium: pl_font.c,v 1.4 92/07/16 11:05:06 mor Exp $ */
+/* $XConsortium: pl_font.c,v 1.5 92/08/26 13:05:22 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -568,11 +568,11 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 
     for (i = 0; i < count; i++)
     {
-	Data (display, (char *) &encoded_text[i].count, sizeof (CARD32));
-	Data (display, (char *) (pexMonoEncoding *) &encoded_text[i],
-	    sizeof (pexMonoEncoding));
-
 	string = encoded_text[i].encoded_text;
+
+	Data (display, (char *) &encoded_text[i].count, sizeof (CARD32));
+	Data (display, (char *) string, sizeof (pexMonoEncoding));
+
 	for (j = 0; j < (int) encoded_text[i].count; j++, string++)
 	{
 	    if (string->character_set_width == PEXCSLong) 
