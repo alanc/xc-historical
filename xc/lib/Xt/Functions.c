@@ -1,4 +1,4 @@
-/* $XConsortium: Functions.c,v 1.3 91/01/06 13:32:11 rws Exp $ */
+/* $XConsortium: Functions.c,v 1.4 91/03/15 15:11:19 gildea Exp $ */
 
 /*
 
@@ -90,8 +90,14 @@ Boolean XtIsWMShell(object)
 Boolean XtIsVendorShell(object)
     Widget object;
 {
+#if defined(AIXSHLIB) && defined(SHAREDCODE)
+    return _XtIsSubclassOf(object,
+			   transientShellWidgetClass->core_class.superclass,
+			   (WidgetClass)wmShellWidgetClass, 0x40);
+#else
     return _XtIsSubclassOf(object, (WidgetClass)vendorShellWidgetClass,
 			   (WidgetClass)wmShellWidgetClass, 0x40);
+#endif
 }
 
 
