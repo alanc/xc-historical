@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.227 89/03/12 15:04:56 rws Exp $ */
+/* $XConsortium: window.c,v 1.228 89/03/17 16:37:10 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -697,7 +697,11 @@ CreateRootWindow(screen)
 
     /* re-validate GC for use with root Window */
 
-    (*pScreen->CreateWindow)(pWin);
+    if (!(*pScreen->CreateWindow)(pWin))
+    {
+	DeleteWindow(pWin, pWin->wid);
+	return BadAlloc;
+    }
     (*pScreen->PositionWindow)(pWin, 0, 0);
 
     MakeRootTile(pWin);
@@ -955,7 +959,12 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     SetBorderSize (pWin);
 
     /* We SHOULD check for an error value here XXX */
-    (*pScreen->CreateWindow)(pWin);
+    if (!(*pScreen->CreateWindow)(pWin))
+    {
+	*error = BadAlloc;
+	DeleteWindow(pWin, wid);
+	return (WindowPtr)NULL;
+    }
     /* We SHOULD check for an error value here XXX */
     (*pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
     if ((vmask & CWEventMask) == 0)
