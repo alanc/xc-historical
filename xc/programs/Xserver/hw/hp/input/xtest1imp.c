@@ -1,4 +1,4 @@
-/* $XConsortium: xtest1imp.c,v 1.1 93/08/08 12:59:57 rws Exp $ */
+/* $XConsortium: xtest1imp.c,v 1.2 94/04/17 20:30:19 rws Exp $ */
 /*
  *	File: xtest1dd.c
  *
@@ -157,7 +157,7 @@ int	dev_type;
 	coords[0] = xdiff;
 	coords[1] = jy - hpPointer->coords[1];
 	process_motion (inputInfo.pointer, hpPointer, hpPointer, coords);
-	ev = format_ev (MotionNotify, 0, GetTimeInMillis(), hpPointer, NULL);
+	ev = format_ev (inputInfo.pointer, MotionNotify, 0, GetTimeInMillis(), hpPointer, NULL);
 	ProcessInputEvents();
 }
 
@@ -189,6 +189,7 @@ int	keystate;
 int	mousex;
 int	mousey;
 {
+	DeviceIntPtr		dev;
 	HPInputDevice		*tmp_ptr;
         xEvent			*format_ev(), *ev;
 
@@ -198,12 +199,14 @@ int	mousey;
 	 */
 	if (dev_type == MOUSE)
 	{
+		dev = inputInfo.pointer;
 		hpPointer->coords[0] = mousex;
 		hpPointer->coords[1] = mousey;
 		tmp_ptr = hpPointer;
 	}
 	else
 	{
+		dev = inputInfo.keyboard;
 		hpPointer->coords[0] = mousex;
 		hpPointer->coords[1] = mousey;
 		tmp_ptr = hpKeyboard;
@@ -245,7 +248,7 @@ int	mousey;
 	/*
 	 * put a key/button input action into the servers input event queue
 	 */
-	ev = format_ev (keystate, keycode, GetTimeInMillis(), tmp_ptr, NULL);
+	ev = format_ev (dev, keystate, keycode, GetTimeInMillis(), tmp_ptr, NULL);
 	/*
 	 * Tell the server to process all of the events in its input queue.
 	 * This makes sure that key/button event we just put in the queue

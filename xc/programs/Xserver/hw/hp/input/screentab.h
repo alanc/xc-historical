@@ -1,7 +1,6 @@
-/* $XConsortium: screentab.h,v 1.1 93/08/08 13:00:04 rws Exp $ */
 /*
 
-Copyright (c) 1986, 1987  X Consortium
+Copyright (c) 1988  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,23 +27,23 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 
-Copyright (c) 1986, 1987 by Hewlett-Packard Company
+Copyright (c) 1988 by Hewlett-Packard Company
 
-Permission to use, copy, modify, and distribute this
-software and its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright
-notice and this permission notice appear in supporting
-documentation, and that the name of Hewlett-Packard not be used in
-advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.
+Permission to use, copy, modify, and distribute this software 
+and its documentation for any purpose and without fee is hereby 
+granted, provided that the above copyright notice appear in all 
+copies and that both that copyright notice and this permission 
+notice appear in supporting documentation, and that the name of 
+Hewlett-Packard not be used in advertising or publicity 
+pertaining to distribution of the software without specific, written 
+prior permission.
 
 HEWLETT-PACKARD MAKES NO WARRANTY OF ANY KIND WITH REGARD
-TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
-PURPOSE.  Hewlett-Packard shall not be liable for errors 
-contained herein or direct, indirect, special, incidental or 
-consequential damages in connection with the furnishing, 
+TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  Hewlett-Packard shall not be liable for errors
+contained herein or direct, indirect, special, incidental or
+consequential damages in connection with the furnishing,
 performance, or use of this material.
 
 This software is not subject to any license of the American
@@ -52,7 +51,6 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-
 /*
  * Header file which declares structures to initialize and close
  * each type of screen supported by the X server.

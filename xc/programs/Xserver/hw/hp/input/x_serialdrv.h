@@ -1,4 +1,3 @@
-/* $XConsortium$ */
 /************************************************************
 Copyright (c) 1992 by Hewlett-Packard Company, Palo Alto, California.
 
@@ -29,6 +28,7 @@ SOFTWARE.
  */
 
 #ifndef _X_SERIALDRV_H_
+#define _X_SERIALDRV_H_
 #include <dl.h>
 
 #define X_KEYMAP_NAME		"/etc/kbdlang"
@@ -56,9 +56,9 @@ SOFTWARE.
 #define IN_PROXIMITY		0
 #define OUT_OF_PROXIMITY	1
 
-#define SCROLLLOCK_LED		1 << 0
-#define NUMLOCK_LED		1 << 1 
-#define CAPSLOCK_LED		1 << 2
+#define SCROLLLOCK_LED		(1 << 0)
+#define NUMLOCK_LED		(1 << 1) 
+#define CAPSLOCK_LED		(1 << 2)
 
 #define _XSetDeviceMode		0
 #define _XSetDeviceValuators	1
@@ -66,6 +66,12 @@ SOFTWARE.
 #define _XChangeFeedbackControl	3
 #define _XChangeKeyboardControl	4
 #define _XChangePointerControl	5
+#define _XBell			6
+
+typedef struct {
+	int	class;
+	int	bell_percent;
+} HPBell;
 
 typedef struct {
 	int	class;
@@ -146,17 +152,6 @@ typedef struct _SerialProcs
     ReadProc		read;		/* filled in by driver		*/
     WriteProc		write;		/* filled in by driver		*/
     CloseProc		close;		/* filled in by driver		*/
-    shl_t		ldr_module_id;	/* filled in by X server	*/
-    int			fd;		/* filled in by X server	*/
-    char		driver_name[MAX_NM];   /* filled in by X server	*/
-    char		*keymap_name;   /* filled in by X server	*/
-    char		*keymap_file;   /* filled in by X server	*/
-    int         	num_fdbk;       /* filled in by X server       	*/
-    u_char		*feedbacks;	/* filled in by X server        */
-    int         	num_ledf;       /* filled in by X server       	*/
-    u_char		*ledf; 		/* filled in by X server        */
-    int         	num_strf;       /* filled in by X server      	*/
-    HPStrF		*strf;          /* filled in by X server        */
     } SerialProcs; 
 
 typedef struct _HPInputDeviceHeader
@@ -168,7 +163,7 @@ typedef struct _HPInputDeviceHeader
     int		resolution;	/* resolution in counts/cm         	*/
     int         max_x;        	/* maximum x value in counts    	*/
     int         max_y;          /* maximum y value in counts    	*/
-    int         file_ds;        /* file descriptor              	*/
+    int         file_ds;       	/* file descriptor              	*/
     int         num_fdbk;       /* length of list that follows  	*/
     u_char	*feedbacks;	/* kbd, ptr, bell, and integer feedbacks*/
     int         num_ledf;       /* length of list that follows  	*/
@@ -184,5 +179,6 @@ typedef struct _HPInputDeviceHeader
     u_char	reset;		/* keycode to cause X server reset      */
     u_char	reset_mods;	/* mask of modifiers for server reset   */
     u_char	button_chording;/* interval (ms) if chording enabled    */
+    u_char	reserved[8];    /* reserved for future use              */
     }HPInputDeviceHeader;
 #endif /* _X_SERIALDRV_H_ */
