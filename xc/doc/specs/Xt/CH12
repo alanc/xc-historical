@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 \&
 .sp 1
 .ce 3
@@ -77,8 +92,8 @@ ObjectClassPart Structure
 .LP
 The common fields for all object classes are defined in the
 .PN ObjectClassPart
-structure.  All fields have the same purpose and
-function as the corresponding fields in
+structure.  All fields have the same purpose,
+function, and restrictions as the corresponding fields in
 .PN CoreClassPart ;
 fields whose
 names are obj\fI\s+1n\s-1\fP for some integer \s+1\fIn\fP\s-1 are not
@@ -196,7 +211,6 @@ typedef struct _ObjectPart {
 	Widget self;
 	WidgetClass widget_class;
 	Widget parent;
-	XrmName xrm_name;
 	Boolean being_destroyed;
 	XtCallbackList destroy_callbacks;
 	XtPointer constraints;
@@ -424,7 +438,7 @@ for establishing the resource-naming root of an object hierarchy.
 .NH 2
 Rectangle Objects
 .XS
-\*(SN Rectangle Objects
+\fB\*(SN Rectangle Objects\fP
 .XE
 .LP
 The class of rectangle objects is a subclass of
@@ -633,9 +647,9 @@ have the same default values as the corresponding fields in
 .PN CorePart .
 
 .NH 3
-RectObj Arguments To \*(xI Routines
+Widget Arguments To \*(xI Routines
 .XS
-\*(SN RectObj Arguments To \*(xI Routines
+\fB\*(SNWidget Arguments To \*(xI Routines\fP
 .XE
 .LP
 The WidgetClass arguments to the following procedures may be

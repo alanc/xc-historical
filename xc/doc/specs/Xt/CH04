@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 \&
 .sp 1
 .ce 3
@@ -303,6 +318,7 @@ extern WidgetClass applicationShellWidgetClass;
 The following opaque types and opaque variables are defined
 for generic operations on widgets whose class is a subclass of
 Shell.
+.bp
 .TS
 lw(2.75i) lw(2.75i).
 _
@@ -746,7 +762,7 @@ _
 .NH 3
 ShellPart Default Values
 .XS
-\*(SN ShellPart Default Values
+\fB\*(SN ShellPart Default Values\fP
 .XE
 .LP
 The default values for fields common to all classes of public shells
@@ -959,12 +975,12 @@ the value of the field is modified as follows:
 .br
 .sp
 .TS
-lw(2i) lw(2i).
--
+lw(2i) lw(3i).
+_
 .sp 6p
 Field	Replacement
 .sp 6p
--
+_
 .sp 6p
 base_width, base_height	0
 width_inc, height_inc	1
@@ -980,7 +996,7 @@ if called,
 else \fBNorthWestGravity\fP
 T}
 .sp 6p
--
+_
 .TE
 
 .IN "XWMGeometry"

@@ -1,3 +1,19 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
+
 \&
 .sp 1
 .ce 3
@@ -164,7 +180,7 @@ and never changed, except for a one-time class initialization
 and in-place compilation of resource lists,
 which takes place when the first widget of the class or subclass is created.)
 For further information,
-see Section 2.4.
+see Section 2.5.
 .LP
 The distribution of the declarations and code for a new widget class
 among a public .h file for application programmer use, a private .h file
@@ -202,6 +218,7 @@ which is defined by the
 and 
 .PN CorePart 
 structures.
+.bp
 .NH 4
 CoreClassPart Structure
 .XS
@@ -223,9 +240,9 @@ typedef struct {
 	XtProc class_initialize;	See Section 1.6
 	XtWidgetClassProc class_part_initialize;	See Section 1.6
 	XtEnum class_inited;	See Section 1.6
-	XtInitProc initialize;	See Section 2.4
-	XtArgsProc initialize_hook;	See Section 2.4
-	XtRealizeProc realize;	See Section 2.5
+	XtInitProc initialize;	See Section 2.5
+	XtArgsProc initialize_hook;	See Section 2.5
+	XtRealizeProc realize;	See Section 2.6
 	XtActionList actions;	See Chapter 10
 	Cardinal num_actions;	See Chapter 10
 	XtResourceList resources;	See Chapter 9
@@ -235,7 +252,7 @@ typedef struct {
 	XtEnum compress_exposure;	See Section 7.9
 	Boolean compress_enterleave;	See Section 7.9
 	Boolean visible_interest;	See Section 7.10
-	XtWidgetProc destroy;	See Section 2.7
+	XtWidgetProc destroy;	See Section 2.8
 	XtWidgetProc resize;	See Chapter 6
 	XtExposeProc expose;	See Section 7.10
 	XtSetValuesFunc set_values;	See Section 9.7
@@ -330,10 +347,9 @@ structure.
 typedef struct _CorePart {
 	Widget self;	described below
 	WidgetClass widget_class;	See Section 1.6
-	Widget parent;	See Section 2.4
-	XrmName xrm_name;	Private to resource manager
-	Boolean being_destroyed;	See Section 2.7
-	XtCallbackList destroy_callbacks;	See Section 2.7
+	Widget parent;	See Section 2.5
+	Boolean being_destroyed;	See Section 2.8
+	XtCallbackList destroy_callbacks;	See Section 2.8
 	XtPointer constraints;	See Section 3.6
 	Position x;	See Chapter 6
 	Position y;	See Chapter 6
@@ -343,20 +359,18 @@ typedef struct _CorePart {
 	Boolean managed;	See Chapter 3
 	Boolean sensitive;	See Section 7.7
 	Boolean ancestor_sensitive;	See Section 7.7
-	XtEventTable event_table;	Private to event manager
-	XtTMRec tm;	Private to translation manager
 	XtTranslations accelerators;	See Chapter 10
-	Pixel border_pixel;	See Section 2.5
-	Pixmap border_pixmap;	See Section 2.5
+	Pixel border_pixel;	See Section 2.6
+	Pixmap border_pixmap;	See Section 2.6
 	WidgetList popup_list;	See Chapter 5
 	Cardinal num_popups;	See Chapter 5
 	String name;	See Chapter 9
-	Screen *screen;	See Section 2.5
-	Colormap colormap;	See Section 2.5
-	Window window;	See Section 2.5
-	Cardinal depth;	See Section 2.5
-	Pixel background_pixel;	See Section 2.5
-	Pixmap background_pixmap;	See Section 2.5
+	Screen *screen;	See Section 2.6
+	Colormap colormap;	See Setcion 2.6
+	Window window;	See Section 2.6
+	Cardinal depth;	See Section 2.6
+	Pixel background_pixel;	See Section 2.6
+	Pixmap background_pixmap;	See Section 2.6
 	Boolean visible;	See Section 7.10
 	Boolean mapped_when_managed;	See Chapter 3
 } CorePart;
@@ -464,13 +478,6 @@ T}	T{
 .PN XtCreateWidget
 (may not be changed).
 T}
-T{
-xrm_name
-T}	T{
-Encoded \fIname\fP argument to
-.PN XtCreateWidget
-(may not be changed).
-T}
 being_destroyed	Parent's \fIbeing_destroyed\fP value.
 destroy_callbacks	NULL
 constraints	NULL
@@ -491,8 +498,6 @@ T}	T{
 T}
 ancestor_sensitive	logical AND of parent's \fIsensitive\fP and
 \fIancestor_sensitive\fP values.
-event_table	Initialized by the event manager.
-tm	Initialized by the translation manager.
 accelerators	NULL
 T{
 border_pixel	
@@ -738,7 +743,7 @@ the
 resource list are
 .LP
 .TS
-lw(1.5i) lw(1.5i) lw(2.5i) .
+lw(1.5i) lw(1.5i) lw(2i) .
 _
 .sp 6p
 Name	Class	Representation
@@ -989,7 +994,7 @@ Constraint.
 .NH 2
 Implementation-specific Types
 .XS
-\*(SN Implementation-Specific Types
+\fB\*(SN Implementation-Specific Types\fP
 .XE
 .LP
 To increase the portability of widget and application source code
@@ -1066,7 +1071,10 @@ part records
 .PN TopLevelShellPart ,
 and
 .PN ApplicationShellPart
-is implementation-defined.  The
+is implementation-defined.  These
+structures may also have additional private
+fields internal to the implementation.
+The
 .PN ObjectPart ,
 .PN RectObjPart ,
 and
@@ -1077,8 +1085,7 @@ appears at the same offset in
 .PN RectObjRec
 and
 .PN CoreRec
-(
-.PN WidgetRec ).
+.Pn ( WidgetRec ).
 No other relations between the offsets of any two
 fields may be assumed.
 
@@ -1472,6 +1479,10 @@ which is used by
 the resource manager.
 For example, the Label widget has the string ``Label''.
 More than one widget class can share the same text class name.
+This string must be permanently allocated prior to or during the
+execution of the class initialization procedure and must not be
+subsequently deallocated.
+
 .LP
 .IN "widget_size" "" "@DEF@"
 The \fIwidget_size\fP field is the size of the corresponding widget
@@ -1785,33 +1796,51 @@ With a linked field,
 the \*(xI access the field's value only after accessing its corresponding
 superclass value (called downward superclass chaining) or 
 before accessing its corresponding superclass value (called upward superclass
-chaining).
-The self-contained fields are
+chaining).  The self-contained fields are
+.sp
 .ta 2i
 In all widget classes:	\fIclass_name\fP
+.br
 	\fIclass_initialize\fP
+.br
 	\fIwidget_size\fP
+.br
 	\fIrealize\fP
+.br
 	\fIvisible_interest\fP
+.br
 	\fIresize\fP
+.br
 	\fIexpose\fP
+.br
 	\fIaccept_focus\fP
+.br
 	\fIcompress_motion\fP
+.br
 	\fIcompress_exposure\fP
+.br
 	\fIcompress_enterleave\fP
+.br
 	\fIset_values_almost\fP
+.br
 	\fItm_table\fP
+.br
 	\fIversion\fP
 .sp
 In Composite widget classes:	\fIgeometry_manager\fP
+.br
 	\fIchange_managed\fP
+.br
 	\fIinsert_child\fP
+.br
 	\fIdelete_child\fP
+.br
 	\fIaccepts_objects\fP
 .sp
 In Constraint widget classes:	\fIconstraint_size\fP
 .sp
 In Shell widget classes:	\fIroot_geometry_manager\fP
+.sp
 .LP
 With downward superclass chaining,
 the invocation of an operation first accesses the field from the
@@ -1820,22 +1849,24 @@ RectObj,
 and
 Core 
 class structures, then from the subclass structure, and so on down the class chain to
-that widget's class structure.
-These superclass-to-subclass fields are
-.IP
-\fIclass_part_initialize\fP
-.IP
-\fIget_values_hook\fP
-.IP
-\fIinitialize\fP
-.IP
-\fIinitialize_hook\fP
-.IP
-\fIset_values\fP
-.IP
-\fIset_values_hook\fP
-.IP
-\fIresources\fP
+that widget's class structure.  These superclass-to-subclass fields are
+.sp
+.ta 1i
+.br
+	\fIclass_part_initialize\fP
+.br
+	\fIget_values_hook\fP
+.br
+	\fIinitialize\fP
+.br
+	\fIinitialize_hook\fP
+.br
+	\fIset_values\fP
+.br
+	\fIset_values_hook\fP
+.br
+	\fIresources\fP
+.sp
 .LP
 In addition, for subclasses of
 Constraint,
@@ -1846,14 +1877,16 @@ and
 structures are chained from the
 Constraint
 class down to the subclass:
-.IP
-\fIresources\fP
-.IP
-\fIinitialize\fP
-.IP
-\fIset_values\fP
-.IP
-\fIget_values_hook\fP
+.ta 1i
+.br
+	\fIresources\fP
+.br
+	\fIinitialize\fP
+.br
+	\fIset_values\fP
+.br
+	\fIget_values_hook\fP
+.sp
 .LP
 With upward superclass chaining,
 the invocation of an operation first accesses the field from the widget 
@@ -1865,10 +1898,13 @@ and
 Object
 class structures.
 The subclass-to-superclass fields are
-.IP
-\fIdestroy\fP
-.IP
-\fIactions\fP
+.sp
+.ta 1i
+.br
+	\fIdestroy\fP
+.br
+	\fIactions\fP
+.sp
 .LP
 For subclasses of
 Constraint,
@@ -1876,8 +1912,10 @@ the following field of
 .PN ConstraintClassPart
 is chained from the subclass up to the
 Constraint class:
-.IP
-\fIdestroy\fP
+.sp
+.ta 1i
+.br
+	\fIdestroy\fP
 
 .NH 3
 Class Initialization: class_initialize and class_part_initialize Procedures
@@ -1984,7 +2022,7 @@ static void ClassInitialize()
 .NH 3
 Initializing a Widget Class
 .XS
-\*(SN Initializing a Widget Class
+\fB\*(SN Initializing a Widget Class\fP
 .XE
 .IN "Widget" "class initialization"
 .LP

@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 \&
 .sp 1
 .ce 3
@@ -36,8 +51,10 @@ specifies the mapping of event sequences to procedure name strings.
 .LP
 You can override the translation table in the class structure 
 for a specific widget instance by supplying a different translation table
-for the widget instance.
-The resource name is XtNtranslations.
+for the widget instance.  The resources
+XtNtranslations and XtNbaseTranslations are used to modify the class
+default translation table; see Section 10.3.
+
 .NH 2
 Action Tables
 .XS
@@ -93,6 +110,13 @@ The \fIstring\fP field is the name used in translation tables to access
 the procedure.
 The \fIproc\fP field is a pointer to a procedure that implements
 the functionality.
+
+When the action list is specified as the
+.PN CoreClassPart
+\fIactions\fP field the string pointed to by \fIstring\fP must be
+permanently allocated prior to or during the execution of the class
+initialization procedure and must not be subsequently deallocated.
+
 .LP
 Action procedures should not assume that the widget in which they
 are invoked is realized; an accelerator specification can cause
@@ -141,14 +165,20 @@ built-in \*(xI functions.
 .NH 3
 Action Table Registration
 .XS
-\*(SN Action Table Registration
+\fB\*(SN Action Table Registration\fP
 .XE
 .LP
 .IN "actions"
 The \fIactions\fP and \fInum_actions\fP fields of
 .PN CoreClassPart
 specify the actions implemented by a widget class.  These are
-automatically registered with the \*(xI when the class is initialized.
+automatically registered with the \*(xI when the class is initialized
+and must be allocated in writable storage prior to Core class_part
+initialization, and never deallocated.  To save memory and optimize
+access, the \*(xI may overwrite the storage in order to compile the
+list into an internal representation.
+.sp
+
 .LP
 To declare an action table within an application
 and register it with the translation manager, use
@@ -184,7 +214,7 @@ as part of
 .NH 3
 Action Names to Procedure Translations
 .XS
-\*(SN Action Names to Procedure Translations
+\fB\*(SN Action Names to Procedure Translations\fP
 .XE
 .LP
 The translation manager uses a simple algorithm to resolve the name of
@@ -311,7 +341,7 @@ the list in which it was registered.
 .NH 2
 Translation Tables
 .XS
-\*(SN Translation Tables
+\fB\*(SN Translation Tables\fP
 .XE
 .LP
 All widget instance records contain a translation table,
@@ -351,7 +381,7 @@ static String defaultTranslations =
 .LP
 The \fItm_table\fP field of the
 .PN CoreClassPart
-should be filled in at static initialization time with
+should be filled in at class initialization time with
 the string containing the class's default translations.
 If a class wants to inherit its superclass's translations,
 it can store the special value
@@ -361,7 +391,8 @@ In Core's class part initialization procedure,
 the \*(xI compile this translation table into an efficient internal form.
 Then, at widget creation time,
 this default translation table is
-combined with the XtNtranslations resource.
+combined with the XtNtranslations
+and XtNbaseTranslations resources; see Section 10.3.
 .LP
 The resource conversion mechanism automatically compiles
 string translation tables that are specified in the resource database.
@@ -377,7 +408,7 @@ for events to be processed by the translation manager.
 .NH 3
 Event Sequences
 .XS
-\*(SN Event Sequences
+\fB\*(SN Event Sequences\fP
 .XE
 .LP
 An event sequence is a comma-separated list of X event descriptions 
@@ -393,7 +424,7 @@ to trigger the action sequence.
 .NH 3
 Action Sequences
 .XS
-\*(SN Action Sequences
+\fB\*(SN Action Sequences\fP
 .XE
 .LP
 Action sequences specify what program or widget actions to take in response to
@@ -476,11 +507,9 @@ Translation Table Management
 Sometimes an application needs to merge
 its own translations with a widget's translations.
 For example, a window manager provides functions to move a window.
-It usually may move the window when any pointer button is pressed down
-in a title bar,
-but it allows the user to specify other translations for the middle
-or right button down in the title bar,
-and it ignores any user translations for left button down.
+The window manager wishes to bind this operation to a specific
+pointer button in the title bar without the possibility of user
+override and bind it to other buttons that may be overridden by the user.
 .LP
 To accomplish this,
 the window manager should first create the title bar
@@ -488,7 +517,7 @@ and then should merge the two translation tables into
 the title bar's translations.
 One translation table contains the translations that the window manager
 wants only if the user has not specified a translation for a particular event
-or event sequence.
+or event sequence (i.e., those that may be overridden).
 The other translation table contains the translations that the
 window manager wants regardless of what the user has specified.
 .LP
@@ -626,12 +655,25 @@ Core
 instance initialization and
 during the
 Core
-set_values invocation.  At instance initialization
-the widget class translation table (if any) is copied into the widget
-prior to a merge operation.  The merge operation produces a new
-translation resource value; if the original table was shared by
+set_values invocation.
+Each merge operation produces a new
+translation resource value; if the original tables were shared by
 other widgets, they are unaffected.  If no directive is
 specified, ``#replace'' is assumed.
+
+At instance initialization
+the XtNtranslations resource is first fetched.  Then, if it was
+not specified or did not contain ``#replace'', the
+resource database is searched for the resource XtNbaseTranslations.
+If XtNbaseTranslations is found it is merged into the widget class
+translation table.  Then the widget \fItranslations\fP field is
+merged into the result, or into the class translation table if
+XtNbaseTranslations was not found.  This final table is then
+stored into the widget \fItranslations\fP field.  If the XtNtranslations
+resource specified ``#replace'' no merge is done.
+If neither XtNbaseTranslations or XtNtranslations are specified,
+the class translation table is copied into the widget instance.
+
 .sp
 .LP
 To completely remove existing translations, use
@@ -834,6 +876,16 @@ This procedure takes a KeyCode and modifiers and produces a KeySym.
 For any given key translator function,
 \fImodifiers_return\fP will be a constant that indicates the subset of all
 modifiers that are examined by the key translator.
+.LP
+The KeyCode-to-KeySym translator procedure
+must be implemented such that multiple calls with the same
+\fIdisplay\fP, \fIkeycode\fP, and \fImodifiers\fP return the same
+result until either a new case converter (
+.PN XtCaseProc )
+is installed or a
+.PN MappingNotify
+event is received.
+
 .sp
 .LP
 The \*(xI maintain tables internally to map KeyCodes to KeySyms
@@ -877,8 +929,7 @@ Clients should not cache the KeySym table but should call
 each time the value is
 needed, as the table may change prior to dispatching each event.
 .LP
-For more information on this table, see Section 7.9 in \fI\*(xL\fP,
-section 7.9, Keyboard Encoding.
+For more information on this table, see Section 12.7 in \fI\*(xL\fP.
 .sp
 .LP
 To register a key translator, use
@@ -1050,7 +1101,7 @@ may need to use this function.
 .NH 2
 Obtaining a KeySym in an Action Procedure
 .XS
-\*(SN Obtaining a KeySym in an Action Procedure
+\fB\*(SN Obtaining a KeySym in an Action Procedure\fP
 .XE
 .LP
 When an action procedure is invoked on a
@@ -1164,7 +1215,7 @@ the KeyCode-to-KeySym table for a particular KeyCode, it should call
 .NH 2
 Registering Button and Key Grabs For Actions
 .XS
-\*(SN Registering Button and Key Grabs For Actions
+\fB\*(SN Registering Button and Key Grabs For Actions\fP
 .XE
 .LP
 To register button and key grabs for a widget's window according to the
@@ -1307,4 +1358,48 @@ the specified widget is realized or sensitive.  If the named action
 routine cannot be found,
 .PN XtCallActionProc
 generates a warning message and returns.
+
+.NH 2
+Obtaining a Widget's Action List
+.XS
+\*(SN Obtaining a Widget's Action List
+.XE
+.LP
+Occasionally a subclass will require the pointers to one or more of
+its superclass's action procedures.  This would be needed, for
+example, in order to envelope the superclass's action.  To retrieve
+the list of action procedures registered in the superclass's
+\fIactions\fP field, use
+.PN XtGetActionList .
+.IN "XtGetActionList" "" "@DEF@"
+.FD 0
+void XtGetActionList(\fIwidget_class\fP, \fIactions_return\fP, \
+\fInum_actions_return\fP)
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      XtActionList *\fIactions_return\fP;
+.br
+      Cardinal *\fInum_actions_return\fP;
+.FN
+.IP \fIwidget_class\fP 1i
+Specifies the widget class whose actions are to be returned.
+.IP \fIactions_return\fP 1i
+Returns the action list.
+.IP \fInum_actions_return\fP 1i
+Returns the number of action procedures declared by the class.
+.LP
+.PN XtGetActionList
+returns the action table defined by the specified
+widget class.  This table does not include actions defined by the
+superclasses.  If \fIwidget_class\fP is not initialized, or is not
+.PN coreWidgetClass
+or a subclass thereof, or if the class does not define any actions,
+*\fIactions_return\fP will be NULL and *\fInum_actions_return\fP
+will be zero.
+If *\fIactions_return\fP is non-NULL the client is responsible for freeing
+the table using
+.PN XtFree
+when it is no longer needed.
+
 .bp

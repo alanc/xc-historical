@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 .bp
 \&
 .sp 1
@@ -8,7 +23,7 @@
 .sp 2
 .LP
 .XS
-Appendix B \- Translation Table Syntax
+\fBAppendix B \- Translation Table Syntax\fP
 .XE
 .IN "Translation tables"
 .SH
@@ -49,9 +64,19 @@ name	= namechar { namechar }
 namechar	= { ``a''-``z'' | ``A''-``Z'' | ``0''-``9'' | ``_'' | ``-'' }
 params	= string {``,'' string}
 string	= quoted_string | unquoted_string
-quoted_string	= ``"'' {<Latin 1 character>} ``"''
+quoted_string	= ``"'' {<Latin 1 character> | escape_char} [``\\\\\\\\'' ] ``"''
+escape_char	= ``\\\\"''
 unquoted_string	= {<Latin 1 character except space, tab, ``,'', ``\\\\n'', ``)''>}
 .TE
+
+.LP
+The \fIparams\fP field is parsed into a list of
+.PN String
+values that will be passed to the named action procedure.  A
+\fIquoted string\fP may contain an embedded quotation mark if the
+quotation mark is preceded by a single backslash (\\).  The
+three-character sequence ``\\\\"'' is interpreted as ``single backslash
+followed by end-of-string''.
 
 .SH
 Modifier Names
@@ -505,7 +530,8 @@ name	= namechar { namechar }
 namechar	= { ``a''-``z'' | ``A''-``Z'' | ``0''-``9'' | ``_'' | ``-'' }
 params	= string {``,'' string}
 string	= quoted_string
-quoted_string	= ``"'' {<Latin 1 character>} ``"''
+quoted_string	= ``"'' {<Latin 1 character> | escape_char} [``\\\\\\\\'' ] ``"''
+escape_char	= ``\\\\"''
 .TE
 .LP
 The canonical modifier names are

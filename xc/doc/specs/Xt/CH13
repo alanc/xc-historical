@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 \&
 .sp 1
 .ce 3
@@ -47,13 +62,13 @@ symbolic macro
 .PN XtSpecificationRelease .
 .LP
 .Ds 0
-#define XtSpecificationRelease 4
+#define XtSpecificationRelease 5
 .De
 .IN "XtSpecificationRelease" "" "@DEF@"
 .LP
 As the symbol
 .PN XtSpecificationRelease
-is new to Release 4, widgets and
+was new to Release 4, widgets and
 applications desiring to build against earlier implementations should
 test for the presence of this symbol and assume only Release 3
 interfaces if the definition is not present.
@@ -93,7 +108,7 @@ modification.
 .NH 3
 Additional Arguments
 .XS
-\fB\*(SN Additional Arguments\fP
+\*(SN Additional Arguments
 .XE
 .LP
 Arguments were added to the procedure definitions for
@@ -259,4 +274,214 @@ is no requirement that all composite widgets implement the extra
 functionality required to manage windowless children, so the
 \fIaccept_objects\fP field allows a composite widget to declare that it
 is not prepared to do so.
+
+.NH 2
+Release 4 to Release 5 Compatibility
+.XS
+\fB\*(SN Release 4 to Release 5 Compatibility\fP
+.XE
+.LP
+At the data structure level, Release 5 retains complete binary
+compatibility with release 4.  The specification of the
+.PN ObjectPart ,
+.PN RectObjPart ,
+.PN CorePart ,
+.PN CompositePart ,
+.PN ShellPart ,
+.PN WMShellPart ,
+.PN TopLevelShellPart ,
+and
+.PN ApplicationShellPart
+instance records was made less strict to permit implementations to
+add internal fields to these structures.  Any implementation that
+chooses to do so would, of course, force a recompilation.
+The Xlib specification for
+.PN XrmValue
+and
+.PN XrmOptionDescRec
+was updated to use a new type,
+.PN XPointer ,
+for the \fIaddr\fP and \fIvalue\fP fields respectively, to avoid
+ANSI C conformance problems.  The definition of
+.PN XPointer
+is binary compatible with the previous implementation.
+
+.NH 3
+baseTranslations Resource
+.XS
+\fB\*(SN baseTranslations Resource\fP
+.XE
+
+.LP
+A new pseudo-resource, XtNbaseTranslations, was defined to permit
+application developers to specify translation tables in application
+defaults files while still giving end users the ability to augment
+or override individual event sequences.  This change will affect
+only those applications that wish to take advantage of the new
+functionality, or those widgets that may have previously defined
+a resource named ``baseTranslations''.
+.LP
+Applications wishing to take advantage of the new functionality
+would change their application defaults file, e.g., from
+.Ds
+	app.widget.translations: \fIvalue\fP
+.DE
+to
+.Ds
+	app.widget.baseTranslations: \fIvalue\fP
+.DE
+If it is important to the application to preserve complete
+compatibility of the defaults file between different versions
+of the application running under Release 4 and Release 5,
+the full translations can be replicated in both the ``translations''
+and the ``baseTranslations'' resource.
+
+.NH 3
+Resource File Search Path
+.XS
+\fB\*(SN Resource File Search Path\fP
+.XE
+
+.LP
+The current specification allows implementations greater flexibility
+in defining the directory structure used to hold the application class
+and per-user application defaults files.  Previous specifications
+required the substitution strings to appear in the default path in a
+certain order, preventing sites from collecting all the files for
+a specific application together in one directory.  The Release 5
+specification allows the default path to specify the substitution
+strings in any order within a single path entry.  Users will need to
+pay close attention to the documentation for the specific
+implementation to know where to find these files and how to specify
+their own
+.PN XFILESEARCHPATH
+and
+.PN XUSERFILESEARCHPATH
+values when overriding the system defaults.
+
+
+.NH 3
+Customization Resource
+.XS
+\fB\*(SN Customization Resource\fP
+.XE
+
+.LP
+.PN XtResolvePathname
+supports a new substitution string, %C, for specifying separate
+application class resource files according to arbitrary user-specified
+categories.  The primary motivation for this addition was separate
+monochrome and color application class defaults files.  The
+substitution value is obtained by querying the current resource
+database for the application resource name ``customization'', class
+``Customization''.  Any application that previously used this
+resource name and class will need to be aware of the possibly
+conflicting semantics.
+
+.NH 3
+Per-Screen Resource Database
+.XS
+\fB\*(SN Per-Screen Resource Database\fP
+.XE
+
+.LP
+To allow a user to specify separate preferences for each screen of a
+display, a per-screen resource specification string has been added and
+multiple resource databases are created; one for each screen.  This
+will affect any application that modified the (formerly unique)
+resource database associated with the display subsequent to the \*(xI
+database initialization.  Such applications will need to be aware
+of the particular screen on which each shell widget is to be created.
+.LP
+Although the wording of the specification changed substantially in the
+description of the process by which the resource database(s) is
+initialized, the net effect is the same as in prior releases with the
+exception of the added per-screen resource specification and the new
+customization substitution string in
+.PN XtResolvePathname .
+
+.NH 3
+Internationalization of Applications
+.XS
+\fB\*(SN Internationalization of Applications\fP
+.XE
+
+.LP
+Internationalization as defined by ANSI is a technology that
+allows support of an application in a single locale.  In
+adding support for internationalization to the \*(xI
+the restrictions of this model have been followed.
+In particular, the new \*(xI interfaces are designed to not
+preclude an application from using other alternatives.
+For this reason, no \*(xI routine makes a call to establish the
+locale.   However, a convenience routine to establish the
+locale at initialize time has been provided, in the form
+of a default procedure that must be explicitly installed
+if the application desires ANSI C locale behavior.
+.LP
+As many objects in X, particularly resource databases, now inherit
+the global locale when they are created, applications wishing to use
+the ANSI C locale model should use the new function
+.PN XtSetLanguageProc
+to do so.
+.LP
+The internationalization additions also define event filters
+as a part of the Xlib Input Method specifications.  The
+\*(xI enable the use of event filters through additions to
+.PN XtDispatchEvent .
+Applications that may not be dispatching all events through
+.PN XtDispatchEvent
+should be reviewed in the context of this new input method mechanism.
+.LP
+In order to permit internationalization of error messages the name
+and path of the error database file is now allowed to be implementation
+dependent.  No adequate standard mechanism has yet been suggested to
+allow the \*(xI to locate the database from localization information
+supplied by the client.
+.LP
+The previous specification for the syntax of the language string
+specified by
+.PN xnlLanguage
+has been dropped to avoid potential conflicts with other standards.
+The language string syntax is now implementation-defined.
+The example syntax cited is consistent with the previous
+specification.
+
+.NH 3
+Permanently Allocated Strings
+.XS
+\*(SN Permanently Allocated Strings
+.XE
+
+.LP
+In order to permit additional memory savings, an Xlib interface was
+added to allow the resource manager to avoid copying certain string
+constants.  The \*(xI specification was updated to explicitly require
+the Object \fIclass_name\fP, \fIresource_name\fP, \fIresource_class\fP,
+\fIresource_type\fP, \fIdefault_type\fP in resource tables, Core \fIactions\fP
+\fIstring\fP field, and Constraint \fIresource_name\fP, \fIresource_class\fP,
+\fIresource_type\fP, and \fIdefault_type\fP resource fields to be
+permanently allocated.  This explicit requirement is expected to
+affect only applications that may create and destroy classes
+on the fly.
+
+.NH 3
+Arguments to Existing Functions
+.XS
+\fB\*(SN Arguments to Existing Functions\fP
+.XE
+
+.LP
+The \fIargs\fP argument to
+.PN XtAppInitialize ,
+.PN XtVaAppInitialize ,
+.PN XtOpenDisplay ,
+.PN XtDisplayInitialize ,
+and
+.PN XtInitialize
+were changed from
+.PN Cardinal *
+to int* to conform to pre-existing convention and avoid otherwise
+annoying typecasting in ANSI C environments.
+
 .bp

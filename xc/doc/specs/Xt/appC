@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 .bp
 \&
 .sp 1
@@ -87,7 +102,7 @@ Widget XtInitialize(\fIshell_name\fP, \fIapplication_class\fP, \fIoptions\fP, \
 .br
       Cardinal \fInum_options\fP;
 .br
-      Cardinal *\fIargc\fP;
+      int *\fIargc\fP;
 .br
       String \fIargv\fP[];
 .FN
@@ -741,6 +756,10 @@ returns the appropriate message from the error database
 associated with the default application context
 or returns the specified default message if one is not found in the
 error database.
+To form the full resource name and class when querying the database,
+the \fIname\fP and \fItype\fP are concatenated with a single ``.''
+between them and the \fIclass\fP is concatenated with itself with a
+single ``.'' if it does not already contain a ``.''.
 This routine has been superseded by
 .PN XtAppGetErrorDatabaseText .
 .sp

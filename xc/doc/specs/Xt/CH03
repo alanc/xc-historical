@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 \&
 .sp 1
 .ce 3
@@ -109,8 +124,9 @@ Constraint .
 .IP \(bu 5
 Shell boxes
 .IP
-Shell boxes have only one child,
-which is exactly the size of the shell.
+Shell boxes typically have only one child,
+and the child's size is usually
+exactly the size of the shell.
 The geometry manager must communicate with the window manager, if it exists,
 and the box must also accept
 .PN ConfigureNotify
@@ -170,7 +186,7 @@ in the array and increments the \fInum_children\fP field.
 .NH 2
 Insertion Order of Children: the insert_position Procedure
 .XS
-\*(SN Insertion Order of Children: the insert_position Procedure
+\fB\*(SN Insertion Order of Children: the insert_position Procedure\fP
 .XE
 .LP
 Instances of composite widgets sometimes need to specify more about the order in which
@@ -248,7 +264,7 @@ The \*(xI provide a set of generic routines to permit the addition of
 widgets to or the removal of widgets from a composite widget's managed set.
 .IN "change_managed procedure"
 These generic routines eventually call the composite widget's change_managed
-procedure.
+procedure if the procedure pointer is non-NULL.
 The change_managed procedure pointer is of type
 .PN XtWidgetProc .
 The widget argument specifies the composite widget whose managed child
@@ -420,7 +436,7 @@ resource specifications.
 is identical in function to
 .PN XtCreateManagedWidget
 with the \fIargs\fP and \fInum_args\fP parameters replaced
-by a varargs list, as described in Section 2.4.1.
+by a varargs list, as described in Section 2.5.1.
 
 .NH 3
 Unmanaging Children
@@ -476,7 +492,7 @@ and some time later the client may manage the children again.
 To destroy widgets entirely,
 .PN XtDestroyWidget
 should be called instead;
-see Section 2.8.
+see Section 2.9.
 .sp
 .LP
 To remove a single child from its parent widget's managed set, use
@@ -504,7 +520,7 @@ high-level convenience procedures.
 .NH 3
 Determining If a Widget Is Managed
 .XS
-\*(SN Determining If a Widget Is Managed
+\fB\*(SN Determining If a Widget Is Managed\fP
 .XE
 .LP
 To determine the managed state of a given child widget, use
@@ -520,8 +536,7 @@ Specifies the widget.  \*(oI
 .LP
 The
 .PN XtIsManaged
-macro (for widget programmers) or function (for application programmers)
-returns
+function returns
 .PN True
 if the specified widget is of class RectObj or any subclass thereof
 and is managed, or

@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 \&
 .sp 1
 .ce 3
@@ -73,6 +88,7 @@ When it resizes a child (that is, changes the width, height, or
 border width) other than the one making the request,
 it should do so by calling
 .PN XtResizeWidget .
+The requesting child may be given special treatment; see Section 6.5.
 It can simultaneously move and resize a child with a single call to
 .PN XtConfigureWidget .
 .LP
@@ -89,7 +105,7 @@ Because such cascaded arbitration of widget geometry can involve extended
 negotiation,
 windows are not actually allocated to widgets at application
 startup until all widgets are satisfied with their geometry;
-see Sections 2.4 and 2.5.
+see Sections 2.5 and 2.6.
 .NT Notes
 .IP 1. 5
 The \*(xI treatment of stacking requests is deficient in several areas.
@@ -531,8 +547,12 @@ The widget's window is moved and resized automatically by
 .PN XtMakeGeometryRequest .
 .LP
 Homogeneous composite widgets often find it convenient to treat the widget
-making the request the same as any other widget, possibly reconfiguring
-it as part of its layout process, unless 
+making the request the same as any other widget, including reconfiguring
+it using
+.PN XtConfigureWidget
+or
+.PN XtResizeWidget
+as part of its layout process, unless 
 .PN XtCWQueryOnly
 is specified.
 If it does this,

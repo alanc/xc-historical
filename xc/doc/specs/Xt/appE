@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 .bp
 \&
 .sp 1
@@ -15,10 +30,11 @@ The
 .PN StringDefs.h
 header file contains definitions for the following resource name,
 class, and representation type symbolic constants.
+.IN "String Constants" "resource names"
 .LP
 Resource names:
 .TS
-lw(1.5i) lw(3i).
+lw(2i) lw(2.5i).
 _
 .sp 6p
 Symbol	Definition
@@ -44,6 +60,7 @@ XtNdestroyCallback	"destroyCallback"
 XtNeditType	"editType"
 XtNfile	"file"
 XtNfont	"font"
+XtNfontSet	"fontSet"
 XtNforceBars	"forceBars"
 XtNforeground	"foreground"
 XtNfunction	"function"
@@ -114,10 +131,11 @@ XtNy	"y"
 .sp 6p
 _
 .TE
+.IN "String Constants" "resource classes"
 .LP
 Resource classes:
 .TS
-lw(1.5i) lw(3i).
+lw(2i) lw(2.5i).
 _
 .sp 6p
 Symbol	Definition
@@ -139,6 +157,7 @@ XtCEditType	"EditType"
 XtCEventBindings	"EventBindings"
 XtCFile	"File"
 XtCFont	"Font"
+XtCFontSet	"FontSet"
 XtCForeground	"Foreground"
 XtCFraction	"Fraction"
 XtCFunction	"Function"
@@ -193,10 +212,11 @@ XtCY	"Y"
 .sp 6p
 _
 .TE
+.IN "String Constants" "representation types"
 .LP
 Resource representation types:
 .TS
-lw(1.5i) lw(3i).
+lw(2i) lw(2.5i).
 _
 .sp 6p
 Symbol	Definition
@@ -221,6 +241,7 @@ XtREnum	"Enum"
 XtRFile	"File"
 XtRFloat	"Float"
 XtRFont	"Font"
+XtRFontSet	"FontSet"
 XtRFontStruct	"FontStruct"
 XtRFunction	"Function"
 XtRGeometry	"Geometry"
@@ -253,7 +274,7 @@ _
 .LP
 Boolean enumeration constants:
 .TS
-lw(1.5i) lw(3i).
+lw(2i) lw(2.5i).
 _
 .sp 6p
 Symbol	Definition
@@ -272,7 +293,7 @@ _
 .LP
 Orientation enumeration constants:
 .TS
-lw(1.5i) lw(3i).
+lw(2i) lw(2.5i).
 _
 .sp 6p
 Symbol	Definition
@@ -287,7 +308,7 @@ _
 .LP
 Text edit enumeration constants:
 .TS
-lw(1.5i) lw(3i).
+lw(2i) lw(2.5i).
 _
 .sp 6p
 Symbol	Definition
@@ -303,7 +324,7 @@ _
 .LP
 Color enumeration constants:
 .TS
-lw(1.5i) lw(3i).
+lw(2i) lw(2.5i).
 _
 .sp 6p
 Symbol	Definition
@@ -318,7 +339,7 @@ _
 .LP
 Font constant:
 .TS
-lw(1.5i) lw(3i).
+lw(2i) lw(2.5i).
 _
 .sp 6p
 Symbol	Definition
@@ -329,4 +350,6 @@ XtExtdefaultfont	"xtdefaultfont"
 .sp 6p
 _
 .TE
+.IN "String Constants" "miscellaneous"
 .TC
+

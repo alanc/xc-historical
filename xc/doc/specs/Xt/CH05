@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 \&
 .sp 1
 .ce 3
@@ -50,7 +65,7 @@ widget on the pop-up list.
 Pop-Up Widget Types
 .LP
 .XS
-\*(SN Pop-Up Widget Types
+\fB\*(SN Pop-Up Widget Types\fP
 .XE
 There are three kinds of pop-up widgets:
 .IP \(bu 5
@@ -141,7 +156,7 @@ Widget XtCreatePopupShell(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
       Cardinal \fInum_args\fP;
 .FN
 .IP \fIname\fP 1i
-Specifies the text name for the created shell widget.
+Specifies the instance name for the created shell widget.
 .IP \fIwidget_class\fP 1i
 Specifies the widget class pointer for the created shell widget.
 .IP \fIparent\fP 1i
@@ -159,6 +174,21 @@ and, rather than using insert_child to attach the widget to the parent's
 .IN "insert_child procedure"
 \fIchildren\fP list,
 attaches the shell to the parent's \fIpopup_list\fP directly.
+.LP
+The screen resource for this widget is determined by first scanning
+\fIargs\fP for the XtNscreen argument.  If no XtNscreen argument is
+found, the resource database associated with the parent's screen
+is queried for the resource \fIname\fP.screen, class
+\fIClass\fP.Screen where \fIClass\fP is the \fIclass_name\fP
+field from the
+.PN CoreClassPart
+of the specified \fIwidget_class\fP .
+If this query fails, the parent's screen is used.
+Once the screen is determined,
+the resource database associated with that screen is used to retrieve
+all remaining resources for the widget not specified in
+\fIargs\fP.
+
 .LP
 A spring-loaded pop-up invoked from a translation table via
 .PN XtMenuPopup
@@ -186,7 +216,7 @@ Widget XtVaCreatePopupShell(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...)
       Widget \fIparent\fP;
 .FN
 .IP \fIname\fP 1i
-Specifies the text name for the created shell widget.
+Specifies the instance name for the created shell widget.
 .IP \fIwidget_class\fP 1i
 Specifies the widget class pointer for the created shell widget.
 .IP \fIparent\fP 1i
@@ -199,7 +229,7 @@ resource specifications.
 is identical in function to
 .PN XtCreatePopupShell
 with \fIthe\fP args and \fInum_args\fP parameters replaced by a varargs list as
-described in Section 2.4.1.
+described in Section 2.5.1.
 
 .NH 2
 Creating Pop-Up Children
@@ -322,7 +352,9 @@ to ensure \fIpopup_shell\fP's class is a subclass of
 Raises the window and returns if the shell's \fIpopped_up\fP field is already 
 .PN True .
 .IP \(bu 5
-Calls the callback procedures on the shell's \fIpopup_callback\fP list.
+Calls the callback procedures on the shell's \fIpopup_callback\fP list,
+specifying a pointer to the value of \fIgrab_kind\fP as the \fIcall_data\fP
+argument.
 .IP \(bu 5
 Sets the shell \fIpopped_up\fP field to 
 .PN True ,
@@ -595,7 +627,9 @@ it calls
 Sets \fIpopup_shell\fP's \fIpopped_up\fP field to 
 .PN False .
 .IP \(bu 5
-Calls the callback procedures on the shell's \fIpopdown_callback\fP list.
+Calls the callback procedures on the shell's \fIpopdown_callback\fP list,
+specifying a pointer to the value of the shell's \fIgrab_kind\fP field
+as the \fIcall_data\fP argument.
 .sp
 .LP
 To pop down a pop-up from a callback list, you may use the callback 

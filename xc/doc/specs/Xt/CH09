@@ -1,3 +1,18 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
+.\" and Digital Equipment Corporation, Maynard, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. or Digital not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T and Digital makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
 \&
 .sp 1
 .ce 3
@@ -71,6 +86,19 @@ typedef struct {
 } XtResource, *XtResourceList;
 .De
 .IN "XtResourceList"
+
+.LP
+When the resource list is specified as the
+.PN CoreClassPart ,
+.PN ObjectClassPart ,
+.PN RectObjClassPart ,
+or
+.PN ConstraintClassPart
+\fIresources\fP field the strings pointed to by \fIresource_name\fP,
+\fIresource_Iclass\fP, \fIresource_type\fP, and \fIdefault_type\fP must
+be permanently allocated prior to or during the execution of the class
+initialization procedure and must not be subsequently deallocated.
+
 .LP
 The \fIresource_name\fP field contains the name used by clients to access the field
 in the widget.
@@ -90,9 +118,10 @@ The \*(xI's symbolic resource names begin with
 ``XtN''
 and are followed by the string name (for example, XtNbackgroundPixel
 for backgroundPixel).
+
 .LP
-The \fIresource_class\fP field contains the class used by
-clients to access the field.
+The \fIresource_class\fP field contains the class string used in resource
+specification files to identify the field.
 A resource class provides two functions:
 .IP \(bu 5
 It isolates an application from different representations that widgets 
@@ -150,8 +179,8 @@ spelled identically to the type name of the field.
 The resource type is used when resources are fetched to
 convert from the resource database format (usually
 .PN String )
-or the default
-resource format (almost anything, but often
+or the format of the resource default value
+(almost anything, but often
 .PN String )
 to the desired
 physical representation (see Section 9.6).
@@ -215,6 +244,9 @@ T}	float
 T{
 .PN XtRFont
 T}	Font
+T{
+.PN XtRFontSet
+T}	XFontSet
 T{
 .PN XtRFontStruct
 T}	XFontStruct*
@@ -734,7 +766,7 @@ resource specifications.
 is identical in function to
 .PN XtGetSubresources
 with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list, as
-described in Section 2.4.1.
+described in Section 2.5.1.
 
 .NH 2
 Obtaining Application Resources
@@ -843,7 +875,7 @@ resource specifications.
 is identical in function to
 .PN XtGetApplicationResources
 with the \fIargs\fP and \fInum_args\fP parameters
-replaced by a varargs list, as described in Section 2.4.1.
+replaced by a varargs list, as described in Section 2.5.1.
 
 .NH 2
 Resource Conversions
@@ -883,59 +915,124 @@ Constraint,
 and 
 Shell 
 widget classes.
-It registers the following resource converters:
+The \*(xI register the following resource converters that accept
+input values of representation type
+.PN XtRString .
 .LP
-From
-.PN XtRString 
-to:
-.IP
-.PN XtRAcceleratorTable ,
-.PN XtRAtom ,
-.PN XtRBoolean ,
-.PN XtRBool ,
-.PN XtRCursor ,
-.PN XtRDimension ,
-.PN XtRDisplay ,
-.PN XtRFile ,
-.PN XtRFloat ,
-.PN XtRFont ,
-.PN XtRFontStruct ,
-.PN XtRInt ,
-.PN XtRInitialState ,
-.PN XtRPixel ,
-.PN XtRPosition ,
-.PN XtRShort ,
-.PN XtRTranslationTable ,
-.PN XtRUnsignedChar ,
-and
-.PN XtRVisual .
-.LP
-From
-.PN XtRColor
-to
-.PN XtRPixel .
-.LP
-From
-.PN XRInt
-to:
-.IP
-.PN XtRBoolean ,
-.PN XtRBool ,
-.PN XtRColor ,
-.PN XtRDimension ,
-.PN XtRFloat ,
-.PN XtRFont ,
-.PN XtRPixel ,
-.PN XtRPixmap ,
-.PN XtRPosition ,
-.PN XtRShort ,
-and
-.PN XtRUnsignedChar .
-.LP
-From
+.TS
+lw(1.5i) lw(2.25i) lw(1.5i) .
+_
+.sp 6p
+Target Representation	Converter Name	Additional Args
+.sp 6p
+_
+.sp 6p
+T{
+.PN XtRAcceleratorTable
+T}	T{
+.PN XtCvtStringToAcceleratorTable
+T}
+T{
+.PN XtRAtom
+T}	T{
+.PN XtCvtStringToAtom
+T}	Display*
+T{
+.PN XtRBoolean
+T}	T{
+.PN XtCvtStringToBoolean
+T}
+T{
+.PN XtRBool
+T}	T{
+.PN XtCvtStringToBool
+T}
+T{
+.PN XtRCursor
+T}	T{
+.PN XtCvtStringToCursor
+T}	Display*
+T{
+.PN XtRDimension
+T}	T{
+.PN XtCvtStringToDimension
+T}
+T{
+.PN XtRDisplay
+T}	T{
+.PN XtCvtStringToDisplay
+T}
+T{
+.PN XtRFile
+T}	T{
+.PN XtCvtStringToFile
+T}
+T{
+.PN XtRFloat
+T}	T{
+.PN XtCvtStringToFloat
+T}
+T{
+.PN XtRFont
+T}	T{
+.PN XtCvtStringToFont
+T}	Display*
+T{
+.PN XtRFontSet
+T}	T{
+.PN XtCvtStringToFontSet
+T}	Display*, String \fIlocale\fP
+T{
+.PN XtRFontStruct
+T}	T{
+.PN XtCvtStringToFontStruct
+T}	Display*
+T{
+.PN XtRInitialState
+T}	T{
+.PN XtCvtStringToInitialState
+T}
+T{
+.PN XtRInt
+T}	T{
+.PN XtCvtStringToInt
+T}
+T{
 .PN XtRPixel
-to
-.PN XtRColor .
+T}	T{
+.PN XtCvtStringToPixel
+T}	T{
+.PN colorConvertArgs
+T}
+T{
+.PN XtRPosition
+T}	T{
+.PN XtCvtStringToPosition
+T}
+T{
+.PN XtRShort
+T}	T{
+.PN XtCvtStringToShort
+T}
+T{
+.PN XtRTranslationTable
+T}	T{
+.PN XtCvtStringToTranslationTable
+T}
+T{
+.PN XtRUnsignedChar
+T}	T{
+.PN XtCvtStringToUnsignedChar
+T}
+T{
+.PN XtRVisual
+T}	T{
+.PN XtCvtStringToVisual
+T}	Screen*, Cardinal \fIdepth\fP
+.sp 6p
+_
+.TE
+
 .LP
 The String-to-Pixel conversion has two predefined constants that are
 guaranteed to work and contrast with each other:
@@ -979,7 +1076,47 @@ font in the list.  This wildcard font name should be as broad as
 possible to maximize the probability of locating a useable font;
 for example, "-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1".)
 .IP \(bu 5
-If no suitable ISO8859-1 font can be found, issue an error message.
+If no suitable ISO8859-1 font can be found, issue a warning message
+and return
+.PN False .
+.LP
+The String-to-FontSet converter recognizes the constant
+.PN XtDefaultFontSet
+.IN "XtDefaultFontSet" "" "@DEF@"
+.IN "Resources" "xtDefaultFontSet"
+and evaluate this in the following manner:
+.IP \(bu 5
+Query the resource database for the resource whose full name
+is ``xtDefaultFontSet'', class ``XtDefaultFontSet'' (that is, no widget
+name/class prefixes) and use a type
+.PN XtRString
+value returned as the base font name list, or a type
+.PN XtRFontSet
+value directly as the resource value.
+.IP \(bu 5
+If the resource database does not contain a value for xtDefaultFontSet,
+class XtDefaultFontSet, or if a font set cannot be
+successfully created from this resource,
+an implementation-defined font set is created.
+(One possible algorithm is to
+perform an
+.PN XCreateFontSet
+using a wildcard base font name.
+This wildcard base font name should be as broad as
+possible to maximize the probability of locating a useable font;
+for example, "-*-*-*-R-*-*-*-120-*-*-*-*".)
+.IP \(bu 5
+If no suitable font set can be created, issue a warning message
+and return
+.PN False .
+.LP
+If a font set is created but \fImissing_charset_list\fP is not
+empty, a warning is issued and the partial font set is returned.
+The \*(xI register the String-to-FontSet converter with
+a conversion argument list that extracts the current process
+locale at the time the converter is invoked.   This ensures
+that the converter is invoked again if the same conversion
+is required in a different locale.
 .LP
 The String-to-InitialState conversion accepts the values
 .PN NormalState
@@ -1005,6 +1142,124 @@ Section 8;
 and
 .PN DirectColor .
 
+.LP
+The \*(xI register the following resource converter that accepts
+an input value of representation type
+.PN XtRColor .
+.LP
+.TS
+lw(1.5i) lw(2.25i) lw(1.5i) .
+_
+.sp 6p
+Target Representation	Converter Name	Additional Args
+.sp 6p
+_
+.sp 6p
+T{
+.PN XtRPixel
+T}	T{
+.PN XtCvtColorToPixel
+T}
+.sp 6p
+_
+.TE
+
+.LP
+The \*(xI register the following resource converters that accept
+input values of representation type
+.PN XtRInt .
+.LP
+.TS
+lw(1.5i) lw(2.25i) lw(1.5i) .
+_
+.sp 6p
+Target Representation	Converter Name	Additional Args
+.sp 6p
+_
+.sp 6p
+T{
+.PN XtRBoolean
+T}	T{
+.PN XtCvtIntToBoolean
+T}
+T{
+.PN XtRBool
+T}	T{
+.PN XtCvtIntToBool
+T}
+T{
+.PN XtRColor
+T}	T{
+.PN XtCvtIntToColor
+T}	T{
+.PN colorConvertArgs
+T}
+T{
+.PN XtRDimension
+T}	T{
+.PN XtCvtIntToDimension
+T}
+T{
+.PN XtRFloat
+T}	T{
+.PN XtCvtIntToFloat
+T}
+T{
+.PN XtRFont
+T}	T{
+.PN XtCvtIntToFont
+T}
+T{
+.PN XtRPixel
+T}	T{
+.PN XtCvtIntToPixel
+T}
+T{
+.PN XtRPixmap
+T}	T{
+.PN XtCvtIntToPixmap
+T}
+T{
+.PN XtRPosition
+T}	T{
+.PN XtCvtIntToPosition
+T}
+T{
+.PN XtRShort
+T}	T{
+.PN XtCvtIntToShort
+T}
+T{
+.PN XtRUnsignedChar
+T}	T{
+.PN XtCvtIntToUnsignedChar
+T}
+.sp 6p
+_
+.TE
+
+.LP
+The \*(xI register the following resource converter that accepts
+an input value of representation type
+.PN XtRPixel .
+.LP
+.TS
+lw(1.5i) lw(2.25i) lw(1.5i) .
+_
+.sp 6p
+Target Representation	Converter Name	Additional Args
+.sp 6p
+_
+.sp 6p
+T{
+.PN XtRColor
+T}	T{
+.PN XtCvtPixelToColor
+T}
+.sp 6p
+_
+.TE
+
 .NH 3
 New Resource Converters
 .XS
@@ -1015,7 +1270,7 @@ Type converters use pointers to
 .PN XrmValue
 structures (defined in
 .Pn < X11/Xresource.h >;
-see Section 10.11 in \fI\*(xL\fP)
+see Section 15.4 in \fI\*(xL\fP)
 for input and output values.
 .LP
 .Ds 0
@@ -1023,7 +1278,7 @@ for input and output values.
 .ta .5i 3i
 typedef struct {
 	unsigned int size;
-	caddr_t addr;
+	XPointer addr;
 } XrmValue, *XrmValuePtr;
 .De
 .LP
@@ -1032,7 +1287,7 @@ gives the total number of significant bytes in the data.  For values
 of type
 .PN String ,
 \fIaddr\fP is the address of the first character and \fIsize\fP
-includes the NULL terminating byte. 
+includes the NUL terminating byte. 
 .LP
 A resource converter procedure pointer is of type
 .PN XtTypeConverter .
@@ -1123,6 +1378,15 @@ Note that if an address is written into \fIto->addr\fP, it cannot be that
 of a local variable of the converter because the data will not be
 valid after the converter returns.  Static variables may be used,
 as in the following example.
+If the converter modifies the resource database,
+the changes affect any in-progress widget creation,
+.PN XtGetApplicationResources ,
+or
+.PN XtGetSubresources
+in an implementation-defined manner; however, insertion of new entries
+or changes to existing entries is allowed and will not directly cause
+an error.
+
 .LP
 The following is an example of a converter that takes a
 .PN string
@@ -1151,7 +1415,7 @@ a function of the particular display (and colormap).
 		else {				\\
 			static type static_val;	\\
 			static_val = (value);	\\
-			toVal->addr = (XtPointer)&static_val;	\\
+			toVal->addr = (XPointer)&static_val;	\\
 		}					\\
 		toVal->size = sizeof(type);	\\
 		return True;			\\
@@ -1654,11 +1918,22 @@ or
 the arguments are
 computed with respect to the specified widget, not the base address or
 resource list specified in the call.
+.LP
+If the
+.PN XtConvertArgProc
+modifies the resource database,
+the changes affect any in-progress widget creation,
+.PN XtGetApplicationResources ,
+or
+.PN XtGetSubresources
+in an implementation-defined manner; however, insertion of new entries
+or changes to existing entries is allowed and will not directly cause
+an error.
 
 .NH 3
 Resource Converter Invocation
 .XS
-\*(SN Resource Converter Invocation
+\fB\*(SN Resource Converter Invocation\fP
 .XE
 .LP
 All resource-fetching routines (for example,
@@ -1681,14 +1956,14 @@ typedef Opaque XtCacheRef;
 .De
 .IN "XtCallConverter" "" "@DEF@"
 .FD 0
-Boolean XtCallConverter( \fIdisplay\fP, \fIconverter\fP, \fIargs\fP, \
+Boolean XtCallConverter( \fIdisplay\fP, \fIconverter\fP, \fIconversion_args\fP, \
 \fInum_args\fP, \fIfrom\fP, \fIto_in_out\fP, \fIcache_ref_return\fP )
 .br
       Display* \fIdisplay\fP;
 .br
       XtTypeConverter \fIconverter\fP;
 .br
-      XrmValuePtr \fIargs\fP;
+      XrmValuePtr \fIconversion_args\fP;
 .br
       Cardinal \fInum_args\fP;
 .br
@@ -1702,11 +1977,11 @@ Boolean XtCallConverter( \fIdisplay\fP, \fIconverter\fP, \fIargs\fP, \
 Specifies the display with which the conversion is to be associated.
 .IP \fIconverter\fP 1i
 Specifies the conversion procedure to be called.
-.IP \fIargs\fP 1i
+.IP \fIconversion_args\fP 1i
 Specifies the additional conversion arguments needed
 to perform the conversion, or NULL.
 .IP \fInum_args\fP 1i
-Specifies the number of entries in \fIargs\fP.
+Specifies the number of entries in \fIconversion_args\fP.
 .IP \fIfrom\fP 1i
 Specifies a descriptor for the source value.
 .IP \fIto_in_out\fP 1i
@@ -1724,7 +1999,7 @@ with cache type
 or
 .PN XtCacheByDisplay
 looks in the conversion cache to see if this conversion procedure
-has been called with the specified arguments.  If so, it
+has been called with the specified conversion arguments.  If so, it
 checks the success status of the prior call, and if
 the conversion failed,
 .PN XtCallConverter
@@ -2008,9 +2283,34 @@ The
 function starts with the resources specified for the Object class
 and proceeds down the subclass chain to the class of the object.
 The \fIvalue\fP field of a passed argument list must contain the
-address into which to store the corresponding resource value.
+address into which to copy the contents of the corresponding
+object instance field.  If the field is a pointer type, the lifetime
+of the pointed-to data is defined by the object class.  For the
+\*(xI-defined resources, the following lifetimes apply
+.IP \(bu 3
+Not valid following any operation that modifies the resource:
+.RS
+.IP \- 3
+XtNchildren resource of composite widgets.
+.IP \- 3
+All resources of representation type XtRCallback.
+.RE
+.IP \(bu 3
+Remain valid at least until the widget is destroyed:
+.RS
+.IP \- 3
+XtNaccelerators, XtNtranslations.
+.RE
+.IP \(bu 3
+Remain valid until the Display is closed:
+.RS
+.IP \- 3
+XtNscreen.
+.RE
+.LP
 It is the caller's responsibility
-to allocate and deallocate this storage according to the size of the
+to allocate and deallocate storage for the copied data
+according to the size of the
 resource representation type used within the object.
 .LP
 If the class of the object's parent is a subclass of
@@ -2044,6 +2344,14 @@ calls the get_values_hook procedures in superclass-to-subclass order.
 This permits a Constraint parent to provide
 nonresource data via
 .PN XtGetValues .
+.LP
+Get_values_hook procedures may modify the data stored at the
+location addressed by the \fIvalue\fP field, including (but not
+limited to) making a copy of data whose resource representation is a
+pointer.  None of the \*(xI-defined object classes copy
+data in this manner.  Any operation that modifies the queried
+object resource may invalidate the pointed-to data.
+
 .sp
 .LP
 To retrieve the current values of resources associated with a widget
@@ -2066,7 +2374,7 @@ is identical in function to
 .PN XtGetValues
 with the \fIargs\fP
 and \fInum_args\fP parameters replaced by a varargs list, as described in
-Section 2.4.1.  All value entries in the list must specify pointers to
+Section 2.5.1.  All value entries in the list must specify pointers to
 storage allocated by the caller to which the resource value will be
 copied.  It is the caller's responsibility to ensure that sufficient
 storage is allocated.  If
@@ -2194,7 +2502,7 @@ is identical in function to
 .PN XtGetSubvalues
 with the
 \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list, as described
-in Section 2.4.1.
+in Section 2.5.1.
 .PN XtVaTypedArg
 is not supported for
 .PN XtVaGetSubvalues .
@@ -2271,21 +2579,22 @@ RectObj,
 determines if a geometry request is needed by comparing the old object to
 the new object.
 If any geometry changes are required,
-it restores the original geometry, then
-makes the request, and the geometry manager returns
-.PN XtGeometryYes ,
-.PN XtGeometryAlmost ,
-or
-.PN XtGeometryNo .
-If
+.PN XtSetValues
+restores the original geometry and makes the request on behalf of the widget.a
+If the geometry manager returns
 .PN XtGeometryYes ,
 .PN XtSetValues
 calls the object's resize procedure.
-If
+If the geometry manager returns
+.PN XtGeometryDone ,
+.PN XtSetValues
+continues, as the object's resize procedure should have been called
+by the geometry manager.
+If the geometry manager returns
 .PN XtGeometryNo ,
 .PN XtSetValues
 ignores the geometry request and continues.
-If
+If the geometry manager returns
 .PN XtGeometryAlmost ,
 .PN XtSetValues
 calls the set_values_almost procedure,
@@ -2322,7 +2631,7 @@ contain the resources to be modified and their new values.
 is identical in function to
 .PN XtSetValues
 with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list, as
-described in Section 2.4.1.
+described in Section 2.5.1.
 
 .NH 4
 Widget State: the set_values Procedure
@@ -2637,7 +2946,7 @@ contain the resources to be modified and their new values.
 is identical in function to
 .PN XtSetSubvalues
 with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list, as
-described in Section 2.4.1.
+described in Section 2.5.1.
 .PN XtVaTypedArg
 is not supported for
 .PN XtVaSetSubvalues .
