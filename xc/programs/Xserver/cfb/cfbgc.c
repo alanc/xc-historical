@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.47 91/04/10 11:41:26 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.48 91/05/03 17:02:31 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -42,11 +42,10 @@ SOFTWARE.
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
 
-static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
-static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
-static cfbDestroyOps();
+void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
+void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 
-static GCFuncs cfbFuncs = {
+GCFuncs cfbGCFuncs = {
     cfbValidateGC,
     cfbChangeGC,
     cfbCopyGC,
@@ -56,7 +55,7 @@ static GCFuncs cfbFuncs = {
     cfbCopyClip,
 };
 
-static GCOps	cfbTEOps1Rect = {
+GCOps	cfbTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
@@ -95,7 +94,7 @@ static GCOps	cfbTEOps1Rect = {
     NULL,
 };
 
-static GCOps	cfbTEOps = {
+GCOps	cfbTEOps = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
@@ -129,7 +128,7 @@ static GCOps	cfbTEOps = {
     NULL,
 };
 
-static GCOps	cfbNonTEOps1Rect = {
+GCOps	cfbNonTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
@@ -137,11 +136,11 @@ static GCOps	cfbNonTEOps1Rect = {
     cfbCopyPlane,
     cfbPolyPoint,
 #if PPW == 4
-    cfbLineSS,
-    cfbSegmentSS,
-#else
     cfb8LineSS1Rect,
     cfb8SegmentSS1Rect,
+#else
+    cfbLineSS,
+    cfbSegmentSS,
 #endif
     miPolyRectangle,
 #if PPW == 4
@@ -162,7 +161,7 @@ static GCOps	cfbNonTEOps1Rect = {
     NULL,
 };
 
-static GCOps	cfbNonTEOps = {
+GCOps	cfbNonTEOps = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
@@ -196,8 +195,8 @@ static GCOps	cfbNonTEOps = {
     NULL,
 };
 
-static GCOps *
-matchCommon (pGC, devPriv)
+GCOps *
+cfbMatchCommon (pGC, devPriv)
     GCPtr	    pGC;
     cfbPrivGCPtr    devPriv;
 {
@@ -258,7 +257,7 @@ cfbCreateGC(pGC)
      */
 
     pGC->ops = &cfbNonTEOps;
-    pGC->funcs = &cfbFuncs;
+    pGC->funcs = &cfbGCFuncs;
 
     /* cfb wants to translate before scan conversion */
     pGC->miTranslate = 1;
@@ -273,7 +272,7 @@ cfbCreateGC(pGC)
 }
 
 /*ARGSUSED*/
-static void
+void
 cfbChangeGC(pGC, mask)
     GC		    *pGC;
     BITS32	    mask;
@@ -281,7 +280,7 @@ cfbChangeGC(pGC, mask)
     return;
 }
 
-static void
+void
 cfbDestroyGC(pGC)
     GC 			*pGC;
 {
@@ -299,7 +298,7 @@ cfbDestroyGC(pGC)
  * create a private op array for a gc
  */
 
-static GCOps *
+GCOps *
 cfbCreateOps (prototype)
     GCOps	*prototype;
 {
@@ -316,7 +315,6 @@ cfbCreateOps (prototype)
     return ret;
 }
 
-static
 cfbDestroyOps (ops)
     GCOps   *ops;
 {
@@ -334,7 +332,7 @@ cfbDestroyOps (ops)
 	    CT_other ==> pCompositeClip is the pixmap bounding box
 */
 
-static void
+void
 cfbValidateGC(pGC, changes, pDrawable)
     register GCPtr  pGC;
     Mask	    changes;
@@ -660,7 +658,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     {
 	GCOps	*newops;
 
-	if (newops = matchCommon (pGC, devPriv))
+	if (newops = cfbMatchCommon (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
 		cfbDestroyOps (pGC->ops);
@@ -873,7 +871,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     }
 }
 
-static void
+void
 cfbDestroyClip(pGC)
     GCPtr	pGC;
 {
@@ -894,7 +892,7 @@ cfbDestroyClip(pGC)
     pGC->clientClipType = CT_NONE;
 }
 
-static void
+void
 cfbChangeClip(pGC, type, pvalue, nrects)
     GCPtr	pGC;
     int		type;
@@ -923,7 +921,7 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     pGC->stateChanges |= GCClipMask;
 }
 
-static void
+void
 cfbCopyClip (pgcDst, pgcSrc)
     GCPtr pgcDst, pgcSrc;
 {
@@ -948,7 +946,7 @@ cfbCopyClip (pgcDst, pgcSrc)
 }
 
 /*ARGSUSED*/
-static void
+void
 cfbCopyGC (pGCSrc, changes, pGCDst)
     GCPtr	pGCSrc;
     Mask 	changes;
