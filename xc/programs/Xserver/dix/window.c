@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.36 89/10/04 14:18:57 rws Exp $ */
+/* $XConsortium: window.c,v 5.37 89/10/06 17:27:04 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1838,7 +1838,7 @@ MoveWindow(pWin, x, y, pNextSib, kind)
     DDXPointRec oldpt;
     Bool anyMarked;
     register ScreenPtr pScreen;
-    WindowPtr windowToValidate = pWin;
+    WindowPtr windowToValidate;
 #ifdef DO_SAVE_UNDERS
     Bool dosave = FALSE;
 #endif
@@ -3937,7 +3937,7 @@ TileScreenSaver(i, kind)
 	    cursorID = FakeClientID(0);
 	    if (AddResource (cursorID, RT_CURSOR, (pointer) cursor))
 	    {
-	    	attributes[attri++] = cursorID;
+	    	attributes[attri] = cursorID;
 	    	mask |= CWCursor;
 		cursor->refcnt++;
 	    }
