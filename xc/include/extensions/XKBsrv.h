@@ -425,6 +425,19 @@ extern	void DDXUpdateIndicators(
 #endif
 );
 
+extern	void XkbSetRepeatKeys(
+#if NeedFunctionPrototypes
+    DeviceIntPtr 	/* pXDev */,
+    int		 	/* onoff */
+#endif
+);
+
+extern	int XkbUsesSoftRepeat(
+#if NeedFunctionPrototypes
+    DeviceIntPtr 	/* pXDev */
+#endif
+);
+
 extern	int SProcXkbDispatch(
 #if NeedFunctionPrototypes
 	ClientPtr	/* client */
