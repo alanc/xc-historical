@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.43 92/10/20 13:23:35 rws Exp $ */
+/* $XConsortium: Xmd.h,v 1.44 93/02/08 09:45:14 rws Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -59,7 +59,7 @@ SOFTWARE.
  * The extra indirection in the __STDC__ case is to get macro arguments to
  * expand correctly before the concatenation, rather than afterward.
  */
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if ((__STDC__ || defined(__cplusplus) || defined(c_plusplus)) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define _SIZEOF(x) sz_##x
 #define SIZEOF(x) _SIZEOF(x)
 #else
