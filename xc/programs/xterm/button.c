@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.44 89/11/13 11:59:31 keith Exp $
+ *	$XConsortium: button.c,v 1.45 89/11/20 13:22:09 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.44 89/11/13 11:59:31 keith Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.45 89/11/20 13:22:09 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -218,7 +218,6 @@ Bool use_cursor_loc;
 }
 
 
-/*ARGSUSED*/
 void HandleSelectEnd(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* must be XButtonEvent */
@@ -229,7 +228,6 @@ Cardinal *num_params;
 }
 
 
-/*ARGSUSED*/
 void HandleKeyboardSelectEnd(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* must be XButtonEvent */
@@ -336,7 +334,6 @@ int *format;
 }
 
 
-/* ARGSUSED */
 HandleInsertSelection(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* assumed to be XButtonEvent* */
@@ -1114,7 +1111,6 @@ int *format;
 }
 
 
-/* ARGSUSED */
 static void LoseSelection(w, selection)
   Widget w;
   Atom *selection;
