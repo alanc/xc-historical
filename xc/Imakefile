@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.102 91/07/16 23:07:43 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.103 91/07/23 11:30:13 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -9,11 +9,8 @@ XCOMM $XConsortium: Imakefile,v 1.102 91/07/16 23:07:43 gildea Exp $
 #if BuildServer
 SERVERDIRSTOMAKE = server rgb
 #endif
-#if BuildDoc
-DOCDIRS = doc
-#endif
         SUBDIRS = config include lib extensions fonts $(SERVERDIRSTOMAKE) \
-			clients demos util $(DOCDIRS)
+			clients demos util man
   LNINSTALLDIRS = $(LIBSRC) $(EXTENSIONSRC)
 
 MakeSubdirs($(SUBDIRS))
