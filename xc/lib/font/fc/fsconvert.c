@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.10 92/05/29 18:02:06 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.11 92/09/29 17:40:59 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -354,10 +354,12 @@ _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     FSFontPtr   fsfont;
     int         i;
     CharInfoPtr encoding;
+    CharInfoPtr oldDefault;
     
     fsfont = (FSFontPtr) pFont->fontPrivate;
-    if (!fsfont->pDefault)
-	fsfont->pDefault = &junkDefault;
+
+    oldDefault = fsfont->pDefault;
+    fsfont->pDefault = &junkDefault;
 
     /* sleeze - smash the encoding so we get ink metrics */
     encoding = fsfont->encoding;
@@ -366,8 +368,7 @@ _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
 			 glyphCount, (CharInfoPtr *) glyphs);
     fsfont->encoding = encoding;
 
-    if (fsfont->pDefault == &junkDefault)
-	fsfont->pDefault = 0;
+    fsfont->pDefault = oldDefault;
     return ret;
 }
 
