@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.2 89/07/20 14:37:34 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.52 89/07/21 12:06:06 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -46,11 +46,12 @@ static void CallClassPartInit(ancestor, wc)
     }
 }
 
-static void ClassInit(wc)
+void XtInitializeWidgetClass(wc)
     WidgetClass wc;
 {
     String param[3];
     Cardinal num_params=3;
+    if (widgetClass->core_class.class_inited) return;
     if (wc->core_class.version != XtVersion &&
 	    wc->core_class.version != XtVersionDontCheck) {
         param[0] =  wc->core_class.class_name;
@@ -69,7 +70,7 @@ static void ClassInit(wc)
 
     if ((wc->core_class.superclass != NULL) 
 	    && (!(wc->core_class.superclass->core_class.class_inited)))
- 	ClassInit(wc->core_class.superclass);
+ 	XtInitializeWidgetClass(wc->core_class.superclass);
  
     if (wc->core_class.class_initialize != NULL)
 	(*(wc->core_class.class_initialize))();
@@ -129,7 +130,7 @@ Widget _XtCreate(
     extern XtCacheRef* _XtGetResources();
 
     if (! (widgetClass->core_class.class_inited))
-	ClassInit(widgetClass);
+	XtInitializeWidgetClass(widgetClass);
     widget = (Widget) XtMalloc((unsigned)widgetClass->core_class.widget_size);
     widget->core.self = widget;
     widget->core.parent = parent;
