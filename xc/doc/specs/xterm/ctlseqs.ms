@@ -1,36 +1,10 @@
-.\"#! troff -Q -ms $1
+.\"#! troff -Q -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium$
-.\" This is the "Xterm Control Sequences" document, originally written by
-.\" Edward Moy, University of California, Berkeley, for the X.V10R4 xterm.
-.\" Some minor edits have been made to begin to reconcile this document with
-.\" the current sources, but it still has a long way to go:
+.\" $XConsortium: ctlseqs.ms,v 1.4 91/05/31 20:12:05 gildea Exp $
 .\"
-.\"	1) I don't guarantee that this is 100% correct.  I tried most of
-.\"	   the things that seemed to be different, and this document
-.\"	   reflects what I saw.  Stuff that appears to be in the X10R4
-.\"	   document and missing from this document is so because it
-.\"	   appears not to be present in the X11 version of "xterm" (e.g.,
-.\"	   the "Alternate Character ROM" character sets and the Sun TTY
-.\"	   emulation).
-.\"
-.\"	2) It is definitely not 100% complete; some escape sequences
-.\"	   that do something that's either unobservable - at least in
-.\"	   the current state of the code - or not useful aren't
-.\"	   documented.  An example of the former are the Locking Shift
-.\"	   sequences that modify the interpretation of the GR
-.\"	   characters; at present, it sets a state variable that's
-.\"	   unused, but perhaps some future version will use it (perhaps
-.\"	   for displaying characters in the range 0200-0377?).  An
-.\"	   example of the latter is the sequence to set DECANM mode
-.\"	   (ANSI/VT52 mode): it doesn't do what it does on a VT100,
-.\"	   namely get the terminal to emulate a VT100, it only seems to
-.\"	   fiddle the current character set a bit.
-.\"
-.\"	3) It doesn't document any of the mouse-related stuff, such as
-.\"	   what the "Track Mouse" escape sequence does, or what the
-.\"	   different mouse modes (MIT, VT220, "VT220 Hilite") do; I
-.\"	   leave that to somebody familiar with that part of the code....
+.\" Originally written by Edward Moy, University of California,
+.\" Berkeley, edmoy@violet.berkeley.edu, for the X.V10R4 xterm.
+.\" The X Consortium staff has since updated it for X11.
 .\"
 .\" Run this file through troff and use the -ms macro package.
 .ND
@@ -96,6 +70,7 @@
 .[] Gs \v'-1p'\s\nsGS\s0\v'1p'
 .[] Rs \v'-1p'\s\nsRS\s0\v'1p'
 .[] Us \v'-1p'\s\nsUS\s0\v'1p'
+.[] ! !
 .[] # #
 .[] (( (
 .[] ) )
@@ -163,6 +138,9 @@
 .[] c~ ~
 .[] Sc \fIc\fP
 .ds Cc \fIC\fP
+.ds Cb \fIC\v'.3m'\h'-.2m'\s-2b\s0\v'-.3m'\fP
+.ds Cx \fIC\v'.3m'\h'-.2m'\s-2x\s0\v'-.3m'\fP
+.ds Cy \fIC\v'.3m'\h'-.2m'\s-2y\s0\v'-.3m'\fP
 .ds Ps \fIP\v'.3m'\h'-.2m'\s-2s\s0\v'-.3m'\fP
 .ds Pm \fIP\v'.3m'\h'-.2m'\s-2m\s0\v'-.3m'\fP
 .ds Pt \fIP\v'.3m'\h'-.2m'\s-2t\s0\v'-.3m'\fP
@@ -203,13 +181,15 @@ parameters, separated by \*; character(s).
 .IP \*(Pt
 A text parameter composed of printable characters.
 .SH
-VT102 Mode
-.ds RH VT102 Mode
+VT100 Mode
+.ds RH VT100 Mode
 .LP
-Most of these control sequences are standard VT102 control sequences.
-There are, however, additional ones to provide control of
-.I xterm
-dependent functions, like the scrollbar or window size.
+Most of these control sequences are standard VT102 control sequences,
+but there are some sequences here from later DEC VT terminals, too.
+Major VT102 features not supported are smooth scrolling, double size
+characters, blinking characters, and VT52 mode.
+There are additional control sequences to provide
+\fIxterm-\fPdependent functions, like the scrollbar or window size.
 Where the function is specified by DEC or ISO 6429, the code assigned
 to it is given in parentheses.  The escape codes to designate
 character sets are specified by ISO 2022; see that document for a
@@ -278,7 +258,7 @@ Single Shift Select of G2 Character Set (SS2): affects next character only
 .IP \\*(Es\\*O
 Single Shift Select of G3 Character Set (SS3): affects next character only
 .IP \\*(Es\\*Z
-Return Terminal ID (DECID)
+Return Terminal ID (DECID).  Obsolete form of \*(Es\*([[\*c (DA).
 .IP \\*(Es\\*([[\\*(Ps\|\\*@
 Insert \*(Ps (Blank) Character(s) (default = 1) (ICH)
 .IP \\*(Es\\*([[\\*(Ps\|\\*A
@@ -308,23 +288,28 @@ Delete \*(Ps Line(s) (default = 1) (DL)
 .IP \\*(Es\\*([[\\*(Ps\|\\*P
 Delete \*(Ps Character(s) (default = 1) (DCH)
 .IP \\*(Es\\*([[\\*(Ps\|\\*;\\*(Ps\|\\*;\\*(Ps\|\\*;\\*(Ps\|\\*;\\*(Ps\|\\*T
-Track Mouse [func;startcol;startrow;firstrow;lastrow] XXX - describe
+Initiate hilite mouse tracking.
+Parameters are [func;startx;starty;firstrow;lastrow].
+See the section \fBMouse Tracking\fP.
 .IP \\*(Es\\*([[\\*(Ps\|\\*c
-Device Attributes (default 0) (DA) XXX - describe
+Send Device Attributes (DA)
+  \*(Ps = \*0 or omitted \(-> request attributes from terminal
+  \(-> \*(Es\*([[\*?\*1\*;\*2\*c (``I am a VT100 with Advanced
+Video Option.'')
 .IP \\*(Es\\*([[\\*(Ps\|\\*;\\*(Ps\|\\*f
 Horizontal and Vertical Position [row;column] (default = [1,1]) (HVP)
 .IP \\*(Es\\*([[\\*(Ps\|\\*g
-Tab Clear
+Tab Clear (TBC)
   \*(Ps = \*0 \(-> Clear Current Column (default)
   \*(Ps = \*3 \(-> Clear All
-.IP \\*(Es\\*([[\\*(Ps\|\\*h
+.IP \\*(Es\\*([[\\*(Pm\|\\*h
 Set Mode (SM)
   \*(Ps = \*4 \(-> Insert Mode (IRM)
-  \*(Ps = \*2\*0 \(-> Automatic Linefeed (LNM)
-.IP \\*(Es\\*([[\\*(Ps\|\\*l
+  \*(Ps = \*2\*0 \(-> Automatic Newline (LNM)
+.IP \\*(Es\\*([[\\*(Pm\|\\*l
 Reset Mode (RM)
-  \*(Ps = \*4 \(-> Insert Mode (IRM)
-  \*(Ps = \*2\*0 \(-> Automatic Linefeed (LNM)
+  \*(Ps = \*4 \(-> Replace Mode (IRM)
+  \*(Ps = \*2\*0 \(-> Normal Linefeed (LNM)
 .IP \\*(Es\\*([[\\*(Pm\|\\*m
 Character Attributes (SGR)
   \*(Ps = \*0 \(-> Normal (default)
@@ -334,26 +319,27 @@ Character Attributes (SGR)
   \*(Ps = \*7 \(-> Inverse
 .IP \\*(Es\\*([[\\*(Ps\|\\*n
 Device Status Report (DSR)
-  \*(Ps = \*5 \(-> Status Report \*(Es\*([[\*0\*n \(-> OK
+  \*(Ps = \*5 \(-> Status Report \*(Es\*([[\*0\*n (``OK'')
   \*(Ps = \*6 \(-> Report Cursor Position (CPR) [row;column] as
 \*(Es\*([[\*(Ir\|\*;\*(Ic\|\*R
 .IP \\*(Es\\*([[\\*(Ps\|\\*;\\*(Ps\|\\*r
 Set Scrolling Region [top;bottom] (default = full size of window) (DECSTBM)
 .IP \\*(Es\\*([[\\*(Ps\|\\*x
 Request Terminal Parameters (DECREQTPARM)
-.IP \\*(Es\\*([[\\*?\\*(Ps\|\\*h
+.IP \\*(Es\\*([[\\*?\\*(Pm\|\\*h
 DEC Private Mode Set (DECSET)
   \*(Ps = \*1 \(-> Application Cursor Keys (DECCKM)
-  \*(Ps = \*2 \(-> Select ANSI mode (DECANM).  Since \fIxterm\fP
-doesn't support VT52 mode, this is not too exciting.  It designates
-USASCII for character sets G0-G3.
+  \*(Ps = \*2 \(-> Designate USASCII for character sets G0-G3.
+(In a real VT102, this selects VT52 mode (DECANM), which \fIxterm\fP
+doesn't support.)
   \*(Ps = \*3 \(-> 132 Column Mode (DECCOLM)
   \*(Ps = \*4 \(-> Smooth (Slow) Scroll (DECSCLM)
   \*(Ps = \*5 \(-> Reverse Video (DECSCNM)
   \*(Ps = \*6 \(-> Origin Mode (DECOM)
   \*(Ps = \*7 \(-> Wraparound Mode (DECAWM)
   \*(Ps = \*8 \(-> Auto-repeat Keys (DECARM)
-  \*(Ps = \*9 \(-> Send MIT Mouse Row & Column on Button Press XXX - describe
+  \*(Ps = \*9 \(-> Send Mouse X & Y on button press.
+See the section \fBMouse Tracking\fP.
   \*(Ps = \*3\*8 \(-> Enter Tektronix Mode (DECTEK)
   \*(Ps = \*4\*0 \(-> Allow 80 \z\(<-\(-> 132 Mode
   \*(Ps = \*4\*1 \(-> \fIcurses\fP(5) fix
@@ -362,9 +348,11 @@ USASCII for character sets G0-G3.
   \*(Ps = \*4\*6 \(-> Start Logging
   \*(Ps = \*4\*7 \(-> Use Alternate Screen Buffer (unless
 disabled by the \fBtiteInhibit\fP resource)
-  \*(Ps = \*1\*0\*0\*0 \(-> Send VT200 Mouse Row & Column on Button Press XXX - describe
-  \*(Ps = \*1\*0\*0\*1 \(-> Send VT200 Hilite Mouse Row & Column on Button Press XXX - describe
-.IP \\*(Es\\*([[\\*?\\*(Ps\|\\*l
+  \*(Ps = \*1\*0\*0\*0 \(-> Send Mouse X & Y on button press and release.
+See the section \fBMouse Tracking\fP.
+  \*(Ps = \*1\*0\*0\*1 \(-> Use Hilite Mouse Tracking.
+See the section \fBMouse Tracking\fP.
+.IP \\*(Es\\*([[\\*?\\*(Pm\|\\*l
 DEC Private Mode Reset (DECRST)
   \*(Ps = \*1 \(-> Normal Cursor Keys (DECCKM)
   \*(Ps = \*3 \(-> 80 Column Mode (DECCOLM)
@@ -373,51 +361,21 @@ DEC Private Mode Reset (DECRST)
   \*(Ps = \*6 \(-> Normal Cursor Mode (DECOM)
   \*(Ps = \*7 \(-> No Wraparound Mode (DECAWM)
   \*(Ps = \*8 \(-> No Auto-repeat Keys (DECARM)
-  \*(Ps = \*9 \(-> Don't Send Mouse Row & Column on Button Press
+  \*(Ps = \*9 \(-> Don't Send Mouse X & Y on button press
   \*(Ps = \*4\*0 \(-> Disallow 80 \z\(<-\(-> 132 Mode
   \*(Ps = \*4\*1 \(-> No \fIcurses\fP(5) fix
   \*(Ps = \*4\*4 \(-> Turn Off Margin Bell
   \*(Ps = \*4\*5 \(-> No Reverse-wraparound Mode
   \*(Ps = \*4\*6 \(-> Stop Logging
   \*(Ps = \*4\*7 \(-> Use Normal Screen Buffer
-  \*(Ps = \*1\*0\*0\*0 \(-> Don't Send Mouse Row & Column on Button Press
-  \*(Ps = \*1\*0\*0\*1 \(-> Don't Send Mouse Row & Column on Button Press
-.IP \\*(Es\\*([[\\*?\\*(Ps\|\\*r
-Restore DEC Private Mode
-  \*(Ps = \*1 \(-> Normal/Application Cursor Keys (DECCKM)
-  \*(Ps = \*3 \(-> 80/132 Column Mode (DECCOLM)
-  \*(Ps = \*4 \(-> Jump (Fast)/Smooth (Slow) Scroll (DECSCLM)
-  \*(Ps = \*5 \(-> Normal/Reverse Video (DECSCNM)
-  \*(Ps = \*6 \(-> Normal/Origin Cursor Mode (DECOM)
-  \*(Ps = \*7 \(-> No Wraparound/Wraparound Mode (DECAWM)
-  \*(Ps = \*8 \(-> Auto-repeat/No Auto-repeat Keys (DECARM)
-  \*(Ps = \*9 \(-> Don't Send/Send MIT Mouse Row & Column on Button Press
-  \*(Ps = \*4\*0 \(-> Disallow/Allow 80 \z\(<-\(-> 132 Mode
-  \*(Ps = \*4\*1 \(-> Off/On \fIcurses\fP(5) fix
-  \*(Ps = \*4\*4 \(-> Turn Off/On Margin Bell
-  \*(Ps = \*4\*5 \(-> No Reverse-wraparound/Reverse-wraparound Mode
-  \*(Ps = \*4\*6 \(-> Stop/Start Logging
-  \*(Ps = \*4\*7 \(-> Use Normal/Alternate Screen Buffer
-  \*(Ps = \*1\*0\*0\*0 \(-> Don't Send/Send VT220 Mouse Row & Column on Button Press
-  \*(Ps = \*1\*0\*0\*1 \(-> Don't Send/Send VT220 Hilite Mouse Row & Column on Button Press
-.IP \\*(Es\\*([[\\*?\\*(Ps\|\\*s
-Save DEC Private Mode
-  \*(Ps = \*1 \(-> Normal/Application Cursor Keys (DECCKM)
-  \*(Ps = \*3 \(-> 80/132 Column Mode (DECCOLM)
-  \*(Ps = \*4 \(-> Jump (Fast)/Smooth (Slow) Scroll (DECSCLM)
-  \*(Ps = \*5 \(-> Normal/Reverse Video (DECSCNM)
-  \*(Ps = \*6 \(-> Normal/Origin Cursor Mode (DECOM)
-  \*(Ps = \*7 \(-> No Wraparound/Wraparound Mode (DECAWM)
-  \*(Ps = \*8 \(-> Auto-repeat/No Auto-repeat Keys (DECARM)
-  \*(Ps = \*9 \(-> Don't Send/Send MIT Mouse Row & Column on Button Press
-  \*(Ps = \*4\*0 \(-> Disallow/Allow 80 \z\(<-\(-> 132 Mode
-  \*(Ps = \*4\*1 \(-> Off/On \fIcurses\fP(5) fix
-  \*(Ps = \*4\*4 \(-> Turn Off/On Margin Bell
-  \*(Ps = \*4\*5 \(-> No Reverse-wraparound/Reverse-wraparound Mode
-  \*(Ps = \*4\*6 \(-> Stop/Start Logging
-  \*(Ps = \*4\*7 \(-> Use Normal/Alternate Screen Buffer
-  \*(Ps = \*1\*0\*0\*0 \(-> Don't Send/Send VT220 Mouse Row & Column on Button Press
-  \*(Ps = \*1\*0\*0\*1 \(-> Don't Send/Send VT220 Hilite Mouse Row & Column on Button Press
+  \*(Ps = \*1\*0\*0\*0 \(-> Don't Send Mouse X & Y on button press and
+release
+  \*(Ps = \*1\*0\*0\*1 \(-> Don't Use Hilite Mouse Tracking
+.IP \\*(Es\\*([[\\*?\\*(Pm\|\\*r
+Restore DEC Private Mode Values.  The value of \*(Ps previously saved is
+restored.  \*(Ps values are the same as for DECSET.
+.IP \\*(Es\\*([[\\*?\\*(Pm\|\\*s
+Save DEC Private Mode Values.  \*(Ps values are the same as for DECSET.
 .IP \\*(Es\\*]\\*(Ps\|\\*;\\*(Pt\|\\*(Be
 Set Text Parameters
   \*(Ps = \*0 \(-> Change Icon Name and Window Title to \*(Pt
@@ -436,18 +394,82 @@ Select the G3 Character Set (LS3)
 Invoke the G3 Character Set as GR (LS3R).  Has no visible effect in \fIxterm\fP.
 .IP \\*(Es\\*}
 Invoke the G2 Character Set as GR (LS2R).  Has no visible effect in \fIxterm\fP.
-.IP \\*(Es\\*~
+.IP \\*(Es\\*(c~
 Invoke the G1 Character Set as GR (LS1R).  Has no visible effect in \fIxterm\fP.
 .Ed
 .SH
-Tektronix 4015 Mode
-.ds RH Tektronix 4015 Mode
+Mouse Tracking
 .LP
-Most of these sequences are standard Tektronix 4015 control sequences.
-The major features missing are the alternate (APL) character set and
+The VT widget can be set to send the mouse position and other
+information on button presses.  These modes are typically used by
+editors and other full-screen applications that want to make use of
+the mouse.
+.LP
+There are three mutually exclusive modes, each enabled (or disabled)
+by a different parameter in the DECSET (or DECRST) escape sequence.
+Parameters for all mouse tracking escape sequences generated by
+\fIxterm\fP encode numeric parameters in a single character as
+\fIvalue\fP+040.  For example, \*! is 1.  The screen
+coodinate system is 1-based.
+.LP
+X10 compatibility mode sends an escape sequence on button press
+encoding the location and the mouse button pressed.
+It is enabled by specifying parameter 9 to DECSET.
+On button press, \fIxterm\fP sends
+\*(Es\*([[\*M\*(Cb\*(Cx\*(Cy (6 characters).  \*(Cb is button\-1.
+\*(Cx and \*(Cy are the x and y coordinates of the mouse when the
+button was pressed.
+.LP
+Normal tracking mode sends an escape sequence on both button press and
+release.  Modifier information is also sent.
+It is enabled by specifying parameter 1000 to DECSET.
+On button press or release, \fIxterm\fP sends
+\*(Es\*([[\*M\*(Cb\*(Cx\*(Cy.
+The low two bits of \*(Cb encode button information:
+0=MB1 pressed, 1=MB2 pressed, 2=MB3 pressed, 3=release.
+The upper bits encode what modifiers were down when the button was
+pressed and are added together.  4=Shift, 8=Meta, 16=Control.
+\*(Cx and \*(Cy are the x and y coordinates of the mouse event.  The
+upper left corner is (1,1).
+.LP
+Mouse hilite tracking notifies a program of a button press, receives a
+range of lines from the program, highlights the region covered by
+the mouse within that range until button release, and then sends the
+program the release coordinates.
+It is enabled by specifying parameter 1001 to DECSET.
+Warning: use of this mode requires a cooperating program or it will
+hang \fIxterm.\fP
+On button press, the same information as for normal tracking is
+generated; \fIxterm\fP then waits for the program to send mouse
+tracking information.
+\fIAll X events are ignored until the proper escape sequence is
+received from the pty:\fP 
+\*(Es\*([[\*(Ps\|\*;\*(Ps\|\*;\*(Ps\|\*;\*(Ps\|\*;\*(Ps\|\*T.
+The parameters are \fIfunc, startx, starty, firstrow,\fP and \fIlastrow.\fP
+\fIfunc\fP is non-zero to initiate hilite tracking and zero to abort.
+\fIstartx\fP and \fIstarty\fP give the starting x and y location for
+the highlighted region.  The ending location tracks the mouse, but
+will never be above row \fIfirstrow\fP and will always be above row
+\fIlastrow.\fP  (The top of the screen is row 1.)
+When the button is released, \fIxterm\fP reports the ending position
+one of two ways: if the start and end coordinates are valid text
+locations: \*(Es\*([[\*t\*(Cx\*(Cy.  If either coordinate is past
+the end of the line:
+\*(Es\*([[\*T\*(Cx\*(Cy\*(Cx\*(Cy\*(Cx\*(Cy.
+The parameters are \fIstartx, starty, endx, endy, mousex,\fP and \fImousey.\fP
+\fIstartx, starty, endx, \fPand\fI endy\fP give the starting and
+ending character positions of the region. \fImousex\fP and \fImousey\fP
+give the location of the mouse at button up, which may not be over a
+character.
+.SH
+Tektronix 4014 Mode
+.ds RH Tektronix 4014 Mode
+.LP
+Most of these sequences are standard Tektronix 4014 control sequences.
+The major features missing are
 the write-thru and defocused modes.
 This document does not describe the commands used in the various
-Tektronix plotting modes, but does describe the commands to switch modes.
+Tektronix plotting modes but does describe the commands to switch modes.
 .St
 .IP \\*(Be
 Bell (Ctrl-G)
@@ -464,19 +486,19 @@ Form Feed or New Page (Ctrl-L)
 .IP \\*(Cr
 Carriage Return (Ctrl-M)
 .IP \\*(Es\\*(Et
-Switch to VT102 Mode
+Switch to VT100 Mode (ESC Ctrl-D)
 .IP \\*(Es\\*(En
-Return Terminal Status
+Return Terminal Status (ESC Ctrl-E)
 .IP \\*(Es\\*(Lf
 PAGE (Clear Screen)
 .IP \\*(Es\\*(Eb
-COPY (Save Tektronix Codes to File)
+COPY (Save Tektronix Codes to File COPYyy-mm-dd.hh:mm:ss) (ESC Ctrl-W)
 .IP \\*(Es\\*(Ca
-Bypass Condition
+Bypass Condition (ESC Ctrl-X)
 .IP \\*(Es\\*(Su
-GIN mode
+GIN mode (ESC Ctrl-Z)
 .IP \\*(Es\\*(Fs
-Special Point Plot Mode
+Special Point Plot Mode (ESC Ctrl-\e)
 .IP \\*(Es\\*8
 Select Large Character Set
 .IP \\*(Es\\*9
