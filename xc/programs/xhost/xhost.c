@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.22 88/08/18 17:47:50 jim Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.23 88/08/18 18:38:11 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -104,8 +104,6 @@ main(argc, argv)
 		    ProgramName, XDisplayName (NULL));
 	    exit(1);
 	}
-
-	XSetCloseDownMode(dpy, RetainPermanent);
 
 	XSetErrorHandler(local_xerror);
  
