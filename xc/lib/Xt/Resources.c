@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Resources.c,v 1.12 87/09/11 21:24:22 swick Locked $";
 #endif lint
 
 /*
@@ -211,7 +211,7 @@ static void XrmGetResources(
 	/* Copy the args into the resources, mark each as found */
 	for (arg = args, i = 0; i < num_args; i++, arg++) {
 	    argName = StringToName(arg->name);
-#ifdef reversVideoHack
+#ifdef reverseVideoHack
 	    if (argName == QreverseVideo) {
 		reverseVideo = (Boolean) arg->value;
 		getReverseVideo = FALSE;
