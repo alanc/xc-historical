@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.14 92/08/15 19:25:46 rws Exp $
+$XConsortium: a2x.doc,v 1.15 92/08/21 09:02:40 rws Exp $
 
 				Using a2x
 
@@ -859,6 +859,16 @@ export the DragonDictate menus onto your X display.  This means you don't
 have to look at another screen to make corrections, but at the cost of
 dedicating some screen real estate to a window for menus.  You may also
 find the menu display slower going across the network.
+
+[If you are trying to use DESQview/X with FTP Software's version 2.1, you
+may have trouble getting it configured.  You need to have IPCUST.SYS in
+your CONFIG.SYS for compatibility:
+	DEVICE=C:\PCTCP\IPCUST.SYS
+and you need to do a one-time "install" step:
+	CD \PCTCP
+	IPCONFIG IPCUST.SYS HOSTNAME <pc-hostname>
+	IPCONFIG IPCUST.SYS USERID <your-userid>
+Reboot, and run DESQview/X's Setup again to configure the network.]
 
 To accomplish this, you start a DOS window on your X display, then start up
 DragonDictate in that DOS window.  If you have a version of a2x compiled to
