@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 1.126 89/03/18 12:26:51 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 1.127 89/03/24 07:53:55 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -416,7 +416,6 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	  case GCTile:
 	    if(pGC->tile == (PixmapPtr)NULL)
 		break;
-	    mfbPadPixmap(pGC->tile);
 	    new_rotate = TRUE;
 	    new_fill = TRUE;
 	    break;
@@ -424,7 +423,6 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	  case GCStipple:
 	    if(pGC->stipple == (PixmapPtr)NULL)
 		break;
-	    mfbPadPixmap(pGC->stipple);
 	    new_rotate = TRUE;
 	    new_fill = TRUE;
 	    break;
@@ -621,11 +619,20 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	}
 
 	/* copy current tile and stipple */
-	if (pGC->tile && (pGC->tile->width == 32))
+	if (pGC->tile && (pGC->tile->width <= 32) &&
+	    !(pGC->tile->width & (pGC->tile->width - 1)))
+	{
 	    devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile);
-	if (pGC->stipple && (pGC->stipple->width == 32))
+	    if (devPriv->pRotatedTile)
+		mfbPadPixmap(devPriv->pRotatedTile);
+	}
+	if (pGC->stipple && (pGC->stipple->width <= 32) &&
+	    !(pGC->stipple->width & (pGC->stipple->width - 1)))
+	{
 	    devPriv->pRotatedStipple = mfbCopyPixmap(pGC->stipple);
-
+	    if (devPriv->pRotatedStipple)
+		mfbPadPixmap(devPriv->pRotatedStipple);
+	}
 	if (xrot)
 	{
 	    if (devPriv->pRotatedTile)
