@@ -178,8 +178,5 @@ mastermakefiles::
 	$(MAKE) -f Makefile.bak Makefile
 	$(MAKE) Makefiles
 	$(MAKE) includes
-	cd $(DEPENDSRC); $(MAKE) clean; $(MAKE) all
-	$(MAKE) depend
 	cd $(IMAKESRC); $(MAKE) clean
-	cd $(DEPENDSRC); $(MAKE) clean
 
