@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.60 88/02/02 11:55:01 rws Exp $ */
+/* $Header: property.c,v 1.60 88/02/02 12:03:38 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -397,7 +397,7 @@ ProcGetProperty(client)
 
 		reply.bytesAfter = n - (ind + len);
 		reply.format = pProp->format;
-		reply.length = len >> 2;
+		reply.length = (len + 3) >> 2;
 		reply.nItems = len / (pProp->format / 8 );
 		reply.propertyType = pProp->type;
 		WriteReplyToClient(client, sizeof(xGenericReply), &reply);
