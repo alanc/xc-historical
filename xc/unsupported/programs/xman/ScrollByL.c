@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.23 91/07/12 15:50:47 dave Exp $
- * $Header: ScrollByL.c,v 1.23 91/07/12 15:50:47 dave Exp $
+ * $XConsortium: ScrollByL.c,v 1.24 91/07/13 16:33:29 rws Exp $
+ * $Header: ScrollByL.c,v 1.24 91/07/13 16:33:29 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -871,6 +871,9 @@ Widget w;
 				/* Choose BOLD over ITALICS.  If neither */
 				/* is chosen, use NORMAL. */
 
+static int DumpText();
+static Boolean Boldify();	
+
 /*	Function Name: PrintText
  *	Description: This function actually prints the text.
  *	Arguments: w - the ScrollByLine widget.
@@ -896,8 +899,6 @@ int  start_line, num_lines, location;
   Boolean italicflag = FALSE;	/* Print text in italics?? */
   Boolean first = TRUE;	        /* First line of a manual page??? */
   int x_loc, y_loc;		/* x and y location of text. */
-  static int DumpText();
-  static Boolean Boldify();	
 
 /*
  * For table hack
