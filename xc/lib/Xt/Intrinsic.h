@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.132 90/03/19 08:44:33 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.133 90/03/19 10:19:04 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -2179,14 +2179,14 @@ extern char *XtCalloc(
 
 extern char *XtRealloc(
 #if NeedFunctionPrototypes
-    void* 		/* ptr */,
+    char* 		/* ptr */,
     Cardinal 		/* num */
 #endif
 );
 
 extern void XtFree(
 #if NeedFunctionPrototypes
-    void*		/* ptr */
+    char*		/* ptr */
 #endif
 );
 
