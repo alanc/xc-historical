@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.54 91/02/07 17:58:27 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.55 91/02/07 19:53:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -164,8 +164,10 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args,
     while ((p = *pp) && (p->from != from_type || p->to != to_type))
 	pp = &p->next;
 
-    if (p)
+    if (p) {
+	*pp = p->next;
 	XtFree((char *)p);
+    }
 
     p = (ConverterPtr) XtMalloc(sizeof(ConverterRec) +
 				sizeof(XtConvertArgRec) * num_args);
