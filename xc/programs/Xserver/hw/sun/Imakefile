@@ -8,7 +8,6 @@ SRCS1 =	\
 	sunKbd.c \
 	sunMouse.c \
 	sunUtils.c \
-	sunGC.c \
 	sunCG2C.c \
 	sunCG2M.c \
 	sunCG3C.c \
@@ -41,7 +40,6 @@ OBJS = \
 	sunKbd.o \
 	sunMouse.o \
 	sunUtils.o \
-	sunGC.o \
 	sunCG2C.o \
 	sunCG2M.o \
 	sunCG3C.o \
