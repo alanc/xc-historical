@@ -1,28 +1,8 @@
-[XXX - this needs to be updated to R4:
-
-     o  easier to maintain since common information is stored in one place
-        instead of many.
-
-     o  easier to port (now uses the "describe how you are different" model
-        instead of "tell me how to do each of the following 20 things").
-
-     o  main template is more generic so that other projects might make use of
-        it (there is still some work to be done in separating X-specific
-        rules from generic ones).
-
-     o  more descriptive names used for config files (and easier to find).
-
-     o  will support use without source tree (not tested yet).
-
-     o  will support multiple installation (e.g. DW and R4).
-
-- XXX]
-
 
 				X Window System
 			   Imake Configuration Guide
 
-				   Release 3
+				Release 4alpha
 
 
 
@@ -32,6 +12,13 @@ This document describes the various parameters that are used to configure this
 release of the X Window System.  It should be read by anyone who is porting X
 to a new platform or attempting to change the default installation.
 
+
+
+
+0.  Overview
+
+Sources for a paper giving an overview of the build system may be found in
+doc/config/usenixwx/paper.ms.
 
 
 
@@ -64,14 +51,16 @@ and then has a series of conditional blocks for setting the platform type.
 
 This requires that there be a unique preprocessor symbol that can be used to
 identify which configuration block to use.  Systems whose cpp does not define
-such a symbol must add one to the cpp_argv table in ../imake/imake.c and build
-with BOOTSTRAPCFLAGS set to the appropriate name.
+such a symbol must add one to the cpp_argv table in util/imake/imake.c and 
+build with BOOTSTRAPCFLAGS set to the appropriate name.  Any additional flags
+(such as -DSYSV or -DUSG) that are needed to compile imake.c should be added 
+to the file ccflags.c.
 
 Each block defines several symbol names representing the type of system
 being configured:
 
-	#define MacroIncludeFile	"PLATFORM.macros"
-	#define MacroFile		PLATFORM.macros
+	#define MacroIncludeFile	"PLATFORM.cf"
+	#define MacroFile		PLATFORM.cf
 	#define PLATFORMArchitecture
 
 where PLATFORM is the type of the system being configured.  The redundant
@@ -83,164 +72,147 @@ to prevent Imakefiles from using system-dependent rules as opposed to
 platform-dependent (some platforms run on multiple systems).
 
 The rest of the template file should not be edited.  Server-specific changes
-can be made in the appropriate .macros file and site-specific changes can be
+can be made in the appropriate .cf file and site-specific changes can be
 made in site.def.  Any parameter that is not set will be given a default value
-in Imake.tmpl.  THESE DEFAULTS SHOULD NOT BE CHANGED.
+in the appropriate .tmpl file.  THESE DEFAULTS SHOULD NOT BE CHANGED.
 
 
 
 
-3.  Server-specific .macros file
+3.  Server-specific .cf file
 
 Differences between operating systems are handled by setting various
-configuration parameters in the .macros files.  The easiest way to create
+configuration parameters in the .cf files.  The easiest way to create
 a new one is to:
 
-     o  take Guess.macros, select the right portions based on whether or not
-	your OS is System V.
-     o  set LibraryDefines, ServerDefines, and ConnectionFlags.
-     o  read Imake.tmpl to see if there is anything you'd like to override.
-     o  look at some of the other .macros files for systems that might be
-	similar to yours.
+     o  find a configuration similar to yours or start with generic.cf.
+     o  set the SystemV variable if your OS is based on SVR2.
+     o  set the OSName, OSMajorVersion, and OSMinorVersion variables.
+     o  set BuildServer to NO if you are doing a client-only build.
+     o  look at the other .cf files, Imake.tmpl, and Project.tmpl to see 
+	    if there are any variables you'd like to set; common ones include:
 
-The make variables should be defined as follows:
+		HasSockets, HasVFork, HasVoidSignalReturn, HasBsearch,
+		HasPutenv, NeedBerklibInXlib, ConnectionFlags, CcCmd, LnCmd,
+		setTtyGroup, UnalignedReferencesAllowed
 
-    AR			command to generate object libraries;  usually set to
-			    "ar clq".
-    AS			command to assemble code into object file; usually set
-			    to "as".
-    BOOTSTRAPCFLAGS	special flags that are needed to build imake; this
-			    is for cpp's that don't define unique symbols.
-			    This must be set on the make World command line.
-    CC			command to compile C files; usually set to "cc"
-			    followed by any special flags.
-    COMPRESS		command to compress(1) a file.
-    CPP			name of C preprocessor program.
-    INSTALL		name of BSD-compatible install program; usually set to
-			    "install" or "bsdinstall".
-    LD			name of loader program; usually set to "ld".
-    LINT		name of lint program; usually set to "lint".
-    LINTLIBFLAG		flag to make $(LINT) generate a lint library; usually
-			    set to either "-C" or "-o".
-    LINTOPTS		flags to pass to $(LINT).
-    LN			command line to generate links; usually set to 
-			    "ln -s" or "ln" if soft links aren't supported.
-    MV			name of move file program; usually set to "mv".
-    RANLIB		name of program to run after building a library;
-			    usually set to "ranlib" or "/bin/true".
-    RANLIBINSTFLAGS	some systems support a -t flag to ranlib telling it
-			    it to just touch the archive explicitly for
-			    installing libraries
-    RM			command line to force a regular file to be removed;
-			    usually set to "rm -f".
-    STD_CPP_DEFINES	preprocessor definitions for passing things through
-			    cpp; usually a subset of STD_DEFINES.
-    STD_DEFINES		C compiler flags to be used on every compile; this is
-			    where special options increasing table sizes are
-			    put.  Also, System V sites should add -DSYSV.
-    SYSLAST_LIBRARIES	libraries to put at the end of link lines; usually
-			    left blank or set to the names of any emulation
-			    libraries (such as DECnet or sockets).
-    TAGS		name of ctags program; usually set to "ctags".
+Imake.tmpl provides defaults for the following variables:
+
+    SystemV			whether or not based on SVR2
+    OSMajorVersion		major version number of OS
+    OSMinorVersion		minor version number of OS
+    UnalignedReferencesAllowed	if allowed to deref arbitrary addresses
+    ExecableScripts		if scripts with #! may be exec'ed
+    BourneShell			filename of Bourne shell
+    ConstructMFLAGS		whether or not to do MFLAGS with MAKEFLAGS
+    HasSockets			whether or not system has bsd sockets
+    HasVFork			whether or not libc has vfork()
+    HasPutenv			whether or not libc has putenv()
+    HasVoidSignalReturn		whether or not signal() proc is type void
+    HasBsearch			whether or not libc has bsearch()
+    HasSaberC			whether or not system has Saber C
+    IncRoot			path below which X11 includes live
+    UNCOMPRESSPATH		name of uncompress program
+    OptimizedCDebugFlags	C compiler flags to turn on optimizer
+    DebuggableCDebugFlags	C compiler flags to turn on debugger
+    NoOpCDebugFlags		C compiler default flags
+    DefaultCDebugFlags		one of previous 3 for compiling programs
+    LibraryCDebugFlags		one of previous 3 for compiling libraries
+    DefaultCCOptions		C compiler flags for floating point, etc.
+    LibraryCCOptions		C compiler flags for libraries for f.p. etc.
+    ServerCCOptions		C compiler flags for server for f.p. etc.
+    InstBinFlags		install modes for program binaries
+    InstUidFlags		install modes for setuid programs (xterm)
+    InstLibFlags		install modes for libraries
+    InstIncFlags		install modes for includes
+    InstManFlags		install modes for manual pages
+    InstDatFlags		install modes for data files
+    InstKmemFlags		install modes for setgid kmem programs (xload)
+    ArCmd			command to create and add to libraries
+    BootstrapCFlags		initial -Dmacro for systems that don't have 'em
+    CcCmd			command to run C compiler
+    AsCmd			command to run assembler
+    CompressCmd			command to run compress
+    CppCmd			command to run C preprocessor
+    PreProcessCmd		command to run cpp with C default defines
+    InstallCmd			command to do bsd-style install
+    LdCmd			command to run loader
+    LintCmd			command to run linter
+    LintLibFlag			flag to tell lint to create a library
+    LintOpts			default lint options
+    CpCmd			command to copy a file
+    LnCmd			command to soft link (if possible) a file
+    MakeCmd			command to make from Makefile
+    MvCmd			command to rename a file
+    RanlibCmd			command to run after creating a library
+    RanlibInstFlags		special flags to ranlib for installed libs
+    RmCmd			command to remove a file
+    StandardCppDefines		defines for cpp'ing scripts
+    StandardDefines		defines and flags for C compiler
+    ExtraLibraries		special libraries at end of load line
+    ExtraLoadFlags		special flags for load lines
+    CompatibilityFlags		defines for turning on source code compat 
+    TagsCmd			command for generating C tags
 
 
-In addition, you will also have to set the following preprocessor definitions:
+Project.tmpl provides defaults for the following variables:
 
-    LibraryDefines	any special flags for compiling libraries
-    ServerDefines	any special flags for compiling the server
-    ConnectionFlags	any of -DTCPCONN -DUNIXCONN -DDNETCONN
-
-If you are going to build a server, you will need to define the following
-parameters as well:
-
-    XnameServer		where name is the name of the platform in lower case
-    FontDefines		any of -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
-
-You'll then have to add sections to the server/Imakefile to build your
-server.
-
-A number of other parameters may be defined.  The file Imake.tmpl contains
-defaults for all servers which can be overridden by including an appropriate
-definition in the .macros file:
-
-    SystemV			is System V based instead of BSD?  YES/NO
-    BuildServer			build the server and fonts?  YES/NO
-    UnalignedReferencesAllowed	arbitrary memory references okay?  YES/NO
-    BourneShell			pathname of Bourne shell
-    InstallxinitConfig		install sample xinit configuration?  YES/NO
-    InstallxdmConfig		install sample xdm configuration?  YES/NO
-    InstallAppDefFiles		install application default resources?   YES/NO
-    ExpandManNames		expand Xlib man page filename?  YES/NO
-    DebugLibX			build debuggable Xlib?  YES/NO
-    DebugLibXArchive		build separate debug Xlib library?  YES/NO
-    ProfileLibX			build profiled Xlib?  YES/NO
-    ProfileLibXArchive		build separate profile Xlib library?  YES/NO
-    DebugOldLibX		build debuggable X10 emul library?  YES/NO
-    ProfileOldLibX		build profiled X10 emul library?  YES/NO
-    DebugLibXt			build debuggable Xt library?  YES/NO
-    ProfileLibXt		build profiled Xt library?  YES/NO
-    DebugLibXaw			build debuggable Xaw library?  YES/NO
-    ProfileLibXaw		build profiled Xaw library?  YES/NO
-    DebugLibXext		build debuggable extensions library?  YES/NO
-    ProfileLibXext		build profiled extensions library?  YES/NO
-    DebugLibXmu			build debuggable Xmu library?  YES/NO
-    ProfileLibXmu		build profiled Xmu library?  YES/NO
-    ManDirectoryRoot		root of man page tree
-    ManSuffix			suffix for program man pages
-    LibManSuffix		suffix for library man pages
-    ExtensionDefines		any of -DZOID -DBEZIER -DTEXTEXT1
-    UNCOMPRESSPATH		full pathname of uncompress program
-    UNCOMPRESSFILT		-D version of above
-    BDFTOSNFFILT		-D version of bdftosnf program
-    SHELLPATH			full pathname of Bourne shell
-    ZBDFTOSNFFILT		command to uncompress BDF and compile
-    PrimaryScreenResolution	dots per inch of main monitor
-    DefaultFontPath		comma-separated list of directories
-    DefaultRGBDatabase		pathname of RGB database
-    FontCompilerFlags		flags to pass to font compiler
-    OptimizedCDebugFlags	flags to pass to compiler for optimized code
-    DebuggableCDebugFlags	flags to pass to compiler for debuggable code
-    NoOpCDebugFlags		flags to pass to compiler to do neither
-    DefaultCDebugFlags		default debug vs. optimize flags 
-    LibraryCDebugFlags		debug vs. optimize flags for libraries
-    ServerCDebugFlags		debug vs. optimize flags for server
-    CppSourcesPresent		are BSD cpp sources available?  YES/NO
-    CppSources			pathname of directory with BSD cpp sources
-    ConstructMFLAGS		set MFLAGS from MAKEFLAGS?  YES/NO
-    DestDir			root of installation, should be blank
-    UsrLibDir			directory to contain libraries
-    BinDir			directory to contain programs
-    IncDir			directory to contain header files
-    AdmDir			directory in which server should put log file
-    LibDir			directory to contain fonts, config files, etc.
-    LintlibDir			directory to contain lint libraries
-    FontDir			directory to contain fonts
-    XinitDir			directory to contain xinit config files
-    XdmDir			directory to contain xdm config files
-    XdmConfigurationSubdirectory	subdir of xdm containing config
-    UwmDir			directory to contain uwm config files
-    AwmDir			directory to contain awm config files
-    TwmDir			directory to contain twm config files
-    ManPath			root of manual page tree
-    ManSourcePath		name of man source directories to append to
-    ManDir			directory to contain program man pages
-    LibmanDir			directory to contain library man pages
-    XAppLoadDir			directory to contain application defaults
-    InstBinFlags		install flags for programs
-    InstUidFlags		install flags for setuid programs
-    InstLibFlags		install flags for libraries
-    InstIncFlags		install flags for header files
-    InstManFlags		install flags for man pages
-    InstAppFlags		install flags for application defaults
-    InstKmemFlags		install flags for reading /dev/kmem
-    BandAidLibraryNeeded	is a hack library needed in Xlib?  YES/NO
-    OsNameDefines		definitions used to specify OS Name
-    DefaultUserPath		path for xdm to use when starting user progs
-    DefaultSystemPath		path for xdm to use when running Xstartup/reset
-    DefaultSystemShell		contents of SHELL when running progs
-
-See the various .macros files for examples.
-
+    BuildServer			whether or not to build a server
+    InstallXinitConfig		whether or not to install xinit config stuff
+    InstallXdmConfig		whether or not to install xdm config stuff
+    InstallAppDefFiles		whether or not to install app-defaults
+    InstallOldHeaderFiles	whether or not to install old include files
+    NeedBerklibInXlib		whether or not need BSDisms in Xlib
+    ManDirectoryRoot		top of manual pages
+    ManSuffix			suffix for X program manual pages
+    LibManSuffix		suffix for Xlib manual pages
+    UNCOMPRESSFILT		define for server command to uncompress stdin
+    BDFTOSNFFILT		define for server command to compile bdf files
+    SHELLPATH			define for server command to run shell
+    ZBDFTOSNFFILT		define for server command to uncompress,comp
+    FontFilters			define for server for filters to provide
+    PrimaryScreenResolution	resolution of primary screen for servers
+    DefaultFontPath		default font path for servers
+    DefaultRGBDatabase		default rgb database path for servers
+    FontCompilerFlags		flags for font compiler
+    ConnectionFlags		flags for turning on networking transports
+    FontDefines			server compile flags for enabling font filters
+    ExtensionDefines		types of extensions desired
+    ServerCDebugFlags		C compiler flags for server
+    LibraryDefines		special C compiler for building libraries
+    ServerDefines		special C compiler flags for building servers
+    BinDir			path for installed programs
+    IncRoot			path for top of X11 includes directory
+    LibDir			path for installed libraries
+    ConfigDir			path for installed config stuff
+    LintlibDir			path for installed lint libraries
+    FontDir			path for installed fonts
+    AdmDir			path for system administrative directories
+    XinitDir			path for xinit config stuff
+    XdmDir			path for xdm config stuff
+    XdmConfigurationSubdirectory	default xdm config sources
+    AwmDir			path for installed awm default stuff
+    TwmDir			path for installed twm default stuff
+    ManPath			macro for directory where to put man pages
+    ManSourcePath		macro for subdirectory where to put man pages
+    ManDir			macro for program man page subdir
+    LibmanDir			macro for library man page subdir
+    XAppLoadDir			path for installed app-defaults
+    OsNameDefines		define for giving OS name
+    DefaultUserPath		default user login path for xdm
+    DefaultSystemPath		default system path for xdm
+    DefaultSystemShell		default shell for xdm
+    UseCCMakeDepend		whether or not to use slow shell script
+    DependDir			source directory for makedepend
+    DependCmd			command to run make depend
+    RemoveTargetProgramByMoving	whether or not files removed by moving
+    HasSunOSSharedLibraries	whether or not system has SunOS 4.0 shared libs
+    SharedXlib			whether or not to share Xlib
+    SharedXlibRev		version for shared Xlib
+    BandAidLibraryNeeded	whether or not Xlib needs extra files
+    BandAidLibrarySources	extra Xlib source files
+    BandAidLibraryObjects	extra Xlib object files
+    NeedDefaultDepLibs		whether or not Imakefiles have been updated
 
 
 
