@@ -1,4 +1,3 @@
-/* $XConsortium$ */
 /* Automatically generated Request table
  */
 /******************************************************************
@@ -123,7 +122,18 @@ LOCAL_FLAG ErrorCode
 	SWAP_FUNC_PREFIX(PEXQueryFont) (),
 	SWAP_FUNC_PREFIX(PEXListFonts) (),
 	SWAP_FUNC_PREFIX(PEXListFontsWithInfo) (),
-	SWAP_FUNC_PREFIX(PEXQueryTextExtents) ();
+	SWAP_FUNC_PREFIX(PEXQueryTextExtents) (),
+	SWAP_FUNC_PREFIX(PEXMatchRendererTargets) (),
+	SWAP_FUNC_PREFIX(PEXEscape) (),
+	SWAP_FUNC_PREFIX(PEXEscapeWithReply) (),
+	SWAP_FUNC_PREFIX(PEXRenderElements) (),
+	SWAP_FUNC_PREFIX(PEXAccumulateState) (),
+	SWAP_FUNC_PREFIX(PEXBeginPickOne) (),
+	SWAP_FUNC_PREFIX(PEXEndPickOne) (),
+	SWAP_FUNC_PREFIX(PEXPickOne) (),
+	SWAP_FUNC_PREFIX(PEXBeginPickAll) (),
+	SWAP_FUNC_PREFIX(PEXEndPickAll) (),
+	SWAP_FUNC_PREFIX(PEXPickAll) ();
 
 RequestFunction SWAP_FUNC_PREFIX(PEXRequest)[] = {
 /*   0	*/  SWAP_FUNC_PREFIX(PEXRequestUnused),
@@ -219,7 +229,18 @@ RequestFunction SWAP_FUNC_PREFIX(PEXRequest)[] = {
 /*   90	*/  SWAP_FUNC_PREFIX(PEXQueryFont),
 /*   91	*/  SWAP_FUNC_PREFIX(PEXListFonts),
 /*   92	*/  SWAP_FUNC_PREFIX(PEXListFontsWithInfo),
-/*   93	*/  SWAP_FUNC_PREFIX(PEXQueryTextExtents)
+/*   93	*/  SWAP_FUNC_PREFIX(PEXQueryTextExtents),
+/*   94	*/  SWAP_FUNC_PREFIX(PEXMatchRendererTargets),
+/*   95	*/  SWAP_FUNC_PREFIX(PEXEscape),
+/*   96	*/  SWAP_FUNC_PREFIX(PEXEscapeWithReply),
+/*   97	*/  SWAP_FUNC_PREFIX(PEXRenderElements),
+/*   98	*/  SWAP_FUNC_PREFIX(PEXAccumulateState),
+/*   99	*/  SWAP_FUNC_PREFIX(PEXBeginPickOne),
+/*   100	*/  SWAP_FUNC_PREFIX(PEXEndPickOne),
+/*   101	*/  SWAP_FUNC_PREFIX(PEXPickOne),
+/*   102	*/  SWAP_FUNC_PREFIX(PEXBeginPickAll),
+/*   103	*/  SWAP_FUNC_PREFIX(PEXEndPickAll),
+/*   104	*/  SWAP_FUNC_PREFIX(PEXPickAll)
 };
 
 #undef SWAP_FUNC_PREFIX
