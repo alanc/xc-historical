@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.69 89/10/04 16:09:25 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.70 89/10/05 10:59:29 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -653,16 +653,20 @@ void XtAppNextEvent(app, event)
     int i, d;
 
     for (;;) {
-	for (i = 1; i <= app->count; i++) {
-	    d = (i + app->last) % app->count;
-	    if (d == 0) DoOtherSources(app);
-	    if (XEventsQueued(app->list[d], QueuedAfterReading))
-		goto GotEvent;
-	}
-	for (i = 1; i <= app->count; i++) {
-	    d = (i + app->last) % app->count;
-	    if (XEventsQueued(app->list[d], QueuedAfterFlush))
-		goto GotEvent;
+	if (app->count == 0)
+	    DoOtherSources(app);
+	else {
+	    for (i = 1; i <= app->count; i++) {
+		d = (i + app->last) % app->count;
+		if (d == 0) DoOtherSources(app);
+		if (XEventsQueued(app->list[d], QueuedAfterReading))
+		    goto GotEvent;
+	    }
+	    for (i = 1; i <= app->count; i++) {
+		d = (i + app->last) % app->count;
+		if (XEventsQueued(app->list[d], QueuedAfterFlush))
+		    goto GotEvent;
+	    }
 	}
 
 	/* We're ready to wait...if there is a work proc, call it */
