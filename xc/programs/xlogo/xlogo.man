@@ -1,4 +1,4 @@
-.\" $XConsortium: xlogo.man,v 1.21 94/04/11 16:02:57 matt Exp $
+.\" $XConsortium: xlogo.man,v 1.22 94/04/14 11:23:36 dpw Exp $
 .\" Copyright 1988 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -17,8 +17,7 @@ xlogo - X Window System logo
 .B xlogo
 [-\fItoolkitoption\fP ...]
 .SH DESCRIPTION
-The \fIxlogo\fP program displays the X Window System logo.  This program is
-nothing more than a wrapper around the \fIundocumented\fP Athena Logo widget.
+The \fIxlogo\fP program displays the X Window System logo.
 .SH OPTIONS
 .I Xlogo
 accepts all of the standard X Toolkit command line options, as well as the
