@@ -1,5 +1,6 @@
 /*
- * If you have source for cpp... (this is no longer tested or supported)
+ * NOTE: CppSourcesPresent IS NO LONGER TESTED OR SUPPORTED,
+ * and is nearly guaranteed to not work.
  */
 #if CppSourcesPresent
     SRCS = include.c main.c parse.c pr.c cppsetup.c cpp.c cpy.y
