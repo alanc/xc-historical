@@ -53,11 +53,10 @@ typedef enum {
  
 /* Class record constants */
 
-typedef struct _LabelWidgetClassData LabelWidgetClassData;
+extern WidgetClass labelWidgetClass;
 
-extern LabelWidgetClassData labelWidgetClassData;
-
-#define labelWidgetClass	(&labelWidgetClassData)
+typedef struct _LabelClassRec *LabelWidgetClass;
+typedef struct _LabelRec      *LabelWidget;
 
 #endif _XtLabel_h
 /* DON'T ADD STUFF AFTER THIS #endif */
