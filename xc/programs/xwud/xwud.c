@@ -1,7 +1,7 @@
 /* 
  * $Locker: jim $ 
  */ 
-static char	*rcsid = "$XConsortium: xwud.c,v 1.20 88/09/03 20:34:59 keith Exp $";
+static char	*rcsid = "$XConsortium: xwud.c,v 1.21 88/09/06 17:37:18 jim Exp $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$XConsortium: xwud.c,v 1.20 88/09/03 20:34:59 keith Exp $"
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$XConsortium: xwud.c,v 1.20 88/09/03 20:34:59 keith Exp $";
+static char *rcsid_xwud_c = "$XConsortium: xwud.c,v 1.21 88/09/06 17:37:18 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -139,7 +139,7 @@ main(argc, argv)
      * check to see if the dump file is in the proper format.
      */
     if (header.file_version != XWD_FILE_VERSION) {
-	fprintf(stderr,"xwud: XWD file format version missmatch.");
+	fprintf(stderr,"xwud: XWD file format version mismatch.");
 	Error("exiting.");
     }
     if (header.header_size < sizeof(header)) {
