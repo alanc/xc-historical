@@ -1,6 +1,6 @@
 /***********************************************************
 
- "$XConsortium: SimpleMenP.h,v 1.6 89/07/12 13:50:12 kit Exp $";
+ "$XConsortium: SimpleMenP.h,v 1.8 89/09/28 16:41:12 kit Exp $";
 
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
@@ -39,12 +39,17 @@ SOFTWARE.
 #define _SimpleMenuP_h
 
 #include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/MenuEntryP.h>
 #include <X11/ShellP.h>
 
-#define NO_ENTRY -1
+#define ForAllChildren(smw, childP) \
+  for ( (childP) = (MenuEntryObject *) (smw)->composite.children ; \
+        (childP) < (MenuEntryObject *) ( (smw)->composite.children + \
+					 (smw)->composite.num_children ) ; \
+        (childP)++ )
 
 typedef struct {
-    caddr_t extension;		/* For future needs. */
+    XtPointer extension;		/* For future needs. */
 } SimpleMenuClassPart;
 
 typedef struct _SimpleMenuClassRec {
@@ -57,71 +62,35 @@ typedef struct _SimpleMenuClassRec {
 
 extern SimpleMenuClassRec simpleMenuClassRec;
 
-typedef enum {
-  XawErefreshAll, XawErefreshEntry, XawErefreshLabel
-} XawRefreshTypes;
-
-typedef struct _MenuEntry {
-  struct _MenuEntry * next;	 /* next menu entry. */
-  XrmQuark          name;        /* name of this menu item. */
-  String            label;       /* label displayed for this menu item. */
-  Boolean           sensitive;	 /* is this item sensitive. */
-  Pixmap            left_bitmap; /* Bitmap to display on the left and right. */
-  Pixmap            right_bitmap;
-  XawMenuEntryType  type;	 /* Type of item to display. */
-  XtCallbackList callbacks;	 /* The callback list. */
-
-  /* private state */
-  
-  unsigned int         left_bitmap_width; /* sizes of bitmaps */
-  unsigned int         left_bitmap_height;
-  unsigned int         right_bitmap_width;
-  unsigned int         right_bitmap_height;
-} MenuEntry;
-
 typedef struct _SimpleMenuPart {
 
   /* resources */
 
-  Cursor       cursor;		/* The menu's cursor. */
-  String       label;		/* label the menu will display. */
-  XawMenuEntryType  label_sep_type; /* Type of label separator. */
+  String       label_string;	/* The string for the label or NULL. */
+  MenuEntryObject   label;	/* If label_string is non-NULL then this is
+				   the label widget. */
+  WidgetClass  label_class;	/* Widget Class of the menu label object. */
 
-  String       popup_entry;	/* The entry to position the cursor on for
+  Dimension    top_margin;	/* Top and bottom margins. */
+  Dimension    bottom_margin;
+  Dimension    row_height;	/* height of each row (menu entry) */
+
+  Cursor       cursor;		/* The menu's cursor. */
+  MenuEntryObject popup_entry;	/* The entry to position the cursor on for
 				   when using XawPositionSimpleMenu. */
   Boolean      menu_on_screen;	/* Force the menus to be fully on the screen.*/
-  Pixel	       foreground;	/* foreground color for label. */
-  XFontStruct  *font;		/* font to display all entries. */
-  XFontStruct  *label_font;	/* font to display the label. */
-  Dimension    left_margin;	/* margins on each side of menu entries. */
-  Dimension    right_margin;
-  Dimension    top_margin;	
-  Dimension    bottom_margin;
-  int          vertical_space;	/* Space between entries ( in pixels ). */
-  Dimension    row_height;	/* height of each row - 
-				   excluding vertical space */
-  Dimension    column_width;    /* width of column, excluding margins. */
-  Boolean      auto_resize;	/* row and column height are automatically
-				   calculated of this is TRUE. */
   int          backing_store;	/* What type of backing store to use. */
 
   /* private state */
 
-  GC           norm_gc;		/* GC to use when drawing normally. */
-  GC           label_gc;	/* GC to use when drawing label. */
-  GC           rev_gc;		/* GC to use when drawing in reverse vid. */
-  GC           norm_grey_gc;	/* GC for insensitive entries. */
-  GC           invert_gc;	/* GC to use when inverting items. */
-
-  MenuEntry * entries;		/* a pointer to list of entries. */
-  MenuEntry * tail;		/* a pointer to the last entry in the list. */
-  Cardinal num_entries;		/* number of current menu entries */
   Boolean recursive_set_values;	/* contain a possible infinite loop. */
-  int          entry_set;	/* The entry that is currently set or
-				   highlighted. */
-  Dimension label_width;	/* width of the label. */
-  Dimension label_height;	/* height of the label. */
 
+  Boolean menu_width;		/* If true then force width to remain 
+				   core.width */
+  Boolean menu_height;		/* Just like menu_width, but for height. */
+
+  MenuEntryObject entry_set;	/* The entry that is currently set or
+				   highlighted. */
 } SimpleMenuPart;
 
 typedef struct _SimpleMenuRec {

@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.11 89/08/10 13:47:34 kit Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.13 89/09/28 16:41:25 kit Exp $";
 
                         All Rights Reserved
 
@@ -66,60 +66,18 @@ SOFTWARE.
  columnWidth         ColumnWidth        Dimension       Width of widest text
  cursor              Cursor             Cursor          None
  destroyCallback     Callback		Pointer		NULL
- font                Font               XFontStruct *   XtDefaultFont
- foreground          Foreground         Pixel           XtDefaultForeground
  height		     Height		Dimension	0
  label               Label              String          NULL (No label)
- leftMargin          HorizontalMargins  Dimension       4
+ labelClass          LabelClass         Pointer         bSBMenuEntryClass
  mappedWhenManaged   MappedWhenManaged	Boolean		True
- resize              Resize             Boolean         True
- rightMargin         HorizontalMargins  Dimension       4
  rowHeight           RowHeight          Dimension       Height of Font
  sensitive	     Sensitive		Boolean		True
  topMargin           VerticalMargins    Dimension       VerticalSpace
- verticalSpace       VerticalSpace      Dimension       4
  width		     Width		Dimension	0
  x		     Position		Position	0n
  y		     Position		Position	0
 
 */
-
-/* Resources Specific to each menu entry:
-
- Name		     Class		RepType		Default Value
- ----		     -----		-------		-------------
- callback            Callback           Callback        NULL
- label               Label              String          Name of entry
- leftBitmap          LeftBitmap         Pixmap          None
- rightBitmap         RightBitmap        Pixmap          None
- sensitive	     Sensitive		Boolean		True
- type                Type               XawMenuEntryType  Text
-
-*/
-
-/*
- * Valid menu types are:
- * 
- * XawMenuText                text
- * XawMenuSeparator           separator
- * XawMenuBlank               blank
- *
- * The text type is the only one that can be selected.
- * The separator will be rendered as a one pixel wide line in the center
- * of the area.
- */
-
-typedef enum {XawMenuText, XawMenuSeparator, 
-	      XawMenuBlank, XawMenuNone} XawMenuEntryType;
-
-/* Masks for XawSimpleMenuEntryCount() */
-
-#define XawMenuTextMask		0x1
-#define XawMenuSeparatorMask	0x2
-#define XawMenuBlankMask	0x4
-#define XawMenuAllMask		0x7
-
-#define XAW_MENU_ENTRY ("MenuEntry")
 
 typedef struct _SimpleMenuClassRec*	SimpleMenuWidgetClass;
 typedef struct _SimpleMenuRec*		SimpleMenuWidget;
@@ -129,39 +87,18 @@ extern WidgetClass simpleMenuWidgetClass;
 #define XtNcursor "cursor"
 #define XtNbottomMargin "bottomMargin"
 #define XtNcolumnWidth "columnWidth"
-#define XtNlabelFont "labelFont"
-#define XtNlabelSeparatorType "labelSeparatorType"
-#define XtNleftBitmap "leftBitmap"
-#define XtNleftMargin "leftMargin"
+#define XtNlabelClass "labelClass"
 #define XtNmenuOnScreen "menuOnScreen"
 #define XtNpopupOnEntry "popupOnEntry"
-#define XtNresize "resize"
-#define XtNrightBitmap "rightBitmap"
-#define XtNrightMargin "rightMargin"
 #define XtNrowHeight "rowHeight"
 #define XtNtopMargin "topMargin"
-#define XtNtype "type"
-#define XtNverticalSpacePercent "verticalSpacePercent"
-
-#define XtEblank "blank"
-#define XtEnone "none"
-#define XtEseparator "separator"
-#define XtEtext "text"
 
 #define XtCColumnWidth "ColumnWidth"
-#define XtCHorizontalMargins "HorizontalMargins"
-#define XtCLabelSeparatorType "LabelSeparatorType"
-#define XtCLeftBitmap "LeftBitmap"
+#define XtCLabelClass "LabelClass"
 #define XtCMenuOnScreen "MenuOnScreen"
 #define XtCPopupOnEntry "PopupOnEntry"
-#define XtCResize "Resize"
-#define XtCRightBitmap "RightBitmap"
 #define XtCRowHeight "RowHeight"
-#define XtCType "Type"
 #define XtCVerticalMargins "VerticalMargins"
-#define XtCVerticalSpacePercent "VerticalSpacePercent"
-
-#define XtRSimpleMenuType "SimpleMenuType"
 
 /************************************************************
  *
@@ -179,101 +116,6 @@ void
 XawSimpleMenuAddGlobalActions(/* app_con */);
 /*
 XtAppContext app_con;
-*/
- 
-/*      Function Name: XawSimpleMenuAddEntryCallback
- *      Description: Adds an entry to the callback list.
- *      Arguments: w - the menu widget
- *                 name - name of new menu item.
- *                 proc - the callback proceedure.
- *                 data - the callback (client) data.
- *      Returns: none.
- */
-
-void
-XawSimpleMenuAddEntryCallback(/* w, name, proc, data */);
-/*
-Widget w;
-char * name;
-XtCallbackProc proc;
-caddr_t data;
-*/
-  
-/*      Function Name: XawSimpleMenuAddEntry
- *      Description:  Adds an item to the menu.
- *      Arguments: w - the menu widget
- *                 name - name of new menu item.
- *                 args - the argument list.
- *                 num_args -  number of arguments.
- *      Returns: none.
- */
-
-void XawSimpleMenuAddEntry(/* w, name , args, num_args */);
-/*
-Widget w;
-char * name;
-ArgList args;
-Cardinal num_args;
-*/
-
-/*      Function Name: XawSimpleMenuRemoveEntry
- *      Description: removes an entry from the menu.
- *      Arguments: w - the menu widget
- *                 name - name of the menu item to remove.
- *      Returns: none.
- */
-
-void XawSimpleMenuRemoveEntry( /* w, name */);
-/*
-Widget w;
-char * name;
-*/
-
-/*	Function Name: XawSimpleMenuEntryCount
- *	Description: Determines the number of entries in a menu.
- *	Arguments: w - specifies the menu widget
- *		   entry_mask - specifies the type(s) of entries to count.
- *	Returns: the number of entries of the type(s) specified in the menu.
- */
-
-Cardinal XawSimpleMenuEntryCount( /* w, entry_mask */ );
-/*
-Widget w;
-unsigned long entry_mask;
-*/
-
-/*      Function Name: XawSimpleMenuSetEntryValues
- *      Description: Sets the values for an entry's resources.
- *      Arguments: w - the menu widget
- *                 name - name of menu item.
- *                 args - the argument list.
- *                 num_args -  number of arguments.
- *      Returns: none.
- */
-
-void XawSimpleMenuSetEntryValues(/* w, name , args, num_args */);
-/*
-Widget w;
-char * name;
-ArgList args;
-Cardinal num_args;
-*/
-  
-/*      Function Name: XawSimpleMenuGetEntryValues
- *      Description: Gets the current values for an entry.
- *      Arguments: w - the menu widget
- *                 name - name of menu item.
- *                 args - the argument list. (name/address pairs)
- *                 num_args -  number of arguments.
- *      Returns: none.
- */
-
-void XawSimpleMenuGetEntryValues(/* w, name , args, num_args */);
-/*
-Widget w;
-char * name;
-ArgList args;
-Cardinal num_args;
 */
 
 #endif /* _SimpleMenu_h */
