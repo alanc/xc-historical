@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.4 93/09/12 14:19:19 mor Exp $ */
+/* $XConsortium: misc.c,v 1.5 93/09/13 16:40:52 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -151,25 +151,26 @@ IceConn iceConn;
  * Use in place of read() when fd is a stream socket.
  *
  * Return Status 0 if we detected an EXPECTED closed connection.
+ *
  */
 
 Status
 _IceRead (iceConn, nbytes, ptr)
 
 register IceConn iceConn;
-register int	 nbytes;
+unsigned long	 nbytes;
 register char	 *ptr;
 
 {
-    int	nleft, nread;
+    register unsigned long nleft;
 
     nleft = nbytes;
     while (nleft > 0)
     {
 #ifdef WIN32
-	nread = recv (iceConn->fd, ptr, nleft, 0);
+	int nread = recv (iceConn->fd, ptr, (int) nleft, 0);
 #else
-	nread = read (iceConn->fd, ptr, nleft);
+	int nread = read (iceConn->fd, ptr, (int) nleft);
 #endif
 	if (nread <= 0)
 	{
@@ -190,7 +191,7 @@ register char	 *ptr;
 	    else 
 	    {
 		/*
-		 * Fatal IO error.  First notify each protocol's IceIOErrorCB
+		 * Fatal IO error.  First notify each protocol's IceIOErrorProc
 		 * callback, then invoke the application IO error handler.
 		 */
 
@@ -208,12 +209,12 @@ register char	 *ptr;
 
 			if (process->in_use)
 			{
-			    IceIOErrorCB IOErrCB = process->accept_flag ?
-				process->protocol->accept_client->io_error_cb :
-				process->protocol->orig_client->io_error_cb;
+			    IceIOErrorProc IOErrProc = process->accept_flag ?
+			      process->protocol->accept_client->io_error_proc :
+			      process->protocol->orig_client->io_error_proc;
 
-			    if (IOErrCB)
-				(*IOErrCB) (iceConn);
+			    if (IOErrProc)
+				(*IOErrProc) (iceConn);
 			}
 		    }
 		}
@@ -241,6 +242,32 @@ register char	 *ptr;
 
 
 /*
+ * If we read a message header with a bad major or minor opcode,
+ * we need to advance to the end of the message.  This way, the next
+ * message can be processed correctly.
+ */
+
+void
+_IceReadSkip (iceConn, nbytes)
+
+register IceConn	iceConn;
+register unsigned long	nbytes;
+
+{
+    char temp[512];
+
+    while (nbytes > 0)
+    {
+	unsigned long rbytes = nbytes > 512 ? 512 : nbytes;
+
+	_IceRead (iceConn, rbytes, temp);
+	nbytes -= rbytes;
+    }
+}
+
+
+
+/*
  * Write "n" bytes to a descriptor.
  * Use in place of write() when fd is a stream socket.
  */
@@ -249,19 +276,19 @@ void
 _IceWrite (iceConn, nbytes, ptr)
 
 register IceConn iceConn;
-register int	 nbytes;
+unsigned long	 nbytes;
 register char	 *ptr;
 
 {
-    int	nleft, nwritten;
+    register unsigned long nleft;
 
     nleft = nbytes;
     while (nleft > 0)
     {
 #ifdef WIN32
-	nwritten = send (iceConn->fd, ptr, nleft, 0);
+	int nwritten = send (iceConn->fd, ptr, (int) nleft, 0);
 #else
-	nwritten = write (iceConn->fd, ptr, nleft);
+	int nwritten = write (iceConn->fd, ptr, (int) nleft);
 #endif
 
 	if (nwritten <= 0)
@@ -270,7 +297,7 @@ register char	 *ptr;
 	    errno = WSAGetLastError();
 #endif
 	    /*
-	     * Fatal IO error.  First notify each protocol's IceIOErrorCB
+	     * Fatal IO error.  First notify each protocol's IceIOErrorProc
 	     * callback, then invoke the application IO error handler.
 	     */
 
@@ -288,12 +315,12 @@ register char	 *ptr;
 
 		    if (process->in_use)
 		    {
-			IceIOErrorCB IOErrCB = process->accept_flag ?
-			    process->protocol->accept_client->io_error_cb :
-			    process->protocol->orig_client->io_error_cb;
+			IceIOErrorProc IOErrProc = process->accept_flag ?
+			    process->protocol->accept_client->io_error_proc :
+			    process->protocol->orig_client->io_error_proc;
 
-			if (IOErrCB)
-			    (*IOErrCB) (iceConn);
+			if (IOErrProc)
+			    (*IOErrProc) (iceConn);
 		    }
 		}
 	    }
