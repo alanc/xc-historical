@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.127 89/12/14 14:52:16 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.128 89/12/14 15:09:20 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -504,14 +504,6 @@ typedef Boolean (*XtConvertSelectionIncrProc)(
 #endif
 );
 
-typedef void (*XtCancelSelectionCallbackProc)(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    Atom*		/* selection */,
-    XtPointer 		/* client_data */
-#endif
-);
-
 typedef void (*XtCancelConvertSelectionProc)(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
@@ -521,19 +513,6 @@ typedef void (*XtCancelConvertSelectionProc)(
     XtPointer 		/* client_data */
 #endif
 );
-
-typedef void (*XtSelectionIncrCallbackProc)(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    XtPointer 		/* client_data */,
-    Atom*		/* selection */,
-    Atom*		/* type */,
-    XtPointer*		/* value */,
-    unsigned long*	/* length */,
-    int*		/* format */
-#endif
-);
-
 
 /***************************************************************
  *
@@ -2392,8 +2371,7 @@ extern void XtGetSelectionValueIncremental(
     Widget 		/* widget */,
     Atom 		/* selection */,
     Atom 		/* target */,
-    XtSelectionIncrCallbackProc /* selection_callback */,
-    XtCancelSelectionCallbackProc /* cancel_callback */,
+    XtSelectionCallbackProc /* selection_callback */,
     XtPointer 		/* client_data */,
     Time 		/* time */
 #endif
@@ -2405,8 +2383,7 @@ extern void XtGetSelectionValuesIncremental(
     Atom 		/* selection */,
     Atom*		/* targets */,
     int 		/* count */,
-    XtSelectionIncrCallbackProc /* callback */,
-    XtCancelSelectionCallbackProc /* cancel_callback */,
+    XtSelectionCallbackProc /* callback */,
     XtPointer*		/* client_data */,
     Time 		/* time */
 #endif
