@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.113 94/03/30 09:59:52 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.114 94/03/30 13:47:29 dpw Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -30,9 +30,14 @@ XCOMM site:  $XConsortium: site.def,v 1.113 94/03/30 09:59:52 rws Exp $
  *                                                                           *
  *****************************************************************************/
 
-#ifdef BeforeVendorCF
+#ifndef SiteIConfigFiles
+#define SiteIConfigFiles $(IRULESRC)/host.def
+#define LocalConfigFiles host.def
+#endif
 
 #include <host.def>
+
+#ifdef BeforeVendorCF
 
 #ifdef SunArchitecture
 #ifndef HasCplusplus 
@@ -180,13 +185,6 @@ clean::									@@\
 #define ServerExtraDefines -D_XSERVER64
 #define ServerOSDefines -DDDXTIME
 #endif
-
-#ifndef SiteIConfigFiles
-#define SiteIConfigFiles $(IRULESRC)/host.def
-#define LocalConfigFiles host.def
-#endif
-
-#include <host.def>
 
 #endif /* AfterVendorCF */
 

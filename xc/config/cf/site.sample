@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.4 94/02/07 17:04:45 kaleb Exp $
+XCOMM site:  $XConsortium: site.sample,v 1.5 94/03/04 08:11:25 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -21,9 +21,24 @@ XCOMM site:  $XConsortium: site.sample,v 1.4 94/02/07 17:04:45 kaleb Exp $
  *                                                                           *
  *****************************************************************************/
 
+/* if you want host-specific customization, this is one way to do it */
+/*
+#ifndef SiteIConfigFiles
+#define SiteIConfigFiles $(IRULESRC)/host.def
+#define LocalConfigFiles host.def
+#endif
+
+#include <host.def>
+*/
+
+
 #ifdef BeforeVendorCF
 
-/* #define HasGcc2 YES */
+/*
+#ifndef HasGcc2
+#define HasGcc2 YES
+#endif
+*/
 
 #endif /* BeforeVendorCF */
 
@@ -70,13 +85,3 @@ XCOMM site:  $XConsortium: site.sample,v 1.4 94/02/07 17:04:45 kaleb Exp $
 */
 
 #endif /* AfterVendorCF */
-
-/* if you want host-specific customization, this is one way to do it */
-/*
-#ifndef SiteIConfigFiles
-#define SiteIConfigFiles $(IRULESRC)/host.def
-#define LocalConfigFiles host.def
-#endif
-
-#include <host.def>
-*/
