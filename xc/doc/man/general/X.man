@@ -1,16 +1,38 @@
-.\" $XConsortium: X.man,v 1.63 94/04/11 16:02:47 matt Exp $
+.\" $XConsortium: X.man,v 1.64 94/04/11 21:39:46 gildea Exp $
+.\" Copyright (c) 1994  X Consortium
+.\" 
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"), 
+.\" to deal in the Software without restriction, including without limitation 
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+.\" and/or sell copies of the Software, and to permit persons to whom the 
+.\" Software furnished to do so, subject to the following conditions:
+.\" 
+.\" The above copyright notice and this permission notice shall be included in
+.\" all copies or substantial portions of the Software.
+.\" 
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+.\" THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+.\" WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+.\" OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+.\" SOFTWARE.
+.\" 
+.\" Except as contained in this notice, the name of the X Consortium shall not 
+.\" be used in advertising or otherwise to promote the sale, use or other 
+.\" dealing in this Software without prior written authorization from the 
+.\" X Consortium.
 .TH X 1 "Release 6" "X Version 11"
 .SH NAME
 X \- a portable, network-transparent window system
 .SH SYNOPSIS
 .PP
-The X Window System
-is a network transparent window system developed at MIT which runs on a wide
-range of computing and graphics machines.
-It should be relatively straightforward to build the MIT software distribution
-on most ANSI C and POSIX compliant systems.
-Commercial implementations are also available for a wide range
-of platforms.
+The X Window System is a network transparent window system which runs
+on a wide range of computing and graphics machines.  It should be
+relatively straightforward to build the X Consortium software
+distribution on most ANSI C and POSIX compliant systems.  Commercial
+implementations are also available for a wide range of platforms.
 .PP
 The X Consortium requests that the following names be used when
 referring to this software:
@@ -27,7 +49,7 @@ X Window System, Version 11
 X11
 .PP
 .I "X Window System"
-is a trademark of the Massachusetts Institute of Technology.
+is a trademark of X Consortium, Inc.
 .SH DESCRIPTION
 X Window System servers run on computers with bitmap displays.
 The server distributes user input to and accepts output requests from various
@@ -48,37 +70,43 @@ the \fIX Toolkit Intrinsics - C Language Interface\fP manual,
 and various toolkit documents.
 .PP
 The number of programs that use \fIX\fP is quite large.
-Programs provided in the core MIT distribution include:
+Programs provided in the core X Consortium distribution include:
 a terminal emulator (\fIxterm\fP),
 a window manager (\fItwm\fP), 
 a display manager (\fIxdm\fP),
 a console redirect program (\fIxconsole\fP),
-mail managing utilities (\fIxmh\fP and \fIxbiff\fP),
-a manual page browser (\fIxman\fP),
+a mail interface (\fIxmh\fP),
 a bitmap editor (\fIbitmap\fP),
-a resource editor (\fIeditres\fP),
-a ditroff previewer (\fIxditview\fP),
-access control programs (\fIxauth\fP and \fIxhost\fP),
+resource listing/manipulation tools (\fIappres\fP, \fIeditres\fP),
+access control programs (\fIxauth\fP, \fIxhost\fP, and \fIiceauth\fP),
 user preference setting programs (\fIxrdb\fP, \fIxcmsdb\fP,
 \fIxset\fP, \fIxsetroot\fP, \fIxstdcmap\fP, and \fIxmodmap\fP),
-a load monitor (\fIxload\fP), clocks (\fIxclock\fP and \fIoclock\fP),
+clocks (\fIxclock\fP and \fIoclock\fP),
 a font displayer (\fIxfd\fP),
 utilities for listing information about fonts, windows, and displays
-(\fIxlsfonts\fP, \fIxfontsel\fP, \fIxwininfo\fP, \fIxlsclients\fP,
-\fIxdpyinfo\fP, and \fIxprop\fP), a diagnostic for seeing what events
-are generated and when (\fIxev\fP), screen image manipulation utilities
-(\fIxwd\fP, \fIxwud\fP, \fIxpr\fP, and \fIxmag\fP), and various demos
-(\fIxeyes\fP, \fIico\fP, \fIxgc\fP, \fIx11perf\fP, etc.).
+(\fIxlsfonts\fP, \fIxwininfo\fP, \fIxlsclients\fP,
+\fIxdpyinfo\fP, \fIxlsatoms\fP, and \fIxprop\fP),
+screen image manipulation utilities (\fIxwd\fP, \fIxwud\fP, and \fIxmag\fP),
+a performance measurement utility (\fIx11perf\fP),
+a font compiler (\fIbdftopcf\fP),
+a font server and related utilities (\fIxfs\fP, \fIfsinfo\fP, \fIfslsfonts\fP, \fIfstobdf\fP),
+an X Image Extension exerciser (\fIxieperf\fP),
+a display server and related utilities (\fIXserver\fP, \fIrgb\fP, \fImkfontdir\fP),
+remote execution utilities (\fIrstart\fP and \fIxon\fP),
+a clipboard manager (\fIxclipboard\fP),
+a keyboard description compiler (\fIxkbcomp\fP),
+a utility to terminate clients (\fIxkill\fP), 
+and a utility to cause part or all of the screen to be redrawn (\fIxrefresh\fP). 
 .PP
 Many other utilities, window managers, games, toolkits, etc. are included
-as user-contributed software in the MIT distribution, or are
+as user-contributed software in the X Consortium distribution, or are
 available using anonymous ftp on the Internet.
 See your site administrator for details.
 .SH "STARTING UP"
 .PP 
 There are two main ways of getting the X server and an initial set of
 client applications started.  The particular method used depends on what
-operating system you are running and on whether or not you use other window
+operating system you are running and whether or not you use other window
 systems in addition to X.
 .TP 8
 .B "\fIxdm\fP (the X Display Manager)"
@@ -133,7 +161,7 @@ The phrase "display" is usually used to refer to collection of monitors that
 share a common keyboard and pointer (mouse, tablet, etc.).  Most workstations
 tend to only have one keyboard, and therefore, only one display.  Larger, 
 multi-user
-systems, however, will frequently have several displays so that more than
+systems, however, frequently have several displays so that more than
 one person can be doing graphics work at once.  To avoid confusion, each
 display on a machine is assigned a \fIdisplay number\fP (beginning at 0)
 when the X server for that display is started.  The display number must always
@@ -143,12 +171,12 @@ be given in a display name.
 Some displays share a single keyboard and pointer among two or more monitors.
 Since each monitor has its own set of windows, each screen is assigned a
 \fIscreen number\fP (beginning at 0) when the X server for that display is
-started.  If the screen number is not given, then screen 0 will be used.
+started.  If the screen number is not given, screen 0 will be used.
 .PP
 On POSIX systems, the default display name is stored 
 in your DISPLAY environment variable.  This variable is set automatically
 by the \fIxterm\fP terminal emulator.  However, when you log into another
-machine on a network, you'll need to set DISPLAY by hand to point to your
+machine on a network, you will need to set DISPLAY by hand to point to your
 display.  For example,
 .sp
 .nf
@@ -193,7 +221,7 @@ are all allowed.  For example:  \fIx.org:0\fP, \fIexpo:0\fP,
 .I DECnet
 .br
 The hostname part of the display name should be the server machine's 
-nodename followed by two colons instead of one.
+nodename, followed by two colons instead of one.
 For example:  \fImyws::0\fP, \fIbig::1\fP, and \fIhydra::0.1\fP.
 .PP
 .SH "ACCESS CONTROL"
@@ -209,7 +237,7 @@ in Release 6 are:
     MIT-KERBEROS-5	Kerberos Version 5 user-to-user.
 .fi
 .PP
-\fIXdm\fP initializes access control for the server, and also places
+\fIXdm\fP initializes access control for the server and also places
 authorization information in a file accessible to the user.
 Normally, the list of hosts from
 which connections are always accepted should be empty, so that only clients
@@ -223,9 +251,9 @@ the file \fB.Xauthority\fP in the home directory.  \fIXdm\fP uses
 \fB$HOME/.Xauthority\fP and will create it or merge in authorization records
 if it already exists when a user logs in.
 .PP
-If you use several machines, and share a common home directory
+If you use several machines and share a common home directory
 across all of the machines by means of a network file system,
-then you never really have to worry about authorization files,
+you never really have to worry about authorization files,
 the system should work correctly by default.
 Otherwise, as the authorization files are machine-independent,
 you can simply copy the files to share them.
@@ -239,7 +267,7 @@ Note that authorization information transmitted
 ``in the clear'' through a network file system or
 using \fIftp\fP or \fIrcp\fP can be ``stolen''
 by a network eavesdropper, and as such may enable unauthorized access.
-In many environments this level of security is not a concern, but if it is,
+In many environments, this level of security is not a concern, but if it is,
 you need to know the exact semantics of the particular authorization
 data to know if this is actually a problem.
 .PP
@@ -267,7 +295,7 @@ offset may be specified in the following ways:
 .TP 8
 .I +XOFF
 The left edge of the window is to be placed \fIXOFF\fP pixels in from the
-left edge of the screen (i.e. the X coordinate of the window's origin will be 
+left edge of the screen (i.e., the X coordinate of the window's origin will be 
 \fIXOFF\fP).  \fIXOFF\fP may be negative, in which case the window's left edge 
 will be off the screen.
 .TP 8
@@ -280,7 +308,7 @@ The Y offset has similar meanings:
 .TP 8
 .I +YOFF
 The top edge of the window is to be \fIYOFF\fP pixels below the
-top edge of the screen (i.e. the Y coordinate of the window's origin will be
+top edge of the screen (i.e., the Y coordinate of the window's origin will be
 \fIYOFF\fP).  \fIYOFF\fP may be negative, in which case the window's top edge 
 will be off the screen.
 .TP 8
@@ -305,9 +333,9 @@ lower right hand corner.
 .I +0-0
 lower left hand corner.
 .PP
-In the following examples, a terminal emulator will be placed in roughly
+In the following examples, a terminal emulator is placed in roughly
 the center of the screen and
-a load average monitor, mailbox, and clock will be placed in the upper right 
+a load average monitor, mailbox, and clock are placed in the upper right 
 hand corner:
 .sp
 .nf
@@ -325,12 +353,12 @@ to explicitly draw the window's region on the screen with the pointer, for
 example).
 .PP
 Since window managers are regular (albeit complex) client programs,
-a variety of different user interfaces can be built.  The MIT distribution
+a variety of different user interfaces can be built.  The X Consortium distribution
 comes with a window manager named \fItwm\fP which supports overlapping windows,
 popup menus, point-and-click or click-to-type input models, title bars, nice
 icons (and an icon manager for those who don't like separate icon windows).
 .PP
-See the user-contributed software in the MIT distribution for other
+See the user-contributed software in the X Consortium distribution for other
 popular window managers.
 .SH "FONT NAMES"
 Collections of characters for displaying text and symbols in X are known as
@@ -836,7 +864,8 @@ in RESOURCE_MANAGER or SCREEN_RESOURCES, as appropriate.
 .TP 8
 .B "application-specific files"
 Directories named by the environment variable XUSERFILESEARCHPATH
-or the environment variable XAPPLRESDIR, plus directories in a
+or the environment variable XAPPLRESDIR (which names a single
+directory and should end with a '/' on POSIX systems), plus directories in a
 standard place (usually under <XRoot>/lib/X11/,
 but this can be overridden with the XFILESEARCHPATH environment variable)
 are searched for for application-specific resources.
@@ -1006,19 +1035,16 @@ XConsortium(1),
 XStandards(1),
 Xsecurity(1),
 .\" clients, utilities, and demos
-appres(1), auto_box(1), bdftopcf(1), beach_ball(1), bitmap(1), editres(1),
-xfs(1), fsinfo(1), fslsfonts(1), fstobdf(1),
-ico(1), imake(1), listres(1), lndir(1), makedepend(1), maze(1),
-mkdirhier(1), mkfontdir(1), oclock(1), plbpex(1), puzzle(1), resize(1),
-showfont(1), showrgb(1), twm(1), viewres(1), x11perf(1), x11perfcomp(1),
-xauth(1), xbiff(1), xcalc(1), xclipboard(1), xclock(1),
-xcmsdb(1), xcmstest(1), xconsole(1), xcutsel(1),
-xditview(1), xdm(1), xdpr(1), xdpyinfo(1), xedit(1), xev(1), xeyes(1), xfd(1),
-xfontsel(1), xgas(1), xgc(1), xhost(1), xinit(1), xkill(1), xload(1),
-xlogo(1), xlsatoms(1), xlsclients(1), xlsfonts(1), xmag(1),
-xman(1), xmessage(1), xmh(1), xmkmf(1), xmodmap(1), xon(1),
-xpr(1), xprop(1), xrdb(1), xrefresh(1),
-xset(1), xsetroot(1), xstdcmap(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
+
+appres(1), bdftopcf(1), bitmap(1), editres(1), fsinfo(1),
+fslsfonts(1), fstobdf(1), iceauth(1), imake(1), makedepend(1),
+mkfontdir(1), oclock(1), rgb(1), resize(1), rstart(1), twm(1),
+x11perf(1), x11perfcomp(1), xauth(1), xclipboard(1), xclock(1),
+xcmsdb(1), xconsole(1), xdm(1), xdpyinfo(1), xfd(1), xfs(1), xhost(1),
+xieperf(1), xinit(1), xkbcomp(1), xkill(1), xlogo(1), xlsatoms(1),
+xlsclients(1), xlsfonts(1), xmag(1), xmh(1), xmodmap(1), xon(1),
+xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1),
+xstdcmap(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
 .\" servers
 Xserver(1), Xdec(1), XmacII(1), Xsun(1), Xnest(1), Xvfb(1),
 XF86_Acc(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1),
@@ -1027,36 +1053,16 @@ kbd_mode(1),
 .I "Xlib \- C Language X Interface\fR,\fP"
 and
 .I "X Toolkit Intrinsics \- C Language Interface"
-.SH COPYRIGHT
-.PP
-The following copyright and permission notice outlines the rights and
-restrictions covering most parts of the core distribution of the X Window
-System from MIT.  Other parts have additional or different copyrights
-and permissions; see the individual source files.
-.sp
-Copyright 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991 by the Massachusetts 
-Institute of Technology.
-.sp
-Permission to use, copy, modify, distribute, and sell this
-software and its documentation for any purpose is hereby granted without fee,
-provided that the above copyright
-notice appear in all copies and that both that copyright
-notice and this permission notice appear in supporting
-documentation, and that the name of MIT not be used in
-advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.
-MIT makes no representations about the suitability of
-this software for any purpose.  It is provided "as is"
-without express or implied warranty.
 .SH TRADEMARKS
 .PP
-X Window System is a trademark of MIT.
+X Window System is a trademark of X Consortium, Inc.
+Fresco is a registered trademark of X Consortium, Inc.
 .SH AUTHORS
 .PP
-A cast of thousands, literally.  The MIT Release 6 distribution is brought to
-you by X Consortium, Inc.  The names of all people who made it a reality
-will be found in the individual documents and source files.
-The staff members at the X Consortium responsible for this release are:
-Matt Landau, Donna Converse, Gary Cutbill, Stephen Gildea, Jay Hersh,
-Kaleb Keithley, Ralph Mor, Janet O'Halloran, Bob Scheifler Ralph Swick,
-Dave Wiggins.
+A cast of thousands, literally.  The X Consortium Release 6
+distribution is brought to you by X Consortium, Inc.  The names of all
+people who made it a reality will be found in the individual documents
+and source files.  The staff members at the X Consortium responsible
+for this release are: Matt Landau, Donna Converse, Gary Cutbill,
+Stephen Gildea, Jay Hersh, Kaleb Keithley, Ralph Mor, Janet
+O'Halloran, Bob Scheifler, Ralph Swick, and Dave Wiggins.
