@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.106 91/07/07 14:24:41 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.107 91/07/10 09:51:13 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -181,9 +181,6 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	Fd_set rmaskfd, wmaskfd, emaskfd;
 	static Fd_set zero_fd = { 0 };
 	int nfound, i, d;
-#ifdef DEBUG_SELECT
-	int loop_count = -1;
-#endif
 	
  	if (block) {
 		(void) gettimeofday (&cur_time, NULL);
@@ -203,9 +200,6 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 
       WaitLoop:
 	while (1) {
-#ifdef DEBUG_SELECT
-	        loop_count++;
-#endif
 		if (app->timerQueue != NULL && !ignoreTimers && block) {
 		    if(IS_AFTER(cur_time, app->timerQueue->te_timer_value)) {
 			TIMEDELTA (wait_time, app->timerQueue->te_timer_value, 
@@ -258,24 +252,22 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 				}
 			    }
 			} else {
-			    char Errno[100];
+			    char Errno[12];
 			    String param = Errno;
 			    Cardinal param_count = 1;
+
+			    if (!ignoreEvents) {
+				/* get Xlib to detect a bad connection */
+				for (d = 0; d < app->count; d++) {
+				    if (XEventsQueued(app->list[d],
+						      QueuedAfterReading))
+					return d;
+				}
+			    }
 			    sprintf( Errno, "%d", errno);
 			    XtAppWarningMsg(app, "communicationError","select",
 			       XtCXtToolkitError,"Select failed; error code %s",
 			       &param, &param_count);
-#ifdef DEBUG_SELECT
-			    if (errno == EINVAL && wait_time_ptr != NULL) {
-				char msg[1000];
-				sprintf( msg, "howlong = %#x, wait_time = {%d, %d}, loop_count = %d",
-					 howlong ? *howlong : 0,
-					 wait_time_ptr->tv_sec,
-					 wait_time_ptr->tv_usec,
-					 loop_count );
-				XtAppWarning( app, msg );
-			    }
-#endif /*DEBUG_SELECT*/
 			    continue;
 			}
 		} /* timed out or input available */
