@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.8 89/09/09 19:03:54 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.9 89/09/09 19:09:11 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -37,15 +37,34 @@ miZeroArcSetup(arc, info)
     int startAngle, endAngle;
     int i, overlap;
 
-    info->alpha = (arc->width * arc->width) << 2;
-    info->beta = (arc->height * arc->height) << 2;
     l = arc->width & 1;
-    info->k1 = -(info->beta << 1);
-    info->k3 = info->k1 - (info->alpha << 1);
-    info->b = info->beta * (3 - l);
-    info->a = (info->alpha * arc->height) - info->b;
-    info->d = info->b - (info->a >> 1) - ((info->beta >> 2) * (2 + l)) +
-	     (info->alpha >> 2);
+    if (arc->width == arc->height)
+    {
+	info->alpha = 4;
+	info->beta = 4;
+	info->k1 = -8;
+	info->k3 = -16;
+	info->b = 12;
+	info->a = (arc->width << 2) - 12;
+	info->d = 17 - (arc->width << 1);
+	if (l)
+	{
+	    info->b -= 4;
+	    info->a += 4;
+	    info->d -= 7;
+	}
+    }
+    else
+    {
+	info->alpha = (arc->width * arc->width) << 2;
+	info->beta = (arc->height * arc->height) << 2;
+	info->k1 = -(info->beta << 1);
+	info->k3 = info->k1 - (info->alpha << 1);
+	info->b = info->beta * (3 - l);
+	info->a = (info->alpha * arc->height) - info->b;
+	info->d = info->b - (info->a >> 1) - ((info->beta >> 2) * (2 + l)) +
+		 (info->alpha >> 2);
+    }
     info->x = 1;
     info->y = 0;
     info->dx1 = 1;
