@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.111 88/09/06 15:41:05 jim Exp $ */
+/* $XConsortium: gc.c,v 1.112 89/03/11 16:48:39 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -726,8 +726,7 @@ FreeGC(pGC, gid)
 	pQ = pQnext;
     }
     while(pQ != pQInit);
-    if (pGC->dash)
-	xfree(pGC->dash);
+    xfree(pGC->dash);
     xfree(pGC);
     return(Success);
 }
