@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.24 89/07/10 17:38:15 kit Exp $
+* $XConsortium: Text.h,v 1.25 89/07/18 15:35:34 kit Exp $
 */
 
 
@@ -192,6 +192,12 @@ typedef struct _XawTextSink XtTextSinkRec, *XtTextSink;
 #endif /* XAW_BC */
 
 extern void XawTextDisplay(); /* w */
+    /* Widget w; */
+
+extern void XawTextEnableRedisplay(); /* w */
+    /* Widget w; */
+
+extern void XawTextDisableRedisplay(); /* w */
     /* Widget w; */
 
 extern void XawTextSetSelectionArray(); /* w, sarray */
