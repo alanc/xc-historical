@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.49 90/03/01 19:17:39 jim Exp $
+ * $XConsortium: viewres.c,v 1.50 90/03/06 18:55:42 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -181,7 +181,7 @@ static struct _nametable {
     { "toggle", BOOL_TOGGLE },
 };
 
-static Widget treeWidget, portholeWidget, pannerWidget;
+static Widget treeWidget;
 static Widget quitButton, viewButton, viewMenu, selectButton, selectMenu;
 static Widget view_widgets[VIEW_number];
 static Widget select_widgets[SELECT_number];
@@ -681,50 +681,162 @@ static void toggle_callback (gw, closure, data)
     update_selection_items ();
 }
 
-/* ARGSUSED */
-static void panner_porthole_callback (gw, closure, data)
-    Widget gw;				/* either porthole or panner */
-    caddr_t closure;			/* unused */
+
+/*
+ * panner/porthole controls - called when the other changes
+ */
+static void panner_callback (gw, closure, data)
+    Widget gw;				/* panner widget */
+    caddr_t closure;			/* porthole widget */
     caddr_t data;			/* report */
 {
-    XawPannerReport *rep;
-    Arg args[6];
-    Cardinal n;
-    Widget target = NULL;
+    Widget porthole = (Widget) closure;
+    XawPannerReport *rep = (XawPannerReport *) data;
+    Arg args[2];
 
-    rep = (XawPannerReport *) data;
-    n = TWO;
+    if (!treeWidget) return;
 
-    if (gw == pannerWidget) {
-	target = treeWidget;
-
-	XtSetArg (args[0], XtNx, -rep->slider_x);
-	XtSetArg (args[1], XtNy, -rep->slider_y);
-    } else if (gw == portholeWidget) {
-	target = pannerWidget;
-
-	XtSetArg (args[0], XtNsliderX, rep->slider_x);
-	XtSetArg (args[1], XtNsliderY, rep->slider_y);
-	if (rep->changed != (XawPRSliderX | XawPRSliderY)) {
-	    XtSetArg (args[2], XtNsliderWidth, rep->slider_width);
-	    XtSetArg (args[3], XtNsliderHeight, rep->slider_height);
-	    XtSetArg (args[4], XtNcanvasWidth, rep->canvas_width);
-	    XtSetArg (args[5], XtNcanvasHeight, rep->canvas_height);
-	    n = SIX;
-	}
-    }
-
-    if (!target) return;
-    XtSetValues (target, args, n);
-    return;
+    XtSetArg (args[0], XtNx, -rep->slider_x);
+    XtSetArg (args[1], XtNy, -rep->slider_y);
+    XtSetValues (treeWidget, args, TWO);
 }
 
+static void porthole_callback (gw, closure, data)
+    Widget gw;				/* porthole widget */
+    caddr_t closure;			/* panner widget */
+    caddr_t data;			/* report */
+{
+    Widget panner = (Widget) closure;
+    XawPannerReport *rep = (XawPannerReport *) data;
+    Arg args[6];
+    Cardinal n = TWO;
+
+    XtSetArg (args[0], XtNsliderX, rep->slider_x);
+    XtSetArg (args[1], XtNsliderY, rep->slider_y);
+    if (rep->changed != (XawPRSliderX | XawPRSliderY)) {
+	XtSetArg (args[2], XtNsliderWidth, rep->slider_width);
+	XtSetArg (args[3], XtNsliderHeight, rep->slider_height);
+	XtSetArg (args[4], XtNcanvasWidth, rep->canvas_width);
+	XtSetArg (args[5], XtNcanvasHeight, rep->canvas_height);
+	n = SIX;
+    }
+    XtSetValues (panner, args, n);
+}
+
+
+
+static void build_tree (node, tree, super)
+    XmuWidgetNode *node;
+    Widget tree;
+    Widget super;
+{
+    ViewresData *d = VData (node);
+    Widget box, w;			/* widget for this Class */
+    XmuWidgetNode *child;			/* iterator over children */
+    Arg args[3];			/* need to set super node */
+    Cardinal n;				/* count of args */
+    static XtCallbackRec callback_rec[2] = {{ toggle_callback, NULL },
+					     { NULL, NULL }};
+
+
+    n = 0;
+    XtSetArg (args[n], XtNtreeParent, super); n++;
+    box = XtCreateManagedWidget (node->label, boxWidgetClass, tree, args, n);
+
+    n = 0;
+    XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
+				  node->label : XmuWnClassname(node))); n++;
+    XtSetArg (args[n], XtNcallback, callback_rec); n++;
+
+    callback_rec[0].closure = (caddr_t) node;
+    w = XtCreateManagedWidget (node->label, toggleWidgetClass, box, args, n);
+    d->instance = w;
+
+    /*
+     * recursively build the rest of the tree
+     */
+    for (child = node->children; child; child = child->siblings) {
+	build_tree (child, tree, box);
+    }
+}
+
+
+static void set_node_labels (node, depth)
+    XmuWidgetNode *node;
+    int depth;
+{
+    Arg args[1];
+    XmuWidgetNode *child;
+    ViewresData *d = VData(node);
+
+    if (!node) return;
+    XtSetArg (args[0], XtNlabel, (Appresources.show_variable ?
+				  node->label : XmuWnClassname(node)));
+    XtSetValues (d->instance, args, ONE);
+
+    for (child = node->children; child; child = child->siblings) {
+	set_node_labels (child, depth + 1);
+    }
+}
+
+
+static void oneof_sensitive (choosea, a, b)
+    Boolean choosea;
+    Widget a, b;
+{
+    static Arg args[1] = { XtNsensitive, (XtArgVal) NULL };
+
+    args[0].value = (XtArgVal) TRUE;
+    XtSetValues (choosea ? a : b, args, ONE);
+    args[0].value = (XtArgVal) FALSE;
+    XtSetValues (choosea ? b : a, args, ONE);
+}
+
+static void set_labeltype_menu (isvar, doall)
+    Boolean isvar;
+    Boolean doall;
+{
+    Appresources.show_variable = isvar;
+    oneof_sensitive (isvar, view_widgets[VIEW_CLASSES],
+		     view_widgets[VIEW_VARIABLES]);
+
+    if (doall) {
+	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+	set_node_labels (topnode, 0);
+	XawTreeForceLayout (treeWidget);
+	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+    }
+}
+
+static void set_orientation_menu (horiz, dosetvalues)
+    Boolean horiz, dosetvalues;
+{
+    oneof_sensitive (horiz, view_widgets[VIEW_VERTICAL],
+		     view_widgets[VIEW_HORIZONTAL]);
+
+    if (dosetvalues) {
+	Arg args[1];
+
+	XtSetArg (args[0], XtNorientation,
+		  horiz ? XtorientHorizontal : XtorientVertical);
+	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+ 	XtSetValues (treeWidget, args, ONE);
+	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+    }
+}
+
+
+/*****************************************************************************
+ *                                                                           *
+ *		     viewres - visual class browser for Xt                   *
+ *                                                                           *
+ *****************************************************************************/
 
 main (argc, argv)
     int argc;
     char **argv;
 {
-    Widget toplevel, pane, box, dummy;
+    Widget toplevel, pane, box, dummy, porthole, panner;
     XtAppContext app_con;
     Arg args[5];
     Dimension width, height;
@@ -734,6 +846,10 @@ main (argc, argv)
 
     ProgramName = argv[0];
 
+    /*
+     * set mappedWhenManaged FALSE so that we can play games later letting
+     * the window grow to fit the panner
+     */
     XtSetArg (args[0], XtNmappedWhenManaged, FALSE);
     toplevel = XtAppInitialize (&app_con, "Viewres", 
 				Options, XtNumber (Options),
@@ -755,11 +871,6 @@ main (argc, argv)
      */
     XtSetArg (args[0], XtNwidth, 1);
     XtSetArg (args[1], XtNheight, 1);
-    /*
-     * whack a text first so that asciiSrc gets its converters installed
-     */
-    dummy = XtCreateWidget ("dummy", textWidgetClass, toplevel, args, TWO);
-    XtDestroyWidget (dummy);
     dummy = XtCreateWidget ("dummy", widgetClass, toplevel, args, TWO);
     for (i = 0; i < nwidgets; i++) {
 	XmuWidgetNode *node = &widget_list[i];
@@ -836,21 +947,34 @@ main (argc, argv)
     MAKE_SELECT (SELECT_SHOWN_RESOURCES, "selectShownResources");
 #undef MAKE_SELECT
 
+    /*
+     * create the panner and the porthole and then connect them with the
+     * callbacks (passing the other widget each callback)
+     */
+    XtSetArg (args[0], XtNallowResize, TRUE);
+    XtSetArg (args[1], XtNresize, TRUE);
+    panner = XtCreateManagedWidget ("panner", pannerWidgetClass, box,
+				    args, TWO);
+
+    XtSetArg (args[0], XtNbackgroundPixmap, None);  /* faster updates */
+    porthole = XtCreateManagedWidget ("porthole", portholeWidgetClass,
+				      pane, args, ONE);
+
     XtSetArg (args[0], XtNreportCallback, callback_rec);
-    callback_rec[0].callback = (XtCallbackProc) panner_porthole_callback;
-    callback_rec[0].closure = (caddr_t) NULL;
-    XtSetArg (args[1], XtNallowResize, TRUE);
-    XtSetArg (args[2], XtNresize, TRUE);
-    pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, box,
-					  args, THREE);
+    callback_rec[0].callback = (XtCallbackProc) panner_callback;
+    callback_rec[0].closure = (XtPointer) porthole;
+    XtSetValues (panner, args, ONE);
 
-    /* use same callback arg[0] */
-    XtSetArg (args[1], XtNbackgroundPixmap, None);  /* faster updates */
-    portholeWidget = XtCreateManagedWidget ("porthole", portholeWidgetClass,
-					    pane, args, TWO);
+    callback_rec[0].callback = (XtCallbackProc) porthole_callback;
+    callback_rec[0].closure = (XtPointer) panner;
+    XtSetValues (porthole, args, ONE);
 
+    /*
+     * now that the panner and porthole are set up, insert the tree and 
+     * fix up the menu, fill in the nodes
+     */
     treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass,
-					portholeWidget, (ArgList) NULL, ZERO);
+					porthole, (ArgList) NULL, ZERO);
 
     set_labeltype_menu (Appresources.show_variable, FALSE);
     XtSetArg (args[0], XtNorientation, &orient);
@@ -859,6 +983,11 @@ main (argc, argv)
     update_selection_items ();
     build_tree (topnode, treeWidget, (Widget) NULL);
 
+    /*
+     * Realize the tree, but do not map it (we set mappedWhenManaged to 
+     * false up above).  Get the initial size of the tree so that we can
+     * size the panner appropriately.
+     */
     XtRealizeWidget (toplevel);
     XtSetArg (args[0], XtNwidth, &width);
     XtSetArg (args[1], XtNheight, &height);
@@ -867,16 +996,26 @@ main (argc, argv)
     XtSetArg (args[1], XtNcanvasHeight, height);
     XtSetArg (args[2], XtNsliderWidth, width);
     XtSetArg (args[3], XtNsliderHeight, height);
-    XtSetValues (pannerWidget, args, FOUR);
+    XtSetValues (panner, args, FOUR);
 
+    /*
+     * make sure that the panner doesn't try to grow when the porthole 
+     * changes size
+     */
     XtSetArg (args[0], XtNresize, FALSE);
-    XtSetValues (pannerWidget, args, ONE);
+    XtSetValues (panner, args, ONE);
 
     XtMapWidget (toplevel);
     XtAppMainLoop (app_con);
 }
 
 
+
+/*****************************************************************************
+ *                                                                           *
+ *		   viewres translation table action routines                 *
+ *                                                                           *
+ *****************************************************************************/
 
 /* ARGSUSED */
 static void ActionQuit (w, event, params, num_params)
@@ -887,7 +1026,6 @@ static void ActionQuit (w, event, params, num_params)
 {
     exit (0);
 }
-
 
 /* ARGSUSED */
 static void ActionSetLableType (w, event, params, num_params)
@@ -1031,106 +1169,4 @@ static void ActionResources (w, event, params, num_params)
 		       show_resources_callback);
     }
 }
-
-
-static void build_tree (node, tree, super)
-    XmuWidgetNode *node;
-    Widget tree;
-    Widget super;
-{
-    ViewresData *d = VData (node);
-    Widget box, w;			/* widget for this Class */
-    XmuWidgetNode *child;			/* iterator over children */
-    Arg args[3];			/* need to set super node */
-    Cardinal n;				/* count of args */
-    static XtCallbackRec callback_rec[2] = {{ toggle_callback, NULL },
-					     { NULL, NULL }};
-
-
-    n = 0;
-    XtSetArg (args[n], XtNtreeParent, super); n++;
-    box = XtCreateManagedWidget (node->label, boxWidgetClass, tree, args, n);
-
-    n = 0;
-    XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
-				  node->label : XmuWnClassname(node))); n++;
-    XtSetArg (args[n], XtNcallback, callback_rec); n++;
-
-    callback_rec[0].closure = (caddr_t) node;
-    w = XtCreateManagedWidget (node->label, toggleWidgetClass, box, args, n);
-    d->instance = w;
-
-    /*
-     * recursively build the rest of the tree
-     */
-    for (child = node->children; child; child = child->siblings) {
-	build_tree (child, tree, box);
-    }
-}
-
-
-static void set_node_labels (node, depth)
-    XmuWidgetNode *node;
-    int depth;
-{
-    Arg args[1];
-    XmuWidgetNode *child;
-    ViewresData *d = VData(node);
-
-    if (!node) return;
-    XtSetArg (args[0], XtNlabel, (Appresources.show_variable ?
-				  node->label : XmuWnClassname(node)));
-    XtSetValues (d->instance, args, ONE);
-
-    for (child = node->children; child; child = child->siblings) {
-	set_node_labels (child, depth + 1);
-    }
-}
-
-
-static void oneof_sensitive (choosea, a, b)
-    Boolean choosea;
-    Widget a, b;
-{
-    static Arg args[1] = { XtNsensitive, (XtArgVal) NULL };
-
-    args[0].value = (XtArgVal) TRUE;
-    XtSetValues (choosea ? a : b, args, ONE);
-    args[0].value = (XtArgVal) FALSE;
-    XtSetValues (choosea ? b : a, args, ONE);
-}
-
-static void set_labeltype_menu (isvar, doall)
-    Boolean isvar;
-    Boolean doall;
-{
-    Appresources.show_variable = isvar;
-    oneof_sensitive (isvar, view_widgets[VIEW_CLASSES],
-		     view_widgets[VIEW_VARIABLES]);
-
-    if (doall) {
-	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
-	set_node_labels (topnode, 0);
-	XawTreeForceLayout (treeWidget);
-	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
-    }
-}
-
-static void set_orientation_menu (horiz, dosetvalues)
-    Boolean horiz, dosetvalues;
-{
-    oneof_sensitive (horiz, view_widgets[VIEW_VERTICAL],
-			 view_widgets[VIEW_HORIZONTAL]);
-
-    if (dosetvalues) {
-	Arg args[1];
-
-	XtSetArg (args[0], XtNorientation,
-		  horiz ? XtorientHorizontal : XtorientVertical);
-	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
- 	XtSetValues (treeWidget, args, ONE);
-	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
-    }
-}
-
 
