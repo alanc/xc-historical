@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.9 90/05/18 13:48:10 rws Exp $ */
+/* $XConsortium: devices.c,v 5.10 90/05/18 15:17:00 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -169,6 +169,7 @@ CloseDevice(dev)
 
     if (dev->inited)
 	(void)(*dev->deviceProc)(dev, DEVICE_CLOSE);
+    xfree(dev->name);
     if (dev->key)
     {
 	xfree(dev->key->curKeySyms.map);
