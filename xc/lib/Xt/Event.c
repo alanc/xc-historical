@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.140 93/07/21 11:48:42 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.141 93/08/09 17:12:31 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -34,6 +34,14 @@ SOFTWARE.
 #define Const /**/
 #endif
 
+typedef struct _XtEventRecExt {
+    int type;
+    XtPointer select_data[1]; /* actual dimension is [mask] */
+} XtEventRecExt;
+
+#define EXT_TYPE(p) (((XtEventRecExt*) ((p)+1))->type)
+#define EXT_SELECT_DATA(p,n) (((XtEventRecExt*) ((p)+1))->select_data[n])
+
 #define NonMaskableMask ((EventMask)0x80000000L)
 
 /*
@@ -60,7 +68,18 @@ EventMask XtBuildEventMask(widget)
     EventMask	mask = 0L;
 
     for (ev = widget->core.event_table; ev != NULL; ev = ev->next)
-	if (ev->select) mask |= ev->mask;
+	if (ev->select) {
+	    if (!ev->has_type_specifier)
+		mask |= ev->mask;
+	    else {
+		if (EXT_TYPE(ev) < LASTEvent) {
+		    int i;
+		    for (i = 0; i < ev->mask; i++)
+			if (EXT_SELECT_DATA(ev, i))
+			    mask |= *(EventMask*)EXT_SELECT_DATA(ev, i);
+		}
+	    }
+	}
     if (widget->core.widget_class->core_class.expose != NULL)
 	mask |= ExposureMask;
     if (widget->core.widget_class->core_class.visible_interest) 
@@ -71,30 +90,85 @@ EventMask XtBuildEventMask(widget)
     return mask & ~NonMaskableMask;
 }
 
+static void CallExtensionSelector(widget, rec, forceCall)
+    Widget widget;
+    ExtSelectRec* rec;
+    Boolean forceCall;
+{
+    XtEventRec* p;
+    XtPointer* data;
+    int* types;
+    int i, count = 0;
+
+    for (p = widget->core.event_table; p != NULL; p = p->next)
+	if (EXT_TYPE(p) >= rec->min && EXT_TYPE(p) <= rec->max)
+	    count += p->mask;
+
+    if (count == 0 && !forceCall) return;
+
+    data = (XtPointer *) ALLOCATE_LOCAL(count * sizeof (XtPointer));
+    types = (int *) ALLOCATE_LOCAL(count * sizeof (int));
+    count = 0;
+
+    for (p = widget->core.event_table; p != NULL; p = p->next)
+	if (EXT_TYPE(p) >= rec->min && EXT_TYPE(p) <= rec->max)
+	    for (i =0; i < p->mask; i++) {
+		types[count] = EXT_TYPE(p);
+		data[count++] = EXT_SELECT_DATA(p, i);
+	    }
+
+    (*rec->proc)(widget, types, data, count, rec->client_data);
+    DEALLOCATE_LOCAL((char*) data);
+    DEALLOCATE_LOCAL((char*) types);
+}
+
 static void
-RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
-Widget	        widget;
-EventMask       eventMask;
-Boolean	        other;
-XtEventHandler  proc;
-XtPointer	closure;
-Boolean	        raw;
+RemoveEventHandler(widget, select_data, type, has_type_specifier, other, 
+		   proc, closure, raw)
+    Widget widget;
+    XtPointer select_data;
+    int type;
+    Boolean has_type_specifier, other;
+    XtEventHandler proc;
+    XtPointer closure;
+    Boolean raw;
 {
     XtEventRec *p, **pp;
-    EventMask oldMask = XtBuildEventMask(widget);
+    EventMask eventMask, oldMask = XtBuildEventMask(widget);
 
     if (raw) raw = 1;
     pp = &widget->core.event_table;
     while ((p = *pp) &&
-	   (p->proc != proc || p->closure != closure || p->select == raw))
+	   (p->proc != proc || p->closure != closure || p->select == raw ||
+	    has_type_specifier != p->has_type_specifier ||
+	    (has_type_specifier && EXT_TYPE(p) != type)))
 	pp = &p->next;
     if (!p) return;
 
     /* un-register it */
-    eventMask &= ~NonMaskableMask;
-    if (other)
-	eventMask |= NonMaskableMask;
-    p->mask &= ~eventMask;
+    if (!has_type_specifier) {
+	eventMask = *(EventMask*)select_data;
+	eventMask &= ~NonMaskableMask;
+	if (other)
+	    eventMask |= NonMaskableMask;
+	p->mask &= ~eventMask;
+    } else {
+	int i;
+	/* p->mask specifies count of EXT_SELECT_DATA(p,i)
+	 * search through the list of selection data, if not found
+	 * dont remove this handler
+	 */
+	for (i = 0; i < p->mask && select_data != EXT_SELECT_DATA(p,i);) i++;
+	if (i == p->mask) return;
+	if (p->mask == 1) p->mask = 0;
+	else {
+	    p->mask--;
+	    while (i < p->mask) {
+		EXT_SELECT_DATA(p,i) = EXT_SELECT_DATA(p, i+1);
+		i++;
+	    }
+	}
+    }
 
     if (!p->mask) {        /* delete it entirely */
         *pp = p->next;
@@ -104,9 +178,23 @@ Boolean	        raw;
     /* Reset select mask if realized and not raw. */
     if ( !raw && XtIsRealized(widget) && !widget->core.being_destroyed) {
 	EventMask mask = XtBuildEventMask(widget);
+	Display* dpy = XtDisplay (widget);
 
 	if (oldMask != mask) 
-	    XSelectInput(XtDisplay(widget), XtWindow(widget), mask);
+	    XSelectInput(dpy, XtWindow(widget), mask);
+
+	if (has_type_specifier) {
+	    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+	    int i;
+	    for (i = 0; i < pd->ext_select_count; i++) {
+		if (type >= pd->ext_select_list[i].min &&
+		    type <= pd->ext_select_list[i].max) {
+		    CallExtensionSelector(widget, pd->ext_select_list+i, TRUE);
+		    break;
+		}
+		if (type < pd->ext_select_list[i].min) break;
+	    }
+	}
     }
 }
 
@@ -127,41 +215,56 @@ Boolean	        raw;
  */
 
 static void 
-AddEventHandler(widget, eventMask, other, proc, 
+AddEventHandler(widget, select_data, type, has_type_specifier, other, proc, 
 		closure, position, force_new_position, raw)
-Widget	        widget;
-EventMask       eventMask;
-Boolean         other, force_new_position, raw;
-XtEventHandler  proc;
-XtPointer	closure;
-XtListPosition  position;
+    Widget widget;
+    XtPointer select_data;
+    int type;
+    Boolean         has_type_specifier, other, force_new_position, raw;
+    XtEventHandler  proc;
+    XtPointer	closure;
+    XtListPosition  position;
 {
     register XtEventRec *p, **pp;
-    EventMask oldMask;
-    
-    eventMask &= ~NonMaskableMask;
-    if (other)
-	eventMask |= NonMaskableMask;
-    if (!eventMask) return;
+    EventMask oldMask, eventMask;
+
+    if (!has_type_specifier) {
+	eventMask = *(EventMask*)select_data & ~NonMaskableMask;
+	if (other) eventMask |= NonMaskableMask;
+	if (!eventMask) return;
+    }
     
     if (XtIsRealized(widget) && !raw) oldMask = XtBuildEventMask(widget);
     
     if (raw) raw = 1;
     pp = &widget->core.event_table;
     while ((p = *pp) &&
-	   (p->proc != proc || p->closure != closure || p->select == raw))
+	   (p->proc != proc || p->closure != closure || p->select == raw ||
+	    has_type_specifier != p->has_type_specifier ||
+	    (has_type_specifier && EXT_TYPE(p) != type)))
 	pp = &p->next;
 
     if (!p) {		                /* New proc to add to list */
-	p = XtNew(XtEventRec);
+	if (has_type_specifier) {
+	    p = (XtEventRec*) XtMalloc(sizeof(XtEventRec) + 
+				       sizeof(XtEventRecExt));
+	    EXT_TYPE(p) = type;
+	    EXT_SELECT_DATA(p,0) = select_data;
+	    p->mask = 1;
+	    p->has_type_specifier = True;
+	} else {
+	    p = (XtEventRec*) XtMalloc(sizeof(XtEventRec));
+	    p->mask = eventMask;
+	    p->has_type_specifier = False;
+	}
 	p->proc = proc;
 	p->closure = closure;
-	p->mask = eventMask;
 	p->select = ! raw;
 	
 	if (position == XtListHead) {
 	    p->next = widget->core.event_table;
 	    widget->core.event_table = p;
+	    pp = &widget->core.event_table;
 	} else {
 	    *pp = p;
 	    p->next = NULL;
@@ -185,17 +288,44 @@ XtListPosition  position;
 	    }
 	}
 
-	/* update existing proc */
-	p->mask |= eventMask;
+	if (!has_type_specifier)
+	    p->mask |= eventMask;
+	else {
+	    int i;
+	    /* p->mask specifies count of EXT_SELECT_DATA(p,i) */
+	    for (i = 0; i < p->mask && select_data != EXT_SELECT_DATA(p,i); )
+		i++;
+	    if (i == p->mask) {
+		p = (XtEventRec*) XtRealloc((char*)p,
+					    sizeof(XtEventRec) +
+					    sizeof(XtEventRecExt) +
+					    p->mask * sizeof(XtPointer));
+		EXT_SELECT_DATA(p,i) = select_data;
+		p->mask++;
+		*pp = p;
+	    }
+	}
     }
 
     if (XtIsRealized(widget) && !raw) {
 	EventMask mask = XtBuildEventMask(widget);
+	Display* dpy = XtDisplay (widget);
 
 	if (oldMask != mask) 
-	    XSelectInput(XtDisplay(widget), XtWindow(widget), mask);
-    }
+	    XSelectInput(dpy, XtWindow(widget), mask);
 
+	if (has_type_specifier) {
+	    XtPerDisplay pd = _XtGetPerDisplay (dpy);
+	    int i;
+	    for (i = 0; i < pd->ext_select_count; i++) {
+		if (type >= pd->ext_select_list[i].min &&
+		    type <= pd->ext_select_list[i].max) {
+		    CallExtensionSelector(widget, pd->ext_select_list+i, FALSE);
+		    break;
+		}
+	    }
+	}
+    }
 }
 
 #if NeedFunctionPrototypes
@@ -215,7 +345,8 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 #endif
 {
-    RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE);
+    RemoveEventHandler(widget, (XtPointer) &eventMask, 0, FALSE,
+		       other, proc, closure, FALSE);
 }
 
 #if NeedFunctionPrototypes
@@ -235,7 +366,7 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 #endif
 {
-    AddEventHandler(widget, eventMask, other, 
+    AddEventHandler(widget, (XtPointer) &eventMask, 0, FALSE, other, 
 		    proc, closure, XtListTail, FALSE, FALSE);
 }
 
@@ -258,7 +389,7 @@ void XtInsertEventHandler(widget, eventMask, other, proc, closure, position)
     XtListPosition  position;
 #endif
 {
-    AddEventHandler(widget, eventMask, other, 
+    AddEventHandler(widget, (XtPointer) &eventMask, 0, FALSE, other, 
 		    proc, closure, position, TRUE, FALSE);
 }
 
@@ -279,7 +410,8 @@ void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 #endif
 {
-    RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE);
+    RemoveEventHandler(widget, (XtPointer) &eventMask, 0, FALSE,
+		       other, proc, closure, TRUE);
 }
 
 #if NeedFunctionPrototypes
@@ -301,7 +433,7 @@ void XtInsertRawEventHandler(widget, eventMask, other, proc, closure, position)
     XtListPosition  position;
 #endif
 {
-    AddEventHandler(widget, eventMask, other, 
+    AddEventHandler(widget, (XtPointer) &eventMask, 0, FALSE, other, 
 		    proc, closure, position, TRUE, TRUE);
 }
 
@@ -322,8 +454,50 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 #endif
 {
-    AddEventHandler(widget, eventMask, other, 
+    AddEventHandler(widget, (XtPointer) &eventMask, 0, FALSE, other, 
 		    proc, closure, XtListTail, FALSE, TRUE);
+}
+
+#if NeedFunctionPrototypes
+void XtRemoveEventTypeHandler(
+    Widget	    widget,
+    int		    type,
+    XtPointer	    select_data,
+    XtEventHandler  proc,
+    XtPointer	    closure)
+#else
+void XtRemoveEventTypeHandler(widget, type, select_data, proc, closure)
+    Widget	    widget;
+    int		    type;
+    XtPointer	    select_data;
+    XtEventHandler  proc;
+    XtPointer	    closure;
+#endif
+{
+    RemoveEventHandler(widget, select_data, type, TRUE,
+		       FALSE, proc, closure, FALSE);
+}
+
+#if NeedFunctionPrototypes
+void XtInsertEventTypeHandler(
+    Widget	    widget,
+    int		    type,
+    XtPointer	    select_data,
+    XtEventHandler  proc,
+    XtPointer	    closure,
+    XtListPosition  position)
+#else
+void XtInsertEventTypeHandler(widget, type, select_data, proc, closure, position)
+    Widget	    widget;
+    int		    type;
+    XtPointer	    select_data;
+    XtEventHandler  proc;
+    XtPointer	    closure;
+    XtListPosition  position;
+#endif
+{
+    AddEventHandler(widget, select_data, type, TRUE, FALSE,
+		    proc, closure, position, TRUE, FALSE);
 }
 
 typedef struct _WWPair {
@@ -532,7 +706,8 @@ static Boolean CallEventHandlers(widget, event, mask)
 
     numprocs = 0;
     for (p=widget->core.event_table; p; p = p->next) {
-	if (mask & p->mask)
+	if ((!p->has_type_specifier && (mask & p->mask)) ||
+	    (p->has_type_specifier && event->type == EXT_TYPE(p)))
 	    numprocs++;
     }
     if (numprocs > EHMAXSIZE) {
@@ -545,7 +720,8 @@ static Boolean CallEventHandlers(widget, event, mask)
     }
     numprocs = 0;
     for (p=widget->core.event_table; p; p = p->next) {
-	if (mask & p->mask) {
+	if ((!p->has_type_specifier && (mask & p->mask)) ||
+	    (p->has_type_specifier && event->type == EXT_TYPE(p))) {
 	    proc[numprocs] = p->proc;
 	    closure[numprocs] = p->closure;
 	    numprocs++;
@@ -576,14 +752,10 @@ static Boolean DispatchEvent(event, widget, mask, pd)
     XtPerDisplay pd;
 {
     register XtEventRec *p;   
-    XEvent nextEvent;
     Boolean was_dispatched = XtDidNothing;
     Boolean call_tm = XtDidNothing;
     Boolean cont_to_disp;
 
-    if (XFilterEvent(event, XtWindow(widget)))
-	return XtDidFilter;
-	
     if ( (mask == ExposureMask) ||
 	 ((event->type == NoExpose) && NO_EXPOSE) ||
 	 ((event->type == GraphicsExpose) && GRAPHICS_EXPOSE) ) {
@@ -602,36 +774,6 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 		CompressExposures(event, widget, pd);
 	    }
 	    was_dispatched = XtDidDispatch;
-	}
-    }
-
-    if (mask == EnterWindowMask &&
-	    widget->core.widget_class->core_class.compress_enterleave) {
-	if (XPending(event->xcrossing.display)) {
-	    XPeekEvent(event->xcrossing.display, &nextEvent);
-	    if (nextEvent.type == LeaveNotify &&
-		  event->xcrossing.window == nextEvent.xcrossing.window &&
-		(event->xcrossing.detail != NotifyInferior &&
-		 nextEvent.xcrossing.detail != NotifyInferior ||
-		 event->xcrossing.detail == NotifyInferior &&
-		 nextEvent.xcrossing.detail == NotifyInferior)) {
-		/* skip the enter/leave pair */
-		XNextEvent(event->xcrossing.display, &nextEvent);
-		return XtDidNothing;
-	    }
-	}
-    }
-
-    if (event->type == MotionNotify &&
-	    widget->core.widget_class->core_class.compress_motion) {
-	while (XPending(event->xmotion.display)) {
-	    XPeekEvent(event->xmotion.display, &nextEvent);
-	    if (nextEvent.type == MotionNotify &&
-		    event->xmotion.window == nextEvent.xmotion.window &&
-		    event->xmotion.subwindow == nextEvent.xmotion.subwindow) {
-		/* replace the current event with the next one */
-		XNextEvent(event->xmotion.display, event);
-	    } else break;
 	}
     }
 
@@ -674,7 +816,8 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 	     * call XtRemoveEventHandler, which would break our linked list. */
 
 	    for (; p; p = p->next) {
-		if (mask & p->mask) {
+		if ((!p->has_type_specifier && (mask & p->mask)) ||
+		    (p->has_type_specifier && event->type == EXT_TYPE(p))) {
 		    if (numprocs >= EHSIZE)
 			break;
 		    proc[numprocs] = p->proc;
@@ -692,7 +835,8 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 		}
 		was_dispatched = XtDidDispatch;
 	    }
-	} else if (mask & p->mask) {
+	} else if ((!p->has_type_specifier && (mask & p->mask)) ||
+		   (p->has_type_specifier && event->type == EXT_TYPE(p))) {
 	    (*p->proc)(widget, p->closure, event, &cont_to_disp);
 	    was_dispatched = XtDidDispatch;
 	}
@@ -700,6 +844,22 @@ static Boolean DispatchEvent(event, widget, mask, pd)
     if (call_tm && cont_to_disp)
 	_XtTranslateEvent(widget, event);
     return (was_dispatched|call_tm);
+}
+
+#if NeedFunctionPrototypes
+Boolean XtDispatchEventToWidget(
+    Widget widget,
+    XEvent* event)
+#else
+Boolean XtDispatchEventToWidget(widget, event)
+    Widget widget;
+    XEvent* event;
+#endif
+{
+    return (DispatchEvent(event, widget,
+			  _XtConvertTypeToMask(event->xany.type),
+			  _XtGetPerDisplay(event->xany.display))
+	    ? True : False);
 }
 
 /*
@@ -737,6 +897,7 @@ XtPerDisplay pd;
 {
     CheckExposeInfo info;
     int count;
+    Display* dpy = XtDisplay (widget);
 
     XtAddExposureToRegion(event, pd->region);
 
@@ -744,7 +905,7 @@ XtPerDisplay pd;
 	return;
 
     if ( (COMP_EXPOSE_TYPE == XtExposeCompressSeries) ||
-	 (XEventsQueued(XtDisplay(widget), QueuedAfterReading) == 0) ) {
+	 (XEventsQueued(dpy, QueuedAfterReading) == 0) ) {
 	SendExposureEvent(event, widget, pd);
 	return;
     }
@@ -784,14 +945,14 @@ XtPerDisplay pd;
     while (TRUE) {
 	XEvent event_return;
 
-	if (XCheckIfEvent(XtDisplay(widget), &event_return, 
+	if (XCheckIfEvent(dpy, &event_return, 
 			  CheckExposureEvent, (char *) &info)) {
 
 	    count = GetCount(&event_return);
 	    XtAddExposureToRegion(&event_return, pd->region);
 	}
 	else if (count != 0) {
-	    XIfEvent(XtDisplay(widget), &event_return,
+	    XIfEvent(dpy, &event_return,
 		     CheckExposureEvent, (char *) &info);
 	    count = GetCount(&event_return);
 	    XtAddExposureToRegion(&event_return, pd->region);
@@ -955,6 +1116,48 @@ static Widget LookupSpringLoaded(grabList)
     return NULL;
 }
 
+static Boolean DefaultDispatcher(event, widget, mask, pd)
+    XEvent* event;
+    Widget widget;
+    EventMask mask;
+    XtPerDisplay pd;
+{
+    if (XFilterEvent(event, XtWindow(widget))) return XtDidFilter;
+    if (mask == EnterWindowMask &&
+	    widget->core.widget_class->core_class.compress_enterleave) {
+	if (XPending(event->xcrossing.display)) {
+	    XEvent nextEvent;
+	    XPeekEvent(event->xcrossing.display, &nextEvent);
+	    if (nextEvent.type == LeaveNotify &&
+		    event->xcrossing.window == nextEvent.xcrossing.window &&
+		(event->xcrossing.detail != NotifyInferior &&
+		 nextEvent.xcrossing.detail != NotifyInferior ||
+		 event->xcrossing.detail == NotifyInferior &&
+		 nextEvent.xcrossing.detail == NotifyInferior)) {
+		/* skip the enter/leave pair */
+		XNextEvent(event->xcrossing.display, &nextEvent);
+		return XtDidNothing;
+	    }
+	}
+    }
+
+    if (event->type == MotionNotify &&
+	    widget->core.widget_class->core_class.compress_motion) {
+	while (XPending(event->xmotion.display)) {
+	    XEvent nextEvent;
+	    XPeekEvent(event->xmotion.display, &nextEvent);
+	    if (nextEvent.type == MotionNotify &&
+		    event->xmotion.window == nextEvent.xmotion.window &&
+		    event->xmotion.subwindow == nextEvent.xmotion.subwindow) {
+		/* replace the current event with the next one */
+		XNextEvent(event->xmotion.display, event);
+	    } else break;
+	}
+    }
+
+    return DispatchEvent(event, widget, mask, pd);
+}
+
 typedef enum _GrabType {pass, ignore, remap} GrabType;
 
 static Boolean DecideToDispatch(event)
@@ -969,10 +1172,7 @@ static Boolean DecideToDispatch(event)
     XtPerDisplayInput pdi;
     XtGrabList  grabList;
 
-    widget = XtWindowToWidget (event->xany.display, event->xany.window);
     pd = _XtGetPerDisplay(event->xany.display);
-    pdi = _XtGetPerDisplayInput(event->xany.display);
-    grabList = *_XtGetGrabList(pdi);
     
     mask = _XtConvertTypeToMask(event->xany.type);
 
@@ -1007,24 +1207,35 @@ static Boolean DecideToDispatch(event)
 
     if (time) pd->last_timestamp = time;
 
+    if (pd->dispatcher_list) {
+	XtEventDispatchProc d;
+	if (d = pd->dispatcher_list[event->xany.type & 0x7f])
+	    return (*d)(event);
+    }
+
+    pdi = _XtGetPerDisplayInput(event->xany.display);
+    grabList = *_XtGetGrabList(pdi);
+    mask = _XtConvertTypeToMask(event->xany.type);
+    widget = XtWindowToWidget (event->xany.display, event->xany.window);
+
     if (widget == NULL) {
 	if (grabType != remap)
 	    return XFilterEvent(event, None);
 	/* event occurred in a non-widget window, but we've promised also
 	   to dispatch it to the nearest accessible spring_loaded widget */
 	else if ((widget = LookupSpringLoaded(grabList)) != NULL)
-	    return DispatchEvent(event, widget, mask, pd);
+	    return DefaultDispatcher(event, widget, mask, pd);
 	return XFilterEvent(event, None);
     }
 
     switch(grabType) {
 	case pass:
-	    return DispatchEvent(event, widget, mask, pd);
+	    return DefaultDispatcher(event, widget, mask, pd);
 
 	case ignore:
 	    if ((grabList == NULL || _XtOnGrabList(widget,grabList))
 		&& XtIsSensitive(widget)) {
-		return DispatchEvent(event, widget, mask, pd);
+		return DefaultDispatcher(event, widget, mask, pd);
 	    }
 	    return XtDidNothing;
 
@@ -1040,8 +1251,8 @@ static Boolean DecideToDispatch(event)
 		if ((grabList == NULL || 
 		     _XtOnGrabList(dspWidget, grabList)) &&
 		    XtIsSensitive(dspWidget)) {
-		    was_dispatched = DispatchEvent(event, dspWidget,
-						   mask, pd);
+		    was_dispatched = DefaultDispatcher(event, dspWidget,
+						       mask, pd);
 		    if (was_dispatched & XtDidFilter)
 			return was_dispatched;
 		}
@@ -1052,8 +1263,8 @@ static Boolean DecideToDispatch(event)
 		grabList = *_XtGetGrabList(pdi);
 		widget = LookupSpringLoaded(grabList);
 		if (widget != NULL && widget != dspWidget) {
-		    was_dispatched |= DispatchEvent(event, widget,
-						    mask, pd);
+		    was_dispatched |= DefaultDispatcher(event, widget,
+							mask, pd);
 		}
 		
 		return was_dispatched;
@@ -1280,22 +1491,134 @@ void _XtSendFocusEvent(child, type)
     Widget child;
     int type;
 {
-
     child = XtIsWidget(child) ? child : _XtWindowedAncestor(child);
     if (XtIsSensitive(child) && !child->core.being_destroyed
 	&& XtIsRealized(child)
 	&& (XtBuildEventMask(child) & FocusChangeMask))
     {
 	XFocusChangeEvent event;
+	Display* dpy = XtDisplay (child);
 
 	event.type = type;
-	event.serial = LastKnownRequestProcessed(XtDisplay(child));
+	event.serial = LastKnownRequestProcessed(dpy);
 	event.send_event = True;
-	event.display = XtDisplay(child);
+	event.display = dpy;
 	event.window = XtWindow(child);
 	event.mode = NotifyNormal;
 	event.detail = NotifyAncestor;
-	DispatchEvent((XEvent*)&event, child, _XtConvertTypeToMask(type),
-		      _XtGetPerDisplay(XtDisplay(child)));
+	DefaultDispatcher((XEvent*)&event, child, _XtConvertTypeToMask(type),
+			  _XtGetPerDisplay(dpy));
+    }
+}
+
+static XtEventDispatchProc* NewDispatcherList()
+{
+    XtEventDispatchProc* l =
+	(XtEventDispatchProc*) XtCalloc((Cardinal)0x7f,
+					(Cardinal)sizeof(XtEventDispatchProc));
+    return l;
+}
+
+#if NeedFunctionPrototypes
+XtEventDispatchProc XtSetEventDispatcher(
+    Display		*dpy,
+    int			event_type,
+    XtEventDispatchProc	proc
+    )
+#else
+XtEventDispatchProc XtSetEventDispatcher(dpy, event_type, proc)
+    Display		  *dpy;
+    int			  event_type;
+    XtEventDispatchProc	  proc;
+#endif
+{
+    XtEventDispatchProc *list;
+    XtEventDispatchProc old_proc = NULL;
+    register XtPerDisplay pd;
+
+    if (event_type > 0x7f) return (XtEventDispatchProc) DefaultDispatcher;
+
+    pd = _XtGetPerDisplay(dpy);
+
+    list = pd->dispatcher_list;
+    if (!list) {
+	if (proc) list = pd->dispatcher_list = NewDispatcherList();
+	else return (XtEventDispatchProc) DefaultDispatcher;
+    }
+    old_proc = list[event_type];
+    list[event_type] = proc;
+    return (old_proc == NULL 
+		? (XtEventDispatchProc) DefaultDispatcher 
+		: old_proc);
+}
+
+#if NeedFunctionPrototypes
+void XtRegisterExtensionSelector(
+    Display		*dpy,
+    int			min_event_type,
+    int			max_event_type,
+    XtExtensionSelectProc	proc,
+    XtPointer 		client_data
+    )
+#else
+void XtRegisterExtensionSelector(dpy, min_event_type, max_event_type,
+				 proc, client_data)
+    Display		*dpy;
+    int			min_event_type;
+    int			max_event_type;
+    XtExtensionSelectProc	proc;
+    XtPointer 		client_data;
+#endif
+{
+    ExtSelectRec *e;
+    XtPerDisplay pd;
+    int i;
+
+    if (dpy == NULL) XtErrorMsg("nullDisplay",
+		"xtRegisterExtensionSelector", XtCXtToolkitError,
+		"XtRegisterExtensionSelector requires a non-NULL display",
+		(String *) NULL, (Cardinal *) NULL);
+
+    pd = _XtGetPerDisplay(dpy);
+
+    for (i = 0; i < pd->ext_select_count; i++) {
+	e = &pd->ext_select_list[i];
+	if (e->min == min_event_type && e->max == max_event_type) {
+	    e->proc = proc;
+	    e->client_data = client_data;
+	    return;
+	}
+	if ((min_event_type >= e->min && min_event_type <= e->max) || 
+	    (max_event_type >= e->min && max_event_type <= e->max)) {
+	    XtErrorMsg("rangeError", "xtRegisterExtensionSelector",
+		       XtCXtToolkitError,
+	"Attempt to register multiple selectors for one extension event type",
+		       (String *) NULL, (Cardinal *) NULL);
+	    return;
+	}
+    }
+    pd->ext_select_count++;
+    pd->ext_select_list =
+	    (ExtSelectRec *) XtRealloc((char *) pd->ext_select_list,
+		       pd->ext_select_count * sizeof(ExtSelectRec));
+    for (i = pd->ext_select_count - 1; i > 0; i--) {
+	if (pd->ext_select_list[i-1].min > min_event_type) {
+	    pd->ext_select_list[i] = pd->ext_select_list[i-1];
+	} else break;
+    }
+    pd->ext_select_list[i].min = min_event_type;
+    pd->ext_select_list[i].max = max_event_type;
+    pd->ext_select_list[i].proc = proc;
+    pd->ext_select_list[i].client_data = client_data;
+}
+
+void _XtExtensionSelect(widget)
+    Widget widget;
+{
+    int i;
+    XtPerDisplay pd = _XtGetPerDisplay(XtDisplay(widget));
+    
+    for (i = 0; i < pd->ext_select_count; i++) {
+	CallExtensionSelector(widget, pd->ext_select_list+i, FALSE);
     }
 }

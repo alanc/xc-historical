@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.18 91/01/29 10:56:58 rws Exp $ */
+/* $XConsortium: EventI.h,v 1.19 93/08/09 17:09:58 kaleb Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -47,10 +47,11 @@ extern void _XtEventInitialize(
 
 typedef struct _XtEventRec {
      XtEventTable	next;
-     EventMask		mask;
+     EventMask		mask;	/*  also select_data count for RecExt */
      XtEventHandler	proc;
      XtPointer		closure;
      unsigned int	select:1;
+     unsigned int	has_type_specifier:1;
      unsigned int	async:1; /* not used, here for Digital extension? */
 } XtEventRec;
 

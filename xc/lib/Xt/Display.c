@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.91 93/07/12 15:38:05 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.92 93/07/21 11:47:35 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -144,6 +144,9 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
 						sizeof(XrmDatabase));
     pd->cmd_db = (XrmDatabase)NULL;
     pd->server_db = (XrmDatabase)NULL;
+    pd->dispatcher_list = NULL;
+    pd->ext_select_list = NULL;
+    pd->ext_select_count = 0;
     return pd;
 }
 
@@ -523,6 +526,10 @@ static void CloseDisplay(dpy)
 	    if (xtpd->server_db)
 		XrmDestroyDatabase(xtpd->server_db);
 	    XtFree(xtpd->language);
+	    if (xtpd->dispatcher_list != NULL)
+		XtFree((char *) xtpd->dispatcher_list);
+	    if (xtpd->ext_select_list != NULL)
+		XtFree((char *) xtpd->ext_select_list);
         }
 	XtFree((char*)pd);
 	XrmSetDatabase(dpy, (XrmDatabase)NULL);

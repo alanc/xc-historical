@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.173 93/02/26 16:37:13 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.174 93/08/09 17:14:11 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -212,9 +212,11 @@ static void RealizeWidget(widget)
     XSetWindowAttributes	values;
     XtRealizeProc		realize;
     Window			window;
-    Display*                    display = XtDisplay (widget);
+    Display*                    display;
 
     if (!XtIsWidget(widget) || XtIsRealized(widget)) return;
+
+    display = XtDisplay (widget);
 
     _XtInstallTranslations(widget);
 
@@ -253,9 +255,7 @@ static void RealizeWidget(widget)
 #endif
     _XtRegisterGrabs(widget);
     XtRegisterDrawable (display, window, widget);
-#ifdef notdef
-    _XtRegisterWindow (window, widget);
-#endif
+    _XtExtensionSelect(widget);
 
     if (XtIsComposite (widget)) {
 	register Cardinal		i;

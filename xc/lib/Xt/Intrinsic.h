@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.177 93/07/06 18:35:30 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.178 93/08/09 17:09:12 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -522,6 +522,22 @@ typedef void (*XtCancelConvertSelectionProc)(
 #endif
 );
 
+typedef Boolean (*XtEventDispatchProc)(
+#if NeedFunctionPrototypes
+    XEvent*		/* event */
+#endif
+);
+
+typedef void (*XtExtensionSelectProc)(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    int*		/* event_types */,
+    XtPointer*		/* select_data */,
+    int			/* count */,
+    XtPointer		/* client_data */
+#endif
+);
+
 /***************************************************************
  *
  * Exported Interfaces
@@ -1028,9 +1044,55 @@ extern void XtInsertRawEventHandler(
 #endif
 );
 
+extern XtEventDispatchProc XtSetEventDispatcher(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* event_type */,
+    XtEventDispatchProc	/* proc */
+#endif
+);
+
+extern Boolean XtDispatchEventToWidget(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    XEvent*		/* event */
+#endif
+);
+
+extern void XtInsertEventTypeHandler(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    int			/* type */,
+    XtPointer		/* select_data */,
+    XtEventHandler	/* proc */,
+    XtPointer		/* closure */,
+    XtListPosition	/* position */
+#endif
+);
+
+extern void XtRemoveEventTypeHandler(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    int			/* type */,
+    XtPointer		/* select_data */,
+    XtEventHandler	/* proc */,
+    XtPointer		/* closure */
+#endif
+);
+
 extern EventMask XtBuildEventMask(
 #if NeedFunctionPrototypes
     Widget 		/* widget */
+#endif
+);
+
+extern void XtRegisterExtensionSelector(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* min_event_type */,
+    int			/* max_event_type */,
+    XtExtensionSelectProc /* proc */,
+    XtPointer		/* client_data */
 #endif
 );
 
@@ -1084,6 +1146,12 @@ extern void XtSetKeyboardFocus(
 #if NeedFunctionPrototypes
     Widget		/* subtree */,
     Widget 		/* descendent */
+#endif
+);
+
+extern Widget XtGetKeyboardFocusWidget(
+#if NeedFunctionPrototypes
+    Widget		/* widget */
 #endif
 );
 

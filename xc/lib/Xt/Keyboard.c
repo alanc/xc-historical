@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.27 93/07/14 14:08:04 converse Exp $ */
+/* $XConsortium: Keyboard.c,v 1.28 93/07/14 14:38:07 converse Exp $ */
 
 /********************************************************
 
@@ -158,6 +158,12 @@ static Widget FindFocusWidget(widget, pdi)
       return _FindFocusWidget(widget, pdi->trace, pdi->traceDepth, FALSE, NULL);
 }
 
+Widget XtGetKeyboardFocusWidget(widget)
+    Widget widget;
+{
+    XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(widget));
+    return FindFocusWidget(widget, pdi);
+}
 
 static Boolean IsOutside(e, w) 
     XKeyEvent	*e;
@@ -695,7 +701,8 @@ void XtSetKeyboardFocus(widget, descendant)
     Widget widget;
     Widget descendant;
 {
-    XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(widget));
+    Display* dpy = XtDisplay (widget);
+    XtPerDisplayInput pdi = _XtGetPerDisplayInput(dpy);
     XtPerWidgetInput pwi = _XtGetPerWidgetInput(widget, TRUE);
     Widget oldDesc = pwi->focusKid;
     Widget oldTarget, target;
@@ -715,7 +722,7 @@ void XtSetKeyboardFocus(widget, descendant)
 	
 	if (oldDesc) {
 	    /* invalidate FindKeyDestination's ancestor list */
-	    if (pseudoTraceDepth && pseudoTraceDisplay == XtDisplay(widget) &&
+	    if (pseudoTraceDepth && pseudoTraceDisplay == dpy &&
 		oldTarget == pseudoTrace[0])
 		pseudoTraceDepth = 0;
 

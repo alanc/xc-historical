@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.66 93/07/10 12:19:06 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.67 93/07/21 11:45:58 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -252,6 +252,12 @@ typedef struct _CaseConverterRec {
     CaseConverterPtr	next;		/* next converter record */
 } CaseConverterRec;
 
+typedef struct _ExtensionSelectorRec {
+    XtExtensionSelectProc proc;
+    int min, max;
+    XtPointer client_data;
+} ExtSelectRec;
+
 typedef struct _XtPerDisplayStruct {
     InternalCallbackList destroy_callbacks;
     Region region;
@@ -285,6 +291,9 @@ typedef struct _XtPerDisplayStruct {
     XrmDatabase *per_screen_db;        /* per screen resource databases */
     XrmDatabase cmd_db;		       /* db from command line, if needed */
     XrmDatabase server_db;	       /* resource property else .Xdefaults */
+    XtEventDispatchProc* dispatcher_list;
+    ExtSelectRec* ext_select_list;
+    int ext_select_count;
 } XtPerDisplayStruct, *XtPerDisplay;
 
 typedef struct _PerDisplayTable {
@@ -361,6 +370,12 @@ extern void _XtDoPhase2Destroy(
 extern void _XtDoFreeBindings(
 #if NeedFunctionPrototypes
     XtAppContext /* app */
+#endif
+);
+
+extern void _XtExtensionSelect(
+#if NeedFunctionPrototypes
+    Widget /* widget */
 #endif
 );
 
