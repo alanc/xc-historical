@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.70 88/08/09 17:12:21 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.71 88/08/11 11:20:49 jim Exp $";
 #endif
 
 /*
@@ -257,7 +257,7 @@ _XRead32 (dpy, data, size)
  long maskw, nwords, i, bits;
  extern char packbuffer[];
 
-        _XRead(dpy,packbuffer,size);
+        _XReadPad (dpy, packbuffer, size);
 
         lp = data;
         lpack = (long *) packbuffer;
