@@ -28,10 +28,11 @@ static GC   pgc;
 
 #define DegreesToX(degrees) (degrees * 64)
 
-static void GenerateCircles(xp, p, partialArcs)
+static void GenerateCircles(xp, p, partialArcs, ddashed)
     XParms  xp;
     Parms   p;
     Bool    partialArcs;
+    Bool    ddashed;
 {
     int     i;
     int     rows;       /* Number of rows filled in current column	    */
@@ -41,7 +42,10 @@ static void GenerateCircles(xp, p, partialArcs)
     int     half;
     int     startAngle, arcAngle;
 
-    pgc = xp->fggc;
+    if(ddashed)
+	pgc = xp->ddfggc;
+    else
+	pgc = xp->fggc;
 
     size = p->special;
     half = (size + 19) / 20;
@@ -93,7 +97,7 @@ int InitCircles(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateCircles(xp, p, False);
+    GenerateCircles(xp, p, False, False);
     return reps;
 }
 
@@ -102,7 +106,7 @@ int InitPartCircles(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateCircles(xp, p, True);
+    GenerateCircles(xp, p, True, False);
     return reps;
 }
 
@@ -112,7 +116,7 @@ int InitChordPartCircles(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateCircles(xp, p, True);
+    GenerateCircles(xp, p, True, False);
     XSetArcMode(xp->d, xp->bggc, ArcChord);
     XSetArcMode(xp->d, xp->fggc, ArcChord);
     return reps;
@@ -124,27 +128,36 @@ int InitSlicePartCircles(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateCircles(xp, p, True);
+    GenerateCircles(xp, p, True, False);
     XSetArcMode(xp->d, xp->bggc, ArcPieSlice);
     XSetArcMode(xp->d, xp->fggc, ArcPieSlice);
     return reps;
 }
 
 static void
-GenerateWideCircles (xp, p, partialArcs)
+GenerateWideCircles (xp, p, partialArcs, ddashed)
     XParms  xp;
     Parms   p;
     Bool    partialArcs;
+    Bool    ddashed;
 {
     int	    size;
 
-    GenerateCircles(xp, p, partialArcs);
+    GenerateCircles(xp, p, partialArcs, ddashed);
 
     size = p->special;
-    XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
-	LineSolid, CapRound, JoinRound);
-    XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
-	LineSolid, CapRound, JoinRound);
+    if(ddashed) {
+	XSetLineAttributes(xp->d, xp->ddbggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+	XSetLineAttributes(xp->d, xp->ddfggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+    }
+    else {
+	XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+	XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+    }
 }
 
 int InitWideCircles(xp, p, reps)
@@ -152,7 +165,7 @@ int InitWideCircles(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateWideCircles (xp, p, False);
+    GenerateWideCircles (xp, p, False, False);
     return reps;
 }
  
@@ -161,7 +174,7 @@ int InitPartWideCircles(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateWideCircles (xp, p, True);
+    GenerateWideCircles (xp, p, True, False);
     return reps;
 }
  
@@ -172,7 +185,7 @@ int InitDashedCircles(xp, p, reps)
 {
     char dashes[2];
 
-    (void)InitCircles(xp, p, reps);
+    GenerateCircles(xp, p, False, False);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
@@ -192,7 +205,7 @@ int InitWideDashedCircles(xp, p, reps)
     XGCValues   gcv;
     char	dashes[2];
 
-    (void)InitWideCircles(xp, p, reps);
+    GenerateWideCircles(xp, p, False, False);
     size = p->special;
     size = (size + 9) / 10;
 
@@ -213,14 +226,14 @@ int InitDoubleDashedCircles(xp, p, reps)
 {
     char dashes[2];
 
-    (void)InitCircles(xp, p, reps);
+    GenerateCircles(xp, p, False, True);
 
     /* Modify GCs to draw dashed */
-    XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
-    XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->ddbggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->ddfggc, 0, LineDoubleDash, CapButt, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
-    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
-    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddfggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddbggc, 0, dashes, 2);
     return reps;
 }
 
@@ -233,24 +246,25 @@ int InitWideDoubleDashedCircles(xp, p, reps)
     XGCValues   gcv;
     char	dashes[2];
 
-    (void)InitWideCircles(xp, p, reps);
+    GenerateWideCircles(xp, p, False, True);
     size = p->special;
     size = (size + 9) / 10;
 
     /* Modify GCs to draw dashed */
     dashes[0] = 2*size;   dashes[1] = 2*size;
     gcv.line_style = LineDoubleDash;
-    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
-    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
-    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
-    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    XChangeGC(xp->d, xp->ddfggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->ddbggc, GCLineStyle, &gcv);
+    XSetDashes(xp->d, xp->ddfggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddbggc, 0, dashes, 2);
     return reps;
 }
 
-static void GenerateEllipses(xp, p, partialArcs)
+static void GenerateEllipses(xp, p, partialArcs, ddashed)
     XParms  xp;
     Parms   p;
     int    partialArcs;
+    Bool    ddashed;
 {
     int     size;
     int     half;
@@ -261,7 +275,10 @@ static void GenerateEllipses(xp, p, partialArcs)
     int     dir;
     int     startAngle, arcAngle;
 
-    pgc = xp->fggc;
+    if(ddashed)
+	pgc = xp->ddfggc;
+    else
+	pgc = xp->fggc;
 
     size = p->special;
     half = (size + 19) / 20;
@@ -323,7 +340,7 @@ int InitEllipses(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateEllipses(xp, p, False);
+    GenerateEllipses(xp, p, False, False);
     return reps;
 }
 
@@ -333,7 +350,7 @@ int InitPartEllipses(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateEllipses(xp, p, True);
+    GenerateEllipses(xp, p, True, False);
     return reps;
 }
 
@@ -343,7 +360,7 @@ int InitChordPartEllipses(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateEllipses(xp, p, True);
+    GenerateEllipses(xp, p, True, False);
     XSetArcMode(xp->d, xp->bggc, ArcChord);
     XSetArcMode(xp->d, xp->fggc, ArcChord);
     return reps;
@@ -355,7 +372,7 @@ int InitSlicePartEllipses(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateEllipses(xp, p, True);
+    GenerateEllipses(xp, p, True, False);
     XSetArcMode(xp->d, xp->bggc, ArcPieSlice);
     XSetArcMode(xp->d, xp->fggc, ArcPieSlice);
     return reps;
@@ -363,19 +380,28 @@ int InitSlicePartEllipses(xp, p, reps)
 
 
 static void
-GenerateWideEllipses (xp, p, partialArcs)
+GenerateWideEllipses (xp, p, partialArcs, ddashed)
     XParms  xp;
     Parms   p;
     Bool    partialArcs;
+    Bool    ddashed;
 {
     int size;
 
-    GenerateEllipses (xp, p, partialArcs);
+    GenerateEllipses (xp, p, partialArcs, ddashed);
     size = p->special;
-    XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
-	LineSolid, CapRound, JoinRound);
-    XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
-	LineSolid, CapRound, JoinRound);
+    if(ddashed) {
+	XSetLineAttributes(xp->d, xp->ddbggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+	XSetLineAttributes(xp->d, xp->ddfggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+    }
+    else {
+	XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+	XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+    }
 
 }
 
@@ -384,7 +410,7 @@ int InitWideEllipses(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateWideEllipses(xp, p, False);
+    GenerateWideEllipses(xp, p, False, False);
     return reps;
 }
  
@@ -393,7 +419,7 @@ int InitPartWideEllipses(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    GenerateWideEllipses(xp, p, True);
+    GenerateWideEllipses(xp, p, True, False);
     return reps;
 }
  
@@ -404,7 +430,7 @@ int InitDashedEllipses(xp, p, reps)
 {
     char dashes[2];
 
-    (void)InitEllipses(xp, p, reps);
+    GenerateEllipses(xp, p, False, False);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
@@ -424,7 +450,7 @@ int InitWideDashedEllipses(xp, p, reps)
     XGCValues   gcv;
     char	dashes[2];
 
-    (void)InitWideEllipses(xp, p, reps);
+    GenerateWideEllipses(xp, p, False, False);
     size = p->special;
     size = (size + 9) / 10;
 
@@ -445,14 +471,14 @@ int InitDoubleDashedEllipses(xp, p, reps)
 {
     char dashes[2];
 
-    (void)InitEllipses(xp, p, reps);
+    GenerateEllipses(xp, p, False, True);
 
     /* Modify GCs to draw dashed */
-    XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
-    XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->ddbggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->ddfggc, 0, LineDoubleDash, CapButt, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
-    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
-    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddfggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddbggc, 0, dashes, 2);
     return reps;
 }
 
@@ -465,17 +491,17 @@ int InitWideDoubleDashedEllipses(xp, p, reps)
     XGCValues   gcv;
     char	dashes[2];
 
-    (void)InitWideEllipses(xp, p, reps);
+    GenerateWideEllipses(xp, p, False, True);
     size = p->special;
     size = (size + 9) / 10;
 
     /* Modify GCs to draw dashed */
     dashes[0] = 2*size;   dashes[1] = 2*size;
     gcv.line_style = LineDoubleDash;
-    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
-    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
-    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
-    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    XChangeGC(xp->d, xp->ddfggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->ddbggc, GCLineStyle, &gcv);
+    XSetDashes(xp->d, xp->ddfggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddbggc, 0, dashes, 2);
     return reps;
 }
 
@@ -488,7 +514,11 @@ void DoArcs(xp, p, reps)
 
     for (i = 0; i != reps; i++) {
         XDrawArcs(xp->d, xp->w, pgc, arcs, p->objects);
-        if (pgc == xp->bggc)
+        if (pgc == xp->ddbggc)
+            pgc = xp->ddfggc;
+        else if(pgc == xp->ddfggc)
+            pgc = xp->ddbggc;
+        else if (pgc == xp->bggc)
             pgc = xp->fggc;
         else
             pgc = xp->bggc;
@@ -504,7 +534,11 @@ void DoFilledArcs(xp, p, reps)
 
     for (i = 0; i != reps; i++) {
         XFillArcs(xp->d, xp->w, pgc, arcs, p->objects);
-        if (pgc == xp->bggc)
+        if (pgc == xp->ddbggc)
+            pgc = xp->ddfggc;
+        else if(pgc == xp->ddfggc)
+            pgc = xp->ddbggc;
+        else if (pgc == xp->bggc)
             pgc = xp->fggc;
         else
             pgc = xp->bggc;

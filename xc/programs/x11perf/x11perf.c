@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.34 92/07/31 17:22:40 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.35 92/11/11 13:06:31 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -79,6 +79,7 @@ static unsigned long planemasks[256] = { (unsigned long)~0 };
 
 static char *foreground = NULL;
 static char *background = NULL;
+static char *ddbackground = NULL;
 static int clips = 0;
 
 static int numSubWindows = 7;
@@ -239,10 +240,10 @@ void ReportTimes(usecs, n, str, average)
         objspersec =  RoundTo3Digits(objspersec);
 
         if (average) {
-	    printf("%6d trep @ %7.4f msec (%6.1f/sec): %s\n", 
+	    printf("%7d trep @ %8.4f msec (%8.1f/sec): %s\n", 
 		    n, msecsperobj, objspersec, str);
 	} else {
-	    printf("%6d reps @ %7.4f msec (%6.1f/sec): %s\n", 
+	    printf("%7d reps @ %8.4f msec (%8.1f/sec): %s\n", 
 	        n, msecsperobj, objspersec, str);
 	}
     } else {
@@ -358,12 +359,14 @@ void usage()
 "    -fg                       the foreground color to use",
 "    -bg                       the background color to use",
 "    -clips <default>          default number of clip windows per test",
+"    -ddbg                     the background color to use for DoubleDash",
 "    -rop <rop0 rop1 ...>      use the given rops to draw (default = GXcopy)",
 "    -pm <pm0 pm1 ...>         use the given planemasks to draw (default = ~0)",
 "    -depth <depth>            use a visual with <depth> planes per pixel",
 "    -reps <n>                 fix the rep count (default = auto scale)",
 "    -subs <s0 s1 ...>         a list of the number of sub-windows to use",
 "    -v1.2                     perform only v1.2 tests using old semantics",
+"    -v1.3                     perform only v1.3 tests using old semantics",
 NULL};
 
     fflush(stdout);
@@ -373,7 +376,7 @@ NULL};
     }
     while (test[i].option != NULL) {
         fprintf(stderr, "    %-24s   %s\n",
-		test[i].option, test[i].label);
+		test[i].option, test[i].label14 ? test[i].label14 : test[i].label);
         i++;
     }
     fprintf(stderr, "\n");
@@ -429,9 +432,9 @@ void DoHardwareSync(xp, p, reps)
 }
 
 static Test syncTest = {
-    "syncTime", "Internal test for finding how long HardwareSync takes",
+    "syncTime", "Internal test for finding how long HardwareSync takes", NULL,
     NullInitProc, DoHardwareSync, NullProc, NullProc, 
-    VALL, NONROP, 0,
+    V1_2FEATURE, NONROP, 0,
     {1}
 };
 
@@ -604,27 +607,41 @@ void CreatePerfGCs(xp, func, pm)
     int     func;
     unsigned long   pm;
 {
-    XGCValues gcvfg, gcvbg;
-    unsigned long	fg, bg;
+    XGCValues gcvfg, gcvbg, gcvddbg,gcvddfg;
+    unsigned long	fg, bg, ddbg;
 
     fg = xp->foreground;
     bg = xp->background;
+    ddbg = xp->ddbackground;
     gcvfg.graphics_exposures = False;
     gcvbg.graphics_exposures = False;
+    gcvddfg.graphics_exposures = False;
+    gcvddbg.graphics_exposures = False;
     gcvfg.plane_mask = pm;
     gcvbg.plane_mask = pm;
+    gcvddfg.plane_mask = pm;
+    gcvddbg.plane_mask = pm;
     gcvfg.function = func;
     gcvbg.function = func;
+    gcvddfg.function = func;
+    gcvddbg.function = func;
     
     if (func == GXxor) {
 	/* Make test look good visually if possible */
 	gcvbg.foreground = gcvfg.foreground = bg ^ fg;
 	gcvbg.background = gcvfg.background = bg;
+	/* Double Dash GCs (This doesn't make a huge amount of sense) */
+	gcvddbg.foreground = gcvddfg.foreground = bg ^ fg;
+	gcvddbg.background = gcvddfg.foreground = bg ^ ddbg;
     } else {
 	gcvfg.foreground = fg;
 	gcvfg.background = bg;
 	gcvbg.foreground = bg;
 	gcvbg.background = fg;
+	gcvddfg.foreground = fg;
+	gcvddfg.background = ddbg;
+	gcvddbg.foreground = ddbg;
+	gcvddbg.background = fg;
     }
     xp->fggc = XCreateGC(xp->d, xp->w,
 	GCForeground | GCBackground | GCGraphicsExposures
@@ -632,6 +649,12 @@ void CreatePerfGCs(xp, func, pm)
     xp->bggc = XCreateGC(xp->d, xp->w, 
 	GCForeground | GCBackground | GCGraphicsExposures
       | GCFunction | GCPlaneMask, &gcvbg);
+    xp->ddfggc = XCreateGC(xp->d, xp->w,
+	GCForeground | GCBackground | GCGraphicsExposures
+      | GCFunction | GCPlaneMask, &gcvddfg);
+    xp->ddbggc = XCreateGC(xp->d, xp->w, 
+	GCForeground | GCBackground | GCGraphicsExposures
+      | GCFunction | GCPlaneMask, &gcvddbg);
 }
 
 
@@ -751,7 +774,7 @@ main(argc, argv)
     }
 
     xparms.pack = False;
-    xparms.version = VERSION1_3;
+    xparms.version = VERSION1_4;
 
     /* Count number of tests */
     ForEachTest(numTests);
@@ -831,11 +854,18 @@ main(argc, argv)
 	    if (argc <= i)
 		usage ();
 	    background = argv[i];
+	    if(ddbackground == NULL)
+		ddbackground = argv[i];
 	} else if (strcmp(argv[i], "-clips") == 0 ) {
 	    i++;
 	    if (argc <= i)
 		usage ();
 	    clips = atoi( argv[i] );
+	} else if (strcmp(argv[i], "-ddbg") == 0) {
+	    if (argc <= i)
+		usage ();
+	    i++;
+	    ddbackground = argv[i];
 	} else if (strcmp(argv[i], "-rop") == 0) {
 	    skip = GetRops (i+1, argc, argv, rops, &numRops);
 	    i += skip;
@@ -868,6 +898,8 @@ main(argc, argv)
 	    i += skip;
 	} else if (strcmp(argv[i], "-v1.2") == 0) {
 	    xparms.version = VERSION1_2;
+	} else if (strcmp(argv[i], "-v1.3") == 0) {
+	    xparms.version = VERSION1_3;
 	} else {
 	    ForEachTest (j) {
 		if (strcmp (argv[i], test[j].option) == 0 &&
@@ -882,6 +914,8 @@ main(argc, argv)
 	}
     }
 
+#define LABEL_POINTER (test[i].label14 && (xparms.version >= VERSION1_4) \
+		        ? test[i].label14 : test[i].label)
     if (labels) {
 	/* Just print out list of tests for use with .sh programs that
 	   assemble data from different x11perf runs into a nice format */
@@ -890,7 +924,7 @@ main(argc, argv)
 	    if (doit[i] && (test[i].versions & xparms.version)) {
 		switch (test[i].testType) {
 		    case NONROP:
-			printf ("%s\n", test[i].label);
+			printf ("%s\n", LABEL_POINTER);
 			break;
     
 		    case ROP:
@@ -899,17 +933,17 @@ main(argc, argv)
 			    for (pm = 0; pm < numPlanemasks; pm++) {
 				if (planemasks[pm] == ~0) {
 				    if (rops[rop] == GXcopy) {
-					printf ("%s\n", test[i].label);
+					printf ("%s\n", LABEL_POINTER);
 				    } else {
 					printf ("(%s) %s\n",
 					    ropNames[rops[rop]].name,
-					    test[i].label);
+					    LABEL_POINTER);
 				    }
 				} else {
 				    printf ("(%s 0x%x) %s\n",
 					    ropNames[rops[rop]].name,
 					    planemasks[pm],
-					    test[i].label);
+					    LABEL_POINTER);
 				}
 			    } /* for pm */
 			} /* for rop */
@@ -918,7 +952,7 @@ main(argc, argv)
 		    case WINDOW:
 			for (child = 0; child != numSubWindows; child++) {
 			    printf ("%s (%d kids)\n",
-				test[i].label, subWindows[child]);
+				LABEL_POINTER, subWindows[child]);
 			}
 			break;
 		} /* switch */
@@ -1005,6 +1039,8 @@ main(argc, argv)
 	AllocateColor(xparms.d, foreground, BlackPixel(xparms.d, screen));
     xparms.background =
 	AllocateColor(xparms.d, background, WhitePixel(xparms.d, screen));
+    xparms.ddbackground =
+	AllocateColor(xparms.d, ddbackground, WhitePixel(xparms.d, screen));
     xparms.w = CreatePerfWindow(&xparms, 2, 2, WIDTH, HEIGHT);
     status = CreatePerfWindow(&xparms, 2, HEIGHT+5, WIDTH, 20);
     tgcv.foreground = BlackPixel(xparms.d, screen);
@@ -1034,7 +1070,7 @@ main(argc, argv)
 	    switch (test[i].testType) {
 	        case NONROP:
 		    /* Simplest...just run it once */
-		    strcpy (label, test[i].label);
+		    strcpy (label, LABEL_POINTER);
 		    ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
 		    break;
 
@@ -1044,17 +1080,17 @@ main(argc, argv)
 			for (pm = 0; pm < numPlanemasks; pm++) {
 			    if (planemasks[pm] == ~0) {
 				if (rops[rop] == GXcopy) {
-				    sprintf (label, "%s", test[i].label);
+				    sprintf (label, "%s", LABEL_POINTER);
 				} else {
 				    sprintf (label, "(%s) %s",
 					ropNames[rops[rop]].name,
-					test[i].label);
+					LABEL_POINTER);
 				}
 			    } else {
 				sprintf (label, "(%s 0x%x) %s",
 					ropNames[rops[rop]].name,
 					planemasks[pm],
-					test[i].label);
+					LABEL_POINTER);
 			    }
 			    ProcessTest(&xparms, &test[i], rops[rop],
 				        planemasks[pm], label);
@@ -1067,7 +1103,7 @@ main(argc, argv)
 		    for (child = 0; child != numSubWindows; child++) {
 			test[i].parms.objects = subWindows[child];
 			sprintf(label, "%s (%d kids)",
-			    test[i].label, test[i].parms.objects);
+			    LABEL_POINTER, test[i].parms.objects);
 			ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
 		    }
 		    break;

@@ -26,10 +26,10 @@ SOFTWARE.
 static XPoint   *points;
 static GC       pgc;
 
-int InitLines(xp, p, reps)
+static void GenerateLines(xp, p, ddashed)
     XParms  xp;
     Parms   p;
-    int     reps;
+    Bool    ddashed;
 {
     int size;
     int half;		/* Half of width if wide line		        */
@@ -44,7 +44,10 @@ int InitLines(xp, p, reps)
     float phaseinc;     /* how much to increment phasef at each segment */
     int size4;		/* 4 * size					*/
 
-    pgc = xp->fggc;
+    if(ddashed)
+	pgc = xp->ddfggc;
+    else
+	pgc = xp->fggc;
 
     size = p->special;
     size4 = 4 * (size+1);
@@ -158,25 +161,50 @@ int InitLines(xp, p, reps)
 	if (phasef >= size4) phasef -= size4;
 
     }
-    return reps;
 }
  
+int InitLines(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    GenerateLines(xp, p, False);
+	return reps;
+}
+
+static int GenerateWideLines(xp, p, reps, ddashed)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+    Bool    ddashed;
+{
+    int size;
+
+    GenerateLines(xp, p, ddashed);
+
+    size = p->special;
+    if(ddashed) {
+	XSetLineAttributes(xp->d, xp->ddbggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+	XSetLineAttributes(xp->d, xp->ddfggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+    }
+    else {
+	XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+	XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
+	    LineSolid, CapRound, JoinRound);
+    }
+
+    return reps;
+}
+
 int InitWideLines(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-    int size;
-
-    (void)InitLines(xp, p, reps);
-
-    size = p->special;
-    XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
-	LineSolid, CapRound, JoinRound);
-    XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
-	LineSolid, CapRound, JoinRound);
-
-    return reps;
+    return GenerateWideLines(xp, p, reps, False);
 }
  
 int InitDashedLines(xp, p, reps)
@@ -186,7 +214,7 @@ int InitDashedLines(xp, p, reps)
 {
     char dashes[2];
 
-    (void)InitLines(xp, p, reps);
+    GenerateLines(xp, p, False);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
@@ -206,7 +234,7 @@ int InitWideDashedLines(xp, p, reps)
     XGCValues   gcv;
     char	dashes[2];
 
-    (void)InitWideLines(xp, p, reps);
+    (void)GenerateWideLines(xp, p, reps, False);
     size = p->special;
     size = (size + 9) / 10;
 
@@ -227,14 +255,14 @@ int InitDoubleDashedLines(xp, p, reps)
 {
     char dashes[2];
 
-    (void)InitLines(xp, p, reps);
+    GenerateLines(xp, p, True);
 
     /* Modify GCs to draw dashed */
-    XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
-    XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->ddbggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->ddfggc, 0, LineDoubleDash, CapButt, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
-    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
-    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddfggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddbggc, 0, dashes, 2);
     return reps;
 }
 
@@ -247,17 +275,17 @@ int InitWideDoubleDashedLines(xp, p, reps)
     XGCValues   gcv;
     char	dashes[2];
 
-    (void)InitWideLines(xp, p, reps);
+    (void)GenerateWideLines(xp, p, reps, True);
     size = p->special;
     size = (size + 9) / 10;
 
     /* Modify GCs to draw dashed */
     dashes[0] = 2*size;   dashes[1] = 2*size;
     gcv.line_style = LineDoubleDash;
-    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
-    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
-    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
-    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    XChangeGC(xp->d, xp->ddfggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->ddbggc, GCLineStyle, &gcv);
+    XSetDashes(xp->d, xp->ddfggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddbggc, 0, dashes, 2);
     return reps;
 }
 
@@ -271,7 +299,11 @@ void DoLines(xp, p, reps)
     for (i = 0; i != reps; i++)
     {
         XDrawLines(xp->d, xp->w, pgc, points, p->objects+1, CoordModeOrigin);
-        if (pgc == xp->bggc)
+        if (pgc == xp->ddbggc)
+            pgc = xp->ddfggc;
+        else if(pgc == xp->ddfggc)
+            pgc = xp->ddbggc;
+        else if (pgc == xp->bggc)
             pgc = xp->fggc;
         else
             pgc = xp->bggc;

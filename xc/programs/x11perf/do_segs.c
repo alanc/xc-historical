@@ -26,10 +26,10 @@ SOFTWARE.
 static XSegment *segments;
 static GC       pgc;
 
-int InitSegments(xp, p, reps)
+static void GenerateSegments(xp, p, ddashed)
     XParms  xp;
     Parms   p;
-    int     reps;
+    Bool     ddashed;
 {
     int     size;
     int     half;
@@ -42,7 +42,11 @@ int InitSegments(xp, p, reps)
     int     size8;	    /* 8 * size					    */
     XGCValues   gcv;
 
-    pgc = xp->fggc;
+    if(ddashed)
+	pgc = xp->ddfggc;
+    else
+	pgc = xp->fggc;
+
 
     size = p->special;
     size8 = 8 * size;
@@ -153,12 +157,24 @@ int InitSegments(xp, p, reps)
     }
 
     gcv.cap_style = CapNotLast;
-    XChangeGC(xp->d, xp->fggc, GCCapStyle, &gcv);
-    XChangeGC(xp->d, xp->bggc, GCCapStyle, &gcv);
-    
-    return reps;
+
+    if(ddashed) {
+	XChangeGC(xp->d, xp->ddfggc, GCCapStyle, &gcv);
+	XChangeGC(xp->d, xp->ddbggc, GCCapStyle, &gcv);
+    } else {
+	XChangeGC(xp->d, xp->fggc, GCCapStyle, &gcv);
+	XChangeGC(xp->d, xp->bggc, GCCapStyle, &gcv);
+    }
 }
    
+int InitSegments(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    GenerateSegments(xp, p, False);
+    return reps;
+}
 
 int InitDashedSegments(xp, p, reps)
     XParms  xp;
@@ -167,7 +183,7 @@ int InitDashedSegments(xp, p, reps)
 {
     char dashes[2];
 
-    (void)InitSegments(xp, p, reps);
+    GenerateSegments(xp, p, False);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes
@@ -187,16 +203,16 @@ int InitDoubleDashedSegments(xp, p, reps)
 {
     char dashes[2];
 
-    (void)InitSegments(xp, p, reps);
+    GenerateSegments(xp, p, True);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes
-	(xp->d, xp->bggc, 0, LineDoubleDash, CapNotLast, JoinMiter);
+	(xp->d, xp->ddbggc, 0, LineDoubleDash, CapNotLast, JoinMiter);
     XSetLineAttributes
-	(xp->d, xp->fggc, 0, LineDoubleDash, CapNotLast, JoinMiter);
+	(xp->d, xp->ddfggc, 0, LineDoubleDash, CapNotLast, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
-    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
-    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddfggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->ddbggc, 0, dashes, 2);
     return reps;
 }
 
@@ -365,7 +381,11 @@ void DoSegments(xp, p, reps)
 
     for (i = 0; i != reps; i++) {
         XDrawSegments(xp->d, xp->w, pgc, segments, p->objects);
-        if (pgc == xp->bggc)
+        if (pgc == xp->ddbggc)
+            pgc = xp->ddfggc;
+        else if(pgc == xp->ddfggc)
+            pgc = xp->ddbggc;
+        else if (pgc == xp->bggc)
             pgc = xp->fggc;
         else
             pgc = xp->bggc;

@@ -28,7 +28,9 @@ SOFTWARE.
 #include <decw$include/Xlib.h>
 #include <decw$include/Xutil.h>
 #endif
+#if defined(XlibSpecificationRelease) && XlibSpecificationRelease >= 5
 #include <X11/Xfuncs.h>
+#endif
 #ifndef NULL
 #define NULL 0
 #endif
@@ -43,18 +45,25 @@ SOFTWARE.
 #define CHILDSIZE       8       /* Size of children on windowing tests  */
 #define CHILDSPACE      4       /* Space between children		*/
 
+#define BigTile	((char *)2)		/* Big tile/stipple */
+#define OddTile	((char *)1)		/* Odd sized tile/stipple */
+
 typedef Bool (*InitProc)    (/* XParms xp; Parms p */);
 typedef void (*Proc)	    (/* XParms xp; Parms p */);
 
 extern void NullProc	    (/* XParms xp; Parms p */);
 extern Bool NullInitProc    (/* XParms xp; Parms p */);
 
-#define VERSION1_2  (1 << 0)
-#define VERSION1_3  (1 << 1)
-#define VALL	    (VERSION1_2 | VERSION1_3)
-
 typedef unsigned char Version;
-    
+
+#define VERSION1_2  ((Version)(1 << 0))
+#define VERSION1_3  ((Version)(1 << 1))
+#define VERSION1_4  ((Version)(1 << 2))
+#define V1_2ONLY VERSION1_2
+#define V1_2FEATURE	(VERSION1_2 | VERSION1_3 | VERSION1_4)
+#define V1_3FEATURE	(VERSION1_3 | VERSION1_4)
+#define V1_4FEATURE	(VERSION1_4)
+
 typedef struct _Parms {
     /* Required fields */
     int  objects;       /* Number of objects to process in one X call	    */
@@ -70,8 +79,11 @@ typedef struct _XParms {
     Window	    w;
     GC		    fggc;
     GC		    bggc;
+    GC		    ddfggc;
+    GC		    ddbggc;
     unsigned long   foreground;
     unsigned long   background;
+    unsigned long   ddbackground;
     XVisualInfo     vinfo;
     Bool	    pack;
     Version	    version;
@@ -86,6 +98,7 @@ typedef enum {
 typedef struct _Test {
     char	*option;    /* Name to use in prompt line		    */
     char	*label;     /* Fuller description of test		    */
+    char	*label14;   /* Labels that are different in Version 1.4     */
     InitProc    init;       /* Initialization procedure			    */
     Proc	proc;       /* Timed benchmark procedure		    */
     Proc	passCleanup;/* Cleanup between repetitions of same test     */

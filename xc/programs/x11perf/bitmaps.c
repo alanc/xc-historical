@@ -37,7 +37,15 @@ static unsigned char bitmap4x4[] = {
    0x03, 0x06, 0x0c, 0x09
 };
 
+#define oddbit_width 17
+#define oddbit_height 15
+static unsigned char oddbit_bits[] = {
+   0x01, 0x00, 0x01, 0xc2, 0x87, 0x00, 0x34, 0x58, 0x00, 0x08, 0x20, 0x00,
+   0x38, 0x38, 0x00, 0x44, 0x44, 0x00, 0x84, 0x42, 0x00, 0x04, 0x41, 0x00,
+   0x84, 0x42, 0x00, 0x44, 0x44, 0x00, 0x28, 0x28, 0x00, 0x18, 0x30, 0x00,
+   0x34, 0x58, 0x00, 0xc2, 0x87, 0x00, 0x01, 0x00, 0x01};
 
+/* A big bitmap */
 #define mensetmanus_width 161
 #define mensetmanus_height 145
 
@@ -791,6 +799,10 @@ void SetFillStyle(xp, p)
 	    stipple = XCreateBitmapFromData(xp->d, xp->w,
 			(char *)escherknot_bits, escherknot_width, escherknot_height);
 	    xorg = -3;
+	} else if (!strcmp (p->font, "OddTile")) {
+	    /* Odd sized tile */
+	    stipple = XCreateBitmapFromData(xp->d, xp->w,
+			(char *)oddbit_bits, oddbit_width, oddbit_height);
 	} else {
 	    /* Enormous stipple.  Well, pretty big. */
 	    stipple = XCreateBitmapFromData(xp->d, xp->w,
@@ -821,6 +833,12 @@ void SetFillStyle(xp, p)
 		    xp->foreground, xp->background, xp->vinfo.depth);
 	    /* align tile with screen */
 	    xorg = -3;
+	} else if (!strcmp (p->font, "OddTile")) {
+	    /* Odd sized tile */
+	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
+		    (char *)oddbit_bits, oddbit_width, oddbit_height,
+		    xp->foreground, xp->background, xp->vinfo.depth);
+	    /* align tile with screen */
 	} else {
 	    /* Enormous tile.  Well, pretty big. */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
@@ -840,6 +858,11 @@ void SetFillStyle(xp, p)
 	    /* Enormous stipple which is x4 bits wide */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
 		    (char *)escherknot_bits, escherknot_width, escherknot_height,
+		    xp->background, xp->foreground, xp->vinfo.depth);
+	} else if (!strcmp (p->font, "OddTile")) {
+	    /* Odd sized tile */
+	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
+		    (char *)oddbit_bits, oddbit_width, oddbit_height,
 		    xp->background, xp->foreground, xp->vinfo.depth);
 	} else {
 	    /* Enormous tile.  Well, pretty big. */

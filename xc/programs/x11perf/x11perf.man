@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.11 92/07/31 16:58:21 rws Exp $
+.\" $XConsortium: x11perf.man,v 1.12 92/11/11 13:07:23 rws Exp $
 .TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
@@ -172,6 +172,11 @@ Specifies the background color to use.
 .B \-clips \fIdefault\fP
 Default number of clip windows.
 .TP 14
+.B \-ddbg \fIcolor
+Specifies the color to use for drawing
+the odd segments of a DoubleDashed line or arc.
+This will default to the bg color.
+.TP 14
 .B \-rop <rop0 rop1 ...>
 Use specified raster ops (default is GXcopy).
 This option only affects graphics
@@ -185,6 +190,19 @@ benchmarks in which the planemask is actually used.
 .B \-depth <depth>
 Use a visual with <depth> planes per pixel (default is the default
 visual).
+.TP 14
+.B \-reps <n>
+Specify the repetion count (Default is number that takes aprox. 5 seconds)
+.TP 14
+.B \-subs <s0 s1 ...>
+Specify the number of sub windows to use in the Window tests.
+Default is  4, 16, 25, 50, 75, 100 and 200.
+.TP 14
+.B \-v1.2
+Perform only x11perf Version 1.2 tests using Version 1.2 semantics.
+.TP 14
+.B \-v1.3
+Perform only x11perf Version 1.3 tests using Version 1.3 semantics.
 .TP 14
 .B \-dot
 Dot.
@@ -236,6 +254,42 @@ Dot.
 .TP 14
 .B \-tilerect500
 500x500 tiled rectangle, 4x4 tile pattern.
+.TP 14
+.B \-oddsrect1
+1x1 transparent stippled rectangle, 17x15 stipple pattern.
+.TP 14
+.B \-oddsrect10
+10x10 transparent stippled rectangle, 17x15 stipple pattern.
+.TP 14
+.B \-oddsrect100
+100x100 transparent stippled rectangle, 17x15 stipple pattern.
+.TP 14
+.B \-oddsrect500
+500x500 transparent stippled rectangle, 17x15 stipple pattern.
+.TP 14
+.B \-oddosrect1
+1x1 opaque stippled rectangle, 17x15 stipple pattern.
+.TP 14
+.B \-oddosrect10
+10x10 opaque stippled rectangle, 17x15 stipple pattern.
+.TP 14
+.B \-oddosrect100
+100x100 opaque stippled rectangle, 17x15 stipple pattern.
+.TP 14
+.B \-oddosrect500
+500x500 opaque stippled rectangle, 17x15 stipple pattern.
+.TP 14
+.B \-oddtilerect1
+1x1 tiled rectangle, 17x15 tile pattern.
+.TP 14
+.B \-oddtilerect10
+10x10 tiled rectangle, 17x15 tile pattern.
+.TP 14
+.B \-oddtilerect100
+100x100 tiled rectangle, 17x15 tile pattern.
+.TP 14
+.B \-oddtilerect500
+500x500 tiled rectangle, 17x15 tile pattern.
 .TP 14
 .B \-bigsrect1
 1x1 stippled rectangle, 161x145 stipple pattern.
@@ -550,11 +604,20 @@ Fill 10-pixel/side triangle.
 .B \-triangle100
 Fill 100-pixel/side triangle.
 .TP 14
+.B \-trap1
+Fill 1x1 trapezoid.
+.TP 14
 .B \-trap10
 Fill 10x10 trapezoid.
 .TP 14
 .B \-trap100
 Fill 100x100 trapezoid.
+.TP 14
+.B \-trap300
+Fill 300x300 trapezoid.
+.TP 14
+.B \-strap1
+Fill 1x1 transparent stippled trapezoid, 8x8 stipple pattern.
 .TP 14
 .B \-strap10
 Fill 10x10 transparent stippled trapezoid, 8x8 stipple pattern.
@@ -562,11 +625,23 @@ Fill 10x10 transparent stippled trapezoid, 8x8 stipple pattern.
 .B \-strap100
 Fill 100x100 transparent stippled trapezoid, 8x8 stipple pattern.
 .TP 14
+.B \-strap300
+Fill 300x300 transparent stippled trapezoid, 8x8 stipple pattern.
+.TP 14
+.B \-ostrap1
+Fill 10x10 opaque stippled trapezoid, 8x8 stipple pattern.
+.TP 14
 .B \-ostrap10
 Fill 10x10 opaque stippled trapezoid, 8x8 stipple pattern.
 .TP 14
 .B \-ostrap100
 Fill 100x100 opaque stippled trapezoid, 8x8 stipple pattern.
+.TP 14
+.B \-ostrap300
+Fill 300x300 opaque stippled trapezoid, 8x8 stipple pattern.
+.TP 14
+.B \-tiletrap1
+Fill 10x10 tiled trapezoid, 4x4 tile pattern.
 .TP 14
 .B \-tiletrap10
 Fill 10x10 tiled trapezoid, 4x4 tile pattern.
@@ -574,11 +649,59 @@ Fill 10x10 tiled trapezoid, 4x4 tile pattern.
 .B \-tiletrap100
 Fill 100x100 tiled trapezoid, 4x4 tile pattern.
 .TP 14
+.B \-tiletrap300
+Fill 300x300 tiled trapezoid, 4x4 tile pattern.
+.TP 14
+.B \-oddstrap1
+Fill 1x1 transparent stippled trapezoid, 17x15 stipple pattern.
+.TP 14
+.B \-oddstrap10
+Fill 10x10 transparent stippled trapezoid, 17x15 stipple pattern.
+.TP 14
+.B \-oddstrap100
+Fill 100x100 transparent stippled trapezoid, 17x15 stipple pattern.
+.TP 14
+.B \-oddstrap300
+Fill 300x300 transparent stippled trapezoid, 17x15 stipple pattern.
+.TP 14
+.B \-oddostrap1
+Fill 10x10 opaque stippled trapezoid, 17x15 stipple pattern.
+.TP 14
+.B \-oddostrap10
+Fill 10x10 opaque stippled trapezoid, 17x15 stipple pattern.
+.TP 14
+.B \-oddostrap100
+Fill 100x100 opaque stippled trapezoid, 17x15 stipple pattern.
+.TP 14
+.B \-oddostrap300
+Fill 300x300 opaque stippled trapezoid, 17x15 stipple pattern.
+.TP 14
+.B \-oddtiletrap1
+Fill 10x10 tiled trapezoid, 17x15 tile pattern.
+.TP 14
+.B \-oddtiletrap10
+Fill 10x10 tiled trapezoid, 17x15 tile pattern.
+.TP 14
+.B \-oddtiletrap100
+Fill 100x100 tiled trapezoid, 17x15 tile pattern.
+.TP 14
+.B \-oddtiletrap300
+Fill 300x300 tiled trapezoid, 17x15 tile pattern.
+.TP 14
+.B \-bigstrap1
+Fill 1x1 transparent stippled trapezoid, 161x145 stipple pattern.
+.TP 14
 .B \-bigstrap10
 Fill 10x10 transparent stippled trapezoid, 161x145 stipple pattern.
 .TP 14
 .B \-bigstrap100
 Fill 100x100 transparent stippled trapezoid, 161x145 stipple pattern.
+.TP 14
+.B \-bigstrap300
+Fill 300x300 transparent stippled trapezoid, 161x145 stipple pattern.
+.TP 14
+.B \-bigostrap1
+Fill 10x10 opaque stippled trapezoid, 161x145 stipple pattern.
 .TP 14
 .B \-bigostrap10
 Fill 10x10 opaque stippled trapezoid, 161x145 stipple pattern.
@@ -586,17 +709,32 @@ Fill 10x10 opaque stippled trapezoid, 161x145 stipple pattern.
 .B \-bigostrap100
 Fill 100x100 opaque stippled trapezoid, 161x145 stipple pattern.
 .TP 14
+.B \-bigostrap300
+Fill 300x300 opaque stippled trapezoid, 161x145 stipple pattern.
+.TP 14
+.B \-bigtiletrap1
+Fill 10x10 tiled trapezoid, 161x145 tile pattern.
+.TP 14
 .B \-bigtiletrap10
 Fill 10x10 tiled trapezoid, 161x145 tile pattern.
 .TP 14
 .B \-bigtiletrap100
 Fill 100x100 tiled trapezoid, 161x145 tile pattern.
 .TP 14
+.B \-bigtiletrap300
+Fill 300x300 tiled trapezoid, 161x145 tile pattern.
+.TP 14
+.B \-eschertiletrap1
+Fill 1x1 tiled trapezoid, 216x208 tile pattern.
+.TP 14
 .B \-eschertiletrap10
 Fill 10x10 tiled trapezoid, 216x208 tile pattern.
 .TP 14
 .B \-eschertiletrap100
 Fill 100x100 tiled trapezoid, 216x208 tile pattern.
+.TP 14
+.B \-eschertiletrap300
+Fill 300x300 tiled trapezoid, 216x208 tile pattern.
 .TP 14
 .B \-complex10
 Fill 10-pixel/side complex polygon.
@@ -637,6 +775,9 @@ Character in 30-char line (Times-Roman 24).
 .B \-polytext
 Character in 20/40/20 line (6x13, Times-Roman 10, 6x13).
 .TP 14
+.B \-polytext16
+2-byte character in 7/14/7 line (k14, k24).
+.TP 14
 .B \-fitext
 Character in 80-char image line (6x13).
 .TP 14
@@ -648,6 +789,9 @@ Character in 60-char image line (9x15).
 .TP 14
 .B \-f14itext16
 2-byte character in 40-char image line (k14).
+.TP 14
+.B \-f24itext16
+2-byte character in 23-char image line (k24).
 .TP 14
 .B \-tr10itext
 Character in 80-char image line (Times-Roman 10).
