@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.68 91/04/02 08:55:52 gildea Exp $ */
+/* $XConsortium: Display.c,v 1.69 91/04/08 14:39:53 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -247,7 +247,11 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	_XtHeapInit(&pd->heap);
 	pd->destroy_callbacks = NULL;
 	pd->region = XCreateRegion();
-        pd->defaultCaseConverter = _XtConvertCase;
+	pd->case_cvt = (CaseConverterPtr) XtMalloc(sizeof(CaseConverterRec));
+	pd->case_cvt->start = (KeySym) 0;	/* first possible in Latin-1 */
+	pd->case_cvt->stop =  (KeySym) 0x3ff;	/* last possible in Latin-4 */
+	pd->case_cvt->proc = _XtConvertCase;
+	pd->case_cvt->next = NULL;
         pd->defaultKeycodeTranslator = XtTranslateKey;
         pd->keysyms = NULL;
 	pd->modKeysyms = NULL;
