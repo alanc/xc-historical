@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.14 89/12/12 17:26:08 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.15 89/12/13 17:58:32 jim Exp $
 
 
 /*
@@ -9,7 +9,7 @@
 
 #define OSName			UNICOS 5.1
 #define OSMajorVersion		5
-#define OSMinorVersion		0
+#define OSMinorVersion		1
 
 #define InstallCmd sh $(SCRIPTSRC)/install.sh
 #define RemoveTargetProgramByMoving YES
@@ -32,7 +32,7 @@
 
 #ifdef CRAY1
 #define Cray1Architecture
-#define DefaultCCOptions    -halign
+#define DefaultCCOptions /**/
 #else /* CRAY 2 */
 #define Cray2Architecture
 #ifdef CrayUsingSCC
