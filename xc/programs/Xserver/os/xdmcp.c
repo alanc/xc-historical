@@ -53,6 +53,8 @@ static XdmcpBuffer	    buffer;
 
 static struct sockaddr_in   ManagerAddress;
 
+static get_manager_by_name(), get_xdmcp_sock();
+
 static	receive_packet(), send_packet();
 static	timeout(), restart();
 
@@ -65,6 +67,8 @@ static	send_query_msg();
 static	send_request_msg();
 static	send_manage_msg();
 static	send_keepalive_msg();
+
+static XdmcpFatal(), XdmcpWarning();
 
 static short	xdm_udp_port = XDM_UDP_PORT;
 
@@ -666,11 +670,11 @@ get_xdmcp_sock()
     int soopts = 1;
 
     if ((xdmcpSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-	rpterr("get_xdmcp_sock: socket failed");
+	XdmcpWarning("UDP socket creation failed");
 #ifdef SO_BROADCAST
     else if (setsockopt(xdmcpSocket, SOL_SOCKET, SO_BROADCAST, &soopts,
 	sizeof(soopts)) < 0)
-	    rpterr("get_xdmcp_sock: setsockopt failed");
+	    XdmcpWarning("UDP set broadcast socket-option failed");
 #endif SO_BROADCAST
 }
 
@@ -995,12 +999,10 @@ XdmcpFatal (type, status)
 }
 
 static 
-rpterr(str, arg1, arg2, arg3, arg4)
+XdmcpWarning(str)
     char *str;
 {
-    printf("Xdmcp error: ");
-    printf(str, arg1, arg2, arg3, arg4);
-    printf("\n");
+    printf("XDMCP warning: %s\n", str);
 }
 
 static
