@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.9 93/08/22 11:24:22 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.10 93/08/22 11:33:43 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -63,6 +63,9 @@ extern int errno;
 #include <decw$include/Xatom.h>
 #endif
 #include "xieperf.h"
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
@@ -2167,7 +2170,7 @@ int	which;
                 fprintf( stderr, "Couldn't stat %s\n", buf );
                 return 0;
         }
-        if ( ( fd = open( buf, O_RDONLY ) ) == -1 )
+        if ( ( fd = open( buf, O_RDONLY|O_BINARY ) ) == -1 )
         {
                 fprintf( stderr, "Couldn't open %s\n", buf );
                 goto out;
