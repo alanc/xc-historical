@@ -247,7 +247,8 @@ static Boolean SetValues(current, request, new, last)
 	}
     }
 
-    Resize( new );			/* takes care of bars, &tc. */
+    /* take care of bars, &tc. */
+    (*w->core.widget_class->core_class.resize)( new );
     return False;
 }
 
@@ -536,30 +537,34 @@ static XtGeometryResult GeometryManager(child, request, reply)
     if ((!w->viewport.allowhoriz && rWidth) ||
 	(!w->viewport.allowvert && rHeight)) {
 	myrequest.request_mode = CWWidth | CWHeight;
-	myrequest.width =
-	    (w->viewport.allowhoriz || !rWidth)
-		? w->core.width : request->width;
-	myrequest.height =
-	    (w->viewport.allowvert || !rHeight)
-		? w->core.height : request->height;
+	myrequest.width = rWidth ?
+	      (w->viewport.allowhoriz ?
+		  Min(w->core.width, request->width) : request->width)
+	    : w->core.width;
+	myrequest.height = rHeight ?
+	      (w->viewport.allowvert ?
+		  Min(w->core.height, request->height) : request->height)
+	    : w->core.height;
 	if (w->core.width != myrequest.width ||
 	    w->core.height != myrequest.height) {
 	    result = XtMakeGeometryRequest((Widget)w, &myrequest, &allowed);
 	    if (result == XtGeometryYes)
 		resized = True;
-	    else if (result == XtGeometryNo) {
-		if (w->viewport.allowhoriz)
-		    allowed.width = request->width;
-		else
-		    allowed.width = w->core.width;
-		if (w->viewport.allowvert)
-		    allowed.height = request->height;
-		else
-		    allowed.height = w->core.height;
+	    else {
+		if (result == XtGeometryNo) {
+		    if (w->viewport.allowhoriz)
+			allowed.width = Max(w->core.width, request->width);
+		    else
+			allowed.width = w->core.width;
+		    if (w->viewport.allowvert)
+			allowed.height = Max(w->core.height, request->height);
+		    else
+			allowed.height = w->core.height;
+		}
 		if ((rWidth && allowed.width != request->width) ||
 		    (rHeight && allowed.height != request->height)) {
-		    result = XtGeometryAlmost;
 		    *reply = allowed;
+		    result = XtGeometryAlmost;
 		}
 	    }
 	}
@@ -592,7 +597,7 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	    if (ans == XtGeometryYes)
 		resized = True;
 	}
-	if (resized) Resize( (Widget)w );
+	if (resized) (*w->core.widget_class->core_class.resize)( (Widget)w );
     }
 
     return result;
