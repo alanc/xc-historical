@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.139 92/04/20 14:54:26 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.140 92/05/15 13:50:28 eswu Exp $
 /*
  * Server Master Makefile
  */
@@ -50,7 +50,7 @@ XCOMM $XConsortium: Imakefile,v 1.139 92/04/20 14:54:26 rws Exp $
 #if SystemV4 && X386Server
         SYSLIBS = -lm /usr/ucblib/libucb.a
 #else
-#if XirisServer
+#if XirisServer || XhpServer
         SYSLIBS = -lm
 #else
         SYSLIBS = -lm -ldbm
@@ -139,6 +139,10 @@ ALL2 = Xnon
 
 #if XirisServer
 ALL1 = Xiris
+#endif
+
+#if XhpServer
+ALL1 = Xhp
 #endif
 
 /* end ALL definitions */
@@ -378,7 +382,20 @@ IRISLIBS = 	$(DIX) $(OS) \
 IRISSYSLIBS = $(SYSLIBS)
  
 ServerTarget(Xiris,$(IRISDIRS),$(IRISOBJS),$(IRISLIBS),$(IRISSYSLIBS))
-#endif
+#endif /* XirisServer */
+
+#if XhpServer
+XCOMM
+XCOMM Hewlett Packard CFB Server
+XCOMM
+SUBDIRS0 = CFBSubdirs
+SUBDIRS1 = ddx/hp
+HPSUBDIRS = $(SUBDIRS0) $(SUBDIRS1)
+HPOBJS = ddx/hp/hp.o
+HPLIBS = CFBLibs
+HPSYSLIBS = $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
+ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
+#endif	/* XhpServer */
 
 #if XnonServer
 XCOMM
