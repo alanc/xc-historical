@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.43 93/07/12 09:23:41 dpw Exp $ */
+/* $XConsortium: dixutils.c,v 1.44 93/08/24 18:49:50 gildea Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -152,6 +152,21 @@ LookupDrawable(rid, client)
     if (pDraw && (pDraw->type != UNDRAWABLE_WINDOW))
         return (pointer)pDraw;		
     return (pointer)NULL;
+}
+
+
+ClientPtr
+LookupClient(rid)
+    XID rid;
+{
+    pointer pRes = (pointer)LookupIDByClass(rid, RC_ANY);
+    int clientIndex = CLIENT_ID(rid);
+
+    if (clientIndex && pRes && clients[clientIndex] && !(rid & SERVER_BIT))
+    {
+	return clients[clientIndex];
+    }
+    return (ClientPtr)NULL;
 }
 
 
