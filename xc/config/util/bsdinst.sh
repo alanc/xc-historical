@@ -63,13 +63,13 @@ esac
 
 if [ x$src = x ] 
 then
-	echo "bsdinst:  no input file specified"
+	echo "$0:  no input file specified"
 	exit 1
 fi
 
 if [ x$dst = x ] 
 then
-	echo "bsdinst:  no destination specified"
+	echo "$0:  no destination specified"
 	exit 1
 fi
 
