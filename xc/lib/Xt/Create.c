@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.75 90/07/26 10:00:40 swick Exp $ */
+/* $XConsortium: Create.c,v 1.76 90/08/22 14:50:56 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,6 @@ SOFTWARE.
 #include <stdio.h>
 
 static String XtNxtCreateWidget = "xtCreateWidget";
-static String XtNremovePopupFromParent = "removePopupFromParent";
 static String XtNxtCreatePopupShell = "xtCreatePopupShell";
 
 extern void bcopy();
@@ -407,47 +406,6 @@ Widget XtCreateManagedWidget(name, widget_class, parent, args, num_args)
     return widget;
 }
 
-/*ARGSUSED*/
-static void RemovePopupFromParent(widget,closure,call_data)
-    Widget  widget;
-    XtPointer closure;
-    XtPointer call_data;
-{
-    int i;
-    Boolean found = FALSE;
-    register Widget parent;
-    parent = widget->core.parent;
-    if (parent == NULL || parent->core.num_popups == 0)
-        XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		"invalidParameter",XtNremovePopupFromParent,XtCXtToolkitError,
-                "RemovePopupFromParent requires non-NULL popuplist",
-                  (String *)NULL, (Cardinal *)NULL);
-
-    for (i=0; i<parent->core.num_popups; i++)
-        if (parent->core.popup_list[i] == widget){
-            found = TRUE; break;
-        }
-    if (found == FALSE) {
-        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		  "invalidWidget",XtNremovePopupFromParent,XtCXtToolkitError,
-                  "RemovePopupFromParent, widget not on parent list",
-                   (String *)NULL, (Cardinal *)NULL);
-        return;
-    }
-    if (parent->core.being_destroyed) {
-	return;
-	/* don't update parent's popup_list, as we won't then be able to find
-	 * this child for Phase2Destroy.  This also allows for the possibility
-	 * that a destroy callback higher up in the hierarchy may care to
-	 * know that this popup child once existed.
-	 */
-    }
-    parent->core.num_popups--;
-    for (/*i=i*/; i<parent->core.num_popups; i++)
-        parent->core.popup_list[i]= parent->core.popup_list[i+1];
-
-}
-
 Widget _XtCreatePopupShell(name, widget_class, parent, args, num_args,
 			   typed_args, num_typed_args)
     String      name;
@@ -482,8 +440,6 @@ Widget _XtCreatePopupShell(name, widget_class, parent, args, num_args,
 	(WidgetList) XtRealloc((char*) parent->core.popup_list,
                (unsigned) (parent->core.num_popups+1) * sizeof(Widget));
     parent->core.popup_list[parent->core.num_popups++] = widget;
-    XtAddCallback(
-       widget,XtNdestroyCallback,RemovePopupFromParent, (XtPointer)NULL);
     return(widget);
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.31 90/08/29 14:09:46 swick Exp $ */
+/* $XConsortium: Destroy.c,v 1.32 90/08/29 17:17:15 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -110,17 +110,6 @@ static Boolean IsDescendant(widget, root)
     return True;
 }
 
-static Boolean IsPopup(w)
-    Widget w;
-{
-    Widget parent = XtParent(w);
-    int i;
-    for (i = 0; i < parent->core.num_popups; i++) {
-	if (parent->core.popup_list[i] == w) return True;
-    }
-    return False;
-}
-
 static void XtPhase2Destroy (widget)
     register Widget widget;
 {
@@ -130,10 +119,21 @@ static void XtPhase2Destroy (widget)
     XtAppContext    app = XtWidgetToApplicationContext(widget);
     Boolean	    outerInPhase2Destroy = app->in_phase2_destroy;
     int		    starting_count = app->destroy_count;
+    Boolean	    isPopup = False;
 
     parent = widget->core.parent;
 
-    if (parent != NULL && XtIsComposite(parent) && !IsPopup(widget)) {
+    if (parent && parent->core.num_popups) {
+	int i;
+	for (i = 0; i < parent->core.num_popups; i++) {
+	    if (parent->core.popup_list[i] == widget) {
+		isPopup = True;
+		break;
+	    }
+	}
+    }
+
+    if (!isPopup && parent && XtIsComposite(parent)) {
 	XtWidgetProc delete_child =
 	    ((CompositeWidgetClass) parent->core.widget_class)->
 		composite_class.delete_child;
@@ -186,6 +186,19 @@ static void XtPhase2Destroy (widget)
     app->in_phase2_destroy = TRUE;
     Recursive(widget, Phase2Destroy);
     app->in_phase2_destroy = outerInPhase2Destroy;
+
+    if (isPopup) {
+	int i;
+	for (i = 0; i < parent->core.num_popups; i++)
+	    if (parent->core.popup_list[i] == widget) {
+		parent->core.num_popups--;
+		while (i < parent->core.num_popups) {
+		    parent->core.popup_list[i] = parent->core.popup_list[i+1];
+		    i++;
+		}
+		break;
+	    }
+    }
 
     /* %%% the following parent test hides a more serious problem,
        but it avoids breaking those who depended on the old bug
