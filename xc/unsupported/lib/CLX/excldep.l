@@ -155,7 +155,7 @@
      (declare (fixnum totread))
      (multiple-value-bind (numread errcode)
 	 (comp::.primcall-sargs 'sys::filesys excl::fs-read-bytes fd vector
-				start-index length)
+				(+ start-index totread) length)
        (declare (fixnum numread))
        (if* errcode
 	  then (if (not (eq errcode
@@ -310,7 +310,7 @@
 ;; restrictions of Restricted Rights for Commercial Software developed
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 
-;; $Header: skel.cl,v 1.1 89/02/15 14:58:11 layer Exp $
+;; $Header: excldep.l,v 1.6 89/10/13 00:56:37 cjl Exp $
 
 (in-package 'patch :use '(lisp excl))
 
