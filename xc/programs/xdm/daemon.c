@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.2 88/09/23 14:29:02 jim Exp $
+ * $XConsortium: daemon.c,v 1.3 88/09/23 14:36:49 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,6 +23,8 @@
 #ifdef SYSV
 #include <sys/ptyio.h>
 #endif
+
+extern void exit ();
 
 BecomeDaemon ()
 {
@@ -56,7 +58,7 @@ BecomeDaemon ()
 	int zero = 0;
 	(void) ioctl (i, TIOCTTY, &zero);
 #else
-	(void) ioctl (i, TIOCNOTTY, 0);		/* detach, BSD style */
+	(void) ioctl (i, TIOCNOTTY, (char *) 0);    /* detach, BSD style */
 #endif
 	(void) close (i);
     }
