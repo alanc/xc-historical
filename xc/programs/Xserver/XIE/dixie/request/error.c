@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.1 93/10/26 09:57:48 rws Exp $ */
+/* $XConsortium: error.c,v 1.2 93/10/26 20:19:02 rws Exp $ */
 /**** module error.c ****/
 /****************************************************************************
 				NOTICE
@@ -110,6 +110,7 @@ int SendResourceError(client, code, id)
     register int n;
     swaps(&err.sequenceNum,n);
     swapl(&err.resourceID,n);
+    swaps(&err.minorOpcode,n);
   }
   WriteToClient(client, sz_xieResourceErr, (char *)&err);
   isItTimeToYield = TRUE;
@@ -145,6 +146,7 @@ int SendFloIDError(client, spaceID, floID)
     swaps(&err.sequenceNum, n);
     swapl(&err.nameSpace, n);
     swapl(&err.floID, n);
+    swaps(&err.minorOpcode,n);
   }
   WriteToClient(client, sz_xieFloErr, (char *)&err);
   isItTimeToYield = TRUE;
@@ -183,6 +185,7 @@ int SendFloError(client, flo)
     swapl(&err.floID, n);
     swaps(&err.phototag, n);
     swaps(&err.type, n);
+    swaps(&err.minorOpcode,n);
   }
   /* take care of the unique parts
    */
