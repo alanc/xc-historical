@@ -9,7 +9,7 @@ typedef struct sectionName {
     char *	suffix;
 } SectionNameRec;
 
-#ifdef SYSV
+#if defined(SYSV) || defined(__OSF1__)
 
 static SectionNameRec SectionNames[] = {
     {"(1) User Commands",		"1"},
