@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.37 91/03/04 18:53:59 converse Exp $ */
+/* $XConsortium: TextAction.c,v 1.38 91/03/07 15:14:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -41,10 +41,7 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-
-#include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/Misc.h>
-
 #include <X11/Xaw/TextP.h>
 
 #define SrcScan                XawTextSourceScan
@@ -171,7 +168,7 @@ Cardinal num_params;
     Atom selection;
     int buffer;
 
-    XmuInternStrings(XtDisplay(w), params, (Cardinal)1, &selection);
+    selection = XInternAtom(XtDisplay(w), *params, False);
     switch (selection) {
       case XA_CUT_BUFFER0: buffer = 0; break;
       case XA_CUT_BUFFER1: buffer = 1; break;
@@ -933,14 +930,18 @@ XEvent *event;
 String *params;
 Cardinal *num_params;
 {
-    Atom    selections[256];
     int	    num_atoms;
+    Atom*   sel;
+    Display* dpy = XtDisplay(w);
+    Atom    selections[256];
 
     StartAction (w, event);
     num_atoms = *num_params;
     if (num_atoms > 256)
 	num_atoms = 256;
-    XmuInternStrings(XtDisplay(w), params, num_atoms, selections);
+    for (sel=selections; --num_atoms >= 0; sel++, params++)
+	*sel = XInternAtom(dpy, *params, False);
+    num_atoms = *num_params;
     _XawTextSaltAwaySelection (w, selections, num_atoms);
     EndAction (w);
 }
