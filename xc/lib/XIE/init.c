@@ -1,4 +1,4 @@
-/* $XConsortium: init.c,v 1.6 93/10/30 14:56:24 rws Exp $ */
+/* $XConsortium: init.c,v 1.7 93/10/30 15:09:12 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -209,7 +209,7 @@ XieTechnique		**techniques_ret;
 	SYNC_HANDLE (display);
 
 	*ntechniques_ret = 0;
-	*techniques_ret = 0;
+	*techniques_ret = NULL;
 
 	return (0);
     }

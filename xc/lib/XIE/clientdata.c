@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: clientdata.c,v 1.1 93/07/19 11:39:13 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -104,7 +104,7 @@ unsigned     	*nbytes_ret;
 	SYNC_HANDLE (display);
 
    	*nbytes_ret = 0;
-	*data_ret = 0;
+	*data_ret = NULL;
 
 	return (0);
     }

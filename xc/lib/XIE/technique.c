@@ -1,4 +1,4 @@
-/* $XConsortium: technique.c,v 1.4 93/10/28 15:17:57 mor Exp $ */
+/* $XConsortium: technique.c,v 1.5 94/01/12 19:44:45 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -27,7 +27,7 @@ _XieTechniqueLength (group, technique, param)
 
 int group;
 int technique;
-char *param;
+XiePointer param;
 
 {
     XieTechFuncPtr techfunc = _XieLookupTechFunc (group, technique);
@@ -48,7 +48,7 @@ _XieEncodeTechnique (bufDest, group, technique, param)
 char **bufDest;
 int  group;
 int  technique;
-char *param;
+XiePointer param;
 
 {
     XieTechFuncPtr techfunc = _XieLookupTechFunc (group, technique);

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: photoflo.c,v 1.1 93/07/19 11:39:28 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -254,9 +254,9 @@ unsigned int    	*navailable_ret;
 
 	*state_ret = 0;
 	*nexpected_ret = 0;
-	*data_expected_ret = 0;
+	*data_expected_ret = NULL;
 	*navailable_ret = 0;
-	*data_available_ret = 0;
+	*data_available_ret = NULL;
 	
 	return (0);
     }

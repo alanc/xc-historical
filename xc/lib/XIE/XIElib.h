@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.5 94/01/12 19:44:01 rws Exp $ */
+/* $XConsortium: XIElib.h,v 1.6 94/02/22 17:41:18 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -131,6 +131,12 @@ typedef unsigned long	XieLTriplet[3];
 
 typedef unsigned  	XieWhiteAdjustTechnique;
 
+#if NeedFunctionPrototypes
+typedef void *XiePointer;
+#else
+typedef char *XiePointer;
+#endif
+
 
 /*--------------------------------------------------------------------------*
  * 			  Extension information				    *
@@ -180,7 +186,7 @@ typedef struct {
 	    XieLevels		levels;
 	    Bool		notify;
 	    XieDecodeTechnique	decode_tech;
-	    char		*decode_param;
+	    XiePointer		decode_param;
 	} ImportClientPhoto;
 	
 	struct {
@@ -277,7 +283,7 @@ typedef struct {
 	    XiePhototag			src;
 	    XieLevels			levels;
 	    XieConstrainTechnique	constrain_tech;
-	    char			*constrain_param;
+	    XiePointer			constrain_param;
 	} Constrain;
 	
 	struct {
@@ -290,7 +296,7 @@ typedef struct {
 	struct {
 	    XiePhototag		src;
 	    XieColorspace	color_space;
-	    char		*color_param;
+	    XiePointer		color_param;
 	} ConvertFromRGB;
 	
 	struct {
@@ -299,13 +305,13 @@ typedef struct {
 	    XieColorList		color_list;
 	    Bool			notify;
 	    XieColorAllocTechnique	color_alloc_tech;
-	    char			*color_alloc_param;
+	    XiePointer			color_alloc_param;
 	} ConvertToIndex;
 	
 	struct {
 	    XiePhototag		src;
 	    XieColorspace	color_space;
-	    char		*color_param;
+	    XiePointer		color_param;
 	} ConvertToRGB;
 	
 	struct {
@@ -315,7 +321,7 @@ typedef struct {
 	    int				kernel_size;
 	    unsigned int		band_mask;
 	    XieConvolveTechnique	convolve_tech;
-	    char			*convolve_param;
+	    XiePointer			convolve_param;
 	} Convolve;
 	
 	struct {
@@ -323,7 +329,7 @@ typedef struct {
 	    XieLevels		levels;
 	    unsigned int	band_mask;
 	    XieDitherTechnique	dither_tech;
-	    char		*dither_param;
+	    XiePointer		dither_param;
 	} Dither;
 	
 	struct {
@@ -334,7 +340,7 @@ typedef struct {
 	    XieConstant			constant;
 	    unsigned int		band_mask;
 	    XieGeometryTechnique	sample_tech;
-	    char			*sample_param;
+	    XiePointer			sample_param;
 	} Geometry;
 	
 	struct {
@@ -350,7 +356,7 @@ typedef struct {
 	    XiePhototag		src;
 	    XieProcessDomain	domain;
 	    XieHistogramShape	shape;
-	    char		*shape_param;
+	    XiePointer		shape_param;
 	} MatchHistogram;
 	
 	struct {
@@ -401,7 +407,7 @@ typedef struct {
 	    XiePhototag		src;
 	    XieExportNotify	notify;
 	    XieEncodeTechnique	encode_tech;
-	    char		*encode_param;
+	    XiePointer		encode_param;
 	} ExportClientPhoto;
 	
 	struct {
@@ -436,7 +442,7 @@ typedef struct {
 	    XiePhototag		src;
 	    XiePhotomap		photomap;
 	    XieEncodeTechnique	encode_tech;
-	    char		*encode_param;
+	    XiePointer		encode_param;
 	} ExportPhotomap;
 	
 	struct {
@@ -475,7 +481,7 @@ typedef struct {
 typedef struct {
     XieMatrix			matrix;
     XieWhiteAdjustTechnique	white_adjust_tech;
-    char			*white_adjust_param;
+    XiePointer			white_adjust_param;
 } XieRGBToCIELabParam, XieRGBToCIEXYZParam;
 
 typedef struct {
@@ -500,9 +506,9 @@ typedef struct {
 typedef struct {
     XieMatrix			matrix;
     XieWhiteAdjustTechnique	white_adjust_tech;
-    char			*white_adjust_param;
+    XiePointer			white_adjust_param;
     XieGamutTechnique		gamut_tech;
-    char			*gamut_param;
+    XiePointer			gamut_param;
 } XieCIELabToRGBParam, XieCIEXYZToRGBParam;
 
 typedef struct {
@@ -512,7 +518,7 @@ typedef struct {
     float		luma_blue;
     XieConstant		bias;
     XieGamutTechnique	gamut_tech;
-    char		*gamut_param;
+    XiePointer		gamut_param;
 } XieYCbCrToRGBParam;
 
 typedef struct {
@@ -522,7 +528,7 @@ typedef struct {
     float		luma_blue;
     float		scale;
     XieGamutTechnique	gamut_tech;
-    char		*gamut_param;
+    XiePointer		gamut_param;
 } XieYCCToRGBParam;
 
 /* Constrain */
@@ -1174,7 +1180,7 @@ extern void XieFloImportClientPhoto (
     XieLevels		/* levels */,
     Bool		/* notify */,
     XieDecodeTechnique	/* decode_tech */,
-    char *		/* decode_param */
+    XiePointer		/* decode_param */
 #endif
 );
 
@@ -1305,7 +1311,7 @@ extern void XieFloConstrain (
     XiePhototag			/* src */,
     XieLevels			/* levels */,
     XieConstrainTechnique	/* constrain_tech */,
-    char *			/* constrain_param */
+    XiePointer			/* constrain_param */
 #endif
 );
 
@@ -1324,7 +1330,7 @@ extern void XieFloConvertFromRGB (
     XiePhotoElement *	/* element */,
     XiePhototag		/* src */,
     XieColorspace	/* color_space */,
-    char *		/* color_param */
+    XiePointer		/* color_param */
 #endif
 );
 
@@ -1336,7 +1342,7 @@ extern void XieFloConvertToIndex (
     XieColorList		/* color_list */,
     Bool			/* notify */,
     XieColorAllocTechnique 	/* color_alloc_tech */,
-    char *			/* color_alloc_param */
+    XiePointer			/* color_alloc_param */
 #endif
 );
 
@@ -1345,7 +1351,7 @@ extern void XieFloConvertToRGB (
     XiePhotoElement *	/* element */,
     XiePhototag		/* src */,
     XieColorspace	/* color_space */,
-    char *		/* color_param */
+    XiePointer		/* color_param */
 #endif
 );
 
@@ -1358,7 +1364,7 @@ extern void XieFloConvolve (
     int				/* kernel_size */,
     unsigned int		/* band_mask */,
     XieConvolveTechnique	/* convolve_tech */,
-    char *			/* convolve_param */
+    XiePointer			/* convolve_param */
 #endif
 );
 
@@ -1369,7 +1375,7 @@ extern void XieFloDither (
     unsigned int		/* band_mask */,
     XieLevels			/* levels */,
     XieDitherTechnique		/* dither_tech */,
-    char *			/* dither_param */
+    XiePointer			/* dither_param */
 #endif
 );
 
@@ -1383,7 +1389,7 @@ extern void XieFloGeometry (
     XieConstant			/* constant */,
     unsigned int		/* band_mask */,
     XieGeometryTechnique	/* sample_tech */,
-    char *			/* sample_param */
+    XiePointer			/* sample_param */
 #endif
 );
 
@@ -1405,7 +1411,7 @@ extern void XieFloMatchHistogram (
     XiePhototag		/* src */,
     XieProcessDomain *	/* domain */,
     XieHistogramShape	/* shape */,
-    char *		/* shape_param */
+    XiePointer		/* shape_param */
 #endif
 );
 
@@ -1473,7 +1479,7 @@ extern void XieFloExportClientPhoto (
     XiePhototag		/* src */,
     XieExportNotify	/* notify */,
     XieEncodeTechnique	/* encode_tech */,
-    char *		/* encode_param */
+    XiePointer		/* encode_param */
 #endif
 );
 
@@ -1523,7 +1529,7 @@ extern void XieFloExportPhotomap (
     XiePhototag		/* src */,
     XiePhotomap		/* photomap */,
     XieEncodeTechnique	/* encode_tech */,
-    char *		/* encode_param */
+    XiePointer		/* encode_param */
 #endif
 );
 
@@ -1561,7 +1567,7 @@ extern XieRGBToCIELabParam *XieTecRGBToCIELab (
 #if NeedFunctionPrototypes
     XieMatrix			/* matrix */,
     XieWhiteAdjustTechnique	/* white_adjust_tech */,
-    char *			/* white_adjust_param */
+    XiePointer			/* white_adjust_param */
 #endif
 );
 
@@ -1569,7 +1575,7 @@ extern XieRGBToCIEXYZParam *XieTecRGBToCIEXYZ (
 #if NeedFunctionPrototypes
     XieMatrix			/* matrix */,
     XieWhiteAdjustTechnique	/* white_adjust_tech */,
-    char *			/* white_adjust_param */
+    XiePointer			/* white_adjust_param */
 #endif
 );
 
@@ -1597,9 +1603,9 @@ extern XieCIELabToRGBParam *XieTecCIELabToRGB (
 #if NeedFunctionPrototypes
     XieMatrix			/* matrix */,
     XieWhiteAdjustTechnique	/* white_adjust_tech */,
-    char *			/* white_adjust_param */,
+    XiePointer			/* white_adjust_param */,
     XieGamutTechnique		/* gamut_tech */,
-    char *			/* gamut_param */
+    XiePointer			/* gamut_param */
 #endif
 );
 
@@ -1607,9 +1613,9 @@ extern XieCIEXYZToRGBParam *XieTecCIEXYZToRGB (
 #if NeedFunctionPrototypes
     XieMatrix			/* matrix */,
     XieWhiteAdjustTechnique	/* white_adjust_tech */,
-    char *			/* white_adjust_param */,
+    XiePointer			/* white_adjust_param */,
     XieGamutTechnique		/* gamut_tech */,
-    char *			/* gamut_param */
+    XiePointer			/* gamut_param */
 #endif
 );
 
@@ -1621,7 +1627,7 @@ extern XieYCbCrToRGBParam *XieTecYCbCrToRGB (
     double		/* luma_blue */,
     XieConstant		/* bias */,
     XieGamutTechnique	/* gamut_tech */,
-    char *		/* gamut_param */
+    XiePointer		/* gamut_param */
 #endif
 );
 
@@ -1633,7 +1639,7 @@ extern XieYCCToRGBParam *XieTecYCCToRGB (
     double		/* luma_blue */,
     double		/* scale */,
     XieGamutTechnique	/* gamut_tech */,
-    char *		/* gamut_param */
+    XiePointer		/* gamut_param */
 #endif
 );
 

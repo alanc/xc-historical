@@ -1,4 +1,4 @@
-/* $XConsortium: conven.c,v 1.5 93/10/28 15:17:48 mor Exp $ */
+/* $XConsortium: conven.c,v 1.6 94/01/12 19:44:12 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -55,7 +55,7 @@ XieLTriplet		height;
 XieLevels		levels;
 Bool			notify;
 XieDecodeTechnique	decode_tech;
-char			*decode_param;
+XiePointer		decode_param;
 
 {
     element->elemType				 = xieElemImportClientPhoto;
@@ -318,7 +318,7 @@ XiePhotoElement		*element;
 XiePhototag		src;
 XieLevels		levels;
 XieConstrainTechnique	constrain_tech;
-char			*constrain_param;
+XiePointer		constrain_param;
 
 {
     element->elemType			    = xieElemConstrain;
@@ -355,7 +355,7 @@ XieFloConvertFromRGB (element, src, color_space, color_param)
 XiePhotoElement	*element;
 XiePhototag	src;
 XieColorspace	color_space;
-char	      	*color_param;
+XiePointer     	color_param;
 
 {
     element->elemType			     = xieElemConvertFromRGB;
@@ -375,7 +375,7 @@ Colormap		colormap;
 XieColorList		color_list;
 Bool	    		notify;
 XieColorAllocTechnique	color_alloc_tech;
-char			*color_alloc_param;
+XiePointer		color_alloc_param;
 
 {
     element->elemType				   = xieElemConvertToIndex;
@@ -394,7 +394,7 @@ XieFloConvertToRGB (element, src, color_space, color_param)
 XiePhotoElement	*element;
 XiePhototag	src;
 XieColorspace	color_space;
-char		*color_param;
+XiePointer	color_param;
 
 {
     element->elemType			   = xieElemConvertToRGB;
@@ -415,7 +415,7 @@ float			*kernel;
 int			kernel_size;
 unsigned int		band_mask;
 XieConvolveTechnique	convolve_tech;
-char			*convolve_param;
+XiePointer		convolve_param;
 
 {
     unsigned size;
@@ -444,7 +444,7 @@ XiePhototag		src;
 unsigned int		band_mask;
 XieLevels		levels;
 XieDitherTechnique	dither_tech;
-char			*dither_param;
+XiePointer		dither_param;
 
 {
     element->elemType		      = xieElemDither;
@@ -470,7 +470,7 @@ float			coefficients[6];
 XieConstant		constant;
 unsigned int		band_mask;
 XieGeometryTechnique	sample_tech;
-char			*sample_param;
+XiePointer		sample_param;
 
 {
     element->elemType			   = xieElemGeometry;
@@ -525,7 +525,7 @@ XiePhotoElement		*element;
 XiePhototag		src;
 XieProcessDomain	*domain;
 XieHistogramShape	shape;
-char			*shape_param;
+XiePointer		shape_param;
 
 {
     element->elemType				 = xieElemMatchHistogram;
@@ -667,7 +667,7 @@ XiePhotoElement		*element;
 XiePhototag		src;
 XieExportNotify		notify;
 XieEncodeTechnique	encode_tech;
-char			*encode_param;
+XiePointer		encode_param;
 
 {
     element->elemType                            = xieElemExportClientPhoto;
@@ -761,7 +761,7 @@ XiePhotoElement		*element;
 XiePhototag		src;
 XiePhotomap		photomap;
 XieEncodeTechnique	encode_tech;
-char			*encode_param;
+XiePointer		encode_param;
 
 {
     element->elemType                         = xieElemExportPhotomap;
@@ -843,7 +843,7 @@ XieTecRGBToCIELab (matrix, white_adjust_tech, white_adjust_param)
 
 XieMatrix		matrix;
 XieWhiteAdjustTechnique	white_adjust_tech;
-char			*white_adjust_param;
+XiePointer		white_adjust_param;
 
 {
     XieRGBToCIELabParam *param = (XieRGBToCIELabParam *)
@@ -862,7 +862,7 @@ XieTecRGBToCIEXYZ (matrix, white_adjust_tech, white_adjust_param)
 
 XieMatrix		matrix;
 XieWhiteAdjustTechnique	white_adjust_tech;
-char			*white_adjust_param;
+XiePointer		white_adjust_param;
 
 {
     XieRGBToCIEXYZParam *param = (XieRGBToCIEXYZParam *)
@@ -934,9 +934,9 @@ XieTecCIELabToRGB (matrix, white_adjust_tech, white_adjust_param,
 
 XieMatrix		matrix;
 XieWhiteAdjustTechnique	white_adjust_tech;
-char			*white_adjust_param;
+XiePointer		white_adjust_param;
 XieGamutTechnique	gamut_tech;
-char			*gamut_param;
+XiePointer		gamut_param;
 
 {
     XieCIELabToRGBParam *param = (XieCIELabToRGBParam *)
@@ -958,9 +958,9 @@ XieTecCIEXYZToRGB (matrix, white_adjust_tech, white_adjust_param,
 
 XieMatrix		matrix;
 XieWhiteAdjustTechnique	white_adjust_tech;
-char			*white_adjust_param;
+XiePointer		white_adjust_param;
 XieGamutTechnique	gamut_tech;
-char			*gamut_param;
+XiePointer		gamut_param;
 
 {
     XieCIEXYZToRGBParam *param = (XieCIEXYZToRGBParam *)
@@ -986,7 +986,7 @@ double			luma_green;
 double			luma_blue;
 XieConstant		bias;
 XieGamutTechnique	gamut_tech;
-char			*gamut_param;
+XiePointer		gamut_param;
 
 {
     XieYCbCrToRGBParam *param = (XieYCbCrToRGBParam *)
@@ -1018,7 +1018,7 @@ double			luma_green;
 double			luma_blue;
 double			scale;
 XieGamutTechnique	gamut_tech;
-char			*gamut_param;
+XiePointer		gamut_param;
 
 {
     XieYCCToRGBParam *param = (XieYCCToRGBParam *)

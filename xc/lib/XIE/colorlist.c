@@ -1,4 +1,4 @@
-/* $XConsortium: colorlist.c,v 1.1 93/07/19 11:39:14 mor Exp $ */
+/* $XConsortium: colorlist.c,v 1.2 93/07/26 19:00:52 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -133,7 +133,7 @@ unsigned long  	**colors_ret;
 
 	*colormap_ret = 0;
 	*ncolors_ret = 0;
-	*colors_ret = 0;
+	*colors_ret = NULL;
 
 	return (0);
     }
