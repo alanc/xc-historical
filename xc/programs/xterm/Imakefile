@@ -69,6 +69,7 @@ AllTarget($(PROGRAMS))
 
 SpecialObjectRule(main.o, ,$(MAIN_DEFINES))
 SpecialObjectRule(misc.o, ,$(MISC_DEFINES))
+SpecialObjectRule(charproc.o, ,$(MISC_DEFINES))
 
 NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 InstallProgramWithFlags(xterm, $(BINDIR), $(INSTUIDFLAGS))
