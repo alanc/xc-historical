@@ -11,19 +11,24 @@ Ascii Sink Object
 .TA 2.0i
 .ta 2.0i
 Application Header file	<X11/Xaw/AsciiSink.h>
+.IN "AsciiSink.h" ""
 Class Header file	<X11/Xaw/AsciiSinkP.h>
+.IN "AsciiSinkP.h" ""
 Class		asciiSinkObjectClass
+.IN "asciiSinkObjectClass" ""
 Class Name	AsciiSink
+.IN "AsciiSink object" "class name"
 Superclass	TextSink
 .sp 1
 .LP
 The AsciiSink object is used by a text widget to render the text.  It
-will display all Latin1 Characters in an 8 bit font, Tab and
-Carriage Return.  The name may be a bit misleading, but is left this
-way for compatability.  This object also reports the text window
-metrics to the text widgets.
+will display all Latin1 Characters in an 8 bit font, Tab and Carriage
+Return.  The name may be a bit misleading, but is left this way for
+compatibility.  This object also reports the text window metrics to the
+text widgets.
 .De
-.LP
+.NH 3
+Resources
 .IN "AsciiSink object" "resources"
 .ps 9
 .nr PS 9
@@ -45,7 +50,7 @@ destroyCallback	Callback	XtCallbackList		NULL
 displayNonprinting	Output	Boolean		True
 echo	Output	Boolean		True
 font	Font	XFontStruct*		XtDefaultFont
-foreground	Foreground	Pixel		XtDefaultForground
+foreground	Foreground	Pixel		XtDefaultForeground
 .sp 3p
 _
 .TE

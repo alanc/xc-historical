@@ -10,9 +10,13 @@ Ascii Text Widget
 .TA 2.0i
 .ta 2.0i
 Application Header file	<X11/Xaw/AsciiText.h>
+.IN "AsciiText.h" ""
 ClassHeader file	<X11/Xaw/AsciiTextP.h>
+.IN "AsciiTextP.h" ""
 Class		asciiTextWidgetClass
+.IN "asciiTextWidgetClass" ""
 Class Name	Text
+.IN "AsciiText widget" "class name"
 Superclass	Text
 Sink Name	textSink
 Source Name	textSource
@@ -23,6 +27,8 @@ The AsciiText widget is really a collection of smaller parts.  It
 includes the Text widget, an AsciiSource, and an AsciiSink.  Some of
 the resources listed below are not actually resources of the
 AsciiText, but belong to the AsciiSource or AsciiSink.  This is
+.IN "AsciiSource object" ""
+.IN "AsciiSink object" ""
 is noted in the explanation of each resource where it applies.  When
 specifying these resources in a resource file be sure to use
 \fI*AsciiText*resource_name\fP instead of
@@ -30,6 +36,8 @@ specifying these resources in a resource file be sure to use
 children of the AsciiText widget, and not the AsciiText widget itself.
 However, these resources may be set directly on the AsciiText widget at
 widget creation time, or via \fBXtSetValues\fP.
+.NH 3
+Resources
 .IN "AsciiText widget" "resources"
 .ps 9
 .nr PS 9
