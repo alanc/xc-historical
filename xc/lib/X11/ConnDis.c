@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.92 92/08/10 15:17:54 eswu Exp $
+ * $XConsortium: XConnDis.c,v 11.93 92/10/21 10:21:07 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -173,10 +173,12 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 
     if (*p) {
 	for (lastp = ++p; *p && isascii(*p) && isdigit (*p); p++) ;
-	if (*p ||			/* non-digits */
-	    !(pscrnum = copystring (lastp, p - lastp)))	 /* no memory */
-	  goto bad;
-	iscreen = atoi (lastp);
+	if (p != lastp) {
+	    if (*p ||			/* non-digits */
+		!(pscrnum = copystring (lastp, p - lastp))) /* no memory */
+		goto bad;
+	    iscreen = atoi (lastp);
+	}
     }
 
 
