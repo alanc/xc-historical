@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.94 89/03/24 17:34:29 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.95 89/03/27 12:00:36 jim Exp $
  */
 
 #include "copyright.h"
@@ -571,8 +571,9 @@ register Display *dpy;
  * The right choice for rep->sequenceNumber is the largest that
  * still meets these constraints.
  */
-static unsigned long
-_SetLastRequestRead(dpy, rep)
+
+unsigned long
+_XSetLastRequestRead(dpy, rep)
     register Display *dpy;
     register xGenericReply *rep;
 {
@@ -633,7 +634,7 @@ Status _XReply (dpy, rep, extra, discard)
 	        if (rep->generic.sequenceNumber == (cur_request & 0xffff))
 		    dpy->last_request_read = cur_request;
 		else
-		    (void) _SetLastRequestRead(dpy, &rep->generic);
+		    (void) _XSetLastRequestRead(dpy, &rep->generic);
 		if (extra == 0) {
 		    if (discard && (rep->generic.length > 0))
 		       /* unexpectedly long reply! */
@@ -673,7 +674,7 @@ Status _XReply (dpy, rep, extra, discard)
 		xError *err = (xError *) rep;
 		unsigned long serial;
 
-		serial = _SetLastRequestRead(dpy, (xGenericReply *)rep);
+		serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
 		if (serial == cur_request)
 			/* do not die on "no such font", "can't allocate",
 			   "can't grab" failures */
@@ -829,7 +830,7 @@ register xEvent *event;	/* wire protocol event */
 {
 
 	re->type = event->u.u.type & 0x7f;
-	((XAnyEvent *)re)->serial = _SetLastRequestRead(dpy,
+	((XAnyEvent *)re)->serial = _XSetLastRequestRead(dpy,
 					(xGenericReply *)event);
 	((XAnyEvent *)re)->send_event = ((event->u.u.type & 0x80) != 0);
 	((XAnyEvent *)re)->display = dpy;
@@ -1240,7 +1241,7 @@ int _XError (dpy, rep)
 
     event.display = dpy;
     event.type = X_Error;
-    event.serial = _SetLastRequestRead(dpy, (xGenericReply *)rep);
+    event.serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
     event.resourceid = rep->resourceID;
     event.error_code = rep->errorCode;
     event.request_code = rep->majorCode;

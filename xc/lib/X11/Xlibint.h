@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.62 89/01/10 11:17:13 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.63 89/02/01 15:05:57 rws Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -48,6 +48,7 @@ extern (*_XIOErrorFunction)();		/* X system error reporting routine. */
 extern (*_XErrorFunction)();		/* X_Error event reporting routine. */
 extern char *_XAllocScratch();		/* fast memory allocator */
 extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
+extern unsigned long _XSetLastRequestRead();	/* update dpy->last_request_read */
 
 #ifndef BUFSIZE
 #define BUFSIZE 2048			/* X output buffer size. */
