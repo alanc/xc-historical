@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: stfnt.m,v 1.8 92/06/11 16:18:34 rws Exp $
  */
 >>TITLE XSetFont CH05
 char **
@@ -72,7 +72,13 @@ int		xmin, ymax;
 	values.background = W_BG;
 	values.function = GXxor;
 
-	gc = XCreateGC(display, DRW(display), GCFont|GCBackground|GCForeground|GCFunction, &values);
+        /*
+         * Create the GC with the window with which it is to be used.
+         * This is required because there is a possibility that the target
+         * window may not match the default visual depth (causing a BadMatch
+         * error if the GC is used with it if created with the root).
+         */
+	gc = XCreateGC(display, Win, GCFont|GCBackground|GCForeground|GCFunction, &values);
 
 	xmin = (int) ((cs1->lbearing < cs2->lbearing) ? cs1->lbearing : cs2->lbearing);
 	ymax = (int) ((cs1->ascent > cs2->ascent) ? cs1->ascent : cs2->ascent);
