@@ -1,7 +1,5 @@
-/* $XConsortium: ThreadsI.h,v 1.00 93/08/17 12:07:18 kaleb Exp $ */
+/* $XConsortium: ThreadsI.h,v 1.1 93/08/27 08:55:56 kaleb Exp $ */
 
-#ifndef _X11_THREADSI_H 
-#define _X11_THREADSI_H 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -32,66 +30,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #if defined(XTHREADS)
 
-#if defined(CTHREADS)
-#include <cthreads.h>
-typedef cthread_t ThreadId;
-typedef mutex_t Mutex;
-typedef condition_t Cond;
-#define MutexLock(m) mutex_lock(m)
-#define MutexUnlock(m) mutex_unlock(m)
-#define MutexInit(m) mutex_init(m)
-#define CondInit(c) condition_init(c)
-#define CondWait(c,m) condition_wait(c,m)
-#define CondSignal(c) condition_signal(c)
-#define NewMutex() XtNew(mutex_t)
-#define NewCond() XtNew(condition_t)
-#define ThrSelf() cthread_self()
-#define SameThrId(t1,t2) t1 == t2 /* XXX */
-#define DestroyMutex(m) mutex_clear(m)
-#define DestroyCond(c) condition_clear(c)
-#define DeleteMutex(m) XtFree((char *)m)
-#define DeleteCond(c) XtFree((char *)c);
-#else
-#if defined(sun)
-#include <thread.h>
-typedef thread_t ThreadId;
-typedef mutex_t *Mutex;
-typedef cond_t *Cond;
-#define MutexLock(m) mutex_lock(m)
-#define MutexUnlock(m) mutex_unlock(m)
-#define MutexInit(m) mutex_init(m, USYNC_THREAD, 0)
-#define CondInit(c) cond_init(c, USYNC_THREAD, 0)
-#define CondWait(c,m) cond_wait(c,m)
-#define CondSignal(c) cond_signal(c)
-#define NewMutex() XtNew(mutex_t)
-#define NewCond() XtNew(cond_t)
-#define ThrSelf() thr_self()
-#define SameThrId(t1,t2) t1 == t2
-#define DestroyMutex(m) mutex_destroy(m)
-#define DestroyCond(c) cond_destroy(c)
-#define DeleteMutex(m) XtFree((char *)m)
-#define DeleteCond(c)  XtFree((char *)c)
-#else
-#include <pthread.h>
-typedef pthread_t ThreadId;
-typedef pthread_mutex_t *Mutex;
-typedef pthread_cond_t *Cond;
-#define MutexLock(m) pthread_mutex_lock(m)
-#define MutexUnlock(m) pthread_mutex_unlock(m)
-#define MutexInit(m) pthread_mutex_init(m, pthread_mutexattr_default)
-#define CondInit(c) pthread_cond_init(c, pthread_condattr_default)
-#define CondWait(c,m) pthread_cond_wait(c,m)
-#define CondSignal(c) pthread_cond_signal(c)
-#define NewMutex() XtNew(pthread_mutex_t)
-#define NewCond() XtNew(pthread_cond_t)
-#define ThrSelf() pthread_self()
-#define SameThrId(t1,t2) pthread_equal(t1, t2) 
-#define DestroyMutex(m) pthread_mutex_destroy(m) 
-#define DestroyCond(c) pthread_cond_destroy(c) 
-#define DeleteMutex(m) XtFree((char *)m)
-#define DeleteCond(c)  XtFree((char *)c)
-#endif
-#endif
+#define xmalloc XtMalloc
+#define xfree   XtFree
+
+#include <X11/Xthreads.h>
+#define NDEBUG
+#include <assert.h>
 
 /* No thread should have _XT_NO_THREAD_ID as its id*/
 #ifndef _XT_NO_THREAD_ID
@@ -103,10 +47,10 @@ typedef pthread_cond_t *Cond;
 
 /* typedefs */
 typedef struct _LockRec {
-    ThreadId holder;
-    Mutex mutex;
+    xthread_t holder;
+    xmutex_t mutex;
     int recursion;
-    Cond cond;
+    xcondition_t cond;
 } LockRec, *LockPtr;
 
 #define STACK_INCR 16
@@ -114,7 +58,7 @@ typedef struct _LockRec {
 typedef struct _ThreadStack {
 	unsigned int size;
 	int sp;
-	ThreadId *p;
+	xthread_t *p;
 } ThreadStack, *ThreadStackPtr;
 
 typedef void (*ProcessLockProc)();
@@ -222,6 +166,4 @@ extern InitAppLockProc _XtInitAppLock;
 #define WIDGET_TO_APPCON(w) /**/
 #define DPY_TO_APPCON(d) /**/
 
-#endif /* defined(XTHREADS) */
-#endif /* _X11_THREADSI_H */ 
-
+#endif /* !defined(XTHREADS) */
