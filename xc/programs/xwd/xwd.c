@@ -29,9 +29,10 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.1 87/05/18 09:40:42 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.2 87/05/18 13:02:17 dkk Locked $";
 #endif
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -50,12 +51,16 @@ char *calloc();
 #define MIN(a, b) (a) < (b) ? (a) : (b)
 #define ABS(a) (a) < 0 ? -(a) : (a)
 
+#define UBPS (sizeof(short)/2) /* useful bytes per short */
+#define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
+#define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
+#define BZPixmapSize(width, height) ((width) * (height))
+#define WZPixmapSize(width, height) (((width) * (height)) << 1)
+
 #define FAILURE 0
 
 #define FEEP_VOLUME 0
 
-#define TRUE = True
-#define FALSE = False
 
 extern int errno;
 
@@ -76,25 +81,29 @@ main(argc, argv)
     int header_size;
     int ncolors = 0;
     int pointer_mode, keyboard_mode;
+    int screen;
+    int format;
+    long plane_mask;
     char *str_index;
     char *file_name;
     char display[256];
     char *win_name;
-    Bool nobdrs = FALSE;
-    Bool debug = FALSE;
-    Bool standard_out = TRUE;
-    Bool owner_events = TRUE;
+    Bool nobdrs = False;
+    Bool debug = False;
+    Bool standard_out = True;
+    Bool owner_events = True;
 
     Pixmap source;
     Pixmap mask;
     XColor *scolor;
     XColor *bcolor;
-    Color *pixcolors;
+    XColor *pixcolors;
     Display *dpy;
     Window target_win;
-    Window image_win;
     Window confine_to;
+    Window rootwin;
     XWindowAttributes win_info;
+    Drawable image_win;
     Cursor cursor;
     XButtonEvent rep;
 
@@ -103,8 +112,6 @@ main(argc, argv)
     FILE *out_file = stdout;
 
     pointer_mode = keyboard_mode = GrabModeSync;
-    confine_to = 0;
-    *dpy = NULL;
 
     for (i = 1; i < argc; i++) {
 	str_index = (char *)index (argv[i], ':');
@@ -115,11 +122,11 @@ main(argc, argv)
 	str_index = (char *) index (argv [i], '-');
 	if (str_index == (char *)NULL) Syntax(argv[0]);
 	if (strncmp(argv[i], "-nobdrs", 6) == 0) {
-	    nobdrs = TRUE;
+	    nobdrs = True;
 	    continue;
 	}
 	if (strncmp(argv[i], "-debug", 6) == 0) {
-	    debug = TRUE;
+	    debug = True;
 	    continue;
 	}
 	if (strncmp(argv[i], "-help", 5) == 0) {
@@ -128,11 +135,11 @@ main(argc, argv)
 	if (strncmp(argv[i], "-out", 4) == 0) {
 	    if (++i >= argc) Syntax(argv[0]);
 	    file_name = argv[i];
-	    standard_out = FALSE;
+	    standard_out = False;
 	    continue;
 	}
 	if(strncmp(argv[i], "-xy") == 0) {
-	    pixmap_format = XYFormat;
+	    pixmap_format = XYPixmap;
 	    continue;
 	}
 	Syntax(argv[0]);
@@ -155,32 +162,41 @@ main(argc, argv)
 	exit(1);
       }
 
+    screen = DefaultScreen(dpy);
+    rootwin = RootWindow(dpy, screen);
 
     /*
      * Store the cursor incase we need it.
      */
     if (debug) fprintf(stderr,"xwd: Storing target cursor.\n");
-    if((cursor = XCreateCursor(dpy
-    	target_width, target_height, 
-    	target_bits, target_mask_bits, 
-	8, 8,
-	BlackPixel, WhitePixel,
-	GXcopy
-    )) == FAILURE)
+    if((cursor = XCreateCursor(dpy, source, mask, scolor, bcolor,
+	8, 8)) == FAILURE)
+/*    	target_width, target_height, 
+ *   	target_bits, target_mask_bits, %%*/
+
+/*	BlackPixel, WhitePixel,
+ *	GXcopy  %%*/
+
 	Error("Error occured while trying to store target cursor.");
 
     /*
      * Set the right pixmap format for the display type.
      */
-    if(DisplayPlanes() == 1) pixmap_format = XYFormat;
+    if(DisplayPlanes(dpy, screen) == 1) {
+        pixmap_format = XYPixmap;
+	format = Bitmap;
+    }
     else {
-	if(pixmap_format != XYFormat) pixmap_format = ZFormat;
+            format = XYPixmap;              /*  INCOMPLETE  %%*/
+	if(pixmap_format != XYPixmap) {
+	    pixmap_format = ZPixmap;
+	    format = ZPixmap;
     }
 
     /*
      * Let the user select the target window.
      */
-    if(XGrabPointer(dpy, RootWindow, owner_events, ButtonPress,
+    if(XGrabPointer(dpy, rootwin, owner_events, ButtonPress,
 		    pointer_mode, keyboard_mode, confine_to, cursor,
 		    CurrentTime) == FAILURE)
       Error("Can't grab the mouse.");
@@ -192,7 +208,7 @@ main(argc, argv)
 	 * The user must have indicated the root window.
 	 */
 	if (debug) fprintf(stderr,"xwd: Root window selected as target.\n");
-	target_win = RootWindow;
+	target_win = rootwin;
     }
     else if (debug) 
      fprintf(stderr,
@@ -230,24 +246,25 @@ main(argc, argv)
     }
     else {
 	if (debug) fprintf(stderr,"xwd: Image with borders selected.\n");
-	image_win = RootWindow;
+	image_win = rootwin;
 	virt_x = win_info.x;
 	virt_y = win_info.y;
-	virt_width = win_info.width + (win_info.bdrwidth << 1);
-    	virt_height = win_info.height + (win_info.bdrwidth << 1);
+	virt_width = win_info.width + (win_info.border_width << 1);
+    	virt_height = win_info.height + (win_info.border_width << 1);
     }
 
     /*
      * Determine the pixmap size.
      */
-    if (pixmap_format == XYFormat) {
-	buffer_size = XYPixmapSize(virt_width, virt_height, DisplayPlanes());
+    if (pixmap_format == XYPixmap) {
+	buffer_size = XYPixmapSize(virt_width, virt_height,
+				   DisplayPlanes(dpy, screen));
 	if (debug) {
 	    fprintf(stderr,
 		    "xwd: Pixmap in XYFormat, size %d bytes.\n", buffer_size);
 	}
     }
-    else if (DisplayPlanes() < 9) {
+    else if (DisplayPlanes(dpy, screen) < 9) {
 	buffer_size = BZPixmapSize(virt_width, virt_height);
 	if (debug) {
 	    fprintf(stderr,
@@ -276,12 +293,14 @@ main(argc, argv)
      * map allocations before resnarfing if XY format selected.
      */
     if (debug) fprintf(stderr,"xwd: Getting pixmap.\n");
-    if (DisplayPlanes() == 1) {
-	(void) XPixmapGetXY(
-	    image_win,
+    if (DisplayPlanes(dpy, screen) == 1) {
+	(void) XGetImage(
+	    dpy, image_win,
 	    virt_x, virt_y,
 	    virt_width, virt_height,
-	    (short *)buffer
+	    plane_mask,
+	    format
+/*	    (short *)buffer  %%*/
 	);
     }
     else {
@@ -297,16 +316,16 @@ main(argc, argv)
      * Find the number of colors used, then write them out to the file.
      */
     ncolors = 0;
-    if(DisplayPlanes() > 1) {
-	if(DisplayPlanes() < 9) {
+    if(DisplayPlanes(dpy, screen) > 1) {
+	if(DisplayPlanes(dpy, screen) < 9) {
 	    histbuffer = (int *)calloc(256, sizeof(int));
 	    bzero(histbuffer, 256*sizeof(int));
-	    pixcolors = (Color *)calloc(1, sizeof(Color));
+	    pixcolors = (XColor *)calloc(1, sizeof(XColor));
 	    for(i=0; i<buffer_size; i++) {
 		/* if previously found, skip color query */
 		if(histbuffer[(int)buffer[i]] == 0) {
 		    pixcolors = 
-		      (Color *)realloc(pixcolors, sizeof(Color)*(++ncolors));
+		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
 		    if(debug)
 		      fprintf(stderr,"Color %3d at pixel val %5d, i= %5d =",
 			      ncolors, buffer[i], i);
@@ -321,16 +340,16 @@ main(argc, argv)
 		}
 	    }
 	}
-	else if(DisplayPlanes() < 17) {
+	else if(DisplayPlanes(dpy, screen) < 17) {
 	    wbuffer = (u_short *)buffer;
 	    histbuffer = (int *)calloc(65536, sizeof(int));
 	    bzero(histbuffer, 65536*sizeof(int));
-	    pixcolors = (Color *)calloc(1, sizeof(Color));
+	    pixcolors = (XColor *)calloc(1, sizeof(XColor));
 	    for(i=0; i<(buffer_size/sizeof(u_short)); i++) {
 		/* if previously found, skip color query */
 		if(histbuffer[(int)wbuffer[i]] == 0) {
 		    pixcolors = 
-		      (Color *)realloc(pixcolors, sizeof(Color)*(++ncolors));
+		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
 		    if(debug)
 		      fprintf(stderr,"Color %2d at pixel val %d, i= %d =",
 			      ncolors, wbuffer[i], i);
@@ -345,11 +364,11 @@ main(argc, argv)
 		}
 	    }
 	} 
-	else if(DisplayPlanes() > 16)
+	else if(DisplayPlanes(dpy, screen) > 16)
 	  Error("Unable to handle more than 16 planes at this time");
 
 	/* reread in XY format if necessary */
-	if(pixmap_format == XYFormat) {
+	if(pixmap_format == XYPixmap) {
 	    (void) XPixmapGetXY(image_win,
 				virt_x, virt_y,
 				virt_width, virt_height,
@@ -362,8 +381,8 @@ main(argc, argv)
     /*
      * Inform the user that the image has been retrieved.
      */
-    XFeep(FEEP_VOLUME);
-    XFeep(FEEP_VOLUME);
+    XBell(FEEP_VOLUME);
+    XBell(FEEP_VOLUME);
     XFlush();
 
     /*
@@ -378,8 +397,8 @@ main(argc, argv)
     if (debug) fprintf(stderr,"xwd: Constructing and dumping file header.\n");
     header.header_size = header_size;
     header.file_version = XWD_FILE_VERSION;
-    header.display_type = DisplayType();
-    header.display_planes = DisplayPlanes();
+    header.display_type = DisplayType(dpy, screen);
+    header.display_planes = DisplayPlanes(dpy, screen);
     header.pixmap_format = pixmap_format;
     header.pixmap_width = virt_width;
     header.pixmap_height = virt_height;
@@ -387,7 +406,7 @@ main(argc, argv)
     header.window_height = win_info.height;
     header.window_x = win_info.x;
     header.window_y = win_info.y;
-    header.window_bdrwidth = win_info.bdrwidth;
+    header.window_bdrwidth = win_info.border_width;
     header.window_ncolors = ncolors;
 
     (void) fwrite((char *)&header, sizeof(header), 1, out_file);
@@ -397,7 +416,7 @@ main(argc, argv)
      * Write out the color maps, if any
      */
     if (debug) fprintf(stderr,"xwd: Dumping %d colors.\n",ncolors);
-    (void) fwrite(pixcolors, sizeof(Color), ncolors, out_file);
+    (void) fwrite(pixcolors, sizeof(XColor), ncolors, out_file);
 
     /*
      * Write out the buffer.
