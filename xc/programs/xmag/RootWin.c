@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: RootWin.c,v 1.1 90/12/06 20:39:39 dave Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -24,7 +24,7 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include "RootWindoP.h"
+#include "RootWinP.h"
 
 static void Realize();
 

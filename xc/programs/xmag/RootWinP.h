@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: RootWinP.h,v 1.1 90/12/06 20:40:50 dave Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -25,7 +25,7 @@
 #ifndef _RootWindoP_h
 #define _RootWindoP_h
 
-#include "RootWindow.h"
+#include "RootWin.h"
 /* include superclass private header file */
 #include <X11/CoreP.h>
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xmag.c,v 1.26 92/06/10 16:16:29 dave Exp $ */
+/* $XConsortium: xmag.c,v 1.27 92/09/01 14:42:03 gildea Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -33,7 +33,7 @@
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Shell.h>
-#include "RootWindow.h"
+#include "RootWin.h"
 #include "Scale.h"
 #include <X11/cursorfont.h>
 
