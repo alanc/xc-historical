@@ -318,13 +318,13 @@ do_XkbCompatMapNotify(xkbev)
     if (map->changed_vmods)
 	printf("    maps for virtual modifiers in 0x%04x changed\n",
 						map->changed_vmods);
-    if (map->num_syms>0) {
+    if (map->num_si>0) {
 	printf("    symbol interpretations %d..%d (of %d) changed\n",
-				map->first_sym,map->first_sym+map->num_syms-1,
-							map->num_total_syms);
+				map->first_si,map->first_si+map->num_si-1,
+							map->num_total_si);
     }
     else printf("   keyboard has %d symbol interpretations\n",
-							map->num_total_syms);
+							map->num_total_si);
     return;
 }
 
