@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.9 87/12/24 10:41:54 swick Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.10 88/01/08 11:24:50 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -53,7 +53,7 @@ int flags, mode;
 {
     int fid;
     fid = open(path, flags, mode);
-    if (debug && fid >= 0) fprintf(stderr, "# %d : %s\n", fid, path);
+    if (fid >= 0) DEBUG2("# %d : %s\n", fid, path);
     return fid;
 }
 
@@ -63,7 +63,7 @@ char *path, *mode;
 {
     FILE *result;
     result = fopen(path, mode);
-    if (debug && result)  fprintf(stderr, "# %d : %s\n", fileno(result), path);
+    if (result)  DEBUG2("# %d : %s\n", fileno(result), path);
     return result;
 }
 
@@ -72,7 +72,7 @@ char *path, *mode;
 int myclose(fid)
 {
     if (close(fid) < 0) Punt("Error in myclose!");
-    if (debug) fprintf(stderr, "# %d : <Closed>\n", fid);
+    DEBUG1( "# %d : <Closed>\n", fid);
 }
 
 
@@ -81,7 +81,7 @@ FILE *file;
 {
     int fid = fileno(file);
     if (fclose(file) < 0) Punt("Error in myfclose!");
-    if (debug) fprintf(stderr, "# %d : <Closed>\n", fid);
+    DEBUG1("# %d : <Closed>\n", fid);
 }
 
 
@@ -299,24 +299,27 @@ char *str;
 
 
 
-TextWidget CreateTextSW(scrn, position, name, options, arglist, argcount)
+Widget CreateTextSW(scrn, position, name, options)
 Scrn scrn;
 int position;
 char *name;
 int options;
-ArgList arglist;
-Cardinal argcount;
 {
-    Widget result;
-    result = XtCreateWidget(name, textWidgetClass, (Widget) scrn->widget,
-			    arglist, argcount);
-    XtManageChild(result);
-    return (TextWidget) result;
+    static Arg arglist[] = {
+        {XtNtextOptions, NULL},
+        {XtNfile, (XtArgVal)"/dev/null"}
+    };
+
+    arglist[0].value = (XtArgVal) (scrollVertical | options);
+
+    return XtCreateManagedWidget( name, asciiDiskWidgetClass,
+				  (Widget)scrn->widget,
+				  arglist, XtNumber(arglist) );
 }
 
 
 
-LabelWidget CreateTitleBar(scrn, position)
+Widget CreateTitleBar(scrn, position)
 Scrn scrn;
 int position;
 {
@@ -326,12 +329,12 @@ int position;
 	{XtNlabel, NULL},
     };
     arglist[0].value = (XtArgVal) Version();
-    result = XtCreateWidget("titlebar", labelWidgetClass, (Widget)scrn->widget,
-			    arglist, XtNumber(arglist));
+    result = XtCreateManagedWidget( "titlebar", labelWidgetClass,
+				    (Widget)scrn->widget,
+				    arglist, XtNumber(arglist) );
     height = GetHeight(result);
-    DwtPaneSetMinMax(result, height, height);
-    XtManageChild(result);
-    return (LabelWidget) result;
+    XtPanedSetMinMax(result, height, height);
+    return result;
 }
 
 
@@ -388,7 +391,3 @@ char *str;
     arglist[0].value = (XtArgVal) str;
     XtSetValues(scrn->parent, arglist, XtNumber(arglist));
 }
-
-
-void DwtInitCallbacks(){}
-void DwtCallCallbacks(){}
