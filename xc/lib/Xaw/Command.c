@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.41 88/09/26 18:03:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.42 88/09/27 11:33:27 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -361,8 +361,10 @@ static Boolean SetValues (current, request, new)
 	XtCBField(oldcbw,highlight_thickness) != ComWhighlightThickness ||
 	XtLField(oldcbw,font) != ComWfont)
     {
-	XtReleaseGC(new, ComWnormalGC);	   
-	XtReleaseGC(new, ComWinverseGC);
+	if (ComWset)		/* Label has release one of these */
+	    XtReleaseGC(new, ComWnormalGC);
+	else
+	    XtReleaseGC(new, ComWinverseGC);
 	ComWnormalGC = Get_GC(cbw, ComWforeground, ComWbackground);
 	ComWinverseGC = Get_GC(cbw, ComWbackground, ComWforeground);
 	redisplay = True;
