@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontmisc.h,v 1.3 91/05/11 11:31:14 rws Exp $
+ * $XConsortium: fontmisc.h,v 1.4 91/05/11 15:12:36 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -33,6 +33,8 @@ typedef int		Bool;
 #ifndef X_PROTOCOL
 typedef unsigned long	Atom;
 typedef unsigned long	XID;
+#endif
+#ifndef LSBFirst
 #define LSBFirst	0
 #define MSBFirst	1
 #endif
