@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 94/02/22 14:33:17 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 94/02/22 15:42:37 mor Exp $
 #if !defined(RshCmd)
 #if SystemV
 #ifdef HPArchitecture
@@ -38,3 +38,5 @@ SpecialCObjectRule(remote,NullParameter,'-DRSHCMD="$(RSHCMD)"')
 #if !HasPutenv
 SpecialCObjectRule(misc,NullParameter,-DNOPUTENV)
 #endif
+SpecialCObjectRule(restart,$(_NOOP_),'-DSYSTEM_INIT_FILE="'$(XSMDIR)'/system.xsm"')
+InstallNonExecFile(system.xsm,$(XSMDIR))
