@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.13 91/06/05 09:09:43 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.14 93/09/17 13:24:53 rws Exp $
  */
 
 /*
@@ -7,6 +7,8 @@
  *                      and Nippon Telegraph and Telephone Corporation
  * Copyright 1991 by the Massachusetts Institute of Technology
  * Copyright 1991 by the Open Software Foundation
+ * Copyright 1993 by the TOSHIBA Corp.
+ * Copyright 1993 by the Sony Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -35,6 +37,8 @@
  *		 Muneiyoshi Suzuki	Nippon Telegraph and Telephone Co.
  * 
  *		 M. Collins		OSF  
+ *		 Katsuhisa Yano		TOSHIBA Corp.
+ *               Makoto Wakamatsu       Sony Corporation
  */				
 
 
@@ -42,6 +46,7 @@
 #define	_XLCINT_H_
 
 #include <X11/Xresource.h>
+#include <X11/Xutil.h>
 
 /* current Ultrix compiler gets horribly confused */
 #if defined(FUNCPROTO) && defined(ultrix)
@@ -61,6 +66,11 @@ typedef struct _XIMFilter {
     XPointer client_data;
 } XFilterEventRec, *XFilterEventList;
 
+typedef struct {
+    char    *name;
+    XPointer value;
+} XIMArg;
+
 #ifdef offsetof
 #define XOffsetOf(s_type,field) offsetof(s_type,field)
 #else
@@ -69,53 +79,28 @@ typedef struct _XIMFilter {
 
 #define XIMNumber(arr) ((unsigned int) (sizeof(arr) / sizeof(arr[0])))
 
-typedef struct {
-    char    *name;
-    XPointer value;
-} XIMArg;
-
-#define	ICInputStyle		0
-#define	ICClientWindow		1
-#define	ICFocusWindow		2
-#define	ICFilterEvents		3
-#define	ICArea			4
-#define	ICAreaNeeded		5
-#define	ICSpotLocation		6
-#define	ICColormap		7
-#define	ICStdColormap		8
-#define	ICForeground		9
-#define	ICBackground		10
-#define	ICBackgroundPixmap	11
-#define	ICFontSet		12
-#define	ICLineSpace		13
-#define	ICCursor		14
-#define	ICResourceClass		26
-#define	ICResourceName		27
-
-#define	IMQueryInputStyle	0
-
 #define IMResourceWrite		1
 #define IMResourceRead 		2
 #define IMResourceReadWrite	3
 
 /*
- * define secondary data structs which are part of Input methods
- * and input context
+ * define secondary data structs which are part of Input Methods
+ * and Input Context
  */
 typedef struct {
     XrmQuark		xrm_name;		/* Resource name quark */
     int			xrm_size;		/* Size in bytes of data */
     long		xrm_offset;		/* -offset-1 */
     unsigned short 	mode;			/* Read Write Permission */
-    int			mask;			/* ? */
+    unsigned short 	id;			/* Input Method Protocol */
 } XIMrmResource, *XIMrmResourceList;
 
 typedef struct {
     char		*resource_name;		/* Resource string */
     int			resource_size;		/* Size in bytes of data */
-    long		resource_offset;	/* -offset-1 */
+    long		resource_offset;	/* Offset from base */
     unsigned short 	mode;			/* Read Write Permission */
-    int			mask;			/* ? */
+    unsigned short 	id;			/* Input Method Protocol */
 } XIMResource, *XIMResourceList;
 
 typedef struct {
@@ -144,6 +129,40 @@ typedef struct {
     ICCallbacks		callbacks;
 } ICAttributes, *ICAttributesPtr;
 
+/*
+ * Methods for Xrm parsing
+ */
+
+typedef struct {
+    void (*mbinit)(
+#if NeedFunctionPrototypes
+	XPointer	/* state */
+#endif
+	);
+    char (*mbchar)(
+#if NeedFunctionPrototypes
+	XPointer	/* state */,
+	char*		/* str */,
+	int*		/* lenp */
+#endif
+	);
+    void (*mbfinish)(
+#if NeedFunctionPrototypes
+	XPointer /* state */
+#endif
+	);
+    char* (*lcname)(
+#if NeedFunctionPrototypes
+	XPointer /* state */
+#endif
+	);
+    void (*destroy)(
+#if NeedFunctionPrototypes
+	XPointer /* state */
+#endif
+	);
+} XrmMethodsRec, *XrmMethods;
+
 typedef struct _XLCd *XLCd; /* need forward reference */
 
 /*
@@ -166,6 +185,51 @@ typedef struct {
 	XLCd, Display*, XrmDatabase, char*, char*
 #endif
 	);
+    Bool (*register_callback)(
+#if NeedFunctionPrototypes
+	XLCd, Display*, XIMProc, XPointer*
+#endif
+	);
+    Bool (*unregister_callback)(
+#if NeedFunctionPrototypes
+	XLCd, Display*, XIMProc
+#endif
+	);
+    XrmMethods (*init_parse_info)(
+#if NeedFunctionPrototypes
+	XLCd, XPointer*
+#endif
+	);
+    int (*mb_text_prop_to_list)(
+#if NeedFunctionPrototypes
+	XLCd, Display*, XTextProperty*, char***, int*
+#endif
+	);
+    int (*wc_text_prop_to_list)(
+#if NeedFunctionPrototypes
+	XLCd, Display*, XTextProperty*, wchar_t***, int*
+#endif
+	);
+    int (*mb_text_list_to_prop)(
+#if NeedFunctionPrototypes
+	XLCd, Display*, char**, int, XICCEncodingStyle, XTextProperty*
+#endif
+	);
+    int (*wc_text_list_to_prop)(
+#if NeedFunctionPrototypes
+	XLCd, Display*, wchar_t**, int, XICCEncodingStyle, XTextProperty*
+#endif
+	);
+    void (*wc_free_string_list)(
+#if NeedFunctionPrototypes
+	XLCd, wchar_t**
+#endif
+	);
+    char* (*default_string)(
+#if NeedFunctionPrototypes
+	XLCd
+#endif
+	);
 } XLCdMethodsRec, *XLCdMethods;
 
 
@@ -177,8 +241,14 @@ typedef struct {
 
 typedef struct _XLCd {
     XLCdMethods		methods;		/* methods of this LC */
-    XLCdCoreRec		core;			/* data of this LC */
+    XLCdCore		core;			/* data of this LC */
+    XPointer		opaque;			/* LDX specific data */
 } XLCdRec;
+
+typedef int XlcPosition;
+
+#define XlcHead		0
+#define XlcTail		-1
 
 
 /*
@@ -323,10 +393,11 @@ typedef struct {
     char *		res_name;
     char *		res_class;
 
-    XIMrmResourceList	ic_resources;		/* compiled IC resource list */
+    char *		im_name;		/* XIMMODIFIER name */
+    XIMResourceList	im_resources;		/* compiled IM resource list */
+    unsigned int	im_num_resources;
+    XIMResourceList	ic_resources;		/* compiled IC resource list */
     unsigned int	ic_num_resources;
-    XIMrmResourceList	ic_attr_resources;	/* compiled IC visual res */
-    unsigned int	ic_num_attr_resources;
 } XIMCoreRec, *XIMCore;
 
 
@@ -411,11 +482,10 @@ typedef struct {
 						/* display or subwindows */
     XIMStyle		input_style;		/* IM's input style */
     Window		focus_window;		/* where key events go */
-    XrmDatabase		res_database;		/* where IM gets resources */
-    char *		string_database;	/* string for IM's resources */
-    XIMCallback		geometry_callback;	/* client callback */
-    int			preedit_state;		/*  */
     unsigned long	filter_events;		/* event mask from IM */
+    XIMCallback		geometry_callback;	/* client callback */
+    char *		res_name;
+    char *		res_class;
 
     ICAttributes	preedit_attr;		/* visuals of preedit area */
     ICAttributes	status_attr;		/* visuals of status area */
@@ -430,40 +500,6 @@ typedef struct _XIC {
     XICMethods		methods;		/* method list of this IC */
     XICCoreRec		core;			/* data of this IC */
 } XICRec;
-
-/*
- * Methods for Xrm parsing
- */
-
-typedef struct {
-    void (*mbinit)(
-#if NeedFunctionPrototypes
-	XPointer	/* state */
-#endif
-	);
-    char (*mbchar)(
-#if NeedFunctionPrototypes
-	XPointer	/* state */,
-	char*		/* str */,
-	int*		/* lenp */
-#endif
-	);
-    void (*mbfinish)(
-#if NeedFunctionPrototypes
-	XPointer /* state */
-#endif
-	);
-    char* (*lcname)(
-#if NeedFunctionPrototypes
-	XPointer /* state */
-#endif
-	);
-    void (*destroy)(
-#if NeedFunctionPrototypes
-	XPointer /* state */
-#endif
-	);
-} XrmMethodsRec, *XrmMethods;
 
 /* current Ultrix compiler gets horribly confused */
 #if !defined(NeedFunctionPrototypes) && defined(FUNCPROTO)
@@ -575,6 +611,25 @@ extern void _XUnregisterFilter(
 #endif
 	     )		/* filter */,
     XPointer		/* client_data */
+#endif
+);
+
+extern XLCd _XlcGetLC(
+#if NeedFunctionPrototypes
+    char*		/* name */
+#endif
+);
+
+extern Bool _XlcAddLoader(
+#if NeedFunctionPrototypes
+    XLCdLoadProc	/* proc */,
+    XlcPosition		/* position */
+#endif
+);
+
+extern void _XlcRemoveLoader(
+#if NeedFunctionPrototypes
+    XLCdLoadProc	/* proc */
 #endif
 );
 

@@ -11,20 +11,6 @@ XCOMM $XConsortium: Imakefile,v 1.152 93/09/04 20:46:11 rws Exp $
 #define MotifBC NO
 #endif
 
-#ifndef BuildXimp
-#define BuildXimp NO
-#endif
-#ifndef BuildXsi
-#if !BuildXimp
-#define BuildXsi YES
-#endif
-#endif
-#if BuildXsi
-#ifndef BuildLocalIM
-#define BuildLocalIM YES
-#endif
-#endif
-
 #ifdef SharedXlibReqs
 REQUIREDLIBS = SharedXlibReqs
 #endif
@@ -52,7 +38,6 @@ XBSDLIB = /**/
      EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
      CMS_DEFINES = -DXCMSDB=\"$(LIBDIR)/Xcms.txt\"
-     NLS_DEFINES = -DXNLSPATHDEFAULT=\"$(NLSDIR)\"
 #if MotifBC
       BC_DEFINES = -DMOTIFBC
 #endif
@@ -61,6 +46,7 @@ XBSDLIB = /**/
 #endif
     MTX_DEFINES = XMTDefines
     MTT_DEFINES = ThreadTypeDefines
+    XLC_DEFINES = -DXLOCALEDIR=\"$(XLOCALEDIR)\"
 
         DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
  DEPEND_DEFINES = -I$(EXTINCSRC) $(MTT_DEFINES)
@@ -734,282 +720,145 @@ OBJS3 = \
 	LockDis.o \
 	$(LCOBJS)
 
-#if BuildXsi
-
-#if BuildLocalIM
-LIMSRCS = XLocalIM.c
-LIMOBJS = XLocalIM.o
+#ifdef RsArchitecture
+LCDEPSYMSRCS = XaixlcLoad.c
 #endif
 
-LCSYMSRCS = \
-	ProtoFlt.c \
-	XCnvCTToWC.c \
-	XCnvMBToCT.c \
-	XCnvWCToMB.c \
-	XCnvToStr.c \
-	XConnIM.c \
-	XCrFntSet.c \
-	XCrIC.c \
-	XGetIMVal.c \
-	XICFocus.c \
-	XICGetVal.c \
-	XICSetVal.c \
-	XIMKeyBind.c \
-	XIMProto.c \
-	XIMQueue.c \
-	XInitCT.c \
-	$(LIMSRCS) \
-	XOpenIM.c \
-	XParseCT.c \
-	XlcAccess.c \
-	XlcDefLd.c \
-	XlcLoad.c \
-	XmbDeGlyph.c \
-	XmbPrpText.c \
-	XmbText.c \
-	XmbTextExt.c \
-	XmbTextPer.c \
-	XmbTextPrp.c \
-	XwcDeGlyph.c \
-	XwcPrpText.c \
-	XwcText.c \
-	XwcTextExt.c \
-	XwcTextPer.c \
-	XwcTextPrp.c
+#if HasDECnet
+IMDNETSRC = imTrDnet.c
+IMDNETOBJ = imTrDnet.o
+#endif
+#if HasStreams
+IMSTRMSRC = imTrSrm.c
+IMSTRMOBJ = imTrSrm.o
+#endif
+#if HasSockets
+IMTCPSRC = imTrTcp.c
+IMTCPOBJ = imTrTcp.o
+#endif
 
 LCSRCS = \
 	SetLocale.c \
-	$(LCSYMSRCS)
+	$(LCDEPSYMSRCS) \
+	imConv.c \
+	imDefFlt.c \
+	imDefIc.c \
+	imDefIm.c \
+	imDefLkup.c \
+	imDispch.c \
+	imEvToWire.c \
+	imExten.c \
+	imImSw.c \
+	imInsClbk.c \
+	imLcFlt.c \
+	imLcGIc.c \
+	imLcIc.c \
+	imLcIm.c \
+	imLcLkup.c \
+	imLcPrs.c \
+	imLcSIc.c \
+	imRm.c \
+	imRmAttr.c \
+	imThaiFlt.c \
+	imThaiIc.c \
+	imThaiIm.c \
+	$(IMDNETSRC) \
+	$(IMSTRMSRC) \
+	$(IMTCPSRC) \
+	imTrX.c \
+	imTransR.c \
+	imInt.c \
+	lcCT.c \
+	lcCharSet.c \
+	lcConv.c \
+	lcDB.c \
+	lcDefConv.c \
+	lcEuc.c \
+	lcGenConv.c \
+	lcGeneric.c \
+	lcInit.c \
+	lcPrTxt.c \
+	lcPubWrap.c \
+	lcPublic.c \
+	lcRM.c \
+	lcSjis.c \
+	lcStd.c \
+	lcTxtPr.c \
+	lcUtil.c \
+	lcUTF.c \
+	omGeneric.c \
+	omImText.c \
+	omText.c \
+	omTextEsc.c \
+	omTextExt.c \
+	omTextPer.c \
+	omXChar.c
 
-LCOBJS = \
-	SetLocale.o \
-	ProtoFlt.o \
-	XCnvCTToWC.o \
-	XCnvMBToCT.o \
-	XCnvWCToMB.o \
-	XCnvToStr.o \
-	XConnIM.o \
-	XCrFntSet.o \
-	XCrIC.o \
-	XGetIMVal.o \
-	XICFocus.o \
-	XICGetVal.o \
-	XICSetVal.o \
-	XIMKeyBind.o \
-	XIMProto.o \
-	XIMQueue.o \
-	XInitCT.o \
-	$(LIMOBJS) \
-	XOpenIM.o \
-	XParseCT.o \
-	XlcAccess.o \
-	XlcDefLd.o \
-	XlcLoad.o \
-	XmbDeGlyph.o \
-	XmbPrpText.o \
-	XmbText.o \
-	XmbTextExt.o \
-	XmbTextPer.o \
-	XmbTextPrp.o \
-	XwcDeGlyph.o \
-	XwcPrpText.o \
-	XwcText.o \
-	XwcTextExt.o \
-	XwcTextPer.o \
-	XwcTextPrp.o
-
-#define LCRules()							@@\
-LinkSourceFile(XIMlibint.h,Xsi)						@@\
-LinkSourceFile(XIMproto.h,Xsi)						@@\
-LinkSourceFile(Xi18nint.h,Xsi)						@@\
-LinkSourceFile(Xlocaleint.h,Xsi)					@@\
-LinkSourceFile(wcharint.h,Xsi)						@@\
-LinkSourceFile(ProtoFlt.c,Xsi)						@@\
-LinkSourceFile(TextBody.c,Xsi)						@@\
-LinkSourceFile(TextEscBd.c,Xsi)						@@\
-LinkSourceFile(TextExtBd.c,Xsi)						@@\
-LinkSourceFile(TextPerBd.c,Xsi)						@@\
-LinkSourceFile(XCnvCTToWC.c,Xsi)					@@\
-LinkSourceFile(XCnvMBToCT.c,Xsi)					@@\
-LinkSourceFile(XCnvWCToMB.c,Xsi)					@@\
-LinkSourceFile(XCnvToStr.c,Xsi)						@@\
-LinkSourceFile(XConnIM.c,Xsi)						@@\
-LinkSourceFile(XCrFntSet.c,Xsi)						@@\
-LinkSourceFile(XCrIC.c,Xsi)						@@\
-LinkSourceFile(XGetIMVal.c,Xsi)						@@\
-LinkSourceFile(XICFocus.c,Xsi)						@@\
-LinkSourceFile(XICGetVal.c,Xsi)						@@\
-LinkSourceFile(XICSetVal.c,Xsi)						@@\
-LinkSourceFile(XIMKeyBind.c,Xsi)					@@\
-LinkSourceFile(XIMProto.c,Xsi)						@@\
-LinkSourceFile(XIMQueue.c,Xsi)						@@\
-LinkSourceFile(XInitCT.c,Xsi)						@@\
-LinkSourceFile(XLocalIM.c,Xsi)						@@\
-LinkSourceFile(XOpenIM.c,Xsi)						@@\
-LinkSourceFile(XParseCT.c,Xsi)						@@\
-LinkSourceFile(XlcAccess.c,Xsi)						@@\
-LinkSourceFile(XlcDefLd.c,Xsi)						@@\
-LinkSourceFile(XlcLoad.c,Xsi)						@@\
-LinkSourceFile(XmbDeGlyph.c,Xsi)					@@\
-LinkSourceFile(XmbPrpText.c,Xsi)					@@\
-LinkSourceFile(XmbText.c,Xsi)						@@\
-LinkSourceFile(XmbTextExt.c,Xsi)					@@\
-LinkSourceFile(XmbTextPer.c,Xsi)					@@\
-LinkSourceFile(XmbTextPrp.c,Xsi)					@@\
-LinkSourceFile(XwcDeGlyph.c,Xsi)					@@\
-LinkSourceFile(XwcPrpText.c,Xsi)					@@\
-LinkSourceFile(XwcText.c,Xsi)						@@\
-LinkSourceFile(XwcTextExt.c,Xsi)					@@\
-LinkSourceFile(XwcTextPer.c,Xsi)					@@\
-LinkSourceFile(XwcTextPrp.c,Xsi)					@@\
-SpecialCLibObjectRule(XConnIM,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))		@@\
-SpecialCLibObjectRule(XlcLoad,$(ICONFIGFILES),$(NLS_DEFINES) $(RCONST_DEFINES))		@@\
-SpecialCLibObjectRule(XLocalIM,$(ICONFIGFILES),$(NLS_DEFINES) $(RCONST_DEFINES))	@@\
-SpecialCLibObjectRule(XCrFntSet,$(_NOOP_),$(RCONST_DEFINES))		@@\
-SpecialCLibObjectRule(XCrIC,$(_NOOP_),$(RCONST_DEFINES))		@@\
-SpecialCLibObjectRule(XOpenIM,$(_NOOP_),$(RCONST_DEFINES))		@@\
-SpecialCLibObjectRule(XlcDefLd,$(_NOOP_),$(RCONST_DEFINES))
-
-#endif /* BuildXsi */
-
-#if BuildXimp
-
-#ifdef XlibI18nPath
-XLIBI18N_PATH = XlibI18nPath
-#else
-XLIBI18N_PATH = $(LIBDIR)
+/*
+#if defined(SunArchitecture) && defined(HasSharedLibraries)
+LCDEPOBJS = XsunDL.o
 #endif
-SRCH_DEFINES = -DXLIBI18N_PATH=\"$(XLIBI18N_PATH)\"
-
-LCSYMSRCS = \
-	XimpCT.c \
-	XimpCallbk.c \
-	XimpConv.c \
-	XimpCrFS.c \
-	XimpDefCnv.c \
-	XimpDrStr.c \
-	XimpEUC.c \
-	XimpExten.c \
-	XimpIC.c \
-	XimpICG.c \
-	XimpICS.c \
-	XimpIM.c \
-	XimpLCUtil.c \
-	XimpLCd.c \
-	XimpLkup.c \
-	XimpLocal.c \
-	XimpMCT.c \
-	XimpMDrS.c \
-	XimpMEsc.c \
-	XimpMExt.c \
-	XimpMPer.c \
-	XimpMPrTxt.c \
-	XimpMTxtPr.c \
-	XimpParser.c \
-	XimpPrTxt.c \
-	XimpTxtPr.c \
-	XimpRm.c \
-	XimpSJIS.c \
-	XimpTxtEsc.c \
-	XimpTxtExt.c \
-	XimpTxtPer.c \
-	XimpWCT.c \
-	XimpWDrS.c \
-	XimpWEsc.c \
-	XimpWExt.c \
-	XimpWPer.c \
-	XimpWPrTxt.c \
-	XimpWTxtPr.c \
-	XimpXConv.c \
-	Ximpint.c
-
-LCSRCS = \
-	SetLocale.c \
-	$(LCSYMSRCS)
+*/
+#ifdef RsArchitecture
+LCDEPOBJS = XaixlcLoad.o
+#endif
 
 LCOBJS = \
 	SetLocale.o \
-	XimpCT.o \
-	XimpCallbk.o \
-	XimpConv.o \
-	XimpCrFS.o \
-	XimpDefCnv.o \
-	XimpEUC.o \
-	XimpExten.o \
-	XimpIC.o \
-	XimpICG.o \
-	XimpICS.o \
-	XimpIM.o \
-	XimpLCUtil.o \
-	XimpLCd.o \
-	XimpLkup.o \
-	XimpLocal.o \
-	XimpMCT.o \
-	XimpMDrS.o \
-	XimpMEsc.o \
-	XimpMExt.o \
-	XimpMPer.o \
-	XimpMPrTxt.o \
-	XimpMTxtPr.o \
-	XimpRm.o \
-	XimpSJIS.o \
-	XimpWCT.o \
-	XimpWDrS.o \
-	XimpWEsc.o \
-	XimpWExt.o \
-	XimpParser.o \
-	XimpWPer.o \
-	XimpWPrTxt.o \
-	XimpWTxtPr.o \
-	XimpXConv.o \
-	Ximpint.o
-
-#define LCRules()							@@\
-LinkSourceFile(XIMProto.h,Ximp)						@@\
-LinkSourceFile(Ximplc.h,Ximp)						@@\
-LinkSourceFile(XimpCT.c,Ximp)						@@\
-LinkSourceFile(XimpCallbk.c,Ximp)					@@\
-LinkSourceFile(XimpConv.c,Ximp)						@@\
-LinkSourceFile(XimpCrFS.c,Ximp)						@@\
-LinkSourceFile(XimpDefCnv.c,Ximp)					@@\
-LinkSourceFile(XimpDrStr.c,Ximp)					@@\
-LinkSourceFile(XimpEUC.c,Ximp)						@@\
-LinkSourceFile(XimpExten.c,Ximp)					@@\
-LinkSourceFile(XimpIC.c,Ximp)						@@\
-LinkSourceFile(XimpICG.c,Ximp)						@@\
-LinkSourceFile(XimpICS.c,Ximp)						@@\
-LinkSourceFile(XimpIM.c,Ximp)						@@\
-LinkSourceFile(XimpLCUtil.c,Ximp)					@@\
-LinkSourceFile(XimpLCd.c,Ximp)						@@\
-LinkSourceFile(XimpLkup.c,Ximp)						@@\
-LinkSourceFile(XimpLocal.c,Ximp)					@@\
-LinkSourceFile(XimpMCT.c,Ximp)						@@\
-LinkSourceFile(XimpMDrS.c,Ximp)						@@\
-LinkSourceFile(XimpMEsc.c,Ximp)						@@\
-LinkSourceFile(XimpMExt.c,Ximp)						@@\
-LinkSourceFile(XimpMPer.c,Ximp)						@@\
-LinkSourceFile(XimpMPrTxt.c,Ximp)					@@\
-LinkSourceFile(XimpMTxtPr.c,Ximp)					@@\
-LinkSourceFile(XimpParser.c,Ximp)					@@\
-LinkSourceFile(XimpPrTxt.c,Ximp)					@@\
-LinkSourceFile(XimpRm.c,Ximp)						@@\
-LinkSourceFile(XimpSJIS.c,Ximp)						@@\
-LinkSourceFile(XimpTxtPr.c,Ximp)					@@\
-LinkSourceFile(XimpTxtEsc.c,Ximp)					@@\
-LinkSourceFile(XimpTxtExt.c,Ximp)					@@\
-LinkSourceFile(XimpTxtPer.c,Ximp)					@@\
-LinkSourceFile(XimpWCT.c,Ximp)						@@\
-LinkSourceFile(XimpWDrS.c,Ximp)						@@\
-LinkSourceFile(XimpWEsc.c,Ximp)						@@\
-LinkSourceFile(XimpWExt.c,Ximp)						@@\
-LinkSourceFile(XimpWPer.c,Ximp)						@@\
-LinkSourceFile(XimpWPrTxt.c,Ximp)					@@\
-LinkSourceFile(XimpWTxtPr.c,Ximp)					@@\
-LinkSourceFile(XimpXConv.c,Ximp)					@@\
-LinkSourceFile(Ximpint.c,Ximp)						@@\
-SpecialCLibObjectRule(XimpLCUtil,$(ICONFIGFILES),$(SRCH_DEFINES))
-
-#endif /* BuildXimp */
+	$(LCDEPOBJS) \
+	imConv.o \
+	imDefFlt.o \
+	imDefIc.o \
+	imDefIm.o \
+	imDefLkup.o \
+	imDispch.o \
+	imEvToWire.o \
+	imExten.o \
+	imImSw.o \
+	imInsClbk.o \
+	imLcFlt.o \
+	imLcGIc.o \
+	imLcIc.o \
+	imLcIm.o \
+	imLcLkup.o \
+	imLcPrs.o \
+	imLcSIc.o \
+	imRm.o \
+	imRmAttr.o \
+	imThaiFlt.o \
+	imThaiIc.o \
+	imThaiIm.o \
+	$(IMDNETOBJ) \
+	$(IMSTRMOBJ) \
+	$(IMTCPOBJ) \
+	imTrX.o \
+	imTransR.o \
+	imInt.o \
+	lcCT.o \
+	lcCharSet.o \
+	lcConv.o \
+	lcDB.o \
+	lcDefConv.o \
+	lcEuc.o \
+	lcGenConv.o \
+	lcGeneric.o \
+	lcInit.o \
+	lcPrTxt.o \
+	lcPubWrap.o \
+	lcPublic.o \
+	lcRM.o \
+	lcSjis.o \
+	lcStd.o \
+	lcTxtPr.o \
+	lcUtil.o \
+	lcUTF.o \
+	omGeneric.o \
+	omImText.o \
+	omText.o \
+	omTextEsc.o \
+	omTextExt.o \
+	omTextPer.o \
+	omXChar.o
 
 OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
@@ -1027,7 +876,10 @@ SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
 SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES))
 SpecialCLibObjectRule(locking,$(ICONFIGFILES),$(MTT_DEFINES))
-LCRules()
+SpecialCLibObjectRule(imTrDnet,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCLibObjectRule(imTrSrm,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCLibObjectRule(imTrTcp,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCLibObjectRule(lcUtil,$(ICONFIGFILES),$(XLC_DEFINES))
 
 #if InstallXcmsTxt
 InstallNonExecFile(Xcms.txt,$(LIBDIR))

@@ -1,10 +1,11 @@
 /*
- * $XConsortium: lcWrap.c,v 11.10 93/07/09 17:01:30 gildea Exp $
+ * $XConsortium: XlcWrap.c,v 11.9 93/09/17 13:25:13 rws Exp $
  */
 
 /*
  * Copyright 1991 by the Massachusetts Institute of Technology
  * Copyright 1991 by the Open Software Foundation
+ * Copyright 1993 by the TOSHIBA Corp.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -26,12 +27,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  *		 M. Collins		OSF  
+ *
+ *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include <X11/Xlocale.h>
 #include <X11/Xos.h>
+#include <X11/Xutil.h>
 
 #if __STDC__
 #define Const const
@@ -43,9 +47,9 @@
 extern char *getenv();
 #endif
 
-extern XLCd _XlcDefaultLoader(
+extern void _XlcInitLoader(
 #if NeedFunctionPrototypes
-    char*
+    void
 #endif
 );
 
@@ -66,12 +70,12 @@ XSetLocaleModifiers(modifiers)
     if (!lcd)
 	return (char *) NULL;
     if (!modifiers)
-	return lcd->core.modifiers;
+	return lcd->core->modifiers;
     user_mods = getenv("XMODIFIERS");
     modifiers = (*lcd->methods->map_modifiers) (lcd,
 						user_mods, (char *)modifiers);
     if (modifiers)
-	lcd->core.modifiers = (char *)modifiers;
+	lcd->core->modifiers = (char *)modifiers;
     return (char *)modifiers;
 }
 
@@ -131,36 +135,87 @@ _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
     return mods;
 }
 
-static XLCd *lcd_list;
-static XLCdLoadProc *loaders;
+#ifndef	lint
+static lock;
+#endif /* lint */
 
-Bool
-_XlcAddLoader (proc)
+static XLCd *lcd_list;
+
+typedef struct _XlcLoaderListRec {
+    struct _XlcLoaderListRec *next;
+    XLCdLoadProc proc;
+} XlcLoaderListRec, *XlcLoaderList;
+
+static XlcLoaderList loader_list = NULL;
+
+void
+_XlcRemoveLoader(proc)
     XLCdLoadProc proc;
 {
-    if (!loaders) {
-	loaders = (XLCdLoadProc *) Xmalloc (2 * sizeof(XLCdLoadProc));
-	if (!loaders)
-	    return False;
-	loaders[0] = proc;
-	loaders[1] = (XLCdLoadProc) NULL;
-    } else {
+    XlcLoaderList loader, prev;
+
+    if (loader_list == NULL)
+	return;
+
+    prev = loader = loader_list;
+    if (loader->proc == proc) {
+	loader_list = loader->next;
+	Xfree(loader);
+	return;
     }
+
+    while (loader = loader->next) {
+	if (loader->proc == proc) {
+	    prev->next = loader->next;
+	    Xfree(loader);
+	    return;
+	}
+	prev = loader;
+    }
+
+    return;
+}
+
+Bool
+_XlcAddLoader(proc, position)
+    XLCdLoadProc proc;
+    XlcPosition position;
+{
+    XlcLoaderList loader, last;
+
+    _XlcRemoveLoader(proc);		/* remove old loader, if exist */
+
+    loader = (XlcLoaderList) Xmalloc(sizeof(XlcLoaderListRec));
+    if (loader == NULL)
+	return False;
+
+    loader->proc = proc;
+
+    if (loader_list == NULL)
+	position = XlcHead;
+
+    if (position == XlcHead) {
+	loader->next = loader_list;
+	loader_list = loader;
+    } else {
+	last = loader_list;
+	while (last->next)
+	    last = last->next;
+	
+	loader->next = NULL;
+	last->next = loader;
+    }
+
     return True;
 }
 
-/*
- * Get the XLCd for the current locale
- */
-
 XLCd
-_XlcCurrentLC ()
-{
+_XlcGetLC(name)
     char *name;
+{
     XLCd lcd;
-    int i, j;
-
-    name = setlocale (LC_CTYPE, (char *)NULL);
+    int i;
+    XlcLoaderList loader;
 
     LockMutex();
 
@@ -179,18 +234,18 @@ _XlcCurrentLC ()
      */
     for (i = 0; lcd_list[i]; i++) {
 	lcd = lcd_list[i];
-	if (!strcmp (lcd->core.name, name))
+	if (!strcmp (lcd->core->name, name))
 	    goto found;
     }
 
-    if (!loaders && !_XlcAddLoader(_XlcDefaultLoader))
-	goto bad;
+    if (!loader_list)
+	_XlcInitLoader();
 
     /*
      * not there, so try to get and add to list
      */
-    for (j = 0; loaders[j]; j++) {
-	lcd = (*loaders[j]) (name);
+    for (loader = loader_list; loader; loader = loader->next) {
+	lcd = (*loader->proc)(name);
 	if (lcd) {
 	    XLCd *new_list;
 
@@ -211,4 +266,115 @@ bad:
 found:
     UnlockMutex();
     return lcd;
+}
+
+/*
+ * Get the XLCd for the current locale
+ */
+
+XLCd
+_XlcCurrentLC()
+{
+    return _XlcGetLC(setlocale(LC_CTYPE, (char *) NULL));
+}
+
+XrmMethods
+_XrmInitParseInfo(state)
+    XPointer *state;
+{
+    XLCd lcd =  _XlcCurrentLC();
+    
+    if (lcd == (XLCd) NULL)
+	return (XrmMethods) NULL;
+    
+    return (*lcd->methods->init_parse_info)(lcd, state);
+}
+
+int
+XmbTextPropertyToTextList(dpy, text_prop, list_ret, count_ret)
+    Display *dpy;
+    XTextProperty *text_prop;
+    char ***list_ret;
+    int *count_ret;
+{
+    XLCd lcd = _XlcCurrentLC();
+    
+    if (lcd == NULL)
+	return XLocaleNotSupported;
+
+    return (*lcd->methods->mb_text_prop_to_list)(lcd, dpy, text_prop, list_ret,
+						 count_ret);
+}
+
+int
+XwcTextPropertyToTextList(dpy, text_prop, list_ret, count_ret)
+    Display *dpy;
+    XTextProperty *text_prop;
+    wchar_t ***list_ret;
+    int *count_ret;
+{
+    XLCd lcd = _XlcCurrentLC();
+    
+    if (lcd == NULL)
+	return XLocaleNotSupported;
+
+    return (*lcd->methods->wc_text_prop_to_list)(lcd, dpy, text_prop, list_ret,
+						 count_ret);
+}
+
+int
+XmbTextListToTextProperty(dpy, list, count, style, text_prop)
+    Display *dpy;
+    char **list;
+    int count;
+    XICCEncodingStyle style;
+    XTextProperty *text_prop;
+{
+    XLCd lcd = _XlcCurrentLC();
+    
+    if (lcd == NULL)
+	return XLocaleNotSupported;
+
+    return (*lcd->methods->mb_text_list_to_prop)(lcd, dpy, list, count, style,
+						 text_prop);
+}
+
+int
+XwcTextListToTextProperty(dpy, list, count, style, text_prop)
+    Display *dpy;
+    wchar_t **list;
+    int count;
+    XICCEncodingStyle style;
+    XTextProperty *text_prop;
+{
+    XLCd lcd = _XlcCurrentLC();
+    
+    if (lcd == NULL)
+	return XLocaleNotSupported;
+
+    return (*lcd->methods->wc_text_list_to_prop)(lcd, dpy, list, count, style,
+						 text_prop);
+}
+
+void
+XwcFreeStringList(list)
+    wchar_t **list;
+{
+    XLCd lcd = _XlcCurrentLC();
+    
+    if (lcd == NULL)
+	return;
+
+    (*lcd->methods->wc_free_string_list)(lcd, list);
+}
+
+char *
+XDefaultString()
+{
+    XLCd lcd = _XlcCurrentLC();
+    
+    if (lcd == NULL)
+	return (char *) NULL;
+    
+    return (*lcd->methods->default_string)(lcd);
 }

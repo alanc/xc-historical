@@ -1,10 +1,11 @@
 /*
- * $XConsortium: IMWrap.c,v 11.4 91/04/07 18:59:21 rws Exp $
+ * $XConsortium: XIMWrap.c,v 11.4 93/09/17 13:24:47 rws Exp $
  */
 
 /*
  * Copyright 1991 by the Massachusetts Institute of Technology
  * Copyright 1991 by the Open Software Foundation
+ * Copyright 1993 by the Sony Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -26,6 +27,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  *		 M. Collins		OSF  
+ *               Makoto Wakamatsu       Sony Corporation
  */				
 
 #include "Xlibint.h"
@@ -71,12 +73,12 @@ _XCopyToArg(src, dst, size)
 	    else if (size == sizeof(char))     *dst = (XPointer)u.charval;
 	    else if (size == sizeof(char*))    *dst = (XPointer)u.charptr;
 	    else if (size == sizeof(XPointer)) *dst = (XPointer)u.ptr;
-	    else memmove((char*)dst,  (char*)src, (int)size );
+	    else memcpy( (char*)dst, (char*)src, (int)size );
 	} else {
-	    memmove((char*)dst,  (char*)src, (int)size );
+	    memcpy( (char*)dst, (char*)src, (int)size );
 	}
     } else {
-	memmove((char*)*dst,  (char*)src, (int)size );
+	memcpy( (char*)*dst, (char*)src, (int)size );
     }
 }
 
@@ -133,5 +135,39 @@ char *
 XLocaleOfIM(im)
     XIM im;
 {
-    return im->core.lcd->core.name;
+    return im->core.lcd->core->name;
 }
+
+/*
+ * Register to a input method instantiation callback to prepare the
+ * on-demand input method instantiation.
+ */
+Bool
+XRegisterIMInstantiateCallback(display, callback, client_data)
+    Display *display;
+    XIMProc callback;
+    XPointer *client_data;
+{
+    XLCd lcd = _XlcCurrentLC();
+
+    if (!lcd)
+	return False;
+    return (*lcd->methods->register_callback) (lcd, display, callback,
+					       client_data);
+}
+
+/*
+ * Unregister to a input method instantiation callback.
+ */
+Bool
+XUnregisterIMInstantiateCallback(display, callback)
+    Display *display;
+    XIMProc callback;
+{
+    XLCd lcd = _XlcCurrentLC();
+
+    if (!lcd)
+	return False;
+    return (*lcd->methods->unregister_callback) (lcd, display, callback );
+}
+
