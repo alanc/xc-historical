@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/04/30 11:38:20 rws Exp $
 
 #define Prefix TET_ROOT=`pwd` PATH=`pwd`/xtest/bin:$$PATH export TET_ROOT PATH;
 
@@ -25,7 +25,7 @@ install::
 	(Prefix cd xtest/fonts; pmake install)
 	(Prefix cd xtest/src/bin/mc; pmake install)
 	(Prefix cd xtest/src/pixval/blowup; pmake install)
-	(Prefix cd xtest; BuildCmd)
+	(Prefix cd xtest; $(CCENVSETUP) BuildCmd)
 
 clean::
 	(Prefix cd tet/src/posix_c/tools; pclean)
