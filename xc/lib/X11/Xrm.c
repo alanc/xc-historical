@@ -1,5 +1,5 @@
-/* $Header: Xrm.c,v 1.1 87/09/12 12:27:21 swick Locked $ */
-/* $Header: Xrm.c,v 1.1 87/09/12 12:27:21 swick Locked $ */
+/* $Header: Xrm.c,v 1.2 87/11/19 14:13:47 swick Locked $ */
+/* $Header: Xrm.c,v 1.2 87/11/19 14:13:47 swick Locked $ */
 #ifndef lint
 static char *sccsid = "@(#)Xrm.c	1.11	3/20/87";
 #endif lint
@@ -517,18 +517,18 @@ void PrintQuarkList(quarks)
     }
 }
 
-static void DumpEntry(quarks, type, val, stream)
+static void DumpEntry(stream, quarks, type, val)
+    FILE	     *stream;
     XrmQuarkList	     quarks;
     XrmRepresentation type;
     XrmValue	     val;
-    FILE	     *stream;
 {
 
     register unsigned int	i;
 
     for (i=0; quarks[i] != NULLQUARK; i++) {
 	if (i != 0) (void) fprintf(stream, ".");
-	(void) fprintf(stream, "%s", XrmQuarkToAtom(*quarks));
+	(void) fprintf(stream, "%s", XrmQuarkToAtom(quarks[i]));
     }
     if (type == XrmQString) {
 	(void) fprintf(stream, ":\t%s\n", val.addr);
