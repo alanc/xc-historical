@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XPolyTxt16.c,v 11.18 88/08/09 15:57:07 jim Exp $ */
+/* $XConsortium: XPolyTxt16.c,v 11.19 88/09/06 16:10:58 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -141,7 +141,19 @@ XDrawText16(dpy, d, gc, x, y, items, nitems)
 		    elt->delta = 0;
 		}
 	    	elt->len = 254;
-                bcopy ((char *)CharacterOffset, (char *) (elt + 1), 254 * 2);
+
+#ifdef MUSTCOPY
+		{
+		    register int i;
+		    register unsigned char *cp;
+		    for (i = 0, cp = ((unsigned char *)elt) + 2; i < 254; i++) {
+			*cp++ = CharacterOffset[i].byte1;
+			*cp++ = CharacterOffset[i].byte2;
+		    }
+		}
+#else
+		bcopy ((char *)CharacterOffset, (char *) (elt + 1), 254 * 2);
+#endif
 		PartialNChars = PartialNChars - 254;
 		CharacterOffset += 254;
 
@@ -174,7 +186,21 @@ XDrawText16(dpy, d, gc, x, y, items, nitems)
 		    elt->delta = 0;
 		}
 	    	elt->len = PartialNChars;
-                bcopy ((char *)CharacterOffset, (char *) (elt + 1), PartialNChars * 2);
+
+#ifdef MUSTCOPY
+		{
+		    register int i;
+		    register unsigned char *cp;
+		    for (i = 0, cp = ((unsigned char *)elt) + 2; i < PartialNChars;
+			 i++) {
+			*cp++ = CharacterOffset[i].byte1;
+			*cp++ = CharacterOffset[i].byte2;
+		    }
+		}
+#else
+		bcopy ((char *)CharacterOffset, (char *) (elt + 1), PartialNChars *
+2);
+#endif
 	    }
 	}
     item++;
