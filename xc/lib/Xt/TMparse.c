@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.133 92/12/29 18:45:24 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.134 92/12/30 13:02:26 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1925,6 +1925,8 @@ static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
       return (XtTranslations)NULL;
 
     source = CheckForPoundSign(source, defaultOp, &actualOp);
+    if (isAccelerator && actualOp == XtTableReplace)
+	actualOp = defaultOp;
 
     parseTree->isSimple = True;
     parseTree->mappingNotifyInterest = False;
