@@ -78,8 +78,6 @@ typedef unsigned int XcmsColorFormat;	/* Color Space Format ID */
 
 typedef double XcmsFloat;
 
-typedef Status (*XcmsFuncPtr)(); /* Pointer to a function returning Status */
-
     /*
      * Device RGB
      */
@@ -182,6 +180,7 @@ typedef struct {
     XcmsColorFormat	format;		/* the specification format	*/
 } XcmsColor;
 
+
     /*
      * XCMS Per Screen related data
      */
@@ -196,6 +195,30 @@ typedef struct _XcmsPerScrnInfo {
     char	pad[3];
 } XcmsPerScrnInfo;
 
+typedef struct _XcmsCCC *XcmsCCC;
+
+typedef Status (*XcmsCompressionProc)(		/* Gamut Compression Proc */
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+typedef Status (*XcmsWhiteAdjustProc)(	 	/* White Point Adjust Proc */
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* initial_white_point*/,
+    XcmsColor*		/* target_white_point*/,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
     /*
      * XCMS Color Conversion Context
      */
@@ -204,29 +227,42 @@ typedef struct _XcmsCCC {
     int		screenNumber;		/* X screen number */
     Visual	*visual;		/* X Visual */
     XcmsColor	clientWhitePt;		/* Client White Point */
-    XcmsFuncPtr	gamutCompProc;		/* Gamut Compression Function */
+    XcmsCompressionProc	gamutCompProc;	/* Gamut Compression Function */
     XPointer	gamutCompClientData;	/* Gamut Comp Func Client Data */
-    XcmsFuncPtr	whitePtAdjProc;		/* White Point Adjustment Function */
+    XcmsWhiteAdjustProc	whitePtAdjProc;	/* White Point Adjustment Function */
     XPointer	whitePtAdjClientData;	/* White Pt Adj Func Client Data */
     XcmsPerScrnInfo *pPerScrnInfo;	/* pointer to per screen information */
 					/*  associated with the above display */
 					/*  screenNumber */
-} XcmsCCCRec, *XcmsCCC;
+} XcmsCCCRec;
 
-    /*
-     * Callback typedefs
-     */
-typedef Status (*XcmsCompressionProc)();	/* Gamut Compression Proc */
-typedef Status (*XcmsWhiteAdjustProc)();	/* White Point Adjustment Proc */
-typedef int (*XcmsParseStringProc)();	/* Color String Parsing Proc */
-typedef int (*XcmsConversionProc)();	/* Color Conversion Proc */
-typedef Status (*XcmsScreenInitProc)();	/* Screen Initialization Proc */
+typedef Status (*XcmsScreenInitProc)(	/* Screen Initialization Proc */
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen_number */,
+    XcmsPerScrnInfo*	/* screen_info */
+#endif
+);
+
+typedef void (*XcmsScreenFreeProc)(
+#if NeedFunctionPrototypes
+    XPointer		/* screenData */
+#endif
+);
 
     /*
      * Function List Pointer -- pointer to an array of function pointers.
      *    The end of list is indicated by a NULL pointer.
      */
+typedef Status (*XcmsConversionProc)();
 typedef XcmsConversionProc *XcmsFuncListPtr;
+
+typedef int (*XcmsParseStringProc)(	/* Color String Parsing Proc */
+#if NeedFunctionPrototypes
+    char*		/* color_string */,
+    XcmsColor*		/* color_return */
+#endif
+);
 
     /*
      * Color Space -- per Color Space related data (Device-Independent
@@ -262,20 +298,34 @@ typedef struct _XcmsColorSpace {
      * Screen Color Characterization Function Set -- per device class
      *    color space conversion functions.
      */
-typedef struct _XcmsSCCFuncSet {
-    XcmsColorSpace **papDDColorSpaces;
+typedef struct _XcmsFunctionSet {
+    XcmsColorSpace **DDColorSpaces;
 				/* Pointer to an array of pointers to	*/
 				/*   Device-DEPENDENT color spaces	*/
 				/*   understood by this SCCFuncSet.	*/
-    int (*pInitScrnFunc)();	/* Screen initialization function that	*/
+    XcmsScreenInitProc screenInitProc;
+				/* Screen initialization function that	*/
 				/*   reads Screen Color Characterization*/
 				/*   Data off properties on the screen's*/
 				/*   root window.			*/
-    void (*pFreeSCCData)();	/* Function that frees the SCCData	*/
+    XcmsScreenFreeProc screenFreeProc;
+				/* Function that frees the SCCData	*/
 				/*   structures.			*/
-} XcmsSCCFuncSet;
+} XcmsFunctionSet;
 
 _XFUNCPROTOBEGIN
+
+extern Status XcmsAddColorSpace (
+#if NeedFunctionPrototypes
+    XcmsColorSpace*	/* pColorSpace */
+#endif
+);
+
+extern Status XcmsAddFunctionSett (
+#if NeedFunctionPrototypes
+    XcmsFunctionSet*	/* functionSet */
+#endif
+);
 
 extern Status XcmsAllocColor (
 #if NeedFunctionPrototypes
@@ -304,6 +354,256 @@ extern XcmsCCC XcmsCCCOfColormap (
 #endif
 );
 
+extern Status XcmsCIELabClipab(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIELabClipL(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIELabClipLab(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIELabQueryMaxC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue_angle */,
+    XcmsFloat		/* L_star */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsCIELabQueryMaxL (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue_angle */,
+    XcmsFloat		/* chroma */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsCIELabQueryMaxLC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue_angle */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsCIELabQueryMinL (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue_angle */,
+    XcmsFloat		/* chroma */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsCIELabToCIEXYZ (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsCIELabWhiteShiftColors(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* initial_white_point*/,
+    XcmsColor*		/* target_white_point*/,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIELuvClipL(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIELuvClipLuv(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIELuvClipuv(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIELuvQueryMaxC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue_angle */,
+    XcmsFloat		/* L_star */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsCIELuvQueryMaxL (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue_angle */,
+    XcmsFloat		/* chroma */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsCIELuvQueryMaxLC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue_angle */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsCIELuvQueryMinL (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue_angle */,
+    XcmsFloat		/* chroma */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsCIELuvToCIEuvY (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsCIELuvWhiteShiftColors(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* initial_white_point*/,
+    XcmsColor*		/* target_white_point*/,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIEXYZToCIELab (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsCIEXYZToCIEuvY (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsCIEXYZToCIExyY (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsCIEXYZToRGBi (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsCIEuvYToCIELuv (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsCIEuvYToCIEXYZ (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsCIEuvYToTekHVC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsCIExyYToCIEXYZ (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern XcmsColor *XcmsClientWhitePointOfCCC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */
+#endif
+);
+
 extern Status XcmsConvertColors (
 #if NeedFunctionPrototypes
     XcmsCCC		/* ccc */,
@@ -320,9 +620,9 @@ extern XcmsCCC XcmsCreateCCC (
     int			/* screenNumber */,
     Visual*		/* visual */,
     XcmsColor*		/* clientWhitePt */,
-    XcmsFuncPtr	        /* gamutCompProc */,
+    XcmsCompressionProc /* gamutCompProc */,
     XPointer		/* gamutCompClientData */,
-    XcmsFuncPtr 	/* whitePtAdjProc */,
+    XcmsWhiteAdjustProc	/* whitePtAdjProc */,
     XPointer		/* whitePtAdjClientData */
 #endif
 );
@@ -331,6 +631,18 @@ extern XcmsCCC XcmsDefaultCCC (
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screenNumber */
+#endif
+);
+
+extern Display *XcmsDisplayOfCCC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */
+#endif
+);
+
+extern XcmsColorFormat XcmsFormatOfPrefix (
+#if NeedFunctionPrototypes
+    char*		/* prefix */
 #endif
 );
 
@@ -351,6 +663,28 @@ extern Status XcmsLookupColor (
 #endif
 );
 
+extern char *XcmsPrefixOfFormat (
+#if NeedFunctionPrototypes
+    XcmsColorFormat		/* id */
+#endif
+);
+
+extern Status XcmsQueryBlack (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsQueryBlue (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
 extern Status XcmsQueryColor (
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
@@ -366,7 +700,101 @@ extern Status XcmsQueryColors (
     Colormap		/* colormap */,
     XcmsColor*		/* colorArry_in_out */,
     unsigned int	/* nColors */,
-    XcmsColorFormat		/* result_format */
+    XcmsColorFormat	/* result_format */
+#endif
+);
+
+extern Status XcmsQueryGreen (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsQueryRed (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsQueryWhite (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsRGBiToCIEXYZ (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsRGBiToRGB (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Status XcmsRGBToRGBi (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern int XcmsScreenNumberOfCCC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */
+#endif
+);
+
+extern XcmsColor *XcmsScreenWhitePointOfCCC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */
+#endif
+);
+
+extern XcmsCCC XcmsSetCCCOfColormap(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Colormap		/* colormap */,
+    XcmsCCC		/* ccc */
+#endif
+);
+
+extern XcmsCompressionProc XcmsSetCompressionProc (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsCompressionProc	/* compression_proc */,
+    XPointer		/* client_data */
+#endif
+);
+
+extern XcmsWhiteAdjustProc XcmsSetWhiteAdjustProc (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsWhiteAdjustProc	/* white_adjust_proc */,
+    XPointer		/* client_data */
+#endif
+);
+
+extern Status XcmsSetWhitePoint (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* color */
 #endif
 );
 
@@ -388,27 +816,104 @@ extern Status XcmsStoreColors (
 #endif
 );
 
-extern XcmsColorFormat XcmsFormatOfPrefix (
+extern Status XcmsTekHVCClipC(
 #if NeedFunctionPrototypes
-    char*		/* prefix */
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
 #endif
 );
 
-extern char *XcmsPrefixOfFormat (
+extern Status XcmsTekHVCClipV(
 #if NeedFunctionPrototypes
-    XcmsColorFormat		/* id */
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
 #endif
 );
 
-extern Status XcmsAddColorSpace (
+extern Status XcmsTekHVCClipVC(
 #if NeedFunctionPrototypes
-    XcmsColorSpace*	/* pColorSpace */
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    unsigned int	/* index */,
+    Bool*		/* compression_flags_return */
 #endif
 );
 
-extern Status XcmsAddFunctionSett (
+extern Status XcmsTekHVCQueryMaxC (
 #if NeedFunctionPrototypes
-    XcmsSCCFuncSet*	/* functionSet */
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue */,
+    XcmsFloat		/* value */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsTekHVCQueryMaxV (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue */,
+    XcmsFloat		/* chroma */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsTekHVCQueryMaxVC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsTekHVCQueryMaxVSamples (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue */,
+    XcmsColor*		/* colors_return */,
+    unsigned int	/* nsamples */
+#endif
+);
+
+extern Status XcmsTekHVCQueryMinV (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsFloat		/* hue */,
+    XcmsFloat		/* chroma */,
+    XcmsColor*		/* color_return */
+#endif
+);
+
+extern Status XcmsTekHVCToCIEuvY (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* white_point */,
+    XcmsColor*		/* colors */,
+    unsigned int	/* ncolors */
+#endif
+);
+
+extern Status XcmsTekHVCWhiteShiftColors(
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */,
+    XcmsColor*		/* initial_white_point*/,
+    XcmsColor*		/* target_white_point*/,
+    XcmsColorFormat	/* target_format */,
+    XcmsColor*		/* colors_in_out */,
+    unsigned int	/* ncolors */,
+    Bool*		/* compression_flags_return */
+#endif
+);
+
+extern Visual *XcmsVisualOfCCC (
+#if NeedFunctionPrototypes
+    XcmsCCC		/* ccc */
 #endif
 );
 
