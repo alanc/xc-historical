@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.54 91/05/09 13:51:02 converse Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.55 91/06/11 18:26:30 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -160,12 +160,10 @@ typedef void (*XtStringProc)(
 #endif
 );
 
-typedef struct _StateRec *StatePtr;
-
 typedef struct _XtTMRec {
     XtTranslations  translations;	/* private to Translation Manager    */
     XtBoundActions  proc_table;		/* procedure bindings for actions    */
-    StatePtr        current_state;      /* Translation Manager state ptr     */
+    struct _XtStateRec *current_state;  /* Translation Manager state ptr     */
     unsigned long   lastEventTime;
 } XtTMRec, *XtTM;
 
