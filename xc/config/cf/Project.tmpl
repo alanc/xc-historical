@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.52 89/11/24 17:47:27 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.53 89/11/28 18:30:36 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -333,7 +333,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.52 89/11/24 17:47:27 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.53 89/11/28 18:30:36 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -437,7 +437,7 @@ Berklib.c: sysV/Berklib.c					@@\
              XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
 #else
           DEPXLIB = $(DEPEXTENSIONLIB) _Use($(USRLIBDIR),$(XLIBSRC))/libX11.a 
-             XLIB = $(EXTENSIONLIB) LoaderLibPrefix $_Use(-lX11, (DEPXLIB))
+             XLIB = $(EXTENSIONLIB) LoaderLibPrefix _Use(-lX11, $(DEPXLIB))
 #endif
       DEPXAUTHLIB = _Use($(USRLIBDIR),$(XAUTHSRC))/libXau.a
          XAUTHLIB = LoaderLibPrefix $(DEPXAUTHLIB)
