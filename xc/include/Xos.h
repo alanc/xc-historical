@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.46 91/07/19 23:22:51 rws Exp $
+ * $XConsortium: Xos.h,v 1.47 91/08/17 17:14:38 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -56,10 +56,17 @@
  */
 
 #ifndef X_NOT_STDC_ENV
+
 #include <string.h>
+#ifndef index
 #define index strchr
+#endif
+#ifndef rindex
 #define rindex strrchr
+#endif
+
 #else
+
 #ifdef SYSV
 #include <string.h>
 #define index strchr
@@ -69,7 +76,8 @@
 #define strchr index
 #define strrchr rindex
 #endif
-#endif
+
+#endif /* X_NOT_STDC_ENV */
 
 
 /*
