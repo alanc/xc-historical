@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.32 89/07/05 16:03:09 jim Exp $
+ * $XConsortium: resize.c,v 1.33 89/07/06 11:30:18 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.32 89/07/05 16:03:09 jim Exp $";
+"$XConsortium: resize.c,v 1.33 89/07/06 11:30:18 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -116,8 +116,8 @@ static void do_auto_clamp (tmp_win)
  */
 
 void
-StartResize(ev, tmp_win, fromtitlebar)
-XEvent ev;
+StartResize(evp, tmp_win, fromtitlebar)
+XEvent *evp;
 TwmWindow *tmp_win;
 Bool fromtitlebar;
 {

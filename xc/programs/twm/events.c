@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.71 89/06/30 20:12:51 jim Exp $
+ * $XConsortium: events.c,v 1.72 89/07/05 16:02:43 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.71 89/06/30 20:12:51 jim Exp $";
+"$XConsortium: events.c,v 1.72 89/07/05 16:02:43 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -332,7 +332,7 @@ HandleKeyPress()
 	    if (key->cont != C_NAME)
 	    {
 		ExecuteFunction(key->func, key->action, Event.xany.window,
-		    Tmp_win, Event, Context, FALSE);
+		    Tmp_win, &Event, Context, FALSE);
 		XUngrabPointer(dpy, CurrentTime);
 		return;
 	    }
@@ -349,7 +349,7 @@ HandleKeyPress()
 		    {
 			matched = TRUE;
 			ExecuteFunction(key->func, key->action, Tmp_win->frame,
-			    Tmp_win, Event, C_FRAME, FALSE);
+			    Tmp_win, &Event, C_FRAME, FALSE);
 			XUngrabPointer(dpy, CurrentTime);
 		    }
 		}
@@ -363,7 +363,7 @@ HandleKeyPress()
 		    {
 			matched = TRUE;
 			ExecuteFunction(key->func, key->action, Tmp_win->frame,
-			    Tmp_win, Event, C_FRAME, FALSE);
+			    Tmp_win, &Event, C_FRAME, FALSE);
 			XUngrabPointer(dpy, CurrentTime);
 		    }
 		}
@@ -377,7 +377,7 @@ HandleKeyPress()
 		    {
 			matched = TRUE;
 			ExecuteFunction(key->func, key->action, Tmp_win->frame,
-			    Tmp_win, Event, C_FRAME, FALSE);
+			    Tmp_win, &Event, C_FRAME, FALSE);
 			XUngrabPointer(dpy, CurrentTime);
 		    }
 		}
@@ -631,7 +631,7 @@ HandleClientMessage()
 			      &JunkX, &JunkY, &JunkMask);
 
 		ExecuteFunction(F_ICONIFY, NULL, Event.xany.window,
-		    Tmp_win, button, FRAME, FALSE);
+		    Tmp_win, &button, FRAME, FALSE);
 		XUngrabPointer(dpy, CurrentTime);
 	    }
 	}
@@ -1157,7 +1157,7 @@ HandleButtonRelease()
 		    ButtonPressed = -1;
 	    ExecuteFunction(ActiveItem->func, ActiveItem->action,
 		ButtonWindow ? ButtonWindow->frame : NULL,
-		ButtonWindow, ButtonEvent, Context, TRUE);
+		ButtonWindow, &ButtonEvent, Context, TRUE);
 	    Context = C_NO_CONTEXT;
 	    ButtonWindow = NULL;
 
@@ -1275,14 +1275,14 @@ HandleButtonPress()
 	if (Event.xany.window == Tmp_win->iconify_w)
 	{
 	    ExecuteFunction(F_ICONIFY, NULL, Event.xany.window,
-		Tmp_win, Event, C_TITLE, FALSE);
+		Tmp_win, &Event, C_TITLE, FALSE);
 	    return;
 	}
 
 	if (Event.xany.window == Tmp_win->resize_w)
 	{
 	    ExecuteFunction(F_RESIZE, NULL, Event.xany.window, Tmp_win,
-		Event, C_TITLE, FALSE);
+		&Event, C_TITLE, FALSE);
 	    return;
 	}
     }
@@ -1366,7 +1366,7 @@ HandleButtonPress()
 	}
 
 	ExecuteFunction(RootFunction, Action, Event.xany.window,
-	    Tmp_win, Event, Context, FALSE);
+	    Tmp_win, &Event, Context, FALSE);
 
 	RootFunction = NULL;
 	return;
@@ -1397,7 +1397,7 @@ HandleButtonPress()
 	Action = Scr->Mouse[Event.xbutton.button][Context][modifier].item ?
 	    Scr->Mouse[Event.xbutton.button][Context][modifier].item->action : NULL;
 	ExecuteFunction(Scr->Mouse[Event.xbutton.button][Context][modifier].func,
-	    Action, Event.xany.window, Tmp_win, Event, Context, FALSE);
+	    Action, Event.xany.window, Tmp_win, &Event, Context, FALSE);
     }
     else if (Scr->DefaultFunction.func != NULL)
     {
@@ -1414,7 +1414,7 @@ HandleButtonPress()
 	    Action = Scr->DefaultFunction.item ?
 		Scr->DefaultFunction.item->action : NULL;
 	    ExecuteFunction(Scr->DefaultFunction.func, Action,
-	       Event.xany.window, Tmp_win, Event, Context, FALSE);
+	       Event.xany.window, Tmp_win, &Event, Context, FALSE);
 	}
     }
 }

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.75 89/07/06 11:12:04 jim Exp $
+ * $XConsortium: menus.c,v 1.76 89/07/06 11:30:11 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.75 89/07/06 11:12:04 jim Exp $";
+"$XConsortium: menus.c,v 1.76 89/07/06 11:30:11 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1035,12 +1035,12 @@ int *count;
  */
 
 int
-ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
+ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     int func;
     char *action;
     Window w;
     TwmWindow *tmp_win;
-    XEvent event;
+    XEvent *eventp;
     int context;
     int pulldown;
 {
@@ -1181,7 +1181,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	{
 	   ExecuteFunction(Scr->WindowFunction.func,
 			   Scr->WindowFunction.item->action,
-			   w, tmp_win, event, C_FRAME, FALSE);
+			   w, tmp_win, eventp, C_FRAME, FALSE);
 	}
 	else
 	{
@@ -1199,11 +1199,11 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
 	if (pulldown)
 	    XWarpPointer(dpy, None, Scr->Root, 
-		0, 0, 0, 0, event.xbutton.x_root, event.xbutton.y_root);
+		0, 0, 0, 0, eventp->xbutton.x_root, eventp->xbutton.y_root);
 
 	if (w != tmp_win->icon_w)
 	{
-	    StartResize (event, tmp_win, (Bool) (tmp_win->resize_w == w));
+	    StartResize (eventp, tmp_win, (Bool) (tmp_win->resize_w == w));
 	    return TRUE;
 	}
 	break;
@@ -1227,12 +1227,12 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    return TRUE;
 
 	PopDownMenu();
-	rootw = event.xbutton.root;
+	rootw = eventp->xbutton.root;
 	MoveFunction = func;
 
 	if (pulldown)
 	    XWarpPointer(dpy, None, Scr->Root, 
-		0, 0, 0, 0, event.xbutton.x_root, event.xbutton.y_root);
+		0, 0, 0, 0, eventp->xbutton.x_root, eventp->xbutton.y_root);
 
 	EventHandler[EnterNotify] = HandleUnknown;
 	EventHandler[LeaveNotify] = HandleUnknown;
@@ -1240,7 +1240,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	if (!Scr->NoGrabServer || !Scr->OpaqueMove) {
 	    XGrabServer(dpy);
 	}
-	XGrabPointer(dpy, event.xbutton.root, True,
+	XGrabPointer(dpy, eventp->xbutton.root, True,
 	    ButtonPressMask | ButtonReleaseMask,
 	    GrabModeAsync, GrabModeAsync,
 	    Scr->Root, Scr->MoveCursor, CurrentTime);
@@ -1248,14 +1248,14 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	if (context == C_ICON && tmp_win->icon_w)
 	{
 	    w = tmp_win->icon_w;
-	    DragX = event.xbutton.x;
-	    DragY = event.xbutton.y;
+	    DragX = eventp->xbutton.x;
+	    DragY = eventp->xbutton.y;
 	}
 	else if (w != tmp_win->icon_w)
 	{
 	    XTranslateCoordinates(dpy, w, tmp_win->frame,
-		event.xbutton.x, 
-		event.xbutton.y, 
+		eventp->xbutton.x, 
+		eventp->xbutton.y, 
 		&DragX, &DragY, &JunkChild);
 
 	    w = tmp_win->frame;
@@ -1267,25 +1267,25 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    &DragWidth, &DragHeight, &JunkBW,
 	    &JunkDepth);
 
-	origX = event.xbutton.x_root;
-	origY = event.xbutton.y_root;
+	origX = eventp->xbutton.x_root;
+	origY = eventp->xbutton.y_root;
 	/*
-	MoveOutline((Window)event.xbutton.root,
-	    event.xbutton.x_root-DragX-JunkBW,
-	    event.xbutton.y_root-DragY-JunkBW,
+	MoveOutline(eventp->xbutton.root,
+	    eventp->xbutton.x_root-DragX-JunkBW,
+	    eventp->xbutton.y_root-DragY-JunkBW,
 	    DragWidth + 2 * JunkBW,
 	    DragHeight + 2 * JunkBW, 
 	    tmp->tmp_win->frame_bw, tmp_win->title_height);
 	*/
 
-	if ((event.xbutton.time - last_time) < 400)
+	if ((eventp->xbutton.time - last_time) < 400)
 	{
 	    int width, height;
 
 	    ConstMove = TRUE;
 	    ConstMoveDir = MOVE_NONE;
-	    ConstMoveX = event.xbutton.x_root - DragX - JunkBW;
-	    ConstMoveY = event.xbutton.y_root - DragY - JunkBW;
+	    ConstMoveX = eventp->xbutton.x_root - DragX - JunkBW;
+	    ConstMoveY = eventp->xbutton.y_root - DragY - JunkBW;
 	    width = DragWidth + 2 * JunkBW;
 	    height = DragHeight + 2 * JunkBW;
 	    ConstMoveXL = ConstMoveX + width/3;
@@ -1299,7 +1299,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    XQueryPointer(dpy, w, &JunkRoot, &JunkChild,
 		&JunkX, &JunkY, &DragX, &DragY, &JunkMask);
 	}
-	last_time = event.xbutton.time;
+	last_time = eventp->xbutton.time;
 
 	while (TRUE)
 	{
@@ -1344,13 +1344,16 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    if (done)
 		break;
 
-	    XQueryPointer(dpy, rootw, &(event.xmotion.root), &JunkChild,
-		&(event.xmotion.x_root), &(event.xmotion.y_root),
+	    /* 
+	     * WARNING - mashing event
+	     */
+	    XQueryPointer(dpy, rootw, &(eventp->xmotion.root), &JunkChild,
+		&(eventp->xmotion.x_root), &(eventp->xmotion.y_root),
 		&JunkX, &JunkY, &JunkMask);
 
 	    if (DragWindow == NULL &&
-		abs(event.xmotion.x_root - origX) < Scr->MoveDelta &&
-	        abs(event.xmotion.y_root - origY) < Scr->MoveDelta)
+		abs(eventp->xmotion.x_root - origX) < Scr->MoveDelta &&
+	        abs(eventp->xmotion.y_root - origY) < Scr->MoveDelta)
 		continue;
 
 	    WindowMoved = TRUE;
@@ -1361,12 +1364,12 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		switch (ConstMoveDir)
 		{
 		    case MOVE_NONE:
-			if (event.xmotion.x_root < ConstMoveXL ||
-			    event.xmotion.x_root > ConstMoveXR)
+			if (eventp->xmotion.x_root < ConstMoveXL ||
+			    eventp->xmotion.x_root > ConstMoveXR)
 			    ConstMoveDir = MOVE_HORIZ;
 
-			if (event.xmotion.y_root < ConstMoveYT ||
-			    event.xmotion.y_root > ConstMoveYB)
+			if (eventp->xmotion.y_root < ConstMoveYT ||
+			    eventp->xmotion.y_root > ConstMoveYB)
 			    ConstMoveDir = MOVE_VERT;
 
 			XQueryPointer(dpy, DragWindow, &JunkRoot, &JunkChild,
@@ -1374,11 +1377,11 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 			break;
 
 		    case MOVE_VERT:
-			ConstMoveY = event.xmotion.y_root - DragY - JunkBW;
+			ConstMoveY = eventp->xmotion.y_root - DragY - JunkBW;
 			break;
 
 		    case MOVE_HORIZ:
-			ConstMoveX= event.xmotion.x_root - DragX - JunkBW;
+			ConstMoveX= eventp->xmotion.x_root - DragX - JunkBW;
 			break;
 		}
 
@@ -1409,7 +1412,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		    if (Scr->OpaqueMove)
 			XMoveWindow(dpy, DragWindow, xl, yt);
 		    else
-			MoveOutline(event.xmotion.root, xl, yt, w, h,
+			MoveOutline(eventp->xmotion.root, xl, yt, w, h,
 				    tmp_win->frame_bw, tmp_win->title_height);
 		}
 	    }
@@ -1417,8 +1420,8 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    {
 		int xl, yt, xr, yb, w, h;
 
-		xl = event.xmotion.x_root - DragX - JunkBW;
-		yt = event.xmotion.y_root - DragY - JunkBW;
+		xl = eventp->xmotion.x_root - DragX - JunkBW;
+		yt = eventp->xmotion.y_root - DragY - JunkBW;
 		w = DragWidth + 2 * JunkBW;
 		h = DragHeight + 2 * JunkBW;
 
@@ -1441,7 +1444,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		if (Scr->OpaqueMove)
 		    XMoveWindow(dpy, DragWindow, xl, yt);
 		else
-		    MoveOutline(event.xmotion.root, xl, yt, w, h,
+		    MoveOutline(eventp->xmotion.root, xl, yt, w, h,
 				tmp_win->frame_bw, tmp_win->title_height);
 	    }
 
@@ -1466,9 +1469,8 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		for (mitem = mroot->first; mitem != NULL; mitem = mitem->next)
 		{
 		    if (!ExecuteFunction (mitem->func, mitem->action, w,
-					  tmp_win, event, context, pulldown)) {
-			break;
-		    }
+					  tmp_win, eventp, context, pulldown))
+		      break;
 		}
 	    }
 	}
@@ -1485,7 +1487,8 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	}
         else if (func == F_ICONIFY)
 	{
-	    Iconify(tmp_win, event.xbutton.x_root-5, event.xbutton.y_root-5);
+	    Iconify (tmp_win, eventp->xbutton.x_root - 5,
+		     eventp->xbutton.y_root - 5);
 	}
 	SetHints(tmp_win);
 	break;
