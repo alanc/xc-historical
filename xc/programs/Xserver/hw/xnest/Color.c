@@ -1,4 +1,4 @@
-/* $XConsortium: Color.c,v 1.1 93/07/12 15:27:58 rws Exp $ */
+/* $XConsortium: Color.c,v 1.2 93/09/03 08:12:44 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -428,6 +428,7 @@ Bool xnestCreateDefaultColormap(pScreen)
   VisualPtr   pVisual;
   ColormapPtr pCmap;
   unsigned short zero = 0, ones = 0xFFFF;  
+  Pixel wp, bp;
 
   for (pVisual = pScreen->visuals;
        pVisual->vid != pScreen->rootVisual;
@@ -438,12 +439,13 @@ Bool xnestCreateDefaultColormap(pScreen)
       != Success)
     return False;
 
-  if ((AllocColor(pCmap, &ones, &ones, &ones, &(pScreen->whitePixel), 0) !=
+  if ((AllocColor(pCmap, &ones, &ones, &ones, &wp, 0) !=
        Success) ||
-      (AllocColor(pCmap, &zero, &zero, &zero, &(pScreen->blackPixel), 0) !=
+      (AllocColor(pCmap, &zero, &zero, &zero, &bp, 0) !=
        Success))
     return FALSE;
-  
+  pScreen->whitePixel = wp;
+  pScreen->blackPixel = bp;
   (*pScreen->InstallColormap)(pCmap);
 
   xnestInstalledDefaultColormap = True;
