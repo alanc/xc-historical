@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shmstr.h,v 1.1 89/08/20 16:28:08 rws Exp $ */
+/* $XConsortium: shmstr.h,v 1.2 89/08/20 18:54:17 rws Exp $ */
 
 #include "XShm.h"
 
@@ -42,7 +42,7 @@ typedef struct _ShmQueryVersion {
 
 typedef struct {
     BYTE	type;			/* X_Reply */
-    Bool	sharedPixmaps;
+    BOOL	sharedPixmaps;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     CARD16	majorVersion B16;	/* major version of SHM protocol */
