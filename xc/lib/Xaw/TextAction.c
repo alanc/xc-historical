@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.3 89/07/21 19:57:36 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.4 89/07/27 17:51:00 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -43,7 +43,7 @@ SOFTWARE.
 
 void _XawTextInsertFileAction(), _XawTextInsertFile(), _XawTextSearch();
 void _XawTextSearch(), _XawTextDoSearchAction(), _XawTextDoReplaceAction();
-void _XawTextSetField();
+void _XawTextSetField(), _XawTextPopdownSearchAction();
 
 /*
  * These are defined in Text.c
@@ -1389,6 +1389,7 @@ XtActionsRec textActionsTable[] = {
   {"DoSearchAction",            _XawTextDoSearchAction},
   {"DoReplaceAction",           _XawTextDoReplaceAction},
   {"SetField",                  _XawTextSetField},
+  {"PopdownSearchAction",       _XawTextPopdownSearchAction},
 };
 
 Cardinal textActionsTableCount = XtNumber(textActionsTable);

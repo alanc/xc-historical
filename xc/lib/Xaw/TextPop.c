@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.2 89/07/16 16:21:25 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.3 89/07/18 15:38:49 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -83,6 +83,7 @@ static char search_text_trans[] =
   "~Shift<Key>Return:      DoSearchAction(Popdown) \n\
    Shift<Key>Return:       SetField(Replace) \n\
    Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
+   Ctrl<Key>c:             PopdownSearchAction() \n\
    <Btn1Down>:             select-start() SetField(Search) \n\
    <Key>Tab:               DoSearchAction() SetField(Replace)";
 
@@ -90,6 +91,7 @@ static char rep_text_trans[] =
   "~Shift<Key>Return:      DoReplaceAction(Popdown) \n\
    Shift<Key>Return:       SetField(Search) \n\
    Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
+   Ctrl<Key>c:             PopdownSearchAction() \n\
    <Btn1Down>:             select-start() SetField(Replace) \n\
    <Key>Tab:               SetField(Search)";
 
@@ -382,6 +384,26 @@ Cardinal * num_params;
     
   if (DoSearch(tw->text.search) && popdown)
     PopdownSearch(w, (caddr_t) tw->text.search, NULL);
+}
+
+/*	Function Name: _XawTextPopdownSearchAction
+ *	Description: Action routine that can be bound to dialog box's 
+ *                   Text Widget that will popdown the search widget.
+ *	Arguments:   (Standard Action Routine args) 
+ *	Returns:     none.
+ */
+
+/* ARGSUSED */
+void 
+_XawTextPopdownSearchAction(w, event, params, num_params)
+Widget w;
+XEvent *event;
+String * params;
+Cardinal * num_params;
+{
+  TextWidget tw = (TextWidget) XtParent(XtParent(XtParent(w)));
+
+  PopdownSearch(w, (caddr_t) tw->text.search, NULL);
 }
 
 /*	Function Name: PopdownSeach
