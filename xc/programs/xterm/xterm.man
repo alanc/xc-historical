@@ -183,6 +183,14 @@ those lines can be viewed.  This option may be turned on and off from the
 .B \+sb
 This option indicates that a scrollbar should not be displayed.
 .TP 8
+.B \-sf
+This option indicates that Sun Function Key escape codes should be generated
+for function keys.
+.TP 8
+.B \+sf
+This option indicates that the standard escape codes should be generated for
+function keys.
+.TP 8
 .B \-si
 This option indicates that output to a window should not automatically
 reposition the screen to the bottom of the scrolling region.  
@@ -326,6 +334,14 @@ It is not necessarily obeyed by all window managers.
 .B "title (\fPclass\fB Title)"
 Specifies a string that may be used by the window manager when displaying
 this application.
+.TP 8
+.B "utmpInhibit (\fPclass\fB UtmpInhibit)"
+Specifies whether or not \fIxterm\fP should try to record the user's terminal
+in \fI/etc/utmp\fP.
+.TP 8
+.B "sunFunctionKeys (\fPclass\fB SunFunctionKeys)"
+Specifies whether or not Sun Function Key escape codes should be generated for
+function keys instead of standard escape sequences.
 .sp
 .PP
 The following resources are specified as part of the ``vt100'' widget (class
