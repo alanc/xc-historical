@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.17 89/10/06 19:22:38 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.18 89/10/08 13:38:22 rws Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -1274,18 +1274,19 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
 	return NULL;
     }
 
-    if (ctx->widget == NULL) 	/* owner is not local */
-	return &ctx->event;
+    if (ctx->widget != NULL) {
+	/* owner is local; construct an event */
+	ctx->event.type = SelectionRequest;
+	ctx->event.serial = LastKnownRequestProcessed(XtDisplay(widget));
+	ctx->event.send_event = True;
+	ctx->event.display = XtDisplay(widget);
+	ctx->event.owner = XtWindow(ctx->widget);
+    /*  ctx->event.requestor = XtWindow(requesting_widget); */
+	ctx->event.selection = selection;
+    /*  ctx->event.target = requestors_target; */
+	ctx->event.property = None; /* %%% what to do about side-effects? */
+    /*  ctx->event.time = requestors_time; */
+    }
 
-    /* owner is local; construct an event */
-    ctx->event.type = SelectionRequest;
-    ctx->event.serial = LastKnownRequestProcessed(XtDisplay(widget));
-    ctx->event.send_event = True;
-    ctx->event.display = XtDisplay(widget);
-    ctx->event.owner = XtWindow(ctx->widget);
-/*  ctx->event.requestor = XtWindow(requesting_widget); */
-    ctx->event.selection = selection;
-/*  ctx->event.target = requestors_target; */
-    ctx->event.property = None;	/* %%% what to do about side-effects? */
-/*  ctx->event.time = requestors_time; */
+    return &ctx->event;
 }
