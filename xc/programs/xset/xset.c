@@ -55,11 +55,11 @@ int numpixels = 0;
 char *disp = '\0';
 Display *dpy;
 progName = argv[0];
-if (argc == 1)  usage(argv[0]); /* To be replaced by window-interface */
+if (argc == 1)  usage (NULL, NULL);    /* To be replaced by window-interface */
 for (i = 1; i < argc; i++) {
   arg = argv[i];
   if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
-    if (++i >= argc) usage (argv[0]);
+    if (++i >= argc) usage ("missing argument to -display", NULL);
     disp = argv[i];
   } 
 }
@@ -293,12 +293,12 @@ for (i = 1; i < argc; ) {
   }
   else if (*arg == 'p') {           /*  If arg starts with "p"       */
     if (i + 1 >= argc)
-      usage(argv[0]);
+      usage ("missing argument to p", NULL);
     arg = argv[i];
     if (*arg >= '0' && *arg <= '9')
       pixels[numpixels] = atoi(arg);
     else
-      usage(argv[0]);
+      usage ("invalid pixel number %s", arg);
     i++;
     colors[numpixels] = argv[i];
     i++;
@@ -314,7 +314,7 @@ for (i = 1; i < argc; ) {
     query(dpy);
   }
   else
-    usage(argv[0]);
+    usage ("unknown option %s", arg);
 }
 
 if (numpixels)
@@ -670,39 +670,46 @@ return;
 
 /*  This is the usage function */
 
-usage(prog)
-char *prog;
+usage (fmt, arg)
+    char *fmt;
+    char *arg;
 {
-	printf("usage: %s [-display host:dpy] option ...\n", prog);
-	printf("    To turn bell off:\n");
-	printf("\t-b                b off               b 0\n");
-	printf("    To set bell volume, pitch and duration:\n");
-	printf("\t b [vol [pitch [dur]]]          b on\n");
-	printf("    To turn keyclick off:\n");
-	printf("\t-c                c off               c 0\n");
-	printf("    To set keyclick volume:\n");
-	printf("\t c [0-100]        c on\n");
-	printf("    To set the font path:\n" );
-	printf("\t fp path[,path...]\n" );
-	printf("    To restore the default font path:\n" );
-	printf("\t fp default\n" );
-	printf("    To set LED states off or on:\n");
-	printf("\t-led [1-32]         led off\n");
-	printf("\t led [1-32]         led on\n");
-	printf("    To set mouse acceleration and threshold:\n");
-	printf("\t m [acc [thr]]    m default\n");
-	printf("    To set pixel colors:\n");
-	printf("\t p pixel_value color_name\n");
-	printf("    To turn auto-repeat off or on:\n");
-	printf("\t-r     r off        r    r on\n");
-	printf("    For screen-saver control:\n");
-	printf("\t s [timeout [cycle]]  s default\n");
-	printf("\t s blank              s noblank\n");
-	printf("\t s expose             s noexpose\n");
-	printf("    To set the pointer mapping:\n");
-	printf("\t pm [number ...]      pm default\n");
-	printf("    For status information:  q   or  query\n");
-	exit(0);
+    if (fmt) {
+	fprintf (stderr, "%s:  ", progName);
+	fprintf (stderr, fmt, arg);
+	fprintf (stderr, "\n\n");
+    }
+
+    fprintf (stderr, "usage:  %s [-display host:dpy] option ...\n", progName);
+    fprintf (stderr, "    To turn bell off:\n");
+    fprintf (stderr, "\t-b                b off               b 0\n");
+    fprintf (stderr, "    To set bell volume, pitch and duration:\n");
+    fprintf (stderr, "\t b [vol [pitch [dur]]]          b on\n");
+    fprintf (stderr, "    To turn keyclick off:\n");
+    fprintf (stderr, "\t-c                c off               c 0\n");
+    fprintf (stderr, "    To set keyclick volume:\n");
+    fprintf (stderr, "\t c [0-100]        c on\n");
+    fprintf (stderr, "    To set the font path:\n" );
+    fprintf (stderr, "\t fp path[,path...]\n" );
+    fprintf (stderr, "    To restore the default font path:\n" );
+    fprintf (stderr, "\t fp default\n" );
+    fprintf (stderr, "    To set LED states off or on:\n");
+    fprintf (stderr, "\t-led [1-32]         led off\n");
+    fprintf (stderr, "\t led [1-32]         led on\n");
+    fprintf (stderr, "    To set mouse acceleration and threshold:\n");
+    fprintf (stderr, "\t m [acc [thr]]    m default\n");
+    fprintf (stderr, "    To set pixel colors:\n");
+    fprintf (stderr, "\t p pixel_value color_name\n");
+    fprintf (stderr, "    To turn auto-repeat off or on:\n");
+    fprintf (stderr, "\t-r     r off        r    r on\n");
+    fprintf (stderr, "    For screen-saver control:\n");
+    fprintf (stderr, "\t s [timeout [cycle]]  s default\n");
+    fprintf (stderr, "\t s blank              s noblank\n");
+    fprintf (stderr, "\t s expose             s noexpose\n");
+    fprintf (stderr, "    To set the pointer mapping:\n");
+    fprintf (stderr, "\t pm [number ...]      pm default\n");
+    fprintf (stderr, "    For status information:  q   or  query\n");
+    exit(0);
 }
 
 error( message )
