@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.25 87/09/11 07:19:01 rws Locked $ */
+/* $Header: miexpose.c,v 1.26 87/11/08 18:11:37 rws Locked $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -117,9 +117,16 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     }
     else if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
-	prgnDstClip = (*pscr->RegionCreate)(NullBox, 1);
-	(*pscr->RegionCopy)(prgnDstClip,
-			    ((WindowPtr)pDstDrawable)->clipList);
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    prgnDstClip = NotClippedByChildren((WindowPtr)pDstDrawable);
+	}
+	else
+	{
+	    prgnDstClip = (*pscr->RegionCreate)(NullBox, 1);
+	    (*pscr->RegionCopy)(prgnDstClip,
+				((WindowPtr)pDstDrawable)->clipList);
+	}
 	(*pscr->TranslateRegion)(prgnDstClip,
 				 -((WindowPtr)pDstDrawable)->absCorner.x,
 				 -((WindowPtr)pDstDrawable)->absCorner.y);
