@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 2.21 91/07/10 19:43:04 converse Exp $
+/* $XConsortium: main.c,v 2.22 91/07/13 13:30:08 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -27,53 +27,59 @@
 #define MAIN 1			/* Makes global.h actually declare vars */
 #include "xmh.h"
 
-static XtIntervalId timerid;
-static unsigned long interval;
-
-/* NeedToCheckScans() gets called every five minutes, by default.
- * The frequency of its invocations is can be changed by the resource
- * Xmh*CheckFrequency, whose default is one minute.  NeedToCheckScans()
- * will be called once for every five check frequency intervals.
- */
-
-static void NeedToCheckScans()
+/*ARGSUSED*/
+static void NeedToCheckScans(client_data, id)
+    XtPointer client_data;
+    XtIntervalId *id;		/* unused */
 {
     int i;
-    DEBUG("[magic toc check ...")
-    for (i = 0; i < numScrns; i++) {
-	if (scrnList[i]->toc)
-	    TocRecheckValidity(scrnList[i]->toc);
-	if (scrnList[i]->msg)
-	    TocRecheckValidity(MsgGetToc(scrnList[i]->msg));
+    (void) XtAppAddTimeOut((XtAppContext)client_data,
+			   (unsigned long) app_resources.checkpoint_interval,
+			   NeedToCheckScans, client_data);
+    if (!subProcessRunning) {
+        DEBUG("[magic toc check ...")
+	for (i = 0; i < numScrns; i++) {
+	    if (scrnList[i]->toc)
+		TocRecheckValidity(scrnList[i]->toc);
+	    if (scrnList[i]->msg)
+		TocRecheckValidity(MsgGetToc(scrnList[i]->msg));
+	}
+        DEBUG(" done]\n")
     }
-    DEBUG(" done]\n")
 }
 
+/*ARGSUSED*/
+static void Checkpoint(client_data, id)
+    XtPointer client_data;
+    XtIntervalId *id;		/* unused */
+{
+    register int i;
+    (void) XtAppAddTimeOut((XtAppContext)client_data,
+			   (unsigned long) app_resources.checkpoint_interval,
+			   Checkpoint, client_data);
+    if (!subProcessRunning) {
+	DEBUG("(Checkpointing...")
+   	for (i=0; i<numScrns; i++)
+	    if (scrnList[i]->msg) 
+		MsgCheckPoint(scrnList[i]->msg);
+        DEBUG(" done)\n")
+    }
+}
 
 /*ARGSUSED*/
 static void CheckMail(client_data, id)
-    XtPointer client_data;	/* unused */
+    XtPointer client_data;
     XtIntervalId *id;		/* unused */
 {
     extern void XmhCheckForNewMail();
-    static int count = 0;
-    register int i;
-    timerid = XtAppAddTimeOut(XtWidgetToApplicationContext( toplevel ),
-			      interval, CheckMail, (XtPointer) NULL);
-    if (app_resources.new_mail_check) {
-	DEBUG("(Checking for new mail...")
-	XmhCheckForNewMail(NULL, NULL, NULL, NULL);
-	DEBUG(" done)\n")
-    }
-    if (!subProcessRunning && (count++ % 5 == 0)) {
-	NeedToCheckScans();
-	if (app_resources.make_checkpoints) {
-	    DEBUG("(Checkpointing...")
-	    for (i=0 ; i<numScrns ; i++)
-		if (scrnList[i]->msg) 
-		    MsgCheckPoint(scrnList[i]->msg);
-	    DEBUG(" done)\n")
-	}
+
+    (void) XtAppAddTimeOut((XtAppContext)client_data,
+			   (unsigned long) app_resources.mail_interval,
+			   CheckMail, client_data);
+    if (!subProcessRunning) {
+        DEBUG("(Checking for new mail...")
+        XmhCheckForNewMail(NULL, NULL, NULL, NULL);
+        DEBUG(" done)\n")
     }
 }
 
@@ -91,11 +97,26 @@ char **argv;
 
     InitializeWorld(argc, argv);
     subProcessRunning = False;
-
     appCtx = XtWidgetToApplicationContext(toplevel);
-    if (app_resources.check_frequency > 0) {
-	interval = app_resources.check_frequency * 60000;
-	timerid = XtAppAddTimeOut(appCtx,interval,CheckMail,(XtPointer)NULL);
+
+    if (app_resources.new_mail_check && app_resources.mail_interval > 0) {
+	app_resources.mail_interval *= 60000;
+	(void) XtAppAddTimeOut(appCtx,
+			       (unsigned long) app_resources.mail_interval,
+			       CheckMail, (XtPointer)appCtx);
+    }
+    if (app_resources.rescan_interval > 0) {
+	app_resources.rescan_interval *= 60000;
+	(void) XtAppAddTimeOut(appCtx,
+			       (unsigned long) app_resources.rescan_interval,
+			       NeedToCheckScans, (XtPointer)appCtx);
+    }
+    if (app_resources.make_checkpoints &&
+	app_resources.checkpoint_interval > 0) {
+	app_resources.checkpoint_interval *= 60000;
+	(void) XtAppAddTimeOut(appCtx, (unsigned long)
+			       app_resources.checkpoint_interval,
+			       Checkpoint, (XtPointer)appCtx);
     }
 
     lastInput.win = -1;		/* nothing mapped yet */
