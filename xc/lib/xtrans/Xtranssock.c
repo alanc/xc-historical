@@ -142,8 +142,8 @@ static int
 TRANS(SocketGetAddr)(ciptr)
 XtransConnInfo ciptr;
 {
-Xtransaddr	sockname;
-int		namelen=sizeof(sockname);
+struct sockaddr_in sockname;
+int		namelen=sizeof sockname;
 
 PRMSG(3,"TRANS(SocketGetAddr)(%x)\n", ciptr, 0,0 );
 
@@ -165,9 +165,9 @@ if( (ciptr->addr=(char *)malloc(namelen)) == NULL )
         return -1;
         }
 
-ciptr->family=sockname.family;
+ciptr->family=sockname.sin_family;
 ciptr->addrlen=namelen;
-memcpy(ciptr->addr,&sockname,ciptr->addrlen);
+memcpy(ciptr->addr,(char*)&sockname,ciptr->addrlen);
 
 return 0;
 }
