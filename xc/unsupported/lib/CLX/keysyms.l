@@ -148,6 +148,7 @@
 (define-keysym #\~ 126)
 
 (progn   ;; Semi-standard characters
+  (define-keysym #\escape (keysym 255 027))	; :tty
   (define-keysym #\rubout (keysym 255 255))	; :tty
   (define-keysym #\tab (keysym 255 009))	; :tty
   (define-keysym #\linefeed (keysym 255 010))	; :tty
@@ -312,7 +313,6 @@
   (define-keysym #\abort (keysym 255 105))	; :function
   (define-keysym #\resume (keysym 255 098))	; :function
   (define-keysym #\end (keysym 255 087))	; :cursor
-  (define-keysym #\escape (keysym 255 027))	; :tty
 ;;#\universal-quantifier
 ;;#\existential-quantifier
 ;;#\circle-plus
