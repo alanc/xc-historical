@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.3 89/07/04 16:13:12 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.4 89/07/09 15:47:50 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -99,7 +99,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     if (!pGC->graphicsExposures &&
 	(pDstDrawable->type == DRAWABLE_PIXMAP) &&
 	((pSrcDrawable->type == DRAWABLE_PIXMAP) ||
-	 (((WindowPtr)pSrcDrawable)->backStorage == (BackingStorePtr)NULL)))
+	 (((WindowPtr)pSrcDrawable)->backStorage == NULL)))
 	return NULL;
 	
     srcBox.x1 = srcx;
@@ -194,7 +194,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	 * Copy any areas from the source backing store. Modifies
 	 * prgnExposed.
 	 */
-	(* pSrcWin->backStorage->funcs->ExposeCopy) (pSrcDrawable,
+	(* pSrcWin->drawable.pScreen->ExposeCopy) (pSrcDrawable,
 					      pDstDrawable,
 					      pGC,
 					      prgnExposed,
@@ -242,7 +242,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	(*pscr->RegionReset)(prgnExposed, &expBox);
 	/* need to clear out new areas of backing store */
 	if (pWin->backStorage)
-	    (* pWin->backStorage->funcs->ClearToBackground)(
+	    (* pWin->drawable.pScreen->ClearBackingStore)(
 					 pWin,
 					 expBox.x1,
 					 expBox.y1,
@@ -264,7 +264,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	    /* PaintWindowBackground doesn't clip, so we have to */
 	    (*pscr->Intersect)(prgnExposed, prgnExposed, &pWin->clipList);
 	}
-	(*pWin->funcs->PaintWindowBackground)(pDstDrawable, prgnExposed, 
+	(*pWin->drawable.pScreen->PaintWindowBackground)(pDstDrawable, prgnExposed, 
 				       PW_BACKGROUND);
 
 	if (extents)
@@ -381,7 +381,7 @@ miWindowExposures(pWin, prgn)
 	     * be sent to the client; if prgn is empty
 	     * no areas will be repainted.
 	     */
-	    exposures = (*pWin->backStorage->funcs->RestoreAreas)(pWin, prgn);
+	    exposures = (*pWin->drawable.pScreen->RestoreAreas)(pWin, prgn);
 	if (exposures && (REGION_NUM_RECTS(exposures) > RECTLIMIT))
 	{
 	    /*
@@ -404,7 +404,7 @@ miWindowExposures(pWin, prgn)
 	    (* pWin->drawable.pScreen->Intersect)(prgn, prgn, &pWin->clipList);
 	    /* need to clear out new areas of backing store, too */
 	    if (pWin->backStorage)
-		(* pWin->backStorage->funcs->ClearToBackground)(
+		(* pWin->drawable.pScreen->ClearBackingStore)(
 					     pWin,
 					     box.x1 - pWin->drawable.x,
 					     box.y1 - pWin->drawable.y,
@@ -413,7 +413,7 @@ miWindowExposures(pWin, prgn)
 					     FALSE);
 	}
 	if (!REGION_NIL(prgn))
-	    (*pWin->funcs->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
+	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
 	if (exposures && !REGION_NIL(exposures))
 	{
 	    int numRects;
@@ -533,7 +533,7 @@ int what;
 	case None:
 	    return;
 	case ParentRelative:
-	    (*pWin->parent->funcs->PaintWindowBackground)(pWin->parent, prgn, what);
+	    (*pWin->parent->drawable.pScreen->PaintWindowBackground)(pWin->parent, prgn, what);
 	    return;
 	case BackgroundPixel:
 	    newValues[FOREGROUND] = pWin->background.pixel;
@@ -631,7 +631,7 @@ int what;
     }
     
     if (pWin->backStorage)
-	(*pWin->backStorage->funcs->DrawGuarantee) (pWin, pGC, GuaranteeVisBack);
+	(*pWin->drawable.pScreen->DrawGuarantee) (pWin, pGC, GuaranteeVisBack);
 
     mask = gcmask;
     gcmask = 0;
@@ -712,7 +712,7 @@ int what;
     DEALLOCATE_LOCAL(prect);
 
     if (pWin->backStorage)
-	(*pWin->backStorage->funcs->DrawGuarantee) (pWin, pGC, GuaranteeNothing);
+	(*pWin->drawable.pScreen->DrawGuarantee) (pWin, pGC, GuaranteeNothing);
 
     if (usingScratchGC)
     {

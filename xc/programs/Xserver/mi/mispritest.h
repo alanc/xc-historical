@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.2 89/06/21 11:17:02 rws Exp $ */
+/* $XConsortium: mispritest.h,v 5.3 89/07/10 14:56:48 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -31,12 +31,18 @@ typedef struct {
     void	    (*GetImage)();
     unsigned int    *(*GetSpans)();
     Bool	    (*CreateGC)();
-    Bool	    (*CreateWindow)();
-    Bool	    (*DestroyWindow)();
-    Bool	    (*ChangeWindowAttributes)();
     void	    (*BlockHandler)();
     void	    (*InstallColormap)();
     void	    (*StoreColors)();
+
+    void	    (* PaintWindowBackground)();
+    void	    (* PaintWindowBorder)();
+    void	    (* CopyWindow)();
+    void	    (* ClearToBackground)();
+
+    void	    (* SaveDoomedAreas)();
+    RegionPtr	    (* RestoreAreas)();
+
     CursorPtr	    pCursor;
     int		    x;
     int		    y;
@@ -52,11 +58,6 @@ typedef struct {
 
 #define SOURCE_COLOR	0
 #define MASK_COLOR	1
-
-typedef struct {
-    WindowFuncs		*wrapFuncs;
-    BackingStoreFuncs	*wrapBSFuncs;
-} miSpriteWindowRec, *miSpriteWindowPtr;
 
 typedef struct {
     GCFuncs		*wrapFuncs;

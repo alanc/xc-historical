@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.1 89/07/04 16:13:58 rws Exp $ */
+/* $XConsortium: miwindow.c,v 5.2 89/07/09 15:48:12 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -61,7 +61,7 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 	 * an Expose event is to be generated for those areas in backing
 	 * store if generateExposures is TRUE).
 	 */
-	(* pWin->backStorage->funcs->ClearToBackground)(pWin, x, y, w, h,
+	(* pWin->drawable.pScreen->ClearBackingStore)(pWin, x, y, w, h,
 						 generateExposures);
     }
 
@@ -69,6 +69,6 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
     if (generateExposures)
 	(*pWin->drawable.pScreen->WindowExposures)(pWin, pReg);
     else if (pWin->backgroundState != None)
-        (*pWin->funcs->PaintWindowBackground)(pWin, pReg, PW_BACKGROUND);
+        (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pReg, PW_BACKGROUND);
     (* pWin->drawable.pScreen->RegionDestroy)(pReg);
 }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.2 89/07/03 14:45:32 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.3 89/07/09 15:56:53 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -166,6 +166,11 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->RectIn = miRectIn;
     pScreen->PointInRegion = miPointInRegion;
     pScreen->WindowExposures = miWindowExposures;
+    pScreen->PaintWindowBackground = mfbPaintWindow;
+    pScreen->PaintWindowBorder = mfbPaintWindow;
+    pScreen->CopyWindow = mfbCopyWindow;
+    pScreen->ClearToBackground = miClearToBackground;
+
     pScreen->RegionNotEmpty = miRegionNotEmpty;
     pScreen->RegionEmpty = miRegionEmpty;
     pScreen->RegionExtents = miRegionExtents;

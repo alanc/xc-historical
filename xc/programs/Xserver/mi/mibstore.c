@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.8 89/07/09 15:53:10 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.9 89/07/10 21:30:11 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -102,13 +102,13 @@ implied warranty.
 
 #define SETUP_BACKING(pDrawable,pGC) \
     DrawablePtr	  pBackingDrawable = (DrawablePtr) \
-    	((miBSWindowPtr)((WindowPtr)(pDrawable))->backStorage->devPrivate.ptr)->pBackingPixmap; \
+    	((miBSWindowPtr)((WindowPtr)(pDrawable))->backStorage)->pBackingPixmap; \
     SETUP_BACKING_TERSE(pGC) \
     GCPtr	pBackingGC = pGCPrivate->pBackingGC;
 
 #define SETUP_BACKING_VERBOSE(pDrawable,pGC) \
     miBSWindowPtr pBackingStore = \
-    	(miBSWindowPtr)((WindowPtr)(pDrawable))->backStorage->devPrivate.ptr; \
+    	(miBSWindowPtr)((WindowPtr)(pDrawable))->backStorage; \
     SETUP_BACKING(pDrawable, pGC)
 
 #define PROLOGUE(pGC) \
@@ -136,6 +136,15 @@ static unsigned int *miBSGetSpans();
 static Bool	    miBSChangeWindowAttributes();
 static Bool	    miBSCreateGC();
 static Bool	    miBSDestroyWindow();
+
+/*
+ * backing store screen functions
+ */
+
+static void	    miBSSaveDoomedAreas();
+static RegionPtr    miBSRestoreAreas();
+static void	    miBSExposeCopy(),		miBSTranslateBackingStore();
+static void	    miBSClearBackingStore(),	miBSDrawGuarantee();
 
 /*
  * wrapper vectors for GC funcs and ops
@@ -214,24 +223,6 @@ static GCFuncs miBSCheapGCFuncs = {
     ((pGC)->funcs = &miBSCheapGCFuncs)
 
 /*
- * func vec for window backing store
- */
-
-static void	    miBSSaveDoomedAreas();
-static RegionPtr    miBSRestoreAreas();
-static void	    miBSExposeCopy(),		miBSTranslateBackingStore();
-static void	    miBSClearToBackground(),	miBSDrawGuarantee();
-
-BackingStoreFuncs miBSFuncs = {
-    miBSSaveDoomedAreas,
-    miBSRestoreAreas,
-    miBSExposeCopy,
-    miBSTranslateBackingStore,
-    miBSClearToBackground,
-    miBSDrawGuarantee,
-};
-
-/*
  * called from device screen initialization proc.  Gets a GCPrivateIndex
  * and wraps appropriate per-screen functions
  */
@@ -271,6 +262,14 @@ miInitializeBackingStore (pScreen, funcs)
     pScreen->ChangeWindowAttributes = miBSChangeWindowAttributes;
     pScreen->CreateGC = miBSCreateGC;
     pScreen->DestroyWindow = miBSDestroyWindow;
+
+    pScreen->SaveDoomedAreas = miBSSaveDoomedAreas;
+    pScreen->RestoreAreas = miBSRestoreAreas;
+    pScreen->ExposeCopy = miBSExposeCopy;
+    pScreen->TranslateBackingStore = miBSTranslateBackingStore;
+    pScreen->ClearBackingStore = miBSClearBackingStore;
+    pScreen->DrawGuarantee = miBSDrawGuarantee;
+
     pScreen->devPrivates[miBSScreenIndex].ptr = (pointer) pScreenPriv;
 }
 
@@ -331,7 +330,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 	GCPtr		pGC;
 
 	pWin = (WindowPtr) pDrawable;
-	pWindowPriv = (miBSWindowPtr) pWin->backStorage->devPrivate.ptr;
+	pWindowPriv = (miBSWindowPtr) pWin->backStorage;
 	pPixmap = pWindowPriv->pBackingPixmap;
 
     	bounds.x1 = sx;
@@ -415,7 +414,7 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans)
 	GCPtr		pGC;
 
 	pWin = (WindowPtr) pDrawable;
-	pWindowPriv = (miBSWindowPtr) pWin->backStorage->devPrivate.ptr;
+	pWindowPriv = (miBSWindowPtr) pWin->backStorage;
 	pPixmap = pWindowPriv->pBackingPixmap;
 
     	bounds.x1 = ppt->x;
@@ -1964,7 +1963,7 @@ miBSLineHelper(pDrawable, pGC, cap, npts, pts, xOrg, yOrg)
 
 /*-
  *-----------------------------------------------------------------------
- * miBSClearToBackground --
+ * miBSClearBackingStore --
  *	Clear the given area of the backing pixmap with the background of
  *	the window, whatever it is. If generateExposures is TRUE, generate
  *	exposure events for the area. Note that if the area has any
@@ -1981,7 +1980,7 @@ miBSLineHelper(pDrawable, pGC, cap, npts, pts, xOrg, yOrg)
  *-----------------------------------------------------------------------
  */
 static void
-miBSClearToBackground(pWin, x, y, w, h, generateExposures)
+miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
     WindowPtr	  	pWin;
     int	    	  	x;
     int	    	  	y;
@@ -2005,7 +2004,7 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
     char		backgroundState;
     int			numRects;
 
-    pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
+    pBackingStore = (miBSWindowPtr)pWin->backStorage;
     pScreen = pWin->drawable.pScreen;
 
     if (pBackingStore->status == StatusNoPixmap)
@@ -2405,7 +2404,7 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
 	DoChangeGC (pGC, gcmask, gcval, 1);
 
     if (pWin)
-	(*pWin->backStorage->funcs->DrawGuarantee) (pWin, pGC, GuaranteeVisBack);
+	(*pWin->drawable.pScreen->DrawGuarantee) (pWin, pGC, GuaranteeVisBack);
 
     if (pDrawable->serialNumber != pGC->serialNumber)
 	ValidateGC (pDrawable, pGC);
@@ -2421,7 +2420,7 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
     pRect -= numRects;
     (*pGC->ops->PolyFillRect) (pDrawable, pGC, numRects, pRect);
     if (pWin)
-	(*pWin->backStorage->funcs->DrawGuarantee) (pWin, pGC, GuaranteeNothing);
+	(*pWin->drawable.pScreen->DrawGuarantee) (pWin, pGC, GuaranteeNothing);
     DEALLOCATE_LOCAL (pRect);
 }
 
@@ -2451,7 +2450,7 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC, planeMask)
     int		n;
     
     pScreen = pWin->drawable.pScreen;
-    pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
+    pBackingStore = (miBSWindowPtr)pWin->backStorage;
     pBackRgn = (*pScreen->RegionCreate) (NULL, 1);
     if (pWin->backStorage && pBackingStore->status != StatusNoPixmap)
     {
@@ -2604,7 +2603,6 @@ miBSAllocate(pWin)
 {
     register miBSWindowPtr  pBackingStore;
     register ScreenPtr 	    pScreen;
-    BackingStorePtr	    pBS;
 	
     if (!pWin->backStorage &&
 	(pWin->drawable.pScreen->backingStoreSupport != NotUseful))
@@ -2615,23 +2613,13 @@ miBSAllocate(pWin)
 	if (!pBackingStore)
 	    return;
 
-	pBS = (BackingStorePtr) xalloc(sizeof(BackingStoreRec));
-	if (!pBS)
-	{
-	    xfree ((pointer) pBackingStore);
-	    return;
-	}
-
 	pBackingStore->pBackingPixmap = NullPixmap;
 	(* pScreen->RegionInit)(&pBackingStore->pSavedRegion, NullBox, 1);
 	pBackingStore->viewable = (char)pWin->viewable;
 	pBackingStore->status = StatusNoPixmap;
 	pBackingStore->backgroundState = None;
 	
-	pBS->funcs = &miBSFuncs;
-	pBS->devPrivate.ptr = (pointer) pBackingStore;
-
-	pWin->backStorage = pBS;
+	pWin->backStorage = (pointer) pBackingStore;
 
 	/*
 	 * Now want to initialize the backing pixmap and pSavedRegion if
@@ -2720,7 +2708,7 @@ miBSFree(pWin)
 
     if (pWin->backStorage)
     {
-	pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
+	pBackingStore = (miBSWindowPtr)pWin->backStorage;
 	if (pBackingStore)
 	{
 	    miDestroyBSPixmap (pWin);
@@ -2731,9 +2719,8 @@ miBSFree(pWin)
 		(*pScreen->DestroyPixmap) (pBackingStore->background.pixmap);
 
 	    xfree(pBackingStore);
+	    pWin->backStorage = NULL;
 	}
-	xfree(pWin->backStorage);
-	pWin->backStorage = (BackingStorePtr)NULL;
     }
 }
 
@@ -2768,7 +2755,7 @@ miResizeBackingStore(pWin, dx, dy)
     BoxRec pixbounds;
     RegionPtr prgnTmp;
 
-    pBackingStore = (miBSWindowPtr)(pWin->backStorage->devPrivate.ptr);
+    pBackingStore = (miBSWindowPtr)(pWin->backStorage);
     pScreen = pWin->drawable.pScreen;
     pBackingPixmap = pBackingStore->pBackingPixmap;
 
@@ -2864,7 +2851,7 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
     ScreenPtr	  	pScreen;
     
 
-    pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
+    pBackingStore = (miBSWindowPtr)pWin->backStorage;
     pScreen = pWin->drawable.pScreen;
 
     pBackingStore->viewable = (char)pWin->viewable;
@@ -2976,7 +2963,7 @@ miBSRestoreAreas(pWin, prgnExposed)
     RegionPtr exposures = prgnExposed;
 
     pScreen = pWin->drawable.pScreen;
-    pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
+    pBackingStore = (miBSWindowPtr)pWin->backStorage;
     pBackingPixmap = pBackingStore->pBackingPixmap;
 
     prgnSaved = &pBackingStore->pSavedRegion;
@@ -3119,7 +3106,7 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     BoxRec			extents;
 
     pScreen = pWin->drawable.pScreen;
-    pBackingStore = (miBSWindowPtr)(pWin->backStorage->devPrivate.ptr);
+    pBackingStore = (miBSWindowPtr)(pWin->backStorage);
     if (pBackingStore->status == StatusNoPixmap)
 	return;
 
@@ -3193,7 +3180,7 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
 	 * one will be generated if there are unobscured areas that
 	 * are newly exposed.  Is it worth computing, or cheating?
 	 */
-	miBSClearToBackground(pWin, extents.x1, extents.y1,
+	miBSClearBackingStore(pWin, extents.x1, extents.y1,
 			      extents.x2 - extents.x1,
 			      extents.y2 - extents.y1,
 			      TRUE);
@@ -3277,7 +3264,6 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
     DrawablePtr   pDrawable;
 {
     GCPtr   	  	pBackingGC;
-    BackingStorePtr	pBackingStore;
     miBSWindowPtr	pWindowPriv;
     miBSGCPtr		pPriv;
     WindowPtr		pWin;
@@ -3287,10 +3273,8 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
         pWin = (WindowPtr) pDrawable;
-	pBackingStore = pWin->backStorage;
-	lift_functions = (pBackingStore == (BackingStorePtr)NULL);
-	if (!lift_functions)
-	    pWindowPriv = (miBSWindowPtr) pBackingStore->devPrivate.ptr;
+	pWindowPriv = (miBSWindowPtr) pWin->backStorage;
+	lift_functions = (pWindowPriv == (miBSWindowPtr) NULL);
     }
     else
     {
@@ -3584,7 +3568,7 @@ miDestroyBSPixmap (pWin)
     ScreenPtr		pScreen;
     
     pScreen = pWin->drawable.pScreen;
-    pBackingStore = (miBSWindowPtr) pWin->backStorage->devPrivate.ptr;
+    pBackingStore = (miBSWindowPtr) pWin->backStorage;
     if (pBackingStore->pBackingPixmap)
 	(* pScreen->DestroyPixmap)(pBackingStore->pBackingPixmap);
     pBackingStore->pBackingPixmap = NullPixmap;
@@ -3601,7 +3585,7 @@ miTileVirtualBS (pWin)
 {
     miBSWindowPtr	pBackingStore;
 
-    pBackingStore = (miBSWindowPtr) pWin->backStorage->devPrivate.ptr;
+    pBackingStore = (miBSWindowPtr) pWin->backStorage;
     pBackingStore->backgroundState = pWin->backgroundState;
     pBackingStore->background = pWin->background;
     if (pBackingStore->backgroundState == BackgroundPixmap)
@@ -3636,7 +3620,7 @@ miCreateBSPixmap (pWin)
     Bool		backSet;
 
     pScreen = pWin->drawable.pScreen;
-    pBackingStore = (miBSWindowPtr) pWin->backStorage->devPrivate.ptr;
+    pBackingStore = (miBSWindowPtr) pWin->backStorage;
     backSet = ((pBackingStore->status == StatusVirtual) ||
 	       (pBackingStore->status == StatusVDirty));
 
@@ -3681,7 +3665,7 @@ miCreateBSPixmap (pWin)
     if ((* pScreen->RegionNotEmpty) (&pBackingStore->pSavedRegion))
     {
 	extents = (* pScreen->RegionExtents) (&pBackingStore->pSavedRegion);
-	miBSClearToBackground(pWin,
+	miBSClearBackingStore(pWin,
 			      extents->x1, extents->y1,
 			      extents->x2 - extents->x1,
 			      extents->y2 - extents->y1,
@@ -3733,7 +3717,7 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 
     if (!(*pGC->pScreen->RegionNotEmpty) (prgnExposed))
 	return;
-    pBackingStore = (miBSWindowPtr)pSrc->backStorage->devPrivate.ptr;
+    pBackingStore = (miBSWindowPtr)pSrc->backStorage;
     
     if (pBackingStore->status == StatusNoPixmap)
     	return;

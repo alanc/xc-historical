@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.7 89/07/09 15:55:28 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.8 89/07/10 14:56:12 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -45,12 +45,17 @@ static Bool	    miSpriteCloseScreen();
 static void	    miSpriteGetImage();
 static unsigned int *miSpriteGetSpans();
 static Bool	    miSpriteCreateGC();
-static Bool	    miSpriteCreateWindow();
-static Bool	    miSpriteDestroyWindow();
-static Bool	    miSpriteChangeWindowAttributes();
 static void	    miSpriteBlockHandler();
 static void	    miSpriteInstallColormap();
 static void	    miSpriteStoreColors();
+
+static void	    miSpritePaintWindowBackground();
+static void	    miSpritePaintWindowBorder();
+static void	    miSpriteCopyWindow();
+static void	    miSpriteClearToBackground();
+
+static void	    miSpriteSaveDoomedAreas();
+static RegionPtr    miSpriteRestoreAreas();
 
 #define SCREEN_PROLOGUE(pScreen, field)\
   ((pScreen)->field = \
@@ -58,56 +63,6 @@ static void	    miSpriteStoreColors();
 
 #define SCREEN_EPILOGUE(pScreen, field, wrapper)\
     ((pScreen)->field = wrapper)
-
-/*
- * window wrappers
- */
-
-static int  miSpriteWindowIndex = -1;
-
-static void miSpritePaintWindowBackground(),	miSpritePaintWindowBorder();
-static void miSpriteCopyWindow(),		miSpriteClearToBackground();
-
-static WindowFuncs miSpriteWindowFuncs = {
-    miSpritePaintWindowBackground,
-    miSpritePaintWindowBorder,
-    miSpriteCopyWindow,
-    miSpriteClearToBackground,
-};
-
-#define WINDOW_PROLOGUE(pWin)\
-    ((pWin)->funcs = \
-	((miSpriteWindowPtr) (pWin->devPrivates[miSpriteWindowIndex].ptr))->wrapFuncs)
-	
-#define WINDOW_EPILOGUE(pWin)\
-    ((pWin)->funcs = &miSpriteWindowFuncs)
-
-/*
- * backing store wrappers
- */
-
-static void	    miSpriteSaveDoomedAreas();
-static RegionPtr    miSpriteRestoreAreas();
-static void	    miSpriteExposeCopy(), miSpriteTranslateBackingStore();
-static void	    miSpriteClearBSToBackground(), miSpriteDrawGuarantee();
-
-static BackingStoreFuncs miSpriteBackingStoreFuncs = {
-    miSpriteSaveDoomedAreas,
-    miSpriteRestoreAreas,
-    miSpriteExposeCopy,
-    miSpriteTranslateBackingStore,
-    miSpriteClearBSToBackground,
-    miSpriteDrawGuarantee,
-};
-
-#define BSTORE_PROLOGUE(pWin) (\
-  (WINDOW_PROLOGUE(pWin)) , \
-  ((pWin)->backStorage->funcs = \
-    ((miSpriteWindowPtr) (pWin)->devPrivates[miSpriteWindowIndex].ptr)->wrapBSFuncs))
-
-#define BSTORE_EPILOGUE(pWin) (\
-  (WINDOW_EPILOGUE(pWin)) , \
-  ((pWin)->backStorage->funcs = &miSpriteBackingStoreFuncs))
 
 /*
  * GC func wrappers
@@ -252,8 +207,6 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
 	if (miSpriteScreenIndex == -1)
 	    return FALSE;
     }
-    if (miSpriteWindowIndex == -1)
-	miSpriteWindowIndex = AllocateWindowPrivateIndex ();
     if (miSpriteGCIndex == -1)
 	miSpriteGCIndex = AllocateGCPrivateIndex ();
     pPriv = (miSpriteScreenPtr) xalloc (sizeof (miSpriteScreenRec));
@@ -273,12 +226,18 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pPriv->GetImage = pScreen->GetImage;
     pPriv->GetSpans = pScreen->GetSpans;
     pPriv->CreateGC = pScreen->CreateGC;
-    pPriv->CreateWindow = pScreen->CreateWindow;
-    pPriv->DestroyWindow = pScreen->DestroyWindow;
-    pPriv->ChangeWindowAttributes = pScreen->ChangeWindowAttributes;
     pPriv->BlockHandler = pScreen->BlockHandler;
     pPriv->InstallColormap = pScreen->InstallColormap;
     pPriv->StoreColors = pScreen->StoreColors;
+
+    pPriv->PaintWindowBackground = pScreen->PaintWindowBackground;
+    pPriv->PaintWindowBorder = pScreen->PaintWindowBorder;
+    pPriv->CopyWindow = pScreen->CopyWindow;
+    pPriv->ClearToBackground = pScreen->ClearToBackground;
+
+    pPriv->SaveDoomedAreas = pScreen->SaveDoomedAreas;
+    pPriv->RestoreAreas = pScreen->RestoreAreas;
+
     pPriv->pCursor = NULL;
     pPriv->x = 0;
     pPriv->y = 0;
@@ -291,12 +250,18 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pScreen->GetImage = miSpriteGetImage;
     pScreen->GetSpans = miSpriteGetSpans;
     pScreen->CreateGC = miSpriteCreateGC;
-    pScreen->CreateWindow = miSpriteCreateWindow;
-    pScreen->DestroyWindow = miSpriteDestroyWindow;
-    pScreen->ChangeWindowAttributes = miSpriteChangeWindowAttributes;
     pScreen->BlockHandler = miSpriteBlockHandler;
     pScreen->InstallColormap = miSpriteInstallColormap;
     pScreen->StoreColors = miSpriteStoreColors;
+
+    pScreen->PaintWindowBackground = miSpritePaintWindowBackground;
+    pScreen->PaintWindowBorder = miSpritePaintWindowBorder;
+    pScreen->CopyWindow = miSpriteCopyWindow;
+    pScreen->ClearToBackground = miSpriteClearToBackground;
+
+    pScreen->SaveDoomedAreas = miSpriteSaveDoomedAreas;
+    pScreen->RestoreAreas = miSpriteRestoreAreas;
+
     return TRUE;
 }
 
@@ -320,10 +285,18 @@ miSpriteCloseScreen (i, pScreen)
     pScreen->CloseScreen = pScreenPriv->CloseScreen;
     pScreen->GetImage = pScreenPriv->GetImage;
     pScreen->GetSpans = pScreenPriv->GetSpans;
-    pScreen->CreateWindow = pScreenPriv->CreateWindow;
-    pScreen->DestroyWindow = pScreenPriv->DestroyWindow;
-    pScreen->ChangeWindowAttributes = pScreenPriv->ChangeWindowAttributes;
     pScreen->CreateGC = pScreenPriv->CreateGC;
+    pScreen->BlockHandler = pScreenPriv->BlockHandler;
+    pScreen->InstallColormap = pScreenPriv->InstallColormap;
+    pScreen->StoreColors = pScreenPriv->StoreColors;
+
+    pScreen->PaintWindowBackground = pScreenPriv->PaintWindowBackground;
+    pScreen->PaintWindowBorder = pScreenPriv->PaintWindowBorder;
+    pScreen->CopyWindow = pScreenPriv->CopyWindow;
+    pScreen->ClearToBackground = pScreenPriv->ClearToBackground;
+
+    pScreen->SaveDoomedAreas = pScreenPriv->SaveDoomedAreas;
+    pScreen->RestoreAreas = pScreenPriv->RestoreAreas;
 
     xfree ((pointer) pScreenPriv);
 
@@ -401,117 +374,6 @@ miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans)
     ret = (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans);
 
     SCREEN_EPILOGUE (pScreen, GetSpans, miSpriteGetSpans);
-
-    return ret;
-}
-
-static Bool
-miSpriteCreateWindow (pWin)
-    WindowPtr	    pWin;
-{
-    ScreenPtr		pScreen;
-    miSpriteWindowPtr   pWindowPriv;
-    Bool		ret;
-
-    pScreen = pWin->drawable.pScreen;
-
-    pWindowPriv = (miSpriteWindowPtr) xalloc (sizeof (miSpriteWindowRec));
-    if (!pWindowPriv)
-	return FALSE;
-
-    SCREEN_PROLOGUE (pScreen, CreateWindow);
-
-    ret = (*pScreen->CreateWindow) (pWin);
-
-    if (ret)
-    {
-	if (pWin->backStorage)
-	{
-	    pWindowPriv->wrapBSFuncs = pWin->backStorage->funcs;
-	    pWin->backStorage->funcs = &miSpriteBackingStoreFuncs;
-	}
-
-	pWindowPriv->wrapFuncs = pWin->funcs;
-	pWin->funcs = &miSpriteWindowFuncs;
-	pWin->devPrivates[miSpriteWindowIndex].ptr = (pointer) pWindowPriv;
-    }
-    else
-    {
-	pWin->devPrivates[miSpriteWindowIndex].ptr = (pointer) 0;
-	xfree ((pointer) pWindowPriv);
-    }
-
-    SCREEN_EPILOGUE (pScreen, CreateWindow, miSpriteCreateWindow);
-
-    return ret;
-}
-
-static Bool
-miSpriteDestroyWindow (pWin)
-    WindowPtr	    pWin;
-{
-    ScreenPtr		pScreen;
-    miSpriteWindowPtr   pWindowPriv;
-    Bool		ret;
-
-    pScreen = pWin->drawable.pScreen;
-
-    SCREEN_PROLOGUE (pScreen, DestroyWindow);
-
-    pWindowPriv = (miSpriteWindowPtr) pWin->devPrivates[miSpriteWindowIndex].ptr;
-    /*
-     * unwrap the window funcs before diving down
-     */
-    if (pWin->backStorage)
-	pWin->backStorage->funcs = pWindowPriv->wrapBSFuncs;
-    pWin->funcs = pWindowPriv->wrapFuncs;
-
-    ret = (*pScreen->DestroyWindow) (pWin);
-
-    xfree(pWindowPriv);
-
-    SCREEN_EPILOGUE (pScreen, DestroyWindow, miSpriteDestroyWindow);
-
-    return ret;
-}
-
-static Bool
-miSpriteChangeWindowAttributes (pWin, mask)
-    WindowPtr	    pWin;
-    unsigned long   mask;
-{
-    ScreenPtr	    pScreen;
-    miSpriteWindowPtr    pWindowPriv;
-    Bool	ret;
-
-    pScreen = pWin->drawable.pScreen;
-
-    SCREEN_PROLOGUE (pScreen, ChangeWindowAttributes);
-
-    pWindowPriv = (miSpriteWindowPtr) pWin->devPrivates[miSpriteWindowIndex].ptr;
-    /*
-     * unwrap the window funcs before diving down
-     */
-    if (pWin->backStorage)
-	pWin->backStorage->funcs = pWindowPriv->wrapBSFuncs;
-    pWin->funcs = pWindowPriv->wrapFuncs;
-
-    ret = (*pScreen->ChangeWindowAttributes) (pWin, mask);
-
-    /*
-     * rewrap window funcs
-     */
-
-    if (pWin->backStorage)
-    {
-	pWindowPriv->wrapBSFuncs = pWin->backStorage->funcs;
-	pWin->backStorage->funcs = &miSpriteBackingStoreFuncs;
-    }
-
-    pWindowPriv->wrapFuncs = pWin->funcs;
-    pWin->funcs = &miSpriteWindowFuncs;
-
-    SCREEN_EPILOGUE (pScreen, ChangeWindowAttributes, miSpriteChangeWindowAttributes);
 
     return ret;
 }
@@ -667,10 +529,10 @@ miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
     miSpriteScreenPtr   pScreenPriv;
     BoxRec		cursorBox;
 
-    BSTORE_PROLOGUE (pWin);
-
     pScreen = pWin->drawable.pScreen;
     
+    SCREEN_PROLOGUE (pScreen, SaveDoomedAreas);
+
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
     {
@@ -687,9 +549,9 @@ miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
 	    miSpriteRemoveCursor (pScreen);
     }
 
-    (*pWin->backStorage->funcs->SaveDoomedAreas) (pWin, pObscured, dx, dy);
+    (*pScreen->SaveDoomedAreas) (pWin, pObscured, dx, dy);
 
-    BSTORE_EPILOGUE (pWin);
+    SCREEN_EPILOGUE (pScreen, SaveDoomedAreas, miSpriteSaveDoomedAreas);
 }
 
 static RegionPtr
@@ -701,10 +563,10 @@ miSpriteRestoreAreas (pWin, prgnExposed)
     miSpriteScreenPtr   pScreenPriv;
     RegionPtr		result;
 
-    BSTORE_PROLOGUE (pWin);
-
     pScreen = pWin->drawable.pScreen;
     
+    SCREEN_PROLOGUE (pScreen, RestoreAreas);
+
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
     {
@@ -712,75 +574,11 @@ miSpriteRestoreAreas (pWin, prgnExposed)
 	    miSpriteRemoveCursor (pScreen);
     }
 
-    result = (*pWin->backStorage->funcs->RestoreAreas) (pWin, prgnExposed);
+    result = (*pScreen->RestoreAreas) (pWin, prgnExposed);
 
-    BSTORE_EPILOGUE (pWin);
+    SCREEN_EPILOGUE (pScreen, RestoreAreas, miSpriteRestoreAreas);
 
     return result;
-}
-
-static void
-miSpriteExposeCopy(pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
-    WindowPtr	  	pSrc;
-    DrawablePtr	  	pDst;
-    GCPtr   	  	pGC;
-    RegionPtr	  	prgnExposed;
-    int	    	  	srcx, srcy;
-    int	    	  	dstx, dsty;
-    unsigned long 	plane;
-{
-    BSTORE_PROLOGUE (pSrc);
-
-    (*pSrc->backStorage->funcs->ExposeCopy)
-	(pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane);
-
-    BSTORE_EPILOGUE (pSrc);
-}
-
-static void
-miSpriteTranslateBackingStore(pWin, dx, dy, oldClip)
-    WindowPtr 	  pWin;
-    int     	  dx;		/* translation distance */
-    int     	  dy;
-    RegionPtr	  oldClip;  	/* Region being copied */
-{
-    BSTORE_PROLOGUE (pWin);
-
-    (*pWin->backStorage->funcs->TranslateBackingStore) (pWin, dx, dy, oldClip);
-
-    BSTORE_EPILOGUE (pWin);
-}
-
-static void
-miSpriteClearBSToBackground (pWin, x, y, w, h, generateExposures)
-    WindowPtr	  	pWin;
-    int	    	  	x;
-    int	    	  	y;
-    int	    	  	w;
-    int	    	  	h;
-    Bool    	  	generateExposures;
-{
-    BSTORE_PROLOGUE (pWin);
-
-    (*pWin->backStorage->funcs->ClearToBackground)
-	(pWin, x, y, w, h, generateExposures);
-
-    BSTORE_EPILOGUE (pWin);
-}
-
-static void
-miSpriteDrawGuarantee (pWin, pGC, guarantee)
-    WindowPtr	pWin;
-    GCPtr	pGC;
-    int		guarantee;
-{
-    GC_FUNC_PROLOGUE (pGC);
-    BSTORE_PROLOGUE (pWin);
-
-    (*pWin->backStorage->funcs->DrawGuarantee) (pWin, pGC, guarantee);
-    
-    BSTORE_EPILOGUE (pWin);
-    GC_FUNC_EPILOGUE (pGC);
 }
 
 /*
@@ -796,9 +594,9 @@ miSpritePaintWindowBackground (pWin, pRegion, what)
     ScreenPtr	    pScreen;
     miSpriteScreenPtr    pScreenPriv;
 
-    WINDOW_PROLOGUE (pWin);
-
     pScreen = pWin->drawable.pScreen;
+
+    SCREEN_PROLOGUE (pScreen, PaintWindowBackground);
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
@@ -811,9 +609,9 @@ miSpritePaintWindowBackground (pWin, pRegion, what)
 	    miSpriteRemoveCursor (pScreen);
     }
 
-    (*pWin->funcs->PaintWindowBackground) (pWin, pRegion, what);
+    (*pScreen->PaintWindowBackground) (pWin, pRegion, what);
 
-    WINDOW_EPILOGUE (pWin);
+    SCREEN_EPILOGUE (pScreen, PaintWindowBackground, miSpritePaintWindowBackground);
 }
 
 static void
@@ -825,9 +623,9 @@ miSpritePaintWindowBorder (pWin, pRegion, what)
     ScreenPtr	    pScreen;
     miSpriteScreenPtr    pScreenPriv;
 
-    WINDOW_PROLOGUE (pWin);
-
     pScreen = pWin->drawable.pScreen;
+
+    SCREEN_PROLOGUE (pScreen, PaintWindowBorder);
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
@@ -840,9 +638,9 @@ miSpritePaintWindowBorder (pWin, pRegion, what)
 	    miSpriteRemoveCursor (pScreen);
     }
 
-    (*pWin->funcs->PaintWindowBorder) (pWin, pRegion, what);
+    (*pScreen->PaintWindowBorder) (pWin, pRegion, what);
 
-    WINDOW_EPILOGUE (pWin);
+    SCREEN_EPILOGUE (pScreen, PaintWindowBorder, miSpritePaintWindowBorder);
 }
 
 static void
@@ -856,9 +654,9 @@ miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
     BoxRec	    cursorBox;
     int		    dx, dy;
 
-    WINDOW_PROLOGUE (pWin);
-
     pScreen = pWin->drawable.pScreen;
+
+    SCREEN_PROLOGUE (pScreen, CopyWindow);
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
@@ -880,9 +678,9 @@ miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
 	    miSpriteRemoveCursor (pScreen);
     }
 
-    (*pWin->funcs->CopyWindow) (pWin, ptOldOrg, pRegion);
+    (*pScreen->CopyWindow) (pWin, ptOldOrg, pRegion);
 
-    WINDOW_EPILOGUE (pWin);
+    SCREEN_EPILOGUE (pScreen, CopyWindow, miSpriteCopyWindow);
 }
 
 static void
@@ -896,9 +694,10 @@ miSpriteClearToBackground (pWin, x, y, w, h, generateExposures)
     miSpriteScreenPtr	pScreenPriv;
     int			realw, realh;
 
-    WINDOW_PROLOGUE (pWin);
-
     pScreen = pWin->drawable.pScreen;
+
+    SCREEN_PROLOGUE (pScreen, ClearToBackground);
+
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
     {
@@ -913,9 +712,9 @@ miSpriteClearToBackground (pWin, x, y, w, h, generateExposures)
 	}
     }
 
-    (*pWin->funcs->ClearToBackground) (pWin, x, y, w, h, generateExposures);
+    (*pScreen->ClearToBackground) (pWin, x, y, w, h, generateExposures);
 
-    WINDOW_EPILOGUE (pWin);
+    SCREEN_EPILOGUE (pScreen, ClearToBackground, miSpriteClearToBackground);
 }
 
 /*

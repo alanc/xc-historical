@@ -52,13 +52,7 @@ extern PixmapPtr cfbCreatePixmap();
 extern Bool cfbDestroyPixmap();
 
 extern void cfbCopyWindow();
-extern void cfbPaintWindowBorder();
-extern void cfbPaintWindowBackground();
-extern void cfbPaintAreaNone();
-extern void cfbPaintAreaPR();
-extern void cfbPaintAreaSolid();
-extern void cfbPaintArea32();
-extern void cfbPaintAreaOther();
+extern void cfbPaintWindow();
 
 extern void miPolyFillRect();
 extern void miPolyFillArc();

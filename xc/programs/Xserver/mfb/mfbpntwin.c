@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 5.0 89/06/09 15:06:58 keith Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.1 89/07/09 15:58:47 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,12 +39,55 @@ extern void miPaintWindow();
 /*
 NOTE
    PaintArea32() doesn't need to rotate the tile, since
-mfbPositionWIndow() and mfbChangeWIndowAttributes() do it.
+mfbPositionWIndow() and mfbChangeWindowAttributes() do it.
 */
+
+static void mfbPaintWindowNone(),   mfbPaintWindowPR();
+static void mfbPaintWindow32(),	    mfbPaintWindowSolid();
+
+void
+mfbPaintWindow(pWin, pRegion, what)
+    WindowPtr	pWin;
+    RegionPtr	pRegion;
+    int		what;
+{
+    void    (*painter)();
+    register mfbPrivWin	*pPrivWin;
+
+    pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
+    
+    painter = miPaintWindow;
+    switch (what) {
+    case PW_BACKGROUND:
+	switch (pWin->backgroundState) {
+	case None:
+	    painter = mfbPaintWindowNone;
+	    break;
+	case ParentRelative:
+	    painter = mfbPaintWindowPR;
+	    break;
+	case BackgroundPixmap:
+	    if (pPrivWin->fastBackground)
+		painter = mfbPaintWindow32;
+	    break;
+	case BackgroundPixel:
+	    painter = mfbPaintWindowSolid;
+	    break;
+    	}
+    	break;
+    case PW_BORDER:
+	if (pWin->borderIsPixel)
+	    painter = mfbPaintWindowSolid;
+	else if (pPrivWin->fastBorder)
+	    painter = mfbPaintWindow32;
+	break;
+    }
+    (*painter) (pWin, pRegion, what);
+}
 
 /* Paint Window None -- just return */
 /*ARGSUSED*/
-void
+static void
 mfbPaintWindowNone(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;
@@ -54,7 +97,7 @@ mfbPaintWindowNone(pWin, pRegion, what)
 
 /* Paint Window Parent Relative -- Find first ancestor which isn't parent
  * relative and paint as it would, but with this region */ 
-void
+static void
 mfbPaintWindowPR(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;
@@ -67,12 +110,12 @@ mfbPaintWindowPR(pWin, pRegion, what)
 	pParent = pParent->parent;
 
     if(what == PW_BORDER)
-        (*pParent->funcs->PaintWindowBorder)(pParent, pRegion, what);
+        (*pParent->drawable.pScreen->PaintWindowBorder)(pParent, pRegion, what);
     else
-	(*pParent->funcs->PaintWindowBackground)(pParent, pRegion, what);
+	(*pParent->drawable.pScreen->PaintWindowBackground)(pParent, pRegion, what);
 }
 
-void
+static void
 mfbPaintWindowSolid(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;
@@ -103,7 +146,7 @@ mfbPaintWindowSolid(pWin, pRegion, what)
    this could call mfbTileArea32, but that has to do a switch on the
 rasterop, which seems expensive.
 */
-void
+static void
 mfbPaintWindow32(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;

@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.5 89/07/09 18:16:45 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.6 89/07/12 13:44:38 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -400,8 +400,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     if (pParent->backStorage)
     {
 	(* pScreen->Subtract) (exposed, &pParent->clipList, universe);
-	(*pParent->backStorage->funcs->SaveDoomedAreas)(
-					    pParent, exposed, dx, dy);
+	(* pScreen->SaveDoomedAreas)(pParent, exposed, dx, dy);
     }
     
     (* pScreen->RegionCopy) (&pParent->clipList, universe);
@@ -581,8 +580,7 @@ miValidateTree (pParent, pChild, kind)
     case VTMap:
 	if (pParent->backStorage) {
 	    (* pScreen->Subtract) (exposed, &pParent->clipList, totalClip);
-	    (*pParent->backStorage->funcs->SaveDoomedAreas)(
-					    pParent, exposed, 0, 0);
+	    (* pScreen->SaveDoomedAreas)(pParent, exposed, 0, 0);
 	}
 	
 	(* pScreen->RegionCopy) (&pParent->clipList, totalClip);

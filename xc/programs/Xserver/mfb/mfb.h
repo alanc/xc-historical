@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.1 89/06/16 16:58:04 keith Exp $ */
+/* $XConsortium: mfb.h,v 5.2 89/07/10 13:25:01 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -59,11 +59,8 @@ extern void mfbCopyWindow();
 extern void mfbSaveAreas();
 extern void mfbRestoreAreas();
 
-/* window painters */
-extern void mfbPaintWindowNone();
-extern void mfbPaintWindowPR();
-extern void mfbPaintWindowSolid();
-extern void mfbPaintWindow32();
+/* window painter */
+extern void mfbPaintWindow();
 
 /* rectangle painters */
 extern void mfbSolidWhiteArea();
@@ -73,7 +70,6 @@ extern void mfbStippleBlackArea();
 extern void mfbSolidInvertArea();
 extern void mfbStippleInvertArea();
 extern void mfbTileArea32();
-
 
 extern void mfbPolyFillRect();
 extern RegionPtr mfbCopyArea();

@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.1 89/07/09 15:33:55 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.2 89/07/10 08:01:45 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -107,11 +107,26 @@ typedef struct _Screen {
     int  (* ValidateTree)();		/* pParent, pChild, top, anyMarked */
     void (* WindowExposures)();       /* pWin: WindowPtr, pRegion: RegionPtr */
 
+    void (* PaintWindowBackground)();	/* pWin, pRgn, which */
+    void (* PaintWindowBorder)();	/* pWin, pRgn, which */
+    void (* CopyWindow)();		/* pWin, oldPt, pOldRegion */
+    void (* ClearToBackground)();	/* pWin, x,y,w,h, sendExpose */
+
     /* Pixmap procedures */
 
     PixmapPtr (* CreatePixmap)(); 	/* pScreen, width, height, depth */
     Bool (* DestroyPixmap)();		/* pPixmap */
 
+    /* Backing store procedures */
+
+    void (* SaveDoomedAreas)();		/* pWin, pRegion, dx, dy */
+    RegionPtr (* RestoreAreas)();	/* pWin, pRegion */
+    void (* ExposeCopy)();		/* pSrc, pDst, pGC, pRegion, */
+					/* srcx, srcy, dstx, dsty, plane */
+    void (* TranslateBackingStore)();	/* pWin, dx, dy, pOldClip */
+    void (* ClearBackingStore)();	/* pWin, x, y, w, h, sendExpose */
+    void (* DrawGuarantee)();		/* pWin, pGC, guarantee */
+    
     /* Font procedures */
 
     Bool (* RealizeFont)();		/* pScr, pFont */

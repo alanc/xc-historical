@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.5 89/07/05 17:32:39 rws Exp $ */
+/* $XConsortium: windowstr.h,v 5.6 89/07/09 15:35:20 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -39,21 +39,6 @@ SOFTWARE.
 #define GuaranteeNothing	0
 #define GuaranteeVisBack	1
 
-typedef struct _BackingStoreFuncs {
-    void	(* SaveDoomedAreas)();
-    RegionPtr	(* RestoreAreas)();
-    void	(* ExposeCopy)();
-    void	(* TranslateBackingStore)();
-    void	(* ClearToBackground)();
-    void	(* DrawGuarantee)();
-    DevUnion	devPrivate;
-} BackingStoreFuncs;
-
-typedef struct _BackingStore {
-    BackingStoreFuncs	*funcs;
-    DevUnion		devPrivate;
-} BackingStoreRec;
-
 typedef enum { VTOther, VTStack, VTMove, VTUnmap, VTMap } VTKind;
 
 typedef struct _Validate {
@@ -69,14 +54,6 @@ typedef struct _Validate {
 
 #define SameBorder(as, a, bs, b)				\
     EqualPixUnion(as, a, bs, b)
-
-typedef struct _WindowFuncs {
-    void	(* PaintWindowBackground)();
-    void	(* PaintWindowBorder)();
-    void	(* CopyWindow)();
-    void	(* ClearToBackground)();
-    DevUnion	devPrivate;
-} WindowFuncs;
 
 typedef struct _WindowOpt {
     VisualID		visual;		   /* default: same as parent */
@@ -116,8 +93,7 @@ typedef struct _Window {
     Mask		eventMask;
     PixUnion		background;
     PixUnion		border;
-    WindowFuncs		*funcs;
-    BackingStorePtr	backStorage;
+    pointer		backStorage;	/* null when BS disabled */
     WindowOptPtr	optional;
     unsigned		backgroundState:2; /* None, Relative, Pixel, Pixmap */
     unsigned		borderIsPixel:1;

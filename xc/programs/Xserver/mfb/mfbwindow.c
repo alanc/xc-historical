@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.2 89/06/16 16:58:08 keith Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.3 89/07/09 15:58:24 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,42 +33,12 @@ SOFTWARE.
 
 extern WindowPtr *WindowTable;
 
-static WindowFuncs commonFuncs[] = {
-    {
-	mfbPaintWindow32,	/* PaintWindowBackground */
-	mfbPaintWindow32,	/* PaintWindowBorder */
-	mfbCopyWindow,		/* CopyWindow */
-	miClearToBackground,	/* ClearToBackground */
-    },
-    {
-	mfbPaintWindowSolid,	/* PaintWindowBackground */
-	mfbPaintWindow32,	/* PaintWindowBorder */
-	mfbCopyWindow,		/* CopyWindow */
-	miClearToBackground,	/* ClearToBackground */
-    },
-    {
-	mfbPaintWindowSolid,	/* PaintWindowBackground */
-	mfbPaintWindowSolid,	/* PaintWindowBorder */
-	mfbCopyWindow,		/* CopyWindow */
-	miClearToBackground,	/* ClearToBackground */
-    },
-    {
-	mfbPaintWindowNone,
-	mfbPaintWindowPR,
-	mfbCopyWindow,
-	miClearToBackground,
-    },
-};
-
-#define NumCommonFuncs	(sizeof (commonFuncs) / sizeof (commonFuncs[0]))
-
 Bool
 mfbCreateWindow(pWin)
     register WindowPtr pWin;
 {
     register mfbPrivWin *pPrivWin;
 
-    pWin->funcs = &commonFuncs[NumCommonFuncs-1];
     pPrivWin = (mfbPrivWin *)xalloc(sizeof(mfbPrivWin));
     pWin->devPrivates[mfbWindowPrivateIndex].ptr = (pointer)pPrivWin;
     if (!pPrivWin)
@@ -96,8 +66,6 @@ mfbDestroyWindow(pWin)
     if (pPrivWin->pRotatedBackground)
 	mfbDestroyPixmap(pPrivWin->pRotatedBackground);
     xfree(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
-    if (pWin->funcs->devPrivate.val)
-	xfree (pWin->funcs);
     return (TRUE);
 }
 
@@ -247,10 +215,8 @@ mfbChangeWindowAttributes(pWin, mask)
 {
     register unsigned long index;
     register mfbPrivWin *pPrivWin;
-    WindowFuncs		newFuncs;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
-    newFuncs = *pWin->funcs;
     while(mask)
     {
 	index = lowbit (mask);
@@ -279,12 +245,10 @@ mfbChangeWindowAttributes(pWin, mask)
 	  case CWBackPixmap:
 	      if (pWin->backgroundState == None)
 	      {
-		  newFuncs.PaintWindowBackground = mfbPaintWindowNone;
 		  pPrivWin->fastBackground = 0;
 	      }
 	      else if (pWin->backgroundState == ParentRelative)
 	      {
-		  newFuncs.PaintWindowBackground = mfbPaintWindowPR;
 		  pPrivWin->fastBackground = 0;
 	      }
 	      else if ((pWin->background.pixmap->drawable.width <= 32) &&
@@ -305,23 +269,19 @@ mfbChangeWindowAttributes(pWin, mask)
 				       pWin->drawable.y);
 		      pPrivWin->oldRotate.x = pWin->drawable.x;
 		      pPrivWin->oldRotate.y = pWin->drawable.y;
-		      newFuncs.PaintWindowBackground = mfbPaintWindow32;
 		  }
 		  else
 		  {
 		      pPrivWin->fastBackground = 0;
-		      newFuncs.PaintWindowBackground = miPaintWindow;
 		  }
 	      }
 	      else
 	      {
 		  pPrivWin->fastBackground = 0;
-		  newFuncs.PaintWindowBackground = miPaintWindow;
 	      }
 	      break;
 
 	  case CWBackPixel:
-              newFuncs.PaintWindowBackground = mfbPaintWindowSolid;
 	      pPrivWin->fastBackground = 0;
 	      break;
 
@@ -343,47 +303,20 @@ mfbChangeWindowAttributes(pWin, mask)
 				       pWin->drawable.x);
 		      mfbYRotatePixmap(pPrivWin->pRotatedBorder,
 				       pWin->drawable.y);
-		      newFuncs.PaintWindowBorder = mfbPaintWindow32;
 		  }
 		  else
 		  {
 		      pPrivWin->fastBorder = 0;
-		      newFuncs.PaintWindowBorder = miPaintWindow;
 		  }
 	      }
 	      else
 	      {
 		  pPrivWin->fastBorder = 0;
-		  newFuncs.PaintWindowBorder = miPaintWindow;
 	      }
 	      break;
 	    case CWBorderPixel:
-	      newFuncs.PaintWindowBorder = mfbPaintWindowSolid;
 	      pPrivWin->fastBorder = 0;
 	      break;
-
-	}
-    }
-    if (newFuncs.PaintWindowBorder != pWin->funcs->PaintWindowBorder ||
-        newFuncs.PaintWindowBackground != pWin->funcs->PaintWindowBackground)
-    {
-	int	i;
-
-	for (i = 0; i < NumCommonFuncs; i++)
-	    if (newFuncs.PaintWindowBorder == commonFuncs[i].PaintWindowBorder &&
-	        newFuncs.PaintWindowBackground == commonFuncs[i].PaintWindowBackground)
-	    {
-		break;
-	    }
-	if (i < NumCommonFuncs) {
-	    if (pWin->funcs->devPrivate.val)
-	    	xfree (pWin->funcs);
-	    pWin->funcs = &commonFuncs[i];
-	} else {
-	    if (!pWin->funcs->devPrivate.val)
-		pWin->funcs = (WindowFuncs *) xalloc (sizeof (WindowFuncs));
-	    *pWin->funcs = newFuncs;
-	    pWin->funcs->devPrivate.val = 1;
 	}
     }
     /* Again, we have no failure modes indicated by any of the routines

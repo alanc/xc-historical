@@ -38,9 +38,61 @@ cfbPositionWIndow() and cfbChangeWIndowAttributes() do it;
 cfbPaintAreaOther(), however, needs to rotate things.
 */
 
+static void cfbPaintAreaNone(),   cfbPaintAreaPR();
+static void cfbPaintArea32(),	    cfbPaintAreaSolid();
+static void cfbPaintAreaOther();
+
+extern void miPaintWindow();
+
+static void cfbTileOddWin();
+
+void
+cfbPaintWindow(pWin, pRegion, what)
+    WindowPtr	pWin;
+    RegionPtr	pRegion;
+    int		what;
+{
+    void    (*painter)();
+    register cfbPrivWin	*pPrivWin;
+
+    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    
+    painter = miPaintWindow;
+    switch (what) {
+    case PW_BACKGROUND:
+	switch (pWin->backgroundState) {
+	case None:
+	    painter = cfbPaintAreaNone;
+	    break;
+	case ParentRelative:
+	    painter = cfbPaintAreaPR;
+	    break;
+	case BackgroundPixmap:
+	    if (pPrivWin->fastBackground)
+		painter = cfbPaintArea32;
+	    else
+		painter = cfbPaintAreaOther;
+	    break;
+	case BackgroundPixel:
+	    painter = cfbPaintAreaSolid;
+	    break;
+    	}
+    	break;
+    case PW_BORDER:
+	if (pWin->borderIsPixel)
+	    painter = cfbPaintAreaSolid;
+	else if (pPrivWin->fastBorder)
+	    painter = cfbPaintArea32;
+	else
+	    painter = cfbPaintAreaOther;
+	break;
+    }
+    (*painter) (pWin, pRegion, what);
+}
+
 /* Paint Area None -- just return */
 /*ARGSUSED*/
-void
+static void
 cfbPaintAreaNone(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;
@@ -52,7 +104,7 @@ cfbPaintAreaNone(pWin, pRegion, what)
 
 /* Paint Area Parent Relative -- Find first ancestor which isn't parent
  * relative and paint as it would, but with this region */ 
-void
+static void
 cfbPaintAreaPR(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;
@@ -68,12 +120,12 @@ cfbPaintAreaPR(pWin, pRegion, what)
 	pParent = pParent->parent;
 
     if(what == PW_BORDER)
-        (*pParent->funcs->PaintWindowBorder)(pParent, pRegion, what);
+        (*pParent->drawable.pScreen->PaintWindowBorder)(pParent, pRegion, what);
     else
-	(*pParent->funcs->PaintWindowBackground)(pParent, pRegion, what);
+	(*pParent->drawable.pScreen->PaintWindowBackground)(pParent, pRegion, what);
 }
 
-void
+static void
 cfbPaintAreaSolid(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;
@@ -189,7 +241,7 @@ cfbPaintAreaSolid(pWin, pRegion, what)
 }
 
 /* Tile area with a 32 bit wide tile */
-void
+static void
 cfbPaintArea32(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;
@@ -341,7 +393,7 @@ cfbPaintArea32(pWin, pRegion, what)
     }
 }
 
-void
+static void
 cfbPaintAreaOther(pWin, pRegion, what)
     WindowPtr pWin;
     RegionPtr pRegion;
@@ -413,8 +465,7 @@ cfbPaintAreaOther(pWin, pRegion, what)
     }
 }
 
-
-
+static void
 cfbTileOddWin(pSrc, pDstWin, tileWidth, tileHeight, x, y)
     PixmapPtr	pSrc;		/* pointer to src tile */
     WindowPtr	pDstWin;	/* pointer to dest window */

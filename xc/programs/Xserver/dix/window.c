@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.10 89/07/10 19:13:57 rws Exp $ */
+/* $XConsortium: window.c,v 5.11 89/07/11 16:38:40 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -439,7 +439,7 @@ HandleExposures(pWin)
 	if (val = pChild->valdata)
 	{
 	    if ((*RegionNotEmpty)(&val->borderExposed))
-		(*pChild->funcs->PaintWindowBorder)(pChild,
+		(*pChild->drawable.pScreen->PaintWindowBorder)(pChild,
 						    &val->borderExposed,
 						    PW_BORDER);
 	    (*RegionUninit)(&val->borderExposed);
@@ -481,7 +481,7 @@ SetWindowToDefaults(pWin)
     pWin->cursorIsNone = TRUE;
 
     pWin->backingStore = NotUseful;
-    pWin->backStorage = (BackingStorePtr) NULL;
+    pWin->backStorage = (pointer) NULL;
 
     pWin->mapped = FALSE;           /* off */
     pWin->realized = FALSE;     /* off */
@@ -1533,7 +1533,7 @@ PatchUp:
 
 	exposed = (* pScreen->RegionCreate)(NullBox, 1);
         (* pScreen->Subtract)(exposed, &pWin->borderClip, &pWin->winSize);
-	(*pWin->funcs->PaintWindowBorder)(pWin, exposed, PW_BORDER);
+	(*pWin->drawable.pScreen->PaintWindowBorder)(pWin, exposed, PW_BORDER);
         (* pScreen->RegionDestroy)(exposed);
     }
     return error;
@@ -1771,7 +1771,7 @@ MoveWindow(pWin, x, y, pNextSib)
 	if (anyMarked)
 	{
 	    (* pScreen->ValidateTree)(pParent, NullWindow, VTMove);
-	    (* pWin->funcs->CopyWindow)(pWin, oldpt, oldRegion);
+	    (* pWin->drawable.pScreen->CopyWindow)(pWin, oldpt, oldRegion);
 	    (* pScreen->RegionDestroy)(oldRegion);
 	    /* XXX need to retile border if ParentRelative origin */
 	    HandleExposures(pParent);
@@ -2051,13 +2051,10 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	if (!WasViewable)
 	    pRegion = &pWin->clipList; /* a convenient empty region */
 	if (pWin->bitGravity == ForgetGravity)
-	    (* pWin->backStorage->funcs->TranslateBackingStore) (pWin, 0, 0,
-								 NullRegion);
+	    (* pScreen->TranslateBackingStore) (pWin, 0, 0, NullRegion);
 	else
-	    (* pWin->backStorage->funcs->TranslateBackingStore) (pWin,
-							  x - oldx,
-							  y - oldy,
-							  pRegion);
+	    (* pScreen->TranslateBackingStore) (pWin, x - oldx, y - oldy,
+						pRegion);
     }
 
     if (WasViewable)
@@ -2129,7 +2126,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    /* and move those bits */
 
 	    if (oldpt.x != x || oldpt.y != y)
-		(*pWin->funcs->CopyWindow)(pWin, oldpt, gravitate[g]);
+		(*pWin->drawable.pScreen->CopyWindow)(pWin, oldpt, gravitate[g]);
 
 	    /* remove any overwritten bits from the remaining useful bits */
 
@@ -2219,7 +2216,7 @@ ChangeBorderWidth(pWin, width)
 	    {
 		(* pScreen->Subtract)(&pWin->valdata->borderExposed,
 				      &pWin->borderClip, &pWin->winSize);
-		(* pWin->funcs->PaintWindowBorder)(pWin,
+		(* pWin->drawable.pScreen->PaintWindowBorder)(pWin,
 						 &pWin->valdata->borderExposed,
 						 PW_BORDER);
 		(* pScreen->RegionEmpty)(&pWin->valdata->borderExposed);
@@ -3231,7 +3228,7 @@ MapWindow(pWin, client)
         pWin->viewable = pWin->drawable.class == InputOutput;
     	/* We SHOULD check for an error value here XXX */
         (* pScreen->RealizeWindow)(pWin);
-	(*pWin->funcs->PaintWindowBackground)(pWin,
+	(*pWin->drawable.pScreen->PaintWindowBackground)(pWin,
 					      &pWin->clipList, PW_BACKGROUND);
     }
 
@@ -3283,7 +3280,7 @@ UnrealizeTree(pWin)
 	    {
 		pChild->viewable = FALSE;
 		if (pChild->backStorage)
-		    (*pChild->backStorage->funcs->SaveDoomedAreas)(
+		    (*pChild->drawable.pScreen->SaveDoomedAreas)(
 					    pChild, &pChild->clipList, 0, 0);
 		if (pChild != pWin)
 		{
@@ -3399,7 +3396,7 @@ UnmapSubwindows(pWin)
 		pChild->DIXsaveUnder = FALSE;
 #endif /* DO_SAVE_UNDERS */
 		if (pChild->backStorage)
-		    (*pChild->backStorage->funcs->SaveDoomedAreas)(
+		    (*pChild->drawable.pScreen->SaveDoomedAreas)(
 					    pChild, &pChild->clipList, 0, 0);
 	    }
 	}
@@ -3559,7 +3556,7 @@ SaveScreens(on, mode)
 		    WindowPtr pWin = savedScreenInfo[i].pWindow;
 #ifndef NOLOGOHACK
 		    if (logoScreenSaver)
-			(*pWin->funcs->ClearToBackground)(pWin, 0, 0, 0, 0, FALSE);
+			(*pWin->drawable.pScreen->ClearToBackground)(pWin, 0, 0, 0, 0, FALSE);
 #endif
 	            MoveWindow(pWin,
 			       (short)(-(random() % RANDOM_WIDTH)),

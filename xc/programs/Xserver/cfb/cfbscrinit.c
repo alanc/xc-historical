@@ -198,6 +198,11 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->RectIn = miRectIn;
     pScreen->PointInRegion = miPointInRegion;
     pScreen->WindowExposures = miWindowExposures;
+    pScreen->PaintWindowBackground = cfbPaintWindow;
+    pScreen->PaintWindowBorder = cfbPaintWindow;
+    pScreen->CopyWindow = cfbCopyWindow;
+    pScreen->ClearToBackground = miClearToBackground;
+
     pScreen->RegionNotEmpty = miRegionNotEmpty;
     pScreen->RegionEmpty = miRegionEmpty;
     pScreen->RegionExtents = miRegionExtents;

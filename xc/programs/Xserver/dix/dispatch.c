@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.6 89/07/04 16:10:54 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.7 89/07/09 15:39:03 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1579,7 +1579,7 @@ ProcClearToBackground(client)
 	client->errorValue = stuff->exposures;
         return(BadValue);
     }
-    (*pWin->funcs->ClearToBackground)(pWin, stuff->x, stuff->y,
+    (*pWin->drawable.pScreen->ClearToBackground)(pWin, stuff->x, stuff->y,
 			       stuff->width, stuff->height,
 			       (Bool)stuff->exposures);
     return(client->noClientException);
