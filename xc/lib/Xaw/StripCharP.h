@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StripCharP.h,v 1.2 89/08/24 11:51:55 kit Exp $
+* $XConsortium: StripCharP.h,v 1.3 89/11/11 14:53:47 kit Exp $
 */
 
 
@@ -53,7 +53,6 @@ typedef struct {
     int	min_scale;	/* smallest scale factor */
     int	interval;	/* data point interval */
     XPoint * points ;	/* Poly point for repairing graph lines. */
-    Boolean reverse_video;		/* display in reverse video */
     double max_value;	/* Max Value in window */
     double valuedata[2048];/* record of data points */
     XtIntervalId interval_id;

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Scrollbar.h,v 1.2 90/04/30 17:03:58 converse Exp $
+* $XConsortium: Scrollbar.h,v 1.3 90/05/08 15:18:35 converse Exp $
 */
 
 
@@ -52,7 +52,6 @@ SOFTWARE.
  length		     Length		Dimension	1
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  orientation	     Orientation	XtOrientation	XtorientVertical
- reverseVideo	     ReverseVideo	Boolean		False
  scrollDCursor	     Cursor		Cursor		XC_sb_down_arrow
  scrollHCursor	     Cursor		Cursor		XC_sb_h_double_arrow
  scrollLCursor	     Cursor		Cursor		XC_sb_left_arrow

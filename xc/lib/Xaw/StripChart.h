@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StripChart.h,v 1.1 89/08/23 17:53:58 kit Exp $
+* $XConsortium: StripChart.h,v 1.2 89/08/24 11:52:00 kit Exp $
 */
 
 
@@ -50,7 +50,6 @@ SOFTWARE.
  highlight	     Foreground		Pixel		Black
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  minScale	     Scale		int		1
- reverseVideo	     ReverseVideo	Boolean		False
  update		     Interval		int		5 (seconds)
  width		     Width		Dimension	120
  x		     Position		Position	0
