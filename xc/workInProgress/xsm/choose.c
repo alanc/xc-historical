@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.15 94/09/16 04:59:51 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.16 94/12/06 14:38:21 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -43,15 +43,19 @@ Widget chooseSessionListWidget;
 Widget chooseSessionMessageLabel;
 Widget chooseSessionLoadButton;
 Widget chooseSessionDeleteButton;
+#if 0
 Widget chooseSessionForceShutdownButton;
+#endif
 Widget chooseSessionFailSafeButton;
 Widget chooseSessionCancelButton;
 
 
 
 int
-GetSessionNames (count_ret, names_ret, locked_ret)
+GetSessionNames (include_locking_info_in_name,
+	count_ret, names_ret, locked_ret)
 
+Bool include_locking_info_in_name;
 int *count_ret;
 String **names_ret;
 Bool **locked_ret;
@@ -103,11 +107,12 @@ Bool **locked_ret;
 	{
 	    char *name = entry->d_name + 5;
 	    char *id = NULL;
+	    Bool locked = CheckSessionLocked (name, True, &id);
 
-	    if (!CheckSessionLocked (name, True, &id))
+	    if (!locked || !include_locking_info_in_name)
 	    {
 		(*names_ret)[*count_ret] = XtNewString (name);
-		(*locked_ret)[(*count_ret)++] = False;
+		(*locked_ret)[(*count_ret)++] = locked;
 	    }
 	    else
 	    {
@@ -169,7 +174,9 @@ Bool highlight;
 
     XtSetSensitive (chooseSessionLoadButton, !locked);
     XtSetSensitive (chooseSessionDeleteButton, !locked);
+#if 0
     XtSetSensitive (chooseSessionForceShutdownButton, locked);
+#endif
 }
 
 
@@ -416,28 +423,14 @@ XtPointer 	callData;
     }
     else
     {
-	char filename[256];
-	char *dir;
-	int i, j;
-
 	XtVaSetValues (chooseSessionMessageLabel,
 	    XtNforeground, save_message_background,
             NULL);
 
-	dir = (char *) getenv ("SM_SAVE_DIR");
-	if (!dir)
+	if (DeleteSession (name))
 	{
-	    dir = (char *) getenv ("HOME");
-	    if (!dir)
-		dir = ".";
-	}
+	    int i, j;
 
-	sprintf (filename, "%s/.XSM-%s", dir, name);
-
-	ExecuteOldDiscardCommands (name);
-
-	if (remove (filename) != -1)
-	{
 	    for (i = 0; i < sessionNameCount; i++)
 	    {
 		if (strcmp (sessionNames[i], name) == 0)
@@ -475,6 +468,7 @@ XtPointer 	callData;
 
 
 
+#if 0
 static void
 ChooseSessionForceShutdownXtProc (w, client_data, callData)
 
@@ -485,6 +479,7 @@ XtPointer 	callData;
 {
     XBell (XtDisplay (topLevel), 0);
 }
+#endif
 
 
 
@@ -616,6 +611,7 @@ create_choose_session_popup ()
     XtAddCallback (chooseSessionDeleteButton, XtNcallback,
 	ChooseSessionDeleteXtProc, 0);
 
+#if 0
     chooseSessionForceShutdownButton = XtVaCreateManagedWidget (
 	"chooseSessionForceShutdownButton",
 	commandWidgetClass, chooseSessionForm,
@@ -625,11 +621,12 @@ create_choose_session_popup ()
 
     XtAddCallback (chooseSessionForceShutdownButton, XtNcallback,
 	ChooseSessionForceShutdownXtProc, 0);
+#endif
 
     chooseSessionFailSafeButton = XtVaCreateManagedWidget (
 	"chooseSessionFailSafeButton", commandWidgetClass, chooseSessionForm,
-        XtNfromHoriz, NULL,
-        XtNfromVert, chooseSessionLoadButton,
+        XtNfromHoriz, chooseSessionDeleteButton,
+        XtNfromVert, chooseSessionMessageLabel,
         NULL);
 
     XtAddCallback (chooseSessionFailSafeButton, XtNcallback,
@@ -639,7 +636,7 @@ create_choose_session_popup ()
     chooseSessionCancelButton = XtVaCreateManagedWidget (
 	"chooseSessionCancelButton", commandWidgetClass, chooseSessionForm,
         XtNfromHoriz, chooseSessionFailSafeButton,
-        XtNfromVert, chooseSessionLoadButton,
+        XtNfromVert, chooseSessionMessageLabel,
         NULL);
 
     XtAddCallback (chooseSessionCancelButton, XtNcallback,
