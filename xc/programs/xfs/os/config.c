@@ -1,4 +1,4 @@
-/* $XConsortium: config.c,v 1.5 91/07/16 20:22:28 keith Exp $ */
+/* $XConsortium: config.c,v 1.6 91/07/25 12:15:45 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -248,7 +248,7 @@ SetConfigValues()
 
     err = SetFontCatalogue(font_catalogue, &num);
     if (err != FSSuccess) {
-	FatalError("Element #%d of font path \"%s\" is bad\n",
+	FatalError("Element #%d (starting at 0) of font path is bad:\"%s\"\n",
 		   num, font_catalogue);
     }
     InitErrors();
