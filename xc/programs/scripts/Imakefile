@@ -13,6 +13,8 @@ InstallProgram(mkdirhier,$(BINDIR))
 #if UseCCMakeDepend
 InstallProgram(makedepend,$(BINDIR))
 #endif
+InstallNamedProg(lndir.sh,lndir,$(BINDIR))
+InstallManPage(lndir,$(MANDIR))
 
 clean::
 	$(RM) $(PROGRAMS)
