@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: mieq.c,v 1.1 91/04/26 21:46:13 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -133,42 +133,49 @@ mieqSwitchScreen (pScreen)
 
 mieqProcessInputEvents ()
 {
-    int		i;
-    EventPtr	e;
+    EventRec	*e;
+    int		x, y;
 
-    i = miEventQueue.head;
-    while (i != miEventQueue.tail)
+    while (miEventQueue.head != miEventQueue.tail)
     {
 	extern int  screenIsSaved;
 
-	e = &miEventQueue.events[i];
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens (SCREEN_SAVER_OFF, ScreenSaverReset);
+
+	e = &miEventQueue.events[miEventQueue.head];
 	/*
-	 * Screen switching can only occur on motion events
+	 * Assumption - screen switching can only occur on motion events
 	 */
 	if (e->pScreen != miEventQueue.pDequeueScreen)
 	{
-	    if (e->event.u.u.type == MotionNotify)
-		NewCurrentScreen (e->pScreen,
-				  e->event.u.keyButtonPointer.rootX,
-				  e->event.u.keyButtonPointer.rootY);
+	    miEventQueue.pDequeueScreen = e->pScreen;
+	    x = e->event.u.keyButtonPointer.rootX;
+	    y = e->event.u.keyButtonPointer.rootY;
+	    if (miEventQueue.head == QUEUE_SIZE - 1)
+	    	miEventQueue.head = 0;
+	    else
+	    	++miEventQueue.head;
+	    NewCurrentScreen (miEventQueue.pDequeueScreen, x, y);
 	}
 	else
 	{
-    	    switch (e->event.u.u.type) {
-    	    case KeyPress:
-    	    case KeyRelease:
-	    	(*miEventQueue.pKbd->processInputProc) (&e->event, miEventQueue.pKbd, 1);
+	    switch (e->event.u.u.type) 
+	    {
+	    case KeyPress:
+	    case KeyRelease:
+	    	(*miEventQueue.pKbd->processInputProc)
+					    (&e->event, miEventQueue.pKbd, 1);
 	    	break;
-    	    default:
-	    	(*miEventQueue.pPtr->processInputProc) (&e->event, miEventQueue.pPtr, 1);
+	    default:
+	    	(*miEventQueue.pPtr->processInputProc)
+					    (&e->event, miEventQueue.pPtr, 1);
 	    	break;
-    	    }
+	    }
+	    if (miEventQueue.head == QUEUE_SIZE - 1)
+	    	miEventQueue.head = 0;
+	    else
+	    	++miEventQueue.head;
 	}
-	if (i == QUEUE_SIZE - 1)
-	    i = miEventQueue.head = 0;
-	else
-	    i = ++miEventQueue.head;
     }
 }
