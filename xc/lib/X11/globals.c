@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.5 89/06/15 19:14:25 jim Exp $
+ * $XConsortium: globals.c,v 1.6 89/06/16 14:48:13 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -18,23 +18,32 @@
  * global initialized data.
  */
 #ifdef NULL_NOT_ZERO			/* then need to initialize */
+#define SetZero(t,var,z) t var = z
+#else 
+#define SetZero(t,var,z) t var
+#endif
 
 #ifdef ATTSHAREDLIB			/* then need extra variables */
+/*
+ * If we need to define extra variables for each global
+ */
 #if defined(__STDC__) && !defined(UNIXCPP)  /* then ANSI C concatenation */
-#define ZEROINIT(t,var,val) \
-  t var = val; long var##Flag = 0; void * var##Ptr = NULL
+#define ZEROINIT(t,var,val) SetZero(t,var,val); \
+  SetZero (long, _libX_##var##Flag, 0); \
+  SetZero (void *, _libX_##var##Ptr, NULL)
 #else /* else pcc concatenation */
-#define ZEROINIT(t,var,val) \
-  t var = val; long var/**/Flag = 0; void * var/**/Ptr = NULL
+#define ZEROINIT(t,var,val) SetZero(t,var,val); \
+  SetZero (long, _libX_/**/var/**/Flag, 0); \
+  SetZero (void *, _libX_/**/var/**/Ptr, NULL)
 #endif /* concat ANSI C vs. pcc */
+
 #else /* else not ATTSHAREDLIB */
-#define ZEROINIT(t,var,val) t var = val
+/*
+ * no extra crud
+ */
+#define ZEROINIT(t,var,val) SetZero (t, var, val)
+
 #endif /* ATTSHAREDLIB */
-
-
-#else /* not NULL_NOT_ZERO */		/* do not need to explicitly init */
-#define ZEROINIT(t,var,val) t var		/* let it default to zero */
-#endif /* NULL_NOT_ZERO */
 
 
 /*
