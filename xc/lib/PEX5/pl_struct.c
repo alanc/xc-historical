@@ -1,4 +1,4 @@
-/* $XConsortium: pl_struct.c,v 1.2 92/05/18 14:17:37 mor Exp $ */
+/* $XConsortium: pl_struct.c,v 1.3 92/05/20 20:22:50 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include "PEXlib.h"
 #include "PEXlibint.h"
+#include "pl_oc_util.h"
 
 
 PEXStructure
