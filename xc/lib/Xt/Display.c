@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.36 89/10/05 10:57:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.37 89/10/05 11:59:36 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -272,6 +272,7 @@ XtAppContext XtCreateApplicationContext()
 	_XtSetDefaultSelectionTimeout(&app->selectionTimeout);
 	_XtSetDefaultConverterTable(&app->converterTable);
 	app->sync = app->being_destroyed = app->error_inited = FALSE;
+	app->in_phase2_destroy = FALSE;
 	app->fds.nfds = app->fds.count = 0;
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);

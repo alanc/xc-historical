@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.26 89/10/05 12:19:04 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.27 89/10/05 18:58:14 rws Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -114,7 +114,7 @@ typedef struct _XtAppStruct {
     short count;			/* num of assigned entries in list */
     short max;				/* allocate size of list */
     short last;
-    Boolean sync, being_destroyed, error_inited;
+    Boolean sync, being_destroyed, error_inited, in_phase2_destroy;
     Heap heap;
     String * fallback_resources;	/* Set by XtAppSetFallbackResources. */
     struct _ActionHookRec* action_hook_list;
