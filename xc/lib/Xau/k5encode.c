@@ -1,4 +1,4 @@
-/* $XConsortium: k5encode.c,v 1.4 94/04/02 17:14:22 gildea Exp $ */
+/* $XConsortium: k5encode.c,v 1.5 94/04/17 20:15:47 gildea Exp gildea $ */
 
 /*
 
@@ -108,7 +108,8 @@ XauKrb5Encode(princ, outbuf)
 /*
  * XauKrb5Decode
  *
- * this function essentially reverses what XauKrb5Encode does
+ * This function essentially reverses what XauKrb5Encode does.
+ * return value: 0 if okay, -1 if malloc fails, -2 if inbuf format bad
  */
 int
 XauKrb5Decode(inbuf, princ)
@@ -120,8 +121,7 @@ XauKrb5Decode(inbuf, princ)
     
     if (inbuf.length < 4)
     {
-	krb5_free_principal(*princ);
-	return -1;
+	return -2;
     }
     *princ = (krb5_principal)malloc(sizeof (krb5_principal_data));
     if (*princ == NULL)
@@ -133,7 +133,7 @@ XauKrb5Decode(inbuf, princ)
     if (inbuf.length < 4 + (int)rlen + 2)
     {
 	krb5_free_principal(*princ);
-	return -1;
+	return -2;
     }
     krb5_princ_realm(*princ)->data = (char *)malloc(rlen);
     if (krb5_princ_realm(*princ)->data == NULL)
@@ -148,20 +148,25 @@ XauKrb5Decode(inbuf, princ)
     numparts |= *cp++;
     krb5_princ_name(*princ) =
 	(krb5_data *)malloc(numparts * sizeof (krb5_data));
+    if (krb5_princ_name(*princ) == NULL)
+    {
+	krb5_free_principal(*princ);
+	return -1;
+    }
     krb5_princ_size(*princ) = 0;
     for (i = 0; i < numparts; i++)
     {
 	if (cp + 2 > (CARD8 *)inbuf.data + inbuf.length)
 	{
 	    krb5_free_principal(*princ);
-	    return -1;
+	    return -2;
 	}
 	plen = *cp++ << 8;
 	plen |= *cp++;
 	if (cp + plen > (CARD8 *)inbuf.data + inbuf.length)
 	{
 	    krb5_free_principal(*princ);
-	    return -1;
+	    return -2;
 	}
 	pdata = (CARD8 *)malloc(plen);
 	if (pdata == NULL)
