@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XModMap.c,v 11.7 88/09/06 16:09:18 jim Exp $ */
+/* $XConsortium: XModMap.c,v 11.8 89/11/08 17:07:24 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -95,11 +95,22 @@ XFreeModifiermap(map)
     }
 }
 
+#if NeedFunctionPrototypes
 XModifierKeymap *
-XInsertModifiermapEntry(map, keysym, modifier)
+XInsertModifiermapEntry(XModifierKeymap *map,
+#if NeedWidePrototypes
+			int keycode,
+#else
+			KeyCode keycode,
+#endif
+			int modifier)
+#else
+XModifierKeymap *
+XInsertModifiermapEntry(map, keycode, modifier)
     XModifierKeymap *map;
-    KeyCode keysym;
+    KeyCode keycode;
     int modifier;
+#endif
 {
     XModifierKeymap *newmap;
     int i,
@@ -108,10 +119,10 @@ XInsertModifiermapEntry(map, keysym, modifier)
 	lastrow;
 
     for (i=0; i<map->max_keypermod; i++) {
-        if (map->modifiermap[ row+i ] == keysym)
+        if (map->modifiermap[ row+i ] == keycode)
 	    return(map); /* already in the map */
         if (map->modifiermap[ row+i ] == 0) {
-            map->modifiermap[ row+i ] = keysym;
+            map->modifiermap[ row+i ] = keycode;
 	    return(map); /* we added it without stretching the map */
 	}
     }   
@@ -130,21 +141,32 @@ XInsertModifiermapEntry(map, keysym, modifier)
     }
     XFreeModifiermap(map);
     newrow = newmap->max_keypermod * modifier + newmap->max_keypermod - 1;
-    newmap->modifiermap[ newrow ] = keysym;
+    newmap->modifiermap[ newrow ] = keycode;
     return(newmap);
 }
 
+#if NeedFunctionPrototypes
 XModifierKeymap *
-XDeleteModifiermapEntry(map, keysym, modifier)
+XDeleteModifiermapEntry(XModifierKeymap *map,
+#if NeedWidePrototypes
+			int keycode,
+#else
+			KeyCode keycode,
+#endif
+			int modifier)
+#else
+XModifierKeymap *
+XDeleteModifiermapEntry(map, keycode, modifier)
     XModifierKeymap *map;
-    KeyCode keysym;
+    KeyCode keycode;
     int modifier;
+#endif
 {
     int i,
 	row = modifier * map->max_keypermod;
 
     for (i=0; i<map->max_keypermod; i++) {
-        if (map->modifiermap[ row+i ] == keysym)
+        if (map->modifiermap[ row+i ] == keycode)
             map->modifiermap[ row+i ] = 0;
     }
     /* should we shrink the map?? */
