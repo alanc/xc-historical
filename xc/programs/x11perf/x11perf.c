@@ -659,6 +659,8 @@ main(argc, argv)
 	saveargv[i] = argv[i];
     }
 
+    xparms.pack = False;
+
     /* Count number of tests */
     ForEachTest(numTests);
     doit = (Bool *)calloc(numTests, sizeof(Bool));
@@ -704,8 +706,10 @@ main(argc, argv)
 	    if (test[j].option == NULL)
 		usage();
 	    foundOne = True;
-    } else if (strcmp (argv[i], "-sync") == 0) {
+	} else if (strcmp (argv[i], "-sync") == 0) {
 	    synchronous = True;
+	} else if (strcmp(argv[i], "-pack") == 0) {
+	    xparms.pack = True;
 	} else if (strcmp (argv[i], "-draw") == 0) {
 	    drawToFakeServer = True;
 	} else if (strcmp (argv[i], "-repeat") == 0) {
