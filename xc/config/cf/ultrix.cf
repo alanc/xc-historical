@@ -20,9 +20,11 @@
 
 #ifdef MipsArchitecture
 #define XmfbpmaxServer Xmfbpmax
-#define StandardDefines		-Wf,-XNh2000
-#define ServerDefines StandardDefines -Olimit 2000 ExtensionDefines -DPURDUE
+#define XcfbpmaxServer Xcfbpmax
+#define StandardDefines
+#define DefaultCCOptions -Wf,-XNh2000 -Olimit 2000
+#define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.9 89/07/11 11:32:54 jim Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.10 89/07/12 10:18:12 jim Exp $
 /**/# operating system:  OSName
