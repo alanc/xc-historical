@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.45 91/04/26 17:09:10 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.46 91/05/10 17:39:22 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3291,8 +3291,8 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 		 */
 		translatedClip = NotClippedByChildren (pWin);
 		(*pGC->pScreen->TranslateRegion) (translatedClip,
-						  pGC->clipOrg.x,
-						  pGC->clipOrg.y);
+						  -pDrawable->x,
+						  -pDrawable->y);
 		(*pGC->pScreen->Subtract) (backingCompositeClip, backingCompositeClip, translatedClip);
 		(*pGC->pScreen->RegionDestroy) (translatedClip);
 	    }
