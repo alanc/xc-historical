@@ -1,4 +1,4 @@
-# $XConsortium: Imakefile,v 1.15 89/10/08 19:40:59 rws Exp $
+# $XConsortium: Imakefile,v 1.16 89/10/13 17:16:26 jim Exp $
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	xtestext1.h bezier.h plxvideo.h 
 INSTALLFLAGS = -m 0444
@@ -6,6 +6,7 @@ INSTALLFLAGS = -m 0444
 all:
 
 BuildIncludes($(HEADERS),extensions,..)
+MakeDirectories(install,$(INCDIR)/extensions)
 InstallMultiple($(HEADERS),$(INCDIR)/extensions)
 
 depend:
