@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.5 91/07/26 19:17:25 keith Exp $
+ * $XConsortium: sunGX.c,v 1.6 91/07/26 21:09:11 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -1444,13 +1444,27 @@ sunGXCheckFill (pGC, pDrawable)
     switch (pGC->fillStyle) {
     case FillTiled:
 	if (!sunGXCheckTile (pGC->tile.pixmap, stipple))
+	{
+	    if (gxPriv->stipple)
+	    {
+		xfree (gxPriv->stipple);
+		gxPriv->stipple = 0;
+	    }
 	    return FALSE;
+	}
 	break;
     case FillStippled:
 	alu = gx_stipple_rop_table[pGC->alu];
     case FillOpaqueStippled:
 	if (!sunGXCheckStipple (pGC->stipple, stipple))
+	{
+	    if (gxPriv->stipple)
+	    {
+	    	xfree (gxPriv->stipple);
+	    	gxPriv->stipple = 0;
+	    }
 	    return FALSE;
+	}
 	stipple->fore = pGC->fgPixel;
 	stipple->back = pGC->bgPixel;
 	break;
@@ -1554,7 +1568,7 @@ GCOps	sunGXNonTEOps1Rect = {
     miPolyText16,
     miImageText8,
     miImageText16,
-    cfbImageGlyphBlt8,
+    miImageGlyphBlt,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
     NULL,
@@ -1578,7 +1592,7 @@ GCOps	sunGXNonTEOps = {
     miPolyText16,
     miImageText8,
     miImageText16,
-    cfbImageGlyphBlt8,
+    miImageGlyphBlt,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
     NULL,
@@ -2056,7 +2070,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
             else
 	    {
 #if PPW == 4
-		pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
+		pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
 #else
                 pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
 #endif
@@ -2108,7 +2122,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	{
 	    pGC->ops->PolyFillArc = sunGXPolyFillArc;
 	    pGC->ops->PolyFillRect = sunGXPolyFillRect;
-	    if (oneRect)
+	    if (devPriv->oneRect)
 		pGC->ops->PolyFillRect = sunGXPolyFillRect1Rect;
 	}
 	pGC->ops->PushPixels = mfbPushPixels;
