@@ -22,7 +22,7 @@ Or instead of specifying
 the window by its id number, the \fB\-name\fP option may be used to specify
 which window is desired by name.
 There is also a special \fB\-root\fP option to quickly obtain information
-on X's root window.
+on the screen's root window.
 .SH OPTIONS
 .PP
 .TP 8
@@ -165,10 +165,10 @@ X(1), xprop(1)
 .SH BUGS
 Using \fB\-stats \-bits\fP shows some redundant information.
 .PP
-The -geometry string displayed is only correct if the window gravity
-hint is a corner gravity.  With CenterGravity and the edge gravities,
-a corner can only be determined to within the border width of the
-original window.  The hint necessary to make this work will be added someday.
+The -geometry string displayed must make assumptions about the
+window's border width and the behavior of the application and the
+window manager.  As a result, the location given is not always
+correct.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
