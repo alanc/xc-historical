@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.7 88/01/19 15:27:18 swick Locked $";
+static char rcsid[] = "$Header: Viewport.c,v 1.10 88/01/22 20:34:47 swick Locked $";
 #endif lint
 
 /*
@@ -31,7 +31,6 @@ static char rcsid[] = "$Header: Viewport.c,v 1.7 88/01/19 15:27:18 swick Locked 
 #include <X/Misc.h>
 #include <X/Scroll.h>
 #include <X/Atoms.h>
-#include <X/Viewport.h>
 #include "ViewportP.h"
 
 
@@ -54,14 +53,15 @@ static XtResource resources[] = {
 };
 #undef offset
 
-static void ClassInitialize(), Initialize(), Realize(), Resize(),
-    ChangeManaged();
+static void ClassInitialize(), Initialize(), ConstraintInitialize(),
+    Realize(), Resize(), ChangeManaged();
 static Boolean SetValues(), DoLayout();
 static XtGeometryResult GeometryManager();
 
+#define superclass	(&formClassRec)
 ViewportClassRec viewportClassRec = {
   { /* core_class fields */
-    /* superclass	  */	(WidgetClass) &formClassRec,
+    /* superclass	  */	(WidgetClass) superclass,
     /* class_name	  */	"Viewport",
     /* widget_size	  */	sizeof(ViewportRec),
     /* class_initialize	  */	ClassInitialize,
@@ -96,7 +96,7 @@ ViewportClassRec viewportClassRec = {
     /* subresourses	  */	NULL,
     /* subresource_count  */	0,
     /* constraint_size	  */	sizeof(ViewportConstraintsRec),
-    /* initialize	  */	NULL,
+    /* initialize	  */	ConstraintInitialize,
     /* destroy		  */	NULL,
     /* set_values	  */	NULL
   },
@@ -113,14 +113,12 @@ WidgetClass viewportWidgetClass = (WidgetClass)&viewportClassRec;
 
 static void ClassInitialize()
 {
-    register WidgetClass superclass = viewportClassRec.core_class.superclass;
+#define Inherit(method) \
+    viewportClassRec.method = superclass->method;
 
-#define Inherit(class, method) \
-    viewportClassRec.method = ((class)superclass)->method
-
-    Inherit(WidgetClass, core_class.expose);
-    Inherit(CompositeWidgetClass, composite_class.insert_child);
-    Inherit(CompositeWidgetClass, composite_class.delete_child);
+    Inherit(core_class.expose);
+    Inherit(composite_class.insert_child);
+    Inherit(composite_class.delete_child);
 }
 
 static Widget CreateScrollbar(w, horizontal)
@@ -151,13 +149,13 @@ static Widget CreateScrollbar(w, horizontal)
     XtSetArg(barArgs[1], XtNlength,
 	     horizontal ? clip->core.width : clip->core.height);
     XtSetArg(barArgs[2], XtNleft,
-	     (!horizontal && w->viewport.useright) ? XtRubber : XtChainLeft);
+	     (!horizontal && w->viewport.useright) ? XtChainRight : XtChainLeft);
     XtSetArg(barArgs[3], XtNright,
-	     (!horizontal && !w->viewport.useright) ? XtRubber : XtChainRight);
+	     (!horizontal && !w->viewport.useright) ? XtChainLeft : XtChainRight);
     XtSetArg(barArgs[4], XtNtop,
-	     (horizontal && w->viewport.usebottom) ? XtRubber: XtChainTop);
+	     (horizontal && w->viewport.usebottom) ? XtChainBottom: XtChainTop);
     XtSetArg(barArgs[5], XtNbottom,
-	     (horizontal && !w->viewport.usebottom) ? XtRubber: XtChainBottom);
+	     (horizontal && !w->viewport.usebottom) ? XtChainTop: XtChainBottom);
 
     bar = XtCreateWidget( (horizontal ? "horizontal" : "vertical"),
 			  scrollbarWidgetClass, (Widget)w,
@@ -225,6 +223,15 @@ static void Initialize(request, new, args, num_args)
     XtManageChild( w->viewport.clip );	/* see ChangeManaged() */
 }
 
+/* ARGSUSED */
+static void ConstraintInitialize(request, new, args, num_args)
+    Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
+{
+    ((ViewportConstraints)new->core.constraints)->viewport.reparented = False;
+}
+
 static void Realize(widget, value_mask, attributes)
     Widget widget;
     XtValueMask *value_mask;
@@ -236,8 +243,7 @@ static void Realize(widget, value_mask, attributes)
 
     *value_mask |= CWBitGravity;
     attributes->bit_gravity = NorthWestGravity;
-    (*w->core.widget_class->core_class.superclass
-     ->core_class.realize)(widget, value_mask, attributes);
+    (*superclass->core_class.realize)(widget, value_mask, attributes);
 
     (*w->core.widget_class->core_class.resize)(widget);	/* turn on bars */
 
@@ -299,13 +305,35 @@ static void ChangeManaged(widget)
 	if (child) {
 	    XtResizeWidget( child, child->core.width,
 			    child->core.height, (Dimension)0 );
-	    if (XtIsRealized(widget) && !XtIsRealized(child)) {
-		XtMoveWidget( child, (Position)0, (Position)0 );
-		XtRealizeWidget( child );
-		XReparentWindow( XtDisplay(w), XtWindow(child),
-				 XtWindow(w->viewport.clip),
-				 (Position)0, (Position)0 );
-		XtMapWidget( child );
+	    if (XtIsRealized(widget)) {
+		ViewportConstraints constraints =
+		    (ViewportConstraints)child->core.constraints;
+		if (!XtIsRealized(child)) {
+		    Window window = XtWindow(w);
+		    XtMoveWidget( child, (Position)0, (Position)0 );
+#ifdef notdef
+		    /* this is dirty, but it saves the following code: */
+		    XtRealizeWidget( child );
+		    XReparentWindow( XtDisplay(w), XtWindow(child),
+				     XtWindow(w->viewport.clip),
+				     (Position)0, (Position)0 );
+		    if (child->core.mapped_when_managed)
+			XtMapWidget( child );
+#else notdef
+		    w->core.window = XtWindow(w->viewport.clip);
+		    XtRealizeWidget( child );
+		    w->core.window = window;
+#endif notdef
+		    constraints->viewport.reparented = True;
+		}
+		else if (!constraints->viewport.reparented) {
+		    XReparentWindow( XtDisplay(w), XtWindow(child),
+				     XtWindow(w->viewport.clip),
+				     (Position)0, (Position)0 );
+		    constraints->viewport.reparented = True;
+		    if (child->core.mapped_when_managed)
+			XtMapWidget( child );
+		}
 	    }
 	    /* %%% DoLayout should be FormClass method */
 	    if (DoLayout( widget, child->core.width, child->core.height ))
@@ -315,8 +343,7 @@ static void ChangeManaged(widget)
     }
 
 #ifdef notdef
-    (*((CompositeWidgetClass)w->core.widget_class->core_class.superclass)
-     ->composite_class.change_managed)( widget );
+    (*superclass->composite_class.change_managed)( widget );
 #endif
 }
 
@@ -452,7 +479,7 @@ static void Resize(widget)
 	register Widget bar = w->viewport.horiz_bar;
 	if (!needshoriz) {
 	    constraints->form.vert_base = (Widget)NULL;
-	    XtDestroyWidget( w->viewport.horiz_bar );
+	    XtDestroyWidget( bar );
 	    w->viewport.horiz_bar = (Widget)NULL;
 	}
 	else {
