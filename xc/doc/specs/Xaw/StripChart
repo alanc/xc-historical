@@ -156,7 +156,7 @@ and this point will be added to the right end of the StripChart.
 .br
 .ns
 .IP y 1.5i
-The location of the upper lefthand corner of this widget in its parent.
+The location of the upper left corner of this widget in its parent.
 .NH 3
 Getting The StripChart Value
 .LP

@@ -80,7 +80,7 @@ Whether of not this menu entry may be selected.
 .br
 .ns
 .IP y 1.5i
-The location of the upper lefthand corner of this object with respect
+The location of the upper left corner of this object with respect
 to its parent's window.
 .NH 3
 Subclassing the Sme Object

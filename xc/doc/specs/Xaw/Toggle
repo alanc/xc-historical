@@ -130,8 +130,8 @@ A list of routines to be called when the notify action is invoked.
 The colormap that this widget wants for its window.
 .IP \fBcornerRoundPercent\fP 1.5i
 When a \fBShapeStyle\fP of \fBroundedRectangle\fP is used this
-resource controls the radius of the rounded corder.  The radius of the
-rounded corders is specified as a percentage of the length of the
+resource controls the radius of the rounded corner.  The radius of the
+rounded corners is specified as a percentage of the length of the
 shortest side of the widget.  This must be a positive value.
 .IP cursor 1.5i
 The cursor that will be displayed as the mouse pointer, whenever the mouse
@@ -198,7 +198,7 @@ Specifies whether the Toggle widget should attempt to resize to its
 preferred dimensions whenever its resources are modified with
 \fBXtSetValues\fP.  This
 attempt at a resize is subject to the dictates of the parent of this
-widget which is free to resize the MenuButton reguardless of the state
+widget which is free to resize the MenuButton regardless of the state
 of this resource. 
 .IP shapeStyle 1.5i
 Non rectangular Toggles may be created using this resource.  Non
@@ -223,7 +223,7 @@ The event bindings associated with this widget.
 .br
 .ns
 .IP y 1.5i
-The location of the upper lefthand corner of this widget in its parent.
+The location of the upper left corner of this widget in its parent.
 .NH 3
 Toggle Actions
 .LP
