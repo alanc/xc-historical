@@ -13,7 +13,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdvprop.m,v 1.3 94/01/29 15:30:14 rws Exp $
+ * $XConsortium: gtdvprop.m,v 1.4 94/01/30 11:53:13 rws Exp $
  */
 >>TITLE GetDeviceDontPropagateList XIPROTO
 >>SET startup protostartup
@@ -57,7 +57,7 @@ void
 tester()
 {
 Window	w;
-Display	*client1;
+Display	*client1, *opendisplay();
 int 	ret;
 
 	Create_Client(CLIENT);
