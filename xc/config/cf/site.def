@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.53 92/05/26 14:56:41 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.54 92/05/29 18:38:31 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -107,11 +107,6 @@ clean::									@@\
 
 #ifdef SonyArchitecture
 #define BuildFontServer YES
-#endif
-
-#if defined(OSF1Architecture) && defined(MipsArchitecture)
-/* hopefully temporary crock */
-#define ExtraLoadFlags -non_shared
 #endif
 
 #endif /* AfterVendorCF */
