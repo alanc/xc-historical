@@ -9,6 +9,10 @@
 #endif
 #if BuildPexExt
   PEXDIRS = PEX
+#else
+#if BuildPexClients
+  PEXDIRS = PEX/dipex/swap
+#endif
 #endif
 #if HasShm
   SHMSRCS = shm.c
