@@ -25,5 +25,6 @@
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
 
-char *Version = "MIT X Consortium, R5";
+/* $XConsortium$ */
+char *Version = "X Consortium, R6";
 
