@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.38 90/03/12 16:43:54 keith Exp $
+ * $XConsortium: dm.c,v 1.39 90/03/29 11:34:57 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -316,32 +316,33 @@ WaitForChild ()
 		break;
 	    case OPENFAILED_DISPLAY:
 		Debug ("Display exited with OPENFAILED_DISPLAY\n");
-		if (d->displayType.origin == FromXDMCP ||
-		    d->status == zombie)
-		{
+		/*
+ 		 * no display connection was ever made, tell the
+		 * terminal that the open attempt failed
+ 		 */
+		if (d->displayType.origin == FromXDMCP)
 		    SendFailed (d, "Cannot open display");
+		if (d->displayType.origin == FromXDMCP ||
+		    d->status == zombie ||
+		    ++d->startTries >= d->startAttempts)
+		{
 		    StopDisplay (d);
 		}
 		else
 		{
-		    if (++d->startTries >= d->startAttempts)
-			StopDisplay (d);
-		    else
-			RestartDisplay (d, TRUE);
+		    RestartDisplay (d, TRUE);
 		}
 		break;
 	    case RESERVER_DISPLAY:
 		Debug ("Display exited with RESERVER_DISPLAY\n");
-		if (d->displayType.origin == FromXDMCP ||
-		    d->status == zombie)
+		if (d->displayType.origin == FromXDMCP || d->status == zombie)
 		    StopDisplay(d);
 		else
 		    RestartDisplay (d, TRUE);
 		break;
 	    case waitCompose (SIGTERM,0,0):
 		Debug ("Display exited on SIGTERM\n");
-		if (d->displayType.origin == FromXDMCP ||
-		    d->status == zombie)
+		if (d->displayType.origin == FromXDMCP || d->status == zombie)
 		    StopDisplay(d);
 		else
 		    RestartDisplay (d, TRUE);
@@ -352,8 +353,7 @@ WaitForChild ()
  		 * XDMCP will restart the session if the display
 		 * requests it
 		 */
-		if (d->displayType.origin == FromXDMCP ||
-		    d->status == zombie)
+		if (d->displayType.origin == FromXDMCP || d->status == zombie)
 		    StopDisplay(d);
 		else
 		    RestartDisplay (d, FALSE);
@@ -375,7 +375,7 @@ WaitForChild ()
 		break;
 	    case running:
 		Debug ("Server for display %s terminated unexpectedly, status %d\n", d->name, waitVal (status));
-		LogError ("Server for display %s terminated unexpectedly\n", d->name);
+		LogError ("Server for display %s terminated unexpectedly: %d\n", d->name, waitVal (status));
 		if (d->pid != -1)
 		{
 		    Debug ("Terminating session pid %d\n", d->pid);
