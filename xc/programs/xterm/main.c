@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.204 93/02/08 16:53:21 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.205 93/02/10 14:37:11 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -494,6 +494,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-fb",		"*boldFont",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-j",		"*jumpScroll",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+j",		"*jumpScroll",	XrmoptionNoArg,		(caddr_t) "off"},
+/* parse logging options anyway for compatibility */
 {"-l",		"*logging",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+l",		"*logging",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-lf",		"*logFile",	XrmoptionSepArg,	(caddr_t) NULL},
@@ -572,8 +573,13 @@ static struct _options {
 { "-fb fontname",          "bold text font" },
 { "-/+im",		   "use insert mode for TERMCAP" },
 { "-/+j",                  "turn on/off jump scroll" },
+#ifdef ALLOWLOGGING
 { "-/+l",                  "turn on/off logging" },
 { "-lf filename",          "logging filename" },
+#else
+{ "-/+l",                  "turn on/off logging (not supported)" },
+{ "-lf filename",          "logging filename (not supported)" },
+#endif
 { "-/+ls",                 "turn on/off login shell" },
 { "-/+mb",                 "turn on/off margin bell" },
 { "-mc milliseconds",      "multiclick time in milliseconds" },
@@ -747,7 +753,7 @@ int argc;
 char **argv;
 {
 	register TScreen *screen;
-	register int i, pty;
+	register int pty;
 	int Xsocket, mode;
 	char *base_name();
 	int xerror(), xioerror();
@@ -1001,7 +1007,9 @@ char **argv;
 	}
 
 	inhibit = 0;
+#ifdef ALLOWLOGGING
 	if (term->misc.logInhibit) 	    inhibit |= I_LOG;
+#endif
 	if (term->misc.signalInhibit)		inhibit |= I_SIGNAL;
 	if (term->misc.tekInhibit)			inhibit |= I_TEK;
 
@@ -1045,13 +1053,16 @@ char **argv;
 	if(screen->TekEmu && !TekInit())
 		exit(ERROR_INIT);
 
-	/* set up stderr properly */
-	i = -1;
 #ifdef DEBUG
-	if(debug)
-		i = open ("xterm.debug.log", O_WRONLY | O_CREAT | O_TRUNC,
-		 0666);
-#endif	/* DEBUG */
+    {
+	/* Set up stderr properly.  Opening this log file cannot be
+	 done securely by a privileged xterm process (although we try),
+	 so the debug feature is disabled by default. */
+	int i = -1;
+	if(debug) {
+	        creat_as (getuid(), getgid(), "xterm.debug.log", 0666);
+		i = open ("xterm.debug.log", O_WRONLY | O_TRUNC, 0666);
+	}
 	if(i >= 0) {
 #if defined(USE_SYSV_TERMIO) && !defined(SVR4)
 		/* SYSV has another pointer which should be part of the
@@ -1074,6 +1085,8 @@ char **argv;
 		/* mark this file as close on exec */
 		(void) fcntl(i, F_SETFD, 1);
 	}
+    }
+#endif	/* DEBUG */
 
 	/* open a terminal for client */
 	get_terminal ();
@@ -1096,9 +1109,11 @@ char **argv;
 	    write (pty, buf, strlen (buf));
 	}
 
+#ifdef ALLOWLOGGING
 	if (term->misc.log_on) {
 		StartLog(screen);
 	}
+#endif
 	screen->inhibit = inhibit;
 
 #ifdef AIXV3
@@ -2584,8 +2599,8 @@ spawn ()
 #ifdef SYSV
 	/* if we were spawned by a jobcontrol smart shell (like ksh or csh),
 	 * then our pgrp and pid will be the same.  If we were spawned by
-	 * a jobcontrol dump shell (like /bin/sh), then we will be in out
-	 * parents pgrp, and we must ignore keyboard signals, or will will
+	 * a jobcontrol dumb shell (like /bin/sh), then we will be in our
+	 * parent's pgrp, and we must ignore keyboard signals, or we will
 	 * tank on everything.
 	 */
 	if (getpid() == getpgrp()) {
@@ -2682,8 +2697,10 @@ Exit(n)
 #endif	/* USE_SYSV_UTMP */
 #endif	/* UTMP */
         close(pty); /* close explicitly to avoid race with slave side */
+#ifdef ALLOWLOGGING
 	if(screen->logging)
 		CloseLog(screen);
+#endif
 
 	if (!am_slave) {
 		/* restore ownership of tty and pty */
