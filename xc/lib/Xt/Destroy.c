@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.29 90/08/27 11:53:11 swick Exp $ */
+/* $XConsortium: Destroy.c,v 1.30 90/08/27 12:49:11 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -110,6 +110,17 @@ static Boolean IsDescendant(widget, root)
     return True;
 }
 
+static Boolean IsPopup(w)
+    Widget w;
+{
+    Widget parent = XtParent(w);
+    int i;
+    for (i = 0; i < parent->core.num_popups; i++) {
+	if (parent->core.popup_list[i] == w) return True;
+    }
+    return False;
+}
+
 static void XtPhase2Destroy (widget)
     register Widget widget;
 {
@@ -122,7 +133,9 @@ static void XtPhase2Destroy (widget)
 
     parent = widget->core.parent;
 
-    if (parent != NULL && XtIsComposite(parent)) {
+    if (parent != NULL && XtIsComposite(parent) &&
+	(! XtIsShell(widget) || ! IsPopup(widget)))
+    {
 	XtWidgetProc delete_child =
 	    ((CompositeWidgetClass) parent->core.widget_class)->
 		composite_class.delete_child;
