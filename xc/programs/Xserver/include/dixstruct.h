@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.18 93/07/12 09:44:46 dpw Exp $ */
+/* $XConsortium: dixstruct.h,v 1.19 93/09/03 08:28:57 dpw Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -81,13 +81,11 @@ typedef struct _Client {
 );
     unsigned long req_len;		/* length of current request */
     Bool	big_requests;		/* supports large requests */
+    int		priority;
 
 #ifdef DEBUG
     unsigned char requestLog[MAX_REQUEST_LOG];
     int         requestLogIndex;
-#endif
-#ifdef SYNC
-    int		priority;
 #endif
 }           ClientRec;
 

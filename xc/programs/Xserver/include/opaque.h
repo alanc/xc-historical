@@ -1,4 +1,4 @@
-/* $XConsortium: opaque.h,v 1.10 93/07/12 09:44:59 dpw Exp $ */
+/* $XConsortium: opaque.h,v 1.11 93/09/03 08:36:28 dpw Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -14,9 +14,7 @@ extern char dispatchException;
 /* bit values for dispatchException */
 #define DE_RESET     1
 #define DE_TERMINATE 2
-#ifdef SYNC
 #define DE_PRIORITYCHANGE 4  /* set when a client's priority changes */
-#endif
 
 extern long TimeOutValue;
 extern long ScreenSaverTime;

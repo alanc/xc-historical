@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /***********************************************************
 Copyright 1991, 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -24,19 +25,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/*
- * @DEC_COPYRIGHT@
- */
-/*
- * HISTORY 64 bit changes $Log: sync.c,v $ Revision 1.1.1.2  1993/05/05
- * 18:03:32  Pete_Snider initial rcs submit
- * 
- * 
- * $EndLog$
- */
-
-
-#ifdef SYNC
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -2294,5 +2282,3 @@ SyncInitServerTime()
 			    ServertimeQueryValue, ServertimeBracketValues);
     pnext_time = NULL;
 }
-
-#endif				/* SYNC */

@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.46 93/08/24 18:49:52 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 5.47 93/09/03 13:19:45 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -281,9 +281,7 @@ Dispatch()
 	    }
 	    FlushAllOutput();
 	}
-#ifdef SYNC
 	dispatchException &= ~DE_PRIORITYCHANGE;
-#endif
     }
     KillAllClients();
     DEALLOCATE_LOCAL(clientReady);
