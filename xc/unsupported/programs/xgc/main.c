@@ -40,8 +40,10 @@ extern void GC_change_background();
 extern void GC_change_font();
 extern void close_file_if_recording();
 
+#ifdef notdef
 int fildes[2];			/* for pipe */
 FILE *outend;
+#endif
 
 XStuff X;			/* GC stuff plus some global variables */
 char resultstring[80] = "";
@@ -128,8 +130,10 @@ main(argc,argv)
 
   /* Open the pipe */
 
+#ifdef notdef
   pipe(fildes);
   outend = fdopen(fildes[0],"r");
+#endif
 
   /* Initialize toolkit stuff */
 
