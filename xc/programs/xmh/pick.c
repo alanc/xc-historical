@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 2.19 88/02/06 10:54:51 swick Exp $";
+static char rcs_id[] = "$Header: pick.c,v 2.20 88/02/22 10:36:49 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -374,9 +374,12 @@ static ParseGroup(group)
 
 
 
-static void DestroyErrorWidget(pick)
-Pick pick;
+static void DestroyErrorWidget(w, client_data, call_data)
+    Widget w;			/* unused */
+    caddr_t client_data;	/* Pick */
+    caddr_t call_data;		/* unused */
 {
+    Pick pick = (Pick)client_data;
     if (pick->errorwidget) {
 	XtDestroyWidget(pick->errorwidget);
 	pick->errorwidget = NULL;
@@ -389,7 +392,7 @@ char *str;
 {
     Arg args[1];
 
-    DestroyErrorWidget(pick);
+    DestroyErrorWidget(NULL, (caddr_t)pick, NULL);
     XtSetArg( args[0], XtNlabel, str );
     pick->errorwidget = XtCreateWidget( "error", dialogWidgetClass,
 				        pick->scrn->widget,
@@ -428,7 +431,7 @@ static void ExecOK(w, closure, call_data)
     int i, found;
     char *folderpath;
 
-    DestroyErrorWidget(pick);
+    DestroyErrorWidget(NULL, (caddr_t)pick, NULL);
     if (strcmp(toseq, "all") == 0) {
 	MakeErrorWidget(pick, "Can't create a sequence called \"all\".");
 	return;
@@ -807,5 +810,5 @@ AddPick(scrn, toc, fromseq, toseq)
     InitGeneral(pick, fromseq, toseq);
     (void) sprintf(str, "Pick: %s", TocName(toc));
     ChangeLabel(pick->label, str);
-    XStoreName(theDisplay, XtWindow(scrn->widget), str);
+    StoreWindowName(scrn, str);
 }
