@@ -1,4 +1,4 @@
-/* $XConsortium: ReconfWM.c,v 1.3 89/12/22 11:21:56 jim Exp $ */
+/* $XConsortium: ReconfWM.c,v 1.4 91/01/06 11:43:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986   */
 
 /*
@@ -20,8 +20,6 @@ without express or implied warranty.
 #define AllMaskBits (CWX|CWY|CWWidth|CWHeight|\
                      CWBorderWidth|CWSibling|CWStackMode)
 
-static int restack_error_handler();
-
 Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
     register Display *dpy;
     Window w;
@@ -31,7 +29,8 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
 {
     XConfigureRequestEvent ev;
     Window root = RootWindow (dpy, screen);
-    Bool succeeded;
+    _XInternalErrorHandler async;
+    _XInternalErrorState async_state;
 
     /*
      * Only need to go through the trouble if we are actually changing the
@@ -49,16 +48,6 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
      */
 
     LockDisplay(dpy);
-    /*
-     * Remember the old error handler, set the new one, set the sequence
-     * number to look for, clear the failure flag, try the request, and
-     * restore the error handler.
-     */
-    dpy->reconfigure_wm_window.old_handler = _XErrorFunction;
-    _XErrorFunction = restack_error_handler;
-    dpy->reconfigure_wm_window.sequence_number = NextRequest(dpy);
-    dpy->reconfigure_wm_window.succeeded = True;
-
 
     /*
      * XConfigureWindow (dpy, w, mask, changes);
@@ -70,6 +59,18 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
 	register xConfigureWindowReq *req;
 
 	GetReq(ConfigureWindow, req);
+
+	async_state.min_sequence_number = dpy->request;
+	async_state.max_sequence_number = dpy->request;
+	async_state.error_code = BadMatch;
+	async_state.major_opcode = X_ConfigureWindow;
+	async_state.minor_opcode = 0;
+	async_state.error_count = 0;
+	async.next = dpy->async_handlers;
+	async.handler = _XAsyncErrorHandler;
+	async.data = (XPointer)&async_state;
+	dpy->async_handlers = &async;
+
 	req->window = w;
 	mask &= AllMaskBits;
 	req->mask = mask;
@@ -98,16 +99,7 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
 	(void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
     }
 
-    /*
-     * Put the world back together; copy the failure code out so that it can
-     * be accessed once the display is unlocked.
-     */
-    _XErrorFunction = dpy->reconfigure_wm_window.old_handler;
-    succeeded = dpy->reconfigure_wm_window.succeeded;
-    dpy->reconfigure_wm_window.old_handler = NULL;
-    dpy->reconfigure_wm_window.sequence_number = 0;
-    dpy->reconfigure_wm_window.succeeded = False;
-
+    _XDeqErrorHandler(dpy, &async);
     UnlockDisplay(dpy);
     SyncHandle();
 
@@ -115,7 +107,7 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
     /*
      * If the request succeeded, then everything is okay; otherwise, send event
      */
-    if (succeeded) return True;
+    if (!async_state.error_count) return True;
 
     ev.type		= ConfigureRequest;
     ev.window		= w;
@@ -131,17 +123,4 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
     return (XSendEvent (dpy, root, False,
 			SubstructureRedirectMask|SubstructureNotifyMask,
 			(XEvent *)&ev));
-}
-
-
-static int restack_error_handler (dpy, ev)
-    Display *dpy;
-    XErrorEvent *ev;
-{
-    if (ev->serial == dpy->reconfigure_wm_window.sequence_number &&
-	ev->error_code == BadMatch) {
-	dpy->reconfigure_wm_window.succeeded = False;
-	return 0;
-    }
-    return (*(dpy->reconfigure_wm_window.old_handler))(dpy, ev);
 }
