@@ -29,7 +29,13 @@
  * Interface to routines that do transport across address spaces/network.
  */
 
+#ifdef hpux
+extern "C" {
 #include <rpc/rpc.h>
+}
+#else
+#include <rpc/rpc.h>
+#endif
 
 /*
  * C-style interface for now because the underlying layers are C-based.
