@@ -1,4 +1,4 @@
-/* $XConsortium: Cursor.c,v 1.1 93/07/12 15:28:02 rws Exp $ */
+/* $XConsortium: Cursor.c,v 1.2 94/02/06 17:49:44 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -31,6 +31,7 @@ is" without express or implied warranty.
 #include "Screen.h"
 #include "Cursor.h"
 #include "Visual.h"
+#include "Keyboard.h"
 
 void xnestConstrainCursor(pScreen, pBox)
      ScreenPtr pScreen;
@@ -57,7 +58,8 @@ void xnestConstrainCursor(pScreen, pBox)
     
     XGrabPointer(xnestDisplay, 
 		 xnestDefaultWindows[pScreen->myNum], 
-		 True, xnestEventMask,
+		 True,
+		 xnestEventMask & (~XNEST_KEYBOARD_EVENT_MASK|KeymapStateMask),
 		 GrabModeAsync, GrabModeAsync, 
 		 xnestConfineWindow,
 		 None, CurrentTime);
