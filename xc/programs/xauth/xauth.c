@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xauth.c,v 1.14 89/01/02 18:06:23 jim Exp $
+ * $XConsortium: xauth.c,v 1.15 89/01/03 11:40:02 jim Exp $
  *
  * xauth - manipulate authorization file
  *
@@ -65,7 +65,7 @@ static void usage ()
 NULL };
     static char *suffixmsg[] = {
 "A dash may be used with the \"merge\" and \"source\" to read from the",
-"standard input.  Commands beginning with [n] use numeric format.",
+"standard input.  Commands beginning with \"n\" use numeric format.",
 "",
 NULL };
     char **msg;
