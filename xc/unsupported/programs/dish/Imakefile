@@ -1,0 +1,26 @@
+XCOMM
+XCOMM DISH - Dynamic Invocation SHell
+XCOMM
+
+#ifdef InObjectCodeDir
+
+/*
+ * You need to have Tcl installed on your system already to build Dish.
+ * Tcl is available via anonymous ftp from sprite.berkeley.edu.
+ * Install <tcl.h> in either a standard place or Fresco/installed/include.
+ */
+
+APP_CCINCLUDES = -I$(INCDIR)
+APP_CCLDFLAGS = -u main
+APP_CCLDLIBS = -L$(LIBDIR) -ltcl
+
+Use_libFresco()
+ComplexProgramTarget(dish)
+
+MakeObjectFromSrc(main)
+
+#else
+
+MakeInObjectCodeDir()
+
+#endif
