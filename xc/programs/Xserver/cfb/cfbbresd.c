@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.4 89/10/03 20:04:34 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.5 89/10/04 16:23:47 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -290,5 +290,5 @@ int len;		/* length of line */
     	} /* else Y_AXIS */
     }
     *pdashIndex = dashIndex;
-    *pdashOffset = dashOffset;
+    *pdashOffset = pDash[dashIndex] - dashRemaining;
 }
