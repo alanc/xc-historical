@@ -20,7 +20,9 @@ SingleProgramTarget(x11perf, $(OBJS), , -lX11)
 x11perf_labels: do_tests.c
 	x11perf -labels > x11perf_labels
 
-DependTarget()
+lint::
+	$(LINT) -u $(SRCS)
+
 clean::
 	$(RM) $(PROGRAMS)
 
@@ -34,4 +36,6 @@ tar:	$(DEPEND)
 		link.com link.options make.com;
 	mv Makefile.bak Makefile
 	compress x11perf.tar
+
+DependTarget()
 
