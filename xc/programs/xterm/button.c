@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.19 88/10/13 17:33:55 swick Exp $
+ *	$XConsortium: button.c,v 1.20 88/10/15 16:33:22 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.19 88/10/13 17:33:55 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.20 88/10/15 16:33:22 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -1279,11 +1279,11 @@ menusync()
 
 #define	XMENU_VISUALBELL 0
 #define	XMENU_LOG	(XMENU_VISUALBELL+1)
-#define	XMENU_LINE	(XMENU_LOG+1)
-#define	XMENU_REDRAW	(XMENU_LINE+1)
-#define	XMENU_RESUME	(XMENU_REDRAW+1)
-#define	XMENU_SUSPEND	(XMENU_RESUME+1)
-#define	XMENU_INTR	(XMENU_SUSPEND+1)
+#define	XMENU_REDRAW	(XMENU_LOG+1)
+#define	XMENU_LINE	(XMENU_REDRAW+1)
+#define	XMENU_SUSPEND	(XMENU_LINE+1)
+#define	XMENU_RESUME	(XMENU_SUSPEND+1)
+#define	XMENU_INTR	(XMENU_RESUME+1)
 #define	XMENU_HANGUP	(XMENU_INTR+1)
 #define	XMENU_TERM	(XMENU_HANGUP+1)
 #define	XMENU_KILL	(XMENU_TERM+1)
@@ -1293,16 +1293,16 @@ menusync()
 static char *xtext[] = {
 	"Visual Bell",
 	"Logging",
-	"-",
 	"Redraw",
-	"Continue program",
+	"-",
 	"Suspend program",
+	"Continue program",
 	"Interrupt program",
 	"Hangup program",
 	"Terminate program",
 	"Kill program",
 	"-",
-	"Exit xterm",
+	"Quit",
 	0,
 };
 
