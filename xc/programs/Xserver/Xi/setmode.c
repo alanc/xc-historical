@@ -1,4 +1,4 @@
-/* $XConsortium: xsetmode.c,v 1.4 89/12/02 15:21:40 rws Exp $ */
+/* $XConsortium: xsetmode.c,v 1.5 90/05/18 11:42:58 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -37,13 +37,11 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 #include "inputstr.h"			/* DeviceIntPtr	     */
-#include "windowstr.h"			/* window structure  */
 
 extern	int 		IReqCode;
 extern	int		BadDevice;
-extern	int		BadMode;
 extern	void		(* ReplySwapVector[256]) ();
-extern	InputInfo	inputInfo;
+DeviceIntPtr		LookupDeviceIntRec();
 
 /***********************************************************************
  *
@@ -72,7 +70,7 @@ int
 ProcXSetDeviceMode(client)
     register ClientPtr client;
     {
-    int status;
+    DeviceIntPtr dev;
     xSetDeviceModeReply	rep;
 
     REQUEST(xSetDeviceModeReq);
@@ -83,21 +81,19 @@ ProcXSetDeviceMode(client)
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
 
-    if (stuff->deviceid == inputInfo.pointer->id || 
-	stuff->deviceid == inputInfo.keyboard->id)
+    dev = LookupDeviceIntRec (stuff->deviceid);
+    if (dev == NULL)
 	{
-        rep.status = BadDevice;
-        WriteReplyToClient (client, sizeof (xSetDeviceModeReply), &rep);
-	SendErrorToClient(client, IReqCode, X_SetDeviceMode, 0, BadDevice);
-        return Success;
+	SendErrorToClient (client, IReqCode, X_SetDeviceMode, 0, BadDevice);
+	return Success;
 	}
 
-    status = SetDeviceMode (client, stuff->deviceid, stuff->mode);
-    rep.status = status;
-    WriteReplyToClient (client, sizeof (xSetDeviceModeReply), &rep);
+    rep.status = SetDeviceMode (client, dev, stuff->mode);
+    if (rep.status != Success)
+	SendErrorToClient(client, IReqCode, X_SetDeviceMode, 0, rep.status);
+    else
+	WriteReplyToClient (client, sizeof (xSetDeviceModeReply), &rep);
 
-    if (status != Success)
-	SendErrorToClient(client, IReqCode, X_SetDeviceMode, 0, BadDevice);
     return Success;
     }
 
