@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.45 91/05/10 11:40:44 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.46 91/05/10 11:43:54 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -303,8 +303,6 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 	return image;
 }
 
-static int _XReportBadImage();
-
 /*
  * _DestroyImage
  * 	
@@ -404,7 +402,7 @@ static unsigned long _XGetPixel (ximage, x, y)
 			pixel &= 0xf;
 		}
 	} else {
-		_XReportBadImage("format", ximage->format, "_XGetPixel");
+		return 0; /* bad image */
 	}
 	if (ximage->bits_per_pixel == ximage->depth)
 	  return pixel;
@@ -596,7 +594,7 @@ static int _XPutPixel (ximage, x, y, pixel)
 		dst = &ximage->data[ZINDEX(x, y, ximage)];
 		for (i=0; i < nbytes; i++) *dst++ = *src++;
 	} else {
-		_XReportBadImage("format", ximage->format, "_XPutPixel");
+		return 0; /* bad image */
 	}
 	return 1;
 }
@@ -923,7 +921,7 @@ static _XAddPixel (ximage, value)
 		    }
 		}
 	  } else {
-		_XReportBadImage("format", ximage->format, "_XAddPixel");
+		/* bad image */
 	  }
 	}
 }
@@ -964,14 +962,4 @@ _XInitImageFuncPtrs (image)
 	image->f.sub_image = _XSubImage;
 /*	image->f.set_image = _XSetImage;*/
 	image->f.add_pixel = _XAddPixel;
-}
-
-static int _XReportBadImage (errtype, error, routine)
-    char *errtype;
-    int error;
-    char *routine;
-{
-	(void) fprintf(stderr, "Bad image %s: %d found in routine: %s\n",
-	    errtype, error, routine );
-	exit(1);
 }
