@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.53 91/12/29 14:06:01 rws Exp $ */
+/* $XConsortium: access.c,v 1.54 92/05/19 17:23:02 keith Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -617,20 +617,11 @@ GetHosts (data, pnHosts, pLen, pEnabled)
     register pointer	ptr;
     register HOST	*host;
     int			nHosts = 0;
-    int			*lengths = (int *) NULL;
-    int			*newlens;
 
     *pEnabled = AccessEnabled ? EnableAccess : DisableAccess;
     for (host = validhosts; host; host = host->next)
     {
-	newlens = (int *) xrealloc(lengths, (nHosts + 1) * sizeof(int));
-	if (!newlens)
-	{
-	    xfree(lengths);
-	    return(BadAlloc);
-	}
-	lengths = newlens;
-	lengths[nHosts++] = host->len;
+	nHosts++;
 	n += (((host->len + 3) >> 2) << 2) + sizeof(xHostEntry);
     }
     if (n)
@@ -638,14 +629,11 @@ GetHosts (data, pnHosts, pLen, pEnabled)
         *data = ptr = (pointer) xalloc (n);
 	if (!ptr)
 	{
-	    xfree(lengths);
 	    return(BadAlloc);
 	}
-	nHosts = 0;
         for (host = validhosts; host; host = host->next)
 	{
-
-	    len = lengths[nHosts++];
+	    len = host->len;
 	    ((xHostEntry *)ptr)->family = host->family;
 	    ((xHostEntry *)ptr)->length = len;
 	    ptr += sizeof(xHostEntry);
@@ -657,7 +645,6 @@ GetHosts (data, pnHosts, pLen, pEnabled)
     }
     *pnHosts = nHosts;
     *pLen = n;
-    xfree(lengths);
     return(Success);
 }
 
