@@ -29,6 +29,7 @@ HEADERS = \
 	StdSel.h \
 	StdCmap.h \
 	SysUtil.h \
+	WidgetNode.h \
 	WinUtil.h \
 	Xct.h
 
@@ -71,6 +72,7 @@ SRCS = \
 	StrToWidg.c \
 	UpdMapHint.c \
 	VisCmap.c \
+	WidgetNode.c \
 	Xct.c \
 	sharedlib.c 
 
@@ -112,6 +114,7 @@ OBJS = \
 	StrToWidg.o \
 	UpdMapHint.o \
 	VisCmap.o \
+	WidgetNode.o \
 	Xct.o
 
 UNSHAREDOBJS = sharedlib.o
