@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.15 93/09/15 15:11:18 gildea Exp $
+ * $XConsortium: locking.c,v 1.16 93/11/11 17:45:19 kaleb Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -95,6 +95,13 @@ static void _XUnlockMutex(lip)
 #endif
 {
     xmutex_unlock(lip->lock);
+}
+
+static void _XCreateMutex(lip)
+    LockInfoPtr* lib;
+{
+    (*lip)->lock = xmutex_malloc();
+    if ((*lip)->lock) xmutex_init(&lip->lock);
 }
 
 #ifdef XTHREADS_WARN
@@ -495,6 +502,7 @@ Status XInitThreads()
     xmutex_init(_Xglobal_lock->lock);
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;
+    _XCreateMutex_fn = _XCreateMutex;
     _XInitDisplayLock_fn = _XInitDisplayLock;
     _XFreeDisplayLock_fn = _XFreeDisplayLock;
     _Xthread_self_fn = _Xthread_self;

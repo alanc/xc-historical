@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.79 93/09/07 21:33:22 rws Exp $
+ * $XConsortium: Xrm.c,v 1.80 93/11/11 17:45:53 kaleb Exp $
  */
 
 /***********************************************************
@@ -458,10 +458,7 @@ static XrmDatabase NewDatabase()
 
     db = (XrmDatabase) Xmalloc(sizeof(XrmHashBucketRec));
     if (db) {
-#ifdef XTHREADS
-	db->linfo.lock = xmutex_malloc();
-	xmutex_init(db->linfo.lock);
-#endif
+	CreateMutex(&db->linfo);
 	db->table = (NTable)NULL;
 	db->methods = _XrmInitParseInfo(&db->mbstate);
 	if (!db->methods)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.200 93/10/25 13:14:57 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.201 93/11/05 11:20:57 kaleb Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -38,6 +38,7 @@ without express or implied warranty.
 #include "locking.h"
 
 /* these pointers get initialized by XInitThreads */
+void (*_XCreateMutex_fn)() = NULL;
 void (*_XLockMutex_fn)() = NULL;
 void (*_XUnlockMutex_fn)() = NULL;
 xthread_t (*_Xthread_self_fn)() = NULL;

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.124 93/10/24 15:49:47 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.125 93/11/11 17:45:13 kaleb Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -215,6 +215,11 @@ struct _XLockPtrs {
 typedef struct _LockInfoRec *LockInfoPtr;
 
 /* in XlibInt.c */
+extern void (*_XCreateMutex_fn)(
+#if NeedFunctionPrototypes
+    LockInfoPtr* /* lock */
+#endif
+);
 extern void (*_XLockMutex_fn)(
 #if NeedFunctionPrototypes
     LockInfoPtr	/* lock */
@@ -240,12 +245,14 @@ extern LockInfoPtr _Xglobal_lock;
 #define LockMutex(lock)		if (_XLockMutex_fn) (*_XLockMutex_fn)(lock)
 #define UnlockMutex(lock)	if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)(lock)
 #endif
+#define CreateMutex(lock)	if (_XCreateMutex_fn) (*_XCreateMutex_fn)(lock);
 
 #else /* XTHREADS */
 #define LockDisplay(dis)
 #define LockMutex(lock)
 #define UnlockMutex(lock)
 #define UnlockDisplay(dis)
+#define CreateMutex(lock)
 #endif
 
 #define Xfree(ptr) free((ptr))
