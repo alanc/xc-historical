@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.10 91/11/08 19:17:16 gildea Exp $
+ * $XConsortium: sunGX.c,v 1.11 91/11/13 20:03:05 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -422,6 +422,199 @@ sunGXCopyArea(pSrcDrawable, pDstDrawable,
             pGC, srcx, srcy, width, height, dstx, dsty);
     return cfbBitBlt (pSrcDrawable, pDstDrawable,
             pGC, srcx, srcy, width, height, dstx, dsty, sunGXDoBitblt, 0);
+}
+
+static unsigned long	copyPlaneFG, copyPlaneBG;
+
+static void
+sunGXCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane)
+    DrawablePtr pSrcDrawable;
+    DrawablePtr pDstDrawable;
+    int	rop;
+    RegionPtr prgnDst;
+    DDXPointPtr pptSrc;
+    unsigned long planemask;
+    unsigned long   bitPlane;
+{
+    register sunGXPtr	gx = sunGXGetScreenPrivate (pDstDrawable->pScreen);
+    int			srcx, srcy, dstx, dsty, width, height;
+    int			dstLastx, dstRightx;
+    int			xoffSrc, widthSrc, widthRest;
+    int			widthLast;
+    unsigned long	*psrcBase, *psrcLine, *psrc;
+    unsigned long	bits, tmp, lastTmp;
+    register int	leftShift, rightShift;
+    register int	nl, nlMiddle;
+    int			nbox;
+    BoxPtr		pbox;
+    register int	r;
+
+    GXDrawInit (gx, copyPlaneFG, 
+		gx_opaque_stipple_rop_table[rop]|GX_PATTERN_ONES,
+ 		planemask);
+    gx->bg = copyPlaneBG;
+    gx->mode = GX_BLIT_NOSRC | GX_MODE_COLOR1;
+
+    cfbGetLongWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
+
+    nbox = REGION_NUM_RECTS(prgnDst);
+    pbox = REGION_RECTS(prgnDst);
+    gx->incx = 32;
+    gx->incy = 0;
+    while (nbox--)
+    {
+	dstx = pbox->x1;
+	dsty = pbox->y1;
+	srcx = pptSrc->x;
+	srcy = pptSrc->y;
+	dstLastx = pbox->x2;
+	width = dstLastx - dstx;
+	height = pbox->y2 - dsty;
+	pbox++;
+	pptSrc++;
+	if (!width)
+	    continue;
+	psrc = psrcBase + srcy * widthSrc + (srcx >> 5);
+	dstLastx--;
+	dstRightx = dstx + 31;
+	nlMiddle = (width + 31) >> 5;
+	widthLast = width & 31;
+	xoffSrc = srcx & 0x1f;
+	leftShift = xoffSrc;
+	rightShift = 32 - leftShift;
+	widthRest = widthSrc - nlMiddle;
+	if (widthLast)
+	    nlMiddle--;
+	if (leftShift == 0)
+	{
+	    while (height--)
+	    {
+	    	gx->x0 = dstx;
+	    	gx->x1 = dstRightx;
+	    	gx->y0 = dsty++;
+	    	nl = nlMiddle;
+	    	while (nl--)
+		    gx->font = *psrc++;
+	    	if (widthLast) 
+	    	{
+		    gx->x1 = dstLastx;
+		    gx->font = *psrc++;
+	    	}
+		psrc += widthRest;
+	    }
+	}
+	else
+	{
+	    widthRest--;
+	    while (height--)
+	    {
+	    	gx->x0 = dstx;
+	    	gx->x1 = dstRightx;
+	    	gx->y0 = dsty++;
+	    	bits = *psrc++;
+	    	nl = nlMiddle;
+	    	while (nl--)
+	    	{
+		    tmp = BitLeft(bits, leftShift);
+		    bits = *psrc++;
+		    tmp |= BitRight(bits, rightShift);
+		    gx->font = tmp;
+	    	}
+	    	if (widthLast) 
+	    	{
+		    tmp = BitLeft(bits, leftShift);
+		    bits = *psrc++;
+		    tmp |= BitRight(bits, rightShift);
+		    gx->x1 = dstLastx;
+		    gx->font = tmp;
+	    	}
+		psrc += widthRest;
+	    }
+	}
+    }
+    GXWait (gx, r);
+    gx->incx = 0;
+    gx->incy = 0;
+    gx->mode = GX_BLIT_SRC | GX_MODE_COLOR8;
+}
+
+RegionPtr sunGXCopyPlane(pSrcDrawable, pDstDrawable,
+	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane)
+    DrawablePtr 	pSrcDrawable;
+    DrawablePtr		pDstDrawable;
+    GCPtr		pGC;
+    int 		srcx, srcy;
+    int 		width, height;
+    int 		dstx, dsty;
+    unsigned long	bitPlane;
+{
+    RegionPtr		ret;
+    extern RegionPtr    miHandleExposures();
+    int			(*doBitBlt)();
+    extern		cfbCopyPlane8to1();
+
+    if (pSrcDrawable->bitsPerPixel == 1 && pDstDrawable->bitsPerPixel == 8)
+    {
+    	if (bitPlane == 1)
+	{
+	    copyPlaneFG = pGC->fgPixel;
+	    copyPlaneBG = pGC->bgPixel;
+    	    ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
+	    	    pGC, srcx, srcy, width, height, dstx, dsty, sunGXCopyPlane1to8, bitPlane);
+	}
+	else
+	    ret = miHandleExposures (pSrcDrawable, pDstDrawable,
+	    	pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
+    }
+    else if (pSrcDrawable->bitsPerPixel == 8 && pDstDrawable->bitsPerPixel == 1)
+    {
+	extern	int InverseAlu[16];
+	int oldalu;
+
+	oldalu = pGC->alu;
+    	if ((pGC->fgPixel & 1) == 0 && (pGC->bgPixel&1) == 1)
+	    pGC->alu = InverseAlu[pGC->alu];
+    	else if ((pGC->fgPixel & 1) == (pGC->bgPixel & 1))
+	    pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
+	ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
+		    pGC, srcx, srcy, width, height, dstx, dsty, cfbCopyPlane8to1, bitPlane);
+	pGC->alu = oldalu;
+    }
+    else
+    {
+	PixmapPtr	pBitmap;
+	ScreenPtr	pScreen = pSrcDrawable->pScreen;
+	GCPtr		pGC1;
+	unsigned long	fg, bg;
+
+	pBitmap = (*pScreen->CreatePixmap) (pScreen, width, height, 1);
+	if (!pBitmap)
+	    return NULL;
+	pGC1 = GetScratchGC (1, pScreen);
+	if (!pGC1)
+	{
+	    (*pScreen->DestroyPixmap) (pBitmap);
+	    return NULL;
+	}
+	/*
+	 * don't need to set pGC->fgPixel,bgPixel as copyPlane8to1
+	 * ignores pixel values, expecting the rop to "do the
+	 * right thing", which GXcopy will.
+	 */
+	ValidateGC ((DrawablePtr) pBitmap, pGC1);
+	/* no exposures here, scratch GC's don't get graphics expose */
+	(void) cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
+			    pGC1, srcx, srcy, width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
+	(void) cfbBitBlt ((DrawablePtr) pBitmap, pDstDrawable, pGC,
+			    0, 0, width, height, dstx, dsty, sunGXCopyPlane1to8, 1);
+	FreeScratchGC (pGC1);
+	(*pScreen->DestroyPixmap) (pBitmap);
+	/* compute resultant exposures */
+	ret = miHandleExposures (pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height,
+				 dstx, dsty, bitPlane);
+    }
+    return ret;
 }
 
 void
@@ -1788,7 +1981,7 @@ GCOps	sunGXTEOps1Rect = {
     cfbSetSpans,
     cfbPutImage,
     sunGXCopyArea,
-    cfbCopyPlane,
+    sunGXCopyPlane,
     cfbPolyPoint,
     sunGXPolylines1Rect,
     sunGXPolySeg1Rect,
@@ -1812,7 +2005,7 @@ GCOps	sunGXTEOps = {
     cfbSetSpans,
     cfbPutImage,
     sunGXCopyArea,
-    cfbCopyPlane,
+    sunGXCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
@@ -1836,7 +2029,7 @@ GCOps	sunGXNonTEOps1Rect = {
     cfbSetSpans,
     cfbPutImage,
     sunGXCopyArea,
-    cfbCopyPlane,
+    sunGXCopyPlane,
     cfbPolyPoint,
     sunGXPolylines1Rect,
     sunGXPolySeg1Rect,
@@ -1860,7 +2053,7 @@ GCOps	sunGXNonTEOps = {
     cfbSetSpans,
     cfbPutImage,
     sunGXCopyArea,
-    cfbCopyPlane,
+    sunGXCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
