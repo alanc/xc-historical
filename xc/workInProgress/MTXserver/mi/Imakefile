@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.18 92/05/28 13:07:45 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.19 93/09/04 17:18:52 rws Exp $
 #include <Server.tmpl>
 
 SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
@@ -21,6 +21,8 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	midash.o mibstore.o miinitext.o mieq.o \
 	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o
 
+EXT_DEFINES = ExtensionDefines
+
 INCLUDES = -I. -I../include -I$(INCLUDESRC) -I$(FONTINCSRC)
 LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
@@ -31,6 +33,7 @@ NormalLintTarget($(SRCS))
 
 all:: cbrt.o
 
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
 
 DependTarget()
