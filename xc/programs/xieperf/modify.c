@@ -1,4 +1,4 @@
-/* $XConsortium: modify.c,v 1.2 93/10/26 10:06:36 rws Exp $ */
+/* $XConsortium: modify.c,v 1.3 93/10/26 15:10:49 rws Exp $ */
 
 /**** module modify.c ****/
 /******************************************************************************
@@ -54,6 +54,8 @@ terms and conditions:
 static int BuildModifyPointFlograph();
 static int BuildModifySimpleFlograph();
 static int BuildModifyROIFlograph();
+static int BuildModifyLong1Flograph();
+static int BuildModifyLong2Flograph();
 
 static XiePhotomap XIEPhotomap;
 static XieRoi XIERoi1, XIERoi2;
