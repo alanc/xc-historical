@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.12 90/04/04 11:28:49 swick Exp $";
+    "$XConsortium: VarCreate.c,v 1.13 90/12/12 14:53:48 rws Exp $";
 #endif
 
 /*
@@ -279,7 +279,7 @@ _XtVaAppInitialize(
     Cardinal num_options,
     Cardinal *argc_in_out,
     String *argv_in_out,
-    _Xconst char* _Xconst *fallback_resources,
+    _Xconst char* *fallback_resources,
     va_list var_args)
 #else
 /*VARARGS7*/
@@ -287,12 +287,12 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
 			  num_options, argc_in_out, argv_in_out,
 			  fallback_resources, var_args)
     XtAppContext *app_context_return;
-    String application_class;
+    _Xconst String application_class;
     XrmOptionDescList options;
     Cardinal num_options;
     Cardinal *argc_in_out;
     String *argv_in_out;
-    String *fallback_resources;
+    _Xconst String *fallback_resources;
     va_list var_args;
 #endif
 {
@@ -383,7 +383,7 @@ XtVaAppInitialize(
     Cardinal num_options,
     Cardinal *argc_in_out,
     String *argv_in_out,
-    _Xconst char* _Xconst *fallback_resources,
+    _Xconst char* *fallback_resources,
     ...)
 #else
 Widget XtVaAppInitialize(app_context_return, application_class, options,
