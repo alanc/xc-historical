@@ -1,3 +1,4 @@
+# $XConsortium: $
 # $XFree86: xc/lib/PEX5/jump_vars,v 3.0 1994/04/28 12:30:33 dawes Exp $
 #
 00000004 D _PEXDisplayInfoHeader libPEX5        pl_startup

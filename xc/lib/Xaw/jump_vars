@@ -1,3 +1,4 @@
+# $XConsortium: $
 # $XFree86: xc/lib/Xaw/jump_vars,v 3.0 1994/04/28 12:31:54 dawes Exp $
 #
 00001400 D _XawWidgetArray      libXaw         AllWidgets

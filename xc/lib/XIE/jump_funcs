@@ -1,3 +1,4 @@
+# $XConsortium: $
 # $XFree86: xc/lib/XIE/jump_funcs,v 3.0 1994/04/28 12:31:33 dawes Exp $
 00000000 T _XieAbort            libXIE         abort
 00000000 T _XieAwait            libXIE         await

@@ -1,3 +1,4 @@
+# $XConsortium: $
 # $XFree86: xc/lib/Xt/jump_vars,v 3.1 1994/05/04 14:56:48 dawes Exp $
 #
 00000100 D _compositeClassRec   libXt          Composite

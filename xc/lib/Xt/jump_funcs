@@ -1,3 +1,4 @@
+# $XConsortium: $
 # $XFree86: xc/lib/Xt/jump_funcs,v 3.1 1994/05/04 14:56:46 dawes Exp $
 #
 00000000 T _XtAppAddActionHook  libXt          ActionHook
