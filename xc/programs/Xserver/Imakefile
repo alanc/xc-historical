@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.171 94/01/21 22:07:48 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.172 94/02/04 19:33:34 dpw Exp $
 /*
  * Server Master Makefile
  */
@@ -191,7 +191,7 @@ XCOMM
 MFBDIR = mfb
 DDXDIR1 = hw/sun
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
-SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInitExtMono.o
+SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o
 SUNMLIBS = hw/sun/libsun.a MFBBareLibs $(OTHEREXTS)
 ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
