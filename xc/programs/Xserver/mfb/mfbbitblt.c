@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.46 88/07/21 13:18:01 xguest Locked $ */
+/* $Header: mfbbitblt.c,v 1.45 88/02/02 18:05:19 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -254,7 +254,7 @@ DDXPointPtr pptSrc;
     register unsigned int *pdst;/* pointer to current dst longword */
 
 				/* following used for looping through a line */
-    unsigned int startmask, endmask;	/* masks for writing ends of dst */
+    int startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
     register int nl;		/* temp copy of nlMiddle */
     register unsigned int tmpSrc;
