@@ -1,4 +1,4 @@
-/* $XConsortium: XStNColor.c,v 11.16 91/02/07 17:35:37 dave Exp $ */
+/* $XConsortium: XStNColor.c,v 11.17 91/02/12 16:12:01 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -36,11 +36,9 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     unsigned int nbytes;
     register xStoreNamedColorReq *req;
     XcmsCCC *pCCC;
-    XcmsColor cmsColor_scr;
     XcmsColor cmsColor_exact;
     XColor scr_def;
     char tmpName[BUFSIZ];
-    XcmsSpecFmt result_format;
 
     /*
      * Let's Attempt to use TekCMS approach to Parse Color
