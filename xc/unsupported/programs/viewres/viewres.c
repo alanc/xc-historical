@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.22 90/02/06 15:00:02 jim Exp $
+ * $XConsortium: viewres.c,v 1.23 90/02/06 15:34:40 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,6 +37,7 @@
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Toggle.h>
+#include <X11/Xaw/Text.h>
 #include "Tree.h"
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
@@ -375,8 +376,16 @@ main (argc, argv)
 
     topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
 
+    /*
+     * create dummy widgets to initialize resources
+     */
     XtSetArg (args[0], XtNwidth, 1);
     XtSetArg (args[1], XtNheight, 1);
+    /*
+     * whack a text first so that asciiSrc gets its converters installed
+     */
+    dummy = XtCreateWidget ("dummy", textWidgetClass, toplevel, args, TWO);
+    XtDestroyWidget (dummy);
     dummy = XtCreateWidget ("dummy", widgetClass, toplevel, args, TWO);
     for (i = 0; i < nwidgets; i++) {
 	WidgetNode *node = &widget_list[i];
