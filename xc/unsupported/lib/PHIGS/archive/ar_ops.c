@@ -1,4 +1,4 @@
-/* $XConsortium: ar_ops.c,v 5.1 91/02/16 09:47:32 rws Exp $ */
+/* $XConsortium: ar_ops.c,v 5.2 91/02/18 20:48:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,7 +32,7 @@ SOFTWARE.
 #include "ar.h"
 #ifdef SYSV
 #include <fcntl.h>
-#endif SYSV
+#endif /* SYSV */
 
 /* parameters for LSEEK */
 #ifndef L_SET
@@ -455,13 +455,13 @@ Ar_handle     arh;
 	lseek(fd, 0, L_XTND);	            /* ...goto the end of the file */
     }
        
-#else !UTEKV
+#else /* !UTEKV */
 
     /* This is the way it should be !! */
     if (ftruncate(fd, (long)nbytes)) 
 	return(1);
     
-#endif UTEKV
+#endif /* UTEKV */
 
     return(0);
 }
