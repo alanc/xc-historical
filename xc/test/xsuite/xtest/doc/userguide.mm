@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.4 92/07/03 15:47:12 gildea Exp $
+.\" $XConsortium: userguide.mm,v 1.5 92/07/03 17:35:31 rws Exp $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header
@@ -775,7 +775,7 @@ ii) different access control mechanisms.
 .br
 Refer to your Xlib documentation for further details.
 .cS
-Eg. XP_OPEN_DIS=XOpenDis4.c
+Eg. XP_OPEN_DIS=XlibOpaque.c
 .cE
 .LE
 .H 3 "Pixel validation section"
