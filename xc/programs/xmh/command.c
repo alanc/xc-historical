@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.17 88/09/06 17:23:12 jim Exp $";
+static char rcs_id[] = "$XConsortium: command.c,v 2.18 89/02/02 13:04:35 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,7 +29,7 @@ static char rcs_id[] = "$XConsortium: command.c,v 2.17 88/09/06 17:23:12 jim Exp
 /* command.c -- interface to exec mh commands. */
 
 #include "xmh.h"
-#include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <sys/signal.h>
 #ifndef SYSV
 #include <sys/wait.h>
@@ -54,6 +54,30 @@ static char rcs_id[] = "$XConsortium: command.c,v 2.17 88/09/06 17:23:12 jim Exp
 #define FD_ZERO(p)      bzero((char *)(p), sizeof(*(p)))
 #endif FD_SET
 
+
+typedef struct _CommandStatus {
+    Widget	popup;		 /* must be first; see PopupStatus */
+    struct _LastInput lastInput; /* must be second; ditto */
+    int		child_pid;
+    XtInputId	error_inputId;
+    int		error_pipe[2];
+    char*	error_output;
+    int		buf_size;
+} CommandStatusRec, *CommandStatus;
+
+typedef char* Pointer;
+static void FreeStatus();
+
+static void SystemError(text)
+    char* text;
+{
+    extern int sys_nerr;
+    extern char* sys_errlist[];
+    char msg[BUFSIZ];
+    sprintf( msg, "%s; errno = %d %s", text, errno, 
+	     (errno < sys_nerr) ? sys_errlist[errno] : NULL );
+    XtWarning( msg );
+}
 
 
 /* Return the full path name of the given mh command. */
@@ -85,9 +109,10 @@ DoCommand(argv, inputfile, outputfile)
   char *outputfile;		/* Output file for command. */
 {
     int old_stdin, old_stdout, old_stderr;
-    FILEPTR fin, fout, ferr;
+    FILEPTR fin, fout, fnull = NULL;
     int pid;
     fd_set readfds, fds;
+    CommandStatus status = XtNew(CommandStatusRec);
     FD_ZERO(&fds);
     FD_SET(ConnectionNumber(theDisplay), &fds);
     DEBUG1("Executing %s ...", argv[0])
@@ -99,66 +124,154 @@ DoCommand(argv, inputfile, outputfile)
 	myfclose(fin);
     }
 
+    old_stdout = dup(fileno(stdout));
     if (outputfile) {
-        old_stdout = dup(fileno(stdout));
 	fout = FOpenAndCheck(outputfile, "w");
 	(void) dup2(fileno(fout), fileno(stdout));
 	myfclose(fout);
     }
+    else if (!app_resources.debug) { /* Throw away stdout. */
+	fnull = FOpenAndCheck("/dev/null", "w");
+	(void) dup2(fileno(fnull), fileno(stdout));
+	myfclose(fnull);
+    }
 
-    if (!app_resources.debug) {		/* Throw away error messages. */
-        old_stderr = dup(fileno(stderr));
-	ferr = FOpenAndCheck("/dev/null", "w");
-	(void) dup2(fileno(ferr), fileno(stderr));
-	if (!outputfile) {
-	    old_stdout = dup(fileno(stdout));
-	    (void) dup2(fileno(ferr), fileno(stdout));
-	}
-	myfclose(ferr);
+    if (pipe(status->error_pipe) /*failed*/) {
+	SystemError( "couldn't re-direct standard error" );
+	status->error_pipe[0]=0;
+    }
+    else {
+	old_stderr = dup(fileno(stderr));
+	(void) dup2(status->error_pipe[1], fileno(stderr));
+	FD_SET(status->error_pipe[0], &fds);
+#ifdef notdef
+	status->error_inputId =
+	    XtAddInput( err_pipe[0], (caddr_t)XtInputReadMask,
+		        ReadStderr, (caddr_t)status
+		       );
+#endif /*notdef*/
+	fcntl(status->error_pipe[0], F_SETFL, FNDELAY);
     }
 
     childdone = FALSE;
+    status->popup = (Widget)NULL;
+    status->lastInput = lastInput;
+    status->error_output = NULL;
+    status->buf_size = 0;
     (void) signal(SIGCHLD, ChildDone);
     pid = vfork();
     if (inputfile) {
 	if (pid != 0) dup2(old_stdin,  fileno(stdin));
 	close(old_stdin);
     }
-    if (outputfile) {
+    if (outputfile || !app_resources.debug) {
 	if (pid != 0) dup2(old_stdout, fileno(stdout));
 	close(old_stdout);
     }
-    if (!app_resources.debug) {
+    if (status->error_pipe[0]) {
 	if (pid != 0) dup2(old_stderr, fileno(stderr));
 	close(old_stderr);
-	if (!outputfile) {
-	    if (pid != 0) dup2(old_stdout, fileno(stdout));
-	    close(old_stdout);
-	}
     }
+
     if (pid == -1) Punt("Couldn't fork!");
     if (pid) {			/* We're the parent process. */
+	int num_fds = (ConnectionNumber(theDisplay) < status->error_pipe[0])
+	    ? status->error_pipe[0]+1 : ConnectionNumber(theDisplay)+1;
+	status->child_pid = pid;
 	while (!childdone) {
 	    XEvent event;
 	    while (XCheckTypedEvent( theDisplay, Expose, &event )) {
 		XtDispatchEvent( &event );
 	    }
 	    readfds = fds;
-	    (void) select(ConnectionNumber(theDisplay)+1, (int *) &readfds,
+	    (void) select(num_fds, (int *) &readfds,
 			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
+	    if (FD_ISSET(status->error_pipe[0], &readfds)) {
+		CheckReadFromPipe( status->error_pipe[0],
+				   &status->error_output,
+				   &status->buf_size
+				  );
+	    }
 	}
+	CheckReadFromPipe( status->error_pipe[0],
+			   &status->error_output,
+			   &status->buf_size
+			  );
+#ifdef notdef
 #ifdef SYSV
 	(void) wait((int *) NULL);
 #else /* !SYSV */
 	(void) wait((union wait *) NULL);
 #endif /* !SYSV */
+#endif /*notdef*/
 
 	DEBUG(" done\n")
+	if (status->error_output != NULL) {
+	    while (status->error_output[status->buf_size-1]  == '\0')
+		status->buf_size--;
+	    while (status->error_output[status->buf_size-1]  == '\n')
+		status->error_output[--status->buf_size] = '\0';
+	    DEBUG1( "stderr = \"%s\"\n", status->error_output );
+	    PopupNotice( status->error_output, FreeStatus, (Pointer)status );
+	}
+	else {
+	    FreeStatus( (Widget)NULL, (Pointer)status, (Pointer)NULL );
+	}
     } else {			/* We're the child process. */
 	(void) execv(FullPathOfCommand(argv[0]), argv);
 	(void) execvp(argv[0], argv);
 	Punt("Execvp failed!");
     }
+}
+
+
+static /*void*/
+CheckReadFromPipe( fd, bufP, lenP )
+    int fd;
+    char **bufP;
+    int *lenP;
+{
+    long nread;
+    if (ioctl( fd, FIONREAD, &nread ) /*failed*/) {
+	SystemError( "couldn't inquire bytes in pipe" );
+    }
+    else if (nread) {
+	char buf[BUFSIZ];
+	int old_end = *lenP;
+	*bufP = XtRealloc( *bufP, (*lenP += nread) + 1 );
+	while (nread > BUFSIZ) {
+	    read( fd, buf, BUFSIZ );
+	    bcopy( buf, *bufP+old_end, BUFSIZ );
+	    nread -= BUFSIZ;
+	    old_end += BUFSIZ;
+	}
+	read( fd, buf, nread );
+	bcopy( buf, *bufP+old_end, nread );
+	(*bufP)[old_end+nread] = '\0';
+    }
+}
+
+
+/* ARGSUSED */
+static void FreeStatus( w, closure, call_data )
+    Widget w;			/* unused */
+    Pointer closure;
+    Pointer call_data;		/* unused */
+{
+    CommandStatus status = (CommandStatus)closure;
+    if (status->popup != (Widget)NULL) {
+	XtPopdown( status->popup );
+	XtDestroyWidget( status->popup );
+    }
+#ifdef notdef
+    XtRemoveInput( status->error_inputId );
+#endif /*notdef*/
+    if (status->error_pipe[0]) {
+	close( status->error_pipe[0] );
+	close( status->error_pipe[1] );
+    }
+    if (status->error_output != NULL) XtFree(status->error_output);
+    XtFree( closure );
 }
 
 
