@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFontInfo.c,v 11.8 87/09/11 08:08:46 newman Locked $ */
+/* $Header: XFontInfo.c,v 11.9 87/10/29 23:59:11 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -76,7 +76,7 @@ XFontStruct **info;
 	    fs->properties = NULL;
 	flist[i] = (char *) Xmalloc ((unsigned int) (reply.nameLength + 1));
 	flist[i][reply.nameLength] = '\0';
-	_XReadPad (dpy, flist[i], reply.nameLength);
+	_XReadPad (dpy, flist[i], (long) reply.nameLength);
     }
     *info = finfo;
     *actualCount = i;
