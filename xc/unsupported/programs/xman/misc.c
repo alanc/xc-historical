@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.17 89/10/04 14:55:12 kit Exp $
+ * $XConsortium: misc.c,v 1.18 89/12/06 19:58:37 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -413,7 +413,6 @@ Cursor cursor;
   Arg args[10];
   Cardinal num_args = 0;
   Colormap c_map;
-  Pixel bg;
   
   if (!XtIsRealized(w)) {
     PrintWarning(NULL, "Widget is not realized, no cursor added.\n");
