@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: colorlst.c,v 1.1 93/07/19 10:09:42 rws Exp $ */
 /**** colorlst.c ****/
 /****************************************************************************
 				NOTICE
@@ -204,7 +204,7 @@ int ProcQueryColorList(client)
     swapl(&rep.colormap,n);
     swapl(&rep.length,n);
   }
-  WriteToClient(client, sz_xieQueryColorListReply, &rep);
+  WriteToClient(client, sz_xieQueryColorListReply, (char *)&rep);
   
   if( clst->cellCnt )
     /*
@@ -216,7 +216,7 @@ int ProcQueryColorList(client)
     if( client->swapped )
       CopySwap32Write(client, clst->cellCnt, clst->cellPtr);
     else
-      WriteToClient(client, clst->cellCnt, clst->cellPtr);
+      WriteToClient(client, clst->cellCnt, (char *)clst->cellPtr);
   
   return(Success);
 }                               /* end ProcQueryColorList */

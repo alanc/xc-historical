@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: event.c,v 1.1 93/07/19 10:10:01 rws Exp $ */
 /**** module event.c ****/
 /****************************************************************************
 				NOTICE
@@ -149,7 +149,7 @@ void SendFloEvent(flo)
   evn.event += extEntry->eventBase;
   
   if( status == Success )
-    WriteToClient(flo->client, sz_xieFloEvn, &evn);
+    WriteToClient(flo->client, sz_xieFloEvn, (char *)&evn);
   
 }                               /* end SendFloEvent */
 

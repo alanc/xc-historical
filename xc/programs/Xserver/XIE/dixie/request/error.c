@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: error.c,v 1.1 93/07/19 10:09:55 rws Exp $ */
 /**** module error.c ****/
 /****************************************************************************
 				NOTICE
@@ -122,7 +122,7 @@ int SendResourceError(client, code, id)
     swaps(&err.sequenceNum,n);
     swapl(&err.resourceID,n);
   }
-  WriteToClient(client, sz_xieResourceErr, &err);
+  WriteToClient(client, sz_xieResourceErr, (char *)&err);
   
   return(Success);
 }                               /* end SendResourceError */
@@ -153,7 +153,7 @@ int SendFloIDError(client, spaceID, floID)
     swapl(&err.nameSpace, n);
     swapl(&err.floID, n);
   }
-  WriteToClient(client, sz_xieFloErr, &err);
+  WriteToClient(client, sz_xieFloErr, (char *)&err);
   
   return(Success);
 }                               /* end SendFloIDError */
@@ -235,7 +235,7 @@ int SendFloError(client, flo)
   }
   
   if( status == Success )
-    WriteToClient(client, sz_xieFloErr, &err);
+    WriteToClient(client, sz_xieFloErr, (char *)&err);
   
   return(status);
 }                               /* end SendFloError */

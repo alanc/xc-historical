@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: photomap.c,v 1.1 93/07/19 10:10:27 rws Exp $ */
 /**** module photomap.c ****/
 /****************************************************************************
 				NOTICE
@@ -209,7 +209,7 @@ int ProcQueryPhotomap(client)
       }
     }
   }
-  WriteToClient(client, sz_xieQueryPhotomapReply, &rep);
+  WriteToClient(client, sz_xieQueryPhotomapReply, (char *)&rep);
   
   return(Success);
 }                               /* end ProcQueryPhotomap */
