@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.20 91/05/27 12:48:37 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.21 91/05/29 15:26:43 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -86,6 +86,7 @@ static unsigned char *font_path_string;
 static int  num_slept_fpes = 0;
 static int  size_slept_fpes = 0;
 static FontPathElementPtr *slept_fpes = (FontPathElementPtr *) 0;
+static FontPatternCachePtr  patternCache;
 
 int
 FontToXError(err)
@@ -288,6 +289,9 @@ doOpenFont(client, c)
 	UseFPE(pfont->fpe);
     }
     pfont->refcnt++;
+    if (patternCache)
+	CacheFontPattern (patternCache, c->origFontName,
+			  c->origFontNameLen, pfont);
 dropout:
     if (err != Successful && c->client != serverClient) {
 	SendErrorToClient(c->client, X_OpenFont, 0,
@@ -314,10 +318,25 @@ OpenFont(client, fid, flags, lenfname, pfontname)
 {
     OFclosurePtr c;
     int         i;
+    FontPtr	cached;
 
+    
+    if (patternCache)
+    {
+    	cached = FindCachedFontPattern (patternCache, pfontname, lenfname);
+    	if (cached)
+    	{
+	    if (!AddResource(fid, RT_FONT, (pointer) cached))
+	    	return BadAlloc;
+	    cached->refcnt++;
+	    return Success;
+    	}
+    }
     c = (OFclosurePtr) xalloc(sizeof(OFclosureRec));
     if (!c)
 	return BadAlloc;
+    c->origFontName = pfontname;
+    c->origFontNameLen = lenfname;
     c->fontname = (char *) xalloc(lenfname);
     if (!c->fontname) {
 	xfree(c);
@@ -367,6 +386,8 @@ CloseFont(pfont, fid)
     if (pfont == NullFont)
 	return (Success);
     if (--pfont->refcnt == 0) {
+	if (patternCache)
+	    RemoveCachedFontPattern (patternCache, pfont);
 	/*
 	 * since the last reference is gone, ask each screen to free any
 	 * storage it may have allocated locally for it.
@@ -938,6 +959,8 @@ SetFontPathElements(npaths, paths, bad)
 	    }
 	}
     }
+    if (patternCache)
+	EmptyFontPatternCache (patternCache);
     FreeFontPath(font_path_elements, num_fpes);
     font_path_elements = fplist;
     num_fpes = npaths;
@@ -1094,6 +1117,9 @@ FreeFPE(fpe)
 
 InitFonts ()
 {
+    if (patternCache)
+	FreeFontPatternCache (patternCache);
+    patternCache = MakeFontPatternCache ();
     ResetFontPrivateIndex ();
     FontFileRegisterFpeFunctions ();
 /*    SpeedoRegisterFpeFunctions (); */
@@ -1203,6 +1229,11 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 
 FreeFonts()
 {
+    if (patternCache)
+    {
+	FreeFontPatternCache (patternCache);
+	patternCache = 0;
+    }
     xfree(fpe_functions);
     num_fpe_types = 0;
     fpe_functions = (FPEFunctions *) 0;
