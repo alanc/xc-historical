@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.9 90/12/09 16:45:30 rws Exp $ */
+/* $XConsortium: Context.c,v 1.10 90/12/12 09:16:33 rws Exp $ */
 /* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
@@ -35,8 +35,8 @@ SOFTWARE.
    XFindContext(a,b,c,&d) will set d to be the value in position (a,b,c).
    XDeleteContext(a,b,c) will delete the entry in (a,b,c).
 
-   a is a display id, b is a window id, and c is a Context.  d is just a
-   caddr_t.  This code will work with any range of parameters, but is geared
+   a is a display id, b is a window id, and c is a Context.  d is just an
+   XPointer.  This code will work with any range of parameters, but is geared
    to be most efficient with very few (one or two) different a's.
 
 */
@@ -49,11 +49,7 @@ SOFTWARE.
 typedef struct _TableEntryRec {	/* Stores one entry. */
     Window 			window;
     XContext			context;
-#if NeedFunctionPrototypes
-    _Xconst void		*data;
-#else
-    caddr_t			data;
-#endif
+    XPointer			data;
     struct _TableEntryRec	*next;
 } TableEntryRec, *TableEntry;
 
@@ -135,13 +131,13 @@ int XSaveContext(
     Display *display,
     register Window window,
     register XContext context,
-    _Xconst void* data)
+    _Xconst char* data)
 #else
 int XSaveContext(display, window, context, data)
     Display *display;
     register Window window;
     register XContext context;
-    caddr_t data;
+    XPointer data;
 #endif
 {
     DB *pdb;
@@ -174,7 +170,7 @@ int XSaveContext(display, window, context, data)
     head = &Hash(db, window, context);
     for (entry = *head; entry; entry = entry->next) {
 	if (entry->window == window && entry->context == context) {
-	    entry->data = data;
+	    entry->data = (XPointer)data;
 	    return 0;
 	}
     }
@@ -183,7 +179,7 @@ int XSaveContext(display, window, context, data)
 	return XCNOMEM;
     entry->window = window;
     entry->context = context;
-    entry->data = data;
+    entry->data = (XPointer)data;
     entry->next = *head;
     *head = entry;
     db->numentries++;
@@ -203,7 +199,7 @@ int XFindContext(display, window, context, data)
     Display *display;
     register Window window;
     register XContext context;
-    caddr_t *data;		/* RETURN */
+    XPointer *data;		/* RETURN */
 {
     register DB db;
     register TableEntry entry;
@@ -217,7 +213,7 @@ int XFindContext(display, window, context, data)
     for (entry = Hash(db, window, context); entry; entry = entry->next)
     {
 	if (entry->window == window && entry->context == context) {
-	    *data = (caddr_t)entry->data;
+	    *data = (XPointer)entry->data;
 	    return 0;
 	}
     }
