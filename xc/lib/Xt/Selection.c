@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.72 91/07/23 12:20:29 rws Exp $ */
+/* $XConsortium: Selection.c,v 1.74 92/11/13 17:34:44 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -688,7 +688,8 @@ Boolean *cont;
       case SelectionClear:
 	/* if this event is not for the selection we registered for,
 	 * don't do anything */
-	if (ctx->selection != event->xselectionclear.selection)
+	if (ctx->selection != event->xselectionclear.selection ||
+	    ctx->serial > event->xselectionclear.serial)
 	    break;
 	(void) LoseSelection(ctx, widget, event->xselectionclear.selection,
 			event->xselectionclear.time);
@@ -774,7 +775,6 @@ Boolean incremental;
 {
     Select ctx;
     Select oldctx = NULL;
-    Window window;
 
     if (!XtIsRealized(widget)) return False;
 
@@ -783,7 +783,8 @@ Boolean incremental;
 	ctx->ref_count || ctx->was_disowned)
     {
 	Boolean replacement = FALSE;
-	window = XtWindow(widget);
+	Window window = XtWindow(widget);
+	unsigned long serial = XNextRequest(ctx->dpy);
         XSetSelectionOwner(ctx->dpy, selection, window, time);
         if (XGetSelectionOwner(ctx->dpy, selection) != window)
 	    return FALSE;
@@ -831,6 +832,7 @@ Boolean incremental;
 	}
 	ctx->widget = widget;	/* Selection offically changes hands. */
 	ctx->time = time;
+	ctx->serial = serial;
     }
     ctx->convert = convert;
     ctx->loses = lose;

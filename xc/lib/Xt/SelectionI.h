@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.31 91/05/02 20:24:14 converse Exp $ */
+/* $XConsortium: SelectionI.h,v 1.33 92/11/13 17:29:56 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -71,6 +71,7 @@ typedef struct _SelectRec {
     Display *dpy; 			/* constant */
     Widget widget;
     Time time;
+    unsigned long serial;
     XtConvertSelectionProc convert;
     XtLoseSelectionProc loses;
     XtSelectionDoneProc notify;
