@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.0 89/10/20 13:15:38 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.0 89/10/20 15:04:02 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -30,10 +30,11 @@ without any express or implied warranty.
 extern void miPolyFillArc();
 
 static void
-mfbFillEllipseSolid(pDraw, pGC, arc)
+mfbFillEllipseSolid(pDraw, pGC, arc, rop)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
+    int rop;
 {
     int iscircle;
     int x, y, e, ex;
@@ -44,14 +45,9 @@ mfbFillEllipseSolid(pDraw, pGC, arc)
     register int *addrl;
     register int n;
     int nlwidth;
-    register int fill, xpos, rop;
+    register int fill, xpos;
     int startmask, endmask, nlmiddle;
 
-    rop = ((mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr)->rop;
-    if (!arc->width || !arc->height ||
-	((arc->width == 1) && (arc->height & 1)) ||
-	(rop == RROP_NOP) || !(pGC->planemask & 1))
-	return;
     if (pDraw->type == DRAWABLE_WINDOW)
     {
 	addrlt = (int *)
@@ -165,14 +161,22 @@ mfbPolyFillArcSolid(pDraw, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
+    mfbPrivGC *priv;
     register xArc *arc;
     register int i;
     BoxRec box;
     RegionPtr cclip;
+    int rop;
 
-    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
+    rop = priv->rop;
+    if ((rop == RROP_NOP) || !(pGC->planemask & 1))
+	return;
+    cclip = priv->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
+	if (miFillArcEmpty(arc))
+	    continue;
 	if (((arc->angle2 >= FULLCIRCLE) || (arc->angle2 <= -FULLCIRCLE)) &&
 	    miCanFillArc(arc))
 	{
@@ -182,7 +186,7 @@ mfbPolyFillArcSolid(pDraw, pGC, narcs, parcs)
 	    box.y2 = box.y1 + (int)arc->height + 1;
 	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
 	    {
-		mfbFillEllipseSolid(pDraw, pGC, arc);
+		mfbFillEllipseSolid(pDraw, pGC, arc, rop);
 		continue;
 	    }
 	}

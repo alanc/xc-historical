@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.0 89/10/20 09:20:07 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.0 89/10/20 13:15:38 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -47,9 +47,6 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
     register int fill, xpos;
     int startmask, endmask, nlmiddle;
 
-    if (!arc->width || !arc->height ||
-	((arc->width == 1) && (arc->height & 1)))
-	return;
     if (pDraw->type == DRAWABLE_WINDOW)
     {
 	addrlt = (int *)
@@ -138,6 +135,8 @@ cfbPolyFillArcSolidCopy(pDraw, pGC, narcs, parcs)
     cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
+	if (miFillArcEmpty(arc))
+	    continue;
 	if (((arc->angle2 >= FULLCIRCLE) || (arc->angle2 <= -FULLCIRCLE)) &&
 	    miCanFillArc(arc))
 	{
