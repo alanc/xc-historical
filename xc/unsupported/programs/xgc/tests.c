@@ -6,7 +6,7 @@
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/AsciiText.h>
-#include "xbench.h"
+#include "xgc.h"
 #include "math.h"
 #include "stdio.h"
 #include <sys/types.h>
@@ -288,7 +288,7 @@ void genericarc_test(fill)
      Boolean fill;
 {
   XArc *arcs;
-  int num_arcs = 400;
+  int num_arcs = 100;
   int i;
   long totaltime;
   char buf[80];
@@ -333,7 +333,7 @@ void polyfillarc_test()
 void polytext8_test()
 {
   int num_strings = 200;
-  static char string[] = "Fill my box with ten dozen liquor jugs";
+  static char string[] = "pack my box with five dozen liquor jugs";
   int i;
   long totaltime;
   char buf[80];
