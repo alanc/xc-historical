@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.77 89/12/12 12:01:52 jim Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.78 89/12/15 21:11:55 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -61,20 +61,6 @@ static int gettimeofday (tvp, tzp)
 	    (dest).tv_sec --;(dest).tv_usec += 1000000; } } }
 
 
-#ifdef CRAY
-
-/* apparently gettimeofday() is broken and doesn't clear high-order bits */
-#define TIMEDELTA(dest, src1, src2) { \
-	if(((dest).tv_usec = ((src1).tv_usec & 0xffff) - (src2).tv_usec) < 0) {\
-	      (dest).tv_usec += 1000000;\
-	      (dest).tv_sec = (src1).tv_sec - (src2).tv_sec - 1;\
-	} else 	(dest).tv_sec = (src1).tv_sec - (src2).tv_sec;  }
-
-#define IS_AFTER(t1, t2) (((t2).tv_sec > (t1).tv_sec) \
-	|| (((t2).tv_sec == (t1).tv_sec)&& ((t2).tv_usec > ((t1).tv_usec & 0xffff))))
-
-#else /*!CRAY*/
-
 #define TIMEDELTA(dest, src1, src2) { \
 	if(((dest).tv_usec = (src1).tv_usec - (src2).tv_usec) < 0) {\
 	      (dest).tv_usec += 1000000;\
@@ -83,8 +69,6 @@ static int gettimeofday (tvp, tzp)
 
 #define IS_AFTER(t1, t2) (((t2).tv_sec > (t1).tv_sec) \
 	|| (((t2).tv_sec == (t1).tv_sec)&& ((t2).tv_usec > (t1).tv_usec)))
-
-#endif /*!CRAY*/
 
 static void QueueTimerEvent(app, ptr)
     XtAppContext app;
