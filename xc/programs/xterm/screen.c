@@ -1,5 +1,5 @@
 /*
- *	$Header: screen.c,v 1.3 88/07/12 10:41:21 jim Exp $
+ *	$Header: screen.c,v 1.4 88/07/14 17:55:17 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.3 88/07/12 10:41:21 jim Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.4 88/07/14 17:55:17 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -345,7 +345,7 @@ ScreenResize (screen, width, height, flags)
       and from the right
    4. Cursor is positioned as closely to its former position as possible
    5. Sets screen->max_row and screen->max_col to reflect new size
-   6. Maintains the inner border.
+   6. Maintains the inner border (and clears the border on the screen).
    7. Clears origin mode and sets scrolling region to be entire screen.
    8. Returns 0
  */
@@ -370,6 +370,18 @@ unsigned *flags;
 	struct winsize ws;
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
+	Window tw = TextWindow (screen);
+
+	/* clear the right and bottom internal border because of NorthWest
+	   gravity might have left junk on the right and bottom edges */
+	XClearArea (screen->display, tw,
+		    width - screen->border, 0,                /* right edge */
+		    screen->border, height,           /* from top to bottom */
+		    False);
+	XClearArea (screen->display, tw, 
+		    0, height - screen->border,	                  /* bottom */
+		    width, screen->border,         /* all across the bottom */
+		    False);
 
 	/* round so that it is unlikely the screen will change size on  */
 	/* small mouse movements.					*/
