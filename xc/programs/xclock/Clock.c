@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.69 93/11/01 10:30:27 kaleb Exp $ */
+/* $XConsortium: Clock.c,v 1.70 93/12/26 14:12:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,7 +27,6 @@ SOFTWARE.
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
-#include <X11/Xaw/XawInit.h>
 #include "ClockP.h"
 #include <X11/Xosdefs.h>
 
@@ -154,7 +153,6 @@ WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
 
 static void ClassInitialize()
 {
-    XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
 		    NULL, 0 );
 }
