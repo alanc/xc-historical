@@ -28,6 +28,8 @@ static char rcsid[] = "$Header: Text.c,v 1.9 87/12/23 16:27:24 swick Locked $";
 
 #include <X/Intrinsic.h>
 #include <X/Text.h>
+#include <X/Command.h>
+#include <X/Dialog.h>
 #include <X/Scroll.h>
 #include <X/Atoms.h>
 #include <X/Xutil.h>
@@ -332,6 +334,8 @@ static XtTextPosition PositionForXY (ctx, x, y)
     XtTextPosition position, resultstart, resultend;
 
     /*** figure out what line it is on ***/
+    if (ctx->text.lt.lines == 0) return 0;
+
     for (line = 0; line < ctx->text.lt.lines - 1; line++) {
 	if (y <= ctx->text.lt.info[line + 1].y)
 	    break;
@@ -663,7 +667,7 @@ int ReplaceText (ctx, pos1, pos2, text)
 	    1, TRUE);
     startPos = max(updateFrom, ctx->text.lt.top);
     visible = LineAndXYForPosition(ctx, startPos, &line1, &x, &y);
-    error = (*ctx->text.source->Replace)(ctx->text.source, pos1, pos2, text, &delta);
+    error = (*ctx->text.source->Replace)(ctx->text.source, pos1, pos2, text);
     if (error) return error;
     ctx->text.lastPos = GETLASTPOS;
     if (ctx->text.lt.top >= ctx->text.lastPos) {
@@ -672,6 +676,7 @@ int ReplaceText (ctx, pos1, pos2, text)
 	SetScrollBar(ctx);
 	return error;
     }
+    delta = text->length - (pos2 - pos1);
     if (delta < ctx->text.lastPos) {
 	for (i = 0; i < ctx->text.numranges; i++) {
 	    if (ctx->text.updateFrom[i] > pos1)
@@ -973,7 +978,7 @@ DisplayTextWindow (w)
  * shrunk) or scrolled then text to be painted overflows to the right or
  * the bottom of the window. It is used by the keyboard input routine.
 */
-CheckResizeOrOverflow(ctx)
+static CheckResizeOrOverflow(ctx)
   TextWidget ctx;
 {
     XtTextPosition posToCheck;
@@ -992,7 +997,7 @@ CheckResizeOrOverflow(ctx)
 	    rbox.width = width;
 	    reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
 	    if (reply == XtGeometryAlmost)
-	        reply = XtMakeGeometryRequest(ctx, &rbox, NULL);
+	        reply = XtMakeGeometryRequest((Widget)ctx, &rbox, NULL);
 	    if (reply == XtGeometryYes)
 	        ctx->core.width = rbox.width;
 	}
@@ -1021,7 +1026,7 @@ CheckResizeOrOverflow(ctx)
 				(ctx, line + 1) + (2*yMargin)+2;
 		reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
 		if (reply == XtGeometryAlmost)
-		    reply = XtMakeGeometryRequest(ctx, &rbox, NULL);
+		    reply = XtMakeGeometryRequest((Widget)ctx, &rbox, NULL);
 		if (reply == XtGeometryYes)
 		    ctx->core.height = rbox.height;
 	    }
@@ -1244,10 +1249,13 @@ TextWidget ctx;
 }
 
 
+/* by the time we are managed (and get this far),
+ * we had better have both a source and a sink */
 static void Resize(w)
     Widget          w;
 {
     TextWidget ctx = (TextWidget) w;
+
     _XtTextPrepareToUpdate(ctx);
     ForceBuildLineTable(ctx);
     _XtTextExecuteUpdate(ctx);
@@ -1377,6 +1385,7 @@ void XtTextSetSource(w, source, startPos)
 	ctx->text.s.left = ctx->text.s.right = 0;
 	ctx->text.insertPos = startPos;
 	ctx->text.lastPos = GETLASTPOS;
+
 	ForceBuildLineTable(ctx);
 	_XtTextPrepareToUpdate(ctx);
 	DisplayTextWindow(w);
@@ -1518,11 +1527,13 @@ static StartAction(ctx, event)
    XEvent *event;
 {
     _XtTextPrepareToUpdate(ctx);
-    if (event->type == ButtonPress) TextAcceptFocus((Widget)ctx);
-/* this code is wrong if actions bound to non-button events! */
-    ctx->text.time = event->xbutton.time;
-    ctx->text.ev_x = event->xbutton.x;
-    ctx->text.ev_y = event->xbutton.y;
+    if (event) {
+	if (event->type == ButtonPress) TextAcceptFocus((Widget)ctx);
+    /* this code is wrong if actions bound to non-button events! */
+	ctx->text.time = event->xbutton.time;
+	ctx->text.ev_x = event->xbutton.x;
+	ctx->text.ev_y = event->xbutton.y;
+    }
 }
 
 static EndAction(ctx)
@@ -2163,7 +2174,7 @@ static void RedrawDisplay(ctx, event)
 }
 
 
-_XtTextAbortDialog(ctx, event)
+void _XtTextAbortDialog(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2210,8 +2221,9 @@ static void DoInsert(ctx)
 {
     if (InsertFileNamed(ctx, XtDialogGetValueString(ctx->text.dialog)))
 	XBell(XtDisplay(ctx), 50);
-    else
-	_XtTextAbortDialog(ctx);
+    else {
+	_XtTextAbortDialog(ctx, (XEvent*)NULL);
+    }
 }
 
 static void TextFocusIn (ctx, event)
@@ -2260,8 +2272,8 @@ static void InsertFile(ctx, event)
     char *ptr;
     XtTextBlock text;
     register Widget dialog;
-    ArgList args[1];
-    XtCallbackRec callbacks[] = { {NULL, NULL}, {NULL, NULL} };
+    Arg args[1];
+    static XtCallbackRec callbacks[] = { {NULL, NULL}, {NULL, NULL} };
 
    StartAction(ctx, event);
     if ((*ctx->text.source->EditType)(ctx->text.source) != XttextEdit) {
@@ -2271,7 +2283,7 @@ static void InsertFile(ctx, event)
     }
     if (ctx->text.s.left < ctx->text.s.right) {
 	ptr = _XtTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
-	DeleteCurrentSelection(ctx);
+	DeleteCurrentSelection(ctx, (XEvent*)NULL);
 	if (InsertFileNamed(ctx, ptr)) {
 	    XBell( XtDisplay(ctx), 50);
 	    text.ptr = ptr;
@@ -2279,7 +2291,7 @@ static void InsertFile(ctx, event)
 	    (void) ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text);
 	    ctx->text.s.left = ctx->text.insertPos;
 	    ctx->text.s.right = ctx->text.insertPos = 
-		(*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos, 
+	      (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos, 
 		  XtstPositions, XtsdRight, text.length, TRUE);
 	}
 	XtFree(ptr);
@@ -2287,18 +2299,18 @@ static void InsertFile(ctx, event)
 	return;
     }
     if (ctx->text.dialog)
-	_XtTextAbortDialog(ctx);
+	_XtTextAbortDialog(ctx, (XEvent*)NULL);
 
     XtSetArg( args[0], XtNlabel, "Insert File:" );
     dialog = XtCreateWidget( NULL, dialogWidgetClass,
 			     (Widget)ctx, args, (Cardinal)1 );
 
-    callbacks[0].proc = _XtTextAbortDialog;
+    callbacks[0].callback = _XtTextAbortDialog;
     callbacks[0].closure = (caddr_t)ctx;
     XtSetArg( args[0], XtNcallback, callbacks );
     XtCreateManagedWidget("Abort",commandWidgetClass,dialog,args,(Cardinal)1);
 
-    callbacks[0].proc = DoInsert;
+    callbacks[0].callback = DoInsert;
     XtCreateManagedWidget("DoIt",commandWidgetClass,dialog,args,(Cardinal)1);
 
     XtRealizeWidget( dialog );
