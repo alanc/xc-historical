@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.11 89/09/02 15:15:34 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.12 89/09/05 20:12:20 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -112,7 +112,7 @@ static GCOps	whiteTEInvertOps = {
 	mfbLineSS,
 	mfbSegmentSS,
 	miPolyRectangle,
-	mfbZeroPolyArcSS,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -136,7 +136,7 @@ static GCOps	blackTEInvertOps = {
 	mfbLineSS,
 	mfbSegmentSS,
 	miPolyRectangle,
-	mfbZeroPolyArcSS,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -208,7 +208,7 @@ static GCOps	whiteInvertOps = {
 	mfbLineSS,
 	mfbSegmentSS,
 	miPolyRectangle,
-	mfbZeroPolyArcSS,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -232,7 +232,7 @@ static GCOps	blackInvertOps = {
 	mfbLineSS,
 	mfbSegmentSS,
 	miPolyRectangle,
-	mfbZeroPolyArcSS,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -304,7 +304,7 @@ static GCOps	fgEqBgInvertOps = {
 	mfbLineSS,
 	mfbSegmentSS,
 	miPolyRectangle,
-	mfbZeroPolyArcSS,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -538,8 +538,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	the window's clip has changed since the last validation
 	we need to recompute the composite clip
     */
-    if ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask)) ||
-	(changes & GCSubwindowMode) ||
+    if ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode)) ||
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
        )
     {
@@ -863,33 +862,39 @@ mfbValidateGC(pGC, changes, pDrawable)
 
     if (new_line || new_fill)
     {
+	if (pGC->lineWidth == 0)
+	{
+	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid)
+		&& ((rrop == RROP_WHITE) || (rrop == RROP_BLACK)))
+		pGC->ops->PolyArc = mfbZeroPolyArcSS;
+	    else
+		pGC->ops->PolyArc = miZeroPolyArc;
+	}
+	else
+	    pGC->ops->PolyArc = miPolyArc;
 	if (pGC->lineStyle == LineSolid)
 	{
 	    if(pGC->lineWidth == 0)
 	    {
 	        if (pGC->fillStyle == FillSolid)
 		{
-		    pGC->ops->PolyArc = mfbZeroPolyArcSS;
 		    pGC->ops->PolySegment = mfbSegmentSS;
 		    pGC->ops->Polylines = mfbLineSS;
 	        }
  		else
 		{
-		    pGC->ops->PolyArc = miZeroPolyArc;
 		    pGC->ops->PolySegment = miPolySegment;
 		    pGC->ops->Polylines = miZeroLine;
 		}
 	    }
 	    else
 	    {
-		pGC->ops->PolyArc = miPolyArc;
 		pGC->ops->PolySegment = miPolySegment;
 		pGC->ops->Polylines = miWideLine;
 	    }
 	}
 	else
 	{
-	    pGC->ops->PolyArc = miPolyArc;
 	    if(pGC->lineWidth == 0 && pGC->fillStyle == FillSolid)
 	    {
 	        pGC->ops->Polylines = mfbLineSD;
