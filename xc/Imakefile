@@ -23,7 +23,7 @@ depend::
 	done
 
 clean::
-	for i in $(SUBDIRS) $(UTILDIR) ;\
+	for i in $(SUBDIRS) ;\
 	do \
 		(cd $$i ; make $(MFLAGS) clean ); \
 	done
