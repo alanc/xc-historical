@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.127 89/11/17 10:48:08 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.128 89/11/21 15:51:23 swick Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -75,7 +75,7 @@ static Boolean LineAndXYForPosition();
 static XawTextPosition FindGoodPosition(), _BuildLineTable();
 
 void _XawTextAlterSelection(), _XawTextExecuteUpdate();
-void _XawTextBuildLineTable(), _XawTextSetScrollBars();;
+void _XawTextBuildLineTable(), _XawTextSetScrollBars();
 
 /****************************************************************
  *
@@ -181,7 +181,7 @@ XrmValuePtr	toVal;
   }
   done(&editType, XawTextEditType);
   return;
-};
+}
 
 
 /* ARGSUSED */
@@ -217,7 +217,7 @@ XrmValuePtr	toVal;
   }
   done(&scrollMode, XawTextScrollMode);
   return;
-};
+}
 
 /* ARGSUSED */
 static void 
@@ -252,7 +252,7 @@ XrmValuePtr	toVal;
   }
   done(&wrapMode, XawTextWrapMode);
   return;
-};
+}
 
 /* ARGSUSED */
 static void 
@@ -289,7 +289,7 @@ XrmValuePtr	toVal;
   }
   done(&resizeMode, XawTextResizeMode);
   return;
-};
+}
 
 #undef done
 
