@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.15 89/05/18 18:20:07 kit Exp $ */
+/* $XConsortium: FormP.h,v 1.16 89/05/31 09:24:09 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -34,7 +34,7 @@ SOFTWARE.
 #include <X11/Xaw/Form.h>
 #include <X11/ConstrainP.h>
 
-#define XtREdgeType		"EdgeType"
+#define XtREdgeType "EdgeType"
 
 typedef enum {LayoutPending, LayoutInProgress, LayoutDone} LayoutState;
 #define XtInheritLayout ((Boolean (*)())_XtInherit)

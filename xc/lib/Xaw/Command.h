@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.19 89/03/30 16:05:24 jim Exp $
+* $XConsortium: Command.h,v 1.20 89/05/11 01:04:59 kit Exp $
 */
 
 
@@ -67,7 +67,7 @@ SOFTWARE.
 
 */
 
-#define XtNhighlightThickness   "highlightThickness"
+#define XtNhighlightThickness "highlightThickness"
 
 extern WidgetClass     commandWidgetClass;
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Label.h,v 1.22 89/05/11 01:05:32 kit Exp $
+ * $XConsortium: Label.h,v 1.23 89/07/16 14:36:26 jim Exp $
  */
 
 /***********************************************************
@@ -65,16 +65,16 @@ SOFTWARE.
 
 */
 
-#define XtNbitmap		"bitmap"
-#define XtNforeground		"foreground"
-#define XtNlabel		"label"
-#define XtNfont			"font"
-#define XtNinternalWidth	"internalWidth"
-#define XtNinternalHeight	"internalHeight"
-#define XtNresize		"resize"
-#define XtCResize		"Resize"
+#define XtNbitmap "bitmap"
+#define XtNforeground "foreground"
+#define XtNlabel "label"
+#define XtNfont "font"
+#define XtNinternalWidth "internalWidth"
+#define XtNinternalHeight "internalHeight"
+#define XtNresize "resize"
+#define XtCResize "Resize"
  
-#define XtCBitmap		"Bitmap"
+#define XtCBitmap "Bitmap"
 
 /* Class record constants */
 

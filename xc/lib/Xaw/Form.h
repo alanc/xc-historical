@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.20 89/05/11 14:20:19 kit Exp $ */
+/* $XConsortium: Form.h,v 1.21 89/06/19 11:26:40 jim Exp $ */
 
 
 /***********************************************************
@@ -72,21 +72,21 @@ SOFTWARE.
 
 
 
-#define XtNdefaultDistance	"defaultDistance"
-#define XtNtop			"top"
-#define XtNbottom		"bottom"
-#define XtNleft			"left"
-#define XtNright		"right"
-#define XtNfromHoriz		"fromHoriz"
-#define XtNfromVert		"fromVert"
-#define XtNhorizDistance	"horizDistance"
-#define XtNvertDistance		"vertDistance"
-#define XtNresizable		"resizable"
+#define XtNdefaultDistance "defaultDistance"
+#define XtNtop "top"
+#define XtNbottom "bottom"
+#define XtNleft "left"
+#define XtNright "right"
+#define XtNfromHoriz "fromHoriz"
+#define XtNfromVert "fromVert"
+#define XtNhorizDistance "horizDistance"
+#define XtNvertDistance "vertDistance"
+#define XtNresizable "resizable"
 
-#define XtCEdge			"Edge"
-#define XtCWidget		"Widget"
+#define XtCEdge "Edge"
+#define XtCWidget "Widget"
 
-#define XtRWidget		"Widget"
+#define XtRWidget "Widget"
 
 #ifndef _XawEdgeType_e
 #define _XawEdgeType_e

@@ -1,5 +1,5 @@
 /*
- *      $XConsortium: List.h,v 1.12 89/05/11 01:05:41 kit Exp $
+ *      $XConsortium: List.h,v 1.13 89/05/11 14:20:22 kit Exp $
  */
 
 /***********************************************************
@@ -116,22 +116,22 @@ SOFTWARE.
 
 #define XAW_LIST_NONE -1	
 
-#define XtCList                 "List"
-#define XtCSpacing              "Spacing"
-#define XtCColumns              "Columns"
-#define XtCLongest              "Longest"
-#define XtCNumberStrings        "NumberStrings"
+#define XtCList "List"
+#define XtCSpacing "Spacing"
+#define XtCColumns "Columns"
+#define XtCLongest "Longest"
+#define XtCNumberStrings "NumberStrings"
 
-#define XtNcursor               "cursor"
-#define XtNcolumnSpacing        "columnSpacing"
-#define XtNdefaultColumns       "defaultColumns"
-#define XtNforceColumns         "forceColumns"
-#define XtNlist                 "list"
-#define XtNlongest              "longest"
-#define XtNnumberStrings        "numberStrings"
-#define XtNpasteBuffer          "pasteBuffer"
-#define XtNrowSpacing           "rowSpacing"
-#define XtNverticalList         "verticalList"
+#define XtNcursor "cursor"
+#define XtNcolumnSpacing "columnSpacing"
+#define XtNdefaultColumns "defaultColumns"
+#define XtNforceColumns "forceColumns"
+#define XtNlist "list"
+#define XtNlongest "longest"
+#define XtNnumberStrings "numberStrings"
+#define XtNpasteBuffer "pasteBuffer"
+#define XtNrowSpacing "rowSpacing"
+#define XtNverticalList "verticalList"
  
 /* Class record constants */
 

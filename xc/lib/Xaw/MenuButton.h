@@ -1,5 +1,5 @@
 /*
-* $XConsortium: MButton.h,v 1.4 89/07/06 16:53:01 kit Exp $
+* $XConsortium: MenuButton.h,v 1.5 89/07/12 13:50:11 kit Exp $
 */
 
 /***********************************************************
@@ -80,8 +80,8 @@ SOFTWARE.
 
 */
 
-#define XtNmenuName     "menuName"
-#define XtCMenuName     "MenuName"
+#define XtNmenuName "menuName"
+#define XtCMenuName "MenuName"
 
 extern WidgetClass     menuButtonWidgetClass;
 

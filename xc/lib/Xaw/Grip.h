@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Grip.h,v 1.13 89/03/30 16:05:31 jim Exp $
+* $XConsortium: Grip.h,v 1.14 89/05/11 01:05:25 kit Exp $
 */
 
 
@@ -62,7 +62,7 @@ SOFTWARE.
 
 */
 
-#define XtNgripTranslations	"gripTranslations"
+#define XtNgripTranslations "gripTranslations"
 
 typedef struct {
   XEvent *event;		/* the event causing the GripAction */

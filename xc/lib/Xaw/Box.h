@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Box.h,v 1.16 89/03/30 16:05:13 jim Exp $
+* $XConsortium: Box.h,v 1.17 89/05/11 15:11:36 kit Exp $
 */
 
 
@@ -56,8 +56,8 @@ SOFTWARE.
 
 
 /* New fields */
-#define XtNhSpace		"hSpace"
-#define XtNvSpace		"vSpace"
+#define XtNhSpace "hSpace"
+#define XtNvSpace "vSpace"
 
 /* Class record constants */
 

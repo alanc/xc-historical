@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.17 89/05/11 01:05:55 kit Exp $
+ * $XConsortium: Mailbox.h,v 1.18 89/07/21 01:48:45 kit Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,7 +28,7 @@
 #define XtNupdate "update"
 
 /* command to exec */
-#define XtNcheckCommand "checkCommand"	
+#define XtNcheckCommand "checkCommand"
 #define XtNonceOnly "onceOnly"
 
 /* Int: volume for bell */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.9 89/05/11 01:07:11 kit Exp $
+ * $XConsortium: Viewport.h,v 1.10 89/07/21 01:39:39 kit Exp $
  * Public definitions for Viewport widget
  */
 
@@ -55,15 +55,15 @@ SOFTWARE.
 */
 
 /* fields added to Form */
-#define	XtNforceBars "forceBars"
-#define	XtNallowHoriz "allowHoriz"
-#define	XtNallowVert "allowVert"
-#define	XtNuseBottom "useBottom"
-#define	XtNuseRight "useRight"
+#define XtNforceBars "forceBars"
+#define XtNallowHoriz "allowHoriz"
+#define XtNallowVert "allowVert"
+#define XtNuseBottom "useBottom"
+#define XtNuseRight "useRight"
 
 extern WidgetClass viewportWidgetClass;
 
 typedef struct _ViewportClassRec *ViewportWidgetClass;
-typedef struct _ViewportRec	 *ViewportWidget;
+typedef struct _ViewportRec  *ViewportWidget;
 
 #endif /* _Viewport_h */

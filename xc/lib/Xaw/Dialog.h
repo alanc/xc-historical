@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.15 89/05/11 14:20:16 kit Exp $ */
+/* $XConsortium: Dialog.h,v 1.16 89/05/31 09:03:59 swick Exp $ */
 
 
 /***********************************************************
@@ -57,12 +57,12 @@ SOFTWARE.
 
 */
 
-#define XtNgrabFocus			"grabFocus"
+#define XtNgrabFocus "grabFocus"
 #define XtNicon "icon"
-#define XtNmaximumLength		"maximumLength"
-#define XtCGrabFocus			"GrabFocus"
+#define XtNmaximumLength "maximumLength"
+#define XtCGrabFocus "GrabFocus"
 #define XtCIcon "Icon"
-#define XtCMax				"Max"
+#define XtCMax "Max"
 
 typedef struct _DialogClassRec	*DialogWidgetClass;
 typedef struct _DialogRec	*DialogWidget;
