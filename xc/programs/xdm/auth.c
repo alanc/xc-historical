@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.11 89/09/09 13:01:07 keith Exp $
+ * $XConsortium: auth.c,v 1.12 89/10/03 16:27:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

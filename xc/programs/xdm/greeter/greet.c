@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.13 89/07/22 19:42:48 keith Exp $
+ * $XConsortium: greet.c,v 1.14 89/09/08 14:34:06 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.17 89/09/09 12:59:18 keith Exp $
+ * $XConsortium: dm.h,v 1.18 89/10/09 14:57:22 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

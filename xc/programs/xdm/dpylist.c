@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.12 89/10/09 14:57:32 keith Exp $
+ * $XConsortium: dpylist.c,v 1.13 89/10/31 14:25:47 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
