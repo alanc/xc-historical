@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.39 91/01/24 15:49:40 gildea Exp $
+ * $XConsortium: xrdb.c,v 11.40 91/02/05 19:34:17 rws Exp $
  */
 
 /*
@@ -937,6 +937,8 @@ Process(scrno, doScreen, execute)
     if (execute)
 	FreeEntries(&newDB);
     FreeEntries(&oldDB);
+    if (doScreen && xdefs)
+	XFree(xdefs);
 }
 
 ShuffleEntries(db, dbs, num)
