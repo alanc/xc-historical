@@ -32,7 +32,7 @@
 .ef ''\fB % \fP''
 .of ''\fB % \fP''
 .\" Set the page number for the index properly.
-.pn 37
+.pn 51
 .++ A
 .po 1.0i	\" physical offset
 .ta 5iR		\" right alignment tab
