@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.19 89/09/04 10:03:59 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.20 89/09/04 11:06:45 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -50,6 +50,7 @@ static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static cfbDestroyOps();
 
 extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
+extern RegionPtr cfbCopyPlane ();
 
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
@@ -68,7 +69,7 @@ static GCOps	cfbTEOps = {
     cfbSetSpans,
     cfbPutImage,
     cfbCopyArea,
-    miCopyPlane,
+    cfbCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
@@ -98,7 +99,7 @@ static GCOps	cfbNonTEOps = {
     cfbSetSpans,
     cfbPutImage,
     cfbCopyArea,
-    miCopyPlane,
+    cfbCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
@@ -575,7 +576,8 @@ cfbValidateGC(pGC, changes, pDrawable)
 	case LineSolid:
 	    if(pGC->lineWidth == 0)
 	    {
-		if ((pGC->planemask & PMSK) == PMSK || pGC->alu == GXinvert)
+		if (((pGC->planemask & PMSK) == PMSK || pGC->alu == GXinvert) &&
+		    pGC->fillStyle == FillSolid)
 		{
 		    pGC->ops->Polylines = cfbLineSS;
 		    pGC->ops->PolySegment = cfbSegmentSS;
@@ -588,7 +590,8 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    break;
 	case LineOnOffDash:
 	case LineDoubleDash:
-	    if (pGC->lineWidth == 0 && (pGC->planemask & PMSK) == PMSK)
+	    if (pGC->lineWidth == 0 && (pGC->planemask & PMSK) == PMSK &&
+	        pGC->fillStyle == FillSolid)
 	    {
 		pGC->ops->Polylines = cfbLineSD;
 		pGC->ops->PolySegment = cfbSegmentSD;
