@@ -347,8 +347,13 @@
   (when (buffer-dead buffer)
     (x-error 'closed-display :display buffer))
   (unless (= start end)
-    (wrap-buf-input (buffer)
-      (funcall (buffer-input-function buffer) buffer vector start end timeout))))
+    (let ((result
+	    (wrap-buf-input (buffer)
+	      (funcall (buffer-input-function buffer)
+		       buffer vector start end timeout))))
+      (unless (or (null result) (eq result :timeout))
+	(close-buffer buffer))
+      result)))
 
 (defun buffer-input-wait  (buffer timeout)
   ;; Timeout, when non-nil, is in seconds
@@ -359,8 +364,13 @@
   (declare (values timeout))
   (when (buffer-dead buffer)
     (x-error 'closed-display :display buffer))
-  (wrap-buf-input (buffer)
-    (funcall (buffer-input-wait-function buffer) buffer timeout)))
+  (let ((result
+	  (wrap-buf-input (buffer)
+	    (funcall (buffer-input-wait-function buffer)
+		     buffer timeout))))
+    (unless (or (null result) (eq result :timeout))
+      (close-buffer buffer))
+    result))
 
 (defun buffer-listen (buffer)
   ;; Returns T if there is input available for the buffer. This should never
