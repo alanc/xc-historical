@@ -26,8 +26,8 @@ XTerm*vtMenu*reversevideo*Label:  Enable Reverse Video
 XTerm*vtMenu*autowrap*Label:  Enable Auto Wraparound
 XTerm*vtMenu*reversewrap*Label:  Enable Reverse Wraparound
 XTerm*vtMenu*autolinefeed*Label:  Enable Auto Linefeed
-XTerm*vtMenu*appcursor*Label:  Use Application Cursors
-XTerm*vtMenu*appkeypad*Label:  Use Application Keypad
+XTerm*vtMenu*appcursor*Label:  Enable Application Cursor Keys
+XTerm*vtMenu*appkeypad*Label:  Enable Application Keypad
 XTerm*vtMenu*scrollkey*Label:  Scroll to Bottom on Key Press
 XTerm*vtMenu*scrollinput*Label:  Scroll to Bottom on Tty Output
 XTerm*vtMenu*allow132*Label:  Allow 80/132 switching
