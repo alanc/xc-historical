@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.1 93/09/28 00:01:41 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.2 93/09/28 10:54:42 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -31,6 +31,10 @@
 #include <X11/extensions/XKBstr.h>
 #include "XKBlibint.h"
 #include <X11/Xlocale.h>
+
+#ifdef X_NOT_STDC_ENV
+extern char *getenv();
+#endif
 
 #if __STDC__
 #define Const const
@@ -293,9 +297,9 @@ static KeySym
 _XkbDefaultToUpper(sym)
     KeySym	sym;
 {
-KeySym	lower,upper;
+    KeySym	lower,upper;
 
-    XkbConvertCase(NULL, sym, &lower, &upper);
+    XConvertCase(NULL, sym, &lower, &upper);
     return upper;
 }
 
@@ -350,34 +354,45 @@ static XkbConverters	cvt_Hebrew = {
 	_XkbKSToKnownSet,(XPointer)&WantHebrew,_XkbKnownSetToKS,NULL,NULL
 };
 
+static int
+Strcmp(str1, str2)
+    char *str1, *str2;
+{
+    char str[256];
+
+    _XcmsCopyISOLatin1Lowered(str, str1);
+    return (strcmp(str, str2));
+}
 
 int 
-XkbGetConverters(char *charset,XkbConverters *cvt_rtrn)
+_XkbGetConverters(charset, cvt_rtrn)
+    char *charset;
+    XkbConverters *cvt_rtrn;
 {
     if ( cvt_rtrn ) {
-	if ( (charset==NULL) || (strcasecmp(charset,"ascii")==0) )
+	if ( (charset==NULL) || (Strcmp(charset,"ascii")==0) )
 	     *cvt_rtrn = cvt_ascii;
-	else if (strcasecmp(charset,"iso8859-1")==0)
+	else if (Strcmp(charset,"iso8859-1")==0)
 	     *cvt_rtrn = cvt_latin1;
-	else if (strcasecmp(charset, "iso8859-2")==0)
+	else if (Strcmp(charset, "iso8859-2")==0)
 	     *cvt_rtrn = cvt_latin2;
-	else if (strcasecmp(charset, "iso8859-3")==0)
+	else if (Strcmp(charset, "iso8859-3")==0)
 	     *cvt_rtrn = cvt_latin3;
-	else if (strcasecmp(charset, "iso8859-4")==0)
+	else if (Strcmp(charset, "iso8859-4")==0)
 	     *cvt_rtrn = cvt_latin4;
-	else if (strcasecmp(charset, "iso8859-5")==0)
+	else if (Strcmp(charset, "iso8859-5")==0)
 	     *cvt_rtrn = cvt_Cyrillic;
-	else if (strcasecmp(charset, "iso8859-6")==0)
+	else if (Strcmp(charset, "iso8859-6")==0)
 	     *cvt_rtrn = cvt_Arabic;
-	else if (strcasecmp(charset, "iso8859-7")==0)
+	else if (Strcmp(charset, "iso8859-7")==0)
 	     *cvt_rtrn = cvt_Greek;
-	else if (strcasecmp(charset, "iso8859-8")==0)
+	else if (Strcmp(charset, "iso8859-8")==0)
 	     *cvt_rtrn = cvt_Hebrew;
-	else if (strcasecmp(charset, "apl")==0)
+	else if (Strcmp(charset, "apl")==0)
 	     *cvt_rtrn = cvt_APL;
-	else if (strcasecmp(charset, "jisx0201")==0)
+	else if (Strcmp(charset, "jisx0201")==0)
 	     *cvt_rtrn = cvt_X0201;
-	else if (strcasecmp(charset, "kana")==0)
+	else if (Strcmp(charset, "kana")==0)
 	     *cvt_rtrn = cvt_kana;
 /* other codesets go here */
 	else *cvt_rtrn = cvt_latin1;
@@ -392,12 +407,13 @@ XkbGetConverters(char *charset,XkbConverters *cvt_rtrn)
 static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fi,fr,is,it,nl,no,pt,sv=iso8859-1:pl=iso8859-2:ru=iso8859-5";
 
 char	*
-XkbGetCharset(char *locale)
+_XkbGetCharset(locale)
+    char *locale;
 {
-static char	buf[100];
-char	*start,*tmp,*end,*next,*set;
-char	*lang,*country,*charset;
-int	 len;
+    static char buf[100];
+    char *start,*tmp,*end,*next,*set;
+    char *lang,*country,*charset;
+    int	 len;
 
     if ( locale == NULL ) {
 	tmp = getenv( "_XKB_COMPOSE_CHARSETS" );
@@ -408,7 +424,10 @@ int	 len;
     if ( locale == NULL )
 	return NULL;
 
-    lang = strdup( locale );
+    lang = Xmalloc(strlen(locale) + 1);
+    if (!lang)
+	return NULL;
+    _XcmsCopyISOLatin1Lowered(lang, locale);
     country = strchr( lang, '_');
     if ( country ) {
 	*country++ = '\0';
@@ -425,23 +444,28 @@ int	 len;
 	charset = NULL;
     }
 
-    if ((tmp = getenv("_XKB_LOCALE_CHARSETS"))!=NULL)
-	tmp = strdup(tmp);
-    else {
+    if ((tmp = getenv("_XKB_LOCALE_CHARSETS"))!=NULL) {
+	start = Xmalloc(strlen(tmp) + 1);
+	strcpy(start, tmp);
+	tmp = start;
+    } else {
 	struct stat sbuf;
 	if ( (stat(CHARSET_FILE,&sbuf)==0) && (sbuf.st_mode&S_IFREG) ) {
 	    FILE *file = fopen(CHARSET_FILE,"r");
-	    tmp = malloc(sbuf.st_size+1);
+	    tmp = Xmalloc(sbuf.st_size+1);
 	    if (tmp!=NULL) {
-		fread(tmp,1,sbuf.st_size,file);
+		sbuf.st_size = fread(tmp,1,sbuf.st_size,file);
 		tmp[sbuf.st_size] = '\0';
 	    }
 	}
     }
 
-    if ( tmp == NULL )
-	tmp = strdup(_XkbKnownLanguages);
-
+    if ( tmp == NULL ) {
+	tmp = Xmalloc(strlen(_XkbKnownLanguages) + 1);
+	if (!tmp)
+	    return NULL;
+	strcpy(tmp, _XkbKnownLanguages);
+    }
     start = tmp;
     do {
 	if ( (set=strchr(tmp,'=')) == NULL )
@@ -452,19 +476,19 @@ int	 len;
 	while ( tmp && *tmp ) {
 	    if ( (end=strchr(tmp,',')) != NULL )
 		*end++ = '\0';
-	    if ( strcasecmp( tmp, lang ) == 0 ) {
+	    if ( Strcmp( tmp, lang ) == 0 ) {
 		strncpy(buf,set,100);
 		buf[99] = '\0';
-		free(start);
-		free(lang);
+		Xfree(start);
+		Xfree(lang);
 		return buf;
 	    }
 	    tmp = end;
 	}
 	tmp = next;
     } while ( tmp && *tmp );
-    free(start);
-    free(lang);
+    Xfree(start);
+    Xfree(lang);
     return NULL;
 }
 
