@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.49 94/07/12 14:24:38 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.50 94/07/13 10:57:51 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -47,6 +47,8 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <signal.h>
 
+Atom wmStateAtom;
+
 
 /*
  * Forward declarations
@@ -77,8 +79,7 @@ char **argv;
     static	char environment_name[] = "SESSION_MANAGER";
     Dimension   width, height;
     Position	x, y;
-    int		sessionNameCount, success, found, i;
-    String	*sessionNames;
+    int		success, found_command_line_name, i;
 
     for (i = 1; i < argc; i++)
     {
@@ -112,6 +113,8 @@ char **argv;
 	XtNmappedWhenManaged, False,
 	NULL);
 	
+    wmStateAtom = XInternAtom (XtDisplay (topLevel), "WM_STATE", False);
+
 
     /*
      * Set my own IO error handler.
@@ -191,23 +194,28 @@ char **argv;
 
     success = GetSessionNames (&sessionNameCount, &sessionNames);
 
-    found = 0;
+    found_command_line_name = 0;
     if (success && session_name)
     {
 	for (i = 0; i < sessionNameCount; i++)
 	    if (strcmp (session_name, sessionNames[i]) == 0)
 	    {
-		found = 1;
+		found_command_line_name = 1;
 		break;
 	    }
     }
 
-    if (!success || found)
+    if (!success || found_command_line_name || sessionNameCount == 1)
     {
 	char title[256];
 
-	if (!found)
-	    session_name = XtNewString (DEFAULT_SESSION_NAME);
+	if (!found_command_line_name)
+	{
+	    if (sessionNameCount == 1)
+		session_name = sessionNames[0];
+	    else
+		session_name = XtNewString (DEFAULT_SESSION_NAME);
+	}
 
 	sprintf (title, "xsm: %s", session_name);
 
@@ -253,7 +261,7 @@ char **argv;
 
 	XtPopup (chooseSessionPopup, XtGrabNone);
     }
-
+    
 
     /*
      * Main loop
@@ -261,6 +269,27 @@ char **argv;
 
     setjmp (JumpHere);
     XtAppMainLoop (appContext);
+}
+
+
+
+void
+PropertyChangeXtHandler (w, closure, event, continue_to_dispatch)
+
+Widget w;
+XtPointer closure;
+XEvent *event;
+Boolean *continue_to_dispatch;
+
+{
+    if (w == topLevel && event->type == PropertyNotify &&
+	event->xproperty.atom == wmStateAtom)
+    {
+	XtRemoveEventHandler (topLevel, PropertyChangeMask, False,
+	    PropertyChangeXtHandler, NULL);
+
+	Restart (RESTART_REST_OF_CLIENTS);
+    }
 }
 
 
@@ -299,17 +328,26 @@ char *name;
 
 	StartDefaultApps ();
     }
+    else
+    {
+	/*
+	 * Restart window manager first.  When the session manager
+	 * gets a WM_STATE stored on its top level window, we know
+	 * the window manager is running.  At that time, we can start
+	 * the rest of the applications.
+	 */
 
+	XtAddEventHandler (topLevel, PropertyChangeMask, False,
+	    PropertyChangeXtHandler, NULL);
 
-    /*
-     * Restart clients.
-     */
+	if (!Restart (RESTART_MANAGERS))
+	{
+	    XtRemoveEventHandler (topLevel, PropertyChangeMask, False,
+	        PropertyChangeXtHandler, NULL);
 
-    RestartEverything();
-
-
-    if (verbose)
-	printf ("Waiting for connections...\n");
+	    Restart (RESTART_REST_OF_CLIENTS);
+	}
+    }
 }
 
 
