@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: nextvinf.c,v 1.7 92/06/11 15:46:09 rws Exp $
+ * $XConsortium: nextvinf.c,v 1.8 92/06/29 18:09:03 rws Exp $
  */
 
 /*
@@ -209,7 +209,7 @@ int		ret;
 	resetvinf(type);
 	do
 		ret = nextvinf(&vp);
-	while (ret && vp->visual != DefaultVisual(disp, DefaultScreen(disp)));
+	while (ret && vp->visual != DefaultVisual(disp, vp->screen));
 
 	if (!ret)
 		trace("--- WARNING - nextvinf did not find default visual");
