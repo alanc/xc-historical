@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.48 90/07/27 12:02:09 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.49 90/07/27 13:56:53 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -75,8 +75,8 @@ static void FreePropList(w, closure, callData)
     PropList sarray = (PropList)closure;
     XDeleteContext(sarray->dpy, DefaultRootWindow(sarray->dpy),
 		   selectPropertyContext);
-    XtFree((XtPointer)sarray->list);
-    XtFree(closure);
+    XtFree((char*)sarray->list);
+    XtFree((char*)closure);
 }
 
 
@@ -312,7 +312,7 @@ XtPointer closure;
 	    _XtUnregisterWindow(window, widget);
 	    XSelectInput(dpy, window, 0L);
 	    (void)XDeleteContext(dpy, window, selectWindowContext);
-	    XtFree((XtPointer)requestWindow);
+	    XtFree((char*)requestWindow);
 	}
     } else {
         XtRemoveEventHandler(widget, mask, TRUE,  proc, closure); 
@@ -334,7 +334,7 @@ XtIntervalId   *id;
 			     ctx->owner_closure);
     } else {
 	if (ctx->notify == NULL)
-	    XtFree((XtPointer)req->value);
+	    XtFree((char*)req->value);
 	else {
 	    /* the requestor hasn't deleted the property, but
 	     * the owner needs to free the value.
@@ -350,7 +350,7 @@ XtIntervalId   *id;
 
     RemoveHandler(ctx->dpy, req->requestor, req->widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
-    XtFree((XtPointer)req);
+    XtFree((char*)req);
 }
 
 static void SendIncrement(incr)
@@ -377,7 +377,7 @@ Request req;
 		    PropModeReplace, (unsigned char *) NULL, 0);
     req->allSent = TRUE;
 
-    if (ctx->notify == NULL) XtFree((XtPointer)req->value);
+    if (ctx->notify == NULL) XtFree((char*)req->value);
 }
 
 static void HandlePropertyGone(widget, closure, ev)
@@ -409,7 +409,7 @@ XEvent *ev;
 	    else (*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
 	RemoveHandler(event->display, event->window, widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
-	XtFree((XtPointer)req);
+	XtFree((char*)req);
     } else  { /* is this part of an incremental transfer? */ 
 	if (ctx->incremental) {
 	     if (req->bytelength == 0)
@@ -421,7 +421,7 @@ XEvent *ev;
 			   (ctx->widget, &ctx->selection, &req->target, 
 			    &req->type, &req->value, 
 			    &req->bytelength, &req->format,
-			    &size, ctx->owner_closure, (XtRequestId*)&req);
+			    &size, ctx->owner_closure, (XtPointer*)&req);
 		if (req->bytelength)
 		    req->bytelength = BYTELENGTH(req->bytelength, req->format);
 		req->offset = 0;
@@ -522,7 +522,7 @@ Boolean *incremental;
 				&targetType, &value, &length, &format,
 				&size, ctx->owner_closure, (XtRequestId*)&req)
 		     == FALSE) {
-		 XtFree((XtPointer)req);
+		 XtFree((char*)req);
 		 return(FALSE);
 	     }
 	     PrepareIncremental(req, widget, event->requestor, property,
@@ -533,7 +533,7 @@ Boolean *incremental;
 	ctx->req = req;
 	if ((*ctx->convert)(ctx->widget, &event->selection, &target,
 			    &targetType, &value, &length, &format) == FALSE) {
-	    XtFree((XtPointer)req);
+	    XtFree((char*)req);
 	    ctx->req = NULL;
 	    return(FALSE);
 	}
@@ -562,8 +562,8 @@ Boolean *incremental;
 			(unsigned char *)value, (int)length);
 	/* free storage for client if no notify proc */
 	if (timestamp_target || ctx->notify == NULL) {
-	    XtFree((XtPointer)value);
-	    XtFree((XtPointer)req);
+	    XtFree((char*)value);
+	    XtFree((char*)req);
 	}
 	*incremental = FALSE;
     } else {
@@ -811,9 +811,9 @@ Boolean *cont;
 		XDeleteProperty(event->display, XtWindow(widget),
 				event->property);
            FreeSelectionProperty(XtDisplay(widget), info->property);
-	   XtFree((XtPointer)info->req_closure);
-	   XtFree((XtPointer)info->target);
-           XtFree((XtPointer) info);
+	   XtFree((char*)info->req_closure);
+	   XtFree((char*)info->target);
+           XtFree((char*)info);
 	}
     } else if ((ev->type == PropertyNotify) &&
 		(ev->xproperty.state == PropertyNewValue) &&
@@ -828,9 +828,9 @@ Boolean *cont;
            XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE,
 			   ReqCleanup, (XtPointer) info );
            FreeSelectionProperty(XtDisplay(widget), info->property);
-	   XtFree((XtPointer)info->req_closure);
-	   XtFree((XtPointer)info->target);
-           XtFree((XtPointer) info);
+	   XtFree((char*)info->req_closure);
+	   XtFree((char*)info->target);
+           XtFree((char*)info);
 	}
     }
 }
@@ -919,9 +919,9 @@ Boolean *cont;
        XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE, 
 		HandleGetIncrement, (XtPointer) info);
        FreeSelectionProperty(event->display, info->property);
-       XtFree((XtPointer)info->req_closure);
-       XtFree((XtPointer)info->target);
-       XtFree((XtPointer) info);
+       XtFree((char*)info->req_closure);
+       XtFree((char*)info->target);
+       XtFree((char*)info);
     } else { /* add increment to collection */
       if (info->incremental) {
         (*info->callback)(widget, *info->req_closure, &ctx->selection, 
@@ -929,8 +929,8 @@ Boolean *cont;
       } else {
           if ((BYTELENGTH(length,info->format)+info->offset) 
 			> info->bytelength) {
-  	    info->value = (char *)XtRealloc((XtPointer) info->value, 
-					 (unsigned) (info->bytelength *= 2));
+  	    info->value = XtRealloc(info->value, 
+				    (unsigned) (info->bytelength *= 2));
           }
           bcopy(value, &info->value[info->offset], 
 		(int) BYTELENGTH(length, info->format));
@@ -1153,15 +1153,15 @@ Boolean *cont;
        }
        XFree((char*)pairs);
        FreeSelectionProperty(dpy, info->property);
-       XtFree((XtPointer)info->req_closure); 
-       XtFree((XtPointer)info->target); 
-       XtFree((XtPointer) info);
+       XtFree((char*)info->req_closure); 
+       XtFree((char*)info->target); 
+       XtFree((char*)info);
     } else if (event->property == None) {
 	HandleNone(widget, info->callback, *info->req_closure, event->selection);
         FreeSelectionProperty(XtDisplay(widget), info->property);
-        XtFree((XtPointer)info->req_closure);
-        XtFree((XtPointer)info->target); 
-        XtFree((XtPointer) info);
+        XtFree((char*)info->req_closure);
+        XtFree((char*)info->target); 
+        XtFree((char*)info);
 #ifndef NO_DRAFT_ICCCM_COMPATIBILITY
     } else if (event->target == ctx->prop_list->incremental_atom) {
 	HandleIncremental(dpy, widget, event->property, info, 0);
@@ -1170,9 +1170,9 @@ Boolean *cont;
 	if (HandleNormal(dpy, widget, event->property, info, 
 			 *info->req_closure, event->selection)) {
 	    FreeSelectionProperty(XtDisplay(widget), info->property);
-	    XtFree((XtPointer)info->req_closure);
-	    XtFree((XtPointer)info->target); 
-	    XtFree((XtPointer) info);
+	    XtFree((char*)info->req_closure);
+	    XtFree((char*)info->target); 
+	    XtFree((char*)info);
 	}
     }
 }
@@ -1253,7 +1253,7 @@ Boolean incremental;
 		  (*(XtSelectionDoneIncrProc)ctx->notify)
 				(ctx->widget, &selection, &target, 
 				 (XtRequestId*)&req, ctx->owner_closure);
-	      else XtFree(value);
+	      else XtFree((char*)value);
 	  }
 	} else { /* not incremental owner */
 	  if (!(*ctx->convert)(ctx->widget, &selection, &target, 
@@ -1384,7 +1384,7 @@ Boolean incremental;
 			info->property, info->property,
 			32, PropModeReplace, (unsigned char *) pairs, 
 			count * IndirectPairWordSize);
-	XtFree((XtPointer)pairs);
+	XtFree((char*)pairs);
 	RequestSelectionValue(info, selection, ctx->prop_list->indirect_atom);
     }
 }
