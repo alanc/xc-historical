@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.25 94/03/30 21:49:05 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.26 94/03/30 22:19:24 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -20,7 +20,6 @@ Author: Ralph Mor, X Consortium
 #include <X11/SM/SMlib.h>
 #include "SMlibint.h"
 #include "globals.h"
-#include <locale.h>
 
 static void set_callbacks();
 
