@@ -9,7 +9,7 @@
 OTHERDIRS = Berk
 #endif
 
-SUBDIRS = $(OTHERDIRS) Xau X oldX Xt Xmu Xaw Xdmcp
+SUBDIRS = $(OTHERDIRS) Xau X oldX Xt Xmu Xaw Xdmcp nls
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
