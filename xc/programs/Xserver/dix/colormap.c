@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.2 89/07/16 17:24:34 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.3 89/07/20 09:50:49 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -38,7 +38,7 @@ SOFTWARE.
 extern XID clientErrorValue;
 
 static Pixel FindBestPixel();
-static void  CopyFree(), FreeCell(), FreePixels();
+static void  CopyFree(), FreeCell(), FreePixels(), UpdateColors();
 static int   AllComp(), RedComp(), GreenComp(), BlueComp();
 static int   AllocDirect(), AllocPseudo(), FreeCo();
 static Bool  AllocCP(), AllocShared();
@@ -392,16 +392,19 @@ CopyColormapAndFree (mid, pSrc, client)
 	}
 	pSrc->flags &= ~AllAllocated;
 	FreePixels(pSrc, client);
+	UpdateColors(pmap);
 	return(Success);
     }
 
     if (pmap->class & DynamicClass)
-	CopyFree(REDMAP, client, pSrc, pmap);
-
-    if (pmap->class == DirectColor)
     {
-        CopyFree(GREENMAP, client, pSrc, pmap);
-        CopyFree(BLUEMAP, client, pSrc, pmap);
+	CopyFree(REDMAP, client, pSrc, pmap);
+	if (pmap->class == DirectColor)
+	{
+	    CopyFree(GREENMAP, client, pSrc, pmap);
+	    CopyFree(BLUEMAP, client, pSrc, pmap);
+	}
+	UpdateColors(pmap);
     }
     /* XXX should worry about removing any RT_CMAPENTRY resource */
     return(Success);
@@ -544,6 +547,68 @@ FreeCell (pmap, i, channel)
     }
 }
 
+static void
+UpdateColors (pmap)
+    ColormapPtr	pmap;
+{
+    xColorItem		*defs;
+    register xColorItem *pdef;
+    register EntryPtr 	pent;
+    register VisualPtr	pVisual;
+    int			i, n, size;
+
+    pVisual = pmap->pVisual;
+    size = pVisual->ColormapEntries;
+    defs = (xColorItem *)ALLOCATE_LOCAL(size * sizeof(xColorItem));
+    if (!defs)
+	return;
+    n = 0;
+    pdef = defs;
+    if (pmap->class == DirectColor)
+    {
+        for (i = 0; i < size; i++)
+	{
+	    if (!pmap->red[i].refcnt &&
+		!pmap->green[i].refcnt &&
+		!pmap->blue[i].refcnt)
+		continue;
+	    pdef->pixel = ((Pixel)i << pVisual->offsetRed) |
+			  ((Pixel)i << pVisual->offsetGreen) |
+			  ((Pixel)i << pVisual->offsetBlue);
+	    pdef->red = pmap->red[i].co.local.red;
+	    pdef->green = pmap->green[i].co.local.green;
+	    pdef->blue = pmap->blue[i].co.local.blue;
+	    pdef++;
+	    n++;
+	}
+    }
+    else
+    {
+        for (i = 0, pent = pmap->red; i < size; i++, pent++)
+	{
+	    if (!pent->refcnt)
+		continue;
+	    pdef->pixel = i;
+	    if(pent->fShared)
+	    {
+		pdef->red = pent->co.shco.red->color;
+		pdef->green = pent->co.shco.green->color;
+		pdef->blue = pent->co.shco.blue->color;
+	    }
+	    else
+	    {
+		pdef->red = pent->co.local.red;
+		pdef->green = pent->co.local.green;
+		pdef->blue = pent->co.local.blue;
+	    }
+	    pdef++;
+	    n++;
+	}
+    }
+    if (n)
+	(*pmap->pScreen->StoreColors)(pmap, n, defs);
+    DEALLOCATE_LOCAL(defs);
+}
 
 /* Get a read-only color from a ColorMap (probably slow for large maps)
  * Returns by changing the value in pred, pgreen, pblue and pPix
