@@ -167,7 +167,7 @@ ServerTarget(Xqvss,$(EXTDIR) $(FONTUTILDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),
 #define need_ddx_mfb
 #define need_ddx_dec_lk201
 #define need_ddx_dec_qdss
-#define need_ddx_qdss_libtl
+#define need_ddx_dec_qdss_libtl
 #define need_os_42bsd
 QDSSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qdss \
            ddx/dec/qdss/libtl os/4.2bsd
