@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.7 88/09/26 18:49:32 jim Exp $
+ * $XConsortium: xbiff.c,v 1.8 89/02/02 16:47:25 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,6 +31,7 @@ static XrmOptionDescRec options[] = {
 { "-update", "*mailbox.update", XrmoptionSepArg, (caddr_t) NULL },
 { "-file",   "*mailbox.file", XrmoptionSepArg, (caddr_t) NULL },
 { "-volume", "*mailbox.volume", XrmoptionSepArg, (caddr_t) NULL },
+{ "-shape",  "*mailbox.shapeWindow", XrmoptionNoArg, (caddr_t) "on" },
 };
 
 static void Usage ()
@@ -45,6 +46,7 @@ static void Usage ()
 "    -bg color                      background color",
 "    -fg color                      foreground color",
 "    -rv                            reverse video",
+"    -shape                         shape the window",
 NULL};
     char **cpp;
 
