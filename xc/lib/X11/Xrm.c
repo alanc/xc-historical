@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.74 92/09/10 19:29:31 rws Exp $
+ * $XConsortium: Xrm.c,v 1.75 93/03/29 18:28:39 rws Exp $
  */
 
 /***********************************************************
@@ -1296,6 +1296,7 @@ static void GetDatabase(db, str, filename, doall)
 		/*
 		 * We need to do some magic after a backslash.
 		 */
+		Bool read_next = True;
 
 		if (only_pcs) {
 		    bits = next_char(c, str);
@@ -1359,15 +1360,17 @@ static void GetDatabase(db, str, filename, doall)
 						      the correct order */
 			}
 		    }
-		    continue;
+		    read_next = False;
 		}
-		if (only_pcs) {
-		    bits = next_char(c, str);
-		    if (is_nonpcs(bits))
-			only_pcs = False;
+		if (read_next) {
+		    if (only_pcs) {
+			bits = next_char(c, str);
+			if (is_nonpcs(bits))
+			    only_pcs = False;
+		    }
+		    if (!only_pcs)
+			bits = next_mbchar(c, len, str);
 		}
-		if (!only_pcs)
-		    bits = next_mbchar(c, len, str);
 	    }
 
 	    /* 
