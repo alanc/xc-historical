@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.2 93/12/27 19:38:19 rob Exp $ */
+/* $XConsortium: mibstore.c,v 1.4 94/01/08 17:31:35 rob Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1531,7 +1531,8 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
 	     * the backing store.  An unnecessary optimisation,
 	     * but a useful one when GetSpans is slow.
 	     */
-	    pExtents = REGION_EXTENTS(pDst->pScreen, pBackingGC->clientClip);
+	    pExtents = REGION_EXTENTS(pDst->pScreen,
+		(RegionPtr)pBackingGC->clientClip);
 	    bsrcx = srcx;
 	    bsrcy = srcy;
 	    bw = w;
@@ -1639,7 +1640,8 @@ miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 	     * the backing store.  An unnecessary optimisation,
 	     * but a useful one when GetSpans is slow.
 	     */
-	    pExtents = REGION_EXTENTS(pDst->pScreen, pBackingGC->clientClip);
+	    pExtents = REGION_EXTENTS(pDst->pScreen,
+		(RegionPtr)pBackingGC->clientClip);
 	    bsrcx = srcx;
 	    bsrcy = srcy;
 	    bw = w;
