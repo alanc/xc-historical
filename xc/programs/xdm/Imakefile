@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.70 94/03/31 22:34:52 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.71 94/03/31 22:43:19 gildea Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -7,10 +7,7 @@ XCOMM $XConsortium: Imakefile,v 1.70 94/03/31 22:34:52 gildea Exp $
 #endif
 
 #ifndef SharedLibXdmGreet
-/* Can someone figure out how to make this work on more systems? */
-/* Theoretically works on SVR4Architecture, but hasn't been tested enough */
-#define SharedLibXdmGreet defined(AlphaArchitecture)
-/* #define SharedLibXdmGreet HasSharedLibraries */
+#define SharedLibXdmGreet (defined(AlphaArchitecture) || SystemV4)
 #endif
 
 #if HasXdmAuth
@@ -35,7 +32,7 @@ KRB5SRCS = krb5auth.c
 
 #if SharedLibXdmGreet
 GREET_DIR = greeter
-#if defined(SVR4Architecture)
+#if SystemV4
     DLLIB = -ldl
 #endif
 #else
