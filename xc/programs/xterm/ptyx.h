@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.6 88/04/06 13:47:02 jim Exp $
+ *	$Header: ptyx.h,v 1.7 88/04/06 16:00:10 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -327,6 +327,8 @@ typedef struct {
 	char		*TekGIN;	/* nonzero if Tektronix GIN mode*/
 	int		multiClickTime;	 /* time between multiclick selects */
 	char		*charClass;	/* for overriding word selection */
+	Boolean		cutNewline;	/* whether or not line cut has \n */
+	Boolean		cutToBeginningOfLine;  /* line cuts to BOL? */
 } TScreen;
 
 /* meaning of bits in screen.select flag */

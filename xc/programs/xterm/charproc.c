@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.27 88/04/06 15:59:54 jim Exp $
+ * $Header: charproc.c,v 1.28 88/04/06 16:07:43 jim Exp $
  */
 
 
@@ -62,6 +62,8 @@ static void VTallocbuf();
 #define XtNcharClass		"charClass"
 #define	XtNcurses		"curses"
 #define	XtNcursorColor		"cursorColor"
+#define XtNcutNewline		"cutNewline"
+#define XtNcutToBeginningOfLine	"cutToBeginningOfLine"
 #define XtNgeometry		"geometry"
 #define XtNtekGeometry		"tekGeometry"
 #define	XtNinternalBorder	"internalBorder"
@@ -90,6 +92,8 @@ static void VTallocbuf();
 #define	XtCC132			"C132"
 #define XtCCharClass		"CharClass"
 #define	XtCCurses		"Curses"
+#define XtCCutNewline		"CutNewline"
+#define XtCCutToBeginningOfLine	"CutToBeginningOfLine"
 #define XtCGeometry		"Geometry"
 #define	XtCJumpScroll		"JumpScroll"
 #define	XtCLogfile		"Logfile"
@@ -114,7 +118,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.27 88/04/06 15:59:54 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.28 88/04/06 16:07:43 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -178,6 +182,12 @@ static XtResource resources[] = {
 {XtNcurses, XtCCurses, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.curses),
 	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNcutNewline, XtCCutNewline, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, screen.cutNewline),
+	XtRBoolean, (caddr_t) &defaultTRUE},
+{XtNcutToBeginningOfLine, XtCCutToBeginningOfLine, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, screen.cutToBeginningOfLine),
+	XtRBoolean, (caddr_t) &defaultTRUE},
 {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, core.background_pixel),
 	XtRString, "White"},
@@ -1795,6 +1805,8 @@ static void VTInitialize (request, new)
    new->misc.re_verse = request->misc.re_verse;
    new->screen.multiClickTime = request->screen.multiClickTime;
    new->screen.charClass = request->screen.charClass;
+   new->screen.cutNewline = request->screen.cutNewline;
+   new->screen.cutToBeginningOfLine = request->screen.cutToBeginningOfLine;
 
     /*
      * set the colors if reverse video; this is somewhat tricky since

@@ -1,5 +1,5 @@
 /*
- *	$Header: button.c,v 1.2 88/04/06 13:46:46 jim Exp $
+ *	$Header: button.c,v 1.3 88/04/06 15:59:50 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$Header: button.c,v 1.2 88/04/06 13:46:46 jim Exp $";
+static char rcs_id[] = "$Header: button.c,v 1.3 88/04/06 15:59:50 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -729,9 +729,13 @@ int startRow, startCol, endRow, endCol;
 			}
 			break;
 		case SELECTLINE :
-			startSCol = 0;
-			endSCol = 0;
-			++endSRow;
+			if (term->screen.cutToBeginningOfLine) startSCol = 0;
+			if (term->screen.cutNewline) {
+			    endSCol = 0;
+			    ++endSRow;
+			} else {
+			    endSCol = LastTextCol(endSRow) + 1;
+			}
 			break;
 	}
 	TrackText(startSRow, startSCol, endSRow, endSCol);
