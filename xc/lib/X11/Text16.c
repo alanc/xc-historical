@@ -1,10 +1,20 @@
 #include "copyright.h"
 
-/* $XConsortium: XText16.c,v 11.17 88/09/06 16:11:42 jim Exp $ */
+/* $XConsortium: XText16.c,v 11.18 89/10/09 17:14:43 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+XDrawString16(
+    register Display *dpy,
+    Drawable d,
+    GC gc,
+    int x,
+    int y,
+    const XChar2b *string,
+    int length)
+#else
 XDrawString16(dpy, d, gc, x, y, string, length)
     register Display *dpy;
     Drawable d;
@@ -12,6 +22,7 @@ XDrawString16(dpy, d, gc, x, y, string, length)
     int x, y;
     XChar2b *string;
     int length;
+#endif
 {   
     int Datalength = 0;
     register xPolyText16Req *req;
@@ -48,7 +59,7 @@ XDrawString16(dpy, d, gc, x, y, string, length)
 	int nbytes;
 	int PartialNChars = length;
         register xTextElt *elt;
- 	XChar2b *CharacterOffset = string;
+ 	XChar2b *CharacterOffset = (XChar2b *)string;
 
 	while(PartialNChars > 254)
         {
