@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.63 88/09/27 16:29:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.64 88/09/29 18:52:17 swick Exp $";
 #endif
 
 
@@ -122,7 +122,7 @@ static  XrmQuark  XtQTextEdit;
 
 /* ARGSUSED */
 static void CvtStringToEditMode(args, num_args, fromVal, toVal)
-    XrmValuePtr *args;		/* unused */
+    XrmValuePtr args;		/* unused */
     Cardinal	*num_args;	/* unused */
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
@@ -683,18 +683,20 @@ static Boolean ConvertSelection(w, selection, target,
 	    *length = 0;
 	}
 	XmuConvertStandardSelection(w, ctx->text.time, selection, target, type,
-				   (caddr_t)&std_targets, &std_length, format);
+				   (caddr_t*)&std_targets, &std_length, format);
 	*value = XtRealloc(*value, sizeof(Atom)*(std_length + 6 + *length));
 	targetP = *(Atom**)value + *length;
-	*length += std_length + 6;
+	*length += std_length + 5;
+	if (ctx->text.source->edit_mode == XttextEdit)
+	    (*length)++;
 	*targetP++ = XA_STRING;
 	*targetP++ = XA_TEXT(d);
 	*targetP++ = XA_LENGTH(d);
 	*targetP++ = XA_LIST_LENGTH(d);
 	*targetP++ = XA_CHARACTER_POSITION(d);
-	*targetP++ = XA_DELETE(d);
-	while (std_length)
-	    *targetP++ = std_targets[--std_length];
+	if (ctx->text.source->edit_mode == XttextEdit)
+	    *targetP++ = XA_DELETE(d);
+	bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
 	XtFree((char*)std_targets);
 	*type = XA_ATOM;
 	*format = 32;
@@ -1854,16 +1856,7 @@ static StartAction(ctx, event)
 				    ctx->text.time = event->xcrossing.time;
 				    ctx->text.ev_x = event->xcrossing.x;
 				    ctx->text.ev_y = event->xcrossing.y;
-				    break;
-	  default:
-				    ctx->text.ev_x = 0;
-				    ctx->text.ev_y = 0;
 	}
-
-    }
-    else {
-	ctx->text.ev_x = 0;
-	ctx->text.ev_y = 0;
     }
 }
 
