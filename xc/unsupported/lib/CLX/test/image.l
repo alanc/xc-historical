@@ -10,7 +10,7 @@
 
 (export '(image-test))
 
-(defvar *image-test-host* "unix")
+(defvar *image-test-host* "")
 
 (defvar *image-test-get-image-result-type-choices*
   '(image-x image-x image-xy image-z))
@@ -18,22 +18,63 @@
 (defvar *image-test-get-image-image-x-format-choices*
   '(:xy-pixmap :z-pixmap))
 
+(defvar *image-test-copy* t)
+
+(defvar *image-test-copy-random-subimage* t)
+
+(defvar *image-test-put-random-subimage* t)
+
+(defun image-test
+       (&key
+	(host *image-test-host*)
+	(copy *image-test-copy*)
+	(copy-random-subimage *image-test-copy-random-subimage*)
+	(put-random-subimage *image-test-put-random-subimage*)
+	(get-image-result-type-choices
+	  *image-test-get-image-result-type-choices*)
+	(get-image-image-x-format-choices
+	  *image-test-get-image-image-x-format-choices*))
+  (let* ((display (open-display host))
+	 (abort t))
+    (unwind-protect
+	(let* ((screen (display-default-screen display))
+	       (window (screen-root screen))
+	       (gcontext (create-gcontext
+			   :drawable window
+			   :font (open-font display "fixed"))))
+	  (dotimes (i 30)
+	    (let* ((image (image-test-get-image
+			    window
+			    get-image-result-type-choices
+			    get-image-image-x-format-choices))
+		   (copy (if copy
+			     (image-test-copy-image
+			       image
+			       copy-random-subimage)
+			   image))
+		   (info (concatenate 'string (image-info image)
+				      (image-info copy))))
+	      (image-test-put-image
+		screen gcontext copy info put-random-subimage)
+	      ))
+	  (read-char)
+	  (setq abort nil))
+      (close-display display :abort abort))))
+
 (defun image-test-choose (list)
   (nth (random (length list)) list))
 
-(defun image-test-get-image (window)
+(defun image-test-get-image (window result-type-choices image-x-format-choices)
   (let* ((x (random (floor (drawable-width window) 3)))
 	 (y (random (floor (drawable-height window) 3)))
 	 (hw (floor (- (drawable-width window) x) 3))
 	 (hh (floor (- (drawable-height window) y) 3))
 	 (width (+ hw hw (random hw)))
 	 (height (+ hh hh (random hh)))
-	 (result-type (image-test-choose
-			*image-test-get-image-result-type-choices*))
+	 (result-type (image-test-choose result-type-choices))
 	 (format
 	   (ecase result-type
-	     (image-x (image-test-choose
-			*image-test-get-image-image-x-format-choices*))
+	     (image-x (image-test-choose image-x-format-choices))
 	     (image-xy :xy-pixmap)
 	     (image-z :z-pixmap)))
 	 (image (get-image window :x x :y y :width width :height height
@@ -42,16 +83,18 @@
     (setf (image-y-hot image) (- y))
     image))
 
-(defun test-image-subimage-parameters (image)
-  (let* ((x (random (floor (image-width image) 3)))
-	 (y (random (floor (image-height image) 3)))
-	 (hw (floor (- (image-width image) x) 3))
-	 (hh (floor (- (image-height image) y) 3))
-	 (width (+ hw hw (random hw)))
-	 (height (+ hh hh (random hh))))
-    (values x y width height)))
+(defun image-test-subimage-parameters (image random-subimage-p)
+  (if random-subimage-p 
+      (let* ((x (random (floor (image-width image) 3)))
+	     (y (random (floor (image-height image) 3)))
+	     (hw (floor (- (image-width image) x) 3))
+	     (hh (floor (- (image-height image) y) 3))
+	     (width (+ hw hw (random hw)))
+	     (height (+ hh hh (random hh))))
+	(values x y width height))
+    (values 0 0 (image-width image) (image-height image))))
 
-(defun image-test-copy-image (image)
+(defun image-test-copy-image (image random-subimage-p)
   (let ((result-type
 	  (if (zerop (random 2))
 	      (type-of image)
@@ -61,13 +104,13 @@
 			 (:z-pixmap 'image-z)))
 	      ((or image-xy image-z) 'image-x)))))
     (multiple-value-bind (x y width height)
-	(test-image-subimage-parameters image)
+	(image-test-subimage-parameters image random-subimage-p)
       (copy-image image :x x :y y :width width :height height
 		  :result-type result-type))))
 
-(defun image-test-put-image (screen gcontext image info)
+(defun image-test-put-image (screen gcontext image info random-subimage-p)
   (multiple-value-bind (src-x src-y width height)
-      (test-image-subimage-parameters image)
+      (image-test-subimage-parameters image random-subimage-p)
     (let* ((border-width 1)
 	   (x (- src-x (image-x-hot image) border-width))
 	   (y (- src-y (image-y-hot image) border-width)))
@@ -95,24 +138,3 @@
 	       (:z-pixmap  "XZ ")))
     (image-xy "XY ")
     (image-z  "Z  ")))
-
-(defun image-test (&optional (host *image-test-host*))
-  (let* ((display (open-display host))
-	 (abort t))
-    (unwind-protect
-	(let* ((screen (display-default-screen display))
-	       (window (screen-root screen))
-	       (gcontext (create-gcontext
-			   :drawable window
-			   :font (open-font display "fixed"))))
-	  (dotimes (i 30)
-	    (let* ((image (image-test-get-image window))
-		   (copy (image-test-copy-image image))
-		   (info (concatenate 'string (image-info image)
-				      (image-info copy))))
-	      (image-test-put-image screen gcontext copy info)
-	      ))
-	  (read-char)
-	  (setq abort nil))
-      (close-display display :abort abort))))
-

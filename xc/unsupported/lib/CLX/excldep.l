@@ -48,15 +48,6 @@
 	  ,str)))))
 
 
-(defun underlying-simple-vector (array)
-  (cond ((excl::svectorp array)
-	 array)
-	((arrayp array)
-	 (cdr (excl::ah_data array)))
-	(t
-	 (error "~s is not an array" array))))
-
-
 (defconstant type-pred-alist
   '(
     (card8  . card8p)

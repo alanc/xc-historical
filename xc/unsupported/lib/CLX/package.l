@@ -48,7 +48,6 @@
     lcl:type-error
     lucid::type-error-datum
     lucid::type-error-expected-type
-    sys:underlying-simple-vector
     ))
 
 #+(and excl (not ansi-common-lisp)) 
@@ -231,7 +230,6 @@
   #+Genera (:import-from sys array-register)
   #+Genera (:import-from zwei indentation)
   #+lcl3.0 (:import-from lcl arglist)
-  #+lcl3.0 (:import-from sys underlying-simple-vector)
   #+lispm (:import-from lisp char-bit)
   #+lispm (:import-from sys arglist downward-funarg with-stack-list
 			with-stack-list*)

@@ -1626,7 +1626,7 @@
 ;;-----------------------------------------------------------------------------
 ;; Internal error conditions signaled by CLX
 
-(define-condition x-type-error (type-error)
+(define-condition x-type-error (type-error x-error)
   ((type-string :reader x-type-error-type-string))
   (:report
     (lambda (condition stream)
