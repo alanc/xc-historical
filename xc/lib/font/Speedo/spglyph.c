@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spglyph.c,v 1.3 91/05/11 09:58:37 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -208,10 +208,6 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
     ci->metrics.descent = -off_vert;
     ci->metrics.rightSideBearing = xsize + off_horz;
     ci->metrics.ascent = ysize + off_vert;
-    if (ci->metrics.ascent == -ci->metrics.descent)
-	ci->metrics.ascent = -ci->metrics.descent + 1;
-    if (ci->metrics.leftSideBearing == ci->metrics.rightSideBearing)
-	ci->metrics.rightSideBearing = ci->metrics.leftSideBearing + 1;
 
     cfv->bit_width = xsize;
     cfv->bit_height = ysize;
