@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.13 94/04/17 23:56:45 rws Exp $
+.\" $XConsortium: protocol.ms,v 1.14 94/04/28 16:38:12 gildea Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -2180,7 +2180,9 @@ T}	T{
 .br
 \ key: KEYCODE
 .br
-\ auto_repeat_mode: {AutoRepeatModeOn, AutoRepeatModeOff, AutoRepeatModeDefault}]
+\ auto_repeat_mode: {AutoRepeatModeOn,
+.br
+\ \ AutoRepeatModeOff, AutoRepeatModeDefault}]
 T}
 .TE
 .in -.5i
@@ -2217,7 +2219,7 @@ T}	T{
 .br
 \ accelNumerator: INT16
 .br
-accelDenominator: INT16
+\ accelDenominator: INT16
 .br
 \ threshold: INT16]
 T}
