@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.88 91/12/17 17:55:57 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.89 92/01/19 15:02:48 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -448,12 +448,19 @@ static int MakeUNIXSocketConnection (phostname, idisplay, retries,
     int oaddrlen;			/* length of addr */
 #endif
 
+#ifdef SUN_LEN
+    unaddr.sun_len = strlen(unaddr.sun_path) + 1;
+#endif
     unaddr.sun_family = AF_UNIX;
     sprintf (unaddr.sun_path, "%s%d", X_UNIX_PATH, idisplay);
 
     addr = (struct sockaddr *) &unaddr;
+#ifdef SUN_LEN
+    addrlen = SUN_LEN(&unaddr);
+#else
     addrlen = strlen(unaddr.sun_path) + sizeof(unaddr.sun_family);
-
+#endif
+  
 #ifdef hpux /* this is disgusting */
     ounaddr.sun_family = AF_UNIX;
     sprintf (ounaddr.sun_path, "%s%d", OLD_UNIX_PATH, idisplay);
@@ -577,6 +584,9 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 
     addr = (struct sockaddr *) &inaddr;
     addrlen = sizeof (struct sockaddr_in);
+#ifdef SUN_LEN
+    inaddr.sin_len = addrlen;
+#endif
     inaddr.sin_port = X_TCP_PORT + idisplay;
     inaddr.sin_port = htons (inaddr.sin_port);	/* may be funky macro */
 
