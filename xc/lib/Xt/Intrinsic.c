@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.89 87/12/02 15:50:39 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.90 87/12/04 10:32:05 swick Locked $";
 #endif lint
 
 /*
@@ -674,7 +674,7 @@ void XtUnmanageChildren(children, num_children)
     for (i = 0; i < num_children; i++) {
 	child = children[i];
         if ((CompositeWidget) child->core.parent != parent) {
-	    XtWarning("Not all children have same parent in XtRemoveChildren");
+	    XtWarning("Not all children have same parent in XtUnmanageChildren");
 	} else if ((! child->core.managed) || (child->core.being_destroyed)) {
 	    /* Do nothing */
 	} else {
@@ -718,7 +718,7 @@ void XtManageChildren(children, num_children)
     for (i = 0; i < num_children; i++) {
 	child = children[i];
         if ((CompositeWidget) child->core.parent != parent) {
-	    XtWarning("Not all children have same parent in XtAddChildren");
+	    XtWarning("Not all children have same parent in XtManageChildren");
 	} else if ((child->core.managed) || (child->core.being_destroyed)) {
 	    /* Do nothing */
 	} else {
