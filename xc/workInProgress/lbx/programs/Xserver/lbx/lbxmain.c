@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.18 95/04/25 20:34:35 dpw Exp mor $ */
+/* $XConsortium: lbxmain.c,v 1.19 95/05/03 21:11:46 mor Exp mor $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.61 1994/11/18 20:32:36 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -952,17 +952,15 @@ LbxReadRequestFromClient (client)
  * have to copy data off into pending buffer 
  */
 void
-LbxResetCurrentRequest(client)
+LbxResetCurrentRequest(client, len)
     ClientPtr	client;
+    int		len;
 {
     LbxClientPtr lbxClient = LbxClient(client);
-    LbxProxyPtr proxy;
-    xReq       *req = (xReq *) client->requestBuffer;
 
     if (lbxClient) {
-	proxy = lbxClient->proxy;
-	AppendFakeRequest(client, client->requestBuffer, req->length * 4);
-
+	LbxProxyPtr proxy = lbxClient->proxy;
+	AppendFakeRequest(client, client->requestBuffer, len);
 	++proxy->curRecv->reqs_pending;
 	if (!proxy->curRecv->input_blocked) {
 	    proxy->curRecv->input_blocked = TRUE;

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxprop.c,v 1.6 94/03/27 13:17:07 dpw Exp mor $ */
+/* $XConsortium: lbxprop.c,v 1.7 94/12/01 20:29:09 mor Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -60,8 +60,47 @@ LbxStallPropRequest(client, pProp)
     ClientPtr   client;
     PropertyPtr pProp;
 {
-    LbxQueryTagData(client, pProp->owner_pid, pProp->tag_id, LbxTagTypeProperty, pProp);
-    LbxResetCurrentRequest(client);
+    LbxClientPtr lbxClient = LbxClient(client);
+    xReq *req = (xReq *) client->requestBuffer;
+    int len = req->length * 4;
+
+    LbxQueryTagData(client, pProp->owner_pid,
+	pProp->tag_id, LbxTagTypeProperty, pProp);
+
+    if (lbxClient) {
+	/*
+	 * Before we reset the request, we must make sure
+	 * it is in the client's byte order.
+	 */
+
+	ClientPtr masterClient =
+	    lbxClient->proxy->lbxClients[LbxMasterClientIndex]->client;
+
+	if (client->swapped != masterClient->swapped) {
+	    if (req->reqType == X_ChangeProperty) {
+		register char n;
+		xChangePropertyReq *stuff = (xChangePropertyReq *) req;
+		swaps(&stuff->length, n);
+		swapl(&stuff->window, n);
+		swapl(&stuff->property, n);
+		swapl(&stuff->type, n);
+		swapl(&stuff->nUnits, n);
+		switch ( stuff->format ) {
+		case 8 :
+		    break;
+		case 16:
+		    SwapRestS(stuff);
+		    break;
+		case 32:
+		    SwapRestL(stuff);
+		    break;
+		}
+	    }
+	}
+    }
+
+    LbxResetCurrentRequest(client, len);
+
     client->sequence--;
 
 /* XXX this won't work too well went done to a proxy client.
