@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Composite.c,v 1.11 89/09/08 17:45:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Composite.c,v 1.12 89/09/12 16:49:22 swick Exp $";
 /* $oHeader: Composite.c,v 1.2 88/08/18 15:35:39 asente Exp $ */
 #endif /* lint */
 
@@ -32,6 +32,10 @@ SOFTWARE.
 #include "StringDefs.h"
 
 static XtResource resources[] = {
+    {XtNchildren, XtCReadOnly, XtRWidgetList, sizeof(WidgetList),
+     XtOffset(CompositeWidget, composite.children), XtRImmediate, NULL},
+    {XtNnumChildren, XtCReadOnly, XtRCardinal, sizeof(Cardinal),
+     XtOffset(CompositeWidget, composite.num_children), XtRImmediate, 0},
     {XtNinsertPosition, XtCInsertPosition, XtRFunction, sizeof(XtOrderProc),
      XtOffset(CompositeWidget, composite.insert_position), XtRImmediate, NULL},
 };

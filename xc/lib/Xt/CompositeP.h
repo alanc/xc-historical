@@ -1,4 +1,4 @@
-/* $XConsortium: CompositeP.h,v 1.9 89/06/16 18:08:55 jim Exp $ */
+/* $XConsortium: CompositeP.h,v 1.10 89/09/12 16:49:30 swick Exp $ */
 /* $oHeader: CompositeP.h,v 1.2 88/08/18 15:54:11 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -59,8 +59,17 @@ typedef struct _CompositeClassPart {
     XtWidgetProc      change_managed;	  /* change managed state of child   */
     XtWidgetProc      insert_child;	  /* physically add child to parent  */
     XtWidgetProc      delete_child;	  /* physically remove child	     */
-    XtPointer	    extension;		/* pointer to extension record      */
+    XtPointer	      extension;	  /* pointer to extension record     */
 } CompositeClassPart,*CompositePartPtr;
+
+typedef struct {
+    XtPointer next_extension;	/* 1st 4 mandated for all extension records */
+    XrmQuark record_type;	/* NULLQUARK; on CompositeClassPart */
+    long version;		/* must be XtCompositeExtensionVersion */
+    Cardinal record_size;	/* sizeof(CompositeClassExtensionRec) */
+    Boolean accepts_objects;
+} CompositeClassExtensionRec, *CompositeClassExtension;
+
 
 typedef struct _CompositeClassRec {
      CoreClassPart      core_class;
@@ -69,6 +78,7 @@ typedef struct _CompositeClassRec {
 
 externalref CompositeClassRec compositeClassRec;
 
+#define XtCompositeExtensionVersion 1L
 #define XtInheritGeometryManager ((XtGeometryHandler) _XtInherit)
 #define XtInheritChangeManaged ((XtWidgetProc) _XtInherit)
 #define XtInheritInsertChild ((XtWidgetProc) _XtInherit)
