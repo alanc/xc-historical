@@ -13,10 +13,6 @@
      EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
    INSTALLFLAGS = $(INSTINCFLAGS)
-#if NeedBerklibInXlib
-        AIDSRCS = Berklib.c
-        AIDOBJS = Berklib.o
-#endif
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
            SRCS = *.c
@@ -273,8 +269,7 @@ OBJS2 =\
 	TextToStr.o \
 	WMGeom.o \
 	Withdraw.o \
-	$(AIDOBJS) \
-	$(AUTHOBJS) $(DESOBJS)
+	$(DESOBJS)
 
 OBJS =\
 	$(OBJS1) $(OBJS2)
@@ -384,12 +379,6 @@ DebuggedLibraryTarget(X11,$(OBJS))
 InstallLibrary(X11_d,$(USRLIBDIR))
 #endif
 
-#if NeedBerklibInXlib
-Berklib.c: sysV/Berklib.c
-	-$(RM) Berklib.c
-	-$(LN) sysV/Berklib.c .
-#endif
-
 AuDispose.c:  $(XAUTHSRC)/AuDispose.c
 	$(RM) $@
 	$(LN) $? $@
@@ -427,15 +416,15 @@ ks_tables.h: $(INCLUDESRC)/keysymdef.h makekeys.C
 	$(MV) ks_tables_h $@
 	$(RM) makekeys ks_tables_h
 
-includes:: ks_tables.h des.h $(DESSRCS) $(AIDSRCS)
+includes:: ks_tables.h des.h $(DESSRCS)
 
-depend:: ks_tables.h des.h $(AUTHSRCS) $(DESSRCS) $(AIDSRCS)
+depend:: ks_tables.h des.h $(AUTHSRCS) $(DESSRCS)
 
 clean::
 	$(RM) ks_tables_h ks_tables.h makekeys.c makekeys
 
 clean::
-	$(RM) $(AUTHSRCS) $(DESSRCS) $(AIDSRCS)
+	$(RM) $(AUTHSRCS) $(DESSRCS)
 
 DependTarget()
 
