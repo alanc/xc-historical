@@ -1,4 +1,4 @@
-/* $XConsortium: XCrGC.c,v 11.34 90/12/26 10:03:37 rws Exp $ */
+/* $XConsortium: XCrGC.c,v 11.35 91/01/06 11:44:54 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -319,6 +319,13 @@ _XFlushGCCache(dpy, gc)
 		ext = ext->next;
 	}    
     }
+}
+
+void XFlushGC(dpy, gc)
+     Display *dpy;
+     GC gc;
+{
+    FlushGC(dpy, gc);
 }
 
 GContext XGContextFromGC(gc)
