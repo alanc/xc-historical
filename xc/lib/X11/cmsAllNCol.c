@@ -1,24 +1,27 @@
-/* $XConsortium: XcmsAlNCol.c,v 1.3 91/02/11 18:17:21 dave Exp $" */
+/* $XConsortium: XcmsAlNCol.c,v 1.4 91/02/12 16:12:21 dave Exp $" */
 
 /*
- * (c) Copyright 1989 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -56,7 +59,7 @@ XcmsAllocNamedColor (
     _Xconst char *color_name,
     XcmsColor *pColor_scrn_return,
     XcmsColor *pColor_exact_return,
-    XcmsSpecFmt result_format)
+    XcmsColorFormat result_format)
 #else
 Status
 XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
@@ -66,7 +69,7 @@ XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
     char *color_name;
     XcmsColor *pColor_scrn_return;
     XcmsColor *pColor_exact_return;
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
 #endif
 /*
  *	DESCRIPTION
@@ -93,22 +96,22 @@ XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
     XColor hard_def;
     XColor exact_def;
     Status retval1 = 1;
-    Status retval2 = XCMS_SUCCESS;
+    Status retval2 = XcmsSuccess;
     XcmsColor tmpColor;
     XColor XColor_in_out;
     char tmpName[BUFSIZ];
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
 
     /*
      * 0. Check for invalid arguments.
      */
     if (dpy == NULL || color_name[0] == '\0' || pColor_scrn_return == 0
 	    || pColor_exact_return == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
-    if ((pCCC = XcmsCCCofColormap(dpy, cmap)) == (XcmsCCC *)NULL) {
-	return(XCMS_FAILURE);
+    if ((ccc = XcmsCCCOfColormap(dpy, cmap)) == (XcmsCCC)NULL) {
+	return(XcmsFailure);
     }
 
     /*
@@ -116,9 +119,9 @@ XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
      */
     /* copy string to allow overwrite by _XcmsResolveColorString() */
     strncpy(tmpName, color_name, BUFSIZ - 1);
-    if ((retval1 = _XcmsResolveColorString(pCCC, tmpName,
-	    &tmpColor, result_format)) == XCMS_FAILURE) {
-	return(XCMS_FAILURE);
+    if ((retval1 = _XcmsResolveColorString(ccc, tmpName,
+	    &tmpColor, result_format)) == XcmsFailure) {
+	return(XcmsFailure);
     }
     if (retval1 == _XCMS_NEWNAME) {
 	goto PassToServer;
@@ -129,17 +132,17 @@ XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
      * 2. Convert tmpColor to RGB
      *	Assume pColor_exact_return is now adjusted to Client White Point
      */
-    if ((retval2 = XcmsConvertColors(pCCC, &tmpColor,
-	    1, XCMS_RGB_FORMAT, (Bool *) NULL)) == XCMS_FAILURE) {
-	return(XCMS_FAILURE);
+    if ((retval2 = XcmsConvertColors(ccc, &tmpColor,
+	    1, XcmsRGBFormat, (Bool *) NULL)) == XcmsFailure) {
+	return(XcmsFailure);
     }
 
     /*
      * 3. Convert to XColor and call XAllocColor
      */
     _XcmsRGB_to_XColor(&tmpColor, &XColor_in_out, 1);
-    if (XAllocColor(pCCC->dpy, cmap, &XColor_in_out) == 0) {
-	return(XCMS_FAILURE);
+    if (XAllocColor(ccc->dpy, cmap, &XColor_in_out) == 0) {
+	return(XcmsFailure);
     }
 
     /*
@@ -149,14 +152,14 @@ XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
      *    We can ignore the return value because we're already in a
      *    device-dependent format.
      */
-    _XColor_to_XcmsRGB(pCCC, &XColor_in_out, pColor_scrn_return, 1);
-    if (result_format != XCMS_RGB_FORMAT) {
-	if (result_format == XCMS_UNDEFINED_FORMAT) {
+    _XColor_to_XcmsRGB(ccc, &XColor_in_out, pColor_scrn_return, 1);
+    if (result_format != XcmsRGBFormat) {
+	if (result_format == XcmsUndefinedFormat) {
 	    result_format = pColor_exact_return->format;
 	}
-	if (XcmsConvertColors(pCCC, pColor_scrn_return, 1, result_format,
-		(Bool *) NULL) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+	if (XcmsConvertColors(ccc, pColor_scrn_return, 1, result_format,
+		(Bool *) NULL) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
     }
 
@@ -167,7 +170,7 @@ PassToServer:
      * All previous methods failed, so lets pass it to the server
      * for parsing.
      */
-    dpy = pCCC->dpy;
+    dpy = ccc->dpy;
     LockDisplay(dpy);
     GetReq(AllocNamedColor, req);
 
@@ -200,19 +203,19 @@ PassToServer:
     /*
      * Now convert to the target format.
      */
-    _XColor_to_XcmsRGB(pCCC, &exact_def, pColor_exact_return, 1);
-    _XColor_to_XcmsRGB(pCCC, &hard_def, pColor_scrn_return, 1);
-    if (result_format != XCMS_RGB_FORMAT
-	    && result_format != XCMS_UNDEFINED_FORMAT) {
-	if (XcmsConvertColors(pCCC, pColor_exact_return, 1, result_format,
-		(Bool *) NULL) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+    _XColor_to_XcmsRGB(ccc, &exact_def, pColor_exact_return, 1);
+    _XColor_to_XcmsRGB(ccc, &hard_def, pColor_scrn_return, 1);
+    if (result_format != XcmsRGBFormat
+	    && result_format != XcmsUndefinedFormat) {
+	if (XcmsConvertColors(ccc, pColor_exact_return, 1, result_format,
+		(Bool *) NULL) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
-	if (XcmsConvertColors(pCCC, pColor_scrn_return, 1, result_format,
-		(Bool *) NULL) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+	if (XcmsConvertColors(ccc, pColor_scrn_return, 1, result_format,
+		(Bool *) NULL) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
     }
 
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }

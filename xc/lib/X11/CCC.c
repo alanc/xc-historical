@@ -1,24 +1,27 @@
 /* $XConsortium: XcmsCCC.c,v 1.6 91/02/12 16:12:26 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -50,17 +53,17 @@
  *	SYNOPSIS
  */
 
-XcmsCCC *
-XcmsCreateCCC(dpy, screen_number, visual, clientWhitePt, gamutCompFunc,
-	gamutCompClientData, whitePtAdjFunc, whitePtAdjClientData)
+XcmsCCC 
+XcmsCreateCCC(dpy, screenNumber, visual, clientWhitePt, gamutCompProc,
+	gamutCompClientData, whitePtAdjProc, whitePtAdjClientData)
     Display *dpy;
-    int	screen_number;
+    int	screenNumber;
     Visual *visual;
     XcmsColor *clientWhitePt;
-    XcmsFuncPtr gamutCompFunc;
-    caddr_t gamutCompClientData;
-    XcmsFuncPtr whitePtAdjFunc;
-    caddr_t whitePtAdjClientData;
+    XcmsFuncPtr gamutCompProc;
+    XPointer gamutCompClientData;
+    XcmsFuncPtr whitePtAdjProc;
+    XPointer whitePtAdjClientData;
 /*
  *	DESCRIPTION
  *		Given a Display, Screen, Visual, etc., this routine creates
@@ -72,44 +75,44 @@ XcmsCreateCCC(dpy, screen_number, visual, clientWhitePt, gamutCompFunc,
  *
  */
 {
-    XcmsCCC *pDefaultCCC = XcmsDefaultCCC(dpy, screen_number);
-    XcmsCCC *pNewCCC;
+    XcmsCCC pDefaultCCC = XcmsDefaultCCC(dpy, screenNumber);
+    XcmsCCC newccc;
 
     if (pDefaultCCC == NULL ||
-	    !(pNewCCC = (XcmsCCC *) Xcalloc(1, (unsigned) sizeof(XcmsCCC)))) {
+	    !(newccc = (XcmsCCC) Xcalloc(1, (unsigned) sizeof(XcmsCCCRec)))) {
 	return(NULL);
     } 
 
     /*
      * Should inherit the following as result of a bcopy():
      *		dpy
-     *		screen_number
+     *		screenNumber
      *		pPerScrnInfo
      */
-    bcopy((char *)pDefaultCCC, (char *)pNewCCC, sizeof(XcmsCCC));
+    bcopy((char *)pDefaultCCC, (char *)newccc, sizeof(XcmsCCCRec));
     if (clientWhitePt) {
-	bcopy((char *)clientWhitePt, (char *)&pNewCCC->clientWhitePt,
+	bcopy((char *)clientWhitePt, (char *)&newccc->clientWhitePt,
 		sizeof(XcmsColor));
     }
-    if (gamutCompFunc) {
-	pNewCCC->gamutCompFunc = gamutCompFunc;
+    if (gamutCompProc) {
+	newccc->gamutCompProc = gamutCompProc;
     }
     if (gamutCompClientData) {
-	pNewCCC->gamutCompClientData = gamutCompClientData;
+	newccc->gamutCompClientData = gamutCompClientData;
     }
-    if (whitePtAdjFunc) {
-	pNewCCC->whitePtAdjFunc = whitePtAdjFunc;
+    if (whitePtAdjProc) {
+	newccc->whitePtAdjProc = whitePtAdjProc;
     }
     if (whitePtAdjClientData) {
-	pNewCCC->whitePtAdjClientData = whitePtAdjClientData;
+	newccc->whitePtAdjClientData = whitePtAdjClientData;
     }
 
     /*
      * Set visual component
      */
-    pNewCCC->visual = visual;
+    newccc->visual = visual;
 
-    return(pNewCCC);
+    return(newccc);
 }
 
 
@@ -119,10 +122,10 @@ XcmsCreateCCC(dpy, screen_number, visual, clientWhitePt, gamutCompFunc,
  *
  *	SYNOPSIS
  */
-XcmsCCC *
-XcmsDefaultCCC(dpy, screen_number)
+XcmsCCC 
+XcmsDefaultCCC(dpy, screenNumber)
     Display *dpy;
-    int screen_number;
+    int screenNumber;
 /*
  *	DESCRIPTION
  *		Given a Display and Screen, this routine creates
@@ -136,60 +139,60 @@ XcmsDefaultCCC(dpy, screen_number)
  *
  */
 {
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
 
 
-    if ((screen_number < 0) || (screen_number >= ScreenCount(dpy))) {
-	return((XcmsCCC *)NULL);
+    if ((screenNumber < 0) || (screenNumber >= ScreenCount(dpy))) {
+	return((XcmsCCC)NULL);
     }
 
     /*
      * Check if the XcmsCCC's for each screen has been created
      */
-    if ((XcmsCCC *)dpy->cms.defaultCCCs == NULL) {
+    if ((XcmsCCC)dpy->cms.defaultCCCs == NULL) {
 	if (!_XcmsInitDefaultCCCs(dpy)) {
-	    return((XcmsCCC *)NULL);
+	    return((XcmsCCC)NULL);
 	}
     }
 
-    pCCC = (XcmsCCC *)dpy->cms.defaultCCCs + screen_number;
+    ccc = (XcmsCCC)dpy->cms.defaultCCCs + screenNumber;
 
-    if (!pCCC->pPerScrnInfo) {
+    if (!ccc->pPerScrnInfo) {
 	/*
 	 * Need to create the XcmsPerScrnInfo structure.  The
 	 * _XcmsInitScrnInfo routine will create the XcmsPerScrnInfo
-	 * structure as well as initialize its pSCCFuncSet and pSCCData
+	 * structure as well as initialize its functionSet and pScreenData
 	 * components.
 	 */
-	if (!_XcmsInitScrnInfo(dpy, screen_number)) {
-	    return((XcmsCCC *)NULL);
+	if (!_XcmsInitScrnInfo(dpy, screenNumber)) {
+	    return((XcmsCCC)NULL);
 	}
-	return(pCCC);
+	return(ccc);
     } else {
 	/*
-	 * If pCCC->pPerScrnInfo->state == XCMS_INIT_SUCCESS,
+	 * If ccc->pPerScrnInfo->state == XcmsInitSuccess,
 	 *    then the pPerScrnInfo component has already been initialized
-	 *    therefore, just return pCCC.
-	 * If pCCC->pPerScrnInfo->state == XCMS_INIT_DEFAULT,
+	 *    therefore, just return ccc.
+	 * If ccc->pPerScrnInfo->state == XcmsInitDefault,
 	 *    then this means that we already attempted to initialize
 	 *    the pPerScrnInfo component but failed therefore stuffing
-	 *    the pPerScrnInfo component with defaults.  Just return pCCC.
-	 * If pCCC->pPerScrnInfo->state == XCMS_INIT_NONE,
+	 *    the pPerScrnInfo component with defaults.  Just return ccc.
+	 * If ccc->pPerScrnInfo->state == XcmsInitNone,
 	 *    then attempt to initialize the pPerScrnInfo component.
 	 */
-	switch (pCCC->pPerScrnInfo->state) {
-	   case XCMS_INIT_DEFAULT :
+	switch (ccc->pPerScrnInfo->state) {
+	   case XcmsInitDefault :
 	    /* fall through */
-	   case XCMS_INIT_SUCCESS :
-	    return(pCCC);
-	   case XCMS_INIT_NONE :
+	   case XcmsInitSuccess :
+	    return(ccc);
+	   case XcmsInitNone :
 	    /* XcmsPerScreenInfo has not been initialized */
-	    if (!_XcmsInitScrnInfo(dpy, screen_number)) {
-		return((XcmsCCC *)NULL);
+	    if (!_XcmsInitScrnInfo(dpy, screenNumber)) {
+		return((XcmsCCC)NULL);
 	    }
-	    return(pCCC);
+	    return(ccc);
 	   default :
-	    return((XcmsCCC *)NULL);
+	    return((XcmsCCC)NULL);
 	}
     }
 }
@@ -202,8 +205,8 @@ XcmsDefaultCCC(dpy, screen_number)
  *	SYNOPSIS
  */
 void
-XcmsFreeCCC(pCCC)
-    XcmsCCC *pCCC;
+XcmsFreeCCC(ccc)
+    XcmsCCC ccc;
 /*
  *	DESCRIPTION
  *		Frees memory associated with a Color Conversion Context
@@ -214,12 +217,12 @@ XcmsFreeCCC(pCCC)
  *
  */
 {
-    if (pCCC == XcmsDefaultCCC(pCCC->dpy, pCCC->screen_number)) {
+    if (ccc == XcmsDefaultCCC(ccc->dpy, ccc->screenNumber)) {
 	/* do not allow clients to free DefaultCCC's */
 	return;
     }
 
-    Xfree(pCCC);
+    Xfree(ccc);
 
     /*
      * Note that XcmsPerScrnInfo sub-structures are not freed here.

@@ -1,31 +1,34 @@
-/* $XConsortium: XcmsAddSF.c,v 1.2 91/02/11 18:17:19 dave Exp $" */
+/* $XConsortium: XcmsAddSF.c,v 1.3 91/02/12 16:12:18 dave Exp $" */
 
 /*
- * (c) Copyright 1989 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
  *		XcmsAddSF.c
  *
  *	DESCRIPTION
- *		Source for XcmsAddSCCFuncSet
+ *		Source for XcmsAddFunctionSett
  *
  *
  */
@@ -44,22 +47,24 @@
 /*
  *      EXTERNS
  */
-extern caddr_t *_XcmsPushPointerArray();
-extern XcmsSpecFmt _XcmsRegIdOfPrefix();
+extern XPointer *_XcmsPushPointerArray();
+extern XcmsColorFormat _XcmsRegFormatOfPrefix();
 extern XcmsSCCFuncSet **_XcmsSCCFuncSets;
+extern XcmsSCCFuncSet **_XcmsSCCFuncSetsInit;
 extern XcmsColorSpace **_XcmsDDColorSpaces;
+extern XcmsColorSpace **_XcmsDDColorSpacesInit;
 
 
 
 /*
  *	NAME
- *		XcmsAddSCCFuncSet - Add an Screen Color Characterization
+ *		XcmsAddFunctionSett - Add an Screen Color Characterization
  *					Function Set
  *
  *	SYNOPSIS
  */
 Status
-XcmsAddSCCFuncSet(pNewFS)
+XcmsAddFunctionSett(pNewFS)
     XcmsSCCFuncSet *pNewFS;
 /*
  *	DESCRIPTION
@@ -67,13 +72,13 @@ XcmsAddSCCFuncSet(pNewFS)
  *		managed on a global basis.  This means that with exception
  *		of the provided DD color spaces:
  *			    RGB and RGBi
- *		DD color spaces may have different XcmsSpecFmt IDs between
- *		clients.  So, you must be careful when using XcmsSpecFmt
- *		across clients!  Use the routines XcmsIDofPrefix()
- *		and XcmsPrefixOfID() appropriately.
+ *		DD color spaces may have different XcmsColorFormat IDs between
+ *		clients.  So, you must be careful when using XcmsColorFormat
+ *		across clients!  Use the routines XcmsFormatOfPrefix()
+ *		and XcmsPrefixOfFormat() appropriately.
  *
  *	RETURNS
- *		XCMS_SUCCESS if succeeded, otherwise XCMS_FAILURE
+ *		XcmsSuccess if succeeded, otherwise XcmsFailure
  *
  *	CAVEATS
  *		Additional Screen Color Characterization Function Sets
@@ -87,7 +92,7 @@ XcmsAddSCCFuncSet(pNewFS)
     XcmsSCCFuncSet **papSCCFuncSets = _XcmsSCCFuncSets;
     XcmsColorSpace **papNewCSs;
     XcmsColorSpace *pNewCS, **paptmpCS;
-    XcmsSpecFmt lastID = 0;
+    XcmsColorFormat lastID = 0;
 
 
     if (papSCCFuncSets != NULL) {
@@ -96,13 +101,13 @@ XcmsAddSCCFuncSet(pNewFS)
 	     * Error, new Screen Color Characterization Function Set
 	     *	missing color spaces
 	     */
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	while ((pNewCS = *papNewCSs++) != NULL) {
-	    if ((pNewCS->id = _XcmsRegIdOfPrefix(pNewCS->prefix)) != 0) {
+	    if ((pNewCS->id = _XcmsRegFormatOfPrefix(pNewCS->prefix)) != 0) {
 		if (XCMS_DI_ID(pNewCS->id)) {
 		    /* This is a Device-Independent Color Space */
-		    return(XCMS_FAILURE);
+		    return(XcmsFailure);
 		}
 		/*
 		 * REGISTERED DD Color Space
@@ -128,9 +133,10 @@ XcmsAddSCCFuncSet(pNewFS)
 		    /* still haven't found one */
 		    pNewCS->id = NextUnregDdCsID(lastID);
 		    if ((paptmpCS = (XcmsColorSpace **)_XcmsPushPointerArray(
-		   	    (caddr_t *) _XcmsDDColorSpaces,
-			    (caddr_t) pNewCS)) == NULL) {
-			return(XCMS_FAILURE);
+		   	    (XPointer *) _XcmsDDColorSpaces,
+			    (XPointer) pNewCS,
+			    (XPointer *) _XcmsDDColorSpacesInit)) == NULL) {
+			return(XcmsFailure);
 		    }
 		    _XcmsDDColorSpaces = paptmpCS;
 		}
@@ -138,11 +144,12 @@ XcmsAddSCCFuncSet(pNewFS)
 	}
     }
     if ((papSCCFuncSets = (XcmsSCCFuncSet **)
-	    _XcmsPushPointerArray((caddr_t *) _XcmsSCCFuncSets,
-	    (caddr_t) pNewFS)) == NULL){
-	return(XCMS_FAILURE);
+	    _XcmsPushPointerArray((XPointer *) _XcmsSCCFuncSets,
+	    (XPointer) pNewFS,
+	    (XPointer *)_XcmsSCCFuncSetsInit)) == NULL) {
+	return(XcmsFailure);
     }
     _XcmsSCCFuncSets = papSCCFuncSets;
 
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }

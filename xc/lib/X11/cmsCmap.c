@@ -1,24 +1,27 @@
 /* $XConsortium: XcmsCmap.c,v 1.7 91/02/12 16:12:29 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -134,15 +137,15 @@ CmapRecForColormap(dpy, cmap)
 		    DefaultVisual(dpy, i))) == NULL) {
 		return((XcmsCmapRec *)NULL);
 	    }
-	    pRec->pCCC = XcmsCreateCCC(
+	    pRec->ccc = XcmsCreateCCC(
 		    dpy,
-		    i,			/* screen_number */
+		    i,			/* screenNumber */
 		    DefaultVisual(dpy, i),
 		    (XcmsColor *)NULL,	/* clientWhitePt */
-		    (XcmsFuncPtr)NULL,  /* gamutCompFunc */
-		    (caddr_t)NULL,	/* gamutCompClientData */
-		    (XcmsFuncPtr)NULL,  /* whitePtAdjFunc */
-		    (caddr_t)NULL	/* whitePtAdjClientData */
+		    (XcmsCompressionProc)NULL,  /* gamutCompProc */
+		    (XPointer)NULL,	/* gamutCompClientData */
+		    (XcmsWhiteAdjustProc)NULL,  /* whitePtAdjProc */
+		    (XPointer)NULL	/* whitePtAdjClientData */
 		    );
 	    return(pRec);
 	}
@@ -208,26 +211,26 @@ CmapRecForColormap(dpy, cmap)
 		    (visualList+j)->visual)) == NULL) {
 		return((XcmsCmapRec *)NULL);
 	    }
-	    pRec->pCCC = XcmsCreateCCC(
+	    pRec->ccc = XcmsCreateCCC(
 		    dpy,
-		    i,			/* screen_number */
+		    i,			/* screenNumber */
 		    (visualList+j)->visual,
 		    (XcmsColor *)NULL,	/* clientWhitePt */
-		    (XcmsFuncPtr)NULL,  /* gamutCompFunc */
-		    (caddr_t)NULL,	/* gamutCompClientData */
-		    (XcmsFuncPtr)NULL,  /* whitePtAdjFunc */
-		    (caddr_t)NULL	/* whitePtAdjClientData */
+		    (XcmsCompressionProc)NULL,  /* gamutCompProc */
+		    (XPointer)NULL,	/* gamutCompClientData */
+		    (XcmsWhiteAdjustProc)NULL,  /* whitePtAdjProc */
+		    (XPointer)NULL	/* whitePtAdjClientData */
 		    );
 	    XSetErrorHandler(oldErrorHandler);
 	    XDestroyWindow(dpy, tmpWindow);
-	    XFree((caddr_t)visualList);
+	    XFree((XPointer)visualList);
 	    return(pRec);
 	}
 
 	/*
 	 * Otherwise continue ....
 	 */
-	XFree((caddr_t)visualList);
+	XFree((XPointer)visualList);
     }
 
     /*
@@ -281,11 +284,11 @@ _XcmsAddCmapRec(dpy, cmap, windowID, visual)
     pNew->windowID = windowID;
     pNew->visual = visual;
     pNew->pNext = (XcmsCmapRec *)dpy->cms.clientCmaps;
-    dpy->cms.clientCmaps = (caddr_t)pNew;
+    dpy->cms.clientCmaps = (XPointer)pNew;
     dpy->free_funcs->clientCmaps = _XcmsFreeClientCmaps;
 
     /*
-     * Note, we don't create the XcmsCCC for pNew->pCCC here because
+     * Note, we don't create the XcmsCCC for pNew->ccc here because
      * it may require the use of XGetWindowAttributes (a round trip request)
      * to determine the screen.
      */
@@ -321,10 +324,10 @@ _XcmsCopyCmapRecAndFree(dpy, src_cmap, copy_cmap)
     if ((pRec_src = CmapRecForColormap(dpy, src_cmap)) != NULL) {
 	pRec_copy =_XcmsAddCmapRec(dpy, copy_cmap, pRec_src->windowID,
 		pRec_src->visual);
-	if (pRec_copy != NULL && pRec_src->pCCC) {
-	    pRec_copy->pCCC = (XcmsCCC *)Xcalloc(1,(unsigned) sizeof(XcmsCCC));
-	    bcopy((char *)pRec_src->pCCC, (char *)pRec_copy->pCCC,
-		    sizeof(XcmsCCC));
+	if (pRec_copy != NULL && pRec_src->ccc) {
+	    pRec_copy->ccc = (XcmsCCC)Xcalloc(1, (unsigned) sizeof(XcmsCCCRec));
+	    bcopy((char *)pRec_src->ccc, (char *)pRec_copy->ccc,
+		    sizeof(XcmsCCCRec));
 	}
 	return(pRec_copy);
     }
@@ -360,11 +363,11 @@ _XcmsDeleteCmapRec(dpy, cmap)
 	 * Target CmapRec is at the head of the list.
 	 */
 	pNext = ((XcmsCmapRec *)dpy->cms.clientCmaps)->pNext;
-	if (((XcmsCmapRec *)dpy->cms.clientCmaps)->pCCC) {
-	    XcmsFreeCCC(((XcmsCmapRec *)dpy->cms.clientCmaps)->pCCC);
+	if (((XcmsCmapRec *)dpy->cms.clientCmaps)->ccc) {
+	    XcmsFreeCCC(((XcmsCmapRec *)dpy->cms.clientCmaps)->ccc);
 	}
 	Xfree(dpy->cms.clientCmaps);
-	dpy->cms.clientCmaps = (caddr_t)pNext;
+	dpy->cms.clientCmaps = (XPointer)pNext;
 	return;
     }
 
@@ -412,14 +415,14 @@ _XcmsFreeClientCmaps(dpy)
     while (pRecNext != NULL) {
 	pRecFree = pRecNext;
 	pRecNext = pRecNext->pNext;
-	if (pRecFree->pCCC) {
+	if (pRecFree->ccc) {
 	    /* Free the XcmsCCC structure */
-	    XcmsFreeCCC(pRecFree->pCCC);
+	    XcmsFreeCCC(pRecFree->ccc);
 	}
 	/* Now free the XcmsCmapRec structure */
 	Xfree(pRecFree);
     }
-    dpy->cms.clientCmaps = (caddr_t)NULL;
+    dpy->cms.clientCmaps = (XPointer)NULL;
 }
 
 
@@ -432,12 +435,12 @@ _XcmsFreeClientCmaps(dpy)
 
 /*
  *	NAME
- *		XcmsCCCofColormap
+ *		XcmsCCCOfColormap
  *
  *	SYNOPSIS
  */
-XcmsCCC *
-XcmsCCCofColormap(dpy, cmap)
+XcmsCCC 
+XcmsCCCOfColormap(dpy, cmap)
     Display *dpy;
     Colormap cmap;
 /*
@@ -456,9 +459,9 @@ XcmsCCCofColormap(dpy, cmap)
     int i;
 
     if ((pRec = CmapRecForColormap(dpy, cmap)) != NULL) {
-	if (pRec->pCCC) {
+	if (pRec->ccc) {
 	    /* XcmsCmapRec already has a XcmsCCC */
-	    return(pRec->pCCC);
+	    return(pRec->ccc);
 	}
 
 	/*
@@ -468,30 +471,30 @@ XcmsCCCofColormap(dpy, cmap)
 	 * information.  Unless, of course there is only one screen!!
 	 */
 	if (nScrn == 1) {
-	    /* Assume screen_number == 0 */
-	    return(pRec->pCCC = XcmsCreateCCC(
+	    /* Assume screenNumber == 0 */
+	    return(pRec->ccc = XcmsCreateCCC(
 		    dpy,
-		    0,			/* screen_number */
+		    0,			/* screenNumber */
 		    pRec->visual,
 		    (XcmsColor *)NULL,	/* clientWhitePt */
-		    (XcmsFuncPtr)NULL,  /* gamutCompFunc */
-		    (caddr_t)NULL,	/* gamutCompClientData */
-		    (XcmsFuncPtr)NULL,  /* whitePtAdjFunc */
-		    (caddr_t)NULL	/* whitePtAdjClientData */
+		    (XcmsFuncPtr)NULL,  /* gamutCompProc */
+		    (XPointer)NULL,	/* gamutCompClientData */
+		    (XcmsFuncPtr)NULL,  /* whitePtAdjProc */
+		    (XPointer)NULL	/* whitePtAdjClientData */
 		    ));
 	} else {
 	    if (XGetWindowAttributes(dpy, pRec->windowID, &windowAttr)) {
 		for (i = 0; i < nScrn; i++) {
 		    if (ScreenOfDisplay(dpy, i) == windowAttr.screen) {
-			return(pRec->pCCC = XcmsCreateCCC(
+			return(pRec->ccc = XcmsCreateCCC(
 				dpy,
-				i,		   /* screen_number */
+				i,		   /* screenNumber */
 				pRec->visual,
 				(XcmsColor *)NULL, /* clientWhitePt */
-				(XcmsFuncPtr)NULL, /* gamutCompFunc */
-				(caddr_t)NULL,	   /* gamutCompClientData */
-				(XcmsFuncPtr)NULL, /* whitePtAdjFunc */
-				(caddr_t)NULL	   /* whitePtAdjClientData */
+				(XcmsFuncPtr)NULL, /* gamutCompProc */
+				(XPointer)NULL,	   /* gamutCompClientData */
+				(XcmsFuncPtr)NULL, /* whitePtAdjProc */
+				(XPointer)NULL	   /* whitePtAdjClientData */
 				));
 		    }
 		}

@@ -17,6 +17,8 @@ without express or implied warranty.
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
+extern void _XcmsRGB_to_XColor();
+
 #if NeedFunctionPrototypes
 XStoreNamedColor(
 register Display *dpy,
@@ -35,7 +37,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
 {
     unsigned int nbytes;
     register xStoreNamedColorReq *req;
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     XcmsColor cmsColor_exact;
     XColor scr_def;
     char tmpName[BUFSIZ];
@@ -45,9 +47,9 @@ int flags;  /* DoRed, DoGreen, DoBlue */
      */
     /* copy string to allow overwrite by _XcmsResolveColorString() */
     strncpy(tmpName, name, BUFSIZ - 1);
-    if ((pCCC = XcmsCCCofColormap(dpy, cmap)) != (XcmsCCC *)NULL) {
-	if (_XcmsResolveColorString(pCCC, tmpName, &cmsColor_exact,
-		XCMS_RGB_FORMAT) == XCMS_SUCCESS) {
+    if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
+	if (_XcmsResolveColorString(ccc, tmpName, &cmsColor_exact,
+		XcmsRGBFormat) == XcmsSuccess) {
 	    _XcmsRGB_to_XColor(&cmsColor_exact, &scr_def, 1);
 	    scr_def.pixel = pixel;
 	    scr_def.flags = flags;
@@ -72,7 +74,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     req->cmap = cmap;
     req->flags = flags;
     req->pixel = pixel;
-    req->nbytes = nbytes = tmpName ? strlen(tmpName) : 0;
+    req->nbytes = nbytes = tmpName[0] == '\0' ? strlen(tmpName) : 0;
     req->length += (nbytes + 3) >> 2; /* round up to multiple of 4 */
     Data(dpy, tmpName, (long)nbytes);
     UnlockDisplay(dpy);

@@ -1,31 +1,34 @@
-/* $XConsortium: XcmsAddDIC.c,v 1.2 91/02/11 18:17:17 dave Exp $" */
+/* $XConsortium: XcmsAddDIC.c,v 1.3 91/02/12 16:12:14 dave Exp $" */
 
 /*
- * (c) Copyright 1989 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
  *		XcmsAddDIC.c
  *
  *	DESCRIPTION
- *		Source for XcmsAddDIColorSpace
+ *		Source for XcmsAddColorSpace
  *
  *
  */
@@ -46,41 +49,42 @@
  *      EXTERNS
  */
 extern XcmsPerDpyInfo *_XcmsFindDpyInfo();
-extern caddr_t *_XcmsPushPointerArray();
-extern XcmsSpecFmt _XcmsRegIdOfPrefix();
+extern XPointer *_XcmsPushPointerArray();
+extern XcmsColorFormat _XcmsRegFormatOfPrefix();
 extern XcmsColorSpace **_XcmsDIColorSpaces;
+extern XcmsColorSpace **_XcmsDIColorSpacesInit;
 
 /*
  *	NAME
- *		XcmsAddDIColorSpace - Add a Device-Independent Color Space
+ *		XcmsAddColorSpace - Add a Device-Independent Color Space
  *
  *	SYNOPSIS
  */
 Status
-XcmsAddDIColorSpace(pCS)
+XcmsAddColorSpace(pCS)
     XcmsColorSpace *pCS;
 /*
  *	DESCRIPTION
  *		DI Color Spaces are managed on a global basis.
  *		This means that with exception of the provided DI color spaces:
  *			CIEXYZ, CIExyY, CIELab, CIEuvY, CIELuv, and TekHVC
- *		DI color spaces may have different XcmsSpecFmt IDs between
+ *		DI color spaces may have different XcmsColorFormat IDs between
  *		clients.  So, you must be careful when using XcmsColor
- *		structures between clients!  Use the routines XcmsIDofPrefix()
- *		and XcmsPrefixOfID() appropriately.
+ *		structures between clients!  Use the routines XcmsFormatOfPrefix()
+ *		and XcmsPrefixOfFormat() appropriately.
  *
  *	RETURNS
- *		XCMS_SUCCESS if succeeded, otherwise XCMS_FAILURE
+ *		XcmsSuccess if succeeded, otherwise XcmsFailure
  */
 {
     XcmsColorSpace **papColorSpaces;
     XcmsColorSpace *ptmpCS;
-    XcmsSpecFmt lastID = 0;
+    XcmsColorFormat lastID = 0;
 
-    if ((pCS->id = _XcmsRegIdOfPrefix(pCS->prefix)) != 0) {
+    if ((pCS->id = _XcmsRegFormatOfPrefix(pCS->prefix)) != 0) {
 	if (XCMS_DD_ID(pCS->id)) {
 	    /* This is a Device-Dependent Color Space */
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	/*
 	 * REGISTERED DI Color Space
@@ -99,7 +103,7 @@ XcmsAddDIColorSpace(pCS)
 		if (pCS->id == ptmpCS->id) {
 		    if (pCS == ptmpCS) {
 			/* a. duplicate*/
-			return(XCMS_SUCCESS);
+			return(XcmsSuccess);
 		    }
 		    /* b. same ID/prefix but different XcmsColorSpace */
 		    break;
@@ -127,7 +131,7 @@ XcmsAddDIColorSpace(pCS)
 		if (strcmp(pCS->prefix, ptmpCS->prefix) == 0) {
 		    if (pCS == ptmpCS) {
 			/* a. duplicate */
-			return(XCMS_SUCCESS);
+			return(XcmsSuccess);
 		    }
 		    /* b. same prefix but different XcmsColorSpec */
 		    pCS->id = ptmpCS->id;
@@ -142,10 +146,11 @@ XcmsAddDIColorSpace(pCS)
 
 AddColorSpace:
     if ((papColorSpaces = (XcmsColorSpace **)
-	    _XcmsPushPointerArray((caddr_t *)_XcmsDIColorSpaces,
-	    (caddr_t)pCS)) == NULL) {
-	return(XCMS_FAILURE);
+	    _XcmsPushPointerArray((XPointer *)_XcmsDIColorSpaces,
+	    (XPointer)pCS,
+	    (XPointer *)_XcmsDIColorSpacesInit)) == NULL) {
+	return(XcmsFailure);
     }
     _XcmsDIColorSpaces = papColorSpaces;
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
