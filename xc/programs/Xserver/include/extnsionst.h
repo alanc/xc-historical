@@ -1,4 +1,4 @@
-/* $Header: extnsionst.h,v 1.1 87/07/16 14:03:04 toddb Locked $ */
+/* $Header: extnsionst.h,v 1.2 87/07/16 14:03:19 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -80,7 +80,7 @@ typedef void (* ExtensionLookupProc)();
 extern void InitExtensions();
 extern int ProcQueryExtension();
 extern int ProcListExtensions();
-extern ExtensionEntry *AddExtensions();
+extern ExtensionEntry *AddExtension();
 extern ExtensionLookupProc LookupProc();
 extern void RegisterProc();
 extern void RegisterScreenProc();
