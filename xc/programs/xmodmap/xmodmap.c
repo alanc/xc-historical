@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.14 88/10/08 15:14:52 jim Exp $
+ * $XConsortium: xmodmap.c,v 1.15 88/10/08 15:38:35 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -64,7 +64,6 @@ void usage ()
     for (cpp = help_message; *cpp; cpp++) {
 	fprintf (stderr, "%s\n", *cpp);
     }
-    fprintf (stderr, "\n");
     Exit (1);
 }
 
@@ -86,6 +85,7 @@ static char *grammar_message[] = {
 "Keysyms on the left hand side of the = sign are looked up before any changes",
 "are made; keysyms on the right are looked up after all of those on the left",
 "have been resolved.  This makes it possible to swap modifier keys.",
+"",
 NULL };
 
 
@@ -98,7 +98,6 @@ void grammar_usage ()
     for (cpp = grammar_message; *cpp; cpp++) {
 	fprintf (stderr, "%s\n", *cpp);
     }
-    fprintf (stderr, "\n");
     Exit (0);
 }
 
