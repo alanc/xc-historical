@@ -18,7 +18,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 ;;;-------------------------------------------------------------------------
 ;;; Declarations
@@ -168,13 +168,9 @@
 
 #+lcl3.0
 (eval-when (compile eval load)
-(if (eq lucid::machine-endian :little) (pushnew :clx-little-endian *features*))
-)
-#+LCL3.0
-(eval-when (compile)
-  (unless (= (cdr (assoc 'compilation-speed lucid::*compiler-optimizations*)) 0)
-    (cerror "Go ahead anyway"
-	    "You must use Lucid's compiler in Production Mode to compile CLX")))
+  (ecase lucid::machine-endian
+    (:big)
+    (:little (pushnew :clx-little-endian *features*))))
 
 ;;; Steele's Common-Lisp states:  "It is an error if the array specified
 ;;; as the :displaced-to argument  does not have the same :element-type
