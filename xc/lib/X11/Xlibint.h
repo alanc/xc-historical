@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.52 88/08/11 18:16:56 jim Exp $ */
+/* $Header: Xlibint.h,v 11.53 88/08/12 17:03:31 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -245,6 +245,11 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #define _XRead32(dpy, data, len) _XRead((dpy), (char *)(data), (len))
 #endif /* not WORD64 */
 
+#define PackData16(dpy,data,len) Data16 (dpy, data, len)
+#define PackData32(dpy,data,len) Data32 (dpy, data, len)
+
+/* Xlib manual is bogus */
+#define PackData(dpy,data,len) PackData16 (dpy, data, len)
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
