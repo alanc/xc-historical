@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.26 93/09/20 20:11:15 dpw Exp $ */
+/* $XConsortium: xdmcp.c,v 1.27 93/09/22 20:01:23 rws Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -42,10 +42,10 @@ static xdmcp_states	    state;
 static struct sockaddr_in   req_sockaddr;
 static int		    req_socklen;
 static CARD32		    SessionID;
-static long		    timeOutTime;
+static CARD32		    timeOutTime;
 static int		    timeOutRtx;
-static long		    defaultKeepaliveDormancy = XDM_DEF_DORMANCY;
-static long		    keepaliveDormancy = XDM_DEF_DORMANCY;
+static CARD32		    defaultKeepaliveDormancy = XDM_DEF_DORMANCY;
+static CARD32		    keepaliveDormancy = XDM_DEF_DORMANCY;
 static CARD16		    DisplayNumber;
 static xdmcp_states	    XDM_INIT_STATE = XDM_OFF;
 #ifdef HASXDMAUTH
@@ -595,7 +595,7 @@ XdmcpBlockHandler(data, wt, pReadmask)
     pointer	    pReadmask;
 {
     FdMask *LastSelectMask = (FdMask *)pReadmask;
-    long millisToGo, wtMillis;
+    CARD32 millisToGo, wtMillis;
     static struct timeval waittime;
 
     if (state == XDM_OFF)
@@ -603,8 +603,10 @@ XdmcpBlockHandler(data, wt, pReadmask)
     BITSET(LastSelectMask, xdmcpSocket);
     if (timeOutTime == 0)
 	return;
-    millisToGo = timeOutTime - GetTimeInMillis() + 1;
-    if (millisToGo < 0)
+    millisToGo = GetTimeInMillis();
+    if (millisToGo < timeOutTime)
+	millisToGo = timeOutTime - millisToGo;
+    else
 	millisToGo = 0;
     if (*wt == NULL)
     {
