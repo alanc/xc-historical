@@ -175,6 +175,9 @@ extern Bool InitComplexPoly();
 extern void DoComplexPoly();
 extern void EndComplexPoly();
 
+extern Bool InitGeneralPoly();
+extern void DoGeneralPoly();
+
 /*
  * some test must be done a certain multiple of times. That multiple is
  * in the second half of the products below. You can edit the multiplier,
@@ -754,6 +757,22 @@ Test test[] = {
 		InitComplexPoly, DoComplexPoly, NullProc, EndComplexPoly,
 		VERSION1_3, ROP, 0,
 		{POLY/10, 100}},
+  {"-64poly10convex", "Fill 10x10 64-gon (Convex)",
+		InitGeneralPoly, DoGeneralPoly, NullProc, EndComplexPoly,
+		VERSION1_3, ROP, 0,
+		{POLY, 10, (char *) 64, (char *) Convex}},
+  {"-64poly100convex", "Fill 100x100 64-gon (Convex)",
+		InitGeneralPoly, DoGeneralPoly, NullProc, EndComplexPoly,
+		VERSION1_3, ROP, 0,
+		{POLY/10, 100, (char *) 64, (char *) Convex}},
+  {"-64poly10complex", "Fill 10x10 64-gon (Complex)",
+		InitGeneralPoly, DoGeneralPoly, NullProc, EndComplexPoly,
+		VERSION1_3, ROP, 0,
+		{POLY, 10, (char *) 64, (char *) Complex}},
+  {"-64poly100complex", "Fill 100x100 64-gon (Complex)",
+		InitGeneralPoly, DoGeneralPoly, NullProc, EndComplexPoly,
+		VERSION1_3, ROP, 0,
+		{POLY/10, 100, (char *) 64, (char *) Complex}},
   {"-ftext",    "Char in 80-char line (6x13)",
 		InitText, DoText, ClearTextWin, EndText,
 		VALL, ROP, 0,

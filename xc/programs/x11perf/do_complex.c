@@ -30,6 +30,7 @@ static GC       pgc;
 
 extern double sin();
 extern double cos();
+extern double tan();
 extern double sqrt();
 #define PI  3.14159265357989
 
@@ -124,3 +125,76 @@ void EndComplexPoly(xp, p)
     free(points);
 }
 
+int InitGeneralPoly (xp,p,reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    int     i, j, numPoints;
+    int	    nsides;
+    int	    x, y;
+    int     size, iradius;
+    double  phi, phiinc, inner_radius, outer_radius, delta, phi2;
+    XPoint  *curPoint;
+
+    pgc = xp->fggc;
+    size = p->special;
+    nsides = (int) p->font;
+    phi = 0.0;
+    delta = 2.0 * PI / ((double) nsides);
+    phiinc = delta / 10.0;
+
+    inner_radius = size / sqrt (nsides * tan (PI / nsides));
+    outer_radius = inner_radius / cos (PI / (2 * nsides));
+    numPoints = p->objects * nsides;
+    points = (XPoint *) malloc (numPoints * sizeof (XPoint));
+    curPoint = points;
+    iradius = outer_radius + 1;
+    x = iradius;
+    y = iradius;
+    for (i = 0; i < p->objects; i++) {
+	phi2 = phi;
+	for (j = 0; j < nsides; j++) {
+	    curPoint->x = x + (outer_radius * cos(phi2) + 0.5);
+	    curPoint->y = y + (outer_radius * sin(phi2) + 0.5);
+	    curPoint++;
+	    phi2 += delta;
+	}
+	phi += phiinc;
+	y += 2 * iradius;
+	if (y + iradius >= HEIGHT) {
+	    y = iradius;
+	    x += 2 * iradius;
+	    if (x + iradius >= WIDTH) {
+		x = iradius;
+	    }
+	}
+    }
+    return reps;
+}
+
+void DoGeneralPoly(xp,p,reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    int     i, j;
+    int	    nsides;
+    int	    mode;
+    XPoint  *curPoint;
+
+    nsides = (int) p->font;
+    mode = (int) p->bfont;
+    for (i = 0; i != reps; i++) {
+        curPoint = points;
+        for (j = 0; j != p->objects; j++) {
+            XFillPolygon(xp->d, xp->w, pgc, curPoint, nsides, mode, 
+			 CoordModeOrigin);
+            curPoint += nsides;
+	  }
+        if (pgc == xp->bggc)
+            pgc = xp->fggc;
+        else
+            pgc = xp->bggc;
+    }
+}
