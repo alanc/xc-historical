@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.26 91/04/26 11:47:16 dave Exp $
+/* $XConsortium: xfontsel.c,v 1.27 91/04/26 17:11:10 dave Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -401,6 +401,13 @@ struct ParseRec {
     FieldValueList **fieldValues;
 };
 
+int SizeList(p)
+char *p;
+{
+  int count = 0;
+  while (strtok(p, ",")) count++;
+  return count;
+}
 
 void GetFontNames( closure )
     XtPointer closure;
@@ -414,6 +421,17 @@ void GetFontNames( closure )
 
     fontNames = parseRec->fontNames =
 	XListFonts(dpy, AppRes.pattern, 32767, &numFonts);
+/*****
+    numfonts += ListSize(AppRes.pixelSizeList) +
+      ListSize(AppRes.pointSizeList);
+*****/
+/***** Listing fonts to a file:
+    { 
+      int j; FILE *to;
+      to  = fopen("fontFile", "a");
+      for (j=0;j<numFonts;j++) fprintf(to,"%s\n",fontNames[j]);
+    }
+*****/
 
     fonts = (FontValues*)XtMalloc( numFonts*sizeof(FontValues) );
     fontInSet = (Boolean*)XtMalloc( numFonts*sizeof(Boolean) );
@@ -453,6 +471,7 @@ void GetFontNames( closure )
     SetParsingFontCount(matchingFontCount);
     if (AppRes.pattern != defaultPattern) {
 	int maxField, f;
+	/* SUPPRESS 530 */
 	for (f = 0; f < numFonts && !IsXLFDFontName(fontNames[f]); f++);
 	if (f != numFonts) {
 	    if (Matches(AppRes.pattern, fontNames[f],
@@ -481,8 +500,10 @@ void ProcessScaledFonts(i, f, font, closure)
 {
   FieldValue *v; 
   ParseRec *parseRec = (ParseRec*)closure;
-  char **fontNames = parseRec->fontNames;
-  int num_fonts = parseRec->end;
+  /* SUPPRESS 594 */
+  char **fontNames = parseRec->fontNames; 
+  /* SUPPRESS 594 */
+  int num_fonts = parseRec->end; /* SUPPRESS 594 */
   FieldValueList **fieldValues = parseRec->fieldValues;
   FontValues *fontValues = parseRec->fonts - numBadFonts;
   int len;
@@ -560,7 +581,8 @@ void ParseFontNames( closure )
 		len = 0;
 	    } else {
 		fieldP = p;
-		while (*p && *++p != DELIM);
+		/* SUPPRESS 530 */ 
+		while (*p && *++p != DELIM); 
 		len = p - fieldP;
 	    }
 	    for (i=fieldValues[f]->count,v=fieldValues[f]->value; i;i--,v++) {
@@ -585,6 +607,7 @@ void ParseFontNames( closure )
 		  firstScaledPoints = False;
 		  continue;
 		}
+		fontValues->value_index[f] = fieldValues[f]->count;
 		continue;
 	      }
 	      else {
@@ -669,7 +692,9 @@ void MakeFieldMenu(closure)
     FieldValueList *values = fieldValues[makeRec->field];
     FieldValue *val = values->value;
     int i;
+    /* SUPPRESS 594 */
     Arg args[1];
+    /* SUPPRESS 594 */
     register Widget item, line;
     Boolean firstScaledFieldValue = False;
 
@@ -740,7 +765,7 @@ SetNoFonts()
 #ifdef USE_TEXT_WIDGET
 	XtUnmapWidget(XtParent(sampleText));
 #else
-	XtUnmapWidget(sampleText);
+	XtUnmapWidget(sampleText); 
 #endif
     }
 }
@@ -901,8 +926,10 @@ void SetCurrentFont(closure)
 	    String str;
 
 	    currentFontNameString[pos++] = DELIM;
+	    /* SUPPRESS 560 */
 	    if ((i = currentFont.value_index[f]) != -1) {
 		FieldValue *val = &fieldValues[f]->value[i];
+	        /* SUPPRESS 560 */
 		if (str = val->string)
 		    len = strlen(str);
 		else {
@@ -1004,12 +1031,13 @@ EnableRemainingItems(current_field_action)
 		int *fp = value->font;
 		int fontCount;
 		for (fontCount = value->count; fontCount; fontCount--, fp++) {
-		    if (fontInSet[*fp] && !value->scaledFieldValue) {
+		    if (fontInSet[*fp] /*&& !value->scaledFieldValue*/) {
 			value->enable = True;
 			goto NextValue;
 		    }
 		}
-		value->enable = False;
+		/*if (!value->scaledFieldValue)*/
+		  value->enable = False;
 	      NextValue:;
 	    }
 	}
@@ -1051,7 +1079,7 @@ void SelectField(w, closure, callData)
     int count = fieldValues[field]->count;
     printf( "field %d:\n", field );
     while (count--) {
-	printf( " %s: %d fonts\n", values->string, values->count );
+	printf( " %s: %d <fonts\n", values->string, values->count );
 	values++;
     }
     printf( "\n" );
@@ -1110,8 +1138,8 @@ void EnableMenu(closure)
 
     for (f = fieldValues[field]->count; f; f--, val++) {
 	if (showUnselectable) {
-	    if (val->enable != XtIsSensitive(val->menu_item))
-		XtSetSensitive(val->menu_item, val->enable);
+	    if (val->enable != XtIsSensitive(val->menu_item)) 
+	      XtSetSensitive(val->menu_item, val->enable);
 	}
 	else {
 	    if (val->enable != XtIsManaged(val->menu_item)) {
