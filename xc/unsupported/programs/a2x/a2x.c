@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.84 92/08/06 18:57:59 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.85 92/08/13 20:02:38 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -246,11 +246,16 @@ Window my_window = None;
 JumpRec jump;
 MacroRec macros[10];
 LocationRec locations[10];
+char *hotwinname = "a2x";
+Window hotwin = None;
+char *hotkeyname = NULL;
+KeyCode hotkey = 0;
 #ifdef XTRAP
 XETC *tc;
 #endif
 
 void process();
+KeyCode parse_keysym();
 
 #if defined(XTRAP) || defined(XTESTEXT1)
 void
@@ -338,7 +343,8 @@ generate_warp(screen, x, y)
 void
 usage()
 {
-    printf("%s: [-d display] [-e] [-b] [-u <undofile>]\n", progname);
+    printf("%s: [-d <display>] [-e] [-b] [-u <undofile>] [-h <keysym>] [-w <name>]\n",
+	   progname);
     exit(1);
 }
 
@@ -493,11 +499,39 @@ reset_mapping()
 	meta = mod5;
 	break;
     }
-    last_sym = 0;
     if (bs_is_del) {
 	keycodes['\b'] = keycodes['\177'];
 	modifiers['\b'] = modifiers['\177'];
     }
+    last_sym = 0;
+    if (hotkeyname) {
+	hotkey = parse_keysym(hotkeyname);
+	hotwin = None;
+	if (hotkey) {
+	    Window w, *children;
+	    unsigned int nchild;
+	    int i, nomatch;
+	    char *name;
+
+	    XQueryTree(dpy, DefaultRootWindow(dpy), &w, &w,
+		       &children, &nchild);
+	    for (i = 0; !hotwin && i < nchild; i++) {
+		w = XmuClientWindow(dpy, children[i]);
+		if (!XFetchName(dpy, w, &name))
+		    continue;
+		if (!strcmp(name, hotwinname))
+		    hotwin = w;
+		XFree(name);
+	    }
+	    XFree(children);
+	}
+	if (hotwin)
+	    XGrabKey(dpy, hotkey, 0, DefaultRootWindow(dpy), False,
+		     GrabModeAsync, GrabModeAsync);
+	else
+	    XBell(dpy, 0);
+    }
+    last_sym = 0;
 }
 
 void
@@ -1503,6 +1537,14 @@ set_trigger()
 }
 
 void
+do_hotkey(ev)
+    XEvent *ev;
+{
+    ev->xkey.window = hotwin;
+    XSendEvent(dpy, hotwin, False, KeyPressMask, ev);
+}
+
+void
 process_events()
 {
     int i;
@@ -1512,6 +1554,10 @@ process_events()
     for (i = XEventsQueued(dpy, QueuedAfterReading); --i >= 0; ) {
 	XNextEvent(dpy, &ev);
 	switch (ev.type) {
+	case KeyPress:
+	    if (ev.xkey.keycode == hotkey)
+		do_hotkey(&ev);
+	    break;
 	case MappingNotify:
 	    XRefreshKeyboardMapping(&ev.xmapping);
 	    reset_mapping();
@@ -2320,6 +2366,18 @@ main(argc, argv)
 	    if (!argc)
 		usage();
 	    undofile = *argv;
+	    break;
+	case 'h':
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    hotkeyname = *argv;
+	    break;
+	case 'w':
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    hotwinname = *argv;
 	    break;
 	default:
 	    usage();
