@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.28 89/06/19 14:04:20 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.29 89/07/12 12:30:57 jim Exp $";
 #endif
 
 /*
@@ -540,6 +540,9 @@ void Syntax ()
     fprintf (stderr, 
 	     "    -remove                      remove %s from its window\n",
 	     RESOURCE_PROPERTY_NAME);
+    fprintf (stderr, 
+	     "    -retain                      retain %s when xrdb is first client\n",
+	     RESOURCE_PROPERTY_NAME);
     fprintf (stderr,
 	     "    -quiet                       don't warn about duplicates\n");
     fprintf (stderr, 
@@ -599,6 +602,7 @@ main (argc, argv)
     int printit = 0;
     int showDefines = 0;
     int removeProp = 0;
+    int retainProp = 0;
     int merge = 0;
     char *editFile = NULL;
     char *cpp_program = CPP;
@@ -662,8 +666,11 @@ main (argc, argv)
 	    } else if (isabbreviation ("-symbols", arg, 2)) {
 		showDefines = 1;
 		continue;
-	    } else if (isabbreviation ("-remove", arg, 2)) {
+	    } else if (isabbreviation ("-remove", arg, 3)) {
 		removeProp = 1;
+		continue;
+	    } else if (isabbreviation ("-retain", arg, 3)) {
+		retainProp = 1;
 		continue;
 	    } else if (isabbreviation ("-quiet", arg, 2)) {
 		quiet = True;
@@ -792,6 +799,8 @@ main (argc, argv)
 	    XChangeProperty (dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER,
 			     XA_STRING, 8, PropModeReplace, buffer.buff, 
 			     buffer.used);
+	    if (retainProp)
+	      XSetCloseDownMode(dpy, RetainPermanent);
 	}
     }
 
