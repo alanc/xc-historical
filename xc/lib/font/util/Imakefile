@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 91/07/16 23:04:29 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 91/07/22 22:21:27 rws Exp $
 #include <Server.tmpl>
 
         INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
@@ -7,10 +7,10 @@ XCOMM $XConsortium: Imakefile,v 1.6 91/07/16 23:04:29 gildea Exp $
      FORMAT_DEFS = FontFormatDefines
 #endif
             SRCS = bitmaputil.c fontnames.c fontutil.c fontxlfd.c format.c \
-		   fontaccel.c atom.c miscutil.c private.c patcache.c
+		   fontaccel.c atom.c miscutil.c private.c patcache.c fsfuncs.c
 
             OBJS = bitmaputil.o fontnames.o fontutil.o fontxlfd.o format.o \
-		   fontaccel.o atom.o miscutil.o private.o patcache.o
+		   fontaccel.o atom.o miscutil.o private.o patcache.o fsfuncs.o
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
