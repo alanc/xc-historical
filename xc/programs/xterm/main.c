@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.166 91/02/05 19:25:37 gildea Exp $ */
+/* $XConsortium: main.c,v 1.167 91/02/06 17:26:01 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -95,6 +95,7 @@ SOFTWARE.
  * now get system-specific includes
  */
 #ifdef CRAY
+#define USE_SYSV_UTMP
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
 #endif
@@ -199,7 +200,11 @@ SIGNAL_T Exit();
 #include <unistd.h>
 #else
 extern long lseek();
+#ifdef USG
+extern unsigned sleep();
+#else
 extern void sleep();
+#endif
 #endif
 
 extern char *malloc();
@@ -687,7 +692,7 @@ char **argv;
 	** of the various terminal structures (which may change from
 	** implementation to implementation).
 	*/
-#if defined(macII) || defined(ATT)
+#if defined(macII) || defined(ATT) || defined(CRAY)
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
@@ -1292,7 +1297,10 @@ spawn ()
 #endif	/* USE_SYSV_TERMIO */
 	char **envnew;		/* new environment */
 	int envsize;		/* elements in new environment */
-	char buf[32];
+	char buf[64];
+#ifdef HAS_UTMP_UT_HOST
+	char *s;
+#endif
 	char *TermName = NULL;
 	int ldisc = 0;
 #ifdef sun
@@ -1356,7 +1364,8 @@ spawn ()
 		 * seem to return EIO.
 		 */
  		if (tty < 0) {
-			if (tty_got_hung || errno == ENXIO || errno == EIO) {
+			if (tty_got_hung || errno == ENXIO || errno == EIO ||
+			    errno == ENOTTY) {
 				no_dev_tty = TRUE;
 #ifdef USE_SYSV_TERMIO
 				tio = d_tio;
@@ -1621,7 +1630,11 @@ spawn ()
 		 * open up the pty slave.
 		 */
 #ifdef	USE_SYSV_PGRP
+#if defined(CRAY) && (OSMAJORVERION > 5)
+		(void) setsid();
+#else
 		(void) setpgrp();
+#endif
 #endif	/* USE_SYSV_PGRP */
 		while (1) {
 #ifdef TIOCNOTTY
@@ -1718,7 +1731,7 @@ spawn ()
 		 */
 		{
 #ifdef USE_SYSV_TERMIO
-#ifdef umips
+#if defined(umips) || defined(CRAY)
 		    /* If the control tty had its modes screwed around with,
 		       eg. by lineedit in the shell, or emacs, etc. then tio
 		       will have bad values.  Let's just get termio from the
@@ -1887,6 +1900,7 @@ spawn ()
 		/* this is the time to go and set up stdin, out, and err
 		 */
 		{
+#ifndef CRAY
 		    /* dup the tty */
 		    for (i = 0; i <= 2; i++)
 			if (i != tty) {
@@ -1898,6 +1912,19 @@ spawn ()
 		    /* and close the tty */
 		    if (tty > 2)
 			(void) close(tty);
+#endif
+#else /* CRAY */
+		    (void) close(tty);
+		    (void) close(0);
+
+		    if (open ("/dev/tty", O_RDWR)) {
+			fprintf(stderr, "cannot open /dev/tty\n");
+			exit(1);
+		    }
+		    (void) close(1);
+		    (void) close(2);
+		    dup(0);
+		    dup(0);
 #endif
 		}
 
@@ -1955,8 +1982,11 @@ spawn ()
 			ptyname + strlen("/dev/"), sizeof (utmp.ut_line));
 
 #ifdef HAS_UTMP_UT_HOST
-		(void) strncpy(utmp.ut_host, DisplayString(screen->display),
-			       sizeof(utmp.ut_host));
+		(void) strncpy(buf, DisplayString(screen->display),
+			       sizeof(buf));
+		if (s = rindex(buf, ':'))
+		    *s = '\0';
+		(void) strncpy(utmp.ut_host, buf, sizeof(utmp.ut_host));
 #endif
 		(void) strncpy(utmp.ut_name, pw->pw_name, 
 			       sizeof(utmp.ut_name));
@@ -2193,7 +2223,7 @@ spawn ()
 
 		/* Exec failed. */
 		fprintf (stderr, "%s: Could not exec %s!\n", xterm_name, ptr);
-		sleep(5);
+		(void) sleep(5);
 		exit(ERROR_EXEC);
 	    }				/* end if in child after fork */
 
@@ -2465,7 +2495,7 @@ static SIGNAL_T reapchild (n)
 		SIGNAL_RETURN;
 	}
 #else /* USE_POSIX_WAIT */
-#if defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP)
+#if defined(USE_SYSV_SIGNALS) && (defined(CRAY) || !defined(SIGTSTP))
 	int status, pid;
 
 	pid = wait(&status);
@@ -2473,7 +2503,7 @@ static SIGNAL_T reapchild (n)
 		(void) signal(SIGCHLD, reapchild);
 		SIGNAL_RETURN;
 	}
-#else	/* defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP) */
+#else	/* defined(USE_SYSV_SIGNALS) && (defined(CRAY) || !defined(SIGTSTP)) */
 	union wait status;
 	register int pid;
 	
