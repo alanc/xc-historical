@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.65 89/12/09 19:10:20 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.66 90/03/05 11:41:01 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -361,7 +361,6 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #include <netinet/tcp.h>
 #endif /* apollo */
 #endif
-void bcopy();
 #endif /* NEED_BSDISH */
 
 
