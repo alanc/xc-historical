@@ -1,4 +1,4 @@
-.TH LISTRES 1 "17 July 1989" "X Version 11"
+.TH LISTRES 1 "Release 4" "X Version 11"
 .SH NAME
 listres - list resources in widgets
 .SH SYNOPSIS

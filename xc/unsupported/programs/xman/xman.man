@@ -1,4 +1,4 @@
-.TH XMAN 1 "11 December 1989" "X Version 11 Release 4"
+.TH XMAN 1 "Release 4" "X Version 11 Release 4"
 .SH NAME
 xman - Manual page display program for the X Window System.
 .SH SYNOPSIS

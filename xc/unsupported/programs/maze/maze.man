@@ -1,4 +1,4 @@
-.TH MAZE 1 "5 October 1988" "X Version 11"
+.TH MAZE 1 "Release 4" "X Version 11"
 .SH NAME
 maze - an automated maze program... [ demo ][ X11 ]
 .SH SYNTAX

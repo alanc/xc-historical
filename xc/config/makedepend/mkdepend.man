@@ -1,4 +1,4 @@
-.TH MAKEDEPEND 1 "26 October 1988" "X Version 11"
+.TH MAKEDEPEND 1 "Release 4" "X Version 11"
 .UC 4
 .SH NAME
 makedepend \- create dependencies in makefiles
