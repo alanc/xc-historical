@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.8 94/02/10 16:54:45 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 94/03/26 18:48:12 gildea Exp $
 XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
@@ -140,6 +140,9 @@ install::
 	Recurse(commands,$(MYLIBDIR),FilterCommand)
 	Recurse(contexts,$(MYLIBDIR),FilterContext)
 	InstallAliases()
+
+InstallManPage(rstart,$(MANDIR))
+InstallManPage(rstartd,$(MANDIR))
 
 XCOMM # Turning this on makes the server look up host names in $DISPLAY and
 XCOMM # substitute IP addresses.  (ODT v1 X clients can't look names up in
