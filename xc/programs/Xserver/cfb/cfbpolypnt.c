@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.6 89/09/06 18:03:27 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.7 89/11/19 17:43:21 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -47,8 +47,8 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     unsigned long pixel = pGC->fgPixel;
     unsigned long planemask = PFILL(pGC->planemask);
     unsigned long mask;
-    int	x1, x2, y1, y2;
-    int xoff, yoff;
+    register int x1, x2, y1, y2;
+    register int xoff, yoff;
 
     if (!planemask)
 	return;
