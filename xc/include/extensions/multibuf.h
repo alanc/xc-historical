@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.12 89/11/01 09:09:56 jim Exp $
+ * $XConsortium: multibuf.h,v 1.13 91/01/05 16:31:59 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -123,6 +123,8 @@ typedef struct {
     int update_action;		/* Undefined, Background, Untouched, Copied */
     int update_hint;		/* Frequent, Intermittent, Static */
     int window_mode;		/* Mono, Stereo */
+    int nbuffers;		/* Number of buffers */
+    Multibuffer *buffers;	/* Buffers */
 } XmbufWindowAttributes;
 
 /*
