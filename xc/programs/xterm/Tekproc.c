@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.107 91/06/25 19:49:48 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.108 91/10/21 14:29:15 eswu Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -669,7 +669,7 @@ again:
 			if(Tselect_mask & pty_mask) {
 				if(screen->logging)
 					FlushLog(screen);
-				Tbcnt = read(screen->respond, Tbptr = Tbuffer, BUF_SIZE);
+				Tbcnt = read(screen->respond, (char *)(Tbptr = Tbuffer), BUF_SIZE);
 				if(Tbcnt < 0) {
 					if(errno == EIO)
 						Cleanup (0);
