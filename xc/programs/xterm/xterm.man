@@ -750,6 +750,41 @@ For example, the string ``33:48,37:48,46-47:48,64:48'' indicates that the
 exclamation mark, percent sign, period, slash, and ampersand characters
 should be treated the same way as characters and numbers.  This is very useful 
 for cutting and pasting electronic mailing addresses and Unix filenames.
+.SH "KEY TRANSLATIONS"
+.PP
+It is possible to rebind keys (or sequences of keys) to arbitrary strings
+for input, by changing the translations for the vt100 or tek4014 widgets.
+Changing the translations for events other than key presses
+is not expected, and will cause unpredictable behavior.
+.PP
+The actions available for key translations are ``insert'', ``string'',
+``keymap'', and ``selection''.  The insert action causes the
+key to be processed in the normal way.  The string action takes a
+single string argument, and rebinds the key/sequence to that string value.
+The keymap action takes a single string argument naming a resource
+to be used to dynamically define a new translation table; the name of the
+resource is obtained by appending the string ``Keymap'' to the
+string argument to the action.  A string argument of ``None''
+to the keymap action restores the original translation table
+(the very first one; a stack is not maintained).
+The selection action takes a single string argument specifying
+a selection and causes the contents of that selection
+to be used as effective input (the current implementation of this
+is a crock, and always uses cut buffer zero).
+.PP
+For example, helpers for dbx on a Sun:
+.sp
+.in +10
+.nf
+*VT100.translations: #override <Key>L7: keymap(dbx)
+*VT100.dbxKeymap.translations: \\
+	<Key>L7: keymap(None)			\\n\\
+	<Key>L9: string("next") string(0x0d)	\\n\\
+	<Key>L10: string("step") string(0x0d)	\\n\\
+	<Key>L8: string("print ") selection(PRIMARY)
+.fi
+.sp
+.in -10
 .SH "OTHER FEATURES"
 .I Xterm
 automatically highlights the window border and text cursor when the
