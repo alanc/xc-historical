@@ -1,4 +1,4 @@
-/* $XConsortium: makekeys.C,v 11.2 90/07/28 10:38:18 rws Exp $ */
+/* $XConsortium: makekeys.C,v 11.3 90/07/28 10:54:32 rws Exp $ */
 /*
 Copyright 1990 by the Massachusetts Institute of Technology
 
@@ -123,7 +123,7 @@ next1:	;
 
     z = best_z;
     printf("#ifdef NEEDKTABLE\n");
-    printf("Const unsigned char __XkeyTable[] = {\n");
+    printf("Const unsigned char _XkeyTable[] = {\n");
     printf("0,\n");
     k = 1;
     for (i = 0; i < ksnum; i++) {

@@ -1,4 +1,4 @@
-/* $XConsortium: XKeysymStr.c,v 11.4 91/01/06 11:46:43 rws Exp $ */
+/* $XConsortium: XKeysymStr.c,v 11.5 91/02/14 15:23:16 rws Exp $ */
 /* Copyright 1990 Massachusetts Institute of Technology */
 
 /*
@@ -29,7 +29,7 @@ typedef unsigned long Signature;
 #include "ks_tables.h"
 
 extern XrmDatabase _XInitKeysymDB();
-extern Const unsigned char __XkeyTable[];
+extern Const unsigned char _XkeyTable[];
 
 
 typedef struct _GRNData {
@@ -81,7 +81,7 @@ char *XKeysymToString(ks)
 	n = VMAXHASH;
 	while (idx = hashKeysym[i])
 	{
-	    entry = &__XkeyTable[idx];
+	    entry = &_XkeyTable[idx];
 	    if ((entry[0] == val1) && (entry[1] == val2))
 		return ((char *)entry + 2);
 	    if (!--n)
