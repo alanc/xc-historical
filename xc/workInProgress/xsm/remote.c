@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.3 94/03/17 12:21:22 mor Exp $ */
+/* $XConsortium: remote.c,v 1.4 94/04/17 21:15:17 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -100,20 +100,21 @@ char	*non_local_session_env;
 	    fprintf (fp, "CONTEXT X\n");
 	    fprintf (fp, "DIR %s\n", cwd);
 
-	    for (i = 0; env[i]; i++)
-	    {
-		/*
-		 * There may be spaces inside some of the environment
-		 * values, and rstartd will barf on spaces.  Need
-		 * to replace space characters with their equivalent
-		 * octal escape sequences.
-		 */
+	    if (env)
+		for (i = 0; env[i]; i++)
+		{
+		    /*
+		     * There may be spaces inside some of the environment
+		     * values, and rstartd will barf on spaces.  Need
+		     * to replace space characters with their equivalent
+		     * octal escape sequences.
+		     */
 
-		char *temp = spaces_to_octal (env[i]);
-		fprintf (fp, "MISC X %s\n", temp);
-		if (temp != env[i])
-		    free (temp);
-	    }
+		    char *temp = spaces_to_octal (env[i]);
+		    fprintf (fp, "MISC X %s\n", temp);
+		    if (temp != env[i])
+			free (temp);
+		}
 
 	    fprintf (fp, "MISC X %s\n", non_local_display_env);
 	    fprintf (fp, "MISC X %s\n", non_local_session_env);
