@@ -1,5 +1,7 @@
 #include "copyright.h"
 
+/* $Header: XCrBFData.c,v 1.4 88/02/07 11:10:59 jim Exp $ */
+/* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlib.h"
 
