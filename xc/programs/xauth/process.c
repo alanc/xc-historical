@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.34 91/02/12 15:37:17 rws Exp $
+ * $XConsortium: process.c,v 1.36 91/10/28 17:28:47 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -933,7 +933,7 @@ static int extract_entry (inputfilename, lineno, auth, data)
 }
 
 
-static int match_auth (a, b)
+static int match_auth_dpy (a, b)
     register Xauth *a, *b;
 {
     return ((a->family == b->family &&
@@ -941,6 +941,16 @@ static int match_auth (a, b)
 	     a->number_length == b->number_length &&
 	     bcmp (a->address, b->address, a->address_length) == 0 &&
 	     bcmp (a->number, b->number, a->number_length) == 0) ? 1 : 0);
+}
+
+/* return non-zero iff display and authorization type are the same */
+
+static int match_auth (a, b)
+    register Xauth *a, *b;
+{
+    return ((match_auth_dpy(a, b)
+	     && a->name_length == b->name_length
+	     && bcmp(a->name, b->name, a->name_length) == 0) ? 1 : 0);
 }
 
 
@@ -1040,7 +1050,7 @@ static int iterdpy (inputfilename, lineno, start,
 	}
 	status = 0;
 	for (l = xauth_head; l; l = l->next) {
-	    if (match_auth (&proto, l->auth)) {
+	    if (match_auth_dpy (&proto, l->auth)) {
 		if (yfunc) {
 		    status = (*yfunc) (inputfilename, lineno,
 				       l->auth, data);
@@ -1085,7 +1095,7 @@ static int remove_entry (inputfilename, lineno, auth, data)
      * run through list removing any records that match
      */
     while (list) {
-	if (match_auth (list->auth, auth)) {
+	if (match_auth_dpy (list->auth, auth)) {
 	    AuthList *next = list->next;	      /* next one to look at */
 	    if (prev) {
 		prev->next = next;		       /* unlink current one */
