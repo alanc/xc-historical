@@ -16,7 +16,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-"$Header$ SPRITE (Berkeley)";
+"$Header: cfbbstore.c,v 1.1 88/07/29 11:46:53 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "cfb.h"
@@ -77,6 +77,8 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
 		GXcopy,
 		prgnSave,
 		pPtsInit);
+
+    DEALLOCATE_LOCAL (pPtsInit);
 }
 
 /*-
@@ -129,6 +131,7 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
 		GXcopy,
 		prgnRestore,
 		pPtsInit);
+    DEALLOCATE_LOCAL (pPtsInit);
 }
 
 
