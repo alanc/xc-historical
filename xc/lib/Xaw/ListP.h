@@ -1,45 +1,40 @@
-/*  This is the List widget, it is useful to display a list, without the
- *  overhead of having a widget for each item in the list.  It allows 
- *  the user to select an item in a list and notifies the application through
- *  a callback function.
+/*
+ * $XConsortium$
  *
- *	Created: 	8/13/88
- *	By:		Chris D. Peterson
- *                      MIT - Project Athena
+ * Copyright 1989 Massachusetts Institute of Technology
  *
- *      $Author: jim $
- *      $oHeader: ListP.h,v 1.3 88/08/30 16:37:03 kit Exp $
- *      $XConsortium: ListP.h,v 1.10 89/03/30 16:05:38 jim Exp $
- *	
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Chris D. Peterson, MIT X Consortium
  */
 
-/***********************************************************
-Copyright 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
-
-                        All Rights Reserved
-
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
-provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
-
-DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
-ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
-ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-SOFTWARE.
-
-******************************************************************/
 
 /* 
  * ListP.h - Private definitions for List widget
  * 
+ * This is the List widget, it is useful to display a list, without the
+ * overhead of having a widget for each item in the list.  It allows 
+ * the user to select an item in a list and notifies the application through
+ * a callback function.
+ *
+ *	Created: 	8/13/88
+ *	By:		Chris D. Peterson
+ *                      MIT - Project Athena
  */
 
 #ifndef _XawListP_h
