@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.16 94/02/06 22:31:22 rws Exp $ */
+/* $XConsortium: misc.c,v 1.17 94/02/07 18:07:27 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -157,12 +157,32 @@ IceConn iceConn;
 
 
 unsigned long
-IceLastSequenceNumber (iceConn)
+IceLastSentSequenceNumber (iceConn)
 
 IceConn iceConn;
 
 {
-    return (iceConn->sequence);
+    return (iceConn->send_sequence);
+}
+
+
+unsigned long
+IceLastReceivedSequenceNumber (iceConn)
+
+IceConn iceConn;
+
+{
+    return (iceConn->receive_sequence);
+}
+
+
+Bool
+IceSwapping (iceConn)
+
+IceConn iceConn;
+
+{
+    return (iceConn->swap);
 }
 
 
