@@ -1,4 +1,4 @@
-/* $XConsortium: checktree.c,v 1.6 92/03/16 17:53:30 rws Exp $ */
+/* $XConsortium: checktree.c,v 1.1 93/09/04 17:56:34 rws Exp $ */
 
 /*
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -48,12 +48,24 @@ without express or implied warranty.
 
 #define fmode_bits_minset 0444
 #define fmode_bits_maxset 0777
+#define fmode_bits_write  0222
 #define dmode_bits_minset 0775
 
 extern int errno;
 
 int dorcs = 1;
 int do83 = 1;
+int doro = 1;
+int dodot = 1;
+
+int dontcare(fn)
+    char *fn;
+{
+    char *cp;
+
+    cp = strrchr(fn, '.');
+    return cp && (!strcmp(cp + 1, "Z") || !strcmp(cp + 1, "PS"));
+}
 
 checkfile(fullname, fn, fs)
     char *fullname, *fn;
@@ -63,13 +75,23 @@ checkfile(fullname, fn, fs)
     int maxlen = 12;
     int len, mode;
 
-    if (fn[0] == '.') {
+    if (dodot && fn[0] == '.') {
 	printf("dot file: %s\n", fullname);
 	return;
     }
+    for (len = 0, cp = fn; *cp; len++, cp++) {
+	if (!strchr(CHARSALLOWED, *cp)) {
+	    printf ("bad character: %s\n", fullname);
+	    break;
+	}
+    }
+    if (len > maxlen && !dontcare(fn))
+	printf("too long (%d): %s\n", len, fullname);
 #ifdef S_IFLNK
-    if ((fs->st_mode & S_IFLNK) == S_IFLNK)
+    if ((fs->st_mode & S_IFLNK) == S_IFLNK) {
 	printf("symbolic link: %s\n", fullname);
+	return;
+    }
 #endif
     mode = fs->st_mode & (~S_IFMT);
     if ((fs->st_mode & S_IFDIR) == S_IFDIR) {
@@ -85,21 +107,12 @@ checkfile(fullname, fn, fs)
 		   fs->st_mode, fmode_bits_minset, fullname);
 	if (fs->st_nlink != 1)
 	    printf("%d links instead of 1: %s\n", fs->st_nlink, fullname);
+	if (doro && (mode & fmode_bits_write) && !dontcare(fn))
+	    printf("writable: %s\n", fullname);
     }
     if ((mode & ~fmode_bits_maxset) != 0)
 	printf("mode 0%o outside maximum set 0%o: %s\n",
 	       mode, fmode_bits_maxset, fullname);
-    for (len = 0, cp = fn; *cp; len++, cp++) {
-	if (!strchr(CHARSALLOWED, *cp)) {
-	    printf ("bad character: %s\n", fullname);
-	    break;
-	}
-    }
-    if (len > maxlen) {
-	cp = strrchr(fn, '.');
-	if (!cp || (strcmp(cp + 1, "Z") && strcmp(cp + 1, "PS")))
-	    printf("too long (%d): %s\n", len, fullname);
-    }
 }
 
 void
@@ -224,16 +237,13 @@ checkdir(dir)
 	    continue;
 	}
 	checkfile(dir, p, &fs);
-	if (dorcs) {
-	    s = strrchr(dp->d_name, '.');
-	    if (s && strcmp(s + 1, "Z") && strcmp(s + 1, "PS")) {
-		strcpy(p, "RCS/");
-		strcat(p, dp->d_name);
-		strcat(p, ",v");
-		if (Stat(dir, &fs) < 0) {
-		    strcpy(p, dp->d_name);
-		    printf("no RCS: %s\n", dir);
-		}
+	if (dorcs && !dontcare(dp->d_name)) {
+	    strcpy(p, "RCS/");
+	    strcat(p, dp->d_name);
+	    strcat(p, ",v");
+	    if (Stat(dir, &fs) < 0) {
+		strcpy(p, dp->d_name);
+		printf("no RCS: %s\n", dir);
 	    }
 	}
 	if (do83) {
@@ -280,6 +290,14 @@ main(argc, argv)
 	    argv++;
 	} else if (!strcmp(*argv, "-83")) {
 	    do83 = 0;
+	    argc--;
+	    argv++;
+	} else if (!strcmp(*argv, "-ro")) {
+	    doro = 0;
+	    argc--;
+	    argv++;
+	} else if (!strcmp(*argv, "-dot")) {
+	    dodot = 0;
 	    argc--;
 	    argv++;
 	} else
