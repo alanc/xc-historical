@@ -15,18 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.7 89/09/20 13:38:00 rws Exp $ */
-
-#define FULLCIRCLE (360 * 64)
-#define OCTANT (45 * 64)
-#define QUADRANT (90 * 64)
-
-#ifndef M_PI
-#define M_PI	3.14159265358979323846
-#endif
-
-#define Dsin(d)	((d) == 0.0 ? 0.0 : ((d) == 90.0 ? 1.0 : sin(d*M_PI/180.0)))
-#define Dcos(d)	((d) == 0.0 ? 1.0 : ((d) == 90.0 ? 0.0 : cos(d*M_PI/180.0)))
+/* $XConsortium: mizerarc.h,v 5.8 89/09/20 18:55:54 rws Exp $ */
 
 typedef struct {
     int x;
