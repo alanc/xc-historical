@@ -2,7 +2,7 @@
 
 #define NUMPOINTS 100
 
-static GC whitegc, blackgc;
+static GC bggc, fggc;
 static Window w;
 static XRectangle ws[3] = {
     {100, 100, 200, 200},
@@ -25,8 +25,8 @@ void InitCopyArea(d, p)
         points[i].x = rand() % WIDTH;
         points[i].y = rand() % HEIGHT;
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &whitegc, &blackgc);
-    XDrawLines(d, w, blackgc, points, NUMPOINTS, CoordModeOrigin);
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+    XDrawLines(d, w, fggc, points, NUMPOINTS, CoordModeOrigin);
     XSync(d, 0);    
 }
 
@@ -40,7 +40,7 @@ void DoCopyArea(d, p)
     for (i=0; i<p->reps; i++)
     {
     
-        XCopyArea(d, w, w, blackgc, rand() % WIDTH, rand() % HEIGHT,
+        XCopyArea(d, w, w, fggc, rand() % WIDTH, rand() % HEIGHT,
 		200, 200, rand() % WIDTH, rand() % HEIGHT);
     }
 }
@@ -49,7 +49,7 @@ void MidCopyArea(d, p)
     Display *d;
     Parms p;
 {
-    XDrawLines(d, w, blackgc, points, NUMPOINTS, CoordModeOrigin);
+    XDrawLines(d, w, fggc, points, NUMPOINTS, CoordModeOrigin);
     XSync(d, 0);    
 }
 
@@ -60,7 +60,7 @@ void EndCopyArea(d, p)
     int i;
     if (w != None)
 	    XDestroyWindow(d, w);
-    XFreeGC(d, whitegc);
-    XFreeGC(d, blackgc);
+    XFreeGC(d, bggc);
+    XFreeGC(d, fggc);
 }
 
