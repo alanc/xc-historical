@@ -1,4 +1,4 @@
-/* $XConsortium: GC.c,v 1.4 94/01/07 09:52:40 dpw Exp $ */
+/* $XConsortium: GC.c,v 1.5 94/02/06 17:52:15 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -202,10 +202,9 @@ void xnestChangeClip(pGC, type, pValue, nRects)
      pointer pValue;
      int nRects;
 {
-  Region reg;
-  int i;
+  int i, size;
   BoxPtr pBox;
-  XRectangle rect;
+  XRectangle *pRects;
 
   xnestDestroyClipHelper(pGC);
 
@@ -216,22 +215,32 @@ void xnestChangeClip(pGC, type, pValue, nRects)
       break;
       
     case CT_REGION:
-      reg = XCreateRegion();
+      nRects = REGION_NUM_RECTS((RegionPtr)pValue);
+      size = nRects * sizeof(*pRects);
+      pRects = (XRectangle *) xalloc(size);
       pBox = REGION_RECTS((RegionPtr)pValue);
-      for (i = 0; i < REGION_NUM_RECTS((RegionPtr)pValue); i++) {
-	rect.x = pBox[i].x1;
-	rect.y = pBox[i].y1;
-	rect.width = pBox[i].x2 - pBox[i].x1;
-	rect.height = pBox[i].y2 - pBox[i].y1;
-	XUnionRectWithRegion(&rect, reg, reg);
+      for (i = nRects; i-- > 0; ) {
+	pRects[i].x = pBox[i].x1;
+	pRects[i].y = pBox[i].y1;
+	pRects[i].width = pBox[i].x2 - pBox[i].x1;
+	pRects[i].height = pBox[i].y2 - pBox[i].y1;
       }
-      XSetRegion(xnestDisplay, xnestGC(pGC), reg);
-      XDestroyRegion(reg);
+      XSetClipRectangles(xnestDisplay, xnestGC(pGC), 0, 0,
+			 pRects, nRects, Unsorted);
+      xfree((char *) pRects);
       break;
 
     case CT_PIXMAP:
       XSetClipMask(xnestDisplay, xnestGC(pGC), 
 		   xnestPixmap((PixmapPtr)pValue));
+      /*
+       * Need to change into region, so subsequent uses are with
+       * current pixmap contents.
+       */
+      pGC->clientClip = (pointer) (*pGC->pScreen->BitmapToRegion)((PixmapPtr)pValue);
+      (*pGC->pScreen->DestroyPixmap)((PixmapPtr)pValue);
+      pValue = pGC->clientClip;
+      type = CT_REGION;
       break;
 
     case CT_UNSORTED:
@@ -259,6 +268,30 @@ void xnestChangeClip(pGC, type, pValue, nRects)
       break;
     }
 
+  switch(type) 
+    {
+    default:
+      break;
+
+    case CT_UNSORTED:
+    case CT_YSORTED:
+    case CT_YXSORTED:
+    case CT_YXBANDED:
+      
+      /*
+       * other parts of server can only deal with CT_NONE,
+       * CT_PIXMAP and CT_REGION client clips.
+       */
+      pGC->clientClip = (pointer) (*pGC->pScreen->RectsToRegion)(nRects,
+						    (xRectangle *)pValue,
+						    type);
+      xfree(pValue);
+      pValue = pGC->clientClip;
+      type = CT_REGION;
+
+      break;
+    }
+
   pGC->clientClipType = type;
   pGC->clientClip = pValue;
   xnestGCPriv(pGC)->nClipRects = nRects;
@@ -281,22 +314,12 @@ void xnestDestroyClipHelper(pGC)
 {
   switch (pGC->clientClipType)
     {
+    default:
     case CT_NONE:
       break;
       
     case CT_REGION:
       REGION_DESTROY(pGC->pScreen, pGC->clientClip); 
-      break;
-      
-    case CT_PIXMAP:
-      (*pGC->pScreen->DestroyPixmap)(pGC->clientClip);
-      break;
-      
-    case CT_UNSORTED:
-    case CT_YSORTED:
-    case CT_YXSORTED:
-    case CT_YXBANDED:
-      xfree(pGC->clientClip);
       break;
     }
 }
@@ -311,6 +334,7 @@ void xnestCopyClip(pGCDst, pGCSrc)
 
   switch (pGCSrc->clientClipType)
     {
+    default:
     case CT_NONE:
       xnestDestroyClip(pGCDst);
       break;
@@ -319,22 +343,6 @@ void xnestCopyClip(pGCDst, pGCSrc)
       pRgn = REGION_CREATE(pGCDst->pScreen, NULL, 1);
       REGION_COPY(pGCDst->pScreen, pRgn, pGCSrc->clientClip);
       xnestChangeClip(pGCDst, CT_REGION, pRgn, 0);
-      break;
-
-    case CT_PIXMAP:
-      xnestSharePixmap((PixmapPtr)pGCSrc->clientClip);
-      xnestChangeClip(pGCDst, CT_PIXMAP, pGCSrc->clientClip, 0);
-      break;
-
-    case CT_UNSORTED:
-    case CT_YSORTED:
-    case CT_YXSORTED:
-    case CT_YXBANDED: 
-      nRects = xnestGCPriv(pGCSrc)->nClipRects;
-      size = sizeof(xRectangle) * nRects;
-      pRects = (xRectangle *)xalloc(size);
-      memmove(pRects, pGCSrc->clientClip, size);
-      xnestChangeClip(pGCDst, pGCSrc->clientClipType, pRects, nRects);
       break;
     }
 }
