@@ -1,10 +1,10 @@
-.\" $XConsortium$
+.\" $XConsortium: xmkmf.man,v 1.1 91/07/29 20:48:54 gildea Exp $
 .TH XMKMF 1 "Release 5" "X Version 11"
 .SH NAME
 xmkmf \- create a Makefile from an Imakefile
 .SH SYNOPSIS
 .B xmkmf
-[
+[ -a ] [
 .I topdir
 [
 .I curdir
@@ -17,23 +17,28 @@ command is the normal way to create a
 from an
 .I Imakefile
 shipped with third-party software.
-It should be invoked with no arguments in the directory containing the
-.I Imakefile.
-.I Xmkmf
-runs
+.PP
+When invoked with no arguments in a directory containing an
+.I Imakefile,
+the
 .I imake
-with arguments appropriate for your system
+program is run with arguments appropriate for your system
 (configured into
 .I xmkmf
-when X was built).
+when X was built) and generates a
+.I Makefile.
 .PP
-If the software you are trying to build has subdirectories, use
+When invoked with the
+.I \-a
+option,
 .I xmkmf
-to build the top-level
-.I Makefile,
-and then type ``make Makefiles'' in that directory to build a
+builds the
 .I Makefile
-in each subdirectory.
+in the current directory, and then automatically executes
+``make Makefiles'' (in case there are subdirectories)
+and ``make depend'' for you.
+This is the normal way to configure software that is outside
+the MIT X build tree.
 .PP
 If working inside the MIT X build tree (unlikely unless you are an X
 developer, and even then this option is never really used), the
