@@ -1,4 +1,4 @@
-/*      $Header: XExtToWire.c,v 1.8 90/04/05 17:49:26 gms Exp $ */
+/*      $Header: XExtToWire.c,v 1.2 90/08/14 16:58:43 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -361,7 +361,7 @@ XInputEventToWire(dpy, re, event, count)
 		    sev->classes_reported |= (1 << ValuatorClass);
 		    sev->num_valuators = val->num_valuators < 3 ?
 					 val->num_valuators : 3;
-	            ip = &vev->valuator0;
+	            ip = (INT32 *) &sev->valuator0;
 		    for (j=0; j<val->num_valuators && j<3; j++)
 			*(ip+j) = val->valuators[j];
 		    if (val->num_valuators > 3)
