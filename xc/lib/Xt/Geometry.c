@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Geometry.c,v 1.20 88/02/03 10:05:41 swick Exp $";
+static char rcsid[] = "$Header: Geometry.c,v 1.21.1.1 88/02/22 23:41:56 swick Exp $";
 #endif lint
 
 /*
@@ -279,4 +279,40 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
 	*rootx += w->core.x + w->core.border_width;
 	*rooty += w->core.y + w->core.border_width;
     }
+}
+
+XtGeometryResult XtQueryGeometry(widget, intended, reply)
+    Widget widget;
+    register XtWidgetGeometry *intended; /* parent's changes; may be NULL */
+    XtWidgetGeometry *reply;	/* child's preferred geometry; never NULL */
+{
+    XtWidgetGeometry null_intended;
+    XtGeometryHandler query = XtClass(widget)->core_class.query_geometry;
+    XtGeometryResult result;
+
+    if (query != NULL) {
+	if (intended == NULL) {
+	    null_intended.request_mode = 0;
+	    intended = &null_intended;
+	}
+	result = (*query) (widget, intended, reply);
+    }
+    else {
+	reply->request_mode = 0;
+	result = XtGeometryYes;
+    }
+
+#define FillIn(mask, field) \
+	if (!(reply->request_mode & mask)) reply->field = widget->core.field;
+
+    FillIn(CWX, x);
+    FillIn(CWY, y);
+    FillIn(CWWidth, width);
+    FillIn(CWHeight, height);
+    FillIn(CWBorderWidth, border_width);
+#undef FillIn
+
+    if (!reply->request_mode & CWStackMode) reply->stack_mode = XtSMDontChange;
+
+    return result;
 }
