@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.120 91/09/09 14:47:58 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.121 91/12/17 17:55:22 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -60,7 +60,7 @@ Display *XOpenDisplay (display)
 	xConnClientPrefix client;	/* client information */
 	xConnSetupPrefix prefix;	/* prefix information */
 	int vendorlen;			/* length of vendor string */
-	char *setup;			/* memory allocated at startup */
+	char *setup = NULL;		/* memory allocated at startup */
 	char *fullname = NULL;		/* expanded name of display */
 	int idisplay;			/* display number */
 	int iscreen;			/* screen number */
@@ -132,6 +132,80 @@ Display *XOpenDisplay (display)
 		return(NULL);
 	}
 
+	/* Initialize as much of the display structure as we can */
+	dpy->display_name	= fullname;
+	dpy->keysyms		= (KeySym *) NULL;
+	dpy->modifiermap	= NULL;
+	dpy->lock_meaning	= NoSymbol;
+	dpy->keysyms_per_keycode = 0;
+	dpy->current		= None;
+	dpy->xdefaults		= (char *)NULL;
+	dpy->scratch_length	= 0L;
+	dpy->scratch_buffer	= NULL;
+	dpy->key_bindings	= NULL;
+	dpy->ext_procs		= (_XExtension *)NULL;
+	dpy->ext_data		= (XExtData *)NULL;
+	dpy->ext_number 	= 0;
+	dpy->event_vec[X_Error] = _XUnknownWireEvent;
+	dpy->event_vec[X_Reply] = _XUnknownWireEvent;
+	dpy->wire_vec[X_Error]  = _XUnknownNativeEvent;
+	dpy->wire_vec[X_Reply]  = _XUnknownNativeEvent;
+	for (i = KeyPress; i < LASTEvent; i++) {
+	    dpy->event_vec[i] 	= _XWireToEvent;
+	    dpy->wire_vec[i] 	= NULL;
+	}
+	for (i = LASTEvent; i < 128; i++) {
+	    dpy->event_vec[i] 	= _XUnknownWireEvent;
+	    dpy->wire_vec[i] 	= _XUnknownNativeEvent;
+	}
+	dpy->resource_id	= 0;
+	dpy->db 		= (struct _XrmHashBucketRec *)NULL;
+	dpy->cursor_font	= None;
+	dpy->flags		= 0;
+/* 
+ * Initialize pointers to NULL so that XFreeDisplayStructure will
+ * work if we run out of memory
+ */
+
+	dpy->screens = NULL;
+	dpy->vendor = NULL;
+	dpy->buffer = NULL;
+	dpy->atoms = NULL;
+	dpy->error_vec = NULL;
+	dpy->context_db = NULL;
+
+/*
+ * Setup other information in this display structure.
+ */
+	dpy->vnumber = X_PROTOCOL;
+	dpy->resource_alloc = _XAllocID;
+	dpy->synchandler = NULL;
+	dpy->request = 0;
+	dpy->last_request_read = 0;
+	dpy->default_screen = iscreen;  /* Value returned by ConnectDisplay */
+	dpy->last_req = (char *)&_dummy_request;
+
+	/* Set up the output buffers. */
+	if ((dpy->bufptr = dpy->buffer = Xmalloc(BUFSIZE)) == NULL) {
+	        OutOfMemory (dpy, setup);
+		UnlockMutex(&lock);
+		return(NULL);
+	}
+	dpy->bufmax = dpy->buffer + BUFSIZE;
+ 
+	/* Set up the input event queue and input event queue parameters. */
+	dpy->head = dpy->tail = NULL;
+	dpy->qlen = 0;
+
+	/* Set up free-function record */
+	if ((dpy->free_funcs = (_XFreeFuncRec *)Xcalloc(1,
+							sizeof(_XFreeFuncRec)))
+	    == NULL) {
+	    OutOfMemory (dpy, setup);
+	    UnlockMutex(&lock);
+	    return(NULL);
+	}
+
 /*
  * The xConnClientPrefix describes the initial connection setup information
  * and is followed by the authorization information.  Sites that are interested
@@ -193,9 +267,7 @@ Display *XOpenDisplay (display)
 		(void) fwrite (u.failure, sizeof(char),
 			(int)prefix.lengthReason, stderr);
 		(void) fwrite ("\r\n", sizeof(char), 2, stderr);
-		_XDisconnectDisplay (dpy->fd);
-		Xfree ((char *)dpy);
-		Xfree (setup);
+		OutOfMemory(dpy, setup);
 		UnlockMutex(&lock);
 		return (NULL);
 	}
@@ -211,15 +283,6 @@ Display *XOpenDisplay (display)
 	dpy->resource_mask	= u.setup->ridMask;
 	dpy->min_keycode	= u.setup->minKeyCode;
 	dpy->max_keycode	= u.setup->maxKeyCode;
-	dpy->keysyms		= (KeySym *) NULL;
-	dpy->modifiermap	= NULL;
-	dpy->lock_meaning	= NoSymbol;
-	dpy->keysyms_per_keycode = 0;
-	dpy->current		= None;
-	dpy->xdefaults		= (char *)NULL;
-	dpy->scratch_length	= 0L;
-	dpy->scratch_buffer	= NULL;
-	dpy->key_bindings	= NULL;
 	dpy->motion_buffer	= u.setup->motionBufferSize;
 	dpy->nformats		= u.setup->numFormats;
 	dpy->nscreens		= u.setup->numRoots;
@@ -228,44 +291,12 @@ Display *XOpenDisplay (display)
 	dpy->bitmap_pad		= u.setup->bitmapScanlinePad;
 	dpy->bitmap_bit_order   = u.setup->bitmapBitOrder;
 	dpy->max_request_size	= u.setup->maxRequestSize;
-	dpy->ext_procs		= (_XExtension *)NULL;
-	dpy->ext_data		= (XExtData *)NULL;
-	dpy->ext_number 	= 0;
-	dpy->event_vec[X_Error] = _XUnknownWireEvent;
-	dpy->event_vec[X_Reply] = _XUnknownWireEvent;
-	dpy->wire_vec[X_Error]  = _XUnknownNativeEvent;
-	dpy->wire_vec[X_Reply]  = _XUnknownNativeEvent;
-	for (i = KeyPress; i < LASTEvent; i++) {
-	    dpy->event_vec[i] 	= _XWireToEvent;
-	    dpy->wire_vec[i] 	= NULL;
-	}
-	for (i = LASTEvent; i < 128; i++) {
-	    dpy->event_vec[i] 	= _XUnknownWireEvent;
-	    dpy->wire_vec[i] 	= _XUnknownNativeEvent;
-	}
-	dpy->resource_id	= 0;
 	mask = dpy->resource_mask;
 	dpy->resource_shift	= 0;
 	while (!(mask & 1)) {
 	    dpy->resource_shift++;
 	    mask = mask >> 1;
 	}
-	dpy->db 		= (struct _XrmHashBucketRec *)NULL;
-	dpy->cursor_font	= None;
-	dpy->flags		= 0;
-/* 
- * Initialize pointers to NULL so that XFreeDisplayStructure will
- * work if we run out of memory
- */
-
-	dpy->screens = NULL;
-	dpy->display_name = NULL;
-	dpy->vendor = NULL;
-	dpy->buffer = NULL;
-	dpy->atoms = NULL;
-	dpy->error_vec = NULL;
-	dpy->context_db = NULL;
-
 /*
  * now extract the vendor string...  String must be null terminated,
  * padded to multiple of 4 bytes.
@@ -388,41 +419,6 @@ Display *XOpenDisplay (display)
 	    }
 	}
 		
-
-/*
- * Setup other information in this display structure.
- */
-	dpy->vnumber = X_PROTOCOL;
-	dpy->resource_alloc = _XAllocID;
-	dpy->synchandler = NULL;
-	dpy->request = 0;
-	dpy->last_request_read = 0;
-	dpy->default_screen = iscreen;  /* Value returned by ConnectDisplay */
-	dpy->last_req = (char *)&_dummy_request;
-
-	/* Salt away the host:display string for later use */
-	dpy->display_name = fullname;
- 
-	/* Set up the output buffers. */
-	if ((dpy->bufptr = dpy->buffer = Xmalloc(BUFSIZE)) == NULL) {
-	        OutOfMemory (dpy, setup);
-		UnlockMutex(&lock);
-		return(NULL);
-	}
-	dpy->bufmax = dpy->buffer + BUFSIZE;
- 
-	/* Set up the input event queue and input event queue parameters. */
-	dpy->head = dpy->tail = NULL;
-	dpy->qlen = 0;
-
-	/* Set up free-function record */
-	if ((dpy->free_funcs = (_XFreeFuncRec *)Xcalloc(1,
-							sizeof(_XFreeFuncRec)))
-	    == NULL) {
-	    OutOfMemory (dpy, setup);
-	    UnlockMutex(&lock);
-	    return(NULL);
-	}
 
 /*
  * Now start talking to the server to setup all other information...
