@@ -2,6 +2,10 @@
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
 #endif
 
+#if HasShm
+        SHMDEFS = -DMITSHM
+#endif
+        DEFINES = $(SIGNAL_DEFINES) $(SHMDEFS)
         PERFLIB = X11perfcompLib
        PROGRAMS = x11perf x11perf_labels x11perfcomp
         HEADERS = x11perf.h bitmaps.h
@@ -35,6 +39,7 @@ InstallNamedProg(getavg.sh,getavg,$(PERFLIB))
 InstallNamedProg(fillblnk.sh,fillblnk,$(PERFLIB))
 InstallNamedProg(getrel.sh,getrel,$(PERFLIB))
 InstallNamedProg(getrate.sh,getrate,$(PERFLIB))
+InstallManPageLong(x11pcomp,$(MANDIR),x11perfcomp)
 
 x11perf_labels: x11perf
 	./x11perf -labels > x11perf_labels
