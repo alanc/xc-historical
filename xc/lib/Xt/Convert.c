@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.63 91/11/26 13:54:29 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.64 92/02/14 16:57:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -64,7 +64,7 @@ void _XtSetDefaultConverterTable(table)
 	ConverterPtr rec;
 	int i;
 	XtCacheType cache_type;
-	for (i = CONVERTHASHSIZE; --i >- 0; ) {
+	for (i = CONVERTHASHSIZE; --i >= 0; ) {
 	    for (rec = *globalConverterTable++; rec; rec = rec->next) {
 		cache_type = rec->cache_type;
 		if (rec->do_ref_count)
