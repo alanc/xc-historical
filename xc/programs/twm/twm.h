@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.61 90/03/20 11:16:54 jim Exp $
+ * $XConsortium: twm.h,v 1.62 90/03/22 09:39:08 jim Exp $
  *
  * twm include file
  *
@@ -98,7 +98,8 @@ typedef void (*SigProc)();	/* type of function returned by signal() */
 			 C_ROOT_BIT | C_FRAME_BIT | C_ICONMGR_BIT)
 
 /* modifiers for button presses */
-#define MOD_SIZE	((ShiftMask | ControlMask | Mod1Mask) + 1)
+#define MOD_SIZE	((ShiftMask | ControlMask | Mod1Mask \
+			  | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask) + 1)
 
 #define TITLE_BAR_SPACE         1	/* 2 pixel space bordering chars */
 #define TITLE_BAR_FONT_HEIGHT   15	/* max of 15 pixel high chars */
