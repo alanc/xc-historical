@@ -17,10 +17,12 @@ without any express or implied warranty.
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: MITMisc.h,v 1.2 90/05/15 18:46:26 keith Exp $ */
+/* $XConsortium: MITMisc.h,v 1.3 90/05/15 18:50:17 keith Exp $ */
 
 #ifndef _XMITMISC_H_
 #define _XMITMISC_H_
+
+#include <X11/Xfuncproto.h>
 
 #define X_MITSetBugMode			0
 #define X_MITGetBugMode			1
@@ -30,9 +32,32 @@ without any express or implied warranty.
 #define MITMiscNumberErrors		0
 
 #ifndef _MITMISC_SERVER_
-Bool XMITMiscQueryExtension();
-Status XMITMiscSetBugMode();
-Bool XMITMiscGetBugMode();
+
+_XFUNCPROTOBEGIN
+
+Bool XMITMiscQueryExtension(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int*		/* event_basep */,
+    int*		/* error_basep */
+#endif
+);
+
+Status XMITMiscSetBugMode(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Bool		/* onOff */
+#endif
+);
+
+Bool XMITMiscGetBugMode(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */
+#endif
+);
+
+_XFUNCPROTOEND
+
 #endif
 
 #endif
