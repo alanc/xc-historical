@@ -1,6 +1,8 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.51 91/07/16 23:07:16 gildea Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+
+#ifndef Win32Architecture
 
 #ifndef CrayArchitecture
 RUNDIRS = xdm xhost xinit
@@ -13,6 +15,18 @@ SUBDIRS = \
 	xlsatoms xlsclients xlsfonts xmag xman xmh \
 	xmodmap xpr xprop xrdb xrefresh xfontsel $(RUNDIRS) \
  	xset xsetroot xstdcmap xterm xwd xwininfo xwud
+
+#else
+
+SUBDIRS = \
+	appres bitmap editres listres oclock viewres \
+	xauth xcalc xclipboard xclock xcmsdb \
+	xdpyinfo xedit xfd xkill xlogo \
+	xlsatoms xlsclients xlsfonts xmag \
+	xmodmap xprop xrdb xrefresh xfontsel \
+ 	xset xsetroot xstdcmap xwd xwininfo xwud
+
+#endif
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
