@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.10 91/07/22 22:26:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.11 91/07/22 23:05:08 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -52,9 +52,8 @@ SRCS = $(CSRCS) $(HSRCS)
   PEXINCLUDE = -I../../../include/PEX
     INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
 
-LINT_LIBS = ../cp/llib-lcp.ln ../util/llib-lut.ln ../error/llib-lerr.ln \
+LINTLIBS = ../cp/llib-lcp.ln ../util/llib-lut.ln ../error/llib-lerr.ln \
 		../ws_type/llib-lwst.ln
-XLINT_LIBS = $(LINTXLIB)
 
 SubdirLibraryRule($(OBJS))
 
