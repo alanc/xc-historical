@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.134 91/09/12 13:23:00 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.135 91/09/22 10:27:51 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -28,8 +28,12 @@ XCOMM $XConsortium: Imakefile,v 1.134 91/09/12 13:23:00 rws Exp $
 		   $(PEXTENSIONSRC)/ospex/libospex.a 
 #endif
 #if BuildXInputExt
-      OTHEREXTS = $(EXTENSIONSRC)/server/xinput/libxinput.a
+      XINPUTEXT = $(EXTENSIONSRC)/server/xinput/libxinput.a
 #endif
+#if BuildXTrapExt
+       XTRAPEXT = $(EXTENSIONSRC)/server/xtrap/libxtrapext.a
+#endif
+      OTHEREXTS = $(XINPUTEXT) $(XTRAPEXT)
 
         DEPDIRS = $(FONTSRC)/lib/font $(EXTENSIONSRC)/server
      NONPEXEXTS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a
