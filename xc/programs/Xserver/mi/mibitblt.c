@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.55 87/12/09 20:05:03 rws Locked $ */
+/* $Header: mibitblt.c,v 1.56 88/02/14 21:11:32 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -548,7 +548,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
 
     ValidateGC(pDraw, pGC);
     /* put what we hope is a smaller clip region back in the scratch gc */
-    (*pGCT->ChangeClip)(pGCT, CT_NONE, 0, 0);
+    (*pGCT->ChangeClip)(pGCT, CT_NONE, NULL, 0);
     FreeScratchGC(pGCT);
     (*pDraw->pScreen->DestroyPixmap)(pPixmap);
 
