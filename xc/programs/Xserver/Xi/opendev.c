@@ -131,6 +131,11 @@ ProcXOpenDevice(client)
 	evbase[j].class = ValuatorClass;
 	evbase[j++].event_type_base = event_base[ValuatorClass];
 	}
+    if (dev->kbdfeed != NULL || dev->ptrfeed != NULL)
+	{
+	evbase[j].class = FeedbackClass;
+	evbase[j++].event_type_base = event_base[FeedbackClass];
+	}
     if (dev->focus != NULL)
 	{
 	evbase[j].class = FocusClass;
