@@ -1,15 +1,14 @@
 /*
- * $XConsortium: sharedlib.c,v 1.4 89/09/26 23:34:44 jim Exp $
+ * $XConsortium: sharedlib.c,v 1.5 89/10/08 14:26:32 jim Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * This file is used to force shared libraries to get the right routines.
+ * This file is used to force shared libraries to get the right routines.  For
+ * Sun shared libraries, this only wants to be compiled when we are *not*
+ * generating shared code so that this gets copied into the application binary.
  */
 
-#ifndef SUNSHLIB
-static int dummy;			/* avoid warning from ranlib */
-#else
-
+#if !defined(SHAREDCODE) && defined(SUNSHLIB)
 #include "IntrinsicI.h"
 
 /*
@@ -63,4 +62,6 @@ ArgList args_in;
 			     fallback_resources, args_in, num_args_in);
 }
 
+#else
+static int dummy;			/* avoid warning from ranlib */
 #endif /* SUNSHLIB */
