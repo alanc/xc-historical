@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.136 88/06/03 12:30:41 matt Exp $ */
+/* $Header: main.c,v 1.137 88/06/03 13:52:48 matt Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -52,7 +52,6 @@ extern WindowRec WindowTable[];
 extern FontPtr defaultFont;
 
 extern void SetInputCheck();
-extern void AbortServer();
 extern void InitProcVectors();
 extern void InitEvents();
 extern void InitExtensions();
@@ -328,7 +327,7 @@ CreateConnectionBlock()
         root.maxInstalledMaps = pScreen->maxInstalledCmaps; 
         root.rootVisualID = pScreen->rootVisual;		
         root.backingStore = pScreen->backingStoreSupport;
-        root.saveUnders = pScreen->saveUnderSupport;
+        root.saveUnders = pScreen->saveUnderSupport != NotUseful;
         root.rootDepth = pScreen->rootDepth;
 	root.nDepths = pScreen->numDepths;
         bcopy((char *)&root, pBuf, sizeof(xWindowRoot));
