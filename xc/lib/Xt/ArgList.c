@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ArgList.c,v 1.8 87/10/27 13:34:15 guarino BL5 $";
+static char rcsid[] = "$Header: ArgList.c,v 6.3 88/01/29 11:59:25 asente Exp $";
 #endif lint
 
 /*
@@ -24,15 +24,11 @@ static char rcsid[] = "$Header: ArgList.c,v 1.8 87/10/27 13:34:15 guarino BL5 $"
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#ifdef VMS
-#include	Xlib
-#include	stdio
-#else
 #include	"Xlib.h"
 #include	<stdio.h>
-#endif
-#include	"Intrinsic.h"
+#include	"IntrinsicI.h"
 
+#ifndef lint
 static void PrintArgList(args, num_args)
     ArgList	args;
     int num_args;
@@ -41,6 +37,7 @@ static void PrintArgList(args, num_args)
 	(void) printf("name: %s, value: 0x%x\n", args->name, args->value);
     }
 }
+#endif
 
 /*
  * This routine merges two arglists. It does NOT check for duplicate entries.
