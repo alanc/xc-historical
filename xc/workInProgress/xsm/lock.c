@@ -1,4 +1,4 @@
-/* $XConsortium: lock.c,v 1.2 94/12/06 14:46:34 mor Exp mor $ */
+/* $XConsortium: lock.c,v 1.3 94/12/14 17:11:10 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -27,9 +27,8 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 #include <sys/types.h>
-#include <fcntl.h>
 
-
+
 static char *
 GetPath ()
 
