@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.66 91/06/01 11:16:05 rws Exp $ */
+/* $XConsortium: window.c,v 5.67 91/06/09 17:52:26 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3049,7 +3049,8 @@ ActuallyDoSomething:
 	    pWin->borderWidth = bw;
 	}
 	else if ((action == MOVE_WIN) &&
-		 ((int)bw == (x - beforeX)) && ((int)bw == (y - beforeY)))
+		 (beforeX + wBorderWidth (pWin) == x + (int)bw) &&
+		 (beforeY + wBorderWidth (pWin) == y + (int)bw))
 	{
 	    action = REBORDER_WIN;
             ChangeBorderWidth(pWin, bw);
