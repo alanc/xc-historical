@@ -1,10 +1,11 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.37 90/06/22 17:12:37 swick Exp $";
+static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.38 90/06/25 09:32:19 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
-Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
+Massachusetts, and the Massachusetts Institute of Technology, Cambridge,
+Massachusetts.
 
                         All Rights Reserved
 
@@ -26,79 +27,91 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include "IntrinsicI.h"
 
 
 typedef struct _GCrec {
-    Screen	*screen;	/* Screen for GC */
-    Cardinal	depth;		/* Depth for GC */
-    Cardinal    ref_count;      /* # of shareholders */
-    GC 		gc;		/* The GC itself. */
-    XtValueMask	valueMask;	/* What fields are being used right now. */
-    XGCValues 	values;		/* What values those fields have. */
+    unsigned char screen;	/* Screen for GC */
+    unsigned char depth;	/* Depth for GC */
+    char	  dashes;	/* Dashes value */
+    Pixmap	  clip_mask;	/* Clip_mask value */
+    Cardinal	  ref_count;    /* # of shareholders */
+    GC		  gc;		/* The GC itself. */
     struct _GCrec *next;	/* Next GC for this widgetkind. */
 } GCrec, *GCptr;
 
-static Bool Matches(ptr, valueMask, v)
-	     GCptr	    ptr;
-    register XtValueMask    valueMask;
-    register XGCValues      *v;
+#define GCVAL(bit,mask,val,default) ((bit&mask) ? val : default)
+
+#define CHECK(bit,comp,default) \
+    if (GCVAL(bit,valueMask,v->comp,default) != gcv.comp) return False
+
+#define ALLGCVALS (GCFunction | GCPlaneMask | GCForeground | \
+		   GCBackground | GCLineWidth | GCLineStyle | \
+		   GCCapStyle | GCJoinStyle | GCFillStyle | \
+		   GCFillRule | GCTile | GCStipple | \
+		   GCTileStipXOrigin | GCTileStipYOrigin | \
+		   GCFont | GCSubwindowMode | GCGraphicsExposures | \
+		   GCClipXOrigin | GCClipYOrigin | GCDashOffset | \
+		   GCArcMode)
+
+static Bool Matches(dpy, ptr, valueMask, v)
+    Display *dpy;
+    GCptr ptr;
+    register XtValueMask valueMask;
+    register XGCValues *v;
 {
-    register XGCValues      *p = &(ptr->values);
+    XGCValues gcv;
 
-#define CheckGCField(MaskBit,fieldName) \
-    if ((valueMask & MaskBit) && (p->fieldName != v->fieldName)) return False
-
-    /* Check most common fields specified for GCs first */
-    CheckGCField( GCForeground,		foreground);
-    CheckGCField( GCBackground,		background);
-    CheckGCField( GCFont,		font);
-    CheckGCField( GCFillStyle,		fill_style);
-    CheckGCField( GCLineWidth,		line_width);
-    /* Are we done yet ? */
-    if (! (valueMask
-        & ~(GCForeground | GCBackground | GCFont | GCFillStyle | GCLineWidth)))
-	return True;
-
-    /* Check next most common */
-    CheckGCField( GCFunction,		function);
-    CheckGCField( GCGraphicsExposures,	graphics_exposures);
-    CheckGCField( GCTile,		tile);
-    CheckGCField( GCSubwindowMode,	subwindow_mode);
-    CheckGCField( GCPlaneMask,		plane_mask);
-    /* Now are we done ? */
-    if (! (valueMask
-         & ~(GCForeground | GCBackground | GCFont | GCFillStyle | GCLineWidth
-	    | GCFunction | GCGraphicsExposures | GCTile | GCSubwindowMode
-	    | GCPlaneMask))) return True;
-
-    CheckGCField( GCLineStyle,		line_style);
-    CheckGCField( GCCapStyle,		cap_style);
-    CheckGCField( GCJoinStyle,		join_style);
-    CheckGCField( GCFillRule,		fill_rule);
-    CheckGCField( GCArcMode,		arc_mode);
-    CheckGCField( GCStipple,		stipple);
-    CheckGCField( GCTileStipXOrigin,	ts_x_origin);
-    CheckGCField( GCTileStipYOrigin,	ts_y_origin);
-    CheckGCField( GCClipXOrigin,	clip_x_origin);
-    CheckGCField( GCClipYOrigin,	clip_y_origin);
-    CheckGCField( GCClipMask,		clip_mask);
-    CheckGCField( GCDashOffset,		dash_offset);
-    CheckGCField( GCDashList,		dashes);
-#undef CheckGCField
+    if (!XGetGCValues(dpy, ptr->gc, ALLGCVALS, &gcv))
+	return False;
+    CHECK(GCForeground, foreground, 0);
+    CHECK(GCBackground, background, 1);
+    CHECK(GCFont, font, ~0L);
+    CHECK(GCFillStyle, fill_style, FillSolid);
+    CHECK(GCLineWidth, line_width, 0);
+    CHECK(GCFunction, function, GXcopy);
+    CHECK(GCGraphicsExposures, graphics_exposures, True);
+    CHECK(GCTile, tile, ~0L);
+    CHECK(GCSubwindowMode, subwindow_mode, ClipByChildren);
+    CHECK(GCPlaneMask, plane_mask, AllPlanes);
+    CHECK(GCLineStyle, line_style, LineSolid);
+    CHECK(GCCapStyle, cap_style, CapButt);
+    CHECK(GCJoinStyle, join_style, JoinMiter);
+    CHECK(GCFillRule, fill_rule, EvenOddRule);
+    CHECK(GCArcMode, arc_mode, ArcPieSlice);
+    CHECK(GCStipple, stipple, ~0L);
+    CHECK(GCTileStipXOrigin, ts_x_origin, 0);
+    CHECK(GCTileStipYOrigin, ts_y_origin, 0);
+    CHECK(GCClipXOrigin, clip_x_origin, 0);
+    CHECK(GCClipYOrigin, clip_y_origin, 0);
+    CHECK(GCDashOffset, dash_offset, 0);
+    gcv.clip_mask = ptr->clip_mask;
+    CHECK(GCClipMask, clip_mask, None);
+    gcv.dashes = ptr->dashes;
+    CHECK(GCDashList, dashes, 4);
     return True;
 } /* Matches */
 
 /* Called by CloseDisplay to free the per-display GC list */
-void _XtGClistFree(GClist)
-    register GCptr GClist;
+void _XtGClistFree(dpy, pd)
+    Display *dpy;
+    register XtPerDisplay pd;
 {
-    register GCptr next;
-    while (GClist != NULL) {
+    register GCptr GClist, next;
+    register int i;
+
+    GClist = pd->GClist;
+    while (GClist) {
 	next = GClist->next;
 	XtFree((char*)GClist);
 	GClist = next;
+    }
+    if (pd->pixmap_tab) {
+	for (i = ScreenCount(dpy); --i >= 0; ) {
+	    if (pd->pixmap_tab[i])
+		XFree((char *)pd->pixmap_tab[i]);
+	}
+	XFree((char *)pd->pixmap_tab);
     }
 }
 
@@ -108,103 +121,94 @@ void _XtGClistFree(GClist)
  */
 
 GC XtGetGC(widget, valueMask, values)
-	     Widget	widget;
-    register XtGCMask	valueMask;
-	     XGCValues	*values;
+    register Widget widget;
+    XtGCMask        valueMask;
+    XGCValues       *values;
 {
-	     GCptr      prev;
-    register GCptr      cur;
-    register Cardinal   depth;
-    register Screen     *screen;
-	     Drawable   drawable;
-	     XtPerDisplay pd;
+    register GCptr *prev;
+    register GCptr cur;
+    Cardinal depth;
+    Screen *screen;
+    register Display *dpy;
+    register XtPerDisplay pd;
+    Drawable drawable;
+    Drawable *pixmaps;
 
-    if (XtIsWidget(widget)) {
-	depth = widget->core.depth;
-	screen = XtScreen(widget);
-	drawable = XtWindow(widget);
-    } else {
-	Widget w = _XtWindowedAncestor(widget);
-	depth = w->core.depth;
-	screen = XtScreen(w);
-	drawable = XtWindow(w);
-    }
-    pd = _XtGetPerDisplay(DisplayOfScreen(screen));
+    if (!XtIsWidget(widget))
+	widget = _XtWindowedAncestor(widget);
+    depth = widget->core.depth;
+    screen = XtScreen(widget);
+    dpy = DisplayOfScreen(screen);
+    pd = _XtGetPerDisplay(dpy);
 
     /* Search for existing GC that matches exactly */
-    for (cur = pd->GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
-	if (cur->valueMask == valueMask && cur->depth == depth
-		&& cur->screen == screen
-		&& Matches(cur, valueMask, values)) {
+    for (prev = &pd->GClist; cur = *prev; prev = &cur->next) {
+	if (cur->depth == depth &&
+	    ScreenOfDisplay(dpy, cur->screen) == screen &&
+	    Matches(dpy, cur, valueMask, values)) {
             cur->ref_count++;
-	    /* Move this GC to front of list if not already there */
-	    if (prev != NULL) {
-		prev->next = cur->next;
-		cur->next = pd->GClist;
-		pd->GClist = cur;
-	    }
+	    /* Move this GC to front of list */
+	    *prev = cur->next;
+	    cur->next = pd->GClist;
+	    pd->GClist = cur;
 	    return cur->gc;
 	}
     }
 
     /* No matches, have to create a new one */
-    cur		= XtNew(GCrec);
-    cur->next   = pd->GClist;
-    pd->GClist  = cur;
-
-    cur->screen     = screen;
-    cur->depth      = depth;
-    cur->ref_count  = 1;
-    cur->valueMask  = valueMask;
-    if (values != NULL) cur->values = *values;
-
-    if (drawable == NULL) {
-	/* Have to find a Drawable to identify the depth for the GC */
-	ScreenDrawables sd;
-	for (sd = pd->drawable_tab; sd->screen != screen; sd++);
-	if (sd != pd->drawable_tab) {
-	    ScreenDrawablesRec dr;
-	    dr = *pd->drawable_tab;
-	    *pd->drawable_tab = *sd;
-	    *sd = dr;
-	    sd = pd->drawable_tab;
+    cur = XtNew(GCrec);
+    cur->screen = XScreenNumberOfScreen(screen);
+    cur->depth = depth;
+    cur->ref_count = 1;
+    cur->dashes = GCVAL(GCDashList, valueMask, values->dashes, 4);
+    cur->clip_mask = GCVAL(GCClipMask, valueMask, values->clip_mask, None);
+    drawable = XtWindow(widget);
+    if (!drawable && depth == DefaultDepthOfScreen(screen))
+	drawable = RootWindowOfScreen(screen);
+    if (!drawable) {
+	if (!pd->pixmap_tab)
+	    pd->pixmap_tab = (Drawable **)XtCalloc((unsigned)ScreenCount(dpy),
+						   sizeof(Drawable *));
+	pixmaps = pd->pixmap_tab[cur->screen];
+	if (!pixmaps) {
+	    int max, n, *depths;
+	    depths = XListDepths(dpy, cur->screen, &n);
+	    n--;
+	    max = depths[n];
+	    while (n--) {
+		if (depths[n] > max)
+		    max = depths[n];
+	    }
+	    XFree((char *)depths);
+	    pixmaps = (Drawable *)XtCalloc((unsigned)max, sizeof(Drawable));
+	    pd->pixmap_tab[cur->screen] = pixmaps;
 	}
-	if (depth >= sd->drawable_count) {
-	    int i;
-	    sd->drawables =
-		(Drawable*)XtRealloc((char*)sd->drawables,
-				     (unsigned)(depth+1)*sizeof(Drawable));
-	    for (i = sd->drawable_count; i <= depth; i++)
-		sd->drawables[i] = 0;
-	    sd->drawable_count = depth+1;
+	drawable = pixmaps[cur->depth - 1];
+	if (!drawable) {
+	    drawable = XCreatePixmap(dpy, RootWindowOfScreen(screen), 1, 1,
+				     cur->depth);
+	    pixmaps[cur->depth - 1] = drawable;
 	}
-	if (sd->drawables[depth] != 0)
-	    drawable = sd->drawables[depth];
-        else {
-	    if (depth == DefaultDepthOfScreen(screen))
-		drawable = RootWindowOfScreen(screen);
-	    else 
-		drawable = XCreatePixmap(DisplayOfScreen(screen), screen->root, 1, 1, depth);
-	    sd->drawables[depth] = drawable;
-        }
     }
-    cur->gc = XCreateGC(DisplayOfScreen(screen), drawable, valueMask, values);
+    cur->gc = XCreateGC(dpy, drawable, valueMask, values);
+    cur->next = pd->GClist;
+    pd->GClist = cur;
     return cur->gc;
 } /* XtGetGC */
 
 void  XtReleaseGC(widget, gc)
-    Widget   widget;
-    GC      gc;
+    Widget      widget;
+    register GC gc;
 {
-    register GCptr cur, prev;
-    XtPerDisplay pd = _XtGetPerDisplay(XtDisplayOfObject(widget));
+    register GCptr cur, *prev;
+    Display *dpy = XtDisplayOfObject(widget);
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
     
-    for (cur = pd->GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
+    for (prev = &pd->GClist; cur = *prev; prev = &cur->next) {
 	if (cur->gc == gc) {
 	    if (--(cur->ref_count) == 0) {
-		if (prev != NULL) prev->next = cur->next;
-		else pd->GClist = cur->next;
-		XFreeGC(DisplayOfScreen(cur->screen), gc);
+		*prev = cur->next;
+		XFreeGC(dpy, gc);
 		XtFree((char *) cur);
 	    }
 	    break;
@@ -218,25 +222,23 @@ void  XtReleaseGC(widget, gc)
  */
 
 void XtDestroyGC(gc)
-    GC      gc;
+    register GC gc;
 {
-    register GCptr cur, prev;
-    XtAppContext app = _XtGetProcessContext()->appContextList;
+    register GCptr cur, *prev;
+    register XtAppContext app = _XtGetProcessContext()->appContextList;
     
     /* This is awful; we have to search through all the lists
        to find the GC. */
     for (; app; app = app->next) {
 	int i;
 	for (i = app->count; i ;) {
-	    XtPerDisplay pd = _XtGetPerDisplay(app->list[--i]);
-	    for (cur = pd->GClist, prev = NULL;
-		 cur != NULL; 
-		 prev = cur, cur = cur->next) {
+	    Display *dpy = app->list[--i];
+	    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+	    for (prev = &pd->GClist; cur = *prev; prev = &cur->next) {
 		if (cur->gc == gc) {
 		    if (--(cur->ref_count) == 0) {
-			if (prev != NULL) prev->next = cur->next;
-			else pd->GClist = cur->next;
-			XFreeGC(DisplayOfScreen(cur->screen), gc);
+			*prev = cur->next;
+			XFreeGC(dpy, gc);
 			XtFree((char *) cur);
 		    }
 		    return;
