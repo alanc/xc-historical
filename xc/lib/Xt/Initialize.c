@@ -327,7 +327,7 @@ Widget request, new;
 	}
 
 	XtAddEventHandler(
-	    wid, (EventMask) StructureNotifyMask,
+	    request, (EventMask) StructureNotifyMask,
 	    FALSE, EventHandler, (Opaque) NULL);
 }
 
