@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.58 89/10/09 17:27:17 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.59 89/10/16 16:47:30 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -146,6 +146,14 @@
 #undef umips
 #define MipsArchitecture
 #define UMipsArchitecture
+#endif
+
+
+/*
+ * A convenience for people running on rt's
+ */
+#if defined(ibm032) && !defined(ibm)
+#define ibm
 #endif
 
 #if defined(ibm)
