@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.7 89/11/21 14:51:02 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.8 89/12/02 15:20:43 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -121,10 +121,10 @@ ProcessOtherEvent (xE, other, count)
 	        xV->device_state |= b->state;
 	    }
     bit = 1 << (key & 7);
-    modifiers = other->key->modifierMap[key];
     
     if (xE->type == DeviceKeyPress)
 	{
+	modifiers = k->modifierMap[key];
         kptr = &k->down[key >> 3];
 	if (*kptr & bit) /* allow ddx to generate multiple downs */
 	    {   
@@ -159,6 +159,7 @@ ProcessOtherEvent (xE, other, count)
         kptr = &k->down[key >> 3];
 	if (!(*kptr & bit)) /* guard against duplicates */
 	    return;
+	modifiers = k->modifierMap[key];
 	if (other->valuator)
 	    other->valuator->motionHintWindow = NullWindow;
 	*kptr &= ~bit;
@@ -651,7 +652,7 @@ RecalculateDeviceDeliverableEvents(pWin)
 	    for (i=0; i<EMASKSIZE; i++)
 		wOtherInputMasks(pChild)->deliverableEvents[i] =
 		    wOtherInputMasks(pChild)->inputEvents[i];
-	    if (pChild->parent)
+	    if (pChild->parent && wOtherInputMasks(pChild->parent))
 		for (i=0; i<EMASKSIZE; i++)
 		    wOtherInputMasks(pChild)->deliverableEvents[i] |=
 			(wOtherInputMasks(pChild->parent)->deliverableEvents[i] &
