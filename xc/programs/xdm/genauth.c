@@ -1,4 +1,4 @@
-/* $XConsortium: genauth.c,v 1.18 94/04/17 20:03:39 gildea Exp gildea $ */
+/* $XConsortium: genauth.c,v 1.19 94/10/22 20:33:50 gildea Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -88,7 +88,7 @@ long	sum[2];
 
     fd = open (name, 0);
     if (fd < 0) {
-	LogError("Cannot open randomFile \"%s\"\n", name);
+	LogError("Cannot open randomFile \"%s\", errno = %d\n", name, errno);
 	return 0;
     }
     reads = FILE_LIMIT;
