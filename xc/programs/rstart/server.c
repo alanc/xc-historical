@@ -43,10 +43,6 @@ extern char *getenv();
 #define	TRUE	1
 #define	FALSE	0
 
-#ifndef	strerror
-extern char *strerror();
-#endif	/* strerror */
-
 struct key {
 	char *name;
 	void (*func)();
@@ -182,6 +178,23 @@ Strdup(s)
     strcpy(cs, s);
     return cs;
 }
+
+#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
+extern int sys_nerr;
+extern char *sys_errlist[];
+
+char *
+strerror(err)
+int err;
+{
+	static char buf[20];
+	if(err < 0 || err > sys_nerr) {
+		sprintf(buf, "Unknown err %d");
+		return buf;
+	}
+	return sys_errlist[err];
+}
+#endif
 
 int
 get_a_line(f, pargc, pargv)
