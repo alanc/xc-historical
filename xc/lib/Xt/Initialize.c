@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.190 91/05/31 18:04:00 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.191 91/05/31 18:46:16 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -635,7 +635,7 @@ static void GetLanguage(dpy, pd)
 void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
 	Display *dpy;
         XtPerDisplay pd;
-	String name;
+	_Xconst char* name;
 	XrmOptionDescRec *urlist;
 	Cardinal num_urs;
 	int *argc;
