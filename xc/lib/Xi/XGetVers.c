@@ -1,4 +1,4 @@
-/* $XConsortium: XGetVers.c,v 1.7 91/02/09 17:50:57 rws Exp $ */
+/* $XConsortium: XGetVers.c,v 1.8 94/02/14 17:39:18 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -37,9 +37,15 @@ SOFTWARE.
 #include "extutil.h"
 
 XExtensionVersion
+#if NeedFunctionPrototypes
+*XGetExtensionVersion (
+    register Display 	*dpy,
+    _Xconst char	*name)
+#else
 *XGetExtensionVersion (dpy, name)
     register Display 	*dpy;
     char		*name;
+#endif
     {       
     xGetExtensionVersionReq 	*req;
     xGetExtensionVersionReply 	rep;
