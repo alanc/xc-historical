@@ -1,4 +1,21 @@
 .TH XTERM 1 "18 October 1988" "X Version 11"
+.de Ds
+.nf
+.\\$1D \\$2 \\$1
+.ft 1
+.ps \\n(PS
+.\".if \\n(VS>=40 .vs \\n(VSu
+.\".if \\n(VS<=39 .vs \\n(VSp
+..
+.de De
+.ce 0
+.if \\n(BD .DF
+.nr BD 0
+.in \\n(OIu
+.if \\n(TM .ls 2
+.sp \\n(DDu
+.fi
+..
 .SH NAME
 xterm \- terminal emulator for X
 .SH SYNOPSIS
@@ -815,32 +832,45 @@ for input, by changing the translations for the vt100 or tek4014 widgets.
 Changing the translations for events other than key and button events
 is not expected, and will cause unpredictable behavior.
 .PP
-The actions available for key translations are \fBinsert\fP, \fBstring\fP,
-\fBkeymap\fP, and \fBinsert-selection\fP.  The \fBinsert\fP action causes the
-key to be processed in the normal way.  The \fBstring\fP action takes a
-single string argument, and rebinds the key/sequence to that string value.
-If the string argument begins with the characters ``0x'', it is interpreted
-as a hex character constant and the corresponding character is processed
+The actions available for key translations are:
+.TP 15
+.B insert()
+Processes the key in the normal way; i.e. inserts the
+ASCII character code corresponding to the keysym found in the
+keyboard mapping table into the input stream.
+.TP 15
+.B string(\fP[\"]\fIstring\fP[\"]\fB)
+Rebinds the key or key sequence to the string value; that is, inserts the
+string argument into the input stream.
+Quotation is necessary only if the string contains
+non-alphanumeric characters.  If the string argument begins with the
+characters ``0x'', it is interpreted
+as a hex character constant and the corresponding character is sent
 in the normal way.
-.PP
+.TP 15
+.B keymap(\fIname\fB)
 The \fBkeymap\fP action takes a single string argument naming a resource
 to be used to dynamically define a new translation table; the name of the
-resource is obtained by appending the string ``Keymap'' to the
-string argument to the action.  A string argument of ``None''
-to the keymap action restores the original translation table
+resource is obtained by appending the string ``Keymap'' to
+\fIname\fP.   The keymap name \fBNone\fP
+restores the original translation table
 (the very first one; a stack is not maintained).  Upper/lower case is
 significant.
-.PP
-The \fBinsert-selection\fP action takes a list of string arguments specifying
-selection names or cut buffers and causes the contents of the first selection
-or cut buffer that exists
-to be used as effective input.
+.TP 15
+.B insert-selection(\fIname\fP[,\fIname\fP]...\fB)
+Retrieves the value of the first (left-most) named selection that exists
+or cut buffer that is non-empty
+and inserts the value into the input stream. \fIName\fP is the
+name of any selection, for example, \fBPRIMARY\fP or \fBSECONDARY\fP, or
+the name of a cut buffer: \fBCUT_BUFFER0\fP, ..., \fBCUT_BUFFER7\fP.
 Upper/lower case is significant.
 .PP
 For example, a debugging session might benefit from the following bindings:
 .sp
 .in +4
-.nf
+.Ds
+.TA .5i
+.ta .5i
 *VT100.translations: #override <Key>F13: keymap(dbx)
 *VT100.dbxKeymap.translations: \\
 	<Key>F14: keymap(None) \\n\\
@@ -848,7 +878,7 @@ For example, a debugging session might benefit from the following bindings:
 	<Key>F18: string("step") string(0x0d) \\n\\
 	<Key>F19: string("continue") string(0x0d) \\n\\
 	<Key>F20: string("print ") insert-selection(PRIMARY, CUT_BUFFER0)
-.fi
+.De
 .sp
 .in -4
 .SH KEY/BUTTON BINDINGS
@@ -856,47 +886,49 @@ Within the VT100 widget the key and button bindings for selecting
 text, pasting text, and activating the menus are controlled by the
 translation bindings.  In addition to the actions listed above under
 \fBKEY TRANSLATIONS\fP, the following actions are available:
-.TP 12
+.TP 15
 .B mode-menu()
 Posts one of the two mode menus, depending on which button is pressed.
-.TP 12
+.TP 15
 .B select-start()
 Unselects any previously selected text and begins selecting new text.
-.TP 12
+.TP 15
 .B select-extend()
 Continues selecting text from the previous starting position.
-.TP 12
+.TP 15
 .B start-extend()
 Begins extending the selection from the farthest (left or right) edge.
-.TP 12
+.TP 15
 .B select-end(\fIname\fP[,\fIname\fP]...\fB)
 Ends the text selection.  \fIName\fP is the name of a selection, or
 the name of a cut buffer into which the text is to be copied.  \fIXterm\fP
 will assert ownership of all the selections named and will copy the text
 into each of the cut buffers.  Upper/lower case is significant.
-.TP 12
+.TP 15
 .B ignore()
 Quietly discards the key or button event.
-.TP 12
+.TP 15
 .B bell(\fP[\fIvolume\fP]\fB)
 Rings the bell at the specified volume increment above/below the base volume.
 .PP
 The default bindings are:
 .sp
 .in +4
-.nf
-            <KeyPress>:         insert() \\n\\
- Ctrl ~Meta <Btn1Down>:         mode-menu() \\n\\
-      ~Meta <Btn1Down>:         select-start() \\n\\
-      ~Meta <Btn1Motion>:       select-extend() \\n\\
- Ctrl ~Meta <Btn2Down>:         mode-menu() \\n\\
-~Ctrl ~Meta <Btn2Down>:         ignore() \\n\\
-      ~Meta <Btn2Up>:           insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
-~Ctrl ~Meta <Btn3Down>:         start-extend() \\n\\
-      ~Meta <Btn3Motion>:       select-extend() \\n\\
-      ~Meta <BtnUp>:            select-end(PRIMARY, CUT_BUFFER0) \\n\\
-            <BtnDown>:          bell(0)
-.fi
+.Ds
+.TA .5i 1i 2i
+.ta .5i 1i 2i
+		<KeyPress>:	insert() \\n\\
+ Ctrl	~Meta	<Btn1Down>:	mode-menu() \\n\\
+	~Meta	<Btn1Down>:	select-start() \\n\\
+	~Meta	<Btn1Motion>:	select-extend() \\n\\
+ Ctrl	~Meta	<Btn2Down>:	mode-menu() \\n\\
+~Ctrl	~Meta	<Btn2Down>:	ignore() \\n\\
+	~Meta	<Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
+~Ctrl	~Meta	<Btn3Down>:	start-extend() \\n\\
+	~Meta	<Btn3Motion>:	select-extend() \\n\\
+	~Meta	<BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \\n\\
+		<BtnDown>:	bell(0)
+.De
 .sp
 .in -4
 .SH "STARTING XTERM FROM INIT"
