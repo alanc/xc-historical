@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: init.c,v 1.5 92/04/06 18:18:58 keith Exp $ */
+/* $XConsortium: init.c,v 1.6 93/07/10 11:18:20 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -140,7 +140,7 @@ InitOutput(screenInfo, argc, argv)
 	defaultKeyboardControl.bell_duration = control.bell_duration;
 	defaultKeyboardControl.autoRepeat = control.auto_repeat;
 	defaultKeyboardControl.leds = control.leds;
-	bcopy (control.autorepeats, defaultKeyboardControl.autoRepeats, 32);
+	memmove(defaultKeyboardControl.autoRepeats, control.autorepeats, 32);
 	
     /* turn off cursors on additional screens initially */
 /* 

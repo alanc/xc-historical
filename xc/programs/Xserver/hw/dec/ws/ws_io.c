@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.7 92/05/18 20:12:44 rws Exp $ */
+/* $XConsortium: ws_io.c,v 1.8 93/07/10 11:29:35 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -181,7 +181,7 @@ wsChangeKeyboardControl(device, ctrl)
      * XXX a crock, but to have a byte interface would have implied the
      * driver did alot more work at interrupt time, so we made it 32 bits wide.
      */
-    bcopy(ctrl->autoRepeats, control.autorepeats, 32);
+    memmove(control.autorepeats, ctrl->autoRepeats, 32);
 #ifdef notdef
     /* LEDs */
     for (i=1; i<=MAX_LED; i++)

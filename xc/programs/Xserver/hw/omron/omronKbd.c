@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: omronKbd.c,v 1.1 91/06/29 13:49:01 xguest Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -76,12 +76,12 @@ int           what;
 					return (!Success);
 				initFlag = TRUE;
 			}
-			bcopy(prv->semiEncodeDef,prv->semiEncode,CODTBSZ);
+			memmove(prv->semiEncode,prv->semiEncodeDef,CODTBSZ);
 #ifndef USE_KANA_SWITCH
-			bcopy(prv->semiEncodeDef,prv->semiKanaEncode,CODTBSZ);
+			memmove(prv->semiKanaEncode,prv->semiEncodeDef,CODTBSZ);
 #endif
-			bcopy (omronAutoRepeats[prv->type],
-				defaultKeyboardControl.autoRepeats,AREPBUFSZ);
+			memmove (defaultKeyboardControl.autoRepeats,
+				 omronAutoRepeats[prv->type],AREPBUFSZ);
 			prv->keybdCtrl = defaultKeyboardControl;
 #ifndef USE_KANA_SWITCH
 			prv->key_state = 0;

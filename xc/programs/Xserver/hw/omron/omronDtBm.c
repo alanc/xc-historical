@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: omronDtBm.c,v 1.1 91/06/29 13:48:53 xguest Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -265,7 +265,7 @@ static void
 omronDtBmPalInit(omron_fb_info)
 OmronFbInfoPtr omron_fb_info;
 {
-	bcopy(palinit, palsave, sizeof(palinit));
+	memmove(palsave, palinit, sizeof(palinit));
 	omronDtBmSetPal(omron_fb_info, palsave);
 }
 
