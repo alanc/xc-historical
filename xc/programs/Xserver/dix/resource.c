@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.70 89/02/02 14:49:29 rws Exp $ */
+/* $XConsortium: resource.c,v 1.71 89/03/11 16:47:44 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -376,7 +376,7 @@ LegalNewID(id, client)
     register ClientPtr client;
 {
     return ((client->clientAsMask == CLIENT_BITS(id)) && !(id & SERVER_BIT) &&
-	    ((clientTable[client->index].expectID == id) ||
+	    ((clientTable[client->index].expectID >= id) ||
 	     !LookupID(id, RT_ANY, RC_CORE)));
 }
 
