@@ -1,4 +1,4 @@
-/* $XConsortium: ppcFillRct.c,v 1.1 94/03/28 21:36:33 dpw Exp $ */
+/* $XConsortium: ppcFillRct.c,v 1.2 94/04/17 20:31:48 dpw Exp kaleb $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ppcFillRct.c,v 1.1 94/03/28 21:36:33 dpw Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
