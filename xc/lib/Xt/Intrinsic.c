@@ -445,18 +445,12 @@ void XtSetSensitive(widget,sensitive)
       
 }
 
-#define ClassToSuperclass(widget, proc)	\
-{  WidgetClass widgetClass; \
-  for(widgetClass = widget->core.widget_class;widgetClass != NULL; \
-                         widgetClass = widgetClass ->core_class.superclass) \
-  if ((widgetClass->core_class.proc) != (WidgetProc)NULL) widgetClass->core_class.proc; \
-}
 #define TABLESIZE 20
 typedef struct {
     int offset;
     WidgetClass widgetClass;
 } CallbackTableRec,*CallbackTable;
-
+typedef void (*fooProc)();
 static CallbackTable callbackTable = NULL;
 static XtCallbackType currentIndex = 1;
 static XtCallbackType maxIndex;
@@ -625,7 +619,7 @@ void XtCallCallbacks (widget, callbackType, callData)
 }
 
 
-void DestroyChildren (widget)
+void Phase1Destroy (widget)
     Widget    widget;
 {
     int i;
@@ -633,58 +627,60 @@ void DestroyChildren (widget)
     widget-> core.being_destroyed = TRUE;
     if (XtIsSubclass (widget,compositeWidgetClass))
         for (i= ((CompositeWidget)widget)->composite.num_children; i != 0; --i)
-            DestroyChildren (((CompositeWidget)widget)->composite.children[i-1]);
+            Phase1Destroy (((CompositeWidget)widget)->composite.children[i-1]);
     return;
 }
+void Recursive(widget,proc)
+   Widget  widget;
+   fooProc proc;
+{
+  CompositeWidget cwidget;
+  int i;
+  if (XtIsSubclass(widget,compositeWidgetClass)) {
+      cwidget=(CompositeWidget)widget;
+      for (i=cwidget->composite.num_children;
+           i != 0; --i) {
+         Recursive(cwidget->composite.children[i-1],proc);
+         (*proc)(cwidget);
+  } }
+  proc(widget);  
+  return;
+}
 
-
-void Phase2ChildrenCallbacks(widget)
+void Phase2Callbacks(widget)
     Widget    widget;
 {
-     CompositeWidget cwidget;
-     int i;
-    if (XtIsSubclass(widget,compositeWidgetClass)) {
-     cwidget = (CompositeWidget)widget;
-       for (i=cwidget->composite.num_children; i!=0; --i) {
-    CallCallbacks(&(cwidget->composite.children[i-1]->core.destroy_callbacks),
-                                                 NULL);
-           Phase2ChildrenCallbacks(cwidget->composite.children[i-1]);
-       }
-    }
+     CallCallbacks(&(widget->core.destroy_callbacks),
+         NULL);
      return;
 }
 
-void Phase2ChildrenDestroy(widget)
+void Phase2Destroy(widget)
     Widget    widget;
 {
-      CompositeWidget cwidget;
-      int i;
-   if (XtIsSubclass(widget,compositeWidgetClass)){
-       cwidget = (CompositeWidget)widget;
-       for (i=cwidget->composite.num_children; i!=0; --i) {
-           Phase2ChildrenDestroy(cwidget->composite.children[i-1]);
-	ClassToSuperclass(cwidget->composite.children[i-1],destroy())
-       }
-   }
-     return;
+  WidgetClass widgetClass;
+  for(widgetClass = widget->core.widget_class;
+      widgetClass != NULL; 
+      widgetClass = widgetClass ->core_class.superclass) 
+  if ((widgetClass->core_class.destroy) != NULL)
+       widgetClass->core_class.destroy(widget);
 }
-
 
 void XtPhase2Destroy (widget)
     Widget    widget;
 {
+    Display *display;
+    Window window;
     if (widget->core.parent != NULL) {
 	XtCompositeRemoveChild(widget);
 	((CompositeWidgetClass) widget->core.parent->core.widget_class)
 		->composite_class.delete_child(widget);
     }
-
-    CallCallbacks(&(widget->core.destroy_callbacks),NULL);
-    Phase2ChildrenCallbacks(widget);
-    Phase2ChildrenDestroy(widget);
-    /* ||| All this shit needs to check procs for NULL before calling */
-    ClassToSuperclass(widget,destroy())
-    if (widget->core.window != NULL) XDestroyWindow(widget->core.window);
+    display = XtDisplay(widget); /* Phase2Destroy removes Widget*/
+    window = widget->core.window;
+    Recursive(widget,Phase2Callbacks);
+    Recursive(widget,Phase2Destroy);
+    if (window != NULL) XDestroyWindow(display,window);
     return;
 }
 
@@ -695,7 +691,7 @@ void XtDestroyWidget (widget)
 {
     if (widget->core.being_destroyed) return;
 
-    DestroyChildren(widget);
+    Phase1Destroy(widget);
     AddCallback(widget, &DestroyList, XtPhase2Destroy, NULL);
 
 }
