@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.44 91/07/18 23:01:12 keith Exp $ */
+/* $XConsortium: os.h,v 1.46 92/02/13 15:57:26 keith Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -41,6 +41,9 @@ SOFTWARE.
 
 #ifndef MAX_REQUEST_SIZE
 #define MAX_REQUEST_SIZE 65535
+#endif
+#ifndef MAX_BIG_REQUEST_SIZE
+#define MAX_BIG_REQUEST_SIZE 1048575
 #endif
 
 typedef pointer	FID;
