@@ -102,7 +102,7 @@ cfbPaintWindow(pWin, pRegion, what)
 			      pPrivWin->pRotatedBorder);
 	    return;
 	}
-	else if (pWin->border.pixmap->drawable.width > 32)
+	else if (pWin->border.pixmap->drawable.width >= PPW/2)
 	{
 	    cfbFillBoxTileOdd ((DrawablePtr)pWin,
 			       (int)REGION_NUM_RECTS(pRegion),
