@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.30 94/03/29 15:42:14 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.31 94/03/31 11:36:57 gildea Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -43,6 +43,7 @@ sv4Lib.tmpl
 
 CFFILES = \
 Imake.cf \
+Amoeba.cf \
 DGUX.cf \
 Mips.cf \
 NetBSD.cf \
@@ -71,6 +72,7 @@ sequent.cf \
 sgi.cf \
 sony.cf \
 sun.cf \
+svr4.cf \
 ultrix.cf \
 usl.cf \
 x386.cf \
