@@ -1,12 +1,8 @@
-/* $Header: inp.c,v 3.1 94/03/29 13:39:15 gildea Exp $
+/* $XConsortium: inp.c,v 3.2 94/09/09 20:04:28 gildea Exp $
  *
- * $Log:	inp.c,v $
  * Revision 3.1  94/03/29  13:39:15  gildea
  * check that a patch that creates a file has not already been applied.
  * version "XC1"
- * 
- * Revision 3.0  88/06/03  15:06:13  lwall
- * patch 2.0.12u9
  * 
  * Revision 2.0.1.1  88/06/03  15:06:13  lwall
  * patch10: made a little smarter about sccs files
