@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.17 92/06/27 21:55:11 rws Exp $ */
+/* $XConsortium: TMaction.c,v 1.18 93/05/13 15:14:24 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -832,10 +832,23 @@ static XtActionsRec RConst tmActions[] = {
 };
 
 
-void _XtActionInitialize(app)
+void _XtPopupInitialize(app)
     XtAppContext app;
 {
     register ActionList rec;
+
+    /*
+     * The _XtGlobalTM.newMatchSemantics flag determines whether
+     * we support old or new matching
+     * behavior. This is mainly an issue of whether subsequent lhs will
+     * get pushed up in the match table if a lhs containing thier initial
+     * sequence has already been encountered. Currently inited to False;
+     */
+#ifdef NEW_TM
+    _XtGlobalTM.newMatchSemantics = True;
+#else
+    _XtGlobalTM.newMatchSemantics = False;
+#endif
 
     rec = XtNew(ActionListRec);
     rec->next = app->action_table;
@@ -843,7 +856,10 @@ void _XtActionInitialize(app)
     rec->table = CompileActionTable(tmActions, XtNumber(tmActions), False,
 				    True);
     rec->count = XtNumber(tmActions);
+
+    _XtGrabInitialize(app);
 }
+
 
 #if NeedFunctionPrototypes
 void XtCallActionProc(
