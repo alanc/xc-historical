@@ -641,9 +641,10 @@
   (let* ((screen (if (type? screen 'display)
 		     (display-default-screen screen)
 		   screen))
-	 (window (screen-root screen)))
-    (wm-resources (or database (make-resource-database)) window
-		  :key key :test test :test-not test-not)))
+	 (window (screen-root screen))
+	 (database (or database (make-resource-database))))
+    (wm-resources database window :key key :test test :test-not test-not)
+    database))
 
 (defun set-root-resources (screen &key test test-not (write 'princ) database)
   "Changes the contents of the root window RESOURCE_MANAGER property for the
@@ -663,7 +664,8 @@
 		     (display-default-screen screen)
 		   screen))
 	 (window (screen-root screen)))
-    (set-wm-resources database window :write write :test test :test-not test-not)))
+    (set-wm-resources database window :write write :test test :test-not test-not)
+    database))
 
 (defsetf root-resources set-root-resources)
 
