@@ -4,7 +4,7 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- * $XConsortium: xwininfo.c,v 1.52 91/05/11 22:32:49 gildea Exp $
+ * $XConsortium: xwininfo.c,v 1.53 92/03/16 17:19:38 gildea Exp $
  *
  *	This program will report all relevant information
  *	about a specific window.
@@ -356,8 +356,8 @@ typedef struct {
 
 static char _lookup_buffer[100];
 
-char *Lookup(code, table)
-    int code;
+char *LookupL(code, table)
+    long code;
     binding *table;
 {
 	char *name;
@@ -376,6 +376,12 @@ char *Lookup(code, table)
 	return(name);
 }
 
+char *Lookup(code, table)
+    int code;
+    binding *table;
+{
+    return LookupL((long)code, table);
+}
 
 /*
  * Routine to display a window id in dec/hex with name if window has one
@@ -721,7 +727,7 @@ Display_Event_Mask(mask)
   for (bit=0, bit_mask=1; bit<sizeof(long)*8; bit++, bit_mask <<= 1)
     if (mask & bit_mask)
       printf("      %s\n",
-	     Lookup(bit_mask, _event_mask_names));
+	     LookupL(bit_mask, _event_mask_names));
 }
 
 
