@@ -1,40 +1,60 @@
 .TH XCUTSEL 1 "14 October 1988" "X Version 11"
 .SH NAME
-xcutsel - X cutsel client
-.SH SYNTAX
+xcutsel - convert cut buffer to selection
+.SH SYNOPSIS
 \fBxcutsel\fP [ \fI-toolkitoption\fP ...] [-atom \fIselection\fP] [-buffer #]
+.SH DESCRIPTION
+The \fIxcutsel\fP program is used to copy the current selection into a
+cut buffers and to make a selection that contains the current contents of
+the cut buffer.  It acts as a bridge between applications that don't support
+selections and those that do.
+.PP
+By default, \fIxcutsel\fP will use the selection named PRIMARY and the cut
+buffer CUT_BUFFER_0.  Either or both of these can be overridden by command
+line arguments or by resources.
+.PP
+An \fIxcutsel\fP window contains three buttons:
+.TP 8
+.I "    quit"
+When this button is pressed, \fIxcutsel\fP exits.  Any selections held by
+\fIxcutsel\fP are automatically released.
+.TP 8
+.I "    cut->sel"
+When this button is pressed, \fIxcutsel\fP converts the current contents of
+the cut buffer into a selection.
+.TP 8
+.I "    sel->cut"
+When this button is pressed, \fIxcutsel\fP copies the current selection into
+the cut buffer.
 .SH OPTIONS
 .I Xcutsel
-accepts all of the standard X Toolkit command line options.
-.SH DESCRIPTION
-.I Xcutsel
-provides a trivial interface to copy the contents of a selection into
-a cut buffer and vice-versa.
-.PP
-The default selection
+accepts all of the standard X Toolkit command line options as well as the
+following:
+.TP 8
+.B \-selection \fIname\fP
+This option specifies the name of the selection to use.  The default is
+PRIMARY.
+.TP 8
+.B \-buffer \fInumber\fP
+This option specifies the cut buffer to use.  The default is cut buffer 0.
 .SH X DEFAULTS
-For
-.I xcutsel,
-the available class identifiers are:
-.sp
-.nf
-Command
-Scrollbar
-Text   
-.fi
-.PP
-For
-.I xcutsel,
-the available name identifiers are:
-.sp
-.nf
-quit
-text
-xcutsel
-.fi
-.sp
-.LP
-.SH AUTHOR
-Ralph R. Swick, DEC/MIT Project Athena
+This program accepts all of the standard X Toolkit resource names and classes
+as well as:
+.TP 8
+.B "selection (\fPclass\fB Selection)"
+This resource specifies the name of the selection to use.  The default is
+PRIMARY.
+.TP 8
+.B "buffer (\fPclass\fB Buffer)"
+This resource specifies the number of the cut buffer to use.  The default is 0.
+.SH "SEE ALSO"
+X(1), xterm(1), text widget documentation
+.SH BUGS
+There is no way to change the name of the selection or the number of the
+cut buffer while the program is running.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
+Ralph R. Swick, DEC/MIT Project Athena
