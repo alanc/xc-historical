@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.43 88/01/20 18:16:47 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.44 88/01/20 18:48:19 swick Locked $";
 #endif lint
 
 /*
@@ -348,7 +348,7 @@ static void DispatchEvent(event, widget, mask)
 	  XtAddExposureToRegion(event, exposeRegion);
 	  return;
 	}
-	if (event->type != NoExpose) {
+	if (exposeRegion != NULL) {
 	  XRectangle rect;
 	  XClipBox(exposeRegion, &rect);
 	  switch (event->type) {
@@ -364,6 +364,8 @@ static void DispatchEvent(event, widget, mask)
 		      event->xgraphicsexpose.width = rect.width;
 		      event->xgraphicsexpose.height = rect.height;
 		      break;
+	    default:
+		      XtError("DispatchEvent got NoExposure with non-empty region");
 	  }
 	  XDestroyRegion(exposeRegion);
 	  exposeRegion = NULL;
