@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.32 89/03/16 14:45:45 jim Exp $ */
+/* $XConsortium: os.h,v 1.33 89/03/22 15:59:59 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -47,12 +47,8 @@ typedef struct _NewClientRec *NewClientPtr;
 #ifndef NO_ALLOCA
 /*
  * os-dependent definition of local allocation and deallocation
- * If you need something other than malloc/free for ALLOCATE/DEALLOCATE
- * LOCAL then you add that to the beginning of this set.  Note that
- * some machines do not return a valid pointer for malloc(0), in
- * which case we provide an alternate under the control of the
- * define MALLOC_0_RETURNS_NULL.  This is necessary because some
- * server code expects malloc(0) to return a valid pointer to storage.
+ * If you want something other than Xalloc/Xfree for ALLOCATE/DEALLOCATE
+ * LOCAL then you add that in here.
  */
 #if defined(__HIGHC__)
 
@@ -90,13 +86,8 @@ char *alloca();
 #endif /* NO_ALLOCA */
 
 #ifndef ALLOCATE_LOCAL
-char *malloc();
-#ifdef MALLOC_0_RETURNS_NULL
-#define ALLOCATE_LOCAL(size) malloc((unsigned)((size) > 0 ? (size) : 1))
-#else
-#define ALLOCATE_LOCAL(size) malloc((unsigned)(size))
-#endif
-#define DEALLOCATE_LOCAL(ptr) free((char *)(ptr))
+#define ALLOCATE_LOCAL(size) Xalloc((unsigned long)(size))
+#define DEALLOCATE_LOCAL(ptr) Xfree((pointer)(ptr))
 #endif /* ALLOCATE_LOCAL */
 
 
