@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontmisc.h,v 1.2 91/05/11 11:06:18 rws Exp $
+ * $XConsortium: fontmisc.h,v 1.3 91/05/11 11:31:14 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -25,6 +25,8 @@
 
 #ifndef _FONTMISC_H_
 #define _FONTMISC_H_
+
+#include <X11/Xfuncs.h>
 
 typedef unsigned char	*pointer;
 typedef int		Bool;
