@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.34 94/02/02 08:42:25 gildea Exp $
+ * $XConsortium: greet.c,v 1.35 94/02/03 08:21:16 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,8 +26,6 @@
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-
-#include <X11/Xaw/Command.h>
 
 #include "dm.h"
 #include "greet.h"

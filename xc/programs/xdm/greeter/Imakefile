@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/02/04 23:38:43 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 94/03/31 18:18:03 gildea Exp $
 #define DoNormalLib NO
 #define DoSharedLib YES
 #define DoDebugLib NO
@@ -22,8 +22,8 @@ KRB5_DEFINES = Krb5Defines
 KRB5_INCLUDE = Krb5Includes
 #endif
 
-#ifdef SharedXmuReqs
-REQUIREDLIBS = $(LDPRELIB) XawClientLibs
+#ifdef SharedXmuReqs			/* do we support required libs? */
+REQUIREDLIBS = $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #endif
 
 #ifdef OSF1Architecture

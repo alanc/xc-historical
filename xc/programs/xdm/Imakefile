@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.67 94/01/14 19:39:54 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.68 94/02/02 08:42:14 gildea Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -57,8 +57,8 @@ SOCK_DEFINES = -DBSD44SOCKETS
         SUBDIRS = $(GREET_DIR) $(XDMCONFIGDIR)
 
 INCLUDES = $(KRB5_INCLUDE)
-DEPLIBS = XawClientDepLibs $(DEPXAUTHLIB) $(DEPXDMCPLIB)
-LOCAL_LIBRARIES = XawClientLibs $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB)
+DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) $(DEPXDMCPLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \
