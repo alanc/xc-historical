@@ -1,4 +1,4 @@
-/* $XConsortium: extensions.c,v 1.2 91/05/13 16:55:16 gildea Exp $ */
+/* $XConsortium: extensions.c,v 1.3 91/07/18 23:39:35 rws Exp $ */
 /*
  * font server extensions
  *
@@ -280,7 +280,7 @@ ProcListExtensions(client)
 	}
     }
     WriteReplyToClient(client, sizeof(fsListExtensionsReply), &reply);
-    if (reply.length) {
+    if (total_length) {
 	WriteToClient(client, total_length, buffer);
 	DEALLOCATE_LOCAL(buffer);
     }
