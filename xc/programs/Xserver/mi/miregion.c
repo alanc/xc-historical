@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.28 87/10/08 13:48:14 rws Locked $ */
+/* $Header: miregion.c,v 1.29 87/11/18 10:19:12 rws Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -72,6 +72,7 @@ typedef BoxRec BOX;	/* this is to cut down on some gratuitous edits */
         ( ((r1)->y2 <= (r2)->y1)) || \
         ( ((r1)->y1 >= (r2)->y2)) ) )
 
+static BoxRec EmptyBox = {0, 0, 0, 0};
 
 void
 miprintRects(rgn)
@@ -107,10 +108,7 @@ miRegionCreate(rect, size)
     if (rect == (BOX *)NULL)
     {
         temp->numRects = 0;
-        temp->extents.x1 = 0;
-        temp->extents.y1 = 0;
-        temp->extents.x2 = 0;
-        temp->extents.y2 = 0;
+        temp->extents = EmptyBox;
     }
     else
     {
@@ -616,6 +614,12 @@ miSetExtents (pReg)
 			pBoxEnd,
 			pExtents;
 
+    if (pReg->numRects == 0)
+    {
+	pReg->extents = EmptyBox;
+	return;
+    }
+
     pExtents = &pReg->extents;
     pBox = pReg->rects;
     pBoxEnd = &pBox[pReg->numRects - 1];
@@ -774,24 +778,18 @@ miIntersect(newReg, reg1, reg2)
    /* check for trivial reject */
     if ( (!(reg1->numRects)) || (!(reg2->numRects))  ||
 	(!EXTENTCHECK(&reg1->extents, &reg2->extents)))
-    {
         newReg->numRects = 0;
-        return(1);
-    }
-
-    miRegionOp (newReg, reg1, reg2, miIntersectO, NULL, NULL);
+    else
+	miRegionOp (newReg, reg1, reg2, miIntersectO, NULL, NULL);
     
-    if (newReg->numRects != 0)
-    {
-	/*
-	 * Can't alter newReg's extents before we call miRegionOp because
-	 * it might be one of the source regions and miRegionOp depends
-	 * on the extents of those regions being the same. Besides, this
-	 * way there's no checking against rectangles that will be nuked
-	 * due to coalescing, so we have to examine fewer rectangles.
-	 */
-	miSetExtents(newReg);
-    }
+    /*
+     * Can't alter newReg's extents before we call miRegionOp because
+     * it might be one of the source regions and miRegionOp depends
+     * on the extents of those regions being the same. Besides, this
+     * way there's no checking against rectangles that will be nuked
+     * due to coalescing, so we have to examine fewer rectangles.
+     */
+    miSetExtents(newReg);
     return(1);
 }
 
@@ -1218,17 +1216,14 @@ miSubtract(regD, regM, regS)
  
     miRegionOp (regD, regM, regS, miSubtractO, miSubtractNonO1, NULL);
 
-    if (regD->numRects != 0)
-    {
-	/*
-	 * Can't alter newReg's extents before we call miRegionOp because
-	 * it might be one of the source regions and miRegionOp depends
-	 * on the extents of those regions being the unaltered. Besides, this
-	 * way there's no checking against rectangles that will be nuked
-	 * due to coalescing, so we have to examine fewer rectangles.
-	 */
-	miSetExtents (regD);
-    }
+    /*
+     * Can't alter newReg's extents before we call miRegionOp because
+     * it might be one of the source regions and miRegionOp depends
+     * on the extents of those regions being the unaltered. Besides, this
+     * way there's no checking against rectangles that will be nuked
+     * due to coalescing, so we have to examine fewer rectangles.
+     */
+    miSetExtents (regD);
     return(1);
 }
 
@@ -1375,14 +1370,17 @@ miRegionReset(pRegion, pBox)
     RegionPtr pRegion;
     BOX *pBox;
 {
-    assert(pBox->x1<pBox->x2);
-    assert(pBox->y1<pBox->y2);
+    assert(pBox->x1<=pBox->x2);
+    assert(pBox->y1<=pBox->y2);
     pRegion->extents.x1 = pRegion->rects->x1 = pBox->x1;
     pRegion->extents.y1 = pRegion->rects->y1 = pBox->y1;
     pRegion->extents.x2 = pRegion->rects->x2 = pBox->x2;
     pRegion->extents.y2 = pRegion->rects->y2 = pBox->y2;
-
-    pRegion->numRects = 1;
+    
+    if ((pBox->x1 == pBox->x2) || (pBox->y1 == pBox->y2))
+	pRegion->numRects = 0;
+    else
+	pRegion->numRects = 1;
 }
 
 #define INBOX(r, x, y) \
