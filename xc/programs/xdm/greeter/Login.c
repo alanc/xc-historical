@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.30 91/05/09 23:00:01 gildea Exp $
+ * $XConsortium: Login.c,v 1.31 91/05/11 15:39:09 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -799,11 +799,12 @@ static void Destroy (gw)
     LoginWidget w = (LoginWidget)gw;
     bzero (w->login.data.name, NAME_LEN);
     bzero (w->login.data.passwd, NAME_LEN);
-    XtDestroyGC (w->login.textGC);
-    XtDestroyGC (w->login.bgGC);
-    XtDestroyGC (w->login.xorGC);
-    XtDestroyGC (w->login.promptGC);
-    XtDestroyGC (w->login.greetGC);
+    XtReleaseGC(gw, w->login.textGC);
+    XtReleaseGC(gw, w->login.bgGC);
+    XtReleaseGC(gw, w->login.xorGC);
+    XtReleaseGC(gw, w->login.promptGC);
+    XtReleaseGC(gw, w->login.greetGC);
+    XtReleaseGC(gw, w->login.failGC);
 }
 
 /* ARGSUSED */
