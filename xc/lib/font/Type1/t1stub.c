@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1stub.c,v 1.2 91/10/10 11:19:51 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -27,14 +27,16 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+
+#include "objects.h"	/* get #define for abort() */
  
 xiStub()
 {
        printf("xiStub called\n");
-       abort();
+       abort("xiStub called");
 }
  
-t1_DumpText()
+void t1_DumpText()
 {
        xiStub();
 }

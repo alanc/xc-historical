@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1malloc.c,v 1.3 91/10/10 11:19:43 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -36,6 +36,9 @@ routines (malloc/free).
 &author. Jeffrey B. Lotspiech (lotspiech@almaden.ibm.com)
  
 */
+
+#include "objects.h"	/* get #define for abort() */
+
 static combine();
 static freeuncombinable();
 static unhook();
