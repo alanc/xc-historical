@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.52 92/03/13 15:42:27 rws Exp $ */
+/* $XConsortium: events.c,v 5.53 92/03/13 17:49:31 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -464,6 +464,14 @@ CursorPtr
 GetSpriteCursor()
 {
     return sprite.current;
+}
+
+void
+GetSpritePosition(px, py)
+    int *px, *py;
+{
+    *px = sprite.hotPhys.x;
+    *py = sprite.hotPhys.y;
 }
 
 #define TIMESLOP (5 * 60 * 1000) /* 5 minutes */
