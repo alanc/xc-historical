@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.h,v 5.1 91/02/16 09:54:44 rws Exp $ */
+/* $XConsortium: miStruct.h,v 5.2 92/08/12 15:21:50 hersh Exp $ */
 
 
 /***********************************************************
@@ -112,6 +112,7 @@ typedef struct _miPPLevel {
 typedef struct {
 	miExecStrState	exec_str_flag;
 	ddULONG		pickId;
+	ddULONG		ROCoffset;
 	ddPickPath	*p_curr_pick_el;
 	ddElementRef	*p_curr_sc_el;
 	ddSHORT		max_depth;	/* max depth reached in pick or search */
