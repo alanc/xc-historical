@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.6 89/05/01 13:19:45 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.7 89/05/02 21:37:00 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -529,8 +529,8 @@ caddr_t radio_data;
     local_tog = (ToggleWidget) radio_group;
     if ( (local_tog->toggle.radio_data == radio_data) )     
       if (!local_tog->command.set) {
-	ToggleSet(radio_group, NULL, NULL, 0);
-	Notify(radio_group, NULL, NULL, 0);
+	ToggleSet((Widget) local_tog, NULL, NULL, 0);
+	Notify((Widget) local_tog, NULL, NULL, 0);
       }
     return;
   }
@@ -549,8 +549,8 @@ caddr_t radio_data;
     local_tog = (ToggleWidget) list->widget;
     if ( (local_tog->toggle.radio_data == radio_data) ) {
       if (!local_tog->command.set) { /* if not already set. */
-	ToggleSet(radio_group, NULL, NULL, 0);
-	Notify(radio_group, NULL, NULL, 0);
+	ToggleSet((Widget) local_tog, NULL, NULL, 0);
+	Notify((Widget) local_tog, NULL, NULL, 0);
       }
       return;			/* found it, done */
     }
