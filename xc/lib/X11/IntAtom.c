@@ -1,4 +1,4 @@
-/* $XConsortium: XIntAtom.c,v 11.20 93/08/31 17:34:20 rws Exp $ */
+/* $XConsortium: IntAtom.c,v 11.21 93/08/31 19:22:41 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -55,30 +55,25 @@ _XFreeAtomTable(dpy)
     }
 }
 
-#if NeedFunctionPrototypes
-Atom XInternAtom (
-    Display *dpy,
-    _Xconst char *name,
-    Bool onlyIfExists)
-#else
-Atom XInternAtom (dpy, name, onlyIfExists)
+static
+Atom _XInternAtom(dpy, name, onlyIfExists, psig, pidx, pn)
     Display *dpy;
     char *name;
     Bool onlyIfExists;
-#endif
+    unsigned long *psig;
+    int *pidx;
+    int *pn;
 {
     register AtomTable *atoms;
     register char *s1, c, *s2;
     register unsigned long sig;
     register int idx, i;
-    Entry e, oe;
+    Entry e;
     int n, firstidx, rehash;
-    xInternAtomReply rep;
     xInternAtomReq *req;
 
     if (!name)
 	name = "";
-    LockDisplay(dpy);
     /* look in the cache first */
     if (!(atoms = dpy->atoms)) {
 	dpy->atoms = atoms = (AtomTable *)Xcalloc(1, sizeof(AtomTable));
@@ -96,11 +91,8 @@ Atom XInternAtom (dpy, name, onlyIfExists)
 		    if (*s1++ != *s2++)
 		    	goto nomatch;
 	    	}
-	    	if (!*s2) {
-		    rep.atom = e->atom;
-		    UnlockDisplay(dpy);
-		    return rep.atom;
-	    	}
+	    	if (!*s2)
+		    return e->atom;
 	    }
 nomatch:    if (idx == firstidx)
 		rehash = REHASHVAL(sig);
@@ -109,6 +101,9 @@ nomatch:    if (idx == firstidx)
 		break;
 	}
     }
+    *psig = sig;
+    *pidx = idx;
+    *pn = n;
     /* not found, go to the server */
     GetReq(InternAtom, req);
     req->nbytes = n;
@@ -117,21 +112,171 @@ nomatch:    if (idx == firstidx)
     _XSend (dpy, name, n);
     	/* use _XSend instead of Data, since the following _XReply
            will always flush the buffer anyway */
-    if(_XReply (dpy, (xReply *)&rep, 0, xTrue) == 0) {
-	rep.atom = None;
-    } else if (rep.atom && atoms) {
-	/* store it in the cache */
-	e = (Entry)Xmalloc(sizeof(EntryRec) + n + 1);
-	if (e) {
-	    e->sig = sig;
-	    e->atom = rep.atom;
-	    strcpy(EntryName(e), name);
-	    if (oe = atoms->table[idx])
-		Xfree((char *)oe);
-	    atoms->table[idx] = e;
+    return None;
+}
+
+void
+_XUpdateAtomCache(dpy, name, atom, sig, idx, n)
+    Display *dpy;
+    char *name;
+    Atom atom;
+    unsigned long sig;
+    int idx;
+    int n;
+{
+    Entry e, oe;
+    register char *s1;
+    register char c;
+    int firstidx, rehash;
+
+    if (!dpy->atoms) {
+	if (idx < 0) {
+	    dpy->atoms = (AtomTable *)Xcalloc(1, sizeof(AtomTable));
+	    dpy->free_funcs->atoms = _XFreeAtomTable;
 	}
+	if (!dpy->atoms)
+	    return;
+    }
+    if (!sig) {
+	for (s1 = (char *)name; c = *s1++; )
+	    sig = (sig << 1) + c;
+	n = s1 - (char *)name - 1;
+	if (idx < 0) {
+	    firstidx = idx = HASH(sig);
+	    if (dpy->atoms->table[idx]) {
+		rehash = REHASHVAL(sig);
+		do
+		    idx = REHASH(idx, rehash);
+		while (idx != firstidx && dpy->atoms->table[idx]);
+	    }
+	}
+    }
+    e = (Entry)Xmalloc(sizeof(EntryRec) + n + 1);
+    if (e) {
+	e->sig = sig;
+	e->atom = atom;
+	strcpy(EntryName(e), name);
+	if (oe = dpy->atoms->table[idx])
+	    Xfree((char *)oe);
+	dpy->atoms->table[idx] = e;
+    }
+}
+
+#if NeedFunctionPrototypes
+Atom XInternAtom (
+    Display *dpy,
+    _Xconst char *name,
+    Bool onlyIfExists)
+#else
+Atom XInternAtom (dpy, name, onlyIfExists)
+    Display *dpy;
+    char *name;
+    Bool onlyIfExists;
+#endif
+{
+    Atom atom;
+    unsigned long sig;
+    int idx, n;
+    xInternAtomReply rep;
+
+    LockDisplay(dpy);
+    if (atom = _XInternAtom(dpy, name, onlyIfExists, &sig, &idx, &n)) {
+	UnlockDisplay(dpy);
+	return atom;
+    }
+    if (_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
+	if (atom = rep.atom)
+	    _XUpdateAtomCache(dpy, name, atom, sig, idx, n);
     }
     UnlockDisplay(dpy);
     SyncHandle();
     return (rep.atom);
+}
+
+typedef struct {
+    unsigned long start_seq;
+    char **names;
+    Atom *atoms;
+    int count;
+} _XIntAtomState;
+
+static
+Bool _XIntAtomHandler(dpy, rep, buf, len, data)
+    register Display *dpy;
+    register xReply *rep;
+    char *buf;
+    int len;
+    XPointer data;
+{
+    register _XIntAtomState *state;
+    register int i, idx;
+    xInternAtomReply replbuf;
+    register xInternAtomReply *repl;
+
+    state = (_XIntAtomState *)data;
+    if (dpy->last_request_read < state->start_seq)
+	return False;
+    for (i = 0; i < state->count; i++) {
+	if (state->atoms[i] & 0x80000000) {
+	    idx = ~state->atoms[i];
+	    state->atoms[i] = None;
+	    break;
+	}
+    }
+    if (i >= state->count)
+	return False;
+    if (rep->generic.type == X_Error)
+	return False;
+    repl = (xInternAtomReply *)
+	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len,
+			(SIZEOF(xInternAtomReply) - SIZEOF(xReply)) >> 2,
+			True);
+    if (state->atoms[i] = repl->atom)
+	_XUpdateAtomCache(dpy, state->names[i], repl->atom,
+			  (unsigned long)0, idx, 0);
+    return True;
+}
+
+void
+XInternAtoms (dpy, names, count, onlyIfExists, atoms_return)
+    Display *dpy;
+    char **names;
+    int count;
+    Bool onlyIfExists;
+    Atom *atoms_return;
+{
+    int i, idx, n;
+    unsigned long sig;
+    _XAsyncHandler async;
+    _XIntAtomState async_state;
+    int missed = -1;
+    xInternAtomReply rep;
+
+    LockDisplay(dpy);
+    async_state.start_seq = dpy->request + 1;
+    async_state.atoms = atoms_return;
+    async_state.names = names;
+    async_state.count = count - 1;
+    async.next = dpy->async_handlers;
+    async.handler = _XIntAtomHandler;
+    async.data = (XPointer)&async_state;
+    dpy->async_handlers = &async;
+    for (i = 0; i < count; i++) {
+	if (!(atoms_return[i] = _XInternAtom(dpy, names[i], onlyIfExists,
+					     &sig, &idx, &n))) {
+	    missed = i;
+	    atoms_return[i] = ~((Atom)idx);
+	}
+    }
+    if (missed >= 0) {
+	if (_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
+	    if (atoms_return[missed] = rep.atom)
+		_XUpdateAtomCache(dpy, names[missed], rep.atom, sig, idx, n);
+	} else
+	    atoms_return[missed] = None;
+    }
+    DeqAsyncHandler(dpy, &async);
+    UnlockDisplay(dpy);
+    if (missed >= 0)
+	SyncHandle();
 }
