@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.81 89/02/22 13:49:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.82 89/03/10 18:18:38 rws Exp $";
 #endif
 
 
@@ -109,6 +109,8 @@ static XtResource resources[] = {
          offset(text.sink), XtRPointer, NULL},
     {XtNselection, XtCSelection, XtRPointer, sizeof(caddr_t),
 	 offset(text.s), XtRPointer, NULL},
+    {XtNdisplayCaret, XtCOutput, XtRBoolean, sizeof(Boolean),
+	offset(text.display_caret), XtRImmediate, (caddr_t)True},
 };
 #undef offset
 
@@ -316,7 +318,7 @@ static void InsertCursor (w, state)
 	   }
     }
     y += dy;
-    if (visible)
+    if (visible && ctx->text.display_caret)
 	(*ctx->text.sink->InsertCursor)(w, x, y, state);
     ctx->text.ev_x = x;
     ctx->text.ev_y = y;
@@ -1660,8 +1662,11 @@ Widget current, request, new;
     TextWidget oldtw = (TextWidget) current;
     TextWidget newtw = (TextWidget) new;
     Boolean    redisplay = FALSE;
-
+    Boolean    display_caret = newtw->text.display_caret;
+    
+    newtw->text.display_caret = oldtw->text.display_caret;
     _XtTextPrepareToUpdate(newtw);
+    newtw->text.display_caret = display_caret;
     
     if ((oldtw->text.options & scrollVertical)
 		!= (newtw->text.options & scrollVertical)) {
@@ -1709,7 +1714,6 @@ Widget current, request, new;
 				valueMask, &attributes);
 	redisplay = TRUE;
     }
-
 
     if (!redisplay)
 	_XtTextExecuteUpdate(newtw);
@@ -1987,6 +1991,23 @@ XtTextSource XtTextGetSource(w)
     return ((TextWidget)w)->text.source;
 }
 
+
+void XtTextDisplayCaret (w, display_caret)
+    Widget w;
+    Boolean display_caret;
+{
+    TextWidget ctx = (TextWidget) w;
+
+    if (ctx->text.display_caret == display_caret) return;
+
+    if (XtIsRealized(w)) {
+	_XtTextPrepareToUpdate(ctx);
+	ctx->text.display_caret = display_caret;
+	_XtTextExecuteUpdate(ctx);
+    }
+    else
+	ctx->text.display_caret = display_caret;
+}
 
 /* The following used to be a separate file, TextActs.c, but
    is included here because textActionsTable can't be external
@@ -3081,6 +3102,39 @@ static void InsertString(w, event, params, paramCount)
    EndAction(ctx);
 }
 
+
+static void DisplayCaret(w, event, params, num_params)
+   Widget w;
+   XEvent *event;		/* CrossingNotify special-cased */
+   String *params;		/* Off, False, No, On, True, Yes, etc. */
+   Cardinal *num_params;	/* 0, 1 or 2 */
+{
+   TextWidget ctx = (TextWidget)w;
+   Boolean display_caret = True;
+
+   if (event->type == EnterNotify || event->type == LeaveNotify) {
+       /* for Crossing events, the default case is to check the focus
+	* field and only change the caret when focus==True.  A second
+	* argument of "always" will cause the focus field to be ignored.
+	*/
+       Boolean check_focus = True;
+       if (*num_params == 2 && strcmp(params[1], "always") == 0)
+	   check_focus = False;
+       if (check_focus && !event->xcrossing.focus) return;
+   }
+
+   if (*num_params > 0) {	/* default arg is "True" */
+       XrmValue from, to;
+       from.size = strlen(from.addr = params[0]);
+       XtConvert(w, XtRString, &from, XtRBoolean, &to);
+       if (to.addr != NULL) display_caret = *(Boolean*)to.addr;
+       if (ctx->text.display_caret == display_caret) return;
+   }
+   StartAction(ctx, event);
+   ctx->text.display_caret = display_caret;
+   EndAction(ctx);
+}
+
 /* Actions Table */
 
 XtActionsRec textActionsTable [] = {
@@ -3137,6 +3191,7 @@ XtActionsRec textActionsTable [] = {
   {"insert-string",		InsertString},
   {"focus-in", 	 	        TextFocusIn},
   {"focus-out", 		TextFocusOut},
+  {"display-caret",		DisplayCaret},
 };
 
 Cardinal textActionsTableCount = XtNumber(textActionsTable); /* for subclasses */
