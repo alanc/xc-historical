@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.128 87/12/10 14:38:01 rws Exp $ */
+/* $Header: events.c,v 1.129 87/12/29 19:18:02 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -166,7 +166,7 @@ static KeyCode *modifierKeyMap;
 static int lastEventMask;
 
 #define CantBeFiltered NoEventMask
-static int filters[128] =
+static Mask filters[128] =
 {
 	NoSuchEvent,		       /* 0 */
 	NoSuchEvent,		       /* 1 */
@@ -990,7 +990,7 @@ XYToWindow(x, y)
 	    {
 		spriteTraceSize += 10;
 		spriteTrace = (WindowPtr *)Xrealloc(
-		    spriteTrace, spriteTraceSize*sizeof(WindowPtr));
+		    (pointer)spriteTrace, spriteTraceSize*sizeof(WindowPtr));
 	    }
 	    spriteTrace[spriteTraceGood] = pWin;
 	    pWin = spriteTrace[spriteTraceGood++]->firstChild;
@@ -1069,6 +1069,7 @@ DefineInitialRootWindow(win)
  * between the one the pointer is in and the one that the last cursor was
  * instantiated from.
  */
+/*ARGSUSED*/
 void
 WindowHasNewCursor(pWin)
     WindowPtr pWin;
@@ -1494,6 +1495,7 @@ ProcessPointerEvent (xE, mouse)
         DeactivatePointerGrab(mouse);
 }
 
+/*ARGSUSED*/
 void
 ProcessOtherEvent (xE, pDevice)
     xEvent *xE;
@@ -1543,7 +1545,7 @@ OtherClientGone(pWin, id)
 	if ((other = *next)->resource == id)
 	{
 	    *next = other->next;
-	    Xfree(other);
+	    Xfree((pointer)other);
 	    RecalculateDeliverableEvents(pWin);
 	    return;
 	}
@@ -1565,7 +1567,7 @@ PassiveClientGone(pWin, id)
 	if ((grab = *next)->resource == id)
 	{
 	    *next = grab->next;
-	    Xfree(grab);
+	    Xfree((pointer)grab);
 	    return;
 	}
     }
@@ -1638,6 +1640,7 @@ maskSet:
     return Success;
 }
 
+/*ARGSUSED*/
 int
 EventSuppressForWindow(pWin, client, mask)
 	WindowPtr pWin;
@@ -2015,7 +2018,7 @@ ProcSetInputFocus(client)
         {
 	    focusTraceSize = depth+1;
 	    focusTrace = (WindowPtr *)Xrealloc(
-		    focusTrace, focusTraceSize*sizeof(WindowPtr));
+		    (pointer)focusTrace, focusTraceSize*sizeof(WindowPtr));
 	}
 
  	focusTraceGood = depth;
@@ -2262,8 +2265,7 @@ ProcUngrabKeyboard(client)
 }
 
 static void
-SetPointerStateMasks(ptr)
-    DevicePtr ptr;
+SetPointerStateMasks()
 {
  /* all have to be defined since some button might be mapped here */
     keyModifiersList[1] = Button1Mask;
@@ -2299,7 +2301,8 @@ AddInputDevice(deviceProc, autoStart)
     {
 	inputInfo.arraySize += 5;
 	inputInfo.devices = (DeviceIntPtr *)Xrealloc(
-	    inputInfo.devices, inputInfo.arraySize * sizeof(DeviceIntPtr));
+				(pointer)inputInfo.devices,
+				inputInfo.arraySize * sizeof(DeviceIntPtr));
     }
     d = (DeviceIntPtr) Xalloc(sizeof(DeviceIntRec));
     inputInfo.devices[inputInfo.numDevices++] = d;
@@ -2407,7 +2410,7 @@ CloseDownDevices(argc, argv)
     int     		i;
     DeviceIntPtr	d;
 
-    Xfree(curKeySyms.map);
+    Xfree((pointer)curKeySyms.map);
     curKeySyms.map = (KeySym *)NULL;
 
     for (i = inputInfo.numDevices - 1; i >= 0; i--)
@@ -2416,7 +2419,7 @@ CloseDownDevices(argc, argv)
 	if (d->inited)
 	    (*d->deviceProc) (d, DEVICE_CLOSE, argc, argv);
 	inputInfo.numDevices = i;
-	Xfree(d);
+	Xfree((pointer)d);
     }
    
     /* The array inputInfo.devices doesn't need to be freed here since it
@@ -2470,7 +2473,7 @@ InitPointerDeviceStruct(device, map, mapLength, motionProc, controlProc)
     mouse->u.ptr.CtrlProc = controlProc;
     mouse->u.ptr.autoReleaseGrab = FALSE;
     if (mouse == inputInfo.pointer)
-	SetPointerStateMasks(mouse);
+	SetPointerStateMasks();
     (*mouse->u.ptr.CtrlProc)(mouse, &mouse->u.ptr.ctrl);
 }
 
@@ -2519,7 +2522,7 @@ SetKeySymsMap(pKeySyms)
 		    &curKeySyms.map[i*curKeySyms.mapWidth],
 		    &map[i*pKeySyms->mapWidth],
 		    curKeySyms.mapWidth * sizeof(KeySym));
-	    Xfree(curKeySyms.map);
+	    Xfree((pointer)curKeySyms.map);
 	}
 	curKeySyms.mapWidth = pKeySyms->mapWidth;
         curKeySyms.map = map;
@@ -2535,9 +2538,9 @@ static int
 WidthOfModifierTable(modifierMap)
     CARD8 modifierMap[];
 {
-    int         i, keysPerModifier[8], maxKeysPerModifier;
+    int         i, keysPerModifier[8], maxKeysPerMod;
 
-    maxKeysPerModifier = 0;
+    maxKeysPerMod = 0;
     bzero((char *)keysPerModifier, sizeof keysPerModifier);
 
     for (i = 8; i < MAP_LENGTH; i++) {
@@ -2546,8 +2549,8 @@ WidthOfModifierTable(modifierMap)
 
 	for (j = 0, mask = 1; j < 8; j++, mask <<= 1) {
 	    if (mask & modifierMap[i]) {
-		if (++keysPerModifier[j] > maxKeysPerModifier) {
-		    maxKeysPerModifier = keysPerModifier[j];
+		if (++keysPerModifier[j] > maxKeysPerMod) {
+		    maxKeysPerMod = keysPerModifier[j];
 		}
 		if (debug_modifiers)
 		    ErrorF("Key 0x%x modifier %d sequence %d\n",
@@ -2556,11 +2559,11 @@ WidthOfModifierTable(modifierMap)
 	}
     }
     if (debug_modifiers)
-	ErrorF("Max Keys per Modifier = %d\n", maxKeysPerModifier);
+	ErrorF("Max Keys per Modifier = %d\n", maxKeysPerMod);
     if (modifierKeyMap)
-	Xfree(modifierKeyMap);
-    modifierKeyMap = (KeyCode *)Xalloc(8*maxKeysPerModifier);
-    bzero((char *)modifierKeyMap, 8*maxKeysPerModifier);
+	Xfree((pointer)modifierKeyMap);
+    modifierKeyMap = (KeyCode *)Xalloc(8*maxKeysPerMod);
+    bzero((char *)modifierKeyMap, 8*maxKeysPerMod);
     bzero((char *)keysPerModifier, sizeof keysPerModifier);
 
     for (i = 8; i < MAP_LENGTH; i++) {
@@ -2571,14 +2574,14 @@ WidthOfModifierTable(modifierMap)
 	    if (mask & modifierMap[i]) {
 		if (debug_modifiers)
 		    ErrorF("Key 0x%x modifier %d index %d\n", i, j,
-			   j*maxKeysPerModifier+keysPerModifier[j]);
-		modifierKeyMap[j*maxKeysPerModifier+keysPerModifier[j]] = i;
+			   j*maxKeysPerMod+keysPerModifier[j]);
+		modifierKeyMap[j*maxKeysPerMod+keysPerModifier[j]] = i;
 		keysPerModifier[j]++;
 	    }
 	}
     }
 
-    return (maxKeysPerModifier);
+    return (maxKeysPerMod);
 }
 
 void 
@@ -2752,7 +2755,7 @@ ProcSetModifierMapping(client)
     REQUEST(xSetModifierMappingReq);
     KeyCode *inputMap;
     int inputMapLen;
-    int i;
+    register int i;
     
     REQUEST_AT_LEAST_SIZE(xSetModifierMappingReq);
 
@@ -2792,8 +2795,6 @@ ProcSetModifierMapping(client)
 	    ErrorF("Busy\n");
 	rep.success = MappingBusy;
     } else {
-	register int i;
-
 	for (i = 0; i < inputMapLen; i++) {
 	    if (inputMap[i] && !LegalModifier(inputMap[i])) {
 		if (debug_modifiers)
@@ -2812,10 +2813,8 @@ ProcSetModifierMapping(client)
 	 *	Now build the keyboard's modifier bitmap from the
 	 *	list of keycodes.
 	 */
-	register int i;
-
 	if (modifierKeyMap)
-	    Xfree(modifierKeyMap);
+	    Xfree((pointer)modifierKeyMap);
 	modifierKeyMap = (KeyCode *)Xalloc(inputMapLen);
 	bcopy(inputMap, modifierKeyMap, inputMapLen);
 
@@ -2915,7 +2914,6 @@ ProcSetPointerMapping(client)
 	}
     for (i = 0; i < stuff->nElts; i++)
 	inputInfo.pointer->u.ptr.map[i + 1] = map[i];
-    SetPointerStateMasks(inputInfo.pointer);	   
     WriteReplyToClient(client, sizeof(xSetPointerMappingReply), &rep);
     SendMappingNotify(MappingPointer, 0, 0);
     return Success;
@@ -2971,7 +2969,7 @@ int
 Ones(mask)                /* HACKMEM 169 */
     Mask mask;
 {
-    register int y;
+    register Mask y;
 
     y = (mask >> 1) &033333333333;
     y = mask - y - ((y >>1) & 033333333333);
@@ -3304,14 +3302,14 @@ ProcGetMotionEvents(client)
 		rep.nEvents++;
 	    }
     }
-    rep.length = rep.nEvents * sizeof(xTimecoord) / 4;
+    rep.length = rep.nEvents * (sizeof(xTimecoord) / 4);
     nEvents = rep.nEvents;
     WriteReplyToClient(client, sizeof(xGetMotionEventsReply), &rep);
     if (inputInfo.numMotionEvents)
     {
 	client->pSwapReplyFunc = SwapTimeCoordWrite;
 	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord), coords);
-	Xfree(coords);
+	Xfree((pointer)coords);
     }
     return Success;
 }
