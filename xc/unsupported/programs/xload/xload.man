@@ -50,6 +50,20 @@ In addition to the resources avaliable to each of the widgets used by
 .TP 8
 .B showLabel (\fPclass\fB Boolean)
 If False then no label will be displayed.
+.SH WIDGETS
+The widgets used by xload are listed below.  Widgets are listed by
+name and class.  Consult the \fIX Toolkit Athena Widgets\fP or the \fPX Toolkit
+Intrinsics\fP for the each widget's list of settable resources.  The label
+widget is optional.
+.sp
+.nf
+.ta .5i 1.0i 1.5i 2.0i
+xload - XLoad
+	paned - Paned
+		label - Label
+		load - StripChart
+.fi
+.sp
 .SH ENVIRONMENT
 .PP
 .TP 8
