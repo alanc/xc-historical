@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.71 94/02/10 20:08:52 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.72 94/03/26 18:12:38 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -139,7 +139,7 @@
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32)
+#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || (defined(AMOEBA) && defined(CROSS_COMPILE))
 #define FIXUP_CPP_WHITESPACE
 #endif
 #ifdef WIN32
@@ -182,6 +182,9 @@
 #ifdef _CRAY
 #define DEFAULT_CPP "/lib/pcpp"
 #endif
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#define DEFAULT_CPP "/usr/libexec/cpp"
+#endif
 
 /*
  * Step 5:  cpp_argv
@@ -206,6 +209,14 @@ char *cpp_argv[ARGUMENTS] = {
 	"-I.",		/* add current directory to include path */
 #ifdef unix
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
+#endif
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+# ifdef __i386__
+	"-D__i386__",
+# endif
+# ifdef __GNUC__
+	"-traditional"
+# endif
 #endif
 #ifdef M4330
 	"-DM4330",	/* Tektronix */
@@ -328,6 +339,10 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef NCR
 	"-DNCR",	/* NCR */
 #endif
+#ifdef linux
+        "-traditional",
+        "-Dlinux",
+#endif
 #ifdef __uxp__
 	"-D__uxp__",
 #endif
@@ -336,6 +351,22 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef nec_ews_svr2
 	"-Dnec_ews_svr2",
+#endif
+#ifdef AMOEBA
+	"-DAMOEBA",
+# ifdef CROSSCOMPILE
+	"-DCROSS_COMPILE",
+# else
+#  ifdef i80386
+	"-Di80386",
+#  endif
+#  ifdef sparc
+	"-Dsparc",
+#  endif
+#  ifdef mc68000
+	"-Dmc68000",
+#  endif
+# endif
 #endif
 };
 #else /* else MAKEDEPEND */
@@ -508,6 +539,9 @@ struct symtab	predefs[] = {
 #ifdef _SEQUENT_
 	{"_SEQUENT_", "1"},
 	{"__STDC__", "1"},
+#endif
+#ifdef __bsdi__
+	{"__bsdi__", "1"},
 #endif
 #ifdef nec_ews_svr2
 	{"nec_ews_svr2", "1"},
