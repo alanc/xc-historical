@@ -1,7 +1,7 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.6 92/07/24 15:19:37 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.7 92/08/05 10:39:51 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -2923,6 +2923,7 @@ extern void PEXIdentityMatrix2D(
 extern int PEXInitialize(
 #if NeedFunctionPrototypes
     Display *		/* display */,
+    PEXExtensionInfo **		/* info_return */,
     int 		/* length */,
     char *		/* error_string */
 #endif

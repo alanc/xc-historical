@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.5 92/07/24 15:17:29 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.6 92/08/05 11:16:44 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -32,11 +32,12 @@ SOFTWARE.
 
 
 int
-PEXInitialize (display, length, error_string)
+PEXInitialize (display, info_return, length, error_string)
 
-INPUT Display	*display;
-INPUT int	length;
-OUTPUT char	*error_string;
+INPUT  Display		*display;
+OUTPUT PEXExtensionInfo	**info_return;
+INPUT  int		length;
+OUTPUT char		*error_string;
 
 {
     pexGetExtensionInfoReq	*req;
@@ -66,6 +67,8 @@ OUTPUT char	*error_string;
     /*
      * Initialize the PEX extension on this display.
      */
+
+    *info_return = NULL;
 
     if ((pExtCodes = XInitExtension (display, "X3D-PEX")) == NULL)
     {
@@ -255,7 +258,7 @@ OUTPUT char	*error_string;
      * Store the extension info.
      */
 
-    extInfo = pexDisplayInfo->extInfo =	(PEXExtensionInfo *)
+    extInfo = *info_return = pexDisplayInfo->extInfo = (PEXExtensionInfo *)
 	PEXAllocBuf ((unsigned) (sizeof (PEXExtensionInfo)));
 
     if (!extInfo)
