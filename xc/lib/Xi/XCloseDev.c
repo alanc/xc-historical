@@ -1,4 +1,4 @@
-/* $XConsortium: XCloseDev.c,v 1.3 89/09/25 16:20:04 gms Exp $ */
+/* $XConsortium: XCloseDev.c,v 1.4 89/12/06 20:31:34 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -53,7 +53,7 @@ XCloseDevice(dpy, dev)
     req->ReqType = X_CloseDevice;
     req->deviceid = dev->device_id;
 
-    XFree (dev);
+    XFree ((char *)dev);
     UnlockDisplay (dpy);
     SyncHandle();
     return (Success);
