@@ -7,7 +7,7 @@
 #ifndef _BUFFERSTR_H_
 #define _BUFFERSTR_H_
 
-#include	"buffer.h"
+#include	"lbxbuf.h"
 
 /*
  * LZW Input/Output buffer
