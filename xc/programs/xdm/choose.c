@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.4 91/05/06 23:53:51 gildea Exp $
+ * $XConsortium: choose.c,v 1.5 91/07/15 15:59:01 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -38,7 +38,6 @@
 # include	<sys/socket.h>
 # include	<netinet/in.h>
 # include	<sys/un.h>
-# include	<netdb.h>
 # include	<ctype.h>
 
 static
@@ -151,12 +150,12 @@ FormatChooserArgument (buf, len)
     int		    result_len = 0;
     int		    netfamily;
 
-    if (GetChooserAddr ((struct sockaddr *) addr_buf, &addr_len) == -1)
+    if (GetChooserAddr (addr_buf, &addr_len) == -1)
     {
 	Debug ("Cannot get chooser socket address\n");
 	return 0;
     }
-    netfamily = NetaddrFamily((XdmcpNetaddr *)addr_buf);
+    netfamily = NetaddrFamily((XdmcpNetaddr)addr_buf);
     switch (netfamily) {
     case AF_INET:
 	{
@@ -164,7 +163,7 @@ FormatChooserArgument (buf, len)
 	    int portlen;
 	    ARRAY8Ptr localAddress, getLocalAddress ();
 
-	    port = NetaddrPort((XdmcpNetaddr *)addr_buf, &portlen);
+	    port = NetaddrPort((XdmcpNetaddr)addr_buf, &portlen);
 	    result_buf[0] = netfamily >> 8;
 	    result_buf[1] = netfamily & 0xFF;
 	    result_buf[2] = port[0];
@@ -378,7 +377,7 @@ ProcessChooserSocket (fd)
 RunChooser (d)
     struct display  *d;
 {
-    char    **args, **parseArgs(), **defaultEnv(), **setEnv();
+    char    **args, **parseArgs(), **systemEnv();
     char    buf[1024];
     char    **env;
 
@@ -396,10 +395,7 @@ RunChooser (d)
     args = parseArgs (args, buf);
     ForEachChooserHost (&d->clientAddr, d->connectionType, AddChooserHost,
 			(char *) &args);
-    env = defaultEnv ();
-    env = setEnv (env, "DISPLAY", d->name);
-    if (d->authFile)
-	env = setEnv (env, "XAUTHORITY", d->authFile);
+    env = systemEnv (d, (char *) 0, (char *) 0);
     Debug ("Running %s\n", args[0]);
     execute (args, env);
     Debug ("Couldn't run %s\n", args[0]);
