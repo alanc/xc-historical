@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.40 91/01/09 19:39:04 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.41 91/02/18 16:39:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -186,8 +186,6 @@ void _XtHeapFree(heap)
 #undef XtCalloc
 #undef XtFree
 
-extern void _XtFree();
-
 typedef struct stat {
     struct stat *prev, *next;
     char *file;
@@ -339,18 +337,19 @@ void XtFree(ptr)
 }
 
 char *_XtHeapMalloc(heap, size, file, line)
-    XtPointer heap;
-    unsigned size;
+    Heap *heap;
+    Cardinal size;
     char *file;
     int line;
 {
     StatsPtr ptr;
     unsigned newsize;
+    XtPointer hp = (XtPointer) heap;
 
     newsize = StatsSize(size);
     if ((ptr = (StatsPtr)Xmalloc(newsize)) == NULL)
         _XtAllocError("malloc");
-    CHAIN(ptr, size, heap);
+    CHAIN(ptr, size, hp);
     return(ToMem(ptr));
 }
 
