@@ -1,4 +1,4 @@
-.\" $XConsortium: CH02,v 1.14 94/01/07 19:36:17 converse Exp $
+.\" $XConsortium: CH02,v 1.15 94/04/14 15:58:23 kaleb Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -130,7 +130,7 @@ which initializes the per-display state.
 which creates the root of a widget tree.
 .LP
 or an application can call the convenience procedure
-.PN XtAppInitialize
+.PN XtOpenApplication
 which combines the functions of the preceding procedures.
 An application wishing to use the ANSI C locale mechanism should call
 .PN XtSetLanguageProc
@@ -138,7 +138,7 @@ prior to calling
 .PN XtDisplayInitialize ,
 .PN XtOpenDisplay ,
 or
-.PN XtAppInitialize .
+.PN XtOpenApplication .
 .LP
 Multiple instances of \*(tk applications may be implemented 
 in a single address space.
@@ -316,7 +316,7 @@ calls
 to associate the resource database of the default screen with the
 display before returning.
 
-.bp
+.KS
 .LP
 To open a display, initialize it, and then
 add it to an application context, use 
@@ -363,6 +363,7 @@ Specifies the number of entries in the options list.
 Specifies a pointer to the number of command line parameters.
 .IP \fIargv\fP 1.4i
 Specifies the list of command line parameters.
+.KE
 .LP
 The
 .PN XtOpenDisplay
@@ -562,7 +563,7 @@ as in the following example.
 .TA .5i
 	Widget top;
 	XtSetLanguageProc(NULL, NULL, NULL);
-	top = XtAppInitialize( ... );
+	top = XtOpenApplication( ... );
 	...
 .De
 
@@ -964,7 +965,7 @@ _
 \-title	.title	SepArg	next argument
 \-xnllanguage	.xnlLanguage	SepArg	next argument
 \-xrm	next argument	ResArg	next argument
-\-xtsessionID	.xtsessionID	SepArg	next argument
+\-xtsessionID	.sessionID	SepArg	next argument
 .sp 6p
 _
 .TE
@@ -1013,11 +1014,6 @@ you can start it up as
 .Ds
 xmh \-xrm 'xmh*Command.background: red'
 .DE
-.LP
-The value of the xtsessionID resource specifies an identification
-previously assigned to this client by the session manager.  When a 
-session object is created, this identification will be used as the
-default value of the XtNsessionID resource of the session object.
 .LP
 When it parses the command line,
 .PN XtDisplayInitialize
@@ -1240,7 +1236,7 @@ calling convention.  The name of the analog is formed by prefixing
 ``Va'' to the name of the corresponding
 .PN ArgList
 procedure; e.g.,
-.PN \%XtVaCreateWidget .
+.PN XtVaCreateWidget .
 Each procedure named \fBXtVa\fP\fIsomething\fP takes as its
 last arguments, in place of the corresponding
 .PN ArgList /
@@ -1423,7 +1419,7 @@ for the widget instance.  If the parent is a member of the class
 the procedure also allocates memory for the
 parent's constraints and stores the address of this memory into the
 \fIconstraints\fP field.  If no allocate procedure is found, the \*(xI
-allocate memory for the widget and when applicable the constraints,
+allocate memory for the widget and, when applicable, the constraints,
 and initializes the \fIconstraints\fP field.
 .IP \(bu 5
 Initializes the Core nonresource data fields
@@ -1680,18 +1676,18 @@ Convenience Procedure to Initialize an Application
 .XE
 .LP
 To initialize the \*(xI internals, create an application context,
-open and initialize a display, and create the initial application shell
+open and initialize a display, and create the initial root shell
 instance, an application may use
-.PN XtAppInitialize
+.PN XtOpenApplication
 or
-.PN XtVaAppInitialize .
-.IN "XtAppInitialize" "" "@DEF@"
+.PN XtVaOpenApplication .
+.IN "XtOpenApplication" "" "@DEF@"
 .FD 0
-Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
+Widget XtOpenApplication(\fIapp_context_return\fP, \fIapplication_class\fP, \
 \fIoptions\fP, \fInum_options\fP,
 .br
                        \fIargc_in_out\fP, \fIargv_in_out\fP, \
-\fIfallback_resources\fP, \fIargs\fP, \fInum_args\fP)
+\fIfallback_resources\fP, \fIwidget_class\fP, \fIargs\fP, \fInum_args\fP)
 .br
       XtAppContext *\fIapp_context_return\fP;
 .br
@@ -1706,6 +1702,8 @@ Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
       String *\fIargv_in_out\fP;
 .br
       String *\fIfallback_resources\fP;
+.br
+      WidgetClass \fIwidget_class\fP;
 .br
       ArgList \fIargs\fP;
 .br
@@ -1726,6 +1724,10 @@ Specifies a pointer to the command line arguments.
 .IP \fIfallback_resources\fP 1.5i
 Specifies resource values to be used if the application class resource
 file cannot be opened or read, or NULL.
+.IP \fIwidget_class\fP 1.5i
+Specifies the class of the widget to be created.  Must be shellWidgetClass
+or a subclass.
+.br
 .IP \fIargs\fP 1.5i
 Specifies the argument list to override any
 other resource specifications for the created shell widget.
@@ -1733,7 +1735,7 @@ other resource specifications for the created shell widget.
 Specifies the number of entries in the argument list.
 .LP
 The
-.PN XtAppInitialize
+.PN XtOpenApplication
 function calls
 .PN XtToolkitInitialize
 followed by
@@ -1743,29 +1745,34 @@ then calls
 with \fIdisplay_string\fP NULL and
 \fIapplication_name\fP NULL, and finally calls
 .PN XtAppCreateShell
-with \fIapplication_name\fP NULL, \fIwidget_class\fP
-.PN application\%Shell\%Widget\%Class ,
-and the specified \fIargs\fP and \fInum_args\fP
-and returns the created shell.  The modified \fIargc\fP and \fIargv\fP returned by
+with \fIname\fP NULL, the specified \fIwidget_class\fP,
+an argument list and count,
+and returns the created shell.
+The recommended \fIwidget_class\fP is 
+.PN sessionShellWidgetClass .
+The argument list and count are created by merging
+the specified \fIargs\fP and \fInum_args\fP with a list 
+containing the specified \fIargc\fP and \fIargv\fP.
+The modified \fIargc\fP and \fIargv\fP returned by
 .PN XtDisplayInitialize
 are returned in \fIargc_in_out\fP and \fIargv_in_out\fP.  If
 \fIapp_context_return\fP is not NULL, the created application context is
 also returned.  If the display specified by the command line cannot be
 opened, an error message is issued and
-.PN XtAppInitialize
+.PN XtOpenApplication
 terminates the application.  If \fIfallback_resources\fP is non-NULL,
 .PN XtAppSetFallbackResources
 is called with the value prior to calling
 .PN XtOpenDisplay .
 .sp
 .LP
-.IN "XtVaAppInitialize" "" "@DEF@"
+.IN "XtVaOpenApplication" "" "@DEF@"
 .FD 0
-Widget XtVaAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
+Widget XtVaOpenApplication(\fIapp_context_return\fP, \fIapplication_class\fP, \
 \fIoptions\fP, \fInum_options\fP,
 .br
                          \fIargc_in_out\fP, \fIargv_in_out\fP, \
-\fIfallback_resources\fP, ...)
+\fIfallback_resources\fP, \fIwidget_class\fP, ...)
 .br
     XtAppContext *\fIapp_context_return\fP;
 .br
@@ -1780,6 +1787,8 @@ Widget XtVaAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
     String *\fIargv_in_out\fP;
 .br
     String *\fIfallback_resources\fP;
+.br
+    WidgetClass \fIwidget_class\fP;
 .FN
 .IP \fIapp_context_return\fP 1.5i
 Returns the application context, if non-NULL.
@@ -1796,14 +1805,17 @@ Specifies the command line arguments array.
 .IP \fIfallback_resources\fP 1.5i
 Specifies resource values to be used if the application class
 resource file cannot be opened, or NULL.
+.IP \fIwidget_class\fP 1.5i
+Specifies the class of the widget to be created.  Must be shellWidgetClass
+or a subclass.
 .IP ... 1.5i
 Specifies the variable argument list to override any other
 resource specifications for the created shell.
 .LP
 The
-.PN XtVaAppInitialize
+.PN XtVaOpenApplication
 procedure is identical in function to
-.PN XtAppInitialize
+.PN XtOpenApplication
 with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list,
 as described
 in Section 2.5.1.
@@ -1844,39 +1856,34 @@ record is of type
 .PN XtAllocateProc .
 .IN "XtAllocateProc" "" "@DEF@"
 .FD 0
-typedef void (*XtAllocateProc)(WidgetClass, WidgetClass, Cardinal, Widget,
-                               ArgList, Cardinal, XtTypedArgList, Cardinal,
-                               Widget*, XtPointer*);
+typedef void (*XtAllocateProc)(WidgetClass, Cardinal*, Cardinal*, ArgList,
+Cardinal*,
+                                  XtTypedArgList, Cardinal*, Widget*, XtPointer*);
 .br
       WidgetClass \fIwidget_class\fP;
 .br
-      WidgetClass \fIconstraint_class\fP;
+      Cardinal* \fIconstraint_size\fP;
 .br
-      Cardinal \fImore_bytes\fP;
-.br
-      Widget \fIparent\fP;
+      Cardinal* \fImore_bytes\fP;
 .br
       ArgList \fIargs\fP;
 .br
-      Cardinal \fInum_args\fP;
+      Cardinal* \fInum_args\fP;
 .br
       XtTypedArgList \fItyped_args\fP,
 .br
-      Cardinal \fInum_typed_args\fP;
+      Cardinal* \fInum_typed_args\fP;
 .br
-      Widget *\fInew_return\fP;
+      Widget* \fInew_return\fP;
 .br
-      XtPointer *\fImore_bytes_return\fP;
+      XtPointer* \fImore_bytes_return\fP;
 .FN
 .IP \fIwidget_class\fP 1i
 Specifies the widget class of the instance to allocate.
-.IP \fIconstraint_class\fP 1i
-Specifies the constraint widget class of the parent of normal
-(geometry managed) children.
+.IP \fIconstraint_size\fP 1i
+Specifies the size of the constraint record to allocate, or 0.
 .IP \fImore_bytes\fP 1i
 Specifies the number of auxiliary bytes of memory to allocate.
-.IP \fIparent\fP 1i
-Specifies the parent widget, or NULL if there is no parent.
 .IP \fIargs\fP 1i
 Specifies the argument list as given in the call to create the widget.
 .IP \fInum_args\fP 1i
@@ -1890,28 +1897,7 @@ Returns a pointer to the newly allocated instance, or NULL in case of error.
 .IP \fImore_bytes_return\fP 1i
 Returns the auxiliary memory if it was requested, or NULL
 if requested and an error occurred; otherwise, unchanged.
-.LP
-When creating an instance of a widget class through the invocation of one of:
 .sp
-.IP
-.PN XtCreateWidget ,
-.PN XtVaCreateWidget
-.IP
-.PN XtCreateManagedWidget ,
-.PN XtVaCreateManagedWidget
-.IP
-.PN XtCreatePopupShell ,
-.PN XtVaCreatePopupShell
-.IP
-.PN XtAppCreateShell ,
-.PN XtVaAppCreateShell
-.IP
-.PN XtCreateApplicationShell
-.IP
-.PN XtAppInitialize ,
-.PN XtVaAppInitialize ,
-or
-.PN XtInitialize
 .LP
 At widget allocation time, if an extension record with \fIrecord_type\fP
 equal to 
@@ -1919,7 +1905,15 @@ equal to
 is located through the object class part extension field
 and the \fIallocate\fP field is not NULL, the 
 .PN XtAllocateProc
-will be invoked to allocate memory for the widget.  If no
+will be invoked to allocate memory for the widget.  If no ObjectClassPart
+extension record is declared with \fIrecord_type equal\fP to
+.PN \s-1NULLQUARK\s+1 ,
+then
+.PN XtInheritAllocate
+and 
+.PN XtInheritDeallocate
+are assumed.
+If no
 .PN XtAllocateProc
 is found, the \*(xI will allocate memory for the widget.
 .LP
@@ -1932,11 +1926,9 @@ The memory must be at least \fIwc->core_class.widget_size\fP bytes in length,
 double word aligned.
 .IP \(bu 5
 Initializes the \fIcore.constraints\fP field in the instance record to NULL
-or to point to a constraint record.  If the \fIconstraint_widget_class\fP
-parameter is not NULL, the procedure allocates memory for the
-constraint record.  The memory must be at least as many bytes as
-specified by the \fIconstraint_size\fP field in the 
-\fIconstraint_widget_class\fP, and double word aligned.  
+or to point to a constraint record.  If \fIconstraint_size\fP
+is not 0, the procedure allocates memory for the constraint record.
+The memory must be double word aligned.
 .IP \(bu 5
 If \fImore_bytes\fP is not 0, then the address of a block of memory
 at least \fImore_bytes\fP in size, double word aligned, must be
@@ -1945,10 +1937,10 @@ or NULL to indicate an error.
 .LP
 A class allocation procedure which envelopes the allocation procedure of a
 superclass must rely on the enveloped procedure to perform the instance
-and constraint allocation.  A class allocation procedure which implements
-private algorithms that require reliable initialization of non-resource
-instance fields should restrict the initialization to fields in their own
-class's part of the instance record.
+and constraint allocation.
+Allocation procedures are discouraged from initializing fields in the
+widget record but if they choose to do so they should not touch the
+instance part of any superclass.
 
 .NH 3
 Widget Instance Initialization: the initialize Procedure
@@ -2400,6 +2392,8 @@ Widgets that have children and whose class is not a subclass of
 are responsible for calling
 .PN XtRealizeWidget
 on their children, usually from within the realize procedure.
+.LP
+Realize procedures cannot manage or unmanage their descendants.
 
 .NH 3
 Window Creation Convenience Routine
@@ -2975,6 +2969,14 @@ record exists in the Object part of the widget class record with type
 and the \fIdeallocate\fP field is not NULL, the
 .PN XtDeallocateProc
 will be called.
+If no ObjectClassPart extension record is declared with \fIrecord_type\fP
+equal to 
+.PN \s-1NULLQUARK\s+1 ,
+then 
+.PN XtInheritAllocateProc 
+and 
+.PN XtInheritDeallocateProc
+are assumed.
 The responsibilities of the deallocate method are to deallocate the
 memory specified by \fImore_bytes\fP if it is not NULL,
 to deallocate the constraints record as specified by the
@@ -2984,7 +2986,7 @@ not NULL, and the widget instance itself.
 If no
 .PN XtDeallocateProc
 is found, it is assumed that the \*(xI
-originally allocated the memory an is responsible for freeing it.
+originally allocated the memory and is responsible for freeing it.
 
 .NH 2
 Exiting from an Application
@@ -3013,9 +3015,9 @@ destroy individual widgets or widget trees with
 before calling
 .PN XtDestroyApplicationContext
 in order to ensure that any
-required widget cleanup is properly executed. The application developer
+required widget cleanup is properly executed.  The application developer
 must refer to the widget documentation to learn if a widget needs to
 perform additional cleanup beyond that performed automatically by the
-operating system. None of the widget classes defined by the Intrinsics
+operating system.  None of the widget classes defined by the \*(xI
 require additional cleanup.
 .bp
