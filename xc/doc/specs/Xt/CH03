@@ -1,4 +1,4 @@
-.\" $XConsortium: CH03,v 1.6 91/07/31 20:23:53 swick Exp $
+.\" $XConsortium: CH03,v 1.7 91/08/26 13:29:01 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -60,7 +60,8 @@ also get destroyed.
 .LP
 Only a subset of the total number of children is actually managed by
 the geometry manager and hence possibly visible.
-For example, a multibuffer composite editor widget might allocate one child
+For example, a composite editor widget
+supporting multiple editing buffers might allocate one child
 widget for each file buffer,
 but it might only display a small number of the existing buffers.
 Widgets that are in this displayable subset are called managed widgets
@@ -99,21 +100,15 @@ Each composite widget class declares a geometry manager,
 which is responsible for figuring out where the managed children
 should appear within the composite widget's window.
 Geometry management techniques fall into four classes:
-.IP \(bu 5
-Fixed boxes
-.IP
+.IP "Fixed boxes" 1.6i
 Fixed boxes have a fixed number of children created by the parent.
 All these children are managed,
 and none ever makes geometry manager requests.
-.IP \(bu 5
-Homogeneous boxes
-.IP
+.IP "Homogeneous boxes" 1.6i
 Homogeneous boxes treat all children equally and apply the same geometry
 constraints to each child.
 Many clients insert and delete widgets freely.
-.IP \(bu 5
-Heterogeneous boxes
-.IP
+.IP "Heterogeneous boxes" 1.6i
 Heterogeneous boxes have a specific location where each child is placed.
 This location usually is not specified in pixels,
 because the window may be resized, but is expressed rather
@@ -121,9 +116,7 @@ in terms of the relationship between a child
 and the parent or between the child and other specific children.
 The class of heterogeneous boxes is usually a subclass of
 Constraint .
-.IP \(bu 5
-Shell boxes
-.IP
+.IP "Shell boxes" 1.6i
 Shell boxes typically have only one child,
 and the child's size is usually
 exactly the size of the shell.
