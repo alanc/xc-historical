@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Popup.c,v 1.13 88/02/03 23:33:15 swick Exp $";
+static char rcsid[] = "$xHeader: Popup.c,v 1.2 88/08/18 15:51:15 asente Exp $";
+/* $oHeader: Popup.c,v 1.2 88/08/18 15:51:15 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -30,7 +31,7 @@ SOFTWARE.
 #include "Shell.h"
 #include "ShellP.h"
 #include "StringDefs.h"
-#include "Resource.h"
+
 void _XtPopup(widget, grab_kind, spring_loaded)
     Widget      widget;
     XtGrabKind  grab_kind;
@@ -38,12 +39,14 @@ void _XtPopup(widget, grab_kind, spring_loaded)
 {
     register ShellWidget shell_widget = (ShellWidget) widget;
 
-    if (! XtIsSubclass(widget,shellWidgetClass)) {
-	XtError("XtPopup requires a subclass of shellWidgetClass");
+    if (! XtIsShell(widget)) {
+	XtErrorMsg("invalidClass","xtPopup","XtToolkitError",
+                "XtPopup requires a subclass of shellWidgetClass",
+                  (String *)NULL, (Cardinal *)NULL);
     }
 
     if (! shell_widget->shell.popped_up) {
-	XtCallCallbacks(widget, XtNpopupCallback, (caddr_t)NULL);
+	XtCallCallbacks(widget, XtNpopupCallback, (Opaque)NULL);
 	shell_widget->shell.popped_up = TRUE;
 	shell_widget->shell.grab_kind = grab_kind;
 	shell_widget->shell.spring_loaded = spring_loaded;
@@ -106,8 +109,10 @@ void XtPopdown(widget)
 
     register ShellWidget shell_widget = (ShellWidget) widget;
 
-    if (! XtIsSubclass(widget, shellWidgetClass)) {
-	XtError("XtPopdown requires a subclass of shellWidgetClass");
+    if (! XtIsShell(widget)) {
+	XtErrorMsg("invalidClass","xtPopdown","XtToolkitError",
+            "XtPopdown requires a subclass of shellWidgetClass",
+              (String *)NULL, (Cardinal *)NULL);
     }
 
     if (shell_widget->shell.popped_up) {
@@ -116,7 +121,7 @@ void XtPopdown(widget)
 	    XtRemoveGrab(widget);
 	}
 	shell_widget->shell.popped_up = FALSE;
-	XtCallCallbacks(widget, XtNpopdownCallback, (caddr_t)NULL);
+	XtCallCallbacks(widget, XtNpopdownCallback, (Opaque)NULL);
     }
 } /* XtPopdown */
 
