@@ -20,12 +20,12 @@
 
 *SmeBSB.Foreground: 		Gold
 
-*Porthole.Background:		Grey
-*Panner*Foreground:		MintCream
-*Panner*Background:		Grey
-*Panner*BorderColor:		Grey
-*Panner*ShadowColor:		Black
-*Panner*BackgroundStipple:	None
+*Porthole.Background:			Grey
+*porthole.panner*Foreground:		red
+*porthole.panner*Background:		Grey
+*porthole.panner*BorderColor:		Grey
+*porthole.panner*ShadowColor:		Black
+*porthole.panner*BackgroundStipple:	None
 
 *resourceBox*namesAndClasses.Background: Grey
 *resourceBox*namesAndClasses*Toggle.Background: RoyalBlue4

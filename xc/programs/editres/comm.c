@@ -1,4 +1,4 @@
-/* $XConsortium: comm.c,v 1.19 91/04/04 21:35:16 gildea Exp $ */
+/* $XConsortium: comm.c,v 1.9 92/03/02 17:50:30 dave Exp $ */
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  * 
@@ -41,12 +41,14 @@ static Atom atom_editres_protocol;
  * external function definitions.
  */
 
+extern void RebuildMenusAndLabel();
 extern ResIdent GetNewIdent();
 extern void SetMessage(), BuildVisualTree(),DisplayChild();
 extern char * GetFormattedSetValuesError(), *HandleFlashWidget();
 extern char * HandleGetResources(),  *PrintSetValuesError();
 char * GetFailureMessage(), * ProtocolFailure();
 extern int HandleXErrors();
+extern void SetEntriesSensitive();
 
 static void TellUserAboutMessage(), BuildHeader(), FreeEvent();
 static Event * BuildEvent();
@@ -55,6 +57,10 @@ static void GetClientValue();
 static void ClientTimedOut(), LoseSelection(), SelectionDone();
 static Boolean ConvertCommand();
 
+
+extern Widget CM_entries[NUM_CM_ENTRIES], TM_entries[NUM_TM_ENTRIES];
+
+
 
 /*	Function Name: ClientTimedOut
  *	Description: Called if the client takes too long to take our selection.
@@ -70,17 +76,19 @@ ClientTimedOut(data, id)
 XtPointer data;
 XtIntervalId * id;
 {
-    char msg[BUFSIZ];
-    Widget w = (Widget) data;
-    
-    global_client.ident = NO_IDENT;
-    XtDisownSelection(w, global_client.atom, 
-		      XtLastTimestampProcessed(XtDisplay(w)));
-
-    sprintf(msg, "It appears that this client does not understand\n%s",
-	    "the Editres Protocol.");
-    SetMessage(global_screen_data.info_label, msg);
+  char msg[BUFSIZ];
+  Widget w = (Widget) data;
+  
+  global_client.ident = NO_IDENT;
+  XtDisownSelection(w, global_client.atom, 
+		    XtLastTimestampProcessed(XtDisplay(w)));
+  
+  sprintf(msg, res_labels[4],
+	  "the Editres Protocol.");
+  SetMessage(global_screen_data.info_label, msg);
 }
+
+
 
 /*	Function Name: GetClientWindow
  *	Description: Gets the Client's window by asking the user.
@@ -93,67 +101,69 @@ GetClientWindow(w, x, y)
 Widget w;
 int *x, *y;
 {
-    int status;
-    Cursor cursor;
-    XEvent event;
-    int buttons = 0;
-    Display * dpy = XtDisplayOfObject(w);
-    Window target_win = None, root = RootWindowOfScreen(XtScreenOfObject(w));
-    XtAppContext app = XtWidgetToApplicationContext(w);
-    
-    /* Make the target cursor */
-    cursor = XCreateFontCursor(dpy, XC_crosshair);
-    
-    /* Grab the pointer using target cursor, letting it room all over */
-    status = XGrabPointer(dpy, root, False,
-			   ButtonPressMask|ButtonReleaseMask, GrabModeSync,
-			   GrabModeAsync, root, cursor, CurrentTime);
-    if (status != GrabSuccess) {
-	SetMessage(global_screen_data.info_label, "Can't grab the mouse.\n");
-	return(None);
+  int status;
+  Cursor cursor;
+  XEvent event;
+  int buttons = 0;
+  Display * dpy = XtDisplayOfObject(w);
+  Window target_win = None, root = RootWindowOfScreen(XtScreenOfObject(w));
+  XtAppContext app = XtWidgetToApplicationContext(w);
+  
+  /* Make the target cursor */
+  cursor = XCreateFontCursor(dpy, XC_crosshair);
+  
+  /* Grab the pointer using target cursor, letting it room all over */
+  status = XGrabPointer(dpy, root, False,
+			ButtonPressMask|ButtonReleaseMask, GrabModeSync,
+			GrabModeAsync, root, cursor, CurrentTime);
+  if (status != GrabSuccess) {
+    SetMessage(global_screen_data.info_label, res_labels[5]);
+    return(None);
+  }
+  
+  /* Let the user select a window... */
+  while ((target_win == None) || (buttons != 0)) {
+    /* allow one more event */
+    XAllowEvents(dpy, SyncPointer, CurrentTime);
+    XtAppNextEvent(app, &event);
+    switch (event.type) {
+    case ButtonPress:
+      if (event.xbutton.window != root) {
+	XtDispatchEvent(&event);
+	break;
+      }
+      
+      if (target_win == None) {
+	target_win = event.xbutton.subwindow; /* window selected */
+	if (x != NULL)
+	  *x = event.xbutton.x_root;
+	if (y != NULL)
+	  *y = event.xbutton.y_root;
+      }
+      buttons++;
+      break;
+    case ButtonRelease:
+      if (event.xbutton.window != root) {
+	XtDispatchEvent(&event);
+	break;
+      }
+      
+      if (buttons > 0) /* There may have been some
+			  down before we started */
+	buttons--;
+      break;
+    default:
+      XtDispatchEvent(&event);
+      break;
     }
-
-    /* Let the user select a window... */
-    while ((target_win == None) || (buttons != 0)) {
-	/* allow one more event */
-	XAllowEvents(dpy, SyncPointer, CurrentTime);
-	XtAppNextEvent(app, &event);
-	switch (event.type) {
-	case ButtonPress:
-	    if (event.xbutton.window != root) {
-		XtDispatchEvent(&event);
-		break;
-	    }
-
-	    if (target_win == None) {
-		target_win = event.xbutton.subwindow; /* window selected */
-		if (x != NULL)
-		    *x = event.xbutton.x_root;
-		if (y != NULL)
-		    *y = event.xbutton.y_root;
-	    }
-	    buttons++;
-	    break;
-	case ButtonRelease:
-	    if (event.xbutton.window != root) {
-		XtDispatchEvent(&event);
-		break;
-	    }
-
-	    if (buttons > 0) /* There may have been some
-				down before we started */
-		buttons--;
-	    break;
-	default:
-	    XtDispatchEvent(&event);
-	    break;
-	}
-    } 
-    
-    XUngrabPointer(dpy, CurrentTime);      /* Done with pointer */
-
-    return(XmuClientWindow(dpy, target_win));
+  } 
+  
+  XUngrabPointer(dpy, CurrentTime);      /* Done with pointer */
+  
+  return(XmuClientWindow(dpy, target_win));
 }
+
+
 
 /*	Function Name: SetCommand
  *	Description: Causes this widget to own the resource editor's 
@@ -167,71 +177,72 @@ int *x, *y;
 /* ARGSUSED */
 void
 SetCommand(w, command, msg)
-Widget w;
-ResCommand command;
-char * msg;
+     Widget w;
+     ResCommand command;
+     char * msg;
 {
-    XClientMessageEvent client_event;
-    Display * dpy = XtDisplay(w);
+  XClientMessageEvent client_event;
+  Display * dpy = XtDisplay(w);
+  
+  if (msg == NULL) 
+    msg = res_labels[6];
+  
+  SetMessage(global_screen_data.info_label, msg);
+  
+  if (global_client.window == None)
+    if ( (global_client.window = GetClientWindow(w, NULL, NULL)) == None) 
+      return;
+
+  global_client.ident = GetNewIdent();
     
-    if (msg == NULL) 
-	msg = "Click the mouse pointer on any Xaw client.";
+  global_client.command = command;
+  global_client.atom = atom_comm;
 
-    SetMessage(global_screen_data.info_label, msg);
-	      
-    if (global_client.window == None) {
-	if ( (global_client.window = GetClientWindow(w, NULL, NULL)) == None) 
-	    return;
-    }
+  BuildHeader(&(global_client)); 
 
-    global_client.ident = GetNewIdent();
+  if (!XtOwnSelection(w, global_client.atom, CurrentTime, ConvertCommand, 
+		      LoseSelection, SelectionDone))
+    SetMessage(global_screen_data.info_label,
+	       res_labels[7]);
+
+  client_event.window = global_client.window;
+  client_event.type = ClientMessage;
+  client_event.message_type = atom_resource_editor;
+  client_event.format = EDITRES_SEND_EVENT_FORMAT;
+  client_event.data.l[0] = XtLastTimestampProcessed(dpy);
+  client_event.data.l[1] = global_client.atom;
+  client_event.data.l[2] = (long) global_client.ident;
+  client_event.data.l[3] = global_effective_protocol_version;
+  
+  global_error_code = NO_ERROR;                 /* Reset Error code. */
+  global_old_error_handler = XSetErrorHandler(HandleXErrors);
+  global_serial_num = NextRequest(dpy);
+  
+  XSendEvent(dpy, global_client.window, FALSE, (long) 0, 
+	     (XEvent *) &client_event);
+  
+  XSync(dpy, FALSE);
+  XSetErrorHandler(global_old_error_handler);
+  if (global_error_code == NO_WINDOW) {
+    char error_buf[BUFSIZ];
     
-    global_client.command = command;
-    global_client.atom = atom_comm;
-
-    BuildHeader(&(global_client)); 
-
-    if (!XtOwnSelection(w, global_client.atom, CurrentTime, ConvertCommand, 
-			LoseSelection, SelectionDone))
-	SetMessage(global_screen_data.info_label,
-		   "Unable to own the Resource Selection");
-
-    client_event.window = global_client.window;
-    client_event.type = ClientMessage;
-    client_event.message_type = atom_resource_editor;
-    client_event.format = EDITRES_SEND_EVENT_FORMAT;
-    client_event.data.l[0] = XtLastTimestampProcessed(dpy);
-    client_event.data.l[1] = global_client.atom;
-    client_event.data.l[2] = (long) global_client.ident;
-    client_event.data.l[3] = CURRENT_PROTOCOL_VERSION;
-
-    global_error_code = NO_ERROR;                 /* Reset Error code. */
-    global_old_error_handler = XSetErrorHandler(HandleXErrors);
-    global_serial_num = NextRequest(dpy);
-
-    XSendEvent(dpy, global_client.window, FALSE, (long) 0, 
-	       (XEvent *) &client_event);
-
-    XSync(dpy, FALSE);
-    XSetErrorHandler(global_old_error_handler);
-    if (global_error_code == NO_WINDOW) {
-	char error_buf[BUFSIZ];
-	
-	global_error_code = NO_ERROR;	/* Reset Error code. */
-	sprintf(error_buf, "The communication window with%s%s.",
-		" application is no longer avaliable\n",
- 		"Please select a new widget tree");
-
-	global_client.window = None;
- 	SetCommand(w, LocalSendWidgetTree, error_buf);
-	return;
-    }   
-		   
-    TellUserAboutMessage(global_screen_data.info_label, command);
-    global_client.timeout = XtAppAddTimeOut(XtWidgetToApplicationContext(w),
-					    CLIENT_TIME_OUT, 
-					    ClientTimedOut, (XtPointer) w);
+    global_error_code = NO_ERROR;	/* Reset Error code. */
+    sprintf(error_buf, "The communication window with%s%s.",
+	    " application is no longer avaliable\n",
+	    "Please select a new widget tree");
+    
+    global_client.window = None;
+    SetCommand(w, LocalSendWidgetTree, error_buf);
+    return;
+  }   
+  
+  TellUserAboutMessage(global_screen_data.info_label, command);
+  global_client.timeout = XtAppAddTimeOut(XtWidgetToApplicationContext(w),
+					  CLIENT_TIME_OUT, 
+					  ClientTimedOut, (XtPointer) w);
 }
+
+
 
 /*	Function Name: TellUserAboutMessage
  *	Description: Informs the user that we have sent a message to the client
@@ -269,9 +280,11 @@ ResCommand command;
 	break;
     }
 
-    sprintf(msg, "Message sent to client%s.", str);
+    sprintf(msg, res_labels[8], str);
     SetMessage(label, msg);
 }
+
+
 
 /*	Function Name: ConvertCommand
  *	Description: Converts the command string into a selection that can
@@ -300,6 +313,8 @@ int * format_ret;
     return(TRUE);
 }
 
+
+
 /*	Function Name: SelectionDone
  *	Description: done with the selection.
  *	Arguments: *** UNUSED ***
@@ -314,6 +329,8 @@ SelectionDone(w, sel, targ)
 {
     /* Keep the toolkit from automaticaly freeing the selection value */
 }
+
+
 
 /*	Function Name: LoseSelection
  *	Description: Called when we have lost the selection, asks client
@@ -337,6 +354,8 @@ Atom * sel;
 			NULL, XtLastTimestampProcessed(XtDisplay(w)));
 }
 
+
+
 /*	Function Name: GetClientValue
  *	Description: Gets the value out of the client, and does good things
  *                   to it.
@@ -350,6 +369,7 @@ Atom * sel;
  *	Returns: none.
  */
 
+static Boolean reset_protocol_level = True;
 
 /* ARGSUSED */
 static void
@@ -379,7 +399,7 @@ int * format;
 
     if (*length < HEADER_SIZE) {
 	SetMessage(global_screen_data.info_label,
-		   "Incorrectly formatted message from client.");
+		   res_labels[9]);
 	return;
     }
 
@@ -392,7 +412,7 @@ int * format;
 	if (!XtOwnSelection(w, *selection, CurrentTime, ConvertCommand, 
 			    LoseSelection, SelectionDone))
 	    SetMessage(global_screen_data.info_label,
-		       "Unable to own the Resource Editor Command Selection");
+		       res_labels[10]);
 	return;
     }
 
@@ -402,6 +422,11 @@ int * format;
 
     switch ((int) error_code) {
     case PartialSuccess:
+/*****
+        if (global_client.command == LocalSendWidgetTree &&
+	    global_effective_protocol_version < CURRENT_PROTOCOL_VERSION)
+	  ++global_effective_protocol_version;
+*****/
 	if ((event = BuildEvent(stream)) != NULL) {
 	    error_str = DispatchEvent(event);
 	    FreeEvent(event);
@@ -416,9 +441,16 @@ int * format;
 	break;
     case ProtocolMismatch:
 	error_str = ProtocolFailure(stream);
+	--global_effective_protocol_version;
+	/* normaly protocol version is reset to current during a SendWidgetTree
+         * request, however, after a protocol failure this is skiped once for
+         * a retry.
+         */
+	reset_protocol_level = False;
+	SetCommand(w, LocalSendWidgetTree, NULL);
 	break;
     default:
-	sprintf(msg, "Unknown Error code %d", (int) error_code);
+	sprintf(msg, res_labels[11], (int) error_code);
 	SetMessage(global_screen_data.info_label, msg);
 	break;
     }
@@ -430,13 +462,15 @@ int * format;
 	    return;
 	
 	top = global_tree_info->top_node;
-	sprintf(msg, "Widget Tree for client %s(%s).", top->name, top->class);
+	sprintf(msg, res_labels[12], top->name, top->class);
 	SetMessage(global_screen_data.info_label, msg);
 	return;
     }
     SetMessage(global_screen_data.info_label, error_str);
     XtFree(error_str);
 }
+
+
 
 /*	Function Name: BuildHeader
  *	Description: Puts the header into the message.
@@ -473,7 +507,10 @@ CurrentClient * client_data;
     
     _XEditResPut8(stream, client_data->ident);
     switch(client_data->command) {
-    case LocalSendWidgetTree:
+    case LocalSendWidgetTree: 
+        if (reset_protocol_level) global_effective_protocol_version = 
+	  CURRENT_PROTOCOL_VERSION;
+        reset_protocol_level = True;
 	command = SendWidgetTree;
 	break;
     case LocalSetValues:
@@ -488,6 +525,9 @@ CurrentClient * client_data;
     case LocalFindChild:
 	command = FindChild;
 	break;
+    case LocalGetValues:
+	command = GetValues;
+	break;
     default:
 	command = SendWidgetTree;
 	break;
@@ -500,6 +540,8 @@ CurrentClient * client_data;
     stream->current = old_current;
     stream->size = old_size;
 }
+
+
 
 /*	Function Name: BuildEvent
  *	Description: Builds the event structure from the 
@@ -543,6 +585,24 @@ ProtocolStream * stream;
 		    goto done;
 		}
 	    }
+
+	    if (global_effective_protocol_version == 
+		CURRENT_PROTOCOL_VERSION) {
+				/* get toolkit type and reset if necessary */
+	      if (!_XEditResGetString8(stream, &(send_event->toolkit)))
+ 	        goto done;
+	    }
+	    /* set the command menu entries senitive */
+	    SetEntriesSensitive(&CM_entries[CM_OFFSET], CM_NUM, True);
+	    /* set the tree menu entries senitive */
+	    SetEntriesSensitive(TM_entries, TM_NUM, True);
+	    if (global_effective_protocol_version == 
+		CURRENT_PROTOCOL_VERSION) {
+	      if (!strcmp(send_event->toolkit, "InterViews")) 
+	        RebuildMenusAndLabel("iv");
+            } 
+            else
+              RebuildMenusAndLabel("xt");
 	}
 	break;
     case LocalSetValues:
@@ -666,6 +726,40 @@ ProtocolStream * stream;
 		goto done;
 	}
 	break;
+    case LocalGetValues: /* This is for REPLY... */
+	{
+	  Arg args[1];
+	  GetValuesEvent * gv_event = (GetValuesEvent *) event;
+	  
+	  gv_event->type = GetValues;
+	  
+	  if (!_XEditResGet16(stream, &(gv_event->num_entries)))
+	    goto done;
+
+	  gv_event->info = (GetValuesInfo*)XtCalloc(sizeof(GetValuesInfo),1);
+
+	  {
+	    GetValuesInfo * info = gv_event->info;
+	    if (!(_XEditResGetString8(stream, &(info->value))))
+	      {
+		goto done;
+	      }
+
+	    /* set the string value of the asciitext widget. note that only
+             * one active node is dealt with here.  This is ok because only
+	     * one node can be active when the resource box is up.
+	     */
+
+	    XtSetArg (args[0], XtNstring, info->value);
+
+	    XtSetValues(
+	      global_tree_info->active_nodes[0]->resources->res_box->value_wid,
+ 	      args, 1
+	    );
+	  }
+	}
+	break;
+
     default:
 	goto done;
     }
@@ -677,6 +771,7 @@ ProtocolStream * stream;
     return(NULL);
 }
 
+
 
 /*	Function Name: FreeEvent
  *	Description: Frees all memory associated with the event. 
@@ -779,6 +874,8 @@ Event * event;
     }
 }
 
+
+
 /*	Function Name: DispatchEvent
  *	Description: Handles the event, calling the proper function.
  *	Arguments: event - the event.
@@ -807,6 +904,8 @@ Event * event;
     case LocalFindChild:
 	DisplayChild(event);
 	break;
+    case LocalGetValues:
+	break;
     default:
         {
 	    char msg[BUFSIZ];
@@ -818,6 +917,8 @@ Event * event;
     }
     return(error);
 }
+
+
 
 /*	Function Name: InternAtoms
  *	Description: interns all static atoms.

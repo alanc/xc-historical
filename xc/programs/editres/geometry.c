@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.12 91/04/04 21:35:22 gildea Exp $
+ * $XConsortium: geometry.c,v 1.3 92/02/25 18:07:28 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -57,8 +57,7 @@ Widget w;
     Window win, GetClientWindow();
     int x, y;			/* location of event in root coordinates. */
 
-    sprintf(msg, "Click on any widget in the client.\nEditres will %s",
-	    "select that widget in the tree display.");
+    sprintf(msg, res_labels[14]);
 
     SetMessage(global_screen_data.info_label, msg);
 
@@ -77,7 +76,7 @@ Widget w;
     }
 
     SetMessage(global_screen_data.info_label, 
-      "That window does not appear to be\nin the currently displayed client.");
+      res_labels[15]);
 }
 
 /*	Function Name: FindWidgetFromWindow
@@ -143,7 +142,7 @@ Event * event;
 		    find_event->widgets.num_widgets);
 
     if (node == NULL) {
-	sprintf(msg, "Editres Internal Error: Unable to FindNode.\n");
+	sprintf(msg, res_labels[13]);
 	SetMessage(global_screen_data.info_label, msg);
 	return;	
     }
@@ -152,7 +151,7 @@ Event * event;
 
     node = node->tree_info->top_node;
 
-    sprintf(msg, "Widget Tree for client %s(%s).", node->name, node->class);
+    sprintf(msg, res_labels[12], node->name, node->class);
     SetMessage(global_screen_data.info_label, msg);
 
     _FlashActiveWidgets(global_tree_info);
@@ -173,12 +172,12 @@ TreeInfo * tree_info;
 
     if (tree_info == NULL) {
 	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
+		   res_labels[17]);
 	return;
     }
 
     if (tree_info->num_nodes == 0) {
-	SetMessage(global_screen_data.info_label,"There are no active nodes.");
+	SetMessage(global_screen_data.info_label,res_labels[18]);
 	return;
     }
 	

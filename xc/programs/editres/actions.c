@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.11 91/07/09 11:50:28 rws Exp $
+ * $XConsortium: actions.c,v 1.5 92/03/03 14:34:04 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -67,6 +67,29 @@ static struct  ActionValues label_values[] = {
 
 static WNode * FindTreeNodeFromWidget();
 static Boolean CheckAndFindEntry();
+
+/*	Function Name: EnableGetVal
+ *	Description: sets a global variable to notify the Notify action
+ *                   for the resource list widet to do GetValues.
+ *      Arguments: w - any widget in the widget tree.
+ *                 event - NOT USED.
+ *                 params, num_params - the parameters paseed to the action
+ *                                      routine. 
+ *
+ */
+
+Boolean do_get_values = False;
+
+/* ARGSUSED */
+static void
+EnableGetVal(w, event, params, num_params)
+Widget w;
+XEvent * event;
+String * params;
+Cardinal * num_params;
+{
+  do_get_values = True;
+}
 
 /*	Function Name: SelectAction
  *	Description: 
@@ -171,7 +194,7 @@ Cardinal * num_params;
     Boolean val;
 
     if (*num_params != 1) {
-	sprintf(buf, "Action `%s' must have exactly one argument.", 
+	sprintf(buf, res_labels[2], 
 		"PopdownFileDialog");
 
 	SetMessage(global_screen_data.info_label, buf);
@@ -185,7 +208,7 @@ Cardinal * num_params;
     else if (streq(buf, "okay"))
 	val = TRUE;
     else {
-	sprintf(buf, "Action %s's argument must be either `cancal' or `okay'.",
+	sprintf(buf, res_labels[1],
 		"PopdownFileDialog");
 
 	SetMessage(global_screen_data.info_label, buf);
@@ -203,7 +226,6 @@ Cardinal * num_params;
  *	Returns: none
  */
 
-extern Widget toplevel;
 /* ARGSUSED */
 static void
 ActionQuit(w, event, params, num_params)
@@ -212,7 +234,7 @@ XEvent * event;
 String * params;
 Cardinal * num_params;
 {
-  if (w==toplevel) {
+  if (w==global_toplevel) {
     XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
     exit(0);
   }
@@ -233,6 +255,7 @@ Cardinal * num_params;
 extern void ModifySVEntry();
 
 static XtActionsRec actions[] = {
+  {"EnableGetVal",      EnableGetVal},
   {"Select",            SelectAction},
   {"SVActiveEntry",     ModifySVEntry},
   {"Relabel",      	RelabelAction}, 
@@ -277,7 +300,7 @@ int * type;
     int i;
 
     if (num_params != 1) {
-	sprintf(buf, "Action `%s' must have exactly one argument.", 
+	sprintf(buf, res_labels[2], 
 		action_name);
 	SetMessage(global_screen_data.info_label, buf);
 	return(FALSE);
@@ -290,7 +313,7 @@ int * type;
 	    return(TRUE);
 	}
     
-    sprintf(buf,"Unknown parameter to action `%s' must be one of:\n", 
+    sprintf(buf,res_labels[3], 
 	    action_name);
 
     for (i = 0; i < num_table; ) {

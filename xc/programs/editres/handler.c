@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.25 91/10/09 17:36:13 dave Exp $
+ * $XConsortium: handler.c,v 1.6 92/03/03 14:35:29 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -52,8 +52,7 @@ void SetResourceString(), ActivateResourceWidgets();
 void ActivateWidgetsAndSetResourceString();
 static void SetOnlyMatchingWidgets();
 static void CreateSetValuesCommand();
-
-extern Widget toplevel;
+static void ObtainResource();
 
 /*	Function Name: Quit
  *	Description: This function prints a message to stdout.
@@ -75,6 +74,7 @@ XtPointer call_data, client_data;
 
 /*	Function Name: SendTree
  *	Description: This function initiates the client communication.
+ *                   by getting the resource tree.
  *	Arguments: w - the widget that made the selection.
  *                 value - a boolean value stored as a pointer.
  *                         if True then get a new client, otherwise
@@ -96,7 +96,8 @@ XtPointer value, call_data;
 	w = XtParent(w);
 
     _XEditResResetStream(&(global_client.stream)); /* an empty message. */
-    SetCommand(w, LocalSendWidgetTree, NULL);
+    
+    SetCommand(w, LocalSendWidgetTree, NULL); 
 }
 
 /*	Function Name: FindWidget
@@ -266,13 +267,13 @@ XtPointer junk, garbage;
 
     if (global_tree_info == NULL) {
 	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
+		   res_labels[17]);
 	return;
     }
 
     if (global_tree_info->num_nodes != 1) {
 	SetMessage(global_screen_data.info_label,
-	      "This function requires exactly one (1) widget to be selected.");
+	      res_labels[19]);
 	return;
     }
 
@@ -519,12 +520,18 @@ XtPointer node_ptr, junk;
 }
     
 /*	Function Name: ResourceListCallback
- *	Description: Callback functions for the resource lists.
+ *	Description: Callback functions for the resource lists.  This 
+ *                   routine is essentialy called by the list widgets
+ *                   Notify action.  If action EnableGetVal has been
+ *                   invoked,  ResourceListCallback will perform a
+ *                   GetValues protocol request.
  *	Arguments: list - the list widget that we are dealing with.
  *                 node_ptr - pointer to widget node contating this res box.
  *                 junk - UNUSED.
  *	Returns: none
  */
+
+extern Boolean do_get_values;
 
 void
 ResourceListCallback(list, node_ptr, junk)
@@ -544,6 +551,13 @@ XtPointer node_ptr, junk;
 	XawListUnhighlight(o_list);
 
     SetResourceString(list, node_ptr, junk);
+
+    /* get the resource value from the application */
+    if (global_effective_protocol_version >=
+	PROTOCOL_VERSION_ONE_POINT_ONE && do_get_values) {
+      ObtainResource(node_ptr);
+      do_get_values = False;
+    }
 }
 
 /*	Function Name: PopdownResBox
@@ -565,14 +579,6 @@ XtPointer shell_ptr, junk;
     XtPopdown(shell);
     XtDestroyWidget(shell);
 }
-
-/*	Function Name: _AppendResourceString
- *	Description: Actually append the resource string to your resoruce file.
- *	Arguments: w - UNUSED
- *                 res_box_ptr - the resource box info.
- *                 filename_ptr - a pointer to the filename;
- *	Returns: none
- */
 
 /* ARGSUSED */
 static void
@@ -598,7 +604,7 @@ XtPointer res_box_ptr, filename_ptr;
     if ((fp = fopen(global_resources.save_resources_file, "a+")) == NULL) {
 	sprintf(buf, "Unable to open this file for writing, would %s",
 		"you like To try again?");
-	_PopupFileDialog(toplevel ,buf,
+	_PopupFileDialog(global_toplevel ,buf,
 			global_resources.save_resources_file,
 			_AppendResourceString, res_box_ptr);
 	return;
@@ -656,7 +662,7 @@ _SetResourcesFile(w, junk, filename_ptr)
 Widget w;
 XtPointer junk, filename_ptr;
 {
-    char buf[BUFSIZ], *filename = (char *) filename_ptr;
+    char *filename = (char *) filename_ptr;
 
     if (global_resources.allocated_save_resources_file) 
 	XtFree(global_resources.save_resources_file);
@@ -757,9 +763,56 @@ XtPointer node_ptr, junk;
     }
     else 
 	SetMessage(global_screen_data.info_label,
-		   "ApplyResource: found no matches.");
+		   res_labels[20]);
 	
     XrmDestroyDatabase(info.database);
+}
+
+/*	Function Name: ObtainResource
+ *	Description: Obtain the current resource from the running application.
+ *	Arguments: node_ptr - a pointer to the node containing 
+ *                            the current resouce box.
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+static void
+ObtainResource(node_ptr)
+XtPointer node_ptr;
+{
+    ProtocolStream * stream = &(global_client.stream);
+    ObtainResourcesInfo info;
+    WNode * node = (WNode *) node_ptr;	       
+    char * value;
+    Arg args[1];
+
+    info.name = GetResourceName(node->resources->res_box);
+    info.class = "IGNORE_ME";	/* Not currently used.  */
+    info.stream = stream;
+    info.count = 1;
+
+    XtSetArg(args[0], XtNlabel, &value);
+    XtGetValues(node->resources->res_box->res_label, args, ONE);
+
+    info.database = NULL;
+    XrmPutLineResource(&(info.database), value);
+
+    _XEditResResetStream(stream);
+    _XEditResPutString8(stream, info.name); /* insert name */
+
+    /* 
+     * Insert the widget count, always 1
+     */
+
+    _XEditResPut16(stream, 1); 
+
+    /*CreateGetValuesCommand(node, (XtPointer)&info);  Inserts widget */
+
+    /* Insert widget */
+    _XEditResPut16(stream, 1);
+    _XEditResPut32(stream, node->id);
+
+    SetCommand(node->tree_info->tree_widget, LocalGetValues, NULL);
 }
 
 /*	Function Name: CreateSetValuesCommand
@@ -794,6 +847,42 @@ XtPointer info_ptr;
     XtFree((char *)name_quarks);
     XtFree((char *)class_quarks);
 }
+
+/*	Function Name: CreateGetValuesCommand
+ *	Description: Creates the GetValues command.
+ *	Arguments: node - the current node.
+ *                 info_ptr - the pointer to the apply info.
+ *	Returns: none
+ */
+
+/*****
+
+static void
+CreateGetValuesCommand(node, info_ptr)
+WNode * node;
+XtPointer info_ptr;
+{
+    ApplyResourcesInfo * info = (ApplyResourcesInfo *) info_ptr;
+    XrmNameList name_quarks;
+    XrmClassList class_quarks;
+    char ** names, **classes;
+
+    GetNamesAndClasses(node, &names, &classes);
+    name_quarks = (XrmNameList) Quarkify(names, info->name);
+    class_quarks = (XrmNameList) Quarkify(classes, info->class);
+
+    if (CheckDatabase(info->database, name_quarks, class_quarks)) {
+	InsertWidgetFromNode(info->stream, node);
+	info->count++;
+    }
+
+    XtFree((char *)names);
+    XtFree((char *)classes);
+    XtFree((char *)name_quarks);
+    XtFree((char *)class_quarks);
+}
+
+*****/
 
 /*	Function Name: ActivateResourceWidgets
  *	Description: Activates all widgets that match this resource.

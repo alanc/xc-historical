@@ -1,5 +1,5 @@
 /*
- * $XConsortium: wtree.c,v 1.13 91/07/09 12:08:53 rws Exp $
+ * $XConsortium: wtree.c,v 1.3 92/02/25 18:07:37 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -80,7 +80,7 @@ Event * event;
 
     if (top == NULL) {
 	SetMessage(global_screen_data.info_label,
-		   "There is no widget tree to display.");
+		   res_labels[27]);
 	return;
     }
 
@@ -91,7 +91,7 @@ Event * event;
 
     XtManageChild(global_tree_info->tree_widget);
 
-    sprintf(msg, "Widget Tree for client %s(%s).", top->name, top->class);
+    sprintf(msg, res_labels[11], top->name, top->class);
     SetMessage(global_screen_data.info_label, msg);
 }
 
@@ -116,7 +116,7 @@ WNode * top;
 
     if (top->parent != NULL) {
 	if (top->parent->widget == NULL) {
-	    sprintf( msg, "Loop in tree: node %s's parent (%s) has %s.\n",
+	    sprintf( msg, res_labels[28],
 		    top->name, top->parent->name, "not been created yet");
 	    SetMessage(global_screen_data.info_label, msg);
 	}
@@ -129,7 +129,7 @@ WNode * top;
 
     if (XSaveContext(XtDisplay(top->widget), (Window) top->widget, 
 		     NODE_INFO, (caddr_t) top) != 0) {
-	sprintf( msg, "XSaveContext failed on widget %s.", top->name);
+	sprintf( msg, res_labels[29], top->name);
 	SetMessage(global_screen_data.info_label, msg);
     }	
 
@@ -303,7 +303,7 @@ LabelTypes type;
 
     if (tree_info == NULL) {
 	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
+		   res_labels[17]);
 	return;
     }
 
@@ -333,7 +333,7 @@ SelectTypes type;
 
     if (tree_info == NULL) {
 	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
+		   res_labels[17]);
 	return;
     }
 
@@ -349,7 +349,7 @@ SelectTypes type;
 
     if (tree_info->num_nodes == 0) {
 	SetMessage(global_screen_data.info_label,
-		   "There are no active nodes.");
+		   res_labels[18]);
 	return;
     }
 
@@ -395,7 +395,7 @@ Boolean recurse;
 	break;
     default:
 	SetMessage(global_screen_data.info_label,
-		   "Internal Error: Unknown select type.");
+		   res_labels[16]);
 	return;
     }
 
@@ -460,7 +460,7 @@ Boolean recurse;
 	break;
     default:
 	SetMessage(global_screen_data.info_label,
-		   "Internal Error: Unknown label type.");
+		   res_labels[32]);
 	return;
     }
 
@@ -511,7 +511,7 @@ SelectTypes type;
 	}
     else
 	SetMessage(global_screen_data.info_label,
-		   "Internal Error: Unknown activate type.");	
+		   res_labels[33]);	
 }
 
 /************************************************************

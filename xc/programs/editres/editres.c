@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.12 91/02/16 17:46:17 dave Exp $
+ * $XConsortium: editres.c,v 1.6 92/03/02 16:52:01 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,6 +25,8 @@
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 
+/* #include "/users/dave/src/vroot/vroot.h" for virtual root window */
+
 #include <X11/Xaw/Cardinals.h>	
 
 #define THIS_IS_MAIN		/* Don't get extern definitions of global
@@ -36,6 +38,15 @@
  * Global variables. 
  */
 
+/* array of toolkit dependent labels taken from the resource file */
+String res_labels[NUM_RES_LABELS];
+
+/* decremented if the target client does not speak the current version */
+int global_effective_protocol_version = CURRENT_PROTOCOL_VERSION;
+
+/* toolkit type of client whose "resources" we are currently editing */
+char *global_effective_toolkit = "xt";
+
 int global_error_code;
 unsigned long global_serial_num;
 int (*global_old_error_handler)();
@@ -45,7 +56,13 @@ TreeInfo *global_tree_info = NULL;
 CurrentClient global_client;
 ScreenData global_screen_data;
 Widget global_tree_parent;
+Widget global_paned = NULL;		/* named after toolkit */
+Widget global_toplevel;
 AppResources global_resources;
+
+/*
+ * external function definitions.
+ */
 
 extern void InternAtoms(), SetMessage(), BuildWidgetTree();
 extern void SetApplicationActions();
@@ -72,7 +89,6 @@ static XtResource editres_resources[] = {
 };
 
 Atom wm_delete_window;
-Widget toplevel;
 
 void
 main(argc, argv)
@@ -81,7 +97,7 @@ char **argv;
 {
     XtAppContext app_con;
 
-    toplevel = XtAppInitialize(&app_con, "Editres", NULL, ZERO,
+    global_toplevel = XtAppInitialize(&app_con, "Editres", NULL, ZERO,
 			       &argc, argv, fallback_resources,
 			       NULL, ZERO);
 
@@ -89,28 +105,32 @@ char **argv;
 	Syntax(app_con, argv[0]);
 
     SetApplicationActions(app_con);
-    XtGetApplicationResources(toplevel, (caddr_t) &global_resources, 
+    XtGetApplicationResources(global_toplevel, (caddr_t) &global_resources, 
 			      editres_resources, XtNumber(editres_resources),
 			      NULL, (Cardinal) 0);
     global_resources.allocated_save_resources_file = FALSE;
 
     XtOverrideTranslations
-      (toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));  
+      (global_toplevel, 
+       XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));  
 
-    BuildWidgetTree(toplevel);
+    /* build tree for Xt intrinsics */
+    BuildWidgetTree(global_toplevel); 
 
     SetMessage(global_screen_data.info_label, 
-	       "Welcome to the X Resource Editor version 1.0");
+	       res_labels[13]);
 
     global_screen_data.set_values_popup = NULL;
 
-    InternAtoms(XtDisplay(toplevel));
+    InternAtoms(XtDisplay(global_toplevel));
 
-    XtRealizeWidget(toplevel);
+    XtRealizeWidget(global_toplevel);
 
-    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+    wm_delete_window = 
+      XInternAtom(XtDisplay(global_toplevel), "WM_DELETE_WINDOW",
 				   False);
-    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+    (void) XSetWMProtocols (XtDisplay(global_toplevel), 
+			    XtWindow(global_toplevel),
                             &wm_delete_window, 1);
     XtAppMainLoop(app_con);
 }

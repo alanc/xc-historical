@@ -1,5 +1,5 @@
 /*
- * $XConsortium: svpopup.c,v 1.13 91/07/09 09:46:48 rws Exp $
+ * $XConsortium: svpopup.c,v 1.3 92/02/25 18:07:30 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -62,7 +62,7 @@ XEvent * event;
 
     if (global_tree_info == NULL) {
 	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
+		   res_labels[17]);
 	return;
     }
 
@@ -111,7 +111,7 @@ Cardinal * num_params;
     
     if (*num_params != 1) {
 	strcpy(msg, 
-	       "Error: SVActiveEntry Action must have exactly one argument.");
+	       res_labels[21]);
 	SetMessage(global_screen_data.info_label, msg);
 	return;
     }
@@ -128,8 +128,7 @@ Cardinal * num_params;
 	old = global_screen_data.res_text;
 	break;
     default:
-	sprintf(msg, "%s %s", "Error: SVActiveEntry Action's first Argument",
-		"must be either 'Resource' or 'Value'.");
+	sprintf(msg, res_labels[22]);
 	SetMessage(global_screen_data.info_label, msg);
 	return;
     }
@@ -286,7 +285,7 @@ XtPointer junk, garbage;
 
     if (global_tree_info->num_nodes == 0) {
 	SetMessage(global_screen_data.info_label,
-		   "There are no currently active widgets.");
+		   res_labels[23]);
 	return;
     }
 		

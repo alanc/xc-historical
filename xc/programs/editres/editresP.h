@@ -1,5 +1,6 @@
+
 /*
- * $XConsortium: editresP.h,v 1.11 91/07/09 12:08:37 rws Exp $
+ * $XConsortium: editresP.h,v 1.9 92/03/02 16:52:05 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,7 +35,13 @@
 #  define CLIENT_TIME_OUT 5000	/* wait five seconds for the client. */
 #endif /* DEBUG */
 
-#define CURRENT_PROTOCOL_VERSION 4
+#define PROTOCOL_VERSION_ONE_POINT_ONE  5 /* version 1.1 */
+#define ONE_POINT_ONE_STRING "1.1"
+#define PROTOCOL_VERSION_ONE_POINT_ZERO 4 /* version 1.0 */
+#define ONE_POINT_ZERO_STRING "1.0" ONE_POINT_ONE_STRING 
+
+#define CURRENT_PROTOCOL_VERSION PROTOCOL_VERSION_ONE_POINT_ONE 
+#define CURRENT_PROTOCOL_VERSION_STRING ONE_POINT_ONE_STRING
 
 #define FLASH_TIME  1000	/* Default flash time in microseconds */
 #define NUM_FLASHES 3		/* Default number of flashes. */
@@ -69,7 +76,8 @@ extern void exit();
 #define NO_WINDOW 1
 
 typedef enum {LocalSendWidgetTree, LocalSetValues, LocalFindChild, 
-	      LocalFlashWidget, LocalGetGeometry, LocalGetResources}ResCommand;
+	      LocalFlashWidget, LocalGetGeometry, LocalGetResources,
+              LocalGetValues} ResCommand;
 
 typedef enum {ClassLabel, NameLabel, IDLabel, WindowLabel,
 	      ToggleLabel} LabelTypes;
@@ -187,6 +195,16 @@ typedef struct _ApplyResourcesInfo {
     XrmDatabase database;
 } ApplyResourcesInfo;
     
+/*
+ * Information needed to get a resource string from a widget.
+ */
+
+typedef struct _ObtainResourcesInfo {
+    char * name, *class;	/* name and class  of this resource. */
+    unsigned short count;
+    ProtocolStream * stream;
+    XrmDatabase database;
+} ObtainResourcesInfo;
 
 /************************************************************
  *
@@ -207,6 +225,7 @@ typedef struct _WidgetTreeInfo {
 
 typedef struct _SendWidgetTreeEvent {
     EditresCommand type;
+    char * toolkit;
     unsigned short num_entries;
     WidgetTreeInfo * info;
 } SendWidgetTreeEvent;
@@ -221,6 +240,17 @@ typedef struct _SetValuesEvent {
     unsigned short num_entries;
     SetValuesInfo * info;
 } SetValuesEvent;
+
+typedef struct _GetValuesInfo {
+    WidgetInfo widgets;
+    char * value;
+} GetValuesInfo;
+    
+typedef struct _GetValuesEvent {
+    EditresCommand type;
+    unsigned short num_entries;
+    GetValuesInfo * info;
+} GetValuesEvent;
 
 typedef struct _ResourceInfo {
     ResourceType res_type;
@@ -269,13 +299,22 @@ typedef union _Event {
     GetResourcesEvent get_resources_event;
     GetGeomEvent get_geom_event;
     FindChildEvent find_child_event;
+    GetValuesEvent get_values_event;
 } Event;
     
+/*
+ * number of application resource labels.
+ */
+
+#define NUM_RES_LABELS 37
+
 /*
  * Global variables. 
  */
 
 #ifndef THIS_IS_MAIN
+    extern int global_effective_protocol_version;
+    extern char* global_effective_toolkit;
     extern int global_error_code;
     extern unsigned long global_serial_num;
     extern int (*global_old_error_handler)();
@@ -285,7 +324,11 @@ typedef union _Event {
     extern CurrentClient global_client;
     extern ScreenData global_screen_data;
     extern Widget global_tree_parent;
+    extern Widget global_paned;	/* named after toolkit */
+    extern Widget global_toplevel;
     extern AppResources global_resources;
+
+    extern String res_labels[NUM_RES_LABELS];
 #endif
 
 /*
@@ -293,3 +336,14 @@ typedef union _Event {
  */
 
 #define streq(a, b)        ( strcmp((a), (b)) == 0 )
+
+/* number of entries in the command menu */
+#define NUM_CM_ENTRIES 8
+/* offset into CM entries for setting insensitive */
+#define CM_OFFSET 1
+/* number of CM entries to make insensitive */
+#define CM_NUM 5
+/* number of entries in the tree menu */
+#define NUM_TM_ENTRIES 16
+#define TM_OFFSET 0
+#define TM_NUM 16

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: utils.c,v 1.16 91/07/03 09:46:13 converse Exp $
+ * $XConsortium: utils.c,v 1.5 92/02/28 18:01:59 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,7 +43,7 @@ void CreateResourceBox();
 
 extern void PopupCentered(), PerformTreeToFileDump();
 
-/*	Function Name: ShowMessage(w, str)
+/*	Function Name: SetMessage(w, str)
  *	Description: shows the message to the user.
  *	Arguments: w - a label widget to show the message in.
  *                 str - the string to show.
@@ -276,14 +276,14 @@ char * filename;
 
     if (tree_info == NULL) {
 	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
+		   res_labels[17]);
 	return;
     }
 
     if ( (fp = fopen(filename, "w")) == NULL ) {
 	char buf[BUFSIZ];
 
-	sprintf(buf, "Unable to open the file `%s' for writing.", filename);
+	sprintf(buf, res_labels[24], filename);
 	SetMessage(global_screen_data.info_label, buf);
 	return;
     }
@@ -508,7 +508,7 @@ char *** names, ***classes;
     WNode * temp = node;
 
     for (total_widgets = 1 ; temp->parent != NULL ;
-       total_widgets++, temp = temp->parent) { } /* empty for */
+       total_widgets++, temp = temp->parent) {}
 
     *names = (char **) XtMalloc(sizeof(char *) * (total_widgets + 1));
     *classes = (char **) XtMalloc(sizeof(char *) * (total_widgets + 1));
@@ -542,7 +542,7 @@ Event * event;
 			get_event->info[i].widgets.num_widgets);
 
 	if (node == NULL) {
-	    sprintf(buf, "Editres Internal Error: Unable to FindNode.\n");
+	    sprintf(buf, res_labels[16]);
 	    AddString(&errors, buf); 
 	    continue;	
 	}
@@ -581,7 +581,7 @@ char ** errors;
     int i;
 
     if (global_resource_box_up) {
-	AddString(errors, "Only one Resource Box can be active at a time.");
+	AddString(errors, res_labels[34]);
 	return;
     }
     else
@@ -879,7 +879,7 @@ ProtocolStream * stream;
     if (_XEditResGetString8(stream, &return_str)) 
 	return(return_str);
 
-    return(XtNewString("Unable to unpack protocol request."));
+    return(XtNewString(res_labels[35]));
 }
 
 /*	Function Name: ProtocolFailure
@@ -895,13 +895,18 @@ ProtocolStream * stream;
 {
     char buf[BUFSIZ];
     unsigned char version;
+    char* old_version_string;
 
     if (!_XEditResGet8(stream, &version)) 
-	return(XtNewString("Unable to unpack protocol request."));
+	return(XtNewString(res_labels[35]));
 
-    sprintf(buf, "This version of editres uses protocol version %d.\n%s%d",
-	    CURRENT_PROTOCOL_VERSION,
-	    "But the client speaks version ", (int) version);
+    switch ((int)version) {
+    case PROTOCOL_VERSION_ONE_POINT_ZERO: old_version_string = "1.0"; break;
+    default: old_version_string = "1.0";
+    }
+    
+    sprintf(buf, res_labels[36], 
+	    CURRENT_PROTOCOL_VERSION_STRING, old_version_string);
     return(XtNewString(buf));
 }
 	

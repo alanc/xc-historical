@@ -1,9 +1,6 @@
 
 ! The App-defaults file for Editres.
 
-! The top few items are strictly to make it look `nice', users may
-! modify these as they see fit.
-
 Editres.Geometry:			500x600
 
 *ShapeStyle:				Oval
@@ -20,29 +17,102 @@ Editres.Geometry:			500x600
 *Box*commands.Label:			Commands
 *Box*treeCommands.Label:		Tree
 
-! Menu Entry Names
+*porthole.tree.width:			500
+*porthole.tree.height:			480
 
-*SimpleMenu*sendTree.Label:		Get Widget Tree
-*SimpleMenu*refreshTree.Label:		Refresh Current Widget Tree
-*SimpleMenu*dumpTreeToFile.Label:	Dump Widget Tree to a File
-*SimpleMenu*getResourceList.Label:	Show Resource Box
-*SimpleMenu*setValues.Label:		Set Resource
-*SimpleMenu*quit.Label:			Quit
+! Universal Menu Entry Names
+*sendTree.Label:		Get Tree
+*quit.Label:			Quit
 
+*selectAll.Label:		Select All
+*unselectAll.Label:		Unselect All
+*invertAll.Label:		Invert All
+*selectChildren.Label:		Select Children
+*selectParent.Label:		Select Parent
+*selectDescendants.Label:	Select Descendants
+*selectAncestors.Label:		Select Ancestors
 
-*SimpleMenu*showClientWidget.Label:	Select Widget in Client
-*SimpleMenu*selectAll.Label:		Select All
-*SimpleMenu*unselectAll.Label:		Unselect All
-*SimpleMenu*invertAll.Label:		Invert All
-*SimpleMenu*selectChildren.Label:	Select Children
-*SimpleMenu*selectParent.Label:		Select Parent
-*SimpleMenu*selectDescendants.Label:	Select Descendants
-*SimpleMenu*selectAncestors.Label:	Select Ancestors
-*SimpleMenu*showWidgetNames.Label:	Show Widget Names
-*SimpleMenu*showClassNames.Label:	Show Class Names
-*SimpleMenu*showWidgetIDs.Label:	Show Widget IDs
-*SimpleMenu*showWidgetWindows.Label:	Show Widget Windows
-*SimpleMenu*flashActiveWidgets.Label:	Flash Active Widgets
+! Xt Menu Entry Names
+
+*xt*refreshTree.Label:		Refresh Current Widget Tree
+*xt*dumpTreeToFile.Label:	Dump Widget Tree to a File
+*xt*getResourceList.Label:	Show Resource Box
+*xt*setValues.Label:		Set Resource
+
+*xt*showClientWidget.Label:	Select Widget in Client
+*xt*showWidgetNames.Label:	Show Widget Names
+*xt*showClassNames.Label:	Show Class Names
+*xt*showWidgetIDs.Label:	Show Widget IDs
+*xt*showWidgetWindows.Label:	Show Widget Windows
+*xt*flashActiveWidgets.Label:	Flash Active Widgets
+
+! InterViews Menu Entry Names
+
+*iv*refreshTree.Label:		Refresh Current Style Tree
+*iv*dumpTreeToFile.Label:	Dump Style Tree to a File
+*iv*getResourceList.Label:	Show Attribute Box
+*iv*setValues.Label:		Set Attribute
+
+*iv*showClientWidget.Label:	Select Style in Client
+*iv*showWidgetNames.Label:	Show Style Names
+*iv*showClassNames.Label:	Show Class Names
+*iv*showWidgetIDs.Label:	Show Style IDs
+*iv*showWidgetWindows.Label:	Show Style Windows
+*iv*flashActiveWidgets.Label:	Flash Active Styles
+
+! Universal Toolkit Messages
+
+*label0: Action `%s' must have the Editres Protocol.
+*label1: Action %s's argument must be either `cancel' or `okay'.
+*label2: Action `%s' must have exactly one argument.
+*label3: Unknown parameter to action `%s' must be one of:\n
+*label4: It appears that this client does not understand\nthe Editres Protocol.
+*label5: Can't grab the mouse.\n
+*label6: Click the mouse pointer on any toolkit client.
+*label8: Message sent to client%s.
+*label9: Incorrectly formatted message from client.
+*label10: Unable to own the Resource Editor Command Selection
+*label11: Unknown Error code %d
+*label13: Welcome to the X Resource Editor version 1.1
+*label15: That window does not appear to be\nin the currently displayed client.
+*label16: Editres Internal Error: Unable to FindNode.\n
+*label18: There are no active nodes.
+*label20: ApplyResource: found no matches.
+*label21: Error: SVActiveEntry Action must have exactly one argument.
+*label22: Error: SVActiveEntry Action's first Argument must be either 'Resource' or 'Value'.
+*label24: Unable to open the file `%s' for writing.
+*label25: Error while trying to save Context\nAborting file dialog popup.
+*label26: Error while trying to find Context\nAborting...
+*label28: Loop in tree: node %s's parent (%s) has not been created yet\n
+*label30: There are no active nodes.
+*label31: Internal Error: Unknown select type.
+*label32: Internal Error: Unknown label type.
+*label33: Internal Error: Unknown activate type.
+*label34: Only one Resource Box can be active at a time.
+*label35: Unable to unpack protocol request.
+*label36: This version of editres uses protocol version %s,\nbut the client speaks version %s.
+
+! Xt Messages
+
+*xt*label7: Unable to own the Resource Selection
+*xt*label12: Widget Tree for client %s(%s).
+*xt*label14: Click on any widget in the client.\nEditres will select that widget in the tree display.
+*xt*label17: No widget Tree is avaliable.
+*xt*label19: This function requires exactly one (1) widget to be selected.
+*xt*label23: There are no currently active widgets.
+*xt*label27: There is no widget tree to display.
+*xt*label29: XSaveContext failed on widget %s.
+
+! InterViews Messages
+
+*iv*label7: Unable to own the Attribute Selection
+*iv*label12: Style Tree for client %s(%s).
+*iv*label14: Click on any style in the client.\nEditres will select that style in the tree display.
+*iv*label17: No style Tree is avaliable.
+*iv*label19: This function requires exactly one (1) style to be selected.
+*iv*label23: There are no currently active styles.
+*iv*label27: There is no style tree to display.
+*iv*label29: XSaveContext failed on style %s.
 
 *MenuButton.leftBitmap:			menu10
 
@@ -53,9 +123,9 @@ Editres.Geometry:			500x600
 *hPane.Panner.width:			100
 *hPane.Panner.height:			100
 *hPane.Panner.preferredPaneSize:	100
-*paned*Panner.showGrip:			False
-*paned.box.showGrip:			False
-*paned.hPane.showGrip:			True
+*Paned.Panner.showGrip:			False
+*Paned.box.showGrip:			False
+*Paned.hPane.showGrip:			True
 
 ! For the Filename popup dialog.
 
@@ -64,45 +134,49 @@ Editres.Geometry:			500x600
 *fileDialog*Text.baseTranslations:	#override \n\
 	<Key>Return:		PopdownFileDialog(okay)
 
-! Resources for the Resource Box.
 
-*resourceBox*resourceLabel.font:			\
+! Universal Resources for the Resource Box.
+
+*resourceLabel.font:			\
 -*-new century schoolbook-bold-r-*-*-20-*-*-*-*-*-*-*
-
-*resourceBox.allowShellResize:				True
-
-*resourceBox*resourceLabel.allowResize:			True
-
-*resourceBox*List.verticalList:				True
-
-*resourceBox*namesAndClasses*BorderWidth:		0
-*resourceBox*star.Label:				*
-*resourceBox*dot.Label:					.
-*resourceBox*single.Label:				Any Widget
-*resourceBox*any.Label:					Any Widget Chain
-
-*resourceBox*namesLabel.Label:				Normal Resources
-*resourceBox*namesLabel.font:				\
+*allowShellResize:				True
+*resourceLabel.allowResize:			True
+*List.verticalList:				True
+*namesAndClasses*BorderWidth:		0
+*star.Label:				*
+*dot.Label:					.
+*namesLabel.font:				\
 -*-new century schoolbook-bold-r-*-*-17-*-*-*-*-*-*-*
-*resourceBox*constraintLabel.Label:			Constraint Resources
-*resourceBox*constraintLabel.font:			\
+*constraintLabel.font:			\
 -*-new century schoolbook-bold-r-*-*-17-*-*-*-*-*-*-*
+*valueLabel.BorderWidth:			0
+*valueForm*preferredPaneSize:		100
+*valueText*editType:			edit
+*valueText.Scroll:				WhenNeeded
+*valueText.width:				300
+*setFile.Label:				Set Save File
+*save.Label:				Save
+*apply.Label:				Apply
+*saveAndApply.Label:			Save and Apply
+*commandBox.show.Label:		        Show
 
+! InterViews Resources for the Resource Box.
 
-*resourceBox*valueLabel.Label:				Enter Resource Value:
-*resourceBox*valueLabel.BorderWidth:			0
+*iv*single.Label:				Any Style
+*iv*any.Label:					Any Style Chain
+*iv*namesLabel.Label:				Normal Attributes: mb2 gets a value
+*iv*constraintLabel.Label:			Constraint Attributes
+*iv*valueLabel.Label:				Enter Attribute Value:
+*iv*commandBox.cancel.Label:			Popdown Attribute Box
 
-*resourceBox*valueForm*preferredPaneSize:		100
+! Xt Resources for the Resource Box.
 
-*resourceBox*valueText*editType:			edit
-*resourceBox*valueText.Scroll:				WhenNeeded
-*resourceBox*valueText.width:				300
-
-*resourceBox*setFile.Label:				Set Save File
-*resourceBox*save.Label:				Save
-*resourceBox*apply.Label:				Apply
-*resourceBox*saveAndApply.Label:			Save and Apply
-*resourceBox*commandBox.cancel.Label:			Popdown Resource Box
+*xt*single.Label:                              Any Widget
+*xt*any.Label:                                 Any Widget Chain
+*xt*namesLabel.Label:                          Normal Resources: mb2 gets a value
+*xt*constraintLabel.Label:                     Constraint Resources
+*xt*valueLabel.Label:                          Enter Resource Value:
+*xt*commandBox.cancel.Label:                   Popdown Resource Box
 
 ! This gives us an exactly one of many toggle, if toggle is
 ! not set in each group the application will probabally core dump.
@@ -112,6 +186,11 @@ Editres.Geometry:			500x600
     
 
 *commandBox.skipAdjust:				True
+
+! Get resource values action binding.
+
+*List.baseTranslations: #override \n\
+	<Btn2Down>,<Btn2Up>:		Set() EnableGetVal() Notify()
 
 ! Keyboard Actions for Tree and children of the Tree.
 
