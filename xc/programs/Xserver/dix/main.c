@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.18 92/04/20 17:34:41 rws Exp $ */
+/* $XConsortium: main.c,v 5.19 92/04/21 15:34:25 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -178,18 +178,7 @@ main(argc, argv)
 	    serverClient = (ClientPtr)xalloc(sizeof(ClientRec));
 	    if (!serverClient)
 		FatalError("couldn't create server client");
-            serverClient->sequence = 0;
-            serverClient->closeDownMode = RetainPermanent;
-            serverClient->clientGone = FALSE;
-            serverClient->lastDrawable = (DrawablePtr)NULL;
-	    serverClient->lastDrawableID = INVALID;
-            serverClient->lastGC = (GCPtr)NULL;
-	    serverClient->lastGCID = INVALID;
-	    serverClient->numSaved = 0;
-	    serverClient->saveSet = (pointer *)NULL;
-	    serverClient->index = 0;
-	    serverClient->clientAsMask = (Mask)0;
-	    serverClient->noClientException = Success;
+	    InitClient(serverClient, 0, (pointer)NULL);
 	}
 	else
 	    ResetWellKnownSockets ();
