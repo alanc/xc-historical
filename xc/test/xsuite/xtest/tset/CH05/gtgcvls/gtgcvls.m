@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtgcvls.m,v 1.8 92/06/11 16:16:31 rws Exp $
  */
 >>TITLE XGetGCValues CH05
 Status
@@ -58,7 +58,14 @@ XFontStruct	*fontinfo;
 		CHECK;
 
 	resetvinf(VI_WIN);
-	nextvinf(&vp);	
+
+	/*
+	 * Find the visual information associated with the default
+	 * visual, since we will be testing using the root window.
+	 */
+	do
+		nextvinf(&vp);	
+	while(vp->visual != DefaultVisual(display, DefaultScreen(display)));
 
 	font = fontinfo -> fid;
 	tile = makepixm(display, vp);
@@ -285,8 +292,14 @@ XFontStruct	*fontinfo;
 	} else
 		CHECK;
 
+	/*
+	 * Find the visual information associated with the default
+	 * visual, since we will be testing using the root window.
+	 */
 	resetvinf(VI_WIN);
-	nextvinf(&vp);	
+	do
+		nextvinf(&vp);	
+	while(vp->visual != DefaultVisual(display, DefaultScreen(display)));
 
 	font = fontinfo -> fid;
 	tile = makepixm(display, vp);
