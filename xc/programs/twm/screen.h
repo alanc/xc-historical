@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.40 89/10/27 15:54:36 jim Exp $
+ * $XConsortium: screen.h,v 1.41 89/11/01 17:28:06 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -176,6 +176,7 @@ typedef struct ScreenInfo
     int FramePadding;		/* distance between decorations and border */
     int TitlePadding;		/* distance between items in titlebar */
     int ButtonIndent;		/* amount to shrink buttons on each side */
+    int NumAutoRaises;		/* number of autoraise windows on screen */
     short UsePPosition;		/* what do with PPosition, see values below */
     short AutoRelativeResize;	/* start resize relative to position in quad */
     short FocusRoot;		/* is the input focus on the root ? */

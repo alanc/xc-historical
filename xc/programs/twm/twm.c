@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.72 89/10/30 11:50:35 jim Exp $
+ * $XConsortium: twm.c,v 1.73 89/11/01 17:28:08 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.72 89/10/30 11:50:35 jim Exp $";
+"$XConsortium: twm.c,v 1.73 89/11/01 17:28:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -595,6 +595,7 @@ InitVariables()
     Scr->IconBorderWidth = BW;
     Scr->UnknownWidth = 0;
     Scr->UnknownHeight = 0;
+    Scr->NumAutoRaises = 0;
     Scr->UsePPosition = PPOS_OFF;
     Scr->FocusRoot = TRUE;
     Scr->Focus = NULL;

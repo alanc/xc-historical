@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.95 89/11/01 19:20:53 jim Exp $
+ * $XConsortium: events.c,v 1.96 89/11/02 09:16:01 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.95 89/11/01 19:20:53 jim Exp $";
+"$XConsortium: events.c,v 1.96 89/11/02 09:16:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -74,6 +74,7 @@ int DragWidth;
 int DragHeight;
 
 static int enter_flag;
+static TwmWindow *enter_win, *raise_win;
 
 ScreenInfo *FindScreenInfo();
 int ButtonPressed = -1;
@@ -86,6 +87,16 @@ void HandleCreateNotify();
 void HandleShapeNotify ();
 extern int ShapeEventBase, ShapeErrorBase;
 #endif
+
+static void do_autoraise_window (tmp)
+    TwmWindow *tmp;
+{
+    XRaiseWindow (dpy, tmp->frame);
+    XSync (dpy, 0);
+    enter_flag = TRUE;
+    raise_win = tmp;
+}
+
 
 /***********************************************************************
  *
@@ -104,6 +115,7 @@ InitEvents()
     ResizeWindow = NULL;
     DragWindow = NULL;
     enter_flag = FALSE;
+    enter_win = raise_win = NULL;
 
     for (i = 0; i < MAX_X_EVENT; i++)
 	EventHandler[i] = HandleUnknown;
@@ -238,6 +250,13 @@ HandleEvents()
 	}
 	else
 	{
+	    if (enter_flag && !QLength(dpy)) {
+		if (enter_win && enter_win != raise_win) {
+		    do_autoraise_window (enter_win);  /* sets enter_flag T */
+		} else {
+		    enter_flag = FALSE;
+		}
+	    }
 	    WindowMoved = FALSE;
 	    XNextEvent(dpy, &Event);
 	    (void) DispatchEvent ();
@@ -490,6 +509,25 @@ HandleKeyPress()
 
 }
 
+static void free_window_names (tmp, nukefull, nukename, nukeicon)
+    TwmWindow *tmp;
+    Bool nukefull, nukename, nukeicon;
+{
+/*
+ * XXX - are we sure that nobody ever sets these to another constant (check
+ * twm windows)?
+ */
+    if (tmp->name == tmp->full_name) nukefull = False;
+    if (tmp->icon_name == tmp->name) nukename = False;
+
+#define isokay(v) ((v) && (v) != NoName)
+    if (nukefull && isokay(tmp->full_name)) XFree (tmp->full_name);
+    if (nukename && isokay(tmp->name)) XFree (tmp->name);
+    if (nukeicon && isokay(tmp->icon_name)) XFree (tmp->icon_name);
+#undef isokay
+    return;
+}
+
 /***********************************************************************
  *
  *  Procedure:
@@ -551,6 +589,8 @@ HandlePropertyNotify()
     switch (Event.xproperty.atom)
     {
     case XA_WM_NAME:
+	free_window_names (Tmp_win, True, True, False);
+
 	Tmp_win->full_name = prop;
 	Tmp_win->name = prop;
 
@@ -578,12 +618,14 @@ HandlePropertyNotify()
 	break;
 
     case XA_WM_ICON_NAME:
+	free_window_names (Tmp_win, False, False, True);
 	Tmp_win->icon_name = prop;
 
 	RedoIconName();
 	break;
 
     case XA_WM_HINTS:
+	if (Tmp_win->wmhints) XFree (Tmp_win->wmhints);
 	Tmp_win->wmhints = XGetWMHints(dpy, Event.xany.window);
 
 	if (Tmp_win->wmhints && (Tmp_win->wmhints->flags & WindowGroupHint))
@@ -951,6 +993,20 @@ HandleDestroyNotify()
         }
     }
 
+    /*
+     * TwmWindows contain the following pointers
+     * 
+     *     1.  full_name
+     *     2.  name
+     *     3.  icon_name
+     *     4.  wmhints
+     *     5.  class.res_name
+     *     6.  class.res_class
+     *     7.  list
+     *     8.  iconmgrp
+     *     9.  cmap_windows
+     *     10. titlebuttons
+     */
     if (Tmp_win->gray) XFreePixmap (dpy, Tmp_win->gray);
 
     XDestroyWindow(dpy, Tmp_win->frame);
@@ -958,18 +1014,26 @@ HandleDestroyNotify()
 	XDestroyWindow(dpy, Tmp_win->icon_w);
 	IconDown (Tmp_win);
     }
-    RemoveIconManager(Tmp_win);
+    RemoveIconManager(Tmp_win);					/* 7 */
     Tmp_win->prev->next = Tmp_win->next;
     if (Tmp_win->next != NULL)
 	Tmp_win->next->prev = Tmp_win->prev;
+    if (Tmp_win->auto_raise) Scr->NumAutoRaises--;
 
-    if (Tmp_win->cmap_windows) {
+    free_window_names (Tmp_win, True, True, True, True);	/* 1, 2, 3 */
+    XFree ((char *)Tmp_win->wmhints);				/* 4 */
+    if (Tmp_win->class.res_name && Tmp_win->class.res_name != NoName)  /* 5 */
+      XFree ((char *)Tmp_win->class.res_name);
+    if (Tmp_win->class.res_class && Tmp_win->class.res_class != NoName) /* 6 */
+      XFree ((char *)Tmp_win->class.res_class);
+    if (Tmp_win->cmap_windows) {				/* 9 */
 	if (Tmp_win->xfree_cmap_windows) {
 	    XFree ((char *) Tmp_win->cmap_windows);
 	} else {
 	    free ((char *) Tmp_win->cmap_windows);
 	}
     }
+    if (Tmp_win->titlebuttons) free ((char *) Tmp_win->titlebuttons);  /* 10 */
     free((char *)Tmp_win);
 }
 
@@ -1140,6 +1204,8 @@ HandleUnmapNotify()
     if (Tmp_win == NULL || (!Tmp_win->mapped && !Tmp_win->icon))
 	return;
 
+    if (enter_win == Tmp_win) enter_win = NULL;
+
     /*
      * The program may have unmapped the client window, from either
      * NormalState or IconicState.  Handle the transition to WithdrawnState.
@@ -1265,10 +1331,15 @@ HandleButtonRelease()
 
 	if (!Scr->NoRaiseMove)
 	    XRaiseWindow(dpy, DragWindow);
+	if (Scr->NumAutoRaises) {
+	    XSync (dpy, 0);
+	    enter_flag = TRUE;
+	    enter_win = NULL;
+	    raise_win = ((DragWindow == Tmp_win->frame && !Scr->NoRaiseMove)
+			 ? Tmp_win : NULL);
+	}
 	DragWindow = NULL;
 	ConstMove = FALSE;
-
-	enter_flag = TRUE;
     }
 
     if (ResizeWindow != NULL)
@@ -1646,10 +1717,9 @@ HandleEnterNotify()
 		InstallAColormap(dpy, Tmp_win->attr.colormap);
 	    }
 	}
-	if (enter_flag == FALSE && Tmp_win->auto_raise)
-	{
-	    XRaiseWindow(dpy, Tmp_win->frame);
-	    enter_flag = TRUE;
+	if (Tmp_win->auto_raise) {
+	    enter_win = Tmp_win;
+	    if (enter_flag == FALSE) do_autoraise_window (Tmp_win);
 	}
 	return;
     }

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.95 89/11/01 18:03:02 jim Exp $
+ * $XConsortium: add_window.c,v 1.96 89/11/01 20:01:32 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.95 89/11/01 18:03:02 jim Exp $";
+"$XConsortium: add_window.c,v 1.96 89/11/01 20:01:32 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -222,8 +222,9 @@ IconMgr *iconp;
 	(!(short)LookInList(Scr->NoTitleHighlight, tmp_win->full_name, 
 	    &tmp_win->class));
 
-    tmp_win->auto_raise = (short)LookInList(Scr->AutoRaise, tmp_win->full_name, 
-	&tmp_win->class);
+    tmp_win->auto_raise = (short)LookInList(Scr->AutoRaise, tmp_win->full_name,
+					    &tmp_win->class);
+    if (tmp_win->auto_raise) Scr->NumAutoRaises++;
     tmp_win->iconify_by_unmapping = Scr->IconifyByUnmapping;
     if (Scr->IconifyByUnmapping)
     {
