@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.119 93/09/21 11:00:19 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.120 93/09/27 19:39:57 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -128,6 +128,7 @@ struct _XDisplay
 	int watcher_count;	/* number of conn_watchers */
 	Bool in_process_conni;	/* in XProcessInternalConnection */
 	XPointer filedes;	/* struct pollfd cache for _XWaitForReadable */
+	int (*savedsynchandler)(); /* user synchandler when Xlib usurps */
 	struct _XkbInfoRec *xkb_info; /* XKB info */
 };
 
