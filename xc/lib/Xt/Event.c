@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.95 89/09/14 16:45:06 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.96 89/09/20 15:46:47 kit Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -444,22 +444,26 @@ static void DispatchEvent(event, widget, mask)
     int numprocs, i;
     XEvent nextEvent;
 
-    if ( widget->core.widget_class->core_class.expose != NULL )
-	if ( (mask == ExposureMask) ||
-	     ((event->type == NoExpose) && NO_EXPOSE) ||
-	     ((event->type == GraphicsExpose) && GRAPHICS_EXPOSE) ) {
-	    XtExposeProc expose = widget->core.widget_class->core_class.expose;
+    if ( (mask == ExposureMask) ||
+	 ((event->type == NoExpose) && NO_EXPOSE) ||
+	 ((event->type == GraphicsExpose) && GRAPHICS_EXPOSE) ) {
+
+	if (widget->core.widget_class->core_class.expose != NULL ) {
 
 	    /* We need to mask off the bits that could contain the information
 	     * about whether or not we desire Graphics and NoExpose events.  */
 
-	    if ( (COMP_EXPOSE_TYPE == XtExposeNoCompress) || NO_EXPOSE )
-		(*expose)(widget, event, (Region)NULL);
+	    if ( (COMP_EXPOSE_TYPE == XtExposeNoCompress) || 
+		 (event->type == NoExpose) )
+
+		(*widget->core.widget_class->core_class.expose)
+		    (widget, event, (Region)NULL);
 	    else {
 		static void CompressExposures();
 		CompressExposures(event, widget);
 	    }
 	}
+    }
 
     if (mask == EnterWindowMask &&
 	    widget->core.widget_class->core_class.compress_enterleave) {
@@ -521,7 +525,11 @@ static void DispatchEvent(event, widget, mask)
 	}
     }
 
-    for (i=0 ; i<numprocs ; i++) (*(proc[i]))(widget, closure[i], event);
+    {
+	Boolean continue_to_dispatch = True;
+	for (i=0 ; i < numprocs && continue_to_dispatch; i++)
+	    (*(proc[i]))(widget, closure[i], event, &continue_to_dispatch);
+    }
 }
 
 /*
@@ -530,6 +538,7 @@ static void DispatchEvent(event, widget, mask)
 
 typedef struct _CheckExposeInfo {
     int type1, type2;		/* Types of events to check for. */
+    Boolean maximal;		/* Ignore non-exposure events? */
     Boolean non_matching;	/* Was there an event that did not 
 				   match eighter type? */
     Window window;		/* Window to match. */
@@ -554,7 +563,7 @@ XEvent * event;
 {
     XtPerDisplay pd = _XtGetPerDisplay(event->xany.display);
     CheckExposeInfo info;
-    static void SetExposureEvent();
+    static void SendExposureEvent();
     int count;
 
     XtAddExposureToRegion(event, pd->region);
@@ -563,8 +572,8 @@ XEvent * event;
 	return;
 
     if ( (COMP_EXPOSE_TYPE == XtExposeCompressSeries) ||
-	 (XPending(XtDisplay(widget)) == 0) ) {
-	SetExposureEvent(event, widget, pd);
+	 (XEventsQueued(XtDisplay(widget), QueuedAfterReading) == 0) ) {
+	SendExposureEvent(event, widget, pd);
 	return;
     }
 
@@ -576,6 +585,8 @@ XEvent * event;
 	info.type1 = event->type;
 	info.type2 = 0;
     }
+    info.maximal =(COMP_EXPOSE_TYPE == XtExposeCompressMaximal) ? True : False;
+    info.non_matching = FALSE;
     info.window = XtWindow(widget);
 
 /*
@@ -583,13 +594,18 @@ XEvent * event;
  * when blocking until count gets to zero.
  *
  * First, check to see if there are any events in the queue for this
- * widget, and of the correct type.  
+ * widget, and of the correct type.
  *
  * Once we cannot find any more events, check to see that count is zero. 
  * If it is not then block until we get another exposure event.
  *
  * If we find no more events, and count on the last one we saw was zero we
  * we can be sure that all events have been processed.
+ *
+ * Unfortunately, we wind up having to look at the entire queue
+ * event if we're not doing Maximal compression, due to the
+ * semantics of XCheckIfEvent (we can't abort without re-ordering
+ * the event queue as a side-effect).
  */
 
     count = 0;
@@ -597,14 +613,9 @@ XEvent * event;
 	XEvent event_return;
 	static Bool CheckExposureEvent();
 
-	info.non_matching = FALSE;
 	if (XCheckIfEvent(XtDisplay(widget), &event_return, 
 			  CheckExposureEvent, (char *) &info)) {
-	    if ( (COMP_EXPOSE_TYPE == XtExposeCompressMultiple) &&
-		info.non_matching )
-	    {
-		break; /* Non Expose Event occured, we are done compressing. */
-	    }
+
 	    count = GetCount(&event_return);
 	    XtAddExposureToRegion(&event_return, pd->region);
 	}
@@ -618,20 +629,20 @@ XEvent * event;
 	    break;
     }
 
-    SetExposureEvent(event, widget, pd);
+    SendExposureEvent(event, widget, pd);
 }
 
-/*	Function Name: SetExposureEvent
+/*	Function Name: SendExposureEvent
  *	Description: Sets the x, y, width, and height of the event
  *                   to be the clip box of Expose Region.
- *	Arguments: event  - the X Event to mangle.
+ *	Arguments: event  - the X Event to mangle; Expose or GraphicsExpose.
  *                 widget - the widget that this event occured in.
  *                 pd     - the per display information for this widget.
  *	Returns: none.
  */
 
 static void
-SetExposureEvent(event, widget, pd)
+SendExposureEvent(event, widget, pd)
 XEvent * event;
 Widget widget;
 XtPerDisplay pd;
@@ -678,6 +689,7 @@ char * arg;
     CheckExposeInfo * info = ((CheckExposeInfo *) arg);
 
     if ( (info->type1 == event->type) || (info->type2 == event->type)) {
+	if (!info->maximal && info->non_matching) return FALSE;
 	if (event->type == GraphicsExpose)
 	    return(event->xgraphicsexpose.drawable == info->window);
 	return(event->xexpose.window == info->window);
@@ -712,7 +724,7 @@ static struct {
      | Button5MotionMask
      | ButtonMotionMask,	ignore},    /* MotionNotify	*/
     {EnterWindowMask,		ignore},    /* EnterNotify	*/
-    {LeaveWindowMask,		ignore},    /* LeaveNotify	*/
+    {LeaveWindowMask,		pass},      /* LeaveNotify	*/
     {FocusChangeMask,		pass},      /* FocusIn		*/
     {FocusChangeMask,		pass},      /* FocusOut		*/
     {KeymapStateMask,		pass},      /* KeymapNotify	*/
@@ -867,12 +879,31 @@ static void DecideToDispatch(event)
     EventMask   mask;
     GrabType    grabType;
     Widget	dspWidget;
+    Time	time = 0;
 
     widget = XtWindowToWidget (event->xany.display, event->xany.window);
 
     /* Lint complains about &grabType not matching the declaration.
        Don't bother trying to fix it, it won't work */
     ConvertTypeToMask(event->xany.type, &mask, &grabType);
+
+    switch (event->xany.type) {
+
+      case KeyPress:
+      case KeyRelease:		time = event->xkey.time; break;
+
+      case ButtonPress:
+      case ButtonRelease:	time = event->xbutton.time; break;
+
+      case MotionNotify:	time = event->xmotion.time; break;
+
+      case EnterNotify:
+      case LeaveNotify:		time = event->xcrossing.time; break;
+
+      case PropertyNotify:	time = event->xproperty.time; break;
+    }
+
+    if (time) _XtGetPerDisplay(event->xany.display)->last_timestamp = time;
 
     if (widget == NULL) {
 	if (grabType != remap) return;
@@ -1427,4 +1458,10 @@ static SendFocusNotify(child, type)
 	ConvertTypeToMask(type, &mask, &grabType);
 	DispatchEvent(&event, child, mask);
     }
+}
+
+Time XtLastTimestampProcessed(dpy)
+    Display *dpy;
+{
+    return _XtGetPerDisplay(dpy)->last_timestamp;
 }
