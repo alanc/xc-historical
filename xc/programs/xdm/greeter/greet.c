@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.14 89/09/08 14:34:06 keith Exp $
+ * $XConsortium: greet.c,v 1.16 89/11/03 14:44:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -41,6 +41,21 @@ static char	name[128], password[128];
 static Widget		toplevel;
 static Widget		login;
 static XtAppContext	context;
+static XtIntervalId	pingTimeout;
+
+static void
+GreetPingServer (closure, intervalId)
+    XtPointer	    closure;
+    XtIntervalId    *intervalId;
+{
+    struct display *d;
+
+    d = (struct display *) closure;
+    if (!PingServer (d, XtDisplay (toplevel)))
+	SessionPingFailed (d);
+    pingTimeout = XtAppAddTimeOut (context, d->pingInterval * 60 * 1000,
+				   GreetPingServer, (closure));
+}
 
 /*ARGSUSED*/
 GreetDone (w, data, status)
@@ -110,33 +125,31 @@ struct display	*d;
 			WidthOfScreen(scrn) / 2,
  			HeightOfScreen(scrn) / 2);
 
-#ifdef DRAWLOGO
-	i = 0;
-	XtSetArg (arglist[i], XtNgeometry, "100x100-0-0"); i++;
-	logoToplevel = XtCreateApplicationShell (0, topLevelShellWidgetClass,
-						arglist, i);
-	i = 0;
-	logo = XtCreateManagedWidget ("logo", logoWidgetClass, logoToplevel,
-					arglist, i);
-	XtRealizeWidget (logoToplevel);
-#endif
+	pingTimeout = XtAppAddTimeOut (context, d->pingInterval * 60 * 1000,
+				       GreetPingServer, (XtPointer) d);
 	return dpy;
 }
 
 CloseGreet (d)
 struct display	*d;
 {
-	Boolean	    allow;
-	Arg	    arglist[1];
+    Boolean	    allow;
+    Arg	    arglist[1];
 
-	UnsecureDisplay (d, XtDisplay (toplevel));
-	XtSetArg (arglist[0], XtNallowAccess, (char *) &allow);
-	XtGetValues (login, arglist, 1);
-	if (allow) {
-		Debug ("Disabling access control\n");
-		XSetAccessControl (XtDisplay (toplevel), DisableAccess);
-	}
-	XCloseDisplay (XtDisplay (toplevel));
+    if (pingTimeout)
+    {
+	XtRemoveTimeOut (pingTimeout);
+	pingTimeout = 0;
+    }
+    UnsecureDisplay (d, XtDisplay (toplevel));
+    XtSetArg (arglist[0], XtNallowAccess, (char *) &allow);
+    XtGetValues (login, arglist, 1);
+    if (allow)
+    {
+	Debug ("Disabling access control\n");
+	XSetAccessControl (XtDisplay (toplevel), DisableAccess);
+    }
+    XCloseDisplay (XtDisplay (toplevel));
 }
 
 Greet (d, greet)

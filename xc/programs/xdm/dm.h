@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.20 89/11/03 14:44:43 keith Exp $
+ * $XConsortium: dm.h,v 1.21 89/11/14 13:35:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -123,6 +123,8 @@ struct display {
 	int		openRepeat;	/* open attempts to make */
 	int		openTimeout;	/* abort open attempt timeout */
 	int		startAttempts;	/* number of attempts at starting */
+	int		pingInterval;	/* interval between XSync */
+	int		pingTimeout;	/* timeout for XSync */
 	int		terminateServer;/* restart for each session */
 	int		grabTimeout;	/* time to wait for grab */
 	int		resetForAuth;	/* server reads auth file at reset */

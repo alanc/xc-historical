@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.11 89/10/31 14:31:20 keith Exp $
+ * $XConsortium: socket.c,v 1.12 89/11/08 17:21:02 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -720,7 +720,23 @@ manage (from, fromlen, length)
 	}
 	pdpy = FindProtoDisplay (from, fromlen, displayNumber);
 	if (!pdpy || pdpy->sessionID != sessionID)
+	{
+	    /*
+	     * We may have already started a session for this display
+	     * but it hasn't seen the response in the form of an
+	     * XOpenDisplay() yet. So check if it is in the list of active
+	     * displays, and if so check that the session id's match.
+	     * If all this is true, then we have a duplicate request that
+	     * can be ignored.
+	     */
+	    if (!pdpy 
+		&& (d = FindDisplayByAddress(from, fromlen, displayNumber))
+		&& d->sessionID == sessionID) {
+		     Debug("manage: got duplicate pkt, ignoring\n");
+		     goto abort;
+	    }
 	    send_refuse (from, fromlen, sessionID);
+	}
 	else
 	{
 	    char	*NetworkAddressToName ();

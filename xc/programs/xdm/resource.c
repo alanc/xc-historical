@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.23 89/11/08 17:20:58 keith Exp $
+ * $XConsortium: resource.c,v 1.24 89/11/14 13:35:22 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -148,6 +148,10 @@ struct displayResources {
 				"30",
 "startAttempts","StartAttempts",DM_INT,		boffset(startAttempts),
 				"4",
+"pingInterval",	"PingInterval",	DM_INT,		boffset(pingInterval),
+				"5",
+"pingTimeout",	"PingTimeout",	DM_INT,		boffset(pingTimeout),
+				"5",
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
 				"false",
 "userPath",	"Path",		DM_STRING,	boffset(userPath),

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.1 89/11/03 14:41:43 keith Exp $
+ * $XConsortium: server.c,v 1.2 89/11/08 17:21:11 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -266,4 +266,46 @@ ResetServer (d)
 {
     if (dpy && d->displayType.origin != FromXDMCP)
 	pseudoReset (dpy);
+}
+
+static jmp_buf	pingTime;
+
+int
+PingLost ()
+{
+    longjmp (pingTime, 1);
+}
+
+PingServer (d, alternateDpy)
+    struct display  *d;
+    Display	    *alternateDpy;
+{
+    int	    (*oldError)();
+    void    (*oldSig)();
+    int	    oldAlarm;
+
+    if (!alternateDpy)
+	alternateDpy = dpy;
+    oldError = XSetIOErrorHandler (PingLost);
+    oldAlarm = alarm (0);
+    oldSig = signal (SIGALRM, PingLost);
+    alarm (d->pingTimeout * 60);
+    if (!setjmp (pingTime))
+    {
+	Debug ("Ping server\n");
+	XSync (alternateDpy, 0);
+    }
+    else
+    {
+	Debug ("Server dead\n");
+	alarm (0);
+	signal (SIGALRM, SIG_DFL);
+	return 0;
+    }
+    alarm (0);
+    signal (SIGALRM, oldSig);
+    alarm (oldAlarm);
+    Debug ("Server alive\n");
+    XSetIOErrorHandler (oldError);
+    return 1;
 }

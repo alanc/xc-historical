@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.22 89/11/03 14:44:57 keith Exp $
+ * $XConsortium: session.c,v 1.23 89/11/08 17:20:53 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,7 +29,9 @@
 # include <setjmp.h>
 # include <sys/errno.h>
 
-static int	clientPid;
+static int			clientPid;
+static struct greet_info	greet;
+static struct verify_info	verify;
 
 static jmp_buf	abortSession;
 
@@ -39,15 +41,29 @@ catchTerm ()
     longjmp (abortSession, 1);
 }
 
+static jmp_buf	pingTime;
+
+static void
+catchAlrm ()
+{
+    longjmp (pingTime, 1);
+}
+
+SessionPingFailed (d)
+    struct display  *d;
+{
+    AbortClient (clientPid);
+    source (&verify, d->reset);
+    SessionExit (d, RESERVER_DISPLAY);
+}
+
 extern void	exit ();
 
 ManageSession (d)
 struct display	*d;
 {
-    struct greet_info	greet;
-    struct verify_info	verify;
     int			pid;
-    Display			*dpy, *InitGreet ();
+    Display		*dpy, *InitGreet ();
 
     Debug ("ManageSession %s\n", d->name);
     SetTitle(d->name, (char *) 0);
@@ -101,9 +117,28 @@ struct display	*d;
 	     * Wait for session to end,
 	     */
 	    for (;;) {
-		pid = wait ((waitType *) 0);
+		if (d->pingInterval)
+		{
+		    if (!setjmp (pingTime))
+		    {
+			signal (SIGALRM, catchAlrm);
+			alarm (d->pingInterval * 60);
+			pid = wait ((waitType *) 0);
+			alarm (0);
+		    }
+		    else
+		    {
+			alarm (0);
+		    	if (!PingServer (d, (Display *) NULL))
+			    SessionPingFailed (d);
+		    }
+		}
+		else
+		{
+		    pid = wait ((waitType *) 0);
+		}
 		if (pid == clientPid)
-			break;
+		    break;
 	    }
 	} else {
 	    LogError ("session start failed\n");

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.24 89/11/08 17:20:47 keith Exp $
+ * $XConsortium: dm.c,v 1.25 89/11/14 13:34:58 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -290,6 +290,9 @@ WaitForChild ()
 		else if (d->serverPid != -1)
 		{
 		    kill (d->serverPid, SIGTERM);
+#ifdef SIGCONT
+		    kill (d->serverPid, SIGCONT);
+#endif
 		    d->serverPid = -1;
 		}
 		break;
@@ -323,6 +326,9 @@ WaitForChild ()
 		 * will occur
 		 */
 		kill (d->pid, SIGTERM);
+#ifdef SIGCONT
+		kill (d->pid, SIGCONT);
+#endif
 	    }
 	}
     }
@@ -423,7 +429,12 @@ StopDisplay (d)
 
     RemoveDisplay (d);
     if (serverPid >= 2)
+    {
 	kill (serverPid, SIGTERM);
+#ifdef SIGCONT
+	kill (serverPid, SIGCONT);
+#endif
+    }
 }
 
 void
@@ -440,6 +451,9 @@ TerminateDisplay (d)
 	if (pid < 2)
 	    abort ();
 	kill (pid, SIGTERM);
+#ifdef SIGCONT
+	kill (pid, SIGCONT);
+#endif
     }
 }
 
