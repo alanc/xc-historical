@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.3 93/09/13 19:38:47 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.4 93/10/14 11:56:51 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -103,7 +103,7 @@ XCOMM $XConsortium: Imake.cf,v 1.3 93/09/13 19:38:47 rws Exp $
 #undef mips
 #define MipsArchitecture
 #endif
-#if !defined(bsd43) || defined(SYSTYPE_SYSV)
+#if !defined(bsd43) || defined(SYSTYPE_SYSV) || defined(_SYSTYPE_SYSV)
 #define SonySysvArchitecture
 #else
 #define SonyBsdArchitecture

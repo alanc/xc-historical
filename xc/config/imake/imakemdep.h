@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.61 93/09/13 19:13:19 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.62 93/09/13 19:42:07 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -34,7 +34,7 @@
 #endif
 
 #ifdef sony
-#ifdef SYSTYPE_SYSV
+#if defined(SYSTYPE_SYSV) || defined(_SYSTYPE_SYSV)
 #define imake_ccflags "-DSVR4"
 #else
 #include <sys/param.h>
@@ -183,7 +183,7 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef sony
 	"-Dsony",	/* Sony */
-#if !defined(SYSTYPE_SYSV) && NEWSOS < 42
+#if !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV) && NEWSOS < 42
 	"-Dbsd43",
 #endif
 #endif
@@ -426,6 +426,9 @@ struct symtab	predefs[] = {
 	{"sony", "1"},
 #ifdef SYSTYPE_SYSV
 	{"SYSTYPE_SYSV", "1"},
+#endif
+#ifdef _SYSTYPE_SYSV
+	{"_SYSTYPE_SYSV", "1"},
 #endif
 #endif
 #ifdef __osf__

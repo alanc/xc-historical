@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.9 93/08/13 16:34:21 rws Exp $
+ * $XConsortium: Xosdefs.h,v 1.10 93/12/06 15:17:14 kaleb Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -41,7 +41,7 @@
 #endif
 
 #ifdef sony
-#ifndef SYSTYPE_SYSV
+#if !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV)
 #define X_NOT_POSIX
 #endif
 #endif

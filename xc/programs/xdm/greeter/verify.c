@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.24 91/07/18 22:22:45 rws Exp $
+ * $XConsortium: verify.c,v 1.25 93/09/30 12:07:15 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@ char *getenv();
 #endif
 
 static char *envvars[] = {
-#if defined(sony) && !defined(SYSTYPE_SYSV)
+#if defined(sony) && !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV)
     "bootdev",
     "boothowto",
     "cputype",
