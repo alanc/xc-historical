@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: pick.c,v 2.25 89/03/11 09:52:28 rws Exp $";
+static char rcs_id[] = "$XConsortium: pick.c,v 2.26 89/04/10 11:50:37 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -112,13 +112,13 @@ InitPick()
 static PrepareToUpdate(form)
   FormBox form;
 {
-    XtFormDoLayout(form->inner, FALSE);
+    XawFormDoLayout(form->inner, FALSE);
 }
 
 static ExecuteUpdate(form)
   FormBox form;
 {
-    XtFormDoLayout(form->inner, TRUE);
+    XawFormDoLayout(form->inner, TRUE);
     XtManageChild(form->inner);
     XtManageChild(form->outer);
 }
@@ -189,7 +189,7 @@ static void AddTextEntry(row, str)
 	{XtNwidth, (XtArgVal) NULL},
 	{XtNlength, (XtArgVal) 300},
 	{XtNtextOptions, (XtArgVal)(resizeWidth | resizeHeight)},
-	{XtNeditType, (XtArgVal)XttextEdit},
+	{XtNeditType, (XtArgVal)XawtextEdit},
     };
     char *ptr;
     FormEntry entry;
@@ -210,17 +210,17 @@ char *str;
 	{XtNtextSource, (XtArgVal) NULL}
     };
     Arg arglist2[3];
-    XtTextSource source;
+    XawTextSource source;
     if (strcmp(str, entry->ptr) == 0) return;
     arglist[0].value = (XtArgVal)&source;
     XtGetValues(entry->widget, arglist, XtNumber(arglist));
-    XtStringSourceDestroy(source);
+    XawStringSourceDestroy(source);
     (void) strcpy(entry->ptr, str);
     XtSetArg( arglist2[0], XtNstring, entry->ptr );
     XtSetArg( arglist2[1], XtNlength, 300 );
-    XtSetArg( arglist2[2], XtNeditType, XttextEdit );
-    source = XtStringSourceCreate(entry->widget, arglist2, XtNumber(arglist2));
-    XtTextSetSource(entry->widget, source, (XtTextPosition) 0);
+    XtSetArg( arglist2[2], XtNeditType, XawtextEdit );
+    source = XawStringSourceCreate(entry->widget, arglist2, XtNumber(arglist2));
+    XawTextSetSource(entry->widget, source, (XawTextPosition) 0);
 }
 
 
@@ -297,7 +297,7 @@ static ParseRow(row)
 	    if (!result) {
 		result = TRUE;
 		if (! (*((short *)
-			 (XtToggleGetCurrent(row->wlist[0]->widget)))))
+			 (XawToggleGetCurrent(row->wlist[0]->widget)))))
 		    AppendArgv("-not");
 		AppendArgv("-lbrace");
 	    }
@@ -380,7 +380,7 @@ char *str;
 				        pick->scrn->widget,
 				        args, XtNumber(args) );
 
-    XtDialogAddButton( pick->errorwidget, "OK",
+    XawDialogAddButton( pick->errorwidget, "OK",
 		       DestroyErrorWidget, (caddr_t)pick );
 
     XtRealizeWidget( pick->errorwidget );
@@ -408,7 +408,7 @@ static void ExecOK(w, closure, call_data)
     char *fromdate = row1->wlist[1]->ptr;
     char *todate = row1->wlist[3]->ptr;
     char *datefield = row1->wlist[5]->ptr;
-    short removeoldmsgs = *(XtToggleGetCurrent(row2->wlist[1]->widget));
+    short removeoldmsgs = *(XawToggleGetCurrent(row2->wlist[1]->widget));
     char str[1000];
     int i, found;
     char *folderpath;
@@ -774,7 +774,7 @@ AddPick(scrn, toc, fromseq, toseq)
 	pick->general = general = MakeAForm(pick, 2);
 	FindStdWidth();
 
-	XtPanedSetRefigureMode(scrn->widget, False);
+	XawPanedSetRefigureMode(scrn->widget, False);
 	PrepareToUpdate(details);
 	AddDetailGroup(details);
 	ExecuteUpdate(details);
@@ -785,10 +785,10 @@ AddPick(scrn, toc, fromseq, toseq)
 	height = general->inner->core.height;
 	if (general->inner->core.width > scrn->widget->core.width)
 	    height += XtScrollMgrGetThickness(general->outer);
-	XtPanedSetMinMax(scrn->widget, general->outer, height, height);
-	XtPanedSetMinMax(scrn->widget, general->outer, 10, 10000);
+	XawPanedSetMinMax(scrn->widget, general->outer, height, height);
+	XawPanedSetMinMax(scrn->widget, general->outer, 10, 10000);
 #endif notdef
-	XtPanedSetRefigureMode(scrn->widget, True);
+	XawPanedSetRefigureMode(scrn->widget, True);
     }
     pick->toc = toc;
     InitGeneral(pick, fromseq, toseq);

@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.31 89/04/10 11:50:31 converse Exp $";
+    "$XConsortium: screen.c,v 2.32 89/05/04 15:40:22 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -160,11 +160,11 @@ Scrn scrn;
     extern void ExecForceRescan();
     int i, theight, min, max;
     ButtonBox buttonbox;
-    static XtTextSelectType sarray[] = {XtselectLine,
-					XtselectPosition,
-					XtselectWord,
-					XtselectAll,
-					XtselectNull};
+    static XawTextSelectType sarray[] = {XawselectLine,
+					XawselectPosition,
+					XawselectWord,
+					XawselectAll,
+					XawselectNull};
 /*    static Arg arglist2[] = {
  *	{XtNselectionArray, (XtArgVal) sarray},
  *	{XtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
@@ -197,7 +197,7 @@ Scrn scrn;
     buttonbox = scrn->seqbuttons;
     BBoxAddButton(buttonbox, "all", NoOp, 999, TRUE);
 
-    XtTextSetSelectionArray(scrn->tocwidget, sarray);
+    XawTextSetSelectionArray(scrn->tocwidget, sarray);
 
     buttonbox = scrn->tocbuttons;
     BBoxAddButton(buttonbox, "inc", ExecIncorporate, 999, TRUE);
@@ -243,9 +243,9 @@ Scrn scrn;
     theight = GetHeight((Widget)scrn->tocwidget) +
 	GetHeight((Widget)scrn->viewwidget);
     theight = app_resources.defTocPercentage * theight / 100;
-    XtPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
-    XtPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
-    XtPanedSetMinMax((Widget) scrn->tocwidget, min, max);
+    XawPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
+    XawPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
+    XawPanedSetMinMax((Widget) scrn->tocwidget, min, max);
 }
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: toc.c,v 2.17 88/09/06 17:23:33 jim Exp $";
+static char rcs_id[] = "$XConsortium: toc.c,v 2.18 89/04/10 11:50:25 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -383,7 +383,7 @@ void TocSetCurMsg(toc, msg)
 		toc->needsrepaint = TRUE;
 	    else {
 		for (i=0 ; i<toc->num_scrns ; i++)
-		    XtTextSetInsertionPoint(toc->scrn[i]->tocwidget,
+		    XawTextSetInsertionPoint(toc->scrn[i]->tocwidget,
 						msg->position);
 	    }
 	}
@@ -534,23 +534,23 @@ MsgList TocCurMsgList(toc)
   Toc toc;
 {
     MsgList result;
-    XtTextPosition pos1, pos2;
+    XawTextPosition pos1, pos2;
     extern Msg MsgFromPosition();
     if (toc->num_scrns == NULL) return NULL;
     result = MakeNullMsgList();
 /*    if ((*toc->source->GetSelection)(toc->source, &pos1, &pos2)) { */
-    XtTextGetSelectionPos( toc->scrn[0]->tocwidget, &pos1, &pos2); /* %%% */
+    XawTextGetSelectionPos( toc->scrn[0]->tocwidget, &pos1, &pos2); /* %%% */
     if (pos1 < pos2) {
-	pos1 = (*toc->source->Scan)(toc->source, pos1, XtstEOL, XtsdLeft,
+	pos1 = (*toc->source->Scan)(toc->source, pos1, XawstEOL, XawsdLeft,
 				    1, FALSE);
-	pos2 = (*toc->source->Scan)(toc->source, pos2, XtstPositions,
-				    XtsdLeft, 1, TRUE);
-	pos2 = (*toc->source->Scan)(toc->source, pos2, XtstEOL, XtsdRight,
+	pos2 = (*toc->source->Scan)(toc->source, pos2, XawstPositions,
+				    XawsdLeft, 1, TRUE);
+	pos2 = (*toc->source->Scan)(toc->source, pos2, XawstEOL, XawsdRight,
 				    1, FALSE);
 	while (pos1 < pos2) {
-	    AppendMsgList(result, MsgFromPosition(toc, pos1, XtsdRight));
-	    pos1 = (*toc->source->Scan)(toc->source, pos1, XtstEOL,
-					XtsdRight, 1, TRUE);
+	    AppendMsgList(result, MsgFromPosition(toc, pos1, XawsdRight));
+	    pos1 = (*toc->source->Scan)(toc->source, pos1, XawstEOL,
+					XawsdRight, 1, TRUE);
 	}
     }
     return result;
@@ -565,7 +565,7 @@ Toc toc;
 {
     if (toc->source)
 /*	(*toc->source->SetSelection)(toc->source, 1, 0); */
-        XtTextUnsetSelection(toc->scrn[0]->tocwidget);
+        XawTextUnsetSelection(toc->scrn[0]->tocwidget);
 }
 
 
@@ -599,7 +599,7 @@ Toc toc;
 {
     int i;
     for (i=0 ; i<toc->num_scrns ; i++)
-	XtTextDisableRedisplay(toc->scrn[i]->tocwidget, FALSE);
+	XawTextDisableRedisplay(toc->scrn[i]->tocwidget, FALSE);
     toc->stopupdate++;
 }
 
@@ -621,7 +621,7 @@ Toc toc;
 	    TUSaveTocFile(toc);
     }
     for (i=0 ; i<toc->num_scrns ; i++)
-	XtTextEnableRedisplay(toc->scrn[i]->tocwidget);
+	XawTextEnableRedisplay(toc->scrn[i]->tocwidget);
 }
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: tsource.c,v 2.12 88/09/06 17:23:50 jim Exp $";
+static char rcs_id[] = "$XConsortium: tsource.c,v 2.13 88/10/23 12:56:40 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -38,13 +38,13 @@ static char rcs_id[] = "$XConsortium: tsource.c,v 2.12 88/09/06 17:23:50 jim Exp
 
 Msg MsgFromPosition(toc, position, dir)
   Toc toc;
-  XtTextPosition position;
-  XtTextScanDirection dir;
+  XawTextPosition position;
+  XawTextScanDirection dir;
 {
     Msg msg;
     int     h, l, m;
     if (position > toc->lastPos) position = toc->lastPos;
-    if (dir == XtsdLeft) position--;
+    if (dir == XawsdLeft) position--;
     l = 0;
     h = toc->nummsgs - 1;
     while (l < h - 1) {
@@ -65,9 +65,9 @@ Msg MsgFromPosition(toc, position, dir)
 }
 
 
-static XtTextPosition CoerceToLegalPosition(toc, position)
+static XawTextPosition CoerceToLegalPosition(toc, position)
   Toc toc;
-  XtTextPosition position;
+  XawTextPosition position;
 {
     return (position < 0) ? 0 :
 		 ((position > toc->lastPos) ? toc->lastPos : position);
@@ -83,10 +83,10 @@ caddr_t *value;
 int *length;
 {
     TextWidget widget = (TextWidget) w;
-    XtTextSource source = widget->text.source;
+    XawTextSource source = widget->text.source;
     Toc toc = (Toc) source->data;
-    XtTextBlock block;
-    XtTextPosition position, lastpos;
+    XawTextBlock block;
+    XawTextPosition position, lastpos;
     *type = (Atom) FMT8BIT;		/* Only thing we know! */
     if (toc == NULL || !toc->hasselection) return FALSE;
     *length = toc->right - toc->left;
@@ -115,7 +115,7 @@ Atom selection;
 /* Semi-public definitions */
 
 static void AddWidget(source, widget)
-XtTextSource source;
+XawTextSource source;
 TextWidget widget;
 {
     Toc toc = (Toc) source->data;
@@ -132,7 +132,7 @@ TextWidget widget;
 }
 
 static void RemoveWidget(source, widget)
-XtTextSource source;
+XawTextSource source;
 TextWidget widget;
 {
     Toc toc = (Toc) source->data;
@@ -152,10 +152,10 @@ TextWidget widget;
 }
 
 
-static XtTextPosition Read(source, position, block, length)
-  XtTextSource source;
-  XtTextPosition position;
-  XtTextBlock *block;
+static XawTextPosition Read(source, position, block, length)
+  XawTextSource source;
+  XawTextPosition position;
+  XawTextBlock *block;
   int length;
 {
     Toc toc = (Toc) source->data;
@@ -164,7 +164,7 @@ static XtTextPosition Read(source, position, block, length)
 
     if (position < toc->lastPos) {
         block->firstPos = position;
-	msg = MsgFromPosition(toc, position, XtsdRight);
+	msg = MsgFromPosition(toc, position, XawsdRight);
 	block->ptr = msg->buf + (position - msg->position);
 	count = msg->length - (position - msg->position);
 	block->length = (count < length) ? count : length;
@@ -184,28 +184,28 @@ static XtTextPosition Read(source, position, block, length)
    and it can't cross between lines. */
 
 static int Replace(source, startPos, endPos, block)
-  XtTextSource source;
-  XtTextPosition startPos, endPos;
-  XtTextBlock *block;
+  XawTextSource source;
+  XawTextPosition startPos, endPos;
+  XawTextBlock *block;
 {
     Toc toc = (Toc) source->data;
     Msg msg;
     int i;
     if (block->length != endPos - startPos)
-	return EditError;
-    msg = MsgFromPosition(toc, startPos, XtsdRight);
+	return XawEditError;
+    msg = MsgFromPosition(toc, startPos, XawsdRight);
     for (i = 0; i < block->length; i++)
 	msg->buf[startPos - msg->position + i] = block->ptr[i];
     for (i=0 ; i<toc->numwidgets ; i++)
-	XtTextInvalidate(toc->widgets[i], startPos, endPos);
-    return EditDone;
+	XawTextInvalidate(toc->widgets[i], startPos, endPos);
+    return XawEditDone;
 }
 
 
 #define Look(index, c)\
 {									\
-    if ((dir == XtsdLeft && index <= 0) ||				\
-	    (dir == XtsdRight && index >= toc->lastPos))		\
+    if ((dir == XawsdLeft && index <= 0) ||				\
+	    (dir == XawsdRight && index >= toc->lastPos))		\
 	c = 0;								\
     else {								\
 	if (index + doff < msg->position ||				\
@@ -217,35 +217,35 @@ static int Replace(source, startPos, endPos, block)
 
 
 
-static XtTextPosition Scan(source, position, sType, dir, count, include)
-XtTextSource source;
-XtTextPosition position;
-XtTextScanType sType;
-XtTextScanDirection dir;
+static XawTextPosition Scan(source, position, sType, dir, count, include)
+XawTextSource source;
+XawTextPosition position;
+XawTextScanType sType;
+XawTextScanDirection dir;
 int count;
 Boolean include;
 {
     Toc toc = (Toc) source->data;
-    XtTextPosition index;
+    XawTextPosition index;
     Msg msg;
     char    c;
     int     ddir, doff, i, whiteSpace;
-    ddir = (dir == XtsdRight) ? 1 : -1;
-    doff = (dir == XtsdRight) ? 0 : -1;
+    ddir = (dir == XawsdRight) ? 1 : -1;
+    doff = (dir == XawsdRight) ? 0 : -1;
 
     if (toc->lastPos == 0) return 0;
     index = position;
     if (index + doff < 0) return 0;
-    if (dir == XtsdRight && index >= toc->lastPos) return toc->lastPos;
+    if (dir == XawsdRight && index >= toc->lastPos) return toc->lastPos;
     msg = MsgFromPosition(toc, index, dir);
     switch (sType) {
-	case XtstPositions:
+	case XawstPositions:
 	    if (!include && count > 0)
 		count--;
 	    index = CoerceToLegalPosition(toc, index + count * ddir);
 	    break;
-	case XtstWhiteSpace:
-/* |||	case XtstWordBreak: */
+	case XawstWhiteSpace:
+/* |||	case XawstWordBreak: */
 	    for (i = 0; i < count; i++) {
 		whiteSpace = -1;
 		while (index >= 0 && index <= toc->lastPos) {
@@ -258,13 +258,13 @@ Boolean include;
 		}
 	    }
 	    if (!include) {
-		if (whiteSpace < 0 && dir == XtsdRight)
+		if (whiteSpace < 0 && dir == XawsdRight)
 		    whiteSpace = toc->lastPos;
 		index = whiteSpace;
 	    }
 	    index = CoerceToLegalPosition(toc, index);
 	    break;
-	case XtstEOL:
+	case XawstEOL:
 	    for (i = 0; i < count; i++) {
 		while (index >= 0 && index <= toc->lastPos) {
 		    Look(index, c);
@@ -279,8 +279,8 @@ Boolean include;
 		index += ddir;
 	    index = CoerceToLegalPosition(toc, index);
 	    break;
-	case XtstAll:
-	    if (dir == XtsdLeft)
+	case XawstAll:
+	    if (dir == XawsdLeft)
 		index = 0;
 	    else
 		index = toc->lastPos;
@@ -290,8 +290,8 @@ Boolean include;
 }
 
 static Boolean GetSelection(source, left, right)
-XtTextSource source;
-XtTextPosition *left, *right; 
+XawTextSource source;
+XawTextPosition *left, *right; 
 {
     Toc toc = (Toc) source->data;
     if (toc->hasselection && toc->left < toc->right) {
@@ -305,21 +305,21 @@ XtTextPosition *left, *right;
 
 
 static void SetSelection(source, left, right)
-XtTextSource source;
-XtTextPosition left, right; 
+XawTextSource source;
+XawTextPosition left, right; 
 {
 #ifdef notdef
     Toc toc = (Toc) source->data;
     int i;
     for (i=0 ; i<toc->numwidgets; i++) {
-	XtTextDisableRedisplay(toc->widgets[i], FALSE);
+	XawTextDisableRedisplay(toc->widgets[i], FALSE);
 	if (toc->hasselection)
 	    Xt_TextSetHighlight(toc->widgets[i], toc->left, toc->right,
 				Normal);
 	if (left < right)
 	    Xt_TextSetHighlight(toc->widgets[i], left, right,
 				Selected);
-	XtTextEnableRedisplay(toc->widgets[i]);
+	XawTextEnableRedisplay(toc->widgets[i]);
     }
     toc->hasselection = (left < right);
     toc->left = left;
@@ -337,11 +337,11 @@ XtTextPosition left, right;
 
 /* Public definitions. */
 
-XtTextSource TSourceCreate(toc)
+XawTextSource TSourceCreate(toc)
   Toc toc;
 {
-    XtTextSource source;
-    source = XtNew(XtTextSourceRec);
+    XawTextSource source;
+    source = XtNew(XawTextSourceRec);
     source->data = (caddr_t) toc;
     source->AddWidget = AddWidget;
     source->RemoveWidget = RemoveWidget;
@@ -355,7 +355,7 @@ XtTextSource TSourceCreate(toc)
     source->SetSelection = NULL;
 #endif
     source->ConvertSelection = NULL;
-    source->edit_mode = XttextRead;
+    source->edit_mode = XawtextRead;
     toc->numwidgets = 0;
     toc->widgets = XtNew(TextWidget);
     toc->hasselection = FALSE;
@@ -370,5 +370,5 @@ Toc toc;
     int i;
     SetSelection(toc->source, 1, 0); /* %%% A bit of a hack. */
     for (i=0 ; i<toc->numwidgets ; i++)
-	XtTextInvalidate(toc->widgets[i], position, position+length-1);
+	XawTextInvalidate(toc->widgets[i], position, position+length-1);
 }

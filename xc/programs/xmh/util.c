@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.20 88/09/16 13:41:49 swick Exp $";
+    "$XConsortium: util.c,v 2.21 89/04/10 11:50:02 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -355,7 +355,7 @@ int position;
     result = XtCreateManagedWidget( "titlebar", labelWidgetClass, scrn->widget,
 				    arglist, XtNumber(arglist) );
     height = GetHeight(result);
-    XtPanedSetMinMax(result, height, height);
+    XawPanedSetMinMax(result, height, height);
     return result;
 }
 

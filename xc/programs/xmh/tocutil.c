@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: tocutil.c,v 2.21 89/04/10 11:50:09 converse Exp $";
+static char rcs_id[] = "$XConsortium: tocutil.c,v 2.22 89/05/04 15:43:02 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -190,7 +190,7 @@ void TURedisplayToc(scrn)
   Scrn scrn;
 {
     Toc toc;
-    XtTextSource source;
+    XawTextSource source;
     if (scrn != NULL && scrn->tocwidget != NULL) {
 	toc = scrn->toc;
  	if (toc) {
@@ -198,17 +198,17 @@ void TURedisplayToc(scrn)
 		toc->needsrepaint = TRUE;
 		return;
 	    }
-	    XtTextDisableRedisplay(scrn->tocwidget, TRUE);
-	    source = XtTextGetSource(scrn->tocwidget);
+	    XawTextDisableRedisplay(scrn->tocwidget, TRUE);
+	    source = XawTextGetSource(scrn->tocwidget);
 	    if (source != toc->source)
-		XtTextSetSource(scrn->tocwidget, toc->source,
-				 (XtTextPosition) 0);
+		XawTextSetSource(scrn->tocwidget, toc->source,
+				 (XawTextPosition) 0);
 	    TocSetCurMsg(toc, TocGetCurMsg(toc));
-	    XtTextEnableRedisplay(scrn->tocwidget);
+	    XawTextEnableRedisplay(scrn->tocwidget);
 	    CheckSeqButtons(toc);
 	    toc->needsrepaint = FALSE;
 	} else {
-	    XtTextSetSource(scrn->tocwidget, NullSource, (XtTextPosition) 0);
+	    XawTextSetSource(scrn->tocwidget, NullSource, (XawTextPosition) 0);
 	}
     }
 }
@@ -329,7 +329,7 @@ void TULoadTocFile(toc)
 {
     int maxmsgs, l, orignummsgs, i, j, origcurmsgid;
     FILEPTR fid;
-    XtTextPosition position;
+    XawTextPosition position;
     char *ptr;
     Msg msg, curmsg;
     Msg *origmsgs;
@@ -420,7 +420,7 @@ void TUSaveTocFile(toc)
     Msg msg;
     int fid;
     int i;
-    XtTextPosition position;
+    XawTextPosition position;
     char c;
     if (toc->stopupdate) {
 	toc->needscachesave = TRUE;
@@ -481,7 +481,7 @@ void TURefigureTocPositions(toc)
 {
     int i;
     Msg msg;
-    XtTextPosition position, length;
+    XawTextPosition position, length;
     position = length = 0;
     for (i=0; i<toc->nummsgs ; i++) {
 	msg = toc->msgs[i];
