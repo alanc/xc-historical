@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.8 89/07/10 14:56:12 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.9 89/07/12 17:17:27 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -940,6 +940,8 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     int	    	  dstx;
     int	    	  dsty;
 {
+    RegionPtr rgn;
+
     GC_SETUP(pDst, pGC);
 
     /*
@@ -966,9 +968,12 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
 
     GC_OP_PROLOGUE (pGC);
 
-    (*pGC->ops->CopyArea) (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty);
+    rgn = (*pGC->ops->CopyArea) (pSrc, pDst, pGC, srcx, srcy, w, h,
+				 dstx, dsty);
 
     GC_OP_EPILOGUE (pGC);
+
+    return rgn;
 }
 
 static RegionPtr
@@ -984,6 +989,8 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 		  dsty;
     unsigned long  plane;
 {
+    RegionPtr rgn;
+
     GC_SETUP(pDst, pGC);
 
     /*
@@ -1010,9 +1017,12 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 
     GC_OP_PROLOGUE (pGC);
 
-    (*pGC->ops->CopyPlane) (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane);
+    rgn = (*pGC->ops->CopyPlane) (pSrc, pDst, pGC, srcx, srcy, w, h,
+				  dstx, dsty, plane);
 
     GC_OP_EPILOGUE (pGC);
+
+    return rgn;
 }
 
 static void
