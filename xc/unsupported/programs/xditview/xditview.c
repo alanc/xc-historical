@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.1 89/03/01 15:47:44 keith Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.2 89/03/03 13:57:25 keith Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -178,6 +178,8 @@ char	*name;
     SelectPage ("1");
 }
 
+static fileBuf[1024];
+
 static void
 commandCall (cw, closure, data)
     Widget  cw;
@@ -185,6 +187,7 @@ commandCall (cw, closure, data)
 {
     Arg	dviArg[1];
     int	number;
+    char *file;
     if (cw == nextPage) {
 	XtSetArg (dviArg[0], XtNpageNumber, &number);
 	XtGetValues (dvi, dviArg, 1);
@@ -194,9 +197,15 @@ commandCall (cw, closure, data)
 	XtGetValues (dvi, dviArg, 1);
 	SetPageNumber (number-1);
     } else if (cw == selectPage) {
-	MakePrompt (cw, "Page number", SelectPage);
+	MakePrompt (cw, "Page number", SelectPage, "");
     } else if (cw == open) {
-	MakePrompt (cw, "File to open:", NewFile);
+	XtSetArg (dviArg[0], XtNfileName, &file);
+	XtGetValues (dvi, dviArg, 1);
+	if (file)
+	    strcpy (fileBuf, file);
+	else
+	    fileBuf[0] = '\0';
+	MakePrompt (cw, "File to open:", NewFile, fileBuf);
     } else if (cw == quit) {
 	exit (0);
     }
@@ -231,10 +240,11 @@ void TellPrompt(widget, client_data, call_data)
     DestroyPromptWidget(widget, client_data, call_data);
 }
 
-MakePrompt(cw, prompt, func)
+MakePrompt(cw, prompt, func, def)
 Widget	cw;
 char *prompt;
 void (*func)();
+char	*def;
 {
     static Boolean true = TRUE;
     static Arg dialogArgs[] = {
@@ -261,7 +271,7 @@ void (*func)();
     promptShell = XtCreatePopupShell ("promptShell", transientShellWidgetClass,
 		    toplevel, shellArgs, XtNumber (shellArgs));
     dialogArgs[0].value = (XtArgVal)prompt;
-    dialogArgs[1].value = (XtArgVal)"";
+    dialogArgs[1].value = (XtArgVal)def;
     promptDialog = XtCreateManagedWidget( "promptDialog", dialogWidgetClass,
 		    promptShell, dialogArgs, XtNumber (dialogArgs));
     XtDialogAddButton(promptDialog, "Accept", TellPrompt, (caddr_t)0);
