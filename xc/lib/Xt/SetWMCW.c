@@ -1,4 +1,4 @@
-/* $XConsortium: SetWMCW.c,v 1.6 93/10/06 17:36:14 kaleb Exp $ */
+/* $XConsortium: SetWMCW.c,v 1.7 94/01/14 17:56:24 kaleb Exp $ */
 /*
  * Copyright 1989 Massachusetts Institute of Technology
  * Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -128,11 +128,13 @@ Cardinal count;
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHsetWMColormapWindows;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	call_data.event_data = (XtPointer) list;
+	call_data.num_event_data = count;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
 
     XtFree( (char *) data);

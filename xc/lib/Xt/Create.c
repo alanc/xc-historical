@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.101 94/02/10 20:36:24 converse Exp $ */
+/* $XConsortium: Create.c,v 1.102 94/03/31 15:57:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -108,6 +108,7 @@ XtInitializeWidgetClass(wc)
 	wc->core_class.version != XtVersionDontCheck) {
 	String param[3];
 	String mismatch = "Widget class %s version mismatch (recompilation needed):\n  widget %d vs. intrinsics %d.";
+	String recompile = "Widget class %s must be re-compiled.";
 	Cardinal num_params;
 
 	param[0] = wc->core_class.class_name;
@@ -123,6 +124,10 @@ XtInitializeWidgetClass(wc)
 		num_params=3;
 		XtWarningMsg("versionMismatch","widget",XtCXtToolkitError,
 			     mismatch, param, &num_params);
+		num_params=1;
+		XtErrorMsg("R4orR5versionMismatch","widget",XtCXtToolkitError,
+			   recompile, param, &num_params);
+
 	    }
 	}
 	else if (wc->core_class.version == (11 * 1000 + 3)) { /* MIT X11R3 */
@@ -131,6 +136,8 @@ XtInitializeWidgetClass(wc)
 		XtWarningMsg("r3versionMismatch","widget",XtCXtToolkitError,
 			     "Shell Widget class %s binary compiled for R3",
 			     param,&num_params);
+		XtErrorMsg("R3versionMismatch","widget",XtCXtToolkitError,
+			   recompile, param, &num_params);
 	    }
 	}
 	else {
@@ -140,8 +147,7 @@ XtInitializeWidgetClass(wc)
 	    if (wc->core_class.version == (2 * 1000 + 2)) /* MIT X11R2 */ {
 		num_params=1;
 		XtErrorMsg("r2versionMismatch","widget",XtCXtToolkitError,
-			   "Widget class %s must be re-compiled.",
-			   param, &num_params);
+			   recompile, param, &num_params);
 	    }
 	}
     }
@@ -385,14 +391,18 @@ xtCreate(name, class, widget_class, parent, default_screen,
     if (post_proc != (XtWidgetProc) NULL) {
 	Widget hookobj;
 	(*post_proc)(widget);
-	call_data.widget = widget;
-	call_data.args = args;
-	call_data.num_args = num_args;
 	hookobj = XtHooksOfDisplay((default_screen != (Screen*) NULL) ? 
 		default_screen->display :
 		XtDisplayOfObject(parent));
 	if (XtHasCallbacks(hookobj, XtNcreateHook) == XtCallbackHasSome) {
-	    XtCallCallbacks(hookobj, XtNcreateHook, (XtPointer)&call_data);
+
+	    call_data.type = XtHcreate;
+	    call_data.widget = widget;
+	    call_data.args = args;
+	    call_data.num_args = num_args;
+	    XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.createhook_callbacks, 
+		(XtPointer)&call_data);
 	}
     }
     if (typed_args != NULL) {

@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.18 93/10/06 17:36:13 kaleb Exp $ */
+/* $XConsortium: SetValues.c,v 1.19 94/01/14 17:56:22 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -228,20 +228,26 @@ void XtSetValues(w, args, num_args)
 		       (char *) w->core.constraints, (int) constraintSize);
     }
 
-    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
-	XtChangeHookDataRec call_data;
-
-	call_data.old = oldw;
-	call_data.widget = w;
-	call_data.args = args;
-	call_data.num_args = num_args;
-	XtCallCallbacks (hookobj, XtNchangeHook, (XtPointer)&call_data);
-    }
-
     /* Inform widget of changes, then inform parent of changes */
     redisplay = CallSetValues (wc, oldw, reqw, w, args, num_args);
     if (hasConstraints) {
 	redisplay |= CallConstraintSetValues(cwc, oldw, reqw, w, args, num_args);
+    }
+
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+	XtChangeHookSetValuesDataRec set_val;
+
+	set_val.old = oldw;
+	set_val.req = reqw;
+	set_val.args = args;
+	set_val.num_args = num_args;
+	call_data.type = XtHsetValues;
+	call_data.widget = w;
+	call_data.event_data = (XtPointer) &set_val;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
 
     if (XtIsRectObj(w)) {
@@ -302,8 +308,27 @@ void XtSetValues(w, args, num_args)
 		}
 	    }
 	    do {
-		result = _XtMakeGeometryRequest(w, &geoReq, &geoReply, 
-						&cleared_rect_obj);
+		XtGeometryHookDataRec call_data;
+
+		if (XtHasCallbacks(hookobj, XtNgeometryHook) == XtCallbackHasSome) {
+		    call_data.type = XtHpreGeometry;
+		    call_data.widget = w;
+		    call_data.request = &geoReq;
+		    XtCallCallbackList(hookobj, 
+			((HookObject)hookobj)->hooks.geometryhook_callbacks, 
+			(XtPointer)&call_data);
+		    call_data.result = result =
+			_XtMakeGeometryRequest(w, &geoReq, &geoReply,
+					       &cleared_rect_obj);
+		    call_data.type = XtHpostGeometry;
+		    call_data.reply = &geoReply;
+		    XtCallCallbackList(hookobj, 
+			((HookObject)hookobj)->hooks.geometryhook_callbacks, 
+			(XtPointer)&call_data);
+		} else {
+		    result = _XtMakeGeometryRequest(w, &geoReq, &geoReply, 
+						    &cleared_rect_obj);
+		}
 		if (result == XtGeometryYes || result == XtGeometryDone)
 		    break;
 

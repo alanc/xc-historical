@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.29 94/01/14 17:56:19 kaleb Exp $ */
+/* $XConsortium: Manage.c,v 1.30 94/02/10 18:08:32 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -135,13 +135,13 @@ void XtUnmanageChildren (children, num_children)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = 0;
-	for (ii = 0; ii < num_children; ii++) {
-	    call_data.widget = children[ii];
-	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
-	}
+	call_data.type = XtHunmanageChildren;
+	call_data.widget = parent;
+	call_data.event_data = (XtPointer) children;
+	call_data.num_event_data = num_children;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 } /* XtUnmanageChildren */
@@ -275,15 +275,14 @@ void XtManageChildren(children, num_children)
     hookobj = XtHooksOfDisplay(XtDisplayOfObject(children[0]));
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
-	int ii;
 
-	call_data.old = (Widget)NULL;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = 0;
-	for (ii = 0; ii < num_children; ii++) {
-	    call_data.widget = children[ii];
-	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
-	}
+	call_data.type = XtHmanageChildren;
+	call_data.widget = parent;
+	call_data.event_data = (XtPointer) children;
+	call_data.num_event_data = num_children;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 } /* XtManageChildren */
@@ -320,11 +319,12 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget) NULL;
+	call_data.type = XtHsetMappedWhenManaged;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	call_data.event_data = (XtPointer) mapped_when_managed;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
 
     if (! XtIsManaged(widget)) {
@@ -371,6 +371,7 @@ void XtChangeManagedSet(unmanage_children, num_unmanage, do_change_proc,
     CompositeClassExtension ext;
     XtAppContext app;
     Widget hookobj;
+    XtChangeHookDataRec call_data;
 
     if (num_unmanage == 0 && num_manage == 0)
 	return;
@@ -423,15 +424,13 @@ void XtChangeManagedSet(unmanage_children, num_unmanage, do_change_proc,
 
     hookobj = XtHooksOfDisplay(XtDisplay(parent));
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
-	XtChangeHookDataRec call_data;
-	call_data.old = (Widget) NULL;
-	call_data.args = (ArgList) NULL;
-	call_data.num_args = 0;
-	childp = unmanage_children;
-	for (i = num_unmanage; --i >= 0; childp++) {
-	    call_data.widget = *childp;
-	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer) &call_data);
-	}
+	call_data.type = XtHunmanageSet;
+	call_data.widget = parent;
+	call_data.event_data = (XtPointer) unmanage_children;
+	call_data.num_event_data = num_unmanage;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer) &call_data);
     }
 
     if (do_change_proc) 
@@ -443,15 +442,12 @@ void XtChangeManagedSet(unmanage_children, num_unmanage, do_change_proc,
 		   XtNxtChangeManagedSet);
 
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
-	XtChangeHookDataRec call_data;
-	call_data.old = (Widget) NULL;
-	call_data.args = (ArgList) NULL;
-	call_data.num_args = 0;
-	childp = manage_children;
-	for (i = num_manage; --i >= 0; childp++) {
-	    call_data.widget = *childp;
-	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer) &call_data);
-	}
+	call_data.type = XtHmanageSet;
+	call_data.event_data = (XtPointer) manage_children;
+	call_data.num_event_data = num_manage;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer) &call_data);
     }
     UNLOCK_APP(app);
 } /* XtChangeManagedSet */

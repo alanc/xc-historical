@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.41 94/01/18 19:41:22 converse Exp $ */
+/* $XConsortium: Callback.c,v 1.42 94/02/04 21:29:19 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -153,11 +153,12 @@ void XtAddCallback(widget, name, callback, closure)
 	if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	    XtChangeHookDataRec call_data;
 
-	    call_data.old = (Widget)NULL;
+	    call_data.type = XtHaddCallback;
 	    call_data.widget = widget;
-	    call_data.args = (ArgList)NULL;
-	    call_data.num_args = (Cardinal)0;
-	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	    call_data.event_data = (XtPointer) name;
+	    XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
 	}
     }
     UNLOCK_APP(app);
@@ -227,11 +228,12 @@ void XtAddCallbacks(widget, name, xtcallbacks)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHaddCallbacks;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	call_data.event_data = (XtPointer) name;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 } /* XtAddCallbacks */
@@ -326,11 +328,12 @@ void XtRemoveCallback (widget, name, callback, closure)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHremoveCallback;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	call_data.event_data = (XtPointer) name;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 } /* XtRemoveCallback */
@@ -407,11 +410,12 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHremoveCallbacks;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	call_data.event_data = (XtPointer) name;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 } /* XtRemoveCallbacks */
@@ -460,11 +464,12 @@ void XtRemoveAllCallbacks(widget, name)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHremoveAllCallbacks;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	call_data.event_data = (XtPointer) name;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 } /* XtRemoveAllCallbacks */

@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.170 93/10/06 17:38:55 kaleb Exp $ */
+/* $XConsortium: TMstate.c,v 1.171 94/01/14 17:56:25 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1342,11 +1342,11 @@ void XtUninstallTranslations(widget)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHuninstallTranslations;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 }
@@ -2229,11 +2229,11 @@ void XtAugmentTranslations(widget, new)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHaugmentTranslations;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_PROCESS;
     UNLOCK_APP(app);
@@ -2253,11 +2253,11 @@ void XtOverrideTranslations(widget, new)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHoverrideTranslations;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_PROCESS;
     UNLOCK_APP(app);

@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.31 93/10/06 17:31:39 kaleb Exp $ */
+/* $XConsortium: Keyboard.c,v 1.32 94/01/14 17:56:17 kaleb Exp $ */
 
 /********************************************************
 
@@ -819,11 +819,12 @@ void XtSetKeyboardFocus(widget, descendant)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHsetKeyboardFocus;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	call_data.event_data = (XtPointer) descendant;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_PROCESS;
     UNLOCK_APP(app);

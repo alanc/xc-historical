@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.47 94/01/10 20:29:50 converse Exp $ */
+/* $XConsortium: Destroy.c,v 1.48 94/01/14 17:56:06 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -75,8 +75,12 @@ static void Phase1Destroy (widget)
     widget->core.being_destroyed = TRUE;
     if (XtHasCallbacks(hookobj, XtNdestroyHook) == XtCallbackHasSome) {
 	XtDestroyHookDataRec call_data;
+
+	call_data.type = XtHdestroy;
 	call_data.widget = widget;
-	XtCallCallbacks(hookobj, XtNdestroyHook, (XtPointer) &call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.destroyhook_callbacks, 
+		(XtPointer) &call_data);
     }
 } /* Phase1Destroy */
 

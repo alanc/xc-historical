@@ -1,4 +1,4 @@
-/* $XConsortium: Functions.c,v 1.9 94/01/14 17:56:10 kaleb Exp $ */
+/* $XConsortium: Functions.c,v 1.10 94/03/30 19:37:42 converse Exp $ */
 
 /*
 
@@ -159,11 +159,11 @@ void XtMapWidget(w)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHmapWidget;
 	call_data.widget = w;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 }
@@ -182,11 +182,11 @@ void XtUnmapWidget(w)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHunmapWidget;
 	call_data.widget = w;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 }

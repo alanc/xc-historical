@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.59 93/10/06 17:20:22 kaleb Exp $ */
+/* $XConsortium: Geometry.c,v 1.60 94/01/14 17:56:12 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -288,15 +288,19 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 
     LOCK_APP(app);
     if (XtHasCallbacks(hookobj, XtNgeometryHook) == XtCallbackHasSome) {
+	call_data.type = XtHpreGeometry;
 	call_data.widget = widget;
 	call_data.request = request;
-	call_data.pending = TRUE;
-	XtCallCallbacks(hookobj, XtNgeometryHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.geometryhook_callbacks, 
+		(XtPointer)&call_data);
 	call_data.result = r = 
 	    _XtMakeGeometryRequest(widget, request, reply, &junk);
+	call_data.type = XtHpostGeometry;
 	call_data.reply = reply;
-	call_data.pending = FALSE;
-	XtCallCallbacks(hookobj, XtNgeometryHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.geometryhook_callbacks, 
+		(XtPointer)&call_data);
     } else {
 	r = _XtMakeGeometryRequest(widget, request, reply, &junk);
     }
@@ -334,15 +338,19 @@ XtMakeResizeRequest (widget, width, height, replyWidth, replyHeight)
     request.height = height;
 
     if (XtHasCallbacks(hookobj, XtNgeometryHook) == XtCallbackHasSome) {
+	call_data.type = XtHpreGeometry;
 	call_data.widget = widget;
 	call_data.request = &request;
-	call_data.pending = TRUE;
-	XtCallCallbacks(hookobj, XtNgeometryHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.geometryhook_callbacks, 
+		(XtPointer)&call_data);
 	call_data.result = r = 
 	    _XtMakeGeometryRequest(widget, &request, &reply, &junk);
+	call_data.type = XtHpostGeometry;
 	call_data.reply = &reply;
-	call_data.pending = FALSE;
-	XtCallCallbacks(hookobj, XtNgeometryHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.geometryhook_callbacks, 
+		(XtPointer)&call_data);
     } else {
 	r = _XtMakeGeometryRequest(widget, &request, &reply, &junk);
     }
@@ -451,11 +459,15 @@ void XtResizeWidget(w, width, height, borderWidth)
     if (call_data.changeMask != 0) {
 	Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(w));;
 	if (XtHasCallbacks(hookobj, XtNconfigureHook) == XtCallbackHasSome) {
-	    call_data.pending = TRUE;
-	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    call_data.type = XtHpreConfigure;
+	    XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.confighook_callbacks, 
+		(XtPointer)&call_data);
 	    ResizeWidget(&call_data, &old);
-	    call_data.pending = FALSE;
-	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    call_data.type = XtHpostConfigure;
+	    XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.confighook_callbacks, 
+		(XtPointer)&call_data);
 	} else {
 	    ResizeWidget(&call_data, &old);
 	}
@@ -538,11 +550,15 @@ void XtConfigureWidget(w, x, y, width, height, borderWidth)
     if (call_data.changeMask != 0) {
 	Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(w));
 	if (XtHasCallbacks(hookobj, XtNconfigureHook) == XtCallbackHasSome) {
-	    call_data.pending = TRUE;
-	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    call_data.type = XtHpreConfigure;
+	    XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.confighook_callbacks, 
+		(XtPointer)&call_data);
 	    ConfigureWidget(&call_data, &old);
-	    call_data.pending = FALSE;
-	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    call_data.type = XtHpostConfigure;
+	    XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.confighook_callbacks, 
+		(XtPointer)&call_data);
 	} else {
 	    ConfigureWidget(&call_data, &old);
 	}
@@ -602,11 +618,15 @@ void XtMoveWidget(w, x, y)
     if (call_data.changeMask != 0) {
 	Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(w));
 	if (XtHasCallbacks(hookobj, XtNconfigureHook) == XtCallbackHasSome) {
-	    call_data.pending = TRUE;
-	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    call_data.type = XtHpreConfigure;
+	    XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.confighook_callbacks, 
+		(XtPointer)&call_data);
 	    MoveWidget(&call_data, &old);
-	    call_data.pending = FALSE;
-	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    call_data.type = XtHpostConfigure;
+	    XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.confighook_callbacks, 
+		(XtPointer)&call_data);
 	} else {
 	    MoveWidget(&call_data, &old);
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.194 94/02/10 18:51:31 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.195 94/03/30 19:45:03 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2716,34 +2716,42 @@ extern Widget XtHooksOfDisplay(
 );
 
 typedef struct {
+    String type;
     Widget widget;
     ArgList args;
     Cardinal num_args;
 } XtCreateHookDataRec, *XtCreateHookData;
 
 typedef struct {
-    Widget old;
+    String type;
     Widget widget;
-    ArgList args;
-    Cardinal num_args;
+    XtPointer event_data;
+    Cardinal num_event_data;
 } XtChangeHookDataRec, *XtChangeHookData;
 
 typedef struct {
+    Widget old, req;
+    ArgList args;
+    Cardinal num_args;
+} XtChangeHookSetValuesDataRec, *XtChangeHookSetValuesData;
+
+typedef struct {
+    String type;
     Widget widget;
     XtGeometryMask changeMask;
     XWindowChanges changes;
-    Boolean pending;
 } XtConfigureHookDataRec, *XtConfigureHookData;
 
 typedef struct {
+    String type;
     Widget widget;
     XtWidgetGeometry* request;
     XtWidgetGeometry* reply;
     XtGeometryResult result;
-    Boolean pending;
 } XtGeometryHookDataRec, *XtGeometryHookData;
 
 typedef struct {
+    String type;
     Widget widget;
 } XtDestroyHookDataRec, *XtDestroyHookData;
 

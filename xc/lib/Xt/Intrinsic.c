@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.191 94/03/08 20:21:32 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.192 94/03/28 11:22:31 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -365,11 +365,12 @@ void XtRealizeWidget (widget)
     hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
     if (XtHasCallbacks(hookobj,XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
-	call_data.old = (Widget)NULL;
+
+	call_data.type = XtHrealizeWidget;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 } /* XtRealizeWidget */
@@ -441,11 +442,11 @@ void XtUnrealizeWidget (widget)
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
 
-	call_data.old = (Widget)NULL;
+	call_data.type = XtHunrealizeWidget;
 	call_data.widget = widget;
-	call_data.args = (ArgList)NULL;
-	call_data.num_args = (Cardinal)0;
-	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
     }
     UNLOCK_APP(app);
 } /* XtUnrealizeWidget */
@@ -646,10 +647,8 @@ Display *XtDisplayOfObject(object)
      Widget object;
 {
     /* Attempts to LockApp() here will generate endless recursive loops */
-    if (XtIsSubclass(object, hookObjectClass)) {
-	HookObject hobject = (HookObject)object;
-	return hobject->hooks.screen->display;
-    }
+    if (XtIsSubclass(object, hookObjectClass))
+	return DisplayOfScreen(((HookObject)object)->hooks.screen);
     return XtDisplay(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
 }
 
@@ -666,10 +665,8 @@ Screen *XtScreenOfObject(object)
      Widget object;
 {
     /* Attempts to LockApp() here will generate endless recursive loops */
-    if (XtIsSubclass(object, hookObjectClass)) {
-	HookObject hobject = (HookObject)object;
-	return hobject->hooks.screen;
-    }
+    if (XtIsSubclass(object, hookObjectClass))
+	return ((HookObject)object)->hooks.screen;
     return XtScreen(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
 }
 
