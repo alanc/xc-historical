@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.4 93/07/26 14:40:07 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.5 93/07/26 14:48:03 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -897,6 +897,7 @@ main(argc, argv)
     cmap = XCreateColormap(xparms.d, DefaultRootWindow(xparms.d),
 		XDefaultVisual(xparms.d, screen), AllocNone );
     xparms.vinfo = *vinfolist;
+    XFree(vinfolist);
     if (!foreground) foreground = "Black";
     if (!background) background = "White";
 
@@ -1262,7 +1263,7 @@ int	flo_id;
 	while ( 1 )
 	{
 		while ( sigFloFinishedSeen == 0 && 
-			( yup = XCheckIfEvent(xp->d,&event,event_check,0) ) );
+			!( yup = XCheckIfEvent(xp->d,&event,event_check,0) ) );
 		if ( sigFloFinishedSeen == 1 )
 		{
 			retval = 0;
@@ -1310,7 +1311,7 @@ XiePhototag element;
 	while ( 1 )
 	{
 		while ( sigExportClientSeen == 0 && 
-			( yup = XCheckIfEvent(xp->d,&event,event_check,0) ) );
+			!( yup = XCheckIfEvent(xp->d,&event,event_check,0) ) );
 		if ( sigExportClientSeen == 1 )
 		{
 			retval = 0;
