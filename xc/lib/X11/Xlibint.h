@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.55 88/08/13 12:13:16 jim Exp $ */
+/* $Header: Xlibint.h,v 11.56 88/08/15 11:36:29 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -86,7 +86,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  *
  */
 
-#if (defined __STDC__) && (!defined UNIXCPP)
+#if defined(__STDC__) && !defined(UNIXCPP)
 #define GetReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x/**/name/**/Req)) > dpy->bufmax)\
@@ -112,7 +112,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-#if (defined __STDC__) && (!defined UNIXCPP)
+#if defined(__STDC__) && !defined(UNIXCPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(*req) + n) > dpy->bufmax)\
@@ -141,7 +141,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * "rid" is the name of the resource. 
  */
 
-#if (defined __STDC__) && (!defined UNIXCPP)
+#if defined(__STDC__) && !defined(UNIXCPP)
 #define GetResReq(name, rid, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xResourceReq)) > dpy->bufmax)\
@@ -169,7 +169,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * GetEmptyReq is for those requests that have no arguments
  * at all. 
  */
-#if (defined __STDC__) && (!defined UNIXCPP)
+#if defined(__STDC__) && !defined(UNIXCPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xReq)) > dpy->bufmax)\
