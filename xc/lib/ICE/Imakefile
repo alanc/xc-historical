@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.3 93/09/04 16:26:43 rws Exp $
 
 #define DoNormalLib NormalLibICE
 #define DoSharedLib SharedLibICE
@@ -31,6 +31,7 @@ SRCS = connect.c \
        process.c \
        ping.c \
        replywait.c \
+       watch.c \
        error.c \
        iceauth.c \
        misc.c
@@ -43,6 +44,7 @@ OBJS = connect.o \
        process.o \
        ping.o \
        replywait.o \
+       watch.o \
        error.o \
        iceauth.o \
        misc.o
