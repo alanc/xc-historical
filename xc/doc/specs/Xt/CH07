@@ -1,4 +1,4 @@
-.\" $XConsortium: CH07,v 1.15 94/04/18 18:48:17 rws Exp $
+.\" $XConsortium: CH07,v 1.16 94/04/18 20:20:37 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -164,7 +164,7 @@ the callback procedure is called.
 The legal values for the \fIcondition\fP argument are operating-system-dependent.
 On a POSIX-based system,
 \fIsource\fP is a file number and the condition is some union of the following:
-.IN "XtInputReadMask" "" "@DEF"
+.IN "XtInputReadMask" "" "@DEF@"
 .IP \fBXtInputReadMask\fR 1.5i
 Specifies that \fIproc\fP is to be called when \fIsource\fP has data to be read.
 .IN "XtInputWriteMask" "" "@DEF@"
@@ -199,8 +199,8 @@ Passes the id returned from the corresponding
 .PN XtAppAddInput
 call.
 .LP
-Please refer to Section 7.12 for information regarding the use of
-.Pn XtAppAddInput
+See Section 7.12 for information regarding the use of
+.PN XtAppAddInput
 in multiple threads.
 .sp
 .LP
@@ -222,7 +222,7 @@ The
 function causes the \*(xI read routine to stop watching for events
 from the file source specified by \fIid\fP.
 .LP
-Please refer to Section 7.12 for information regarding the use of
+See Section 7.12 for information regarding the use of
 .PN XtRemoveInput
 in multiple threads.
 
@@ -280,7 +280,7 @@ Passes the client data argument that was registered for this procedure in
 .LP
 To discontinue the use of a procedure for blocking notification, use
 .PN XtRemoveBlockHook .
-.IN "XtRemoveBlockHook" "" "@DEF"
+.IN "XtRemoveBlockHook" "" "@DEF@"
 .FD 0
 void XtRemoveBlockHook(\fIid\fP)
 .br
@@ -361,7 +361,7 @@ Passes the id returned from the corresponding
 .PN XtAppAddTimeOut
 call.
 .LP
-Please refer to Section 7.12 for information regarding the use of
+See Section 7.12 for information regarding the use of
 .PN XtAppAddTimeOut
 in multiple threads.
 .sp
@@ -403,7 +403,7 @@ call
 .PN XtAppAddSignal ,
 and store the resulting identifier in a place accessible to the signal
 handler.  When a signal arrives, the signal handler should call
-.PN XtNotice
+.PN XtNoticeSignal
 to notify the \*(xI that a signal has occured.  To register a signal 
 callback use
 .PN XtAppAddSignal .
@@ -498,8 +498,8 @@ again, even though all of the signal raises have been handled.  The
 callback must also be prepared to handle this case.
 .LP
 To remove a registered signal callback, call
-.PN XtRemoveSignal
-.IN "XtRemoveSignal" "" "@DEF"
+.PN XtRemoveSignal .
+.IN "XtRemoveSignal" "" "@DEF@"
 .FD 0
 XtRemoveSignal(\fIid\fP)
 .br
@@ -1214,7 +1214,7 @@ do so, a widget class specifies an accept_focus procedure.
 .IN "accept_focus procedure"
 The accept_focus procedure pointer is of type
 .PN XtAcceptFocusProc .
-.IN "XtAcceptFocusProc" ""@DEF@"
+.IN "XtAcceptFocusProc" "" "@DEF@"
 .FD 0
 typedef Boolean (*XtAcceptFocusProc)(Widget, Time*);
 .br
@@ -1311,8 +1311,8 @@ associates the specified drawable with the specified widget
 so that future calls to
 .PN XtWindowToWidget
 with the drawable will return the widget.
-The default event dispatcher will dispatch future core events that
-arrive with the drawable to the widget as though the event contained
+The default event dispatcher will dispatch future events that
+arrive for the drawable to the widget as though the event contained
 the widget's window, but the event itself will not be changed in any
 way when being passed to event handler or action procedures.
 .LP
@@ -1340,7 +1340,7 @@ Specifies the drawable to unregister.
 .LP
 .PN XtUnregisterDrawable
 removes an association created with 
-.Pn XtRegisterDrawable .  
+.PN XtRegisterDrawable .  
 If the drawable is the window of a widget in the client's widget tree
 the results of calling 
 .PN XtUnregisterDrawable
@@ -1362,7 +1362,7 @@ and
 Xlib calls.
 .sp
 .LP
-.IN "Events
+.IN "Events"
 To determine if there are any events on the input queue for a given application,
 use
 .PN XtAppPending .
@@ -2080,7 +2080,8 @@ other exposure events or with each other.
 Specifies that the final region argument passed to the expose
 procedure is NULL.  The rectangle in the event will still
 contain bounding box information for the entire series of
-compressed exposure events.
+compressed exposure events.  This option saves processing time when the
+region is not needed by the widget.
 
 .NH 2
 Widget Exposure and Visibility
@@ -2710,9 +2711,9 @@ and sent to the server when event handlers and translations are installed or
 removed on the realized widget.
 
 .NH 3
-X Extension Event Handlers
+Event Handlers for X11 Protocol Extensions
 .XS
-\fB\*(SN X Extension Event Handlers\fP
+\fB\*(SN Event Handlers for X11 Protocol Extensions\fP
 .XE
 .LP
 To register an event handler procedure with the \*(xI dispatch
@@ -2789,7 +2790,7 @@ which registers this event handler after any previously
 registered handlers for this event type.
 .LP
 Each widget has a single registered event handler list, which will
-contain any procedure-client_data pair exactly once if it is
+contain any procedure/client data pair exactly once if it is
 registered with 
 .PN XtInsertEventTypeHandler ,
 regardless of the manner
@@ -2806,7 +2807,7 @@ use
 .IN "XtRemoveEventTypeHandler" "" "@DEF"
 .FD 0
 void XtRemoveEventTypeHandler(\fIwidget\fP, \fIevent_type\fP, \
-\fIselect_data\fP, \fIproc\fP, \fIclosure\fP)
+\fIselect_data\fP, \fIproc\fP, \fIclient_data\fP)
 .br
       Widget \fIwidget\fP;
 .br
@@ -2816,7 +2817,7 @@ void XtRemoveEventTypeHandler(\fIwidget\fP, \fIevent_type\fP, \
 .br
       XtEventHandler \fIproc\fP;
 .br
-      XtPointer \fIclosure\fP;
+      XtPointer \fIclient_data\fP;
 .FN
 .IP \fIwidget\fP 1i
 Specifies the widget for which the event handler was registered.  \*(cI
@@ -2827,7 +2828,7 @@ Specifies data used to deselect events of the specified type
 from the server, or NULL.
 .IP \fIproc\fP 1i
 Specifies the event handler to be removed.
-.IP \fIclosure\fP 1i
+.IP \fIclient_data\fP 1i
 Specifies the additional client data with which the procedure was registered.
 .LP
 The
@@ -2836,7 +2837,7 @@ function unregisters an event handler
 registered with
 .PN XtInsertEventTypeHandler
 for the specified event type.
-The request is ignored if \fIclosure\fP does not match the value given
+The request is ignored if \fIclient_data\fP does not match the value given
 when the handler was registered.
 .LP
 If \fIevent_type\fP specifies one of the core X protocol events,
@@ -2851,7 +2852,7 @@ if necessary.
 Specifying NULL for \fIselect_data\fP is equivalent to specifying a pointer
 to an event mask containing 0.  This is similar to the
 .PN XtRemoveRawEventHandler
-function.  
+function.
 .LP
 If \fIevent_type\fP specifies an extension event type then the semantics of
 the data pointed to by \fIselect_data\fP are defined by the extension
@@ -2864,9 +2865,9 @@ To register a procedure to select extension events for a widget, use
 .FD 0
 void XtRegisterExtensionSelector(\fIdisplay\fP, \fImin_event_type\fP, \
 \fImax_event_type\fP, \fIproc\fP,
-                                                 \fIclient_data\fP)
+                                                     \fIclient_data\fP)
 .br
-      Display \fI*dpy\fP;
+      Display \fI*display\fP;
 .br
       int \fImin_event_type\fP;
 .br
@@ -2876,14 +2877,14 @@ void XtRegisterExtensionSelector(\fIdisplay\fP, \fImin_event_type\fP, \
 .br
       XtPointer \fIclient_data\fP;
 .FN
-.IP \fIdisplay\fP 1i
+.IP \fIdisplay\fP 1.5i
 Specifies the display for which the extension selector is to be registered.
 .IP \fImin_event_type\fP
-.IP \fImax_event_type\fP
+.IP \fImax_event_type\fP 1.5i
 Specifies the range of event types for the extension.
-.IP \fIproc\fP 1i
+.IP \fIproc\fP 1.5i
 Specifies the extension selector procedure.
-.IP \fIclient_data\fP 1i
+.IP \fIclient_data\fP 1.5i
 Specifies additional data to be passed to the extension selector.
 .LP
 The
@@ -2894,7 +2895,8 @@ for the delivery of extension events to widgets.
 If \fImin_event_type\fP and \fImax_event_type\fP match the parameters
 to a previous call to
 .PN XtRegisterExtensionSelector
-for the same display, \fIproc\fP and \fIclient_data\fP replace the previously
+for the same \fIdisplay\fP, then \fIproc\fP and \fIclient_data\fP
+replace the previously
 registered values.  If the range specified by \fImin_event_type\fP
 and \fImax_event_type\fP overlaps the range of the parameters to a
 previous call for the same display in any other way, an error results.
@@ -2910,7 +2912,7 @@ selector and if it does calls the selector.  In either case the \*(xI
 pass a list of all the widget's event types that are within the
 selector's range.  The corresponding select data are also passed.  The
 selector is responsible for enabling the delivery of extension events
-that the widget has a handler for.
+required by the widget.
 .sp
 .LP
 An extension selector is of type
@@ -3013,7 +3015,8 @@ event, call
 with the window of this widget, or
 .PN None
 if the event is to be discarded, and if
-.PN XFilterEvent returns
+.PN XFilterEvent
+returns
 .PN False ,
 dispatch the event to the widget using
 .PN XtDispatchEventToWidget .
