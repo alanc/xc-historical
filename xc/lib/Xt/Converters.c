@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.40 89/09/07 17:48:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.41 89/09/12 16:49:13 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -300,7 +300,7 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
     XColor	    screenColor;
     XColor	    exactColor;
     Screen	    *screen;
-    XtAppContext    app = XtDisplayToApplicationContext(dpy);
+    XtPerDisplay    pd = _XtGetPerDisplay(dpy);
     Colormap	    colormap;
     Status	    status;
     char	    message[1000];
@@ -309,7 +309,8 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
     Cardinal	    num_params=1;
 
     if (*num_args != 2)
-     XtAppErrorMsg(app, "wrongParameters","cvtStringToPixel","XtToolkitError",
+     XtAppErrorMsg(pd->appContext, "wrongParameters", "cvtStringToPixel",
+		   "XtToolkitError",
 	"String to pixel conversion needs screen and colormap arguments",
         (String *)NULL, (Cardinal *)NULL);
 
@@ -321,13 +322,13 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
 
     if (q == XtQExtdefaultbackground) {
 	*closure_ret = False;
-	if (app->rv) done(Pixel, screen->black_pixel)
-	else	     done(Pixel, screen->white_pixel);
+	if (pd->rv) done(Pixel, BlackPixelOfScreen(screen))
+	else	    done(Pixel, WhitePixelOfScreen(screen));
     }
     if (q == XtQExtdefaultforeground) {
 	*closure_ret = False;
-	if (app->rv) done(Pixel, screen->white_pixel)
-        else	     done(Pixel, screen->black_pixel);
+	if (pd->rv) done(Pixel, WhitePixelOfScreen(screen))
+        else	    done(Pixel, BlackPixelOfScreen(screen));
     }
 
     if ((char) fromVal->addr[0] == '#') {  /* some color rgb definition */
@@ -345,7 +346,8 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
 				  &exactColor);
     if (status == 0) {
 	params[0]=(String)fromVal->addr;
-	XtAppWarningMsg(app, "noColormap","cvtStringToPixel","XtToolkitError",
+	XtAppWarningMsg(pd->appContext, "noColormap", "cvtStringToPixel",
+			"XtToolkitError",
                  "Cannot allocate colormap entry for \"%s\"",
                   params,&num_params);
 	return False;
