@@ -1,5 +1,5 @@
 /*
- * $XConsortium: SetLocale.c,v 1.34 93/09/07 20:06:13 rws Exp $
+ * $XConsortium: SetLocale.c,v 1.35 94/03/07 21:04:03 rws Exp $
  */
 
 /*
@@ -156,8 +156,8 @@ _XlcMapOSLocaleName(osname, siname)
 #endif
 #ifdef STARTCHAR
     if (start && (start = strchr (start, STARTCHAR))) {
-#endif
 	start++;
+#endif
 	if (end = strchr (start, ENDCHAR)) {
 	    len = end - start;
 	    strncpy(siname, start, len);
