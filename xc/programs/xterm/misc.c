@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.87 91/06/25 19:50:39 gildea Exp $
+ *	$XConsortium: misc.c,v 1.88 91/07/05 15:07:24 rws Exp $
  */
 
 /*
@@ -70,7 +70,9 @@ xevents()
 
 	if(screen->scroll_amt)
 		FlushScroll(screen);
-	XPending (screen->display);
+	if (!XPending (screen->display))
+	    /* protect against events/errors being swallowed by us or Xlib */
+	    return;
 	do {
 		if (waitingForTrackInfo)
 			return;
