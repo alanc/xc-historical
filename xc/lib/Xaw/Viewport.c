@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.15 88/02/08 20:16:41 swick Locked $";
+static char rcsid[] = "$Header: Viewport.c,v 1.16 88/02/09 07:27:09 swick Exp $";
 #endif lint
 
 /*
@@ -26,11 +26,11 @@ static char rcsid[] = "$Header: Viewport.c,v 1.15 88/02/08 20:16:41 swick Locked
  */
 
 
-#include "IntrinsicP.h"
-#include "Misc.h"
-#include <X/Scroll.h>
-#include <X/Atoms.h>
-#include "ViewportP.h"
+#include <X11/IntrinsicP.h>
+#include <X11/Misc.h>
+#include <X11/Scroll.h>
+#include <X11/Atoms.h>
+#include <X11/ViewportP.h>
 
 
 static void ScrollUpDownProc(), ThumbProc();
