@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.21 92/01/08 19:53:35 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.22 92/01/27 16:31:21 hersh Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -144,6 +144,7 @@ Frame Technology Corp.
 Gfxbase, Inc.
 GIPSI S.A.
 HaL Computer Systems, Inc.
+Hummingbird Communications Ltd.
 Institute for Information Industry
 Integrated Computer Solutions, Inc.
 Ithaca Software
