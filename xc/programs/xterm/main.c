@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.198 91/12/18 14:46:32 eswu Exp $";
+static char *rid="$XConsortium: main.c,v 1.199 91/12/23 17:02:24 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -1208,7 +1208,7 @@ get_pty (pty)
 	strcpy(ttydev, ttyname(*pty));
 	return 0;
 #endif
-#ifdef sgi
+#if defined(sgi) && OSMAJORVERSION >= 4
 	{
 	    char    *tty_name;
 
@@ -1237,7 +1237,7 @@ get_pty (pty)
 #ifdef USE_GET_PSEUDOTTY
 	return ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 ? 0 : 1);
 #else
-#if (defined(umips) && defined (SYSTYPE_SYSV))
+#if (defined(sgi) && OSMAJORVERSION < 4) || (defined(umips) && defined (SYSTYPE_SYSV))
 	struct stat fstat_buf;
 
 	*pty = open ("/dev/ptc", O_RDWR);
