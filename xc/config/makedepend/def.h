@@ -1,7 +1,10 @@
 /*
- * $Header: def.h,v 1.1 87/04/08 16:40:37 rich Exp $
+ * $Header: def.h,v 1.1 87/04/08 16:40:37 toddb Locked $
  *
  * $Log:	def.h,v $
+ * Revision 1.1  87/04/08  16:40:37  rich
+ * Initial revision
+ * 
  * Revision 1.1  87/04/08  16:40:37  rich
  * Initial revision
  * 
@@ -19,6 +22,10 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
+#ifdef USG
+#define u_char		unchar
+#endif
 
 #define MAXDEFINES	512
 #define MAXFILES	512
