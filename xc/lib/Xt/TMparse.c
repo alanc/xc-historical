@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.93 90/07/03 17:26:20 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.94 90/07/06 12:29:24 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1561,7 +1561,7 @@ static String ParseString(str, strP)
     if (*str == '"') {
 	str++;
 	start = str;
-	while (*str != '"' && *str != '\0' && *str != '\n') str++;
+	while (*str != '"' && *str != '\0') str++;
 	*strP = strncpy(XtMalloc((unsigned)(str-start+1)), start, str-start);
 	(*strP)[str-start] = '\0';
 	if (*str == '"') str++; else
