@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.12 91/01/02 19:06:08 rws Exp $
+ * $XConsortium: get_load.c,v 1.13 91/02/02 18:02:18 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -223,7 +223,7 @@ void GetLoadPoint( w, closure, call_data )
 #ifndef KERNEL_FILE
 
 #ifdef alliant
-#define KERNEL_FILE "/unix"
+#define KERNEL_FILE "/vmunix"
 #endif /* alliant */
 
 #ifdef CRAY
