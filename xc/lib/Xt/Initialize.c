@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.201 92/06/08 11:15:22 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.202 93/03/12 13:28:32 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -372,8 +372,8 @@ XrmDatabase XtScreenDatabase(screen)
 	doing_def = False;
     }
     pd = _XtGetPerDisplay(dpy);
-    if (db = (doing_def ? XrmGetDatabase(dpy) : pd->per_screen_db[scrno]))
-	return db;
+    if (db = pd->per_screen_db[scrno])
+	return doing_def ? XrmGetDatabase(dpy) : db;
     scr_resources = XScreenResourceString(screen);
 
     if (ScreenCount(dpy) == 1) {
@@ -410,9 +410,7 @@ XrmDatabase XtScreenDatabase(screen)
 
     if (!db)
 	db = XrmGetStringDatabase("");
-    /* Never cache the default database: the client could replace it. */
-    if (!doing_def)
-	pd->per_screen_db[scrno] = db;
+    pd->per_screen_db[scrno] = db;
     olddb = XrmGetDatabase(dpy);
     /* set database now, for XtResolvePathname to use */
     XrmSetDatabase(dpy, db);
