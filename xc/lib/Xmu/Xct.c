@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.5 89/05/09 10:02:11 rws Exp $
+ * $XConsortium: Xct.c,v 1.6 89/05/24 11:59:39 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -65,7 +65,12 @@ ComputeGLGR(data)
 {
     /* XXX this will need more work if more sets are registered */
     if ((data->GL_set_size == 94) && (data->GL_char_size == 1) &&
+	(data->GL[0] == '\102') &&
 	(data->GR_set_size == 96) && (data->GR_char_size == 1))
+	data->GLGR_encoding = data->GR_encoding;
+    else if ((data->GL_set_size == 94) && (data->GL_char_size == 1) &&
+	     (data->GL[0] == '\112') &&
+	     (data->GR_set_size == 94) && (data->GR_char_size == 1))
 	data->GLGR_encoding = data->GR_encoding;
     else
 	data->GLGR_encoding = (char *)NULL;
@@ -80,6 +85,10 @@ HandleGL(data, c)
     case 0x42:
 	data->GL = "\102";
 	data->GL_encoding = "ISO8859-1";
+	break;
+    case 0x4a:
+	data->GL = "\112";
+	data->GL_encoding = "JISX0201.1976-0";
 	break;
     default:
 	return 0;
@@ -99,17 +108,17 @@ HandleMultiGL(data, c)
     case 0x41:
 	data->GL = "\101";
 	data->GL_char_size = 2;
-	data->GL_encoding = "GB2312-1980.0";
+	data->GL_encoding = "GB2312.1980-0";
 	break;
     case 0x42:
 	data->GL = "\102";
 	data->GL_char_size = 2;
-	data->GL_encoding = "JISX0208-1983.0";
+	data->GL_encoding = "JISX0208.1983-0";
 	break;
     case 0x43:
 	data->GL = "\103";
 	data->GL_char_size = 2;
-	data->GL_encoding = "KSC5601-1987.0";
+	data->GL_encoding = "KSC5601.1987-0";
 	break;
     default:
 	return 0;
@@ -133,7 +142,7 @@ Handle94GR(data, c)
     switch (c) {
     case 0x49:
 	data->GR = "\111";
-	data->GR_encoding = "JISX0201-1976";
+	data->GR_encoding = "JISX0201.1976-0";
 	break;
     default:
 	return 0;
@@ -199,15 +208,15 @@ HandleMultiGR(data, c)
     switch (c) {
     case 0x41:
 	data->GR = "\101";
-	data->GR_encoding = "GB2312-1980.1";
+	data->GR_encoding = "GB2312.1980-1";
 	break;
     case 0x42:
 	data->GR = "\102";
-	data->GR_encoding = "JISX0208-1983.1";
+	data->GR_encoding = "JISX0208.1983-1";
 	break;
     case 0x43:
 	data->GR = "\103";
-	data->GR_encoding = "KSC5601-1987.1";
+	data->GR_encoding = "KSC5601.1987-1";
 	break;
     default:
 	return 0;
