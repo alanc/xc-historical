@@ -1,0 +1,13 @@
+MANDIR = $(LIBMANDIR)
+MANSUFFIX = $(LIBMANSUFFIX)
+
+all::
+
+depend:
+
+#if ExpandManNames
+InstallManPageLong(Xmbuf,$(MANDIR),XmbufQueryExtension)
+InstallManPageAliases(XmbufQueryExtension,$(MANDIR),XmbufGetVersion XmbufCreateBuffers XmbufDestroyBuffers XmbufDisplayBuffers XmbufGetWindowAttributes XmbufChangeWindowAttributes XmbufGetBufferAttributes XmbufChangeBufferAttributes XmbufGetScreenInfo XmbufCreateStereoWindow)
+#else
+InstallManPage(Xmbuf,$(MANDIR))
+#endif
