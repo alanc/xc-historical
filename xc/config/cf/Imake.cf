@@ -1,15 +1,15 @@
-XCOMM $XConsortium: Imake.cf,v 1.11 94/03/26 18:08:11 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp rws $
 /*
  * To add support for another platform:
  * 
  *     1.  Identify a machine-specific cpp symbol.  If your preprocessor 
  *         does not have any built in, you will need to add the symbol to the
- *         cpp_argv table in config/imakemdep.h and rebuild imake with the
- *         BOOTSTRAPCFLAGS variable set (see the macII for an example).
+ *         cpp_argv table in config/imake/imakemdep.h and rebuild imake with
+ *         the BOOTSTRAPCFLAGS variable set (see the macII for an example).
  *
  *     2.  Add all machine-specific cpp symbols (either defined by you or by
  *         the preprocessor or compiler) to the predefs table in 
- *         config/imakemdep.h.
+ *         config/imake/imakemdep.h.
  *
  *     3.  But a new #ifdef block below that defines MacroIncludeFile and
  *         MacroFile for your new platform and then #undefs the machine-
