@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.2 91/01/10 17:16:15 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.3 91/01/10 20:20:49 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -531,7 +531,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     Cardinal *keycount_return;
 {
     register XtPerDisplay pd = _XtGetPerDisplay(dpy);
-    KeyCode keycode;
+    unsigned keycode;
     int per, match;
     register KeySym *syms;
     register int i, j;
@@ -543,7 +543,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     _InitializeKeysymTables(dpy, pd);
     keycodes = NULL;
     per = pd->keysyms_per_keycode;
-    for (syms = pd->keysyms, keycode = pd->min_keycode;
+    for (syms = pd->keysyms, keycode = (unsigned) pd->min_keycode;
 	 (int)keycode <= pd->max_keycode;
 	 syms += per, keycode++) {
 	match = 0;
@@ -574,7 +574,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
 		}
 		codeP = &keycodes[ncodes];
 	    }
-	    *codeP++ = keycode;
+	    *codeP++ = (KeyCode) keycode;
 	    ncodes++;
 	}
     }
