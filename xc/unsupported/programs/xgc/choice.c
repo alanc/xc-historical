@@ -250,8 +250,9 @@ choose_defaults(descs,numdescs)
   int j;			/* which toggle within it */
 
   for (i = 0; i < numdescs; ++i) {
-    /* THIS SHOULD BE CHANGED SO THAT NOT EVERYTHING STARTS AT 0 */
     j = 0;
+    if (i == 0)
+      j = 3;
     select_button(descs[i],j);
     XtCallCallbacks(descs[i]->widgets[j], XtNcallback, (caddr_t) NULL);
   }
