@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.42 94/04/01 19:59:12 kaleb Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.43 94/06/03 21:38:45 matt Exp gildea $
 
 #define OSName			IRIX 5.2
 XCOMM operating system:  OSName
@@ -24,7 +24,9 @@ XCOMM operating system:  OSName
 #define HasPoll                 YES
 #define Malloc0ReturnsNull	YES
 #define ExpandManNames          YES
+#ifndef BuildXInputExt
 #define BuildXInputExt		YES
+#endif
 
 #if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion > 2)
 #define NeedVarargsPrototypes	YES

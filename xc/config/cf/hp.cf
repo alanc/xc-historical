@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.67 94/04/01 20:00:21 kaleb Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.68 94/06/03 21:38:44 matt Exp gildea $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -82,7 +82,9 @@ XCOMM operating system:  OSName
 #define PrimaryScreenResolution	91
 #define ExtensionOSDefines     -DHPINPUT -DXTESTEXT1
 #define XhpServer              YES
+#ifndef BuildXInputExt
 #define BuildXInputExt         YES
+#endif
 #define HPFastScrolling        YES
 #define BuildServer            __hp9000s700
 #define NeedBerklib            (BuildServer|BuildFontServer)
