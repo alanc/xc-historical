@@ -21,13 +21,23 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.134 93/12/12 11:15:33 rob Exp $ */
+/* $XConsortium: utils.c,v 1.133 93/12/06 15:21:07 kaleb Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
 #include "X.h"
 #include "input.h"
+
+#ifdef MTX
+#include "dixstruct.h"
+#endif
+
 #include "opaque.h"
+
+#ifdef MTX
+#include "mtxlock.h"
+#endif
+
 #ifdef X_POSIX_C_SOURCE
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
@@ -80,6 +90,10 @@ extern Bool defeatAccessControl;
 Bool CoreDump;
 Bool noTestExtensions;
 int auditTrailLevel = 1;
+
+#ifdef MTX
+static long timeTilFrob = 0;		/* while screen saving */
+#endif /* MTX */
 
 void ddxUseMsg();
 #if NeedVarargsPrototypes
@@ -144,6 +158,9 @@ SIGVAL
 AutoResetServer (sig)
     int sig;
 {
+#ifdef MTX
+    SignalServerReset();
+#else
     dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
 #ifdef GPROF
@@ -153,6 +170,7 @@ AutoResetServer (sig)
 #if defined(SYSV) && defined(X_NOT_POSIX)
     OsSignal (SIGHUP, AutoResetServer);
 #endif
+#endif /* MTX */
 }
 
 /* Force connections to close and then exit on SIGTERM, SIGINT */
@@ -162,12 +180,16 @@ SIGVAL
 GiveUp(sig)
     int sig;
 {
+#ifdef MTX
+    SignalServerTerminate();
+#else
     dispatchException |= DE_TERMINATE;
     isItTimeToYield = TRUE;
 #if defined(SYSV) && defined(X_NOT_POSIX)
     if (sig)
 	OsSignal(sig, SIG_IGN);
 #endif
+#endif /* MTX */
 }
 
 
@@ -180,6 +202,9 @@ AbortServer()
     fflush(stderr);
     if (CoreDump)
 	abort();
+#ifdef MTX
+    SignalServerTerminate();
+#endif /* MTX */
     exit (1);
 }
 
@@ -225,6 +250,69 @@ AdjustWaitForDelay (waitTime, newdelay)
 	}
     }
 }
+
+#ifdef MTX
+void
+SetScreenSaver(client)
+    ClientPtr client;
+{
+    struct itimerval waittime, *wt;
+    long timeout;
+
+    if (ScreenSaverTime)
+    {
+        timeout = ScreenSaverTime - 
+		  (GetTimeInMillis() - lastDeviceEventTime.milliseconds);
+        if (timeout <= 0) /* may be forced by AutoResetServer() */
+        {
+            long timeSinceSave;
+
+            timeSinceSave = -timeout;
+            if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
+            {
+                SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
+                if (ScreenSaverInterval)
+		{
+                    /* round up to the next ScreenSaverInterval */
+                    timeTilFrob = ScreenSaverInterval *
+                            ((timeSinceSave + ScreenSaverInterval) /
+                                    ScreenSaverInterval);
+		}
+                else
+		{
+                    timeTilFrob = -1;
+		}
+            }
+            timeout = timeTilFrob - timeSinceSave;
+        }
+        else
+        {
+            if (timeout > ScreenSaverTime)
+                timeout = ScreenSaverTime;
+            timeTilFrob = 0;
+        }
+        if (timeTilFrob >= 0)
+        {
+            waittime.it_interval.tv_sec = 0;
+            waittime.it_interval.tv_usec = 0;
+            waittime.it_value.tv_sec = timeout / MILLI_PER_SECOND;
+            waittime.it_value.tv_usec = (timeout % MILLI_PER_SECOND) *
+                                        (1000000 / MILLI_PER_SECOND);
+            wt = &waittime;
+        }
+        else
+        {
+            wt = NULL;
+        }
+    }
+    else
+    {
+        wt = NULL;
+    }
+    setitimer(ITIMER_REAL,wt,NULL);
+}
+#endif /* MTX */
+
 
 void UseMsg()
 {
@@ -639,7 +727,7 @@ unsigned long *
 Xalloc (amount)
     unsigned long amount;
 {
-    char		*malloc();
+    char	*malloc();
     register pointer  ptr;
 	
     if ((long)amount <= 0)
@@ -698,6 +786,19 @@ Xcalloc (amount)
     if (ret)
 	bzero ((char *) ret, (int) amount);
     return ret;
+}
+
+unsigned long *
+XNFcalloc (amount)
+    unsigned long   amount;
+{
+    unsigned long   *ret;
+    ret = Xalloc (amount);
+    if (ret)
+	bzero ((char *) ret, (int) amount);
+    else
+	FatalError( "Out of memory" );
+    return (ret);
 }
 
 /*****************
@@ -853,6 +954,10 @@ VErrorF(f, args)
     char *f;
     va_list args;
 {
+#ifdef MTX
+    extern X_MUTEX_TYPE PrintfMutex;
+#endif /* MTX */
+    MTX_MUTEX_LOCK (&PrintfMutex);
 #ifdef AIXV3
     vfprintf(aixfd, f, args);
     fflush (aixfd);
@@ -861,6 +966,7 @@ VErrorF(f, args)
 #else
     vfprintf(stderr, f, args);
 #endif /* AIXV3 */
+    MTX_MUTEX_UNLOCK (&PrintfMutex);
 }
 #endif
 
@@ -881,6 +987,10 @@ ErrorF(
     VErrorF(f, args);
     va_end(args);
 #else
+#ifdef MTX
+    extern X_MUTEX_TYPE PrintfMutex;
+#endif /* MTX */
+    MTX_MUTEX_LOCK (&PrintfMutex);
 #ifdef AIXV3
     fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
     fflush (aixfd);
@@ -890,6 +1000,7 @@ ErrorF(
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 #endif /* AIXV3 */
 #endif
+    MTX_MUTEX_UNLOCK (&PrintfMutex);
 }
 
 #ifdef AIXV3
