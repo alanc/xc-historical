@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.97 88/11/07 11:16:34 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.98 89/01/04 11:20:37 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -102,7 +102,24 @@ SOFTWARE.
 #endif /* apollo */
 
 #include <utmp.h>
+#ifdef LASTLOG
+#include <lastlog.h>
+#endif
 #include <sys/param.h>	/* for NOFILE */
+
+#ifndef UTMP_FILENAME
+#define UTMP_FILENAME "/etc/utmp"
+#endif
+#ifndef LASTLOG_FILENAME
+#define LASTLOG_FILENAME "/usr/adm/lastlog"  /* only on BSD systems */
+#endif
+#ifndef WTMP_FILENAME
+#if defined(SYSV) || defined(macII)
+#define WTMP_FILENAME "/etc/wtmp"
+#else
+#define WTMP_FILENAME "/usr/adm/wtmp"
+#endif
+#endif
 
 #include "ptyx.h"
 #include "data.h"
@@ -220,7 +237,13 @@ extern void setpwent();
 extern void endpwent();
 extern struct passwd *fgetpwent();
 #else	/* not USE_SYSV_UTMP */
-static char etc_utmp[] = "/etc/utmp";
+static char etc_utmp[] = UTMP_FILENAME;
+#ifdef LASTLOG
+static char etc_lastlog[] = LASTLOG_FILENAME;
+#endif 
+#ifdef WTMP
+static char etc_wtmp[] = WTMP_FILENAME;
+#endif
 #endif	/* USE_SYSV_UTMP */
 
 static char *get_ty;
@@ -1130,6 +1153,9 @@ spawn ()
 	struct passwd *pw = NULL;
 #ifdef UTMP
 	struct utmp utmp;
+#ifdef LASTLOG
+	struct lastlog lastlog;
+#endif	/* LASTLOG */
 #endif	/* UTMP */
 	extern int Exit();
 	char *getenv();
@@ -1715,8 +1741,35 @@ spawn ()
 				time(&utmp.ut_time);
 				lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
 				write(i, (char *)&utmp, sizeof(struct utmp));
-				added_utmp_entry = True;
 				close(i);
+				added_utmp_entry = True;
+#ifdef WTMP
+				if (term->misc.login_shell &&
+				(i = open(etc_wtmp, O_WRONLY|O_APPEND)) >= 0) {
+				    write(i, (char *)&utmp,
+					sizeof(struct utmp));
+				close(i);
+				}
+#endif /* WTMP */
+#ifdef LASTLOG
+				if (term->misc.login_shell &&
+				(i = open(etc_lastlog, O_WRONLY)) >= 0) {
+				    bzero((char *)&lastlog,
+					sizeof (struct lastlog));
+				    (void) strncpy(lastlog.ll_line, ttydev +
+					sizeof("/dev"),
+					sizeof (lastlog.ll_line));
+				    (void) strncpy(lastlog.ll_host, 
+					  XDisplayString (screen->display),
+					  sizeof (lastlog.ll_host));
+				    time(&lastlog.ll_time);
+				    lseek(i, (long)(screen->uid *
+					sizeof (struct lastlog)), 0);
+				    write(i, (char *)&lastlog,
+					sizeof (struct lastlog));
+				    close(i);
+				}
+#endif /* LASTLOG */
 			} else
 				tslot = -tslot;
 		}
@@ -2024,6 +2077,16 @@ int n;
 		lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
 		write(i, (char *)&utmp, sizeof(struct utmp));
 		close(i);
+#ifdef WTMP
+		if (term->misc.login_shell &&
+		    (i = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
+			(void) strncpy(utmp.ut_line, ttydev +
+			    sizeof("/dev"), sizeof (utmp.ut_line));
+			time(&utmp.ut_time);
+			write(i, (char *)&utmp, sizeof(struct utmp));
+			close(i);
+		}
+#endif /* WTMP */
 	}
 #endif	/* USE_SYSV_UTMP */
 #endif	/* UTMP */
