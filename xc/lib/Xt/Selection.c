@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.22 89/11/28 10:40:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.23 89/11/28 12:22:37 swick Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -332,11 +332,14 @@ XtIntervalId   *id;
        hasn't received it, but we are done with it; owner needs
        the chance to free it */
     if (rec->notify) 
-	if (ctx->incremental)
-	      (*rec->notify)(rec->widget, &ctx->selection, &rec->target, 
-			     (XtRequestId*)&rec->property, ctx->owner_closure);
+	if (ctx->incremental) {
+	    XtRequestId req =
+		(XtRequestId)((long)rec->property | (long)rec->window);
+	    (*rec->notify)(rec->widget, &ctx->selection, &rec->target, 
+			   &req, ctx->owner_closure);
+	}
 	else
-	      (*rec->notify)(rec->widget, &ctx->selection, &rec->target);
+	    (*rec->notify)(rec->widget, &ctx->selection, &rec->target);
      RemoveHandler(ctx->dpy, rec->window, rec->widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
      XtFree((char *)rec);
@@ -394,10 +397,12 @@ XEvent *ev;
 #endif 
     if (rec->allSent) { 
           if (rec->notify)  
-		if (ctx->incremental)
+		if (ctx->incremental) {
+		    XtRequestId req =
+			(XtRequestId)((long)rec->property | (long)rec->window);
 		    (*rec->notify)(widget, &ctx->selection, &rec->target,
-				   (XtRequestId*)&rec->property,
-				   ctx->owner_closure);
+				   &req, ctx->owner_closure);
+		}
 		else (*rec->notify)(widget, &ctx->selection, &rec->target);
 	  RemoveHandler(event->display, event->window, widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
@@ -409,11 +414,14 @@ XEvent *ev;
 	     if (incr->bytelength == 0)
 		AllSent(ctx, incr, rec);
 	     else {
-		unsigned long size;
-		XtRequestId req;
+		unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
+		XtRequestId req =
+		    (XtRequestId)((long)rec->property | (long)rec->window);
+		if (rec->notify && rec->anySent)
+		    (*rec->notify)(widget, &ctx->selection, &rec->target,
+				   &req, ctx->owner_closure);
     		SendIncrement(ctx, incr);
-		size = MAX_SELECTION_INCR(ctx->dpy);
-		req = (XtRequestId)((long)rec->property | (long)rec->window);
+		rec->anySent = TRUE;
 		(*incr->convert)(ctx->widget, &ctx->selection, &rec->target, 
 			    &incr->type, &incr->value, 
 			    &incr->bytelength, &incr->format,
@@ -475,6 +483,7 @@ int format;
 	rec->widget = widget;
 	rec->window = window;
 	rec->allSent = FALSE;
+	rec->anySent = FALSE;
 #ifndef DEBUG_WO_TIMERS
 	{
 	XtAppContext app = XtWidgetToApplicationContext(rec->widget);
