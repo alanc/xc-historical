@@ -303,7 +303,7 @@ XSetWindowAttributes *attr;
 	XWMHints wmhints;
 
 	win = w->core.window = XCreateWindow( dpy,
-	    RootWindow( dpy, w->core.screen), w->core.x, w->core.y,
+	    w->core.screen->root, w->core.x, w->core.y,
 	    w->core.width, w->core.height,
 	    w->core.border_width, w->core.depth, CopyFromParent,
 	    CopyFromParent, mask, attr);
