@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.73 91/07/05 10:32:34 rws Exp $ */
+/* $XConsortium: window.c,v 5.74 91/07/11 21:12:07 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1181,6 +1181,111 @@ DestroySubwindows(pWin, client)
     while (pWin->lastChild)
 	FreeResource(pWin->lastChild->drawable.id, RT_NONE);
 }
+
+/* here is a version might be correct and faster */
+#ifdef notdef
+/*ARGSUSED*/
+DestroySubwindows(pWin, client)
+    register WindowPtr pWin;
+    ClientPtr client;
+{
+    register WindowPtr pChild, pHead;
+    xEvent event;
+    Bool wasRealized = (Bool)pWin->realized;
+    Bool wasViewable = (Bool)pWin->viewable;
+    Bool anyMarked = FALSE;
+    Mask parentNotify;
+    Bool notify;
+
+    if (!pWin->firstChild)
+	return;
+    parentNotify = SubSend(pWin);
+    pHead = RealChildHead(pWin);
+    for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
+    {
+	notify = parentNotify || StrSend(pChild);
+	if (pChild->mapped)
+        {
+	    if (notify)
+	    {
+		event.u.u.type = UnmapNotify;
+		event.u.unmapNotify.window = pChild->drawable.id;
+		event.u.unmapNotify.fromConfigure = xFalse;
+		DeliverEvents(pChild, &event, 1, NullWindow);
+	    }
+	    if (pChild->viewable)
+	    {
+		pChild->valdata = UnmapValData;
+		anyMarked = TRUE;
+	    }
+	    pChild->mapped = FALSE;
+            if (pChild->realized)
+		UnrealizeTree(pChild, FALSE);
+	    if (wasViewable)
+	    {
+#ifdef DO_SAVE_UNDERS
+		pChild->DIXsaveUnder = FALSE;
+#endif /* DO_SAVE_UNDERS */
+		if (pChild->backStorage)
+		    (*pChild->drawable.pScreen->SaveDoomedAreas)(
+					    pChild, &pChild->clipList, 0, 0);
+	    }
+	}
+	CrushTree(pChild);
+	if (notify)
+	{
+	    event.u.u.type = DestroyNotify;
+	    event.u.destroyNotify.window = pChild->drawable.id;
+	    DeliverEvents(pChild, &event, 1, NullWindow);
+	}
+    }
+    if (wasViewable)
+    {
+	if (anyMarked)
+	{
+	    MarkWindow(pWin);
+	    (* pWin->drawable.pScreen->ValidateTree)(pWin, pHead, VTUnmap);
+	    HandleExposures(pWin);
+	}
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    if (deltaSaveUndersViewable || numSaveUndersViewable) {
+		numSaveUndersViewable += deltaSaveUndersViewable;
+		deltaSaveUndersViewable = 0;
+		if (pWin->DIXsaveUnder) {
+		    pWin->DIXsaveUnder = FALSE;
+		    DoChangeSaveUnder(pWin, NullWindow);
+		}
+	    }
+	}
+#endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pWin->drawable.pScreen->PostValidateTree)
+	    (* pWin->drawable.pScreen->PostValidateTree)(pWin, pHead, VTUnmap);
+    }
+    if (pHead)
+    {
+	pChild = pHead->nextSib;
+	pWin->lastChild = pHead;
+	pHead->nextSib = NullWindow;
+    }
+    else
+    {
+	pChild = pWin->firstChild;
+	pWin->firstChild = NullWindow;
+	pWin->lastChild = NullWindow;
+    }
+    for (; pChild; pChild = pHead)
+    {
+	pHead = pChild->nextSib;
+	FreeResource(pChild->drawable.id, RT_WINDOW);
+	FreeWindowResources(pChild);
+	xfree(pChild);
+    }
+    if (wasRealized)
+	WindowsRestructured ();
+}
+#endif
 
 /*****
  *  ChangeWindowAttributes
