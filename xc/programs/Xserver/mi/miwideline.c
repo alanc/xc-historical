@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.14 89/11/02 13:51:16 rws Exp $
+ * $XConsortium: miwideline.c,v 1.15 89/11/02 18:31:35 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -360,6 +360,13 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     int		    joinStyle = pGC->joinStyle;
     int		    lw = pGC->lineWidth;
 
+    if (joinStyle == JoinRound)
+    {
+	miLineArc(pDrawable, pGC, pixel, spanData,
+		  pLeft, pRight,
+		  (double)0.0, (double)0.0, TRUE);
+	return;
+    }
     denom = - pLeft->dx * pRight->dy + pRight->dx * pLeft->dy;
     if (denom == 0)
 	return;	/* no join to draw */
@@ -417,13 +424,8 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
 	    joinStyle = JoinBevel;
     }
 
-    switch (joinStyle)
+    if (joinStyle == JoinMiter)
     {
-    case JoinRound:
-	miLineArc(pDrawable, pGC, pixel, spanData, pLeft->x, pLeft->y,
-		  (double)0.0, (double)0.0, TRUE);
-	return;
-    case JoinMiter:
 	slopes[2].dx = pLeft->dx;
 	slopes[2].dy = pLeft->dy;
 	if (swapslopes)
@@ -441,25 +443,23 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
 	    slopes[3].dy = -slopes[3].dy;
 	}
 	edgecount = 4;
-	break;
-    case JoinBevel:
-	{
-	    double	scale, dx, dy, adx, ady;
-    
-	    adx = dx = pRight->xa - pLeft->xa;
-	    ady = dy = pRight->ya - pLeft->ya;
-	    if (adx < 0)
-		adx = -adx;
-	    if (ady < 0)
-		ady = -ady;
-	    scale = ady;
-	    if (adx > ady)
-	    	scale = adx;
-	    slopes[2].dx = (dx * 65536) / scale;
-	    slopes[2].dy = (dy * 65536) / scale;
-	    edgecount = 3;
-	}
-	break;
+    }
+    else
+    {
+	double	scale, dx, dy, adx, ady;
+
+	adx = dx = pRight->xa - pLeft->xa;
+	ady = dy = pRight->ya - pLeft->ya;
+	if (adx < 0)
+	    adx = -adx;
+	if (ady < 0)
+	    ady = -ady;
+	scale = ady;
+	if (adx > ady)
+	    scale = adx;
+	slopes[2].dx = (dx * 65536) / scale;
+	slopes[2].dy = (dy * 65536) / scale;
+	edgecount = 3;
     }
 
     y = miPolyBuildPoly (vertices, slopes, edgecount, pLeft->x, pLeft->y,
@@ -475,26 +475,29 @@ miLineArcI (pDraw, pGC, xorg, yorg, points, widths)
     DDXPointPtr	    points;
     int		    *widths;
 {
+    register DDXPointPtr tpts, bpts;
+    register int *twids, *bwids;
     register int x, y, e, ex, slw;
-    register DDXPointPtr pts;
-    register int *wids;
 
-    pts = points;
-    wids = widths;
+    tpts = points;
+    twids = widths;
     if (pGC->miTranslate)
     {
 	xorg += pDraw->x;
 	yorg += pDraw->y;
     }
-    if (pGC->lineWidth == 1)
+    slw = pGC->lineWidth;
+    if (slw == 1)
     {
-	pts->x = xorg;
-	pts->y = yorg;
-	*wids = 1;
+	tpts->x = xorg;
+	tpts->y = yorg;
+	*twids = 1;
 	return 1;
     }
-    y = (pGC->lineWidth >> 1) + 1;
-    if (pGC->lineWidth & 1)
+    bpts = tpts + slw;
+    bwids = twids + slw;
+    y = (slw >> 1) + 1;
+    if (slw & 1)
 	e = - ((y << 2) + 3);
     else
 	e = - (y << 3);
@@ -512,33 +515,61 @@ miLineArcI (pDraw, pGC, xorg, yorg, points, widths)
 	slw = (x << 1) + 1;
 	if ((e == ex) && (slw > 1))
 	    slw--;
-	pts->x = xorg - x;
-	pts->y = yorg - y;
-	pts++;
-	*wids++ = slw;
+	tpts->x = xorg - x;
+	tpts->y = yorg - y;
+	tpts++;
+	*twids++ = slw;
 	if ((y != 0) && ((slw > 1) || (e != ex)))
 	{
-	    pts->x = xorg - x;
-	    pts->y = yorg + y;
-	    pts++;
-	    *wids++ = slw;
+	    bpts--;
+	    bpts->x = xorg - x;
+	    bpts->y = yorg + y;
+	    *--bwids = slw;
 	}
     }
-    return (pts - points);
+    return (pGC->lineWidth);
 }
 
+#define CLIPSTEPEDGE(edgey,edge,edgeleft) \
+    if (ybase == edgey) \
+    { \
+	if (edgeleft) \
+	{ \
+	    if (edge->x < xcl) \
+		xcl = edge->x; \
+	} \
+	else \
+	{ \
+	    if (edge->x > xcr) \
+		xcr = edge->x; \
+	} \
+	edgey++; \
+	edge->x += edge->stepx; \
+	edge->e += edge->dx; \
+	if (edge->e >= 0) \
+	{ \
+	    edge->x += edge->signdx; \
+	    edge->e -= edge->dy; \
+	} \
+    }
+
 int
-miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
+miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
+	    edge1, edgey1, edgeleft1, edge2, edgey2, edgeleft2)
     DrawablePtr	    pDraw;
     GCPtr	    pGC;
     double	    xorg, yorg;
     DDXPointPtr	    points;
     int		    *widths;
+    PolyEdgePtr	    edge1, edge2;
+    int		    edgey1, edgey2;
+    Bool	    edgeleft1, edgeleft2;
 {
     register DDXPointPtr pts;
     register int *wids;
     double radius, x0, y0, el, er, yk, xlk, xrk, k;
-    int xbase, ybase, y, boty, xl, xr;
+    int xbase, ybase, y, boty, xl, xr, xcl, xcr;
+    int ymin, ymax;
 
     pts = points;
     wids = widths;
@@ -557,6 +588,24 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
     radius = ((double)pGC->lineWidth) / 2.0;
     y = floor(radius - y0 + 1.0);
     ybase -= y;
+    ymin = ybase;
+    ymax = 65536;
+    if (!edge1->dy)
+    {
+	if (edgeleft1)
+	    ymin = edgey1;
+	else
+	    ymax = edgey1;
+	edgey1 = 65536;
+    }
+    if (!edge2->dy)
+    {
+	if (edgeleft2)
+	    ymin = edgey2;
+	else
+	    ymax = edgey2;
+	edgey2 = 65536;
+    }
     el = radius * radius - ((y + y0) * (y + y0)) - (x0 * x0);
     er = el + xrk;
     xl = 1;
@@ -567,6 +616,8 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
 	el -= xlk;
     }
     boty = (y0 < -0.5) ? 1 : 0;
+    if (ybase + y - boty > ymax)
+	boty = ymax - ybase - y;
     while (y > boty)
     {
 	k = (y << 1) + yk;
@@ -584,17 +635,25 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
 	}
 	y--;
 	ybase++;
-	if (xr >= xl)
+	if (ybase < ymin)
+	    continue;
+	xcl = xl;
+	xcr = xr;
+	CLIPSTEPEDGE(edgey1, edge1, edgeleft1);
+	CLIPSTEPEDGE(edgey2, edge2, edgeleft2);
+	if (xcr >= xcl)
 	{
-	    pts->x = xbase + xl;
+	    pts->x = xbase + xcl;
 	    pts->y = ybase;
 	    pts++;
-	    *wids++ = xr - xl + 1;
+	    *wids++ = xcr - xcl + 1;
 	}
     }
     er = xrk - (xr << 1) - er;
     el = (xl << 1) - xlk - el;
     boty = floor(-y0 - radius + 1.0);
+    if (ybase + y - boty > ymax)
+	boty = ymax - ybase - y;
     while (y > boty)
     {
 	k = (y << 1) + yk;
@@ -612,32 +671,74 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
 	}
 	y--;
 	ybase++;
-	if (xr >= xl)
+	if (ybase < ymin)
+	    continue;
+	xcl = xl;
+	xcr = xr;
+	CLIPSTEPEDGE(edgey1, edge1, edgeleft1);
+	CLIPSTEPEDGE(edgey2, edge2, edgeleft2);
+	if (xcr >= xcl)
 	{
-	    pts->x = xbase + xl;
+	    pts->x = xbase + xcl;
 	    pts->y = ybase;
 	    pts++;
-	    *wids++ = xr - xl + 1;
+	    *wids++ = xcr - xcl + 1;
 	}
     }
     return (pts - points);
 }
 
-miLineArc (pDraw, pGC, pixel, spanData, xorgi, yorgi, xorg, yorg, isInteger)
+miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     DrawablePtr	    pDraw;
-    GCPtr	    pGC;
+    register GCPtr  pGC;
     unsigned long   pixel;
     SpanDataPtr	    spanData;
-    int		    xorgi, yorgi;
+    LineFacePtr	    leftFace, rightFace;
     double	    xorg, yorg;
-    Bool	    isInteger;
+    Bool	    isInt;
 {
     DDXPointPtr points;
     int *widths;
+    int xorgi, yorgi;
     unsigned long oldPixel;
     Spans spanRec;
     int n;
+    PolyEdgeRec	edge1, edge2;
+    int		edgey1, edgey2;
+    Bool	edgeleft1, edgeleft2;
 
+    if (isInt)
+    {
+	xorgi = leftFace ? leftFace->x : rightFace->x;
+	yorgi = leftFace ? leftFace->y : rightFace->y;
+    }
+    edgey1 = 65536;
+    edgey2 = 65536;
+    edgeleft1 = FALSE;
+    edgeleft2 = FALSE;
+    if ((pGC->lineStyle != LineSolid || pGC->lineWidth > 2) &&
+	(pGC->capStyle == CapRound && pGC->joinStyle != JoinRound ||
+	 pGC->joinStyle == JoinRound && pGC->capStyle == CapButt))
+    {
+	if (isInt)
+	{
+	    xorg = (double) xorgi;
+	    yorg = (double) yorgi;
+	    isInt = FALSE;
+	}
+	if (leftFace && rightFace)
+	{
+	    /* miComputeRoundClip (); */
+	}
+	else if (leftFace)
+	{
+	    /* edgey1 = miPolyBuildEdge (); */
+	}
+	else if (rightFace)
+	{
+	    /* edgey2 = miPolyBuildEdge (); */
+	}
+    }
     if (!spanData)
     {
     	points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * pGC->lineWidth);
@@ -670,14 +771,16 @@ miLineArc (pDraw, pGC, pixel, spanData, xorgi, yorgi, xorg, yorg, isInteger)
 	spanRec.points = points;
 	spanRec.widths = widths;
     }
-    if (isInteger)
+    if (isInt)
 	n = miLineArcI(pDraw, pGC, xorgi, yorgi, points, widths);
     else
-	n = miLineArcD(pDraw, pGC, xorg, yorg, points, widths);
+	n = miLineArcD(pDraw, pGC, xorg, yorg, points, widths,
+		       &edge1, edgey1, edgeleft1,
+		       &edge2, edgey2, edgeleft2);
 
     if (!spanData)
     {
-    	(*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, FALSE);
+    	(*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, TRUE);
     	DEALLOCATE_LOCAL(widths);
     	DEALLOCATE_LOCAL(points);
     	if (pixel != oldPixel)
@@ -921,30 +1024,33 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 }
 
 static SpanDataPtr
-miSetupSpanData (pGC, spanData)
+miSetupSpanData (pGC, spanData, npt)
     GCPtr	pGC;
     SpanDataPtr	spanData;
+    int		npt;
 {
+    if (npt < 3 && pGC->capStyle != CapRound)
+	return (SpanDataPtr) NULL;
     switch(pGC->alu)
     {
-    case GXclear:		/* 0 */
+    case GXclear:	/* 0 */
     case GXand:		/* src AND dst */
-    case GXcopy:		/* src */
+    case GXcopy:	/* src */
     case GXandInverted:	/* NOT src AND dst */
-    case GXnoop:		/* dst */
+    case GXnoop:	/* dst */
     case GXor:		/* src OR dst */
-    case GXcopyInverted:	/* NOT src */
+    case GXcopyInverted:/* NOT src */
     case GXorInverted:	/* NOT src OR dst */
     case GXset:		/* 1 */
 	spanData = (SpanDataPtr) NULL;
 	break;
     case GXandReverse:	/* src AND NOT dst */
-    case GXxor:			/* src XOR dst */
+    case GXxor:		/* src XOR dst */
     case GXnor:		/* NOT src AND NOT dst */
-    case GXequiv:		/* NOT src XOR dst */
-    case GXinvert:		/* NOT dst */
-    case GXorReverse:		/* src OR NOT dst */
-    case GXnand:		/* NOT src OR NOT dst */
+    case GXequiv:	/* NOT src XOR dst */
+    case GXinvert:	/* NOT dst */
+    case GXorReverse:	/* src OR NOT dst */
+    case GXnand:	/* NOT src OR NOT dst */
 	if (pGC->lineStyle == LineDoubleDash)
 	    miInitSpanGroup (&spanData->bgGroup);
 	miInitSpanGroup (&spanData->fgGroup);
@@ -986,7 +1092,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     if (npt == 0)
 	return;
 
-    spanData = miSetupSpanData (pGC, &spanDataRec);
+    spanData = miSetupSpanData (pGC, &spanDataRec, npt);
     pixel = pGC->fgPixel;
     x2 = pPts->x;
     y2 = pPts->y;
@@ -1016,7 +1122,8 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	{
 	    if (pGC->capStyle == CapRound)
 		miLineArc (pDrawable, pGC, pixel, spanData,
-			   leftFace.x, leftFace.y, (double)0.0, (double)0.0,
+			   &leftFace, (LineFacePtr) NULL,
+ 			   (double)0.0, (double)0.0,
 			   TRUE);
 	}
 	else
@@ -1026,7 +1133,8 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	}
 	if (npt == 1 && pGC->capStyle == CapRound)
 	    miLineArc (pDrawable, pGC, pixel, spanData,
-		       rightFace.x, rightFace.y, (double)0.0, (double)0.0,
+		       (LineFacePtr) NULL, &rightFace,
+ 		       (double)0.0, (double)0.0,
 		       TRUE);
 	prevRightFace = rightFace;
 	first = FALSE;
@@ -1042,10 +1150,12 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	if (pGC->capStyle == CapRound)
 	{
 	    miLineArc (pDrawable, pGC, pixel, spanData,
-		       leftFace.x, leftFace.y, (double)0.0, (double)0.0,
+		       &leftFace, (LineFacePtr) NULL,
+		       (double)0.0, (double)0.0,
 		       TRUE);
 	    miLineArc (pDrawable, pGC, pixel, spanData,
-		       rightFace.x, rightFace.y, (double)0.0, (double)0.0,
+		       (LineFacePtr) NULL, &rightFace,
+ 		       (double)0.0, (double)0.0,
 		       TRUE);
 	}
     }
@@ -1221,9 +1331,11 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 		    vertices[V_RIGHT] = saveRight;
 		    break;
 		case CapRound:
-		    miLineArc (pDrawable, pGC, pixel, spanData, 0, 0,
+		    miLineArc (pDrawable, pGC, pixel, spanData,
+			       leftFace, (LineFacePtr) NULL,
 			       lcenterx, lcentery, FALSE);
-		    miLineArc (pDrawable, pGC, pixel, spanData, 0, 0,
+		    miLineArc (pDrawable, pGC, pixel, spanData,
+			       (LineFacePtr) NULL, rightFace,
 			       rcenterx, rcentery, FALSE);
 		    break;
 		}
@@ -1284,8 +1396,9 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	if (!first && pGC->lineStyle == LineOnOffDash &&
 	    pGC->capStyle == CapRound)
 	{
-	    miLineArc (pDrawable, pGC, pixel, spanData, 0, 0,
-		       lcenterx, lcentery, FALSE);
+	    miLineArc (pDrawable, pGC, pixel, spanData,
+		       (LineFacePtr) NULL, rightFace,
+		       rcenterx, rcentery, FALSE);
 	}
     }
     dashRemain = ((double) dashRemain) - LRemain;
@@ -1328,7 +1441,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 
     if (npt == 0)
 	return;
-    spanData = miSetupSpanData (pGC, &spanDataRec);
+    spanData = miSetupSpanData (pGC, &spanDataRec, npt);
     x2 = pPts->x;
     y2 = pPts->y;
     first = TRUE;
@@ -1365,7 +1478,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    {
 	    	if (pGC->capStyle == CapRound)
 		    miLineArc (pDrawable, pGC, pixel, spanData,
-			       leftFace.x, leftFace.y,
+			       &leftFace, (LineFacePtr) NULL,
 			       (double)0.0, (double)0.0, TRUE);
 	    }
 	    else
@@ -1378,7 +1491,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	{
 	    if (npt == 1 && pGC->capStyle == CapRound)
 	    	miLineArc (pDrawable, pGC, pixel, spanData,
-			   rightFace.x, rightFace.y,
+			   (LineFacePtr) NULL, &rightFace,
 			   (double)0.0, (double)0.0, TRUE);
 	}
 	prevRightFace = rightFace;
