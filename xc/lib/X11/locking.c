@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.10 93/08/26 08:56:58 rws Exp $
+ * $XConsortium: locking.c,v 1.12 93/09/11 09:40:39 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -39,7 +39,13 @@ extern int  (*_XInitDisplayLock_fn)();
 extern void (*_XFreeDisplayLock_fn)();
 
 #ifdef WIN32
-static DWORD _X_TlsIndex;
+static DWORD _X_TlsIndex = (DWORD)-1;
+
+_Xthread_init()
+{
+    if (_X_TlsIndex == (DWORD)-1)
+	_X_TlsIndex = TlsAlloc();
+}
 
 xthread_t
 _Xthread_self()
@@ -451,9 +457,6 @@ Status XInitThreads()
 {
     if (_Xglobal_lock)
 	return 1;
-#ifdef WIN32
-    _X_TlsIndex = TlsAlloc();
-#endif
 #ifdef xthread_init
     xthread_init();		/* return value? */
 #endif
