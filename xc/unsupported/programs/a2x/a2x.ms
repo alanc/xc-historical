@@ -1,3 +1,4 @@
+$XConsortium$
 				Using a2x
 
 Copyright 1992 by the Massachusetts Institute of Technology
