@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c,v 1.2 93/09/20 10:50:15 rws Exp $ */
+/* $XConsortium: lcEuc.c,v 1.3 93/09/23 12:31:19 rws Exp $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -33,7 +33,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XlcGeneric.h"
 
-unsigned char SS2, SS3;
+static unsigned char SS2, SS3;
 
 typedef struct _ConvRec {
     XlcConv from_conv;
