@@ -1,4 +1,4 @@
-/* $XConsortium: XGetColor.c,v 11.19 91/02/07 17:35:39 dave Exp $ */
+/* $XConsortium: XGetColor.c,v 11.20 91/02/12 16:11:15 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -42,7 +42,7 @@ XColor *exact_def; /* RETURN */
     char tmpName[BUFSIZ];
     XcmsCCC *pCCC;
     XcmsColor cmsColor_exact;
-
+    Status ret;
 
     /*
      * Let's Attempt to use TekCMS and i18n approach to Parse Color
@@ -54,7 +54,9 @@ XColor *exact_def; /* RETURN */
 		XCMS_RGB_FORMAT) == XCMS_SUCCESS) {
 	    _XcmsRGB_to_XColor(&cmsColor_exact, exact_def, 1);
 	    bcopy((char *)exact_def, (char *)hard_def, sizeof(XColor));
-	    return(XAllocColor(dpy, cmap, hard_def));
+	    ret = XAllocColor(dpy, cmap, hard_def);
+	    exact_def->pixel = hard_def->pixel;
+	    return(ret);
 	}
 	/*
 	 * Otherwise we failed; or tmpName was overwritten with yet another
