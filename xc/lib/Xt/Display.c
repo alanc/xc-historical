@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.82 92/04/03 13:22:49 converse Exp $ */
+/* $XConsortium: Display.c,v 1.83 92/04/14 14:28:02 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -176,9 +176,10 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	String language = NULL;
 
 	/* parse the command line for name, display, and/or language */
-	if (!applName || !displayName || app->process->globalLangProcRec.proc)
-	    db = _XtPreparseCommandLine(urlist, num_urs, *argc, argv,
-					&applName, &displayName, &language);
+	db = _XtPreparseCommandLine(urlist, num_urs, *argc, argv, &applName,
+				    (displayName ? NULL : &displayName),
+				    (app->process->globalLangProcRec.proc ?
+				     &language : NULL));
 	d = XOpenDisplay(displayName);
 
 	if (! applName && !(applName = getenv("RESOURCE_NAME"))) {
