@@ -7,6 +7,13 @@
 IconDirectory "/users/jim/icons"
 
 SqueezeTitle
+{
+    "oclock"	center	  0  0
+    "XTerm"	left	  0  0
+    "emacs"	center	  0  0
+    "xlogo"	right	 -1  4
+    "xmh"	center	  0  0
+}
 NoDefaults
 LeftTitleButton "menu12" = f.menu "windowmenu"
 TitleButtonBorderWidth 0
@@ -90,13 +97,14 @@ DefaultFunction f.nop
 
 Button1 =      : root                     : f.menu "twmops"
 Button2 =      : root                     : f.menu "windowops"
-Button3 =      : root                     : f.menu "apps"
+Button3 =      : root                     : f.menu "TwmWindows"
 Button1 =      : title                    : f.function "move-or-raise"
 Button1 =      : icon                     : f.iconify
 Button1 =      : iconmgr                  : f.iconify
 Button1 = m    : window|icon|frame|title  : f.lower
 Button2 = m    : window                   : f.resize
 Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
+Button1 = c|m|s: root			  : f.refresh
 #"F20"   =      : all                      : f.warptoscreen "next"
 
 "F28"   =      : all                      : f.colormap "next"
@@ -126,8 +134,7 @@ DontIconifyByUnmapping
   "xclock"
   "xbiff"
   "xload"
-  "oclock"
-  "TWM Icon Manager"
+  "xcutsel"
 }
 IconManagerDontShow
 {
@@ -135,15 +142,15 @@ IconManagerDontShow
   "xbiff"
   "xload"
   "oclock"
-  "TWM Icon Manager"
+  "xcutsel"
 }
 NoTitle
 {
   "xclock"
   "xbiff"
   "xload"
-  "oclock"
   "TWM Icon Manager"
+  "xcutsel"
 }
 
 
@@ -161,8 +168,10 @@ menu "twmops"
 "Restart"		f.restart
 "Exit"			f.quit
 ""			f.nop
-"Show Iconmgr"		f.showiconmgr
-"Hide Iconmgr"		f.hideiconmgr
+"xterm"			!"xterm &"
+"xterm -e /bin/sh"	!"xterm -e /bin/sh &"
+"xhost +"		!"xhost + >/dev/null"
+"xhost -"		!"xhost - >/dev/null"
 }
 
 menu "windowops"
@@ -191,18 +200,8 @@ menu "windowmenu"
 "Kill"			f.menu "kill"
 }
 
-menu "apps"
-{
-"Applications"		f.title
-"xterm"			!"xterm &"
-"xterm -e /bin/sh"	!"xterm -e /bin/sh &"
-"xhost +"		!"xhost + >/dev/null"
-"xhost -"		!"xhost - >/dev/null"
-}
-
 menu "kill"
 {
-    "Kill"		f.title
     "Kill Window"	f.destroy
     "Send Delete"	f.delete
 }
