@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: io.c,v 1.4 91/05/13 16:50:59 gildea Exp $ */
 /*
  * i/o functions
  *
@@ -540,6 +540,7 @@ AllocateInputBuffer()
 	fsfree(oci);
 	return (ConnectionInputPtr) NULL;
     }
+    oci->next = 0;
     oci->size = BUFSIZE;
     oci->bufptr = oci->buffer;
     oci->bufcnt = 0;
