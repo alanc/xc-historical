@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.4 93/09/03 09:57:19 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.5 93/09/03 14:12:08 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -52,9 +52,6 @@ typedef struct _ThreadStack {
     xthread_t *p;
 } ThreadStack;
 
-#ifndef _XT_NO_THREAD_ID
-#define _XT_NO_THREAD_ID 0
-#endif
 #define STACK_INCR 16
 
 static LockPtr process_lock = NULL;
@@ -71,7 +68,7 @@ InitProcessLock()
     	xcondition_init(process_lock->cond);
 
     	process_lock->recursion = 0;
-    	process_lock->holder = _XT_NO_THREAD_ID;
+    	xthread_clear_id(process_lock->holder);
     }
 }
 
@@ -82,7 +79,7 @@ ProcessLock()
     
     xmutex_lock(process_lock->mutex);
     
-    if (xthread_equal(process_lock->holder, _XT_NO_THREAD_ID)) {
+    if (!xthread_have_id(process_lock->holder)) {
 	process_lock->holder = this_thread;
 	xmutex_unlock(process_lock->mutex);
 	return;
@@ -94,7 +91,7 @@ ProcessLock()
 	return;
     }
     
-    while(!xthread_equal(process_lock->holder, _XT_NO_THREAD_ID))  
+    while(xthread_have_id(process_lock->holder))
 	xcondition_wait(process_lock->cond, process_lock->mutex);
     
     process_lock->holder = this_thread;
@@ -113,7 +110,7 @@ ProcessUnlock()
 	return;
     }
     
-    process_lock->holder = _XT_NO_THREAD_ID;
+    xthread_clear_id(process_lock->holder);
     xcondition_signal(process_lock->cond);
     
     xmutex_unlock(process_lock->mutex);
@@ -134,7 +131,7 @@ AppLock(app)
     
     xmutex_lock(app_lock->mutex);
     
-    if (xthread_equal(app_lock->holder, _XT_NO_THREAD_ID)) {
+    if (!xthread_have_id(app_lock->holder)) {
 	app_lock->holder = this_thread;
     	assert(xthread_equal(app_lock->holder, this_thread));
 	xmutex_unlock(app_lock->mutex);
@@ -147,7 +144,7 @@ AppLock(app)
 	return;
     }
     
-    while(!xthread_equal(app_lock->holder, _XT_NO_THREAD_ID))  
+    while(xthread_have_id(app_lock->holder))
 	xcondition_wait(app_lock->cond, app_lock->mutex);
     
     app_lock->holder = this_thread;
@@ -175,7 +172,7 @@ AppUnlock(app)
 	return;
     }
 
-    app_lock->holder = _XT_NO_THREAD_ID;
+    xthread_clear_id(app_lock->holder);
     xcondition_signal(app_lock->cond);
 
     xmutex_unlock(app_lock->mutex);
@@ -202,7 +199,7 @@ YieldAppLock(app)
     r = app_lock->recursion;
 
     app_lock->recursion = 0;
-    app_lock->holder = _XT_NO_THREAD_ID;
+    xthread_clear_id(app_lock->holder);
 
     xcondition_signal(app_lock->cond);
     xmutex_unlock(app_lock->mutex);
@@ -225,7 +222,7 @@ RestoreAppLock(app, r)
     LockPtr app_lock = app->lock_info;
 
     xmutex_lock(app_lock->mutex);
-    while(!xthread_equal(app_lock->holder, _XT_NO_THREAD_ID))  
+    while(xthread_have_id(app_lock->holder))
 	xcondition_wait(app_lock->cond, app_lock->mutex);
 
     app_lock->holder = this_thread;
@@ -348,7 +345,7 @@ InitAppLock(app)
     xmutex_init(app->lock_info->mutex);
     xcondition_init(app->lock_info->cond);
     app->lock_info->recursion = 0;
-    app->lock_info->holder = _XT_NO_THREAD_ID;
+    xthread_clear_id(app->lock_info->holder);
    
     app->stack = XtNew(ThreadStack);
     app->stack->size = STACK_INCR;
