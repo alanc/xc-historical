@@ -1,4 +1,4 @@
-/* $XConsortium: VarGet.c,v 1.15 91/01/06 13:32:54 rws Exp $ */
+/* $XConsortium: VarGet.c,v 1.16 91/02/05 16:59:20 gildea Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -145,8 +145,8 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
     XtGetValues(widget, &arg, 1);
 
     from_val.size = from_size;
-    from_val.addr = (caddr_t)value;
-    to_val.addr = (caddr_t)typed_arg->value;
+    from_val.addr = (XPointer)value;
+    to_val.addr = (XPointer)typed_arg->value;
     to_val.size = typed_arg->size;
 
     if (!XtConvertAndStore(widget, from_type, &from_val,
