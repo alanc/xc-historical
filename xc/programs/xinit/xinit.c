@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.10 88/04/11 12:01:37 rws Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.11 88/04/11 13:54:56 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -60,6 +60,7 @@ sigCatch(sig)
 sigAlarm(sig)
 	int sig;
 {
+	signal (sig, sigAlarm);
 }
 #endif /* SYSV */
 
