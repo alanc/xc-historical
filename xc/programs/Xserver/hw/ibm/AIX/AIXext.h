@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXext.h,v 1.2 91/07/16 12:56:01 jap Exp $
+ * $XConsortium: AIXext.h,v 1.3 91/11/22 17:06:44 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -62,6 +62,7 @@ int whatelse[5]  ;
 		 ((char *) &(dst))[0] = ((char *) &(src))[1];\
 		 ((char *) &(dst))[1] = ((char *) &(src))[0];
 
+/*
 #define LengthRestB(stuff) \
     (((unsigned long)stuff->length << 2) - sizeof(*stuff))
 
@@ -70,6 +71,7 @@ int whatelse[5]  ;
 
 #define LengthRestL(stuff) \
     ((unsigned long)stuff->length - (sizeof(*stuff) >> 2))
+*/
 
 #define SwapRestS(stuff) \
     SwapShorts((short *)(stuff + 1), LengthRestS(stuff))
