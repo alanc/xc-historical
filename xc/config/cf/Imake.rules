@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.137 93/08/07 10:30:21 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.138 93/08/10 20:36:44 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -424,12 +424,12 @@ ProgramTargetHelper(program,SRCS2,OBJS2,DEPLIBS2,locallib,syslib)
 ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
 #endif /* ComplexProgramTarget_3 */
 
-#ifndef MoveToBakFile(file)
+#ifndef MoveToBakFile
 #define MoveToBakFile(file) -@if [ -f file ]; then set -x; \		@@\
 	$(MV) file file.bak; else exit 0; fi
 #endif /* MoveToBakFile */
 
-#ifndef RMoveToBakFile(file)
+#ifndef RMoveToBakFile
 #define RMoveToBakFile(file) -@if [ -f file ]; then set -x; \		@@\
 	$(RM) file.bak; $(MV) file file.bak; \				@@\
 	else exit 0; fi
