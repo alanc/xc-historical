@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: externs.h,v 1.7 87/10/09 14:01:32 weissman Exp $";
+ * $Header: externs.h,v 1.8 88/01/19 14:24:16 swick Locked $
  */
 
 /*
@@ -31,9 +31,7 @@ extern int errno;
 
 extern char *getenv();
 
-extern DwtTextSource XtCreateEDiskSource();
-extern int *XtStringSourceCreate();
-extern void XtStringSourceDestroy();
+extern XtTextSource XtCreateEDiskSource();
 
 extern char *DoCommandToFile();
 extern char *DoCommandToString();
@@ -53,8 +51,8 @@ extern char *MallocACopy();
 extern int DenyGeoRequest();
 extern char *CreateGeometry();
 extern char *MakeFileName();
-extern TextWidget CreateTextSW();
-extern LabelWidget CreateTitleBar();
+extern Widget CreateTextSW();
+extern Widget CreateTitleBar();
 extern MsgList CurMsgListOrCurMsg();
 extern Toc SelectedToc();
 
@@ -70,7 +68,7 @@ extern Scrn LastButtonScreen();
 
 extern char *Version();
 
-DwtTextSource TSourceCreate();
+XtTextSource TSourceCreate();
 
 extern void IconInit();
 
