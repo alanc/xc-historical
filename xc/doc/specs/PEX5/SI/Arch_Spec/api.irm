@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: api.irm,v 5.1 91/02/16 09:36:39 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -44,9 +44,8 @@ the \fI\s-1PEX-SI\s+1 User Guide\fR.
 .IX "C binding"
 .LP
 The Application Program Interface to \s-1PEX\s+1 is provided by the \s-1PHIGS\s+1 
-and \s-1PHIGS PLUS\s+1 C bindings.  The \s-1PHIGS\s+1 C binding is 
-currently out for Draft International Standard (\s-1DIS\s+1) review in \s-1ISO\s+1.
-The \s-1API\s+1 is based on the (August 1990) \s-1DIS\s0 version of the binding.
+and \s-1PHIGS PLUS\s+1 C bindings.  
+The \s-1API\s+1 is based on the \s-1IS\s0 version of the binding.
 The \s-1PHIGS PLUS\s+1 C binding effort has just begun in \s-1ISO\s+1, so there
 is no working draft.  The \s-1API\s+1 has developed an interim version to use until a
 working draft (or better) is available.  This version follows the same 

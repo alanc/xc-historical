@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: cover.irm,v 5.1 91/02/16 09:36:37 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,7 +30,7 @@
 .EF ''29 February 1991''  
 .OF ''29 February 1991''  
 .TL  
-\PEX-SI Architecture Specification v. \(*W
+\PEX-SI Architecture Specification 
 .AU  
 Marty Hess  
 .AU  
