@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: miStruct.h,v 5.1 91/02/16 09:54:44 rws Exp $ */
+
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -97,6 +98,13 @@ typedef enum {
 	ES_FOLLOW_SEARCH = 3	/* follow initial search path before search */
 } miExecStrState;
 
+/* added to allow SI to do pick last */
+typedef struct _miPPLevel {
+  ddPickPath pp;
+  struct _miPPLevel *up;
+} miPPLevel;
+
+
 /*
  * level 3 traversal doesn't do picking or search, so it ALWAYS sets
  * exec_str_flag to YES and the element pointers to NULL
@@ -107,6 +115,7 @@ typedef struct {
 	ddPickPath	*p_curr_pick_el;
 	ddElementRef	*p_curr_sc_el;
 	ddSHORT		max_depth;	/* max depth reached in pick or search */
+        miPPLevel       *p_pick_path;
 }  miTraverserState;
 
 #endif	/* MISTRUCT_H */
