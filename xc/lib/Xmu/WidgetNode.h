@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WidgetNode.h,v 1.1 90/02/26 11:27:35 jim Exp $
+ * $XConsortium: WidgetNode.h,v 1.2 90/02/26 11:30:39 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -41,6 +41,9 @@ typedef struct _XmuWidgetNode {
     XtResourceList resources;		/* extracted resource database */
     struct _XmuWidgetNode **resourcewn;	/* where resources come from */
     Cardinal nresources;		/* number of resources */
+    XtResourceList constraints;		/* extracted constraint resources */
+    struct _XmuWidgetNode **constraintwn;  /* where constraints come from */
+    Cardinal nconstraints;		/* number of constraint resources */
     XtPointer data;			/* extra data */
 } XmuWidgetNode;
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.24 90/02/26 11:50:47 jim Exp $
+ * $XConsortium: listres.c,v 1.25 90/02/26 11:56:20 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -180,6 +180,18 @@ static void print_resources (node, format, topnode, showsuper, showvar)
     XmuWidgetNode **wn = node->resourcewn;
 
     for (i = 0; i < node->nresources; i++, res++, wn++) {
+	if (!showsuper && *wn != node) continue;
+	printf (format, showvar ? (*wn)->label : XmuWnClassname(*wn),
+		res->resource_name, res->resource_class, res->resource_type);
+	putchar ('\n');
+    }
+    if (node->nconstraints > 0) {
+	printf (format, "----", "----", "----", "----");
+	putchar ('\n');
+    }
+    res = node->constraints;
+    wn = node->constraintwn;
+    for (i = 0; i < node->nconstraints; i++, res++, wn++) {
 	if (!showsuper && *wn != node) continue;
 	printf (format, showvar ? (*wn)->label : XmuWnClassname(*wn),
 		res->resource_name, res->resource_class, res->resource_type);

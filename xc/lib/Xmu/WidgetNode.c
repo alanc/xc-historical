@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 1.17 90/02/08 13:31:14 jim Exp $
+ * $XConsortium: WidgetNode.c,v 1.1 90/02/26 11:27:33 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -61,43 +61,55 @@ static char *binsearch (key, base, nelems, elemsize, compar)
 
 
 static int compare_resource_entries (a, b)
-    char *a, *b;
+    register char *a, *b;
 {
     return strcmp (((XtResourceList)a)->resource_name,
 		   ((XtResourceList)b)->resource_name);
 }
 
 
-static XmuWidgetNode *find_resource (node, name)
+static XmuWidgetNode *find_resource (node, name, cons)
     XmuWidgetNode *node;
     char *name;
+    Bool cons;
 {
-    XmuWidgetNode *sup;
+    register XmuWidgetNode *sup;
     XtResource res;
+
+#define reslist ((char *) (cons ? sup->constraints : sup->resources))
+#define nreslist (int) (cons ? sup->nconstraints : sup->nresources)
 
     res.resource_name = name;
     for (sup = node->superclass; 
 	 sup && (XtResourceList) binsearch ((char *) &res,
-					    (char *) sup->resources,
-					    (int) sup->nresources, 
+					    reslist, nreslist,
 					    sizeof(XtResource),
 					    compare_resource_entries);
 	 node = sup, sup = sup->superclass) ;
+
+#undef reslist
+#undef nreslist
 
     return node;
 }
 
 
 static void mark_resource_owner (node)
-    XmuWidgetNode *node;
+    register XmuWidgetNode *node;
 {
-    int i;
+    register int i;
     XtResourceList childres;
 
     childres = node->resources;
-
     for (i = 0; i < node->nresources; i++, childres++) {
-	node->resourcewn[i] = find_resource (node, childres->resource_name);
+	node->resourcewn[i] = find_resource (node, childres->resource_name,
+					     False);
+    }
+
+    childres = node->constraints;
+    for (i = 0; i < node->nconstraints; i++, childres++) {
+	node->constraintwn[i] = find_resource (node, childres->resource_name,
+						True);
     }
 }
 
@@ -139,6 +151,9 @@ void XmuWnInitializeNodes (nodearray, nnodes)
 	wn->resources = NULL;
 	wn->resourcewn = NULL;
 	wn->nresources = 0;
+	wn->constraints = NULL;
+	wn->constraintwn = NULL;
+	wn->nconstraints = 0;
 	wn->data = (XtPointer) NULL;
 
 	/*
@@ -202,6 +217,23 @@ void XmuWnFetchResources (node, toplevel, topnode)
 		     sizeof (XmuWidgetNode *));
 	    exit (1);
 	}
+
+	XtGetConstraintResourceList (XmuWnClass(wn), &wn->constraints,
+				     &wn->nconstraints);
+	if (wn->constraints) {
+	    qsort ((char *) wn->constraints, wn->nconstraints,
+		   sizeof(XtResource), compare_resource_entries);
+	}
+	wn->constraintwn = (XmuWidgetNode **)
+	  XtCalloc (wn->nconstraints, sizeof (XmuWidgetNode *));
+	if (!wn->constraintwn) {
+	    fprintf (stderr,
+		     "%s:  unable to calloc %d %d byte widget node ptrs\n",
+		     "XmuWnFetchResources", wn->nconstraints,
+		     sizeof (XmuWidgetNode *));
+	    exit (1);
+	}
+
 	wn->have_resources = True;
 	if (wn == topnode) break;
     }
