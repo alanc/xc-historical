@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.91 90/12/11 12:20:17 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.92 90/12/12 14:53:03 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -269,7 +269,7 @@ void  XrmCompileResourceList(resources, num_resources)
     	xrmres->xrm_name	 = PSToQ(resources->resource_name);
     	xrmres->xrm_class	 = PSToQ(resources->resource_class);
     	xrmres->xrm_type	 = PSToQ(resources->resource_type);
-#ifdef CRAY1
+#if defined(CRAY1) && !defined(__STDC__)
 	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
 #else
         xrmres->xrm_offset	 = -resources->resource_offset - 1;
@@ -293,7 +293,7 @@ static void  XrmCompileResourceListEphem(resources, num_resources)
     	xrmres->xrm_name	 = StringToName(resources->resource_name);
     	xrmres->xrm_class	 = StringToClass(resources->resource_class);
     	xrmres->xrm_type	 = StringToQuark(resources->resource_type);
-#ifdef CRAY1
+#if defined(CRAY1) && !defined(__STDC__)
 	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
 #else
         xrmres->xrm_offset	 = -resources->resource_offset - 1;

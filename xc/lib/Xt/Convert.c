@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.50 90/12/31 18:49:59 rws Exp $ */
+/* $XConsortium: Convert.c,v 1.51 91/01/02 08:11:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -478,7 +478,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	    break;
 
 	case XtBaseOffset:
-#ifdef CRAY1
+#if defined(CRAY1) && !defined(__STDC__)
 	    args[i].addr =
 		(caddr_t)((int)widget + (int)convert_args[i].address_id);
 #else
@@ -494,7 +494,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 		    ancestor = _XtWindowedAncestor(widget);
 	    }
 
-#ifdef CRAY1
+#if defined(CRAY1) && !defined(__STDC__)
 	    args[i].addr =
 		(caddr_t)((int)ancestor + (int)convert_args[i].address_id);
 #else
@@ -530,7 +530,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
                      params,&num_params);
 		offset = 0;
 	    }
-#ifdef CRAY1
+#if defined(CRAY1) && !defined(__STDC__)
 	    args[i].addr = (caddr_t)((int)widget + offset);
 #else
 	    args[i].addr = (caddr_t)((char *)widget + offset);
