@@ -276,13 +276,17 @@ _FSConnectServer(server_name, expanded_name)
 		char       *cp;
 		char        tmpbuf[1024];
 
-#if defined(CRAY) && defined(OLDTCP)
+#ifdef CRAY
+#ifdef OLDTCP
 		tmp_server_addrlen = sizeof(inaddr.sin_addr);
+#else
+		tmp_server_addrlen = SIZEOF_in_addr;
+#endif
 		cp = (char *) &inaddr.sin_addr;
 #else
 		tmp_server_addrlen = sizeof(inaddr.sin_addr.s_addr);
 		cp = (char *) &inaddr.sin_addr.s_addr;
-#endif				/* CRAY and OLDTCP */
+#endif /* CRAY */
 
 		if ((tmp_server_addrlen == 4) &&
 			(cp[0] == 127) && (cp[1] == 0) &&
