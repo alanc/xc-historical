@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: looper.yacc,v 5.2 91/02/16 09:59:47 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1455,7 +1455,7 @@ N_fopen_from_path(name, type, path)
 	return fopen(name, type);
     } else {
 	/* go through dirs in path */
-	path_copy = strdup(path);
+	path_copy = strcpy (malloc (strlen (path) + 1), path);
 	for (dir=strtok(path_copy, ":"), stream = NULL; 
 	     dir != NULL && stream==NULL;
 	     dir=strtok(NULL, ":")) {
