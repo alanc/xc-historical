@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XRestackWs.c,v 1.8 88/08/11 14:52:18 jim Exp $ */
+/* $XConsortium: XRestackWs.c,v 1.9 88/09/06 16:11:37 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -11,7 +11,9 @@ XRestackWindows (dpy, windows, n)
     int n;
     {
     int i = 0;
+#ifdef MUSTCOPY
     unsigned long val = Below;		/* needed for macro below */
+#endif
 
     LockDisplay(dpy);
     while (windows++, ++i < n) {
