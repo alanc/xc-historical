@@ -1,5 +1,5 @@
 /*
-* $Header: ConstraintP.h,v 1.2 88/02/03 15:08:30 swick Locked $
+* $Header: ConstraintP.h,v 1.3 88/02/05 23:09:57 swick Exp $
 */
 
 /*
@@ -28,8 +28,8 @@
 #ifndef _XtConstraintP_h
 #define _XtConstraintP_h
 
-#include <X/Constraint.h>
-#include "CoreP.h"
+#include <X11/Constraint.h>
+#include <X11/CoreP.h>
 
 typedef struct _ConstraintPart {
     caddr_t     mumble;		/* No new fields, keep C compiler happy */

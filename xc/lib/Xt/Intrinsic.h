@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.72 88/02/06 10:17:55 swick Locked $
+* $Header: Intrinsic.h,v 1.73 88/02/09 14:27:35 swick Exp $
 */
 
 /*
@@ -26,8 +26,8 @@
  */
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h
-#include	<X/Xlib.h>
-#include	<X/Xresource.h>
+#include	<X11/Xlib.h>
+#include	<X11/Xresource.h>
 #include	<sys/types.h>
 
 #ifndef NULL
@@ -87,9 +87,9 @@ typedef unsigned int	Dimension;  /* Size in pixels		        */
  ****************************************************************/
 typedef long XtArgVal;
 
-#include "Core.h"
-#include "Composite.h"
-#include "Constraint.h"
+#include <X11/Core.h>
+#include <X11/Composite.h>
+#include <X11/Constraint.h>
 
 extern Boolean XtIsSubclass ();
     /* Widget       widget;	    */

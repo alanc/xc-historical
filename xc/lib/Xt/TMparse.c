@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.56 88/02/02 13:37:30 swick Locked $";
+static char rcsid[] = "$Header: TMparse.c,v 1.56 88/02/02 13:41:54 swick Exp $";
 #endif lint
 
 /*
@@ -26,14 +26,14 @@ static char rcsid[] = "$Header: TMparse.c,v 1.56 88/02/02 13:37:30 swick Locked 
  */
 /* TMparse.c -- parse all X events into widget specific actions. */
 
-#include <X/Xos.h>
-#include <X/Xlib.h>
-#include <X/Xutil.h>
-#include <X/Atoms.h>
+#include <X11/Xos.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Atoms.h>
 #include <stdio.h>
 #include "IntrinsicI.h"
 #include "TMprivate.h"
-#include <X/Convert.h>
+#include <X11/Convert.h>
 
 /* Private definitions. */
 #define LF 0x0a

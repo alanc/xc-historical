@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Convert.c,v 1.6 88/02/03 23:21:53 swick Exp $";
+static char rcsid[] = "$Header: Convert.c,v 1.7 88/02/14 11:56:20 rws Exp $";
 #endif lint
 
 /*
@@ -27,8 +27,8 @@ static char rcsid[] = "$Header: Convert.c,v 1.6 88/02/03 23:21:53 swick Exp $";
 
 #include	"IntrinsicI.h"
 
-#include        <X/Convert.h>
-#include	"Quarks.h"
+#include        <X11/Convert.h>
+#include	<X11/Quarks.h>
 #include	"Resource.h"
 
 /* ||| */

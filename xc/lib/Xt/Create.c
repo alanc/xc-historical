@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Create.c,v 6.31 88/02/03 23:03:34 swick Exp $";
+static char rcsid[] = "$Header: Create.c,v 6.32 88/02/13 16:05:35 swick Exp $";
 #endif lint
 
 /*
@@ -25,8 +25,8 @@ static char rcsid[] = "$Header: Create.c,v 6.31 88/02/03 23:03:34 swick Exp $";
  * SOFTWARE.
  */
 #include "IntrinsicI.h"
-#include <X/Atoms.h>
-#include <X/Xos.h>
+#include <X11/Atoms.h>
+#include <X11/Xos.h>
 #include <stdio.h>
 #include "Resource.h"
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Constraint.c,v 1.2 88/02/03 09:06:10 swick Locked $";
+static char rcsid[] = "$Header: Constraint.c,v 1.3 88/02/03 09:07:10 swick Exp $";
 #endif lint
 
 /*
@@ -27,7 +27,7 @@ static char rcsid[] = "$Header: Constraint.c,v 1.2 88/02/03 09:06:10 swick Locke
 
 #define CONSTRAINT
 #include "IntrinsicI.h"
-#include <X/Atoms.h>
+#include <X11/Atoms.h>
 #include "Resource.h"
 
 globaldef ConstraintClassRec constraintClassRec = {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ArgList.c,v 1.9 88/02/02 20:02:38 swick Locked $";
+static char rcsid[] = "$Header: ArgList.c,v 1.10 88/02/02 20:36:10 swick Exp $";
 #endif lint
 
 /*
@@ -24,7 +24,7 @@ static char rcsid[] = "$Header: ArgList.c,v 1.9 88/02/02 20:02:38 swick Locked $
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#include	<X/Xlib.h>
+#include	<X11/Xlib.h>
 #include	<stdio.h>
 #include	"IntrinsicI.h"
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.109 88/02/11 21:08:30 rws Exp $";
+static char rcsid[] = "$Header: Initialize.c,v 1.110 88/02/14 11:56:46 rws Exp $";
 #endif
 
 /*
@@ -28,14 +28,14 @@ static char rcsid[] = "$Header: Initialize.c,v 1.109 88/02/11 21:08:30 rws Exp $
 
 #include <pwd.h>
 #include <stdio.h>
-#include <X/Xos.h>
+#include <X11/Xos.h>
 #include <sys/param.h>
 
  /* Xlib definitions  */
  /* things like Window, Display, XEvent are defined herein */
 #include "IntrinsicI.h"
 #include "Event.h"
-#include "Atoms.h"
+#include <X11/Atoms.h>
 #include "Shell.h"
 #include "ShellP.h"
 

@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicP.h,v 6.22 88/02/06 10:17:39 swick Locked $
+* $Header: IntrinsicP.h,v 6.23 88/02/09 14:27:05 swick Exp $
 */
 
 /*
@@ -27,8 +27,8 @@
 #ifndef _XtintrinsicP_h
 #define _XtintrinsicP_h
 
-#include <X/Intrinsic.h>
-#include <X/Xutil.h>
+#include <X11/Intrinsic.h>
+#include <X11/Xutil.h>
 
 typedef unsigned long XtVersionType;
 

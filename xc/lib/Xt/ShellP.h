@@ -1,5 +1,5 @@
 /*
-* $Header: ShellP.h,v 6.10 88/01/29 13:01:17 asente Exp $
+* $Header: ShellP.h,v 1.11 88/02/02 08:31:08 swick Exp $
 */
 
 /*
@@ -152,7 +152,7 @@ typedef  struct {
 	WMShellPart	wm;
 } WMShellRec, *WMShellWidget;
 
-#include "VendorP.h"
+#include <X11/VendorP.h>
 
 /***********************************************************************
  *

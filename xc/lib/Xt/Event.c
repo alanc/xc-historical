@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.53 88/02/04 18:58:26 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.54 88/02/05 21:22:05 swick Exp $";
 #endif lint
 
 /*
@@ -24,11 +24,11 @@ static char rcsid[] = "$Header: Event.c,v 1.53 88/02/04 18:58:26 swick Locked $"
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#include <X/Xlib.h>
-#include <X/Xutil.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include "IntrinsicI.h"
 #include "Event.h"
-#include "Atoms.h"
+#include <X11/Atoms.h>
 extern void bzero();
 
 EventMask _XtBuildEventMask(widget)

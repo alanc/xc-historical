@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.21 88/02/11 21:19:15 rws Exp $";
+static char rcsid[] = "$Header: Converters.c,v 1.22 88/02/14 11:57:20 rws Exp $";
 #endif lint
 
 /*
@@ -29,16 +29,16 @@ static char rcsid[] = "$Header: Converters.c,v 1.21 88/02/11 21:19:15 rws Exp $"
 /* Conversion.c - implementations of resource type conversion procs */
 
 #include	"IntrinsicI.h"
-#include	"CoreP.h"
-#include	<X/Xlib.h>
-#include	<X/Xos.h>
-#include	<X/Xutil.h>
-#include	<X/Atoms.h>
+#include	<X11/CoreP.h>
+#include	<X11/Xlib.h>
+#include	<X11/Xos.h>
+#include	<X11/Xutil.h>
+#include	<X11/Atoms.h>
 #include	<stdio.h>
 #include	<sys/dir.h>
-#include	<X/cursorfont.h>
-#include	<X/Convert.h>
-#include	"Quarks.h"
+#include	<X11/cursorfont.h>
+#include	<X11/Convert.h>
+#include	<X11/Quarks.h>
 
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
