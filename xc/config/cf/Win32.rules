@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.30 94/01/08 18:32:30 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.31 94/01/08 18:57:28 rws Exp $
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries NO
@@ -331,6 +331,10 @@ Avoid.Error $(XVARuse0:/=\):						@@\
 Concat3(DEP,varname,LIB) = _UseCat($(USRLIBDIR)/,libsource/,libname.lib) @@\
 Concat(varname,LIB) = LoaderLibPrefix _Use(libname.lib,$(Concat3(DEP,varname,LIB))) @@\
 LintLibReferences(varname,libname,libsource)
+
+#define SharedLibReferences(varname,libname,libsource,revname,rev)	@@\
+revname = rev								@@\
+UnsharedLibReferences(varname,libname,libsource)
 
 #define	SubdirLibraryRule(objlist)					@@\
 XVARdef0 = objlist							@@\
