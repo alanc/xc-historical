@@ -16,9 +16,30 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 Author: Keith Packard, MIT X Consortium
 
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.16 93/12/13 17:22:25 dpw Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.1 93/12/31 11:21:51 rob Exp $ */
 
 #if PSZ == 8
 
@@ -38,6 +59,17 @@ Author: Keith Packard, MIT X Consortium
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
 
+#ifndef MTX
+
+#define MTX_STIPPLE(_a) _a
+#define MTX_STIPPLE_CHANGE(_a) /* nothing */
+
+#else /* MTX */
+
+#define MTX_STIPPLE(_a) pstipple->_a
+#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
+
+#endif /* MTX */
 void
 cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     DrawablePtr	    pDrawable;
@@ -67,11 +99,24 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     cfbPrivGCPtr	    devPriv;
     PixmapPtr		    stipple;
     int	    wEnd;
+#ifdef MTX
+    StippleRec		    *pstipple;
+#endif /* MTX */
 
     devPriv = cfbGetGCPrivate(pGC);
     stipple = devPriv->pRotatedPixmap;
 
-    cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
+#ifdef MTX
+    stipple = devPriv->pRotatedPixmap;
+    if(pstipple->change == TRUE)
+    {
+#endif /* MTX */
+	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
+			       pGC->planemask);
+#ifdef MTX
+	pstipple->change = FALSE;
+    }
+#endif /* MTX */
 
     stippleHeight = stipple->drawable.height;
     src = (unsigned long *)stipple->devPrivate.ptr;
@@ -97,7 +142,7 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	rot = (pBox->x1 & ((PGSZ-1) & ~PIM));
 	pBox++;
 	y = y % stippleHeight;
-	if (cfb8StippleRRop == GXcopy)
+	if (MTX_STIPPLE(cfb8StippleRRop) == GXcopy)
 	{
 	    if (w < PGSZ*2)
 	    {
@@ -248,13 +293,25 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     PixmapPtr	    stipple;
     int		    stippleHeight;
     register int    nlw;
+#ifdef MTX
+    StippleRec		    *pstipple;
+#endif /* MTX */
     
     devPriv = cfbGetGCPrivate(pGC);
     stipple = devPriv->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 
-    cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#ifdef MTX
+    stipple = devPriv->pRotatedPixmap;
+    if(pstipple->change == TRUE)
+    {
+#endif /* MTX */
+	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#ifdef MTX
+	pstipple->change = FALSE;
+    }
+#endif /* MTX */
 
     cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
 
@@ -278,7 +335,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     	h = pBox->y2 - y;
 	pBox++;
 	y %= stippleHeight;
-	if (cfb8StippleRRop == GXcopy)
+	if (MTX_STIPPLE(cfb8StippleRRop) == GXcopy)
 	{
 	    xor = devPriv->xor;
 	    if (w < PGSZ*2)
@@ -467,13 +524,20 @@ cfb8FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
     unsigned long   *srcTemp, *srcStart;
     unsigned long   *psrcBase;
     unsigned long   startmask, endmask;
+#ifdef MTX
+    StippleRec		    *pstipple;
+#endif /* MTX */
 
+#ifdef MTX
+    UpdateStipple
+#else /* MTX */
     if (pGC->fillStyle == FillStippled)
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
     else
 	cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
+#endif /* MTX */
 
-    if (cfb8StippleRRop == GXnoop)
+    if (MTX_STIPPLE(cfb8StippleRRop) == GXnoop)
 	return;
 
     /*

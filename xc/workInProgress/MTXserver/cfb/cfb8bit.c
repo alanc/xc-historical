@@ -4,7 +4,33 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: cfb8bit.c,v 1.9 93/12/13 17:21:28 dpw Exp $ */
+/*
+ *
+ * Copyright 1992, 1993 Data General Corporation;
+ * Copyright 1992, 1993 OMRON Corporation  
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that neither the name OMRON or DATA GENERAL be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission of the party whose name is to be used.  Neither 
+ * OMRON or DATA GENERAL make any representation about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or 
+ * implied warranty.  
+ *
+ * OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+ * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ * USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
+ *
+ */
+
+/* $XConsortium: cfb8bit.c,v 1.1 93/12/31 11:21:27 rob Exp $ */
 
 #if PSZ == 8
 
@@ -158,25 +184,43 @@ PixelGroup cfb8StippleMasks[NUM_MASKS] = {
 #endif
 };
 
+#ifndef MTX
+
 int	cfb8StippleMode, cfb8StippleAlu, cfb8StippleRRop;
 PixelGroup cfb8StippleFg, cfb8StippleBg, cfb8StipplePm;
 PixelGroup cfb8StippleAnd[NUM_MASKS], cfb8StippleXor[NUM_MASKS];
+#define MTX_STIPPLE(_a) _a
+#define MTX_STIPPLE_CHANGE(_a) /* nothing */
+
+#else /* MTX */
+
+#define MTX_STIPPLE(_a) pstipple->_a
+#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
+
+#endif /* MTX */
 
 int
-cfb8SetStipple (alu, fg, planemask)
-int		alu;
-unsigned long	fg, planemask;
+cfb8SetStipple (alu, fg, planemask
+#ifdef MTX
+    , pstipple
+#endif
+)
+    int             alu;
+    unsigned long   fg, planemask;
+#ifdef MTX
+    StippleRec      *pstipple;
+#endif
 {
     unsigned long   and, xor, rrop;
     int	s;
     unsigned long   c;
 
-    cfb8StippleMode = FillStippled;
-    cfb8StippleAlu = alu;
-    cfb8StippleFg = fg & PMSK;
-    cfb8StipplePm = planemask & PMSK;
+    MTX_STIPPLE(cfb8StippleMode) = FillStippled;
+    MTX_STIPPLE(cfb8StippleAlu) = alu;
+    MTX_STIPPLE(cfb8StippleFg) = fg & PMSK;
+    MTX_STIPPLE(cfb8StipplePm) = planemask & PMSK;
     rrop = cfbReduceRasterOp (alu, fg, planemask, &and, &xor);
-    cfb8StippleRRop = rrop;
+    MTX_STIPPLE(cfb8StippleRRop) = rrop;
     /*
      * create the appropriate pixel-fill bits for current
      * foreground
@@ -184,31 +228,40 @@ unsigned long	fg, planemask;
     for (s = 0; s < NUM_MASKS; s++)
     {
 	c = cfb8StippleMasks[s];
-	cfb8StippleAnd[s] = and | ~c;
-	cfb8StippleXor[s] = xor & c;
+	MTX_STIPPLE(cfb8StippleAnd[s]) = and | ~c;
+	MTX_STIPPLE(cfb8StippleXor[s]) = xor & c;
     }
+    MTX_STIPPLE_CHANGE(TRUE);
 }
 
+
 int
-cfb8SetOpaqueStipple (alu, fg, bg, planemask)
-int		alu;
-unsigned long	fg, bg, planemask;
+cfb8SetOpaqueStipple (alu, fg, bg, planemask
+#ifdef MTX
+    , pstipple
+#endif
+)
+    int			alu;
+    unsigned long	fg, bg, planemask;
+#ifdef MTX
+    StippleRec		*pstipple;
+#endif
 {
     unsigned long   andfg, xorfg, andbg, xorbg, rropfg, rropbg;
     int	s;
     unsigned long   c;
 
-    cfb8StippleMode = FillOpaqueStippled;
-    cfb8StippleAlu = alu;
-    cfb8StippleFg = fg & PMSK;
-    cfb8StippleBg = bg & PMSK;
-    cfb8StipplePm = planemask & PMSK;
+    MTX_STIPPLE(cfb8StippleMode) = FillOpaqueStippled;
+    MTX_STIPPLE(cfb8StippleAlu) = alu;
+    MTX_STIPPLE(cfb8StippleFg) = fg & PMSK;
+    MTX_STIPPLE(cfb8StippleBg) = bg & PMSK;
+    MTX_STIPPLE(cfb8StipplePm) = planemask & PMSK;
     rropfg = cfbReduceRasterOp (alu, cfb8StippleFg, cfb8StipplePm, &andfg, &xorfg);
     rropbg = cfbReduceRasterOp (alu, cfb8StippleBg, cfb8StipplePm, &andbg, &xorbg);
     if (rropfg == rropbg)
-	cfb8StippleRRop = rropfg;
+	MTX_STIPPLE(cfb8StippleRRop) = rropfg;
     else
-	cfb8StippleRRop = GXset;
+	MTX_STIPPLE(cfb8StippleRRop) = GXset;
     /*
      * create the appropriate pixel-fill bits for current
      * foreground
@@ -216,9 +269,10 @@ unsigned long	fg, bg, planemask;
     for (s = 0; s < NUM_MASKS; s++)
     {
 	c = cfb8StippleMasks[s];
-	cfb8StippleAnd[s] = (andfg | ~c) & (andbg | c);
-	cfb8StippleXor[s] = (xorfg & c) | (xorbg & ~c);
+	MTX_STIPPLE(cfb8StippleAnd[s]) = (andfg | ~c) & (andbg | c);
+	MTX_STIPPLE(cfb8StippleXor[s]) = (xorfg & c) | (xorbg & ~c);
     }
+    MTX_STIPPLE_CHANGE(TRUE);
 }
 
 /*

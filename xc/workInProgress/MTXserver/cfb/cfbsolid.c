@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.7 93/12/13 17:22:33 dpw Exp $
+ * $XConsortium: cfbsolid.c,v 1.1 93/12/31 11:21:51 rob Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -21,6 +21,25 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Keith Packard, MIT X Consortium
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that neither the name OMRON or DATA GENERAL be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission of the party whose name is to be used.  Neither 
+ * OMRON or DATA GENERAL make any representation about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or 
+ * implied warranty.  
+ *
+ * OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+ * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ * USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
  */
 
 
@@ -236,7 +255,11 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
-		     ppt, pwidth, fSorted);
+		     ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+		     ,pDrawable->x, pDrawable->y
+#endif /* MTX */
+		     );
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 

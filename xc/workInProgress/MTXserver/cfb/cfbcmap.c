@@ -1,4 +1,4 @@
-/* $XConsortium: cfbcmap.c,v 4.16 93/12/13 17:21:52 dpw Exp $ */
+/* $XConsortium: cfbcmap.c,v 1.1 93/12/31 11:21:41 rob Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -24,6 +24,27 @@ ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,  DATA  OR
 PROFITS,  WHETHER  IN  AN  ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
 
 ********************************************************/
 
@@ -313,6 +334,19 @@ cfbCreateDefColormap(pScreen)
 
 extern int defaultColorVisualClass;
 
+/* MTX comment: luna88K changes are from MTX merge --RTC */
+#ifdef luna88k
+#define _BZ(d) ((d + 2) / 3)
+#define _BS(d) 0
+#define _BM(d) ((1 << _BZ(d)) - 1)
+#define _GZ(d) ((d - _BZ(d) + 1) / 2)
+#define _GS(d) _BZ(d)
+#define _GM(d) (((1 << _GZ(d)) - 1) << _GS(d))
+#define _RZ(d) (d - _BZ(d) - _GZ(d))
+#define _RS(d) (_BZ(d) + _GZ(d))
+#define _RM(d) (((1 << _RZ(d)) - 1) << _RS(d))
+#define _CE(d) (1 << _BZ(d))
+#else
 #define _RZ(d) ((d + 2) / 3)
 #define _RS(d) 0
 #define _RM(d) ((1 << _RZ(d)) - 1)
@@ -323,6 +357,7 @@ extern int defaultColorVisualClass;
 #define _BS(d) (_RZ(d) + _GZ(d))
 #define _BM(d) (((1 << _BZ(d)) - 1) << _BS(d))
 #define _CE(d) (1 << _RZ(d))
+#endif /* luna88k */
 
 #define MAX_PSEUDO_DEPTH    10	    /* largest DAC size I know */
 

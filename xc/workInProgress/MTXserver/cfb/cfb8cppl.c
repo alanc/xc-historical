@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.12 93/12/13 17:21:36 dpw Exp $
+ * $XConsortium: cfb8cppl.c,v 1.1 93/12/31 11:21:41 rob Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -21,6 +21,28 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Keith Packard, MIT X Consortium
+ *
+ * Copyright 1992, 1993 Data General Corporation;
+ * Copyright 1992, 1993 OMRON Corporation  
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that neither the name OMRON or DATA GENERAL be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission of the party whose name is to be used.  Neither 
+ * OMRON or DATA GENERAL make any representation about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or 
+ * implied warranty.  
+ *
+ * OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+ * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ * USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
  */
 
 #if PSZ == 8
@@ -64,11 +86,21 @@ cfbCopyImagePlane (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     unsigned long planemask;
 {
     cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
-		      (unsigned long) ~0L, planemask);
+		      (unsigned long) ~0L, planemask
+#ifdef MTX
+			,(StippleRec *)0
+#endif /* MTX */
+		      );
 }
 
+/* MTX comment: MTX adds pstipple argument but doesn't use it --RTC */
+
 void
-cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane)
+cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane
+#ifdef MTX
+    , pstipple
+#endif /* MTX */
+    )
     DrawablePtr pSrcDrawable;
     DrawablePtr pDstDrawable;
     int	rop;
@@ -76,6 +108,9 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     DDXPointPtr pptSrc;
     unsigned long planemask;
     unsigned long   bitPlane;
+#ifdef MTX
+    StippleRec	*pstipple;
+#endif /* MTX */
 {
     int			    srcx, srcy, dstx, dsty, width, height;
     unsigned char	    *psrcBase;

@@ -48,9 +48,30 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.22 93/12/13 17:21:57 dpw Exp $ */
+/* $XConsortium: cfbfillsp.c,v 1.1 93/12/31 11:21:41 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -72,6 +93,18 @@ SOFTWARE.
 
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
+
+#ifndef MTX
+
+#define MTX_STIPPLE(_a) _a
+#define MTX_STIPPLE_CHANGE(_a) /* nothing */
+
+#else /* MTX */
+
+#define MTX_STIPPLE(_a) pstipple->_a
+#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
+
+#endif /* MTX */
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks
@@ -162,7 +195,11 @@ int fSorted;
     }
     n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
-		     ppt, pwidth, fSorted);
+		     ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+		     ,pDrawable->x, pDrawable->y
+#endif /* MTX */
+		     );
 
     xrot = pDrawable->x + pGC->patOrg.x;
     yrot = pDrawable->y + pGC->patOrg.y;
@@ -205,13 +242,20 @@ int fSorted;
     unsigned long   *srcTemp, *srcStart;
     unsigned long   *psrcBase;
     unsigned long   startmask, endmask;
+#ifdef MTX
+    StippleRec      *pstipple;
+#endif /* MTX */
 
+#ifdef MTX
+    UpdateStipple
+#else /* MTX */
     if (pGC->fillStyle == FillStippled)
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
     else
 	cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
+#endif /* MTX */
 
-    if (cfb8StippleRRop == GXnoop)
+    if (MTX_STIPPLE(cfb8StippleRRop) == GXnoop)
 	return;
 
     n = nInit * miFindMaxBand( cfbGetCompositeClip(pGC) );
@@ -230,7 +274,11 @@ int fSorted;
     ppt = pptFree;
     n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
-		     ppt, pwidth, fSorted);
+		     ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+		     ,pDrawable->x, pDrawable->y
+#endif /* MTX */
+		     );
 
     /*
      *  OK,  so what's going on here?  We have two Drawables:
@@ -412,7 +460,11 @@ int fSorted;
     ppt = pptFree;
     n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
-		     ppt, pwidth, fSorted);
+		     ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+		     ,pDrawable->x, pDrawable->y
+#endif /* MTX */
+		     );
     rop = pGC->alu;
     if (pGC->fillStyle == FillStippled) {
 	switch (rop) {
@@ -572,9 +624,21 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		    *pwidthFree;	/* copies of the pointers to free */
     DDXPointPtr	    pptFree;
     cfbPrivGCPtr    devPriv;
+#ifdef MTX
+    StippleRec      *pstipple;
+#endif MTX
 
     devPriv = cfbGetGCPrivate(pGC);
-    cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#ifdef MTX
+    pstipple = devPriv->stipple;
+    if(pstipple->change == TRUE)
+    {
+#endif /* MTX */
+	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#ifdef MTX
+	pstipple->change = FALSE;
+    }
+#endif /* MTX */
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
     if ( n == 0 )
 	return;
@@ -590,7 +654,11 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
-		     ppt, pwidth, fSorted);
+		     ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+		     ,pDrawable->x, pDrawable->y
+#endif /* MTX */
+		     );
 
     stipple = devPriv->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
@@ -617,7 +685,7 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	bits = src[y % stippleHeight];
 	RotBitsLeft (bits, (x & ((PGSZ-1) & ~PIM)));
-	if (cfb8StippleRRop == GXcopy)
+	if (MTX_STIPPLE(cfb8StippleRRop) == GXcopy)
 	{
 	    xor = devPriv->xor;
 	    if (w < (PGSZ*2))
@@ -784,10 +852,24 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		    *pwidthFree;	/* copies of the pointers to free */
     DDXPointPtr	    pptFree;
     cfbPrivGCPtr    devPriv;
+#ifdef MTX
+    StippleRec      *pstipple;
+#endif MTX
 
     devPriv = cfbGetGCPrivate(pGC);
 
-    cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
+#ifdef MTX
+    pstipple = devPriv->stipple;
+    if(pstipple->change == TRUE)
+    {
+#endif /* MTX */
+	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
+	    pGC->planemask);
+#ifdef MTX
+	pstipple->change = FALSE;
+    }
+#endif /* MTX */
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
 
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
     if ( n == 0 )
@@ -804,7 +886,11 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
-		     ppt, pwidth, fSorted);
+		     ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+		     ,pDrawable->x, pDrawable->y
+#endif /* MTX */
+		     );
 
     stipple = devPriv->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
@@ -831,7 +917,7 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	bits = src[y % stippleHeight];
 	RotBitsLeft (bits, (x & ((PGSZ-1) & ~PIM)));
-	if (cfb8StippleRRop == GXcopy)
+	if (MTX_STIPPLE(cfb8StippleRRop) == GXcopy)
 	{
 	    xor = devPriv->xor;
 	    if (w < PGSZ*2)

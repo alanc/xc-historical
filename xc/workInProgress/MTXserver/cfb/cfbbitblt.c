@@ -17,8 +17,29 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 Author: Keith Packard
 
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 */
-/* $XConsortium: cfbbitblt.c,v 5.48 93/12/13 17:21:43 dpw Exp $ */
+/* $XConsortium: cfbbitblt.c,v 1.1 93/12/31 11:21:41 rob Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -34,6 +55,18 @@ Author: Keith Packard
 #include	"fastblt.h"
 #define MFB_CONSTS_ONLY
 #include	"maskbits.h"
+
+#ifndef MTX
+
+#define MTX_STIPPLE(_a) _a
+#define MTX_STIPPLE_CHANGE(_a) /* nothing */
+
+#else /* MTX */
+
+#define MTX_STIPPLE(_a) pstipple->_a
+#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
+
+#endif /* MTX */
 
 RegionPtr
 cfbBitBlt (pSrcDrawable, pDstDrawable,
@@ -64,6 +97,11 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     BoxRec fastBox;
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
+#ifdef MTX
+#if PSZ == 8
+    StippleRec	 *pstipple = (cfbGetGCPrivate(pGC))->stipple;
+#endif
+#endif /* MTX */
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -259,7 +297,13 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 	    ppt->y = pbox->y1 + dy;
 	}
 
-	(*doBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask, bitPlane);
+	(*doBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask, bitPlane
+#ifdef MTX
+#if PSZ == 8
+	    ,pstipple
+#endif
+#endif /* MTX */
+	);
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
@@ -343,7 +387,11 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 
 #if PSZ == 8
 void
-cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane)
+cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane
+#ifdef MTX
+    ,pstipple
+#endif /* MTX */
+)
     DrawablePtr pSrcDrawable;	/* must be a bitmap */
     DrawablePtr pDstDrawable;	/* must be depth 8 drawable */
     int	rop;		/* not used; caller must call cfb8CheckOpaqueStipple
@@ -355,6 +403,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     DDXPointPtr pptSrc;		/* drawable relative src coords to copy from;
 				 * must be one point for each box in prgnDst */
     unsigned long   bitPlane;	/* not used; assumed always to be 1 */
+#ifdef MTX
+    StippleRec *pstipple;
+#endif /* MTX */
 {
     int	srcx, srcy;	/* upper left corner of box being copied in source */
     int dstx, dsty;	/* upper left corner of box being copied in dest */
@@ -443,7 +494,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	 * to set cfb8StippleRRop!
 	 */
 
-	if (cfb8StippleRRop == GXcopy)
+	if (MTX_STIPPLE(cfb8StippleRRop) == GXcopy)
 	{
 	    while (height--)
 	    { /* one iteration of this loop copies one row */
@@ -495,8 +546,8 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 #define Step(c)			NextBitGroup(c);
 #define StoreBitsPlain(o,c)	StorePixels(pdst,o,GetPixelGroup(c))
 #define StoreRopBitsPlain(o,c)	StoreRopPixels(pdst,o,\
-					cfb8StippleAnd[GetBitGroup(c)], \
-					cfb8StippleXor[GetBitGroup(c)])
+				(MTX_STIPPLE(cfb8StippleAnd)[GetBitGroup(c)]), \
+				(MTX_STIPPLE(cfb8StippleXor)[GetBitGroup(c)]))
 #define StoreBits0(c)		StoreBitsPlain(0,c)
 #define StoreRopBits0(c)	StoreRopBitsPlain(0,c)
 
@@ -508,16 +559,16 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 #if PGSZ == 64
 # define StoreBits(o,c)	StorePixels(pdst,o, (cfb8Pixels[c & 0xff]))
 # define StoreRopBits(o,c)  StoreRopPixels(pdst,o, \
-    (cfb8StippleAnd[c & 0xff]), \
-    (cfb8StippleXor[c & 0xff]))
+    (MTX_STIPPLE(cfb8StippleAnd)[c & 0xff]), \
+    (MTX_STIPPLE(cfb8StippleXor)[c & 0xff]))
 # define FirstStep(c)	c = BitLeft (c, 8);
 #else
 /* 0x3c is 0xf << 2 (4 bits, long word) */
 # define StoreBits(o,c)	StorePixels(pdst,o,*((unsigned long *)\
 			    (((char *) cfb8Pixels) + (c & 0x3c))))
 # define StoreRopBits(o,c)  StoreRopPixels(pdst,o, \
-    *((unsigned long *) (((char *) cfb8StippleAnd) + (c & 0x3c))), \
-    *((unsigned long *) (((char *) cfb8StippleXor) + (c & 0x3c))))
+    *((unsigned long *) (((char *)MTX_STIPPLE(cfb8StippleAnd)) + (c & 0x3c))), \
+    *((unsigned long *) (((char *)MTX_STIPPLE(cfb8StippleXor)) + (c & 0x3c))))
 # define FirstStep(c)	c = BitLeft (c, 2);
 #endif /* PGSZ */
 #endif /* BITMAP_BIT_ORDER */
@@ -566,7 +617,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	    	}
 	    }
 	}
-	else /* cfb8StippleRRop != GXcopy */
+	else /* MTX_STIPPLE(cfb8StippleRRop) != GXcopy */
 	{
 	    while (height--)
 	    { /* one iteration of this loop copies one row */
@@ -651,7 +702,8 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 /* shared among all different cfb depths through linker magic */
 RegionPtr   (*cfbPuntCopyPlane)();
 
-RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
+RegionPtr
+cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane)
     DrawablePtr 	pSrcDrawable;
     DrawablePtr		pDstDrawable;
@@ -664,6 +716,12 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     RegionPtr	ret;
     extern RegionPtr    miHandleExposures();
     void		(*doBitBlt)();
+#ifdef MTX
+#if PSZ == 8
+    cfbPrivGCPtr devPriv;
+    StippleRec	 *pstipple;
+#endif
+#endif MTX
 
 #if PSZ == 8
 
@@ -672,9 +730,25 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     	if (bitPlane == 1)
 	{
        	    doBitBlt = cfbCopyPlane1to8;
-	    cfb8CheckOpaqueStipple (pGC->alu,
-				    pGC->fgPixel, pGC->bgPixel,
-				    pGC->planemask);
+#ifdef MTX
+	    devPriv = cfbGetGCPrivate(pGC);
+	    pstipple = devPriv->stipple;
+            if(pstipple == NULL)
+	    {
+		pstipple = (StippleRec *)xalloc(sizeof( StippleRec ));
+                cfb8SetOpaqueStipple( pGC->alu, pGC->fgPixel, pGC->bgPixel,
+				      pGC->planemask, pstipple );
+		devPriv->stipple = pstipple;
+	
+            }
+	    else 
+#endif /* MTX */
+	    cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel,
+				    pGC->planemask
+#ifdef MTX
+				    ,pstipple
+#endif /* MTX */
+				    );
     	    ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
 	    	    pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, bitPlane);
 	}
@@ -722,9 +796,26 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	(void) cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
 			  pGC1, srcx, srcy, width, height, 0, 0, 
 			  cfbCopyPlane8to1, bitPlane);
+#ifdef MTX
+	devPriv = cfbGetGCPrivate( pGC );
+	pstipple = devPriv->stipple;
+	if(pstipple == NULL)
+	{
+	    pstipple = (StippleRec *)xalloc(sizeof( StippleRec ));
+	    cfb8SetOpaqueStipple( pGC->alu, pGC->fgPixel, pGC->bgPixel,
+				  pGC->planemask, pstipple );
+	    devPriv->stipple = pstipple;
+    
+	}
+	else 
+#endif /* MTX */
 	cfb8CheckOpaqueStipple (pGC->alu,
 				pGC->fgPixel, pGC->bgPixel,
-				pGC->planemask);
+				pGC->planemask
+#ifdef MTX
+				,pstipple
+#endif /* MTX */
+				);
 	/* no exposures here, copy bits from inside a pixmap */
 	(void) cfbBitBlt ((DrawablePtr) pBitmap, pDstDrawable, pGC,
 			    0, 0, width, height, dstx, dsty, cfbCopyPlane1to8, 1);

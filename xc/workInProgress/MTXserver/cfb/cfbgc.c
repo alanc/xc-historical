@@ -20,9 +20,30 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.59 93/12/13 17:21:59 dpw Exp $ */
+/* $XConsortium: cfbgc.c,v 1.1 93/12/31 11:21:41 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -38,12 +59,21 @@ SOFTWARE.
 
 #include "mistruct.h"
 #include "mibstore.h"
+#ifndef MTX
 #include "migc.h"
+#endif /* MTX */
 
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
 
+#ifdef MTX
 void cfbValidateGC();
+#else /* MTX */
+#ifdef MTX
+void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
+void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
+#endif MTX
+#endif /* MTX */
 
 #if PSZ == 8
 # define useTEGlyphBlt  cfbTEGlyphBlt8
@@ -77,12 +107,21 @@ void cfbValidateGC();
 
 GCFuncs cfbGCFuncs = {
     cfbValidateGC,
+#ifndef MTX
     miChangeGC,
     miCopyGC,
     miDestroyGC,
     miChangeClip,
     miDestroyClip,
     miCopyClip,
+#else MTX
+    cfbChangeGC,
+    cfbCopyGC,
+    cfbDestroyGC,
+    cfbChangeClip,
+    cfbDestroyClip,
+    cfbCopyClip,
+#endif MTX
 };
 
 GCOps	cfbTEOps1Rect = {
@@ -269,7 +308,11 @@ cfbCreateGC(pGC)
     pGC->funcs = &cfbGCFuncs;
 
     /* cfb wants to translate before scan conversion */
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+    pGC->miTranslate = 0; 
+#else
     pGC->miTranslate = 1;
+#endif /* MTX */
 
     pPriv = cfbGetGCPrivate(pGC);
     pPriv->rop = pGC->alu;
@@ -277,8 +320,75 @@ cfbCreateGC(pGC)
     pPriv->fExpose = TRUE;
     pPriv->freeCompClip = FALSE;
     pPriv->pRotatedPixmap = (PixmapPtr) NULL;
+
+#ifdef MTX
+#if PSZ == 8
+    /*
+     * Set the stipple pointer to NULL.  It will be set when the first drawing
+     * function is called....
+     */
+    pPriv->stipple = NULL;
+#endif
+#endif MTX
+
     return TRUE;
 }
+
+#ifdef MTX
+/*ARGSUSED*/
+void
+cfbChangeGC(pGC, mask)
+    GC		    *pGC;
+    BITS32	    mask;
+{
+    return;
+}
+
+void
+cfbDestroyGC(pGC)
+    GC 			*pGC;
+{
+    cfbPrivGC *pPriv;
+
+    pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    if (pPriv->pRotatedPixmap)
+	cfbDestroyPixmap(pPriv->pRotatedPixmap);
+    if (pPriv->freeCompClip)
+	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
+#if PSZ == 8
+    if(pPriv->stipple)
+    {
+        xfree(pPriv->stipple);
+    }
+#endif
+    cfbDestroyOps (pGC->ops);
+}
+
+/*
+ * create a private op array for a gc
+ */
+
+GCOps *
+cfbCreateOps (prototype)
+    GCOps	*prototype;
+{
+    GCOps	*ret;
+
+    ret = (GCOps *) xnfalloc (sizeof(GCOps));
+    if (!ret)
+	return 0;
+    *ret = *prototype;
+    ret->devPrivate.val = 1;
+    return ret;
+}
+
+cfbDestroyOps (ops)
+    GCOps   *ops;
+{
+    if (ops->devPrivate.val)
+	xfree (ops);
+}
+#endif /* MTX */
 
 /* Clipping conventions
 	if the drawable is a window
@@ -296,6 +406,9 @@ cfbValidateGC(pGC, changes, pDrawable)
     Mask	    changes;
     DrawablePtr	    pDrawable;
 {
+#ifdef MTX
+    WindowPtr   pWin;
+#endif /* MTX */
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
     int		new_rrop;
@@ -311,6 +424,12 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     pGC->lastWinOrg.x = pDrawable->x;
     pGC->lastWinOrg.y = pDrawable->y;
+#ifdef MTX
+    if (pDrawable->type == DRAWABLE_WINDOW)
+	pWin = (WindowPtr) pDrawable;
+    else
+	pWin = (WindowPtr) NULL;
+#endif /* MTX */
     devPriv = cfbGetGCPrivate(pGC);
 
     new_rrop = FALSE;
@@ -328,6 +447,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     if ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode)) ||
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
 	)
+#ifndef MTX
     {
 	miComputeCompositeClip (pGC, pDrawable);
 #ifdef NO_ONE_RECT
@@ -339,6 +459,143 @@ cfbValidateGC(pGC, changes, pDrawable)
 	devPriv->oneRect = oneRect;
 #endif
     }
+#else /* MTX */
+    {
+	ScreenPtr pScreen = pGC->pScreen;
+
+	if (pWin) {
+	    RegionPtr   pregWin;
+	    Bool        freeTmpClip, freeCompClip;
+
+	    if (pGC->subWindowMode == IncludeInferiors) {
+		pregWin = NotClippedByChildren(pWin);
+		freeTmpClip = TRUE;
+	    }
+	    else {
+		pregWin = &pWin->clipList;
+		freeTmpClip = FALSE;
+	    }
+	    freeCompClip = devPriv->freeCompClip;
+
+	    /*
+	     * if there is no client clip, we can get by with just keeping
+	     * the pointer we got, and remembering whether or not should
+	     * destroy (or maybe re-use) it later.  this way, we avoid
+	     * unnecessary copying of regions.  (this wins especially if
+	     * many clients clip by children and have no client clip.) 
+	     */
+	    if (pGC->clientClipType == CT_NONE) {
+		if (freeCompClip)
+		    (*pScreen->RegionDestroy) (devPriv->pCompositeClip);
+		devPriv->pCompositeClip = pregWin;
+		devPriv->freeCompClip = freeTmpClip;
+	    }
+	    else {
+		/*
+		 * we need one 'real' region to put into the composite
+		 * clip. if pregWin the current composite clip are real,
+		 * we can get rid of one. if pregWin is real and the
+		 * current composite clip isn't, use pregWin for the
+		 * composite clip. if the current composite clip is real
+		 * and pregWin isn't, use the current composite clip. if
+		 * neither is real, create a new region. 
+		 */
+
+		(*pScreen->TranslateRegion)(pGC->clientClip,
+					    pDrawable->x + pGC->clipOrg.x,
+					    pDrawable->y + pGC->clipOrg.y);
+						  
+		if (freeCompClip)
+		{
+		    (*pGC->pScreen->Intersect)(devPriv->pCompositeClip,
+					       pregWin, pGC->clientClip);
+		    if (freeTmpClip)
+			(*pScreen->RegionDestroy)(pregWin);
+		}
+		else if (freeTmpClip)
+		{
+		    (*pScreen->Intersect)(pregWin, pregWin, pGC->clientClip);
+		    devPriv->pCompositeClip = pregWin;
+		}
+		else
+		{
+		    devPriv->pCompositeClip = (*pScreen->RegionCreate)(NullBox,
+								       0);
+		    (*pScreen->Intersect)(devPriv->pCompositeClip,
+					  pregWin, pGC->clientClip);
+		}
+		devPriv->freeCompClip = TRUE;
+		(*pScreen->TranslateRegion)(pGC->clientClip,
+					    -(pDrawable->x + pGC->clipOrg.x),
+					    -(pDrawable->y + pGC->clipOrg.y));
+						  
+	    }
+	}			/* end of composite clip for a window */
+	else {
+	    BoxRec      pixbounds;
+
+	    /* XXX should we translate by drawable.x/y here ? */
+	    pixbounds.x1 = 0;
+	    pixbounds.y1 = 0;
+	    pixbounds.x2 = pDrawable->width;
+	    pixbounds.y2 = pDrawable->height;
+
+	    if (devPriv->freeCompClip)
+		(*pScreen->RegionReset)(devPriv->pCompositeClip, &pixbounds);
+	    else {
+		devPriv->freeCompClip = TRUE;
+		devPriv->pCompositeClip = (*pScreen->RegionCreate)(&pixbounds,
+								   1);
+	    }
+
+	    if (pGC->clientClipType == CT_REGION)
+	    {
+		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
+					    -pGC->clipOrg.x, -pGC->clipOrg.y);
+		(*pScreen->Intersect)(devPriv->pCompositeClip,
+				      devPriv->pCompositeClip,
+				      pGC->clientClip);
+		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
+					    pGC->clipOrg.x, pGC->clipOrg.y);
+	    }
+	}			/* end of composute clip for pixmap */
+    }
+
+#if PSZ == 8
+    /*
+     * Need to check if the stipple data needs to be recalculated....
+     *
+     *                  ....this looks like a good place....
+     */
+#define CheckMask (GCPlaneMask | GCFunction | GCForeground | GCFillStyle)
+
+    if (pGC->fillStyle == FillStippled)
+    {
+        if (changes & CheckMask)
+	{
+            if(devPriv->stipple == NULL)
+	    {
+                devPriv->stipple = (StippleRec *)xalloc(sizeof(StippleRec));
+            }
+            cfb8SetStipple( pGC->alu, pGC->fgPixel, pGC->planemask,
+                            devPriv->stipple );
+            devPriv->stipple->change = FALSE;
+        }
+    }
+    else if (pGC->fillStyle == FillOpaqueStippled) {
+        if (changes & (CheckMask | GCBackground))
+	{
+            if(devPriv->stipple == NULL)
+	    {
+                devPriv->stipple = (StippleRec *)xalloc(sizeof(StippleRec));
+            }
+            cfb8SetOpaqueStipple( pGC->alu, pGC->fgPixel, pGC->bgPixel,
+                                  pGC->planemask, devPriv->stipple );
+            devPriv->stipple->change = FALSE;
+        }
+    }
+#endif /* PSZ == 8 */
+#endif /* MTX */
 
     mask = changes;
     while (mask) {
@@ -518,7 +775,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 	if (newops = cfbMatchCommon (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
+#ifdef MTX
+		cfbDestroyOps (pGC->ops);
+#else /* MTX */
 		miDestroyGCOps (pGC->ops);
+#endif /* MTX */
 	    pGC->ops = newops;
 	    new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
 	}
@@ -526,7 +787,12 @@ cfbValidateGC(pGC, changes, pDrawable)
  	{
 	    if (!pGC->ops->devPrivate.val)
 	    {
-		pGC->ops = miCreateGCOps (pGC->ops);
+		pGC->ops = 
+#ifdef MTX
+		    cfbCreateOps (pGC->ops);
+#else /* MTX */
+		    miCreateGCOps (pGC->ops);
+#endif /* MTX */
 		pGC->ops->devPrivate.val = 1;
 	    }
 	}
@@ -758,3 +1024,89 @@ cfbValidateGC(pGC, changes, pDrawable)
 	}
     }
 }
+
+#ifdef MTX
+void
+cfbDestroyClip(pGC)
+    GCPtr	pGC;
+{
+    if(pGC->clientClipType == CT_NONE)
+	return;
+    else if (pGC->clientClipType == CT_PIXMAP)
+    {
+	cfbDestroyPixmap((PixmapPtr)(pGC->clientClip));
+    }
+    else
+    {
+	/* we know we'll never have a list of rectangles, since
+	   ChangeClip immediately turns them into a region 
+	*/
+        (*pGC->pScreen->RegionDestroy)(pGC->clientClip);
+    }
+    pGC->clientClip = NULL;
+    pGC->clientClipType = CT_NONE;
+}
+
+void
+cfbChangeClip(pGC, type, pvalue, nrects)
+    GCPtr	pGC;
+    int		type;
+    pointer	pvalue;
+    int		nrects;
+{
+    cfbDestroyClip(pGC);
+    if(type == CT_PIXMAP)
+    {
+	pGC->clientClip = (pointer) (*pGC->pScreen->BitmapToRegion)((PixmapPtr)pvalue);
+	(*pGC->pScreen->DestroyPixmap)(pvalue);
+    }
+    else if (type == CT_REGION) {
+	/* stuff the region in the GC */
+	pGC->clientClip = pvalue;
+    }
+    else if (type != CT_NONE)
+    {
+	pGC->clientClip = (pointer) (*pGC->pScreen->RectsToRegion)(nrects,
+						    (xRectangle *)pvalue,
+						    type);
+	xfree(pvalue);
+    }
+    pGC->clientClipType = (type != CT_NONE && pGC->clientClip) ? CT_REGION :
+								 CT_NONE;
+    pGC->stateChanges |= GCClipMask;
+}
+
+void
+cfbCopyClip (pgcDst, pgcSrc)
+    GCPtr pgcDst, pgcSrc;
+{
+    RegionPtr prgnNew;
+
+    switch(pgcSrc->clientClipType)
+    {
+      case CT_PIXMAP:
+	((PixmapPtr) pgcSrc->clientClip)->refcnt++;
+	/* Fall through !! */
+      case CT_NONE:
+        cfbChangeClip(pgcDst, (int)pgcSrc->clientClipType, pgcSrc->clientClip,
+		      0);
+        break;
+      case CT_REGION:
+        prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
+        (*pgcSrc->pScreen->RegionCopy)(prgnNew,
+                                       (RegionPtr)(pgcSrc->clientClip));
+        cfbChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
+        break;
+    }
+}
+
+/*ARGSUSED*/
+void
+cfbCopyGC (pGCSrc, changes, pGCDst)
+    GCPtr	pGCSrc;
+    Mask 	changes;
+    GCPtr	pGCDst;
+{
+    return;
+}
+#endif /* MTX */
