@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.13 89/01/16 17:08:19 keith Exp $
+ * $XConsortium: dm.c,v 1.14 89/03/28 16:51:58 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,12 +33,22 @@ static void	RescanServers ();
 static int	Rescan;
 static void	TerminateAll (), RescanNotify ();
 
+#ifndef NOXDMTITLE
+static char *Title;
+static int TitleLen;
+#endif
+
 main (argc, argv)
 int	argc;
 char	**argv;
 {
 #ifndef SYSV
 	void	ChildNotify ();
+#endif
+
+#ifndef NOXDMTITLE
+	Title = argv[0];
+	TitleLen = (argv[argc - 1] + strlen(argv[argc - 1])) - Title;
 #endif
 
 	/*
@@ -321,4 +331,37 @@ StorePid ()
 			fclose (f);
 		}
 	}
+}
+
+SetTitle (name, class)
+	char *name;
+	char *class;
+{
+#ifndef NOXDMTITLE
+	char *p = Title;
+	int left = TitleLen;
+	int len;
+
+	*p++ = '-';
+	left--;
+	len = strlen(name);
+	if (len >= left)
+		len = left - 1;
+	bcopy(name, p, len);
+	p += len;
+	left -= len;
+	if (left)
+	{
+		*p++ = ' ';
+		left--;
+		len = strlen(class);
+		if (len >= left)
+			len = left - 1;
+		bcopy(class, p, len);
+		p += len;
+		left -= len;
+	}
+	while (--left >= 0)
+		*p++ = ' ';
+#endif	
 }
