@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.25 94/08/25 20:19:49 mor Exp mor $ */
+/* $XConsortium: smproxy.c,v 1.26 94/11/30 16:16:22 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -53,6 +53,8 @@ int die_count = 0;
 Bool ok_to_die = 0;
 
 Bool caught_error = 0;
+
+Bool sent_save_done = 0;
 
 int Argc;
 char **Argv;
@@ -410,8 +412,9 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    WinInfo *winInfo = (WinInfo *) clientData;
-
+    /*
+     * Nothing to do here.
+     */
 }
 
 
@@ -423,8 +426,11 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    WinInfo *winInfo = (WinInfo *) clientData;
-
+    /*
+     * Since we did not request to interact or request save yourself
+     * phase 2, we know we already sent the save yourself done, so
+     * there is nothing to do here.
+     */
 }
 
 
@@ -773,6 +779,15 @@ XCreateWindowEvent *event;
     Bool got_wm_state = 0;
 
     /*
+     * We are waiting for all proxy connections to close so we can die.
+     * Don't handle new connections.
+     */
+
+    if (ok_to_die)
+	return;
+
+
+    /*
      * Add the new window
      */
 
@@ -918,11 +933,6 @@ SmPointer clientData;
     WinInfo *winptr;
     static int first_time = 1;
 
-    filename = WriteProxyFile ();
-
-    if (!filename)
-	success = False;
-
     if (first_time)
     {
 	char userId[20];
@@ -959,6 +969,12 @@ SmPointer clientData;
 	first_time = 0;
     }
 
+    if ((filename = WriteProxyFile ()) == NULL)
+    {
+	success = False;
+	goto finishUp;
+    }
+
     prop1.name = SmRestartCommand;
     prop1.type = SmLISTofARRAY8;
 
@@ -967,8 +983,8 @@ SmPointer clientData;
 
     if (!prop1.vals)
     {
-	SmcSaveYourselfDone (smcConn, False);
-	return;
+	success = False;
+	goto finishUp;
     }
 
     numVals = 0;
@@ -1016,7 +1032,13 @@ SmPointer clientData;
     SmcSetProperties (smcConn, 2, props);
     free ((char *) prop1.vals);
 
+ finishUp:
+
     SmcSaveYourselfDone (smcConn, success);
+    sent_save_done = 1;
+
+    if (filename)
+	free (filename);
 }
 
 
@@ -1043,7 +1065,10 @@ Bool fast;
 	ProxySaveYourselfPhase2CB, NULL))
     {
 	SmcSaveYourselfDone (smcConn, False);
+	sent_save_done = 1;
     }
+    else
+	sent_save_done = 0;
 }
 
 
@@ -1085,7 +1110,11 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    SmcSaveYourselfDone (smcConn, False);
+    if (!sent_save_done)
+    {
+	SmcSaveYourselfDone (smcConn, False);
+	sent_save_done = 1;
+    }
 }
 
 
