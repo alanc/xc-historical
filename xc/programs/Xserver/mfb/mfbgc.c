@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.112 87/08/29 15:02:24 drewry Exp $ */
+/* $Header: mfbgc.c,v 1.114 87/08/30 22:29:21 drewry Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -122,7 +122,7 @@ mfbCreateGC(pGC)
     pQ->ChangeInterestMask = 0; /* interested in nothing at change time */
     pQ->ChangeGC = (int (*) () ) NULL;
     pQ->CopyGCSource = (void (*) () ) NULL;
-    pQ->CopyGCDest = mfbCopyGCDest;
+    pQ->CopyGCDest = (void (*) () ) NULL;
     pQ->DestroyGC = mfbDestroyGC;
     return TRUE;
 }
@@ -550,11 +550,29 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	}
 	else
 	{
-	    if (pGC->fgPixel == 0)
-		pGC->ImageGlyphBlt = mfbImageGlyphBltBlack;
+	    /* special case ImageGlyphBlt for terminal emulator fonts */
+	    if ((pGC->font) &&
+		(pGC->font->pFI->terminalFont) &&
+		(pGC->fgPixel != pGC->bgPixel))
+	    {
+		/* pcc bug makes this not compile...
+		pGC->ImageGlyphBlt = (pGC->fgPixel) ? mfbTEGlyphBltWhite :
+						      mfbTEGlyphBltBlack;
+		*/
+		if (pGC->fgPixel)
+		    pGC->ImageGlyphBlt = mfbTEGlyphBltWhite;
+		else
+		    pGC->ImageGlyphBlt = mfbTEGlyphBltBlack;
+	    }
 	    else
-		pGC->ImageGlyphBlt = mfbImageGlyphBltWhite;
+	    {
+	        if (pGC->fgPixel == 0)
+		    pGC->ImageGlyphBlt = mfbImageGlyphBltBlack;
+	        else
+		    pGC->ImageGlyphBlt = mfbImageGlyphBltWhite;
+	    }
 
+	    /* now do PolyGlyphBlt */
 	    if (pGC->fillStyle == FillSolid ||
 		(pGC->fillStyle == FillOpaqueStippled &&
 		 pGC->fgPixel == pGC->bgPixel
@@ -903,7 +921,17 @@ mfbDestroyClip(pGC)
 {
     if(pGC->clientClipType == CT_NONE)
 	return;
-    (*pGC->pScreen->RegionDestroy)(pGC->clientClip);
+    else if (pGC->clientClipType == CT_PIXMAP)
+    {
+	mfbDestroyPixmap((PixmapPtr)(pGC->clientClip));
+    }
+    else
+    {
+	/* we know we'll never have a list of rectangles, since
+	   ChangeClip immediately turns them into a region 
+	*/
+        (*pGC->pScreen->RegionDestroy)(pGC->clientClip);
+    }
     pGC->clientClip = NULL;
     pGC->clientClipType = CT_NONE;
 }
@@ -915,16 +943,35 @@ mfbChangeClip(pGC, type, pvalue, nrects)
     pointer	pvalue;
     int		nrects;
 {
+    /*
+       remember to bump the pixmap's refcnt before destroying the old
+       one, since the two may be the same.
+       regions that have been fed to the clip code are assumed to have
+       disappeared, so we'll never see the same one twice.
+    */
+
+    if (type == CT_PIXMAP)
+    {
+	/* so we can call destroy later, and leave this as
+	   an example
+	*/
+	((PixmapPtr)(pvalue))->refcnt++;
+    }
+
     mfbDestroyClip(pGC);
     if(type == CT_PIXMAP)
     {
+	/* convert the pixmap to a region */
 	pGC->clientClip = (pointer) mfbPixmapToRegion(pvalue);
+	/* you wouldn't do this if you were leaving the pixmap in
+	   rather than converting it.
+	*/
 	(*pGC->pScreen->DestroyPixmap)(pvalue);
     }
     else if (type == CT_REGION)
     {
-	pGC->clientClip = (pointer)(*pGC->pScreen->RegionCreate)(NULL, 0);
-	(*pGC->pScreen->RegionCopy)(pGC->clientClip, pvalue);
+	/* stuff the region in the GC */
+	pGC->clientClip = pvalue;
     }
     else if (type != CT_NONE)
     {
@@ -933,37 +980,26 @@ mfbChangeClip(pGC, type, pvalue, nrects)
     }
     pGC->clientClipType = (type != CT_NONE && pGC->clientClip) ? CT_REGION :
         CT_NONE;
-    pGC->stateChanges |= GCClipXOrigin | GCClipYOrigin | GCClipMask;
+    pGC->stateChanges |= GCClipMask;
 }
 
 void
-mfbCopyGCDest (pGC, pQ, changes, pGCSrc)
-    GCPtr	pGC;
-    GCInterestPtr	pQ;
-    Mask 		changes;
-    GCPtr		pGCSrc;
+mfbCopyClip (pgcDst, pgcSrc)
+    GCPtr pgcDst, pgcSrc;
 {
-    RegionPtr		pClip;
+    RegionPtr prgnNew;
 
-    if(changes & GCClipMask)
+    switch(pgcSrc->clientClipType)
     {
-	if(pGC->clientClipType == CT_PIXMAP)
-	{
-	    ((PixmapPtr)pGC->clientClip)->refcnt++;
-	}
-	else if(pGC->clientClipType == CT_REGION)
-	{
-	    BoxRec pixbounds;
-
-	    pixbounds.x1 = 0;
-	    pixbounds.y1 = 0;
-	    pixbounds.x2 = 0;
-	    pixbounds.y2 = 0;
-
-	    pClip = (RegionPtr) pGC->clientClip;
-	    pGC->clientClip =
-	        (pointer)(* pGC->pScreen->RegionCreate)(&pixbounds, 1);
-	    (* pGC->pScreen->RegionCopy)(pGC->clientClip, pClip);
-	}
+      case CT_NONE:
+      case CT_PIXMAP:
+	mfbChangeClip(pgcDst, pgcSrc->clientClipType, pgcSrc->clientClip, 0);
+	break;
+      case CT_REGION:
+	prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
+	(*pgcSrc->pScreen->RegionCopy)(prgnNew,
+				       (RegionPtr)(pgcSrc->clientClip));
+	mfbChangeClip(pgcDst, CT_REGION, prgnNew, 0);
+	break;
     }
 }
