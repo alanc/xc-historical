@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.61 94/04/17 20:25:52 dpw Exp kaleb $ */
+/* $XConsortium: os.h,v 1.62 94/09/13 21:51:32 kaleb Exp kaleb $ */
 
 #ifndef OS_H
 #define OS_H
@@ -102,13 +102,14 @@ pragma on(alloca);
 
 #ifdef __GNUC__
 #define alloca __builtin_alloca
-#endif
+#else
 
 /*
  * warning: old mips alloca (pre 2.10) is unusable, new one is builtin
  * Test is easy, the new one is named __builtin_alloca and comes
  * from alloca.h which #defines alloca.
  */
+#ifndef NCR
 #if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
@@ -121,6 +122,8 @@ char *alloca();
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #endif /* who does alloca */
+#endif /* NCR */
+#endif /* ! __GNUC__ */
 
 #endif /* NO_ALLOCA */
 
