@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.0 89/06/09 15:06:50 keith Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.1 89/06/12 16:28:40 keith Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -55,8 +55,11 @@ mfbCreatePixmap (pScreen, width, height, depth)
     if (!pPixmap)
 	return NullPixmap;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
+    pPixmap->drawable.class = 0;
     pPixmap->drawable.pScreen = pScreen;
     pPixmap->drawable.depth = 1;
+    pPixmap->drawable.bitsPerPixel = 1;
+    pPixmap->drawable.id = 0;
     pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pPixmap->drawable.x = 0;
     pPixmap->drawable.y = 0;
@@ -97,13 +100,9 @@ mfbCopyPixmap(pSrc)
     pDst = (PixmapPtr)xalloc(sizeof(PixmapRec));
     if (!pDst)
 	return NullPixmap;
-    pDst->drawable.type = pSrc->drawable.type;
-    pDst->drawable.pScreen = pSrc->drawable.pScreen;
-    pDst->drawable.x = pSrc->drawable.x;
-    pDst->drawable.y = pSrc->drawable.y;
-    pDst->drawable.width = pSrc->drawable.width;
-    pDst->drawable.height = pSrc->drawable.height;
-    pDst->drawable.depth = pSrc->drawable.depth;
+    pDst->drawable = pSrc->drawable;
+    pDst->drawable.id = 0;
+    pDst->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pDst->devKind = pSrc->devKind;
     pDst->refcnt = 1;
 
