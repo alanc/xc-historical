@@ -1,0 +1,17 @@
+XCOMM $XConsortium$
+XCOMM
+XCOMM Definitions for using Fresco library
+XCOMM
+
+DEPLIBS = FrescoClientDepLibs
+LOCAL_LIBRARIES = -L$(FRESCOSRC)/src FrescoClientLibs
+EXTENSIONLIB =
+
+#if ThreadedX
+LOCAL_LDFLAGS = ThreadsLoadFlags
+SYS_LIBRARIES = ThreadsLibraries
+#endif
+
+#define CplusplusSource
+
+NormalCplusplusObjectRule()
