@@ -1,4 +1,4 @@
-/* $XConsortium: strip.c,v 1.1 93/10/26 09:44:24 rws Exp $ */
+/* $XConsortium: strip.c,v 1.2 93/10/31 09:42:56 dpw Exp $ */
 /**** module strip.c ****/
 /*****************************************************************************
 				NOTICE
@@ -492,11 +492,11 @@ static Bool map_data(flo,pet,bnd,map,unit,len,purge)
    */
   if(len && map + len <= bnd->mapSize)
     if(bnd->isInput) {
-      last = GetSrc(CARD8,flo,pet,bnd,unit+len-1,KEEP);
-      next = GetSrc(CARD8,flo,pet,bnd,unit,purge);
+      last = GetSrc(CARD8 *,flo,pet,bnd,unit+len-1,KEEP);
+      next = GetSrc(CARD8 *,flo,pet,bnd,unit,purge);
     } else {
-      last = GetDst(CARD8,flo,pet,bnd,unit+len-1,KEEP);
-      next = GetDst(CARD8,flo,pet,bnd,unit,purge);
+      last = GetDst(CARD8 *,flo,pet,bnd,unit+len-1,KEEP);
+      next = GetDst(CARD8 *,flo,pet,bnd,unit,purge);
     }
   if(!next || !last)
     return(FALSE);	/* map too small or can't map first and last unit */
@@ -735,11 +735,11 @@ static void bypass_src(flo,pet,sbnd)
     /*
      * if there's lingering data, see that it gets to its destination
      */
-    for(src = GetCurrentSrc(CARD8,flo,pet,sbnd),
-	dst = GetCurrentDst(CARD8,flo,pet,dbnd);
+    for(src = GetCurrentSrc(CARD8 *,flo,pet,sbnd),
+	dst = GetCurrentDst(CARD8 *,flo,pet,dbnd);
 	src && dst;
-	src = GetNextSrc(CARD8,flo,pet,sbnd,KEEP),
-	dst = GetNextDst(CARD8,flo,pet,dbnd,!src)) {
+	src = GetNextSrc(CARD8 *,flo,pet,sbnd,KEEP),
+	dst = GetNextDst(CARD8 *,flo,pet,dbnd,!src)) {
       if(src != dst)
 	memcpy((char*)dst, (char*)src, (int)dbnd->pitch);
     }
