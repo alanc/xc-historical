@@ -1,4 +1,4 @@
-/* $Header: cursorstr.h,v 1.1 87/09/11 07:49:40 rws Locked $ */
+/* $Header: cursorstr.h,v 1.2 88/01/02 17:08:03 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,10 +37,10 @@ SOFTWARE.
 typedef struct _Cursor {
     unsigned char *source;			/* points to bits */
     unsigned char *mask;			/* points to bits */
-    int width;
-    int height;
-    int xhot;					/* must be within bitmap */
-    int yhot;					/* must be within bitmap */
+    long width;
+    long height;
+    long xhot;					/* must be within bitmap */
+    long yhot;					/* must be within bitmap */
     unsigned foreRed, foreGreen, foreBlue;	/* device-independent color */
     unsigned backRed, backGreen, backBlue;	/* device-independent color */
     int refcnt;
@@ -48,7 +48,7 @@ typedef struct _Cursor {
 } CursorRec;
 
 typedef struct _CursorMetric {
-    int width, height, xhot, yhot;
+    long width, height, xhot, yhot;
 } CursorMetricRec;
 
 extern int		FreeCursor();
