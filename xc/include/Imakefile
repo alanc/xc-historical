@@ -13,8 +13,8 @@ EXPORTS = \
 
 IMPORTS = \
 	$(OLDXLIBSRC)/X10.h \
-	$(XRMSRC)/Xresource.h \
 	$(XLIBSRC)/Xlib.h \
+	$(XLIBSRC)/Xresource.h \
 	$(XLIBSRC)/Xutil.h \
 	$(FONTSRC)/cursorfont.h \
 	$(TOOLKITSRC)/AsciiText.h \

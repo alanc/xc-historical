@@ -7,7 +7,6 @@
 #
 
 SUBDIRS = X \
-	Xrm \
 	oldX \
 	oldXrm \
 	oldXtk \

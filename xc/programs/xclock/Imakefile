@@ -2,5 +2,5 @@
            OBJS = xclock.o
            SRCS = xclock.c
 
-SingleProgramTarget(xclock,$(OBJS),$(XTOOLLIB) $(XRMLIB) $(XLIB),-lm)
+SingleProgramTarget(xclock,$(OBJS),$(XTOOLLIB) $(XLIB),-lm)
 DependTarget()
