@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.97 93/09/03 20:28:08 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.98 93/09/05 18:20:14 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,7 @@ SOFTWARE.
 extern char* getenv();
 #endif
 
-#if defined (XTHREADS)
+#ifdef XTHREADS
 void (*_XtProcessLock)() = NULL;
 void (*_XtProcessUnlock)() = NULL;
 ThreadAppProc _XtInitAppLock = NULL;
@@ -84,7 +84,7 @@ static void AddToAppContext(d, app)
 	}
 
 	app->list[app->count++] = d;
-#if !defined(USE_POLL)
+#ifndef USE_POLL
 	if (ConnectionNumber(d) + 1 > app->fds.nfds) {
 	    app->fds.nfds = ConnectionNumber(d) + 1;
 	}
@@ -321,7 +321,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 XtAppContext XtCreateApplicationContext()
 {
 	XtAppContext app = XtNew(XtAppStruct);
-#if defined(XTHREADS)
+#ifdef XTHREADS
 	app->lock = NULL;
 	app->unlock = NULL;
 	app->restore_lock = NULL;
@@ -356,7 +356,7 @@ XtAppContext XtCreateApplicationContext()
 	app->sync = app->being_destroyed = app->error_inited = FALSE;
 	app->in_phase2_destroy = NULL;
 	app->fds.nfds = app->fds.count = 0;
-#if !defined(USE_POLL)
+#ifndef USE_POLL
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
 	FD_ZERO(&app->fds.emask);
@@ -439,7 +439,7 @@ void _XtDestroyAppContext(app)
 	*prev_app = app->next;
 	if (app->process->defaultAppContext == app)
 	    app->process->defaultAppContext = NULL;
-#if defined(USE_POLL)
+#ifdef USE_POLL
 	XtFree((char *)app->fds.fdlist);
 #endif
 	if (app->free_bindings) _XtDoFreeBindings (app);

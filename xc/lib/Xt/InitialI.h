@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.72 93/08/27 16:23:41 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.73 93/09/03 09:57:14 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -167,7 +167,7 @@ typedef struct _XtAppStruct {
     Display **dpy_destroy_list;
     int dpy_destroy_count;
     Boolean exit_flag;
-#if defined(XTHREADS)
+#ifdef XTHREADS
     LockPtr lock_info;
     ThreadStackPtr stack;
     ThreadAppProc lock;
@@ -268,7 +268,7 @@ extern int _XtWaitForSomething(
     _XtBoolean 		/* ignoreInputs */,
     _XtBoolean		/* ignoreSignals */,
     _XtBoolean 		/* block */,
-#if defined(XTHREADS)
+#ifdef XTHREADS
     _XtBoolean		/* drop_lock */,
 #endif
     unsigned long*	/* howlong */

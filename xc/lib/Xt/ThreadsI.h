@@ -1,4 +1,4 @@
-/* $XConsortium: ThreadsI.h,v 1.2 93/08/27 16:19:51 kaleb Exp $ */
+/* $XConsortium: ThreadsI.h,v 1.3 93/09/03 09:57:20 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -28,7 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#if defined (XTHREADS)
+#ifdef XTHREADS
 
 typedef struct _LockRec *LockPtr;
 typedef struct _ThreadStack *ThreadStackPtr;

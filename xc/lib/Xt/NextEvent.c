@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.119 93/09/03 09:57:16 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.120 93/09/03 15:25:30 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -182,7 +182,7 @@ int _XtWaitForSomething(
 	_XtBoolean ignoreInputs,
 	_XtBoolean ignoreSignals,
 	_XtBoolean block,
-#if defined(XTHREADS)
+#ifdef XTHREADS
 	_XtBoolean drop_lock,
 #endif
 	unsigned long *howlong)
@@ -190,7 +190,7 @@ int _XtWaitForSomething(
 int _XtWaitForSomething(app,
 			ignoreEvents, ignoreTimers, ignoreInputs, ignoreSignals,
 			block, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 			drop_lock, 
 #endif
 			howlong)
@@ -200,7 +200,7 @@ int _XtWaitForSomething(app,
 	Boolean ignoreInputs;
 	Boolean ignoreSignals;
 	Boolean block;
-#if defined(XTHREADS)
+#ifdef XTHREADS
 	Boolean drop_lock;
 #endif
 	unsigned long *howlong;
@@ -213,10 +213,10 @@ int _XtWaitForSomething(app,
 	struct timeval  time_spent;
 	struct timeval	max_wait_time;
 	int nfound, ii, dd;
-#if defined(XTHREADS)
+#ifdef XTHREADS
 	Boolean push_thread = TRUE;
 #endif
-#if !defined(USE_POLL) /* { variable declaration block */
+#ifndef USE_POLL /* { variable declaration block */
 	static struct timeval  zero_time = { 0 , 0};
 	register struct timeval *wait_time_ptr;
 	Fd_set rmaskfd, wmaskfd, emaskfd;
@@ -225,7 +225,7 @@ int _XtWaitForSomething(app,
 	int poll_wait, fdlistlen, fdli;
 #endif /* } */
 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 	/* assert ((ignoreTimers && ignoreInputs && ignoreSignals) || drop_lock); */
 
 	/* If not multi-threaded, never drop lock */
@@ -233,7 +233,7 @@ int _XtWaitForSomething(app,
 	    drop_lock = FALSE;
 #endif
 
-#if !defined(USE_POLL) /* { init timer block */
+#ifndef USE_POLL /* { init timer block */
  	if (block) {
 		GETTIMEOFDAY (&cur_time);
 		FIXUP_TIMEVAL(cur_time);
@@ -271,7 +271,7 @@ int _XtWaitForSomething(app,
 	}
 #endif /* } */
 
-#if !defined(USE_POLL) /* { select/poll init block */
+#ifndef USE_POLL /* { select/poll init block */
 		if( !ignoreInputs ) {
 			rmaskfd = app->fds.rmask;
 			wmaskfd = app->fds.wmask;
@@ -324,7 +324,7 @@ int _XtWaitForSomething(app,
       WaitLoop:
 	while (1) {
 
-#if !defined(USE_POLL) /* { adjust timers block */
+#ifndef USE_POLL /* { adjust timers block */
 		if (app->timerQueue != NULL && !ignoreTimers && block) {
 		    if(IS_AFTER(cur_time, app->timerQueue->te_timer_value)) {
 			TIMEDELTA (wait_time, app->timerQueue->te_timer_value, 
@@ -351,7 +351,7 @@ int _XtWaitForSomething(app,
 		} 
 #endif /* } */
 
-#if defined(XTHREADS) /* { */
+#ifdef XTHREADS /* { */
 		if (drop_lock) {
 		    int yield = 0;
 		    if (push_thread) {
@@ -359,7 +359,7 @@ int _XtWaitForSomething(app,
 			push_thread = FALSE;
 		    }
 		    yield = YIELD_APP_LOCK(app);
-#if !defined(USE_POLL) /* { select/poll block */
+#ifndef USE_POLL /* { select/poll block */
 		    nfound = select (app->fds.nfds, 
 				     (int *) &rmaskfd, 
 				     (int *) &wmaskfd, 
@@ -377,7 +377,7 @@ int _XtWaitForSomething(app,
 		    push_thread = TRUE;
 		} else
 #endif /* } */
-#if !defined(USE_POLL) /* { select/poll block */
+#ifndef USE_POLL /* { select/poll block */
 		    nfound = select (app->fds.nfds, 
 				     (int *) &rmaskfd, 
 				     (int *) &wmaskfd, 
@@ -408,7 +408,7 @@ int _XtWaitForSomething(app,
 			    }
 
 			    if (block) {
-#if !defined(USE_POLL) /* { adjust timeout after signal interrupt block */
+#ifndef USE_POLL /* { adjust timeout after signal interrupt block */
 				if (wait_time_ptr == NULL) /*howlong == NULL*/
 				    continue;
 				GETTIMEOFDAY (&new_time);
@@ -472,7 +472,7 @@ int _XtWaitForSomething(app,
 	    AdjustHowLong (howlong, &start_time);
 	}
 
-#if !defined(USE_POLL) /* { check ready file descriptors block */
+#ifndef USE_POLL /* { check ready file descriptors block */
 	if(ignoreInputs) {
 	    if (ignoreEvents) return -1; /* then only doing timers */
 	    for (dd = 0; dd < app->count; dd++) {
@@ -854,7 +854,7 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	sptr->ie_next = app->input_list[source];
 	app->input_list[source] = sptr;
 
-#if !defined(USE_POLL)
+#ifndef USE_POLL
 	if (condition & XtInputReadMask)   FD_SET(source, &app->fds.rmask);
 	if (condition & XtInputWriteMask)  FD_SET(source, &app->fds.wmask);
 	if (condition & XtInputExceptMask) FD_SET(source, &app->fds.emask);
@@ -901,7 +901,7 @@ void XtRemoveInput( id )
 				} else {
 				    lptr->ie_next = sptr->ie_next;
 				}
-#if !defined(USE_POLL)
+#ifndef USE_POLL
 				for (lptr = app->input_list[source];
 				     lptr; lptr = lptr->ie_next)
 				    condition |= lptr->ie_condition;
@@ -971,7 +971,7 @@ static void DoOtherSources(app)
 	    (void) _XtWaitForSomething (app,
 					TRUE, TRUE, FALSE, TRUE, 
 					FALSE, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 					TRUE, 
 #endif
 					(unsigned long *)NULL);
@@ -1094,7 +1094,7 @@ void XtAppNextEvent(app, event)
 	d = _XtWaitForSomething (app,
 				 FALSE, FALSE, FALSE, FALSE,
 				 TRUE, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 				 TRUE, 
 #endif
 				 (unsigned long *) NULL);
@@ -1102,7 +1102,7 @@ void XtAppNextEvent(app, event)
 	if (d != -1) {
 	  GotEvent:
 	    XNextEvent (app->list[d], event);
-#if defined(XTHREADS)
+#ifdef XTHREADS
 	    /* assert(app->list[d] == event->xany.display); */
 #endif
 	    app->last = d;
@@ -1174,7 +1174,7 @@ void XtAppProcessEvent(app, mask)
 		    (void) _XtWaitForSomething (app, 
 						TRUE, TRUE, FALSE, TRUE, 
 						FALSE, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 						TRUE, 
 #endif
 						(unsigned long *)NULL);
@@ -1212,7 +1212,7 @@ void XtAppProcessEvent(app, mask)
 				    (mask & XtIMAlternateInput ? FALSE : TRUE),
 				    (mask & XtIMSignal ? FALSE : TRUE),
 				    TRUE, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 				    TRUE, 
 #endif
 				    (unsigned long *) NULL);
@@ -1220,7 +1220,7 @@ void XtAppProcessEvent(app, mask)
 	    if (mask & XtIMXEvent && d != -1) {
 	      GotEvent:
 		XNextEvent(app->list[d], &event);
-#if defined(XTHREADS)
+#ifdef XTHREADS
 		/* assert(app->list[d] == event.xany.display); */
 #endif
 		app->last = d;
@@ -1296,7 +1296,7 @@ XtInputMask XtAppPending(app)
 	    if(_XtWaitForSomething (app,
 				    FALSE, TRUE, FALSE, TRUE, 
 				    FALSE, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 				    TRUE, 
 #endif
 				    (unsigned long *) NULL) != -1) 
@@ -1330,7 +1330,7 @@ static Boolean PeekOtherSources(app)
 	    (void) _XtWaitForSomething (app,
 					TRUE, TRUE, FALSE, TRUE, 
 					FALSE, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 					TRUE, 
 #endif
 					(unsigned long *)NULL);
@@ -1384,7 +1384,7 @@ Boolean XtAppPeekEvent(app, event)
 	d = _XtWaitForSomething (app,
 				 FALSE, FALSE, FALSE, FALSE,
 				 TRUE, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 				 TRUE, 
 #endif
 				 (unsigned long *) NULL);

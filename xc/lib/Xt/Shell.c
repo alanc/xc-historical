@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.136 93/08/19 08:41:20 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.137 93/08/27 16:29:42 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1708,7 +1708,7 @@ static _wait_for_response(w, event, request_num)
 	    if (_XtWaitForSomething (app, 
 				     FALSE, TRUE, TRUE, TRUE, 
 				     TRUE, 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 				     FALSE, 
 #endif
 				     &timeout) != -1) continue;
