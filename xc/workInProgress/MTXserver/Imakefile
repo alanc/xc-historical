@@ -108,15 +108,19 @@ HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx \
 HPOBJS = ddx/hp/hp/init.o
 HPLIBS = $(HP) \
           ddx/hp/gbx/libgbx.a \
-          ddx/hp/catseye/libcatseye.a \
           ddx/hp/mob/libmob.a \
           ddx/hp/topcat/libtopcat.a \
+          ddx/hp/catseye/libcatseye.a \
           ddx/hp/ren/libren.a \
+	  $(HP) \
           ddx/hp/mfb/libmfb.a \
           ddx/hp/cfb/libcfb.a \
-          $(HP) \
+          ddx/hp/ren/libren.a \
           $(DIX) $(SNF) $(HPUX) $(MI) $(EXTENSIONS)
-HPSYSLIBS = $(SYSLIBS)
+#if ServerMallocLib
+HPMALLOCLIB = -lmalloc
+#endif
+HPSYSLIBS = $(SYSLIBS) $(HPMALLOCLIB)
 XhpDIRS = $(HPDIRS)
 
 ServerTarget(Xhp,$(EXTDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
