@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.142 93/09/28 00:04:17 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.143 93/10/20 19:11:02 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -337,6 +337,7 @@ Display *XOpenDisplay (display)
 	    dpy->resource_shift++;
 	    mask = mask >> 1;
 	}
+	dpy->resource_max = (dpy->resource_mask >> dpy->resource_shift) - 5;
 /*
  * now extract the vendor string...  String must be null terminated,
  * padded to multiple of 4 bytes.
