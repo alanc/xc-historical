@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.19 91/02/08 18:12:24 dave Exp $
+ * $XConsortium: BitEdit.c,v 1.20 91/07/10 17:20:17 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1041,7 +1041,7 @@ void main(argc, argv)
     top_widget = XtInitialize(NULL, "Bitmap", 
 			      options, XtNumber(options), &argc, argv);
 
-    if (argc != 1) {
+    if (argc != 3) {
 	fprintf(stderr, usage);
 	exit (0);
     }
