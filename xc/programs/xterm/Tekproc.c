@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.63 89/08/10 13:36:35 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.64 89/08/10 14:07:18 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.63 89/08/10 13:36:35 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.64 89/08/10 14:07:18 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -1198,7 +1198,7 @@ static void TekRealize (gw, valuemaskp, values)
 	    break;
 	}
     } else {
-	sizehints.flags |= PSize|PPosition;
+	sizehints.flags |= PSize;
     }
     sizehints.width = width;
     sizehints.height = height;

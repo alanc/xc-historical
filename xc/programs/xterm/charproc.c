@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.94 89/09/07 10:36:19 jim Exp $
+ * $XConsortium: charproc.c,v 1.95 89/09/07 15:17:32 swick Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.94 89/09/07 10:36:19 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.95 89/09/07 15:17:32 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2121,7 +2121,8 @@ XSetWindowAttributes *values;
 		break;
 	    }
 	} else {
-	    sizehints.flags |= PSize|PPosition;
+	    /* set a default size, but do *not* set position */
+	    sizehints.flags |= PSize;
 	}
 	sizehints.width = width;
 	sizehints.height = height;
