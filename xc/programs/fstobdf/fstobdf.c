@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fstobdf.c,v 1.2 91/05/13 16:35:48 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -67,12 +67,12 @@ main(argc, argv)
     for (i = 1; i < argc; i++) {
 	if (!strncmp(argv[i], "-s", 2)) {
 	    if (argv[++i])
-		serverName = argv[i++];
+		serverName = argv[i];
 	    else
 		usage(argv[0]);
 	} else if (!strncmp(argv[i], "-fn", 3)) {
 	    if (argv[++i])
-		fontName = argv[i++];
+		fontName = argv[i];
 	    else
 		usage(argv[0]);
 	}
