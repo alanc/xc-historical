@@ -19,8 +19,6 @@ NormalLibraryTarget(dix,$(OBJS))
 LintLibraryTarget(dix,$(SRCS))
 NormalLintTarget($(SRCS))
 
-SpecialObjectRule(initext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
-
 SpecialObjectRule(globals.o, $(IRULESRC)/Imake.tmpl, $(SITE_DEFINES))
 
 DependTarget()
