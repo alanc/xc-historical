@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlogo.c,v 1.16 91/10/30 10:28:15 converse Exp $
+ * $XConsortium: xlogo.c,v 1.17 93/09/18 20:06:09 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,6 +23,7 @@
  */
 
 #include <X11/Intrinsic.h>
+#include <X11/Shell.h>
 #include "Logo.h"
 #include <X11/Xaw/Cardinals.h>
 
@@ -44,6 +45,21 @@ String fallback_resources[] = {
     "*iconMask:      xlogo32",
     NULL,
 };
+
+static void die(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data, call_data;
+{
+    XCloseDisplay(XtDisplay(w));
+    exit(0);
+}
+
+static void save(w, client_data, call_data)
+    Widget w;
+    XtPointer client_data, call_data;
+{
+    return;
+}
 
 /*
  * Report the syntax for calling xlogo.
@@ -71,11 +87,15 @@ char **argv;
     Widget toplevel;
     XtAppContext app_con;
 
-    toplevel = XtAppInitialize(&app_con, "XLogo", options, XtNumber(options), 
-			       &argc, argv, fallback_resources, NULL, ZERO);
+    toplevel = XtOpenApplication(&app_con, "XLogo",
+				 options, XtNumber(options), 
+				 &argc, argv, fallback_resources,
+				 sessionShellWidgetClass, NULL, ZERO);
     if (argc != 1) 
 	Syntax(argv[0]);
 
+    XtAddCallback(toplevel, XtNsaveCallback, save, NULL);
+    XtAddCallback(toplevel, XtNdieCallback, die, NULL);
     XtAppAddActions
 	(XtWidgetToApplicationContext(toplevel), actions, XtNumber(actions));
     XtOverrideTranslations
@@ -96,11 +116,15 @@ static void quit(w, event, params, num_params)
     String *params;
     Cardinal *num_params;
 {
+    Arg arg;
+
     if (event->type == ClientMessage && 
 	event->xclient.data.l[0] != wm_delete_window) {
 	XBell(XtDisplay(w), 0);
     } else {
-	XCloseDisplay(XtDisplay(w));
-	exit(0);
+	/* resign from the session */
+	XtSetArg(arg, XtNjoinSession, False);
+	XtSetValues(w, &arg, ONE);
+	die(w, NULL, NULL);
     }
 }
