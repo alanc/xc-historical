@@ -1,4 +1,4 @@
-.\" $XConsortium: CH04,v 1.9 94/01/07 19:36:24 converse Exp $
+.\" $XConsortium: CH04,v 1.10 94/04/18 17:34:02 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -991,6 +991,10 @@ state information as described under
 .PN XtPopdown ,
 and
 .PN XtMenuPopdown .
+The pop-up and pop-down callbacks are called during
+.PN XtPopup
+and
+.PN XtPopdown .
 The \fIallow_shell_resize\fP field controls whether the widget contained
 by the shell is allowed to try to resize itself.
 If allow_shell_resize is 
@@ -1009,13 +1013,15 @@ Setting \fIoverride_redirect\fP
 determines
 whether the window manager can intercede when the shell window
 is mapped.
-The pop-up and pop-down callbacks are called during
-.PN XtPopup
-and
-.PN XtPopdown .
 For further information on override_redirect,
 see Section 3.2 in \fI\*(xL\fP and Sections 4.1.10 and 4.2.2 in the
 \fI\*(xC\fP.
+The default value of the \fIvisual\fP resource is the symbol
+.PN CopyFromParent .
+To reliably determine the visual of a shell, use 
+.PN XGetWindowAttributes
+and the window of the shell.
+
 .LP
 The default values for Shell fields in
 WMShell
