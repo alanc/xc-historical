@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.3 93/08/26 08:48:07 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.4 93/08/26 09:19:25 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -112,7 +112,7 @@ extern xthread_t _Xthread_self();
     InitializeCriticalSection(&(cv)->cs); \
     (cv)->waiters = NULL; \
 }
-#define xcondition_clear(cv) DeleteCriticalSection(&cv->cs)
+#define xcondition_clear(cv) DeleteCriticalSection(&(cv)->cs)
 #define xcondition_wait(cv,m) { \
     xthread_t _tmpthr; \
     _tmpthr = xthread_self(); \
