@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.59 91/04/23 18:46:27 rws Exp $
+ * $XConsortium: Xrm.c,v 1.60 91/04/24 08:41:59 rws Exp $
  */
 
 /***********************************************************
@@ -329,7 +329,7 @@ void XrmStringToQuarkList(name, quarks)
 		    i = 0;
 		    sig = 0;
 		}
-		name = tname;
+		name = tname+1;
 	    }
 	    else {
 		sig = (sig << 1) + ch; /* Compute the signature. */
@@ -374,7 +374,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 		    sig = 0;
 		    binding = XrmBindTightly;
 		}
-		name = tname;
+		name = tname+1;
 
 		if (ch == '*')
 		    binding = XrmBindLoosely;
