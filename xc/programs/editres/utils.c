@@ -1,5 +1,5 @@
 /*
- * $XConsortium: utils.c,v 1.14 91/03/19 12:38:56 gildea Exp $
+ * $XConsortium: utils.c,v 1.15 91/04/04 21:35:32 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -137,11 +137,7 @@ char ** str, *add;
     int len_str, len_add;
     char * ptr;
 
-    if (*str == NULL)
-	len_str = NULL;
-    else
-	len_str = strlen(*str);
-
+    len_str = ((*str) ? strlen(*str) : 0);
     len_add = strlen(add);
 
     *str = XtRealloc(*str, sizeof(char) * (len_str + len_add + 1));
