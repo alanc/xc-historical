@@ -21,9 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.20 92/09/07 13:29:44 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.21 92/09/15 16:17:52 rws Exp $ */
 
 #include "misc.h"
+
+#ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
+#undef PEXEXT
+#endif
 
 extern Bool noTestExtensions;
 
