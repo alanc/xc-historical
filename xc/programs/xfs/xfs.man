@@ -1,4 +1,4 @@
-.\" $XConsortium: xfs.man,v 1.6 94/04/11 14:29:02 gildea Exp $
+.\" $XConsortium: xfs.man,v 1.7 94/04/11 16:03:27 matt Exp $
 .TH XFS 1 "Release 6" "X Version 11"
 .SH NAME
 xfs \- X font server
@@ -67,7 +67,7 @@ Whether this font server should attempt to clone itself
 when it reachs the client-limit.
 .IP "default-point-size (cardinal)"
 The default pointsize (in decipoints) for fonts that 
-don't specify.
+don't specify.  The default is 120.
 .IP "default-resolutions (list of resolutions)"
 Resolutions the server supports by default.
 This information may be used as a hint for 
@@ -84,6 +84,11 @@ TCP port on which the server will listen for connections.
 .IP "use-syslog (boolean)"
 Whether syslog(3) (on supported systems) is to be used 
 for errors.
+.IP "deferglyphs (string)"
+Set the mode for delayed fetching and caching of glyphs.  Value is
+"none", meaning deferred glyphs is disabled, "all", meaning it is
+enabled for all fonts, and "16", meaning it is enabled only for
+16-bits fonts.
 .\" .IP "trusted-clients (list of string)"
 .\" Those clients the fontserver will talk to.  Others
 .\" will be refused for the initial connection.  An empty
@@ -101,7 +106,7 @@ client-limit = 10
 clone-self = on
 
 # alternate font servers for clients to use
-alternate-servers = hansen:7001,hansen:7002
+alternate-servers = hansen:7101,hansen:7102
 
 # where to look for fonts
 # the first is a set of Speedo outlines, the second is a set of 
@@ -134,7 +139,7 @@ is the decimal TCP port on which the font server is listening for connections.
 The \fIcataloguelist\fP specifies a list of catalogue names,
 with '+' as a separator.
 .PP
-Examples: \fItcp/expo.lcs.mit.edu:7000\fP, \fItcp/18.30.0.212:7001/all\fP.
+Examples: \fItcp/fs.x.org:7100\fP, \fItcp/18.30.0.212:7101/all\fP.
 .PP
 One of the following forms can be used to name a font server that
 accepts DECnet connections:
