@@ -102,6 +102,8 @@ OBJS = \
 
 UNSHAREDOBJS = sharedlib.o
 
+all::
+
 #if SharedLibXt 
 # if DebugLibXt
 SharedAndDebuggedLibraryObjectRule()
