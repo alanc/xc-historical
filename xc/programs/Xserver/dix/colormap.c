@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.18 91/05/26 21:09:22 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.19 91/05/28 13:42:45 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -768,7 +768,6 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
     return (Success);
 }
 
-#ifndef hpux
 /*
  * FakeAllocColor -- fake an AllocColor request by
  * returning a free pixel if availible, otherwise returning
@@ -867,87 +866,6 @@ FakeFreeColor(pmap, pixel)
 	break;
     }
 }
-#else
-/* XXX for now preserve buggy R4 code for HP ddx binary compatibility */
-FakeAllocColor (pmap, pred, pgreen, pblue, pPix, read_only)
-    ColormapPtr		pmap;
-    unsigned short 	*pred, *pgreen, *pblue;
-    Pixel		*pPix;
-    Bool		*read_only;
-{
-    Pixel	pixR, pixG, pixB;
-    int		entries;
-    xrgb	rgb;
-    int		class;
-    VisualPtr	pVisual;
-    static Pixel lastPix = 0;
-
-    pVisual = pmap->pVisual;
-    (*pmap->pScreen->ResolveColor) (pred, pgreen, pblue, pVisual);
-    rgb.red = *pred;
-    rgb.green = *pgreen;
-    rgb.blue = *pblue;
-    class = pmap->class;
-    entries = pVisual->ColormapEntries;
-    /* kludge to avoid duplicate allocations most of the time */
-    lastPix++;
-    if (lastPix >= entries)
-	lastPix = 0;
-    *pPix = lastPix;
-    
-
-    /* If this is one of the static storage classes, and we're not initializing
-     * it, the best we can do is to find the closest color entry to the
-     * requested one and return that.
-     */
-    switch (class) {
-    case GrayScale:
-    case PseudoColor:
-	if (FindColor(pmap, pmap->red, entries, &rgb, pPix, PSEUDOMAP,
-		      -1, AllComp) == Success)
-	{
-	    break;
-	}
-	/* fall through ... */
-    case StaticColor:
-    case StaticGray:
-	*pPix = pixR = FindBestPixel(pmap->red, entries, &rgb, PSEUDOMAP);
-	*pred = pmap->red[pixR].co.local.red;
-	*pgreen = pmap->red[pixR].co.local.green;
-	*pblue = pmap->red[pixR].co.local.blue;
-	*read_only = TRUE;
-	break;
-
-    case DirectColor:
-	pixR = (*pPix & pVisual->redMask) >> pVisual->offsetRed; 
-	pixG = (*pPix & pVisual->greenMask) >> pVisual->offsetGreen; 
-	pixB = (*pPix & pVisual->blueMask) >> pVisual->offsetBlue; 
-	if (FindColor(pmap, pmap->red, entries, &rgb, &pixR, REDMAP,
-		      -1, RedComp) == Success &&
-	    FindColor(pmap, pmap->green, entries, &rgb, &pixG, GREENMAP,
-		      -1, GreenComp) == Success &&
-	    FindColor(pmap, pmap->blue, entries, &rgb, &pixB, BLUEMAP,
-		      -1, BlueComp) == Success)
-	{
-	    break;
-	}
-	/* fall through ... */
-    case TrueColor:
-	/* Look up each component in its own map, then OR them together */
-	pixR = FindBestPixel(pmap->red, entries, &rgb, REDMAP);
-	pixG = FindBestPixel(pmap->green, entries, &rgb, GREENMAP);
-	pixB = FindBestPixel(pmap->blue, entries, &rgb, BLUEMAP);
-	*pPix = (pixR << pVisual->offsetRed) |
-		(pixG << pVisual->offsetGreen) |
-		(pixB << pVisual->offsetBlue);
-	*pred = pmap->red[pixR].co.local.red;
-	*pgreen = pmap->green[pixG].co.local.green;
-	*pblue = pmap->blue[pixB].co.local.blue;
-	*read_only = TRUE;
-	break;
-    }
-}
-#endif
 
 typedef unsigned short	BigNumUpper;
 typedef unsigned long	BigNumLower;
@@ -1118,13 +1036,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	return (BadAlloc);
     pent = pentFirst + Free;
     pent->fShared = FALSE;
-#ifndef hpux
     pent->refcnt = (client >= 0) ? 1 : AllocTemporary;
-#else
-    /* XXX for now preserve buggy R4 code for HP ddx binary compatibility */
-    if (client != -1)
-	pent->refcnt = 1;
-#endif
 
     switch (channel)
     {
