@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.6 91/02/16 16:03:51 converse Exp $
+ * $XConsortium: actions.c,v 1.7 91/02/16 17:06:44 rws Exp $
  *
  * actions.c - externally available procedures for xcalc
  * 
@@ -160,9 +160,9 @@ void divide(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void e(w, e, vector, count)
+void e(w, ev, vector, count)
     Widget	w;
-    XEvent	*e;
+    XEvent	*ev;
     String	*vector;
     Cardinal	*count;
 {
