@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.49 88/09/12 16:57:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.50 88/09/13 15:06:04 swick Exp $";
 #endif
 
 
@@ -1475,7 +1475,31 @@ int XtTextReplace(w, startPos, endPos, text)
     int result;
 
     _XtTextPrepareToUpdate(ctx);
-    result = ReplaceText(ctx, startPos, endPos, text);
+    if (endPos > ctx->text.lastPos) endPos = ctx->text.lastPos;
+    if (startPos > ctx->text.lastPos) startPos = ctx->text.lastPos;
+    if ((result = ReplaceText(ctx, startPos, endPos, text)) == EditDone) {
+	if (ctx->text.insertPos >= endPos) {
+	    int delta = text->length - (endPos - startPos);
+	    XtTextScanDirection sd;
+	    if (delta < 0) {
+		sd = XtsdLeft;
+		delta = -delta;
+	    }
+	    else
+		sd = XtsdRight;
+
+	    ctx->text.insertPos =
+		(*ctx->text.source->Scan)(ctx->text.source,
+					  ctx->text.insertPos,
+					  XtstPositions, sd,
+					  delta, TRUE);
+	}
+	else if (ctx->text.insertPos > startPos)
+	    ctx->text.insertPos =
+		(*ctx->text.source->Scan)(ctx->text.source, startPos,
+					  XtstPositions, XtsdRight,
+					  text->length, TRUE);
+    }
     _XtTextExecuteUpdate(ctx);
 
     return result;
