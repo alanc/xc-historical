@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.28 90/08/23 14:47:24 swick Exp $ */
+/* $XConsortium: Destroy.c,v 1.29 90/08/27 11:53:11 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -236,6 +236,19 @@ void XtDestroyWidget (widget)
     }
     app->destroy_list[app->destroy_count].dispatch_level = app->dispatch_level;
     app->destroy_list[app->destroy_count++].widget = widget;
+
+    if (app->dispatch_level > 1) {
+	int i;
+	for (i = app->destroy_count - 1; i;) {
+	    /* this handles only one case of nesting difficulties */
+	    if (app->destroy_list[--i].dispatch_level < app->dispatch_level &&
+		IsDescendant(app->destroy_list[i].widget, widget)) {
+		app->destroy_list[app->destroy_count-1].dispatch_level =
+		    app->destroy_list[i].dispatch_level;
+		break;
+	    }
+	}
+    }
 
     if (_XtSafeToDestroy(app))
 	_XtDoPhase2Destroy(app, app->dispatch_level);
