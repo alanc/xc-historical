@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.28 91/06/05 09:49:23 dave Exp $
+ * $XConsortium: buttons.c,v 1.29 91/06/05 14:49:54 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -579,9 +579,9 @@ Widget parent;
   Arg warg[1];
 
 /* make the please stand by popup widget. */
-
+  XtSetArg(warg[0], XtNtransientFor, parent);
   shell = XtCreatePopupShell( "pleaseStandBy", transientShellWidgetClass,
-			      parent, NULL, (Cardinal) 0);
+			      parent, warg, (Cardinal) 1);
 
   man_globals->standby = XtCreateManagedWidget("label", labelWidgetClass, 
 					       shell, NULL, (Cardinal) 0);
