@@ -71,6 +71,9 @@ All of the sample servers accept the following command line options:
 sets pointer acceleration (i.e. the ratio of how much is reported to how much
 the user actually moved the pointer).
 .TP 8
+.B \-bs
+disables backing store support on all screens.
+.TP 8
 .B \-c
 turns off key-click.
 .TP 8
@@ -99,6 +102,9 @@ turns on auto-repeat.
 .TP 8
 .B \-s \fIminutes\fP
 sets screen-saver timeout time in minutes.
+.TP 8
+.B \-su
+disables save under support on all screens.
 .TP 8
 .B \-t \fInumbers\fP
 sets pointer acceleration threshold in pixels (i.e. after how many pixels
@@ -180,7 +186,7 @@ bigcpu::
 Unlike some window systems, X does not have any notion of window operation
 permissions or place any restrictions on what a client can do; if a program can
 connect to a display, it has full run of the screen.  The core protocol does
-has support for providing authentication information when establishing
+have support for providing authentication information when establishing
 connections, but is not used in the sample implementation.  Sites that have
 authentication and authorization systems (such as Kerberos) might wish to make
 use of the hooks in the libraries and the server to provide additional
