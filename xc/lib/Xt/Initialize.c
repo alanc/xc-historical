@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: Initialize.c,v 1.6 88/08/29 16:45:39 asente Exp $";
+static char rcsid[] =
+    "$XConsortium: Initialize.c,v 1.6 88/08/29 16:45:39 asente Exp $";
 /* $oHeader: Initialize.c,v 1.6 88/08/29 16:45:39 asente Exp $ */
 #endif lint
 
@@ -31,11 +32,7 @@ SOFTWARE.
 
 #include <pwd.h>
 #include <sys/param.h>
-
 #include <stdio.h>
-
- /* Xlib definitions  */
- /* things like Window, Display, XEvent are defined herein */
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include "Shell.h"
@@ -53,7 +50,7 @@ SOFTWARE.
 
 static XrmOptionDescRec opTable[] = {
 {"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
-{"+synchronize","*synchronize",	XrmoptionNoArg,		(caddr_t) "off"},
+{"+synchronous","*synchronous",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-background",	"*background",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-bd",		"*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-bg",		"*background",	XrmoptionSepArg,	(caddr_t) NULL},
@@ -72,8 +69,8 @@ static XrmOptionDescRec opTable[] = {
 {"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
 {"-selectionTimeout",
 		".selectionTimeout", XrmoptionSepArg,	(caddr_t) NULL},
-{"-synchronize","*synchronize",	XrmoptionNoArg,		(caddr_t) "on"},
-{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL}
+{"-synchronous","*synchronous",	XrmoptionNoArg,		(caddr_t) "on"},
+{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
 #ifdef EQUALGEOMETRY
 {"=",		".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
@@ -114,18 +111,20 @@ static String XtGetRootDirName(buf)
  		pw = getpwuid(uid);
 	    }
 	    if (pw) ptr = pw->pw_dir;
-	    else ptr = NULL;
+	    else {
+		ptr = NULL;
+		*buf = '\0';
+	    }
 	}
      }
 
-     if (ptr != NULL) {
+     if (ptr != NULL) 
  	(void) strcpy(buf, ptr);
-	 buf += strlen(buf);
-	 *buf = '/';
-	 buf++;
-	 *buf = '\0';
-     }
 
+     buf += strlen(buf);
+     *buf = '/';
+     buf++;
+     *buf = '\0';
      return buf;
 }
 
@@ -135,6 +134,10 @@ static XrmDatabase GetAppSystemDefaults(classname)
 	XrmDatabase rdb;
 	char	filenamebuf[MAXPATHLEN];
 	char	*filename = &filenamebuf[0];
+
+#ifndef XAPPLOADDIR
+#define XAPPLOADDIR  "/usr/lib/X11/app-defaults/"
+#endif /* XAPPLOADDIR */
 
 	(void) strcpy(filename, XAPPLOADDIR);
 	(void) strcat(filename, classname);
@@ -219,6 +222,87 @@ static void GetInitialResourceDatabase(dpy, classname)
 	if (rdb != NULL) XrmMergeDatabases(rdb, &(dpy->db));
 }
 
+
+/*
+ * Merge two option tables, allowing the second to over-ride the first,
+ * so that ambiguous abbreviations can be noticed.  The merge attempts
+ * to make the resulting table lexicographically sorted, but succeeds
+ * only if the first source table is sorted.  Though it _is_ recommended
+ * (for optimizations later in XrmParseCommand), it is not required
+ * that either source table be sorted.
+ *
+ * Caller is responsible for freeing the returned option table.
+ */
+
+static void _MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
+    XrmOptionDescRec *src1, *src2;
+    Cardinal num_src1, num_src2;
+    XrmOptionDescRec **dst;
+    Cardinal *num_dst;
+{
+    XrmOptionDescRec *table, *endP;
+    register XrmOptionDescRec *opt1, *opt2, *whereP, *dstP; 
+    int i1, i2, dst_len, order;
+    Boolean found;
+    enum {Check, NotSorted, IsSorted} sort_order = Check;
+
+    *dst = table = (XrmOptionDescRec*)
+	XtMalloc( sizeof(XrmOptionDescRec) * (num_src1 + num_src2) );
+
+    bcopy( src1, table, sizeof(XrmOptionDescRec) * num_src1 );
+    if (num_src2 == 0) {
+	*num_dst = num_src1;
+	return;
+    }
+    endP = &table[dst_len = num_src1];
+    for (opt2 = src2, i2= 0; i2 < num_src2; opt2++, i2++) {
+	found = False;
+	whereP = endP-1;	/* assume new option goes at the end */
+	for (opt1 = table, i1 = 0; i1 < dst_len; opt1++, i1++) {
+	    /* have to walk the entire new table so new list is ordered
+	       (if src1 was ordered) */
+	    if (sort_order == Check && i1 > 0
+		&& strcmp(opt1->option, (opt1-1)->option) < 0)
+		sort_order = NotSorted;
+	    if ((order = strcmp(opt1->option, opt2->option)) == 0) {
+		/* same option names; just overwrite opt1 with opt2 */
+		*opt1 = *opt2;
+		found = True;
+		break;
+		}
+	    /* else */
+	    if (sort_order == IsSorted && order > 0) {
+		/* insert before opt1 to preserve order */
+		/* shift rest of table forward to make room for new entry */
+		for (dstP = endP++; dstP > opt1; dstP--)
+		    *dstP = *(dstP-1);
+		*opt1 = *opt2;
+		dst_len++;
+		found = True;
+		break;
+	    }
+	    /* else */
+	    if (order < 0)
+		/* opt2 sorts after opt1, so remember this position */
+		whereP = opt1;
+	}
+	if (sort_order == Check && i1 == dst_len)
+	    sort_order = IsSorted;
+	if (!found) {
+	   /* when we get here, whereP points to the last entry in the
+	      destination that sorts before "opt2".  Shift rest of table
+	      forward and insert "opt2" after whereP. */
+	    whereP++;
+	    for (dstP = endP++; dstP > whereP; dstP--)
+		*dstP = *(dstP-1);
+	    *whereP = *opt2;
+	    dst_len++;
+	}
+    }
+    *num_dst = dst_len;
+}
+
+
 void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv)
 	Display *dpy;
 	XtAppContext app;
@@ -233,7 +317,9 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
 	char *return_type;
 	XrmValue value;
 	XrmQuark q;
-
+	XrmOptionDescRec *options;
+	Cardinal num_options;
+	
 	/* save first app name & class for R2 compatibility onlyX */
 	if (app->class == NULL) {
 	    app->name = XrmStringToName(name);
@@ -242,20 +328,23 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
 
 	GetInitialResourceDatabase(dpy, classname);
 
+	_MergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
+			    &options, &num_options );
+
 	/*
 	   This routine parses the command line arguments and removes them from
 	   argv.
 	 */
 	XrmParseCommand(
-	    (XrmDatabase *)&(dpy->db), opTable, (int) XtNumber(opTable),
+	    (XrmDatabase *)&(dpy->db), options, num_options,
 	    name, (int *)argc, argv);
 
 	namelen = strlen(name);
 	classlen = strlen(classname);
 	strcpy(names, name);
-	strcat(names, ".synchronize");
+	strcat(names, ".synchronous");
 	strcpy(classes, classname);
-	strcat(classes, ".Synchronize");
+	strcat(classes, ".Synchronous");
 	if (XrmGetResource((XrmDatabase) (dpy->db), names, classes,
 		&return_type, &value)) {
 	    LowerCase((char *) value.addr, lowerName);
@@ -287,12 +376,7 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
 		&return_type, &value)) {
 	    (void) sscanf((char *) value.addr, "%lu", &app->selectionTimeout);
 	}
-
-	if(num_urs != 0) { 	/* the application has some more defaults */
-	    XrmParseCommand(
-	        (XrmDatabase *)&(dpy->db), urlist, (int) num_urs,
-		name, (int *)argc, argv);
-	}
+	XtFree( (char*)options );
 }
 	
 /*
