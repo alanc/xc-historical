@@ -1,8 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/04 16:09:45 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/06 15:53:42 rws Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
          PROGRAMS = xmkmf $(MDEP_PROG) mergelib
+          DEPLIBS =
 
 all:: $(PROGRAMS)
 
