@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsProp.c,v 1.1 91/01/30 18:52:43 dave Exp $" */
+/* $XConsortium: XcmsProp.c,v 1.2 91/02/05 13:41:44 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -130,7 +130,8 @@ _XcmsGetProperty (pDpy, w, property, pFormat, pNItems, pNBytes, pValue)
     
     while (XGetWindowProperty (pDpy, w, property, 0, len, False, 
 			       XA_INTEGER, &atom_ret, &format_ret, 
-			       &nitems_ret, &after_ret, &prop_ret)) {
+			       &nitems_ret, &after_ret, 
+			       (unsigned char **)&prop_ret)) {
 	if (after_ret > 0) {
 	    len += nitems_ret * (format_ret >> 3);
 	    XFree (prop_ret);

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.1 91/01/30 18:34:24 dave Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.2 91/02/05 13:41:28 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -50,9 +50,11 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 #include <ctype.h>
-#if __STDC__
+/*****
+#if __STDC__ 
 #include <stdlib.h>
 #endif 
+*****/
 #include "Xlibos.h"
 #define XK_LATIN1
 #include <X11/keysymdef.h>
@@ -243,7 +245,7 @@ _XcmsParseColorString(pCCC, color_string, pColor)
     /*
      * While copying color_string to string_lowered, convert to lowercase
      */
-    if ((strlen(color_string)) > BUFSIZ -1) {
+    if ((int)(strlen(color_string)) > BUFSIZ -1) {
 	return(0);
     }
 

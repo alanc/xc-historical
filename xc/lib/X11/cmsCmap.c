@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.1 91/01/30 18:33:06 dave Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.2 91/02/05 13:41:25 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -154,9 +154,9 @@ CmapRecForColormap(dpy, cmap)
 		    i,			/* screen_number */
 		    DefaultVisual(dpy, i),
 		    (XcmsColor *)NULL,	/* clientWhitePt */
-		    (XcmsFuncPtr *)NULL,/* gamutCompFunc */
+		    (XcmsFuncPtr)NULL,  /* gamutCompFunc */
 		    (caddr_t)NULL,	/* gamutCompClientData */
-		    (XcmsFuncPtr *)NULL,/* whitePtAdjFunc */
+		    (XcmsFuncPtr)NULL,  /* whitePtAdjFunc */
 		    (caddr_t)NULL	/* whitePtAdjClientData */
 		    );
 	    return(pRec);
@@ -228,9 +228,9 @@ CmapRecForColormap(dpy, cmap)
 		    i,			/* screen_number */
 		    (visualList+j)->visual,
 		    (XcmsColor *)NULL,	/* clientWhitePt */
-		    (XcmsFuncPtr *)NULL,/* gamutCompFunc */
+		    (XcmsFuncPtr)NULL,  /* gamutCompFunc */
 		    (caddr_t)NULL,	/* gamutCompClientData */
-		    (XcmsFuncPtr *)NULL,/* whitePtAdjFunc */
+		    (XcmsFuncPtr)NULL,  /* whitePtAdjFunc */
 		    (caddr_t)NULL	/* whitePtAdjClientData */
 		    );
 	    XSetErrorHandler(oldErrorHandler);
@@ -488,9 +488,9 @@ XcmsCCCofColormap(dpy, cmap)
 		    0,			/* screen_number */
 		    pRec->visual,
 		    (XcmsColor *)NULL,	/* clientWhitePt */
-		    (XcmsFuncPtr *)NULL,/* gamutCompFunc */
+		    (XcmsFuncPtr)NULL,  /* gamutCompFunc */
 		    (caddr_t)NULL,	/* gamutCompClientData */
-		    (XcmsFuncPtr *)NULL,/* whitePtAdjFunc */
+		    (XcmsFuncPtr)NULL,  /* whitePtAdjFunc */
 		    (caddr_t)NULL	/* whitePtAdjClientData */
 		    ));
 	} else {
@@ -499,13 +499,13 @@ XcmsCCCofColormap(dpy, cmap)
 		    if (ScreenOfDisplay(dpy, i) == windowAttr.screen) {
 			return(pRec->pCCC = XcmsCreateCCC(
 				dpy,
-				i,			/* screen_number */
+				i,		   /* screen_number */
 				pRec->visual,
-				(XcmsColor *)NULL,	/* clientWhitePt */
-				(XcmsFuncPtr *)NULL,/* gamutCompFunc */
-				(caddr_t)NULL,	/* gamutCompClientData */
-				(XcmsFuncPtr *)NULL,/* whitePtAdjFunc */
-				(caddr_t)NULL	/* whitePtAdjClientData */
+				(XcmsColor *)NULL, /* clientWhitePt */
+				(XcmsFuncPtr)NULL, /* gamutCompFunc */
+				(caddr_t)NULL,	   /* gamutCompClientData */
+				(XcmsFuncPtr)NULL, /* whitePtAdjFunc */
+				(caddr_t)NULL	   /* whitePtAdjClientData */
 				));
 		    }
 		}

@@ -1,4 +1,4 @@
-/* $XConsortium: XStNColor.c,v 11.13 91/01/06 11:48:20 rws Exp $ */
+/* $XConsortium: XStNColor.c,v 11.14 91/02/05 13:40:30 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -42,24 +42,10 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     XcmsColor cmsColor_exact;
     XColor scr_def;
     char tmpName[BUFSIZ];
+    XcmsSpecFmt result_format;
 
     /*
      * Let's Attempt to use TekCMS approach to Parse Color
-     */
-
-    if ((pCCC = XcmsCCCofColormap(dpy, cmap)) != NULL) {
-	cmsColor_scr.format = cmsColor_exact.format = XCMS_RGB_FORMAT;
-	if (XcmsLookupColor(pCCC, name, &cmsColor_scr, &cmsColor_exact)) {
-	    _XcmsRGB_to_XColor(&cmsColor_scr, &scr_def, 1);
-	    scr_def.pixel = pixel;
-	    scr_def.flags = flags;
-	    XStoreColor(dpy, cmap, &scr_def);
-	    return;
-	}
-    }
-
-    /*
-     * Let's Attempt to use TekCMS and i18n approach to Parse Color
      */
     /* copy string to allow overwrite by _XcmsResolveColorString() */
     strncpy(tmpName, name, BUFSIZ - 1);

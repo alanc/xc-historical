@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsStCols.c,v 1.7 91/01/22 22:18:46 alt Exp $" */
+/* $XConsortium: XcmsStCols.c,v 1.1 91/01/30 19:03:28 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -57,9 +57,9 @@
  *	SYNOPSIS
  */
 Status
-XcmsStoreColors(pCCC, colormap, pColors_in,
+XcmsStoreColors(dpy, colormap, pColors_in,
 	nColors, pCompressed)
-    XcmsCCC *pCCC;
+    Display *dpy;
     Colormap colormap;
     XcmsColor *pColors_in;
     unsigned int nColors;
@@ -100,7 +100,7 @@ XcmsStoreColors(pCCC, colormap, pColors_in,
     /*
      * Call routine to store colors using the copied color structures
      */
-    retval = _XcmsSetGetColors (XStoreColors, pCCC, colormap,
+    retval = _XcmsSetGetColors (XStoreColors, dpy, colormap,
 	    pColors_tmp, nColors, XCMS_RGB_FORMAT, pCompressed);
 
     /*

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.1 91/01/30 18:43:27 dave Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.2 91/02/05 13:41:38 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -333,9 +333,11 @@ ValueInterpolation (key, lo, hi, answer, bitsPerRGB)
 {
     XcmsFloat ratio;
 
-    ratio = (XcmsFloat)(key->value - lo->value) / (XcmsFloat)(hi->value - lo->value);
+    ratio = 
+      ((XcmsFloat)key->value - (XcmsFloat)lo->value) / 
+	((XcmsFloat)hi->value - (XcmsFloat)lo->value);
     answer->value = key->value;
-    answer->intensity = (hi->intensity - lo->intensity) * ratio;
+    answer->intensity = (hi->intensity) - (lo->intensity) * ratio;
     answer->intensity += lo->intensity;
     return (XCMS_SUCCESS);
 }
@@ -365,7 +367,8 @@ IntensityInterpolation (key, lo, hi, answer, bitsPerRGB)
     int tmp;
     ratio = (key->intensity - lo->intensity) / (hi->intensity - lo->intensity);
     answer->intensity = key->intensity;
-    tmp = ((XcmsFloat)(hi->value - lo->value) * ratio) + 0.5;
+    tmp = (((XcmsFloat)hi->value - (XcmsFloat)lo->value) * ratio)
+      + (XcmsFloat)0.5;
     answer->value = (lo->value + tmp + HALF[bitsPerRGB]) & MASK[bitsPerRGB];
     return (XCMS_SUCCESS);
 }

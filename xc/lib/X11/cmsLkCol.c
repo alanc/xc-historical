@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.12 91/01/27 00:39:19 alt Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.1 91/01/30 16:52:15 dave Exp $ */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -68,7 +68,8 @@ extern char *getenv();
 Status
 XcmsLookupColor (
     Display *dpy,
-    const char *color_name,
+    Colormap cmap,
+    _Xconst char *color_name,
     XcmsColor *pColor_exact_return,
     XcmsColor *pColor_scrn_return,
     XcmsSpecFmt result_format)
