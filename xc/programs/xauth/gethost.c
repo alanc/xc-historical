@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.12 91/05/11 15:16:09 gildea Exp $
+ * $XConsortium: gethost.c,v 1.13 91/07/19 18:40:38 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -94,6 +94,8 @@ char *get_hostname (auth)
     static char nodeaddr[16];
 #endif /* DNETCONN */
 
+    if (auth->address_length == 0)
+	return "Illegal Address";
 #ifdef TCPCONN
     if (auth->family == FamilyInternet) {
 	/* gethostbyaddr can take a LONG time if the host does not exist.
