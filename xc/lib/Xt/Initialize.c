@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.194 91/06/13 18:48:34 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.195 91/06/17 20:00:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -173,8 +173,9 @@ static String XtGetRootDirName(buf)
 #else
      int uid;
      extern int getuid();
-     extern struct passwd *getpwuid();
-     extern struct passwd *getpwnam();
+#ifndef SYSV386
+     extern struct passwd *getpwuid(), *getpwnam();
+#endif
 #endif
      struct passwd *pw;
      static char *ptr = NULL;
