@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.64 91/05/02 17:00:22 rws Exp $
+ * $XConsortium: Xrm.c,v 1.65 91/05/04 14:00:45 rws Exp $
  */
 
 /***********************************************************
@@ -98,7 +98,7 @@ typedef unsigned long Signature;
 static XrmQuark XrmQString, XrmQANY;
 
 typedef	Bool (*DBEnumProc)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes    /* this is Nested on purpose, to match Xlib.h */
     XrmDatabase*	/* db */,
     XrmBindingList	/* bindings */,
     XrmQuarkList	/* quarks */,
