@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.101 89/11/05 17:46:56 jim Exp $
+ * $XConsortium: events.c,v 1.102 89/11/06 14:19:13 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.101 89/11/05 17:46:56 jim Exp $";
+"$XConsortium: events.c,v 1.102 89/11/06 14:19:13 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -865,7 +865,7 @@ HandleExpose()
 		Tmp_win->icon_name, strlen(Tmp_win->icon_name));
 	    flush_expose (Event.xany.window);
 	    return;
-	} else {
+	} else if (Tmp_win->titlebuttons) {
 	    int i;
 	    Window w = Event.xany.window;
 	    register TBWindow *tbw;
@@ -958,9 +958,13 @@ HandleDestroyNotify()
 	    XDeleteContext(dpy, Tmp_win->hilite_w, TwmContext);
 	    XDeleteContext(dpy, Tmp_win->hilite_w, ScreenContext);
 	}
-	for (i = 0; i < nb; i++) {
-	    XDeleteContext(dpy, Tmp_win->titlebuttons[i].window, TwmContext);
-	    XDeleteContext(dpy, Tmp_win->titlebuttons[i].window, ScreenContext);
+	if (Tmp_win->titlebuttons) {
+	    for (i = 0; i < nb; i++) {
+		XDeleteContext (dpy, Tmp_win->titlebuttons[i].window,
+				TwmContext);
+		XDeleteContext (dpy, Tmp_win->titlebuttons[i].window,
+				ScreenContext);
+	    }
         }
     }
 
@@ -1466,7 +1470,7 @@ HandleButtonPress()
 	return;
 
     /* check the title bar buttons */
-    if (Tmp_win && Tmp_win->title_height)
+    if (Tmp_win && Tmp_win->title_height && Tmp_win->titlebuttons)
     {
 	register int i;
 	register TBWindow *tbw;
