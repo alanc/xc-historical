@@ -172,6 +172,30 @@ Digital Equipment Corporation
 MIT Project Athena
 
 June, 1988
+.sp
+.LP
+From Release 3 to Release 4, several new members joined the design
+team.  We greatly appreciate the thoughtful comments, suggestions,
+lengthy discussions, and in some cases implementation code contributed by each
+of the following:
+.LP
+.Ds
+Don Alecci (AT&T)
+Ellis Cohen (OSF)
+Donna Converse (MIT)
+Clive Feather (IXI)
+Nayeem Islam (Sun)
+Dana Laursen (HP)
+Keith Packard (MIT)
+Chris Peterson (MIT)
+Richard Probst (Sun)
+Larry Cable (Sun)
+.De
+.sp
+.Ds 0
+Ralph R. Swick
+
+December, 1989
 .De
 .bp iv
 .XS iv
