@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.56 88/10/21 13:23:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.57 89/01/18 10:56:04 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -662,10 +662,13 @@ void XtAppProcessEvent(app, mask)
 
 	    if (CallWorkProc(app)) continue;
 
-	    d = _XtwaitForSomething(FALSE, FALSE, TRUE,
+	    d = _XtwaitForSomething(
+				    (mask & XtIMTimer ? FALSE : TRUE),
+				    (mask & XtIMAlternateInput ? FALSE : TRUE),
+				    TRUE,
 				    (unsigned long *) NULL, app);
 	    
-	    if (d != -1) {
+	    if (mask & XtIMXEvent && d != -1) {
 		XNextEvent(app->list[d], &event);
 		app->last = d;
 		if (event.xany.type == MappingNotify) {
