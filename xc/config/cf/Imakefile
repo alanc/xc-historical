@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.25 94/01/18 19:21:53 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.26 94/02/04 21:43:08 rws Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -63,5 +63,3 @@ INSTFILES = $(RULEFILES) $(TMPLFILES) $(DEFFILES) $(CFFILES) $(LOCALFILES)
 all::
 
 InstallMultipleDestFlags(install,$(INSTFILES),$(CONFIGDIR),$(INSTDATFLAGS))
-
-depend::

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.15 91/07/17 00:45:19 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.16 92/01/30 20:10:55 gildea Exp $
 
 OBJS1 =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(courB18) FontObj(courB24) FontObj(courBO08) \
@@ -252,5 +252,3 @@ FontTarget(lutRS24)
 InstallFontObjs($(OBJS1),$(FONTINSTDIR))
 InstallFontObjs($(OBJS2),$(FONTINSTDIR))
 InstallFontAliases($(FONTINSTDIR))
-
-depend::

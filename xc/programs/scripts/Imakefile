@@ -1,11 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.25 93/09/04 17:49:12 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.26 93/09/04 17:51:51 rws Exp $
 
 all::
 
 InstallNamedProg(xon.sh,xon,$(BINDIR))
 InstallManPage(xon,$(MANDIR))
-
-depend::
-
-install.man::
-

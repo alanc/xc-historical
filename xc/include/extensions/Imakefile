@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.33 93/09/26 21:50:09 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.34 94/01/30 14:18:41 rws Exp $
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	XTest.h xtestext1.h saver.h scrnsaver.h XIE.h XIEproto.h XIEprotost.h \
@@ -10,5 +10,3 @@ all::
 
 BuildIncludes($(HEADERS),extensions,..)
 InstallMultiple($(HEADERS),$(INCDIR)/extensions)
-
-depend::

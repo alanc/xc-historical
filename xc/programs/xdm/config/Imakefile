@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 91/10/09 11:03:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.15 93/08/25 09:30:19 rws Exp $
 
 SERVERSTYPE = XdmServersType
 
@@ -19,5 +19,3 @@ InstallNamedProg(GiveConsole,GiveConsole,$(XDMDIR))
 InstallNamedProg(TakeConsole,TakeConsole,$(XDMDIR))
 InstallNamedProg(Xsetup_0,Xsetup_0,$(XDMDIR))
 #endif
-
-depend::

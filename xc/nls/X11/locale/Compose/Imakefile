@@ -1,7 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/17 13:37:18 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/17 16:01:55 rws Exp $
 
 all::
 
 InstallNamedNonExec(iso8859-1,Compose,$(XLOCALEDIR)/iso8859-1)
-
-depend::

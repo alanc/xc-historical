@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 93/09/17 16:43:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 93/09/29 14:27:20 rws Exp $
 
   WCHAR32 = HasWChar32
    TBLDIR = $(XLOCALEDIR)/tbl_data
@@ -40,5 +40,3 @@ InstallNonExecFile(tab8859_9,$(TBLDIR))
 InstallNonExecFile(jis0208,$(TBLDIR))
 InstallNonExecFile(ksc5601,$(TBLDIR))
 InstallNonExecFile(gb2312,$(TBLDIR))
-
-depend::

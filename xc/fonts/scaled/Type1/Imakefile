@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 92/03/24 17:56:56 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 92/03/25 16:41:18 gildea Exp $
 OBJS = UTRG____.pfa UTB_____.pfa UTBI____.pfa UTI_____.pfa \
       cour.pfa courb.pfa courbi.pfa couri.pfa \
  c0648bt_.pfb c0649bt_.pfb c0632bt_.pfb c0633bt_.pfb \
@@ -11,5 +11,3 @@ MakeFontsDir(fonts.scale)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
-
-depend::
