@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMxV.c,v 1.5 91/02/15 18:33:34 dave Exp $" */
+/* $XConsortium: TekHVCMxV.c,v 1.6 91/05/13 22:47:13 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -104,6 +104,7 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
     int         nCount, nMaxCount;
     XcmsFloat   nT, nChroma, savedChroma, lastValue, lastChroma, prevChroma;
     XcmsFloat   rFactor;
+    XcmsFloat	ftmp1, ftmp2;
 
     /*
      * Check Arguments
@@ -204,8 +205,14 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 		nChroma = max_vc.spec.TekHVC.C;
 		rFactor *= 0.5;  /* selective relaxation employed */
 	    } else if (nChroma < 0.0) {
-		if (fabs ((double) (lastChroma - savedChroma)) < 
-		    fabs ((double) (tmp.spec.TekHVC.C - savedChroma))) {
+		/* avoid using fabs */
+		ftmp1 = lastChroma - savedChroma;
+		if (ftmp1 < 0.0)
+		    ftmp1 = -ftmp1;
+		ftmp2 = tmp.spec.TekHVC.C - savedChroma;
+		if (ftmp2 < 0.0)
+		    ftmp2 = -ftmp2;
+		if (ftmp1 < ftmp2) {
 		    tmp.spec.TekHVC.V = lastValue;
 		    tmp.spec.TekHVC.C = lastChroma;
 		}
@@ -222,8 +229,14 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 	    }
 	}
 	if (nCount >= nMaxCount) {
-	    if (fabs((double) (lastChroma - savedChroma)) < 
-		fabs((double) (tmp.spec.TekHVC.C - savedChroma))) {
+	    /* avoid using fabs */
+	    ftmp1 = lastChroma - savedChroma;
+	    if (ftmp1 < 0.0)
+		ftmp1 = -ftmp1;
+	    ftmp2 = tmp.spec.TekHVC.C - savedChroma;
+	    if (ftmp2 < 0.0)
+		ftmp2 = -ftmp2;
+	    if (ftmp1 < ftmp2) {
 		    tmp.spec.TekHVC.V = lastValue;
 		    tmp.spec.TekHVC.C = lastChroma;
 	    }
