@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.13 94/09/14 18:23:21 mor Exp mor $ */
+/* $XConsortium: session.c,v 1.14 94/11/30 16:19:04 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -27,6 +27,28 @@ in this Software without prior written authorization from the X Consortium.
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
 
+#include <X11/Xosdefs.h>
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif /* X_NOT_POSIX */
+#ifndef PATH_MAX
+#include <sys/param.h>
+#ifndef PATH_MAX
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
+#endif /* PATH_MAX */
+
 #include <X11/Xlib.h>
 #include <X11/SM/SMlib.h>
 #include <X11/Xatom.h>
@@ -40,7 +62,7 @@ char *twm_clientId;
 TWMWinConfigEntry *winConfigHead = NULL;
 Bool gotFirstSave = 0;
 
-#define SAVEFILE_VERSION 1
+#define SAVEFILE_VERSION 2
 
 
 
@@ -289,6 +311,9 @@ char	**stringp;
  * Geom y				2
  * Geom width				2
  * Geom height				2
+ *
+ * Width ever changed by user		1
+ * Height ever changed by user		1
  */
 
 int
@@ -380,14 +405,21 @@ char *windowRole;
     if (!write_ushort (configFile, (unsigned short) theWindow->attr.height))
 	return 0;
 
+    if (!write_byte (configFile, theWindow->widthEverChangedByUser ? 1 : 0))
+	return 0;
+
+    if (!write_byte (configFile, theWindow->heightEverChangedByUser ? 1 : 0))
+	return 0;
+
     return 1;
 }
 
 
 int
-ReadWinConfigEntry (configFile, pentry)
+ReadWinConfigEntry (configFile, version, pentry)
 
 FILE *configFile;
+unsigned short version;
 TWMWinConfigEntry **pentry;
 
 {
@@ -469,6 +501,22 @@ TWMWinConfigEntry **pentry;
     if (!read_ushort (configFile, &entry->height))
 	goto give_up;
 
+    if (version > 1)
+    {
+	if (!read_byte (configFile, &byte))
+	    goto give_up;
+	entry->width_ever_changed_by_user = byte;
+
+	if (!read_byte (configFile, &byte))
+	    goto give_up;
+	entry->height_ever_changed_by_user = byte;
+    }
+    else
+    {
+	entry->width_ever_changed_by_user = False;
+	entry->height_ever_changed_by_user = False;
+    }
+
     return 1;
 
 give_up:
@@ -522,7 +570,7 @@ char *filename;
 
     while (!done)
     {
-	if (ReadWinConfigEntry (configFile, &entry))
+	if (ReadWinConfigEntry (configFile, version, &entry))
 	{
 	    entry->next = winConfigHead;
 	    winConfigHead = entry;
@@ -538,7 +586,8 @@ char *filename;
 
 int
 GetWindowConfig (theWindow, x, y, width, height,
-    iconified, icon_info_present, icon_x, icon_y)
+    iconified, icon_info_present, icon_x, icon_y,
+    width_ever_changed_by_user, height_ever_changed_by_user)
 
 TwmWindow *theWindow;
 short *x, *y;
@@ -546,6 +595,8 @@ unsigned short *width, *height;
 Bool *iconified;
 Bool *icon_info_present;
 short *icon_x, *icon_y;
+Bool *width_ever_changed_by_user;
+Bool *height_ever_changed_by_user;
 
 {
     char *clientId, *windowRole;
@@ -647,6 +698,9 @@ short *icon_x, *icon_y;
 	*height = ptr->height;
 	*iconified = ptr->iconified;
 	*icon_info_present = ptr->icon_info_present;
+	*width_ever_changed_by_user = ptr->width_ever_changed_by_user;
+	*height_ever_changed_by_user = ptr->height_ever_changed_by_user;
+
 	if (*icon_info_present)
 	{
 	    *icon_x = ptr->icon_x;
@@ -664,6 +718,25 @@ short *icon_x, *icon_y;
 	XFree (windowRole);
 
     return found;
+}
+
+
+
+static char *
+unique_filename (path, prefix)
+
+char *path;
+char *prefix;
+
+{
+#ifndef X_NOT_POSIX
+    return ((char *) XtNewString ((char *) tempnam (path, prefix)));
+#else
+    char tempFile[PATH_MAX];
+
+    sprintf (tempFile, "%s/%sXXXXXX", path, prefix);
+    return ((char *) XtNewString ((char *) mktemp (tempFile)));
+#endif
 }
 
 
@@ -697,7 +770,7 @@ SmPointer clientData;
 	    path = ".";
     }
 
-    filename = (char *) tempnam (path, ".twm");
+    filename = unique_filename (path, ".twm");
     configFile = fopen (filename, "wb");
 
     if (!write_ushort (configFile, SAVEFILE_VERSION))
