@@ -2,6 +2,7 @@
 #include BandAidCompiler
 #endif
 
+      CCOPTIONS = LibraryCCOptions
     STD_DEFINES = LibraryDefines $(ALIGN_DEFINES)
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP)

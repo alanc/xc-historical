@@ -1,3 +1,4 @@
+      CCOPTIONS = LibraryCCOptions
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)

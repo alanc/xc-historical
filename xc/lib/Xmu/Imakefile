@@ -3,6 +3,7 @@
 /**/# of the Xlib standard.
 /**/#
 
+      CCOPTIONS = LibraryCCOptions
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(TOP)/X11

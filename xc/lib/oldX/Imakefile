@@ -1,3 +1,6 @@
+      CCOPTIONS = LibraryCCOptions
+    STD_DEFINES = LibraryDefines
+    CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC)
    INSTALLFLAGS = $(INSTINCFLAGS)
            SRCS = *.c

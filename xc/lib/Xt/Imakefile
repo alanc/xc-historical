@@ -5,6 +5,7 @@
 #if UnalignedReferencesAllowed
   ALIGN_DEFINES = -DUNALIGNED
 #endif
+      CCOPTIONS = LibraryCCOptions
     STD_DEFINES = LibraryDefines $(ALIGN_DEFINES)
     APP_DEFINES = -DXAPPLOADDIR=\"$(XAPPLOADDIR)$(PATHSEP)\"
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\"
