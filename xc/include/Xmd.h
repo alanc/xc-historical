@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.36 90/03/14 12:15:16 jim Exp $ */
+/* $XConsortium: Xmd.h,v 1.37 90/12/11 13:24:15 rws Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -56,9 +56,13 @@ SOFTWARE.
  * The sz_ prefix is used instead of something more descriptive so that the
  * symbols are no more than 32 characters long (which causes problems for some
  * compilers and preprocessors).
+ *
+ * The extra indirection in the __STDC__ case is to get macro arguments to
+ * expand correctly before the concatenation, rather than afterward.
  */
 #if __STDC__ && !defined(UNIXCPP)
-#define SIZEOF(x) sz_##x
+#define _SIZEOF(x) sz_##x
+#define SIZEOF(x) _SIZEOF(x)
 #else
 #define SIZEOF(x) sz_/**/x
 #endif /* if ANSI C compiler else not */
