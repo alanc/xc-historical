@@ -1,4 +1,4 @@
-/* $Header: XStBytes.c,v 11.12 87/06/13 12:09:20 jg Exp $ */
+/* $Header: XStBytes.c,v 11.13 87/08/29 22:54:33 jg Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -36,7 +36,7 @@ char *XFetchBuffer (dpy, nbytes, buffer)
     if ((buffer < 0) || (buffer > 7)) return (NULL);
 /* XXX should be (sizeof (maxint) - 1)/4 */
     if (XGetWindowProperty(dpy, RootWindow(dpy, 0), n_to_atom[buffer], 
-	0L, 1073725440L, False, XA_STRING, 
+	0L, 10000000L, False, XA_STRING, 
 	&actual_type, &actual_format, &nitems, &leftover, &data) != Success) {
 	return (NULL);
 	}

@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.126 87/08/29 21:40:33 jg Exp $ */
+/* $Header: Xlib.h,v 11.129 87/08/30 21:36:19 jg Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -64,6 +64,8 @@
 #define ImageByteOrder(dpy) 	((dpy)->byte_order)
 
 /* macros for screen oriented applications (toolkit) */
+#define ScreenOfDisplay(dpy, scr)(&((dpy)->screens[(scr)]))
+#define DefaultScreenOfDisplay(dpy) (&((dpy)->screens[(dpy)->default_screen]))
 #define DisplayOfScreen(s)	((s)->display)
 #define RootWindowOfScreen(s)	((s)->root)
 #define BlackPixelOfScreen(s)	((s)->black_pixel)
@@ -77,7 +79,7 @@
 #define WidthMMOfScreen(s)	((s)->mwidth)
 #define HeightMMOfScreen(s)	((s)->mheight)
 #define PlanesOfScreen(s)	((s)->root_depth)
-#define CellsOfScreen(s)	(DefaultVisualofScreen((s))->map_entries)
+#define CellsOfScreen(s)	(DefaultVisualOfScreen((s))->map_entries)
 /*
  * Extensions need a way to hang private data on some structures.
  */
@@ -398,6 +400,7 @@ XModifierKeymap *XNewModifiermap(),
  */
 typedef struct _XDisplay {
 	XExtData *ext_data;	/* hook for extension to hang data */
+	struct _XDisplay *next; /* next open Display on list */
 	int fd;			/* Network socket. */
 	int lock;		/* is someone in critical section? */
 	int proto_major_version;/* maj. version of server's X protocol */
@@ -946,5 +949,16 @@ Atom *XListProperties();
 XImage *XGetImage();
 XHostAddress *XListHosts();
 KeySym XLookupKeysym(), *XGetKeyboardMapping();
+XModifierKeymap *XNewModifierMap();
 
+/* these are routines for which there are also macros */
+Window XRootWindow(), XDefaultRootWindow(), XRootWindowOfScreen();
+Visual *XDefaultVisual(), *XDefaultVisualOfScreen();
+GC XDefaultGC(), XDefaultGCofScreen();
+unsigned long XBlackPixel(), XWhitePixel(), XAllPlanes();
+unsigned long XBlackPixelOfScreen(), XWhitePixelOfScreen();
+char *XServerVendor(), *XDisplayString();
+Colormap XDefaultColormap(), XDefaultColormapOfScreen();
+Display *XDisplayOfScreen();
+Screen *XScreenOfDisplay(), *XDefaultScreenOfDisplay();
 #endif /* _XLIB_H_ */
