@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.7 89/07/25 13:58:54 rws Exp $
+ * $XConsortium: Xct.c,v 1.8 89/07/27 10:54:10 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -26,6 +26,8 @@ typedef struct _XctPriv {
     unsigned		flags;
     XctHDirection	*dirstack;
     unsigned		dirsize;
+    XctString		*encodings;
+    unsigned		enc_count;
 } *XctPriv;
 
 #define IsMore(priv) ((priv)->ptr != (priv)->ptrend)
@@ -237,9 +239,6 @@ HandleMultiGR(data, c)
     return 1;
 }
 
-static unsigned enc_count = 0;
-static XctString *encodings = (XctString *)NULL;
-
 static int
 HandleExtended(data, c)
     register XctData data;
@@ -258,10 +257,11 @@ HandleExtended(data, c)
     data->item_length = priv->ptr - data->item;
     len = ptr - enc;
     for (i = 0;
-	 (i < enc_count) && strncmp((char *)encodings[i], (char *)enc, len);
+	 (i < priv->enc_count) &&
+	 strncmp((char *)priv->encodings[i], (char *)enc, len);
 	 i++)
 	;
-    if (i == enc_count) {
+    if (i == priv->enc_count) {
 	XctString cp;
 
 	for (cp = enc; cp != ptr; cp++) {
@@ -271,15 +271,16 @@ HandleExtended(data, c)
 	ptr = (XctString)malloc((unsigned)len + 1);
 	bcopy((char *)enc, (char *)ptr, len);
 	ptr[len] = 0x00;
-	enc_count++;
-	if (encodings)
-	    encodings = (XctString *)realloc((char *)encodings,
-					     enc_count * sizeof(XctString));
+	priv->enc_count++;
+	if (priv->encodings)
+	    priv->encodings = (XctString *)realloc(
+				       (char *)priv->encodings,
+				       priv->enc_count * sizeof(XctString));
 	else
-	    encodings = (XctString *)malloc(sizeof(XctString));
-	encodings[i] = ptr;
+	    priv->encodings = (XctString *)malloc(sizeof(XctString));
+	priv->encodings[i] = ptr;
     }
-    data->encoding = (char *)encodings[i];
+    data->encoding = (char *)priv->encodings[i];
     data->char_size = c - 0x30;
     return 1;
 }
@@ -303,6 +304,8 @@ XctCreate(string, length, flags)
     data->flags = flags;
     priv->dirstack = (XctHDirection *)NULL;
     priv->dirsize = 0;
+    priv->encodings = (XctString *)NULL;
+    priv->enc_count = 0;
     XctReset(data);
     return data;
 }
@@ -593,9 +596,16 @@ void
 XctFree(data)
     register XctData data;
 {
-    if (data->priv->dirstack)
-	free((char *)data->priv->dirstack);
+    int i;
+    register XctPriv priv = data->priv;
+
+    if (priv->dirstack)
+	free((char *)priv->dirstack);
     if (data->flags & XctFreeString)
 	free((char *)data->total_string);
+    for (i = 0; i < priv->enc_count; i++)
+	free((char *)priv->encodings[i]);
+    if (priv->encodings)
+	free((char *)priv->encodings);
     free((char *)data);
 }
