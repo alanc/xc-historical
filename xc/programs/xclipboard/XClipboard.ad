@@ -11,13 +11,6 @@ XClipboard*erase.bottom:		ChainTop
 XClipboard*erase.left:			ChainLeft
 XClipboard*erase.right:			ChainLeft
 
-XClipboard*save.label: 			Save To Temp File
-XClipboard*save.fromHoriz: 		erase
-XClipboard*save.top: 			ChainTop
-XClipboard*save.bottom: 		ChainTop
-XClipboard*save.left: 			ChainLeft
-XClipboard*save.right: 			ChainLeft
-
 XClipboard*text.scrollVertical:  	WhenNeeded
 XClipboard*text.scrollHorizontal:  	WhenNeeded
 XClipboard*text.autoFill: 		on
@@ -29,4 +22,3 @@ XClipboard*text.left: 			ChainLeft
 XClipboard*text.right: 			ChainRight
 XClipboard*text.width:			300
 
-XClipboard*geometry:				300x200

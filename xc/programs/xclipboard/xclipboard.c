@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.7 89/12/08 13:01:46 swick Exp $
+ * $XConsortium: xclipboard.c,v 1.8 89/12/08 13:10:53 swick Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.7 89/12/08 13:01:46 swick Exp $ */
+/* $XConsortium: xclipboard.c,v 1.8 89/12/08 13:10:53 swick Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -166,16 +166,6 @@ caddr_t client_data, call_data;
 }
 
 static void 
-SaveToFile(w, client_data, call_data)
-Widget w;
-caddr_t client_data, call_data;
-{
-    Widget text = (Widget) client_data;
-
-    XawAsciiSave(XawTextGetSource(text));
-}
-
-static void 
 Quit(w, client_data, call_data)
 Widget w;
 caddr_t client_data, call_data;
@@ -224,7 +214,6 @@ char **argv;
     parent = XtCreateManagedWidget("shell", formWidgetClass, top, NULL, ZERO);
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
     erase = XtCreateManagedWidget("erase", Command, parent, NULL, ZERO);
-    save = XtCreateManagedWidget("save", Command, parent, NULL, ZERO);
 
     XtSetArg(args[0], XtNtype, XawAsciiFile);
     XtSetArg(args[1], XtNeditType, XawtextEdit);
@@ -232,7 +221,6 @@ char **argv;
 
     XtAddCallback(quit, XtNcallback, Quit, NULL);
     XtAddCallback(erase, XtNcallback, Erase, text);
-    XtAddCallback(save, XtNcallback, SaveToFile, text);
 
     XtRealizeWidget(top);
 
