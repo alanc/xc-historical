@@ -295,7 +295,6 @@ wire_to_event(dpy,re,event)
 		    cev->req_minor = cn->requestMinor;
 		    return True;
 		}
-		return False;
 	    }
 	    break;
 	case XkbIndicatorMapNotify:
@@ -317,7 +316,6 @@ wire_to_event(dpy,re,event)
 		    iev->map_changed =  in->mapChanged;
 		    return True;
 		}
-		return False;
 	    }
 	    break;
 	case XkbIndicatorStateNotify:
@@ -339,7 +337,6 @@ wire_to_event(dpy,re,event)
 		    iev->state_changed =  in->mapChanged;
 		    return True;
 		}
-		return False;
 	    }
 	    break;
 	case XkbBellNotify:
@@ -365,7 +362,6 @@ wire_to_event(dpy,re,event)
 		    bev->window = bn->window;
 		    return True;
 		}
-		return False;
 	    }
 	    break;
 	case XkbSlowKeyNotify:
@@ -387,7 +383,6 @@ wire_to_event(dpy,re,event)
 		    skev->delay = skn->delay;
 		    return True;
 		}
-		return False;
 	    }
 	    break;
 	case XkbNamesNotify:
@@ -417,7 +412,6 @@ wire_to_event(dpy,re,event)
 		    nev->changed_indicators = nn->changedIndicators;
 		    return True;
 		}
-		return False;
 	    }
 	    break;
 	case XkbCompatMapNotify:
@@ -441,7 +435,6 @@ wire_to_event(dpy,re,event)
 		    cmev->num_total_syms = cmn->nTotalSI;
 		    return True;
 		}
-		return False;
 	    }
 	    break;
 	case XkbAlternateSymsNotify:
@@ -463,7 +456,6 @@ wire_to_event(dpy,re,event)
 		    asev->num_keys = asn->nKeys;
 		    return True;
 		}
-		return False;
 	    }
 	    break;
 	case XkbActionMessage:

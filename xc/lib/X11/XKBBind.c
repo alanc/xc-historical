@@ -37,7 +37,6 @@ without express or implied warranty.
 #define Is_KP_Keysym(k) ((((k) >= XK_KP_0) && ((k) <= XK_KP_9)) || \
 			 ((k) == XK_KP_Decimal) || ((k)==XK_KP_Separator))
 
-static _XkbComputeMaskFromKeytrans();
 static int _XkbLoadDpy();
 
 struct _XKeytrans {
@@ -490,7 +489,7 @@ XLookupString (event, buffer, nbytes, keysym, status)
 {
     KeySym	dummy;
     int rtrnLen;
-    unsigned int *new_mods;
+    unsigned int new_mods;
     Display *dpy = event->display;
 
     if (XKB_UNAVAILABLE(dpy))

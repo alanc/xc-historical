@@ -145,17 +145,17 @@ _XkbReadGetNamesReply(dpy,rep,xkb)
 	}
     }
     if (rep->which & XkbIndicatorNamesMask) {
-	if (!_XkbReadAtoms(&buf,(char *)names->indicators,XkbNumIndicators,
+	if (!_XkbReadAtoms(&buf,names->indicators,XkbNumIndicators,
 							rep->indicators))
 	    goto BAILOUT;
     }
     if ( rep->which&XkbModifierNamesMask ) {
-	if (!_XkbReadAtoms(&buf,(char *)names->mods,XkbNumModifiers,
-							rep->modifiers))
+	if (!_XkbReadAtoms(&buf,names->mods,
+			   XkbNumModifiers,(CARD32)rep->modifiers))
 	    goto BAILOUT;
     }
     if ( rep->which&XkbVirtualModNamesMask ) {
-	if (!_XkbReadAtoms(&buf,(char *)names->vmods,XkbNumVirtualMods,
+	if (!_XkbReadAtoms(&buf,names->vmods,XkbNumVirtualMods,
 							rep->virtualMods))
 	    goto BAILOUT;
     }
@@ -343,7 +343,7 @@ XkbSetNames(dpy,which,firstType,nTypes,xkb)
 	if (which&XkbKTLevelNamesMask) {
 	    type= &xkb->map->types[firstType];
 	    for (i=nLvlNames=0;i<nTypes;i++,type++) {
-		if (type->lvl_names[i]!=NULL)
+		if (type->lvl_names[i]!=None)
 		    nLvlNames+= type->group_width;
 	    }
 	}
