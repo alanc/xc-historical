@@ -1237,10 +1237,12 @@ sunCreateWindow (pWin)
 
     if (pWin->backStorage) {
 	pPriv->SaveAreas = pWin->backStorage->SaveDoomedAreas;
-	pWin->backStorage->SaveDoomedAreas = sunSaveAreas;
 	pPriv->RestoreAreas = pWin->backStorage->RestoreAreas;
-	pWin->backStorage->DrawGuarantee = sunDrawGuarantee;
 	pPriv->DrawGuarantee = pWin->backStorage->DrawGuarantee;
+
+	pWin->backStorage->SaveDoomedAreas = sunSaveAreas;
+	pWin->backStorage->RestoreAreas = sunRestoreAreas;
+	pWin->backStorage->DrawGuarantee = sunDrawGuarantee;
     }
     AddResource (pWin->wid, RT_WINDOW, (pointer)pPriv, Xfree, 
 		 wPrivClass);
