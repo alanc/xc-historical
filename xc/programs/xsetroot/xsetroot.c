@@ -399,12 +399,13 @@ unsigned long NameToPixel(name, pixel)
     if (!name || !*name)
 	return pixel;
     if (!XParseColor(dpy,DefaultColormap(dpy,screen),name,&ecolor)) {
-	fprintf(stderr,"%s: unknown color %d\n",program_name,name);
+	fprintf(stderr,"%s:  unknown color \"%s\"\n",program_name,name);
 	exit(1);
 	/*NOTREACHED*/
     }
     if (!XAllocColor(dpy, DefaultColormap(dpy, screen),&ecolor)) {
-	fprintf(stderr, "%s: allocation failure: %s\n",program_name, name);
+	fprintf(stderr, "%s:  unable to allocate color for \"%s\"\n",
+		program_name, name);
 	exit(1);
 	/*NOTREACHED*/
     }
