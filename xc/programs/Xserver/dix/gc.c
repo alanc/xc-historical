@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.2 89/06/16 16:54:01 keith Exp $ */
+/* $XConsortium: gc.c,v 5.3 89/07/09 15:38:37 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -1037,7 +1037,7 @@ VerifyRectOrder(nrects, prects, ordering)
 		  i++, prectP++, prectN++)
 		  if((prectN->y < prectP->y) ||
 		      ( (prectN->y == prectP->y) &&
-		        (  (prectN->x < prectP->x)   ||
+		        (  (prectN->x < (prectP->x + prectP->height))   ||
 		           (prectN->height != prectP->height) ) ) )
 		      return -1;
 	  }
