@@ -114,7 +114,7 @@ void XtAddEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 .br
       XtEventHandler \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .LP
 void XtAddRawEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 \fIproc\fP, \fIclient_data\fP)
@@ -127,7 +127,7 @@ void XtAddRawEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 .br
       XtEventHandler \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .LP
 void XtRemoveEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 \fIproc\fP, \fIclient_data\fP)
@@ -140,7 +140,7 @@ void XtRemoveEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 .br
       XtEventHandler \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .LP
 void XtRemoveRawEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 \fIproc\fP, \fIclient_data\fP)
@@ -153,7 +153,7 @@ void XtRemoveRawEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 .br
       XtEventHandler \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .SH ARGUMENTS
 .IP \fIclient_data\fP 1i
 Specifies additional data to be passed to the client's event handler.

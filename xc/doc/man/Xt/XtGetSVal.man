@@ -113,7 +113,7 @@ void XtGetSelectionValue(\fIw\fP, \fIselection\fP, \fItarget\fP, \
 .br
       XtSelectionCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
       Time \fItime\fP;
 .LP
@@ -130,7 +130,7 @@ void XtGetSelectionValues(\fIw\fP, \fIselection\fP, \fItargets\fP, \
 .br
       XtSelectionCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
       Time \fItime\fP;
 .SH ARGUMENTS

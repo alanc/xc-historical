@@ -110,9 +110,9 @@ void XtCallbackPopdown(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
-      caddr_t \fIcall_data\fP;
+      XtPointer \fIcall_data\fP;
 .LP
 void MenuPopdown(\fIshell_name\fP)
 .br

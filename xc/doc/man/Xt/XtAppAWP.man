@@ -109,7 +109,7 @@ XtWorkProcId XtAppAddWorkProc(\fIapp_context\fP, \fIproc\fP, \fIclient_data\fP)
 .br
       XtWorkProc \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .LP
 void XtRemoveWorkProc(\fIid\fP)
 .br

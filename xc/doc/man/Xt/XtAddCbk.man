@@ -112,7 +112,7 @@ void XtAddCallback(\fIw\fP, \fIcallback_name, \fP\fIcallback\fP, \
 .br
       XtCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .LP
 void XtAddCallbacks(\fIw\fP, \fIcallback_name, \fP\fIcallbacks\fP)
 .br
@@ -131,7 +131,7 @@ void XtRemoveCallback(\fIw\fP, \fIcallback_name\fP, \fIcallback\fP, \
 .br
       XtCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .LP
 void XtRemoveCallbacks(\fIw\fP, \fIcallback_name\fP, \fIcallbacks\fP)
 .br

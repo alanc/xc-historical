@@ -108,7 +108,7 @@ void XtGetSubresources(\fIw\fP, \fIbase\fP, \fIname\fP, \fIclass\fP, \
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIbase\fP;
+      XtPointer \fIbase\fP;
 .br
       String \fIname\fP;
 .br
@@ -127,7 +127,7 @@ void XtGetApplicationResources(\fIw\fP, \fIbase\fP, \fIresources\fP, \
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIbase\fP;
+      XtPointer \fIbase\fP;
 .br
       XtResourceList \fIresources\fP;
 .br

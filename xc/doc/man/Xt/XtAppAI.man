@@ -109,11 +109,11 @@ XtInputId XtAppAddInput(\fIapp_context\fP, \fIsource\fP, \fIcondition\fP, \
 .br
       int \fIsource\fP;
 .br
-      caddr_t \fIcondition\fP;
+      XtPointer \fIcondition\fP;
 .br
       XtInputCallbackProc \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .LP
 void XtRemoveInput(\fIid\fP)
 .br

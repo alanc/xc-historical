@@ -111,7 +111,7 @@ XtIntervalId XtAppAddTimeOut(\fIapp_context\fP, \fIinterval\fP, \fIproc\fP, \
 .br
       XtTimerCallbackProc \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .LP
 void XtRemoveTimeOut(\fItimer\fP)
 .br

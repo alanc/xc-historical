@@ -114,7 +114,7 @@ void XtSetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 void XtSetSubvalues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \
 \fIargs\fP, \fInum_args\fP)
 .br
-      caddr_t \fIbase\fP;
+      XtPointer \fIbase\fP;
 .br
       XtResourceList \fIresources\fP;
 .br
@@ -135,7 +135,7 @@ void XtGetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 void XtGetSubvalues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \
 \fIargs\fP, \fInum_args\fP)
 .br
-      caddr_t \fIbase\fP;
+      XtPointer \fIbase\fP;
 .br
       XtResourceList \fIresources\fP;
 .br

@@ -113,25 +113,25 @@ void XtCallbackNone(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
-      caddr_t \fIcall_data\fP;
+      XtPointer \fIcall_data\fP;
 .LP
 void XtCallbackNonexclusive(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
-      caddr_t \fIcall_data\fP;
+      XtPointer \fIcall_data\fP;
 .LP
 void XtCallbackExclusive(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
-      caddr_t \fIcall_data\fP;
+      XtPointer \fIcall_data\fP;
 .LP
 void MenuPopup(\fIshell_name\fP)
 .br

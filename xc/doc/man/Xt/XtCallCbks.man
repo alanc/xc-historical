@@ -108,7 +108,7 @@ void XtCallCallbacks(\fIw\fP, \fIcallback_name\fP, \fIcall_data\fP)
 .br
       String \fIcallback_name\fP;
 .br
-      caddr_t \fIcall_data\fP;
+      XtPointer \fIcall_data\fP;
 .LP
 typedef enum {XtCallbackNoList, XtCallbackHasNone, XtCallbackHasSome} \
 XtCallbackStatus;
