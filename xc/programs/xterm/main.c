@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.214 94/02/04 15:38:55 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.215 94/02/04 15:58:32 kaleb Exp $";
 #endif /* lint */
 
 /*
@@ -167,6 +167,10 @@ static Bool IsPts = False;
 #endif /* sgi */
 #ifdef sun
 #include <sys/strredir.h>
+#endif
+#ifdef AIXV3
+#define USE_SYSV_UTMP
+#define HAS_UTMP_UT_HOST
 #endif
 #endif /* SYSV */
 
