@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.14 93/07/12 09:44:42 dpw Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.15 93/08/24 18:49:58 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -93,11 +93,6 @@ typedef struct _Screen {
     int			GCPrivateLen;
     unsigned		*GCPrivateSizes;
     unsigned		totalGCSize;
-#ifdef PIXPRIV
-    int			PixmapPrivateLen;
-    unsigned		*PixmapPrivateSizes;
-    unsigned		totalPixmapSize;
-#endif
 
     /* Random screen procedures */
 
@@ -680,6 +675,13 @@ typedef struct _Screen {
 );
 
     PixmapPtr pScratchPixmap;		/* scratch pixmap "pool" */
+
+#ifdef PIXPRIV
+    int			PixmapPrivateLen;
+    unsigned		*PixmapPrivateSizes;
+    unsigned		totalPixmapSize;
+#endif
+
 } ScreenRec;
 
 typedef struct _ScreenInfo {
