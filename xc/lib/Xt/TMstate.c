@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.125 90/12/28 17:40:08 gildea Exp $ */
+/* $XConsortium: TMstate.c,v 1.126 90/12/29 12:17:51 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -831,23 +831,20 @@ static unsigned long GetTime(tm, event)
 }
 
 
-/* ARGSUSED */
-void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
-    Widget w;
-    XtPointer closure;		/* XtTM */
+void _XtTranslateEvent (w, event)
+    Widget	w;
     register    XEvent * event;
-    Boolean *continue_to_dispatch; /* unused */
 {
-    XtTranslations translateData = ((XtTM)closure)->translations;
+    XtTM tm = &w->core.tm;
+    XtTranslations translateData = tm->translations;
     register StateTablePtr stateTable = translateData->stateTable;
     StatePtr oldState;
     TMEventRec curEvent;
-    StatePtr current_state = ((XtTM)closure)->current_state;
+    StatePtr current_state = tm->current_state;
     int     index;
     register ActionPtr actions;
-    XtBoundActions proc_table = ((XtTM)closure)->proc_table;
+    XtBoundActions proc_table = tm->proc_table;
     XtBoundAccActions accProcTbl = translateData->accProcTbl;
-    XtTM tm = (XtTM)closure;
     ActionHook actionHookList
 	= XtWidgetToApplicationContext(w)->action_hook_list;
 
@@ -981,7 +978,7 @@ void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
     }
 
     /* move into successor state */
-    ((XtTM)tm)->current_state = current_state->nextLevel;
+    tm->current_state = current_state->nextLevel;
 }
 
 static Boolean EqualEvents(event1, event2)
@@ -1112,66 +1109,16 @@ CompiledActionTable _CompileActionTable(actions, count)
 }
 
 static EventMask EventToMask(event)
-    EventObjPtr	event;
+    register EventObjPtr event;
 {
-static EventMask Const masks[] = {
-        0,			    /* Error, should never see  */
-        0,			    /* Reply, should never see  */
-        KeyPressMask,		    /* KeyPress			*/
-        KeyReleaseMask,		    /* KeyRelease		*/
-        ButtonPressMask,	    /* ButtonPress		*/
-        ButtonReleaseMask,	    /* ButtonRelease		*/
-        PointerMotionMask	    /* MotionNotify		*/
-		| Button1MotionMask
-		| Button2MotionMask
-		| Button3MotionMask
-		| Button4MotionMask
-		| Button5MotionMask
-		| ButtonMotionMask,
-        EnterWindowMask,	    /* EnterNotify		*/
-        LeaveWindowMask,	    /* LeaveNotify		*/
-        FocusChangeMask,	    /* FocusIn			*/
-        FocusChangeMask,	    /* FocusOut			*/
-        KeymapStateMask,	    /* KeymapNotify		*/
-        ExposureMask,		    /* Expose			*/
-        0,			    /* GraphicsExpose, in GC    */
-        0,			    /* NoExpose, in GC		*/
-        VisibilityChangeMask,       /* VisibilityNotify		*/
-        SubstructureNotifyMask,     /* CreateNotify		*/
-        StructureNotifyMask,	    /* DestroyNotify		*/
-/*		| SubstructureNotifyMask, */
-        StructureNotifyMask,	    /* UnmapNotify		*/
-/*		| SubstructureNotifyMask, */
-        StructureNotifyMask,	    /* MapNotify		*/
-/*		| SubstructureNotifyMask, */
-        SubstructureRedirectMask,   /* MapRequest		*/
-        StructureNotifyMask,	    /* ReparentNotify		*/
-/*		| SubstructureNotifyMask, */
-        StructureNotifyMask,	    /* ConfigureNotify		*/
-/*		| SubstructureNotifyMask, */
-        SubstructureRedirectMask,   /* ConfigureRequest		*/
-        StructureNotifyMask,	    /* GravityNotify		*/
-/*		| SubstructureNotifyMask, */
-        ResizeRedirectMask,	    /* ResizeRequest		*/
-        StructureNotifyMask,	    /* CirculateNotify		*/
-/*		| SubstructureNotifyMask, */
-        SubstructureRedirectMask,   /* CirculateRequest		*/
-        PropertyChangeMask,	    /* PropertyNotify		*/
-        0,			    /* SelectionClear		*/
-        0,			    /* SelectionRequest		*/
-        0,			    /* SelectionNotify		*/
-        ColormapChangeMask,	    /* ColormapNotify		*/
-        0,			    /* ClientMessage		*/
-        0 ,			    /* MappingNotify		*/
-    };
+    EventMask returnMask;
+    unsigned long eventType = event->event.eventType;
 
-    /* Events sent with XSendEvent in R1 will have high bit set. */
-    unsigned long eventType = event->event.eventType /* & 0x7f */;
     if (eventType == MotionNotify) {
         Modifiers modifierMask = event->event.modifierMask;
-        EventMask returnMask = 0;
         Modifiers tempMask;
 
+	returnMask = 0;
         if (modifierMask == 0) {
 	    if (event->event.modifiers == AnyButtonMask)
 		return ButtonMotionMask;
@@ -1195,16 +1142,19 @@ static EventMask Const masks[] = {
             returnMask |= Button5MotionMask;
         return returnMask;
     }
-    return ((eventType >= XtNumber(masks)) ?  0 : masks[eventType]);
+    returnMask = _XtConvertTypeToMask(eventType);
+    if (returnMask == (StructureNotifyMask|SubstructureNotifyMask))
+	returnMask = StructureNotifyMask;
+    return returnMask;
 }
 
+/*ARGSUSED*/
 static void DispatchMappingNotify(widget, closure, call_data)
     Widget widget;
-    XtPointer closure;		/* XtTM */
+    XtPointer closure;		/* unused */
     XtPointer call_data;	/* XEvent* */
 {
-    Boolean bool;
-    _XtTranslateEvent( widget, closure, (XEvent*)call_data, &bool );
+    _XtTranslateEvent( widget, (XEvent*)call_data );
 }
 
   
@@ -1221,37 +1171,29 @@ static void RemoveFromMappingCallbacks(widget, closure, call_data)
 }
 
 
-void _XtInstallTranslations(widget, translateData)
+void _XtInstallTranslations(widget)
     Widget widget;
-    XtTranslations translateData;
 {
-    register EventMask	eventMask = 0;
-    register Boolean	nonMaskable = FALSE;
+    register XtTranslations translateData;
     register Cardinal	i;
     StateTablePtr stateTable;
 
-/*    widget->core.translations = stateTable; */
+    translateData = widget->core.tm.translations;
     if (translateData == NULL) return;
+    translateData->eventMask = 0;
     stateTable = translateData->stateTable;
 
     for (i = 0; i < stateTable->numEvents; i++) {
-	register EventMask mask = EventToMask(&stateTable->eventObjTbl[i]);
-
-	if (mask != 0)
-	    eventMask |= mask;
-	else
-	    nonMaskable = True;
+	translateData->eventMask |= EventToMask(&stateTable->eventObjTbl[i]);
     }
 
     /* double click needs to make sure that you have selected on both
 	button down and up. */
 
-    if (eventMask & ButtonPressMask) eventMask |= ButtonReleaseMask;
-    if (eventMask & ButtonReleaseMask) eventMask |= ButtonPressMask;
-
-    XtAddEventHandler(
-        widget, eventMask, nonMaskable,
-             _XtTranslateEvent, (XtPointer)&widget->core.tm);
+    if (translateData->eventMask & ButtonPressMask)
+	translateData->eventMask |= ButtonReleaseMask;
+    if (translateData->eventMask & ButtonReleaseMask)
+	translateData->eventMask |= ButtonPressMask;
 
     if (stateTable->mappingNotifyInterest) {
 	_XtAddCallbackOnce( &_XtGetPerDisplay(XtDisplay(widget))
@@ -1277,11 +1219,13 @@ void _XtInstallTranslations(widget, translateData)
 void _XtRemoveTranslations(widget)
     Widget widget;
 {
-    XtRemoveEventHandler(widget, XtAllEvents, TRUE, _XtTranslateEvent,
-			 (XtPointer)&widget->core.tm);
+    register XtTranslations translateData;
 
-    if ( widget->core.tm.translations &&
-	 widget->core.tm.translations->stateTable->mappingNotifyInterest) {
+    translateData = widget->core.tm.translations;
+    if (!translateData) return;
+    translateData->eventMask = 0;
+
+    if ( translateData->stateTable->mappingNotifyInterest) {
 	RemoveFromMappingCallbacks(widget, (XtPointer)&widget->core.tm, NULL);
     }
 }
@@ -1562,6 +1506,7 @@ void _XtInitializeStateTable(pStateTable)
     (*pStateTable) = XtNew(TranslationData);
     (*pStateTable)->stateTable = stateTable = XtNew(StateTableData);
     (*pStateTable)->accProcTbl = NULL;
+    (*pStateTable)->eventMask = 0;
     stateTable->operation = XtTableReplace;
     stateTable->numEvents = 0;
     stateTable->eventTblSize = 0;
@@ -1935,6 +1880,7 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
 	merged = XtNew(TranslationData);
 	merged->stateTable = new;
 	merged->accProcTbl = NULL;
+	merged->eventMask = 0;
 #endif
     }
     else {
@@ -1977,6 +1923,7 @@ static void MergeAccProcTbls (mergedT, oldT, newT)
 	      + sizeof(TranslationData));
     (*mergedT)->stateTable = stateTable;
     (*mergedT)->accProcTbl = accProcTbl = (XtBoundAccActions)(*mergedT + 1);
+    (*mergedT)->eventMask = 0;
     if (oldT) {
 	XtBoundAccActions opt = oldT->accProcTbl;
 	for (i = oldT->stateTable->accNumQuarks; i; i--){
@@ -2089,6 +2036,7 @@ XtTranslations _XtCondCopyTranslations(translations)
     copy = (XtTranslations)XtMalloc(size + sizeof(TranslationData));
     copy->stateTable = translations->stateTable;
     copy->accProcTbl = (XtBoundAccActions)(copy + 1);
+    copy->eventMask = translations->eventMask;
     bcopy(translations->accProcTbl, copy->accProcTbl, size);
     return copy;
 }
@@ -2106,7 +2054,7 @@ void XtOverrideTranslations(widget, new)
            XtUninstallTranslations(widget);
            widget->core.tm.translations = newTable;
            _XtBindActions(widget, &widget->core.tm);
-           _XtInstallTranslations(widget,newTable);
+           _XtInstallTranslations(widget);
 	   _XtRegisterGrabs(widget, False);
     }
     else {
@@ -2291,7 +2239,7 @@ void XtInstallAccelerators(destination, source)
 	destination->core.tm.translations = new_table;
     }
     if (XtIsRealized(destination)) {
-	_XtInstallTranslations(destination, destination->core.tm.translations);
+	_XtInstallTranslations(destination);
 	_XtRegisterGrabs(destination, True);
     }
 
@@ -2364,7 +2312,7 @@ void XtAugmentTranslations(widget, new)
  	   XtUninstallTranslations(widget);
            widget->core.tm.translations = newTable;
            _XtBindActions(widget, &widget->core.tm);
-           _XtInstallTranslations(widget,newTable);
+           _XtInstallTranslations(widget);
 	   _XtRegisterGrabs(widget, False);
     }
     else {
