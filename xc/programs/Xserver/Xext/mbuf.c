@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.6 89/10/11 11:38:11 keith Exp $ */
+/* $XConsortium: multibuf.c,v 1.7 89/12/10 11:03:48 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -480,7 +480,7 @@ ProcDestroyImageBuffers (client)
     WindowPtr	pWin;
 
     REQUEST_SIZE_MATCH (xMbufDestroyImageBuffersReq);
-    if (!(pWin = LookupWindow (stuff->window)))
+    if (!(pWin = LookupWindow (stuff->window, client)))
 	return BadWindow;
     DisposeMultibuffers (pWin);
     return Success;
