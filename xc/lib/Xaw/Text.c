@@ -195,6 +195,7 @@ static void Initialize(request, new)
     ctx->text.hasfocus = FALSE;
     ctx->text.leftmargin = ctx->text.client_leftmargin;
     ctx->text.update_disabled = False;
+    ctx->text.old_insert = -1;
 #ifdef notdef
     if (ctx->text.sink)
       BuildLineTable(ctx, ctx->text.lt.top);
@@ -1183,20 +1184,17 @@ static void ProcessExposeRegion(w, event)
     _XtTextExecuteUpdate(ctx);
 }
 
-
-static int oldinsert = -1;
-
 /*
  * This routine does all setup required to syncronize batched screen updates
 */
 int _XtTextPrepareToUpdate(ctx)
   TextWidget ctx;
 {
-    if (oldinsert < 0) {
+    if (ctx->text.old_insert < 0) {
 	InsertCursor((Widget)ctx, XtisOff);
 	ctx->text.numranges = 0;
 	ctx->text.showposition = FALSE;
-	oldinsert = ctx->text.insertPos;
+	ctx->text.old_insert = ctx->text.insertPos;
     }
 }
 
@@ -1292,12 +1290,13 @@ _XtTextExecuteUpdate(ctx)
 {
     if (ctx->text.update_disabled) return;
 
-    if (oldinsert >= 0) {
-	if (oldinsert != ctx->text.insertPos || ctx->text.showposition)
+    if (ctx->text.old_insert >= 0) {
+	if (ctx->text.old_insert != ctx->text.insertPos
+	    || ctx->text.showposition)
 	    _XtTextShowPosition(ctx);
 	FlushUpdate(ctx);
 	InsertCursor((Widget)ctx, XtisOn);
-	oldinsert = -1;
+	ctx->text.old_insert = -1;
     }
 }
 
@@ -1511,6 +1510,7 @@ int XtTextReplace(w, startPos, endPos, text)
 					  XtstPositions, XtsdRight,
 					  text->length, TRUE);
     }
+    CheckResizeOrOverflow(ctx);
     _XtTextExecuteUpdate(ctx);
 
     return result;
@@ -2446,7 +2446,7 @@ static void InsertFile(w, event)
 	{XtNsaveUnder, True},
     };
     Arg args[2];
-    static XtCallbackRec callbacks[] = { {NULL, NULL}, {NULL, NULL} };
+    XtCallbackRec callbacks[];
     int x, y;
     Window j;
 
@@ -2522,6 +2522,8 @@ static void InsertFile(w, event)
 			    XtNameToWidget( dialog->widget, "value" ));
 	callbacks[0].callback = _XtTextAbortDialog;
 	callbacks[0].closure = (caddr_t)dialog;
+	callbacks[1].callback = (XtCallbackProc)NULL;
+	callbacks[1].closure = (caddr_t)NULL;
 	XtSetArg( args[0], XtNcallback, callbacks );
 	XtCreateManagedWidget( "Cancel", commandWidgetClass, dialog->widget,
 			       args, ONE );
