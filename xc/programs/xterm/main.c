@@ -1,11 +1,12 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.89 88/09/16 14:21:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.90 88/09/16 16:20:12 jim Exp $";
 #endif	/* lint */
 
 /*
- * WARNING:  This code (particularly, the tty setup code) is a historical
- * relic and should not be confused with a real toolkit application or a
- * an example of how to do anything.  It really needs a rewrite.  Badly.
+ * The tty setup code was completely rewritten by Dave Serisky at 
+ * Hewlett-Packard and should now work properly under both System V and
+ * 4BSD.  However, the toolkit stuff is still pretty crufty.  In general,
+ * beware, for there be dragons here.
  */
 
 #include <X11/copyright.h>
