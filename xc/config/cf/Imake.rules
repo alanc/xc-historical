@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.32 89/05/22 15:42:00 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.33 89/06/07 18:33:38 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -38,7 +38,7 @@
  *     	DependTarget                             ()
  *     	CleanTarget                              ()
  *     	TagsTarget                               ()
- *      ImakeDependency                          ()
+ *      ImakeDependency                          (target)
  *     	BuildMakefileTarget                      (imakefile,imakeflags)
  *      MakefileTarget                           ()
  *     	NormalLibraryObjectRule                  ()
@@ -545,10 +545,10 @@ tags::									@@\
  */
 #ifndef ImakeDependency
 #ifdef UseInstalled
-#define ImakeDependency() /**/
+#define ImakeDependency(target) /**/
 #else
-#define ImakeDependency()						@@\
-Makefile:: $(IMAKE)							@@\
+#define ImakeDependency(target)						@@\
+target:: $(IMAKE)							@@\
 									@@\
 $(IMAKE):								@@\
 	@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
@@ -566,7 +566,7 @@ $(IMAKE):								@@\
  */
 #ifndef BuildMakefileTarget
 #define	BuildMakefileTarget(imakefile,imakeflags)			@@\
-ImakeDependency()							@@\
+ImakeDependency(Makefile)						@@\
 									@@\
 Makefile:: imakefile $(ICONFIGFILES)					@@\
 	-@if [ -f Makefile ]; then \					@@\
@@ -1100,7 +1100,7 @@ MakeLintSubdirs(dirs,lintlib,lintlib)
  */
 #ifndef MakeMakeSubdirs
 #define MakeMakeSubdirs(dirs,target)					@@\
-target:: $(IMAKE)							@@\
+ImakeDependency(target)							@@\
 									@@\
 target::								@@\
 	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
