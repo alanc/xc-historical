@@ -249,28 +249,6 @@ macIIBW2Init (index, pScreen, argc, argv)
     pScreen->whitePixel = 0;
     pScreen->blackPixel = 1;
 
-#ifdef ZOIDS
-    {
-	GCPtr	pGC = CreateScratchGC(pScreen, 1);
-
-	if (pGC) {
-	    RegisterProc("PolySolidXAlignedTrapezoid", pGC,
-			  macIIBW2SolidXZoids);
-	    RegisterProc("PolySolidYAlignedTrapezoid", pGC,
-			  macIIBW2SolidYZoids);
-	    RegisterProc("PolyTiledXAlignedTrapezoid", pGC,
-			  macIIBW2TiledXZoids);
-	    RegisterProc("PolyTiledYAlignedTrapezoid", pGC,
-			  macIIBW2TiledYZoids);
-	    RegisterProc("PolyStipXAlignedTrapezoid", pGC,
-			  macIIBW2StipXZoids);
-	    RegisterProc("PolyStipYAlignedTrapezoid", pGC,
-			  macIIBW2StipYZoids);
-	    FreeScratchGC(pGC);
-	}
-    }
-#endif ZOIDS
-
     if (CreateColormap(pScreen->defColormap, pScreen,
 		   LookupID(pScreen->rootVisual, RT_VISUALID, RC_CORE),
 		   &pColormap, AllocNone, 0) != Success
@@ -327,12 +305,12 @@ macIIBW2Probe(pScreenInfo, index, fbNum, argc, argv)
 	}
 
 	{
-		static char *video_virtaddr = 0x0;
+		static char *video_virtaddr = 120 * 1024 * 1024;
 		struct video_map vmap;
 		struct strioctl ctl; /* Streams ioctl control structure */
 
-		/* map to next 32MB segment boundary */
-		video_virtaddr = video_virtaddr + (32 * 1024 * 1024); 
+		/* map to next 8MB segment boundary above 128M */
+		video_virtaddr = video_virtaddr + (8 * 1024 * 1024); 
 	        vmap.map_physnum = 0;
         	vmap.map_virtaddr = video_virtaddr;
 
@@ -353,7 +331,6 @@ macIIBW2Probe(pScreenInfo, index, fbNum, argc, argv)
 
 	macIIFbs[index].fd = fd; /* This fd has been closed! XXX */
 	macIIFbs[index].info = fbType;
-        macIIFbs[index].EnterLeave = NoopDDA;
 	macIIFbData[fbNum].probeStatus = probedAndSucceeded;
 
     }

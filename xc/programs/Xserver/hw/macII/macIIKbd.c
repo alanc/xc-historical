@@ -492,7 +492,6 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
     unsigned long err;
     pointer pReadmask;
 {
-    struct tms tms;
     long now;
 
     if (autoRepeatDebug)
@@ -505,7 +504,17 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
       return;
 
     if (autoRepeatKeyDown) {
-        now = times(&tms) << 4;
+#ifdef USE_TOD_CLOCK
+	struct timeval tv;
+
+	gettimeofday (&tv, (struct timezone *)0);
+	now = TVTOMILLI(tv);
+#else
+	struct tms  tms;
+
+	now = times (&tms) << 4;
+#endif USE_TOD_CLOCK
+
         autoRepeatDeltaTv = now - autoRepeatLastKeyDownTv;
         if ((!autoRepeatFirst && autoRepeatDeltaTv > AUTOREPEAT_DELAY) ||
             (autoRepeatDeltaTv > AUTOREPEAT_INITIATE))

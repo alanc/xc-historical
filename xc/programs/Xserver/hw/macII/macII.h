@@ -12,10 +12,16 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.5 88/03/07 13:04:24 x Locked $ SPRITE (Berkeley)"
+ *	"$Header: macII.h,v 1.6 88/03/07 19:20:47 x Locked $ SPRITE (Berkeley)"
  */
 #ifndef _MACII_H_
 #define _MACII_H_
+
+#define USE_TOD_CLOCK
+
+#ifdef macII
+#define gettimeofday(time, timezone) _gettimeofday(time)
+#endif
 
 #include    <errno.h>
 #include    <sys/param.h>
@@ -51,9 +57,6 @@
 #include    "dix.h"
 #include    "mfb.h"
 #include    "mi.h"
-#ifdef ZOIDS
-#include    "zoid.h"
-#endif ZOIDS
 
 /*
  * MAXEVENTS is the maximum number of events the mouse and keyboard functions
@@ -70,18 +73,18 @@
  *	devPrivate is private to the specific keyboard.
  *	map_q is TRUE if the event queue for the keyboard is memory mapped.
  */
-#define KEY_DETAIL(e) ((e) & 0x7f)
-#define KEY_UP(e)     ((e) & 0x80)
+#define KEY_DETAIL(e) 	((e) & 0x7f)
+#define KEY_UP(e)     	((e) & 0x80)
 
-#define MS_LEFT 1
-#define MS_MIDDLE 2
-#define MS_RIGHT 3
+#define MS_LEFT 	1
+#define MS_MIDDLE 	2
+#define MS_RIGHT 	3
 
-#define MOUSE_ESCAPE 0x7e	/* from <sys/video.h> */
-#define PSEUDO_MIDDLE 0x3a /* Option Key */
-#define PSEUDO_RIGHT  0x4c /* Enter Key */
+#define MOUSE_ESCAPE 	0x7e	/* from <sys/video.h> */
+#define PSEUDO_MIDDLE 	0x3a 	/* Option Key */
+#define PSEUDO_RIGHT  	0x4c 	/* Enter Key */
 
-#define KBTYPE_MACII 0
+#define KBTYPE_MACII 	0
 
 typedef struct kbPrivate {
     int	    	  type;           	/* Type of keyboard */
@@ -196,7 +199,6 @@ typedef struct {
     Bool	      	(*CreateWindow)();
     Bool		(*ChangeWindowAttributes)();
     unsigned int  	*(*GetSpans)();
-    void		(*EnterLeave)();
     Bool    	  	mapped;	    /* TRUE if frame buffer already mapped */
     int	    	  	fd; 	    /* Descriptor open to frame buffer */
     fbtype 		info;	    /* Frame buffer characteristics */
@@ -298,18 +300,5 @@ extern long autoRepeatDeltaTv;
                       (tv).tv_sec += 1; \
               }
 #endif USE_TOD_CLOCK
-
-/*
- * 	Extensions:
- *	trapezoids
- */
-#ifdef ZOIDS
-extern void	  macIIBW2SolidXZoids();
-extern void	  macIIBW2SolidYZoids();
-extern void	  macIIBW2TiledXZoids();
-extern void	  macIIBW2TiledYZoids();
-extern void	  macIIBW2StipXZoids();
-extern void	  macIIBW2StipYZoids();
-#endif ZOIDS
 
 #endif _MACII_H_
