@@ -41,9 +41,11 @@ Boolean IdentifierImpl::generate_unmarshal(Generator* g) {
 
 void InterfaceDef::put_stub_hdr(Generator* g) {
     String* s = ident_->string();
-    g->emit("\nclass %I%C : public %I%t {\n", s);
+    g->emit("\nclass %I%C : public %I {\n", s);
     g->emit("public:\n%i%I%C(%O*);\n~%I%C();\n\n", s);
+#ifdef notdef
     g->emit("static %S%p _create(%O*);\n");
+#endif
     g->emit("%O* _exchange();\n");
     g->emit("%uprotected:\n%i");
     g->emit("%O* exch_;\n");
@@ -54,7 +56,8 @@ Boolean InterfaceDef::generate_stub(Generator* g) {
     String* s = ident_->string();
     g->emit("%Q%C::%I%C(%O* e) { exch_ = e; }\n", s);
     g->emit("%Q%C::~%I%C() { }\n", s);
-    g->emit("%S%p %Q%C::_create(%O* e) {%i\n", s);
+//  g->emit("%S%p %Q%C::_create(%O* e) {%i\n", s);
+    g->emit("%S%p _%_%I%C_create(%O* e) {%i\n", s);
     g->emit("return (%S%p)(void*)new %Q%C(e);\n%u}\n", s);
     g->emit("%O* %Q%C::_exchange() {%i\nreturn exch_;\n%u}\n", s);
     if (defs_ != nil) {
@@ -82,7 +85,6 @@ Boolean Operation::generate_stub(Generator* g) {
     String* s = ident_->string();
     Boolean has_return_value = !g->void_type(type_);
     Boolean has_marshal = has_marshal_funcs(g);
-    Boolean refobjs = g->refobjs() && need_indirect_;
     long nparams = (params_ == nil) ? 1 : params_->count() + 1;
     long rdesc;
     if (oneway_) {
@@ -124,20 +126,7 @@ Boolean Operation::generate_stub(Generator* g) {
     }
     g->emit("\n%u};\n");
 
-    if (refobjs && !inline_indirect_) {
-	put_indirect_type(g);
-	g->emit(" %~%t::%I", s);
-	g->indirect(true);
-	g->emit_param_list(params_, Generator::emit_env_formals_body);
-	put_indirect_body(g, has_return_value);
-	g->indirect(false);
-    }
-
-    g->emit("%F %~%t::", nil, type_);
-    if (refobjs) {
-	g->emit("_c_");
-    }
-    g->emit("%I", s);
+    g->emit("%F %:%I", s, type_);
     g->emit_param_list(params_, Generator::emit_env_formals_body);
     g->emit(" {\n%i%B _b;\n");
     g->emit("extern %MId _%_tid;\n");
@@ -212,7 +201,7 @@ Boolean Operation::generate_marshal_func(Generator* g, Expr* e) {
 	break;
     case Symbol::sym_interface:
 	b = g->interface_is_ref(false);
-	g->emit("&%F%C::_create", nil, e);
+	g->emit("&_%Y%C_create", nil, e);
 	g->interface_is_ref(b);
 	break;
     case Symbol::sym_sequence:
@@ -286,6 +275,11 @@ void Operation::generate_param_value(Generator* g) {
 	Symbol* s = g->actual_type(d);
 	switch (s->tag()) {
 	case Symbol::sym_string:
+	    if (in_param) {
+		generate_arg(g, n, ".u_string = ");
+		g->emit("%E;\n", nil, name);
+	    }
+	    break;
 	case Symbol::sym_typedef:
 	    if (in_param) {
 		generate_arg(g, n, ".u_");
@@ -732,7 +726,7 @@ void InterfaceDef::put_receive(Generator* g) {
     g->emit("void _%_%I_receive(", s);
     g->emit("%S%p _object, ULong _m, %B& _b) {\n%i");
     g->emit("extern %MId %T;\n", s);
-    g->emit("%:%I%p _this = (%:%I%p)_BaseObject_tcast(_object, %T);\n", s);
+    g->emit("%:%I%p _this = (%:%I%p)_%S_tcast(_object, %T);\n", s);
     if (g->envclass() != nil) {
 	g->emit(g->envclass());
 	g->emit("* _env = _b.env();\n");
@@ -777,11 +771,7 @@ Boolean Operation::generate_receive(Generator* g) {
 	    generate_receive_asg(g, type_);
 	}
     }
-    g->emit("_this->");
-    if (g->refobjs() && need_indirect_) {
-	g->emit("_c_");
-    }
-    g->emit("%I", s);
+    g->emit("_this->%I", s);
     Boolean b = g->array_decl(false);
     g->emit_param_list(params_, Generator::emit_env_actuals);
     g->array_decl(b);
@@ -814,6 +804,8 @@ void Operation::generate_receive_asg(Generator* g, Expr* type) {
     generate_arg(g, 0, ".u_");
     switch (s->tag()) {
     case Symbol::sym_string:
+	g->emit("string = ", s->typename()->str());
+	break;
     case Symbol::sym_typedef:
 	g->emit("%I = ", s->typename()->str());
 	break;

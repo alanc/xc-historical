@@ -38,7 +38,6 @@ extern "C" int yyparse();
 #else
 extern int yyparse();
 #endif
-
 extern Expr* yyparse_root;
 
 #if defined(YYDEBUG)
@@ -64,6 +63,7 @@ private:
     Boolean resolving_;
     Boolean generating_;
     Boolean filtering_;
+    Boolean ucase_;
     unsigned long heapstart_;
 
     unsigned long curheapsize();
@@ -135,9 +135,10 @@ void App::init() {
     resolving_ = true;
     generating_ = true;
     filtering_ = false;
+    ucase_ = false;
     heapstart_ = 0;
     heapstart_ = curheapsize();
-    String::case_sensitive(false);
+    String::case_sensitive(true);
     stage("init");
 }
 
@@ -213,7 +214,7 @@ void App::get_args(int argc, char** argv) {
 	} else if (arg == "-cstubs") {
 	    gen_.cstubs = true;
 	} else if (arg == "-cs") {
-	    String::case_sensitive(true);
+	    ucase_ = true;
 	} else if (arg == "-debug") {
 	    const char* debugflags = get_next_arg(i, argc, argv);
 	    for (const char* p = debugflags; *p != '\0'; p++) {
@@ -273,7 +274,7 @@ const char* App::get_next_arg(long& i, int argc, char** argv) {
 
 void App::run() {
     ScannerKit* scanners = new ScannerKit;
-    Scanner* s = scanners->make_scanner(nil, errors_);
+    Scanner* s = scanners->make_scanner(nil, errors_, ucase_);
     if (scanning_only_) {
 	if (timing_) {
 	    while (s->get_token() != 0);

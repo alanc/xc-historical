@@ -27,24 +27,9 @@
  */
 
 #include "generator.h"
+#include "tokendefs.h"
 #include <ctype.h>
 #include <string.h>
-
-/*
- * Forward declarations of classes for picky C++ compilers
- */
-
-class String;
-class UniqueString;
-class Identifier;
-class Expr;
-class ExprList;
-class CaseList;
-class CaseElement;
-class UnionMember;
-class SourcePosition;
-
-#include "tokens"
 
 implementPtrList(StringList,String)
 
@@ -355,10 +340,8 @@ void Generator::emit_flush(const char* p, const char* start) {
  *
  *    %^ - name prefix if defined
  *    %p - suffix for an object pointer type
+ *    %r - suffix for a managed object pointer type
  *    %P - same as %p if interface types should be output as pointers
- *    %r - suffix for an object reference type
- *    %R - same as %r if interface types should be output as references
- *    %t - suffix for the object base type
  *    %* - current pointer suffix
  *    %i - increment tab indentation level
  *    %u - decrement tab indentation level
@@ -416,17 +399,7 @@ void Generator::emit_format(int ch, String* s, Expr* e) {
 	}
 	break;
     case 'r':
-	/* Use interface name for indirect object references */
-	break;
-    case 'R':
-	if (ref_) {
-	    emit("%r");
-	}
-	break;
-    case 't':
-	if (refobjs_) {
-	    emit("Type");
-	}
+	emit_str("_var", 4);
 	break;
     case '*':
 	emit_str(ptr_, strlen(ptr_));
@@ -512,7 +485,7 @@ void Generator::emit_format(int ch, String* s, Expr* e) {
 	emit_str(stubclass_, stubclass_length_);
 	break;
     case 'c':
-	emit(stubclass_ != nil ? "&%Q%C::_create" : "0", s);
+	emit(stubclass_ != nil ? "&_%_%I%C_create" : "0", s);
 	break;
     case 'D':
 	emit_str(request_, request_length_);
@@ -881,7 +854,7 @@ void Generator::emit_type_info(
     Boolean has_offsets = false;
     if (parents != nil) {
 	has_offsets = parents->count() > 1;
-	emit_parent_type_info(name, *ptr == '*', parents);
+	emit_parent_type_info(name, parents);
     }
     emit("extern %MId %T;\n", name);
     const char* stubs = stubclass_;
@@ -910,9 +883,7 @@ void Generator::emit_type_info(
     stubclass_ = stubs;
 }
 
-void Generator::emit_parent_type_info(
-    String* name, Boolean impl, ExprList* parents
-) {
+void Generator::emit_parent_type_info(String* name, ExprList* parents) {
     Boolean b = interface_is_ref(false);
     emit("extern %M_Descriptor ");
     long p = 0;
@@ -935,15 +906,9 @@ void Generator::emit_parent_type_info(
 	emit("Long _%_%I_offsets[] = {\n%i", name);
 	p = 1;
 	for (;;) {
-	    emit("Long((%F%t*)(%:%I", name, parents->item(p));
-	    if (!impl) {
-		emit("%t");
-	    }
-	    emit("*)8) - Long((%:%I", name);
-	    if (!impl) {
-		emit("%t");
-	    }
-	    emit("*)8)");
+	    emit(
+		"Long((%F*)(%:%I*)8) - Long((%:%I*)8)", name, parents->item(p)
+	    );
 	    ++p;
 	    if (p == nparents) {
 		break;
@@ -1126,7 +1091,7 @@ void Generator::emit_get(Expr* type, char* format, Expr* value) {
 	emit(format, nil, value);
 	b = interface_is_ref(false);
 	emit(" = (%F%p)_b.get_object(", nil, type);
-	emit(stubclass_ == nil ? "0" : "&%F%C::_create", nil, type);
+	emit(stubclass_ == nil ? "0" : "&_%Y%C_create", nil, type);
 	emit(");\n");
 	interface_is_ref(b);
 	break;

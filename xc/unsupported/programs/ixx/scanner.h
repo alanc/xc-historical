@@ -50,7 +50,9 @@ public:
     ScannerKit();
     virtual ~ScannerKit();
 
-    virtual Scanner* make_scanner(const char* filename, ErrorHandler*);
+    virtual Scanner* make_scanner(
+	const char* filename, ErrorHandler*, Boolean unique_case
+    );
 private:
     ScannerKitImpl* impl_;
 };

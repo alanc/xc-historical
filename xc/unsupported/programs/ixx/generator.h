@@ -136,7 +136,7 @@ public:
 	String* name, char* ptr, ExprList* parents,
 	Boolean dii, Boolean excepts, Boolean narrow
     );
-    void emit_parent_type_info(String* name, Boolean impl, ExprList* parents);
+    void emit_parent_type_info(String* name, ExprList* parents);
     void emit_opt_info(
 	Boolean flag, const char* start, const char* tag, String* name,
 	const char* trail

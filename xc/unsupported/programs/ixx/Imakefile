@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/03/22 16:22:58 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/03/30 12:11:24 gildea Exp $
 XCOMM
 XCOMM Interface translator
 XCOMM
@@ -25,14 +25,12 @@ depend:: tokens
 
 tokens gram.CCsuf: gram.y
 	$(CCYACC) $(YFLAGS) gram.y
-	$(MV) y.tab.c gram.CCsuf
 	$(MV) y.tab.h tokens
+	$(MV) y.tab.c gram.CCsuf
 
 ComplexCplusplusProgramTarget(ixx)
 
-SPECIAL_OPTIONS=CplusplusSpecialOptions
 SpecialCplusplusObjectRule(gram,gram,$(SPECIAL_OPTIONS))
 
 clean::
 	RemoveFiles(y.tab.c y.tab.h tokens gram.CCsuf)
-

@@ -29,6 +29,8 @@
 #include "err.h"
 #include "scanner.h"
 #include "table.h"
+#include "tokendefs.h"
+#include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,24 +38,6 @@
 #if defined(sun) && !defined(SVR4)
 #include <sysent.h>
 #endif
-
-/*
- * The "tokens" file is the output from yacc and cannot be forced
- * to include the necessary files ahead of its definitions.  It therefore
- * must be included after the other files define the appropriate symbols.
- */
-
-class String;
-class UniqueString;
-class Identifier;
-class Expr;
-class ExprList;
-class CaseList;
-class CaseElement;
-class UnionMember;
-class SourcePosition;
-
-#include "tokens"
 
 /* global for yylex/yyparse */
 extern Scanner* yyparse_scanner;
@@ -64,7 +48,7 @@ Scanner::Scanner() { }
 Scanner::~Scanner() { }
 
 class IdentTable;
-class InputFile;
+class KeywordTable;
 
 typedef unsigned int CharSet;
 typedef unsigned int CharType;
@@ -103,12 +87,14 @@ static const int char_colon = 20;
 
 static const int charset_empty = 0;
 static const int charset_white = (1 << char_white) + (1 << char_newline);
-static const int charset_alpha = (1 << char_lower) + (1 << char_upper);
-static const int charset_alphanum = charset_alpha + (1 << char_digit);
+static const int charset_upper = (1 << char_upper);
+static const int charset_lower = (1 << char_lower);
+static const int charset_alpha = charset_lower + charset_upper;
+static const int charset_digit = (1 << char_digit);
+static const int charset_alphanum = charset_alpha + charset_digit;
 static const int charset_ident = charset_alpha + (1 << char_otherident);
-static const int charset_identnum = charset_ident + (1 << char_digit);
-static const int charset_num = (1 << char_digit);
-static const int charset_hexnum = (1 << char_hexdigit) + (1 << char_digit);
+static const int charset_identnum = charset_ident + charset_digit;
+static const int charset_hexnum = (1 << char_hexdigit) + charset_digit;
 
 /*
  * String buffer for input.
@@ -201,7 +187,9 @@ inline Boolean InputFile::error() { return (status_ & input_error) != 0; }
 
 class ScannerImpl : public Scanner {
 public:
-    ScannerImpl(InputFile*, const char* filename, ErrorHandler*);
+    ScannerImpl(
+	InputFile*, const char* filename, ErrorHandler*, Boolean ucase
+    );
     virtual ~ScannerImpl();
 
     virtual TokenType get_token();
@@ -213,13 +201,14 @@ private:
     ErrorHandler* errs_;
     CharType chartype_[char_maxchar + 1];
     CharSet charset_[char_maxchar + 1];
-    IdentTable* keywords_;
+    IdentTable* idents_;
+    KeywordTable* keywords_;
     StringBuffer buf_;
 
-    void init(InputFile*, const char* filename, ErrorHandler*);
+    void init(InputFile*, const char* filename, ErrorHandler*, Boolean ucase);
     void init_charmap();
     void map(const char*, CharType);
-    void add(const char*, CharSet);
+    void add(const char*, CharType);
     CharType chartype(char);
     Boolean match(char, CharSet);
     void scan(CharSet);
@@ -243,8 +232,11 @@ inline Boolean ScannerImpl::match(char c, CharSet s) {
 
 inline unsigned long key_to_hash(String& s) { return s.hash(); }
 
-declareTable(IdentTable,String,TokenType)
-implementTable(IdentTable,String,TokenType)
+declareTable(IdentTable,String,String)
+implementTable(IdentTable,String,String)
+
+declareTable(KeywordTable,String,TokenType)
+implementTable(KeywordTable,String,TokenType)
 
 /* class ScannerKit */
 
@@ -254,7 +246,9 @@ ScannerKit::ScannerKit() {
 
 ScannerKit::~ScannerKit() { }
 
-Scanner* ScannerKit::make_scanner(const char* filename, ErrorHandler* errs) {
+Scanner* ScannerKit::make_scanner(
+    const char* filename, ErrorHandler* errs, Boolean ucase
+) {
     int fd = 0;
     const char* name = filename;
     if (name == nil) {
@@ -269,27 +263,30 @@ Scanner* ScannerKit::make_scanner(const char* filename, ErrorHandler* errs) {
     if (yyparse_scanner != nil) {
 	yyparse_scanner->destroy();
     }
-    yyparse_scanner = new ScannerImpl(new InputFile(fd), name, errs);
+    yyparse_scanner = new ScannerImpl(new InputFile(fd), name, errs, ucase);
     return yyparse_scanner;
 }
 
 /* class ScannerImpl */
 
 ScannerImpl::ScannerImpl(
-    InputFile* in, const char* filename, ErrorHandler* errs
+    InputFile* in, const char* filename, ErrorHandler* errs, Boolean ucase
 ) {
-    init(in, filename, errs);
+    init(in, filename, errs, ucase);
 }
 
 ScannerImpl::~ScannerImpl() { }
 
-void ScannerImpl::init(InputFile* in, const char* name, ErrorHandler* errs) {
+void ScannerImpl::init(
+    InputFile* in, const char* name, ErrorHandler* errs, Boolean ucase
+) {
     in_ = in;
     errs_ = errs;
     String fname(name);
     errs_->position()->set(&fname, 1);
     init_charmap();
-    keywords_ = new IdentTable(200);
+    idents_ = ucase ? nil : new IdentTable(500);
+    keywords_ = new KeywordTable(200);
     enter("attribute", ATTRIBUTE);
     enter("case", CASE);
     enter("const", CONST);
@@ -359,7 +356,7 @@ void ScannerImpl::init_charmap() {
     map("ABCDEFGHIJKLMNOPQRSTUVWXYZ", char_upper);
     map("_$", char_otherident);
     map("0123456789", char_digit);
-    add("abcdefABCDEF", charset_hexnum);
+    add("abcdefABCDEF", char_hexdigit);
     map("'\"", char_quote);
     map("/", char_comment);
     map("#", char_numbersign);
@@ -389,10 +386,10 @@ void ScannerImpl::map(const char* str, CharType t) {
     }
 }
 
-void ScannerImpl::add(const char* str, CharSet s) {
+void ScannerImpl::add(const char* str, CharType t) {
     register const char* a;
     for (a = str; *a != '\0'; a++) {
-	charset_[*a] |= s;
+	charset_[*a] |= (1 << t);
     }
 }
 
@@ -430,7 +427,7 @@ TokenType ScannerImpl::get_token() {
 	    return SRCPOS;
 	case char_dot:
 	    next = f->read();
-	    if (chartype(next) == char_digit) {
+	    if (match(next, charset_digit)) {
 		return get_number('.');
 	    } else if (next == '.') {
 		next = f->read();
@@ -519,6 +516,39 @@ TokenType ScannerImpl::lookup(const String& name) {
     if (!keywords_->find(t, name)) {
 	t = IDENT;
 	yylval.string_ = new CopyString(name);
+	if (idents_ != nil) {
+	    String* original = yylval.string_;
+	    const char* fold_chars = original->string();
+	    long n = original->length();
+	    char* new_chars = nil;
+	    for (const char* o = fold_chars; *o != '\0'; o++) {
+		if (*o != tolower(*o)) {
+		    new_chars = new char[n + 1];
+		    char* s1 = new_chars;
+		    const char* s2 = fold_chars;
+		    for (long i = n; i > 0; i--, s1++, s2++) {
+			*s1 = tolower(*s2);
+		    }
+		    *s1 = '\0';
+		    fold_chars = new_chars;
+		    break;
+		}
+	    }
+	    String key(fold_chars, n);
+	    String found;
+	    if (!idents_->find(found, key)) {
+		idents_->insert(key, *original);
+	    } else {
+		if (found != *original) {
+		    errs_->begin_error();
+		    errs_->put_chars("Mixed case identifier \"");
+		    errs_->put_string(*original);
+		    errs_->put_chars("\"");
+		    errs_->end();
+		}
+		delete new_chars;
+	    }
+	}
     }
     return t;
 }
@@ -538,7 +568,7 @@ TokenType ScannerImpl::get_number(char ch) {
     char c;
     InputFile* f = in_;
     Boolean isint = true;
-    scan(charset_num);
+    scan(charset_digit);
     c = f->read();
     if ((c == 'x' || c == 'X') && buf_.length() == 1 && *buf_.start() == '0') {
 	buf_.put(c);
@@ -547,7 +577,7 @@ TokenType ScannerImpl::get_number(char ch) {
 	if (c == '.') {
 	    isint = false;
 	    buf_.put('.');
-	    scan(charset_num);
+	    scan(charset_digit);
 	    c = f->read();
 	}
 	if (c == 'e' || c == 'E') {
@@ -559,7 +589,7 @@ TokenType ScannerImpl::get_number(char ch) {
 	    } else {
 		f->unread();
 	    }
-	    scan(charset_num);
+	    scan(charset_digit);
 	    c = f->read();
 	}
 	if (!isint || !(c == 'l' || c == 'L')) {
@@ -587,12 +617,10 @@ long ScannerImpl::get_integer() {
 	if (p[1] == 'x' || p[1] == 'X') {
 	    for (p += 2; p < q; p++) {
 		n = (n << 4) + (*p - '0');
-		if (chartype(*p) == char_hexdigit) {
-		    if (chartype(*p) == char_upper) {
-			n += (10 + '0' - 'A');
-		    } else {
-			n += (10 + '0' - 'a');
-		    }
+		if (match(*p, charset_upper)) {
+		    n += (10 + '0' - 'A');
+		} else if (match(*p, charset_lower)) {
+		    n += (10 + '0' - 'a');
 		}
 	    }
 	} else {
@@ -668,8 +696,8 @@ char ScannerImpl::backslash(char ch) {
     String::Index search = src.index(c);
     if (search != -1) {
 	c = dst[search];
-    } else if (chartype(c) == char_digit) {
-	scan(charset_num);
+    } else if (match(c, charset_digit)) {
+	scan(charset_digit);
 	c = (char)get_integer();
     } else {
 	in_->unread(c);

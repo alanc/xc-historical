@@ -713,9 +713,9 @@ void InterfaceDef::put_init(Generator* g) {
 	g->leave_scope();
     }
     String* s = ident_->string();
-    g->emit("%:%I%t::%I%t() { }\n", s);
-    g->emit("%:%I%t::~%I%t() { }\n", s);
-    g->emit("void* %:%I%t::_this() { return this; }\n", s);
+    g->emit("%:%I::%I() { }\n", s);
+    g->emit("%:%I::~%I() { }\n", s);
+    g->emit("void* %:%I::_this() { return this; }\n", s);
     g->emit("\n");
 }
 
@@ -726,7 +726,7 @@ void InterfaceDef::put_type(Generator* g) {
 	String* s = ident_->string();
 	Boolean has_exceptions = (info_->block->except_index != 0);
 	g->emit_type_info(s, "Ref", supertypes_, false, has_exceptions, true);
-	g->emit("%MId %:%I%t::_tid() { return %T; }\n", s);
+	g->emit("%MId %:%I::_tid() { return %T; }\n", s);
     }
 }
 
@@ -741,7 +741,7 @@ void InterfaceDef::put_type_dii(Generator* g) {
 	String* s = ident_->string();
 	Boolean has_exceptions = (info_->block->except_index != 0);
 	g->emit_type_info(s, "Ref", supertypes_, true, has_exceptions, true);
-	g->emit("%MId %:%I%t::_tid() { return %T; }\n", s);
+	g->emit("%MId %:%I::_tid() { return %T; }\n", s);
 	put_receive(g);
     }
 }
@@ -749,7 +749,7 @@ void InterfaceDef::put_type_dii(Generator* g) {
 void InterfaceDef::put_empty_type(Generator* g) {
     if (g->metaclass() != nil) {
 	String* s = ident_->string();
-	g->emit("%MId %:%I%t::_tid() { return 0; }\n", s);
+	g->emit("%MId %:%I::_tid() { return 0; }\n", s);
     }
 }
 
@@ -814,12 +814,13 @@ Boolean Operation::generate_impl(Generator* g) {
     String* s = ident_->string();
     String* impl = g->prefix();
     String* name = g->impl_is_from();
-    g->emit(impl != nil || g->refobjs() ? "%F %." : "%E %.", nil, type_);
-    Boolean refobjs = g->refobjs() && need_indirect_;
-    if (refobjs) {
-	g->emit("_c_");
+    Boolean ref = g->interface_is_ref(false);
+    g->emit(impl != nil ? "%F" : "%E", nil, type_);
+    if (g->actual_type(type_)->tag() == Symbol::sym_interface) {
+	g->emit("_return");
     }
-    g->emit("%I", s);
+    g->interface_is_ref(ref);
+    g->emit(" %.%I", s);
     g->emit_param_list(
 	params_, impl == nil ?
 	    Generator::emit_env_formals : Generator::emit_env_formals_body
@@ -830,9 +831,6 @@ Boolean Operation::generate_impl(Generator* g) {
 	    g->emit("return ");
 	}
 	g->emit("%I", name);
-	if (refobjs) {
-	    g->emit("_c_");
-	}
 	g->emit("%I", s);
 	g->emit_param_list(params_, Generator::emit_env_actuals);
 	g->emit(";\n%u}\n");
@@ -850,13 +848,8 @@ void AttrOp::put_individual_attr(Generator* g, char* param) {
 	return;
     }
     String* s = ident_->string();
-    Boolean refobjs = g->refobjs() && need_indirect_;
     if (param != nil) {
-	g->emit("void %.");
-	if (refobjs) {
-	    g->emit("_c_");
-	}
-	g->emit("%I(", s);
+	g->emit("void %.%I(", s);
 	Boolean addr = g->addr_type(type_);
 	if (addr) {
 	    g->emit("const ");
@@ -879,11 +872,7 @@ void AttrOp::put_individual_attr(Generator* g, char* param) {
 	}
 	g->emit("%,%f)");
     } else {
-	g->emit("%X %.", nil, type_);
-	if (refobjs) {
-	    g->emit("_c_");
-	}
-	g->emit("%I(%f)", s);
+	g->emit("%X %.%I(%f)", s, type_);
     }
 }
 

@@ -394,6 +394,7 @@ void ExprImpl::set_source_position(ErrorHandler* h) {
 IdentifierImpl::IdentifierImpl(IdentString* s, SourcePosition* p) {
     parent_ = nil;
     value_ = s;
+    symbol_ = nil;
     position_ = p->clone();
 }
 

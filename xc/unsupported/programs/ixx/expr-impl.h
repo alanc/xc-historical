@@ -392,7 +392,6 @@ public:
     Boolean generate_stub(Generator*);
     Boolean generate_extern_stubs(Generator*);
     Boolean generate_types(Generator*);
-    Boolean put_inlines(Generator*);
     Boolean put_members(long count, InterfaceDefState&);
     Boolean put_impl(InterfaceDefState*, Expr*);
     void put_forward_decl(Generator*);
@@ -400,14 +399,8 @@ public:
     void put_cast_up(Generator*);
     void put_cast_down(Generator*);
     void put_release(Generator*);
-    void put_indirect(Generator*);
-    void put_ancestors(Generator*, String* name, Boolean body);
-    void put_base(
-	Generator*, String* name, Boolean body,
-	ExprList& path, ExprList& visited
-    );
-    void put_indirect_inlines(Generator*);
     void put_stub_hdr(Generator*);
+    void put_managed_hdr(Generator*);
     void put_init(Generator*);
     void put_type(Generator*);
     void put_type_dii(Generator*);
@@ -706,8 +699,6 @@ public:
     Boolean generate_extern_stubs(Generator*);
     Boolean generate_types(Generator*);
     Boolean generate_receive(Generator*);
-    void put_indirect_type(Generator*);
-    void put_indirect_body(Generator*, Boolean has_return_value);
     void put_skeleton(Generator*, String* impl);
 
     static long type_desc(Generator*, Expr*);
