@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.22 91/07/25 18:10:22 rws Exp $ */
+/* $XConsortium: TextPop.c,v 1.26 94/01/31 10:55:48 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -65,7 +65,7 @@ SOFTWARE.
 extern int errno;
 #endif
 
-#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)))
+#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII))
 extern int sys_nerr;
 extern char* sys_errlist[];
 #endif
@@ -247,7 +247,7 @@ XtPointer call_data;		/* unused */
       return;
     }
     else
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4))
+#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
       (void) sprintf( msg, "*** Error: %s ***",
 	      (errno <= sys_nerr) ? sys_errlist[errno] : "Can't open file" );
 #else

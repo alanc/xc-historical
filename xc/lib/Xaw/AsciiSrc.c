@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.57 92/05/15 13:56:09 keith Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.62 94/01/31 10:48:02 kaleb Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -99,7 +99,7 @@ static Boolean SetValues(), WriteToFile();
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
-#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)))
+#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII))
 extern int sys_nerr;
 extern char* sys_errlist[];
 #endif
@@ -1061,7 +1061,7 @@ Boolean newString;
 	    char msg[11];
 	    
 	    params[0] = src->ascii_src.string;
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4))
+#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
 	    if (errno <= sys_nerr)
 		params[1] = sys_errlist[errno];
 	    else {
