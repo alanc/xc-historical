@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFSWrap.c,v 11.3 91/04/07 16:57:40 rws Exp $
+ * $XConsortium: XFSWrap.c,v 11.4 91/04/07 17:15:49 rws Exp $
  */
 
 /*
@@ -143,10 +143,8 @@ XCreateFontSet (dpy, base_font_name_list, missing_charset_list,
     return font_set;
 }
 
-/*ARGSUSED*/
 int
-XFontsOfFontSet(dpy, font_set, font_struct_list, font_name_list)
-    Display        *dpy;
+XFontsOfFontSet(font_set, font_struct_list, font_name_list)
     XFontSet        font_set;
     XFontStruct  ***font_struct_list;
     char         ***font_name_list;
@@ -156,28 +154,22 @@ XFontsOfFontSet(dpy, font_set, font_struct_list, font_name_list)
     return font_set->core.num_of_fonts;
 }
 
-/*ARGSUSED*/
 char *
-XBaseFontNameListOfFontSet(dpy, font_set)
-    Display        *dpy;
+XBaseFontNameListOfFontSet(font_set)
     XFontSet        font_set;
 {
     return font_set->core.base_name_list;
 }
 
-/*ARGSUSED*/
 char *
-XLocaleOfFontSet(dpy, font_set)
-    Display        *dpy;
+XLocaleOfFontSet(font_set)
     XFontSet        font_set;
 {
     return font_set->core.lcd->core.name;
 }
 
-/*ARGSUSED*/
 XFontSetExtents *
-XExtentsOfFontSet(dpy, font_set)
-    Display        *dpy;
+XExtentsOfFontSet(font_set)
     XFontSet        font_set;
 {
     return &font_set->core.font_set_extents;
