@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.23 91/10/21 14:31:34 eswu Exp $
+ * $XConsortium: BitEdit.c,v 1.24 91/10/31 09:20:43 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -971,7 +971,7 @@ void main(argc, argv)
     int i, n;
     Arg wargs[2];
     Widget w;
-    Widget radio_group; caddr_t radio_data;
+    Widget radio_group; XtPointer radio_data;
     
     top_widget = XtInitialize(NULL, "Bitmap", 
 			      options, XtNumber(options), &argc, argv);
