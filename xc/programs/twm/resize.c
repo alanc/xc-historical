@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.14 89/04/12 18:56:03 jim Exp $
+ * $XConsortium: resize.c,v 1.15 89/04/12 19:00:07 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.14 89/04/12 18:56:03 jim Exp $";
+"$XConsortium: resize.c,v 1.15 89/04/12 19:00:07 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -673,6 +673,7 @@ void
 SetHints(tmp_win)
 TwmWindow *tmp_win;
 {
+#ifdef not_allowed_by_icccm	/* could set a different property... */
     XWMHints wmhints;
     XSizeHints hints;
     int x, y, w, h;
@@ -709,6 +710,7 @@ TwmWindow *tmp_win;
 
     hints.flags |= (USPosition | USSize);
     XSetNormalHints(dpy, tmp_win->w, &hints);
+#endif /* not_allowed_by_icccm */
 }
 
 /**********************************************************************
