@@ -58,7 +58,7 @@ cursor	Cursor	Cursor		None
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 foreground	Foreground	Pixel		XtDefaultForeground
-getValue	Callback	Callback		NULL
+getValue	Callback	XtCallbackList		NULL
 height	Height	Dimension		0
 highlight	Foreground	Pixel		XtDefaultForeground
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
