@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.107 88/06/06 11:01:16 keith Exp $ */
+/* $Header: gc.c,v 1.108 88/06/06 16:12:47 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -356,11 +356,20 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    case GCDashList:
-		xfree(pGC->dash);
-		pGC->numInDashList = 2;
-		pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
-		pGC->dash[0] = (CARD8)(*pval);
-		pGC->dash[1] = (CARD8)(*pval++);
+		if ((CARD8) (*pval) != 0)
+ 		{
+		    xfree(pGC->dash);
+		    pGC->numInDashList = 2;
+		    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
+		    pGC->dash[0] = (CARD8)(*pval);
+		    pGC->dash[1] = (CARD8)(*pval);
+		}
+ 		else
+		{
+		   clientErrorValue = (CARD8)*pval;
+		   error = BadValue;
+		}
+		pval++;
 		break;
 	    case GCArcMode:
 		if (((CARD8)*pval >= ArcChord) 
