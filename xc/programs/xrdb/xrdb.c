@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.51 92/03/10 12:10:34 keith Exp $
+ * $XConsortium: xrdb.c,v 11.52 92/07/29 18:38:49 rws Exp $
  */
 
 /*
@@ -378,6 +378,10 @@ DoDisplayDefines(display, defs, host)
 {
 #define MAXHOSTNAME 255
     char client[MAXHOSTNAME], server[MAXHOSTNAME], *colon;
+    char extname[260];
+    char **extnames;
+    char *s;
+    int nexts;
     
     XmuGetHostname(client, MAXHOSTNAME);
     strcpy(server, XDisplayName(host));
@@ -393,6 +397,14 @@ DoDisplayDefines(display, defs, host)
     AddNum(defs, "REVISION", ProtocolRevision(display));
     AddDefQ(defs, "VENDOR", ServerVendor(display));
     AddNum(defs, "RELEASE", VendorRelease(display));
+    extnames = XListExtensions(display, &nexts);
+    while (--nexts >= 0) {
+	strcpy(extname, "EXT_");
+	strcat(extname, extnames[nexts]);
+	for (s = extname; s = index(s, '-'); s++)
+	    *s = '_';
+	AddDef(defs, extname, (char *)NULL);
+    }
 }
 
 /*
