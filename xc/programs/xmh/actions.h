@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.5 90/01/22 17:36:35 swick Exp $
+ * $XConsortium: actions.h,v 1.6 91/07/02 17:59:37 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -79,6 +79,7 @@ extern void	XmhReply();
 extern void	XmhForward();
 extern void	XmhUseAsComposition();
 extern void	XmhPrint();
+extern void	XmhShellCommand();
 extern void	XmhPickMessages();
 extern void	XmhOpenSequence();
 extern void	XmhAddToSequence();

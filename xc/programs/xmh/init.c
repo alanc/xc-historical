@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.58 91/07/05 15:17:35 converse Exp $
+ * $XConsortium: init.c,v 2.59 91/07/05 18:14:25 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -267,6 +267,7 @@ char **argv;
 	{"XmhReply",			XmhReply},
 	{"XmhForward",			XmhForward},
 	{"XmhUseAsComposition",		XmhUseAsComposition},
+	{"XmhShellCommand",		XmhShellCommand},
 	{"XmhPrint",			XmhPrint},
 
 	/* actions upon sequences */
