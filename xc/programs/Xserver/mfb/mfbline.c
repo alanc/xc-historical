@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.9 89/11/24 18:05:53 rws Exp $ */
+/* $XConsortium: mfbline.c,v 5.10 90/01/23 15:14:37 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -142,6 +142,9 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     register int x1, x2;
     RegionPtr cclip;
     int		    alu;
+
+    if (!(pGC->planemask & 1))
+	return;
 
     cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
     alu = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
@@ -549,6 +552,9 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int		    isDoubleDash;
     int		    dashIndexTmp, dashOffsetTmp;
     int		    unclippedlen;
+
+    if (!(pGC->planemask & 1))
+	return;
 
     cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
     fgrop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
