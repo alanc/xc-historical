@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.48 88/02/02 17:54:58 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.49 88/02/02 18:10:47 swick Locked $";
 #endif lint
 
 /*
@@ -24,6 +24,8 @@ static char rcsid[] = "$Header: Event.c,v 1.48 88/02/02 17:54:58 swick Locked $"
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+#include <X/Xlib.h>
+#include <X/Xutil.h>
 #include "IntrinsicI.h"
 #include "Event.h"
 #include "Atoms.h"
@@ -653,7 +655,7 @@ void XtRemoveGrab(widget)
 		prev->next = next = gl->next;
 	    else
 		grabList = next = gl->next;
-	    XtFree(gl);
+	    XtFree((char*)gl);
 	    gl = next;
 	}
 	else {
