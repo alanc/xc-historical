@@ -3,7 +3,7 @@
 X - X Window System server
 .SH SYNOPSIS
 .B X
-displaynumber [-option ...] ttyname
+[:displaynumber] [-option ...] [ttyname]
 .SH DESCRIPTION
 .I X
 is the window system server.  On operating systems derived from 4.3bsd, it is 
@@ -12,7 +12,8 @@ run automatically by \fIinit(8)\fP, otherwise it is started from the
 by clients in their DISPLAY environment variables to indicate which server
 to contact (large machines may have several displays attached).  This
 number is usually in the range of 0-6 and is also used in determining the
-names of various startup files.  The \fIttyname\fP argument is passed in
+names of various startup files.  The default value is ":0".
+The \fIttyname\fP argument is passed in
 by \fIinit\fP and isn't used.
 .PP
 The executable that is invoked when \fIX\fP is run
@@ -172,6 +173,14 @@ after the initial process (usually
 the login \fIxterm(1)\fP) started on the display terminates.
 This signal causes all connections to be closed (thereby ``disowning'' the
 terminal), all resources to be freed, and all defaults restored.
+.SH "FONTS"
+Fonts are stored in individual files in the directory(ies) named by
+the font search path.  These files may be created by the \fIfc\fP utility.
+The name of the file must correspond to the name of the font in lowercase
+with the suffix ".snf" appended.
+Font files may be stored in \fIcompress\fP(1) format, in which case an
+additional suffix (usually ".Z", defined when the server is built) must
+be appended to the usual filename.
 .SH DIAGNOSTICS
 Too numerous to list them all.
 If run from \fIinit(8)\fP, errors are logged in the file \fI/usr/adm/X*msgs\fP,
