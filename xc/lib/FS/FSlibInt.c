@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSlibInt.c,v 1.6 91/05/13 15:11:59 gildea Exp $ */
 
 /* @(#)FSlibInt.c	3.3	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -88,6 +88,40 @@ _FSWriteV(fd, iov, iovcnt)
 }
 
 #endif				/* CRAY */
+
+#if defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)
+/*
+ * SYSV/386 does not have readv so we emulate
+ */
+#include <sys/uio.h>
+
+int _FSReadV(fd, iov, iovcnt)
+int fd;
+struct iovec *iov;
+int iovcnt;
+{
+    int i, len, total;
+    char *base;
+
+    errno = 0;
+    for (i=0, total=0;  i<iovcnt;  i++, iov++) {
+	len = iov->iov_len;
+	base = iov->iov_base;
+	while (len > 0) {
+	    register int nbytes;
+	    nbytes = read(fd, base, len);
+	    if (nbytes < 0 && total == 0)  return -1;
+	    if (nbytes <= 0)  return total;
+	    errno = 0;
+	    len   -= nbytes;
+	    total += nbytes;
+	    base  += nbytes;
+	}
+    }
+    return total;
+}
+
+#endif /* SYSV && SYSV386 && !STREAMSCONN */
 
 /*
  * The following routines are internal routines used by FSlib for protocol
