@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.30 89/12/14 21:07:26 converse Exp $
+ * $XConsortium: folder.c,v 2.31 89/12/16 03:33:16 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -50,6 +50,10 @@ static void CreateFolderMenu();
 static void AddFolderMenuEntry();
 static void DeleteFolderMenuEntry();
 
+#ifdef DEBUG_CLEANUP
+extern Boolean ExitLoop;
+#endif
+
 /* Close this toc&view scrn.  If this is the last toc&view, quit xmh. */
 
 /*ARGSUSED*/
@@ -97,10 +101,19 @@ void DoClose(widget, client_data, call_data)
  *		CmdSetSequence(toc, "cur", MakeSingleMsgList(toc->curmsg));
  *	}
  */
+#ifdef DEBUG_CLEANUP
+	XtDestroyWidget(scrn->parent);
+#else
 	XtUnmapWidget(scrn->parent);
+#endif
 	XtDestroyApplicationContext
 	    (XtWidgetToApplicationContext(scrn->parent));
+#ifdef DEBUG_CLEANUP
+	ExitLoop = TRUE;
+	return;
+#else
 	exit(0);
+#endif
     }
     else {
 	if (MsgSetScrn((Msg) NULL, scrn, confirm_callbacks, 

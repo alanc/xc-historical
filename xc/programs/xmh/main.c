@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 2.16 89/10/06 15:02:44 converse Exp $
+ * $XConsortium: main.c,v 2.17 90/06/27 13:45:42 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -79,6 +79,10 @@ static void CheckMail(client_data, id)
 
 /* Main loop. */
 
+#ifdef DEBUG_CLEANUP
+Boolean ExitLoop = FALSE;
+#endif
+
 main(argc, argv)
 unsigned int argc;
 char **argv;
@@ -97,7 +101,11 @@ char **argv;
     }
 
     lastInput.win = -1;		/* nothing mapped yet */
+#ifdef DEBUG_CLEANUP
+    while (!ExitLoop) {
+#else
     for (;;) {
+#endif
 	XEvent ev;
 	XtAppNextEvent( appCtx, &ev );
 	if (ev.type == KeyPress) {
