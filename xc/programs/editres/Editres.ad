@@ -26,7 +26,7 @@ Editres.Geometry:			500x600
 *SimpleMenu*refreshTree.Label:		Refresh Current Widget Tree
 *SimpleMenu*dumpTreeToFile.Label:	Dump Widget Tree to a File
 *SimpleMenu*getResourceList.Label:	Show Resource Box
-*SimpleMenu*setValues.Label:		Set Values
+*SimpleMenu*setValues.Label:		Set Resource
 *SimpleMenu*quit.Label:			Quit
 
 
@@ -154,7 +154,7 @@ Editres.Geometry:			500x600
 
 *setValuesPopup*resourceLabel.Label:	Resource Name:
 *setValuesPopup*valueLabel.Label:	Value:
-*setValuesPopup*setValues.Label:	Set Values
+*SimpleMenu*setValuesPopup*setValues.Label:	Apply
 *setValuesPopup*cancel.Label:		Cancel
 
 *setValuesPopup*Text*EditType:		Edit
