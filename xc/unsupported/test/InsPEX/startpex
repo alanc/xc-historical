@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XConsortium: startpex,v 5.1 91/02/16 10:04:53 rws Exp $
+# $XConsortium: startpex,v 5.2 91/02/18 20:35:58 hersh Exp $
 #
 # 
 # Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -27,11 +27,11 @@
 #	"Usage:  startpex DEVICE XRC_FILE [options]"
 #
 
-XHOME=${XHOME:-../../../..}
+XHOME=${XHOME:-../../..}
 
 X=$XHOME/server/Xsun
 XPATH=/usr/bin/X11
-#XCMD=xinit
+XCMD=xinit
 
 #	This Env'var MUST be set to start up the PEX server extension right
 PEX_FONTPATH=$XHOME/extensions/fonts/PEX; export PEX_FONTPATH
