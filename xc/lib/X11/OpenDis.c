@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.132 93/03/10 16:48:37 converse Exp $
+ * $XConsortium: XOpenDis.c,v 11.133 93/06/25 16:27:57 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -384,7 +384,6 @@ Display *XOpenDisplay (display)
 	    sp->mheight	    = u.rp->mmHeight;
 	    sp->min_maps    = u.rp->minInstalledMaps;
 	    sp->max_maps    = u.rp->maxInstalledMaps;
-	    sp->root_visual = NULL;  /* filled in later, when we alloc Visuals */
 	    sp->backing_store= u.rp->backingStore;
 	    sp->save_unders = u.rp->saveUnders;
 	    sp->root_depth  = u.rp->rootDepth;
@@ -417,8 +416,7 @@ Display *XOpenDisplay (display)
 		    }
 		    for (k = 0; k < dp->nvisuals; k++) {
 			register Visual *vp = &dp->visuals[k];
-			if ((vp->visualid = u.vp->visualID) == root_visualID)
-			   sp->root_visual = vp;
+			vp->visualid	= u.vp->visualID;
 			vp->class	= u.vp->class;
 			vp->bits_per_rgb= u.vp->bitsPerRGB;
 			vp->map_entries	= u.vp->colormapEntries;
@@ -433,6 +431,7 @@ Display *XOpenDisplay (display)
 		    dp->visuals = (Visual *) NULL;
 		}
 	    }
+	    sp->root_visual = _XVIDtoVisual(root_visualID);
 	}
 		
 
