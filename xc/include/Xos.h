@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.26 90/12/26 11:12:18 rws Exp $
+ * $XConsortium: Xos.h,v 1.27 90/12/28 09:26:18 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -122,26 +122,30 @@ struct timezone {
 #include <sys/time.h>				/* SYSV && macII */
 #endif
 
-#else
-#include <sys/time.h>				/* else bsd or SVR4 */
+#else /* not SYSV */
+
+/* (stupid SVR4) need to omit _POSIX_SOURCE in order to get what we want */
+#ifdef SVR4
+#ifdef _POSIX_SOURCE
+#undef _POSIX_SOURCE
+#define _XposixDEF
+#endif
 #endif
 
-/*
- * POSIXism
- */
+#include <sys/time.h>
 
-#ifdef SYSV
-#ifndef macII
-#ifndef ibm
-#ifndef hpux
+#ifdef _XposixDEF
+#define _POSIX_SOURCE
+#undef _XposixDEF
+#endif
+
+#endif /* SYSV */
+
+/* use POSIX name for signal */
+#if defined(SYSV) && !defined(SIGCHLD)
+#if !defined(macII) && !defined(ibm) && !defined(hpux)
 #define SIGCHLD SIGCLD
 #endif
 #endif
-#endif
-#endif
-
-/*
- * Put system-specific definitions here
- */
 
 #endif /* _XOS_H_ */
