@@ -253,6 +253,10 @@ ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
         pProp->type = type;
         pProp->format = format;
         pProp->data = data;
+#ifdef LBX
+	pProp->tag_id = 0;
+	pProp->owner_pid = 0;
+#endif
 	if (len)
 	    memmove((char *)data, (char *)value, totalSize);
 	pProp->size = len;
@@ -270,7 +274,13 @@ ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
 	    return(BadMatch);
         if ((pProp->type != type) && (mode != PropModeReplace))
             return(BadMatch);
-        if (mode == PropModeReplace) 
+#ifdef LBX
+	if (pProp->tag_id) {
+	    LbxFlushPropertyTag(pProp->tag_id);
+	    pProp->tag_id = 0;
+	}
+#endif
+        if (mode == PropModeReplace)
         {
 	    if (totalSize != pProp->size * (pProp->format >> 3))
 	    {
@@ -355,6 +365,11 @@ DeleteProperty(pWin, propName)
         {
             prevProp->next = pProp->next;
         }
+#ifdef LBX
+	if (pProp->tag_id) {
+	    LbxFlushPropertyTag(pProp->tag_id);
+	}
+#endif
 	event.u.u.type = PropertyNotify;
 	event.u.property.window = pWin->drawable.id;
 	event.u.property.state = PropertyDelete;
@@ -377,6 +392,11 @@ DeleteAllWindowProperties(pWin)
     pProp = wUserProps (pWin);
     while (pProp)
     {
+#ifdef LBX
+	if (pProp->tag_id) {
+	    LbxFlushPropertyTag(pProp->tag_id);
+	}
+#endif
 	event.u.u.type = PropertyNotify;
 	event.u.property.window = pWin->drawable.id;
 	event.u.property.state = PropertyDelete;
@@ -480,6 +500,11 @@ ProcGetProperty(client)
 		reply.nItems = len / (pProp->format / 8 );
 		reply.propertyType = pProp->type;
 
+#ifdef LBX
+		if (stuff->delete && (reply.bytesAfter == 0) && pProp->tag_id) {
+		    LbxFlushPropertyTag(pProp->tag_id);
+		}
+#endif
                 if (stuff->delete && (reply.bytesAfter == 0))
                 { /* send the event */
 		    xEvent event;

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.43 93/09/20 18:03:12 dpw Exp $ */
+/* $XConsortium: dixfonts.c,v 1.44 94/02/03 10:07:16 gildea Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -437,6 +437,9 @@ CloseFont(value, fid)
 	}
 	if (pfont == defaultFont)
 	    defaultFont = NULL;
+#ifdef LBX
+	LbxFreeFontTag(pfont);
+#endif
 	fpe = pfont->fpe;
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
 	FreeFPE(fpe, FALSE);
