@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.22 87/10/10 02:31:46 rws Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.23 87/10/11 16:21:10 rws Locked $";
 #endif
 
 #include <sys/types.h>
@@ -76,6 +76,7 @@ enum orientation {
 #define F_NOFF 32
 #define F_REPORT 64
 #define F_COMPACT 128
+#define F_INVERT 256
 
 /* 3812 PagePrinter macros, copied from pmp.h; change there, too */
 #define PPI	240
@@ -84,6 +85,8 @@ enum orientation {
 #define X_MAX_PELS	inch2pel(DEFAULT_WIDTH)
 #define DEFAULT_LENGTH	11
 #define Y_MAX_PELS	inch2pel(DEFAULT_LENGTH)
+
+#define INTENSITY(color) (39L*color.red + 50L*color.green + 11L*color.blue)
 
 char *infilename = "stdin", *whoami;
 
@@ -98,8 +101,6 @@ char **argv;
     register int ih;
     register int sixel_count;
     char *w_name;
-    char *filename;
-    char *output_filename;
     int scale = 0, width, height, flags, split;
     int left, top;
     int top_margin, left_margin;
@@ -124,9 +125,9 @@ char **argv;
     }
 
     /* read in window header */
-    read(0, &win, sizeof win);
+    read(0, (char *)&win, sizeof win);
     if (*(char *) &swaptest)
-	_swaplong((char *) &win, sizeof(win));
+	_swaplong((char *) &win, (long)sizeof(win));
 
     if (win.file_version != XWD_FILE_VERSION) {
 	fprintf(stderr,"xpr: file format version missmatch.\n");
@@ -145,16 +146,25 @@ char **argv;
     if (win.byte_order != win.bitmap_bit_order)
         fprintf(stderr,"xpr: image will be incorrect, byte swapping required but not performed.\n");
 
-    w_name = (char *)malloc(win.header_size - sizeof win);
-    read(0, w_name, win.header_size - sizeof win);
+    w_name = (char *)malloc((unsigned)(win.header_size - sizeof win));
+    read(0, w_name, (int) (win.header_size - sizeof win));
     
-    if(win.ncolors)
-	read(0,
-	     malloc(win.ncolors * sizeof(XColor)),
-	     win.ncolors * sizeof(XColor));
+    if(win.ncolors) {
+	XColor *colors = (XColor *)malloc((unsigned) (win.ncolors * sizeof(XColor)));
+
+	read(0, (char *)colors, (int) (win.ncolors * sizeof(XColor)));
+	if (*(char *) &swaptest) {
+	    for (i = 0; i < win.ncolors; i++) {
+		_swaplong((char *) &colors[i].pixel, (long)sizeof(long));
+		_swapshort((char *) &colors[i].red, (long) (3 * sizeof(short)));
+	    }
+	}
+	if (win.ncolors == 2 && INTENSITY(colors[0]) > INTENSITY(colors[1]))
+	    flags ^= F_INVERT;
+    }
 
     /* calculate orientation and scale */
-    setup_layout(device, win.pixmap_width, win.pixmap_height, flags, width, 
+    setup_layout(device, (int) win.pixmap_width, (int) win.pixmap_height, flags, width, 
 		 height, header, trailer, &scale, &orientation);
 
     if (device == PS) {
@@ -168,8 +178,8 @@ char **argv;
 
 	/* build pixcells from input file */
 	sixel_count = iw * ih;
-	sixmap = (unsigned char (*)[])malloc(sixel_count);
-	build_sixmap(iw, ih, sixmap, hpad, &win);
+	sixmap = (unsigned char (*)[])malloc((unsigned)sixel_count);
+	build_sixmap(iw, ih, sixmap, hpad, (flags & F_INVERT), &win);
     }
 
     /* output commands and sixel graphics */
@@ -335,9 +345,11 @@ char **trailer;
 	    }
 	    break;
 
-	case 'r':		/* -report */
+	case 'r':		/* -report | -rv */
 	    if (!bcmp(*argv, "-report", len)) {
 		*flags |= F_REPORT;
+	    } else if (!bcmp(*argv, "-rv", len)) {
+		*flags |= F_INVERT;
 	    }
 	    break;
 
@@ -482,21 +494,20 @@ int ih;
     }
 }
 
-build_sixmap(iw, ih, sixmap, hpad, win)
+build_sixmap(iw, ih, sixmap, hpad, invert, win)
 int ih;
 int iw;
 unsigned char (*sixmap)[];
 int hpad;
+int invert;
 XWDFileHeader *win;
 {
     int iwb = win->bytes_per_line;
-    int iww;
     int rsize, cc;
-    int w, maxw;
     struct iovec linevec[6];
     unsigned char line[6][500];
     register unsigned char *c;
-    register int i, j;
+    register int i, j, w;
     register int sixel;
 
     c = (unsigned char *)sixmap;
@@ -528,7 +539,11 @@ XWDFileHeader *win;
 
 	if (win->bitmap_bit_order == MSBFirst)
 	    for (i = 0; i <= 5; i++)
-	        _swapbits((char *)&line[i][0], iwb);
+	        _swapbits(&line[i][0], (long)iwb);
+
+	if (invert)
+	    for (i = 0; i <= 5; i++)
+	        _invbits(&line[i][0], (long)iwb);
 
 #ifndef NOINLINE
 	for (i = 0; i < iw; i++) {
@@ -595,7 +610,6 @@ char *trailer;
 {
     register int i;
     register int lm, tm, xm;
-    char fontname[6];
     char buf[256];
     register char *bp = buf;
 	
@@ -656,8 +670,8 @@ ln03_finish()
 
 la100_setup(iw, ih, scale)
 {
-    unsigned char buf[256];
-    register unsigned char *bp;
+    char buf[256];
+    register char *bp;
     int lm, tm;
 
     bp = buf;
@@ -959,7 +973,6 @@ unsigned char (*sixmap)[];
 int iw;
 int ih;
 {
-    register int size;
     register unsigned char *c, *stopc;
     register unsigned char *startc;
     register int n;
@@ -1008,7 +1021,7 @@ int left_margin;
     char snum[6];
     register char *snp;
 
-    bp = (unsigned char *)malloc(iw*ih+512);
+    bp = (unsigned char *)malloc((unsigned)(iw*ih+512));
     buf = bp;
     count = 0;
     lastc = -1;
@@ -1049,24 +1062,28 @@ int left_margin;
 	*bp++ = '-';		/* New line */
 	lastc = -1;
 	if ((i % split) == 0 && i != 0) {
-	    sprintf(bp, LN_ST); bp += sizeof LN_ST - 1;
+	    sprintf((char *)bp, LN_ST); bp += sizeof LN_ST - 1;
 	    *bp++ = '\f';
-	    sprintf(bp, LN_VPA, top_margin + (i * 6 * scale)); bp += strlen(bp);
-	    sprintf(bp, LN_HPA, left_margin); bp += strlen(bp);
-	    sprintf(bp, LN_SIXEL_GRAPHICS, 9, 0, scale); bp += strlen(bp);
-	    sprintf(bp, "\"1;1"); bp += 4;
+	    sprintf((char *)bp, LN_VPA, top_margin + (i * 6 * scale));
+	    bp += strlen((char *)bp);
+	    sprintf((char *)bp, LN_HPA, left_margin);
+	    bp += strlen((char *)bp);
+	    sprintf((char *)bp, LN_SIXEL_GRAPHICS, 9, 0, scale);
+	    bp += strlen((char *)bp);
+	    sprintf((char *)bp, "\"1;1"); bp += 4;
 	}
     }
 
-    sprintf(bp, LN_ST); bp += sizeof LN_ST - 1;
+    sprintf((char *)bp, LN_ST); bp += sizeof LN_ST - 1;
     *bp++ = '\f';
-    write(1, buf, bp-buf);
+    write(1, (char *)buf, bp-buf);
 }
 
-la100_output_sixels(sixmap, iw, ih)
+la100_output_sixels(sixmap, iw, ih, nosixopt)
 unsigned char (*sixmap)[];
 int iw;
 int ih;
+int nosixopt;
 {
     unsigned char *buf;
     register unsigned char *bp;
@@ -1077,7 +1094,7 @@ int ih;
     register int count;
     char snum[6];
 
-    bp = (unsigned char *)malloc(iw*ih+512);
+    bp = (unsigned char *)malloc((unsigned)(iw*ih+512));
     buf = bp;
     count = 0;
     lastc = -1;
@@ -1118,9 +1135,9 @@ int ih;
 	lastc = -1;
     }
 
-    sprintf(bp, LN_ST); bp += sizeof LN_ST - 1;
+    sprintf((char *)bp, LN_ST); bp += sizeof LN_ST - 1;
     *bp++ = '\f';
-    write(1, buf, bp-buf);
+    write(1, (char *)buf, bp-buf);
 }
 
 #define LINELEN 72 /* number of CHARS (bytes*2) per line of bitmap output */
@@ -1179,13 +1196,15 @@ enum orientation orientation;
 		exit(1);
 	    }
 	    if (win->bitmap_bit_order == MSBFirst)
-		_swapbits((char *)buffer, iwb);
+		_swapbits(buffer, (long)iwb);
+	    if (flags & F_INVERT)
+		_invbits(buffer, (long)iwb);
 	    if (!(*(char *) &swaptest))
-		_swaplong((char *)buffer,iwb);
+		_swaplong((char *)buffer,(long)iwb);
 	    ps_bitrot(buffer,iw,--ocol,owidth);
 	}
 	if (!(*(char *) &swaptest))
-	    _swaplong(obuf,iw*owidth);
+	    _swaplong(obuf,(long)(iw*owidth));
 	q = &obuf[iw*owidth];
 	bytes = (ih+7)/8;
 	for (p=obuf;p<q;p+=owidth)
@@ -1203,7 +1222,9 @@ enum orientation orientation;
 		exit(1);
 	    }
 	    if (win->bitmap_bit_order == MSBFirst)
-		_swapbits((char *)buffer, iwb);
+		_swapbits(buffer, (long)iwb);
+	    if (flags & F_INVERT)
+		_invbits(buffer, (long)iwb);
 	    ocount = ps_putbuf(buffer,(iw+7)/8,ocount,flags&F_COMPACT);
 	}
     }
@@ -1253,6 +1274,17 @@ char _reverse_byte[0x100] = {
 	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
 
+_invbits (b, n)
+	register unsigned char *b;
+	register long n;
+{
+	do {
+		*b = ~*b;
+		b++;
+	    } while (--n > 0);
+	
+}
+
 /* copied from lib/X/XPutImage.c */
 
 _swapbits (b, n)
@@ -1264,6 +1296,22 @@ _swapbits (b, n)
 		b++;
 	    } while (--n > 0);
 	
+}
+
+_swapshort (bp, n)
+     register char *bp;
+     register long n;
+{
+	register char c;
+	register char *ep = bp + n;
+	do {
+		c = *bp;
+		*bp = *(bp + 1);
+		bp++;
+		*bp = c;
+		bp++;
+	}
+	while (bp < ep);
 }
 
 _swaplong (bp, n)
