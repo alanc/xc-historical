@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.47 89/12/07 20:19:40 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.48 89/12/15 11:37:22 kit Exp $";
 #endif /* lint */
 
 
@@ -177,7 +177,7 @@ static void Initialize(request, new)
     Widget request, new;
 {
     ViewportWidget w = (ViewportWidget)new;
-    static Arg clip_args[5];
+    static Arg clip_args[6];
     Cardinal num_args;
     Widget h_bar, v_bar;
     Dimension clip_height, clip_width;
@@ -197,6 +197,7 @@ static void Initialize(request, new)
  */
 
     num_args = 0;
+    XtSetArg(clip_args[num_args], XtNbackgroundPixmap, None); num_args++;
     XtSetArg(clip_args[num_args], XtNborderWidth, 0); num_args++;
     XtSetArg(clip_args[num_args], XtNleft, XtChainLeft); num_args++;
     XtSetArg(clip_args[num_args], XtNright, XtChainRight); num_args++;
