@@ -170,6 +170,7 @@ macIIBW2CreateColormap(pmap)
      * worth writing a for loop or three to initialize it */
 
     /* this will be pixel 0 */
+    pix = 0;
     red = green = blue = ~0;
     AllocColor(pmap, &red, &green, &blue, &pix, 0);
 
