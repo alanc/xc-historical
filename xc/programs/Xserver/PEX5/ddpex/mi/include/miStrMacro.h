@@ -1,4 +1,4 @@
-/* $XConsortium: miStrMacro.h,v 5.2 91/12/26 17:53:13 hersh Exp $ */
+/* $XConsortium: miStrMacro.h,v 5.3 92/02/03 16:38:17 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -81,15 +81,15 @@ SOFTWARE.
     else if ((OFFSET) == MISTR_CURR_EL_OFFSET(PSTRUCT))			\
     	(PE) = MISTR_CURR_EL_PTR(PSTRUCT);				\
     else {								\
-	register int	i, start;					\
+	register int	_i, _start;					\
     	if ((OFFSET) < MISTR_CURR_EL_OFFSET(PSTRUCT)) {			\
 	    (PE) = MISTR_ZERO_EL(PSTRUCT);				\
-	    start = 0;							\
+	    _start = 0;							\
     	} else {							\
-	    start = MISTR_CURR_EL_OFFSET(PSTRUCT);			\
+	    _start = MISTR_CURR_EL_OFFSET(PSTRUCT);			\
 	    (PE) = MISTR_CURR_EL_PTR(PSTRUCT);				\
 	}								\
-	for (i=start; i<(OFFSET); i++, (PE) = MISTR_NEXT_EL(PE));	\
+	for (_i=_start; _i<(OFFSET); _i++, (PE) = MISTR_NEXT_EL(PE));	\
     }
 
 /* given pointer to element, find out what its OFFSET is in the struct */
