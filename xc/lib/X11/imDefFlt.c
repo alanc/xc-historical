@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imDefFlt.c,v 1.1 93/09/17 13:25:39 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -235,8 +235,8 @@ _XimFilterKeypress (d, w, ev, client_data)
     XEvent		*ev;
     XPointer		 client_data;
 {
-    return _XimProtoKeypressFilter((Xic)((void *)client_data),
-							(XKeyEvent *)ev );
+    return _XimProtoKeypressFilter((Xic)client_data,
+				   (XKeyEvent *)ev );
 }
 
 Private Bool
@@ -280,8 +280,8 @@ _XimFilterKeyrelease (d, w, ev, client_data)
     XEvent		*ev;
     XPointer		 client_data;
 {
-    return _XimProtoKeyreleaseFilter((Xic)((void *)client_data),
-							(XKeyEvent *)ev);
+    return _XimProtoKeyreleaseFilter((Xic)client_data,
+				     (XKeyEvent *)ev);
 }
 
 Public void 
