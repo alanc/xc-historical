@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.11 89/11/28 15:02:53 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.12 89/12/08 12:36:32 swick Exp $";
 #endif
 
 /***********************************************************
@@ -178,6 +178,7 @@ static void Initialize (greq, gnew)
     w->strip_chart.interval = 0;
     w->strip_chart.max_value = 0.0;
     w->strip_chart.points = NULL;
+    SetPoints(w);
 }
  
 static void Destroy (gw)
@@ -460,6 +461,7 @@ StripChartWidget w;
     int i;
 
     if (w->strip_chart.scale <= 1) { /* no scale lines. */
+	XtFree ((char *) w->strip_chart.points);
 	w->strip_chart.points = NULL;
 	return;
     }
