@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.35 92/04/03 10:07:36 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.36 92/04/04 17:39:23 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -526,8 +526,6 @@ find_closest(dir, mult, rootx, rooty, parent, pwa, input,
 	    continue;
 	if (wa.map_state != IsViewable)
 	    continue;
-	if (input && !(wa.all_event_masks & input))
-	    continue;
 	x1 = wa.x;
 	y1 = wa.y;
 	x2 = x1 + wa.width + (2 * wa.border_width);
@@ -544,8 +542,9 @@ find_closest(dir, mult, rootx, rooty, parent, pwa, input,
 	    find_closest(dir, mult, rootx, rooty, children[i], &wa, input,
 	    		 bestx, besty, best_dist, recurse)) {
 	    found = True;
-	    continue;
 	}
+	if (input && !(wa.all_event_masks & input))
+	    continue;
 	if (rootx >= x1 && rootx < x2 && rooty >= y1 && rooty < y2)
 	    continue;
 	switch (dir) {
@@ -600,7 +599,7 @@ find_closest(dir, mult, rootx, rooty, parent, pwa, input,
 	}
 	dist = (xmult * (x - rootx) * (x - rootx) +
 		ymult * (y - rooty) * (y - rooty));
-	if (dist > *best_dist)
+	if (dist >= *best_dist)
 	    continue;
 	*bestx = (x1 + x2) / 2;
 	*besty = (y1 + y2) / 2;
