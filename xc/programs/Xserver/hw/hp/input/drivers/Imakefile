@@ -1,0 +1,34 @@
+XCOMM $XConsortium: Imakefile,v 1.4 93/09/06 15:25:54 rws Exp $
+#ifndef DoSharedLib
+#define DoSharedLib YES
+#endif
+
+#include <Library.tmpl>
+#include <Server.tmpl>
+
+HP7LC2KSRCS =		hp7lc2k.c
+HP7LC2MSRCS =		hp7lc2m.c
+
+HP7LC2KOBJS =		hp7lc2k.o
+HP7LC2MOBJS =		hp7lc2m.o
+
+HP7LC2KLOBJS =		hp7lc2k.ln
+HP7LC2MLOBJS =		hp7lc2m.ln
+
+HP7LC2KSHLIB =		hp7lc2k.sl
+HP7LC2MSHLIB =		hp7lc2m.sl
+
+all::
+
+DRVRLIBDIR = $(LIBDIR)/extensions
+
+LibraryObjectRule()
+SharedLibraryTarget(hp7lc2k,,$(HP7LC2KOBJS),.,.)
+SharedLibraryTarget(hp7lc2m,,$(HP7LC2MOBJS),.,.)
+
+install::
+	(chmod a-w $(HP7LC2KSHLIB))
+	(chmod a-w $(HP7LC2MSHLIB))
+
+InstallProgram($(HP7LC2KSHLIB),$(DRVRLIBDIR))
+InstallProgram($(HP7LC2MSHLIB),$(DRVRLIBDIR))
