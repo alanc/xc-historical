@@ -628,6 +628,7 @@ receive_packet()
 static
 send_packet()
 {
+    int rtx;
     switch (state) {
     case XDM_QUERY:
     case XDM_BROADCAST:
@@ -644,8 +645,10 @@ send_packet()
 	send_keepalive_msg();
 	break;
     }
-    timeOutTime = GetTimeInMillis() 
-	+ MIN (XDM_MIN_RTX * (1 << timeOutRtx), XDM_MAX_RTX) * 1000;
+    rtx = (XDM_MIN_RTX << timeOutRtx);
+    if (rtx > XDM_MAX_RTX)
+	rtx = XDM_MAX_RTX;
+    timeOutTime = GetTimeInMillis() + rtx * 1000;
 }
 
 /*
@@ -1051,6 +1054,7 @@ recv_alive_msg (length)
 {
     CARD8   SessionRunning;
     CARD32  AliveSessionID;
+    int	    dormancy;
 
     if (state != XDM_AWAIT_ALIVE_RESPONSE)
 	return;
@@ -1064,7 +1068,11 @@ recv_alive_msg (length)
 	    /* backoff dormancy period */
 	    state = XDM_RUN_SESSION;
 	    if (TimeSinceLastInputEvent() > keepaliveDormancy * 1000)
-	    	keepaliveDormancy = MIN(keepaliveDormancy << 1, XDM_MAX_DORMANCY);
+	    {
+		keepaliveDormancy <<= 1;
+		if (keepaliveDormancy > XDM_MAX_DORMANCY)
+		    keepaliveDormancy = XDM_MAX_DORMANCY;
+	    }
 	    timeOutTime = GetTimeInMillis() + keepaliveDormancy * 1000;
     	}
 	else
