@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.95 89/09/12 16:48:02 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.96 89/09/19 09:50:00 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -251,7 +251,7 @@ extern void XtAddActions(); /* action, num_actions */
 
 typedef Opaque XtActionHookId;
 
-typedef void (*XtActionHookProc);
+typedef void (*XtActionHookProc)();
     /* Widget	 w;		*/
     /* XtPointer client_data;	*/
     /* String	 action_name;	*/
@@ -259,7 +259,7 @@ typedef void (*XtActionHookProc);
     /* String	 *params;	*/
     /* Cardinal	 *num_params;	*/
 
-extern XtActionHookid XtAppAddActionHook();
+extern XtActionHookId XtAppAddActionHook();
     /* XtAppContext	app;	     */
     /* XtActionHookProc	proc;	     */
     /* XtPointer	client_data; */
