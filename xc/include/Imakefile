@@ -12,7 +12,6 @@ EXPORTS = \
 	DECkeysym.h
 
 IMPORTS = \
-	$(OLDXMENUSRC)/XMenu.h \
 	$(OLDXLIBSRC)/X10.h \
 	$(XRMSRC)/Xresource.h \
 	$(XLIBSRC)/Xlib.h \
