@@ -1,10 +1,9 @@
-XCOMM $NCDId$: Imakefile,v 1.1 94/02/17 15:26:09 dpw Exp $
-XCOMM $XConsortium: Imakefile,v 1.2 94/02/20 11:14:35 dpw Exp $
+XCOMM $XConsortium$
 
 #include <Server.tmpl>
 
 INCLUDES = -I$(TOP)/include -I$(SERVERSRC)/include -I$(EXTINCSRC) \
-           -I$(LIBSRC)/Xau
+           -I$(LIBSRC)/Xau -I../../../include/extensions
 
     SRCS = main.c dispatch.c wire.c globals.c \
 		utils.c stubs.c tables.c init.c \
@@ -16,9 +15,9 @@ INCLUDES = -I$(TOP)/include -I$(SERVERSRC)/include -I$(EXTINCSRC) \
 		cache.o colormap.o lbxfuncs.o reqtype.o \
                 resource.o tags.o atomcache.o gfx.o lbxutil.o \
                 props.o swapreq.o swaprep.o
-	
-    EXTRA_DEFINES = AllocateLocalDefines
 
+    EXTRA_DEFINES = AllocateLocalDefines
+	
 NormalLibraryObjectRule()
 NormalLibraryTarget(dilbx,$(OBJS))
 LintLibraryTarget(dilbx,$(SRCS))
