@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.76 88/10/21 09:43:29 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.77 88/10/25 00:14:46 jim Exp $";
 #endif
 
 
@@ -1939,7 +1939,7 @@ void XtTextInvalidate(w, from, to)
 {
     TextWidget ctx = (TextWidget) w;
 
-        ctx->text.lastPos = (*ctx->text.source->GetLastPos)(ctx->text.source);
+        ctx->text.lastPos = GETLASTPOS;
         _XtTextPrepareToUpdate(ctx);
         _XtTextNeedsUpdating(ctx, from, to);
         ForceBuildLineTable(ctx);
