@@ -71,7 +71,7 @@ resource.  This makes
 .I xdm
 close all file descriptors, disassociate the controlling terminal and put
 itself in the background when it first starts up (just like the host
-of other daemons).  It is the default behaviour.
+of other daemons).  It is the default behavior.
 .IP "\fB-debug\fP \fIdebug_level\fP"
 Specifies the numeric value for the \fBDisplayManager.debugLevel\fP
 resource.  A non-zero value causes
@@ -285,7 +285,7 @@ or if \fBopenTimeout\fP seconds elapse in any particular attempt,
 terminates and restarts the server, attempting to connect again, this
 process is repeated \fBstartAttempts\fP time, at which point the display is
 declared dead and disabled.  Although
-this behaviour may seem arbitrary, it has been empirically developed and
+this behavior may seem arbitrary, it has been empirically developed and
 works quite well on most systems.  The default values are
 5 for \fBopenDelay\fP, 5 for \fBopenRepeat\fP, 30 for \fBopenTimeout\fP and
 4 for \fBstartAttempts\fP.

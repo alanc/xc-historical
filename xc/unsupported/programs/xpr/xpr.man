@@ -262,11 +262,11 @@ If no \fB\-scale\fP is specified the image will be expanded to fit the
 printable page area.
 
 The default printable page area is 8x10.5 inches. Other paper sizes can
-be accomodated using the \fB\-height\fP and \fB\-width\fP options.
+be accomadated using the \fB\-height\fP and \fB\-width\fP options.
 
 Note that a 1024x768 image fits the default printable area when processed
 at 100 dpi with scale=1, the same image can also be printed using 300 dpi
-with scale=3 but will require considerably more data be transfered to the
+with scale=3 but will require considerably more data be transferred to the
 printer.
 
 \fIxpr\fP may be tailored for use with monochrome PCL printers other than

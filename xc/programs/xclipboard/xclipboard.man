@@ -32,7 +32,7 @@ button to get rid of useless items.
 .PP
 Since \fIxclipboard\fP uses a Text Widget to display the contents of the
 clipboard, text sent to the CLIPBOARD may be re-selected for use in other
-applications.  \fIxclipbaord\fP also responds to requests for the CLIPBOARD
+applications.  \fIxclipboard\fP also responds to requests for the CLIPBOARD
 selection from other clients by sending the entire contents of the currently
 displayed buffer.
 .PP

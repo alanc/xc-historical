@@ -62,7 +62,7 @@ This specifies an alternate wtmp file, instead of /usr/adm/wtmp for BSD or
 /usr/adm/wtmp.
 .IP "\fB-u\fP \fIutmp-file\fP"
 This specifies an alternate utmp file, instead of "/etc/utmp".  The special
-name "none" disabbles writing records to /etc/utmp.
+name "none" disables writing records to /etc/utmp.
 .IP "\fB-l\fP \fIline-name\fP"
 This describes the "line" name of the entry.  For terminal sessions,
 this is the final pathname segment of the terminal device filename

@@ -99,7 +99,7 @@ use the same class as the source image.  Alternatively, an exact
 visual id (specific to the server) can be specified, either as a
 hexadecimal number (prefixed with "0x") or as a decimal number.
 Finally, "default" can be specified, meaning to use the same class
-as the colormap of the root window.  Case is not signficant in
+as the colormap of the root window.  Case is not significant in
 any of these strings.
 .SH ENVIRONMENT
 .PP

@@ -43,7 +43,7 @@ is no longer included.
 Installations that run more than one window system will still need to use the
 \fIxinit\fP utility.  However, \fIxinit\fP is to be considered a tool for
 building startup scripts and is not intended for use by end users.  Site
-adminstrators are \fBstrongly\fP urged to build nicer interfaces for novice
+administrators are \fBstrongly\fP urged to build nicer interfaces for novice
 users.
 .PP
 When the sample server starts up, it takes over the display.  If you 
@@ -113,7 +113,7 @@ sets default cursor font.
 sets the default font.
 .TP 8
 .B \-fp \fIfontPath\fP
-sets the search path for fonts.  This path is a comma seperated list of
+sets the search path for fonts.  This path is a comma separated list of
 directories which the sample server searches for font databases.
 .TP 8
 .B \-help
@@ -186,7 +186,7 @@ not typically useful as it doesn't allow xdm to manage the server process,
 it can be used to debug XDMCP implementations, and servers as a sample
 implementation of the server side of XDMCP.  For more information on this
 protocol, see the XDMCP specification in docs/XDMCP/xdmcp.ms.  The following
-options control the behaviour of XDMCP.
+options control the behavior of XDMCP.
 .TP 8
 .B \-query \fIhost-name\fP
 Enable XDMCP and send Query packets to the specified host.
@@ -207,7 +207,7 @@ Normally, the server keeps starting sessions, one after the other.  This
 option makes the server exit after the first session is over.
 .TP 8
 .B \-class \fIdisplay-class\fP
-XDMCP has an addtional display qualifier used in resource lookup for
+XDMCP has an additional display qualifier used in resource lookup for
 display-specific options.  This option sets that value, by default it 
 is "MIT-Unspecified" (not a very useful value).
 .TP 8
@@ -234,14 +234,14 @@ discovered the private key.  But in many environments, this level of
 security is better than the host-based scheme as it allows access control
 per-user instead of per-host.
 .PP
-In addtion, the server provides support for a DES-based authorization
+In addition, the server provides support for a DES-based authorization
 scheme, XDM-AUTHORIZATION-1, which is more secure (given a secure key
 distribution mechanism), but as DES is not generally distributable, the
 implementation is missing routines to encrypt and decrypt the authorization
 data.  This authorization scheme can be used in conjunction with XDMCP's
 authentication scheme, XDM-AUTHENTICATION-1 or in isolation.
 .PP
-The authorzation data is passed to the server in a private file named with
+The authorization data is passed to the server in a private file named with
 the \fB-auth\fP command line option.  Each time the server is about to
 accept the first connection after a reset (or when the server is starting),
 it reads this file.  If this file contains any authorization records, the
@@ -249,7 +249,7 @@ local host is not automatically allowed access to the server, and only
 clients which send one of the authorization records contained in the file in
 the connection setup information will be allowed access.  See the \fIXau\fP
 manual page for a description of the binary format of this file.
-Maintenence of this file, and distribution of its contents to remote sites
+Maintenance of this file, and distribution of its contents to remote sites
 for use there is left as an exercise for the reader.
 .PP
 The sample server also uses a host-based access control list for deciding
@@ -317,7 +317,7 @@ This signal is used quite differently from either of the above.  When the
 server starts, it checks to see if it has inherited SIGUSR1 as SIG_IGN
 instead of the usual SIG_DFL.  In this case, the server sends a SIGUSR1 to
 it's parent process after it has set up the various connection schemes.  Xdm
-uses this feature to recognise when connecting to the server is possible.
+uses this feature to recognize when connecting to the server is possible.
 .SH "FONTS"
 Fonts are usually stored as individual files in directories.  The list of
 directories in which the server looks when trying to open a font is controlled
