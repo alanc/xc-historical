@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.82 89/03/18 16:24:24 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.83 89/03/23 08:51:01 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1631,56 +1631,63 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
     }
     for(pptr = ppix, npix = c; --npix >= 0; pptr++)
     {
-	bits = 0;
-	base = lowbit (rmask);
-	while(1)
+	if (rmask)
 	{
-	    pshared = *ppshared++;
-	    pshared->refcnt = 1 << (g + b);
-	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
+	    bits = 0;
+	    base = lowbit (rmask);
+	    while(1)
 	    {
-		if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
-		    ((*cptr & rmask) == ((*pptr | bits) & rmask)))
+		pshared = *ppshared++;
+		pshared->refcnt = 1 << (g + b);
+		for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 		{
-		    pmap->red[*cptr].fShared = TRUE;
-		    pmap->red[*cptr].co.shco.red = pshared;
+		    if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
+			((*cptr & rmask) == ((*pptr | bits) & rmask)))
+		    {
+			pmap->red[*cptr].fShared = TRUE;
+			pmap->red[*cptr].co.shco.red = pshared;
+		    }
 		}
+		GetNextBitsOrBreak(bits, rmask, base);
 	    }
-	    GetNextBitsOrBreak(bits, rmask, base);
 	}
-
-	bits = 0;
-	base = lowbit (gmask);
-	while(1)
+	if (gmask)
 	{
-	    pshared = *ppshared++;
-	    pshared->refcnt = 1 << (r + b);
-	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
+	    bits = 0;
+	    base = lowbit (gmask);
+	    while(1)
 	    {
-		if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
-		    ((*cptr & gmask) == ((*pptr | bits) & gmask)))
+		pshared = *ppshared++;
+		pshared->refcnt = 1 << (r + b);
+		for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 		{
-		    pmap->red[*cptr].co.shco.green = pshared;
+		    if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
+			((*cptr & gmask) == ((*pptr | bits) & gmask)))
+		    {
+			pmap->red[*cptr].co.shco.green = pshared;
+		    }
 		}
+		GetNextBitsOrBreak(bits, gmask, base);
 	    }
-	    GetNextBitsOrBreak(bits, gmask, base);
 	}
-
-	bits = 0;
-	base = lowbit (bmask);
-	while(1)
+	if (bmask)
 	{
-	    pshared = *ppshared++;
-	    pshared->refcnt = 1 << (r + g);
-	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
+	    bits = 0;
+	    base = lowbit (bmask);
+	    while(1)
 	    {
-		if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
-		    ((*cptr & bmask) == ((*pptr | bits) & bmask)))
+		pshared = *ppshared++;
+		pshared->refcnt = 1 << (r + g);
+		for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 		{
-		    pmap->red[*cptr].co.shco.blue = pshared;
+		    if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
+			((*cptr & bmask) == ((*pptr | bits) & bmask)))
+		    {
+			pmap->red[*cptr].co.shco.blue = pshared;
+		    }
 		}
+		GetNextBitsOrBreak(bits, bmask, base);
 	    }
-	    GetNextBitsOrBreak(bits, bmask, base);
 	}
     }
     DEALLOCATE_LOCAL(psharedList);
