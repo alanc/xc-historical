@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.60 89/10/27 14:01:18 jim Exp $
+ * $XConsortium: gram.y,v 1.61 89/11/01 17:27:48 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.60 89/10/27 14:01:18 jim Exp $";
+"$XConsortium: gram.y,v 1.61 89/11/01 17:27:48 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -231,7 +231,9 @@ stmt		: error
 		    Scr->IconifyByUnmapping = TRUE; }
 		| SHOW_ICONMGR	{ if (Scr->FirstTime) 
 					Scr->ShowIconManager = TRUE; }
-		| TITLEBUTTON string EQUALS action { GotTitleButton ($2, $4); }
+		| TITLEBUTTON string EQUALS action { 
+					  GotTitleButton ($2, $4); 
+					}
 		| button string		{ root = GetRoot($2, 0, 0);
 					  Scr->Mouse[$1][C_ROOT][0].func = F_MENU;
 					  Scr->Mouse[$1][C_ROOT][0].menu = root;
@@ -926,12 +928,13 @@ static void GotTitleButton (bitmapname, func)
     char *bitmapname;
     int func;
 {
-    if (!AddTitleButton (bitmapname, func, Action)) {
+    if (!AddTitleButton (bitmapname, func, Action, pull)) {
 	fprintf (stderr, 
 		 "twm: line %d:  unable to add titlebutton \"%s\"\n",
 		 yylineno, bitmapname);
     }
     Action = "";
+    pull = NULL;
 }
 
 static Bool CheckWarpScreenArg (s)

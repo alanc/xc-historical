@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.93 89/10/27 15:54:31 jim Exp $
+ * $XConsortium: events.c,v 1.94 89/11/01 17:27:44 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.93 89/10/27 15:54:31 jim Exp $";
+"$XConsortium: events.c,v 1.94 89/11/01 17:27:44 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1351,6 +1351,16 @@ HandleButtonRelease()
  ***********************************************************************
  */
 
+static do_menu (menu)
+    MenuRoot *menu;
+{
+    if (!Scr->NoGrabServer)
+	XGrabServer(dpy);
+    PopUpMenu (menu, Event.xbutton.x_root, Event.xbutton.y_root);
+    UpdateMenu();
+}
+
+
 void
 HandleButtonPress()
 {
@@ -1433,9 +1443,15 @@ HandleButtonPress()
 	for (i = 0, tbw = Tmp_win->titlebuttons; i < Scr->TBInfo.nbuttons;
 	     i++, tbw++) {
 	    if (Event.xany.window == tbw->window) {
-		ExecuteFunction (tbw->info->func, tbw->info->action,
-				 Event.xany.window, Tmp_win, &Event,
-				 C_TITLE, FALSE);
+		if (tbw->info->func == F_MENU) {
+		    ButtonEvent = Event;
+		    ButtonWindow = Tmp_win;
+		    do_menu (tbw->info->menuroot);
+		} else {
+		    ExecuteFunction (tbw->info->func, tbw->info->action,
+				     Event.xany.window, Tmp_win, &Event,
+				     C_TITLE, FALSE);
+		}
 		return;
 	    }
 	}
@@ -1540,11 +1556,7 @@ HandleButtonPress()
     RootFunction = NULL;
     if (Scr->Mouse[Event.xbutton.button][Context][modifier].func == F_MENU)
     {
-	if (!Scr->NoGrabServer)
-	    XGrabServer(dpy);
-	PopUpMenu(Scr->Mouse[Event.xbutton.button][Context][modifier].menu, 
-	    Event.xbutton.x_root, Event.xbutton.y_root);
-	UpdateMenu();
+	do_menu (Scr->Mouse[Event.xbutton.button][Context][modifier].menu);
     }
     else if (Scr->Mouse[Event.xbutton.button][Context][modifier].func != NULL)
     {
@@ -1557,11 +1569,7 @@ HandleButtonPress()
     {
 	if (Scr->DefaultFunction.func == F_MENU)
 	{
-	    if (!Scr->NoGrabServer)
-		XGrabServer(dpy);
-	    PopUpMenu(Scr->DefaultFunction.menu, 
-		Event.xbutton.x_root, Event.xbutton.y_root);
-	    UpdateMenu();
+	    do_menu (Scr->DefaultFunction.menu);
 	}
 	else
 	{

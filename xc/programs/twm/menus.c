@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.103 89/11/01 17:27:52 jim Exp $
+ * $XConsortium: menus.c,v 1.104 89/11/01 18:02:43 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.103 89/11/01 17:27:52 jim Exp $";
+"$XConsortium: menus.c,v 1.104 89/11/01 18:02:43 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -199,10 +199,11 @@ Bool AddFuncKey (name, cont, mods, func, win_name, action)
     return True;
 }
 
-int AddTitleButton (bitmapname, func, action)
+int AddTitleButton (bitmapname, func, action, menuroot)
     char *bitmapname;
     int func;
     char *action;
+    MenuRoot *menuroot;
 {
     TitleButton *tb = (TitleButton *) malloc (sizeof(TitleButton));
 
@@ -227,6 +228,7 @@ int AddTitleButton (bitmapname, func, action)
     }
     tb->func = func;
     tb->action = action;
+    tb->menuroot = menuroot;
     Scr->TBInfo.nbuttons++;
     if (Scr->TBInfo.head) {		/* link it into list */
 	TitleButton *tail;
@@ -1083,6 +1085,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     int pulldown;
 {
     static Time last_time = 0;
+    static int calldepth = 0;
 
     char tmp[200];
     char *ptr;

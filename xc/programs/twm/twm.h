@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.39 89/10/27 14:01:38 jim Exp $
+ * $XConsortium: twm.h,v 1.40 89/11/01 17:28:10 jim Exp $
  *
  * twm include file
  *
@@ -141,6 +141,7 @@ typedef struct _TitleButton {
     int dstx, dsty;			/* to where to start copying */
     int func;				/* function to execute */
     char *action;			/* optional action arg */
+    struct MenuRoot *menuroot;		/* menu to pop on F_MENU */
 } TitleButton;
 
 typedef struct _TBWindow {
