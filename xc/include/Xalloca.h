@@ -1,4 +1,4 @@
-/* $XConsortium: copyright.h,v 1.13 95/01/23 21:21:39 gildea Exp $ */
+/* $XConsortium: Xalloca.h,v 1.1 95/05/16 14:13:52 dpw Exp dpw $ */
 
 /*
 
@@ -63,7 +63,7 @@ from the X Consortium.
 #define XALLOCA_H 1
 
 #ifdef INCLUDE_ALLOCA_H
-#include <alloca.h>
+#  include <alloca.h>
 #endif
 
 #ifndef NO_ALLOCA
@@ -72,64 +72,60 @@ from the X Consortium.
  * If you want something other than (DE)ALLOCATE_LOCAL_FALLBACK
  * for ALLOCATE/DEALLOCATE_LOCAL then you add that in here.
  */
-#if defined(__HIGHC__)
-
-#ifndef NCR
-extern char *alloca();
-
-#if HCVERSION < 21003
-#define ALLOCATE_LOCAL(size)	alloca((int)(size))
-pragma on(alloca);
-#else /* HCVERSION >= 21003 */
-#define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
-#endif /* HCVERSION < 21003 */
-#else /* NCR */
-#define ALLOCATE_LOCAL(size)	alloca(size)
-#endif
-
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-
-#endif /* defined(__HIGHC__) */
+#  if defined(__HIGHC__)
+#    ifndef NCR
+       extern char *alloca();
+#      if HCVERSION < 21003
+#        define ALLOCATE_LOCAL(size)	alloca((int)(size))
+         pragma on(alloca);
+#      else /* HCVERSION >= 21003 */
+#        define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
+#      endif /* HCVERSION < 21003 */
+#    else /* NCR */
+#      define ALLOCATE_LOCAL(size)	alloca(size)
+#    endif
+#  define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+#  endif /* defined(__HIGHC__) */
 
 
-#ifdef __GNUC__
-#ifndef alloca
-#define alloca __builtin_alloca
-#endif /* !alloca */
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#else /* ! __GNUC__ */
+#  ifdef __GNUC__
+#    ifndef alloca
+#      define alloca __builtin_alloca
+#    endif /* !alloca */
+#    define ALLOCATE_LOCAL(size) alloca((int)(size))
+#    define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+#  else /* ! __GNUC__ */
 
 /*
  * warning: old mips alloca (pre 2.10) is unusable, new one is built in
  * Test is easy, the new one is named __builtin_alloca and comes
  * from alloca.h which #defines alloca.
  */
-#ifndef NCR
-#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
+#    ifndef NCR
+#      if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix it here.
  */
 /* alloca might be a macro taking one arg (hi, Sun!), so give it one. */
-#define __Xnullarg		/* as nothing */
-char *alloca(__Xnullarg);
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#endif /* who does alloca */
-#endif /* NCR */
-#endif /* __GNUC__ */
+#        define __Xnullarg		/* as nothing */
+         char *alloca(__Xnullarg);
+#        define ALLOCATE_LOCAL(size) alloca((int)(size))
+#        define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+#      endif /* who does alloca */
+#    endif /* NCR */
+#  endif /* __GNUC__ */
 
 #endif /* NO_ALLOCA */
 
 #if !defined(ALLOCATE_LOCAL)
-#if defined(ALLOCATE_LOCAL_FALLBACK) && defined(DEALLOCATE_LOCAL_FALLBACK)
-#define ALLOCATE_LOCAL(_size)  ALLOCATE_LOCAL_FALLBACK(_size)
-#define DEALLOCATE_LOCAL(_ptr) DEALLOCATE_LOCAL_FALLBACK(_ptr)
-#else /* no fallbacks supplied; error */
-#define ALLOCATE_LOCAL(_size)  ALLOCATE_LOCAL_FALLBACK undefined!
-#define DEALLOCATE_LOCAL(_ptr) DEALLOCATE_LOCAL_FALLBACK undefined!
-#endif /* defined(ALLOCATE_LOCAL_FALLBACK && DEALLOCATE_LOCAL_FALLBACK) */
+#  if defined(ALLOCATE_LOCAL_FALLBACK) && defined(DEALLOCATE_LOCAL_FALLBACK)
+#    define ALLOCATE_LOCAL(_size)  ALLOCATE_LOCAL_FALLBACK(_size)
+#    define DEALLOCATE_LOCAL(_ptr) DEALLOCATE_LOCAL_FALLBACK(_ptr)
+#  else /* no fallbacks supplied; error */
+#    define ALLOCATE_LOCAL(_size)  ALLOCATE_LOCAL_FALLBACK undefined!
+#    define DEALLOCATE_LOCAL(_ptr) DEALLOCATE_LOCAL_FALLBACK undefined!
+#  endif /* defined(ALLOCATE_LOCAL_FALLBACK && DEALLOCATE_LOCAL_FALLBACK) */
 #endif /* !defined(ALLOCATE_LOCAL) */
 
 #endif /* XALLOCA_H */
