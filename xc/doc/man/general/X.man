@@ -8,10 +8,10 @@ range of computing and graphics machines.  The core distribution from MIT
 has both client and server support for the following operating systems:
 .sp
 .ce 7
-Ultrix 3.0
-SunOS 4.0.1
-HP-UX 6.01
-Apollo Domain/IX 10.1
+Ultrix 3.1
+SunOS 4.0.3
+HP-UX 6.5
+Apollo Domain/IX 10.2
 A/UX 1.1
 .sp
 Commercial implementations are also available for a much wider range
