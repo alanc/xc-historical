@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.112 89/11/14 18:58:31 jim Exp $
+ * $XConsortium: charproc.c,v 1.113 89/11/15 10:56:53 jim Exp $
  */
 
 
@@ -143,7 +143,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.112 89/11/14 18:58:31 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.113 89/11/15 10:56:53 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2631,11 +2631,13 @@ void HandleSetFont(w, event, params, param_count)
     Cardinal *param_count;	/* unused */
 {
     int fontnum;
-    char *name = NULL;
+    char *name1 = NULL, *name2 = NULL;
 
     if (*param_count == 0) {
 	fontnum = fontMenu_fontdefault;
     } else {
+	int maxparams = 1;		/* total number of params allowed */
+
 	switch (params[0][0]) {
 	  case 'd': case 'D': case '0':
 	    fontnum = fontMenu_fontdefault; break;
@@ -2648,25 +2650,35 @@ void HandleSetFont(w, event, params, param_count)
 	  case '4':
 	    fontnum = fontMenu_font4; break;
 	  case 'e': case 'E':
-	    if (*param_count > 1) name = params[1];
-	    fontnum = fontMenu_fontescape; break;
+	    fontnum = fontMenu_fontescape; maxparams = 3; break;
 	  case 's': case 'S':
-	    if (*param_count > 1) name = params[1];
-	    fontnum = fontMenu_fontsel; break;
+	    fontnum = fontMenu_fontsel; maxparams = 2; break;
 	  default:
 	    Bell();
 	    return;
 	}
+	if (*param_count > maxparams) {	 /* see if extra args given */
+	    Bell();
+	    return;
+	}
+	switch (*param_count) {		/* assign 'em */
+	  case 3:
+	    name2 = params[2];
+	    /* fall through */
+	  case 2:
+	    name1 = params[1];
+	    break;
+	}
     }
 
-    SetVTFont (fontnum, True, name);
+    SetVTFont (fontnum, True, name1, name2);
 }
 
 
-void SetVTFont (i, doresize, name)
+void SetVTFont (i, doresize, name1, name2)
     int i;
     Bool doresize;
-    char *name;
+    char *name1, *name2;
 {
     TScreen *screen = &term->screen;
 
@@ -2675,11 +2687,11 @@ void SetVTFont (i, doresize, name)
 	return;
     }
     if (i == fontMenu_fontsel) {	/* go get the selection */
-	FindFontSelection (name, False);
+	FindFontSelection (name1, False);  /* name1 = atom, name2 is ignored */
 	return;
     }
-    if (!name) name = screen->menu_font_names[i];
-    if (!LoadNewFont(screen, name, NULL, doresize, i)) {
+    if (!name1) name1 = screen->menu_font_names[i];
+    if (!LoadNewFont(screen, name1, name2, doresize, i)) {
 	Bell();
     }
     return;
