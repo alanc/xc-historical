@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.26 93/08/18 15:09:52 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.27 93/09/18 18:13:19 kaleb Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -90,19 +90,19 @@ static char *get_os_name ()
 	FILE *f = NULL;
 
 #ifdef USE_UNAME
-	struct utsname uts;
+	struct utsname utss;
 
-	if (uname (&uts) == 0) {
+	if (uname (&utss) == 0) {
 	    char *os_name;
-	    int len = strlen(uts.sysname);
+	    int len = strlen(utss.sysname);
 #ifndef hpux				/* because of hostname length crock */
-	    len += 1 + strlen(uts.release);
+	    len += 1 + strlen(utss.release);
 #endif
 	    os_name = XtMalloc (len);
-	    strcpy (os_name, uts.sysname);
+	    strcpy (os_name, utss.sysname);
 #ifndef hpux
 	    strcat (os_name, " ");
-	    strcat (os_name, uts.release);
+	    strcat (os_name, utss.release);
 #endif
 	    return os_name;
 	}
