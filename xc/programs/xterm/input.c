@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: input.c,v 1.4 88/08/31 18:46:33 rws Exp $
+ *	$XConsortium: input.c,v 1.5 88/09/06 17:08:05 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_input_c = "$XConsortium: input.c,v 1.4 88/08/31 18:46:33 rws Exp $";
+static char *rcsid_input_c = "$XConsortium: input.c,v 1.5 88/09/06 17:08:05 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@ static char *rcsid_input_c = "$XConsortium: input.c,v 1.4 88/08/31 18:46:33 rws 
 /* input.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: input.c,v 1.4 88/08/31 18:46:33 rws Exp $";
+static char rcs_id[] = "$XConsortium: input.c,v 1.5 88/09/06 17:08:05 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -45,7 +45,7 @@ static char rcs_id[] = "$XConsortium: input.c,v 1.4 88/08/31 18:46:33 rws Exp $"
 #include <stdio.h>
 #include "ptyx.h"
 
-int MetaMode = 1;	/* prefix with ESC when Meta Key is down */
+int MetaMode = 0;	/* prefix with ESC when Meta Key is down */
 
 static XComposeStatus compose_status = {NULL, 0};
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-.\\0123456789XXX=";
@@ -149,8 +149,14 @@ register XKeyPressedEvent *event;
 			TekGINoff();
 			nbytes--;
 		}
+		/* XXX - need to locate meta key */
+		if (nbytes == 1 && event->state & Mod1Mask) {
+			*string |= 0x80;
+		}
+/*
 		if ((nbytes == 1) && MetaMode && (event->state & Mod1Mask))
 			unparseputc(033, pty);
+ */
 		while (nbytes-- > 0)
 			unparseputc(*string++, pty);
 		key = TRUE;
