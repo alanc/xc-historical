@@ -61,27 +61,27 @@
   ;; This macro is for use in a multi-process environment.  It provides
   ;; exclusive access to the local buffer object for request generation and
   ;; reply processing.
-  (macrolet ((with-buffer ((buffer &key timeout) &body body)
-	       ;; Speedup hack for lexically nested with-buffers
-	       `(progn
-		  (progn ,buffer ,@(and timeout `(,timeout)) nil)
-		  ,@body)))
-    ,(if (and (null inline) (macroexpand '(use-closures) env))
-	 `(flet ((.with-buffer-body. () ,@body))
-	    #+ansi-common-lisp
-	    (declare (dynamic-extent #'.with-buffer-body.))
-	    (with-buffer-function ,buffer ,timeout #'.with-buffer-body.))
-       (let ((buf (if (or (symbolp buffer) (constantp buffer))
-		      buffer
-		    '.buffer.)))
-	 `(let (,@(unless (eq buf buffer) `((,buf ,buffer))))
-	    ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
-	    ,(declare-bufmac)
-	    (when (buffer-dead ,buf)
-	      (x-error 'closed-display :display ,buf))
-	    (holding-lock ((buffer-lock ,buf) ,buf "CLX Display Lock"
-			   ,@(and timeout `(:timeout ,timeout)))
-	      ,@body))))))
+  `(macrolet ((with-buffer ((buffer &key timeout) &body body)
+		;; Speedup hack for lexically nested with-buffers
+		`(progn
+		   (progn ,buffer ,@(and timeout `(,timeout)) nil)
+		   ,@body)))
+     ,(if (and (null inline) (macroexpand '(use-closures) env))
+	  `(flet ((.with-buffer-body. () ,@body))
+	     #+ansi-common-lisp
+	     (declare (dynamic-extent #'.with-buffer-body.))
+	     (with-buffer-function ,buffer ,timeout #'.with-buffer-body.))
+	(let ((buf (if (or (symbolp buffer) (constantp buffer))
+		       buffer
+		     '.buffer.)))
+	  `(let (,@(unless (eq buf buffer) `((,buf ,buffer))))
+	     ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
+	     ,(declare-bufmac)
+	     (when (buffer-dead ,buf)
+	       (x-error 'closed-display :display ,buf))
+	     (holding-lock ((buffer-lock ,buf) ,buf "CLX Display Lock"
+			    ,@(and timeout `(:timeout ,timeout)))
+	       ,@body))))))
 
 (defun with-buffer-function (buffer timeout function)
   (declare (type display buffer)
