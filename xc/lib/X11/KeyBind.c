@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.29 87/08/29 13:46:28 toddb Locked $ */
+/* $Header: XKeyBind.c,v 11.30 87/09/01 14:55:18 toddb Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -41,6 +41,57 @@ KeySym XKeycodeToKeysym(dpy, keycode, col)
      return (dpy->keysyms[ind]);
 }
 
+static struct ks_info {
+    char	*ks_name;
+    KeySym	ks_val;
+} keySymInfo[] = {
+#include	"ks_names.h"
+};
+
+KeySym XStringToKeysym(s)
+    char *s;
+{
+    int i;
+
+    /*
+     *	Yes,  yes,  yes.  I know this is a linear search,  and we should
+     *	do better,  but I'm in a hurry right now.
+     */
+
+    for (i = 0; i < ((sizeof keySymInfo)/(sizeof keySymInfo[0])); i++) {
+	if (strcmp(s, keySymInfo[i].ks_name) == 0)
+	    return (keySymInfo[i].ks_val);
+    }
+    return (NoSymbol);
+}
+
+char *XKeysymToString(ks)
+    KeySym ks;
+{
+    int i;
+
+    /*
+     *	Yes,  yes,  yes.  I know this is a linear search,  and we should
+     *	do better,  but I'm in a hurry right now.
+     */
+
+    for (i = 0; i < ((sizeof keySymInfo)/(sizeof keySymInfo[0])); i++) {
+	if (ks == keySymInfo[i].ks_val)
+	    return (keySymInfo[i].ks_name);
+    }
+    return ((char *) NULL);
+}
+
+KeySym XKeycodeToKeysym(dpy, kc, col)
+    Display *dpy;
+    KeyCode kc;
+    int col;
+{
+     if (dpy->keysyms == NULL)
+         Initialize(dpy);
+     return (KeyCodetoKeySym(dpy, kc, col));
+}
+
 KeyCode XKeysymToKeycode(dpy, ks)
     Display *dpy;
     KeySym ks;
@@ -61,6 +112,7 @@ KeyCode XKeysymToKeycode(dpy, ks)
     }
     return (0);
 }
+
 KeySym XLookupKeysym(event, col)
      register XKeyEvent *event;
      int col;
@@ -81,9 +133,10 @@ XRefreshKeyboardMapping(event)
 	         Xfree ((char *)event->display->keysyms);
 	         event->display->keysyms = NULL;
 	    }
-     if(event->request == MappingModifier) 
+     if(event->request == MappingModifier) {
 	    XFreeModifiermap(event->display->modifiermap);
 	    event->display->keysyms = NULL;/* XXX - looks like astorage leak */
+     }
      UnlockDisplay(event->display);
 }
 static InitTranslationList()
