@@ -1198,7 +1198,7 @@
 (defun read-image-xy (bbuf index length data x y width height depth
 		      padded-bytes-per-line padded-bytes-per-plane
 		      unit byte-lsb-first-p bit-lsb-first-p)
-  (declare (type buffer-bytes buffer-bbuf)
+  (declare (type buffer-bytes bbuf)
 	   (type card16 x y width height)
 	   (type array-index index length padded-bytes-per-line
 		 padded-bytes-per-plane)
@@ -2167,7 +2167,7 @@
     (declare (type card16 x)
 	     (type card8 left-pad)
 	     (type (member 8 16 32) unit pad)
-	     (type array-index bits-per-pixel padded-width padded-bytes-per-line
+	     (type array-index bits-per-pixel padded-bytes-per-line
 		   padded-bytes-per-plane length)
 	     (type buffer-bytes obuf))
     (write-z-format-image-x-data
@@ -2429,97 +2429,96 @@
       (declare (type string line)
 	       (type stringable name)
 	       (type list properties))
-      (with-vector (line string)
-	;; Get properties
-	(loop
-	  (setq line (read-line fstream))
-	  (unless (char= (aref line 0) #\#) (return))
-	  (flet ((read-token (line start end)
-		   (let ((*package* (find-package 'keyword))
-			 (*read-base* 10))
-		     (read-from-string
-		       (substitute
-			 #\- #\_
-			 (string-upcase (subseq line start end))
-			 :test #'char=)))))
-	    (when (null name)
-	      (setq name-end (position #\_ line :test #'char= :from-end t)
-		    name (read-token line 8 name-end))
-	      (unless (eq name :image)
-		(setf (getf properties :name) name)))
-	    (let* ((ind-start (index1+ name-end))
-		   (ind-end (position #\Space line :test #'char=
-				      :start ind-start))
-		   (ind (read-token line ind-start ind-end))
-		   (val-start (index1+ ind-end))
-		   (val (read-token line val-start nil)))
-	      (setf (getf properties ind) val))))
-	;; Calculate sizes
-	(multiple-value-bind (width height depth left-pad)
-	    (flet ((extract-property (ind &rest default)
-		     (prog1 (apply #'getf properties ind default)
-			    (remf properties ind))))
-	      (values (extract-property :width)
-		      (extract-property :height)
-		      (extract-property :depth 1)
-		      (extract-property :left-pad 0)))
-	  (declare (type (or null card16) width height)
-		   (type image-depth depth)
-		   (type card8 left-pad))
-	  (unless (and width height) (error "Not a BITMAP file"))
-	  (let* ((bits-per-pixel
-		   (cond ((index> depth 24) 32)
-			 ((index> depth 16) 24)
-			 ((index> depth 8)  16)
-			 ((index> depth 4)   8)
-			 ((index> depth 1)   4)
-			 (t                  1)))
-		 (bits-per-line (index* width bits-per-pixel))
-		 (bytes-per-line (index-ceiling bits-per-line 8))
-		 (padded-bits-per-line
-		   (index* (ceiling bits-per-line 32) 32))
-		 (padded-bytes-per-line
-		   (index-ceiling padded-bits-per-line 8))
-		 (data (make-array (* padded-bytes-per-line height)
-				   :element-type 'card8))
-		 (line-base 0)
-		 (byte 0))
-	    (declare (type array-index bits-per-line bytes-per-line
-			   padded-bits-per-line padded-bytes-per-line
-			   line-base byte)
-		     (type buffer-bytes data))
-	    (with-vector (data buffer-bytes)
-	      (flet ((parse-hex (char)
-		       (second
-			 (assoc char
-				'((#\0  0) (#\1  1) (#\2  2) (#\3  3)
-				  (#\4  4) (#\5  5) (#\6  6) (#\7  7)
-				  (#\8  8) (#\9  6) (#\a 10) (#\b 11)
-				  (#\c 12) (#\d 13) (#\e 14) (#\f 15))
-				:test #'char-equal))))
-		;; Read data
-		;; Note: using read-line instead of read-char would be 20% faster,
-		;;       but would cons a lot of garbage...
-		(dotimes (i height)
-		  (dotimes (j bytes-per-line)
-		    (loop (when (eql (read-char fstream) #\x) (return)))
-		    (setf (aref data (index+ line-base byte))
-			  (index+ (index-ash (parse-hex (read-char fstream)) 4)
-				  (parse-hex (read-char fstream))))
-		    (incf byte))
-		  (setq byte 0
-			line-base (index+ line-base padded-bytes-per-line)))))
-	    ;; Compensate for left-pad in width and x-hot
-	    (index-decf width left-pad)
-	    (when (getf properties :x-hot)
-	      (index-decf (getf properties :x-hot) left-pad))
-	    (create-image
-	      :width width :height height
-	      :depth depth :bits-per-pixel bits-per-pixel
-	      :data data :plist properties :format :z-pixmap
-	      :bytes-per-line padded-bytes-per-line
-	      :unit 32 :byte-lsb-first-p t :bit-lsb-first-p t
-	      :pad 32 :left-pad left-pad)))))))
+      ;; Get properties
+      (loop
+	(setq line (read-line fstream))
+	(unless (char= (aref line 0) #\#) (return))
+	(flet ((read-token (line start end)
+		 (let ((*package* (find-package 'keyword))
+		       (*read-base* 10))
+		   (read-from-string
+		     (substitute
+		       #\- #\_
+		       (string-upcase (subseq line start end))
+		       :test #'char=)))))
+	  (when (null name)
+	    (setq name-end (position #\_ line :test #'char= :from-end t)
+		  name (read-token line 8 name-end))
+	    (unless (eq name :image)
+	      (setf (getf properties :name) name)))
+	  (let* ((ind-start (index1+ name-end))
+		 (ind-end (position #\Space line :test #'char=
+				    :start ind-start))
+		 (ind (read-token line ind-start ind-end))
+		 (val-start (index1+ ind-end))
+		 (val (read-token line val-start nil)))
+	    (setf (getf properties ind) val))))
+      ;; Calculate sizes
+      (multiple-value-bind (width height depth left-pad)
+	  (flet ((extract-property (ind &rest default)
+		   (prog1 (apply #'getf properties ind default)
+			  (remf properties ind))))
+	    (values (extract-property :width)
+		    (extract-property :height)
+		    (extract-property :depth 1)
+		    (extract-property :left-pad 0)))
+	(declare (type (or null card16) width height)
+		 (type image-depth depth)
+		 (type card8 left-pad))
+	(unless (and width height) (error "Not a BITMAP file"))
+	(let* ((bits-per-pixel
+		 (cond ((index> depth 24) 32)
+		       ((index> depth 16) 24)
+		       ((index> depth 8)  16)
+		       ((index> depth 4)   8)
+		       ((index> depth 1)   4)
+		       (t                  1)))
+	       (bits-per-line (index* width bits-per-pixel))
+	       (bytes-per-line (index-ceiling bits-per-line 8))
+	       (padded-bits-per-line
+		 (index* (ceiling bits-per-line 32) 32))
+	       (padded-bytes-per-line
+		 (index-ceiling padded-bits-per-line 8))
+	       (data (make-array (* padded-bytes-per-line height)
+				 :element-type 'card8))
+	       (line-base 0)
+	       (byte 0))
+	  (declare (type array-index bits-per-line bytes-per-line
+			 padded-bits-per-line padded-bytes-per-line
+			 line-base byte)
+		   (type buffer-bytes data))
+	  (with-vector (data buffer-bytes)
+	    (flet ((parse-hex (char)
+		     (second
+		       (assoc char
+			      '((#\0  0) (#\1  1) (#\2  2) (#\3  3)
+				(#\4  4) (#\5  5) (#\6  6) (#\7  7)
+				(#\8  8) (#\9  6) (#\a 10) (#\b 11)
+				(#\c 12) (#\d 13) (#\e 14) (#\f 15))
+			      :test #'char-equal))))
+	      ;; Read data
+	      ;; Note: using read-line instead of read-char would be 20% faster,
+	      ;;       but would cons a lot of garbage...
+	      (dotimes (i height)
+		(dotimes (j bytes-per-line)
+		  (loop (when (eql (read-char fstream) #\x) (return)))
+		  (setf (aref data (index+ line-base byte))
+			(index+ (index-ash (parse-hex (read-char fstream)) 4)
+				(parse-hex (read-char fstream))))
+		  (incf byte))
+		(setq byte 0
+		      line-base (index+ line-base padded-bytes-per-line)))))
+	  ;; Compensate for left-pad in width and x-hot
+	  (index-decf width left-pad)
+	  (when (getf properties :x-hot)
+	    (index-decf (getf properties :x-hot) left-pad))
+	  (create-image
+	    :width width :height height
+	    :depth depth :bits-per-pixel bits-per-pixel
+	    :data data :plist properties :format :z-pixmap
+	    :bytes-per-line padded-bytes-per-line
+	    :unit 32 :byte-lsb-first-p t :bit-lsb-first-p t
+	    :pad 32 :left-pad left-pad))))))
 
 (defun write-bitmap-file (pathname image &optional name)
   ;; Writes an image to a C include file in standard X11 format
