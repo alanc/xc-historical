@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.56 91/05/13 22:21:16 gildea Exp $
+ * $XConsortium: init.c,v 2.57 91/07/02 18:00:58 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -201,7 +201,7 @@ static void PopupAppDefaultsWarning(w, closure, event, cont)
     Boolean *cont;
 {
     if (event->type == MapNotify) {
-	PopupError(
+	PopupError(w,
 "The minimum application default resources\n\
 were not properly installed; many features\n\
 will not work properly, if at all.  See the\n\

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.41 90/01/24 18:07:22 converse Exp $
+ * $XConsortium: pick.c,v 2.42 91/01/10 22:28:57 gildea Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -377,7 +377,6 @@ static void ExecOK(w, closure, call_data)
     char *todate;
     short removeoldmsgs =
 	*((short*)XawToggleGetCurrent(row2->wlist[1]->widget));
-    char str[1000];
     int i, found;
     char *folderpath;
     int cmd_status;
@@ -386,14 +385,16 @@ static void ExecOK(w, closure, call_data)
     XtSetArg(args[0], XtNstring, &toseq);
     XtGetValues(row0->wlist[1]->widget, args, (Cardinal) 1);
     if (strcmp(toseq, "all") == 0) {
-	PopupError("Can't create a sequence called \"all\".");
+	PopupError(pick->scrn->parent,
+		   "Can't create a sequence called \"all\".");
 	return;
     }
     XtSetArg(args[0], XtNstring, &fromseq);
     XtGetValues(row0->wlist[3]->widget, args, (Cardinal) 1);
     if (TocGetSeqNamed(toc, fromseq) == NULL) {
+	char str[200];
 	(void) sprintf(str, "Sequence \"%s\" doesn't exist!", fromseq);
-	PopupError(str);
+	PopupError(pick->scrn->parent, str);
 	return;
     }
 
