@@ -4,7 +4,7 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- * $XConsortium: xwininfo.c,v 1.49 90/12/26 11:47:20 gildea Exp $
+ * $XConsortium: xwininfo.c,v 1.50 91/01/12 11:35:23 rws Exp $
  *
  *	This program will report all relevant information
  *	about a specific window.
@@ -13,13 +13,13 @@
  *		16-Jun-87
  */
 
-#include <stdio.h>
-#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/Xos.h>
 #include <X11/extensions/shape.h>
 #include <X11/Xmu/WinUtil.h>
+#include <stdio.h>
 
 /* Include routines to handle parsing defaults */
 #include "dsimple.h"
@@ -30,7 +30,7 @@
 #define FAILURE 0
 
 Window window;
-static char *window_id_format = " 0x%lx";
+static char *window_id_format = "0x%lx";
 
 /*
  * Report the syntax for calling xwininfo:
@@ -190,6 +190,7 @@ char *bscale(b)
 /* This handler is enabled when we are checking
    to see if the -id the user specified is valid. */
 
+/* ARGSUSED */
 bad_window_handler(disp, err)
     Display *disp;
     XErrorEvent *err;
@@ -197,7 +198,7 @@ bad_window_handler(disp, err)
     char badid[20];
 
     sprintf(badid, window_id_format, err->resourceid);
-    Fatal_Error("No such window with id%s.", badid);
+    Fatal_Error("No such window with id %s.", badid);
     exit (1);
 }
 
@@ -223,7 +224,7 @@ main(argc, argv)
     if (!strcmp(argv[i], "-help"))
       usage();
     if (!strcmp(argv[i], "-int")) {
-      window_id_format = " %ld";
+      window_id_format = "%ld";
       continue;
     }
     if (!strcmp(argv[i], "-children")) {
@@ -317,8 +318,8 @@ main(argc, argv)
     (void) XSetErrorHandler(old_handler);
   }
 
-  printf("\nxwininfo: Window id:");
-  Display_Window_Id(window);
+  printf("\nxwininfo: Window id: ");
+  Display_Window_Id(window, True);
   if (children || tree)
     Display_Tree_Info(window, tree);
   if (stats)
@@ -349,8 +350,8 @@ typedef struct {
 static char _lookup_buffer[100];
 
 char *Lookup(code, table)
-long code;
-binding *table;
+    int code;
+    binding *table;
 {
 	char *name;
 
@@ -373,28 +374,33 @@ binding *table;
  * Routine to display a window id in dec/hex with name if window has one
  */
 
-Display_Window_Id(window)
-     Window window;
+Display_Window_Id(window, newline_wanted)
+    Window window;
+    Bool newline_wanted;
 {
     char *win_name;
     
     printf(window_id_format, window);         /* print id # in hex/dec */
+
     if (!window) {
-	printf(" (none)\n");
-	return;
+	printf(" (none)");
+    } else {
+	if (window == RootWindow(dpy, screen)) {
+	    printf(" (the root window)");
+	}
+	if (!XFetchName(dpy, window, &win_name)) { /* Get window name if any */
+	    printf(" (has no name)");
+	} else if (win_name) {
+	    printf(" \"%s\"", win_name);
+	    XFree(win_name);
+	} else
+	    printf(" (has no name)");
     }
-    if (window == RootWindow(dpy, screen)) {
-	printf(" (the root window)");
-    }
-    if (!XFetchName(dpy, window, &win_name)) { /* Get window name if any */
-	printf(" (has no name)\n");
-	return;
-    }
-    if (win_name) {
-	printf(" \"%s\"\n", win_name);
-	XFree(win_name);
-    } else
-	printf(" (has no name)\n");
+
+    if (newline_wanted)
+	printf("\n");
+
+    return;
 }
 
 
@@ -741,7 +747,7 @@ Display_Events_Info(window)
 
 
 /*
- * Display root, parent, and (recursively) children window IDs of window
+ * Display root, parent, and (recursively) children information
  */
 Display_Tree_Info(window, recurse)
      Window window;
@@ -756,20 +762,23 @@ display_tree_info_1(window, recurse, level)
      int level;			/* recursion level */
 {
   int i, j;
+  int rel_x, rel_y, abs_x, abs_y;
+  unsigned int width, height, border, depth;
   Window root_win, parent_win;
   unsigned int num_children;
   Window *child_list;
-  
+  XClassHint classhint;
+
   if (!XQueryTree(dpy, window, &root_win, &parent_win, &child_list,
 		  &num_children))
     Fatal_Error("Can't query window tree.");
 
   if (level == 0) {
     printf("\n");
-    printf("  Root window id:");
-    Display_Window_Id(root_win);
-    printf("  Parent window id:");
-    Display_Window_Id(parent_win);
+    printf("  Root window id: ");
+    Display_Window_Id(root_win, True);
+    printf("  Parent window id: ");
+    Display_Window_Id(parent_win, True);
   }
 
   if (level == 0  ||  num_children > 0) {
@@ -782,8 +791,34 @@ display_tree_info_1(window, recurse, level)
   for (i = (int)num_children - 1; i >= 0; i--) {
     printf("     ");
     for (j=0; j<level; j++) printf("   ");
-    printf("window id:"); 
-    Display_Window_Id(child_list[i]);
+    Display_Window_Id(child_list[i], False);
+    printf(": (");
+    if(XGetClassHint(dpy, child_list[i], &classhint)) {
+	if(classhint.res_name) {
+	    printf("\"%s\" ", classhint.res_name);
+	    XFree(classhint.res_name);
+	} else
+	    printf("(none) ");
+	if(classhint.res_class) {
+	    printf("\"%s\") ", classhint.res_class);
+	    XFree(classhint.res_class);
+	} else
+	    printf("(none)) ");
+    } else
+	printf(") ");
+
+    if (XGetGeometry(dpy, child_list[i], &root_win,
+		     &rel_x, &rel_y, &width, &height, &border, &depth)) {
+	Window child;
+
+	printf (" %ux%u+%d+%d", width, height, rel_x, rel_y);
+	if (XTranslateCoordinates (dpy, child_list[i], root_win,
+				   0 ,0, &abs_x, &abs_y, &child)) {
+	    printf ("  +%d+%d", abs_x - border, abs_y - border);
+	}
+    }
+    printf("\n");
+    
     if (recurse)
 	display_tree_info_1(child_list[i], 1, level+1);
   }
@@ -960,8 +995,8 @@ Display_WM_Info(window)
 		 Lookup(wmhints->input, _bool));
 
 	if (flags & IconWindowHint) {
-		printf("      Icon window id:");
-		Display_Window_Id(wmhints->icon_window);
+		printf("      Icon window id: ");
+		Display_Window_Id(wmhints->icon_window, True);
 	}
 
 	if (flags & IconPositionHint)
