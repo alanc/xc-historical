@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.8 93/09/24 12:15:21 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.9 93/09/24 15:58:30 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -194,13 +194,29 @@ IceReplyWaitInfo *replyWait;
 	{
 	    smPropertiesReplyMsg 	*pMsg;
 	    char 			*pData;
+	    char			*tempBuf = NULL;
+	    unsigned long 		bytes;
 	    int				numProps;
 	    SmProp			*props;
 	    _SmcPropReplyWait 		*next;
 
-	    IceReadCompleteMessage (iceConn,
-		SIZEOF (smPropertiesReplyMsg),
-		smPropertiesReplyMsg, pMsg, pData);
+	    IceReadMessageHeader (iceConn, SIZEOF (smPropertiesReplyMsg),
+		smPropertiesReplyMsg, pMsg);
+
+	    bytes = (pMsg->length << 3) - (SIZEOF (smPropertiesReplyMsg) - 8);
+
+	    if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
+	    {
+		IceReadData (iceConn, bytes, iceConn->inbufptr);
+		pData = iceConn->inbufptr;
+		iceConn->inbufptr += bytes;
+	    }
+	    else
+	    {
+		tempBuf = (char *) malloc ((unsigned) bytes);
+		pData = tempBuf;
+		IceReadData (iceConn, bytes, tempBuf);
+	    }
 
 	    EXTRACT_LISTOF_PROPERTY (pData, swap, numProps, props);
 
@@ -211,6 +227,9 @@ IceReplyWaitInfo *replyWait;
 
 	    free ((char *) smcConn->prop_reply_waits);
 	    smcConn->prop_reply_waits = next;
+
+	    if (tempBuf)
+		free (tempBuf);
 	}
 	break;
 
@@ -427,12 +446,28 @@ Bool		 swap;
     {
 	smSetPropertiesMsg 	*pMsg;
 	char 			*pData;
+	char			*tempBuf = NULL;
+	unsigned long 		bytes;
 	SmProp			*props = NULL;
 	int 			numProps;
 	
-	IceReadCompleteMessage (iceConn,
-	    SIZEOF (smSetPropertiesMsg),
-	    smSetPropertiesMsg, pMsg, pData);
+	IceReadMessageHeader (iceConn, SIZEOF (smSetPropertiesMsg),
+	    smSetPropertiesMsg, pMsg);
+
+	bytes = (pMsg->length << 3) - (SIZEOF (smSetPropertiesMsg) - 8);
+
+	if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
+	{
+	    IceReadData (iceConn, bytes, iceConn->inbufptr);
+	    pData = iceConn->inbufptr;
+	    iceConn->inbufptr += bytes;
+	}
+	else
+	{
+	    tempBuf = (char *) malloc ((unsigned) bytes);
+	    pData = tempBuf;
+	    IceReadData (iceConn, bytes, tempBuf);
+	}
 
 	if (swap)
 	    pMsg->sequenceRef = lswapl (pMsg->sequenceRef);
@@ -442,6 +477,9 @@ Bool		 swap;
 	(*smsConn->callbacks.set_properties.callback) (smsConn,
 	    smsConn->callbacks.set_properties.manager_data,
             pMsg->sequenceRef, numProps, props);
+
+	if (tempBuf)
+	    free (tempBuf);
 
 	break;
     }
