@@ -1,6 +1,7 @@
 /*
- * $XConsortium: main.c,v 1.39 89/12/13 09:16:54 rws Exp $
+ * $XConsortium: main.c,v 1.40 89/12/16 21:03:37 rws Exp $
  */
+#include <X11/Xdefs.h>
 #include "def.h"
 #ifdef hpux
 #define sigvec sigvector
@@ -66,18 +67,13 @@ catch (sig)
 }
 
 #ifndef USG
-struct sigvec sig_vec = {
-	catch,
-	 (1<<(SIGINT -1))
-	|(1<<(SIGQUIT-1))
-	|(1<<(SIGBUS-1))
-	|(1<<(SIGILL-1))
-	|(1<<(SIGSEGV-1))
-	|(1<<(SIGHUP-1))
-	|(1<<(SIGPIPE-1))
-	|(1<<(SIGSYS-1)),
-	0
-};
+#ifndef _POSIX_SOURCE
+#define sigaction sigvec
+#define sa_handler sv_handler
+#define sa_mask sv_mask
+#define sa_flags sv_flags
+#endif
+struct sigaction sig_act;
 #endif /* USG */
 
 main(argc, argv)
@@ -216,13 +212,35 @@ main(argc, argv)
 	signal (SIGSEGV, catch);
 	signal (SIGSYS, catch);
 #else
-	sigvec(SIGHUP, &sig_vec, (struct sigvec *)0);
-	sigvec(SIGINT, &sig_vec, (struct sigvec *)0);
-	sigvec(SIGQUIT, &sig_vec, (struct sigvec *)0);
-	sigvec(SIGILL, &sig_vec, (struct sigvec *)0);
-	sigvec(SIGBUS, &sig_vec, (struct sigvec *)0);
-	sigvec(SIGSEGV, &sig_vec, (struct sigvec *)0);
-	sigvec(SIGSYS, &sig_vec, (struct sigvec *)0);
+	sig_act.sa_handler = catch;
+#ifdef _POSIX_SOURCE
+	sigemptyset(&sig_act.sa_mask);
+	sigaddset(&sig_act.sa_mask, SIGINT);
+	sigaddset(&sig_act.sa_mask, SIGQUIT);
+	sigaddset(&sig_act.sa_mask, SIGBUS);
+	sigaddset(&sig_act.sa_mask, SIGILL);
+	sigaddset(&sig_act.sa_mask, SIGSEGV);
+	sigaddset(&sig_act.sa_mask, SIGHUP);
+	sigaddset(&sig_act.sa_mask, SIGPIPE);
+	sigaddset(&sig_act.sa_mask, SIGSYS);
+#else
+	sig_act.sa_mask = ((1<<(SIGINT -1))
+			   |(1<<(SIGQUIT-1))
+			   |(1<<(SIGBUS-1))
+			   |(1<<(SIGILL-1))
+			   |(1<<(SIGSEGV-1))
+			   |(1<<(SIGHUP-1))
+			   |(1<<(SIGPIPE-1))
+			   |(1<<(SIGSYS-1)));
+#endif
+	sig_act.sa_flags = 0;
+	sigaction(SIGHUP, &sig_act, (struct sigaction *)0);
+	sigaction(SIGINT, &sig_act, (struct sigaction *)0);
+	sigaction(SIGQUIT, &sig_act, (struct sigaction *)0);
+	sigaction(SIGILL, &sig_act, (struct sigaction *)0);
+	sigaction(SIGBUS, &sig_act, (struct sigaction *)0);
+	sigaction(SIGSEGV, &sig_act, (struct sigaction *)0);
+	sigaction(SIGSYS, &sig_act, (struct sigaction *)0);
 #endif
 
 	/*
@@ -444,6 +462,7 @@ redirect(line, makefile)
 
 /*VARARGS*/
 fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+    char *x0;
 {
 	warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 	exit (1);
@@ -451,6 +470,7 @@ fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 
 /*VARARGS0*/
 warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+    char *x0;
 {
 	fprintf(stderr, "%s:  ", ProgramName);
 	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
