@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.46 92/07/23 19:17:33 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.47 92/12/31 15:43:27 rws Exp $
  */
 
 /***********************************************************
@@ -129,11 +129,15 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     char temp[BUFSIZ];
 
     if (nbytes == 0) return;
+
+    LockMutex();
     if (!initialized) {
 	XrmInitialize();
 	db = XrmGetFileDatabase(ERRORDB);
 	initialized = True;
     }
+    UnlockMutex();
+
     if (db)
     {
 	sprintf(temp, "%s.%s", name, type);
