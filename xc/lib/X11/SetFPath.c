@@ -1,4 +1,4 @@
-/* $XConsortium: XSetFPath.c,v 11.12 88/09/06 16:10:29 jim Exp $ */
+/* $XConsortium: XSetFPath.c,v 11.13 91/01/06 11:47:58 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -35,6 +35,7 @@ int ndirs;
 		n += safestrlen (directories[i]) + 1;
 	}
 	nbytes = (n + 3) & ~3;
+	req->length += nbytes >> 2;
 	BufAlloc (char *, p, nbytes);
 	/*
 	 * pack into counted strings.
@@ -45,7 +46,6 @@ int ndirs;
 		bcopy (directories[i], p + 1, length);
 		p += length + 1;
 	}
-	req->length += nbytes >> 2;
         UnlockDisplay(dpy);
 	SyncHandle();
 }
