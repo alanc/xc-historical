@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.99 91/03/13 17:30:39 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.100 91/03/13 19:14:02 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -365,6 +365,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #endif					/* as root */
 #ifndef IncRoot
 #define IncRoot $(DESTDIR)/usr/include
+#define AlternateIncRoot NO
+#else
+#define AlternateIncRoot YES
 #endif
 #ifndef UNCOMPRESSPATH
 #define UNCOMPRESSPATH /usr/ucb/uncompress
@@ -678,7 +681,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 
           DESTDIR = DestDir		/* root of install */
 #ifdef UseInstalled
+#if AlternateIncRoot
      TOP_INCLUDES = -I$(INCROOT)	/* def: for alternative /usr/include */
+#endif
 #else
      TOP_INCLUDES = -I$(TOP)		/* def: for builds within tree */
 #endif
