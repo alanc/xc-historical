@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.21 90/01/20 11:45:34 rws Exp $ */
+/* $XConsortium: events.c,v 5.22 90/03/08 11:27:15 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -289,6 +289,7 @@ CheckPhysLimits(cursor, generateEvents, pScreen)
 	pScreen = new.pScreen;
     (*pScreen->CursorLimits) (pScreen, cursor, &sprite.hotLimits,
 			      &sprite.physLimits);
+    (* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
     if (new.x < sprite.physLimits.x1)
 	new.x = sprite.physLimits.x1;
     else
@@ -380,7 +381,6 @@ ConfineCursorToWindow(pWin, generateEvents)
 					       : NullRegion;
 #endif
 	CheckPhysLimits(sprite.current, generateEvents, pScreen);
-	(* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
     }
 }
 
