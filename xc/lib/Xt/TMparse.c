@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: TMparse.c,v 1.68 88/09/05 14:19:05 swick Exp $";
+    "$XConsortium: TMparse.c,v 1.69 88/09/05 14:53:21 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
@@ -84,14 +84,14 @@ static ModifierRec modifiers[] = {
     {"Mod3",	0,	ParseModImmed,Mod3Mask},
     {"Mod4",	0,	ParseModImmed,Mod4Mask},
     {"Mod5",	0,	ParseModImmed,Mod5Mask},
-    {"Meta",	0,	ParseModSym, MetaMask},
-    {"m",       0,      ParseModSym, MetaMask},
-    {"h",       0,      ParseModSym, HyperMask},
-    {"su",      0,      ParseModSym, SuperMask},
-    {"a",       0,      ParseModSym, AltMask},
-    {"Hyper",   0,      ParseModSym, HyperMask},
-    {"Super",   0,      ParseModSym, SuperMask},
-    {"Alt",     0,      ParseModSym, AltMask},
+    {"Meta",	0,	ParseModSym,  NULL},
+    {"m",       0,      ParseModSym,  NULL},
+    {"h",       0,      ParseModSym,  NULL},
+    {"su",      0,      ParseModSym,  NULL},
+    {"a",       0,      ParseModSym,  NULL},
+    {"Hyper",   0,      ParseModSym,  NULL},
+    {"Super",   0,      ParseModSym,  NULL},
+    {"Alt",     0,      ParseModSym,  NULL},
     {"Button1",	0,	ParseModImmed,Button1Mask},
     {"Button2",	0,	ParseModImmed,Button2Mask},
     {"Button3",	0,	ParseModImmed,Button3Mask},
@@ -193,8 +193,7 @@ static EventKey events[] = {
 {"PtrMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"Motion", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"MouseMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
-{"BtnMotion",       NULL, MotionNotify, ParseAddModifier, (Opaque)
-	(Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask)},
+{"BtnMotion",       NULL, MotionNotify,ParseAddModifier,(Opaque)AnyButtonMask},
 {"Btn1Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button1Mask},
 {"Btn2Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button2Mask},
 {"Btn3Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button3Mask},
@@ -774,10 +773,9 @@ static void ParseModSym (name,value,lateBindings,notFlag,valueP)
     Value* valueP;
 {
     int length;
-    String newName;
+    char newName[500];		/* MAXKEYSYMNAMELEN+2 */
     KeySym keysymL, keysymR;
     length = strlen(name);
-    newName = XtMalloc((unsigned) ((length+3)*sizeof(char)));
     XtBCopy(name,newName,length);
     newName[length++] = '_';
     newName[length] = 'L';
@@ -811,7 +809,10 @@ static String ParseAddModifier(str, closure, event, error)
     Boolean* error;
 {
     event->event.modifiers |= (unsigned long)closure;
-    event->event.modifierMask |= (unsigned long)closure;
+    if (((unsigned long)closure) != AnyButtonMask) {
+	/* AnyButtonMask is really a don't-care mask */
+	event->event.modifierMask |= (unsigned long)closure;
+    }
 
     return str;
 }
