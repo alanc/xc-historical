@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.95 89/07/18 15:38:37 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.96 89/07/21 19:56:54 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -672,15 +672,15 @@ int n;
     else
       top = ctx->text.lastPos;
 
-    _XawTextBuildLineTable(ctx, top, FALSE);
     y = IsValidLine(ctx, n) ? lt->info[n].y : ctx->core.height;
+    _XawTextBuildLineTable(ctx, top, FALSE);
     if (top >= ctx->text.lastPos)
       DisplayTextWindow( (Widget) ctx);
     else {
       XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc,
 		0, y, (int)ctx->core.width, (int)ctx->core.height - y,
-		0, lt->info[0].y);
-      (*ClearToBG)(ctx, 0, lt->info[0].y + ctx->core.height - y,
+		0, yMargin);
+      (*ClearToBG)(ctx, 0, yMargin + ctx->core.height - y,
 		   (int) ctx->core.width, (int) ctx->core.height);
 
       if (n < lt->lines) n++; /* update descenders at bottom */
@@ -697,17 +697,17 @@ int n;
     target = lt->top;
     top = (*ctx->text.source->Scan)(ctx->text.source, target, XawstEOL,
 				    XawsdLeft, n+1, FALSE);
-    _XawTextBuildLineTable(ctx, top, FALSE);
 
+    _XawTextBuildLineTable(ctx, top, FALSE);
     y = IsValidLine(ctx, n) ? lt->info[n].y : ctx->core.height;
     updateTo = IsValidLine(ctx, n) ? lt->info[n].position : ctx->text.lastPos;
-    height = IsValidLine(ctx, lt->lines - n) ? lt->info[lt->lines-n].y - 1
+    height = IsValidLine(ctx, lt->lines - n) ? lt->info[lt->lines-n].y -yMargin
 	                                     : ctx->core.height;
 
     if ( updateTo == target ) {
       XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc, 
-		0, lt->info[0].y, (int)ctx->core.width, height, 0, y);
-      (*ClearToBG)(ctx, 0, lt->info[0].y, (int)ctx->core.width, y - 1);
+		0, yMargin, (int) ctx->core.width, height, 0, y);
+      (*ClearToBG)(ctx, 0, yMargin, (int) ctx->core.width, y - yMargin);
       
       _XawTextNeedsUpdating(ctx, lt->info[0].position, updateTo);
       SetScrollBar(ctx);
@@ -730,15 +730,10 @@ caddr_t closure;		/* TextWidget */
 caddr_t callData;		/* #pixels */
 {
   TextWidget ctx = (TextWidget)closure;
-  int apix, a;			/* 'a' is the number of lines to scroll. */
-
+  int lines = (int) callData;
+  lines = (int) (lines * (int) ctx->text.lt.lines) / (int) ctx->core.height;
   _XawTextPrepareToUpdate(ctx);
-  apix = abs((int)callData);
-  for (a= 1; a < ctx->text.lt.lines && apix > ctx->text.lt.info[a + 1].y; a++);
-  if ( ((int) callData) >= 0)
-    _XawTextScroll(ctx, a);
-  else
-    _XawTextScroll(ctx, -a);
+  _XawTextScroll(ctx, lines);
   _XawTextExecuteUpdate(ctx);
 }
 
@@ -1862,7 +1857,7 @@ Cardinal * num_args;
 static XawTextPosition
 FindGoodPosition(ctx, pos)
 TextWidget ctx;
-XawTextPosition;
+XawTextPosition pos;
 {
   if (pos < 0) return(0);
   return ( ((pos > ctx->text.lastPos) ? ctx->text.lastPos : pos) );
