@@ -1,4 +1,4 @@
-/* $XConsortium: record.h,v 1.2 94/01/29 18:01:55 rws Exp $ */
+/* $XConsortium: record.h,v 1.3 94/01/30 23:47:45 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -62,11 +62,11 @@ typedef struct
 {
    union
    {
-        CARD8		type;
-   	xEvent          event;
-   	xResourceReq    req;
-   	xGenericReply   reply;
-   	xError          error;
+       CARD8		type;
+       xEvent		event;
+       xResourceReq	req;
+       xGenericReply	reply;
+       xError		error;
    } u;
 } XRecordDatum;
 
@@ -76,7 +76,8 @@ typedef struct
     unsigned long client_seq;
     int  direction;
     Bool client_swapped;
-    XRecordDatum    *data;
+    XRecordDatum *data;
+    unsigned long data_len;
 } XRecordInterceptData;
 
 _XFUNCPROTOBEGIN
@@ -87,10 +88,10 @@ _XFUNCPROTOBEGIN
 
 extern Status XRecordQueryVersion(
 #if NeedFunctionPrototypes
-	Display* 			/* dpy */,
-        int 				/* cmajor */, 
-        int 				/* cminor */, 
-        XRecordQueryVersionReply* 	/* ret */   
+    Display* 			/* dpy */,
+    int 			/* cmajor */, 
+    int 			/* cminor */, 
+    XRecordQueryVersionReply* 	/* ret */   
 #endif
 );
 
@@ -102,48 +103,59 @@ extern XRecordConfig XRecordCreateCG(
 
 extern Status XRecordFreeCG(
 #if NeedFunctionPrototypes
-    	Display* 		/* dpy */, 
-        XRecordConfig 		/* config */
+    Display* 			/* dpy */, 
+    XRecordConfig 		/* config */
 #endif
 );
 
 extern Status XRecordChangeCG(
 #if NeedFunctionPrototypes
-    	Display* 		/* dpy */, 
-        XRecordConfig 		/* config */, 
-        XID 		        /* id_base */, 
-    	XRecordFlags* 		/* record_flags */,  
-        Bool			/* add/delete id_base */
+    Display* 			/* dpy */, 
+    XRecordConfig 		/* config */, 
+    XID 		        /* id_base */, 
+    XRecordFlags* 		/* record_flags */,  
+    Bool			/* add/delete id_base */
 #endif
 );
 
 extern Status XRecordGetCG(
 #if NeedFunctionPrototypes
-    	Display*		/* dpy */,
-        XRecordConfig 		/* config */, 
-    	XRecordState* 		/* ret */ 
+    Display*			/* dpy */,
+    XRecordConfig 		/* config */, 
+    XRecordState* 		/* ret */ 
+#endif
+);
+
+typedef void (*XRecordInterceptProc) (
+#if NeedFunctionPrototypes
+    Display*			/* display */,
+    XRecordInterceptData*	/* attr */,
+    XPointer			/* arg */
 #endif
 );
 
 extern Status XRecordEnableCG(
 #if NeedFunctionPrototypes
-    	Display*		/* dpy */,
-        XRecordConfig 		/* config */, 
-	void (*) (
-#if NeedNestedPrototypes
-	       Display*			/* display */,
-	       XRecordInterceptData*	/* attr */,
-               XPointer			/* arg */
+    Display*			/* dpy */,
+    XRecordConfig 		/* config */, 
+    XRecordInterceptProc	/* func */,
+    XPointer			/* arg */
 #endif
-             )			/* func */,
+); 
+
+extern Status XRecordEnableCGAsync(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    XRecordConfig 		/* config */, 
+    XRecordInterceptProc	/* func */,
     XPointer			/* arg */
 #endif
 ); 
 
 extern Status XRecordDisableCG(
 #if NeedFunctionPrototypes
-    	Display*		/* dpy */,
-        XRecordConfig 		/* config */
+    Display*			/* dpy */,
+    XRecordConfig 		/* config */
 #endif
 ); 
 
