@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.34 93/08/13 14:34:14 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.35 93/08/31 18:16:48 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -254,15 +254,8 @@ int OpenFrameBuffer(device, screen)
  *-----------------------------------------------------------------------
  */
 /*ARGSUSED*/
-#ifdef SVR4 /* { */
 static void SigIOHandler(sig)
-#else /* }{ */
-static void SigIOHandler(sig, code, scp, addr)
-    int		code;
     int		sig;
-    struct sigcontext *scp;
-    char	*addr;
-#endif /* } */
 {
     sunEnqueueEvents ();
 }
@@ -425,7 +418,7 @@ void InitOutput(pScreenInfo, argc, argv)
 	if (sunFbs[scr].fd != -1)
 	    (void) AddScreen (sunFbData[sunFbs[scr].info.fb_type].init, 
 			      argc, argv);
-    signal(SIGWINCH, SIG_IGN);
+    (void) OsSignal(SIGWINCH, SIG_IGN);
 }
 
 /*-
@@ -461,66 +454,8 @@ void InitInput(argc, argv)
     miRegisterPointerDevice(screenInfo.screens[0], p);
     (void) mieqInit (k, p);
 #ifdef SVR4
-    (void) signal(SIGPOLL, SigIOHandler);
+    (void) OsSignal(SIGPOLL, SigIOHandler);
 #else
-    (void) signal(SIGIO, SigIOHandler);
+    (void) OsSignal(SIGIO, SigIOHandler);
 #endif
 }
-
-/*
- * signal() that provides similiar semantics under both SunOS and Solaris,
- * i.e. POSIX, with automatic restarting of system calls.  The following
- * source is borrowed from W. Richard Stevens book "Advanced Programming 
- * in the UNIX Environment".  
- *
- * Why automatic restarting?  Under SunOS, sigvec() based signals default 
- * to automatic restart.  Under Solaris, sigaction() based signals don't, 
- * at least not according to Stevens, although in his book, he does say 
- * that SunOS sigaction() *does* restart system calls by default, so 
- * there's a bit of redundancy in this implementation of signal() under
- * SunOS.
- * 
- * By placing this here in sunInit.c, we ensure that any other calls to 
- * signal(), e.g. those in .../mit/server/os use this function too and not 
- * the one in libc.  Technically speaking, this is really ugly; somewhere
- * or another it's said (probably ANSI C spec) that you may not use names
- * that are defined in the Standard library. But, short of changing the
- * calls to signal() elsewhere in the server source, there's no way to
- * do this. Sigh.
- *
- * The rest of the server just uses signal() to install signal handlers,
- * and the really esoteric signal stuff is done right here in ddx/sun,
- * namely in sunKbd.c and sunMouse.c, where the keyboard and mouse inputs
- * are bundled off to the dix layer, and they've all been converted to 
- * the POSIX family of functions also.
- */
-
-#ifndef i386 /* { */
-#ifdef SVR4 /* { */
-void (*signal (int signo, void (*func)(int)))(int)
-#else /* }{ */
-void (*signal (signo, func))()
-    int signo;
-    void (*func)();
-#endif /* } */
-{
-    struct sigaction act, oact;
-
-    act.sa_handler = func;
-    sigemptyset (&act.sa_mask);
-    act.sa_flags = 0;
-    if (signo == SIGALRM) {
-#ifdef SA_INTERRUPT /* { */
-	act.sa_flags |= SA_INTERRUPT;
-#endif /* } */
-    } else {
-#ifdef SA_RESTART /* { */
-	act.sa_flags |= SA_RESTART;
-#endif /* } */
-    }
-    if (sigaction (signo, &act, &oact) == -1)
-	oact.sa_handler = (void (*)())SIG_ERR;
-
-    return oact.sa_handler;
-}
-#endif /* } */
