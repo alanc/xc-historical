@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.12 93/09/11 10:18:11 rws Exp $
+ * $XConsortium: locking.c,v 1.13 93/09/14 17:27:44 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -47,13 +47,13 @@ _Xthread_init()
 	_X_TlsIndex = TlsAlloc();
 }
 
-xthread_t
-_Xthread_self()
+struct _xthread_waiter *
+_Xthread_waiter()
 {
-    xthread_t me;
+    struct _xthread_waiter *me;
 
     if (!(me = TlsGetValue(_X_TlsIndex))) {
-	me = (xthread_t)xmalloc(sizeof(struct _xthread_t));
+	me = (struct _xthread_waiter *)xmalloc(sizeof(struct _xthread_waiter));
 	me->sem = CreateSemaphore(NULL, 0, 1, NULL);
 	me->next = NULL;
 	TlsSetValue(_X_TlsIndex, me);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.8 93/09/14 11:47:12 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.9 93/09/14 17:01:47 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -115,9 +115,9 @@ typedef CRITICAL_SECTION *xmutex_t;
     (cv)->waiters = NULL; \
 }
 #define xcondition_clear(cv) DeleteCriticalSection(&(cv)->cs)
-extern struct _xthread_waiter *_Xthread_self();
+extern struct _xthread_waiter *_Xthread_waiter();
 #define xcondition_wait(cv,m) { \
-    struct _xthread_waiter *_tmpthr = _Xthread_self(); \
+    struct _xthread_waiter *_tmpthr = _Xthread_waiter(); \
     EnterCriticalSection(&(cv)->cs); \
     _tmpthr->next = (cv)->waiters; \
     (cv)->waiters = _tmpthr; \
