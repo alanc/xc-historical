@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.38 89/05/02 09:48:44 jim Exp $
+ * $XConsortium: add_window.c,v 1.39 89/05/03 14:37:04 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.38 89/05/02 09:48:44 jim Exp $";
+"$XConsortium: add_window.c,v 1.39 89/05/03 14:37:04 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -199,8 +199,13 @@ IconMgr *iconp;
     tmp_win->old_bw = tmp_win->attr.border_width;
 
     tmp_win->bw = 0;
-    tmp_win->frame_bw = Scr->BorderWidth;
-    tmp_win->title_bw = Scr->BorderWidth;
+    if (Scr->ClientBorderWidth) {
+    	tmp_win->frame_bw = tmp_win->old_bw;
+    	tmp_win->title_bw = tmp_win->old_bw;
+    } else {
+    	tmp_win->frame_bw = Scr->BorderWidth;
+    	tmp_win->title_bw = Scr->BorderWidth;
+    }
 
     tmp_win->title_height = Scr->TitleHeight + tmp_win->title_bw;
     if (Scr->NoTitlebar)
@@ -364,7 +369,7 @@ IconMgr *iconp;
     xwc.y = tmp_win->attr.y + tmp_win->attr.border_width;
     xwc.width = tmp_win->attr.width;
     xwc.height = tmp_win->attr.height;
-    if (Scr->BorderWidth)
+    if (tmp_win->frame_bw)
     {
 	xwc.border_width = 0;
         xwcm |= CWBorderWidth;
@@ -459,8 +464,8 @@ IconMgr *iconp;
 	Scr->d_depth, CopyFromParent,
 	Scr->d_visual, valuemask, &attributes);
     
-    tmp_win->title_x = -Scr->BorderWidth;
-    tmp_win->title_y = -Scr->BorderWidth;
+    tmp_win->title_x = -tmp_win->title_bw;
+    tmp_win->title_y = -tmp_win->title_bw;
 
     if (tmp_win->title_height)
     {

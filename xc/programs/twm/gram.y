@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.33 89/05/02 09:48:53 jim Exp $
+ * $XConsortium: gram.y,v 1.34 89/05/04 15:51:28 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.33 89/05/02 09:48:53 jim Exp $";
+"$XConsortium: gram.y,v 1.34 89/05/04 15:51:28 jim Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -84,7 +84,7 @@ extern int yylineno;
 %token <num> ICONMGR_GEOMETRY SHOW_ICONMGR ICONMGR_NOSHOW MAKE_TITLE
 %token <num> F_RAISELOWER DECORATE_TRANSIENTS RANDOM_PLACEMENT
 %token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING
-%token <num> WARPCURSOR NUMBER BORDERWIDTH TITLE_FONT 
+%token <num> WARPCURSOR NUMBER BORDERWIDTH CLIENT_BORDERWIDTH TITLE_FONT 
 %token <num> RESIZE_FONT NO_TITLE AUTO_RAISE FORCE_ICON NO_HILITE
 %token <num> MENU_FONT ICON_FONT UNKNOWN_ICON ICONS ICON_DIRECTORY
 %token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME 
@@ -188,6 +188,8 @@ stmt		: error
 						Scr->BorderWidth = $2; }
 		| ICON_BORDERWIDTH number{ if (Scr->FirstTime) 
 						Scr->IconBorderWidth = $2; }
+		| CLIENT_BORDERWIDTH	{ if (Scr->FirstTime)
+						Scr->ClientBorderWidth=TRUE; }
 		| NO_TITLE_FOCUS	{ if (Scr->FirstTime) 
 						Scr->TitleFocus = FALSE; }
 		| RANDOM_PLACEMENT	{ if (Scr->FirstTime) 

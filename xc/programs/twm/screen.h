@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.25 89/04/18 13:33:11 jim Exp $
+ * $XConsortium: screen.h,v 1.26 89/05/02 09:49:11 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -151,6 +151,7 @@ typedef struct ScreenInfo
     short ShowVersion;		/*  show the version window on startup */
     short InterpolateMenuColors;/* make pretty menus */
     short NoIconManagers;	/* Don't create any icon managers */
+    short ClientBorderWidth;	/* respect client window border width */
     short FirstTime;		/* first time we've read .twmrc */
 
     FuncKey FuncKeyRoot;

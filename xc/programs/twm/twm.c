@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.40 89/05/02 09:49:13 jim Exp $
+ * $XConsortium: twm.c,v 1.41 89/05/03 14:37:19 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.40 89/05/02 09:49:13 jim Exp $";
+"$XConsortium: twm.c,v 1.41 89/05/03 14:37:19 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -566,6 +566,7 @@ InitVariables()
     Scr->ShowVersion = TRUE;
     Scr->InterpolateMenuColors = FALSE;
     Scr->NoIconManagers = FALSE;
+    Scr->ClientBorderWidth = FALSE;
     Scr->FirstRegion = NULL;
     Scr->LastRegion = NULL;
     Scr->FirstTime = TRUE;
@@ -633,12 +634,11 @@ Done()
 
 	    xwcm = CWX | CWY;
 
-	    xwc.x = x - Scr->BorderWidth;
-	    xwc.y = y - Scr->BorderWidth;
-	    if (Scr->BorderWidth)
-	    {
+	    if (Scr->BorderWidth) {
+	    	xwc.x = x + tmp->frame_bw - tmp->old_bw;
+	    	xwc.y = y + tmp->frame_bw - tmp->old_bw;
+	    	xwc.border_width = tmp->old_bw;
 		xwcm |= CWBorderWidth;
-		xwc.border_width = Scr->BorderWidth;
 	    }
 
 	    XConfigureWindow(dpy, tmp->w, xwcm, &xwc);
