@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.28 88/09/06 15:49:02 jim Exp $ */
+/* $XConsortium: os.h,v 1.29 88/09/20 13:50:03 jim Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -53,12 +53,20 @@ typedef struct _NewClientRec *NewClientPtr;
  * define MALLOC_0_RETURNS_NULL.  This is necessary because some
  * server code expects malloc(0) to return a valid pointer to storage.
  */
-#if defined(ibm032) && !defined(_pcc_)
-char *alloca();
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+#if defined(__HIGHC__)
+
+extern char *alloca();
+
+#if HCVERSION < 21003
+#define ALLOCATE_LOCAL(size)	alloca((int)(size))
 pragma on(alloca);
-#endif
+#else /* HCVERSION >= 21003 */
+#define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
+#endif /* HCVERSION < 21003 */
+
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+
+#endif /* defined(__HIGHC__) */
 
 
 #if defined(vax) || defined(sun)
