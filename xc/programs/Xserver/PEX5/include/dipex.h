@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: dipex.h,v 5.1 91/02/16 09:57:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -119,10 +119,11 @@ typedef struct {
 
 /* these arrays are in dipexExt.c */
 
+#ifndef _DIPEXEXT_
 LOCAL_FLAG unsigned long add_pad_of[];
 
 LOCAL_FLAG unsigned int ColourSpecSizes[];
-
+#endif
 
 
 #define PADDED(PB) (PB + add_pad_of[(PB & 3)]);
