@@ -34,7 +34,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.15 93/12/13 17:21:34 dpw Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.16 94/04/17 20:28:40 dpw Exp dpw $ */
 
 #include "servermd.h"
 
@@ -1165,3 +1165,32 @@ extern int		cfb8StippleRRop;
 #endif /* AVOID_MEMORY_READ */
 
 extern PixelGroup cfb8BitLenMasks[PGSZ];
+
+extern int cfb8SetStipple (
+#if NeedFunctionPrototypes
+    int	/*alu*/,
+    unsigned long /*fg*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern int cfb8SetOpaqueStipple (
+#if NeedFunctionPrototypes
+    int /*alu*/,
+    unsigned long /*fg*/,
+    unsigned long /*bg*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern int cfb8ComputeClipMasks32 (
+#if NeedFunctionPrototypes
+    BoxPtr	/*pBox*/,
+    int		/*numRects*/,
+    int		/*x*/,
+    int		/*y*/,
+    int		/*w*/,
+    int		/*h*/,
+    CARD32 * /*clips*/
+#endif
+);

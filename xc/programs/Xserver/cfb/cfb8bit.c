@@ -1,4 +1,4 @@
-/* $XConsortium: cfb8bit.c,v 1.11 94/04/12 17:26:06 dpw Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.12 94/04/17 20:28:39 dpw Exp dpw $ */
 /*
 
 Copyright (c) 1989, 1994  X Consortium
@@ -217,7 +217,9 @@ unsigned long	fg, planemask;
 	cfb8StippleAnd[s] = and | ~c;
 	cfb8StippleXor[s] = xor & c;
     }
+    return TRUE;
 }
+
 
 int
 cfb8SetOpaqueStipple (alu, fg, bg, planemask)
@@ -249,6 +251,7 @@ unsigned long	fg, bg, planemask;
 	cfb8StippleAnd[s] = (andfg | ~c) & (andbg | c);
 	cfb8StippleXor[s] = (xorfg & c) | (xorbg & ~c);
     }
+    return TRUE;
 }
 
 /*
