@@ -950,7 +950,7 @@ Test test[] = {
 		VALL, ROP, 0,
 		{4, 100}},
   {"-shmput500", "ShmPutImage 500x500 square",
-		InitShmPutImage, DoShmPutImage, MidCopyPix, EndGetImage,
+		InitShmPutImage, DoShmPutImage, MidCopyPix, EndShmPutImage,
 		VALL, ROP, 0,
 		{4, 500}},
 #endif
