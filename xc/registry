@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.70 92/09/09 09:44:22 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.71 92/09/09 09:46:33 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -13,6 +13,7 @@ Name						Reference
 "BBN"						[61]
 "CRAB"						[84]
 "CRUC"						[30]
+"DEC"						[82]
 "DG"						[48]
 "ES"						[75]
 "FXD"						[55]
@@ -236,6 +237,7 @@ String						Reference
 "Crab Advanced Technologies Ltd"		[84]
 "Crucible"					[30]
 "Data General Corporation"			[48]
+"Digital Equipment Corporation"			[82]
 "Evans & Sutherland"				[75]
 "FUJITSU LIMITED"				[87]
 "International Business Machines"		[33]
