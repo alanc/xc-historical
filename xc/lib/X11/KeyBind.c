@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.32 87/09/03 21:01:27 toddb Locked $ */
+/* $Header: XKeyBind.c,v 11.33 87/09/04 16:59:43 newman Locked $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -11,6 +11,8 @@
 #include "Xutil.h"
 #include "keysym.h"
 #include <stdio.h>
+
+#define HAS_CTRL(c)  ((c) >= '@' && (c) <= '\0177')
 
 struct XKeytrans {
 	struct XKeytrans *next;/* next on list */
@@ -235,7 +237,9 @@ int XLookupString (event, buffer, nbytes, keysym, status)
             buf[0] = byte4;
 	    /* if X keysym, convert to ascii by grabbing low 7 bits */
 	    if (byte3 == 0xFF) buf[0] &= 0x7F;
-	    if (event->state & ControlMask) buf[0] = buf[0] & 0x1F;
+	    /* only apply Control key if it makes sense, else ignore it */
+	    if ((event->state & ControlMask) && HAS_CTRL(buf[0]))
+	        buf[0] = buf[0] & 0x1F;
      	    length = 1;
       }
       if (length > nbytes) length = nbytes;
