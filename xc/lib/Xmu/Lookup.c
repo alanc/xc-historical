@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lookup.c,v 1.0 88/10/09 14:25:16 rws Exp $";
+	"$XConsortium: Lookup.c,v 1.1 88/10/10 09:45:21 rws Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -16,11 +16,18 @@ static char rcsid[] =
  *
  */
 
+/* XXX
+ * These routines are probably a bit buggy.  The goal is that they
+ * actually return a a standaard character set.  It is likely that in
+ * some cases the least significant byte of the keysym does not match
+ * the standard character set representation.  Also, there are probably
+ * characters in Latin<N-1> that belong in Latin<N>.
+ */
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 /* return 7-bit ASCII plus least significant byte from specified keysym set */
-/* XXX for LatinN, we need to reincorporate missing chars from Latin<N-1> */
 int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
     register XKeyEvent *event;
     char *buffer;
