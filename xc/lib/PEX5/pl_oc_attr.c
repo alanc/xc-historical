@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_attr.c,v 1.13 92/05/07 23:28:43 mor Exp $ */
+/* $XConsortium: pl_oc_attr.c,v 1.1 92/05/08 15:13:14 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -573,7 +573,7 @@ INPUT PEXReflectionAttributes	*reflectionAttr;
 {
     PEXAddSimpleOC (display, resource_id, req_type, PEXOCReflectionAttributes,
 	sizeof (PEXReflectionAttributes) -
-	AdjustSizeFromType (reflectionAttr->specular_color.color_type),
+	AdjustSizeFromType (reflectionAttr->specular_color.type),
     	reflectionAttr);
 }
 
@@ -688,7 +688,7 @@ INPUT PEXReflectionAttributes	*reflectionAttr;
 {
     PEXAddSimpleOC (display, resource_id, req_type,
 	PEXOCBFReflectionAttributes, sizeof (PEXReflectionAttributes) -
- 	AdjustSizeFromType (reflectionAttr->specular_color.color_type),
+ 	AdjustSizeFromType (reflectionAttr->specular_color.type),
      	reflectionAttr);
 }
 
@@ -992,6 +992,8 @@ INPUT PEXMatrix		transform;
     PEXInitOC (display, resource_id, req_type, PEXOCLocalTransform, 
 	LENOF (pexLocalTransform), 0, pexLocalTransform, pReq);
 
+    if (pReq == NULL) return;
+
     pReq->compType = compType;
     COPY_AREA (transform, pReq->matrix, sizeof (pexMatrix));
 
@@ -1013,6 +1015,8 @@ INPUT PEXMatrix3x3	transform;
 
     PEXInitOC (display, resource_id, req_type, PEXOCLocalTransform2D, 
 	LENOF (pexLocalTransform2D), 0, pexLocalTransform2D, pReq);
+
+    if (pReq == NULL) return;
 
     pReq->compType = compType;
     COPY_AREA (transform, pReq->matrix3X3, sizeof (pexMatrix3X3));
@@ -1321,7 +1325,7 @@ INPUT PEXPSCData	*pscData;
     }
     else if (pscType == PEXPSCMCLevelCurves || pscType == PEXPSCWCLevelCurves)
     {
-	lenofData = NUMWORDS (sizeof (PEXPSCLevelCurves) +
+	lenofData = NUMWORDS (sizeof (pexPSC_LevelCurves) +
 		(pscData->level_curves.count * sizeof (PEXCoord)));
     }
 
@@ -1345,7 +1349,22 @@ INPUT PEXPSCData	*pscData;
      */
 
     if (lenofData > 0)
-	PEXCopyWordsToOC (display, lenofData, (char *) pscData);
+    {
+	if (pscType == PEXPSCIsoCurves)
+	{
+	    PEXCopyWordsToOC (display, lenofData, (char *) pscData);
+	}
+	else if (pscType == PEXPSCMCLevelCurves ||
+	    pscType == PEXPSCWCLevelCurves)
+	{
+	    PEXCopyBytesToOC (display,  sizeof (pexPSC_LevelCurves),
+		(char *) pscData);
+
+	    PEXCopyBytesToOC (display,
+		pscData->level_curves.count * sizeof (PEXCoord),
+		(char *) (pscData->level_curves.parameters));
+	}
+    }
 
     PEXFinishOC (display);
 }
