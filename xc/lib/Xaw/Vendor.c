@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.15 91/01/06 16:08:45 rws Exp $ */
+/* $XConsortium: Vendor.c,v 1.16 91/01/11 18:35:05 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -117,7 +117,7 @@ externaldef(vendorshellwidgetclass) WidgetClass vendorShellWidgetClass =
 static void XawVendorShellClassInitialize()
 {
     static XtConvertArgRec screenConvertArg[] = {
-        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
+        {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.screen),
 	     sizeof(Screen *)}
     };
 
