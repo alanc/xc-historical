@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.16 91/06/07 17:29:12 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.17 91/06/07 17:36:29 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -753,6 +753,8 @@ LoadColornameDB()
     struct stat txt;
     int length;
 
+    /* use and name of this env var is not part of the standard */
+    /* implementation-dependent feature */
     if ((pathname = getenv("XCMSDB")) == NULL) {
 	pathname = XCMSDB;
     }

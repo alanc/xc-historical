@@ -1,4 +1,4 @@
-/* $XConsortium: XStrKeysym.c,v 11.13 91/04/08 17:10:57 rws Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.14 91/06/07 17:37:03 rws Exp $ */
 /* Copyright 1985, 1987, 1990 Massachusetts Institute of Technology */
 
 /*
@@ -49,6 +49,8 @@ _XInitKeysymDB()
 	char *dbname;
 
 	XrmInitialize();
+	/* use and name of this env var is not part of the standard */
+	/* implementation-dependent feature */
 	dbname = getenv("XKEYSYMDB");
 	if (!dbname)
 	    dbname = KEYSYMDB;
