@@ -174,3 +174,8 @@ o The DESCRIBE-WINDOW debug utility has been fixed to not use strange
   lisp machine format codes.
 
 o Numerous Allegro specific changes in support of Allegro CL version 4.0.
+
+R4.5 changes:
+
+o COMPILE-CLX changed to get compiler switches for #+mips right.
+
