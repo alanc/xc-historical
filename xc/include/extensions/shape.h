@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.12 89/10/08 19:22:37 jim Exp $ */
+/* $XConsortium: shape.h,v 1.13 91/01/11 20:51:06 converse Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_
@@ -102,11 +102,7 @@ extern void XShapeCombineRegion (
     int		/* dest_kind */,
     int		/* x_off */,
     int		/* y_off */,
-#ifdef _XSHAPE_C_
-    REGION*	/* region */,
-#else
     Region	/* region */,
-#endif
     int		/* op */
 #endif
 );
