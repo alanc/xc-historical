@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.164 90/12/17 12:00:59 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.165 90/12/19 20:06:15 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -200,30 +200,31 @@ static String XtGetRootDirName(buf)
      return buf;
 }
 
-static XrmDatabase GetAppSystemDefaults(dpy)
-     Display *dpy;
+static Status CombineAppSystemDefaults(dpy, pdb)
+    Display *dpy;
+    XrmDatabase *pdb;
 {
     char	*filename;
-    XrmDatabase rdb;
+    Status	res;
 
     if ((filename = XtResolvePathname(dpy, "app-defaults",
 				      NULL, NULL, NULL, NULL, 0, NULL))
 	== NULL) {
-	return NULL;
+	return 0;
     }
 
-    rdb = XrmGetFileDatabase(filename);
+    res = XrmCombineFileDatabase(filename, pdb, False);
     XtFree(filename);
-    return rdb;
+    return res;
 }
 
-static XrmDatabase GetAppUserDefaults(dpy)
+static void CombineAppUserDefaults(dpy, pdb)
     Display *dpy;
+    XrmDatabase *pdb;
 {
     char* filename;
     char* path;
     Boolean deallocate = False;
-    XrmDatabase rdb;
     extern char *getenv();
 
     if ((path = getenv("XUSERFILESEARCHPATH")) == NULL) {
@@ -231,32 +232,31 @@ static XrmDatabase GetAppUserDefaults(dpy)
 	char homedir[MAXPATHLEN];
 	XtGetRootDirName(homedir);
 	if ((old_path = getenv("XAPPLRESDIR")) == NULL) {
-	    char *path_default = "%s/%%L/%%N:%s/%%l/%%N:%s/%%N";
+	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N";
 	    if ((
-	      path = ALLOCATE_LOCAL(3*strlen(homedir) + strlen(path_default)))
+	      path = ALLOCATE_LOCAL(6*strlen(homedir) + strlen(path_default)))
 		== NULL) _XtAllocError(NULL);
-	    sprintf( path, path_default, homedir, homedir, homedir );
+	    sprintf( path, path_default,
+		    homedir, homedir, homedir, homedir, homedir, homedir );
 	} else {
-	    char *path_default = "%s/%%L/%%N:%s/%%l/%%N:%s/%%N:%s/%%N";
+	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N:%s/%%N";
 	    if ((
-	      path = ALLOCATE_LOCAL( 3*strlen(old_path)
+	      path = ALLOCATE_LOCAL( 8*strlen(old_path)
 				     + strlen(homedir) + strlen(path_default)))
 		== NULL) _XtAllocError(NULL);
-	    sprintf(path, path_default, old_path, old_path, old_path, homedir);
+	    sprintf(path, path_default, old_path, old_path, old_path, homedir,
+		    old_path, old_path, old_path, homedir );
 	}
 	deallocate = True;
     }
 
-    if ((filename = XtResolvePathname(dpy, NULL, NULL, NULL, path, NULL, 0, NULL))
-	== NULL)
-	rdb = NULL;
-    else {
-	rdb = XrmGetFileDatabase(filename);
+    filename = XtResolvePathname(dpy, NULL, NULL, NULL, path, NULL, 0, NULL);
+    if (filename) {
+	(void)XrmCombineFileDatabase(filename, pdb, False);
 	XtFree(filename);
     }
 
     if (deallocate) DEALLOCATE_LOCAL(path);
-    return rdb;
 }
 
 static XrmDatabase GetUserDefaults(dpy)
@@ -277,7 +277,8 @@ static XrmDatabase GetUserDefaults(dpy)
 	return rdb;
 }
 
-static XrmDatabase GetEnvironmentDefaults()
+static void CombineEnvironmentDefaults(pdb)
+    XrmDatabase *pdb;
 {
 	XrmDatabase rdb;
 	extern char *getenv();
@@ -292,53 +293,44 @@ static XrmDatabase GetEnvironmentDefaults()
 	    (void) _XtGetHostname (filename+len, MAXPATHLEN-len);
 	}
 
-	rdb = XrmGetFileDatabase(filename);
-	return rdb;
+	(void)XrmCombineFileDatabase(filename, pdb, False);
 }
 
-static XrmDatabase GetFallbackResourceDatabase(dpy)
+static void CombineFallbackDefaults(dpy, pdb)
         Display * dpy;
+        XrmDatabase *pdb;
 {
 	XtPerDisplay pd = _XtGetPerDisplay(dpy);
         XrmDatabase db = NULL;
 	String *res;
 
 	if ( (res = pd->appContext->fallback_resources) == NULL)
-	    return(NULL);
+	    return;
 	
 	for ( ; *res != NULL ; res++) {
 	    XrmPutLineResource(&db, (char*)*res);
 	}
 
-	return(db);
+	(void)XrmCombineDatabase(db, pdb, False);
 }
 
-static XrmDatabase GetInitialResourceDatabase(dpy, user_db)
+static XrmDatabase GetInitialResourceDatabase(dpy, cmd_db, user_db)
 	Display *dpy;
+        XrmDatabase cmd_db;
         XrmDatabase user_db;
 {
-	XrmDatabase rdb;
-	XrmDatabase db = NULL;
+	XrmDatabase db = cmd_db;
 
-	if ( (rdb = GetAppSystemDefaults(dpy)) != NULL) 
-	    XrmMergeDatabases(rdb, &db);
-	else if ( (rdb = GetFallbackResourceDatabase(dpy)) != NULL )
-	    XrmMergeDatabases(rdb, &db);
-	
-	if ( (rdb = GetAppUserDefaults(dpy)) != NULL )
-	    XrmMergeDatabases(rdb, &db);
-
-	if ( user_db != NULL ) 
-	    XrmMergeDatabases(user_db, &db);
-
-	if ( (rdb = GetEnvironmentDefaults()) != NULL )
-	    XrmMergeDatabases(rdb, &db);
-
-	if (db == NULL)
+	CombineEnvironmentDefaults(&db);
+	if (user_db)
+	    (void)XrmCombineDatabase(user_db, &db, False);
+	if (!db)
 	    db = XrmGetStringDatabase("");
-
+	/* set database now, for XtResolvePathname to use */
 	XrmSetDatabase(dpy, db);
-
+	CombineAppUserDefaults(dpy, &db);
+	if (!CombineAppSystemDefaults(dpy, &db))
+	    CombineFallbackDefaults(dpy, &db);
 	return db;
 }
 
@@ -469,14 +461,15 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	char *argv[];
 {
 	Boolean tmp_bool;
+	XrmRepresentation type;
 	XrmValue value;
 	XrmOptionDescRec *options;
 	Cardinal num_options;
 	XrmDatabase cmd_db = NULL;
-	XrmDatabase user_db = GetUserDefaults(dpy);
+	XrmDatabase user_db;
 	XrmDatabase db;
-	XrmName name_list[2];
-	XrmClass class_list[2];
+	XrmName name_list[3];
+	XrmClass class_list[3];
 	XrmHashTable* search_list;
 	int search_list_size = SEARCH_LIST_SIZE;
 	extern char *getenv();
@@ -490,65 +483,33 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	 */
 	XrmParseCommand(&cmd_db, options, num_options, name, (int*)argc, argv);
 
-	name_list[0] = XrmStringToName(name);
-	name_list[1] = NULLQUARK;
-	class_list[0] = XrmStringToClass(class);
-	class_list[1] = NULLQUARK;
+	name_list[0] = pd->name;
+	name_list[1] = XrmPermStringToQuark("xnlLanguage");
+	name_list[2] = NULLQUARK;
+	class_list[0] = pd->class;
+	class_list[1] = XrmPermStringToQuark("XnlLanguage");
+	class_list[2] = NULLQUARK;
+
+	user_db = GetUserDefaults(dpy);
+
+	if ((!cmd_db ||
+	     !XrmQGetResource(cmd_db, name_list, class_list, &type, &value))
+	    &&
+	    (!user_db ||
+	     !XrmQGetResource(user_db, name_list, class_list, &type, &value))){
+	    if (!(pd->language = getenv("LANG")))
+		pd->language = "";
+	} else {
+	    pd->language = (char *)value.addr;
+	}
+
+	db = GetInitialResourceDatabase(dpy, cmd_db, user_db);
 
 	if ((
 	  search_list = (XrmHashTable*)
 	     ALLOCATE_LOCAL( SEARCH_LIST_SIZE*sizeof(XrmHashTable) ))
 	    == NULL) _XtAllocError(NULL);
 
-	while (cmd_db != NULL
-	       && !XrmQGetSearchList(cmd_db, name_list, class_list,
-				     search_list, search_list_size)) {
-	    XrmHashTable* old = search_list;
-	    Cardinal size = (search_list_size*=2)*sizeof(XrmHashTable);
-	    if ((
-	      search_list = (XrmHashTable*)ALLOCATE_LOCAL(size))
-		== NULL) _XtAllocError(NULL);
-	    bcopy( (char*)old, (char*)search_list, (size>>1) );
-	    DEALLOCATE_LOCAL(old);
-	}
-
-	value.size = sizeof(pd->language);
-	value.addr = (XtPointer)&pd->language;
-	if (cmd_db == NULL
-	    || !_GetResource(dpy, search_list, "xnlLanguage", "XnlLanguage",
-			  XtRString, &value)) {
-	    XrmHashTable* u_search_list;
-	    int u_search_list_size = SEARCH_LIST_SIZE;
-	    if ((
-	      u_search_list = (XrmHashTable*)
-		 ALLOCATE_LOCAL( SEARCH_LIST_SIZE*sizeof(XrmHashTable) ))
-		== NULL) _XtAllocError(NULL);
-
-	    while (user_db != NULL
-		   && !XrmQGetSearchList(user_db, name_list, class_list,
-					 u_search_list, u_search_list_size)) {
-		XrmHashTable* old = u_search_list;
-		Cardinal size = (u_search_list_size*=2)*sizeof(XrmHashTable);
-		if ((
-		  u_search_list = (XrmHashTable*)ALLOCATE_LOCAL(size))
-		    == NULL) _XtAllocError(NULL);
-		bcopy( (char*)old, (char*)u_search_list, (size>>1) );
-		DEALLOCATE_LOCAL(old);
-	    }
-	    if (user_db == NULL
-		|| !_GetResource(dpy, u_search_list,
-				 "xnlLanguage", "XnlLanguage",
-				 XtRString, &value)) {
-		if ((pd->language = getenv("LANG")) == NULL)
-		    pd->language = "";
-	    }
-	    DEALLOCATE_LOCAL(u_search_list);
-	}
-
-	db = GetInitialResourceDatabase(dpy, user_db);
-	if (cmd_db != NULL) {
-	    XrmMergeDatabases(cmd_db, &db);
-	}
 	while (!XrmQGetSearchList(db, name_list, class_list,
 				  search_list, search_list_size)) {
 	    XrmHashTable* old = search_list;
