@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.5 87/05/20 20:38:50 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.6 87/05/22 14:06:44 dkk Locked $";
 #endif
 
 #include <X11/X.h>
@@ -98,7 +98,7 @@ main(argc, argv)
     char *str_index;
     char *file_name;
     char display[256];
-    char *win_name;
+    char *win_name[256];
     char *data;
     Bool nobdrs = False;
     Bool debug = False;
@@ -119,7 +119,7 @@ main(argc, argv)
     Drawable image_win;
     XImage *image;
     Cursor cursor;
-    XButtonEvent rep;
+    XButtonPressedEvent rep;
 
     XWDFileHeader header;
 
@@ -242,7 +242,7 @@ main(argc, argv)
     if(XGetWindowAttributes(dpy, target_win, &win_info) == FAILURE) 
      Error("Can't query target window.\n");
 
-    if(XFetchName(dpy, target_win, &win_name) == FAILURE) {
+    if(XFetchName(dpy, target_win, win_name) == FAILURE) {
       strcpy(win_name, "xwdump");
     }
 
@@ -266,7 +266,7 @@ main(argc, argv)
     }
     else {
 	if (debug) fprintf(stderr,"xwd: Image with borders selected.\n");
-	image_win = rootwin;
+	image_win = target_win;
 	virt_x = win_info.x;
 	virt_y = win_info.y;
 	virt_width = win_info.width + (win_info.border_width << 1);
@@ -318,6 +318,7 @@ main(argc, argv)
     offset = virt_x;
     width = virt_width;
     height = virt_height;
+    plane_mask = 1;
 
     image = XCreateImage ( dpy, visual, depth, format, offset,
 			   data, width, height);
