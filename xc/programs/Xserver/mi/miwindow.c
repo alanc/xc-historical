@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.9 93/09/29 17:20:32 dpw Exp $ */
+/* $XConsortium: miwindow.c,v 5.10 93/09/29 18:59:40 dpw Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -965,7 +965,6 @@ miSetShape(pWin)
 						      &pLayerWin);
 	if (pWin->valdata)
 	{
-	    /* XYZ make this a screen func */
 	    if (HasBorder (pWin))
 	    {
 		RegionPtr	borderVisible;
@@ -1087,7 +1086,6 @@ miChangeBorderWidth(pWin, width)
 	     */
 	    if (pWin->valdata && HadBorder)
 	    {
-		/* XYZ make this a screen func */
 		RegionPtr   borderVisible;
 		borderVisible = (*pScreen->RegionCreate) (NULL, 1);
 		(*pScreen->Subtract) (borderVisible,
