@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.52 89/03/06 11:02:10 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.53 89/03/22 15:22:50 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.52 89/03/06 11:02:10 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.53 89/03/22 15:22:50 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1266,10 +1266,7 @@ static void TekRealize (gw, valuemaskp, values)
 		    dashes[i], dash_length[i]);
     }
 
-    if (term->flags & REVERSE_VIDEO)
-      TekReverseVideo(screen);
-    else
-      TekBackground(screen);
+    TekBackground(screen);
 
     screen->margin = MARGIN1;		/* Margin 1		*/
     screen->TekGIN = FALSE;			/* GIN off		*/
@@ -1347,17 +1344,7 @@ register TScreen *screen;
 		 screen->Tforeground);
 	}
 
-	if(screen->cellsused) {
-		flag = (term->flags & REVERSE_VIDEO) != 0;
-		screen->Tcursorcolor = screen->Tbackground | screen->xorplane;
-		i = screen->select ? 2 : !flag;
-		screen->colorcells[i].pixel = screen->Tcursorcolor;
-		XStoreColor(screen->display, TekColormap, &screen->colorcells[i]);
-		screen->colorcells[flag].pixel = screen->Tforeground |
-		 screen->xorplane;
-		XStoreColor(screen->display, TekColormap, &screen->colorcells[flag]);
-	} else
-		screen->Tcursorcolor = screen->Tforeground;
+	screen->Tcursorcolor = screen->Tforeground;
 
 	gcv.plane_mask = screen->xorplane = (screen->Tbackground ^
 					     screen->Tcursorcolor);
