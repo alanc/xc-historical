@@ -966,3 +966,5 @@ the stylus or finger leaves the proximity of the input devices surface.
 \fBProximity\fP events contain almost the same information as button events.
 The event type is \fBProximityIn\fP or \fBProximityOut\fP, and there is no
 detail information.
+.bp
+.TC
