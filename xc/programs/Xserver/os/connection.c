@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.122 90/06/06 13:52:54 rws Exp $ */
+/* $XConsortium: connection.c,v 1.123 90/12/03 16:04:12 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -49,7 +49,6 @@ SOFTWARE.
 #include <sys/socket.h>
 
 #include <signal.h>
-#include <fcntl.h>
 #include <setjmp.h>
 
 #ifdef hpux
