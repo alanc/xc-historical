@@ -1,4 +1,4 @@
-/* $XConsortium: XGetVers.c,v 1.6 90/05/18 11:23:33 rws Exp $ */
+/* $XConsortium: XGetVers.c,v 1.7 91/02/09 17:50:57 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -47,7 +47,7 @@ XExtensionVersion
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, Dont_Check) == -1)
+    if (_XiCheckExtInit(dpy, Dont_Check) == -1)
 	return ((XExtensionVersion *) NoSuchExtension);
 
     GetReq(GetExtensionVersion,req);		

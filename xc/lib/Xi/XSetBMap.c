@@ -1,4 +1,4 @@
-/* $XConsortium: XSetBMap.c,v 1.3 89/09/25 16:21:11 gms Exp $ */
+/* $XConsortium: XSetBMap.c,v 1.4 89/12/06 20:38:51 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -51,7 +51,7 @@ XSetDeviceButtonMapping (dpy, device, map, nmap)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay(dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
     GetReq (SetDeviceButtonMapping, req);
     req->reqType = info->codes->major_opcode;

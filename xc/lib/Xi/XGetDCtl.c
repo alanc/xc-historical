@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XGetDCtl.c,v 1.2 94/02/06 20:10:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,7 +54,7 @@ XDeviceControl
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Add_XChangeDeviceControl) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Add_XChangeDeviceControl) == -1)
 	return ((XDeviceControl *) NoSuchExtension);
 
     GetReq(GetDeviceControl,req);

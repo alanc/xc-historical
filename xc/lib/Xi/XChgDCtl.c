@@ -1,4 +1,4 @@
-/* $XConsortium: XChgDCtl.c,v 1.1 91/07/24 15:43:51 rws Exp $ */
+/* $XConsortium: XChgDCtl.c,v 1.2 91/07/24 16:13:07 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -50,7 +50,7 @@ XChangeDeviceControl (dpy, dev, control, d)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Add_XChangeDeviceControl) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Add_XChangeDeviceControl) == -1)
 	return (NoSuchExtension);
 
     GetReq(ChangeDeviceControl,req);

@@ -1,4 +1,4 @@
-/* $XConsortium: XGetProp.c,v 1.5 90/05/18 11:23:31 rws Exp $ */
+/* $XConsortium: XGetProp.c,v 1.6 93/01/28 19:39:39 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -50,7 +50,7 @@ XEventClass
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XEventClass *) NoSuchExtension);
 
     GetReq(GetDeviceDontPropagateList,req);		

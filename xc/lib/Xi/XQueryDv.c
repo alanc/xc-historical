@@ -1,4 +1,4 @@
-/* $XConsortium: XQueryDv.c,v 1.11 92/11/14 12:55:23 rws Exp $ */
+/* $XConsortium: XQueryDv.c,v 1.12 93/09/08 10:23:48 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -52,7 +52,7 @@ XDeviceState
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XDeviceState *) NoSuchExtension);
 
     GetReq(QueryDeviceState,req);		

@@ -1,4 +1,4 @@
-/* $XConsortium: XChgKMap.c,v 1.3 89/09/25 16:19:52 gms Exp $ */
+/* $XConsortium: XChgKMap.c,v 1.4 89/12/06 20:31:27 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -50,7 +50,7 @@ XChangeDeviceKeyMapping (dpy, dev, first, syms_per_code, keysyms, count)
     XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(ChangeDeviceKeyMapping,req);

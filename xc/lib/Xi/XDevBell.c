@@ -1,4 +1,4 @@
-/* $XConsortium: XDevBell.c,v 1.2 91/07/23 12:26:53 rws Exp $ */
+/* $XConsortium: XDevBell.c,v 1.3 92/11/14 12:54:48 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -47,7 +47,7 @@ XDeviceBell (dpy, dev, feedbackclass, feedbackid, percent)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Add_XDeviceBell) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Add_XDeviceBell) == -1)
 	return (NoSuchExtension);
 
     GetReq(DeviceBell,req);		

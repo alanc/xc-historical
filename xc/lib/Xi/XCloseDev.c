@@ -1,4 +1,4 @@
-/* $XConsortium: XCloseDev.c,v 1.4 89/12/06 20:31:34 rws Exp $ */
+/* $XConsortium: XCloseDev.c,v 1.5 89/12/13 20:05:46 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -45,7 +45,7 @@ XCloseDevice(dpy, dev)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(CloseDevice,req);		

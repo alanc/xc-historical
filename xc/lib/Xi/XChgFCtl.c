@@ -1,4 +1,4 @@
-/* $XConsortium: XChgFCtl.c,v 1.6 90/05/18 15:21:46 rws Exp $ */
+/* $XConsortium: XChgFCtl.c,v 1.7 91/02/09 17:48:17 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -49,7 +49,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(ChangeFeedbackControl,req);

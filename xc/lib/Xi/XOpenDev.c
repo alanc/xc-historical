@@ -1,4 +1,4 @@
-/* $XConsortium: XOpenDev.c,v 1.8 93/01/28 19:35:50 rws Exp $ */
+/* $XConsortium: XOpenDev.c,v 1.9 93/02/25 15:12:12 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -48,7 +48,7 @@ XDevice
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XDevice *) NoSuchExtension);
 
     GetReq(OpenDevice,req);		

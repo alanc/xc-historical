@@ -1,4 +1,4 @@
-/* $XConsortium: XGrDvKey.c,v 1.6 92/11/14 12:55:17 rws Exp $ */
+/* $XConsortium: XGrDvKey.c,v 1.7 93/01/28 19:43:32 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -56,7 +56,7 @@ XGrabDeviceKey (dpy, dev, key, modifiers, modifier_device,
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(GrabDeviceKey, req);

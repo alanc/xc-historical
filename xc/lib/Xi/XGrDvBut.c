@@ -1,4 +1,4 @@
-/* $XConsortium: XGrDvBut.c,v 1.5 91/01/24 16:06:18 rws Exp $ */
+/* $XConsortium: XGrDvBut.c,v 1.6 92/11/14 12:55:14 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -56,7 +56,7 @@ XGrabDeviceButton (dpy, dev, button, modifiers, modifier_device,
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(GrabDeviceButton, req);

@@ -1,4 +1,4 @@
-/* $XConsortium: XAllowDv.c,v 1.4 89/12/06 20:31:24 rws Exp $ */
+/* $XConsortium: XAllowDv.c,v 1.5 91/07/23 12:25:25 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -47,7 +47,7 @@ XAllowDeviceEvents (dpy, dev, event_mode, time)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(AllowDeviceEvents,req);		

@@ -1,4 +1,4 @@
-/* $XConsortium: XUngrDev.c,v 1.3 89/09/25 16:21:26 gms Exp $ */
+/* $XConsortium: XUngrDev.c,v 1.4 89/12/06 20:39:01 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -46,7 +46,7 @@ XUngrabDevice (dpy, dev, time)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(UngrabDevice,req);		

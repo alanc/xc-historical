@@ -1,4 +1,4 @@
-/* $XConsortium: XSetMode.c,v 1.6 91/02/22 15:25:50 rws Exp $ */
+/* $XConsortium: XSetMode.c,v 1.7 92/11/14 12:55:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -47,7 +47,7 @@ XSetDeviceMode (dpy, dev, mode)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(SetDeviceMode,req);		

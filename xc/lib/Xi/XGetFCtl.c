@@ -1,4 +1,4 @@
-/* $XConsortium: XGetFCtl.c,v 1.12 92/11/14 12:55:09 rws Exp $ */
+/* $XConsortium: XGetFCtl.c,v 1.13 93/09/08 10:23:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,7 +54,7 @@ XFeedbackState
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XFeedbackState *) NoSuchExtension);
 
     GetReq(GetFeedbackControl,req);

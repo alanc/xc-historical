@@ -1,4 +1,4 @@
-/* $XConsortium: XGrabDev.c,v 1.4 89/12/06 20:38:38 rws Exp $ */
+/* $XConsortium: XGrabDev.c,v 1.5 91/07/23 12:27:52 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,7 +54,7 @@ XGrabDevice (dpy, dev, grab_window, ownerEvents, event_count, event_list,
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(GrabDevice,req);		

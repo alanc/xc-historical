@@ -1,4 +1,4 @@
-/* $XConsortium: XChgProp.c,v 1.4 89/12/06 20:31:32 rws Exp $ */
+/* $XConsortium: XChgProp.c,v 1.5 91/07/23 12:26:35 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -49,7 +49,7 @@ XChangeDeviceDontPropagateList (dpy, window, count, events, mode)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(ChangeDeviceDontPropagateList,req);		

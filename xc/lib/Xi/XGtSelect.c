@@ -1,4 +1,4 @@
-/* $XConsortium: XGtSelect.c,v 1.7 93/01/28 19:42:50 rws Exp $ */
+/* $XConsortium: XGtSelect.c,v 1.8 93/08/24 09:27:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -52,7 +52,7 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
     GetReq(GetSelectedExtensionEvents,req);		
 

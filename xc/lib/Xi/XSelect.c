@@ -1,4 +1,4 @@
-/* $XConsortium: XSelect.c,v 1.4 89/12/06 20:38:49 rws Exp $ */
+/* $XConsortium: XSelect.c,v 1.5 93/08/24 09:28:29 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -47,7 +47,7 @@ XSelectExtensionEvent (dpy, w, event_list, count)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy,XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy,XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
     GetReq(SelectExtensionEvent,req);		
 

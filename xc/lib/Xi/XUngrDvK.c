@@ -1,4 +1,4 @@
-/* $XConsortium: XUngrDvK.c,v 1.5 91/01/24 16:09:43 rws Exp $ */
+/* $XConsortium: XUngrDvK.c,v 1.6 92/11/14 12:55:31 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -49,7 +49,7 @@ XUngrabDeviceKey (dpy, dev, key, modifiers, modifier_dev, grab_window)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay(dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
     GetReq(UngrabDeviceKey, req);
 

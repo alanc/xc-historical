@@ -1,4 +1,4 @@
-/* $XConsortium: XGMotion.c,v 1.11 92/11/14 10:38:02 rws Exp $ */
+/* $XConsortium: XGMotion.c,v 1.12 92/11/14 12:50:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -55,7 +55,7 @@ XDeviceTimeCoord
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XDeviceTimeCoord *) NoSuchExtension);
 
     GetReq(GetDeviceMotionEvents,req);		

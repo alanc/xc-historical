@@ -1,4 +1,4 @@
-/* $XConsortium: XGetBMap.c,v 1.4 89/12/06 20:38:18 rws Exp $ */
+/* $XConsortium: XGetBMap.c,v 1.5 93/09/08 10:23:35 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -56,7 +56,7 @@ XGetDeviceButtonMapping (dpy, device, map, nmap)
     xGetDeviceButtonMappingReply rep;
 
     LockDisplay(dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
     GetReq(GetDeviceButtonMapping, req);
 

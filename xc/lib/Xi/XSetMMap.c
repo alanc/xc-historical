@@ -1,4 +1,4 @@
-/* $XConsortium: XSetMMap.c,v 1.5 93/01/28 19:40:44 rws Exp $ */
+/* $XConsortium: XSetMMap.c,v 1.6 93/09/08 10:23:51 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -48,7 +48,7 @@ XSetDeviceModifierMapping (dpy, dev, modmap)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReqExtra(SetDeviceModifierMapping, mapSize, req);

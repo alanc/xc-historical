@@ -1,4 +1,4 @@
-/* $XConsortium: XGtFocus.c,v 1.3 89/09/25 16:20:49 gms Exp $ */
+/* $XConsortium: XGtFocus.c,v 1.4 89/12/06 20:38:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -49,7 +49,7 @@ XGetDeviceFocus (dpy, dev, focus, revert_to, time)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(GetDeviceFocus,req);		

@@ -1,4 +1,4 @@
-/* $XConsortium: XSndExEv.c,v 1.4 89/12/06 20:38:57 rws Exp $ */
+/* $XConsortium: XSndExEv.c,v 1.5 89/12/13 20:28:10 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -57,7 +57,7 @@ XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     /* call through display to find proper conversion routine */

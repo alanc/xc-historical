@@ -1,4 +1,4 @@
-/* $XConsortium: XSetDVal.c,v 1.1 90/06/20 14:11:40 xbuild ic1C-80 $ */
+/* $XConsortium: XSetDVal.c,v 1.1 91/02/22 15:26:57 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -50,7 +50,7 @@ XSetDeviceValuators (dpy, dev, valuators, first_valuator, num_valuators)
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Add_XSetDeviceValuators) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Add_XSetDeviceValuators) == -1)
 	return (NoSuchExtension);
 
     GetReq(SetDeviceValuators,req);		

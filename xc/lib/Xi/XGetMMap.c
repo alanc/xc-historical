@@ -1,4 +1,4 @@
-/* $XConsortium: XGetMMap.c,v 1.4 89/12/06 20:38:25 rws Exp $ */
+/* $XConsortium: XGetMMap.c,v 1.5 90/05/18 11:23:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -48,7 +48,7 @@ XModifierKeymap
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
-    if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
+    if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XModifierKeymap *) NoSuchExtension);
 
     GetReq(GetDeviceModifierMapping,req);
