@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.34 94/04/08 15:08:08 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.35 94/04/08 16:30:17 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -2643,16 +2643,18 @@ defined for the following XLFD fields:
 .fi
 .LP
 .sC
-The string \*Q\fC0\fP\*U is the special polymorphic value.  In the
-WEIGHT_NAME, SLANT, or SETWIDTH_NAME field, \*Q\fC0\fP\*U must be the
+The string \*Q0\*U is the special polymorphic value.  In the
+WEIGHT_NAME, SLANT, or SETWIDTH_NAME field, \*Q0\*U must be the
 entire field.
 There may be multiple polymorphic values
 in the ADD_STYLE_NAME field.
 .eC
 They are surrounded by \*Q[\*U and \*Q]\*U and separated by a Space,
-as \*Q\fC[0 0]\fP\*U.  The polymorphic values may coexist with
+.sC
+as \*Q[0\00]\*U.  The polymorphic values may coexist with
 other data in the field.
 It is recommended that the polymorphic values
+.eC
 be at the end of the ADD_STYLE_NAME field.
 .LP
 The font matching algorithms for a font with polymorphic fields are
@@ -2677,101 +2679,115 @@ The Adobe Myriad MM font program has width and weight axes.  Weight can
 vary from 215 to 830, and width from 300 to 700.
 .\" indented display
 .ID
+.SM
 Name:
 .ft C
 	-Adobe-Myriad MM-0-R-0--0-0-0-0-P-0-ISO8859-1
 .ft P
 AXIS_NAMES:
 .sC
-	Weight\e0Width\e0
+	Weight, Width
 .eC
 AXIS_LIMITS:
-	215,830,300,700
+.sC
+	215, 830, 300, 700
+.eC
 AXIS_TYPES:
 .sC
-	Adobe-Weight\e0Adobe-Width\e0
+	Adobe-Weight, Adobe-Width
 .eC
 Sample derived instance:
 .ft C
 	-Adobe-Myriad MM-412-R-575--*-120-100-100-P-*-ISO8859-1
 .ft P
+.NL
 .DE			\" display end
 .LP
 The Adobe Minion MM Italic font program has width, weight, and optical
 size axes.
 .ID
+.SM
 Name:
 .ft C
 	-Adobe-Minion MM-0-I-0-[0]-0-0-0-0-P-0-ISO8859-1
 .ft P
 AXIS_NAMES:
 .sC
-	Weight\e0Width\e0Optical size\e0
+	Weight, Width, Optical size
 .eC
 AXIS_LIMITS:
-	345,620,450,600,6,72
+.sC
+	345, 620, 450, 600, 6, 72
+.eC
 AXIS_TYPES:
 .sC
-	Adobe-Weight\e0Adobe-Width\e0Adobe-OpticalSize\e0
+	Adobe-Weight, Adobe-Width, Adobe-OpticalSize
 .eC
 Sample derived instance:
 .ft C
-.SM
 	-Adobe-Minion MM-550-I-480-[18]-*-180-100-100-P-*-ISO8859-1
-.NL
 .ft P
+.NL
 .DE
 .LP
 The Adobe Minion MM Swash Italic font program has the same axes and
-values.  This shows how \fC[0]\fP in the ADD_STYLE_NAME field can
+values.  This shows how
+.sC
+\*Q[0]\*U in the ADD_STYLE_NAME field can
 coexist with other words.
+.br
+.eC
 .ID
+.SM
 Name:
 .ft C
 	-Adobe-Minion MM-0-I-0-Swash[0]-0-0-0-0-P-0-ISO8859-1
 .ft P
 AXIS_NAMES:
 .sC
-	Weight\e0Width\e0Optical size\e0
+	Weight, Width, Optical size
 .eC
 AXIS_LIMITS:
-	345,620,450,600,6,72
+.sC
+	345, 620, 450, 600, 6, 72
+.eC
 AXIS_TYPES:
 .sC
-	Adobe-Weight\e0Adobe-Width\e0Adobe-OpticalSize\e0
+	Adobe-Weight, Adobe-Width, Adobe-OpticalSize
 .eC
 Sample derived instance:
 .ft C
-.SM
 	-Adobe-Minion MM-550-I-480-Swash[18]-*-180-100-100-P-*-ISO8859-1
-.NL
 .ft P
+.NL
 .DE
 .LP
 The XYZ Abc font, a hypothetical font, has optical size and x-height axes.
 This shows how there can be more than one polymorphic value in the
 ADD_STYLE_NAME field.
 .ID
+.SM
 Name:
 .ft C
 	-XYZ-Abc-Medium-R-Normal-[0 0]-0-0-0-0-P-0-ISO8859-1
 .ft P
 AXIS_NAMES:
 .sC
-	Optical size\e0X-height\e0
+	Optical size, X-height
 .eC
 AXIS_LIMITS:
-	6,72,400,600
+.sC
+	6, 72, 400, 600
+.eC
 AXIS_TYPES:
 .sC
-	XYZ-OpticalSize\e0XYZ-Xheight\e0
+	XYZ-OpticalSize, XYZ-Xheight
 .eC
 Sample derived instance:
 .ft C
-.SM
 	-XYZ-Abc-Medium-R-Normal-[14 510]-*-140-100-100-P-*-ISO8859-1
-.NL
 .ft P
+.NL
 .DE
 .LP
 If an axis allows negative values, a client requests a negative value by
