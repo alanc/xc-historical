@@ -133,10 +133,8 @@ DISPLAY, and therefore this argument is not normally specified.
 .B DISPLAY
 To get default host and display number.
 .SH SEE ALSO
-X(1)
+X(1), xprop(1)
 .SH AUTHOR
 Copyright 1987, 1988, Massachusetts Institute of Technology.
 .br
 Mark Lillibridge, MIT Project Athena
-
-
