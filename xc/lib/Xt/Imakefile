@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.92 91/09/09 18:26:35 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.93 91/09/18 14:29:25 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -174,12 +174,12 @@ UNSHAREDOBJS = sharedlib.o
 
 LibraryObjectRule()
 
-SpecialLibObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
-SpecialLibObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialLibObjectRule(Alloc.o,NullParameter,$(ALLOC_DEFINES))
-SpecialLibObjectRule(Converters.o,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(Intrinsic,$(ICONFIGFILES),$(SRCH_DEFINES))
+SpecialCLibObjectRule(Error,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialCLibObjectRule(Alloc,NullParameter,$(ALLOC_DEFINES))
+SpecialCLibObjectRule(Converters,$(ICONFIGFILES),$(BC_DEFINES))
 #if DoSharedLib
-SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
+SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
 
 #if DoSharedLib
