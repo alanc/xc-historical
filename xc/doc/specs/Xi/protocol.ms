@@ -3,6 +3,8 @@
 .OH ''''
 .EF ''''
 .OF ''''
+.ps 11
+.nr PS 11
 \0
 .sp 10
 .ce 500
@@ -66,6 +68,11 @@ without express or implied warranty.
 .\"
 .\"
 .tr ~
+.NH 2
+Input Extension Overview
+.XS
+\*(SN Input Extension Overview
+.XE
 .LP
 This document defines an extension to the X11 protocol to support 
 input devices other than the core X keyboard and pointer. 

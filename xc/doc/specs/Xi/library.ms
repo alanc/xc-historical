@@ -3,6 +3,8 @@
 .OH ''''
 .EF ''''
 .OF ''''
+.ps 11
+.nr PS 11
 \0
 .sp 10
 .ce 500
@@ -34,7 +36,7 @@ Permission to use, copy, modify, and distribute this documentation for
 any purpose and without fee is hereby granted, provided that the above
 copyright notice and this permission notice appear in all copies.
 MIT, Ardent, and Hewlett-Packard make no representations about the suitability 
-for any purpose of the information in this document.  It is provided "as is" 
+for any purpose of the information in this document.  It is provided ``as is''
 without express or implied warranty.
 .ps
 .vs
@@ -62,6 +64,11 @@ without express or implied warranty.
 .\"
 .\"
 .tr ~
+.NH 1
+Input Extension Overview
+.XS
+\*(SN Input Extension Overview
+.XE
 .LP
 This document describes an extension to
 the X11 server.  The purpose of this extension is to support the use
@@ -3818,7 +3825,7 @@ header file:
 \f(C
 .ps 8
 
-/* $Header: library.ms,v 1.3 91/07/26 16:44:38 rws Exp $ */
+/* $Header: library.ms,v 1.4 91/07/26 17:32:28 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -4501,7 +4508,7 @@ XExtensionVersion      *XGetExtensionVersion();
 XDeviceState           *XQueryDeviceState();
 XEventClass            *XGetDeviceDontPropagateList();
 #endif /* _XINPUT_H_ */
-/* $Header: library.ms,v 1.3 91/07/26 16:44:38 rws Exp $ */
+/* $Header: library.ms,v 1.4 91/07/26 17:32:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
