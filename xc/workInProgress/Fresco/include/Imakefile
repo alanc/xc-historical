@@ -1,26 +1,32 @@
-XCOMM
-XCOMM Fresco include files
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.1 93/12/31 15:12:57 kaleb Exp $
 
-HEADERS = *.h
+#define IHaveSubdirs
+#define PassCDebugFlags /**/
+
+SUBDIRS = Interfaces OS Ox Impls
+
+HEADERS = _defines.h \
+	  _enter.h \
+ 	  _leave.h \
+	  _undefs.h \
+	  display.h \
+	  drawing.h \
+	  figures.h \
+	  fresco.h \
+	  glyph.h \
+	  layouts.h \
+	  types.h \
+	  viewer.h \
+	  widgets.h
+
 DEST = $(INCDIR)/Fresco
-SUBDIRS = Impls Interfaces OS Ox
 
-#define Hdr(name,flags) MakeHeaderFlags(name,flags)
+all::
 
-Hdr(display, -i '<X11/Fresco/drawing.h>')
-Hdr(drawing, -i '<X11/Fresco/types.h>')
-Hdr(figures, -i '<X11/Fresco/drawing.h>' -i '<X11/Fresco/glyph.h>')
-Hdr(glyph, -i '<X11/Fresco/display.h>' -i '<X11/Fresco/drawing.h>')
-Hdr(layouts, -i '<X11/Fresco/glyph.h>')
-Hdr(types,-i '<X11/Fresco/Ox/object.h>')
-Hdr(viewer, -i '<X11/Fresco/glyph.h>')
-Hdr(widgets, -i '<X11/Fresco/viewer.h>')
-
-DependHeaders()
+BuildIncludes($(HEADERS),Fresco,..)
 
 InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))
-MakeInSubdirs($(SUBDIRS))
 
-gendefs:
-	./_gendefs
+depend::
+
+clean::
