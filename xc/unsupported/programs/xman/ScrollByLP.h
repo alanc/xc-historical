@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByLP.h,v 1.4 89/05/16 13:54:36 kit Exp $
+ * $XConsortium: ScrollByLP.h,v 1.5 89/07/21 17:33:51 kit Exp $
  * $Athena: ScrollByLP.h,v 4.0 88/08/31 22:11:21 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -70,9 +70,6 @@ typedef struct _ScrollByLinePart {
 
   char ** top_line;		/* The top line of the file. */
   int lines;			/* number of line in the file. */
-
-  Boolean lockout;		/* Make sure that we do not get two
-				   XCopyArea Commands in a row. */
 } ScrollByLinePart;
 
 /****************************************************************

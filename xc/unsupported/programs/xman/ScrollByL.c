@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.8 89/05/16 13:54:33 kit Exp $
- * $Header: ScrollByL.c,v 1.8 89/05/16 13:54:33 kit Exp $
+ * $XConsortium: ScrollByL.c,v 1.9 89/11/17 10:50:07 kit Exp $
+ * $Header: ScrollByL.c,v 1.9 89/11/17 10:50:07 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -39,9 +39,7 @@
 /* Default Translation Table */
 
 static char defaultTranslations[] = 
-  "<Btn1Down>:  Page(Forward) \n\
-   <Btn3Down>:  Page(Back) \n\
-   <Key>f:      Page(Forward) \n\
+  "<Key>f:      Page(Forward) \n\
    <Key>b:      Page(Back) \n\
    <Key>1:      Page(Line, 1) \n\
    <Key>2:      Page(Line, 2) \n\
@@ -228,9 +226,8 @@ Widget w;
 XEvent *event;
 Region region;
 {
-  int top,bottom;		/* the locations of the top and
-       			  bottom of the region that needs to be
-       			  repainted. */
+  int top, height;		/* the locations of the top and height
+				   of the region that needs to be repainted. */
   
 /*
  * This routine tells the client which sections of the window to 
@@ -239,14 +236,14 @@ Region region;
 
   if (event->type == Expose) {
     top = event->xexpose.y;
-    bottom = event->xexpose.height + top;
+    height = event->xexpose.height;
   }
   else {
     top = event->xgraphicsexpose.y;
-    bottom  = event->xgraphicsexpose.height + top;
+    height  = event->xgraphicsexpose.height;
   }
   
-  PaintText(w, top, bottom - top);
+  PaintText(w, top, height);
 } /* redisplay (expose) */
 
 /*	Function Name: PaintText
@@ -278,7 +275,6 @@ int y_loc, height;
   location =  y_loc / sblw->scroll.font_height * sblw->scroll.font_height;
 
   PrintText(w, start_line, num_lines, location);
-  sblw->scroll.lockout = FALSE;
 } 
 
 /*	Function Name: Page
@@ -376,7 +372,7 @@ Boolean force_redisp;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   int num_lines = w->core.height / sblw->scroll.font_height + 1;
-  int max_lines;
+  int max_lines, old_line;
   Boolean move_thumb = FALSE;
 
 /*
@@ -401,22 +397,21 @@ Boolean force_redisp;
  * If forced to redisplay then do a full redisplay and return.
  */
 
-
-  if (sblw->scroll.lockout)
-    return(TRUE);
+  old_line = sblw->scroll.line_pointer;	
+  sblw->scroll.line_pointer = new_line;	/* Set current top of page. */
 
   if (force_redisp) 
     MoveAndClearText(w, 0, /* cause a full redisplay */ 0, 0);
 
-  if (new_line == sblw->scroll.line_pointer)
+  if (new_line == old_line)
     return(move_thumb);
 
 /*
  * Scroll forward.
  */
 
-  else if (new_line < sblw->scroll.line_pointer) {
-    int lines_to_scroll = sblw->scroll.line_pointer - new_line;
+  else if (new_line < old_line) {
+    int lines_to_scroll = old_line - new_line;
     MoveAndClearText(w, 0, num_lines - lines_to_scroll, lines_to_scroll);
   }
 
@@ -425,11 +420,10 @@ Boolean force_redisp;
  */
 
   else {
-    int lines_to_scroll = new_line - sblw->scroll.line_pointer;
+    int lines_to_scroll = new_line - old_line;
     MoveAndClearText(w, lines_to_scroll, num_lines - lines_to_scroll, 0);
   }
 
-  sblw->scroll.line_pointer = new_line;	/* Set current top of page. */
   return(move_thumb);
 }
 
@@ -466,7 +460,8 @@ int old_y, new_y, height;
 
   if (height <= sblw->scroll.font_height) { /* avoid rounding errors. */
     XClearArea( XtDisplay(w), XtWindow(w), from_left, 0, 
-	       (unsigned int) 0, (unsigned int) 0, TRUE);    
+	       (unsigned int) 0, (unsigned int) 0, FALSE);    
+    PaintText(w, 0, (int) sblw->core.height);
     return;
   }
 
@@ -479,7 +474,7 @@ int old_y, new_y, height;
 	    from_left, new_y);
 
   height -= sblw->scroll.font_height/2;	/* clear 1/2 font of extra space,
-					   to mak sure we don't lose or
+					   to make sure we don't lose or
 					   gain decenders. */
   if (old_y > new_y)
     y_clear = height;
@@ -488,14 +483,13 @@ int old_y, new_y, height;
   
 /*
  * We cannot use generate exposures, since that may allow another move and
- * clear before the area get repainted, this is really bad.
+ * clear before the area get repainted, this would be bad.
  */
 
   XClearArea( XtDisplay(w), XtWindow(w), from_left, y_clear,
 	     (unsigned int) 0, (unsigned int) (w->core.height - height),
-	     TRUE);
-
-  sblw->scroll.lockout = TRUE;
+	     FALSE);
+  PaintText(w, (int) y_clear, (int) (w->core.height - height));
 }
 
 /*	Function Name: SetThumbHeight
@@ -605,7 +599,6 @@ Widget req, new;
   sblw->scroll.line_pointer = 0;
   LoadFile(new);
   sblw->scroll.bar = (Widget) NULL;
-  sblw->scroll.lockout = FALSE;
 
   sblw->scroll.font_height = (sblw->scroll.normal_font->max_bounds.ascent + 
 			      sblw->scroll.normal_font->max_bounds.descent); 
@@ -854,7 +847,6 @@ Widget w;
 
   sblw->scroll.top_line = top_line;
   sblw->scroll.line_pointer = 0;
-  sblw->scroll.lockout = FALSE;
   SetThumbHeight(w);
   SetThumb(w);
 }
