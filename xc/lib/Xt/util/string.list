@@ -1,4 +1,4 @@
-! $XConsortium: string.list,v 11.6 91/05/01 14:29:38 rws Exp $
+! $XConsortium: string.list,v 1.1 91/05/04 16:51:40 rws Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
 
@@ -12,7 +12,7 @@ Nbackground
 NbackgroundPixmap
 Nbitmap
 NborderColor
-Nborder
+Nborder borderColor
 NborderPixmap
 NborderWidth
 Ncallback
