@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.9 89/01/19 16:56:26 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.10 89/01/20 11:00:39 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -8,6 +8,15 @@
  * These are the macros that Imakefiles can use; also see README for a list of
  * the applicable make variables.
  */
+
+/*
+ * general linking order:
+ *   program-objects programlibs syslibs SYSAUX systemlibs SYSLAST
+ *
+ * where programlibs is LOCAL_LIBRARIES for ComplexProgramTarget
+ * and SYSAUX comes with syslibs from the LDFLAGS
+ */
+
 
 /*
  * This will build an uninstalled program.  This can be used
