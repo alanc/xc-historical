@@ -1,7 +1,6 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.19 89/03/30 16:53:12 jim Exp $";
-#endif /* lint */
-
+#if (!defined(lint) && !defined(SABER))
+static char Xrcsid[] = "$XConsortium: DiskSrc.c,v 1.1 89/06/21 17:24:30 kit Exp $";
+#endif /* lint && SABER */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,57 +26,155 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include <stdio.h>
 #include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/Xaw/AsciiTextP.h>
 
-/* from Text.c */
+#include <X11/Xmu/Xmu.h>
+
+#include <X11/Xaw/AsciiTextP.h>
+#include <X11/Xaw/AsciiSrc.h> /* no need to get private header. */
 
 extern void ForceBuildLineTable(); /* in Text.c */
 
-static XtResource string_resources[] = {
-  {XtNstring, XtCString, XtRString, sizeof(String),
-     XtOffset(AsciiStringWidget, ascii_string.string), XtRString, NULL}
+static void ClassInitialize(), Initialize(), CreateSourceSink(), Destroy();
+
+AsciiTextClassRec asciiTextClassRec = {
+  { /* core fields */
+    /* superclass       */      (WidgetClass) &textClassRec,
+    /* class_name       */      "Text",
+    /* widget_size      */      sizeof(AsciiRec),
+    /* class_initialize */      ClassInitialize,
+    /* class_part_init  */	NULL,
+    /* class_inited     */      FALSE,
+    /* initialize       */      Initialize,
+    /* initialize_hook  */	CreateSourceSink,
+    /* realize          */      XtInheritRealize,
+    /* actions          */      textActionsTable,
+    /* num_actions      */      0,
+    /* resources        */      NULL,
+    /* num_ resource    */      0,
+    /* xrm_class        */      NULLQUARK,
+    /* compress_motion  */      TRUE,
+    /* compress_exposure*/      FALSE,
+    /* compress_enterleave*/	TRUE,
+    /* visible_interest */      FALSE,
+    /* destroy          */      Destroy,
+    /* resize           */      XtInheritResize,
+    /* expose           */      XtInheritExpose,
+    /* set_values       */      NULL,
+    /* set_values_hook  */	NULL,
+    /* set_values_almost*/	XtInheritSetValuesAlmost,
+    /* get_values_hook  */	NULL,
+    /* accept_focus     */      XtInheritAcceptFocus,
+    /* version          */	XtVersion,
+    /* callback_private */      NULL,
+    /* tm_table         */      XtInheritTranslations,
+    /* query_geometry	*/	XtInheritQueryGeometry
+  },
+  { /* text fields */
+    /* empty            */      0
+  },
+  { /* ascii fields */
+    /* empty            */      0
+  }
 };
 
-static XtResource disk_resources[] = {
-  {XtNfile, XtCFile, XtRString, sizeof(String),
-     XtOffset(AsciiDiskWidget, ascii_disk.file_name), XtRString, NULL}
-};
+WidgetClass asciiTextWidgetClass = (WidgetClass)&asciiTextClassRec;
 
-static void StringClassInitialize(), StringInitialize(),
-    StringCreateSourceSink(), StringDestroy();
-static Boolean StringSetValues();
+static void 
+ClassInitialize()
+{
+  asciiTextClassRec.core_class.num_actions = textActionsTableCount;
+}
 
-static void DiskClassInitialize(), DiskInitialize(),
-    DiskCreateSourceSink(), DiskDestroy();
-static Boolean DiskSetValues();
+/* ARGSUSED */
+static void
+Initialize(request, new)
+Widget request, new;
+{
+  /* superclass Initialize can't set the following,
+   * as it didn't know the source or sink when it was called */
+  if (request->core.height == DEFAULT_TEXT_HEIGHT)
+    new->core.height = DEFAULT_TEXT_HEIGHT;
+
+}
+
+static void 
+CreateSourceSink(widget, args, num_args)
+Widget widget;
+ArgList args;
+Cardinal *num_args;
+{
+  AsciiWidget w = (AsciiWidget)widget;
+  void (*NullProc)() = NULL;	/* some compilers require this */
+  
+  w->text.source = XawAsciiSourceCreate( widget, args, *num_args );
+  w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
+  
+  w->text.lastPos = /* GETLASTPOS */
+    (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
+			     XawsdRight, 1, TRUE );
+
+  if (w->core.height == DEFAULT_TEXT_HEIGHT)
+    w->core.height = (2*yMargin) + 2 + (*w->text.sink->MaxHeight)(widget, 1);
+
+    if (w->text.sink->SetTabs != NullProc) {
+#define TAB_COUNT 32
+	int i;
+	Position tabs[TAB_COUNT], tab;
+
+	for (i=0, tab=0; i<TAB_COUNT;i++) {
+	    tabs[i] = (tab += 8);
+	}
+	(w->text.sink->SetTabs) (widget, w->text.leftmargin, TAB_COUNT, tabs);
+#undef TAB_COUNT
+    }
+
+    ForceBuildLineTable( (TextWidget)w );
+}
+
+static void 
+Destroy(w)
+Widget w;
+{
+  XawAsciiSourceDestroy( ((AsciiWidget)w)->text.source );
+  XawAsciiSinkDestroy( ((AsciiWidget)w)->text.sink );
+}
+
+#ifdef ASCII_STRING
+
+/************************************************************
+ *
+ * Ascii String Compatibility Code.
+ *
+ ************************************************************/
 
 AsciiStringClassRec asciiStringClassRec = {
   { /* core fields */
-    /* superclass       */      (WidgetClass) &textClassRec,
+    /* superclass       */      (WidgetClass) &asciiTextClassRec,
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(AsciiStringRec),
-    /* class_initialize */      StringClassInitialize,
+    /* class_initialize */      NULL,
     /* class_part_init  */	NULL,
     /* class_inited     */      FALSE,
-    /* initialize       */      StringInitialize,
-    /* initialize_hook  */	StringCreateSourceSink,
+    /* initialize       */      NULL,
+    /* initialize_hook  */	NULL,
     /* realize          */      XtInheritRealize,
     /* actions          */      textActionsTable,
     /* num_actions      */      0,
-    /* resources        */      string_resources,
-    /* num_ resource    */      XtNumber(string_resources),
+    /* resources        */      NULL,
+    /* num_ resource    */      0,
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
     /* compress_exposure*/      FALSE,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
-    /* destroy          */      StringDestroy,
+    /* destroy          */      NULL,
     /* resize           */      XtInheritResize,
     /* expose           */      XtInheritExpose,
-    /* set_values       */      StringSetValues,
+    /* set_values       */      NULL,
     /* set_values_hook  */	NULL,
     /* set_values_almost*/	XtInheritSetValuesAlmost,
     /* get_values_hook  */	NULL,
@@ -90,35 +187,47 @@ AsciiStringClassRec asciiStringClassRec = {
   { /* text fields */
     /* empty            */      0
   },
-  { /* ascii_string fields */
+  { /* ascii fields */
     /* empty            */      0
   }
 };
+
+WidgetClass asciiStringWidgetClass = (WidgetClass)&asciiStringClassRec;
+
+#endif /* ASCII_STRING */
+
+#ifdef ASCII_DISK
+
+/************************************************************
+ *
+ * Ascii Disk Compatibility Code.
+ *
+ ************************************************************/
 
 AsciiDiskClassRec asciiDiskClassRec = {
   { /* core fields */
-    /* superclass       */      (WidgetClass) &textClassRec,
+    /* superclass       */      (WidgetClass) &asciiTextClassRec,
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(AsciiDiskRec),
-    /* class_initialize */      DiskClassInitialize,
+    /* class_initialize */      NULL,
     /* class_part_init  */	NULL,
     /* class_inited     */      FALSE,
-    /* initialize       */      DiskInitialize,
-    /* initialize_hook  */	DiskCreateSourceSink,
+    /* initialize       */      NULL,
+    /* initialize_hook  */	NULL,
     /* realize          */      XtInheritRealize,
     /* actions          */      textActionsTable,
     /* num_actions      */      0,
-    /* resources        */      disk_resources,
-    /* num_ resource    */      XtNumber(disk_resources),
+    /* resources        */      NULL,
+    /* num_ resource    */      0,
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
     /* compress_exposure*/      FALSE,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
-    /* destroy          */      DiskDestroy,
+    /* destroy          */      NULL,
     /* resize           */      XtInheritResize,
     /* expose           */      XtInheritExpose,
-    /* set_values       */      DiskSetValues,
+    /* set_values       */      NULL,
     /* set_values_hook  */	NULL,
     /* set_values_almost*/	XtInheritSetValuesAlmost,
     /* get_values_hook  */	NULL,
@@ -131,156 +240,11 @@ AsciiDiskClassRec asciiDiskClassRec = {
   { /* text fields */
     /* empty            */      0
   },
-  { /* ascii_disk fields */
+  { /* ascii fields */
     /* empty            */      0
   }
 };
 
-
-WidgetClass asciiStringWidgetClass = (WidgetClass)&asciiStringClassRec;
 WidgetClass asciiDiskWidgetClass = (WidgetClass)&asciiDiskClassRec;
 
-
-static void StringClassInitialize()
-{
-    asciiStringClassRec.core_class.num_actions = textActionsTableCount;
-}
-
-/* ARGSUSED */
-static void StringInitialize(request, new)
-    Widget request, new;
-{
-    /* superclass Initialize can't set the following,
-     * as it didn't know the source or sink when it was called */
-    if (request->core.height == DEFAULT_TEXT_HEIGHT)
-	new->core.height = DEFAULT_TEXT_HEIGHT;
-}
-
-static void StringCreateSourceSink(widget, args, num_args)
-    Widget widget;
-    ArgList args;
-    Cardinal *num_args;
-{
-    AsciiStringWidget w = (AsciiStringWidget)widget;
-    void (*NullProc)() = NULL;	/* some compilers require this */
-
-    w->text.source = XawStringSourceCreate( widget, args, *num_args );
-    w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
-
-    if (w->core.height == DEFAULT_TEXT_HEIGHT)
-        w->core.height = (2*yMargin) + 2
-			  + (*w->text.sink->MaxHeight)(widget, 1);
-
-    w->text.lastPos = /* GETLASTPOS */
-      (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
-			        XawsdRight, 1, TRUE );
-
-    if (w->text.sink->SetTabs != NullProc) {
-#define TAB_COUNT 32
-	int i;
-	Position tabs[TAB_COUNT], tab;
-
-	for (i=0, tab=0; i<TAB_COUNT;i++) {
-	    tabs[i] = (tab += 8);
-	}
-	(w->text.sink->SetTabs) (widget, w->text.leftmargin, TAB_COUNT, tabs);
-#undef TAB_COUNT
-    }
-
-    ForceBuildLineTable( (TextWidget)w );
-}
-
-
-/* ARGSUSED */
-static Boolean StringSetValues(current, request, new)
-    Widget current, request, new;
-{
-    AsciiStringWidget old = (AsciiStringWidget)current;
-    AsciiStringWidget w = (AsciiStringWidget)new;
-
-    if (w->ascii_string.string != old->ascii_string.string)
-        XtError( "SetValues on AsciiStringWidget string not supported." );
-
-    return False;
-}
-
-
-static void StringDestroy(w)
-    Widget w;
-{
-    XawStringSourceDestroy( ((AsciiStringWidget)w)->text.source );
-    XawAsciiSinkDestroy( ((AsciiStringWidget)w)->text.sink );
-}
-
-
-static void DiskClassInitialize()
-{
-    asciiDiskClassRec.core_class.num_actions = textActionsTableCount;
-}
-
-
-/* ARGSUSED */
-static void DiskInitialize(request, new)
-    Widget request, new;
-{
-    /* superclass Initialize can't set the following,
-     * as it didn't know the source or sink when it was called */
-    if (request->core.height == DEFAULT_TEXT_HEIGHT)
-	new->core.height = DEFAULT_TEXT_HEIGHT;
-}
-
-static void DiskCreateSourceSink(widget, args, num_args)
-    Widget widget;
-    ArgList args;
-    Cardinal *num_args;
-{
-    AsciiDiskWidget w = (AsciiDiskWidget)widget;
-    void (*NullProc)() = NULL;	/* some compilers require this */
-
-    w->text.source = XawDiskSourceCreate( widget, args, *num_args );
-    w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
-
-    w->text.lastPos = /* GETLASTPOS */
-      (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
-			        XawsdRight, 1, TRUE );
-
-    if (w->core.height == DEFAULT_TEXT_HEIGHT)
-        w->core.height = (2*yMargin) + 2
-			  + (*w->text.sink->MaxHeight)(widget, 1);
-
-    if (w->text.sink->SetTabs != NullProc) {
-#define TAB_COUNT 32
-	int i;
-	Position tabs[TAB_COUNT], tab;
-
-	for (i=0, tab=0; i<TAB_COUNT;i++) {
-	    tabs[i] = (tab += 8);
-	}
-	(w->text.sink->SetTabs) (widget, w->text.leftmargin, TAB_COUNT, tabs);
-#undef TAB_COUNT
-    }
-
-    ForceBuildLineTable( (TextWidget)w );
-}
-
-
-/* ARGSUSED */
-static Boolean DiskSetValues(current, request, new)
-    Widget current, request, new;
-{
-    AsciiDiskWidget old = (AsciiDiskWidget)current;
-    AsciiDiskWidget w = (AsciiDiskWidget)new;
-
-    if (w->ascii_disk.file_name != old->ascii_disk.file_name)
-        XtError( "SetValues on AsciiDiskWidget file not supported." );
-
-    return False;
-}
-
-
-static void DiskDestroy(w)
-    Widget w;
-{
-    XawDiskSourceDestroy( ((AsciiDiskWidget)w)->text.source );
-    XawAsciiSinkDestroy( ((AsciiDiskWidget)w)->text.sink );
-}
+#endif /* ASCII_DISK */

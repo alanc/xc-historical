@@ -1,6 +1,6 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.88 89/06/19 17:51:09 jim Exp $";
-#endif
+#if (!defined(lint) && !defined(SABER))
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.1 89/06/21 17:25:01 kit Exp $";
+#endif /* lint && SABER */
 
 
 /***********************************************************
@@ -27,6 +27,7 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
@@ -705,7 +706,7 @@ static void ThumbProc (w, closure, callData)
 		_XawTextScroll(ctx, -line);
 	}
 	else {
-	    DisplayTextWindow(ctx);
+	    DisplayTextWindow( (Widget) ctx);
 	}
     }
     _XawTextExecuteUpdate(ctx);
@@ -828,7 +829,7 @@ static void LoseSelection(w, selection)
     TextWidget ctx = (TextWidget)w;
     Boolean update_in_progress = (ctx->text.old_insert >= 0);
     register Atom* atomP;
-    int i, empty;
+    int i;
 
     _XawTextPrepareToUpdate(ctx);
 
@@ -981,7 +982,7 @@ int ReplaceText (ctx, pos1, pos2, text)
     ctx->text.lastPos = GETLASTPOS;
     if (ctx->text.lt.top >= ctx->text.lastPos) {
 	BuildLineTable(ctx, ctx->text.lastPos);
-	ClearWindow(ctx);
+	ClearWindow( (Widget) ctx);
 	SetScrollBar(ctx);
 	return error;
     }
@@ -1042,9 +1043,14 @@ int ReplaceText (ctx, pos1, pos2, text)
 	    }
 	    if (startPos > lastPos) {
 		if (nextLine->position <= lastPos) {
-		    (*ClearToBackground) (ctx, nextLine->x, nextLine->y,
-					  nextLine->endX,
-					  (nextLine+1)->y - nextLine->y);
+		    if ( i < (ctx->text.lt.lines - 1) ) 
+		        (*ClearToBackground) (ctx, nextLine->x, nextLine->y,
+					      nextLine->endX,
+					      (nextLine+1)->y - nextLine->y);
+		    else
+		        (*ClearToBackground) (ctx, nextLine->x, nextLine->y,
+					      nextLine->endX,
+					      ctx->core.height - nextLine->y);
 		}
 		nextLine->endX = ctx->text.leftmargin;
 	    }
@@ -1726,6 +1732,58 @@ Widget current, request, new;
 }
 
 
+/*	Function Name: SetValuesHook
+ *	Description: set the values in the text source and sink.
+ *	Arguments: w - the text widget.
+ *                 args - the arg list.
+ *                 num_args - the number of args in the list.
+ *	Returns: True if redisplay is needed.
+ */
+
+static Boolean
+SetValuesHook(w, args, num_args)
+Widget w;
+ArgList args;
+Cardinal * num_args;
+{
+  TextWidget ctx = (TextWidget) w;
+  Boolean ret = FALSE;
+
+  if (ctx->text.source->SetValuesHook != NULL) 
+    ret = (*ctx->text.source->SetValuesHook) (w, args, num_args);
+
+#ifdef notdef
+  if (ctx->text.sink->SetValuesHook != NULL) 
+    ret = (*ctx->text.sink->SetValuesHook) (w, args, num_args);
+#endif
+
+  return(ret);
+}
+
+/*	Function Name: GetValuesHook
+ *	Description: get the values in the text source and sink.
+ *	Arguments: w - the text widget.
+ *                 args - the arg list.
+ *                 num_args - the number of args in the list.
+ *	Returns: none.
+ */
+
+static void
+GetValuesHook(w, args, num_args)
+Widget w;
+ArgList args;
+Cardinal * num_args;
+{
+  TextWidget ctx = (TextWidget) w;
+
+  if (ctx->text.source->GetValuesHook != NULL) 
+    (void) (*ctx->text.source->GetValuesHook) (w, args, num_args);
+
+#ifdef notdef
+  if (ctx->text.sink->GetValuesHook != NULL) 
+    (void) (*ctx->text.sink->GetValuesHook) (w, args, num_args);
+#endif
+}
 
 void XawTextDisplay (w)
     Widget w;
@@ -1887,7 +1945,6 @@ void XawTextUnsetSelection(w)
 {
     register TextWidget ctx = (TextWidget)w;
     int i;
-    void (*nullProc)() = NULL;
 
     /* must walk the selection list in opposite order from LoseSelection */
     for (i = ctx->text.s.atom_count; i;) {
@@ -2241,7 +2298,8 @@ static void InsertSelection(w, event, params, num_params)
    Cardinal *num_params;
 {
    static String default_params[] = {"PRIMARY", "CUT_BUFFER0"};
-   int count;
+   Cardinal count;
+
    StartAction((TextWidget)w, event);
     if ((count = *num_params) == 0) {
 	params = default_params;
@@ -2734,6 +2792,7 @@ static void SelectAll(ctx, event, params, num_params)
    EndAction(ctx);
 }
 
+/* ARGSUSED */
 static void SelectStart(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
@@ -2745,6 +2804,7 @@ static void SelectStart(ctx, event, params, num_params)
    EndAction(ctx);
 }
 
+/* ARGSUSED */
 static void SelectAdjust(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
@@ -2767,6 +2827,7 @@ static void SelectEnd(ctx, event, params, num_params)
    EndAction(ctx);
 }
 
+/* ARGSUSED */
 static void ExtendStart(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
@@ -2778,6 +2839,7 @@ static void ExtendStart(ctx, event, params, num_params)
    EndAction(ctx);
 }
 
+/* ARGSUSED */
 static void ExtendAdjust(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
@@ -3065,8 +3127,6 @@ static void InsertString(w, event, params, paramCount)
    Cardinal *paramCount;
 {
    TextWidget ctx = (TextWidget)w;
-   char strbuf[STRBUFSIZE];
-   int     keycode;
    XawTextBlock text;
    int	   i;
    XawTextPosition (*Scan)() = ctx->text.source->Scan;
@@ -3224,9 +3284,9 @@ TextClassRec textClassRec = {
     /* resize           */      Resize,
     /* expose           */      ProcessExposeRegion,
     /* set_values       */      SetValues,
-    /* set_values_hook  */	NULL,
+    /* set_values_hook  */	SetValuesHook,
     /* set_values_almost*/	XtInheritSetValuesAlmost,
-    /* get_values_hook  */	NULL,
+    /* get_values_hook  */	GetValuesHook,
     /* accept_focus     */      NULL,
     /* version          */	XtVersion,
     /* callback_private */      NULL,

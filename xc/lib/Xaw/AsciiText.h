@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiText.h,v 1.12 89/03/30 16:05:10 jim Exp $ */
+/* $XConsortium: AsciiText.h,v 1.13 89/05/11 15:11:32 kit Exp $ */
 
 
 /***********************************************************
@@ -38,6 +38,7 @@ SOFTWARE.
  ****************************************************************/
 
 #include <X11/Xaw/Text.h>		/* AsciiText is a subclass of Text */
+#include <X11/Xaw/AsciiSrc.h>
 
 /* Resources:
 
@@ -48,8 +49,7 @@ SOFTWARE.
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
  displayPosition     TextPosition	int		0
- editType	     EditType		XtTextEditType	XttextRead
- file		     File		String		NULL
+ editType	     EditType		XawTextEditType	XawtextRead
  font		     Font		XFontStruct*	Fixed
  foreground	     Foreground		Pixel		Black
  height		     Height		Dimension	font height
@@ -68,17 +68,26 @@ SOFTWARE.
 */
 
 /*
- * Everything we need is in StringDefs.h 
+ * Everything else we need is in StringDefs.h or Text.h
  */
 
-typedef struct _AsciiStringClassRec	*AsciiStringWidgetClass;
-typedef struct _AsciiStringRec		*AsciiStringWidget;
+typedef struct _AsciiTextClassRec	*AsciiTextWidgetClass;
+typedef struct _AsciiRec	        *AsciiWidget;
 
+extern WidgetClass asciiTextWidgetClass;
+
+/************************************************************
+ *
+ * Disk and String Emulation Info.
+ * 
+ ************************************************************/
+
+#ifdef ASCII_STRING
 extern WidgetClass asciiStringWidgetClass;
+#endif
 
-typedef struct _AsciiDiskClassRec	*AsciiDiskWidgetClass;
-typedef struct _AsciiDiskRec		*AsciiDiskWidget;
-
+#ifdef ASCII_DISK
 extern WidgetClass asciiDiskWidgetClass;
+#endif
 
 #endif /* _AsciiText_h */

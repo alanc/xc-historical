@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiTextP.h,v 1.11 89/03/30 16:05:11 jim Exp $ */
+/* $XConsortium: AsciiTextP.h,v 1.12 89/05/11 01:04:42 kit Exp $ */
 
 
 /***********************************************************
@@ -36,27 +36,59 @@ SOFTWARE.
 extern XtActionsRec textActionsTable[];
 extern Cardinal textActionsTableCount;
 
+typedef struct {int empty;} AsciiClassPart;
+
+typedef struct _AsciiTextClassRec {
+    CoreClassPart	core_class;
+    SimpleClassPart	simple_class;
+    TextClassPart	text_class;
+    AsciiClassPart	ascii_class;
+} AsciiTextClassRec;
+
+extern AsciiTextClassRec asciiTextClassRec;
+
+typedef struct { char foo; /* keep compiler happy. */ } AsciiPart;
+
+typedef struct _AsciiRec {
+    CorePart		core;
+    SimplePart		simple;
+    TextPart		text;
+    AsciiPart           ascii;
+} AsciiRec;
+
+/************************************************************
+ *
+ * Ascii String Emulation widget.
+ *
+ ************************************************************/ 
+
 typedef struct {int empty;} AsciiStringClassPart;
 
 typedef struct _AsciiStringClassRec {
     CoreClassPart	core_class;
     SimpleClassPart	simple_class;
     TextClassPart	text_class;
-    AsciiStringClassPart ascii_string_class;
+    AsciiClassPart	ascii_class;
+    AsciiStringClassPart string_class;
 } AsciiStringClassRec;
 
 extern AsciiStringClassRec asciiStringClassRec;
 
-typedef struct {
-    String	string;		/* string for which to create a source */
-} AsciiStringPart;
+typedef struct { char foo; /* keep compiler happy. */ } AsciiStringPart;
 
 typedef struct _AsciiStringRec {
     CorePart		core;
     SimplePart		simple;
     TextPart		text;
-    AsciiStringPart	ascii_string;
+    AsciiPart           ascii;
+    AsciiStringPart     ascii_str;
 } AsciiStringRec;
+
+/************************************************************
+ *
+ * Ascii Disk Emulation widget.
+ *
+ ************************************************************/ 
 
 typedef struct {int empty;} AsciiDiskClassPart;
 
@@ -64,20 +96,20 @@ typedef struct _AsciiDiskClassRec {
     CoreClassPart	core_class;
     SimpleClassPart	simple_class;
     TextClassPart	text_class;
-    AsciiDiskClassPart	ascii_disk_class;
+    AsciiClassPart	ascii_class;
+    AsciiDiskClassPart	disk_class;
 } AsciiDiskClassRec;
 
 extern AsciiDiskClassRec asciiDiskClassRec;
 
-typedef struct {
-    String	file_name;	/* file for which to create a source */
-} AsciiDiskPart;
+typedef struct { char foo; /* keep compiler happy. */ } AsciiDiskPart;
 
 typedef struct _AsciiDiskRec {
     CorePart		core;
     SimplePart		simple;
     TextPart		text;
-    AsciiDiskPart	ascii_disk;
+    AsciiPart           ascii;
+    AsciiDiskPart       ascii_disk;
 } AsciiDiskRec;
 
 #endif /* _AsciiTextP_h */

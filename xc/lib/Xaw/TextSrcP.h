@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.4 89/05/11 14:20:38 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.5 89/05/19 21:07:51 kit Exp $
 */
 
 
@@ -48,7 +48,9 @@ typedef struct _XawTextSource {
     void		(*SetSelection)( /* source, left, right, selection */);
     Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
     XawTextEditType	edit_mode;
-    caddr_t		data;	    
+    caddr_t		data;	
+    Boolean             (*SetValuesHook)(); /* Widget, ArgList, NumArgs */
+    void                (*GetValuesHook)(); /* Widget, ArgList, NumArgs */
     };
 
 typedef struct _XawTextSink {
@@ -82,6 +84,13 @@ typedef struct {
 } XawTextSelection;
 
 typedef enum  {Normal, Selected }highlightType;
+
+/*
+ * Error Conditions:
+ */
+
+#define XawTextReadError -1
+#define XawTextScanError -1
 
 #ifdef XAW_BC
 /*************************************************************
