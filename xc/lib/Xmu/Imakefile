@@ -1,0 +1,54 @@
+/**/#
+/**/# This library contains miscellaneous utility routines and is not part
+/**/# of the Xlib standard.
+/**/#
+
+    STD_DEFINES = LibraryDefines
+    CDEBUGFLAGS = LibraryCDebugFlags
+       INCLUDES = -I. -I$(TOP) -I$(TOP)/X11
+   INSTALLFLAGS = $(INSTINCFLAGS)
+       LINTLIBS = $(LINTXLIB) 
+
+HEADERS = \
+	Xmu.h
+
+SRCS = \
+	RdBitF.c
+
+OBJS = \
+	RdBitF.o
+
+#if DebugLibXmu && ProfileLibXmu
+DebuggedAndProfiledLibraryObjectRule()
+#else
+# if DebugLibXmu 
+DebuggedLibraryObjectRule()
+# else
+#  if ProfileLibXmu
+ProfiledLibraryObjectRule()
+#  else
+NormalLibraryObjectRule()
+#  endif
+# endif
+#endif
+
+NormalLibraryTarget(Xmu,$(OBJS))
+LintLibraryTarget(Xmu,$(SRCS))
+InstallLibrary(Xmu,$(USRLIBDIR))
+InstallLintLibrary(Xmu,$(LINTLIBDIR))
+
+#if ProfileLibXmu 
+ProfiledLibraryTarget(Xmu,$(OBJS))
+InstallLibrary(Xmu_p,$(USRLIBDIR))
+#endif
+
+#if DebugLibXmu
+DebuggedLibraryTarget(Xmu,$(OBJS))
+#endif
+
+InstallMultiple($(HEADERS),$(INCDIR))
+
+DependTarget()
+
+NormalLintTarget($(SRCS))
+
