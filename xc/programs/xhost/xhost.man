@@ -51,7 +51,7 @@ Access is restricted to only those machines on the list of allowed hosts
 .I nothing
 If no command line arguments are given, the list of hosts that are allowed
 to connect is printed on the standard output along with a message indicating
-whether or not access control is currently enabled.  This is the only that
+whether or not access control is currently enabled.  This is the only option that
 may be used from machines other than the one on which the server is
 running.
 .SH FILES
