@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.14 94/04/07 17:49:25 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.15 94/04/17 20:15:40 mor Exp mor $ */
 /******************************************************************************
 
 
@@ -282,7 +282,7 @@ IceConn iceConn;
 	}
     }
 
-    if (iceConn->trans_conn)
+    if (iceConn->trans_conn && iceConn->io_ok)
 	_IceTransClose (iceConn->trans_conn);
 
     if (iceConn->connection_string)
