@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.202 93/03/12 13:28:32 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.203 93/03/15 15:25:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,7 +30,9 @@ SOFTWARE.
 #include "StringDefs.h"
 #include "CoreP.h"
 #include "ShellP.h"
+#ifndef WIN32
 #include <pwd.h>
+#endif
 #include <stdio.h>
 #include <X11/Xlocale.h>
 
@@ -174,6 +176,17 @@ void XtToolkitInitialize()
 static String XtGetRootDirName(buf)
      String buf;
 {
+#ifdef WIN32
+    register char *ptr;
+
+    if (ptr = getenv("HOME"))
+	(void) strcpy(buf, ptr);
+    else if (ptr = getenv("USERNAME")) {
+	(void) strcpy (buf, "/users/");
+	(void) strcat (buf, ptr);
+    } else
+	*buf = '\0';
+#else
 #ifndef X_NOT_POSIX
      uid_t uid;
 #else
@@ -203,6 +216,7 @@ static String XtGetRootDirName(buf)
 
      if (ptr)
  	(void) strcpy(buf, ptr);
+#endif
 
      buf += strlen(buf);
      *buf = '/';
