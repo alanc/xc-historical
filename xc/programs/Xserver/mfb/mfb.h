@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.14 91/01/27 13:02:07 keith Exp $ */
+/* $XConsortium: mfb.h,v 5.15 91/04/10 11:43:42 keith Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -81,6 +81,9 @@ extern RegionPtr mfbCopyArea();
 extern void mfbPolyPoint();
 extern RegionPtr mfbCopyPlane();
 extern void mfbPolyFillArcSolid();
+extern void mfbFillPolyWhite();
+extern void mfbFillPolyBlack();
+extern void mfbFillPolyInvert();
 
 extern void mfbSetSpans();
 extern void mfbGetSpans();

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.24 91/05/24 17:22:33 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.25 91/05/26 09:22:58 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -61,7 +61,7 @@ static GCOps	whiteTECopyOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	mfbZeroPolyArcSS,
-	miFillPolygon,
+	mfbFillPolyWhite,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -85,7 +85,7 @@ static GCOps	blackTECopyOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	mfbZeroPolyArcSS,
-	miFillPolygon,
+	mfbFillPolyBlack,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -109,7 +109,7 @@ static GCOps	whiteTEInvertOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	miZeroPolyArc,
-	miFillPolygon,
+	mfbFillPolyInvert,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -133,7 +133,7 @@ static GCOps	blackTEInvertOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	miZeroPolyArc,
-	miFillPolygon,
+	mfbFillPolyInvert,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -157,7 +157,7 @@ static GCOps	whiteCopyOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	mfbZeroPolyArcSS,
-	miFillPolygon,
+	mfbFillPolyWhite,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -181,7 +181,7 @@ static GCOps	blackCopyOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	mfbZeroPolyArcSS,
-	miFillPolygon,
+	mfbFillPolyBlack,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -205,7 +205,7 @@ static GCOps	whiteInvertOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	miZeroPolyArc,
-	miFillPolygon,
+	mfbFillPolyInvert,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -229,7 +229,7 @@ static GCOps	blackInvertOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	miZeroPolyArc,
-	miFillPolygon,
+	mfbFillPolyInvert,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -253,7 +253,7 @@ static GCOps	whiteWhiteCopyOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	mfbZeroPolyArcSS,
-	miFillPolygon,
+	mfbFillPolyWhite,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -277,7 +277,7 @@ static GCOps	blackBlackCopyOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	mfbZeroPolyArcSS,
-	miFillPolygon,
+	mfbFillPolyBlack,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -301,7 +301,7 @@ static GCOps	fgEqBgInvertOps = {
 	mfbSegmentSS,
 	miPolyRectangle,
 	miZeroPolyArc,
-	miFillPolygon,
+	mfbFillPolyInvert,
 	mfbPolyFillRect,
 	mfbPolyFillArcSolid,
 	miPolyText8,
@@ -958,6 +958,7 @@ mfbValidateGC(pGC, changes, pDrawable)
     {
 	/* install a suitable fillspans and pushpixels */
 	pGC->ops->PushPixels = mfbPushPixels;
+	pGC->ops->FillPolygon = miFillPolygon;
 	if ((pGC->fillStyle == FillSolid) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
 	     ((pGC->fgPixel & 1) == (pGC->bgPixel & 1))))
@@ -967,15 +968,19 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    {
 	      case RROP_WHITE:
 		pGC->ops->FillSpans = mfbWhiteSolidFS;
+		pGC->ops->FillPolygon = mfbFillPolyWhite;
 		break;
 	      case RROP_BLACK:
 		pGC->ops->FillSpans = mfbBlackSolidFS;
+		pGC->ops->FillPolygon = mfbFillPolyBlack;
 		break;
 	      case RROP_INVERT:
 		pGC->ops->FillSpans = mfbInvertSolidFS;
+		pGC->ops->FillPolygon = mfbFillPolyInvert;
 		break;
 	      case RROP_NOP:
 		pGC->ops->FillSpans = NoopDDA;
+		pGC->ops->FillPolygon = NoopDDA;
 		break;
 	    }
 	}
