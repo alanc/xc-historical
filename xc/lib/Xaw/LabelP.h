@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.15 88/02/26 09:27:32 swick Exp $
+* $XConsortium: LabelP.h,v 1.16 88/09/04 12:32:28 swick Exp $
 */
 
 
@@ -43,8 +43,6 @@ SOFTWARE.
 
 #include <X11/Label.h>
 #include <X11/SimpleP.h>
-
-#define XtRjustify		"Justify"
 
 /* New fields for the Label widget class record */
 
