@@ -294,7 +294,7 @@
       (CLOSE-DISPLAY display))))
   
 
-(defun pop-up (host strings &key (title "Pick one:") (font "fg-16"))
+(defun pop-up (host strings &key (title "Pick one:") (font "fixed"))
   (let* ((display   (OPEN-DISPLAY host))
 	 (screen    (first (DISPLAY-ROOTS display)))
 	 (fg-color  (SCREEN-BLACK-PIXEL screen))
