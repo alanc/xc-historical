@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.141 93/09/27 22:53:03 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.142 93/09/28 00:04:17 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -207,6 +207,7 @@ Display *XOpenDisplay (display)
 	dpy->vnumber = X_PROTOCOL;
 	dpy->resource_alloc = _XAllocID;
 	dpy->synchandler = NULL;
+	dpy->savedsynchandler = NULL;
 	dpy->request = 0;
 	dpy->last_request_read = 0;
 	dpy->default_screen = iscreen;  /* Value returned by ConnectDisplay */
