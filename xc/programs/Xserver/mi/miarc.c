@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.64 88/12/06 15:26:35 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.66 88/12/08 16:50:48 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -1385,7 +1385,17 @@ double	a;
 }
 
 /*
- * draw zero width/height arcs with the rectangle routines
+ * scan convert wide arcs.
+ */
+
+#undef fabs
+#undef min
+#undef max
+
+extern double	ceil (), floor (), fabs (), sin (), cos (), sqrt (), pow ();
+
+/*
+ * draw zero width/height arcs
  */
 
 drawZeroArc (pDraw, pGC, tarc, left, right)
@@ -1397,7 +1407,6 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 	double	x0, y0, x1, y1, w, h;
 	int	a0, a1;
 	double	startAngle, endAngle;
-	SppPointRec	box[4];
 	double	l;
 
 	l = pGC->lineWidth;
@@ -1441,16 +1450,32 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 		}
 	}
 	if (x1 != x0 && y1 != y0) {
-		box[0].x = x0;
-		box[0].y = y0;
-		box[1].x = x1;
-		box[1].y = y0;
-		box[2].x = x1;
-		box[2].y = y1;
-		box[3].x = x0;
-		box[3].y = y1;
-		miFillSppPoly (pDraw, pGC, 4, box, tarc.x, tarc.y,
-			       w, h);
+		int	minx, maxx, miny, maxy, y, t;
+		xRectangle  rect;
+
+		minx = ceil (x0 + w) + tarc.x;
+		maxx = ceil (x1 + w) + tarc.x;
+		if (minx > maxx) {
+			t = minx;
+			minx = maxx;
+			maxx = t;
+		}
+		miny = ceil (y0 + h) + tarc.y;
+		maxy = ceil (y1 + h) + tarc.y;
+		if (miny > maxy) {
+			t = miny;
+			miny = maxy;
+			maxy = t;
+		}
+		rect.x = minx;
+		rect.y = miny;
+		rect.width = maxx - minx;
+		rect.height = maxy - miny;
+		(*pGC->PolyFillRect) (pDraw, pGC, 1, &rect);
+/*
+		for (y = miny; y < maxy; y++)
+			newFinalSpan (y, minx, maxx);
+*/
 	}
 	if (right) {
 		if (h != 0) {
@@ -1487,16 +1512,6 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 		}
 	}
 }
-
-/*
- * scan convert wide arcs.
- */
-
-#undef fabs
-#undef min
-#undef max
-
-extern double	ceil (), floor (), fabs (), sin (), cos (), sqrt (), pow ();
 
 # define BINARY_LIMIT	(0.1)
 # define NEWTON_LIMIT	(0.0000001)
@@ -1981,8 +1996,8 @@ elipseX (elipse_y, def, acc)
 
 double
 outerX (outer_y, def, bound, acc)
-	double			outer_y;
-	struct arc_def		*def;
+	register double		outer_y;
+	register struct arc_def	*def;
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
 {
@@ -1992,7 +2007,8 @@ outerX (outer_y, def, bound, acc)
 	 * special case for circles
 	 */
 	if (def->w == def->h) {
-		double	x;
+		register double	x;
+
 		x = def->w + def->l/2.0;
 		x = Sqrt (x * x - outer_y * outer_y);
 		return x;
@@ -2012,13 +2028,14 @@ outerX (outer_y, def, bound, acc)
  */
 
 innerXs (inner_y, def, bound, acc, innerX1p, innerX2p)
-	double			inner_y;
+	register double		inner_y;
 	struct arc_def		*def;
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
 	double			*innerX1p, *innerX2p;
 {
-	double	x1, x2, xalt, y0, y1, altY, elipse_y1, elipse_y2;
+	register double	x1, x2;
+	double		xalt, y0, y1, altY, elipse_y1, elipse_y2;
 
 	/*
 	 * special case for circles
@@ -2287,7 +2304,7 @@ static struct finalSpan    *freeFinalSpans, *tmpFinalSpan;
 				 tmpFinalSpan) : \
 			     realAllocSpan ())
 
-# define SPAN_CHUNK_SIZE    1024
+# define SPAN_CHUNK_SIZE    128
 
 struct finalSpanChunk {
 	struct finalSpan	data[SPAN_CHUNK_SIZE];
@@ -2375,7 +2392,7 @@ fillSpans (pDrawable, pGC)
 	nspans = 0;
 }
 
-# define SPAN_REALLOC	2048
+# define SPAN_REALLOC	1024
 
 # define findSpan(y) ((finalMiny <= (y) && (y) < finalMaxy) ? \
 			  &finalSpans[(y) - finalMiny] : \
@@ -2386,8 +2403,8 @@ realFindSpan (y)
 {
 	struct finalSpan	**newSpans;
 	int			newSize, newMiny, newMaxy;
-	int			i;
 	int			change;
+	int			i;
 
 	if (y < finalMiny || y >= finalMaxy) {
 		if (y < finalMiny)
@@ -2413,10 +2430,11 @@ realFindSpan (y)
 			       finalSize * sizeof (struct finalSpan *));
 			Xfree (finalSpans);
 		}
-		for (i = newMiny; i < finalMiny; i++)
-			newSpans[i-newMiny] = 0;
-		for (i = finalMaxy; i < newMaxy; i++)
-			newSpans[i-newMiny] = 0;
+		if ((i = finalMiny - newMiny) > 0)
+			bzero (newSpans, i * sizeof (struct finalSpan *));
+		if ((i = newMaxy - finalMaxy) > 0)
+			bzero (newSpans + finalMaxy - newMiny,
+			       i * sizeof (struct finalSpan *));
 		finalSpans = newSpans;
 		finalMaxy = newMaxy;
 		finalMiny = newMiny;
@@ -2426,9 +2444,13 @@ realFindSpan (y)
 }
 
 newFinalSpan (y, xmin, xmax)
+int		y;
+register int	xmin, xmax;
 {
-	struct finalSpan	**f;
-	struct finalSpan	*x, *oldx, *prev;
+	register struct finalSpan	*x;
+	register struct finalSpan	**f;
+	struct finalSpan		*oldx;
+	struct finalSpan		*prev;
 
 	f = findSpan (y);
 	oldx = 0;
