@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.34 92/04/02 19:24:16 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.35 92/04/03 10:07:36 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -29,7 +29,7 @@ Syntax of magic values in the input stream:
 ^T^C			set Control key for next character
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
-^T^J<options>^T		jump to next closest top-level window
+^T^J<options> [mult]^T	jump to next closest top-level window
 	C		closest top-level window
 	D		top-level window going down
 	L		top-level window going left
@@ -40,8 +40,9 @@ Syntax of magic values in the input stream:
 	l		top-level widget going left
 	r		top-level widget going right
 	u		top-level widget going up
-	k		ignore windows that don't select for key events
-	b		ignore windows that don't select for button events
+	k		require windows that select for key events
+	b		require windows that select for button events
+	[mult]		off-axis distance multiplier
 ^T^M			set Meta key for next character
 ^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
@@ -497,15 +498,16 @@ do_warp(buf)
 }
 
 Bool
-find_closest(dir, rootx, rooty, parent, pwa, input,
+find_closest(dir, mult, rootx, rooty, parent, pwa, input,
 	     bestx, besty, best_dist, recurse)
     char dir;
+    double mult;
     int rootx, rooty;
     Window parent;
     XWindowAttributes *pwa;
     Mask input;
     int *bestx, *besty;
-    long *best_dist;
+    double *best_dist;
     Bool recurse;
 {
     Window *children;
@@ -513,7 +515,10 @@ find_closest(dir, rootx, rooty, parent, pwa, input,
     XWindowAttributes wa;
     int i;
     Bool found = False;
-    long dist;
+    double dist;
+    int x1, y1, x2, y2, x, y;
+    double xmult = 1.0;
+    double ymult = 1.0;
 
     XQueryTree(dpy, parent, &wa.root, &wa.root, &children, &nchild);
     for (i = 0; i < nchild; i++) {
@@ -523,50 +528,82 @@ find_closest(dir, rootx, rooty, parent, pwa, input,
 	    continue;
 	if (input && !(wa.all_event_masks & input))
 	    continue;
-	if (wa.x >= pwa->width ||
-	    wa.x + wa.width + (2 * wa.border_width) <= 0 ||
-	    wa.y >= pwa->height ||
-	    wa.y + wa.height + (2 * wa.border_width) <= 0)
+	x1 = wa.x;
+	y1 = wa.y;
+	x2 = x1 + wa.width + (2 * wa.border_width);
+	y2 = y1 + wa.height + (2 * wa.border_width);
+	if (x1 >= pwa->width || x2 <= 0 || y1 >= pwa->height || y2 <= 0)
 	    continue;
-	wa.x += pwa->x;
-	wa.y += pwa->y;
+	x1 += pwa->x;
+	y1 += pwa->y;
+	wa.x = x1;
+	wa.y = y1;
+	x2 += pwa->x;
+	y2 += pwa->y;
 	if (recurse &&
-	    find_closest(dir, rootx, rooty, children[i], &wa, input,
+	    find_closest(dir, mult, rootx, rooty, children[i], &wa, input,
 	    		 bestx, besty, best_dist, recurse)) {
 	    found = True;
 	    continue;
 	}
-	if (rootx >= wa.x &&
-	    rootx < wa.x + wa.width + (2 * wa.border_width) &&
-	    rooty >= wa.y &&
-	    rooty < wa.y + wa.height + (2 * wa.border_width))
-	    continue;
-	wa.x += wa.width/2 + wa.border_width;
-	wa.y += wa.height/2 + wa.border_width;
-	dist = ((wa.x - rootx) * (wa.x - rootx) +
-		(wa.y - rooty) * (wa.y - rooty));
-	if (dist > *best_dist)
+	if (rootx >= x1 && rootx < x2 && rooty >= y1 && rooty < y2)
 	    continue;
 	switch (dir) {
 	case 'U':
-	    if (wa.y >= rooty)
+	    if (y2 > rooty)
 		continue;
+	    if (x2 < rootx)
+		x = x2;
+	    else if (x1 > rootx)
+		x = x1;
+	    else
+		x = rootx;
+	    xmult = mult;
+	    y = y2;
 	    break;
 	case 'D':
-	    if (wa.y <= rooty)
+	    if (y1 < rooty)
 		continue;
+	    if (x2 < rootx)
+		x = x2;
+	    else if (x1 > rootx)
+		x = x1;
+	    else
+		x = rootx;
+	    xmult = mult;
+	    y = y1;
 	    break;
 	case 'R':
-	    if (wa.x <= rootx)
+	    if (x1 < rootx)
 	    	continue;
+	    if (y2 < rooty)
+		y = y2;
+	    else if (y1 > rooty)
+		y = y1;
+	    else
+		y = rooty;
+	    ymult = mult;
+	    x = x1;
 	    break;
 	case 'L':
-	    if (wa.x >= rootx)
+	    if (x2 > rootx)
 		continue;
+	    if (y2 < rooty)
+		y = y2;
+	    else if (y1 > rooty)
+		y = y1;
+	    else
+		y = rooty;
+	    ymult = mult;
+	    x = x2;
 	    break;
 	}
-	*bestx = wa.x;
-	*besty = wa.y;
+	dist = (xmult * (x - rootx) * (x - rootx) +
+		ymult * (y - rooty) * (y - rooty));
+	if (dist > *best_dist)
+	    continue;
+	*bestx = (x1 + x2) / 2;
+	*besty = (y1 + y2) / 2;
 	*best_dist = dist;
 	found = True;
     }
@@ -583,11 +620,13 @@ do_jump(buf)
     int rootx, rooty;
     XWindowAttributes wa;
     int bestx, besty;
-    long best_dist;
+    double best_dist;
     int screen;
     char dir;
     Bool widget = False;
-    Mask input = KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask;
+    Mask input = 0;
+    double mult = 10.0;
+    char *endptr;
 
     for (; *buf; buf++) {
 	switch (*buf) {
@@ -604,14 +643,20 @@ do_jump(buf)
 	case 'u':
 	case 'l':
 	case 'r':
-	    dir = *buf - 'a' - 'A';
+	    dir = *buf - 'a' + 'A';
 	    widget = True;
 	    break;
 	case 'k':
-	    input &= ~(KeyPressMask|KeyReleaseMask);
+	    input |= KeyPressMask|KeyReleaseMask;
 	    break;
 	case 'b':
-	    input &= ~(ButtonPressMask|ButtonReleaseMask);
+	    input |= ButtonPressMask|ButtonReleaseMask;
+	    break;
+	case ' ':
+	    mult = strtod(buf+1, &endptr);
+	    if (*endptr)
+		return;
+	    buf = endptr - 1;
 	    break;
 	default:
 	    return;
@@ -621,7 +666,7 @@ do_jump(buf)
 		  &bestx, &besty, (unsigned int *)&screen);
     for (screen = 0; RootWindow(dpy, screen) != root; screen++)
 	;
-    if (widget) {
+    if (widget && child) {
 	XGetWindowAttributes(dpy, child, &wa);
 	root = child;
     } else {
@@ -630,8 +675,8 @@ do_jump(buf)
 	wa.width = WidthOfScreen(ScreenOfDisplay(dpy, screen));
 	wa.height = HeightOfScreen(ScreenOfDisplay(dpy, screen));
     }
-    best_dist = 0x7fffffff;
-    if (find_closest(dir, rootx, rooty, root, &wa, input,
+    best_dist = 4e9;
+    if (find_closest(dir, mult, rootx, rooty, root, &wa, input,
 		     &bestx, &besty, &best_dist, widget))
 	generate_warp(screen, bestx, besty);
 }
