@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.200 88/02/25 17:48:36 rws Exp $ */
+/* $Header: window.c,v 1.201 88/03/16 10:29:24 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2238,7 +2238,7 @@ CirculateWindow(pParent, direction, client)
 						        : (WindowPtr)NULL);
 
     event.u.u.type = CirculateNotify;
-    DeliverEvents(pParent, &event, 1, NullWindow);
+    DeliverEvents(pWin, &event, 1, NullWindow);
     return(Success);
 }
 
