@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.4 89/06/15 18:49:08 jim Exp $
+ * $XConsortium: globals.c,v 1.5 89/06/15 19:14:25 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -9,6 +9,7 @@
  * This file should contain only those objects which must be predefined.
  */
 #include "Xlib.h"
+#include <sys/param.h>			/* for definition of NULL */
 
 
 /*
@@ -17,44 +18,39 @@
  * global initialized data.
  */
 #ifdef NULL_NOT_ZERO			/* then need to initialize */
-/*
- * need to explicitly initialize variables to null values
- */
+
 #ifdef ATTSHAREDLIB			/* then need extra variables */
 #if defined(__STDC__) && !defined(UNIXCPP)  /* then ANSI C concatenation */
-#define INIT(t,var,val) \
+#define ZEROINIT(t,var,val) \
   t var = val; long var##Flag = 0; void * var##Ptr = NULL
-#else					/* else pcc concatenation */
-#define INIT(t,var,val) \
+#else /* else pcc concatenation */
+#define ZEROINIT(t,var,val) \
   t var = val; long var/**/Flag = 0; void * var/**/Ptr = NULL
-#endif					/* concat ANSI C vs. pcc */
-#else					/* else no extra variables */
-/*
- * zeroed variables are NULL
- */
-#define INIT(t,var,val) t var = val
-#endif					/* NULL_NOT_ZERO */
-#include <sys/param.h>			/* for definition of NULL */
+#endif /* concat ANSI C vs. pcc */
+#else /* else not ATTSHAREDLIB */
+#define ZEROINIT(t,var,val) t var = val
+#endif /* ATTSHAREDLIB */
 
-#else					/* else zero value same as NULL */
-#define INIT(t,var,val) t var	/* let it default to zero */
-#endif
+
+#else /* not NULL_NOT_ZERO */		/* do not need to explicitly init */
+#define ZEROINIT(t,var,val) t var		/* let it default to zero */
+#endif /* NULL_NOT_ZERO */
 
 
 /*
  * Error handlers; used to be in XlibInt.c
  */
 typedef int (*funcptr)();
-INIT (funcptr, _XErrorFunction, NULL);
-INIT (funcptr, _XIOErrorFunction, NULL);
-INIT (_XQEvent *, _qfree, NULL);
+ZEROINIT (funcptr, _XErrorFunction, NULL);
+ZEROINIT (funcptr, _XIOErrorFunction, NULL);
+ZEROINIT (_XQEvent *, _qfree, NULL);
 
 
 /*
  * Debugging information and display list; used to be in XOpenDis.c
  */
-INIT (int, _Xdebug, 0);
-INIT (Display *, _XHeadOfDisplayList, NULL);
+ZEROINIT (int, _Xdebug, 0);
+ZEROINIT (Display *, _XHeadOfDisplayList, NULL);
 
 
 
