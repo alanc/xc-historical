@@ -1,149 +1,146 @@
-/* $XConsortium: XcmsInt.c,v 1.11 91/01/28 14:33:58 alt Exp $" */
-
 /*
- * (c) Copyright 1990 1991, Tektronix Inc.
- * 	All Rights Reserved
+ * square and cube roots by Newton's method
  *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
+ * $XConsortium$
  *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * Copyright 1990 Massachusetts Institute of Technology
  *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
  *
- *	NAME
- *		XcmsMath.c - TekCMS Math Routines
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *	DESCRIPTION
- *		Math routines provided in lieu of those provided
- *		in the math library (libm.a) so that device-independent
- *		color spaces that need them can be accessed by the color
- *		management system without the need of calling
- *		XcmsAddDIColorSpace().
- *
- *		CIELab -- requires cuberoot
- *		CIELuv -- requires cuberoot
- *		TekHVC -- requires cuberoot, squareroot, and arctangent
- *
- *
+ * Stephen Gildea, MIT X Consortium, January 1991
  */
 
+/* header files should say this: */
+#ifdef __GNUC__
+const double XcmsCubeRoot(double a);
+const double XcmsSquareRoot(double a);
+#else
+#ifdef __STDC__
+double XcmsCubeRoot(double a);
+double XcmsSquareRoot(double a);
+#else
+double XcmsCubeRoot();
+double XcmsSquareRoot();
+#endif
+#endif
+
+#ifdef __STDC__
+#include <float.h>
+static double epsilon_factor = DBL_EPSILON;
+#else
+static double epsilon_factor = 1e-6; /* conservative */
+#endif
+
+#ifdef _X_ROOT_STATS
+int cbrt_loopcount;
+int sqrt_loopcount;
+#endif
+
+/* Newton's Method:  x_n+1 = x_n - ( f(x_n) / f'(x_n) ) */
 
 
-/*
- *      EXTERNAL INCLUDES
- */
+/* for cube roots, x^3 - a = 0,  x_new = x - 1/3 (x - a/x^2) */
 
-/*
- *      DEFINES
- */
-#define MAXERROR 0.0001
-#define MAXITER  10000
-#define MYABS(z) ((z) < 0.0 ? -(z) : (z))
-
-
-
-/************************************************************************
- *									*
- *			   API PRIVATE ROUTINES				*
- *									*
- ************************************************************************/
-
-/*
- *	NAME
- *		Xcms_CubeRoot
- *
- *	SYNOPSIS
- */
 double
-XcmsCubeRoot(x)
-    double x;
-/*
- *	DESCRIPTION
- *		Computes the cuberoot.
- *
- *	RETURNS
- *		Returns the cuberoot
- */
+XcmsCubeRoot(a)
+    double a;
 {
-    double y;
-    double maxerror;
-    int i;
+    double abs_a, cur_guess, delta;
 
-    if (x <= 0.0)  {
-	return (0.0);
-    }
-    if (x == 1.0) {
-	return (1.0);
-    }
-    if (x < 1.0) {
-	maxerror = x * MAXERROR;
-	y = x * 3.0;
-    } else {
-	maxerror = MAXERROR;
-	y = x / 3.0;
-    }
-    for (i = 0; i < MAXITER; i++) {
-	if ((MYABS((y*y*y) - x) < maxerror)) {
-	    return (y);
-	}
-	y = (y + (((3 * x) / 2.0) / ((y * y) + ((x / 2.0) / y)))) / 2.0;
-    }
+#ifdef DEBUG
+    printf("XcmsCubeRoot passed in %g\n", a);
+#endif
+#ifdef _X_ROOT_STATS
+    cbrt_loopcount = 0;
+#endif
+    if (a == 0.)
+	return 0.;
 
-    /* Max interations reached */
-    return (y);
+    abs_a = a<0. ? -a : a;	/* convert to positive to speed loop tests */
+
+    /* arbitrary first guess */
+    if (abs_a > 1.)
+	cur_guess = abs_a/8.;
+    else
+	cur_guess = abs_a*8.;
+
+    while (1) {
+#ifdef _X_ROOT_STATS
+	cbrt_loopcount++;
+#endif
+	delta = (cur_guess - abs_a/(cur_guess*cur_guess))/3.;
+	cur_guess -= delta;
+	if (delta < 0.) delta = -delta;
+	if (delta < cur_guess*epsilon_factor)
+	    break;
+    }
+    if (a < 0.)
+	cur_guess = -cur_guess;
+
+#ifdef DEBUG
+    printf("XcmsCubeRoot returning %g\n", cur_guess);
+#endif
+    return cur_guess;
 }
+	
 
-
-/*
- *	NAME
- *		Xcms_SquareRoot
- *
- *	SYNOPSIS
- */
+
+/* for square roots, x^2 - a = 0,  x_new = x - 1/2 (x - a/x) */
+
 double
-XcmsSquareRoot(x)
-    double x;
-/*
- *	DESCRIPTION
- *		Computes the square root.
- *
- *	RETURNS
- *		Returns the square root
- */
+XcmsSquareRoot(a)
+    double a;
 {
-    double y; 
-    int i;
-    double maxerror;
+    double cur_guess, delta;
 
-    if (x <= 0.0)  {
-	return (0.0);
+#ifdef DEBUG
+    printf("XcmsSquareRoot passed in %g\n", a);
+#endif
+#ifdef _X_ROOT_STATS
+    sqrt_loopcount = 0;
+#endif
+    if (a == 0.)
+	return 0.;
+
+    if (a < 0.) {
+	/* errno = EDOM; */
+	return 0.;
     }
-    if (x == 1.0) {
-	return (1.0);
+
+    /* arbitrary first guess */
+    if (a > 1.)
+	cur_guess = a/4.;
+    else
+	cur_guess = a*4.;
+
+    while (1) {
+#ifdef _X_ROOT_STATS
+	sqrt_loopcount++;
+#endif
+	delta = (cur_guess - a/cur_guess)/2.;
+	cur_guess -= delta;
+	if (delta < 0.) delta = -delta;
+	if (delta < cur_guess*epsilon_factor)
+	    break;
     }
-    if (x < 1.0) {
-	maxerror = x * MAXERROR;
-	y = x * 2.0;
-    } else {
-	maxerror = MAXERROR;
-	y = x / 2.0;
-    }
-    for (i = 0; i < MAXITER; i++) {
-	if (MYABS((y*y) - x) < maxerror) {
-	    return (y);
-	}
-	y += (((x  / y) - y) / 2.0);
-    }
-    return (y);
+#ifdef DEBUG
+    printf("XcmsSquareRoot returning %g\n", cur_guess);
+#endif
+    return cur_guess;
 }
+	
