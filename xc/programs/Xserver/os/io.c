@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.62 89/07/14 16:25:34 rws Exp $ */
+/* $XConsortium: io.c,v 1.63 89/08/03 20:27:49 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -54,8 +54,9 @@ extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 static Bool CriticalOutputPending;
 static int timesThisConnection = 0;
-static ConnectionInputPtr FreeInput = (ConnectionInputPtr)NULL;
-static ConnectionOutputPtr FreeOutput = (ConnectionOutputPtr)NULL;
+static ConnectionInputPtr FreeInputs = (ConnectionInputPtr)NULL;
+static ConnectionOutputPtr FreeOutputs = (ConnectionOutputPtr)NULL;
+static OsCommPtr AvailableInput = (OsCommPtr)NULL;
 
 static ConnectionInputPtr AllocateInputBuffer();
 static ConnectionOutputPtr AllocateOutputBuffer();
@@ -108,10 +109,28 @@ ReadRequestFromClient(client)
     int result, gotnow, needed;
     register xReq *request;
 
-    if (!oci && !(oci = AllocateInputBuffer(oc)))
+    if (AvailableInput)
     {
-	YieldControlDeath();
-	return -1;
+	if (AvailableInput != oc)
+	{
+	    AvailableInput->input->next = FreeInputs;
+	    FreeInputs = AvailableInput->input;
+	    AvailableInput->input = (ConnectionInputPtr)NULL;
+	}
+	AvailableInput = (OsCommPtr)NULL;
+    }
+    if (!oci)
+    {
+	if (oci = FreeInputs)
+	{
+	    FreeInputs = oci->next;
+	}
+	else if (!(oci = AllocateInputBuffer()))
+	{
+	    YieldControlDeath();
+	    return -1;
+	}
+	oc->input = oci;
     }
     oci->bufptr += oci->lenLastReq;
 
@@ -205,7 +224,11 @@ ReadRequestFromClient(client)
 	    YieldControlNoInput();
     }
     else
+    {
+	if (gotnow == needed)
+	    AvailableInput = oc;
 	YieldControlNoInput();
+    }
     if (++timesThisConnection >= MAX_TIMES_PER)
 	YieldControl();
 
@@ -231,8 +254,24 @@ InsertFakeRequest(client, data, count)
     register xReq *request;
     int gotnow, moveup;
 
-    if (!oci && !(oci = AllocateInputBuffer(oc)))
-	return FALSE;
+    if (AvailableInput)
+    {
+	if (AvailableInput != oc)
+	{
+	    AvailableInput->input->next = FreeInputs;
+	    FreeInputs = AvailableInput->input;
+	    AvailableInput->input = (ConnectionInputPtr)NULL;
+	}
+	AvailableInput = (OsCommPtr)NULL;
+    }
+    if (!oci)
+    {
+	if (oci = FreeInputs)
+	    FreeInputs = oci->next;
+	else if (!(oci = AllocateInputBuffer()))
+	    return FALSE;
+	oc->input = oci;
+    }
     oci->bufptr += oci->lenLastReq;
     oci->lenLastReq = 0;
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
@@ -282,6 +321,8 @@ ResetCurrentRequest(client)
     register xReq *request;
     int gotnow;
 
+    if (AvailableInput == oc)
+	AvailableInput = (OsCommPtr)NULL;
     oci->lenLastReq = 0;
     request = (xReq *)oci->bufptr;
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
@@ -477,6 +518,9 @@ FlushClient(who, oc, extraBuf, extraCount)
 	    oco->buf = obuf;
 	}
     }
+    oco->next = FreeOutputs;
+    FreeOutputs = oco;
+    oc->output = (ConnectionOutputPtr)NULL;
     return extraCount; /* return only the amount explicitly requested */
 }
 
@@ -571,11 +615,19 @@ WriteToClient (who, count, buf)
     if (!count)
 	return(0);
 
-    if (!oco && !(oco = AllocateOutputBuffer(oc)))
+    if (!oco)
     {
-	close(oc->fd);
-	MarkClientException(who);
-	return -1;
+	if (oco = FreeOutputs)
+	{
+	    FreeOutputs = oco->next;
+	}
+	else if (!(oco = AllocateOutputBuffer()))
+	{
+	    close(oc->fd);
+	    MarkClientException(who);
+	    return -1;
+	}
+	oc->output = oco;
     }
 
     padBytes =  padlength[count & 3];
@@ -597,34 +649,10 @@ WriteToClient (who, count, buf)
 }
 
 static ConnectionInputPtr
-AllocateInputBuffer(oc)
-    OsCommPtr oc;
+AllocateInputBuffer()
 {
-    int i;
-    ClientPtr client;
-    OsCommPtr coc;
-    ConnectionInputPtr oci;
+    register ConnectionInputPtr oci;
 
-    if (oci = FreeInput)
-    {
-	FreeInput = (ConnectionInputPtr)NULL;
-	oc->input = oci;
-	return oci;
-    }
-    for (i=1; i<currentMaxClients; i++)
-    {
-	if (client = clients[i])
-	{
-	    coc = (OsCommPtr)(client->osPrivate);
-	    if (coc && (oci = coc->input) &&
-		((oci->buffer + oci->bufcnt - oci->lenLastReq) == oci->bufptr))
-	    {
-		oc->input = oci;
-		coc->input = (ConnectionInputPtr)NULL;
-		return oci;
-	    }
-	}
-    }
     oci = (ConnectionInputPtr)xalloc(sizeof(ConnectionInput));
     if (!oci)
 	return (ConnectionInputPtr)NULL;
@@ -638,38 +666,14 @@ AllocateInputBuffer(oc)
     oci->bufptr = oci->buffer;
     oci->bufcnt = 0;
     oci->lenLastReq = 0;
-    oc->input = oci;
     return oci;
 }
 
 static ConnectionOutputPtr
-AllocateOutputBuffer(oc)
-    OsCommPtr oc;
+AllocateOutputBuffer()
 {
-    int i;
-    ClientPtr client;
-    OsCommPtr coc;
-    ConnectionOutputPtr oco;
+    register ConnectionOutputPtr oco;
 
-    if (oco = FreeOutput)
-    {
-	FreeOutput = (ConnectionOutputPtr)NULL;
-	oc->output = oco;
-	return oco;
-    }
-    for (i=1; i<currentMaxClients; i++)
-    {
-	if (client = clients[i])
-	{
-	    coc = (OsCommPtr)(client->osPrivate);
-	    if (coc && (oco = coc->output) && !oco->count)
-	    {
-		oc->output = oco;
-		coc->output = (ConnectionOutputPtr)NULL;
-		return oco;
-	    }
-	}
-    }
     oco = (ConnectionOutputPtr)xalloc(sizeof(ConnectionOutput));
     if (!oco)
 	return (ConnectionOutputPtr)NULL;
@@ -681,7 +685,6 @@ AllocateOutputBuffer(oc)
     }
     oco->size = OutputBufferSize;
     oco->count = 0;
-    oc->output = oco;
     return oco;
 }
 
@@ -689,28 +692,58 @@ void
 FreeOsBuffers(oc)
     OsCommPtr oc;
 {
-    if (oc->input)
+    register ConnectionInputPtr oci;
+    register ConnectionOutputPtr oco;
+
+    if (AvailableInput == oc)
+	AvailableInput = (OsCommPtr)NULL;
+    if (oci = oc->input)
     {
-	if (FreeInput)
+	if (FreeInputs)
 	{
-	    xfree(oc->input->buffer);
-	    xfree(oc->input);
+	    xfree(oci->buffer);
+	    xfree(oci);
 	}
 	else
 	{
-	    FreeInput = oc->input;
+	    FreeInputs = oci;
+	    oci->next = (ConnectionInputPtr)NULL;
+	    oci->bufptr = oci->buffer;
+	    oci->bufcnt = 0;
+	    oci->lenLastReq = 0;
 	}
     }
-    if (oc->output)
+    if (oco = oc->output)
     {
-	if (FreeOutput)
+	if (FreeOutputs)
 	{
-	    xfree(oc->output->buf);
-	    xfree(oc->output);
+	    xfree(oco->buf);
+	    xfree(oco);
 	}
 	else
 	{
-	    FreeOutput = oc->output;
+	    FreeOutputs = oco;
+	    oco->next = (ConnectionOutputPtr)NULL;
+	    oco->count = 0;
 	}
+    }
+}
+
+ResetOsBuffers()
+{
+    register ConnectionInputPtr oci;
+    register ConnectionOutputPtr oco;
+
+    while (oci = FreeInputs)
+    {
+	FreeInputs = oci->next;
+	xfree(oci->buffer);
+	xfree(oci);
+    }
+    while (oco = FreeOutputs)
+    {
+	FreeOutputs = oco->next;
+	xfree(oco->buf);
+	xfree(oco);
     }
 }
