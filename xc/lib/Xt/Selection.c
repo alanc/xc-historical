@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.83 93/09/18 18:18:35 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.84 93/09/22 10:43:06 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -112,6 +112,12 @@ static PropList GetPropList(dpy)
     Display *dpy;
 {
     PropList sarray;
+    Atom atoms[4];
+    static char* names[] = {
+	"INCR",
+	"MULTIPLE",
+	"TIMESTAMP",
+	"_XT_SELECTION_0" };
 
     LOCK_PROCESS;
     if (selectPropertyContext == 0)
@@ -121,12 +127,14 @@ static PropList GetPropList(dpy)
 	XtPerDisplay pd = _XtGetPerDisplay(dpy);
 	sarray = (PropList) XtMalloc((unsigned) sizeof(PropListRec));
 	sarray->dpy = dpy;
-	sarray->incr_atom = XInternAtom(dpy, "INCR", FALSE);
-	sarray->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
-	sarray->timestamp_atom = XInternAtom(dpy, "TIMESTAMP", FALSE);
+	XInternAtoms(dpy, names, 4, FALSE, atoms);
+	sarray->incr_atom = atoms[0];
+	sarray->indirect_atom = atoms[1];
+	sarray->timestamp_atom = atoms[2];
 	sarray->propCount = 1;
-	sarray->list = (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
-	sarray->list[0].prop = XInternAtom(dpy, "_XT_SELECTION_0", FALSE);
+	sarray->list = 
+	    (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
+	sarray->list[0].prop = atoms[3];
 	sarray->list[0].avail = TRUE;
 	(void) XSaveContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
 			    (char *) sarray);
