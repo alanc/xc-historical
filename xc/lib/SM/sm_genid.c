@@ -1,5 +1,5 @@
-/* $XConsortium: sm_genid.c,v 1.3 94/03/18 16:03:14 mor Exp $ */
-/******************************************************************************
+/* $XConsortium: sm_genid.c,v 1.4 94/03/28 14:57:12 gildea Exp $ */
+/****************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -15,7 +15,7 @@ M.I.T. makes no representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 
 Author: Ralph Mor, X Consortium
-******************************************************************************/
+****************************************************************************/
 
 #ifdef WIN32
 #define _WILLWINSOCK_
