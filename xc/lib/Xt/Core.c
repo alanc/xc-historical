@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 1.5 88/02/03 14:54:07 swick Locked $";
+static char rcsid[] = "$Header: Core.c,v 1.6 88/02/04 15:58:08 swick Exp $";
 #endif lint
 
 /*
@@ -250,6 +250,7 @@ static void CoreDestroy (widget)
     register Widget    widget;
 {
     register XtEventRec *event, *next;
+    int i;
 
     if (*widget->core.name != '\0') /* special case; we didn't copy this */
 	XtFree((char *) (widget->core.name));
@@ -267,6 +268,10 @@ static void CoreDestroy (widget)
     _XtUnregisterWindow(widget->core.window, widget);
     if (widget->core.constraints != NULL)
 	XtFree((char *) widget->core.constraints);
+    for (i = 0; i < widget->core.num_popups; i++)
+        XDestroyWindow(XtDisplay(widget->core.popup_list[i]),
+		       widget->core.popup_list[i]->core.window);
+    if (widget->core.popup_list != NULL) XtFree(widget->core.popup_list);
     XtFree((char *) widget);
 } /* CoreDestroy */
 
