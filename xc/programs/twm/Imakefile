@@ -5,44 +5,12 @@
 /**/#distribute this one.
 /**/#
 
-/*
- * The following definitions will be removed when R4beta ships with the new
- * configuration control stuff.
- */
-#ifndef SignalReturnProcType
-#if defined(HPArchitecture) && OSMajorVersion <= 6 && OSMajorVersion <= 2
-#define SignalReturnProcType int
-#endif
-#if defined(SunArchitecture)
-#if OSMajorVersion <= 3
-#define SignalReturnProcType int
-#else
-#define SignalReturnProcType void
-#endif
-#endif
-#if defined(MacIIArchitecture)
-#define SignalReturnProcType int
-#endif
-#if defined(UltrixArchitecture)
-#define SignalReturnProcType void
-#endif
-#if defined(ApolloArchitecture)
-#define SignalReturnProcType int
-#endif
-#ifndef SignalReturnProcType
-#define SignalReturnProcType int	/* not correct, but works more often */
-#endif
+
+#if !HasVoidSignalReturn
+     SIGPROCDEF = -DSIGNALRETURNSINT
 #endif
 
-#ifndef HasPutenv
-#if defined(SunArchitecture) || defined(UltrixArchitecture)
-#define HasPutenv YES
-#endif
-#endif
-
-#if HasPutenv
-      PUTENVDEF = 
-#else
+#if !HasPutenv
       PUTENVDEF = -DNOPUTENV
 #endif
 
@@ -51,8 +19,7 @@ LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XMULIB) $(XLIB)
       OTHERSRCS = gram.y lex.l
          YFLAGS = -d
      OPTIONSDEF = -DSHAPE 
-     SIGPROCDEF = -DSIGPROCTYPE=SignalReturnProcType
-        DEFINES = $(SIGPROCDEF) $(OPTIONSDEF) $(PUTENVDEF)
+        DEFINES = $(OPTIONSDEF) $(SIGPROCDEF) $(PUTENVDEF)
 
 SRCS1=	gram.c lex.c add_window.c gc.c list.c twm.c parse.c\
         menus.c events.c resize.c util.c version.c iconmgr.c\

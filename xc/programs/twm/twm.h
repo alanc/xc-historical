@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.31 89/06/30 19:33:30 jim Exp $
+ * $XConsortium: twm.h,v 1.32 89/07/07 13:07:04 jim Exp $
  *
  * twm include file
  *
@@ -47,11 +47,12 @@
 #define WithdrawnState 0
 #endif
 
-#ifndef SIGPROCTYPE
-#define SIGPROCTYPE void	/* type of function returned by signal() */
+#ifdef SIGNALRETURNSINT
+typedef int (*SigProc)();	/* type of function returned by signal() */
+#else
+typedef void (*SigProc)();	/* type of function returned by signal() */
 #endif
 
-typedef SIGPROCTYPE (*SigProc)();
 
 #define BW 2			/* border width */
 #define BW2 4			/* border width  * 2 */
