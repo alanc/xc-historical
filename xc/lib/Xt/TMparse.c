@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.81 89/09/28 11:53:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.82 89/09/28 17:14:07 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -38,10 +38,10 @@ SOFTWARE.
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
 
-#ifndef NOCACHE_TRANSLATIONS
+#ifdef NOCACHE_TRANSLATIONS
 #define CACHED XtCacheNone
 #else
-#define CACHED XtCacheAll | XtRefCount
+#define CACHED XtCacheAll | XtCacheRefCount
 #endif
 
 /* Private definitions. */
@@ -632,7 +632,6 @@ static String ParseModifiers(str, event,error)
              str = ScanWhitespace(str);
         }
         if (*str == ':') {
-             exclusive = TRUE;
              event->event.standard = TRUE;
              str++;
              str = ScanWhitespace(str);
@@ -1020,7 +1019,7 @@ static String ParseEvent(str, event,error)
  * modifiers in grabs.
  */
     if ((event->event.eventType == ButtonRelease)
-	&& (event->event.modifiers |event->event.modifierMask != 0) /* any */
+	&& (event->event.modifiers | event->event.modifierMask) /* any */
         && (event->event.modifiers != AnyModifier))
     {
 	event->event.modifiers
@@ -1106,7 +1105,7 @@ static void RepeatDown(eventP, reps, actionsP)
 	ButtonRelease : KeyRelease);
     if ((upEvent->event.eventType == ButtonRelease)
 	&& (upEvent->event.modifiers != AnyModifier)
-        && (upEvent->event.modifiers | upEvent->event.modifierMask !=0))
+        && (upEvent->event.modifiers | upEvent->event.modifierMask))
 	upEvent->event.modifiers
 	    |= buttonModifierMasks[event->event.eventCode];
 
@@ -1157,7 +1156,7 @@ static void RepeatDownPlus(eventP, reps, actionsP)
 	ButtonRelease : KeyRelease);
     if ((upEvent->event.eventType == ButtonRelease)
 	&& (upEvent->event.modifiers != AnyModifier)
-        && (upEvent->event.modifiers | upEvent->event.modifierMask != 0))
+        && (upEvent->event.modifiers | upEvent->event.modifierMask))
 	upEvent->event.modifiers
 	    |= buttonModifierMasks[event->event.eventCode];
 
@@ -1215,7 +1214,7 @@ static void RepeatUp(eventP, reps, actionsP)
 	ButtonPress : KeyPress);
     if ((downEvent->event.eventType == ButtonPress)
 	&& (downEvent->event.modifiers != AnyModifier)
-        && (downEvent->event.modifiers | downEvent->event.modifierMask != 0))
+        && (downEvent->event.modifiers | downEvent->event.modifierMask))
 	downEvent->event.modifiers
 	    &= ~buttonModifierMasks[event->event.eventCode];
 
@@ -1275,7 +1274,7 @@ static void RepeatUpPlus(eventP, reps, actionsP)
 	ButtonPress : KeyPress);
     if ((downEvent->event.eventType == ButtonPress)
 	&& (downEvent->event.modifiers != AnyModifier)
-        && (downEvent->event.modifiers |downEvent->event.modifierMask !=0))
+        && (downEvent->event.modifiers | downEvent->event.modifierMask))
 	downEvent->event.modifiers
 	    &= ~buttonModifierMasks[event->event.eventCode];
 
@@ -1486,19 +1485,23 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
 }
 
 
-static String ParseActionProc(str, actionProcNameP)
+static String ParseActionProc(str, actionProcNameP, error)
     register String str;
-    String *actionProcNameP;
+    XrmQuark *actionProcNameP;
+    Boolean *error;
 {
     register String start = str;
-    char procName[100];
+    char procName[200];
 
     str = ScanIdent(str);
+    if (str-start >= 199) {
+	Syntax("Action procedure name is longer than 199 chars","");
+	*error = TRUE;
+	return str;
+    }
     (void) strncpy(procName, start, str-start);
     procName[str-start] = '\0';
-
-    *actionProcNameP = strncpy(
-	XtMalloc((unsigned)(str-start+1)), procName, str-start+1);
+    *actionProcNameP = XrmStringToQuark( procName );
     return str;
 }
 
@@ -1555,7 +1558,8 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
 	String newStr;
 	str = ParseString(str, &newStr);
 	if (newStr != NULL) {
-	    ParamPtr temp = XtNew(ParamRec);
+	    ParamPtr temp = (ParamRec*)
+		ALLOCATE_LOCAL( (unsigned)sizeof(ParamRec) );
 
 	    num_params++;
 	    temp->next = params;
@@ -1567,16 +1571,18 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
     }
 
     if (num_params != 0) {
-	*paramSeqP = (String *)XtCalloc(
-	    num_params+1, (unsigned) sizeof(String));
+	String *paramP =
+	    *paramSeqP = (String *)
+		XtMalloc( (unsigned)(num_params+1) * sizeof(String) );
 	*paramNumP = num_params;
+	paramP += num_params; /* list is LIFO right now */
+	*paramP-- = NULL;
 	for (i=0; i < num_params; i++) {
-	    ParamPtr temp = params;
-	    (*paramSeqP)[num_params-i-1] = params->param;
-	    params = params->next;
-	    XtFree((char *)temp);
+	    ParamPtr next = params->next;
+	    *paramP-- = params->param;
+	    DEALLOCATE_LOCAL( (XtPointer)params );
+	    params = next;
 	}
-	(*paramSeqP)[num_params] = NULL;
     } else {
 	*paramSeqP = NULL;
 	*paramNumP = 0;
@@ -1585,25 +1591,28 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
     return str;
 }
 
-static String ParseAction(str, actionP,error)
+static String ParseAction(str, actionP, quarkP, error)
     String str;
     ActionPtr actionP;
+    XrmQuark* quarkP;
     Boolean* error;
 {
-    str = ParseActionProc(str, &actionP->token);
+    str = ParseActionProc(str, quarkP, error);
+    if (*error) return str;
+
     if (*str == '(') {
 	str++;
 	str = ParseParamSeq(str, &actionP->params, &actionP->num_params);
     } else {
         Syntax("Missing '(' while parsing action sequence",""); 
         *error = TRUE;
-        return PanicModeRecovery(str);
+        return str;
     }
     if (*str == ')') str++;
     else{
         Syntax("Missing ')' while parsing action sequence","");
         *error = TRUE;
-        return PanicModeRecovery(str);
+        return str;
     }
     return str;
 }
@@ -1618,22 +1627,20 @@ static String ParseActionSeq(stateTable,str, actionsP,acc,error)
 {
     ActionPtr *nextActionP = actionsP;
     int index;
-     Boolean found;
-     XrmQuark quark;
+    Boolean found;
     *actionsP = NULL;
 
     while (*str != '\0' && *str != '\n') {
 	register ActionPtr	action;
+	XrmQuark quark;
 
 	action = XtNew(ActionRec);
-        action->token = NULL;
-        action->index = -1;
         action->params = NULL;
         action->num_params = 0;
         action->next = NULL;
 
-	str = ParseAction(str, action,error);
-        quark = StringToQuark(action->token);
+	str = ParseAction(str, action, &quark, error);
+	if (*error) return PanicModeRecovery(str);
 
         if (!acc) { /*regular table */
             found = FALSE;
@@ -1645,26 +1652,25 @@ static String ParseActionSeq(stateTable,str, actionsP,acc,error)
             if (found==FALSE) {
                 index = stateTable->numQuarks++;
                 if (index==stateTable->quarkTblSize) {
-                    stateTable->quarkTblSize +=20;
+                    stateTable->quarkTblSize += 10;
                     stateTable->quarkTable=(XrmQuark*) XtRealloc(
-                        (char*)stateTable->quarkTable,
-                        stateTable->quarkTblSize*sizeof(int));
+                        (XtPointer)stateTable->quarkTable,
+                        stateTable->quarkTblSize*sizeof(XrmQuark));
                 }
 
-                (stateTable->quarkTable)[index] = 
-                   StringToQuark(action->token);
+                (stateTable->quarkTable)[index] = quark;
              }
             action->index=index;
         }
         else { /*accelerator table */
             index = stateTable->accNumQuarks++;
             if (index == stateTable->accQuarkTblSize) {
-                stateTable->accQuarkTblSize+=10;
+                stateTable->accQuarkTblSize += 10;
                 stateTable->accQuarkTable = (XrmQuark*) XtRealloc(
-                   (char*)stateTable->accQuarkTable,
-                   stateTable->accQuarkTblSize*sizeof(int));
+                   (XtPointer)stateTable->accQuarkTable,
+                   stateTable->accQuarkTblSize*sizeof(XrmQuark));
             }
-            stateTable->accQuarkTable[index] = StringToQuark(action->token);
+            stateTable->accQuarkTable[index] = quark;
             action->index= -(index+1);
         }
 
@@ -1716,8 +1722,8 @@ static String ParseTranslationTableProduction(stateTable, str,acc)
         return (str);
     }
     str = ScanWhitespace(str);
-    str = ParseActionSeq(stateTable,str, actionsP,acc,&error);
-    if (error == TRUE) {
+    str = ParseActionSeq(stateTable, str, actionsP,acc,&error);
+    if (error) {
 	ShowProduction(production);
         FreeEventSeq(eventSeq);
         return (str);
