@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.19 87/12/17 16:35:52 swick Locked $";
+static char rcsid[] = "$Header: Box.c,v 1.20 88/01/18 12:14:46 swick Locked $";
 #endif lint
 
 /*
@@ -25,7 +25,7 @@ static char rcsid[] = "$Header: ButtonBox.c,v 1.19 87/12/17 16:35:52 swick Locke
  * SOFTWARE.
  */
 /* 
- * ButtonBox.c - Button box composite widget
+ * Box.c - Box composite widget
  * 
  * Author:	Joel McCormack
  * 		Digital Equipment Corporation
@@ -37,20 +37,20 @@ static char rcsid[] = "$Header: ButtonBox.c,v 1.19 87/12/17 16:35:52 swick Locke
 #include	<X11/Intrinsic.h>
 #include	<X11/Atoms.h>
 #include	<X11/Misc.h>
-#include	<X11/ButtonBox.h>
-#include	"ButtonBoxP.h"
+#include	<X11/Box.h>
+#include	"BoxP.h"
 
 /****************************************************************
  *
- * ButtonBox Resources
+ * Box Resources
  *
  ****************************************************************/
 
 static XtResource resources[] = {
     {XtNhSpace, XtCHSpace, XrmRInt, sizeof(int),
-	 XtOffset(ButtonBoxWidget, button_box.h_space), XtRString, "4"},
+	 XtOffset(BoxWidget, box.h_space), XtRString, "4"},
     {XtNvSpace, XtCVSpace, XrmRInt, sizeof(int),
-	 XtOffset(ButtonBoxWidget, button_box.v_space), XtRString, "4"},
+	 XtOffset(BoxWidget, box.v_space), XtRString, "4"},
 };
 
 /****************************************************************
@@ -67,12 +67,12 @@ static XtGeometryResult GeometryManager();
 static void ChangeManaged();
 static void ClassInitialize();
 
-ButtonBoxClassRec buttonBoxClassRec = {
+BoxClassRec boxClassRec = {
   {
 /* core_class fields      */
     /* superclass         */    (WidgetClass) &compositeClassRec,
-    /* class_name         */    "ButtonBox",
-    /* widget_size        */    sizeof(ButtonBoxRec),
+    /* class_name         */    "Box",
+    /* widget_size        */    sizeof(BoxRec),
     /* class_initialize   */    ClassInitialize,
     /* class_inited       */	FALSE,
     /* initialize         */    Initialize,
@@ -105,7 +105,7 @@ ButtonBoxClassRec buttonBoxClassRec = {
   }
 };
 
-WidgetClass buttonBoxWidgetClass = (WidgetClass)&buttonBoxClassRec;
+WidgetClass boxWidgetClass = (WidgetClass)&boxClassRec;
 
 
 /****************************************************************
@@ -117,9 +117,9 @@ WidgetClass buttonBoxWidgetClass = (WidgetClass)&buttonBoxClassRec;
 static void ClassInitialize()
 {
     CompositeWidgetClass superclass;
-    ButtonBoxWidgetClass myclass;
+    BoxWidgetClass myclass;
 
-    myclass = (ButtonBoxWidgetClass) buttonBoxWidgetClass;
+    myclass = (BoxWidgetClass) boxWidgetClass;
     superclass = (CompositeWidgetClass) myclass->core_class.superclass;
 
     /* Inherit insert_child and delete_child from Composite */
@@ -138,22 +138,22 @@ static void ClassInitialize()
 
 /* ARGSUSED */
 static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
-    ButtonBoxWidget	bbw;
-    Dimension		width, height;
-    Dimension		*replyWidth, *replyHeight;	/* RETURN */
-    Boolean		position;	/* actually reposition the windows? */
+    BoxWidget	bbw;
+    Dimension	width, height;
+    Dimension	*replyWidth, *replyHeight;	/* RETURN */
+    Boolean	position;	/* actually reposition the windows? */
 {
     Cardinal  i;
-    Dimension w, h;	/* Width and height needed for button box 	*/
+    Dimension w, h;	/* Width and height needed for box 		*/
     Dimension lw, lh;	/* Width and height needed for current line 	*/
-    Dimension bw, bh;	/* Width and height needed for current button 	*/
-    Dimension h_space;  /* Local copy of bbw->buttonBox.h_space 	*/
-    Widget    widget;	/* Current button 				*/
+    Dimension bw, bh;	/* Width and height needed for current widget 	*/
+    Dimension h_space;  /* Local copy of bbw->box.h_space 		*/
+    Widget    widget;	/* Current widget 				*/
 
-    /* ButtonBox width and height */
-    h_space = bbw->button_box.h_space;
+    /* Box width and height */
+    h_space = bbw->box.h_space;
     w = h_space;
-    h = bbw->button_box.v_space;
+    h = bbw->box.v_space;
    
     /* Line width and height */
     lh = 0;
@@ -162,13 +162,13 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
     for (i = 0; i < bbw->composite.num_children; i++) {
 	widget = bbw->composite.children[i];
 	if (widget->core.managed) {
-	    /* Compute button width */
+	    /* Compute widget width */
 	    bw = widget->core.width + 2*widget->core.border_width + h_space;
 	    if ((lw + bw > width) && (lw > h_space)) {
-		/* At least one button on this line, and can't fit any more.
+		/* At least one widget on this line, and can't fit any more.
 		   Start new line */
 		AssignMax(w, lw);
-		h += lh + bbw->button_box.v_space;
+		h += lh + bbw->box.v_space;
 		lh = 0;
 		lw = h_space;
 	    }
@@ -184,7 +184,7 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
     /* Finish off last line */
     if (lw > h_space) {
 	AssignMax(w, lw);
-        h += lh + bbw->button_box.v_space;
+        h += lh + bbw->box.v_space;
     }
 
     *replyWidth = Max(w, 1);
@@ -200,9 +200,9 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
  */
 
 static Boolean PreferredSize(bbw, width, height, replyWidth, replyHeight)
-    ButtonBoxWidget	bbw;
-    Dimension		width, height;
-    Dimension		*replyWidth, *replyHeight;
+    BoxWidget	bbw;
+    Dimension	width, height;
+    Dimension	*replyWidth, *replyHeight;
 {
     DoLayout(bbw, width, height, replyWidth, replyHeight, FALSE);
     return ((*replyWidth <= width) && (*replyHeight <= height));
@@ -210,7 +210,7 @@ static Boolean PreferredSize(bbw, width, height, replyWidth, replyHeight)
 
 /*
  *
- * Actually layout the button box
+ * Actually layout the box
  *
  */
 
@@ -219,7 +219,7 @@ static void Resize(w)
 {
     Dimension junk;
 
-    DoLayout((ButtonBoxWidget)w, w->core.width, w->core.height,
+    DoLayout((BoxWidget)w, w->core.width, w->core.height,
 	     &junk, &junk, TRUE);
 } /* Resize */
 
@@ -232,7 +232,7 @@ static void Resize(w)
  */
 
 static Boolean TryNewLayout(bbw)
-    ButtonBoxWidget	bbw;
+    BoxWidget	bbw;
 {
     Dimension	width, height, proposed_width, proposed_height;
     int		iterations;
@@ -315,7 +315,7 @@ static XtGeometryResult GeometryManager(w, request, reply)
 
 {
     Dimension	width, height, borderWidth;
-    ButtonBoxWidget bbw;
+    BoxWidget bbw;
 
     /* Position request always denied */
     if (request->request_mode & (CWX | CWY))
@@ -340,11 +340,11 @@ static XtGeometryResult GeometryManager(w, request, reply)
 	w->core.height = request->height;
 	w->core.border_width = request->border_width;
 
-	/* Decide if new layout works: (1) new button is smaller,
-	   (2) new button fits in existing ButtonBox, (3) ButtonBox can be
-	   expanded to allow new button to fit */
+	/* Decide if new layout works: (1) new widget is smaller,
+	   (2) new widget fits in existing Box, (3) Box can be
+	   expanded to allow new widget to fit */
 
-	bbw = (ButtonBoxWidget) w->core.parent;
+	bbw = (BoxWidget) w->core.parent;
 
 /* whenever a child changes his geometry, we attempt to
  * change ours to be the minimum enclosing size...
@@ -373,8 +373,8 @@ static XtGeometryResult GeometryManager(w, request, reply)
 static void ChangeManaged(w)
     Widget w;
 {
-    /* Reconfigure the button box */
-    (void) TryNewLayout((ButtonBoxWidget)w);
+    /* Reconfigure the box */
+    (void) TryNewLayout((BoxWidget)w);
     Resize(w);
 }
 
@@ -384,17 +384,17 @@ static void Initialize(request, new, args, num_args)
     ArgList args;
     Cardinal *num_args;
 {
-    ButtonBoxWidget newbbw = (ButtonBoxWidget)new;
+    BoxWidget newbbw = (BoxWidget)new;
 
 /* ||| What are consequences of letting height, width be 0? If okay, then
        Initialize can be NULL */
 
     if (newbbw->core.width == 0)
-        newbbw->core.width = ((newbbw->button_box.h_space != 0)
-			      ? newbbw->button_box.h_space : 10);
+        newbbw->core.width = ((newbbw->box.h_space != 0)
+			      ? newbbw->box.h_space : 10);
     if (newbbw->core.height == 0)
-	newbbw->core.height = ((newbbw->button_box.v_space != 0)
-			       ? newbbw->button_box.v_space : 10);
+	newbbw->core.height = ((newbbw->box.v_space != 0)
+			       ? newbbw->box.v_space : 10);
 } /* Initialize */
 
 /* ||| Should Realize just return a modified mask and attributes?  Or will some

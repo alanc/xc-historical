@@ -1,5 +1,5 @@
 /*
-* $Header: ButtonBox.h,v 1.5 87/09/11 21:18:39 swick Locked $
+* $Header: Box.h,v 1.6 88/01/22 11:14:38 swick Locked $
 */
 
 /*
@@ -24,12 +24,12 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#ifndef _XtButtonBox_h
-#define _XtButtonBox_h
+#ifndef _XtBox_h
+#define _XtBox_h
 
 /***********************************************************************
  *
- * Button Box Widget (subclass of CompositeClass)
+ * Box Widget (subclass of CompositeClass)
  *
  ***********************************************************************/
 
@@ -58,10 +58,10 @@
 
 /* Class record constants */
 
-extern WidgetClass buttonBoxWidgetClass;
+extern WidgetClass boxWidgetClass;
 
-typedef struct _ButtonBoxClassRec *ButtonBoxWidgetClass;
-typedef struct _ButtonBoxRec      *ButtonBoxWidget;
+typedef struct _BoxClassRec *BoxWidgetClass;
+typedef struct _BoxRec      *BoxWidget;
 
-#endif _XtButtonBox_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+#endif _XtBox_h
+

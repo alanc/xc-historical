@@ -1,5 +1,5 @@
 /*
-* $Header: ButtonBoxP.h,v 1.2 87/09/11 21:18:41 haynes Rel $
+* $Header: BoxP.h,v 1.3 87/12/09 09:08:53 swick Exp $
 */
 
 /*
@@ -25,41 +25,35 @@
  * SOFTWARE.
  */
 /* 
- * ButtonBoxPrivate.h - Private definitions for ButtonBox widget
+ * BoxP.h - Private definitions for Box widget
  * 
- * Author:	Joel McCormack
- * 		Digital Equipment Corporation
- * 		Western Software Laboratory
- * Date:	Mon Aug 31 1987
  */
 
-#ifndef _XtButtonBoxPrivate_h
-#define _XtButtonBoxPrivate_h
+#ifndef _XtBoxPrivate_h
+#define _XtBoxPrivate_h
 
 /***********************************************************************
  *
- * ButtonBox Widget Private Data
+ * Box Widget Private Data
  *
  ***********************************************************************/
 
-/* New fields for the ButtonBox widget class record */
-typedef struct {
-     int mumble;   /* No new procedures */
-} ButtonBoxClassPart;
+/* New fields for the Box widget class record */
+typedef struct {int empty;} BoxClassPart;
 
 /* Full class record declaration */
-typedef struct _ButtonBoxClassRec {
+typedef struct _BoxClassRec {
     CoreClassPart	core_class;
     CompositeClassPart  composite_class;
-    ButtonBoxClassPart	button_box_class;
-} ButtonBoxClassRec;
+    BoxClassPart	box_class;
+} BoxClassRec;
 
-extern ButtonBoxClassRec buttonBoxClassRec;
+extern BoxClassRec boxClassRec;
 
-/* New fields for the ButtonBox widget record */
+/* New fields for the Box widget record */
 typedef struct {
     Dimension   h_space, v_space;
-} ButtonBoxPart;
+} BoxPart;
 
 
 /****************************************************************
@@ -68,12 +62,12 @@ typedef struct {
  *
  ****************************************************************/
 
-typedef struct _ButtonBoxRec {
+typedef struct _BoxRec {
     CorePart	    core;
     CompositePart   composite;
-    ButtonBoxPart   button_box;
-} ButtonBoxRec;
+    BoxPart 	    box;
+} BoxRec;
 
-#endif _XtButtonBoxPrivate_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+#endif _XtBoxPrivate_h
+
 
