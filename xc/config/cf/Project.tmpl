@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.233 94/03/28 15:24:41 gildea Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.234 94/03/30 12:05:06 gildea Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -140,6 +140,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.233 94/03/28 15:24:41 gildea Exp $
 #endif
 #ifndef DefaultRGBDatabase
 #define DefaultRGBDatabase $(LIBDIR)/rgb
+#endif
+#ifndef UseRgbTxt
+#define UseRgbTxt		NO	/* default is to compile with dbm */
 #endif
 #ifndef FontCompilerFlags
 #define FontCompilerFlags -t
