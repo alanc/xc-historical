@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.65 89/03/29 15:14:36 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.66 89/05/08 15:57:39 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -271,6 +271,63 @@ extern void Data();
 #define CI_NONEXISTCHAR(cs) (((cs)->width == 0) && \
 			     ((cs)->rbearing == 0) && \
 			     ((cs)->lbearing == 0))
+
+/* 
+ * CI_GET_CHAR_INFO_1D - return the charinfo struct for the indicated 8bit
+ * character.  If the character is in the column and exists, then return the
+ * appropriate metrics (note that fonts with common per-character metrics will
+ * return min_bounds).  If none of these hold true, try again with the default
+ * char.
+ */
+#define CI_GET_CHAR_INFO_1D(fs,col,def,cs) \
+{ \
+    cs = def; \
+    if (col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_char_or_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+	} \
+    } \
+}
+
+#define CI_GET_DEFAULT_INFO_1D(fs,cs) \
+  CI_GET_CHAR_INFO_1D (fs, fs->default_char, NULL, cs)
+
+
+
+/*
+ * CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and 
+ * column.  This is used for fonts that have more than row zero.
+ */
+#define CI_GET_CHAR_INFO_2D(fs,row,col,def,cs) \
+{ \
+    cs = NULL; \
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
+	col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[((row - fs->min_byte1) * \
+			        (fs->max_char_or_byte2 - \
+				 fs->min_char_or_byte2 + 1)) + \
+			       (col - fs->min_char_or_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = NULL; \
+        } \
+    } \
+}
+
+#define CI_GET_DEFAULT_INFO_2D(fs,cs) \
+{ \
+    unsigned int r = (fs->default_char >> 8); \
+    unsigned int c = (fs->default_char & 0xff); \
+    CI_GET_CHAR_INFO_2D (fs, r, c, NULL, cs); \
+}
+
+
+
+
 
 #ifdef MUSTCOPY
 
