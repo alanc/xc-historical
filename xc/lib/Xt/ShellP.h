@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.26 89/09/21 13:10:46 swick Exp $
+* $XConsortium: ShellP.h,v 1.27 89/09/21 16:38:52 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -88,9 +88,10 @@ typedef struct {
 	Boolean	    popped_up;
 	Boolean	    allow_shell_resize;
 	Boolean     client_specified; /* re-using old name */
-#define _XtShellPositionValid	0x01
-#define _XtShellNotReparented	0x02
-#define _XtShellPPositionOK	0x04
+#define _XtShellPositionValid	((Boolean)(1<<0))
+#define _XtShellNotReparented	((Boolean)(1<<1))
+#define _XtShellPPositionOK	((Boolean)(1<<2))
+#define _XtShellGeometryParsed	((Boolean)(1<<3))
 	Boolean	    save_under;
 	Boolean	    override_redirect;
 
