@@ -10,6 +10,7 @@
 #define HasNdbm			YES
 #define BuildPex		YES
 #define HasVFork		YES
+#define MkdirHasP		YES
 /* At SGI, in 3.2 we have TCP/IP sockets only, 3.3 has unix domain also ! */
 #define HasSockets		YES
 
@@ -66,6 +67,11 @@
 /* General Parameters Affecting Clients And The Server */
 #define StandardDefines -DSYSV -DMALLOC_0_RETURNS_NULL -D_WCHAR_T_
 
+#define BuildServer             YES /* XXX change to NO in R5 */
+#define XnonServer Xnon /* XXX remove in R5 */
+
+#ifdef notdef
+
 /* Server Build Parameters */
 #define BuildServer             NO
 /* We will use DEC's PCF format for IRIX 4.0 */
@@ -82,6 +88,8 @@
  -DFONT_NEWS
 #else
 #define FontDefines -DFONT_BDF -DCOMPRESSED_FONTS -DFONT_SNF -DFONT_NEWS
+#endif
+
 #endif
 
 #ifndef Crt1
