@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.9 89/01/18 14:11:25 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.10 89/01/18 14:13:10 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -220,7 +220,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.9 89/01/18 14:11:25 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.10 89/01/18 14:13:10 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -254,7 +254,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 #ifdef UseInstalled
             IMAKE = imake		/* assume BINDIR in path */
-           DEPEND = depend		/* assume BINDIR in path */
+           DEPEND = makedepend		/* assume BINDIR in path */
 #else
             IMAKE = $(IMAKESRC)/imake
            DEPEND = $(DEPENDSRC)/makedepend
@@ -277,7 +277,7 @@ Berklib.c: sysV/Berklib.c					@@\
        CONTRIBSRC = $(TOP)/contrib
            DOCSRC = $(TOP)/doc
            RGBSRC = $(TOP)/rgb
-        DEPENDSRC = $(UTILSRC)/makedepend
+        DEPENDSRC = $(SCRIPTSSRC)	/* use script instead of program now */
          IMAKESRC = $(UTILSRC)/imake
          XAUTHSRC = $(LIBSRC)/Xau
           XLIBSRC = $(LIBSRC)/X
