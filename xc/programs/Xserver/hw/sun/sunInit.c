@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.39 93/10/29 17:40:28 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.40 93/11/12 16:38:19 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -382,7 +382,6 @@ void OsVendorInit(
 	(void) setrlimit (RLIMIT_NOFILE, &rl);
     }
 #endif
-    (void) close (0); (void) close (1);
 #define SET_FLOW(fd) fcntl(fd, F_SETFL, FNDELAY | FASYNC)
 #ifdef SVR4
 #define WANT_SIGNALS(fd) ioctl(fd, I_SETSIG, S_INPUT | S_HIPRI)
