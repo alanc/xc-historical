@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.10 88/05/21 17:52:18 rws Exp $
+.\" $Header: ddx.doc.tbl.ms,v 1.11 88/07/25 11:18:08 toddb Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -4041,7 +4041,7 @@ Validate routines like mfbValidateGC() switch between them.
 	void pGC->SetSpans(pDrawable, pGC, pSrc, ppt, pWidths, nSpans, sorted)
 		DrawablePtr pDrawable;
 		GCPtr pGC;
-		int *pSrc;
+		unsigned int *pSrc;
 		POINT *pPoints;
 		int *pWidths;
 		int nSpans;
@@ -4068,7 +4068,7 @@ and reload the procedure pointers
 at validate time, as with the other output functions.
 .nf
 
-	int pScreen->GetSpans(pDrawable, wMax, pPoints, pWidths, nSpans)
+	unsigned int *pScreen->GetSpans(pDrawable, wMax, pPoints, pWidths, nSpans)
 		DrawablePtr pDrawable;
 		int wMax;
 		POINT *pPoints;
