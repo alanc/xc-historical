@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.5 87/09/11 19:57:36 jg Exp $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.9 88/01/22 18:31:17 jim Locked $";
 #endif
 
 /*
@@ -42,7 +42,14 @@ static char rcs_id[] = "$Header: xrdb.c,v 11.5 87/09/11 19:57:36 jg Exp $";
 #include <X11/Xos.h>
 #include <ctype.h>
 
+#ifndef CPP
+#define CPP "/usr/lib/cpp"
+#endif /* CPP */
+
 char *ProgramName;
+
+#define BACKUP_SUFFIX ".bak"		/* for editting */
+
 
 extern FILE *popen();
 
@@ -401,12 +408,26 @@ void Syntax ()
 	     ProgramName);
     fprintf (stderr, "where options include:\n");
     fprintf (stderr, "    -display host:dpy        which display to use\n");
-    fprintf (stderr, "    -q                       query resources\n");
-    fprintf (stderr, "    -m                       merge resources\n");
-    fprintf (stderr, "    -e                       edit resources\n");
-    fprintf (stderr, "    -d                       show defines\n");
-    fprintf (stderr, "    -r                       remove properties\n");
-    fprintf (stderr, "    -Ddefine=value           #define for cpp\n");
+    fprintf (stderr, "    -cpp filename            C pre-processor to use\n");
+    fprintf (stderr, "    -nocpp                   do not run through cpp\n");
+    fprintf (stderr, "    -query                   query resources\n");
+    fprintf (stderr, "    -merge                   merge resources\n");
+    fprintf (stderr, "    -edit                    edit resources\n");
+    fprintf (stderr, "    -backup string           backup suffix\n");
+    fprintf (stderr, "    -defines                 show defines\n");
+    fprintf (stderr, "    -remove                  remove properties\n");
+    fprintf (stderr, "    -Ddefine=value           passed to cpp\n");
+    fprintf (stderr, "    -Udefine                 passed to cpp\n");
+    fprintf (stderr, "    -Idirectory              passed to cpp\n");
+    fprintf (stderr, 
+"\nIf no input filename is given, stdin will be read.  By default,\n");
+    fprintf (stderr, "%s is the name of the C pre-processor and \"%s\" is \n",
+	     CPP, BACKUP_SUFFIX);
+    fprintf (stderr, 
+"the backup suffix.  The display may be specified using the obsolete\n");
+    fprintf (stderr,
+"form host:dpy (no -display), but this is unsupported.\n");
+    fprintf (stderr, "\n");
     exit (1);
 }
 
@@ -414,7 +435,7 @@ main (argc, argv)
     int argc;
     char **argv;
 {
-    Display * dpy;
+    Display *dpy;
     int i;
     char *displayname = NULL;
     char *filename = NULL;
@@ -428,6 +449,9 @@ main (argc, argv)
     int removeProp = 0;
     int merge = 0;
     int editFile = 0;
+    int usecpp = 1;
+    char *cpp_program = CPP;
+    char *backup_suffix = BACKUP_SUFFIX;
 
     ProgramName = argv[0];
 
@@ -439,32 +463,45 @@ main (argc, argv)
 	char *arg = argv[i];
 
 	if (arg[0] == '-') {
-	    if (strcmp ("-display", argv[i]) == 0) {
+	    if (strcmp ("-display", argv[i]) == 0) {	/* -display host:dpy */
 		if (++i >= argc) Syntax ();
 		displayname = argv[i];
 		continue;
 	    } else {
 		switch (arg[1]) {
-		    case 'g':
+		    case 'g':			/* -geometry */
 			if (++i >= argc) Syntax ();
 			/* ignore geometry */
 			continue;
-		    case 'q':		/* query */
+		    case 'c':			/* -cpp */
+			if (++i >= argc) Syntax ();
+			cpp_program = argv[i];
+			continue;
+		    case 'n':			/* -nocpp */
+			usecpp = 0;
+			continue;
+		    case 'q':			/* -query */
 			printit = 1;
 			continue;
-		    case 'm':
+		    case 'm':			/* -merge */
 			merge = 1;
 			continue;
-		    case 'e':
+		    case 'e':			/* -edit */
 			editFile = 1;
 			continue;
-		    case 'd':
+		    case 'b':			/* -backup suffix */
+			if (++i >= argc) Syntax ();
+			backup_suffix = argv[i];
+			continue;
+		    case 'd':			/* -defines */
 			showDefines = 1;
 			continue;
-		    case 'r':
+		    case 'r':			/* -remove */
 			removeProp = 1;
 			continue;
-		    case 'D':
+		    case 'I':			/* -I for cpp */
+		    case 'U':			/* -U for cpp */
+		    case 'D':			/* -D for cpp */
 			strcat(defines, " \"");
 			strcat(defines, arg);
 			strcat(defines, "\"");
@@ -493,6 +530,7 @@ main (argc, argv)
 	/* user wants to print contents */
 	if (dpy->xdefaults)
 	    fputs(dpy->xdefaults, stdout);
+	XCloseDisplay (dpy);
 	exit(0);
 	}
     else if (removeProp) {
@@ -520,7 +558,7 @@ main (argc, argv)
 	fclose(input);
 	fclose(output);
 	strcpy(old, filename);
-	strcat(old, ".BAK");
+	strcat(old, backup_suffix);
 	rename(filename, old);
 	rename(template, filename);
 	}
@@ -530,9 +568,13 @@ main (argc, argv)
 		if (fp == NULL)
 		    fatal("%s: can't open file '%s'\n", ProgramName, filename);
 		}
-	sprintf(cmd, "/usr/lib/cpp %s", defines);
-	if ((input = popen(cmd, "r")) == NULL)
-	    fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	if (usecpp) {
+	    sprintf(cmd, "%s %s", cpp_program, defines);
+	    if ((input = popen(cmd, "r")) == NULL)
+		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	} else {
+	    input = stdin;
+	}
 	ReadFile(&buffer, input);
 	GetEntries(&newDB, &buffer);
 	if (merge && dpy->xdefaults) {
@@ -549,7 +591,7 @@ main (argc, argv)
 	XChangeProperty (dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER,
 		XA_STRING, 8, PropModeReplace, buffer.buff, buffer.used);
 	}
-	XCloseDisplay(dpy);
-
+    XCloseDisplay(dpy);
+    exit (0);
 }
 
