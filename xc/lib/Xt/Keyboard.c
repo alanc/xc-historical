@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.24 91/07/21 16:55:01 converse Exp $ */
+/* $XConsortium: Keyboard.c,v 1.25 92/04/22 16:49:33 rws Exp $ */
 
 /********************************************************
 
@@ -690,8 +690,9 @@ static void FocusDestroyCallback(widget, closure, call_data)
 {
     XtSetKeyboardFocus((Widget)closure, None);
     /* invalidate FindKeyDestination's ancestor list if it is still for us */
-    if (pseudoTraceDepth && pseudoTraceDisplay == XtDisplay(widget) &&
-	widget == pseudoTrace[0])
+    if (pseudoTraceDepth &&
+	pseudoTraceDisplay == XtDisplay((Widget)closure) &&
+	_GetWindowedAncestor(widget) == pseudoTrace[0])
 	pseudoTraceDepth = 0;
 }
 
