@@ -97,6 +97,10 @@ Not obeyed by all servers.
 .B \-co \fIfilename\fP
 sets name of RGB color database.
 .TP 8
+.B \-dpi \fIresolution\fP
+sets the resolution of the screen, in dots per inch.
+To be used when the server cannot determine the screen size from the hardware.
+.TP 8
 .B \-f \fIvolume\fP
 sets feep (bell) volume (allowable range: 0-100).
 .TP 8
