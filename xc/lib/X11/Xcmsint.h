@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.15 91/07/25 01:06:00 rws Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.16 91/11/05 11:01:36 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -57,8 +57,8 @@
          */
 #define       XCMS_DD_ID(id)          ((id) & (XcmsColorFormat)0x80000000)
 #define       XCMS_DI_ID(id)          (!((id) & (XcmsColorFormat)0x80000000))
-#define       XCMS_REG_ID(id)         ((id) & (XcmsColorFormat)0x40000000)
-#define       XCMS_UNREG_ID(id)       (!((id) & (XcmsColorFormat)0x40000000))
+#define       XCMS_UNREG_ID(id)       ((id) & (XcmsColorFormat)0x40000000)
+#define       XCMS_REG_ID(id)         (!((id) & (XcmsColorFormat)0x40000000))
 #define       XCMS_FIRST_REG_DI_ID    (XcmsColorFormat)0x00000001
 #define       XCMS_FIRST_UNREG_DI_ID  (XcmsColorFormat)0x40000000
 #define       XCMS_FIRST_REG_DD_ID    (XcmsColorFormat)0x80000000
