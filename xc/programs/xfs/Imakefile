@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.24 93/09/19 10:20:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.25 93/12/13 17:36:44 dpw Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -14,18 +14,15 @@ BSDEMUL = $(DEPXBSDLIB)
 
 FSDIRS = $(OSDIR) $(DIFSDIR) $(PCFDIRS)
 FSLIBS = $(DIFSLIB) $(DEPFONTLIB) $(DIFSLIB) $(OSLIB) $(BSDEMUL)
-#ifdef MacIIArchitecture
-MFSDIRS = MacFS
-#endif
 
-SUBDIRS = $(FSDIRS) $(MFSDIRS)
+SUBDIRS = $(FSDIRS)
 
 FSLIBDIR = $(LIBDIR)/fs
 FSERRORS = $(FSLIBDIR)/fs-errors
 DEFAULTFONTPATH = DefaultFontPath
 SITE_CONFIG = -DDEFAULTFONTPATH=$(DEFAULTFONTPATH) -DFSERRORS=$(FSERRORS)
 
-all:: config $(MFSDIRS)
+all:: config
 
 ServerTarget(xfs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
 
