@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: icon.c,v 1.2 87/09/11 08:19:38 swick Locked $";
+static char rcs_id[] = "$Header: icon.c,v 1.4 88/01/25 13:59:03 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -35,7 +35,6 @@ static char rcs_id[] = "$Header: icon.c,v 1.2 87/09/11 08:19:38 swick Locked $";
 
 void IconInit()
 {
-#ifdef X11
     NoMailPixmap = XCreateBitmapFromData( theDisplay,
 					  DefaultRootWindow(theDisplay),
 					  nomail_bits,
@@ -45,5 +44,4 @@ void IconInit()
 					   DefaultRootWindow(theDisplay),
 					   newmail_bits,
 					   newmail_width, newmail_height);
-#endif
 }
