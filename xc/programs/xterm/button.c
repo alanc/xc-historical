@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.17 88/10/10 11:01:23 swick Exp $
+ *	$XConsortium: button.c,v 1.18 88/10/10 13:03:38 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.17 88/10/10 11:01:23 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.18 88/10/10 13:03:38 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -221,8 +221,7 @@ Cardinal *num_params;
 			break;
 		case LEFTEXTENSION :
 		case RIGHTEXTENSION :
-			if AllButtonsUp(event->xbutton.state, event->xbutton.button)
-				EndExtend(event, params, *num_params);
+			EndExtend(event, params, *num_params);
 			break;
 	}
 }
