@@ -19,7 +19,7 @@ XTerm*mainMenu*kill*Label:  Send KILL Signal
 XTerm*mainMenu*quit*Label:  Quit
 
 XTerm*vtMenu.Label:  VT Options
-XTerm*vtMenu*scrollbar*Label:  Show Scrollbar
+XTerm*vtMenu*scrollbar*Label:  Enable Scrollbar
 XTerm*vtMenu*jumpscroll*Label:  Enable Jump Scroll
 XTerm*vtMenu*reversevideo*Label:  Enable Reverse Video
 XTerm*vtMenu*autowrap*Label:  Enable Auto Wraparound
