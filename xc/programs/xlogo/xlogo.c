@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlogo.c,v 1.12 90/04/17 17:40:10 jim Exp $
+ * $XConsortium: xlogo.c,v 1.13 90/04/30 16:53:59 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,10 +28,17 @@
 #include <X11/Xaw/Cardinals.h>
 
 extern void exit();
+static void quit();
 
 static XrmOptionDescRec options[] = {
 { "-shape", "*shapeWindow", XrmoptionNoArg, (caddr_t) "on" },
 };
+
+static XtActionsRec actions[] = {
+    {"quit",	quit}
+};
+
+static Atom wm_delete_window;
 
 String fallback_resources[] = {
     "*iconPixmap:    xlogo32",
@@ -68,11 +75,33 @@ char **argv;
     toplevel = XtAppInitialize(&app_con, "XLogo", options, XtNumber(options), 
 			       (Cardinal *) &argc, argv, fallback_resources,
 			       NULL, ZERO);
-
     if (argc != 1) 
 	Syntax(argv[0]);
 
+    XtAppAddActions
+	(XtWidgetToApplicationContext(toplevel), actions, XtNumber(actions));
+    XtOverrideTranslations
+	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
     XtCreateManagedWidget("xlogo", logoWidgetClass, toplevel, NULL, ZERO);
     XtRealizeWidget(toplevel);
+    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				   False);
+    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+                            &wm_delete_window, 1);
     XtAppMainLoop(app_con);
+}
+
+static void quit(w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    if (event->type == ClientMessage && 
+	event->xclient.data.l[0] != wm_delete_window) {
+	XBell(XtDisplay(w), 0);
+    } else {
+	XCloseDisplay(XtDisplay(w));
+	exit(0);
+    }
 }
