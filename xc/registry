@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.20 91/03/04 19:37:01 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.21 91/03/11 10:22:28 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -35,6 +35,7 @@ Name						Reference
 "TEK"						[43]
 "visual"					[5]
 "VIT"						[46]
+"WYSE"						[68]
 "X3D"						[8]
 "XUG"						[31]
 
@@ -213,6 +214,7 @@ String						Reference
 "Sony Corporation"				[37]
 "Stellar Computer Inc."				[28]
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
+"Wyse Technology Inc."				[68]
 "X11/NeWS - Sun Microsystems, Inc."		[58]
 
 5. PROTOCOL EXTENSION NAMES
@@ -941,4 +943,9 @@ REFERENCES
 	6/23 Northwood Street
 	Camperdown 2050
 	AUSTRALIA
+
+[68]	Bill Rainey
+	Wyse Technology
+	3471 N. First Street
+	San Jose, CA 95134
 Sumitomo Electric Workstation Corp.	[77]
