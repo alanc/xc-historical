@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.24 88/02/04 20:23:53 swick Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.25 88/02/14 13:58:44 rws Exp $";
 #endif lint
 
 /*
@@ -78,6 +78,8 @@ static XtResource resources[] = {
         offset(padding), XtRString, "8"},
     {XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
         offset(font), XtRString, "fixed"},
+    {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
+	offset (reverse_video), XtRString, "FALSE"},
 };
 
 #undef offset
@@ -161,6 +163,31 @@ static void Initialize (request, new)
        if (w->core.width < min_width) w->core.width = min_width;
        if (w->core.height < min_height) w->core.width = min_height;
     }
+
+    /*
+     * set the colors if reverse video; this is somewhat tricky since there
+     * are 5 colors:
+     *
+     *     background - paper		white
+     *     foreground - text, ticks	black
+     *     border - border		black (foreground)
+     *     highlight - edge of hands	black (foreground)
+     *     hands - solid parts		black (foreground)
+     *
+     * This doesn't completely work since the parent has already made up a 
+     * border.  Sigh.
+     */
+    if (w->clock.reverse_video) {
+	Pixel fg = w->clock.fgpixel;
+	Pixel bg = w->core.background_pixel;
+
+	if (w->clock.Hdpixel == fg) w->clock.Hdpixel = bg;
+	if (w->clock.Hipixel == fg) w->clock.Hipixel = bg;
+	if (w->core.border_pixel == fg) w->core.border_pixel = bg;
+	w->clock.fgpixel = bg;
+	w->core.background_pixel = fg;
+    }
+
     myXGCV.foreground = w->clock.fgpixel;
     myXGCV.background = w->core.background_pixel;
     if (w->clock.font != NULL)
