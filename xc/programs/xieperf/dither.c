@@ -1,6 +1,6 @@
-/* $XConsortium: dither.c,v 1.3 93/07/26 17:21:10 rws Exp $ */
+/* $XConsortium: dither.c,v 1.1 93/10/26 10:05:59 rws Exp $ */
 
-/**** module do_dither.c ****/
+/**** module dither.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_dither.c -- dither flo element tests 
+	dither.c -- dither flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -52,115 +52,134 @@ terms and conditions:
 #include <stdio.h>
 
 static XiePhotomap XIEPhotomap;
+static int flo_notify, flo_id;
+static XiePhotospace photospace;
+static XiePhotoElement *flograph;
+static int decode_notify;
+static XieLTriplet levels;
+static XieConstant in_low,in_high;
+static XieLTriplet out_low,out_high;
+static char *dithertech_parms=NULL;
+static XieClipScaleParam *parms;
+static int maxlevels;
+static int flo_elements;
 
-int InitDitherFloMap(xp, p, reps)
+int InitDither(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	p->data = ( char * ) NULL;
+	int	threshold;
 
-        if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
-                reps = 0;
+	photospace = ( XiePhotospace ) NULL;
+	XIEPhotomap = ( XiePhotomap ) NULL;
+	parms = ( XieClipScaleParam * ) NULL; 
+	dithertech_parms = ( char * ) NULL;
+	flograph = ( XiePhotoElement * ) NULL; 
+	maxlevels = xp->vinfo.depth;
+
+	if ( ( ( DitherParms * ) p->ts )->dither != xieValDitherDefault )
+	{
+		if ( TechniqueSupported( xp, xieValDither, 
+			( ( DitherParms * ) p->ts )->dither ) == False )
+		{
+			fprintf( stderr, "Dither technique %d not supported\n", 
+				( ( DitherParms * ) p->ts )->dither );
+			reps = 0;
+		}
+	}
+	if ( reps )
+	{
+        	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
+			( XiePhotomap ) NULL )
+		{
+			fprintf( stderr, "Couldn't get photomap\n" );
+			reps = 0;
+		}
+	}
+	if ( reps )
+	{
+		photospace = XieCreatePhotospace(xp->d);
+		threshold = ( ( DitherParms * )p->ts )->threshold;
+		decode_notify = False;
+		levels[ 0 ] = levels[ 1 ] = levels[ 2 ] = 0;
+		in_low[ 0 ] = in_low[ 1 ] = in_low[ 2 ] = 0.0;
+		out_low[ 0 ] = out_low[ 1 ] = out_low[ 2 ] = 0;
+		out_high[ 0 ] = out_high[ 1 ] = out_high[ 2 ] = 0;
+		if ( ( ( DitherParms * )p->ts )->drawable == Drawable )
+			out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+		else
+			out_high[ 0 ] = 1;
+		flo_elements = 4;
+		flograph = XieAllocatePhotofloGraph(flo_elements);	
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+	}
+	if ( reps )
+	{
+		flo_notify = False;	
+		XieFloImportPhotomap(&flograph[0],XIEPhotomap, decode_notify);
+
+		if ( ( ( DitherParms * ) p->ts )->dither == xieValDitherOrdered )
+		{	 
+			dithertech_parms = ( char * ) 
+				XieTecDitherOrderedParam(threshold); 
+			if ( dithertech_parms == ( char * ) NULL )
+			{
+				fprintf( stderr, 
+				"Trouble loading dither technique parameters\n" );
+				reps = 0;
+			}
+		}
+	}
+	if ( !reps )
+	{
+		FreeDitherStuff( xp, p );
+	}
         return( reps );
 }
 
-void DoDitherFloMapImmediate(xp, p, reps)
+void DoDither(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-    	int     i, j;
-	GC	pgc;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-	XiePhotoElement *flograph;
-	int	decode_notify;
-	XieLTriplet levels;
+	int	i, j, idx;
 	char    *tech_parms=NULL;
-	char    *dithertech_parms=NULL;
-        XieClipScaleParam *parms;
-        XieConstant in_low,in_high;
-        XieLTriplet out_low,out_high;
-	int	threshold;
 
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	threshold = 0;
-	decode_notify = False;
-	levels[ 1 ] = 0;
-	levels[ 2 ] = 0;
-	in_low[ 0 ] = 0.0;
-	out_low[ 0 ] = 0;
-	in_low[ 1 ] = 0.0;
-	in_high[ 1 ] = 0.0;
-	in_low[ 2 ] = 0.0;
-	in_high[ 2 ] = 0.0;
-	out_low[ 1 ] = 0;
-	out_high[ 1 ] = 0;
-	out_low[ 2 ] = 0;
-	out_high[ 2 ] = 0;
-	if ( ( ( DitherParms * )p->ts )->drawable == Drawable )
-		out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
-	else
-		out_high[ 0 ] = 1;
-	pgc = xp->fggc;
-	flograph = XieAllocatePhotofloGraph(4);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-	XieFloImportPhotomap(&flograph[0],XIEPhotomap, decode_notify);
-
-	dithertech_parms = ( char * ) NULL;
-	if ( ( ( DitherParms * ) p->ts )->dither == xieValDitherOrdered )
-	{	 
-		dithertech_parms = ( char * ) 
-			XieTecDitherOrderedParam(threshold); 
-		if ( dithertech_parms == ( char * ) NULL )
-		{
-			fprintf( stderr, 
-			"Trouble loading dither technique parameters\n" );
-			return;
-		}
-	}
-
-	if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
-		XieFloExportDrawable(&flograph[3],
-			3,              /* source phototag number */
-			xp->w,
-			pgc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		);
-	else
-		XieFloExportDrawablePlane(&flograph[3],
-			3,              /* source phototag number */
-			xp->w,
-			pgc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		);
-
-	flo_notify = False;	
+	j = 0;
     	for (i = 0; i != reps; i++) {
 
+		idx = 1;
 		flo_id = i + 1;		
 		if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
-			j = i + 2;
+			j += 2;
 		else
+			j = 2;
+		if ( j >= maxlevels )
 			j = 2;
 		levels[ 0 ] = j;
 
-		XieFloDither( &flograph[ 1 ], 
-			1,
+		XieFloDither( &flograph[ idx ], 
+			idx,
+			( ( DitherParms * ) p->ts )->bandMask,
 			levels,
 			( ( DitherParms * ) p->ts )->dither,
 			dithertech_parms
 		);
+		idx++;
 
 		in_high[ 0 ] =  ( float ) j - 1.0;
+		in_high[ 1 ] =  0.0;
+		in_high[ 2 ] =  0.0;
+		if ( tech_parms )
+		{
+			free( tech_parms );
+			tech_parms = ( char * ) NULL;
+		}
 		parms = XieTecClipScale( in_low, in_high, out_low, out_high);
 		tech_parms = ( char * ) parms;
 		if ( tech_parms == ( char * ) NULL )
@@ -170,173 +189,87 @@ void DoDitherFloMapImmediate(xp, p, reps)
 			return;
 		}
 
+		if ( levels[ 0 ] != xp->vinfo.depth && 
+			( ( DitherParms * ) p->ts )->drawable == Drawable )
+		{
+			if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
+				levels[ 0 ] = 1 << xp->vinfo.depth;
+			else
+				levels[ 0 ] = 2;
+
+			XieFloConstrain( &flograph[idx], 
+				idx,
+				levels,
+				xieValConstrainClipScale,
+				tech_parms
+			);
+			idx++;
+		}
+
 		if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
-			levels[ 0 ] = 1 << xp->vinfo.depth;
+			XieFloExportDrawable(&flograph[idx],
+				idx,       /* source phototag number */
+				xp->w,
+				xp->fggc,
+				0,       /* x offset in window */
+				0        /* y offset in window */
+			);
 		else
-			levels[ 0 ] = 2;
-
-		XieFloConstrain( &flograph[2], 
-			2,
-			levels,
-			xieValConstrainClipScale,
-			tech_parms
-		);
-
+			XieFloExportDrawablePlane(&flograph[idx],
+				idx,       /* source phototag number */
+				xp->w,
+				xp->fggc,
+				0,       /* x offset in window */
+				0        /* y offset in window */
+			);
+		idx++;
        		XieExecuteImmediate(xp->d, photospace,
                		flo_id,		
                		flo_notify,     
                		flograph,       /* photoflo specification */
-               		4               /* number of elements */
+               		idx    		/* number of elements */
        		);
-		if ( tech_parms )
-		    free( tech_parms );	
-
 		XSync( xp->d, 0 );
     	}
-	if ( dithertech_parms )
-		free( dithertech_parms );
-	XieFreePhotofloGraph(flograph,4);	
-	XieDestroyPhotospace( xp->d, photospace );
-}
-
-void DoDitherFloMapStored(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i;
-	int	flo_notify, decode_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-	XieLTriplet levels;
-	char    *tech_parms=NULL;
-        XieClipScaleParam *parms;
-        XieConstant in_low,in_high;
-        XieLTriplet out_low,out_high;
-	int	threshold;
-
-	threshold = 0;
-	decode_notify = False;
-	levels[ 0 ] = 2;
-	levels[ 1 ] = 0;
-	levels[ 2 ] = 0;
-
-	in_low[ 0 ] = 0.0;
-	in_high[ 0 ] = ( float ) 1;
-	out_low[ 0 ] = 0;
-	in_low[ 1 ] = 0.0;
-	in_high[ 1 ] = 0.0;
-	in_low[ 2 ] = 0.0;
-	in_high[ 2 ] = 0.0;
-	out_low[ 1 ] = 0;
-	out_high[ 1 ] = 0;
-	out_low[ 2 ] = 0;
-	out_high[ 2 ] = 0;
-        if ( ( ( DitherParms * )p->ts )->drawable == Drawable )
-                out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
-        else
-                out_high[ 0 ] = 1;
-	flograph = XieAllocatePhotofloGraph(4);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportPhotomap(&flograph[0],XIEPhotomap,decode_notify);
-
-        tech_parms = ( char * ) NULL;
-        if ( ( ( DitherParms * ) p->ts )->dither == xieValDitherOrdered )
-        {
-                tech_parms = ( char * )
-                XieTecDitherOrderedParam(threshold);
-                if ( tech_parms == ( char * ) NULL )
-                {
-                        fprintf( stderr,
-                                "Trouble loading dither technique parameters\n" );
-                        return;
-                }
-        }
-
-	XieFloDither( &flograph[ 1 ],
-                1,
-                levels,
-                ( ( DitherParms * ) p->ts )->dither,
-                tech_parms
-        );
-
 	if ( tech_parms )
+	{
 		free( tech_parms );
-        parms = XieTecClipScale( in_low, in_high, out_low, out_high);
-        tech_parms = ( char * ) parms;
-        if ( tech_parms == ( char * ) NULL )
-        {
-                fprintf( stderr,
-                       "Trouble loading clipscale technique parameters\n" );
-                return;
-        }
-
-	if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
-		levels[ 0 ] = 1 << xp->vinfo.depth;
-
-        XieFloConstrain( &flograph[2],
-                2,
-                levels,
-                xieValConstrainClipScale,
-                tech_parms
-	);
-
-	if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
-		XieFloExportDrawable(&flograph[3],
-			3,              /* source phototag number */
-			xp->w,
-			xp->fggc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		);
-	else
-		XieFloExportDrawablePlane(&flograph[3],
-			3,              /* source phototag number */
-			xp->w,
-			xp->fggc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, 4 );
-
-	if ( tech_parms )
-		free( tech_parms );	
-
-	/* crank it */
-
-	flo_notify = 0;
-    	for (i = 0; i != reps; i++) {
-		XieExecutePhotoflo( xp->d, flo, flo_notify );
-		XSync( xp->d, 0 );
-    	}
-
-	/* destroy the photoflo */
-
-	XieDestroyPhotoflo( xp->d, flo );
-	XieFreePhotofloGraph(flograph,4);	
+		tech_parms = ( char * ) NULL;
+	}
 }
 
-void EndDitherFloMap(xp, p)
+void 
+EndDither(xp, p)
     XParms  xp;
     Parms   p;
 {
-        /* deallocate the data buffer */
+	FreeDitherStuff( xp, p );
+}
 
-	if ( p->data )
+int
+FreeDitherStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{
-        	free( p->data );
-		p->data = ( char * ) NULL;	
+		XieDestroyPhotomap(xp->d, XIEPhotomap);
+		XIEPhotomap = ( XiePhotomap ) NULL;
 	}
-
-        /* destroy the photomap */
-
-        XieDestroyPhotomap(xp->d, XIEPhotomap);
-
+	if ( dithertech_parms )
+	{
+		free( dithertech_parms );
+		dithertech_parms = ( char * ) NULL;
+	}
+	if ( flograph != (XiePhotoElement *) NULL )
+	{
+		XieFreePhotofloGraph(flograph,4);	
+		flograph = ( XiePhotoElement * ) NULL; 
+	}
+	if ( photospace )
+	{
+		XieDestroyPhotospace( xp->d, photospace );
+		photospace = ( XiePhotospace ) NULL;
+	}
 }
 

@@ -1,6 +1,6 @@
-/* $XConsortium: creatdstry.c,v 1.2 93/07/19 14:43:45 rws Exp $ */
+/* $XConsortium: creatdstry.c,v 1.2 93/10/26 10:05:45 rws Exp $ */
 
-/**** module do_createdestroy.c ****/
+/**** module creatdstry.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_createdestroy.c -- create/destroy resource tests
+	creatdstry.c -- create/destroy resource tests
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -53,6 +53,7 @@ terms and conditions:
 
 static XieLut	PhotofloTestLut1, PhotofloTestLut2;
 static XiePhotoElement *flograph;
+static int flo_elements;
 
 int InitCreateDestroyPhotoflo(xp, p, reps)
     XParms  xp;
@@ -64,58 +65,80 @@ int InitCreateDestroyPhotoflo(xp, p, reps)
         Bool    merge;
         XieLTriplet start;
 
-        flograph = XieAllocatePhotofloGraph(2);
+	lut1 = ( unsigned char * ) NULL;
+	lut2 = ( unsigned char * ) NULL;
+	PhotofloTestLut1 = PhotofloTestLut2 = ( XieLut ) NULL;
+	flo_elements = 2;
+        flograph = XieAllocatePhotofloGraph(flo_elements);
+
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-                return 0;
+		reps = 0;
         }
-
-        lutSize = 1 << xp->vinfo.depth;
-        lut1 = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
-        if ( lut1 == ( unsigned char * ) NULL )
-                return 0;
-        lut2 = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
-        if ( lut2 == ( unsigned char * ) NULL )
+	else
 	{
-	        XieFreePhotofloGraph(flograph,2);
-		free( lut1 );
-		return( 0 );
+		lutSize = 1 << xp->vinfo.depth;
+		lut1 = (unsigned char *)
+			malloc( lutSize * sizeof( unsigned char ) );
+		if ( lut1 == ( unsigned char * ) NULL )
+			reps = 0;
 	}
-        if ( ( PhotofloTestLut1 = GetXIELut( xp, p, lut1, lutSize, lutSize ) ) 
-		== ( XieLut ) NULL )
-        {
-	        XieFreePhotofloGraph(flograph,2);
-		free( lut1 );
-		free( lut2 );
-                return 0;
+	if ( reps )
+	{
+		lut2 = (unsigned char *)
+			malloc( lutSize * sizeof( unsigned char ) );
+		if ( lut2 == ( unsigned char * ) NULL )
+		{
+			reps = 0;
+		}
+	}
+	if ( reps )
+	{
+		if ( ( PhotofloTestLut1 = 
+			GetXIELut( xp, p, lut1, lutSize, lutSize ) ) 
+			== ( XieLut ) NULL )
+		{
+			reps = 0;
+		}
         }
-        if ( ( PhotofloTestLut2 = GetXIELut( xp, p, lut2, lutSize, lutSize ) ) 
-		== ( XieLut ) NULL )
-        {
-	        XieFreePhotofloGraph(flograph,2);
-		free( lut1 );
-		free( lut2 );
-		XieDestroyLUT( xp->d, PhotofloTestLut1 );
-                return 0;
+	if ( reps )
+	{
+		if ( ( PhotofloTestLut2 = 
+			GetXIELut( xp, p, lut2, lutSize, lutSize ) ) 
+			== ( XieLut ) NULL )
+		{
+			reps = 0;
+		}
         }
-	free( lut1 );
-	free( lut2 );
+	if ( lut1 )
+	{
+		free( lut1 );
+	}
+	if ( lut2 )
+	{
+		free( lut2 );
+	}
 
-        XieFloImportLUT(&flograph[0], PhotofloTestLut1 );
+	if ( reps )
+	{
+		XieFloImportLUT(&flograph[0], PhotofloTestLut1 );
 
-        merge = False;
-        start[ 0 ] = 0;
-        start[ 1 ] = 0;
-        start[ 2 ] = 0;
+		merge = False;
+		start[ 0 ] = 0;
+		start[ 1 ] = 0;
+		start[ 2 ] = 0;
 
-        XieFloExportLUT(&flograph[1],
-                1,              /* source phototag number */
-                PhotofloTestLut2,
-                merge,
-                start
-        );
+		XieFloExportLUT(&flograph[1],
+			1,              /* source phototag number */
+			PhotofloTestLut2,
+			merge,
+			start
+		);
+	}
 
+	if ( !reps )
+		FreeCreateDestroyPhotofloStuff( xp, p );
 	return reps;
 
 }
@@ -237,7 +260,7 @@ void DoCreateDestroyPhotoflo(xp, p, reps)
 	int	i;
 	for ( i = 0; i < reps; i++ )
 	{
-        	if ( !( flo = XieCreatePhotoflo( xp->d, flograph, 2 ) ) )
+        	if ( !( flo = XieCreatePhotoflo( xp->d, flograph, flo_elements ) ) )
 		{
 			fprintf( stderr, "XieCreatePhotoflo failed\n" );
 			break;
@@ -251,13 +274,36 @@ void EndCreateDestroy(xp, p)
     XParms  xp;
     Parms   p;
 {
+	return;
 }
 
 void EndCreateDestroyPhotoflo(xp, p)
     XParms  xp;
     Parms   p;
 {
-        XieFreePhotofloGraph(flograph,2);
-	XieDestroyLUT( xp->d, PhotofloTestLut1 );
-	XieDestroyLUT( xp->d, PhotofloTestLut2 );
+	FreeCreateDestroyPhotofloStuff( xp, p );
+}
+
+int
+FreeCreateDestroyPhotofloStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( flograph )
+	{
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+
+        if ( PhotofloTestLut1 )
+        {
+                XieDestroyLUT( xp->d, PhotofloTestLut1 );
+                PhotofloTestLut1 = ( XieLut ) NULL;
+        }
+
+        if ( PhotofloTestLut2 )
+        {
+                XieDestroyLUT( xp->d, PhotofloTestLut2 );
+                PhotofloTestLut2 = ( XieLut ) NULL;
+        }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.11 93/09/14 14:28:40 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.2 93/10/26 10:07:30 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -54,32 +54,26 @@ terms and conditions:
 #include <stdio.h>
 #include <ctype.h>
 #include <signal.h>
+#include <math.h>
 
-#ifdef X_NOT_STDC_ENV
 extern int errno;
-#endif
 
-
-#ifndef VMS
-#include <X11/Xatom.h>
-#else
-#include <decw$include/Xatom.h>
-#endif
 #include "xieperf.h"
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
 static Pixmap   tileToQuery     = None;
 
 static Bool     labels		= False;
+static Bool 	loadTests 	= False;
+static char 	*loadTestsFile;
 static int      repeat		= 5;
 static int	seconds		= 5;
 Bool 	dontClear;
 unsigned short capabilities = 0;
 unsigned short class_request = SUBSET_FULL;
+extern int CacheSizeMax;
+static FILE	*fp = ( FILE * ) NULL;
 
 char	*imagepath = "./images";
 
@@ -97,6 +91,18 @@ static char *background = NULL;
 static int  fixedReps = 0;
 
 static Bool *doit;
+Bool WMSafe = False;
+static Bool notBoring = False;
+static Bool loCal = False;
+Bool showErrors = False;
+static Bool runErrors = False;
+static Bool runEvents = False;
+static Bool showLabels = False;   /* Hear me now and believe me later,
+				     when 'True', is helpful if test 
+				     dies in calibration */ 
+				     
+
+static int visualClass = -1;
 
 static XRectangle ws[] = {  /* Clip rectangles */
     {195, 195, 120, 120},
@@ -109,8 +115,12 @@ static Window clipWindows[MAXCLIP];
 static Colormap cmap;
 static int depth = -1;  /* -1 means use default depth */
 Window drawableWindow;
+Window monitorWindow;
+Window monitor2Window;
 static int maxcoloridx;
-static int timeout = 60;	/* in seconds */
+
+Window	CreateXIEParent();
+void	AllocateRest();
 
 /* ScreenSaver state */
 static XParmRec    xparms;
@@ -142,8 +152,9 @@ struct timezone {
 static int firsttime = True;
 static vms_time basetime;
 
-int gettimeofday(tp)
+int gettimeofday(tp, tzp)
     struct timeval *tp;
+    struct timezone *tzp;
 {
     vms_time current_time, resultant;
     unsigned long mumble, foo;
@@ -178,24 +189,17 @@ void PrintTime()
 
 void InitTimes ()
 {
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-    gettimeofday(&start);
-#else
     struct timezone foo;
     gettimeofday(&start, &foo);
-#endif
 }
 
 double ElapsedTime(correction)
     double correction;
 {
     struct timeval stop;
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-    gettimeofday(&stop);
-#else
     struct timezone foo;
+    
     gettimeofday(&stop, &foo);
-#endif
     if (stop.tv_usec < start.tv_usec) {
         stop.tv_usec += 1000000;
 	stop.tv_sec -= 1;
@@ -274,6 +278,12 @@ void ReportTimes(usecs, n, str, average)
 
 static char *program_name;
 void usage();
+
+Display *
+GetDisplay()
+{
+	return( xparms.d );
+}
 
 /*
  * Get_Display_Name (argc, argv) Look for -display, -d, or host:dpy (obselete)
@@ -355,18 +365,35 @@ void usage()
     int     i = 0;
     static char *help_message[] = {
 "where options include:",
-"    -display <host:display>   the X server to contact",
+"    -display <host:display>   the XIE server to contact",
 "    -images <path>            path to images supplied with this software,", 
 "                              defaults to ./images if flag not specified",
-"    -timeout <s>              timeout value for certain tests (default=60)",
+"    -timeout <s>              timeout value for certain tests (default=60 secs)",
 "    -sync                     do the tests in synchronous mode",
-"    -repeat <n>               do tests <n> times (default = 5)",
+"    -script file              read tests from a file, ``-'' to use console",
+"    -repeat <n>               do tests <n> times (outer loop) (default = 5)",
 "    -time <s>                 do tests for <s> seconds each (default = 5)",
+"    -depth <depth>            use a visual with <depth> planes per pixel",
+"    -GrayScale                use a GrayScale visual",
+"    -StaticGray               use a StaticGray visual",
+"    -StaticColor              use a StaticColor visual",
+"    -PseudoColor              use a PseudoColor visual",
+"    -TrueColor                use a TrueColor visual",
+"    -DirectColor              use a DirectColor visual",
+"    -WMSafe                   let window manager install colormap",
+"    -lessboring               very subjective selection of less boring tests",
+"    -showlabels               print test label to screen before calibration",
+"    -showevents               for error and event tests, display as received",
+"    -events                   include event tests",
+"    -errors                   include error tests",
+"    -loCal                    no calibration, fix reps to 5 ( -reps overrides this )",
 "    -all                      do all tests",
-"    -labels",
-"    -DIS		       run DIS subset tests only",			
+"    -tests		       generate a list of all recognizable test names",
+"    -cache <n>		       cache up to n photomaps in server",
+"    -labels		       print test labels ( use -all or -range to specify tests )",	
+"    -DIS                      run DIS subset tests only",			
 "    -range <test1>[,<test2>]  like all, but do <test1> to <test2>",
-"    -reps <n>                 fix the rep count (default = auto scale)",
+"    -reps <n>                 fix the inner loop rep count (default = auto scale)",
 NULL};
 
     fflush(stdout);
@@ -374,11 +401,7 @@ NULL};
     for (cpp = help_message; *cpp; cpp++) {
 	fprintf(stderr, "%s\n", *cpp);
     }
-    while (test[i].option != NULL) {
-        fprintf(stderr, "    %-24s   %s\n",
-		test[i].option, test[i].label);
-        i++;
-    }
+
     fprintf(stderr, "\n");
     
     /* Print out original command line as the above usage message is so long */
@@ -447,16 +470,23 @@ Window CreatePerfWindow(xp, x, y, width, height)
     Window w;
     Screen *s;
     int su;
+    unsigned long value_mask;
 
     xswa.background_pixel = xp->background;
     xswa.border_pixel = xp->foreground;
-    xswa.override_redirect = True;
+    if ( WMSafe == False )
+    	xswa.override_redirect = True;
+    else
+    	xswa.override_redirect = False;
     xswa.backing_store = False;
     xswa.save_under = False;
-    w = XCreateWindow(xp->d, DefaultRootWindow(xp->d), x, y, width, height, 1,
+    xswa.colormap = cmap;
+    value_mask = CWBackPixel | CWBorderPixel | CWColormap |
+	CWOverrideRedirect |CWBackingStore | CWSaveUnder;
+
+    w = XCreateWindow(xp->d, xp->p, x, y, width, height, 1,
         xp->vinfo.depth, CopyFromParent, xp->vinfo.visual,
-	CWBackPixel | CWBorderPixel /* | CWColormap */ | CWOverrideRedirect 
-	| CWBackingStore | CWSaveUnder, &xswa);
+	value_mask, &xswa);
     XMapWindow (xp->d, w);
     return w;
 }
@@ -469,32 +499,55 @@ Window CreatePerfWindowUnmapped(xp, x, y, width, height)
     Window w;
     Screen *s;
     int su;
+    unsigned long value_mask;
 
     xswa.background_pixel = xp->background;
     xswa.border_pixel = xp->foreground;
     xswa.colormap = cmap;
-    xswa.override_redirect = True;
+    if ( WMSafe == False )
+    	xswa.override_redirect = True;
+    else
+    	xswa.override_redirect = False;
     xswa.backing_store = False;
     xswa.save_under = False;
-    w = XCreateWindow(xp->d, DefaultRootWindow(xp->d), x, y, width, height, 1,
-        xp->vinfo.depth, CopyFromParent, xp->vinfo.visual,
-	CWBackPixel | CWBorderPixel | CWColormap | CWOverrideRedirect 
-	| CWBackingStore | CWSaveUnder, &xswa);
+    value_mask = CWBackPixel | CWBorderPixel | CWColormap |
+	CWOverrideRedirect |CWBackingStore | CWSaveUnder;
+    w = XCreateWindow(xp->d, xp->p, x, y, width, height, 1,
+        xp->vinfo.depth, CopyFromParent, xp->vinfo.visual, value_mask, &xswa);
     return w;
 }
 
 void
-InstallXIECmap( display )
+InstallThisColormap( display, window, cmap )
 Display	*display;
+Window	window;
+Colormap cmap;
 {
-	XInstallColormap( display, cmap );	
+	XSetWindowColormap( display, window, cmap );
+	if ( WMSafe == False )
+		XInstallColormap( display, cmap );
 }
 
 void
-UninstallXIECmap( display )
+InstallDefaultColormap( display, window )
 Display	*display;
+Window	window;
 {
-	XUninstallColormap( display, cmap );
+	XSetWindowColormap( display, window, 
+		DefaultColormap( display, DefaultScreen( display ) ) );
+	if ( WMSafe == False )
+		XInstallColormap( display, 
+			DefaultColormap( display, DefaultScreen( display ) ) );
+}
+
+void
+InstallCustomColormap( display, window )
+Display	*display;
+Window	window;
+{
+	XSetWindowColormap( display, window, cmap );
+	if ( WMSafe == False )
+		XInstallColormap( display, cmap );
 }
 
 void CreateClipWindows(xp, clips)
@@ -507,8 +560,8 @@ void CreateClipWindows(xp, clips)
     (void) XGetWindowAttributes(xp->d, xp->w, &xwa);
     if (clips > MAXCLIP) clips = MAXCLIP;
     for (j = 0; j != clips; j++) {
-	clipWindows[j] = CreatePerfWindow(xp,
-	    xwa.x + ws[j].x, xwa.y + ws[j].y, ws[j].width, ws[j].height);
+	clipWindows[j] = CreatePerfWindow(xp, xwa.x + ws[j].x, 
+		xwa.y + ws[j].y, ws[j].width, ws[j].height);
     }
 } /* CreateClipWindows */
 
@@ -587,6 +640,8 @@ int CalibrateTest(xp, test, seconds, usecperobj)
 	}
 	/* Create clip windows if requested */
 	CreateClipWindows(xp, test->clips);
+    	if ( dontClear == False )
+		XClearWindow( xp->d, xp->w );
 	HardwareSync(xp);
 	InitTimes();
 	(*test->proc) (xp, &test->parms, reps);
@@ -660,11 +715,11 @@ void CreatePerfGCs(xp, func, pm)
     xp->bggc = XCreateGC(xp->d, xp->w, 
 	GCForeground | GCBackground | GCGraphicsExposures
       | GCFunction | GCPlaneMask, &gcvbg);
+
 }
 
-
 void DestroyPerfGCs(xp)
-    XParms(xp);
+XParms	xp;
 {
     XFreeGC(xp->d, xp->fggc);
     XFreeGC(xp->d, xp->bggc);
@@ -685,30 +740,52 @@ void DisplayStatus(d, message, test)
 }
 
 
-void ProcessTest(xp, test, func, pm, label)
+void ProcessTest(xp, test, func, pm, label, locreps)
     XParms  xp;
     Test    *test;
     int     func;
     unsigned long   pm;
     char    *label;
+    int	    locreps;
 {
     double  time, totalTime;
-    int     reps, fooreps;
+    int     reps;
     int     j;
 
     CreatePerfGCs(xp, func, pm);
-    DisplayStatus(xp->d, "Calibrating", label);
-    reps = CalibrateTest(xp, test, seconds, &time);
+    if ( showLabels == True )
+    {
+	    fprintf( stderr, "'%s'\n", label );
+	    fflush( stderr );
+    }
+    if ( loCal == False )
+    {
+	    DisplayStatus(xp->d, "Calibrating", label);
+	    reps = CalibrateTest(xp, test, seconds, &time);
+    }
+    else
+    {
+    	if (fixedReps != 0)
+            reps = fixedReps;
+	else
+	    reps = 5;
+    }
+    if ( locreps != -1 )
+	reps = locreps;
     if (reps != 0) {
 	DisplayStatus(xp->d, "Testing", label);
 	XDestroySubwindows(xp->d, xp->w);
 	XClearWindow(xp->d, xp->w);
+
+	/* scale down the reps if needed */
+
 	reps = (*test->init) (xp, &test->parms, reps);
 	/* Create clip windows if requested */
 	CreateClipWindows(xp, test->clips);
 
 	totalTime = 0.0;
 	for (j = 0; j != repeat; j++) {
+    
 	    time = DoTest(xp, test, reps);
 	    totalTime += time;
 	    ReportTimes (time, reps * test->parms.objects,
@@ -748,7 +825,10 @@ main(argc, argv)
     unsigned long vmask;
     XieExtensionInfo        *xieInfo;
     XWindowAttributes attribs;
+    XEvent  event;
+    int	done, cclass, timeout;
 
+    CacheInit();
     dontClear = False;
     /* Save away argv, argc, for usage to print out */
     saveargc = argc;
@@ -822,6 +902,9 @@ main(argc, argv)
 	    timeout = atoi (argv[i]);
 	    if (timeout < 0)
 	       usage ();
+	    else
+	       SetTimeout( timeout );
+	    
 	} else if (strcmp (argv[i], "-repeat") == 0) {
 	    i++;
 	    if (argc <= i)
@@ -843,8 +926,63 @@ main(argc, argv)
 	    fixedReps = atoi (argv[i]);
 	    if (fixedReps <= 0)
 		usage ();
+        } else if (strcmp(argv[i], "-depth") == 0) {
+            i++;
+            if (argc <= i)
+                usage ();
+            depth = atoi(argv[i]);
+            if (depth <= 0)
+                usage ();
+        } else if (strcmp(argv[i], "-script") == 0) {
+            i++;
+	    loadTests = True;
+            if (argc <= i)
+		usage();
+            loadTestsFile = argv[i];
+	    foundOne = True;
+        } else if (strcmp(argv[i], "-cache") == 0) {
+            i++;
+            if (argc <= i)
+                usage ();
+            CacheSizeMax = atoi(argv[i]);
+            if (CacheSizeMax < 0)
+                usage ();
+	} else if (strcmp(argv[i], "-loCal") == 0) {
+		loCal = True;
+	} else if (strcmp(argv[i], "-showlabels") == 0) {
+		showLabels = True;
+	} else if (strcmp(argv[i], "-events") == 0) {
+		runEvents = True;
+	} else if (strcmp(argv[i], "-errors") == 0) {
+		runErrors = True;
+	} else if (strcmp(argv[i], "-showevents") == 0) {
+		showErrors = True;
+	} else if (strcmp(argv[i], "-lessboring") == 0) {
+		notBoring = True;
+	} else if (strcmp(argv[i], "-GrayScale") == 0) {
+		visualClass = GrayScale;
+	} else if (strcmp(argv[i], "-StaticGray") == 0) {
+		visualClass = StaticGray;
+	} else if (strcmp(argv[i], "-PseudoColor") == 0) {
+		visualClass = PseudoColor;
+	} else if (strcmp(argv[i], "-StaticColor") == 0) {
+		visualClass = StaticColor;
+	} else if (strcmp(argv[i], "-DirectColor") == 0) {
+		visualClass = DirectColor;
+	} else if (strcmp(argv[i], "-TrueColor") == 0) {
+		visualClass = TrueColor;
 	} else if (strcmp(argv[i], "-DIS") == 0) {
 		class_request = SUBSET_DIS;
+	} else if (strcmp(argv[i], "-WMSafe") == 0) {
+		WMSafe = True;
+	} else if (strcmp(argv[i], "-tests") == 0) {
+		j = 0;
+    		while (test[j].option != NULL) {
+			fprintf(stderr, "    %-24s   %s\n",
+				test[j].option, test[j].label);
+			j++;
+		}
+		exit(0);
 	} else {
 	    ForEachTest (j) {
 		if (strcmp (argv[i], test[j].option) == 0 &&
@@ -861,7 +999,7 @@ main(argc, argv)
 
     if (labels) {
 	/* Just print out list of tests for use with .sh programs that
-	   assemble data from different x11perf runs into a nice format */
+	   assemble data from different xieperf runs into a nice format */
 	ForEachTest (i) {
 	    int child;
 	    if (doit[i] && (test[i].versions & xparms.version)) {
@@ -873,12 +1011,27 @@ main(argc, argv)
 
     if (!foundOne)
 	usage ();
+    if ( loadTests == True )
+    {
+	if ( !strcmp( loadTestsFile, "-" ) )
+		fp = stdin;
+	else
+		fp = fopen( loadTestsFile, "r" );
+	if ( fp == ( FILE * ) NULL )
+	{
+		fprintf( stderr, "Couldn't open script file '%s'\n",
+			loadTestsFile );
+		fprintf( stderr, "script argument will be ignored\n" );
+		loadTests = False;
+	}
+    }
+
     xparms.d = Open_Display (displayName);
     screen = DefaultScreen(xparms.d);
 
     /* check for presence of XIE */
 
-    printf("xieperf - XIE performance program, version 0.9\n");
+    printf("xieperf - XIE performance program, beta version 0.95\n");
     if ( !XieInitialize(xparms.d, &xieInfo ) ) {
 	printf("\nXIE not supported on this display!\n");
         exit(1);
@@ -886,14 +1039,19 @@ main(argc, argv)
     printf("\nXIE V%d.%d\n", xieInfo->server_major_rev, 
 	xieInfo->server_minor_rev);
 
-    capabilities |= ( xieInfo->service_class << 8 );	
-    if ( IsFull( class_request ) && IsDIS( capabilities ) )
+    capabilities = ( xieInfo->service_class << 8 );	
+    if ( IsDIS( capabilities ) )
+	printf( "DIS server\n" );
+    else
+	printf( "FULL server\n" );
+
+    if ( IsFull( capabilities ) && IsDIS( class_request ) )
     {
 	printf( "Service class is DIS - running DIS tests only\n" );
-        class_request = SUBSET_DIS;
+	capabilities = SUBSET_DIS;
     }
 
-    InitEvents( &xparms, xieInfo );
+    InitEventInfo( &xparms, xieInfo );
     /* get visual info of default visual */
     vmask = VisualIDMask | VisualScreenMask;
     vinfotempl.visualid = XVisualIDFromVisual(XDefaultVisual(xparms.d, screen));
@@ -905,25 +1063,72 @@ main(argc, argv)
 	exit(1);
     }
 
+    if (depth == -1 && visualClass == -1) {
+        /* use the default visual and colormap */
+        xparms.vinfo = *vinfolist;
+	free( vinfolist );
+    } else {
+        /* find the specified visual */
+	vmask = VisualScreenMask;
+        vinfotempl.screen = screen;
+	if ( depth != -1 )
+	{
+		vmask |= VisualDepthMask;
+        	vinfotempl.depth = depth;
+	}
+	if ( visualClass != -1 )
+	{
+		vmask |= VisualClassMask;
+#if	defined(__cplusplus) || defined(c_plusplus)
+		vinfotempl.c_class = visualClass;
+#else
+		vinfotempl.class = visualClass; 
+#endif
+	}
+	if ( vinfolist )
+		free( vinfolist );
+        vinfolist = XGetVisualInfo(xparms.d, vmask, &vinfotempl, &n);
+        if (!vinfolist) {
+            fprintf (stderr, 
+		"%s: can't find an appropriate visual for requested depth and/or class\n", program_name);
+            exit(1);
+        }
+        xparms.vinfo = *vinfolist;  /* use the first one in list */
+	free( vinfolist );
+    }
+
+#if	defined(__cplusplus) || defined(c_plusplus)
+    cclass = xparms.vinfo.c_class;
+#else
+    cclass = xparms.vinfo.class;
+#endif
     cmap = XCreateColormap(xparms.d, DefaultRootWindow(xparms.d),
-		XDefaultVisual(xparms.d, screen), AllocNone );
-    xparms.vinfo = *vinfolist;
-    XFree(vinfolist);
+	xparms.vinfo.visual, AllocNone );
+    if ( WMSafe == False )
+	XInstallColormap( xparms.d, cmap );
+    if ( cclass == GrayScale || cclass == PseudoColor || cclass == DirectColor )
+    { 
+    	AllocateRest( &xparms );
+	xparms.foreground = 0;
+    	xparms.background = maxcoloridx;
+    }
+    else
+    {
+	xparms.foreground = BlackPixel( xparms.d, DefaultScreen( xparms.d ) );
+	xparms.background = WhitePixel( xparms.d, DefaultScreen( xparms.d ) );
+    }
+
     if (!foreground) foreground = "Black";
     if (!background) background = "White";
 
-    /* set depth capabilities. If it is not 8, 16, 24, then assume is mono */
-
-    if ( xparms.vinfo.depth == 8 )
-	capabilities |= CAPA_COLOR_8;
-    else if ( xparms.vinfo.depth == 16 )
-	capabilities |= CAPA_COLOR_16;
-    else if ( xparms.vinfo.depth == 24 )
-	capabilities |= CAPA_COLOR_24;
-
-    XmuGetHostname(hostname, 100);
+#ifndef VMS
+    gethostname (hostname, 100);
     printf ("%s server on %s\nfrom %s\n",
 	    ServerVendor (xparms.d), DisplayString (xparms.d), hostname);
+#else
+    printf ("%s server on %s\n",
+	    ServerVendor (xparms.d), DisplayString (xparms.d));
+#endif
     PrintTime ();
 
     /* Force screen out of screen-saver mode, grab current data, and set
@@ -937,13 +1142,9 @@ main(argc, argv)
     XGetScreenSaver(xparms.d, &ssTimeout, &ssInterval, &ssPreferBlanking,
 	&ssAllowExposures);
     (void) signal(SIGINT, Cleanup); /* ^C */
-#ifdef SIGQUIT
     (void) signal(SIGQUIT, Cleanup);
-#endif
     (void) signal(SIGTERM, Cleanup);
-#ifdef SIGHUP
     (void) signal(SIGHUP, Cleanup);
-#endif
     XSetScreenSaver(xparms.d, 8 * 3600, ssInterval, ssPreferBlanking, 
 	ssAllowExposures);
 
@@ -951,12 +1152,33 @@ main(argc, argv)
         tileToQuery =
 	    XCreatePixmap(xparms.d, DefaultRootWindow (xparms.d), 32, 32, 1);
     }
-    AllocateRest( &xparms );
-    xparms.foreground = 0;
-    xparms.background = maxcoloridx;
-    xparms.w = CreatePerfWindow(&xparms, 2, 2, WIDTH, HEIGHT);
-    drawableWindow = CreatePerfWindowUnmapped(&xparms, 610, 0, WIDTH, HEIGHT);
-    status = CreatePerfWindow(&xparms, 2, HEIGHT+5, WIDTH, 20);
+    if ( WMSafe == True )
+    {
+	xparms.p = CreateXIEParent( &xparms );
+    	XSetTransientForHint( xparms.d, xparms.p, DefaultRootWindow (xparms.d) );
+	XMapRaised( xparms.d, xparms.p );
+    }
+    else
+	xparms.p = DefaultRootWindow( xparms.d );
+    xparms.w = CreatePerfWindowUnmapped(&xparms, 2, 2, WIDTH, HEIGHT);
+    if ( WMSafe == True )
+    	XSetTransientForHint( xparms.d, xparms.w, xparms.p );
+    monitorWindow = CreatePerfWindowUnmapped(&xparms, WIDTH - 100, 
+	HEIGHT - 100, MONWIDTH, MONHEIGHT);
+    if ( WMSafe == True )
+    	XSetTransientForHint( xparms.d, monitorWindow, xparms.p );
+    monitor2Window = CreatePerfWindowUnmapped(&xparms, WIDTH - 100, 
+	HEIGHT - 100, MONWIDTH, MONHEIGHT);
+    if ( WMSafe == True )
+    	XSetTransientForHint( xparms.d, monitor2Window, xparms.p );
+
+    drawableWindow = CreatePerfWindowUnmapped(&xparms, 610, 0, 
+	WIDTH, HEIGHT);
+    if ( WMSafe == True )
+    	XSetTransientForHint( xparms.d, drawableWindow, xparms.p );
+    status = CreatePerfWindowUnmapped(&xparms, 2, HEIGHT+5, WIDTH, 20);
+    if ( WMSafe == True )
+    	XSetTransientForHint( xparms.d, status, xparms.p );
     tgcv.foreground = xparms.foreground;
     tgcv.background = xparms.background;
     tgc = XCreateGC(xparms.d, status, GCForeground | GCBackground, &tgcv);
@@ -970,51 +1192,258 @@ main(argc, argv)
        creation/configuration performance. */
     XGetWindowAttributes( xparms.d, DefaultRootWindow( xparms.d ), &attribs );
     XSync( xparms.d, 0 );
-    XWarpPointer(xparms.d, None, DefaultRootWindow( xparms.d ), 0, 0, 0, 0, 
-	0, HEIGHT+40);
+
+    /* wait for first expose event before we trudge forward */
+
+    XSelectInput( xparms.d, xparms.w, ExposureMask );
+    XSync( xparms.d, 0 );
+    XMapWindow( xparms.d, xparms.w );
+    XMapWindow( xparms.d, status );
+
+    done = 0;
+    while( done == 0 )
+    {
+	XNextEvent( xparms.d, &event );
+        switch( event.type )
+	{
+		case Expose:
+			done = 1;
+			break;
+	}
+    }
+
+    XWarpPointer(xparms.d, None, xparms.p, 0, 0, 0, 0, 10, HEIGHT+30);
 
     /* Figure out how long to call HardwareSync, so we can adjust for that
        in our total elapsed time */
+
     (void) CalibrateTest(&xparms, &syncTest, 1, &syncTime);
     printf("Sync time adjustment is %6.4f msecs.\n\n", syncTime/1000);
 
-    ForEachTest (i) {
-	int child;
-	char label[200];
+    ListAllTechs( &xparms );
 
-	if (doit[i] && (test[i].versions & xparms.version) && ServerIsCapable( test[ i ].parms.description ) ) {
-	    	strcpy (label, test[i].label);
-		ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
-	} /* if doit */
-    } /* ForEachTest */
+    if ( loadTests == False )
+    {
+    	ForEachTest (i) {
+		int child;
+		char label[200];
 
+		if ( !EventOrErrorValid( test[ i ].parms.description ) )
+			continue;
+		if (doit[i] && (test[i].versions & xparms.version) && ServerIsCapable( test[ i ].parms.description ) ) {
+			if ( IsNotBoring( test[ i ].parms.description ) )
+			{
+				strcpy (label, test[i].label);
+				ProcessTest(&xparms, &test[i], GXcopy, ~0, label, -1);
+			}
+		} /* if doit */
+	    } /* ForEachTest */
+    }
+    else
+    {
+	Bool 	done;
+	int 	repeattmp, 
+		repeatsave;
+	int 	reps;
+	done = False;
+
+	while ( done == False )
+	{
+		repeattmp = -1;
+		if ( ( i = GetNextTest( fp, &repeattmp, &reps ) ) < 0 )
+			done = True;
+		else
+		{
+			int child;
+			char label[200];
+
+			if ( !EventOrErrorValid( test[ i ].parms.description ) )
+				continue;
+			if ((test[i].versions & xparms.version) && 
+				ServerIsCapable( test[ i ].parms.description ) )
+			{
+				if ( IsNotBoring( test[ i ].parms.description ) )
+				{
+					strcpy (label, test[i].label);
+					if ( repeattmp != -1 )
+					{
+						repeatsave = repeat;
+						repeat = repeattmp;
+					}
+					ProcessTest(&xparms, 
+						&test[i], GXcopy, ~0, label, reps);
+					if ( repeattmp != -1 )
+						repeat = repeatsave;
+				}
+		        }
+		}
+	}
+    }
+
+    if ( fp != ( FILE * ) NULL )
+	fclose( fp );
+    ReclaimPhotomapMemory();	/* shut up Purify :-) */
     XDestroyWindow(xparms.d, xparms.w);
+    XDestroyWindow(xparms.d, xparms.p );
     /* Restore ScreenSaver to original state. */
     XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
 	ssAllowExposures);
     XCloseDisplay(xparms.d);
 }
 
-#define MAXCOLORS 256
-
 int
+TestIndex ( testname )
+char	*testname;
+{
+	int	j, found;
+
+	found = -1;
+	ForEachTest (j) 
+	{
+       		if (strcmp (testname, (test[j].option) + 1) == 0 )
+		{
+			found = j;
+			break;
+		}
+	}
+	return( found );
+}
+
+Window
+CreateXIEParent( xp )
+XParms	xp;
+{
+	Window root, ret;
+	unsigned int width, height, border_width, depth;
+    	XSetWindowAttributes xswa;
+	int x, y;
+	int hasBS;
+	unsigned long value_mask;
+
+/* 
+	Time for a little explaining...
+
+	Xieperf puts up windows, moves them around, and associates
+	colormaps with windows. If no window manager is running, then 
+	things are fine - I don't even call this function. I just set 
+	the window attribute override_redirect = True at window creation 
+	time, and associate my grayscale colormap with the window at 
+	creation time also.
+
+	If a window manager is running, I need to be nice. Nice means
+	allow the window manager to install colormaps as my windows
+	gain focus, and let the manager control any geometry changes
+	that I issue. 
+
+	The user, when a window manager is running, is required to use 
+	the -WMSafe argument to xieperf to indicate to me that a window
+	manager is running. If this arg is given, then I do the following:
+
+	I make a child window of the root window which acts as the parent 
+	window for xieperf's windows. I use XSetTransientForHint() to tell
+	the window manager essentially that each child window of this 
+	parent is a transient window so please don't mess with my geometry
+	requests and please install the colormap associated with each
+	child window as that window gains focus.
+
+	Since the parent window has dimensions equal to the root window,
+	the app will have focus and my colormap ( which is also the color 
+	map of the parent window ) will be installed ( assuming the
+	graciousness of the window manager ). Also, any child windows will 
+	appear, disappear, and be moved at my command. Finally, it was
+	my goal to make the parent window transparent, so it has the usual 
+	root window appearance. This could be done by calling the function
+	XSetWindowBackgroundPixmap(), and specifying ParentRelative as its
+	final argument.
+
+	But I ran into problems. I got the desired effects - namely window
+	placement, colormap handling, and the transparency thing all seemed
+	o.k., but under twm my parent window would not clear itself when
+	child windows were unmapped, nor would it respond to XClearWindow()
+	calls. Turning backing store on for the parent window fixed the
+	problem, but that is not a viable solution since backing store isn't
+	always around to help. And, when running under mwm, bizarro effects 
+	like side-by-side mirror images of a child window would appear. It
+        was dazzling, but unappreciated...
+
+	My solution was simple. If this function is called, and the server 
+	currently supports backing store, I use that, go for the transparent
+	window, and things are happy.
+
+	If this function is called and there is no backing store support, 
+	instead of having a transparent parent window, the parent window is 
+	created with a background pixel of BlackPixel ( also it was shown
+	that while the transparent version of the parent window never cleared 
+	either on its own or explicitly via XClearWindow(), windows that had
+	normal pixel-based backgrounds would clear themselves whenever the 
+	child windows were unmapped ).
+
+	Comments would be appreciated... there should be a way to do this
+	that isn't too painful. The Xlib Programming Manual ( O'Reilly
+	Volume 1, p 96 ) states that if ParentRelative is used as a 
+	backround pixmap, the backgrounds are automatically repainted on
+	exposure. As the above states, they aren't. My feeling is that there 
+        is a bug in the R5 cfb code or...
+*/ 
+
+	hasBS = DoesBackingStore( DefaultScreenOfDisplay( xp->d ) );
+	XGetGeometry( xp->d, DefaultRootWindow( xp->d ), &root, &x, &y,
+		&width, &height, &border_width, &depth );
+
+    	xswa.colormap = cmap;
+	if ( hasBS )
+	{
+		xswa.backing_store = WhenMapped;
+	}
+	else
+	{
+		xswa.background_pixel = 
+			BlackPixel( xp->d, DefaultScreen( xp->d ) );
+	}
+	value_mask = CWColormap | ( hasBS ? CWBackingStore : CWBackPixel );
+	ret = XCreateWindow( xp->d, DefaultRootWindow( xp->d ),
+		x, y, width, height, border_width, xp->vinfo.depth, 
+		CopyFromParent, xp->vinfo.visual, 
+		value_mask, &xswa );
+
+	if ( hasBS )
+	{
+		/* make it transparent */
+
+		XSetWindowBackgroundPixmap( xp->d, ret, ParentRelative );	
+	}
+	return( ret );
+}
+
+void
 AllocateRest( xp )
 XParms	xp;
 {
 	int	i, n_colors;
 	long	intensity;
-	unsigned long pixels[ MAXCOLORS ];
-	XColor	gray[ MAXCOLORS ];
+	unsigned long *pixels;
+	XColor	*gray;
 
-	/* if we are monochrome, why bother */
-
-	if ( xp->vinfo.depth == 1 )
-		return;
-	
 	/* get what we can, and remember it. we should get all since
 	   we created the colormap */
 
-	i = MAXCOLORS;
+	i = ( 1 << xp->vinfo.depth );
+	pixels = ( unsigned long * ) malloc( sizeof( unsigned long ) * i );
+	if ( pixels == ( unsigned long * ) NULL )
+	{
+		fprintf( stderr, 
+			"Couldn't allocate pixel vector for XAllocColorCells\n" );
+		exit( 1 );
+	}
+
+	gray = ( XColor * ) malloc( sizeof( XColor ) * i );
+	if ( gray == ( XColor * ) NULL )
+	{
+		fprintf( stderr, "Couldn't allocate XColor vector for XAllocColorCells\n" );
+		free( pixels );
+		exit( 1 );
+	}
+	
 	n_colors = 0;
 	while ( i ) 
 	{
@@ -1030,7 +1459,7 @@ XParms	xp;
 
 	maxcoloridx = n_colors - 1;
 
-       	for (i=0; i<n_colors; ++i) {
+       	for (i=0; i<n_colors; i++) {
                 intensity = (i*65535L) / (long) (n_colors-1);
                 gray[i].pixel = pixels[i];
                 gray[i].red   = intensity;
@@ -1041,14 +1470,17 @@ XParms	xp;
 	if ( n_colors )
 	{
         	XStoreColors(xp->d,cmap,gray,n_colors);
-        	XInstallColormap(xp->d,cmap);
         	XSync(xp->d,0);
 	}	
 	else
 	{
 		fprintf( stderr, "Couldn't allocate colors in colormap\n" );
+		free( pixels );
+		free( gray );
 		exit( 0 );
 	}
+	free( pixels );
+	free( gray );
 }
 
 int
@@ -1121,7 +1553,8 @@ int GetNumbers (argi, argc, argv, intsp, nump)
 }
 
 int	
-PumpTheClientData( xp, p, flo_id, photospace, element, data, size )
+SendTripleBandPlaneDataSequential( xp, p, flo_id, photospace, element, data, 
+	size, pixel_stride, left_pad, scanline_pad, width, height )
 XParms	xp;
 Parms	p;
 int	flo_id;
@@ -1129,6 +1562,72 @@ XiePhotospace photospace;
 int	element;
 char	*data;
 int	size;
+unsigned char pixel_stride[ 3 ];
+unsigned char left_pad[ 3 ];
+unsigned char scanline_pad[ 3 ];
+XieLTriplet width, height;
+{
+	void	ScanlinePad();
+	int	band1, band2, band3;
+
+	/* calculate band sizes */
+
+	band1 = ( ( left_pad[ 0 ] >> 3 ) + 
+		( width[ 0 ] * ( pixel_stride[ 0 ] >> 3 ) ) ) * height[ 0 ];
+	ScanlinePad( &band1, scanline_pad[ 0 ] );
+	band2 = ( ( left_pad[ 1 ] >> 3 ) + 
+		( width[ 1 ] * ( pixel_stride[ 1 ] >> 3 ) ) ) * height[ 1 ];
+	ScanlinePad( &band2, scanline_pad[ 1 ] );
+	band3 = ( ( left_pad[ 2 ] >> 3 ) + 
+		( width[ 2 ] * ( pixel_stride[ 2 ] >> 3 ) ) ) * height[ 2 ];
+	ScanlinePad( &band3, scanline_pad[ 0 ] );
+
+	/* fire away! */
+
+	PumpTheClientData( xp, p, flo_id, photospace, element, data, band1, 0 );
+	data += band1;
+	PumpTheClientData( xp, p, flo_id, photospace, element, data, band2, 1 );
+	data += band2;
+	PumpTheClientData( xp, p, flo_id, photospace, element, data, band3, 2 );
+	data += band3;
+}
+
+void
+ScanlinePad( value, pad )
+int	*value;
+int	pad;
+{
+	int	newval;
+
+	if ( !( *value == 0 || pad == 0 || pad == 1 ) )
+	{
+		if ( ( *value % pad ) != 0 )
+		{
+			if ( *value < pad )
+			{
+				*value = pad;
+			}
+			else
+			{
+				newval = pad;
+				while ( newval < *value )
+					newval += pad;
+				*value = newval;
+			}
+		}
+	}
+}
+
+int	
+PumpTheClientData( xp, p, flo_id, photospace, element, data, size, band_number )
+XParms	xp;
+Parms	p;
+int	flo_id;
+XiePhotospace photospace;
+int	element;
+char	*data;
+int	size;
+int	band_number;
 {
 	int	bytes_left, final, nbytes;
 
@@ -1143,9 +1642,11 @@ int	size;
                         xp->d,
                         photospace,
                         flo_id,
-                        element,              /* element */
+                        element,        /* element */
                         final,          /* signal that this is all the data */
-                        0,              /* band_number */
+                        band_number,    /* 0 for all but triple band data 
+					   BandByPlane, which then may be
+					   0, 1, or 2 */
                         (unsigned char *)data,
                         nbytes
                 );
@@ -1155,214 +1656,226 @@ int	size;
 }
 
 int	
-ReadNotifyExportData( xp, p, namespace, flo_id, element, nbytes )
+ReadNotifyExportData( xp, p, namespace, flo_id, element, elementsz, 
+	numels, data, done )
 XParms	xp;
 Parms	p;
 unsigned long namespace;
 int	flo_id;
 XiePhototag element;
-unsigned int nbytes;
+unsigned int elementsz;
+unsigned int numels;
+char	**data;
+int	*done;
 {
-	char	*data = p->data;
-	char	*cp;
+	char	*cp, *ptr;
 	Bool	terminate = False;
 	XieExportState new_state_ret;
+	unsigned int nbytes;
 	unsigned int nbytes_ret;
-	Bool	no_errors;
-	unsigned int bytes;
+	Bool	no_errors, reallocFlag;
+	unsigned int cnt;
+	int bytes;
 
+	*done = 0;
+	if ( numels == 0 )
+	{
+		numels = WaitForXIEEvent( xp, xieEvnNoExportAvailable,
+			flo_id, element, False );
+		if ( numels == 0 )
+			return( -1 );
+	}
+
+	nbytes = numels * elementsz; 	
 	bytes = nbytes;
 	no_errors = True;
-	while ( bytes > 0 )
+	reallocFlag = False;
+	cnt = 0;
+	if ( *data == ( char * ) NULL )
+	{
+		if ( ( *data = ( char * ) malloc( nbytes ) ) == ( char * ) NULL )
+		{
+			fprintf( stderr, "ReadNotifyExportData: couldn't allocate data\n" );
+			return( 0 );
+		}
+	}
+	ptr = *data;
+	while ( 1 )		
 	{  
         	XieGetClientData ( xp->d, namespace, flo_id, element,  
 			bytes > 2048 ? 2048 : bytes, terminate, 0,
 			&new_state_ret, (unsigned char **)&cp, &nbytes_ret );
 
+		if ( nbytes_ret && reallocFlag )
+		{
+			*data = realloc( *data, cnt + nbytes_ret );
+			if ( *data == ( char * ) NULL )
+			{
+				/* oh no */
+					
+				fprintf( stderr, "ReadNotifyExportData: realloc failed\n" );	
+				no_errors = False;
+				break;
+			}	
+			ptr = *data + cnt;
+		}
+
 /* this rots */
 
-		memcpy( data, cp, nbytes_ret * sizeof( char ) ); 
-		data += nbytes_ret * sizeof( char );
+		memcpy( ptr, cp, nbytes_ret * sizeof( char ) ); 
+		ptr += nbytes_ret * sizeof( char );
 		free( cp );
 
+		cnt += nbytes_ret;	
 		bytes -= nbytes_ret;
 		if ( new_state_ret == xieValExportEmpty )
-			WaitForExportClientData( xp, flo_id, element );		
+			WaitForXIEEvent( xp, xieEvnNoExportAvailable,
+				flo_id, element, False );
+		else if ( new_state_ret == xieValExportMore ) 
+		{
+			if ( bytes <= 0 )
+				reallocFlag = True;
+			bytes = 2048;
+		}
 		else if ( new_state_ret == xieValExportDone ) 
+		{
+			*done = 1;
 			break;
+		}
 		else if ( new_state_ret == xieValExportError )
 		{
+			fprintf( stderr, "ReadNotifyExportData: xieValExportError received from XieGetClientData\n" );
 			no_errors = False;
 			break;
+		}
+
+		if ( bytes <= 0 && reallocFlag == False )
+		{
+			/* if we get here, we didn't get an ExportDone,
+			   and we have no buffer space left. So turn on 
+			   the realloc flag. Also, server could be not
+                           sending the ExportDone for some reason...
+			   if so XIE or xieperf or both may be broken. */
+			
+			bytes = 2048;
+			reallocFlag = True;
 		}
 	}
 	if ( no_errors == False )
 	{
 		return( -1 );
 	}
-	return( nbytes - bytes );
+	return( cnt );
 }
 
-static XieExtensionInfo *xieInfo=NULL;
-
-Bool 
-event_check(display,event,arg)
-Display *display;
-XEvent *event;
-char *arg;
-{
-	int xie_event;
-
-        if (xieInfo == NULL)
-                return(False);
-
-	if ( event == ( XEvent * ) NULL )
-		return( False );
-
-        xie_event = event->type - xieInfo->first_event;
-        if (xie_event <= 0)
-                return(False);
-        if (xie_event > xieEvnNoPhotofloDone)
-                return(False);
-        return(True);
-}
-
-static int sigFloFinishedSeen, sigExportClientSeen;
-
-#ifdef SIGALRM
-
-#ifdef SIGNALRETURNSINT
-int
-#else
-void
-#endif
-SigFloFinishedHandler(sig)
-    int sig;
-{
-	sigFloFinishedSeen = 1;
-}
-
-#ifdef SIGNALRETURNSINT
-int
-#else
-void
-#endif
-SigExportClientHandler(sig)
-    int sig;
-{
-	sigExportClientSeen = 1;
-}
-#endif
-
-int
-WaitForFloToFinish( xp, flo_id )
+int	
+ReadNotifyExportTripleData( xp, p, namespace, flo_id, element, elementsz, 
+	numels, data, done )
 XParms	xp;
-int	flo_id;
-{
-	XEvent event;
-	Bool yup;
-	int retval;
-	int xie_event;
-	XiePhotofloDoneEvent    *floev= (XiePhotofloDoneEvent    *) &event;
-
-	retval = 1;
-
-	/* if we don't see the event after, say, 1 minute then 
-	   something is wrong */
-
-#ifdef SIGALRM
-	signal( SIGALRM, SigFloFinishedHandler );
-	alarm( timeout );
-#endif
-	sigFloFinishedSeen = 0;
-	while ( 1 )
-	{
-		while ( sigFloFinishedSeen == 0 && 
-			!( yup = XCheckIfEvent(xp->d,&event,event_check,0) ) );
-		if ( sigFloFinishedSeen == 1 )
-		{
-			retval = 0;
-			fprintf( stderr, "Timed out on receiving XiePhotofloDoneEvent\n" ); 
-			break;
-		}
-		xie_event = event.type - xieInfo->first_event;
-		if ( xie_event == xieEvnNoPhotofloDone )
-		{
-			if ( floev->flo_id != flo_id )
-				continue;
-			else
-				break;
-		}
-		else
-			continue;
-	}
-
-	/* turn off the signal */
-#ifdef SIGALRM
-	alarm( 0 );
-#endif
-	sigFloFinishedSeen = 0;
-	return( retval );
-}
-
-int
-WaitForExportClientData( xp, flo_id, element )
-XParms	xp;
+Parms	p;
+unsigned long namespace;
 int	flo_id;
 XiePhototag element;
+unsigned int elementsz;
+unsigned int numels;
+char	**data;
+int	*done;
 {
-	XEvent event;
-	int retval;
-	Bool yup;
-	int xie_event;
-	XieExportAvailableEvent    *floev= (XieExportAvailableEvent *) &event;
+	char	*cp, *ptr;
+	Bool	terminate = False;
+	XieExportState new_state_ret;
+	unsigned int nbytes;
+	unsigned int nbytes_ret;
+	Bool	no_errors, reallocFlag;
+	unsigned int cnt;
+	int bytes;
+	int band;
 
-	/* if we don't see the event after, say, 1 minutes then 
-	   something is ( terribly ) wrong */
-
-	retval = 1;
-#ifdef SIGALRM
-	signal( SIGALRM, SigExportClientHandler );
-	alarm( timeout );
-#endif
-	sigExportClientSeen = 0;
-	while ( 1 )
+	*done = 0;
+	if ( numels == 0 )
 	{
-		while ( sigExportClientSeen == 0 && 
-			!( yup = XCheckIfEvent(xp->d,&event,event_check,0) ) );
-		if ( sigExportClientSeen == 1 )
-		{
-			retval = 0;
-			fprintf( stderr, "Timed out on receiving XieExportAvailableEvent\n" ); 
-			break;
-		}
-		xie_event = event.type - xieInfo->first_event;
-		if ( xie_event == xieEvnNoExportAvailable )
-		{
-			if ( floev->flo_id != flo_id || floev->src != element )
-				continue;
-			else
-				break;
-		}
-		else
-		{
-			continue;
-		}
+		numels = WaitForXIEEvent( xp, xieEvnNoExportAvailable,
+			flo_id, element, False );
+		if ( numels == 0 )
+			return( -1 );
+		fprintf( stderr, "There are %d elements available\n", numels );
 	}
 
-	/* turn off the signal */
-#ifdef SIGALRM
-	alarm( 0 );
-#endif
-	sigExportClientSeen = 0;
-	return( retval );
-}
+	nbytes = numels * elementsz; 	
+	bytes = nbytes;
+	no_errors = True;
+	reallocFlag = False;
+	cnt = 0;
+	if ( *data == ( char * ) NULL )
+	{
+		if ( ( *data = ( char * ) malloc( nbytes ) ) == ( char * ) NULL )
+		{
+			fprintf( stderr, "ReadNotifyExportTripleData: couldn't allocate data\n" );
+			return( 0 );
+		}
+	}
+	ptr = *data;
+	for ( band = 0; band < 3; band++ )
+	{
+		while ( 1 )		
+		{  
+			XieGetClientData ( xp->d, namespace, flo_id, element,  
+				bytes > 2048 ? 2048 : bytes, terminate, band,
+				&new_state_ret, (unsigned char **)&cp, 
+				&nbytes_ret );
 
-InitEvents(display,info)
-Display *display;
-XieExtensionInfo *info;
-{
-        xieInfo = info;
+			if ( nbytes_ret && reallocFlag )
+			{
+				*data = realloc( *data, cnt + nbytes_ret );
+				if ( *data == ( char * ) NULL )
+				{
+					/* oh no */
+						
+					fprintf( stderr, "ReadNotifyExportTripleData: realloc failed\n" );	
+					no_errors = False;
+					break;
+				}	
+				ptr = *data + cnt;
+			}
+
+			memcpy( ptr, cp, nbytes_ret * sizeof( char ) ); 
+			ptr += nbytes_ret * sizeof( char );
+			free( cp );
+
+			cnt += nbytes_ret;	
+			bytes -= nbytes_ret;
+			if ( new_state_ret == xieValExportEmpty )
+				WaitForXIEEvent( xp, xieEvnNoExportAvailable,
+					flo_id, element, False );
+			else if ( new_state_ret == xieValExportMore ) 
+			{
+				if ( bytes <= 0 )
+					reallocFlag = True;
+				bytes = 2048;
+			}
+			else if ( new_state_ret == xieValExportDone ) 
+			{
+				*done = 1;
+				break;
+			}
+			else if ( new_state_ret == xieValExportError )
+			{
+				fprintf( stderr, "ReadNotifyExportTripleData: xieValExportError received from XieGetClientData\n" );
+				no_errors = False;
+				break;
+			}
+			if ( bytes <= 0 && reallocFlag == False )
+			{
+				bytes = 2048;
+				reallocFlag = True;
+			}
+		}
+	}
+	if ( no_errors == False )
+	{
+		return( -1 );
+	}
+	return( cnt );
 }
 
 unsigned int
@@ -1381,10 +1894,11 @@ unsigned int size;
 }
 
 XiePhotomap
-GetXIEFAXPhotomap( xp, p, which )
+GetXIEFAXPhotomap( xp, p, which, radiometric )
 XParms	xp;
 Parms	p;
 int	which;
+Bool 	radiometric;
 {
 	XIEimage	*image;
         XiePhotospace photospace;
@@ -1393,6 +1907,8 @@ int	which;
 	XieDecodeG42DParam *g42d_decode_params=NULL;
 	XieDecodeG32DParam *g32d_decode_params=NULL;
 	XieDecodeG31DParam *g31d_decode_params=NULL;
+	XieDecodeTIFF2Param *tiff2_decode_params=NULL;
+	XieDecodeTIFFPackBitsParam *tiffpb_decode_params=NULL;
 	char *decode_params;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
@@ -1402,9 +1918,6 @@ int	which;
 	unsigned char scanline_pad[ 3 ];
 	XiePhotomap	tmp;
 	int	size;
-
-	if ( !GetImageData( xp, p, which ) )
-		return( ( XiePhotomap ) NULL );
 
 	if ( which == 1 )
 	{
@@ -1422,11 +1935,23 @@ int	which;
 	}
 	if ( !image )
 		return( XiePhotomap ) NULL;
+	
+	if ( IsImageInCache( image ) == True )
+	{
+		return( PhotomapOfImage( image ) );
+	}
+
+	if ( !GetImageData( xp, p, which ) )
+		return( ( XiePhotomap ) NULL );
+
+	if ( TechniqueSupported( xp, xieValDecode, image->decode ) == False )
+		return( XiePhotomap ) NULL;
+
 	size = image->fsize;
-	image->chksum = CheckSum( p->data, size );
-	width[ 0 ] = image->width;
-	height[ 0 ] = image->height;
-	levels[ 0 ] = image->levels;
+	image->chksum = CheckSum( image->data, size );
+	width[ 0 ] = image->width[ 0 ];
+	height[ 0 ] = image->height[ 0 ];
+	levels[ 0 ] = image->levels[ 0 ];
 
 	/* create a photomap */
 
@@ -1434,33 +1959,49 @@ int	which;
 
 	/* get the data from the client into the photomap */
 
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
+        photospace = XieCreatePhotospace(xp->d);
 
 	if ( image->decode == xieValDecodeG42D )  {
             g42d_decode_params = XieTecDecodeG42D(
                 image->fill_order, 
-		True	/* XXX needs config */
+		True,
+		radiometric
             );
 	    decode_params = (char *) g42d_decode_params;
 	}
 	else if ( image->decode == xieValDecodeG32D )  {
             g32d_decode_params = XieTecDecodeG32D(
                 image->fill_order, 
-		True	/* XXX needs config */
+		True,
+		radiometric
             );
 	    decode_params = (char *) g32d_decode_params;
+	}
+	else if ( image->decode == xieValDecodeTIFF2 )  {
+            tiff2_decode_params = XieTecDecodeTIFF2(
+                image->fill_order, 
+		True,
+		radiometric
+            );
+	    decode_params = (char *) tiff2_decode_params;
+	}
+	else if ( image->decode == xieValDecodeTIFFPackBits )  {
+            tiffpb_decode_params = XieTecDecodeTIFFPackBits(
+                image->fill_order, 
+		True
+            );
+	    decode_params = (char *) tiffpb_decode_params;
 	}
 	else if ( image->decode == xieValDecodeG31D )  {
             g31d_decode_params = XieTecDecodeG31D(
                 image->fill_order, 
-		True	/* XXX needs config */
+		True,
+		radiometric
             );
 	    decode_params = (char *) g31d_decode_params;
 	}
 	else {
-	   fprintf(stderr, " %s(%d), unexpected decode, %d\n",
-		__FILE__,__LINE__,image->decode);
-	   exit(1);
+                return( XiePhotomap ) NULL;
 	}
 
         flograph = XieAllocatePhotofloGraph(2);
@@ -1468,11 +2009,13 @@ int	which;
         {
                 fprintf( stderr, "GetXIEFAXPhotomap: XieAllocatePhotofloGraph failed\n" );
 		XieDestroyPhotomap( xp->d, tmp );
+		if ( decode_params )
+			free( decode_params );
                 return( XiePhotomap ) NULL;
         }
 
         XieFloImportClientPhoto(&flograph[0],
-                image->data_class,
+                image->bandclass,
                 width, height, levels,
                 False,
                 image->decode, (char *)decode_params
@@ -1494,11 +2037,12 @@ int	which;
                 2               /* number of elements */
         );
         XSync( xp->d, 0 );
-       	PumpTheClientData( xp, p, flo_id, photospace, 1, p->data, size );
-        WaitForFloToFinish( xp, flo_id );
+       	PumpTheClientData( xp, p, flo_id, photospace, 1, image->data, size, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,2);
         XieDestroyPhotospace(xp->d, photospace);
 	free( decode_params );
+	AddToCache( image, tmp );
     	return tmp;
 }
 
@@ -1512,7 +2056,7 @@ int	which;
         XiePhotospace photospace;
 	int	flo_id, flo_notify;
         XiePhotoElement *flograph;
-	XieDecodeUncompressedTripleParam *decode_params=NULL;
+	char *decode_params=NULL;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
 	XieLTriplet width, height, levels;
@@ -1521,9 +2065,6 @@ int	which;
 	unsigned char scanline_pad[ 3 ];
 	XiePhotomap	tmp;
 	int	size;
-
-	if ( !GetImageData( xp, p, which ) )
-		return( ( XiePhotomap ) NULL );
 
 	if ( which == 1 )
 	{
@@ -1539,9 +2080,21 @@ int	which;
 	}
 	if ( !image )
 		return( XiePhotomap ) NULL;
+
+	if ( IsImageInCache( image ) == True )
+	{
+		TouchImage( image );
+		return( PhotomapOfImage( image ) );
+	}
+
+	if ( !GetImageData( xp, p, which ) )
+		return( ( XiePhotomap ) NULL );
+
+	if ( TechniqueSupported( xp, xieValDecode, image->decode ) == False )
+		return( XiePhotomap ) NULL;
 	
 	size = image->fsize;
-	image->chksum = CheckSum( p->data, size );
+	image->chksum = CheckSum( image->data, size );
 
 	/* create a photomap */
 
@@ -1549,28 +2102,60 @@ int	which;
 
 	/* get the data from the client into the photomap */
 
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
+        photospace = XieCreatePhotospace(xp->d);
 
-	width[ 0 ] = width[ 1 ] = width[ 2 ] = image->width;
-	height[ 0 ] = height[ 1 ] = height[ 2 ] = image->height;
-	levels[ 0 ] = levels[ 1 ] = levels[ 2 ] = image->levels;
+	width[ 0 ] = image->width[ 0 ];
+	width[ 1 ] = image->width[ 1 ];
+	width[ 2 ] = image->width[ 2 ];
+	height[ 0 ] = image->height[ 0 ];
+	height[ 1 ] = image->height[ 1 ];
+	height[ 2 ] = image->height[ 2 ];
+	levels[ 0 ] = image->levels[ 0 ];
+	levels[ 1 ] = image->levels[ 1 ];
+	levels[ 2 ] = image->levels[ 2 ];
 
-	pixel_stride[ 0 ] = pixel_stride[ 1 ] = pixel_stride[ 2 ] =
-		image->pixel_stride;
-	left_pad[ 0 ] = left_pad[ 1 ] = left_pad[ 2 ] =
-		image->left_pad;
-	scanline_pad[ 0 ] = scanline_pad[ 1 ] = scanline_pad[ 2 ] =
-		image->scanline_pad;
+	if ( image->decode == xieValDecodeUncompressedTriple )
+	{
+		pixel_stride[ 0 ] = image->pixel_stride[ 0 ];
+		pixel_stride[ 1 ] = image->pixel_stride[ 1 ];
+		pixel_stride[ 2 ] = image->pixel_stride[ 2 ];
+		left_pad[ 0 ] = image->left_pad[ 0 ];
+		left_pad[ 1 ] = image->left_pad[ 1 ];
+		left_pad[ 2 ] = image->left_pad[ 2 ];
+		scanline_pad[ 0 ] = image->scanline_pad[ 0 ];
+		scanline_pad[ 1 ] = image->scanline_pad[ 1 ];
+		scanline_pad[ 2 ] = image->scanline_pad[ 2 ];
 
-        decode_params = XieTecDecodeUncompressedTriple(
-                image->fill_order,
-		xieValLSFirst,		/* XXX needs config */
-		xieValLSFirst,		/* XXX needs config */
-		xieValBandByPixel,	/* XXX needs config */
-                pixel_stride,
-                left_pad,
-                scanline_pad
-        );
+		decode_params = ( char * ) XieTecDecodeUncompressedTriple(
+			image->fill_order,
+			xieValLSFirst,		
+			xieValLSFirst,		
+			image->interleave,	
+			pixel_stride,
+			left_pad,
+			scanline_pad
+		);
+	}
+	else if ( image->decode == xieValDecodeJPEGBaseline )
+	{
+		decode_params = ( char * ) XieTecDecodeJPEGBaseline(
+			image->interleave,
+			image->band_order
+		);	
+	}
+	else if ( image->decode == xieValDecodeJPEGLossless )
+	{
+		decode_params = ( char * ) XieTecDecodeJPEGLossless(
+			image->interleave,
+			image->band_order
+		);	
+	}
+	else
+	{
+		fprintf( stderr, "GetXIETriplePhotomap: invalid decode technique\n" );
+		XieDestroyPhotomap( xp->d, tmp );
+                return( XiePhotomap ) NULL;
+	}	
 
         flograph = XieAllocatePhotofloGraph(2);
         if ( flograph == ( XiePhotoElement * ) NULL )
@@ -1581,7 +2166,7 @@ int	which;
         }
 
         XieFloImportClientPhoto(&flograph[0],
-                image->data_class,
+                image->bandclass,
                 width, height, levels,
                 False,
                 image->decode, (char *)decode_params
@@ -1603,20 +2188,25 @@ int	which;
                 2               /* number of elements */
         );
         XSync( xp->d, 0 );
-       	PumpTheClientData( xp, p, flo_id, photospace, 1, p->data, size );
-        WaitForFloToFinish( xp, flo_id );
+	if ( image->interleave == xieValBandByPixel )
+	{
+		PumpTheClientData( xp, p, flo_id, photospace, 
+			1, image->data, size, 0 );
+	}
+	else
+	{
+		SendTripleBandPlaneDataSequential( xp, p, flo_id, photospace,
+			1, image->data, size, pixel_stride,
+			left_pad, scanline_pad, width, height );
+	} 
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,2);
         XieDestroyPhotospace(xp->d, photospace);
-	free( decode_params );
+	if ( decode_params )
+		free( decode_params );
+	AddToCache( image, tmp );
     	return tmp;
 }
-
-static XieLTriplet MONOlevels;
-static XieConstrainTechnique MONOtech = xieValConstrainClipScale;
-static XieClipScaleParam *MONOparms;
-static XieConstant MONOin_low,MONOin_high;
-static XieLTriplet MONOout_low,MONOout_high;
-static int monoflag = 0;
 
 XiePhotomap
 GetXIEPhotomap( xp, p, which )
@@ -1635,9 +2225,6 @@ int	which;
 	XiePhotomap	tmp;
 	int	size;
 
-	if ( !GetImageData( xp, p, which ) )
-		return( ( XiePhotomap ) NULL );
-
 	if ( which == 1 )
 	{
 		image = p->finfo.image1; 
@@ -1650,14 +2237,25 @@ int	which;
 	{
 		image = p->finfo.image3;
 	}
+
 	if ( !image )
 		return( XiePhotomap ) NULL;
-	size = image->fsize;
-	image->chksum = CheckSum( p->data, size );
 
-	width[ 0 ] = image->width;
-	height[ 0 ] = image->height;
-	levels[ 0 ] = image->levels;
+	if ( IsImageInCache( image ) == True )
+	{
+		TouchImage( image );
+		return( PhotomapOfImage( image ) );
+	}
+
+	if ( !GetImageData( xp, p, which ) )
+		return( ( XiePhotomap ) NULL );
+
+	size = image->fsize;
+	image->chksum = CheckSum( image->data, size );
+
+	width[ 0 ] = image->width[ 0 ];
+	height[ 0 ] = image->height[ 0 ];
+	levels[ 0 ] = image->levels[ 0 ];
 
 	/* create a photomap */
 
@@ -1665,14 +2263,14 @@ int	which;
 
 	/* get the data from the client into the photomap */
 
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
+        photospace = XieCreatePhotospace(xp->d);
 
         decode_params = XieTecDecodeUncompressedSingle(
                 image->fill_order,
                 image->pixel_order,
-                image->pixel_stride,
-                image->left_pad,
-                image->scanline_pad
+                image->pixel_stride[ 0 ],
+                image->left_pad[ 0 ],
+                image->scanline_pad[ 0 ]
         );
 
         flograph = XieAllocatePhotofloGraph(2);
@@ -1684,7 +2282,7 @@ int	which;
         }
 
         XieFloImportClientPhoto(&flograph[0],
-                image->data_class,
+                image->bandclass,
                 width, height, levels,
                 False,
                 image->decode, (char *)decode_params
@@ -1706,12 +2304,299 @@ int	which;
                 2               /* number of elements */
         );
         XSync( xp->d, 0 );
-       	PumpTheClientData( xp, p, flo_id, photospace, 1, p->data, size );
-        WaitForFloToFinish( xp, flo_id );
+       	PumpTheClientData( xp, p, flo_id, photospace, 1, image->data, size, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,2);
         XieDestroyPhotospace(xp->d, photospace);
-	free( decode_params );
+	if ( decode_params )
+		free( decode_params );
+	AddToCache( image, tmp );
     	return tmp;
+}
+
+XiePhotomap
+GetXIEPointPhotomap( xp, p, which, inlevels )
+XParms	xp;
+Parms	p;
+int	which;
+int	inlevels;
+{
+	XIEimage *image;
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+        XiePhotospace photospace;
+	int flo_id, flo_notify;
+        XiePhotoElement *flograph;
+	XieLTriplet width, height, levels;
+	XiePhotomap XIEPhotomap, tmp;
+	XieLut XIELut;
+	XieProcessDomain domain;
+	XieLut CreatePointLut();
+
+	tmp = GetXIEPhotomap( xp, p, which );
+
+	if ( which == 1 )
+		image = p->finfo.image1;
+	else if ( which == 2 )
+		image = p->finfo.image2;
+	else if ( which == 3 )
+		image = p->finfo.image3;
+
+	if ( tmp == ( XiePhotomap ) NULL )
+		return( tmp );
+
+	XIELut = CreatePointLut( xp, p, image->depth[ 0 ], inlevels );
+	if ( XIELut == ( XieLut ) NULL )
+		return( ( XiePhotomap ) NULL );
+
+        XIEPhotomap = XieCreatePhotomap(xp->d);
+
+	/* get the data from the client into the photomap */
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(4);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEPointPhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                return( XiePhotomap ) NULL;
+        }
+
+        XieFloImportPhotomap(&flograph[0],
+		tmp,
+                False
+        );
+
+	XieFloImportLUT(&flograph[1], XIELut );
+
+        domain.offset_x = 0;
+        domain.offset_y = 0;
+        domain.phototag = 0;
+	
+	XieFloPoint(&flograph[2],
+                1,
+                &domain,
+                2,
+                0x1
+        );
+		
+        XieFloExportPhotomap(&flograph[3],
+                3,              /* source phototag number */
+                XIEPhotomap,
+                encode_tech,
+                encode_params
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                4               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,4);
+        XieDestroyPhotospace(xp->d, photospace);
+	if ( XIELut )
+		XieDestroyLUT( xp->d, XIELut );
+    	return XIEPhotomap;
+}
+
+XiePhotomap
+GetXIEGeometryPhotomap( xp, p, geo, which )
+XParms	xp;
+Parms	p;
+GeometryParms *geo;
+int	which;
+{
+	XIEimage *image;
+        XiePhotospace photospace;
+	int size, flo_id, flo_notify;
+        XiePhotoElement *flograph;
+	XieLTriplet width, height, levels;
+	static XieConstant constant = { 0.0, 0.0, 0.0 };
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+	float coeffs[ 6 ];
+	XiePhotomap tmp, XIEPhotomap;
+
+	tmp = GetXIEPhotomap( xp, p, which );
+
+	/* create a photomap */
+
+        XIEPhotomap = XieCreatePhotomap(xp->d);
+
+	if ( XIEPhotomap == ( XiePhotomap ) NULL )
+		return( ( XiePhotomap ) NULL );
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(3);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEGeometryPhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                return( XiePhotomap ) NULL;
+        }
+
+        XieFloImportPhotomap(&flograph[0],
+		tmp,
+                False
+        );
+
+        SetCoefficients( xp, p, geo, coeffs );
+
+        XieFloGeometry(&flograph[1],
+                1,
+                geo->geoWidth,
+                geo->geoHeight,  
+                coeffs,
+                constant,
+                7,
+                geo->geoTech,
+                ( char * ) NULL 
+        ); 
+
+        XieFloExportPhotomap(&flograph[2],
+                2,              /* source phototag number */
+                XIEPhotomap,
+                encode_tech,
+                encode_params
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                3               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,3);
+        XieDestroyPhotospace(xp->d, photospace);
+    	return XIEPhotomap;
+}
+
+XiePhotomap
+GetXIEGeometryWindow( xp, p, w, geo, which )
+XParms	xp;
+Parms	p;
+Window 	w;
+GeometryParms *geo;
+int	which;
+{
+	XIEimage *image;
+        XiePhotospace photospace;
+	int size, flo_id, flo_notify;
+        XiePhotoElement *flograph;
+	XieLTriplet width, height, levels;
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+	float coeffs[ 6 ];
+	static XieConstant constant = { 0.0, 0.0, 0.0 };
+	XieLut XIELut;
+	XieProcessDomain domain;
+	XiePhotomap tmp, XIEPhotomap;
+
+	switch( which )
+	{
+	case 1:
+		image = p->finfo.image1;
+		break;
+	case 2:
+		image = p->finfo.image2;
+		break;
+	case 3:
+		image = p->finfo.image3;
+		break;
+	default:
+		fprintf( stderr, "Invalid image\n" );
+		return( 0 );
+	};
+
+	tmp = GetXIEPhotomap( xp, p, which );
+
+	/* create a photomap */
+
+        XIEPhotomap = XieCreatePhotomap(xp->d);
+
+	if ( XIEPhotomap == ( XiePhotomap ) NULL )
+		return( ( XiePhotomap ) NULL );
+
+	if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ], 
+		xp->vinfo.depth ) ) == ( XieLut ) NULL )
+	{
+                return 0;
+        }
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(5);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEGeometryPhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                return( XiePhotomap ) NULL;
+        }
+
+        XieFloImportPhotomap(&flograph[0],
+		tmp,
+                False
+        );
+
+        SetCoefficients( xp, p, geo, coeffs );
+
+        XieFloGeometry(&flograph[1],
+                1,
+                geo->geoWidth,
+                geo->geoHeight,  
+                coeffs,
+                constant,
+                7,
+                geo->geoTech,
+                ( char * ) NULL 
+        ); 
+
+	XieFloImportLUT(&flograph[2], XIELut );
+
+        domain.offset_x = 0;
+        domain.offset_y = 0;
+        domain.phototag = 0;
+
+        XieFloPoint(&flograph[3],
+                2,
+                &domain,
+                3,
+                0x1
+        );
+		
+        XieFloExportDrawable(&flograph[4],
+                4,              /* source phototag number */
+                w,
+		xp->fggc,
+		0,
+		0
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                5               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,5);
+        XieDestroyPhotospace(xp->d, photospace);
+	XieDestroyLUT( xp->d, XIELut );
+    	return XIEPhotomap;
 }
 
 int
@@ -1723,109 +2608,71 @@ int	which;
 {
 	XIEimage *image;
         XiePhotospace photospace;
-	int	flo_elements, flo_id, flo_notify;
+	int flo_elements, flo_id, flo_notify;
         XiePhotoElement *flograph;
-	XieDecodeUncompressedSingleParam *decode_params=NULL;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XieLTriplet width, height, levels;
-	int	size;
+	XieLut	XIELut;
+	XiePhotomap XIEPhotomap;
+        XieProcessDomain domain;
+	XieLut CreatePointLut();
 
-	p->data = ( char * ) NULL;
-	if ( !GetImageData( xp, p, which ) )
+	XIEPhotomap = GetXIEPhotomap( xp, p, which );
+	if ( XIEPhotomap == ( XiePhotomap ) NULL )
 		return( 0 );
 
-	if ( which == 1 ) 
+	switch( which )
 	{
+	case 1:
 		image = p->finfo.image1;
-	}
-	else if ( which == 2 )
-	{
+		break;
+	case 2:
 		image = p->finfo.image2;
-	}
-	else
-	{
+		break;
+	case 3:
 		image = p->finfo.image3;
+		break;
+	default:
+		image = ( XIEimage * ) NULL;
+		break;
 	}
-	if ( !image )
+
+	if ( image == ( XIEimage * ) NULL )
 		return( 0 );
-	size = image->fsize;
-	image->chksum = CheckSum( p->data, size );
 
-	MONOparms = NULL;
-	monoflag = 0;
-	if ( xp->vinfo.depth == 1 )
+	if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ], xp->vinfo.depth
+		 ) ) == ( XieLut ) NULL )
 	{
-		monoflag = 1;
-		if ( !SetupMonoClipScale( image, MONOlevels, MONOin_low, 
-			MONOin_high, MONOout_low, MONOout_high, &MONOparms ) )
-		{
-			if ( p->data )
-			{
-				free( p->data );
-				p->data = ( char * ) NULL;
-			}
-			return 0;
-		}
+		return 0;
 	}
-	else
-		monoflag = 0;
 
-	/* get the data from the client into the photomap */
+        photospace = XieCreatePhotospace(xp->d);
 
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	width[ 0 ] = image->width;
-	height[ 0 ] = image->height;
-	levels[ 0 ] = image->levels;
-
-        decode_params = XieTecDecodeUncompressedSingle(
-                image->fill_order,
-                image->pixel_order,
-                image->pixel_stride,
-                image->left_pad,
-                image->scanline_pad
-        );
-
-	if ( monoflag )
-	{
-		flo_elements = 3;
-	}
-	else
-	{
-		flo_elements = 2;
-	}
+	flo_elements = 4;
         flograph = XieAllocatePhotofloGraph(flo_elements);
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "GetXIEPixmap: XieAllocatePhotofloGraph failed\n" );
-		if ( p->data )
-		{
-			free( p->data );
-			p->data = ( char * ) NULL;
-		}
-		if ( MONOparms )
-			free( MONOparms );
-		free( decode_params );
+		if ( XIELut )
+			XieDestroyLUT( xp->d, XIELut );
                 return( 0 );
         }
 
-        XieFloImportClientPhoto(&flograph[0],
-                image->data_class,
-                width, height, levels,
-                False,
-                image->decode, (char *)decode_params
+        XieFloImportPhotomap(&flograph[0],
+		XIEPhotomap,
+                False
         );
 
-	if ( monoflag)
-	{ 
-	       XieFloConstrain(&flograph[1],
-			1,
-			MONOlevels,
-			MONOtech,
-			(char *)MONOparms
-		);
-	}
+	XieFloImportLUT(&flograph[1], XIELut );
+
+	domain.offset_x = 0;
+        domain.offset_y = 0;
+        domain.phototag = 0;
+
+	XieFloPoint(&flograph[2],
+		1,
+		&domain,
+		2,
+		0x1
+	);
 
         XieFloExportDrawable(&flograph[flo_elements - 1],
 		flo_elements - 1,       /* source phototag number */
@@ -1844,18 +2691,11 @@ int	which;
                 flo_elements    /* number of elements */
         );
         XSync( xp->d, 0 );
-	PumpTheClientData( xp, p, flo_id, photospace, 1, p->data, size );
-        WaitForFloToFinish( xp, flo_id );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,flo_elements);
 	XieDestroyPhotospace( xp->d, photospace );
-	free( decode_params );
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-	if ( MONOparms )
-		free( MONOparms );
+	if ( XIELut )
+		XieDestroyLUT( xp->d, XIELut );
     	return 1;
 }
 
@@ -1866,114 +2706,74 @@ Parms	p;
 Window 	window;
 int	which;
 {
-	XIEimage	*image;
         XiePhotospace photospace;
-	int	flo_elements, flo_id, flo_notify;
+	int flo_elements, flo_id, flo_notify;
         XiePhotoElement *flograph;
-	XieDecodeUncompressedSingleParam *decode_params=NULL;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XieLTriplet width, height, levels;
-	int	size;
+	XieLut	XIELut;
+	XIEimage *image;
+	XiePhotomap XIEPhotomap;
+        XieProcessDomain domain;
+	XieLut CreatePointLut();
 
-	p->data = ( char * ) NULL;
-	if ( !GetImageData( xp, p, which ) )
-		return( 0 );
-
-	if ( which == 1 )
+	switch( which )
 	{
+	case 1:
 		image = p->finfo.image1;
-	}
-	else if ( which == 2 )
-	{
+		break;
+	case 2:
 		image = p->finfo.image2;
-	}
-	else
-	{
+		break;
+	case 3:
 		image = p->finfo.image3;
+		break;
+	default:
+		image = ( XIEimage * ) NULL;
+		break;
 	}
-	if ( !image )
+
+	XIEPhotomap = GetXIEPhotomap( xp, p, which );
+	if ( XIEPhotomap == ( XiePhotomap ) NULL )
 		return( 0 );
-	size = image->fsize;
-	image->chksum = CheckSum( p->data, size );
-
-	MONOparms = NULL;
-        if ( xp->vinfo.depth == 1 )
-        {
-                monoflag = 1;
-                if ( !SetupMonoClipScale( image, MONOlevels, MONOin_low,
-                        MONOin_high, MONOout_low, MONOout_high, &MONOparms ) )
-		{
-			if ( p->data )
-			{
-				free( p->data );
-				p->data = ( char * ) NULL;
-			}
-                        return 0;
-		}
+	
+	if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ], 
+		xp->vinfo.depth ) ) == ( XieLut ) NULL )
+	{
+                return 0;
         }
-        else
-                monoflag = 0;
 
-	/* get the data from the client into the photomap */
+        photospace = XieCreatePhotospace(xp->d);
 
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	width[ 0 ] = image->width;
-	height[ 0 ] = image->height;
-	levels[ 0 ] = image->levels;
-
-        decode_params = XieTecDecodeUncompressedSingle(
-                image->fill_order,
-                image->pixel_order,
-                image->pixel_stride,
-                image->left_pad,
-                image->scanline_pad
-        );
-
-        if ( monoflag )
-        {
-                flo_elements = 3;
-        }
-        else
-        {
-                flo_elements = 2;
-        }
+	flo_elements = 4;
 
         flograph = XieAllocatePhotofloGraph(flo_elements);
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "GetXIEWindow: XieAllocatePhotofloGraph failed\n" );
-		if ( p->data )
-		{
-			free( p->data );
-			p->data = ( char * ) NULL;
-		}
-		if ( MONOparms )
-			free( MONOparms );
-		free( decode_params );
+		if ( XIELut )
+			XieDestroyLUT( xp->d, XIELut );
                 return( 0 );
         }
 
-        XieFloImportClientPhoto(&flograph[0],
-                image->data_class,
-                width, height, levels,
-                False,
-                image->decode, (char *)decode_params
+        XieFloImportPhotomap(&flograph[0],
+		XIEPhotomap,
+                False
         );
 
-        if ( monoflag )
-	{
-		XieFloConstrain(&flograph[1],
-			1,
-			MONOlevels,
-			MONOtech,
-			(char *)MONOparms
-		);
-	}
+	XieFloImportLUT(&flograph[1], XIELut );
 
-        XieFloExportDrawable(&flograph[flo_elements - 1],
-		flo_elements - 1,     /* source phototag number */
+	domain.offset_x = 0;
+        domain.offset_y = 0;
+        domain.phototag = 0;
+
+	XieFloPoint(&flograph[2],
+		1,
+		&domain,
+		2,
+		0x1
+	);
+
+        XieFloExportDrawable(&flograph[3],
+		3,     /* source phototag number */
 		window,
 		xp->fggc,
 		0,       /* x offset in window */
@@ -1989,102 +2789,49 @@ int	which;
                 flo_elements    /* number of elements */
         );
         XSync( xp->d, 0 );
-	PumpTheClientData( xp, p, flo_id, photospace, 1, p->data, size );
-        WaitForFloToFinish( xp, flo_id );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,flo_elements);
 	XieDestroyPhotospace( xp->d, photospace );
-	free( decode_params );
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-	if ( MONOparms )
-		free( MONOparms );
+
+	if ( XIELut )
+		XieDestroyLUT( xp->d, XIELut );
     	return 1;
 }
 
-XiePhotomap
-GetXIEBitonalPhotomap( xp, p, which )
+int
+GetXIEDitheredWindow( xp, p, window, which, level )
 XParms	xp;
 Parms	p;
+Window 	window;
 int	which;
+int	level;
 {
-	XIEimage	*image;
         XiePhotospace photospace;
-	int	flo_id, flo_notify;
+	int flo_id, flo_notify;
         XiePhotoElement *flograph;
-	XieDecodeUncompressedSingleParam *decode_params=NULL;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XieLTriplet width, height, levels;
-        char    *tech_parms=NULL;
+        char *tech_parms=NULL;
+	XieLTriplet levels;
 	XiePhotomap tmp;
-	int	size;
 
-	p->data = ( char * ) NULL;
-	if ( !GetImageData( xp, p, which ) )
-		return ( XiePhotomap ) NULL;
+	tmp = GetXIEPhotomap( xp, p, which );
+	if ( tmp == ( XiePhotomap ) NULL )
+		return( 0 );
 
-	if ( which == 1 )
-	{
-		image = p->finfo.image1;
-	}
-	else if ( which == 2 )
-	{
-		image = p->finfo.image2;
-	}
-	else if ( which == 3 )
-	{
-		image = p->finfo.image3;
-	}
-	if ( !image )
-		return( XiePhotomap ) NULL;
-	size = image->fsize;
-	image->chksum = CheckSum( p->data, size );
-
-	width[ 0 ] = image->width;
-	height[ 0 ] = image->height;
-	levels[ 0 ] = image->levels;
-
-	/* create a photomap */
-
-        tmp = XieCreatePhotomap(xp->d);
-
-	/* get the data from the client into the photomap */
-
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-        decode_params = XieTecDecodeUncompressedSingle(
-                image->fill_order,
-                image->pixel_order,
-                image->pixel_stride,
-                image->left_pad,
-                image->scanline_pad
-        );
+        photospace = XieCreatePhotospace(xp->d);
 
         flograph = XieAllocatePhotofloGraph(3);
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
-                fprintf( stderr, "GetXIEBitonalPhotomap: XieAllocatePhotofloGraph failed\n" );
-		free( decode_params );
-		if ( p->data )
-		{
-			free( p->data );
-			p->data = ( char * ) NULL;
-		}
-		XieDestroyPhotomap( xp->d, tmp );
-                return ( XiePhotomap ) NULL;
+                fprintf( stderr, "GetXIEDitheredPhotomap: XieAllocatePhotofloGraph failed\n" );
+                return ( 0 );
         }
 
-        XieFloImportClientPhoto(&flograph[0],
-                image->data_class,
-                width, height, levels,
-                False,
-                image->decode, (char *)decode_params
+        XieFloImportPhotomap(&flograph[0],
+		tmp,
+                False
         );
 
-        levels[ 0 ] = 2;		/* bitonal */
+        levels[ 0 ] = level;		
         levels[ 1 ] = 0;
         levels[ 2 ] = 0;
 
@@ -2092,14 +2839,94 @@ int	which;
 
 	XieFloDither(&flograph[ 1 ],
 		1,
+		1,
 	        levels,
-		xieValDitherErrorDiffusion,
+		xieValDitherDefault,
+		tech_parms
+	);
+ 
+        XieFloExportDrawable(&flograph[2],
+                2,              /* source phototag number */
+                xp->w,
+                xp->fggc,
+                0,
+		0
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                3               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,3);
+    	return 1;
+}
+
+XiePhotomap
+GetXIEDitheredPhotomap( xp, p, which, level )
+XParms	xp;
+Parms	p;
+int	which;
+int	level;
+{
+	XIEimage *image;
+        XiePhotospace photospace;
+	int flo_id, flo_notify;
+        XiePhotoElement *flograph;
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+	XieLTriplet width, height, levels;
+        char *tech_parms=NULL;
+	XiePhotomap tmp, XIEPhotomap;
+	int size;
+
+	tmp = GetXIEPhotomap( xp, p, which );
+	if ( tmp == ( XiePhotomap ) NULL )
+		return( ( XiePhotomap ) NULL );
+
+	/* create a photomap */
+
+        XIEPhotomap = XieCreatePhotomap(xp->d);
+
+	/* get the data from the client into the photomap */
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(3);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEDitheredPhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                return ( XiePhotomap ) NULL;
+        }
+
+        XieFloImportPhotomap(&flograph[0],
+		tmp,
+                False
+        );
+
+        levels[ 0 ] = level;		
+        levels[ 1 ] = 0;
+        levels[ 2 ] = 0;
+
+	tech_parms = ( char * ) NULL;
+
+	XieFloDither(&flograph[ 1 ],
+		1,
+		1,
+	        levels,
+		xieValDitherDefault,
 		tech_parms
 	);
  
         XieFloExportPhotomap(&flograph[2],
                 2,              /* source phototag number */
-                tmp,
+                XIEPhotomap,
                 encode_tech,
                 encode_params
         );
@@ -2113,18 +2940,678 @@ int	which;
                 3               /* number of elements */
         );
         XSync( xp->d, 0 );
-	PumpTheClientData( xp, p, flo_id, photospace, 1, p->data, size );
-        WaitForFloToFinish( xp, flo_id );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,3);
-	free( decode_params );
-	if ( p->data )
+    	return XIEPhotomap;
+}
+
+XiePhotomap
+GetXIEDitheredTriplePhotomap( xp, p, which, ditherTech, threshold, levels )
+XParms	xp;
+Parms	p;
+int	which;
+int	ditherTech;
+int	threshold;
+XieLTriplet levels;
+{
+	XiePhotomap tmp;
+	XiePhotomap triple;
+        XiePhotospace photospace;
+	XiePhotoElement *flograph;
+        char *dithertech_parms=NULL;
+        static XieEncodeTechnique encode_tech = xieValEncodeServerChoice;
+        char *encode_param = ( char * ) NULL;
+        int flo_id, flo_notify;
+
+	if ( ( triple = GetXIETriplePhotomap( xp, p, which ) ) ==
+                ( XiePhotomap ) NULL )
 	{
-		free( p->data );
-		p->data = ( char * ) NULL;
+		return( ( XiePhotomap ) NULL );
 	}
+
+	/* create a photomap */
+
+        tmp = XieCreatePhotomap(xp->d);
+	if ( tmp == ( XiePhotomap ) NULL )
+	{
+        	XieDestroyPhotomap( xp->d, triple );
+		return( ( XiePhotomap ) NULL );
+	}
+
+	/* get the data from the client into the photomap */
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(3);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEDitheredTriplePhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, tmp );
+		XieDestroyPhotomap( xp->d, triple );
+                return ( XiePhotomap ) NULL;
+        }
+
+	XieFloImportPhotomap(&flograph[0], triple, False);
+
+        dithertech_parms = ( char * ) NULL;
+        if ( ditherTech == xieValDitherOrdered )
+        {
+                dithertech_parms = ( char * )
+                        XieTecDitherOrderedParam(threshold);
+                if ( dithertech_parms == ( char * ) NULL )
+                {
+                        fprintf( stderr,
+                        "Trouble loading dither technique parameters\n" );
+                        XieFreePhotofloGraph(flograph,3);
+                        XieDestroyPhotospace( xp->d, photospace );
+			XieDestroyPhotomap( xp->d, tmp );
+			XieDestroyPhotomap( xp->d, triple );
+                        return( 0 );
+                }
+        }
+
+        XieFloDither( &flograph[ 1 ],
+                1,
+		0x7,
+                levels,
+                ditherTech,
+                dithertech_parms
+        );
+
+        XieFloExportPhotomap(&flograph[2],
+                2,              /* source phototag number */
+                tmp,
+                encode_tech,
+                encode_param
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                3               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,3);
+        XieDestroyPhotospace( xp->d, photospace );
+        if ( dithertech_parms )
+                free( dithertech_parms );
     	return tmp;
 }
 
+XiePhotomap
+GetXIEConstrainedPhotomap( xp, p, which, cliplevels, cliptype,
+	in_low, in_high, out_low, out_high )
+XParms	xp;
+Parms	p;
+int	which;
+XieLTriplet cliplevels;
+int	cliptype;
+XieConstant in_low,in_high;
+XieLTriplet out_low,out_high;
+{
+	XIEimage *image;
+        XiePhotospace photospace;
+	int flo_id, flo_notify;
+        XiePhotoElement *flograph;
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+	XieLTriplet width, height, levels;
+        char *tech_parms=NULL;
+	XiePhotomap tmp, XIEPhotomap;
+
+	tmp = GetXIEPhotomap( xp, p, which );
+	if ( tmp == ( XiePhotomap ) NULL )
+		return( ( XiePhotomap ) NULL );
+
+	/* create a photomap */
+
+        XIEPhotomap = XieCreatePhotomap(xp->d);
+
+	/* get the data from the client into the photomap */
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(3);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEConstrainedPhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                return ( XiePhotomap ) NULL;
+        }
+
+        XieFloImportPhotomap(&flograph[0],
+		tmp,
+                False
+        );
+
+    	if ( cliptype == xieValConstrainHardClip )
+	{
+		tech_parms = ( char * ) NULL;
+	}
+	else
+	{
+		tech_parms = ( char * ) XieTecClipScale( in_low, in_high, 
+			out_low, out_high);
+		if ( tech_parms == ( char * ) NULL )
+		{
+			fprintf( stderr,
+				"GetXIEConstrainedPhotomap: Trouble loading ClipScale technique parameters\n" );
+			fprintf( stderr, "Reverting to HardClip technique\n" );
+			cliptype = xieValConstrainHardClip;
+		}
+	}
+
+	XieFloConstrain( &flograph[1],
+		1,
+		cliplevels,
+		cliptype,
+		tech_parms
+	);
+
+        XieFloExportPhotomap(&flograph[2],
+		2,
+                XIEPhotomap,
+		encode_tech,
+		encode_params
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                3               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,3);
+	if ( tech_parms )
+		free( tech_parms );
+    	return XIEPhotomap;
+}
+
+XiePhotomap
+GetXIEConstrainedTriplePhotomap( xp, p, which, cliplevels, cliptype, 
+	in_low, in_high, out_low, out_high )
+XParms	xp;
+Parms	p;
+int	which;
+XieLTriplet cliplevels;
+int 	cliptype;
+XieConstant in_low,in_high;
+XieLTriplet out_low,out_high;
+{
+	XiePhotomap tmp, XIEPhotomap;
+        XiePhotospace photospace;
+	XiePhotoElement *flograph;
+	char *tech_parms = ( char * ) NULL;
+        static XieEncodeTechnique encode_tech = xieValEncodeServerChoice;
+        char *encode_params = ( char * ) NULL;
+        int flo_id, flo_notify;
+
+	if ( ( tmp = GetXIETriplePhotomap( xp, p, which ) ) ==
+                ( XiePhotomap ) NULL )
+	{
+		return( ( XiePhotomap ) NULL );
+	}
+
+	/* create a photomap */
+
+        XIEPhotomap = XieCreatePhotomap(xp->d);
+	if ( XIEPhotomap == ( XiePhotomap ) NULL )
+	{
+		return( ( XiePhotomap ) NULL );
+	}
+
+	/* get the data from the client into the photomap */
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(3);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEConstrainedTriplePhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                return ( XiePhotomap ) NULL;
+        }
+
+	XieFloImportPhotomap(&flograph[0], tmp, False);
+
+        if ( cliptype == xieValConstrainHardClip )
+        {
+                tech_parms = ( char * ) NULL;
+        }
+        else
+        {
+                tech_parms = ( char * ) XieTecClipScale( in_low, in_high,
+                        out_low, out_high);
+                if ( tech_parms == ( char * ) NULL )
+                {
+                        fprintf( stderr,
+                                "GetXIEConstrainedPhotomap: Trouble loading ClipScale technique parameters\n" );
+                        fprintf( stderr, "Reverting to HardClip technique\n" );
+                        cliptype = xieValConstrainHardClip;
+                }
+        }
+
+        XieFloConstrain( &flograph[1],
+                1,
+                cliplevels,
+                cliptype,
+                tech_parms
+	);
+
+        XieFloExportPhotomap(&flograph[2],
+                2,              /* source phototag number */
+                XIEPhotomap,
+		encode_tech,
+		encode_params
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                3               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,3);
+        XieDestroyPhotospace( xp->d, photospace );
+        if ( tech_parms )
+                free( tech_parms );
+    	return XIEPhotomap;
+}
+
+XiePhotomap
+GetXIEConstrainedGeometryTriplePhotomap( xp, p, which, cliplevels, cliptype, 
+	in_low, in_high, out_low, out_high, geo )
+XParms	xp;
+Parms	p;
+int	which;
+XieLTriplet cliplevels;
+int 	cliptype;
+XieConstant in_low,in_high;
+XieLTriplet out_low,out_high;
+GeometryParms *geo;
+{
+	XiePhotomap tmp, XIEPhotomap;
+        XiePhotospace photospace;
+	XiePhotoElement *flograph;
+	char *tech_parms = ( char * ) NULL;
+        static XieEncodeTechnique encode_tech = xieValEncodeServerChoice;
+        char *encode_params = ( char * ) NULL;
+        int flo_id, flo_notify;
+	float coeffs[ 6 ];
+	static XieConstant constant = { 0.0, 0.0, 0.0 };
+
+	if ( ( tmp = GetXIETriplePhotomap( xp, p, which ) ) ==
+                ( XiePhotomap ) NULL )
+	{
+		return( ( XiePhotomap ) NULL );
+	}
+
+	/* create a photomap */
+
+        XIEPhotomap = XieCreatePhotomap(xp->d);
+	if ( XIEPhotomap == ( XiePhotomap ) NULL )
+	{
+		return( ( XiePhotomap ) NULL );
+	}
+
+	/* get the data from the client into the photomap */
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(4);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEConstrainedTriplePhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                return ( XiePhotomap ) NULL;
+        }
+
+	XieFloImportPhotomap(&flograph[0], tmp, False);
+
+        SetCoefficients( xp, p, geo, coeffs );
+
+        XieFloGeometry(&flograph[1],
+                1,
+                geo->geoWidth,
+                geo->geoHeight,
+                coeffs,
+                constant,
+                7,
+                geo->geoTech,
+                ( char * ) NULL
+        );
+
+        if ( cliptype == xieValConstrainHardClip )
+        {
+                tech_parms = ( char * ) NULL;
+        }
+        else
+        {
+                tech_parms = ( char * ) XieTecClipScale( in_low, in_high,
+                        out_low, out_high);
+                if ( tech_parms == ( char * ) NULL )
+                {
+                        fprintf( stderr,
+                                "GetXIEConstrainedPhotomap: Trouble loading ClipScale technique parameters\n" );
+                        fprintf( stderr, "Reverting to HardClip technique\n" );
+                        cliptype = xieValConstrainHardClip;
+                }
+        }
+
+        XieFloConstrain( &flograph[2],
+                2,
+                cliplevels,
+                cliptype,
+                tech_parms
+	);
+
+        XieFloExportPhotomap(&flograph[3],
+                3,              /* source phototag number */
+                XIEPhotomap,
+		encode_tech,
+		encode_params
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                4               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,4);
+        XieDestroyPhotospace( xp->d, photospace );
+        if ( tech_parms )
+                free( tech_parms );
+    	return XIEPhotomap;
+}
+
+XiePhotomap
+GetXIEGeometryTriplePhotomap( xp, p, which, geo )
+XParms	xp;
+Parms	p;
+int	which;
+GeometryParms *geo;
+{
+	XiePhotomap tmp, XIEPhotomap;
+        XiePhotospace photospace;
+	XiePhotoElement *flograph;
+	char *tech_parms = ( char * ) NULL;
+        static XieEncodeTechnique encode_tech = xieValEncodeServerChoice;
+        char *encode_params = ( char * ) NULL;
+        int flo_id, flo_notify;
+	float coeffs[ 6 ];
+	static XieConstant constant = { 0.0, 0.0, 0.0 };
+
+	if ( ( tmp = GetXIETriplePhotomap( xp, p, which ) ) ==
+                ( XiePhotomap ) NULL )
+	{
+		return( ( XiePhotomap ) NULL );
+	}
+
+	/* create a photomap */
+
+        XIEPhotomap = XieCreatePhotomap(xp->d);
+	if ( XIEPhotomap == ( XiePhotomap ) NULL )
+	{
+		return( ( XiePhotomap ) NULL );
+	}
+
+	/* get the data from the client into the photomap */
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(3);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEGeometryTriplePhotomap: XieAllocatePhotofloGraph failed\n" );
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                return ( XiePhotomap ) NULL;
+        }
+
+	XieFloImportPhotomap(&flograph[0], tmp, False);
+
+        SetCoefficients( xp, p, geo, coeffs );
+
+        XieFloGeometry(&flograph[1],
+                1,
+                geo->geoWidth,
+                geo->geoHeight,
+                coeffs,
+                constant,
+                7,
+                geo->geoTech,
+                ( char * ) NULL
+        );
+
+        XieFloExportPhotomap(&flograph[2],
+                2,              /* source phototag number */
+                XIEPhotomap,
+		encode_tech,
+		encode_params
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                3               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,3);
+        XieDestroyPhotospace( xp->d, photospace );
+        if ( tech_parms )
+                free( tech_parms );
+    	return XIEPhotomap;
+}
+
+int
+GetXIEDitheredTripleWindow( xp, p, w, which, ditherTech, threshold, levels )
+XParms	xp;
+Parms	p;
+Window 	w;
+int	which;
+int	ditherTech;
+int	threshold;
+XieLTriplet levels;
+{
+	XiePhotomap ditheredPhoto;
+        XiePhotospace photospace;
+	XiePhotoElement *flograph;
+        int flo_id, flo_notify;
+	XieColorList clist;
+        XWindowAttributes xwa;
+        XieColorAllocAllParam *color_parm;
+
+        color_parm = ( XieColorAllocAllParam * ) NULL;
+	clist = ( XieColorList ) NULL;
+	color_parm = XieTecColorAllocAll( 123 );
+	if ( color_parm == ( XieColorAllocAllParam * ) NULL )
+	{
+		return( 0 );
+	}
+
+	if ( ( clist = XieCreateColorList( xp->d ) ) == ( XieColorList ) NULL )
+	{
+		if ( color_parm )
+			free( color_parm );
+		return( 0 );
+	}
+	if ( ( ditheredPhoto = GetXIEDitheredTriplePhotomap( xp, p, which,
+		ditherTech, threshold, levels ) ) == ( XiePhotomap ) NULL )
+	{
+		if ( clist )
+			XieDestroyColorList( xp->d, clist );
+		if ( color_parm )
+			free( color_parm );
+		return( 0 );
+	}
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(3);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEDitheredTripleWindow: XieAllocatePhotofloGraph failed\n" );
+		if ( color_parm )
+			free( color_parm );
+		if ( clist )
+			XieDestroyColorList( xp->d, clist );
+		return( 0 );
+        }
+
+	XieFloImportPhotomap(&flograph[0], ditheredPhoto, False);
+
+        XGetWindowAttributes( xp->d, xp->w, &xwa );
+        XieFloConvertToIndex(&flograph[1],
+                1,
+                xwa.colormap,
+                clist,
+                False,
+                xieValColorAllocAll,
+                (char *)color_parm
+        );
+
+        XieFloExportDrawable(&flograph[2],
+                2,              /* source phototag number */
+                xp->w,
+		xp->fggc,
+                0,
+               	0 
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                3               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,3);
+        XieDestroyPhotospace( xp->d, photospace );
+	if ( clist )
+		XieDestroyColorList( xp->d, clist );
+	if ( color_parm )
+		free( color_parm );
+	return( 1 );
+}
+
+int
+GetXIEDitheredStdTripleWindow( xp, p, w, which, ditherTech, threshold, levels,
+	stdCmap )
+XParms	xp;
+Parms	p;
+Window 	w;
+int	which;
+int	ditherTech;
+int	threshold;
+XieLTriplet levels;
+XStandardColormap *stdCmap;
+{
+	XiePhotomap ditheredPhoto;
+        XiePhotospace photospace;
+	XiePhotoElement *flograph;
+        int flo_id, flo_notify;
+	XieColorList clist;
+        XWindowAttributes xwa;
+        XieColorAllocAllParam *color_parm;
+	XieConstant c1;
+	float bias;
+
+	if ( ( ditheredPhoto = GetXIEDitheredTriplePhotomap( xp, p, which,
+		ditherTech, threshold, levels ) ) == ( XiePhotomap ) NULL )
+	{
+		if ( clist )
+			XieDestroyColorList( xp->d, clist );
+		if ( color_parm )
+			free( color_parm );
+		return( 0 );
+	}
+
+        photospace = XieCreatePhotospace(xp->d);
+
+        flograph = XieAllocatePhotofloGraph(3);
+        if ( flograph == ( XiePhotoElement * ) NULL )
+        {
+                fprintf( stderr, "GetXIEDitheredTripleWindow: XieAllocatePhotofloGraph failed\n" );
+		return( 0 );
+        }
+
+	XieFloImportPhotomap(&flograph[0], ditheredPhoto, False);
+
+       	c1[ 0 ] = stdCmap->red_mult;
+	c1[ 1 ] = stdCmap->green_mult;
+	c1[ 2 ] = stdCmap->blue_mult;
+	bias = ( float ) stdCmap->base_pixel;
+
+	XieFloBandExtract( &flograph[1], 1, 1 << xp->vinfo.depth, bias, c1 );
+
+        XieFloExportDrawable(&flograph[2],
+                2,              /* source phototag number */
+                xp->w,
+		xp->fggc,
+                0,
+               	0 
+        );
+
+        flo_id = 1;
+        flo_notify = True;
+
+        XieExecuteImmediate(xp->d, photospace,
+                flo_id,
+                flo_notify,
+                flograph,       /* photoflo specification */
+                3               /* number of elements */
+        );
+        XSync( xp->d, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
+        XieFreePhotofloGraph(flograph,3);
+        XieDestroyPhotospace( xp->d, photospace );
+	return( 1 );
+}
+
+int
+GetFileSize( path )
+char	*path;
+{
+	int	size;
+
+        /* open the file */
+
+        if ( ( size = file_size( path ) ) < 0 )
+        {
+                fprintf( stderr, "Couldn't stat %s\n", path );
+                return 0;
+        }
+	return( size );
+}
+ 
 int
 GetImageData( xp, p, which )
 XParms	xp;
@@ -2134,9 +3621,9 @@ int	which;
         int     fd;
         int     n;
 	int	*size;
+	XIEimage *image;
 	char	*name;
 	char	buf[ 64 ];
-	XIEimage *image;
 
 	if ( which == 1 )
 	{
@@ -2153,10 +3640,6 @@ int	which;
 
 	if (!image)
 		return( 0 );
-	size = &image->fsize;
-	name = image->fname;
-
-        /* validate test parameters XXX need to be more complete */
 
         if ( p->buffer_size <= 0 )
         {
@@ -2164,16 +3647,16 @@ int	which;
                 return 0;
         }
 
+	size = &image->fsize;
+	name = image->fname;
 	sprintf( buf, "%s/%s", imagepath, name );
 
-        /* open the file */
+	*size = GetFileSize( buf );
 
-        if ( ( *size = file_size( buf ) ) < 0 )
-        {
-                fprintf( stderr, "Couldn't stat %s\n", buf );
-                return 0;
-        }
-        if ( ( fd = open( buf, O_RDONLY|O_BINARY ) ) == -1 )
+	if ( *size == 0 )
+		return( 0 );
+
+        if ( ( fd = open( buf, O_RDONLY ) ) == -1 )
         {
                 fprintf( stderr, "Couldn't open %s\n", buf );
                 goto out;
@@ -2181,15 +3664,19 @@ int	which;
 
         /* allocate the data buffer */
 
-        if ( ( p->data = (char *)malloc( *size ) ) == ( char * ) NULL )
-        {
-                fprintf( stderr, "Couldn't allocate buffer\n" );
-                goto out;
-        }
+	if ( image->data == ( char * ) NULL )
+	{
+		if ( ( image->data = 
+			(char *)malloc( *size ) ) == ( char * ) NULL )
+		{
+			fprintf( stderr, "Couldn't allocate buffer\n" );
+			goto out;
+		}
+	}
 
         /* read the data */
 
-        if ( ( n = read( fd, p->data, *size ) ) != *size )
+        if ( ( n = read( fd, image->data, *size ) ) != *size )
         {
                 fprintf( stderr, "Couldn't read data\n" );
                 goto out;
@@ -2204,22 +3691,7 @@ out:	if ( fd )
 	{
 		close( fd );
 	}
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
 	return 0;
-}
-
-void
-CloseXIEPhotomap( xp, p, pmap )
-XParms	xp;
-Parms	p;
-XiePhotomap pmap;
-{
-	XieDestroyPhotomap( xp->d, pmap );
-	free( p->data );
 }
 
 XieLut
@@ -2233,7 +3705,7 @@ int	lutLevels;
         XiePhotospace photospace;
 	int	flo_id, flo_notify;
         XiePhotoElement *flograph;
-	XieDataClass	data_class;
+	XieDataClass	cclass;
 	XieOrientation	band_order;
 	XieLTriplet	length, levels;
 	Bool 	merge;
@@ -2254,8 +3726,8 @@ int	lutLevels;
                 return ( XieLut ) NULL;
         }
 
-	data_class = xieValSingleBand;
-	band_order = xieValLSFirst;
+	cclass = xieValSingleBand;
+	band_order = xieValMSFirst;
 	length[ 0 ] = lutSize;
 	length[ 1 ] = 0;
 	length[ 2 ] = 0;
@@ -2264,7 +3736,7 @@ int	lutLevels;
 	levels[ 2 ] = 0;
 
         XieFloImportClientLUT(&flograph[0],
-                data_class,
+                cclass,
 		band_order,
 		length,
 		levels
@@ -2291,19 +3763,10 @@ int	lutLevels;
                 2               /* number of elements */
         );
         XSync( xp->d, 0 );
-        PumpTheClientData( xp, p, flo_id, photospace, 1, lut, lutSize );
-        WaitForFloToFinish( xp, flo_id );
+        PumpTheClientData( xp, p, flo_id, photospace, 1, lut, lutSize, 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,2);
     	return tmp;
-}
-
-void
-CloseXIELut( xp, p, lut )
-XParms	xp;
-Parms	p;
-XieLut	lut;
-{
-	XieDestroyLUT( xp->d, lut );
 }
 
 XieRoi
@@ -2351,89 +3814,73 @@ int	rectsSize;
         );
         XSync( xp->d, 0 );
         PumpTheClientData( xp, p, flo_id, photospace, 1, rects, rectsSize
-		* sizeof( XieRectangle ) );
-        WaitForFloToFinish( xp, flo_id );
+		* sizeof( XieRectangle ), 0 );
+        WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
  
         XieFreePhotofloGraph(flograph,2);
     	return tmp;
 }
 
-void
-CloseXIERoi( xp, p, roi )
-XParms	xp;
-Parms	p;
-XieRoi	roi;
+int
+EventOrErrorValid( testcp )
+unsigned short testcp;
 {
-	XieDestroyROI( xp->d, roi );
+	if ( IsEvent( testcp ) && runEvents == False )
+		return( 0 );
+	else if ( IsError( testcp ) && runErrors == False )
+		return( 0 );
+	return( 1 );
+}
+
+int	
+IsDISServer()
+{
+	return( IsDIS( capabilities ) );
 }
 
 int
 ServerIsCapable( testcp )
 unsigned short testcp;
 {
-	if ( IsColor8( testcp ) && !IsColor8( capabilities ) )
-	{
+	if ( IsFull( testcp ) && IsDIS( capabilities ) )
 		return( 0 );
-	}
-	if ( IsColor16( testcp ) && !IsColor16( capabilities ) )
-	{
-		return( 0 );
-	}
-	if ( IsColor24( testcp ) && !IsColor24( capabilities ) )
-	{
-		return( 0 );
-	}
-	if ( ( testcp & SUBSET_MASK ) != ( class_request & SUBSET_MASK ) )
-	{
-		return( 0 );
-	}
 	return( 1 );
 }
 
 int
-SetupMonoClipScale( image, levels, in_low, in_high, out_low, out_high, parms )
-XIEimage    *image;
-XieLTriplet levels;
-XieConstant in_low, in_high;
-XieLTriplet out_low, out_high;
-XieClipScaleParam **parms;
-{
-        levels[ 0 ] = 2;
-        levels[ 1 ] = 0;
-        levels[ 2 ] = 0;
-
-        in_low[ 0 ] = 0.0;
-        in_high[ 0 ] = ( float ) ( 1 << image->depth ) - 1.0;
-        out_low[ 0 ] = 0;
-        out_high[ 0 ] = 1;
-
-        *parms = XieTecClipScale( in_low, in_high, out_low, out_high );
-        if ( *parms == ( XieClipScaleParam * ) NULL )
-        {
-                fprintf( stderr, "Couldn't allocate clip scale parameters\n" );
-                return( 0 );
-        }
-        return( 1 );
-}
-
-int
-SetupFaxClipScale( xp, p, levels, in_low, in_high, out_low, out_high, parms )
+SetupClipScale( xp, p, image, levels, in_low, in_high, out_low, out_high, parms )
 XParms	xp;
 Parms   p;
+XIEimage *image;
 XieLTriplet levels;
 XieConstant in_low, in_high;
 XieLTriplet out_low, out_high;
 XieClipScaleParam **parms;
 {
         levels[ 0 ] = ( 1 << xp->vinfo.depth );
-        levels[ 1 ] = 0;
-        levels[ 2 ] = 0;
+        levels[ 1 ] = ( 1 << xp->vinfo.depth );
+        levels[ 2 ] = ( 1 << xp->vinfo.depth );
 
         in_low[ 0 ] = 0.0;
-        in_high[ 0 ] = 1.0;
+        in_low[ 1 ] = 0.0;
+        in_low[ 2 ] = 0.0;
+        in_high[ 0 ] = ( float ) ( 1 << image->depth[ 0 ] ) - 1.0;
+        in_high[ 1 ] = ( float ) ( 1 << image->depth[ 1 ] ) - 1.0;
+        in_high[ 2 ] = ( float ) ( 1 << image->depth[ 2 ] ) - 1.0;
         out_low[ 0 ] = 0;
+        out_low[ 1 ] = 0;
+        out_low[ 2 ] = 0;
         out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+        out_high[ 1 ] = ( 1 << xp->vinfo.depth ) - 1; 
+        out_high[ 2 ] = ( 1 << xp->vinfo.depth ) - 1; 
 
+	if ( TechniqueSupported( xp, xieValConstrain, xieValConstrainClipScale ) 
+		== False )
+	{
+                fprintf( stderr, "ClipScale constrain tech not supported\n" );
+		return( 0 );
+	}
+	
         *parms = XieTecClipScale( in_low, in_high, out_low, out_high );
         if ( *parms == ( XieClipScaleParam * ) NULL )
         {
@@ -2443,8 +3890,393 @@ XieClipScaleParam **parms;
         return( 1 );
 }
 
-int
-GetTimeout()
+Bool
+TechniqueSupported( xp, group, tech )
+XParms			xp;
+XieTechniqueGroup	group;
+unsigned int		tech;
 {
-	return(	timeout );
+	XieTechnique	*techVector;		
+	int		numTech, i;
+	Bool		gotIt;
+
+	gotIt = False;
+	if ( !XieQueryTechniques( xp->d, group, &numTech, &techVector ) )
+	{
+		fprintf( stderr, 
+			"TechniqueSupported: XieQueryTechniques failed\n" );
+	}
+	else
+	{	
+		/* search for it */
+
+		for ( i = 0; i < numTech; i++ )
+		{
+			if ( tech == techVector[ i ].number )
+			{
+				gotIt = True;
+			}
+			free( techVector[ i ].name ); 	
+		}
+		free( techVector );
+	}
+	
+	return( gotIt );
+}	
+
+/* list all of the techniques supported. this isn't used by xieperf, but was
+   used to validate TechniqueSupported() */
+
+struct _tech {
+	char	*name;
+	unsigned int tech; 
+};
+
+struct _class {
+	char *name;
+	Bool full;
+	XieTechniqueGroup group;
+	struct _tech *techs; 
+	int	n;
+};
+
+static struct _tech ColorAllocTechs[] = {
+	{ "ColorAllocAll", xieValColorAllocAll },
+	{ "ColorAllocMatch", xieValColorAllocMatch },
+	{ "ColorAllocRequantize", xieValColorAllocRequantize } };
+
+static struct _tech ConstrainTechs[] = {
+	{ "ConstrainClipScale", xieValConstrainClipScale },
+	{ "ConstrainHardClip", xieValConstrainHardClip } };
+ 
+static struct _tech ConvolveTechs[] = {
+	{ "ConvolveConstant", xieValConvolveConstant },
+	{ "ConvolveReplicate", xieValConvolveReplicate } };
+ 
+static struct _tech DecodeTechs[] = {
+	{ "DecodeUncompressedSingle", xieValDecodeUncompressedSingle },
+	{ "DecodeUncompressedTriple", xieValDecodeUncompressedTriple },
+	{ "DecodeG31D", xieValDecodeG31D },
+	{ "DecodeG32D", xieValDecodeG32D },
+	{ "DecodeG42D", xieValDecodeG42D },
+	{ "DecodeJPEGBaseline", xieValDecodeJPEGBaseline },
+	{ "DecodeJPEGLossless", xieValDecodeJPEGLossless },
+	{ "DecodeTIFF2", xieValDecodeTIFF2 },
+	{ "DecodeTIFFPackBits", xieValDecodeTIFFPackBits } };
+
+static struct _tech DitherTechs[] = {
+	{ "DitherErrorDiffusion", xieValDitherErrorDiffusion },
+	{ "DitherOrdered", xieValDitherOrdered } };
+
+static struct _tech ColorspaceTechs[] = {
+	{ "CIELab", xieValCIELab },
+	{ "CIEXYZ", xieValCIEXYZ },
+	{ "YCbCr", xieValYCbCr },
+	{ "YCC", xieValYCC } };
+
+static struct _tech EncodeTechs[] = {
+	{ "EncodeUncompressedSingle", xieValEncodeUncompressedSingle },
+	{ "EncodeUncompressedTriple", xieValEncodeUncompressedTriple },
+	{ "EncodeG31D", xieValEncodeG31D },
+	{ "EncodeG32D", xieValEncodeG32D },
+	{ "EncodeG42D", xieValEncodeG42D },
+	{ "EncodeJPEGBaseline", xieValEncodeJPEGBaseline },
+	{ "EncodeJPEGLossless", xieValEncodeJPEGLossless },
+	{ "EncodeTIFF2", xieValEncodeTIFF2 },
+	{ "EncodeTIFFPackBits", xieValEncodeTIFFPackBits } };
+
+static struct _tech GeometryTechs[] = {
+	{ "GeometryAntialias", xieValGeomAntialias },
+	{ "GeometryAntialiasByArea", xieValGeomAntialiasByArea },
+	{ "GeometryAntialiasByLowpass", xieValGeomAntialiasByLPF },
+	{ "GeometryBilinearInterpolation", xieValGeomBilinearInterp },
+	{ "GeometryGaussian", xieValGeomGaussian },
+	{ "GeometryNearestNeighbor", xieValGeomNearestNeighbor } };
+
+static struct _tech GamutTechs[] = {
+	{ "GamutNone", xieValGamutNone },
+	{ "GamutClipRGB", xieValGamutClipRGB } };
+
+static struct _tech HistogramTechs[] = {
+	{ "HistogramFlat", xieValHistogramFlat },
+	{ "HistogramGaussian", xieValHistogramGaussian },
+	{ "HistogramHyperbolic", xieValHistogramHyperbolic } };
+
+static struct _tech WhiteAdjustTechs[] = {
+	{ "WhiteAdjustNone", xieValWhiteAdjustNone },
+	{ "WhiteAdjustCIELabShift", xieValWhiteAdjustCIELabShift } };
+
+static struct _class classes[] = { 
+	{ "ColorAlloc", True, xieValColorAlloc, ColorAllocTechs, 
+		sizeof( ColorAllocTechs ) / sizeof( struct _tech )  },
+	{ "Constrain", True, xieValConstrain,  ConstrainTechs,
+		sizeof( ConstrainTechs ) / sizeof( struct _tech )  },
+	{ "Convolve", True, xieValConvolve, ConvolveTechs, 
+		sizeof( ConvolveTechs ) / sizeof( struct _tech )  },
+	{ "ConvertFromRGB", True, xieValConvertFromRGB, ColorspaceTechs, 
+		sizeof( ColorspaceTechs ) / sizeof( struct _tech )  },
+	{ "ConvertToRGB", True, xieValConvertToRGB, ColorspaceTechs, 
+		sizeof( ColorspaceTechs ) / sizeof( struct _tech )  },
+	{ "Decode", False, xieValDecode, DecodeTechs, 
+		sizeof( DecodeTechs ) / sizeof( struct _tech )  },
+	{ "Dither", True, xieValDither, DitherTechs, 
+		sizeof( DitherTechs ) / sizeof( struct _tech )  },
+	{ "Encode", False, xieValEncode, EncodeTechs, 
+		sizeof( EncodeTechs ) / sizeof( struct _tech )  },
+  	{ "Gamut", True, xieValGamut, GamutTechs, 
+		sizeof( GamutTechs ) / sizeof( struct _tech )  },
+	{ "Geometry", False, xieValGeometry, GeometryTechs, 
+		sizeof( GeometryTechs ) / sizeof( struct _tech )  },
+	{ "Histogram", True, xieValHistogram, HistogramTechs, 
+		sizeof( HistogramTechs ) / sizeof( struct _tech )  },
+  	{ "WhiteAdjust", True, xieValWhiteAdjust, WhiteAdjustTechs, 
+		sizeof( WhiteAdjustTechs ) / sizeof( struct _tech )  } };
+		  
+int
+ListAllTechs( xp )
+XParms	xp;
+{
+	int	i, j;
+
+	for ( i = 0; i < sizeof( classes ) / sizeof( struct _class ); i++ )
+	{
+		printf( "Class name: %s\n", classes[ i ].name );
+		for ( j = 0; j < classes[ i ].n; j++ )
+		{
+			printf( "\tTechnique %s:", classes[ i ].techs[ j ].name );
+			if (classes[ i ].full==True && IsDIS( capabilities ))
+			{
+				printf( " is not supported\n" ); 
+			}
+			else if ( TechniqueSupported( xp, classes[ i ].group,
+				classes[ i ].techs[ j ].tech ) == True )
+			{
+				printf( " is supported\n" );
+			}
+			else
+			{
+				printf( " is not supported\n" );
+			}
+		}
+	}
+	printf( "\n" );
+} 
+
+void
+FillHisto( histos, size, levels )
+XieHistogramData histos[];
+int	size;
+int	levels;
+{
+	int	i;
+	int	sy;
+
+	sy = levels / size;
+	for ( i = 0; i < size; i++ )
+	{
+		histos[ i ].value = i + 40;
+		histos[ i ].count = i * sy;
+	}	
 }
+
+void
+DrawHistogram( xp, w, histos, size, levels )
+XParms  xp;
+Window	w;
+XieHistogramData histos[];
+int     size;
+unsigned long levels;
+{
+        unsigned long maxcount;
+        int     i;
+        float   sx, sy;
+        XRectangle *rects;
+        short   yadd, xadd;
+        char    buf[ 32 ];
+
+        maxcount = 0;
+	levels = 0;
+        for ( i = 0; i < size; i++ )
+        {
+                if ( histos[ i ].count > maxcount )
+                        maxcount = histos[ i ].count;
+                if ( histos[ i ].value > levels  )
+                        levels = histos[ i ].value;
+        }
+
+        if ( maxcount == 0 )
+                return;
+
+        xadd = ( short ) ( ( float ) MONWIDTH * 0.15 );
+        yadd = xadd; 
+
+        sx = ( float ) ( MONWIDTH - xadd ) / ( float ) ( levels + 1 ); 
+        sy = ( float ) ( MONHEIGHT - yadd ) / ( float ) maxcount;
+
+        XClearWindow( xp->d, w );
+
+        /* label x */
+
+        XDrawImageString( xp->d, w, tgc, xadd,
+                MONHEIGHT - 3, "0", 1 );
+        sprintf( buf, "%d", levels );
+        XDrawImageString( xp->d, w, tgc, MONWIDTH -
+                strlen( buf ) * 14, MONHEIGHT - 3, buf, strlen( buf ) );
+
+        /* label y */
+
+        sprintf( buf, "%d", maxcount );
+        XDrawImageString( xp->d, w, tgc, 3,
+                20, buf, strlen( buf ) );
+        XDrawImageString( xp->d, w, tgc, 3,
+                MONHEIGHT - yadd, "0", 1 );
+
+	/* y axis */
+
+        XDrawLine( xp->d, w, tgc, xadd, MONHEIGHT - yadd, 
+		xadd, 0 );
+
+	/* x axis */
+
+        XDrawLine( xp->d, w, tgc, xadd, MONHEIGHT - yadd,
+                MONWIDTH, MONHEIGHT - yadd );
+
+        rects = ( XRectangle * ) malloc( sizeof( XRectangle ) * size );
+        if ( rects == ( XRectangle * ) NULL )
+                return;
+
+        /* create the rectangles */
+
+        for ( i = 0; i < size; i++ )
+        {
+                rects[ i ].width = ( short ) ceil( sx );
+                rects[ i ].height = ( short ) ( sy * histos[ i ].count );
+                rects[ i ].x = xadd + ( short ) ( sx * histos[ i ].value );
+                rects[ i ].y = ( short ) MONHEIGHT - yadd - rects[ i ].height;
+        }
+
+        /* draw it */
+
+        XFillRectangles( xp->d, w, tgc, rects, size );
+        XSync( xp->d, 0 );
+
+        free( rects );
+}
+
+int
+GetStandardColormap( xp, stdColormap, atom )
+XParms	xp;
+XStandardColormap *stdColormap;
+Atom	atom;
+{
+	int	status, i;
+	int	numberColormaps;
+	XStandardColormap *colormapsReturned;
+	VisualID	visualId;
+
+	visualId = XVisualIDFromVisual( xp->vinfo.visual );
+	status = XmuLookupStandardColormap( xp->d, 
+		DefaultScreen( xp->d ),
+		visualId,	
+		xp->vinfo.depth,
+		atom,
+		False,		/* Don't replace existing cmap */
+		True );
+	if ( status != 0 )
+	{
+		status = XGetRGBColormaps( xp->d,
+			RootWindow( xp->d, DefaultScreen( xp->d ) ),
+			&colormapsReturned,
+			&numberColormaps,
+			atom );
+		if ( status != 0 )
+		{
+			for ( i = 0; i < numberColormaps; i++ )
+			{
+				if (visualId == colormapsReturned[i].visualid)
+				{
+					*stdColormap = colormapsReturned[ i ];
+					free( colormapsReturned );
+					return( True );
+				}
+			}
+			free( colormapsReturned );
+		}
+	}
+	return( False );
+}
+
+#define SETLUT if ( lutCellSize == sizeof( char ) ) {\
+        *( ( char * ) ptr ) = val; \
+	ptr+=sizeof(char); } \
+else if ( lutCellSize == sizeof( short ) ) { \
+        *( ( short * ) ptr ) = val; \
+	ptr+=sizeof(short); } \
+else { \
+        *( ( long * ) ptr) = val; \
+	ptr+=sizeof(long); }
+
+XieLut
+CreatePointLut( xp, p, indepth, outdepth )
+XParms	xp;
+Parms	p;
+int	indepth;
+int	outdepth;
+{
+        char    *lut, *ptr; 
+        int     lutSize, lutLevels;
+        int     lutCellSize;
+        int     i, j, val;
+        int     step, increment;
+	XieLut 	retval;
+
+	lutSize = 1 << indepth;
+	lutCellSize = ( outdepth + 7 ) >> 3;  /* bytes, shorts, ? */
+
+	if ( lutCellSize != sizeof( char ) && lutCellSize != sizeof( short )
+		 && lutCellSize != sizeof( long ) )
+	{
+		fprintf( stderr, "CreatePointLut: cell size not supported\n" );
+		return( ( XieLut ) NULL );
+	}
+
+        if ( indepth == outdepth )
+        {
+                increment = 1;
+                step = 1;
+        }
+        else if ( indepth > outdepth )
+        {
+                increment = 1; 
+                step = ( 1 << indepth ) / ( 1 << outdepth );
+        }
+        else /* outdepth > indepth */
+        {
+		increment = (( 1 << outdepth ) - 1 ) / (( 1 << indepth ) - 1);
+                step = 1;
+        }
+
+	lut = (char *) malloc( lutSize * lutCellSize );
+	ptr = ( void * ) lut;
+	if ( lut == ( char * ) NULL )
+		return( ( XieLut ) NULL );
+
+	/* initialize the lut */
+
+	val = 0;
+	j = 0;
+        for ( i = 0; i < lutSize; i++ )
+        {
+                SETLUT
+                j++;
+                if ( j == step )
+                {
+                        j = 0;
+                        val += increment;
+                }
+        }
+	retval = GetXIELut( xp, p, lut, lutSize, 1 << outdepth );
+	free( lut );
+	return( retval );
+}
+

@@ -1,6 +1,6 @@
-/* $XConsortium: pasteup.c,v 1.3 93/07/26 14:35:42 rws Exp $ */
+/* $XConsortium: pasteup.c,v 1.2 93/10/26 10:06:42 rws Exp $ */
 
-/**** module do_pasteup.c ****/
+/**** module pasteup.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_pasteup.c -- pasteup flo element tests 
+	pasteup.c -- pasteup flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -81,58 +81,87 @@ int InitPasteUp(xp, p, reps)
 	XIEimage *image;
 	int	i;
 
-	parms = NULL;
-	p->data = ( char * ) NULL;
+	parms = ( XieClipScaleParam * ) NULL;
+        flograph = ( XiePhotoElement * ) NULL;
+        flo = ( XiePhotoflo ) NULL;
+	XIEPhotomap = ( XiePhotomap ) NULL;
+	InitSegments();
+
 	image = p->finfo.image1;
         if ( !image )
-                return( 0 );
+		reps = 0;
 
-	monoflag = 0;
-        if ( xp->vinfo.depth == 1 )
-        {
-		monoflag = 1;
-		if ( SetupMonoClipScale( image, levels, 
-			in_low, in_high, out_low, out_high, &parms ) == 0 )
+	if ( reps )
+	{
+		monoflag = 0;
+		if ( xp->vinfo.depth != image->depth[ 0 ] )
 		{
-			return( 0 );
+			monoflag = 1;
+			if ( SetupClipScale( xp, p, image, levels, in_low, 
+				in_high, out_low, out_high, &parms ) == 0 )
+			{
+				reps = 0;
+			}
 		}
-        }
+	}
+	if ( reps )
+	{
+		if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
+			( XiePhotomap ) NULL )
+		{
+			reps = 0;
+		}
 
-	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
-		( XiePhotomap ) NULL )
-	{
-		reps = 0;
-	}
+		else if ( !SegmentPhotomap( xp, p, XIEPhotomap, 
+			segments, NTILES, SPLIT, image->width[ 0 ], 
+			image->height[ 0 ] ) )
+		{
+			reps = 0;
+		}
 
-	else if ( !SegmentPhotomap( xp, p, XIEPhotomap, 
-		segments, NTILES, SPLIT, image->width, image->height ) )
-	{
-		CloseXIEPhotomap( xp, p, XIEPhotomap );
-		reps = 0;
+		else if ( !BuildPasteUpFlograph( xp, p, 
+			&flograph, segments, NTILES, SPLIT, image->width[ 0 ], 
+			image->height[ 0 ] ) )
+		{
+			reps = 0;
+		}
 	}
-
-	else if ( !BuildPasteUpFlograph( xp, p, 
-		&flograph, segments, NTILES, SPLIT, image->width, 
-		image->height ) )
-	{
-		CloseXIEPhotomap( xp, p, XIEPhotomap );
-		for ( i = 0; i < NTILES; i++ )
-			XieDestroyPhotomap( xp->d, segments[ i ] );
-		reps = 0;
-	}
-	if ( !reps && parms )
-		free( parms );
-	if ( !reps && p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
+	if ( !reps )
+		FreePasteUpStuff( xp, p );
         return( reps );
 }
 
 /* cut a photoflo into "size" little pieces. Assumption is that the values
    width and height are each congruent to 0 mod size. Caller allocates segvec */
- 
+
+int
+InitSegments()
+{
+	int	i;
+
+	for ( i = 0; i < NTILES; i++ )
+	{
+		segments[ i ] = ( XiePhotomap ) NULL;
+	}
+} 
+
+int
+CloseSegments( xp, p )
+XParms	xp;
+Parms	p;
+{
+	int	i;
+
+	for ( i = 0; i < NTILES; i++ )
+	{
+		if ( segments[ i ] != ( XiePhotomap ) NULL )
+		{
+			XieDestroyPhotomap( xp->d, segments[ i ] );
+			segments[ i ] = ( XiePhotomap ) NULL;
+		}
+	}
+}
+
 int
 SegmentPhotomap( xp, p, pm, segvec, size, split, width, height )
 XParms	xp;
@@ -153,7 +182,7 @@ int	height;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_param=NULL;
 	float coefficients[ 6 ];
-	int	i, j, retval;
+	int	i, retval;
 	XieGeometryTechnique sample_tech = xieValGeomNearestNeighbor;
 	char	*sample_param = NULL;
 	unsigned long flo_id;
@@ -183,9 +212,6 @@ int	height;
 			{
 				fprintf( stderr,"XieCreatePhotomap failed\n" );
 				retval = 0;
-				for ( j = i - 1; j >= 0; j-- )
-					XieDestroyPhotomap( xp->d, 
-						segments[ j ] );
 			}
 		}
 	}
@@ -229,13 +255,14 @@ int	height;
 					flo_elements/* number of elements */
 				);
 				XSync( xp->d, 0 );
-				WaitForFloToFinish( xp, flo_id );
+				WaitForXIEEvent( xp, xieEvnNoPhotofloDone, 
+					flo_id, 0, False );	
 				flo_id++;
 			}
 		}			
+		XieFreePhotofloGraph(flograph, flo_elements);
+		XieDestroyPhotospace(xp->d, photospace);
 	}
-	XieFreePhotofloGraph(flograph, flo_elements);
-	XieDestroyPhotospace(xp->d, photospace);
 	return( retval );
 }
 
@@ -307,7 +334,6 @@ int	height;
 	);
 
 	flo = XieCreatePhotoflo( xp->d, *flograph, flo_elements );
-	XFree((*flograph)[size].data.PasteUp.tiles);
 	return( 1 );
 }
 
@@ -405,43 +431,70 @@ void DoPasteUp(xp, p, reps)
 	if ( !image )
 		return;
 	method = 0;
-	width = image->width;
-	height = image->height;
+	width = image->width[ 0 ];
+	height = image->height[ 0 ];
 	overlap = ( ( PasteUpParms * ) p->ts )->overlap;
 	for ( i = 0; i != reps; i++ )
 	{
                 XieExecutePhotoflo( xp->d, flo, flo_notify );
-		WaitForFloToFinish( xp, flo );
+		WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False );
 		XSync( xp->d, 0 );
-		BuildMeSomeTiles( tiles, SPLIT, width / SPLIT,
-			height / SPLIT, method++, overlap );
-		if ( method == 2 )
-			method = 0;
-		XieFloPasteUp( &flograph[ pasteUpIdx ], width, height, 
-			constant, tiles, NTILES );
-		XieModifyPhotoflo( xp->d, flo, pasteUpIdx + 1, &flograph[pasteUpIdx], 1 );
-		XFree(flograph[pasteUpIdx].data.PasteUp.tiles);
-		XSync( xp->d, 0 );
+
+		if ( i < reps ) 
+		{
+			XieFreePasteUpTiles(&flograph[ pasteUpIdx ] );
+			BuildMeSomeTiles( tiles, SPLIT, width / SPLIT,
+				height / SPLIT, method++, overlap );
+			if ( method == 2 )
+				method = 0;
+			XieFloPasteUp( &flograph[ pasteUpIdx ], width, height, 
+				constant, tiles, NTILES );
+			XieModifyPhotoflo( xp->d, flo, pasteUpIdx + 1, 
+				&flograph[pasteUpIdx], 1 );
+			XSync( xp->d, 0 );
+		}
     	}
 }
 
-int EndPasteUp(xp, p)
+int
+EndPasteUp(xp, p)
     XParms  xp;
     Parms   p;
 {
+	FreePasteUpStuff( xp, p );
+}
+
+int
+FreePasteUpStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
 	int	i;
 
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
+	XieFreePasteUpTiles(&flograph[ pasteUpIdx ] );
+
 	if ( parms )
+	{
 		free( parms );
-	XieDestroyPhotomap( xp->d, XIEPhotomap );
-	for ( i = 0; i < NTILES; i++ )
-		XieDestroyPhotomap( xp->d, segments[ i ] );
-        XieFreePhotofloGraph(flograph,flo_elements);
-        XieDestroyPhotoflo( xp->d, flo );
+		parms = ( XieClipScaleParam * ) NULL;
+	}
+	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+		XIEPhotomap = ( XiePhotomap ) NULL;
+	}
+
+	CloseSegments( xp, p );
+
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
 }
 

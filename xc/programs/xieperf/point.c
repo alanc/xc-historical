@@ -1,6 +1,6 @@
-/* $XConsortium: point.c,v 1.2 93/07/19 14:44:28 rws Exp $ */
+/* $XConsortium: point.c,v 1.2 93/10/26 10:06:49 rws Exp $ */
 
-/**** module do_point.c ****/
+/**** module point.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,85 +43,143 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_point.c -- point flo element tests 
+	point.c -- point flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
 *****************************************************************************/
+
 #include "xieperf.h"
 #include <stdio.h>
 
 static XieLTriplet levels;
-static XieConstrainTechnique tech = xieValConstrainClipScale;
-static XieClipScaleParam *parms;
-static XieConstant in_low,in_high;
-static XieLTriplet out_low,out_high;
 static int monoflag = 0;
 
 static XiePhotomap XIEPhotomap;
-static XieLut	XIELut;
+static XiePhotomap XIEPhotomap2;
+static XieLut XIELut;
+static XieLut ClipLut;
+static XieRoi XIERoi;
+
+static int flo_notify;
+static XiePhotoElement *flograph;
+static XiePhotoflo flo;
+static int flo_elements;
+static unsigned char *lut;
+static XStandardColormap stdCmap;
 
 int InitPoint(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	unsigned char *lut;
-	int lutSize, i, levelsIn, levelsOut;
-        XIEimage *image;
+	int lutSize, i, idx; 
+	int src1, src2, levelsIn, levelsOut;
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+        Bool useROI, photoDest;
+	XieRectangle rect;
+	unsigned int bandMask;
+        XieProcessDomain domain;
+        int decode_notify;
 
-        image = p->finfo.image1;
-        if ( !image )
-                return( 0 );
+        photoDest = ( ( PointParms * )p->ts )->photoDest;
+        useROI = ( ( PointParms * )p->ts )->useROI;
+        bandMask = ( ( PointParms * )p->ts )->bandMask;
 
-	parms = NULL;
+        flograph = ( XiePhotoElement * ) NULL;
+        XIEPhotomap = ( XiePhotomap ) NULL;
+        XIEPhotomap2 = ( XiePhotomap ) NULL;
+        XIERoi = ( XieRoi ) NULL;
+	XIELut = ClipLut = ( XieLut ) NULL;
+        flo = ( XiePhotoflo ) NULL;
+
+	XIEPhotomap2 = XieCreatePhotomap( xp->d );
+	if ( XIEPhotomap2 == ( XiePhotomap ) NULL )
+		return( 0 );
 	monoflag = 0;
-        if ( xp->vinfo.depth == 1 )
+	levelsIn = (( PointParms * ) p->ts )->levelsIn;
+	levelsOut = (( PointParms * ) p->ts )->levelsOut;
+        if ( xp->vinfo.depth != levelsOut && photoDest == False )
         {
                 monoflag = 1;
-                if ( !SetupMonoClipScale( image, levels, 
-			in_low, in_high, out_low, out_high, &parms ) )
+		if ( ( ClipLut = CreatePointLut( xp, p, levelsOut, xp->vinfo.depth ) ) == ( XieLut ) NULL )
                 {
-			return( 0 );
+			reps = 0;
                 }
         }
 
-	levelsIn = (( PointParms * ) p->ts )->levelsIn;
-	levelsOut = (( PointParms * ) p->ts )->levelsOut;
-	lutSize = 1 << levelsIn;
-	lut = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
-	if ( lut == ( unsigned char * ) NULL )
-		reps = 0;
-	else if ( levelsIn == 8 && levelsOut == 8 )
+	if ( reps )
 	{
-		for ( i = 0; i < 75; i++ )
-			lut[ i ] = i;
-		for ( i = 75; i < lutSize; i++ )
+		flo_elements = 4;
+		if ( useROI == True )
+			flo_elements++;
+		if ( monoflag )
+			flo_elements+=2;
+
+		if ( useROI == True && levelsIn != levelsOut )
 		{
-			lut[ i ] = ( 1 << levelsOut ) - i;
+			fprintf( stderr, 
+				"levelsIn must equal levelsOut with ROIs\n" );
+			reps = 0;
 		}
 	}
-	else if ( levelsIn == 1 && levelsOut == 8 )
+
+	/* XXX only support 8 levels or 1 level in, 8 levels 
+	   or 1 level out. I could be more general here... */
+
+	if ( reps )
 	{
-		lut[ 0 ] = 0;
-		lut[ 1 ] = 255;
-	}
-	else if ( levelsIn == 8 && levelsOut == 1 )
-	{
-		for ( i = 0; i < 75; i++ )
-			lut[ i ] = 0;
-		for ( i = 75; i < 256; i++ )
-			lut[ i ] = 1;
-	}	
-	if ( levelsIn == 1 )
-	{
-		if ( ( XIEPhotomap = GetXIEBitonalPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+		lutSize = 1 << levelsIn;
+		lut = (unsigned char *)
+			malloc( lutSize * sizeof( unsigned char ) );
+		if ( lut == ( unsigned char * ) NULL )
 			reps = 0;
+		else if ( levelsIn == 1 && levelsOut == 8 )
+		{
+			lut[ 0 ] = 0;
+			lut[ 1 ] = 255;
+		}
+		else if ( levelsIn == 8 && levelsOut == 1 )
+		{
+			for ( i = 0; i < lutSize / 2; i++ )
+			{
+				lut[ i ] = 0;
+			}
+
+			for ( i = lutSize / 2; i < lutSize; i++ )
+			{
+				lut[ i ] = 1;
+			}
+		}
+		else if ( levelsIn == 8 && levelsOut == 8 )
+		{
+			for ( i = 0; i < lutSize; i++ )
+			{
+				lut[ i ] = ( ( 1 << levelsIn ) - 1 ) - i;
+			}
+		}
 	}
-	else if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+	if ( reps )
 	{
-		reps = 0;
+		if ( levelsIn == 1 && IsDISServer() )
+		{
+			XIEPhotomap = GetXIEPointPhotomap( xp, p, 1, 1 );
+		}	
+		else if ( levelsIn == 1 )
+		{
+			XIEPhotomap = GetXIEDitheredPhotomap( xp, p, 1, 2 );
+		}
+		else 
+		{
+			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
+		}
+		if ( XIEPhotomap == ( XiePhotomap ) NULL )
+		{
+			reps = 0;
+		}
 	}
+
 	if ( reps != 0 )
 	{
 		if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, 1 << levelsOut ) ) 
@@ -130,208 +188,390 @@ int InitPoint(xp, p, reps)
 			reps = 0;
 		}
 	}
-	if ( lut )
-		free( lut );
-	if ( !reps && parms )
-		free( parms );
+	if ( reps )
+	{
+		flograph = XieAllocatePhotofloGraph(flo_elements);	
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+		else
+		{
+			if ( useROI == True )
+			{
+				rect.x = ( ( PointParms * )p->ts )->x;
+				rect.y = ( ( PointParms * )p->ts )->y;
+				rect.width = ( ( PointParms * )p->ts )->width;
+				rect.height = ( ( PointParms * )p->ts )->height;
+
+				if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) 
+					== ( XieRoi ) NULL )
+				{
+					reps = 0;
+				}
+			}
+		}
+	}
+	if ( reps )
+	{
+		idx = 0;
+
+		decode_notify = False;
+		XieFloImportPhotomap(&flograph[idx], XIEPhotomap, decode_notify);
+		idx++;
+		src1 = idx;
+
+		domain.offset_x = 0;
+		domain.offset_y = 0;
+
+                if ( useROI == True )
+                {
+                        XieFloImportROI(&flograph[idx], XIERoi);
+                        idx++;
+                        domain.phototag = idx;
+                }
+                else
+                {
+                        domain.phototag = 0;
+                }
+
+		XieFloImportLUT(&flograph[idx], XIELut );
+		idx++;
+		src2 = idx;
+
+		XieFloPoint(&flograph[idx],
+			src1,
+			&domain,
+			src2,
+			bandMask
+		);
+		idx++;
+
+		if ( photoDest == False )
+		{
+			if ( monoflag )
+			{
+				/* Point-to-point protocol :-) */
+
+				XieFloImportLUT(&flograph[idx], ClipLut );
+				idx++;
+
+				domain.phototag = 0;
+
+				XieFloPoint(&flograph[idx],
+					idx - 1,
+					&domain,
+					idx,
+					bandMask	
+				);
+				idx++;
+			}
+
+			XieFloExportDrawable(&flograph[idx],
+				idx,     /* source phototag number */
+				xp->w,
+				xp->fggc,
+				0,       /* x offset in window */
+				0        /* y offset in window */
+			);
+		}
+		else
+		{
+			XieFloExportPhotomap(&flograph[idx],
+                                idx,              /* source phototag number */
+                                XIEPhotomap2,
+                                encode_tech,
+                                encode_params
+                        );
+                        idx++;
+		}
+
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+		flo_notify = False;
+	}
+	if ( !reps )
+		FreePointStuff( xp, p );
 	return( reps );
 }
 
-void DoPointImmediate(xp, p, reps)
+void DoPoint(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-    	int     i, flo_elements;
-	int	levelsOut;
-	int     band_mask = 1;
-	char 	*datatmp;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-	int     band_order = xieValLSFirst;
-	XieProcessDomain domain;
-	XiePhotoElement *flograph;
-	int	decode_notify;
+    	int     i;
 
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	levelsOut = (( PointParms * ) p->ts )->levelsOut;
-	flo_id = 1;
-        if ( monoflag )
-                flo_elements = 5;
-        else
-                flo_elements = 4;
-
-	flograph = XieAllocatePhotofloGraph(flo_elements);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	decode_notify = False;
-	XieFloImportPhotomap(&flograph[0], XIEPhotomap, decode_notify);
-
-	domain.offset_x = 0;
-	domain.offset_y = 0;
-	domain.phototag = 0;
-
-	XieFloImportLUT(&flograph[1], XIELut );
-
-	XieFloPoint(&flograph[2],
-		1,
-		&domain,
-		2,
-		band_mask 
-	);
-
-	if ( monoflag )
-	{
-		XieFloConstrain(&flograph[3],
-			3,
-			levels,
-			tech,
-			(char *)parms
-		);
-	}
-
-	if ( levelsOut == 1 )
-	{
-		XieFloExportDrawablePlane(&flograph[flo_elements - 1],
-			flo_elements - 1,  /* source phototag number */
-			xp->w,
-			xp->fggc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		);
-	}
-	else
-	{
-		XieFloExportDrawable(&flograph[flo_elements - 1],
-			flo_elements - 1,  /* source phototag number */
-			xp->w,
-			xp->fggc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		);
-	}
-
-	flo_notify = False;	
-    	for (i = 0; i != reps; i++) {
-
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		flo_elements    /* number of elements */
-       		);
-
-		flo_id++;
-		XSync( xp->d, 0 );
-    	}
-	XieFreePhotofloGraph(flograph,flo_elements);	
-	XieDestroyPhotospace( xp->d, photospace );
-}
-
-void DoPointStored(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i, flo_elements;
-	int	flo_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-        int     band_mask = 1;
-        int     band_order = xieValLSFirst;
-        XieProcessDomain domain;
-	int	levelsOut;
-        int     decode_notify;
-
-	levelsOut = ( ( PointParms * ) p->ts )->levelsOut;
-        if ( monoflag )
-                flo_elements = 5;
-        else
-                flo_elements = 4;
-
-	flograph = XieAllocatePhotofloGraph(flo_elements);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	decode_notify = False;
-        XieFloImportPhotomap(&flograph[0], XIEPhotomap, decode_notify);
-
-	domain.offset_x = 0;
-	domain.offset_y = 0;
-	domain.phototag = 0;
-
-	XieFloImportLUT(&flograph[1], XIELut );
-
-	XieFloPoint(&flograph[2],
-		1,
-		&domain,
-		2,
-		band_mask
-	);
-
-      	if ( monoflag )
-	{
-		XieFloConstrain(&flograph[3],
-			3,
-			levels,
-			tech,
-			(char *)parms
-		);
-	}
-
-	if ( levelsOut == 1 )
-	{
-		XieFloExportDrawablePlane(&flograph[flo_elements-1],
-			flo_elements-1,      /* source phototag number */
-			xp->w,
-			xp->fggc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		);
-	}
-	else
-	{
-                XieFloExportDrawable(&flograph[flo_elements-1],
-                        flo_elements-1,  /* source phototag number */
-                        xp->w,
-                        xp->fggc,
-                        0,       /* x offset in window */
-                        0        /* y offset in window */
-                );
-        }
-
-
-	flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
-
-	/* crank it */
-
-	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
     	}
-
-	/* destroy the photoflo */
-
-	XieDestroyPhotoflo( xp->d, flo );
-	XieFreePhotofloGraph(flograph,flo_elements);	
 }
 
 void EndPoint(xp, p)
     XParms  xp;
     Parms   p;
 {
-	CloseXIEPhotomap( xp, p, XIEPhotomap );
-	CloseXIELut( xp, p, XIELut );
-	if ( parms )
-		free( parms );
+	FreePointStuff( xp, p );
 }
 
+int
+FreePointStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+		XIEPhotomap = ( XiePhotomap ) NULL;
+	}
+	if ( XIEPhotomap2 )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap2 );
+		XIEPhotomap2 = ( XiePhotomap ) NULL;
+	}
+	if ( XIELut )
+	{
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
+	}
+	if ( ClipLut )
+	{
+		XieDestroyLUT( xp->d, ClipLut );
+		ClipLut = ( XieLut ) NULL;
+	}
+	if ( flograph )
+	{
+		XieFreePhotofloGraph( flograph, flo_elements );
+		flograph = ( XiePhotoElement * ) NULL;
+	}
+        if ( flo )
+	{
+                XieDestroyPhotoflo( xp->d, flo );
+		flo = ( XiePhotoflo ) NULL;
+	}
+	if ( lut )
+	{
+		free( lut );
+		lut = ( unsigned char * ) NULL;
+	}
+}
+
+int InitTriplePoint(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+	int lutSize, idx; 
+	int i, src1, src2;
+        Bool useROI;
+	XieRectangle rect;
+	unsigned int bandMask;
+        XieProcessDomain domain;
+        int decode_notify;
+	XieLTriplet levels;
+	int cclass, ditherTech;
+	char *ditherTechParms;
+	int threshold;
+	Atom atom;
+
+#if     defined(__cplusplus) || defined(c_plusplus)
+        cclass = xp->vinfo.c_class;
+#else
+        cclass = xp->vinfo.class;
+#endif
+	if ( cclass != PseudoColor )
+		return( 0 );
+	if ( xp->vinfo.depth == 1 )
+		return( 0 );
+
+        atom = ( ( TriplePointParms * )p->ts )->atom;
+	if ( GetStandardColormap( xp, &stdCmap, atom ) == False )
+	{
+		fprintf( stderr, "Couldn't get a standard colormap\n" );
+		fflush( stderr );
+		return( 0 );
+	}
+
+	fprintf( stderr, "Standard cmap found: dithering input to levels %d, %d, %d\n", stdCmap.red_max + 1, stdCmap.green_max + 1, stdCmap.blue_max + 1 );
+	fflush( stderr );
+        useROI = ( ( TriplePointParms * )p->ts )->useROI;
+        bandMask = ( ( TriplePointParms * )p->ts )->bandMask;
+	levels[ 0 ] = stdCmap.red_max + 1; 
+	levels[ 1 ] = stdCmap.green_max + 1; 
+	levels[ 2 ] = stdCmap.blue_max + 1;
+	ditherTech = ( ( TriplePointParms * )p->ts )->ditherTech;
+	threshold = ( ( TriplePointParms * )p->ts )->threshold;
+
+        flograph = ( XiePhotoElement * ) NULL;
+        XIEPhotomap = ( XiePhotomap ) NULL;
+        XIERoi = ( XieRoi ) NULL;
+	XIELut = ( XieLut ) NULL;
+        flo = ( XiePhotoflo ) NULL;
+	ditherTechParms = ( char * ) NULL;
+
+	flo_elements = 4;
+	if ( useROI == True )
+		flo_elements++;
+
+	if ( reps )
+	{
+		lutSize = 1 << xp->vinfo.depth;
+		lut = (unsigned char *)
+			malloc( lutSize * sizeof( unsigned char ) );
+		if ( lut == ( unsigned char * ) NULL )
+			reps = 0;
+
+		/* build a grayscale ramp lut */
+
+	        for (i=0; i<lutSize; i++) {
+       	        	lut[ i ] = i + stdCmap.base_pixel;
+		}
+	
+	}
+	if ( reps )
+	{
+		if ( ( XIEPhotomap = GetXIEDitheredTriplePhotomap( xp, p, 1, ditherTech, threshold, levels ) ) == ( XiePhotomap ) NULL )
+		{
+			reps = 0;
+		}
+	}
+
+	if ( reps != 0 )
+	{
+		if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, lutSize ) ) 
+			== ( XieLut ) NULL )
+		{
+			reps = 0;
+		}
+	}
+	if ( reps )
+	{
+		flograph = XieAllocatePhotofloGraph(flo_elements);	
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+		else
+		{
+			if ( useROI == True )
+			{
+				rect.x = ( ( TriplePointParms * )p->ts )->x;
+				rect.y = ( ( TriplePointParms * )p->ts )->y;
+				rect.width = ( ( TriplePointParms * )p->ts )->width;
+				rect.height = ( ( TriplePointParms * )p->ts )->height;
+
+				if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) 
+					== ( XieRoi ) NULL )
+				{
+					reps = 0;
+				}
+			}
+		}
+	}
+	if ( reps )
+	{
+		idx = 0;
+
+		decode_notify = False;
+		XieFloImportPhotomap(&flograph[idx], XIEPhotomap, decode_notify);
+		idx++;
+		src1 = idx;
+
+		domain.offset_x = 0;
+		domain.offset_y = 0;
+
+                if ( useROI == True )
+                {
+                        XieFloImportROI(&flograph[idx], XIERoi);
+                        idx++;
+                        domain.phototag = idx;
+                }
+                else
+                {
+                        domain.phototag = 0;
+                }
+
+		XieFloImportLUT(&flograph[idx], XIELut );
+		idx++;
+		src2 = idx;
+
+		XieFloPoint(&flograph[idx],
+			src1,
+			&domain,
+			src2,
+			bandMask
+		);
+		idx++;
+
+		XieFloExportDrawable(&flograph[idx],
+			idx,     /* source phototag number */
+			xp->w,
+			xp->fggc,
+			0,       /* x offset in window */
+			0        /* y offset in window */
+		);
+
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+		flo_notify = False;
+	}
+	if ( !reps )
+		FreeTriplePointStuff( xp, p );
+	else
+		InstallThisColormap( xp->d, xp->p, stdCmap.colormap );
+	return( reps );
+}
+
+void DoTriplePoint(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    	int     i;
+
+    	for (i = 0; i != reps; i++) {
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
+		XSync( xp->d, 0 );
+    	}
+}
+
+void EndTriplePoint(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+	InstallCustomColormap( xp->d, xp->p );
+	FreeTriplePointStuff( xp, p );
+}
+
+int
+FreeTriplePointStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+		XIEPhotomap = ( XiePhotomap ) NULL;
+	}
+	if ( XIELut )
+	{
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
+	}
+	if ( flograph )
+	{
+		XieFreePhotofloGraph( flograph, flo_elements );
+		flograph = ( XiePhotoElement * ) NULL;
+	}
+        if ( flo )
+	{
+                XieDestroyPhotoflo( xp->d, flo );
+		flo = ( XiePhotoflo ) NULL;
+	}
+	if ( lut )
+	{
+		free( lut );
+		lut = ( unsigned char * ) NULL;
+	}
+}

@@ -1,6 +1,6 @@
-/* $XConsortium: query.c,v 1.2 93/07/19 14:44:33 rws Exp $ */
+/* $XConsortium: query.c,v 1.2 93/10/26 10:07:01 rws Exp $ */
 
-/**** module do_query.c ****/
+/**** module query.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,20 +43,22 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_query.c -- query flo element test 
+	query.c -- query flo element test 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
 *****************************************************************************/
+
 #include "xieperf.h"
 #include <stdio.h>
 
 static XiePhotomap XIEPhotomap;
-static XiePhotoElement *flograph;
-
 static XieLut   PhotofloTestLut1, PhotofloTestLut2;
-static XiePhotoflo flo;
 static XieColorList XIEColorList;
+
+static int flo_elements;
+static XiePhotoElement *flograph;
+static XiePhotoflo flo;
 
 int InitQueryTechniques(xp, p, reps)
     XParms  xp;
@@ -78,13 +80,6 @@ int InitQueryColorList(xp, p, reps)
 		fprintf( stderr, "XieCreateColorList failed\n" );
 		reps = 0;
 	}
-
-	/* later, when we support it, we want to execute some flo which
-           will place data in the color list to make the query far more
-           interesting. For now, we will check that there are no colors
-           by seeing that the returned colormap is 0 and the list of 
-           colors returned is of size 0 */
-
 	return reps;
 }
 
@@ -93,7 +88,8 @@ int InitQueryPhotomap(xp, p, reps)
     Parms   p;
     int     reps;
 {
-	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+	if ( ( XIEPhotomap = 
+		GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 	{
 		reps = 0;
 	}
@@ -110,59 +106,77 @@ int InitQueryPhotoflo(xp, p, reps)
         Bool    merge;
         XieLTriplet start;
 
-        flograph = XieAllocatePhotofloGraph(2);
+	flograph = ( XiePhotoElement * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	lut1 = lut2 = ( unsigned char * ) NULL;
+	PhotofloTestLut1 = PhotofloTestLut2 = ( XieLut ) NULL;
+
+	flo_elements = 2;
+        flograph = XieAllocatePhotofloGraph(flo_elements);
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-                return 0;
+		reps = 0;
+        }
+	else
+	{
+		lutSize = ( ( QueryParms * ) p->ts )->lutSize;
+		lutLevels = ( ( QueryParms * ) p->ts )->lutLevels;
+		lut1 = (unsigned char *)
+			malloc( lutSize * sizeof( unsigned char ) );
+		if ( lut1 == ( unsigned char * ) NULL )
+			reps = 0;
+		else
+		{
+			lut2 = (unsigned char *)
+				malloc( lutSize * sizeof( unsigned char ) );
+			if ( lut2 == ( unsigned char * ) NULL )
+			{
+				reps = 0;
+			}
+		}
+        }
+	
+	if ( reps )
+	{
+		if ( ( PhotofloTestLut1 = GetXIELut( xp, p, lut1, lutSize,
+			lutLevels ) ) == ( XieLut ) NULL )
+		{
+			reps = 0;
+		}
+		else if ( ( PhotofloTestLut2 = GetXIELut( xp, p, lut2, lutSize,
+			lutLevels ) ) == ( XieLut ) NULL )
+		{
+			reps = 0;
+		}
         }
 
-        lutSize = ( ( QueryParms * ) p->ts )->lutSize;
-        lutLevels = ( ( QueryParms * ) p->ts )->lutLevels;
-        lut1 = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
-        if ( lut1 == ( unsigned char * ) NULL )
-                return 0;
-        lut2 = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
-        if ( lut2 == ( unsigned char * ) NULL )
-        {
-                XieFreePhotofloGraph(flograph,2);
-                free( lut1 );
-                return( 0 );
-        }
-        if ( ( PhotofloTestLut1 = GetXIELut( xp, p, lut1, lutSize,
-		lutLevels ) ) == ( XieLut ) NULL )
-        {
-                XieFreePhotofloGraph(flograph,2);
-                free( lut1 );
-                free( lut2 );
-                return 0;
-        }
-        if ( ( PhotofloTestLut2 = GetXIELut( xp, p, lut2, lutSize,
-		lutLevels ) ) == ( XieLut ) NULL )
-        {
-                XieFreePhotofloGraph(flograph,2);
-                free( lut1 );
-                free( lut2 );
-                XieDestroyLUT( xp->d, PhotofloTestLut1 );
-                return 0;
-        }
-        free( lut1 );
-        free( lut2 );
+	if ( reps )
+	{
 
-        XieFloImportLUT(&flograph[0], PhotofloTestLut1 );
+		XieFloImportLUT(&flograph[0], PhotofloTestLut1 );
 
-        merge = False;
-        start[ 0 ] = 0;
-        start[ 1 ] = 0;
-        start[ 2 ] = 0;
+		merge = False;
+		start[ 0 ] = 0;
+		start[ 1 ] = 0;
+		start[ 2 ] = 0;
 
-        XieFloExportLUT(&flograph[1],
-                1,              /* source phototag number */
-                PhotofloTestLut2,
-                merge,
-                start
-        );
-        flo = XieCreatePhotoflo( xp->d, flograph, 2 );
+		XieFloExportLUT(&flograph[1],
+			1,              /* source phototag number */
+			PhotofloTestLut2,
+			merge,
+			start
+		);
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+	}
+
+	if ( !reps )
+		FreeQueryPhotofloStuff( xp, p );
+
+	if ( lut1 )
+		free( lut1 );
+	if ( lut2 )
+		free( lut2 );
 
 	return reps;
 }
@@ -249,7 +263,7 @@ void DoQueryPhotomap(xp, p, reps)
 	XieLTriplet	height;
 	XieLTriplet	levels;
 	XieDataType	data_type;
-	XieDataClass	data_class;
+	XieDataClass	cclass;
 	Bool 	pop, error;
 	XieDecodeTechnique decode;
         XIEimage *image;
@@ -262,27 +276,27 @@ void DoQueryPhotomap(xp, p, reps)
 	for ( i = 0; i < reps && error == False; i++ )
 	{
 		if ( !XieQueryPhotomap( xp->d, XIEPhotomap, &pop, &data_type,
-			&data_class, &decode, width, height, levels ) )
+			&cclass, &decode, width, height, levels ) )
 		{
 			fprintf( stderr, "XieQueryPhotomap failed\n" );
 			fflush( stderr );
 			error = True;
 		}
-		if ( levels[ 0 ] != image->levels )
+		if ( levels[ 0 ] != image->levels[ 0 ] )
 		{
-			fprintf( stderr, "XieQueryPhotomap levels return invalid should be 0x%x got 0x%x\n", image->levels, levels[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap levels return invalid should be 0x%x got 0x%x\n", image->levels[ 0 ], levels[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}
-		if ( width[ 0 ] != image->width )
+		if ( width[ 0 ] != image->width[ 0 ] )
 		{
-			fprintf( stderr, "XieQueryPhotomap width return invalid should be 0x%x got 0x%x\n", image->width, width[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap width return invalid should be 0x%x got 0x%x\n", image->width[ 0 ], width[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}
-		if ( height[ 0 ] != image->height )
+		if ( height[ 0 ] != image->height[ 0 ] )
 		{
-			fprintf( stderr, "XieQueryPhotomap height return invalid should be 0x%x got 0x%x\n", image->height, height[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap height return invalid should be 0x%x got 0x%x\n", image->height[ 0 ], height[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}
@@ -313,33 +327,89 @@ void DoQueryPhotoflo(xp, p, reps)
 	}
 }
 
-int EndQueryTechniques(xp, p)
+int 
+EndQueryTechniques(xp, p)
     XParms  xp;
     Parms   p;
 {
 }
 
-int EndQueryColorList(xp, p)
+int 
+EndQueryColorList(xp, p)
     XParms  xp;
     Parms   p;
 {
-	XieDestroyColorList( xp->d, XIEColorList );
+	FreeQueryColorListStuff( xp, p );
 }
 
-int EndQueryPhotomap(xp, p)
-    XParms  xp;
-    Parms   p;
+int
+FreeQueryColorListStuff( xp, p )
+XParms	xp;
+Parms	p;
 {
-	CloseXIEPhotomap(xp, p, XIEPhotomap);
+	if ( XIEColorList )
+	{
+		XieDestroyColorList( xp->d, XIEColorList );
+		XIEColorList = ( XieColorList ) NULL;
+	}
 }
 
-int EndQueryPhotoflo(xp, p)
+int 
+EndQueryPhotomap(xp, p)
     XParms  xp;
     Parms   p;
 {
-	XieDestroyPhotoflo( xp->d, flo );
-        XieFreePhotofloGraph(flograph,2);
-        XieDestroyLUT( xp->d, PhotofloTestLut1 );
-        XieDestroyLUT( xp->d, PhotofloTestLut2 );
+	FreeQueryPhotomapStuff( xp, p );
 }
+
+int
+FreeQueryPhotomapStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+		XIEPhotomap = ( XiePhotomap ) NULL;
+	}
+}
+
+int 
+EndQueryPhotoflo(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+	FreeQueryPhotofloStuff( xp, p );
+}
+
+int
+FreeQueryPhotofloStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( PhotofloTestLut1 )
+	{
+		XieDestroyLUT( xp->d, PhotofloTestLut1 );
+		PhotofloTestLut1 = ( XieLut ) NULL;
+	}
+
+	if ( PhotofloTestLut2 )
+	{
+		XieDestroyLUT( xp->d, PhotofloTestLut2 );
+		PhotofloTestLut2 = ( XieLut ) NULL;
+	}
+
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+}
+
 

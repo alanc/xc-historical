@@ -1,6 +1,6 @@
-/* $XConsortium: exportcl.c,v 1.4 93/07/27 14:38:12 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.2 93/10/26 10:06:18 rws Exp $ */
 
-/**** module do_exportclient.c ****/
+/**** module exportcl.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_exportclient.c -- export client flo element tests 
+	exportcl.c -- export client flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -60,14 +60,223 @@ static XieRectangle *rects;
 static int rectsSize;
 extern unsigned int dataCheckSum1;
 
+static XIEimage	*image;
+static int flo_notify;
+static XiePhotoElement *flograph;
+static XiePhotoflo flo;
+static XieHistogramData *histos;
+static int flo_elements;
+static Bool useROI;
+static int histoSrc;
+static XieClipScaleParam *clipParms;
+
+extern Window monitorWindow;
+extern Bool dontClear;
+static char *data;
+
 int InitExportClientPhoto(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	p->data = ( char * ) NULL;
-	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+        char *encode_params=NULL;
+	char *decode_params=NULL;
+	int *size;
+	extern char *imagepath;
+	unsigned char pixel_stride[ 3 ];
+	unsigned char scanline_pad[ 3 ];
+	char buf[ 64 ];
+
+	flograph = ( XiePhotoElement * ) NULL;
+	XIEPhotomap = ( XiePhotomap ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+
+	image = p->finfo.image1;
+	if ( !image )
+		return ( 0 );
+
+	sprintf( buf, "%s/%s", imagepath, image->fname );
+        size = &image->fsize;
+        *size = GetFileSize( buf );
+	if ( *size == 0 )
+		return( 0 );
+
+	data = ( char * ) malloc( *size );
+	if ( data == ( char * ) NULL )
+		return( 0 );
+	flograph = XieAllocatePhotofloGraph(2);	
+	if ( flograph == ( XiePhotoElement * ) NULL )
+	{
+		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
 		reps = 0;
+	}
+	else
+	{
+		switch( image->decode )
+		{
+		case xieValDecodeJPEGBaseline:
+			if ( ( XIEPhotomap = GetXIETriplePhotomap( xp, p, 1 ) ) == 
+				( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+			else
+			{
+				encode_params = ( char * ) XieTecEncodeJPEGBaseline(
+					image->interleave,
+					image->band_order,
+					( char * ) NULL,
+					0,
+					( char * ) NULL,
+					0,
+					( char * ) NULL,
+					0 
+				);
+			}	
+			break;
+		case xieValDecodeUncompressedTriple:
+			if ( ( XIEPhotomap = GetXIETriplePhotomap( xp, p, 1 ) ) == 
+				( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+			else
+			{
+				pixel_stride[ 0 ] = image->pixel_stride[ 0 ];
+				pixel_stride[ 1 ] = image->pixel_stride[ 1 ];
+				pixel_stride[ 2 ] = image->pixel_stride[ 2 ];
+				scanline_pad[ 0 ] = image->scanline_pad[ 0 ];
+				scanline_pad[ 1 ] = image->scanline_pad[ 1 ];
+				scanline_pad[ 2 ] = image->scanline_pad[ 2 ];
+
+	        		encode_params = ( char * ) XieTecEncodeUncompressedTriple(
+					image->fill_order,
+					image->pixel_order,		
+					image->band_order,
+					xieValBandByPixel,	
+					pixel_stride,
+					scanline_pad
+				);
+			}
+			break;
+		case xieValDecodeUncompressedSingle:
+			if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
+				( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+			else
+			{
+	        		encode_params = ( char * ) XieTecEncodeUncompressedSingle(
+					image->fill_order,
+					image->pixel_order,		
+					image->pixel_stride[ 0 ],
+					image->scanline_pad[ 0 ]
+				);
+			}
+			break;
+		case xieValDecodeG31D:
+			if ( ( XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1,
+				False ) ) == ( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+			else
+			{
+	        		encode_params = ( char * ) XieTecEncodeG31D(
+					False,
+					False,		
+					xieValLSFirst
+				);
+			}
+			break;
+		case xieValDecodeG32D:
+			if ( ( XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1,
+				False ) ) == ( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+			else
+			{
+	        		encode_params = ( char * ) XieTecEncodeG32D(
+					False,
+					False,
+					False,		
+					xieValLSFirst,
+					1
+				);
+			}
+			break;
+		case xieValDecodeG42D:
+			if ( ( XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1,
+				False ) ) == ( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+			else
+			{
+	        		encode_params = ( char * ) XieTecEncodeG42D(
+					False,
+					xieValLSFirst
+				);
+			}
+			break;
+		case xieValDecodeTIFF2:
+			if ( ( XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1,
+				False ) ) == ( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+			else
+			{
+	        		encode_params = ( char * ) XieTecEncodeTIFF2(
+					xieValLSFirst,
+					False		
+				);
+			}
+			break;
+		case xieValDecodeTIFFPackBits:
+			if ( ( XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1,
+				False ) ) == ( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+			else
+			{
+	        		encode_params = ( char * ) XieTecEncodeTIFFPackBits(
+					xieValLSFirst
+				);
+			}
+			break;
+		default:
+			reps = 0;
+			break;
+		}
+
+		if ( reps )
+		{
+			XieFloImportPhotomap(&flograph[0], XIEPhotomap, False );
+			XieFloExportClientPhoto(&flograph[1],
+				1,              /* source phototag number */
+				xieValNewData,
+				image->decode,
+				encode_params
+			);
+
+			flo = XieCreatePhotoflo( xp->d, flograph, 2 );
+			flo_notify = True;
+		}
+	}
+	if ( encode_params )
+	{
+		if ( image->decode == xieValDecodeJPEGBaseline )
+			XieFreeEncodeJPEGBaseline( 
+			( XieEncodeJPEGBaselineParam * ) encode_params );
+		else
+			free( encode_params );	
+	}
+	if ( !reps )
+		FreeExportClientPhotoStuff( xp, p );
 	return( reps );
 }
 
@@ -77,19 +286,21 @@ int InitExportClientLUT(xp, p, reps)
     int     reps;
 {
 	int	i;
+        XieOrientation band_order = xieValLSFirst;
+        XieLTriplet     start, length, levels;
 
+	XIELut = ( XieLut ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+
+	histos = ( XieHistogramData * ) malloc( sizeof( XieHistogramData ) *
+		1 << xp->vinfo.depth );
 	lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
-	lut = (unsigned char *)malloc( lutSize );
-	p->data = (char *)malloc( lutSize );
-	if ( lut == ( unsigned char * ) NULL || p->data == ( char * ) NULL )
+	lut = (unsigned char *) malloc( lutSize );
+	data = (char *) malloc( lutSize );
+	if ( lut == ( unsigned char * ) NULL || data == ( char * ) NULL ||
+		histos == ( XieHistogramData * ) NULL )
 	{
-		if ( lut )
-			free( lut );
-		else if ( p->data )
-		{
-			free( p->data );
-			p->data = ( char * ) NULL;
-		}
 		reps = 0;
 	}
 	else
@@ -104,6 +315,48 @@ int InitExportClientLUT(xp, p, reps)
 			reps = 0;
 		}	
 	}
+	if ( reps )
+	{
+		flo_elements = 2;
+		flograph = XieAllocatePhotofloGraph( flo_elements );	
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+	}
+	if ( reps )
+	{
+		XieFloImportLUT(&flograph[0], XIELut);
+
+		length[ 0 ] = 1 << xp->vinfo.depth;
+		length[ 1 ] = 0;
+		length[ 2 ] = 0;
+
+		start[ 0 ] = 0;
+		start[ 1 ] = 0;
+		start[ 2 ] = 0;
+
+		XieFloExportClientLUT(&flograph[1],
+			1,              /* source phototag number */
+			band_order,
+			xieValNewData,
+			start,
+			length
+		);
+
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+		flo_notify = True;
+	}
+	if ( !reps )
+	{
+		FreeExportClientLUTStuff( xp, p );
+	}
+	else
+	{
+		XMapRaised( xp->d, monitorWindow );
+		XSync( xp->d, 0 );
+	}
 	return( reps );
 }
 
@@ -114,428 +367,537 @@ int InitExportClientROI(xp, p, reps)
 {
 	int	i;
 
-	rectsSize = 10;
+        XIERoi = ( XieRoi ) NULL;
+        flograph = ( XiePhotoElement * ) NULL;
+        flo = ( XiePhotoflo ) NULL;
+
+	rectsSize = (( ExportClParms * ) p->ts)->numROIs;
 	rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
-	p->data = (char *)malloc( rectsSize * sizeof( XieRectangle ) );
-	if ( rects == ( XieRectangle * ) NULL || p->data == ( char * ) NULL )
+	data = (char *) NULL;
+	if ( rects == ( XieRectangle * ) NULL )
 	{
 		reps = 0;
 	}
 	else
 	{
-		/* who cares what the data is */
-
 		for ( i = 0; i < rectsSize; i++ )
 		{
-			rects[ i ].x = i;
-			rects[ i ].y = i;
-			rects[ i ].width = i + 10;
-			rects[ i ].height = i + 10;
+			rects[ i ].x = i * 10;
+			rects[ i ].y = i * 10; 
+			rects[ i ].width = i * 10;
+			rects[ i ].height = i * 10;
+			XFillRectangle( xp->d, xp->w, xp->fggc,
+				rects[ i ].x,
+				rects[ i ].y,
+				rects[ i ].width,
+				rects[ i ].height
+			 );
 		}
 		if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) ==
 			( XieRoi ) NULL )
 		{
 			reps = 0;
 		}
+		else
+		{
+			flo_elements = 2;
+			flograph = XieAllocatePhotofloGraph( flo_elements );	
+			if ( flograph == ( XiePhotoElement * ) NULL )
+			{
+				fprintf( stderr, 
+					"XieAllocatePhotofloGraph failed\n" );
+				reps = 0;
+			}
+			else
+			{
+				XieFloImportROI(&flograph[0], XIERoi);
+				XieFloExportClientROI(&flograph[1],
+					1,       /* source phototag number */
+					xieValNewData
+				);
+				flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+				flo_notify = True;
+			}
+		}
 	}
 	if ( !reps )
 	{
-		if ( rects )
-			free( rects );
-		if ( p->data )
-		{
-			free( p->data );
-			p->data = ( char * ) NULL;
-		}
+		FreeExportClientROIStuff( xp, p );
 	}
-
+	else
+		dontClear = True;
 	return( reps );
 }
 
-void DoExportClientPhotoImmediate(xp, p, reps)
+int 
+InitExportClientHistogram(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	XIEimage	*image;
-    	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XiePhotoElement *flograph;
-	unsigned int checksum;
+	XieProcessDomain domain;
+	int	idx, src;
+        XieRectangle    rect;
+	ExportClParms	*parms;
+	XieLTriplet levels;
+	XieConstrainTechnique tech = xieValConstrainClipScale;
+	XieConstant in_low,in_high;
+	XieLTriplet out_low,out_high;
+	XIEimage *image;
+	int constrainflag = 0;
+
+	parms = ( ExportClParms * )p->ts;
+	clipParms = ( XieClipScaleParam * ) NULL;
+	XIERoi = ( XieRoi ) NULL;
+	XIEPhotomap = ( XiePhotomap ) NULL;
+	histos = ( XieHistogramData * ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	if ( parms )	
+        	useROI = parms->useROI;
+	else
+		useROI = False;
+
+	flo_elements = 3;
 
 	image = p->finfo.image1;
-        if ( !image )
-                return;
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flograph = XieAllocatePhotofloGraph(2);
-	if ( flograph == ( XiePhotoElement * ) NULL )
+	if ( !image )
 	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
+		reps = 0;
 	}
-	XieFloImportPhotomap(&flograph[0], XIEPhotomap, False );
 
-	XieFloExportClientPhoto(&flograph[1],
-		1,              /* source phototag number */
-		True,
-		encode_tech,
-		encode_params
-	);
+	if ( reps && xp->vinfo.depth != image->depth[ 0 ] )
+        {
+		flo_elements++;
+                constrainflag = 1;
+                if ( !SetupClipScale( xp, p, image, levels, in_low,
+                        in_high, out_low, out_high, &clipParms ) )
+                {
+                        reps = 0;
+                }
+        }
 
-	flo_notify = True;
-	flo_id = 1;
-    	for (i = 0; i != reps; i++) {
+	if ( reps && useROI == True )
+	{
+                rect.x = parms->x;
+                rect.y = parms->y;
+                rect.width = parms->width;
+                rect.height = parms->height;
 
-		XieExecuteImmediate(xp->d, photospace,
-			flo_id,
-			flo_notify,
-			flograph,       /* photoflo specification */
-			2               /* number of elements */
-		);
-		XSync( xp->d, 0 );
-		ReadNotifyExportData( xp, p, photospace, flo_id, 2, 
-			image->fsize );
-		WaitForFloToFinish( xp, flo_id );
-		checksum = CheckSum( p->data, image->fsize );
-		if ( checksum != image->chksum )
-		{
-			fprintf( stderr, "Photomap not read correctly by client\n" );
-			break;
+                if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) ==
+                        ( XieRoi ) NULL )
+                {
+			reps = 0;
 		}
-		flo_id++;
-    	}
-	XieFreePhotofloGraph(flograph,2);
-	XieDestroyPhotospace( xp->d, photospace );
+		flo_elements++;
+	}
+
+	if ( reps )
+	{
+		histos = ( XieHistogramData * ) malloc( sizeof( XieHistogramData ) * ( 1 << image->depth[ 0 ] ) );
+		if ( histos == ( XieHistogramData * ) NULL )
+		{
+			reps = 0;
+		}
+	}
+	if ( reps )
+	{
+		flograph = XieAllocatePhotofloGraph(flo_elements);	
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+		else if ( ( XIEPhotomap = 
+			GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+		{
+			reps = 0;
+		}
+		else
+		{
+			domain.offset_x = 0;
+			domain.offset_y = 0;
+			domain.phototag = 0;
+
+			idx = 0;
+			if ( useROI == True )
+			{
+				XieFloImportROI(&flograph[idx], XIERoi);
+				idx++;
+				domain.phototag = idx;
+			}
+			
+			XieFloImportPhotomap(&flograph[idx], XIEPhotomap, False );
+			idx++;
+			src = idx;
+
+			XieFloExportClientHistogram(&flograph[idx],
+				idx,              /* source phototag number */
+				&domain,
+				xieValNewData
+			);
+			idx++;
+			histoSrc = idx;
+	
+			if ( constrainflag )
+			{
+				XieFloConstrain(&flograph[idx],
+                                	src,
+					levels,
+					tech,
+					(char *)clipParms
+				); idx++;
+				src = idx;
+			}	
+
+			XieFloExportDrawable(&flograph[idx],
+				src,     	/* source phototag number */
+				xp->w,
+				xp->fggc,
+				0,       /* x offset in window */
+				0        /* y offset in window */
+			);
+			idx++;
+
+			flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+			flo_notify = True;
+		}
+	}
+	if ( reps )
+	{
+		XMapRaised( xp->d, monitorWindow );
+		XSync( xp->d, 0 );
+	}
+	else 
+	{
+		FreeExportClientHistogramStuff( xp, p );
+	}
+	return( reps );
 }
 
-void DoExportClientPhotoStored(xp, p, reps)
+void DoExportClientPhotoCSum(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	XIEimage	*image;
-    	int     i;
-        XiePhotospace photospace;
-	int	flo_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
+    	int     i, done;
 	unsigned int checksum;
 
-	image = p->finfo.image1;
-        if ( !image )
-                return;
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportPhotomap(&flograph[0], XIEPhotomap, False );
-
-        XieFloExportClientPhoto(&flograph[1],
-		1,              /* source phototag number */
-		True,
-		encode_tech,
-		encode_params
-	);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, 2 );
-
-	/* crank it */
-
-	photospace = 0;
-	flo_notify = True;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
-		ReadNotifyExportData( xp, p, photospace, flo, 2,
-			image->fsize );
-		WaitForFloToFinish( xp, flo );
-		checksum = CheckSum( p->data, image->fsize );
+		if ( image->bandclass == xieValTripleBand && image->interleave == xieValBandByPlane )
+		{
+			ReadNotifyExportTripleData( xp, p, 0, flo, 2, 1, 
+				image->fsize, &data, &done );
+		}
+		else
+		{
+			ReadNotifyExportData( xp, p, 0, flo, 2, 1, 
+				image->fsize, &data, &done );
+		}
+		WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False );	
+		checksum = CheckSum( data, image->fsize );
 		if ( checksum != image->chksum )
 		{
-			fprintf( stderr, "Photomap not read correctly by client\n" );
+			fprintf( stderr, 
+				"Photomap not read correctly by client\n" );
 			break;
 		}
     	}
-
-	/* destroy the photoflo */
-
-	XieDestroyPhotoflo( xp->d, flo );
-	XieFreePhotofloGraph(flograph,2);	
 }
 
-void DoExportClientLUTImmediate(xp, p, reps)
+void DoExportClientPhoto(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-    	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-	XieOrientation band_order = xieValLSFirst;
-        XieLTriplet     start, length;
-	XiePhotoElement *flograph;
+    	int     i, done;
+	unsigned int checksum;
 
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-     	length[ 0 ] = 1 << xp->vinfo.depth;
-	length[ 1 ] = 0;
-	length[ 2 ] = 0;
-
-	XieFloImportLUT(&flograph[0], XIELut);
-
-	start[ 0 ] = 0;
-	start[ 1 ] = 0;
-	start[ 2 ] = 0;
-
-	XieFloExportClientLUT(&flograph[1],
-		1,              /* source phototag number */
-		band_order,
-		True,
-		start,
-		length
-	);
-
-	flo_notify = True;	
     	for (i = 0; i != reps; i++) {
-
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		2               /* number of elements */
-       		);
-                XSync( xp->d, 0 );
-                ReadNotifyExportData( xp, p, photospace, flo_id, 2,
-                        lutSize * sizeof( unsigned char ) );
-                WaitForFloToFinish( xp, flo_id );
-		if ( memcmp( lut, p->data, lutSize * sizeof( unsigned char ) ) )
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
+		XSync( xp->d, 0 );
+		if ( image->bandclass == xieValTripleBand && 
+			image->interleave == xieValBandByPlane )
 		{
-			fprintf( stderr, "ExportClientLUT failed\n" );
-			break;
+			ReadNotifyExportTripleData( xp, p, 0, flo, 2, 1, 
+				image->fsize, &data, &done );
 		}
-		flo_id++;
+		else
+		{
+			ReadNotifyExportData( xp, p, 0, flo, 2, 1, 
+				image->fsize, &data, &done );
+		}
+		WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False );	
     	}
-	XieDestroyPhotospace( xp->d, photospace );
-	XieFreePhotofloGraph(flograph,2);	
 }
 
-void DoExportClientLUTStored(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoExportClientHistogram(xp, p, reps)
+XParms  xp;
+Parms   p;
+int     reps;
 {
-    	int     i;
-	XiePhotospace photospace;
-	int	flo_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-        XieOrientation band_order = xieValLSFirst;
-        XieLTriplet     start, length, levels;
+    	int     i, done, numHistos;
+	unsigned int checksum;
 
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
+    	for (i = 0; i != reps; i++) {
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
+		XSync( xp->d, 0 );
+		numHistos = ReadNotifyExportData( xp, p, 0, flo, histoSrc, 
+			sizeof( XieHistogramData ), 0, ( char ** ) &histos, 
+			&done ) / sizeof( XieHistogramData );
+		WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False );	
+		DrawHistogram( xp, monitorWindow, ( XieHistogramData * ) histos,
+			numHistos, 1<< xp->vinfo.depth ); 
+    	}
+}
 
-	XieFloImportLUT(&flograph[0], XIELut);
+void 
+DoExportClientLUT(xp, p, reps)
+XParms  xp;
+Parms   p;
+int     reps;
+{
+    	int     i, j, done;
+	int	maxcount;
 
-	length[ 0 ] = 1 << xp->vinfo.depth;
-	length[ 1 ] = 0;
-	length[ 2 ] = 0;
-
-	start[ 0 ] = 0;
-	start[ 1 ] = 0;
-	start[ 2 ] = 0;
-
-	XieFloExportClientLUT(&flograph[1],
-		1,              /* source phototag number */
-		band_order,
-		True,
-		start,
-		length
-	);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, 2 );
-
-	/* crank it */
-
-	flo_notify = True;
-	photospace = 0;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
                 XSync( xp->d, 0 );
-                ReadNotifyExportData( xp, p, photospace, flo, 2,
-                        lutSize * sizeof( unsigned char ) );
-                WaitForFloToFinish( xp, flo );
-                if ( memcmp( lut, p->data, lutSize * sizeof( unsigned char ) ) )
+                ReadNotifyExportData( xp, p, 0, flo, 2,
+                        sizeof( unsigned char ), lutSize, 
+			&data, &done );
+               	WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False ); 
+		maxcount = 0;
+		for ( j = 0; j < lutSize; j++ )
+		{
+			histos[ j ].value = j;
+			histos[ j ].count = (( unsigned char * ) data)[ j ];
+		}
+                if ( memcmp( lut, data, lutSize * sizeof( unsigned char ) ) )
                 {
                         fprintf( stderr, "ExportClientLUT failed\n" );
                         break;
                 }
+		DrawHistogram( xp, monitorWindow, ( XieHistogramData * ) histos,
+			lutSize, 1 << xp->vinfo.depth ); 
     	}
-
-	/* destroy the photoflo */
-
-	XieDestroyPhotoflo( xp->d, flo );
-	XieFreePhotofloGraph(flograph,2);	
 }
 
-void DoExportClientROIImmediate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoExportClientROI(xp, p, reps)
+XParms  xp;
+Parms   p;
+int     reps;
 {
-    	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-	XiePhotoElement *flograph;
+    	int     i, j, done, n;
+	GC	gc;
 
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
+	gc = xp->fggc;
+    	for (i = 0; i != reps; i++) 
 	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportROI(&flograph[0], XIERoi );
-
-	XieFloExportClientROI(&flograph[1],
-		1,              /* source phototag number */
-		True 
-	);
-
-	flo_notify = True;	
-    	for (i = 0; i != reps; i++) {
-
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		2               /* number of elements */
-       		);
-		
-	        XSync( xp->d, 0 );
-                ReadNotifyExportData( xp, p, photospace, flo_id, 2,
-                        rectsSize * sizeof( XieRectangle ) );
-                WaitForFloToFinish( xp, flo_id );
-		if ( memcmp( rects, p->data, rectsSize * sizeof( XieRectangle ) ) )
-		{
-			fprintf( stderr, "ExportClientROI failed\n" );
-			break;
-		}
-		flo_id++;
-    	}
-	XieFreePhotofloGraph(flograph,2);	
-	XieDestroyPhotospace( xp->d, photospace );
-}
-
-void DoExportClientROIStored(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i;
-	XiePhotospace	photospace;
-	int	flo_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-        XieFloImportROI(&flograph[0], XIERoi);
-
-	XieFloExportClientROI(&flograph[1],
-		1,              /* source phototag number */
-		True
-	);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, 2 );
-
-	/* crank it */
-
-	flo_notify = True;
-	photospace = 0;
-    	for (i = 0; i != reps; i++) {
+		done = 0;
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
                 XSync( xp->d, 0 );
-                ReadNotifyExportData( xp, p, photospace, flo, 2,
-                        rectsSize * sizeof( XieRectangle ) );
-                WaitForFloToFinish( xp, flo );
-                if ( memcmp( rects, p->data, rectsSize * sizeof( XieRectangle )
-) )
-                {
-                        fprintf( stderr, "ExportClientROI failed\n" );
-                        break;
-                }
+               	n = ReadNotifyExportData( xp, p, 0, flo, 2, 
+                       	sizeof( XieRectangle ), 0, &data, &done );
+	
+		if ( n == 0 )
+			continue;
+
+		for ( j = 0; j < n / sizeof( XieRectangle ); j++ )	
+		{
+			XDrawRectangle( xp->d, xp->w, gc,
+				( (( XieRectangle * )data)[ j ] ).x,
+				( (( XieRectangle * )data)[ j ] ).y,
+				( (( XieRectangle * )data)[ j ] ).width,
+				( (( XieRectangle * )data)[ j ] ).height );
+			if ( gc == xp->fggc )
+				gc = xp->bggc;
+			else
+				gc = xp->fggc;
+		}
+               	WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False ); 
     	}
-
-	/* destroy the photoflo */
-
-	XieDestroyPhotoflo( xp->d, flo );
-	XieFreePhotofloGraph(flograph,2);	
 }
 
 void EndExportClientLUT(xp, p)
-    XParms  xp;
-    Parms   p;
+XParms  xp;
+Parms   p;
 {
-	XieDestroyLUT( xp->d, XIELut );
-	free( lut );
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
+	XUnmapWindow( xp->d, monitorWindow );
+	FreeExportClientLUTStuff( xp, p );
 }
 
-void EndExportClientPhoto(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndExportClientPhoto(xp, p)
+XParms  xp;
+Parms   p;
 {
-	XieDestroyPhotomap(xp->d, XIEPhotomap);
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
+	FreeExportClientPhotoStuff( xp, p );
+}
+
+void 
+EndExportClientHistogram(xp, p)
+XParms  xp;
+Parms   p;
+{
+	XUnmapWindow( xp->d, monitorWindow );
+	FreeExportClientHistogramStuff( xp, p );
 }
 
 void EndExportClientROI(xp, p)
     XParms  xp;
     Parms   p;
 {
-	XieDestroyROI(xp->d, XIERoi );
-	free( rects );
-	if ( p->data )
+	dontClear = False;
+	FreeExportClientROIStuff( xp, p );
+}
+
+int
+FreeExportClientPhotoStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( data )
 	{
-		free( p->data );
-		p->data = ( char * ) NULL;
+		free( data );
+		data = ( char * ) NULL;
+	}
+
+	if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+
+	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+	{
+                XieDestroyPhotomap( xp->d, XIEPhotomap );
+                XIEPhotomap = ( XiePhotomap ) NULL;
 	}
 }
+
+int
+FreeExportClientROIStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+        if ( data )
+        {
+                free( data );
+                data = ( char * ) NULL;
+        }
+
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+
+        if ( XIERoi )
+        {
+                XieDestroyROI( xp->d, XIERoi );
+                XIERoi = ( XieRoi ) NULL;
+        }
+
+	if ( rects )
+	{
+		free( rects );
+		rects = ( XieRectangle * ) NULL;
+	}
+}
+
+int
+FreeExportClientLUTStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( data )
+	{
+		free( data );
+		data = ( char * ) NULL;
+	}
+
+	if ( histos )
+	{
+		free( histos );
+		histos = ( XieHistogramData * ) NULL;
+	}
+
+	if ( lut )
+	{
+		free( lut );
+		lut = ( unsigned char * ) NULL;
+	}
+
+	if ( XIELut )
+	{
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
+	}
+
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+}
+
+int
+FreeExportClientHistogramStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+        if ( clipParms )
+        {
+                free( clipParms );
+                clipParms = ( XieClipScaleParam * ) NULL;
+        }
+
+        if ( XIERoi )
+        {
+                XieDestroyROI( xp->d, XIERoi );
+                XIERoi = ( XieRoi ) NULL;
+        }
+	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+		XIEPhotomap = ( XiePhotomap ) NULL;
+	}
+	if ( histos )
+	{
+		free( histos );
+		histos = ( XieHistogramData * ) NULL;
+	}
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+}
+

@@ -1,4 +1,4 @@
-/* $XConsortium: geometry.c,v 1.3 93/07/20 20:51:09 rws Exp $ */
+/* $XConsortium: geometry.c,v 1.3 93/10/26 10:06:11 rws Exp $ */
 
 /**** module geometry.c ****/
 /******************************************************************************
@@ -56,53 +56,79 @@ terms and conditions:
 #endif
 
 static XiePhotomap XIEPhotomap;
+static XieLut	XIELut;
 
 static XieLTriplet levels;
-static XieConstrainTechnique tech = xieValConstrainClipScale;
-static XieClipScaleParam *parms;
-static XieConstant in_low,in_high;
-static XieLTriplet out_low,out_high;
 static int constrainflag = 0;
 static int drawableplaneflag = 0;
 
 static XieDecodeG42DParam *G42Ddecode_params=NULL;
 static XieDecodeG32DParam *G32Ddecode_params=NULL;
 static XieDecodeG31DParam *G31Ddecode_params=NULL;
+static XieDecodeTIFFPackBitsParam *TIFFPackBitsdecode_params=NULL;
+static XieDecodeTIFF2Param *TIFF2decode_params=NULL;
+
 static XiePhotoElement *flograph;
-static XiePhotospace photospace;
+static XiePhotoflo flo;
 static int flo_elements;
+static int flo_notify;
+static int size;
+static XIEimage *image;
 
 int InitGeometry(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	XIEimage	*image;
+	int     band_mask = 1;
+	int	idx;
+	float	coeffs[ 6 ];
+	static XieConstant constant = { 0.0, 0.0, 0.0 };
+	XieProcessDomain domain;
+	XieGeometryTechnique geo_tech;
+	char	*geo_tech_params = NULL;
 
+	XIELut = ( XieLut ) NULL;
+	XIEPhotomap = ( XiePhotomap ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	
 	image = p->finfo.image1;
 	if ( !image )
 		return 0;
-	p->data = ( char * ) NULL;
-	parms = NULL;
+
+        if ( TechniqueSupported( xp, xieValGeometry,
+                ( ( GeometryParms * ) p->ts )->geoTech ) == False )
+		return 0;
+
 	constrainflag = drawableplaneflag = 0;
 	if ( xp->vinfo.depth == 1 && !IsFaxImage( image->decode ) )
 	{
 		constrainflag = 1;
-		if ( !SetupMonoClipScale( image, levels, in_low, 
-			in_high, out_low, out_high, &parms ) )
-		{
-			reps = 0;
-		}
+                if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
+                        xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                {
+                        reps = 0;
+                }
 	}	
 	else if ( xp->vinfo.depth != 1 && IsFaxImage( image->decode ) 
 		&& ( ( GeometryParms * ) p->ts )->geoTech == xieValGeomAntialias )
 	{
 		constrainflag = 1;
-		if ( !SetupFaxClipScale( xp, p, levels, in_low, 
-			in_high, out_low, out_high, &parms ) )
-		{
-			reps = 0;
-		}
+                if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
+                        xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                {
+                        reps = 0;
+                }
+	}
+	else if ( xp->vinfo.depth != image->depth[ 0 ] )
+	{
+		constrainflag = 1;
+                if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
+                        xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                {
+                        reps = 0;
+                }
 	}
 	if ( xp->vinfo.depth != 1 && IsFaxImage( image->decode ) 
 		&& ( ( GeometryParms * ) p->ts )->geoTech != xieValGeomAntialias )
@@ -110,21 +136,79 @@ int InitGeometry(xp, p, reps)
 
 	if ( reps )
 	{
-		if ( image->decode == xieValDecodeG42D )
-			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
-		else if ( image->decode == xieValDecodeG32D )
-			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
-		else if ( image->decode == xieValDecodeG31D )
-			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
+		if ( IsFaxImage( image->decode ) )
+			GetXIEFAXPhotomap( xp, p, 1, False );
 		else
-			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
+			XIEPhotomap = GetXIEPhotomap( xp, p, 1, False );
 		if ( XIEPhotomap == ( XiePhotomap ) NULL )
 		{
 			reps = 0;
 		}
 	}
-	if ( !reps && parms )
-		free( parms );
+	if ( reps )
+	{
+		if ( constrainflag )
+			flo_elements = 5;
+		else
+			flo_elements = 3;
+		flograph = XieAllocatePhotofloGraph(flo_elements);	
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+
+		idx = 0;
+		XieFloImportPhotomap(&flograph[idx], XIEPhotomap, False); idx++;
+
+		geo_tech = ( ( GeometryParms * ) p->ts )->geoTech;
+
+		if ( !SetCoefficients( xp, p, p->ts, coeffs ) )
+			reps = 0;
+	}
+	if ( reps )
+	{
+		XieFloGeometry(&flograph[idx], 
+			idx,
+			( ( GeometryParms * ) p->ts )->geoWidth,
+			( ( GeometryParms * ) p->ts )->geoHeight,
+			coeffs,
+			constant,
+			band_mask,
+			geo_tech,
+			geo_tech_params
+		); idx++;
+
+		if ( constrainflag )
+		{
+	                XieFloImportLUT(&flograph[idx], XIELut );
+			idx++;
+
+			domain.phototag = 0;
+			domain.offset_x = 0;
+			domain.offset_y = 0;
+			XieFloPoint(&flograph[idx],
+				idx-1,
+				&domain,
+				idx,
+				0x7
+			);
+			idx++;
+		}	
+
+		XieFloExportDrawable(&flograph[idx],
+			idx, 		/* source phototag number */
+			xp->w,
+			xp->fggc,
+			0,       /* x offset in window */
+			0        /* y offset in window */
+		); idx++;
+
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+		flo_notify = True;	
+	}
+	if ( !reps )
+		FreeGeometryStuff( xp, p );
 	return( reps );
 }
 
@@ -134,77 +218,12 @@ void DoGeometry(xp, p, reps)
     int     reps;
 {
     	int     i;
-	int     band_mask = 1;
-	int	flo_notify, flo_id;
-	int	idx;
-	float	coeffs[ 6 ];
-	static XieConstant constant = { 0.0, 0.0, 0.0 };
-	XieGeometryTechnique	geo_tech;
-	char	*geo_tech_params = NULL;
 
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-	flo_id = 1;
-	if ( constrainflag )
-		flo_elements = 4;
-	else
-		flo_elements = 3;
-	flograph = XieAllocatePhotofloGraph(flo_elements);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	idx = 0;
-	XieFloImportPhotomap(&flograph[idx], XIEPhotomap, False); idx++;
-
-	geo_tech = ( ( GeometryParms * ) p->ts )->geoTech;
-
-	SetCoefficients( xp, p, ( ( GeometryParms * ) p->ts )->geoType, coeffs );
-
-	XieFloGeometry(&flograph[idx], 
-		idx,
-		( ( GeometryParms * ) p->ts )->geoWidth,
-		( ( GeometryParms * ) p->ts )->geoHeight,
-		coeffs,
-		constant,
-		band_mask,
-		geo_tech,
-		geo_tech_params
-	); idx++;
-
-	if ( constrainflag )
-	{
-		XieFloConstrain(&flograph[idx],
-			idx,
-			levels,
-			tech,
-			(char *)parms
-		); idx++;		
-	}	
-
-	XieFloExportDrawable(&flograph[idx],
-		idx, 		/* source phototag number */
-		xp->w,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	); idx++;
-
-	flo_notify = True;	
     	for (i = 0; i != reps; i++) {
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		flo_elements    /* number of elements */
-       		);
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
-		WaitForFloToFinish( xp, flo_id );
-		flo_id++;
+		WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False );
     	}
-	XieDestroyPhotospace( xp->d, photospace );
-	XieFreePhotofloGraph(flograph,flo_elements);	
 }
 
 int InitGeometryFAX(xp, p, reps)
@@ -212,95 +231,204 @@ int InitGeometryFAX(xp, p, reps)
     Parms   p;
     int     reps;
 {
-	XIEimage *image;
+	int     band_mask = 1;
+	int	idx;
+	Bool radiometric;
+	float	coeffs[ 6 ];
+	static XieConstant constant = { 0.0, 0.0, 0.0 };
+        XieLTriplet width, height, mylevels;
+	XieGeometryTechnique geo_tech;
+	char	*geo_tech_params = NULL;
+	XieProcessDomain domain;
+	char	*decode_tech;
+
+        if ( TechniqueSupported( xp, xieValGeometry,
+                ( ( GeometryParms * ) p->ts )->geoTech ) == False )
+		return 0;
 
 	image = p->finfo.image1;
 	if ( !image )
 		return( 0 );
-	G42Ddecode_params=NULL;
-	G32Ddecode_params=NULL;
-	G31Ddecode_params=NULL;
-	parms = NULL;
-	p->data = ( char * ) NULL;
-	constrainflag = drawableplaneflag = 0;
-	if ( xp->vinfo.depth == 1 && !IsFaxImage( image->decode ) )
-	{
-		constrainflag = 1;
-		if ( !SetupMonoClipScale( image, levels, in_low, 
-			in_high, out_low, out_high, &parms ) )
-		{
-			reps = 0;
-		}
-	}	
-	else if ( xp->vinfo.depth != 1 && IsFaxImage( image->decode ) 
-		&& ( ( GeometryParms * ) p->ts )->geoTech == xieValGeomAntialias )
-	{
-		constrainflag = 1;
-		if ( !SetupFaxClipScale( xp, p, levels, in_low, 
-			in_high, out_low, out_high, &parms ) )
-		{
-			reps = 0;
-		}
-	}
 
-	if ( xp->vinfo.depth != 1 && IsFaxImage( image->decode ) 
-		&& ( ( GeometryParms * ) p->ts )->geoTech != xieValGeomAntialias )
+	if ( !IsFaxImage( image->decode ) )
+		return( 0 );
+
+	FlushCache();
+	G42Ddecode_params = ( XieDecodeG42DParam * ) NULL;
+	G32Ddecode_params = ( XieDecodeG32DParam * ) NULL;
+	G31Ddecode_params = ( XieDecodeG31DParam * ) NULL;
+	TIFFPackBitsdecode_params = ( XieDecodeTIFFPackBitsParam * ) NULL;
+	TIFF2decode_params = ( XieDecodeTIFF2Param * ) NULL;
+	XIEPhotomap = ( XiePhotomap ) NULL;
+	XIELut = ( XieLut ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	constrainflag = drawableplaneflag = 0;
+	if ( xp->vinfo.depth != 1 && ( ( GeometryParms * ) p->ts )->geoTech 
+		== xieValGeomAntialias )
+	{
+		constrainflag = 1;
+                if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
+                        xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                {
+                        reps = 0;
+                }
+	}
+	else if ( xp->vinfo.depth != 1 
+		&& ((GeometryParms *) p->ts )->geoTech != xieValGeomAntialias)
 		drawableplaneflag = 1;
 
 	if ( reps )	
+	{
         	if ( !GetImageData( xp, p, 1 ) )
 			reps = 0;
-		else  {
-		    if ( image->decode == xieValDecodeG42D )
-       			G42Ddecode_params = XieTecDecodeG42D(
-                		image->fill_order,
-                		True    /* XXX needs config */
-			);
-		    else if ( image->decode == xieValDecodeG32D )
-       			G32Ddecode_params = XieTecDecodeG32D(
-                		image->fill_order,
-                		True    /* XXX needs config */
-			);
-		    else if ( image->decode == xieValDecodeG31D )
-       			G31Ddecode_params = XieTecDecodeG31D(
-                		image->fill_order,
-                		True    /* XXX needs config */
-			);
-		    else {
-			fprintf(stderr," bogus decode, %d, expected",
-			   image->decode);
-			fprintf(stderr," xieValDecodeG42D (%d) \n",
-				xieValDecodeG42D);
-			fprintf(stderr," or xieValDecodeG32D (%d) \n",
-				xieValDecodeG32D);
-			fprintf(stderr," or xieValDecodeG31D (%d) \n",
-				xieValDecodeG31D);
-			exit(1);	/* XXX */
-		    }
+		else  
+		{
+		    	radiometric = (( GeometryParms *) p->ts )->radiometric;
+		    	if ( image->decode == xieValDecodeG42D )
+		    	{
+       				G42Ddecode_params = XieTecDecodeG42D(
+                			image->fill_order,
+					True,
+					radiometric    
+				);
+				decode_tech = ( char * ) G42Ddecode_params;
+			}
+			else if ( image->decode == xieValDecodeG32D )
+			{
+				G32Ddecode_params = XieTecDecodeG32D(
+					image->fill_order,
+					True,
+					radiometric    
+				);
+				decode_tech = ( char * ) G32Ddecode_params;
+			}
+		    	else if ( image->decode == xieValDecodeG31D )
+			{
+				G31Ddecode_params = XieTecDecodeG31D(
+					image->fill_order,
+					True,
+					radiometric    
+				);
+				decode_tech = ( char * ) G31Ddecode_params;
+			}
+		    	else if ( image->decode == xieValDecodeTIFF2 )
+			{
+				TIFF2decode_params = XieTecDecodeTIFF2(
+					image->fill_order,
+					True,
+					radiometric    
+				);
+				decode_tech = ( char * ) TIFF2decode_params;
+			}
+		    	else if ( image->decode == xieValDecodeTIFFPackBits )
+			{
+       				TIFFPackBitsdecode_params = 
+					XieTecDecodeTIFFPackBits(
+						image->fill_order,
+						True
+					);
+				decode_tech = ( char * ) TIFFPackBitsdecode_params;
+			}
+			else 
+			{
+				fprintf(stderr,"Invalid decode\n" );
+				reps = 0;
+			}
+			if ( decode_tech == ( char * ) NULL )
+			{
+				reps = 0;
+			}
 		}
-
+	}
 	if ( reps )
 	{
 		if ( constrainflag )
-			flo_elements = 4;
+			flo_elements = 5;
 		else
 			flo_elements = 3;
-        	photospace = XieCreatePhotospace(xp->d);
        		flograph = XieAllocatePhotofloGraph(flo_elements);
         	if ( flograph == ( XiePhotoElement * ) NULL )
         	{
 			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-			free( p->data );
 			reps = 0;
 		}
 	} 
-	if ( !reps && parms )
-		free( parms );
-	if ( !reps && p->data )
+	if ( reps )
 	{
-		free( p->data );
-		p->data = ( char * ) NULL;
+		width[ 0 ] = image->width[ 0 ];
+		height[ 0 ] = image->height[ 0 ];
+		mylevels[ 0 ] = image->levels[ 0 ];
+
+		idx = 0;
+		XieFloImportClientPhoto(&flograph[idx],
+			image->bandclass,
+			width, height, mylevels,
+			False,
+			image->decode, decode_tech 
+		); 
+		idx++;
+
+		geo_tech = ( ( GeometryParms * ) p->ts )->geoTech;
+
+		if ( !SetCoefficients( xp, p, p->ts, coeffs ) )
+			reps = 0;
 	}
+	
+	if ( reps )
+	{
+		if ( constrainflag )
+		{
+	                XieFloImportLUT(&flograph[idx], XIELut );
+			idx++;
+
+			domain.phototag = 0;
+			domain.offset_x = 0;
+			domain.offset_y = 0;
+			XieFloPoint(&flograph[idx],
+				idx-1,
+				&domain,
+				idx,
+				0x7
+			);
+			idx++;
+		}	
+
+		XieFloGeometry(&flograph[idx], 
+			idx,
+			( ( GeometryParms * ) p->ts )->geoWidth,
+			( ( GeometryParms * ) p->ts )->geoHeight,
+			coeffs,
+			constant,
+			band_mask,
+			geo_tech,
+			geo_tech_params
+		); idx++;
+
+		if ( drawableplaneflag ) {
+			XieFloExportDrawablePlane(&flograph[idx],
+				idx, 	 /* source phototag number */
+				xp->w,
+				xp->bggc,
+				0,       /* x offset in window */
+				0        /* y offset in window */
+			); idx++;
+		}
+		else {
+			XieFloExportDrawable(&flograph[idx],
+				idx, 	 /* source phototag number */
+				xp->w,
+				xp->bggc,
+				0,       /* x offset in window */
+				0        /* y offset in window */
+			); idx++;
+		}
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+		flo_notify = True;	
+		size = image->fsize;
+	}
+	if ( !reps )
+		FreeGeometryFAXStuff( xp, p );
 	return( reps );
 }
 
@@ -309,134 +437,34 @@ void DoGeometryFAX(xp, p, reps)
     Parms   p;
     int     reps;
 {
-	int     band_mask = 1;
-	int	flo_notify, flo_id;
-	int	i, size, idx;
-	float	coeffs[ 6 ];
-	static XieConstant constant = { 0.0, 0.0, 0.0 };
-        XieLTriplet width, height, mylevels;
-	XieGeometryTechnique	geo_tech;
-	char	*geo_tech_params = NULL;
-	XIEimage *image;
-
-	image = p->finfo.image1;
-	if ( !image )
-		return;
-
-        width[ 0 ] = image->width;
-        height[ 0 ] = image->height;
-        mylevels[ 0 ] = image->levels;
-
-	idx = 0;
-	if ( image->decode == xieValDecodeG42D )
-            XieFloImportClientPhoto(&flograph[idx],
-                image->data_class,
-                width, height, mylevels,
-                False,
-                image->decode, (char *)G42Ddecode_params
-            ); 
-	else if ( image->decode == xieValDecodeG32D )
-            XieFloImportClientPhoto(&flograph[idx],
-                image->data_class,
-                width, height, mylevels,
-                False,
-                image->decode, (char *)G32Ddecode_params
-            ); 
-	else if ( image->decode == xieValDecodeG31D )
-            XieFloImportClientPhoto(&flograph[idx],
-                image->data_class,
-                width, height, mylevels,
-                False,
-                image->decode, (char *)G31Ddecode_params
-            ); 
-	else
-	{
-		fprintf( stderr, "Invalid image decode\n" );
-		return;
-	}
-	idx++;
- 
-	geo_tech = ( ( GeometryParms * ) p->ts )->geoTech;
-
-	SetCoefficients( xp, p, ( ( GeometryParms * ) p->ts )->geoType, coeffs );
-
-	if ( constrainflag )
-	{
-		XieFloConstrain(&flograph[idx],
-			idx,
-			levels,
-			tech,
-			(char *)parms
-		); idx++;		
-	}	
-
-	XieFloGeometry(&flograph[idx], 
-		idx,
-		( ( GeometryParms * ) p->ts )->geoWidth,
-		( ( GeometryParms * ) p->ts )->geoHeight,
-		coeffs,
-		constant,
-		band_mask,
-		geo_tech,
-		geo_tech_params
-	); idx++;
-
-	if ( drawableplaneflag ) {
-		XieFloExportDrawablePlane(&flograph[idx],
-			idx, 		/* source phototag number */
-			xp->w,
-			xp->bggc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		); idx++;
-	}
-	else {
-		XieFloExportDrawable(&flograph[idx],
-			idx, 		/* source phototag number */
-			xp->w,
-			xp->bggc,
-			0,       /* x offset in window */
-			0        /* y offset in window */
-		); idx++;
-	}
-
-
-	flo_notify = True;	
-	flo_id = 1;
-	size = image->fsize;
+	int	i;
 
     	for (i = 0; i != reps; i++) {
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		flo_elements    /* number of elements */
-       		);
+       		XieExecutePhotoflo(xp->d, flo, flo_notify ); 
 		XSync( xp->d, 0 );
-	        PumpTheClientData( xp, p, flo_id, photospace, 1, p->data, size );
-
-		WaitForFloToFinish( xp, flo_id );
-		flo_id++;
+	        PumpTheClientData( xp, p, flo, 0, 1, image->data, size, 0 );
+		WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False );	
     	}
 }
 
 int
-SetCoefficients( xp, p, type, coeffs )
+SetCoefficients( xp, p, gp, coeffs )
 XParms	xp;
 Parms	p;
-int	type;
+GeometryParms *gp;
 float	coeffs[];
 {
 	double	sf, rad;
 	XIEimage *image;
-	GeometryParms *gp;
+	int type;
 
 	image = p->finfo.image1;
-	gp = ( GeometryParms * ) p->ts;
+	type = gp->geoType;
 	if ( !image || !gp )
 	{
-		fprintf( stderr, "SetCoefficients: invalid image or test parameters\n" );
-		return;
+		fprintf( stderr, 
+			"SetCoefficients: invalid image or test parameters\n" );
+		return ( 0 );
 	}
 
 	switch( type )
@@ -450,22 +478,22 @@ float	coeffs[];
 		coeffs[ 5 ] = gp->geoYOffset;
 		break;
 	case GEO_TYPE_SCALE:
-		coeffs[ 0 ] = image->width / ( float )gp->geoWidth;
+		coeffs[ 0 ] = image->width[ 0 ] / ( float )gp->geoWidth;
 		coeffs[ 1 ] = 0;
 		coeffs[ 2 ] = 0;
-		coeffs[ 3 ] = image->height / ( float )gp->geoHeight;
+		coeffs[ 3 ] = image->height[ 0 ] / ( float )gp->geoHeight;
 		coeffs[ 4 ] = 0;
 		coeffs[ 5 ] = 0;
 		break;
 	case GEO_TYPE_SCALEDROTATE:
 		rad = M_PI * gp->geoAngle / 180.0;
-		sf = ( image->width / ( float )gp->geoWidth );
+		sf = ( image->width[ 0 ] / ( float )gp->geoWidth );
 		coeffs[ 0 ] = sf * cos( rad );
 		coeffs[ 1 ] = sf * sin( rad );
 		coeffs[ 2 ] = -sf * sin( rad );
 		coeffs[ 3 ] = sf * cos( rad );
-		coeffs[ 4 ] = image->width / 2.0 - sf/2 * (cos(rad)*gp->geoWidth + sin(rad) * gp->geoHeight); 
-		coeffs[ 5 ] = image->height / 2.0 - sf/2 * (-sin(rad)*gp->geoWidth + cos(rad) * gp->geoHeight); 
+		coeffs[ 4 ] = image->width[ 0 ] / 2.0 - sf/2 * (cos(rad)*gp->geoWidth + sin(rad) * gp->geoHeight); 
+		coeffs[ 5 ] = image->height[ 0 ] / 2.0 - sf/2 * (-sin(rad)*gp->geoWidth + cos(rad) * gp->geoHeight); 
 		break;
 	case GEO_TYPE_MIRRORX:
 		coeffs[ 0 ] = -1;
@@ -497,8 +525,8 @@ float	coeffs[];
 		coeffs[ 1 ] = sin( rad );
 		coeffs[ 2 ] = -sin( rad );
 		coeffs[ 3 ] = cos( rad );
-		coeffs[ 4 ] = gp->geoWidth/2.0 - 0.5 * ( cos( rad ) * image->width + sin( rad ) * image->height );
-		coeffs[ 5 ] = gp->geoHeight/2.0 - 0.5 * ( -sin( rad ) * image->width + cos( rad ) * image->height );
+		coeffs[ 4 ] = gp->geoWidth/2.0 - 0.5 * ( cos( rad ) * image->width[ 0 ] + sin( rad ) * image->height[ 0 ] );
+		coeffs[ 5 ] = gp->geoHeight/2.0 - 0.5 * ( -sin( rad ) * image->width[ 0 ] + cos( rad ) * image->height[ 0 ] );
 		break;
 	case GEO_TYPE_DEFAULT:
 	default:
@@ -510,20 +538,43 @@ float	coeffs[];
 		coeffs[ 5 ] = 0;
 		break;
 	}
+	return( 1 );
 }
 
 int EndGeometry(xp, p)
 XParms  xp;
 Parms   p;
 {
-	if ( p->data ) 
+	FreeGeometryStuff( xp, p );
+}
+
+int
+FreeGeometryStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( XIELut )
 	{
-		free( p->data );
-		p->data = ( char * ) NULL;
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
 	}
-	if ( parms )
-		free( parms );
-	XieDestroyPhotomap( xp->d, XIEPhotomap );
+
+        if ( XIEPhotomap && !IsPhotomapInCache( XIEPhotomap ) )
+        {
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                XIEPhotomap = ( XiePhotomap ) NULL;
+        }
+
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
 }
 
 int
@@ -531,19 +582,62 @@ EndGeometryFAX(xp, p)
 XParms  xp;
 Parms   p;
 {
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-	if ( parms )
-		free( parms );
-	XieDestroyPhotospace( xp->d, photospace );
-	XieFreePhotofloGraph(flograph,flo_elements);	
-	if ( G42Ddecode_params )
-		free( G42Ddecode_params );
-	else if ( G32Ddecode_params )
-		free( G32Ddecode_params );
-	else if ( G31Ddecode_params )
-		free( G31Ddecode_params );
+	FreeGeometryFAXStuff( xp, p );
 }
+
+int
+FreeGeometryFAXStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( XIELut )
+	{
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
+	}
+
+        if ( XIEPhotomap )
+        {
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+                XIEPhotomap = ( XiePhotomap ) NULL;
+        }
+
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+
+	if ( G42Ddecode_params )
+	{
+		free( G42Ddecode_params );
+		G42Ddecode_params = ( XieDecodeG42DParam * ) NULL;
+	}
+	else if ( G32Ddecode_params )
+	{
+		free( G32Ddecode_params );
+		G32Ddecode_params = ( XieDecodeG32DParam * ) NULL;
+	}
+	else if ( G31Ddecode_params )
+	{
+		free( G31Ddecode_params );
+		G31Ddecode_params = ( XieDecodeG31DParam * ) NULL;
+	}
+	else if ( TIFF2decode_params )
+	{
+		free( TIFF2decode_params );
+		TIFF2decode_params = ( XieDecodeTIFF2Param * ) NULL;
+	}
+	else if ( TIFFPackBitsdecode_params )
+	{
+		free( TIFFPackBitsdecode_params );
+		TIFFPackBitsdecode_params = 
+			( XieDecodeTIFFPackBitsParam * ) NULL;
+	}
+}
+

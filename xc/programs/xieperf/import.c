@@ -1,6 +1,6 @@
-/* $XConsortium: import.c,v 1.2 93/07/19 14:44:00 rws Exp $ */
+/* $XConsortium: import.c,v 1.2 93/10/26 10:06:24 rws Exp $ */
 
-/**** module do_import.c ****/
+/**** module import.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_import.c -- import flo element tests 
+	import.c -- import flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -52,17 +52,19 @@ terms and conditions:
 #include <stdio.h>
 
 static XiePhotomap XIEPhotomap;
+static XiePhotomap XIEPhotomap2;
 static XieRoi	XIERoi;
 static XieLut	XIELut;
 extern Window 	drawableWindow;
 static Pixmap	myPixmap;
 
-static XieLTriplet levels;
-static XieConstrainTechnique tech = xieValConstrainClipScale;
-static XieClipScaleParam *parms;
-static XieConstant in_low,in_high;
-static XieLTriplet out_low,out_high;
-static int monoflag = 0;
+static unsigned char *lut;
+static XieRectangle *rects;
+
+static int flo_notify;
+static XiePhotoElement *flograph;
+static int flo_elements;
+static XiePhotoflo flo;
 
 extern Bool dontClear;
 
@@ -71,30 +73,54 @@ int InitImportDrawablePixmap(xp, p, reps)
     Parms   p;
     int     reps;
 {
-	XIEimage *image;
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
 
-	monoflag = 0;
-	parms = NULL;
-	image = p->finfo.image1;
-	if ( !image )
-		return( 0 );
-	if ( xp->vinfo.depth == 1 )
-	{
-		monoflag = 1;
-                if ( !SetupMonoClipScale( image, levels, in_low, 
-			in_high, out_low, out_high, &parms ) )
-                {
-			return 0;
-                }
-	}
-	else
-		monoflag = 0;
-	myPixmap = XCreatePixmap( xp->d, drawableWindow,
-		WIDTH, HEIGHT, xp->vinfo.depth );
+	flo = ( XiePhotoflo ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+
+	myPixmap = XCreatePixmap( xp->d, drawableWindow, WIDTH, HEIGHT, 
+		xp->vinfo.depth );
 	XFillRectangle( xp->d, myPixmap, xp->bggc, 0, 0, 
 		WIDTH, HEIGHT );
 	XSync( xp->d, 0 );
 	GetXIEPixmap( xp, p, myPixmap, 1 );
+
+	flo_elements = 2;
+	flo_notify = False;	
+	flograph = XieAllocatePhotofloGraph(flo_elements);	
+	if ( flograph == ( XiePhotoElement * ) NULL )
+	{
+		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+		reps = 0;
+	}
+
+	if ( reps )
+	{
+		XieFloImportDrawable(&flograph[0], 
+			myPixmap,
+			0, 
+			0,
+			WIDTH,
+			HEIGHT,
+			0,
+			False
+		);	
+
+		XieFloExportDrawable(&flograph[flo_elements-1],
+			flo_elements-1,       /* source phototag number */
+			xp->w,
+			xp->fggc,
+			0,       /* x offset in window */
+			0        /* y offset in window */
+		);
+
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+	}
+
+	if ( !reps )
+		FreeImportDrawablePixmapStuff( xp, p );
+
 	return( reps );
 }
 
@@ -103,41 +129,212 @@ int InitImportDrawableWindow(xp, p, reps)
     Parms   p;
     int     reps;
 {
-	XIEimage *image;
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
 
-	image = p->finfo.image1;
+	flo = ( XiePhotoflo ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
 
-	monoflag = 0;
-	parms = NULL;
-	if ( !image )
-		return( 0 );
+        flo_elements = 2;
+	flo_notify = False;	
+	flograph = XieAllocatePhotofloGraph(flo_elements);	
+	if ( flograph == ( XiePhotoElement * ) NULL )
+	{
+		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+		reps = 0;
+	}
+	else
+	{
+
+		XieFloImportDrawable(&flograph[0], 
+			xp->w,
+			0, 
+			0,
+			WIDTH,
+			HEIGHT,
+			0,
+			False
+		);	
+
+		XieFloExportDrawable(&flograph[1],
+			1,              /* source phototag number */
+			drawableWindow,
+			xp->fggc,
+			0,       /* x offset in window */
+			0        /* y offset in window */
+		);
+
+		if ( ( ( ImportParms * )p->ts )->obscure == Obscuring )
+			XMoveWindow( xp->d, drawableWindow, 100, 100 );
+		else if ( ( ( ImportParms * )p->ts )->obscure == Obscured )
+			XMoveWindow( xp->d, drawableWindow, 400, 300 );
+		else
+			XMoveWindow( xp->d, drawableWindow, WIDTH + 10, 0 );
+		if ( ( ( ImportParms * )p->ts )->obscure == Obscured )
+		{
+			XMapWindow( xp->d, drawableWindow );
+			XLowerWindow( xp->d, drawableWindow );
+		}
+		else
+		{
+			XMapRaised( xp->d, drawableWindow );
+		}
+
+		XSync( xp->d, 0 );
+		GetXIEWindow( xp, p, xp->w, 1 );
+		dontClear = True;
+
+		flo = XieCreatePhotoflo( xp->d, flograph, 2 );
+	}
+	
+	if ( !reps )
+	{
+		dontClear = False;
+		FreeImportDrawableWindowStuff( xp, p );
+	}
+
+	return( reps );
+}
+
+int InitImportDrawablePlanePixmap(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+	int	planes;
+
+	flo = ( XiePhotoflo ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+
 	if ( xp->vinfo.depth == 1 )
 	{
-		monoflag = 1;
-                if ( !SetupMonoClipScale( image, levels, in_low, 
-			in_high, out_low, out_high, &parms ) )
-                {
-			return 0;
-                }
+		planes = 1;
 	}
 	else
-		monoflag = 0;
-	GetXIEWindow( xp, p, xp->w, 1 );
-	if ( ( ( ImportParms * )p->ts )->obscure == Obscuring )
-		XMoveWindow( xp->d, drawableWindow, 100, 100 );
-	else if ( ( ( ImportParms * )p->ts )->obscure == Obscured )
-		XMoveWindow( xp->d, drawableWindow, 400, 300 );
-	else
-		XMoveWindow( xp->d, drawableWindow, WIDTH + 10, 0 );
-	if ( ( ( ImportParms * )p->ts )->obscure == Obscured )
+		planes = ( 1 << xp->vinfo.depth ) >> 1;
+	myPixmap = XCreatePixmap( xp->d, drawableWindow, WIDTH, HEIGHT, 
+		xp->vinfo.depth );
+	XFillRectangle( xp->d, myPixmap, xp->bggc, 0, 0, WIDTH, HEIGHT );
+	XSync( xp->d, 0 );
+	GetXIEPixmap( xp, p, myPixmap, 1 );
+
+	flo_elements = 2;
+	flo_notify = False;	
+	flograph = XieAllocatePhotofloGraph(flo_elements);	
+	if ( flograph == ( XiePhotoElement * ) NULL )
 	{
-		XLowerWindow( xp->d, drawableWindow );
-		XSync( xp->d, 0 );
-		XMapWindow( xp->d, drawableWindow );
+		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+		reps = 0;
 	}
 	else
-		XMapRaised( xp->d, drawableWindow );
-	dontClear = True;
+	{
+		XieFloImportDrawablePlane(&flograph[0], 
+			myPixmap,
+			0, 
+			0,
+			WIDTH,
+			HEIGHT,
+			0,
+			planes,
+			False
+		);	
+
+		XieFloExportDrawablePlane(&flograph[flo_elements-1],
+			flo_elements-1,       /* source phototag number */
+			xp->w,
+			xp->fggc,
+			0,       /* x offset in window */
+			0        /* y offset in window */
+		);
+
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+	}
+	if ( !reps )
+	{
+		FreeImportDrawablePixmapStuff( xp, p );
+	}
+	return( reps );
+}
+
+int InitImportDrawablePlaneWindow(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+	int	planes;
+
+	flo = ( XiePhotoflo ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+
+	if ( xp->vinfo.depth == 1 )
+	{
+		planes = 1;
+	}
+	else
+	{
+		planes = ( 1 << xp->vinfo.depth ) >> 1;
+	}
+
+	flo_elements = 2;
+	flo_notify = False;	
+	flograph = XieAllocatePhotofloGraph(flo_elements);	
+	if ( flograph == ( XiePhotoElement * ) NULL )
+	{
+		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+		reps = 0;
+	}
+	else
+	{
+		XieFloImportDrawablePlane(&flograph[0], 
+			xp->w,
+			0, 
+			0,
+			WIDTH,
+			HEIGHT,
+			0,
+			planes,
+			False
+		);	
+
+		XieFloExportDrawablePlane(&flograph[flo_elements-1],
+			flo_elements-1,       /* source phototag number */
+			drawableWindow,
+			xp->fggc,
+			0,       /* x offset in window */
+			0        /* y offset in window */
+		);
+
+		if ( ( ( ImportParms * )p->ts )->obscure == Obscuring )
+			XMoveWindow( xp->d, drawableWindow, 100, 100 );
+		else if ( ( ( ImportParms * )p->ts )->obscure == Obscured )
+			XMoveWindow( xp->d, drawableWindow, 400, 300 );
+		else
+			XMoveWindow( xp->d, drawableWindow, WIDTH + 10, 0 );
+		if ( ( ( ImportParms * )p->ts )->obscure == Obscured )
+		{
+			XMapWindow( xp->d, drawableWindow );
+			XLowerWindow( xp->d, drawableWindow );
+		}
+		else
+		{
+			XMapRaised( xp->d, drawableWindow );
+		}
+
+		GetXIEWindow( xp, p, xp->w, 1 );
+
+		flo = XieCreatePhotoflo( xp->d, flograph, 2 );
+		dontClear = True;
+	}
+	if ( !reps )
+	{
+		dontClear = False;
+		FreeImportDrawableWindowStuff( xp, p );
+	}
+
 	return( reps );
 }
 
@@ -146,46 +343,201 @@ int InitImportPhoto(xp, p, reps)
     Parms   p;
     int     reps;
 {
-	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
+	int	decode_notify;
+
+	XIEPhotomap = ( XiePhotomap ) NULL;
+	XIEPhotomap2 = ( XiePhotomap ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+
+	XIEPhotomap2 = XieCreatePhotomap( xp->d );
+	if ( XIEPhotomap2 == ( XiePhotomap ) NULL )
+		reps = 0;
+	else if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
+		( XiePhotomap ) NULL )
 	{
 		reps = 0;
+	}
+	else
+	{
+		decode_notify = False;
+		flo_elements = 2;
+		flograph = XieAllocatePhotofloGraph(flo_elements);	
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+		else
+		{
+			XieFloImportPhotomap(&flograph[0], XIEPhotomap, 
+				decode_notify);
+
+			XieFloExportPhotomap(&flograph[1],
+				1,              /* source phototag number */
+				XIEPhotomap2,
+				encode_tech,
+				encode_params
+			);
+
+			flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+
+			flo_notify = False;
+		}
+	}
+	if ( !reps )
+	{
+		FreeImportPhotoStuff( xp, p );
 	}
 	return( reps );
 }
 
-int InitImportLUT(xp, p, reps)
+int InitImportPhotoExportDrawable(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	unsigned char *lut;
-	int lutSize, i;
+	int	decode_notify;
+	XIEimage *image;
 
-	lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
-	lut = (unsigned char *)malloc( lutSize );
-	if ( lut == ( unsigned char * ) NULL )
-		reps = 0;
+	XIEPhotomap = ( XiePhotomap ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+	image = p->finfo.image1;
+
+	if ( xp->vinfo.depth != image->depth[ 0 ] && IsDISServer() )
+	{
+		XIEPhotomap = GetXIEPointPhotomap( xp, p, 1, xp->vinfo.depth );
+	}
+	else if ( xp->vinfo.depth != image->depth[ 0 ] )
+	{
+		XIEPhotomap = GetXIEDitheredPhotomap( xp, p, 1,
+			( 1 << xp->vinfo.depth ) );
+	}
 	else
 	{
-		for ( i = 0; i < lutSize; i++ )
+		XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
+	}
+ 
+	if ( XIEPhotomap == ( XiePhotomap ) NULL )
+	{
+		reps = 0;
+	}
+	else
+	{
+		decode_notify = False;
+		flo_elements = 2;
+		flograph = XieAllocatePhotofloGraph(flo_elements);	
+		if ( flograph == ( XiePhotoElement * ) NULL )
 		{
-			if ( i % 5 == 0 )
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+		else
+		{
+			XieFloImportPhotomap(&flograph[0], XIEPhotomap, 
+				decode_notify);
+
+			XieFloExportDrawable(&flograph[1],
+				1,              /* source phototag number */
+				xp->w,
+				xp->fggc,
+				0,
+				0
+			);
+
+			flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+
+			flo_notify = False;
+		}
+	}
+	if ( !reps )
+	{
+		FreeImportPhotoStuff( xp, p );
+	}
+	return( reps );
+}
+
+int 
+InitImportLUT(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+	int lutSize, i;
+        Bool    merge;
+        XieLTriplet start;
+
+	flograph = ( XiePhotoElement * ) NULL;
+	lut = ( unsigned char * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	XIELut = ( XieLut ) NULL;
+
+	flo_elements = 2;	
+	flograph = XieAllocatePhotofloGraph(flo_elements);	
+	if ( flograph == ( XiePhotoElement * ) NULL )
+	{
+		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+		reps = 0;
+	}
+	else
+	{
+		lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
+		lut = (unsigned char *)malloc( lutSize );
+		if ( lut == ( unsigned char * ) NULL )
+		{
+			reps = 0;
+		}
+		else
+		{
+			for ( i = 0; i < lutSize; i++ )
 			{
-				lut[ i ] = ( ( 1 << xp->vinfo.depth ) - 1 ) - i;
+				if ( i % 5 == 0 )
+				{
+					lut[ i ] = ( ( 1 << xp->vinfo.depth ) - 1 ) - i;
+				}
+				else
+				{
+					lut[ i ] = i;
+				}
 			}
-			else
+			if ( ( XIELut = 
+				GetXIELut( xp, p, lut, lutSize, lutSize ) ) == 
+				( XieLut ) NULL )
 			{
-				lut[ i ] = i;
+				reps = 0;
 			}
 		}
 	}
-	if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, lutSize ) ) == 
-		( XieLut ) NULL )
+
+	if ( reps )
 	{
-		reps = 0;
+
+		XieFloImportLUT(&flograph[0], XIELut );
+
+		merge = False;
+		start[ 0 ] = 0;
+		start[ 1 ] = 0;
+		start[ 2 ] = 0;
+
+		XieFloExportLUT(&flograph[1],
+			1,              /* source phototag number */
+			XIELut,
+			merge,
+			start
+		);
+
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+
+		flo_notify = False;
 	}
-	if ( lut )
-		free( lut );
+	if ( !reps )
+	{
+		FreeImportLUTStuff( xp, p );
+	}
+
 	return( reps );
 }
 
@@ -194,587 +546,183 @@ int InitImportROI(xp, p, reps)
     Parms   p;
     int     reps;
 {
-	XieRectangle *rects;
 	int     rectsSize, i;
+        int     decode_notify;
 
-	rectsSize = 10;
-	rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
-	if ( rects == ( XieRectangle * ) NULL )
+	flograph = ( XiePhotoElement * ) NULL;
+	rects = ( XieRectangle * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	XIERoi = ( XieRoi ) NULL;
+	
+	flo_elements = 2;
+	flograph = XieAllocatePhotofloGraph(flo_elements);	
+	if ( flograph == ( XiePhotoElement * ) NULL )
+	{
+		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
 		reps = 0;
+	}
 	else
 	{
-		/* who cares what the data is */
-
-		for ( i = 0; i < rectsSize; i++ )
+		rectsSize = (( ImportParms * ) p->ts )->numROIs;
+		rects = (XieRectangle *)
+			malloc( rectsSize * sizeof( XieRectangle ) );
+		if ( rects == ( XieRectangle * ) NULL )
 		{
-			rects[ i ].x = i;
-			rects[ i ].y = i;
-			rects[ i ].width = i + 10;
-			rects[ i ].height = i + 10;
+			reps = 0;
+		}
+		else
+		{
+			/* who cares what the data is */
+
+			for ( i = 0; i < rectsSize; i++ )
+			{
+				rects[ i ].x = i;
+				rects[ i ].y = i;
+				rects[ i ].width = i + 10;
+				rects[ i ].height = i + 10;
+			}
+		}
+		if ( ( XIERoi = 
+			GetXIERoi( xp, p, rects, rectsSize ) ) == ( XieRoi ) NULL )
+		{
+			reps = 0;
 		}
 	}
-	if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) == ( XieRoi ) NULL )
+
+	if ( reps )
 	{
-		reps = 0;
+
+		XieFloImportROI(&flograph[0], XIERoi );
+
+		XieFloExportROI(&flograph[1],
+			1,              /* source phototag number */
+			XIERoi
+		);
+
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+		flo_notify = False;
 	}
-	if ( rects )
-		free( rects );
+
+	if ( !reps )
+	{
+		FreeImportROIStuff( xp, p );
+	}
+
 	return( reps );
 }
 
-void DoImportPhotoImmediate(xp, p, reps)
+void DoImportPhoto(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
     	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XiePhotoElement *flograph;
-	int	decode_notify;
 
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-	flo_notify = decode_notify = False;	
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportPhotomap(&flograph[0], XIEPhotomap, decode_notify);
-
-	XieFloExportPhotomap(&flograph[1],
-		1,              /* source phototag number */
-		XIEPhotomap,
-		encode_tech,
-		encode_params
-	);
-
-    	for (i = 0; i != reps; i++) {
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		2               /* number of elements */
-       		);
-
-		flo_id++;
-		XSync( xp->d, 0 );
-    	}
-	XieFreePhotofloGraph(flograph,2);	
-	XieDestroyPhotospace( xp->d, photospace );
-}
-
-void DoImportPhotoStored(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i;
-	int	flo_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	int	decode_notify;
-
-	decode_notify = False;
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-        XieFloImportPhotomap(&flograph[0], XIEPhotomap,
-		decode_notify);
-
-        XieFloExportPhotomap(&flograph[1],
-	    	1,              /* source phototag number */
-		XIEPhotomap,
-		encode_tech,
-		encode_params
-	);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, 2 );
-
-	/* crank it */
-
-	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
     	}
-
-	/* destroy the photoflo */
-
-	XieFreePhotofloGraph(flograph,2);	
-	XieDestroyPhotoflo( xp->d, flo );
 }
 
-void DoImportDrawablePixmapImmediate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i, flo_elements;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XiePhotoElement *flograph;
-
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-	flo_elements = 2;
-	flo_notify = False;	
-	flograph = XieAllocatePhotofloGraph(flo_elements);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-	XieFloImportDrawable(&flograph[0], 
-		myPixmap,
-		0, 
-		0,
-		WIDTH,
-		HEIGHT,
-		0,
-		False
-	);	
-
-	XieFloExportDrawable(&flograph[flo_elements-1],
-		flo_elements-1,       /* source phototag number */
-		xp->w,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
-
-    	for (i = 0; i != reps; i++) {
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		flo_elements    /* number of elements */
-       		);
-
-		flo_id++;
-		XSync( xp->d, 0 );
-    	}
-	XieFreePhotofloGraph(flograph,flo_elements);	
-	XieDestroyPhotospace( xp->d, photospace );
-}
-
-void DoImportDrawableWindowImmediate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i, flo_elements;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XiePhotoElement *flograph;
-
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-        if ( monoflag )
-                flo_elements = 3;
-        else
-                flo_elements = 2;
-	flo_notify = False;	
-	flograph = XieAllocatePhotofloGraph(flo_elements);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-	XieFloImportDrawable(&flograph[0], 
-		xp->w,
-		0, 
-		0,
-		WIDTH,
-		HEIGHT,
-		0,
-		False
-	);	
-
-	XieFloExportDrawable(&flograph[1],
-		1,              /* source phototag number */
-		drawableWindow,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
-
-    	for (i = 0; i != reps; i++) {
-
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		2               /* number of elements */
-       		);
-
-		flo_id++;
-		XSync( xp->d, 0 );
-    	}
-	XClearWindow( xp->d, drawableWindow );
-	XieFreePhotofloGraph(flograph,2);	
-	XieDestroyPhotospace( xp->d, photospace );
-}
-
-void DoImportDrawablePlanePixmapImmediate(xp, p, reps)
+void DoImportDrawablePixmap(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
     	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XiePhotoElement *flograph;
-	int	planes;
 
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
+    	for (i = 0; i != reps; i++) {
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
+		XSync( xp->d, 0 );
+    	}
+}
 
-	if ( monoflag )
-		planes = 1;
-	else
-		planes = 1 << 4;
-	flo_id = 1;
-	flo_notify = False;	
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
+void DoImportDrawableWindow(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    	int     i;
 
-	XieFloImportDrawablePlane(&flograph[0], 
-		myPixmap,
-		0, 
-		0,
-		WIDTH,
-		HEIGHT,
-		0,
-		planes,	
-		False
-	);	
+    	for (i = 0; i != reps; i++) {
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
+		XSync( xp->d, 0 );
+    	}
+	XClearWindow( xp->d, drawableWindow );
+}
 
-	XieFloExportDrawablePlane(&flograph[1],
-		1,              /* source phototag number */
-		xp->w,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
+void DoImportDrawablePlanePixmap(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    	int     i;
 
 	for ( i = 0; i < reps; i++ ) {
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		2               /* number of elements */
-       		);
-
-		flo_id++;
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
     	}
-	XieFreePhotofloGraph(flograph,2);	
-	XieDestroyPhotospace( xp->d, photospace );
 }
 
-void DoImportDrawablePlaneWindowImmediate(xp, p, reps)
+void DoImportDrawablePlaneWindow(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
     	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-	XiePhotoElement *flograph;
-	int	planes;
-
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-	if ( monoflag )
-		planes = 1;
-	else
-		planes = 1 << 4;
-
-	flo_notify = False;	
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportDrawablePlane(&flograph[0], 
-		xp->w,
-		0, 
-		0,
-		WIDTH,
-		HEIGHT,
-		0,
-		planes,
-		False
-	);	
-
-	XieFloExportDrawablePlane(&flograph[1],
-		1,              /* source phototag number */
-		drawableWindow,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
 
     	for (i = 0; i != reps; i++) {
-
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		2               /* number of elements */
-       		);
-
-		flo_id++;
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
     	}
 	XClearWindow( xp->d, drawableWindow );
-	XieDestroyPhotospace( xp->d, photospace );
-	XieFreePhotofloGraph(flograph,2);	
 }
 
-void DoImportLUTImmediate(xp, p, reps)
+void DoImportLUT(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
     	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-	XieOrientation band_order = xieValLSFirst;
-        Bool    merge;
-        XieLTriplet start;
-	XiePhotoElement *flograph;
 
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-	flo_notify = False;	
-
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportLUT(&flograph[0], XIELut );
-
-	merge = False;
-	start[ 0 ] = 0;
-	start[ 1 ] = 0;
-	start[ 2 ] = 0;
-
-	XieFloExportLUT(&flograph[1],
-		1,              /* source phototag number */
-		XIELut,
-		merge,
-		start
-	);
-
-
-    	for (i = 0; i != reps; i++) {
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		2               /* number of elements */
-       		);
-
-		flo_id++;
-		XSync( xp->d, 0 );
-    	}
-	XieFreePhotofloGraph(flograph,2);	
-	XieDestroyPhotospace( xp->d, photospace );
-}
-
-void DoImportLUTStored(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i;
-	int	flo_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-        Bool    merge;
-        XieLTriplet start;
-
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportLUT(&flograph[0], XIELut );
-
-	merge = False;
-	start[ 0 ] = 0;
-	start[ 1 ] = 0;
-	start[ 2 ] = 0;
-
-	XieFloExportLUT(&flograph[1],
-		1,              /* source phototag number */
-		XIELut,
-		merge,
-		start
-	);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, 2 );
-
-	/* crank it */
-
-	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
     	}
-
-	/* destroy the photoflo */
-
-	XieFreePhotofloGraph(flograph,2);	
-	XieDestroyPhotoflo( xp->d, flo );
 }
 
-void DoImportROIImmediate(xp, p, reps)
+void DoImportROI(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
     	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-	XiePhotoElement *flograph;
 
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-	flo_notify = False;	
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportROI(&flograph[0], XIERoi );
-
-	XieFloExportROI(&flograph[1],
-		1,              /* source phototag number */
-		XIERoi	
-	);
-
-    	for (i = 0; i != reps; i++) {
-
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		2               /* number of elements */
-       		);
-
-		flo_id++;
-		XSync( xp->d, 0 );
-    	}
-	XieDestroyPhotospace( xp->d, photospace );
-	XieFreePhotofloGraph(flograph,2);	
-}
-
-void DoImportROIStored(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i;
-	int	flo_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-        int     decode_notify;
-
-	flograph = XieAllocatePhotofloGraph(2);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportROI(&flograph[0], XIERoi );
-
-	XieFloExportROI(&flograph[1],
-		1,              /* source phototag number */
-		XIERoi
-	);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, 2 );
-
-	/* crank it */
-
-	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
     	}
-
-	/* destroy the photoflo */
-
-	XieFreePhotofloGraph(flograph,2);	
-	XieDestroyPhotoflo( xp->d, flo );
 }
 
 void EndImportLUT(xp, p)
     XParms  xp;
     Parms   p;
 {
-        /* deallocate the data buffer */
-
-	CloseXIELut( xp, p, XIELut );
+	FreeImportLUTStuff( xp, p );
 }
 
 void EndImportPhoto(xp, p)
     XParms  xp;
     Parms   p;
 {
-        /* deallocate the data buffer */
-
-	CloseXIEPhotomap( xp, p, XIEPhotomap );
+	FreeImportPhotoStuff( xp, p );
 }
 
 void EndImportROI(xp, p)
     XParms  xp;
     Parms   p;
 {
-        /* deallocate the data buffer */
-
-	CloseXIERoi( xp, p, XIERoi );
+	FreeImportROIStuff( xp, p );
 }
 
 void EndImportDrawableWindow(xp, p)
@@ -782,17 +730,136 @@ void EndImportDrawableWindow(xp, p)
     Parms   p;
 {
 	XUnmapWindow( xp->d, drawableWindow );
-	if ( parms )
-		free( parms );
 	dontClear = False;
+	FreeImportDrawableWindowStuff( xp, p );
 }
 
 void EndImportDrawablePixmap(xp, p)
     XParms  xp;
     Parms   p;
 {
+	FreeImportDrawablePixmapStuff( xp, p );
+}
+
+int
+FreeImportPhotoStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap );
+		XIEPhotomap = ( XiePhotomap ) NULL;
+	}
+
+	if ( XIEPhotomap2 )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap2 );
+		XIEPhotomap2 = ( XiePhotomap ) NULL;
+	}
+
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+}
+
+int
+FreeImportDrawableWindowStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+}
+
+int
+FreeImportDrawablePixmapStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
 	XFreePixmap( xp->d, myPixmap );
-	if ( parms )
-		free( parms );
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+}
+
+int
+FreeImportLUTStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+	
+	if ( lut )
+	{
+		free( lut );
+		lut = ( unsigned char * ) NULL;
+	}
+
+	if ( XIELut )
+	{
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
+	}
+}
+
+int
+FreeImportROIStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+	
+	if ( rects )
+	{
+		free( rects );
+		rects = ( XieRectangle * ) NULL;
+	}
+
+	if ( XIERoi )
+	{
+		XieDestroyROI( xp->d, XIERoi );
+		XIERoi = ( XieRoi ) NULL;
+	}
 }
 

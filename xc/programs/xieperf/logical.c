@@ -1,6 +1,6 @@
-/* $XConsortium: logical.c,v 1.2 93/07/19 14:44:12 rws Exp $ */
+/* $XConsortium: logical.c,v 1.2 93/10/26 10:06:30 rws Exp $ */
 
-/**** module do_logical.c ****/
+/**** module logical.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_logical.c -- logical flo element tests 
+	logical.c -- logical flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -51,9 +51,10 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 
-static XiePhotomap XIEPhotomap;
+static XiePhotomap XIEPhotomap1;
+static XiePhotomap XIEPhotomap2;
 static XieRoi XIERoi;
-static XiePhotomap src1, src2;
+static XIEimage *image1, *image2;
 
 static XieLTriplet levels;
 static XieConstrainTechnique tech = xieValConstrainClipScale;
@@ -62,617 +63,251 @@ static XieConstant in_low,in_high;
 static XieLTriplet out_low,out_high;
 static int monoflag = 0;
 
-int InitLogicalMonadic(xp, p, reps)
+static XiePhotoflo flo;
+static int flo_notify;
+static XiePhotoElement *flograph;
+static int flo_elements;
+static XieRectangle *rects;
+
+int InitLogical(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	XIEimage *image;
+        int rectsSize, i, idx;
+	XieProcessDomain domain;
+	int decode_notify;
+        unsigned int bandMask;
+        Bool useROI;
+	unsigned long logicalOp;
+        int numROIs, src1, src2;
+	XieConstant logicalConstant;
 
-	p->data = ( char * ) NULL;
-	image = p->finfo.image1;
-	if ( !image )
+        useROI = ( ( LogicalParms * )p->ts )->useROI;
+        numROIs = ( ( LogicalParms * )p->ts )->numROIs;
+        bandMask = ( ( LogicalParms * )p->ts )->logicalBandMask;
+	logicalOp = ( ( LogicalParms * )p->ts )->logicalOp;
+	logicalConstant[ 0 ] = (( LogicalParms * )p->ts)->logicalConstant[ 0 ];
+	logicalConstant[ 1 ] = (( LogicalParms * )p->ts)->logicalConstant[ 1 ];
+	logicalConstant[ 2 ] = (( LogicalParms * )p->ts)->logicalConstant[ 2 ];
+
+        image1 = p->finfo.image1;
+
+        /* we must have image1. image2, however, is optional ( dyadic only ) */
+
+        if ( !image1 )
 		return( 0 );
-	parms = NULL;
-	monoflag = 0;
-	if ( xp->vinfo.depth == 1 )
-	{
-		monoflag = 1;
-		if ( !SetupMonoClipScale( image, levels, 
-			in_low, in_high, out_low, out_high, &parms ) )
-		{
-			reps = 0;
-		}
-	}	
 
+        image2 = p->finfo.image2;
+
+        if ( image2 )
+                flo_elements = 4;
+        else
+                flo_elements = 3;
+
+        if ( useROI == True )
+                flo_elements++;
+
+	monoflag = 0;
+        parms = ( XieClipScaleParam * ) NULL;
+
+        if ( xp->vinfo.depth != 8 )
+        {
+		monoflag = 1;
+		flo_elements++;
+		if ( SetupClipScale( xp, p, image1, levels, in_low, 
+			in_high, out_low, out_high, &parms ) == 0 )
+		{
+			return( 0 );
+		}
+        }
+
+	rects = ( XieRectangle * ) NULL;
+	if ( useROI == True )
+	{
+		rects = (XieRectangle *)
+			malloc( numROIs * sizeof( XieRectangle ) );
+		if ( rects == ( XieRectangle * ) NULL )
+			reps = 0;
+		else
+		{
+			for ( i = 0; i < numROIs; i++ )
+			{
+				rects[ i ].x = i * 100;
+				rects[ i ].y = i * 100;
+				rects[ i ].width = 100;
+				rects[ i ].height = 100;
+			}
+		}
+        }
+
+	flograph = ( XiePhotoElement * ) NULL;
+	XIEPhotomap1 = XIEPhotomap2 = ( XiePhotomap ) NULL;
+	XIERoi = ( XieRoi ) NULL;
+	flo = ( XiePhotoflo ) NULL;
 	if ( reps )
-		if ( ( XIEPhotomap = 
-			GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+	{
+		flograph = XieAllocatePhotofloGraph( flo_elements );
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
 			reps = 0;
-	if ( !reps && parms )
-		free( parms );
-	if ( !reps && p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
+		}
+		else if ( ( XIEPhotomap1 =
+			GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+		{
+			reps = 0;
+		}
+		else if ( image2 )
+		{
+			if ( ( XIEPhotomap2 = GetXIEPhotomap( xp, p, 2 ) ) == 
+				( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}
+		}
+
+		if ( useROI == True )
+		{
+			if ( ( XIERoi = GetXIERoi( xp, p, rects, numROIs ) ) ==
+				( XieRoi ) NULL )
+			{
+				reps = 0;
+			}
+		}
 	}
-		
-	return( reps );
-}
-
-int InitLogicalDyadic(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-	XIEimage *image;
-
-	p->data = ( char * ) NULL;
-	image = p->finfo.image1;
-	parms = NULL;
-	if ( !image )
-		return( 0 );
-	monoflag = 0;
-        if ( xp->vinfo.depth == 1 )
-        {
-		monoflag = 1;
-		if ( SetupMonoClipScale( image, levels, in_low, 
-			in_high, out_low, out_high, &parms ) == 0 )
-		{
-			return( 0 );
-		}
-        }
-
-        if ( ( src1 = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
-                reps = 0;
-        else
-        {
-		free( p->data );
-		p->data = ( char * ) NULL;
-                if ( ( src2 = GetXIEPhotomap( xp, p, 2 ) ) == 
-			( XiePhotomap ) NULL )
-		{
-			XieDestroyPhotomap( xp->d, src1 );
-                        reps = 0;
-		}
-        }
-	if ( !reps && parms )
-		free( parms );
-	if ( !reps && p->data )
+	if ( reps )
 	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-        return( reps );
-}
+		idx = 0;
 
-int InitROILogicalMonadic(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-        XieRectangle *rects;
-        int     rectsSize, i;
-	XIEimage *image;
+		domain.offset_x = 0;
+		domain.offset_y = 0;
 
-	image = p->finfo.image1;
-	if ( !image )
-		return( 0 );
-	p->data = ( char * ) NULL;
-	parms = NULL;
-	monoflag = 0;
-        if ( xp->vinfo.depth == 1 )
-        {
-		monoflag = 1;
-		if ( SetupMonoClipScale( image, levels, in_low, 
-			in_high, out_low, out_high, &parms ) == 0 )
+		if ( useROI == True )
 		{
-			return( 0 );
+			XieFloImportROI(&flograph[idx], XIERoi);
+			idx++;
+			domain.phototag = idx;
 		}
-        }
-        rectsSize = 5;
-        rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
-        if ( rects == ( XieRectangle * ) NULL )
-                reps = 0;
-        else
-        {
-                for ( i = 0; i < rectsSize; i++ )
+                else
                 {
-                        rects[ i ].x = i * 100;
-                        rects[ i ].y = i * 100;
-                        rects[ i ].width = 100;
-                        rects[ i ].height = 100;
+                        domain.phototag = 0;
                 }
-        }
-        if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) == 
-		( XieRoi ) NULL )
-        {
-                reps = 0;
-        }
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-        if ( rects )
-                free( rects );
-        if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
-		( XiePhotomap ) NULL )
-	{
-		XieDestroyROI( xp->d, XIERoi );
-                reps = 0;
-	}
-	if ( !reps && parms )
-		free( parms );
-	if ( !reps && p->data )
-	{	
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-        return( reps );
-}
 
-int InitROILogicalDyadic(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-        XieRectangle *rects;
-        int     rectsSize, i;
-        XIEimage *image;
+                XieFloImportPhotomap(&flograph[idx], XIEPhotomap1, False );
+                idx++;
+                src1 = idx;
 
-        image = p->finfo.image1;
-	p->data = ( char * ) NULL;
-        if ( !image )
-                return( 0 );
-	parms = NULL;
-	monoflag = 0;
-        if ( xp->vinfo.depth == 1 )
-        {
-		monoflag = 1;
-		if ( SetupMonoClipScale( image, levels, in_low, 
-			in_high, out_low, out_high, &parms ) == 0 )
-		{
-			return( 0 );
-		}
-        }
-        rectsSize = 5;
-        rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
-        if ( rects == ( XieRectangle * ) NULL )
-                reps = 0;
-        else
-        {
-                for ( i = 0; i < rectsSize; i++ )
+                if ( image2 )
                 {
-                        rects[ i ].x = i * 100;
-                        rects[ i ].y = i * 100;
-                        rects[ i ].width = 100;
-                        rects[ i ].height = 100;
+                        XieFloImportPhotomap(&flograph[idx], XIEPhotomap2,
+                                False );
+                        idx++;
+                        src2 = idx;
                 }
-        }
-        if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) == 
-		( XieRoi ) NULL )
-        {
-                reps = 0;
-        }
-        if ( rects )
-                free( rects );
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
+                else
+                        src2 = 0;
 
-        if ( ( src1 = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
-	{
-                reps = 0;
-		XieDestroyROI( xp->d, XIERoi );
-	}
-        else
-        {
-		free( p->data );
-		p->data = ( char * ) NULL;
-                if ( ( src2 = GetXIEPhotomap( xp, p, 2 ) ) == 
-			( XiePhotomap ) NULL )
-		{
-                        reps = 0;
-			XieDestroyPhotomap( xp->d, src1 );
-			XieDestroyROI( xp->d, XIERoi );
-		}
-        }
-	if ( !reps && p->data )
-	{	
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-	if ( parms && !reps )
-		free( parms );
-        return( reps );
-}
-
-void DoLogicalMonadicImmediate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i;
-	int     band_mask = 1;
-	char 	*datatmp;
-	int	flo_notify, flo_id;
-	int	flo_elements;
-	XiePhotospace photospace;
-	int     band_order = xieValLSFirst;
-	XieProcessDomain domain;
-	XiePhotoElement *flograph;
-	int	decode_notify;
-
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-	flo_id = 1;
-	if ( monoflag )
-		flo_elements = 4;
-	else
-		flo_elements = 3;
-	decode_notify = False;
-	flograph = XieAllocatePhotofloGraph(flo_elements);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-	XieFloImportPhotomap(&flograph[0], XIEPhotomap, decode_notify);
-
-	domain.offset_x = 0;
-	domain.offset_y = 0;
-	domain.phototag = 0;
-
-	XieFloLogical(&flograph[1], 
-		1,
-		0,
-		&domain,
-		( ( LogicalParms * ) p->ts )->logicalConstant,
-		( ( LogicalParms * ) p->ts )->logicalOp,
-		( ( LogicalParms * ) p->ts )->logicalBandMask );
-	if ( monoflag )
-	{
-		XieFloConstrain(&flograph[2],
-			2,
-			levels,
-			tech,
-			(char *)parms
-		); 		
-	}	
-	XieFloExportDrawable(&flograph[flo_elements - 1],
-		flo_elements - 1, /* source phototag number */
-		xp->w,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
-	flo_notify = True;	
-    	for (i = 0; i != reps; i++) {
-
-
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		flo_elements    /* number of elements */
-       		);
-		XSync( xp->d, 0 );
-		WaitForFloToFinish( xp, flo_id );
-		flo_id++;
-    	}
-	XieDestroyPhotospace( xp->d, photospace );
-	XieFreePhotofloGraph(flograph,flo_elements);	
-}
-
-void DoLogicalDyadicImmediate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-        int     i, flo_elements;
-        int     band_mask = 1;
-        char    *datatmp;
-        int     flo_notify, flo_id;
-        XiePhotospace photospace;
-        int     band_order = xieValLSFirst;
-        XieProcessDomain domain;
-        XiePhotoElement *flograph;
-        int     decode_notify;
-
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	decode_notify = False;
-        flo_id = 1;
-        if ( monoflag )
-                flo_elements = 5;
-        else
-                flo_elements = 4;
-        flograph = XieAllocatePhotofloGraph(flo_elements);
-        if ( flograph == ( XiePhotoElement * ) NULL )
-        {
-                fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-                return;
-        }
-
-	XieFloImportPhotomap(&flograph[0], src1,
-		decode_notify);
-
-	XieFloImportPhotomap(&flograph[1], src2,
-		decode_notify);
-
-	domain.offset_x = 0;
-	domain.offset_y = 0;
-	domain.phototag = 0;
-
-	XieFloLogical(&flograph[2],
-		1,
-		2,
-		&domain,
-		( ( LogicalParms * ) p->ts )->logicalConstant,
-		( ( LogicalParms * ) p->ts )->logicalOp,
-		( ( LogicalParms * ) p->ts )->logicalBandMask );
-	if ( monoflag )
-	{
-		XieFloConstrain(&flograph[3],
-			3,
-			levels,
-			tech,
-			(char *)parms
-		);
-	}
-
-       XieFloExportDrawable(&flograph[flo_elements-1],
-		flo_elements-1,         /* source phototag number */
-		xp->w,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
-
-	flo_notify = True;
-        for (i = 0; i != reps; i++) {
-
-                XieExecuteImmediate(xp->d, photospace,
-                        flo_id,
-                        flo_notify,
-                        flograph,       /* photoflo specification */
-                        flo_elements    /* number of elements */
+                XieFloLogical(&flograph[idx],
+                        src1,
+                        src2,
+                        &domain,
+                        logicalConstant,
+                        logicalOp,
+                        bandMask
                 );
-		WaitForFloToFinish( xp, flo_id );
-                XSync( xp->d, 0 );
+                idx++;
 
-                flo_id++;
-        }
-        XieDestroyPhotospace( xp->d, photospace );
-        XieFreePhotofloGraph(flograph,flo_elements);
-}
+		if ( monoflag )
+		{
+			XieFloConstrain( &flograph[ idx ],
+				idx,
+				levels,
+				tech,
+				( char * ) parms
+			);
+			idx++;
+		}
 
-void DoROILogicalMonadicImmediate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i, flo_elements;
-	int     band_mask = 1;
-	char 	*datatmp;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-	int     band_order = xieValLSFirst;
-	XieProcessDomain domain;
-	XiePhotoElement *flograph;
-	int	decode_notify;
-
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	flo_id = 1;
-        if ( monoflag )
-                flo_elements = 5;
-        else
-                flo_elements = 4;
-	decode_notify = False;
-	flograph = XieAllocatePhotofloGraph(flo_elements);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportPhotomap(&flograph[0], XIEPhotomap, decode_notify);
-
-	XieFloImportROI(&flograph[1], XIERoi);
-
-	domain.offset_x = 0;
-	domain.offset_y = 0;
-	domain.phototag = 2;
-
-	XieFloLogical(&flograph[2], 
-		1,
-		0,
-		&domain,
-		( ( LogicalParms * ) p->ts )->logicalConstant,
-		( ( LogicalParms * ) p->ts )->logicalOp,
-		( ( LogicalParms * ) p->ts )->logicalBandMask );
-
-	if ( monoflag )
-	{
-		XieFloConstrain(&flograph[3],
-			3,
-			levels,
-			tech,
-			(char *)parms
-		);
-	}
-
-       XieFloExportDrawable(&flograph[flo_elements - 1],
-		flo_elements - 1,       /* source phototag number */
-		xp->w,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
-
-	flo_notify = True;	
-    	for (i = 0; i != reps; i++) {
-
-       		XieExecuteImmediate(xp->d, photospace,
-               		flo_id,		
-               		flo_notify,     
-               		flograph,       /* photoflo specification */
-               		flo_elements    /* number of elements */
-       		);
-
-		WaitForFloToFinish( xp, flo_id );
-		XSync( xp->d, 0 );
-
-		flo_id++;
-    	}
-	XieDestroyPhotospace( xp->d, photospace );
-	XieFreePhotofloGraph(flograph,flo_elements);	
-}
-
-void DoROILogicalDyadicImmediate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-        int     i, flo_elements;
-        int     band_mask = 1;
-        char    *datatmp;
-        int     flo_notify, flo_id;
-        XiePhotospace photospace;
-        int     band_order = xieValLSFirst;
-        XieProcessDomain domain;
-        XiePhotoElement *flograph;
-        int     decode_notify;
-
-        photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-        flo_id = 1;
-        if ( monoflag )
-                flo_elements = 6;
-        else
-                flo_elements = 5;
-	decode_notify = False;
-        flograph = XieAllocatePhotofloGraph(flo_elements);
-        if ( flograph == ( XiePhotoElement * ) NULL )
-        {
-                fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-                return;
-        }
-
-	XieFloImportPhotomap(&flograph[0], src1,
-		decode_notify);
-
-	XieFloImportPhotomap(&flograph[1], src2,
-		decode_notify);
-
-	XieFloImportROI(&flograph[2], XIERoi );
-
-	domain.offset_x = 0;
-	domain.offset_y = 0;
-	domain.phototag = 3;
-
-	XieFloLogical(&flograph[3],
-		1,
-		2,
-		&domain,
-		( ( LogicalParms * ) p->ts )->logicalConstant,
-		( ( LogicalParms * ) p->ts )->logicalOp,
-		( ( LogicalParms * ) p->ts )->logicalBandMask );
-	if ( monoflag )
-	{
-		XieFloConstrain(&flograph[4],
-			4,
-			levels,
-			tech,
-			(char *)parms
-		);
-	}
-       XieFloExportDrawable(&flograph[flo_elements - 1],
-		flo_elements - 1,   /* source phototag number */
-		xp->w,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
-
-	flo_notify = True;
-        for (i = 0; i != reps; i++) {
-
-                XieExecuteImmediate(xp->d, photospace,
-                        flo_id,
-                        flo_notify,
-                        flograph,       /* photoflo specification */
-                        flo_elements    /* number of elements */
+                XieFloExportDrawable(&flograph[idx],
+                        idx,            /* source phototag number */
+                        xp->w,
+                        xp->fggc,
+                        0,       /* x offset in window */
+                        0        /* y offset in window */
                 );
 
-		WaitForFloToFinish( xp, flo_id );
-                XSync( xp->d, 0 );
-                flo_id++;
+                idx++;
+
+                flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+                flo_notify = True;
         }
-        XieFreePhotofloGraph(flograph,flo_elements);
-        XieDestroyPhotospace( xp->d, photospace );
+	if ( !reps )
+	{
+		FreeLogicalStuff( xp, p );
+	}
+        return( reps );
 }
 
-int EndLogicalMonadic(xp, p)
+void DoLogical(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+        int     i;
+
+        for (i = 0; i != reps; i++) {
+		XieExecutePhotoflo( xp->d, flo, flo_notify );
+		WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False );	
+                XSync( xp->d, 0 );
+        }
+}
+
+int EndLogical(xp, p)
     XParms  xp;
     Parms   p;
 {
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-	if ( parms )
-		free( parms );
-	XieDestroyPhotomap( xp->d, XIEPhotomap );
+	FreeLogicalStuff( xp, p );
 }
 
-int EndLogicalDyadic(xp, p)
-    XParms  xp;
-    Parms   p;
+int
+FreeLogicalStuff( xp, p )
+XParms	xp;
+Parms	p;
 {
-	if ( p->data )
+	if ( XIEPhotomap1 && IsPhotomapInCache( XIEPhotomap1 ) == False )
 	{
-		free( p->data );
-		p->data = ( char * ) NULL;
+		XieDestroyPhotomap( xp->d, XIEPhotomap1 );
+		XIEPhotomap1 = ( XiePhotomap ) NULL;
+	}
+	if ( XIEPhotomap2 && IsPhotomapInCache( XIEPhotomap2 ) == False )
+	{
+		XieDestroyPhotomap( xp->d, XIEPhotomap2 );
+		XIEPhotomap1 = ( XiePhotomap ) NULL;
+	}
+	if ( rects )
+	{
+		free( rects );
+		rects = ( XieRectangle * ) NULL;
+	}
+	if ( XIERoi )
+	{
+		XieDestroyROI( xp->d, XIERoi );
+		XIERoi = ( XieRoi ) NULL;
 	}
 	if ( parms )
-		free( parms );
-	XieDestroyPhotomap( xp->d, src1 );
-	XieDestroyPhotomap( xp->d, src2 );
-}
-
-int EndROILogicalMonadic(xp, p)
-    XParms  xp;
-    Parms   p;
-{
-	if ( p->data )
 	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-	if ( parms )
 		free( parms );
-        XieDestroyPhotomap( xp->d, XIEPhotomap );
-        XieDestroyROI( xp->d, XIERoi );
-}
-
-int EndROILogicalDyadic(xp, p)
-    XParms  xp;
-    Parms   p;
-{
-	if ( p->data )
+		parms = ( XieClipScaleParam * ) NULL;
+	}
+	if ( flo )
 	{
-		free( p->data );
-		p->data = ( char * ) NULL;
+		XieDestroyPhotoflo( xp->d, flo );
+		flo = ( XiePhotoflo ) NULL;
 	}
-	if ( parms )
-		free( parms );
-        XieDestroyPhotomap( xp->d, src1 );
-        XieDestroyPhotomap( xp->d, src2 );
-        XieDestroyROI( xp->d, XIERoi );
+	if ( flograph )
+	{
+		XieFreePhotofloGraph(flograph,flo_elements);
+		flograph = ( XiePhotoElement * ) NULL;
+	}
 }
-

@@ -1,6 +1,6 @@
-/* $XConsortium: constrain.c,v 1.3 93/07/26 17:20:43 rws Exp $ */
+/* $XConsortium: constrain.c,v 1.1 93/10/26 10:05:39 rws Exp $ */
 
-/**** module do_constrain.c ****/
+/**** module constrain.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_constrain.c -- constrain flo element tests 
+	constrain.c -- constrain flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -52,84 +52,133 @@ terms and conditions:
 #include <stdio.h>
 
 static XiePhotomap XIEPhotomap;
+static XiePhotomap XIEPhotomap2;
+static int flo_notify, flo_id;
+static XiePhotoElement *flograph;
+static XiePhotoflo flo;
+static int flo_elements;
+static XieClipScaleParam *parms;
 
-int InitConstrainFlo(xp, p, reps)
+int InitConstrain(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	p->data = ( char * ) NULL;
-	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
-		reps = 0;
-	return( reps );
-}
 
-void DoConstrainFloMapImmediate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    	int     i;
-	int	flo_notify, flo_id;
-	XiePhotospace photospace;
-	XiePhotoElement *flograph;
-	int	decode_notify;
 	XieLTriplet levels;
-	XieConstrainTechnique   tech;
-	char    *tech_parms=NULL;
-        XieClipScaleParam *parms;
+	XieConstrainTechnique tech;
+	char *tech_parms=NULL;
         XieConstant in_low,in_high;
         XieLTriplet out_low,out_high;
-	int	InClampDelta = 0;
-	int	OutClampDelta = 0;
+	int InClampDelta = 0;
+	int OutClampDelta = 0;
+	int decode_notify;
+	XIEimage *image;
+	Bool photoDest;
+        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
+        char *encode_params=NULL;
 
-	decode_notify = False;
-	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
+	image = p->finfo.image1;
+        XIEPhotomap = ( XiePhotomap ) NULL;
+        XIEPhotomap2 = ( XiePhotomap ) NULL;
+        parms = ( XieClipScaleParam * ) NULL;
+        flograph = ( XiePhotoElement * ) NULL;
+        flo = ( XiePhotoflo ) NULL;
 
 	tech = ( ( ConstrainParms * ) p->ts )->constrain;
+        photoDest = ( ( ConvolveParms * )p->ts )->photoDest;
 
-	levels[ 0 ] = 1 << xp->vinfo.depth;
-	levels[ 1 ] = 0;
-	levels[ 2 ] = 0;
+	XIEPhotomap2 = XieCreatePhotomap( xp->d );
 
-	in_low[ 0 ] = 0.0;
-	in_high[ 0 ] = ( float ) ( 1 << xp->vinfo.depth ) - 1.0;
-	out_low[ 0 ] = 0;
-	out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
-	in_low[ 1 ] = 0.0;
-	in_high[ 1 ] = 0.0;
-	in_low[ 2 ] = 0.0;
-	in_high[ 2 ] = 0.0;
-	out_low[ 1 ] = 0;
-	out_high[ 1 ] = 0;
-	out_low[ 2 ] = 0;
-	out_high[ 2 ] = 0;
-
-	if ( ( ( ConstrainParms * ) p->ts )->clamp & ClampInputs )
+        if ( TechniqueSupported( xp, xieValConstrain, tech ) == False )
+                reps = 0;
+	else if ( xp->vinfo.depth < 8 && tech == xieValConstrainHardClip )
 	{
-		InClampDelta = levels[ 0 ] / reps;
+		if ( ( XIEPhotomap = GetXIEDitheredPhotomap( xp, p, 1, 
+			1 << xp->vinfo.depth ) ) == 
+				( XiePhotomap ) NULL )
+			reps = 0;
 	}
-	if ( ( ( ConstrainParms * ) p->ts )->clamp & ClampOutputs )
+	else 
 	{
-		OutClampDelta = out_high[ 0 ] / reps;
-	}	
-	flograph = XieAllocatePhotofloGraph(3);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
+		if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
+        		( XiePhotomap ) NULL )
+        		reps = 0;
 	}
-	XieFloImportPhotomap(&flograph[0],XIEPhotomap,decode_notify);
+	if ( reps )
+	{
+		decode_notify = False;
+		flo_elements = 3;
 
-       	XieFloExportDrawable(&flograph[2],
-               	2,              /* source phototag number */
-               	xp->w,
-               	xp->fggc,
-               	0,       /* x offset in window */
-               	0        /* y offset in window */
-       	);
-	flo_notify = False;	
-    	for (i = 0; i != reps; i++) {
+		levels[ 0 ] = 1 << xp->vinfo.depth;
+		levels[ 1 ] = 0;
+		levels[ 2 ] = 0;
+		out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+		out_high[ 1 ] = 0; 
+		out_high[ 2 ] = 0; 
+
+		if ( levels[ 0 ] == 256 && 
+			( ( ConstrainParms * ) p->ts )->clamp & ClampInputs )
+		{
+			InClampDelta = levels[ 0 ] / 2;
+		}
+		else
+		{
+			InClampDelta = 0;
+		}
+		if ( levels[ 0 ] == 256 && 
+			( ( ConstrainParms * ) p->ts )->clamp & ClampOutputs )
+		{
+			OutClampDelta = out_high[ 0 ] / 2;
+		}	
+		else
+		{
+			OutClampDelta = 0;
+		}
+		in_low[ 0 ] = 0.0 + ( float ) InClampDelta; 
+		in_low[ 1 ] = 0.0; 
+		in_low[ 2 ] = 0.0; 
+		in_high[ 0 ] = ( ( float ) image->levels[ 0 ] - 1.0 ) -
+			( float ) InClampDelta;
+		in_high[ 1 ] = 0.0; 
+		in_high[ 2 ] = 0.0; 
+		out_low[ 0 ] = 0 + OutClampDelta;
+		out_low[ 1 ] = 0;
+		out_low[ 2 ] = 0;
+		out_high[ 0 ] = out_high[ 0 ] - OutClampDelta;
+		out_high[ 1 ] = 0; 
+		out_high[ 2 ] = 0; 
+
+		flograph = XieAllocatePhotofloGraph( flo_elements );	
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
+			reps = 0;
+		}
+	}
+	if ( reps )
+	{
+		XieFloImportPhotomap(&flograph[0],XIEPhotomap,decode_notify);
+
+		if ( photoDest == False )
+		{
+			XieFloExportDrawable(&flograph[2],
+				2,              /* source phototag number */
+				xp->w,
+				xp->fggc,
+				0,       /* x offset in window */
+				0        /* y offset in window */
+			);
+		}
+		else
+		{
+                        XieFloExportPhotomap(&flograph[2],
+                                2,              /* source phototag number */
+                                XIEPhotomap2,
+                                encode_tech,
+                                encode_params
+                        );
+		}
 
 		if ( tech == xieValConstrainHardClip )
 		{
@@ -144,14 +193,12 @@ void DoConstrainFloMapImmediate(xp, p, reps)
 			{
 				fprintf( stderr, 
 					"Trouble loading clipscale technique parameters\n" );
-				return;
+				reps = 0;
 			}
-			in_low[ 0 ] += ( float ) InClampDelta;
-			in_high[ 0 ] -= ( float ) InClampDelta;
-			out_low[ 0 ] += OutClampDelta;
-			out_high[ 0 ] -= OutClampDelta;
 		}
-
+	}
+	if ( reps )
+	{
 		XieFloConstrain( &flograph[1], 
 			1,
 			levels,
@@ -159,133 +206,65 @@ void DoConstrainFloMapImmediate(xp, p, reps)
 			tech_parms
 		);
 
-		flo_id = i + 1;		
-        	XieExecuteImmediate(xp->d, photospace,
-                	flo_id,		
-                	flo_notify,     
-                	flograph,       /* photoflo specification */
-                	3               /* number of elements */
-        	);
-
-		if ( tech_parms )
-		    free( tech_parms );	
-    	}
-	XieDestroyPhotospace( xp->d, photospace );
-	XieFreePhotofloGraph(flograph,3);	
+		flo_notify = False;	
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements ); 
+	}
+	if ( !reps )
+		FreeConstrainStuff( xp, p );
+	return( reps );
 }
 
-void DoConstrainFloMapStored(xp, p, reps)
+void DoConstrain(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
     	int     i;
-	int	flo_notify, decode_notify;
-	XiePhotoElement *flograph;
-	XiePhotoflo flo;
-	XieLTriplet levels;
-	XieConstrainTechnique   tech;
-	char    *tech_parms=NULL;
-        XieClipScaleParam *parms;
-        XieConstant in_low,in_high;
-        XieLTriplet out_low,out_high;
 
-	decode_notify = False;
-	tech = ( ( ConstrainParms * ) p->ts )->constrain;
-
-	levels[ 0 ] = 1 << xp->vinfo.depth;
-	levels[ 1 ] = 0;
-	levels[ 2 ] = 0;
-
-	in_low[ 0 ] = 0.0;
-	in_high[ 0 ] = ( float ) ( 1 << xp->vinfo.depth ) - 1.0 ;
-	out_low[ 0 ] = 0;
-	out_high[ 0] = 0;
-	in_low[ 1 ] = 0.0;
-	in_high[ 1 ] = 0.0;
-	in_low[ 2 ] = 0.0;
-	in_high[ 2 ] = 0.0;
-	out_low[ 1 ] = 0;
-	out_high[ 1 ] = 0;
-	out_low[ 2 ] = 0;
-	out_high[ 2 ] = 0;
-	if ( xp->vinfo.depth == 1 ) 
-		out_high[ 0 ] = 1;
-	else
-		out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
-	if ( tech == xieValConstrainHardClip )
-	{
-		tech_parms = ( char * ) NULL;
-	}
-	else
-	{
-		parms = XieTecClipScale( in_low, in_high, out_low, out_high);
-		tech_parms = ( char * ) parms;
-		if ( tech_parms == ( char * ) NULL )
-		{
-			fprintf( stderr, 
-				"Trouble loading clipscale technique parameters\n" );
-			return;
-		}
-	}
-
-	flograph = XieAllocatePhotofloGraph(3);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		return;
-	}
-
-	XieFloImportPhotomap(&flograph[0],XIEPhotomap,decode_notify);
-
-	XieFloConstrain( &flograph[1], 
-		1,
-		levels,
-		tech,
-		tech_parms
-	);
-					
-       	XieFloExportDrawable(&flograph[2],
-               	2,              /* source phototag number */
-               	xp->w,
-               	xp->fggc,
-               	0,       /* x offset in window */
-               	0        /* y offset in window */
-       	);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, 3 );
-
-	if ( tech_parms )
-		free( tech_parms );	
-
-	/* crank it */
-
-	flo_notify = False;
     	for (i = 0; i != reps; i++) {
-		XieExecutePhotoflo( xp->d, flo, flo_notify );
-		XSync( xp->d, 0 );
+        	XieExecutePhotoflo(xp->d, flo, flo_notify );
     	}
-
-	/* destroy the photoflo */
-
-	XieFreePhotofloGraph(flograph,3);	
-	XieDestroyPhotoflo( xp->d, flo );
 }
 
-void EndConstrainFlo(xp, p)
+void EndConstrain(xp, p)
     XParms  xp;
     Parms   p;
 {
-	/* deallocate the data buffer */
+	FreeConstrainStuff( xp, p );
+}
 
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
+int
+FreeConstrainStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+        if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+        {
+                XieDestroyPhotomap( xp->d, XIEPhotomap );
+                XIEPhotomap = ( XiePhotomap ) NULL;
+        }
 
-	/* destroy the photomap */
+        if ( XIEPhotomap2 ) 
+        {
+                XieDestroyPhotomap( xp->d, XIEPhotomap2 );
+                XIEPhotomap2 = ( XiePhotomap ) NULL;
+        }
 
-        XieDestroyPhotomap(xp->d, XIEPhotomap);
+        if ( parms )
+        {
+                free( parms );
+                parms = ( XieClipScaleParam * ) NULL;
+        }
 
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
 }

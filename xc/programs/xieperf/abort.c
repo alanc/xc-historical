@@ -1,6 +1,6 @@
-/* $XConsortium: abort.c,v 1.2 93/07/19 14:43:12 rws Exp $ */
+/* $XConsortium: abort.c,v 1.2 93/10/26 10:05:20 rws Exp $ */
 
-/**** module do_abort.c ****/
+/**** module abort.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_abort.c -- abort flo test 
+	abort.c -- abort flo test 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -62,57 +62,65 @@ int InitAbort(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        XieDataClass    data_class;
+        XieDataClass    class;
         XieOrientation  band_order;
         XieLTriplet     length, levels;
         Bool    	merge;
         XieLTriplet     start;
 
+	XIELut = ( XieLut ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	
 	if ( !(XIELut = XieCreateLUT( xp->d ) ) )
 	{
 		fprintf( stderr, "XieCreateLUT failed\n" );
-		return( 0 );
+		reps = 0;
 	}
 
-	/* set up a flo to read a lut from client */
+	if ( reps )
+	{
+		/* set up a flo to read a lut from client */
 
-        flograph = XieAllocatePhotofloGraph(2);
-        if ( flograph == ( XiePhotoElement * ) NULL )
-        {
-                fprintf(stderr,"XieAllocatePhotofloGraph failed\n");
-		XieDestroyLUT( xp->d, XIELut );
-		return( 0 );
-        }
+		flograph = XieAllocatePhotofloGraph(2);
+		if ( flograph == ( XiePhotoElement * ) NULL )
+		{
+			fprintf(stderr,"XieAllocatePhotofloGraph failed\n");
+			reps = 0;
+		}
 
-        data_class = xieValSingleBand;
-        band_order = xieValLSFirst;
-        length[ 0 ] = ( ( AbortParms * ) p->ts )->lutSize;
-        length[ 1 ] = 0;
-        length[ 2 ] = 0;
-        levels[ 0 ] = ( ( AbortParms * ) p->ts )->lutLevels; 
-        levels[ 1 ] = 0;
-        levels[ 2 ] = 0;
+		class = xieValSingleBand;
+		band_order = xieValLSFirst;
+		length[ 0 ] = ( ( AbortParms * ) p->ts )->lutSize;
+		length[ 1 ] = 0;
+		length[ 2 ] = 0;
+		levels[ 0 ] = ( ( AbortParms * ) p->ts )->lutLevels; 
+		levels[ 1 ] = 0;
+		levels[ 2 ] = 0;
 
-        XieFloImportClientLUT(&flograph[0],
-                data_class,
-                band_order,
-                length,
-                levels
-        );
+		XieFloImportClientLUT(&flograph[0],
+			class,
+			band_order,
+			length,
+			levels
+		);
 
-        merge = False;
-        start[ 0 ] = 0;
-        start[ 1 ] = 0;
-        start[ 2 ] = 0;
+		merge = False;
+		start[ 0 ] = 0;
+		start[ 1 ] = 0;
+		start[ 2 ] = 0;
 
-        XieFloExportLUT(&flograph[1],
-                1,              /* source phototag number */
-                XIELut,
-                merge,
-                start
-        );
+		XieFloExportLUT(&flograph[1],
+			1,              /* source phototag number */
+			XIELut,
+			merge,
+			start
+		);
 
-	flo = XieCreatePhotoflo( xp->d, flograph, 2 );
+		flo = XieCreatePhotoflo( xp->d, flograph, 2 );
+	}
+	if ( !reps )
+		FreeAbortStuff( xp, p );
 	return( reps );
 }
 
@@ -125,10 +133,10 @@ void DoAbort(xp, p, reps)
 
     	for (i = 0; i != reps; i++) {
 
-		/* now, the flo should be active and waiting for data */
-		/* XXX should verify this? */
-
 		XieExecutePhotoflo( xp->d, flo, True );
+
+		/* now, the flo should be active and waiting for data */
+
 		if ( !AbortAndWaitForEvent( xp, p, 0, flo ) )
 			break;
     	}
@@ -151,6 +159,27 @@ unsigned long namespace;
 unsigned long flo_id;
 {
 	XieAbort( xp->d, namespace, flo_id );
-	return( WaitForFloToFinish( xp, flo_id ) );
+	return( WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False ) );
 }
 
+int
+FreeAbortStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( XIELut )
+	{
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
+	}
+	if ( flograph )
+	{
+                XieFreePhotofloGraph(flograph,2);
+		flograph = ( XiePhotoElement * ) NULL;
+	}
+	if ( flo )
+	{
+                XieDestroyPhotoflo( xp->d, flo );
+		flo = ( XiePhotoflo ) NULL;
+	}
+}

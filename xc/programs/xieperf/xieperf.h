@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.6 93/08/19 09:40:27 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.2 93/10/26 10:07:37 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -48,6 +48,14 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
 *****************************************************************************/
+
+#ifndef VMS
+#include <X11/Xatom.h>
+#include <X11/Xos.h>
+#else
+#include <decw$include/Xatom.h>
+#endif
+
 #ifndef VMS
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -55,13 +63,13 @@ terms and conditions:
 #include <decw$include/Xlib.h>
 #include <decw$include/Xutil.h>
 #endif
-#include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <X11/extensions/XIElib.h>
 
 #ifndef NULL
 #define NULL 0
 #endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef X_NOT_STDC_ENV
@@ -71,8 +79,12 @@ char *malloc();
 #endif
 #include <fcntl.h>
 
+
 #define WIDTH         600	/* Size of large window to work within  */
 #define HEIGHT        600
+
+#define	MONWIDTH      350 
+#define	MONHEIGHT     200 
 
 typedef Bool (*InitProc)    (/* XParms xp; Parms p */);
 typedef void (*Proc)	    (/* XParms xp; Parms p */);
@@ -117,21 +129,29 @@ static struct stat _Stat_Buffer;
 /* the low 8 bits of the short are for test requirements. Bit positions not
    defined below are reserved for future expansion */
 
-#define	CAPA_COLOR_8	( 1 << 0 )	
-#define	CAPA_COLOR_16	( 1 << 1 )	
-#define	CAPA_COLOR_24	( 1 << 2 )	
-#define	CAPA_TRIPLEBAND	( 1 << 3 )	
+#define	CAPA_EVENT	( 1 << 0 )	
+#define	CAPA_ERROR	( 1 << 1 )	
 
 #define	CAPA_MASK	0x00ff
 
-#define	IsColor8( x ) ( x & CAPA_COLOR_8 ? 1 : 0 )
-#define	IsColor16( x ) ( x & CAPA_COLOR_16 ? 1 : 0 )
-#define	IsColor24( x ) ( x & CAPA_COLOR_24 ? 1 : 0 )
-#define IsTripleBand( x ) ( x & CAPA_TRIPLE_BAND ) ? 1 : 0 )
+#define IsEvent(x)	( x & CAPA_EVENT ? 1 : 0 ) 
+#define IsError(x)	( x & CAPA_ERROR ? 1 : 0 ) 
 
-#define IsFaxImage( x ) ( x == xieValDecodeG42D   ||		\
-			  x == xieValDecodeG32D   ||		\
-			  x == xieValDecodeG31D )
+#define IsFaxImage( x ) ( x == xieValDecodeG42D   	||		\
+			  x == xieValDecodeG32D   	||		\
+			  x == xieValDecodeTIFFPackBits ||		\
+			  x == xieValDecodeTIFF2   	||		\
+			  x == xieValDecodeG31D ) 
+
+#define IsColorVisual( visclass ) ( visclass == StaticColor || visclass == \
+	PseudoColor || visclass == DirectColor || visclass == TrueColor ? 1 : 0 )
+
+#define IsGrayVisual( visclass ) ( !IsColorVisual( visclass ) )
+
+#define IsStaticVisual( visclass ) ( visclass == StaticColor || visclass == TrueColor\
+	 || visclass == StaticGray )
+
+#define IsDynamicVisual( visclass ) ( !IsStaticVisual( visclass ) )
 
 /* protocol subset masks */
 
@@ -141,32 +161,38 @@ static struct stat _Stat_Buffer;
 #define SUBSET_MASK	0xff00
 #define	SUBSET_FULL	( xieValFull << 8 )
 #define SUBSET_DIS	( xieValDIS << 8 )
+#define	NOTBORING	0x8000
 
 #define	IsFull( x ) ( x & SUBSET_FULL ? 1 : 0 )
 #define IsDIS( x ) ( x & SUBSET_DIS ? 1 : 0 )
 #define IsDISAndFull( x ) ( IsFullTest( x ) && IsDISTest( x ) )
+#define IsNotBoring( x ) ( notBoring == True ? ( x & NOTBORING ? 1 : 0 ) : 1 )
 
 /*
  * configuration shared by all tests 
  */
  
-/* image configuration */
+/* image configuration - could be nicer, but put info for all
+   decode techniques in this one struct */
 
 typedef struct _Image {
     char	*fname;		/* filename */
     int		fsize;	      	/* size in bytes. set in init function */
-    int		data_class;    	/* singleband or tripleband */
-    int		width;		/* width of image */
-    int         height;         /* height of image */
-    int         depth;		/* pixel depth */
-    int         levels;		/* 1 << depth */
+    int		bandclass;     	/* singleband or tripleband */
+    int		width[ 3 ];	/* width of image */
+    int         height[ 3 ];    /* height of image */
+    int         depth[ 3 ];     /* pixel depth */
+    int         levels[ 3 ];	/* 1 << depth */
     int		decode;	     	/* decode method */
-    int         fill_order;
-    int         pixel_order;
-    int         pixel_stride;
-    int         scanline_pad;
-    int         left_pad;
+    int         fill_order;	
+    int         pixel_order;	
+    int         pixel_stride[ 3 ];	
+    int         scanline_pad[ 3 ];	
+    int         left_pad[ 3 ];	
+    int		interleave;	
+    int		band_order;	
     unsigned int chksum;
+    char        *data;       /* image data */
 } XIEimage;
 
 /* a file represents an image. 3 files per test are supported */
@@ -185,9 +211,8 @@ typedef struct _Parms {
     /* Optional fields */
     int		description; /* server requirements flags */
     int         buffer_size; /* size when sending/reading data from xie */
-    char        *data;       /* image data */
     XIEifile 	finfo;      /* image file info */	
-    XPointer	ts;	    /* test specifics */		
+    caddr_t	ts;	    /* test specifics */		
 } ParmRec, *Parms;
 
 /*
@@ -199,18 +224,65 @@ typedef struct _abortParms {
     int		lutLevels;
 } AbortParms;
 
+typedef struct _encodeParms {
+	int	encode;		/* encode technique */
+	char	*parms;		/* encode technique structs */
+	Bool	exportClient;	/* if True, ECP. Else, EP */
+} EncodeParms;
+
+typedef struct _eventParms {
+    int		event;
+} EventParms;
+
+typedef struct _rgbParms {
+	int			colorspace;
+	int			which;
+#define RGB_FF 1
+#define RGB_IF 2
+#define RGB_II 3
+	XieMatrix		toMatrix;
+	XieMatrix		fromMatrix;
+	XieWhiteAdjustTechnique whiteAdjust;
+	XieConstant		whitePoint;
+	XieGamutTechnique	gamut;
+        XieLTriplet		RGBLevels;
+	XieConstant 		luma;
+	XieConstant		bias;
+	XieFloat		scale;
+} RGBParms;
+
+typedef struct _errorParms {
+    int		error;
+} ErrorParms;
+
 typedef struct _awaitParms {
     int		lutSize;
     int		lutLevels;
 } AwaitParms;
 
+#define	BandExtract 1
+#define BandSelect  2
+
+typedef struct _bandParms {
+    XieConstant c1;
+    XieConstant c2;
+    XieConstant c3;
+    int which;		/* BandExtract or BandSelect */
+    float bias;
+    Atom atom;
+    Bool useStdCmap;
+} BandParms;
+
 typedef struct _blendParms {
     XieConstant constant;
     XieFloat 	alphaConstant;
     int		bandMask;
+    Bool        useROI;
+    int         numROIs;
 } BlendParms;
 
 typedef struct _constrainParms {
+    Bool 	photoDest;
     int		constrain;
     int		clamp;
 } ConstrainParms;
@@ -221,24 +293,29 @@ typedef struct _creatDstryParms {
 
 typedef struct _cvtToIndexParms {
     int		dither;
+    Bool	useDefaultCmap;
+    Bool	flo_notify;
+    Bool	addCvtFromIndex;
 } CvtToIndexParms;
 
 typedef struct _ditherParms {
     int		dither;
     int		drawable;
+    float	threshold;
+    int		bandMask;
 } DitherParms;
 
 typedef struct _exportClParms {
-    int		dummy;
+    int		numROIs;	/* ExportClientROI */
+	
+    /* following are for ExportClientHistogram with ROIs */
+
+    Bool		useROI;
+    short		x;
+    short		y;
+    short		width;
+    short		height;
 } ExportClParms;
-
-typedef struct _floParms {
-    int		dummy;
-} FloParms;
-
-typedef struct _floMapParms {
-    int		dummy;
-} FloMapParms;
 
 typedef struct _geometryParms {
     int		geoType;
@@ -248,20 +325,24 @@ typedef struct _geometryParms {
     int		geoYOffset;
     XieGeometryTechnique geoTech;
     int		geoAngle;
+    Bool 	radiometric;
 } GeometryParms;
 
 typedef struct _logicalParms {
     XieConstant	logicalConstant;
     unsigned long logicalOp;
     int		logicalBandMask;
+    Bool	useROI;
+    int		numROIs;
 } LogicalParms;
 
 typedef struct _importParms {
     int		obscure;
+    int		numROIs;
 } ImportParms;
 
 typedef struct _importClParms {
-    int		dummy;
+    int		numROIs;
 } ImportClParms;
 
 typedef struct _pasteUpParms {
@@ -282,18 +363,103 @@ typedef struct _modifyParms {
 } ModifyParms;
 
 typedef struct _pointParms {
+    Bool	photoDest;
     int		levelsIn;
     int		levelsOut;
+    Bool 	useROI;
+    short	x;
+    short	y;
+    short	width;
+    short	height;
+    int		bandMask;
 } PointParms;
+
+typedef struct _funnyEncodeParms {
+    int			floElements;
+    XieOrientation	*fillOrder;
+    XieOrientation	*pixelOrder;
+    unsigned char 	*pixelStride;	
+    unsigned char	*scanlinePad;
+    XieOrientation	*bandOrder;
+    XieInterleave	*interleave;
+    Bool		useMyLevelsPlease;
+    XieLTriplet		myBits;
+} FunnyEncodeParms;
+    
+typedef struct _triplePointParms {
+    Bool 	useROI;
+    short	x;
+    short	y;
+    short	width;
+    short	height;
+    Atom	atom;
+    int		bandMask;
+    int 	ditherTech;
+    int		threshold;
+} TriplePointParms;
 
 typedef struct _unconstrainParms {
     int		constrain;
-    int		clamp;
 } UnconstrainParms;
 
 typedef struct _purgeColStParms {
     int		dummy;
 } PurgeColStParms;
+
+typedef struct _compareParms {
+    XieCompareOp	op;
+    XieConstant		constant;
+    Bool		combine;
+    unsigned int	bandMask;
+    Bool		useROI;
+    short		x;
+    short		y;
+    short		width;
+    short		height;
+} CompareParms;
+
+typedef struct _arithmeticParms {
+    XieArithmeticOp	op;
+    XieConstant		constant;
+    unsigned int	bandMask;
+    Bool		useROI;
+    short		x;
+    short		y;
+    short		width;
+    short		height;
+    Bool		constrain;
+    XieConstrainTechnique constrainTech;	
+    float		inLow;			
+    float		inHigh;			
+} ArithmeticParms;
+
+typedef struct _mathParms {
+    XieMathOp		*ops;
+    int			nops; 
+    unsigned int	bandMask;
+    Bool		useROI;
+    short		x;
+    short		y;
+    short		width;
+    short		height;
+    Bool		constrain;
+    XieConstrainTechnique constrainTech;
+    float		inLow;
+    float		inHigh;
+} MathParms;
+
+typedef struct _convolveParms {
+    Bool		photoDest;
+    unsigned int	bandMask;
+    Bool		useROI;
+    short		x;
+    short		y;
+    short		width;
+    short		height;
+    XieConvolveTechnique tech;
+    XieConstant		constant;
+    int			( * kfunc )();
+} ConvolveParms;
 
 typedef struct _queryParms {
     int		lutSize;
@@ -301,10 +467,24 @@ typedef struct _queryParms {
     XieTechniqueGroup techGroup;
 } QueryParms;
 
+typedef struct _matchHistogramParms {
+    XieHistogramShape	shape;
+    double		mean;
+    double		sigma;
+    double		constant;
+    Bool		shape_factor;
+    Bool		useROI;
+    short		x;
+    short		y;
+    short		width;
+    short		height;
+} MatchHistogramParms;
+
 typedef struct _XParms {
     Display	    *d;
     char	    *displayName;	/* see do_await.c */
     Window	    w;
+    Window	    p;
     GC		    fggc;
     GC		    bggc;
     unsigned long   foreground;

@@ -1,6 +1,6 @@
-/* $XConsortium: cvttoindex.c,v 1.2 93/07/19 14:43:41 rws Exp $ */
+/* $XConsortium: cvttoindex.c,v 1.2 93/10/26 10:05:52 rws Exp $ */
 
-/**** module do_converttoindex.c ****/
+/**** module cvttoindex.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_converttoindex.c -- converttoindex flo element tests 
+	cvttoindex.c -- converttoindex flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -52,222 +52,285 @@ terms and conditions:
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
+#include <math.h>
 
-static XiePhotomap XIEPhotomap, ditheredPhotomap;
-static XieColorList clist;
+static XiePhotomap ditheredPhotomap;
+static XieColorList clist1;
+static XieColorList clist2;
 
-int InitConvertToIndex(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+static XiePhotoElement *flograph;
+static int flo_notify;
+static XiePhotoflo flo;
+static int flo_elements;
+
+extern Bool showErrors;
+extern Bool dontClear;
+extern Window drawableWindow;
+
+int 
+InitConvertToIndex(xp, p, reps)
+XParms  xp;
+Parms   p;
+int     reps;
 {
-	XiePhotospace photospace;
-	XiePhotoElement *flograph;
-	int	threshold;
 	XieLTriplet levels;
-	char    *dithertech_parms=NULL;
-	int	flo_notify, flo_id;
-	static XieEncodeTechnique encode_tech = xieValEncodeServerChoice;
-	char	*encode_param = ( char * ) NULL;
-	int	decode_notify;
+	double cube;
+	int cclass;
 
-	p->data = ( char * ) NULL;
-	if ( !( clist = XieCreateColorList( xp->d ) ) )
+#if     defined(__cplusplus) || defined(c_plusplus)
+    	cclass = xp->vinfo.c_class;
+#else
+    	cclass = xp->vinfo.class;
+#endif
+	if ( !IsColorVisual( cclass ) || IsStaticVisual( cclass ) )
 		return( 0 );
-        if ( ( XIEPhotomap = GetXIETriplePhotomap( xp, p, 1 ) ) == 
-		( XiePhotomap ) NULL )
-	{
-		XieDestroyColorList( xp->d, clist );
-                return( 0 );
-	}
+	cube = floor( cbrt( ( double ) ( 1 << xp->vinfo.depth ) ) );
+	levels[ 0 ] = ( long ) cube;
+	levels[ 1 ] = ( long ) cube;
+	levels[ 2 ] = ( long ) cube;
+	clist1 = ( XieColorList ) NULL;
+	clist2 = ( XieColorList ) NULL;
+	ditheredPhotomap = ( XiePhotomap ) NULL;
+	flograph = ( XiePhotoElement * ) NULL;
+	flo = ( XiePhotoflo ) NULL;
+	
+	if ( !( clist1 = XieCreateColorList( xp->d ) ) )
+		reps = 0;
+	if ( ( ( CvtToIndexParms * ) p->ts )->addCvtFromIndex == True )
+		if ( !( clist2 = XieCreateColorList( xp->d ) ) )
+			reps = 0;
 
-	if ( ( ditheredPhotomap = XieCreatePhotomap( xp->d ) ) == 
-		( XiePhotomap ) NULL )
+	if ( reps )
 	{
-		if ( p->data )
-		{
-			free( p->data );
-			p->data = ( char * ) NULL;
+		if ( ( ( CvtToIndexParms * ) p->ts )->addCvtFromIndex == False ) 		{
+			ditheredPhotomap = 
+				GetXIEDitheredTriplePhotomap( xp, p, 1, 
+					( ( CvtToIndexParms * ) p->ts )->dither,
+					0, levels );
+			if ( ditheredPhotomap == ( XiePhotomap ) NULL )
+			{
+				reps = 0;
+			}	 
 		}
-		XieDestroyPhotomap( xp->d, XIEPhotomap );	
-		XieDestroyColorList( xp->d, clist );
-		return( 0 );
-	}
-
-	photospace = XieCreatePhotospace(xp->d);
-
-	threshold = 0;
-
-	levels[ 0 ] = 6;
-	levels[ 1 ] = 6;
-	levels[ 2 ] = 6;
-
-	flograph = XieAllocatePhotofloGraph(3);	
-	if ( flograph == ( XiePhotoElement * ) NULL )
-	{
-		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-		XieDestroyPhotomap( xp->d, XIEPhotomap );
-		XieDestroyPhotomap( xp->d, ditheredPhotomap );
-		XieDestroyColorList( xp->d, clist );
-		XieDestroyPhotospace( xp->d, photospace );
-		if ( p->data )
+		else
 		{
-			free( p->data );
-			p->data = ( char * ) NULL;
+			dontClear = True;
+			if ( !GetXIEDitheredTripleWindow( xp, p, xp->w, 1, 
+				( ( CvtToIndexParms * ) p->ts )->dither, 
+				0, levels ) )
+			{
+				reps = 0;
+			}
+			else
+			{
+	                       	XMoveWindow( xp->d, drawableWindow, WIDTH + 10, 
+					0 );
+				XMapRaised( xp->d, drawableWindow );
+			}
 		}
-		return( 0 );
 	}
-
-	decode_notify = False;
-
-	XieFloImportPhotomap(&flograph[0],XIEPhotomap, decode_notify);
-
-	dithertech_parms = ( char * ) NULL;
-	if ( ( ( CvtToIndexParms * ) p->ts )->dither == xieValDitherOrdered )
-	{	 
-		dithertech_parms = ( char * ) 
-			XieTecDitherOrderedParam(threshold); 
-		if ( dithertech_parms == ( char * ) NULL )
+	if ( reps )
+	{
+		if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
+			InstallDefaultColormap( xp->d, xp->p ); 
+		if ( !CreateCvtToIndexFlo( xp, p ) ) 
 		{
 			fprintf( stderr, 
-			"Trouble loading dither technique parameters\n" );
-			if ( p->data )
-			{
-				free( p->data );
-				p->data = ( char * ) NULL;
-			}
-			XieDestroyPhotomap( xp->d, XIEPhotomap );	
-			XieDestroyColorList( xp->d, clist );
-			XieFreePhotofloGraph(flograph,3);	
-			XieDestroyPhotospace( xp->d, photospace );
-			return( 0 );
+				"Could not create ConvertToIndex flo\n" );
+			reps = 0;
 		}
 	}
 
-	XieFloDither( &flograph[ 1 ], 
-		1,
-		levels,
-		( ( CvtToIndexParms * ) p->ts )->dither,
-		dithertech_parms
-	);
-
-	XieFloExportPhotomap(&flograph[2],
-		2,              /* source phototag number */
-		ditheredPhotomap,
-		encode_tech,
-		encode_param
-	);
-
-	flo_id = 1;		
-	flo_notify = True;	
-
-      	XieExecuteImmediate(xp->d, photospace,
-		flo_id,		
-		flo_notify,     
-		flograph,       /* photoflo specification */
-		3               /* number of elements */
-	);
-	XSync( xp->d, 0 );
-	WaitForFloToFinish( xp, flo_id );
-	XieFreePhotofloGraph(flograph,3);	
-	XieDestroyPhotospace( xp->d, photospace );
-	UninstallXIECmap( xp->d );
-	if ( dithertech_parms )
-		free( dithertech_parms );
+	if ( !reps )
+	{
+		if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
+			InstallCustomColormap( xp->d, xp->p );
+		FreeCvtToIndexStuff( xp, p );
+	}
 	return( reps );
 }
 
-void DoConvertToIndex(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int
+CreateCvtToIndexFlo( xp, p )
+XParms	xp;
+Parms	p;
 {
-	int	i;
-        XiePhotospace photospace;
-        XiePhotoElement *flograph;
-        int     flo_notify, flo_id;
-	int	decode_notify;
+	int decode_notify;
+	int idx;
 	XieColorAllocAllParam *color_param = NULL;
-	Colormap cmap, GetColormap();
 	XWindowAttributes xwa;
+	Bool colorAllocNotify;
+	Bool addCvtFromIndex;
 
-       	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-        flograph = XieAllocatePhotofloGraph(3);
+	addCvtFromIndex = ( ( CvtToIndexParms * ) p->ts )->addCvtFromIndex;
+
+	if ( addCvtFromIndex == False )
+		flo_elements = 3;
+	else
+		flo_elements = 4;
+        flograph = XieAllocatePhotofloGraph( flo_elements );
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-                return;
+                return( 0 );
         }
 
 	color_param = XieTecColorAllocAll( 123 );
+        if ( color_param == ( XieColorAllocAllParam * ) NULL )
+        {
+                fprintf( stderr, "XieTecColorAllocAll failed\n" );
+        	XieFreePhotofloGraph(flograph,3);
+                return( 0 );
+        }
 
 	decode_notify = False;
-        XieFloImportPhotomap(&flograph[0],ditheredPhotomap,decode_notify);
+	idx = 0;
 
-        XieFloExportDrawable(&flograph[2],
-                2,              /* source phototag number */
-                xp->w,
+	if ( addCvtFromIndex == True )
+	{
+                XieFloImportDrawable(&flograph[idx],
+                        xp->w,
+                        0,
+                        0,
+                        WIDTH,
+                        HEIGHT,
+                        0,
+                        False
+                );
+		idx++;
+	}
+	else
+	{
+		XieFloImportPhotomap(&flograph[idx],ditheredPhotomap,
+			decode_notify);
+		idx++;
+	}
+
+	colorAllocNotify = True;
+	if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
+	{
+		colorAllocNotify = False;
+		XGetWindowAttributes( xp->d, DefaultRootWindow( xp->d ), &xwa );
+		XSetWindowColormap( xp->d, xp->w, xwa.colormap );
+		XSync( xp->d, 0 );
+	}
+
+	XGetWindowAttributes( xp->d, xp->w, &xwa );
+
+	if ( addCvtFromIndex == True )
+	{
+		XieFloConvertFromIndex(&flograph[idx],
+			idx,
+			xwa.colormap,	
+			xieValTripleBand,
+			xp->vinfo.bits_per_rgb
+		);
+		idx++;
+	}
+
+	XieFloConvertToIndex(&flograph[idx],
+		idx,
+		xwa.colormap,	
+		clist1,	
+		colorAllocNotify,
+		xieValColorAllocAll,
+		(char *)color_param
+	);
+	idx++;
+
+        XieFloExportDrawable(&flograph[idx],
+                idx,     /* source phototag number */
+		( addCvtFromIndex == False ? xp->w : drawableWindow ),
                 xp->fggc,
                 0,       /* x offset in window */
                 0        /* y offset in window */
         );
+	idx++;
 
-	flo_id = 1;
-	flo_notify = True;
-	XGetWindowAttributes( xp->d, DefaultRootWindow( xp->d ), &xwa );
+	flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
+	XSync( xp->d, 0 );
+	free( color_param );
+	flo_notify = ( ( CvtToIndexParms * ) p->ts )->flo_notify;
+	return( 1 );
+}
+
+void 
+DoConvertToIndex(xp, p, reps)
+XParms  xp;
+Parms   p;
+int     reps;
+{
+	int	i;
+
 	for ( i = 0; i < reps; i++ )
 	{
-		XSetWindowColormap( xp->d, xp->w, xwa.colormap );
-		XSync( xp->d, 0 );
-		XieFloConvertToIndex(&flograph[1],
-			1,
-			xwa.colormap,	
-			clist,	
-			False,
-			xieValColorAllocAll,
-			(char *)color_param
-		);
-		
-		XSync( xp->d, 0 );
-                XieExecuteImmediate(xp->d, photospace,
-                        flo_id,
-                        flo_notify,
-                        flograph,       /* photoflo specification */
-                        3               /* number of elements */
-                );
-		XSync( xp->d, 0 );
-		WaitForFloToFinish( xp, flo_id );
-		XSync( xp->d, 0 );
-               	flo_id = i + 1;
+                XieExecutePhotoflo(xp->d, flo, flo_notify );
         }
-        XieDestroyPhotospace( xp->d, photospace );
-        XieFreePhotofloGraph(flograph,3);
-	if ( color_param )
-		free( color_param );
 }
 
+/* this is for the ColorAlloc event test ( see events.c ) */
+
+void
+DoColorAllocEvent( xp, p, reps )
+XParms  xp;
+Parms   p;
+int     reps;
+{
+        int     i;
+
+        for (i = 0; i != reps; i++) {
+                XieExecutePhotoflo( xp->d, flo, flo_notify );
+                WaitForXIEEvent( xp, ( ( EventParms * ) p->ts )->event, flo, 0,
+showErrors );
+                WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False );
+        }
+}
 
 void EndConvertToIndex(xp, p)
-    XParms  xp;
-    Parms   p;
+XParms  xp;
+Parms   p;
 {
-        /* deallocate the data buffer */
-
-	if ( p->data )
+	if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
+		InstallCustomColormap( xp->d, xp->p );
+	if ( ( ( CvtToIndexParms * ) p->ts )->addCvtFromIndex == True )
 	{
-        	free( p->data );
-		p->data = ( char * ) NULL;
+	        XUnmapWindow( xp->d, drawableWindow );
+        	dontClear = False;
 	}
-
-        /* destroy the photomaps */
-
-        XieDestroyPhotomap(xp->d, XIEPhotomap);
-        XieDestroyPhotomap(xp->d, ditheredPhotomap);
-
-	/* destroy the ColorList */
-
-	XieDestroyColorList( xp->d, clist );
-	InstallXIECmap( xp->d );
-
+	FreeCvtToIndexStuff( xp, p );
 }
 
+int
+FreeCvtToIndexStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+	if ( ditheredPhotomap )
+	{
+		XieDestroyPhotomap(xp->d, ditheredPhotomap);
+		ditheredPhotomap = ( XiePhotomap ) NULL;
+	}
+
+	if ( clist1 )
+	{
+		XieDestroyColorList( xp->d, clist1 );
+		clist1 = ( XieColorList ) NULL;
+	}
+
+	if ( clist2 )
+	{
+		XieDestroyColorList( xp->d, clist2 );
+		clist2 = ( XieColorList ) NULL;
+	}
+
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+}

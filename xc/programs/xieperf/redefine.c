@@ -1,6 +1,6 @@
-/* $XConsortium: redefine.c,v 1.2 93/07/19 14:44:39 rws Exp $ */
+/* $XConsortium: redefine.c,v 1.2 93/10/26 10:07:07 rws Exp $ */
 
-/**** module do_redefine.c ****/
+/**** module redefine.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_redefine.c -- redefine flo element test 
+	redefine.c -- redefine flo element test 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -55,16 +55,13 @@ static int BuildRedefineFlograph();
 
 static XiePhotomap XIEPhotomap;
 static XieLTriplet levels;
-static XieConstrainTechnique tech = xieValConstrainClipScale;
-static XieClipScaleParam *parms;
-static XieConstant in_low,in_high;
-static XieLTriplet out_low,out_high;
+XieLut XIELut;
 static int monoflag = 0;
 static XiePhotoElement *flograph1;
 static XiePhotoElement *flograph2;
 static XiePhotoflo flo;
-static XiePhotospace photospace;
 static int flo_elements;
+extern Bool dontClear;
 
 int InitRedefine(xp, p, reps)
     XParms  xp;
@@ -73,41 +70,42 @@ int InitRedefine(xp, p, reps)
 {
 	XIEimage *image;
 
-	p->data = ( char * ) NULL;
+	XIELut = ( XieLut ) NULL;
+	XIEPhotomap = ( XiePhotomap ) NULL;
+        flo = ( XiePhotoflo ) NULL;
+        flograph1 = ( XiePhotoElement * ) NULL;
+        flograph2 = ( XiePhotoElement * ) NULL;
+
 	image = p->finfo.image1;
         if ( !image )
-                return( 0 );
-
-	parms = NULL;
-	monoflag = 0;
-	if ( xp->vinfo.depth == 1 )
-	{
-		flo_elements = 4;
-		monoflag = 1;
-		if ( !SetupMonoClipScale( image, levels, in_low, 
-			in_high, out_low, out_high, &parms ) )
-		{
-			reps = 0;
-		}
-	}	
+		reps = 0;
 	else
-		flo_elements = 3;
+	{
+		monoflag = 0;
+		if ( xp->vinfo.depth != image->depth[ 0 ] )
+		{
+			flo_elements = 4;
+			monoflag = 1;
+			if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
+				xp->vinfo.depth ) ) == ( XieLut ) NULL )
+			{
+				reps = 0;
+			}
+		}	
+		else
+			flo_elements = 2;
+	}
 	if ( reps )
 	{
 		if ( ( XIEPhotomap = 
 			GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 			reps = 0;
-		else if ( !BuildRedefineFlograph( xp, p, &flograph1,
-			( ( RedefineParms * ) p->ts )->op1 ) )
+		else if ( !BuildRedefineFlograph( xp, p, &flograph1, 0 ) )
 		{
-			XieDestroyPhotomap( xp->d, XIEPhotomap );
 			reps = 0;
 		}
-		else if ( !BuildRedefineFlograph( xp, p, &flograph2,
-			( ( RedefineParms * ) p->ts )->op2 ) )
+		else if ( !BuildRedefineFlograph( xp, p, &flograph2, 1 ) )
 		{
-			XieFreePhotofloGraph( flograph1, flo_elements);
-			XieDestroyPhotomap( xp->d, XIEPhotomap );
 			reps = 0;
 		}
 
@@ -115,22 +113,19 @@ int InitRedefine(xp, p, reps)
 
 	        flo = XieCreatePhotoflo( xp->d, flograph1, flo_elements );
 	}
-	if ( p->data )
-	{
-		free( p->data );
-		p->data = ( char * ) NULL;
-	}
-	if ( !reps && parms )
-		free( parms );
+	if ( !reps )
+		FreeRedefineStuff( xp, p );
+	else
+		dontClear = False;
 	return( reps );
 }
 
 static int
-BuildRedefineFlograph( xp, p, flograph, op )
+BuildRedefineFlograph( xp, p, flograph, which )
 XParms	xp;
 Parms	p;
 XiePhotoElement **flograph;
-unsigned long op;
+int	which;
 {
 	XieProcessDomain domain;
 
@@ -147,36 +142,27 @@ unsigned long op;
 	domain.offset_y = 0;
 	domain.phototag = 0;
 
-	XieFloLogical(&(*flograph)[1], 
-		1,
-		0,
-		&domain,
-		( ( RedefineParms * ) p->ts )->constant,
-		op,
-		( ( RedefineParms * ) p->ts )->bandMask );
 	if ( monoflag )
 	{
-		XieFloConstrain(&(*flograph)[2],
+		XieFloImportLUT(&(*flograph)[1], XIELut );
+
+		XieFloPoint(&(*flograph)[2],
+			1,
+			&domain,
 			2,
-			levels,
-			tech,
-			(char *)parms
+			0x1
 		);
 	}
 	XieFloExportDrawable(&(*flograph)[flo_elements - 1],
 		flo_elements - 1, /* source phototag number */
 		xp->w,
 		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
+		( which ? 0 : 100 ),       /* x offset in window */
+		( which ? 100 : 0 )        /* y offset in window */
 	);
 	return( 1 );
 }
 
-/* We shouldn't really execute the photoflo if we are interested in really
-   timing the operation, but hey, it's an alpha release and right now 
-   showing it works is important ( no other test currently uses it ) */
- 
 void DoRedefine(xp, p, reps)
     XParms  xp;
     Parms   p;
@@ -207,11 +193,38 @@ EndRedefine(xp, p)
     XParms  xp;
     Parms   p;
 {
-        XieFreePhotofloGraph(flograph1,flo_elements);
-        XieFreePhotofloGraph(flograph2,flo_elements);
-        XieDestroyPhotoflo( xp->d, flo );
-	XieDestroyPhotomap( xp->d, XIEPhotomap );
-	if ( parms )
-		free( parms );
+	dontClear = True;
+	FreeRedefineStuff( xp, p );
 }
 
+int
+FreeRedefineStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+        if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
+        {
+                XieDestroyPhotomap( xp->d, XIEPhotomap );
+                XIEPhotomap = ( XiePhotomap ) NULL;
+        }
+	if ( XIELut )
+	{
+                XieDestroyLUT( xp->d, XIELut );
+                XIELut = ( XieLut ) NULL;
+	}
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+        if ( flograph1 )
+        {
+                XieFreePhotofloGraph(flograph1,flo_elements);
+                flograph1 = ( XiePhotoElement * ) NULL;
+        }
+        if ( flograph2 )
+        {
+                XieFreePhotofloGraph(flograph2,flo_elements);
+                flograph2 = ( XiePhotoElement * ) NULL;
+        }
+}

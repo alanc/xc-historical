@@ -1,6 +1,6 @@
-/* $XConsortium$ */
+/* $XConsortium: purgecolst.c,v 1.1 93/10/26 10:06:55 rws Exp $ */
 
-/**** module do_purgecolorlist.c ****/
+/**** module purgecolst.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_purgecolorlist.c -- purge color list test 
+	purgecolst.c -- purge color list test 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -65,10 +65,6 @@ int InitPurgeColorList(xp, p, reps)
 		fprintf( stderr, "XieCreateColorList failed\n" );
 		reps = 0;
 	}
-
-	/* build a flo which will allocate entries in the color list. this
-	   flo should be permanent, and is executed in DoPurgeColorList */
-	 
 	return reps;
 }
 
@@ -81,8 +77,6 @@ void DoPurgeColorList(xp, p, reps)
 
 	for ( i = 0; i < reps; i++ )
 	{
-		/* execute the flo to get data into the colorlist */
-
 		/* purge the colorlist */
 
 		XiePurgeColorList( xp->d, XIEColorList );
@@ -94,7 +88,5 @@ int EndPurgeColorList(xp, p)
     Parms   p;
 {
 	XieDestroyColorList( xp->d, XIEColorList );
-
-	/* destroy the flo allocated in InitPurgeColorList here... */
 }
 
