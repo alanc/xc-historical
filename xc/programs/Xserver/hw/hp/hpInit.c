@@ -1,4 +1,4 @@
-/* $XConsortium: hpInit.c,v 1.2 93/09/26 12:34:20 rws Exp $ */
+/* $XConsortium: hpInit.c,v 1.3 93/10/07 10:21:22 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -43,7 +43,11 @@
 #include "XHPproto.h"
 
 #ifndef LIBDIR
+#if OSMAJORVERSION >= 10
+#define LIBDIR "/etc/X11"
+#else
 #define LIBDIR "/usr/lib/X11"
+#endif
 #endif
 
 extern char    		*display;	/* display number as a string */

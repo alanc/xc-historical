@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 3.5 93/10/07 10:21:00 rws Exp $
+XCOMM $XConsortium: Imakefile,v 3.6 93/10/12 11:25:38 dpw Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -22,7 +22,7 @@ LOBJS = \
 	hpCursorUtils.ln \
 	hpInit.ln
 
-DEFINES = $(ANSI_DEFINES)
+DEFINES = $(ANSI_DEFINES) -DOSMAJORVERSION=OSMajorVersion
 
 LIB_DEFINES = -DLIBDIR=\"$(LIBDIR)\"
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ddx_info.c,v 1.1 93/08/08 13:00:29 rws Exp $ */
 
 /*************************************************************************
  * 
@@ -60,6 +60,9 @@
 #   endif
 #   ifndef S9000_ID_TOMCAT          /* 2-headed ELK; sorry, no P/N yet */
 #       define S9000_ID_TOMCAT          0x27FCCB6D
+#   endif
+#   ifndef S9000_ID_ARTIST          /* Artist 712 mother board graphics */
+#       define S9000_ID_ARTIST          0x2B4DED6D
 #   endif
 #endif
 
@@ -132,6 +135,7 @@ Bool (*ddx_driver_info( php))()
 	case S9000_ID_TOMCAT:	    /* 2-Headed CRX */
 	case S9000_ID_TIMBER:	    /* Bushmaster (710) Graphics */
 	case S9000_ID_A1439A:	    /* CRX24 (24-plane Color) */
+	case S9000_ID_ARTIST:	    /* 712 (8-plane Color) Graphics */
 
 	    return_value = ngleScreenInit;
 	    break;
