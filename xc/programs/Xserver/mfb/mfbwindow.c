@@ -1,4 +1,4 @@
-/* $Header: mfbwindow.c,v 1.1 87/09/02 00:29:00 toddb Locked $ */
+/* $Header: mfbwindow.c,v 1.2 87/09/03 13:48:44 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -235,10 +235,6 @@ mfbChangeWindowAttributes(pWin, mask)
 		  pWin->PaintWindowBackground = mfbPaintWindowPR;
 		  pPrivWin->fastBackground = 0;
 		  break;
-		case USE_BACKGROUND_PIXEL:
-                  pWin->PaintWindowBackground = mfbPaintWindowSolid;
-	          pPrivWin->fastBackground = 0;
-	          break;
 		default:
 		  if(mfbPadPixmap(pWin->backgroundTile))
 		  {
@@ -270,42 +266,25 @@ mfbChangeWindowAttributes(pWin, mask)
 	      break;
 
 	  case CWBorderPixmap:
-	      switch((int)pWin->borderTile)
+	      if(mfbPadPixmap(pWin->borderTile))
 	      {
-		case None:
-		  pWin->PaintWindowBorder = mfbPaintWindowNone;
+		  pPrivWin->fastBorder = 1;
+		  pPrivWin->oldRotate.x = pWin->absCorner.x;
+		  pPrivWin->oldRotate.y = pWin->absCorner.y;
+		  if (pPrivWin->pRotatedBorder)
+		      mfbDestroyPixmap(pPrivWin->pRotatedBorder);
+		  pPrivWin->pRotatedBorder =
+		    mfbCopyPixmap(pWin->borderTile);
+		  mfbXRotatePixmap(pPrivWin->pRotatedBorder,
+				   pWin->absCorner.x);
+		  mfbYRotatePixmap(pPrivWin->pRotatedBorder,
+				   pWin->absCorner.y);
+		  pWin->PaintWindowBorder = mfbPaintWindow32;
+	      }
+	      else
+	      {
 		  pPrivWin->fastBorder = 0;
-		  break;
-		case ParentRelative:
-		  pWin->PaintWindowBorder = mfbPaintWindowPR;
-		  pPrivWin->fastBorder = 0;
-		  break;
-		case USE_BORDER_PIXEL:
-	          pWin->PaintWindowBorder = mfbPaintWindowSolid;
-	          pPrivWin->fastBorder = 0;
-	          break;
-		default:
-		  if(mfbPadPixmap(pWin->borderTile))
-		  {
-		      pPrivWin->fastBorder = 1;
-		      pPrivWin->oldRotate.x = pWin->absCorner.x;
-		      pPrivWin->oldRotate.y = pWin->absCorner.y;
-		      if (pPrivWin->pRotatedBorder)
-			  mfbDestroyPixmap(pPrivWin->pRotatedBorder);
-		      pPrivWin->pRotatedBorder =
-			mfbCopyPixmap(pWin->borderTile);
-		      mfbXRotatePixmap(pPrivWin->pRotatedBorder,
-				       pWin->absCorner.x);
-		      mfbYRotatePixmap(pPrivWin->pRotatedBorder,
-				       pWin->absCorner.y);
-		      pWin->PaintWindowBorder = mfbPaintWindow32;
-		  }
-		  else
-		  {
-		      pPrivWin->fastBorder = 0;
-		      pWin->PaintWindowBorder = miPaintWindow;
-		  }
-		  break;
+		  pWin->PaintWindowBorder = miPaintWindow;
 	      }
 	      break;
 	    case CWBorderPixel:
