@@ -16,7 +16,7 @@ DecorateTransients
 BorderWidth	2
 TitleFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
-IconFont	"-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
+IconFont	"-adobe-helvetica-bold-r-normal--*-80-*-*-*-*-*-*"
 ResizeFont	"6x10"
 NoSaveUnders
 
@@ -91,8 +91,18 @@ Button3 =      : iconmgr                  : f.hideiconmgr
 Button3 =      : title                    : f.zoom
 Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
 "Left"  = m    : all                      : f.raiselower
-"Right" = m    : all                      : f.iconify
 "F20"   =      : all                      : f.warptoscreen "next"
+
+"F8"    =      : all                      : f.warptoiconmgr ""
+
+"F9"    =      : all                      : f.backiconmgr
+"F10"   =      : all                      : f.forwiconmgr
+"F11"   =      : all                      : f.raiselower
+"F12"   =      : all                      : f.iconify
+"KP_F1" =      : all                      : f.backiconmgr
+"KP_F2" =      : all                      : f.forwiconmgr
+"KP_F3" =      : all                      : f.raiselower
+"KP_F4" =      : all                      : f.iconify
 
 ###############################################################################
 #                                                                             #
@@ -112,8 +122,6 @@ DontIconifyByUnmapping
   "xload"
   "oclock"
   "TWM Icon Manager"
-  "expo"
-  "XClipboard"
 }
 IconManagerDontShow
 {
@@ -122,8 +130,6 @@ IconManagerDontShow
   "xload"
   "oclock"
   "TWM Icon Manager"
-  "expo"
-  "XClipboard"
 }
 NoTitle
 {
@@ -132,7 +138,6 @@ NoTitle
   "xload"
   "oclock"
   "TWM Icon Manager"
-  "XClipboard"
 }
 
 IconDirectory "/users/jim/icons"
