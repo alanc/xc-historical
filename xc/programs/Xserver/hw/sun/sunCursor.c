@@ -437,13 +437,21 @@ sunSetCursorPosition (pScreen, hotX, hotY, generateEvent)
     xEvent	  motion;
     extern int	sunSigIO;
 
-    if (currentCursor)
-	sunDisplayCursor (pScreen, currentCursor);
-    
     pDev = LookupPointerDevice();
 
     pptrPriv = (PtrPrivPtr)pDev->devicePrivate;
 
+    if (pptrPriv->pScreen != pScreen)
+    {
+        if (currentCursor)
+	    sunRemoveCursor();
+	(*sunFbs[pptrPriv->pScreen->myNum].EnterLeave) (pptrPriv->pScreen, 1);
+	(*sunFbs[pScreen->myNum].EnterLeave) (pScreen, 0);
+    }
+
+    if (currentCursor)
+	sunDisplayCursor (pScreen, currentCursor);
+    
     pptrPriv->pScreen = pScreen;
     pptrPriv->x = hotX;
     pptrPriv->y = hotY;
@@ -524,14 +532,14 @@ sunDisplayCursor (pScreen, pCursor)
     currentCursor = pCursor;
     ((CrPrivPtr)pCursor->devPriv[pScreen->myNum])->state = CR_OUT;
     isItTimeToYield++;
-
+#ifdef notdef
     pDev = LookupPointerDevice();
 
     if (pScreen != ((PtrPrivPtr)pDev->devicePrivate)->pScreen) {
 	/*XXX*/
 	((PtrPrivPtr)pDev->devicePrivate)->pScreen = pScreen;
     }
-
+#endif
     return TRUE;
 }
 
