@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.7 89/07/28 08:29:09 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.8 89/07/28 12:00:42 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -102,7 +102,7 @@ static GCOps	blackTECopyOps = {
 	miMiter,
 };
 
-static GCOps	invertWhiteTECopyOps = {
+static GCOps	whiteTEInvertOps = {
 	mfbInvertSolidFS,
 	mfbSetSpans,
 	mfbPutImage,
@@ -126,7 +126,7 @@ static GCOps	invertWhiteTECopyOps = {
 	miMiter,
 };
 
-static GCOps	invertBlackTECopyOps = {
+static GCOps	blackTEInvertOps = {
 	mfbInvertSolidFS,
 	mfbSetSpans,
 	mfbPutImage,
@@ -198,7 +198,7 @@ static GCOps	blackCopyOps = {
 	miMiter,
 };
 
-static GCOps	invertWhiteCopyOps = {
+static GCOps	whiteInvertOps = {
 	mfbInvertSolidFS,
 	mfbSetSpans,
 	mfbPutImage,
@@ -222,7 +222,7 @@ static GCOps	invertWhiteCopyOps = {
 	miMiter,
 };
 
-static GCOps	invertBlackCopyOps = {
+static GCOps	blackInvertOps = {
 	mfbInvertSolidFS,
 	mfbSetSpans,
 	mfbPutImage,
@@ -244,7 +244,78 @@ static GCOps	invertBlackCopyOps = {
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
 	miMiter,
+};
 
+static GCOps	whiteWhiteCopyOps = {
+	mfbWhiteSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	miImageGlyphBlt,
+	mfbPolyGlyphBltWhite,
+	mfbSolidPP,
+	miMiter,
+};
+
+static GCOps	blackBlackCopyOps = {
+	mfbBlackSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	miImageGlyphBlt,
+	mfbPolyGlyphBltBlack,
+	mfbSolidPP,
+	miMiter,
+};
+
+static GCOps	fgEqBgInvertOps = {
+	mfbInvertSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	miImageGlyphBlt,
+	mfbPolyGlyphBltInvert,
+	mfbSolidPP,
+	miMiter,
 };
 
 struct commonOps {
@@ -258,12 +329,16 @@ struct commonOps {
 static struct commonOps mfbCommonOps[] = {
     { 1, 0, RROP_WHITE, 1, &whiteTECopyOps, mfbSolidWhiteArea },
     { 0, 1, RROP_BLACK, 1, &blackTECopyOps, mfbSolidBlackArea },
-    { 1, 0, RROP_INVERT, 1, &invertWhiteTECopyOps, mfbSolidInvertArea },
-    { 1, 0, RROP_INVERT, 1, &invertBlackTECopyOps, mfbSolidInvertArea },
+    { 1, 0, RROP_INVERT, 1, &whiteTEInvertOps, mfbSolidInvertArea },
+    { 0, 1, RROP_INVERT, 1, &blackTEInvertOps, mfbSolidInvertArea },
     { 1, 0, RROP_WHITE, 0, &whiteCopyOps, mfbSolidWhiteArea },
     { 0, 1, RROP_BLACK, 0, &blackCopyOps, mfbSolidBlackArea },
-    { 1, 0, RROP_INVERT, 0, &invertWhiteCopyOps, mfbSolidInvertArea },
-    { 0, 1, RROP_INVERT, 0, &invertBlackCopyOps, mfbSolidInvertArea },
+    { 1, 0, RROP_INVERT, 0, &whiteInvertOps, mfbSolidInvertArea },
+    { 0, 1, RROP_INVERT, 0, &blackInvertOps, mfbSolidInvertArea },
+    { 1, 1, RROP_WHITE, 0, &whiteWhiteCopyOps, mfbSolidWhiteArea },
+    { 0, 0, RROP_BLACK, 0, &blackBlackCopyOps, mfbSolidBlackArea },
+    { 1, 1, RROP_INVERT, 0, &fgEqBgInvertOps, mfbSolidInvertArea },
+    { 0, 0, RROP_INVERT, 0, &fgEqBgInvertOps, mfbSolidInvertArea },
 };
 
 #define numberCommonOps	(sizeof (mfbCommonOps) / sizeof (mfbCommonOps[0]))
