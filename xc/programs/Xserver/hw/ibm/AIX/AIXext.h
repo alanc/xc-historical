@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXext.h,v 1.4 92/11/23 10:25:42 eswu Exp $
+ * $XConsortium: AIXext.h,v 1.5 93/07/12 09:26:19 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -47,20 +47,6 @@ int lpfkiodn ;
 int loctype  ;
 int whatelse[5]  ;
 } AIXInfoRec , *AIXInfoPtr ;
-
-/* copy long from src to dst byteswapping on the way */
-
-#define cpswapl(src, dst) \
-                 ((char *)&(dst))[0] = ((char *) &(src))[3];\
-                 ((char *)&(dst))[1] = ((char *) &(src))[2];\
-                 ((char *)&(dst))[2] = ((char *) &(src))[1];\
-                 ((char *)&(dst))[3] = ((char *) &(src))[0];
-
-/* copy short from src to dst byteswapping on the way */
-
-#define cpswaps(src, dst)\
-		 ((char *) &(dst))[0] = ((char *) &(src))[1];\
-		 ((char *) &(dst))[1] = ((char *) &(src))[0];
 
 #define PropagateMask ( \
 	KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | \
