@@ -1,4 +1,4 @@
-/* $XConsortium: scanfont.c,v 1.6 92/03/27 18:15:39 eswu Exp $ */
+/* $XConsortium: scanfont.c,v 1.7 92/05/15 13:56:11 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -1464,8 +1464,6 @@ int scan_font(FontP)
         break;
       case TOKEN_NAME:
             if (0 == strncmp(tokenStartP,"eexec",5) ) {
-            extern struct filter EexecFilter;
- 
                /* if file started with x'80', check next 5 bytes */
                if (starthex80) {
                  V = getc(fileP);
