@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.73 88/10/17 20:01:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.74 88/10/18 12:32:55 swick Exp $";
 #endif
 
 
@@ -886,7 +886,7 @@ static int _XtTextSetNewSelection(ctx, left, right, selections, count)
     ctx->text.s.right = right;
     if (ctx->text.source->SetSelection != nullProc) {
 	(*ctx->text.source->SetSelection) (ctx->text.source,
-					   left, right, XA_PRIMARY);
+					   left, right, selections[0]);
     }
     if (left < right) {
 	int buffer;
@@ -1871,6 +1871,15 @@ void XtTextUnsetSelection(w)
 {
     register TextWidget ctx = (TextWidget)w;
     int i;
+    void (*nullProc)() = NULL;
+
+    ctx->text.s.left = ctx->text.s.right = ctx->text.insertPos;
+    if (ctx->text.source->SetSelection != nullProc) {
+	(*ctx->text.source->SetSelection) (ctx->text.source, ctx->text.s.left,
+					   ctx->text.s.right,
+					   ctx->text.s.atom_count ? 
+					   ctx->text.s.selections[0] : NULL);
+    }
 
     for (i = ctx->text.s.atom_count; i;) {
 	Atom selection = ctx->text.s.selections[--i];
@@ -2056,8 +2065,8 @@ static DeleteOrKill(ctx, from, to, kill)
 	XBell(XtDisplay(ctx), 50);
 	return;
     }
-    XtTextUnsetSelection((Widget)ctx);
     ctx->text.insertPos = from;
+    XtTextUnsetSelection((Widget)ctx);
     ctx->text.showposition = TRUE;
 }
 
