@@ -13,9 +13,14 @@
 #define XsunServer Xsun
 /* #define Xplx Xplx */
 
+#ifdef sparc
+#undef sparc
+#define SparcArchitecture
+#endif
+
 #define SignalReturnProcType int
 
-/**/# platform:  $XConsortium: sun.cf,v 1.9 89/03/16 15:16:55 rws Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.10 89/03/20 13:47:45 jim Exp $
 /**/# operating system:  OSName
 
 
