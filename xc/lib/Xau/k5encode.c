@@ -1,4 +1,17 @@
-/* $XConsortium: k5encode.c,v 1.1 93/09/26 15:42:06 gildea Exp $ */
+/* $XConsortium: k5encode.c,v 1.2 93/09/29 19:14:48 gildea Exp $ */
+/*
+ * Copyright 1993 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ */
 /*
  * functions to encode/decode Kerberos V5 principals
  * into something that can be reasonable spewed over
