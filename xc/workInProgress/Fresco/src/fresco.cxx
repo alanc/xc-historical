@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fresco.cxx,v 1.8 94/08/17 21:39:51 matt Exp matt $
+ * $XConsortium: fresco.cxx,v 1.9 94/08/17 21:48:05 matt Exp matt $
  */
 
 /*
@@ -277,7 +277,15 @@ void Fresco::unref(BaseObjectRef r) {
     }
 }
 
-#if defined(USE_POLL)
+/*
+ * We don't use poll under OSF/1 because the OSF/1 v2.0 version of poll
+ * is broken.  When called with no struct pollfd's and an nfds argument
+ * of zero (to do a simple timeout), it returns immediately instead of
+ * waiting until the timeout period has expired.  It also sets errno to
+ * EAGAIN sometimes, but not always.  Fortunately, select works instead.
+ */
+ 
+#if defined(USE_POLL) && !defined(__osf__)
 
 #include <sys/poll.h>
 
@@ -289,6 +297,10 @@ Boolean Fresco::delay(Float seconds) {
 
 #include <X11/Fresco/OS/types.h>
 #include <sys/time.h>
+
+#if defined(__osf__)
+extern "C" int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
+#endif
 
 Boolean Fresco::delay(Float seconds) {
     struct timeval tv;
