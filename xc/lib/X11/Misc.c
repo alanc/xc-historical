@@ -1,4 +1,4 @@
-/* $XConsortium: XMisc.c,v 1.3 88/09/06 16:10:30 jim Exp $ */
+/* $XConsortium: XMisc.c,v 1.4 91/01/06 11:47:02 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1988	*/
 
 /*
@@ -45,4 +45,10 @@ VisualID XVisualIDFromVisual(visual)
     Visual *visual;
 {
     return visual->visualid;
+}
+
+long XExtendedMaxRequestSize(dpy)
+    Display *dpy;
+{
+    return dpy->bigreq_size;
 }
