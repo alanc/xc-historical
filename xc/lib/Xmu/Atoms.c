@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.13 90/12/19 19:58:30 converse Exp $
+/* $XConsortium: Atoms.c,v 1.14 90/12/20 15:04:30 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -48,13 +48,19 @@ struct _AtomRec {
     DisplayRec* head;
 };
 
+#ifdef SUNSHLIB
+#define STATIC
+#else
+#define STATIC static
+#endif
+
 #if __STDC__ && !defined(UNIXCPP)
 #define DeclareAtom(atom,text) \
-static struct _AtomRec __##atom = { text, NULL }; \
+STATIC struct _AtomRec __##atom = { text, NULL }; \
 AtomPtr _##atom = &__##atom;
 #else
 #define DeclareAtom(atom,text) \
-static struct _AtomRec __/**/atom = { text, NULL }; \
+STATIC struct _AtomRec __/**/atom = { text, NULL }; \
 AtomPtr _/**/atom = &__/**/atom;
 #endif
 
