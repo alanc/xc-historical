@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.6 89/07/18 18:02:52 rws Exp $ */
+/* $XConsortium: mipointer.c,v 5.7 89/09/24 15:42:22 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -347,7 +347,7 @@ miPointerSetCursor (pScreen, x, y, generateEvent, afterEvents)
 	if (afterEvents)
 	    (*pPointer->funcs->QueueEvent) (&xE, pPointer->pPointer, pScreen);
 	else
-	    (*pPointer->pPointer->processInputProc) (&xE, pPointer->pPointer);
+	    (*pPointer->pPointer->processInputProc) (&xE, pPointer->pPointer, 1);
     }
     /*
      * avoid problems when this routine recurses
@@ -368,7 +368,7 @@ miPointerQueueEvent (pxE, pPointer, pScreen)
      * past, which is the best dix knows about.
      */
     pxE->u.keyButtonPointer.time = currentTime.milliseconds;
-    (*pPointer->processInputProc) (pxE, pPointer);
+    (*pPointer->processInputProc) (pxE, pPointer, 1);
 }
 
 void
