@@ -1,9 +1,4 @@
-#ifdef DefaultRGBDatabase
    SITE_RGB_DB = -DRGB_DB=\"DefaultRGBDatabase\"
-#else
-   SITE_RBB_DB = /* as nothing */
-#endif
-
       DEPLIBS = 
       DEFINES = NdbmDefines $(SITE_RGB_DB)
      INCLUDES = -I$(TOP) -I$(SERVERSRC)/include
@@ -22,6 +17,8 @@ all:: $(PROGRAMS) $(DATADEP)
 
 SingleProgramTarget(rgb,$(OBJS1),/**/,-ldbm)
 SingleProgramTarget(showrgb,$(OBJS2),/**/,-ldbm)
+SpecialObjectRule(rgb.o,$(ICONFIGFILES), /**/)
+SpecialObjectRule(showrgb.o,$(ICONFIGFILES), /**/)
 InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
 InstallProgramWithFlags(showrgb,$(BINDIR),)
 
