@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.45 91/07/26 19:47:53 keith Exp $
+ * $XConsortium: auth.c,v 1.46 91/09/12 19:56:05 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -41,8 +41,12 @@
 # include <netdnet/dnetdb.h>
 #endif
 
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4)
+#define NEED_UTSNAME
+#include <sys/utsname.h>
+#endif
+
 #if defined(SYSV) && defined(SYSV386)
-# include <sys/utsname.h>
 # include <sys/stream.h>
 # ifdef ISC
 #  include <sys/sioctl.h>
@@ -52,11 +56,7 @@
 # endif /* ESIX */
 #endif /* SYSV386 */
 
-#ifdef hpux
-# include <sys/utsname.h>
-#endif
 #ifdef SVR4
-# include <sys/utsname.h>
 # include <netdb.h>
 # include <sys/sockio.h>
 #endif
@@ -583,8 +583,19 @@ DefineLocal (file, auth)
 	char	displayname[100];
 
 	/* stolen from xinit.c */
-#ifdef hpux
-	/* Why not use gethostname()?  Well, at least on my system, I've had to
+
+/* Make sure this produces the same string as _XGetHostname in lib/X/XlibInt.c.
+ * Otherwise, Xau will not be able to find your cookies in the Xauthority file.
+ *
+ * Note: POSIX says that the ``nodename'' member of utsname does _not_ have
+ *       to have sufficient information for interfacing to the network,
+ *       and so, you may be better off using gethostname (if it exists).
+ */
+
+#ifdef NEED_UTSNAME
+
+	/* hpux:
+	 * Why not use gethostname()?  Well, at least on my system, I've had to
 	 * make an ugly kernel patch to get a name longer than 8 characters, and
 	 * uname() lets me access to the whole string (it smashes release, you
 	 * see), whereas gethostname() kindly truncates it for me.
@@ -596,6 +607,11 @@ DefineLocal (file, auth)
 	strcpy(displayname, name.nodename);
 	}
 #else
+        /* AIXV3:
+	 * In AIXV3, _POSIX_SOURCE is defined, but uname gives only first
+	 * field of hostname. Thus, we use gethostname instead.
+	 */
+
 	gethostname(displayname, sizeof(displayname));
 #endif
 	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
@@ -717,7 +733,8 @@ DefineSelf (fd, file, auth)
 	
     struct	sockaddr_in	*inetaddr;
 
-    /* Why not use gethostname()?  Well, at least on my system, I've had to
+    /* hpux:
+     * Why not use gethostname()?  Well, at least on my system, I've had to
      * make an ugly kernel patch to get a name longer than 8 characters, and
      * uname() lets me access to the whole string (it smashes release, you
      * see), whereas gethostname() kindly truncates it for me.
