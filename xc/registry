@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.34 91/05/28 08:32:44 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.35 91/05/28 14:01:10 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -682,8 +682,8 @@ Name						Reference
 Value	Name					Reference
 -----	----					---------
 1	MIT					[8]
-2	GfxBase					[74]
-
+2	GfxBase, Inc.				[74]
+3	Silicon Graphics Computer Systems	[6]
 
 
 REFERENCES
