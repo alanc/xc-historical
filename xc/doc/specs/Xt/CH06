@@ -1,4 +1,4 @@
-.\" $XConsortium: CH06,v 1.5 91/07/31 20:24:06 swick Exp $
+.\" $XConsortium: CH06,v 1.6 91/08/26 13:32:57 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -59,7 +59,7 @@ Initiating Geometry Changes
 Parents, children, and clients each initiate geometry changes differently.
 Because a parent has absolute control of its children's geometry,
 it changes the geometry directly by calling
-.PN XtMoveWidget ,
+.PN XtMove\%Widget ,
 .PN XtResizeWidget ,
 or
 .PN XtConfigureWidget .
@@ -433,7 +433,9 @@ creates an
 .PN XtWidgetGeometry
 structure and specifies that width and height should change
 by setting \fIrequest_mode\fP to
-.PN CWWidth|CWHeight .
+.PN CWWidth
+\fB|\fP
+.PN CWHeight .
 The geometry manager is free to modify any of the other window attributes
 (position or stacking order) to satisfy the resize request.
 If the return value is
@@ -520,11 +522,11 @@ XtWidgetGeometry*);
 .br
       XtWidgetGeometry *\fIgeometry_return\fP;
 .FN
-.IP \fIw\fP 1i
+.IP \fIw\fP 1.2i
 Passes the widget making the request.
-.IP \fIrequest\fP 1i
+.IP \fIrequest\fP 1.2i
 Passes the new geometry the child desires.
-.IP \fIgeometry_return\fP 1i
+.IP \fIgeometry_return\fP 1.2i
 Passes a geometry structure in which the geometry manager may store a
 compromise.
 .LP
@@ -915,11 +917,11 @@ XtWidgetGeometry*);
 .br
       XtWidgetGeometry *\fIpreferred_return\fP;
 .FN
-.IP \fIw\fP 1i
+.IP \fIw\fP 1.2i
 Passes the child widget whose preferred geometry is required.
-.IP \fIrequest\fP 1i
+.IP \fIrequest\fP 1.2i
 Passes the geometry changes which the parent plans to make.
-.IP \fIpreferred_return\fP 1i
+.IP \fIpreferred_return\fP 1.2i
 Passes a structure in which the child returns its preferred geometry.
 .LP
 .IN "query_geometry procedure"
