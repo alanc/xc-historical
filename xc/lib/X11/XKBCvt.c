@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.5 93/09/28 20:06:18 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.6 93/09/29 10:35:59 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -304,7 +304,7 @@ __XkbDefaultToUpper(sym)
 {
     KeySym	lower,upper;
 
-    XConvertCase(NULL, sym, &lower, &upper);
+    XConvertCase(sym, &lower, &upper);
     return upper;
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.71 93/09/27 18:00:16 rws Exp $ */
+/* $XConsortium: KeyBind.c,v 11.72 93/09/28 19:28:02 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -39,7 +39,6 @@ without express or implied warranty.
 #define AllMods (ShiftMask|LockMask|ControlMask| \
 		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
 
-void XConvertCase();
 static ComputeMaskFromKeytrans();
 
 struct _XKeytrans {
@@ -75,7 +74,7 @@ KeyCodetoKeySym(dpy, keycode, col)
 		col -= 2;
 	}
 	if ((per <= (col|1)) || (syms[col|1] == NoSymbol)) {
-	    XConvertCase(dpy, syms[col&~1], &lsym, &usym);
+	    XConvertCase(syms[col&~1], &lsym, &usym);
 	    if (!(col & 1))
 		return lsym;
 	    else if (usym == lsym)
@@ -260,10 +259,8 @@ _XKeyInitialize(dpy)
     return 1;
 }
 
-/*ARGSUSED*/
 void
-XConvertCase(dpy, sym, lower, upper)
-    Display *dpy;
+XConvertCase(sym, lower, upper)
     register KeySym sym;
     KeySym *lower;
     KeySym *upper;
@@ -386,21 +383,21 @@ _XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
     } else if (!(modifiers & ShiftMask) &&
 	(!(modifiers & LockMask) || (dpy->lock_meaning == NoSymbol))) {
 	if ((per == 1) || (syms[1] == NoSymbol))
-	    XConvertCase(dpy, syms[0], keysym_return, &usym);
+	    XConvertCase(syms[0], keysym_return, &usym);
 	else
 	    *keysym_return = syms[0];
     } else if (!(modifiers & LockMask) ||
 	       (dpy->lock_meaning != XK_Caps_Lock)) {
 	if ((per == 1) || ((usym = syms[1]) == NoSymbol))
-	    XConvertCase(dpy, syms[0], &lsym, &usym);
+	    XConvertCase(syms[0], &lsym, &usym);
 	*keysym_return = usym;
     } else {
 	if ((per == 1) || ((sym = syms[1]) == NoSymbol))
 	    sym = syms[0];
-	XConvertCase(dpy, sym, &lsym, &usym);
+	XConvertCase(sym, &lsym, &usym);
 	if (!(modifiers & ShiftMask) && (sym != syms[0]) &&
 	    ((sym != usym) || (lsym == usym)))
-	    XConvertCase(dpy, syms[0], &lsym, &usym);
+	    XConvertCase(syms[0], &lsym, &usym);
 	*keysym_return = usym;
     }
     if (*keysym_return == XK_VoidSymbol)
