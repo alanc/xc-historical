@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.12 89/05/06 21:16:51 kit Exp $
- * $Header: buttons.c,v 1.12 89/05/06 21:16:51 kit Exp $
+ * $XConsortium: buttons.c,v 1.13 89/05/09 16:34:57 kit Exp $
+ * $Header: buttons.c,v 1.13 89/05/09 16:34:57 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -568,8 +568,8 @@ Widget parent;
   dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, 
 				 man_globals->save, NULL, (Cardinal) 0);
 
-  XtDialogAddButton(dialog, FILE_SAVE, NULL, NULL);
-  XtDialogAddButton(dialog, CANCEL_FILE_SAVE, NULL, NULL);
+  XawDialogAddButton(dialog, FILE_SAVE, NULL, NULL);
+  XawDialogAddButton(dialog, CANCEL_FILE_SAVE, NULL, NULL);
 
   XtRealizeWidget(man_globals->save);
   AddCursor(man_globals->save, resources.cursors.top);

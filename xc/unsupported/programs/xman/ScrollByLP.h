@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByLP.h,v 1.2 88/09/06 17:47:30 jim Exp $
+ * $XConsortium: ScrollByLP.h,v 1.3 89/05/06 21:16:18 kit Exp $
  * $Athena: ScrollByLP.h,v 4.0 88/08/31 22:11:21 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -22,8 +22,9 @@
 
 #ifndef _XtScrollByLinePrivate_h
 #define _XtScrollByLinePrivate_h
-#include <stdio.h>
-#include <X11/SimpleP.h>
+
+#include <X11/Xaw/SimpleP.h>
+
 #include "ScrollByL.h"
 
 /***********************************************************************

@@ -1,13 +1,16 @@
 /* 
- * $XConsortium: xset.c,v 1.47 89/01/10 17:49:57 jim Exp $ 
+ * $XConsortium: xset.c,v 1.48 89/04/10 14:28:36 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.47 89/01/10 17:49:57 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.48 89/04/10 14:28:36 jim Exp $";
 #endif
+
+#include <stdio.h>
+#include <ctype.h>
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -15,9 +18,7 @@ static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.47 89/01/10 17:49:57 jim E
 #include <X11/keysym.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
-#include <X11/Xmu.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <X11/Xmu/Xmu.h>
 
 #define ON 1
 #define OFF 0

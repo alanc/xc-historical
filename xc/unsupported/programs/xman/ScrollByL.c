@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.6 89/04/28 15:05:58 kit Exp $
- * $Header: ScrollByL.c,v 1.6 89/04/28 15:05:58 kit Exp $
+ * $XConsortium: ScrollByL.c,v 1.7 89/05/06 21:16:11 kit Exp $
+ * $Header: ScrollByL.c,v 1.7 89/05/06 21:16:11 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -25,13 +25,15 @@
 #endif
 
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <ctype.h>
+
 #include <X11/IntrinsicP.h>
-#include <X11/Scroll.h>
+#include <sys/stat.h>		/* depends on IntrinsicP.h */
 #include <X11/StringDefs.h>
-#include <X11/XawMisc.h>
+
+#include <X11/Xaw/Scroll.h>
+#include <X11/Xmu/Misc.h>
+
 #include "ScrollByLP.h"
 
 /* Default Translation Table */
@@ -520,7 +522,7 @@ Widget w;
   if (shown > 1.0)
     shown = 1.0;
 
-  XtScrollBarSetThumb( sblw->scroll.bar, (float) -1, shown );
+  XawScrollBarSetThumb( sblw->scroll.bar, (float) -1, shown );
 }
 
 /*	Function Name: SetThumb
@@ -540,7 +542,7 @@ Widget w;
     return;
 
   location = (float) sblw->scroll.line_pointer / (float) sblw->scroll.lines; 
-  XtScrollBarSetThumb( sblw->scroll.bar, location , (float) -1 );
+  XawScrollBarSetThumb( sblw->scroll.bar, location , (float) -1 );
 }
 
 /*	Function Name: VerticalJump.

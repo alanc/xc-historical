@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.9 89/05/06 21:16:22 kit Exp $
+ * $XConsortium: handler.c,v 1.10 89/05/09 16:35:00 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -234,7 +234,7 @@ caddr_t global_pointer, ret_val;
 {
   FILE * file;			/* The manpage file. */
   ManpageGlobals * man_globals = (ManpageGlobals *) global_pointer;
-  XtListReturnStruct * ret_struct = (XtListReturnStruct *) ret_val;
+  XawListReturnStruct * ret_struct = (XawListReturnStruct *) ret_val;
 
   file = FindFilename(man_globals,
        manual[man_globals->current_directory].entries[ret_struct->list_index]);
@@ -279,7 +279,7 @@ caddr_t pointer,junk;
     XtUnmanageChild(man_globals->manpagewidgets.box[current_box]);
     XtManageChild(man_globals->manpagewidgets.box[number]);
 
-    XtListUnhighlight(man_globals->manpagewidgets.box[current_box]);
+    XawListUnhighlight(man_globals->manpagewidgets.box[current_box]);
     ChangeLabel(man_globals->label, man_globals->section_name[number]);
     man_globals->current_directory = number;
   }

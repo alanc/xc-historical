@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.7 89/04/28 15:05:50 kit Exp $
+ * $XConsortium: search.c,v 1.8 89/05/09 16:35:17 kit Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -68,9 +68,9 @@ Widget parent;
   else
     XtSetKeyboardFocus(dialog, text);
 
-  XtDialogAddButton(dialog, MANUALSEARCH, NULL, NULL);
-  XtDialogAddButton(dialog, APROPOSSEARCH, NULL, NULL);
-  XtDialogAddButton(dialog, CANCEL, NULL, NULL);
+  XawDialogAddButton(dialog, MANUALSEARCH, NULL, NULL);
+  XawDialogAddButton(dialog, APROPOSSEARCH, NULL, NULL);
+  XawDialogAddButton(dialog, CANCEL, NULL, NULL);
 
 /*
  * This is a bit gross, but it get the cancel button underneath the 
@@ -115,7 +115,7 @@ ManpageGlobals * man_globals;
 
   dialog = XtNameToWidget(man_globals->search_widget, DIALOG);
   if (dialog != NULL) 
-    return(XtDialogGetValueString(dialog));
+    return(XawDialogGetValueString(dialog));
 
   PrintWarning(man_globals,
 	      "Could not get the search string, no search will be preformed.");
@@ -299,7 +299,7 @@ char * string;
  * Manual page found in some other section, unhighlight the current one.
  */
     if ( man_globals->manpagewidgets.box != NULL)
-      XtListUnhighlight(
+      XawListUnhighlight(
 	man_globals->manpagewidgets.box[man_globals->current_directory]);
   }
   else {
@@ -308,7 +308,7 @@ char * string;
      * listing currently being shown.
      */
     if ( man_globals->manpagewidgets.box != NULL)
-      XtListHighlight(man_globals->manpagewidgets.box[i], e_num);
+      XawListHighlight(man_globals->manpagewidgets.box[i], e_num);
   }
   return(FindFilename(man_globals, manual[i].entries[e_num]));
 }
