@@ -605,15 +605,14 @@ Widget *old, *new;
  * the toolkit and for window managers.
  */
 
-Display *
-XtInitialize(urlist, urlistCount, argc, argv, name, classname, root)
+Widget
+XtInitialize(urlist, urlistCount, argc, argv, name, classname)
 XrmOptionDescRec *urlist;
 int	urlistCount;
 Cardinal  *argc;
 char *argv[];
 char *name;
 char *classname;
-Widget *root;
 {
 	char  displayName[256];
 	char *displayName_ptr = displayName;
@@ -627,6 +626,7 @@ Widget *root;
 	Display *dpy;
 	char *ptr, *rindex();
 	TopLevelWidget w;
+	Widget root;
 	int squish = -1;
 
 
@@ -698,6 +698,7 @@ Widget *root;
 	strcpy(filename, XAPPLOADDIR);
 	strcat(filename, classname);
 
+
 	/*set up resource database */
 	XGetUsersDataBase(dpy, filename);
 
@@ -717,11 +718,11 @@ Widget *root;
 	/*
 	     Create the top level widget.
 	 */
-	*root = TopLevelCreate(name, topLevelWidgetClass,
+	root = TopLevelCreate(name, topLevelWidgetClass,
 			      &(dpy->screens[dpy->default_screen]),
 			       args, argCount);
 
-	w = (TopLevelWidget) *root;
+	w = (TopLevelWidget) root;
 	w->top.argc = saved_argc;
 	w->top.argv = saved_argv;
 	strcpy(w->top.classname = (char *)XtMalloc(strlen(classname))
@@ -729,6 +730,6 @@ Widget *root;
 
 	init_atoms(dpy);
 
-	return(dpy);
+	return(root);
 }
 
