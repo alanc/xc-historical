@@ -1,4 +1,3 @@
-/* $XConsortium$ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -23,6 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
+ * $NCDId: @(#)fservestr.h,v 1.2 1991/05/24 15:03:06 lemke Exp $
  */
 
 #ifndef _FSERVESTR_H_
@@ -61,9 +61,10 @@ typedef struct _fs_font_data {
 typedef struct _fs_blocked_font {
     FontPtr     pfont;
     long        fontid;
-    int         state;		/* how many of the 3 replies have landed */
-    Bool        load_glyphs;
+    int         state;		/* how many of the replies have landed */
     int         errcode;
+    int         flags;
+    fsBitmapFormat format;
 }           FSBlockedFontRec;
 
 /* LoadGlyphs data for blocked request */
@@ -119,6 +120,7 @@ typedef struct _fs_block_data {
 				 * ListWithInfo */
     pointer     client;		/* who wants it */
     int         sequence_number;/* expected */
+    fsReplyHeader header;
     pointer     data;		/* type specific data */
     struct _fs_block_data *next;
 }           FSBlockDataRec;

@@ -1,4 +1,3 @@
-/* $XConsortium$ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -23,40 +22,29 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
+ * $NCDId: @(#)fsio.c,v 1.3 1991/05/28 15:48:48 lemke Exp $
  */
 /*
  * font server i/o routines
  */
 
 #include	<X11/Xos.h>
-#include	"fontmisc.h"
 #include	"FS.h"
 #include	"FSproto.h"
 #include	<stdio.h>
+#include	<sys/types.h>
 #include	<sys/socket.h>
-#include	<sys/param.h>
 #include	<netinet/tcp.h>
 #include	<errno.h>
+#include	<fcntl.h>
+#include	<sys/file.h>
 #include	"FSlibos.h"
+#include	"fontmisc.h"
 #include	"fsio.h"
-
-/* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
- * systems are broken and return EWOULDBLOCK when they should return EAGAIN
- */
-#if defined(EAGAIN) && defined(EWOULDBLOCK)
-#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
-#else
-#ifdef EAGAIN
-#define ETEST(err) (err == EAGAIN)
-#else
-#define ETEST(err) (err == EWOULDBLOCK)
-#endif
-#endif
+#include	"assert.h"
 
 extern int  errno;
-#ifdef DEBUG
 extern char *sys_errlist[];
-#endif
 
 static int  padlength[4] = {0, 3, 2, 1};
 unsigned long fs_fd_mask[MSKCNT];
@@ -71,6 +59,7 @@ _fs_name_to_address(servername, inaddr)
     char        hostname[256];
     char       *sp;
     unsigned long hostinetaddr;
+    extern struct hostent *gethostbyname();
     struct hostent *hp;
 
     /* XXX - do any service name lookup to get a hostname */
@@ -135,18 +124,14 @@ _fs_connect(servername)
 	return -1;
     }
 
-    /* ultrix reads hang on Unix sockets, hpux reads fail */
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
-    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
-#else
 #ifdef FIOSNBIO
     {
-	int arg = 1;
-	ioctl (fd, FIOSNBIO, &arg);
+	int         arg = 1;
+
+	ioctl(fd, FIOSNBIO, &arg);
     }
 #else
-    (void) fcntl (fd, F_SETFL, FNDELAY);
-#endif
+    (void) fcntl(fd, F_SETFL, FNDELAY);
 #endif
 
     return fd;
@@ -263,8 +248,9 @@ _fs_read(conn, data, size)
 	if (bytes_read > 0) {
 	    size -= bytes_read;
 	    data += bytes_read;
-	} else if (ETEST(errno)) {
-	    /* this shouldn't happen */
+	} else if (errno == EWOULDBLOCK) {
+	    /* in a perfect world, this shouldn't happen */
+	    /* ... but then, its less than perfect... */
 	    if (_fs_wait_for_readable(conn) == -1)	/* check for error */
 		return -1;
 	} else if (bytes_read == 0) {	/* EOF */
@@ -303,7 +289,7 @@ _fs_write(conn, data, size)
 	if (bytes_written > 0) {
 	    size -= bytes_written;
 	    data += bytes_written;
-	} else if (ETEST(errno)) {
+	} else if (errno == EWOULDBLOCK) {
 	    /* XXX -- we assume this can't happen */
 
 #ifdef DEBUG
@@ -390,8 +376,9 @@ _fs_wait_for_readable(conn)
 	result = select(conn->fs_fd + 1, r_mask, NULL, e_mask, NULL);
 	if (result == -1) {
 	    if (errno != EINTR)
-	        return -1;
-	    else continue;
+		return -1;
+	    else
+		continue;
 	}
 	if (result && _fs_any_bit_set(e_mask))
 	    return -1;
@@ -428,14 +415,14 @@ int
 _fs_any_bit_set(mask)
     unsigned long *mask;
 {
-#ifdef _FSANYSET
-    return _FSANYSET(mask);
+#ifdef ANYSET
+    return ANYSET(mask);
 #else
     int i;
 
     for (i=0; i<MSKCNT; i++)
-	if (mask[i])
-	    return (1);
+      if (mask[i])
+          return (1);
     return (0);
 #endif
 }
@@ -449,15 +436,43 @@ _fs_or_bits(dst, m1, m2)
     ORBITS(dst, m1, m2);
 }
 
+_fs_drain_bytes(conn, len)
+    FSFpePtr    conn;
+    int         len;
+{
+    char        buf[128];
+
+#ifdef DEBUG
+    fprintf(stderr, "draining wire\n");
+#endif
+
+    while (len > 0) {
+	_fs_read(conn, buf, MIN(len, 128));
+	len -= 128;
+    }
+}
+
+_fs_drain_bytes_pad(conn, len)
+    FSFpePtr    conn;
+    int         len;
+{
+    _fs_drain_bytes(conn, len);
+
+    /* read the junk */
+    if (padlength[len & 3]) {
+	_fs_drain_bytes(conn, padlength[len & 3]);
+    }
+}
+
 _fs_eat_rest_of_error(conn, err)
     FSFpePtr    conn;
     fsError    *err;
 {
-    char        buf[128];
     int         len = (err->length - (sizeof(fsReplyHeader) >> 2)) << 2;
 
-    while (len > 0) {
-        _fs_read(conn, buf, len < 128 ? len : 128);
-	len -= 128;
-    }
+#ifdef DEBUG
+    fprintf(stderr, "clearing error\n");
+#endif
+
+    _fs_drain_bytes(conn, len);
 }

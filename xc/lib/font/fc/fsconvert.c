@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.4 91/05/14 15:40:29 rws Exp $ */
+/* $XConsortium: fsconvert.c,v 1.5 91/05/30 19:08:22 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -23,15 +23,20 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
+ *	@(#)fsconvert.c	4.2	91/05/14
+ *
+ * $NCDId: @(#)fsconvert.c,v 1.3 1991/06/10 13:21:52 lemke Exp $
+ *
  */
 /*
  * FS data conversion
  */
 
-#include	"fontmisc.h"
-#include	"fontstruct.h"
+#include        <X11/X.h>
 #include	"FS.h"
 #include	"FSproto.h"
+#include	"fontmisc.h"
+#include	"fontstruct.h"
 #include	"fservestr.h"
 
 /*
@@ -224,7 +229,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     CharInfoPtr pDefault;
     FSFontDataPtr fsd = (FSFontDataPtr) pFont->fpePrivate;
     int         itemSize;
-    int         err = Successful;
+    int         err = Success;
 
     fsdata = (FSFontPtr) pFont->fontPrivate;
     encoding = fsdata->encoding;
@@ -242,7 +247,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 	itemSize = 2;
     if (!fsd->complete)
 	err = fs_load_glyphs((pointer) 0, pFont, count, itemSize, chars);
-    if (err != Successful)
+    if (err != Success)
 	return err;
 
     switch (charEncoding) {
@@ -309,7 +314,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return Successful;
 }
 
-static CharInfoRec junkDefault;
+CharInfoRec junkDefault;
 
 static int
 _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)

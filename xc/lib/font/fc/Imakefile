@@ -1,16 +1,15 @@
+#
+# Make file for font handling routines
+#
 #include <Server.tmpl>
 
-        INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
+        INCLUDES = -I$(FONTSRC)/include -I../include
          HEADERS = 
-#ifdef FontFormatDefines
-     FORMAT_DEFS = FontFormatDefines
-#endif
             SRCS = fsconvert.c fserve.c fsio.c
             OBJS = fsconvert.o fserve.o fsio.o
 
-NormalLibraryObjectRule()
+NormalLibraryTarget(fontfc,$(OBJS))
 all:: $(OBJS)
 NormalLintTarget($(SRCS))
 
 DependTarget()
-
