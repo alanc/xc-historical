@@ -1,4 +1,4 @@
-/* $XConsortium: ObjectP.h,v 1.9 89/09/13 17:56:05 swick Exp $ */
+/* $XConsortium: ObjectP.h,v 1.10 89/10/04 12:22:44 swick Exp $ */
 /* $oHeader: ObjectP.h,v 1.2 88/08/18 15:55:35 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -69,13 +69,13 @@ typedef struct _ObjectClassPart {
     XtInitProc      initialize;         /* initialize subclass fields       */
     XtArgsProc      initialize_hook;    /* notify that initialize called    */
     XtProc          obj1;		/* NULL                             */
-    XtProc          obj2;               /* NULL                             */
+    XtPointer       obj2;               /* NULL                             */
     Cardinal        obj3;               /* NULL                             */
     XtResourceList  resources;          /* resources for subclass fields    */
     Cardinal        num_resources;      /* number of entries in resources   */
     XrmClass        xrm_class;          /* resource class quarkified        */
     Boolean         obj4;               /* NULL                             */
-    Boolean         obj5;               /* NULL                             */
+    XtEnum          obj5;               /* NULL                             */
     Boolean         obj6;               /* NULL				    */
     Boolean         obj7;               /* NULL                             */
     XtWidgetProc    destroy;            /* free data for subclass pointers  */
