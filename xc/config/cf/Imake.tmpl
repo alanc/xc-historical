@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.84 90/12/11 13:22:53 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.85 90/12/13 22:39:34 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -247,11 +247,10 @@ XCOMM site-specific configuration parameters - edit site.def to change
  */
 
 #ifndef SystemV
-#ifdef SYSV
-#define SystemV			YES	/* need system 5 style */
-#else
-#define SystemV			NO	/* bsd */
+#define SystemV			NO	/* SYSV (R3) */
 #endif
+#ifndef SystemV4
+#define SystemV4		NO	/* SVR4 */
 #endif
 #ifndef OSMajorVersion
 #define OSMajorVersion          0
@@ -263,7 +262,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define UnalignedReferencesAllowed NO	/* if arbitrary deref is okay */
 #endif
 #ifndef ExecableScripts
-#ifdef SYSV
+#if SystemV
 #define ExecableScripts		NO
 #else
 #define ExecableScripts		YES	/* kernel exec() can handle #! */
@@ -302,14 +301,10 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define HasPutenv		NO	/* assume not */
 #endif
 #ifndef HasVoidSignalReturn
-#if SystemV
-#define HasVoidSignalReturn	YES
-#else
-#define HasVoidSignalReturn	NO	/* may or may not be true */
-#endif
+#define HasVoidSignalReturn	YES	/* assume yes */
 #endif
 #ifndef HasBsearch
-#if SystemV
+#if SystemV || SystemV4
 #define HasBsearch		YES
 #else
 #define HasBsearch		NO	/* stupid systems */
@@ -518,12 +513,15 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #ifndef MvCmd
 #define MvCmd mv
 #endif
-#ifndef RanlibCmd
-#if SystemV
-#define RanlibCmd /bin/true
+#ifndef DoRanlibCmd
+#if SystemV || SystemV4
+#define DoRanlibCmd 0
 #else
-#define RanlibCmd ranlib
+#define DoRanlibCmd 1
 #endif
+#endif
+#ifndef RanlibCmd
+#define RanlibCmd ranlib
 #endif
 #ifndef RanlibInstFlags
 #define RanlibInstFlags /**/
@@ -535,7 +533,11 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #if SystemV
 #define StandardCppDefines -DSYSV
 #else
+#if SystemV4
+#define StandardCppDefines -DSVR4
+#else
 #define StandardCppDefines /**/
+#endif
 #endif
 #endif
 #ifndef StandardIncludes
@@ -545,7 +547,11 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #if SystemV
 #define StandardDefines -DSYSV
 #else
+#if SystemV4
+#define StandardDefines -DSVR4
+#else
 #define StandardDefines /**/
+#endif
 #endif
 #endif
 #ifndef NdbmDefines
@@ -605,8 +611,10 @@ XCOMM site-specific configuration parameters - edit site.def to change
              MAKE = MakeCmd
                MV = MvCmd
                CP = CpCmd
+#if DoRanlibCmd
            RANLIB = RanlibCmd
   RANLIBINSTFLAGS = RanlibInstFlags
+#endif
                RM = RmCmd
      STD_INCLUDES = StandardIncludes
   STD_CPP_DEFINES = StandardCppDefines
@@ -625,7 +633,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
    SIGNAL_DEFINES = -DSIGNALRETURNSINT
 #endif
 /*
- * The following crap is necessary to support forcing of function prototypes
+ * The following supports forcing of function prototypes
  */
 #if NeedFunctionPrototypes
 #define _funcprotodef -DFUNCPROTO
