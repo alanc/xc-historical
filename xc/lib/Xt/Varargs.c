@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.8 89/11/14 14:24:57 swick Exp $";
+    "$XConsortium: Varargs.c,v 1.9 89/11/14 17:56:55 swick Exp $";
 #endif
 /*
 
@@ -236,11 +236,11 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
 
     arg_return->name = typed_arg->name;
     if (to_val.size == sizeof(long))
-        arg_return->value = *(long *)to_val.addr;
+        arg_return->value = (XtArgVal) *(long *)to_val.addr;
     else if (to_val.size == sizeof(short))
-        arg_return->value = *(short *)to_val.addr;
+        arg_return->value = (XtArgVal) *(short *)to_val.addr;
     else if (to_val.size == sizeof(char))
-        arg_return->value = *(char *)to_val.addr;
+        arg_return->value = (XtArgVal) *(char *)to_val.addr;
     else if (to_val.size == sizeof(XtArgVal))
         arg_return->value = *(XtArgVal *)to_val.addr;
        
