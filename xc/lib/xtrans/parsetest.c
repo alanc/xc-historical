@@ -23,6 +23,8 @@ addr	address[] = {
 	{":","local","local",""},
 	{"/:","local","local",""},
 	{"/"THISHOST":","inet",THISHOST,""},
+	{"local/"THISHOST":","local",THISHOST,""},
+	{"local/:","local","local",""},
 	{"inet/"THISHOST":","inet",THISHOST,""},
 	{"inet/:","inet","local",""},
 	{"::","decnet","local",""},
