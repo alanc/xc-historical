@@ -10,19 +10,22 @@ SmeLine Object
 .TA 2.0i
 .ta 2.0i
 Application Header file	<X11/Xaw/SmeLine.h>
+.IN "SmeLine.h" ""
 Class Header file	<X11/Xaw/SmeLineP.h>
+.IN "SmeLineP.h" ""
 Class		smeLineObjectClass
+.IN "smeLineObjectClass" ""
 Class Name	SmeLine
+.IN "SmeLine object" "class name"
 Superclass	Sme
 .De
 .sp
 .LP
-The SmeLine object is used to add a
-horizontal line or menu seperator to a menu.  Since each menu entry is
-an independant object, the application is able to change the color,
-height, and other attributes of the menu entries, on an entry by entry
-basis.  This entry is not selectable, and will not highlight when the
-pointer cursor is over it.
+The SmeLine object is used to add a horizontal line or menu separator to
+a menu.  Since each menu entry is an independent object, the application
+is able to change the color, height, and other attributes of the menu
+entries, on an entry by entry basis.  This entry is not selectable, and
+will not highlight when the pointer cursor is over it.
 .NH 3
 Resources
 .IN "SmeLine object" "resources"
@@ -60,7 +63,7 @@ _
 .De
 .IP \fBforeground\fP 1.5i
 A pixel value which indexes the SimpleMenu's colormap to derive the
-foreground color used to draw the seperator line.
+foreground color used to draw the separator line.
 .Hw
 Keep in mind that the SimpleMenu widget will force all menu items to
 be the width of the widest entry.  Thus the width is generally not
@@ -68,8 +71,7 @@ very important.
 .IP \fBlineWidth\fP 1.5i
 The width of the horizontal line that is to be displayed.
 .IP \fBstipple\fP 1.5i
-If a bitmap is specifed for this resource the line will be stippled 
-through it.  This allows the menu separator to be rendered
-as something more exciting than just a line.  For instance if you
-define a stipple that is a chain link then your menu serperators will
-be look like chains.
+If a bitmap is specified for this resource, the line will be stippled
+through it.  This allows the menu separator to be rendered as something
+more exciting than just a line.  For instance, if you define a stipple
+that is a chain link, then your menu separators will look like chains.

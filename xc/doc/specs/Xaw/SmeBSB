@@ -10,18 +10,22 @@ SmeBSB Object
 .ta 2.0i
 .sp
 Application Header file	<X11/Xaw/SmeBSB.h>
+.IN "SmeBSB.h" ""
 Class Header file	<X11/Xaw/SmeBSBP.h>
+.IN "SmeBSBP.h" ""
 Class		smeBSBObjectClass
+.IN "smeBSBObjectClass" ""
 Class Name	SmeBSB
+.IN "SmeBSB object" "class name"
 Superclass	Sme
 .sp
 .De
 .LP
-The SmeBSB object is used to create
-a menu entry that contains a string, and optional bitmaps in its
-left and right margins.  Since each menu entry is an independant object, the
-application is able to change the font, color, height, and other
-attributes of the menu entries, on an entry by entry basis.
+The SmeBSB object is used to create a menu entry that contains a string,
+and optional bitmaps in its left and right margins.  Since each menu
+entry is an independent object, the application is able to change the
+font, color, height, and other attributes of the menu entries, on an
+entry by entry basis.
 .NH 3
 Resources
 .IN "SmeBSB object" "resources"
@@ -74,7 +78,7 @@ All callback functions on this list are called when the SimpleMenu
 The font used to display the text label.
 .IP \fBforeground\fP 1.5i
 A pixel value which indexes the SimpleMenu's colormap to derive the
-foreground color of the menu entries's window.  This color is also 
+foreground color of the menu entry's window.  This color is also 
 used to render all 1's in the left and right \fBbitmaps\fP.
 .Hw
 Keep in mind that the SimpleMenu widget will force the width of all
@@ -87,10 +91,10 @@ or \fBXtJustifyRight\fP.  When specifying the justification from a
 resource file the values \fBleft\fP, \fBcenter\fP, or \fBright\fP may be
 used.
 .IP \fBlabel\fP 1.5i
-This is a the string that will be displayed in the menu entry.  The exact
-location of this string within the bounds of the menu entry is
-controlled by the \fBleftMargin\fP, \fBrightMargin\fP,
-\fBvertSpace\fP, and \fBjustify\fP resources.
+This is a the string that will be displayed in the menu entry.  The
+exact location of this string within the bounds of the menu entry is
+controlled by the \fBleftMargin\fP, \fBrightMargin\fP, \fBvertSpace\fP,
+and \fBjustify\fP resources.
 .IP \fBleftBitmap\fP 1.5i
 .br
 .ns
