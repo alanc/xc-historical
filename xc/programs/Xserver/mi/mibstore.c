@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.28 89/10/29 14:47:19 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.29 89/11/02 13:58:26 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1281,7 +1281,10 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
 	if ((* pGC->pScreen->RectIn) (pRgnExp, &box) == rgnIN)
 	    (*pGC->pScreen->RegionEmpty) (pRgnExp);
 	else
+	{
 	    (* pGC->pScreen->Inverse) (pRgnExp, pRgnExp, &box);
+	    (* pGC->pScreen->TranslateRegion) (pRgnExp, dx, dy);
+	}
 	*ppRgn = pRgnExp;
     }
     else
