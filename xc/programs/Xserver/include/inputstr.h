@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.22 89/08/08 16:50:51 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.23 89/10/03 19:50:03 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -147,37 +147,56 @@ typedef struct _ProximityClassRec {
     char	pad;
 } ProximityClassRec, *ProximityClassPtr;
 
+typedef struct _KbdFeedbackClassRec *KbdFeedbackPtr;
+typedef struct _PtrFeedbackClassRec *PtrFeedbackPtr;
+typedef struct _IntegerFeedbackClassRec *IntegerFeedbackPtr;
+typedef struct _StringFeedbackClassRec *StringFeedbackPtr;
+typedef struct _BellFeedbackClassRec *BellFeedbackPtr;
+typedef struct _LedFeedbackClassRec *LedFeedbackPtr;
+
 typedef struct _KbdFeedbackClassRec {
     void		(*BellProc) ();
     void		(*CtrlProc) ();
     KeybdCtrl	 	ctrl;
-} KbdFeedbackClassRec, *KbdFeedbackPtr;
+    KbdFeedbackPtr	next;
+    CARD8		id;
+} KbdFeedbackClassRec;
 
 typedef struct _PtrFeedbackClassRec {
-    void	(*CtrlProc) ();
-    PtrCtrl	 ctrl;
-} PtrFeedbackClassRec, *PtrFeedbackPtr;
+    void		(*CtrlProc) ();
+    PtrCtrl		ctrl;
+    PtrFeedbackPtr	next;
+    CARD8		id;
+} PtrFeedbackClassRec;
 
 typedef struct _IntegerFeedbackClassRec {
-    void	(*CtrlProc) ();
-    IntegerCtrl	 ctrl;
-} IntegerFeedbackClassRec, *IntegerFeedbackPtr;
+    void		(*CtrlProc) ();
+    IntegerCtrl	 	ctrl;
+    IntegerFeedbackPtr	next;
+    CARD8		id;
+} IntegerFeedbackClassRec;
 
 typedef struct _StringFeedbackClassRec {
-    void	(*CtrlProc) ();
-    StringCtrl	 ctrl;
-} StringFeedbackClassRec, *StringFeedbackPtr;
+    void		(*CtrlProc) ();
+    StringCtrl	 	ctrl;
+    StringFeedbackPtr	next;
+    CARD8		id;
+} StringFeedbackClassRec;
 
 typedef struct _BellFeedbackClassRec {
-    void	(*BellProc) ();
-    void	(*CtrlProc) ();
-    BellCtrl	 ctrl;
-} BellFeedbackClassRec, *BellFeedbackPtr;
+    void		(*BellProc) ();
+    void		(*CtrlProc) ();
+    BellCtrl	 	ctrl;
+    BellFeedbackPtr	next;
+    CARD8		id;
+} BellFeedbackClassRec;
 
 typedef struct _LedFeedbackClassRec {
-    void	(*CtrlProc) ();
-    LedCtrl	 ctrl;
-} LedFeedbackClassRec, *LedFeedbackPtr;
+    void		(*CtrlProc) ();
+    LedCtrl	 	ctrl;
+    LedFeedbackPtr	next;
+    CARD8		id;
+} LedFeedbackClassRec;
 
 /* states for devices */
 
