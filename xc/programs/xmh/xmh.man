@@ -1,14 +1,14 @@
-.\" $XConsortium: xmh.man,v 1.23 91/07/18 21:03:57 converse Exp $
+.\" $XConsortium: xmh.man,v 1.24 91/07/27 18:38:41 rws Exp $
 .TH XMH 1 "Release 5" "X Version 11"
 .SH NAME
-\fIxmh\fR \- X interface to the MH Message Handling System
+\fIxmh\fR \- send and read mail with an X interface to MH
 .SH SYNOPSIS
 .B xmh
-[-path \fImailpath\fR] [-initial \fIfoldername\fR] [-flag] [-\fItoolkitoption\fR ...]
+[\-path \fImailpath\fR] [\-initial \fIfoldername\fR] [\-flag] [\-\fItoolkitoption\fR ...]
 .SH DESCRIPTION
 The
 .I xmh
-program provides a window-oriented user interface to the \fIMH\fR Message
+program provides a graphical user interface to the \fIMH\fR Message
 Handling System.  To actually do things with your mail, it makes calls to the
 \fIMH\fR package.  Electronic mail messages may be composed, sent, 
 received, replied to, forwarded, sorted, and stored in folders.  \fIxmh\fR
@@ -29,7 +29,7 @@ This option specifies an alternate folder which may receive new mail and is
 initially opened by \fIxmh\fR.  
 The default initial folder is `inbox'.
 .TP 8
-.B -flag
+.B \-flag
 This option will cause \fIxmh\fR to change the appearance of appropriate
 folder buttons and to request the window manager to change the appearance
 of the xmh icon when new mail has arrived.
@@ -61,7 +61,7 @@ file; if this file was not installed properly a warning message will appear
 in a popup dialog box.
 
 .SH BASIC SCREEN LAYOUT
-\fIxmh\fR starts out with a single window, divided into four main areas:
+\fIxmh\fR starts out with a single window, divided into four major areas:
 
 .TP 4
 .B \-
@@ -322,7 +322,8 @@ The corresponding action is \fBXmhMarkMove()\fP.
 Mark the selected messages to be copied into the current folder.  (If the
 current folder is the same as the viewed folder, this command will just
 beep.)  If no messages are highlighted, mark the current message to be
-copied.
+copied.  Note that messages are actually linked, not copied.  If you edit
+a message copied by \fIxmh\fP, all copies of the message will be affected.
 The corresponding action is \fBXmhMarkCopy()\fP.
 .PP
 .TP 18
@@ -605,17 +606,17 @@ Ctrl-w	Kill Selection	Meta-Backspace	Delete Previous Word
 Ctrl-y	Unkill	Meta-Shift Backspace	Kill Previous Word
 Ctrl-z	Scroll One Line Up
 .sp
-In addition, the pointer may be used to cut and paste text:
+In addition, the pointer may be used to copy and paste text:
 .ta .5i 2.0i
 	Button 1 Down	Start Selection
 	Button 1 Motion	Adjust Selection
-	Button 1 Up	End Selection (cut)
+	Button 1 Up	End Selection (copy)
 
 	Button 2 Down	Insert Current Selection (paste)
 
 	Button 3 Down	Extend Current Selection
 	Button 3 Motion	Adjust Selection
-	Button 3 Up	End Selection (cut)
+	Button 3 Up	End Selection (copy)
 .fi
 .sp
 .SH CONFIRMATION DIALOG BOXES
@@ -626,9 +627,10 @@ action.  This window will contain an ``Abort'' or ``No'' button and a
 button.  Pressing the ``No'' button cancels the operation, and pressing
 the ``Yes'' will proceed with the operation. 
 
-Some dialog boxes contain messages from \fIMH\fR.  Clicking on the
-message field will cause the dialog box to resize so that you can read
-the entire message.
+Some dialog boxes contain messages from \fIMH\fR.  Occasionally when the
+message is more than one line long,
+not all of the text will be visible.  Clicking on the message field will 
+cause the dialog box to resize so that you can read the entire message.
 
 .SH MESSAGE-SEQUENCES
 An \fIMH\fP message sequence is just a set of messages associated with some name.
@@ -654,7 +656,7 @@ the same.  (This all pretty much corresponds to the way the folders work.)
 
 The \fBOpen Sequence\fR, \fBAdd to Sequence\fR, \fBRemove from Sequence\fR,
 and \fBDelete Sequence\fR commands are active only if the viewed folder
-contains message-sequences.
+contains message-sequences other than ``all'' sequence.
 .PP
 Note that none of the above actually affect whether a message is in the
 folder.  Remember that a sequence is a set of messages within the folder;
@@ -666,7 +668,7 @@ sequence's initial set of messages based on characteristics of the
 message.  Thus, you can define a sequence to be all the messages that were
 from a particular person, or with a particular subject, and so on.  You
 can also connect things up with boolean operators, so you can select all
-things from ``weissman'' with the subject ``xmh''.
+things from ``weissman'' with a subject containing ``xmh''.
 
 Hopefully, the layout is fairly obvious.  The simplest cases are the
 easiest: just point to the proper field and type.  If you enter in more
@@ -675,12 +677,12 @@ fields.
 
 The more complicated cases arise when you want things that match one field
 or another one, but not necessarily both.  That's what all the ``or''
-buttons are for.  If you want all things with the subject ``xmh'' or
+buttons are for.  If you want all things with subjects that include ``xmh'' or
 ``xterm'', just press the ``or'' button next to the ``Subject:'' field.
 Another box will appear where you can enter another subject.
 
 If you want all things either from ``weissman'' or with subject ``xmh'', but
-not necessarily both, select the ``-Or-'' button.  This will essentially
+not necessarily both, select the ``\-Or\-'' button.  This will essentially
 double the size of the form.  You can then enter ``weissman'' in a from: box
 on the top half, and ``xmh'' in a subject: box on the lower part.
 
@@ -701,7 +703,7 @@ digit day of the month, mmm is the three-letter abbreviation for a month,
 and yy is a year.  The remaining fields are optional: hh, mm, and ss
 specify a time of day, and zzz selects a time zone.  Note that if the time
 is left out, it defaults to midnight; thus if you select a range of ``7
-nov 86'' - ``8 nov 86'', you will only get messages from the 7th, as all
+nov 86'' \- ``8 nov 86'', you will only get messages from the 7th, as all
 messages on the 8th will have arrived after midnight.
 
 ``Date field'' specifies which date field in the header to look at for
@@ -876,7 +878,7 @@ Xmh xmh
 	TopLevelShell  xmh
 		Paned  xmh
 			Label  pickTitlebar
-			Viewport.core  pick.clip
+			Viewport.Core  pick.clip
 				Form  form
 					Form  groupform
 \fIThe first 6 rows of the pick window have identical structure:\fR
@@ -930,9 +932,9 @@ defaults file.
 If \fBTocGeometry\fR, \fBViewGeometry\fR, \fBCompGeometry\fR, or
 \fBPickGeometry\fR are not
 specified, then the value of \fBGeometry\fR is used instead.  If the resulting
-height is not specified (e.g., "", "=500", "+0-0"), then the default
+height is not specified (e.g., "", "=500", "+0\-0"), then the default
 height of windows is calculated from fonts and line counts. If
-the width is not specified (e.g., "", "=x300", "-0+0), then half of the
+the width is not specified (e.g., "", "=x300", "\-0+0), then half of the
 display width is used.  If unspecified, the height of a pick window
 defaults to half the height of the display.
 .PP
@@ -940,7 +942,7 @@ Any of these options may also be specified on the command line by
 using the X Toolkit Intrinsics resource specification mechanism.
 Thus, to run \fIxmh\fR showing all message headers,
 .br
-% xmh -xrm '*HideBoringHeaders:off'
+% xmh \-xrm '*HideBoringHeaders:off'
 .PP
 The following resources are defined:
 .TP 8
@@ -1018,6 +1020,10 @@ Initial geometry for windows containing compositions.
 The name of the symbol used to represent the pointer.  Default is ``left_ptr''.
 .PP
 .TP 8
+.B debug
+Whether or not to print information to stderr as xmh runs.  Default is false.
+.PP
+.TP 8
 .B draftsFolder
 The folder used for message drafts.  Default is ``drafts''.
 .PP
@@ -1028,12 +1034,13 @@ Default geometry to use.  Default is none.
 .TP 8
 .B hideBoringHeaders
 If ``on'', then \fIxmh\fR will attempt to skip uninteresting header lines
-within messages by scrolling them off.  Default is ``on''.
+within messages by scrolling them off the top of the view.
+Default is ``on''.
 .PP
 .TP 8
 .B initialFolder
 Which folder to display on startup.  May also be set with the command-line
-option \fB-initial\fR.  Default is ``inbox''.  
+option \fB\-initial\fR.  Default is ``inbox''.  
 .PP
 .TP 8
 .B initialIncFile
@@ -1042,7 +1049,7 @@ In some installations, for example those using the Post Office Protocol,
 no file is appropriate.
 In this case, \fBinitialIncFile\fR should not be specified,
 or may be specified as the empty string,
-and \fIinc\fR will be invoked without a -file argument.
+and \fIinc\fR will be invoked without a \-file argument.
 By default, this resource has no value.
 .PP
 .TP 8
@@ -1054,15 +1061,15 @@ The default is the value of \fBcheckFrequency\fR.
 .TP 8
 .B mailPath
 The full path prefix for locating your mail folders.  May also be set
-with the command-line option, \fB-path\fR.  The default is the
-Path component in $HOME/.mh_profile, or ``$HOME/Mail'' if none.
+with the command line option, \fB\-path\fR.  The default is the
+Path component in the \fIMH\fP profile, or ``$HOME/Mail'' if none.
 .PP
 .TP 8
 .B mailWaitingFlag
 If true, \fIxmh\fP will attempt to set an indication in its icon when
-new mail is waiting to be retrieved.  If this option is true, then
-\fBcheckNewMail\fP is assumed to be true as well.  The \fB-flag\fP command line
-option is a quick way to turn on this option.
+new mail is waiting to be retrieved.  If \fBmailWaitingFlag\fP is true, then
+\fBcheckNewMail\fP is assumed to be true as well.  The \fB\-flag\fP command
+line option is a quick way to turn on this resource.
 .PP
 .TP 8
 .B makeCheckpoints
@@ -1089,7 +1096,7 @@ has new mail.  The default is ``flagup''.
 .TP 8
 .B "noMailBitmap (\fPclass\fB NoMailBitmap)"
 The bitmap to show in the folder button when a folder has no new mail.
-The default is ``blank6''.
+The default is ``box6''.
 .PP
 .TP 8
 .B "noMailIconBitmap (\fPclass\fB NoMailBitmap)"
@@ -1124,11 +1131,12 @@ message is added to the end of the command before being passed to \fIsh\fP(1).
 The default filter is \fIcat\fP; i.e. it inserts the entire message
 into the composition.  Interesting filters are:
 \fIawk -e '{print "    " $0}'\fP or
-\fI<mh directory>/lib/mhl -form mhl.body\fP.
+\fIsed 's/^/> /'\fP or
+\fI<mh directory>/lib/mhl \-form mhl.body\fP.
 .PP
 .TP 8
 .B "rescanInterval (\fPclass\fB Interval)"
-How often to check the Table of Contents of currently viewed folders,
+How often to check the Table of Contents of currently viewed folders
 and folders with messages currently displayed, for inconsistencies with
 the file system.  The default is 5 times the value of \fBcheckFrequency\fP.
 .PP
@@ -1314,8 +1322,7 @@ MH - to get the location of the \fIMH\fP profile file
 .SH SEE ALSO
 X(1), xrdb(1), X Toolkit Intrinsics, Athena Widget Set, mh(1), enscript(1)
 .br
-\fIMH & xmh: E-mail for Users and Programmers\fR, Jerry Peek, O'Reilly &
-Associates, 1990
+At least one book has been published about \fIMH\fP and \fIxmh\fP.
 .SH BUGS
 - Should handle the ``unseen'' message-sequence.
 .br
@@ -1331,7 +1338,7 @@ of the first toc and view, while trying to keep other \fIxmh\fP windows around.
 .SH COPYRIGHT
 Copyright 1988, 1989, Digital Equipment Corporation.
 .br
-Copyright 1989, Massachusetts Institute of Technology
+Copyright 1989, 1991 Massachusetts Institute of Technology
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
