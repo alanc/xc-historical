@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.4 92/03/11 15:29:06 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.5 92/03/12 09:51:07 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -36,6 +36,9 @@ KeyCode last_keycode = 0;
 struct termios oldterm;
 int istty = 0;
 char buttons[5];
+int moving = 0;
+int moving_x = 0;
+int moving_y = 0;
 
 usage()
 {
@@ -240,6 +243,16 @@ dochar(c)
     do_key(keycodes[c], modifiers[c]);
 }
 
+do_keysym(sym)
+    KeySym sym;
+{
+    if (sym != last_sym) {
+	last_sym = sym;
+	last_keycode = XKeysymToKeycode(dpy, sym);
+    }	
+    do_key(last_keycode, 0);
+}
+
 do_button(button)
     int button;
 {
@@ -255,26 +268,54 @@ do_button(button)
 			 (state & (Button1Mask << (button - 1))) == 0, 0);
 }
 
+move_pointer(dx, dy)
+    int dx, dy;
+{
+    XWarpPointer(dpy, None, None, 0, 0, 0, 0, dx, dy);
+}
+
 do_x(delta)
     int delta;
 {
-    XWarpPointer(dpy, None, None, 0, 0, 0, 0, delta, 0);
+    if (moving)
+	moving_x = delta;
+    else
+	move_pointer(delta, 0);
 }
 
 do_y(delta)
     int delta;
 {
-    XWarpPointer(dpy, None, None, 0, 0, 0, 0, 0, delta);
+    if (moving)
+	moving_y = delta;
+    else
+	move_pointer(0, delta);
 }
 
-do_keysym(sym)
-    KeySym sym;
+start_moving()
 {
-    if (sym != last_sym) {
-	last_sym = sym;
-	last_keycode = XKeysymToKeycode(dpy, sym);
-    }	
-    do_key(last_keycode, 0);
+    moving = 1;
+    moving_x = 0;
+    moving_y = 0;
+}
+
+stop_moving()
+{
+    moving = 0;
+    moving_x = 0;
+    moving_y = 0;
+}
+
+slow_down()
+{
+    if (moving_x < 0)
+	moving_x = -1;
+    else if (moving_x > 0)
+	moving_x = 1;
+    if (moving_y < 0)
+	moving_y = -1;
+    else if (moving_y > 0)
+	moving_y = 1;
 }
 
 quiesce()
@@ -300,7 +341,12 @@ main(argc, argv)
     char keysym_char = '\024'; /* control T */
     KeySym sym;
     char *endptr;
+    int mask[10];
+    struct timeval timeout;
 
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1000 * 100;
+    bzero((char *)mask, sizeof(mask));
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
 	    usage();
@@ -344,6 +390,14 @@ main(argc, argv)
     }
     reset_mapping(dpy);
     while (1) {
+	if (moving_x | moving_y) {
+	    mask[0] = 1;
+	    if (!select(1, &mask, NULL, NULL, &timeout)) {
+		move_pointer(moving_x, moving_y);
+		XFlush(dpy);
+		continue;
+	    }
+	}
 	n = read(0, buf, sizeof(buf));
 	if (n < 0)
 	    quit(0);
@@ -378,8 +432,17 @@ main(argc, argv)
 		    case '\003': /* control c */
 			do_key(control, 0);
 			break;
+		    case '\004': /* control d */
+			slow_down();
+			break;
+		    case '\007':
+			start_moving();
+			break;
 		    case '\015': /* control m */
 			do_key(meta, 0);
+			break;
+		    case '\021': /* control q */
+			stop_moving();
 			break;
 		    case '\023': /* control s */
 			do_key(shift, 0);
