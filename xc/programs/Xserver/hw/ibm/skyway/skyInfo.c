@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skyInfo.c,v 1.3 91/07/16 13:15:33 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -45,11 +45,12 @@ extern void skyRemoveCursor();   /*in skyCur.c */
 
 PixmapFormatRec skyPixmapFormats[]= { { 8, 8, 32 } };
 
-ibmPerScreenInfo skywayScreenInfoStruct = {
-	{ 0, 0, SKYWAY_WIDTH - 1, SKYWAY_HEIGHT - 1 },
+ibmPerScreenInfo skywayScreenInfoStruct =
+{
+	{ 0, 0, SKY_WIDTH - 1, SKY_HEIGHT - 1 },
 	1,
 	skyPixmapFormats,       /* pixmap formats */
-	skyScreenIO,
+	skyScreenInit,
 	skyProbe,
 	skyRemoveCursor,    /*(*ibm_HideCursor)()*/
 	"-colorgda",

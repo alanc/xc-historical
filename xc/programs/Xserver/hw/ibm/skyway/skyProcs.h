@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skyProcs.h,v 1.3 91/07/16 13:15:59 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -31,29 +31,44 @@
 #ifndef _SKYPROCS_H
 #define _SKYPROCS_H
 
-extern int  skyProbe();
-extern void skySetColor();
 extern Bool skyScreenInit();
-extern int  skyHdwrInit();
-extern Bool skyScreenIO();
-extern void skySaveState();
-extern void skyRestoreState();
 extern Bool skyScreenClose();
 
+extern int  skyProbe();
+
+extern void skySaveState();
+extern void skyRestoreState();
 extern void skyQueryBestSize();
+
+extern Bool skyRealizeCursor();
+extern Bool skyUnrealizeCursor();
+extern Bool skyDisplayCursor();
+
 extern void skyStoreColors();
-extern int  skyListInstalledColormaps();
 extern void skyInstallColormap();
 extern void skyUninstallColormap();
+extern int  skyListInstalledColormaps();
 extern void skyRefreshColormaps();
 
-extern void SkywaySetColor();
-extern void SkywayBitBlt();
-extern void SkywayFillSolid();
-extern void SkywayTileRect();
-extern void skywayReadColorImage();
-extern void skywayDrawColorImage();
-
 extern Bool cfbScreenInit();
+extern void skyDoBitbltCopy();
+extern void skyCopyWindow();
+
+extern Bool skyCreateGC();
+extern RegionPtr skyCopyArea();
+
+extern void skyPolyFillRect();
+/*
+extern void skyPolyFillRectSolid_1Rect();
+extern void skyPolyFillRectTile_1Rect();
+extern void skyPolyFillRectStipple_1Rect();
+*/
+
+/* ----------------- internal helper functions ----------------- */
+extern int  skyHdwrInit();
+
+extern unsigned long skySetTileStip();
+extern unsigned long skySetSolid();
+extern void skyNewTileStipID();
 
 #endif /* _SKYPROC_H */

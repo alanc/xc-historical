@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skySave.c,v 1.3 91/07/16 13:16:46 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -78,42 +78,4 @@ int             restoreBits;
     skyHdwrInit(index);
     skyRefreshColormaps(pScreen);
     skyDisplayCursor( pScreen, ibmCurrentCursor(index) );
-}
-
-/*
- * skyScreenClose
- *      Screen is being destroyed. Release its resources.
- */
-
-Bool
-skyScreenClose( index, pScreen )
-register int        index;
-register ScreenPtr  pScreen;
-{
-    unmake_gp skyInfo ;
-
-    TRACE(("skyScreenClose(index=%d, pScreen=0x%x)\n",index,pScreen));
-
-    if (pScreen->devPrivate)
-	Xfree(pScreen->devPrivate);
-
-    if (aixgsc (skyHandle, UNMAKE_GP, &skyInfo))
-    {
-	    TRACE(("aixgsc UNMAKE_GP failed\n"));
-	    return -1 ;
-    }
-
-    return TRUE ;
-}
-
-
-/*
- * rcmGiveUp
- *      Someone is trying killing X. Release GAI resources for all screens.
- *      Called from common/ibmUtils.c
- */
-
-void rcmGiveUp()
-{
-	TRACE(("rcmGiveUp()\n"));
 }

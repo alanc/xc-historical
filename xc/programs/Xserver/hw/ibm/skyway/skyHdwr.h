@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skyHdwr.h,v 1.3 91/07/16 13:17:42 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -25,37 +25,193 @@
 */
 
 /*
- * skyHdwr.h - hardware constants
+ * skyHdwr.h - Skyway IO registers, constants, and macros
  */
 
 #ifndef SKYHDWR_H
 #define SKYHDWR_H
 
-/*
- * System addresses of bounds of adapter data and program areas
- */
+#include <sys/types.h>
 
-extern unsigned long    SKYWAY_OFFSET[]         ;       /* micro channel */
-extern unsigned long    SKYWAY_VRAM_START[]     ;       /* micro channel */
-extern unsigned long    IOREG[]         ;               /* micro channel */
-extern unsigned long    COPREG[]        ;               /* micro channel */
-extern unsigned long    SKYWAY_DMA0[]   ;
-extern unsigned long    SKYWAY_DMA1[]   ;
-extern unsigned long    SKYWAY_DMA2[]   ;
-extern unsigned long    SKYWAY_DMA3[]   ;
-extern unsigned long    SKYWAY_TILEOFFSET[]   ;
+/*****************************************************************************
+*                                                                            *
+*                            Skyway IO Registers                             *
+*                                                                            *
+*****************************************************************************/
 
-#define SKYWAY_VRAM_END         0x140000                /* VRAM SIZE */
-#define SKYWAY_MASKMAP_START    0x800000
-#define SKYWAY_COP_START        0x400000
-#define SKYWAY_WIDTH            1280
-#define SKYWAY_HEIGHT           1024
+typedef volatile struct	_skyIOReg
+{
+    uchar op_mode;	      /* Adapter operating mode	      */
+    uchar pc_vram_window;     /* 64K or	1MB VRAM Window	      */
+    uchar resv1;	      /* Reserved register	      */
+    uchar resv2;	      /* Reserved register	      */
+
+    uchar int_enable;	      /* Interrupts enable flags      */
+    uchar int_status;	      /* Interrupt status	      */
+    uchar vmem_int_enable;    /* Virtual-mem interrupt enab.  */
+    uchar vmem_int_stat;      /* Virtual memory	int status    */
+
+    uchar vram_index;	      /*			      */
+    uchar mem_acc_mode;	      /* Pixel-size for	framebuffer:  */
+			      /* 0xA for 4-bit,	0xB for	8-bit */
+    uchar index;	      /* Index another register set   */
+    uchar data_b;	      /* Data register for 8 bit ops  */
+
+    uchar data_c;	      /* Data register for 16/32 bit  */
+    uchar data_d;	      /* Data register for 16/32 bit  */
+    uchar data_e;	      /* Data register for 32 bit     */
+    uchar data_f;	      /* Data register for 32 bit     */
+} skyIORegRec, *skyIORegPtr;
+
+
+/*****************************************************************************
+*                                                                            *
+*                        Skyway hardware addresses                           *
+*                                                                            *
+*****************************************************************************/
+
+extern ulong		SKY_SEGMENT[];		/* Skyway segment address    */
+extern ulong		SKY_VRAM_START[];	/* Start of VRAM area        */
+extern ulong		SKY_DMA0[];		/* DMA address 0             */
+extern ulong		SKY_DMA1[];		/* DMA address 1             */
+extern ulong		SKY_DMA2[];		/* DMA address 2             */
+extern ulong		SKY_DMA3[];		/* DMA address 3             */
+
+extern skyIORegPtr	IOREG[];		/* IO Register address       */
+
+extern ulong		*SKY_TILESTIP[];	/* Table of installed tiles  */
+extern ulong		SKY_TILESTIPID_CTR[];	/* TileStip ID counter       */
+
+
+
+/*****************************************************************************
+*                                                                            *
+*                      Macros to Access IO Registers                         *
+*                                                                            *
+*****************************************************************************/
+
+#define SKY_MODE_REG(i)			IOREG[i]->op_mode
+#define SKY_WINCTRL_REG(i) 		IOREG[i]->pc_vram_window
+#define SKY_INT_REG(i)			IOREG[i]->int_enable
+#define SKY_INS_REG(i)			IOREG[i]->int_status
+#define SKY_VMC_REG(i)			IOREG[i]->vmem_int_enable
+#define SKY_VMS_REG(i)			IOREG[i]->vmem_int_stat
+#define SKY_VMI_REG(i)			IOREG[i]->vram_index
+#define SKY_MEM_REG(i)			IOREG[i]->mem_acc_mode
+
+#define SKY_BINDEX_REG(i)		IOREG[i]->index
+#define SKY_DATAB_REG(i)		IOREG[i]->data_b
+#define SKY_DATAC_REG(i)		IOREG[i]->data_c
+#define SKY_DATAD_REG(i)		IOREG[i]->data_d
+#define SKY_DATAE_REG(i)		IOREG[i]->data_e
+
+#define SKY_SINDEX_REG(i) \
+	(*((volatile unsigned short *)(&IOREG[i]->index)))
+
+
+#define SKYSetRGBColor(index,r,g,b)					\
+{									\
+    SKY_SINDEX_REG(index)  =  (PALETTESEQ  << 8);			\
+    SKY_SINDEX_REG(index)  =  (PALETTEDATA << 8) | ((r) >> 8);		\
+    SKY_SINDEX_REG(index)  =  (PALETTEDATA << 8) | ((g) >> 8);		\
+    SKY_SINDEX_REG(index)  =  (PALETTEDATA << 8) | ((b) >> 8);		\
+}
+
+#define SKYSetColorIndex(index,n)            				\
+{									\
+    SKY_SINDEX_REG(index) = (PALETTEMASK << 8) | 0xff;			\
+    SKY_SINDEX_REG(index) = (SPINDEXLO << 8)   | (0xff & (n));		\
+    SKY_SINDEX_REG(index) = (SPINDEXHI << 8)   | 0x00;			\
+}
+
+#define SKYSetColor(index,color_index,red,green,blue)			\
+{									\
+    /* Prevents blinking. */						\
+    SKY_SINDEX_REG(index) = (SPINDEXLO << 8) | 0x07;			\
+    SKY_SINDEX_REG(index) = (PALETTEMASK << 8) | 0x00;			\
+									\
+    SKYSetColorIndex(index, color_index);				\
+    SKYSetRGBColor(index, red, green, blue);				\
+}
+
+
+/*****************************************************************************
+*                                                                            *
+*                         Skyway hardware constants                          *
+*                                                                            *
+*****************************************************************************/
+
+#define SKY_WIDTH            1280
+#define SKY_HEIGHT           1024
+
+#define SKY_INVISO_SIZE		(SC_VRAM_END - SC_INVIS_VRAM_BASE + 1)
+#define SKY_TILESTIP_AREAS	0x8
+#define SKY_MAX_TILESTIP_SIZE	(SKY_INVISO_SIZE/SKY_TILESTIP_AREAS)
+
+/* skycolor */
+
+#define SC_VRAM_BASE       0x400000	/* Start of screen VRAM     */
+#define SC_INVIS_VRAM_BASE 0x540000	/* Start of off-screen VRAM */
+#define SC_VRAM_END        0x5fffff	/* Last byte of VRAM        */
+
+
+/* skymono */
+
+#define SM_VRAM_BASE       0x400000	/* Start of screen VRAM     */
+#define SM_INVIS_VRAM_BASE 0x4A0000	/* Start of off-screen VRAM */
+#define SM_VRAM_END        0x4fffff	/* Last byte of VRAM        */
+
+
+/*   CRTC REGISTERS     */
+
+#define Display_Mode1   0x5000      /* Display Mode 1 Register        */
+#define Display_Mode2   0x5100      /* Display Mode 2 Register        */
+
+/*   hardware cursor                                                  */
+
+#define CursLo_Plane0   0x5600      /* Cursor address low plane 0     */
+#define CursLo_Plane1   0x5700      /* Cursor address low plane 1     */
+#define CursHi_Plane0   0x5800      /* Cursor address high plane 0    */
+#define CursHi_Plane1   0x5900      /* Cursor address high plane 0    */
+#define CursImg_Plane0  0x5A00      /* Cursor image plane 0           */
+#define CursImg_Plane1  0x5B00      /* Cursor image plane 1           */
+#define CursIndex       0x6000      /* Cursor index                   */
+#define CursData        0x6A00      /* Cursor data                    */
+#define CursCntl_Plane0 0x6C00      /* Cursor control plane 0         */
+#define CursCntl_Plane1 0x6D00      /* Cursor control plane 1         */
+
+/*   colormap                                                         */
+
+#define PaletIndex      0x6000      /* Palette Index                  */
+#define PaletCntl       0x6400      /* Palette DAC control            */
+#define PaletData       0x6500      /* Palette Data                   */
+
+/*   misc stuff                                                       */
+
+#define x_correct       0x01A8      /* x correction factor for pass 1 */
+#define y_correct       0x001A      /* y correction factor for pass 1 */
+
+#define xc_correct2     0x01AD      /* x cursor offset, color, pass 2 */
+#define yc_correct2     0x001B      /* y cursor offset, color, pass 2 */
+#define xm_correct2     0x0194      /* x cursor offset, mono, pass 2  */
+#define ym_correct2     0x001F      /* y cursor offset, mono, pass 2  */
+
+#define DAC_disable     0x0004
+#define DAC_enable      0x0044
+#define Video_disable   0x0061
+#define Video_enable    0x0063
+#define ColorCmd        0x38
+#define CursPlaneSize   512
+#define MaxCursorSize   64
+#define BestCursorSize  32
+
 
 /* Interrupt Enable Register */
 
 #define FRAMEFLYBACK           (1 << 0)
 #define COPREJECTED            (1 << 2)
 #define COPCOMPLETED           (1 << 3)
+
 
 /*  Mode    */
 
@@ -68,7 +224,12 @@ extern unsigned long    SKYWAY_TILEOFFSET[]   ;
 #define MOTOROLAINHIBITED       0x6
 #define MOTOROLAENABLED         0x7
 
-/*      work with Index Register        */
+
+/*****************************************************************************
+*                                                                            *
+*          Index Registers (access through ``index'' IO register)            *
+*                                                                            *
+*****************************************************************************/
 
 #define MEMORYCONF              0x00    /* Memory Configuration Register */
 #define COPSAVERESTOREDATA1     0x0c    /* Save/Restore Data 1 */
@@ -138,350 +299,5 @@ extern unsigned long    SKYWAY_TILEOFFSET[]   ;
 #define PALETTEBLUE             0x69    /* Palette Blue Prefetch Register */
 #define SPRITEDATA              0x6a    /* Sprite Data Register */
 #define SPRITEPF                0x6b    /* Sprite Prefetch Register */
-
-#define MD_OFF          0x0     /* Operating Mode Register */
-#define WC_OFF          0x1     /* Window Control Register */
-#define INT_OFF         0x4     /* Interrupt Enable Register */
-#define INS_OFF         0x5     /* Interrupt Status Register */
-#define VMC_OFF         0x6     /* Virtual Memory Control Register */
-#define VMS_OFF         0x7     /* Virtual Memory Status Register */
-#define VMI_OFF         0x8     /* VRAM Index Register */
-#define MEM_OFF         0x9     /* Memory Access Mode Register */
-#define INDEX_OFF       0xa     /* IO Index Register */
-#define DATA_B_OFF      0xb     /* IO Data B Register */
-#define DATA_C_OFF      0xc     /* IO Data C Register */
-#define DATA_D_OFF      0xd     /* IO Data D Register */
-#define DATA_E_OFF      0xe     /* IO Data E Register */
-
-#define SKYWAY_MODE_REG(index)                          \
-	(*((volatile unsigned char *)(IOREG[index] + MD_OFF)))
-#define SKYWAY_WINCTRL_REG(index)                       \
-	(*((volatile unsigned char *)(IOREG[index] + WC_OFF)))
-#define SKYWAY_INT_REG(index)                           \
-	(*((volatile unsigned char *)(IOREG[index] + INT_OFF)))
-#define SKYWAY_INS_REG(index)                           \
-	(*((volatile unsigned char *)(IOREG[index] + INS_OFF)))
-#define SKYWAY_VMC_REG(index)                           \
-	(*((volatile unsigned char *)(IOREG[index] + VMC_OFF)))
-#define SKYWAY_VMS_REG(index)                           \
-	(*((volatile unsigned char *)(IOREG[index] + VMS_OFF)))
-#define SKYWAY_VMI_REG(index)                           \
-	(*((volatile unsigned char *)(IOREG[index] + VMI_OFF)))
-#define SKYWAY_MEM_REG(index)                           \
-	(*((volatile unsigned char *)(IOREG[index] + MEM_OFF)))
-#define SKYWAY_BINDEX_REG(index)                        \
-	(*((volatile unsigned char *)(IOREG[index] + INDEX_OFF)))
-#define SKYWAY_SINDEX_REG(index)                        \
-	(*((volatile unsigned short *)(IOREG[index] + INDEX_OFF)))
-#define SKYWAY_DATAB_REG(index)                         \
-	(*((volatile unsigned char *)(IOREG[index] + DATA_B_OFF)))
-#define SKYWAY_DATAC_REG(index)                         \
-	(*((volatile unsigned char *)(IOREG[index] + DATA_C_OFF)))
-#define SKYWAY_DATAD_REG(index)                         \
-	(*((volatile unsigned char *)(IOREG[index] + DATA_D_OFF)))
-#define SKYWAY_DATAE_REG(index)                         \
-	(*((volatile unsigned char *)(IOREG[index] + DATA_E_OFF)))
-
-#define PD_OFF          0x0     /* Page Directory Register */
-#define VA_OFF          0x4     /* Virtual Address Register */
-#define POLL_OFF        0x9     /* new busy poll Register */
-#define LA_OFF          0xe     /* State Length A Register */
-#define LB_OFF          0xf     /* State Length B Register */
-#define PMI_OFF         0x10    /* Pixmap Index Register */
-#define PMC_OFF         0x12    /* Pixmap Control Register */
-#define PMB_OFF         0x14    /* Pixmap Base Register */
-#define PMH_OFF         0x18    /* Pixmap Height Register */
-#define PMW_OFF         0x1a    /* Pixmap Width Register 16 bits */
-#define PMF_OFF         0x1e    /* Pixmap Format Register 16 bits */
-#define BME_OFF         0x20    /* Bresenham Error Register */
-#define BMK1_OFF        0x24    /* Bresenham K1 Register */
-#define BMK2_OFF        0x28    /* Bresenham K2 Register */
-#define DRT_OFF         0x2c    /* Direction Step Register */
-#define CCC_OFF         0x48    /* Color Compare Condition Register */
-#define BM_OFF          0x4a    /* Foreground MIX Register */
-#define FM_OFF          0x4b    /* Background MIX Register */
-#define CCV_OFF         0x4c    /* Color Compare Condition Register */
-#define PM_OFF          0x50    /* Plane Mask  Register */
-#define CC_OFF          0x54    /* Carry Chain Register */
-#define FC_OFF          0x58    /* Foreground Color Register */
-#define BC_OFF          0x5c    /* Background Color Register */
-#define DM2_OFF         0x60    /* Dimention 2 Register */
-#define DM1_OFF         0x62    /* Dimention 1 Register */
-#define MASKY_OFF       0x6c    /* MaskMap  Y offset Register */
-#define MASKX_OFF       0x6e    /* MaskMap  X offset Register */
-#define SRCY_OFF        0x70    /* SrcMap   Y offset Register */
-#define SRCX_OFF        0x72    /* SrcMap   X offset Register */
-#define PATY_OFF        0x74    /* PatMap   Y offset Register */
-#define PATX_OFF        0x76    /* PatMap   X offset Register */
-#define DSTY_OFF        0x78    /* DstMap   Y offset Register */
-#define DSTX_OFF        0x7a    /* DstMap   X offset Register */
-#define PO_OFF          0x7c    /* Pixel Operation Register   */
-
-#define SKYWAY_PAGE_DIR_REG(index)                      \
-	        (*((volatile unsigned int *)(COPREG[index] + PD_OFF)))
-#define SKYWAY_VA_REG(index)                            \
-	        (*((volatile unsigned int *)(COPREG[index] + VA_OFF)))
-#define SKYWAY_POLL_REG(index)                          \
-	        (*((volatile unsigned char *)(COPREG[index] + POLL_OFF)))
-#define SKYWAY_LA_REG(index)                            \
-	        (*((volatile unsigned char *)(COPREG[index] + LA_OFF)))
-#define SKYWAY_LB_REG(index)                            \
-	        (*((volatile unsigned char *)(COPREG[index] + LB_OFF)))
-
-#define SKYWAY_PMI_REG(index)                           \
-	        (*((volatile short *)(COPREG[index] + PMI_OFF)))
-#define SKYWAY_PMC_REG(index)                           \
-	        (*((volatile unsigned char *)(COPREG[index] + PMC_OFF)))
-#define SKYWAY_PMB_REG(index)                           \
-	        (*((volatile unsigned char *)(COPREG[index] + PMB_OFF)))
-#define SKYWAY_PMH_REG(index)                           \
-	        (*((volatile short *)(COPREG[index] + PMH_OFF)))
-#define SKYWAY_PMW_REG(index)                           \
-	        (*((volatile short *)(COPREG[index] + PMW_OFF)))
-#define SKYWAY_PMF_REG(index)                           \
-	        (*((volatile short *)(COPREG[index] + PMF_OFF)))
-#define SKYWAY_BME_REG(index)                           \
-	        (*((volatile unsigned int *)(COPREG[index] + BME_OFF)))
-#define SKYWAY_BMK1_REG(index)                          \
-	        (*((volatile unsigned int *)(COPREG[index] + BMK1_OFF)))
-#define SKYWAY_BMK2_REG(index)                          \
-	        (*((volatile unsigned int *)(COPREG[index] + BMK2_OFF)))
-#define SKYWAY_DRT_REG(index)                           \
-	        (*((volatile unsigned int *)(COPREG[index] + DRT_OFF)))
-#define SKYWAY_CCC_REG(index)                           \
-	        (*((volatile unsigned short *)(COPREG[index] + CCC_OFF)))
-#define SKYWAY_BM_REG(index)                            \
-	        (*((volatile unsigned char *)(COPREG[index] + BM_OFF)))
-#define SKYWAY_FM_REG(index)                            \
-	        (*((volatile unsigned char *)(COPREG[index] + FM_OFF)))
-#define SKYWAY_CCV_REG(index)                           \
-	        (*((volatile int *)(COPREG[index] + CCV_OFF)))
-#define SKYWAY_PM_REG(index)                            \
-	        (*((volatile int *)(COPREG[index] + PM_OFF)))
-#define SKYWAY_CC_REG(index)                            \
-	        (*((volatile int *)(COPREG[index] + CC_OFF)))
-#define SKYWAY_FC_REG(index)                            \
-	        (*((volatile int *)(COPREG[index] + FC_OFF)))
-#define SKYWAY_BC_REG(index)                            \
-	        (*((volatile int *)(COPREG[index] + BC_OFF)))
-#define SKYWAY_DM1_REG(index)                           \
-	        (*((volatile short *)(COPREG[index] + DM1_OFF)))
-#define SKYWAY_DM2_REG(index)                           \
-	        (*((volatile short *)(COPREG[index] + DM2_OFF)))
-#define SKYWAY_MASKY_REG(index)                         \
-	        (*((volatile short *)(COPREG[index] + MASKY_OFF)))
-#define SKYWAY_MASKX_REG(index)                         \
-	        (*((volatile short *)(COPREG[index] + MASKX_OFF)))
-#define SKYWAY_SRCY_REG(index)                          \
-	        (*((volatile short *)(COPREG[index] + SRCY_OFF)))
-#define SKYWAY_SRCX_REG(index)                          \
-	        (*((volatile short *)(COPREG[index] + SRCX_OFF)))
-#define SKYWAY_PATY_REG(index)                          \
-	        (*((volatile short *)(COPREG[index] + PATY_OFF)))
-#define SKYWAY_PATX_REG(index)                          \
-	        (*((volatile short *)(COPREG[index] + PATX_OFF)))
-#define SKYWAY_DSTY_REG(index)                          \
-	        (*((volatile short *)(COPREG[index] + DSTY_OFF)))
-#define SKYWAY_DSTX_REG(index)                          \
-	        (*((volatile short *)(COPREG[index] + DSTX_OFF)))
-#define SKYWAY_PO_REG(index)                            \
-	        (*((volatile unsigned int *)(COPREG[index] + PO_OFF)))
-
-#define skywayWaitFifo1(index)  while(SKYWAY_PMC_REG(index) & 0x80 )
-#define skywayWaitFifo2(index)  while(SKYWAY_POLL_REG(index) & 0x80 )
-
-/* Pixel Map Index Register */
-
-#define PixMapA   1
-#define PixMapB   2
-#define PixMapC   3
-#define PixMapD   0  /* Mask Map */
-
-/* Pixel Map n Format */
-/* M/I Format */
-
-#define MI0  0
-#define MI1  0x8
-
-/* Pixel Size */
-
-#define PixSize1  0
-#define PixSize2  1
-#define PixSize4  2
-#define PixSize8  3
-#define PixSize16 4
-
-/*  Octant fields      */
-
-#define  DX              0x4        /* 3rd pos. from the right        */
-#define  DY              0x2        /* 2nd pos. from the right        */
-#define  DZ              0x1        /* 1st pos. from the right        */
-
-/*  Logical Operations for both Foreground & Background Mix           */
-
-#define  Mix_All_0       0x00       /* All 0's                        */
-#define  Mix_SrcAndDst   0x01       /* Source And Destination         */
-#define  Mix_SrcAndCDst  0x02       /* Source And ^Destination        */
-#define  Mix_Src         0x03       /* Source                         */
-#define  Mix_CSrcAndDst  0x04       /* ^Source And Destination        */
-#define  Mix_Dst         0x05       /* Destination                    */
-#define  Mix_SrcXorDst   0x06       /* Source XOR  Destination        */
-#define  Mix_SrcOrDst    0x07       /* Source OR   Destination        */
-#define  Mix_CSrcAndCDst 0x08       /* ^Source And ^Destination       */
-#define  Mix_SrcXorCDst  0x09       /*  Source XOR ^Destination       */
-#define  Mix_CDst        0x0A       /* ^Destination                   */
-#define  Mix_SrcOrCDst   0x0B       /* Source  OR ^Destination        */
-#define  Mix_CSrc        0x0C       /* ^Source                        */
-#define  Mix_CSrcOrDst   0x0D       /* ^Source  OR  Destination       */
-#define  Mix_CSrcORCDst  0x0E       /* ^Source  OR ^Destination       */
-#define  Mix_All_1       0x0F       /* All 1's                        */
-
-/*  Color Compare Condition         */
-
-#define  Color_Cmp_True  0x0        /* Always True (disable updates)  */
-#define  Color_Grt_Col   0x1        /* Dest > Col value               */
-#define  Color_Equ_Col   0x2        /* Dest = Col value               */
-#define  Color_Les_Col   0x3        /* Dest < Col value               */
-#define  Color_Cmp_Fal   0x4        /* Always False (enable updates)  */
-#define  Color_GtEq_Col  0x5        /* Dest >= Col value              */
-#define  Color_NtEq_Col  0x6        /* Dest <> Col value              */
-#define  Color_LsEq_Col  0x7        /* Dest <= Col value              */
-
-#define  Plane_Mask_All  0xFFFF
-#define  Carry_Mask      0x3FFF
-
-#define POBackReg 0                /* Background color  (register)   */
-#define POBackSrc 0x80             /* Source Pixel Map               */
-#define POForeReg 0                /* Foreground  color (register)   */
-#define POForeSrc 0x20             /* Source Pixel Map               */
-
-/* Step */
-
-#define POStepDSR 0x2              /* Draw & Step Read               */
-#define POStepLDR 0x3              /* Line Draw   Read               */
-#define POStepDSW 0x4              /* Draw & Step Write              */
-#define POStepLDW 0x5              /* Line Draw   Write              */
-#define POStepBlt 0x8              /* Pxblt                          */
-#define POStepIBlt 0x9             /* Inverting Pxblt                */
-#define POStepAFBlt 0xa            /* Area Fill Pxblt                */
-
-/* Source */
-
-#define POSrcA 0x1000              /* Pixel Map A                    */
-#define POSrcB 0x2000              /* Pixel Map B                    */
-#define POSrcC 0x3000              /* Pixel Map C                    */
-#define POSrcD 0x0000              /* Mask Map  D                    */
-
-/* Destination */
-
-#define PODestA 0x100              /* Pixel Map A                    */
-#define PODestB 0x200              /* Pixel Map B                    */
-#define PODestC 0x300              /* Pixel Map C                    */
-#define PODestD 0x000              /* Mask Map  D                    */
-
-/* Pattern */
-
-#define POPatA 0x100000            /* Pixel Map A                    */
-#define POPatB 0x200000            /* Pixel Map B                    */
-#define POPatC 0x300000            /* Pixel Map C                    */
-#define POPatD 0x000000            /* Mask Map  D                    */
-
-#define POPatFore 0x800000         /* Foreground (Fixed)             */
-#define POPatSrc 0x900000          /* Generated from Source          */
-
-/* Mask */
-
-#define POMaskDis 0                /* Mask Map Disabled             */
-#define POMaskBEn 0x40000000       /* Mask Map Boundary Enabled     */
-#define POMaskEn  0x80000000       /* Mask Map Enabled              */
-
-/* Drawing Mode */
-
-#define POModeAll 0                /* Draw All Pixels                */
-#define POModeLast 0x10000000      /* Draw 1s Pixel Null             */
-#define POModeFirst 0x20000000     /* Draw Last Pixel Null           */
-#define POModeArea 0x30000000      /* Draw Area Boundary             */
-
-/* Direction Octant */
-
-#define POOct0 0
-#define POOct1 0x1000000
-#define POOct2 0x2000000
-#define POOct3 0x3000000
-#define POOct4 0x4000000
-#define POOct5 0x5000000
-#define POOct6 0x6000000
-#define POOct7 0x7000000
-
-/* skycolor */
-
-#define SC_INVBASEOFFSET   0x140000
-#define SC_TILEOFFSET      0x0
-#define SC_STIPPLEOFFSET   0x4000
-#define SC_FONTOFFSET      0x6000
-#define SC_MASKOFFSET      0xF00C
-#define SC_DASHOFFSET      0x3700C
-#define SC_WKSPACEOFFSET   0x3708C
-#define SC_TRICKYOFFSET    0x5F08C
-#define SC_USEROFFSET      0x5F08C
-
-/* skymono */
-
-#define SM_INVBASEOFFSET   0x0A0000
-#define SM_TILEOFFSET      0x0
-#define SM_STIPPLEOFFSET   0x2000
-#define SM_FONTOFFSET      0x6000
-#define SM_MASKOFFSET      0xEE0C
-#define SM_DASHOFFSET      0x36E0C
-#define SM_WKSPACEOFFSET   0x36E4C
-#define SM_TRICKYOFFSET    0x5EE4C
-#define SM_USEROFFSET      0x5EE4C
-
-/*   CRTC REGISTERS     */
-
-#define Display_Mode1   0x5000      /* Display Mode 1 Register        */
-#define Display_Mode2   0x5100      /* Display Mode 2 Register        */
-
-/*   hardware cursor                                                  */
-
-#define CursLo_Plane0   0x5600      /* Cursor address low plane 0     */
-#define CursLo_Plane1   0x5700      /* Cursor address low plane 1     */
-#define CursHi_Plane0   0x5800      /* Cursor address high plane 0    */
-#define CursHi_Plane1   0x5900      /* Cursor address high plane 0    */
-#define CursImg_Plane0  0x5A00      /* Cursor image plane 0           */
-#define CursImg_Plane1  0x5B00      /* Cursor image plane 1           */
-#define CursIndex       0x6000      /* Cursor index                   */
-#define CursData        0x6A00      /* Cursor data                    */
-#define CursCntl_Plane0 0x6C00      /* Cursor control plane 0         */
-#define CursCntl_Plane1 0x6D00      /* Cursor control plane 1         */
-
-/*   colormap                                                         */
-
-#define PaletIndex      0x6000      /* Palette Index                  */
-#define PaletCntl       0x6400      /* Palette DAC control            */
-#define PaletData       0x6500      /* Palette Data                   */
-
-/*   misc stuff                                                       */
-
-#define x_correct       0x01A8      /* x correction factor for pass 1 */
-#define y_correct       0x001A      /* y correction factor for pass 1 */
-
-#define xc_correct2     0x01AD      /* x cursor offset, color, pass 2 */
-#define yc_correct2     0x001B      /* y cursor offset, color, pass 2 */
-#define xm_correct2     0x0194      /* x cursor offset, mono, pass 2  */
-#define ym_correct2     0x001F      /* y cursor offset, mono, pass 2  */
-
-#define DAC_disable     0x0004
-#define DAC_enable      0x0044
-#define Video_disable   0x0061
-#define Video_enable    0x0063
-#define ColorCmd        0x38
-#define CursPlaneSize   512
-#define MaxCursorSize   64
-#define BestCursorSize  32
-#define MaxTileSize     1024
-#define BestTileSize    32
-#define MaxStippleSize  1024
-#define BestStippleSize 32
 
 #endif /* SKYHDWR_H */
