@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.170 93/07/22 13:29:46 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.171 93/08/13 19:53:22 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -24,8 +24,8 @@ without express or implied warranty.
 #define NEED_REPLIES
 
 #include "Xlibint.h"
-#include <X11/Xos.h>
 #include "Xlibnet.h"
+#include <X11/Xos.h>
 #include <stdio.h>
 
 #ifdef XTHREADS
@@ -63,6 +63,9 @@ void (*_XUnlockMutex_fn)() = NULL;
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
  */
+#ifdef WSAEWOULDBLOCK
+#define ETEST(err) (err == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
+#else
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
 #define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
 #else
@@ -70,6 +73,7 @@ void (*_XUnlockMutex_fn)() = NULL;
 #define ETEST(err) (err == EAGAIN)
 #else
 #define ETEST(err) (err == EWOULDBLOCK)
+#endif
 #endif
 #endif
 
@@ -156,8 +160,8 @@ _XWaitForWritable(dpy
 #ifdef USE_POLL
     struct pollfd filedes;
 #else
-    unsigned long r_mask[MSKCNT];
-    unsigned long w_mask[MSKCNT];
+    FdSet r_mask;
+    FdSet w_mask;
 #endif
     int nfound;
 
@@ -206,8 +210,11 @@ _XWaitForWritable(dpy
 #ifdef USE_POLL
 	    nfound = poll (&filedes, 1, -1);
 #else
-	    nfound = select (dpy->fd + 1, r_mask, w_mask,
-			     (char *)NULL, (char *)NULL);
+#ifdef WIN32
+	    nfound = select (0, &r_mask, &w_mask, NULL, NULL);
+#else
+	    nfound = select (dpy->fd + 1, r_mask, w_mask, NULL, NULL);
+#endif
 #endif
 	    if (nfound < 0 && errno != EINTR)
 		_XIOError(dpy);
@@ -274,7 +281,7 @@ _XWaitForReadable(dpy)
 #ifdef USE_POLL
     struct pollfd filedes;
 #else
-    unsigned long r_mask[MSKCNT];
+    FdSet r_mask;
 #endif
     int result;
     int fd = dpy->fd;
@@ -295,8 +302,11 @@ _XWaitForReadable(dpy)
 #ifdef USE_POLL
 	result = poll(&filedes, 1, -1);
 #else
-	result = select(fd + 1, r_mask,
-			(char *)NULL, (char *)NULL, (char *)NULL);
+#ifdef WIN32
+	result = select (0, &r_mask, NULL, NULL, NULL);
+#else
+	result = select(fd + 1, r_mask, NULL, NULL, NULL);
+#endif
 #endif
 	LockDisplay(dpy);
 	if (result == -1 && errno != EINTR) _XIOError(dpy);
@@ -462,7 +472,7 @@ _XEventsQueued (dpy, mode)
 #ifdef USE_POLL
 	    struct pollfd filedes;
 #else
-	    unsigned long r_mask[MSKCNT];
+	    FdSet r_mask;
 	    static struct timeval zero_time;
 #endif
 
@@ -474,8 +484,11 @@ _XEventsQueued (dpy, mode)
 #else
 	    CLEARBITS(r_mask);
 	    BITSET(r_mask, dpy->fd);
-	    if (pend = select(dpy->fd + 1, (int *)r_mask, NULL, NULL,
-			      &zero_time))
+#ifdef WIN32
+	    if (pend = select (0, &r_mask, NULL, NULL, &zero_time))
+#else
+	    if (pend = select(dpy->fd + 1, r_mask, NULL, NULL, &zero_time))
+#endif
 #endif
 	    {
 		if (pend > 0)
@@ -2387,11 +2400,13 @@ int iovcnt;
 
 #endif /* CRAY */
 
-#if defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)
+#if (defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)) || defined(WIN32)
 /*
- * SYSV/386 does not have readv so we emulate
+ * SYSV/386 and WIN32 do not have readv so we emulate
  */
+#ifndef WIN32
 #include <sys/uio.h>
+#endif
 
 int _XReadV (fd, iov, iovcnt)
 int fd;
@@ -2407,7 +2422,7 @@ int iovcnt;
 	base = iov->iov_base;
 	while (len > 0) {
 	    register int nbytes;
-	    nbytes = read(fd, base, len);
+	    nbytes = ReadFromServer(fd, base, len);
 	    if (nbytes < 0 && total == 0)  return -1;
 	    if (nbytes <= 0)  return total;
 	    errno = 0;
@@ -2419,7 +2434,36 @@ int iovcnt;
     return total;
 }
 
-#endif /* SYSV && SYSV386 && !STREAMSCONN */
+#endif /* SYSV && SYSV386 && !STREAMSCONN || WIN32 */
+
+#ifdef WIN32
+
+int _XWriteV (fd, iov, iovcnt)
+    int fd;
+    struct iovec *iov;
+    int iovcnt;
+{
+    int i, len, total;
+    char *base;
+
+    errno = 0;
+    for (i=0, total=0;  i<iovcnt;  i++, iov++) {
+	len = iov->iov_len;
+	base = iov->iov_base;
+	while (len > 0) {
+	    register int nbytes;
+	    nbytes = WriteToServer(fd, base, len);
+	    if (nbytes < 0 && total == 0)  return -1;
+	    if (nbytes <= 0)  return total;
+	    errno = 0;
+	    len   -= nbytes;
+	    total += nbytes;
+	    base  += nbytes;
+	}
+    }
+    return total;
+}
+#endif /* WIN32 */
 
 #ifdef STREAMSCONN
 /*
