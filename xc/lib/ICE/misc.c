@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.11 93/11/24 14:42:38 mor Exp $ */
+/* $XConsortium: misc.c,v 1.12 93/12/07 11:04:11 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -500,10 +500,16 @@ IceConn iceConn;
     int	fromlen = sizeof (from);
 
 #ifdef UNIXCONN
-    if (iceConn->listen_obj->unix_domain)
+    if (iceConn->listen_obj->local_conn)
     {
-	name = (char *) malloc (6);
-	strcpy (name, "local");
+	char hostnamebuf[256];
+
+	if (gethostname (hostnamebuf, sizeof (hostnamebuf)) == 0)
+	{
+	    name = (char *) malloc (7 + strlen (hostnamebuf));
+	    if (name)
+		sprintf (name, "local/%s", hostnamebuf);
+	}
     }
     else
 #endif
@@ -516,18 +522,18 @@ IceConn iceConn;
 #ifdef TCPCONN
 	case AF_INET:
 	    temp = (char *) inet_ntoa (from.in.sin_addr);
-	    name = (char *) malloc (strlen (temp) + 1);
+	    name = (char *) malloc (strlen (temp) + 5);
 	    if (name)
-		strcpy (name, temp);
+		sprintf (name, "tcp/%s", temp);
 	    break;
 #endif
 
 #ifdef DNETCONN
 	case AF_DECnet:
 	    temp = (char *) dnet_ntoa (&from.dn.sdn_add);
-	    name = (char *) malloc (strlen (temp) + 1);
+	    name = (char *) malloc (strlen (temp) + 8);
 	    if (name)
-		strcpy (name, temp);
+		sprintf (name, "decnet/%s", temp);
 	    break;
 #endif
 
