@@ -1,21 +1,16 @@
-.EH ''''
-.OH ''''
-.EF ''''
-.OF ''''
 \&
 .sp 1
 .ce 3
 .ps 11
 .nr PS 11
+.XS
+Appendix A \- KEYSYM Encoding
+.XE
 \s+1\fBAppendix A\fP\s-1
 
 \s+1\fBKEYSYM Encoding\fP\s-1
 .sp 2
 .LP
-.EH '\s+2\fBX Protocol\fP''\fBX11, Release 5\fP\s-2'
-.OH '\s+2\fBX Protocol\fP''\fBX11, Release 5\fP\s-2'
-.EF ''\s+2\fB % \fP\s-2''
-.OF ''\s+2\fB % \fP\s-2''
 For convenience, KEYSYM values are viewed as split into four bytes: 
 .IP \(bu 5
 Byte 1 (for the purposes of this encoding) is the most-significant 5 bits
