@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.20 93/09/04 16:09:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.21 94/02/04 21:39:02 rws Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
@@ -34,7 +34,11 @@ all:: ProgramTargetName(makedepend)
 
 #undef InstallManPage
 #define InstallManPage(file,dest) /* as nothing */
+#if CrossCompiling
+ComplexHostProgramTarget(makedepend)
+#else
 ComplexProgramTarget(makedepend)
+#endif
 
 SpecialCObjectRule(main,$(ICONFIGFILES),$(MAIN_DEFINES))
 
