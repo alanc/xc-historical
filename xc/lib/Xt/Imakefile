@@ -117,13 +117,13 @@ OBJS = \
 	Viewport.o \
 	VPaned.o
 
-#if DebugLibXtk && ProfileLibXtk
+#if DebugLibXt && ProfileLibXt
 DebuggedAndProfiledLibraryObjectRule()
 #else
-# if DebugLibXtk
+# if DebugLibXt
 DebuggedLibraryObjectRule()
 # else
-#  if ProfileLibXtk
+#  if ProfileLibXt
 ProfiledLibraryObjectRule()
 #  else
 NormalLibraryObjectRule()
@@ -131,23 +131,23 @@ NormalLibraryObjectRule()
 # endif
 #endif
 
-NormalLibraryTarget(Xtk,$(OBJS))
-AliasedLibraryTarget(Xtk,Xtk11)
-LintLibraryTarget(Xtk,$(SRCS))
-InstallLibrary(Xtk,$(USRLIBDIR))
-InstallLibraryAlias(Xtk,Xtk11,$(USRLIBDIR))
-InstallLintLibrary(Xtk,$(LINTLIBDIR))
+NormalLibraryTarget(Xt,$(OBJS))
+AliasedLibraryTarget(Xt,Xt11)
+LintLibraryTarget(Xt,$(SRCS))
+InstallLibrary(Xt,$(USRLIBDIR))
+InstallLibraryAlias(Xt,Xt11,$(USRLIBDIR))
+InstallLintLibrary(Xt,$(LINTLIBDIR))
 
-#if ProfileLibXtk
-ProfiledLibraryTarget(Xtk,$(OBJS))
-AliasedLibraryTarget(Xtk_p,Xtk11_p)
-InstallLibrary(Xtk_p,$(USRLIBDIR))
-InstallLibraryAlias(Xtk_p,Xtk11_p,$(USRLIBDIR))
+#if ProfileLibXt
+ProfiledLibraryTarget(Xt,$(OBJS))
+AliasedLibraryTarget(Xt_p,Xt11_p)
+InstallLibrary(Xt_p,$(USRLIBDIR))
+InstallLibraryAlias(Xt_p,Xt11_p,$(USRLIBDIR))
 #endif
 
-#if DebugLibXtk
-DebuggedLibraryTarget(Xtk,$(OBJS))
-AliasedLibraryTarget(Xtk_d,Xtk11_d)
+#if DebugLibXt
+DebuggedLibraryTarget(Xt,$(OBJS))
+AliasedLibraryTarget(Xt_d,Xt11_d)
 #endif
 
 InstallMultiple($(HEADERS),$(INCDIR))
