@@ -4,6 +4,7 @@ xprop - property displayer for X
 .SH SYNOPSIS
 .B "xprop"
 [-help] [-grammar] [-id \fIid\fP] [-root] [-name \fIname\fP] 
+[-frame]
 [-font \fIfont\fP]
 [-display \fIdisplay\fP]
 [-len \fIn\fP] [-notype] [-fs \fIfile\fP] 
@@ -73,7 +74,7 @@ Specifies that file \fIfile\fP should be used as a source of more formats
 for properties.
 .PP
 .TP 8
-.B "-wm"
+.B "-frame"
 Specifies that when selecting a window by hand (i.e. if none of \fB-name\fP,
 \fB-root\fP, or \fB-id\fP are given), look at the window manager frame (if
 any) instead of looking for the client window.

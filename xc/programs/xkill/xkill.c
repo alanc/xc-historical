@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.8 88/10/15 19:19:26 jim Exp $
+ * $XConsortium: xkill.c,v 1.9 89/02/02 19:43:42 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -54,7 +54,7 @@ usage ()
 "where options include:",
 "    -display displayname    X server to contact",
 "    -id resource            resource whose client is to be killed",
-"    -wmwindow               believe no window manager is running",
+"    -frame                  don't ignore window manager frames",
 "    -button number          specific button to be pressed to select window",
 "    -all                    kill all clients with top level windows",
 "",
@@ -101,7 +101,7 @@ main (argc, argv)
 		if (++i >= argc) usage ();
 		button_name = argv[i];
 		continue;
-	      case 'w':			/* -wmwindow */
+	      case 'f':			/* -frame */
 		top = True;
 		continue;
 	      case 'a':			/* -all */
