@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.15 91/06/01 12:09:11 rws Exp $ */
+/* $XConsortium: shape.c,v 5.16 91/06/17 11:36:52 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -537,10 +537,13 @@ ShapeFreeClient (data, id)
 	pPrev = 0;
 	for (pCur = *pHead; pCur && pCur != pShapeEvent; pCur=pCur->next)
 	    pPrev = pCur;
-	if (pPrev)
-	    pPrev->next = pShapeEvent->next;
-	else
-	    *pHead = pShapeEvent->next;
+	if (pCur)
+	{
+	    if (pPrev)
+	    	pPrev->next = pShapeEvent->next;
+	    else
+	    	*pHead = pShapeEvent->next;
+	}
     }
     xfree ((pointer) pShapeEvent);
 }
@@ -605,10 +608,7 @@ ProcShapeSelectInput (client)
    	clientResource = FakeClientID (client->index);
     	pNewShapeEvent->clientResource = clientResource;
     	if (!AddResource (clientResource, ClientType, (pointer)pNewShapeEvent))
-    	{
-	    xfree (pNewShapeEvent);
 	    return BadAlloc;
-    	}
     	/*
      	 * create a resource to contain a pointer to the list
      	 * of clients selecting input.  This must be indirect as
@@ -621,9 +621,7 @@ ProcShapeSelectInput (client)
 	    if (!pHead ||
 	    	!AddResource (pWin->drawable.id, EventType, (pointer)pHead))
 	    {
-	    	FreeResource (clientResource, ClientType);
-	    	xfree (pHead);
-	    	xfree (pNewShapeEvent);
+	    	FreeResource (clientResource, RT_NONE);
 	    	return BadAlloc;
 	    }
 	    *pHead = 0;
