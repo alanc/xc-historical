@@ -1,4 +1,4 @@
-.\"	%W%	%E%
+.\" $XConsortium$
 .\" roff -ms
 .de Ip
 .IP \(bu 3
