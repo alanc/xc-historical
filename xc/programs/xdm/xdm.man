@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.26 91/07/31 18:45:39 gildea Exp $
+.\" $XConsortium: xdm.man,v 1.27 91/08/26 19:27:29 gildea Exp $
 .TH XDM 1 "Release 5" "X Version 11"
 .SH NAME
 xdm \- X Display Manager with support for XDMCP
@@ -410,6 +410,16 @@ to pass on to the \fIXsetup\fP,
 A file to checksum to generate the seed of authorization keys.
 This should be a file that changes frequently.
 The default is \fI/dev/mem\fP.
+.IP \fBDisplayManager.greeterLib\fP
+On systems that support a dynamically-loadable greeter library, the
+name of the library.  Default is \fI/usr/lib/X11/xdm/libXdmGreet.so\fP.
+.IP \fBDisplayManager.choiceTimeout\fP
+Number of seconds to wait for display to respond after user has
+selected a host from the chooser.  If the display sends an XDMCP
+IndirectQuery within this time, the request is forwarded to the chosen
+host.  Otherwise, it is assumed to be from a new session and the
+chooser is offered again.
+Default is 15.
 .\"
 .IP "\fBDisplayManager.DISPLAY.resources\fP"
 This resource specifies the name of the file to be loaded by \fIxrdb\fP
