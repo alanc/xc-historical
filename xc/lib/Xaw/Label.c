@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.55 88/09/26 15:17:03 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.56 88/09/26 18:03:02 swick Exp $";
 #endif lint
 
 
@@ -62,7 +62,7 @@ static XtResource resources[] = {
 	offset(label.internal_width), XtRImmediate, (caddr_t)4},
     {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
 	offset(label.internal_height), XtRImmediate, (caddr_t)2},
-    {XtNpixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
+    {XtNbitmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
 	offset(label.pixmap), XtRPixmap, (caddr_t)None},
 };
 
@@ -238,14 +238,15 @@ static void Redisplay(w, event, region)
    LabelWidget lw = (LabelWidget) w;
    GC gc;
 
-   if (XRectInRegion(region, lw->label.label_x, lw->label.label_y,
+   if (region != NULL &&
+       XRectInRegion(region, lw->label.label_x, lw->label.label_y,
 		     lw->label.label_width, lw->label.label_height)
 	     == RectangleOut)
        return;
 
    gc = XtIsSensitive(lw) ? lw->label.normal_GC : lw->label.gray_GC;
 #ifdef notdef
-   XSetRegion(XtDisplay(w), gc, region);
+   if (region != NULL) XSetRegion(XtDisplay(w), gc, region);
 #endif /*notdef*/
    if (lw->label.pixmap == None) {
        XDrawString(
@@ -264,7 +265,7 @@ static void Redisplay(w, event, region)
 		 lw->label.label_x, lw->label.label_y);
    }
 #ifdef notdef
-   XSetClipMask(XtDisplay(w), gc, (Pixmap)None);
+   if (region != NULL) XSetClipMask(XtDisplay(w), gc, (Pixmap)None);
 #endif notdef
 }
 
@@ -289,7 +290,8 @@ static void _Reposition(lw, width, height, dx, dy)
 	    newPos = (width - lw->label.label_width) / 2;
 	    break;
     }
-    if (newPos < 0) newPos = 0;
+    if (newPos < (Position)lw->label.internal_width)
+	newPos = lw->label.internal_width;
     *dx = newPos - lw->label.label_x;
     lw->label.label_x = newPos;
     *dy = (newPos = (height - lw->label.label_height) / 2) - lw->label.label_y;
@@ -386,8 +388,8 @@ static Boolean SetValues(current, request, new)
     if (curlw->label.foreground != newlw->label.foreground
 	|| curlw->label.font->fid != newlw->label.font->fid) {
 
-	XtReleaseGC(XtDisplay(new), curlw->label.normal_GC);
-	XtReleaseGC(XtDisplay(new), curlw->label.gray_GC);
+	XtReleaseGC(new, curlw->label.normal_GC);
+	XtReleaseGC(new, curlw->label.gray_GC);
 	GetnormalGC(newlw);
 	GetgrayGC(newlw);
     }
@@ -409,6 +411,6 @@ static void Destroy(w)
 {
     LabelWidget lw = (LabelWidget)w;
 
-    XtReleaseGC( XtDisplay(w), lw->label.normal_GC );
-    XtReleaseGC( XtDisplay(w), lw->label.gray_GC);
+    XtReleaseGC( w, lw->label.normal_GC );
+    XtReleaseGC( w, lw->label.gray_GC);
 }
