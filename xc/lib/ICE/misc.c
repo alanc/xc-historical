@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.15 94/02/06 14:26:10 rws Exp $ */
+/* $XConsortium: misc.c,v 1.16 94/02/06 22:31:22 rws Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -355,20 +355,93 @@ register char	 *ptr;
 }
 
 #ifdef WORD64
-IceWriteData16(iceConn, nbytes, data)
-    IceConn iceConn;
-    unsigned long nbytes;
-    short  *data;
+
+IceWriteData16 (iceConn, nbytes, data)
+
+IceConn 	iceConn;
+unsigned long 	nbytes;
+short  		*data;
+
 {
+    int numShorts = nbytes / 2;
+    int index = 0;
+
+    while (index < numShorts)
+    {
+	int spaceLeft, count, i;
+	int shortsLeft = numShorts - index;
+
+	spaceLeft = iceConn->outbufmax - iceConn->outbufptr - 1;
+
+	if (spaceLeft < 2)
+	{
+	    IceFlush (iceConn);
+	    spaceLeft = iceConn->outbufmax - iceConn->outbufptr - 1;
+	}
+
+	count = (shortsLeft < spaceLeft / 2) ? shortsLeft : spaceLeft / 2;
+
+	for (i = 0; i < count; i++)
+	    STORE_CARD16 (iceConn->outbufptr, data[index++]);
+    }
 }
 
-IceWriteData32(iceConn, nbytes, data)
-    IceConn iceConn;
-    unsigned long  nbytes;
-    int	 *data;
+
+IceWriteData32 (iceConn, nbytes, data)
+
+IceConn 	iceConn;
+unsigned long  	nbytes;
+int	 	*data;
+
 {
+    int numLongs = nbytes / 4;
+    int index = 0;
+
+    while (index < numLongs)
+    {
+	int spaceLeft, count, i;
+	int longsLeft = numLongs - index;
+
+	spaceLeft = iceConn->outbufmax - iceConn->outbufptr - 1;
+
+	if (spaceLeft < 4)
+	{
+	    IceFlush (iceConn);
+	    spaceLeft = iceConn->outbufmax - iceConn->outbufptr - 1;
+	}
+
+	count = (longsLeft < spaceLeft / 4) ? longsLeft : spaceLeft / 4;
+
+	for (i = 0; i < count; i++)
+	    STORE_CARD32 (iceConn->outbufptr, data[index++]);
+    }
 }
-#endif WORD64
+
+
+IceReadData16 (iceConn, nbytes, data)
+
+IceConn 	iceConn;
+unsigned long 	nbytes;
+short  		*data;
+
+{
+    /* NOT IMPLEMENTED YET */
+}
+
+
+IceReadData32 (iceConn, nbytes, data)
+
+IceConn 	iceConn;
+unsigned long  	nbytes;
+int	 	*data;
+
+{
+    /* NOT IMPLEMENTED YET */
+}
+
+#endif  /* WORD64 */
+
+
 
 void
 _IceAddOpcodeMapping (iceConn, hisOpcode, myOpcode)
