@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.41 89/03/28 17:20:25 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.42 89/03/29 15:15:46 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -18,10 +18,6 @@
 #endif
 #endif
 
-#ifdef hpux
-#include <sys/utsname.h>
-#endif
-
 #ifdef UNIXCONN
 #include <sys/un.h>
 #ifndef X_UNIX_PATH
@@ -29,32 +25,6 @@
 #endif /* X_UNIX_PATH */
 #endif /* UNIXCONN */
 void bcopy();
-
-int _XGetHostname (buf, maxlen)
-    char *buf;
-    int maxlen;
-{
-    int len;
-
-#ifdef hpux
-    /*
-     * same host name crock as in server and xinit.
-     */
-    struct utsname name;
-
-    uname (&name);
-    len = strlen (name.nodename);
-    if (len >= maxlen) len = maxlen - 1;
-    strncpy (buf, name.nodename, len);
-    buf[len] = '\0';
-#else
-    buf[0] = '\0';
-    (void) gethostname (buf, maxlen);
-    buf [maxlen - 1] = '\0';
-    len = strlen(buf);
-#endif /* hpux */
-    return len;
-}
 
 
 /* 

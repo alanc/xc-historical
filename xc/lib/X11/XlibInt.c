@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.95 89/03/27 12:00:36 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.96 89/03/28 17:22:29 keith Exp $
  */
 
 #include "copyright.h"
@@ -1523,6 +1523,37 @@ void _XFreeQ ()
     }
     _qfree = NULL;
     return;
+}
+
+
+/*
+ * _XGetHostname - similar to gethostname but allows special processing.
+ */
+int _XGetHostname (buf, maxlen)
+    char *buf;
+    int maxlen;
+{
+    int len;
+
+#ifdef hpux
+#include <sys/utsname.h>
+    /*
+     * same host name crock as in server and xinit.
+     */
+    struct utsname name;
+
+    uname (&name);
+    len = strlen (name.nodename);
+    if (len >= maxlen) len = maxlen - 1;
+    strncpy (buf, name.nodename, len);
+    buf[len] = '\0';
+#else
+    buf[0] = '\0';
+    (void) gethostname (buf, maxlen);
+    buf [maxlen - 1] = '\0';
+    len = strlen(buf);
+#endif /* hpux */
+    return len;
 }
 
 
