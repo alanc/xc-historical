@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_dec.c,v 1.4 92/06/30 15:53:19 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.5 92/07/16 11:02:50 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -405,7 +405,7 @@ PEXOCData	*ocDest;
     pexModelClipVolume 	*oc = (pexModelClipVolume *) *ocSrc;
     int		   	size;
     
-    ocDest->data.SetModelClipVolume.operator = oc->modelClipOperator;
+    ocDest->data.SetModelClipVolume.op = oc->modelClipOperator;
     ocDest->data.SetModelClipVolume.count = oc->numHalfSpaces;
     size = oc->numHalfSpaces * sizeof (PEXHalfSpace);
     ocDest->data.SetModelClipVolume.half_spaces =
@@ -426,7 +426,7 @@ PEXOCData	*ocDest;
     pexModelClipVolume2D	*oc = (pexModelClipVolume2D *) *ocSrc;
     int		   		size;
     
-    ocDest->data.SetModelClipVolume2D.operator = oc->modelClipOperator;
+    ocDest->data.SetModelClipVolume2D.op = oc->modelClipOperator;
     ocDest->data.SetModelClipVolume2D.count = oc->numHalfSpaces;
     size = oc->numHalfSpaces * sizeof (PEXHalfSpace2D);
     ocDest->data.SetModelClipVolume2D.half_spaces =

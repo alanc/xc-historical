@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.1 92/06/12 15:26:59 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.2 92/07/16 11:02:11 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -393,7 +393,7 @@ char		**ocDest;
     PEXInitEncodeOC (*ocDest, PEXOCModelClipVolume,
 	LENOF (pexModelClipVolume), lenofData, pexModelClipVolume, pInfo);
     
-    pInfo->modelClipOperator = ocSrc->data.SetModelClipVolume.operator;
+    pInfo->modelClipOperator = ocSrc->data.SetModelClipVolume.op;
     pInfo->numHalfSpaces = ocSrc->data.SetModelClipVolume.count;
     
     PEXEncodeWords ((char *) ocSrc->data.SetModelClipVolume.half_spaces,
@@ -417,7 +417,7 @@ char		**ocDest;
     PEXInitEncodeOC (*ocDest, PEXOCModelClipVolume2D,
 	LENOF (pexModelClipVolume2D), lenofData, pexModelClipVolume2D, pInfo);
     
-    pInfo->modelClipOperator = ocSrc->data.SetModelClipVolume2D.operator;
+    pInfo->modelClipOperator = ocSrc->data.SetModelClipVolume2D.op;
     pInfo->numHalfSpaces = ocSrc->data.SetModelClipVolume2D.count;
     
     PEXEncodeWords ((char *) ocSrc->data.SetModelClipVolume2D.half_spaces,
