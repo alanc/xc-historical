@@ -1,4 +1,4 @@
-XCOMM $XConsortium: xfree86.cf,v 1.4 95/01/05 19:41:42 kaleb Exp kaleb $
+XCOMM $XConsortium: xfree86.cf,v 1.5 95/01/11 16:18:33 kaleb Exp kaleb $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -181,32 +181,13 @@ XCOMM $XConsortium: xfree86.cf,v 1.4 95/01/05 19:41:42 kaleb Exp kaleb $
 #define CompressAllFonts	YES
 #endif
 
-#ifndef AsmDefines
-#define AsmDefines /**/
+#ifndef HasLinuxDoc
+#define HasLinuxDoc		NO
 #endif
 
-#ifndef XFree86Version
-#define XFree86Version	3102
-#endif
-
-#ifndef UseRgbTxt
-#define UseRgbTxt	YES
-#endif
-
-#ifndef XF86LinkKit
-#define XF86LinkKit	NO
-#endif
-
-#ifndef LinkKitDefines
-#if XF86LinkKit
-#define LinkKitDefines	-DLINKKIT
-#else
-#define LinkKitDefines	/**/
-#endif
-#endif
-
-#ifndef XFree86ServerExtraDefines
-#define XFree86ServerExtraDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV LinkKitDefines
+/* Server defines required for all OSs */
+#ifndef XFree86ServerDefines
+#define XFree86ServerDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV LinkKitDefines
 #endif
 
 #ifndef XFree86ServerOSDefines
@@ -225,10 +206,35 @@ XCOMM $XConsortium: xfree86.cf,v 1.4 95/01/05 19:41:42 kaleb Exp kaleb $
 #define ServerOSDefines		XFree86ServerOSDefines
 #endif
 
+#ifndef UseServerLock
+#define UseServerLock	YES
+#endif
+
+#ifndef XF86LinkKit
+#define XF86LinkKit	NO
+#endif
+
+#ifndef LinkKitDefines
+#if XF86LinkKit
+#define LinkKitDefines	-DLINKKIT
+#else
+#define LinkKitDefines	/**/
+#endif
+#endif
+
+#ifndef ServerExtraDefines
+#define ServerExtraDefines	XFree86ServerDefines
+#endif
+
+#ifndef ServerOSDefines
+#define ServerOSDefines		XFree86ServerOSDefines
+#endif
+
 #ifndef LinkKitDir
 #define LinkKitDir	$(USRLIBDIR)/Server
 #endif
 
+LINKKITDIR = LinkKitDir
 
 /*
  * Some commonly refered to directories are defined here.
@@ -279,11 +285,38 @@ XF86HWLIB  = $(XF86HWSRC)/libxf86_hw.a
 XF86LIBS   = $(XF86INIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 
+    XFREE86DOCDIR = $(LIBDIR)/doc
+  XFREE86PSDOCDIR = $(XFREE86DOCDIR)/PostScript
+XFREE86HTMLDOCDIR = $(XFREE86DOCDIR)/html
+
+/*
+ * Other stuff used in the Server source.
+ */
+
+#ifndef AsmDefines
+#define AsmDefines /**/
+#endif
+
+#ifndef XFree86Version
+#define XFree86Version	3102
+#endif
+
+#ifndef UseRgbTxt
+#define UseRgbTxt	YES
+#endif
+
+
 /*
  * GNU Compiler stuff
  */
+#ifndef HasGcc2
+#define HasGcc2 NO
+#endif
 #ifndef HasGcc
 #define HasGcc HasGcc2
+#endif
+#ifndef HasGcc2ForCplusplus
+#define HasGcc2ForCplusplus HasGcc2
 #endif
 
 #if HasGcc
