@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.42 93/12/06 15:19:14 kaleb Exp swick $
+ * $XConsortium: folder.c,v 2.43 94/08/26 18:08:21 swick Exp swick $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -98,11 +98,13 @@ void DoClose(widget, client_data, call_data)
  *		CmdSetSequence(toc, "cur", MakeSingleMsgList(toc->curmsg));
  *	}
  */
+
 #ifdef DEBUG_CLEANUP
 	XtDestroyWidget(scrn->parent);
 	ExitLoop = TRUE;
 	return;
 #else
+	XtVaSetValues(scrn->parent, XtNjoinSession, (XtArgVal)False, NULL);
 	XtUnmapWidget(scrn->parent);
 	XtDestroyApplicationContext
 	    (XtWidgetToApplicationContext(scrn->parent));
