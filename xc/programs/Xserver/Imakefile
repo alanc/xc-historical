@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.133 91/07/26 20:55:42 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.134 91/09/12 13:23:00 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -44,7 +44,7 @@ XCOMM $XConsortium: Imakefile,v 1.133 91/07/26 20:55:42 rws Exp $
             DIX = dix/libdix.a
            FONT = $(FONTSRC)/lib/font/libfont.a
 #if SystemV4 && X386Server
-        SYSLIBS = -lm -lc /usr/ucblib/libucb.a
+        SYSLIBS = -lm /usr/ucblib/libucb.a
 #else
         SYSLIBS = -lm -ldbm
 #endif
@@ -82,7 +82,11 @@ ALL1 = Xmfbpmax
 #endif
 
 #if XcfbpmaxServer
+#if XmfbpmaxServer
 ALL2 = Xcfbpmax
+#else
+ALL1 = Xcfbpmax
+#endif
 #endif
 
 #if XsunMonoServer
