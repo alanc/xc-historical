@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.9 88/02/17 17:48:48 jim Exp $
+ *	$Header: misc.c,v 1.10 88/02/17 18:01:44 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.9 88/02/17 17:48:48 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.10 88/02/17 18:01:44 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -885,12 +885,12 @@ void set_tek_visibility (on)
 
     if (on) {
 	if (!screen->Tshow && (TWindow (screen) || TekInit())) {
-	    XMapWindow (screen->display, TWindow (screen));
+	    XMapWindow (screen->display, TShellWindow);
 	    screen->Tshow = TRUE;
 	}
     } else {
 	if (screen->Tshow && TWindow (screen)) {
-	    XUnmapWindow (screen->display, TWindow (screen));
+	    XUnmapWindow (screen->display, TShellWindow);
 	    screen->Tshow = FALSE;
 	}
     }

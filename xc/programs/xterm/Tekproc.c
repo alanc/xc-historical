@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.15 88/02/17 16:59:29 jim Exp $
+ * $Header: Tekproc.c,v 1.16 88/02/17 19:05:21 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.15 88/02/17 16:59:29 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.16 88/02/17 19:05:21 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -208,12 +208,12 @@ static short Tfailed = FALSE;
 TekWidget CreateTekWidget ()
 {
     Widget tekshellwidget;
-    char *tek_name = "xterm_tek";	/* should be a resource */
+    char *tek_name = "Tektronix";	/* should be a resource */
     extern Arg ourTopLevelShellArgs[];
     extern int number_ourTopLevelShellArgs;
 
     /* this causes the Initialize method to be called */
-    tekshellwidget = XtCreateApplicationShell ("Xterm Tek",
+    tekshellwidget = XtCreateApplicationShell ("Tektronix Emulator",
 					       topLevelShellWidgetClass,
 					       ourTopLevelShellArgs, 
 					       number_ourTopLevelShellArgs);
@@ -231,7 +231,7 @@ int TekInit ()
     if (Tfailed) return (0);
     if (tekWidget) return (1);
     if (CreateTekWidget()) {
-	XtRealizeWidget (tekWidget);
+	XtRealizeWidget (tekWidget->core.parent);
 	return (1);
     }
     return (0);
@@ -241,8 +241,11 @@ int TekInit ()
 static void TekInitialize (request, new)
     TekWidget request, new;
 {
-    if (request->core.width < 0) new->core.width = 1;
-    if (request->core.height < 0) new->core.height = 1;
+    /*
+     * make sure that the shell doesn't give us a bogus size
+     */
+    if (request->core.width < 1) new->core.width = 1;
+    if (request->core.height < 1) new->core.height = 1;
     new->core.border_pixel = term->core.border_pixel;
     new->core.background_pixel = term->core.background_pixel;
     return;
@@ -1007,7 +1010,7 @@ TekRun()
 		Exit(ERROR_TINIT);
 	}
 	if(!screen->Tshow) {
-	    XtRealizeWidget (tekWidget);
+	    XtRealizeWidget (tekWidget->core.parent);
 	    set_tek_visibility (TRUE);
 	} 
 
@@ -1193,28 +1196,40 @@ static void TekRealize (gw, valuemaskp, values)
     sizehints.width_inc = 1;
     sizehints.height_inc = 1;
     sizehints.flags = PMinSize|PResizeInc;
+    sizehints.x = winX;
+    sizehints.y = winY;
     if ((XValue&pr) && (YValue&pr))
       sizehints.flags |= USPosition;
     else sizehints.flags |= PPosition;
-    sizehints.width = width;
-    sizehints.height = height;
+    tw->core.width = sizehints.width = width;
+    tw->core.height = sizehints.height = height;
     if ((WidthValue&pr) && (HeightValue&pr))
       sizehints.flags |= USSize;
     else sizehints.flags |= PSize;
 
-    *valuemaskp &= ~CWBorderPixel;
-    values->border_pixmap = screen->graybordertile;
+    (void) XtMakeResizeRequest ((Widget) tw, width, height,
+				&tw->core.width, &tw->core.height);
+
+    /* this shouldn't be necessary, but uwm doesn't seem to pay any
+       attention to USPosition hints that are different from the actual
+       window position */
+    if (sizehints.flags & USPosition)
+      XMoveWindow (XtDisplay(tw), tw->core.parent->core.window,
+		   sizehints.x, sizehints.y);
+    XSetNormalHints (XtDisplay(tw), tw->core.parent->core.window,
+		     &sizehints);
+
     values->win_gravity = NorthWestGravity;
     values->background_pixel = screen->Tbackground;
 
     if((tw->core.window = TWindow(screen) = 
 	XCreateWindow (screen->display,
-		       DefaultRootWindow (screen->display),
-		       winX, winY, width, height, tw->core.border_width,
-		       DefaultDepth(screen->display,
-				    DefaultScreen(screen->display)),
-		       CopyFromParent, CopyFromParent,
-		       ((*valuemaskp)|CWBorderPixmap|CWBackPixel|CWWinGravity),
+		       tw->core.parent->core.window,
+		       tw->core.x, tw->core.y,
+		       tw->core.width, tw->core.height, tw->core.border_width,
+		       (int) tw->core.depth,
+		       InputOutput, CopyFromParent,
+		       ((*valuemaskp)|CWBackPixel|CWWinGravity),
 		       values)) == NULL) {
 	fprintf(stderr, "%s: Can't create Tek window\n", xterm_name);
 	free((char *)Tline);
@@ -1226,9 +1241,12 @@ static void TekRealize (gw, valuemaskp, values)
 	return;
     }
 
-    /* crock to make configure notifies get through */
+#ifdef notyet
+    /*
+     * set the appropriate window manager cruft if the shell doesn't
+     */
+#endif /* notyet */
 
-    XSetNormalHints (screen->display, TWindow(screen), &sizehints);
 
     XtAddEventHandler(gw, EnterWindowMask, FALSE,
 		      HandleEnterWindow, (caddr_t)NULL);
@@ -1309,6 +1327,7 @@ static void TekRealize (gw, valuemaskp, values)
 
 
     XDefineCursor(screen->display, TWindow(screen), screen->curs);
+    TekUnselect ();
 
 #ifdef notyet
 	if((screen->Ticonname = malloc((unsigned) screen->iconnamelen + 7)) == NULL)
@@ -1325,7 +1344,7 @@ static void TekRealize (gw, valuemaskp, values)
 	XChangeProperty(screen->display, TWindow(screen), XA_WM_ICON_NAME,
 	  XA_STRING, 8, PropModeReplace, (unsigned char *)screen->Ticonname,
 	  screen->Ticonnamelen);
-#endif notyet
+#endif /* notyet */
 
     tek = TekRecord = &Tek0;
     tek->next = (TekLink *)0;
@@ -1435,8 +1454,8 @@ TekSelect()
 {
 	register TScreen *screen = &term->screen;
 
-	if (TWindow (screen))
-	  XSetWindowBorder (screen->display, TWindow(screen),
+	if (TShellWindow)
+	  XSetWindowBorder (screen->display, TShellWindow,
 			    tekWidget->core.border_pixel);
 }
 
@@ -1444,8 +1463,8 @@ TekUnselect()
 {
 	register TScreen *screen = &term->screen;
 
-	if (TWindow (screen))
-	  XSetWindowBorderPixmap (screen->display, TWindow(screen),
+	if (TShellWindow)
+	  XSetWindowBorderPixmap (screen->display, TShellWindow,
 				  screen->graybordertile);
 }
 
