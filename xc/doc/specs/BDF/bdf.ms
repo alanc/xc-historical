@@ -1,3 +1,4 @@
+.\" $XConsortium$
 \&
 .sp 1
 .ce 4
@@ -173,7 +174,7 @@ character metric information.
 .ce 5
 BBw = 9, BBh = 22, BBox = -2, BBoy = -6
 DWIDTH = 8 0
-SWIDTH] = 355 0
+SWIDTH = 355 0
 ``+'' = character origin and width
 
 Figure 1: An example of a descender
