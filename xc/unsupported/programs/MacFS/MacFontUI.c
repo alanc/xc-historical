@@ -202,6 +202,14 @@ static void MacFontBanner();
 static void PreflightOutlineFonts();
 extern short CurApRefNum;
 
+extern long LastReapTime, GetTimeInMillis();
+
+OsInit()
+{
+    LastReapTime = GetTimeInMillis();
+    MacFontRegisterFontFileFunctions ();
+}
+
 void
 InitMacWorld()
 {
@@ -1663,7 +1671,7 @@ typedef unsigned char *pointer;
 typedef int Bool;
 
 #include        <sys/param.h>
-#include "../../../server/os/osdep.h"
+#include	<osdep.h>
 extern Bool NewOutputPending;
 extern long ClientsWriteBlocked[]; /* XXX Should be passed in through BlockHandler */
 
