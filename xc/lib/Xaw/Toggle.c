@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.12 89/11/06 17:24:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.13 89/12/08 12:36:09 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -302,7 +302,6 @@ Widget current, request, new;
 {
     ToggleWidget oldtw = (ToggleWidget) current;
     ToggleWidget tw = (ToggleWidget) new;
-    ToggleWidgetClass class = (ToggleWidgetClass) new->core.widget_class;
 
     if (oldtw->toggle.widget != tw->toggle.widget)
       XawToggleChangeRadioGroup(new, tw->toggle.widget);
