@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: bdftopcf.c,v 1.4 91/05/13 15:25:06 gildea Exp $
  * 
  * Copyright 1991 by the Massachusetts Institute of Technology
  *
@@ -19,13 +19,14 @@
 #include    <X11/Xproto.h>
 #include    "fontmisc.h"
 #include    "fontstruct.h"
+#include    "fontfileio.h"
 #include    <stdio.h>
 
 main (argc, argv)
     char    **argv;
 {
     FontRec font;
-    FILE    *input, *output;
+    FontFilePtr	input, output;
     char    *input_name = 0, *output_name = 0;
     char    *program_name;
     int	    bit, byte, glyph, scan;
@@ -132,7 +133,7 @@ main (argc, argv)
     }
     if (input_name)
     {
-    	input = fopen (input_name, "r");
+    	input = FontFileOpen (input_name);
     	if (!input)
     	{
 	    fprintf (stderr, "%s: can't open bdf source file %s\n",
@@ -141,7 +142,7 @@ main (argc, argv)
     	}
     }
     else
-	input = stdin;
+	input = FontFileOpenFd (0);
     if (bdfReadFont (&font, input, bit, byte, glyph, scan) != Successful)
     {
 	fprintf (stderr, "%s: bdf input, %s, corrupt\n",
@@ -150,7 +151,7 @@ main (argc, argv)
     }
     if (output_name)
     {
-	output = fopen (output_name, "w");
+	output = FontFileOpenWrite (output_name);
     	if (!output)
     	{
 	    fprintf (stderr, "%s: can't open pcf sink file %s\n",
@@ -159,7 +160,7 @@ main (argc, argv)
     	}
     } 
     else
-	output = stdout;
+	output = FontFileOpenWriteFd (1);
     if (pcfWriteFont (&font, output) != Successful)
     {
 	fprintf (stderr, "%s: can't write pcf file %s\n",
@@ -169,6 +170,6 @@ main (argc, argv)
 	exit (1);
     }
     else
-	fclose (output);
+	FontFileClose (output);
     exit (0);
 }
