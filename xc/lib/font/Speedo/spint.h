@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spint.h,v 1.3 91/05/11 09:59:09 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,6 +21,8 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ * $NCDId: @(#)spint.h,v 4.6 1991/06/12 13:17:23 lemke Exp $
+ *
  */
 
 #ifndef _SPINT_H_
@@ -29,6 +31,7 @@
 #ifndef DEBUG
 #define NDEBUG
 #endif
+
 #include	<stdio.h>
 #include	"fontfilest.h"
 #include	"speedo.h"
@@ -50,10 +53,11 @@
 
 typedef struct _sp_master {
     FILE       *fp;
+    char       *fname;
     ufix8      *f_buffer;
     ufix8      *c_buffer;
     char       *copyright;
-    ufix8	*key;
+    ufix8      *key;
     buff_t      font;
     buff_t      char_data;
     ufix16      mincharsize;
@@ -78,10 +82,10 @@ typedef struct _cur_font_stats {
     int         bpr;
 
     /*
-     * since Speedo returns extents that are not identical to what it feeds
-     * to the bitmap builder, and we want to be able to use the extents
-     * for preformance reasons, some of the bitmaps require padding
-     * out.  the next two flags keep track of this.
+     * since Speedo returns extents that are not identical to what it feeds to
+     * the bitmap builder, and we want to be able to use the extents for
+     * preformance reasons, some of the bitmaps require padding out.  the next
+     * two flags keep track of this.
      */
     fix15       last_y;
     int         trunc;
@@ -112,6 +116,8 @@ extern SpeedoFontPtr cur_spf;
 
 extern int  open_sp_font();
 extern void close_sp_font();
+extern void close_master_file();
+extern void sp_reset_master();
 extern void SpeedoErr();
 
 extern void make_sp_standard_props();
@@ -124,8 +130,7 @@ extern unsigned long compute_sp_data_size();
 extern int  bics_map[];
 extern int  bics_map_size;
 
-
-#ifdef NCD
+#ifdef EXTRAFONTS
 extern int  adobe_map[];
 extern int  adobe_map_size;
 
