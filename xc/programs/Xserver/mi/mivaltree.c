@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.3 89/07/05 21:35:22 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.4 89/07/09 15:51:29 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -321,7 +321,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     
     if (pParent->firstChild) {
 	childUniverse = (* pScreen->RegionCreate) (NULL, 1);
-	childUnion = (* pScreen->RegionCreate) (NULL, 200);
+	childUnion = (* pScreen->RegionCreate) (NULL, 1);
 	for (pChild = pParent->firstChild; pChild; pChild = pChild->nextSib) {
 	    if (pChild->viewable)
 		(* pScreen->RegionAppend)(childUnion, &pChild->borderSize);
@@ -484,7 +484,7 @@ miValidateTree (pParent, pChild, kind)
      * is the area which can be divied up among the marked
      * children in their new configuration.
      */
-    totalClip = (* pScreen->RegionCreate) (NULL, 200);
+    totalClip = (* pScreen->RegionCreate) (NULL, 1);
     for (pWin = pChild; pWin != NullWindow; pWin = pWin->nextSib)
     {
 	if (pWin->valdata)
