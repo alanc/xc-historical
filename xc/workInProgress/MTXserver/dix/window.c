@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.3 94/01/11 20:47:36 rob Exp $ */
+/* $XConsortium: window.c,v 1.4 94/01/17 23:56:54 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -761,14 +761,12 @@ FreeWindowResources(pWin)
     register WindowPtr pWin;
 {
     register ScreenPtr pScreen;
-    /* void (* proc)(); */
 
     pScreen = pWin->drawable.pScreen;
 
     DeleteWindowFromAnySaveSet(pWin);
     DeleteWindowFromAnySelections(pWin);
     DeleteWindowFromAnyEvents(pWin, TRUE);
-    /* proc = pScreen->RegionUninit; */
     REGION_UNINIT(pScreen, &pWin->clipList);
     REGION_UNINIT(pScreen, &pWin->winSize);
     REGION_UNINIT(pScreen, &pWin->borderClip);
@@ -937,6 +935,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     int error;
     Bool checkOptional = FALSE;
     Bool borderRelative = FALSE;
+    WindowPtr pLayerWin;
 
     if ((pWin->drawable.class == InputOnly) && (vmask & (~INPUTONLY_LEGAL_MASK)))
 	return BadMatch;
@@ -1160,10 +1159,10 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		else
 		    deltaSaveUndersViewable++;
 		pWin->saveUnder = val;
-		/* XXX need to call GetLayerWindow here? */
-		if ((*pScreen->ChangeSaveUnder)(pWin, pWin->nextSib))
-		    (*pScreen->PostChangeSaveUnder)(pWin->parent,
-						    pWin->nextSib);
+ 		pLayerWin = (*pScreen->GetLayerWindow)(pWin);
+ 		if ((*pScreen->ChangeSaveUnder)(pLayerWin->parent,
+						pWin->nextSib))
+ 		    (*pScreen->PostChangeSaveUnder)(pLayerWin, pWin->nextSib);
 	    }
 	    else
 	    {
@@ -1541,16 +1540,13 @@ CreateUnclippedWinSize (pWin)
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
 	ScreenPtr	pScreen = pWin->drawable.pScreen;
 
-	REGION_TRANSLATE(pScreen, 
-	    pRgn, - pWin->drawable.x, - pWin->drawable.y);
+	REGION_TRANSLATE(pScreen, pRgn, - pWin->drawable.x,
+			 - pWin->drawable.y);
 	if (wBoundingShape (pWin))
-	    REGION_INTERSECT(pScreen, 
-		pRgn, pRgn, wBoundingShape (pWin));
+	    REGION_INTERSECT(pScreen, pRgn, pRgn, wBoundingShape (pWin));
 	if (wClipShape (pWin))
-	    REGION_INTERSECT(pScreen, 
-		pRgn, pRgn, wClipShape (pWin));
-	REGION_TRANSLATE(pScreen, 
-	    pRgn, pWin->drawable.x, pWin->drawable.y);
+	    REGION_INTERSECT(pScreen, pRgn, pRgn, wClipShape (pWin));
+	REGION_TRANSLATE(pScreen, pRgn, pWin->drawable.x, pWin->drawable.y);
     }
 #endif
     return pRgn;
@@ -1568,16 +1564,16 @@ SetWinSize (pWin)
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
 	ScreenPtr	pScreen = pWin->drawable.pScreen;
 
-	REGION_TRANSLATE(pScreen, 
-	    &pWin->winSize, - pWin->drawable.x, - pWin->drawable.y);
+	REGION_TRANSLATE(pScreen, &pWin->winSize, - pWin->drawable.x,
+			 - pWin->drawable.y);
 	if (wBoundingShape (pWin))
-	    REGION_INTERSECT(pScreen, 
-		&pWin->winSize, &pWin->winSize, wBoundingShape (pWin));
+	    REGION_INTERSECT(pScreen, &pWin->winSize, &pWin->winSize,
+			     wBoundingShape (pWin));
 	if (wClipShape (pWin))
-	    REGION_INTERSECT(pScreen, 
-		&pWin->winSize, &pWin->winSize, wClipShape (pWin));
-	REGION_TRANSLATE(pScreen, 
-	    &pWin->winSize, pWin->drawable.x, pWin->drawable.y);
+	    REGION_INTERSECT(pScreen, &pWin->winSize, &pWin->winSize,
+			     wClipShape (pWin));
+	REGION_TRANSLATE(pScreen, &pWin->winSize, pWin->drawable.x,
+			 pWin->drawable.y);
     }
 #endif
 }
@@ -1598,14 +1594,14 @@ SetBorderSize (pWin)
 	if (wBoundingShape (pWin)) {
 	    ScreenPtr	pScreen = pWin->drawable.pScreen;
 
-	    REGION_TRANSLATE(pScreen, 
-		&pWin->borderSize, - pWin->drawable.x, - pWin->drawable.y);
-	    REGION_INTERSECT(pScreen, 
-		&pWin->borderSize, &pWin->borderSize, wBoundingShape (pWin));
-	    REGION_TRANSLATE(pScreen, 
-		&pWin->borderSize, pWin->drawable.x, pWin->drawable.y);
-	    REGION_UNION(pScreen, &pWin->borderSize,
-			       &pWin->borderSize, &pWin->winSize);
+	    REGION_TRANSLATE(pScreen, &pWin->borderSize, - pWin->drawable.x,
+			     - pWin->drawable.y);
+	    REGION_INTERSECT(pScreen, &pWin->borderSize, &pWin->borderSize,
+			     wBoundingShape (pWin));
+	    REGION_TRANSLATE(pScreen, &pWin->borderSize, pWin->drawable.x,
+			     pWin->drawable.y);
+	    REGION_UNION(pScreen, &pWin->borderSize, &pWin->borderSize,
+			 &pWin->winSize);
 	}
 #endif
     } else {
@@ -2060,7 +2056,7 @@ ReflectStackChange(pWin, pSib, kind)
 	}
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
-	    (*pScreen->PostChangeSaveUnder)(pLayerWin->parent, pFirstChange);
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin, pFirstChange);
 #endif /* DO_SAVE_UNDERS */
 	if (anyMarked && pWin->drawable.pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(pLayerWin->parent, pFirstChange, kind);
@@ -2680,7 +2676,7 @@ MapWindow(pWin, client)
 #ifdef DO_SAVE_UNDERS
 	    if (DO_SAVE_UNDERS(pWin))
 	    {
-		dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin->nextSib);
+		dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pWin->nextSib);
 	    }
 #endif /* DO_SAVE_UNDERS */
 	    if (anyMarked)
@@ -2690,8 +2686,7 @@ MapWindow(pWin, client)
 	    }
 #ifdef DO_SAVE_UNDERS
 	    if (dosave)
-		(*pScreen->PostChangeSaveUnder)(pLayerWin->parent,
-						pLayerWin->nextSib);
+		(*pScreen->PostChangeSaveUnder)(pLayerWin, pWin->nextSib);
 #endif /* DO_SAVE_UNDERS */
 	if (anyMarked && pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(pLayerWin->parent, pLayerWin, VTMap);
@@ -2745,7 +2740,7 @@ MapSubwindows(pParent, client)
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif
-    WindowPtr		pLayerWin; /* XXX not using it */
+/*    WindowPtr		pLayerWin;  XXX still not using it */
 
     pScreen = pParent->drawable.pScreen;
     parentRedirect = RedirectSend(pParent);
@@ -2806,7 +2801,8 @@ MapSubwindows(pParent, client)
 	}
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
-	    (*pScreen->PostChangeSaveUnder)(pParent, pFirstSaveUndered->nextSib);
+	    (*pScreen->PostChangeSaveUnder)(pFirstSaveUndered,
+					    pFirstSaveUndered->nextSib);
 #endif /* DO_SAVE_UNDERS */
 	if (anyMarked && pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(pParent, pFirstMapped, VTMap);
@@ -2820,8 +2816,8 @@ UnrealizeTree(pWin, fromConfigure)
     Bool fromConfigure;
 {
     register WindowPtr pChild;
-    Bool (*Unrealize)();
-    void (*MarkUnrealizedWindow)();
+    UnrealizeWindowProcPtr Unrealize;
+    MarkUnrealizedWindowProcPtr MarkUnrealizedWindow;
 #ifdef XTHREADS
     ClientPtr client;
 
@@ -2917,10 +2913,9 @@ UnmapWindow(pWin, fromConfigure)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    if ( (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin->nextSib) )
+	    if ( (*pScreen->ChangeSaveUnder)(pLayerWin, pWin->nextSib) )
 	    {
-		(*pScreen->PostChangeSaveUnder)(pLayerWin->parent,
-						pLayerWin->nextSib);
+		(*pScreen->PostChangeSaveUnder)(pLayerWin, pWin->nextSib);
 	    }
 	}
 	pWin->DIXsaveUnder = FALSE;
@@ -3009,10 +3004,8 @@ UnmapSubwindows(pWin)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    if ( (*pScreen->ChangeSaveUnder)(pLayerWin->firstChild,
-					     pLayerWin->firstChild))
-		(*pScreen->PostChangeSaveUnder)(pLayerWin,
-						pLayerWin->firstChild);
+	    if ( (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin))
+		(*pScreen->PostChangeSaveUnder)(pLayerWin, pLayerWin);
 	}
 #endif /* DO_SAVE_UNDERS */
 	if (anyMarked && pScreen->PostValidateTree)
