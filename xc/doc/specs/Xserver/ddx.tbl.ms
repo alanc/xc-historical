@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.35 93/09/30 19:54:53 dpw Exp $"
+.\" $XConsortium: ddx.tbl.ms,v 1.37 94/04/09 20:53:11 dpw Exp $"
 .EF 'Porting Layer Definition'- % -'April 8, 1994'
 .OF 'Porting Layer Definition'- % -'April 8, 1994'
 .EH '''
@@ -70,7 +70,6 @@ for a view of what the client programmer sees.
 for a terse description of the byte stream protocol
 between the client and server.
 .LP
-UNIX is a trademark of XXX Novell .
 LK201 and DEC are trademarks of Digital Equipment Corporation.
 Macintosh and Apple are trademarks of Apple Computer, Inc.
 PostScript is a trademark of Adobe Systems, Inc.
@@ -567,10 +566,10 @@ How a client knows to do this depends upon your network facilities and the
 Xlib implementation.
 In a typical scenario, a user named Fred 
 on his X workstation is logged onto a Cray
-supercomputer running a UNIX shell in an X window.  Fred can type shell
+supercomputer running a command shell in an X window.  Fred can type shell
 commands and have the Cray respond as though the X server were a dumb terminal.
 Fred types in a command to run an X client application that was linked with Xlib.
-Xlib looks at the UNIX environment variable DISPLAY, which has the 
+Xlib looks at the shell environment variable DISPLAY, which has the 
 value "fredsbittube:0.0."
 The host name of Fred's workstation is "fredsbittube," and the 0s are 
 for multiple screens and multiple X server processes.
@@ -825,27 +824,25 @@ Memory Management
 Memory Management
 .XE
 .LP
-Memory management is the same as in the UNIX runtime library.
-Xalloc(), Xrealloc(),  and Xfree() work just like malloc(), 
-realloc(), and free(),
-except that you can pass a null pointer to Xrealloc() to have it allocate
-anew or
-pass a null pointer to Xfree() and nothing will happen.
-The versions in the sample server also do some checking that is useful for debugging.
-Consult a C runtime library reference manual for more details.
+Memory management is based on functions in the C runtime library.
+Xalloc(), Xrealloc(), and Xfree() work just like malloc(), realloc(),
+and free(), except that you can pass a null pointer to Xrealloc() to
+have it allocate anew or pass a null pointer to Xfree() and nothing
+will happen.  The versions in the sample server also do some checking
+that is useful for debugging.  Consult a C runtime library reference
+manual for more details.
 
 The macros ALLOCATE_LOCAL and DEALLOCATE_LOCAL are provided in
-Xserver/include/os.h.  These are useful if
-your compiler supports alloca() (or some
-method of allocating memory from the stack); and are defined appropriately
-on systems which support it.
+Xserver/include/os.h.  These are useful if your compiler supports
+alloca() (or some method of allocating memory from the stack); and are
+defined appropriately on systems which support it.
 
-Treat memory allocation carefully in your implementation.
-Memory leaks can be very hard to find and are frustrating
-to a user.  An X server could be running
-for days or weeks without being reset, just like a regular terminal.
-If you leak a few dozen k per day, that will add up and will cause problems
-for users that leave their workstations on.
+Treat memory allocation carefully in your implementation.  Memory
+leaks can be very hard to find and are frustrating to a user.  An X
+server could be running for days or weeks without being reset, just
+like a regular terminal.  If you leak a few dozen k per day, that will
+add up and will cause problems for users that leave their workstations
+on.
 
 .NH 2
 Client Scheduling
@@ -952,21 +949,17 @@ Other OS Functions
 	    char *str;
 .fi
 .LP
-You should write
-these three routines to provide for diagnostic output from the dix and
-ddx layers, although implementing them to produce no output will not
-affect the correctness of your server.
-ErrorF() and FatalError() take
-a printf() type of format specification in the first argument and
-an implementation-dependent number of arguments following that.
-Normally, the formats passed to ErrorF() and FatalError() should be
-terminated with a newline.
-Error() provides an os interface for printing out the string passed
-as an argument followed by a meaningful explanation of the last
-system error.
-Normally the string does not contain a newline, and it is only called
-by the ddx layer.
-In the sample implementation, Error() uses the Unix routine perror().
+You should write these three routines to provide for diagnostic output
+from the dix and ddx layers, although implementing them to produce no
+output will not affect the correctness of your server.  ErrorF() and
+FatalError() take a printf() type of format specification in the first
+argument and an implementation-dependent number of arguments following
+that.  Normally, the formats passed to ErrorF() and FatalError()
+should be terminated with a newline.  Error() provides an os interface
+for printing out the string passed as an argument followed by a
+meaningful explanation of the last system error.  Normally the string
+does not contain a newline, and it is only called by the ddx layer.
+In the sample implementation, Error() uses the perror() function.
 .LP
 After printing the message arguments, FatalError() must be implemented
 such that the server will call AbortDDX() to give the ddx layer
@@ -1224,11 +1217,11 @@ events be delivered to it through the GetMotionProc routine.
 		int percent;
 		DeviceIntPtr pDevice;
 		pointer ctrl;
-		int unknown;
+		int class;
 .fi
 You need to write this routine to ring the bell on the keyboard. 
 loud is a number from 0 to 100, with 100 being the loudest.
-Nobody knows what the unknown argument is for.
+Class is either BellFeedbackClass or KbdFeedbackClass (from XI.h).
 .nf
 
 	void pInternalDevice->somedevice->CtrlProc(device, ctrl)
@@ -2453,38 +2446,39 @@ Fonts for Screens
 .XE
 .LP
 A font is a set of bitmaps that depict the symbols in a character set.
-Each font is for only one typeface in a given size, in other words, just one
-bitmap for each character.
-Parallel fonts may be available in a variety of sizes and variations, including
-"bold" and "italic."
-X supports fonts for 8-bit and 16-bit character codes (for oriental languages
-that have more than 256 characters in the font).
-Glyphs are bitmaps for individual characters.
+Each font is for only one typeface in a given size, in other words,
+just one bitmap for each character.  Parallel fonts may be available
+in a variety of sizes and variations, including "bold" and "italic."
+X supports fonts for 8-bit and 16-bit character codes (for oriental
+languages that have more than 256 characters in the font).  Glyphs are
+bitmaps for individual characters.
 
-The source comes with some useful font files in an
-ASCII, plain-text format that should be comprehensible on a wide variety of operating systems.
-The text format, referred to as BDF, is a slight extension of the
-current Adobe 2.1 Bitmap Distribution Format (Adobe Systems, Inc.).
+The source comes with some useful font files in an ASCII, plain-text
+format that should be comprehensible on a wide variety of operating
+systems.  The text format, referred to as BDF, is a slight extension
+of the current Adobe 2.1 Bitmap Distribution Format (Adobe Systems,
+Inc.).
 
 A short paper in PostScript format is included with the sample server
 that defines BDF.  It includes helpful pictures, which is why it is
 done in PostScript and is not included in this document.
 
-Your implementation should include some sort of font compiler to read these
-files and generate binary files that are directly usable by your server implementation.
-The sample server comes with the source for a font compiler.
+Your implementation should include some sort of font compiler to read
+these files and generate binary files that are directly usable by your
+server implementation.  The sample server comes with the source for a
+font compiler.
 
 It is important the font properties contained in the BDF files are
 preserved across any font compilation. In particular, copyright
 information cannot be casually tossed aside without legal
-ramifications. Other properties will be important to
-some sophisticated applications.
+ramifications. Other properties will be important to some
+sophisticated applications.
 
-All clients get font information from the server.
-Therefore, your server can support any fonts it wants to.
-It should probably support at least the fonts supplied with the X11 tape.
-In principle, you can convert fonts from other
-sources or dream up your own fonts for use on your server.
+All clients get font information from the server.  Therefore, your
+server can support any fonts it wants to.  It should probably support
+at least the fonts supplied with the X11 tape.  In principle, you can
+convert fonts from other sources or dream up your own fonts for use on
+your server.
 
 .NH 4
 Portable Compiled Format
@@ -2492,17 +2486,15 @@ Portable Compiled Format
 Portable Compiled Format
 .XE
 .LP
-A font compiler is supplied with the sample server.
-It has compile-time switches to convert the BDF files
-into a portable binary form, called Portable Compiled Format or PCF.
-This allows for an arbitrary data format inside the file, and by
-describing the details of the format in the header of the file, any PCF
-file can be read by any PCF reading client.  By selecting the format which
-matches the required internal format for your renderer, the PCF reader can
-avoid reformatting the data each time it is read in.
-The font compiler should be directly portable to most UNIX-based systems 
-and is probably portable
-to many non-UNIX systems.
+A font compiler is supplied with the sample server.  It has
+compile-time switches to convert the BDF files into a portable binary
+form, called Portable Compiled Format or PCF.  This allows for an
+arbitrary data format inside the file, and by describing the details
+of the format in the header of the file, any PCF file can be read by
+any PCF reading client.  By selecting the format which matches the
+required internal format for your renderer, the PCF reader can avoid
+reformatting the data each time it is read in.  The font compiler
+should be quite portable.
 
 The fonts included with the tape are stored in fonts/bdf.  The
 font compiler is found in fonts/tools/bdftopcf.
@@ -4941,7 +4933,7 @@ mi and mfb implementations.
 .TS
 l l.
 dix	portable to all systems; do not attempt to rewrite (Xserver/dix)
-Unix	written for Unix or equivalent (Xserver/os)
+os	routine provided in Xserver/os or Xserver/include/os.h
 ddx	frame buffer dependent (examples in Xserver/mfb,Xserver/cfb)
 mi	routine provided in Xserver/mi
 hd	hardware dependent (examples in many Xserver/hw directories)
@@ -4953,10 +4945,10 @@ c c c
 l c l.
 Procedure	Port	Struct
 _
-ALLOCATE_LOCAL	Unix
+ALLOCATE_LOCAL	os
 AbortDDX	hd
 AddCallback	dix
-AddEnabledDevice	Unix
+AddEnabledDevice	os
 AddInputDevice	dix
 AddScreen	dix
 Bell	hd	Device
@@ -4964,7 +4956,7 @@ ChangeClip	mi	GC func
 ChangeGC		GC func
 ChangeWindowAttributes	ddx	Screen
 ClearToBackground	ddx	Window
-ClientAuthorized	Unix
+ClientAuthorized	os
 ClientSignal	dix
 ClientSleep	dix
 ClientWakeup	dix
@@ -4980,10 +4972,10 @@ CreateGC	ddx	Screen
 CreateCallbackList	dix
 CreatePixmap	ddx	Screen
 CreateScreenResources	ddx	Screen
-CreateWellKnowSockets	Unix
+CreateWellKnowSockets	os
 CreateWindow	ddx	Screen
 CursorLimits	hd	Screen
-DEALLOCATE_LOCAL	Unix
+DEALLOCATE_LOCAL	os
 DeleteCallback	dix
 DeleteCallbackList	dix
 DestroyClip	ddx	GC func
@@ -4991,9 +4983,8 @@ DestroyGC	ddx	GC func
 DestroyPixmap	ddx	Screen
 DestroyWindow	ddx	Screen
 DisplayCursor	hd	Screen
-Error	Unix
-ErrorF	Unix
-ExpandFontNamePattern	Unix
+Error	os
+ErrorF	os
 .TE
 .bp
 .TS
@@ -5002,11 +4993,11 @@ c c c
 l c l.
 Procedure	Port	Struct
 _
-FatalError	Unix
+FatalError	os
 FillPolygon	mi	GC op
 FillSpans	ddx	GC op
-FlushAllOutput	Unix
-FlushIfCriticalOutputPending	Unix
+FlushAllOutput	os
+FlushIfCriticalOutputPending	os
 FreeScratchPixmapHeader	dix
 GetImage	mi	Screen
 GetMotionEvents	hd	Device
@@ -5020,7 +5011,7 @@ InitInput	hd
 InitKeyboardDeviceStruct	dix	
 InitOutput	hd	
 InitPointerDeviceStruct	dix	
-InsertFakeRequest	Unix
+InsertFakeRequest	os
 InstallColormap	ddx	Screen
 Intersect	mi	Screen
 Inverse	mi	Screen
@@ -5031,7 +5022,7 @@ LookupKeyboardDevice	dix
 LookupPointerDevice	dix	
 ModifyPixmapheader	mi	Screen
 NextAvailableClient	dix
-OsInit	Unix	
+OsInit	os	
 PaintWindowBackground	mi	Window
 PaintWindowBorder	mi	Window
 PointerNonInterestBox	hd	Screen
@@ -5051,7 +5042,7 @@ ProcessInputEvents	hd
 PushPixels	mi	GC op
 PutImage	mi	GC op
 QueryBestSize	hd	Screen
-ReadRequestFromClient	Unix	
+ReadRequestFromClient	os	
 RealizeCursor	hd	Screen
 .TE
 .bp
@@ -5075,12 +5066,12 @@ RegionReset	mi	Screen
 ResolveColor	ddx	Screen
 RegisterKeyboardDevice	dix	
 RegisterPointerDevice	dix	
-RemoveEnabledDevice	Unix
-ResetCurrentRequest	Unix
+RemoveEnabledDevice	os
+ResetCurrentRequest	os
 RestoreAreas	none	BackingStore
 SaveDoomedAreas	none	BackingStore
 SaveScreen	ddx	Screen
-SetCriticalOutputPending	Unix
+SetCriticalOutputPending	os
 SetCursorPosition	hd	Screen
 SetInputCheck	dix	
 SetSpans	ddx	GC op
@@ -5096,12 +5087,12 @@ UnrealizeFont	ddx	Screen
 UnrealizeWindow	ddx	Screen
 ValidateGC	ddx	GC func
 ValidateTree	mi	Screen
-WaitForSomething	Unix
+WaitForSomething	os
 WindowExposures	mi	Window
-WriteToClient	Unix	
-Xalloc	Unix
-Xfree	Unix
-Xrealloc	Unix
+WriteToClient	os	
+Xalloc	os
+Xfree	os
+Xrealloc	os
 .TE
 
 .TC
