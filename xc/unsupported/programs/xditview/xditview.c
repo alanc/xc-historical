@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.5 89/03/20 16:07:10 keith Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.6 89/04/13 13:34:02 keith Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -93,10 +93,10 @@ void main(argc, argv)
     };
     static Arg	    panedArgs[] = {
 			{XtNallowResize, True},
-			{XtNskipAdjust, True},
     };
     static Arg	    labelArgs[] = {
 			{XtNlabel, (int) pageLabel},
+			{XtNskipAdjust, True},
     };
     static XtCallbackRec menuCallback[] = {
 			{ menuCall, (caddr_t) 0 },
