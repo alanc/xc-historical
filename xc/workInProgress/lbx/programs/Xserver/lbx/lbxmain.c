@@ -1015,8 +1015,7 @@ ProcLbxNewClient(client)
 	!proxy || proxy->lbxClients[stuff->client])
 	return BadLbxClientCode;
     c = stuff->client; /* get it before our request disappears */
-    newClient = AllocNewConnection (
-			((OsCommPtr)client->osPrivate)->trans_conn, 
+    newClient = AllocNewConnection (ClientTransportObject(client),
 				    ClientConnectionNumber (client), 
 				    LbxRead, LbxWritev, LbxCloseClient);
     if (proxy->lzwHandle)
