@@ -17,30 +17,27 @@
 Chapter 5 - Text Widgets.
 .XE
 .LP
+The Text widget provides a window that will allow an application
+to display and edit one or more lines of text.  Options are provided to
+allow the user to add Scrollbars to its window, search for a specific
+string, and modify the text in the buffer.
 .LP
-The Athena Text widget is made up of a number of pieces, the break up
-is used to seperate functionality, and make customization that much
-easier.  For most applications the AsciiText widget will be general enough
-to meet the programmers needs.  It combines the Text,
-AsciiSink and AsciiSource Widgets in one package for easy use.  If more
-flexibility, special features, or extra functionality is needed, it can
-be added by implementing a new TextSource or TextSink, or by subclassing
-the Text Widget (See Section 5.8 for details on customizing the Text widget).
+The Text widget is made up of a number of pieces.  The modularization of
+functionality is intended to ease customization.  For most applications,
+the AsciiText widget will be general enough to meet the programmer's
+needs.  If more flexibility, special features, or extra functionality is
+needed, it can be added by implementing a new TextSource or TextSink, or
+by subclassing the Text Widget (See Section 5.8 for customization
+details.)
 .LP
 The word \fIinsert point\fP is used in this chapter to refer to the text
 caret.  This is the caret that is displayed between two characters in
-the file.  The insert point marks location where any new characters
+the file.  The insert point marks the location where any new characters
 will be added to the file.  To avoid confusion the pointer cursor will 
-always be referred to as \fIpointer\fP.
+always be referred to as the \fIpointer\fP.
 .LP
-The text widget provides a window that will allow an application
-to display and edit one or more lines of text.  An option is provided to
-let the user add Scrollbars to the Text window, allowing the user to
-scroll through the displayed text.  Other options allow the user to
-modify the text and its attributes.
-.LP
-The text widget supports three edit modes, controlling how much
-modification a user is allowed to do:
+The text widget supports three edit modes, controlling the types of
+modifications a user is allowed to make:
 .IN "Text widgets" "edit modes"
 .IP \(bu 5
 Append-only 
@@ -49,19 +46,19 @@ Editable
 .IP \(bu 5
 Read-only 
 .LP
-Read-only mode does not allow the user or application to modify the text
-in the widget.  While the application may reset the entire string in
+Read-only mode does not allow the user or the programmer to modify the text
+in the widget.  While the programmer may reset the entire string in
 read-only mode with \fBXtSetValues\fP, it may not modify parts of the
 text with \fBXawTextReplace\fP.  Append-only and editable modes allow
 the text at the insert point to be modified.  The only
 difference is that text may only be added to or removed from the end of
-a buffer in Append-only mode.
+a buffer in append-only mode.
 .LP
 .NH 2
 Text Widget for Users
 .IN "Text Widgets" "User Guide"
 .LP
-The text widgets provide many of the common keyboard editing commands.
+The Text widget provides many of the common keyboard editing commands.
 These commands allow users to move around and edit the buffer.  If an
 illegal operation is attempted, (such as deleting characters in a
 read-only text widget), the terminal bell will be rung.
@@ -105,19 +102,20 @@ In addition, the pointer may be used to cut and paste text:
 .ta .5i 2.0i
 	Button 1 Down	Start Selection
 	Button 1 Motion	Adjust Selection
-	Button 1 Up	End Selection
+	Button 1 Up	End Selection (cut)
 
-	Button 2 Down	Insert Current Selection
+	Button 2 Down	Insert Current Selection (paste)
 
 	Button 3 Down	Extend Current Selection
 	Button 3 Motion	Adjust Selection
-	Button 3 Up	End Selection
+	Button 3 Up	End Selection (cut)
 
 .De
 .LP
 Since all of these key and pointer bindings are set through the
-translations and resource manager, the application programmer or user
-can modify them by changing the \fBtranslations\fP resource. 
+translations and resource manager, the user and the application
+programmer can modify them by changing the Text widget's
+\fBtranslations\fP resource.
 .bs 1
 .NH 3
 Search and Replace
@@ -125,23 +123,22 @@ Search and Replace
 .IN "text widgets" "Query Replace"
 .LP
 The Text widget provides a search popup that can be used to search for a
-string within the current text widget.  The popup can be activated by
+string within the current Text widget.  The popup can be activated by
 typing either \fIControl-r\fP or \fIControl-s\fP.  If \fIControl-s\fP is
 used the search will be forward in the file from the current insert point
 location; if \fIControl-r\fP is used the search will be backward.  The
-activated popup is placed under the pointer.  The search popup has
-a number of buttons that allow both text searches and text replacements
-to be performed.
+activated popup is placed under the pointer.  It has a number of buttons
+that allow both text searches and text replacements to be performed.
 .LP
 At the top of the search popup are two toggle buttons labeled
-\fIbackward\fP and \fIforward\fP.  One of these buttons will be
+\fIbackward\fP and \fIforward\fP.  One of these buttons will always be
 highlighted; this is the direction in which the search will be
 performed.  The user can change the direction at any time by clicking on
 the appropriate button.
 .LP
 Directly under the buttons there are two text areas, one labeled
 \fISearch for:\fP and the other labeled \fIReplace with:\fP.  If this is
-a Read-Only text widget the \fIReplace with:\fP field will be grayed out
+a read-only Text widget the \fIReplace with:\fP field will be grayed out
 and no replacements will be allowed.  After each of these labels will be
 a text field.  This field will allow the user to enter a string to
 search for and the string to replace it with.  Only one of these text
@@ -166,11 +163,11 @@ At the bottom of the search popup is a row of buttons.  These buttons
 allow the same actions to to be performed as the key sequences, but the
 buttons will leave the popup active.  This can be quite useful if many
 searches are being performed, as the popup will be left on the display.
-Since the search popup is on a transient window, it may be picked
+Since the search popup is a transient window, it may be picked
 up with the window manager and pulled off to the side for use 
 at a later time.
 .IP \fBSearch\fP 15
-Search for the string, but do not pop down the search popup.
+Search for the specified string.
 .IP \fBReplace\fP 15
 Replace the currently highlighted string with the string in the
 \fIReplace with\fP text field, and move onto the next occurrence of the
@@ -209,7 +206,7 @@ and paste
 into the text widget some text that another application (or text
 widget) has put in the \fBPRIMARY\fP selection.
 .LP
-The simplest method of selecting text is to press with pointer Button 1
+The simplest method of selecting text is to press pointer Button 1
 on the beginning of the text to be selected, drag the pointer until all
 of the desired text is highlighted, and then release the button to
 activate the selection.  The text may now be pasted into any other
@@ -228,12 +225,11 @@ First place the insert point where you would like the text to be inserted,
 then click and release pointer button 2.  The text
 that is in the \fBPRIMARY\fP selection will be placed into the Text widget.
 .LP
-Rapidly clicking pointer button 1 thhe following number of times will adjust
+Rapidly clicking pointer button 1 the following number of times will adjust
 the selection as described.
 .IP \fBTwo\fP 1.0i
 Select the word under the pointer.  A word boundary is defined by the
-text widget to be a Space, Tab, or Carriage Return.  The string
-\fIfoo-bar\fP is considered one word.
+Text widget to be a Space, Tab, or Carriage Return.
 .IP \fBThree\fP 1.0i
 Select the line under the pointer.
 .IP \fBFour\fP 1.0i
@@ -243,5 +239,5 @@ Spaces or Tabs between them.
 .IP \fBFive\fP 1.0i
 Select the entire text buffer.
 .LP
-To unset the text selection just click and release button 1 without
-moving it.
+To unset the text selection just click and release pointer button 1
+without moving it.
