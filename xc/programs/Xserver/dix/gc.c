@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.5 89/07/16 11:30:43 keith Exp $ */
+/* $XConsortium: gc.c,v 5.6 89/07/16 17:24:15 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -42,6 +42,8 @@ extern XID clientErrorValue;
 #ifdef DEBUG
 extern void NotImplemented();
 #endif
+
+static Bool CreateDefaultTile();
 
 /* written by drewry august 1986 */
 

@@ -44,6 +44,7 @@ extern cfbYRotatePixmap();
 
 static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
+static cfbDestroyOps();
 
 static GCFuncs cfbFuncs = {
     cfbValidateGC,

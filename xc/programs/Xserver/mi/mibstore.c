@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.13 89/07/13 19:23:13 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.14 89/07/14 17:14:14 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -123,7 +123,7 @@ static void	    miCreateBSPixmap();
 static void	    miDestroyBSPixmap();
 static void	    miTileVirtualBS();
 static void	    miBSAllocate(), miBSFree();
-
+static Bool	    miBSCreateGCPrivate();
 /*
  * wrappers for screen funcs
  */
