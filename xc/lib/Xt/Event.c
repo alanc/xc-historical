@@ -249,10 +249,7 @@ void XtDispatchEvent (event)
 #define IsSensitive ((!sensitivity) || (widget->core.sensitive && widget->core.ancestor_sensitive))
 
     widget =ConvertWindowToWidget (event->xany.window);
-    if (widget == NULL) {
-         XtError("XtDispatchEvent - no widget registered");
-         return;
-    }
+    if (widget == NULL) return;
     ConvertTypeToMask(event->xany.type, &mask, &grabType, &sensitivity);
     if ((grabType == pass || grabList == NULL) && IsSensitive)
            DispatchEvent(event,widget, mask);
