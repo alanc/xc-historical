@@ -9,7 +9,8 @@ Viewport Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	Viewport.h
+Application Header file	<X11/Xaw/Viewport.h>
+Class Header file	<X11/Xaw/ViewportP.h>
 Class		viewportWidgetClass
 Class Name	Viewport
 Superclass	Form
@@ -37,42 +38,42 @@ retrieved from the argument list or the resource database:
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-allowHoriz	Boolean	Boolean	False
-allowVert	Boolean	Boolean	False
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-children	ReadOnly	WidgetList	NULL
-colormap	Colormap	Pointer	Parent's Colormap
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-forceBars	Boolean	Boolean	False
-height	Height	Dimension	height of the child
-insertPosition	InsertPosition	Function	NULL
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-numChildren	ReadOnly	Cardinal	0
-screen	Screen	Pointer	Parent's Screen
-sensitive	Sensitive	Boolean	True
-translations	Translations	TranslationTable	NULL
-useBottom	Boolean	Boolean	False
-useRight	Boolean	Boolean	False
-width	Width	Dimension	width of the child
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable		NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+allowHoriz	Boolean	Boolean		False
+allowVert	Boolean	Boolean		False
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+children	ReadOnly	WidgetList	R	NULL
+colormap	Colormap	Pointer		Parent's Colormap
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList		NULL
+forceBars	Boolean	Boolean		False
+height	Height	Dimension		height of the child
+insertPosition	InsertPosition	Function		NULL
+mappedWhenManaged	MappedWhenManaged	Boolean		True
+numChildren	ReadOnly	Cardinal	R	0
+screen	Screen	Pointer	R	Parent's Screen
+sensitive	Sensitive	Boolean		True
+translations	Translations	TranslationTable		NULL
+useBottom	Boolean	Boolean		False
+useRight	Boolean	Boolean		False
+width	Width	Dimension		width of the child
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -80,14 +81,7 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
+.Ac
 .IP \fBallowHoriz\fP 1.5i
 .br
 .ns
@@ -95,55 +89,27 @@ however, be queried.
 If these resources are \fBFalse\fP then the Viewport will never create
 a scrollbar in this direction.  If it is \fBTrue\fP then the scrollbar will
 only appear when it is needed, unless \fBforceBars\fP is \fBTrue\fP.
-.IP background 1.5i
-An index into this widget's colormap specifing the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-This is the width of this widget's border.
-.IP children 1.5i
-A list of all this composite widget'c current children.
-.IP colormap 1.5i
-The colormap that this widget wants for its window.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
+.As
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
+.Ch
+.Cm
+.De
+.Dc
 .IP \fBforceBars\fP 1.5i
 When \fBTrue\fP the scrollbars that have been \fIallowed\fP will always be
 visable on the screen.  If \fBFalse\fP the scrollbars will be visable only
 when the inner window is larger than the frame.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
-.IP insertPosition 1.5i
-[||| What is this resource anyway??? ]
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
-.IP numChildren 1.5i
-The number of children in this composite widget.  This list contains
-many extra children created by the Viewport for internal use.
-.IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP translations 1.5i
-The event bindings associated with this widget.
+.Hw
+.Ip
+.Mm
+.Nc
+.Sc
+.Se
+.Tr
 .IP \fBuseBottom\fP 1.5i
 .br
 .ns
@@ -151,11 +117,7 @@ The event bindings associated with this widget.
 By default the scrollbars appear on the left and top of the screen.  These
 resources allow the vertical scrollbar to be placed on the right edge of
 the Vieport, and the horizontal scrollbar on the bottom edge of the Viewport.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left corner of this widget in its parent.
+.Xy
 .NH 3
 Layout Semantics
 .LP
@@ -184,3 +146,4 @@ the resources dynamically once the widget ID has been obtained with
 Although the Viewport is a Subclass of the Form, no resources for the Form
 my be supplied for any of the children of the Viewport.  These constraints
 are managed internally, and are not meant for public consumption.
+.NE

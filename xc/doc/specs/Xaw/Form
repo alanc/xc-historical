@@ -9,7 +9,8 @@ Form Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	Form.h
+Application Header file	<X11/Xaw/Form.h>
+Class Header file	<X11/Xaw/FormP.h>
 Class		formWidgetClass
 Class Name	Form
 Superclass	Constraint
@@ -38,38 +39,38 @@ be clipped by the right and bottom edges of the Form.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-children	ReadOnly	WidgetList	NULL
-colormap	Colormap	Pointer	Parent's Colormap
-defaultDistance	Thickness	Int	4
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-height	Height	Dimension	Enough space to contain all children
-insertPosition	InsertPosition	Function	NULL
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-numChildren	ReadOnly	Cardinal	0
-screen	Screen	Pointer	Parent's Screen
-sensitive	Sensitive	Boolean	True
-translations	Translations	TranslationTable	NULL
-width	Width	Dimension	Enough space to contain all children
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable		NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+children	ReadOnly	WidgetList	R	NULL
+colormap	Colormap	Pointer		Parent's Colormap
+defaultDistance	Thickness	Int		4
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList		NULL
+height	Height	Dimension	A	Enough space to contain all children
+insertPosition	InsertPosition	Function		NULL
+mappedWhenManaged	MappedWhenManaged	Boolean		True
+numChildren	ReadOnly	Cardinal	R	0
+screen	Screen	Pointer	R	Parent's Screen
+sensitive	Sensitive	Boolean		True
+translations	Translations	TranslationTable		NULL
+width	Width	Dimension	A	Enough space to contain all children
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -77,99 +78,59 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-This is the width of this widget's border.
-.IP children 1.5i
-A list of all the current children of this widget.
-.IP colormap 1.5i
-The colormap that this widget wants for its window.
-.IP \fBdefaultDistance\fP 1.5i
-The default internal spacing for the children.  This is
-the default value for the constraint resources \fBhorizDistance\fP and
-\fBvertDistance\fP.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
-.IP insertPosition 1.5i
-[||| What is this resource anyway??? ]
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
-.IP numChildren 1.5i
-The number of children in this composite widget.
-.IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left corner of this widget in its parent.
+.Ac
+.As
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
+.Ch
+.Cm
+.Dd Bold
+.De
+.Dc
+.Hw
+.Ip
+.Mm
+.Nc
+.Sc
+.Se
+.Tr
+.Xy
 .NH 3
 Constraint Resources
 .LP
-.IN "Dialog widget" "constraint resources"
-Each child of the Dialog widget may request special layout resources
-be applied to it.  These \fIconstraint\fP resources allow the Dialog
+.IN "Form widget" "constraint resources"
+Each child of the Form widget may request special layout resources
+be applied to it.  These \fIconstraint\fP resources allow the Form
 widget's children to specify individual layout requirements.
+.LP
 .LP
 .ps 9
 .nr PS 9
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-bottom	Edge	XawEdgeType	XawRubber
-fromHoriz	Widget	Widget	NULL (left edge of Dialog)
-fromVert	Widget	Widget 	NULL (top edge of Dialog)
-horizDistance	Thickness	int	\fBdefaultDistance\fP resource
-left	Edge	XawEdgeType	XawRubber
-resizable	Boolean	Boolean	FALSE
-right	Edge	XawEdgeType	XawRubber
-top	Edge	XawEdgeType	XawRubber
-vertDistance	Thickness	int	\fBdefaultDistance\fP resource
+bottom	Edge	XawEdgeType		XawRubber
+fromHoriz	Widget	Widget		NULL (left edge of Form)
+fromVert	Widget	Widget 		NULL (top edge of Form)
+horizDistance	Thickness	int		\fBdefaultDistance\fP resource
+left	Edge	XawEdgeType		XawRubber
+resizable	Boolean	Boolean		FALSE
+right	Edge	XawEdgeType		XawRubber
+top	Edge	XawEdgeType		XawRubber
+vertDistance	Thickness	int		\fBdefaultDistance\fP resource
 .sp 3p
 _
 .TE
@@ -177,72 +138,14 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP \fBbottom\fP 1.5i
-.br
-.ns
-.IP \fBleft\fP 1.5i
-.br
-.ns
-.IP \fBright\fP 1.5i
-.br
-.ns
-.IP \fBtop\fP 1.5i
-What to do with this edge of the child when the Dialog is resized.  This
-resource may be any \fBedgeType\fP.  See \fBLayout Semantics\fP for
-details.
-.IP \fBfromHoriz\fP 1.5i
-.br
-.ns
-.IP \fBfromVert\fP 1.5i
-Which widget this child should be placed underneath (or to the right
-of).  If a value of NULL is specified then this widget will be positioned
-relative to the edge of the Dialog.
-.IP \fBhorizDistance\fP 1.5i
-.br
-.ns
-.IP \fBvertDistance\fP 1.5i
-The amount of space, in pixels, between this child and its left or
-upper neighbor. 
-.IP \fBresizable\fP 1.5i
-If this resource is \fBFalse\fP then the Dialog widget will ignore all
-geometry request made by this child.  The Dialog may still resize this
-child itself, however.
+.Bt Bold
+.Fh Bold
+.Hd Bold
+.Rl Bold
 .NH 3
 Layout Semantics
 .LP
-The Form widget uses two different sets of layout semantics.  One is
-used when initially laying out the buttons.  The other is used when
-the Form is resized. 
-.LP
-The first layout method uses the \fBfromVert\fP and \fPfromHoriz\fP
-resources to place the children of the form.  A single pass is made
-through the Form widget's children in the order that they were created.
-Each child is then placed in the Form widget below or to the right of
-the widget specified by the \fBfromVert\fP and \fBfromHoriz\fP resources.
-The distance the new child is placed from its left or upper neighbor is
-determined by the \fBhorizDistance\fP and \fBvertDistance\fP resources.
-This implies some things about how the order of creation affects the 
-possible placement of the children.  
-.LP
-The second layout method is used when the Form is resized.  It does
-not matter what causes this resize, and it is possible for a resize to
-happen before the widget becomes visible (due to constraints imposed
-by the parent of the Form widget).  This layout method uses the
-\fBbottom\fP, \fBtop\fP, \fBleft\fP, and \fBright\fP resources.  These
-are used to determine what will happen to each edge of the child when
-the Form is resized.  If the value of \fBXawChain\fP\fI<something>\fP
-is specified, then the edge of the child will remain a fixed distance
-from the \fIchain\fP edge of the form.  For example if
-\fBXawChainLeft\fP is specified for the \fBright\fP resource of a
-child then the right edge of that child will remain a fixed distance
-from the left edge of the Form widget.  If a value of \fBXawRubber\fP
-is specified, that edge will grow by the same percentage that the Form
-grew.  For instance if the Dialog grows by 50% the left edge of the
-child (if specified as \fBXawRubber\fP will be 50% farther from the
-left edge of the Form).  One must be very careful when specifying
-these resources, for if they are specified incorrectly, children may
-overlap or completely occlude other children when the Form widget is
-resized.
+.Lt Form
 .LP
 .ps 9
 .nr PS 9
@@ -296,19 +199,10 @@ void XawFormDoLayout(\fIw\fP, \fIdo_layout\fP)
 .IP \fIw\fP 1i
 Specifies the Form widget.
 .IP \fIdo_layout\fP 1i
-Enables (if
-.PN True )
-or disables (if
-.PN False )
-layout of the Form widget.
+Specifies whether the layout of the Form widget is enabled (\fBTrue\fP)
+or disabled (\fBFalse\fP).
 .LP
 When making several changes to the children of a Form widget
 after the Form has been realized, it is a good idea to disable
-re-layout until all changes have been made, then allow the
-layout.  Form increments an internal count each time
-.PN XawFormDoLayout
-is called with do_layout
-.PN False
-and decrements the count when do_layout is
-.PN True .
-When the count reaches 0, Form performs a re-layout.
+relayout until after all changes have been made.
+

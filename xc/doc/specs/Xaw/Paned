@@ -9,7 +9,8 @@ Paned Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	Paned.h
+Application Header file	<X11/Xaw/Paned.h>
+Class Header file	<X11/Xaw/PanedP.h>
 Class		panedWidgetClass
 Class Name	Paned
 Superclass	Constraint
@@ -58,9 +59,9 @@ _
 .TH
 .R
 .sp 3p
-left	above the grip	left of the grip
-middle	adjust border	adjust border
-right	below the grip	right of the grip
+1 (left)	above the grip	left of the grip
+2 (middle)	adjust border	adjust border
+3 (right)	below the grip	right of the grip
 .sp 3p
 _
 .TE
@@ -78,54 +79,54 @@ retrieved from the argument list or the resource database:
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-betweenCursor	Cursor	Cursor	depends on orientation
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-children	ReadOnly	WidgetList	NULL
-colormap	Colormap	Pointer	Parent's Colormap
-cursor	Curor	Cursor	None
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-gripCursor	Cursor	Cursor	depends on orientation
-gripIndent	GripIndent	Postion	10
-gripTranslations	Translations	TranslationTable	see below
-height	Height	Dimension	Depends on orientation
-horizontalBetweenCursor	Cursor	Cursor	sb_up_arrow
-horizontalGripCursor	Cursor	Cursor	sb_h_double_arrow
-insertPosition	InsertPosition	Function	NULL
-internalBorderColor	BorderColor	Pixel	XtDefaultForeground
-internalBorderWidth	BorderWidth	Dimension	1
-leftCursor	Cursor	Cursor	sb_left_arrow
-lowerCursor	Cursor	Cursor	sb_down_arrow
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-numChildren	ReadOnly	Cardinal	0
-orientation	Orientation	Orientation	vertical
-refigureMode	Boolean	Boolean	True
-rightCursor	Cursor	Cursor	sb_right_arrow
-screen	Screen	Pointer	Parent's Screen
-sensitive	Sensitive	Boolean	True
-translations	Translations	TranslationTable	NULL
-upperCursor	Cursor	Cursor	sb_up_arrow
-verticalBetweenCursor	Cursor	Cursor	sb_left_arrow
-verticalGripCursor	Cursor	Cursor	sb_v_double_arrow
-width	Width	Dimension	Depends on orientation
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable		NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+betweenCursor	Cursor	Cursor	A	depends on orientation
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+children	ReadOnly	WidgetList	R	NULL
+colormap	Colormap	Pointer		Parent's Colormap
+cursor	Curor	Cursor		None
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList		NULL
+gripCursor	Cursor	Cursor	A	depends on orientation
+gripIndent	GripIndent	Postion		10
+gripTranslations	Translations	TranslationTable		see below
+height	Height	Dimension	A	Depends on orientation
+horizontalBetweenCursor	Cursor	Cursor		sb_up_arrow
+horizontalGripCursor	Cursor	Cursor		sb_h_double_arrow
+insertPosition	InsertPosition	Function		NULL
+internalBorderColor	BorderColor	Pixel		XtDefaultForeground
+internalBorderWidth	BorderWidth	Dimension		1
+leftCursor	Cursor	Cursor		sb_left_arrow
+lowerCursor	Cursor	Cursor		sb_down_arrow
+mappedWhenManaged	MappedWhenManaged	Boolean		True
+numChildren	ReadOnly	Cardinal	R	0
+orientation	Orientation	Orientation		vertical
+refigureMode	Boolean	Boolean		True
+rightCursor	Cursor	Cursor		sb_right_arrow
+screen	Screen	Pointer	R	Parent's Screen
+sensitive	Sensitive	Boolean		True
+translations	Translations	TranslationTable		NULL
+upperCursor	Cursor	Cursor		sb_up_arrow
+verticalBetweenCursor	Cursor	Cursor		sb_left_arrow
+verticalGripCursor	Cursor	Cursor		sb_v_double_arrow
+width	Width	Dimension	A	Depends on orientation
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -133,62 +134,32 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifing the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-This is the width of this widget's border.
-.IP children 1.5i
-A list of all this composite widget'c current children.
-.IP colormap 1.5i
-The colormap that this widget wants for its window.
+.Ac
+.As
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
+.Ch
+.Cm
 .IP \fBcursor\fP 1.5i
 The cursor the use when the mouse pointer is over the Paned widget,
 but not in any of its children (children may also inherit this cursor).
 It should be noted that the internal borders are actually part of
 the Paned widget in R4, not the children.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
+.De
+.Dc
 .IP \fBgripCursor\fP 1.5i
 The cursor to use when the grips are no active.  The default value is
-\fBverticalGripCursor\fB or \fBhorizontalGripCursor\fP depeneding on
+\fBverticalGripCursor\fP or \fBhorizontalGripCursor\fP depeneding on
 the orientation of the Paned widget. 
 .IP \fBgripIndent\fP 1.5i
 The amount if space left between the right (or bottom) edge of the
 Paned widget and all the grips.
 .IP \fBgripTranslation\fP 1.5i
 Translation table that will be applied to all grips.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.  If the orientation is
-vertical, the width of the Paned widget is the width of the widest
-child, and the height is just tall enough to give each pane its
-perferred size.  If the orientation is horizontal, the height is the
-height of the tallest child, and the width is just long enough to give
-each pane its preferred size.
+.Hw
 .IP \fBhorizontalBetweenCursor\fP 1.5i
 .br
 .ns
@@ -215,8 +186,7 @@ The width of the internal borders.  This is the amount of space left
 between the panes.  The class name of this resource
 allows \fIfoo*BorderWidth: 3\fP to set the internal border width
 for the Paned widget. 
-.IP insertPosition 1.5i
-[||| What is this resource anyway??? ]
+.Ip
 .IP \fBleftCursor\fP 1.5i
 .br
 .ns
@@ -229,35 +199,23 @@ resize when the Paned widget is oriented horizontally.
 .IP \fBupperCursor\fP 1.5i
 The cursor used to indicate which is the \fIimportant\fP pane to
 resize when the Paned widget is oriented vertically.
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
-.IP numChildren 1.5i
-The number of children in this composite widget.  This is not the same
+.Mm
+.Nc
+This is not the same
 as the number of panes, since this also contains a grip for some of the
 panes, use \fBXawPanedGetNumSub\fP to retreive the number of panes.
 .IP \fBorientation\fP 1.5i
 The orientation to stack the panes.  This value can be either
-\fBXtOrientVertical\fP or \fBXtOrientHorizontal\fP.  A resource
-converter is registered that will convert the strings \fBhorizontal\fP
-and \fBvertical\fP. 
+\fBXtOrientVertical\fP or \fBXtOrientHorizontal\fP.  
+.Rs "horizontal \fPand\fB vertical"
 .IP \fBrefigureMode\fP 1.5i
 This resource allows pane layout to be suspended.  If this value is
 \fBFalse\fP then no layout actions will be taken.  This may improve
 effiency when adding or removing more than one pane from the Paned widget.
-.IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left corner of this widget in its parent.
+.Sc
+.Se
+.Tr
+.Xy
 .NH 3
 Constraint Resources
 .LP
@@ -271,23 +229,23 @@ widget's children to specify individual layout requirements.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-allowResize	Boolean	Boolean	False
-max	Max	Dimension	Infinity
-min	Min	Dimension	Height of Grips
-preferredPaneSize	PreferredPaneSize	Dimension	0 (ask child)
-resizeToPreferred	Boolean	Boolean	False
-showGrip	ShowGrip	Boolean	True
-skipAdjust	Boolean	Boolean	False
+allowResize	Boolean	Boolean		False
+max	Max	Dimension		Infinity
+min	Min	Dimension		Height of Grips
+preferredPaneSize	PreferredPaneSize	Dimension		ask child
+resizeToPreferred	Boolean	Boolean		False
+showGrip	ShowGrip	Boolean		True
+skipAdjust	Boolean	Boolean		False
 .sp 3p
 _
 .TE
@@ -450,24 +408,17 @@ void XawPanedAllowResize(\fIw\fP, \fIallow_resize\fP)
      Boolean \fIallow_resize\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the child widget pane.
+Specifies the child pane.
 .IP \fIallow_resize\fP
-Enables or disables a pane widget for resizing requests.
+Specifies whether or not resizing requests for this child will be
+granted by the Paned widget.
 .LP
-If allow_resize is
-.PN True ,
-Pane allows geometry requests from the child to change the pane's height.
-If allow_resize is
-.PN False ,
+If allow_resize is \fBTrue\P, Pane allows geometry requests from the
+child to change the pane's height. If allow_resize is \fBFalse\fP,
 Pane ignores geometry requests from the child to change the pane's height. 
-The default state is
-.PN True
-before the Pane is realized and
-.PN False
-after it is realized.
-This procedure is equivalent to changing the
-.PN allowResize
-resource for the child.
+The default state is \fBTrue\fP before the Pane is realized and \fBFalse\fP
+after it is realized.  This procedure is equivalent to changing the
+\fBallowResize\fP constraint resource for the child.
 .LP
 .sp
 .IN "Paned widget" "change height settings"
@@ -482,17 +433,14 @@ void XawPanedSetMinMax(\fIw\fP, \fImin\fP, \fImax\fP)
      int \fImin\fP, \fImax\fP;   
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of a child of the Paned widget.
+Specifies the child pane.
 .IP \fImin\fP 1i
-New minimum height of the child, expressed in pixels.
+Specifies the new minimum height of the child, expressed in pixels.
 .IP \fImax\fP 1i
-New maximum height of the child, expressed in pixels.
+Specifies new maximum height of the child, expressed in pixels.
 .LP
-This procedure is equivalent to setting the
-.PN min
-and
-.PN max
-resources for the child.
+This procedure is equivalent to setting the \fBmin\fP and \fBmax\fP
+constraint resources for the child.
 .LP
 .sp
 .IN "Paned widget" "get height settings"
@@ -504,14 +452,14 @@ void XawPanedGetMinMax(\fIw\fP, \fImin\fP, \fImax\fP)
 .br
      Widget \fIw\fP;
 .br
-     int \fI*min\fP, \fI*max\fP;   /* RETURNED */
+     int \fI*min_return\fP, \fI*max_return\fP;   /* RETURNED */
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of a child of the Paned widget.
-.IP \fImin\fP 1i
-The minimum height of the child, expressed in pixels.
-.IP \fImax\fP 1i
-The maximum height of the child, expressed in pixels.
+Specifies the child pane.
+.IP \fImin_return\fP 1i
+Returns the minimum height of the child, expressed in pixels.
+.IP \fImax_return\fP 1i
+Returns the maximum height of the child, expressed in pixels.
 .LP
 This procedure is equivalent to getting the \fBmin\fP and \fBmax\fP
 resources for this child child.
@@ -531,16 +479,14 @@ void XawPanedSetRefigureMode(\fIw\fP, \fImode\fP)
      Boolean \fImode\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the Paned widget.
+Specifies the Paned widget.
 .IP \fImode\fP 1i
-Enables or disables refiguration.
+Specifies whether the layout of the Paned widget is enabled (\fBTrue\fP)
+or disabled (\fBFalse\fP).
 .LP
-You should set the mode to \fBFalse\fP if you add multiple panes to or remove
-multiple panes from the parent frame after it has been realized, unless
-you can arrange to manage all the panes at once using
-\fBXtManageChildren\fP.  After all the panes are added, set the mode to
-\fBTrue\fP.  This avoids unnecessary geometry calculations and \fIwindow
-dancing\fP.
+When making several changes to the children of a Paned widget
+after the Paned has been realized, it is a good idea to disable
+relayout until after all changes have been made.
 .LP
 .sp
 .IN "Paned widget" "getting the number of children"
@@ -553,7 +499,7 @@ int XawPanedGetNumSub(\fIw\fP)
      Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the Paned widget.
+Specifies the Paned widget.
 .LP
 This function returns the number of panes in the Paned widget.  This is
 \fBnot\fP the same as the number of children, since the grips are also

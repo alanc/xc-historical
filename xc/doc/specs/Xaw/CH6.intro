@@ -1,4 +1,6 @@
+.LP
 .bp
+.if e .bp  \" make sure we break on an odd page.
 \&
 .sp 1
 .ce 3

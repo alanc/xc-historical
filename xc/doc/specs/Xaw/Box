@@ -9,7 +9,8 @@ Box Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	Box.h
+Application Header file	<X11/Xaw/Box.h>
+Class Header file	<X11/Xaw/BoxP.h>
 Class		boxWidgetClass
 Class Name	Box
 Superclass	Composite
@@ -39,39 +40,39 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-children	ReadOnly	WidgetList	NULL
-colormap	Colormap	Pointer	Parent's Colormap
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-height	Height	Dimension	Tall enough to contain all managed children
-hSpace	HSpace	Dimension	4
-insertPosition	InsertPosition	Function	NULL
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-numChildren	ReadOnly	Cardinal	0
-screen	Screen	Pointer	Parent's Screen
-sensitive	Sensitive	Boolean	True
-vSpace	VSpace	Dimension	4
-translations	Translations	TranslationTable	NULL
-width	Width	Dimension	Width of the widest child + 2 * \fBhSpace\fP
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable		NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+children	ReadOnly	WidgetList	R	NULL
+colormap	Colormap	Pointer		Parent's Colormap
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList		NULL
+height	Height	Dimension	A	Tall enough to contain all managed children
+hSpace	HSpace	Dimension		4
+insertPosition	InsertPosition	Function		NULL
+mappedWhenManaged	MappedWhenManaged	Boolean		True
+numChildren	ReadOnly	Cardinal	R	0
+screen	Screen	Pointer	R	Parent's Screen
+sensitive	Sensitive	Boolean		True
+vSpace	VSpace	Dimension		4
+translations	Translations	TranslationTable		NULL
+width	Width	Dimension	A	Width of the widest child + 2 * \fBhSpace\fP
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -79,43 +80,18 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-This is the width of this widget's border.
-.IP children 1.5i
-A list of all this composite widget's current children.
-.IP colormap 1.5i
-The colormap that this widget wants for its window.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
+.Ac
+.As
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
+.Ch
+.Cm
+.De
+.Dc
+.Hw
 .IP \fBhSpace\fP 1.5i
 .br
 .ns
@@ -123,26 +99,13 @@ The height and width of this widget in pixels.
 The amount of space, in pixels, to leave between the children.  Also
 the amount of space left between the outermost children and the edge
 of the box. 
-.IP insertPosition 1.5i
-[||| What is this resource anyway??? ]
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
-.IP numChildren 1.5i
-The number of children in this composite widget.
-.IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left corner of this widget in its parent.
+.Ip
+.Mm
+.Nc
+.Sc
+.Se
+.Tr
+.Xy
 .NH 3
 Layout Semantics
 .LP
