@@ -1,4 +1,4 @@
-/* $XConsortium: pexFont.c,v 5.2 91/07/01 08:21:03 rws Exp $ */
+/* $XConsortium: pexFont.c,v 5.3 91/07/02 09:51:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -51,10 +51,12 @@ SOFTWARE.
 #endif /* X_NOT_POSIX */
 #ifndef PATH_MAX
 #include <sys/param.h>
+#ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
 #else
 #define PATH_MAX 1024
+#endif
 #endif
 #endif /* PATH_MAX */
 
