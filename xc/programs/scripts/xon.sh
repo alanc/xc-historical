@@ -12,7 +12,7 @@ target=$1
 shift
 label=$target
 resource=xterm-$label
-rcmd="rsh $target"
+rcmd="rsh $target -n"
 case $DISPLAY in
 unix:*)
 	DISPLAY=`echo $DISPLAY | sed 's/unix//'`
@@ -50,7 +50,7 @@ while $continue; do
 		shift
 		username="-l $1"
 		label="$target $1"
-		rcmd="rsh $target $username"
+		rcmd="rsh $target $username -n"
 		shift
 		case x$XAUTHORITY in
 		x)
