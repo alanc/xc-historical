@@ -45,29 +45,15 @@ typedef enum {
 #endif _XtJustify_e
 
 #define XtNjustify		"justify"
+#define XtNforeground		"foreground"
 #define XtNlabel		"label"
 #define XtNfont			"font"
 #define XtNinternalWidth	"internalWidth"
 #define XtNinternalHeight	"internalHeight"
  
-/* New fields for the Label widget record */
-typedef struct {
-    Pixel	foreground;
-    XFontStruct	*font;
-    GC		gc;
-    char	*label;
-    Dimension	labelWidth;
-    Dimension	labelHeight;
-    XtJustify	justify;
-    Dimension	internalWidth;
-    Dimension	internalHeight;
-} Label;
-
 /* New fields for the Label widget class record */
-typedef struct {
-    int	mumble;
-    /* No new procedures */
-} LabelClass;
+
+typedef void LabelClass;
 
 /* Full class record declaration */
 typedef struct {
@@ -78,7 +64,7 @@ typedef struct {
 /* Class record constants */
 
 extern LabelWidgetClassData labelWidgetClassData;
-extern LabelWidgetClass	labelWidgetClass;
+#define labelWidgetClass	(&labelWidgetClassData)
 
 #endif _XtLabel_h
 /* DON'T ADD STUFF AFTER THIS #endif */

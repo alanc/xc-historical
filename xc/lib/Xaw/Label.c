@@ -27,7 +27,7 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 
 
 /*
- * ButtonBox.c - Button box composite widget
+ * Label.c - Label widget
  *
  * Author:      Charles Haynes
  *              Digital Equipment Corporation
@@ -37,6 +37,8 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
  * Converted to classing toolkit on Wed Aug 26 by Charles Haynes
  */
 
+#define XtStrlen(s)	((s) ? strlen(s) : 0)
+
 #include <stdio.h>
 #include <string.h>
 #include "Xlib.h"
@@ -45,6 +47,7 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 #include "Conversion.h" /* lower case proc */
 #include "Intrinsic.h"
 #include "Label.h"
+#include "LabelPrivate.h"
 #include "Atoms.h"
 
 /****************************************************************
@@ -69,7 +72,7 @@ typedef struct {
 #define XtRjustify		"Justify"
 
 static Resource resources[] = {
-    {XtNforeground, XtCColor, XrmRPixel, sizeof(Pixel),
+    {XtNforeground, XtCForeColor, XrmRPixel, sizeof(Pixel),
 	Offset(LabelWidget, label.foreground), XrmRString, "Black"},
     {XtNfont,  XtCFont, XrmRFontStruct, sizeof(XFontStruct *),
 	Offset(LabelWidget, label.font),XrmRString, "Fixed"},
@@ -85,7 +88,7 @@ static Resource resources[] = {
 
 extern void Initialize();
 extern void Realize();
-extern void Reconfigure();
+extern void Resize();
 extern void Redisplay();
 extern void SetValues();
 
@@ -103,7 +106,7 @@ LabelWidgetClassData labelWidgetClassData = {
     /* xrm_class	*/	NULLQUARK,
     /* visible_interest	*/	FALSE,
     /* destroy		*/	NULL,
-    /* reconfigure	*/	Reconfigure,
+    /* resize		*/	Resize,
     /* expose		*/	Redisplay,
     /* set_values	*/	SetValues,
     /* accepts_focus	*/	FALSE,
@@ -164,9 +167,30 @@ static void SetTextWidthAndHeight(lw)
 {
     register XFontStruct	*fs = lw->label.font;
 
+    lw->label.labelLen = XtStrlen(lw->label.label);
     lw->label.labelHeight = fs->max_bounds.ascent + fs->max_bounds.descent;
     lw->label.labelWidth = XTextWidth(
-	fs, lw->label.label, strlen(lw->label.label));
+	fs, lw->label.label, lw->label.labelLen);
+
+    /* Calculate text position within window given window width and height  */
+    switch (lw->label.justify) {
+
+	case XtjustifyLeft   :
+	    lw->label.labelX = lw->label.internalWidth;
+	    break;
+
+	case XtjustifyRight  :
+	    lw->label.labelX = lw->core.width -
+		(lw->label.labelWidth + lw->label.internalWidth);
+	    break;
+
+	case XtjustifyCenter :
+	    lw->label.labelX = (lw->core.width - lw->label.labelWidth) / 2;
+	    break;
+    }
+    if (lw->label.labelX < 0) lw->label.labelX = 0;
+    lw->label.labelY = (lw->core.height - lw->label.labelHeight) / 2
+	+ lw->label.font->max_bounds.ascent;
 }
 
 static void GetGC(lw)
@@ -176,10 +200,9 @@ static void GetGC(lw)
 
     values.foreground	= lw->label.foreground;
     values.font		= lw->label.font->fid;
-    values.background	= lw->core.background_pixel;
 
     lw->label.gc = XtGetGC(lw->core.display, lw->core.window,
-    	GCForeground | GCFont | GCBackground, &values);
+    	GCForeground | GCFont, &values);
 }
 
 static void Initialize(w)
@@ -202,15 +225,12 @@ static void Initialize(w)
     if (lw->core.height == 0)
         lw->core.height = lw->label.labelHeight + 2 * lw->label.internalHeight;
 
-/* labels want exposure compression */
+/* labels want exposure compression !!! */
 /*     lw->core.compress_expose = TRUE; */
 
 } /* Initialize */
 
 
-
-/* ||| Should Realize just return a modified mask and attributes?  Or will some
-   of the other parameters change from class to class? */
 void Realize(w, valueMask, attributes)
     register Widget w;
     Mask valueMask;
@@ -241,32 +261,14 @@ void Realize(w, valueMask, attributes)
 static void Redisplay(w)
     Widget w;
 {
-    LabelWidget lw = (LabelWidget) w;
-    Position x, y;
-
-    /* Calculate text position within window given window width and height  */
-    switch (lw->label.justify) {
-	case XtjustifyLeft   :
-	    x = lw->label.internalWidth;
-	    break;
-	case XtjustifyRight  :
-	    x = lw->core.width -
-		(lw->label.labelWidth + lw->label.internalWidth);
-	    break;
-	case XtjustifyCenter :
-	    x = (lw->core.width - lw->label.labelWidth) / 2;
-	    break;
-    }
-    if (x < 0) x = 0;
-    y = (lw->core.height - lw->label.labelHeight) / 2
-	+ lw->label.font->max_bounds.ascent;
-
-   XDrawString(lw->core.display, lw->core.window, lw->label.gc, x, y,
-       lw->label.label, strlen(lw->label.label));
+   XDrawString(
+	w->core.display, w->core.window, w->label.gc,
+	(LabelWidget) w->label.labelX, (LabelWidget) w->label.labeY,
+	(LabelWidget) w->label.label, (LabelWidget) w->label.labelLen);
 }
 
 
-static void Reconfigure()
+static void Resize()
 {
 /* !!! */
 }
@@ -280,38 +282,80 @@ void SetValues(old, new)
 {
     LabelWidget oldlw = (LabelWidget) old;
     LabelWidget newlw = (LabelWidget) new;
-    unsigned int len;
-    int	width, height;
-    XtGeometryReturnCode reply;
+    WidgetGeometry	reqGeo;
 
-    if (strcmp(oldlw->label.label, newlw->label.label) != 0
-	  || oldlw->label.font != newlw->label.font) {
+    if (newlw->label.label == NULL) {
+	unsigned int len = strlen(lw->core.name);
+	lw->label.label = XtMalloc(len+1);
+	(void) strcpy(lw->label.label, lw->core.name);
+    }
 
-	len = strlen(newlw->label.label);
-	newlw->label.label = strcpy(
-	    XtMalloc ((unsigned) len + 1), newlw->label.label);
-        XtFree ((char *) oldlw->label.label);
+    if (oldlw->label.label != newlw->label.label)
+	|| (oldlw->label.font != newlw->label.font)
+	|| (oldlw->label.justify != newlw->label.justify) {
 
-	/* obtain text dimensions and calculate the window size */
 	SetTextWidthAndHeight(newlw);
-	width = newlw->label.labelWidth + 2*newlw->label.internalWidth;
-	height = newlw->label.labelHeight + 2*newlw->label.internalHeight;
-	reply = XtMakeResizeRequest(newlw, width, height, &width, &height);
-	if (reply == XtgeometryAlmost) {
-	    reply = XtMakeResizeRequest(newlw, width, height, &width, &height);
+
 	}
-	if (reply == XtgeometryYes) {
-	    newlw->core.width = width;
-	    newlw->core.height = height;
+
+    if (oldlw->label.label != newlw->label.label) {
+        if (newlw->label.label != NULL) {
+	    newlw->label.label = strcpy(
+	        XtMalloc((unsigned) newlw->label.labelLen + 1),
+		newlw->label.label);
+	}
+	XtFree ((char *) oldlw->label.label);
+    }
+
+    /* calculate the window size */
+    if (oldlw->core.width == newlw->core.width)
+	newlw->core.width =
+	    newlw->label.labelWidth +2*newlw->label.internalWidth;
+
+    if (oldlw->core.height == newlw->core.height)
+	newlw->core.height =
+	    newlw->label.labelHeight + 2*newlw->label.internalHeight;
+
+    reqGeo.request_mode = NULL;
+
+    if (oldlw->core.x != newlw->core.x) {
+	reqGeo.request_mode |= CWX;
+	reqGeo.x = newlw->core.x;
+    }
+    if (oldlw->core.y != newlw->core.y) {
+	reqGeo.request_mode |= CWY;
+	reqGeo.y = newlw->core.y;
+    }
+    if (oldlw->core.width != newlw->core.width) {
+	reqGeo.request_mode |= CWWidth;
+	reqGeo.width = newlw->core.width;
+    }
+    if (oldlw->core.height != newlw->core.height) {
+	reqGeo.request_mode |= CWHeight;
+	reqGeo.height = newlw->core.height;
+    }
+    if (oldlw->core.border_width != newlw->core.border_width) {
+	reqGeo.request_mode |= CWBorderWidth;
+	reqGeo.border_width = newlw->core.border_width;
+    }
+
+    if (reqGeo.request_mode != NULL) {
+	if (XtMakeGeometryRequest(newlw, reqGeo, NULL) != XtgeometryNo) {
+	    newlw->core.x = oldlw->core.x;
+	    newlw->core.y = oldlw->core.y;
+	    newlw->core.width = oldlw->core.width;
+	    newlw->core.height = oldlw->core.height;
+	    newlw->core.border_width = oldlw->core.border_width;
 	}
     }
 
     if (oldlw->label.foreground != newlw->label.foreground
-    	|| oldlw->core.background_pixel != newlw->core.background_pixel
 	|| oldlw->label.font->fid != newlw->label.font->fid) {
 
+	XtDestroyGC(oldlw->label.gc);
 	GetGC(newlw);
     }
+
     XClearWindow(oldlw->core.display, oldlw->core.window);
     *oldlw = *newlw;
     Redisplay(oldlw);
