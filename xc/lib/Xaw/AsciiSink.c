@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.42 89/09/13 14:41:48 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.43 89/09/13 15:06:47 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -490,8 +490,9 @@ Widget request, new;
     sink->ascii_sink.invgc = XtGetGC(new, valuemask, &values);
     
     values.function = GXxor;
-    values.background = sink->text_sink.background;
-    values.foreground ^= sink->text_sink.foreground;
+    values.background = (unsigned long) 0L;	/* (pix ^ 0) = pix */
+    values.foreground = (sink->text_sink.background ^ 
+			 sink->text_sink.foreground);
     valuemask |= GCFunction;
     
     sink->ascii_sink.xorgc = XtGetGC(new, valuemask, &values);
