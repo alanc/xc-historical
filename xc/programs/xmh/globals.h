@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.15 89/05/04 18:19:16 converse Exp $
+ *  $XConsortium: globals.h,v 2.16 89/05/11 19:26:52 converse Exp $
  */
 
 /*
@@ -94,3 +94,9 @@ ext Dimension	rootheight;
 
 ext Pixmap	NoMailPixmap;	/* Icon pixmap if no new mail. */
 ext Pixmap	NewMailPixmap;	/* Icon pixmap if new mail. */
+
+ext struct _LastInput {
+    Window win;
+    int x;
+    int y;
+} lastInput;
