@@ -3,7 +3,7 @@
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * $XConsortium: xload.c,v 1.31 91/01/22 18:05:46 gildea Exp $
+ * $XConsortium: xload.c,v 1.32 91/02/17 16:05:41 dave Exp $
  */
 
 #include <stdio.h> 
@@ -31,6 +31,7 @@ static void quit();
 
 typedef struct _XLoadResources {
   Boolean show_label;
+  Boolean use_lights;
 } XLoadResources;
 
 /*
@@ -45,6 +46,7 @@ static XrmOptionDescRec options[] = {
  {"-highlight",		"*load.highlight",	XrmoptionSepArg,	NULL},
  {"-label",		"*label.label",		XrmoptionSepArg,	NULL},
  {"-nolabel",		"*showLabel",	        XrmoptionNoArg,       "False"},
+ {"-lights",		"*useLights",		XrmoptionNoArg,	      "True"},
  {"-jumpscroll",	"*load.jumpScroll",	XrmoptionSepArg,	NULL},
 };
 
@@ -58,9 +60,13 @@ static XrmOptionDescRec options[] = {
 static XtResource my_resources[] = {
   {"showLabel", XtCBoolean, XtRBoolean, sizeof(Boolean),
      Offset(show_label), XtRImmediate, (caddr_t) TRUE},
+  {"useLights", XtCBoolean, XtRBoolean, sizeof(Boolean),
+    Offset(use_lights), XtRImmediate, (caddr_t) FALSE},
 };
 
 #undef Offset
+
+static XLoadResources resources;
 
 static XtActionsRec xload_actions[] = {
     { "quit",	quit },
@@ -102,6 +108,10 @@ void usage()
     exit(1);
 }
 
+static XtAppContext app_con;
+static int	    light_update = 10 * 1000;
+static void	    SetLights();
+
 void main(argc, argv)
     int argc;
     char **argv;
@@ -110,8 +120,6 @@ void main(argc, argv)
     Widget toplevel, load, pane, label_wid, load_parent;
     Arg args[1];
     Pixmap icon_pixmap = None;
-    XLoadResources resources;
-    XtAppContext app_con;
 
     ProgramName = argv[0];
 
@@ -129,59 +137,128 @@ void main(argc, argv)
 			      NULL, (Cardinal) 0);
     if (argc != 1) usage();
     
-    /*
-     * This is a hack so that f.delete will do something useful in this
-     * single-window application.
-     */
-    XtAppAddActions (app_con, xload_actions, XtNumber(xload_actions));
-    XtOverrideTranslations(toplevel,
-		    XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
+    if (resources.use_lights)
+    {
+	char	    name[1024];
+	XrmString   type;
+	XrmValue    db_value;
+	XrmValue    int_value;
 
-    XtSetArg (args[0], XtNiconPixmap, &icon_pixmap);
-    XtGetValues(toplevel, args, ONE);
-    if (icon_pixmap == None) {
-	XtSetArg(args[0], XtNiconPixmap, 
-		 XCreateBitmapFromData(XtDisplay(toplevel),
-				       XtScreen(toplevel)->root,
-				       (char *)xload_bits,
-				       xload_width, xload_height));
-	XtSetValues (toplevel, args, ONE);
-    }
-
-    if (resources.show_label) {
-      pane = XtCreateManagedWidget ("paned", panedWidgetClass,
-				    toplevel, NULL, ZERO);
-
-      label_wid = XtCreateManagedWidget ("label", labelWidgetClass,
-					 pane, NULL, ZERO);
-      
-      XtSetArg (args[0], XtNlabel, &label);
-      XtGetValues(label_wid, args, ONE);
-      
-      if ( strcmp("label", label) == 0 ) {
-	(void) XmuGetHostname (host, 255);
-	XtSetArg (args[0], XtNlabel, host);
-	XtSetValues (label_wid, args, ONE);
-      }
-
-      load_parent = pane;
+	sprintf (name, "%s.paned.load.update", XtName(toplevel));
+	XrmGetResource (XtScreenDatabase(XtScreen(toplevel)),
+			name,
+			"XLoad.Paned.StripChart.Interval",
+			&type, &db_value);
+	if (type)
+	{
+	    XtConvert(toplevel, type, &db_value, XtRInt, &int_value);
+	    light_update = *((int *) int_value.addr) * 1000;
+	}
+	ClearLights (XtDisplay (toplevel));
+	SetLights ((XtPointer) toplevel, (XtIntervalId *) 0);
     }
     else
-      load_parent = toplevel;
-
-    load = XtCreateManagedWidget ("load", stripChartWidgetClass,
-				  load_parent, NULL, ZERO);    
-
-    XtAddCallback(load, XtNgetValue, GetLoadPoint, NULL);
-
-    XtRealizeWidget (toplevel);
-    wm_delete_window = XInternAtom (XtDisplay(toplevel), "WM_DELETE_WINDOW",
-                                    False);
-    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
-                            &wm_delete_window, 1);
+    {
+    	/*
+     	 * This is a hack so that f.delete will do something useful in this
+     	 * single-window application.
+     	 */
+    	XtAppAddActions (app_con, xload_actions, XtNumber(xload_actions));
+    	XtOverrideTranslations(toplevel,
+		    	XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
+    
+    	XtSetArg (args[0], XtNiconPixmap, &icon_pixmap);
+    	XtGetValues(toplevel, args, ONE);
+    	if (icon_pixmap == None) {
+	    XtSetArg(args[0], XtNiconPixmap, 
+		     XCreateBitmapFromData(XtDisplay(toplevel),
+				       	   XtScreen(toplevel)->root,
+				       	   (char *)xload_bits,
+				       	   xload_width, xload_height));
+	    XtSetValues (toplevel, args, ONE);
+    	}
+    
+    	if (resources.show_label) {
+      	  pane = XtCreateManagedWidget ("paned", panedWidgetClass,
+				    	toplevel, NULL, ZERO);
+    
+      	  label_wid = XtCreateManagedWidget ("label", labelWidgetClass,
+					     pane, NULL, ZERO);
+      	  
+      	  XtSetArg (args[0], XtNlabel, &label);
+      	  XtGetValues(label_wid, args, ONE);
+      	  
+      	  if ( strcmp("label", label) == 0 ) {
+	    (void) XmuGetHostname (host, 255);
+	    XtSetArg (args[0], XtNlabel, host);
+	    XtSetValues (label_wid, args, ONE);
+      	  }
+    
+      	  load_parent = pane;
+    	}
+    	else
+      	  load_parent = toplevel;
+    
+    	load = XtCreateManagedWidget ("load", stripChartWidgetClass,
+				      load_parent, NULL, ZERO);    
+    
+    	XtAddCallback(load, XtNgetValue, GetLoadPoint, NULL);
+    
+    	XtRealizeWidget (toplevel);
+    	wm_delete_window = XInternAtom (XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				    	False);
+    	(void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+			    	&wm_delete_window, 1);
+    }
     XtAppMainLoop(app_con);
 }
 
+static unsigned long	current_leds;
+
+static void;
+ClearLights (dpy)
+    Display *dpy;
+{
+    XKeyboardControl	cntrl;
+
+    cntrl.led_mode = LedModeOff;
+    XChangeKeyboardControl (dpy, KBLedMode, &cntrl);
+    current_leds = 0;
+}
+
+static void
+SetLights (data, timer)
+    XtPointer	    data;
+    XtIntervalId    *timer;
+{
+    Widget		toplevel;
+    Display		*dpy;
+    double		value;
+    unsigned long	new_leds, change, bit;
+    int			i;
+    XKeyboardControl	cntrl;
+
+    toplevel = (Widget) data;
+    dpy = XtDisplay (toplevel);
+    GetLoadPoint (toplevel, (caddr_t) 0, (caddr_t) &value);
+    new_leds = (1 << (int) (value + 0.1)) - 1;
+    change = new_leds ^ current_leds;
+    i = 1;
+    bit = 1;
+    while (current_leds != new_leds)
+    {
+	if (change & bit)
+	{
+	    cntrl.led = i;
+	    cntrl.led_mode = new_leds & bit ? LedModeOn : LedModeOff;
+	    XChangeKeyboardControl (dpy, KBLed|KBLedMode, &cntrl);
+	    current_leds ^= bit;
+	}
+	i++;
+	bit <<= 1;
+    }
+    XtAppAddTimeOut (app_con, light_update, SetLights, data);
+}
 
 static void quit (w, event, params, num_params)
     Widget w;
@@ -194,6 +271,8 @@ static void quit (w, event, params, num_params)
         XBell (XtDisplay(w), 0);
         return;
     }
+    if (resources.use_lights)
+	ClearLights (XtDisplay (w));
     XCloseDisplay (XtDisplay(w));
     exit (0);
 }
