@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.17 94/02/03 10:07:09 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.18 94/02/03 10:35:46 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -241,6 +241,9 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     tmpName.name = lowerName;
     tmpName.length = namelen;
     tmpName.ndashes = FontFileCountDashes (lowerName, namelen);
+    if ((entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName))
+	&& entry->type == FONT_ENTRY_BITMAP)
+	goto skip_to_bitmapped_font;
     /* Match XLFD patterns */
     ranges = FontParseRanges(lowerName, &nranges);
 
@@ -385,6 +388,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     }
     if ((!entry || entry->type != FONT_ENTRY_ALIAS) && ranges)
 	xfree(ranges);
+ skip_to_bitmapped_font:
     if (entry)
     {
 	int len;
