@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.2 89/08/28 14:42:59 rws Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.3 89/08/29 15:25:17 keith Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -44,14 +44,13 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int nlwidth;
     int rop = pGC->alu;
     unsigned long pixel = pGC->fgPixel;
-#if PPW == 4
-    register char *addrb;
-#else
+    unsigned long planemask = PFILL(pGC->planemask);
     register int *addr;
     unsigned long mask;
-#endif
     int	x1, x2, y1, y2;
 
+    if (!planemask)
+	return;
     if ((mode == CoordModePrevious) && (npt > 1))
     {
 	for (ppt = pptInit + 1, i = npt - 1; --i >= 0; ppt++)
@@ -74,58 +73,65 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind);
     }
 #if PPW == 4
-    if ((rop == GXcopy) && !(nlwidth & (nlwidth - 1)))
+    if ((rop == GXcopy) && ((planemask & PMSK) == PMSK))
     {
-	nlwidth = ffs(nlwidth) - 1;
-	for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
-	     --nbox >= 0;
-	     pbox++)
+	addr = addrl;
+	if (!(nlwidth & (nlwidth - 1)))
 	{
-	    x1 = pbox->x1;
-	    x2 = pbox->x2;
-	    y1 = pbox->y1;
-	    y2 = pbox->y2;
-	    for (ppt = pptInit, i = npt; --i >= 0; ppt++)
+	    nlwidth = ffs(nlwidth) - 1;
+	    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
+		 --nbox >= 0;
+		 pbox++)
 	    {
-		x = ppt->x + pDrawable->x;
-		y = ppt->y + pDrawable->y;
-		if ((x >= x1) && (x < x2) &&
-		    (y >= y1) && (y < y2))
+		for (ppt = pptInit, i = npt; --i >= 0; ppt++)
 		{
-		    addrb = (char *)(addrl) + (y << nlwidth) + x;
-		    *addrb = pixel;
+		    x = ppt->x + pDrawable->x;
+		    y = ppt->y + pDrawable->y;
+		    if ((x >= pbox->x1) && (x < pbox->x2) &&
+			(y >= pbox->y1) && (y < pbox->y2))
+		    {
+			*((char *)(addr) + (y << nlwidth) + x) = pixel;
+		    }
+		}
+	    }
+	}
+	else
+	{
+	    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
+		 --nbox >= 0;
+		 pbox++)
+	    {
+		for (ppt = pptInit, i = npt; --i >= 0; ppt++)
+		{
+		    x = ppt->x + pDrawable->x;
+		    y = ppt->y + pDrawable->y;
+		    if ((x >= pbox->x1) && (x < pbox->x2) &&
+			(y >= pbox->y1) && (y < pbox->y2))
+		    {
+			*((char *)(addr) + (y * nlwidth) + x) = pixel;
+		    }
 		}
 	    }
 	}
 	return;
     }
-#else
+#endif
     nlwidth >>= 2;
     pixel = PFILL(pixel);
-#endif
     for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
 	 --nbox >= 0;
 	 pbox++)
     {
-	x1 = pbox->x1;
-	x2 = pbox->x2;
-	y1 = pbox->y1;
-	y2 = pbox->y2;
 	for (ppt = pptInit, i = npt; --i >= 0; ppt++)
 	{
 	    x = ppt->x + pDrawable->x;
 	    y = ppt->y + pDrawable->y;
-	    if ((x >= x1) && (x < x2) &&
-		(y >= y1) && (y < y2))
+	    if ((x >= pbox->x1) && (x < pbox->x2) &&
+		(y >= pbox->y1) && (y < pbox->y2))
 	    {
-#if PPW == 4
-		addrb = (char *)(addrl) + (y * nlwidth) + x;
-	    	*addrb = DoRop(rop, pixel, *addrb);
-#else
 		addr = addrl + (y * nlwidth) + (x >> PWSH);
-		mask = cfbmask[x & PIM];
+		mask = cfbmask[x & PIM] & planemask;
 		*addr = (*addr & ~mask) | (DoRop(rop, pixel, *addr) & mask);
-#endif
 	    }
 	}
     }
