@@ -1,4 +1,4 @@
-/* $XConsortium: xpr.c,v 1.50 91/01/10 10:59:48 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.51 91/05/04 22:40:50 rws Exp $ */
 
 /*
  * XPR - process xwd(1) files for the LN03 or LA100 printer
@@ -682,7 +682,7 @@ convert_data(win, data, plane, gray, colors, flags)
     XColor *colors;
     int flags;
 {
-    XImage in_image, out_image;
+    register XImage *in_image, *out_image;
     register int x, y;
 
     if ((win->pixmap_format == XYPixmap) && (plane >= 0)) {
@@ -694,58 +694,95 @@ convert_data(win, data, plane, gray, colors, flags)
     }
 
     /* initialize the input image */
-    in_image.width = (int) win->pixmap_width;
-    in_image.height = (int) win->pixmap_height;
-    in_image.xoffset = (int) win->xoffset;
-    in_image.format = (int) win->pixmap_format;
-    in_image.byte_order = (int) win->byte_order;
-    in_image.bitmap_unit = (int) win->bitmap_unit;
-    in_image.bitmap_bit_order = (int) win->bitmap_bit_order;
-    in_image.bitmap_pad = (int) win->bitmap_pad;
-    in_image.depth = (int) win->pixmap_depth;
-    in_image.bits_per_pixel = (int) win->bits_per_pixel;
-    in_image.bytes_per_line = (int) win->bytes_per_line;
-    in_image.red_mask = win->red_mask;
-    in_image.green_mask = win->green_mask;
-    in_image.blue_mask = win->blue_mask;
-    in_image.obdata = NULL;
-    in_image.data = data;
-    _XInitImageFuncPtrs(&in_image);
-    out_image.width = (int) win->pixmap_width;
-    out_image.height = (int) win->pixmap_height;
-    if ((flags & F_GRAY) && (in_image.depth > 1) && (plane < 0)) {
-	out_image.width *= gray->sizeX;
-	out_image.height *= gray->sizeY;
+
+    /* This is a crock.  Xlib does not provide a way to create an
+     * arbitrary image and get the internal image functions correctly
+     * initialized.  So, we cheat.
+     */
+    {
+	Display fakedpy;
+	ScreenFormat fakefmt;
+
+	fakedpy.byte_order = (int) win->byte_order;
+	fakedpy.bitmap_unit = (int) win->bitmap_unit;
+	fakedpy.bitmap_bit_order = (int) win->bitmap_bit_order;
+	fakedpy.pixmap_format = &fakefmt;
+	fakedpy.nformats = 1;
+	fakefmt.depth = (int) win->pixmap_depth;
+	fakefmt.bits_per_pixel = (int) win->bits_per_pixel;
+
+	in_image = XCreateImage(&fakedpy, NULL,
+				(int) win->pixmap_depth,
+				(int) win->pixmap_format,
+				(int) win->xoffset, data,
+				(int) win->pixmap_width,
+				(int) win->pixmap_height,
+				(int) win->bitmap_pad,
+				(int) win->bytes_per_line);
+    }
+
+    in_image->red_mask = win->red_mask;
+    in_image->green_mask = win->green_mask;
+    in_image->blue_mask = win->blue_mask;
+    in_image->obdata = NULL;
+
+    if ((flags & F_GRAY) && (in_image->depth > 1) && (plane < 0)) {
 	win->pixmap_width *= gray->sizeX;
 	win->pixmap_height *= gray->sizeY;
     }
-    out_image.xoffset = win->xoffset = 0;
-    out_image.format = win->pixmap_format = XYBitmap;
-    out_image.byte_order = win->byte_order = LSBFirst;
-    out_image.bitmap_unit = win->bitmap_unit = 8;
-    out_image.bitmap_bit_order = win->bitmap_bit_order = LSBFirst;
-    out_image.bitmap_pad = win->bitmap_pad = 8;
-    out_image.depth = win->pixmap_depth = 1;
-    out_image.bits_per_pixel = win->bits_per_pixel = 1;
-    out_image.bytes_per_line = win->bytes_per_line =
-		(out_image.width + 7) >> 3;
-    out_image.red_mask = 0;
-    out_image.green_mask = 0;
-    out_image.blue_mask = 0;
-    out_image.obdata = NULL;
-    out_image.data = malloc((unsigned)out_image.bytes_per_line *
-				      out_image.height);
-    _XInitImageFuncPtrs(&out_image);
-    if ((in_image.depth > 1) && (plane > 0)) {
-	for (y = 0; y < in_image.height; y++)
-	    for (x = 0; x < in_image.width; x++)
-		XPutPixel(&out_image, x, y,
-			  (XGetPixel(&in_image, x, y) >> plane) & 1);
+    win->xoffset = 0;
+    win->pixmap_format = XYBitmap;
+    win->byte_order = LSBFirst;
+    win->bitmap_unit = 8;
+    win->bitmap_bit_order = LSBFirst;
+    win->bitmap_pad = 8;
+    win->pixmap_depth = 1;
+    win->bits_per_pixel = 1;
+    win->bytes_per_line = (win->pixmap_width + 7) >> 3;
+
+    /* This is a crock.  Xlib does not provide a way to create an
+     * arbitrary image and get the internal image functions correctly
+     * initialized.  So, we cheat.
+     */
+    {
+	Display fakedpy;
+	ScreenFormat fakefmt;
+
+	fakedpy.byte_order = (int) win->byte_order;
+	fakedpy.bitmap_unit = (int) win->bitmap_unit;
+	fakedpy.bitmap_bit_order = (int) win->bitmap_bit_order;
+	fakedpy.pixmap_format = &fakefmt;
+	fakedpy.nformats = 1;
+	fakefmt.depth = (int) win->pixmap_depth;
+	fakefmt.bits_per_pixel = (int) win->bits_per_pixel;
+
+	out_image = XCreateImage(&fakedpy, NULL,
+				 (int) win->pixmap_depth,
+				 (int) win->pixmap_format,
+				 (int) win->xoffset, NULL,
+				 (int) win->pixmap_width,
+				 (int) win->pixmap_height,
+				 (int) win->bitmap_pad,
+				 (int) win->bytes_per_line);
+    }
+
+    out_image->red_mask = 0;
+    out_image->green_mask = 0;
+    out_image->blue_mask = 0;
+    out_image->obdata = NULL;
+    out_image->data = malloc((unsigned)out_image->bytes_per_line *
+				      out_image->height);
+
+    if ((in_image->depth > 1) && (plane > 0)) {
+	for (y = 0; y < in_image->height; y++)
+	    for (x = 0; x < in_image->width; x++)
+		XPutPixel(out_image, x, y,
+			  (XGetPixel(in_image, x, y) >> plane) & 1);
     } else if (plane == 0) {
-	for (y = 0; y < in_image.height; y++)
-	    for (x = 0; x < in_image.width; x++)
-		XPutPixel(&out_image, x, y, XGetPixel(&in_image, x, y));
-    } else if ((in_image.depth > 1) &&
+	for (y = 0; y < in_image->height; y++)
+	    for (x = 0; x < in_image->width; x++)
+		XPutPixel(out_image, x, y, XGetPixel(in_image, x, y));
+    } else if ((in_image->depth > 1) &&
 	       ((win->visual_class == TrueColor) ||
 		(win->visual_class == DirectColor))) {
 	XColor color;
@@ -774,10 +811,10 @@ convert_data(win, data, plane, gray, colors, flags)
 	    register int ox, oy;
 	    int ix, iy;
 	    unsigned long bits;
-	    for (y = 0, oy = 0; y < in_image.height; y++, oy += gray->sizeY)
-		for (x = 0, ox = 0; x < in_image.width; x++, ox += gray->sizeX)
+	    for (y = 0, oy = 0; y < in_image->height; y++, oy += gray->sizeY)
+		for (x = 0, ox = 0; x < in_image->width; x++, ox += gray->sizeX)
 		{
-		    color.pixel = XGetPixel(&in_image, x, y);
+		    color.pixel = XGetPixel(in_image, x, y);
 		    color.red = (color.pixel >> rshift) & rmask;
 		    color.green = (color.pixel >> gshift) & gmask;
 		    color.blue = (color.pixel >> bshift) & bmask;
@@ -791,12 +828,12 @@ convert_data(win, data, plane, gray, colors, flags)
 					    (INTENSITYPER(100) + 1)];
 		    for (iy = 0; iy < gray->sizeY; iy++)
 			for (ix = 0; ix < gray->sizeX; ix++, bits >>= 1)
-			    XPutPixel(&out_image, ox + ix, oy + iy, bits);
+			    XPutPixel(out_image, ox + ix, oy + iy, bits);
 		}
 	} else {
-	    for (y = 0; y < in_image.height; y++)
-		for (x = 0; x < in_image.width; x++) {
-		    color.pixel = XGetPixel(&in_image, x, y);
+	    for (y = 0; y < in_image->height; y++)
+		for (x = 0; x < in_image->width; x++) {
+		    color.pixel = XGetPixel(in_image, x, y);
 		    color.red = (color.pixel >> rshift) & rmask;
 		    color.green = (color.pixel >> gshift) & gmask;
 		    color.blue = (color.pixel >> bshift) & bmask;
@@ -805,7 +842,7 @@ convert_data(win, data, plane, gray, colors, flags)
 			color.green = colors[color.green].green;
 			color.blue = colors[color.blue].blue;
 		    }
-		    XPutPixel(&out_image, x, y,
+		    XPutPixel(out_image, x, y,
 			      INTENSITY(&color) > HALFINTENSITY);
 		}
 	}
@@ -824,12 +861,12 @@ convert_data(win, data, plane, gray, colors, flags)
 	    color->pixel = gray->grayscales[(gray->level * INTENSITY(color)) /
 					    (INTENSITYPER(100) + 1)];
 	}
-	for (y = 0, oy = 0; y < in_image.height; y++, oy += gray->sizeY)
-	    for (x = 0, ox = 0; x < in_image.width; x++, ox += gray->sizeX) {
-		bits = colors[XGetPixel(&in_image, x, y)].pixel;
+	for (y = 0, oy = 0; y < in_image->height; y++, oy += gray->sizeY)
+	    for (x = 0, ox = 0; x < in_image->width; x++, ox += gray->sizeX) {
+		bits = colors[XGetPixel(in_image, x, y)].pixel;
 	        for (iy = 0; iy < gray->sizeY; iy++)
 		    for (ix = 0; ix < gray->sizeX; ix++, bits >>= 1)
-			XPutPixel(&out_image, ox + ix, oy + iy, bits);
+			XPutPixel(out_image, ox + ix, oy + iy, bits);
 	    }
     } else {
 	if (win->ncolors == 0) {
@@ -840,13 +877,13 @@ convert_data(win, data, plane, gray, colors, flags)
 	    register XColor *color = &colors[x];
 	    color->pixel = (INTENSITY(color) > HALFINTENSITY);
 	}
-	for (y = 0; y < in_image.height; y++)
-	    for (x = 0; x < in_image.width; x++)
-		XPutPixel(&out_image, x, y,
-			  colors[XGetPixel(&in_image, x, y)].pixel);
+	for (y = 0; y < in_image->height; y++)
+	    for (x = 0; x < in_image->width; x++)
+		XPutPixel(out_image, x, y,
+			  colors[XGetPixel(in_image, x, y)].pixel);
     }
     free(data);
-    return (out_image.data);
+    return (out_image->data);
 }
 
 dump_sixmap(sixmap, iw, ih)
