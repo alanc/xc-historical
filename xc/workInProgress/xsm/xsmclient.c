@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.8 94/02/06 21:13:19 rws Exp $ */
+/* $XConsortium: xsmclient.c,v 1.9 94/02/08 11:48:30 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -15,7 +15,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 ******************************************************************************/
 
 /*
- * Sample client for Pseudo Session Manager.
+ * Sample client for X Session Manager.
  *
  * Written by Ralph Mor, X Consortium.
  *
