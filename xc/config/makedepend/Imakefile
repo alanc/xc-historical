@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.19 93/08/17 22:09:49 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.20 93/09/04 16:09:20 rws Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
@@ -26,7 +26,7 @@ MAIN_DEFINES = $(INC_DEFINES) $(SIGNAL_DEFINES) $(OSUF_DEFINES)
 INCLUDES = -I$(IMAKESRC)
  DEPLIBS =
 
-#ifdef MacIIArchitecture
+#if defined(MacIIArchitecture) || defined(SequentArchitecture)
  XBSDLIB = /**/
 #endif
 

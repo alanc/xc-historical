@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.6 94/01/18 19:21:20 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.7 94/02/04 19:45:50 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -294,6 +294,19 @@ XCOMM $XConsortium: Imake.cf,v 1.6 94/01/18 19:21:20 rws Exp $
 #define mc68000Architecture
 #endif /* __sxg__ */
 
+#if defined(sequent) || defined(_SEQUENT_)
+# define MacroIncludeFile <sequent.cf>
+# define MacroFile sequent.cf
+# ifdef sequent
+#  undef sequent
+#  define Dynix3Architecture
+# endif
+# ifdef _SEQUENT_
+#  undef _SEQUENT_
+#  define DynixPtxArchitecture
+# endif
+# define SequentArchitecture
+#endif
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.cf not configured; guessing at definitions!!!
