@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.16 89/09/08 17:45:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.17 89/09/12 16:49:25 swick Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif /* lint */
 
@@ -401,8 +401,8 @@ void XtCallCallbacks(widget, name, call_data)
     _XtCallCallbacks(callbacks, call_data);
 } /* XtCallCallbacks */
 
-/* ||| What is this doing here? */
-extern XtCallbackStatus XtHasCallbacks(widget, callback_name)
+
+XtCallbackStatus XtHasCallbacks(widget, callback_name)
      Widget		widget;
      String		callback_name;
 {
@@ -414,3 +414,11 @@ extern XtCallbackStatus XtHasCallbacks(widget, callback_name)
     if (*callbacks == NULL) return XtCallbackHasNone;
     return XtCallbackHasSome;
 } /* XtHasCallbacks */
+
+
+void XtCallCallbackList(callbacks, call_data)
+    XtCallbackList callbacks;
+    XtPointer call_data;
+{
+    _XtCallCallbacks((CallbackList*)&callbacks, call_data);
+}
