@@ -1,6 +1,5 @@
-      CCOPTIONS = LibraryCCOptions
-    STD_DEFINES = LibraryDefines
-    CDEBUGFLAGS = LibraryCDebugFlags
+#include <Library.tmpl>
+
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
    CONN_DEFINES = ConnectionFlags
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
