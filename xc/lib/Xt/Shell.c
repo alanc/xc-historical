@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.129 92/09/15 13:54:28 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.130 93/05/21 16:45:31 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1883,28 +1883,54 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
 /* ARGSUSED */
 static Boolean SetValues(old, ref, new, args, num_args)
 	Widget old, ref, new;
-	ArgList args;		/* unused */
-	Cardinal *num_args;	/* unused */
+	ArgList args;
+	Cardinal *num_args;
 {
-	ShellWidget nw = (ShellWidget) new;
-	ShellWidget ow = (ShellWidget) old;
-	Mask mask = 0;
-	XSetWindowAttributes attr;
+	if (XtIsRealized(new)) {
+	    ShellWidget nw = (ShellWidget) new;
+	    ShellWidget ow = (ShellWidget) old;
+	    Mask mask = 0;
+	    XSetWindowAttributes attr;
 
-	if (ow->shell.save_under != nw->shell.save_under) {
-	    mask = CWSaveUnder;
-	    attr.save_under = nw->shell.save_under;
-	}
+	    if (ow->shell.save_under != nw->shell.save_under) {
+		mask = CWSaveUnder;
+		attr.save_under = nw->shell.save_under;
+	    }
 
-	if (ow->shell.override_redirect != nw->shell.override_redirect) {
-	    mask |= CWOverrideRedirect;
-	    attr.override_redirect = nw->shell.override_redirect;
-	}
+	    if (ow->shell.override_redirect != nw->shell.override_redirect) {
+		mask |= CWOverrideRedirect;
+		attr.override_redirect = nw->shell.override_redirect;
+	    }
 
-	if (mask && XtIsRealized(new)) {
-	    XChangeWindowAttributes(XtDisplay(new),XtWindow(new), mask, &attr);
-	    if ((mask & CWOverrideRedirect) && !nw->shell.override_redirect)
-		_popup_set_prop(nw);
+	    if (mask) {
+		XChangeWindowAttributes(XtDisplay(new), XtWindow(new), 
+					mask, &attr);
+		if ((mask & CWOverrideRedirect) && !nw->shell.override_redirect)
+		    _popup_set_prop(nw);
+	    }
+
+	    /* 
+	     * x and y resource values may be invalid in ow...  If
+	     * they are, we're going to break the (unwritten) rule 
+	     * that you should never write in the old widget. But 
+	     * since the old widget has decidedly wrong values in 
+	     * it, we're going to make it tell the truth! This has 
+	     * a "downstream effect that will trigger a geometry 
+	     * request when the new requested x/y values are "different" 
+	     * than the old x/y values.
+	     */
+	    if (! (ow->shell.client_specified & _XtShellPositionValid)) {
+		Cardinal n;
+		void _XtShellGetCoordinates();
+
+		for (n = *num_args; n; n--, args++) {
+		    if (strcmp(XtNx, args->name) == 0) {
+			_XtShellGetCoordinates(ow, &ow->core.x, &ow->core.y);
+		    } else if (strcmp(XtNy, args->name) == 0) {
+			_XtShellGetCoordinates(ow, &ow->core.x, &ow->core.y);
+		    }
+		}
+	    }
 	}
 	return FALSE;
 }
