@@ -12,7 +12,7 @@
 #if HasGcc
 #define BootstrapCFlags   -DmacII
 #endif
-#define StandardDefines    -DmacII -DSYSV
+#define StandardDefines    -DmacII -DSYSV -DMALLOC_0_RETURNS_NULL
 #define StandardCppDefines -DmacII -DSYSV
 #define LnCmd             ln -s
 #define ExecableScripts   NO
@@ -27,7 +27,7 @@
 #define XmacIIServer      XmacII
 #define BuildServer YES
 
-XCOMM platform:  $XConsortium: macII.cf,v 1.20 90/12/26 11:38:43 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.21 91/01/08 09:30:20 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************
