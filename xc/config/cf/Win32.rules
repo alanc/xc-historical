@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.9 93/08/16 11:39:39 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.10 93/08/16 13:30:56 rws Exp $
 
 #define ProgramTargetName(target) target.exe
 
@@ -252,3 +252,8 @@ Avoid.Error $(XVARuse0:/=\):						@@\
 	$(MAKE) $(MFLAGS) flags subname					@@\
 	cd ..								@@\
 <<
+
+#define UnsharedLibReferences(varname,libname,libsource)		@@\
+Concat3(DEP,varname,LIB) = _UseCat($(USRLIBDIR)/,libsource/,libname.lib) @@\
+Concat(varname,LIB) = LoaderLibPrefix _Use(libname.lib,$(Concat3(DEP,varname,LIB))) @@\
+LintLibReferences(varname,libname,libsource)
