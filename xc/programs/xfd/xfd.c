@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.30 91/05/30 17:39:20 gildea Exp $
+ * $XConsortium: xfd.c,v 1.31 91/07/18 14:13:24 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,7 +34,7 @@
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Command.h>
 #include <stdio.h>
-#include "fontgrid.h"
+#include "grid.h"
 
 char *ProgramName;
 

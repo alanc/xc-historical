@@ -1,7 +1,7 @@
 #ifndef _FontGridP_h_
 #define _FontGridP_h_
 
-#include "fontgrid.h"
+#include "grid.h"
 
 typedef struct _FontGridClassPart { int dummy; } FontGridClassPart;
 

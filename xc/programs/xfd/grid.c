@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.26 91/10/21 14:32:21 eswu Exp $
+ * $XConsortium: grid.c,v 1.27 93/07/30 17:58:51 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,7 +28,7 @@
 #include <X11/StringDefs.h>
 #include <X11/Xaw/SimpleP.h>
 #include <X11/Xmu/Converters.h>
-#include "fontgridP.h"
+#include "gridP.h"
 
 
 #define Bell(w) XBell(XtDisplay(w), 50)
