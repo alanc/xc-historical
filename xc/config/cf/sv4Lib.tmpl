@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.tmpl,v 1.2 91/03/23 17:02:35 rws Exp $
+XCOMM $XConsortium: sv4Lib.tmpl,v 1.3 91/05/04 11:44:58 rws Exp $
 
 /*
  * SVR4 shared library template
@@ -42,8 +42,14 @@ PICFLAGS = PositionIndependentCFlags
              XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
 #endif
 #if SharedLibXmu
+/* SVR4 shared libraries are deficient in link semantics */
         DEPXMULIB = /* _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV)) */
-           XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
+       XMULIBONLY = _Use(-lXmu,-L$(XMUSRC) -lXmu)
+           XMULIB = $(XMULIBONLY) -z nodefs
+
+#ifndef XawClientLibs
+#define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
+#endif
 #endif
 #if SharedOldLibX
        DEPOLDXLIB = /* _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.sa.$(SOOLDXREV)) */
