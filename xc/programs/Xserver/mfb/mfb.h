@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.7 89/07/26 12:09:47 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.8 89/07/28 08:28:29 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -124,6 +124,11 @@ extern void mfbResolveColor();
 
 extern void mfbCopyGCDest();
 
+extern void mfbCopyRotatePixmap();
+extern void mfbYRotatePixmap();
+extern void mfbXRotatePixmap();
+extern void mfbPadPixmap();
+
 /*
    private filed of pixmap
    pixmap.devPrivate = (unsigned int *)pointer_to_bits
@@ -148,8 +153,7 @@ typedef struct {
     unsigned char	ropFillArea;	/*  == alu, rop, or ropOpStip */
     unsigned	fExpose:1;		/* callexposure handling ? */
     unsigned	freeCompClip:1;
-    PixmapPtr	pRotatedTile;		/* tile/stipple  rotated to align */
-    PixmapPtr	pRotatedStipple;	/* with window and using offsets */
+    PixmapPtr	pRotatedPixmap;		/* tile/stipple rotated to align */
     RegionPtr	pCompositeClip;		/* free this based on freeCompClip
 					   flag rather than NULLness */
     void 	(* FillArea)();		/* fills regions; look at the code */
