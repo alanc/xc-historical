@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.138 90/03/16 10:44:40 jim Exp $
+ * $XConsortium: events.c,v 1.139 90/03/16 11:16:19 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.138 90/03/16 10:44:40 jim Exp $";
+"$XConsortium: events.c,v 1.139 90/03/16 11:16:19 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -430,9 +430,11 @@ HandleColormapNotify()
 		}
 		Scr->cmapInfo.cmaps->scoreboard[n] = 1;
 	    } else {
-		fprintf (stderr, 
-	 "%s:  client illegally changed colormap (i = %d, j = %d\n", 
-			 ProgramName, i, j);
+		if (j != -1 || cevent->state != ColormapUninstalled) {
+		    fprintf (stderr, 
+			     "%s:  client illegally changed colormap (i = %d, j = %d)\n", 
+			     ProgramName, i, j);
+		} /* else client may have terminated and colormap is now bad */
 		InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
 	    }
 	}
