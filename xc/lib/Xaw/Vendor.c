@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.19 91/05/10 20:50:46 swick Exp $ */
+/* $XConsortium: Vendor.c,v 1.20 91/07/23 16:04:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,7 +41,7 @@ SOFTWARE.
 #include <X11/Vendor.h>
 #include <X11/VendorP.h>
 #include <X11/Xmu/Converters.h>
-
+#include <X11/Xmu/Editres.h>
 
 static XtResource resources[] = {
   {XtNinput, XtCInput, XtRBool, sizeof(Bool),
@@ -130,8 +130,6 @@ static void XawVendorShellClassInitialize()
 static void XawVendorShellInitialize(req, new)
 	Widget req, new;
 {
-    void _XEditResCheckMessages();
-
     XtAddEventHandler(new, (EventMask) 0, TRUE, _XEditResCheckMessages, NULL);
 }
 
