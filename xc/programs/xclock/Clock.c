@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.57 91/03/08 14:07:47 converse Exp $ */
+/* $XConsortium: Clock.c,v 1.58 91/03/14 16:44:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,7 +30,6 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/ClockP.h>
 
-extern long time();
 extern struct tm *localtime();
 static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 static erase_hands(), round();
