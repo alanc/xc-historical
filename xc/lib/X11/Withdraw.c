@@ -51,5 +51,5 @@ Status XWithdrawWindow (dpy, w, screen)
     ev.from_configure = False;
     return (XSendEvent (dpy, root, False,
 			SubstructureRedirectMask|SubstructureNotifyMask,
-			&ev));
+			(XEvent *)&ev));
 }

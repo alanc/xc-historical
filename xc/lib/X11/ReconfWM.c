@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: ReconfWM.c,v 1.9 89/03/23 14:54:17 jim Exp $ */
+/* $XConsortium: ReconfWM.c,v 1.1 89/03/28 18:11:43 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986   */
 
 #define NEED_EVENTS
@@ -120,7 +120,7 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
     ev.detail		= changes->stack_mode;
     return (XSendEvent (dpy, root, False,
 			SubstructureRedirectMask|SubstructureNotifyMask,
-			&ev));
+			(XEvent *)&ev));
 }
 
 
