@@ -108,7 +108,6 @@ static KbPrivRec  	sysKbPriv = {
  *
  *-----------------------------------------------------------------------
  */
-#define	TR_UNDEFINED (TR_NONE-1)
 int
 sunKbdProc (pKeyboard, what)
     DevicePtr	  pKeyboard;	/* Keyboard to manipulate */
@@ -116,7 +115,10 @@ sunKbdProc (pKeyboard, what)
 {
     KbPrivPtr	  pPriv;
     register int  kbdFd;
+#ifdef	SUN_WINDOWS
+#define	TR_UNDEFINED (TR_NONE-1)
     static int	  deviceOffKbdState = TR_UNDEFINED;
+#endif	SUN_WINDOWS
 
     switch (what) {
 	case DEVICE_INIT:
@@ -523,6 +525,8 @@ sunKbdProcessEvent (pKeyboard, fe)
     if (keyModifiers & LockMask) {
 	if (xE.u.u.type == KeyRelease)
 	    return; /* this assumes autorepeat is not desired */
+	/* This assumes pKeyboard points to a DeviceRec whose first
+	   element is a DeviceIntRec - a bit tacky */
 	if (((DeviceIntPtr)pKeyboard)->down[key >> 3] & (1 << (key & 7)))
 	    xE.u.u.type = KeyRelease;
     }
