@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.97 89/10/03 12:41:15 jim Exp $
+ * $XConsortium: charproc.c,v 1.98 89/10/17 17:04:20 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.97 89/10/03 12:41:15 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.98 89/10/17 17:04:20 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2020,7 +2020,6 @@ XSetWindowAttributes *values;
 	unsigned int width, height;
 	register TScreen *screen = &term->screen;
 	register int i, j;
-	XPoint	*vp;
 	int xpos, ypos, pr;
 	extern char *malloc();
 	XGCValues		xgcv;
@@ -2034,22 +2033,19 @@ XSetWindowAttributes *values;
 
 	screen->fnt_norm = screen->fnt_bold = NULL;
 	if (!try_new_font (screen, term->misc.f_n, term->misc.f_b, False)) {
-	    fprintf (stderr, "%s:  unable to use font%s \"%s\"",
-		     xterm_name, term->misc.f_b ? "s" : "", 
-		     term->misc.f_n);
-	    if (term->misc.f_b) {
-		fprintf (stderr, " and \"%s\"\n", term->misc.f_b);
-	    } else {
-		fprintf (stderr, "\n");
+	    if (XmuCompareISOLatin1(term->misc.f_n, "fixed") != 0) {
+		fprintf (stderr, 
+		     "%s:  unable to open font \"%s\", trying \"fixed\"\n",
+		     xterm_name, term->misc.f_n);
+		(void) try_new_font (screen, "fixed", NULL, False);
 	    }
-	    screen->fnt_norm =
-		  XQueryFont(screen->display,
-			     DefaultGC(screen->display,
-				       DefaultScreen(screen->display)
-				       )->gid
-			     );
-	    screen->enbolden = TRUE;
-	    update_font_info (screen);
+	}
+
+	/* really screwed if we couldn't open default font */
+	if (!screen->fnt_norm) {
+	    fprintf (stderr, "%s:  unable to locate a suitable font\n",
+		     xterm_name);
+	    Exit (1);
 	}
 
 	/* making cursor */
@@ -2235,12 +2231,7 @@ XSetWindowAttributes *values;
 	screen->do_wrap = NULL;
 	screen->scrolls = screen->incopy = 0;
 /*	free((char *)fInfo);	*/
-	vp = &VTbox[1];
-	(vp++)->x = FontWidth(screen) - 1;
-	(vp++)->y = FontHeight(screen) - 1;
-	(vp++)->x = -(FontWidth(screen) - 1);
-	vp->y = -(FontHeight(screen) - 1);
-	screen->box = VTbox;
+	set_vt_box (screen);
 
 	screen->savedlines = 0;
 
@@ -2605,6 +2596,8 @@ static void HandleIgnore(w, event, params, param_count)
     (void) SendMousePosition(w, event);
 }
 
+
+
 int try_new_font (screen, nfontname, bfontname, doresize)
     TScreen *screen;
     char *nfontname, *bfontname;
@@ -2619,18 +2612,19 @@ int try_new_font (screen, nfontname, bfontname, doresize)
     if (!nfontname) return 0;
 
     if (!(nfs = XLoadQueryFont (screen->display, nfontname))) goto bad;
+
     if (!(bfontname && 
-	  (bfs = XLoadQueryFont (screen->display, nfontname))))
+	  (bfs = XLoadQueryFont (screen->display, bfontname))))
       bfs = nfs;
 
     mask = (GCFont | GCForeground | GCBackground | GCGraphicsExposures |
 	    GCFunction);
 
-    xgcv.graphics_exposures = TRUE;	/* default */
-    xgcv.function = GXcopy;
     xgcv.font = nfs->fid;
     xgcv.foreground = screen->foreground;
     xgcv.background = term->core.background_pixel;
+    xgcv.graphics_exposures = TRUE;	/* default */
+    xgcv.function = GXcopy;
 
     new_normalGC = XtGetGC((Widget)term, mask, &xgcv);
     if (!new_normalGC) goto bad;
@@ -2696,9 +2690,22 @@ update_font_info (screen, doresize)
     TScreen *screen;
     Bool doresize;
 {
+    int i, j, width, height, scrollbar_width;
+
     screen->fullVwin.f_width = screen->fnt_norm->max_bounds.width;
     screen->fullVwin.f_height = (screen->fnt_norm->ascent +
 				 screen->fnt_norm->descent);
+    scrollbar_width = (term->misc.scrollbar ? 
+		       screen->scrollWidget->core.width : 0);
+    i = 2 * screen->border + scrollbar_width;
+    j = 2 * screen->border;
+    width = screen->max_col * screen->fullVwin.f_width + i;
+    height = screen->max_row * screen->fullVwin.f_height + j;
+    screen->fullVwin.fullwidth = width;
+    screen->fullVwin.fullheight = height;
+    screen->fullVwin.width = width - i;
+    screen->fullVwin.height = height - j;
+
     if (doresize) {
 	if (VWindow(screen)) {
 	    XClearWindow (screen->display, VWindow(screen));
@@ -2707,4 +2714,18 @@ update_font_info (screen, doresize)
 	VTConfigure (term);
 	Redraw ();
     }
+    set_vt_box (screen);
+}
+
+set_vt_box (screen)
+	TScreen *screen;
+{
+	XPoint	*vp;
+
+	vp = &VTbox[1];
+	(vp++)->x = FontWidth(screen) - 1;
+	(vp++)->y = FontHeight(screen) - 1;
+	(vp++)->x = -(FontWidth(screen) - 1);
+	vp->y = -(FontHeight(screen) - 1);
+	screen->box = VTbox;
 }
