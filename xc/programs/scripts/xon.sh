@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XConsortium: xon.sh,v 1.6 92/01/24 16:48:29 rws Exp $
+# $XConsortium: xon.sh,v 1.7 92/07/30 18:10:47 rws Exp $
 # start up xterm (or any other X command) on the specified host
 # Usage: xon host [arguments] [command]
 case $# in
@@ -13,9 +13,9 @@ target=$1
 shift
 label=$target
 resource=xterm-$label
-if [ -x /usr/bin/remsh ]; then
+if [ -f /usr/bin/remsh ]; then
     rsh=/usr/bin/remsh
-elif [ -x /usr/bin/rcmd ]; then
+elif [ -f /usr/bin/rcmd ]; then
     rsh=/usr/bin/rcmd
 else
     rsh=rsh
