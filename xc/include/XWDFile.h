@@ -1,4 +1,4 @@
-/* $XConsortium: XWDFile.h,v 1.13 91/01/06 11:59:54 rws Exp $ */
+/* $XConsortium: XWDFile.h,v 1.14 91/01/06 12:18:26 rws Exp $ */
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
 /*
@@ -48,11 +48,7 @@ without express or implied warranty.
 #include <X11/Xmd.h>
 
 #define XWD_FILE_VERSION 7
-#ifdef WORD64
-#define sz_XWDheader 104
-#else
 #define sz_XWDheader 100
-#endif
 #define sz_XWDColor 12
 
 typedef CARD32 xwdval;		/* for old broken programs */
@@ -83,9 +79,6 @@ typedef struct _xwd_file_header {
 	CARD32 window_x B32;		/* Window upper left X coordinate */
 	CARD32 window_y B32;		/* Window upper left Y coordinate */
 	CARD32 window_bdrwidth B32;	/* Window border width */
-#ifdef WORD64
-	CARD32 header_end B32;		/* Pad to fill out word */
-#endif
 } XWDFileHeader;
 
 typedef struct {
