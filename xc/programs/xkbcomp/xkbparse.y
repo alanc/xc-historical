@@ -1,4 +1,4 @@
-/* $XConsortium: xkbparse.y,v 1.1 94/04/02 17:09:31 erik Exp $ */
+/* $XConsortium: xkbparse.y,v 1.4 93/09/28 20:16:45 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -266,9 +266,9 @@ InterpretDecl	:	INTERPRET InterpretMatch OBRACE
 		;
 
 InterpretMatch	:	KeySym PLUS Expr	
-			{ $$= InterpCreate($1,$3); }
+			{ $$= InterpCreate((KeySym)$1,$3); }
 		|	KeySym			
-			{ $$= InterpCreate($1,NULL); }
+			{ $$= InterpCreate((KeySym)$1,NULL); }
 		;
 
 VarDeclList	:	VarDeclList VarDecl
@@ -466,9 +466,9 @@ OptKeySymList	:	KeySymList			{ $$= $1; }
 		;
 
 KeySymList	:	KeySymList COMMA KeySym
-			{ $$= AppendKeysymList($1,$3); }
+			{ $$= AppendKeysymList($1,(KeySym)$3); }
 		|	KeySym
-			{ $$= CreateKeysymList($1); }
+			{ $$= CreateKeysymList((KeySym)$1); }
 		;
 
 KeySym		:	IDENT
