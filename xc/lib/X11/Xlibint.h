@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.66 89/05/08 15:57:39 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.67 89/06/07 13:44:00 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -303,7 +303,7 @@ extern void Data();
  */
 #define CI_GET_CHAR_INFO_2D(fs,row,col,def,cs) \
 { \
-    cs = NULL; \
+    cs = def; \
     if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
 	col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
 	if (fs->per_char == NULL) { \
@@ -313,7 +313,7 @@ extern void Data();
 			        (fs->max_char_or_byte2 - \
 				 fs->min_char_or_byte2 + 1)) + \
 			       (col - fs->min_char_or_byte2)]; \
-	    if (CI_NONEXISTCHAR(cs)) cs = NULL; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
         } \
     } \
 }
