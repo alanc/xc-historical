@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.204 93/10/21 10:12:56 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.205 93/10/26 13:10:48 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -59,7 +59,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.204 93/10/21 10:12:56 rws Exp $
 #define BuildDIS		NO
 #endif
 #ifndef BuildXIE
-#define BuildXIE		!BuildDIS
+#define BuildXIE		YES
 #endif
 #ifndef BuildXKB
 #define BuildXKB		NO
@@ -178,11 +178,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.204 93/10/21 10:12:56 rws Exp $
 #if BuildXIE
 #define XieDefines -DXIE
 #else
-#if BuildDIS
-#define XieDefines -DXIE -DXIE_DIS
-#else
 #define XieDefines /**/
-#endif
 #endif
 #endif
 #ifndef XkbDefines
