@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: globals.h,v 2.10 88/02/23 20:06:29 swick Exp $";
+ *	rcs_id[] = "$Header: globals.h,v 2.11 88/05/12 16:53:44 swick Locked $";
  */
 
 /*
@@ -34,46 +34,47 @@
 #endif
 ext int *dptr;
 
-ext Boolean	debug;
-
 ext Display	*theDisplay;	/* Display variable. */
 ext int		theScreen;	/* Which screen we're using. */
 ext Widget	toplevel;	/* The top level widget (A hack %%%). */
 
 ext char	*progName;	/* Program name. */
 ext char	*homeDir;	/* User's home directory. */
-ext char	*mailDir;	/* mh's mail directory. */
-ext char	*tempDir;	/* Directory to use for temporary files. */
 ext char	*displayName;	/* Name of the X display. */
-ext char	*defGeometry;	/* Default geometry to use for things. */
-ext char	*defTocGeometry;
-ext char	*defViewGeometry;
-ext char	*defCompGeometry;
-ext char	*defPickGeometry;
-ext char	*initialFolderName; /* Initial folder to use. */
-ext char	*initialIncFile;	/* -file for inc on initial folder */
-ext char	*draftsFolderName;	/* Folder for drafts. */
+
+ext struct _resources {
+    Boolean	debug;
+    char	*mailDir;		/* mh's mail directory. */
+    char	*tempDir;		/* Directory for temporary files. */
+    char	*defMhPath;		/* Path for mh commands. */
+    char	*initialFolderName;	/* Initial folder to use. */
+    char	*initialIncFile;	/* -file for inc on initial folder */
+    char	*defInsertFilter;	/* Insert message filter command */
+    char	*draftsFolderName;	/* Folder for drafts. */
+    int		defSendLineWidth;	/* How long to break lines on send. */
+    int		defBreakSendLineWidth;	/* Minimum length of a line before
+					   we'll break it. */
+    char	*defPrintCommand;	/* Printing command. */
+    int		defTocWidth;	/* How many characters wide to use in tocs */
+    Boolean	SkipDeleted;		/* If true, skip over deleted msgs. */
+    Boolean	SkipMoved;		/* If true, skip over moved msgs. */
+    Boolean	SkipCopied;		/* If true, skip over copied msgs. */
+    Boolean	defHideBoringHeaders;
+    char	*defGeometry;	/* Default geometry to use for things. */
+    char	*defTocGeometry;
+    char	*defViewGeometry;
+    char	*defCompGeometry;
+    char	*defPickGeometry;
+    int		defTocPercentage;
+    Boolean	defNewMailCheck;	/* Whether to check for new mail. */
+    Boolean	defMakeCheckpoints; /* Whether to create checkpoint files. */
+    int		mailWaitingFlag;	/* If true, change icon on new mail */
+} app_resources;
+
 ext char	*draftFile;		/* Filename of draft. */
 ext char	*xmhDraftFile;		/* Filename for sending. */
-ext char	*defMhPath;		/* Path for mh commands. */
-ext int		defSendLineWidth;	/* How long to break lines on send. */
-ext int		defBreakSendLineWidth;	/* Minimum length of a line before
-					   we'll break it. */
-ext char	*defInsertFilter; /* Insert message filter command */
-ext char	*defPrintCommand; /* Printing command. */
 
-ext int		defTocWidth;	/* How many characters wide to use in tocs */
-ext int		mailWaitingFlag;	/* If true, change icon on new mail */
 
-ext Boolean	SkipDeleted;		/* If true, skip over deleted msgs. */
-ext Boolean	SkipMoved;		/* If true, skip over moved msgs. */
-ext Boolean	SkipCopied;		/* If true, skip over copied msgs. */
-
-ext Boolean	defHideBoringHeaders;
-
-ext int		defTocPercentage;
-ext Boolean	defNewMailCheck; /* Whether to check for new mail. */
-ext Boolean	defMakeCheckpoints; /* Whether to create checkpoint files. */
 
 ext Toc		*folderList;	/* Array of folders. */
 ext int		numFolders;	/* Number of entries in above array. */
