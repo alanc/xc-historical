@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.32 87/07/31 16:20:15 johnsson Exp $ */
+/* $Header: io.c,v 1.33 87/08/30 08:44:09 susan Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -186,6 +186,21 @@ ReadRequestFromClient(who, status, oldbuf)
 	{
 	    result = read(client, pBuff->buffer + pBuff->bufcnt, 
 		      pBuff->size - pBuff->bufcnt); 
+	    if (result < 0) {
+		if (errno == EWOULDBLOCK)
+		    *status = 0;
+		else
+		    *status = -1;
+		BITCLEAR(ClientsWithInput, client);
+		isItTimeToYield = TRUE;
+		return((char *)NULL);
+	    }
+	    if (result == 0) {
+		*status = -1;
+		BITCLEAR(ClientsWithInput, client);
+		isItTimeToYield = TRUE;
+		return((char *)NULL);
+	    }
             pBuff->bufcnt += result;        
 	}
         request = (xReq *)pBuff->bufptr;
