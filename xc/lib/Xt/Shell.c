@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.161 94/04/01 18:55:56 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.162 94/04/02 17:13:26 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -688,7 +688,9 @@ static XtResource sessionResources[]=
  {XtNsaveCompleteCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
        Offset(session.save_complete_callbacks), XtRCallback, (XtPointer) NULL},
  {XtNdieCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-       Offset(session.die_callbacks), XtRCallback, (XtPointer) NULL}
+       Offset(session.die_callbacks), XtRCallback, (XtPointer) NULL},
+ {XtNerrorCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+       Offset(session.error_callbacks), XtRCallback, (XtPointer) NULL}
 };
 #undef Offset
 
@@ -2570,6 +2572,7 @@ static void JoinSession(w)
     SmcCallbacks smcb;
     char * sm_client_id;
     unsigned long mask;
+    static char context;  /* used to guarantee the connection isn't shared */
 
     smcb.save_yourself.callback = XtCallSaveCallbacks;
     smcb.die.callback = XtCallDieCallbacks;
@@ -2588,7 +2591,7 @@ static void JoinSession(w)
 	char error_msg[XT_MSG_LENGTH];
 	error_msg[0] = '\0';
 	w->session.connection =
-	    SmcOpenConnection(NULL, SmProtoMajor, SmProtoMinor,
+	    SmcOpenConnection(NULL, &context, SmProtoMajor, SmProtoMinor,
 			      mask, &smcb, w->session.session_id,
 			      &sm_client_id, XT_MSG_LENGTH, error_msg);
 	if (error_msg[0]) {
@@ -2611,12 +2614,11 @@ static void JoinSession(w)
 	}
 	free(sm_client_id);
 	ice_conn = SmcGetIceConnection(w->session.connection);
-	/* XXX should add only if first one to select on this fd */
 	w->session.input_id =
 	    XtAppAddInput(XtWidgetToApplicationContext((Widget)w),
 			  IceConnectionNumber(ice_conn),
 			  (XtPointer) XtInputReadMask,
-			  GetIceEvent, (XtPointer) ice_conn);
+			  GetIceEvent, (XtPointer) w);
 
 	w->session.restart_command =
 	    EditCommand(w->session.session_id, w->session.restart_command,
@@ -2833,8 +2835,17 @@ static void GetIceEvent(client_data, source, id)
     int *	source;
     XtInputId *	id;
 {
-    IceConn	ice_conn = (IceConn) client_data;
-    IceProcessMessages(ice_conn, NULL);
+    SessionShellWidget w = (SessionShellWidget) client_data;
+    IceProcessMessagesStatus status;
+
+    status = IceProcessMessages(SmcGetIceConnection(w->session.connection),
+				NULL, NULL);
+
+    if (status == IceProcessMessagesIOError) {
+	StopManagingSession(w, w->session.connection);
+	XtCallCallbackList((Widget)w, w->session.error_callbacks,
+			   (XtPointer) NULL);
+    }
 }
 
 static void CleanUpSave(w)
