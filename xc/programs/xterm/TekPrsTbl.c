@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: TekPrsTbl.c,v 1.3 89/03/01 19:59:14 jim Exp $
+ *	$XConsortium: TekPrsTbl.c,v 1.4 91/01/06 12:46:37 rws Exp $
  */
 
 
@@ -28,7 +28,13 @@
 
 #include "Tekparse.h"
 
-int Talptable[] = {
+#if __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
+Const int Talptable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -351,7 +357,7 @@ CASE_PRINT,
 CASE_PRINT,
 };
 
-int Tbestable[] = {
+Const int Tbestable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_BYP_STATE,
 CASE_BYP_STATE,
@@ -674,7 +680,7 @@ CASE_BYP_STATE,
 CASE_BYP_STATE,
 };
 
-int Tbyptable[] = {
+Const int Tbyptable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -997,7 +1003,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-int Tesctable[] = {
+Const int Tesctable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_CURSTATE,
 CASE_CURSTATE,
@@ -1320,7 +1326,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-int Tipltable[] = {
+Const int Tipltable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -1643,7 +1649,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-int Tplttable[] = {
+Const int Tplttable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -1966,7 +1972,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-int Tpttable[] = {
+Const int Tpttable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -2289,7 +2295,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-int Tspttable[] = {
+Const int Tspttable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: VTPrsTbl.c,v 1.4 89/03/01 19:59:43 jim Exp $
+ *	$XConsortium: VTPrsTbl.c,v 1.5 91/01/06 12:46:58 rws Exp $
  */
 
 /*
@@ -27,12 +27,18 @@
 
 #include "VTparse.h"
 
+#if __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
 /*
  * Stupid Apollo C preprocessor can't handle long lines.  So... To keep
  * it happy, we put each onto a seperate line....  Sigh...
  */
 
-int groundtable[] = {
+Const int groundtable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -355,7 +361,7 @@ CASE_PRINT,
 CASE_PRINT,
 };
 
-int csitable[] = {
+Const int csitable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -678,7 +684,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-int dectable[] = {
+Const int dectable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -1001,7 +1007,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-int eigtable[] = {
+Const int eigtable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -1325,7 +1331,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-int esctable[] = {
+Const int esctable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -1648,7 +1654,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-int iestable[] = {
+Const int iestable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE_STATE,
 CASE_IGNORE_STATE,
@@ -1971,7 +1977,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-int igntable[] = {
+Const int igntable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -2294,7 +2300,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-int scrtable[] = {
+Const int scrtable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -2617,7 +2623,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-int scstable[] = {
+Const int scstable[] = {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
