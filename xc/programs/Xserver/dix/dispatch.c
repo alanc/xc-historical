@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.24 87/12/30 08:27:31 rws Exp $ */
+/* $Header: dispatch.c,v 1.25 87/12/30 18:39:08 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -45,6 +45,12 @@ extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
 extern void ProcessInputEvents();
 extern void ValidateGC();
+extern Atom MakeAtom();
+extern char *NameForAtom();
+extern void SaveScreens();
+extern void ReleaseActiveGrabs();
+extern void QueryFont();
+extern int NotImplemented();
 
 Selection *CurrentSelections = (Selection *)NULL;
 int NumCurrentSelections = 0;
@@ -64,6 +70,7 @@ extern int (* SwappedProcVector[256]) ();
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
 extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
+extern void WriteSConnSetupPrefix();
 void KillAllClients();
 
 /* buffers for clients. legal values below */
@@ -686,7 +693,7 @@ ProcQueryTree(client)
     {
     	client->pSwapReplyFunc = Swap32Write;
 	WriteSwappedDataToClient(client, numChildren * sizeof(Window), childIDs);
-	Xfree(childIDs);
+	Xfree((pointer)childIDs);
     }
 
     return(client->noClientException);
@@ -727,7 +734,7 @@ ProcGetAtomName(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    if (str = (char *)NameForAtom(stuff->id)) 
+    if (str = NameForAtom(stuff->id)) 
     {
 	len = strlen(str);
 	reply.type = X_Reply;
@@ -834,7 +841,7 @@ ProcSetSelectionOwner(client)
 	 */
             NumCurrentSelections++;
 	    CurrentSelections = 
-			(Selection *)Xrealloc(CurrentSelections, 
+			(Selection *)Xrealloc((pointer)CurrentSelections, 
 			NumCurrentSelections * sizeof(Selection));
 
 	CurrentSelections[i].selection = stuff->selection;
@@ -1224,7 +1231,7 @@ ProcListFontsWithInfo(client)
 		WriteToClient(client, *length, *path);
 		DEALLOCATE_LOCAL(reply);
 	}
-	Xfree((char *)font.pFP);
+	Xfree((pointer)font.pFP);
     }
     FreeFontRecord(fpaths);
     bzero((char *)&last_reply, sizeof(xListFontsWithInfoReply));
@@ -1893,10 +1900,10 @@ ProcPolyText(client)
 
 	    if (endReq - pElt < FontShiftSize)
 		 return (BadLength);
-	    fid =  *(pElt+4)		/* big-endian */
-		 | *(pElt+3) << 8
-		 | *(pElt+2) << 16
-		 | *(pElt+1) << 24;
+	    fid =  ((Font)*(pElt+4))		/* big-endian */
+		 | ((Font)*(pElt+3)) << 8
+		 | ((Font)*(pElt+2)) << 16
+		 | ((Font)*(pElt+1)) << 24;
 	    pFont = (FontPtr)LookupID(fid, RT_FONT, RC_CORE);
 	    if (!pFont)
 	    {
@@ -2886,8 +2893,6 @@ int ProcNoOperation(client)
     return(client->noClientException);
 }
 
-extern void NotImplemented();
-
 void
 InitProcVectors()
 {
@@ -2897,12 +2902,12 @@ InitProcVectors()
 	if(!ProcVector[i])
 	{
             ProcVector[i] = SwappedProcVector[i] = ProcBadRequest;
-	    ReplySwapVector[i] = NotImplemented;
+	    ReplySwapVector[i] = (void (*)())NotImplemented;
 	}
     }
     for(i = LASTEvent; i < 128; i++)
     {
-	EventSwapVector[i] = NotImplemented;
+	EventSwapVector[i] = (void (*)())NotImplemented;
     }
     
 }
@@ -2941,7 +2946,7 @@ CloseDownClient(client)
                 clients[nextFreeClientID] = NullClient;
 		break;
 	    }
-        Xfree(client);
+        Xfree((pointer)client);
 	if(--nClients == 0)
 	    nClients = -1;
     }
@@ -2956,7 +2961,7 @@ CloseDownClient(client)
                 clients[nextFreeClientID] = NullClient;
 		break;
 	    }
-        Xfree(client);
+        Xfree((pointer)client);
 	--nClients;
     }
     else
@@ -3010,7 +3015,7 @@ CloseDownRetainedResources()
 	{
             FreeClientResources(client);
             nextFreeClientID = i;
-	    Xfree(client);
+	    Xfree((pointer)client);
 	    clients[i] = NullClient;
 	}
     }
@@ -3045,7 +3050,8 @@ NextAvailableClient()
 	    nextFreeClientID = i;
 	else
         {
-	    clients = (ClientPtr *)Xrealloc(clients, i * sizeof(ClientRec));
+	    clients = (ClientPtr *)Xrealloc((pointer)clients,
+					    i * sizeof(ClientRec));
 	    currentMaxClients++;
 	}
     }
