@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.0 89/08/08 17:16:54 rws Exp $ */
+/* $XConsortium: devices.c,v 5.0 89/10/03 19:55:31 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -42,6 +42,7 @@ extern void (* ReplySwapVector[256]) ();
 extern void CopySwap32Write(), SwapTimeCoordWrite();
 extern void ActivatePointerGrab(), DeactivatePointerGrab();
 extern void ActivateKeyboardGrab(), DeactivateKeyboardGrab();
+extern Mask EventMaskForClient();
 
 DevicePtr
 AddInputDevice(deviceProc, autoStart)
@@ -181,7 +182,7 @@ CloseDevice(dev)
 }
 
 void
-CloseDownDevices(v)
+CloseDownDevices()
 {
     register DeviceIntPtr dev, next;
 
@@ -299,7 +300,7 @@ static Bool
 InitModMap(keyc)
     register KeyClassPtr keyc;
 {
-    int i, j, maxKeysPerMod;
+    int i, j;
     CARD8 keysPerModifier[8];
     CARD8 mask;
 

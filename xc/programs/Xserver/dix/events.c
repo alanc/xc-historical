@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.9 89/10/03 20:20:23 rws Exp $ */
+/* $XConsortium: events.c,v 5.10 89/10/04 14:21:08 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -125,15 +125,16 @@ static  struct {
 
 static void DoEnterLeaveEvents();	/* merely forward declarations */
 static WindowPtr XYToWindow();
-extern Bool CheckKeyboardGrabs();
 static void DeliverFocusedEvent();
-extern int DeliverDeviceEvents();
+int DeliverDeviceEvents();
 void DoFocusEvents();
-extern Mask EventMaskForClient();
-extern void WriteEventsToClient();
+Mask EventMaskForClient();
+void WriteEventsToClient();
 static Bool CheckDeviceGrabs();
-extern void NewCurrentScreen();
+void NewCurrentScreen();
 static void EnqueueEvent();
+
+extern void MaybeStopHint();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern Bool GrabMatchesSecond();
@@ -2396,7 +2397,7 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
     ClientPtr client;
     DeviceIntPtr dev;
     Window focusID;
-    char revertTo;
+    CARD8 revertTo;
     Time ctime;
     Bool followOK;
 {
