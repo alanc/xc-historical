@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.52 90/04/26 17:35:10 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.53 90/10/22 14:43:24 converse Exp $";
 #endif /* lint */
 
 
@@ -34,6 +34,7 @@ SOFTWARE.
 #include <X11/Xaw/ClockP.h>
 
 extern long time();
+extern struct tm *localtime();
 static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 static erase_hands(), round();
 	
@@ -170,7 +171,7 @@ static void Initialize (request, new)
     min_width = min_height = ANALOG_SIZE_DEFAULT;
     if(!w->clock.analog) {
        char *str;
-       struct tm tm, *localtime();
+       struct tm tm;
        long time_value;
        (void) time(&time_value);
        tm = *localtime(&time_value);
@@ -293,7 +294,6 @@ static void clock_tic(client_data, id)
         XtIntervalId *id;
 {
         ClockWidget w = (ClockWidget)client_data;    
-	struct tm *localtime();
 	struct tm tm; 
 	long	time_value;
 	char	*time_ptr;
