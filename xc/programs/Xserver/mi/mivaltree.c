@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mivaltree.c,v 5.28 91/07/10 15:19:52 keith Exp $ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function
@@ -110,6 +110,10 @@ miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
     return rgnOUT;
 }
 #endif
+
+#define HasParentRelativeBorder(w) (!(w)->borderIsPixel && \
+				    HasBorder(w) && \
+				    (w)->backgroundState == ParentRelative)
 
 /*-
  *-----------------------------------------------------------------------
@@ -228,13 +232,6 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    {
 		if (pChild->viewable)
 		{
-		    if (pChild->valdata)
-		    {
-			(* pScreen->RegionInit) (&pChild->valdata->after.borderExposed,
-						 NullBox, 0);
-			(* pScreen->RegionInit) (&pChild->valdata->after.exposed,
-						 NullBox, 0);
-		    }
 		    if (pChild->visibility != VisibilityFullyObscured)
 		    {
 			(* pScreen->TranslateRegion) (&pChild->borderClip,
@@ -245,6 +242,19 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 			if (pScreen->ClipNotify)
 			    (* pScreen->ClipNotify) (pChild, dx, dy);
 
+		    }
+		    if (pChild->valdata)
+		    {
+			(* pScreen->RegionInit) (&pChild->valdata->after.borderExposed,
+						 NullBox, 0);
+			if (HasParentRelativeBorder(pChild))
+			{
+			    (* pScreen->Subtract)(&pChild->valdata->after.borderExposed,
+						  &pChild->borderClip, 
+						  &pChild->winSize);
+			}
+			(* pScreen->RegionInit) (&pChild->valdata->after.exposed,
+						 NullBox, 0);
 		    }
 		    if (pChild->firstChild)
 		    {
@@ -309,7 +319,12 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     	{
 	    (* pScreen->Subtract) (exposed, universe, &pParent->borderClip);
     	}
-    	(* pScreen->Subtract) (&pParent->valdata->after.borderExposed,
+	if (HasParentRelativeBorder(pParent) && (dx || dy))
+	    (* pScreen->Subtract)(&pParent->valdata->after.borderExposed,
+				  universe,
+				  &pParent->winSize);
+	else
+	    (* pScreen->Subtract) (&pParent->valdata->after.borderExposed,
 			       exposed, &pParent->winSize);
 
     	(* pScreen->RegionCopy) (&pParent->borderClip, universe);
