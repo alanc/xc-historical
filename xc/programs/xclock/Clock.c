@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.16 87/09/13 20:48:42 newman Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.18 87/09/13 22:45:21 swick Locked $";
 #endif lint
 
 /*
@@ -110,6 +110,8 @@ ClockClassRec clockClassRec = {
     /* expose */	   Redisplay,
     /* set_values */       SetValues,
     /* accept_focus */     NULL,
+    /* callback_private */ NULL,
+    /* reserved_private */ NULL,
     }
 };
 
@@ -124,19 +126,27 @@ WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
 
 static void EventHandler(gw, closure, event)
     Widget gw;
-    char *closure;
+    caddr_t closure;
     XEvent *event;
 {
     if (event->type == ClientMessage && event->xclient.message_type == XtTimerExpired)
         clock_tic((ClockWidget)gw);
 }
 
-static void Initialize (request, new)
+static void Initialize (request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     ClockWidget w = (ClockWidget)new;
     XtGCMask		valuemask;
     XGCValues	myXGCV;
+
+    valuemask = GCForeground | GCBackground | GCFont | GCLineWidth;
+    if (w->clock.font != NULL)
+        myXGCV.font = w->clock.font->fid;
+    else
+        valuemask &= ~GCFont;	/* use server default font */
 
     if(!w->clock.analog) {
        char *str;
@@ -146,6 +156,9 @@ static void Initialize (request, new)
        (void) time(&time_value);
        tm = *localtime(&time_value);
        str = asctime(&tm);
+       if (w->clock.font == NULL)
+          w->clock.font = XQueryFont( XtDisplay(w),
+				      DefaultGCOfScreen(XtScreen(w)) );
        min_width = XTextWidth(w->clock.font, str, strlen(str)) +
 	  2 * w->clock.padding;
        min_height = w->clock.font->ascent +
@@ -153,45 +166,39 @@ static void Initialize (request, new)
        if (w->core.width < min_width) w->core.width = min_width;
        if (w->core.height < min_height) w->core.width = min_height;
     }
-    valuemask = GCForeground | GCBackground | GCFont | GCLineWidth;
     myXGCV.foreground = w->clock.fgpixel;
     myXGCV.background = w->core.background_pixel;
-    myXGCV.font = w->clock.font->fid;
+    if (w->clock.font != NULL)
+        myXGCV.font = w->clock.font->fid;
+    else
+        valuemask &= ~GCFont;	/* use server default font */
     myXGCV.line_width = 0;
-    w->clock.myGC = XtGetGC(w, valuemask, &myXGCV);
+    w->clock.myGC = XtGetGC((Widget)w, valuemask, &myXGCV);
 
     valuemask = GCForeground | GCLineWidth ;
     myXGCV.foreground = w->core.background_pixel;
-    w->clock.EraseGC = XtGetGC(w, valuemask, &myXGCV);
+    w->clock.EraseGC = XtGetGC((Widget)w, valuemask, &myXGCV);
 
     myXGCV.foreground = w->clock.Hipixel;
-    w->clock.HighGC = XtGetGC(w, valuemask, &myXGCV);
+    w->clock.HighGC = XtGetGC((Widget)w, valuemask, &myXGCV);
 
     valuemask = GCForeground;
     myXGCV.foreground = w->clock.Hdpixel;
-    w->clock.HandGC = XtGetGC(w, valuemask, &myXGCV);
+    w->clock.HandGC = XtGetGC((Widget)w, valuemask, &myXGCV);
 
-    XtAddEventHandler (w, 0, TRUE, EventHandler, NULL);
+    XtAddEventHandler ((Widget)w, 0, TRUE, EventHandler, NULL);
 
-    w->clock.interval_id = XtAddTimeOut(w, w->clock.update*1000);
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
 }
 
 static void Realize (gw, valueMask, attrs)
      Widget gw;
-     XtValueMask valueMask;
+     XtValueMask *valueMask;
      XSetWindowAttributes *attrs;
 {
-     valueMask |= CWBitGravity;
      attrs->bit_gravity = ForgetGravity;
-     gw->core.window = XCreateWindow (XtDisplay(gw),
-				      gw->core.parent->core.window,
-				      gw->core.x, gw->core.y,
-				      gw->core.width, gw->core.height,
-				      gw->core.border_width,
-				      gw->core.depth, InputOutput,
-				      /* visualID */ CopyFromParent,
-				      valueMask, attrs);
+     XtCreateWindow( gw, InputOutput, (Visual *)CopyFromParent,
+		     (*valueMask | CWBitGravity), attrs);
      Resize(gw);
 }
 
@@ -223,8 +230,9 @@ static void Resize (gw)
     }
 }
 
-static void Redisplay (gw)
+static void Redisplay (gw, event)
     Widget gw;
+    XEvent *event;
 {
     ClockWidget w = (ClockWidget) gw;
     if (w->clock.analog)
@@ -245,6 +253,7 @@ static void clock_tic(w)
         register Display *dpy = XtDisplay(w);
         register Window win = XtWindow(w);
 
+	w->clock.interval_id = XtAddTimeOut(w, w->clock.update*1000);
 	(void) time(&time_value);
 	tm = *localtime(&time_value);
 	/*
@@ -672,7 +681,7 @@ static Boolean SetValues (gcurrent, grequest, gnew, last)
           myXGCV.font = new->clock.font->fid;
 	  myXGCV.line_width = 0;
 	  XtDestroyGC (current->clock.HighGC);
-	  new->clock.HighGC = XtGetGC(gcurrent, valuemask, &myXGCV);
+	  new->clock.HighGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
 
@@ -680,7 +689,7 @@ static Boolean SetValues (gcurrent, grequest, gnew, last)
           valuemask = GCForeground;
 	  myXGCV.foreground = new->clock.fgpixel;
 	  XtDestroyGC (current->clock.HandGC);
-	  new->clock.HandGC = XtGetGC(gcurrent, valuemask, &myXGCV);
+	  new->clock.HandGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
 
@@ -689,7 +698,7 @@ static Boolean SetValues (gcurrent, grequest, gnew, last)
 	  myXGCV.foreground = new->core.background_pixel;
 	  myXGCV.line_width = 0;
 	  XtDestroyGC (current->clock.EraseGC);
-	  new->clock.EraseGC = XtGetGC(gcurrent, valuemask, &myXGCV);
+	  new->clock.EraseGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
 	  }
 
