@@ -1,3 +1,7 @@
+*Command*Font: 	-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1
+*Label*Font: 	-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1
+*Text*Font:	-*-courier-medium-r-normal--*-120-*-*-*-*-iso8859-1
+
 *quit.label: 			Quit
 *quit.top: 			ChainTop
 *quit.bottom: 			ChainTop
