@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.15 94/01/01 16:09:00 rws Exp $ */
+/* $XConsortium: sm_manager.c,v 1.16 94/01/31 11:08:21 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -205,8 +205,9 @@ Bool	fast;
 	smsConn->interaction_allowed = SmInteractStyleNone;
     }
 
-    smsConn->can_cancel_shutdown = 
-	shutdown && interactStyle == SmInteractStyleAny;
+    smsConn->can_cancel_shutdown = shutdown &&
+	(interactStyle == SmInteractStyleAny ||
+	interactStyle == SmInteractStyleErrors);
 }
 
 
