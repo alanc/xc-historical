@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.h,v 1.1 94/07/07 11:20:29 mor Exp $ */
+/* $XConsortium: smproxy.h,v 1.2 94/07/18 15:17:40 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -53,6 +53,7 @@ typedef struct WinInfo {
     int wm_command_count;
     XClassHint class;
     char *wm_name;
+    XTextProperty wm_client_machine;
     Bool has_save_yourself;
     Bool waiting_for_update;
     struct WinInfo *next;
