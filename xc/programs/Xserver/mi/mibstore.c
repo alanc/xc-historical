@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.35 90/03/28 19:06:06 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.36 90/03/28 20:00:09 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3536,9 +3536,11 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
     RegionPtr	  	tempRgn;
     miBSWindowPtr	pBackingStore;
     RegionPtr	  	(*copyProc)();
+    GCPtr		pScratchGC;
     register BoxPtr	pBox;
     register int  	i;
     register int  	dx, dy;
+    BITS32		gcMask;
 
     if (!(*pGC->pScreen->RegionNotEmpty) (prgnExposed))
 	return;
@@ -3564,14 +3566,21 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
     switch (pBackingStore->status) {
     case StatusVirtual:
     case StatusVDirty:
-	pGC = GetScratchGC (pDst->depth, pDst->pScreen);
-	if (pGC)
+	pScratchGC = GetScratchGC (pDst->depth, pDst->pScreen);
+	if (pScratchGC)
 	{
-	    miBSFillVirtualBits (pDst, pGC, tempRgn, dx, dy,
+	    gcMask = 0;
+	    if (pGC->alu != pScratchGC->alu)
+	    	gcMask = GCFunction;
+	    if (pGC->planemask != pScratchGC->planemask)
+	    	gcMask |= GCPlaneMask;
+	    if (gcMask)
+	    	CopyGC (pGC, pScratchGC, gcMask);
+	    miBSFillVirtualBits (pDst, pScratchGC, tempRgn, dx, dy,
 				 pBackingStore->backgroundState,
 				 pBackingStore->background,
 				 ~0L);
-	    FreeScratchGC (pGC);
+	    FreeScratchGC (pScratchGC);
 	}
 	break;
     case StatusContents:
