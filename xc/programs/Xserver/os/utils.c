@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.75 89/03/30 17:42:04 rws Exp $ */
+/* $XConsortium: utils.c,v 1.76 89/03/31 08:32:21 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -43,7 +43,7 @@ extern int logoScreenSaver;
 #ifndef SYSV
 extern int limitDataSpace, limitStackSpace;
 #endif
-
+extern int defaultColorVisualClass;
 extern long ScreenSaverTime;		/* for forcing reset */
 extern Bool permitOldBugs;
 
@@ -169,6 +169,7 @@ void UseMsg()
     ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-8)\n");
+    ErrorF("-cc int                default color visual class\n");
     ErrorF("-co string             color database file\n");
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default font name\n");
@@ -269,6 +270,13 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-c") == 0)
 	{
 	    defaultKeyboardControl.click = 0;
+	}
+	else if ( strcmp( argv[i], "-cc") == 0)
+	{
+	    if(++i < argc)
+	        defaultColorVisualClass = atoi(argv[i]);
+	    else
+		UseMsg();
 	}
 	else if ( strcmp( argv[i], "-co") == 0)
 	{
