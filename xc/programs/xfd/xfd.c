@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.18 89/12/10 17:10:06 rws Exp $
+ * $XConsortium: xfd.c,v 1.19 90/04/30 16:54:13 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,6 +34,7 @@
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Command.h>
+#include <X11/Xmu/Converters.h>
 #include "fontgrid.h"
 
 char *ProgramName;
@@ -137,6 +138,7 @@ main (argc, argv)
     if (argc != 1) usage ();
     XtAppAddActions (XtWidgetToApplicationContext (toplevel),
                      xfd_actions, XtNumber (xfd_actions));
+    XmuSetFontConverter (FALSE);
 
     XtGetApplicationResources (toplevel, (caddr_t) &xfd_resources, Resources,
 			       XtNumber (Resources), NULL, ZERO);
@@ -189,7 +191,10 @@ main (argc, argv)
     i = 0;
     XtSetArg (av[i], XtNfont, &fs); i++;
     XtGetValues (fontGrid, av, i);
-    if (!fs) usage ();			/* no font specified */
+    if (!fs) {
+	fprintf (stderr, "%s:  no font to display\n", ProgramName);
+	exit (1);
+    }
     fontname = get_font_name (XtDisplay(toplevel), fs);
     if (!fontname) fontname = "unknown font!";
     i = 0;
