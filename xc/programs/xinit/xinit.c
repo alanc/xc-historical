@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.46 91/02/09 17:29:24 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.47 91/04/03 17:22:11 gildea Exp $";
 #endif /* lint */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
@@ -49,7 +49,7 @@ char **newenviron = NULL;
 #define vfork() fork()
 #endif /* SYSV and not hpux */
 
-#if defined(SVR4) || defined(_POSIX_SOURCE)
+#if defined(SVR4) || defined(sgi) || defined(_POSIX_SOURCE)
 #define setpgrp setpgid
 #endif
 
