@@ -1,4 +1,4 @@
-/* $XConsortium: closestr.h,v 1.8 94/04/12 17:23:24 dpw Exp $ */
+/* $XConsortium: closestr.h,v 1.9 94/04/17 20:25:29 dpw Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -41,6 +41,9 @@ from the X Consortium.
 #include "gcstruct.h"
 
 /* closure structures */
+
+/* OpenFont */
+
 typedef struct _OFclosure {
     ClientPtr   client;
     short       current_fpe;
@@ -58,8 +61,10 @@ typedef struct _OFclosure {
     FontPtr	non_cachable_font;
 }           OFclosureRec;
 
+/* ListFontsWithInfo */
+
 typedef struct _LFWIstate {
-    char	*pattern;
+    char	pattern[256];  /* max len of font name */
     int		patlen;
     int		current_fpe;
     int		max_names;
@@ -81,6 +86,8 @@ typedef struct _LFWIclosure {
     char		*savedName;
 } LFWIclosureRec;
 
+/* ListFonts */
+
 typedef struct _LFclosure {
     ClientPtr   client;
     int         num_fpes;
@@ -93,6 +100,8 @@ typedef struct _LFclosure {
     char	*savedName;
     int		savedNameLen;
 }	LFclosureRec;
+
+/* PolyText */
 
 typedef struct _PTclosure {
     ClientPtr		client;
@@ -110,6 +119,8 @@ typedef struct _PTclosure {
     int			err;
     Bool		slept;
 } PTclosureRec;
+
+/* ImageText */
 
 typedef struct _ITclosure {
     ClientPtr		client;
