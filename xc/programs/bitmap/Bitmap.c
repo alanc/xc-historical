@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.34 91/05/22 17:32:17 converse Exp $
+ * $XConsortium: Bitmap.c,v 1.35 91/07/22 19:58:08 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -703,12 +703,13 @@ static void ClassInitialize()
   {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
        sizeof(Screen *)}
   };
-  int size1 = sizeof(translations1), size2 = sizeof(translations2);
-  char *translations0 = XtMalloc(size1 + size2);
-  
-  strcat(translations0, strcat(translations1, translations2));
-
-  bitmapClassRec.core_class.tm_table = translations0;
+  int len1 = strlen(translations1);
+  int len2 = strlen(translations2);
+  char *tm_table = XtMalloc(len1 + len2 + 1);
+  char *ptr = tm_table;
+  strcpy(ptr, translations1);	ptr += len1;
+  strcpy(ptr, translations2);	
+  bitmapClassRec.core_class.tm_table = tm_table;
 
   XawInitializeWidgetSet();
 
