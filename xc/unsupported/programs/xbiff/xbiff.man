@@ -1,9 +1,9 @@
 .TH XBIFF 1 "1 March 1988" "X Version 11"
 .SH NAME
-xbiff - X Window System, mailbox 
+xbiff - mailbox flag for X
 .SH SYNOPSIS
 .B xbiff
-[-option ...]
+[-\fItoolkitoption\fP ...] [-option ...]
 .SH DESCRIPTION
 The
 .I xbiff
@@ -52,10 +52,11 @@ This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the mailbox window.
+This option specifies the prefered size and position of the mailbox window;
+see \fIX(1)\fP.
 .TP 8
-.B \-display \fIhost\fP:\fIdisplay\fP
-This option specifies the X server to contact.
+.B \-display \fIdisplay\fP
+This option specifies the X server to contact; see \fIX(1)\fP.
 .TP 8
 .B \-xrm \fIresourcestring\fP
 This option specifies a resource string to be used.  This is especially
@@ -83,6 +84,7 @@ Specifies the frequency in seconds at which the mail should be checked.
 .B foreground (class Foreground)
 Specifies the color for the foreground.
 The default is ``black'' since the core default for background is ``white.''
+.TP 8
 .B reverseVideo (class ReverseVideo)
 Specifies that the foreground and background should be reversed.
 .SH ENVIRONMENT
@@ -95,7 +97,9 @@ to get the default host and display number.
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH "SEE ALSO"
-X(1), Xserver(1), xrdb(1), stat(2)
+.I X(1),
+.I xrdb(1),
+.I stat(2)
 .SH BUGS
 The mailbox bitmaps are ugly.
 .SH COPYRIGHT
