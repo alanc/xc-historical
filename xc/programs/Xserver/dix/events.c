@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.143 88/02/25 17:38:25 rws Exp $ */
+/* $Header: events.c,v 1.144 88/04/10 12:15:23 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -721,9 +721,10 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	"Event([%d, %d], mask=0x%x), client=%d",
 	pEvents->u.u.type, pEvents->u.u.detail, mask, client->index);
     if ((client) && (client != serverClient) && (!client->clientGone) &&
-	((filter == CantBeFiltered) || (mask & filter)) &&
-	((!grab) || (client == grab->client)))
+	((filter == CantBeFiltered) || (mask & filter)))
     {
+	if (grab && (client != grab->client))
+	    return -1; /* don't send, but notify caller */
 	if (pEvents->u.u.type == MotionNotify)
 	{
 	    if (mask & PointerMotionHintMask)
@@ -731,7 +732,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 		if (WID(motionHintWindow) == pEvents->u.keyButtonPointer.event)
 		{
 		    if (debug_events) ErrorF("\n");
-		    return 0;
+		    return 1; /* don't send, but pretend we did */
 		}
 		pEvents->u.u.detail = NotifyHint;
 	    }
@@ -764,7 +765,8 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
     int count;
     Mask filter;
 {
-    int     deliveries = 0;
+    int deliveries = 0, nondeliveries = 0;
+    int attempt;
     OtherClients *other;
     ClientPtr client = NullClient;
     Mask deliveryMask; 	/* If a grab occurs due to a button press, then
@@ -773,22 +775,30 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
 /* if nobody ever wants to see this event, skip some work */
     if ((filter != CantBeFiltered) && !(pWin->allEventMasks & filter))
 	return 0;
-    if (TryClientEvents(
+    if (attempt = TryClientEvents(
 	pWin->client, pEvents, count, pWin->eventMask, filter, grab))
     {
-	deliveries++;
-	client = pWin->client;
-	deliveryMask = pWin->eventMask;
+	if (attempt > 0)
+	{
+	    deliveries++;
+	    client = pWin->client;
+	    deliveryMask = pWin->eventMask;
+	} else
+	    nondeliveries--;
     }
     if (filter != CantBeFiltered) /* CantBeFiltered means only window owner gets the event */
 	for (other = OTHERCLIENTS(pWin); other; other = other->next)
 	{
-	    if (TryClientEvents(
+	    if (attempt = TryClientEvents(
 		  other->client, pEvents, count, other->mask, filter, grab))
 	    {
-		deliveries++;
-		client = other->client;
-                deliveryMask = other->mask;
+		if (attempt > 0)
+		{
+		    deliveries++;
+		    client = other->client;
+		    deliveryMask = other->mask;
+		} else
+		    nondeliveries--;
 	    }
 	}
     if ((pEvents->u.u.type == ButtonPress) && deliveries && (!grab))
@@ -808,7 +818,9 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
     }
     else if ((pEvents->u.u.type == MotionNotify) && deliveries)
 	motionHintWindow = pWin;
-    return deliveries;
+    if (deliveries)
+	return deliveries;
+    return nondeliveries;
 }
 
 /* If the event goes to dontDeliverToMe, don't send it and return 0.  if
@@ -923,9 +935,11 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt)
     {
 	FixUpEventFromWindow(xE, pWin, child, FALSE);
 	deliveries = DeliverEventsToWindow(pWin, xE, 1, filter, grab);
-	if ((deliveries > 0) || (filter & pWin->dontPropagateMask))
+	if (deliveries > 0)
 	    return deliveries;
-	if (pWin == stopAt)
+	if ((deliveries < 0) ||
+	    (pWin == stopAt) ||
+	    (filter & pWin->dontPropagateMask))
 	    return 0;
 	child = pWin->wid;
 	pWin = pWin->parent;
@@ -1194,8 +1208,8 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
  
 	    FixUpEventFromWindow(xE, grab->window, None, TRUE);
 
-	    TryClientEvents(grab->client, xE, 1, grab->eventMask, 
-		filters[xE->u.u.type],  grab);
+	    (void) TryClientEvents(grab->client, xE, 1, grab->eventMask, 
+				   filters[xE->u.u.type],  grab);
 
 	    if (device->sync.state == FROZEN_NO_EVENT)
 	    {
@@ -1284,25 +1298,35 @@ NormalKeyboardEvent(keybd, xE, window)
 }
 
 static void
-DeliverGrabbedEvent(xE, thisDev, otherDev, deactivateGrab)
+DeliverGrabbedEvent(xE, thisDev, otherDev, deactivateGrab, isKeyboard)
     register xEvent *xE;
     register DeviceIntPtr thisDev;
     DeviceIntPtr otherDev;
     Bool deactivateGrab;
+    Bool isKeyboard;
 {
     register GrabPtr grab = thisDev->grab;
-    int deliveries;
+    int deliveries = 0;
 
-    if ((!grab->ownerEvents) ||
-	(!(deliveries = DeliverDeviceEvents(sprite.win, xE, grab, NullWindow))))
+    if (grab->ownerEvents)
+    {
+	WindowPtr focus = isKeyboard ? thisDev->u.keybd.focus.win
+				     : PointerRootWin;
+
+	if (focus == PointerRootWin)
+	    deliveries = DeliverDeviceEvents(sprite.win, xE, grab, NullWindow);
+	else if (focus && (focus == sprite.win || IsParent(focus, sprite.win)))
+	    deliveries = DeliverDeviceEvents(sprite.win, xE, grab, focus);
+    }
+    if (!deliveries)
     {
 	FixUpEventFromWindow(xE, grab->window, None, TRUE);
 	deliveries = TryClientEvents(grab->client, xE, 1, grab->eventMask,
 				     filters[xE->u.u.type], grab);
+	if (deliveries && (xE->u.u.type == MotionNotify))
+	    motionHintWindow = grab->window;
     }
-    if (deliveries && (xE->u.u.type == MotionNotify))
-	motionHintWindow = grab->window;
-    else if (deliveries && !deactivateGrab)
+    if (deliveries && !deactivateGrab && (xE->u.u.type != MotionNotify))
 	switch (thisDev->sync.state)
 	{
 	   case FREEZE_BOTH_NEXT_EVENT:
@@ -1401,7 +1425,8 @@ ProcessKeyboardEvent (xE, keybd)
 	    FatalError("Impossible keyboard event");
     }
     if (grab)
-	DeliverGrabbedEvent(xE, keybd, inputInfo.pointer, deactivateGrab);
+	DeliverGrabbedEvent(xE, keybd, inputInfo.pointer, deactivateGrab,
+			    TRUE);
     else
 	NormalKeyboardEvent(keybd, xE, sprite.win);
     if (deactivateGrab)
@@ -1486,7 +1511,8 @@ ProcessPointerEvent (xE, mouse)
 	    FatalError("bogus pointer event from ddx");
     }
     if (grab)
-	DeliverGrabbedEvent(xE, mouse, inputInfo.keyboard, deactivateGrab);
+	DeliverGrabbedEvent(xE, mouse, inputInfo.keyboard, deactivateGrab,
+			    FALSE);
     else
 	DeliverDeviceEvents(sprite.win, xE, NullGrab, NullWindow);
     if (deactivateGrab)
