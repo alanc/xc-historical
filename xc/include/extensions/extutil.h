@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.h,v 1.6 89/10/08 16:35:39 jim Exp $
+ * $XConsortium: extutil.h,v 1.7 89/10/08 17:01:36 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -71,6 +71,8 @@ extern XExtDisplayInfo *XextFindDisplay();
 #define XextHasExtension(i) ((i) && ((i)->codes))
 #define XextCheckExtension(dpy,i,name,val) \
   if (!XextHasExtension(i)) { XMissingExtension (dpy, name); return val; }
+#define XextSimpleCheckExtension(dpy,i,name) \
+  if (!XextHasExtension(i)) { XMissingExtension (dpy, name); return; }
 
 
 /*
