@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swapreq.c,v 1.3 87/08/14 12:22:56 newman Locked $ */
+/* $Header: swapreq.c,v 1.26 87/08/14 22:40:54 newman Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -37,20 +37,85 @@ extern void (* EventSwapVector[128]) ();  /* for SendEvent */
 /* Thanks to Jack Palevich for testing and subsequently rewriting all this */
 
 #define LengthRestB(stuff) \
-    ((stuff->length << 2) - sizeof(*stuff))
+    (((unsigned long)stuff->length << 2) - sizeof(*stuff))
 
 #define LengthRestS(stuff) \
-    ((stuff->length << 1)  - (sizeof(*stuff) >> 1))
+    (((unsigned long)stuff->length << 1) - (sizeof(*stuff) >> 1))
 
 #define LengthRestL(stuff) \
-    (stuff->length  - (sizeof(*stuff) >> 2))
+    ((unsigned long)stuff->length - (sizeof(*stuff) >> 2))
 
 #define SwapRestS(stuff) \
-    SwapShorts(stuff + 1, LengthRestS(stuff))
+    SwapShorts((short *)(stuff + 1), LengthRestS(stuff))
 
 #define SwapRestL(stuff) \
-    SwapLongs(stuff + 1, LengthRestL(stuff))
+    SwapLongs((long *)(stuff + 1), LengthRestL(stuff))
 
+/* Byte swap a list of longs */
+
+void
+SwapLongs (list, count)
+	register long *list;
+	register unsigned long count;
+{
+	register int n;
+
+	while (count >= 8) {
+	    swapl(list+0, n);
+	    swapl(list+1, n);
+	    swapl(list+2, n);
+	    swapl(list+3, n);
+	    swapl(list+4, n);
+	    swapl(list+5, n);
+	    swapl(list+6, n);
+	    swapl(list+7, n);
+	    list += 8;
+	    count -= 8;
+	}
+	if (count != 0) {
+	    do {
+		swapl(list, n);
+		list++;
+	    } while (--count != 0);
+	}
+}
+
+/* Byte swap a list of shorts */
+
+void
+SwapShorts (list, count)
+	register short *list;
+	register unsigned long count;
+{
+	register int n;
+
+	while (count >= 16) {
+	    swaps(list+0, n);
+	    swaps(list+1, n);
+	    swaps(list+2, n);
+	    swaps(list+3, n);
+	    swaps(list+4, n);
+	    swaps(list+5, n);
+	    swaps(list+6, n);
+	    swaps(list+7, n);
+	    swaps(list+8, n);
+	    swaps(list+9, n);
+	    swaps(list+10, n);
+	    swaps(list+11, n);
+	    swaps(list+12, n);
+	    swaps(list+13, n);
+	    swaps(list+14, n);
+	    swaps(list+15, n);
+	    list += 16;
+	    count -= 16;
+	}
+	if (count != 0) {
+	    do {
+		swaps(list, n);
+		list++;
+	    } while (--count != 0);
+	}
+}
 
 /* The following is used for all requests that have
    no fields to be swapped (except "length") */
@@ -170,10 +235,10 @@ SProcChangeProperty(client)
     switch ( stuff->format ) {
         case 8 : break;
         case 16:
-            SwapShorts(stuff + 1, stuff->nUnits);
+            SwapShorts((short *)(stuff + 1), stuff->nUnits);
 	    break;
 	case 32:
-	    SwapLongs(stuff + 1, stuff->nUnits);
+	    SwapLongs((long *)(stuff + 1), stuff->nUnits);
 	    break;
 	}
     return((* ProcVector[X_ChangeProperty])(client));
@@ -789,13 +854,14 @@ SProcStoreColors               (client)
     register ClientPtr client;
 {
     register char n;
+    unsigned long count;
     xColorItem 	*pItem;
 
     REQUEST(xStoreColorsReq);
     swaps(&stuff->length, n);
     swapl(&stuff->cmap, n);
     pItem = (xColorItem *) &stuff[1];
-    for(n = 0; n < LengthRestB(stuff)/sizeof(xColorItem); n++)
+    for(count = LengthRestB(stuff)/sizeof(xColorItem); count != 0; count--)
 	SwapColorItem(pItem++);
     return((* ProcVector[X_StoreColors])(client));
 }
@@ -1007,8 +1073,10 @@ int SProcRotateProperties(client)
     return ((* ProcVector[X_RotateProperties])(client));
 }
 
-int SProcNoOperation(client)
-    register ClientPtr client;
+/*ARGSUSED*/
+int
+SProcNoOperation(client)
+    ClientPtr client;
 {
     /* noop -- don't do anything */
     return(Success);
