@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.9 89/09/14 16:29:48 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.10 89/09/14 19:10:56 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -65,9 +65,6 @@ ICEILTEMPDECL
  *  point expressions.
  */
 
-/* these are from our <math.h>, but I'm told some systems don't have
- * math.h and that they're not in all versions of math.h. */
-
 # define todeg(xAngle)	(((double) (xAngle)) / 64.0)
 
 #ifndef X_AXIS
@@ -76,7 +73,7 @@ ICEILTEMPDECL
 #endif
 
 /* 360 degrees * 64 sub-degree positions */
-#define FULLCIRCLE (64 * 360)
+#define FULLCIRCLE (360 * 64)
 
 # define RIGHT_END	0
 # define LEFT_END	1
@@ -659,87 +656,6 @@ miArcCap (pDraw, pGC, pFace, end, xOrg, yOrg, xFtrans, yFtrans)
 		break;
 	}
 }
-
-/* MIPOLYFILLARC -- The public entry for the PolyFillArc request.
- * Since we don't have to worry about overlapping segments, we can just
- * fill each arc as it comes.  As above, we convert the arc into a set of
- * line segments and then fill the resulting polygon.
- */
-void
-miPolyFillArc(pDraw, pGC, narcs, parcs)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
-{
-    int	i, cpt;
-    SppPointPtr pPts;
-    SppArcRec	sppArc;
-    int		angle1, angle2, a;
-
-    for(i = 0; i < narcs; i++)
-    {
-	angle1 = parcs[i].angle1;
-	if (angle1 >= FULLCIRCLE)
-		angle1 = angle1 % FULLCIRCLE;
-	else if (angle1 <= -FULLCIRCLE)
-		angle1 = - (-angle1 % FULLCIRCLE);
-	angle2 = parcs[i].angle2;
-	if (angle2 > FULLCIRCLE)
-		angle2 = FULLCIRCLE;
-	else if (angle2 < -FULLCIRCLE)
-		angle2 = -FULLCIRCLE;
-	sppArc.x = parcs[i].x;
-	sppArc.y = parcs[i].y;
-	sppArc.width = parcs[i].width;
-	sppArc.height = parcs[i].height;
-	sppArc.angle1 = todeg (angle1);
-	sppArc.angle2 = todeg (angle2);
-	/* We do this test every time because a full circle PieSlice isn't
-	 * really a slice, but a full pie, and the Chord code (below) should
-	 * handle it better */
-        if(pGC->arcMode == ArcPieSlice && abs (angle2) < FULLCIRCLE)
-	{
-	    /*
-	     * more than half a circle isn't convex anymore,
-	     * split the arc into two pieces.
-	     */
-	    if (abs (angle2) > FULLCIRCLE / 2) {
-		pPts = (SppPointPtr) NULL;
-		a = angle2 > 0 ? FULLCIRCLE / 2 : - FULLCIRCLE / 2;
-		sppArc.angle2 = todeg (a);
-		if (cpt = miGetArcPts(&sppArc, 0, &pPts))
-		    miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
-		xfree (pPts);
-		angle1 += a;
-		if (angle1 >= FULLCIRCLE)
-		    angle1 -= FULLCIRCLE;
-		else if (angle1 <= -FULLCIRCLE)
-		    angle1 += FULLCIRCLE;
-		angle2 -= a;
-		sppArc.angle1 = todeg(angle1);
-		sppArc.angle2 = todeg(angle2);
-	    }
-	    if (!(pPts = (SppPointPtr)xalloc(sizeof(SppPointRec))))
-		return;
-	    if(cpt = miGetArcPts(&sppArc, 1, &pPts))
-	    {
-		pPts[0].x = sppArc.x + sppArc.width/2;
-		pPts[0].y = sppArc.y + sppArc.height /2;
-		miFillSppPoly(pDraw, pGC, cpt + 1, pPts, 0, 0, 0.0, 0.0);
-	    }
-	    xfree(pPts);
-	}
-        else /* Chord */
-	{
-	    pPts = (SppPointPtr)NULL;
-	    if(cpt = miGetArcPts(&sppArc, 0, &pPts))
-		miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
-	    xfree(pPts);
-	}
-    }
-}
-
 
 /*
  * To avoid inaccuracy at the cardinal points, use trig functions
