@@ -25,7 +25,7 @@ implied warranty.
 #include "XShm.h"
 #include "shmstr.h"
 
-/* $XConsortium: XShm.c,v 1.1 89/08/20 18:53:40 rws Exp $ */
+/* $XConsortium: XShm.c,v 1.2 89/08/21 07:41:05 rws Exp $ */
 
 struct DpyHasShm {
     struct DpyHasShm	*next;
@@ -199,27 +199,27 @@ XShmQueryVersion(dpy, majorVersion, minorVersion, sharedPixmaps)
     int	    *majorVersion, *minorVersion;
     Bool    *sharedPixmaps;
 {
-    XExtCodes			    *codes;
-    xShmQueryVersionReply	    rep;
-    register xShmQueryVersionReq  *req;
+    XExtCodes *codes;
+    xShmQueryVersionReply rep;
+    register xShmQueryVersionReq *req;
 
     if (!(codes = CheckExtension(dpy)))
-	return 0;
+	return False;
     LockDisplay(dpy);
     GetReq(ShmQueryVersion, req);
     req->reqType = codes->major_opcode;
     req->shmReqType = X_ShmQueryVersion;
-    if (!_XReply(dpy, (xReply *) &rep, 0, xTrue)) {
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
-	return 0;
+	return False;
     }
     *majorVersion = rep.majorVersion;
     *minorVersion = rep.minorVersion;
-    *sharedPixmaps = rep.sharedPixmaps;
+    *sharedPixmaps = rep.sharedPixmaps ? True : False;
     UnlockDisplay(dpy);
     SyncHandle();
-    return 1;
+    return True;
 }
 
 Status
@@ -391,7 +391,7 @@ XShmGetImage(dpy, d, image, x, y, plane_mask)
     req->format = image->format;
     req->shmseg = info->shmseg;
     req->offset = info->shmaddr - image->data;
-    if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return 0;
