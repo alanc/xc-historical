@@ -312,11 +312,12 @@ void NullProc(xp, p)
 {
 }
 
-Bool NullInitProc(xp, p)
+Bool NullInitProc(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int reps;
 {
-    return True;
+    return reps;
 }
 
 
@@ -350,7 +351,7 @@ void DoHardwareSync(xp, p, reps)
 static Test syncTest = {
     "syncTime", "Internal test for finding how long HardwareSync takes",
     NullInitProc, DoHardwareSync, NullProc, NullProc, NONXOR, 0,
-    {5000, 1}
+    {1}
 };
 
 
