@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.25 91/10/21 14:31:50 eswu Exp $
+ * $XConsortium: Clock.c,v 1.26 94/01/18 10:50:32 kaleb Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,7 +41,7 @@ extern struct tm *localtime();
 #define Time_t long
 extern Time_t time();
 #else
-#includd <time.h>
+#include <time.h>
 #define Time_t time_t
 #endif
 
