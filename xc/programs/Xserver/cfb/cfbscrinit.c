@@ -40,28 +40,27 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "dix.h"
 
 extern void miGetImageWithBS();	/* XXX should not be needed */
-extern ColormapPtr CreateStaticColormap();	/* XXX is this needed? */
 
 static VisualRec visuals[] = {
 /* vid screen class rMask gMask bMask oRed oGreen oBlue bpRGB cmpE nplan */
-#ifdef	notdef
     /*  Eventually,  we would like to offer this visual too */
-    0,	0, StaticGray, 0,   0,    0,   0,    0,	  0,    1,   2,    1,
+#ifndef STATIC_COLOR
+    0,  0, PseudoColor,0,    0,    0,      0,    0,   0,    8,  256,   8,
+    0,  0, DirectColor,0x07, 0x38, 0xc0,   0,    3,   6,    8,  8,     8,
+    0,  0, GrayScale,  0,    0,    0,      0,    0,   0,    8,  256,   8,
+    0,  0, StaticGray, 0,    0,    0,      0,    0,   0,    8,  256,   8,
 #endif
-#ifdef	STATIC_COLOR
-    0,  0, StaticColor,0,   0,    0,   0,    0,   0,    8,  256,   8,
-#else
-    0,  0, PseudoColor,0,   0,    0,   0,    0,   0,    8,  256,   8,
-#endif
+    0,  0, StaticColor,0x07, 0x38, 0xc0,   0,    3,   6,    3,  256,   8,
+    0,  0, TrueColor,  0x07, 0x38, 0xc0,   0,    3,   6,    3,  8,     8
 };
 
 #define	NUMVISUALS	((sizeof visuals)/(sizeof visuals[0]))
-#define	ROOTVISUAL	(NUMVISUALS-1)
+#define	ROOTVISUAL	0
 
 static DepthRec depths[] = {
 /* depth	numVid		vids */
     1,		0,		NULL,
-    8,		1,		NULL,
+    8,		NUMVISUALS,	NULL
 };
 
 #define NUMDEPTHS	((sizeof depths)/(sizeof depths[0]))
@@ -77,8 +76,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 {
     VisualID	*pVids;
     register PixmapPtr pPixmap;
-    int	i;
-    Bool cfbInitialize332Colormap();
+    int	i, j;
     ColormapPtr cmap;
 
     pScreen->myNum = index;
@@ -139,8 +137,8 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->UninstallColormap = cfbUninstallColormap;
     pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
     pScreen->StoreColors = NoopDDA;
-    pScreen->ResolveColor = cfbResolveStaticColor;
 #endif
+    pScreen->ResolveColor = cfbResolveColor;
 
     pScreen->RegionCreate = miRegionCreate;
     pScreen->RegionCopy = miRegionCopy;
@@ -164,7 +162,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->blockData = (pointer)0;
     pScreen->wakeupData = (pointer)0;
 
-    pScreen->CreateColormap = cfbInitialize332Colormap;
+    pScreen->CreateColormap = cfbInitializeColormap;
     pScreen->DestroyColormap = NoopDDA;
 
     /*  Set up the remaining fields in the visuals[] array & make a RT_VISUALID */
@@ -196,8 +194,8 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 		xfree(pPixmap);
 		return FALSE;
 	    }
-	    /* XXX - here we offer only the 8-bit visual */
-	    pVids[0] = visuals[ROOTVISUAL].vid;
+	    for (j = 0; j < depths[i].numVids; j++)
+		pVids[j] = visuals[j].vid;
 	}
     }
 
