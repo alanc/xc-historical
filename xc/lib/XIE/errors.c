@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.3 93/10/30 14:56:54 rws Exp $ */
+/* $XConsortium: errors.c,v 1.4 94/04/17 20:18:22 rws Exp mor $ */
 
 /*
 
@@ -119,6 +119,7 @@ xError		*wire;
 
 	host_error->technique_number = wire_error->techniqueNumber;
 	host_error->num_tech_params  = wire_error->lenTechParams;
+	host_error->tech_group = wire_error->techniqueGroup;
 	break;
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.10 94/05/02 14:15:57 mor Exp mor $ */
+/* $XConsortium: XIElib.h,v 1.11 94/12/19 16:57:13 mor Exp mor $ */
 
 /*
 
@@ -884,6 +884,7 @@ typedef struct {
     unsigned int	elem_type;
     unsigned int	technique_number;
     unsigned int	num_tech_params;
+    XieTechniqueGroup	tech_group;
 } XieFloTechniqueError;
 
 typedef struct {
