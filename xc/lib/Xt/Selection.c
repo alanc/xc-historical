@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.32 89/11/30 20:17:35 swick Exp $";
+    "$XConsortium: Selection.c,v 1.33 89/12/01 09:56:58 swick Exp $";
 #endif
 
 /***********************************************************
@@ -430,7 +430,6 @@ int format;
 	req->bytelength = BYTELENGTH(length,format);
 	req->format = format;
 	req->offset = 0;
-	req->ctx = ctx;
 	req->target = target;
 	req->widget = widget;
 	req->allSent = FALSE;
@@ -467,6 +466,7 @@ Boolean *incremental;
     Atom targetType;
     Request req = XtNew(RequestRec);
 
+    req->ctx = ctx;
     req->event = *event;
     if (ctx->incremental == TRUE) {
 	 unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
@@ -489,7 +489,6 @@ Boolean *incremental;
     }
     if (BYTELENGTH(length,format) <= MAX_SELECTION_INCR(ctx->dpy)) {
 	if (ctx->notify != NULL) {
-		  req->ctx = ctx;
 		  req->target = target;
 		  req->property = property;
 		  req->widget = widget;
@@ -1199,12 +1198,14 @@ Boolean incremental;
     ctx = FindCtx(XtDisplay(widget), selection);
     if (ctx->widget) {
 	RequestRec req;
+	ctx->req = &req;
 	req.ctx = ctx;
 	req.event.type = 0;
 	req.event.requestor = XtWindow(widget);
 	req.event.time = time;
 	DoLocalTransfer(&req, selection, target, widget,
 			callback, closure, incremental);
+	ctx->req = NULL;
     }
     else {
 	info = MakeInfo(callback, &closure, 1, widget, time, incremental);
@@ -1267,6 +1268,7 @@ Boolean incremental;
     ctx = FindCtx(XtDisplay(widget), selection);
     if (ctx->widget) {
 	RequestRec req;
+	ctx->req = &req;
 	req.ctx = ctx;
 	req.event.type = 0;
 	req.event.requestor = XtWindow(widget);
@@ -1274,6 +1276,7 @@ Boolean incremental;
 	for (; count; count--, targets++, closures++ )
 	    DoLocalTransfer(&req, selection, *targets, widget,
 			    callback, *closures, incremental);
+	ctx->req = NULL;
     } else {
 	info = MakeInfo(callback, closures, count, widget, time, incremental);
 	info->req_cancel = cancel;
@@ -1336,11 +1339,17 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
     XtRequestId id;
 { 
     Request req = (Request)id;
+    Select ctx;
 
-    if (   req == NULL
-	|| (req->ctx == NULL
-	    || req->ctx->selection != selection
-	    || req->ctx->widget != widget))
+    if (   (req == NULL
+	    && ((ctx = FindCtx( XtDisplay(widget), selection )) == NULL
+		|| ctx->req == NULL
+		|| ctx->selection != selection
+		|| ctx->widget == NULL))
+	|| (req != NULL
+	    && (req->ctx == NULL
+		|| req->ctx->selection != selection
+		|| req->ctx->widget != widget)))
     {
 	String params = XtName(widget);
 	Cardinal num_params = 1;
@@ -1353,13 +1362,19 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
 	return NULL;
     }
 
+    if (req == NULL) {
+	/* non-incremental local owner; only one request can be
+	 * outstanding at a time, so its safe to keep ptr in ctx */
+	req = ctx->req;
+    }
+
     if (req->event.type == 0) {
 	/* owner is local; construct the remainder of the event */
 	req->event.type = SelectionRequest;
 	req->event.serial = LastKnownRequestProcessed(XtDisplay(widget));
 	req->event.send_event = True;
 	req->event.display = XtDisplay(widget);
-	req->event.owner = XtWindow(req->widget);
+	req->event.owner = XtWindow(req->ctx->widget);
     /*  req->event.requestor = XtWindow(requesting_widget); */
 	req->event.selection = selection;
     /*  req->event.target = requestors_target; */
