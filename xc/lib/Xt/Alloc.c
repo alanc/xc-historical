@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.48 93/08/27 16:26:58 kaleb Exp $ */
+/* $XConsortium: Alloc.c,v 1.49 93/09/11 16:08:39 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -214,7 +214,7 @@ static unsigned long ActiveXtMemory = 0;
 static unsigned long XtSeqId = 0;
 static unsigned long XtSeqBreakpoint = ~0;
 
-#define StatsSize(n) ((((n) + 3) & ~3) + sizeof(Stats))
+#define StatsSize(n) ((((n) + (sizeof(long) - 1)) & ~(sizeof(long) - 1)) + sizeof(Stats))
 #define ToStats(ptr) ((StatsPtr)(ptr - sizeof(Stats)))
 #define ToMem(ptr) (((char *)ptr) + sizeof(Stats))
 
