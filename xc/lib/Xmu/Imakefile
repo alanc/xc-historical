@@ -17,6 +17,7 @@ HEADERS = \
 	Xmu.h
 
 SRCS = \
+	AllCmap.c \
 	Atoms.c \
 	ClientWin.c \
 	CrPixFBit.c \
@@ -27,14 +28,17 @@ SRCS = \
 	Lookup.c \
 	Lower.c \
 	RdBitF.c \
+	StdCmap.c \
 	StrToBS.c \
 	StrToBmap.c \
 	StrToCurs.c \
 	StrToJust.c \
 	StrToOrnt.c \
-	StrToWidg.c
+	StrToWidg.c \
+	VisCmap.c
 
 OBJS = \
+	AllCmap.o \
 	Atoms.o \
 	ClientWin.o \
 	CrPixFBit.o \
@@ -45,12 +49,14 @@ OBJS = \
 	Lookup.o \
 	Lower.o \
 	RdBitF.o \
+	StdCmap.o \
 	StrToBS.o \
 	StrToBmap.o \
 	StrToCurs.o \
 	StrToJust.o \
 	StrToOrnt.o \
-	StrToWidg.o
+	StrToWidg.o \
+	VisCmap.o
 
 all::
 
