@@ -1,5 +1,5 @@
 /**/###########################################################################
-/**/# rules:  $XConsortium: Imake.rules,v 1.4 89/01/17 17:57:38 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.5 89/01/18 10:04:45 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -241,9 +241,7 @@ tags::									@@\
 #define	MakefileTarget()						@@\
 Makefile:: $(IMAKE)							@@\
 									@@\
-Makefile:: Imakefile $(IRULESRC)/Imake.tmpl $(IRULESRC)/Imake.rules \	@@\
-	$(IRULESRC)/Project.tmpl $(IRULESRC)/site.def \			@@\
-	$(IRULESRC)/$(MACROFILE)					@@\
+Makefile:: Imakefile $(ICONFIGFILES)					@@\
 	-@if [ -f Makefile ]; then \					@@\
 		echo "$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
 		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
