@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.98 94/05/02 09:57:52 rws Exp $ */
+/* $XConsortium: registry,v 1.99 94/06/03 19:03:26 rws Exp $ */
 
 				  X Registry
 
@@ -87,6 +87,7 @@ Name						Reference
 "X3D"						[8]
 "XC"						[104]
 "Xerox"						[91]
+"XFree86"					[113]
 "XUG"						[31]
 
 
@@ -273,6 +274,8 @@ XeroxXK_PointerButton3	0x10070003		[91]
 XeroxXK_PointerButton4	0x10070004		[91]
 XeroxXK_PointerButton5	0x10070005		[91]
 
+XF86XK_ModeLock		0x1008FF01		[113]
+
 Range 0x11000000 to 0x1100FFFF is allocated for keypad keysyms.
 
 
@@ -321,6 +324,7 @@ String						Reference
 "Stellar Computer Inc."				[28]
 "Sun Microsystems, Inc."			[101]
 "Tech-Source Inc."				[106]
+"The XFree86 Project, Inc"			[113]
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
 "Wolfram Research, Inc."			[102]
 "Wyse Technology Inc."				[68]
@@ -392,6 +396,7 @@ Name						Reference
 "VIT-Image Display List Extension"		[46]
 "X3D-PEX"					[8], [9]
 "XC-MISC"					[109]
+"XFree86-VidModeExtension"			[113]
 "XIE"						[110]
 "XKEYBOARD"					[111]
 "XTEST"						[8]
@@ -944,7 +949,7 @@ Value	Name					Reference
 17	Kubota Pacific Computer			[95]
 18	Hitachi, Ltd.				[100]
 19	Megatek Corporation			[112]
-
+20	The XFree86 Project, Inc		[113]
 
 REFERENCES
 
@@ -1491,3 +1496,9 @@ REFERENCES
 	Megatek Corporation
 	16868 Via Del Campo Court
 	San Diego, CA  92127-1714
+
+[113]	David Wexelblat
+	The XFree86 Project, Inc.
+	c/o AIB Software Corporation
+	46030 Manekin Plaza, Suite 160
+	Dulles, VA  20166
