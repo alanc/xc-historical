@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.4 89/04/13 13:34:56 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.5 89/05/16 14:23:59 keith Exp $";
 #endif lint
 
 /*
@@ -13,10 +13,9 @@ static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.4 89/04/13 13:34:56 keith Exp $"
      Xt..Field macro in this code just refers to some field in
      one of the substructures of the WidgetRec.  */
 
-#include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/Xmu.h>
+#include <X11/Xmu/Xmu.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "DviP.h"
