@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CursorName.c,v 1.1 89/07/19 15:40:18 jim Exp $
+ * $XConsortium: CursorName.c,v 1.2 89/07/19 15:59:42 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-
+#include <X11/Intrinsic.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/CurUtil.h>
 #include <X11/cursorfont.h>
