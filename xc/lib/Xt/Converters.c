@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.65 91/04/08 14:37:49 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.66 91/04/08 18:59:46 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1266,7 +1266,7 @@ CvtStringToInitialState(dpy, args, num_args, fromVal, toVal, closure_ret)
     return False;
 }
 
-XtConvertArgRec Const visualConvertArgs[] = {
+static XtConvertArgRec Const visualConvertArgs[] = {
     {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
      sizeof(Screen *)},
     {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.depth),
