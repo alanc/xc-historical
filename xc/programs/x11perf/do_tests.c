@@ -62,17 +62,23 @@ extern void EndLines();
 
 
 extern Bool InitCircles();
+extern Bool InitPartCircles();
 extern Bool InitWideCircles();
 extern Bool InitDashedCircles();
 extern Bool InitWideDashedCircles();
 extern Bool InitDoubleDashedCircles();
 extern Bool InitWideDoubleDashedCircles();
+extern Bool InitChordPartCircles();
+extern Bool InitSlicePartCircles();
 extern Bool InitEllipses();
+extern Bool InitPartEllipses();
 extern Bool InitWideEllipses();
 extern Bool InitDashedEllipses();
 extern Bool InitWideDashedEllipses();
 extern Bool InitDoubleDashedEllipses();
 extern Bool InitWideDoubleDashedEllipses();
+extern Bool InitChordPartEllipses();
+extern Bool InitSlicePartEllipses();
 extern void DoArcs();
 extern void DoFilledArcs();
 extern void EndArcs();
@@ -309,10 +315,10 @@ Test test[] = {
 		{10, POLY, 10}},
   {"-circle100", "100-pixel circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
-		{40, 100, 100}},
+		{40, 200, 100}},
   {"-circle500", "500-pixel circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
-		{20, 25, 500}},
+		{20, 50, 500}},
   {"-dcircle100", "100-pixel dashed circle",
 		InitDashedCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{40, 100, 100}},
@@ -335,6 +341,15 @@ Test test[] = {
 		InitWideDoubleDashedCircles, DoArcs, NullProc, EndArcs,
 		False, 0,
 		{40, 100, 100}},
+  {"-pcircle10", "10-pixel partial circle",
+		InitPartCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{10, POLY, 10}},
+  {"-pcircle100", "100-pixel partial circle",
+		InitPartCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{40, 198, 100}},
+  {"-pcircle500", "500-pixel partial circle",
+		InitPartCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 54, 500}},
   {"-fcircle1",  "1-pixel solid circle",
 		InitCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{20, POLY, 1}},
@@ -343,19 +358,37 @@ Test test[] = {
 		{10, POLY, 10}},
   {"-fcircle100", "100-pixel solid circle",
 		InitCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
-		{40, 25, 100}},
+		{40, 100, 100}},
   {"-fcircle500", "500-pixel solid circle",
 		InitCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
-		{20, 1, 500}},
+		{20, 20, 500}},
+  {"-fcpcircle10", "10-pixel fill chord partial circle",
+		InitChordPartCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
+		{10, POLY, 10}},
+  {"-fcpcircle100", "100-pixel fill chord partial circle",
+		InitChordPartCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
+		{40, 108, 100}},
+  {"-fcpcircle500", "500-pixel fill chord partial circle",
+		InitChordPartCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
+		{20, 36, 500}},
+  {"-fspcircle10", "10-pixel fill slice partial circle",
+		InitSlicePartCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
+		{10, POLY, 10}},
+  {"-fspcircle100", "100-pixel fill slice partial circle",
+		InitSlicePartCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
+		{40, 108, 100}},
+  {"-fspcircle500", "500-pixel fill slice partial circle",
+		InitSlicePartCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
+		{20, 36, 500}},
   {"-ellipse10", "10-pixel ellipse",
 		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
-		{20, 200, 10}},
+		{20, 500, 10}},
   {"-ellipse100", "100-pixel ellipse",
 		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
-		{20, 25, 100}},
+		{20, 300, 100}},
   {"-ellipse500", "500-pixel ellipse",
 		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
-		{10, 20, 500}},
+		{10, 100, 500}},
   {"-dellipse100", "100-pixel dashed ellipse",
 		InitDashedEllipses, DoArcs, NullProc, EndArcs, False, 0,
 		{20, 25, 100}},
@@ -378,6 +411,15 @@ Test test[] = {
 		InitWideDoubleDashedEllipses, DoArcs, NullProc, EndArcs,
 		False, 0,
 		{20, 25, 100}},
+  {"-pellipse10", "10-pixel partial ellipse",
+		InitPartEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 540, 10}},
+  {"-pellipse100", "100-pixel partial ellipse",
+		InitPartEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 360, 100}},
+  {"-pellipse500", "500-pixel partial ellipse",
+		InitPartEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{10, 108, 500}},
   {"-fellipse10", "10-pixel filled ellipse",
 		InitEllipses, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{20, 200, 10}},
@@ -387,6 +429,30 @@ Test test[] = {
   {"-fellipse500", "500-pixel filled ellipse",
 		InitEllipses, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{10, 10, 500}},
+  {"-fcpellipse10", "10-pixel fill chord partial ellipse",
+		InitChordPartEllipses, DoFilledArcs, NullProc, EndArcs,
+		False, 0,
+		{10, 270, 10}},
+  {"-fcpellipse100", "100-pixel fill chord ellipse",
+		InitChordPartEllipses, DoFilledArcs, NullProc, EndArcs,
+		False, 0,
+		{40, 36, 100}},
+  {"-fcpellipse500", "500-pixel fill chord ellipse",
+		InitChordPartEllipses, DoFilledArcs, NullProc, EndArcs,
+		False, 0,
+		{20, 18, 500}},
+  {"-fspellipse10", "10-pixel fill slice partial ellipse",
+		InitSlicePartEllipses, DoFilledArcs, NullProc, EndArcs,
+		False, 0,
+		{10, 270, 10}},
+  {"-fspellipse100", "100-pixel fill slice ellipse",
+		InitSlicePartEllipses, DoFilledArcs, NullProc, EndArcs,
+		False, 0,
+		{40, 36, 100}},
+  {"-fspellipse500", "500-pixel fill slice ellipse",
+		InitSlicePartEllipses, DoFilledArcs, NullProc, EndArcs,
+		False, 0,
+		{20, 18, 500}},
   {"-triangle1", "Fill 1-pixel/side triangle",
 		InitTriangles, DoTriangles, NullProc, EndTriangles, 
                 False, 0,

@@ -26,9 +26,12 @@ SOFTWARE.
 static XArc *arcs;
 static GC   pgc;
 
-Bool InitCircles(xp, p)
+#define DegreesToX(degrees) (degrees * 64)
+
+static Bool GenerateCircles(xp, p, partialArcs)
     XParms  xp;
     Parms   p;
+    Bool    partialArcs;
 {
     int     i;
     int     rows;       /* Number of rows filled in current column	    */
@@ -36,6 +39,7 @@ Bool InitCircles(xp, p)
     int     xorg, yorg; /* Used to get from column to column or row to row  */
     int     size;
     int     half;
+    int     startAngle, arcAngle;
 
     pgc = xp->fggc;
 
@@ -44,37 +48,83 @@ Bool InitCircles(xp, p)
     arcs = (XArc *)malloc((p->objects) * sizeof(XArc));
     x = xorg = half; y = yorg = half;
     rows = 0;
+    startAngle = DegreesToX(0);
+    arcAngle = DegreesToX(360);
 
     for (i = 0; i != p->objects; i++) {    
 	arcs[i].x = x;
 	arcs[i].y = y;
 	arcs[i].width = size;
 	arcs[i].height = size;
-	arcs[i].angle1 = 0;
-	arcs[i].angle2 = 360*64;
+	arcs[i].angle1 = startAngle;
+	arcs[i].angle2 = arcAngle;
+
+	if (partialArcs) {
+	    startAngle += DegreesToX(30);
+	    if (startAngle >= DegreesToX(360)) startAngle -= DegreesToX(360);
+	    arcAngle -= DegreesToX(20);
+	    if (arcAngle <= DegreesToX(0)) arcAngle += DegreesToX(360);
+	}
 
 	y += size + 1;
 	rows++;
 	if (y >= HEIGHT - size  - half || rows == MAXROWS) {
 	    /* Go to next column */
 	    rows = 0;
-	    yorg++;
-	    if (yorg >= size + half || yorg >= HEIGHT - size - half) {
-		yorg = half;
-		xorg++;
-		if (xorg >= size + half || xorg >= WIDTH - size - half) {
-		    xorg = half;
-		}
-	    }
-	    y = yorg;
 	    x += size + 1;
 	    if (x >= WIDTH - size) {
+		yorg++;
+		if (yorg >= size + half || yorg >= HEIGHT - size - half) {
+		    yorg = half;
+		    xorg++;
+		    if (xorg >= size + half || xorg >= WIDTH - size - half) {
+			xorg = half;
+		    }
+		}
 		x = xorg;
 	    }
+	    y = yorg;
 	}
     }
     return True;
 }
+
+Bool InitCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    return GenerateCircles(xp, p, False);
+}
+
+Bool InitPartCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    return GenerateCircles(xp, p, True);
+}
+
+
+Bool InitChordPartCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    (void) GenerateCircles(xp, p, True);
+    XSetArcMode(xp->d, xp->bggc, ArcChord);
+    XSetArcMode(xp->d, xp->fggc, ArcChord);
+    return True;
+}
+
+
+Bool InitSlicePartCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    (void) GenerateCircles(xp, p, True);
+    XSetArcMode(xp->d, xp->bggc, ArcPieSlice);
+    XSetArcMode(xp->d, xp->fggc, ArcPieSlice);
+    return True;
+}
+
 
 Bool InitWideCircles(xp, p)
     XParms  xp;
@@ -171,9 +221,10 @@ Bool InitWideDoubleDashedCircles(xp, p)
     return True;
 }
 
-Bool InitEllipses(xp, p)
+static Bool GenerateEllipses(xp, p, partialArcs)
     XParms  xp;
     Parms   p;
+    Bool    partialArcs;
 {
     int     size;
     int     half;
@@ -182,6 +233,7 @@ Bool InitEllipses(xp, p)
     int     x, y;	    /* base of square to draw ellipse in	    */
     int     vsize, vsizeinc;
     int     dir;
+    int     startAngle, arcAngle;
 
     pgc = xp->fggc;
 
@@ -195,6 +247,8 @@ Bool InitEllipses(xp, p)
     x = half; y = half;
     dir = 0;
     rows = 0;
+    startAngle = DegreesToX(0);
+    arcAngle = DegreesToX(360);
 
     for (i = 0; i != p->objects; i++) {    
 	arcs[i].x = x;
@@ -208,8 +262,15 @@ Bool InitEllipses(xp, p)
 	    arcs[i].width = size;
 	    arcs[i].height = vsize;
 	}
-	arcs[i].angle1 = 0;
-	arcs[i].angle2 = 360*64;
+	arcs[i].angle1 = startAngle;
+	arcs[i].angle2 = arcAngle;
+
+	if (partialArcs) {
+	    startAngle += DegreesToX(30);
+	    if (startAngle >= DegreesToX(360)) startAngle -= DegreesToX(360);
+	    arcAngle -= DegreesToX(20);
+	    if (arcAngle <= DegreesToX(0)) arcAngle += DegreesToX(360);
+	}
 
 	y += size + 1;
 	rows++;
@@ -231,6 +292,44 @@ Bool InitEllipses(xp, p)
     }
     return True;
 }
+
+Bool InitEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    return GenerateEllipses(xp, p, False);
+}
+
+
+Bool InitPartEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    return GenerateEllipses(xp, p, True);
+}
+
+
+Bool InitChordPartEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    (void) GenerateEllipses(xp, p, True);
+    XSetArcMode(xp->d, xp->bggc, ArcChord);
+    XSetArcMode(xp->d, xp->fggc, ArcChord);
+    return True;
+}
+
+
+Bool InitSlicePartEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    (void) GenerateEllipses(xp, p, True);
+    XSetArcMode(xp->d, xp->bggc, ArcPieSlice);
+    XSetArcMode(xp->d, xp->fggc, ArcPieSlice);
+    return True;
+}
+
 
 Bool InitWideEllipses(xp, p)
     XParms  xp;
