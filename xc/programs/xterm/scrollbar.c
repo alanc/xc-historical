@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.29 89/10/30 14:50:44 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.30 89/11/17 10:51:03 kit Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.29 89/10/30 14:50:44 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.30 89/11/17 10:51:03 kit Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -144,7 +144,7 @@ static void ResizeScreen(xw, min_width, min_height )
 
 	if (oldWidth != reqWidth || oldHeight != reqHeight) {
 	    /* wait for a window manager to actually do it */
-	    XIfEvent (screen->display, &event, IsEventType, ConfigureNotify);
+	    XIfEvent (screen->display, &event, IsEventType, (char *)ConfigureNotify);
 	}
 
 	newAttributes.event_mask = oldAttributes.your_event_mask;
@@ -169,7 +169,6 @@ static Widget CreateScrollBar(xw, x, y, height)
 	int x, y, height;
 {
 	Widget scrollWidget;
-	TScreen *screen = &xw->screen;
 
 	static Arg argList[] = {
 	   {XtNx,		(XtArgVal) 0},
@@ -388,8 +387,6 @@ ScrollBarOn (xw, init, doalloc)
 ScrollBarOff(screen)
 	register TScreen *screen;
 {
-	register int border = 2 * screen->border;
-
 	if(!screen->scrollbar)
 		return;
 	screen->scrollbar = 0;
@@ -474,7 +471,7 @@ static int params_to_pixels (screen, params, n)
     String *params;
     int n;
 {
-    register mult;
+    register mult = 1;
     register char *s;
 
     switch (n > 2 ? 2 : n) {

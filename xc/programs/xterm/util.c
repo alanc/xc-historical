@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.17 89/12/09 16:23:59 jim Exp $
+ *	$XConsortium: util.c,v 1.18 89/12/09 17:39:43 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.17 89/12/09 16:23:59 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.18 89/12/09 17:39:43 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -192,7 +192,7 @@ register int amount;
 	register int i = screen->bot_marg - screen->top_marg + 1;
 	register int shift;
 	register int bot;
-	register int refreshtop;
+	register int refreshtop = 0;
 	register int refreshheight;
 	register int scrolltop;
 	register int scrollheight;

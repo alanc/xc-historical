@@ -466,8 +466,6 @@ static void do_reversevideo (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
     term->flags ^= REVERSE_VIDEO;
     ReverseVideo (term);
     /* update_reversevideo done in ReverseVideo */
@@ -478,8 +476,6 @@ static void do_autowrap (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
     term->flags ^= WRAPAROUND;
     update_autowrap();
 }
@@ -489,8 +485,6 @@ static void do_reversewrap (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
     term->flags ^= REVERSEWRAP;
     update_reversewrap();
 }
@@ -500,8 +494,6 @@ static void do_autolinefeed (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
     term->flags ^= LINEFEED;
     update_autolinefeed();
 }
@@ -511,8 +503,6 @@ static void do_appcursor (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
     term->keyboard.flags ^= CURSOR_APL;
     update_appcursor();
 }
@@ -522,8 +512,6 @@ static void do_appkeypad (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
     term->keyboard.flags ^= KYPD_APL;
     update_appkeypad();
 }
@@ -680,7 +668,6 @@ static void do_vtfont (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
     char *entryname = (char *) closure;
     int i;
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.47 89/12/08 16:04:05 rws Exp $
+ *	$XConsortium: button.c,v 1.48 89/12/09 16:24:28 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.47 89/12/08 16:04:05 rws Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.48 89/12/09 16:24:28 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -268,10 +268,12 @@ Cardinal num_params;
     }
     if (buffer >= 0) {
 	register TScreen *screen = &((XtermWidget)w)->screen;
+	int inbytes;
 	unsigned long nbytes;
 	int fmt8 = 8;
 	Atom type = XA_STRING;
-	char *line = XFetchBuffer(screen->display, &nbytes, buffer);
+	char *line = XFetchBuffer(screen->display, &inbytes, buffer);
+	nbytes = (unsigned long) inbytes;
 	if (nbytes > 0)
 	    SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
 			      &nbytes, &fmt8);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.137 89/12/09 17:23:51 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.138 89/12/09 18:36:15 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -157,6 +157,8 @@ extern char *malloc();
 extern char *calloc();
 extern char *realloc();
 extern char *ttyname();
+extern char *getenv();
+extern char *strindex ();
 extern void exit();
 extern void sleep();
 extern void bcopy();
@@ -284,7 +286,6 @@ static char bin_login[] = LOGIN_FILENAME;
 
 static int inhibit;
 static char passedPty[2];	/* name if pty if slave */
-static int loginpty;
 
 #ifdef TIOCCONS
 static int Console;
@@ -484,7 +485,6 @@ static void Syntax (badOption)
 {
     struct _options *opt;
     int col;
-    char **cpp;
 
     fprintf (stderr, "%s:  bad command line option \"%s\"\r\n\n",
 	     ProgramName, badOption);
@@ -678,6 +678,7 @@ char **argv;
 	if (strcmp(xterm_name, "-") == 0) xterm_name = "xterm";
 	if (resource.icon_geometry != NULL) {
 	    int scr, junk;
+	    int ix, iy;
 	    Arg args[2];
 
 	    for(scr = 0;	/* yyuucchh */
@@ -687,8 +688,9 @@ char **argv;
 	    args[0].name = XtNiconX;
 	    args[1].name = XtNiconY;
 	    XGeometry(XtDisplay(toplevel), scr, resource.icon_geometry, "",
-		      0, 0, 0, 0, 0, &args[0].value, &args[1].value,
-		      &junk, &junk);
+		      0, 0, 0, 0, 0, &ix, &iy, &junk, &junk);
+	    args[0].value = ix;
+	    args[1].value = iy;
 	    XtSetValues( toplevel, args, 2);
 	}
 
@@ -767,7 +769,6 @@ char **argv;
  */
 
 	if (command_to_exec) {
-	    char window_title[1024];
 	    Arg args[2];
 
 	    if (!resource.title) {
@@ -1093,7 +1094,7 @@ spawn ()
 #else
 	int fds[2];
 #endif
-	int index1, tty = -1;
+	int tty = -1;
 	int discipline;
 	int done;
 #ifdef USE_SYSV_TERMIO
@@ -1144,8 +1145,6 @@ spawn ()
 #endif	/* LASTLOG */
 #endif	/* UTMP */
 	extern int Exit();
-	char *getenv();
-	char *strindex ();
 
 	screen->uid = getuid();
 	screen->gid = getgid();
@@ -1355,12 +1354,13 @@ spawn ()
 		 */
 		extern char **environ;
 		int pgrp = getpid();
-		int ptyfd;
 #ifdef USE_SYSV_TERMIO
 		char numbuf[12];
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef USE_HANDSHAKE
+		int ptyfd;
+
 		setpgrp();
 		grantpt (screen->respond);
 		unlockpt (screen->respond);
@@ -2179,7 +2179,7 @@ register char *oldtc, *newtc;
 	register int i;
 	register int li_first = 0;
 	register char *temp;
-	char *index(), *strindex();
+	char *index();
 
 	if ((ptr1 = strindex (oldtc, "co#")) == NULL){
 		strcat (oldtc, "co#80:");
@@ -2301,8 +2301,6 @@ remove_termcap_entry (buf, str)
     if (strinbuf) {
         register char *colonPtr = index (strinbuf+1, ':');
         if (colonPtr) {
-            register char *cp;
-
             while (*colonPtr) {
                 *strinbuf++ = *colonPtr++;      /* copy down */
             }

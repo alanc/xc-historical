@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: input.c,v 1.6 89/03/02 09:54:09 jim Exp $
+ *	$XConsortium: input.c,v 1.7 89/03/02 12:05:08 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_input_c = "$XConsortium: input.c,v 1.6 89/03/02 09:54:09 jim Exp $";
+static char *rcsid_input_c = "$XConsortium: input.c,v 1.7 89/03/02 12:05:08 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@ static char *rcsid_input_c = "$XConsortium: input.c,v 1.6 89/03/02 09:54:09 jim 
 /* input.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: input.c,v 1.6 89/03/02 09:54:09 jim Exp $";
+static char rcs_id[] = "$XConsortium: input.c,v 1.7 89/03/02 12:05:08 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -90,11 +90,11 @@ Bool eightbit;
 	register int key = FALSE;
 	int	pty	= screen->respond;
 	int	nbytes;
-	int 	keycode;
+	KeySym  keysym;
 	ANSI	reply;
 
-	nbytes = XLookupString (event, strbuf, STRBUFSIZE, 
-		&keycode, &compose_status);
+	nbytes = XLookupString ((XKeyEvent *)event, strbuf, STRBUFSIZE, 
+		&keysym, &compose_status);
 
 	string = &strbuf[0];
 	reply.a_pintro = 0;
@@ -102,41 +102,41 @@ Bool eightbit;
 	reply.a_nparam = 0;
 	reply.a_inters = 0;
 
-	if (IsPFKey(keycode)) {
+	if (IsPFKey(keysym)) {
 		reply.a_type = SS3;
 		unparseseq(&reply, pty);
-		unparseputc((char)(keycode-XK_KP_F1+'P'), pty);
+		unparseputc((char)(keysym-XK_KP_F1+'P'), pty);
 		key = TRUE;
-	} else if (IsKeypadKey(keycode)) {
+	} else if (IsKeypadKey(keysym)) {
 	  	if (keyboard->flags & KYPD_APL)	{
 			reply.a_type   = SS3;
 			unparseseq(&reply, pty);
-			unparseputc(kypd_apl[keycode-XK_KP_Space], pty);
+			unparseputc(kypd_apl[keysym-XK_KP_Space], pty);
 		} else
-			unparseputc(kypd_num[keycode-XK_KP_Space], pty);
+			unparseputc(kypd_num[keysym-XK_KP_Space], pty);
 		key = TRUE;
-        } else if (IsCursorKey(keycode) &&
-        	keycode != XK_Prior && keycode != XK_Next) {
+        } else if (IsCursorKey(keysym) &&
+        	keysym != XK_Prior && keysym != XK_Next) {
        		if (keyboard->flags & CURSOR_APL) {
 			reply.a_type = SS3;
 			unparseseq(&reply, pty);
-			unparseputc(cur[keycode-XK_Left], pty);
+			unparseputc(cur[keysym-XK_Left], pty);
 		} else {
 			reply.a_type = CSI;
-			reply.a_final = cur[keycode-XK_Left];
+			reply.a_final = cur[keysym-XK_Left];
 			unparseseq(&reply, pty);
 		}
 		key = TRUE;
-	 } else if (IsFunctionKey(keycode) || IsMiscFunctionKey(keycode) ||
-	 	keycode == XK_Prior || keycode == XK_Next ||
-	 	keycode == DXK_Remove) {
+	 } else if (IsFunctionKey(keysym) || IsMiscFunctionKey(keysym) ||
+	 	keysym == XK_Prior || keysym == XK_Next ||
+	 	keysym == DXK_Remove) {
 		reply.a_type = CSI;
 		reply.a_nparam = 1;
 		if (sunFunctionKeys) {
-		    reply.a_param[0] = sunfuncvalue (keycode);
+		    reply.a_param[0] = sunfuncvalue (keysym);
 		    reply.a_final = 'z';
 		} else {
-		    reply.a_param[0] = funcvalue (keycode);
+		    reply.a_param[0] = funcvalue (keysym);
 		    reply.a_final = '~';
 		}
 		if (reply.a_param[0] > 0)
@@ -161,7 +161,7 @@ Bool eightbit;
 	if(key && !screen->TekEmu)
 	        AdjustAfterInput(screen);
 #ifdef ENABLE_PRINT
-	if (keycode == XK_F2) TekPrint();
+	if (keysym == XK_F2) TekPrint();
 #endif
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.14 89/12/03 12:05:33 jim Exp $
+ *	$XConsortium: screen.c,v 1.15 89/12/09 16:24:20 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.14 89/12/03 12:05:33 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.15 89/12/09 16:24:20 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -365,10 +365,10 @@ Boolean force;			/* ... leading/trailing spaces */
 	   for (; col <= maxcol; col++) {
 		if (attrs[col] != flags) {
 		   XDrawImageString(screen->display, TextWindow(screen), 
-		        	gc, x, y, &chars[lastind], n = col - lastind);
+		        	gc, x, y, (char *) &chars[lastind], n = col - lastind);
 		   if((flags & BOLD) && screen->enbolden)
 		 	XDrawString(screen->display, TextWindow(screen), 
-			 gc, x + 1, y, &chars[lastind], n);
+			 gc, x + 1, y, (char *) &chars[lastind], n);
 		   if(flags & UNDERLINE) 
 			XDrawLine(screen->display, TextWindow(screen), 
 			 gc, x, y+1, x+n*FontWidth(screen), y+1);
@@ -401,10 +401,10 @@ Boolean force;			/* ... leading/trailing spaces */
 	       if (flags & BOLD) gc = screen->normalboldGC;
 	       else gc = screen->normalGC;
 	   XDrawImageString(screen->display, TextWindow(screen), gc, 
-	         x, y, &chars[lastind], n = col - lastind);
+	         x, y, (char *) &chars[lastind], n = col - lastind);
 	   if((flags & BOLD) && screen->enbolden)
 		XDrawString(screen->display, TextWindow(screen), gc,
-		x + 1, y, &chars[lastind], n);
+		x + 1, y, (char *) &chars[lastind], n);
 	   if(flags & UNDERLINE) 
 		XDrawLine(screen->display, TextWindow(screen), gc, 
 		 x, y+1, x + n * FontWidth(screen), y+1);
@@ -487,9 +487,9 @@ unsigned *flags;
 		if(screen->cursor_state)
 			HideCursor();
 		if (screen->altbuf) 
-			Reallocate(&screen->altbuf, &screen->abuf_address,
+			Reallocate(&screen->altbuf, (Char **)&screen->abuf_address,
 			 rows, cols, screen->max_row + 1, screen->max_col + 1);
-		Reallocate(&screen->allbuf, &screen->sbuf_address,
+		Reallocate(&screen->allbuf, (Char **)&screen->sbuf_address,
 		 rows + savelines, cols,
 		 screen->max_row + 1 + savelines, screen->max_col + 1);
 		screen->buf = &screen->allbuf[2 * savelines];

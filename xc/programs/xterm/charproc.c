@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.117 89/12/06 15:32:09 jim Exp $
+ * $XConsortium: charproc.c,v 1.118 89/12/09 17:24:17 jim Exp $
  */
 
 
@@ -149,7 +149,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.117 89/12/06 15:32:09 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.118 89/12/09 17:24:17 jim Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -1928,7 +1928,7 @@ XEvent *event;
     {
     switch (event->type) {
        case MappingNotify:
-	  XRefreshKeyboardMapping (event);
+	  XRefreshKeyboardMapping (&event->xmapping);
 	  break;
        case GraphicsExpose:
        case NoExpose:
@@ -2072,10 +2072,7 @@ XSetWindowAttributes *values;
 	register TScreen *screen = &term->screen;
 	int xpos, ypos, pr;
 	extern char *malloc();
-	XGCValues		xgcv;
-	XtGCMask			mask;
 	XSizeHints		sizehints;
-	XWMHints		wmhints;
 	extern int		VTgcFontMask;
 	int scrollbar_width;
 
@@ -2305,11 +2302,11 @@ ShowCursor()
 	y = CursorY(screen, screen->cur_row) + 
 	  screen->fnt_norm->ascent;
 	XDrawImageString(screen->display, TextWindow(screen), currentGC,
-		x, y, &c, 1);
+		x, y, (char *) &c, 1);
 
 	if((flags & BOLD) && screen->enbolden) /* no bold font */
 		XDrawString(screen->display, TextWindow(screen), currentGC,
-			x + 1, y, &c, 1);
+			x + 1, y, (char *) &c, 1);
 	if(flags & UNDERLINE) 
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			x, y+1, x + FontWidth(screen), y+1);
@@ -2448,7 +2445,7 @@ int set_character_class (s)
     static char *errfmt = "%s:  %s in range string \"%s\" (position %d)\n";
     extern char *ProgramName;
 
-    if (!s || !s[0]) return;
+    if (!s || !s[0]) return -1;
 
     base = 10;				/* in case we ever add octal, hex */
     low = high = -1;			/* out of range */

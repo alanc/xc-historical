@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.60 89/12/09 16:24:13 jim Exp $
+ *	$XConsortium: misc.c,v 1.61 89/12/09 17:24:06 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.60 89/12/09 16:24:13 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.61 89/12/09 17:24:06 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -109,7 +109,6 @@ Cursor make_colored_cursor (cursorindex, fg, bg)
 	register TScreen *screen = &term->screen;
 	Cursor c;
 	register Display *dpy = screen->display;
-	XColor foreback[2];
 	
 	c = XCreateFontCursor (dpy, cursorindex);
 	if (c == (Cursor) 0) return (c);
@@ -286,8 +285,6 @@ unselectwindow(screen, flag)
 register TScreen *screen;
 register int flag;
 {
-    register int i;
-
     if (screen->always_highlight) return;
 
     if(screen->TekEmu) {
@@ -523,7 +520,6 @@ int (*func)();
 	char buf[512];
 	extern char *malloc();
 	Bool okay = True;
-	int len;
 
 	/* 
 	 * lines should be of the form <ESC> ] number ; string <BEL>

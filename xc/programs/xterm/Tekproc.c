@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.70 89/12/06 15:31:56 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.71 89/12/09 17:24:03 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -114,7 +114,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.70 89/12/06 15:31:56 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.71 89/12/09 17:24:03 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -320,7 +320,6 @@ Tekparse()
 	register TScreen *screen = &term->screen;
 	register int c, x, y;
 	char ch;
-	int arg;
 	int Tinput();
 
 	for( ; ; )
@@ -1123,8 +1122,6 @@ static unsigned char *dashes[TEKNUMLINES] = {
 static void TekInitialize(request, new)
     Widget request, new;
 {
-    TekWidget r = (TekWidget) request, n = (TekWidget) new;
-
    /* look for focus related events on the shell, because we need
     * to care about the shell's border being part of our focus.
     */
@@ -1148,8 +1145,6 @@ static void TekRealize (gw, valuemaskp, values)
     register TekLink *tek;
     register double d;
     register int border = 2 * screen->border;
-    XColor cdef;
-    Pixel pixels[2];
     int pr;
     XGCValues gcv;
     int winX, winY, width, height;
@@ -1197,7 +1192,7 @@ static void TekRealize (gw, valuemaskp, values)
     width = TEKDEFWIDTH + border;
     height = TEKDEFHEIGHT + border;
 
-    pr = XParseGeometry(term->misc.T_geometry, &winX, &winY, &width, &height);
+    pr = XParseGeometry(term->misc.T_geometry, &winX, &winY, (unsigned int *)&width, (unsigned int *)&height);
     if ((pr & XValue) && (pr & XNegative))
       winX += DisplayWidth(screen->display, DefaultScreen(screen->display))
                         - width - (term->core.parent->core.border_width * 2);
@@ -1326,7 +1321,7 @@ static void TekRealize (gw, valuemaskp, values)
 	screen->linepat[i] = XCreateGC (screen->display, TWindow(screen),
 					(GCForeground|GCLineStyle), &gcv); 
 	XSetDashes (screen->display, screen->linepat[i], 0,
-		    dashes[i], dash_length[i]);
+		    (char *) dashes[i], dash_length[i]);
     }
 
     TekBackground(screen);
@@ -1394,7 +1389,7 @@ void TekSetFontSize (gw, newitem)
 TekReverseVideo(screen)
 register TScreen *screen;
 {
-	register int flag, i;
+	register int i;
 	XGCValues gcv;
 	 
 
