@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.120 89/11/30 11:43:41 jim Exp $
+ * $XConsortium: add_window.c,v 1.121 89/11/30 18:57:51 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.120 89/11/30 11:43:41 jim Exp $";
+"$XConsortium: add_window.c,v 1.121 89/11/30 18:57:51 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -336,9 +336,14 @@ IconMgr *iconp;
 		XSync(dpy, 0);
 		XGrabServer(dpy);
 
-		(void) XQueryPointer (dpy, Scr->Root, &JunkRoot, 
-				      &JunkChild, &JunkX, &JunkY,
-				      &AddingX, &AddingY, &JunkMask);
+		JunkMask = 0;
+		if (!XQueryPointer (dpy, Scr->Root, &JunkRoot, 
+				    &JunkChild, &JunkX, &JunkY,
+				    &AddingX, &AddingY, &JunkMask))
+		  JunkMask = 0;
+
+		JunkMask &= (Button1Mask | Button2Mask | Button3Mask |
+			     Button4Mask | Button5Mask);
 
 		/*
 		 * watch out for changing screens
