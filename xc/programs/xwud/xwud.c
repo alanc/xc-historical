@@ -1,7 +1,7 @@
 /* 
- * $Locker: rws $ 
+ * $Locker:  $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.14 87/09/11 19:01:19 rws Locked $";
+static char	*rcsid = "$Header: xwud.c,v 1.15 87/12/21 12:22:07 rws Exp $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.14 87/09/11 19:01:19 rws Locked $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.14 87/09/11 19:01:19 rws Locked $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.15 87/12/21 12:22:07 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -471,6 +471,42 @@ Error(string)
 	}
 
 	exit(1);
+}
+
+_swapshort (bp, n)
+    register char *bp;
+    register unsigned n;
+{
+    register char c;
+    register char *ep = bp + n;
+
+    while (bp < ep) {
+	c = *bp;
+	*bp = *(bp + 1);
+	bp++;
+	*bp++ = c;
+    }
+}
+
+_swaplong (bp, n)
+    register char *bp;
+    register unsigned n;
+{
+    register char c;
+    register char *ep = bp + n;
+    register char *sp;
+
+    while (bp < ep) {
+	sp = bp + 3;
+	c = *sp;
+	*sp = *bp;
+	*bp++ = c;
+	sp = bp + 1;
+	c = *sp;
+	*sp = *bp;
+	*bp++ = c;
+	bp += 2;
+    }
 }
 
 /* End of xwud.c */

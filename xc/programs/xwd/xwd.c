@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.29 87/10/09 14:36:37 rws Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.30 87/12/21 12:12:47 rws Exp $";
 #endif
 
 /*%
@@ -361,4 +361,40 @@ int Get_XColors(win_info, colors)
     XQueryColors(dpy, win_info->colormap, *colors, ncolors);
     
     return(ncolors);
+}
+
+_swapshort (bp, n)
+    register char *bp;
+    register unsigned n;
+{
+    register char c;
+    register char *ep = bp + n;
+
+    while (bp < ep) {
+	c = *bp;
+	*bp = *(bp + 1);
+	bp++;
+	*bp++ = c;
+    }
+}
+
+_swaplong (bp, n)
+    register char *bp;
+    register unsigned n;
+{
+    register char c;
+    register char *ep = bp + n;
+    register char *sp;
+
+    while (bp < ep) {
+	sp = bp + 3;
+	c = *sp;
+	*sp = *bp;
+	*bp++ = c;
+	sp = bp + 1;
+	c = *sp;
+	*sp = *bp;
+	*bp++ = c;
+	bp += 2;
+    }
 }
