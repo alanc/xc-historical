@@ -1,0 +1,126 @@
+/**/#
+/**/# This library contains miscellaneous utility routines and is not part
+/**/# of the Xlib standard.
+/**/#
+
+      CCOPTIONS = LibraryCCOptions
+    STD_DEFINES = LibraryDefines
+    CDEBUGFLAGS = LibraryCDebugFlags
+       INCLUDES = -I. -I$(TOP) -I$(TOP)/X11
+   INSTALLFLAGS = $(INSTINCFLAGS)
+       LINTLIBS = $(LINTXLIB) 
+
+#ifdef OsNameDefines
+OS_NAME_DEFINES = OsNameDefines
+#endif
+
+HEADERS = Xdmcp.h
+
+SRCS = \
+	XdmcpA8Eq.c \
+	XdmcpAA8.c \
+	XdmcpAA16.c \
+	XdmcpAA32.c \
+	XdmcpAofA8.c \
+	XdmcpCA8.c \
+	XdmcpDA8.c \
+	XdmcpDA16.c \
+	XdmcpDA32.c \
+	XdmcpDAofA8.c \
+	XdmcpFill.c \
+	XdmcpFlush.c \
+	XdmcpRA8.c \
+	XdmcpRA16.c \
+	XdmcpRA32.c \
+	XdmcpRAofA8.c \
+	XdmcpRC8.c \
+	XdmcpRC16.c \
+	XdmcpRC32.c \
+	XdmcpRHead.c \
+	XdmcpRR.c \
+	XdmcpRaA8.c \
+	XdmcpRaA16.c \
+	XdmcpRaA32.c \
+	XdmcpRaAoA8.c \
+	XdmcpWA8.c \
+	XdmcpWA16.c \
+	XdmcpWA32.c \
+	XdmcpWAofA8.c \
+	XdmcpWC8.c \
+	XdmcpWC16.c \
+	XdmcpWC32.c \
+	XdmcpWhead.c \
+	XdmcpAlloc.c
+
+OBJS = \
+	XdmcpA8Eq.o \
+	XdmcpAA8.o \
+	XdmcpAA16.o \
+	XdmcpAA32.o \
+	XdmcpAofA8.o \
+	XdmcpCA8.o \
+	XdmcpDA8.o \
+	XdmcpDA16.o \
+	XdmcpDA32.o \
+	XdmcpDAofA8.o \
+	XdmcpFill.o \
+	XdmcpFlush.o \
+	XdmcpRA8.o \
+	XdmcpRA16.o \
+	XdmcpRA32.o \
+	XdmcpRAofA8.o \
+	XdmcpRC8.o \
+	XdmcpRC16.o \
+	XdmcpRC32.o \
+	XdmcpRHead.o \
+	XdmcpRR.o \
+	XdmcpRaA8.o \
+	XdmcpRaA16.o \
+	XdmcpRaA32.o \
+	XdmcpRaAoA8.o \
+	XdmcpWA8.o \
+	XdmcpWA16.o \
+	XdmcpWA32.o \
+	XdmcpWAofA8.o \
+	XdmcpWC8.o \
+	XdmcpWC16.o \
+	XdmcpWC32.o \
+	XdmcpWhead.o \
+	XdmcpAlloc.o
+
+all::
+#if DebugLibXdmcp && ProfileLibXdmcp
+DebuggedAndProfiledLibraryObjectRule()
+#else
+# if DebugLibXdmcp 
+DebuggedLibraryObjectRule()
+# else
+#  if ProfileLibXdmcp
+ProfiledLibraryObjectRule()
+#  else
+NormalLibraryObjectRule()
+#  endif
+# endif
+#endif
+
+NormalLibraryTarget(Xdmcp,$(OBJS))
+LintLibraryTarget(Xdmcp,$(SRCS))
+InstallLibrary(Xdmcp,$(USRLIBDIR))
+InstallLintLibrary(Xdmcp,$(LINTLIBDIR))
+
+#if ProfileLibXdmcp 
+ProfiledLibraryTarget(Xdmcp,$(OBJS))
+InstallLibrary(Xdmcp_p,$(USRLIBDIR))
+#endif
+
+#if DebugLibXdmcp
+DebuggedLibraryTarget(Xdmcp,$(OBJS))
+#endif
+
+BuildIncludes($(HEADERS),Xdmcp,..)
+InstallMultiple($(HEADERS),$(INCDIR)/Xdmcp)
+
+DependTarget()
+
+NormalLintTarget($(SRCS))
+
