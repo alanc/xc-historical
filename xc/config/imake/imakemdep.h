@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.69 94/02/04 21:44:33 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.70 94/02/06 13:24:37 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -48,7 +48,7 @@
 #endif
 #endif
 
-#ifdef CRAY
+#ifdef _CRAY
 #define imake_ccflags "-DSYSV -DUSG"
 #endif
 
@@ -112,7 +112,7 @@
  *     descriptor onto another, define such a mechanism here (if you don't
  *     already fall under the existing category(ies).
  */
-#if defined(SYSV) && !defined(CRAY) && !defined(Mips) && !defined(_SEQUENT_)
+#if defined(SYSV) && !defined(_CRAY) && !defined(Mips) && !defined(_SEQUENT_)
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : (close(fd2), \
 					       fcntl(fd1, F_DUPFD, fd2)))
 #endif
@@ -167,7 +167,7 @@
 #ifdef __sxg__
 #define DEFAULT_CPP "/usr/lib/cpp"
 #endif
-#ifdef CRAY
+#ifdef _CRAY
 #define DEFAULT_CPP "/lib/pcpp"
 #endif
 
@@ -243,7 +243,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-Duniosu",
 #endif
 #endif /* luna */
-#ifdef CRAY		/* Cray */
+#ifdef _CRAY		/* Cray */
 	"-Ucray",
 #endif
 #ifdef Mips
@@ -384,6 +384,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef CRAY
 	{"CRAY", "1"},
+#endif
+#ifdef _CRAY
+	{"_CRAY", "1"},
 #endif
 #ifdef att
 	{"att", "1"},

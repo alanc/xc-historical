@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.44 94/02/06 15:01:52 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.45 94/02/06 18:38:41 rws Exp $
 
 #define OSName			UNICOS 8.0
 XCOMM operating system:  OSName
@@ -8,23 +8,18 @@ XCOMM operating system:  OSName
 #define SystemV			YES
 #define Malloc0ReturnsNull	YES
 #define RemoveTargetProgramByMoving YES
-#define InstallCmd		sh $(SCRIPTSRC)/install.sh
 #define ArCmd			bld cr
 #define StandardDefines		-DSYSV -DUSG
 #define ExecableScripts		NO
 #define HasPoll			NO
 #define HasXServer		NO
 #define BuildPex		NO
-#if OSMajorVersion < 8
-#define CcCmd			scc
-#define PostIncDir		/usr/include/stdc
-#endif
 #define ConnectionFlags		-DTCPCONN
 #define HasShm			NO
 #define PexNativeFPFormat	PEXCRAY_Floating
 #define NativeFPFormat		CRAY_Float
 
-#ifdef CRAY2
+#ifdef _CRAY2
 #define DefaultCCOptions	-hpagelm -hlimitlm
 #endif
 
