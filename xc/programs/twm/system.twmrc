@@ -1,44 +1,65 @@
+#
+# $XConsortium$
+# 
+# Default twm configuration file; needs to be kept small to conserve string
+# space in systems whose compilers don't handle medium-sized strings.
+#
+# Sites should tailor this file, providing any extra title buttons, menus, etc.
+# that may be appropriate for their environment.  For example, if most of the
+# users were accustomed to uwm, the defaults could be set up not to decorate
+# any windows and to use meta-keys.
+#
+
 NoGrabServer
 DecorateTransients
-TitleFont "-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
-MenuFont "-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
-IconFont "-*-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
-IconManagerFont "-*-helvetica-bold-r-normal--*-100-*-*-*"
+TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
+IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
 ResizeFont "fixed"
 
+#
+# Define some useful functions for motion-based actions.
+#
 MoveDelta 3
 Function "move-or-raise" { f.move f.deltastop f.raise }
+Function "move-or-iconify" { f.move f.deltastop f.iconify }
+
+#
+# Set some useful bindings.  Sort of uwm-ish, sort of simple-button-ish
+#
 Button1 = : root : f.menu "defops"
+
+Button1 = m : window|icon : f.function "move-or-iconify"
 
 Button1 = : title : f.function "move-or-raise"
 Button2 = : title : f.raiselower
-Button3 = : title : f.raiselower
 
-Button1 = : icon : f.function "move-or-raise"
+Button1 = : icon : f.function "move-or-iconify"
 Button2 = : icon : f.iconify
-Button3 = : icon : f.raiselower
 
 Button1 = : iconmgr : f.iconify
 Button2 = : iconmgr : f.iconify
-Button3 = : iconmgr : f.iconify
 
+#
+# And a menus with the usual things
+#
 menu "defops"
 {
 "Twm"	f.title
 "Iconify"	f.iconify
 "Resize"	f.resize
-"Move"	f.move
-"Raize"	f.raise
-"Lower"	f.lower
+"Move"		f.move
+"Raise"		f.raise
+"Lower"		f.lower
 ""		f.nop
-"Delete"	f.delete
-""		f.nop
+"Focus"		f.focus
+"Unfocus"	f.unfocus
 "Show Iconmgr"	f.showiconmgr
 "Hide Iconmgr"	f.hideiconmgr
 ""		f.nop
-"Focus"	f.focus
-"Unfocus"	f.unfocus
+"Kill"		f.destroy
+"Delete"	f.delete
 ""		f.nop
-"Restart"	f.restart
-"Exit"	f.quit
+"Exit"		f.quit
 }
