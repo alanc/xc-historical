@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.35 91/09/25 11:00:41 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.36 91/10/30 14:51:40 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -583,11 +583,7 @@ ProcGetGeometry(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    if (!(pDraw = LOOKUP_DRAWABLE(stuff->id, client)))
-    {                /* can be inputonly */
-        if (!(pDraw = (DrawablePtr)LookupWindow(stuff->id, client))) 
-            return (BadDrawable);
-    }
+    VERIFY_GEOMETRABLE (pDraw, stuff->id, client);
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
@@ -1213,12 +1209,7 @@ ProcCreatePixmap(client)
     REQUEST_SIZE_MATCH(xCreatePixmapReq);
     client->errorValue = stuff->pid;
     LEGAL_NEW_RESOURCE(stuff->pid, client);
-    if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
-    {        /* can be inputonly */
-        if (!(pDraw = (DrawablePtr)LookupWindow(stuff->drawable, client))) 
-            return (BadDrawable);
-    }
-
+    VERIFY_GEOMETRABLE (pDraw, stuff->drawable, client);
     if (!stuff->width || !stuff->height)
     {
 	client->errorValue = 0;
@@ -1282,11 +1273,7 @@ ProcCreateGC(client)
     REQUEST_AT_LEAST_SIZE(xCreateGCReq);
     client->errorValue = stuff->gc;
     LEGAL_NEW_RESOURCE(stuff->gc, client);
-    if (!(pDraw = LOOKUP_DRAWABLE( stuff->drawable, client) ))
-    {
-	client->errorValue = stuff->drawable;
-        return (BadDrawable);
-    }
+    VERIFY_DRAWABLE (pDraw, stuff->drawable, client);
     len = stuff->length -  (sizeof(xCreateGCReq) >> 2);
     if (len != Ones(stuff->mask))
         return BadLength;
@@ -1460,11 +1447,7 @@ ProcCopyArea(client)
     VALIDATE_DRAWABLE_AND_GC(stuff->dstDrawable, pDst, pGC, client); 
     if (stuff->dstDrawable != stuff->srcDrawable)
     {
-        if (!(pSrc = LOOKUP_DRAWABLE(stuff->srcDrawable, client)))
-	{
-	    client->errorValue = stuff->srcDrawable;
-            return(BadDrawable);
-	}
+	VERIFY_DRAWABLE(pSrc, stuff->srcDrawable, client);
 	if ((pDst->pScreen != pSrc->pScreen) || (pDst->depth != pSrc->depth))
 	{
 	    client->errorValue = stuff->dstDrawable;
@@ -1501,11 +1484,7 @@ ProcCopyPlane(client)
     VALIDATE_DRAWABLE_AND_GC(stuff->dstDrawable, pdstDraw, pGC, client);
     if (stuff->dstDrawable != stuff->srcDrawable)
     {
-        if (!(psrcDraw = LOOKUP_DRAWABLE(stuff->srcDrawable, client)))
-	{
-	    client->errorValue = stuff->srcDrawable;
-            return(BadDrawable);
-	}
+	VERIFY_DRAWABLE(psrcDraw, stuff->srcDrawable, client);
 	if (pdstDraw->pScreen != psrcDraw->pScreen)
 	{
 	    client->errorValue = stuff->dstDrawable;
@@ -1786,11 +1765,7 @@ ProcGetImage(client)
 	client->errorValue = stuff->format;
         return(BadValue);
     }
-    if(!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client) ))
-    {
-	client->errorValue = stuff->drawable;
-	return (BadDrawable);
-    }
+    VERIFY_DRAWABLE(pDraw, stuff->drawable, client);
     if(pDraw->type == DRAWABLE_WINDOW)
     {
       if( /* check for being viewable */
@@ -2768,16 +2743,9 @@ ProcQueryBestSize   (client)
 	client->errorValue = stuff->class;
         return(BadValue);
     }
-    if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
-    {
-        if (!(pDraw = (DrawablePtr)LookupWindow(stuff->drawable, client))) 
-	{
-	    client->errorValue = stuff->drawable;
-	    return (BadDrawable);
-	}
-	if (stuff->class != CursorShape)
-	    return (BadMatch);
-    }
+    VERIFY_GEOMETRABLE (pDraw, stuff->drawable, client);
+    if (stuff->class != CursorShape && pDraw->type == UNDRAWABLE_WINDOW)
+	return (BadMatch);
     pScreen = pDraw->pScreen;
     (* pScreen->QueryBestSize)(stuff->class, &stuff->width,
 			       &stuff->height, pScreen);

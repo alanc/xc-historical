@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.59 91/07/27 23:40:24 keith Exp $ */
+/* $XConsortium: dix.h,v 1.60 91/10/30 14:49:57 rws Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -58,9 +58,39 @@ SOFTWARE.
         return(BadIDChoice);\
     }
 
+/* XXX if you are using this macro, you are probably not generating Match
+ * errors where appropriate */
 #define LOOKUP_DRAWABLE(did, client)\
     ((client->lastDrawableID == did) ? \
      client->lastDrawable : (DrawablePtr)LookupDrawable(did, client))
+
+#define VERIFY_DRAWABLE(pDraw, did, client)\
+    if (client->lastDrawableID == did)\
+	pDraw = client->lastDrawable;\
+    else \
+    {\
+	pDraw = (DrawablePtr) LookupIDByClass(did, RC_DRAWABLE);\
+	if (!pDraw) \
+	{\
+	    client->errorValue = did; \
+	    return BadDrawable;\
+	}\
+	if (pDraw->type == UNDRAWABLE_WINDOW)\
+	    return BadMatch;\
+    }
+
+#define VERIFY_GEOMETRABLE(pDraw, did, client)\
+    if (client->lastDrawableID == did)\
+	pDraw = client->lastDrawable;\
+    else \
+    {\
+	pDraw = (DrawablePtr) LookupIDByClass(did, RC_DRAWABLE);\
+	if (!pDraw) \
+	{\
+	    client->errorValue = did; \
+	    return BadDrawable;\
+	}\
+    }
 
 #define VERIFY_GC(pGC, rid, client)\
     if (client->lastGCID == rid)\
@@ -77,18 +107,9 @@ SOFTWARE.
     if ((stuff->gc == INVALID) || (client->lastGCID != stuff->gc) ||\
 	(client->lastDrawableID != drawID))\
     {\
-        if (client->lastDrawableID != drawID) {\
-	    pDraw = (DrawablePtr)LookupIDByClass(drawID, RC_DRAWABLE);\
-    	    if (!pDraw)\
-    	    {\
-            	client->errorValue = drawID; \
-	    	return (BadDrawable);\
-    	    }\
-        } else\
-	    pDraw = client->lastDrawable;\
+	VERIFY_GEOMETRABLE(pDraw, drawID, client);\
 	VERIFY_GC(pGC, stuff->gc, client);\
-	if ((pDraw->type == UNDRAWABLE_WINDOW) ||\
-	    (pGC->depth != pDraw->depth) ||\
+	if ((pGC->depth != pDraw->depth) ||\
 	    (pGC->pScreen != pDraw->pScreen))\
 	    return (BadMatch);\
 	client->lastDrawable = pDraw;\
