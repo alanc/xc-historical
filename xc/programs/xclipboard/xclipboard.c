@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.14 89/12/12 14:06:15 rws Exp $
+ * $XConsortium: xclipboard.c,v 1.15 89/12/15 20:11:09 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.14 89/12/12 14:06:15 rws Exp $ */
+/* $XConsortium: xclipboard.c,v 1.15 89/12/15 20:11:09 keith Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -35,12 +35,16 @@
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/StdSel.h>
 
+#include <X11/Shell.h>
 #include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Cardinals.h>
 
 #define Command commandWidgetClass
+#define Label	labelWidgetClass
 #define Text    asciiTextWidgetClass
 
 #define INFINITY 10000000	/* pretty big, huh? */
@@ -48,6 +52,7 @@
 typedef struct _Clip {
     struct _Clip    *next, *prev;
     char	    *clip;
+    char	    *filename;
     int		    avail;
 } ClipRec, *ClipPtr;
 
@@ -116,6 +121,7 @@ NewClip (w, old)
     newClip->avail = 0;
     newClip->prev = old;
     newClip->next = NULL;
+    newClip->filename = NULL;
     if (old)
     {
 	newClip->next = old->next;
@@ -138,31 +144,44 @@ DeleteClip (w, clip)
 }
 
 static ClipPtr	currentClip;
-static Widget	text, nextButton, prevButton;
+static Widget	top;
+static Widget	text, nextButton, prevButton, indexLabel;
+static Widget	fileDialog, fileDialogShell;
+static Widget	failDialog, failDialogShell;
 
-static void set_button_state ()
+static int
+IndexCurrentClip ()
+{
+    int	i = 0;
+    ClipPtr clip;
+
+    for (clip = currentClip; clip; clip = clip->prev)
+	i++;
+    return i;
+}
+
+static void
+set_button_state ()
 {
     Boolean prevvalid, nextvalid;
     Arg arg;
+    char labelString[10];
 
-    prevvalid = False;
-    nextvalid = False;
-    if (currentClip)
-    {
-	prevvalid = currentClip->prev != NULL;
-	nextvalid = currentClip->next != NULL;
-    }
-    arg.name = XtNsensitive;
-    arg.value = (XtArgVal) prevvalid;
+    prevvalid = currentClip->prev != NULL;
+    nextvalid = currentClip->next != NULL;
+    XtSetArg (arg, XtNsensitive, prevvalid);
     XtSetValues (prevButton, &arg, ONE);
-    arg.value = (XtArgVal) nextvalid;
+    XtSetArg (arg, XtNsensitive, nextvalid);
     XtSetValues (nextButton, &arg, ONE);
+    sprintf (labelString, "%d", IndexCurrentClip ());
+    XtSetArg (arg, XtNlabel, labelString);
+    XtSetValues (indexLabel, &arg, ONE);
 }
 
 static void
 NextCurrentClip ()
 {
-    if (currentClip && currentClip->next)
+    if (currentClip->next)
     {
 	SaveClip (text, currentClip);
 	currentClip = currentClip->next;
@@ -174,7 +193,7 @@ NextCurrentClip ()
 static void
 PrevCurrentClip ()
 {
-    if (currentClip && currentClip->prev)
+    if (currentClip->prev)
     {
 	SaveClip (text, currentClip);
 	currentClip = currentClip->prev;
@@ -187,26 +206,20 @@ static void
 DeleteCurrentClip ()
 {
     ClipPtr newCurrent;
-    if (currentClip)
+
+    if (currentClip->prev)
+	newCurrent = currentClip->prev;
+    else
+	newCurrent = currentClip->next;
+    if (newCurrent)
     {
-	if (currentClip->prev)
-	{
-	    newCurrent = currentClip->prev;
-	}
-	else
-	{
-	    newCurrent = currentClip->next;
-	}
 	DeleteClip (text, currentClip);
 	currentClip = newCurrent;
-	if (currentClip)
-	    RestoreClip (text, currentClip);
-	else
-	{
-	    EraseTextWidget ();
-	}
-	set_button_state ();
+	RestoreClip (text, currentClip);
     }
+    else
+	EraseTextWidget ();
+    set_button_state ();
 }
 
 static void
@@ -214,6 +227,128 @@ Quit ()
 {
     XtCloseDisplay  (XtDisplay (text));
     exit (0);
+}
+
+static void
+CenterWidgetAtPoint (w, x, y)
+    Widget  w;
+    int	    x, y;
+{
+    Arg	args[2];
+    Dimension	width, height;
+
+    XtSetArg(args[0], XtNwidth, &width);
+    XtSetArg(args[1], XtNheight, &height);
+    XtGetValues (w, args, 2);
+    x = x - (int) width / 2;
+    y = y - (int) height / 2;
+    if (x < 0)
+	x = 0;
+    else {
+	int scr_width = WidthOfScreen (XtScreen(w));
+	if (x + width > scr_width)
+	    x = scr_width - width;
+    }
+    if (y < 0)
+	y = 0;
+    else {
+	int scr_height = HeightOfScreen (XtScreen(w));
+	if (y + height > scr_height)
+	    y = scr_height - height;
+    }
+    XtSetArg(args[0], XtNx, x);
+    XtSetArg(args[1], XtNy, y);
+    XtSetValues (w, args, 2);
+}
+
+static void
+CenterWidgetOnEvent (w, e)
+    Widget  w;
+    XEvent  *e;
+{
+    CenterWidgetAtPoint (w, e->xbutton.x_root, e->xbutton.y_root);
+}
+
+static void
+CenterWidgetOnWidget (w, wT)
+    Widget  w, wT;
+{
+    Position	rootX, rootY;
+    Dimension	width, height;
+    Arg		args[2];
+
+    XtSetArg (args[0], XtNwidth, &width);
+    XtSetArg (args[1], XtNheight, &height);
+    XtGetValues (wT, args, 2);
+    XtTranslateCoords (wT, (Position) width/2, (Position) height/2, &rootX, &rootY);
+    CenterWidgetAtPoint (w, (int) rootX, (int) rootY);
+}
+
+static void
+SaveToFile (w, e, argv, argc)
+    Widget  w;
+    XEvent  *e;
+    String  *argv;
+    Cardinal	    *argc;
+{
+    Arg	    args[1];
+    char    *filename;
+    Dimension	width, height;
+    Position	x, y;
+
+    filename = "clipboard";
+    if (currentClip->filename)
+	filename = currentClip->filename;
+    XtSetArg(args[0], XtNvalue, filename);
+    XtSetValues (fileDialog, args, 1);
+    CenterWidgetOnEvent (fileDialogShell, e);
+    XtPopup (fileDialogShell, XtGrabNone);
+}
+
+static void
+AcceptSaveFile (w, e, argv, argc)
+    Widget  w;
+    XEvent  *e;
+    String  *argv;
+    Cardinal	*argc;
+{
+    char    *filename;
+    Boolean success;
+    Arg	    args[1];
+
+    filename = XawDialogGetValueString (fileDialog);
+    success = XawAsciiSaveAsFile (XawTextGetSource (text), filename);
+    XtPopdown (fileDialogShell);
+    if (!success)
+    {
+	char	failMessage[1024];
+
+	sprintf (failMessage, "Can't open file \"%s\"", filename);
+	XtSetArg (args[0], XtNlabel, failMessage);
+	XtSetValues (failDialog, args, 1);
+	CenterWidgetOnEvent (failDialogShell, e);
+	XtPopup (failDialogShell, XtGrabNone);
+    }
+    else
+    {
+	if (currentClip->filename)
+	    free (currentClip->filename);
+	currentClip->filename = malloc (strlen (filename) + 1);
+	if (currentClip->filename)
+	    strcpy (currentClip->filename, filename);
+    }
+}
+
+static void
+CancelSaveFile ()
+{
+    XtPopdown (fileDialogShell);
+}
+
+static void
+FailContinue ()
+{
+    XtPopdown (failDialogShell);
 }
 
 static void
@@ -229,17 +364,15 @@ NewCurrentClipContents (data, len)
     XawTextBlock textBlock;
     ClipPtr newCurrent;
 
-    if (!currentClip && TextLength (text))
-	currentClip = NewClip (text, (ClipPtr) 0);
-    if (currentClip)
-	SaveClip (text, currentClip);
+    SaveClip (text, currentClip);
+
     /* append new clips at the end */
     while (currentClip && currentClip->next)
 	currentClip = currentClip->next;
-    newCurrent = NewClip (text, currentClip);
+    /* any trailing clips with no text get overwritten */
+    if (strlen (currentClip->clip) != 0)
+	currentClip = NewClip (text, currentClip);
     
-    currentClip = newCurrent;
-
     textBlock.ptr = data;
     textBlock.firstPos = 0;
     textBlock.length = len;
@@ -268,6 +401,10 @@ XtActionsRec xclipboard_actions[] = {
     "NextClip",	NextCurrentClip,
     "PrevClip", PrevCurrentClip,
     "DeleteClip", DeleteCurrentClip,
+    "Save", SaveToFile,
+    "AcceptSave", AcceptSaveFile,
+    "CancelSave", CancelSaveFile,
+    "FailContinue", FailContinue,
     "Quit", Quit,
 };
 
@@ -279,6 +416,7 @@ static XrmOptionDescRec table[] = {
 static void	LoseSelection ();
 static void	InsertClipboard ();
 static Boolean	ConvertSelection();
+static Atom	ManagerAtom, ClipboardAtom;
 
 static void 
 InsertClipboard(w, client_data, selection, type, value, length, format)
@@ -289,14 +427,19 @@ caddr_t value;
 unsigned long *length;
 int *format;
 {
-    if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0) {
+    if (*type != XT_CONVERT_FAIL)
+	NewCurrentClipContents ((char *) value, *length);
+    else
+    {
+	Arg arg;
+	XtSetArg (arg, XtNlabel, "CLIPBOARD selection conversion failed");
+	XtSetValues (failDialog, &arg, 1);
+	CenterWidgetOnWidget (failDialogShell, text);
+	XtPopup (failDialogShell, XtGrabNone);
 	XBell( XtDisplay(w), 0 );
-	return;
     }
     
-    NewCurrentClipContents ((char *) value, *length);
-
-    XtOwnSelection(w, XA_CLIPBOARD(XtDisplay(w)), CurrentTime,
+    XtOwnSelection(top, ClipboardAtom, CurrentTime,
 		   ConvertSelection, LoseSelection, NULL);
 
     XtFree(value);
@@ -344,7 +487,7 @@ static Boolean ConvertSelection(w, selection, target,
     	if (*target == XA_LIST_LENGTH(d))
       	  *temp = 1L;
     	else			/* *target == XA_LENGTH(d) */
-      	  *temp = (long) TextLength (w);
+      	  *temp = (long) TextLength (text);
     	
     	*value = (caddr_t) temp;
     	*type = XA_INTEGER;
@@ -359,7 +502,7 @@ static Boolean ConvertSelection(w, selection, target,
     	
     	temp = (long *) XtMalloc(2 * sizeof(long));
     	temp[0] = (long) 0;
-    	temp[1] = TextLength (w);
+    	temp[1] = TextLength (text);
     	*value = (caddr_t) temp;
     	*type = XA_SPAN(d);
     	*length = 2L;
@@ -376,8 +519,8 @@ static Boolean ConvertSelection(w, selection, target,
 	    *type = *target;
     	else
 	    *type = XA_STRING;
-	*length = TextLength (w);
-    	*value = _XawTextGetSTRING((TextWidget) w, 0, *length);
+	*length = TextLength (text);
+    	*value = _XawTextGetSTRING((TextWidget) text, 0, *length);
     	*format = 8;
     	return True;
     }
@@ -423,37 +566,65 @@ int argc;
 char **argv;
 {
     Arg args[2];
-    Widget top, parent, quit, delete, new;
-    Atom manager;
+    Widget parent, quit, delete, new, save;
+    Widget fileDialogOk, fileDialogCancel;
 
     top = XtInitialize( "xclipboard", "XClipboard", table, XtNumber(table),
 			  &argc, argv);
 
     XtAddActions (xclipboard_actions, XtNumber (xclipboard_actions));
     /* CLIPBOARD_MANAGER is a non-standard mechanism */
-    manager = XInternAtom(XtDisplay(top), "CLIPBOARD_MANAGER", False);
-    if (XGetSelectionOwner(XtDisplay(top), manager))
+    ManagerAtom = XInternAtom(XtDisplay(top), "CLIPBOARD_MANAGER", False);
+    ClipboardAtom = XA_CLIPBOARD(XtDisplay(top));
+    if (XGetSelectionOwner(XtDisplay(top), ManagerAtom))
 	XtError("another clipboard is already running\n");
 
     parent = XtCreateManagedWidget("form", formWidgetClass, top, NULL, ZERO);
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
     delete = XtCreateManagedWidget("delete", Command, parent, NULL, ZERO);
     new = XtCreateManagedWidget("new", Command, parent, NULL, ZERO);
+    save = XtCreateManagedWidget("save", Command, parent, NULL, ZERO);
     nextButton = XtCreateManagedWidget("next", Command, parent, NULL, ZERO);
     prevButton = XtCreateManagedWidget("prev", Command, parent, NULL, ZERO);
+    indexLabel = XtCreateManagedWidget("index", Label, parent, NULL, ZERO);
 
     XtSetArg(args[0], XtNtype, XawAsciiString);
     XtSetArg(args[1], XtNeditType, XawtextEdit);
     text = XtCreateManagedWidget( "text", Text, parent, args, TWO);
 
+    currentClip = NewClip (text, (ClipPtr) 0);
+
     set_button_state ();
+
+    fileDialogShell = XtCreatePopupShell("fileDialogShell", transientShellWidgetClass,
+					 top, NULL, ZERO);
+    fileDialog = XtCreateManagedWidget ("fileDialog", dialogWidgetClass,
+					fileDialogShell, NULL, ZERO);
+    XawDialogAddButton(fileDialog, "accept", NULL, NULL);
+    XawDialogAddButton(fileDialog, "cancel", NULL, NULL);
+
+    XtRealizeWidget (fileDialogShell);
+
+    failDialogShell = XtCreatePopupShell("failDialogShell", transientShellWidgetClass,
+					 top, NULL, ZERO);
+    failDialog = XtCreateManagedWidget ("failDialog", dialogWidgetClass,
+					failDialogShell, NULL, ZERO);
+    XawDialogAddButton (failDialog, "continue", NULL, NULL);
+
+    XtRealizeWidget (failDialogShell);
 
     XtRealizeWidget(top);
 
-    XtOwnSelection(text, manager, CurrentTime,
+    XtOwnSelection(top, ManagerAtom, CurrentTime,
 		   RefuseSelection, LoseManager, NULL);
-    XtOwnSelection(text, XA_CLIPBOARD(XtDisplay(text)), CurrentTime,
-		   ConvertSelection, LoseSelection, NULL);
-
+    if (XGetSelectionOwner (XtDisplay(top), ClipboardAtom))
+    {
+	LoseSelection (top, &ClipboardAtom);
+    }
+    else
+    {
+    	XtOwnSelection(top, ClipboardAtom, CurrentTime,
+		       ConvertSelection, LoseSelection, NULL);
+    }
     XtMainLoop();
 }
