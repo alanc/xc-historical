@@ -1,4 +1,4 @@
-/* $XConsortium: mifpoly.h,v 1.6 90/05/15 18:37:06 keith Exp $ */
+/* $XConsortium: mifpoly.h,v 1.7 93/10/12 11:41:24 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,12 +24,12 @@ SOFTWARE.
 ******************************************************************/
 
 #define EPSILON	0.000001
-#define ISEQUAL(a,b) (fabs((a) - (b)) <= EPSILON)
-#define UNEQUAL(a,b) (fabs((a) - (b)) > EPSILON)
+#define ISEQUAL(a,b) (Fabs((a) - (b)) <= EPSILON)
+#define UNEQUAL(a,b) (Fabs((a) - (b)) > EPSILON)
 #define WITHINHALF(a, b) (((a) - (b) > 0.0) ? (a) - (b) < 0.5 : \
 					     (b) - (a) <= 0.5)
 #define ROUNDTOINT(x)   ((int) (((x) > 0.0) ? ((x) + 0.5) : ((x) - 0.5)))
-#define ISZERO(x) 	(fabs((x)) <= EPSILON)
+#define ISZERO(x) 	(Fabs((x)) <= EPSILON)
 #define PTISEQUAL(a,b) (ISEQUAL(a.x,b.x) && ISEQUAL(a.y,b.y))
 #define PTUNEQUAL(a,b) (UNEQUAL(a.x,b.x) || UNEQUAL(a.y,b.y))
 #define PtEqual(a, b) (((a).x == (b).x) && ((a).y == (b).y))

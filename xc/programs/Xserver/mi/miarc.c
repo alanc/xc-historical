@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.47 93/10/12 11:41:08 dpw Exp $ */
+/* $XConsortium: miarc.c,v 5.48 94/01/21 22:03:36 dpw Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -1536,7 +1536,7 @@ double	dy, dx;
 	if (dy > 0)
 	    return 90.0;
 	return -90.0;
-    } else if (fabs (dy) == fabs (dx)) {
+    } else if (Fabs (dy) == Fabs (dx)) {
 	if (dy > 0) {
 	    if (dx > 0)
 		return 45.0;

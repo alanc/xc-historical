@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.52 94/01/21 22:03:33 dpw Exp $
+ * $XConsortium: miwideline.c,v 1.53 94/02/23 15:50:16 dpw Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -256,7 +256,7 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
     {
 	double	realk, kerror;
     	realk = x0 * dy - y0 * dx;
-    	kerror = fabs (realk - k);
+    	kerror = Fabs (realk - k);
     	if (kerror > .1)
 	    printf ("realk: %g k: %g\n", realk, k);
     }
