@@ -17,13 +17,14 @@
 Chapter 7 - Menus
 .XE
 .LP
-The Athena widget set provides support for single paned non-hierarchal
+The Athena widget set provides support for single paned non-hierarchial
 popup and pulldown menus.  We realized the support for menus must be
 provided in even  
 the most basic of widget sets, and that this has long been perceived as
 a serious flaw in the Athena widget set.  Since the resources
-avaliable for this task were limited we decided to provide only the
-basic functionality, and deliberately not attempt to solve the entire problem.
+available for this task were limited we decided to provide only the
+basic functionality, and deliberately did not attempt to solve the
+entire problem.
 .LP
 Menus in the Athena widget set implement a Menu container (the
 SimpleMenu widget) and a collection of objects that will comprise the
@@ -34,16 +35,18 @@ subclasses of the Sme (Simple Menu Entry) object.
 .LP
 The Athena widget set provides three classes of Sme Objects that may
 be used to build menus.
-.IP Sme 1i
+.sp
+.IP \fBSme\fP 1i
 The base class of all menu entries, it may be used as a menu
 entry itself to provide blank space in a menu.
-.IP SmeBSE 1i
+.IP \fBSmeBSE\fP 1i
 Provides support for a menu string, as well as a bitmap in each of the
 margins. 
-.IP SmeLine 1i
-A seperator line may be placed in a menu by using this object class.
+.IP \fBSmeLine\fP 1i
+A separator line may be placed in a menu by using this object class.
+.sp
 .LP
-The SimpleMenu widget sets the \fBOverrider Redirect\fP flag to
+The SimpleMenu widget sets the \fBOverride Redirect\fP flag to
 tell the window manager to ignore its window.  This behavior is fine
 for the click-drag-release style of menu operation, but if you desire
 click-move-click or \fIpinable\fP menues you should be sure to set up

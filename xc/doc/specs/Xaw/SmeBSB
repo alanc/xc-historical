@@ -8,23 +8,25 @@ SmeBSB Object
 .Ds 0
 .TA 2.0i
 .ta 2.0i
+.sp
 Header file	SmeBSB.h
 Class		smeBSBObjectClass
 Class Name	SmeBSB
-SuperClass	Sme Object
+Superclass	Sme Object
+.sp
 .De
 .LP
 The SmeBSB object is used to create
 a menu entry that contains a string, and optional bitmaps in its
-margins.  Since each menu entry is an independant object.  The
-application is able to change the font, color, height, and other
+margins.  Since each menu entry is an independant object, the
+pplication is able to change the font, color, height, and other
 attributes of the menu entries, on an individual basis.
 .NH 3
 Resources
 .IN "SmeBSB object" "resources"
 .LP
 The resources associated with the SmeBSB object are defined in this section,
-and effect only the single menu entry specified by this object.
+and affect only the single menu entry specified by this object.
 .ps 9
 .nr PS 9
 .vs 11
@@ -104,7 +106,7 @@ menu entry.  All 1's in the bitmap will be rendered in the foreground
 color, and all 0's will be drawn in the background color of the
 SimpleMenu widget.  It is the
 programmers responsibility to make sure that the menu entry is tall
-enough, and the apropriate margin wide enough to accept the bitmap.
+enough, and the appropriate margin wide enough to accept the bitmap.
 If care is not taken the bitmap may extend into another menu entry, or
 into this entry's label.
 .IP \fBleftMargin\fP 1.5i

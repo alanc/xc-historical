@@ -5,18 +5,20 @@ SmeLine Object
 \*(SN SmeLine Object
 .XE
 .IN "SmeLine object" "" "@DEF@"
+.sp
 .Ds 0
 .TA 2.0i
 .ta 2.0i
 Header file	SmeLine.h
 Class		smeLineObjectClass
 Class Name	SmeLine
-SuperClass	Sme Object
+Superclass	Sme Object
 .De
+.sp
 .LP
 The SmeLine object is used to add a
 horizontal line or menu seperator to a menu.  Since each menu entry is
-an independant object.  The application is able to change the color,
+an independant object, the application is able to change the color,
 height, and other attributes of the menu entries, on an individual
 basis.  This entry is not selectable, and will not highlight when the
 mouse pointer is over it.
@@ -25,7 +27,7 @@ Resources
 .IN "SmeLine object" "resources"
 .LP
 The resources associated with the SmeLine object are defined in this section,
-and effect only the single menu entry specified by this object.
+and affect only the single menu entry specified by this object.
 .ps 9
 .nr PS 9
 .vs 11
@@ -69,7 +71,7 @@ widest entry.  Thus the width is generally not very important.
 The width of the horizontal line that is to be displayed.
 .IP \fBstipple\fP 1.5i
 If a bitmap is specifed for this resource the line will be stippled
-through this pixmap.  This allows the menu serperator to be rendered
+through this pixmap.  This allows the menu separator to be rendered
 as something more exciting than just a line.  For instance if you
 define a stipple that is a chain link then your menu serperators will
 be look like chains.  The upper left corner of the stipple will be set
