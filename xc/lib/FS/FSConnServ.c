@@ -53,7 +53,6 @@ _FSConnectServer(server_name, expanded_name)
 #ifdef	X_NOT_STDC_ENV
     extern char *getenv();
 #endif
-    extern struct hostent *gethostbyname();
     int         fd;		/* Network socket */
 
 #ifdef DNETCONN
