@@ -1,4 +1,4 @@
-/* $XConsortium: init.c,v 1.7 93/10/30 15:09:12 rws Exp $ */
+/* $XConsortium: init.c,v 1.9 94/03/30 16:43:55 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -86,7 +86,7 @@ XieExtensionInfo	**extinfo_ret;
 
     END_REQUEST_HEADER (QueryImageExtension, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
 	SYNC_HANDLE (display);
@@ -187,7 +187,7 @@ XieTechnique		**techniques_ret;
 {
     xieQueryTechniquesReq	*req;
     xieQueryTechniquesReply	rep;
-    char			*pBuf;
+    char			*pBuf, *pBufStart;
     XieTechnique		*techRet;
     xieTypTechniqueRec		*techRec;
     int				i;
@@ -203,7 +203,7 @@ XieTechnique		**techniques_ret;
 
     END_REQUEST_HEADER (QueryTechniques, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
 	SYNC_HANDLE (display);
@@ -215,6 +215,7 @@ XieTechnique		**techniques_ret;
     }
 
     XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
+    pBufStart = pBuf;
 
     *ntechniques_ret = rep.numTechniques;
 
@@ -238,6 +239,7 @@ XieTechnique		**techniques_ret;
 	pBuf += PADDED_BYTES (techRec->nameLength);
     }
 
+    FINISH_WITH_SCRATCH (display, pBufStart, rep.length << 2);
     UnlockDisplay (display);
     SYNC_HANDLE (display);
 
