@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.93 87/12/08 16:34:14 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.94 87/12/11 16:57:15 swick Locked $";
 #endif lint
 
 /*
@@ -330,12 +330,12 @@ static void RecurseConstraintInitialize (reqWidget, newWidget, args, num_args, c
     Cardinal num_args;
     WidgetClass class;
 {
-    if ((ConstraintWidgetClass)class->core_class.superclass
-                                                != constraintWidgetClass)
-        RecurseInitialize (reqWidget, newWidget, args, num_args,
+    if (class->core_class.superclass != (WidgetClass)constraintWidgetClass)
+        RecurseConstraintInitialize (reqWidget, newWidget, args, num_args,
            class->core_class.superclass);
-    if (class->core_class.initialize!=NULL)
-        (*class->core_class.initialize) (reqWidget, newWidget, args, &num_args);
+    if (((ConstraintWidgetClass)class)->constraint_class.initialize)
+        (*((ConstraintWidgetClass)class)->constraint_class.initialize)
+	    (reqWidget, newWidget, args, &num_args);
 }
 
 static void CoreInitialize(reqWidget,newWidget,args,num_args)
@@ -429,7 +429,7 @@ static void _XtCreate2(widget,args,num_args)
     RecurseInitialize (reqWidget, widget, args, num_args, wClass);
 
     if ((widget->core.parent != (Widget)NULL) &&
-	XtIsSubclass(widget->core.parent,constraintWidgetClass)) 
+	XtIsSubclass(widget->core.parent, (WidgetClass)constraintWidgetClass)) 
        RecurseConstraintInitialize(reqWidget, widget, args, num_args,
                        widget->core.parent->core.widget_class);
 
@@ -449,7 +449,7 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
 
 /*||| this will go away with later changes to resource management|||*/
    widget =  _XtCreate1(name,widgetClass,parent);
-   if (XtIsSubclass(widget->core.parent,constraintWidgetClass)) {
+   if (XtIsSubclass(widget->core.parent, (WidgetClass)constraintWidgetClass)) {
    ConstraintWidgetClass cwc =(ConstraintWidgetClass) widget->core.parent->core.widget_class;
      widget->core.constraints = 
        (caddr_t)XtMalloc ((unsigned)cwc->constraint_class.constraint_size); 
