@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.11 92/03/13 16:17:36 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.12 92/03/18 17:12:14 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -459,7 +459,7 @@ main(argc, argv)
     if (tcgetattr(0, &term) >= 0) {
 	istty = 1;
 	oldterm = term;
-	term.c_lflag &= ~(ICANON|ECHOCTL|ISIG);
+	term.c_lflag &= ~(ICANON|ISIG);
 	term.c_iflag &= ~(IXOFF|IXON|ICRNL);
 	if (noecho)
 	    term.c_lflag &= ~ECHO;
@@ -479,26 +479,34 @@ main(argc, argv)
     }
     reset_mapping(dpy);
     while (1) {
-	if (moving_x | moving_y) {
-	    mask[0] = 1;
-	    if (!select(1, mask, NULL, NULL, &timeout)) {
+	mask[0] = 1 | (1 << ConnectionNumber(dpy));
+	i = select(ConnectionNumber(dpy)+1, mask, NULL, NULL,
+		   ((moving_x | moving_y) ? &timeout : NULL));
+	if (i < 0)
+	    quit(1);
+	if (!i) {
+	    if (moving_x | moving_y) {
 		move_pointer(moving_x, moving_y);
 		XFlush(dpy);
-		continue;
 	    }
+	    continue;
 	}
-	n = read(0, buf, sizeof(buf));
-	if (n < 0)
-	    quit(0);
-	if (i = XEventsQueued(dpy, QueuedAfterReading)) {
-	    while (--i >= 0) {
-		XNextEvent(dpy, &ev);
-		if (ev.type == MappingNotify) {
-		    XRefreshKeyboardMapping(&ev.xmapping);
-		    reset_mapping(dpy);
+	if (mask[0] & (1 << ConnectionNumber(dpy))) {
+	    if (i = XEventsQueued(dpy, QueuedAfterReading)) {
+		while (--i >= 0) {
+		    XNextEvent(dpy, &ev);
+		    if (ev.type == MappingNotify) {
+			XRefreshKeyboardMapping(&ev.xmapping);
+			reset_mapping(dpy);
+		    }
 		}
 	    }
 	}
+	if (!(mask[0] & 1))
+	    continue;
+	n = read(0, buf, sizeof(buf));
+	if (n <= 0)
+	    quit(0);
 	for (i = 0; i < n; i++) {
 	    if (buf[i] != keysym_char) {
 		dochar(buf[i]);
