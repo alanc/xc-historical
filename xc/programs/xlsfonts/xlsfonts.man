@@ -6,9 +6,9 @@ xlsfonts - X window system font list displayer
 [-options ...] [pattern]
 .SH DESCRIPTION
 .I Xlsfonts
-displays all fonts on a given display which match the given \fIpattern\fP.
+lists the fonts that match the given \fIpattern\fP.
 Patterns may include "*" to match any sequence of characters (including
-the null sequence) and
+no characters) and
 "?" to match any single character.  If no pattern is given, "*" is assumed.
 .PP
 The wildcard characters "*" and "?" should be quoted to prevent them from
@@ -17,35 +17,24 @@ being expanded by the shell.
 .PP
 .TP 8
 .B \-display \fIhost\fP:\fIdpy\fP
-Normally,
-.I xlsfonts
-gets the host and display number to use from the environment
-variable ``DISPLAY''.  One can, however specify them explicitly.
-The
-.I host
-specifies which machine to query for the list of fontnames and
-the
-.I dpy
-argument specifies the display number.
-For example,
-``xlsfonts -display expo:1'' queries display one on the machine expo.
-.PP
+This option specifies the X server to contact.
 .PP
 .TP 8
 .B \-l
-Give a long listing for each font.
+This option indicates that a long listing should be generated for each font.
 .TP 8
 .B \-m
-When used with \fB\-l\fP the minimum and maximum bounds are printed.
+This option indicates that long listings should also print the minimum and
+maximum bounds of each font.
 .TP 8
 .B \-C
-Generate a multiple column listing.
+This option indicates that listings should use multiple columns.
 .TP 8
 .B \-1
-Generate a single column listing.
+This option indicates that listings should use a single column.
 .PP
 .SH "SEE ALSO"
-X(1), X(8C), xterm(1), xfd(1)
+X(1), Xserver(8C), xterm(1), xfd(1)
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY
