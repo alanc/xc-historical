@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: subwindow.mc,v 1.13 92/07/01 11:30:33 rws Exp $
+ * $XConsortium: subwindow.mc,v 1.14 92/12/20 15:21:55 rws Exp $
  */
 >>EXTERN
 #ifdef A_WINDOW2
@@ -181,10 +181,30 @@ int 	i, j;
 			CHECK;
 		else {
 			Drawable savdraw;
+#ifdef A_DRAWABLE2
+			Window sr;
+			int sx = 0, sy = 0;
+			unsigned int sw, sh, sb, sd;
+#endif
 
 			dclear(A_DISPLAY, A_DRAW);
 			XSetWindowBorderWidth(A_DISPLAY, A_DRAW, 0);
 			XMoveWindow(A_DISPLAY, A_DRAW, 0, 0);
+#ifdef A_DRAWABLE2
+			XGetGeometry(A_DISPLAY, A_DRAWABLE, &sr, &sx, &sy,
+				     &sw, &sh, &sb, &sd);
+			if (sx < sw && sy < sh) {
+				if (DisplayWidth(A_DISPLAY, DefaultScreen(A_DISPLAY)) >= 2 * sw + sb)
+					XMoveWindow(A_DISPLAY, A_DRAWABLE, sw, sy);
+				else
+					XMoveWindow(A_DISPLAY, A_DRAWABLE, sx, sh);
+#if T_XCopyPlane
+				dset(A_DISPLAY, A_DRAWABLE, ~0L);
+#else
+				dset(A_DISPLAY, A_DRAWABLE, W_FG);
+#endif
+			}
+#endif
 
 			savdraw = A_DRAW;
 			A_DRAW = DRW(A_DISPLAY);
