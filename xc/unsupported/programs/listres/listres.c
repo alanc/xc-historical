@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.1 89/07/10 17:10:01 jim Exp $
+ * $XConsortium: listres.c,v 1.2 89/07/10 17:39:51 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,14 +33,11 @@
 
 
 static struct _appresources {
-    Boolean super;
     Boolean objects;
 } listres_resources;
 
 static XtResource Resources[] = {
 #define offset(field) XtOffset(struct _appresources *, field)
-  { "superClasses", "SuperClasses", XtRBoolean, sizeof(Boolean),
-      offset(super), XtRString, "FALSE" },
   { "objects", "Objects", XtRBoolean, sizeof(Boolean),
       offset(objects), XtRString, "FALSE" },
 #undef offset
@@ -52,7 +49,7 @@ char *ProgramName;
 
 usage ()
 {
-    fprintf (stderr, "usage:  %s [-super] [-objects] [-widgets]\n",
+    fprintf (stderr, "usage:  %s [-objects] [-widgets]\n",
 	     ProgramName);
     exit (1);
 }
@@ -76,7 +73,7 @@ main (argc, argv)
     int i;
     WidgetClass top;
     WidgetNameList *wl;
-    Widget toplevel, super;
+    Widget toplevel;
 
     ProgramName = argv[0];
 
@@ -90,11 +87,10 @@ main (argc, argv)
 	else usage ();
     }
 
-    super = (listres_resources.super ? toplevel : NULL);
     top = (listres_resources.objects ? NULL : coreWidgetClass);
 
     for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
-	list_resources (wl->label, wl->widget_class[0], top, super);
+	list_resources (wl->label, wl->widget_class[0], top, toplevel);
     }
 
     exit (0);
