@@ -1,37 +1,35 @@
-/* $Header: Xrm.c,v 1.3 87/11/19 14:27:42 swick Locked $ */
-
 /*
- * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
- * 
- *                         All Rights Reserved
- * 
- * Permission to use, copy, modify, and distribute this software and its 
- * documentation for any purpose and without fee is hereby granted, 
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in 
- * supporting documentation, and that the name of Digital Equipment
- * Corporation not be used in advertising or publicity pertaining to
- * distribution of the software without specific, written prior permission.  
- * 
- * 
- * DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
- * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
- * DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
- * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
- * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE.
- */
+*****************************************************************************
+**                                                                          *
+**                         COPYRIGHT (c) 1987 BY                            *
+**             DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.                *
+**			   ALL RIGHTS RESERVED                              *
+**                                                                          *
+**  THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED  *
+**  ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE  *
+**  INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER  *
+**  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY  *
+**  OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY  *
+**  TRANSFERRED.                                                            *
+**                                                                          *
+**  THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE  *
+**  AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT  *
+**  CORPORATION.                                                            *
+**                                                                          *
+**  DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS  *
+**  SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.                 *
+**                                                                          *
+*****************************************************************************
+**/
 
-
+#include	"Xlib.h"
 #include	"Xlibint.h"
 #include	"Xresource.h"
-#include	"XrmConvert.h"
-#include	"Quarks.h"
 #include	<stdio.h>
 #include	<ctype.h>
 
-extern void bcopy();
+
+XrmQuark    XrmQString;
 
 typedef	void (*DBEnumProc)();
 
@@ -43,9 +41,11 @@ typedef	void (*DBEnumProc)();
 typedef struct _XrmHashBucketRec	*XrmHashBucket;
 */
 typedef struct _XrmHashBucketRec {
-    XrmHashBucket		next;
-    XrmQuark		quark;
-    XrmResourceDataBase	db;
+    XrmHashBucket	next;       /* Next entry in this hash chain	    */
+    XrmQuark		quark;      /* Quark for string			    */
+    XrmRepresentation   type;       /* Representation of value (if any)     */
+    XrmValue		value;      /* Value of this node (if any)	    */
+    XrmHashTable	tables[2];  /* Hash table pointers for tight, loose */
 } XrmHashBucketRec;
 
 /*
@@ -56,278 +56,499 @@ typedef XrmHashBucket	*XrmHashTable;
 typedef XrmHashTable XrmSearchList[];
 */
 
-typedef struct _XrmResourceDataBase {
-    XrmRepresentation	type;
-    XrmValue		val;
-    XrmHashBucket	*hashTable;
-    } XrmResourceDataBaseRec;
 
-static Bool FindName(quark, hashTable, ppBucket)
-    register	XrmQuark		quark;
-    		XrmHashTable	hashTable;
-    		XrmHashBucket	**ppBucket;
+void XrmStringToQuarkList(name, quarks)
+    register char 	 *name;
+    register XrmQuarkList quarks;   /* RETURN */
 {
-/*  search hashTable (which must be non-NULL) for quark.
-    If found, *ppBucket is the address of the XrmHashBucket that points to it.
-    If not,   *ppBucket is the address of the hashTable entry that should 
-    	      point to a new XrmHashBucket; **ppBucket is the XrmHashBucket it 
-	      should point to.
-*/
+    register int    i;
+    register char   ch;
+    static char     oneName[1000];
 
-    register XrmHashBucket *pBucket, *pStartBucket;
-    
-    pBucket = pStartBucket = &hashTable[HashIndex(quark)];
-
-    while ((*pBucket) != NULL) {
-	if ((*pBucket)->quark == quark) {
-	    *ppBucket = pBucket;
-	    return True;
+    if (name != NULL) {
+	for (i = 0 ; ((ch = *name) != '\0') ; name++) {
+	    if (ch == '.') {
+		if (i != 0) {
+		    oneName[i] = 0;
+		    *quarks = XrmAtomToQuark(oneName);
+		    quarks++;
+		    i = 0;
+		}
+	    } else {
+		oneName[i] = ch;
+	    	i++;
+	    }
 	}
-	pBucket = &((*pBucket)->next);
+	if (i != 0) {
+	    oneName[i] = 0;
+	    *quarks = XrmAtomToQuark(oneName);
+	    quarks++;
+	}
     }
-    *ppBucket = pStartBucket;
-    return False;
+    *quarks = NULLQUARK;
 }
 
-
-static void SetValue(pdb, type, val)
-    XrmResourceDataBase	*pdb;
-    XrmRepresentation	type;
-    XrmValuePtr		val;
+void XrmStringToBindingQuarkList(name, bindings, quarks)
+    register char	    *name;
+    register XrmBindingList bindings;   /* RETURN */
+    register XrmQuarkList   quarks;     /* RETURN */
 {
-    register	XrmResourceDataBase db = *pdb;
+    register int	i;
+    register XrmBinding binding;
+    register char       ch;
+    char		oneName[1000];
 
-   if (db == NULL) {
-	*pdb = db = (XrmResourceDataBase) Xmalloc (sizeof(XrmResourceDataBaseRec));
-	db->type = NULLQUARK;
-	db->val.addr = NULL;
-	db->val.size = 0;
-	db->hashTable = NULL;
+    if (name != NULL) {
+	binding = XrmBindTightly;
+	for (i = 0 ; ((ch = *name) != '\0') ; name++) {
+	    if (ch == '.' || ch == '*') {
+		if (i != 0) {
+		    /* Found a complete name */
+		    *bindings = binding;
+		    bindings++;
+		    oneName[i] = '\0';
+		    *quarks = XrmAtomToQuark(oneName);
+		    quarks++;
+		    i = 0;
+		    binding = XrmBindTightly;
+		}
+		if (ch == '*') binding = XrmBindLoosely;
+	    } else {
+		oneName[i] = ch;
+	    	i++;
+	    }
+	}
+	/* Do last name */
+	if (i != 0) {
+	    oneName[i] = '\0';
+	    *bindings = binding;
+	    *quarks = XrmAtomToQuark(oneName);
+	    quarks++;
+	}
     }
+    *quarks = NULLQUARK;
+} /* XrmStringToBindingQuarkList */
 
-    db->type = type;
-    if (db->val.addr != NULL)
-        Xfree((char *)db->val.addr);
-    db->val.addr = (caddr_t) Xmalloc(val->size);
-    bcopy((char *)val->addr, (char *)db->val.addr, (int) val->size);
-    db->val.size = val->size;
-}
 
-static void MakeNewDb(pdb, quarks, type, val)
-    	     XrmResourceDataBase *pdb;
+static void PutEntry(bucket, bindings, quarks, type, value)
+    register XrmHashBucket	bucket;
+    register XrmBindingList	bindings;
     register XrmQuarkList	quarks;
-	     XrmRepresentation	type;
-    	     XrmValuePtr	val;
+	     XrmRepresentation  type;
+    	     XrmValuePtr	value;
 {
-    register 	XrmResourceDataBase db;
-    register	XrmHashBucket       *pBucket, bucket;
+    register XrmHashBucket	*pBucket;
+    register int		binding;
+    register int		quark;
 
-    /* make a new database tree rooted at *pdb, initialized with quark/val */
-    /* quarks[0] can be NULLQUARK, in which case just set the value */
+    for (; (quark = *quarks) != NULLQUARK; quarks++, bindings++) {
+	binding = (int) *bindings;
 
-    for (; *quarks != NULLQUARK; quarks++) {
-	db = *pdb = (XrmResourceDataBase) Xmalloc(sizeof(XrmResourceDataBaseRec));
-	db->type = NULLQUARK;
-	db->val.size = 0;
-	db->val.addr = NULL;
-	db->hashTable = (XrmHashTable) Xmalloc(sizeof(XrmHashBucket) * HASHSIZE);
-	bzero((char *) db->hashTable, sizeof(XrmHashBucket) * HASHSIZE);
-	pBucket = &(db->hashTable[HashIndex(*quarks)]);
-	*pBucket = bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec));
-	bucket->next = NULL;
-	bucket->quark = *quarks;
-	bucket->db = NULL;
-	pdb = &(bucket->db);
-    }
-
-    SetValue(pdb, type, val);
-}
-
-static void AddNameToLevel(quarks, pBucket, type, val)
-    XrmQuarkList		quarks;
-    XrmHashBucket		*pBucket;
-    XrmRepresentation	type;
-    XrmValuePtr		val;
-{
-    /* add a new bucket to this level at pBucket */
-
-    register XrmHashBucket bucket;
-
-    /* Prepend new bucket to front of list */
-    bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec));
-    bucket->next = *pBucket;
-    *pBucket = bucket;
-    bucket->quark = *quarks;
-    bucket->db = NULL;
-
-    MakeNewDb(&(bucket->db), &quarks[1], type, val);
-
-}
-
-static void PutEntry(db, quarks, type, val)
-    register XrmResourceDataBase	*db;
-    register XrmQuarkList	quarks;
-	     XrmRepresentation	type;
-    	     XrmValue		val;
-{
-    XrmHashBucket *pBucket;
-
-    for (; *quarks != NULLQUARK; quarks++) {
-	if (*db == NULL) {
-	    MakeNewDb(db, quarks, type, &val);
-	    return;
-	}
-	if ((*db)->hashTable == NULL) {
-	    (*db)->hashTable =
-		(XrmHashTable)Xmalloc(sizeof(XrmHashBucket) * HASHSIZE);
-	    bzero((char *) (*db)->hashTable, sizeof(XrmHashBucket) * HASHSIZE);
-	}
-	if (! FindName(*quarks, (*db)->hashTable, &pBucket)) {
-	    AddNameToLevel(quarks, pBucket, type, &val);
-	    return;
-	    }
-	db = &((*pBucket)->db);
+	/* Allocate new hash table if needed */
+	if (bucket->tables[binding] == NULL) {
+	    bucket->tables[binding] =
+		(XrmHashTable) Xmalloc(sizeof(XrmHashBucket) * HASHSIZE);
+	    bzero((char *) bucket->tables[binding],
+		sizeof(XrmHashBucket) * HASHSIZE);
 	}
 
-    /* update value for entry i */
-    SetValue(db, type, &val);
-
-}
-
-static Bool GetEntry(names, classes, type, val, hashTable)
-    register XrmNameList        names;
-    register XrmClassList       classes;
-    	     XrmRepresentation  *type;
-    	     XrmValuePtr        val;
-    register XrmHashTable         hashTable;
-{
-    register XrmHashBucket	 bucket;
-    register XrmHashTable	 nextHashTable;
-
-    for (; *names != NULLQUARK; names++, classes++) {
-    	bucket = hashTable[HashIndex(*names)];
-	while (bucket != NULL) {
-	    if (bucket->quark == *names) {
-	    	if (names[1] == NULLQUARK) {
-		    *val = bucket->db->val;
-		    /* Must be leaf node with data, else doesn't really match */
-		    if ((*val).addr) {
-			*type = bucket->db->type;
-		    	return True;
-		    } else
-			return False;
-	    	} else if ((nextHashTable = bucket->db->hashTable)
-		 && GetEntry(names+1, classes+1, type, val, nextHashTable)) {
-	    	    return True;
-	    	} else {
-		    break;
-		}
-	    }
+	/* Find bucket containing quark if possible */
+	pBucket = &(bucket->tables[binding][HashIndex(quark)]);
+	bucket = *pBucket;
+	while ((bucket != NULL) && (bucket->quark != quark)) {
 	    bucket = bucket->next;
-    	}
-    	bucket = hashTable[HashIndex(*classes)];
-	while (bucket != NULL) {
-	    if (bucket->quark == *classes) {
-	    	if (classes[1] == NULLQUARK) {
-		    *val = bucket->db->val;
-		    /* Must be leaf node with data, else doesn't really match */
-		    if ((*val).addr) {
-			*type = bucket->db->type;
-		    	return True;
-		    } else
-			return False;
-	    	} else if ((nextHashTable = bucket->db->hashTable)
-		 && GetEntry(names+1, classes+1, type, val, nextHashTable)) {
-	    	    return True;
-	    	} else {
-		    break;
-		}
-	    }
-	    bucket = bucket->next;
-    	}
+	}
+
+	/* Create new bucket if needed */
+	if (bucket == NULL) {
+	    bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec));
+	    bucket->next = *pBucket;
+	    *pBucket = bucket;
+	    bucket->quark = quark;
+	    bucket->type = NULLQUARK;
+	    bucket->value.addr = NULL;
+	    bucket->value.size = 0;
+	    bucket->tables[(int) XrmBindTightly] = NULL;
+	    bucket->tables[(int) XrmBindLoosely] = NULL;
+	}
+    } /* for */
+
+    /* Set value passed in */
+    if (bucket->value.addr != NULL) {
+	Xfree((char *) bucket->value.addr);
     }
-    return False;
-}
+    bucket->type = type;
+    bucket->value.size = value->size;
+    bucket->value.addr = (caddr_t) Xmalloc(value->size);
+    bcopy((char *) value->addr, (char *) bucket->value.addr, (int) value->size);
+} /* PutEntry */
 
 
-static int searchListCount;
-
-static void GetSearchList(names, classes, searchList, hashTable)
-    register XrmNameList  names;
-    register XrmClassList classes;
-    XrmSearchList		 searchList;
-    register XrmHashTable	 hashTable;
-{
-    register XrmHashBucket	 bucket;
-    register XrmHashTable	 nextHashTable;
-
-    for (; *names != NULLQUARK; names++, classes++) {
-    	bucket = hashTable[HashIndex(*names)];
-	while (bucket != NULL) {
-	    if (bucket->quark == *names) {
-		nextHashTable = bucket->db->hashTable;
-	    	if (nextHashTable) {
-		    if (names[1] != NULLQUARK)
-			GetSearchList(names+1,classes+1, 
-			 searchList,nextHashTable);
-		    searchList[searchListCount++] = nextHashTable;
-		}
-		break;
-	    }
-	    bucket = bucket->next;
-    	}
-    	bucket = hashTable[HashIndex(*classes)];
-	while (bucket != NULL) {
-	    if (bucket->quark == *classes) {
-		nextHashTable = bucket->db->hashTable;
-	    	if (nextHashTable) {
-		    if (classes[1] != NULLQUARK)
-			GetSearchList(names+1,classes+1,
-			 searchList,nextHashTable);
-		    searchList[searchListCount++] = nextHashTable;
-		}
-		break;
-	    }
-	    bucket = bucket->next;
-    	}
-    }
-}
-
-void XrmGetSearchList(rdb, names, classes, searchList)
-    XrmResourceDataBase rdb;
-    XrmNameList  names;
-    XrmClassList classes;
-    XrmSearchList	searchList;	/* RETURN */
-{
-    searchListCount = 0;
-    if (rdb && rdb->hashTable) {
-        GetSearchList(names, classes, searchList, rdb->hashTable);
-        searchList[searchListCount++] = rdb->hashTable;
-    }
-    searchList[searchListCount] = NULL;
-}
-
-void XrmGetSearchResource(screen, searchList, name, class, type, pVal)
-	     Screen	*screen;
-    register XrmSearchList	searchList;
-    register XrmName	name;
-    register XrmClass	class;
-    	     XrmAtom	type;
-    	     XrmValuePtr pVal;	/* RETURN */
+static Bool GetEntry(tight, loose, names, classes, type, value)
+	     XrmHashTable	tight;
+    register XrmHashTable	loose;
+    register XrmNameList	names;
+    register XrmClassList	classes;
+    	     XrmRepresentation  *type;  /* RETURN */
+    	     XrmValuePtr	value;  /* RETURN */
 {
     register XrmHashBucket	bucket;
-    register int	nameHash = HashIndex(name);
-    register int	classHash = HashIndex(class);
+    register XrmName		name;
+    register XrmClass		class;
+	     XrmHashTable       nTight, nLoose;
+
+    /* (tight != NULL || loose != NULL) && names[0] != NULLQUARK */
+
+#define GetEntryLookup(table, q) 					    \
+{									    \
+    bucket = table[HashIndex(q)];					    \
+    while (bucket != NULL) {						    \
+	if (bucket->quark == q) {					    \
+	    if (names[1] == NULLQUARK) {				    \
+		/* Must be leaf node with data, else doesn't match */       \
+		if (bucket->value.addr == NULL) {			    \
+		    return False;					    \
+		} else {						    \
+		    *type = bucket->type;				    \
+		    *value = bucket->value;				    \
+		    return True;					    \
+		}							    \
+	    } else {							    \
+		nTight = bucket->tables[(int) XrmBindTightly];		    \
+		nLoose = bucket->tables[(int) XrmBindLoosely];		    \
+		if ((nTight != NULL || nLoose != NULL)			    \
+		    && GetEntry(nTight, nLoose, names+1, classes+1,	    \
+			type, value)) {					    \
+		return True;						    \
+		}							    \
+	    break;							    \
+	    }								    \
+	}								    \
+	bucket = bucket->next;						    \
+    }									    \
+} /* GetEntryLookup */
+
+    /* Check very first name & class in both tight and loose tables */
+    name = *names;
+    if (tight != NULL) GetEntryLookup(tight, name);
+    if (loose != NULL) GetEntryLookup(loose, name);
+    class = *classes;
+    if (tight != NULL) GetEntryLookup(tight, class);
+    if (loose != NULL) GetEntryLookup(loose, class);
+
+    /* Now check any remaining names and class, but just in loose table */
+    if (loose != NULL) {
+	names++;
+	classes++;
+	for (;(name = *names) != NULLQUARK; names++, classes++) {
+	    GetEntryLookup(loose, name);
+	    class = *classes;
+	    GetEntryLookup(loose, class);
+	}
+    }
+
+    /* Didn't find any of the names or classes in either hash table */
+    return False;
+} /* GetEntry */
+
+
+int numTables;
+
+static void GetTables(tight, loose, names, classes, tables)
+             XrmHashTable   tight;
+    register XrmHashTable   loose;
+    register XrmNameList    names;
+    register XrmClassList   classes;
+	     XrmSearchList  tables;     /* RETURN */
+{
+    register XrmName	    name;
+    register XrmClass       class;
+    register XrmHashBucket  bucket;
+             XrmHashTable   nTight, nLoose;
+	
+#define GetTablesLookup(table, q)					    \
+{									    \
+    bucket = table[HashIndex(q)];					    \
+    while (bucket != NULL) {						    \
+	if (bucket->quark == q) {					    \
+	    nTight = bucket->tables[(int) XrmBindTightly];		    \
+	    nLoose = bucket->tables[(int) XrmBindLoosely];		    \
+	    if (nTight != NULL || nLoose != NULL) {			    \
+		if (names[1] != NULLQUARK) {				    \
+		    GetTables(nTight, nLoose, names+1, classes+1, tables);  \
+		} else if (nTight != NULL) {				    \
+		    tables[numTables++] = nTight;			    \
+		}							    \
+		if (nLoose != NULL) {					    \
+		    tables[numTables++] = nLoose;			    \
+		}							    \
+	    }								    \
+	    break;							    \
+	}								    \
+	bucket = bucket->next;						    \
+    }									    \
+} /* GetTablesLookup */
+
+    /* Check first name and class in both tight and loose tables */
+    name = *names;
+    if (tight != NULL) GetTablesLookup(tight, name);
+    if (loose != NULL) GetTablesLookup(loose, name);
+    class = *classes;
+    if (tight != NULL) GetTablesLookup(tight, class);
+    if (loose != NULL) GetTablesLookup(loose, class);
+
+    /* Now check any remaining names and class, but just in loose table */
+    if (loose != NULL) {
+	names++;
+	classes++;
+	for (; (name = *names) != NULLQUARK; names++, classes++) {
+	    GetTablesLookup(loose, name);
+	    class = *classes;
+	    GetTablesLookup(loose, class);
+	}
+    }
+} /* GetTables */
+
+static XrmDatabase NewDatabase()
+{
+    register XrmHashBucket   bucket;
+
+    bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec));
+    bucket->next = NULL;
+    bucket->quark = NULLQUARK;
+    bucket->type = NULLQUARK;
+    bucket->value.addr = NULL;
+    bucket->value.size = 0;
+    bucket->tables[(int) XrmBindTightly] = NULL;
+    bucket->tables[(int) XrmBindLoosely] = NULL;
+    return(bucket);
+} /* NewDatabase */
+
+static char *getstring(buf, nchars, dp)
+	char *buf;
+	register int nchars;
+	char **dp;
+{
+	register char *src = *dp;
+	register char *dst = buf;
+	register char c;
+
+	if (src == NULL) return NULL;
+	if (*src == '\0') return NULL;
+	while (--nchars >= 0) {
+		*dst++ = c = *src++;
+		if (c == '\n' || c == '\0') {
+			*dp = src;
+			return (buf);
+		}
+	}
+	return buf;
+}
+
+static void Enum(db, bindings, quarks, count, proc, closure)
+    XrmHashBucket   db;
+    XrmBindingList  bindings;
+    XrmQuarkList    quarks;
+    unsigned	    count;
+    DBEnumProc      proc;
+    caddr_t	    closure;
+{
+    register int	    i;
+    register XrmHashBucket  bucket;
+    register XrmHashTable   table;
+
+#define EnumTable(binding)						    \
+{									    \
+    table = db->tables[(int) binding];					    \
+    if (table != NULL) {						    \
+	bindings[count] = binding;					    \
+	quarks[count+1] = NULLQUARK;					    \
+	for (i=0; i < HASHSIZE; i++) {					    \
+	    bucket = table[i];						    \
+	    while (bucket != NULL) {					    \
+		quarks[count] = bucket->quark;				    \
+	    	Enum(bucket, bindings, quarks, count+1, proc, closure);     \
+		bucket = bucket->next;					    \
+	    }								    \
+	}								    \
+    }									    \
+} /* EnumTable */
+
+    if (db == NULL) return;
+    EnumTable(XrmBindTightly);
+    EnumTable(XrmBindLoosely);
+
+    quarks[count] = NULLQUARK;
+    if (db->value.addr != NULL) {
+	(*proc)(bindings, quarks, db->type, &(db->value), closure);
+    }
+}
+
+static void EnumerateDatabase(db, proc, closure)
+    XrmHashBucket   db;
+    caddr_t     closure;
+    DBEnumProc      proc;
+{
+    XrmBinding  bindings[100];
+    XrmQuark	quarks[100];
+   
+    Enum(db, bindings, quarks, 0, proc, closure);
+}
+
+static void PrintBindingQuarkList(bindings, quarks, stream)
+    XrmBindingList      bindings;
+    XrmQuarkList	quarks;
+    FILE		*stream;
+{
+    Bool	firstNameSeen;
+
+    for (firstNameSeen = False; (*quarks) != NULLQUARK; bindings++, quarks++) {
+	if (*bindings == XrmBindLoosely) {
+	    (void) fprintf(stream, "*");
+	} else if (firstNameSeen) {
+	    (void) fprintf(stream, ".");
+	}
+	firstNameSeen = True;
+	(void) fputs(XrmQuarkToAtom(*quarks), stream);
+    }
+}
+
+static void DumpEntry(bindings, quarks, type, value, stream)
+    XrmBindingList      bindings;
+    XrmQuarkList	quarks;
+    XrmRepresentation   type;
+    XrmValuePtr		value;
+    FILE		*stream;
+{
+
+    register unsigned int	i;
+
+    PrintBindingQuarkList(bindings, quarks, stream);
+    if (type == XrmQString) {
+	(void) fprintf(stream, ":\t%s\n", value->addr);
+    } else {
+	(void) fprintf(stream, "!%s:\t", XrmRepresentationToAtom(type));
+	for (i = 0; i < value->size; i++)
+	    (void) fprintf(stream, "%02x", (int) value->addr[i]);
+        if (index(value->addr, '\n')) {
+           (void) fprintf(stream, ":\t\\\n");
+           for (i = 0; value->addr[i]; i++) {
+               if (value->addr[i] == '\n') {
+                   (void) fprintf(stream, "\\n");
+                   if (value->addr[i+1]) (void) fprintf(stream, "\\");
+                   (void) fprintf(stream, "\n");
+               } else {
+                   (void) putc(value->addr[i], stream);
+               }
+           }
+        } else {
+           (void) fprintf(stream, ":\t%s\n", value->addr);
+        }
+     }
+}
+
+static void Merge(new, old)
+    XrmHashBucket   new, old;
+{
+    register XrmHashTable   newTable, oldTable;
+    XrmHashBucket	    oldBucket;
+    register XrmHashBucket  newBucket, nextNewBucket, oldSearchBucket;
+    int			    binding;
+    register int	    i;
+
+    /* Merge data in new into old, and destroy new in the process */
+    /* new # NULL && old # NULL */
+    
+    /* Merge new value into old value */
+    if (new->value.addr != NULL) {
+	if (old->value.addr != NULL) {
+	    XFree(old->value.addr);
+	}
+	old->type = new->type;
+	old->value = new->value;
+    } 
+
+    /* Merge new hash tables into old hash tables */
+    for (binding = (int) XrmBindTightly;
+         binding <= (int) XrmBindLoosely;
+	 binding++) {
+	oldTable = old->tables[binding];
+	newTable = new->tables[binding];
+	if (oldTable == NULL) {
+	    old->tables[(int) binding] = newTable;
+	} else if (newTable != NULL) {
+	    /* Copy each bucket over individually */
+	    for (i = 0; i < HASHSIZE; i++) {
+		oldBucket = oldTable[i];
+		newBucket = newTable[i];
+		/* Find each item in newBucket list in the oldBucket list */
+		while (newBucket != NULL) {
+		    nextNewBucket = newBucket->next;
+		    oldSearchBucket = oldBucket;
+		    while (   oldSearchBucket != NULL
+			   && oldSearchBucket->quark != newBucket->quark) {
+			oldSearchBucket = oldSearchBucket->next;
+		    }
+		    if (oldSearchBucket == NULL) {
+			/* Just stick newBucket at head of old bucket list */
+			newBucket->next = oldTable[i];
+			oldTable[i] = newBucket;
+		    } else {
+			/* Merge the two */
+			Merge(newBucket, oldSearchBucket);
+		    }
+		    newBucket = nextNewBucket;
+		} /* while newBucket != NULL */
+	    } /* for i */
+	    XFree(newTable);
+	} /* if */
+    } /* for binding */
+    XFree(new);
+} /* Merge */
+
+void XrmQGetSearchList(db, names, classes, searchList)
+    XrmHashBucket   db;
+    XrmNameList	    names;
+    XrmClassList    classes;
+    XrmSearchList   searchList;	/* RETURN */
+{
+    XrmHashTable    nTight, nLoose;
+
+    numTables = 0;
+    if (db != NULL) {
+	nTight = db->tables[(int) XrmBindTightly];
+	nLoose = db->tables[(int) XrmBindLoosely];
+	if (nTight != NULL || nLoose != NULL)
+	if (*names != NULLQUARK) {
+	    GetTables(nTight, nLoose, names, classes, searchList);
+	} else if (nTight != NULL) {
+	    searchList[numTables++] = nTight;
+	}
+	searchList[numTables++] = nLoose;
+    }
+    searchList[numTables] = NULL;
+} /* XrmGetSearchList */
+
+Bool XrmQGetSearchResource(searchList, name, class, pType, pVal)
+    register XrmSearchList	searchList;
+    register XrmName		name;
+    register XrmClass		class;
+    	     XrmRepresentation	*pType; /* RETURN */
+    	     XrmValue		*pVal;  /* RETURN */
+{
+    register XrmHashBucket	bucket;
+    register int    nameHash  = HashIndex(name);
+    register int    classHash = HashIndex(class);
 
     for (; (*searchList) != NULL; searchList++) {
 	bucket = (*searchList)[nameHash];
 	while (bucket != NULL) {
 	    if (bucket->quark == name) {
-		if (bucket->db->val.addr != NULL) {
+		if (bucket->value.addr != NULL) {
 		    /* Leaf node, it really matches */
-		    _XrmConvert(screen, bucket->db->type, &bucket->db->val,
-		               XrmAtomToRepresentation(type), 	pVal);
-		    return;
+		    (*pType) = bucket->type;
+		    (*pVal) = bucket->value;
+		    return True;
 		}
 		break;
 	    }
@@ -336,228 +557,259 @@ void XrmGetSearchResource(screen, searchList, name, class, type, pVal)
 	bucket = (*searchList)[classHash];
 	while (bucket != NULL) {
 	    if (bucket->quark == class) {
-		if (bucket->db->val.addr != NULL) {
+		if (bucket->value.addr != NULL) {
 		    /* Leaf node, it really matches */
-		    _XrmConvert(screen, bucket->db->type, &bucket->db->val,
-		               XrmAtomToRepresentation(type), 	pVal);
-		    return;
+		    (*pType) = bucket->type;
+		    (*pVal) = bucket->value;
+		    return True;
 		}
 		break;
 	    }
 	    bucket = bucket->next;
     	}
     }
+    (*pType) = NULLQUARK;
     (*pVal).addr = NULL;
     (*pVal).size = 0;
-}
+    return False;
+} /* XrmQGetSearchResource */
 
-void XrmPutResource(rdb, quarks, type, value)
-    XrmResourceDataBase *rdb;
-    XrmQuarkList		quarks;
+
+void XrmQPutResource(pdb, bindings, quarks, type, value)
+    XrmDatabase		*pdb;
+    XrmBindingList      bindings;
+    XrmQuarkList	quarks;
     XrmRepresentation	type;
     XrmValuePtr		value;
 {
-    PutEntry(rdb, quarks, type, *value);
-}
+    if (*pdb == NULL) *pdb = NewDatabase();
+    PutEntry(*pdb, bindings, quarks, type, value);
+} /* XrmQPutResource */
 
-static char *getstring(buf, nchars, dp)
-	char *buf;
-	register int nchars;
-	char **dp;
+void XrmPutResource(pdb, specifier, type, value)
+    XrmDatabase     *pdb;
+    char	    *specifier;
+    char	    *type;
+    XrmValuePtr	    value;
 {
-	register char *p = *dp;
-	register char c;
-	if (*p == '\0') return NULL;
-	while (--nchars > 0) {
-		*buf++ = c = *p++;
-		if (c == '\n' || c == '\0') {
-			*dp = p;
-			return (buf);
-		}
-	}
-	return buf;
-}
+    XrmBinding	    bindings[100];
+    XrmQuark	    quarks[100];
 
-#define PUTRESOURCE(s)					\
-	if (s == NULL) break;				\
-	for (; isspace(s[0]); s++) ;			\
-	if ((s[0] == '\0') || (s[0] == '#')) continue;	\
-	i = strlen(s);					\
-	if (s[i-1] == '\n') s[i-1] = '\0';		\
-	for (i=0 ; ; i++) {				\
-	    if (s[i] == '\0') {				\
-		valStr = "";				\
-		break;					\
-		}					\
-	    if ((s[i] == ':') || isspace(s[i])) {	\
-		valStr = &s[i+1];			\
-		for (; isspace(valStr[0]); valStr++) ;	\
-		s[i] = '\0';				\
-		break;					\
-		}					\
-		}					\
-	XrmStringToQuarkList(s, nl);			\
-	val.size = strlen(valStr)+1;			\
-	val.addr = (caddr_t) valStr;			\
-	XrmPutResource(&db, &nl[0], XrmQString, &val);
+    if (*pdb == NULL) *pdb = NewDatabase();
+    XrmStringToBindingQuarkList(specifier, bindings, quarks);
+    PutEntry(*pdb, bindings, quarks, XrmAtomToQuark(type), value);
+} /* XrmPutResource */
 
 
-XrmResourceDataBase XrmLoadDataBase(data)
-    char 		*data;
+
+void XrmQPutStringResource(pdb, bindings, quarks, str)
+    XrmDatabase     *pdb;
+    XrmBindingList  bindings;
+    XrmQuarkList    quarks;
+    char	    *str;
 {
-    char		buf[1000];
-    register char	*s, *valStr;
-    XrmQuark		nl[100];
-    register int	i;
-    XrmValue		val;
-    char	 	*dp = data;
-    XrmResourceDataBase	db = NULL;
+    XrmValue	value;
 
-    if (data == NULL || data[0] == '\0')
-    	return NULL;
+    if (*pdb == NULL) *pdb = NewDatabase();
+    value.addr = (caddr_t) str;
+    value.size = strlen(str)+1;
+    PutEntry(*pdb, bindings, quarks, XrmQString, &value);
+} /* XrmQPutStringResource */
+
+
+static void PutLineResources(pdb, get_line, closure)
+    XrmDatabase *pdb;
+    char	*((*get_line)(/* buf, count, closure */));
+    caddr_t     closure;
+{
+    register char   *s, *ts, ch;
+    char	buf[5000];
+    register char   *nameStr, *valStr;
+    XrmBinding	    bindings[100];
+    XrmQuark	    quarks[100];
+    XrmValue	    value;
 
     for (;;) {
-	s = getstring(buf, sizeof(buf), &dp);
-	PUTRESOURCE(s);
-    }
+	s = (char *)(*get_line)(buf, sizeof(buf), closure);
+	if (s == NULL) return;
+
+	/* Scan to start of resource name/class specification */
+	for (; isspace(*s); s++) {};
+	if ((*s == '\0') || (*s == '\n') || (*s == '#')) continue;
+    
+	/* Scan to end of resource name/class specification */
+	for (nameStr = s, ts = s-1; ; s++) {
+	    if ((ch = *s) == '\0' || ch == '\n')
+		break;
+	    if (ch == ':') {
+		s++;
+		break;
+	    }
+	    if (! isspace(ch))
+		ts = s;
+	}
+    
+	/* Remove trailing white space from name/class */
+	ts[1] = '\0';
+	
+	/* Scan to start of resource value */
+	for (; isspace(*s); s++) {};
+    
+	/* Scan to end of resource value */
+	for (valStr = ts = s; ((ch = *s) != '\0' && ch != '\n');s++) {
+	    if (ch == '\\') {
+		if (s[1] == 'n') {	    /* \n becomes LF */
+		    *ts = '\n';
+		    ts++;
+		    s++;
+		} else if (s[1] == '\n') {  /* \LF means continue next line */
+		    if ((char *)(*get_line)(s+1, sizeof(buf) - (s-buf), closure) == NULL)
+		    break;
+		} else {
+		    *ts = s[1];
+		    ts++;
+		    s++;
+		}
+	    } else {
+		*ts = ch;
+		ts++;
+	    }
+	};
+	*ts = '\0';
+    
+	/* Store it in database */
+	value.size = s - valStr + 1;
+	value.addr = (caddr_t) valStr;
+	
+	XrmStringToBindingQuarkList(nameStr, bindings, quarks);
+	XrmQPutResource(pdb, bindings, quarks, XrmQString, &value);
+    } /* for lines left to process */
+} /* PutLineResources */
+  
+void XrmPutStringResource(pdb, specifier, str)
+    XrmDatabase *pdb;
+    char	*specifier;
+    char	*str;
+{
+    XrmValue	value;
+    XrmBinding	bindings[100];
+    XrmQuark	quarks[100];
+
+    if (*pdb == NULL) *pdb = NewDatabase();
+    XrmStringToBindingQuarkList(specifier, bindings, quarks);
+    value.addr = (caddr_t) str;
+    value.size = strlen(str)+1;
+    PutEntry(*pdb, bindings, quarks, XrmQString, &value);
+} /* XrmPutStringResource */
+
+
+void XrmPutLineResource(pdb, line)
+    XrmDatabase     *pdb;
+    char   *line;
+{
+    PutLineResources(pdb, getstring, (caddr_t) &line);
+} 
+
+XrmDatabase XrmGetStringDatabase(data)
+    char	    *data;
+{
+    char	    buf[1000];
+    register char   *s;
+    XrmDatabase     db;
+
+    db = NULL;
+    PutLineResources(&db,getstring,&data);
     return db;
 }
 
-XrmResourceDataBase XrmGetDataBase(magicCookie)
-    char 		*magicCookie;
+XrmDatabase XrmGetFileDatabase(fileName)
+    char 	    *fileName;
 {
-    char		buf[1000];
-    register char	*s, *valStr;
-    XrmQuark		nl[100];
-    register int	i;
-    XrmValue		val;
-    FILE		*magicCookieFile;
-    XrmResourceDataBase	db = NULL;
+    char	    buf[1000];
+    register char   *s;
+    register FILE   *file;
+    XrmDatabase     db;
 
-    if (magicCookie == NULL || magicCookie[0] == '\0')
+    if (fileName == NULL)
     	return NULL;
 
-    if((magicCookieFile = fopen(magicCookie, "r")) == NULL){
+    file = fopen(fileName, "r");
+    if (file == NULL) {
 	return NULL;
     }
-    for (;;) {
-	s = fgets(buf, sizeof(buf), magicCookieFile);
-	PUTRESOURCE(s);
-    }
-    fclose(magicCookieFile);
+
+    db = NULL;
+    PutLineResources(&db, fgets, (caddr_t) file);
+    fclose(file);
     return db;
 }
-#undef PUTRESOURCE
 
-static void Enum(db, quarks, count, cd, proc)
-    XrmResourceDataBase db;
-    XrmQuarkList	quarks;
-    unsigned	count;
-    unspecified cd;
-    DBEnumProc  proc;
+void XrmPutFileDatabase(db, fileName)
+    XrmDatabase db;
+    char 	*fileName;
 {
-    unsigned int	i;
-    XrmHashBucket bucket;
-
-    if (db == NULL) return;
-    if (db->hashTable != NULL) {
-	quarks[count+1] = NULLQUARK;
-	for (i=0; i < HASHSIZE; i++) {
-	    bucket = db->hashTable[i];
-	    while (bucket != NULL) {
-	    	quarks[count] = bucket->quark;
-	    	Enum(bucket->db, quarks, count+1, cd, proc);
-		bucket = bucket->next;
-	    }
-	}
-    }
-    quarks[count] = NULLQUARK;
-    if (db->val.addr != NULL) (*proc)(cd, quarks, db->type, db->val);
-    }
-
-static void EnumerateDataBase(db, cd, proc)
-    XrmResourceDataBase	db;
-    unspecified	cd;
-    DBEnumProc	proc;
-    {
-    XrmQuark	nl[100];
-    Enum(db, nl, 0, cd, proc);
-}
-
-void PrintQuark(quark)
-    XrmQuark	quark;
-{
-    (void) printf("%s", XrmQuarkToAtom(quark));
-}
-
-void PrintQuarkList(quarks)
-    XrmQuarkList	quarks;
-{
-    Bool	firstNameSeen;
-
-    for (firstNameSeen = False; (*quarks) != NULLQUARK; quarks++) {
-        if (firstNameSeen) (void) printf(".");
-	firstNameSeen = True;
-	PrintQuark(*quarks);
-    }
-}
-
-static void DumpEntry(stream, quarks, type, val)
-    FILE	     *stream;
-    XrmQuarkList	     quarks;
-    XrmRepresentation type;
-    XrmValue	     val;
-{
-
-    register unsigned int	i;
-
-    for (i=0; quarks[i] != NULLQUARK; i++) {
-	if (i != 0) (void) fprintf(stream, ".");
-	(void) fprintf(stream, "%s", XrmQuarkToAtom(quarks[i]));
-    }
-    if (type == XrmQString) {
-	(void) fprintf(stream, ":\t%s\n", val.addr);
-    } else {
-	(void) fprintf(stream, "!%s:\t", XrmRepresentationToAtom(type));
-	for (i = 0; i < val.size; i++)
-	    (void) fprintf(stream, "%02x", (int) val.addr[i]);
-        (void) fprintf(stream, "\n");
-    }
-}
-
-void XrmPutDataBase(db, magicCookie)
-    XrmResourceDataBase	db;
-    char 		*magicCookie;
-{
-    FILE *magicCookieFile;
+    FILE	*file;
     
-    if((magicCookieFile = fopen(magicCookie, "w")) == NULL) return;
-    EnumerateDataBase(db, (unspecified) magicCookieFile, DumpEntry);
-    fclose(magicCookieFile);
+    if ((file = fopen(fileName, "w")) == NULL) return;
+    EnumerateDatabase(db, DumpEntry, (caddr_t) file);
 }
 
-void XrmMergeDataBases(new, into)
-    XrmResourceDataBase	new, *into;
+
+void XrmMergeDatabases(new, into)
+    XrmDatabase	new, *into;
 {
-    EnumerateDataBase(new, (unspecified) into, PutEntry);
+    if (*into == NULL) {
+	*into = new;
+    } else if (new != NULL) {
+	Merge(new, *into);
+    }
 }
 
-void XrmGetResource(screen, rdb, names, classes, destType, val)
-    Screen		*screen;
-    XrmResourceDataBase rdb;
+Bool XrmQGetResource(db, names, classes, pType, pValue)
+    XrmHashBucket       db;
     XrmNameList		names;
     XrmClassList 	classes;
-    XrmRepresentation	destType;
-    XrmValuePtr		val;
-    {
-    XrmRepresentation	fromType;
-    XrmValue 		from;
+    XrmRepresentation	*pType;  /* RETURN */
+    XrmValuePtr		pValue;  /* RETURN */
+{
+    XrmHashTable	tight, loose;
 
-    if (rdb && rdb->hashTable
-     && GetEntry(names, classes, &fromType, &from, rdb->hashTable)) {
-	_XrmConvert(screen, fromType, &from, destType, val);
-    } else {
-	(*val).addr = NULL;
-	(*val).size = 0;
+    if (db != NULL) {
+	tight = db->tables[(int) XrmBindTightly];
+	loose = db->tables[(int) XrmBindLoosely];
+	if ((tight != NULL || loose != NULL) && (*names != NULL)
+		&& GetEntry(tight, loose, names, classes, pType, pValue)) {
+	    /* Found it */
+	    return True;
+	}
     }
+    (*pType) = NULLQUARK;
+    (*pValue).addr = NULL;
+    (*pValue).size = 0;
+    return False;
 }
+
+Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
+    XrmHashBucket       db;
+    XrmAtom		name_str;
+    XrmAtom		class_str;
+    XrmAtom		*pType_str;  /* RETURN */
+    XrmValuePtr		pValue;      /* RETURN */
+{
+    XrmName		names[100];
+    XrmClass		classes[100];
+    XrmRepresentation   fromType;
+    Bool		result;
+
+    XrmStringToNameList(name_str, names);
+    XrmStringToClassList(class_str, classes);
+    result = XrmQGetResource(db, names, classes, &fromType, pValue);
+    (*pType_str) = XrmQuarkToAtom(fromType);
+    return result;
+} /* XrmGetResource */
+
+void XrmInitialize()
+{
+    XrmQString = XrmAtomToQuark("String");
+}
+
