@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xedit.h,v 1.13 88/09/06 17:34:33 jim Exp $";
+ *	rcs_id[] = "$XConsortium: xedit.h,v 1.14 88/09/16 14:31:22 swick Exp $";
  */
 
 /*
@@ -42,8 +42,8 @@
 #include <X11/Label.h>
 #include <X11/Scroll.h>
 #include <X11/AsciiText.h>
-#include "TextSrc.h"
 #include <X11/Text.h>
+#include <X11/TextSrcP.h>
 #include <X11/VPaned.h>
 #include <X11/Viewport.h>
 #include <X11/Cardinals.h>
