@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.52 91/02/15 08:31:41 rws Exp $
+ * $XConsortium: dm.c,v 1.53 91/02/16 13:24:54 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,7 +25,15 @@
 # include	"dm.h"
 
 # include	<stdio.h>
+#if defined(SVR4) && __STDC__ && !defined(_POSIX_SOURCE)
+/* SVR4 is stupid */
+#define _POSIX_SOURCE
 # include	<signal.h>
+#undef _POSIX_SOURCE
+#else
+# include	<signal.h>
+#endif
+
 #ifndef sigmask
 #define sigmask(m)  (1 << ((m - 1)))
 #endif
@@ -142,7 +150,7 @@ char	**argv;
 	    RescanServers ();
 	    Rescan = 0;
 	}
-#ifdef SYSV
+#if defined(SYSV) || !defined(XDMCP)
 	WaitForChild ();
 #else
 	WaitForSomething ();
