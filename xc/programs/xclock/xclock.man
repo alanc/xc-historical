@@ -133,7 +133,8 @@ local  host  is  assumed.   If  the  display  is omitted, display 0 is
 assumed, the ``:'' is necessary in either case.
 .TP 8
 .B \-xrm \fIresourcestring\fP
-This allows your to override resources that do not have command line arguments.
+This option can be used to set resources that do not have command line 
+arguments.
 .SH X DEFAULTS
 This program uses the 
 .I Clock
