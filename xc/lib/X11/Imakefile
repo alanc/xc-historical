@@ -17,6 +17,7 @@
 
 OBJS1 =\
 	Context.o \
+	Depths.o \
 	ParseCmd.o \
 	Quarks.o \
 	XAllCells.o \
