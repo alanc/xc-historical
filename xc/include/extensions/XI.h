@@ -1,4 +1,4 @@
-/* $XConsortium: XI.h,v 1.6 90/05/18 15:25:03 rws Exp $ */
+/* $Header: XI.h,v 1.18 90/09/27 10:45:09 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -80,9 +80,11 @@ SOFTWARE.
 #define sz_xQueryDeviceStateReq			8
 #define sz_xQueryDeviceStateReply		32
 #define sz_xSendExtensionEventReq		16
+#define sz_xDeviceBellReq			8
 
 #define INAME 			"XInputExtension"
 
+#define XI_KEYBOARD	"KEYBOARD"
 #define XI_MOUSE	"MOUSE"
 #define XI_TABLET	"TABLET"
 #define XI_TOUCHSCREEN	"TOUCHSCREEN"
@@ -103,6 +105,17 @@ SOFTWARE.
 
 #define Dont_Check		0
 #define XInput_Initial_Release	1
+#define XInput_Add_XDeviceBell	2
+
+#define XI_Absent		0
+#define XI_Present		1
+
+#define XI_Initial_Release_Major	1
+#define XI_Initial_Release_Minor	0
+
+#define XI_Add_XDeviceBell_Major	1
+#define XI_Add_XDeviceBell_Minor	1
+
 #define NoSuchExtension		1
 
 #define COUNT			0
@@ -113,6 +126,8 @@ SOFTWARE.
 
 #define XPOINTER		0
 #define XKEYBOARD		1
+
+#define UseXKeyboard		0
 
 #define IsXPointer		0
 #define IsXKeyboard		1
@@ -196,4 +211,5 @@ typedef struct {
         short	major_version;
         short	minor_version;
 } XExtensionVersion;
+
 #endif /* _XI_H_ */

@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.15 90/02/22 13:26:01 gms Exp $ */
+/* $Header: XIproto.h,v 1.19 90/09/26 16:32:32 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -125,6 +125,7 @@ struct tmask
 #define X_SetDeviceButtonMapping	29
 #define X_QueryDeviceState 		30
 #define X_SendExtensionEvent 		31
+#define X_DeviceBell			32
 
 /*********************************************************
  *
@@ -174,7 +175,7 @@ typedef struct {
     CARD8 	RepType;        /* always X_ListInputDevices  	*/
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
-    CARD8 	ndevices;
+    CARD8 	ndevices B32;
     CARD8 	pad1, pad2, pad3;
     CARD32 	pad01 B32;
     CARD32 	pad02 B32;
@@ -208,7 +209,7 @@ typedef struct _xKeyInfo {
     KeyCode 	min_keycode; 
     KeyCode 	max_keycode; 
     CARD16 	num_keys B16;
-    CARD8	pad1, pad2;
+    CARD8 	pad1,pad2;
     } xKeyInfo;
 
 typedef struct _xButtonInfo *xButtonInfoPtr;
@@ -1086,6 +1087,22 @@ typedef struct {
     BYTE	pad1,pad2,pad3;
 } xSendExtensionEventReq;
 
+/*********************************************************
+ *
+ * DeviceBell.
+ *
+ */
+
+typedef struct {
+    CARD8	reqType;
+    CARD8 	ReqType;        /* always X_DeviceBell */
+    CARD16 	length B16;
+    CARD8   	deviceid;
+    CARD8	feedbackid;
+    CARD8	feedbackclass;
+    INT8	percent;
+} xDeviceBellReq;
+
 /**********************************************************
  *
  * Input extension events.
@@ -1179,9 +1196,9 @@ typedef struct
     CARD8       classes_reported;
     CARD8       buttons[4];
     CARD8       keys[4];
-    CARD32	valuator0 B32;
-    CARD32	valuator1 B32;
-    CARD32	valuator2 B32;
+    INT32	valuator0 B32;
+    INT32	valuator1 B32;
+    INT32	valuator2 B32;
     }  deviceStateNotify;
 
 /**********************************************************

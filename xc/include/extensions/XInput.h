@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.9 90/05/18 15:23:42 rws Exp $ */
+/* $Header: XInput.h,v 1.18 90/11/13 13:14:55 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -31,11 +31,6 @@ SOFTWARE.
 
 #ifndef _XLIB_H_
 #include <X11/Xlib.h>
-#endif
-
-#ifndef _EXTUTIL_H_
-#include "extutil.h"
-#define _EXTUTIL_H_
 #endif
 
 #ifndef _XI_H_
@@ -136,25 +131,15 @@ SOFTWARE.
 #define NoExtensionEvent(d, type, class) \
     { class =  ((XDevice *) d)->device_id << 8 | _noExtensionEvent;}
 
-#define BadDevice(dpy, error) \
-    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
-     error = info->codes->first_error + XI_BadDevice;}
+#define BadDevice(dpy, error) _xibaddevice(dpy, &error)
 
-#define BadClass(dpy, error) \
-    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
-     error = info->codes->first_error + XI_BadClass;}
+#define BadClass(dpy, error) _xibadclass(dpy, &error)
 
-#define BadEvent(dpy, error) \
-    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
-     error = info->codes->first_error + XI_BadEvent;}
+#define BadEvent(dpy, error) _xibadevent(dpy, &error)
 
-#define BadMode(dpy, error) \
-    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
-     error = info->codes->first_error + XI_BadMode;}
+#define BadMode(dpy, error) _xibadmode(dpy, &error)
 
-#define DeviceBusy(dpy, error) \
-    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
-     error = info->codes->first_error + XI_DeviceBusy;}
+#define DeviceBusy(dpy, error) _xidevicebusy(dpy, &error)
 
 /***************************************************************
  *
@@ -340,20 +325,21 @@ typedef struct {
     unsigned char	class;
     unsigned char	length;
     unsigned char	num_valuators;
+    unsigned char	mode;
     int        		valuators[6];
 } XValuatorStatus;
 
 typedef struct {
     unsigned char	class;
     unsigned char	length;
-    unsigned char	num_keys;
+    short		num_keys;
     char        	keys[32];
 } XKeyStatus;
 
 typedef struct {
     unsigned char	class;
     unsigned char	length;
-    unsigned char	num_buttons;
+    short		num_buttons;
     char        	buttons[32];
 } XButtonStatus;
 
@@ -464,6 +450,7 @@ typedef struct {
     int     length;
     XID     id;
     int     led_values;
+    int     led_mask;
 } XLedFeedbackState;
 
 typedef struct {
