@@ -1,4 +1,4 @@
-/* $XConsortium: ThreadsI.h,v 1.5 93/09/15 15:09:29 kaleb Exp $ */
+/* $XConsortium: ThreadsI.h,v 1.5 93/09/18 14:57:39 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -101,17 +101,17 @@ extern void (*_XtInitAppLock)(
 
 #else /* defined(XTHREADS) */
 
-#define LOCK_PROCESS /**/
-#define UNLOCK_PROCESS /**/
-#define LOCK_APP(app) /**/
-#define UNLOCK_APP(app) /**/
+#define LOCK_PROCESS
+#define UNLOCK_PROCESS
+#define LOCK_APP(app)
+#define UNLOCK_APP(app)
 
-#define INIT_APP_LOCK(app) /**/
-#define FREE_APP_LOCK(app) /**/
+#define INIT_APP_LOCK(app)
+#define FREE_APP_LOCK(app)
 
-#define IS_TOP_THREAD(app) /**/
+#define IS_TOP_THREAD(app)
 
-#define WIDGET_TO_APPCON(w) /**/
-#define DPY_TO_APPCON(d) /**/
+#define WIDGET_TO_APPCON(w)
+#define DPY_TO_APPCON(d)
 
 #endif /* !defined(XTHREADS) */
