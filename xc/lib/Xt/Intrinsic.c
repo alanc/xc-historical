@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.179 93/09/12 11:23:01 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.180 93/09/18 18:18:30 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -902,7 +902,7 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
     XtFilePredicate predicate;
 #endif
 {
-    char *buf, *buf1, *buf2, *colon, *start;
+    char *buf, *buf1, *buf2, *colon;
     int len;
     Boolean firstTime = TRUE;
 
@@ -912,18 +912,23 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
     if (predicate == NULL) predicate = TestFile;
 
     while (1) {
-	start = (String)path;
-	while (1) {
-	    colon = strchr(start, ':');
-	    if (colon == NULL) break;
-	    if (colon == path) {start++; path++; continue; }
-	    if (*(colon-1) != '%') break;
-	    start = colon+1;
+	colon = (String)path;
+	/* skip leading colons */
+	while (*colon) {
+	    if (*colon != ':') break;
+	    colon++;
+	    path++;
 	}
-	if (colon != NULL)
-	    len = colon - path;
-	else
-	    len = strlen(path);
+	/* now look for an un-escaped colon */
+	for ( ; *colon ; colon++) {
+	    if (*colon == '%' && *(path+1)) {
+		colon++;	/* bump it an extra time to skip %. */
+		continue;
+	    }
+	    if (*colon == ':')
+		break;
+	}
+	len = colon - path;
 	if (Resolve(path, len, substitutions, num_substitutions,
 		    buf, '/')) {
 	    if (firstTime || strcmp(buf1,buf2) != 0) {
@@ -951,7 +956,7 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
 
 	/* Nope...any more paths? */
 
-	if (colon == NULL) break;
+	if (*colon == '\0') break;
 	path = colon+1;
     }
 
@@ -1051,6 +1056,35 @@ static void FillInLangSubs(subs, pd)
     } else (void) strcpy(*rest, string);
 }
 
+/*
+ * default path used if environment variable XFILESEARCHPATH
+ * is not defined.  Also substitued for %D.
+ * The exact value should be documented in the implementation
+ * notes for any Xt implementation.
+ */
+#if NeedFunctionPrototypes
+static char *implementation_default_path(void)
+#else
+static char *implementation_default_path()
+#endif
+{
+#ifdef WIN32
+    /* if you know how to pass % thru the compiler let me know */
+    static char xfilesearchpath[] = XFILESEARCHPATHDEFAULT;
+    static Bool fixed;
+
+    if (!fixed) {
+	for (ch = xfilesearchpath; ch = strchr(ch, ';'); ch++)
+	    *ch = '%';
+	fixed = True;
+    }
+    return xfilesearchpath;
+#else
+    return XFILESEARCHPATHDEFAULT;
+#endif
+}
+
+
 static SubstitutionRec defaultSubs[] = {
     {'N', NULL},
     {'T', NULL},
@@ -1086,6 +1120,8 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 {
     XtPerDisplay pd;
     static char *defaultPath = NULL;
+    char *impl_default = implementation_default_path();
+    int idef_len = strlen(impl_default);
     char *massagedPath;
     int bytesAllocd, bytesLeft;
     char *ch, *result;
@@ -1102,21 +1138,8 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 #ifndef VMS
 	if (defaultPath == NULL) {
 	    defaultPath = getenv("XFILESEARCHPATH");
-#ifdef WIN32
-	    if (defaultPath == NULL) {
-		/* if you know how to pass % thru the compiler let me know */
-		static char xfilesearchpath[] = XFILESEARCHPATHDEFAULT;
-		static Bool fixed;
-		if (!fixed) {
-		    for (ch = xfilesearchpath; ch = strchr(ch, ';'); ch++)
-			*ch = '%';
-		    fixed = True;
-		}
-		defaultPath = xfilesearchpath;
-	    }
-#else
-	    if (defaultPath == NULL) defaultPath = XFILESEARCHPATHDEFAULT;
-#endif
+	    if (defaultPath == NULL)
+		defaultPath = impl_default;
 	}
 	path = defaultPath;
 #else
@@ -1138,10 +1161,13 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 	bytesLeft -= 4;
     } else ch = massagedPath;
 
-    /* Insert %N%S between adjacent colons */
+    /* Insert %N%S between adjacent colons
+     * and default path for %D.
+     * Default path should not have any adjacent colons of its own.
+     */
 
     while (*path != '\0') {
-	if (bytesLeft < 8) {
+	if (bytesLeft < idef_len) {
 	    int bytesUsed = bytesAllocd - bytesLeft;
 	    char *new;
 	    bytesAllocd +=1000;
@@ -1168,6 +1194,13 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 	    ch += 6;
 	    bytesLeft -= 6;
 	    while (*path == ':') path++;
+	    continue;
+	}
+	if (*path == '%' && *(path+1) == 'D') {
+	    strcpy(ch, impl_default);
+	    ch += idef_len;
+	    bytesLeft -= idef_len;
+	    path += 2;
 	    continue;
 	}
 	*ch++ = *path++;
