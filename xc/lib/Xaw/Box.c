@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Box.c,v 1.26 88/02/14 13:58:35 rws Exp $";
+static char rcsid[] = "$Header: Box.c,v 1.27.1.1 88/02/22 21:46:53 swick Exp $";
 #endif lint
 
 /*
@@ -30,7 +30,7 @@ static char rcsid[] = "$Header: Box.c,v 1.26 88/02/14 13:58:35 rws Exp $";
  */
 
 #include	<X11/IntrinsicP.h>
-#include	<X11/Atoms.h>
+#include	<X11/StringDefs.h>
 #include	<X11/Misc.h>
 #include	<X11/BoxP.h>
 
@@ -61,8 +61,7 @@ static void Resize();
 static Boolean SetValues();
 static XtGeometryResult GeometryManager();
 static void ChangeManaged();
-static void ClassPartInitialize();
-static void RefigureLayout();
+static XtGeometryResult PreferredSize();
 
 BoxClassRec boxClassRec = {
   {
@@ -71,7 +70,7 @@ BoxClassRec boxClassRec = {
     /* class_name         */    "Box",
     /* widget_size        */    sizeof(BoxRec),
     /* class_initialize   */    NULL,
-    /* class_part_init    */	ClassPartInitialize,
+    /* class_part_init    */	NULL,
     /* class_inited       */	FALSE,
     /* initialize         */    Initialize,
     /* initialize_hook    */	NULL,
@@ -96,6 +95,7 @@ BoxClassRec boxClassRec = {
     /* version            */	XtVersion,
     /* callback_private   */    NULL,
     /* tm_table           */    NULL,
+    /* query_geometry     */	PreferredSize,
   },{
 /* composite_class fields */
     /* geometry_manager   */    GeometryManager,
@@ -106,7 +106,7 @@ BoxClassRec boxClassRec = {
     /* move_focus_to_prev */    NULL
   },{
 /* Box class fields */
-    /* do_layout	  */	RefigureLayout,
+    /* empty		  */	0,
   }
 };
 
@@ -127,10 +127,10 @@ WidgetClass boxWidgetClass = (WidgetClass)&boxClassRec;
  */
 
 /* ARGSUSED */
-static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
+static DoLayout(bbw, width, height, reply_width, reply_height, position)
     BoxWidget	bbw;
-    Dimension	width, height;
-    Dimension	*replyWidth, *replyHeight;	/* RETURN */
+    Dimension	width, height;	/* height not currently used */
+    Dimension	*reply_width, *reply_height; /* bounding box */
     Boolean	position;	/* actually reposition the windows? */
 {
     Cardinal  i;
@@ -193,25 +193,108 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
         h += lh + bbw->box.v_space;
     }
 
-    *replyWidth = Max(w, 1);
-    *replyHeight = Max(h, 1);
+    *reply_width = Max(w, 1);
+    *reply_height = Max(h, 1);
 }
 
 /*
  *
- * Calculate preferred size, given constraining box
- * Returns TRUE if everything will fit in the constraints, FALSE otherwise.
- * Also returns minimum width and height that will preserve the same layout.
+ * Calculate preferred size, given constraining box, caching it in the widget.
  *
  */
 
-static Boolean PreferredSize(bbw, width, height, replyWidth, replyHeight)
-    BoxWidget	bbw;
-    Dimension	width, height;
-    Dimension	*replyWidth, *replyHeight;
+static XtGeometryResult PreferredSize(widget, constraint, preferred)
+    Widget widget;
+    XtWidgetGeometry *constraint, *preferred;
 {
-    DoLayout(bbw, width, height, replyWidth, replyHeight, FALSE);
-    return ((*replyWidth <= width) && (*replyHeight <= height));
+    BoxWidget w = (BoxWidget)widget;
+    int width /*, height */;
+    Dimension preferred_width = w->box.preferred_width;
+    Dimension preferred_height = w->box.preferred_height;
+
+    constraint->request_mode &= CWWidth | CWHeight;
+
+    if (constraint->request_mode == 0)
+	/* parent isn't going to change w or h, so nothing to re-compute */
+	return XtGeometryYes;
+
+    if (constraint->request_mode == w->box.last_query_mode &&
+	(!(constraint->request_mode & CWWidth) ||
+	 constraint->width == w->box.last_query_width) &&
+	(!(constraint->request_mode & CWHeight) ||
+	 constraint->height == w->box.last_query_height)) {
+	/* same query; current preferences are still valid */
+	preferred->request_mode = CWWidth | CWHeight;
+	preferred->width = preferred_width;
+	preferred->height = preferred_height;
+	if (constraint->request_mode == (CWWidth | CWHeight) &&
+	    constraint->width == preferred_width &&
+	    constraint->height == preferred_height)
+	    return XtGeometryYes;
+	else
+	    return XtGeometryAlmost;
+    }
+	
+    /* else gotta do it the long way...
+       I have a preference for tall and narrow, so if my width is
+       constrained, I'll accept it; otherwise, I'll compute the minimum
+       width that will fit me within the height constraint */
+
+    w->box.last_query_mode = constraint->request_mode;
+    w->box.last_query_width = constraint->width;
+    w->box.last_query_height= constraint->height;
+
+    if (constraint->request_mode & CWWidth)
+	width = constraint->width;
+    else /* if (constraint->request_mode & CWHeight) */ {
+	 /* let's see if I can become any narrower */
+	width = 0;
+	constraint->width = 65535;
+    }
+
+    /* height is currently ignored by DoLayout.
+       height = (constraint->request_mode & CWHeight) ? constraint->height
+		       : *preferred_height;
+     */
+    DoLayout(w, width, 0, &preferred_width, &preferred_height, FALSE);
+
+    if (constraint->request_mode & CWHeight &&
+	preferred_height > constraint->height) {
+	/* find minimum width for this height */
+	if (preferred_width > constraint->width) {
+	    /* punt; over-constrained */
+	}
+	else {
+	    width = preferred_width;
+	    do { /* find some width big enough to stay within this height */
+		width *= 2;
+		if (width > constraint->width) width = constraint->width;
+		DoLayout(w, width, 0, &preferred_width, &preferred_height, FALSE);
+	    } while (preferred_height > constraint->height &&
+		     width < constraint->width);
+	    if (width != constraint->width) {
+		do { /* find minimum width */
+		    width = preferred_width;
+		    DoLayout(w, preferred_width-1, 0,
+			     &preferred_width, &preferred_height, FALSE);
+		} while (preferred_height < constraint->height);
+		/* one last time */
+		DoLayout(w, width, 0, &preferred_width, &preferred_height, FALSE);
+	    }
+	}
+    }
+
+    preferred->request_mode = CWWidth | CWHeight;
+    preferred->width = w->box.preferred_width = preferred_width;
+    preferred->height = w->box.preferred_height = preferred_height;
+
+    if (constraint->request_mode == (CWWidth|CWHeight)
+	&& constraint->width == preferred_width
+	&& constraint->height == preferred_height)
+	return XtGeometryYes;
+    else
+	return XtGeometryAlmost;
+
 }
 
 /*
@@ -224,18 +307,18 @@ static void Resize(w)
     Widget	w;
 {
     Dimension junk;
-
     if (XtIsRealized(w))
 	XClearWindow( XtDisplay(w), XtWindow(w) );
 
-    DoLayout((BoxWidget)w, w->core.width, w->core.height,
-	     &junk, &junk, TRUE);
+    DoLayout((BoxWidget)w, w->core.width, w->core.height, &junk, &junk, TRUE);
+
 } /* Resize */
 
 /*
  *
  * Try to do a new layout within the current width and height;
- * if that fails try to do it within the box returned by PreferredSize.
+ * if that fails try to resize and do it within the box returne
+ * by PreferredSize.
  *
  * TryNewLayout just says if it's possible, and doesn't actually move the kids
  */
@@ -243,67 +326,68 @@ static void Resize(w)
 static Boolean TryNewLayout(bbw)
     BoxWidget	bbw;
 {
-    Dimension	width, height, proposed_width, proposed_height;
+    Dimension 	preferred_width, preferred_height;
+    Dimension	proposed_width, proposed_height;
     int		iterations;
 
-    if (!PreferredSize(bbw, bbw->core.width, bbw->core.height, &width, &height))
-	(void) PreferredSize(bbw, width, height, &width, &height);
+    DoLayout( bbw, bbw->core.width, bbw->core.height,
+	      &preferred_width, &preferred_height, FALSE );
 
-    if ((bbw->core.width == width) && (bbw->core.height == height)) {
+    /* at this point, preferred_width is guaranteed to not be greater
+       than bbw->core.width unless some child is larger, so there's no
+       point in re-computing another layout */
+
+    if ((bbw->core.width == preferred_width) &&
+	(bbw->core.height == preferred_height)) {
         /* Same size */
 	return (TRUE);
     }
 
     /* let's see if our parent will go for a new size. */
     iterations = 0;
+    proposed_width = preferred_width;
+    proposed_height = preferred_height;
     do {
-	switch (XtMakeResizeRequest(
-			    (Widget)bbw, width, height,
-			    &proposed_width, &proposed_height))
+	switch (XtMakeResizeRequest((Widget)bbw,proposed_width,proposed_height,
+				     &proposed_width, &proposed_height))
 	{
 	    case XtGeometryYes:
 		return (TRUE);
 
 	    case XtGeometryNo:
-		if ((width <= bbw->core.width) && (height <= bbw->core.height))
+		if (iterations > 0)
+		    /* protect from malicious parents who change their minds */
+		    DoLayout( bbw, bbw->core.width, bbw->core.height,
+			      &preferred_width, &preferred_height, FALSE );
+		if ((preferred_width <= bbw->core.width) &&
+		    (preferred_height <= bbw->core.height))
 		    return (TRUE);
 		else
 		    return (FALSE);
 
 	    case XtGeometryAlmost:
-		if (proposed_height != height && proposed_width != width) {
+		if (proposed_height >= preferred_height &&
+		    proposed_width >= preferred_width) {
 		    /* punt; parent has its own ideas */
-		    width = proposed_width;
-		    height = proposed_height;
 		}
-		else if (proposed_width != width) {
+		else if (proposed_width != preferred_width) {
 		    /* recalc bounding box; height might change */
-		    DoLayout(bbw, proposed_width, 0, &width, &height, FALSE);
-		    width = proposed_width;
-		}
-		else { /* proposed_height != height */
-		    Boolean fits;
-		    Dimension last_width, last_height;
-
-		    /* find minimum width for this height */
-		    DoLayout(bbw, 0, proposed_height, &width, &height, FALSE);
-		    if (height <= proposed_height) {
-			height = proposed_height;
-			continue;
+		    DoLayout(bbw, proposed_width, 0,
+			     &preferred_width, &preferred_height, FALSE);
+		    if (preferred_width > proposed_width) {
+			/* punt; too narrow, but restore preferences first */
+			DoLayout(bbw, bbw->core.width, bbw->core.height,
+				 &preferred_width, &preferred_height, FALSE);
+			return FALSE;
 		    }
-		    do { /* find some width big enough */
-			last_height = height;
-			width *= 2;
-			fits = DoLayout(bbw, width, proposed_height,
-					&width, &height, FALSE);
-		    } while (!fits && height > last_height);
-		    do { /* find minimum width */
-			last_width = width--;
-			fits = DoLayout(bbw, width, proposed_height,
-					&width, &height, FALSE);
-		    } while (fits);
-		    width = last_width;
-		    height = proposed_height;
+		    proposed_height = preferred_height;
+		}
+		else { /* proposed_height != preferred_height */
+		    XtWidgetGeometry constraints, reply;
+		    constraints.request_mode = CWHeight;
+		    constraints.height = proposed_height;
+		    (void)PreferredSize((Widget)bbw, &constraints, &reply);
+		    proposed_width = preferred_width;
 		}
 	}
 	iterations++;
@@ -314,6 +398,8 @@ static Boolean TryNewLayout(bbw)
 /*
  *
  * Geometry Manager
+ *
+ * 'reply' is unused; we say only yeay or nay, never almost.
  *
  */
 
@@ -361,12 +447,13 @@ static XtGeometryResult GeometryManager(w, request, reply)
  * change ours to be the minimum enclosing size...
 	if (((request->width + request->border_width <= width + borderWidth) &&
 	    (request->height + request->border_width <= height + borderWidth))
-	|| PreferredSize(bbw, bbw->core.width, bbw->core.height, &junk, &junk)
+	|| bbw->box.preferred_width < bbw->core.width
+	|| bbw->box.preferred_height < bbw->core.height
 	|| TryNewLayout(bbw)) {
  */
 	if (TryNewLayout(bbw)) {
 	    /* Fits in existing or new space, relayout */
-	    Resize((Widget)bbw);
+	    (*XtClass((Widget)bbw)->core_class.resize)((Widget)bbw);
 	    return (XtGeometryYes);
 	} else {
 	    /* Cannot satisfy request, change back to original geometry */
@@ -384,25 +471,9 @@ static XtGeometryResult GeometryManager(w, request, reply)
 static void ChangeManaged(w)
     Widget w;
 {
-    XtBoxDoLayout(w);
-}
-
-static void RefigureLayout(w)
-    Widget w;
-{
     /* Reconfigure the box */
     (void) TryNewLayout((BoxWidget)w);
     Resize(w);
-}
-
-static void ClassPartInitialize(widget_class)
-    WidgetClass widget_class;
-{
-    register BoxWidgetClass wc = (BoxWidgetClass)widget_class;
-    BoxWidgetClass super = (BoxWidgetClass)wc->core_class.superclass;
-
-    if (wc->box_class.do_layout == XtInheritBoxDoLayout)
-	wc->box_class.do_layout = super->box_class.do_layout;
 }
 
 /* ARGSUSED */
@@ -411,15 +482,17 @@ static void Initialize(request, new)
 {
     BoxWidget newbbw = (BoxWidget)new;
 
-/* ||| What are consequences of letting height, width be 0? If okay, then
-       Initialize can be NULL */
+    newbbw->box.last_query_mode = CWWidth | CWHeight;
+    newbbw->box.last_query_width = newbbw->box.last_query_height = 0;
+    newbbw->box.preferred_width = Max(newbbw->box.h_space, 1);
+    newbbw->box.preferred_height = Max(newbbw->box.v_space, 1);
 
     if (newbbw->core.width == 0)
-        newbbw->core.width = ((newbbw->box.h_space != 0)
-			      ? newbbw->box.h_space : defFour);
+        newbbw->core.width = newbbw->box.preferred_width;
+
     if (newbbw->core.height == 0)
-	newbbw->core.height = ((newbbw->box.v_space != 0)
-			       ? newbbw->box.v_space : defFour);
+	newbbw->core.height = newbbw->box.preferred_height;
+
 } /* Initialize */
 
 static void Realize(w, valueMask, attributes)
@@ -441,14 +514,4 @@ static Boolean SetValues(current, request, new)
    /* need to relayout if h_space or v_space change */
 
     return False;
-}
-
-    
-/* Public Routines */
-
-void XtBoxDoLayout(widget)
-    Widget widget;
-{
-    (*((BoxWidgetClass)widget->core.widget_class)->
-        box_class.do_layout) (widget);
 }
