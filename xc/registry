@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.69 92/09/07 17:39:28 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.70 92/09/09 09:44:22 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -24,6 +24,7 @@ Name						Reference
 "IXI"						[20]
 "JCC"						[90]
 "JUP"						[93]
+"KPC"						[98]
 "LJK"						[56]
 "LTA"						[60]
 "MIT"						[8]
@@ -240,6 +241,7 @@ String						Reference
 "International Business Machines"		[33]
 "JAPAN COMPUTER CORP."				[90]
 "Jupiter Systems Inc."				[93]
+"Kubota Pacific Computer"			[98]
 "Matsushita Electric Industrial Co., Ltd."	[52]
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
@@ -282,6 +284,7 @@ Name						Reference
 "FUJITSU-VX-VideoControl"			[87]
 "FUJITSU-VX-DeviceControl"			[87]
 "JUPMISC"					[93]
+"KPC-XPeer"					[98]
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
@@ -1253,3 +1256,8 @@ REFERENCES
 	MIT X Consortium
 	545 Technology Square
 	Cambridge, MA 02139
+
+[98]	Randi Rost
+	Kubota Pacific Computer
+	2630 Walsh Avenue
+	Santa Clara, CA 95051-0905
