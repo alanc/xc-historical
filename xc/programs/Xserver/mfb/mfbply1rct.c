@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mfbply1rct.c,v 1.10 91/12/19 14:17:07 keith Exp $
+ * $XConsortium: mfbply1rct.c,v 1.1 92/02/24 19:06:01 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -179,7 +179,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 		    vertex1p = endp;
 	    	c = *--vertex1p;
 	    	Setup (c,x1,vertex1,dx1,dy1,e1,sign1,step1)
-	    } while (y == intToY(vertex1));
+	    } while (y >= intToY(vertex1));
 	    h = dy1;
 	}
 	else
@@ -195,7 +195,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	if (vertex2p == endp)
 		    vertex2p = (int *) ptsIn;
 	    	Setup (c,x2,vertex2,dx2,dy2,e2,sign2,step2)
-	    } while (y == intToY(vertex2));
+	    } while (y >= intToY(vertex2));
 	    if (dy2 < h)
 		h = dy2;
 	}
