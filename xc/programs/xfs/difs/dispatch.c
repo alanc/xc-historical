@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: dispatch.c,v 1.3 91/05/13 16:53:37 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -869,6 +869,27 @@ InitProcVectors()
     }
 }
 
+InitClient (client, i, ospriv)
+    ClientPtr	client;
+    int		i;
+    pointer	ospriv;
+{
+    client->index = i;
+    client->sequence = 0;
+    client->last_request_time = GetTimeInMillis();
+    client->clientGone = CLIENT_ALIVE;
+    client->noClientException = FSSuccess;
+    client->requestVector = InitialVector;
+    client->osPrivate = ospriv;
+    client->swapped = FALSE;
+
+    client->auth = (AuthContextPtr) 0;
+    client->catalogues = NULL;
+    client->num_catalogues = 0;
+    client->num_resolutions = 0;
+    client->resolutions = (fsResolution *) 0;
+    client->eventmask = (Mask) 0;
+}
 ClientPtr
 NextAvailableClient(ospriv)
     pointer     ospriv;
@@ -885,20 +906,8 @@ NextAvailableClient(ospriv)
     clients[i] = client = (ClientPtr) fsalloc(sizeof(ClientRec));
     if (!client)
 	return NullClient;
-    client->index = i;
-    client->sequence = 0;
-    client->last_request_time = GetTimeInMillis();
-    client->clientGone = CLIENT_ALIVE;
-    client->noClientException = FSSuccess;
-    client->requestVector = InitialVector;
-    client->osPrivate = ospriv;
-    client->swapped = FALSE;
 
-    client->auth = (AuthContextPtr) 0;
-    client->catalogues = NULL;
-    client->num_resolutions = 0;
-    client->resolutions = (fsResolution *) 0;
-    client->eventmask = (Mask) 0;
+    InitClient (client, i, ospriv);
 
     if (!InitClientResources(client)) {
 	fsfree(client);
