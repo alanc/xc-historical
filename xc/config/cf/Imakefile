@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.28 94/03/26 18:09:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.29 94/03/26 19:17:37 rws Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -11,19 +11,24 @@ RULEFILES = \
 Imake.rules \
 Win32.rules \
 hpLib.rules \
+bsdLib.rules \
 ibmLib.rules \
+linuxLib.rules \
 necLib.rules \
 noop.rules \
 oldlib.rules \
 osfLib.rules \
 sgiLib.rules \
 sunLib.rules \
-sv4Lib.rules
+sv4Lib.rules \
+xfree86.rules
 
 TMPLFILES = \
 Imake.tmpl \
 Fresco.tmpl \
 Ixx.tmpl \
+bsdLib.tmpl \
+linuxLib.tmpl \
 Library.tmpl \
 Project.tmpl \
 Server.tmpl \
@@ -40,6 +45,8 @@ CFFILES = \
 Imake.cf \
 DGUX.cf \
 Mips.cf \
+NetBSD.cf \
+FreeBSD.cf \
 Oki.cf \
 Win32.cf \
 apollo.cf \
@@ -51,6 +58,7 @@ fujitsu.cf \
 generic.cf \
 hp.cf \
 ibm.cf \
+linux.cf \
 luna.cf \
 macII.cf \
 moto.cf \
@@ -65,7 +73,8 @@ sony.cf \
 sun.cf \
 ultrix.cf \
 usl.cf \
-x386.cf
+x386.cf \
+xfree86.cf
 
 INSTFILES = $(RULEFILES) $(TMPLFILES) $(DEFFILES) $(CFFILES) $(LOCALFILES)
 
