@@ -1,4 +1,4 @@
-/* $XConsortium: colorlist.c,v 1.4 94/03/30 16:43:35 rws Exp $ */
+/* $XConsortium: colorlist.c,v 1.5 94/04/17 20:18:19 rws Exp $ */
 
 /*
 
@@ -160,7 +160,7 @@ unsigned long  	**colors_ret;
       *colors_ret = (unsigned long *) Xmalloc (
 	rep.length * sizeof (unsigned long));
 
-      _XRead32 (display, colors_ret, rep.length << 2);
+      _XRead32 (display, *colors_ret, rep.length << 2);
     }
     else 
 	*colors_ret = NULL;
