@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.63 91/07/19 17:08:03 rws Exp $ */
+/* $XConsortium: Clock.c,v 1.64 91/07/23 12:22:43 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -365,7 +365,7 @@ static void clock_tic(client_data, id)
 			/*
 			 * 12 hour clock.
 			 */
-			if(tm.tm_hour > 12)
+			if(tm.tm_hour >= 12)
 				tm.tm_hour -= 12;
 
 			erase_hands (w, &tm);
