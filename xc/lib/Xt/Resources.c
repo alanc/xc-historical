@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.94 91/01/10 20:59:00 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.95 91/01/30 09:16:16 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -458,7 +458,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     Cardinal	    num_args;       /* number of items in arg list	    */
     XtTypedArgList  typed_args;	    /* Typed arg list to override resources */
     Cardinal*	    pNumTypedArgs;  /* number of items in typed arg list    */
-    Boolean	    tm_hack;	    /* do base_translations		    */
+    Boolean	    tm_hack;	    /* do baseTranslations		    */
 {
 /*
  * assert: *pNumTypedArgs == 0 if num_args > 0
@@ -1043,7 +1043,7 @@ void _XtResourceListInitialize()
     QinitialResourcesPersistent = XrmPermStringToQuark(XtNinitialResourcesPersistent);
     QInitialResourcesPersistent = XrmPermStringToQuark(XtCInitialResourcesPersistent);
     Qtranslations = XrmPermStringToQuark(XtNtranslations);
-    QbaseTranslations = XrmPermStringToQuark("base_translations");
+    QbaseTranslations = XrmPermStringToQuark("baseTranslations");
     QTranslations = XrmPermStringToQuark(XtCTranslations);
     QTranslationTable = XrmPermStringToQuark(XtRTranslationTable);
 }
