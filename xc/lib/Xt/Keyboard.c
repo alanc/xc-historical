@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.26 92/10/06 14:01:53 converse Exp $ */
+/* $XConsortium: Keyboard.c,v 1.27 93/07/14 14:08:04 converse Exp $ */
 
 /********************************************************
 
@@ -719,10 +719,8 @@ void XtSetKeyboardFocus(widget, descendant)
 		oldTarget == pseudoTrace[0])
 		pseudoTraceDepth = 0;
 
-	    if (!oldDesc->core.being_destroyed) {
-		XtRemoveCallback (oldDesc, XtNdestroyCallback, 
-				  FocusDestroyCallback, (XtPointer) widget);
-	    }
+	    XtRemoveCallback(oldDesc, XtNdestroyCallback, 
+			     FocusDestroyCallback, (XtPointer)widget);
 
 	    if (!oldTarget->core.being_destroyed) {
 		if (pwi->map_handler_added) {
