@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.23 89/11/25 13:36:00 rws Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.24 89/12/07 20:35:26 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -1054,10 +1054,11 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 			 * need a more cautious test for partialmask
 			 * case...
 			 */
-		    	if (firstoff > 28)
+		    	if (firstoff >= 28)
 		    	{
 			    bits = *psrc++;
-			    tmp |= BitRight (bits, secondoff);
+			    if (firstoff != 28)
+				tmp |= BitRight (bits, secondoff);
 		    	}
 		    }
 		    *pdst = *pdst & ~startmask | GetFourPixels(tmp) & startmask;
