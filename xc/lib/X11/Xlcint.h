@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.4 91/04/07 16:08:14 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.5 91/04/07 17:15:28 rws Exp $
  */
 
 /*
@@ -315,9 +315,9 @@ typedef struct {
     char *		res_name;
     char *		res_class;
 
-    XIMResourceList	ic_resources;		/* compiled IC resource list */
+    XIMrmResourceList	ic_resources;		/* compiled IC resource list */
     unsigned int	ic_num_resources;
-    XIMResourceList	ic_attr_resources;	/* compiled IC visual res */
+    XIMrmResourceList	ic_attr_resources;	/* compiled IC visual res */
     unsigned int	ic_num_attr_resources;
 } XIMCoreRec, *XIMCore;
 
