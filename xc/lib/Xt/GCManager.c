@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: GCManager.c,v 1.23 87/10/27 13:40:57 swick Locked $";
+static char rcsid[] = "$Header: GCManager.c,v 6.2 87/12/06 16:19:15 haynes Exp $";
 #endif lint
 
 /*
@@ -25,7 +25,7 @@ static char rcsid[] = "$Header: GCManager.c,v 1.23 87/10/27 13:40:57 swick Locke
  * SOFTWARE.
  */
 
-#include "Intrinsic.h"
+#include "IntrinsicI.h"
 
 
 typedef struct _GCrec {
@@ -39,7 +39,7 @@ typedef struct _GCrec {
     struct _GCrec *next;	/* Next GC for this widgetkind. */
 } GCrec, *GCptr;
 
-static Drawable GCparents[256];
+static Drawable GCparents[256]; /* static initialized to zero, K&R ss 4.9 */
 static GCrec *GClist = NULL;
 
 static int Matches(ptr,widget, valueMask, v)
@@ -153,8 +153,15 @@ GC XtGetGC(widget, valueMask, values)
     if (XtWindow(widget) == NULL)
         if (GCparents[cur->depth] != 0) drawable = GCparents[cur->depth];
         else{
-	   drawable = XCreatePixmap(XtDisplay(widget), XtScreen(widget)->root,
-			1,1,widget->core.depth);
+	   if (cur->depth == DefaultDepthOfScreen(XtScreen(widget)))
+	      drawable = RootWindowOfScreen(XtScreen(widget));
+	   else 
+	      drawable = XCreatePixmap(
+	         XtDisplay(widget),
+		 XtScreen(widget)->root,
+		 1,
+		 1,
+		 widget->core.depth);
            GCparents[cur->depth] = drawable;
         }
     else drawable = XtWindow(widget);
@@ -166,7 +173,8 @@ GC XtGetGC(widget, valueMask, values)
     return cur->gc;
 }
 
-void  XtDestroyGC(gc)
+void  XtDestroyGC(widget, gc)
+    Widget widget;
     GC gc;
 {
     GCptr cur, last;
@@ -176,17 +184,10 @@ void  XtDestroyGC(gc)
 	    if (--(cur->ref_count) == 0) {
 		if (last) last->next = cur->next;
 		else GClist = cur->next;
-		XFreeGC(cur->dpy, gc);
+		XFreeGC(XtDisplay(widget), gc);
 		XtFree((char *) cur);
 		break;
 	    }
 	}
     }
 }
-
-static void InitializeGC()
-{
- int i;
- for (i=256;i!=0;--i) GCparents[i-1]=0;
-}
-
