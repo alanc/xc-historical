@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.36 94/04/08 19:13:50 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.37 95/05/23 14:31:40 matt Exp kaleb $
 
 /*
  * SunOS shared library template
@@ -38,8 +38,8 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.36 94/04/08 19:13:50 rws Exp $
 #else				/* else it's Solaris */
 
 #if ThreadedX
-#if OSMinorVersion < 4
-#define SharedX11Reqs -lthread
+#if OSMinorVersion > 3
+#define SharedX11Reqs /**/
 #endif
 #endif
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
