@@ -1,4 +1,4 @@
-/* $Header: XStBytes.c,v 11.13 87/08/29 22:54:33 jg Exp $ */
+/* $Header: XStBytes.c,v 11.13 87/09/01 15:06:39 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -30,7 +30,7 @@ char *XFetchBuffer (dpy, nbytes, buffer)
     Atom actual_type;
     int actual_format;
     unsigned long nitems;
-    long leftover;
+    unsigned long leftover;
     unsigned char *data;
     *nbytes = 0;
     if ((buffer < 0) || (buffer > 7)) return (NULL);
