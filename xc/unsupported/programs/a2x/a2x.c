@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.65 92/04/24 11:34:27 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.66 92/04/24 11:45:55 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -494,7 +494,7 @@ parse_keysym(buf, len)
     char *endptr;
 
     if ((*buf == 'F' && len <= 3) ||
-	!(sym = strtoul(buf, &endptr, 16)) || *endptr)
+	!(sym = strtol(buf, &endptr, 16)) || *endptr)
 	sym = XStringToKeysym(buf);
     if (!sym)
 	return 0;
