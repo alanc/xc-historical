@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.113 93/09/09 11:48:04 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.114 93/09/09 12:34:37 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -133,5 +133,15 @@ Everything::
 	@echo :
 	@echo Rebuild of Release 6alpha of the X Window System complete.
 	@echo :
+
+#ifdef ProjectRoot
+install::
+	MakeDir($(PROJECTROOT:/=\))
+#endif
+
+install::
+	MakeDir($(INCROOT:/=\))
+	MakeDir($(USRLIBDIR:/=\))
+	MakeDir($(LIBDIR:/=\))
 
 #endif
