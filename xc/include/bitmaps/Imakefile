@@ -20,6 +20,10 @@ SRCS = \
 	gray \
 	gray1 \
 	gray3 \
+	grid2 \
+	grid4 \
+	grid8 \
+	grid16 \
 	hlines2 \
 	hlines3 \
 	icon \
