@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.11 87/08/04 20:21:31 toddb Locked $
+ * $Header: imake.c,v 1.12 87/08/05 13:20:06 toddb Locked $
  * $Locker: toddb $
  *
  * Author:
@@ -96,6 +96,21 @@
 #define	TRUE		1
 #define	FALSE		0
 #define	ARGUMENTS	50
+
+#ifdef sun
+#define REDUCED_TO_ASCII_SPACE
+int	InRule = FALSE;
+#endif
+
+/*
+ * Some versions of cpp reduce all tabs in macro expansion to a single
+ * space.  In addition, the escaped newline may be replaced with a
+ * space instead of being deleted.  Blech.
+ */
+#ifndef REDUCED_TO_ASCII_SPACE
+#define KludgeOutputLine(arg)
+#define KludgeResetRule()
+#endif
 
 typedef	u_char	boolean;
 
@@ -463,7 +478,7 @@ char *CleanCppInput(Imakefile)
 		while (*ptoken == ' ' || *ptoken == '\t')
 			ptoken++;
 		pend = ptoken;
-		while (*pend && *pend != ' ' && *pend != '\t')
+		while (*pend && *pend != ' ' && *pend != '\t' && *pend != '\n')
 			pend++;
 		savec = *pend;
 		*pend = '\0';
@@ -504,12 +519,23 @@ CleanCppOutput(tmpfd)
 	char	*input;
 	int	blankline = 0;
 
+#ifdef REDUCED_TO_ASCII_SPACE
+	fprintf(tmpfd, "#\n");
+	fprintf(tmpfd, "#Warning: the cpp used on this machine replaces\n");
+	fprintf(tmpfd, "#all newlines and multiple tabs/spaces in a macro\n");
+	fprintf(tmpfd, "#expansion with a single space.  Imake tries to\n");
+	fprintf(tmpfd, "#compensate for this, but is not always successful.\n");
+	fprintf(tmpfd, "#\n");
+#endif REDUCED_TO_ASCII_SPACE
+
 	while(input = ReadLine(tmpfd)) {
 		if (isempty(input)) {
 			if (blankline++)
 				continue;
+			KludgeResetRule();
 		} else {
 			blankline = 0;
+			KludgeOutputLine(&input);
 			fputs(input, tmpfd);
 		}
 		putc('\n', tmpfd);
@@ -624,3 +650,27 @@ char *Emalloc(size)
 		LogFatal("Cannot allocate %d bytes\n", size);
 	return(p);
 }
+
+#ifdef REDUCED_TO_ASCII_SPACE
+KludgeOutputLine(pline)
+	char	**pline;
+{
+	char	*p = *pline;
+
+	if (*p++ != ' ' || *p == ' ')
+		return;
+	while (*p)
+		if (*p++ == ':') {
+			(*pline)++;
+			InRule = TRUE;
+			return;
+		}
+	if (InRule)
+		**pline = '\t';
+}
+
+KludgeResetRule()
+{
+	InRule = FALSE;
+}
+#endif REDUCED_TO_ASCII_SPACE
