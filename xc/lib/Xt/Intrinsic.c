@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.149 90/04/13 20:17:34 swick Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.150 90/07/12 17:50:41 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -572,16 +572,16 @@ Boolean XtIsSensitive(object)
  * Internal routine; must be called only after XtIsWidget returns false
  */
 Widget _XtWindowedAncestor(object)
-	Widget object;
+    register Widget object;
 {
+    Widget obj = object;
     for (object = XtParent(object); object && !XtIsWidget(object);)
 	object = XtParent(object);
 
     if (object == NULL) {
-	String params = XtName(object);
+	String params = XtName(obj);
 	Cardinal num_params = 1;
-	XtAppErrorMsg(XtWidgetToApplicationContext(object),
-		   "noWidgetAncestor", "windowedAncestor", XtCXtToolkitError,
+	XtErrorMsg("noWidgetAncestor", "windowedAncestor", XtCXtToolkitError,
 		   "Object \"%s\" does not have windowed ancestor",
 		   &params, &num_params);
     }
