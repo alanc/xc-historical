@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.192 91/04/02 21:26:16 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.193 91/04/02 21:46:39 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -39,37 +39,12 @@
 #include <X11/X.h>
 
 #include <X11/Xfuncproto.h>
-
-/* We do not want people to depend on Xosdefs.h being included by Xlib.h */
-#ifndef X_NOT_STDC_ENV
-#ifndef _XOSDEFS_H_
-#ifndef X_NOT_POSIX
-#define _XLIB_REMOVE_POSIX
-#endif
 #include <X11/Xosdefs.h>
-#undef _XOSDEFS_H_
-#ifdef X_NOT_STDC_ENV
-#define _XLIB_REMOVE_STDC_ENV
-#endif
-#endif
-#endif
 
 #ifndef X_NOT_STDC_ENV
 #include <stddef.h>
 #else
 typedef unsigned int wchar_t;
-#endif
-
-/* We do not want people to depend on Xosdefs.h being included by Xlib.h */
-#ifdef _XLIB_REMOVE_STDC_ENV
-#undef X_NOT_STDC_ENV
-#undef _XLIB_REMOVE_STDC_ENV
-#endif
-#ifdef _XLIB_REMOVE_POSIX
-#ifdef X_NOT_POSIX
-#undef X_NOT_POSIX
-#endif
-#undef _XLIB_REMOVE_POSIX
 #endif
 
 typedef char *XPointer;
