@@ -1,38 +1,60 @@
 /*
- * $XConsortium: sharedlib.c,v 1.4 90/07/02 17:17:38 rws Exp $
+ * $XConsortium: sharedlib.c,v 1.0 91/06/29 12:40:18 rws Exp $
+ * 
+ * Copyright 1991 Massachusetts Institute of Technology
  *
- * Copyright 1989 Massachusetts Institute of Technology
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
  *
- * This file is used to force shared libraries to get the right routines.
  */
 
-#ifdef SUNSHLIB
-#ifndef SHAREDCODE
-#include <X11/IntrinsicP.h>
+#if defined(SUNSHLIB) && !defined(SHAREDCODE)
 
-/*
- * The following hack is used by XmuConvertStandardSelection to get the
- * following class records.  Without these, a runtime undefined symbol error 
- * occurs.
- */
-extern WidgetClass applicationShellWidgetClass,wmShellWidgetClass;
+#include "Atoms.h"
 
-WidgetClass get_applicationShellWidgetClass()
-{
-    return applicationShellWidgetClass;
-}
+struct _AtomRec {
+    char *name;
+    struct _DisplayRec* head;
+};
 
-WidgetClass get_wmShellWidgetClass()
-{
-    return wmShellWidgetClass;
-}
-
-/* this is really gross, but it works around bizarre Sun shared library bugs */
-#include "xtsharedlib.c"
-
-#endif /* not SHAREDCODE */
-#endif /* SUNSHLIB */
-
-#if !defined(SUNSHLIB) || defined(SHAREDCODE)
-static int dummy;			/* avoid warning from ranlib */
+#if __STDC__ && !defined(UNIXCPP)
+#define DeclareAtom(atom) \
+extern struct _AtomRec __##atom; \
+AtomPtr _##atom = &__##atom;
+#else
+#define DeclareAtom(atom) \
+extern struct _AtomRec __/**/atom; \
+AtomPtr _/**/atom = &__/**/atom;
 #endif
+
+DeclareAtom(XA_ATOM_PAIR)
+DeclareAtom(XA_CHARACTER_POSITION)
+DeclareAtom(XA_CLASS)
+DeclareAtom(XA_CLIENT_WINDOW)
+DeclareAtom(XA_CLIPBOARD)
+DeclareAtom(XA_COMPOUND_TEXT)
+DeclareAtom(XA_DECNET_ADDRESS)
+DeclareAtom(XA_DELETE)
+DeclareAtom(XA_FILENAME)
+DeclareAtom(XA_HOSTNAME)
+DeclareAtom(XA_IP_ADDRESS)
+DeclareAtom(XA_LENGTH)
+DeclareAtom(XA_LIST_LENGTH)
+DeclareAtom(XA_NAME)
+DeclareAtom(XA_NET_ADDRESS)
+DeclareAtom(XA_NULL)
+DeclareAtom(XA_OWNER_OS)
+DeclareAtom(XA_SPAN)
+DeclareAtom(XA_TARGETS)
+DeclareAtom(XA_TEXT)
+DeclareAtom(XA_TIMESTAMP)
+DeclareAtom(XA_USER)
+
+#endif /* SUNSHLIB */
