@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.137 91/12/19 14:37:54 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.138 91/12/28 15:02:20 keith Exp $
 /*
  * Server Master Makefile
  */
@@ -365,16 +365,13 @@ SGIDIRS = ddx/sgi/IRIX ddx/sgi/common ddx/sgi/gr1 ddx/sgi/nfb ddx/sgi/rrm \
 	ddx/sgi/sgi
 SUBDIRS0 = CFBSubdirs $(SGIDIRS)
 IRISDIRS = $(SUBDIRS0) $(DEPDIRS)
-IRISOBJS = ddx/sgi/sgi/sgiScreens.o ddx/sgi/IRIX/irixKernInit.o \
-	   ddx/mi/miinitext.o
+IRISOBJS =
 IRISLIBS = 	$(DIX) $(OS) \
 		ddx/sgi/common/libcomm.a \
 		ddx/sgi/sgi/libsgi.a \
-		ddx/sgi/IRIX/libirix.a \
-		ddx/sgi/gr1/re1/libre1.a \
 	   	ddx/sgi/gr1/re2/libre2.a \
-		ddx/sgi/IRIX/libirix.a \
 	   	ddx/sgi/gr1/libgr1.a \
+		ddx/sgi/IRIX/libirix.a \
 	   	ddx/sgi/rrm/librrm.a \
 		ddx/sgi/nfb/libnfb.a \
 		$(CFB) $(MFB) $(MI) $(FONT) $(EXTENSIONS)
