@@ -1,0 +1,102 @@
+
+Xman*horizPane.orientation: 		horizontal
+Xman*horizPane*showGrip:		False
+Xman*horizPane.max:			15
+Xman*manualBrowser.BorderWidth:		0
+Xman*search*label.BorderWidth:		0
+
+Xman*dialog*value:			xman
+
+Xman*optionMenu.Label:			Xman Options
+Xman*sectionMenu.Label:			Xman Sections
+
+Xman*horizPane*options.Label:		Options
+Xman*horizPane*sections.Label:		Sections
+
+Xman*helpButton.Label:			Help
+Xman*quitButton.Label:			Quit
+Xman*manpageButton.Label:		Manual Page
+Xman*manualBrowser.Label:		Manual Browser
+
+Xman*displayDirectory.Label:		Display Directory
+Xman*displayManualPage.Label:		Display Manual Page
+Xman*help.Label:			Help
+Xman*search.Label:			Search
+Xman*removeThisManpage.Label:		Remove This Manpage
+Xman*help*removeThisManpage.Label:	Remove Help
+Xman*openNewManpage.Label:		Open New Manpage
+Xman*showVersion.Label:			Show Version
+Xman*quit.Label:			Quit
+
+Xman*pleaseStandBy*Label:		Formatting Manual Page, Please Stand By...
+
+Xman*search*dialog.Label:		Type string to search for:
+Xman*search*apropos.Label:		Apropos
+Xman*search*manualPage.Label:		Manual Page
+Xman*search*cancel.Label:		Cancel
+
+Xman*likeToSave*dialog.Label:		Would you like to save this formatted Manual Page?
+Xman*likeToSave*yes.Label:		Yes
+Xman*likeToSave*no.Label:		No
+
+
+
+Xman*translations: 		#augment \
+				Ctrl<Key>q: Quit() \n\
+				Ctrl<Key>c: Quit() \n\
+				Ctrl<Key>r: RemoveThisManpage() \n\
+				Ctrl<Key>n: CreateNewManpage() \n\
+				Ctrl<Key>h: PopupHelp() 
+
+Xman*manualBrowser*translations:#augment \
+				Ctrl<Key>q: Quit() \n\
+				Ctrl<Key>c: Quit() \n\
+				Ctrl<Key>r: RemoveThisManpage() \n\
+				Ctrl<Key>n: CreateNewManpage() \n\
+				Ctrl<Key>h: PopupHelp() \n\
+				Ctrl<Key>d: GotoPage(Directory) \n\
+				Ctrl<Key>m: GotoPage(ManualPage) \n\
+				Ctrl<Key>v: ShowVersion() \n\
+				Ctrl<Key>s: PopupSearch()
+
+Xman*manualBrowser*manualPage.translations:  #augment \
+				<Btn2Down>,<Btn2Up>:	GotoPage(Directory)
+
+Xman*manualBrowser*directory.translations:   #augment \
+				<Btn2Down>,<Btn2Up>:	GotoPage(Manpage)
+
+Xman*manualBrowser*search*manualPage.translations: 	#override \
+				<Btn1Up>: Search(Manpage) reset()
+
+Xman*manualBrowser*search*apropos.translations:		#override \
+				<Btn1Up>: Search(Apropos) reset()
+
+Xman*manualBrowser*search*cancel*translations:  	#override \
+				<Btn1Up>: Search(Cancel) reset()
+
+Xman*manualBrowser*search*value*translations:		#override \
+				<Key>Return: Search(Manpage) \n\
+				Ctrl<Key>m:  Search(Manpage)
+
+Xman*manualBrowser*likeToSave*yes.translations:	#override \
+				<Btn1Up>: SaveFormattedPage(Save) reset() \n\
+				<Key>y:   SaveFormattedPage(Save) \n\
+				<Key>n:   SaveFormattedPage(Cancel) 
+
+Xman*manualBrowser*likeToSave*no.translations:	#override \
+				<Btn1Up>: SaveFormattedPage(Cancel) reset() \n\
+				<Key>y:	  SaveFormattedPage(Save) \n\
+				<Key>n:	  SaveFormattedPage(Cancel) 
+
+Xman*manualBrowser*likeToSave*translations:	#augment \
+				<Key>y:	  SaveFormattedPage(Save) \n\
+				<Key>n:	  SaveFormattedPage(Cancel) 
+
+Xman*helpButton.translations:	#override \
+				<Btn1Up>: PopupHelp() reset()
+
+Xman*quitButton.translations:	#override \
+				<Btn1Up>: Quit() reset()
+
+Xman*manpageButton.translations:#override \
+				<Btn1Up>: CreateNewManpage() reset()
