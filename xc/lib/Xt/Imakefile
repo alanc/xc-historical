@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.95 92/05/28 13:06:04 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.96 92/06/05 16:05:13 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -16,7 +16,7 @@ REQUIREDLIBS = $(XLIBSRC)/libX11.a
 /* config options */
 
 XFILESEARCHPATHDEFAULT = XFileSearchPathDefault
-/* don't place spaces at the beginning of these lines, hp bug */
+
 XTERRORPREFIX = XtErrorPrefix
 XTWARNINGPREFIX = XtWarningPrefix
 
