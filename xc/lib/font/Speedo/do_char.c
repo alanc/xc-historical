@@ -1,4 +1,4 @@
-/* $XConsortium: do_char.c,v 1.2 91/05/11 09:47:31 rws Exp $ */
+/* $XConsortium: do_char.c,v 1.3 94/02/07 10:01:16 gildea Exp $ */
 
 /*
 
@@ -92,7 +92,7 @@ if (pointer == NULL)             /* Character data not available? */
     return (ufix16)0;            /* Return zero character id */
     }
 
-return (ufix16)NEXT_WORD(pointer); /* Return character id */
+return 0xffff & NEXT_WORD(pointer); /* Return character id */
 }
 
 
@@ -756,8 +756,8 @@ if (fn_begin_char(sp_globals.Psw, Pmin, Pmax)) /* Signal start of character data
 	        y_scale = sp_get_scale_arg(&pointer, (ufix8)(format & BIT5));
 	        scale_tcb(&sp_globals.tcb, x_posn, y_posn, x_scale, y_scale); /* Scale for sub-char */
 	        sub_char_index = (format & BIT6)?  /* Read sub-char index */
-	            (ufix16)NEXT_WORD(pointer):
-	            (ufix16)NEXT_BYTE(pointer);          
+		    0xffff & NEXT_WORD(pointer):
+		    0xffff & NEXT_BYTE(pointer);
 	        sub_pointer = sp_get_char_org(sub_char_index, FALSE); /* Point to start of sub-char */
 	        if (sub_pointer == NULL)           /* Character data not available? */
 	            {
@@ -838,8 +838,8 @@ if (format)                           /* 3-byte entries in char directory? */
     }
 else
     {
-    char_offset = (fix31)((ufix16)NEXT_WORD(pointer)); /* Read file offset to char data */
-    next_char_offset = (fix31)((ufix16)NEXT_WORD(pointer)); /* Read offset to next char */
+    char_offset = (fix31)(0xffff & NEXT_WORD(pointer)); /* Read file offset to char data */
+    next_char_offset = (fix31)(0xffff & NEXT_WORD(pointer)); /* Read offset to next char */
     }
 
 no_bytes = next_char_offset - char_offset;
@@ -902,8 +902,8 @@ if (format)                           /* 3-byte entries in char directory? */
     }
 else
     {
-    char_offset = (fix31)((ufix16)NEXT_WORD(pointer)); /* Read file offset to char data */
-    next_char_offset = (fix31)((ufix16)NEXT_WORD(pointer)); /* Read offset to next char */
+    char_offset = (fix31)(0xffff & NEXT_WORD(pointer)); /* Read file offset to char data */
+    next_char_offset = (fix31)(0xffff & NEXT_WORD(pointer)); /* Read offset to next char */
     }
 
 no_bytes = next_char_offset - char_offset;

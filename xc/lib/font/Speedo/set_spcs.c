@@ -1,4 +1,4 @@
-/* $XConsortium: set_spcs.c,v 1.4 94/02/03 16:38:21 gildea Exp $ */
+/* $XConsortium: set_spcs.c,v 1.5 94/02/07 10:01:12 gildea Exp $ */
 
 /*
 
@@ -470,7 +470,7 @@ sp_globals.multrnd = ((fix31)1 << sp_globals.multshift) >> 1;
 SHOW(sp_globals.multshift);
 
 
-pix_max = (ufix32)((ufix16)read_word_u(sp_globals.hdr2_org + FH_PIXMX));
+pix_max = (ufix32)( 0xffff & read_word_u(sp_globals.hdr2_org + FH_PIXMX));
 
 num = 0;
 xmult = ((sp_globals.pspecs->xxmult >> 16) + 1) >> 1;

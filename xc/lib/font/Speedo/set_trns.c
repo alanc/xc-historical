@@ -1,4 +1,4 @@
-/* $XConsortium: set_trns.c,v 1.3 94/02/03 15:44:29 gildea Exp $ */
+/* $XConsortium: set_trns.c,v 1.4 94/02/07 10:01:14 gildea Exp $ */
 
 /*
 
@@ -1221,12 +1221,12 @@ for (j = 0; ; j++)
                     break;
 
                 case 1:          /* 1 byte fractional distance to next edge */
-                    adj_factor = (ufix16)NEXT_BYTE(pointer) << 8;
+                    adj_factor =  0xffff & NEXT_BYTE(pointer) << 8;
                     goto L1;
 
 
                 case 2:          /* 2 byte fractional distance to next edge */
-                    adj_factor = (ufix16)NEXT_WORD(pointer);
+		    adj_factor = 0xffff & NEXT_WORD(pointer);
                 L1: edge = edge_org + NEXT_BYTE(pointer);
                     end_orus = sp_plaid.orus[edge] +
                         ((((fix31)sp_plaid.orus[edge + 1] - (fix31)sp_plaid.orus[edge]) * 
