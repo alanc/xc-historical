@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XEvToWire.c,v 11.11 87/10/14 18:00:42 newman Locked $";
+static char rcsid[] = "$Header: XEvToWire.c,v 11.12 87/10/20 16:32:23 newman Locked $";
 #endif
 
 /*
@@ -30,8 +30,6 @@ register xEvent *event;	/* wire protocol event */
 	        {
 			register XKeyEvent *ev = (XKeyEvent*) re;
 			event->u.keyButtonPointer.root	= ev->root;
-			ev->window 	= event->u.keyButtonPointer.event;
-
 			event->u.keyButtonPointer.event	 = ev->window;
 			event->u.keyButtonPointer.child  = ev->subwindow;
 			event->u.keyButtonPointer.time	 = ev->time;
@@ -53,7 +51,7 @@ register xEvent *event;	/* wire protocol event */
 			event->u.keyButtonPointer.child	 = ev->subwindow;
 			event->u.keyButtonPointer.time	 = ev->time;
 			event->u.keyButtonPointer.eventX = ev->x;
-			event->u.keyButtonPointer.event  = ev->y;
+			event->u.keyButtonPointer.eventY = ev->y;
 			event->u.keyButtonPointer.rootX	 = ev->x_root;
 			event->u.keyButtonPointer.rootY	 = ev->y_root;
 			event->u.keyButtonPointer.state	 = ev->state;
