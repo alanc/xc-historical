@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.9 90/12/21 13:15:48 converse Exp $
+ * $XConsortium: Xauth.h,v 1.10 91/02/17 13:07:25 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,7 +27,7 @@
 
 # define FamilyLocal (256)	/* not part of X standard (i.e. X.h) */
 # define FamilyWild  (65535)
-# define FamilySecureRPC    (254)   /* not part of X standard */
+# define FamilyNetname    (254)   /* not part of X standard */
 
 #if NeedFunctionPrototypes
 typedef struct xauth {

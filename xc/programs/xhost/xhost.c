@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.41 91/02/12 19:10:20 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.42 91/02/17 14:07:38 rws Exp $ */
  
 /*
 
@@ -318,7 +318,7 @@ int change_host (dpy, name, add)
 	    netname = username;
 	}
 #endif
-	ha.family = FamilySecureRPC;
+	ha.family = FamilyNetname;
 	ha.length = strlen(netname);
 	ha.address = netname;
 	if (add)
@@ -438,7 +438,7 @@ static char *get_hostname (ha)
     else return (inet_ntoa(*((struct in_addr *)(ha->address))));
   }
 #endif
-  if (ha->family == FamilySecureRPC) {
+  if (ha->family == FamilyNetname) {
     static char netname[512];
     int len;
 #ifdef SECURE_RPC
