@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.1 89/06/21 17:25:01 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.90 89/06/29 13:43:12 kit Exp $";
 #endif /* lint && SABER */
 
 
@@ -949,7 +949,7 @@ static int _XawTextSetNewSelection(ctx, left, right, selections, count)
  * This internal routine deletes the text from pos1 to pos2 in a source and
  * then inserts, at pos1, the text that was passed. As a side effect it
  * "invalidates" that portion of the displayed text (if any).
-*/
+ */
 static
 int ReplaceText (ctx, pos1, pos2, text)
   TextWidget ctx;
@@ -964,6 +964,7 @@ int ReplaceText (ctx, pos1, pos2, text)
     XawTextPosition startPos, endPos, updateFrom;
     XawTextPosition (*Scan)() = ctx->text.source->Scan;
 
+    ctx->text.update_disabled = True; /* No redisplay during replacement. */
     /*the insertPos may not always be set to the right spot in XawtextAppend */
     if ((pos1 == ctx->text.insertPos) &&
 	(ctx->text.source->edit_mode == XawtextAppend)) {
@@ -978,12 +979,16 @@ int ReplaceText (ctx, pos1, pos2, text)
     startPos = Max(updateFrom, ctx->text.lt.top);
     visible = LineAndXYForPosition(ctx, startPos, &line1, &x, &y);
     error = (*ctx->text.source->Replace)(ctx->text.source, pos1, pos2, text);
-    if (error) return error;
+    if (error) {
+        ctx->text.update_disabled = FALSE; /* rearm redisplay. */
+	return error;
+    }
     ctx->text.lastPos = GETLASTPOS;
     if (ctx->text.lt.top >= ctx->text.lastPos) {
 	BuildLineTable(ctx, ctx->text.lastPos);
 	ClearWindow( (Widget) ctx);
 	SetScrollBar(ctx);
+	ctx->text.update_disabled = FALSE; /* rearm redisplay. */
 	return error;
     }
     delta = text->length - (pos2 - pos1);
@@ -1067,9 +1072,9 @@ int ReplaceText (ctx, pos1, pos2, text)
 	    _XawTextNeedsUpdating(ctx, updateFrom, endPos);
     }
     SetScrollBar(ctx);
+    ctx->text.update_disabled = FALSE; /* rearm redisplay. */
     return error;
 }
-
 
 /*
  * This routine will display text between two arbitrary source positions.

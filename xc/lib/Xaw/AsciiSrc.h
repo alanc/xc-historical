@@ -1,6 +1,42 @@
 /*
- * $XConsortium: AsciiSrc.c,v 1.1 89/06/21 17:24:30 kit Exp $
+ * $XConsortium: AsciiSrc.h,v 1.1 89/06/29 13:43:07 kit Exp $
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
  */
+
+/***********************************************************************
+ *
+ * Ascii Source
+ *
+ ***********************************************************************/
+
+/*
+ * AsciiSrc.h - Public Header file for Ascii Text Source.
+ *
+ * This is the public header file for the Ascii Text Source.
+ * It is intended to be used with the Text widget, the simplest way to use
+ * this text source is to use the AsciiText Widget.
+ *
+ * Date:    June 29, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
+ */
+
+#ifndef _XawAsciiSrc_h
+#define _XawAsciiSrc_h
 
 #include <X11/Xaw/Text.h>
 
@@ -25,11 +61,11 @@ typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
 #define ASCII_DISK		/* Emulation modes. */
 
 #ifdef ASCII_STRING
-#  define XawStringSourceDestroy XawAsciiSourceDestroy
+#define XawStringSourceDestroy XawAsciiSourceDestroy
 #endif
 
 #ifdef ASCII_DISK
-#  define XawDiskSourceDestroy XawAsciiSourceDestroy
+#define XawDiskSourceDestroy XawAsciiSourceDestroy
 #endif
 
 /************************************************************
@@ -124,7 +160,7 @@ Widget w;
  *	Returns: a pointer to the new text source.
  */
 
-XawTextSource XawAsciiStringSourceCreate(/* parent, args, num_args */);
+XawTextSource XawStringSourceCreate(/* parent, args, num_args */);
 /*
 Widget parent;
 ArgList args;
@@ -140,10 +176,12 @@ Cardinal num_args;
  *	Returns: a pointer to the new text source.
  */
 
-XawTextSource XawAsciiDiskSourceCreate(/* parent, args, num_args */);
+XawTextSource XawDiskSourceCreate(/* parent, args, num_args */);
 /*
 Widget parent;
 ArgList args;
 Cardinal num_args;
 */
 #endif /* ASCII_DISK */
+
+#endif /* _XawAsciiSrc_h  - Don't add anything after this line. */

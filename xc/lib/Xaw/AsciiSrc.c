@@ -1,6 +1,41 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.1 89/06/21 17:24:30 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.1 89/06/29 13:43:06 kit Exp $";
 #endif /* lint && SABER */
+
+/*
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ */
+
+/***********************************************************************
+ *
+ * Ascii Source
+ *
+ ***********************************************************************/
+
+/*
+ * AsciiSrc.c - Source code for Ascii Text Source.
+ *
+ * This is the source code for the Ascii Text Source.
+ * It is intended to be used with the Text widget, the simplest way to use
+ * this text source is to use the AsciiText Widget.
+ *
+ * Date:    June 29, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
+ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -37,6 +72,11 @@ static XtResource resources[] = {
        XtOffset(AsciiSourcePtr, ascii_length), 
        XtRImmediate, (caddr_t) MAGIC_VALUE},
 #endif /* ASCII_STRING */
+
+#ifdef ASCII_DISK
+    {XtNfile, XtCFile, XtRString, sizeof (String),
+       XtOffset(AsciiSourcePtr, filename), XtRString, NULL},
+#endif /* ASCII_DISK */
 };
 
 static XtResource sourceResources[] = {
@@ -123,8 +163,14 @@ XawTextBlock *text;
 
   data->changes = TRUE;		/* We have changed the buffer. */
 
-#ifdef notdef			/* We need an R4 function (I think). */
-  XtCallCallbacks(****);	/* Call the callbacks. */
+#ifndef notdef			/* This code only will call the first
+				   function in the callback list, I plan
+				   to fix this when the correct R4 Xt
+				   function comes along. CDP 7-5-89. */
+
+   if ( (data->callback != NULL) && (data->callback[0].callback != NULL)) 
+     (data->callback[0].callback) (src->widget, data->callback[0].closure, 
+				   NULL);
 #endif
 
 /* 
@@ -370,14 +416,10 @@ Cardinal * num_args;
   Boolean total_reset = FALSE;
   AsciiSourcePtr data = (AsciiSourcePtr) tw->text.source->data;
   AsciiSourcePtr old_data = XtNew(AsciiSourceData);
+  XawTextEditType old_mode;
   register int i;
 
   bcopy( (char *) data, (char *) old_data, sizeof(AsciiSourceData));
-
-#ifdef ASCII_STRING
-  if (data->ascii_string)	/* It did not support this functionality. */
-    return(FALSE);
-#endif
   
   XtSetSubvalues(tw->text.source->data,
 		 resources, XtNumber(resources), args, * num_args);
@@ -401,13 +443,21 @@ Cardinal * num_args;
   }
 
   XtFree(old_data);
-    
-/*
- * no action needs to be take on these resources.
- */
+
+  old_mode = tw->text.source->edit_mode;
 
   XtSetSubvalues((caddr_t) tw->text.source,
 		 sourceResources, XtNumber(sourceResources), args, * num_args);
+
+/*
+ * If the mode has changed we need to open the file in a new mode.
+ */
+
+  if ( (data->type == XawAsciiFile) && 
+       (old_mode != tw->text.source->edit_mode) ) {
+    fclose(data->file);
+    InitStringOrFile(tw->text.source);
+  }
 
   return(FALSE);
 }
@@ -432,17 +482,15 @@ Cardinal * num_args;
   AsciiSourcePtr data = (AsciiSourcePtr) tw->text.source->data;
 
 #ifdef ASCII_STRING
-  if (data->ascii_string)	/* It did not support this functionality. */
-    return;
+  if (!data->ascii_string)
 #endif
-
-  if (data->type == XawAsciiString) {
-    for (i = 0; i < *num_args ; i++ ) 
-      if (streq(args[i].name, XtNstring)) {
-	XawAsciiSave(w);
-	break;
-      }
-  }
+    if (data->type == XawAsciiString) {
+      for (i = 0; i < *num_args ; i++ ) 
+	if (streq(args[i].name, XtNstring)) {
+	  XawAsciiSave(w);
+	  break;
+	}
+    }
 
   XtGetSubvalues(tw->text.source->data,
 		 resources, XtNumber(resources), args, * num_args);
@@ -506,6 +554,7 @@ Cardinal num_args;
 		     sourceResources, XtNumber(sourceResources),
 		     args, num_args);
 
+  src->widget = parent;
   src->Read = ReadText;
   src->Replace = ReplaceText;
   src->SetLastPos = DiskSetLastPos;
@@ -527,8 +576,10 @@ Cardinal num_args;
  */
 
 #ifdef ASCII_DISK
-  if (XtIsSubclass(parent, asciiDiskWidgetClass))
+  if (XtIsSubclass(parent, asciiDiskWidgetClass)) {
     data->type = XawAsciiFile;
+    data->string = data->filename;
+  }
 #endif
 
 #ifdef ASCII_STRING
@@ -540,11 +591,10 @@ Cardinal num_args;
 
 /* end */
 
-  InitStringOrFile(src);
-
   data->changes = FALSE;
   data->allocated_string = FALSE;
 
+  InitStringOrFile(src);
   LoadPieces(data, NULL);
   return src;
 }
@@ -673,14 +723,12 @@ AsciiSourcePtr data;
   if (data->type == XawAsciiFile) {
     (void) fclose(data->file);
     
-    if (data->is_tempfile) {
+    if (data->is_tempfile) 
       unlink(data->string);
-      XtFree((char *) data->string);
-    }
   }
-  else /* XawAsciiString. */
-    if (data->allocated_string) 
-      XtFree(data->string);
+
+  if (data->allocated_string) 
+    XtFree(data->string);
 }
 
 /*	Function Name: WriteToFile
@@ -708,12 +756,12 @@ FILE * file;
     return(FALSE);
   }
   if (fwrite(string, sizeof(char), strlen(string), file) == 0) {
-    sprintf(buf, "Error, while attempting to write to the file %s.", file);
+    sprintf(buf, "Error, while attempting to write to the file %s.", name);
     XtAppWarning(XtWidgetToApplicationContext(w), buf); 
     return(FALSE);
   }
   if (fflush(file) != 0) {
-    sprintf(buf, "Error, while attempting to flush the file %s.", file);
+    sprintf(buf, "Error, while attempting to flush the file %s.", name);
     XtAppWarning(XtWidgetToApplicationContext(w), buf); 
     return(FALSE);
   }
@@ -790,7 +838,7 @@ XawTextSource src;
   case XawtextRead:
     if (data->string == NULL)
       XtErrorMsg("NoFile", "asciiSourceCreate", "XawError",
-		 "Creating a read - only text widget from an empty file.",
+		 "Creating a read only disk widget and no file specified.",
 		 NULL, 0);
     open_mode = "r";
     break;
@@ -800,11 +848,12 @@ XawTextSource src;
       data->string = tmpnam (XtMalloc((unsigned)TMPSIZ));
       data->is_tempfile = TRUE;
     } 
+    else {
+      data->allocated_string = TRUE;
+      data->string = XtNewString(data->string);
+    }
 
-    if (src->edit_mode == XawtextEdit)
-      open_mode = "r+";
-    else
-      open_mode = "a+";
+    open_mode = "r+";
 
     break;
   default:
@@ -846,7 +895,8 @@ char * string;
     if (data->type == XawAsciiFile) {
       fseek(data->file, 0L, 0);
       local_str = XtMalloc((data->length + 1) * sizeof(char));
-      if (fread(local_str, sizeof(char), data->length, data->file) == 0) {
+      if (fread(local_str, sizeof(char), 
+		data->length, data->file) != data->length) {
 	XtErrorMsg("readError", "asciiSourceCreate", "XawError",
 		   "fread returned error.", NULL, NULL);
       }
@@ -1086,7 +1136,7 @@ XrmValuePtr	toVal;
  */
 
 XawTextSource
-XawAsciiStringSourceCreate(parent, args, num_args)
+XawStringSourceCreate(parent, args, num_args)
 Widget parent;
 ArgList args;
 Cardinal num_args;
@@ -1114,7 +1164,7 @@ Cardinal num_args;
  */
 
 XawTextSource
-XawAsciiDiskSourceCreate(parent, args, num_args)
+XawDiskSourceCreate(parent, args, num_args)
 Widget parent;
 ArgList args;
 Cardinal num_args;
@@ -1122,9 +1172,14 @@ Cardinal num_args;
   XawTextSource src;
   ArgList ascii_args;
   Arg temp[1];
+  register int i;
 
   XtSetArg(temp[0], XtNtype, XawAsciiFile);
   ascii_args = XtMergeArgLists(temp, ONE, args, num_args);
+
+  for (i = 0; i < num_args; i++) 
+    if (streq(args[i].name, XtNfile) || streq(args[i].name, XtCFile)) 
+      args[i].name = XtNstring;
 
   src = XawAsciiSourceCreate(parent, ascii_args, num_args + ONE);
   XtFree(ascii_args);

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.21 89/05/19 21:08:15 kit Exp $
+* $XConsortium: Text.h,v 1.22 89/06/06 16:37:43 swick Exp $
 */
 
 
@@ -254,28 +254,10 @@ extern void XawAsciiSinkDestroy(); /* sink */
     /* XawTextSink  sink */
 
 /*
- * from DiskSrc
- */
-extern XawTextSource XawDiskSourceCreate(); /* parent, args, num_args */
-    /* Widget	parent;		*/
-    /* ArgList	args;		*/
-    /* Cardinal	num_args;	*/
-
-extern void XawDiskSourceDestroy(); /* src */
-    /* XawTextSource src;	*/
-
-/*
- * from StringSrc
+ * For R3 compatability only. 
  */
 
-extern XawTextSource XawStringSourceCreate(); /* parent, args, num_args */
-    /* Widget parent;		*/
-    /* ArgList args;		*/
-    /* Cardinal num_args;	*/
-
-extern void XawStringSourceDestroy(); /* src */
-    /* XawTextSource src;	*/
-
+#include <X11/Xaw/AsciiSrc.h>
 
 #endif /* _XawText_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

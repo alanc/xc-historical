@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.5 89/05/19 21:07:51 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.6 89/06/29 13:43:24 kit Exp $
 */
 
 
@@ -49,8 +49,10 @@ typedef struct _XawTextSource {
     Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
     XawTextEditType	edit_mode;
     caddr_t		data;	
+    Widget              widget;	/* Parent of this text source. */
     Boolean             (*SetValuesHook)(); /* Widget, ArgList, NumArgs */
     void                (*GetValuesHook)(); /* Widget, ArgList, NumArgs */
+  
     };
 
 typedef struct _XawTextSink {

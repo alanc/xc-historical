@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: DiskSrc.c,v 1.1 89/06/21 17:24:30 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.21 89/06/29 13:43:08 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -26,6 +26,25 @@ SOFTWARE.
 
 ******************************************************************/
 
+/***********************************************************************
+ *
+ * AsciiText Widget
+ *
+ ***********************************************************************/
+
+/*
+ * AsciiText.c - Source code for AsciiText Widget.
+ *
+ * This Widget is intended to be used as a simple front end to the 
+ * text widget with an ascii source and ascii sink attached to it.
+ *
+ * Date:    June 29, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
+ */
+
 #include <stdio.h>
 #include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
@@ -34,7 +53,6 @@ SOFTWARE.
 #include <X11/Xmu/Xmu.h>
 
 #include <X11/Xaw/AsciiTextP.h>
-#include <X11/Xaw/AsciiSrc.h> /* no need to get private header. */
 
 extern void ForceBuildLineTable(); /* in Text.c */
 

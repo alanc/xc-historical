@@ -1,7 +1,6 @@
-#include <X11/copyright.h>
-
-/* $XConsortium: AsciiTextP.h,v 1.12 89/05/11 01:04:42 kit Exp $ */
-
+/*
+ * $XConsortium: AsciiTextP.h,v 1.13 89/06/29 13:43:11 kit Exp $ 
+ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,11 +26,31 @@ SOFTWARE.
 
 ******************************************************************/
 
+/***********************************************************************
+ *
+ * AsciiText Widget
+ *
+ ***********************************************************************/
+
+/*
+ * AsciiText.c - Private header file for AsciiText Widget.
+ *
+ * This Widget is intended to be used as a simple front end to the 
+ * text widget with an ascii source and ascii sink attached to it.
+ *
+ * Date:    June 29, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
+ */
+
 #ifndef _AsciiTextP_h
 #define _AsciiTextP_h
 
-#include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/TextP.h>
+#include <X11/Xaw/AsciiSrc.h> /* no need to get private header. */
+#include <X11/Xaw/AsciiText.h>
 
 extern XtActionsRec textActionsTable[];
 extern Cardinal textActionsTableCount;
@@ -62,6 +81,8 @@ typedef struct _AsciiRec {
  *
  ************************************************************/ 
 
+#ifdef ASCII_STRING
+
 typedef struct {int empty;} AsciiStringClassPart;
 
 typedef struct _AsciiStringClassRec {
@@ -83,6 +104,10 @@ typedef struct _AsciiStringRec {
     AsciiPart           ascii;
     AsciiStringPart     ascii_str;
 } AsciiStringRec;
+
+#endif /* ASCII_STRING */
+
+#ifdef ASCII_DISK
 
 /************************************************************
  *
@@ -111,5 +136,6 @@ typedef struct _AsciiDiskRec {
     AsciiPart           ascii;
     AsciiDiskPart       ascii_disk;
 } AsciiDiskRec;
+#endif /* ASCII_DISK */
 
 #endif /* _AsciiTextP_h */

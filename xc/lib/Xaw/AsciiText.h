@@ -1,7 +1,6 @@
-#include <X11/copyright.h>
-
-/* $XConsortium: AsciiText.h,v 1.13 89/05/11 15:11:32 kit Exp $ */
-
+/*
+ * $XConsortium: AsciiText.h,v 1.14 89/06/29 13:43:10 kit Exp $ 
+ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,6 +26,24 @@ SOFTWARE.
 
 ******************************************************************/
 
+/***********************************************************************
+ *
+ * AsciiText Widget
+ *
+ ***********************************************************************/
+
+/*
+ * AsciiText.c - Public header file for AsciiText Widget.
+ *
+ * This Widget is intended to be used as a simple front end to the 
+ * text widget with an ascii source and ascii sink attached to it.
+ *
+ * Date:    June 29, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
+ */
 
 #ifndef _AsciiText_h
 #define _AsciiText_h
