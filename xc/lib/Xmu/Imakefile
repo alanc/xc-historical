@@ -13,6 +13,7 @@ HEADERS = \
 	Xmu.h
 
 SRCS = \
+	CrPixFBit.c \
 	FToCback.c \
 	Lower.c \
 	RdBitF.c \
@@ -23,6 +24,7 @@ SRCS = \
 	StrToOrnt.c
 
 OBJS = \
+	CrPixFBit.o \
 	FToCback.o \
 	Lower.o \
 	RdBitF.o \
