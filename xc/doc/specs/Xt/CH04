@@ -1,4 +1,4 @@
-.\" $XConsortium: CH04,v 1.8 91/08/27 10:01:11 swick Exp $
+.\" $XConsortium: CH04,v 1.9 94/01/07 19:36:24 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -32,7 +32,7 @@ Chapter 4 \- Shell Widgets
 .IN "Shell" "" "@DEF@"
 .LP
 Shell widgets hold an application's top-level widgets to allow them to
-communicate with the window manager.
+communicate with the window manager and session manager.
 Shells have been designed to be as nearly invisible as possible.
 Clients have to create them,
 but they should never have to worry about their sizes.
@@ -44,7 +44,7 @@ it can make a geometry request to the shell,
 and the shell negotiates the size change with the outer environment.
 Clients should never attempt to change the size of their shells directly.
 .LP
-The four types of public shells are:
+The five types of public shells are:
 .TS
 lw(1.5i) lw(4.25i).
 T{
@@ -73,11 +73,20 @@ T}
 T{
 .PN ApplicationShell
 T}	T{
+Formerly used for the single main top-level window that
+the window manager identifies as an application instance and
+made obsolete by SessionShell.
+T}
+.IN "ApplicationShell" "" "@DEF@"
+.sp
+T{
+.PN SessionShell
+T}	T{
 Used for the single main top-level window that
 the window manager identifies as an application instance and
 that interacts with the session manager.
 T}
-.IN "ApplicationShell" "" "@DEF@"
+.IN "SessionShell" "" "@DEF@"
 .TE
 
 .NH 2
@@ -101,7 +110,7 @@ encapsulate other widgets and can allow a widget to avoid the
 geometry clipping imposed by the parent-child window relationship.
 They also can provide a layer of communication with the window manager.
 .LP
-The seven different types of shells are
+The eight different types of shells are
 .TS
 lw(1.5i) lw(4.5i).
 T{
@@ -153,7 +162,15 @@ T}
 T{
 .PN ApplicationShell
 T}	T{
-A subclass of TopLevelShell; used for an application's main top-level window.
+A subclass of TopLevelShell; may be used for an application's additional
+root windows.
+T}
+.sp 6p
+T{
+.PN SessionShell
+T}	T{
+A subclass of ApplicationShell; used for an application's
+main root window.
 T}
 .TE
 .LP
@@ -167,8 +184,9 @@ Only
 OverrrideShell,
 TransientShell,
 TopLevelShell,
-and
-ApplicationShell
+ApplicationShell,
+and 
+SessionShell
 are intended for public use.
 
 .NH 3
@@ -189,7 +207,7 @@ None of the other Shell classes have any additional class fields:
 .ta .5i 3i
 typedef struct { XtPointer extension; } ShellClassPart, OverrideShellClassPart,
 	WMShellClassPart, VendorShellClassPart, TransientShellClassPart,
-	TopLevelShellClassPart, ApplicationShellClassPart;
+	TopLevelShellClassPart, ApplicationShellClassPart, SessionShellClassPart;
 .De
 .KE
 .LP
@@ -291,11 +309,27 @@ typedef struct _ApplicationShellClassRec {
 } ApplicationShellClassRec;
 .De
 .KE
+.KS
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct _SessionShellClassRec {
+	CoreClassPart core_class;
+	CompositeClassPart composite_class;
+	ShellClassPart shell_class;
+	WMShellClassPart wm_shell_class;
+	VendorShellClassPart vendor_shell_class;
+	TopLevelShellClassPart top_level_shell_class;
+	ApplicationShellClassPart application_shell_class;
+	SessionShellClassPart session_shell_class;
+} SessionShellClassRec;
+.De
+.KE
 .LP
+.KS
 The single occurrences of the class records and pointers for creating
 instances of shells are
 .LP
-.KS
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -306,6 +340,7 @@ extern VendorShellClassRec vendorShellClassRec;
 extern TransientShellClassRec transientShellClassRec;
 extern TopLevelShellClassRec topLevelShellClassRec;
 extern ApplicationShellClassRec applicationShellClassRec;
+extern SessionShellClassRec sessionShellClassRec;
 
 extern WidgetClass shellWidgetClass;
 extern WidgetClass overrideShellWidgetClass;
@@ -314,13 +349,14 @@ extern WidgetClass vendorShellWidgetClass;
 extern WidgetClass transientShellWidgetClass;
 extern WidgetClass topLevelShellWidgetClass;
 extern WidgetClass applicationShellWidgetClass;
+extern WidgetClass sessionShellWidgetClass;
 .De
 .KE
 .LP
+.KS
 The following opaque types and opaque variables are defined
 for generic operations on widgets whose class is a subclass of
 Shell.
-.bp
 .TS
 lw(2.75i) lw(2.75i).
 _
@@ -364,6 +400,11 @@ T{
 T}	T{
 .PN applicationShellWidgetClass
 T}
+T{
+.PN SessionShellWidget
+T}	T{
+.PN sessionShellWidgetClass
+T}
 .PN ShellWidgetClass
 .PN OverrideShellWidgetClass
 .PN WMShellWidgetClass
@@ -371,9 +412,11 @@ T}
 .PN TransientShellWidgetClass
 .PN TopLevelShellWidgetClass
 .PN ApplicationShellWidgetClass
+.PN SessionShellWidgetClass
 .sp 6p
 _
 .TE
+.KE
 .LP
 The declarations for all Intrinsics-defined shells except
 VendorShell appear in
@@ -486,6 +529,9 @@ typedef struct {
 	int wm_timeout;
 	Boolean wait_for_wm;
 	Boolean transient;
+	Boolean	urgency;
+	Widget	client_leader;
+	String	window_role;
 	struct _OldXSizeHints {
 		long flags;
 		int x, y;
@@ -501,11 +547,13 @@ typedef struct {
 	XWMHints wm_hints;
 	int base_width, base_height, win_gravity;
 	Atom title_encoding;
-	Widget client_leader;
-	String window_role;
-	Boolean visible;
 } WMShellPart;
-
+.De
+.KE
+.KS
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
 typedef struct {
 	int vendor_specific;
 } VendorShellPart;
@@ -537,6 +585,32 @@ typedef struct {
 	char **argv;
 	Widget session;
 } ApplicationShellPart;
+.De
+.KE
+.KS
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	SmcConn connection;
+	String session_id;
+	String * restart_command;
+	String * clone_command;
+	String * discard_command;
+	String * resign_command;
+	String * shutdown_command;
+	String * environment;
+	String current_dir;
+	String program_path;
+	unsigned char restart_style;
+	Boolean join_session;
+	XtCallbackList save_callbacks;
+	XtCallbackList interact_callbacks;
+	XtCallbackList cancel_callbacks;
+	XtCallbackList save_complete_callbacks;
+	XtCallbackList die_callbacks;
+	XtCallbackList error_callbacks;
+} SessionShellPart;
 .De
 .KE
 The full shell widget instance record definitions are
@@ -624,6 +698,23 @@ typedef  struct {
 } ApplicationShellRec, *ApplicationShellWidget;
 .De
 .KE
+.KS
+.IN "SessionShellWidget" "" "@DEF@"
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef  struct {
+	CorePart core;
+	CompositePart composite;
+	ShellPart shell;
+	WMShellPart wm;
+	VendorShellPart vendor;
+	TopLevelShellPart topLevel;
+	ApplicationShellPart application;
+	SessionShellPart session;
+} SessionShellRec, *SessionShellWidget;
+.De
+.KE
 
 .NH 3
 Shell Resources
@@ -668,7 +759,7 @@ the
 resource list are
 .LP
 .TS
-lw(1.7i) lw(1.7i) lw(1.2i) .
+lw(2.1i) lw(2.1i) lw(1.2i) .
 _
 .sp 6p
 Name	Class	Representation
@@ -697,13 +788,13 @@ XtNminWidth	XtCMinWidth	XtRInt
 XtNtitle	XtCTitle	XtRString
 XtNtitleEncoding	XtCTitleEncoding	XtRAtom
 XtNtransient	XtCTransient	XtRBoolean
-XtNwaitForWm	XtCWaitForWm	XtRBoolean
+XtNwaitforwm, XtNwaitForWm	XtCWaitforwm, XtCWaitForWm	XtRBoolean
 XtNwidthInc	XtCWidthInc	XtRInt
 XtNwindowRole	XtCWindowRole	XtRString
 XtNwinGravity	XtCWinGravity	XtRGravity
 XtNwindowGroup	XtCWindowGroup	XtRWindow
 XtNwmTimeout	XtCWmTimeout	XtRInt
-XtNvisible	XtCVisible	XtRBoolean
+XtNurgency	XtCUrgency	XtRBoolean
 .sp 6p
 _
 .TE
@@ -764,7 +855,40 @@ _
 .sp 6p
 XtNargc	XtCArgc	XtRInt
 XtNargv	XtCArgv	XtRStringArray
-XtNsession	XtCSession	XtRWidget
+.sp 6p
+_
+.TE
+.LP
+The resource names, classes, and representation types that are specified
+in the
+.PN sessionShellClassRec
+resource list are
+.LP
+.TS
+lw(1.7i) lw(1.7i) lw(1.2i) .
+_
+.sp 6p
+Name	Class	Representation
+.sp 6p
+_
+XtNcancelCallback	XtCCallback	XtRCallback
+XtNcloneCommand	XtCCloneCommand	XtRCommandArgArray
+XtNconnection	XtCConnection	XtRSmcConn
+XtNcurrentDirectory	XtCCurrentDirectory	XtRDirectoryString
+XtNdieCallback	XtCCallback	XtRCallback
+XtNdiscardCommand	XtCDiscardCommand	XtRCommandArgArray
+XtNenvironment	XtCEnvironment	XtREnvironmentArray
+XtNerrorCallback	XtCCallback	XtRCallback
+XtNinteractCallback	XtCCallback	XtRCallback
+XtNjoinSession	XtCJoinSession	XtRBoolean
+XtNprogramPath	XtCProgramPath	XtRString
+XtNresignCommand	XtCResignCommand	XtRCommandArgArray
+XtNrestartCommand	XtCRestartCommand	XtRCommandArgArray
+XtNrestartStyle	XtCRestartStyle	XtRRestartStyle
+XtNsaveCallback	XtCCallback	XtRCallback
+XtNsaveCompleteCallback	XtCCallback	XtRCallback
+XtNsessionID	XtCSessionID	XtRString
+XtNshutdownCommand	XtCShutdownCommand	XtRCommandArgArray
 .sp 6p
 _
 .TE
@@ -921,6 +1045,11 @@ TransientShell,
 .PN False 
 otherwise
 T}
+urgency	T{
+.PN False
+T}
+client_leader	NULL
+window_role	NULL
 min_width	\fBXtUnspecifiedShellInt\fP
 min_height	\fBXtUnspecifiedShellInt\fP
 max_width	\fBXtUnspecifiedShellInt\fP
@@ -945,11 +1074,6 @@ base_width	\fBXtUnspecifiedShellInt\fP
 base_height	\fBXtUnspecifiedShellInt\fP
 win_gravity	\fBXtUnspecifiedShellInt\fP
 title_encoding	See text
-client_leader	NULL
-window_role	NULL
-visible	T{
-.PN False
-T}
 .sp 6p
 _
 .TE
@@ -993,30 +1117,23 @@ under which the application is run; see the \fI\*(xC\fP for more details.
 The realize and set_values procedures of WMShell store the 
 .PN \s-1WM_CLIENT_LEADER\s+1
 property on the shell window.
-When \fIclient_leader\fP is not NULL, the
-.PN \s-1WM_CLIENT_LEADER\s+1
-property will be created with the value of the window of the
+When \fIclient_leader\fP is not NULL and the client leader widget is
+realized, the property will be created with the value of the window of the
 client leader widget.
 When \fIclient_leader\fP is NULL and the shell widget has a NULL parent,
 the widget's window is used as the value of the
-.PN \s-1WM_CLIENT_LEADER\s+1
 property.
 When \fIclient_leader\fP is NULL and the shell widget has a non-NULL parent,
-the
-.PN \s-1WM_CLIENT_LEADER\s+1
-property will be created with the same value as
-the closest realized shell ancestor when one is found.
+a search is made for the closest shell ancestor
+with a non-NULL \fIclient_leader\fP,
+and if none is found the shell ancestor with a NULL parent is the result.
+If the resulting widget is realized, the property is created 
+with the value of the widget's window.
 .LP
 When the value of \fIwindow_role\fP is not NULL, the
+realize and set_values procedures store the
 .PN \s-1WM_WINDOW_ROLE\s+1
-property will be stored on the shell's window with the value of the resource.
-This property is used by a window manager while checkpointing session
-state to distinguish the windows of a session participant.  If the
-property is not present the window manager will use the contents of
-.PN \s-1WM_CLASS\s+1
-and
-.PN \s-1WM_NAME\s+1
-to distinguish between windows of a session participant.
+property on the shell's window with the value of the resource.
 .LP
 All other resources specify fields in the window manager hints
 and the window manager size hints.
@@ -1176,7 +1293,6 @@ _
 .sp 6p
 argc	0
 argv	NULL
-session	NULL
 .sp 6p
 _
 .TE
@@ -1186,10 +1302,612 @@ the standard property
 .PN \s-1WM_COMMAND\s+1 .
 See the \fI\*(xC\fP for more information.
 .LP
-The realize and set_values procedures of ApplicationShell store the
-.PN \s-1SM_ID\s+1
-property on the shell window when the session resource is not NULL.
-The property is created with the value of the \fIsession_id\fP field
-of the session widget.
+The default values for the SessionShell instance fields,
+which are filled in from the resource lists and by the
+initialize procedure, are
+.TS
+l l.
+_
+.sp 6p
+Field	Default Value
+.sp 6p
+_
+.sp 6p
+cancel_callbacks	NULL
+clone_command	See text
+connection	NULL
+current_dir	NULL
+die_callbacks	NULL
+discard_command	NULL
+environment	NULL
+error_callbacks	NULL
+interact_callbacks	NULL
+join_session	T{
+.PN True
+T}
+resign_command	NULL
+restart_command	See text
+restart_style	SmRestartIfRunning
+program_path	See text
+save_callbacks	NULL
+save_complete_callbacks	NULL
+session_id	NULL
+shutdown_command	NULL
+.sp 6p
+_
+.TE
+.LP
+The \fIconnection\fP field contains the session connection object, or NULL
+if a session connection is not being managed by this widget.
+.LP
+The \fIsession_id\fP is an identification assigned to the session
+participant by the session manager.
+The \fIsession_id\fP will be passed to the session
+manager as the client identifier of the previous session.
+When a connection is established with the session manager, 
+the client id assigned by the session manager is stored
+in the \fIsession_id\fP field.
+When not NULL, the \fIsession_id\fP of the Session shell widget which
+is at the root of the widget tree of the client leader widget will be
+used to create the
+.PN \s-1SM_CLIENT_ID\s+1
+property on the client leader's window.
+.LP
+If \fIjoin_session\fP is
+.PN False ,
+the widget will not attempt to establish a
+connection to the session manager at shell creation time.
+See sections 4.3 and 4.6
+for more information on the functionality of this resource.
+.LP
+The \fIrestart_command\fP, \fIclone_command\fP, \fIdiscard_command\fP,
+\fIresign_command\fP, \fIshutdown_command\fP, \fIenvironment\fP,
+\fIcurrent_dir\fP, \fIprogram_path\fP, and
+\fIrestart_style\fP fields contain standard session properties.
+.LP
+When a session connection is established or newly managed by the shell,
+the shell initialize and set_values methods check the values of the
+\fIrestart_command\fP, \fIclone_command\fP, and \fIprogram_path\fP
+resources.  At that time, if \fIrestart_command\fP is NULL, the value
+of the \fIargv\fP resource will be copied to \fIrestart_command\fP.  
+Whether or not \fIrestart_command\fP was NULL,
+if \fI-xtsessionID\fP <\fIsession_id\fP> does not
+already appear in the \fIrestart_command\fP, it will be added by the
+initialize and set_values methods at the beginning of the command arguments;
+if the \fI-xtsessionID\fP argument already appears with an incorrect
+value of \fIsession_id\fP in the following argument, that argument
+will be replaced with the current \fIsession_id\fP.
+.LP
+After this, the shell initialize and set_values procedures check the
+\fIclone_command\fP.  If \fIclone_command\fP is NULL, 
+\fIrestart_command\fP will be copied to \fIclone_command\fP,
+except the \fI-xtsessionID\fP and following argument will not be copied.
+.LP
+Finally, the shell initialize and set_values procedures check the
+\fIprogram_path\fP.  If \fIprogram_path\fP is NULL, the 
+first element of \fIrestart_command\fP is copied to \fIprogram_path\fP.
+.LP
+The possible values of \fIrestart_style\fP are
+.PN SmRestartIfRunning ,
+.PN SmRestartAnyway ,
+.PN SmRestartImmediately ,
+and
+.PN SmRestartNever .
+A resource converter is registered for this resource; 
+for the strings that it recognizes
+see section 9.6.1.
+.LP
+The resource type EnvironmentArray is an array of pointers to strings;
+each string has the format "name=value".
+The `=' character may not appear in the name,
+and the string is terminated by a null character.
 
+.NH 2
+Session Participation
+.XS
+\fB\*(SN Session Participation\fP
+.XE
+.LP
+Applications can participate in a user's session, exchanging messages
+with the session manager as described in the \fIX Session Management
+Protocol\fP and the \fIX Session Management Library\fP.
+.LP
+When a widget of
+.PN sessionShellWidgetClass
+or a subclass is created, the widget provides support for the application
+as a session participant, and continues to provide support until the
+widget is destroyed.
+
+.NH 3
+Joining a Session
+.XS
+\fB\*(SN Joining a Session\fP
+.XE
+.LP
+When a Session shell is created, 
+if \fIconnection\fP is NULL,
+and if \fIjoin_session\fP is
+.PN True ,
+and if \fIargv\fP or \fIrestart_command\fP is not NULL,
+and if in POSIX environments the 
+.PN \s-1SESSION_MANAGER\s+1
+environment variable is defined,
+the shell will attempt to establish a new connection with the session manager.
+.LP
+To transfer management of an existing session connection from an
+application to the shell at widget creation time, pass the existing
+session connection ID as the \fIconnection\fP resource value
+when creating the Session shell,
+and if the other creation-time conditions on session participation are met,
+the widget will maintain the connection with the session manager.
+The application must insure that only one
+Session shell manages the connection.
+.LP
+In the Session shell set_values procedure,
+if \fIjoin_session\fP changes from 
+.PN False 
+to 
+.PN True
+and \fIconnection\fP is NULL and when in POSIX environments the
+.PN \s-1SESSION_MANAGER\s+1
+environment variable is defined, 
+the shell will attempt to open a connection to the session manager.
+If \fIconnection\fP changes from NULL to non-NULL, the
+Session shell
+will take over management of that session connection and will set
+\fIjoin_session\fP to
+.PN True .
+If \fIjoin_session\fP changes from
+.PN False
+to
+.PN True
+and \fIconnection\fP is not NULL, the
+Session shell will take over management of the session connection.
+.LP
+When a successful connection has been established, \fIconnection\fP
+contains the session connection ID for the session participant.
+When the shell begins to manage the connection, it will call
+.PN XtAppAddInput
+to register the handler which watches for protocol messages
+from the session manager.
+When the attempt to connect fails, a warning message is issued
+and \fIconnection\fP is set to NULL.
+.LP
+While the connection is being managed, if a 
+.PN SaveYourself ,
+.PN SaveYourselfPhase2 ,
+.PN Interact ,
+.PN ShutdownCancelled ,
+.PN SaveComplete ,
+or
+.PN Die
+message is received from the session manager, the Session shell will
+call out to application callback procedures registered
+on the respective callback list of the Session shell, and will
+send 
+.PN SaveYourselfPhase2Request ,
+.PN InteractRequest ,
+.PN InteractDone ,
+.PN SaveYourselfDone ,
+and
+.PN ConnectionClosed
+messages as appropriate.
+Initially, all of the client's session properties are undefined.
+When any of the session property resource values are defined or change,
+the Session shell initialize and set_values procedures
+will update the client's session property value by a 
+.PN SetProperties
+or a
+.PN DeleteProperties
+message, as appropriate.
+The session ProcessID and UserID properties are always set by the shell
+when it is possible to determine the value of these properties.
+
+.NH 3
+Saving Application State
+.XS
+\fB\*(SN Saving Application State\fP
+.XE
+.LP
+The session manager instigates an application checkpoint by sending a
+.PN SaveYourself
+request.  
+Applications are responsible for saving their state in response to the
+request.
+.LP
+When the
+.PN SaveYourself
+request arrives, the procedures registered on the
+Session shell's save callback list are called.
+If the application does not register any save callback procedures on
+the save callback list, the shell will report to the session manager
+that the application failed to save its state.
+Each procedure on the save callback list receives a token
+in the \fIcall_data\fP parameter.
+.sp
+.LP
+.KS
+The checkpoint token in the \fIcall_data\fP parameter is of type
+.PN XtCheckpointToken .
+.IN "XtCheckpointToken" "" "@DEF@"
+.IN "XtCheckpointTokenRec" "" "@DEF@"
+.LP
+.Ds 0
+.TA .5i 2i 4i
+.ta .5i 2i 4i
+typedef struct {
+	int	save_type;
+	int	interact_style;
+	Boolean	shutdown;
+	Boolean	fast;
+	Boolean	cancel_shutdown
+	int	phase;
+	int	interact_dialog_type;	/* return */
+	Boolean	request_cancel;	/* return */
+	Boolean	request_next_phase;	/* return */
+	Boolean	save_success;	/* return */
+} XtCheckpointTokenRec, *XtCheckpointToken;
+.KE
+.De
+.LP
+The \fIsave_type\fP, \fIinteract_style\fP, \fIshutdown\fP, and \fIfast\fP
+fields of the token contain the parameters of the
+.PN SaveYourself
+message.
+The possible values of \fIsave_type\fP are
+.PN SmSaveLocal ,
+.PN SmSaveGlobal ,
+and 
+.PN SmSaveBoth ;
+these indicate the type of information to be saved.
+The possible values of \fIinteract_style\fP are
+.PN SmInteractStyleNone ,
+.PN SmInteractStyleErrors ,
+and
+.PN SmInteractStyleAny ;
+these indicate whether user interaction would be permitted
+and if so, what kind of interaction.
+If \fIshutdown\fP is
+.PN True ,
+the checkpoint is being performed in preparation for the end of the session.
+If \fIfast\fP is
+.PN True ,
+the client should perform the checkpoint as quickly as possible.
+If \fIcancel_shutdown\fP is 
+.PN True,
+a 
+.PN ShutdownCancelled
+message has been received for the current save operation.  (See section 4.4.4.)
+The \fIphase\fP is used by manager clients, such as a window manager,
+to distinguish between the first and second phase of a save operation.
+The \fIphase\fP will be either 1 or 2.
+The remaining fields in the checkpoint token structure are provided for
+the application to communicate with the shell.
+.LP
+Upon entry to the first application save callback procedure, the return
+fields in the token have the following initial values:
+\fIinteract_dialog_type\fP is 
+.PN SmDialogNormal ;
+\fIrequest_cancel\fP is
+.PN False ;
+\fIrequest_next_phase\fP is
+.PN False ;
+and \fIsave_success\fP is
+.PN True .
+When a token is returned with any of the four return fields containing
+a non-initial value, and when the field is applicable, subsequent tokens
+passed to the application during the current save operation
+will always contain the non-initial value.
+.LP
+The purpose of the token's \fIsave_success\fP field is to 
+indicate the outcome of the entire operation to the
+session manager and ultimately, to the user.
+Returning 
+.PN False
+indicates some portion of the application state 
+could not be successfully saved.  If any token is returned
+to the shell with \fIsave_success\fP 
+.PN False ,
+tokens subsequently received
+by the application for the current save operation will show 
+\fIsave_success\fP as 
+.PN False .
+When the shell sends the final status of the checkpoint to the
+session manager, it will indicate failure to save application state
+if any token was returned with \fIsave_success\fP 
+.PN False .
+.LP
+Session participants which manage and save the state of other clients
+should structure their save or interact callbacks to
+set \fIrequest_next_phase\fP to 
+.PN True
+when phase is 1, which will cause the shell to send the 
+.PN SaveYourselfPhase2Request
+when the first phase is complete.  When the 
+.PN SaveYourselfPhase2 
+message is received, the shell will invoke the save callbacks a
+second time with \fIphase\fP = 2.
+Manager clients should save the state of other clients
+when the callbacks are invoked the second time and \fIphase\fP = 2.
+.LP
+The application may request additional tokens while a checkpoint is under way,
+and these additional tokens must be returned by an explicit call.
+.sp
+.LP
+.KS
+To request an additional token for a save callback response which has a
+deferred outcome, use
+.PN XtSessionGetToken .
+.IN "XtSessionGetToken" "" "@DEF@"
+.FD 0
+XtCheckpointToken XtSessionGetToken(\fIwidget\fP)
+.br
+      Widget \fIwidget\fP;
+.FN
+.IP \fIwidget\fP 1i
+Specifies the Session shell widget which manages session participation.
+.LP
+The 
+.PN XtSessionGetToken
+function will return NULL if no checkpoint operation is currently under way.
+.KE
+.sp
+.LP
+.KS
+To indicate the completion of checkpoint processing including user 
+interaction, the application must signal the Session shell
+by returning all tokens.
+(See Sections 4.4.1 and 4.4.2).
+To return a token use
+.PN  XtSessionReturnToken .
+.IN "XtSessionReturnToken" "" "@DEF@"
+.FD 0
+void XtSessionReturnToken(\fItoken\fP)
+.br
+      XtCheckpointToken \fItoken\fP;
+.FN
+.IP \fItoken\fP 1i
+Specifies a token which was received as the \fIcall_data\fP by a procedure
+on the interact callback list, or a token which was received by a call to
+.PN XtSessionGetToken .
+.KE
+.sp
+.LP
+Tokens passed as \fIcall_data\fP to save callbacks are implicitly
+returned when the save callback procedure returns.
+A save callback procedure should not call 
+.PN XtSessionReturnToken 
+on the token passed in its \fIcall_data\fP.
+
+.NH 4
+Requesting Interaction
+.XS
+\fB\*(SN Requesting Interaction\fP
+.XE
+.LP
+When the token \fIinteract_style\fP allows user interaction,
+the application may
+interact with the user during the checkpoint, but must wait for permission
+to interact.
+Applications request permission to interact with the user during the
+checkpointing operation by registering a procedure on the Session
+shell's interact callback list.  When all save callback procedures have
+returned, and each time a token which was granted by a call to 
+.PN XtSessionGetToken
+is returned, the Session shell examines the interact callback list.
+If interaction is permitted and the interact callback list is not empty,
+the shell will send an
+.PN InteractRequest
+to the session manager when an interact request is not already outstanding
+for the application.
+.LP
+The type of interaction dialog that will be requested is specified by
+the \fIinteract_dialog_type\fP field in the checkpoint token.
+The possible values for \fIinteract_dialog_type\fP are
+.PN SmDialogError
+and
+.PN SmDialogNormal .
+If a token is returned with \fIinteract_dialog_type\fP containing
+.PN SmDialogError ,
+the interact request and any subsequent interact requests will be for
+an error dialog; otherwise, the request will be for a normal dialog with
+the user.  
+.LP
+When a token is returned with \fIsave_success\fP
+.PN False
+or \fIinteract_dialog_type\fP
+.PN SmDialogError ,
+tokens subsequently passed to callbacks during the same active
+.PN SaveYourself
+response will reflect these changed values, indicating that
+an error condition has occurred during the checkpoint.
+.LP
+The \fIrequest_cancel\fP field is a return value for interact callbacks only.
+Upon return from a procedure on the save callback list, the value
+of the token's \fIrequest_cancel\fP field is not examined by the shell.
+This is also true of tokens received through a call to 
+.PN XtSessionGetToken .
+
+.NH 4
+Interacting with the User
+.XS
+\fB\*(SN Interacting with the User During a Checkpoint\fP
+.XE
+.LP
+When the session manager grants the application's request for user interaction,
+the Session shell receives an
+.PN Interact
+message.
+The procedures registered on the interact callback list are executed,
+but not as if executing a typical callback list.
+These procedures are individually executed in
+sequence, with a checkpoint token functioning as the sequencing mechanism.
+Each step in the sequence begins by removing a procedure
+from the interact callback list
+and executing it with a token passed in the \fIcall_data\fP.
+The interact callback will typically pop up a dialog box and return.
+When the user interaction and associated application checkpointing has
+completed, the application must return the token by calling
+.PN XtSessionReturnToken .
+Returning the token completes the current step, and triggers the next step
+in the sequence.
+.LP
+During interaction the client may request cancellation of a shutdown.
+When a token passed as \fIcall_data\fP to an interact procedure is returned,
+if \fIshutdown\fP is 
+.PN True
+and \fIcancel_shutdown\fP is
+.PN False ,
+\fIrequest_cancel\fP indicates whether the 
+application requests that the pending shutdown be cancelled.
+If \fIrequest_cancel\fP is
+.PN True ,
+the field will also be
+.PN True
+in any tokens subsequently granted during the checkpoint operation.
+When a token is returned requesting cancellation of
+the session shutdown, pending interact procedures will still be
+called by the Session shell.
+When all interact procedures have been removed from the interact callback
+list, executed, and the final interact token returned to the shell, an
+.PN InteractDone
+message is sent to the session manager, indicating whether
+a pending session shutdown is requested to be cancelled.
+
+.NH 4
+Responding to a Shutdown Cancellation
+.XS
+\fB\*(SN Responding to a Shutdown Cancellation\fP
+.XE
+.LP
+Callbacks registered on the cancel callback list are invoked when the
+Session shell processes a
+.PN ShutdownCancelled
+message from the session manager.  This may occur during the
+processing of save callbacks, while waiting for interact permission,
+during user interaction, or after the save operation is complete and
+the application is expecting a
+.PN SaveComplete
+or a
+.PN Die
+message.
+The \fIcall_data\fP for these callbacks is NULL.
+.LP
+When the shell notices that a pending shutdown has been cancelled,
+the token \fIcancel_shutdown\fP field will be 
+.PN True
+in tokens subsequently given to the application.
+.LP
+Receiving notice of a shutdown cancellation does not cancel the 
+pending execution of save callbacks or interact callbacks.
+After the cancel callbacks execute, if \fIinteract_style\fP is not
+.PN SmInteractStyleNone
+and the interact list is not empty,
+the procedures on the interact callback list will be executed
+and passed a token with \fIinteract_style\fP 
+.PN SmInteractStyleNone .
+The application should not interact with the user, and the Session shell
+wil not send an 
+.PN InteractDone
+message.
+
+.NH 4
+Completing a Save
+.XS
+\fB\*(SN Completing a Save\fP
+.XE
+.LP
+When there is no user interaction, the shell regards the application
+as having finished saving state when all callback procedures
+on the save callback list have returned, and any additional tokens
+passed out by
+.PN XtSessionGetToken
+have been returned by corresponding calls to
+.PN XtSessionReturnToken .
+If the save operation involved user interaction,
+the above completion conditions apply, and in addition, all requests for
+interaction have been granted or cancelled,
+and all tokens passed to interact callbacks have been returned
+through calls to
+.PN XtSessionReturnToken .
+If the save operation involved a manager client that requested the
+second phase, the above conditions apply to both the first and second
+phase of the save operation.
+.br
+.LP
+When the application has finished saving state,
+the Session shell will report the result to the session manager by
+sending the
+.PN SaveYourselfDone
+message.
+If the session is continuing, the shell will receive the
+.PN SaveComplete
+message when all applications have completed saving state.
+This message indicates that applications may again allow changes
+to their state.  The shell will execute the save_complete callbacks.
+The \fIcall_data\fP for these callbacks is NULL.
+
+.NH 3
+Responding to a Shutdown
+.XS
+\fB\*(SN Responding to a Shutdown\fP
+.XE
+.LP
+Callbacks registered on the die callback list are invoked when the
+session manager sends a
+.PN Die
+message.
+The callbacks on this list should do whatever is appropriate to quit
+the application.
+Before executing procedures on the die callback list,
+the Session shell will close the connection to the session manager
+and will remove the handler which watches for protocol messages.
+The \fIcall_data\fP for these callbacks is NULL.
+
+.NH 3
+Resigning from a Session
+.XS
+\fB\*(SN Resigning from a Session\fP
+.XE
+.LP
+When the Session shell widget is destroyed, the destroy method will
+close the connection to the session manager by sending a
+.PN ConnectionClosed 
+protocol message, and will remove the input callback
+which was watching for session protocol messages.
+.LP
+When
+.PN XtSetValues
+is used to set \fIjoin_session\fP to
+.PN False ,
+the set_values method of the Session shell will close the
+connection to the session manager if one exists by sending a
+.PN ConnectionClosed 
+message, and \fIconnection\fP will be set to NULL.
+.LP
+Applications which exit in response to user actions and which do not
+wait for phase 2 destroy to complete on
+the Session shell should set \fIjoin_session\fP to
+.PN False
+before exiting.
+.LP
+When
+.PN XtSetValues 
+is used to set \fIconnection\fP to NULL,
+the Session shell will stop managing the connection, if one exists.
+However that session connection will not be closed.
+.LP
+Applications which wish to ensure continuation of a session connection
+beyond the destruction of the shell, should first retrieve the 
+\fIconnection\fP resource value,
+then set the \fIconnection\fP resource to NULL, 
+and then they may safely destroy the widget without losing control
+of the session connection.
+.LP
+The error callback list will be called if an unrecoverable
+communications error occurs while the shell is managing the connection.
+The shell will close the connection, set \fIconnection\fP to NULL,
+remove the input callback, and 
+call the procedures registered on the error callback list.
+The \fIcall_data\fP for these callbacks is NULL.
 .bp
