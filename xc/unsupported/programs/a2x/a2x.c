@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.60 92/04/16 20:34:32 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.61 92/04/17 08:52:31 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1991,6 +1991,8 @@ main(argc, argv)
 	    usage();
 	}
     }
+    if (!dname && !*(XDisplayName(dname)))
+	dname = ":0";
     dpy = XOpenDisplay(dname);
     if (!dpy) {
 	fprintf(stderr, "%s: unable to open display '%s'\n",
