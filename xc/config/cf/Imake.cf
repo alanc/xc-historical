@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.1 93/09/10 12:00:03 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.2 93/09/13 19:14:07 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -250,6 +250,10 @@ XCOMM $XConsortium: Imake.cf,v 1.1 93/09/10 12:00:03 rws Exp $
 #ifdef __mips__
 #undef __mips__
 #define MipsArchitecture
+#endif
+#ifdef __alpha
+#undef __alpha
+#define AlphaArchitecture
 #endif
 #endif /* __osf__ */
 
