@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.39 90/06/15 17:19:26 rws Exp $
+ * $XConsortium: Xrm.c,v 1.40 90/06/29 13:51:15 kit Exp $
  */
 
 /***********************************************************
@@ -32,9 +32,6 @@ SOFTWARE.
 #include	<stdio.h>
 #include	<ctype.h>
 #include 	"XrmI.h"
-#ifdef SYSV
-#include	<X11/Xos.h>
-#endif /* SYSV */
 
 #ifdef __STDC__
 #define Const const

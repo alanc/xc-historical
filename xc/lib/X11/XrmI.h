@@ -1,4 +1,4 @@
-/* $XConsortium: XrmI.h,v 1.5 89/12/22 16:11:28 rws Exp $ */
+/* $XConsortium: XrmI.h,v 1.3 90/06/15 17:19:01 rws Exp $ */
 /*
 
 Copyright 1990 by the Massachusetts Institute of Technology
@@ -57,8 +57,8 @@ without express or implied warranty.
  * You may need to redefine these for various other operating systems. 
  */
 
+#include	<X11/Xos.h>
 #include        <sys/stat.h>                        
-#include 	<fcntl.h>
 
 #define OpenFile(name) 		open((name), O_RDONLY)
 #define CloseFile(fd)           close((fd))
