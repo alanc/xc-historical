@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.31 94/03/07 15:22:43 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.32 94/03/08 12:14:26 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -225,7 +225,8 @@ struct _IceConn {
     unsigned char my_ice_version_index; /* which version are we using? */
 
     struct _XtransConnInfo *trans_conn; /* transport connection object */
-    unsigned long sequence;     	/* Sequence number of last message */
+    unsigned long send_sequence;     	/* Sequence # of last msg sent */
+    unsigned long receive_sequence;    	/* Sequence # of last msg received */
 
     char *connection_string;		/* network connection string */
     char *vendor;			/* other client's vendor */
@@ -382,7 +383,7 @@ typedef struct {
     _pMsg->minorOpcode = _minor; \
     _pMsg->length = (_headerSize - SIZEOF (iceMsg)) >> 3; \
     _iceConn->outbufptr += _headerSize; \
-    _iceConn->sequence++
+    _iceConn->send_sequence++
 
 #define IceGetHeaderExtra(_iceConn, _major, _minor, _headerSize, _extra, _msgType, _pMsg, _pData) \
     if ((_iceConn->outbufptr + \
@@ -398,7 +399,7 @@ typedef struct {
     _pMsg->minorOpcode = _minor; \
     _pMsg->length = ((_headerSize - SIZEOF (iceMsg)) >> 3) + (_extra); \
     _iceConn->outbufptr += (_headerSize + ((_extra) << 3)); \
-    _iceConn->sequence++
+    _iceConn->send_sequence++
 
 #define IceSimpleMessage(_iceConn, _major, _minor) \
 { \
@@ -778,8 +779,8 @@ typedef struct _IceWatchProc {
  * Locking
  */
 
-#define LockIceConn(_iceConn)
-#define UnlockIceConn(_iceConn)
+#define IceLockConn(_iceConn)
+#define IceUnlockConn(_iceConn)
 
 
 /*
