@@ -746,8 +746,8 @@ static int charClass[128] = {
 .fi
 .sp
 .in -10
-For example, the string ``33:48,37:48,46-47:48,64:48'' indicates that the
-exclamation mark, percent sign, period, slash, and ampersand characters
+For example, the string ``33:48,37:48,45-47:48,64:48'' indicates that the
+exclamation mark, percent sign, dash, period, slash, and ampersand characters
 should be treated the same way as characters and numbers.  This is very useful 
 for cutting and pasting electronic mailing addresses and Unix filenames.
 .SH "KEY TRANSLATIONS"
