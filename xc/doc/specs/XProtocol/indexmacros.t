@@ -27,12 +27,12 @@
 ..
 .\" set up various parameters for the right evironment.
 .\" Your taste may be different.
-.eh '\s+1\fBX Window System, Protocol Version 11\fP''\fBV11, Release 1\fP\s-1'
-.oh '\s+1\fBX Window System, Protocol Version 11'\fP'\fBV11, Release 1\fP\s-1'
+.eh '\s+1\fBX Protocol\fP''\fBX11, Release 2\fP\s-1'
+.oh '\s+1\fBX Protocol\fP''\fBX11, Release 2\fP\s-1'
 .ef ''\s+1\fB % \fP\s-1''
 .of ''\s+1\fB % \fP\s-1''
 .\" Set the page number for the index properly.
-.pn 143
+.pn 144
 .++ A
 .po 1.0i	\" physical offset
 .ta 5iR		\" right alignment tab
