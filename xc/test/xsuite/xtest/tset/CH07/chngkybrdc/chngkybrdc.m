@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chngkybrdc.m,v 1.8 92/06/11 17:11:42 rws Exp $
+ * $XConsortium: chngkybrdc.m,v 1.9 93/12/24 11:39:25 rws Exp $
  */
 >>TITLE XChangeKeyboardControl CH07
 void
@@ -399,7 +399,7 @@ static int 	vals[] = {
 		values->led_mode = LedModeOff;
 		for (j = 0; j < NELEM(vals); j++) {
 			if (vals[j] == i) {
-				onmask |= (1<<(i-1));
+				onmask |= (1L<<(i-1));
 				values->led_mode = LedModeOn;
 				break;
 			}
