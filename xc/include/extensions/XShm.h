@@ -15,7 +15,9 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: XShm.h,v 1.2 89/08/21 07:40:24 rws Exp $ */
+/* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
+
+/* $XConsortium: XShm.h,v 1.3 89/08/21 08:58:06 rws Exp $ */
 
 #ifndef _XSHM_H_
 #define _XSHM_H_

@@ -15,7 +15,9 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shm.c,v 1.3 89/08/20 18:54:47 rws Exp $ */
+/* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
+
+/* $XConsortium: shm.c,v 1.4 89/08/21 08:59:28 rws Exp $ */
 
 #ifdef MITSHM
 

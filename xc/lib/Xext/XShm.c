@@ -15,6 +15,8 @@ implied warranty.
 
 ********************************************************/
 
+/* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
+
 #ifdef MITSHM
 
 #define NEED_EVENTS
@@ -23,7 +25,7 @@ implied warranty.
 #include "XShm.h"
 #include "shmstr.h"
 
-/* $XConsortium: XShm.c,v 1.3 89/08/21 08:10:35 rws Exp $ */
+/* $XConsortium: XShm.c,v 1.4 89/08/21 08:58:48 rws Exp $ */
 
 struct DpyHasShm {
     struct DpyHasShm	*next;
