@@ -1,10 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.4 91/07/16 22:51:23 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 91/11/08 18:08:34 eswu Exp $
 
 #include <Server.tmpl>
 
 SRCS =	 	skyInfo.c	\
-		skyIO.c	        \
-		skyImg.c        \
 		skyHdwr.c	\
 		skyCur.c        \
 		skySave.c       \
@@ -12,11 +10,13 @@ SRCS =	 	skyInfo.c	\
 		skyCmap.c       \
 		skyProbe.c	\
 		skySGC.c	\
-		skyBitBlt.c
+		skyBitBlt.c	\
+		skyFillRct.c	\
+		skyWin.c	\
+		skyFill.c	\
+		copyword.s
 
 OBJS =	 	skyInfo.o       \
-		skyIO.o	        \
-		skyImg.o        \
 		skyHdwr.o       \
 		skyCur.o        \
 		skySave.o       \
@@ -24,7 +24,11 @@ OBJS =	 	skyInfo.o       \
 		skyCmap.o       \
 		skyProbe.o	\
 		skySGC.o	\
-		skyBitBlt.o
+		skyBitBlt.o	\
+		skyFillRct.o	\
+		skyWin.o	\
+		skyFill.o	\
+		copyword.o
 
 INCLUDES = -I../ -I../OPERATING_SYSTEM -I../../mfb -I../../cfb -I../ppc -I../../../include -I$(INCLUDESRC) -I../common -I../../mi -I../../../../fonts/include
 STD_DEFINES = ServerDefines
