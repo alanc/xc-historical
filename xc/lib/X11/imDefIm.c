@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIm.c,v 1.13 94/07/08 14:45:26 kaleb Exp kaleb $ */
+/* $XConsortium: imDefIm.c,v 1.14 94/08/23 18:10:17 kaleb Exp kaleb $ */
 /******************************************************************
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
          Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -390,7 +390,7 @@ _XimPreConnect(im)
     if((imserver = XInternAtom(display, XIM_SERVERS, True)) == (Atom)None)
 	return False;
 
-    if(XGetWindowProperty(display, RootWindow(display, DefaultScreen(display)),
+    if(XGetWindowProperty(display, RootWindow(display, 0),
 			imserver, 0L, 1000000L, False, XA_ATOM, &actual_type, 
 			&actual_format, &nitems, &bytes_after,
 			&prop_return) != Success)
