@@ -9,7 +9,7 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    50
 
-/**/# platform:  $XConsortium: Mips.cf,v 1.1 91/04/26 19:00:04 keith Exp $
+/**/# platform:  $XConsortium: Mips.cf,v 1.2 91/05/01 22:44:57 keith Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
@@ -52,7 +52,6 @@
  *****************************************************************************/
 
 #define BuildServer		YES
-#define BuildExamples		NO
 #define SpecialMalloc		NO
 #define ExpandManNames		YES	/* expand Xlib man page filenames */
 #define InstallXinitConfig	NO	/* install sample xinit config */
