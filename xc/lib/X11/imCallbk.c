@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.7 94/07/06 14:47:01 kaleb Exp kaleb $ */
+/* $XConsortium: imCallbk.c,v 1.8 94/09/01 18:44:49 kaleb Exp kaleb $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -468,7 +468,7 @@ _XimPreeditStartCallback(im, ic, proto, len)
      */
     if (cb && cb->callback){
 	ret = (*(int (*)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 			XIC, XPointer, XPointer
 #endif
 			))(cb->callback))((XIC)ic, 
@@ -577,22 +577,22 @@ _read_text_from_packet(im, buf, text)
 	    tmp_buf[tmp_len] = '\0';
 
 	    text->encoding_is_wchar = False;
-	    text->length = im->methods->ctstowcs((XIM)im, 
+	    text->length = im->methods->ctstombs((XIM)im, 
 					tmp_buf, tmp_len, 
-					(wchar_t*)NULL, 0, 
-					&s); /* CT? HM */
+					NULL, 0, &s); /* CT? HM */
 	    if (s != XLookupNone) {
-		if (text->string.multi_byte
-		    = (char*)Xmalloc(text->length * XLC_PUBLIC(im->core.lcd,mb_cur_max))) {
+		if (text->string.multi_byte = (char*)Xmalloc(text->length+1)) {
 			int tmp;
 			tmp = im->methods->ctstombs((XIM)im,
 					   tmp_buf, tmp_len, 
 					   text->string.multi_byte, text->length, 
 					   &s);
-			text->string.multi_byte
-			  = (char*)Xrealloc(text->string.multi_byte, tmp+1);
 			text->string.multi_byte[tmp] = '\0';
 		}
+	    }
+	    else {
+		text->length = 0;
+		text->string.multi_byte = NULL;
 	    }
 
 	    Xfree(tmp_buf);
@@ -699,15 +699,13 @@ _XimPreeditCaretCallback(im, ic, proto, len)
 {
     XIMCallback* cb = &ic->core.preedit_attr.caret_callback;
     XIMPreeditCaretCallbackStruct cbs;
-    int p;
 
     /* invoke the callback
      */
     if (cb && cb->callback) {
-	p = XIM_HEADER_SIZE;
-	cbs.position  = (int)*(INT32*)&proto[p]; p += sz_INT32;
-	cbs.direction = (int)*(CARD32*)&proto[p]; p += sz_CARD32;
-	cbs.style     = (int)*(CARD32*)&proto[p]; p += sz_CARD32;
+	cbs.position  = (int)*(INT32*)proto; proto += sz_INT32;
+	cbs.direction = (int)*(CARD32*)proto; proto += sz_CARD32;
+	cbs.style     = (int)*(CARD32*)proto; proto += sz_CARD32;
 
 	(*cb->callback)((XIC)ic, cb->client_data, &cbs);
     }
@@ -827,22 +825,19 @@ _XimStatusDrawCallback(im, ic, proto, len)
     /* invoke the callback
      */
     if (cb && cb->callback) {
-	int p;
-
-	p = XIM_HEADER_SIZE;
-	cbs.type = (XIMStatusDataType)*(CARD32*)&proto[p]; p += sz_CARD32;
+	cbs.type = (XIMStatusDataType)*(CARD32*)proto; proto += sz_CARD32;
 	if (cbs.type == XIMTextType) {
 	    if (cbs.data.text = (XIMText*)Xmalloc(sizeof(XIMText))) {
 		_read_text_from_packet(im, proto, cbs.data.text);
 	    }
 	}
 	else if (cbs.type == XIMBitmapType) {
-	    cbs.data.bitmap = (Pixmap)*(CARD32*)&proto[p];
+	    cbs.data.bitmap = (Pixmap)*(CARD32*)proto;
 	}
 
-	(*cb->callback)((XIC)ic, cb->client_data, (XPointer)NULL);
+	(*cb->callback)((XIC)ic, cb->client_data, (XPointer)&cbs);
 
-	_free_memory_for_text((XIMText *)&cbs.data.text);
+	_free_memory_for_text((XIMText *)cbs.data.text);
     }
     else {
 
