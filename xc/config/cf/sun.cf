@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.125 94/04/02 17:45:59 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.126 94/04/04 17:17:27 gildea Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -209,37 +209,40 @@ XCOMM operating system:  OSName
 
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 
+/* Set up compiler-dependent options for Sun C */
+
+#if HasSunC
 #ifdef Sun3Architecture
 #ifndef DefaultCCOptions
 #define DefaultCCOptions -f68881 -pipe
 #endif
-#else
+#else	/* not defined(Sun3Architecture) */
 #if OSMajorVersion < 5
-#if HasSunC
 #ifndef DefaultCCOptions
 #define DefaultCCOptions -pipe
 #endif
-#endif
-#else 	/* OSMajorVersion */
-#if HasSunC
+#else	/* OSMajorVersion >= 5*/
 #ifndef DefaultCCOptions
 #define DefaultCCOptions -Xc
 #endif
+#endif	
+#endif	
 #endif
+
+/* Set compiler-dependent options for CenterLine C */
+
 #if HasCenterLineC
-#ifndef DefaultCCOptions
-#define DefaultCCOptions -traditional -w1
+#ifndef	DefaultCCOptions
+#define DefaultCCOptions -Xt -w1 -DANSICPP -U__HIGHC__
 #endif
-#if OSMinorVersion <= 3 
-/* Cannot use wctype.h under Solaris 2.3 in non-ansi mode: fixed in 2.4? */
-#ifdef XawI18nDefines
-#undef XawI18nDefines
+#ifndef NeedConstPrototypes
+#define NeedConstPrototypes YES
 #endif
-#define XawI18nDefines -DHAS_ISW_FUNCS -DUSE_XWCHAR_STRING
-#endif	
-#endif	
-#endif	/* OSMajorVersion */
-#endif	/* Sun3Architecture */
+#ifndef NeedVarargsPrototypes
+#define NeedVarargsPrototypes YES
+#endif
+#endif
+
 
 #define PexCCOptions DefaultCCOptions
 
