@@ -1,4 +1,4 @@
-/* $XConsortium: region.h,v 1.1 87/09/11 07:50:15 toddb Exp $ */
+/* $XConsortium: region.h,v 1.2 88/09/06 15:48:33 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -33,10 +33,7 @@ SOFTWARE.
 
 #define NullRegion ((RegionPtr)0)
 
-
 typedef struct _Region *RegionPtr;
-
-extern int SingleRectRegionEqual();
 
 #endif /* REGION_H */
 
