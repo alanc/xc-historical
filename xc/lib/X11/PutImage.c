@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.65 93/02/08 10:43:16 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.66 93/03/27 11:46:36 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -22,7 +22,7 @@ without express or implied warranty.
 #else
 #define Const /**/
 #endif
-#if __STDC__ && defined(sun) && defined(SVR4)
+#if __STDC__ && ((defined(sun) && defined(SVR4)) || defined(WIN32))
 #define RConst /**/
 #else
 #define RConst Const
