@@ -102,23 +102,39 @@ OBJS = \
 
 all::
 
-#if DebugLibXmu && ProfileLibXmu
+#if SharedLibXmu
+# if DebugLibXmu
+SharedAndDebuggedLibraryObjectRule()
+SpecialSharedAndDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+# else
+SharedLibraryObjectRule()
+SpecialSharedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+# endif
+#else
+# if DebugLibXmu && ProfileLibXmu
 DebuggedAndProfiledLibraryObjectRule()
 SpecialDebuggedAndProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
-#else
-# if DebugLibXmu 
+# else
+#  if DebugLibXmu 
 DebuggedLibraryObjectRule()
 SpecialDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
-# else
-#  if ProfileLibXmu
+#  else
+#   if ProfileLibXmu
 ProfiledLibraryObjectRule()
 SpecialProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
-#  else
+#   else
 NormalLibraryObjectRule()
 SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+#   endif
 #  endif
 # endif
 #endif
+
+#if SharedLibXmu
+NormalSharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),)
+InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
+#endif
+
 
 NormalLibraryTarget(Xmu,$(OBJS))
 LintLibraryTarget(Xmu,$(SRCS))
