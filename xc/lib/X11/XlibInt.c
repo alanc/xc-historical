@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.190 93/10/13 14:28:33 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.191 93/10/20 19:24:11 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -528,8 +528,8 @@ static _XFlushInt (dpy, cv)
 	    }
 	}
 	dpy->last_req = (char *)&_dummy_request;
-	if (!dpy->savedsynchandler &&
-	    (dpy->request - dpy->last_request_read) >= SEQLIMIT) {
+	if ((dpy->request - dpy->last_request_read) >= SEQLIMIT &&
+	    !dpy->savedsynchandler) {
 	    dpy->savedsynchandler = dpy->synchandler;
 	    dpy->synchandler = _XSyncFunction;
 	}
@@ -1247,8 +1247,8 @@ _XSend (dpy, data, size)
 
 	dpy->bufptr = dpy->buffer;
 	dpy->last_req = (char *) & _dummy_request;
-	if (!dpy->savedsynchandler &&
-	    (dpy->request - dpy->last_request_read) >= SEQLIMIT) {
+	if ((dpy->request - dpy->last_request_read) >= SEQLIMIT &&
+	    !dpy->savedsynchandler) {
 	    dpy->savedsynchandler = dpy->synchandler;
 	    dpy->synchandler = _XSyncFunction;
 	}
