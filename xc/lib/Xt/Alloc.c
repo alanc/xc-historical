@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.43 91/05/01 17:06:37 converse Exp $ */
+/* $XConsortium: Alloc.c,v 1.44 91/05/11 15:25:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -50,6 +50,7 @@ char *malloc(), *realloc(), *calloc();
 #define Xrealloc(ptr, size) realloc((ptr), (size))
 #define Xcalloc(nelem, elsize) calloc((nelem), (elsize))
 #endif
+#define Xfree(ptr) free(ptr)
 
 #ifdef _XNEEDBCOPYFUNC
 void _XtBCopy(b1, b2, length)
