@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.222 88/12/31 15:22:06 rws Exp $ */
+/* $XConsortium: window.c,v 1.223 89/02/06 17:43:49 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2198,13 +2198,7 @@ ChangeBorderWidth(pWin, width)
     pParent = pWin->parent;
     pWin->borderWidth = width;
 
-    if (width)
-	ClippedRegionFromBox(pParent, pWin->borderSize,
-	    pWin->absCorner.x - (int)width, pWin->absCorner.y - (int)width,
-	    (int)(pWin->clientWinSize.width + (width<<1)),
-	    (int)(pWin->clientWinSize.height + (width<<1)));
-    else
-        (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
+    SetBorderSize (pWin);
 
     if (WasViewable)
     {
