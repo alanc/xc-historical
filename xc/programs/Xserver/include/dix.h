@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: dix.h,v 1.4 87/08/14 21:29:32 newman Locked $ */
+/* $Header: dix.h,v 1.49 87/08/14 22:48:17 newman Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -50,12 +50,12 @@ SOFTWARE.
    if (pClient->swapped) \
       (*ReplySwapVector[((xReq *)pClient->requestBuffer)->reqType]) \
            (pClient, size, pReply); \
-      else WriteToClient(pClient, size, (char *) pReply);
+      else (void) WriteToClient(pClient, size, (char *) pReply);
 
 #define WriteSwappedDataToClient(pClient, size, pbuf) \
    if (pClient->swapped) \
       (*pClient->pSwapReplyFunc)(pClient, size, pbuf); \
-   else WriteToClient (pClient, size, (char *) pbuf);
+   else (void) WriteToClient (pClient, size, (char *) pbuf);
 
 typedef struct _TimeStamp *TimeStampPtr;
 typedef struct _Client *ClientPtr;
