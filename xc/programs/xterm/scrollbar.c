@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.6 88/03/29 10:23:35 jim Exp $
+ *	$Header: scrollbar.c,v 1.8 88/03/31 12:53:39 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -42,7 +42,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.6 88/03/29 10:23:35 jim Exp $";
+static char rcs_id[] = "$Header: scrollbar.c,v 1.8 88/03/31 12:53:39 swick Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -76,15 +76,37 @@ static void ResizeScreen(xw, min_width, min_height )
 	static Arg argList[] = {
 	    {XtNminWidth,	0},
 	    {XtNminHeight,	0},
+	    /* %%% the next two should move to VTInitialize, VTSetValues */
 	    {XtNwidthInc,	0},
 	    {XtNheightInc,	0}
 	};
+
+#ifndef nothack
+	/* %%% gross hack caused by our late processing of geometry
+	   (in VTRealize) and setting of size hints there, leaving
+	   Shell with insufficient information to do the job properly here.
+	   Instead of doing it properly, we save and restore the
+	   size hints around Shell.SetValues and Shell.GeometryManager
+	 */
+	if (!XGetNormalHints(screen->display, XtWindow(XtParent(xw)),
+			     &sizehints))
+	    sizehints.flags = 0;
+	sizehints.min_width = min_width;
+	sizehints.min_height = min_height;
+	sizehints.width_inc = FontWidth(screen);
+	sizehints.height_inc = FontHeight(screen);
+	sizehints.width =  (screen->max_col + 1) * FontWidth(screen)
+				+ min_width;
+	sizehints.height = FontHeight(screen) * (screen->max_row + 1)
+				+ min_height;
+	sizehints.flags |= PMinSize|PResizeInc;
+#endif
 
 	argList[0].value = (XtArgVal)min_width;
 	argList[1].value = (XtArgVal)min_height;
 	argList[2].value = (XtArgVal)FontWidth(screen);
 	argList[3].value = (XtArgVal)FontHeight(screen);
-	XtSetValues( xw->core.parent, argList, XtNumber(argList) );
+	XtSetValues( XtParent(xw), argList, XtNumber(argList) );
 
 	XGetWindowAttributes( screen->display, TextWindow(screen),
 			      &oldAttributes );
@@ -103,6 +125,10 @@ static void ResizeScreen(xw, min_width, min_height )
 	    (unsigned) (screen->max_col + 1) * FontWidth(screen) + min_width,
 	    (unsigned) FontHeight(screen) * (screen->max_row + 1) + min_height,
             &junk, &junk);
+
+#ifndef nothack
+	XSetNormalHints(screen->display, XtWindow(XtParent(xw)), &sizehints);
+#endif
 
 	/* wait for a window manager to actually do it */
 	XIfEvent( screen->display, &event, IsEventType, ConfigureNotify );
