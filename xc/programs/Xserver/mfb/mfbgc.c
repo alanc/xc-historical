@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.31 93/12/13 17:26:41 dpw Exp $ */
+/* $XConsortium: mfbgc.c,v 5.32 94/01/12 18:04:55 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -440,7 +440,7 @@ mfbCreateGC(pGC)
 void
 mfbValidateGC(pGC, changes, pDrawable)
     register GCPtr 	pGC;
-    Mask 		changes;
+    unsigned long	changes;
     DrawablePtr 	pDrawable;
 {
     register mfbPrivGCPtr	devPriv;

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.11 93/09/20 18:04:42 dpw Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.12 93/09/23 19:55:02 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -63,7 +63,7 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     PixmapPtr ppix;
     long nby;
     char *pbits;
-    XID gcval[3];
+    pointer gcval[3];
     unsigned char char2b[2];
 
     /* turn glyph index into a protocol-format char2b */
@@ -97,16 +97,16 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     rect.height = cm->height;
 
     /* fill the pixmap with 0 */
-    gcval[0] = GXcopy;
-    gcval[1] = 0;
-    gcval[2] = (XID)pfont;
-    DoChangeGC(pGC, GCFunction | GCForeground | GCFont, gcval, 1);
+    gcval[0] = (pointer)GXcopy;
+    gcval[1] = (pointer)0;
+    gcval[2] = (pointer)pfont;
+    DoChangeGC(pGC, GCFunction | GCForeground | GCFont, (XID *)gcval, 1);
     ValidateGC((DrawablePtr)ppix, pGC);
     (*pGC->ops->PolyFillRect)((DrawablePtr)ppix, pGC, 1, &rect);
 
     /* draw the glyph */
-    gcval[0] = 1;
-    DoChangeGC(pGC, GCForeground, gcval, 0);
+    gcval[0] = (pointer)1;
+    DoChangeGC(pGC, GCForeground, (XID *)gcval, 1);
     ValidateGC((DrawablePtr)ppix, pGC);
     (*pGC->ops->PolyText16)((DrawablePtr)ppix, pGC, cm->xhot, cm->yhot,
 			    1, (unsigned short *)char2b);

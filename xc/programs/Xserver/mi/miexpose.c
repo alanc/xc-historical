@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.17 93/07/12 09:28:56 dpw Exp $ */
+/* $XConsortium: miexpose.c,v 5.18 94/01/07 09:44:41 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -551,8 +551,8 @@ int what;
 #define SUBWINDOW	7
 #define COUNT_BITS	8
 
-    XID gcval[7];
-    XID newValues [COUNT_BITS];
+    pointer gcval[7];
+    pointer newValues [COUNT_BITS];
 
     BITS32 gcmask, index, mask;
     RegionRec prgnWin;
@@ -577,13 +577,13 @@ int what;
 	    (*pWin->parent->drawable.pScreen->PaintWindowBackground)(pWin->parent, prgn, what);
 	    return;
 	case BackgroundPixel:
-	    newValues[FOREGROUND] = pWin->background.pixel;
-	    newValues[FILLSTYLE] = FillSolid;
+	    newValues[FOREGROUND] = (pointer)pWin->background.pixel;
+	    newValues[FILLSTYLE] = (pointer)FillSolid;
 	    gcmask |= GCForeground | GCFillStyle;
 	    break;
 	case BackgroundPixmap:
-	    newValues[TILE] = (XID)pWin->background.pixmap;
-	    newValues[FILLSTYLE] = FillTiled;
+	    newValues[TILE] = (pointer)pWin->background.pixmap;
+	    newValues[FILLSTYLE] = (pointer)FillTiled;
 	    gcmask |= GCTile | GCFillStyle | GCTileStipXOrigin | GCTileStipYOrigin;
 	    break;
 	}
@@ -592,14 +592,14 @@ int what;
     {
 	if (pWin->borderIsPixel)
 	{
-	    newValues[FOREGROUND] = pWin->border.pixel;
-	    newValues[FILLSTYLE] = FillSolid;
+	    newValues[FOREGROUND] = (pointer)pWin->border.pixel;
+	    newValues[FILLSTYLE] = (pointer)FillSolid;
 	    gcmask |= GCForeground | GCFillStyle;
 	}
 	else
 	{
-	    newValues[TILE] = (XID)pWin->border.pixmap;
-	    newValues[FILLSTYLE] = FillTiled;
+	    newValues[TILE] = (pointer)pWin->border.pixmap;
+	    newValues[FILLSTYLE] = (pointer)FillTiled;
 	    gcmask |= GCTile | GCFillStyle | GCTileStipXOrigin | GCTileStipYOrigin;
 	}
     }
@@ -609,7 +609,7 @@ int what;
     if (!prect)
 	return;
 
-    newValues[FUNCTION] = GXcopy;
+    newValues[FUNCTION] = (pointer)GXcopy;
     gcmask |= GCFunction | GCClipMask;
 
     i = pScreen->myNum;
@@ -649,13 +649,13 @@ int what;
 	    box.y2 = pScreen->height;
 	    REGION_INIT(pScreen, &pWin->clipList, &box, 1);
 	    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	    newValues[ABSX] = pBgWin->drawable.x;
-	    newValues[ABSY] = pBgWin->drawable.y;
+	    newValues[ABSX] = (pointer)pBgWin->drawable.x;
+	    newValues[ABSY] = (pointer)pBgWin->drawable.y;
 	}
 	else
 	{
-	    newValues[ABSX] = 0;
-	    newValues[ABSY] = 0;
+	    newValues[ABSX] = (pointer)0;
+	    newValues[ABSY] = (pointer)0;
 	}
     } else {
 	/*
@@ -675,9 +675,9 @@ int what;
 	        return;
 	}
 	pGC = screenContext[i];
-	newValues[SUBWINDOW] = IncludeInferiors;
-	newValues[ABSX] = pBgWin->drawable.x;
-	newValues[ABSY] = pBgWin->drawable.y;
+	newValues[SUBWINDOW] = (pointer)IncludeInferiors;
+	newValues[ABSX] = (pointer)pBgWin->drawable.x;
+	newValues[ABSY] = (pointer)pBgWin->drawable.y;
 	gcmask |= GCSubwindowMode;
 	pWin = pRoot;
     }
@@ -693,50 +693,50 @@ int what;
 	mask &= ~index;
 	switch (index) {
 	case GCFunction:
-	    if ((XID) pGC->alu != newValues[FUNCTION]) {
+	    if ((pointer) pGC->alu != newValues[FUNCTION]) {
 		gcmask |= index;
 		gcval[i++] = newValues[FUNCTION];
 	    }
 	    break;
 	case GCTileStipXOrigin:
-	    if ((XID) pGC->patOrg.x != newValues[ABSX]) {
+	    if ((pointer) pGC->patOrg.x != newValues[ABSX]) {
 		gcmask |= index;
 		gcval[i++] = newValues[ABSX];
 	    }
 	    break;
 	case GCTileStipYOrigin:
-	    if ((XID) pGC->patOrg.y != newValues[ABSY]) {
+	    if ((pointer) pGC->patOrg.y != newValues[ABSY]) {
 		gcmask |= index;
 		gcval[i++] = newValues[ABSY];
 	    }
 	    break;
 	case GCClipMask:
-	    if ((XID) pGC->clientClipType != CT_NONE) {
+	    if ((pointer) pGC->clientClipType != (pointer)CT_NONE) {
 		gcmask |= index;
-		gcval[i++] = CT_NONE;
+		gcval[i++] = (pointer)CT_NONE;
 	    }
 	    break;
 	case GCSubwindowMode:
-	    if ((XID) pGC->subWindowMode != newValues[SUBWINDOW]) {
+	    if ((pointer) pGC->subWindowMode != newValues[SUBWINDOW]) {
 		gcmask |= index;
 		gcval[i++] = newValues[SUBWINDOW];
 	    }
 	    break;
 	case GCTile:
-	    if (pGC->tileIsPixel || (XID) pGC->tile.pixmap != newValues[TILE])
+	    if (pGC->tileIsPixel || (pointer) pGC->tile.pixmap != newValues[TILE])
  	    {
 		gcmask |= index;
 		gcval[i++] = newValues[TILE];
 	    }
 	    break;
 	case GCFillStyle:
-	    if ((XID) pGC->fillStyle != newValues[FILLSTYLE]) {
+	    if ((pointer) pGC->fillStyle != newValues[FILLSTYLE]) {
 		gcmask |= index;
 		gcval[i++] = newValues[FILLSTYLE];
 	    }
 	    break;
 	case GCForeground:
-	    if ((XID) pGC->fgPixel != newValues[FOREGROUND]) {
+	    if ((pointer) pGC->fgPixel != newValues[FOREGROUND]) {
 		gcmask |= index;
 		gcval[i++] = newValues[FOREGROUND];
 	    }
@@ -745,7 +745,7 @@ int what;
     }
 
     if (gcmask)
-        DoChangeGC(pGC, gcmask, gcval, 1);
+        DoChangeGC(pGC, gcmask, (XID *)gcval, 1);
 
     if (pWin->drawable.serialNumber != pGC->serialNumber)
 	ValidateGC((DrawablePtr)pWin, pGC);
@@ -788,8 +788,8 @@ miClearDrawable(pDraw, pGC)
     DrawablePtr	pDraw;
     GCPtr	pGC;
 {
-    unsigned long    fg = pGC->fgPixel;
-    unsigned long    bg = pGC->bgPixel;
+    XID fg = pGC->fgPixel;
+    XID bg = pGC->bgPixel;
     xRectangle rect;
 
     rect.x = 0;

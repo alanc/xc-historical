@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.12 93/12/13 17:21:36 dpw Exp $
+ * $XConsortium: cfb8cppl.c,v 1.13 94/01/12 17:57:43 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -32,6 +32,7 @@
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "cfb.h"
+#undef   PSZ /* for maskbits.h */
 #include "maskbits.h"
 #include "mergerop.h"
 
@@ -47,7 +48,7 @@
     bits = 0; \
     while (nBits--) \
     { \
-	bits |= ((*psrc++ >> bitPos) & 1) << curBit; \
+	bits |= (PixelType)(((*psrc++ >> bitPos) & 1)) << curBit; \
 	StepBit (curBit, 1); \
     } \
 }
@@ -134,7 +135,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	}
 	if (startmask)
 	{
-	    niStart = MFB_PPW - dstx; /* XXX Dec has min(,width) */
+	    niStart = min(MFB_PPW - dstx, width);
 	    bitStart = LeftMost;
 	    StepBit (bitStart, dstx);
 	}

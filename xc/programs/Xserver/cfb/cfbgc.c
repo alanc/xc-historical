@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.58 93/09/20 20:06:38 dpw Exp $ */
+/* $XConsortium: cfbgc.c,v 5.59 93/12/13 17:21:59 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -42,8 +42,6 @@ SOFTWARE.
 
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
-
-void cfbValidateGC();
 
 #if PSZ == 8
 # define useTEGlyphBlt  cfbTEGlyphBlt8
@@ -293,7 +291,7 @@ cfbCreateGC(pGC)
 void
 cfbValidateGC(pGC, changes, pDrawable)
     register GCPtr  pGC;
-    Mask	    changes;
+    unsigned long   changes;
     DrawablePtr	    pDrawable;
 {
     int         mask;		/* stateChanges */

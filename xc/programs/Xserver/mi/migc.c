@@ -56,7 +56,7 @@ miRegisterGCPrivateIndex(gcindex)
 void
 miChangeGC(pGC, mask)
     GCPtr           pGC;
-    BITS32          mask;
+    unsigned long   mask;
 {
     return;
 }
@@ -186,7 +186,7 @@ miCopyClip(pgcDst, pgcSrc)
 void
 miCopyGC(pGCSrc, changes, pGCDst)
     GCPtr           pGCSrc;
-    Mask            changes;
+    unsigned long   changes;
     GCPtr           pGCDst;
 {
     return;

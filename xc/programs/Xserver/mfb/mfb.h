@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.24 93/12/13 17:25:41 dpw Exp $ */
+/* $XConsortium: mfb.h,v 5.25 94/01/12 18:04:25 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -405,7 +405,7 @@ extern Bool mfbCreateGC(
 extern void mfbValidateGC(
 #if NeedFunctionPrototypes
     GCPtr /*pGC*/,
-    Mask /*changes*/,
+    unsigned long /*changes*/,
     DrawablePtr /*pDrawable*/
 #endif
 );

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.50 92/07/28 16:38:52 rws Exp $
+ * $XConsortium: miwideline.c,v 1.51 93/07/11 15:20:07 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -72,7 +72,7 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
     DDXPointPtr pptInit;
     register int *pwidth;
     int *pwidthInit;
-    unsigned long oldPixel;
+    XID		oldPixel;
     int		xorg;
     Spans	spanRec;
 
@@ -156,7 +156,7 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
     	DEALLOCATE_LOCAL (pptInit);
     	if (pixel != oldPixel)
     	{
-	    DoChangeGC (pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	    DoChangeGC (pGC, GCForeground, &oldPixel, FALSE);
 	    ValidateGC (pDrawable, pGC);
     	}
     }
@@ -179,7 +179,7 @@ miFillRectPolyHelper (pDrawable, pGC, pixel, spanData, x, y, w, h)
     DDXPointPtr pptInit;
     register int *pwidth;
     int *pwidthInit;
-    unsigned long oldPixel;
+    XID		oldPixel;
     Spans	spanRec;
     xRectangle  rect;
     int		xorg;
@@ -199,7 +199,7 @@ miFillRectPolyHelper (pDrawable, pGC, pixel, spanData, x, y, w, h)
 	(*pGC->ops->PolyFillRect) (pDrawable, pGC, 1, &rect);
     	if (pixel != oldPixel)
     	{
-	    DoChangeGC (pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	    DoChangeGC (pGC, GCForeground, &oldPixel, FALSE);
 	    ValidateGC (pDrawable, pGC);
     	}
     }
@@ -974,7 +974,7 @@ miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     DDXPointPtr points;
     int *widths;
     int xorgi, yorgi;
-    unsigned long oldPixel;
+    XID		oldPixel;
     Spans spanRec;
     int n;
     PolyEdgeRec	edge1, edge2;
@@ -1064,7 +1064,7 @@ miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     	DEALLOCATE_LOCAL(points);
     	if (pixel != oldPixel)
     	{
-	    DoChangeGC(pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	    DoChangeGC(pGC, GCForeground, &oldPixel, FALSE);
 	    ValidateGC (pDraw, pGC);
     	}
     }
@@ -1480,20 +1480,20 @@ miCleanupSpanData (pDrawable, pGC, spanData)
 {
     if (pGC->lineStyle == LineDoubleDash)
     {
-	unsigned long	oldPixel, pixel;
+	XID oldPixel, pixel;
 	
 	pixel = pGC->bgPixel;
 	oldPixel = pGC->fgPixel;
     	if (pixel != oldPixel)
     	{
-    	    DoChangeGC (pGC, GCForeground, (XID *)&pixel, FALSE);
+    	    DoChangeGC (pGC, GCForeground, &pixel, FALSE);
     	    ValidateGC (pDrawable, pGC);
     	}
 	miFillUniqueSpanGroup (pDrawable, pGC, &spanData->bgGroup);
 	miFreeSpanGroup (&spanData->bgGroup);
     	if (pixel != oldPixel)
     	{
-	    DoChangeGC (pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	    DoChangeGC (pGC, GCForeground, &oldPixel, FALSE);
 	    ValidateGC (pDrawable, pGC);
     	}
     }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.15 93/12/13 17:22:08 dpw Exp $ */
+/* $XConsortium: cfbimage.c,v 1.16 94/01/07 09:42:24 dpw Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -67,7 +67,8 @@ cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     }
     else
     {
-	unsigned long	oldFg, oldBg, gcv[3];
+	unsigned long	oldFg, oldBg;
+	XID		gcv[3];
 	unsigned long	oldPlanemask;
 	unsigned long	i;
 	long		bytesPer;

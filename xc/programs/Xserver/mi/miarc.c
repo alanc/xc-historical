@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.46 93/09/18 10:14:01 dpw Exp $ */
+/* $XConsortium: miarc.c,v 5.47 93/10/12 11:41:08 dpw Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -1135,10 +1135,10 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	     iphase--)
 	{
 	    if (iphase == 1) {
-		DoChangeGC (pGC, GCForeground, (XID *)&bg, 0);
+		DoChangeGC (pGC, GCForeground, (XID *)&bg, 1);
 		ValidateGC (pDraw, pGC);
 	    } else if (pGC->lineStyle == LineDoubleDash) {
-		DoChangeGC (pGC, GCForeground, (XID *)&fg, 0);
+		DoChangeGC (pGC, GCForeground, (XID *)&fg, 1);
 		ValidateGC (pDraw, pGC);
 	    }
 	    for (i = 0; i < polyArcs[iphase].narcs; i++) {

@@ -1,4 +1,4 @@
-/* $XConsortium: cfbcmap.c,v 4.15 92/07/30 10:44:27 rws Exp $ */
+/* $XConsortium: cfbcmap.c,v 4.16 93/12/13 17:21:52 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -291,6 +291,7 @@ cfbCreateDefColormap(pScreen)
     unsigned short	zero = 0, ones = 0xFFFF;
     VisualPtr	pVisual;
     ColormapPtr	cmap;
+    Pixel wp, bp;
     
     for (pVisual = pScreen->visuals;
 	 pVisual->vid != pScreen->rootVisual;
@@ -302,11 +303,13 @@ cfbCreateDefColormap(pScreen)
 		       0)
 	!= Success)
 	return FALSE;
-    if ((AllocColor(cmap, &ones, &ones, &ones, &(pScreen->whitePixel), 0) !=
+    if ((AllocColor(cmap, &ones, &ones, &ones, &wp, 0) !=
        	   Success) ||
-    	(AllocColor(cmap, &zero, &zero, &zero, &(pScreen->blackPixel), 0) !=
+    	(AllocColor(cmap, &zero, &zero, &zero, &bp, 0) !=
        	   Success))
     	return FALSE;
+    pScreen->whitePixel = wp;
+    pScreen->blackPixel = bp;
     (*pScreen->InstallColormap)(cmap);
     return TRUE;
 }
@@ -468,7 +471,7 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
 	}
 	depth->depth = d;
 	depth->numVids = nvtype;
-	depth->vids = (unsigned long *) vid;
+	depth->vids = vid;
 	depth++;
 	for (i = 0; i < NUM_PRIORITY; i++) {
 	    if (! (vtype & (1 << cfbVisualPriority[i])))

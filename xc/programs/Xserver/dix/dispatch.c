@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.53 93/09/26 17:20:15 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.54 94/01/07 09:41:26 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1751,13 +1751,26 @@ ProcPolyFillArc(client)
     return (client->noClientException);
 }
 
+/* 64-bit server notes: the protocol restricts padding of images to
+ * 8-, 16-, or 32-bits. We would like to have 64-bits for the server
+ * to use internally. Removes need for internal alignment checking.
+ * All of the PutImage functions could be changed individually, but
+ * as currently written, they call other routines which require things
+ * to be 64-bit padded on scanlines, so we changed things here.
+ * If an image would be padded differently for 64- versus 32-, then
+ * copy each scanline to a 64-bit padded scanline.
+ * Also, we need to make sure that the image is aligned on a 64-bit
+ * boundary, even if the scanlines are padded to our satisfaction.
+ */
 int
 ProcPutImage(client)
     register ClientPtr client;
 {
-    register GC *pGC;
-    register DrawablePtr pDraw;
-    long length;
+    register	GC *pGC;
+    register	DrawablePtr pDraw;
+    long	length; 	/* length of scanline server padded */
+    long 	lengthProto; 	/* length of scanline protocol padded */
+    char	*tmpImage;
     REQUEST(xPutImageReq);
 
     REQUEST_AT_LEAST_SIZE(xPutImageReq);
@@ -1767,34 +1780,97 @@ ProcPutImage(client)
         if ((stuff->depth != 1) ||
 	    (stuff->leftPad >= screenInfo.bitmapScanlinePad))
             return BadMatch;
-        length = BitmapBytePad(stuff->width + stuff->leftPad);
+        length 	    = BitmapBytePad(stuff->width + stuff->leftPad);
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+        lengthProto = BitmapBytePadProto(stuff->width + stuff->leftPad);
+#endif
     }
     else if (stuff->format == XYPixmap)
     {
         if ((pDraw->depth != stuff->depth) || 
 	    (stuff->leftPad >= screenInfo.bitmapScanlinePad))
             return BadMatch;
-        length = BitmapBytePad(stuff->width + stuff->leftPad);
-	length *= stuff->depth;
+        length      = BitmapBytePad(stuff->width + stuff->leftPad);
+	length      *= stuff->depth;
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+        lengthProto = BitmapBytePadProto(stuff->width + stuff->leftPad);
+	lengthProto *= stuff->depth;
+#endif
     }
     else if (stuff->format == ZPixmap)
     {
         if ((pDraw->depth != stuff->depth) || (stuff->leftPad != 0))
             return BadMatch;
-        length = PixmapBytePad(stuff->width, stuff->depth);
+        length      = PixmapBytePad(stuff->width, stuff->depth);
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+        lengthProto = PixmapBytePadProto(stuff->width, stuff->depth);
+#endif
     }
     else
     {
 	client->errorValue = stuff->format;
         return BadValue;
     }
-    length *= stuff->height;
-    if ((((length + 3) >> 2) + (sizeof(xPutImageReq) >> 2)) != client->req_len)
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    /* handle 64 bit case where protocol may pad to 32 and we want 64 */
+    if ( length != lengthProto ) {
+	register int 	i;
+	char 		* stuffptr, /* pointer into protocol data */
+			* tmpptr;   /* new location to copy to */
+
+        if(!(tmpImage = (char *) ALLOCATE_LOCAL(length*stuff->height)))
+            return (BadAlloc);
+    
+	bzero(tmpImage,length*stuff->height);
+    
+	if ( stuff->format == XYPixmap ) {
+	    int lineBytes = BitmapBytePad(stuff->width + stuff->leftPad);
+	    int lineBytesProto = 
+		BitmapBytePadProto(stuff->width + stuff->leftPad);
+	    int depth = stuff->depth;
+
+	    stuffptr = (char *)&stuff[1];
+	    tmpptr = tmpImage;
+	    for ( i = 0; i < stuff->height*stuff->depth;
+	        stuffptr += lineBytesProto,tmpptr += lineBytes, i++) 
+	        memmove(tmpptr,stuffptr,lineBytesProto);
+	}
+	else {
+	    for ( i = 0,stuffptr = (char *)&stuff[1],tmpptr=tmpImage;
+	        i < stuff->height;
+	        stuffptr += lengthProto,tmpptr += length, i++) 
+	        memmove(tmpptr,stuffptr,lengthProto);
+	}
+    }
+
+    /* handle 64-bit case where stuff is not 64-bit aligned */
+    else if ((unsigned long)&stuff[1] & (sizeof(long)-1)) {
+        if(!(tmpImage = (char *) ALLOCATE_LOCAL(length*stuff->height)))
+            return (BadAlloc);
+	memmove(tmpImage,(char *)&stuff[1],length*stuff->height);
+    }
+    else
+	tmpImage = (char *)&stuff[1];
+#else
+    tmpImage = (char *)&stuff[1];
+    lengthProto = length;
+#endif /* INTERNAL_VS_EXTERNAL_PADDING */
+	
+    if (((((lengthProto * stuff->height) + 3) >> 2) + 
+	(sizeof(xPutImageReq) >> 2)) != client->req_len)
 	return BadLength;
+
     (*pGC->ops->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
 		  stuff->width, stuff->height, 
-		  stuff->leftPad, stuff->format, 
-		  (char *) &stuff[1]);
+		  stuff->leftPad, stuff->format, tmpImage);
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    /* free up our temporary space if used */
+    if (tmpImage != (char *)&stuff[1])
+        DEALLOCATE_LOCAL(tmpImage);
+#endif /* INTERNAL_VS_EXTERNAL_PADDING */
+
      return (client->noClientException);
 }
 
@@ -1806,6 +1882,10 @@ ProcGetImage(client)
     int			nlines, linesPerBuf;
     register int	height, linesDone;
     long		widthBytesLine, length;
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    long		widthBytesLineProto, lengthProto;
+    char 		* tmpImage;
+#endif
     Mask		plane;
     char		*pBuf;
     xGetImageReply	xgi;
@@ -1857,6 +1937,11 @@ ProcGetImage(client)
     {
 	widthBytesLine = PixmapBytePad(stuff->width, pDraw->depth);
 	length = widthBytesLine * height;
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	widthBytesLineProto = PixmapBytePadProto(stuff->width, pDraw->depth);
+	lengthProto 	    = widthBytesLineProto * height;
+#endif
     }
     else 
     {
@@ -1865,8 +1950,20 @@ ProcGetImage(client)
 	/* only planes asked for */
 	length = widthBytesLine * height *
 		 Ones(stuff->planeMask & (plane | (plane - 1)));
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	widthBytesLineProto = BitmapBytePadProto(stuff->width);
+	lengthProto = widthBytesLineProto * height *
+		 Ones(stuff->planeMask & (plane | (plane - 1)));
+#endif
     }
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    xgi.length = (lengthProto + 3) >> 2;
+#else
     xgi.length = (length + 3) >> 2;
+#endif
+
     if (widthBytesLine == 0 || height == 0)
 	linesPerBuf = 0;
     else if (widthBytesLine >= IMAGE_BUFSIZE)
@@ -1881,12 +1978,13 @@ ProcGetImage(client)
     if (linesPerBuf < height)
     {
 	/* we have to make sure intermediate buffers don't need padding */
-	while ((linesPerBuf > 1) && (length & 3))
+	while ((linesPerBuf > 1) &&
+	       (length & ((1 << LOG2_BYTES_PER_SCANLINE_PAD)-1)))
 	{
 	    linesPerBuf--;
 	    length -= widthBytesLine;
 	}
-	while (length & 3)
+	while (length & ((1 << LOG2_BYTES_PER_SCANLINE_PAD)-1))
 	{
 	    linesPerBuf++;
 	    length += widthBytesLine;
@@ -1894,6 +1992,16 @@ ProcGetImage(client)
     }
     if(!(pBuf = (char *) ALLOCATE_LOCAL(length)))
         return (BadAlloc);
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    /* check for protocol/server padding differences */
+    if ( widthBytesLine != widthBytesLineProto ) {
+    	if(!(tmpImage = (char *) ALLOCATE_LOCAL(length))) {
+    		DEALLOCATE_LOCAL(pBuf);
+        	return (BadAlloc);
+	}
+    }
+#endif
 
     WriteReplyToClient(client, sizeof (xGetImageReply), &xgi);
 
@@ -1915,13 +2023,34 @@ ProcGetImage(client)
 				         stuff->format,
 				         stuff->planeMask,
 				         (pointer) pBuf);
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	    /* for 64-bit server, convert image to pad to 32 bits */
+	    if ( widthBytesLine != widthBytesLineProto ) {
+		register char * bufPtr, * protoPtr;
+		register int i;
+
+		bzero(tmpImage,length);
+
+		for ( i=0,bufPtr=pBuf,protoPtr=tmpImage; i < nlines;
+		    bufPtr += widthBytesLine,protoPtr += widthBytesLineProto, 
+			i++)
+		    memmove(protoPtr,bufPtr,widthBytesLineProto);
+
+	        /* Note that this is NOT a call to WriteSwappedDataToClient,
+                   as we do NOT byte swap */
+	        (void)WriteToClient(client, 
+		    (int)(nlines * widthBytesLineProto), tmpImage);
+	    }
+	    else 
+#endif
 	    /* Note that this is NOT a call to WriteSwappedDataToClient,
                as we do NOT byte swap */
 	    (void)WriteToClient(client, (int)(nlines * widthBytesLine), pBuf);
 	    linesDone += nlines;
         }
     }
-    else
+    else /* XYPixmap */
     {
         for (; plane; plane >>= 1)
 	{
@@ -1939,6 +2068,28 @@ ProcGetImage(client)
 				                 stuff->format,
 				                 plane,
 				                 (pointer)pBuf);
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	    	    /* for 64-bit server, convert image to pad to 32 bits */
+	    	    if ( widthBytesLine != widthBytesLineProto ) {
+			register char * bufPtr, * protoPtr;
+			register int i;
+
+			bzero(tmpImage,length);
+
+			for ( i=0,bufPtr=pBuf,protoPtr=tmpImage; i < nlines;
+		    	      bufPtr += widthBytesLine,
+			      protoPtr += widthBytesLineProto, 
+			      i++)
+		    	    bcopy(bufPtr,protoPtr,widthBytesLineProto);
+
+		        /* Note: NOT a call to WriteSwappedDataToClient,
+		           as we do NOT byte swap */
+		        (void)WriteToClient(client, 
+				 (int)(nlines * widthBytesLineProto), tmpImage);
+	    	    }
+	    	    else 
+#endif
 		    /* Note: NOT a call to WriteSwappedDataToClient,
 		       as we do NOT byte swap */
 		    (void)WriteToClient(client, (int)(nlines * widthBytesLine),
@@ -1949,6 +2100,10 @@ ProcGetImage(client)
 	}
     }
     DEALLOCATE_LOCAL(pBuf);
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    if ( widthBytesLine != widthBytesLineProto ) 
+        DEALLOCATE_LOCAL(tmpImage);
+#endif
     return (client->noClientException);
 }
 
@@ -2320,7 +2475,7 @@ ProcAllocColorCells           (client)
 	xAllocColorCellsReply	accr;
 	int			npixels, nmasks, retval;
 	long			length;
-	unsigned long		*ppixels, *pmasks;
+	Pixel			*ppixels, *pmasks;
 
 	npixels = stuff->colors;
 	if (!npixels)
@@ -2381,7 +2536,7 @@ ProcAllocColorPlanes(client)
 	xAllocColorPlanesReply	acpr;
 	int			npixels, retval;
 	long			length;
-	unsigned long		*ppixels;
+	Pixel			*ppixels;
 
 	npixels = stuff->colors;
 	if (!npixels)
@@ -2403,7 +2558,7 @@ ProcAllocColorPlanes(client)
             return(BadAlloc);
 	if( (retval = AllocColorPlanes(client->index, pcmp, npixels,
 	    (int)stuff->red, (int)stuff->green, (int)stuff->blue,
-	    (int)stuff->contiguous, ppixels,
+	    (Bool)stuff->contiguous, ppixels,
 	    &acpr.redMask, &acpr.greenMask, &acpr.blueMask)) )
 	{
             DEALLOCATE_LOCAL(ppixels);
@@ -2444,7 +2599,7 @@ ProcFreeColors          (client)
 	    return(BadAccess);
 	count = ((client->req_len << 2)- sizeof(xFreeColorsReq)) >> 2;
 	retval =  FreeColors(pcmp, client->index, count,
-	    (unsigned long *)&stuff[1], stuff->planeMask);
+	    (Pixel *)&stuff[1], (Pixel)stuff->planeMask);
         if (client->noClientException != Success)
             return(client->noClientException);
         else
@@ -2548,7 +2703,7 @@ ProcQueryColors(client)
 	prgbs = (xrgb *)ALLOCATE_LOCAL(count * sizeof(xrgb));
 	if(!prgbs && count)
             return(BadAlloc);
-	if( (retval = QueryColors(pcmp, count, (unsigned long *)&stuff[1], prgbs)) )
+	if( (retval = QueryColors(pcmp, count, (Pixel *)&stuff[1], prgbs)) )
 	{
    	    if (prgbs) DEALLOCATE_LOCAL(prgbs);
 	    if (client->noClientException != Success)

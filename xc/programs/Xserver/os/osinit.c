@@ -21,12 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.44 93/09/25 18:14:44 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.45 93/09/26 21:14:27 rws Exp $ */
+
+#include <stdio.h>
 #include "X.h"
 #include "os.h"
 #include "osdep.h"
-#undef NULL
-#include <stdio.h>
 #include "Xos.h"
 
 #ifndef PATH_MAX

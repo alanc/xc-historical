@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.9 93/07/08 14:51:23 rws Exp $
+ * $XConsortium: saver.c,v 1.10 93/09/23 16:58:30 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -454,7 +454,7 @@ CreateSaverWindow (pScreen)
     pWin = CreateWindow (pSaver->wid, WindowTable[pScreen->myNum],
 			 pAttr->x, pAttr->y, pAttr->width, pAttr->height,
 			 pAttr->borderWidth, pAttr->class, 
-			 pAttr->mask, pAttr->values, 
+			 pAttr->mask, (XID *)pAttr->values, 
 			 pAttr->depth, serverClient, pAttr->visual, 
 			 &result);
     if (!pWin)

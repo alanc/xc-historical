@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuLock.c,v 1.10 93/09/03 14:43:11 rws Exp $
+ * $XConsortium: AuLock.c,v 1.11 93/09/17 11:02:17 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,9 +24,17 @@
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
 #endif
-extern long time ();
+#ifndef X_NOT_POSIX
+#include <unistd.h>
+#else
 extern unsigned	sleep ();
+#endif
 
 #if NeedFunctionPrototypes
 int
@@ -47,7 +55,7 @@ long	dead;
 #ifndef WIN32 /* XXX */
     char	creat_name[1025], link_name[1025];
     struct stat	statb;
-    long	now;
+    Time_t	now;
     int		creat_fd = -1;
 
     if (strlen (file_name) > 1022)
@@ -57,7 +65,7 @@ long	dead;
     (void) strcpy (link_name, file_name);
     (void) strcat (link_name, "-l");
     if (stat (creat_name, &statb) != -1) {
-	now = time ((long *) 0);
+	now = time ((Time_t *) 0);
 	/*
 	 * NFS may cause ctime to be before now, special
 	 * case a 0 deadtime to force lock removal

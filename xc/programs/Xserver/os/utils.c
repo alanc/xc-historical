@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.134 93/12/12 11:15:33 rob Exp $ */
+/* $XConsortium: utils.c,v 1.135 94/01/12 18:01:36 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -590,7 +590,7 @@ pointer client;
     if (p == NULL)
     {
 	char hname[1024], *hnameptr;
-	struct hostent *host, *gethostbyname();
+	struct hostent *host;
 	int len;
 
 	gethostname(hname, 1024);

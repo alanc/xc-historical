@@ -31,7 +31,7 @@ extern void miRegisterGCPrivateIndex(
 extern void miChangeGC(
 #if NeedFunctionPrototypes
     GCPtr  /*pGC*/,
-    BITS32 /*mask*/
+    unsigned long /*mask*/
 #endif
 );
 
@@ -78,7 +78,7 @@ extern void miCopyClip(
 extern void miCopyGC(
 #if NeedFunctionPrototypes
     GCPtr /*pGCSrc*/,
-    Mask  /*changes*/,
+    unsigned long /*changes*/,
     GCPtr /*pGCDst*/
 #endif
 );

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexDump.c,v 5.1 91/02/16 09:56:40 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,6 +34,12 @@ SOFTWARE.
  *	Notes:
  *
  */
+
+/*  some compilers don't like files that don't have any real code
+ *  in them, as is the case with this file if DUMP_ON is not
+ *  defined.  The following static is to appease such compilers.
+ */
+static int foo;
 
 #ifdef	DUMP_ON
 

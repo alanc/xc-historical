@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mfbply1rct.c,v 1.6 93/09/19 11:52:30 rws Exp $
+ * $XConsortium: mfbply1rct.c,v 1.7 94/01/12 18:05:12 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -218,8 +218,8 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
     	    }
 	    c = l & PIM;
 	    l -= c;
-	    l = l >> (PWSH - 2);
-	    addr = (PixelType *) (((char *) addrl) + l);
+	    l = l >> PWSH;
+	    addr = addrl + l;
 	    if (c + nmiddle < PPW)
 	    {
 	    	mask = SCRRIGHT (bits,c) ^ SCRRIGHT (bits,c+nmiddle);

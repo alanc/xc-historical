@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.59 93/09/20 20:22:59 dpw Exp $ */
+/* $XConsortium: mibstore.c,v 5.60 94/01/07 09:44:33 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2182,7 +2182,7 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
     GCPtr   	  	pGC;
     int	    	  	ts_x_origin,
 			ts_y_origin;
-    XID	    	  	gcvalues[4];
+    pointer    	  	gcvalues[4];
     unsigned long 	gcmask;
     xRectangle	  	*rects;
     BoxPtr  	  	pBox;
@@ -2268,20 +2268,20 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
 	    
 		if (backgroundState == BackgroundPixel)
 		{
-		    gcvalues[0] = (XID) background.pixel;
-		    gcvalues[1] = FillSolid;
+		    gcvalues[0] = (pointer) background.pixel;
+		    gcvalues[1] = (pointer)FillSolid;
 		    gcmask = GCForeground|GCFillStyle;
 		}
 		else
 		{
-		    gcvalues[0] = FillTiled;
-		    gcvalues[1] = (XID) background.pixmap;
+		    gcvalues[0] = (pointer)FillTiled;
+		    gcvalues[1] = (pointer) background.pixmap;
 		    gcmask = GCFillStyle|GCTile;
 		}
-		gcvalues[2] = ts_x_origin - pBackingStore->x;
-		gcvalues[3] = ts_y_origin - pBackingStore->y;
+		gcvalues[2] = (pointer)(ts_x_origin - pBackingStore->x);
+		gcvalues[3] = (pointer)(ts_y_origin - pBackingStore->y);
 		gcmask |= GCTileStipXOrigin|GCTileStipYOrigin;
-		DoChangeGC(pGC, gcmask, gcvalues, TRUE);
+		DoChangeGC(pGC, gcmask, (XID *)gcvalues, TRUE);
 		ValidateGC((DrawablePtr)pBackingStore->pBackingPixmap, pGC);
     
 		/*
@@ -2372,7 +2372,7 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
 {
     int		i;
     BITS32	gcmask;
-    XID		gcval[5];
+    pointer	gcval[5];
     xRectangle	*pRect;
     BoxPtr	pBox;
     WindowPtr	pWin;
@@ -2393,18 +2393,18 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
     }
     i = 0;
     gcmask = 0;
-    gcval[i++] = planeMask;
+    gcval[i++] = (pointer)planeMask;
     gcmask |= GCPlaneMask;
     if (state == BackgroundPixel)
     {
 	if (pGC->fgPixel != pixunion.pixel)
 	{
-	    gcval[i++] = (XID) pixunion.pixel;
+	    gcval[i++] = (pointer)pixunion.pixel;
 	    gcmask |= GCForeground;
 	}
 	if (pGC->fillStyle != FillSolid)
 	{
-	    gcval[i++] = (XID) FillSolid;
+	    gcval[i++] = (pointer)FillSolid;
 	    gcmask |= GCFillStyle;
 	}
     }
@@ -2412,27 +2412,27 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
     {
 	if (pGC->fillStyle != FillTiled)
 	{
-	    gcval[i++] = (XID) FillTiled;
+	    gcval[i++] = (pointer)FillTiled;
 	    gcmask |= GCFillStyle;
 	}
 	if (pGC->tileIsPixel || pGC->tile.pixmap != pixunion.pixmap)
 	{
-	    gcval[i++] = (XID) pixunion.pixmap;
+	    gcval[i++] = (pointer)pixunion.pixmap;
 	    gcmask |= GCTile;
 	}
 	if (pGC->patOrg.x != x)
 	{
-	    gcval[i++] = (XID) x;
+	    gcval[i++] = (pointer)x;
 	    gcmask |= GCTileStipXOrigin;
 	}
 	if (pGC->patOrg.y != y)
 	{
-	    gcval[i++] = (XID) y;
+	    gcval[i++] = (pointer)y;
 	    gcmask |= GCTileStipYOrigin;
 	}
     }
     if (gcmask)
-	DoChangeGC (pGC, gcmask, gcval, 1);
+	DoChangeGC (pGC, gcmask, (XID *)gcval, 1);
 
     if (pWin)
 	(*pWin->drawable.pScreen->DrawGuarantee) (pWin, pGC, GuaranteeVisBack);
@@ -3419,8 +3419,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 	XID vals[2];
 	vals[0] = pGC->patOrg.x - pWindowPriv->x;
 	vals[1] = pGC->patOrg.y - pWindowPriv->y;
-	DoChangeGC(pBackingGC, GCTileStipXOrigin|GCTileStipYOrigin, vals,
-		   TRUE);
+	DoChangeGC(pBackingGC, GCTileStipXOrigin|GCTileStipYOrigin, vals, 0);
     }
     pPriv->stateChanges = 0;
 
@@ -3437,7 +3436,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 					-pGC->clipOrg.x, -pGC->clipOrg.y);
 	    vals[0] = pGC->clipOrg.x - pWindowPriv->x;
 	    vals[1] = pGC->clipOrg.y - pWindowPriv->y;
-	    DoChangeGC(pBackingGC, GCClipXOrigin|GCClipYOrigin, vals, TRUE);
+	    DoChangeGC(pBackingGC, GCClipXOrigin|GCClipYOrigin, vals, 0);
 	    pScreenPriv = (miBSScreenPtr) 
 		pGC->pScreen->devPrivates[miBSScreenIndex].ptr;
 	    (* pScreenPriv->funcs->SetClipmaskRgn)
@@ -3448,7 +3447,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 	{
 	    vals[0] = -pWindowPriv->x;
 	    vals[1] = -pWindowPriv->y;
-	    DoChangeGC(pBackingGC, GCClipXOrigin|GCClipYOrigin, vals, TRUE);
+	    DoChangeGC(pBackingGC, GCClipXOrigin|GCClipYOrigin, vals, 0);
 	    (*pBackingGC->funcs->ChangeClip) (pBackingGC, CT_REGION, backingCompositeClip, 0);
 	}
 	pPriv->serialNumber = pDrawable->serialNumber;

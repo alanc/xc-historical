@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.32 93/12/13 17:20:56 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.33 94/01/12 17:55:49 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -673,7 +673,7 @@ extern Bool cfbCreateGC(
 extern void cfbValidateGC(
 #if NeedFunctionPrototypes
     GCPtr /*pGC*/,
-    Mask /*changes*/,
+    unsigned long /*changes*/,
     DrawablePtr /*pDrawable*/
 #endif
 );

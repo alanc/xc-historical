@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.13 93/09/17 18:26:41 gildea Exp $
+ * $XConsortium: fontdir.c,v 1.14 93/09/20 15:56:33 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -355,19 +355,6 @@ FontFileSaveString (s)
 }
 
 FontEntryPtr
-FontFileFindNameInDir(table, pat)
-{
-    return FontFileFindNameInScalableDir(table, pat, (FontScalablePtr)0);
-}
-
-int
-FontFileFindNamesInDir(table, pat, max, names)
-{
-    return FontFileFindNamesInScalableDir(table, pat, max, names,
-					  (FontScalablePtr)0);
-}
-
-FontEntryPtr
 FontFileFindNameInScalableDir(table, pat, vals)
     FontTablePtr    table;
     FontNamePtr	    pat;
@@ -412,6 +399,14 @@ FontFileFindNameInScalableDir(table, pat, vals)
 	    break;
     }
     return (FontEntryPtr)0;
+}
+
+FontEntryPtr
+FontFileFindNameInDir(table, pat)
+    FontTablePtr    table;
+    FontNamePtr	    pat;
+{
+    return FontFileFindNameInScalableDir(table, pat, (FontScalablePtr)0);
 }
 
 int
@@ -468,6 +463,17 @@ FontFileFindNamesInScalableDir(table, pat, max, names, vals)
 	    break;
     }
     return Successful;
+}
+
+int
+FontFileFindNamesInDir(table, pat, max, names)
+    FontTablePtr    table;
+    FontNamePtr	    pat;
+    int		    max;
+    FontNamesPtr    names;
+{
+    return FontFileFindNamesInScalableDir(table, pat, max, names,
+					  (FontScalablePtr)0);
 }
 
 /*

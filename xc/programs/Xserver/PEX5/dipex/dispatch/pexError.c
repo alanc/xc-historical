@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexError.c,v 5.1 91/02/16 09:56:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -27,3 +27,9 @@ SOFTWARE.
 
 /*++	PEXerror.c
  --*/
+
+/*  some compilers don't like files that don't have any real code
+ *  in them.  The following static is to appease such compilers.
+ */
+static int foo;
+

@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.12 92/12/23 17:35:19 rws Exp $ */
+/* $XConsortium: maskbits.c,v 1.13 94/01/12 18:04:03 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -562,7 +562,7 @@ PixelType partmasks[PPW][PPW] = {
       LONG2CHARS( 0x00000000 ), LONG2CHARS( 0x00000000 ), LONG2CHARS( 0x00000000 ), LONG2CHARS( 0x00000000 )},
 };
 #else /* PPW == 64 */
-unsigned long partmasks[WRDSZ][WRDSZ] = {
+unsigned long partmasks[PPW][PPW] = {
 	{
 		LONG2CHARS( 0xFFFFFFFFFFFFFFFF ),
 		LONG2CHARS( 0x8000000000000000 ),
@@ -5315,7 +5315,7 @@ PixelType partmasks[PPW][PPW] = {
       LONG2CHARS( 0X00000000 ), LONG2CHARS( 0x00000000 ), LONG2CHARS( 0x00000000 ), LONG2CHARS( 0x00000000 )},
 };
 #else /* PPW == 64 */
-unsigned long partmasks[WRDSZ][WRDSZ] = {
+unsigned long partmasks[PPW][PPW] = {
 	{
 		LONG2CHARS( 0xFFFFFFFFFFFFFFFF ),
 		LONG2CHARS( 0x0000000000000001 ),

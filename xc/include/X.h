@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: X.h,v 1.66 88/09/06 15:55:56 jim Exp $
+ *	$XConsortium: X.h,v 1.67 93/09/25 11:32:24 rws Exp $
  */
 
 /* Definitions for the X window system likely to be used by applications */
@@ -47,11 +47,12 @@ typedef unsigned long Atom;
 typedef unsigned long VisualID;
 typedef unsigned long Time;
 #else
-typedef unsigned int XID;
-typedef unsigned int Mask;
-typedef unsigned int Atom;
-typedef unsigned int VisualID;
-typedef unsigned int Time;
+#include <X11/Xmd.h>
+typedef CARD32 XID;
+typedef CARD32 Mask;
+typedef CARD32 Atom;
+typedef CARD32 VisualID;
+typedef CARD32 Time;
 #endif
 
 typedef XID Window;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbcmap.c,v 5.3 89/07/19 15:48:00 rws Exp $ */
+/* $XConsortium: mfbcmap.c,v 5.4 93/07/12 16:27:08 dpw Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
@@ -117,7 +117,7 @@ mfbCreateColormap(pMap)
     ScreenPtr	pScreen;
     unsigned short  red0, green0, blue0;
     unsigned short  red1, green1, blue1;
-    unsigned long   pix;
+    Pixel pix;
     
     pScreen = pMap->pScreen;
     if (pScreen->whitePixel == 0)

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.23 93/09/03 08:03:14 dpw Exp $ */
+/* $XConsortium: gc.c,v 5.24 93/09/20 16:48:08 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -73,7 +73,15 @@ ChangeGC(pGC, mask, pval)
    mask is a set of bits indicating which values to change.
    pval contains an appropriate value for each mask.
    fPointer is true if the values for tiles, stipples, fonts or clipmasks
-   are pointers instead of IDs.  
+   are pointers instead of IDs.  Note: if you are passing pointers you
+   MUST declare the array of values as type pointer!  Other data types
+   may not be large enough to hold pointers on some machines.  Yes,
+   this means you have to cast to (XID *) when you pass the array to
+   DoChangeGC.  Similarly, if you are not passing pointers (fPointer = 0) you
+   MUST declare the array as type XID (not unsigned long!), or again the wrong
+   size data type may be used.  I wish we could change the interface to accept
+   a union of (XID, pointer), but it's too late.
+
    if there is an error, the value is marked as changed 
    anyway, which is probably wrong, but infrequent.
 
@@ -81,6 +89,9 @@ NOTE:
 	all values sent over the protocol for ChangeGC requests are
 32 bits long
 */
+
+#define NEXTVAL(_type, _var) \
+    { if (fPointer) _var = (_type)*pPtr++; else _var = (_type)*pval++; }
 
 int
 DoChangeGC(pGC, mask, pval, fPointer)
@@ -93,6 +104,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
     register int 	error = 0;
     PixmapPtr 		pPixmap;
     BITS32		maskQ;
+    pointer		*pPtr = (pointer *)pval;
 
     pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
 
@@ -105,20 +117,23 @@ DoChangeGC(pGC, mask, pval, fPointer)
 	switch (index)
 	{
 	    case GCFunction:
-		if (/*((CARD8)*pval >= GXclear) &&*/ ((CARD8)*pval <= GXset))
-		    pGC->alu = (CARD8)*pval;
+	    {
+		CARD8 newalu;
+		NEXTVAL(CARD8, newalu);
+		if (newalu <= GXset)
+		    pGC->alu = newalu;
 		else
 		{
-		    clientErrorValue = (CARD8)*pval;
+		    clientErrorValue = newalu;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCPlaneMask:
-		pGC->planemask = *pval++;
+		NEXTVAL(unsigned long, pGC->planemask);
 		break;
 	    case GCForeground:
-		pGC->fgPixel = *pval++;
+		NEXTVAL(unsigned long, pGC->fgPixel);
 		/*
 		 * this is for CreateGC
 		 */
@@ -129,73 +144,88 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		}
 		break;
 	    case GCBackground:
-		pGC->bgPixel = *pval++;
+		NEXTVAL(unsigned long, pGC->bgPixel);
 		break;
 	    case GCLineWidth:		/* ??? line width is a CARD16 */
-		pGC->lineWidth = (CARD16)*pval;
-                pval++;
+		 NEXTVAL(CARD16, pGC->lineWidth);
 		break;
 	    case GCLineStyle:
-		if (/*((CARD8)*pval >= LineSolid) &&*/
-		    ((CARD8)*pval <= LineDoubleDash))
-		    pGC->lineStyle = (CARD8)*pval;
+	    {
+		unsigned int newlinestyle;
+		NEXTVAL(unsigned int, newlinestyle);
+		if (newlinestyle <= LineDoubleDash)
+		    pGC->lineStyle = newlinestyle;
 		else
 		{
-		    clientErrorValue = (CARD8)*pval;
+		    clientErrorValue = newlinestyle;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCCapStyle:
-		if (/*((CARD8)*pval >= CapNotLast) &&*/
-		    ((CARD8)*pval <= CapProjecting))
-		    pGC->capStyle = (CARD8)*pval;
+	    {
+		unsigned int newcapstyle;
+		NEXTVAL(unsigned int, newcapstyle);
+		if (newcapstyle <= CapProjecting)
+		    pGC->capStyle = newcapstyle;
 		else
 		{
-		    clientErrorValue = (CARD8)*pval;
+		    clientErrorValue = newcapstyle;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCJoinStyle:
-		if (/*((CARD8)*pval >= JoinMiter) &&*/
-		    ((CARD8)*pval <= JoinBevel))
-		    pGC->joinStyle = (CARD8)*pval;
+	    {
+		unsigned int newjoinstyle;
+		NEXTVAL(unsigned int, newjoinstyle);
+		if (newjoinstyle <= JoinBevel)
+		    pGC->joinStyle = newjoinstyle;
 		else
 		{
-		    clientErrorValue = (CARD8)*pval;
+		    clientErrorValue = newjoinstyle;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCFillStyle:
-		if (/*((CARD8)*pval >= FillSolid) &&*/
-		    ((CARD8)*pval <= FillOpaqueStippled))
-		    pGC->fillStyle = (CARD8)*pval;
+	    {
+		unsigned int newfillstyle;
+		NEXTVAL(unsigned int, newfillstyle);
+		if (newfillstyle <= FillOpaqueStippled)
+		    pGC->fillStyle = newfillstyle;
 		else
 		{
-		    clientErrorValue = (CARD8)*pval;
+		    clientErrorValue = newfillstyle;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCFillRule:
-		if (/*((CARD8)*pval >= EvenOddRule) &&*/
-		    ((CARD8)*pval <= WindingRule))
-		    pGC->fillRule = (CARD8)*pval;
+	    {
+		unsigned int newfillrule;
+		NEXTVAL(unsigned int, newfillrule);
+		if (newfillrule <= WindingRule)
+		    pGC->fillRule = newfillrule;
 		else
 		{
-		    clientErrorValue = (CARD8)*pval;
+		    clientErrorValue = newfillrule;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCTile:
-		if(fPointer)
-		    pPixmap = (PixmapPtr) *pval;
+	    {
+		XID newpix = 0;
+		if (fPointer)
+		{
+		    pPixmap = (PixmapPtr) *pPtr++;
+		}
 		else
-		    pPixmap = (PixmapPtr)LookupIDByType((CARD32)*pval, 
-							RT_PIXMAP);
+		{
+		    newpix = (XID)*pval++;
+		    pPixmap = (PixmapPtr)LookupIDByType(newpix,	RT_PIXMAP);
+		}
 		if (pPixmap)
 		{
 		    if ((pPixmap->drawable.depth != pGC->depth) ||
@@ -214,17 +244,23 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		}
 		else
 		{
-		    clientErrorValue = (CARD32)*pval;
+		    clientErrorValue = newpix;
 		    error = BadPixmap;
 		}
-		pval++;
 		break;
+	    }
 	    case GCStipple:
-		if(fPointer)
-		    pPixmap = (PixmapPtr) *pval;
+	    {
+		XID newstipple = 0;
+		if (fPointer)
+		{
+		    pPixmap = (PixmapPtr) *pPtr++;
+		}
 		else
-		    pPixmap = (PixmapPtr)LookupIDByType((CARD32)*pval, 
-							RT_PIXMAP);
+		{
+		    newstipple = (XID)*pval++;
+		    pPixmap = (PixmapPtr)LookupIDByType(newstipple, RT_PIXMAP);
+		}
 		if (pPixmap)
 		{
 		    if ((pPixmap->drawable.depth != 1) ||
@@ -242,29 +278,30 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		}
 		else
 		{
-		    clientErrorValue = (CARD32)*pval;
+		    clientErrorValue = newstipple;
 		    error = BadPixmap;
 		}
-		pval++;
 		break;
+	    }
 	    case GCTileStipXOrigin:
-		pGC->patOrg.x = (INT16)*pval;
-                pval++;
+		NEXTVAL(INT16, pGC->patOrg.x);
 		break;
 	    case GCTileStipYOrigin:
-		pGC->patOrg.y = (INT16)*pval;
-		pval++;
+		NEXTVAL(INT16, pGC->patOrg.y);
 		break;
 	    case GCFont:
-              {
+    	    {
 		FontPtr	pFont;
-
-
-		if(fPointer)
-		    pFont = (FontPtr) *pval;
+		XID newfont = 0;
+		if (fPointer)
+		{
+		    pFont = (FontPtr) *pPtr++;
+		}
 		else
-		    pFont = (FontPtr)LookupIDByType((CARD32)*pval, RT_FONT);
-
+		{
+		    newfont = (XID)*pval++;
+		    pFont = (FontPtr)LookupIDByType(newfont, RT_FONT);
+		}
 		if (pFont)
 		{
 		    pFont->refcnt++;
@@ -274,93 +311,97 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		 }
 		else
 		{
-		    clientErrorValue = *pval;
+		    clientErrorValue = newfont;
 		    error = BadFont;
 		}
-		pval++;
 		break;
-	      }
+	    }
 	    case GCSubwindowMode:
-		if (((CARD8)*pval == ClipByChildren) ||
-		    ((CARD8)*pval == IncludeInferiors))
-		    pGC->subWindowMode = (CARD8)*pval;
+	    {
+		unsigned int newclipmode;
+		NEXTVAL(unsigned int, newclipmode);
+		if (newclipmode <= IncludeInferiors)
+		    pGC->subWindowMode = newclipmode;
 		else
 		{
-		    clientErrorValue = (CARD8)*pval;
+		    clientErrorValue = newclipmode;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCGraphicsExposures:
-		if ((Bool)*pval == xFalse)
-		    pGC->graphicsExposures = FALSE;
-		else if ((Bool)*pval == xTrue)
-		    pGC->graphicsExposures = TRUE;
+    	    {
+		unsigned int newge;
+		NEXTVAL(unsigned int, newge);
+		if (newge <= xTrue)
+		    pGC->graphicsExposures = newge;
 		else
 		{
-		    clientErrorValue = (Bool)*pval;
+		    clientErrorValue = newge;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCClipXOrigin:
-		pGC->clipOrg.x = (INT16)(*pval);
-		pval++;
+		NEXTVAL(INT16, pGC->clipOrg.x);
 		break;
 	    case GCClipYOrigin:
-		pGC->clipOrg.y = (INT16)(*pval);
-		pval++;
+		NEXTVAL(INT16, pGC->clipOrg.y);
 		break;
 	    case GCClipMask:
-	      {
+	    {
 		Pixmap pid;
-		int	clipType;
+		int    clipType;
 
-		pid = (Pixmap) *pval;
-		if (pid == None)
+		if (fPointer)
 		{
-		    clipType = CT_NONE;
-		    pPixmap = NullPixmap;
+		    pPixmap = (PixmapPtr)*pPtr++;
 		}
 		else
 		{
-		    if(fPointer)
-			pPixmap = (PixmapPtr) *pval;
+		    pid = (Pixmap)*pval++;
+		    if (pid == None)
+		    {
+			clipType = CT_NONE;
+			pPixmap = NullPixmap;
+		    }
 		    else
 		        pPixmap = (PixmapPtr)LookupIDByType(pid, RT_PIXMAP);
-		    if (pPixmap)
-  		    {
-			if ((pPixmap->drawable.depth != 1) ||
-			    (pPixmap->drawable.pScreen != pGC->pScreen))
-			{
-			    error = BadMatch;
-			}
-			else
-			{
-			    clipType = CT_PIXMAP;
-			    pPixmap->refcnt++;
-			}
+		}
+
+		if (pPixmap)
+		{
+		    if ((pPixmap->drawable.depth != 1) ||
+			(pPixmap->drawable.pScreen != pGC->pScreen))
+		    {
+			error = BadMatch;
 		    }
 		    else
 		    {
-			clientErrorValue = pid;
-			error = BadPixmap;
+			clipType = CT_PIXMAP;
+			pPixmap->refcnt++;
 		    }
 		}
-		pval++;
+		else if (!fPointer && (pid != None))
+		{
+		    clientErrorValue = pid;
+		    error = BadPixmap;
+		}
 		if(error == Success)
 		{
 		    (*pGC->funcs->ChangeClip)(pGC, clipType,
 					      (pointer)pPixmap, 0);
 		}
 		break;
-	      }
+	    }
 	    case GCDashOffset:
-		pGC->dashOffset = (CARD16)*pval;
-		pval++;
+		NEXTVAL(INT16, pGC->dashOffset);
 		break;
 	    case GCDashList:
-		if ((CARD8) (*pval) == 4)
+	    {
+		CARD8 newdash;
+		NEXTVAL(CARD8, newdash);
+		if (newdash == 4)
 		{
 		    if (pGC->dash != DefaultDash)
 		    {
@@ -369,7 +410,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 			pGC->dash = DefaultDash;
 		    }
 		}
-		else if ((CARD8) (*pval) != 0)
+		else if (newdash != 0)
  		{
 		    unsigned char *dash;
 
@@ -380,37 +421,39 @@ DoChangeGC(pGC, mask, pval, fPointer)
 			    xfree(pGC->dash);
 			pGC->numInDashList = 2;
 			pGC->dash = dash;
-			dash[0] = (CARD8)(*pval);
-			dash[1] = (CARD8)(*pval);
+			dash[0] = newdash;
+			dash[1] = newdash;
 		    }
 		    else
 			error = BadAlloc;
 		}
  		else
 		{
-		   clientErrorValue = (CARD8)*pval;
+		   clientErrorValue = newdash;
 		   error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    case GCArcMode:
-		if (/*((CARD8)*pval >= ArcChord) &&*/
-		    ((CARD8)*pval <= ArcPieSlice))
-		    pGC->arcMode = (CARD8)*pval;
+	    {
+		unsigned int newarcmode;
+		NEXTVAL(unsigned int, newarcmode);
+		if (newarcmode <= ArcPieSlice)
+		    pGC->arcMode = newarcmode;
 		else
 		{
-		    clientErrorValue = (CARD8)*pval;
+		    clientErrorValue = newarcmode;
 		    error = BadValue;
 		}
-		pval++;
 		break;
+	    }
 	    default:
 		clientErrorValue = maskQ;
 		error = BadValue;
-		pval++;
 		break;
 	}
-    }
+    } /* end while mask && !error */
+
     if (pGC->fillStyle == FillTiled && pGC->tileIsPixel)
     {
 	if (!CreateDefaultTile (pGC))
@@ -422,6 +465,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
     (*pGC->funcs->ChangeGC)(pGC, maskQ);
     return error;
 }
+
+#undef NEXTVAL
 
 /* CreateGC(pDrawable, mask, pval, pStatus)
    creates a default GC for the given drawable, using mask to fill

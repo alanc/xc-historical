@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.29 93/12/13 17:26:11 dpw Exp $ */
+/* $XConsortium: maskbits.h,v 1.30 94/01/12 18:04:16 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -555,14 +555,14 @@ extern PixelType mask[];
 #endif
 
 #if GETLEFTBITS_ALIGNMENT == 1
-#define getleftbits(psrc, w, dst)	dst = *((PixelType *) psrc)
+#define getleftbits(psrc, w, dst)	dst = *((CARD32 *) psrc)
 #endif /* GETLEFTBITS_ALIGNMENT == 1 */
 
 #if GETLEFTBITS_ALIGNMENT == 2
 #define getleftbits(psrc, w, dst) \
     { \
 	if ( ((int)(psrc)) & 0x01 ) \
-		getbits( ((PixelType *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
+		getbits( ((CARD32 *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
 	else \
 		getbits(psrc, 0, w, dst);
     }
@@ -574,7 +574,7 @@ extern PixelType mask[];
 	int off, off_b; \
 	off_b = (off = ( ((int)(psrc)) & 0x03)) << 3; \
 	getbits( \
-		(PixelType *)( ((char *)(psrc)) - off), \
+		(CARD32 *)( ((char *)(psrc)) - off), \
 		(off_b), (w), (dst) \
 	       ); \
     }

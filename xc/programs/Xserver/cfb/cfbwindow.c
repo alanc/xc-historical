@@ -1,4 +1,4 @@
-/* $XConsortium: cfbwindow.c,v 5.17 93/12/13 17:22:41 dpw Exp $ */
+/* $XConsortium: cfbwindow.c,v 5.18 94/01/07 09:42:37 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.19 93/12/13 17:32:19 dpw Exp $ */
+/* $XConsortium: mibitblt.c,v 5.20 94/01/07 09:44:26 dpw Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -268,6 +268,9 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 #if BITMAP_SCANLINE_UNIT == 32
 #define OUT_TYPE CARD32
 #endif
+#if BITMAP_SCANLINE_UNIT == 64
+#define OUT_TYPE CARD64
+#endif
 
     OUT_TYPE		*pOut;
     int			delta;
@@ -360,7 +363,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     int		oldfill, i;
     unsigned long oldfg;
     int		*pwidth, *pwidthFirst;
-    XID		gcv[6];
+    pointer	gcv[6];
     PixmapPtr	pStipple, pPixmap;
     DDXPointRec	oldOrg;
     GCPtr	pGCT;
@@ -381,8 +384,8 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
 	return;
     }
     /* First set the whole pixmap to 0 */
-    gcv[0] = 0;
-    DoChangeGC(pGCT, GCBackground, gcv, 0);
+    gcv[0] = (pointer)0;
+    DoChangeGC(pGCT, GCBackground, (XID *)gcv, 1);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
     miClearDrawable((DrawablePtr)pPixmap, pGCT);
     ppt = pptFirst = (DDXPointPtr)ALLOCATE_LOCAL(h * sizeof(DDXPointRec));
@@ -428,14 +431,14 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     oldOrg = pGC->patOrg;
 
     /* Set a new stipple in the drawable */
-    gcv[0] = FillStippled;
-    gcv[1] = (long) pPixmap;
-    gcv[2] = dstx - srcx;
-    gcv[3] = dsty;
+    gcv[0] = (pointer)FillStippled;
+    gcv[1] = (pointer)pPixmap;
+    gcv[2] = (pointer)(dstx - srcx);
+    gcv[3] = (pointer)dsty;
 
     DoChangeGC(pGC,
              GCFillStyle | GCStipple | GCTileStipXOrigin | GCTileStipYOrigin,
-	     gcv, 1);
+	     (XID *)gcv, 1);
     ValidateGC(pDraw, pGC);
 
     /* Fill the drawable with the stipple.  This will draw the
@@ -450,8 +453,8 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
 
     /* Invert the tiling pixmap. This sets 0s for 1s and 1s for 0s, only
      * within the clipping region, the part outside is still all 0s */
-    gcv[0] = GXinvert;
-    DoChangeGC(pGCT, GCFunction, gcv, 0);
+    gcv[0] = (pointer)GXinvert;
+    DoChangeGC(pGCT, GCFunction, (XID *)gcv, 1);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
     (*pGCT->ops->CopyArea)((DrawablePtr)pPixmap, (DrawablePtr)pPixmap,
 			   pGCT, 0, 0, w + srcx, h, 0, 0);
@@ -460,10 +463,10 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
      * Now when we fill the drawable, we will fill in the "Background"
      * values */
     oldfg = pGC->fgPixel;
-    gcv[0] = (long) pGC->bgPixel;
-    gcv[1] = (long) oldfg;
-    gcv[2] = (long) pPixmap;
-    DoChangeGC(pGC, GCForeground | GCBackground | GCStipple, gcv, 1); 
+    gcv[0] = (pointer)pGC->bgPixel;
+    gcv[1] = (pointer)oldfg;
+    gcv[2] = (pointer)pPixmap;
+    DoChangeGC(pGC, GCForeground | GCBackground | GCStipple, (XID *)gcv, 1);
     ValidateGC(pDraw, pGC);
     /* PolyFillRect might have bashed the rectangle */
     rect.x = dstx;
@@ -475,15 +478,15 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     /* Now put things back */
     if(pStipple)
         pStipple->refcnt--;
-    gcv[0] = (long) oldfg;
-    gcv[1] = pGC->fgPixel;
-    gcv[2] = oldfill;
-    gcv[3] = (long) pStipple;
-    gcv[4] = oldOrg.x;
-    gcv[5] = oldOrg.y;
+    gcv[0] = (pointer)oldfg;
+    gcv[1] = (pointer)pGC->fgPixel;
+    gcv[2] = (pointer)oldfill;
+    gcv[3] = (pointer)pStipple;
+    gcv[4] = (pointer)oldOrg.x;
+    gcv[5] = (pointer)oldOrg.y;
     DoChangeGC(pGC, 
         GCForeground | GCBackground | GCFillStyle | GCStipple | 
-	GCTileStipXOrigin | GCTileStipYOrigin, gcv, 1);
+	GCTileStipXOrigin | GCTileStipYOrigin, (XID *)gcv, 1);
 
     ValidateGC(pDraw, pGC);
     /* put what we hope is a smaller clip region back in the scratch gc */
@@ -634,7 +637,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pDst)
 				   TRUE);
  
 	    /* alu is already GXCopy */
-	    gcv[0] = planeMask;
+	    gcv[0] = (XID)planeMask;
 	    DoChangeGC(pGC, GCPlaneMask, gcv, 0);
 	    ValidateGC((DrawablePtr)pPixmap, pGC);
 	}
@@ -706,7 +709,8 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     int			*pwidthFirst, *pwidth;
     RegionPtr		prgnSrc;
     BoxRec		box;
-    unsigned long	oldFg, oldBg, gcv[3];
+    unsigned long	oldFg, oldBg;
+    XID			gcv[3];
     unsigned long	oldPlanemask;
     unsigned long	i;
     long		bytesPer;
@@ -733,8 +737,8 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	oldPlanemask = pGC->planemask;
 	oldFg = pGC->fgPixel;
 	oldBg = pGC->bgPixel;
-	gcv[0] = ~0L;
-	gcv[1] = 0;
+	gcv[0] = (XID)~0;
+	gcv[1] = (XID)0;
 	DoChangeGC(pGC, GCForeground | GCBackground, gcv, 0);
 	bytesPer = (long)h * BitmapBytePad(w + leftPad);
 
@@ -742,16 +746,16 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	{
 	    if (i & oldPlanemask)
 	    {
-	        gcv[0] = i;
+	        gcv[0] = (XID)i;
 	        DoChangeGC(pGC, GCPlaneMask, gcv, 0);
 	        ValidateGC(pDraw, pGC);
 	        (*pGC->ops->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
 			         XYBitmap, (char *)pImage);
 	    }
 	}
-	gcv[0] = oldPlanemask;
-	gcv[1] = oldFg;
-	gcv[2] = oldBg;
+	gcv[0] = (XID)oldPlanemask;
+	gcv[1] = (XID)oldFg;
+	gcv[2] = (XID)oldBg;
 	DoChangeGC(pGC, GCPlaneMask | GCForeground | GCBackground, gcv, 0);
 	break;
 

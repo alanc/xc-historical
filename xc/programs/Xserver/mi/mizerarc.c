@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.33 92/04/21 19:05:01 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.34 92/05/22 17:44:26 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -709,7 +709,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     int numPts;
     Bool dospans;
     int *widths;
-    unsigned long fgPixel = pGC->fgPixel;
+    XID fgPixel = pGC->fgPixel;
     DashInfo dinfo;
 
     for (arc = parcs, i = narcs; --i >= 0; arc++)
@@ -826,7 +826,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 	    if ((pGC->fillStyle == FillSolid) ||
 		(pGC->fillStyle == FillStippled))
 	    {
-		DoChangeGC(pGC, GCForeground, (XID *)&fgPixel, 0);
+		DoChangeGC(pGC, GCForeground, &fgPixel, 0);
 		ValidateGC(pDraw, pGC);
 	    }
 	}
