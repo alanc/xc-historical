@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: pmp.h,v 1.3 87/10/30 12:59:33 swick Exp $
+ *	$XConsortium: pmp.h,v 1.4 88/09/06 17:20:25 jim Exp $
  */
 
 /* Written by Jose' J. Capo' */
@@ -64,7 +64,3 @@
 
 /* int long3sgn(long) */
 #define long3sgn(l)	(((l) > 0x800000 - 1)? (l) - 0x1000000 : (l))
-
-typedef enum _bool {FALSE, TRUE} bool;
-
-#define toggle_(b)	b = (b == TRUE)? FALSE: TRUE
