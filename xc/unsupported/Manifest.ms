@@ -1,5 +1,5 @@
 .\" Contrib manifest  -*- Nroff -*-
-.\" $XConsortium: Manifest.ms,v 1.5 94/06/13 15:52:51 gildea Exp $
+.\" $XConsortium: Manifest.ms,v 1.6 94/06/14 13:54:54 gildea Exp gildea $
 .\" #! troff -ms
 .nr PS 11
 .if n \{
@@ -149,7 +149,7 @@ Input Method server developers kit.
 Network Audio System, a
 network-transparent, client/server audio system.
 .DH 2 pcthreads
-POSIX pthreads to MACH cthreads ininterface routines
+POSIX pthreads to MACH cthreads interface routines
 .DH 2 PHIGS
 3D graphics library interface to PEX using the PHIGS bindings.
 .DH 2 tcl
