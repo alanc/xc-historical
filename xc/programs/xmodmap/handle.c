@@ -2,7 +2,7 @@
  * xmodmap - program for loading keymap definitions into server
  *
  * $Source: /usr/expo/X/src/clients/xmodmap/RCS/handle.c,v $
- * $Header: handle.c,v 1.4 88/07/11 14:29:42 jim Exp $
+ * $Header: handle.c,v 1.5 88/07/12 14:42:21 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1003,7 +1003,8 @@ int execute_work_queue ()
 	    else update_map = True;
 	    break;
 	  default:
-	    fprintf (stderr, "%s:  unknown opcode %d\n", op->generic.type);
+	    fprintf (stderr, "%s:  unknown opcode %d\n", 
+		     ProgramName, op->generic.type);
 	    break;
 	}
 	lastop = op->generic.type;
