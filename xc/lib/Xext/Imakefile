@@ -1,9 +1,9 @@
 #include <Library.tmpl>
 
-#if HasInputExtension || BuildPexClients
+#if BuildXInputLib || BuildPexClients
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-#if HasInputExtension
+#if BuildXInputLib
       XINPUTDIRS = xinput
 #endif
 #if BuildPexClients
