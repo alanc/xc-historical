@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 1.14 89/03/24 15:35:17 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 1.15 89/03/24 16:21:31 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -262,37 +262,36 @@ mfbChangeWindowAttributes(pWin, mask)
 		  pWin->PaintWindowBackground = mfbPaintWindowPR;
 		  pPrivWin->fastBackground = 0;
 	      }
-	      else
+	      else if ((pWin->backgroundTile->width <= 32) &&
+		       !(pWin->backgroundTile->width &
+			 (pWin->backgroundTile->width - 1)))
 	      {
-		  if(mfbPadPixmap(pWin->backgroundTile))
+		  if (pPrivWin->pRotatedBackground)
+		      mfbDestroyPixmap(pPrivWin->pRotatedBackground);
+		  pPrivWin->pRotatedBackground =
+		    mfbCopyPixmap(pWin->backgroundTile);
+		  if (pPrivWin->pRotatedBackground)
 		  {
-		      if (pPrivWin->pRotatedBackground)
-			  mfbDestroyPixmap(pPrivWin->pRotatedBackground);
-		      pPrivWin->pRotatedBackground =
-			mfbCopyPixmap(pWin->backgroundTile);
-		      if (pPrivWin->pRotatedBackground)
-		      {
-			  pPrivWin->fastBackground = 1;
-			  mfbXRotatePixmap(pPrivWin->pRotatedBackground,
-					   pWin->absCorner.x);
-			  mfbYRotatePixmap(pPrivWin->pRotatedBackground,
-					   pWin->absCorner.y);
-			  pPrivWin->oldRotate.x = pWin->absCorner.x;
-			  pPrivWin->oldRotate.y = pWin->absCorner.y;
-			  pWin->PaintWindowBackground = mfbPaintWindow32;
-		      }
-		      else
-		      {
-			  pPrivWin->fastBackground = 0;
-			  pWin->PaintWindowBackground = miPaintWindow;
-		      }
+		      pPrivWin->fastBackground = 1;
+		      mfbPadPixmap(pPrivWin->pRotatedBackground);
+		      mfbXRotatePixmap(pPrivWin->pRotatedBackground,
+				       pWin->absCorner.x);
+		      mfbYRotatePixmap(pPrivWin->pRotatedBackground,
+				       pWin->absCorner.y);
+		      pPrivWin->oldRotate.x = pWin->absCorner.x;
+		      pPrivWin->oldRotate.y = pWin->absCorner.y;
+		      pWin->PaintWindowBackground = mfbPaintWindow32;
 		  }
 		  else
 		  {
 		      pPrivWin->fastBackground = 0;
 		      pWin->PaintWindowBackground = miPaintWindow;
 		  }
-		  break;
+	      }
+	      else
+	      {
+		  pPrivWin->fastBackground = 0;
+		  pWin->PaintWindowBackground = miPaintWindow;
 	      }
 	      break;
 
@@ -302,20 +301,29 @@ mfbChangeWindowAttributes(pWin, mask)
 	      break;
 
 	  case CWBorderPixmap:
-	      if(mfbPadPixmap(pWin->borderTile))
+	      if ((pWin->borderTile->width <= 32) &&
+		  !(pWin->borderTile->width & (pWin->borderTile->width - 1)))
 	      {
-		  pPrivWin->fastBorder = 1;
-		  pPrivWin->oldRotate.x = pWin->absCorner.x;
-		  pPrivWin->oldRotate.y = pWin->absCorner.y;
 		  if (pPrivWin->pRotatedBorder)
 		      mfbDestroyPixmap(pPrivWin->pRotatedBorder);
-		  pPrivWin->pRotatedBorder =
-		    mfbCopyPixmap(pWin->borderTile);
-		  mfbXRotatePixmap(pPrivWin->pRotatedBorder,
-				   pWin->absCorner.x);
-		  mfbYRotatePixmap(pPrivWin->pRotatedBorder,
-				   pWin->absCorner.y);
-		  pWin->PaintWindowBorder = mfbPaintWindow32;
+		  pPrivWin->pRotatedBorder = mfbCopyPixmap(pWin->borderTile);
+		  if (pPrivWin->pRotatedBorder)
+		  {
+		      pPrivWin->fastBorder = 1;
+		      pPrivWin->oldRotate.x = pWin->absCorner.x;
+		      pPrivWin->oldRotate.y = pWin->absCorner.y;
+		      mfbPadPixmap(pPrivWin->pRotatedBorder);
+		      mfbXRotatePixmap(pPrivWin->pRotatedBorder,
+				       pWin->absCorner.x);
+		      mfbYRotatePixmap(pPrivWin->pRotatedBorder,
+				       pWin->absCorner.y);
+		      pWin->PaintWindowBorder = mfbPaintWindow32;
+		  }
+		  else
+		  {
+		      pPrivWin->fastBorder = 0;
+		      pWin->PaintWindowBorder = miPaintWindow;
+		  }
 	      }
 	      else
 	      {
