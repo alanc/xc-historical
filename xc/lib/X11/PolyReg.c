@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyReg.c,v 11.17 89/11/08 17:07:30 converse Exp $ */
+/* $XConsortium: XPolyReg.c,v 11.18 90/12/12 09:18:57 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -26,10 +26,10 @@ SOFTWARE.
 #define LARGE_COORDINATE 1000000
 #define SMALL_COORDINATE -LARGE_COORDINATE
 
+#include "Xlibint.h"
+#include "Xutil.h"
 #include "region.h"
 #include "poly.h"
-#include "Xlib.h"
-#include "Xutil.h"
 
 /*
  *     InsertEdgeInET
