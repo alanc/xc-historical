@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.51 90/04/26 15:55:52 converse Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.52 90/08/14 14:15:46 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -131,9 +131,9 @@ unsigned char c;
     XFontStruct *font = sink->text_sink.font;
     Position *tab;
 
-    if ( c == LF ) return(0);
+    if ( c == XawLF ) return(0);
 
-    if (c == TAB) {
+    if (c == XawTAB) {
 	/* Adjust for Left Margin. */
 	x -= ((TextWidget) XtParent(w))->text.margin.left;
 
@@ -150,11 +150,11 @@ unsigned char c;
 	return 0;
     }
 
-    if ( (nonPrinting = (c < (unsigned char) SP)) )
+    if ( (nonPrinting = (c < (unsigned char) XawSP)) )
 	if (sink->ascii_sink.display_nonprinting)
 	    c += '@';
 	else {
-	    c = SP;
+	    c = XawSP;
 	    nonPrinting = False;
 	}
 
@@ -249,7 +249,7 @@ XawTextPosition pos1, pos2;
 		j = 0;
 	    }
 	    buf[j] = blk.ptr[k];
-	    if (buf[j] == LF)	/* line feeds ('\n') are not printed. */
+	    if (buf[j] == XawLF)	/* line feeds ('\n') are not printed. */
 	        continue;
 
 	    else if (buf[j] == '\t') {
@@ -375,7 +375,7 @@ int *resHeight;			/* Height required. */
 	    XawTextSourceRead(source, index, &blk, toPos - fromPos);
 	c = blk.ptr[index - blk.firstPos];
 	*resWidth += CharWidth(w, fromx + *resWidth, c);
-	if (c == LF) {
+	if (c == XawLF) {
 	    index++;
 	    break;
 	}
@@ -420,12 +420,12 @@ int *resHeight;			/* Height required. */
 	c = blk.ptr[index - blk.firstPos];
 	*resWidth += CharWidth(w, fromx + *resWidth, c);
 
-	if ((c == SP || c == TAB) && *resWidth <= width) {
+	if ((c == XawSP || c == XawTAB) && *resWidth <= width) {
 	    whiteSpaceSeen = TRUE;
 	    whiteSpacePosition = index;
 	    whiteSpaceWidth = *resWidth;
 	}
-	if (c == LF) {
+	if (c == XawLF) {
 	    index++;
 	    break;
 	}
@@ -438,7 +438,7 @@ int *resHeight;			/* Height required. */
 	    *resWidth = whiteSpaceWidth;
 	}
     }
-    if (index == lastPos && c != LF) index = lastPos + 1;
+    if (index == lastPos && c != XawLF) index = lastPos + 1;
     *resPos = index;
     *resHeight = sink->text_sink.font->ascent +sink->text_sink.font->descent;
 }

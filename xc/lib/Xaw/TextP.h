@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.43 90/02/01 16:03:00 keith Exp $
+* $XConsortium: TextP.h,v 1.44 90/04/26 15:22:53 kit Exp $
 */
 
 
@@ -50,13 +50,13 @@ SOFTWARE.
 extern XtActionsRec textActionsTable[];
 extern Cardinal textActionsTableCount;
 
-#define LF	0x0a
-#define CR	0x0d
-#define TAB	0x09
-#define BS	0x08
-#define SP	0x20
-#define DEL	0x7f
-#define BSLASH	'\\'
+#define XawLF	0x0a
+#define XawCR	0x0d
+#define XawTAB	0x09
+#define XawBS	0x08
+#define XawSP	0x20
+#define XawDEL	0x7f
+#define XawBSLASH '\\'
 
 /* constants that subclasses may want to know */
 #define DEFAULT_TEXT_HEIGHT ((Dimension)~0)
