@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.125 89/06/16 19:34:49 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.126 89/08/22 17:29:28 jim Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -445,7 +445,11 @@ Widget XtNameToWidget(root, name)
 Display *XtDisplay(widget)
 	Widget widget;
 {
-	return widget->core.screen->display;
+    if (!XtIsWidget(widget))
+	widget = _XtWindowedAncestor(widget);
+
+    return widget->core.screen->display;
+
 }
 
 #undef XtScreen
@@ -453,7 +457,10 @@ Display *XtDisplay(widget)
 Screen *XtScreen(widget)
 	Widget widget;
 {
-	return widget->core.screen;
+    if (!XtIsWidget(widget))
+	widget = _XtWindowedAncestor(widget);
+
+    return widget->core.screen;
 }
 
 #undef XtWindow
@@ -461,7 +468,10 @@ Screen *XtScreen(widget)
 Window XtWindow(widget)
 	Widget widget;
 {
-	return widget->core.window;
+    if (!XtIsWidget(widget))
+	widget = _XtWindowedAncestor(widget);
+
+    return widget->core.window;
 }
 
 #undef XtSuperclass
@@ -504,6 +514,26 @@ Boolean XtIsSensitive(widget)
 	return widget->core.sensitive && widget->core.ancestor_sensitive;
 }
 
+/*
+ * Internal routine; must be called only after XtIsWidget returns false
+ */
+Widget _XtWindowedAncestor(object)
+	Widget object;
+{
+    for (object = XtParent(object); object && !XtIsWidget(object);)
+	object = XtParent(object);
+
+    if (object == NULL) {
+	String params = XtName(object);
+	Cardinal num_params = 1;
+	XtErrorMsg("noWidgetAncestor", "windowedAncestor", "XtToolkitError",
+   "Object \"%s\" does not have windowed ancestor for conversion arguments",
+		   &params, &num_params);
+    }
+
+    return object;
+}
+
 #undef XtParent
 
 Widget XtParent(widget)
@@ -512,3 +542,10 @@ Widget XtParent(widget)
 	return widget->core.parent;
 }
 
+#undef XtName
+
+String XtName(object)
+     Widget object;
+{
+    return XrmQuarkToString(object->core.xrm_name);
+}
