@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: wtree.c,v 1.12 91/01/09 17:46:19 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -427,6 +427,7 @@ Boolean recurse;
     int i;
     Arg args[1];
     char buf[30];
+    char *label;
 
     switch(type) {
     case ClassLabel:
@@ -448,6 +449,14 @@ Boolean recurse;
 	    sprintf(buf, "win: 0x%lx", node->window);
 	    
 	XtSetArg(args[0], XtNlabel, buf);
+	break;
+    case ToggleLabel:
+	XtSetArg(args[0], XtNlabel, &label);
+	XtGetValues(node->widget, args, ONE);
+	if (label && !strcmp(label, node->name))
+	    XtSetArg(args[0], XtNlabel, node->class);
+	else
+	    XtSetArg(args[0], XtNlabel, node->name);
 	break;
     default:
 	SetMessage(global_screen_data.info_label,

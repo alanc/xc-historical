@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editresP.h,v 1.9 91/04/04 21:35:20 gildea Exp $
+ * $XConsortium: editresP.h,v 1.10 91/07/08 12:35:21 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -71,7 +71,8 @@ extern void exit();
 typedef enum {LocalSendWidgetTree, LocalSetValues, LocalFindChild, 
 	      LocalFlashWidget, LocalGetGeometry, LocalGetResources}ResCommand;
 
-typedef enum {ClassLabel, NameLabel, IDLabel, WindowLabel} LabelTypes;
+typedef enum {ClassLabel, NameLabel, IDLabel, WindowLabel,
+	      ToggleLabel} LabelTypes;
 typedef enum {SelectWidget, SelectAll, SelectNone, SelectInvert, SelectParent, 
 	      SelectChildren,  SelectDescendants, SelectAncestors} SelectTypes;
 

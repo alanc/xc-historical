@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.10 91/07/09 09:39:49 rws Exp $
+ * $XConsortium: actions.c,v 1.11 91/07/09 11:50:28 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -54,7 +54,7 @@ static struct ActionValues select_values[] = {
     { "children", (int) SelectChildren },
     { "descendants", (int) SelectDescendants },
     { "parent", (int) SelectParent },
-    { "ancestors", (int) SelectAncestors },
+    { "ancestors", (int) SelectAncestors }
 };
 
 static struct  ActionValues label_values[] = {
@@ -62,6 +62,7 @@ static struct  ActionValues label_values[] = {
     { "class", (int) ClassLabel },
     { "id", (int) IDLabel },
     { "window", (int) WindowLabel },
+    { "toggle", (int) ToggleLabel }
 };
 
 static WNode * FindTreeNodeFromWidget();
