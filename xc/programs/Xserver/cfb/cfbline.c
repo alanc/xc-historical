@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.16 90/11/19 17:28:00 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.17 91/04/10 11:41:56 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -461,7 +461,6 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    {
 		unsigned long mask;
 		unsigned long scrbits;
-		extern int cfbmask[4];
 
 		mask = cfbmask[x2 & PIM];
 		addrl += (y2 * nlwidth) + (x2 >> PWSH);
@@ -773,7 +772,6 @@ dontStep:	;
 	    {
 		unsigned long	mask;
 		int		pix;
-		extern int	cfbmask[4];
 
 		pix = 0;
 		if (dashIndex & 1)
