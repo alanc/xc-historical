@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: svr4.cf,v 1.1 94/03/29 15:34:47 gildea Exp $
 /*
  * A default OS name
  */
@@ -100,8 +100,10 @@ XCOMM $XConsortium$
 /*
  * The TLI interface is more robust on most SVR4s, so it will be the default.
  */
+#if !defined(SunArchitecture)
 #ifndef ConnectionFlags
 #define ConnectionFlags	-DSTREAMSCONN -DUNIXCONN -DLOCALCONN
+#endif
 #endif
 
 #ifndef ManSuffix
