@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.2 89/09/04 16:02:51 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.3 89/09/09 19:03:31 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -62,7 +62,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     info.xorgo += pDraw->x;
     x = info.x;
     y = info.y;
-    yoffset = y * nlwidth;
+    yoffset = 0;
     k1 = info.k1;
     k3 = info.k3;
     a = info.a;
@@ -70,7 +70,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     d = info.d;
     dx1 = info.dx1;
     dy1 = info.dy1;
-    dyoffset = dy1 * nlwidth;
+    dyoffset = 0;
     mask = info.initialMask;
     if (!(arc->width & 1))
     {
@@ -84,23 +84,25 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     if ((mask == 0xf) && (info.startx < 0) &&
 	(arc->width == arc->height) && !(arc->width & 1))
     {
-	int xoffset = x * nlwidth;
-	char *yorghb = yorgb + (info.h * nlwidth);
-	int xorghp = info.xorg + info.h;
-	int xorghn = info.xorg - info.h;
+	int xoffset = nlwidth;
+	char *yorghb = yorgb + (info.h * nlwidth) + info.xorg;
+	char *yorgohb = yorghb - info.h;
 
+	yorgb += info.xorg;
+	yorgob += info.xorg;
+	yorghb += info.h;
 	while (1)
 	{
-	    *(yorgb + yoffset + info.xorg + x) = pixel;
-	    *(yorgb + yoffset + info.xorg - x) = pixel;
-	    *(yorgob - yoffset + info.xorg - x) = pixel;
-	    *(yorgob - yoffset + info.xorg + x) = pixel;
+	    *(yorgb + yoffset + x) = pixel;
+	    *(yorgb + yoffset - x) = pixel;
+	    *(yorgob - yoffset - x) = pixel;
+	    *(yorgob - yoffset + x) = pixel;
 	    if (a < 0)
 		break;
-	    *(yorghb - xoffset + xorghp - y) = pixel;
-	    *(yorghb - xoffset + xorghn + y) = pixel;
-	    *(yorghb + xoffset + xorghn + y) = pixel;
-	    *(yorghb + xoffset + xorghp - y) = pixel;
+	    *(yorghb - xoffset - y) = pixel;
+	    *(yorgohb - xoffset + y) = pixel;
+	    *(yorgohb + xoffset + y) = pixel;
+	    *(yorghb + xoffset - y) = pixel;
 	    b -= k1;
 	    x++;
 	    xoffset += nlwidth;
@@ -117,6 +119,8 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 		d -= a;
 	    }
 	}
+	yorgb -= info.xorg;
+	yorgob -= info.xorg;
 	x = info.w;
 	yoffset = info.h * nlwidth;
     }
