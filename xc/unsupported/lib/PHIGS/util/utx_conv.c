@@ -1,4 +1,4 @@
-/* $XConsortium: utx_conv.c,v 5.3 91/07/01 16:23:12 hersh Exp $ */
+/* $XConsortium: utx_conv.c,v 5.4 91/07/12 20:27:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2655,7 +2655,7 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		RHEADER(ExtFillAreaSet)->vertexAttribs & PEXGAEdges
 		    ? PEDGE_VISIBILITY : PEDGE_NONE;
 	    ed->fasd3.vflag = PEX_CONV_TO_VertexFlag(
-		RHEADER(ExtFillAreaSet)->vertexAttribs);
+		RHEADER(ExtFillAreaSet)->vertexAttribs &~PEXGAEdges);
 	    ed->fasd3.colr_model = 
 		PEX_CONV_PEX_COLOUR_TYPE(RHEADER(ExtFillAreaSet)->colourType);
 	    ed->fasd3.nfa =
