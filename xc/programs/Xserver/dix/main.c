@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.7 89/09/11 13:04:14 keith Exp $ */
+/* $XConsortium: main.c,v 5.8 89/09/21 19:22:06 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -228,7 +228,7 @@ main(argc, argv)
 		FatalError("failed to create root window");
 	}
 	InitInput(argc, argv);
-	if (InitAndStartDevices(argc, argv) != Success)
+	if (InitAndStartDevices() != Success)
 	    FatalError("failed to initialize core devices");
 
 	if (SetDefaultFontPath(defaultFontPath) != Success)
@@ -250,7 +250,7 @@ main(argc, argv)
 	/* Now free up whatever must be freed */
 	CloseDownExtensions();
 	FreeAllResources();
-	CloseDownDevices(argc, argv);
+	CloseDownDevices();
 	for (i = screenInfo.numScreens - 1; i >= 0; i--)
 	{
 	    FreeGCperDepth(i);
