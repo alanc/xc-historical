@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.63 94/03/09 10:53:30 matt Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.64 94/03/31 18:25:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -175,14 +175,13 @@ typedef struct {
 typedef void (*XtAllocateProc)(
 #if NeedFunctionPrototypes
     WidgetClass		/* widget_class */,
-    WidgetClass		/* constraint_class */,
+    Cardinal *		/* constraint_size */,
     Cardinal *		/* more_bytes */,
-    Widget		/* parent */,
     ArgList		/* args */,
     Cardinal *		/* num_args */,
     XtTypedArgList	/* typed_args */,
     Cardinal *		/* num_typed_args */,
-    Widget *		/* new_return */,
+    Widget *		/* widget_return */,
     XtPointer *		/* more_bytes_return */
 #endif
 );
