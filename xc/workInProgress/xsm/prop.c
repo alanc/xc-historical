@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: prop.c,v 1.1 94/08/17 19:25:52 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -128,10 +128,11 @@ List		*props;
 
 
 void
-SetProperty (client, theProp)
+SetProperty (client, theProp, freeIt)
 
 ClientRec	*client;
 SmProp		*theProp;
+Bool		freeIt;
 
 {
     List 	*pl;
@@ -221,7 +222,8 @@ SmProp		*theProp;
 	}
     }
 
-    SmFreeProperty (theProp);
+    if (freeIt)
+	SmFreeProperty (theProp);
 }
 
 
@@ -288,7 +290,7 @@ SmProp 		**props;
 
     for (i = 0; i < numProps; i++)
     {
-	SetProperty (client, props[i]);
+	SetProperty (client, props[i], True /* free it */);
     }
 
     free ((char *) props);
