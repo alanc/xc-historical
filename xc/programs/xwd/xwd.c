@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.41 88/09/20 23:38:19 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.42 89/03/31 08:31:18 jim Exp $";
 #endif
 
 /*%
@@ -179,6 +179,7 @@ Window_Dump(window, out)
     int header_size;
     int ncolors, i;
     char *win_name;
+    Bool got_win_name;
     XWindowAttributes win_info;
     XImage *image;
     int absx, absy, x, y;
@@ -215,8 +216,12 @@ Window_Dump(window, out)
     if (absy + height > dheight) width = dheight - absy;
 
     XFetchName(dpy, window, &win_name);
-    if (!win_name || !win_name[0])
-      win_name = "xwdump";
+    if (!win_name || !win_name[0]) {
+	win_name = "xwdump";
+	got_win_name = False;
+    } else {
+	got_win_name = True;
+    }
 
     /* sizeof(char) is included for the null string terminator. */
     win_name_size = strlen(win_name) + sizeof(char);
@@ -331,7 +336,7 @@ Window_Dump(window, out)
      * Free window name string.
      */
     if (debug) outl("xwd: Freeing window name string.\n");
-    free(win_name);
+    if (got_win_name) XFree(win_name);
 
     /*
      * Free image
