@@ -1,6 +1,6 @@
-/* $Header: XRegion.c,v 11.19 88/06/18 17:19:07 rws Exp $ */
+/* $Header: XRegion.c,v 11.20 88/07/05 16:46:56 rws Exp $ */
 /************************************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
@@ -233,54 +233,76 @@ XOffsetRegion(pRegion, x, y)
     pRegion->extents.y2 += y;
 }
 
-XShrinkRegion( r, dx, dy )
+/* 
+   Utility procedure Compress:
+   Replace r by the region r', where 
+     p in r' iff (Quantifer m <= dx) (p + m in r), and
+     Quantifier is Exists if grow is TRUE, For all if grow is FALSE, and
+     (x,y) + m = (x+m,y) if xdir is TRUE; (x,y+m) if xdir is FALSE.
+
+   Thus, if xdir is TRUE and grow is FALSE, r is replaced by the region
+   of all points p such that p and the next dx points on the same
+   horizontal scan line are all in r.  We do this using by noting
+   that p is the head of a run of length 2^i + k iff p is the head
+   of a run of length 2^i and p+2^i is the head of a run of length
+   k. Thus, the loop invariant: s contains the region corresponding
+   to the runs of length shift.  r contains the region corresponding
+   to the runs of length 1 + dxo & (shift-1), where dxo is the original
+   value of dx.  dx = dxo & ~(shift-1).  As parameters, s and t are
+   scratch regions, so that we don't have to allocate them on every
+   call.
+*/
+
+#define ZOpRegion(a,b,c) if (grow) XUnionRegion(a,b,c); \
+			 else XIntersectRegion(a,b,c)
+#define ZShiftRegion(a,b) if (xdir) XOffsetRegion(a,b,0); \
+			  else XOffsetRegion(a,0,b)
+#define ZCopyRegion(a,b) XUnionRegion(a,a,b)
+
+static void
+Compress(r, s, t, dx, xdir, grow)
+    Region r, s, t;
+    register unsigned dx;
+    register int xdir, grow;
+{
+    register unsigned shift = 1;
+
+    ZCopyRegion(r, s);
+    while (dx) {
+        if (dx & shift) {
+            ZShiftRegion(r, -shift);
+            ZOpRegion(r, s, r);
+            dx -= shift;
+            if (!dx) break;
+        }
+        ZCopyRegion(s, t);
+        ZShiftRegion(s, -shift);
+        ZOpRegion(s, t, s);
+        shift <<= 1;
+    }
+}
+
+#undef ZOpRegion
+#undef ZShiftRegion
+#undef ZCopyRegion
+
+XShrinkRegion(r, dx, dy)
     Region r;
     int dx, dy;
 {
-    int i,h,w;
-    float sx,sy;
-    int cx,cy,newcx,newcy;
-    BoxPtr rect;
+    Region s, t;
+    int grow;
 
-    /* figure out ratios */
-    h = r->extents.y2 - r->extents.y1;
-    w = r->extents.x2 - r->extents.x1;
-    sx = ((float)(w+dx))/w;
-    sy = ((float)(h+dy))/h;
-    rect = &(r->rects[0]);
-    for(i=0; i<r->numRects; i++)
-    {
-    	cx = (rect->x1 + rect->x2)/2;
-    	cy = (rect->y1 + rect->y2)/2;
-
-	/* shrink or expand box */
-    	rect->x1 = rect->x1 * sx;
-    	rect->x2 = rect->x2 * sx;
-    	rect->y1 = rect->y1 * sy;
-    	rect->y2 = rect->y2 * sy;
-
-	/* recenter box around old center */
-    	newcx = (rect->x1 + rect->x2)/2;
-    	newcy = (rect->y1 + rect->y2)/2;
-	rect->x1 = rect->x1 - (newcx - cx);
-	rect->x2 = rect->x2 - (newcx - cx);
-	rect->y1 = rect->y1 - (newcy - cy);
-	rect->y2 = rect->y2 - (newcy - cy);
-
-    	/* adjust for shrinkage problems */
-    	if ( dx < 0 )
-    	{
-    		if ( rect->x1 > cx ) rect->x1 = cx;
-    		if ( rect->x2 < cx ) rect->x2 = cx;
-    	}
-    	if ( dy < 0 )
-    	{
-    		if ( rect->y1 > cy ) rect->y1 = cy;
-    		if ( rect->y2 < cy ) rect->y2 = cy;
-    	}
-    	EXTENTS(rect,r);
-    	(rect)++;
-    }
+    if (!dx && !dy) return;
+    s = XCreateRegion();
+    t = XCreateRegion();
+    if (grow = (dx < 0)) dx = -dx;
+    if (dx) Compress(r, s, t, 2*dx, TRUE, grow);
+    if (grow = (dy < 0)) dy = -dy;
+    if (dy) Compress(r, s, t, 2*dy, FALSE, grow);
+    XOffsetRegion(r, dx, dy);
+    XDestroyRegion(s);
+    XDestroyRegion(t);
 }
 
 #ifdef notdef
