@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.43 89/04/03 19:23:57 keith Exp $ */
+/* $XConsortium: miexpose.c,v 1.44 89/04/04 14:00:35 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -121,8 +121,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 
 	    TsrcBox.x1 = srcx + pSrcWin->absCorner.x;
 	    TsrcBox.y1 = srcy + pSrcWin->absCorner.x;
-	    TsrcBox.x1 = TsrcBox.x1+width;
-	    TsrcBox.x1 = TsrcBox.y1+height;
+	    TsrcBox.x2 = TsrcBox.x1+width;
+	    TsrcBox.y2 = TsrcBox.y1+height;
 	    if (((*pscr->RectIn)(pSrcWin->clipList, &TsrcBox)) == rgnIN)
 		return NULL;
 	    prgnSrcClip = (*pscr->RegionCreate)(NullBox, 1);
