@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.36 92/05/28 13:03:13 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.37 92/05/28 13:08:18 rws Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -74,65 +74,60 @@ LintLibraryTarget(cfb,$(SRCS))
 NormalLintTarget($(SRCS))
 
 #ifdef LinkDirectory
-#define LinkDepSourceFile(file,dir)		@@\
-LinkSourceFile(file,dir)			@@\
-depend:: file					@@\
-clean::						@@\
-	$(RM) file
 
-LinkDepSourceFile(cfb.h,LinkDirectory)
-LinkDepSourceFile(cfbmap.h,LinkDirectory)
-LinkDepSourceFile(cfballpriv.c,LinkDirectory)
-LinkDepSourceFile(cfbbitblt.c,LinkDirectory)
-LinkDepSourceFile(cfbblt.c,LinkDirectory)
-LinkDepSourceFile(cfbbres.c,LinkDirectory)
-LinkDepSourceFile(cfbbresd.c,LinkDirectory)
-LinkDepSourceFile(cfbbstore.c,LinkDirectory)
-LinkDepSourceFile(cfbcmap.c,LinkDirectory)
-LinkDepSourceFile(cfbfillarc.c,LinkDirectory)
-LinkDepSourceFile(cfbfillrct.c,LinkDirectory)
-LinkDepSourceFile(cfbfillsp.c,LinkDirectory)
-LinkDepSourceFile(cfbgc.c,LinkDirectory)
-LinkDepSourceFile(cfbgetsp.c,LinkDirectory)
-LinkDepSourceFile(cfbhrzvert.c,LinkDirectory)
-LinkDepSourceFile(cfbimage.c,LinkDirectory)
-LinkDepSourceFile(cfbline.c,LinkDirectory)
-LinkDepSourceFile(cfb8line.c,LinkDirectory)
-LinkDepSourceFile(cfbmskbits.c,LinkDirectory)
-LinkDepSourceFile(cfbmskbits.h,LinkDirectory)
-LinkDepSourceFile(cfbpixmap.c,LinkDirectory)
-LinkDepSourceFile(cfbply1rct.c,LinkDirectory)
-LinkDepSourceFile(cfbpntwin.c,LinkDirectory)
-LinkDepSourceFile(cfbpolypnt.c,LinkDirectory)
-LinkDepSourceFile(cfbrrop.c,LinkDirectory)
-LinkDepSourceFile(cfbrrop.h,LinkDirectory)
-LinkDepSourceFile(cfbscrinit.c,LinkDirectory)
-LinkDepSourceFile(cfbsetsp.c,LinkDirectory)
-LinkDepSourceFile(cfbsolid.c,LinkDirectory)
-LinkDepSourceFile(cfbigblt8.c,LinkDirectory)
-LinkDepSourceFile(cfbglblt8.c,LinkDirectory)
-LinkDepSourceFile(cfbtegblt.c,LinkDirectory)
-LinkDepSourceFile(cfbtileodd.c,LinkDirectory)
-LinkDepSourceFile(cfbtile32.c,LinkDirectory)
-LinkDepSourceFile(cfbwindow.c,LinkDirectory)
-LinkDepSourceFile(cfbzerarc.c,LinkDirectory)
-LinkDepSourceFile(cfb8bit.h,LinkDirectory)
+LinkSourceFile(cfb.h,LinkDirectory)
+LinkSourceFile(cfbmap.h,LinkDirectory)
+LinkSourceFile(cfballpriv.c,LinkDirectory)
+LinkSourceFile(cfbbitblt.c,LinkDirectory)
+LinkSourceFile(cfbblt.c,LinkDirectory)
+LinkSourceFile(cfbbres.c,LinkDirectory)
+LinkSourceFile(cfbbresd.c,LinkDirectory)
+LinkSourceFile(cfbbstore.c,LinkDirectory)
+LinkSourceFile(cfbcmap.c,LinkDirectory)
+LinkSourceFile(cfbfillarc.c,LinkDirectory)
+LinkSourceFile(cfbfillrct.c,LinkDirectory)
+LinkSourceFile(cfbfillsp.c,LinkDirectory)
+LinkSourceFile(cfbgc.c,LinkDirectory)
+LinkSourceFile(cfbgetsp.c,LinkDirectory)
+LinkSourceFile(cfbhrzvert.c,LinkDirectory)
+LinkSourceFile(cfbimage.c,LinkDirectory)
+LinkSourceFile(cfbline.c,LinkDirectory)
+LinkSourceFile(cfb8line.c,LinkDirectory)
+LinkSourceFile(cfbmskbits.c,LinkDirectory)
+LinkSourceFile(cfbmskbits.h,LinkDirectory)
+LinkSourceFile(cfbpixmap.c,LinkDirectory)
+LinkSourceFile(cfbply1rct.c,LinkDirectory)
+LinkSourceFile(cfbpntwin.c,LinkDirectory)
+LinkSourceFile(cfbpolypnt.c,LinkDirectory)
+LinkSourceFile(cfbrrop.c,LinkDirectory)
+LinkSourceFile(cfbrrop.h,LinkDirectory)
+LinkSourceFile(cfbscrinit.c,LinkDirectory)
+LinkSourceFile(cfbsetsp.c,LinkDirectory)
+LinkSourceFile(cfbsolid.c,LinkDirectory)
+LinkSourceFile(cfbigblt8.c,LinkDirectory)
+LinkSourceFile(cfbglblt8.c,LinkDirectory)
+LinkSourceFile(cfbtegblt.c,LinkDirectory)
+LinkSourceFile(cfbtileodd.c,LinkDirectory)
+LinkSourceFile(cfbtile32.c,LinkDirectory)
+LinkSourceFile(cfbwindow.c,LinkDirectory)
+LinkSourceFile(cfbzerarc.c,LinkDirectory)
+LinkSourceFile(cfb8bit.h,LinkDirectory)
 #if PixelSize == 8
-LinkDepSourceFile(cfb8bit.c,LinkDirectory)
-LinkDepSourceFile(cfb8cppl.c,LinkDirectory)
-LinkDepSourceFile(cfbpush8.c,LinkDirectory)
-LinkDepSourceFile(cfbrctstp8.c,LinkDirectory)
-LinkDepSourceFile(cfbteblt8.c,LinkDirectory)
+LinkSourceFile(cfb8bit.c,LinkDirectory)
+LinkSourceFile(cfb8cppl.c,LinkDirectory)
+LinkSourceFile(cfbpush8.c,LinkDirectory)
+LinkSourceFile(cfbrctstp8.c,LinkDirectory)
+LinkSourceFile(cfbteblt8.c,LinkDirectory)
 #ifdef MipsArchitecture
-LinkDepSourceFile(stipmips.s,LinkDirectory)
+LinkSourceFile(stipmips.s,LinkDirectory)
 #endif
 #ifdef SparcArchitecture
-LinkDepSourceFile(stipsparc.s,LinkDirectory)
+LinkSourceFile(stipsparc.s,LinkDirectory)
 #endif
 #endif
 #if PixelSize == 32
 #ifdef SparcArchitecture
-LinkDepSourceFile(stipsparc32.s,LinkDirectory)
+LinkSourceFile(stipsparc32.s,LinkDirectory)
 #endif
 #endif
 #endif
