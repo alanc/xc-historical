@@ -118,34 +118,17 @@ typedef struct {
     unsigned char       rop;            /* reduction of rasterop to 1 of 3 */
     unsigned char       ropOpStip;      /* rop for opaque stipple */
     unsigned char       ropFillArea;    /*  == alu, rop, or ropOpStip */
-    short		fExpose;	/* callexposure handling ? */
-    short		freeCompClip;
-#ifdef CFBROTPIX
-    PixmapPtr		pRotatedTile;	/* tile/stipple  rotated to align with window */
-    PixmapPtr		pRotatedStipple;/* and using offsets */
-#endif
-    RegionPtr		pAbsClientRegion;/* client region in screen coords */
+    unsigned		fExpose:1;	/* callexposure handling ? */
+    unsigned		freeCompClip:1;
     RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     } cfbPrivGC;
 
 typedef cfbPrivGC	*cfbPrivGCPtr;
 
-/* freeCompositeClip values */
-#define REPLACE_CC	0		/* compsite clip is a copy of a
-					pointer, so it doesn't need to 
-					be freed; just overwrite it.
-					this happens if there is no
-					client clip and the gc is
-					clipped by children 
-					*/
-#define FREE_CC		1		/* composite clip is a real
-					   region that we need to free
-					*/
-
 /* private field of window */
 typedef struct {
-    int		fastBorder;	/* non-zero if border is 32 bits wide */
-    int		fastBackground;
+    unsigned	fastBorder:1;	/* non-zero if border is 32 bits wide */
+    unsigned	fastBackground:1;
     DDXPointRec	oldRotate;
     PixmapPtr	pRotatedBackground;
     PixmapPtr	pRotatedBorder;
