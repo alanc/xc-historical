@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: allcclrcll.m,v 1.10 92/06/11 16:14:35 rws Exp $
  */
 >>TITLE XAllocColorCells CH05
 Status
@@ -660,18 +660,25 @@ int j, cells;
 		trace("red_mask is %x", vp->red_mask);
 		trace("green_mask is %x", vp->green_mask);
 		trace("blue_mask is %x", vp->blue_mask);
-		if(!bitsubset(planeor1, vp->red_mask)) {
-			report("Planemasks in red subfield (0x%lx) were not subset of 0x%lx", planeor1, vp->red_mask);
-			FAIL;
-		} else
-			CHECK;
-		if(!bitsubset(planeor2, vp->green_mask)) {
-			report("Planemasks in green subfield (0x%lx) were not subset of 0x%lx", planeor2, vp->green_mask);
-			FAIL;
-		} else
-			CHECK;
-		if(!bitsubset(planeor3, vp->blue_mask)) {
-			report("Planemasks in blue subfield (0x%lx) were not subset of 0x%lx", planeor3, vp->blue_mask);
+		if(!((bitsubset(planeor1, vp->red_mask) &&
+		      bitsubset(planeor2, vp->green_mask) &&
+		      bitsubset(planeor3, vp->blue_mask)) ||
+		     (bitsubset(planeor1, vp->red_mask) &&
+		      bitsubset(planeor3, vp->green_mask) &&
+		      bitsubset(planeor2, vp->blue_mask)) ||
+		     (bitsubset(planeor2, vp->red_mask) &&
+		      bitsubset(planeor1, vp->green_mask) &&
+		      bitsubset(planeor3, vp->blue_mask)) ||
+		     (bitsubset(planeor2, vp->red_mask) &&
+		      bitsubset(planeor3, vp->green_mask) &&
+		      bitsubset(planeor1, vp->blue_mask)) ||
+		     (bitsubset(planeor3, vp->red_mask) &&
+		      bitsubset(planeor1, vp->green_mask) &&
+		      bitsubset(planeor2, vp->blue_mask)) ||
+		     (bitsubset(planeor3, vp->red_mask) &&
+		      bitsubset(planeor2, vp->green_mask) &&
+		      bitsubset(planeor1, vp->blue_mask)))) {
+			report("Planemasks (0x%lx, 0x%lx, 0x%lx) are not subsets of RGB masks (0x%lx, 0x%lx, 0x%lx)", planeor1, planeor2, planeor3, vp->red_mask, vp->green_mask, vp->blue_mask);
 			FAIL;
 		} else
 			CHECK;
@@ -692,7 +699,7 @@ int j, cells;
 		
 	}
 
-	CHECKPASS(6+nplanes);
+	CHECKPASS(4+nplanes);
 
 >>ASSERTION Bad A
 .ER BadColor 
