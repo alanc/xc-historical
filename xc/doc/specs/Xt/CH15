@@ -1,0 +1,287 @@
+.\" $XConsortium$
+.\"
+.\" Copyright 1994
+.\" Massachusetts Institute of Technology, Cambridge, Massachusetts.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for any
+.\" purpose and without fee is hereby granted, provided that the above copyright
+.\" notice appears in all copies and that both that copyright notice and this
+.\" permission notice appear in supporting documentation, and that the name of
+.\" M.I.T. not be used in in advertising or publicity pertaining
+.\" to distribution of the software without specific, written prior permission.
+.\" M.I.T makes no representations about the suitability of the
+.\" software described herein for any purpose.
+.\" It is provided ``as is'' without express or implied warranty.
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 15\fP\s-1
+
+\s+1\fBUsing the Intrinsics in a Multithreaded Environment\fP\s-1
+.sp 2
+.nr H1 15
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.LP
+.XS
+Chapter 15 \- Using the Intrinsics in a Multithreaded Environment
+.XE
+Subject to the limitations described below, any \*(tk function 
+may be used in multiple threads.
+
+.NH 2
+Initializing a Multithreaded \*(tk Application
+.XS
+\fB\*(SN Initializing a Multithreaded \*(tk Application\fP
+.XE
+.LP
+An application using \*(tk functions in multiple threads must 
+explicitly initialize the toolkit for multiple thread use by calling 
+.PN XtToolkitThreadInitialize
+any time before
+.PN XtAppInitialize
+(or
+.PN XtInitialize
+) or
+.PN XtCreateApplicationContext
+is called. 
+.IN "XtToolkitThreadInitialize" "" "@DEF@"
+.FD 0
+void XtToolkitThreadInitialize()
+.FN
+.LP
+If
+.PN XtToolkitThreadInitialize
+was previously called, it returns. 
+The application programmer must insure that two or more threads do
+not simultaneously attempt to call
+.PN XtToolkitThreadInitialize ;
+the effect of this is undefined.
+
+.NH 2
+Event Management in Multiple Threads
+.XS
+\fB\*(SN Event Management in Multiple Threads\fP
+.XE
+.LP
+If a thread gets blocked in 
+.PN XtAppMainLoop ,
+.PN XtAppNextEvent ,
+.PN XtAppPeekEvent , 
+or
+.PN XtAppProcessEvent ,
+(or their corresponding compatibility functions),
+it is ``pushed'' on a per application context ``stack''
+of blocked threads. 
+When there is input to process, a thread is ``popped'' off the stack
+and is allowed to read and process the input.  
+.LP
+For example, if an application programmer calls
+.PN XtAppNextEvent
+for a given application context from two or more distinct threads, 
+and if each of these calls gets blocked in
+.PN XtAppNextEvent
+due to an empty event queue,
+the thread to make the most recent function call will be the first
+one to complete the call, if and when an event arrives on the event queue.
+
+.NH 3
+\*(tk Functions Affected by Event Management in Multiple Threads
+.XS
+\fB\*(SN \*(tk Functions Affected by Event Management in Multiple Threads\fP
+.XE
+.LP
+The following \*(tk functions may (as in probability, not as in permission)
+not have any effect on threads blocked in 
+.PN XtAppMainLoop ,
+.PN XtAppNextEvent , 
+.PN XtAppPeekEvent ,
+or
+.PN XtAppProcessEvent ,
+until one of the blocked threads returns. 
+.LP	
+For exmaple, if, in a given application context,  thread A and thread B are 
+blocked in 
+.PN XtAppNextEvent ,
+and thread C successfully completes a call to 
+.PN XtOpenDisplay ,
+neither thread A nor thread B may start detecting events on 
+the new display connection until either thread A or thread B returns from
+.PN XtAppNextEvent .
+.LP
+The \*(tk functions in question are:
+.sp
+.IP
+.PN XtOpenDisplay ,
+.PN XtCloseDisplay ,
+.IP
+.PN XtAppAddTimeOut ,
+.PN XtRemoveTimeOut ,
+.IP
+.PN XtAppAddInput ,
+and
+.PN XtRemoveInput .
+
+.NH 3 
+Exit Flag in an Application Context and XtAppMainLoop
+.XS
+\fB\*(SN Exit Flag in an Application Context and XtAppMainLoop\fP
+.XE
+.LP
+If an application wants to cause
+.PN XtAppMainLoop
+to return when the current event dispatching is complete, it can use 
+.PN XtAppSetExitFlag .
+.IN "XtAppSetExitFlag" "" "@DEF@"
+.FD 0
+void XtAppSetExitFlag(\fIapp_context\fP)
+.br
+       XtAppContext \fIapp_context\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application.
+.LP
+The exit flag is checked at the bottom of the event loop in
+.PN XtAppMainLoop . 
+.sp
+.LP
+To get the exit flag, use
+.PN XtAppGetExitFlag .
+.IN "XtAppGetExitFlag" "" "@DEF@"
+.FD 0
+Boolean XtAppGetExitFlag(\fIapp_context\fP)
+.br
+      XtAppContext \fIapp_context\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application.
+
+.NH 2
+Destroying an Application Context
+.XS
+\fB\*(SN Destroying an Application Context\fP
+.XE
+.LP
+In an application with multiple threads, the recommended way of destroying
+an application context is to first call
+.PN XtAppSetExitFlag
+from a callback.
+This causes
+.PN XtAppMainLoop to return.
+If the programmers have their own event loop,
+they may check the exit flag at the bottom of their event loop.
+After exiting from the event loop and ensuring no other thread
+could be referring to the current application context,
+the programmer may call
+.PN XtDestroyApplicationContext .
+	
+.NH 2
+Locking \*(tk Data Structures
+.XS
+\*(SN Locking \*(tk Data Structures
+.XE
+.sp
+.LP
+To lock an application context and all widgets and displays in the 
+application context, use
+.PN XtAppLock .
+.IN "XtAppLock" "" "@DEF@"
+.FD 0
+void XtAppLock(\fIapp_context\fP)
+.br
+      XtAppContext \fIapp_context\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application.
+.sp
+.LP
+To unlock an application context and all widgets and displays in the 
+application context, use
+.PN XtAppUnlock .
+.IN "XtAppUnlock" "" "@DEF@"
+.FD 0
+void XtAppUnlock(\fIapp_context\fP)
+.br
+      XtAppContext \fIapp_context\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application.
+.LP
+A widget set which needs to lock any global data structures 
+within it should use the following functions:
+.sp
+.LP
+To lock all global data structures used within a widget set, use
+.PN XtProcessLock .
+.IN "XtProcessLock" "" "@DEF@"
+.FD 0
+void XtProcessLock()
+.FN
+This function may not be used by application programmers.
+.sp
+.LP 
+To unlock all global data structures used within a widget set, use
+.PN XtProcessUnlock .
+.IN "XtProcessUnlock" "" "@DEF@"
+.FD 0
+void XtProcessUnlock()
+.FN
+This function may not be used by application programmers.
+.sp
+.LP
+All \*(xI functions guarantee mutually exclusive access to
+critical \*(xI data. 
+Therefore, normally, the application programmer does not need call
+.PN XtAppLock 
+before calling an \*(xI function.
+However, if the application
+programmer needs to make a series of \*(xI function calls atomically, 
+such calls must be made within a matching pair of
+.PN XtAppLock
+and
+.PN XtAppUnlock .
+.LP
+The 
+.PN XtProcessLock
+and
+XtProcsssUnlock
+functions are used by the \*(xI to lock all global \*(tk data structures.
+These locks must be used to lock all global data structures
+within a widget set, too.
+.LP
+The application context and process locks are recursive.
+If a lock is acquired multiple times by the same calling thread,
+a reference count will be incremented.
+The lock must be unlocked a matching number of times
+by the thread before it can be acquired by another thread.
+
+.NH 2
+Avoiding Deadlock
+.XS
+\*(SN Avoiding Deadlock
+.XE
+.LP
+The order in which \*(tk locks are acquired is very important.
+The application and the widget set must acquire
+.PN XtAppLock
+before acquiring
+.PN XtProcessLock , 
+if both locks need to be acquired.
+All application-specific locks should be acquired either before or
+after \*(tk locks, in a consistent order.
+Violation of this rule may lead to a "deadlock" among application threads.
+
+.NH 2
+Resource Converters
+.XS
+\*(SN Resource Converters
+.XE
+.LP
+Applications and widget sets invoking resource converters must always
+ensure that they provide space for the converter to return its results.
+Failing to do so may result in the converter returning a pointer to
+static local data.
+In a multithreaded application, a race condition could easily result.
+.bp
