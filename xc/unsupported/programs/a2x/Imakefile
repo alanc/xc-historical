@@ -1,0 +1,4 @@
+        DEPLIBS = $(DEPXTESTLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XTESTLIB) $(XLIB)
+
+SimpleProgramTarget(a2x)
