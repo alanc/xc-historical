@@ -24,7 +24,7 @@ SOFTWARE.
 
 /*
  * $Source: /u1/X11/clients/xrefresh/RCS/xrefresh.c,v $
- * $Header: xrefresh.c,v 1.4 88/01/22 17:20:56 jim Locked $
+ * $Header: xrefresh.c,v 1.5 88/01/22 17:42:04 jim Locked $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
@@ -53,9 +53,9 @@ void Syntax ()
     fprintf (stderr, "    -black                  use BlackPixel\n");
     fprintf (stderr, "    -white                  use WhitePixel\n");
     fprintf (stderr, "    -solid colorname        use the color indicated\n");
-    fprintf (stderr, "    -background             use the root background\n");
+    fprintf (stderr, "    -root                   use the root background\n");
     fprintf (stderr, 
-"    -none                   no background (smooth refresh)\n");
+"    -none                   no background in window (smooth refresh)\n");
     fprintf (stderr, "where geometry may be specified as:\n");
     fprintf (stderr, "    =WxH+X+Y                old style geometry spec\n");
     fprintf (stderr, "    -geometry WxH+X+Y       or -g spec\n");
@@ -83,8 +83,37 @@ static char *copystring (s)
     return (retval);
 }
 
+/*
+ * The following is a hack until XrmParseCommand is ready.  It determines
+ * whether or not the given string is an abbreviation of the arg.
+ */
 
-enum e_action {doDefault, doBlack, doWhite, doSolid, doNone, doBackground};
+static Bool isabbreviation (arg, s, minslen)
+    char *arg;
+    char *s;
+    int minslen;
+{
+    int arglen;
+    int slen;
+
+    /* exact match */
+    if (strcmp (arg, s) == 0) return (True);
+
+    arglen = strlen (arg);
+    slen = strlen (s);
+
+    /* too long or too short */
+    if (slen >= arglen || slen < minslen) return (False);
+
+    /* abbreviation */
+    if (strncmp (arg, s, slen) == 0) return (True);
+
+    /* bad */
+    return (False);
+}
+
+
+enum e_action {doDefault, doBlack, doWhite, doSolid, doNone, doRoot};
 
 struct s_pair {
 	char *resource_name;
@@ -93,8 +122,9 @@ struct s_pair {
 	{ "Black", doBlack },
 	{ "White", doWhite },
 	{ "None", doNone },
-	{ "Background", doBackground },
+	{ "Root", doRoot },
 	{ NULL, doDefault }};
+
 
 main(argc, argv)
 int	argc;
@@ -122,37 +152,36 @@ char	*argv[];
 	char *arg = argv[i];
 
 	if (arg[0] == '-') {
-	    if (strcmp (arg, "-d") == 0 || strcmp (arg, "-display") == 0) {
+	    if (isabbreviation ("-display", arg, 2)) {
 		if (++i >= argc) Syntax ();
 		displayname = argv[i];
 		continue;
-	    } else if (strcmp (arg, "-g") == 0 || strcmp (arg, "-geom") == 0 ||
-		strcmp (arg, "-geometry") == 0) {
+	    } else if (isabbreviation ("-geometry", arg, 2)) {
 		if (++i >= argc) Syntax ();
 		geom = argv[i];
 		continue;
-	    } else if (strcmp (arg, "-black") == 0) {
+	    } else if (isabbreviation ("-black", arg, 2)) {
 		action = doBlack;
 		continue;
-	    } else if (strcmp (arg, "-white") == 0) {
+	    } else if (isabbreviation ("-white", arg, 2)) {
 		action = doWhite;
 		continue;
-	    } else if (strcmp (arg, "-solid") == 0) {
+	    } else if (isabbreviation ("-solid", arg, 2)) {
 		if (++i >= argc) Syntax ();
 		solidcolor = argv[i];
 		action = doSolid;
 		continue;
-	    } else if (strcmp (arg, "-none") == 0) {
+	    } else if (isabbreviation ("-none", arg, 2)) {
 		action = doNone;
 		continue;
-	    } else if (strcmp (arg, "-background") == 0) {
-		action = doBackground;
+	    } else if (isabbreviation ("-root", arg, 2)) {
+		action = doRoot;
 		continue;
 	    } else 
 		Syntax ();
-	} else if (arg[0] == '=')
+	} else if (arg[0] == '=')			/* obsolete */
 	    geom = arg;
-	else if (index (arg, ':') != NULL)
+	else if (index (arg, ':') != NULL)		/* obsolete */
 	    displayname = arg;
 	else 
 	    Syntax ();
@@ -270,7 +299,7 @@ char	*argv[];
 	    xswa.background_pixmap = None;
 	    mask |= CWBackPixmap;
 	    break;
-	case doBackground:
+	case doRoot:
 	    xswa.background_pixmap = ParentRelative;
 	    mask |= CWBackPixmap;
 	    break;

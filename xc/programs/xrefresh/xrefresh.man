@@ -34,7 +34,7 @@ a moment.
 Use a solid background of the specified color.  Try green.
 .PP
 .TP 10
-.B \-background
+.B \-root
 Use the root window background.
 .PP
 .TP 10
@@ -58,7 +58,7 @@ DISPLAY, and therefore this argument is not normally specified.
 .SH X DEFAULTS
 .PP
 .TP 8
-.B Black\fP, \fBWhite\fP, \fBSolid\fP, \fBNone\fP, \fBBackground
+.B Black\fP, \fBWhite\fP, \fBSolid\fP, \fBNone\fP, \fBRoot\fP
 Determines what sort of window background to use.
 .PP
 .TP 8
