@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.16 89/05/31 09:24:09 swick Exp $ */
+/* $XConsortium: FormP.h,v 1.17 89/07/21 01:51:27 kit Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -98,12 +98,17 @@ typedef struct _FormConstraintsPart {
  * Private contstraint resources.
  */
 
-    int         virtual_width, virtual_height; 
-
 /*
  * What the size of this child would be if we did not impose the 
  * constraint the width and height must be greater than zero (0).
  */
+    int         virtual_width, virtual_height; 
+
+/*
+ * Temporary Storage for children's new possible possition.
+ */
+
+    Position new_x, new_y;
 
     LayoutState	layout_state;	/* temporary layout state		*/
 } FormConstraintsPart;
