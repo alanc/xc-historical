@@ -1,5 +1,5 @@
 .\" Use eqn, tbl, and -ms
-.\" $XConsortium: Exp $
+.\" $XConsortium: protocol,v 1.15 89/09/06 13:21:54 keith Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -1565,7 +1565,7 @@ o	CARD8	\f7Authentication Name\fP
 p	CARD8	\f7Authentication Data\fP
 1	CARD8	Count of \f7Authorization Names\fP (q)
 2	CARD16	Length of first \f7Authorization Name\fP (q\s-2\d1\u\s+2)
-q\s-s\d1\u\s+2	CARD8	First \f7Authorization Name\fP
+q\s-2\d1\u\s+2	CARD8	First \f7Authorization Name\fP
 \&...		Other authorization names
 2	CARD16	Length of \f7Manufacturer Display ID\fP (r)
 r	CARD8	\f7Manufacturer Display ID\fP
