@@ -1,0 +1,15 @@
+XCOMM platform:  $XConsortium: Oki.cf,v 1.16 92/09/14 18:52:50 rws Exp $
+
+#define OSName			Unix System V/860 Release 4.0 Version 3
+XCOMM operating system:  OSName
+#define OSMajorVersion		4
+#define OSMinorVersion		3
+
+#define SystemV4		YES
+#define ExtraLibraries		-lnsl
+#define BootstrapCFlags		-DOki
+#define StandardDefines -DSVR4 -Di860
+#define DefaultCCOptions	-Xc
+#define BuildXimp		YES
+#define BuildServer             NO
+#include <sv4Lib.rules>
