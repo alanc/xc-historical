@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.115 89/09/08 17:20:27 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.116 89/09/13 14:41:51 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -481,7 +481,7 @@ Widget request, new;
   ctx->text.updateFrom = (XawTextPosition *) XtMalloc(ONE);
   ctx->text.updateTo = (XawTextPosition *) XtMalloc(ONE);
   ctx->text.numranges = ctx->text.maxranges = 0;
-  ctx->text.gc = DefaultGCOfScreen(XtScreen(ctx));
+  ctx->text.gc = DefaultGCOfScreen(XtScreen(ctx)); 
   ctx->text.hasfocus = FALSE;
   ctx->text.margin = ctx->text.r_margin; /* Strucure copy. */
   ctx->text.update_disabled = FALSE;
@@ -2122,28 +2122,38 @@ XRectangle * rect;
  * window, that it can.
  */
 
+/* ARGSUSED */
 static void
-ProcessExposeRegion(w, event)
+ProcessExposeRegion(w, event, region)
 Widget w;
 XEvent *event;
+Region region;			/* Unused. */
 {
-  TextWidget ctx = (TextWidget) w;
-  XRectangle expose, cursor;
-
-  expose.x = event->xexpose.x;
-  expose.y = event->xexpose.y;
-  expose.width = event->xexpose.width;
-  expose.height = event->xexpose.height;
-
-  _XawTextPrepareToUpdate(ctx);
-  UpdateTextInRectangle(ctx, &expose);
-  XawTextSinkGetCursorBounds(ctx->text.sink, &cursor);
-  if (RectanglesOverlap(&cursor, &expose)) {
-    SinkClearToBG(ctx->text.sink, (Position) cursor.x, (Position) cursor.y,
-		  (Dimension) cursor.width, (Dimension) cursor.height);
-    UpdateTextInRectangle(ctx, &cursor);
-  }
-  _XawTextExecuteUpdate(ctx);
+    TextWidget ctx = (TextWidget) w;
+    XRectangle expose, cursor;
+    
+    if (event->type == Expose) {
+	expose.x = event->xexpose.x;
+	expose.y = event->xexpose.y;
+	expose.width = event->xexpose.width;
+	expose.height = event->xexpose.height;
+    }
+    else {  /* Graphics Expose. */
+	expose.x = event->xgraphicsexpose.x;
+	expose.y = event->xgraphicsexpose.y;
+	expose.width = event->xgraphicsexpose.width;
+	expose.height = event->xgraphicsexpose.height;
+    }      
+    
+    _XawTextPrepareToUpdate(ctx);
+    UpdateTextInRectangle(ctx, &expose);
+    XawTextSinkGetCursorBounds(ctx->text.sink, &cursor);
+    if (RectanglesOverlap(&cursor, &expose)) {
+	SinkClearToBG(ctx->text.sink, (Position) cursor.x, (Position) cursor.y,
+		      (Dimension) cursor.width, (Dimension) cursor.height);
+	UpdateTextInRectangle(ctx, &cursor);
+    }
+    _XawTextExecuteUpdate(ctx);
 }
 
 /*
@@ -2760,7 +2770,7 @@ TextClassRec textClassRec = {
     /* num_ resource    */      XtNumber(resources),
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
-    /* compress_exposure*/      FALSE,
+    /* compress_exposure*/      XtExposeGraphicsExpose,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      TextDestroy,
