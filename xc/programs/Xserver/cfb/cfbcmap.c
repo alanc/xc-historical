@@ -28,6 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 #include "X.h"
+#include "Xproto.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "resource.h"
@@ -197,6 +198,89 @@ cfbInitializeColormap(pmap)
 	}
     }
     return TRUE;
+}
+
+/* When simulating DirectColor on PseudoColor hardware, multiple
+   entries of the colormap must be updated
+ */
+
+#define AddElement(mask) { \
+    pixel = red | green | blue; \
+    for (i = 0; i < nresult; i++) \
+  	if (outdefs[i].pixel == pixel) \
+    	    break; \
+    if (i == nresult) \
+    { \
+   	nresult++; \
+	outdefs[i].pixel = pixel; \
+	outdefs[i].flags = 0; \
+    } \
+    outdefs[i].flags |= (mask); \
+    outdefs[i].red = pmap->red[red >> pVisual->offsetRed].co.local.red; \
+    outdefs[i].green = pmap->green[green >> pVisual->offsetGreen].co.local.green; \
+    outdefs[i].blue = pmap->blue[blue >> pVisual->offsetBlue].co.local.blue; \
+}
+
+cfbExpandDirectColors (pmap, ndef, indefs, outdefs)
+    ColormapPtr	pmap;
+    int		ndef;
+    xColorItem	*indefs, *outdefs;
+{
+    int		    minred, mingreen, minblue;
+    register int    red, green, blue;
+    int		    maxred, maxgreen, maxblue;
+    int		    stepred, stepgreen, stepblue;
+    VisualPtr	    pVisual;
+    register int    pixel;
+    register int    nresult;
+    register int    i;
+
+    pVisual = pmap->pVisual;
+
+    stepred = 1 << pVisual->offsetRed;
+    stepgreen = 1 << pVisual->offsetGreen;
+    stepblue = 1 << pVisual->offsetBlue;
+    maxred = pVisual->redMask;
+    maxgreen = pVisual->greenMask;
+    maxblue = pVisual->blueMask;
+    nresult = 0;
+    for (;ndef--; indefs++)
+    {
+	if (indefs->flags & DoRed)
+	{
+	    red = indefs->pixel & pVisual->redMask;
+    	    for (green = 0; green <= maxgreen; green += stepgreen)
+    	    {
+	    	for (blue = 0; blue <= maxblue; blue += stepblue)
+	    	{
+		    AddElement (DoRed)
+	    	}
+    	    }
+	}
+	if (indefs->flags & DoGreen)
+	{
+	    green = indefs->pixel & pVisual->greenMask;
+    	    for (red = 0; red <= maxred; red += stepred)
+    	    {
+	    	for (blue = 0; blue <= maxblue; blue += stepblue)
+	    	{
+		    AddElement (DoGreen)
+	    	}
+    	    }
+	}
+	if (indefs->flags & DoBlue)
+	{
+	    blue = indefs->pixel & pVisual->blueMask;
+    	    for (red = 0; red <= maxred; red += stepred)
+    	    {
+	    	for (green = 0; green <= maxgreen; green += stepgreen)
+	    	{
+		    AddElement (DoBlue)
+	    	}
+    	    }
+	}
+    }
+    return nresult;
 }
 
 Bool
