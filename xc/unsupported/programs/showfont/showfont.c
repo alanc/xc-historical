@@ -1,25 +1,25 @@
-/* $XConsortium: showfont.c,v 1.5 91/09/07 13:32:20 keith Exp $ */
+/* $XConsortium: showfont.c,v 1.6 92/05/12 09:04:22 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 #include	<stdio.h>
 #include	<ctype.h>
@@ -41,11 +41,15 @@ int         pad = 8,
             bitmap_pad = 0,
             scan_unit = 8;
 
+/* set from bitmap_pad to ImageRect, ImageMaxWidth, or ImageMax */
+int	    bitmap_format;	
+
 int         bitorder = MSBFirst;
 int         byteorder = MSBFirst;
 int         first_ch = 0;
 int         end_ch = ~0;
 char       *cmd;
+Bool	    no_props = False;	/* -noprops: don't show font properties */
 
 static fsBitmapFormat make_format();
 static Bool extents_only = False;
@@ -53,7 +57,7 @@ static Bool extents_only = False;
 static void
 usage()
 {
-    fprintf(stderr, "%s: [-server servername] [-extents_only] [-l] [-m] [-L] -[M] [-unit #] [-pad #] [-bitmap_pad value] [-start first_char] [-end last_char] -fn fontname\n", cmd);
+    fprintf(stderr, "%s: [-server servername] [-extents_only] [-noprops] [-l] [-m] [-L] -[M] [-unit #] [-pad #] [-bitmap_pad value] [-start first_char] [-end last_char] -fn fontname\n", cmd);
     exit(0);
 }
 
@@ -86,6 +90,8 @@ main(argc, argv)
 		usage();
 	} else if (!strncmp(argv[i], "-ext", 4)) {
 	    extents_only = True;
+	} else if (!strncmp(argv[i], "-noprops", 7)) {
+	    no_props = True;
 	} else if (!strncmp(argv[i], "-l", 2)) {
 	    bitorder = LSBFirst;
 	} else if (!strncmp(argv[i], "-m", 2)) {
@@ -227,15 +233,18 @@ show_glyphs(fid, hdr, show_all, first, last)
 	            bpr,
 	            charwidth;
 
-	printf("char #%d ('%c')\n", ch + start,
-	       (isprint(ch + start) ? (char) (ch + start) : '?'));
+	printf("char #%d", ch + start);
+	if (isprint(ch + start))
+	    printf(" '%c'\n", (char) (ch + start));
+	else
+	    printf(" '\\%03o'\n", (ch + start)&0377);
 	show_char_info(&extents[ch]);
 	if (extents_only)
 	    continue;
 	if (offset != offsets[ch].position)
-	    fprintf(stderr, "offset mismatch 0x%x != 0x%x\n",
+	    fprintf(stderr, "offset mismatch: expected %d, got %d\n",
 		    offset, offsets[ch].position);
-	switch (bitmap_pad) {
+	switch (bitmap_format) {
 	case BitmapFormatImageRectMin:
 	    bottom = extents[ch].descent + extents[ch].ascent;
 	    charwidth = extents[ch].right - extents[ch].left;
@@ -251,14 +260,19 @@ show_glyphs(fid, hdr, show_all, first, last)
 	    break;
 	}
 
-	if (offsets[ch].length == 0) {
+	if (extents[ch].left == 0 &&
+	    extents[ch].right == 0 &&
+	    extents[ch].width == 0 &&
+	    extents[ch].ascent == 0 &&
+	    extents[ch].descent == 0)
+	{
 	    printf ("Nonexistent character\n");
 	    continue;
 	}
 	bpr = GLWIDTHBYTESPADDED(charwidth, scanpad);
 	if (offsets[ch].length != bottom * bpr) {
-	    fprintf (stderr, "length mismatch: %d != %d\n",
-			 bottom * bpr, offsets[ch].length);
+	    fprintf (stderr, "length mismatch: expected %d (%dx%d), got %d\n",
+			 bottom * bpr, bpr, bottom, offsets[ch].length);
 	}
 	offset = offsets[ch].position;
 	for (r = 0; r < bottom; r++) {
@@ -282,8 +296,8 @@ show_glyphs(fid, hdr, show_all, first, last)
 show_char_info(ci)
     fsCharInfo *ci;
 {
-    printf("Right: %d\tLeft: %d\tDescent: %d\tAscent: %d\tWidth: %d\n",
-	   ci->right, ci->left, ci->descent, ci->ascent, ci->width);
+    printf("Left: %-3d    Right: %-3d    Ascent: %-3d    Descent: %-3d    Width: %d\n",
+	   ci->left, ci->right, ci->ascent, ci->descent, ci->width);
 }
 
 show_info(fid, hdr, first, last)
@@ -312,10 +326,11 @@ show_info(fid, hdr, first, last)
     show_char_info(&hdr->min_bounds);
     printf("Max bounds: \n");
     show_char_info(&hdr->max_bounds);
-    printf("Font Ascent: %d\tFont Descent: %d\n",
+    printf("Font Ascent: %d  Font Descent: %d\n",
 	   hdr->font_ascent, hdr->font_descent);
 
-    show_props(&pi, po, pd);
+    if (!no_props)
+	show_props(&pi, po, pd);
     FSFree((char *) po);
     FSFree((char *) pd);
 }
@@ -390,21 +405,19 @@ make_format()
     }
     switch (bitmap_pad) {
     case 0:
-	format |= BitmapFormatImageRectMin;
-	bitmap_pad = BitmapFormatImageRectMin;
+	bitmap_format = BitmapFormatImageRectMin;
 	break;
     case 1:
-	format |= BitmapFormatImageRectMaxWidth;
-	bitmap_pad = BitmapFormatImageRectMaxWidth;
+	bitmap_format = BitmapFormatImageRectMaxWidth;
 	break;
     case 2:
-	format |= BitmapFormatImageRectMax;
-	bitmap_pad = BitmapFormatImageRectMax;
+	bitmap_format = BitmapFormatImageRectMax;
 	break;
     default:
 	fprintf(stderr, "bogus bitmap pad value: %d\n", bitmap_pad);
 	break;
     }
+    format |= bitmap_format;
 
     format |= (bitorder == MSBFirst) ? BitmapFormatBitOrderMSB :
 	BitmapFormatBitOrderLSB;
