@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.35 89/09/13 16:27:26 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.36 89/09/14 10:36:17 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -30,6 +30,7 @@ SOFTWARE.
 #ifndef _XtintrinsicI_h
 #define _XtintrinsicI_h
 
+#include "Xtos.h"
 #include "IntrinsicP.h"
 
 #include "Object.h"
@@ -154,6 +155,8 @@ extern int bcmp();
 #ifndef ERRORDB
 #define ERRORDB "/usr/lib/X11/XtErrorDB"
 #endif
+
+extern void _XtAllocError();
 
 #endif /* _XtintrinsicI_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
