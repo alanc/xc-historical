@@ -1,4 +1,4 @@
-/* $Header: windowstr.h,v 1.5 88/01/03 16:55:12 rws Locked $ */
+/* $Header: windowstr.h,v 1.6 88/01/04 07:30:47 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -36,13 +36,19 @@ SOFTWARE.
 #include "miscstruct.h"
 #include "Xprotostr.h"
 
+#define GuaranteeNothing	0
+#define GuaranteeVisBack	1
 
 typedef struct _BackingStore {
     RegionPtr obscured;
+    DDXPointRec oldAbsCorner;	    /* Screen origin of obscured region */
     void (* SaveDoomedAreas)();
-    void (* RestoreAreas)();
+    RegionPtr  (* RestoreAreas)();
+    void (* ExposeCopy)();  	    /* To handle GraphicsExpose */
     void (* TranslateBackingStore)(); /* to make bit gravity and backing
 					store work together */
+    void (* ClearToBackground)();
+    void (* DrawGuarantee)();
 } BackingStoreRec;
 
 /* 

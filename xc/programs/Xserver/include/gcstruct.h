@@ -1,4 +1,4 @@
-/* $Header: gcstruct.h,v 1.2 87/11/09 14:10:10 rws Exp $ */
+/* $Header: gcstruct.h,v 1.3 87/12/31 17:25:30 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,6 +52,7 @@ typedef struct _GCInterest {
 typedef struct _GC{
     ScreenPtr	pScreen;		
     pointer	devPriv;		/* private to the device */
+    pointer	devBackingStore;	/* private to backing store */
     int         depth;    
     unsigned long        serialNumber;
     GCInterestPtr	pNextGCInterest;
