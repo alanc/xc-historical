@@ -1,4 +1,4 @@
-/* $XConsortium: Xlocale.h,v 1.13 91/02/20 18:20:30 rws Exp $ */
+/* $XConsortium: Xlocale.h,v 1.1 91/02/20 22:20:01 rws Exp $ */
 
 #ifndef _XLOCALE_H_
 #define _XLOCALE_H_
@@ -27,4 +27,4 @@ _XFUNCPROTOEND
 #define NULL 0
 #endif
 
-#endif _XLOCALE_H_
+#endif /* _XLOCALE_H_ */
