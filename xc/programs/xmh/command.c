@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.18 89/02/02 13:04:35 swick Exp $";
+static char rcs_id[] = "$XConsortium: command.c,v 2.19 89/05/31 10:23:00 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -60,6 +60,7 @@ typedef struct _CommandStatus {
     struct _LastInput lastInput; /* must be second; ditto */
     int		child_pid;
     XtInputId	error_inputId;
+    int		output_pipe[2];
     int		error_pipe[2];
     char*	error_output;
     int		buf_size;
@@ -101,39 +102,60 @@ ChildDone()
 /* Execute the given command, and wait until it has finished.  While the
    command is executing, watch the X socket and cause Xlib to read in any
    incoming data.  This will prevent the socket from overflowing during
-   long commands. */
+   long commands.  Returns 0 if stderr empty, -1 otherwise. */
 
-DoCommand(argv, inputfile, outputfile)
+static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
   char **argv;			/* The command to execute, and its args. */
-  char *inputfile;		/* Input file for command. */
-  char *outputfile;		/* Output file for command. */
+  int inputfd;			/* Input stream for command. */
+  int outputfd;			/* Output stream; /dev/null if == -1 */
+  char **bufP;			/* output buffer ptr if outputfd == -2 */
+  int *lenP;			/* output length ptr if outputfd == -2 */
 {
+    int return_status;
     int old_stdin, old_stdout, old_stderr;
-    FILEPTR fin, fout, fnull = NULL;
     int pid;
     fd_set readfds, fds;
+    Boolean output_to_pipe = False;
     CommandStatus status = XtNew(CommandStatusRec);
     FD_ZERO(&fds);
     FD_SET(ConnectionNumber(theDisplay), &fds);
     DEBUG1("Executing %s ...", argv[0])
 
-    if (inputfile) {
-        old_stdin = dup(fileno(stdin));
-	fin = FOpenAndCheck(inputfile, "r");
-	(void) dup2(fileno(fin), fileno(stdin));
-	myfclose(fin);
+    if (inputfd != -1) {
+	old_stdin = dup(fileno(stdin));
+	(void) dup2(inputfd, fileno(stdin));
     }
 
-    old_stdout = dup(fileno(stdout));
-    if (outputfile) {
-	fout = FOpenAndCheck(outputfile, "w");
-	(void) dup2(fileno(fout), fileno(stdout));
-	myfclose(fout);
+    if (outputfd == -1) {
+	if (!app_resources.debug) { /* Throw away stdout. */
+	    outputfd = open( "/dev/null", O_WRONLY, 0 );
+	    old_stdout = dup(fileno(stdout));
+	    (void) dup2(outputfd, fileno(stdout));
+	    close(outputfd);
+	}
     }
-    else if (!app_resources.debug) { /* Throw away stdout. */
-	fnull = FOpenAndCheck("/dev/null", "w");
-	(void) dup2(fileno(fnull), fileno(stdout));
-	myfclose(fnull);
+    else if (outputfd == -2) {	/* make pipe */
+	if (pipe(status->output_pipe) /*failed*/) {
+	    SystemError( "couldn't re-direct standard output" );
+	    status->output_pipe[0]=0;
+	}
+	else {
+	    outputfd = status->output_pipe[1];
+	    old_stdout = dup(fileno(stdout));
+	    (void) dup2(status->output_pipe[1], fileno(stdout));
+	    FD_SET(status->output_pipe[0], &fds);
+#ifdef notdef
+	    status->output_inputId =
+		XtAddInput( output_pipe[0], (caddr_t)XtInputReadMask,
+			    ReadStdout, (caddr_t)status
+			   );
+#endif /*notdef*/
+	    output_to_pipe = True;
+	}
+    }
+    else {
+	old_stdout = dup(fileno(stdout));
+	(void) dup2(outputfd, fileno(stdout));
     }
 
     if (pipe(status->error_pipe) /*failed*/) {
@@ -150,7 +172,6 @@ DoCommand(argv, inputfile, outputfile)
 		        ReadStderr, (caddr_t)status
 		       );
 #endif /*notdef*/
-	fcntl(status->error_pipe[0], F_SETFL, FNDELAY);
     }
 
     childdone = FALSE;
@@ -160,11 +181,11 @@ DoCommand(argv, inputfile, outputfile)
     status->buf_size = 0;
     (void) signal(SIGCHLD, ChildDone);
     pid = vfork();
-    if (inputfile) {
+    if (inputfd != -1) {
 	if (pid != 0) dup2(old_stdin,  fileno(stdin));
 	close(old_stdin);
     }
-    if (outputfile || !app_resources.debug) {
+    if (outputfd != -1) {
 	if (pid != 0) dup2(old_stdout, fileno(stdout));
 	close(old_stdout);
     }
@@ -186,12 +207,18 @@ DoCommand(argv, inputfile, outputfile)
 	    readfds = fds;
 	    (void) select(num_fds, (int *) &readfds,
 			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
+	    if (output_to_pipe && FD_ISSET(status->output_pipe[0], &readfds)) {
+		CheckReadFromPipe( status->output_pipe[0], bufP, lenP );
+	    }
 	    if (FD_ISSET(status->error_pipe[0], &readfds)) {
 		CheckReadFromPipe( status->error_pipe[0],
 				   &status->error_output,
 				   &status->buf_size
 				  );
 	    }
+	}
+	if (output_to_pipe && FD_ISSET(status->output_pipe[0], &readfds)) {
+	    CheckReadFromPipe( status->output_pipe[0], bufP, lenP );
 	}
 	CheckReadFromPipe( status->error_pipe[0],
 			   &status->error_output,
@@ -206,6 +233,14 @@ DoCommand(argv, inputfile, outputfile)
 #endif /*notdef*/
 
 	DEBUG(" done\n")
+	if (output_to_pipe) {
+	    close( status->output_pipe[0] );
+	    close( status->output_pipe[1] );
+	}
+	if (status->error_pipe[0]) {
+	    close( status->error_pipe[0] );
+	    close( status->error_pipe[1] );
+	}
 	if (status->error_output != NULL) {
 	    while (status->error_output[status->buf_size-1]  == '\0')
 		status->buf_size--;
@@ -213,15 +248,19 @@ DoCommand(argv, inputfile, outputfile)
 		status->error_output[--status->buf_size] = '\0';
 	    DEBUG1( "stderr = \"%s\"\n", status->error_output );
 	    PopupNotice( status->error_output, FreeStatus, (Pointer)status );
+	    return_status = -1;
 	}
 	else {
 	    FreeStatus( (Widget)NULL, (Pointer)status, (Pointer)NULL );
+	    return_status = 0;
 	}
     } else {			/* We're the child process. */
 	(void) execv(FullPathOfCommand(argv[0]), argv);
 	(void) execvp(argv[0], argv);
 	Punt("Execvp failed!");
+	return_status = -1;
     }
+    return return_status;
 }
 
 
@@ -274,7 +313,38 @@ static void FreeStatus( w, closure, call_data )
     XtFree( closure );
 }
 
+/* Execute the given command, waiting until it's finished.  Put the output
+   in the specified file path.  Returns 0 if stderr empty, -1 otherwise */
 
+DoCommand(argv, inputfile, outputfile)
+  char **argv;			/* The command to execute, and its args. */
+  char *inputfile;		/* Input file for command. */
+  char *outputfile;		/* Output file for command. */
+{
+    int fd_in, fd_out;
+    int status;
+
+    if (inputfile != NULL) {
+	FILEPTR file = FOpenAndCheck(inputfile, "r");
+	fd_in = dup(fileno(file));
+	myfclose(file);
+    }
+    else
+	fd_in = -1;
+
+    if (outputfile) {
+	FILEPTR file = FOpenAndCheck(outputfile, "w");
+	fd_out = dup(fileno(file));
+	myfclose(file);
+    }
+    else
+	fd_out = -1;
+
+    status = _DoCommandToFileOrPipe( argv, fd_in, fd_out, NULL, NULL );
+    if (fd_in != -1) close(fd_in);
+    if (fd_out != -1) close(fd_out);
+    return status;
+}
 
 /* Execute the given command, waiting until it's finished.  Put the output
    in a newly mallocced string, and return a pointer to that string. */
@@ -282,58 +352,15 @@ static void FreeStatus( w, closure, call_data )
 char *DoCommandToString(argv)
 char ** argv;
 {
-    char *result;
-    char *file;
-    int fid, length;
-    file = DoCommandToFile(argv);
-    length = GetFileLength(file);
-    result = XtMalloc((unsigned) length + 1);
-    fid = myopen(file, O_RDONLY, 0666);
-    if (length != read(fid, result, length))
-	Punt("Couldn't read result from DoCommandToString");
-    result[length] = 0;
+    char *result = NULL;
+    int len = 0;
+    _DoCommandToFileOrPipe( argv, -1, -2, &result, &len );
+    if (result == NULL) result = XtMalloc(1);
+    result[len] = '\0';
     DEBUG1("('%s')\n", result)
-    (void) myclose(fid);
-    DeleteFileAndCheck(file);
     return result;
 }
     
-
-#ifdef NOTDEF	/* This implementation doesn't work right on null return. */
-char *DoCommandToString(argv)
-  char **argv;
-{
-    static char result[1030];
-    int fildes[2], pid, l;
-    DEBUG1("Executing %s ...", argv[0])
-    (void) pipe(fildes);
-    pid = vfork();
-    if (pid == -1) Punt("Couldn't fork!");
-    if (pid) {
-#ifdef SYSV
-        while (wait((int *) 0) == -1) ;
-#else /* !SYSV */
-	while (wait((union wait *) 0) == -1) ;
-#endif /* !SYSV */
-	l = read(fildes[0], result, 1024);
-	if (l <= 0) Punt("Couldn't read result from DoCommandToString");
-	(void) myclose(fildes[0]);
-	result[l] = 0;
-	while (result[--l] == 0) ;
-	while (result[l] == '\n') result[l--] = 0;
-	DEBUG1(" done: '%s'\n", result)
-	return result;
-    } else {
-	(void) dup2(fildes[1], fileno(stdout));
-	(void) execv(FullPathOfCommand(argv[0]), argv);
-	(void) execvp(argv[0], argv);
-	Punt("Execvp failed!");
-	return NULL;
-    }
-}
-#endif NOTDEF
-
-
 
 /* Execute the command to a temporary file, and return the name of the file. */
 
@@ -341,7 +368,13 @@ char *DoCommandToFile(argv)
   char **argv;
 {
     char *name;
+    FILEPTR file;
+    int fd;
     name = MakeNewTempFileName();
-    DoCommand(argv, (char *) NULL, name);
+    file = FOpenAndCheck(name, "w");
+    fd = dup(fileno(file));
+    myfclose(file);
+    _DoCommandToFileOrPipe(argv, -1, fd, NULL, NULL);
+    close(fd);
     return name;
 }
