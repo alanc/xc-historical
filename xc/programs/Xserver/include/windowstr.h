@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.18 93/09/29 17:09:57 dpw Exp $ */
+/* $XConsortium: windowstr.h,v 5.19 94/04/17 20:26:13 dpw Exp dpw $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -141,10 +141,10 @@ typedef struct _Window {
 extern Mask	    DontPropagateMasks[];
 
 #define wTrackParent(w,field)	((w)->optional ? \
-				    w->optional->field \
+				    (w)->optional->field \
  				 : FindWindowWithOptional(w)->optional->field)
 #define wUseDefault(w,field,def)	((w)->optional ? \
-				    w->optional->field \
+				    (w)->optional->field \
 				 : def)
 
 #define wVisual(w)		wTrackParent(w, visual)
