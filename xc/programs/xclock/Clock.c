@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.66 91/10/16 21:30:24 eswu Exp $ */
+/* $XConsortium: Clock.c,v 1.67 93/09/18 20:03:22 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -811,7 +811,7 @@ static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
 
       if (new->clock.Hipixel != current->clock.Hipixel) {
           valuemask = GCForeground | GCLineWidth;
-	  myXGCV.foreground = new->clock.fgpixel;
+	  myXGCV.foreground = new->clock.Hipixel;
           myXGCV.font = new->clock.font->fid;
 	  myXGCV.line_width = 0;
 	  XtReleaseGC (gcurrent, current->clock.HighGC);
@@ -821,7 +821,7 @@ static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
 
       if (new->clock.Hdpixel != current->clock.Hdpixel) {
           valuemask = GCForeground;
-	  myXGCV.foreground = new->clock.fgpixel;
+	  myXGCV.foreground = new->clock.Hdpixel;
 	  XtReleaseGC (gcurrent, current->clock.HandGC);
 	  new->clock.HandGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
