@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Atoms.h,v 1.5 90/12/19 19:55:25 converse Exp $
+ * $XConsortium: Atoms.h,v 1.6 90/12/20 16:48:04 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -73,10 +73,7 @@ extern AtomPtr
 #define XA_TIMESTAMP(d)		XmuInternAtom(d, _XA_TIMESTAMP)
 #define XA_USER(d)		XmuInternAtom(d, _XA_USER)
 
-
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern char *XmuGetAtomName(
 #if NeedFunctionPrototypes
@@ -113,8 +110,6 @@ extern char *XmuNameOfAtom(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XMU_ATOMS_H_ */

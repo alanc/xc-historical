@@ -1,5 +1,4 @@
-/*
- * $XConsortium: SysUtil.h,v 1.1 89/09/22 12:07:37 jim Exp $
+/* $XConsortium: SysUtil.h,v 1.2 90/12/19 18:11:13 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,9 +23,9 @@
 #ifndef _SYSUTIL_H_
 #define _SYSUTIL_H_
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
 extern int XmuGetHostname(
 #if NeedFunctionPrototypes
@@ -35,8 +34,6 @@ extern int XmuGetHostname(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _SYSUTIL_H_ */

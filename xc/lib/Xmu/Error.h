@@ -1,5 +1,4 @@
-/*
- * $XConsortium: Error.h,v 1.2 89/11/14 16:16:30 jim Exp $
+/* $XConsortium: Error.h,v 1.3 90/12/19 18:06:17 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,9 +21,9 @@
 #ifndef _XMU_ERROR_H_
 #define _XMU_ERROR_H_
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
 extern int XmuPrintDefaultErrorMessage(
 #if NeedFunctionPrototypes
@@ -41,8 +40,6 @@ extern int XmuSimpleErrorHandler(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XMU_ERROR_H_ */

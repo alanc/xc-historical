@@ -2,7 +2,7 @@
 #define _Xct_h
 
 /* 
- * $XConsortium: Xct.h,v 1.4 90/12/19 18:03:08 converse Exp $
+ * $XConsortium: Xct.h,v 1.5 90/12/19 20:00:03 converse Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -14,8 +14,9 @@
  * written prior permission. M.I.T. makes no representations about the 
  * suitability of this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
- *
  */
+
+#include <X11/Xfuncproto.h>
 
 #define XctVersion 1
 
@@ -123,11 +124,8 @@ typedef struct _XctRec {
     struct _XctPriv	*priv;		/* private to parser, don't peek */
 } *XctData;
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
 /* these are the external routines */
+_XFUNCPROTOBEGIN
 
 extern XctData XctCreate(
 #if NeedFunctionPrototypes
@@ -155,8 +153,6 @@ extern void XctReset(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _Xct_h */

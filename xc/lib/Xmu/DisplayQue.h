@@ -1,5 +1,4 @@
-/*
- * $XConsortium: DisplayQue.h,v 1.3 90/12/19 18:07:40 converse Exp $
+/* $XConsortium: DisplayQue.h,v 1.4 91/05/28 16:18:29 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,6 +25,7 @@
 #define _XMU_DISPLAYQUE_H_
 
 #include <X11/Xmu/CloseHook.h>
+#include <X11/Xfuncproto.h>
 
 /*
  *			      Public Entry Points
@@ -116,9 +116,7 @@ struct _XmuDisplayQueue {
     caddr_t data;
 };
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern XmuDisplayQueue *XmuDQCreate(
 #if NeedFunctionPrototypes
@@ -157,9 +155,7 @@ extern Bool XmuDQRemoveDisplay(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #define XmuDQNDisplays(q) ((q)->nentries)
 

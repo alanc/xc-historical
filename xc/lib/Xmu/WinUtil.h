@@ -1,5 +1,4 @@
-/*
- * $XConsortium: WinUtil.h,v 1.4 90/12/19 18:10:50 converse Exp $
+/* $XConsortium: WinUtil.h,v 1.5 90/12/20 15:19:14 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -23,10 +22,9 @@
 #define _XMU_WINDOWUTIL_H_
 
 #include <X11/Xutil.h>
+#include <X11/Xfuncproto.h>
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern Window XmuClientWindow(
 #if NeedFunctionPrototypes
@@ -50,8 +48,6 @@ extern Screen *XmuScreenOfWindow(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XMU_WINDOWUTIL_H_ */

@@ -1,5 +1,4 @@
-/*
- * $XConsortium: StdCmap.h,v 1.1 89/07/14 17:51:56 jim Exp $
+/* $XConsortium: StdCmap.h,v 1.2 90/05/09 12:24:57 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,9 +21,9 @@
 #ifndef _XMU_STDCMAP_H_
 #define _XMU_STDCMAP_H_
 
-#ifdef __cplusplus
-extern "C" {		/* for C++ V2.0 */
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
 Status XmuAllStandardColormaps(
 #if NeedFunctionPrototypes
@@ -94,8 +93,6 @@ Status XmuVisualStandardColormaps(
 #endif
 );
 
-#ifdef __cplusplus
-}			/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XMU_STDCMAP_H_ */

@@ -1,5 +1,4 @@
-/*
- * $XConsortium: Converters.h,v 1.11 91/05/16 18:04:24 converse Exp $
+/* $XConsortium: Converters.h,v 1.12 91/07/22 18:03:44 ackerman Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,9 +21,9 @@
 #ifndef _XMU_STRCONVERT_H_
 #define _XMU_STRCONVERT_H_
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {					/* for C++ V2.0 */
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
 /*
  * Converters - insert in alphabetical order
@@ -246,8 +245,6 @@ extern void XmuNewCvtStringToWidget(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XMU_STRCONVERT_H_ */

@@ -1,5 +1,4 @@
-/*
- * $XConsortium: StdSel.h,v 1.1 89/07/14 17:51:56 jim Exp $
+/* $XConsortium: StdSel.h,v 1.2 90/12/19 18:10:28 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,9 +21,9 @@
 #ifndef _XMU_SELECTION_H_
 #define _XMU_SELECTION_H_
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
 extern Boolean XmuConvertStandardSelection(
 #if NeedFunctionPrototypes
@@ -39,9 +38,7 @@ extern Boolean XmuConvertStandardSelection(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XMU_SELECTION_H_ */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WidgetNode.h,v 1.5 90/04/25 15:54:56 converse Exp $
+ * $XConsortium: WidgetNode.h,v 1.6 90/12/19 18:05:40 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -26,6 +26,8 @@
 #ifndef _XmuWidgetNode_h
 #define _XmuWidgetNode_h
 
+#include <X11/Xfuncproto.h>
+
 /*
  * This is usually initialized by setting the first two fields and letting
  * rest be implicitly nulled (by genlist.sh, for example)
@@ -51,11 +53,8 @@ typedef struct _XmuWidgetNode {
 #define XmuWnClassname(wn) (XmuWnClass(wn)->core_class.class_name)
 #define XmuWnSuperclass(wn) ((XmuWnClass(wn))->core_class.superclass)
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
 					/* external interfaces */
+_XFUNCPROTOBEGIN
 
 extern void XmuWnInitializeNodes (
 #if NeedFunctionPrototypes
@@ -88,9 +87,7 @@ extern XmuWidgetNode *XmuWnNameToNode (
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XmuWidgetNode_h */
 

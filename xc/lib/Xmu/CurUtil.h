@@ -1,5 +1,4 @@
-/*
- * $XConsortium: CurUtil.h,v 1.1 89/07/19 15:40:17 jim Exp $
+/* $XConsortium: CurUtil.h,v 1.2 90/12/19 18:08:10 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,9 +21,9 @@
 #ifndef _XMU_CURUTIL_H_
 #define _XMU_CURUTIL_H_
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
 extern int XmuCursorNameToIndex(
 #if NeedFunctionPrototypes
@@ -32,8 +31,6 @@ extern int XmuCursorNameToIndex(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XMU_CURUTIL_H_ */
