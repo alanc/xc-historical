@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Panner.h,v 1.1 90/02/08 17:45:54 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,27 +41,26 @@
  *  callback		Callback	XtCallbackList	NULL
  *  canvasWidth		CanvasWidth	Dimension	0
  *  canvasHeight	CanvasHeight	Dimension	0
- *  drawGC		DrawGC		GC		NULL
- *  eraseGC		EraseGC		GC		NULL
+ *  defaultScale	DefaultScale	Dimension	10 (percent)
+ *  dynamic		Dynamic		Boolean		FALSE
  *  foreground		Foreground	Pixel		XtDefaultForeground
  *  lineWidth		LineWidth	Dimension	0
  *  sliderX		SliderX		Position	0
  *  sliderY		SliderY		Position	0
  *  sliderWidth		SliderWidth	Dimension	0
  *  sliderHeight	SliderHeight	Dimension	0
- *  stretch		Stretch		Boolean		FALSE
  * 
  *****************************************************************************/
 
 					/* new instance and class names */
+#define XtNdefaultScale "defaultScale"
+#define XtCDefaultScale "DefaultScale"
 #define XtNcanvasWidth "canvasWidth"
 #define XtCCanvasWidth "CanvasWidth"
 #define XtNcanvasHeight "canvasHeight"
 #define XtCCanvasHeight "CanvasHeight"
-#define XtNdrawGC "drawGC"
-#define XtCDrawGC "DrawGC"
-#define XtNeraseGC "eraseGC"
-#define XtCEraseGC "EraseGC"
+#define XtNdynamic "dynamic"
+#define XtCDynamic "Dynamic"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
 #define XtNsliderX "sliderX"
@@ -72,11 +71,6 @@
 #define XtCSliderWidth "SliderWidth"
 #define XtNsliderHeight "sliderHeight"
 #define XtCSliderHeight "SliderHeight"
-#define XtNstretch "stretch"
-#define XtCStretch "Stretch"
-
-					/* new resource names */
-#define XtRGC "GC"
 
 					/* external declarations */
 extern WidgetClass pannerWidgetClass;

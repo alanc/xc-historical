@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: PannerP.h,v 1.1 90/02/08 17:45:55 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,8 +23,8 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#ifndef _XawPanner_h
-#define _XawPanner_h
+#ifndef _XawPannerP_h
+#define _XawPannerP_h
 
 /* #include <X11/Xaw/Panner.h> */
 #include "Panner.h"
@@ -35,7 +35,7 @@ typedef struct {			/* new fields in widget class */
 
 typedef struct _PannerClassRec {	/* Panner widget class */
     CoreClassPart core_class;
-    ClassPart simple_class;
+    SimpleClassPart simple_class;
     PannerClassPart panner_class;
 } PannerClassRec;
 
@@ -43,6 +43,7 @@ typedef struct {			/* new fields in widget */
     /* resources... */
     XtCallbackList callbacks;		/* callback/Callback */
     Pixel foreground;			/* foreground/Foreground */
+    Dimension default_scale;		/* defaultScale/DefaultScale */
     Dimension line_width;		/* lineWidth/LineWidth */
     Dimension canvas_width;		/* canvasWidth/CanvasWidth */
     Dimension canvas_height;		/* canvasHeight/CanvasHeight */
@@ -50,14 +51,20 @@ typedef struct {			/* new fields in widget */
     Position slider_y;			/* sliderY/SliderY */
     Dimension slider_width;		/* sliderWidth/SliderWidth */
     Dimension slider_height;		/* sliderHeight/SliderHeight */
-    Boolean stretch;			/* stretch/Stretch */
-    GC draw_gc;				/* drawGC/DrawGC */
-    GC erase_gc;			/* eraseGC/EraseGC */
     /* private data... */
-    GC default_draw_gc;			/* if draw_gc is NULL */
-    GC default_erase_gc;		/* if erase_gc is NULL */
-    Position back_x, back_y;		/* real upper left of canvas image */
-    Dimension back_width, back_height;	/* real size of canvas image */
+    GC draw_gc;				/* for doing regular graphics */
+    GC xor_gc;				/* for doing XOR tmp graphics */
+    float haspect, vaspect;		/* aspect ratio of core to canvas */
+    Boolean dynamic;			/* true if slider should move */
+    struct {
+	Boolean doing;			/* tmp graphics in progress */
+	Boolean showing;		/* true if tmp graphics displayed */
+	Position startx, starty;	/* initial position of slider */
+	Position dx, dy;		/* offset loc for tmp graphics */
+	Position x, y;			/* location for tmp graphics */
+    } tmp;
+    Position knob_x, knob_y;		/* real upper left of knob in canvas */
+    Dimension knob_width, knob_height;	/* real size of knob in canvas */
 } PannerPart;
 
 typedef struct _PannerRec {
@@ -66,10 +73,16 @@ typedef struct _PannerRec {
     PannerPart panner;
 } PannerRec;
 
+#define PANNER_HSCALE(pw,val) ((pw)->panner.haspect * ((float) (val)))
+#define PANNER_VSCALE(pw,val) ((pw)->panner.vaspect * ((float) (val)))
+
+#define PANNER_DSCALE(pw,val) (Dimension)  \
+  ((((unsigned long) (val)) * (unsigned long) pw->panner.default_scale) / 100L)
+#define PANNER_DEFAULT_SCALE 10		/* in percent */
 
 /*
  * external declarations
  */
 extern PannerClassRec pannerClassRec;
 
-#endif /* _XawPanner_h */
+#endif /* _XawPannerP_h */
