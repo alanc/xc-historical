@@ -17,6 +17,7 @@ SRCS = \
 	CrPixFBit.c \
 	CvtStdSel.c \
 	FToCback.c \
+	Lookup.c \
 	Lower.c \
 	RdBitF.c \
 	StrToBS.c \
@@ -31,6 +32,7 @@ OBJS = \
 	CrPixFBit.o \
 	CvtStdSel.o \
 	FToCback.o \
+	Lookup.o \
 	Lower.o \
 	RdBitF.o \
 	StrToBS.o \
