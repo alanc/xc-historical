@@ -1,4 +1,4 @@
-XCOMM  $XConsortium: C,v 1.2 93/09/17 16:29:26 rws Exp $
+XCOMM  $XConsortium: C,v 1.3 94/01/22 14:05:30 rws Exp $
 XCOMM  XLocale Database Sample for C.
 XCOMM 
 
@@ -21,7 +21,6 @@ XLC_XLOCALE
 encoding_name		STRING
 mb_cur_max		1
 state_depend_encoding	False
-direction		RightToLeft
 #if WCHAR32
 wc_encoding_mask	\x30000000
 wc_shift_bits		7
