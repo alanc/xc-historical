@@ -1,6 +1,10 @@
 /*
- * $XConsortium: main.c,v 1.41 90/12/26 11:29:32 rws Exp $
+ * $XConsortium: main.c,v 1.42 91/01/04 15:40:32 rws Exp $
  */
+#ifdef SVR4
+#define _POSIX_SOURCE
+#endif
+
 #include "def.h"
 #ifdef hpux
 #define sigvec sigvector
