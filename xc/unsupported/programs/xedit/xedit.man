@@ -42,6 +42,48 @@ the text to display is too large to fit in that window.  Horizontal scrolling
 is not allowed by default, but can be turned on through the Text
 widget's resources, see \fIAthena Widget Set\fP for the exact
 resource definition.
+.PP
+
+The following keystroke combinations are defined:
+.sp
+.nf
+.ta 1.0i 3.0i 4.5i
+Ctrl-a	Beginning Of Line	Meta-b	Backward Word
+Ctrl-b	Backward Character	Meta-f	Forward Word
+Ctrl-d	Delete Next Character	Meta-i	Insert File
+Ctrl-e	End Of Line	Meta-k	Kill To End Of Paragraph
+Ctrl-f	Forward Character	Meta-q	Form Paragraph
+Ctrl-g	Multiply Reset	Meta-v	Previous Page
+Ctrl-h	Delete Previous Character	Meta-y	Insert Current Selection
+Ctrl-j	Newline And Indent	Meta-z	Scroll One Line Down
+Ctrl-k	Kill To End Of Line	Meta-d	Delete Next Word
+Ctrl-l	Redraw Display	Meta-D	Kill Word
+Ctrl-m	Newline	Meta-h	Delete Previous Word
+Ctrl-n	Next Line	Meta-H	Backward Kill Word
+Ctrl-o	Newline And Backup	Meta-<	Beginning Of File
+Ctrl-p	Previous Line	Meta->	End Of File
+Ctrl-r	Search/Replace Backward	Meta-]	Forward Paragraph
+Ctrl-s	Search/Replace Forward	Meta-[	Backward Paragraph
+Ctrl-t	Transpose Characters
+Ctrl-u	Multiply by 4	Meta-Delete	Delete Previous Word
+Ctrl-v	Next Page	Meta-Shift Delete	Kill Previous Word
+Ctrl-w	Kill Selection	Meta-Backspace	Delete Previous Word
+Ctrl-y	Unkill	Meta-Shift Backspace	Kill Previous Word
+Ctrl-z	Scroll One Line Up
+.sp
+In addition, the pointer may be used to cut and paste text:
+.ta .5i 2.0i
+	Button 1 Down	Start Selection
+	Button 1 Motion	Adjust Selection
+	Button 1 Up	End Selection (cut)
+
+	Button 2 Down	Insert Current Selection (paste)
+
+	Button 3 Down	Extend Current Selection
+	Button 3 Motion	Adjust Selection
+	Button 3 Up	End Selection (cut)
+.fi
+.sp
 .SH COMMANDS
 .IP "Quit" 8
 Quits the current editing session. If any changes have not been saved,
