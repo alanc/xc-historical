@@ -31,6 +31,9 @@ SOFTWARE.
 #include "Xutil.h"
 #include <X11/Xos.h>
 
+extern char *getenv();
+
+
 /* 
  * XSetWMProperties sets the following properties:
  *	WM_NAME		  type: TEXT		format: varies?
@@ -81,6 +84,23 @@ void XSetWMProperties (dpy, w, windowName, iconName, argv, argc, sizeHints,
     /* set hints about how geometry and window manager interaction */
     if (sizeHints) XSetWMNormalHints (dpy, w, sizeHints);
     if (wmHints) XSetWMHints (dpy, w, wmHints);
-    if (classHints) XSetClassHint (dpy, w, classHints);
+    if (classHints) {
+	XClassHint tmp;
+
+	if (!classHints->res_name) {
+	    tmp.res_name = getenv ("RESOURCE_NAME");
+	    if (!tmp.res_name && argv && argv[0]) {
+		/*
+		 * UNIX uses /dir/subdir/.../basename; other operating
+		 * systems will have to change this.
+		 */
+		char *cp = rindex (argv[0], '/');
+		tmp.res_name = (cp ? cp + 1 : argv[0]);
+	    }
+	    tmp.res_class = classHints->res_class;
+	    classHints = &tmp;
+	}
+	XSetClassHint (dpy, w, classHints);
+    }
 }
 
