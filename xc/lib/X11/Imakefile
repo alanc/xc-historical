@@ -145,6 +145,7 @@ OBJS1 =\
 	XInsCmap.o \
 	XIntAtom.o \
 	XKeyBind.o \
+	XKeysymStr.o \
 	XKillCl.o \
 	XLiHosts.o \
 	XLiICmaps.o \
@@ -414,6 +415,21 @@ AuRead.c:  $(XAUTHSRC)/AuRead.c
 Encrypt.c:  $(XDMCPLIBSRC)/Encrypt.c
 	$(RM) $@
 	$(LN) $? $@
+
+ks_tables.h: $(INCLUDESRC)/keysymdef.h makekeys.C
+	$(RM) $@ makekeys.c
+	$(LN) makekeys.C makekeys.c
+	$(CC) -o makekeys makekeys.c $(LDOPTIONS) $(LDLIBS) $(EXTRA_LOAD_FLAGS)
+	./makekeys < $? > ks_tables_h
+	$(MV) ks_tables_h $@
+	$(RM) makekeys makekeys.c ks_tables_h
+
+includes:: ks_tables.h
+
+depend:: ks_tables.h
+
+clean::
+	$(RM) ks_tables_h ks_tables.h makekeys.c makekeys
 
 clean::
 	$(RM) $(AUTHSRCS) $(DESSRCS)
