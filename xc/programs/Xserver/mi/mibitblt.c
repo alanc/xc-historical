@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.56 88/02/14 21:11:32 rws Exp $ */
+/* $Header: mibitblt.c,v 1.57 88/05/21 17:24:48 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -37,6 +37,7 @@ SOFTWARE.
 #include "Xmd.h"
 #include "servermd.h"
 
+static int GetBitsPerPixel();
 
 /* MICOPYAREA -- public entry for the CopyArea request 
  * For each rectangle in the source region
@@ -447,8 +448,8 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     /* First set the whole pixmap to 0 */
     gcv[0] = 0;
     DoChangeGC(pGCT, GCBackground, gcv, 0);
-    ValidateGC(pPixmap, pGCT);
-    miClearDrawable(pPixmap, pGCT);
+    ValidateGC((DrawablePtr)pPixmap, pGCT);
+    miClearDrawable((DrawablePtr)pPixmap, pGCT);
     ppt = pptFirst = (DDXPointPtr)ALLOCATE_LOCAL(h * sizeof(DDXPointRec));
     pwidth = pwidthFirst = (int *)ALLOCATE_LOCAL(h * sizeof(int));
     if(!ppt || !pwidth)
@@ -466,7 +467,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     prgnSrcClip = (*pGCT->pScreen->RegionCreate)(NULL, 0);
     (*pGCT->pScreen->RegionCopy)(prgnSrcClip, prgnSrc);
     (*pGCT->ChangeClip)(pGCT, CT_REGION, prgnSrcClip, 0);
-    ValidateGC(pPixmap, pGCT);
+    ValidateGC((DrawablePtr)pPixmap, pGCT);
 
     /* Since we know pDraw is always a pixmap, we never need to think
      * about translation here */
@@ -514,7 +515,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
      * within the clipping region, the part outside is still all 0s */
     gcv[0] = GXinvert;
     DoChangeGC(pGCT, GCFunction, gcv, 0);
-    ValidateGC(pPixmap, pGCT);
+    ValidateGC((DrawablePtr)pPixmap, pGCT);
     (*pGCT->CopyArea)(pPixmap, pPixmap, pGCT, 0, 0, w, h, 0, 0);
 
     /* Swap foreground and background colors on the GC for the drawable.
@@ -625,7 +626,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 
     /* note that we convert the plane mask bitPlane into a plane number */
     ptile = miGetPlane(pSrcDrawable, ffs(bitPlane) - 1, srcx, srcy,
-   		       width, height, (unsigned char *) NULL);
+   		       width, height, (unsigned long *) NULL);
     miOpqStipDrawable(pDstDrawable, pGC, prgnSrc, ptile, 0,
                       width, height, dstx, dsty);
     miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
@@ -681,7 +682,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	    gcv[0] = GXcopy;
 	    gcv[1] = planeMask;
 	    DoChangeGC(pGC, GCPlaneMask | GCFunction, gcv, 0);
-	    ValidateGC(pPixmap, pGC);
+	    ValidateGC((DrawablePtr)pPixmap, pGC);
 	}
 
         linelength = PixmapBytePad(w, depth);
@@ -721,7 +722,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     }
     else
     {
-	miGetPlane(pDraw, ffs(planeMask) - 1, sx, sy, w, h, pDst);
+	(void) miGetPlane(pDraw, ffs(planeMask) - 1, sx, sy, w, h, pDst);
     }
 }
 
@@ -771,8 +772,8 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	box.y2 = h;
 	prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
 
-        miOpqStipDrawable(pDraw, pGC, prgnSrc, pImage, leftPad, 
-                          (w - leftPad), h, x, y);
+        miOpqStipDrawable(pDraw, pGC, prgnSrc, (unsigned long *) pImage,
+			  leftPad, (w - leftPad), h, x, y);
 	(*pGC->pScreen->RegionDestroy)(prgnSrc);
 	break;
 
