@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.25 88/07/11 17:14:36 toddb Exp $
+ * $Header: imake.c,v 1.26 88/07/13 17:06:10 rws Exp $
  * $Locker: rws $
  *
  * Author:
@@ -107,6 +107,8 @@
 
 #if defined(sun) || defined(hpux)
 #define REDUCED_TO_ASCII_SPACE
+#endif
+#ifdef REDUCED_TO_ASCII_SPACE
 int	InRule = FALSE;
 #endif
 
