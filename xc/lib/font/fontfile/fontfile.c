@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.4 91/05/30 19:05:17 keith Exp $
+ * $XConsortium: fontfile.c,v 1.5 91/06/12 14:35:09 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -614,5 +614,6 @@ FontFileRegisterFpeFunctions()
 					  FontFileStartListFontsWithInfo,
 					  FontFileListNextFontWithInfo,
 					  (IntFunc) 0,
-					  font_file_names);
+					  font_file_names,
+					  (IntFunc) 0);
 }
