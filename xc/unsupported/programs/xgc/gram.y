@@ -26,6 +26,7 @@ extern void GC_change_arcmode();
 extern void GC_change_dashlist();
 extern void GC_change_planemask();
 extern void change_test();
+extern void change_percent();
 extern void run_test();
 %}
 
@@ -47,7 +48,7 @@ extern void run_test();
 %token <num> FILLSTYLE FILLSTYLETYPE
 %token <num> FILLRULE FILLRULETYPE
 %token <num> ARCMODE ARCMODETYPE
-%token <num> FOREGROUND BACKGROUND LINEWIDTH PLANEMASK DASHLIST
+%token <num> FOREGROUND BACKGROUND LINEWIDTH PLANEMASK DASHLIST PERCENT
 %token <num> FONT
 
 %%
@@ -99,6 +100,8 @@ stmt		: error
 	{ GC_change_dashlist ($2, TRUE); }
 		| FONT STRING
 	{ GC_change_font ($2, TRUE); }
+		| PERCENT NUMBER
+	{ change_percent ($2, TRUE); }
 		;
 
 %%

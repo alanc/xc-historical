@@ -24,9 +24,11 @@ void GC_change_dashlist();
 void GC_change_planemask();
 void GC_change_font();
 void change_test();
+void change_percent();
 
 extern void update_dashlist();
 extern void update_planemask();
+extern void update_slider();
 extern void select_button();
 extern void run_test();
 extern void print_if_recording();
@@ -157,6 +159,8 @@ interpret(string)
       GC_change_foreground((unsigned int) atoi(word2),FALSE);
     else if (!strcmp(word1,"background"))
       GC_change_background((unsigned int) atoi(word2),FALSE);
+    else if (!strcmp(word1,"percent"))
+      change_percent(atoi(word2), FALSE);
     else fprintf(stderr,"Ack... %s %s\n",word1,word2);
   }
 }
@@ -379,3 +383,16 @@ GC_change_font(str,feedback)
   }
 }
 
+void
+change_percent(percent,feedback)
+     int percent;
+     Boolean feedback;
+{
+  /* Make sure that percent is valid */
+
+  if (percent < 1 || percent > 100) return;
+
+  X.percent = (float) percent / 100.0;
+
+  if (feedback) update_slider(percent);
+}

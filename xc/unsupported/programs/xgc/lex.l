@@ -141,6 +141,7 @@ PieSlice			{ yylval.num = ArcPieSlice;
 [Pp]lanemask			{ return (PLANEMASK); }
 [Dd]ashlist			{ return (DASHLIST); }
 [Ff]ont				{ return (FONT); }
+[Pp]ercent			{ return (PERCENT); }
 
 {number}			{ (void) sscanf (yytext, "%d", &yylval.num);
 				  return (NUMBER); }
