@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.20 90/02/05 22:59:02 jim Exp $
+ * $XConsortium: viewres.c,v 1.21 90/02/05 23:42:32 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -146,6 +146,7 @@ static void usage ()
 }
 
 
+/* ARGSUSED */
 static void variable_labeltype_callback (gw, closure, data)
     Widget gw;
     caddr_t closure;			/* TRUE or FALSE */
@@ -154,6 +155,7 @@ static void variable_labeltype_callback (gw, closure, data)
     set_labeltype_menu ((Boolean) closure, True);
 }
 
+/* ARGSUSED */
 static void horizontal_orientation_callback (gw, closure, data)
     Widget gw;
     caddr_t closure;			/* TRUE or FALSE */
@@ -229,7 +231,6 @@ static Boolean remove_from_selected_list (node, updatewidget)
     Boolean updatewidget;
 {
     int i, skips;
-    WidgetNode **wn;
 
     if ((i = node->selection_index) < 0) return FALSE;
 
@@ -252,6 +253,7 @@ static Boolean remove_from_selected_list (node, updatewidget)
     }
 }
 
+/* ARGSUSED */
 static void select_callback (gw, closure, data)
     Widget gw;				/* entry widget */
     caddr_t closure;			/* TRUE or FALSE */
@@ -318,6 +320,7 @@ static void select_callback (gw, closure, data)
     }
 }
 
+/* ARGSUSED */
 static void toggle_callback (gw, closure, data)
     Widget gw;
     caddr_t closure;			/* WidgetNode for this widget */
@@ -361,14 +364,14 @@ main (argc, argv)
     initialize_nodes (widget_list, nwidgets);
 
     topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
-/*
+
     XtSetArg (args[0], XtNwidth, 1);
     XtSetArg (args[1], XtNheight, 1);
     dummy = XtCreateWidget ("dummy", widgetClass, toplevel, args, TWO);
     for (i = 0; i < nwidgets; i++) {
 	initialize_resources (&widget_list[i], dummy, topnode);
     }
-*/
+    XtDestroyWidget (dummy);
 
     pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
 				  NULL, ZERO);
@@ -380,7 +383,7 @@ main (argc, argv)
 
     /*
      * Format menu
-     /*/
+     */
     XtSetArg (args[0], XtNmenuName, "formatMenu");
     formatButton = XtCreateManagedWidget ("format", menuButtonWidgetClass, box,
 					  args, ONE);
@@ -393,8 +396,8 @@ main (argc, argv)
     format_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
 					       formatMenu, args, ONE)
 
-    MAKE_FORMAT (FORMAT_VARIABLES, TRUE, "showVariables");
-    MAKE_FORMAT (FORMAT_CLASSES, FALSE, "showClasses");
+    MAKE_FORMAT (FORMAT_VARIABLES, TRUE, "namesVariable");
+    MAKE_FORMAT (FORMAT_CLASSES, FALSE, "namesClass");
 
     (void) XtCreateManagedWidget ("line", smeLineObjectClass, formatMenu,
 				  NULL, ZERO);
@@ -443,6 +446,7 @@ main (argc, argv)
 
 
 
+/* ARGSUSED */
 static void HandleQuit (w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -453,6 +457,7 @@ static void HandleQuit (w, event, params, num_params)
 }
 
 
+/* ARGSUSED */
 static void HandleSetLableType (w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -460,7 +465,6 @@ static void HandleSetLableType (w, event, params, num_params)
     Cardinal *num_params;
 {
     char *cmd;
-    Arg args[1];
     Boolean oldvar = Appresources.show_variable, newvar;
 
     switch (*num_params) {
@@ -490,7 +494,7 @@ static void HandleSetLableType (w, event, params, num_params)
     return;
 }
 
-
+/* ARGSUSED */
 static void HandleSetOrientation (w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -533,7 +537,7 @@ static void HandleSetOrientation (w, event, params, num_params)
     return;
 }
 
-
+/* ARGSUSED */
 static void HandleSelect (w, event, params, num_params)
     Widget w;
     XEvent *event;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.16 90/02/05 11:51:13 jim Exp $
+ * $XConsortium: Tree.c,v 1.17 90/02/05 14:54:18 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -33,6 +33,7 @@
 #include <X11/CoreP.h>
 #include <X11/CompositeP.h>
 #include <X11/ConstrainP.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xmu/Converters.h>
 #include "TreeP.h"
 
@@ -43,7 +44,6 @@ static void             Initialize();
 static void             ConstraintInitialize();
 static void             ConstraintDestroy();
 static Boolean          ConstraintSetValues();
-static void             Resize();
 static void             Destroy();
 static Boolean          SetValues();
 static XtGeometryResult GeometryManager();
@@ -207,6 +207,7 @@ static void Initialize(request, new)
 			 TREE_INITIAL_DEPTH);
 } 
 
+/* ARGSUSED */
 static void ConstraintInitialize(request, new)
      Widget request, new;
 {
@@ -230,6 +231,7 @@ static void ConstraintInitialize(request, new)
     insert_new_node (tw->tree.tree_root, new);
 } 
 
+/* ARGSUSED */
 static Boolean SetValues (current, request, new)
     TreeWidget current, request, new;
 {
@@ -261,6 +263,7 @@ static Boolean SetValues (current, request, new)
     return redraw;
 }
 
+/* ARGSUSED */
 static Boolean ConstraintSetValues(current, request, new, args, num_args)
     Widget current, request, new;
     ArgList args;
@@ -320,7 +323,6 @@ static void insert_new_node(parent, node)
 static void delete_node(parent, node)
     Widget  parent, node;
 {
-  TreeConstraints nc = TREE_CONSTRAINT(node);
   TreeConstraints pc;
   int             pos, i;
   /*
@@ -360,7 +362,7 @@ static void ConstraintDestroy(w)
   * make all this widget's sub-nodes sub-nodes of the parent.
   */
   if(tree_const->tree.parent) { 
-    delete_node(tree_const->tree.parent, w);
+    delete_node(tree_const->tree.parent, (Widget) w);
     for(i=0;i< tree_const->tree.n_children; i++)
       insert_new_node(tree_const->tree.parent, 
                       tree_const->tree.children[i]);
@@ -368,6 +370,7 @@ static void ConstraintDestroy(w)
   new_layout (w->core.parent, FALSE);
 }
 
+/* ARGSUSED */
 static XtGeometryResult GeometryManager(w, request, reply)
     Widget               w;
     XtWidgetGeometry    *request;
@@ -407,10 +410,11 @@ static void Destroy (gw)
 {
     TreeWidget w = (TreeWidget) gw;
 
-    XtDestroyGC (w->tree.gc);
+    XtReleaseGC (gw, w->tree.gc);
     if (w->tree.largest) XtFree (w->tree.largest);
 }
 
+/* ARGSUSED */
 static void Redisplay (tw, event, region)
      TreeWidget tw;
      XEvent *event;
@@ -693,8 +697,6 @@ static void new_layout (tw, insetvalues)
     TreeWidget tw;
     Boolean insetvalues;
 {
-    TreeConstraints tc;
-
     /*
      * Do a depth-first search computing the width and height of the bounding
      * box for the tree at that position (and below).  Then, walk again using
@@ -717,7 +719,7 @@ static void new_layout (tw, insetvalues)
      * Move each widget into place.
      */
     set_tree_size (tw, insetvalues, tw->tree.maxwidth, tw->tree.maxheight);
-    set_positions (tw, tw->tree.tree_root, 0, 0);
+    set_positions (tw, tw->tree.tree_root, 0);
 
     /*
      * And redisplay.
@@ -797,9 +799,9 @@ static XtGeometryResult QueryGeometry (w, intended, preferred)
  *****************************************************************************/
 
 void XawTreeForceLayout (tree)
-    TreeWidget tree;
+    Widget tree;
 {
-    new_layout (tree, FALSE);
+    new_layout ((TreeWidget) tree, FALSE);
 }
 
 
