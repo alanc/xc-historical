@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 1.9 88/01/19 14:43:04 swick Exp $";
+static char rcs_id[] = "$Header: tocutil.c,v 1.10 88/01/25 14:23:19 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -343,7 +343,7 @@ void TULoadTocFile(toc)
     Msg *origmsgs;
 
     TocStopUpdate(toc);
-    toc->lastreaddate = CurrentDate();
+    toc->lastreaddate = LastModifyDate(toc->scanfile);
     if (toc->curmsg) {
 	origcurmsgid = toc->curmsg->msgid;
 	TocSetCurMsg(toc, (Msg)NULL);
@@ -459,7 +459,7 @@ void TUSaveTocFile(toc)
     } else
 	(void) utime(toc->scanfile, (time_t *)NULL);
     toc->needscachesave = FALSE;
-    toc->lastreaddate = CurrentDate();
+    toc->lastreaddate = LastModifyDate(toc->scanfile);
 }
 
 
