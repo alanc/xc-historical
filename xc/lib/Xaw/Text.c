@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.70 88/10/07 09:26:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.71 88/10/07 15:34:11 swick Exp $";
 #endif
 
 
@@ -1867,7 +1867,7 @@ void XtTextUnsetSelection(w)
     int i;
 
     for (i = ctx->text.s.atom_count; i;) {
-	register Atom selection = ctx->text.s.selections[--i];
+	Atom selection = ctx->text.s.selections[--i];
 	switch (selection) {
 	  case XA_CUT_BUFFER0:
 	  case XA_CUT_BUFFER1:
@@ -1879,7 +1879,7 @@ void XtTextUnsetSelection(w)
 	  case XA_CUT_BUFFER7: continue;
 	}
 	XtDisownSelection(w, selection);
-	LoseSelection(w, selection); /* in case it wasn't just called */
+	LoseSelection(w, &selection); /* in case it wasn't just called */
     }
 }
 
