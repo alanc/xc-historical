@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.5 89/01/06 18:41:40 kit Exp $
- * $Header: ScrollByL.c,v 1.5 89/01/06 18:41:40 kit Exp $
+ * $XConsortium: ScrollByL.c,v 1.6 89/04/28 15:05:58 kit Exp $
+ * $Header: ScrollByL.c,v 1.6 89/04/28 15:05:58 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -24,26 +24,15 @@
   static char rcs_version[] = "$Athena: ScrollByL.c,v 4.5 88/12/19 13:46:04 kit Exp $";
 #endif
 
-/*
- * I wrote this widget before I knew what form did, and it shows, since
- * the "right" way to do this widget would be to subclass it to form,
- * and do it much more like the Viewport widget in the Athena widget set.
- * But this works and time is short, so here it is.
- *
- *                                     Chris D. Peterson 1/30/88
- * 
- * I removed all the code for horizontal scrolling here, since is was a crock
- * anyway.
- * 
- *                                     Chris D. Peterson 11/13/88
- */
-
-#include	<X11/IntrinsicP.h>
-#include	"ScrollByL.h"
-#include	"ScrollByLP.h"
-#include        <X11/Scroll.h>
-#include	<X11/StringDefs.h>
-#include	<X11/XawMisc.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <ctype.h>
+#include <X11/IntrinsicP.h>
+#include <X11/Scroll.h>
+#include <X11/StringDefs.h>
+#include <X11/XawMisc.h>
+#include "ScrollByLP.h"
 
 /* Default Translation Table */
 
@@ -52,6 +41,10 @@ static char defaultTranslations[] =
    <Btn3Down>:  Page(Back) \n\
    <Key>f:      Page(Forward) \n\
    <Key>b:      Page(Back) \n\
+   <Key>1:      Page(Line, 1) \n\
+   <Key>2:      Page(Line, 2) \n\
+   <Key>3:      Page(Line, 3) \n\
+   <Key>4:      Page(Line, 4) \n\
    <Key>\\ :    Page(Forward)";
 
       
@@ -61,38 +54,35 @@ static char defaultTranslations[] =
  *
  ****************************************************************/
 
+#define Offset(field) XtOffset(ScrollByLineWidget, scroll.field)
+#define CoreOffset(field) XtOffset(ScrollByLineWidget, core.field)
+
 static XtResource resources[] = {
+    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
+       CoreOffset(width), XtRImmediate, (caddr_t) 500},
+    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
+       CoreOffset(height), XtRImmediate, (caddr_t) 700},
+
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	 XtOffset(ScrollByLineWidget, scroll_by_line.foreground), 
-         XtRString, "XtDefaultForeground"},
-    {XtNinnerWidth, XtCWidth, XtRInt, sizeof(int),
-	 XtOffset(ScrollByLineWidget, scroll_by_line.inner_width), 
-         XtRString, "100"},
-    {XtNinnerHeight, XtCHeight, XtRInt, sizeof(int),
-	 XtOffset(ScrollByLineWidget, scroll_by_line.inner_height),
-         XtRString, "100"},
-    {XtNforceBars, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 XtOffset(ScrollByLineWidget, scroll_by_line.force_bars),
-         XtRString, "FALSE"},
-    {XtNallowVert, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 XtOffset(ScrollByLineWidget, scroll_by_line.allow_vert),
-         XtRString, "FALSE"},
+       Offset(foreground), XtRString, "XtDefaultForeground"},
+    {XtNforceVert, XtCBoolean, XtRBoolean, sizeof(Boolean),
+       Offset(force_vert), XtRImmediate, (caddr_t) FALSE},
+    {XtNindent, XtCIndent, XtRDimension, sizeof(Dimension),
+       Offset(indent), XtRImmediate, (caddr_t) 15},
     {XtNuseRight, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 XtOffset(ScrollByLineWidget, scroll_by_line.use_right),
-         XtRString, "FALSE"},
-    {XtNlines, XtCLine, XtRInt, sizeof(int), 
-         XtOffset(ScrollByLineWidget, scroll_by_line.lines), 
-         XtRString, "1"},
-    {XtNfontHeight, XtCHeight,XtRInt, sizeof(int),
-         XtOffset(ScrollByLineWidget, scroll_by_line.font_height), 
-         XtRString, "0"},
-    {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
-       XtOffset(ScrollByLineWidget, scroll_by_line.callbacks), 
-       XtRCallback, (caddr_t) NULL},
-    {XtNformOnInner, XtCBoolean, XtRBoolean, sizeof(Boolean),
-       XtOffset(ScrollByLineWidget, scroll_by_line.key),
-       XtRString, "FALSE"},
+       Offset(use_right), XtRImmediate, (caddr_t) FALSE},
+    {XtNmanualFontNormal, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+       Offset(normal_font), XtRString, MANPAGE_NORMAL},
+    {XtNmanualFontBold, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+       Offset(bold_font), XtRString, MANPAGE_BOLD},
+    {XtNmanualFontItalic, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+       Offset(italic_font), XtRString, MANPAGE_ITALIC},
+    {XtNfile, XtCFile, XtRFile, sizeof(FILE *),
+       Offset(file), XtRImmediate, (caddr_t) NULL},
 };
+
+#undef Offset
+#undef CoreOffset
 
 /****************************************************************
  *
@@ -101,37 +91,31 @@ static XtResource resources[] = {
  ****************************************************************/
 
 static Boolean ScrollVerticalText();
-static void VerticalThumb();
-static void VerticalScroll();
-static void Page();
-static void InitializeHook();
-static void Initialize();
-static void Realize();
-static void Resize();
-static void ResetThumb();
-static void Redisplay();
-static void ChildExpose();
-static Boolean SetValues();
-static Boolean Layout();
-static XtGeometryResult GeometryManager();
-static void ChangeManaged();
+static void MoveAndClearText(), LoadFile(), PrintText(), VerticalJump();
+static void VerticalScroll(), SetThumbHeight(), PaintText(), Layout();
+
+/* semi - public functions. */
+
+static void Realize(), Initialize(), Destroy(), Redisplay(), Page();
+static Boolean SetValuesHook();
 
 static XtActionsRec actions[] = {
   { "Page",   Page},
-  { NULL, NULL},
 };
+
+#define superclass		(&simpleClassRec)
 
 ScrollByLineClassRec scrollByLineClassRec = {
   {
 /* core_class fields      */
-    /* superclass         */    (WidgetClass) &compositeClassRec,
+    /* superclass         */    (WidgetClass) superclass,
     /* class_name         */    "ScrollByLine",
     /* widget_size        */    sizeof(ScrollByLineRec),
     /* class_initialize   */    NULL,
     /* class_part_init    */    NULL,
     /* class_inited       */	FALSE,
     /* initialize         */    Initialize,
-    /* initialize_hook    */    InitializeHook,
+    /* initialize_hook    */    NULL,
     /* realize            */    Realize,
     /* actions            */    actions,
     /* num_actions	  */	XtNumber(actions),
@@ -142,11 +126,11 @@ ScrollByLineClassRec scrollByLineClassRec = {
     /* compress_exposure  */	FALSE,
     /* compress_enterleave*/    TRUE,
     /* visible_interest   */    FALSE,
-    /* destroy            */    NULL,
-    /* resize             */    Resize,
+    /* destroy            */    Destroy,
+    /* resize             */    Layout,
     /* expose             */    Redisplay,
-    /* set_values         */    SetValues,
-    /* set_values_hook    */    NULL,
+    /* set_values         */    NULL,
+    /* set_values_hook    */    SetValuesHook,
     /* set_values_almost  */    XtInheritSetValuesAlmost,
     /* get_values_hook    */    NULL,
     /* accept_focus       */    NULL,
@@ -155,13 +139,6 @@ ScrollByLineClassRec scrollByLineClassRec = {
     /* tm_table           */    defaultTranslations,
     /* query_geometry	  */	XtInheritQueryGeometry,
     /* display_accelerator*/	XtInheritDisplayAccelerator,
-    /* extension	  */	NULL,
-  },{
-/* composite_class fields */
-    /* geometry_manager   */    GeometryManager,
-    /* change_managed     */    ChangeManaged,
-    /* insert_child	  */	XtInheritInsertChild,
-    /* delete_child	  */	XtInheritDeleteChild,
     /* extension	  */	NULL,
   },{
     /* mumble		  */	0	/* Make C compiler happy   */
@@ -178,181 +155,64 @@ WidgetClass scrollByLineWidgetClass =
  *
  ****************************************************************/
 
-
 /*	Function Name: Layout
- *	Description: This function lays out the scroll_by_line widget.
- *	Arguments: w - the scroll_by_line widget.
+ *	Description: This function lays out the scroll widget.
+ *	Arguments: w - the scroll widget.
  *                 key - a boolean: if true then resize the widget to the child
  *                                  if false the resize children to fit widget.
  *	Returns: TRUE if successful.
  */
 
-static Boolean
-Layout(w,key)
+static void
+Layout(w)
 Widget w;
-int key;
 {    
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-  Dimension width,height;	/* The size that the widget would like to be */
-  XtGeometryResult answer;	/* the answer from the parent. */
-  Widget vbar,child;		/* The two children of this scrolled widget. */
-  int vbar_x,vbar_y;		/* The locations of the various elements. */
-  int child_x;
-  int c_width;
-  Boolean make_bar;
+  Dimension width, height;
+  Widget bar;
+  Position bar_bw;
 
-  vbar = sblw->composite.children[0];
-  child = sblw->composite.children[1];
+/* 
+ * For now always show the bar.
+ */
+
+  bar = sblw->scroll.bar;
   height = sblw->core.height;
   width = sblw->core.width;
+  bar_bw = bar->core.border_width;
 
-/* set the initial scroll bar positions. */
+  /* Move child and v_bar to correct location. */
 
-  vbar_x = vbar_y = - vbar->core.border_width;
-
-/* Should I allow the vertical scrollbar to be seen */
-
-   make_bar = FALSE;  
-   if ( (!key) && (sblw->scroll_by_line.lines * 
-	sblw->scroll_by_line.font_height > height) )
-     make_bar = TRUE;
-
-   else if ( (key) && (sblw->scroll_by_line.lines * 
-	     sblw->scroll_by_line.font_height > child->core.height) )
-     make_bar = TRUE;
-
-   if (sblw->scroll_by_line.allow_vert && (sblw->scroll_by_line.force_bars || 
-				       make_bar) ) {
- /*
-  * Resize the outer window to fit the child, or visa versa.  Also make scroll
-  * bar become placed in the correct location.
-  */
-     if (key)			
-       width = child->core.width + vbar->core.width + 
-	       2 * vbar->core.border_width;
-     else
-       c_width = width - vbar->core.width -2 * vbar->core.border_width;
-
-     /* Put Scrollbar on right side if scrolled window? */
-
-     if (sblw->scroll_by_line.use_right) {
-       vbar_x = width - vbar->core.width - 2 * vbar->core.border_width;
-       child_x = 0;
-     }
-     else 
-       child_x = vbar->core.width + vbar->core.border_width;
-   }
-   else {
-     /* Make the scroll bar dissappear, note how scroll bar is always there,
-        sometimes it is just that we cannot see them. */
-     vbar_x = - vbar->core.width - 2 * vbar->core.border_width - 10;
-     child_x = 0;
-     if (key)
-       width = child->core.width;
-     else
-       c_width = width;
-   }
-
- /* Move child and v_bar to correct location. */
-
-  XtMoveWidget(vbar, vbar_x, vbar_y);
-  XtMoveWidget(child, child_x, 0);
-
-  /* resize the children to be the correct height or width. */
-
-  XtResizeWidget(vbar, vbar->core.width, height, vbar->core.border_width);
-
-  if (!key)
-    XtResizeWidget(child, (Cardinal) (c_width - 20), (Cardinal) height,
-		   child->core.border_width);
-
-  /* set the thumb size to be correct. */
-
-  ResetThumb( (Widget) sblw);
-
-  answer = XtMakeResizeRequest( (Widget) sblw, width, height, &width, &height);
-
-  switch(answer) {
-  case XtGeometryYes:
-    break;
-  case XtGeometryNo:
-    return(FALSE);
-  case XtGeometryAlmost:
-    (void) Layout( (Widget) sblw,FALSE);
+  if (sblw->scroll.use_right) {
+    XtMoveWidget(bar, width - (bar->core.width + bar_bw), - bar_bw);
+    sblw->scroll.offset = 0;
   }
-  return(TRUE);
-}
-
-/*	Function Name: ResetThumb
- *	Description: This function resets the thumb's shown percentage only.
- *	Arguments: w - the ScrollByLineWidget.
- *	Returns: none;
- */
-
-static void
-ResetThumb(w)
-Widget w;
-{
-  float shown;
-  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-  Widget child,vbar;
-
-  vbar = sblw->composite.children[0];
-  child = sblw->composite.children[1];
-
-/* vertical */
-
-  shown = (float) child->core.height /(float) (sblw->scroll_by_line.lines *
-       				  sblw->scroll_by_line.font_height);
-  if (shown > 1.0)
-    shown = 1.0;
-
-  XtScrollBarSetThumb( vbar, (float) -1, shown );
-}
-
-/*
- *
- * Geometry Manager - If the height of width is changed then try a new layout.
- *                    else dissallow the requwest.
- *
- */
-
-/*ARGSUSED*/
-static XtGeometryResult GeometryManager(w, request, reply)
-    Widget		w;
-    XtWidgetGeometry	*request;
-    XtWidgetGeometry	*reply;	/* RETURN */
-
-{
-  ScrollByLineWidget sblw;
-
-  sblw = (ScrollByLineWidget) w->core.parent;
-  if ( request->width != 0 && request->height != 0 && 
-      (request->request_mode && (CWWidth || CWHeight)) ) {
-    w->core.height = request->height;
-    w->core.width = request->width;
-    (void) Layout( (Widget) sblw,TRUE);
-    return(XtGeometryYes);
+  else {
+    XtMoveWidget(bar, - bar_bw, - bar_bw);
+    sblw->scroll.offset = bar->core.width + bar_bw;
   }
-  return(XtGeometryNo);
 
-} /* Geometery Manager */
+  /* resize the scrollbar to be the correct height or width. */
+
+  XtResizeWidget(bar, bar->core.width, height, bar->core.border_width);
+
+  SetThumbHeight(w);
+}
 
 /* ARGSUSED */
-static void ChildExpose(w,junk,event)
+static void 
+GExpose(w,junk,event)
 Widget w;
 caddr_t junk;
 XEvent *event;
 {
 
-/* 
- * since we are realy concerned with the expose events that happen
- * to the child, we have selected expose events on this window, and 
- * then I call the redisplay routine.
+/*
+ * Graphics exposure events are not currently sent to exposure proc.
  */
 
-  if ((event->type == Expose) || (event->type == GraphicsExpose))
-    Redisplay(w->core.parent, event, NULL);
+  if (event->type == GraphicsExpose)
+    Redisplay(w, event, NULL);
 
 } /* ChildExpose */
 
@@ -366,13 +226,10 @@ Widget w;
 XEvent *event;
 Region region;
 {
-  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-
   int top,bottom;		/* the locations of the top and
        			  bottom of the region that needs to be
        			  repainted. */
-  ScrollByLineStruct sblw_struct;
-
+  
 /*
  * This routine tells the client which sections of the window to 
  * repaint in his callback function which does the actual repainting.
@@ -387,44 +244,40 @@ Region region;
     bottom  = event->xgraphicsexpose.height + top;
   }
   
-  sblw_struct.start_line = top / sblw->scroll_by_line.font_height + 
-                            sblw->scroll_by_line.line_pointer;
-/*
- * If an expose event is called on a region that has no text assoicated
- * with it then do not redisplay. Only nescessary for very short file.
- */
-  if (sblw_struct.start_line > sblw->scroll_by_line.lines)
-    return;
-  sblw_struct.num_lines = (bottom - top) / 
-                            sblw->scroll_by_line.font_height + 1;
-  sblw_struct.location =  top / sblw->scroll_by_line.font_height *
-                            sblw->scroll_by_line.font_height;
-
-  XtCallCallbacks( (Widget) sblw, XtNcallback, (caddr_t) &sblw_struct);
-
+  PaintText(w, top, bottom - top);
 } /* redisplay (expose) */
 
+/*	Function Name: PaintText
+ *	Description: paints the text at the give location for a given height.
+ *	Arguments: w - the sbl widget.
+ *                 y_loc, height - location and size of area to paint.
+ *	Returns: none
+ */
+
 static void
-Resize(w)
+PaintText(w, y_loc, height)
 Widget w;
+int y_loc, height;
 {
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+  int start_line, num_lines, location;
 
-  (void) Layout(w,FALSE);
+  start_line = y_loc / sblw->scroll.font_height + sblw->scroll.line_pointer;
 
-} /* Resize */
+  if (start_line >= sblw->scroll.lines)
+    return;
+  
+  num_lines = height / sblw->scroll.font_height + 1;
 
-static void ChangeManaged(w)
-Widget w;
-{
-  /* note how we ignore bonus children, but since we control all children,
-   there should never be a problem anyway. */
-  ScrollByLineWidget sblw = (ScrollByLineWidget) w;;
+/*
+ * Only integer arithmetic makes this possible. 
+ */
 
-  if (sblw->composite.num_children == 3) {
-    (void) Layout( w,sblw->scroll_by_line.key);
-  }
+  location =  y_loc / sblw->scroll.font_height * sblw->scroll.font_height;
 
-} /* Change Managed */
+  PrintText(w, start_line, num_lines, location);
+  sblw->scroll.lockout = FALSE;
+} 
 
 /*	Function Name: Page
  *	Description: This function pages the widget, by the amount it recieves
@@ -445,41 +298,63 @@ String * params;
 Cardinal *num_params;
 {
    ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-   Widget vbar = sblw->composite.children[0];
-   char direction;
+   Widget bar = sblw->scroll.bar;
 
-   if (*num_params > 0)
-     direction = *params[0];
-   else
+   if (*num_params < 1)
      return;
-
 /*
  * If no scroll bar is visible then do not page, as the entire window is shown,
  * of scrolling has been turned off. 
  */
 
-   if (vbar->core.x < - vbar->core.border_width)
+   if (bar == (Widget) NULL)
      return;
 
-   switch ( direction ) {
+   switch ( params[0][0] ) {
    case 'f':
    case 'F':
      /* move one page forward */
-     VerticalScroll(vbar,NULL, (int) vbar->core.height);
+     VerticalScroll(bar, NULL, (int) bar->core.height);
      break;
    case 'b':
    case 'B':
      /* move one page backward */
-     VerticalScroll(vbar,NULL,  - (int) vbar->core.height);
+     VerticalScroll(bar, NULL,  - (int) bar->core.height);
      break;
    case 'L':
    case 'l':
      /* move one line forward */
-     VerticalScroll(vbar,NULL, (int) sblw->scroll_by_line.font_height);
+     VerticalScroll(bar, NULL, 
+		    (int) atoi(params[1]) * sblw->scroll.font_height);
      break;
    default:
      return;
    }
+}
+
+/*	Function Name: CreateScrollbar
+ *	Description: createst the scrollbar for us.
+ *	Arguments: w - sblw widget.
+ *	Returns: none.
+ */
+
+static void
+CreateScrollbar(w)
+Widget w;
+{
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+  Arg args[5];
+  Cardinal num_args = 0;
+
+  if (sblw->scroll.bar != NULL) 
+    return;
+
+  XtSetArg(args[num_args], XtNorientation, XtorientVertical); num_args++;
+  
+  sblw->scroll.bar = XtCreateWidget("scrollbar", scrollbarWidgetClass, w, 
+				    args, num_args);
+  XtAddCallback(sblw->scroll.bar, XtNscrollProc, VerticalScroll, NULL);
+  XtAddCallback(sblw->scroll.bar, XtNjumpProc, VerticalJump, NULL); 
 }
 
 /*	Function Name: ScrollVerticalText
@@ -492,43 +367,27 @@ Cardinal *num_params;
  */
 
 static Boolean
-ScrollVerticalText(w,new_line,force_redisp)
+ScrollVerticalText(w, new_line, force_redisp)
 Widget w;
 int new_line;
 Boolean force_redisp;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-  int max_lines,		/* The location of top of the last screen. */
-    num_lines,			/* The number of lines in one screen of text */
-    y_pos,			/* The location to start displaying text. */
-    num_lines_disp,		/* The number of lines to display. */
-    start_line,			/* The line to start displaying text. */
-    y_location,			/* The y_location to for storing copy area. */
-    lines_to_move;		/* The number of lines to copy. */
-  GC gc;
-  Widget child,vbar;	/* Widgets. */
-  ScrollByLineStruct sblw_struct;
+  int num_lines = w->core.height / sblw->scroll.font_height + 1;
+  int max_lines;
   Boolean move_thumb = FALSE;
 
-  vbar =  sblw->composite.children[0];
-  child = sblw->composite.children[1];
-
-  num_lines =  child->core.height / sblw->scroll_by_line.font_height;
-
-  gc = XCreateGC(XtDisplay( (Widget) sblw),XtWindow(child),NULL,0);
-  XSetGraphicsExposures(XtDisplay( (Widget) sblw),gc,TRUE);
-
- /* do not let the window extend out of bounds */
+/*
+ * Do not let the window extend out of bounds.
+ */
 
   if ( new_line < 0) {
-    move_thumb = TRUE;
     new_line = 0;
+    move_thumb = TRUE;
   }
   else {
-    max_lines = sblw->scroll_by_line.lines -
-     child->core.height / sblw->scroll_by_line.font_height;
-
-    if (max_lines < 0) max_lines = 0;
+    max_lines = sblw->scroll.lines - w->core.height / sblw->scroll.font_height;
+    AssignMax(max_lines, 0);
 
     if ( new_line > max_lines ) {
       new_line = max_lines;
@@ -536,105 +395,156 @@ Boolean force_redisp;
     }
   }
 
-  if ( new_line == sblw->scroll_by_line.line_pointer && !force_redisp)
-/* No change in postion, and no action is nescessary */
+/* 
+ * If forced to redisplay then do a full redisplay and return.
+ */
+
+
+  if (sblw->scroll.lockout)
+    return(TRUE);
+
+  if (force_redisp) 
+    MoveAndClearText(w, 0, /* cause a full redisplay */ 0, 0);
+
+  if (new_line == sblw->scroll.line_pointer)
     return(move_thumb);
-  else if ( new_line <= sblw->scroll_by_line.line_pointer) { /* scroll back. */
-    if ( sblw->scroll_by_line.line_pointer - new_line >= num_lines
-	|| force_redisp) {
+
 /*
- * We have moved so far that no text that is currently on the screen can
- * be saved thus there is no need to be clever just clear
- * the window and display a full screen of text.
+ * Scroll forward.
  */
-      XClearWindow(XtDisplay(child),XtWindow(child));
-      y_pos = 0;
-      start_line = new_line;
-      num_lines_disp = num_lines;
-    }
-    else {
-/*
- * Move text that is to remain on the screen to its new location, and then
- * set up the proper callback values to display the rest of the text.
- */
-      lines_to_move = num_lines - sblw->scroll_by_line.line_pointer + new_line;
-      y_location = sblw->scroll_by_line.line_pointer - new_line;
-      XCopyArea(XtDisplay(vbar),XtWindow(child),XtWindow(child),
-	 gc,0,0,child->core.width,
-	 (lines_to_move + 1) * sblw->scroll_by_line.font_height,
-	 0,y_location * sblw->scroll_by_line.font_height);
-      XClearArea( XtDisplay(vbar),XtWindow(child),0,0,0,
-	  (num_lines - lines_to_move) 
-	  * sblw->scroll_by_line.font_height,
-	  FALSE );
-      y_pos = 0;
-      start_line = new_line;
-      num_lines_disp = num_lines - lines_to_move;
-    }
+
+  else if (new_line < sblw->scroll.line_pointer) {
+    int lines_to_scroll = sblw->scroll.line_pointer - new_line;
+    MoveAndClearText(w, 0, num_lines - lines_to_scroll, lines_to_scroll);
   }
-  else {     /* scrolling forward */
-    if ( new_line - sblw->scroll_by_line.line_pointer >= num_lines
-	|| force_redisp) {
-/*
- * We have moved so far that no text that is currently on the screen can
- * be saved thus there is no need to be clever just clear
- * the window and display a full screen of text.
+
+/* 
+ * Scroll back.
  */
-      XClearWindow(XtDisplay(child),XtWindow(child));
-      y_pos = 0;
-      start_line = new_line;
-      num_lines_disp = num_lines;
-    }
-    else {
-/*
- * Move text that is to remain on the screen to its new location, and then
- * set up the proper callback values to display the rest of the text.
- */
-      lines_to_move = num_lines - new_line + sblw->scroll_by_line.line_pointer;
-      y_location = new_line - sblw->scroll_by_line.line_pointer;
-      XCopyArea(XtDisplay(vbar),XtWindow(child),XtWindow(child),gc,0,
-		y_location * sblw->scroll_by_line.font_height,
-		child->core.width,
-		(lines_to_move)* sblw->scroll_by_line.font_height,0,0);
 
-      lines_to_move--;		/* make sure that we get the last,
-        			    (possibly) partial line, fully painted. */
-
-      /* we add 10% of a font height here to the vertical position
-       because some characters extend a little bit below the fontheight */
-
-      XClearArea(XtDisplay(vbar),XtWindow(child),0,lines_to_move *
-		 sblw->scroll_by_line.font_height + (int)
-		 (.1 * (float) sblw->scroll_by_line.font_height),0,0,FALSE);
-
-      y_pos = lines_to_move * sblw->scroll_by_line.font_height;
-      start_line = new_line + lines_to_move;
-      num_lines_disp = num_lines - lines_to_move;
-    }
+  else {
+    int lines_to_scroll = new_line - sblw->scroll.line_pointer;
+    MoveAndClearText(w, lines_to_scroll, num_lines - lines_to_scroll, 0);
   }
-  
-  sblw->scroll_by_line.line_pointer = new_line;
 
-/*
- * call the callbacks, this is the callback to the application to do the 
- * actual painting of the text. 
- */
-
-  sblw_struct.location = y_pos;
-  sblw_struct.start_line = start_line;
-  sblw_struct.num_lines = num_lines_disp;
-
-  XtCallCallbacks( (Widget) sblw,XtNcallback, (caddr_t) &sblw_struct);
-
-/* Save that memory */
-
-  XFreeGC(XtDisplay( (Widget) sblw), gc);
-
+  sblw->scroll.line_pointer = new_line;	/* Set current top of page. */
   return(move_thumb);
 }
 
-/*	Function Name: VerticalThumb
- *	Description: This function moves the postition of the interior window
+/*	Function Name: MoveAndClearText
+ *	Description: Blits as much text as it can and clear the
+ *                   remaining area with generate exposures TRUE.
+ *	Arguments: w - the sbl widget.
+ *                 old_y - the old y position.
+ *                 height - height of area to move.
+ *                 new_y - new y position.
+ *	Returns: none
+ */
+	   
+static void
+MoveAndClearText(w, old_y, height, new_y)
+Widget w;
+int old_y, new_y, height;
+{
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+  int from_left = sblw->scroll.indent + sblw->scroll.offset;
+  int y_clear;
+
+  old_y *= sblw->scroll.font_height;
+  new_y *= sblw->scroll.font_height;
+  height *= sblw->scroll.font_height;
+
+/*
+ * If we are already at the right location then do nothing.
+ * (height == 0).
+ *
+ * If we have scrolled more than a screen height then just clear
+ * the window.
+ */
+
+  if (height <= sblw->scroll.font_height) { /* avoid rounding errors. */
+    XClearArea( XtDisplay(w), XtWindow(w), from_left, 0, 
+	       (unsigned int) 0, (unsigned int) 0, TRUE);    
+    return;
+  }
+
+  if (height + old_y > w->core.height)
+    height = w->core.height - old_y;
+
+  XCopyArea(XtDisplay(w), XtWindow(w), XtWindow(w), sblw->scroll.move_gc,
+	    from_left, old_y, 
+	    (unsigned int) w->core.width - from_left, (unsigned int) height,
+	    from_left, new_y);
+
+  height -= sblw->scroll.font_height/2;	/* clear 1/2 font of extra space,
+					   to mak sure we don't lose or
+					   gain decenders. */
+  if (old_y > new_y)
+    y_clear = height;
+  else
+    y_clear = 0;
+  
+/*
+ * We cannot use generate exposures, since that may allow another move and
+ * clear before the area get repainted, this is really bad.
+ */
+
+  XClearArea( XtDisplay(w), XtWindow(w), from_left, y_clear,
+	     (unsigned int) 0, (unsigned int) (w->core.height - height),
+	     TRUE);
+
+  sblw->scroll.lockout = TRUE;
+}
+
+/*	Function Name: SetThumbHeight
+ *	Description: Set the height of the thumb.
+ *	Arguments: w - the sblw widget.
+ *	Returns: none
+ */
+
+static void
+SetThumbHeight(w)
+Widget w;
+{
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+  float shown;
+
+  if (sblw->scroll.bar == NULL)
+    return;
+
+  if (sblw->scroll.lines == 0) 
+    shown = 1.0;
+  else
+    shown = (float) w->core.height / (float) (sblw->scroll.lines *
+					      sblw->scroll.font_height);
+  if (shown > 1.0)
+    shown = 1.0;
+
+  XtScrollBarSetThumb( sblw->scroll.bar, (float) -1, shown );
+}
+
+/*	Function Name: SetThumb
+ *	Description: Set the thumb location.
+ *	Arguments: w - the sblw.
+ *	Returns: none
+ */
+
+static void
+SetThumb(w) 
+Widget w;
+{
+  float location;
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+
+  if ( (sblw->scroll.lines == 0) || (sblw->scroll.bar == NULL) )
+    return;
+
+  location = (float) sblw->scroll.line_pointer / (float) sblw->scroll.lines; 
+  XtScrollBarSetThumb( sblw->scroll.bar, location , (float) -1 );
+}
+
+/*	Function Name: VerticalJump.
+ *	Description: This function moves the test
  *                   as the vertical scroll bar is moved.
  *	Arguments: w - the scrollbar widget.
  *                 junk - not used.
@@ -644,28 +554,18 @@ Boolean force_redisp;
 
 /* ARGSUSED */
 static void
-VerticalThumb(w,junk,percent)
+VerticalJump(w, junk, percent_ptr)
 Widget w;
 caddr_t junk;
-float *percent;
+caddr_t percent_ptr;
 {
+  float percent = *((float *) percent_ptr);
   int new_line;			/* The new location for the line pointer. */
-  float location;		/* The location of the thumb. */
-  Widget vbar;
+  ScrollByLineWidget sblw = (ScrollByLineWidget) XtParent(w);
 
-  ScrollByLineWidget sblw = (ScrollByLineWidget) w->core.parent;
-
-  vbar =  sblw->composite.children[0];
-
-  new_line = (int) ((float) sblw->scroll_by_line.lines * (*percent));
-
-  if (ScrollVerticalText( (Widget) sblw, new_line, FALSE)) {
-/* reposition the thumb */
-    location = (float) sblw->scroll_by_line.line_pointer / 
-               (float) sblw->scroll_by_line.lines; 
-    XtScrollBarSetThumb( vbar, location , (float) -1 );
-  }
-
+  new_line = (int) ((float) sblw->scroll.lines * percent);
+  if (ScrollVerticalText( (Widget) sblw, new_line, FALSE))
+    SetThumb((Widget) sblw);
 }
 
 /*	Function Name: VerticalScroll
@@ -685,25 +585,11 @@ caddr_t junk;
 int pos;
 {
   int new_line;			/* The new location for the line pointer. */
-  float location;		/* The new location of the thumb. */
-  Widget vbar;
+  ScrollByLineWidget sblw = (ScrollByLineWidget) XtParent(w);
 
-  ScrollByLineWidget sblw = (ScrollByLineWidget) w->core.parent;
-
-  vbar =  sblw->composite.children[0];
-
-  new_line = sblw->scroll_by_line.line_pointer;
-  new_line += (int) pos / sblw->scroll_by_line.font_height;
-
-  (void) ScrollVerticalText( (Widget) sblw,new_line,FALSE);
-
-/* reposition the thumb */
-
-  location = (float) sblw->scroll_by_line.line_pointer / 
-             (float) sblw->scroll_by_line.lines; 
-  XtScrollBarSetThumb( vbar, location , (float) -1 );
-  
-
+  new_line = sblw->scroll.line_pointer + (pos / sblw->scroll.font_height);
+  (void) ScrollVerticalText( (Widget) sblw, new_line, FALSE);
+  SetThumb( (Widget) sblw);
 }
 
 /* ARGSUSED */
@@ -712,68 +598,102 @@ Initialize(req, new)
 Widget req, new;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) new;
-  
-  sblw->scroll_by_line.line_pointer = 0; /* initially point to line 0. */
 
-  if (sblw->core.height <= 0)
-    sblw->core.height = DEFAULT_HEIGHT;
-  if (sblw->core.width <= 0)
-    sblw->core.width = DEFAULT_WIDTH;
+  sblw->scroll.top_line = NULL;
+  sblw->scroll.line_pointer = 0;
+  LoadFile(new);
+  sblw->scroll.bar = (Widget) NULL;
+  sblw->scroll.lockout = FALSE;
+
+  sblw->scroll.font_height = (sblw->scroll.normal_font->max_bounds.ascent + 
+			      sblw->scroll.normal_font->max_bounds.descent); 
 } /* Initialize. */
 
-static void 
-InitializeHook(new, args, num_args)
-ScrollByLineWidget new;
-ArgList args;
-Cardinal *num_args;
-{
-  ScrollByLineWidget sblw = (ScrollByLineWidget) new;
-  Widget window, s_bar;		/* Window widget, and scollbar. */
-  Arg arglist[10];		/* an arglist. */
-  ArgList merged_list, XtMergeArgLists(); /* The merged arglist. */
-  Cardinal window_num, merged_num; /* The number of window args. */
-
-  s_bar = XtCreateManagedWidget("verticalScrollBar", scrollbarWidgetClass,
-				(Widget) sblw, args, *num_args);
-  XtAddCallback(s_bar, XtNjumpProc, VerticalThumb, NULL);
-  XtAddCallback(s_bar, XtNscrollProc, VerticalScroll, NULL);
-
-  window_num = 0;  
-  XtSetArg(arglist[window_num], XtNwidth, sblw->scroll_by_line.inner_width); 
-  window_num++;
-  XtSetArg(arglist[window_num], XtNheight, sblw->scroll_by_line.inner_height);
-  window_num++;
-  XtSetArg(arglist[window_num], XtNborderWidth, 0);
-  window_num++;  
-
-/* 
- * I hope this will cause my args to override those passed to the SBL widget.
- */
-  
-  merged_list = XtMergeArgLists(args, *num_args, arglist, window_num);
-  merged_num = *num_args + window_num;
-
-  window = XtCreateWidget("windowWithFile",widgetClass,(Widget) sblw,
-			  merged_list, merged_num);
-  XtManageChild(window);
-  XtFree(merged_list);		/* done, free it. */
-
-/*
- * We want expose (and graphic exposuer) events for this window also. 
+/*	Function Name: CreateGCs
+ *	Description: Creates the graphics contexts that we need. 
+ *	Arguments: w - the sblw.
+ *	Returns: none
  */
 
-  XtAddEventHandler(window, (Cardinal) ExposureMask, TRUE, ChildExpose, NULL);
-  
-} /* InitializeHook */
-
-static void Realize(w, valueMask, attributes)
-    register Widget w;
-    Mask *valueMask;
-    XSetWindowAttributes *attributes;
+static void
+CreateGCs(w) 
+Widget w;
 {
-    XtCreateWindow( w, (Cardinal) InputOutput, (Visual *)CopyFromParent,
-	*valueMask, attributes);
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+
+  XtGCMask mask;
+  XGCValues values;
+
+  values.graphics_exposures = TRUE;
+  sblw->scroll.move_gc = XtGetGC(w, GCGraphicsExposures, &values);
+
+  mask = GCForeground | GCFont;
+  values.foreground = sblw->scroll.foreground;
+  
+  values.font = sblw->scroll.normal_font->fid;
+  sblw->scroll.normal_gc = XtGetGC(w, mask, &values);
+
+  values.font = sblw->scroll.italic_font->fid;
+  sblw->scroll.italic_gc = XtGetGC(w, mask, &values);
+
+  values.font = sblw->scroll.bold_font->fid;
+  sblw->scroll.bold_gc = XtGetGC(w, mask, &values);
+}
+
+/*	Function Name: DestroyGCs
+ *	Description: removes all gcs for this widget.
+ *	Arguments: w - the widget.
+ *	Returns: none
+ */
+
+static void
+DestroyGCs(w)
+Widget w;
+{
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+
+  XtReleaseGC(w, sblw->scroll.normal_gc);
+  XtReleaseGC(w, sblw->scroll.bold_gc);
+  XtReleaseGC(w, sblw->scroll.italic_gc);
+  XtReleaseGC(w, sblw->scroll.move_gc);
+}
+
+static void
+Realize(w, valueMask, attributes)
+register Widget w;
+Mask *valueMask;
+XSetWindowAttributes *attributes;
+{
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+
+  CreateScrollbar(w);
+  CreateGCs(w);
+  Layout(w);
+  (*superclass->core_class.realize) (w, valueMask, attributes);
+  XtRealizeWidget(sblw->scroll.bar); /* realize scrollbar. */
+  XtMapWidget(sblw->scroll.bar); /* map scrollbar. */
+
+  XtAddEventHandler(w, 0, TRUE, GExpose, NULL); /* Get Graphics Exposures */
 } /* Realize */
+
+/*	Function Name: Destroy
+ *	Description: Cleans up when we are killed.
+ *	Arguments: w - the widget.
+ *	Returns: none
+ */
+
+static void
+Destroy(w)
+Widget w;
+{
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+
+  if (sblw->scroll.bar != NULL)
+    XtDestroyWidget(sblw->scroll.bar); /* Destroy scrollbar. */
+  if (sblw->scroll.file != NULL)
+    fclose(sblw->scroll.file);
+  DestroyGCs(w);
+}
 
 /*
  *
@@ -783,68 +703,428 @@ static void Realize(w, valueMask, attributes)
 
 /* ARGSUSED */
 static Boolean 
-SetValues (current, request, new)
-Widget current, request, new;
+SetValuesHook( w, args, num_args)
+Widget w;
+ArgList args;
+Cardinal *num_args;
 {
-  ScrollByLineWidget sblw_new, sblw_current;
-  Boolean ret = FALSE;
+  Boolean ret = TRUE;
+  int i;
 
-  sblw_current = (ScrollByLineWidget) current;
-  sblw_new = (ScrollByLineWidget) new;
+  for (i = 0; i < *num_args; i++) {
+    if (strcmp(XtNfile, args[i].name) == 0) {
+      LoadFile(w);
+      ret = TRUE;
+    }
+  }
 
-  if (sblw_current->scroll_by_line.lines != sblw_new->scroll_by_line.lines) {
-    ResetThumb(new);
-    ret = TRUE;
-  }
-  if (sblw_current->scroll_by_line.font_height != 
-      sblw_new->scroll_by_line.font_height) {
-    ResetThumb(new);
-    ret = TRUE;
-  }
+/*
+ * Changing anthing else will have strange effects, I don't need it so
+ * I didn't code it.
+ */
+
   return(ret);
 
 } /* Set Values */
 
-/* Public Routines. */
-
-/*	Function Name: XtScrollByLineWidget()
- *	Description: This function returns the window widget that the 
- *                   ScrollByLine widget uses to display its text.
- *	Arguments: w - the ScrollByLine Widget.
- *	Returns: the widget to display the text into.
+/* 
+ * A little design philosophy is probabally wise to include at this point.
+ *
+ * One of the things that I has hoped to achieve with xman is to make the
+ * viewing of manpage not only easy for the nieve user, but also fast for
+ * the experienced user, I wanted to be able to use it too.  To achieve this
+ * I end up sacrificing a bit of start up time for the manual data structure.
+ * As well as, the overhead of reading the entire file before putting it up 
+ * on the display.  This is actually hardly even noticeable since most manual
+ * pages are shots, one to two pages - the notable exception is of course csh,
+ * but then that should be broken up anyway. 
+ *
+ * METHOD:
+ *
+ * I allocate a chunk of space that is the size of the file, plus a null for
+ * debugging.  Then copiesthe file into this chunk of memory.  I then allocate
+ * an array of char*'s that are assigned to the beginning of each line.  Yes,
+ * this means that I have to read the file twice, and could probabally be more
+ * clever about it, but once it is in memory the second read is damn fast.
+ * There are a few obsucrities here about guessing the number of lines and
+ * reallocing if I guess wrong, but other than that it is pretty straight 
+ * forward.
+ *
+ *                                         Chris Peterson
+ *                                         1/27/88
  */
 
-extern Widget XtScrollByLineWidget(w)
+#define ADD_MORE_MEM 100	/* first guesses for allocations. */
+#define CHAR_PER_LINE 40
+
+/*	Function Name: LoadFile
+ *	Description: Loads the current file into the internal memory.
+ *	Arguments: w - the sblw.
+ *	Returns: none
+ */
+
+static void
+LoadFile(w)
 Widget w;
 {
-  ScrollByLineWidget sblw = (ScrollByLineWidget) w; /* the sblw widget. */
-  
-  return(sblw->composite.children[1]);
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+  FILE * file = sblw->scroll.file;
+
+  char *page;
+  char **line_pointer,**top_line; /* pointers to beginnings of the 
+				     lines of the file. */
+  int nlines;			/* the current number of allocated lines. */
+  struct stat fileinfo;		/* file information from fstat. */
+
+  if ( sblw->scroll.top_line != NULL) {
+    XtFree(*(sblw->scroll.top_line)); /* free characters. */
+    XtFree(sblw->scroll.top_line); /* free lines. */
+  }
+  sblw->scroll.top_line = NULL;
+
+  if (file == NULL)
+    return;
+
+/*
+ * Get file size and allocate a chunk of memory for the file to be 
+ * copied into.
+ */
+
+  if (fstat(fileno(file), &fileinfo))
+    XtAppError(XtWidgetToApplicationContext(w), 
+	       "SBLW LoadFile: Failure in fstat.");
+
+/* 
+ * Allocate a space for a list of pointer to the beginning of each line.
+ */
+
+  if ( (nlines = fileinfo.st_size/CHAR_PER_LINE) == 0)
+    return;
+
+  page = XtMalloc(fileinfo.st_size + 1); /* leave space for the NULL */
+  top_line = line_pointer = (char**) XtMalloc( nlines * sizeof(char *) );
+
+/*
+ * Copy the file into memory. 
+ */
+
+  if (fread(page, sizeof(char), fileinfo.st_size, file) == 0)
+    XtAppError(XtWidgetToApplicationContext(w), 
+	       "SBLW LoadFile: Failure in fread.");
+
+
+/* put NULL at end of buffer. */
+
+  *(page + fileinfo.st_size) = '\0';
+
+/*
+ * Go through the file setting a line pointer to the character after each 
+ * new line.  If we run out of line pointer space then realloc that space
+ * with space for more lines.
+ */
+
+  *line_pointer++ = page;	/* first line points to first char in buffer.*/
+  while (*page != '\0') {
+
+    if ( *page == '\n' ) {
+      *line_pointer++ = page + 1;
+
+      if (line_pointer >= top_line + nlines) {
+	top_line = (char **) XtRealloc( top_line, (nlines +
+					  ADD_MORE_MEM) * sizeof(char *) );
+	line_pointer = top_line + nlines;
+	nlines += ADD_MORE_MEM;
+      }
+    }
+    page++;
+  }
+   
+/*
+ *  Realloc the line pointer space to take only the minimum amount of memory
+ */
+
+  sblw->scroll.lines = nlines = line_pointer - top_line - 1;
+  top_line = (char **) XtRealloc(top_line, nlines * sizeof(char *));
+
+/*
+ * Store the memory pointers
+ */
+
+  sblw->scroll.top_line = top_line;
+  sblw->scroll.line_pointer = 0;
+  sblw->scroll.lockout = FALSE;
+  SetThumbHeight(w);
+  SetThumb(w);
 }
 
-/*	Function Name: XtResetScrollByLine
- *	Description: This function resets the scroll by line widget.
- *	Arguments: w - the sblw widget.
+#define NLINES  66		/* This is the number of lines to wait until
+				   we boldify the line again, this allows 
+				   me to bold the first line of each page.*/
+#define BACKSPACE 010		/* I doubt you would want to change this. */
+
+/*	Function Name: PrintText
+ *	Description: This function actually prints the text.
+ *	Arguments: w - the ScrollByLine widget.
+ *                 start_line - line to start printing,
+ *                 num_lines - the number of lines to print.
+ *                 location - the location to print the text.
  *	Returns: none.
  */
 
-extern void
-XtResetScrollByLine(w)
+/* ARGSUSED */
+
+static void
+PrintText(w, start_line, num_lines, location)
 Widget w;
+int  start_line, num_lines, location;
 {
-  float location;		/* the location of the thumb. */
-  ScrollByLineWidget sblw = (ScrollByLineWidget) w; /* the sblw widget. */
-  Widget vbar;
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
 
-  vbar =  sblw->composite.children[0];
+  register char *bufp, *c;	/* Generic char pointers */
+  int current_line;		/* the number of the currrent line */
+  char buf[BUFSIZ];		/* Misc. characters */
+  int width;			/* Width of a tab stop. */
+  Boolean italicflag = FALSE;	/* Print text in italics?? */
+  Boolean first = FALSE;	/* First line of a manual page??? */
+  int x_loc, y_loc;		/* x and y location of text. */
+  static int DumpText();
+  static Boolean Boldify();	
 
-  (void) ScrollVerticalText( w, 0, TRUE);
+/*
+ * Nothing loaded, take no action.
+ */
+
+  if (sblw->scroll.top_line == NULL)
+    return;
+
+  current_line = start_line;
+
+/* Set the first character to print at the first line. */
+
+  c = *(sblw->scroll.top_line + start_line);
+
+ /* Width of a tab stop. */
+  width =  XTextWidth(sblw->scroll.normal_font, "        ", 8);
+
+/*
+ * Because XDrawString uses the bottom of the text as a position
+ * reference, add the height from the top of the font to the baseline
+ * to the ScollByLine position reference.
+ */
+
+  y_loc = location + sblw->scroll.normal_font->max_bounds.ascent;
+
+/*
+ * Ok, here's the more than mildly heuristic man page formatter.
+ * We put chars into buf until either a font change or newline
+ * occurs (at which time we flush it to the screen.)
+ */
+
+
+  bufp = buf;
+  x_loc = sblw->scroll.offset + sblw->scroll.indent;
   
-  /* reposition the thumb */
+  while(TRUE) {
+    if (current_line % NLINES == 1)
+      first = TRUE;
 
-  location = (float) sblw->scroll_by_line.line_pointer / 
-             (float) sblw->scroll_by_line.lines; 
-  XtScrollBarSetThumb( vbar, location , (float) -1 );
+/* 
+ * Lets make sure that we do not run out of space in our buffer, making full
+ * use of it is not critical since no window will be wide enough to display
+ * nearly BUFSIZ characters.
+ */
 
-  Layout(w, FALSE);		/* see if new layout is required. */
+    if ( (bufp - buf) > (BUFSIZ - 10) )
+      /* Toss everything until we find a <CR> or the end of the buffer. */
+      while ( (*c != '\n') && (*c != '\0') ) c++;
+
+    switch(*c) {
+
+    case '\0':		      /* If we reach the end of the file then return */
+      DumpText(w, x_loc, y_loc, buf, bufp - buf, italicflag, FALSE);
+      return;
+
+    case '\n':
+      if (bufp != buf) {
+	Boolean bold;
+	*bufp = '\0';		/* for Boldify. */
+	bold = ( (first) || ((x_loc == (sblw->scroll.offset +
+			      sblw->scroll.indent)) && Boldify(buf)) );
+
+	(void) DumpText(w, x_loc, y_loc, buf, bufp - buf, italicflag, bold);
+	if (bold)
+	  first = FALSE;
+      }
+
+/* 
+ * If we have painted the required number of lines then we should now return.
+ */
+      if (current_line++ == start_line + num_lines ) 
+	return;
+
+      bufp = buf;
+      italicflag = FALSE;
+      x_loc = sblw->scroll.offset + sblw->scroll.indent;
+      y_loc += sblw->scroll.font_height;
+      break;
+
+/*
+ * This tab handling code is not very clever it moves the cursor over
+ * to the next boundry of eight (8) spaces, as calculated in width just
+ * before the printing loop started.
+ */
+
+    case '\t':			/* TAB */
+      x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf, italicflag, FALSE);
+      bufp = buf; 
+      italicflag = 0;
+      x_loc += width - (x_loc % width);
+      break;
+
+    case '\033':		/* ignore esc sequences for now */
+      c++;			/* should always be esc-x */
+      break;
+
+/* 
+ * Overstrike code supplied by: cs.utexas.edu!ut-emx!clyde@rutgers.edu 
+ * Since my manual pages do not have overstrike I couldn't test this.
+ */
+
+    case BACKSPACE:		/* Backspacing for nroff bolding */
+      if (c[-1] == c[1] && c[1] != BACKSPACE) {	/* overstriking one char */
+	bufp--;		/* Zap 1st instance of char to bolden */
+	if (bufp > buf) {
+	  x_loc = DumpText(w, x_loc, y_loc, buf,
+			   bufp - buf, italicflag, FALSE);
+	  bufp = buf;
+	}
+	*bufp++ = c[1];
+	x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf, FALSE, TRUE);
+	bufp = buf;
+	first = FALSE;
+
+	/*
+	 *     Nroff bolding looks like:
+	 *	 	     C\bC\bC\bCN...
+	 * c points to ----^      ^
+	 * it needs to point to --^
+	 */
+	while (*c == BACKSPACE && c[-1] == c[1])
+	  c += 2;
+	c--;		/* Back up to previous char */
+      }
+      else {
+	if ((c[-1] == 'o' && c[1] == '+')          /* Nroff bullet */
+	    || (c[-1] == '+' && c[1] == 'o')) {	   /* Nroff bullet */
+	  /* I would prefer to put a 'bullet' char here */
+	  *bufp++ = 'o';
+	  c++;
+	}
+	else {		/* 'real' backspace - back up output ptr */
+	  bufp--;
+	}
+      }
+      break;
+
+/* End of contributed overstrike code. */
+  
+   case '_':			/* look for underlining [italicize] */
+      if(*(c + 1) == BACKSPACE) {
+	if(!italicflag) {	/* font change? */
+	  if (bufp != buf) {
+	    x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf, FALSE, FALSE);
+	    bufp = buf;
+	  }
+	  italicflag = TRUE;
+	}
+	c += 2;
+	*bufp++ = *c;
+	break;
+      }
+      /* else fall through to default, because this was a real underscore. */
+
+    default:
+      if(italicflag) { 			/* font change? */
+	if (bufp != buf) {
+	  x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf,
+			   italicflag, FALSE);
+	  bufp = buf;
+	}
+	italicflag = FALSE;
+      }
+      *bufp++ = *c;
+      break;
+    }
+    c++;
+  }
 }
+
+/*	Function Name: DumpText
+ *	Description: Dumps text to the screen.
+ *	Arguments: w - the widget.
+ *                 x_loc - to dump text at.
+ *                 y_loc - the y_location to draw_text.
+ *                 buf - buffer to dump.
+ *                 italic, bold, boolean that tells us which gc to use.
+ *	Returns: x_location of the end of the text.
+ */
+
+static int
+DumpText(w, x_loc, y_loc, buf, len, italic, bold)
+Widget w;
+int x_loc, y_loc;
+char * buf;
+int len;
+Boolean italic, bold;
+{
+  ScrollByLineWidget sblw = (ScrollByLineWidget) w;
+  GC gc;
+  XFontStruct * font;
+
+  if (italic) {
+    if (bold) 
+      XtAppError(XtWidgetToApplicationContext(w),
+		 "SBLW: cannot be both bold and italic.");
+    gc = sblw->scroll.italic_gc;
+    font = sblw->scroll.italic_font;
+  }
+  else {
+    if (bold) {
+      gc = sblw->scroll.bold_gc;
+      font = sblw->scroll.bold_font;
+    }
+    else {
+      gc = sblw->scroll.normal_gc;
+      font = sblw->scroll.normal_font;
+    }
+  }  
+  XDrawString(XtDisplay(w), XtWindow(w), gc, x_loc, y_loc, buf, len);
+  return(x_loc + XTextWidth(font, buf, len));
+}
+
+/*	Function Name: Boldify
+ *	Description: look for keyword.
+ *	Arguments: sp - string pointer.
+ *	Returns: 1 if keyword else 0.
+ */
+
+static Boolean
+Boldify(sp)
+register char *sp;
+{
+  register char *sp_pointer;
+  int length,count;
+
+/* 
+ * If there are not lower case letters in the line the assume it is a
+ * keyword and boldify it in PrintManpage.
+ */
+
+  length = strlen(sp);
+  for (sp_pointer = sp, count = 0; count < length; sp_pointer++,count++) 
+    if ( !isupper(*sp_pointer) && !isspace(*sp_pointer) )
+      return(0);
+  return(1);
+}
+
+#undef superclass

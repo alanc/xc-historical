@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.5 89/02/15 19:25:12 kit Exp $
+ * $XConsortium: main.c,v 1.6 89/04/28 15:05:42 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -34,12 +34,6 @@ static void ArgError();
 #define Offset(field) (XtOffset(Xman_Resources *, field))
 
 static XtResource my_resources[] = {
-  {"manualFontNormal", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     Offset(fonts.normal), XtRString, MANPAGE_NORMAL},
-  {"manualFontBold", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     Offset(fonts.bold), XtRString, MANPAGE_BOLD},
-  {"manualFontItalic", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     Offset(fonts.italic), XtRString, MANPAGE_ITALIC},
   {"directoryFontNormal", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
      Offset(fonts.directory), XtRString, DIRECTORY_NORMAL},
   {"bothShown", XtCBoolean, XtRBoolean, sizeof(Boolean),
@@ -116,14 +110,8 @@ int argc;
   XtAppAddActions(XtWidgetToApplicationContext(initial_widget),
 		  xman_actions, XtNumber(xman_actions));
 
-  if (!resources.fonts.normal)
-	PrintError("Failed to get the manualFontNormal font");
-  if (!resources.fonts.bold)
-	resources.fonts.bold = resources.fonts.normal;
-  if (!resources.fonts.italic)
-	resources.fonts.italic = resources.fonts.bold;
   if (!resources.fonts.directory)
-	resources.fonts.directory = resources.fonts.normal;
+	PrintError("Failed to get the directory font.");
 
 #ifdef DEBUG
   printf("debugging mode\n");

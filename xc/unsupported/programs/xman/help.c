@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: help.c,v 1.3 89/01/06 18:42:03 kit Exp $
+ * $XConsortium: help.c,v 1.4 89/04/28 15:05:40 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -72,20 +72,17 @@ OpenHelpfile(man_globals)
 ManpageGlobals * man_globals;
 {
   FILE * help_file_ptr;
+  Arg arglist[1];
+  Cardinal num_args = 0;
 
   if( (help_file_ptr = fopen(resources.help_file, "r")) == NULL ) {
     PrintWarning(man_globals,
 		 "Could not open help file, NO HELP WILL BE AVALIABLE.");
     return(FALSE);
   }
+    
+  XtSetArg(arglist[num_args], XtNfile, help_file_ptr); num_args++;
+  XtSetValues(man_globals->manpagewidgets.manpage, arglist, num_args);
 
-  if ( ! InitManpage(man_globals, 
-		     man_globals->manpagewidgets.manpage, help_file_ptr) ) {
-    PrintWarning(man_globals,
-		 "Help file is empty, NO HELP WILL BE AVALIABLE.");
-    return(FALSE);
-  }
-
-  fclose(help_file_ptr);
   return(TRUE);
 }

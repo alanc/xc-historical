@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.6 89/02/15 19:02:12 kit Exp $
+ * $XConsortium: man.h,v 1.7 89/04/28 15:05:46 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 #include <sys/dir.h>
-#include <sys/stat.h>
 
 /* X include files */
 
@@ -63,10 +62,7 @@
 typedef void (*fcall)();	/* function pointer typedef */
 
 typedef struct _XmanFonts {
-  XFontStruct * bold,		/* The bold text for the man pages. */
-    * normal,			/* The normal text for the man pages. */
-    * italic,			/* The italic text for the man pages. */
-    * directory;		/* The font for the directory.  */
+  XFontStruct * directory;		/* The font for the directory.  */
 } XmanFonts;
 
 typedef struct _XmanCursors {
@@ -101,16 +97,6 @@ typedef struct tManual {
   int nentries;			/* how many */
   int nalloc;			/* how much space allocated */
 } Manual;
-
-/* 
- * The structure with the information about the file
- */
-
-typedef struct _MemoryStruct {
-  char * top_of_page;		/* a pointer to the top of the page. */
-  char ** top_line;		/* a pointer to the top of the list of
-				   lines in the file. */
-} MemoryStruct;
    
 /* psuedo Globals that are specific to each manpage created. */
 
@@ -136,8 +122,6 @@ typedef struct _ManpageGlobals{
   char ** section_name;		/* The name of each of the sections */
 
   ManPageWidgets manpagewidgets; /* The manpage widgets. */
-
-  MemoryStruct * memory_struct; /* The memory struct */
 
   /* Things to remember when cleaning up whne killing manpage. */
 

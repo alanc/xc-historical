@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.10 89/05/03 17:22:03 kit Exp $
- * $Header: buttons.c,v 1.10 89/05/03 17:22:03 kit Exp $
+ * $XConsortium: buttons.c,v 1.11 89/05/03 17:35:11 kit Exp $
+ * $Header: buttons.c,v 1.11 89/05/03 17:35:11 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -32,7 +32,7 @@
 #include "icon_help.h"
 #include "iconclosed.h"
 
-static void AddManpageCallbacks(), CreateOptionMenu(), CreateSectionMenu();
+static void CreateOptionMenu(), CreateSectionMenu();
 ManpageGlobals * InitPsuedoGlobals();
 
 /*	Function Name: MakeTopBox
@@ -50,7 +50,7 @@ MakeTopBox()
   Arg arglist[TOPARGS];		/* An argument list */
   Cardinal num_args = 0;	/* The number of arguments. */
   static char * full_size[] = {
-    "manualBrowser", MANPAGE_BUTTON, NULL
+    "topLabel", MANPAGE_BUTTON, NULL
   };
   static char * half_size[] = {
     HELP_BUTTON, QUIT_BUTTON, NULL
@@ -112,7 +112,7 @@ CreateManpage()
 
   man_globals = InitPsuedoGlobals();
   CreateManpageWidget(man_globals, MANNAME, TRUE);
-  StartManpage( man_globals,  OpenHelpfile(man_globals) );
+  StartManpage( man_globals, OpenHelpfile(man_globals) );
 }
 
 /*	Function Name: InitPsuedoGlobals
@@ -162,7 +162,6 @@ ManpageGlobals * man_globals;
 char * name;
 Boolean full_instance;
 {
-  int font_height;
   Arg arglist[MANPAGEARGS];	/* An argument list for widget creation */
   Cardinal num_args;		/* The number of arguments in the list. */
   Widget top, pane, hpane, sections;	/* Widgets */
@@ -252,19 +251,8 @@ Boolean full_instance;
 
 /* Create Manpage */
 
-  font_height = (resources.fonts.normal->max_bounds.ascent + 
-		   resources.fonts.normal->max_bounds.descent);
-
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNallowVert, TRUE);
-  num_args++;
-  XtSetArg(arglist[num_args], XtNfontHeight, font_height);
-  num_args++;
-
   mpw->manpage = XtCreateWidget(MANUALPAGE, scrollByLineWidgetClass,
-				pane, arglist, num_args);
-
-  AddManpageCallbacks(man_globals, mpw->manpage);
+				pane, NULL, (Cardinal) 0);
 }
 
 /*	Function Name: StartManpage
@@ -343,37 +331,6 @@ Boolean help;
   XtMapWidget( man_globals->This_Manpage );
 
   AddCursor( man_globals->This_Manpage, resources.cursors.manpage);
-}
-
-/*	Function Name: AddManpageCallbacks
- *	Description: adds callback and event handler to manual page widget.
- *	Arguments: man_globals - the psuedo globals structure for each manpage.
- *                 w - the manual page widget.
- *	Returns: none
- */
-
-static void
-AddManpageCallbacks(man_globals, w)
-ManpageGlobals * man_globals;
-Widget w;
-{
-  
-/*
- * Allocate the memory structure that PrintManpage uses to determine what
- * text to print for the manpage.
- */
-
-  man_globals->memory_struct = (MemoryStruct *) XtMalloc(sizeof(MemoryStruct));
-
-/*
- * Initialize to NULL, telling InitManpage not to try to free this memory. 
- */
-
-  man_globals->memory_struct->top_line = NULL;
-  man_globals->memory_struct->top_of_page = NULL;
-  
-  XtAddCallback(w, XtNcallback,
-		PrintManpage, (caddr_t) man_globals->memory_struct);
 }
 
 /*      Function Name: MenuDestroy

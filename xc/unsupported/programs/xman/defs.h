@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.13 89/04/28 15:05:30 kit Exp $
+ * $XConsortium: defs.h,v 1.14 89/05/03 17:35:27 kit Exp $
  * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -31,19 +31,7 @@
 #define MANPAGE_CURSOR "left_ptr"	/* The manpage cursor. */
 #define SEARCH_ENTRY_CURSOR "question_arrow"	/* The search text widget
 						   cursor. */
-/* The default fonts */
-
-#ifdef ATHENA
-#define MANPAGE_NORMAL   "fixed"
-#define MANPAGE_BOLD     "helvetica-bold12"
-#define MANPAGE_ITALIC   "helvetica-boldoblique12"
-#define DIRECTORY_NORMAL "fixed"
-#else
-#define MANPAGE_NORMAL   "*-new century schoolbook-medium-r-normal--*-120-*"
-#define MANPAGE_BOLD     "*-new century schoolbook-bold-r-normal--*-120-*"
-#define MANPAGE_ITALIC   "*-new century schoolbook-bold-i-normal--*-120-*"
-#define DIRECTORY_NORMAL "fixed"
-#endif ATHENA
+#define DIRECTORY_NORMAL "fixed" /* The default dir font */
 
 #define OPTION_MENU "optionMenu" /* Name of the Option Menu. */
 #define SECTION_MENU "sectionMenu" /* Name of the Section Menu. */
@@ -118,10 +106,6 @@
 #define ENTRYALLOC 100		/* The number of entries allocated
 				   at a time for a section. */
 
-#define NLINES  66		/* This is the number of lines to wait until
-				   we boldify the line again, this allows 
-				   me to bold the first line of each page.*/
-
 #define INITIAL_DIR 0		/* The Initial Directory displayed. */
 
 #define LMAN 3			/* Name and length of the man and cat dirs. */
@@ -142,7 +126,6 @@
 
 #define COPY "cp"		/* The unix copy command.  */
 
-#define BACKSPACE 010		/* I doubt you would want to change this. */
 #define MANDESC "mandesc"	/* Name of the mandesc files.  */
 #ifdef macII
 #define MANDIR "/usr/catman/u_man:/usr/catman/a_man"	/* The default manual page directory. */

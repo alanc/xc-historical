@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.7 89/04/28 15:05:37 kit Exp $
+ * $XConsortium: handler.c,v 1.8 89/05/03 17:22:44 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -198,15 +198,22 @@ ManpageGlobals * man_globals;
 FILE * file;
 {
   String params = "ManualPage";
-  Cardinal num_params = 1;
-
+  Cardinal num_params = 1, num_args = 0;
+  FILE * old_file;
+  Arg arglist[1];
+  
   if (file == NULL)
     return;
 
-  if ( ! InitManpage(man_globals,man_globals->manpagewidgets.manpage,file))
-    return;
+  XtSetArg(arglist[num_args], XtNfile, &old_file); num_args++;
+  XtGetValues(man_globals->manpagewidgets.manpage, arglist, num_args);
 
-  fclose(file);
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNfile, file); num_args++;
+  XtSetValues(man_globals->manpagewidgets.manpage, arglist, num_args);
+
+  if (old_file != NULL)
+    fclose(file);
 
   if (!man_globals->both_shown) {
     Arg arglist[1];
@@ -216,8 +223,6 @@ FILE * file;
   }
 
   GotoPage(man_globals->manpagewidgets.manpage, NULL, &params, &num_params);
-
-  XtResetScrollByLine(man_globals->manpagewidgets.manpage);
 }
 
 /*	Function Name: DirectoryHandler

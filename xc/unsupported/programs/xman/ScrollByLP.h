@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByLP.h,v 1.1 88/08/31 22:52:24 jim Exp $
+ * $XConsortium: ScrollByLP.h,v 1.2 88/09/06 17:47:30 jim Exp $
  * $Athena: ScrollByLP.h,v 4.0 88/08/31 22:11:21 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -22,9 +22,9 @@
 
 #ifndef _XtScrollByLinePrivate_h
 #define _XtScrollByLinePrivate_h
-
-#define DEFAULT_WIDTH 300
-#define DEFAULT_HEIGHT 200
+#include <stdio.h>
+#include <X11/SimpleP.h>
+#include "ScrollByL.h"
 
 /***********************************************************************
  *
@@ -39,8 +39,8 @@ typedef struct {
 
 /* Full class record declaration */
 typedef struct _ScrollByLineClassRec {
-    CoreClassPart	core_class;
-    CompositeClassPart  composite_class;
+    CoreClassPart	  core_class;
+    SimpleClassPart       simple_class;
     ScrollByLineClassPart scrolled_widget_class;
 } ScrollByLineClassRec;
 
@@ -49,24 +49,30 @@ extern ScrollByLineClassRec scrollByLineClassRec;
 /* New fields for the ScrollByLine widget record */
 typedef struct _ScrollByLinePart {
   Pixel foreground;		/* The color for the forground of the text. */
-  int inner_width, inner_height; /* The (viewable) size of the inner widget. */
-  Boolean force_bars,		/* Must have bars visable */
-    allow_horiz,		/* allow use of horizontal scroll bar. */
-    allow_vert,			/* allow use of vertical scroll bar. */
-    use_bottom,			/* put scroll bar on bottom of window. */
+  Boolean force_vert,		/* Must have scrollbar visable */
     use_right;			/* put scroll bar on right side of window. */
-  int lines;			/* The number of lines in the text. */
-  int font_height;		/* the height of the font. */
-  XtCallbackList callbacks;	/* The callback list. */
-  Boolean key;			/* which window will we size on
-				   (TRUE == INNER). */
-
+  FILE * file;			/* The file to display. */
+  Dimension indent;		/* amount to indent the file. */
+  XFontStruct * bold_font,	/* The three fonts. */
+    * normal_font,
+    * italic_font;
+  
 /* variables not in resource list. */
 
+  Widget bar;			/* The scrollbar. */
+  int font_height;		/* the height of the font. */
   int line_pointer;		/* The line that currently is at the top 
 				   of the window being displayed. */
-} ScrollByLinePart;
+  Dimension offset;		/* Drawing offset because of scrollbar. */
+  GC move_gc;			/* GC to use when moving the text. */
+  GC bold_gc, normal_gc, italic_gc; /* gc for drawing. */
 
+  char ** top_line;		/* The top line of the file. */
+  int lines;			/* number of line in the file. */
+
+  Boolean lockout;		/* Make sure that we do not get two
+				   XCopyArea Commands in a row. */
+} ScrollByLinePart;
 
 /****************************************************************
  *
@@ -75,9 +81,9 @@ typedef struct _ScrollByLinePart {
  ****************************************************************/
 
 typedef struct _ScrollByLineRec {
-    CorePart	    core;
-    CompositePart   composite;
-    ScrollByLinePart  scroll_by_line;
+    CorePart	      core;
+    SimplePart        simple;
+    ScrollByLinePart  scroll;
 } ScrollByLineRec;
 
 #endif _XtScrollByLinePrivate_h
