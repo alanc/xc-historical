@@ -1,5 +1,4 @@
-/*
- * $XConsortium: List.h,v 1.18 90/12/01 13:01:42 rws Exp $
+/* $XConsortium: List.h,v 1.19 91/02/17 13:15:17 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -53,6 +52,7 @@
  callback            Callback           XtCallbackList  NULL       **6
  columnSpacing       Spacing            Dimension       6
  cursor		     Cursor		Cursor		left_ptr
+ cursorName	     Cursor		String		NULL
  defaultColumns      Columns            int             2          **5
  destroyCallback     Callback		Pointer		NULL 
  font		     Font		XFontStruct*	XtDefaultFont
@@ -67,6 +67,8 @@
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  numberStrings       NumberStrings      int             0          **4
  pasteBuffer         Boolean            Boolean         False
+ pointerColor	     Foreground		Pixel		XtDefaultForeground
+ pointerColorBackground Background	Pixel		XtDefaultBackground
  rowSpacing          Spacing            Dimension       4
  sensitive	     Sensitive		Boolean		True
  verticalList        Boolean            Boolean         False
