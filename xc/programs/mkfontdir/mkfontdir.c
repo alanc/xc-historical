@@ -22,28 +22,25 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.1 91/02/22 15:44:49 keith Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.2 91/02/23 17:29:30 keith Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <stdio.h>
 #include <sys/param.h>
-#ifdef SYSV
+
+#ifndef X_NOT_POSIX
 #include <dirent.h>
 #else
-#ifdef SVR4
+#ifdef SYSV
 #include <dirent.h>
 #else
 #ifdef USG
 #include <dirent.h>
 #else
-#ifdef _POSIX_SOURCE
-#include <dirent.h>
-#else
 #include <sys/dir.h>
 #ifndef dirent
 #define dirent direct
-#endif
 #endif
 #endif
 #endif
