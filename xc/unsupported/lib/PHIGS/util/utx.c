@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: utx.c,v 5.1 91/02/16 09:50:14 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -48,7 +48,7 @@ phg_utx_pex_supported( display, pexinfo )
 	    &pexinfo->vendor, &pexinfo->release_number,
 	    &pexinfo->subset_info ) ) {
 	if ( pexinfo == &info )
-	    Xfree( pexinfo->vendor );
+	    XFree( pexinfo->vendor );
 	return 1;
     } else
 	return 0;

@@ -1,4 +1,4 @@
-/* $XConsortium: pex_util.c,v 5.1 91/02/16 09:50:01 rws Exp $ */
+/* $XConsortium: pex_util.c,v 5.2 91/02/18 11:16:58 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -38,7 +38,7 @@ PexGrowScratch( srvr, size )
     unsigned		size;
 {
     if ( srvr->scratch )
-	Xfree((char *)srvr->scratch);
+	XFree((char *)srvr->scratch);
 
     if ( !(srvr->scratch = (Pointer)Xmalloc( srvr->scratch_size = size )) )
 	srvr->scratch_size = 0;
@@ -58,8 +58,8 @@ display_close_proc( display, ec )
     for ( srvrp = &Pex_srvr_list; *srvrp; srvrp = &(*srvrp)->next ) {
 	if ( (*srvrp)->display == display ) {
 	    if ( (*srvrp)->scratch )
-		Xfree( (char *)(*srvrp)->scratch );
-	    Xfree( (char *)*srvrp );
+		XFree( (char *)(*srvrp)->scratch );
+	    XFree( (char *)*srvrp );
 	    *srvrp = (*srvrp)->next;
 	    break;
 	}
@@ -126,7 +126,7 @@ PexEntryCheck( display, add_it )
 
 	if ( new = (Pex_srvr_info *)Xcalloc( 1, sizeof(Pex_srvr_info) ) ) {
 	    if ( !PEX_SCRATCH( new, INIT_SCRATCH_SIZE ) ) {
-		Xfree( (char *)new );
+		XFree( (char *)new );
 	    } else {
 		new->display = display;
 		new->next = (Pex_srvr_info*)NULL;
@@ -145,8 +145,8 @@ PexEntryCheck( display, add_it )
     }
 #endif
 		} else {
-		    Xfree( (char *)new );
-		    Xfree( (char *)new->scratch );
+		    XFree( (char *)new );
+		    XFree( (char *)new->scratch );
 		}
 	    }
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpx_util.c,v 5.1 91/02/16 09:48:32 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -106,7 +106,7 @@ destroy_css_srvr( cph, css_srvr )
     if ( display )
 	phg_cpx_release_connection( cph, display );
     if ( vendor_string )
-	Xfree( vendor_string );
+	XFree( vendor_string );
 }
 
 
