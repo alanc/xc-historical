@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGrKeybd.c,v 11.13 87/06/10 23:06:07 jg Exp $ */
+/* $Header: XGrKeybd.c,v 11.13 87/09/08 12:28:23 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -8,7 +8,7 @@
 int XGrabKeyboard (dpy, window, ownerEvents, pointerMode, keyboardMode, time)
     register Display *dpy;
     Window window;
-    int ownerEvents;  /* boolean */
+    Bool ownerEvents;
     int pointerMode, keyboardMode;
     Time time;
 {

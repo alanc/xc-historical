@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGrKey.c,v 11.5 87/05/24 21:36:12 jg Exp $ */
+/* $Header: XGrKey.c,v 11.5 87/09/08 12:28:05 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -11,7 +11,7 @@ XGrabKey(dpy, key, modifiers, grab_window, owner_events,
     int key;
     unsigned int modifiers;
     Window grab_window;
-    int owner_events;  /* boolean */
+    Bool owner_events;
     int pointer_mode, keyboard_mode;
 
 {
