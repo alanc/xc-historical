@@ -1,4 +1,4 @@
-/* $XConsortium: Xcms.h,v 1.11 91/01/27 00:31:39 alt Exp  */
+/* $XConsortium: Xcms.h,v 1.11 91/01/27 00:31:39 alt Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.

@@ -1,4 +1,4 @@
-/* $Xconsortium: CIEXYZ.c,v 1.3 91/01/22 22:13:51 alt Exp $" */
+/* $XConsortium: CIEXYZ.c,v 1.3 91/01/22 22:13:51 alt Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.

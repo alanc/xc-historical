@@ -1,3 +1,5 @@
+/* $XConsortium: main.c,v 1.173 91/03/27 21:19:16 gildea Exp $ */
+
 /* Copyright 1989 Massachusetts Institute of Technology */
 
 /*
