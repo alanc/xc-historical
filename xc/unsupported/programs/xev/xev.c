@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XConsortium: xev.c,v 1.7 88/09/06 14:38:01 jim Exp $
+ * $XConsortium: xev.c,v 1.8 88/10/09 15:44:28 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -890,12 +890,13 @@ set_sizehints (hintp, min_width, min_height,
 	hintp->height = defheight;
 	hintp->flags |= PSize;
     }
+/*
     if (!(hintp->flags & USPosition)) {
 	hintp->x = defx;
 	hintp->y = defy;
 	hintp->flags |= PPosition;
     }
-
+ */
     if (geom_result & XNegative) {
 	hintp->x = DisplayWidth (dpy, DefaultScreen (dpy)) + hintp->x -
 		    hintp->width;
