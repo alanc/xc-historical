@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.43 94/07/07 15:16:59 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.44 94/07/07 16:46:42 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -40,7 +40,6 @@ in this Software without prior written authorization from the X Consortium.
 #include "save.h"
 #include "name.h"
 
-#include <X11/Xatom.h>
 #include <signal.h>
 
 #define DEFAULT_SESSION_NAME "Default"
@@ -50,15 +49,12 @@ AppResources app_resources;
 #define Offset(field) XtOffsetOf(struct _AppResources, field)
 static XtResource resources [] = {
     {"verbose", "Verbose",  XtRBoolean, sizeof (Boolean), 
-	 Offset (verbose), XtRImmediate, (XtPointer) False},
-    {"name", "Name", XtRString, sizeof (XtRString), 
-	 Offset (name), XtRString, (XtPointer) DEFAULT_SESSION_NAME}
+	 Offset (verbose), XtRImmediate, (XtPointer) False}
 };
 #undef Offset
 
 static XrmOptionDescRec options[] = {
-    {"-verbose",    "*verbose",	    XrmoptionNoArg,     (XPointer) "TRUE"},
-    {"-name",	    "*name",	    XrmoptionSepArg,    (XPointer) NULL},
+    {"-verbose",    "*verbose",	    XrmoptionNoArg,     (XPointer) "TRUE"}
 };
 
 List		*PendingList;
@@ -73,7 +69,7 @@ jmp_buf		JumpHere;
 
 char		*sm_id;
 
-char		*session_name;
+char		*session_name = NULL;
 
 IceAuthDataEntry *authDataEntries = NULL;
 int		numTransports = 0;
@@ -90,6 +86,8 @@ Widget		topLevel;
 Widget		    chooseSessionPopup;
 
 Widget		    	chooseSessionForm;
+
+Widget			    chooseSessionLabel;
 
 Widget			    chooseSessionListWidget;
 
@@ -858,115 +856,13 @@ static void Syntax(call)
 
 
 
-main(argc, argv)
-    int  argc;
-    char **argv;
+void
+start_session (name)
+
+char *name;
+
 {
-    IceListenObj *listenObjs;
-    char 	*networkIds;
-    int  	database_read, i;
-    char	*p;
-    char	*progName;
-    char	title[256];
-    char 	errormsg[256];
-    static	char environment_name[] = "SESSION_MANAGER";
-
-    umask (0077);	/* disallow non-owner access */
-
-    p = strrchr(argv[0], '/');
-    progName = (p ? p + 1 : argv[0]);
-    topLevel = XtVaAppInitialize (&appContext, "XSm", options, 
-	XtNumber(options), &argc, argv, NULL,
-        XtNmappedWhenManaged, False,
-	NULL);
-	
-    if (argc > 1) Syntax(progName);
-    XtGetApplicationResources(topLevel, (XtPointer) &app_resources,
-			      resources, XtNumber(resources), NULL, 0);
-    
-    XtAppAddActions (appContext,
-	xsm_actions, XtNumber (xsm_actions));
-
-    sprintf (title, "xsm: %s", app_resources.name);
-
-    XtVaSetValues (topLevel,
-	XtNtitle, title,		/* session name */
-	NULL);
-
-
-    /*
-     * Set my own IO error handler.
-     */
-
-    IceSetIOErrorHandler (myIOErrorHandler);
-
-
-    /*
-     * Ignore SIGPIPE
-     */
-
-    signal (SIGPIPE, SIG_IGN);
-
-
-    /*
-     * Init SM lib
-     */
-
-    /* if these are errors they should write to stderr or an error file. */
-    if (!SmsInitialize ("SAMPLE-SM", "1.0",
-	NewClientProc, NULL,
-	HostBasedProc, 256, errormsg))
-    {
-	printf ("%s\n", errormsg);
-	exit (1);
-    }
-
-    if (!IceListenForConnections (&numTransports, &listenObjs,
-	256, errormsg))
-    {
-	printf ("%s\n", errormsg);
-	exit (1);
-    }
-
-    if (!set_auth (numTransports, listenObjs, &authDataEntries))
-    {
-	printf ("Could not set authorization\n");
-	exit (1);
-    }
-
-    InitWatchProcs (appContext);
-
-
-    create_choose_session_popup ();
-    create_main_window ();
-    create_client_info_popup ();
-    create_save_popup ();
-    create_name_session_popup ();
-
-
-    /*
-     * Realize top level.
-     */
-
-    XtRealizeWidget (topLevel);
-    
-    for (i = 0; i < numTransports; i++)
-    {
-	XtAppAddInput (appContext,
-	    IceGetListenConnectionNumber (listenObjs[i]),
-	    (XtPointer) XtInputReadMask,
-	    newConnectionXtProc, (XtPointer) listenObjs[i]);
-    }
-
-    /* the sizeof includes the \0, so we don't need to count the '=' */
-    networkIds = IceComposeNetworkIdList (numTransports, listenObjs);
-    p = (char *) malloc((sizeof environment_name) + strlen(networkIds) + 1);
-    if(!p) nomem();
-    sprintf(p, "%s=%s", environment_name, networkIds);
-    putenv(p);
-
-    if (app_resources.verbose)
-	printf ("setenv %s %s\n", environment_name, networkIds);
+    int database_read;
 
 
     /*
@@ -975,7 +871,7 @@ main(argc, argv)
      * identify it.
      */
 
-    database_read = read_save (app_resources.name /* session name */, &sm_id);
+    database_read = read_save (name, &sm_id);
     if (!sm_id)
 	sm_id = SmsGenerateClientID (NULL);
     XChangeProperty (XtDisplay (topLevel), XtWindow (topLevel),
@@ -1003,14 +899,167 @@ main(argc, argv)
     restart_everything();
 
 
+    if (app_resources.verbose)
+	printf ("Waiting for connections...\n");
+}
+
+
+
+main(argc, argv)
+    int  argc;
+    char **argv;
+{
+    IceListenObj *listenObjs;
+    char 	*networkIds;
+    char	*p;
+    char	*progName;
+    char	title[256];
+    char 	errormsg[256];
+    static	char environment_name[] = "SESSION_MANAGER";
+    Dimension   width, height;
+    Position	x, y;
+    int		sessionNameCount, i;
+    String	*sessionNames;
+
+    umask (0077);	/* disallow non-owner access */
+
+    p = strrchr(argv[0], '/');
+    progName = (p ? p + 1 : argv[0]);
+    topLevel = XtVaAppInitialize (&appContext, "XSm", options, 
+	XtNumber(options), &argc, argv, NULL,
+        XtNmappedWhenManaged, False,
+	NULL);
+	
+    if (argc > 1) Syntax(progName);
+    XtGetApplicationResources(topLevel, (XtPointer) &app_resources,
+			      resources, XtNumber(resources), NULL, 0);
+    
+    XtAppAddActions (appContext,
+	xsm_actions, XtNumber (xsm_actions));
+
+
+    /*
+     * Set my own IO error handler.
+     */
+
+    IceSetIOErrorHandler (myIOErrorHandler);
+
+
+    /*
+     * Ignore SIGPIPE
+     */
+
+    signal (SIGPIPE, SIG_IGN);
+
+
+    /*
+     * Init SM lib
+     */
+
+    if (!SmsInitialize ("SAMPLE-SM", "1.0",
+	NewClientProc, NULL,
+	HostBasedProc, 256, errormsg))
+    {
+	fprintf (stderr, "%s\n", errormsg);
+	exit (1);
+    }
+
+    if (!IceListenForConnections (&numTransports, &listenObjs,
+	256, errormsg))
+    {
+	fprintf (stderr, "%s\n", errormsg);
+	exit (1);
+    }
+
+    if (!set_auth (numTransports, listenObjs, &authDataEntries))
+    {
+	fprintf (stderr, "Could not set authorization\n");
+	exit (1);
+    }
+
+    InitWatchProcs (appContext);
+
+    for (i = 0; i < numTransports; i++)
+    {
+	XtAppAddInput (appContext,
+	    IceGetListenConnectionNumber (listenObjs[i]),
+	    (XtPointer) XtInputReadMask,
+	    newConnectionXtProc, (XtPointer) listenObjs[i]);
+    }
+
+    /* the sizeof includes the \0, so we don't need to count the '=' */
+    networkIds = IceComposeNetworkIdList (numTransports, listenObjs);
+    p = (char *) malloc((sizeof environment_name) + strlen(networkIds) + 1);
+    if(!p) nomem();
+    sprintf(p, "%s=%s", environment_name, networkIds);
+    putenv(p);
+
+    if (app_resources.verbose)
+	printf ("setenv %s %s\n", environment_name, networkIds);
+
+    free (networkIds);
+
+    create_choose_session_popup ();
+    create_main_window ();
+    create_client_info_popup ();
+    create_save_popup ();
+    create_name_session_popup ();
+
+
+    /*
+     * Get list of session names
+     */
+
+    if (!GetSessionNames(&sessionNameCount, &sessionNames))
+    {
+	session_name = XtNewString (DEFAULT_SESSION_NAME);
+
+	sprintf (title, "xsm: %s", session_name);
+
+	XtVaSetValues (topLevel,
+	    XtNtitle, title,		/* session name */
+	    NULL);
+
+	XtRealizeWidget (topLevel);
+
+    	start_session (session_name);
+    }
+    else
+    {
+	/*
+	 * Add the session names to the list
+	 */
+
+	AddSessionNames (sessionNameCount, sessionNames);
+
+
+	/*
+	 * Center popup containing choice of sessions
+	 */
+
+	XtRealizeWidget (chooseSessionPopup);
+
+	XtVaGetValues (chooseSessionPopup,
+	    XtNwidth, &width,
+	    XtNheight, &height,
+	    NULL);
+
+	x = (Position)(WidthOfScreen (XtScreen (topLevel)) - width) / 2;
+	y = (Position)(HeightOfScreen (XtScreen (topLevel)) - height) / 3;
+
+	XtVaSetValues (chooseSessionPopup,
+	    XtNx, x,
+	    XtNy, y,
+	    NULL);
+
+	XtPopup (chooseSessionPopup, XtGrabNone);
+    }
+
+
     /*
      * Main loop
      */
 
-    if (app_resources.verbose)
-	printf ("Waiting for connections...\n");
-
-    free (networkIds);
     setjmp (JumpHere);
     XtAppMainLoop (appContext);
 }
