@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.93 89/03/24 14:57:04 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.94 89/03/24 17:34:29 jim Exp $
  */
 
 #include "copyright.h"
@@ -14,6 +14,8 @@
 
 #include <stdio.h>
 #include "Xlibint.h"
+
+static void _EatData32();
 
 #ifdef CRAY
 
@@ -635,7 +637,7 @@ Status _XReply (dpy, rep, extra, discard)
 		if (extra == 0) {
 		    if (discard && (rep->generic.length > 0))
 		       /* unexpectedly long reply! */
-		       _EatData (dpy, rep->generic.length);
+		       _EatData32 (dpy, rep->generic.length);
 		    return (1);
 		    }
 		if (extra == rep->generic.length) {
@@ -650,7 +652,7 @@ Status _XReply (dpy, rep, extra, discard)
 		    /* Actual reply is longer than "extra" */
 		    _XRead (dpy, NEXTPTR(rep,xReply), ((long)extra) << 2);
 		    if (discard)
-		        _EatData (dpy, rep->generic.length - extra);
+		        _EatData32 (dpy, rep->generic.length - extra);
 		    return (1);
 		    }
 		/* 
@@ -719,23 +721,33 @@ Status _XReply (dpy, rep, extra, discard)
 }   
 
 
-/* Read and discard "n" 32-bit words. */
+/* Read and discard "n" 8-bit bytes of data */
 
-static _EatData (dpy, n)
+void _XEatData (dpy, n)
     Display *dpy;
-    unsigned long n;
-    {
-    unsigned int bufsize;
-    char *buf;
-    n <<= 2;  /* convert to number of bytes */
-    buf = Xmalloc (bufsize = (n > 2048) ? 2048 : n);
-    while (n) {
-	long bytes_read = (n > bufsize) ? bufsize : n;
+    register unsigned long n;
+{
+#define SCRATCHSIZE 2048
+    char buf[SCRATCHSIZE];
+
+    while (n > 0) {
+	register long bytes_read = (n > SCRATCHSIZE) ? SCRATCHSIZE : n;
 	_XRead (dpy, buf, bytes_read);
 	n -= bytes_read;
-	}
-    Xfree (buf);
     }
+#undef SCRATCHSIZE
+}
+
+
+/* Read and discard "n" 32-bit words. */
+
+static void _EatData32 (dpy, n)
+    Display *dpy;
+    unsigned long n;
+{
+    _XEatData (dpy, n << 2);
+}
+
 
 /*
  * _XEnq - Place event packets on the display's queue.
