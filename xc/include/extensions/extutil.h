@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.h,v 1.5 89/10/06 11:33:38 jim Exp $
+ * $XConsortium: extutil.h,v 1.6 89/10/08 16:35:39 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -98,4 +98,20 @@ int proc (dpy, codes) \
     return XextRemoveDisplay (extinfo, dpy); \
 }
 
-#define XEXT_GENERATE_ERROR_STRING(proc)
+#define XEXT_GENERATE_ERROR_STRING(proc,extname,nerr,errl) \
+int proc (dpy, code, codes, buf, n) \
+    Display  *dpy; \
+    int code; \
+    XExtCodes *codes; \
+    char *buf; \
+    int n; \
+{  \
+    code -= codes->first_error;  \
+    if (code >= 0 && code < nerr) { \
+	char tmp[256]; \
+	sprintf (tmp, "%s.%d", extname, code); \
+	XGetErrorDatabaseText (dpy, "XProtoError", tmp, errl[code], buf, n); \
+    } \
+    return 1; \
+}
+
