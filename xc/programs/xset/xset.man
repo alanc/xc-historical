@@ -3,7 +3,7 @@
 xset - X window system user setup program
 .SH SYNOPSIS
 .B xset
-option [ option ] [ \fIhost\fP:\fIdisplay\fP ]
+[-display \fIhost\fP:\fIdisplay\fP] option ...
 .SH DESCRIPTION
 This program is used to set various user preference options of the display.
 the \fBb\fP option controls bell volume, pitch and duration,

@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.23 87/12/21 12:10:14 jim Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.24 88/01/25 15:04:00 jim Locked $";
 #endif
 
 #include <X11/Xos.h>
@@ -52,9 +52,12 @@ char *disp = '\0';
 Display *dpy;
 progName = argv[0];
 if (argc == 1)  usage(argv[0]); /* To be replaced by window-interface */
-for (i = 1; i < argc; ) {
-  arg = argv[i++];
-  if (index(arg, ':')) {     /*  Set display name if given by user.  */
+for (i = 1; i < argc; i++) {
+  arg = argv[i];
+  if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
+    if (++i >= argc) usage (argv[0]);
+    disp = argv[i];
+  } else if (index(arg, ':')) {     			/* obsolete */
     disp = arg;
   } 
 }
@@ -66,7 +69,10 @@ if (dpy == NULL) {
 }
 for (i = 1; i < argc; ) {
   arg = argv[i++];
-  if (index(arg, ':')) {     /*  Set display name if given by user.  */
+  if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
+    ++i;					/* already dealt with */
+    continue;
+  } else if (index(arg, ':')) {			/* obsolete */
 	; /* forget this */
   } else if (*arg == '-' && *(arg + 1) == 'c'){ /* Does arg start with "-c"? */
     set_click(dpy, 0);           /* If so, turn click off and  */
@@ -511,7 +517,7 @@ return;
 usage(prog)
 char *prog;
 {
-	printf("usage: %s option [option ...] [host:vs]\n", prog);
+	printf("usage: %s [-display host:dpy] option [option ...]\n", prog);
 	printf("    To turn bell off:\n");
 	printf("\t-b                b off               b 0\n");
 	printf("    To set bell volume, pitch and duration:\n");
