@@ -9,7 +9,7 @@
 #define OSMinorVersion         0
 #define CcCmd                  hc
 
-
+#define SignalReturnProcType int
 
 /* 
  * This defines the name of server you want.
