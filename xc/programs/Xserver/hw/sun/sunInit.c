@@ -73,9 +73,6 @@ extern GCPtr CreateScratchGC();
 int sunSigIO = 0;	 /* For use with SetInputCheck */
 static int autoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 
-	/* What should this *really* be? */
-#define MOTION_BUFFER_SIZE 0
-
 static Bool sunDevsProbed = FALSE;
 Bool sunSupportsDepth8 = FALSE;
 unsigned long sunGeneration = 0;
@@ -268,7 +265,7 @@ InitInput(argc, argv)
     if (!p || !k)
 	FatalError("failed to create input devices in InitInput");
 
-    RegisterPointerDevice(p, MOTION_BUFFER_SIZE);
+    RegisterPointerDevice(p);
     RegisterKeyboardDevice(k);
     miRegisterPointerDevice(screenInfo.screens[0], p);
     signal(SIGIO, SigIOHandler);
