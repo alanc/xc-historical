@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.78 93/09/04 16:38:11 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.79 94/03/29 15:54:19 gildea Exp $
 
 #define DoNormalLib NormalLibXmu
 #define DoSharedLib SharedLibXmu
@@ -38,6 +38,7 @@ HEADERS = \
 	Editres.h \
 	EditresP.h \
 	Error.h \
+	ExtAgent.h \
 	Initer.h \
 	Misc.h \
 	StdSel.h \
@@ -66,6 +67,7 @@ SRCS = \
 	DrawLogo.c \
 	DrRndRect.c \
 	EditresCom.c \
+	ExtAgent.c \
 	FToCback.c \
 	GetHost.c \
 	GrayPixmap.c \
@@ -115,6 +117,7 @@ OBJS = \
 	DrawLogo.o \
 	DrRndRect.o \
 	EditresCom.o \
+	ExtAgent.o \
 	FToCback.o \
 	GetHost.o \
 	GrayPixmap.o \
