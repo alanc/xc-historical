@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.28 89/08/31 19:18:03 converse Exp $";
+    "$XConsortium: tocutil.c,v 2.29 89/09/01 17:36:48 kit Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -81,13 +81,13 @@ Toc toc;
 	}
 	if (rebuild) {
 	    for (i = 1; i < numinbox ; i++)
-		BBoxDeleteButton(BBoxButtonNumber(scrn->seqbuttons, 1));
+		RadioBBoxDeleteButton(BBoxButtonNumber(scrn->seqbuttons, 1));
 	    for (i = (numinbox ? 1 : 0); i < toc->numsequences; i++)
-		BBoxAddButton(scrn->seqbuttons, toc->seqlist[i]->name,
-			      999, TRUE);
+		RadioBBoxAddButton(scrn->seqbuttons, toc->seqlist[i]->name,
+				   999, True);
 	}
 	if (scrn->seqbuttons) 
-	    BBoxSetRadio(BBoxFindButtonNamed(scrn->seqbuttons,
+	    RadioBBoxSet(BBoxFindButtonNamed(scrn->seqbuttons,
 					     toc->viewedseq->name));
     }
 }

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocfuncs.c,v 2.21 89/07/20 21:15:33 converse Exp $";
+    "$XConsortium: tocfuncs.c,v 2.22 89/08/31 19:11:25 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -36,8 +36,8 @@ static char rcs_id[] =
 /*ARGSUSED*/
 void DoNextView(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    caddr_t	client_data;
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
 {
     Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
@@ -63,9 +63,9 @@ void DoNextView(widget, client_data, call_data)
     if (msg) {
 	XtCallbackRec	confirms[2];
 	confirms[0].callback = (XtCallbackProc) DoNextView;
-	confirms[0].closure = (caddr_t) scrn;
+	confirms[0].closure = (XtPointer) scrn;
 	confirms[1].callback = (XtCallbackProc) NULL;
-	confirms[1].closure = (caddr_t) NULL;
+	confirms[1].closure = (XtPointer) NULL;
 	if (MsgSetScrn(msg, scrn, confirms, (XtCallbackList) NULL) !=
 	    NEEDS_CONFIRMATION) {
 	    TocUnsetSelection(toc);
@@ -76,22 +76,22 @@ void DoNextView(widget, client_data, call_data)
 }
 
 /*ARGSUSED*/
-void NextView(w, event, params, num_params)
+void XmhViewNextMessage(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoNextView(w, (caddr_t) scrn, (caddr_t) NULL);
+    DoNextView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
 /*ARGSUSED*/
 void DoPrevView(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    caddr_t	client_data;	
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;	
+    XtPointer	call_data;	/* unused */
 {
     Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
@@ -116,9 +116,9 @@ void DoPrevView(widget, client_data, call_data)
     if (msg) {
 	XtCallbackRec	confirms[2];
 	confirms[0].callback = (XtCallbackProc) DoPrevView;
-	confirms[0].closure = (caddr_t) scrn;
+	confirms[0].closure = (XtPointer) scrn;
 	confirms[1].callback = (XtCallbackProc) NULL;
-	confirms[1].closure = (caddr_t) NULL;
+	confirms[1].closure = (XtPointer) NULL;
 	if (MsgSetScrn(msg, scrn, confirms, (XtCallbackList) NULL) !=
 	    NEEDS_CONFIRMATION) {
 	    TocUnsetSelection(toc);
@@ -130,27 +130,28 @@ void DoPrevView(widget, client_data, call_data)
 
 
 /*ARGSUSED*/
-void PrevView(w, event, params, num_params)
+void XmhViewPreviousMessage(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoPrevView(w, (caddr_t) scrn, (caddr_t) NULL);
+    DoPrevView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
+
 /*ARGSUSED*/
-void ViewNew(w, event, params, num_params)
+void DoViewNew(w, client_data, call_data)
     Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    XtPointer	client_data;
+    XtPointer	call_data;
 {
-    Scrn scrn = ScrnFromWidget(w);
-    Toc toc = scrn->toc;
-    Scrn vscrn;
-    MsgList mlist;
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
+    Scrn	vscrn;
+    MsgList	mlist;
+
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
     if (mlist->nummsgs) {
@@ -164,15 +165,27 @@ void ViewNew(w, event, params, num_params)
 
 
 /*ARGSUSED*/
-void TocForward(w, event, params, num_params)
+void XmhViewInNewWindow(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Toc toc = scrn->toc;
-    MsgList mlist;
+    DoViewNew(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoForward(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
+    MsgList	mlist;
+
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
     if (mlist->nummsgs)
@@ -180,18 +193,31 @@ void TocForward(w, event, params, num_params)
     FreeMsgList(mlist);
 }
 
+
 /*ARGSUSED*/
-void TocUseAsComposition(w, event, params, num_params)
+void XmhForward(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Toc toc = scrn->toc;
-    Scrn vscrn;
-    MsgList mlist;
-    Msg msg;
+    DoForward(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoTocUseAsComp(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
+    Scrn	vscrn;
+    MsgList	mlist;
+    Msg		msg;
+
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
     if (mlist->nummsgs) {
@@ -209,6 +235,17 @@ void TocUseAsComposition(w, event, params, num_params)
     FreeMsgList(mlist);
 }
 
+
+/*ARGSUSED*/
+void XmhUseAsComposition(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn scrn = ScrnFromWidget(w);
+    DoTocUseAsComp(w, (XtPointer) scrn, (XtPointer) NULL);
+}
 
 
 /* Utility: change the fate of a set of messages. */
@@ -237,8 +274,8 @@ int skip;
 	    if (msg) {
 		MsgSetFate(msg, fate, desttoc);
 		if (skip)
-		    NextView(scrn->widget, (XEvent *) NULL, (String *) NULL,
-			     (Cardinal *) NULL);
+		    XmhViewNextMessage(scrn->widget, (XEvent *) NULL,
+				       (String *) NULL, (Cardinal *) NULL);
 	    }
 	} else {
 	    for (i = 0; i < mlist->nummsgs; i++)
@@ -250,77 +287,132 @@ int skip;
 
 
 /*ARGSUSED*/
-void MarkDelete(w, event, params, num_params)
+void XmhMarkDelete(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    DoDelete(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoDelete(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn scrn = (Scrn) client_data;
     MarkMessages(scrn, Fdelete, app_resources.SkipDeleted);
 }
 
 
 /*ARGSUSED*/
-void MarkCopy(w, event, params, num_params)
+void DoCopy(w, client_data, call_data)
     Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    XtPointer	client_data;
+    XtPointer	call_data;
 {
-    Scrn scrn = ScrnFromWidget(w);
+    Scrn scrn = (Scrn) client_data;
     MarkMessages(scrn, Fcopy, app_resources.SkipCopied);
 }
 
 
 /*ARGSUSED*/
-void MarkMove(w, event, params, num_params)
+void XmhMarkCopy(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    DoCopy(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoMove(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn scrn = (Scrn) client_data;
     MarkMessages(scrn, Fmove, app_resources.SkipMoved);
 }
 
 
 /*ARGSUSED*/
-void MarkUnmarked(w, event, params, num_params)
+void XmhMarkMove(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    DoMove(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoUnmark(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn scrn = (Scrn) client_data;
     MarkMessages(scrn, Fignore, FALSE);
 }
 
 
 /*ARGSUSED*/
-void CommitChanges(w, event, params, num_params)
+void XmhUnmark(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    TocCommitChanges(w, (caddr_t) scrn->toc, (caddr_t) NULL);
+    DoUnmark(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
 /*ARGSUSED*/
-void PrintMessages(w, event, params, num_params)
+void DoCommit(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	 call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    TocCommitChanges(w, (XtPointer) scrn->toc, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void XmhCommitChanges(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Toc toc = scrn->toc;
-    MsgList mlist;
-    char str[MAX_SYSTEM_LEN], *msg;
-    int i, used, len;
+    TocCommitChanges(w, (XtPointer) scrn->toc, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoPrint(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
+    MsgList	mlist;
+    char	str[MAX_SYSTEM_LEN], *msg;
+    int		i, used, len;
+
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
     i = 0;
@@ -348,10 +440,22 @@ void PrintMessages(w, event, params, num_params)
 
 
 /*ARGSUSED*/
+void XmhPrint(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn scrn = ScrnFromWidget(w);
+    DoPrint(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
 void DoPack(widget, client_data, call_data)
     Widget	widget;
-    caddr_t	client_data;
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
 {
     Scrn	scrn = (Scrn) client_data;
     Toc		toc = scrn->toc;
@@ -361,9 +465,9 @@ void DoPack(widget, client_data, call_data)
     if (toc == NULL) return;
 
     confirms[0].callback = (XtCallbackProc) DoPack;
-    confirms[0].closure = (caddr_t) scrn;
+    confirms[0].closure = (XtPointer) scrn;
     confirms[1].callback = (XtCallbackProc) NULL;
-    confirms[1].closure = (caddr_t) NULL;
+    confirms[1].closure = (XtPointer) NULL;
 
     if (TocConfirmCataclysm(toc, confirms, (XtCallbackRec *) NULL))
 	return;
@@ -380,22 +484,22 @@ void DoPack(widget, client_data, call_data)
 
 
 /*ARGSUSED*/
-void Pack(w, event, params, num_params)
+void XmhPackFolder(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoPack(w, (caddr_t)scrn, (caddr_t)NULL);
+    DoPack(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
 /*ARGSUSED*/
 void DoSort(widget, client_data, call_data)
     Widget	widget;
-    caddr_t	client_data;
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
 {
     Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
@@ -405,9 +509,9 @@ void DoSort(widget, client_data, call_data)
     if (toc == NULL) return;
 
     confirms[0].callback = (XtCallbackProc) DoPack;
-    confirms[0].closure = (caddr_t) scrn;
+    confirms[0].closure = (XtPointer) scrn;
     confirms[1].callback = (XtCallbackProc) NULL;
-    confirms[1].closure = (caddr_t) NULL;
+    confirms[1].closure = (XtPointer) NULL;
 
     if (TocConfirmCataclysm(toc, confirms, (XtCallbackRec *) NULL))
 	return;
@@ -423,42 +527,62 @@ void DoSort(widget, client_data, call_data)
 
 
 /*ARGSUSED*/
-void Sort(w, event, params, num_params)
+void XmhSortFolder(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoSort(w, (caddr_t)scrn, (caddr_t)NULL);
+    DoSort(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
 /*ARGSUSED*/
-void ForceRescan(w, event, params, num_params)
+void XmhForceRescan(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    Rescan(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+/*ARGSUSED*/
+void Rescan(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
     if (toc == NULL) return;
     TocForceRescan(toc);
 }
 
 
-
 /* Incorporate new mail. */
 
 /*ARGSUSED*/
-void Incorporate(w, event, params, num_params)
+void XmhIncorporateNewMail(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    Inc(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void Inc(w, client_data, call_data)
+    Widget	w;		/* unused */
+    XtPointer	client_data;	/* screen */
+    XtPointer	call_data;	/* unused */
+{
+    Scrn scrn = (Scrn) client_data;
     if (scrn->toc == NULL) return;
     TocIncorporate(scrn->toc);
     TocCheckForNewMail();
@@ -466,17 +590,17 @@ void Incorporate(w, event, params, num_params)
 
 
 /*ARGSUSED*/
-void TocReply(w, event, params, num_params)
+void Reply(w, client_data, call_data)
     Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    XtPointer	client_data;
+    XtPointer	call_data;
 {
-    Scrn scrn = ScrnFromWidget(w);
-    Toc toc = scrn->toc;
-    Scrn nscrn;
-    MsgList mlist;
-    Msg msg;
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
+    Scrn	nscrn;
+    MsgList	mlist;
+    Msg		msg;
+
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
     if (mlist->nummsgs) {
@@ -490,21 +614,33 @@ void TocReply(w, event, params, num_params)
     }
     FreeMsgList(mlist);
 }
-
+    
 
 /*ARGSUSED*/
-void PickMessages(w, event, params, num_params)
+void XmhReply(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Toc toc = scrn->toc;
-    Scrn nscrn;
-    char *toseq;
+    Reply(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoPickMessages(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
+    Scrn	nscrn;
+    char *	toseq;
+
     if (toc == NULL) return;
-    if ((toseq = BBoxGetRadioName(scrn->seqbuttons)) == (char *) NULL)
+    if ((toseq = RadioBBoxGetCurrent(scrn->seqbuttons)) == (char *) NULL)
 	toseq = "temp";
     if (strcmp(toseq, "all") == 0)
 	toseq = "temp";
@@ -520,18 +656,40 @@ void PickMessages(w, event, params, num_params)
 
 
 /*ARGSUSED*/
-void OpenSequence(w, event, params, num_params)
+void XmhPickMessages(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Toc toc = scrn->toc;
+    DoPickMessages(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoOpenSeq(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
     if (toc == NULL) return;
-    TocChangeViewedSeq(toc, 
-		       TocGetSeqNamed(toc,
-				      BBoxGetRadioName(scrn->seqbuttons)));
+    TocChangeViewedSeq
+	(toc, TocGetSeqNamed(toc, RadioBBoxGetCurrent(scrn->seqbuttons)));
+}
+
+
+/*ARGSUSED*/
+void XmhOpenSequence(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn scrn = ScrnFromWidget(w);
+    DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -545,8 +703,8 @@ TwiddleOperation op;
     char **argv, str[100], *seqname;
     int i;
     MsgList mlist;
-    if (toc == NULL || (seqname = BBoxGetRadioName(scrn->seqbuttons)) == NULL)
-	return;
+    if (toc == NULL ||
+	(seqname = RadioBBoxGetCurrent(scrn->seqbuttons)) == NULL) return;
     if (strcmp(seqname, "all") == 0) {
 	Feep();
 	return;
@@ -593,9 +751,20 @@ TwiddleOperation op;
     TocReloadSeqLists(toc);
 }
 
-    
+
 /*ARGSUSED*/
-void AddToSequence(w, event, params, num_params)
+void DoAddToSeq(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    TwiddleSequence(scrn, ADD);
+}
+
+
+/*ARGSUSED*/
+void XmhAddToSequence(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
@@ -607,7 +776,18 @@ void AddToSequence(w, event, params, num_params)
 
 
 /*ARGSUSED*/
-void RemoveFromSequence(w, event, params, num_params)
+void DoRemoveFromSeq(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    TwiddleSequence(scrn, REMOVE);
+}
+
+
+/*ARGSUSED*/
+void XmhRemoveFromSequence(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
@@ -619,7 +799,18 @@ void RemoveFromSequence(w, event, params, num_params)
 
 
 /*ARGSUSED*/
-void DeleteSequence(w, event, params, num_params)
+void DoDeleteSeq(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    TwiddleSequence(scrn, DELETE);
+}
+
+
+/*ARGSUSED*/
+void XmhDeleteSequence(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;

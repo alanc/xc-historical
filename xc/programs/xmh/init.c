@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.31 89/08/14 15:42:17 converse Exp $";
+    "$XConsortium: init.c,v 2.32 89/08/23 18:00:02 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -45,7 +45,7 @@ static Boolean static_variable;
 
 static XtResource resources[] = {
     {"debug", "Debug", XtRBoolean, sizeof(Boolean),
-	 offset(debug), XtRBoolean, (caddr_t)&defFalse},
+	 offset(debug), XtRBoolean, (XtPointer)&defFalse},
     {"tempdir", "tempDir", XtRString, sizeof(char *),
 	 offset(tempDir), XtRString, "/tmp"},
     {"mhpath", "MhPath", XtRString, sizeof(char *),
@@ -68,13 +68,13 @@ static XtResource resources[] = {
     {"tocwidth", "TocWidth", XtRInt, sizeof(int),
 	 offset(defTocWidth), XtRString, "100"},
     {"skipdeleted", "SkipDeleted", XtRBoolean, sizeof(Boolean),
-	 offset(SkipDeleted), XtRBoolean, (caddr_t)&defTrue},
+	 offset(SkipDeleted), XtRBoolean, (XtPointer)&defTrue},
     {"skipmoved", "SkipMoved", XtRBoolean, sizeof(Boolean),
-	 offset(SkipMoved), XtRBoolean, (caddr_t)&defTrue},
+	 offset(SkipMoved), XtRBoolean, (XtPointer)&defTrue},
     {"skipcopied", "SkipCopied", XtRBoolean, sizeof(Boolean),
-	 offset(SkipCopied), XtRBoolean, (caddr_t)&defFalse},
+	 offset(SkipCopied), XtRBoolean, (XtPointer)&defFalse},
     {"hideboringheaders", "HideBoringHeaders", XtRBoolean, sizeof(Boolean),
-	 offset(defHideBoringHeaders), XtRBoolean, (caddr_t)&defTrue},
+	 offset(defHideBoringHeaders), XtRBoolean, (XtPointer)&defTrue},
     {"geometry", "Geometry", XtRString, sizeof(char *),
 	 offset(defGeometry), XtRString, NULL},
     {"tocgeometry", "TocGeometry", XtRString, sizeof(char *),
@@ -88,9 +88,9 @@ static XtResource resources[] = {
     {"tocpercentage", "TocPercentage", XtRInt, sizeof(int),
 	 offset(defTocPercentage), XtRString, "33"},
     {"checknewmail", "CheckNewMail", XtRBoolean, sizeof(Boolean),
-	 offset(defNewMailCheck), XtRBoolean, (caddr_t)&defTrue},
+	 offset(defNewMailCheck), XtRBoolean, (XtPointer)&defTrue},
     {"makecheckpoints", "MakeCheckPoints", XtRBoolean, sizeof(Boolean),
-	 offset(defMakeCheckpoints), XtRBoolean, (caddr_t)&defFalse},
+	 offset(defMakeCheckpoints), XtRBoolean, (XtPointer)&defFalse},
     {"checkFrequency", "CheckFrequency", XtRInt, sizeof(int),
 	 offset(check_frequency), XtRString, "1"},
     {"mailpath", "MailPath", XtRString, sizeof(char *),
@@ -161,25 +161,6 @@ static _IOErrorHandler(dpy)
     Punt("Cannot continue from server error.");
 }
 
-/* command button actions */
-extern void
-CloseScrn(),ComposeMessage(),OpenFolder(),OpenFolderInNewWindow(),
-CreateFolder(),DeleteFolder(),Incorporate(),NextView(),PrevView(),
-MarkDelete(),MarkMove(),MarkCopy(),MarkUnmarked(),ViewNew(),TocReply(),
-TocForward(),TocUseAsComposition(),CommitChanges(),OpenSequence(),
-AddToSequence(),RemoveFromSequence(),DeleteSequence(),PickMessages(),
-PrintMessages(),Pack(),Sort(),ForceRescan(),CloseView(),ViewReply(),
-ViewForward(),ViewUseAsComposition(),EditView(),SaveView(),PrintView(),
-CompReset(),SaveDraft(),SendDraft(),MsgInsertAssoc();
-
-/* menu button actions */
-extern void PopupFolderMenu(), SetCurrentFolder(), LeaveFolderButton(),
-OpenFolderFromMenu();
-
-/* actions associated with popup windows */
-extern void PromptOkayAction();
-
-
 /* All the start-up initialization goes here. */
 
 InitializeWorld(argc, argv)
@@ -192,68 +173,77 @@ char **argv;
     Scrn scrn;
     static XtActionsRec actions[] = {
 
-			/* folderButtons action procedures */
+		/* general Xmh action procedures */
 
-	{"CloseScrn",			CloseScrn},
-	{"ComposeMessage",		ComposeMessage},
-	{"OpenFolder",			OpenFolder},
-	{"OpenFolderInNewWindow",	OpenFolderInNewWindow},
-	{"CreateFolder",		CreateFolder},
-	{"DeleteFolder",		DeleteFolder},
+	{"XmhClose",			XmhClose},
+	{"XmhComposeMessage",		XmhComposeMessage},
 
-			/* tocButtons action procedures */
+		/* actions upon folders */
 
-	{"Incorporate",			Incorporate},
-	{"NextView",			NextView},
-	{"PrevView",			PrevView},
-	{"MarkDelete",			MarkDelete},
-	{"MarkMove",			MarkMove},
-	{"MarkCopy",			MarkCopy},
-	{"MarkUnmarked",		MarkUnmarked},
-	{"ViewNew",			ViewNew},
-	{"TocReply",			TocReply},
-	{"TocForward",			TocForward},
-	{"TocUseAsComposition",		TocUseAsComposition},
-	{"CommitChanges",		CommitChanges},
-	{"OpenSequence",		OpenSequence},
-	{"AddToSequence",		AddToSequence},
-	{"RemoveFromSequence",		RemoveFromSequence},
-	{"DeleteSequence",		DeleteSequence},
-	{"Pick",			PickMessages},
-	{"PrintMessages",		PrintMessages},
-	{"Pack",			Pack},
-	{"Sort",			Sort},
-	{"Rescan",			ForceRescan},
+	{"XmhOpenFolder",		XmhOpenFolder},
+	{"XmhOpenFolderInNewWindow",	XmhOpenFolderInNewWindow},
+	{"XmhCreateFolder",		XmhCreateFolder},
+	{"XmhDeleteFolder",		XmhDeleteFolder},
 
-			/* viewButtons action procedures */
+		/* actions upon the Table of Contents */
 
-	{"CloseView",			CloseView},
-	{"ViewReply",			ViewReply},
-	{"ViewForward",			ViewForward},
-	{"ViewUseAsComposition",	ViewUseAsComposition},
-	{"EditView",			EditView},
-	{"SaveView",			SaveView},
-	{"PrintView",			PrintView},
+	{"XmhIncorporateNewMail",	XmhIncorporateNewMail},
+	{"XmhCommitChanges",		XmhCommitChanges},
+	{"XmhPackFolder",		XmhPackFolder},
+	{"XmhSortFolder",		XmhSortFolder},
+	{"XmhForceRescan",		XmhForceRescan},
 
-			/* compButtons action procedures */
+		/* actions upon the currently selected message(s) */
 
-	/* Close button			CloseView */
-	{"CompReset",			CompReset},
-	/* Compose button 		ComposeMessage */
-	{"SaveDraft",			SaveDraft},
-	{"SendDraft",			SendDraft},
-	{"MsgInsertAssoc",		MsgInsertAssoc},
+	{"XmhViewNextMessage",		XmhViewNextMessage},
+	{"XmhViewPreviousMessage",	XmhViewPreviousMessage},
+	{"XmhMarkDelete",		XmhMarkDelete},
+	{"XmhMarkMove",			XmhMarkMove},
+	{"XmhMarkCopy",			XmhMarkCopy},
+	{"XmhUnmark",			XmhUnmark},
+	{"XmhViewInNewWindow",		XmhViewInNewWindow},
+	{"XmhReply",			XmhReply},
+	{"XmhForward",			XmhForward},
+	{"XmhUseAsComposition",		XmhUseAsComposition},
+	{"XmhPrint",			XmhPrint},
 
-			/* Menu Button action procedures */
+		/* actions upon sequences */
 
-        {"PopupFolderMenu",		PopupFolderMenu},
-        {"SetCurrentFolder",		SetCurrentFolder},
-        {"LeaveFolderButton",		LeaveFolderButton},
-	{"OpenFolderFromMenu",		OpenFolderFromMenu},
+	{"XmhPickMessages",		XmhPickMessages},
+	{"XmhOpenSequence",		XmhOpenSequence},
+	{"XmhAddToSequence",		XmhAddToSequence},
+	{"XmhRemoveFromSequence",	XmhRemoveFromSequence},
+	{"XmhDeleteSequence",		XmhDeleteSequence},
 
-			/* popup dialog box button action procedures */
+		/* actions upon the currently viewed message */
 
-	{"PromptOkayAction",		PromptOkayAction}
+	{"XmhCloseView",		XmhCloseView},
+	{"XmhViewReply",		XmhViewReply},
+	{"XmhViewForward",		XmhViewForward},
+	{"XmhViewUseAsComposition",	XmhViewUseAsComposition},
+	{"XmhEditView",			XmhEditView},
+	{"XmhSaveView",			XmhSaveView},
+	{"XmhPrintView",		XmhPrintView},
+
+       		/* composition actions */
+
+	/* Close button			XmhCloseView	  (see above) */
+	{"XmhResetCompose",		XmhResetCompose},
+	/* Compose button 		XmhComposeMessage (see above) */
+	{"XmhSave",			XmhSave},
+	{"XmhSend",			XmhSend},
+	{"XmhInsert",			XmhInsert},
+
+		/* Menu Button action procedures for folders  */
+
+        {"XmhPopupFolderMenu",		XmhPopupFolderMenu},
+        {"XmhSetCurrentFolder",		XmhSetCurrentFolder},
+        {"XmhLeaveFolderButton",	XmhLeaveFolderButton},
+	{"XmhOpenFolderFromMenu",	XmhOpenFolderFromMenu},
+
+		/* popup dialog box button action procedures */
+
+	{"XmhPromptOkayAction",		XmhPromptOkayAction}
     };
 
     static Arg shell_args[] = {
@@ -276,7 +266,7 @@ char **argv;
 
     homeDir = XtNewString(getenv("HOME"));
 
-    XtGetApplicationResources( toplevel, (caddr_t)&app_resources,
+    XtGetApplicationResources( toplevel, (XtPointer)&app_resources,
 			       resources, XtNumber(resources),
 			       NULL, (Cardinal)0 );
 
@@ -315,8 +305,6 @@ char **argv;
     if (app_resources.mailDir == NULL)
 	app_resources.mailDir = XtNewString(str2);
 
-    NullSource = CreateFileSource(toplevel, "/dev/null", FALSE);
-
     l = strlen(app_resources.defMhPath) - 1;
     if (l > 0 && app_resources.defMhPath[l] == '/')
 	app_resources.defMhPath[l] = 0;
@@ -344,6 +332,7 @@ char **argv;
     TocInit();
     InitPick();
     IconInit();
+    BBoxInit();
 
     XtAddActions(actions, XtNumber(actions));
 

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.30 89/08/31 19:12:30 converse Exp $";
+    "$XConsortium: util.c,v 2.31 89/09/01 17:36:40 kit Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -368,14 +368,16 @@ char *str;
 
 
 
-Widget CreateTextSW(scrn, name)
+Widget CreateTextSW(scrn, name, args, num_args)
 Scrn scrn;
 char *name;
+ArgList	args;
+Cardinal num_args;
 {
-    /* text widget options are set in the application defaults file */
+    /* most text widget options are set in the application defaults file */
 
     return XtCreateManagedWidget( name, asciiTextWidgetClass, scrn->widget,
-				  NULL, (Cardinal) 0);
+				  args, num_args);
 }
 
 
@@ -485,8 +487,8 @@ Scrn scrn;
 char *str;
 {
     static Arg arglist[] = {
-	{XtNiconName, (XtArgVal) NULL},
-	{XtNtitle, (XtArgVal) NULL},
+	{XtNiconName,	(XtArgVal) NULL},
+	{XtNtitle,	(XtArgVal) NULL},
     };
     arglist[0].value = arglist[1].value = (XtArgVal) str;
     XtSetValues(scrn->parent, arglist, XtNumber(arglist));

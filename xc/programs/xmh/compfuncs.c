@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: compfuncs.c,v 2.13 89/07/20 21:15:15 converse Exp $";
+    "$XConsortium: compfuncs.c,v 2.14 89/08/31 19:09:25 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -35,7 +35,7 @@ static char rcs_id[] =
    template. */
 
 /*ARGSUSED*/
-void DoCompReset(widget, client_data, call_data)
+static void ResetCompose(widget, client_data, call_data)
     Widget	widget;		/* unused */
     caddr_t	client_data;
     caddr_t	call_data;	/* unused */
@@ -44,7 +44,7 @@ void DoCompReset(widget, client_data, call_data)
     Msg		msg;
     XtCallbackRec	confirms[2];
 
-    confirms[0].callback = (XtCallbackProc) DoCompReset;
+    confirms[0].callback = (XtCallbackProc) ResetCompose;
     confirms[0].closure = (caddr_t) scrn;
     confirms[1].callback = (XtCallbackProc) NULL;
     confirms[1].closure = (caddr_t) NULL;
@@ -61,14 +61,14 @@ void DoCompReset(widget, client_data, call_data)
 }
 
 /*ARGSUSED*/
-void CompReset(w, event, params, num_params)
+void XmhResetCompose(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoCompReset(w, (caddr_t) scrn, (caddr_t) NULL);
+    ResetCompose(w, (caddr_t) scrn, (caddr_t) NULL);
 }
 
 
@@ -77,7 +77,7 @@ void CompReset(w, event, params, num_params)
    sending the same message twice, but it doesn't hurt to be safe here.) */
 
 /*ARGSUSED*/
-void SendDraft(w, event, params, num_params)
+void XmhSend(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
@@ -95,7 +95,7 @@ void SendDraft(w, event, params, num_params)
 /* Save any changes to the message.  This also makes this message permanent. */
 
 /*ARGSUSED*/
-void SaveDraft(w, event, params, num_params)
+void XmhSave(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;

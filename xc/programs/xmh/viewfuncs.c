@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: viewfuncs.c,v 2.14 89/07/20 21:15:36 converse Exp $";
+    "$XConsortium: viewfuncs.c,v 2.15 89/08/31 19:12:44 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -34,16 +34,16 @@ static char rcs_id[] =
 /*ARGSUSED*/
 void DoCloseView(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    caddr_t	client_data;
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
 {
     Scrn scrn = (Scrn) client_data;
     XtCallbackRec	confirms[2];
 
     confirms[0].callback = DoCloseView;
-    confirms[0].closure = (caddr_t) scrn;
+    confirms[0].closure = (XtPointer) scrn;
     confirms[1].callback = (XtCallbackProc) NULL;
-    confirms[1].closure = (caddr_t) NULL;
+    confirms[1].closure = (XtPointer) NULL;
     
     if (MsgSetScrn((Msg) NULL, scrn, confirms, (XtCallbackList) NULL) ==
 	NEEDS_CONFIRMATION)
@@ -53,27 +53,27 @@ void DoCloseView(widget, client_data, call_data)
     
 
 /*ARGSUSED*/
-void CloseView(w, event, params, num_params)
+void XmhCloseView(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoCloseView(w, (caddr_t) scrn, (caddr_t) NULL);
+    DoCloseView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
 /*ARGSUSED*/
-void ViewReply(w, event, params, num_params)
+void DoViewReply(w, client_data, call_data)
     Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    XtPointer	client_data;
+    XtPointer	call_data;
 {
-    Scrn scrn = ScrnFromWidget(w);
-    Msg msg;
-    Scrn nscrn;
+    Scrn	scrn = (Scrn) client_data;
+    Msg		msg;
+    Scrn	nscrn;
+
     if (scrn->msg == NULL) return;
     nscrn = NewCompScrn();
     ScreenSetAssocMsg(nscrn, scrn->msg);
@@ -85,32 +85,56 @@ void ViewReply(w, event, params, num_params)
 }
 
 
+
 /*ARGSUSED*/
-void ViewForward(w, event, params, num_params)
+void XmhViewReply(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    MsgList mlist;
+    DoViewReply(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoViewForward(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    MsgList	mlist;
+
     if (scrn->msg == NULL) return;
     mlist = MakeSingleMsgList(scrn->msg);
     CreateForward(mlist);
     FreeMsgList(mlist);
 }
 
-
 /*ARGSUSED*/
-void ViewUseAsComposition(w, event, params, num_params)
+void XmhViewForward(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Msg msg;
-    Scrn nscrn;
+    DoViewForward(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoViewUseAsComposition(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Msg		msg;
+    Scrn	nscrn;
+
     if (scrn->msg == NULL) return;
     nscrn = NewCompScrn();
     if (MsgGetToc(scrn->msg) == DraftsFolder)
@@ -123,47 +147,106 @@ void ViewUseAsComposition(w, event, params, num_params)
     MsgSetScrnForComp(msg, nscrn);
     MapScrn(nscrn);
 }
-
+    
 
 /*ARGSUSED*/
-void EditView(w, event, params, num_params)
+void XmhViewUseAsComposition(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
-    Scrn scrn = ScrnFromWidget(w);
+    Scrn	scrn = ScrnFromWidget(w);
+    DoViewUseAsComposition(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoEditView(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Arg		args[1];
+    XtTranslations editTranslations = scrn->edit_translations;
+
     if (scrn->msg == NULL) return;
+    if (scrn->kind == STtocAndView) {
+	XtSetArg(args[0], XtNtranslations, editTranslations);
+	XtSetValues(scrn->viewwidget, args, (Cardinal) 1);
+    }
     MsgSetEditable(scrn->msg);
 }
-    
+
 
 /*ARGSUSED*/
-void SaveView(w, event, params, num_params)
+void XmhEditView(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
-    Scrn scrn = ScrnFromWidget(w);
-    if (scrn->msg == NULL) return;
-    if (MsgSaveChanges(scrn->msg))
-	MsgClearEditable(scrn->msg);
+    Scrn	scrn = ScrnFromWidget(w);
+    DoEditView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
-    
+
 
 /*ARGSUSED*/
-void PrintView(w, event, params, num_params)
+void DoSaveView(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Arg		args[2];
+
+    if (scrn->msg == NULL) return;
+    if (MsgSaveChanges(scrn->msg)) {
+	if (scrn->kind == STtocAndView) {
+	    XtSetArg(args[0], XtNtranslations, scrn->read_translations);
+	    XtSetValues(scrn->viewwidget, args, (Cardinal) 1);
+	}
+	MsgClearEditable(scrn->msg);
+    }
+}
+
+
+/*ARGSUSED*/
+void XmhSaveView(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
-    Scrn scrn = ScrnFromWidget(w);
+    Scrn	scrn = ScrnFromWidget(w);
+    DoSaveView(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoPrintView(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
     char str[200];
+
     if (scrn->msg == NULL) return;
     (void) sprintf(str, "%s %s", app_resources.defPrintCommand,
 		   MsgFileName(scrn->msg));
     (void) system(str);
 }
 
+
+/*ARGSUSED*/
+void XmhPrintView(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn scrn = ScrnFromWidget(w);
+    DoPrintView(w, (XtPointer) scrn, (XtPointer) NULL);
+}

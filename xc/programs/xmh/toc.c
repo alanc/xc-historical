@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: toc.c,v 2.27 89/09/01 19:34:31 converse Exp $";
+    "$XConsortium: toc.c,v 2.28 89/09/05 16:29:17 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -213,11 +213,7 @@ void TocCheckForNewMail()
 				hasmail ? NewMailPixmap : NoMailPixmap;
 			    XtSetValues(scrn->parent,
 					arglist, XtNumber(arglist));
-			} else {
-			    BBoxChangeBorderWidth(   /* %%% HACK */
-			       BBoxButtonNumber(scrnList[j]->folderbuttons, i),
-						(unsigned)(hasmail ? 2 : 1));
-			}
+			} 
 		    }
 		}
 	    }
@@ -335,13 +331,16 @@ Scrn scrn;
 	StoreWindowName(scrn, progName);
 	EnableProperButtons(scrn);
     } else {
+	char wm_name[64];
 	toc->num_scrns++;
 	toc->scrn = (Scrn *) XtRealloc((char *) toc->scrn,
 				       (unsigned)toc->num_scrns*sizeof(Scrn));
 	toc->scrn[toc->num_scrns - 1] = scrn;
 	TUEnsureScanIsValidAndOpen(toc);
 	TUResetTocLabel(scrn);
-	StoreWindowName(scrn, toc->foldername);
+	(void) strcpy(wm_name, "xmh: ");
+	(void) strcpy(wm_name+5, toc->foldername);
+	StoreWindowName(scrn, wm_name);
 	TURedisplayToc(scrn);
 	SetCurrentFolderName(scrn, toc->foldername);
 	EnableProperButtons(scrn);
@@ -542,7 +541,7 @@ void TocChangeViewedSeq(toc, seq)
     TURefigureWhatsVisible(toc);
     for (i=0 ; i<toc->num_scrns ; i++) {
 	if (toc->scrn[i]->seqbuttons)
-	    BBoxSetRadio(BBoxFindButtonNamed(toc->scrn[i]->seqbuttons,
+	    RadioBBoxSet(BBoxFindButtonNamed(toc->scrn[i]->seqbuttons,
 					     seq->name));
 	TUResetTocLabel(toc->scrn[i]);
     }
@@ -744,8 +743,8 @@ Toc toc;
 /*ARGSUSED*/
 static void TocCataclysmOkay(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    caddr_t	client_data;
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
 {
     Toc			toc = (Toc) client_data;
     register int	i;
@@ -768,9 +767,9 @@ int TocConfirmCataclysm(toc, confirms, cancels)
     register int	i;
     int			found = False;
     static XtCallbackRec yes_callbacks[] = {
-	{TocCataclysmOkay,	(caddr_t) NULL},
-	{(XtCallbackProc) NULL,	(caddr_t) NULL},
-	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+	{TocCataclysmOkay,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
     if (toc == NULL) 
@@ -783,7 +782,7 @@ int TocConfirmCataclysm(toc, confirms, cancels)
 	char		str[300];
 	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
 		      toc->foldername);
-	yes_callbacks[0].closure = (caddr_t) toc;
+	yes_callbacks[0].closure = (XtPointer) toc;
 	yes_callbacks[1].callback = confirms[0].callback;
 	yes_callbacks[1].closure = confirms[0].closure;
 
@@ -810,8 +809,8 @@ int TocConfirmCataclysm(toc, confirms, cancels)
 /*ARGSUSED*/
 void TocCommitChanges(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    caddr_t	client_data;	
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;	
+    XtPointer	call_data;	/* unused */
 {
     Toc toc = (Toc) client_data;
     Msg msg;
@@ -823,9 +822,9 @@ void TocCommitChanges(widget, client_data, call_data)
     XtCallbackRec	confirms[2];
 
     confirms[0].callback = TocCommitChanges;
-    confirms[0].closure = (caddr_t) toc;
+    confirms[0].closure = (XtPointer) toc;
     confirms[1].callback = (XtCallbackProc) NULL;
-    confirms[1].closure = (caddr_t) NULL;
+    confirms[1].closure = (XtPointer) NULL;
 
     if (toc == NULL) return;
     for (i=0 ; i<toc->nummsgs ; i++) {

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[]=
-    "$XConsortium: popup.c,v 2.16 89/08/31 19:10:26 converse Exp $";
+    "$XConsortium: popup.c,v 2.17 89/09/05 16:29:26 converse Exp $";
 #endif
 
 /*
@@ -159,7 +159,7 @@ static void TellPrompt(okayButton, client_data, call_data)
 #define OkayButtonName "okay"
 
 /*ARGSUSED*/
-void PromptOkayAction(w, event, params, num_params)
+void XmhPromptOkayAction(w, event, params, num_params)
     Widget	w;		/* the "value" widget in the Dialog box */
     XEvent	*event;		/* unused */
     String	*params;	/* unused */
@@ -187,7 +187,7 @@ void PopupPrompt(question, okayCallback)
 	{(XtCallbackProc) NULL,			(caddr_t) NULL},
 	{(XtCallbackProc) NULL,			(caddr_t) NULL}
     };
-    static String text_translations = "<Key>Return: PromptOkayAction()\n";
+    static String text_translations = "<Key>Return: XmhPromptOkayAction()\n";
 
     DeterminePopupPosition(&x, &y);
     XtSetArg(args[0], XtNallowShellResize, True);

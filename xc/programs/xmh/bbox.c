@@ -1,10 +1,10 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: bbox.c,v 2.27 89/07/20 21:15:37 converse Exp $";
+    "$XConsortium: bbox.c,v 2.28 89/08/14 15:42:14 converse Exp $";
 #endif
 /*
  *
- *			  COPYRIGHT 1987
+ *			  COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -30,160 +30,139 @@ static char rcs_id[] =
 /* bbox.c -- management of buttons and buttonboxes. 
  *
  * This module implements a simple interface to buttonboxes, allowing a client
- * to create new buttonboxes and manage their contents.  It is a layer hiding
- * the toolkit interfaces. 
+ * to create new buttonboxes and manage their contents. 
  *
- * Buttonboxes contain buttons which may be one of three kinds: command,
- * toggle, or menuButton.  
  */
 
 #include <X11/Xaw/Cardinals.h>
 #include "xmh.h"
 #include "bboxint.h"
 
-/* ------------------------  Creation ----------------------------------- */
+static XtTranslations	RadioButtonTranslations = NULL;
+
+
+void BBoxInit()
+{
+    RadioButtonTranslations =
+	XtParseTranslationTable("<Btn1Down>,<Btn1Up>:set()\n");
+}
+
 
 /*
  * Create a new button box.  The widget for it will be a child of the given
  * scrn's widget, and it will be added to the scrn's pane. 
  */
 
-static ButtonBox buttonboxCreate(scrn, name, button_type)
-  Scrn scrn;
-  char *name;			/* Name of the buttonbox widget. */
-  WidgetClass button_type;	/* command, toggle (radio), or menu buttons */
+ButtonBox BBoxCreate(scrn, name)
+    Scrn	scrn;
+    char	*name;	/* name of the buttonbox widgets */
 {
-    static Arg arglist[] = {
-	{XtNallowVert,	True},
-	{XtNskipAdjust, True},
-    };
-    ButtonBox buttonbox;
+    Cardinal	n;
+    ButtonBox	buttonbox = XtNew(ButtonBoxRec);
+    Arg		args[5];
 
-    buttonbox = XtNew(ButtonBoxRec);
-    bzero((char *)buttonbox, sizeof(ButtonBoxRec));
-    buttonbox->scrn = scrn;
+    n = 0;
+    XtSetArg(args[n], XtNallowVert, True);	n++;
+    XtSetArg(args[n], XtNskipAdjust, True);	n++;
+    
     buttonbox->outer =
 	XtCreateManagedWidget(name, viewportWidgetClass, scrn->widget,
-			      arglist, XtNumber(arglist));
+			      args, n);
     buttonbox->inner =
 	XtCreateManagedWidget(name, boxWidgetClass, buttonbox->outer,
-			      (ArgList)NULL, (Cardinal) 0);
+			      args, (Cardinal) 0);
     buttonbox->numbuttons = 0;
     buttonbox->button = (Button *) XtMalloc((Cardinal) 1);
-    buttonbox->maxheight = 5;
-    buttonbox->button_type = button_type;
+    buttonbox->scrn = scrn;
     return buttonbox;
 }
 
 
-/* Create a new buttonbox which manages command buttons */
-
-ButtonBox BBoxCreate(scrn, name)
-  Scrn scrn;
-  char *name;
+ButtonBox RadioBBoxCreate(scrn, name)
+    Scrn	scrn;
+    char	*name;	/* name of the buttonbox widgets */
 {
-    return buttonboxCreate(scrn, name, commandWidgetClass);
+    return BBoxCreate(scrn, name);
 }
 
-
-/* Create a new buttonbox which manages toggle buttons */
-
-ButtonBox BBoxRadioCreate(scrn, name)
-  Scrn scrn;
-  char *name;
-{
-    return buttonboxCreate(scrn, name, toggleWidgetClass);
-}
-
-
-/* Create a new buttonbox which manages menu buttons */
-
-ButtonBox BBoxMenuCreate(scrn, name)
-  Scrn scrn;
-  char *name;
-{
-    return buttonboxCreate(scrn, name, menuButtonWidgetClass);
-}
 
 
 /* Create a new button, and add it to a buttonbox. */
 
-void BBoxAddButton(buttonbox, name, position, enabled)
-ButtonBox buttonbox;
-char *name;			/* Name of button. */
-int position;			/* Position to put button in box. */
-int enabled;			/* Whether button is initially enabled. */
+static void bboxAddButton(buttonbox, name, kind, position, enabled, radio)
+
+    ButtonBox	buttonbox;
+    char	*name;
+    WidgetClass	kind;
+    int		position;
+    Boolean	enabled;
+    Boolean	radio;
 {
-    Button		button;
-    register int	i;
-    Arg			 arglist[5];
-    char		menuName[300];
-
-    /* Add menu entries, not new buttons, for new subfolders */
-
-    if (buttonbox->button_type == menuButtonWidgetClass) {
-	extern void MenuAddEntry();
-	char	*c;
-	if (c = index(name, '/')) {	
-	    c[0] = '\0';
-	    button = BBoxFindButtonNamed(buttonbox, name);
-	    c[0] = '/';
-	    MenuAddEntry(button, name);
-	    return;
-	}
-    }
+    Button	button;
+    Cardinal	i;
+    Widget	radio_group;
+    Arg		args[5];
 
     if (position > buttonbox->numbuttons) position = buttonbox->numbuttons;
     buttonbox->numbuttons++;
-    buttonbox->button = (Button *)
+    buttonbox->button = (Button *) 
 	XtRealloc((char *) buttonbox->button,
 		  (unsigned) buttonbox->numbuttons * sizeof(Button));
     for (i=buttonbox->numbuttons-1 ; i>position ; i--)
 	buttonbox->button[i] = buttonbox->button[i-1];
     button = buttonbox->button[position] = XtNew(ButtonRec);
-    bzero((char *) button, sizeof(ButtonRec));
     button->buttonbox = buttonbox;
     button->name = XtNewString(name);
+    button->menu = (Widget) NULL;
 
     i = 0;
     if (!enabled) {
-	XtSetArg(arglist[i], XtNsensitive, False);		i++;
+	XtSetArg(args[i], XtNsensitive, False);		i++;
     }
 
-    if (buttonbox->button_type == toggleWidgetClass) {
-	Widget	radio_group = NULL;
+    if (radio && kind == toggleWidgetClass) {
 	if (buttonbox->numbuttons > 1)
 	    radio_group = (button == buttonbox->button[0]) 
 		? (buttonbox->button[1]->widget)
-	        : (buttonbox->button[0]->widget);
-	XtSetArg(arglist[i], XtNradioGroup, radio_group);	i++;
-	XtSetArg(arglist[i], XtNradioData, button->name);	i++;
-    }
-    else if (buttonbox->button_type == menuButtonWidgetClass) {
-	button->menu = NULL;
-	strcpy(menuName, name);
-	strcpy(menuName + strlen(name), "Menu");
-	button->menu_name = XtNewString(menuName);
-	/* %%% MenuButton requires malloc of the menuName */
-	XtSetArg(arglist[i], XtNmenuName, button->menu_name);	i++;   
+		: (buttonbox->button[0]->widget);
+	else radio_group = NULL;
+	XtSetArg(args[i], XtNradioGroup, radio_group);		i++;
+	XtSetArg(args[i], XtNradioData, button->name);		i++;
     }
 
-    button->widget = XtCreateManagedWidget(name, buttonbox->button_type,
-					   buttonbox->inner, arglist,
-					   (Cardinal) i);
+    button->widget =
+	XtCreateManagedWidget(name, kind, buttonbox->inner, args, i);
 
-    if (buttonbox->button_type == toggleWidgetClass)
-	XtOverrideTranslations(button->widget, XtParseTranslationTable
-			       ("<Btn1Down>,<Btn1Up>:set()\n"));
+    if (radio)
+	XtOverrideTranslations(button->widget, RadioButtonTranslations);
 }
 
 
-/*----------------------- Get & Set ----------------------------------------*/
+void BBoxAddButton(buttonbox, name, kind, position, enabled)
+    ButtonBox	buttonbox;
+    char	*name;
+    WidgetClass	kind;
+    int		position;
+    Boolean	enabled;
+{
+    bboxAddButton(buttonbox, name, kind, position, enabled, False);
+}    
+
+
+void RadioBBoxAddButton(buttonbox, name, position, enabled)
+    ButtonBox	buttonbox;
+    char	*name;
+    int		position;
+    Boolean	enabled;
+{
+    bboxAddButton(buttonbox, name, toggleWidgetClass, position, enabled, True);
+}
+
 
 /* Set the current button in a radio buttonbox. */
 
-void BBoxSetRadio(button)
-Button button;
+void RadioBBoxSet(button)
+    Button button;
 {
     XawToggleSetCurrent(button->widget, button->name);
 }
@@ -191,19 +170,71 @@ Button button;
 
 /* Get the name of the current button in a radio buttonbox. */
 
-char *BBoxGetRadioName(buttonbox)
-ButtonBox buttonbox;
+char *RadioBBoxGetCurrent(buttonbox)
+    ButtonBox buttonbox;
 {
     return ((char *) XawToggleGetCurrent(buttonbox->button[0]->widget));
 }
 
-/*----------------------- Enable & Disable ------------------------*/
+
+/* Remove the given button from its buttonbox, and free all resources
+ * used in association with the button.  If the button was the current
+ * button in a radio buttonbox, the current button becomes the first 
+ * button in the box.
+ */
+
+void BBoxDeleteButton(button)
+    Button	button;
+{
+    ButtonBox	buttonbox;
+    int		i, found;
+    
+    if (button == NULL) return;
+    buttonbox = button->buttonbox;
+    found = False;
+
+    for (i=0 ; i<buttonbox->numbuttons; i++) {
+	if (found)
+	    buttonbox->button[i-1] = buttonbox->button[i];
+	else if (buttonbox->button[i] == button) {
+	    found = True;
+ 
+	    /* Free the resources used by the given button. */
+
+	    if (button->menu != NULL && button->menu != NoMenuForButton)
+		XtDestroyWidget(button->menu);
+	    XtDestroyWidget(button->widget);
+	    XtFree(button->name);
+	    XtFree((char *) button);
+	} 
+    }
+    if (found)
+	buttonbox->numbuttons--;
+}
+
+
+void RadioBBoxDeleteButton(button)
+    Button	button;
+{
+    ButtonBox	buttonbox;
+    Boolean	reradio = False;
+    char *	current;
+
+    buttonbox = button->buttonbox;
+    current = RadioBBoxGetCurrent(buttonbox);
+    if (current) reradio = ! strcmp(current, button->name);
+    BBoxDeleteButton(button);
+
+    if (reradio && BBoxNumButtons(buttonbox))
+	RadioBBoxSet(buttonbox->button[0]);
+}
+
 
 /* Enable or disable the given button widget. */
 
 static void SendEnableMsg(widget, value)
-Widget widget;
-int value;			/* TRUE for enable, FALSE for disable. */
+    Widget	widget;
+    int		value;	/* TRUE for enable, FALSE for disable. */
 {
     static Arg arglist[] = {XtNsensitive, NULL};
     arglist[0].value = (XtArgVal) value;
@@ -216,32 +247,31 @@ int value;			/* TRUE for enable, FALSE for disable. */
 void BBoxEnable(button)
 Button button;
 {
-    SendEnableMsg(button->widget, TRUE);
+    SendEnableMsg(button->widget, True);
 }
 
 
 /* Disable the given button (if it's not already). */
 
 void BBoxDisable(button)
-Button button;
+    Button button;
 {
-    SendEnableMsg(button->widget, FALSE);
+    SendEnableMsg(button->widget, False);
 }
 
-/*---------------------------- Miscellaneous Ops ----------------------*/
 
 /* Given a buttonbox and a button name, find the button in the box with that
    name. */
 
 Button BBoxFindButtonNamed(buttonbox, name)
-ButtonBox buttonbox;
-char *name;
+    ButtonBox buttonbox;
+    char *name;
 {
     register int i;
     for (i=0 ; i<buttonbox->numbuttons; i++)
 	if (strcmp(name, buttonbox->button[i]->name) == 0)
 	    return buttonbox->button[i];
-    return NULL;
+    return (Button) NULL;
 }
 
 
@@ -262,8 +292,8 @@ Button BBoxFindButton(buttonbox, w)
 /* Return the nth button in the given buttonbox. */
 
 Button BBoxButtonNumber(buttonbox, n)
-ButtonBox buttonbox;
-int n;
+    ButtonBox buttonbox;
+    int n;
 {
     return buttonbox->button[n];
 }
@@ -272,7 +302,7 @@ int n;
 /* Return how many buttons are in a buttonbox. */
 
 int BBoxNumButtons(buttonbox)
-ButtonBox buttonbox;
+    ButtonBox buttonbox;
 {
     return buttonbox->numbuttons;
 }
@@ -281,139 +311,26 @@ ButtonBox buttonbox;
 /* Given a button, return its name. */
 
 char *BBoxNameOfButton(button)
-Button button;
+    Button button;
 {
     return button->name;
 }
 
 
-/* Set the minimum and maximum size for a bbox so that it cannot be resized
-   any bigger than its total height. */
+/* Set maximum size for a bbox so that it cannot be resized any bigger 
+ * than its total height.  Allow the user to set the minimum size.
+ * The problem, we think, is that the box computes it's height based on
+ * each button being in a separate row; i.e. a column of buttons. 
+ */
 
 void BBoxLockSize(buttonbox)
-ButtonBox buttonbox;
-{
-#ifdef notyet
-    static Arg args[] = {
-	{XtNmax, NULL},		/* first is for VPaned */
-/*	{XtNmin, 5}, */		/* let user select this */
-    };
-
-    buttonbox->maxheight = GetHeight(buttonbox->inner);
-    args[0].value = (XtArgVal)buttonbox->maxheight;
-    XtSetValues(buttonbox->outer, args, XtNumber(args));
-#endif
-}
-
-
-/* Change the borderwidth of the given button. */
-
-void BBoxChangeBorderWidth(button, borderWidth)
-Button button;
-unsigned int borderWidth;
-{
-    static Arg arglist[] = {XtNborderWidth, NULL};
-    arglist[0].value = (XtArgVal) borderWidth;
-    XtSetValues(button->widget, arglist, XtNumber(arglist));
-}
-
-
-/*---------------------- Deletion Routines --------------------------------*/
-
- 
-/* Free the storage for the given button. */
-static void FreeButton(button)
-Button button;
-{
-    XtFree(button->name);
-    XtFree((char *) button);
-}
-
-
-/* Remove the given button from its buttonbox.  The button widget is
-   destroyed.  If it was the current button in a radio buttonbox, then the
-   current button becomes the first button in the box. */
-
-void BBoxDeleteButton(button)
-Button button;
-{
     ButtonBox buttonbox;
-    int i, found, reradio;
-    
-    if (button == NULL) return;
-    buttonbox = button->buttonbox;
-    found = reradio = FALSE;
-
-    for (i=0 ; i<buttonbox->numbuttons; i++) {
-	if (found)
-	    buttonbox->button[i-1] = buttonbox->button[i];
-	else if (buttonbox->button[i] == button) {
-	    found = TRUE;
-	    if (buttonbox->button_type == toggleWidgetClass) {
-		if (strcmp((char *) XawToggleGetCurrent(button->widget),
-			   button->name) == 0)
-		    reradio = TRUE;
-	    }
-	    else if (buttonbox->button_type == menuButtonWidgetClass) {
-		if (strcmp(buttonbox->scrn->curfolder, button->name) == 0)
-		    reradio = TRUE;
-		if (button->menu != NULL &&
-		    button->menu != NoMenuForButton)
-		    XtDestroyWidget(button->menu);
-	    }
-
-	    XtDestroyWidget(button->widget);
-	    FreeButton(button);
-	}
-    }
-
-    if (found) {
-	buttonbox->numbuttons--;
-	if (reradio && buttonbox->numbuttons) {
-	    if (buttonbox->button_type == toggleWidgetClass)
-		BBoxSetRadio(buttonbox->button[0]);
-	    else if (buttonbox->button_type == menuButtonWidgetClass)
-		SetCurrentFolderName(buttonbox->scrn, 
-				     buttonbox->button[0]->name);
-	}
-    }
-}
-
-
-/* Function:	BBoxDeleteMenuEntry
- * Description:	Remove a subfolder from a menu.
- */
-void BBoxDeleteMenuEntry(button, foldername)
-    Button	button;
-    char	*foldername;	/* guaranteed to be a subfolder */
 {
-
-    if (XawSimpleMenuEntryCount(button->menu, XawMenuTextMask) <= 2) {
-	XtDestroyWidget(button->menu);	/* %%% leaving behind some memory
-					 * in the callback closure struct
-					 */
-	button->menu = NoMenuForButton;
-    }
-    else {
-	char *subfolder = MakeSubFolderName(foldername);
-	if (strcmp(button->name, subfolder) == 0) {
-	    char name[200];
-	    name[0] = '_';
-	    strcpy(name + 1, subfolder);
-	    XawSimpleMenuRemoveEntry(button->menu, name);
-	}
-	else
-	    XawSimpleMenuRemoveEntry(button->menu, subfolder);
-	XtFree(subfolder);
-    }
-    SetCurrentFolderName(button->buttonbox->scrn, button->name);
+    Dimension	maxheight;
+    Arg		args[1];
+    maxheight = (Dimension) GetHeight(buttonbox->inner);
+    DEBUG1("maxheight is %d\n", maxheight);
+    XtSetArg(args[0], XtNmax, maxheight);	/* for Paned widget */
+    XtSetValues(buttonbox->outer, args, (Cardinal) 1);
 }
 
-
-/* Destroy the given buttonbox. */
-
-void BBoxDeleteBox(buttonbox)
-ButtonBox buttonbox;
-{
-    XtDestroyWidget(buttonbox->outer);
-}
