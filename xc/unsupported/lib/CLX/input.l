@@ -1086,11 +1086,11 @@
 	   (type (or null number) timeout)
 	   (type boolean force-output-p)
 	   (type symbol current-event-symbol)
-	   (values event return-value))
+	   (values event eof-or-timeout))
   (unless (symbol-value current-event-symbol)
-    (let ((return-value (wait-for-event display timeout force-output-p)))
-      (when return-value
-	(return-from event-loop-step-before (values nil return-value))))
+    (let ((eof-or-timeout (wait-for-event display timeout force-output-p)))
+      (when eof-or-timeout
+	(return-from event-loop-step-before (values nil eof-or-timeout))))
     (setf (symbol-value current-event-symbol) (display-new-events display)))
   (let ((event (symbol-value current-event-symbol)))
     (declare (type reply-buffer event))
