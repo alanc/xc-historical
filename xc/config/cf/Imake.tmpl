@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.102 91/03/23 16:44:14 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.102 91/03/23 16:45:39 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -427,8 +427,8 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define InstKmemFlags InstUidFlags    /* put -g kmem -m 2755 in site.def... */
 #endif
 #ifndef ArCmd
-#if HasLargeTmp
-#define ArCmd ar cq	/* use /tmp for temp files */
+#if HasLargeTmp | SystemV4
+#define ArCmd ar cq	/* do nothing special */
 #else
 #define ArCmd ar clq	/* use local dir for temp files */
 #endif
