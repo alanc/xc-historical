@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.84 89/07/18 17:15:37 jim Exp $
+ * $XConsortium: add_window.c,v 1.85 89/07/26 11:02:15 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.84 89/07/18 17:15:37 jim Exp $";
+"$XConsortium: add_window.c,v 1.85 89/07/26 11:02:15 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -185,10 +185,6 @@ IconMgr *iconp;
      * The July 27, 1988 draft of the ICCCM ignores the size and position
      * fields in the WM_NORMAL_HINTS property.
      */
-    XGetGeometry(dpy, tmp_win->w, &JunkRoot,
-		 &tmp_win->attr.x, &tmp_win->attr.y,
-		 &tmp_win->attr.width, &tmp_win->attr.height,
-		 &JunkBW, &JunkDepth);
 
     trans = Transient(tmp_win->w);
     if ((tmp_win->hints.flags & USPosition) || trans)
@@ -570,27 +566,37 @@ IconMgr *iconp;
     tmp_win->frame_height = tmp_win->attr.height + tmp_win->title_height +
         2 * tmp_win->bw;
 
-    valuemask = CWBackPixmap | CWBorderPixel;
+    valuemask = CWBackPixmap | CWBorderPixel | CWCursor | CWEventMask;
     attributes.background_pixmap = None;
     attributes.border_pixel = tmp_win->border;
+    attributes.cursor = Scr->FrameCursor;
+    attributes.event_mask = (SubstructureRedirectMask | VisibilityChangeMask |
+			     ButtonPressMask | ButtonReleaseMask |
+			     EnterWindowMask | LeaveWindowMask);
 
-    tmp_win->frame = XCreateWindow(dpy, Scr->Root,
-	tmp_win->frame_x, tmp_win->frame_y,
-	tmp_win->frame_width, tmp_win->frame_height,
-	tmp_win->frame_bw,
-	Scr->d_depth, CopyFromParent,
-	Scr->d_visual, valuemask, &attributes);
+    tmp_win->frame = XCreateWindow (dpy, Scr->Root, tmp_win->frame_x,
+				    tmp_win->frame_y, tmp_win->frame_width,
+				    tmp_win->frame_height, tmp_win->frame_bw,
+				    Scr->d_depth, CopyFromParent,
+				    Scr->d_visual, valuemask, &attributes);
     
     tmp_win->title_x = -tmp_win->title_bw;
     tmp_win->title_y = -tmp_win->title_bw;
 
     if (tmp_win->title_height)
     {
-	tmp_win->title_w = XCreateSimpleWindow(dpy, tmp_win->frame,
-	    tmp_win->title_x, tmp_win->title_y,
-	    tmp_win->attr.width, Scr->TitleHeight,
-	    tmp_win->title_bw,
-	    tmp_win->border, tmp_win->title.back);
+	valuemask = (CWEventMask | CWBorderPixel | CWBackPixel);
+	attributes.event_mask = (KeyPressMask | ButtonPressMask |
+				 ButtonReleaseMask | ExposureMask);
+	attributes.border_pixel = tmp_win->border;
+	attributes.background_pixel = tmp_win->title.back;
+	tmp_win->title_w = XCreateWindow (dpy, tmp_win->frame,
+					  tmp_win->title_x, tmp_win->title_y,
+					  tmp_win->attr.width, 
+					  Scr->TitleHeight, tmp_win->title_bw,
+					  Scr->d_depth, CopyFromParent,
+					  Scr->d_visual, valuemask,
+					  &attributes);
     }
     else
 	tmp_win->title_w = 0;
@@ -611,7 +617,6 @@ IconMgr *iconp;
 
     CreateTitleButtons(tmp_win);
 	
-    XDefineCursor(dpy, tmp_win->frame, Scr->FrameCursor);
     if (tmp_win->title_height)
     {
 	XDefineCursor(dpy, tmp_win->title_w, Scr->TitleCursor);
@@ -619,30 +624,19 @@ IconMgr *iconp;
 	XDefineCursor(dpy, tmp_win->resize_w, Scr->ButtonCursor);
     }
 
-    XSelectInput(dpy, tmp_win->w, StructureNotifyMask | PropertyChangeMask |
-	ColormapChangeMask | EnterWindowMask | LeaveWindowMask);
-
+    valuemask = (CWEventMask | CWDontPropagate);
+    attributes.event_mask = (StructureNotifyMask | PropertyChangeMask |
+			     ColormapChangeMask |
+			     EnterWindowMask | LeaveWindowMask);
     attributes.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask;
-    XChangeWindowAttributes(dpy, tmp_win->w, CWDontPropagate, &attributes);
+    XChangeWindowAttributes (dpy, tmp_win->w, valuemask, &attributes);
 
 #ifdef SHAPE
     if (HasShape)
 	XShapeSelectInput (dpy, tmp_win->w, True);
 #endif
 	
-    /* find out what his color map really is */
-    XGetWindowAttributes(dpy, tmp_win->w, &gattr);
-    tmp_win->attr.colormap = gattr.colormap;
-
-    XSelectInput(dpy, tmp_win->frame,
-	SubstructureRedirectMask | VisibilityChangeMask |
-	ButtonPressMask | ButtonReleaseMask |
-	EnterWindowMask | LeaveWindowMask);
-
     if (tmp_win->title_w) {
-	XSelectInput (dpy, tmp_win->title_w, 
-		      KeyPressMask | ButtonPressMask | ButtonReleaseMask |
-		      ExposureMask);
 	XMapWindow (dpy, tmp_win->title_w);
     }
 
