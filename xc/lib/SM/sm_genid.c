@@ -1,4 +1,4 @@
-/* $XConsortium: sm_genid.c,v 1.5 94/03/30 19:57:29 gildea Exp $ */
+/* $XConsortium: sm_genid.c,v 1.6 94/04/17 20:16:56 gildea Exp $ */
 
 /*
 
@@ -49,7 +49,7 @@ extern Time_t time ();
 
 #ifndef WIN32
 
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -123,7 +123,7 @@ SmsConn smsConn;
     if (gethostname (hostname, sizeof (hostname)))
 	return (NULL);
 
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
     {
     struct hostent *tcp_hostent = gethostbyname (hostname);
     char *inet_addr = (char *) inet_ntoa (
