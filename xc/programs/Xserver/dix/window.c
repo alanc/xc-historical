@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.46 89/11/30 15:31:28 keith Exp $ */
+/* $XConsortium: window.c,v 5.47 89/12/14 14:59:32 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -365,7 +365,7 @@ PrintChildren(p1, indent)
     {
         p2 = p1->firstChild;
         for (i=0; i<indent; i++) ErrorF( " ");
-	ErrorF( "%x\n", p1->wid);
+	ErrorF( "%x\n", p1->drawable.id);
         miprintRegion(&p1->clipList);
 	PrintChildren(p2, indent+4);
 	p1 = p1->nextSib;
