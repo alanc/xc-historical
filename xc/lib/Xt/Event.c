@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.41 88/01/07 13:31:19 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.42 88/01/20 15:35:25 swick Locked $";
 #endif lint
 
 /*
@@ -24,8 +24,10 @@ static char rcsid[] = "$Header: Event.c,v 1.41 88/01/07 13:31:19 swick Locked $"
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#include "Intrinsic.h"
-#include "Atoms.h"
+
+#include <X/Intrinsic.h>
+#include <X/Xutil.h>
+#include <X/Atoms.h>
 
 EventMask _XtBuildEventMask(widget)
     Widget widget;
@@ -262,6 +264,71 @@ static void InitializeHash()
 }
 
 
+/* %%% the following typedefs are lifted from X/lib/X/region.h;
+ * that file is too big to be included here.  XRectToRegion should
+ * become a standard part of Xlib anyway...
+ */
+
+typedef struct {
+    short x1, x2, y1, y2;
+} BOX, Box;
+
+typedef struct _XRegion {
+    short size;
+    short numRects;
+    BOX *rects;
+    BOX extents;
+} REGION;
+
+
+Region XRectToRegion(rect)
+    register XRectangle *rect;
+{
+    Region region;
+    register Box *box;
+
+    region = ( Region )Xmalloc( (unsigned) sizeof( REGION ));
+    box = region->rects = ( BOX * )Xmalloc( (unsigned) sizeof( BOX ));
+    region->numRects = 1;
+    box->x1 = region->extents.x1 = rect->x;
+    box->y1 = region->extents.y1 = rect->y;
+    box->x2 = region->extents.x2 = rect->x + rect->width;
+    box->y2 = region->extents.y2 = rect->y + rect->height;
+    region->size = 1;
+    return( region );
+}
+
+
+XtAddExposureToRegion(event, region)
+    XEvent   *event;
+    Region   region;
+{
+    XRectangle rect;
+    Region exposeRegion;
+
+    switch (event->type) {
+	case Expose:
+		rect.x = event->xexpose.x;
+		rect.y = event->xexpose.y;
+		rect.width = event->xexpose.width;
+		rect.height = event->xexpose.height;
+		break;
+	case GraphicsExpose:
+		rect.x = event->xgraphicsexpose.x;
+		rect.y = event->xgraphicsexpose.y;
+		rect.width = event->xgraphicsexpose.width;
+		rect.height = event->xgraphicsexpose.height;
+		break;
+	default:
+		return;
+    }
+
+    exposeRegion = XRectToRegion(&rect);
+    XUnionRegion(exposeRegion, region, region);
+    XDestroyRegion(exposeRegion);
+}
+
+
 static void DispatchEvent(event, widget, mask)
     XEvent    *event;
     Widget    widget;
@@ -273,11 +340,38 @@ static void DispatchEvent(event, widget, mask)
     XtEventHandler proc[100];
     Opaque closure[100];
     int numprocs, i;
+    static Region exposeRegion = NULL;
+
     if (mask == ExposureMask) {
-      if (widget->core.widget_class->core_class.compress_exposure &&
-	  ((event->type == Expose && event->xexpose.count != 0) ||
-	   (event->type == GraphicsExpose && event->xgraphicsexpose.count != 0)))
+      if (widget->core.widget_class->core_class.compress_exposure) {
+	if ((event->type == Expose && event->xexpose.count != 0) ||
+	    (event->type == GraphicsExpose && event->xgraphicsexpose.count != 0)) {
+	  /* %%% this code will need to be fixed to support multiple displays*/
+	  if (exposeRegion == NULL) exposeRegion = XCreateRegion();
+	  XtAddExposureToRegion(event, exposeRegion);
 	  return;
+	}
+	if (event->type != NoExpose) {
+	  XRectangle rect;
+	  XClipBox(exposeRegion, &rect);
+	  switch (event->type) {
+	    case Expose:
+		      event->xexpose.x = rect.x;
+		      event->xexpose.y = rect.y;
+		      event->xexpose.width = rect.width;
+		      event->xexpose.height = rect.height;
+		      break;
+	    case GraphicsExpose:
+		      event->xgraphicsexpose.x = rect.x;
+		      event->xgraphicsexpose.y = rect.y;
+		      event->xgraphicsexpose.width = rect.width;
+		      event->xgraphicsexpose.height = rect.height;
+		      break;
+	  }
+	  XDestroyRegion(exposeRegion);
+	  exposeRegion = NULL;
+	}
+      }
       if(widget->core.widget_class->core_class.expose != NULL)
          (*(widget->core.widget_class->core_class.expose))(widget,event);
     }
