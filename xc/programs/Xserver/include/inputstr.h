@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: inputstr.h,v 1.10 87/05/31 00:55:34 toddb Locked $ */
+/* $Header: inputstr.h,v 1.11 87/08/18 19:58:13 toddb Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -102,12 +102,8 @@ typedef struct _DeviceIntRec {
     BYTE	down[DOWN_LENGTH];
     union {
 	struct {
-#ifdef	NEW_MODIFIERS
 	    /* here we store a bitmask for each key of the modifiers it sets */
 	    CARD8	modifierMap[MAP_LENGTH];
-#else
-	    ModifierMapRec modMap;
-#endif
 	    KeybdCtrl	ctrl;
 	    void	(*BellProc) ();
 	    void	(*CtrlProc) ();

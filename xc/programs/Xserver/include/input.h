@@ -66,17 +66,6 @@ typedef struct {
 } KeybdCtrl;
 
 typedef struct {
-    KeyCode lock;
-    KeyCode shiftA, shiftB;
-    KeyCode controlA, controlB;
-    KeyCode mod1A, mod1B;
-    KeyCode mod2A, mod2B;
-    KeyCode mod3A, mod3B;
-    KeyCode mod4A, mod4B;
-    KeyCode mod5A, mod5B;
-}  ModifierMapRec, *ModifierMapPtr;
-
-typedef struct {
     KeySym  *map;
     KeyCode minKeyCode,
 	    maxKeyCode;
