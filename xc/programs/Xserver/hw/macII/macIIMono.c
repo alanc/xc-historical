@@ -122,96 +122,6 @@ macIIMonoCloseScreen(i, pScreen)
 
 /*-
  *-----------------------------------------------------------------------
- * macIIMonoResolveColor --
- *	Resolve an RGB value into some sort of thing we can handle.
- *	Just looks to see if the intensity of the color is greater than
- *	1/2 and sets it to 'white' (all ones) if so and 'black' (all zeroes)
- *	if not.
- *
- * Results:
- *	*pred, *pgreen and *pblue are overwritten with the resolved color.
- *
- * Side Effects:
- *	see above.
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static void
-macIIMonoResolveColor(pred, pgreen, pblue, pVisual)
-    unsigned short	*pred;
-    unsigned short	*pgreen;
-    unsigned short	*pblue;
-    VisualPtr		pVisual;
-{
-    /* 
-     * Gets intensity from RGB.  If intensity is >= half, pick white, else
-     * pick black.  This may well be more trouble than it's worth.
-     */
-
-    *pred = *pgreen = *pblue = 
-        (((30L * (long)*pred +
-           59L * (long)*pgreen +
-           11L * (long)*pblue) >> 8) >= (((1<<8)-1)*50)) ? ~0 : 0;
-    
-}
-
-/*-
- *-----------------------------------------------------------------------
- * macIIMonoCreateColormap --
- *	create a bw colormap
- *
- * Results:
- *	None
- *
- * Side Effects:
- *	allocate two pixels
- *
- *-----------------------------------------------------------------------
- */
-Bool
-macIIMonoCreateColormap(pmap)
-    ColormapPtr	pmap;
-{
-    int	red, green, blue, pix;
-
-    /* this is a monochrome colormap, it only has two entries, just fill
-     * them in by hand.  If it were a more complex static map, it would be
-     * worth writing a for loop or three to initialize it */
-
-    /* this will be pixel 0 */
-    pix = 0;
-    red = green = blue = ~0;
-    AllocColor(pmap, &red, &green, &blue, &pix, 0);
-
-    /* this will be pixel 1 */
-    red = green = blue = 0;
-    AllocColor(pmap, &red, &green, &blue, &pix, 0);
-    return TRUE;
-}
-
-/*-
- *-----------------------------------------------------------------------
- * macIIMonoDestroyColormap --
- *	destroy a bw colormap
- *
- * Results:
- *	None
- *
- * Side Effects:
- *	None
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-void
-macIIMonoDestroyColormap(pmap)
-    ColormapPtr	pmap;
-{
-}
-
-/*-
- *-----------------------------------------------------------------------
  * macIIMonoInit --
  *	Initialize the macII framebuffer
  *
@@ -235,46 +145,30 @@ macIIMonoInit (index, pScreen, argc, argv)
     ColormapPtr pColormap;
     PixmapPtr   pPixmap;
 
-    if (!mfbScreenInit(index, pScreen,
+    if (!mfbScreenInit(pScreen,
 			   macIIFbs[index].fb,
 			   macIIFbs[index].info.v_right -
 			   macIIFbs[index].info.v_left,
 			   macIIFbs[index].info.v_bottom -
 			   macIIFbs[index].info.v_top, 
 			   macIIFbs[index].info.v_hres >> 16, 
-			   macIIFbs[index].info.v_vres >> 16))
+			   macIIFbs[index].info.v_vres >> 16,
+    			   macIIFbs[index].info.v_rowbytes * 8))
+    {
 	return (FALSE);
-
-    /* macII screens may have extra video memory to the right of the visible
-     * area, therefore the PixmapBytePad macro in mfbScreenInit gave the 
-     * wrong value to the devKind field of the Pixmap it made for the screen.
-     * So we fix it here. */
-
-    pPixmap = (PixmapPtr)(pScreen->devPrivate);
-    pPixmap->devKind =  macIIFbs[index].info.v_rowbytes;
+    }
 
     pScreen->SaveScreen = macIIMonoSaveScreen;
-    pScreen->ResolveColor = macIIMonoResolveColor;
-    pScreen->CreateColormap = macIIMonoCreateColormap;
-    pScreen->DestroyColormap = macIIMonoDestroyColormap;
+    pScreen->CloseScreen = macIIMonoCloseScreen;
     pScreen->whitePixel = 0;
     pScreen->blackPixel = 1;
-
-    if (CreateColormap(pScreen->defColormap, pScreen,
-		   LookupID(pScreen->rootVisual, RT_VISUALID, RC_CORE),
-		   &pColormap, AllocNone, 0) != Success
-	|| pColormap == NULL)
-	    FatalError("Can't create colormap in macIIMonoInit()\n");
-    mfbInstallColormap(pColormap);
 
     /*
      * Enable video output...? 
      */
     (void) macIIMonoSaveScreen(pScreen, SCREEN_SAVER_FORCER);
 
-    macIIScreenInit(pScreen);
-    return (TRUE);
-
+    return (macIIScreenInit(pScreen) && mfbCreateDefColormap(pScreen));
 }
 
 /*-
@@ -350,7 +244,6 @@ macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
      */
     oldNumScreens = pScreenInfo->numScreens;
     i = AddScreen(macIIMonoInit, argc, argv);
-    pScreenInfo->screens[index]->CloseScreen = macIIMonoCloseScreen;
     return (i > oldNumScreens);
 }
 

@@ -67,6 +67,22 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define NEED_EVENTS
 #include    "macII.h"
+#include	"mipointer.h"
+#include	"misprite.h"
+
+Bool ActiveZaphod = TRUE;
+
+static long macIIEventTime();
+static Bool macIICursorOffScreen();
+static void macIICrossScreen();
+extern void miPointerQueueEvent();
+
+miPointerCursorFuncRec macIIPointerCursorFuncs = {
+    macIIEventTime,
+    macIICursorOffScreen,
+    macIICrossScreen,
+    miPointerQueueEvent,
+};
 
 typedef struct {
     Bool    mouseMoved;	    /* Mouse has moved */
@@ -124,8 +140,8 @@ macIIMouseProc (pMouse, what)
 	    }
 
 	    sysMousePriv.pScreen = screenInfo.screens[0];
-	    sysMousePriv.x = sysMousePriv.pScreen->width / 2;
-	    sysMousePriv.y = sysMousePriv.pScreen->height / 2;
+	    sysMousePriv.x = 0;
+	    sysMousePriv.y = 0;
 
 	    macIIMousePriv.mouseMoved = FALSE;
 
@@ -253,19 +269,18 @@ macIIMouseDoneEvents (pMouse,final)
 {
     PtrPrivPtr	  pPriv;
     macIIMsPrivPtr  pmacIIPriv;
-    xEvent	  xE;
+    int		dx, dy;
 
     pPriv = (PtrPrivPtr) pMouse->devicePrivate;
     pmacIIPriv = (macIIMsPrivPtr) pPriv->devPrivate;
 
     if (pmacIIPriv->mouseMoved) {
-	macIIMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
-	xE.u.keyButtonPointer.rootX = pPriv->x;
-	xE.u.keyButtonPointer.rootY = pPriv->y;
-	xE.u.keyButtonPointer.time = lastEventTime;
-	xE.u.u.type = MotionNotify;
-	(* pMouse->processInputProc) (&xE, pMouse);
-	pmacIIPriv->mouseMoved = FALSE;
+        dx = pPriv->x;
+        dy = pPriv->y;
+        pPriv->x = 0;
+        pPriv->y = 0;
+        pmacIIPriv->mouseMoved = FALSE;
+        miPointerDeltaCursor (screenInfo.screens[0], dx, dy, TRUE);
     }
 }
 
@@ -311,8 +326,10 @@ macIIMouseProcessEvent(pMouse,me)
 	    if (pmacIIPriv->mouseMoved) {
 		(* pPriv->DoneEvents) (pMouse, FALSE);
 	    }
-    	    xE.u.keyButtonPointer.rootX = pPriv->x;
-    	    xE.u.keyButtonPointer.rootY = pPriv->y;
+
+            miPointerPosition (screenInfo.screens[0],
+                           &xE.u.keyButtonPointer.rootX,
+                           &xE.u.keyButtonPointer.rootY);
 
     	    (* pMouse->processInputProc) (&xE, pMouse);
 	    return;
@@ -328,8 +345,10 @@ macIIMouseProcessEvent(pMouse,me)
 	    if (pmacIIPriv->mouseMoved) {
 		(* pPriv->DoneEvents) (pMouse, FALSE);
 	    }
-    	    xE.u.keyButtonPointer.rootX = pPriv->x;
-    	    xE.u.keyButtonPointer.rootY = pPriv->y;
+
+            miPointerPosition (screenInfo.screens[0],
+                           &xE.u.keyButtonPointer.rootX,
+                           &xE.u.keyButtonPointer.rootY);
 
     	    (* pMouse->processInputProc) (&xE, pMouse);
 	    return;
@@ -390,57 +409,7 @@ macIIMouseProcessEvent(pMouse,me)
 #endif
    
    
-    /*
-     * Active Zaphod implementation:
-     *    increment or decrement the current screen
-     *    if the x is to the right or the left of
-     *    the current screen.
-     */
-    if (screenInfo.numScreens > 1 && (!grab || !grab->confineTo) &&
-        (pPriv->x > pPriv->pScreen->width ||
-         pPriv->x < 0)) {
-        macIIRemoveCursor();
-        if (pPriv->x < 0) { 
-             if (pPriv->pScreen->myNum != 0)
-                (pPriv->pScreen)--;
-             else
-                 pPriv->pScreen = screenInfo.screens[screenInfo.numScreens -1];
-             pPriv->x += pPriv->pScreen->width;
-        }
-        else {
-            pPriv->x -= pPriv->pScreen->width;
-            if (pPriv->pScreen->myNum != screenInfo.numScreens -1)
-                (pPriv->pScreen)++;
-            else
-                 pPriv->pScreen = screenInfo.screens[0];
-        }
-	NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
-    }
-
-#ifdef notdef
-    if (!macIIConstrainXY (&pPriv->x, &pPriv->y)) {
-    return;
-    }
-    NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
-#else
-    pPriv->x = max(currentLimits.x1,min(currentLimits.x2,pPriv->x));
-    pPriv->y = max(currentLimits.y1,min(currentLimits.y2,pPriv->y));
-#endif
-   
-    xE.u.keyButtonPointer.rootX = pPriv->x;
-    xE.u.keyButtonPointer.rootY = pPriv->y;
-   
-    if( (lastx != pPriv->x) || (lasty != pPriv->y)) {
-	lastx = pPriv->x;
-	lasty = pPriv->y;
-#ifdef MACII_ALL_MOTION
-    	xE.u.u.type = MotionNotify;
-    	macIIMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
-    	(* pMouse->processInputProc) (&xE, pMouse);
-#else
-    	pmacIIPriv->mouseMoved = TRUE;
-#endif MACII_ALL_MOTION
-    }
+    pmacIIPriv->mouseMoved = TRUE;
 
     if (KEY_UP(*(me + 1)) != last_button) {
         xE.u.u.detail = (MS_LEFT - MS_LEFT) + 1;
@@ -457,3 +426,53 @@ macIIMouseProcessEvent(pMouse,me)
     }
    }
    
+/*ARGSUSED*/
+static Bool
+macIICursorOffScreen (pScreen, x, y)
+    ScreenPtr   *pScreen;
+    int         *x, *y;
+{
+    int     index;
+
+    /*
+     * Active Zaphod implementation:
+     *    increment or decrement the current screen
+     *    if the x is to the right or the left of
+     *    the current screen.
+     */
+    if (ActiveZaphod &&
+        screenInfo.numScreens > 1 && (*x >= (*pScreen)->width || *x < 0))
+    {
+        index = (*pScreen)->myNum;
+        if (*x < 0)
+        {
+            index = (index ? index : screenInfo.numScreens) - 1;
+            *pScreen = screenInfo.screens[index];
+            *x += (*pScreen)->width;
+        }
+        else
+        {
+            *x -= (*pScreen)->width;
+            index = (index + 1) % screenInfo.numScreens;
+            *pScreen = screenInfo.screens[index];
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/*ARGSUSED*/
+static long
+macIIEventTime (pScreen)
+    ScreenPtr   pScreen;
+{
+    return lastEventTime;
+}
+
+static void
+macIICrossScreen (pScreen, entering)
+    ScreenPtr   pScreen;
+    Bool        entering;
+{
+}
+

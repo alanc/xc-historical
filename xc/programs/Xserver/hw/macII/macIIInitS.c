@@ -70,6 +70,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include    "dixstruct.h"
 #include    "dix.h"
 #include    "opaque.h"
+#include    "mipointer.h"
 
 extern int macIIMouseProc();
 extern void macIIKbdProc();
@@ -249,8 +250,6 @@ InitOutput(pScreenInfo, argc, argv)
 	FatalError("Can't find any displays\n");
 
     pScreenInfo->numScreens = index;
-
-    macIIInitCursor();
 }
 
 ParseDepths(argc, argv)
@@ -338,6 +337,7 @@ InitInput(argc, argv)
 
     RegisterPointerDevice(p, MOTION_BUFFER_SIZE);
     RegisterKeyboardDevice(k);
+    miRegisterPointerDevice(screenInfo.screens[0], p);
 
 #ifdef notdef
     signal(SIGIO, SigIOHandler);
@@ -585,7 +585,7 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 	    break;
     }
 
-    return (i > oldNumScreens);
+    return (i >= oldNumScreens);
 }
 
 static int
@@ -762,51 +762,6 @@ register struct video *vp;
 }
 
 /*-
- *-----------------------------------------------------------------------
- * macIIQueryBestSize --
- *	Supposed to hint about good sizes for things.
- *
- * Results:
- *	Perhaps change *pwidth (Height irrelevant)
- *
- * Side Effects:
- *	None.
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-void
-macIIQueryBestSize(class, pwidth, pheight)
-int class;
-short *pwidth;
-short *pheight;
-{
-    unsigned width, test;
-
-    switch(class)
-    {
-      case CursorShape:
-      case TileShape:
-      case StippleShape:
-	  width = *pwidth;
-	  if ((int)width > 0) {
-	      /* Return the closest power of two not less than what they gave me */
-	      test = 0x80000000;
-	      /* Find the highest 1 bit in the width given */
-	      while(!(test & width))
-		 test >>= 1;
-	      /* If their number is greater than that, bump up to the next
-	       *  power of two */
-	      if((test - 1) & width)
-		 test <<= 1;
-	      *pwidth = test;
-	  }
-	  /* We don't care what height they use */
-	  break;
-    }
-}
-
-/*-
  *-------------------------------------------------------------%---------
  * macIIScreenInit --
  *	Things which must be done for all types of frame buffers...
@@ -826,64 +781,14 @@ short *pheight;
  *
  *-----------------------------------------------------------------------
  */
-void
+Bool
 macIIScreenInit (pScreen)
     ScreenPtr	  pScreen;
 {
-    fbFd    	  *fb;
-    DrawablePtr	  pDrawable;
     extern void   macIIBlockHandler();
     extern void   macIIWakeupHandler();
     static ScreenPtr autoRepeatScreen;
-
-    fb = &macIIFbs[pScreen->myNum];
-
-    /*
-     * Prepare the GC for cursor functions on this screen.
-     * Do this before setting interceptions to avoid looping when
-     * putting down the cursor...
-     */
-    pDrawable = (DrawablePtr)(pScreen->devPrivate);
-
-    fb->pGC = CreateScratchGC (pDrawable->pScreen, pDrawable->depth);
-
-    /*
-     * By setting graphicsExposures false, we prevent any expose events
-     * from being generated in the CopyArea requests used by the cursor
-     * routines.
-     */
-    fb->pGC->graphicsExposures = FALSE;
-
-    /*
-     * Preserve the "regular" functions
-     */
-    fb->CreateGC =	    	    	pScreen->CreateGC;
-    fb->CreateWindow = 	    	    	pScreen->CreateWindow;
-    fb->ChangeWindowAttributes =    	pScreen->ChangeWindowAttributes;
-    fb->GetImage =	    	    	pScreen->GetImage;
-    fb->GetSpans =			pScreen->GetSpans;
-
-    /*
-     * Interceptions
-     */
-    pScreen->CreateGC =	    	    	macIICreateGC;
-    pScreen->CreateWindow = 	    	macIICreateWindow;
-    pScreen->ChangeWindowAttributes = 	macIIChangeWindowAttributes;
-    pScreen->QueryBestSize =		macIIQueryBestSize;
-    pScreen->GetImage =	    	    	macIIGetImage;
-    pScreen->GetSpans =			macIIGetSpans;
-
-    /*
-     * Cursor functions
-     */
-    pScreen->RealizeCursor = 	    	macIIRealizeCursor;
-    pScreen->UnrealizeCursor =	    	macIIUnrealizeCursor;
-    pScreen->DisplayCursor = 	    	macIIDisplayCursor;
-    pScreen->SetCursorPosition =    	macIISetCursorPosition;
-    pScreen->CursorLimits = 	    	macIICursorLimits;
-    pScreen->PointerNonInterestBox = 	macIIPointerNonInterestBox;
-    pScreen->ConstrainCursor = 	    	macIIConstrainCursor;
-    pScreen->RecolorCursor = 	    	macIIRecolorCursor;
+    extern miPointerCursorFuncRec   macIIPointerCursorFuncs;
 
     /*
      *	Block/Unblock handlers
@@ -898,6 +803,9 @@ macIIScreenInit (pScreen)
         pScreen->WakeupHandler = macIIWakeupHandler;
     }
 
+    miDCInitialize (pScreen, &macIIPointerCursorFuncs);
+
+    return TRUE; 
 }
 
 /*-
@@ -1033,4 +941,11 @@ void
 ddxUseMsg()
 {
     ErrorF("-screen # -depth #      run screen (0-5) at depth {1,8}\n");
+}
+
+void
+MessageF(s)
+char *s;
+{
+	ErrorF(s);
 }

@@ -93,21 +93,21 @@ macIIColorUpdateColormap(pScreen, cmap)
 	    pent = &cmap->red[(i & pVisual->redMask) >>
 			      pVisual->offsetRed];
 	    if (pent->fShared)
-		Map[i].red = pent->co.shco.red->color >> 8;
+		Map[i].red = pent->co.shco.red->color;
 	    else
 		Map[i].red = pent->co.local.red >> 8;
 	    pent = &cmap->green[(i & pVisual->greenMask) >>
 				pVisual->offsetGreen];
 	    if (pent->fShared)
-		Map[i].green = pent->co.shco.green->color >> 8;
+		Map[i].green = pent->co.shco.green->color;
 	    else
-		Map[i].green = pent->co.local.green >> 8;
+		Map[i].green = pent->co.local.green;
 	    pent = &cmap->blue[(i & pVisual->blueMask) >>
 			       pVisual->offsetBlue];
 	    if (pent->fShared)
-		Map[i].blue = pent->co.shco.blue->color >> 8;
+		Map[i].blue = pent->co.shco.blue->color;
 	    else
-		Map[i].blue = pent->co.local.blue >> 8;
+		Map[i].blue = pent->co.local.blue;
 	}
     } else {
 	for (i = 0, pent = cmap->red;
@@ -132,18 +132,8 @@ macIIColorUpdateColormap(pScreen, cmap)
      * Unfortunately we must slam the entire colormap into
      * the video boards CLUT 'cause SuperMac (and others?)
      * insist on swallowing the whole map at once. The MacOS
-     * does it this way. We require count to be 254 on entry
-     * here, the remaining two hardware CLUT entries are allocated
-     * to color the cursor.
+     * does it this way. 
      */
-    Map[0xfe].value = 0xfe;
-    Map[0xfe].red = currentCursor->foreRed;
-    Map[0xfe].green = currentCursor->foreGreen;
-    Map[0xfe].blue = currentCursor->foreBlue;
-    Map[0xff].value = 0xff;
-    Map[0xff].red = currentCursor->backRed;
-    Map[0xff].green = currentCursor->backGreen;
-    Map[0xff].blue = currentCursor->backBlue;
 
     if (consoleFd <= 0) {
 	    fd = open("/dev/console",O_RDWR);
@@ -159,7 +149,7 @@ macIIColorUpdateColormap(pScreen, cmap)
 
     vde.csTable = (char *) Map;
     vde.csStart = 0;
-    vde.csCount = 256;
+    vde.csCount = 255;
 
 #define noQueueBit 0x0200
 #define SetEntries 0x3
@@ -279,10 +269,10 @@ macIIColorUninstallColormap(cmap)
 	Colormap defMapID = cmap->pScreen->defColormap;
 
 	if (cmap->mid != defMapID) {
-	    ColormapPtr defMap = (ColormapPtr) LookupID(defMapID, RT_COLORMAP, RC_CORE);
+	    ColormapPtr defMap = (ColormapPtr) LookupIDByType(defMapID, RT_COLORMAP);
 
 	    if (defMap)
-		macIIColorInstallColormap(defMap);
+		(*cmap->pScreen->InstallColormap)(defMap);
 	    else
 	        ErrorF("macIIColor: Can't find default colormap\n");
 	}
@@ -362,48 +352,22 @@ macIIColorInit (index, pScreen, argc, argv)
     PixmapPtr   pPixmap;
     CARD16	zero = 0, ones = ~0;
 
-    if (!cfbScreenInit (index, pScreen, 
-			    macIIFbs[index].fb,
+    if (!cfbScreenInit (pScreen, macIIFbs[index].fb,
 			    macIIFbs[index].info.v_right -
 			    macIIFbs[index].info.v_left,
 			    macIIFbs[index].info.v_bottom -
 		            macIIFbs[index].info.v_top,
-			    macIIFbs[index].info.v_hres >> 16))
+			    macIIFbs[index].info.v_hres >> 16,
+			    macIIFbs[index].info.v_vres >> 16,
+			    macIIFbs[index].info.v_rowbytes))
 	return (FALSE);
 
-    /* macII screens may have extra video memory to the right of the visible
-     * area, therefore the PixmapBytePad macro in cfbScreenInit gave the
-     * wrong value to the devKind field of the Pixmap it made for the screen.
-     * So we fix it here. */
-
-    pPixmap = (PixmapPtr)(pScreen->devPrivate);
-    pPixmap->devKind =  macIIFbs[index].info.v_rowbytes; 
-
     pScreen->SaveScreen =   	    	macIIColorSaveScreen;
-    pScreen->RecolorCursor = 	    	macIIRecolorCursor;
     pScreen->InstallColormap = macIIColorInstallColormap;
     pScreen->UninstallColormap = macIIColorUninstallColormap;
     pScreen->ListInstalledColormaps = macIIColorListInstalledColormaps;
     pScreen->StoreColors = macIIColorStoreColors;
 
-    {
-	ColormapPtr cmap = (ColormapPtr)LookupID(pScreen->defColormap, 
-	RT_COLORMAP, RC_CORE);
-
-	if (!cmap)
-	    FatalError("Can't find default colormap\n");
-
-	pScreen->whitePixel = 0xfc;
-	pScreen->blackPixel = 0xfd;
-
-	if (AllocColor(cmap, &ones, &ones, &ones, &(pScreen->whitePixel), 0)
-	    || AllocColor(cmap, &zero, &zero, &zero, &(pScreen->blackPixel), 0))
-		FatalError("Can't alloc black & white pixels in cfbScreeninit\n");
-	macIIColorInstallColormap(cmap);
-    }
-
-
     macIIColorSaveScreen( pScreen, SCREEN_SAVER_FORCER );
-    macIIScreenInit (pScreen);
-    return (TRUE);
+    return (macIIScreenInit(pScreen) && cfbCreateDefColormap(pScreen));
 }

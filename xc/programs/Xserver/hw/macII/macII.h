@@ -275,7 +275,7 @@ extern void	  macIIMoveCursor();
 /*
  * Initialization
  */
-extern void 	  macIIScreenInit();
+extern Bool 	  macIIScreenInit();
 extern int  	  macIIOpenFrameBuffer();
 
 /*
@@ -289,7 +289,6 @@ extern Bool	  macIIChangeWindowAttributes();
 extern void 	  macIIGetImage();
 extern unsigned int *macIIGetSpans();
 
-extern int	  isItTimeToYield;
 extern int  	  macIICheckInput;    /* Non-zero if input is available */
 
 extern int  	  lastEventTime;    /* Time (in ms.) of last event */
