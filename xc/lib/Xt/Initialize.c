@@ -39,6 +39,7 @@ static char rcsid[] = "$Header: Initialize.c,v 1.98 88/02/02 15:13:15 swick Lock
 #include "Shell.h"
 #include "ShellP.h"
 
+#define min(a, b)     (((a) < (b)) ? (a) : (b))
 
 /*
  This is a set of default records describing the command line arguments that
@@ -49,30 +50,29 @@ static char rcsid[] = "$Header: Initialize.c,v 1.98 88/02/02 15:13:15 swick Lock
 */
 
 static XrmOptionDescRec opTable[] = {
+{"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
+{"-background",	"*background",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bd",		"*border",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bg",		"*background",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-border",	".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bordercolor","*border",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bw",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-display",	".display",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-fg",		"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-fn",		"*font",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-font",	"*font",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-geometry",	".geometry",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-iconic",	".iconic",	XrmOptionNoArg,		(caddr_t) "on"},
+{"-name",	".name",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
+{"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
+{"-synchronous",".synchronous", XrmoptionNoArg,		(caddr_t) "on"},
+{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
 #ifndef TRASHEQUALGEOMETRY
 {"=",		".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
 #endif
-{"-g",		".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
-{"-geometry",	".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
-{"-bd",		"*border",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bordercolor","*border",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bg",		"*background",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-background",	"*background",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bw",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-border",	".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-fg",		"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-fn",		"*font",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-font",	"*font",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-iconic",	".iconic",	XrmOptionNoArg,		(caddr_t) "on"},
-{"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
-{"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
-{"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
-{"-n",		".name",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-name",	".name",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-t",		".title",	XrmoptionSepArg,	(caddr_t) NULL}
 };
 
 
@@ -195,6 +195,93 @@ char *name;
     return rdb;
 }
 
+
+/*
+ * Merge two option tables, allowing the second to over-ride the first,
+ * so that ambiguous abbreviations can be noticed.  The merge attempts
+ * to make the resulting table lexicographically sorted, but succeeds
+ * only if the first source table is sorted.
+ */
+
+void
+XtMergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
+    XrmOptionDescRec *src1, *src2;
+    Cardinal num_src1, num_src2;
+    XrmOptionDescRec **dst;
+    Cardinal *num_dst;
+{
+    XrmOptionDescRec *table, *endP;
+    register XrmOptionDescRec *opt1, *opt2, *dstP, *startP; 
+    int i1, i2, len1, len2, dst_len, order;
+    Boolean found;
+
+    *dst = table = (XrmOptionDescRec*)
+	XtMalloc( sizeof(XrmOptionDescRec) * (num_src1 + num_src2) );
+
+    bcopy( src1, table, sizeof(XrmOptionDescRec) * num_src1 );
+    if (num_src2 == 0) {
+	*num_dst = num_src1;
+	return;
+    }
+    endP = &table[dst_len = num_src1];
+    for (opt2 = src2, i2= 0; i2 < num_src2; opt2++, i2++) {
+	found = False;
+	for (opt1 = table, i1 = 0; i1 < dst_len; opt1++, i1++) {
+	    /* have to walk the entire new table so new list is ordered */
+	    if ((order = strcmp(opt1->option, opt2->option)) == 0) {
+		*opt1 = *opt2;
+		found = True;
+		break;
+	    }
+	    len1 = strlen(opt1->option);
+	    len2 = strlen(opt2->option);
+	    if (len1 != len2 &&
+		strncmp(opt1->option, opt2->option, min(len1, len2)) == 0) {
+		/* one is abbrev of the other; make sure shorter one
+		   is found first in the table.  We'll shift the
+		   remainder of the table to try to preserve sort if
+		   src1 was sorted. */
+		startP = opt1;
+		if (len1 < len2) startP++;
+		for (dstP = endP; dstP > startP;)
+		    *dstP-- = *(dstP-1);
+		*startP = *opt2;
+		dst_len++;
+		endP++;
+		found = True;
+		break;
+	    }
+	    if (order < 0) startP = opt1+1;
+	}
+	if (!found) {		/* insert after startP to preserve order */
+	    for (dstP = endP; dstP > startP;)
+		*dstP-- = *(dstP-1);
+	    *startP = *opt2;
+	    dst_len++;
+	    endP++;
+	}
+    }
+    *num_dst = dst_len;
+}
+
+
+static void
+ComputeAbbrevLen(string, name, len)
+    String string;		/* the variable */
+    String name;		/* the constant */
+    int *len;			/* the current ambiguous length */
+{
+    int string_len = strlen(string);
+    int name_len = strlen(name);
+    int i;
+
+    for (i=0; i<string_len && i<name_len && *string++ == *name++; i++);
+
+    if (i < name_len && i > *len)
+	*len = i;
+}
+
+
 /*
  * This routine creates the desired widget and does the "Right Thing" for
  * the toolkit and for window managers.
@@ -224,6 +311,12 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	int squish = -1;
 #endif
 	Boolean dosync = FALSE;
+	XrmOptionDescRec *options;
+	Cardinal num_options;
+	Boolean found_display = FALSE;
+	int min_display_len = 0;
+	int min_name_len = 0;
+	int min_sync_len = 0;
 
 	if( name == NULL) {
 	  	ptr = rindex(argv[0], '/');
@@ -247,37 +340,44 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	 */
 	displayName[0] = 0;
 
+	XtMergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
+			     &options, &num_options );
+
+	for (i = 0; i < num_options; i++) {
+	    ComputeAbbrevLen(options[i].option, "-display",  &min_display_len);
+	    ComputeAbbrevLen(options[i].option, "-name",        &min_name_len);
+	    ComputeAbbrevLen(options[i].option, "-synchronous", &min_sync_len);
+	}
+
 	for(i = 1; i < *argc; i++) {
+	  int len = strlen(argv[i]);
 #ifndef TRASHCOLONDISPLAY
-	  if (index(argv[i], ':') != NULL) {
+	  if (!found_display && index(argv[i], ':') != NULL) {
 		  (void) strncpy(displayName, argv[i], sizeof(displayName));
-		  if( *argc == i + 1) {
-		    (*argc)--;
-		  } else {  /* need to squish this one out of the list */
-		    squish = i;
-		  }
+		  squish = i;
 		  continue;
 	  }
 #endif
-	  if (!strcmp("-d", argv[i]) || !strcmp("-display", argv[i])) {
-		  i++;
+	  if(len > min_display_len && !strncmp("-display", argv[i], len)) {
+	          i++;
 		  if(i == *argc) break;
-		  (void) strncpy(displayName, argv[i], sizeof(displayName));
+		  strncpy(displayName, argv[i], sizeof(displayName));
+		  found_display = TRUE;
 		  continue;
 	  }
-	  if(!strcmp("-name", argv[i]) || ! strcmp("-n", argv[i])) {
+	  if(len > min_name_len && !strncmp("-name", argv[i], len)) {
 		  i++;
 		  if(i == *argc) break;
 		  name = argv[i];
 		  continue;
 	  }
-	  if (!strcmp("-sync", argv[i])) {
+	  if (len > min_sync_len && !strncmp("-synchronous", argv[i], len)) {
 		  dosync = TRUE;
 		  continue;
 	  }
 	}
 #ifndef TRASHCOLONDISPLAY
-	if(squish != -1) {
+	if(!found_display && squish != -1) {
 		(*argc)--;
 		for(i = squish; i < *argc; i++) {
 			argv[i] = argv[i+1];
@@ -312,13 +412,9 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	   This routine parses the command line arguments and removes them from
 	   argv.
 	 */
-	XrmParseCommand(&XtDefaultDB, opTable, XtNumber(opTable), name,
-	    argc, argv);
-	
-	if(num_urs != 0) {
-	       /* the application has some more defaults */
-	       XrmParseCommand(&XtDefaultDB, urlist, num_urs, name, argc, argv);
-	}
+	XrmParseCommand(&XtDefaultDB, options, num_options, name, argc, argv);
+	XtFree( (char*)options );
+
 	/* Resources are initialize and loaded */
 	/* I now must handle geometry specs a compond resource */
 
