@@ -1,4 +1,4 @@
-/* $XConsortium: bigreq.c,v 1.1 92/09/07 13:56:26 rws Exp $ */
+/* $XConsortium: bigreq.c,v 1.2 92/09/08 15:25:16 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -24,7 +24,7 @@ without express or implied warranty.
 #include "bigreqstr.h"
 
 static unsigned char XBigReqCode;
-static int ProcBigReqDispatch(), SProcBigReqDispatch();
+static int ProcBigReqDispatch();
 static void BigReqResetProc();
 
 void
@@ -33,7 +33,7 @@ BigReqExtensionInit()
     ExtensionEntry *extEntry, *AddExtension();
 
     if (extEntry = AddExtension(XBigReqExtensionName, 0, 0,
-				 ProcBigReqDispatch, SProcBigReqDispatch,
+				 ProcBigReqDispatch, ProcBigReqDispatch,
 				 BigReqResetProc, StandardMinorOpcode))
 	XBigReqCode = (unsigned char)extEntry->base;
 }
@@ -46,134 +46,28 @@ BigReqResetProc (extEntry)
 }
 
 static int
-ProcBigReqGetVersion(client)
-    register ClientPtr client;
+ProcBigReqDispatch (client)
+    register ClientPtr	client;
 {
-    REQUEST(xBigReqGetVersionReq);
-    xBigReqGetVersionReply rep;
+    REQUEST(xBigReqEnableReq);
+    xBigReqEnableReply rep;
     register int n;
 
-    REQUEST_SIZE_MATCH(xBigReqGetVersionReq);
-    rep.type = X_Reply;
-    rep.length = 0;
-    rep.sequenceNumber = client->sequence;
-    rep.majorVersion = XBigReqMajorVersion;
-    rep.minorVersion = XBigReqMinorVersion;
     if (client->swapped) {
-    	swaps(&rep.sequenceNumber, n);
-	swaps(&rep.majorVersion, n);
-	swaps(&rep.minorVersion, n);
+	swaps(&stuff->length, n);
     }
-    WriteToClient(client, sizeof(xBigReqGetVersionReply), (char *)&rep);
-    return(client->noClientException);
-}
-
-static int
-ProcBigReqControl(client)
-    register ClientPtr client;
-{
-    REQUEST(xBigReqControlReq);
-
-    REQUEST_SIZE_MATCH(xBigReqControlReq);
-    if (stuff->enable != xTrue && stuff->enable != xFalse)
-    {
-	client->errorValue = stuff->enable;
-        return(BadValue);
-    }
-    client->big_requests = stuff->enable;
-    return(client->noClientException);
-}
-
-static int
-ProcBigReqQueryState(client)
-    register ClientPtr client;
-{
-    REQUEST(xBigReqQueryStateReq);
-    xBigReqQueryStateReply rep;
-    register int n;
-
-    REQUEST_SIZE_MATCH(xBigReqQueryStateReq);
+    if (stuff->brReqType != X_BigReqEnable)
+	return BadRequest;
+    REQUEST_SIZE_MATCH(xBigReqEnableReq);
+    client->big_requests = TRUE;
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.enabled = client->big_requests;
     rep.max_request_size = MAX_BIG_REQUEST_SIZE;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
 	swapl(&rep.max_request_size, n);
     }
-    WriteToClient(client, sizeof(xBigReqQueryStateReply), (char *)&rep);
+    WriteToClient(client, sizeof(xBigReqEnableReply), (char *)&rep);
     return(client->noClientException);
-}
-
-static int
-ProcBigReqDispatch (client)
-    register ClientPtr	client;
-{
-    REQUEST(xReq);
-    switch (stuff->data)
-    {
-    case X_BigReqGetVersion:
-	return ProcBigReqGetVersion(client);
-    case X_BigReqControl:
-	return ProcBigReqControl(client);
-    case X_BigReqQueryState:
-	return ProcBigReqQueryState(client);
-    default:
-	return BadRequest;
-    }
-}
-
-static int
-SProcBigReqGetVersion(client)
-    register ClientPtr	client;
-{
-    register int n;
-    REQUEST(xBigReqGetVersionReq);
-
-    swaps(&stuff->length, n);
-    REQUEST_SIZE_MATCH(xBigReqGetVersionReq);
-    swaps(&stuff->majorVersion, n);
-    swaps(&stuff->minorVersion, n);
-    return ProcBigReqGetVersion(client);
-}
-
-static int
-SProcBigReqControl(client)
-    register ClientPtr	client;
-{
-    register int n;
-    REQUEST(xReq);
-
-    swaps(&stuff->length, n);
-    return ProcBigReqControl(client);
-}
-
-static int
-SProcBigReqQueryState(client)
-    register ClientPtr	client;
-{
-    register int n;
-    REQUEST(xReq);
-
-    swaps(&stuff->length, n);
-    return ProcBigReqQueryState(client);
-}
-
-static int
-SProcBigReqDispatch (client)
-    register ClientPtr	client;
-{
-    REQUEST(xReq);
-    switch (stuff->data)
-    {
-    case X_BigReqGetVersion:
-	return SProcBigReqGetVersion(client);
-    case X_BigReqControl:
-	return SProcBigReqControl(client);
-    case X_BigReqQueryState:
-	return SProcBigReqQueryState(client);
-    default:
-	return BadRequest;
-    }
 }

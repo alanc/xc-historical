@@ -1,4 +1,4 @@
-/* $XConsortium: bigreqstr.h,v 1.1 92/09/07 13:37:31 rws Exp $ */
+/* $XConsortium: bigreqstr.h,v 1.2 92/09/08 15:26:01 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -15,71 +15,31 @@ without express or implied warranty.
 
 */
 
-#define X_BigReqGetVersion	0
-#define X_BigReqControl		1
-#define X_BigReqQueryState	2
+#define X_BigReqEnable		0
 
 #define XBigReqNumberEvents	0
 
 #define XBigReqNumberErrors	0
 
-#define XBigReqMajorVersion	1
-#define XBigReqMinorVersion	0
-
 #define XBigReqExtensionName	"BIG-REQUESTS"
 
 typedef struct {
     CARD8	reqType;	/* always XBigReqCode */
-    CARD8	brReqType;	/* always X_BigReqGetVersion */
+    CARD8	brReqType;	/* always X_BigReqEnable */
     CARD16	length B16;
-    CARD16	majorVersion B16;
-    CARD16	minorVersion B16;
-} xBigReqGetVersionReq;
-#define sz_xBigReqGetVersionReq 8
+} xBigReqEnableReq;
+#define sz_xBigReqEnableReq 4
 
 typedef struct {
     BYTE	type;			/* X_Reply */
     CARD8	pad0;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD16	majorVersion B16;
-    CARD16	minorVersion B16;
+    CARD32	max_request_size B32;
     CARD32	pad1 B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
     CARD32	pad4 B32;
     CARD32	pad5 B32;
-} xBigReqGetVersionReply;
-#define sz_xBigReqGetVersionReply 32
-
-typedef struct {
-    CARD8	reqType;	/* always XBigReqCode */
-    CARD8	brReqType;	/* always X_BigReqControl */
-    CARD16	length B16;
-    BOOL	enable;
-    CARD8	pad0;
-    CARD8	pad1;
-    CARD8	pad2;
-} xBigReqControlReq;
-#define sz_xBigReqControlReq 8
-
-typedef struct {
-    CARD8	reqType;	/* always XBigReqCode */
-    CARD8	brReqType;	/* always X_BigReqQueryState */
-    CARD16	length B16;
-} xBigReqQueryStateReq;
-#define sz_xBigReqQueryStateReq 4
-
-typedef struct {
-    BYTE	type;			/* X_Reply */
-    BOOL	enabled;
-    CARD16	sequenceNumber B16;
-    CARD32	length B32;
-    CARD32	max_request_size B32;
-    CARD32	pad0 B32;
-    CARD32	pad1 B32;
-    CARD32	pad2 B32;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-} xBigReqQueryStateReply;
-#define sz_xBigReqQueryStateReply 32
+} xBigReqEnableReply;
+#define sz_xBigReqEnableReply 32
