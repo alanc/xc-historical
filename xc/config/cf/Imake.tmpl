@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.130 91/07/09 14:33:01 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.131 91/07/15 11:43:28 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -641,6 +641,15 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #ifndef DependFlags
 #define DependFlags /**/
 #endif
+#ifndef TroffCmd
+#define TroffCmd troff
+#endif
+#ifndef TblCmd
+#define TblCmd tbl
+#endif
+#ifndef EqnCmd
+#define EqnCmd eqn
+#endif
 #ifndef TOPDIR
 #define TOPDIR .
 #endif
@@ -685,6 +694,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
   RANLIBINSTFLAGS = RanlibInstFlags
 #endif
                RM = RmCmd
+            TROFF = TroffCmd
+              TBL = TblCmd
+              EQN = EqnCmd
      STD_INCLUDES = StandardIncludes
   STD_CPP_DEFINES = StandardCppDefines
       STD_DEFINES = StandardDefines
