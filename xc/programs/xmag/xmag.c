@@ -18,7 +18,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * xmag.c -- toolkit version.
- * 11-27-90 dms creation.
+ * 11-27-90 Dave Sternlicht --  Creation.
  */
 
 
@@ -44,9 +44,11 @@ typedef struct {
   Boolean   newScale;
   hlMode    selectMode;
   GC        gc;
+  XWindowAttributes win_info;   
+  XImage     *image;
   Position  homeX, homeY, x, y;
   Dimension width, height;
-  Widget    scaleShell, scaleInstance, pixShell, pixLabel;
+  Widget    scaleShell, scaleInstance, pixShell, pixLabel, cmapWinList [2];
   } hlStruct, *hlPtr;
 static XtIntervalId hlId;
 
@@ -60,11 +62,31 @@ static GC selectGC;
 static XGCValues selectGCV;
 static Widget toplevel, root;
 static Atom wm_delete_window;
-static void CloseAP(), NewAP(), ReplaceAP(),PopupPixelAP(), UpdatePixelAP(), 
-  PopdownPixelAP(), SelectRegionAP(), CheckPoints(), HighlightTO(),
-  CloseCB(), ReplaceCB(), NewCB(), SetupGC(), ResizeEH(), DragEH(), 
-  StartRootPtrGrab(), CreateRoot(), InitCursors(), GetImage(),
-  PopupNewScale(), ParseSourceGeom();
+static void 
+  CloseAP(), 
+  SetCmapPropsAP(),
+  UnsetCmapPropsAP(),
+  NewAP(), 
+  ReplaceAP(),
+  PopupPixelAP(), 
+  UpdatePixelAP(), 
+  PopdownPixelAP(), 
+  SelectRegionAP(), 
+  CheckPoints(), 
+  HighlightTO(),
+  CloseCB(), 
+  ReplaceCB(), 
+  NewCB(), 
+  SetupGC(), 
+  ResizeEH(), DragEH(), 
+  StartRootPtrGrab(), 
+  CreateRoot(), 
+  InitCursors(), 
+  GetImageAndAttributes(),
+  PopupNewScale(), 
+  RedoOldScale(),
+  ParseSourceGeom();
+
 static int numXmags = 0;
 static int srcStat, srcX, srcY;
 static unsigned int srcWidth, srcHeight;
@@ -96,6 +118,8 @@ static XrmOptionDescRec optionDesc[] = {
 
 static XtActionsRec actions_table[] = {
   {"close", CloseAP},
+  {"set-colors", SetCmapPropsAP},
+  {"unset-colors", UnsetCmapPropsAP},
   {"new", NewAP},
   {"replace", ReplaceAP},
   {"popup-pixel", PopupPixelAP},
@@ -129,6 +153,48 @@ CloseAP(w, event)
 
 
 /*
+ * SetCmapPropsAP() -- Put the scale widget first in WM_COLORMAP_WINDOWS
+ *                     
+ */
+static void			/* ARGSUSED */
+SetCmapPropsAP(w, event)
+     Widget w; XEvent event;
+{
+  Arg wargs[2]; int n; hlPtr data;
+  n = 0;			/* get user data */
+  XtSetArg(wargs[0], XtNuserData, &data); n++;
+  XtGetValues(w, wargs, n);
+  if (data->win_info.colormap != DefaultColormap(dpy, scr)) {
+    data->cmapWinList[0] = data->scaleInstance;
+    data->cmapWinList[1] = data->scaleShell;
+    XtSetWMColormapWindows(data->scaleShell, data->cmapWinList, 2);
+  }
+}
+
+
+
+/*
+ * UnsetCmapPropsAP() -- Put the shell first in WM_COLORMAP_WINDOWS
+ *                     
+ */
+static void			/* ARGSUSED */
+UnsetCmapPropsAP(w, event)
+     Widget w; XEvent event;
+{
+  Arg wargs[2]; int n; hlPtr data;
+  n = 0;			/* get user data */
+  XtSetArg(wargs[0], XtNuserData, &data); n++;
+  XtGetValues(w, wargs, n);
+  if (data->win_info.colormap != DefaultColormap(dpy, scr)) {
+    data->cmapWinList[0] = data->scaleShell;
+    data->cmapWinList[1] = data->scaleInstance;
+    XtSetWMColormapWindows(data->scaleShell, data->cmapWinList, 2);
+  }
+}
+
+
+
+/*
  * NewAP() -- Create an additional xmag dialog. THIS IS A COPY OF NewEH
  *                                              FIND A BETTER WAY....
  */
@@ -138,6 +204,8 @@ NewAP(w, event)
 {
   StartRootPtrGrab(True, NULL);
 }
+
+
 
 /*
  * ReplaceCB() -- Replace this particular xmag dialog.
@@ -180,7 +248,7 @@ PopupPixelAP(w, event)
     XtGetValues(w, wargs, n);
     XtTranslateCoords(w, -1, -1, &scale_x, &scale_y);
     
-    XtRealizeWidget(data->pixShell); /* to get the right hight  */
+    XtRealizeWidget(data->pixShell); /* to get the right height  */
 
     n = 0;
     XtSetArg(wargs[n], XtNheight, &label_height); n++;
@@ -229,13 +297,10 @@ UpdatePixelAP(w, event)
 	XtPopdown(data->pixShell);
     else {
 	color.pixel = pixel;
-	XQueryColor(XtDisplay(w), DefaultColormap(XtDisplay(w), 
-						  DefaultScreen(XtDisplay(w))),
-		    &color);
+	XQueryColor(dpy, data->win_info.colormap, &color);
 	sprintf(string, "Pixel %d at (%d,%d) colored (%x,%x,%x).", 
 		pixel, x + data->x, y + data->y,
 		color.red, color.green, color.blue);
-	
 	n = 0;
 	XtSetArg(wargs[n], XtNlabel, string); n++;    
 	XtSetValues(data->pixLabel, wargs, n);
@@ -371,6 +436,8 @@ ReplaceCB(w, clientData, callData)
   StartRootPtrGrab(False, data);
 }
 
+
+
 /*
  * NewCB() -- Create an additional xmag dialog.
  */
@@ -399,6 +466,27 @@ SetupGC()
 
 
 /*
+ * FindWindow() -- Determin window the pointer is over.
+ */
+Window 
+FindWindow(x, y)
+     int x, y;
+{
+  Window findW = DefaultRootWindow(dpy), stopW, childW;
+  XTranslateCoordinates(dpy, findW, findW,
+			x, y, &x, &y, &stopW);
+  while (stopW) {
+    XTranslateCoordinates(dpy, findW, stopW, 
+			  x, y, &x, &y, &childW);
+    findW = stopW;
+    stopW = childW;
+  }
+  return findW;
+}
+
+
+
+/*
  * ResizeEH() -- Event Handler for resize of selection box.
  */
 static void 
@@ -412,13 +500,17 @@ ResizeEH(w, closure, event, continue_to_dispatch)	/* ARGSUSED */
     data->y = event->xmotion.y_root; 
     break;
   case ButtonRelease:
-    if (data->newScale)
-      PopupNewScale(data);
-    GetImage(min(data->homeX,event->xbutton.x_root),
+    GetImageAndAttributes(FindWindow(event->xmotion.x_root,
+			event->xmotion.y_root),
+	     min(data->homeX,event->xbutton.x_root),
 	     min(data->homeY,event->xbutton.y_root),
 	     abs(data->homeX - event->xbutton.x_root),
 	     abs(data->homeY - event->xbutton.y_root),
 	     data);
+    if (data->newScale)
+      PopupNewScale(data);
+    else 
+      SWSetImage(data->scaleInstance, data->image);
     XtUngrabPointer(w, CurrentTime);
     XtRemoveEventHandler(w, PointerMotionMask|ButtonReleaseMask,
 			 True, ResizeEH, (XtPointer)data);
@@ -445,10 +537,15 @@ DragEH(w, closure, event, continue_to_dispatch) /* ARGSUSED */
     break;
   case ButtonRelease:		/* end drag mode */
     if (event->xbutton.button == Button1) { /* get image */
+      GetImageAndAttributes(FindWindow(event->xmotion.x_root, 
+			  event->xmotion.y_root),
+	       event->xbutton.x_root, 
+	       event->xbutton.y_root,
+	       srcWidth, srcHeight, data);
       if (data->newScale)
 	PopupNewScale(data);
-      GetImage(event->xbutton.x_root, event->xbutton.y_root,
-		   srcWidth, srcHeight, data);
+      else
+	RedoOldScale(data);
       XtUngrabPointer(w, CurrentTime);
       XtRemoveRawEventHandler(w, PointerMotionMask|ButtonPressMask|
 			      ButtonReleaseMask, True, DragEH,
@@ -543,41 +640,144 @@ CreateRoot()
     data->width      = srcWidth;
     data->height     = srcHeight;
     PopupNewScale(data);
-    GetImage(srcX, srcY, srcWidth, srcHeight, data);
+    GetImageAndAttributes(RootWindow(dpy, scr), srcX, srcY, srcWidth, 
+			  srcHeight, data);
     return;
   }
 }
 
 
 /* 
- * GetImage() -- Get the image bits from the screen.
+ * GetImageAndAttributes() -- Get the image bits from the screen.
+ *               We will also determin here the colormap, depth, and
+ *               visual to be used for the magnification image.  
  */
 static void 
-GetImage(x, y, width, height, data)
-     int x, y, width, height; hlPtr data;
+GetImageAndAttributes(w, x, y, width, height, data)
+     Window w; int x, y, width, height; hlPtr data;
 {
-  XImage *image;
-
   /* avoid off screen pixels */
   if (x < 0) x = 0; if (y < 0) y = 0;
   if (x + width > DisplayWidth(dpy,scr)) x = DisplayWidth(dpy,scr) - width;
   if (y + height > DisplayHeight(dpy,scr)) y = DisplayHeight(dpy,scr) - height;
   data->x = x; data->y = y;
-  image = XGetImage (dpy,
+  /* get parameters of window being magnified */
+  XGetWindowAttributes(dpy, w, &data->win_info);
+  /* get image pixels */
+  data->image = XGetImage (dpy,
 		     RootWindow(dpy, scr),
 		     x, y,
 		     width, height,
 		     AllPlanes, ZPixmap);
-  SWSetImage(data->scaleInstance, image);
-  if (data->newScale) {
-    XtPopup(data->scaleShell, XtGrabNone);
-    (void) XSetWMProtocols	/* ICCCM delete window */
-      (dpy, XtWindow(data->scaleShell), &wm_delete_window, 1);
-  }
-  XDestroyImage(image);
+
 }
 
 
+
+/*
+ * Get_XColors() Get the XColors of all pixels in image - returns # of colors
+ *               This function was taken from the xwd (thanks Bob...)
+ */
+#define lowbit(x) ((x) & (~(x) + 1))
+int Get_XColors(win_info, colors)
+     XWindowAttributes *win_info;
+     XColor **colors;
+{
+    int i, ncolors;
+ 
+    if (!win_info->colormap)
+        return(0);
+ 
+    ncolors = win_info->visual->map_entries;
+    if (!(*colors = (XColor *) XtMalloc (sizeof(XColor) * ncolors)))
+      XtError("Out of memory!");
+ 
+    if (win_info->visual->class == DirectColor ||
+        win_info->visual->class == TrueColor) {
+        Pixel red, green, blue, red1, green1, blue1;
+ 
+        red = green = blue = 0;
+        red1 = lowbit(win_info->visual->red_mask);
+        green1 = lowbit(win_info->visual->green_mask);
+        blue1 = lowbit(win_info->visual->blue_mask);
+        for (i=0; i<ncolors; i++) {
+          (*colors)[i].pixel = red|green|blue;
+          (*colors)[i].pad = 0;
+          red += red1;
+          if (red > win_info->visual->red_mask)
+            red = 0;
+          green += green1;
+          if (green > win_info->visual->green_mask)
+            green = 0;
+          blue += blue1;
+          if (blue > win_info->visual->blue_mask)
+            blue = 0;
+        }
+    } else {
+        for (i=0; i<ncolors; i++) {
+          (*colors)[i].pixel = i;
+          (*colors)[i].pad = 0;
+        }
+    }
+ 
+    XQueryColors(dpy, win_info->colormap, *colors, ncolors);
+ 
+    return(ncolors);
+}
+
+
+
+#define Intensity(cptr) (3.0*cptr->red+0.59*cptr->green+0.11*cptr->blue)
+
+/*
+ * GetMaxIntensity() -- Find the maximum intensity pixel value for a colormap.
+ */
+static Pixel
+GetMaxIntensity(data)
+     hlPtr data;
+{
+  XColor *colors = NULL, *mptr, *tptr;
+  int i, ncolors;
+
+  if (data->win_info.colormap == DefaultColormap(dpy, scr)) 
+    return WhitePixel(dpy, scr);
+  ncolors = Get_XColors(&data->win_info, &colors); 
+  mptr = tptr = colors; tptr++;
+  for (i=1; i<ncolors; i++) {
+    if (Intensity(mptr) < Intensity(tptr)) 
+      mptr = tptr;
+    tptr++;
+  }
+  return mptr->pixel;
+}
+
+
+
+/*
+ * GetMinIntensity() -- Find the minimum intensity pixel value for a colormap.
+ */
+static Pixel
+GetMinIntensity(data)
+     hlPtr data;
+{
+  XColor *colors = NULL, *mptr, *tptr;
+  int i, ncolors;
+
+  if (data->win_info.colormap == DefaultColormap(dpy, scr)) 
+    return BlackPixel(dpy, scr);
+  ncolors = Get_XColors(&data->win_info, &colors); 
+  mptr = tptr = colors; tptr++;
+  for (i=1; i<ncolors; i++)  {
+    if (Intensity(mptr) > Intensity(tptr))
+      mptr = tptr; 
+    tptr++;
+  }
+  return mptr->pixel;
+}
+
+
+
+static Widget form, close, replace, new;
 
 /*
  * PopupNewScale() -- Create and popup a new scale composite.
@@ -586,11 +786,11 @@ static void
 PopupNewScale(data)
      hlPtr data;
 {
-  Widget form, close, replace, new;
   Arg warg;
-  data->scaleShell = XtCreatePopupShell("xmag",
-				  topLevelShellWidgetClass,
-				  toplevel, NULL, 0);
+
+  data->scaleShell = 
+    XtVaCreatePopupShell("xmag", topLevelShellWidgetClass, toplevel, 
+			 NULL);
   form = XtCreateManagedWidget("form", formWidgetClass, data->scaleShell,
                                (Arg *) NULL, 0);
   close = XtCreateManagedWidget("close", commandWidgetClass, form,
@@ -604,30 +804,118 @@ PopupNewScale(data)
 				XtNfromHoriz, (XtArgVal)replace,
 				NULL);
   XtAddCallback(new, XtNcallback, NewCB, (XtPointer)NULL);
+
   data->scaleInstance = 
     XtVaCreateManagedWidget("scale", scaleWidgetClass, 
 			    form,
+			    XtNvisual, (XtArgVal)data->win_info.visual,
+			    XtNcolormap, (XtArgVal)data->win_info.colormap,
+			    XtNdepth, (XtArgVal)data->win_info.depth,
 			    XtNfromVert, (XtArgVal)close,
 			    XtNscaleX, (XtArgVal)options.mag,
 			    XtNscaleY, (XtArgVal)options.mag,
 			    NULL);
+  SWSetImage(data->scaleInstance, data->image);
   XtOverrideTranslations
     (data->scaleShell,
      XtParseTranslationTable ("<Message>WM_PROTOCOLS: close()"));
   XtSetArg(warg, XtNuserData, data);
   XtSetValues(data->scaleInstance, &warg, 1);
-  data->pixShell = XtVaCreatePopupShell("pixShell", overrideShellWidgetClass, 
-					toplevel,
-					XtNborderWidth, (XtPointer)0,
-					NULL);
+  data->pixShell = 
+    XtVaCreatePopupShell("pixShell", overrideShellWidgetClass, 
+			 toplevel,
+			 XtNvisual, (XtArgVal)data->win_info.visual,
+			 XtNcolormap, (XtArgVal)data->win_info.colormap,
+			 XtNdepth, (XtArgVal)data->win_info.depth,
+			 XtNborderWidth, (XtPointer)0,
+			 NULL);
   data->pixLabel = 
     XtVaCreateManagedWidget("pixLabel", labelWidgetClass, 
 			    data->pixShell, 
-			    XtNforeground, (XtPointer)WhitePixel(dpy, scr),
-			    XtNbackground, (XtPointer)BlackPixel(dpy, scr),
+			    XtNforeground, (XtPointer)GetMaxIntensity(data),
+			    XtNbackground, (XtPointer)GetMinIntensity(data),
 			    XtNborderWidth, (XtPointer)0,
 			    NULL);
   XtInstallAllAccelerators(form, form);	/* install accelerators */
+  if (data->newScale) {
+    XtPopup(data->scaleShell, XtGrabNone);
+    (void) XSetWMProtocols	/* ICCCM delete window */
+      (dpy, XtWindow(data->scaleShell), &wm_delete_window, 1);
+  }
+  if (data->win_info.colormap != DefaultColormap(dpy, scr)) {
+    data->cmapWinList[0] = data->scaleShell; 
+    data->cmapWinList[1] = data->scaleInstance;
+    XtSetWMColormapWindows(data->scaleShell, data->cmapWinList, 2);
+  }
+}
+
+
+
+/*
+ * RedoOldScale() -- If visual or depth has changed, save resource settings
+ *                   DESTROY the scale widget, and make a new one with the 
+ *                   new depth/visual.  Also do this for the pixel display
+ *                   widgets.
+ */
+static void
+RedoOldScale(data)
+     hlPtr data;
+{
+  Arg wargs[3]; int n; Dimension scaleWidth, scaleHeight;
+  Visual *oldVis; int oldDepth;
+  n=0;
+  XtSetArg(wargs[n], XtNvisual, &oldVis); n++;
+  XtSetArg(wargs[n], XtNdepth, &oldDepth); n++;
+  XtGetValues(data->scaleInstance, wargs, n);  
+  if (oldVis == data->win_info.visual && oldDepth == data->win_info.depth) {
+    SWSetImage(data->scaleInstance, data->image);    
+    return;
+  }
+  /* get width and height, save and reuse them */
+  n=0;
+  XtSetArg(wargs[n], XtNwidth, &scaleWidth); n++;
+  XtSetArg(wargs[n], XtNheight, &scaleHeight); n++;
+  XtGetValues(data->scaleInstance, wargs, n);
+
+  XtDestroyWidget(data->scaleInstance);
+  XtDestroyWidget(data->pixShell); /* takes care of pixLabel too! */
+  
+  /* notes:  A certain person has said that my userData resource is a bad idea
+   *         Resources with a very few exceptions should be settable from
+   *         resource files and this one, a pointer to an application defined
+   *         structure clearly is not.  Perhaps this shoud be private 
+   *         widget data or some global structure.
+   */
+  data->scaleInstance = 
+    XtVaCreateManagedWidget("scale", scaleWidgetClass, 
+			    form,
+			    XtNvisual, (XtArgVal)data->win_info.visual,
+			    XtNcolormap, (XtArgVal)data->win_info.colormap,
+			    XtNdepth, (XtArgVal)data->win_info.depth,
+			    XtNfromVert, (XtArgVal)close,
+			    XtNscaleX, (XtArgVal)options.mag,
+			    XtNscaleY, (XtArgVal)options.mag,
+			    XtNuserData, (XtArgVal)data,
+			    XtNwidth, (XtArgVal)scaleWidth,
+			    XtNheight, (XtArgVal)scaleHeight,
+			    NULL);
+  data->pixShell = 
+    XtVaCreatePopupShell("pixShell", overrideShellWidgetClass, 
+			 toplevel,
+			 XtNvisual, (XtArgVal)data->win_info.visual,
+			 XtNcolormap, (XtArgVal)data->win_info.colormap,
+			 XtNdepth, (XtArgVal)data->win_info.depth,
+			 XtNborderWidth, (XtPointer)0,
+			 NULL);
+  data->pixLabel = 
+    XtVaCreateManagedWidget("pixLabel", labelWidgetClass, 
+			    data->pixShell, 
+			    XtNforeground, (XtPointer)GetMaxIntensity(data),
+			    XtNbackground, (XtPointer)GetMinIntensity(data),
+			    XtNborderWidth, (XtPointer)0,
+			    NULL);
+  XtRealizeWidget(data->scaleInstance);
+  SWSetImage(data->scaleInstance, data->image); 
 }
 
 

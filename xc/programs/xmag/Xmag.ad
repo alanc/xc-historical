@@ -1,5 +1,7 @@
 *allowShellResize: on
 *Scale.Translations:#augment\
+			<EnterWindow>: set-colors()\n\
+			<LeaveWindow>: unset-colors()\n\
 			<Btn1Down>:popup-pixel()\n\
 			Button1<Enter>:popup-pixel()\n\
 			<Btn1Motion>:update-pixel()\n\
@@ -17,6 +19,5 @@
 			<Key>space:set()notify()unset()\n\
 			<Btn2Up>:set()notify()unset()\n\
 			<Btn3Up>:set()notify()unset()
-			
 *Label.Font: fixed
 *Label.Translations:<Enter>:popdown-pixel()
