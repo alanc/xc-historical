@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.59 88/02/26 09:45:48 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.61 88/02/26 17:53:31 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -855,14 +855,17 @@ static void AddForwardingHandler(widget, descendant)
 	     ForwardEvent,
 	     (caddr_t)descendant
 	    );
-	/* is the pointer already inside? */
-	XQueryPointer( XtDisplay(widget), XtWindow(widget),
-		       &root, &child, &root_x, &root_y,
-		       &win_x, &win_y, &mask );
-	if (win_x >= 0 && win_x < widget->core.width &&
-	    win_y >= 0 && win_y < widget->core.height) {
-	    if (InsertKeyboardGrab( widget, descendant ))
-		SendFocusNotify( descendant, FocusIn );
+	if (widget != XtParent(descendant) ||
+	    !XtIsSubclass(widget, shellWidgetClass)) {
+	    /* is the pointer already inside? */
+	    XQueryPointer( XtDisplay(widget), XtWindow(widget),
+			   &root, &child, &root_x, &root_y,
+			   &win_x, &win_y, &mask );
+	    if (win_x >= 0 && win_x < widget->core.width &&
+		win_y >= 0 && win_y < widget->core.height) {
+		if (InsertKeyboardGrab( widget, descendant ))
+		    SendFocusNotify( descendant, FocusIn );
+	    }
 	}
     }
 }
