@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.25 91/03/29 16:35:42 converse Exp $
+/* $XConsortium: xfontsel.c,v 1.26 91/04/26 11:47:16 dave Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -17,6 +17,8 @@ without express or implied warranty.
 
 Author:	Ralph R. Swick, DEC/MIT Project Athena
 	one weekend in November, 1989
+        Dave Sternlicht, MIT X Consortium, April 1991
+        added support for scalable pixel and point size.
 */
 
 #include <stdio.h>
@@ -822,7 +824,16 @@ void SelectValue(w, closure, callData)
     choiceList = choice;
 	
     SetCurrentFont(NULL);
-    EnableRemainingItems(SkipCurrentField);
+
+    /* if user has specified a scalable pixel size, gray out all point sizes,
+     * and visa-versa
+     */
+    if (val->scaledFieldValue)
+      if (val->field == 6)
+	DisableAllItems(7);
+      else if (val->field == 7)
+	DisableAllItems(6);
+    EnableRemainingItems(SkipCurrentField);    
 }
 
 
@@ -993,7 +1004,7 @@ EnableRemainingItems(current_field_action)
 		int *fp = value->font;
 		int fontCount;
 		for (fontCount = value->count; fontCount; fontCount--, fp++) {
-		    if (fontInSet[*fp]) {
+		    if (fontInSet[*fp] && !value->scaledFieldValue) {
 			value->enable = True;
 			goto NextValue;
 		    }
@@ -1012,6 +1023,14 @@ EnableRemainingItems(current_field_action)
     }
 }
 
+DisableAllItems(field)
+{
+    FieldValue *value = fieldValues[field]->value;
+    int count;
+    for (count = fieldValues[field]->count; count; count--, value++) {
+	value->enable = False;
+    }
+}
 
 EnableAllItems(field)
 {
@@ -1021,7 +1040,6 @@ EnableAllItems(field)
 	value->enable = True;
     }
 }
-
 
 /* ARGSUSED */
 void SelectField(w, closure, callData)
@@ -1079,7 +1097,6 @@ void EnableOtherValues(w, closure, callData)
     if (enabledMenuIndex < field)
 	EnableMenu((XtPointer)field);
 }
-
 
 void EnableMenu(closure)
     XtPointer closure;
