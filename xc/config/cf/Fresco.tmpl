@@ -1,15 +1,15 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: fresco.cf,v 1.1 94/03/18 14:09:57 matt Exp $
 XCOMM
 XCOMM Definitions for using Fresco library
 XCOMM
 
-DEPLIBS = FrescoClientDepLibs
-LOCAL_LIBRARIES = -L$(FRESCOSRC)/src FrescoClientLibs
-EXTENSIONLIB =
+        DEPLIBS = FrescoClientDepLibs
+LOCAL_LIBRARIES = FrescoClientLibs
+   EXTENSIONLIB =
 
 #if ThreadedX
-LOCAL_LDFLAGS = ThreadsLoadFlags
-SYS_LIBRARIES = ThreadsLibraries
+  LOCAL_LDFLAGS = ThreadsLoadFlags
+  SYS_LIBRARIES = ThreadsLibraries
 #endif
 
 #define CplusplusSource
