@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.3 89/09/19 15:36:37 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.4 89/11/24 18:10:39 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -109,10 +109,23 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
     int	xoffStep;
     int tileEndPart;
     int needFirst;
+    unsigned long   narrow[2];
+    unsigned long   narrowMask;
+    int	    narrowShift;
+    Bool    narrowTile;
 
     tileHeight = tile->drawable.height;
     tileWidth = tile->drawable.width;
     widthSrc = tile->devKind >> 2;
+    narrowTile = FALSE;
+    if (widthSrc == 1)
+    {
+	narrowShift = tileWidth;
+	narrowMask = cfbendpartial [tileWidth];
+	tileWidth *= 2;
+	widthSrc = 2;
+	narrowTile = TRUE;
+    }
     pSrcBase = (unsigned long *)tile->devPrivate.ptr;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
@@ -171,6 +184,15 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
 	nlwSrcStart = widthSrc - (srcx >> PWSH);
 	while (h--)
 	{
+	    /* XXX only works when narrowShift >= PPW/2 */
+	    if (narrowTile)
+	    {
+		tmp = pSrcLine[0] & narrowMask;
+		narrow[0] = tmp | SCRRIGHT (tmp, narrowShift);
+		narrow[1] = SCRLEFT (tmp, PPW - narrowShift) |
+			    SCRRIGHT(tmp, 2 * narrowShift - PPW);
+		pSrcLine = narrow;
+	    }
 	    xoff = xoffStart;
 	    leftShift = leftShiftStart;
 	    rightShift = rightShiftStart;
