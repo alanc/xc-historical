@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.8 91/05/06 23:53:53 gildea Exp $
+ * $XConsortium: access.c,v 1.9 91/05/12 09:41:14 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -444,7 +444,8 @@ scanHostlist (h, clientAddress, connectionType, function, closure, depth, broadc
 	switch (h->type) {
 	case HOST_ALIAS:
 	    if (indirectAlias (h->entry.aliasName, clientAddress,
-			   connectionType, function, closure, depth))
+			       connectionType, function, closure, depth,
+			       broadcast))
 		haveLocalhost = 1;
 	    break;
 	case HOST_ADDRESS:
@@ -504,13 +505,15 @@ patternMatch (string, pattern)
 }
 
 static int
-indirectAlias (alias, clientAddress, connectionType, function, closure, depth)
+indirectAlias (alias, clientAddress, connectionType, function, closure, depth,
+	       broadcast)
     char	*alias;
     ARRAY8Ptr	clientAddress;
     CARD16	connectionType;
     int		(*function)();
     char	*closure;
     int		depth;
+    int		broadcast;
 {
     DisplayEntry    *d;
     int		    haveLocalhost = 0;
@@ -522,7 +525,7 @@ indirectAlias (alias, clientAddress, connectionType, function, closure, depth)
 	if (d->type != DISPLAY_ALIAS || !patternMatch (alias, d->entry.aliasName))
 	    continue;
 	if (scanHostlist (d->hosts, clientAddress, connectionType,
-			  function, closure, depth + 1))
+			  function, closure, depth + 1, broadcast))
 	{
 	    haveLocalhost = 1;
 	}
@@ -578,7 +581,7 @@ ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
 		(*function) (connectionType, choice, closure);
 	}
 	else if (scanHostlist (d->hosts, clientAddress, connectionType,
-			  function, closure, 0))
+			  function, closure, 0, False))
 	{
 	    haveLocalhost = 1;
 	}
@@ -666,7 +669,7 @@ ForEachChooserHost (clientAddress, connectionType, function, closure)
 	if (!d->chooser)
 	    break;
 	if (scanHostlist (d->hosts, clientAddress, connectionType,
-			  function, closure, 0))
+			  function, closure, 0, True))
 	{
 	    haveLocalhost = 1;
 	}
