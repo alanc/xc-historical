@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.56 91/12/17 19:42:21 keith Exp $
+ * $XConsortium: session.c,v 1.57 92/08/06 11:02:28 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,6 +29,9 @@
 # include <errno.h>
 # include <stdio.h>
 # include <ctype.h>
+#ifdef AIXV3
+# include <usersec.h>
+#endif
 #ifdef SECURE_RPC
 # include <rpc/rpc.h>
 # include <rpc/key_prot.h>
@@ -189,7 +192,7 @@ struct display	*d;
 	 * Start the clients, changing uid/groups
 	 *	   setting up environment and running the session
 	 */
-	if (StartClient (&verify, d, &clientPid, greet.password)) {
+	if (StartClient (&verify, d, &clientPid, greet.name, greet.password)) {
 	    Debug ("Client Started\n");
 	    /*
 	     * Wait for session to end,
@@ -361,10 +364,11 @@ SessionExit (d, status, removeAuth)
 }
 
 static Bool
-StartClient (verify, d, pidp, passwd)
+StartClient (verify, d, pidp, name, passwd)
     struct verify_info	*verify;
     struct display	*d;
     int			*pidp;
+    char		*name;
     char		*passwd;
 {
     char	**f, *home, *getEnv ();
@@ -385,14 +389,29 @@ StartClient (verify, d, pidp, passwd)
     switch (pid = fork ()) {
     case 0:
 	CleanUpChild ();
-#ifdef NGROUPS_MAX
 
+	/* Do system-dependent login setup here */
+
+#ifdef AIXV3
+	/*
+	 * Set the user's credentials: uid, gid, groups,
+	 * audit classes, user limits, and umask.
+	 */
+	if (setpcred(name, NULL) == -1)
+	{
+	    LogError("can't start session, setpcred failed, errno=%d\n", errno);
+	    return (0);
+	}
+#else /* AIXV3 */
+#ifdef NGROUPS_MAX
 	setgid (verify->groups[0]);
 	setgroups (verify->ngroups, verify->groups);
 #else
 	setgid (verify->gid);
 #endif
 	setuid (verify->uid);
+#endif /* AIXV3 */
+
 #ifdef SECURE_RPC
 	{
 	    char    netname[MAXNETNAMELEN+1], secretkey[HEXKEYBYTES+1];
@@ -435,7 +454,8 @@ StartClient (verify, d, pidp, passwd)
     case -1:
 	bzero(passwd, strlen(passwd));
 	Debug ("StartSession, fork failed\n");
-	LogError ("can't start session for %d, fork failed\n", d->name);
+	LogError ("can't start session for %d, fork failed, errno=%d\n",
+		  d->name, errno);
 	return 0;
     default:
 	bzero(passwd, strlen(passwd));
