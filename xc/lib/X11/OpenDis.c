@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.122 91/12/18 19:36:35 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.123 91/12/20 16:04:29 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -132,7 +132,10 @@ Display *XOpenDisplay (display)
 		return(NULL);
 	}
 
-	/* Initialize as much of the display structure as we can */
+	/* Initialize as much of the display structure as we can.
+	 * Initialize pointers to NULL so that XFreeDisplayStructure will
+	 * work if we run out of memory before we finish initializing.
+	 */
 	dpy->display_name	= fullname;
 	dpy->keysyms		= (KeySym *) NULL;
 	dpy->modifiermap	= NULL;
@@ -162,17 +165,19 @@ Display *XOpenDisplay (display)
 	dpy->db 		= (struct _XrmHashBucketRec *)NULL;
 	dpy->cursor_font	= None;
 	dpy->flags		= 0;
-/* 
- * Initialize pointers to NULL so that XFreeDisplayStructure will
- * work if we run out of memory
- */
-
-	dpy->screens = NULL;
-	dpy->vendor = NULL;
-	dpy->buffer = NULL;
-	dpy->atoms = NULL;
-	dpy->error_vec = NULL;
-	dpy->context_db = NULL;
+	dpy->async_handlers	= NULL;
+	dpy->screens		= NULL;
+	dpy->vendor		= NULL;
+	dpy->buffer		= NULL;
+	dpy->atoms		= NULL;
+	dpy->error_vec		= NULL;
+	dpy->context_db		= NULL;
+	dpy->free_funcs		= NULL;
+	dpy->pixmap_format	= NULL;
+	dpy->cms.clientCmaps	= NULL;
+	dpy->cms.defaultCCCs	= NULL;
+	dpy->cms.perVisualIntensityMaps = NULL;
+	dpy->im_filters		= NULL;
 
 /*
  * Setup other information in this display structure.
@@ -603,7 +608,8 @@ _XFreeDisplayStructure(dpy)
 	    Xfree ((char *)dpy->error_vec);
 
 	_XFreeExtData (dpy->ext_data);
-	Xfree ((char *)dpy->free_funcs);
+	if (dpy->free_funcs)
+	    Xfree ((char *)dpy->free_funcs);
 
 	Xfree ((char *)dpy);
 }
