@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.69 91/09/21 21:39:28 rws Exp $
+ * $XConsortium: Xrm.c,v 1.70 91/11/21 19:18:45 rws Exp $
  */
 
 /***********************************************************
@@ -1004,6 +1004,7 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
  *	Arguments: db - the database.
  *                 str - a pointer to the string containing the database.
  *                 filename - source filename, if any.
+ *                 doall - whether to do all lines or just one
  */
 
 /*
@@ -1019,10 +1020,11 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
 
 static void GetIncludeFile();
 
-static void GetDatabase(db, str, filename)
+static void GetDatabase(db, str, filename, doall)
     XrmDatabase db;
     register char *str;
     char *filename;
+    Bool doall;
 {
     register char *ptr;
     register XrmBits bits = 0;
@@ -1039,6 +1041,7 @@ static void GetDatabase(db, str, filename)
     XrmBinding bindings[LIST_SIZE];
     XrmValue value;
     Bool only_pcs;
+    Bool dolines;
 
     if (!db)
 	return;
@@ -1048,7 +1051,9 @@ static void GetDatabase(db, str, filename)
 
     (*db->methods->mbinit)(db->mbstate);
     str--;
-    while (!is_EOF(bits)) {
+    dolines = True;
+    while (!is_EOF(bits) && dolines) {
+	dolines = doall;
 
 	/*
 	 * First: Remove extra whitespace. 
@@ -1441,7 +1446,7 @@ void XrmPutLineResource(pdb, line)
 #endif
 {
     if (!*pdb) *pdb = NewDatabase();
-    GetDatabase(*pdb, line, (char *)NULL);
+    GetDatabase(*pdb, line, (char *)NULL, False);
 }
 
 #if NeedFunctionPrototypes
@@ -1455,7 +1460,7 @@ XrmDatabase XrmGetStringDatabase(data)
     XrmDatabase     db;
 
     db = NewDatabase();
-    GetDatabase(db, data, (char *)NULL);
+    GetDatabase(db, data, (char *)NULL, True);
     return db;
 }
 
@@ -1520,7 +1525,7 @@ GetIncludeFile(db, base, fname, fnamelen)
     }
     if (!(str = ReadInFile(realfname)))
 	return;
-    GetDatabase(db, str, realfname);
+    GetDatabase(db, str, realfname, True);
     Xfree(str);
 }
 
@@ -1539,7 +1544,7 @@ XrmDatabase XrmGetFileDatabase(filename)
 	return (XrmDatabase)NULL;
 
     db = NewDatabase();
-    GetDatabase(db, str, filename);
+    GetDatabase(db, str, filename, True);
     Xfree(str);
     return db;
 }
@@ -1567,7 +1572,7 @@ Status XrmCombineFileDatabase(filename, target, override)
 	    *target = db = NewDatabase();
     } else
 	db = NewDatabase();
-    GetDatabase(db, str, filename);
+    GetDatabase(db, str, filename, True);
     Xfree(str);
     if (!override)
 	XrmCombineDatabase(db, target, False);
