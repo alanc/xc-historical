@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.158 93/10/06 17:20:17 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.159 93/10/13 18:47:24 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1359,7 +1359,6 @@ Boolean XtDispatchEvent (event)
     XtPerDisplay pd;
     Time	time = 0;
     XtEventDispatchProc dispatch = DefaultDispatcher;
-    void _XtRefreshMapping();
     XtAppContext app = XtDisplayToApplicationContext(event->xany.display);
 
     LOCK_APP(app);

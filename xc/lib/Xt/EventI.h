@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.20 93/08/11 14:06:46 kaleb Exp $ */
+/* $XConsortium: EventI.h,v 1.21 93/09/09 10:14:40 kaleb Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -85,6 +85,13 @@ extern Boolean _XtOnGrabList(
 extern void _XtRemoveAllInputs(
 #if NeedFunctionPrototypes
     XtAppContext /* app */
+#endif
+);
+
+extern void _XtRefreshMapping(
+#if NeedFunctionPrototypes
+    XEvent*	/* event */,
+    Boolean	/* dispatch */
 #endif
 );
 
