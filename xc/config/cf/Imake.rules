@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.61 89/10/09 16:53:11 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.62 89/10/16 16:47:26 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1203,7 +1203,9 @@ MakeLintSubdirs(dirs,lintlib,lintlib)
 
 /*
  * MakeMakeSubdirs - generate rules to recursively recreate Makefiles as part
- * of the specified step in the build.
+ * of the specified step in the build.  If $(TOP) is set to an absolute path, 
+ * don't prepend the ../ prefix.  This makes running things outside of the 
+ * source tree to be much easier.
  */
 #ifndef MakeMakeSubdirs
 #define MakeMakeSubdirs(dirs,target)					@@\
@@ -1211,7 +1213,7 @@ target::								@@\
 	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
 	for i in dirs ;\						@@\
 	do \								@@\
-		echo "making Makefiles in $(CURRENT_DIR)/$$i..."; \			@@\
+		echo "making Makefiles in $(CURRENT_DIR)/$$i..."; \	@@\
 		case "$$i" in \						@@\
 		./?*/?*/?*/?*) newtop=../../../../ sub=subsubsubsub;; \	@@\
 		./?*/?*/?*) newtop=../../../ sub=subsubsub;; \		@@\
@@ -1222,7 +1224,11 @@ target::								@@\
 		*/?*)       newtop=../../ sub=subsub;; \		@@\
 		*)	    newtop=../ sub=sub;; \			@@\
 		esac; \							@@\
-		$(MAKE) $${sub}dirMakefiles NEWTOP=$$newtop \		@@\
+		case "$(TOP)" in \					@@\
+		/?*) newtop=  upprefix=  ;; \				@@\
+		*) upprefix=../ ;; \					@@\
+		esac; \							@@\
+		$(MAKE) $${sub}dirMakefiles UPPREFIX=$$upprefix NEWTOP=$$newtop \		@@\
 		MAKEFILE_SUBDIR=$$i NEW_CURRENT_DIR=$(CURRENT_DIR)/$$i;\ @@\
 	done
 #endif /* MakeMakeSubdirs */
@@ -1239,7 +1245,7 @@ subdirMakefiles:							@@\
 	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi							@@\
-	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
+	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=$(UPPREFIX)$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
 	$(MAKE) $(MFLAGS) Makefiles 					@@\
 									@@\
 subsubdirMakefiles:							@@\
@@ -1248,7 +1254,7 @@ subsubdirMakefiles:							@@\
 	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi							@@\
-	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../../$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
+	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=$(UPPREFIX)$(UPPREFIX)$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
 	$(MAKE) $(MFLAGS) Makefiles 					@@\
 									@@\
 subsubsubdirMakefiles:							@@\
@@ -1257,7 +1263,7 @@ subsubsubdirMakefiles:							@@\
 	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi @@\
-	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../../../$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
+	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=$(UPPREFIX)$(UPPREFIX)$(UPPREFIX)$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
 	$(MAKE) $(MFLAGS) Makefiles 					@@\
 									@@\
 subsubsubsubdirMakefiles:						@@\
@@ -1266,7 +1272,7 @@ subsubsubsubdirMakefiles:						@@\
 	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi 						@@\
-	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../../../../$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
+	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=$(UPPREFIX)$(UPPREFIX)$(UPPREFIX)$(UPPREFIX)$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
 	$(MAKE) $(MFLAGS) Makefiles
 #endif /* MakeNsubdirMakefiles */
 
