@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.8 93/09/23 11:54:51 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.9 93/09/24 12:09:10 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -182,6 +182,10 @@ char 		*errorStringRet;
 	{
 	    if (reply.status == 1)
 	    {
+		/*
+		 * The client successfully registered.
+		 */
+
 		*clientIdRet = reply.client_id;
 
 		smcConn->client_id = (char *) malloc (
@@ -191,16 +195,26 @@ char 		*errorStringRet;
 	    }
 	    else
 	    {
-		IceProtocolShutdown (iceConn, _SmcOpcode);
-		IceCloseConnection (iceConn);
+		/*
+		 * Could not register the client because the previous ID
+		 * was bad.  So now we register the client with the
+		 * previous ID set to NULL.
+		 */
 
-		free (smcConn->vendor);
-		free (smcConn->release);
-		strncpy (errorStringRet,
-		    "Failed to register client", errorLength);
-		free ((char *) smcConn);
+		extra = ARRAY8_BYTES (0);
 
-		return (NULL);
+		IceGetHeaderExtra (iceConn, _SmcOpcode, SM_RegisterClient,
+		    SIZEOF (smRegisterClientMsg), WORD64COUNT (extra),
+		    smRegisterClientMsg, pMsg, pData);
+
+		STORE_ARRAY8 (pData, 0, NULL);
+
+		IceFlush (iceConn);
+
+		replyWait.sequence_of_request =
+		    IceLastSequenceNumber (iceConn);
+
+		gotReply = False;
 	    }
 	}
 
