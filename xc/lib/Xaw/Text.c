@@ -2208,12 +2208,10 @@ static int InsertFileNamed(ctx, str)
 static void DoInsert(ctx)
   TextWidget ctx;
 {
-/* can't do dialog boxes yet
-    if (InsertFileNamed(ctx, XtDialogGetValueString(XtDisplay(ctx), ctx->text.dialog)))
+    if (InsertFileNamed(ctx, XtDialogGetValueString(ctx->text.dialog)))
 	XBell(XtDisplay(ctx), 50);
     else
 	_XtTextAbortDialog(ctx);
-*/
 }
 
 static void TextFocusIn (ctx, event)
@@ -2261,8 +2259,9 @@ static void InsertFile(ctx, event)
 {
     char *ptr;
     XtTextBlock text;
-
-/* this depends on dialog boxes...
+    register Widget dialog;
+    ArgList args[1];
+    XtCallbackRec callbacks[] = { {NULL, NULL}, {NULL, NULL} };
 
    StartAction(ctx, event);
     if ((*ctx->text.source->EditType)(ctx->text.source) != XttextEdit) {
@@ -2289,12 +2288,26 @@ static void InsertFile(ctx, event)
     }
     if (ctx->text.dialog)
 	_XtTextAbortDialog(ctx);
-    ctx->text.dialog = XtDialogCreate( XtDisplay(ctx), ctx->text.w, "Insert File:", "", (ArgList)NULL, 0);
-    XtDialogAddButton( XtDisplay(ctx), ctx->text.dialog, "Abort", _XtTextAbortDialog, (caddr_t)ctx);
-    XtDialogAddButton( XtDisplay(ctx), ctx->text.dialog, "DoIt", DoInsert, (caddr_t)ctx);
-    XMapWindow( XtDisplay(ctx), ctx->text.dialog);
+
+    XtSetArg( args[0], XtNlabel, "Insert File:" );
+    dialog = XtCreateWidget( NULL, dialogWidgetClass,
+			     (Widget)ctx, args, (Cardinal)1 );
+
+    callbacks[0].proc = _XtTextAbortDialog;
+    callbacks[0].closure = (caddr_t)ctx;
+    XtSetArg( args[0], XtNcallback, callbacks );
+    XtCreateManagedWidget("Abort",commandWidgetClass,dialog,args,(Cardinal)1);
+
+    callbacks[0].proc = DoInsert;
+    XtCreateManagedWidget("DoIt",commandWidgetClass,dialog,args,(Cardinal)1);
+
+    XtRealizeWidget( dialog );
+
+    XMapWindow( XtDisplay(ctx), XtWindow(dialog) );
+
+    ctx->text.dialog = dialog;
+
    EndAction(ctx);
-*/
 }
 
 /* Actions Table */
