@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.13 94/01/17 19:09:55 rws Exp $
+ * $XConsortium: protodpy.c,v 1.14 94/04/17 20:03:42 rws Exp gildea $
  *
 Copyright (c) 1989  X Consortium
 
@@ -142,6 +142,7 @@ NewProtoDisplay (address, addrlen, displayNumber,
     return pdpy;
 }
 
+void
 DisposeProtoDisplay (pdpy)
     struct protoDisplay	*pdpy;
 {
@@ -160,11 +161,12 @@ DisposeProtoDisplay (pdpy)
 	prev->next = pdpy->next;
     else
 	protoDisplays = pdpy->next;
-    XdmcpDisposeARRAY8 (&pdpy->connectionAddress);
+    bzero(&pdpy->key, sizeof(pdpy->key));
     if (pdpy->fileAuthorization)
 	XauDisposeAuth (pdpy->fileAuthorization);
     if (pdpy->xdmcpAuthorization)
 	XauDisposeAuth (pdpy->xdmcpAuthorization);
+    XdmcpDisposeARRAY8 (&pdpy->connectionAddress);
     free ((char *) pdpy->address);
     free ((char *) pdpy);
 }

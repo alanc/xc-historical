@@ -1,4 +1,4 @@
-/* $XConsortium: Xauth.h,v 1.15 94/04/02 17:14:48 gildea Exp $ */
+/* $XConsortium: Xauth.h,v 1.16 94/04/17 20:15:46 gildea Exp gildea $ */
 
 /*
 
@@ -31,6 +31,7 @@ in this Software without prior written authorization from the X Consortium.
 #define _Xauth_h
 
 # include   <X11/Xfuncproto.h>
+# include   <X11/Xfuncs.h>
 
 # include   <stdio.h>
 

@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.38 94/10/18 17:47:33 gildea Exp gildea $
+.\" $XConsortium: xdm.man,v 1.39 95/05/04 00:03:58 gildea Exp gildea $
 .\" Copyright (c) 1988, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -290,10 +290,12 @@ uses file locking to keep multiple display managers from running amok.
 On System V, this
 uses the \fIlockf\fP library call, while on BSD it uses \fIflock.\fP
 .IP "\fBDisplayManager.authDir\fP"
-This names a directory in which
+This names a directory under which
 .I xdm
 stores authorization files while initializing the session.  The
 default value is \fI<XRoot>/lib/X11/xdm.\fP
+Can be overridden for specific displays by
+DisplayManager.\fIDISPLAY\fP.authFile.
 .IP \fBDisplayManager.autoRescan\fP
 This boolean controls whether
 .I xdm
@@ -513,6 +515,8 @@ to the server, using the \fB\-auth\fP server command line option.
 It should be
 kept in a directory which is not world-writable as it could easily be
 removed, disabling the authorization mechanism in the server.
+If not specified, a name is generated from DisplayManager.authDir and
+the name of the display.
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.authComplain\fP"
 If set to ``false,'' disables the use of the \fBunsecureGreeting\fP
 in the login window.

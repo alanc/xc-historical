@@ -1,4 +1,4 @@
-/* $XConsortium: genauth.c,v 1.21 94/11/21 18:33:11 kaleb Exp kaleb $ */
+/* $XConsortium: genauth.c,v 1.22 94/11/21 19:58:57 kaleb Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -129,6 +129,28 @@ InitXdmcpWrapper ()
 
 #endif
 
+#ifndef HASXDMAUTH
+/* A random number generator that is more unpredictable
+   than that shipped with some systems.
+   This code is taken from the C standard. */
+
+static unsigned long int next = 1;
+
+static int
+xdm_rand()
+{
+    next = next * 1103515245 + 12345;
+    return (unsigned int)(next/65536) % 32768;
+}
+
+static void
+xdm_srand(seed)
+    unsigned int seed;
+{
+    next = seed;
+}
+#endif /* no HASXDMAUTH */
+
 GenerateAuthData (auth, len)
 char	*auth;
 int	len;
@@ -140,8 +162,8 @@ int	len;
 	struct timeval  now;
 
 	X_GETTIMEOFDAY (&now);
-	ldata[0] = now.tv_sec;
-	ldata[1] = now.tv_usec;
+	ldata[0] = now.tv_usec;
+	ldata[1] = now.tv_sec;
     }
 #else
     {
@@ -183,11 +205,11 @@ int	len;
     	int	    i;
     
     	seed = (ldata[0]) + (ldata[1] << 16);
-    	srand (seed);
+    	xdm_srand (seed);
     	for (i = 0; i < len; i++)
     	{
-	    value = rand ();
-	    auth[i] = value & 0xff;
+	    value = xdm_rand ();
+	    auth[i] = (value & 0xff00) >> 8;
     	}
 	value = len;
 	if (value > sizeof (key))

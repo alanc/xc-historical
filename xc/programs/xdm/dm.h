@@ -1,4 +1,4 @@
-/* $XConsortium: dm.h,v 1.64 94/10/07 19:43:37 converse Exp kaleb $ */
+/* $XConsortium: dm.h,v 1.65 94/12/12 15:35:36 kaleb Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -322,6 +322,9 @@ extern void SetLocalAuthorization();
 extern void SetUserAuthorization();
 extern void RemoveUserAuthorization();
 extern void CleanUpFileName();
+
+/* in protodpy.c */
+extern void DisposeProtoDisplay();
 
 /*
  * CloseOnFork flags

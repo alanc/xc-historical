@@ -1,4 +1,4 @@
-/* $XConsortium: dm.c,v 1.69 94/03/30 21:27:40 gildea Exp $ */
+/* $XConsortium: dm.c,v 1.70 94/04/17 20:03:36 gildea Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -151,9 +151,11 @@ char	**argv;
     if (debugLevel == 0)
 	InitErrorLog ();
 
-    /* Clean up any old Authorization files */
-    sprintf(cmdbuf, "/bin/rm -f %s/A*", authDir);
-    system(cmdbuf);
+    if (nofork_session == 0) {
+	/* Clean up any old Authorization files */
+	sprintf(cmdbuf, "/bin/rm -f %s/authdir/authfiles/A*", authDir);
+	system(cmdbuf);
+    }
 
 #ifdef XDMCP
     init_session_id ();

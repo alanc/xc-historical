@@ -1,4 +1,4 @@
-/* $XConsortium: site.h,v 1.23 93/09/25 17:47:08 rws Exp $ */
+/* $XConsortium: site.h,v 1.24 94/04/17 20:26:10 rws Exp gildea $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -63,7 +63,7 @@ SOFTWARE.
  * by the vendor.
  */
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	6000
+#define VENDOR_RELEASE	6001
 #endif
 
 /*

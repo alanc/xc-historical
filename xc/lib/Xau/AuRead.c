@@ -1,4 +1,4 @@
-/* $XConsortium: AuRead.c,v 1.5 91/01/08 15:09:31 gildea Exp $ */
+/* $XConsortium: AuRead.c,v 1.6 94/04/17 20:15:44 gildea Exp gildea $ */
 
 /*
 
@@ -60,6 +60,7 @@ FILE	*file;
     	if (!data)
 	    return 0;
     	if (fread (data, (int) sizeof (char), (int) len, file) != len) {
+	    bzero (data, len);
 	    free (data);
 	    return 0;
     	}
@@ -101,7 +102,10 @@ FILE	*auth_file;
 	if (local.address) free (local.address);
 	if (local.number) free (local.number);
 	if (local.name) free (local.name);
-	if (local.data) free (local.data);
+	if (local.data) {
+	    bzero (local.data, local.data_length);
+	    free (local.data);
+	}
 	return 0;
     }
     *ret = local;

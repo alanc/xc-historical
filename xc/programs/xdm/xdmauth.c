@@ -1,4 +1,4 @@
-/* $XConsortium: xdmauth.c,v 1.11 94/01/09 18:07:19 gildea Exp $ */
+/* $XConsortium: xdmauth.c,v 1.12 94/04/17 20:03:50 gildea Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -151,6 +151,7 @@ XdmGetAuth (namelen, name)
 
 #ifdef XDMCP
 
+void
 XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
     struct protoDisplay	*pdpy;
     unsigned short	authorizationNameLen;
@@ -251,7 +252,8 @@ XdmGetKey (pdpy, displayID)
     {
 	if (line[0] == '#' || sscanf (line, "%s %s", id, key) != 2)
 	    continue;
-	Debug ("Key entry \"%s\" \"%s\"\n", id, key);
+	bzero(line, sizeof(line));
+	Debug ("Key entry for \"%s\" %d bytes\n", id, strlen(key));
 	if (strlen (id) == displayID->length &&
 	    !strncmp (id, (char *)displayID->data, displayID->length))
 	{
@@ -263,10 +265,13 @@ XdmGetKey (pdpy, displayID)
 		key[keylen++] = '\0';
 	    pdpy->key.data[0] = '\0';
 	    memmove( pdpy->key.data + 1, key, 7);
+	    bzero(key, sizeof(key));
 	    fclose (keys);
 	    return TRUE;
 	}
     }
+    bzero(line, sizeof(line));
+    bzero(key, sizeof(key));
     fclose (keys);
     return FALSE;
 }

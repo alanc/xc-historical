@@ -1,4 +1,4 @@
-/* $XConsortium: AuFileName.c,v 1.3 93/08/16 16:02:01 rws Exp $ */
+/* $XConsortium: AuFileName.c,v 1.4 94/04/17 20:15:42 rws Exp gildea $ */
 
 /*
 
@@ -28,12 +28,12 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 #include <X11/Xauth.h>
+#include <X11/Xos.h>
 
 char *
 XauFileName ()
 {
     char    *name, *malloc (), *getenv ();
-    char    *strcat (), *strcpy ();
     static char	*buf;
     static int	bsize;
 #ifdef WIN32
