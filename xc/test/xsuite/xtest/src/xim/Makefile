@@ -1,4 +1,4 @@
-# $XConsortium: Makefile,v 1.1 94/01/29 15:55:40 rws Exp $
+# $XConsortium: Makefile,v 1.2 94/01/29 16:00:04 rws Exp $
 ##########################################################################
 #
 #
@@ -10,62 +10,60 @@
 #
 # Location of Test Suite
 #
-SUITE_ROOT	= ${TET_ROOT}/xtest
-SUITE_LIB	= ${SUITE_ROOT}/lib
-SUITE_BIN	= ${SUITE_ROOT}/bin
-SUITE_INC	= ${SUITE_ROOT}/include
+SUITE_ROOT = ${TET_ROOT}/xtest
+SUITE_LIB = ${SUITE_ROOT}/lib
+SUITE_BIN = ${SUITE_ROOT}/bin
+SUITE_INC = ${SUITE_ROOT}/include
 
-INSTLIB		= $(SUITE_LIB)
-INSTBIN		= $(SUITE_BIN)
+INSTLIB = $(SUITE_LIB)
+INSTBIN = $(SUITE_BIN)
 
 ################################
 ##### C compiler Directives Section
 ################################
 
-CFILES		= linklocale.c clnlocale.c ic.c nextlocale.c nextlclmod.c \
-			nxtfontset.c parse.c xim_cb.c xim_comp.c response.c \
-			xim_save.c stimulus.c
-OFILES		= linklocale.o clnlocale.o ic.o nextlocale.o nextlclmod.o \
-			nxtfontset.o parse.o xim_cb.o xim_comp.o response.o \
-			xim_save.o stimulus.o
+CFILES = linklocale.c clnlocale.c ic.c nextlocale.c nextlclmod.c \
+         nxtfontset.c parse.c xim_cb.c xim_comp.c response.c \
+         xim_save.c stimulus.c
+OFILES = linklocale.o clnlocale.o ic.o nextlocale.o nextlclmod.o \
+         nxtfontset.o parse.o xim_cb.o xim_comp.o response.o \
+         xim_save.o stimulus.o
 
-LIBRARY		= libximtest.a
+LIBRARY = libximtest.a
 
 ##############################################################################
 
-install:	all
+install: all
 	$(CP) $(LIBRARY) $(INSTLIB)/$(LIBRARY)
 	$(RANLIB) $(INSTLIB)/$(LIBRARY)
 
-all:	$(LIBRARY)
+all: $(LIBRARY)
 	
 $(LIBRARY): $P 	$(OFILES)
 	$(AR) $@ `$(LORDER) $(OFILES) | $(TSORT)`
 	$(RANLIB) $@
 
-FORCE:		CLOBBER all
+FORCE: CLOBBER all
 
 LINT:
-		$(LINT) $(LINTFLAGS) $(CFILES) $(LINTTCM) $(LINTLIBS)
+	$(LINT) $(LINTFLAGS) $(CFILES) $(LINTTCM) $(LINTLIBS)
 
-LINTLIB:	$(LINTSUNTEST)
+LINTLIB: $(LINTSUNTEST)
 
-$(LINTTEST):	llib-lsuntest.ln
-		cp $? $@
-		@echo "	$? made and installed"
+$(LINTXTEST): llib-lsuntest.ln
+	cp $? $@
+	@echo "	$? made and installed"
 
 llib-lsuntest.ln: $(CFILES)
-		$(LINT) -Csuite $(LINTFLAGS) -u $?
+	$(LINT) -Csuite $(LINTFLAGS) -u $?
 
 CLEAN:
-		$(RM) $(OFILES) $(LIBRARY) makefile.bak 
+	$(RM) $(OFILES) $(LIBRARY) makefile.bak 
 
-CLOBBER:	CLEAN
-		$(RM) $(INSTLIB)/$(LIBRARY)
-		
+CLOBBER: CLEAN
+	$(RM) $(INSTLIB)/$(LIBRARY)
 
-clean:		CLEAN
+clean: CLEAN
 
 shar:
-		shar Makefile $(SUITE_INC)/*.h $(CFILES) > libsuntest.shar
-
+	shar Makefile $(SUITE_INC)/*.h $(CFILES) > libsuntest.shar
