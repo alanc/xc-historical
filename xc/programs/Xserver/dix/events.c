@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.10 89/10/04 14:21:08 rws Exp $ */
+/* $XConsortium: events.c,v 5.11 89/10/04 22:50:25 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -125,12 +125,12 @@ static  struct {
 
 static void DoEnterLeaveEvents();	/* merely forward declarations */
 static WindowPtr XYToWindow();
-static void DeliverFocusedEvent();
+void DeliverFocusedEvent();
 int DeliverDeviceEvents();
 void DoFocusEvents();
 Mask EventMaskForClient();
 void WriteEventsToClient();
-static Bool CheckDeviceGrabs();
+Bool CheckDeviceGrabs();
 void NewCurrentScreen();
 static void EnqueueEvent();
 
@@ -408,7 +408,7 @@ ChangeToCursor(cursor)
 }
 
 /* returns true if b is a descendent of a */
-static Bool
+Bool
 IsParent(a, b)
     register WindowPtr a, b;
 {
@@ -447,10 +447,30 @@ PostNewCursor()
 	}
 }
 
+WindowPtr
+GetCurrentRootWindow()
+{
+    return ROOT;
+}
+
+WindowPtr
+GetSpriteWindow()
+{
+    return sprite.win;
+}
+
 #define NoticeTime(xE) { \
     if ((xE)->u.keyButtonPointer.time < currentTime.milliseconds) \
 	currentTime.months++; \
     currentTime.milliseconds = (xE)->u.keyButtonPointer.time; }
+
+void
+NoticeEventTime(xE)
+    register xEvent *xE;
+{
+    if (!syncEvents.playingEvents)
+	NoticeTime(xE);
+}
 
 /**************************************************************************
  *            The following procedures deal with synchronous events       *
@@ -1559,7 +1579,7 @@ CheckPassiveGrabs causes a passive grab to activate or all the windows are
 tried. PRH
 */
 
-static Bool
+Bool
 CheckDeviceGrabs(device, xE, checkFirst, count)
     register DeviceIntPtr device;
     register xEvent *xE;
@@ -1599,7 +1619,7 @@ CheckDeviceGrabs(device, xE, checkFirst, count)
     return FALSE;
 }
 
-static void
+void
 DeliverFocusedEvent(keybd, xE, window, count)
     xEvent *xE;
     DeviceIntPtr keybd;
@@ -1627,7 +1647,7 @@ DeliverFocusedEvent(keybd, xE, window, count)
 				NullGrab, 0);
 }
 
-static void
+void
 DeliverGrabbedEvent(xE, thisDev, deactivateGrab, count)
     register xEvent *xE;
     register DeviceIntPtr thisDev;
