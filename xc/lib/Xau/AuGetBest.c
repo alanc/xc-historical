@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetBest.c,v 1.1 90/09/13 18:23:41 keith Exp $
+ * $XConsortium: AuGetBest.c,v 1.2 90/12/12 09:30:39 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -50,7 +50,7 @@ XauGetBestAuthByAddr (
 #endif
     _Xconst char*	number,
     int			types_length,
-    _Xconst char**	types,
+    char**		types,
     _Xconst int*	type_lengths)
 #else
 Xauth *

@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.7 90/12/11 13:20:24 rws Exp $
+ * $XConsortium: Xauth.h,v 1.8 90/12/12 09:30:27 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -158,7 +158,7 @@ unsigned short	/* number_length */,
 #endif
 _Xconst char*	/* number */,
 int		/* types_length */,
-_Xconst char**	/* type_names */,
+char**		/* type_names */,
 _Xconst int*	/* type_lengths */
 #endif
 );
