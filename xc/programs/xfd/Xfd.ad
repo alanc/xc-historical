@@ -1,27 +1,27 @@
-Xfd*internalBorderWidth: 0
-Xfd*showGrip: false
+*internalBorderWidth: 0
+*showGrip: false
 
-Xfd*grid.borderWidth: 0
+*grid.borderWidth: 0
 
-Xfd*quit.Label: Quit
-Xfd*prev.Label: Prev Page
-Xfd*next.Label: Next Page
+*quit.Label: Quit
+*prev.Label: Prev Page
+*next.Label: Next Page
 
-Xfd*select.Label: Select a character
-Xfd*metrics.Label: 
-Xfd*select.Justify: center
-Xfd*metrics.Justify: center
-Xfd*range.Justify: left
-Xfd*start.Justify: left
+*select.Label: Select a character
+*metrics.Label: 
+*select.Justify: center
+*metrics.Justify: center
+*range.Justify: left
+*start.Justify: left
 
-Xfd*quit.Translations:  #override \
+*quit.Translations:  #override \
 		<Btn1Down>,<Btn1Up>: Quit() unset()
-Xfd*next.Translations:  #override \
+*next.Translations:  #override \
 		<Btn1Down>,<Btn1Up>: Next() unset()
-Xfd*prev.Translations:  #override \
+*prev.Translations:  #override \
 		<Btn1Down>,<Btn1Up>: Prev() unset()
 
-Xfd*Translations: #override \n\
+*Translations: #override \n\
 <Key>q: Quit()\n\
 Ctrl <Key>n: Next()\n\
 Ctrl <Key>p: Prev()
