@@ -1,4 +1,4 @@
-/* $XConsortium: mach32im.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XConsortium: mach32im.c,v 1.2 94/10/12 19:59:09 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.3 1994/09/11 00:49:00 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -180,7 +180,7 @@ mach32ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			px;
     int			py;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     unsigned char *curvm;
     int byteCount;
@@ -221,7 +221,7 @@ mach32ImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			px;
     int			py;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     unsigned char *curvm;
     int offset;
@@ -309,7 +309,7 @@ mach32ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			px;
     int			py;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     int count = ((w + 1) >> 1) * BytesPerPixel;
     int j;
@@ -361,7 +361,7 @@ mach32ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			pwidth;
     int			px;
     int			py;
-    short		planemask;
+    unsigned long	planemask;
 {
     int j;
     unsigned char *curvm;
@@ -395,7 +395,7 @@ mach32ImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			pwidth;
     int			px;
     int			py;
-    short		planemask;
+    unsigned long	planemask;
 {
     unsigned char *curvm;
     int offset;
@@ -460,7 +460,7 @@ mach32ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			pwidth;
     int			px;
     int			py;
-    short		planemask;
+    unsigned long	planemask;
 {
     int	j;
     int	i;
@@ -520,7 +520,7 @@ mach32ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     int i,j;
     unsigned char	*pline;
@@ -577,7 +577,7 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     int i,j;
     unsigned char	*pline;
@@ -661,7 +661,7 @@ mach32ImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     int i,j;
     unsigned char	*pline;

@@ -1,4 +1,4 @@
-/* $XConsortium: mach32frect.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XConsortium: mach32frect.c,v 1.3 94/10/12 19:59:09 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.5 1994/09/11 00:48:55 dawes Exp $ */
 /*
 
@@ -237,7 +237,7 @@ short fgalu;
 short bgalu;
 short fgmix;
 short bgmix;
-short planemask;
+unsigned long planemask;
 {
     int xwmid, ywmid, orig_xwmid;
     int startx, starty, endx, endy;
@@ -476,7 +476,7 @@ int h;
 int pox;
 int poy;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     DoCacheImageFill( pci, x, y, w, h, pox, poy, alu,
@@ -492,9 +492,9 @@ int w;
 int h;
 int pox;
 int poy;
-int fg;
+unsigned long fg;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     WaitQueue(3);
@@ -520,10 +520,10 @@ int w;
 int h;
 int pox;
 int poy;
-int fg;
-int bg;
+unsigned long fg;
+unsigned long bg;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     WaitQueue(4);
