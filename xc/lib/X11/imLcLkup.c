@@ -1,4 +1,4 @@
-/* $XConsortium: imLcLkup.c,v 1.5 94/03/26 17:00:36 rws Exp $ */
+/* $XConsortium: imLcLkup.c,v 1.6 94/07/06 14:46:59 kaleb Exp kaleb $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.
@@ -66,7 +66,7 @@ _XimLocalMbLookupString(xic, ev, buffer, bytes, keysym, status)
 	if(keysym) *keysym = ic->private.local.composed->ks;
 	if (ret > 0) {
 	    if(keysym && *keysym != NoSymbol) {
-		if(status) *status = XLookupChars;
+		if(status) *status = XLookupBoth;
 	    } else {
 		if(status) *status = XLookupChars;
 	    }
@@ -125,7 +125,7 @@ _XimLocalWcLookupString(xic, ev, buffer, wlen, keysym, status)
 	if(keysym) *keysym = ic->private.local.composed->ks;
 	if (ret > 0) {
 	    if(keysym && *keysym != NoSymbol) {
-		if(status) *status = XLookupChars;
+		if(status) *status = XLookupBoth;
 	    } else {
 		if(status) *status = XLookupChars;
 	    }
@@ -191,7 +191,7 @@ _XimLcctstombs(xim, from, from_len, to, to_len, state)
 
     if (to && to_len) {
 	from_left = from_len;
-	to_left = to_len - 1;
+	to_left = to_len;
 	from_cnvlen = 0;
 	to_cnvlen = 0;
 	for (;;) {
@@ -208,7 +208,6 @@ _XimLcctstombs(xim, from, from_len, to, to_len, state)
 	    to_cnvlen += (to_savelen - to_left);
 	    if (from_left == 0) {
 		if (to_cnvlen > 0) {
-		    to[to_cnvlen] = '\0';
 		    *state = XLookupChars;
 		} else {
 		    *state = XLookupNone;
@@ -277,7 +276,7 @@ _XimLcctstowcs(xim, from, from_len, to, to_len, state)
 
     if (to && to_len) {
 	from_left = from_len;
-	to_left = to_len - 1;
+	to_left = to_len;
 	from_cnvlen = 0;
 	to_cnvlen = 0;
 	for (;;) {
@@ -294,7 +293,6 @@ _XimLcctstowcs(xim, from, from_len, to, to_len, state)
 	    to_cnvlen += (to_savelen - to_left);
 	    if (from_left == 0) {
 		if (to_cnvlen > 0) {
-		    to[to_cnvlen] = (wchar_t)'\0';
 		    *state = XLookupChars;
 		} else {
 		    *state = XLookupNone;

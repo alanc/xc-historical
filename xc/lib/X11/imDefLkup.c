@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.12 94/09/01 18:41:58 kaleb Exp kaleb $ */
+/* $XConsortium: imDefLkup.c,v 1.13 95/02/24 22:53:53 kaleb Exp kaleb $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -918,7 +918,7 @@ _Ximctstombs(xim, from, from_len, to, to_len, state)
 
     if (to && to_len) {
 	from_left = from_len;
-	to_left = to_len - 1;
+	to_left = to_len;
 	from_cnvlen = 0;
 	to_cnvlen = 0;
 	for (;;) {
@@ -935,7 +935,6 @@ _Ximctstombs(xim, from, from_len, to, to_len, state)
 	    to_cnvlen += (to_savelen - to_left);
 	    if (from_left == 0) {
 		if (to_cnvlen > 0) {
-		    to[to_cnvlen] = '\0';
 		    *state = XLookupChars;
 		} else {
 		    *state = XLookupNone;
@@ -1004,7 +1003,7 @@ _Ximctstowcs(xim, from, from_len, to, to_len, state)
 
     if (to && to_len) {
 	from_left = from_len;
-	to_left = to_len - 1;
+	to_left = to_len;
 	from_cnvlen = 0;
 	to_cnvlen = 0;
 	for (;;) {
@@ -1021,7 +1020,6 @@ _Ximctstowcs(xim, from, from_len, to, to_len, state)
 	    to_cnvlen += (to_savelen - to_left);
 	    if (from_left == 0) {
 		if (to_cnvlen > 0) {
-		    to[to_cnvlen] = (wchar_t)'\0';
 		    *state = XLookupChars;
 		} else {
 		    *state = XLookupNone;
