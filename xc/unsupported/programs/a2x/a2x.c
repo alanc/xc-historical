@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.85 92/08/13 20:02:38 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.86 92/08/14 16:46:47 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -249,6 +249,7 @@ LocationRec locations[10];
 char *hotwinname = "a2x";
 Window hotwin = None;
 char *hotkeyname = NULL;
+char *hotwingeom = NULL;
 KeyCode hotkey = 0;
 #ifdef XTRAP
 XETC *tc;
@@ -343,7 +344,7 @@ generate_warp(screen, x, y)
 void
 usage()
 {
-    printf("%s: [-d <display>] [-e] [-b] [-u <undofile>] [-h <keysym>] [-w <name>]\n",
+    printf("%s: [-d <display>] [-e] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-g <geometry>]\n",
 	   progname);
     exit(1);
 }
@@ -394,10 +395,14 @@ void
 reset_mapping()
 {
     int minkey, maxkey;
-    int i, j;
+    int i, j, x, y, c;
     KeySym sym;
-    int c;
     XModifierKeymap *mmap;
+    Window root, w, *children;
+    char *name;
+    unsigned int nchild, width, height, bwidth, depth;
+    long mask;
+    XSizeHints hints;
     unsigned char bmap[256];
     
     bzero((char *)button_map, sizeof(button_map));
@@ -508,11 +513,6 @@ reset_mapping()
 	hotkey = parse_keysym(hotkeyname);
 	hotwin = None;
 	if (hotkey) {
-	    Window w, *children;
-	    unsigned int nchild;
-	    int i, nomatch;
-	    char *name;
-
 	    XQueryTree(dpy, DefaultRootWindow(dpy), &w, &w,
 		       &children, &nchild);
 	    for (i = 0; !hotwin && i < nchild; i++) {
@@ -525,11 +525,20 @@ reset_mapping()
 	    }
 	    XFree(children);
 	}
-	if (hotwin)
+	if (hotwin) {
 	    XGrabKey(dpy, hotkey, 0, DefaultRootWindow(dpy), False,
 		     GrabModeAsync, GrabModeAsync);
-	else
-	    XBell(dpy, 0);
+	    if (hotwingeom &&
+		XGetGeometry(dpy, w, &root, &x, &y, &width, &height,
+			     &bwidth, &depth) &&
+		XGetWMNormalHints(dpy, w, &hints, &mask)) {
+		XWMGeometry(dpy, DefaultScreen(dpy), hotwingeom,
+			    (char *)NULL, bwidth, &hints, &x, &y,
+			    (int *)&width, (int *)&height, &j);
+		XMoveResizeWindow(dpy, w, x, y, width, height);
+	    }
+	    hotwingeom = NULL;
+	}
     }
     last_sym = 0;
 }
@@ -2378,6 +2387,12 @@ main(argc, argv)
 	    if (!argc)
 		usage();
 	    hotwinname = *argv;
+	    break;
+	case 'g':
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    hotwingeom = *argv;
 	    break;
 	default:
 	    usage();
