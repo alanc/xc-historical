@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.3 88/02/24 15:42:56 rws Exp $
+ *	$XConsortium: puzzle.c,v 1.4 88/09/06 17:55:57 jim Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -12,7 +12,7 @@
  */
 
 #ifndef lint
-static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.3 88/02/24 15:42:56 rws Exp $";
+static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.4 88/09/06 17:55:57 jim Exp $";
 #endif	/* lint */
 
 /**
@@ -92,7 +92,7 @@ int layers;
 int *tmp_matrix;
 int *target;
 int *locked;
-int *link;
+int *loclist;
 int *position;
 
 int space_x, space_y;		/** location of space in the position matrix **/
@@ -208,7 +208,7 @@ int (*path)[];
 
    for (i=0; i<PuzzleWidth*PuzzleHeight; i++) {
       tmp_matrix[i] = -locked[i];
-      link[i] = -1;
+      loclist[i] = -1;
    }
 
    for (i=0; i<QUEUE_SIZE; i++)
@@ -286,7 +286,7 @@ int (*path)[];
             /** the next line works because the candidate index is  
              ** same as the direction moved to reach the candidate;
              **/
-            link[candidate[i]] = i;
+            loclist[candidate[i]] = i;
             loc_queue[queue_tail] = candidate[i];
             loc_dist[queue_tail] = DIST(end_loc,candidate[i]);
             queue_tail++;
@@ -327,8 +327,8 @@ broke:   if (queue_tail == QUEUE_SIZE) {
 
    (*path)[0] = tmp_matrix[next_loc] - 1;
    for (i=(*path)[0]; i>0; i--) {
-      (*path)[i] = link[next_loc];
-      switch(link[next_loc]) {
+      (*path)[i] = loclist[next_loc];
+      switch(loclist[next_loc]) {
       case LEFT:	next_loc = next_right(next_loc);
 			break;
       case RIGHT:	next_loc = next_left(next_loc);
@@ -436,13 +436,13 @@ initialize()
    tmp_matrix = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
    target     = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
    locked     = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
-   link       = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
+   loclist    = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
    position   = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
 
    for (i=0; i<PuzzleWidth*PuzzleHeight; i++)
       locked[i] = 0;
 
-   if (!tmp_matrix || !target || !locked || !link || !position) {
+   if (!tmp_matrix || !target || !locked || !loclist || !position) {
        printf("matrix allocation failed.\n");
        exit(1);
    }
