@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.143 95/02/23 16:04:31 kaleb Exp gildea $
+XCOMM site:  $XConsortium: site.def,v 1.144 95/04/16 16:05:06 gildea Exp gildea $
 
 /***************************************************************************
  *                                                                         *
@@ -235,8 +235,6 @@ clean::									@@\
 #undef BuildServer
 #define BuildServer YES
 #define XVirtualFramebufferServer YES
-#define ServerExtraDefines -D_XSERVER64
-#define ServerOSDefines -DDDXTIME
 #endif
 
 #ifdef AIXArchitecture
