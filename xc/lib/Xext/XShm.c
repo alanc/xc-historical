@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.6 89/10/06 11:20:09 jim Exp $
+ * $XConsortium: XShm.c,v 1.7 89/10/08 16:23:04 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -61,13 +61,21 @@ static /* const */ XExtensionHooks shm_extension_hooks = {
     wire_to_event,			/* wire_to_event */
     event_to_wire,			/* event_to_wire */
     NULL,				/* error */
-    NULL,				/* error_string */
+    error_string,			/* error_string */
+};
+
+static /* const */ char *shm_error_list[] = {
+    "BadShmSeg",			/* BadShmSeg */
 };
 
 static XEXT_GENERATE_FIND_DISPLAY (find_display, shm_info, shm_extension_name, 
 				   &shm_extension_hooks, ShmNumberEvents, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, shm_info)
+
+static XEXT_GENERATE_ERROR_STRING (error_string, shm_extension_name,
+				   ShmNumberErrors, shm_error_list)
+
 
 static Bool wire_to_event (dpy, re, event)
     Display *dpy;
