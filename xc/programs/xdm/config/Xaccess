@@ -1,21 +1,28 @@
-#
 # Access control file for XDMCP connections
 #
-# Entries in this file are in one of two forms; either
-#
-# 	pattern		host-list
-#
-# or
+# To control Direct and Broadcast access:
 #
 #	pattern
 #
-# The first form direct xdm to forward indirect queries from hosts matching
-# the specified pattern to the indicated list of hosts.  The second form
-# directs xdm to respond to other itself.
+# To control Indirect queries:
 #
-# By default, we'll allow any terminal using XDMCP to get a login window
+# 	pattern		list of hostnames and/or macros ...
 #
+# To define macros:
+#
+#       %name		list of hosts ...
+#
+# The first form tells xdm which displays to respond to itself.
+# The second form tells xdm to forward indirect queries from hosts matching
+# the specified pattern to the indicated list of hosts.
 
-*.lcs.mit.edu	CHOOSER BROADCAST
+*					#any host can get a login window
 
-*
+%hostlist	host1 host2 host3
+
+*		CHOOSER %hostlist	#forward Indirect queries to hostlist
+
+# If your host can broadcast UDP packets, you might prefer this form
+# for Indirect queries:
+
+*		CHOOSER BROADCAST
