@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.78 91/11/27 15:54:50 rws Exp $ */
+/* $XConsortium: window.c,v 5.79 91/12/09 18:46:44 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2579,11 +2579,11 @@ WindowExtents(pWin, pBox)
     register WindowPtr pWin;
     register BoxPtr pBox;
 {
-    pBox->x1 = pWin->origin.x - wBorderWidth (pWin);
-    pBox->y1 = pWin->origin.y - wBorderWidth (pWin);
-    pBox->x2 = pWin->origin.x + (int)pWin->drawable.width
+    pBox->x1 = pWin->drawable.x - wBorderWidth (pWin);
+    pBox->y1 = pWin->drawable.y - wBorderWidth (pWin);
+    pBox->x2 = pWin->drawable.x + (int)pWin->drawable.width
 	       + wBorderWidth (pWin);
-    pBox->y2 = pWin->origin.y + (int)pWin->drawable.height
+    pBox->y2 = pWin->drawable.y + (int)pWin->drawable.height
 	       + wBorderWidth (pWin);
     return(pBox);
 }
