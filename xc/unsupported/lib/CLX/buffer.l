@@ -378,16 +378,16 @@
 	       (type cons lst))
       (setf (car lst) (funcall transform (read-card8 index))))))
 
+#-lispm
 (defun read-simple-array-card8 (buffer nitems data start)
   (declare (type buffer buffer)
 	   (type array-index nitems start)
 	   (type (simple-array card8 (*)) data))
-  (if (index-zerop (index-logand nitems 3))
-      (buffer-input buffer data start (index+ start nitems))
-      (with-vector (data (simple-array card8 (*)))
-	(reading-buffer-chunks card8
-	  (buffer-replace data buffer-bbuf i end)))))
+  (with-vector (data (simple-array card8 (*)))
+    (reading-buffer-chunks card8
+      (buffer-replace data buffer-bbuf i end))))
 
+#-lispm
 (defun read-simple-array-card8-with-transform (buffer nitems data transform start)
   (declare (type buffer buffer)
 	   (type array-index nitems start)
@@ -434,6 +434,7 @@
 	(if transform 
 	    (read-list-card8-with-transform buffer nitems result transform start)
 	  (read-list-card8 buffer nitems result start)))
+      #-lispm
       ((simple-array card8 (*))
        (if transform 
 	   (read-simple-array-card8-with-transform buffer nitems result transform start)
@@ -491,6 +492,7 @@
 	       (type cons lst))
       (setf (car lst) (funcall transform (read-card16 index))))))
 
+#-lispm
 (defun read-simple-array-card16 (buffer nitems data start)
   (declare (type buffer buffer)
 	   (type array-index nitems start)
@@ -505,6 +507,7 @@
       ;; overlapping case
       (buffer-replace data buffer-wbuf i end))))
 
+#-lispm
 (defun read-simple-array-card16-with-transform (buffer nitems data transform start)
   (declare (type buffer buffer)
 	   (type array-index nitems start)
@@ -557,6 +560,7 @@
 	(if transform 
 	    (read-list-card16-with-transform buffer nitems result transform start)
 	  (read-list-card16 buffer nitems result start)))
+      #-lispm
       ((simple-array card16 (*))
        (if transform 
 	   (read-simple-array-card16-with-transform buffer nitems result transform start)
@@ -614,6 +618,7 @@
 	       (type cons lst))
       (setf (car lst) (funcall transform (read-card32 index))))))
 
+#-lispm
 (defun read-simple-array-card32 (buffer nitems data start)
   (declare (type buffer buffer)
 	   (type array-index nitems start)
@@ -628,6 +633,7 @@
       ;; overlapping case
       (buffer-replace data buffer-lbuf i end))))
 
+#-lispm
 (defun read-simple-array-card32-with-transform (buffer nitems data transform start)
   (declare (type buffer buffer)
 	   (type array-index nitems start)
@@ -680,6 +686,7 @@
 	(if transform 
 	    (read-list-card32-with-transform buffer nitems result transform start)
 	  (read-list-card32 buffer nitems result start)))
+      #-lispm
       ((simple-array card32 (*))
        (if transform 
 	   (read-simple-array-card32-with-transform buffer nitems result transform start)
@@ -750,6 +757,7 @@
   nil)
 
 ;;; Should really write directly from data, instead of into the buffer first
+#-lispm
 (defun write-simple-array-card8 (buffer boffset data start end)
   (declare (type buffer buffer)
 	   (type (simple-array card8 (*)) data)
@@ -764,6 +772,7 @@
 		      index)))
   nil)
 
+#-lispm
 (defun write-simple-array-card8-with-transform (buffer boffset data start end transform)
   (declare (type buffer buffer)
 	   (type (simple-array card8 (*)) data)
@@ -819,6 +828,7 @@
       (if transform
 	  (write-list-card8-with-transform buffer boffset data start end transform)
 	  (write-list-card8 buffer boffset data start end)))
+    #-lispm
     ((simple-array card8 (*))
      (if transform
 	 (write-simple-array-card8-with-transform buffer boffset data start end transform)
@@ -874,6 +884,7 @@
       (write-card16 j (funcall transform (pop lst)))))
   nil)
 
+#-lispm
 (defun write-simple-array-card16 (buffer boffset data start end)
   (declare (type buffer buffer)
 	   (type (simple-array card16 (*)) data)
@@ -897,6 +908,7 @@
 	(setq index (index+ index length)))))
   nil)
 
+#-lispm
 (defun write-simple-array-card16-with-transform (buffer boffset data start end transform)
   (declare (type buffer buffer)
 	   (type (simple-array card16 (*)) data)
@@ -965,6 +977,7 @@
       (if transform
 	  (write-list-card16-with-transform buffer boffset data start end transform)
 	  (write-list-card16 buffer boffset data start end)))
+    #-lispm
     ((simple-array card16 (*))
      (if transform
 	 (write-simple-array-card16-with-transform buffer boffset data start end transform)
@@ -1005,6 +1018,7 @@
       (write-int16 j (funcall transform (pop lst)))))
   nil)
 
+#-lispm
 (defun write-simple-array-int16 (buffer boffset data start end)
   (declare (type buffer buffer)
 	   (type (simple-array int16 (*)) data)
@@ -1028,6 +1042,7 @@
 	(setq index (index+ index length)))))
   nil)
 
+#-lispm
 (defun write-simple-array-int16-with-transform (buffer boffset data start end transform)
   (declare (type buffer buffer)
 	   (type (simple-array int16 (*)) data)
@@ -1096,6 +1111,7 @@
       (if transform
 	  (write-list-int16-with-transform buffer boffset data start end transform)
 	  (write-list-int16 buffer boffset data start end)))
+    #-lispm
     ((simple-array int16 (*))
      (if transform
 	 (write-simple-array-int16-with-transform buffer boffset data start end transform)
@@ -1136,6 +1152,7 @@
       (write-card32 j (funcall transform (pop lst)))))
   nil)
 
+#-lispm
 (defun write-simple-array-card32 (buffer boffset data start end)
   (declare (type buffer buffer)
 	   (type (simple-array card32 (*)) data)
@@ -1159,6 +1176,7 @@
 	(setq index (index+ index length)))))
   nil)
 
+#-lispm
 (defun write-simple-array-card32-with-transform (buffer boffset data start end transform)
   (declare (type buffer buffer)
 	   (type (simple-array card32 (*)) data)
@@ -1227,6 +1245,7 @@
       (if transform
 	  (write-list-card32-with-transform buffer boffset data start end transform)
 	  (write-list-card32 buffer boffset data start end)))
+    #-lispm
     ((simple-array card32 (*))
      (if transform
 	 (write-simple-array-card32-with-transform buffer boffset data start end transform)
@@ -1251,40 +1270,27 @@
 	data)
       (write-sequence-card32 buffer boffset start end #'int32->card32)))
 
-(defun read-bitvector256 (buffer boffset &optional (data (make-array 256 :element-type 'bit
-								     :initial-element 0)))
-  (declare (type buffer buffer)
+(defun read-bitvector256 (buffer-bbuf boffset data)
+  (declare (type buffer-bytes buffer-bbuf)
 	   (type array-index boffset)
-	   (type (simple-bit-vector 256) data))
-  (reading-buffer-reply (buffer :sizes (8 32))
-    #+(and clx-overlapping-arrays clx-little-endian)
-    (buffer-replace (make-array 8 :element-type 'overlap32 :displaced-to data)
-		    buffer-lbuf
-		    0
-		    8
-		    (floor boffset 4))
-    #-(and clx-overlapping-arrays clx-little-endian)
+	   (type (or null (simple-bit-vector 256)) data))
+  (let ((result (or data (make-array 256 :element-type 'bit :initial-element 0))))
+    (declare-array (simple-bit-vector 256) result)
     (dotimes (i 32)
       (declare (type array-index i))
-      (do ((byte (read-card8 (index+ boffset i)) (floor byte 2))
-	   (j (index+ (index-ash i 3) 7) (index- j 1)))
+      (do ((byte (aref-card8 buffer-bbuf (index+ boffset i)) (index-ash byte -1))
+	   (j (index-ash i 3) (index+ j 1)))
 	  ((zerop byte))
 	(declare (type array-index j)
 		 (type card8 byte))
-	(setf (aref data j) (the bit (logand byte 1)))))
-    data))
+	(setf (aref result j) (the bit (logand byte 1)))))
+    result))
 
 (defun write-bitvector256 (buffer boffset map)
   (declare (type buffer buffer)
 	   (type array-index boffset)
 	   (type (simple-array bit (*)) map))
-  (writing-buffer-send (buffer :index boffset :sizes (8 32))
-    #+(and clx-overlapping-arrays clx-little-endian)
-    (buffer-replace buffer
-		    (make-array 8 :element-type 'overlap32 :displaced-to map)
-		    buffer-loffset
-		    (index+ buffer-loffset 8))
-    #-(and clx-overlapping-arrays clx-little-endian)
+  (writing-buffer-send (buffer :index boffset :sizes (8))
     (do ((i 4 (index+ i 1)) ;; Skip first word
 	 (j 0 (index+ j 8)))	 
 	((index>= i 32))
