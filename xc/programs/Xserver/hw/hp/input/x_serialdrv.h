@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /************************************************************
 Copyright (c) 1992 by Hewlett-Packard Company, Palo Alto, California.
 
