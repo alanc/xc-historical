@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.61 89/10/03 12:35:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.64 89/11/08 17:36:57 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -158,7 +158,7 @@ static Widget _XtCreate(
     WidgetClass widget_class;
     Widget      parent;
     Screen*     default_screen;
-    ArgList     args;		/* must be NULL if typed_args is NULL */
+    ArgList     args;		/* must be NULL if typed_args is non-NULL */
     Cardinal    num_args;
     XtTypedArgList typed_args;	/* must be NULL if args is non-NULL */
     Cardinal	num_typed_args;
@@ -209,7 +209,8 @@ static Widget _XtCreate(
 
     /* Convert typed arg list to arg list */
     if (typed_args != NULL) {
-	args = (ArgList)XtMalloc(sizeof(Arg) * num_typed_args);
+	args = (ArgList)ALLOCATE_LOCAL(sizeof(Arg) * num_typed_args);
+	if (args == NULL) _XtAllocError(NULL);
 	for (i = 0; i < num_typed_args; i++) {
 	    args[i].name = typed_args[i].name;
 	    args[i].value = typed_args[i].value;
@@ -243,20 +244,20 @@ static Widget _XtCreate(
 
     if (typed_args != NULL) {
 	
-	/* in GetResources we may have dynamically alloc'ed store to hold a 	*/
-	/* copy of a resource whischwas larger then sizeof(XtARgVal) ....	*/
-	/* we must free this store now in order to preevnt a memory leak ...    */
-	/* a typed arg that has a converted value in dynamic store has a 	*/
-	/* negated size field							*/
+	/* in GetResources we may have dynamically alloc'ed store to hold a */
+	/* copy of a resource which was larger then sizeof(XtARrgVal) .... */
+	/* we must free this store now in order to prevent a memory leak... */
+	/* a typed arg that has a converted value in dynamic store has a */
+	/* negated size field */
 
 	for (i = 0; i < num_typed_args; i++) {
 		if (typed_args[i].size < 0) { /* we alloc`ed store dynamically */
-			XtFree((char *)typed_args[i].value);
+			XtFree((XtPointer)typed_args[i].value);
 			typed_args[i].size = -(typed_args[i].size);
 		}
 	}
 
-	XtFree((char *)args);
+	DEALLOCATE_LOCAL((XtPointer)args);
     }
 
     if (parent_constraint_class != NULL) {
