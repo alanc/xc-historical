@@ -482,6 +482,70 @@ directory, they could be loaded into the server using the following command:
 This adds these resources to any that have already been loaded.  This is 
 frequently how user-friendly startup scripts merge user-specific defaults
 into any site-wide defaults.
+.SH "FONT NAMES"
+Collections of characters for displaying text and symbols in X are known as
+\fIfonts\fP.  A font typically contains images that share a common appearance
+and look nice together (for example, a single size, boldness, slant, and
+character set).  Similarly, collections of fonts that all look nice together
+are called \fIfamilies\fP.  
+.PP
+Font families of the same resolution (usually measured in dots per inch) 
+are further grouped into \fIdirectories\fP
+(so named because they were initially stored in file system directories).
+Each directory contains a database which lists the name of the font and
+information on how to find the font.  The server uses these
+databases to translate \fIfont names\fP (which have nothing to do with
+file names) into font data.
+.PP
+The list of font directories in which the server looks when trying to open 
+a font name is controlled by the \fIfont path\fP.  Although most installations
+will choose to have the server start up with all of the commonly used font
+directories, the font path can be changed at any time with the \fIxset\fP
+program.  However, it is important to remember that the directory names are
+on the \fBserver\fP's machine, not on the application's.
+.PP
+The default font path for
+the sample server contains three directories:
+.TP 8
+.I /usr/lib/X11/fonts/misc
+This directory contains several miscellaneous fonts that are useful on all
+systems.  It contains a very small family of fixed-width fonts (\fB6x10\fP, 
+\fB6x12\fP, \fB6x13\fP, \fB8x13\fP, \fB8x13bold\fP, and \fB9x15\fP) and the
+cursor font.  It also has font name aliases for the commonly used fonts
+\fBfixed\fP and \fBvariable\fP.
+.TP 8
+.I /usr/lib/X11/fonts/75dpi
+This directory contains fonts contributed by Adobe Systems, Digital Equipment
+Corporation, and Bitstream for 75 dots per inch displays.  It contains
+the following font families:  Times, Helvetica, Courier, Symbol, New Century
+Schoolbook, Terminal, Dutch, Swiss, and Charter.
+.TP 8
+.I /usr/lib/X11/fonts/100dpi
+This directory contains versions of the fonts in the \fI75dpi\fP directory
+for 100 dots per inch displays.
+.PP
+The \fIxlsfonts\fP program can be used to list all of the fonts that are
+found in font databases in the current font path.  
+Font names tend to be fairly long as they contain all of the information
+needed to uniquely identify individual fonts.  Fortunately, the sample server
+supports wildcarding of font names, so the font 
+.sp
+.ce 1
+\fI-adobe-courier-medium-r-normal--10-100-75-75-m-60-iso8859-1\fP
+.sp
+could be abbreviated as:
+.sp
+.ce 1
+\fI*-courier-medium-r-normal--10-*\fP
+.PP
+If more than one font in a given directory in the font path matches a
+wildcarded font name, the choice of which particular font to return is left
+to the server.  However, if fonts from more than one directory match a name,
+the returned font will always be from the first such directory in the font
+path.  The example given above will match fonts in both the \fI75dpi\fP and
+\fI100dpi\fP directories.  If the \fI75dpi\fP directory is ahead of the
+\fI100dpi\fP directory in the font path, the smaller version of the font will 
+be used.  
 .SH EXAMPLES
 Here are examples of some commonly used programs.  See the
 particular manual pages for details:
@@ -499,6 +563,7 @@ particular manual pages for details:
         %  xlsfonts '*helvetica*'
         %  xlswins -l
         %  xwininfo -root
+        %  xset fp+ /usr/lib/X11/fonts/localfonts
         %  xdpyinfo -display joesworkstation:0
         %  xhost -joesworkstation
         %  xrefresh
