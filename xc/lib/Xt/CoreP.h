@@ -1,5 +1,6 @@
 /*
-* $Header: CoreP.h,v 1.4 88/02/23 10:07:47 swick Exp $
+* $xHeader: CoreP.h,v 1.2 88/08/18 15:54:37 asente Exp $
+* $oHeader: CoreP.h,v 1.2 88/08/18 15:54:37 asente Exp $
 */
 
 /***********************************************************
@@ -29,53 +30,49 @@ SOFTWARE.
 #ifndef XtCoreP_h
 #define XtCoreP_h
 
-#define UnspecifiedPixmap ((Pixmap)2)
-
-typedef struct _StateRec *StatePtr;
-
-typedef struct _TMRec {
-    XtTranslations   translations; /* private to Translation Manager    */
-    XtActionProc*   proc_table;         /* procedure bindings for actions    */
-    StatePtr        current_state;      /* Translation Manager state ptr     */
-    unsigned long   lastEventTime;
-} TMRec;
-
 
 /***************************************************************
  * Widget Core Data Structures
  *
  *
  **************************************************************/
+/* NOTE: the order of these fields can not be changed, even for
+         space optimization. The object, rect-object, and rect-window
+         classes depend on these fields being in this order */
 
 typedef struct _CorePart {
     Widget	    self;		/* pointer to widget itself	     */
     WidgetClass	    widget_class;	/* pointer to Widget's ClassRec	     */
     Widget	    parent;		/* parent widget	  	     */
-    String          name;		/* widget resource name		     */
     XrmName         xrm_name;		/* widget resource name quarkified   */
+    Boolean         being_destroyed;	/* marked for destroy		     */
+    XtCallbackList  destroy_callbacks;	/* who to call when widget destroyed */
+    caddr_t         constraints;        /* constraint record                 */
+/* end of object class */
+    Position        x, y;		/* window position		     */
+    Dimension       width, height;	/* window dimensions		     */
+    Dimension       border_width;	/* window border width		     */
+    Boolean         managed;            /* is widget geometry managed?       */
+    Boolean	    sensitive;		/* is widget sensitive to user events*/
+    Boolean         ancestor_sensitive;	/* are all ancestors sensitive?      */
+/* end of rect-object class */
+    XtEventTable    event_table;	/* private to event dispatcher       */
+    XtTMRec	    tm;                 /* translation management            */
+    XtTranslations  accelerators;       /* accelerator translations          */
+    Pixel	    border_pixel;	/* window border pixel		     */
+    Pixmap          border_pixmap;	/* window border pixmap or NULL      */
+    WidgetList      popup_list;         /* list of popups                    */
+    Cardinal        num_popups;         /* how many popups                   */
+    String          name;		/* widget resource name		     */
     Screen	    *screen;		/* window's screen		     */
     Colormap        colormap;           /* colormap                          */
     Window	    window;		/* window ID			     */
-    Position        x, y;		/* window position		     */
-    Dimension       width, height;	/* window dimensions		     */
     Cardinal        depth;		/* number of planes in window        */
-    Dimension       border_width;	/* window border width		     */
-    Pixel	    border_pixel;	/* window border pixel		     */
-    Pixmap          border_pixmap;	/* window border pixmap or NULL      */
     Pixel	    background_pixel;	/* window background pixel	     */
     Pixmap          background_pixmap;	/* window background pixmap or NULL  */
-    struct _XtEventRec *event_table;	/* private to event dispatcher       */
-    struct _TMRec   tm;                 /* translation management            */
-    caddr_t         constraints;        /* constraint record                 */
     Boolean         visible;		/* is window mapped and not occluded?*/
-    Boolean	    sensitive;		/* is widget sensitive to user events*/
-    Boolean         ancestor_sensitive;	/* are all ancestors sensitive?      */
-    Boolean         managed;		/* is widget geometry managed?	     */
     Boolean	    mapped_when_managed;/* map window if it's managed?       */
-    Boolean         being_destroyed;	/* marked for destroy		     */
-    XtCallbackList  destroy_callbacks;	/* who to call when widget destroyed */
-    WidgetList      popup_list;         /* list of popups                    */
-    Cardinal        num_popups;         /* how many popups                   */
+/* end of window-object class */
 } CorePart;
 
 typedef struct _WidgetRec {
@@ -104,12 +101,12 @@ typedef struct _CoreClassPart {
     String          class_name;		/* widget resource class name       */
     Cardinal        widget_size;	/* size in bytes of widget record   */
     XtProc	    class_initialize;   /* class initialization proc	    */
-    XtWidgetClassProc class_part_initialize; /* dynamic initialization      */
+    XtWidgetClassProc class_part_initialize; /* dynamic initialization	    */
     Boolean         class_inited;       /* has class been initialized?      */
     XtInitProc      initialize;		/* initialize subclass fields       */
     XtArgsProc      initialize_hook;    /* notify that initialize called    */
     XtRealizeProc   realize;		/* XCreateWindow for widget	    */
-    XtActionList    actions;		/* widget semantics name to proc map*/
+    XtActionList    actions;		/* widget semantics name to proc map */
     Cardinal	    num_actions;	/* number of entries in actions     */
     XtResourceList  resources;		/* resources for subclass fields    */
     Cardinal        num_resources;      /* number of entries in resources   */
@@ -123,29 +120,23 @@ typedef struct _CoreClassPart {
     XtExposeProc    expose;		/* rediplay window		    */
     XtSetValuesFunc set_values;		/* set subclass resource values     */
     XtArgsFunc      set_values_hook;    /* notify that set_values called    */
-    XtAlmostProc    set_values_almost;  /* set_values got "Almost" geo reply*/
+    XtAlmostProc    set_values_almost;  /* set_values got "Almost" geo reply */
     XtArgsProc      get_values_hook;    /* notify that get_values called    */
-    XtWidgetProc    accept_focus;       /* assign input focus to widget     */
+    XtAcceptFocusProc accept_focus;      /* assign input focus to widget     */
     XtVersionType   version;	        /* version of intrinsics used	    */
     struct _XtOffsetRec *callback_private;/* list of callback offsets       */
-    String         tm_table;            /* state machine                    */
+    String          tm_table;           /* state machine                    */
     XtGeometryHandler query_geometry;	/* return preferred geometry        */
-  } CoreClassPart;
+    XtStringProc    display_accelerator;/* display your accelerator	    */
+    caddr_t	    extension;		/* pointer to extension record      */
+ } CoreClassPart;
 
 typedef struct _WidgetClassRec {
     CoreClassPart core_class;
 } WidgetClassRec;
 
-globalref WidgetClassRec widgetClassRec;
+externalref WidgetClassRec widgetClassRec;
 
-extern int _XtInheritTranslations;
-#define XtInheritTranslations  ((String) &_XtInheritTranslations)
-#define XtInheritRealize ((XtRealizeProc) _XtInherit)
-#define XtInheritResize ((XtWidgetProc) _XtInherit)
-#define XtInheritExpose ((XtExposeProc) _XtInherit)
-#define XtInheritSetValuesAlmost ((XtAlmostProc) _XtInherit)
-#define XtInheritAcceptFocus ((XtWidgetProc) _XtInherit)
-#define XtInheritQueryGeometry ((XtGeometryHandler) _XtInherit)
 
 #endif _XtCoreP_h
 /* DON'T ADD STUFF AFTER THIS #endif */
