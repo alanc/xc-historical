@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.17 94/03/30 21:07:54 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.18 94/03/30 21:49:19 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -353,6 +353,16 @@ typedef struct _SmcPropReplyWait {
 struct _SmcConn {
 
     /*
+     * Some state.
+     */
+
+    unsigned int save_yourself_in_progress : 1;
+    unsigned int shutdown_in_progress : 1;
+    unsigned int unused1 : 6;		     /* future use */
+    unsigned int unused2 : 8;		     /* future use */
+
+
+    /*
      * We use ICE to esablish a connection with the SM.
      */
 
@@ -413,14 +423,6 @@ struct _SmcConn {
      */
 
     _SmcPropReplyWait	*prop_reply_waits;
-
-
-    /*
-     * Some state.
-     */
-
-    char		save_yourself_in_progress;
-    char		shutdown_in_progress;
 };
 
 
@@ -430,6 +432,17 @@ struct _SmcConn {
  */
 
 struct _SmsConn {
+
+    /*
+     * Some state.
+     */
+
+    unsigned int save_yourself_in_progress : 1;
+    unsigned int can_cancel_shutdown : 1;
+    unsigned int interact_in_progress : 1;
+    unsigned int unused1 : 5;		     /* future use */
+    unsigned int unused2 : 8;		     /* future use */
+
 
     /*
      * We use ICE to esablish a connection with the client.
@@ -461,13 +474,10 @@ struct _SmsConn {
 
 
     /*
-     * Some state.
+     * What type of interaction is allowed - SmInteractStyle{None,Errors,Any}
      */
 
-    char		save_yourself_in_progress;
     char		interaction_allowed;
-    char		can_cancel_shutdown;
-    char		interact_in_progress;
 };
 
 
