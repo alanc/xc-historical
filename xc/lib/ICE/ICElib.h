@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.27 94/03/07 15:19:18 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.28 94/03/08 12:13:08 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -60,6 +60,12 @@ typedef enum {
     IceProtocolAlreadyActive
 } IceProtocolSetupStatus;
 
+typedef enum {
+    IceAcceptSuccess,
+    IceAcceptFailure,
+    IceAcceptBadMalloc
+} IceAcceptStatus;
+
 typedef struct {
     unsigned long	sequence_of_request;
     int			major_opcode_of_request;
@@ -115,7 +121,7 @@ typedef struct {
 typedef IcePoAuthStatus (*IcePoAuthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
-    char *		/* address */,
+    char *		/* networkId */,
     Bool		/* cleanUp */,
     Bool		/* swap */,
     int			/* authDataLen */,
@@ -129,7 +135,7 @@ typedef IcePoAuthStatus (*IcePoAuthProc) (
 typedef IcePaAuthStatus (*IcePaAuthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
-    char *		/* address */,
+    char *		/* networkId */,
     Bool		/* swap */,
     int			/* replyDataLen */,
     IcePointer		/* replyData */,
@@ -241,13 +247,13 @@ extern Status IceListenForConnections (
 #endif
 );
 
-extern int IceGetListenDescrip (
+extern int IceGetListenConnectionNumber (
 #if NeedFunctionPrototypes
     IceListenObj	/* listenObj */
 #endif
 );
 
-extern char *IceGetListenNetworkId (
+extern char *IceGetListenConnectionString (
 #if NeedFunctionPrototypes
     IceListenObj	/* listenObj */
 #endif
@@ -260,9 +266,10 @@ extern char *IceComposeNetworkIdList (
 #endif
 );
 
-extern void IceFreeListenObj (
+extern void IceFreeListenObjs (
 #if NeedFunctionPrototypes
-    IceListenObj	/* listenObj */
+    int			/* count */,
+    IceListenObj *	/* listenObjs */
 #endif
 );
 
@@ -275,7 +282,8 @@ extern void IceSetHostBasedAuthProc (
 
 extern IceConn IceAcceptConnection (
 #if NeedFunctionPrototypes
-    IceListenObj	/* listenObj */
+    IceListenObj	/* listenObj */,
+    IceAcceptStatus *	/* statusRet */
 #endif
 );
 
@@ -334,7 +342,7 @@ extern Status IceProtocolShutdown (
 #endif
 );
 
-extern Bool IceProcessMessage (
+extern Bool IceProcessMessages (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     IceReplyWaitInfo *	/* replyWait */
@@ -398,7 +406,19 @@ extern char *IceConnectionString (
 #endif
 );
 
-extern unsigned long IceLastSequenceNumber (
+extern unsigned long IceLastSentSequenceNumber (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
+#endif
+);
+
+extern unsigned long IceLastReceivedSequenceNumber (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
+#endif
+);
+
+extern Bool IceSwapping (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
@@ -427,13 +447,13 @@ extern Status IceInitThreads (
 #endif
 );
 
-extern void IceLockConn (
+extern void IceAppLockConn (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern void IceUnlockConn (
+extern void IceAppUnlockConn (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
