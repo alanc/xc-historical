@@ -1,4 +1,4 @@
-/* $XConsortium: dfaxg42d.c,v 1.2 94/11/17 14:52:15 mor Exp mor $ */
+/* $XConsortium: dfaxg42d.c,v 1.3 94/11/22 22:25:54 mor Exp mor $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -385,12 +385,14 @@ bad:
 
 
 int
-LbxImageDecodeFaxG42D (inbuf, outbuf, image_bytes, pixels_per_line)
+LbxImageDecodeFaxG42D (inbuf, outbuf, image_bytes,
+	pixels_per_line, reverse_bits)
 
 unsigned char *inbuf;
 unsigned char *outbuf;
 int image_bytes;
 int pixels_per_line;
+int reverse_bits;
 
 {
     int bytes_per_scanline = ROUNDUP ((float) pixels_per_line / 8.0);
@@ -425,7 +427,8 @@ int pixels_per_line;
 
     free ((char *) refline);
 
-    LbxReverseBits (outbuf_start, image_bytes);
+    if (reverse_bits)
+	LbxReverseBits (outbuf_start, image_bytes);
 
     return (outbuf - outbuf_start);
 }
