@@ -1,4 +1,4 @@
-/* $XConsortium: comm.c,v 1.18 91/03/19 15:33:09 gildea Exp $ */
+/* $XConsortium: comm.c,v 1.19 91/04/04 21:35:16 gildea Exp $ */
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  * 
@@ -220,10 +220,10 @@ char * msg;
 	global_error_code = NO_ERROR;	/* Reset Error code. */
 	sprintf(error_buf, "The communication window with%s%s.",
 		" application is no longer avaliable\n",
-		"Please select the application manually");
+ 		"Please select a new widget tree");
 
 	global_client.window = None;
-	SetCommand(w, command, error_buf);
+ 	SetCommand(w, LocalSendWidgetTree, error_buf);
 	return;
     }   
 		   
