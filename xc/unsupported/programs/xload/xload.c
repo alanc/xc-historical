@@ -3,7 +3,7 @@
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * $XConsortium: xload.c,v 1.32 91/02/17 16:05:41 dave Exp $
+ * $XConsortium: xload.c,v 1.33 91/04/26 15:22:00 keith Exp $
  */
 
 #include <stdio.h> 
@@ -215,7 +215,7 @@ void main(argc, argv)
 
 static unsigned long	current_leds;
 
-static void;
+static void
 ClearLights (dpy)
     Display *dpy;
 {
