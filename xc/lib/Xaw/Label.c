@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.52 88/09/06 16:41:39 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.53 88/09/23 16:41:36 swick Exp $";
 #endif lint
 
 
@@ -236,12 +236,16 @@ static void Redisplay(w, event, region)
        return;
 
    gc = XtIsSensitive(lw) ? lw->label.normal_GC : lw->label.gray_GC;
+#ifdef notdef
    XSetRegion(XtDisplay(w), gc, region);
+#endif /*notdef*/
    XDrawString(
 	XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
 	lw->label.label_y + lw->label.font->max_bounds.ascent,
 	lw->label.label, (int) lw->label.label_len);
+#ifdef notdef
    XSetClipMask(XtDisplay(w), gc, (Pixmap)None);
+#endif notdef
 }
 
 static void _Reposition(lw, width, height, dx, dy)
