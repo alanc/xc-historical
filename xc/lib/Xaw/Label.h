@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Label.h,v 1.16 88/09/06 16:41:42 jim Exp $
+* $XConsortium: Label.h,v 1.17 88/09/26 18:02:34 swick Exp $
 */
 
 
@@ -44,6 +44,7 @@ SOFTWARE.
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
  background	     Background		Pixel		White
+ bitmap		     Pixmap		Pixmap		None
  border		     BorderColor	Pixel		Black
  borderWidth	     BorderWidth	Dimension	1
  cursor		     Cursor		Cursor		None
@@ -57,7 +58,6 @@ SOFTWARE.
  justify	     Justify		Justify		Center
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
- pixmap		     Pixmap		Pixmap		None
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	text width
  x		     Position		Position	0
