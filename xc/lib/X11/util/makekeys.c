@@ -1,4 +1,4 @@
-/* $XConsortium: makekeys.C,v 11.1 90/07/28 09:44:25 rws Exp $ */
+/* $XConsortium: makekeys.C,v 11.2 90/07/28 10:38:18 rws Exp $ */
 /*
 Copyright 1990 by the Massachusetts Institute of Technology
 
@@ -90,7 +90,8 @@ main()
     num_found = 0;
     for (z = ksnum; z < KTNUM; z++) {
 	max_rehash = 0;
-	bzero(tab, z);
+	for (name = tab, i = z; --i >= 0;)
+		*name++ = 0;
 	for (i = 0; i < ksnum; i++) {
 	    name = info[i].name;
 	    sig = 0;
@@ -167,7 +168,8 @@ next1:	;
     num_found = 0;
     for (z = ksnum; z < KTNUM; z++) {
 	max_rehash = 0;
-	bzero(tab, z);
+	for (name = tab, i = z; --i >= 0;)
+		*name++ = 0;
 	for (i = 0; i < ksnum; i++) {
 	    val = info[i].val;
 	    first = j = val % z;
@@ -199,7 +201,8 @@ next2:	;
     }
 
     z = best_z;
-    bzero((char *)offsets, z * sizeof(unsigned short));
+    for (i = z; --i >= 0;)
+	offsets[i] = 0;
     for (i = 0; i < ksnum; i++) {
 	val = info[i].val;
 	first = j = val % z;
