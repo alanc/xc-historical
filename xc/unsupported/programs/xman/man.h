@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.16 89/10/04 14:55:43 kit Exp $
+ * $XConsortium: man.h,v 1.17 89/10/11 11:40:23 jim Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -194,7 +194,7 @@ Widget CreateManpage();
 /* handler.c */
 
 void DirectoryHandler(), PopUpMenu(), SaveCallback(), OptionCallback();
-void Popup(),ManpageButtonPress(), GotoManpage(), DirPopupCallback();;
+void Popup(),ManpageButtonPress(), GotoManpage(), DirPopupCallback();
 
 /* Action Routines. */
 
