@@ -1,5 +1,5 @@
 /*
-* $Header: StringDefs.h,v 1.30 88/02/21 07:17:47 swick Exp $
+* $Header: StringDefs.h,v 1.31 88/02/26 12:51:19 swick Exp $
 */
 
 /***********************************************************
@@ -36,6 +36,7 @@ SOFTWARE.
 #define XtNancestorSensitive	"ancestorSensitive"
 #define XtNbackground		"background"
 #define XtNbackgroundPixmap     "backgroundPixmap"
+#define XtNbackingStore		"backingStore"
 #define XtNborder		"borderColor"
 #define XtNborderColor		"borderColor"
 #define XtNborderPixmap		"borderPixmap"
@@ -106,6 +107,7 @@ SOFTWARE.
 /* Class types */ 
 
 #define XtCBackground		"Background"
+#define XtCBackingStore		"BackingStore"
 #define XtCBoolean		"Boolean"
 #define XtCBorderColor		"BorderColor"
 #define XtCBorderWidth		"BorderWidth"
@@ -167,6 +169,7 @@ SOFTWARE.
 
 /* Representation types */
 
+#define XtRBackingStore		"BackingStore"
 #define XtRBoolean		"Boolean"
 #define XtRLongBoolean		"LongBoolean"
 #define XtRCallback		"Callback"
@@ -213,5 +216,12 @@ SOFTWARE.
 #define XtEtextRead		"read"
 #define XtEtextAppend		"append"
 #define XtEtextEdit		"edit"
+
+/* backing store enumeration constants */
+
+#define XtEnotUseful	"notuseful"
+#define XtEwhenMapped	"whenmapped"
+#define XtEalways	"always"
+#define XtEdefault	"default"
 
 #endif _XtStringDefs_h_
