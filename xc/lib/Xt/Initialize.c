@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.206 93/09/11 11:44:13 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.207 93/09/12 11:13:10 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -675,6 +675,35 @@ static void GetLanguage(dpy, pd)
     UNLOCK_PROCESS;
 }
 
+static void ProcessInternalConnection (client_data, fd, id)
+    XtPointer client_data;
+    int* fd;
+    XtInputId* id;
+{
+    XProcessInternalConnection ((Display *) client_data, *fd);
+}
+
+static void ConnectionWatch (dpy, client_data, fd, opening, watch_data)
+    Display* dpy;
+    XPointer client_data;
+    int fd;
+    Bool opening;
+    XPointer* watch_data;
+{
+    XtInputId* iptr;
+    XtAppContext app = XtDisplayToApplicationContext(dpy);
+
+    if (opening) {
+	iptr = (XtInputId *) XtMalloc(sizeof(XtInputId));
+	*iptr = XtAppAddInput(app, fd, (XtPointer) XtInputReadMask,
+			      ProcessInternalConnection, client_data);
+	*watch_data = (XPointer) iptr;
+    } else {
+	iptr = (XtInputId *) *watch_data;
+	XtRemoveInput(*iptr);
+        (void) XtFree(*watch_data);
+    }
+}
 
 #if NeedFunctionPrototypes
 void _XtDisplayInitialize(
@@ -774,6 +803,8 @@ void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
 			   "xtIdentifyWindows", "XtDebug",
 			   XtRBoolean, &value);
 #endif
+
+	XAddConnectionWatch(dpy, ConnectionWatch, (XPointer) dpy);
 
 	XtFree( (XtPointer)options );
 	DEALLOCATE_LOCAL( search_list );
