@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.33 90/01/10 11:50:31 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.34 90/01/31 12:31:31 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -734,7 +734,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	pGC->ops->PolyFillArc = miPolyFillArc;
 	pGC->ops->PushPixels = mfbPushPixels;
 	if (pGC->fillStyle == FillSolid ||
-#ifdef PPW == 4
+#if PPW == 4
 	    pGC->fillStyle != FillTiled ||
 #endif
 	    (pGC->fillStyle == FillTiled &&
