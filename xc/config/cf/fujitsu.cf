@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: fujitsu.cf,v 1.3 94/07/05 11:10:18 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: fujitsu.cf,v 1.4 94/09/01 21:05:53 kaleb Exp gildea $
 
 #ifdef SparcArchitecture
 
@@ -15,6 +15,9 @@ XCOMM operating system:    OSName
 
 #define SystemV4	   YES
 #define HasSockets         YES
+#ifndef HasLdRunPath
+#define HasLdRunPath       YES
+#endif
 #define BuildServer        NO
 
 #include <sv4Lib.rules>
