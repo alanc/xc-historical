@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.137 92/10/19 19:11:02 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.138 92/12/29 14:40:41 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -30,7 +30,7 @@ REQUIREDLIBS = SharedXlibReqs
 XBSDLIB = /**/
 #endif
 #if Malloc0ReturnsNull
-        DEFINES = -DMALLOC_0_RETURNS_NULL
+     MALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 #if HasXdmAuth
         XDMAUTHDEFS = -DHASXDMAUTH
@@ -54,6 +54,10 @@ XBSDLIB = /**/
 #if NoRConst
  RCONST_DEFINES = -DNORCONST
 #endif
+#if ThreadedX
+    MTX_DEFINES = -DXTHREADS
+#endif
+        DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
  DEPEND_DEFINES = -I$(EXTENSIONSRC)/include
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
@@ -644,6 +648,8 @@ SRCS3 = \
 	XwcWrap.c \
 	XFilterEv.c \
 	XRegstFlt.c \
+	locking.c \
+	XLockDis.c \
 	$(LCSRCS)
 
 OBJS3 = \
@@ -719,6 +725,8 @@ OBJS3 = \
 	XwcWrap.o \
 	XFilterEv.o \
 	XRegstFlt.o \
+	locking.o \
+	XLockDis.o \
 	$(LCOBJS)
 
 #if BuildXsi
