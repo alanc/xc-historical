@@ -167,7 +167,7 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 #endif
     pwidthFree = pwidth;
     pptFree = ppt;
-    n = mfbClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
+    n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
@@ -280,7 +280,7 @@ int fSorted;
     }
     pwidthFree = pwidth;
     pptFree = ppt;
-    n = mfbClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
+    n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
 
@@ -555,7 +555,7 @@ int fSorted;
     }
     pwidthFree = pwidth;
     pptFree = ppt;
-    n = mfbClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
+    n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
     rop = ((cfbPrivGC *)(pGC->devPriv))->rop;
