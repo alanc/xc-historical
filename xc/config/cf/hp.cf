@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.45 91/07/25 19:44:38 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.46 91/07/26 20:59:33 rws Exp $
 
 #define OSName                 HP-UX 7.0
 XCOMM operating system:  OSName
@@ -20,6 +20,7 @@ XCOMM operating system:  OSName
 #define HasSockets             YES
 #define HasVFork               YES
 #define RemoveTargetProgramByMoving YES
+#define ExpandManNames         YES
 
 #define BuildServer            NO
 #define NeedBerklib            BuildServer

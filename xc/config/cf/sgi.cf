@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.17 91/07/15 11:48:48 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.18 91/07/21 21:34:29 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -12,6 +12,7 @@ XCOMM operating system:  OSName
 #define HasNdbm			YES
 #define HasVFork		YES
 #define Malloc0ReturnsNull	YES
+#define ExpandManNames          YES
 /* At SGI, in 3.2 we have TCP/IP sockets only, 3.3 has unix domain also ! */
 #define HasSockets		YES
 #define BuildXInputExt		YES

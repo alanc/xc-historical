@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.27 91/07/18 17:57:05 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.28 91/07/20 13:24:12 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.1.5
@@ -25,6 +25,8 @@ XCOMM operating system:  OSName
 
 #ifdef RsArchitecture
 
+#define ProjectRoot		/usr/local
+
 #define SystemV			YES
 #define LnCmd			ln -s
 #define HasSockets		YES
@@ -33,10 +35,10 @@ XCOMM operating system:  OSName
 #define Malloc0ReturnsNull	YES
 #define CppCmd			/usr/lpp/X11/Xamples/util/cpp/cpp
 #define StandardDefines         -DSYSV -DAIXV3
+#define ExpandManNames		YES
 #define XibmServer 		YES
 #define ibmIncludeSKYWAY	YES
 #define OPERATING_SYSTEM 	AIX /* directory name under server/ddx/ibm/ */
-#define ProjectRoot		/usr/local
 #define InstallCmd              /usr/ucb/install
 #include <ibmLib.rules>
 
@@ -61,6 +63,7 @@ XCOMM operating system:  OSName
 #define OSDefines -DAIX -DAIXrt -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
 #else
 #define ExecableScripts		YES
+#define ExpandManNames		YES
 #define InstallCmd              /usr/ucb/install
 #define OSDefines -DAIX386 -DIBM_OS_HAS_HFT
 #define	NeedFunctionPrototypes	YES

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.36 91/07/21 18:36:10 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.37 91/07/25 19:45:22 rws Exp $
 
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
@@ -9,17 +9,18 @@ XCOMM operating system:  OSName
 #if HasGcc
 #define BootstrapCFlags   -DmacII
 #endif
-#define SystemV            YES
-#define ExtraLibraries -lposix
-#define Malloc0ReturnsNull YES
-#define StandardDefines    -DmacII -DSYSV
-#define LnCmd             ln -s
-#define ExecableScripts   NO
+#define SystemV             YES
+#define ExtraLibraries      -lposix
+#define Malloc0ReturnsNull  YES
+#define StandardDefines     -DmacII -DSYSV
+#define LnCmd               ln -s
+#define ExecableScripts     NO
 #define RemoveTargetProgramByMoving YES
-#define HasSockets        YES
-#define PexShmIPC         NO
+#define ExpandManNames      YES
+#define HasSockets          YES
+#define PexShmIPC           NO
 #define HasVoidSignalReturn NO
-#define XmacIIServer      YES
+#define XmacIIServer        YES
 
 #if !HasGcc
 #define DefaultCCOptions -A 3
