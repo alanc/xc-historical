@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.17 93/07/06 15:15:42 gildea Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.17 93/07/06 15:16:59 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -26,9 +26,19 @@
 #include	<stdio.h>
 #include	<X11/Xos.h>
 #include	"FSlibint.h"
+#ifndef WIN32
 #include	<sys/socket.h>
+#endif
 #ifdef NCD
 #include	<fcntl.h>
+#endif
+#ifdef WIN32
+#define EPROTOTYPE WSAEPROTOTYPE
+#define ECHECK(err) (WSAGetLastError() == err)
+#define ESET(val) WSASetLastError(val)
+#else
+#define ECHECK(err) (errno == err)
+#define ESET(val) errno = val
 #endif
 
 /* font server does not actually support unix domain yet */
@@ -41,15 +51,15 @@
 #include <netdnet/dnetdb.h>
 #endif /* DNETCONN */
 
+#ifndef WIN32
 #ifndef hpux
-
 #ifndef apollo			/* nest ifndefs because makedepend is broken */
 #ifdef __OSF1__
 #include <sys/param.h>
 #endif
 #include <netinet/tcp.h>
 #endif
-
+#endif
 #endif
 
 #define FamilyLocal (256)
@@ -256,7 +266,7 @@ _FSConnectServer(server_name, expanded_name)
 	    if (hostinetaddr == -1) {
 		if ((host_ptr = gethostbyname(sp)) == NULL) {
 		    /* No such host! */
-		    errno = EINVAL;
+		    ESET(EINVAL);
 		    if (tmp_svr_num)
 			FSfree(tmp_svr_num);
 		    return (-1);
@@ -264,7 +274,7 @@ _FSConnectServer(server_name, expanded_name)
 		/* Check the address type for an internet host. */
 		if (host_ptr->h_addrtype != AF_INET) {
 		    /* Not an Internet host! */
-		    errno = EPROTOTYPE;
+		    ESET(EPROTOTYPE);
 		    if (tmp_svr_num)
 			FSfree(tmp_svr_num);
 		    return (-1);
@@ -309,8 +319,11 @@ _FSConnectServer(server_name, expanded_name)
 	     * Open the network connection.
 	     */
 
-	    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0 ||
-		fd >= OPEN_MAX) {
+	    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0
+#ifndef WIN32
+		|| fd >= OPEN_MAX
+#endif
+		) {
 		if (tmp_svr_num)
 		    FSfree(tmp_svr_num);
 		return (-1);	/* errno set by system call. */
@@ -390,7 +403,7 @@ _FSConnectServer(server_name, expanded_name)
 	ioctl (fd, FIOSNBIO, &arg);
     }
 #else
-#if defined(AIXV3) && defined(FIONBIO)
+#if (defined(AIXV3) || defined(uniosu) || defined(WIN32)) && defined(FIONBIO)
     {
 	int arg;
 	arg = 1;
@@ -450,8 +463,8 @@ _FSDisconnectServer(server)
 _FSWaitForWritable(svr)
     FSServer     *svr;
 {
-    unsigned long r_mask[MSKCNT];
-    unsigned long w_mask[MSKCNT];
+    FdSet	r_mask;
+    FdSet	w_mask;
     int         nfound;
 
     CLEARBITS(r_mask);
@@ -462,8 +475,12 @@ _FSWaitForWritable(svr)
 	BITSET(w_mask, svr->fd);
 
 	do {
+#ifdef WIN32
+	    nfound = select (0, &r_mask, &w_mask, NULL, NULL);
+#else
 	    nfound = select(svr->fd + 1, r_mask, w_mask, NULL, NULL);
-	    if (nfound < 0 && errno != EINTR)
+#endif
+	    if (nfound < 0 && !ECHECK(EINTR))
 		(*_FSIOErrorFunction) (svr);
 	} while (nfound <= 0);
 
@@ -513,14 +530,18 @@ _FSWaitForWritable(svr)
 _FSWaitForReadable(svr)
     FSServer     *svr;
 {
-    unsigned long r_mask[MSKCNT];
+    FdSet	r_mask;
     int         result;
 
     CLEARBITS(r_mask);
     do {
 	BITSET(r_mask, svr->fd);
+#ifdef WIN32
+	result = select (0, &r_mask, NULL, NULL, NULL);
+#else
 	result = select(svr->fd + 1, r_mask, NULL, NULL, NULL);
-	if (result == -1 && errno != EINTR)
+#endif
+	if (result == -1 && !ECHECK(EINTR))
 	    (*_FSIOErrorFunction) (svr);
     } while (result <= 0);
 }
