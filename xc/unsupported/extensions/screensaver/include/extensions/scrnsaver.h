@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: scrnsaver.h,v 1.1 92/02/13 16:09:00 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -37,17 +37,17 @@ typedef struct {
     Window window;	    /* screen saver window */
     Window root;	    /* root window of event screen */
     int state;		    /* ScreenSaverOff, ScreenSaverOn, ScreenSaverCycle*/
-    int saverType;	    /* ScreenSaverBlanked, ...Internal, ...External */
+    int kind;		    /* ScreenSaverBlanked, ...Internal, ...External */
     Bool forced;	    /* extents of new region */
     Time time;		    /* event timestamp */
-} XScreenSaverEvent;
+} XScreenSaverNotifyEvent;
 
 typedef struct {
     Window  window;
     int	    state;
-    int	    type;
-    Time    tilOrSince;
-    Time    tilCycle;
+    int	    kind;
+    Time    til_or_since;
+    Time    idle;
     unsigned long   eventMask;
 } XScreenSaverInfo;
 
@@ -112,6 +112,31 @@ extern void XScreenSaverUnsetAttributes (
 #if NeedFunctionPrototypes
     Display*	/* display */,
     Drawable	/* drawable */
+#endif
+);
+
+extern Status XScreenSaverRegister (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    int		/* screen */,
+    XID		/* xid */,
+    Atom	/* type */
+#endif
+);
+
+extern Status XScreenSaverUnregister (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    int		/* screen */
+#endif
+);
+
+extern Status XScreenSaverGetRegistered (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    int		/* screen */,
+    XID*	/* xid */,
+    Atom*	/* type */
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: saverproto.h,v 1.1 92/02/13 16:08:42 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -71,9 +71,9 @@ typedef struct {
     CARD32 length B32;
     Window window B32;
     Time tilOrSince B32;
-    Time cycle B32;
+    Time idle B32;
     CARD32 eventMask B32;
-    BYTE saverType;			/* Blanked, Internal, External */
+    BYTE kind;			/* Blanked, Internal, External */
     CARD8 pad0;
     CARD16 pad1 B16;
     CARD32 pad2 B32;
@@ -124,7 +124,7 @@ typedef struct _ScreenSaverNotify {
     Time timestamp B32;
     Window root B32;
     Window window B32;		/* screen saver window */
-    BYTE saverType;			/* blanked, internal, external */
+    BYTE kind;			/* blanked, internal, external */
     BYTE forced;
     CARD16 pad0 B16;
     CARD32 pad1 B32;

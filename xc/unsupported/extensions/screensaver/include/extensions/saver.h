@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: saver.h,v 1.1 92/02/13 16:08:34 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -27,6 +27,7 @@
 #define _SAVER_H_
 
 #define ScreenSaverName	"SCREEN-SAVER"
+#define ScreenSaverPropertyName "_SCREEN_SAVER_ID"
 
 #define ScreenSaverNotifyMask	0x00000001
 #define ScreenSaverCycleMask	0x00000002
