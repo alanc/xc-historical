@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.43 93/02/25 15:05:47 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.44 93/02/26 11:37:22 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -128,7 +128,7 @@ ProcessOtherEvent (xE, other, count)
 	    int first = xV->first_valuator;
 	    int *axisvals;
 
-	    if (!v || (xV->num_valuators && (first + xV->num_valuators > v->numAxes)))
+	    if (xV->num_valuators && (!v || (xV->num_valuators && (first + xV->num_valuators > v->numAxes))))
 		FatalError("Bad valuators reported for device %s\n",other->name);
 	    xV->device_state = 0;
 	    if (k)
