@@ -1,5 +1,4 @@
 .\"
-$XMCOPY
 .\" Copyright ([\d,\s]*) by Hewlett-Packard Company, Ardent Computer, 
 .\" 
 .\" Permission to use, copy, modify, distribute, and sell this documentation 
@@ -35,7 +34,7 @@ with constants defined in \fIXI.h\fP.  Support for additional protocol
 requests added to the input extension after its initial release is indicated
 by a version number corresponding to the added requests.  Each version
 contains all the protocol requests contained by previous versions.
-.P
+.LP
 You should use \fIXFree\fP to free the \fIXExtensionVersion\fP structure.
 .SH STRUCTURES
 This request returns an XExtensionVersion structure.

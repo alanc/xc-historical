@@ -1,5 +1,4 @@
 .\"
-$XMCOPY
 .\" Copyright ([\d,\s]*) by Hewlett-Packard Company, Ardent Computer, 
 .\" 
 .\" Permission to use, copy, modify, distribute, and sell this documentation 
@@ -9,7 +8,7 @@ $XMCOPY
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
-.\" $XConsortium: XDevBell.man,v 1.4 94/04/13 09:52:30 dpw Exp $
+.\" $XConsortium: XDevBell.man,v 1.5 94/04/17 20:07:32 dpw Exp $
 .ds xL Programming With Xlib
 .TH XDeviceBell 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
@@ -54,19 +53,19 @@ and uniquely identify the bell to ring.  If a feedbackclass is specified that
 does not support a bell, or if a nonexistent feedbackid is specified,
 or a percent value is specified that is not in the range -100 to 100,
 a \fIBadValue\fP error will be returned.
-.P
+.LP
 The volume at which the bell is rung when the percent argument is 
 nonnegative is:
 .IP
 base \- [(base * percent) / 100] + percent
-.P
+.LP
 The volume at which the bell rings
 when the percent argument is negative is:
 .IP
 base + [(base * percent) / 100]
-.P
+.LP
 To change the base volume of the bell, use \fIXChangeFeedbackControl\fP.
-.P
+.LP
 \fIXDeviceBell\fP can generate a \fIBadDevice\fP or a \fIBadValue\fP
 error.
 .SH DIAGNOSTICS

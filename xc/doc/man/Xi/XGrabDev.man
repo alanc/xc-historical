@@ -1,5 +1,4 @@
 .\"
-$XMCOPY
 .\" Copyright ([\d,\s]*) by Hewlett-Packard Company, Ardent Computer, 
 .\" 
 .\" Permission to use, copy, modify, distribute, and sell this documentation 
@@ -9,7 +8,7 @@ $XMCOPY
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
-.\" $XConsortium: XGrabDev.man,v 1.4 94/04/13 09:52:35 dpw Exp $
+.\" $XConsortium: XGrabDev.man,v 1.5 94/04/17 20:07:36 dpw Exp $
 .ds xL Programming With Xlib
 .TH XGrabDevice 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
@@ -101,7 +100,7 @@ and if a generated
 device event would normally be reported to this client, it is reported
 normally; otherwise, the event is reported with respect to the
 grab_window, and is only reported if specified in the event_list.
-.P
+.LP
 If the this_device_mode argument is 
 \fIGrabModeAsync\fP ,
 device event processing continues
@@ -117,7 +116,7 @@ grabbing client issues a releasing
 call or until the device grab is released.
 Actual device changes are not lost while the device is frozen; 
 they are simply queued in the server for later processing.
-.P
+.LP
 If other_devices_mode is 
 \fIGrabModeAsync\fP ,
 processing of events from other devices is unaffected
@@ -132,7 +131,7 @@ until the grabbing client issues a releasing
 call or until the device grab is released.
 Actual events are not lost while the devices are frozen; 
 they are simply queued in the server for later processing.
-.P
+.LP
 If the device is actively grabbed by some other client,
 \fIXGrabDevice\fP
 fails and returns
@@ -154,12 +153,12 @@ is replaced by the current X server time).
 If a grabbed device is closed by a client while an active grab by that
 client is in effect, the active grab is released.  If the device is
 frozen only by an active grab of the requesting client, it is thawed.
-.P
+.LP
 \fIXGrabDevice\fP
 can generate
 \fIBadClass\fP, \fIBadDevice\fP, \fIBadValue\fP, and \fIBadWindow\fP 
 errors.
-.P
+.LP
 The
 \fIXUngrabDevice\fP
 request
