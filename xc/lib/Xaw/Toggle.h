@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.10 90/12/01 13:01:38 rws Exp $
+ * $XConsortium: Toggle.h,v 1.11 91/02/17 13:21:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -134,7 +134,7 @@ extern void XawToggleChangeRadioGroup(
  *	Returns: The XtNradioData associated with the toggle widget.
  */
 
-extern caddr_t XawToggleGetCurrent(
+extern XtPointer XawToggleGetCurrent(
 #if NeedFunctionPrototypes
     Widget		/* radio_group */
 #endif
@@ -151,7 +151,7 @@ extern caddr_t XawToggleGetCurrent(
 extern void XawToggleSetCurrent(
 #if NeedFunctionPrototypes
     Widget		/* radio_group */,
-    caddr_t		/* radio_data */
+    XtPointer		/* radio_data */
 #endif
 );
  
