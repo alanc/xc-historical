@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char *rcsid_xclock_c = "$Header: xclock.c,v 1.1 87/08/30 23:22:37 newman Exp $";
+static char *rcsid_xclock_c = "$Header: xclock.c,v 1.2 87/08/31 01:50:24 newman Exp $";
 #endif  lint
 
 #include "Xatom.h"
@@ -19,7 +19,7 @@ extern void exit();
    pass over the remaining options after XtParseCommand is let loose. */
 
 static XrmOptionDescRec options[] = {
-{"-chime",	XtNchime,	XrmoptionNoArg,		"1"},
+{"-chime",	XtNchime,	XrmoptionNoArg,		"TRUE"},
 {"-hd",		XtNhand,	XrmoptionSepArg,	NULL},
 {"-hands",	XtNhand,	XrmoptionSepArg,	NULL},
 {"-hl",		XtNhigh,	XrmoptionSepArg,	NULL},
@@ -27,10 +27,10 @@ static XrmOptionDescRec options[] = {
 {"-u",		XtNupdate,	XrmoptionSepArg,	NULL},
 {"-update",	XtNupdate,	XrmoptionSepArg,	NULL},
 {"-padding",	XtNpadding,	XrmoptionSepArg,	NULL},
-{"-d",		XtNanalog,	 XrmoptionNoArg,	"0"},
-{"-digital",	XtNanalog,	 XrmoptionNoArg,	"0"},
-{"-analog",	XtNanalog,	 XrmoptionNoArg,	"1"},
-{"-a",		XtNanalog,	 XrmoptionNoArg,	"1"},
+{"-d",		XtNanalog,	 XrmoptionNoArg,	"FALSE"},
+{"-digital",	XtNanalog,	 XrmoptionNoArg,	"FALSE"},
+{"-analog",	XtNanalog,	 XrmoptionNoArg,	"TRUE"},
+{"-a",		XtNanalog,	 XrmoptionNoArg,	"TRUE"},
 };
 
 
