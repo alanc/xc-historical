@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfutils.c,v 1.8 93/09/17 18:26:51 gildea Exp $ */
+/* $XConsortium: bdfutils.c,v 1.9 94/02/03 15:24:57 gildea Exp $ */
 
 #include <ctype.h>
 
@@ -168,7 +168,7 @@ bdfGetPropertyValue(s)
 	*p++ = *s++;
     }
     xfree (pp);
-    bdfError("unterminated quoted string property: %s\n", orig_s);
+    bdfError("unterminated quoted string property: %s\n", (pointer) orig_s);
     return None;
 }
 
