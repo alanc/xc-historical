@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.23 92/10/01 12:24:25 rws Exp $
+ * $XConsortium: cfb8line.c,v 1.24 93/09/13 09:35:19 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -531,6 +531,13 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
     cfbPrivGCPtr    devPriv;
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+#ifdef NO_ONE_RECT
+    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    {
+       cfbSegmentSS(pDrawable, pGC, nseg, pSegInit);
+       return;
+    }
+#endif
     switch (devPriv->rop)
     {
     case GXcopy:
@@ -581,6 +588,13 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
     cfbPrivGCPtr    devPriv;
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+#ifdef NO_ONE_RECT
+    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    {
+       cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+       return;
+    }
+#endif
     switch (devPriv->rop)
     {
     case GXcopy:
