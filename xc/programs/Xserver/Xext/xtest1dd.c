@@ -140,11 +140,11 @@ static int			input_action_event_full = 0;
 /*
  * logical x position of the mouse during input action gathering
  */
-static short			fmousex;
+short				xtest_mousex;
 /*
  * logical y position of the mouse during input action gathering
  */
-static short			fmousey;
+short				xtest_mousey;
 /*
  * logical x position of the mouse during input action playback
  */
@@ -354,7 +354,7 @@ CARD32		mode;
 	/*
 	 * keep track of where the mouse is
 	 */
-	XTestGetPointerPos(&fmousex, &fmousey);
+	XTestGetPointerPos(&xtest_mousex, &xtest_mousey);
 	/*
 	 * keep track of which client is getting input actions
 	 */
@@ -366,7 +366,7 @@ CARD32		mode;
 	/*
 	 * jump to the initial position of the mouse, using a device type of 0.
 	 */
-	XTestStealJumpData(fmousex, fmousey, 0);
+	XTestStealJumpData(xtest_mousex, xtest_mousey, 0);
 }
 	
 /******************************************************************************
@@ -467,8 +467,8 @@ int	dev_type;
 	/*
 	 * update the logical mouse position
 	 */
-	fmousex = jx;
-	fmousey = jy;
+	xtest_mousex = jx;
+	xtest_mousey = jy;
 	/*
 	 * point jmp_ptr to the correct place in the input action event
 	 */
@@ -685,7 +685,7 @@ short	my;
 	 * if the current position of the locator is not the same as
 	 * the logical position, then update the logical position
 	 */
-	if ((mx != fmousex) || (my != fmousey))
+	if ((mx != xtest_mousex) || (my != xtest_mousey))
 	{
 		XTestStealJumpData(mx, my, dev_type);
 	}
@@ -696,15 +696,16 @@ short	my;
 	if ((dx > XTestMOTION_MAX) || (dx < XTestMOTION_MIN) ||
 	    (dy > XTestMOTION_MAX) || (dy < XTestMOTION_MIN))
 	{
-		XTestStealJumpData((fmousex + dx), (fmousey + dy), dev_type);
+		XTestStealJumpData((xtest_mousex + dx),
+				   (xtest_mousey + dy), dev_type);
 	}
 	else
 	{ 
 		/*
 		 * compute the new logical position of the mouse
 		 */
-		fmousex = fmousex + dx;
-		fmousey = fmousey + dy;
+		xtest_mousex += dx;
+		xtest_mousey += dy;
 		/*
 		 * Get the time delta from the previous event.  If needed,
 		 * the check_time_event routine will put an XTestDELAY_ACTION
@@ -806,7 +807,7 @@ short	locy;
 	 * update the logical position of the locator if the physical position
 	 * of the locator is not the same as the logical position.
 	 */
-	if ((locx != fmousex) || (locy != fmousey))
+	if ((locx != xtest_mousex) || (locy != xtest_mousey))
 	{
 		XTestStealJumpData(locx, locy, dev_type);
 	}
