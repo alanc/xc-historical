@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.18 91/07/16 22:53:38 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.19 93/09/04 16:32:33 rws Exp $
 #define DoNormalLib NormalLibXau
 #define DoSharedLib SharedLibXau
 #define DoDebugLib DebugLibXau
@@ -21,10 +21,5 @@ OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuGetBest.o AuLock.o \
 #include <Library.tmpl>
 
 InstallManPage(Xau,$(MANDIR))
-
-#ifdef HasSaberC
-saber_src:
-	XCOMM load $(CFLAGS) $(SRCS)
-#endif
 
 DependTarget()
