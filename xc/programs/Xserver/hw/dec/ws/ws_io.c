@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.3 91/07/02 19:10:33 keith Exp $ */
+/* $XConsortium: ws_io.c,v 1.4 91/07/08 11:16:33 keith Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -56,6 +56,7 @@ SOFTWARE.
 
 extern ws_descriptor wsinfo;
 void wsCursorControl();
+static Bool wsDisplayCursor();
 
 extern ws_screen_descriptor screenDesc[];
 extern int wsFd;
@@ -581,7 +582,7 @@ Bool GetKeyboardMappings(pKeySyms, pModMap)
     lockLed = def.lock_key_led;
     km.device_number = wsinfo.console_keyboard;
     km.modifiers = mods;
-    km.keysyms = rawsyms;
+    *((KeySym **)(&km.keysyms)) = rawsyms; /* XXX bad type in inputdevice.h */
     km.keycodes = rawcodes;
     if (ioctl (wsFd, GET_KEYSYMS_AND_MODIFIERS, &km) == -1) {
 	ErrorF ("error getting keysyms and modifiers\n");
