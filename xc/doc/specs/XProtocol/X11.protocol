@@ -2029,7 +2029,8 @@ events.
 The 
 .PN GetMotionEvents 
 request makes such history available.
-The motion-buffer-size gives the approximate size of the history buffer.
+The motion-buffer-size gives the approximate maximum number of elements
+in the history buffer.
 .IP
 Maximum-request-length specifies the maximum length of a request
 accepted by the server, in 4-byte units.
@@ -8450,7 +8451,7 @@ Other negative values generate a
 .PN Value 
 error.
 If the timeout value is zero, 
-screen-saver is disabled.
+screen-saver is disabled (but an activated screen-saver is not deactivated).
 If the timeout value is nonzero, 
 screen-saver is enabled.
 Once screen-saver is enabled,
