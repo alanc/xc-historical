@@ -1,5 +1,5 @@
 /*
- *	$Header: button.c,v 1.6 88/07/11 15:45:02 jim Exp $
+ *	$Header: button.c,v 1.7 88/07/29 14:50:32 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$Header: button.c,v 1.6 88/07/11 15:45:02 jim Exp $";
+static char rcs_id[] = "$Header: button.c,v 1.7 88/07/29 14:50:32 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -1257,6 +1257,7 @@ ReverseVideoAllMenus ()
 	    menu->menuBgColor = bg;
 	    menu->menuFgColor = fg;
 	    XSetWindowBackground (dpy, menu->menuWindow, menu->menuBgColor);
+	    menu->menuFlags |= menuChanged;
 	}
     }
     return;
