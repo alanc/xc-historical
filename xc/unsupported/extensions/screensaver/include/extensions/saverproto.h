@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saverproto.h,v 1.2 92/02/28 17:50:38 keith Exp $
+ * $XConsortium: saverproto.h,v 1.3 92/02/28 18:09:09 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -70,8 +70,8 @@ typedef struct {
     CARD16 sequenceNumber B16;
     CARD32 length B32;
     Window window B32;
-    Time tilOrSince B32;
-    Time idle B32;
+    CARD32 tilOrSince B32;
+    CARD32 idle B32;
     CARD32 eventMask B32;
     BYTE kind;			/* Blanked, Internal, External */
     CARD8 pad0;

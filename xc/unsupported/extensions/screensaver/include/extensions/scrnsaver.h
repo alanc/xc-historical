@@ -1,5 +1,5 @@
 /*
- * $XConsortium: scrnsaver.h,v 1.3 92/02/28 18:09:10 keith Exp $
+ * $XConsortium: scrnsaver.h,v 1.4 92/03/05 19:19:29 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -46,8 +46,8 @@ typedef struct {
     Window  window;	    /* screen saver window - may not exist */
     int	    state;	    /* ScreenSaverOff, ScreenSaverOn, ScreenSaverDisabled*/
     int	    kind;	    /* ScreenSaverBlanked, ...Internal, ...External */
-    Time    til_or_since;   /* time til or since screen saver */
-    Time    idle;	    /* total time since last user input */
+    unsigned long    til_or_since;   /* time til or since screen saver */
+    unsigned long    idle;	    /* total time since last user input */
     unsigned long   eventMask; /* currently selected events for this client */
 } XScreenSaverInfo;
 
