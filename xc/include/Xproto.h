@@ -197,7 +197,7 @@ typedef struct {
  * non-aligned big-endian font ID follows this struct
  */
 typedef struct {           /* followed by string */
-    INT8 len;	/* number of *characters* in string, or FontChange (255)
+    CARD8 len;	/* number of *characters* in string, or FontChange (255)
 		   for font change, or 0 if just delta given */
     INT8 delta;
 } xTextElt;
