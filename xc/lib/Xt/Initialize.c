@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.204 93/08/17 15:59:09 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.205 93/08/27 16:27:35 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -217,13 +217,13 @@ static String XtGetRootDirName(buf)
 
      if (ptr)
  	(void) strcpy(buf, ptr);
+     UNLOCK_PROCESS;
 #endif
 
      buf += strlen(buf);
      *buf = '/';
      buf++;
      *buf = '\0';
-     UNLOCK_PROCESS;
      return buf;
 }
 
