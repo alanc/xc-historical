@@ -1,9 +1,11 @@
 \&
 .sp 1
-.ce 4
+.ce 5
 \s+1\fBBitmap Distribution Format\fP\s-1
 
 \s+1\fBVersion 2.1\fP\s-1
+
+MIT X Consortium Standard
 
 X Version 11, Release 5
 .sp 2
