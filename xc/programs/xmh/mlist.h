@@ -1,4 +1,3 @@
-/* $Header$ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

@@ -1,4 +1,3 @@
-/* $Header$ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -37,7 +36,7 @@ typedef struct _MsgRec {
     Toc		toc;		/* Which toc this message is in. */
     Toc		desttoc;	/* Folder to copy or move to (NULL if none) */
     FateType	fate;		/* What will be done to this message */
-    XtTextPosition position;	/* Position in the scanfile for this msg. */
+    DwtTextPosition position;	/* Position in the scanfile for this msg. */
     int		length;		/* #/chars for this msg's entry in scanfile. */
     char	*buf;		/* The scanline for this message. */
     int		msgid;		/* Message id for this message. */
@@ -45,15 +44,17 @@ typedef struct _MsgRec {
     short	visible;	/* Whether we should show this message. */
     short	temporary;	/* Whether we should delete this message when
 				   it is no longer visible. */
-    Scrn	scrn;		/* Scrn showing this message (if any) */
-    XtTextSource *source;	/* Source (if any) containing this msg. */
+    Scrn	*scrn;		/* Scrns showing this message (if any) */
+    Cardinal	num_scrns;	/* How many scrns are currently showing msg. */
+    DwtTextSource source;	/* Source (if any) containing this msg. */
     short	reapable;	/* True iff we don't need to keep this
 				   composition around. */
-    XtTextPosition startPos;	/* Where to start the insertion point. */
+    DwtTextPosition startPos;	/* Where to start the insertion point. */
 } MsgRec;
 
 typedef struct _TocRec {
-   Scrn	scrn;			/* Scrn containing this table of contents */
+   Scrn		*scrn;		/* Scrns containing this table of contents. */
+   Cardinal	num_scrns;	/* How many scrns are currently showing toc. */
    char 	*foldername;	/* Folder name for this toc */
    char		*path;		/* Full path to folder's directory. */
    char		*scanfile;	/* Full path to file containing scan. */
@@ -61,19 +62,25 @@ typedef struct _TocRec {
    int		nummsgs;	/* How many info entries we currently have. */
    Msg		*msgs;		/* Array of pointers to info about each msg. */
    int		numsequences;	/* #/sequences defined for this folder. */
-   Sequence *seqlist;	/* Array of pointers to sequences. */
-   Sequence viewedseq;	/* Seq currently shown (NULL == all msgs) */
-   XtTextSource	*source;	/* Source for the file containing info. */
+   Sequence	*seqlist;	/* Array of pointers to sequences. */
+   Sequence 	viewedseq;	/* Seq currently shown (NULL == all msgs) */
+   DwtTextSource source;	/* Source for the file containing info. */
+   TextWidget	*widgets;	/* Array of widgets displaying this source. */
+   int		numwidgets;	/* Number of entries in above. */
+   Boolean	hasselection;	/* Whether we own the selection. */
+   DwtTextPosition left, right; /* Left and right extents of selection. */
    int		length;		/* #/chars in the scanfile. */
    int		origlength;	/* Original #/chars in the scanfile. */
    int		lastPos;	/* Last legal position */
    ValidType	validity;	/* Whether the scan file for this toc is */
 				/* up to date. */
-   int		needsrepaint;	/* TRUE if we should repaint this toc. */
-   int		needscachesave;	/* TRUE if the cache needs saving. */
-   int		needslabelupdate;/* TRUE if the toclabel needs repainting. */
-   int		stopupdate;	/* Zero if refreshing; nonzero if refreshing is
+   Boolean	needsrepaint;	/* TRUE if we should repaint this toc. */
+   Boolean	needscachesave;	/* TRUE if the cache needs saving. */
+   Boolean	needslabelupdate;/* TRUE if the toclabel needs repainting. */
+   Boolean	stopupdate;	/* Zero if refreshing; nonzero if refreshing is
 				   currently inhibited. */
+   Boolean	haschanged;	/* Whether it's changed in the process of */
+				/* the current commit. */
    char		*incfile;	/* Which file to incorporate from (if any). */
    int		mailpending;	/* True if we're currently displaying
 				   mail-pending info for this folder. */

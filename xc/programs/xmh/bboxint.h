@@ -1,4 +1,3 @@
-/* $Header$ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -30,7 +29,7 @@
 #define _bboxint_h
 
 typedef struct _ButtonRec {
-    Window	window;		/* Window containing this button. */
+    Widget	widget;		/* Widget containing this button. */
     ButtonBox	buttonbox;	/* Button box containing this button. */
     char	*name;	/* Name of the button. */
     short	enabled;	/* Whether this button is enabled
@@ -41,9 +40,9 @@ typedef struct _ButtonRec {
 				   this button to the buttonbox. */
 } ButtonRec;
 
-typedef struct _ButtonBoxRec {
-    Window	outer;		/* Window containing scollbars & inner */
-    Window	inner;		/* Window containing the buttons. */
+typedef struct _XmhButtonBoxRec {
+    Widget	outer;		/* Widget containing scollbars & inner */
+    Widget	inner;		/* Widget containing the buttons. */
     Scrn	scrn;		/* Scrn containing this button box. */
     int		numbuttons;	/* How many buttons in this box. */
     Button	*button;	/* Array of pointers to buttons. */

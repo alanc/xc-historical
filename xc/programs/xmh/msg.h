@@ -1,4 +1,3 @@
-/* $Header$ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -29,10 +28,9 @@
 
 extern char *MsgFileName();
 extern void MsgSaveChanges();
-extern int MsgSetScreen();
-extern int MsgSetScreenForComp();
+extern int MsgSetScrn();
+extern int MsgSetScrnForComp();
 extern void MsgSetScrnForce();
-extern Scrn MsgGetScrn();
 extern void MsgSetFate();
 extern FateType MsgGetFate();
 extern void MsgSetTemporary();

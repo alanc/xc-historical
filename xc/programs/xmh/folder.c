@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: folder.c,v 1.11 87/07/16 10:10:44 weissman Exp $";
+static char rcs_id[] = "$Header: folder.c,v 1.1 87/12/18 08:32:15 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -56,7 +56,6 @@ Scrn scrn;
 	}
 	if (MsgSetScrn((Msg) NULL, scrn))
 	    return;
-	DestroyPromptWindow();
 /*	for (i = 0; i < numFolders; i++) {
 	    toc = folderList[i];
 	    if (toc->scanfile && toc->curmsg)
@@ -82,6 +81,15 @@ Scrn scrn;
     TocSetScrn(toc, scrn);
 }
 
+/*ARGSUSED*/
+void OpenFolder(w, event, params, num_params)
+Widget w;
+XEvent *event;
+char **params;
+Cardinal num_params;
+{
+    ExecOpenFolder(ScrnFromWidget(w));
+}
 
 
 /* Compose a new message. */
@@ -152,15 +160,11 @@ Scrn scrn;
 			/* Debugging stuff only. */
 void ExecSyncOn()
 {
-#ifdef X11
     (void) XSynchronize(theDisplay, TRUE);
-#endif
 }
 void ExecSyncOff()
 {
-#ifdef X11
     (void) XSynchronize(theDisplay, FALSE);
-#endif
 }
 
 
@@ -172,7 +176,10 @@ void CreateFolder(name)
 {
     Toc toc;
     int i, position;
-    extern void PrepareDoubleClickFolder();
+    static char *extra[] = {
+	"<Btn1Down>(2): open-folder()",
+	NULL
+    };
     for (i=0 ; name[i] > ' ' ; i++) ;
     name[i] = 0;
     toc = TocGetNamed(name);
@@ -191,5 +198,5 @@ void CreateFolder(name)
     for (i = 0; i < numScrns; i++)
 	if (scrnList[i]->folderbuttons)
 	    BBoxAddButton(scrnList[i]->folderbuttons, name,
-			  PrepareDoubleClickFolder, position, TRUE);
+			  NoOp, position, TRUE, extra);
 }
