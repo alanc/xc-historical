@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.42 89/11/03 13:26:56 jim Exp $
+ * $XConsortium: screen.h,v 1.43 89/11/03 14:59:21 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -47,6 +47,8 @@ typedef struct _StdCmap {
 } StdCmap;
 
 #define TITLEBUTTON_BORDERWIDTH 1
+#define SIZE_HINDENT 10
+#define SIZE_VINDENT 2
 
 typedef struct ScreenInfo
 {
@@ -61,7 +63,6 @@ typedef struct ScreenInfo
 
     Window Root;		/* the root window */
     Window SizeWindow;		/* the resize dimensions window */
-    Window InitialWindow;	/* the window name we are creating */
     Window InfoWindow;		/* the information window */
 
     name_list *Icons;		/* list of icon pixmaps */
@@ -157,13 +158,14 @@ typedef struct ScreenInfo
     MyFont MenuFont;		/* menu font structure */
     MyFont IconFont;		/* icon font structure */
     MyFont SizeFont;		/* resize font structure */
-    MyFont InitialFont;		/* window creation font structure */
     MyFont IconManagerFont;	/* window list font structure */
     MyFont DefaultFont;
     IconMgr iconmgr;		/* default icon manager */
     struct IconRegion *FirstRegion;	/* pointer to icon regions */
     struct IconRegion *LastRegion;	/* pointer to the last icon region */
     char *IconDirectory;	/* icon directory to search */
+    int SizeStringOffset;	/* x offset in size window for drawing */
+    int SizeStringWidth;	/* minimum width of size window */
     int BorderWidth;		/* border width of twm windows */
     int IconBorderWidth;	/* border width of icon windows */
     int UnknownWidth;		/* width of the unknown icon */

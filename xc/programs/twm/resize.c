@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.42 89/10/27 14:01:32 jim Exp $
+ * $XConsortium: resize.c,v 1.43 89/11/01 17:27:56 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.42 89/10/27 14:01:32 jim Exp $";
+"$XConsortium: resize.c,v 1.43 89/11/01 17:27:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -161,7 +161,10 @@ Bool fromtitlebar;
     if (Scr->AutoRelativeResize && !fromtitlebar)
       do_auto_clamp (tmp_win, evp);
 
-    XMoveWindow(dpy, Scr->SizeWindow, 0, 0);
+    Scr->SizeStringOffset = SIZE_HINDENT;
+    XResizeWindow (dpy, Scr->SizeWindow,
+		   Scr->SizeStringWidth + SIZE_HINDENT * 2, 
+		   Scr->SizeFont.height + SIZE_VINDENT * 2);
     XMapRaised(dpy, Scr->SizeWindow);
     last_width = 0;
     last_height = 0;
@@ -209,8 +212,6 @@ int x, y, w, h;
 	clampRight = clampBottom = 1;
     }
 
-    XMoveWindow(dpy, Scr->SizeWindow, 0, Scr->InitialFont.height + 4 + BW);
-    XMapRaised(dpy, Scr->SizeWindow);
     last_width = 0;
     last_height = 0;
     DisplaySize(tmp_win, origWidth, origHeight);
@@ -396,7 +397,8 @@ int height;
     XRaiseWindow(dpy, Scr->SizeWindow);
     FBF(Scr->DefaultC.fore, Scr->DefaultC.back, Scr->SizeFont.font->fid);
     XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC,
-		      0, Scr->SizeFont.font->ascent + Scr->SizeFont.height/4,
+		      Scr->SizeStringOffset,
+		      Scr->SizeFont.font->ascent + SIZE_VINDENT,
 		      str, 13);
 }
 
@@ -472,8 +474,6 @@ TwmWindow *tmp_win;
 #ifdef DEBUG
     fprintf(stderr, "AddEndResize\n");
 #endif
-
-    XUnmapWindow(dpy, Scr->SizeWindow);
 
     ConstrainSize (tmp_win, &dragWidth, &dragHeight);
     AddingX = dragx;

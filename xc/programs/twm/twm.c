@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.74 89/11/03 13:26:58 jim Exp $
+ * $XConsortium: twm.c,v 1.75 89/11/03 14:59:23 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.74 89/11/03 13:26:58 jim Exp $";
+"$XConsortium: twm.c,v 1.75 89/11/03 14:59:23 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -467,16 +467,15 @@ main(argc, argv, environ)
 					 CopyFromParent, CopyFromParent,
 					 valuemask, &attributes);
 
-	Scr->InitialWindow = XCreateSimpleWindow(dpy, Scr->Root,
-		0, 0, 5, Scr->InitialFont.height + 4, BW,
-		Scr->DefaultC.fore,Scr->DefaultC.back);
-
-	width = XTextWidth (Scr->SizeFont.font, " 8888 x 8888 ", 13);
-	if (width <= 0) width = 100;
-	Scr->SizeWindow = XCreateSimpleWindow (dpy, Scr->Root, 0, 0, width,
-					       (Scr->SizeFont.height * 3)/2, 
-					       BW, Scr->DefaultC.fore,
-					       Scr->DefaultC.back);
+	Scr->SizeStringWidth = XTextWidth (Scr->SizeFont.font,
+					   " 8888 x 8888 ", 13);
+	valuemask = (CWBorderPixel | CWBackPixel | CWBitGravity);
+	attributes.bit_gravity = NorthWestGravity;
+	Scr->SizeWindow = XCreateWindow (dpy, Scr->Root, 0, 0, 
+					 Scr->SizeStringWidth,
+					 Scr->SizeFont.height + SIZE_VINDENT*2,
+					 BW, 0, CopyFromParent, CopyFromParent,
+					 valuemask, &attributes);
 
 	XUngrabServer(dpy);
 
@@ -564,6 +563,7 @@ InitVariables()
     Scr->FramePadding = 2;		/* values that look "nice" on */
     Scr->TitlePadding = 8;		/* 75 and 100dpi displays */
     Scr->ButtonIndent = 1;
+    Scr->SizeStringOffset = 0;
     Scr->BorderWidth = BW;
     Scr->IconBorderWidth = BW;
     Scr->UnknownWidth = 0;
@@ -616,8 +616,6 @@ InitVariables()
     Scr->IconFont.name = DEFAULT_NICE_FONT;
     Scr->SizeFont.font = NULL;
     Scr->SizeFont.name = DEFAULT_FAST_FONT;
-    Scr->InitialFont.font = NULL;
-    Scr->InitialFont.name = DEFAULT_NICE_FONT;
     Scr->IconManagerFont.font = NULL;
     Scr->IconManagerFont.name = DEFAULT_NICE_FONT;
     Scr->DefaultFont.font = NULL;
@@ -632,7 +630,6 @@ CreateFonts ()
     GetFont(&Scr->MenuFont);
     GetFont(&Scr->IconFont);
     GetFont(&Scr->SizeFont);
-    GetFont(&Scr->InitialFont);
     GetFont(&Scr->IconManagerFont);
     GetFont(&Scr->DefaultFont);
     Scr->HaveFonts = TRUE;

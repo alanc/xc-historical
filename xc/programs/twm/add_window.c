@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.96 89/11/01 20:01:32 jim Exp $
+ * $XConsortium: add_window.c,v 1.97 89/11/03 13:26:49 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.96 89/11/01 20:01:32 jim Exp $";
+"$XConsortium: add_window.c,v 1.97 89/11/03 13:26:49 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -136,7 +136,7 @@ IconMgr *iconp;
     char *prop;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
-    int width, len;			/* tmp variable */
+    int width, height, len;		/* tmp variable */
     int junk1, junk2, junk3;
     int x;
     XWindowChanges xwc;		/* change window structure */
@@ -149,6 +149,7 @@ IconMgr *iconp;
     XWindowAttributes gattr;
     long supplied;
     int gravx, gravy;			/* gravity signs for positioning */
+    int namelen;
 
 #ifdef DEBUG
     fprintf(stderr, "AddWindow: w = 0x%x\n", w);
@@ -213,6 +214,7 @@ IconMgr *iconp;
     	tmp_win->class.res_class = NoName;
 
     tmp_win->full_name = tmp_win->name;
+    namelen = strlen (tmp_win->name);
 
     tmp_win->highlight = Scr->Highlight && 
 	(!(short)LookInList(Scr->NoHighlight, tmp_win->full_name, 
@@ -339,22 +341,24 @@ IconMgr *iconp;
 		    break;
 	    }
 
-	    width = XTextWidth(Scr->InitialFont.font, tmp_win->name,
-		strlen(tmp_win->name)) + 20;
-	    XResizeWindow(dpy, Scr->InitialWindow, width, 
-			  Scr->InitialFont.height + 4);
-	    XMapRaised(dpy, Scr->InitialWindow);
+	    width = (SIZE_HINDENT + XTextWidth (Scr->SizeFont.font,
+						tmp_win->name, namelen));
+	    height = Scr->SizeFont.height + SIZE_VINDENT * 2;
+	    
+	    XResizeWindow (dpy, Scr->SizeWindow, width + SIZE_HINDENT, height);
+	    XMapRaised(dpy, Scr->SizeWindow);
 
 	    FBF(Scr->DefaultC.fore, Scr->DefaultC.back,
-		Scr->InitialFont.font->fid);
-	    XDrawImageString(dpy, Scr->InitialWindow, Scr->NormalGC,
-		10, 2 + Scr->InitialFont.font->ascent,
-		tmp_win->name, strlen(tmp_win->name));
+		Scr->SizeFont.font->fid);
+	    XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC,
+			      SIZE_HINDENT,
+			      SIZE_VINDENT + Scr->SizeFont.font->ascent,
+			      tmp_win->name, namelen);
 
 	    AddingW = tmp_win->attr.width;
 	    AddingH = tmp_win->attr.height;
 
-	    AddingW = tmp_win->attr.width + 2*(tmp_win->bw + tmp_win->frame_bw);
+	    AddingW = tmp_win->attr.width + 2*(tmp_win->bw+tmp_win->frame_bw);
 	    AddingH = tmp_win->attr.height + tmp_win->title_height +
 		2 * (tmp_win->bw + tmp_win->frame_bw);
 
@@ -374,8 +378,14 @@ IconMgr *iconp;
 		}
 	    }
 
-	    if (event.xbutton.button == Button2)
-	    {
+	    if (event.xbutton.button == Button2) {
+		Scr->SizeStringOffset = width +
+		  XTextWidth(Scr->SizeFont.font, ": ", 2);
+		XResizeWindow (dpy, Scr->SizeWindow, Scr->SizeStringOffset +
+			       Scr->SizeStringWidth, height);
+		XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC, width,
+				  SIZE_VINDENT + Scr->SizeFont.font->ascent,
+				  ": ", 2);
 		if (Scr->AutoRelativeResize) {
 		    int dx = (tmp_win->attr.width / 4);
 		    int dy = (tmp_win->attr.height / 4);
@@ -447,7 +457,7 @@ IconMgr *iconp;
 	    }
 
 	    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
-	    XUnmapWindow(dpy, Scr->InitialWindow);
+	    XUnmapWindow(dpy, Scr->SizeWindow);
 	    XUngrabPointer(dpy, CurrentTime);
 
 	    tmp_win->attr.x = AddingX;
@@ -495,7 +505,7 @@ IconMgr *iconp;
     XConfigureWindow(dpy, tmp_win->w, xwcm, &xwc);
 
     tmp_win->name_width = XTextWidth(Scr->TitleBarFont.font, tmp_win->name,
-	strlen(tmp_win->name));
+				     namelen);
 
     if (XGetWindowProperty(dpy, tmp_win->w, XA_WM_ICON_NAME, 0, 200, False,
 	XA_STRING, &junk1, &junk2, &junk3, &len, &tmp_win->icon_name))
