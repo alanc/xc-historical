@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.16 92/06/11 19:52:53 converse Exp $
+ * $XConsortium: xcutsel.c,v 1.17 93/09/11 15:33:07 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -130,7 +130,7 @@ static Boolean ConvertSelection(w, selection, target,
 /*
 	*targetP++ = XA_CHARACTER_POSITION(d);
 */
-	bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
+	memmove( (char*)targetP, (char*)std_targets, sizeof(Atom)*std_length);
 	XtFree((char*)std_targets);
 	*type = XA_ATOM;
 	*format = 32;
@@ -139,7 +139,7 @@ static Boolean ConvertSelection(w, selection, target,
     if (*target == XA_STRING || *target == XA_TEXT(d)) {
 	*type = XA_STRING;
 	*value = XtMalloc((Cardinal) options.length);
-	bcopy(options.value, (char *) *value, options.length);
+	memmove( (char *) *value, options.value, options.length);
 	*length = options.length;
 	*format = 8;
 	return True;

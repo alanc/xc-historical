@@ -1,4 +1,4 @@
-/* $XConsortium: osdep.h,v 1.3 91/05/13 16:51:04 gildea Exp $ */
+/* $XConsortium: osdep.h,v 1.4 92/01/31 17:45:07 eswu Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -125,7 +125,7 @@
 #endif
 
 #if (mskcnt>4)
-#define COPYBITS(src, dst) bcopy((caddr_t) src, (caddr_t) dst,\
+#define COPYBITS(src, dst) memmove( (caddr_t) dst, (caddr_t) src, \
 				 mskcnt*sizeof(long))
 #define CLEARBITS(buf) bzero((caddr_t) buf, mskcnt*sizeof(long))
 #define MASKANDSETBITS(dst, b1, b2)  \

@@ -1,4 +1,4 @@
-/* $XConsortium: extensions.c,v 1.4 91/07/20 13:47:51 rws Exp $ */
+/* $XConsortium: extensions.c,v 1.5 92/11/18 21:30:04 gildea Exp $ */
 /*
  * font server extensions
  */
@@ -266,11 +266,11 @@ ProcListExtensions(client)
 	    int         len;
 
 	    *bufptr++ = len = strlen(extensions[i]->name);
-	    bcopy(extensions[i]->name, bufptr, len);
+	    memmove( bufptr, extensions[i]->name, len);
 	    bufptr += len;
 	    for (j = extensions[i]->num_aliases; --j >= 0;) {
 		*bufptr++ = len = strlen(extensions[i]->aliases[j]);
-		bcopy(extensions[i]->aliases[j], bufptr, len);
+		memmove( bufptr, extensions[i]->aliases[j], len);
 		bufptr += len;
 	    }
 	}

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.191 93/09/03 09:55:25 dpw Exp $
+ * $XConsortium: menus.c,v 1.192 93/09/10 08:36:58 kaleb Exp $
  *
  * twm menu code
  *
@@ -2388,7 +2388,7 @@ static void System (s)
     if ((pid = fork ()) == 0) {
 	(void) setpgrp();
 	if ((shell = getenv ("SHELL")) != NULL) {
-	    shellname = rindex (shell, '/');
+	    shellname = strrchr(shell, '/');
 	    if (shellname == NULL)
 		shellname = shell;
 	    else

@@ -1,4 +1,4 @@
-/* $XConsortium: osglue.c,v 1.3 91/07/16 20:22:39 keith Exp $ */
+/* $XConsortium: osglue.c,v 1.5 91/10/24 21:46:59 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -149,7 +149,7 @@ ListCatalogues(pattern, patlen, maxnames, catalogues, len)
 	    if (!catlist)
 		goto bail;
 	    *catlist = size;
-	    bcopy(catalogue_name, &catlist[1], size);
+	    memmove( &catlist[1], catalogue_name, size);
 	    size++;		/* for length */
 	    count++;
 	}
@@ -216,7 +216,7 @@ SetAlternateServers(list)
 		/* XXX  -- leak */
 		return FSBadAlloc;
 	    }
-	    bcopy(st, a->name, a->namelen);
+	    memmove( a->name, st, a->namelen);
 	    a->subset = FALSE;	/* XXX */
 	    a++;
 	    t++;
@@ -232,7 +232,7 @@ SetAlternateServers(list)
 	/* XXX  -- leak */
 	return FSBadAlloc;
     }
-    bcopy(st, a->name, a->namelen);
+    memmove( a->name, st, a->namelen);
     a->subset = FALSE;		/* XXX */
 
     for (i = 0; i < num_alts; i++) {

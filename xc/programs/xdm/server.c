@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.16 91/09/12 19:56:09 keith Exp $
+ * $XConsortium: server.c,v 1.17 91/09/19 16:26:01 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,7 +31,10 @@
 
 static receivedUsr1;
 
-extern int  errno;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 static serverPause ();
 
 static Display	*dpy;
@@ -267,7 +270,7 @@ GetRemoteAddress (d, fd)
 	d->peer = (XdmcpNetaddr) malloc (len);
 	if (d->peer)
 	{
-	    bcopy (buf, (char *) d->peer, len);
+	    memmove( (char *) d->peer, buf, len);
 	    d->peerlen = len;
 	}
     }

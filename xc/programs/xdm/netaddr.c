@@ -1,7 +1,7 @@
 /*
  * xdm - X display manager
  *
- * $XConsortium: netaddr.c,v 1.4 91/07/19 18:50:08 rws Exp $
+ * $XConsortium: netaddr.c,v 1.5 92/08/24 13:17:57 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -188,13 +188,13 @@ addressEqual (a1, len1, a2, len2)
     }
     part1 = NetaddrPort(a1, &partlen1);
     part2 = NetaddrPort(a2, &partlen2);
-    if (partlen1 != partlen2 || bcmp(part1, part2, partlen1) != 0)
+    if (partlen1 != partlen2 || memcmp(part1, part2, partlen1) != 0)
     {
 	return FALSE;
     }
     part1 = NetaddrAddress(a1, &partlen1);
     part2 = NetaddrAddress(a2, &partlen2);
-    if (partlen1 != partlen2 || bcmp(part1, part2, partlen1) != 0)
+    if (partlen1 != partlen2 || memcmp(part1, part2, partlen1) != 0)
     {
 	return FALSE;
     }

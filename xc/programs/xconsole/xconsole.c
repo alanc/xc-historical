@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.13 92/12/02 18:22:58 rws Exp $
+ * $XConsortium: xconsole.c,v 1.14 93/08/03 12:23:26 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -396,7 +396,7 @@ ConvertSelection (w, selection, target, type, value, length, format)
 	*targetP++ = XA_LIST_LENGTH(d);
 	*targetP++ = XA_CHARACTER_POSITION(d);
 	*length = std_length + (targetP - (*(Atom **) value));
-	bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
+	memmove( (char*)targetP, (char*)std_targets, sizeof(Atom)*std_length);
 	XtFree((char*)std_targets);
 	*type = XA_ATOM;
 	*format = 32;

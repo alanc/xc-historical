@@ -1,4 +1,4 @@
-/* $XConsortium: waitfor.c,v 1.7 91/07/16 20:22:35 keith Exp $ */
+/* $XConsortium: waitfor.c,v 1.8 91/09/11 11:59:39 rws Exp $ */
 /*
  * waits for input
  */
@@ -40,7 +40,10 @@
 
 extern WorkQueuePtr workQueue;
 
-extern int  errno;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 
 extern void MakeNewConnections();
 extern void FlushAllOutput();

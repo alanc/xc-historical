@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.37 91/07/17 21:22:22 converse Exp $
+ * $XConsortium: externs.h,v 2.38 91/07/22 21:29:13 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -26,8 +26,8 @@
  * without specific, written prior permission.
  */
 
-#ifndef X_NOT_STDC_ENV
 #include <errno.h>
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
 extern int errno;

@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.43 91/07/07 16:32:28 converse Exp $ */
+/* $XConsortium: command.c,v 2.44 91/07/16 20:33:52 converse Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -413,7 +413,7 @@ CheckReadFromPipe( fd, bufP, lenP, waitEOF )
 	if (nread <= 0)
 	    break;
 	*bufP = XtRealloc( *bufP, (Cardinal) ((*lenP += nread) + 1) );
-	bcopy( buf, *bufP+old_end, (int) nread );
+	memmove( *bufP+old_end, buf, (int) nread );
 	(*bufP)[old_end+nread] = '\0';
     } while (waitEOF);
 }

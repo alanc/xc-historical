@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.9 92/05/18 13:50:44 gildea Exp $ */
+/* $XConsortium: io.c,v 1.10 92/11/18 21:30:56 gildea Exp $ */
 /*
  * i/o functions
  */
@@ -36,7 +36,10 @@
 #include	"osdep.h"
 #include	"globals.h"
 
-extern int  errno;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -135,7 +138,7 @@ ReadRequest(client)
     /* need 8-byte alignment */
     if ((oci->bufptr - oci->buffer) & 7  &&  gotnow > 0)
     {
-	bcopy(oci->bufptr, oci->buffer, gotnow);
+	memmove( oci->buffer, oci->bufptr, gotnow);
 	oci->bufptr = oci->buffer;
 	oci->bufcnt = gotnow;
     }
@@ -158,7 +161,7 @@ ReadRequest(client)
 	    ((oci->bufptr - oci->buffer + needed) > oci->size))
 	{
 	    if ((gotnow > 0) && (oci->bufptr != oci->buffer))
-		bcopy(oci->bufptr, oci->buffer, gotnow);
+		memmove( oci->buffer, oci->bufptr, gotnow);
 	    /* grow buffer if necessary */
 	    if (needed > oci->size) {
 		char       *ibuf;
@@ -288,11 +291,11 @@ InsertFakeRequest(client, data, count)
     moveup = count - (oci->bufptr - oci->buffer);
     if (moveup > 0) {
 	if (gotnow > 0)
-	    bcopy(oci->bufptr, oci->bufptr + moveup, gotnow);
+	    memmove( oci->bufptr + moveup, oci->bufptr, gotnow);
 	oci->bufptr += moveup;
 	oci->bufcnt += moveup;
     }
-    bcopy(data, oci->bufptr - count, count);
+    memmove( oci->bufptr - count, data, count);
     oci->bufptr -= count;
     request = (fsReq *) oci->bufptr;
     gotnow += count;
@@ -427,8 +430,8 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 	    if (written < oco->count) {
 		if (written > 0) {
 		    oco->count -= written;
-		    bcopy((char *) oco->buf + written,
-			  (char *) oco->buf, oco->count);
+		    memmove( (char *) oco->buf, (char *) oco->buf + written,
+			    oco->count);
 		    written = 0;
 		}
 	    } else {
@@ -452,8 +455,8 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 		oco->buf = obuf;
 	    }
 	    if ((len = extraCount - written) > 0) {
-		bcopy(extraBuf + written,
-		      (char *) oco->buf + oco->count, len);
+		memmove( (char *) oco->buf + oco->count, 
+			extraBuf + written, len);
 	    }
 	    oco->count = notWritten;
 	    return extraCount;
@@ -555,7 +558,7 @@ write_to_client_internal(client, count, buf, padBytes)
     }
     NewOutputPending = TRUE;
     BITSET(OutputPending, oc->fd);
-    bcopy(buf, (char *) oco->buf + oco->count, count);
+    memmove( (char *) oco->buf + oco->count, buf, count);
     oco->count += count + padBytes;
 
     return count;

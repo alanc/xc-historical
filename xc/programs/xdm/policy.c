@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.9 91/05/06 23:53:50 gildea Exp $
+ * $XConsortium: policy.c,v 1.10 91/07/24 00:06:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -124,7 +124,7 @@ Willing (addr, connectionType, authenticationName, status, type)
     if (!status->data)
 	status->length = 0;
     else
-	bcopy (statusBuf, status->data, status->length);
+	memmove( status->data, statusBuf, status->length);
     return ret;
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: exportcl.c,v 1.3 93/07/26 14:15:14 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.4 93/07/27 14:38:12 rws Exp $ */
 
 /**** module do_exportclient.c ****/
 /******************************************************************************
@@ -325,7 +325,7 @@ void DoExportClientLUTImmediate(xp, p, reps)
                 ReadNotifyExportData( xp, p, photospace, flo_id, 2,
                         lutSize * sizeof( unsigned char ) );
                 WaitForFloToFinish( xp, flo_id );
-		if ( bcmp( lut, p->data, lutSize * sizeof( unsigned char ) ) )
+		if ( memcmp( lut, p->data, lutSize * sizeof( unsigned char ) ) )
 		{
 			fprintf( stderr, "ExportClientLUT failed\n" );
 			break;
@@ -386,7 +386,7 @@ void DoExportClientLUTStored(xp, p, reps)
                 ReadNotifyExportData( xp, p, photospace, flo, 2,
                         lutSize * sizeof( unsigned char ) );
                 WaitForFloToFinish( xp, flo );
-                if ( bcmp( lut, p->data, lutSize * sizeof( unsigned char ) ) )
+                if ( memcmp( lut, p->data, lutSize * sizeof( unsigned char ) ) )
                 {
                         fprintf( stderr, "ExportClientLUT failed\n" );
                         break;
@@ -440,7 +440,7 @@ void DoExportClientROIImmediate(xp, p, reps)
                 ReadNotifyExportData( xp, p, photospace, flo_id, 2,
                         rectsSize * sizeof( XieRectangle ) );
                 WaitForFloToFinish( xp, flo_id );
-		if ( bcmp( rects, p->data, rectsSize * sizeof( XieRectangle ) ) )
+		if ( memcmp( rects, p->data, rectsSize * sizeof( XieRectangle ) ) )
 		{
 			fprintf( stderr, "ExportClientROI failed\n" );
 			break;
@@ -488,7 +488,7 @@ void DoExportClientROIStored(xp, p, reps)
                 ReadNotifyExportData( xp, p, photospace, flo, 2,
                         rectsSize * sizeof( XieRectangle ) );
                 WaitForFloToFinish( xp, flo );
-                if ( bcmp( rects, p->data, rectsSize * sizeof( XieRectangle )
+                if ( memcmp( rects, p->data, rectsSize * sizeof( XieRectangle )
 ) )
                 {
                         fprintf( stderr, "ExportClientROI failed\n" );

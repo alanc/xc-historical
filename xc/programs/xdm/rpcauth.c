@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: rpcauth.c,v 1.1 91/02/12 15:34:33 keith Exp $
+ * $XConsortium: rpcauth.c,v 1.2 91/07/18 18:55:01 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -69,8 +69,8 @@ SecureRPCGetAuth (namelen, name)
 	free ((char *) new);
 	return (Xauth *) 0;
     }
-    bcopy (name, new->name, namelen);
+    memmove( new->name, name, namelen);
     new->name_length = namelen;
-    bcopy (key, new->data, new->data_length);
+    memmove( new->data, key, new->data_length);
     return new;
 }

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.8 91/05/12 20:11:06 rws Exp $
+ * $XConsortium: mitauth.c,v 1.9 91/07/24 00:06:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,7 +39,7 @@ MitInitAuth (name_len, name)
     if (name_len > 256)
 	name_len = 256;
     auth_name_len = name_len;
-    bcopy (name, auth_name, name_len);
+    memmove( auth_name, name, name_len);
 }
 
 Xauth *
@@ -71,7 +71,7 @@ MitGetAuth (namelen, name)
 	free ((char *) new);
 	return (Xauth *) 0;
     }
-    bcopy (name, (char *)new->name, namelen);
+    memmove( (char *)new->name, name, namelen);
     new->name_length = namelen;
     GenerateAuthorization (new->data, AUTH_DATA_LEN);
     new->data_length = AUTH_DATA_LEN;

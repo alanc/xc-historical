@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.39 91/07/17 21:55:11 converse Exp $
+ * $XConsortium: folder.c,v 2.40 91/07/20 20:46:08 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -285,7 +285,7 @@ static void CreateFolder(widget, client_data, call_data)
 	if (scrnList[i]->folderbuttons) {
 	    char	*c;
 	    Button	button;
-	    if (c = index(name, '/')) { /* if is subfolder */
+	    if (c = strchr(name, '/')) { /* if is subfolder */
 		c[0] = '\0';
 		button = BBoxFindButtonNamed(scrnList[i]->folderbuttons,
 					     name);
@@ -441,7 +441,7 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
 
 	    if (IsSubfolder(foldername)) {
 		char parent_folder[300];
-		char *c = index( strcpy(parent_folder, foldername), '/');
+		char *c = strchr( strcpy(parent_folder, foldername), '/');
 		*c = '\0';
 
 /* Since menus are built upon demand, and are a per-xmh-screen resource, 
@@ -627,7 +627,7 @@ static void AddFolderMenuEntry(button, entryname)
      * the widget name of the subfolder's menu entry must be unique.
      */
     label = entryname;
-    c = index( strcpy(tmpname, entryname), '/');
+    c = strchr( strcpy(tmpname, entryname), '/');
     if (c) {
 	*c = '\0';
 	label = ++c;
@@ -722,7 +722,7 @@ static void DeleteFolderMenuEntry(button, foldername)
 	return;
     }
 
-    c = index( strcpy(tmpname, foldername), '/');
+    c = strchr( strcpy(tmpname, foldername), '/');
     if (c) {
 	*c = '\0';
 	subfolder = ++c;

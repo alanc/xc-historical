@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.72 93/09/13 20:20:04 rws Exp $
+ * $XConsortium: xrdb.c,v 11.73 93/09/13 20:31:12 rws Exp $
  */
 
 /*
@@ -46,7 +46,11 @@
 #include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <errno.h>
+
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 
 #if NeedVarargsPrototypes
 # include <stdarg.h>
@@ -472,7 +476,7 @@ DoCmdDefines(buff)
     for (i = 0; i < num_cmd_defines; i++) {
 	arg = cmd_defines[i];
 	if (arg[1] == 'D') {
-	    val = index(arg, '=');
+	    val = strchr(arg, '=');
 	    if (val) {
 		*val = '\0';
 		AddDefQ(buff, arg + 2, val + 1);
@@ -504,7 +508,7 @@ DoDisplayDefines(display, defs, host)
     
     XmuGetHostname(client, MAXHOSTNAME);
     strcpy(server, XDisplayName(host));
-    colon = index(server, ':');
+    colon = strchr(server, ':');
     n = 0;
     if (colon) {
 	*colon++ = '\0';

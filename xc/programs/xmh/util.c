@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.39 91/04/16 18:16:11 rws Exp $
+ * $XConsortium: util.c,v 2.40 91/07/05 18:30:00 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -317,7 +317,7 @@ char *file;
 Boolean	IsSubfolder(foldername)
     char	*foldername;
 {
-    return (index(foldername, '/')) ? True : False;
+    return (strchr(foldername, '/')) ? True : False;
 }
 
 void SetCurrentFolderName(scrn, foldername)

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.9 93/08/20 15:53:02 rws Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.10 93/09/12 18:44:04 rws Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -82,10 +82,13 @@ SOFTWARE.
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
-#include "fontfilest.h"
+#include "fntfilst.h"
 
 #include <errno.h>
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>

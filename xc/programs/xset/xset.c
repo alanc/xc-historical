@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.64 92/11/29 14:40:43 rws Exp $ 
+ * $XConsortium: xset.c,v 1.65 93/09/11 14:37:55 rws Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.64 92/11/29 14:40:43 rws Exp $ */
+/* $XConsortium: xset.c,v 1.65 93/09/11 14:37:55 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -554,7 +554,7 @@ set_font_path(dpy, path, special, before, after)
 	register char *cp = path;
 
 	ndirs = 1;
-	while ((cp = index (cp, ',')) != NULL) {
+	while ((cp = strchr(cp, ',')) != NULL) {
 	    ndirs++;
 	    cp++;
 	}
@@ -569,7 +569,7 @@ set_font_path(dpy, path, special, before, after)
 	char *cp = path;
 
 	directoryList[i++] = cp;
-	while ((cp = index (cp, ',')) != NULL) {
+	while ((cp = strchr(cp, ',')) != NULL) {
 	    directoryList[i++] = cp + 1;
 	    *cp++ = '\0';
 	}
@@ -596,15 +596,15 @@ set_font_path(dpy, path, special, before, after)
 	
 	if (!newList) error ("out of memory");
 	if (before > 0) {		/* new + current */
-	    bcopy ((char *) directoryList, (char *) newList, 
+	    memmove( (char *) newList, (char *) directoryList, 
 		   (unsigned) (ndirs*sizeof (char *)));
-	    bcopy ((char *) currentList, (char *) (newList + ndirs),
+	    memmove( (char *) (newList + ndirs), (char *) currentList, 
 			(unsigned) (ncurrent*sizeof (char *)));
 	    XSetFontPath (dpy, newList, nnew);
 	} else if (after > 0) {
-	    bcopy ((char *) currentList, (char *) newList,
+	    memmove( (char *) newList, (char *) currentList, 
 		   (unsigned) (ncurrent*sizeof (char *)));
-	    bcopy ((char *) directoryList, (char *) (newList + ncurrent),
+	    memmove( (char *) (newList + ncurrent), (char *) directoryList, 
 		   (unsigned) (ndirs*sizeof (char *)));
 	    XSetFontPath (dpy, newList, nnew);
 	} 

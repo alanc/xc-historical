@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.9 91/07/25 12:25:41 keith Exp $ */
+/* $XConsortium: main.c,v 1.10 92/11/18 21:29:37 gildea Exp $ */
 /*
  * Font server main routine
  */
@@ -164,9 +164,9 @@ create_connection_block()
     if (!ConnectionInfo)
 	return FALSE;
 
-    bcopy((char *) &setup, ConnectionInfo, SIZEOF(fsConnSetupAccept));
+    memmove( ConnectionInfo, (char *) &setup, SIZEOF(fsConnSetupAccept));
     pBuf = ConnectionInfo + SIZEOF(fsConnSetupAccept);
-    bcopy(VENDOR_STRING, pBuf, (int) setup.vendor_len);
+    memmove( pBuf, VENDOR_STRING, (int) setup.vendor_len);
 
     return TRUE;
 }

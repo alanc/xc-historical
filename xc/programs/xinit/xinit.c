@@ -1,4 +1,4 @@
-/* $XConsortium: xinit.c,v 11.53 91/12/11 10:58:18 rws Exp $ */
+/* $XConsortium: xinit.c,v 11.54 91/12/23 17:26:08 gildea Exp $ */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
@@ -117,7 +117,11 @@ union wait	status;
 #endif /* SYSV */
 int serverpid = -1;
 int clientpid = -1;
-extern int	errno;
+
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 
 static shutdown();
 

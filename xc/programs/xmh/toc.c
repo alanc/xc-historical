@@ -1,4 +1,4 @@
-/* $XConsortium: toc.c,v 2.54 91/07/17 12:28:48 converse Exp $
+/* $XConsortium: toc.c,v 2.55 91/07/23 16:25:56 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -75,7 +75,7 @@ static void MakeSureSubfolderExists(namelistptr, numfoldersptr, name)
 
     /* Make sure that the parent folder exists */
 
-    subfolder = index( strcpy(folder, name), '/');
+    subfolder = strchr( strcpy(folder, name), '/');
     *subfolder = '\0';
     subfolder++;
     MakeSureFolderExists(namelistptr, numfoldersptr, folder);

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.30 92/08/10 20:47:23 eswu Exp $
+ * $XConsortium: socket.c,v 1.31 92/08/24 13:16:40 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,7 +33,10 @@
 #include <sys/un.h>
 #include <netdb.h>
 
-extern int	errno;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 
 extern int	xdmcpFd;
 extern int	chooserFd;
@@ -98,7 +101,7 @@ GetChooserAddr (addr, lenp)
     len = sizeof in_addr;
     if (getsockname (chooserFd, &in_addr, &len) < 0)
 	return -1;
-    bcopy ((char *) &in_addr, addr, len);
+    memmove( addr, (char *) &in_addr, len);
     *lenp = len;
     return 0;
 }

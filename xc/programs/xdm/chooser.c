@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.13 92/04/21 18:42:13 gildea Exp $
+ * $XConsortium: chooser.c,v 1.14 92/08/10 20:47:27 eswu Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -266,7 +266,7 @@ AddHostname (hostname, status, addr, willing)
 			XdmcpDisposeARRAY8 (hostname);
 		    	host = hostent->h_name;
 			XdmcpAllocARRAY8 (hostname, strlen (host));
-			bcopy (host, hostname->data, hostname->length);
+			memmove( hostname->data, host, hostname->length);
 	    	    }
 	    	}
 	    }
@@ -277,7 +277,7 @@ AddHostname (hostname, status, addr, willing)
 	    free ((char *) new);
 	    return 0;
     	}
-    	bcopy (hostAddr.data, new->hostaddr.data, hostAddr.length);
+    	memmove( new->hostaddr.data, hostAddr.data, hostAddr.length);
 	new->connectionType = connectionType;
 	new->hostname = *hostname;
 
@@ -439,7 +439,7 @@ RegisterHostaddr (addr, len, type)
 	free ((char *) host);
 	return;
     }
-    bcopy ((char *) addr, (char *) host->addr, len);
+    memmove( (char *) host->addr, (char *) addr, len);
     host->addrlen = len;
     host->type = type;
     for (prev = &hostAddrdb; *prev; prev = &(*prev)->next)
@@ -530,7 +530,7 @@ RegisterHostname (name)
 	    if (hostent->h_addrtype != AF_INET || hostent->h_length != 4)
 	    	return;
 	    in_addr.sin_family = hostent->h_addrtype;
-	    bcopy (hostent->h_addr, &in_addr.sin_addr, 4);
+	    memmove( &in_addr.sin_addr, hostent->h_addr, 4);
 	}
 	in_addr.sin_port = htons (XDM_UDP_PORT);
 #ifdef BSD44SOCKETS
@@ -554,7 +554,7 @@ RegisterAuthenticationName (name, namelen)
     authName = &AuthenticationNames.data[AuthenticationNames.length-1];
     if (!XdmcpAllocARRAY8 (authName, namelen))
 	return;
-    bcopy (name, authName->data, namelen);
+    memmove( authName->data, name, namelen);
 }
 
 InitXDMCP (argv)
@@ -623,8 +623,8 @@ Choose (h)
 	    in_addr.sin_len = sizeof(in_addr);
 #endif
 	    in_addr.sin_family = family;
-	    bcopy (xdm + 2, &in_addr.sin_port, 2);
-	    bcopy (xdm + 4, &in_addr.sin_addr.s_addr, 4);
+	    memmove( &in_addr.sin_port, xdm + 2, 2);
+	    memmove( &in_addr.sin_addr.s_addr, xdm + 4, 4);
 	    addr = (struct sockaddr *) &in_addr;
 	    len = sizeof (in_addr);
 	    break;

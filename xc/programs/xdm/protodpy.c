@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.9 91/07/16 22:19:41 gildea Exp $
+ * $XConsortium: protodpy.c,v 1.10 91/07/18 18:50:17 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -113,7 +113,7 @@ NewProtoDisplay (address, addrlen, displayNumber,
 	return NULL;
     }
     pdpy->addrlen = addrlen;
-    bcopy (address, pdpy->address, addrlen);
+    memmove( pdpy->address, address, addrlen);
     pdpy->displayNumber = displayNumber;
     pdpy->connectionType = connectionType;
     pdpy->date = date;

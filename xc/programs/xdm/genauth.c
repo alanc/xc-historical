@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: genauth.c,v 1.9 91/10/21 14:32:39 eswu Exp $
+ * $XConsortium: genauth.c,v 1.10 92/08/24 13:17:57 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -156,7 +156,7 @@ int	len;
 	value = len;
 	if (value > sizeof (key))
 	    value = sizeof (key);
-    	bcopy (auth, (char *) key, value);
+    	memmove( (char *) key, auth, value);
     }
 #endif
 }

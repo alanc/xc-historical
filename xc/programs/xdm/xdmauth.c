@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.8 91/07/24 00:07:05 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.9 92/05/19 17:27:04 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -69,7 +69,7 @@ XdmInitAuth (name_len, name)
     if (name_len > 256)
 	name_len = 256;
     auth_name_len = name_len;
-    bcopy (name, auth_name, name_len);
+    memmove( auth_name, name, name_len);
 }
 
 /*
@@ -115,7 +115,7 @@ XdmGetAuthHelper (namelen, name, includeRho)
 	free ((char *) new);
 	return (Xauth *) 0;
     }
-    bcopy (name, (char *)new->name, namelen);
+    memmove( (char *)new->name, name, namelen);
     new->name_length = namelen;
     GenerateAuthorization ((char *)new->data, new->data_length);
     /*
@@ -175,9 +175,9 @@ XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
      * which is simply the number we've been passing back and
      * forth via XDMCP
      */
-    bcopy (xdmcpauth->name, fileauth->name, xdmcpauth->name_length);
-    bcopy (pdpy->authenticationData.data, fileauth->data, 8);
-    bcopy (xdmcpauth->data, fileauth->data + 8, 8);
+    memmove( fileauth->name, xdmcpauth->name, xdmcpauth->name_length);
+    memmove( fileauth->data, pdpy->authenticationData.data, 8);
+    memmove( fileauth->data + 8, xdmcpauth->data, 8);
     XdmPrintDataHex ("Accept packet auth", xdmcpauth->data, xdmcpauth->data_length);
     XdmPrintDataHex ("Auth file auth", fileauth->data, fileauth->data_length);
     /* encrypt the session key for its trip back to the server */
@@ -248,7 +248,7 @@ XdmGetKey (pdpy, displayID)
 	    while (keylen < 7)
 		key[keylen++] = '\0';
 	    pdpy->key.data[0] = '\0';
-	    bcopy (key, pdpy->key.data + 1, 7);
+	    memmove( pdpy->key.data + 1, key, 7);
 	    fclose (keys);
 	    return TRUE;
 	}

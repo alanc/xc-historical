@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.16 93/07/15 17:51:26 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.17 93/08/24 18:49:37 gildea Exp $ */
 /*
  * font control
  */
@@ -201,7 +201,7 @@ remove_id_from_list(ids, fid)
 
     for (i = 0; i < ids->num; i++) {
 	if (ids->client_list[i] == fid) {
-	    /* a bcopy() might be better here */
+	    /* a memmove() might be better here */
 	    while (i < ids->num) {
 		ids->client_list[i] = ids->client_list[i + 1];
 		i++;
@@ -293,7 +293,7 @@ do_open_font(client, c)
 		err = AllocError;
 		break;
 	    }
-	    bcopy(alias, newname, newlen);
+	    memmove( newname, alias, newlen);
 	    c->fontname = newname;
 	    c->fnamelen = newlen;
 	    c->current_fpe = 0;
@@ -479,7 +479,7 @@ OpenFont(client, fid, format, format_mask, namelen, name)
 	fsfree(c);
 	goto lowmem;
     }
-    bcopy(name, c->fontname, namelen);
+    memmove( c->fontname, name, namelen);
     for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
@@ -578,7 +578,7 @@ find_existing_fpe(list, num, name, len)
 
     for (i = 0; i < num; i++) {
 	fpe = list[i];
-	if (fpe->name_length == len && bcmp(name, fpe->name, len) == 0)
+	if (fpe->name_length == len &&  memcmp(name, fpe->name, len) == 0)
 	    return fpe;
     }
     return (FontPathElementPtr) 0;
@@ -703,7 +703,7 @@ SetFontCatalogue(str, badpath)
 	    end = str + strlen(str);
 	}
 	*p++ = len = end - str;
-	bcopy(str, p, len);
+	memmove( p, str, len);
 	npaths++;
 	str += len;		/* skip entry */
 	if (*str == ',')
@@ -801,7 +801,7 @@ finish:
 	else
 	{
 	    *bufptr++ = names->length[i];
-	    bcopy(names->names[i], bufptr, names->length[i]);
+	    memmove( bufptr, names->names[i], names->length[i]);
 	    bufptr += names->length[i];
 	}
     }
@@ -849,7 +849,7 @@ make_list_fonts_closure(client, pattern, length, maxnames)
 	fsfree(c);
 	return (LFclosurePtr) 0;
     }
-    bcopy(pattern, c->pattern, length);
+    memmove( c->pattern, pattern, length);
     for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
@@ -1102,7 +1102,7 @@ StartListFontsWithInfo(client, length, pattern, maxNames)
 	fsfree(c);
 	goto badAlloc;
     }
-    bcopy(pattern, c->current.pattern, length);
+    memmove( c->current.pattern, pattern, length);
     for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.18 93/08/18 19:46:33 rws Exp $
+ * $XConsortium: gethost.c,v 1.19 93/09/09 09:58:21 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -57,7 +57,10 @@
 #endif /* !STREAMSCONN */
 #endif /* !WIN32 */
 #include <errno.h>
-extern int errno;			/* for stupid errno.h files */
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
@@ -171,7 +174,7 @@ static Bool get_inet_address (name, resultp)
 	    return False;
 	}
  
-	bcopy((char *)host_ptr->h_addr, (char *)&hostinetaddr,
+	memmove( (char *)&hostinetaddr, (char *)host_ptr->h_addr, 
 	      sizeof(inaddr.sin_addr));
     }
     *resultp = hostinetaddr;
@@ -192,7 +195,7 @@ static Bool get_dnet_address (name, resultp)
     } else {
 	if ((np = getnodebyname (name)) == NULL) return False;
 	dnaddr.a_len = np->n_length;
-	bcopy (np->n_addr, dnaddr.a_addr, np->n_length);
+	memmove( dnaddr.a_addr, np->n_addr, np->n_length);
     }
     *resultp = dnaddr;
     return True;
@@ -270,7 +273,7 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
 
     retval = malloc (len);
     if (retval) {
-	bcopy (src, retval, len);
+	memmove( retval, src, len);
 	*lenp = len;
     }
     return retval;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.56 91/07/30 18:46:26 converse Exp $
+ * $XConsortium: tocutil.c,v 2.57 91/07/31 01:10:23 keith Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -276,7 +276,7 @@ void TULoadSeqLists(toc)
     fid = myfopen(str, "r");
     if (fid) {
 	while (ptr = ReadLine(fid)) {
-	    ptr2 = index(ptr, ':');
+	    ptr2 = strchr(ptr, ':');
 	    if (ptr2) {
 		*ptr2 = 0;
 		if (strcmp(ptr, "all") != 0 &&

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.7 91/07/18 21:41:28 rws Exp $
+ * $XConsortium: sessreg.c,v 1.8 91/07/18 22:00:12 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -210,7 +210,7 @@ char	**argv;
 #endif
 	if (!lflag) {
 		sysnerr ((int) (line_tmp = ttyname (0)), "ttyname");
-		line = rindex (line_tmp, '/');
+		line = strrchr(line_tmp, '/');
 		if (line)
 			line = line + 1;
 		else
@@ -321,9 +321,9 @@ char	*display_name;
 
 	/* remove screen number from the display name */
 	strcpy(disp_name, display_name);
-	pos = rindex(disp_name, ':');
+	pos = strrchr(disp_name, ':');
 	if (pos) {
-	    pos = index(pos, '.');
+	    pos = strchr(pos, '.');
 	    if (pos)
 		*pos = '\0';
 	}

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: utils.c,v 1.19 93/04/22 14:13:00 dave Exp $
+ * $XConsortium: utils.c,v 1.20 93/08/19 09:27:22 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -86,7 +86,7 @@ int * num;
      * count the number of strings.
      */
 
-    for (*num = 1, ptr = in; (ptr = index(ptr, sep)) != NULL; (*num)++)
+    for (*num = 1, ptr = in; (ptr = strchr(ptr, sep)) != NULL; (*num)++)
 	ptr++;
 
 /*
@@ -107,7 +107,7 @@ int * num;
     i = 1;
     (*out)[0] = ptr;
     while (TRUE) {
-	if ((ptr = index(ptr, sep)) == NULL)
+	if ((ptr = strchr(ptr, sep)) == NULL)
 	    break;
 
 	*ptr++ = '\0';

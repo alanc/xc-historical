@@ -1,4 +1,4 @@
-/* $XConsortium: charinfo.c,v 1.8 93/07/15 17:37:43 gildea Exp $ */
+/* $XConsortium: charinfo.c,v 1.9 93/08/24 18:49:39 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -206,7 +206,7 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
 	cilocal.right = xci->metrics.rightSideBearing;
 	cilocal.width = xci->metrics.characterWidth;
 	cilocal.attributes = xci->metrics.attributes;
-	bcopy(&cilocal, pci, SIZEOF(fsXCharInfo));
+	memmove( pci, &cilocal, SIZEOF(fsXCharInfo));
 	pci += SIZEOF(fsXCharInfo);
     }
     
@@ -474,7 +474,7 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	    if (srcbpr == dstbpr && src_left_bytes == dst_left_bytes)
 	    {
 		r = height * width;
-		bcopy (srcp, dstp, r);
+		memmove( dstp, srcp, r);
 		dstp += r;
 	    }
 	    else

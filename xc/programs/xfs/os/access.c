@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.6 92/06/01 17:07:58 gildea Exp $ */
+/* $XConsortium: access.c,v 1.7 93/08/24 18:49:43 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -69,7 +69,7 @@ GetHostAddress(addr)
     gethostname(hname, sizeof(hname));
     hp = gethostbyname(hname);
     if (hp) {
-	bcopy((char *) hp->h_addr, (char *) addr->address, addr->addr_len);
+	memmove( (char *) addr->address, (char *) hp->h_addr, addr->addr_len);
     } else {
 	fsfree((char *) addr->address);
 	return FSBadName;

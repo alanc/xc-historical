@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.59 92/11/20 10:50:03 gildea Exp $
+ * $XConsortium: session.c,v 1.60 92/12/16 22:52:04 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -37,7 +37,10 @@
 # include <rpc/key_prot.h>
 #endif
 
-extern int  errno;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 extern char **setEnv();
 
 static Bool StartClient();
@@ -158,7 +161,7 @@ struct display	*d;
     for (i = 0; i < d->authNum; i++)
     {
 	if (d->authorizations[i]->name_length == 9 &&
-	    bcmp (d->authorizations[i]->name, "SUN-DES-1", 9) == 0)
+	    memcmp(d->authorizations[i]->name, "SUN-DES-1", 9) == 0)
 	{
 	    XHostAddress	addr;
 	    char		netname[MAXNETNAMELEN+1];

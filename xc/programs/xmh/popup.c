@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.35 91/07/22 21:30:02 converse Exp $
+/* $XConsortium: popup.c,v 2.36 91/07/23 17:43:02 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -483,7 +483,7 @@ void PopupWarningHandler(name, type, class, msg, params, num)
 
     if (params && num && *num) {
 	i = (*num <= 10) ? *num : 10;
-	bcopy((char*)params, (char*)par, i * sizeof(String));
+	memmove( (char*)par, (char*)params, i * sizeof(String));
 	bzero( &par[i], (10-i) * sizeof(String));
 	if (*num > 10)
 	    par[9] = "(truncated)";

@@ -1,4 +1,4 @@
-/* $XConsortium: header.c,v 1.2 91/05/13 16:35:53 gildea Exp $ */
+/* $XConsortium: header.c,v 1.3 92/11/18 21:31:26 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -60,7 +60,7 @@ FindStringProperty(propName, propLength, propInfo, propOffsets, propData)
 #ifdef DEBUG
 	    char        pname[256];
 
-	    bcopy(propData + propOffset->name.position, pname,
+	    memmove( pname, propData + propOffset->name.position, 
 		  propOffset->name.length);
 	    pname[propOffset->name.length] = '\0';
 	    fprintf(stderr, "prop name: %s (len %d)\n",

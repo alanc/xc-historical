@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.21 92/11/18 21:30:58 gildea Exp $ */
+/* $XConsortium: connection.c,v 1.22 92/11/24 11:32:47 rws Exp $ */
 /*
  * handles connections
  */
@@ -78,7 +78,10 @@
 #undef SO_DONTLINGER
 #endif
 
-extern int  errno;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 
 int         ListenPort = DEFAULT_FS_PORT;   /* port to listen on */
 int         lastfdesc;

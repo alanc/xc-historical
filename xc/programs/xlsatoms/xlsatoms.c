@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsatoms.c,v 1.2 89/08/22 10:15:08 jim Exp $
+ * $XConsortium: xlsatoms.c,v 1.3 90/12/17 18:47:10 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -140,8 +140,8 @@ static int parse_range (range, lowp, highp)
 	return RangeLow;
     }
 
-    dash = index (range, '-');
-    if (!dash) dash = index (range, ':');
+    dash = strchr(range, '-');
+    if (!dash) dash = strchr(range, ':');
     if (dash) {
 	if (dash == range) {		/* -high */
 	    *lowp = 1;

@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.38 92/10/16 14:47:09 rws Exp $*/
+/* $XConsortium: xprop.c,v 1.39 93/09/11 13:28:01 rws Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -105,7 +105,7 @@ char *Copy_String(string)
 	length = strlen(string) + 1;
 
 	new = (char *) Malloc(length);
-	bcopy(string, new, length);
+	memmove( new, string, length);
 
 	return(new);
 }
@@ -637,7 +637,7 @@ char *Format_Len_String(string, len)
 
   data = (char *) Malloc(len+1);
 
-  bcopy(string, data, len);
+  memmove( data, string, len);
   data[len]='\0';
 
   result = Format_String(data);

@@ -5,7 +5,7 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.14 91/06/30 16:38:56 rws Exp $";
+static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.15 93/07/29 12:51:44 rws Exp $";
 #endif
 
 #ifdef NDBM
@@ -29,7 +29,11 @@ static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.14 91/06/30 16:38:56 rws Ex
 #include <ctype.h>
 
 #include <errno.h>
-extern int errno;			/* some systems are still stupid */
+
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 extern int sys_nerr;
 extern char *sys_errlist[];
 

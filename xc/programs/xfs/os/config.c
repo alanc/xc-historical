@@ -1,4 +1,4 @@
-/* $XConsortium: config.c,v 1.9 92/05/29 18:04:30 gildea Exp $ */
+/* $XConsortium: config.c,v 1.10 93/08/24 18:49:44 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -113,7 +113,7 @@ strip_comments(data)
     char       *c;
 
     c = data;
-    while ((c = index(c, '#')) != NULL) {
+    while ((c = strchr(c, '#')) != NULL) {
 	if (c == data || *(c - 1) != '\\') {
 	    blank_comment(c);
 	} else {
@@ -175,7 +175,7 @@ parse_config(data)
 		*c = tolower(*c);
 	    c++;
 	}
-	bcopy(p, param_name, min(sizeof(param_name), (int) (c - p)));
+	memmove( param_name, p, min(sizeof(param_name), (int) (c - p)));
 	param_name[(int) (c - p)] = '\0';
 
 	/* check for junk */
@@ -448,7 +448,7 @@ config_set_file(parm, val)
     t = *val;
     *val = '\0';
     if (!strcmp(parm->parm_name, "error-file")) {
-	bcopy(start, ErrorFile, val - start + 1);
+	memmove( ErrorFile, start, val - start + 1);
     }
     *val = t;
     return val;

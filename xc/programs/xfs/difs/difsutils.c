@@ -1,4 +1,4 @@
-/* $XConsortium: difsutils.c,v 1.7 92/05/27 15:55:12 gildea Exp $ */
+/* $XConsortium: difsutils.c,v 1.8 93/08/24 18:49:40 gildea Exp $ */
 /*
  * misc utility routines
  */
@@ -241,7 +241,7 @@ AddHost(list, addr)
     }
     new->type = addr->type;
     new->addr_len = addr->addr_len;
-    bcopy((char *) addr->address, (char *) new->address, new->addr_len);
+    memmove( (char *) new->address, (char *) addr->address, new->addr_len);
 
     new->next = *list;
     *list = new;
@@ -261,7 +261,7 @@ RemoveHost(list, addr)
     while (t) {
 	if (t->type == addr->type &&
 		t->addr_len == addr->addr_len &&
-		bcmp((char *) t->address, (char *) addr->address,
+		memcmp((char *) t->address, (char *) addr->address,
 		     min(t->addr_len, addr->addr_len)) == 0) {
 	    if (last) {
 		last->next = t->next;
@@ -289,7 +289,7 @@ ValidHost(list, addr)
     while (t) {
 	if (t->type == addr->type &&
 		t->addr_len == addr->addr_len &&
-		bcmp((char *) t->address, (char *) addr->address,
+		memcmp((char *) t->address, (char *) addr->address,
 		     min(t->addr_len, addr->addr_len)) == 0) {
 	    return TRUE;
 	}
@@ -615,9 +615,9 @@ ClientPtr client;
 	*p++ = len1 &0xff;
 	*p++ = len2 >> 8;
 	*p++ = len2 & 0xff;
-	bcopy(acp->authname, p, len1);
+	memmove( p, acp->authname, len1);
 	p += len1;
-	bcopy(acp->authdata, p, len2);
+	memmove( p, acp->authdata, len2);
 	p += len2;
 	*authlen = p - result;
 	*authorizations = result;

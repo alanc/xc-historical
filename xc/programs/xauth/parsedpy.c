@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parsedpy.c,v 1.6 89/12/07 08:59:56 jim Exp $
+ * $XConsortium: parsedpy.c,v 1.7 89/12/10 17:00:56 rws Exp $
  *
  * parse_displayname - utility routine for splitting up display name strings
  *
@@ -27,7 +27,7 @@
 
 #include <stdio.h>			/* for NULL */
 #include <ctype.h>			/* for isascii() and isdigit() */
-#include <X11/Xos.h>			/* for index() and string routines */
+#include <X11/Xos.h>			/* for strchr() and string routines */
 #include <X11/Xlib.h>			/* for Family contants */
 #ifdef hpux
 #include <sys/utsname.h>		/* for struct utsname */
@@ -105,7 +105,7 @@ Bool parse_displayname (displayname, familyp, hostp, dpynump, scrnump, restp)
     if (!displayname || !displayname[0]) return False;
 
 					/* must have at least :number */
-    ptr = index (displayname, ':');
+    ptr = strchr(displayname, ':');
     if (!ptr || !ptr[1]) return False;
     if (ptr[1] == ':') {
 	if (ptr[2] == '\0') return False;

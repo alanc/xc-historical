@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.34 91/07/18 18:52:34 rws Exp $
+ * $XConsortium: Login.c,v 1.35 91/07/18 19:31:10 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -653,18 +653,18 @@ InsertChar (ctxw, event, params, num_params)
     switch (ctx->login.state) {
     case GET_NAME:
 	EraseName (ctx, ctx->login.cursor);
-	bcopy (ctx->login.data.name + ctx->login.cursor,
-	       ctx->login.data.name + ctx->login.cursor + len,
+	memmove( ctx->login.data.name + ctx->login.cursor + len,
+	       ctx->login.data.name + ctx->login.cursor,
 	       strlen (ctx->login.data.name + ctx->login.cursor) + 1);
-	bcopy (strbuf, ctx->login.data.name + ctx->login.cursor, len);
+	memmove( ctx->login.data.name + ctx->login.cursor, strbuf, len);
 	DrawName (ctx, ctx->login.cursor);
 	ctx->login.cursor += len;
 	break;
     case GET_PASSWD:
-	bcopy (ctx->login.data.passwd + ctx->login.cursor,
-	       ctx->login.data.passwd + ctx->login.cursor + len,
+	memmove( ctx->login.data.passwd + ctx->login.cursor + len,
+	       ctx->login.data.passwd + ctx->login.cursor,
 	       strlen (ctx->login.data.passwd + ctx->login.cursor) + 1);
-	bcopy (strbuf, ctx->login.data.passwd + ctx->login.cursor, len);
+	memmove( ctx->login.data.passwd + ctx->login.cursor, strbuf, len);
 	ctx->login.cursor += len;
 	break;
     }

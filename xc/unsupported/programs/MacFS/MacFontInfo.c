@@ -47,7 +47,7 @@ IMPLIED.
  */
 
 #include 	"MacFont.h"
-#include	"fontfilest.h"
+#include	"fntfilst.h"
 #define APPLE	"Apple Computer, Inc."
 
 enum scaleType {
@@ -152,9 +152,9 @@ MacFontComputedProps(fontname, vals, pinfo, pMacPriv)
 	    ptr2 = ptr1;
 	else {
 	    if (i > 1)
-		ptr2 = index(ptr1 + 1, '-');
+		ptr2 = strchr(ptr1 + 1, '-');
 	    else
-		ptr2 = index(ptr1 + 1, '\0');
+		ptr2 = strchr(ptr1 + 1, '\0');
 	}
 	pp->name = fpt->atom;
 	switch (fpt->type) {

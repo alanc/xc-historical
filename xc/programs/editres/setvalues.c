@@ -1,5 +1,5 @@
 /*
- * $XConsortium: setvalues.c,v 1.3 91/01/09 17:46:00 gildea Exp $
+ * $XConsortium: setvalues.c,v 1.4 91/03/20 17:08:49 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -111,7 +111,7 @@ unsigned short * size;
     XrmGetResource(db, RESOURCE_NAME, RESOURCE_CLASS, &temp, &value);
 
     ptr = XtMalloc(sizeof(char) * value.size);
-    bcopy(value.addr, ptr, value.size);
+    memmove( ptr, value.addr, value.size);
     XrmDestroyDatabase(db);
     
     *size = (unsigned short) value.size;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.64 91/07/31 16:55:01 keith Exp $
+ * $XConsortium: dm.c,v 1.65 92/08/24 13:16:04 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -54,7 +54,10 @@
 #endif
 #endif
 
-extern int	errno;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 
 #ifdef SVR4
 extern FILE    *fdopen();

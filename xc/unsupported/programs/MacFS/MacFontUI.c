@@ -1781,7 +1781,10 @@ MacFontBanner()
 	MacFontLogInfo(buf);
 }
 
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+
 extern char *sys_errlist[];
 extern int sys_nerr;
 

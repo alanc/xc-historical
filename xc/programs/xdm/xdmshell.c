@@ -34,7 +34,10 @@
 #include <stdio.h>
 #include "dm.h"
 #include <errno.h>
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+
 extern int sys_nerr;
 extern char *sys_errlist[];
 

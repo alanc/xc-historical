@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.10 93/08/22 11:33:43 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.11 93/09/14 14:28:40 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -55,7 +55,10 @@ terms and conditions:
 #include <ctype.h>
 #include <signal.h>
 
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+
 
 #ifndef VMS
 #include <X11/Xatom.h>

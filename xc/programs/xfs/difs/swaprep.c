@@ -1,4 +1,4 @@
-/* $XConsortium: swaprep.c,v 1.7 92/05/28 16:43:00 gildea Exp $ */
+/* $XConsortium: swaprep.c,v 1.8 92/11/18 21:30:09 gildea Exp $ */
 /*
  * font server reply swapping
  */
@@ -374,7 +374,7 @@ WriteSConnectionInfo(client, size, pInfo)
     pInfo += SIZEOF(fsConnSetup);
 
     i = (pConnSetup->vendor_len + 3) & ~3;
-    bcopy(pInfo, pInfoT, i);
+    memmove( pInfoT, pInfo, i);
 
     (void) WriteToClient(client, (int) size, (char *) pInfoTBase);
     DEALLOCATE_LOCAL(pInfoTBase);

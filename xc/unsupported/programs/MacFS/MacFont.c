@@ -24,7 +24,7 @@ IMPLIED.
 
 #include <stdio.h>
 #include <ctype.h>
-#include "fontfilest.h"
+#include "fntfilst.h"
 #include "bitmap.h"
 #include "font.h"
 
@@ -218,20 +218,20 @@ int OpenMacFont (pFont, pMacPriv, name, pixel, res_x, res_y)
        comment */
 
     if (!(*fname == '-') ||				/* foundry */
-	    !(ptr1 = ptr = index(fname + 1, '-')) ||	/* family_name */
-	    !(ptr2 = ptr = index(ptr + 1, '-')) ||	/* weight_name */
-	    !(ptr3 = ptr = index(ptr + 1, '-')) ||	/* slant */
-	    !(ptr4 = ptr = index(ptr + 1, '-')) ||	/* setwidth_name */
-	    !(ptr5 = ptr = index(ptr + 1, '-')) ||	/* add_style_name */
-	    !(ptr6 = ptr = index(ptr + 1, '-')) ||	/* pixel_size */
-	    !(ptr7 = ptr = index(ptr + 1, '-')) ||	/* point_size */
-	    !(ptr8 = ptr = index(ptr + 1, '-')) ||	/* resolution_x */
-	    !(ptr9 = ptr = index(ptr + 1, '-')) ||	/* resolution_y */
-	    !(ptr10 = ptr = index(ptr + 1, '-')) ||	/* spacing */
-	    !(ptr11 = ptr = index(ptr + 1, '-')) ||	/* average_width */
-	    !(ptr12 = ptr = index(ptr + 1, '-')) ||	/* charset_registry */
-	    !(ptr13 = ptr = index(ptr + 1, '-')) ||	/* charset_encoding */
-	    index(ptr + 1, '-'))			/* Too many '-'s ! */
+	    !(ptr1 = ptr = strchr(fname + 1, '-')) ||	/* family_name */
+	    !(ptr2 = ptr = strchr(ptr + 1, '-')) ||	/* weight_name */
+	    !(ptr3 = ptr = strchr(ptr + 1, '-')) ||	/* slant */
+	    !(ptr4 = ptr = strchr(ptr + 1, '-')) ||	/* setwidth_name */
+	    !(ptr5 = ptr = strchr(ptr + 1, '-')) ||	/* add_style_name */
+	    !(ptr6 = ptr = strchr(ptr + 1, '-')) ||	/* pixel_size */
+	    !(ptr7 = ptr = strchr(ptr + 1, '-')) ||	/* point_size */
+	    !(ptr8 = ptr = strchr(ptr + 1, '-')) ||	/* resolution_x */
+	    !(ptr9 = ptr = strchr(ptr + 1, '-')) ||	/* resolution_y */
+	    !(ptr10 = ptr = strchr(ptr + 1, '-')) ||	/* spacing */
+	    !(ptr11 = ptr = strchr(ptr + 1, '-')) ||	/* average_width */
+	    !(ptr12 = ptr = strchr(ptr + 1, '-')) ||	/* charset_registry */
+	    !(ptr13 = ptr = strchr(ptr + 1, '-')) ||	/* charset_encoding */
+	    strchr(ptr + 1, '-'))			/* Too many '-'s ! */
 	return BadFontName;
     
     family_name = ptr1 + 1;

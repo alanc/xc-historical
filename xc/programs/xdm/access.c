@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.12 92/03/20 13:33:50 gildea Exp $
+ * $XConsortium: access.c,v 1.13 92/04/21 11:33:37 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -95,7 +95,7 @@ getLocalAddress ()
 
 	hostent = gethostbyname (localHostname());
 	XdmcpAllocARRAY8 (&localAddress, hostent->h_length);
-	bcopy (hostent->h_addr, localAddress.data, hostent->h_length);
+	memmove( localAddress.data, hostent->h_addr, hostent->h_length);
     }
     return &localAddress;
 }
@@ -266,7 +266,7 @@ tryagain:
 	    free ((char *) h);
 	    return NULL;
 	}
-	bcopy (hostent->h_addr, h->entry.hostAddress.data, hostent->h_length);
+	memmove( h->entry.hostAddress.data, hostent->h_addr, hostent->h_length);
     }
     return h;
 }
@@ -345,7 +345,7 @@ ReadDisplayEntry (file)
 	    	free ((char *) d);
 	    	return NULL;
 	    }
-	    bcopy (hostent->h_addr, display->clientAddress.data, hostent->h_length);
+	    memmove( display->clientAddress.data, hostent->h_addr, hostent->h_length);
 	    switch (hostent->h_addrtype)
 	    {
 #ifdef AF_UNIX

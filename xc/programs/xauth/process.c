@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.43 93/08/16 13:55:43 rws Exp $
+ * $XConsortium: process.c,v 1.44 93/08/16 16:04:06 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,10 @@
 #include "xauth.h"
 #include <ctype.h>
 #include <errno.h>
-extern int errno;			/* for stupid errno.h files */
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 #include <signal.h>
 #include <X11/X.h>			/* for Family constants */
 
@@ -450,7 +453,7 @@ static Bool get_displayname_auth (displayname, auth)
      * check to see if the display name is of the form "host/unix:"
      * which is how the list routine prints out local connections
      */
-    cp = index (displayname, '/');
+    cp = strchr(displayname, '/');
     if (cp && strncmp (cp, "/unix:", 6) == 0)
       prelen = (cp - displayname);
 
@@ -962,8 +965,8 @@ static int match_auth_dpy (a, b)
     return ((a->family == b->family &&
 	     a->address_length == b->address_length &&
 	     a->number_length == b->number_length &&
-	     bcmp (a->address, b->address, a->address_length) == 0 &&
-	     bcmp (a->number, b->number, a->number_length) == 0) ? 1 : 0);
+	     memcmp(a->address, b->address, a->address_length) == 0 &&
+	     memcmp(a->number, b->number, a->number_length) == 0) ? 1 : 0);
 }
 
 /* return non-zero iff display and authorization type are the same */
@@ -973,7 +976,7 @@ static int match_auth (a, b)
 {
     return ((match_auth_dpy(a, b)
 	     && a->name_length == b->name_length
-	     && bcmp(a->name, b->name, a->name_length) == 0) ? 1 : 0);
+	     && memcmp(a->name, b->name, a->name_length) == 0) ? 1 : 0);
 }
 
 

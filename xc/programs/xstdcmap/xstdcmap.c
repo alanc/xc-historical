@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xstdcmap.c,v 1.7 92/11/23 16:56:05 rws Exp $
+ * $XConsortium: xstdcmap.c,v 1.8 92/11/24 16:24:36 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -327,7 +327,7 @@ main(argc, argv)
 {
     Status	status = 0;
 
-    if (program_name = rindex(*argv, '/'))
+    if (program_name = strrchr(*argv, '/'))
 	program_name++;
     else
 	program_name = *argv;

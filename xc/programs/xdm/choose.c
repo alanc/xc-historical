@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.9 91/08/25 10:48:43 keith Exp $
+ * $XConsortium: choose.c,v 1.10 92/04/21 18:45:38 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -189,7 +189,7 @@ FormatChooserArgument (buf, len)
 	    result_buf[2] = port[0];
 	    result_buf[3] = port[1];
 	    localAddress = getLocalAddress ();
-	    bcopy ((char *)localAddress->data, (char *)result_buf+4, 4);
+	    memmove( (char *)result_buf+4, (char *)localAddress->data, 4);
 	    result_len = 8;
 	}
 	break;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.7 91/02/14 13:43:51 rws Exp $
+ * $XConsortium: showrgb.c,v 1.8 91/06/30 16:39:03 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -89,7 +89,7 @@ dumprgb (filename)
 	if (value.dptr) {
 	    RGB rgb;
 	    unsigned short r, g, b;
-	    bcopy (value.dptr, (char *)&rgb, sizeof rgb);
+	    memmove( (char *)&rgb, value.dptr, sizeof rgb);
 #define N(x) (((x) >> 8) & 0xff)
 	    r = N(rgb.red);
 	    g = N(rgb.green);

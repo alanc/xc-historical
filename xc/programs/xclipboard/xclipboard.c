@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.25 91/07/22 15:53:36 converse Exp $
+ * $XConsortium: xclipboard.c,v 1.26 93/08/19 09:30:14 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -531,7 +531,7 @@ static Boolean ConvertSelection(w, selection, target,
 	*targetP++ = XA_LIST_LENGTH(d);
 	*targetP++ = XA_CHARACTER_POSITION(d);
 	*length = std_length + (targetP - (*(Atom **) value));
-	bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
+	memmove( (char*)targetP, (char*)std_targets, sizeof(Atom)*std_length);
 	XtFree((char*)std_targets);
 	*type = XA_ATOM;
 	*format = 32;

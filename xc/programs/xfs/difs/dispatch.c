@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.17 93/07/15 17:36:43 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.18 93/08/24 18:49:34 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -266,9 +266,9 @@ ProcEstablishConnection(client)
 	    SendErrToClient(client, FSBadAlloc, (pointer) 0);
 	    return FSBadAlloc;
 	}
-	bcopy(client_auth[auth_index - 1].name, authp->authname,
+	memmove( authp->authname, client_auth[auth_index - 1].name, 
 	      client_auth[auth_index - 1].namelen);
-	bcopy(client_auth[auth_index - 1].data, authp->authdata,
+	memmove( authp->authdata, client_auth[auth_index - 1].data, 
 	      client_auth[auth_index - 1].datalen);
 	/* Save it with a zero resource id...  subsequent
 	   SetAuthorizations of None will find it.  And it will be freed
@@ -316,7 +316,7 @@ ProcEstablishConnection(client)
 	/* WriteToClient pads, so we have to fake some things */
 	tmp[0] = altservers[i].subset;
 	tmp[1] = altservers[i].namelen;
-	bcopy(altservers[i].name, (char *) &tmp[2], altservers[i].namelen);
+	memmove( (char *) &tmp[2], altservers[i].name, altservers[i].namelen);
 	(void) WriteToClient(client, altservers[i].namelen + 2, tmp);
     }
 
@@ -470,7 +470,7 @@ ProcSetCatalogues(client)
 	    new_cat = (char *) fsalloc(len);
 	    if (!new_cat)
 		return FSBadAlloc;
-	    bcopy((char *)stuff + SIZEOF(fsSetCataloguesReq), new_cat, len);
+	    memmove( new_cat, (char *)stuff + SIZEOF(fsSetCataloguesReq), len);
 	} else {
 	    SendErrToClient(client, err, (pointer) &num);
 	    return err;
@@ -587,8 +587,8 @@ ProcCreateAC(client)
 	    fsfree((char *) authp);
 	    goto alloc_failure;
 	}
-	bcopy(acp[index - 1].name, authp->authname, acp[index - 1].namelen);
-	bcopy(acp[index - 1].data, authp->authdata, acp[index - 1].datalen);
+	memmove( authp->authname, acp[index - 1].name, acp[index - 1].namelen);
+	memmove( authp->authdata, acp[index - 1].data, acp[index - 1].datalen);
     }
     else
 	size = 0;
@@ -688,7 +688,7 @@ ProcSetResolution(client)
 	return FSBadAlloc;
     }
     fsfree((char *) client->resolutions);
-    bcopy((char *)stuff + SIZEOF(fsSetResolutionReq), (char *) new_res,
+    memmove( (char *) new_res, (char *)stuff + SIZEOF(fsSetResolutionReq), 
 	  (stuff->num_resolutions * SIZEOF(fsResolution)));
     client->resolutions = new_res;
     client->num_resolutions = stuff->num_resolutions;

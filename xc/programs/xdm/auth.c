@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.46 91/09/12 19:56:05 keith Exp $
+ * $XConsortium: auth.c,v 1.47 91/11/08 15:18:18 eswu Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -120,7 +120,7 @@ findProtocol (name_length, name)
 
     for (i = 0; i < NUM_AUTHORIZATION; i++)
 	if (AuthProtocols[i].name_length == name_length &&
-	    bcmp (AuthProtocols[i].name, name, name_length) == 0)
+	    memcmp(AuthProtocols[i].name, name, name_length) == 0)
 	{
 	    return &AuthProtocols[i];
 	}
@@ -494,7 +494,7 @@ saveEntry (auth)
 			free ((char *) new);
 			return;
 		}
-		bcopy (auth->address, new->address, (int) auth->address_length);
+		memmove( new->address, auth->address, (int) auth->address_length);
 	} else
 		new->address = 0;
 	if ((new->number_length = auth->number_length) > 0) {
@@ -505,7 +505,7 @@ saveEntry (auth)
 			free ((char *) new);
 			return;
 		}
-		bcopy (auth->number, new->number, (int) auth->number_length);
+		memmove( new->number, auth->number, (int) auth->number_length);
 	} else
 		new->number = 0;
 	if ((new->name_length = auth->name_length) > 0) {
@@ -517,7 +517,7 @@ saveEntry (auth)
 			free ((char *) new);
 			return;
 		}
-		bcopy (auth->name, new->name, (int) auth->name_length);
+		memmove( new->name, auth->name, (int) auth->name_length);
 	} else
 		new->name = 0;
 	new->family = auth->family;
@@ -744,7 +744,7 @@ DefineSelf (fd, file, auth)
     if (hp != NULL) {
 	saddr.sa.sa_family = hp->h_addrtype;
 	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
-	bcopy ( (char *) hp->h_addr, (char *) &(inetaddr->sin_addr), (int) hp->h_length);
+	memmove( (char *) &(inetaddr->sin_addr), (char *) hp->h_addr, (int) hp->h_length);
 	family = ConvertAddr ( &(saddr.sa), &len, &addr);
 	if ( family >= 0) {
 	    writeAddr (FamilyInternet, sizeof (inetaddr->sin_addr),
@@ -765,10 +765,10 @@ setAuthNumber (auth, name)
     char	*dot, *number;
 
     Debug ("setAuthNumber %s\n", name);
-    colon = rindex (name, ':');
+    colon = strrchr(name, ':');
     if (colon) {
 	++colon;
-	dot = index (colon, '.');
+	dot = strchr(colon, '.');
 	if (dot)
 	    auth->number_length = dot - colon;
 	else

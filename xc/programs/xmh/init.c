@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.70 91/07/22 21:30:31 converse Exp $
+ * $XConsortium: init.c,v 2.71 91/07/23 17:42:19 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -347,7 +347,7 @@ char **argv;
 	{XtNinput, (XtArgVal)True},
     };
 
-    ptr = rindex(argv[0], '/');
+    ptr = strrchr(argv[0], '/');
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
 
