@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.35 90/02/22 19:41:18 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.36 90/11/09 15:09:07 dave Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -711,7 +711,6 @@ Do_Direct(dpy, header, colormap, ncolors, colors, in_image, out_image)
 {
     register int x, y;
     XColor color;
-    int direct = 0;
     unsigned long rmask, gmask, bmask;
     int rshift = 0, gshift = 0, bshift = 0;
     int i;
@@ -733,8 +732,6 @@ Do_Direct(dpy, header, colormap, ncolors, colors, in_image, out_image)
 	bmask >>= 1;
 	bshift++;
     }
-    if ((ncolors > 0) && (header->visual_class == DirectColor))
-	direct = 1;
     if (in_image->depth <= 12)
     {
 	pix = 1 << in_image->depth;
@@ -750,7 +747,7 @@ Do_Direct(dpy, header, colormap, ncolors, colors, in_image, out_image)
 		color.red = (pix >> rshift) & rmask;
 		color.green = (pix >> gshift) & gmask;
 		color.blue = (pix >> bshift) & bmask;
-		if (direct) {
+		if (ncolors) {
 		    color.red = colors[color.red].red;
 		    color.green = colors[color.green].green;
 		    color.blue = colors[color.blue].blue;
