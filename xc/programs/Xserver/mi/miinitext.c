@@ -21,11 +21,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.9 89/09/19 11:42:48 keith Exp $ */
+/* $XConsortium: miinitext.c,v 1.10 89/10/06 17:28:36 keith Exp $ */
 
-#ifdef ZOID
-extern void ZoidExtensionInit();
-#endif
 #ifdef BEZIER
 extern void BezierExtensionInit();
 #endif
@@ -44,6 +41,9 @@ extern void PexExtensionInit();
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit();
 #endif
+#ifdef MITMISC
+extern void MITMiscExtensionInit();
+#endif
 
 /*ARGSUSED*/
 void
@@ -51,9 +51,6 @@ InitExtensions(argc, argv)
     int		argc;
     char	*argv[];
 {
-#ifdef ZOID
-    ZoidExtensionInit();
-#endif
 #ifdef BEZIER
     BezierExtensionInit();
 #endif
@@ -71,5 +68,8 @@ InitExtensions(argc, argv)
 #endif
 #ifdef MULTIBUFFER
     MultibufferExtensionInit();
+#endif
+#ifdef MITMISC
+    MITMiscExtensionInit();
 #endif
 }
