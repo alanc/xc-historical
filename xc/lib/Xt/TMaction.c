@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.20 93/07/21 11:49:37 kaleb Exp $ */
+/* $XConsortium: TMaction.c,v 1.21 93/08/27 16:29:45 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -391,7 +391,7 @@ static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
 	      (bindStatus->boundInHierarchy == cacheStatus->boundInHierarchy) &&
 	      (bindStatus->boundInContext == cacheStatus->boundInContext) &&
 	      (bindCache->stateTree == (TMStateTree)stateTree) &&
-	      !XtBCmp(&bindCache->procs[0], procs, procsSize))
+	      !XtMemcmp(&bindCache->procs[0], procs, procsSize))
 	    {
 		bindCache->status.refCount++;
 		break;
@@ -419,9 +419,8 @@ static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
 	    }
 	  _XtGlobalTM.bindCacheTbl[_XtGlobalTM.numBindCache++] = bindCache;
 #endif /* TRACE_TM */
-	  XtBCopy((XtPointer)procs, 
-		  (XtPointer)&bindCache->procs[0], 
-		  procsSize);
+	  (void) XtMemmove((XtPointer)&bindCache->procs[0], 
+			   (XtPointer)procs, procsSize);
       }
     UNLOCK_PROCESS;
     return &bindCache->procs[0];
@@ -581,8 +580,8 @@ void _XtBindActions(widget, tm)
 		procs = (XtActionProc *)
 		  XtStackAlloc(stateTree->numQuarks * sizeof(XtActionProc),
 			       stackProcs);
-		XtBZero((XtPointer)procs, 
-		      stateTree->numQuarks * sizeof(XtActionProc));
+		(void) XtMemset((XtPointer)procs, 0,
+				stateTree->numQuarks * sizeof(XtActionProc));
 
 		localUnbound = BindProcs(bindWidget, 
 					 stateTree, 

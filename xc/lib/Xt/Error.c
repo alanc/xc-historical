@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.33 91/11/09 15:38:01 keith Exp $ */
+/* $XConsortium: Error.c,v 1.34 93/08/27 16:27:20 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -166,7 +166,7 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
     } else {
 	int len = strlen(defaultp);
 	if (len >= nbytes) len = nbytes-1;
-	bcopy(defaultp, buffer, len);
+	(void) memmove(buffer, defaultp, len);
 	buffer[len] = '\0';
     }
 #if GLOBALERRORS
@@ -199,8 +199,8 @@ void _XtDefaultErrorMsg (name,type,class,defaultp,params,num_params)
 	int i = *num_params;
 	String par[10];
 	if (i > 10) i = 10;
-	bcopy( (char*)params, (char*)par, i * sizeof(String) );
-	bzero( &par[i], (10-i) * sizeof(String) );
+	(void) memmove((char*)par, (char*)params, i * sizeof(String) );
+	(void) memset( &par[i], 0, (10-i) * sizeof(String) );
         (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
 		       par[4], par[5], par[6], par[7], par[8], par[9]);
 	XtError(message);
@@ -224,8 +224,8 @@ void _XtDefaultWarningMsg (name,type,class,defaultp,params,num_params)
 	int i = *num_params;
 	String par[10];
 	if (i > 10) i = 10;
-	bcopy( (char*)params, (char*)par, i * sizeof(String) );
-	bzero( &par[i], (10-i) * sizeof(String) );
+	(void) memmove((char*)par, (char*)params, i * sizeof(String) );
+	(void) memset ( &par[i], 0, (10-i) * sizeof(String) );
         (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
 		       par[4], par[5], par[6], par[7], par[8], par[9]);
 	XtWarning(message); 

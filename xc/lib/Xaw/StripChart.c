@@ -1,4 +1,4 @@
-/* $XConsortium: StripChart.c,v 1.20 91/05/24 17:20:42 converse Exp $ */
+/* $XConsortium: StripChart.c,v 1.21 91/10/16 21:40:06 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -366,8 +366,9 @@ Boolean blit;
 	if (j < 0) j = 0;
     }
 
-    bcopy((char *)(w->strip_chart.valuedata + next - j),
-	  (char *)(w->strip_chart.valuedata), j * sizeof(double));
+    (void) memmove((char *)(w->strip_chart.valuedata), 
+		   (char *)(w->strip_chart.valuedata + next - j),
+		   j * sizeof(double));
     next = w->strip_chart.interval = j;
 	
     /*

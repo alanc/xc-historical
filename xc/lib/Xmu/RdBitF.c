@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RdBitF.c,v 1.7 90/12/19 18:15:40 converse Exp $
+ * $XConsortium: RdBitF.c,v 1.8 91/03/09 16:27:55 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -160,7 +160,7 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
 	    RETURN (BitmapFileInvalid);
 	}
 	if (sscanf(line,"#define %s %d",name_and_type,&value) == 2) {
-	    if (!(type = rindex(name_and_type, '_')))
+	    if (!(type = strrchr(name_and_type, '_')))
 	      type = name_and_type;
 	    else
 	      type++;
@@ -189,7 +189,7 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
 	else
 	  continue;
 
-	if (!(type = rindex(name_and_type, '_')))
+	if (!(type = strrchr(name_and_type, '_')))
 	  type = name_and_type;
 	else
 	  type++;

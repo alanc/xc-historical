@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.207 93/09/12 11:13:10 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.208 93/09/18 14:56:32 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -499,7 +499,7 @@ static void _MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
     *dst = table = (XrmOptionDescRec*)
 	XtMalloc( sizeof(XrmOptionDescRec) * (num_src1 + num_src2) );
 
-    bcopy( src1, table, sizeof(XrmOptionDescRec) * num_src1 );
+    (void) memmove(table, src1, sizeof(XrmOptionDescRec) * num_src1 );
     if (num_src2 == 0) {
 	*num_dst = num_src1;
 	return;
@@ -571,11 +571,11 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
 	    if (Qtype == _XtQString)
 		*(String*)value->addr = db_value.addr;
 	    else
-		bcopy( db_value.addr, value->addr, value->size );
+		(void) memmove(value->addr, db_value.addr, value->size );
 	    return True;
 	} else {
 	    WidgetRec widget; /* hack, hack */
-	    bzero( &widget, sizeof(widget) );
+	    (void) memset( &widget, 0, sizeof(widget) );
 	    widget.core.self = &widget;
 	    widget.core.widget_class = coreWidgetClass;
 	    widget.core.screen = (Screen*)DefaultScreenOfDisplay(dpy);
@@ -607,7 +607,7 @@ XrmDatabase _XtPreparseCommandLine(urlist, num_urs, argc, argv, applName,
     int targc = argc;
 
     targv = (String *) XtMalloc(sizeof(char *) * argc);
-    bcopy(argv, targv, sizeof(char *) * argc);
+    (void) memmove(targv, argv, sizeof(char *) * argc);
     _MergeOptionTables(opTable, XtNumber(opTable), urlist, num_urs,
 		       &options, &num_options);
     name_list[0] = class_list[0] = XrmPermStringToQuark(".");
@@ -758,7 +758,7 @@ void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
 	    Cardinal size = (search_list_size*=2)*sizeof(XrmHashTable);
 	    if (!(search_list = (XrmHashTable*)ALLOCATE_LOCAL(size)))
 		_XtAllocError(NULL);
-	    bcopy( (char*)old, (char*)search_list, (size>>1) );
+	    (void) memmove((char*)search_list, (char*)old, (size>>1) );
 	    DEALLOCATE_LOCAL(old);
 	}
 

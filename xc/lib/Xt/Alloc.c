@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.50 93/09/13 20:56:12 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.51 93/09/18 11:38:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -51,18 +51,18 @@ char *malloc(), *realloc(), *calloc();
 #define Xfree(ptr) free(ptr)
 
 #ifdef _XNEEDBCOPYFUNC
-void _XtBCopy(b1, b2, length)
-    register char *b1, *b2;
-    register length;
+void _XtMemmove(dst, src, length)
+    char *dst, *src;
+    int length;
 {
-    if (b1 < b2) {
-	b2 += length;
-	b1 += length;
+    if (src < dst) {
+	dst += length;
+	src += length;
 	while (length--)
-	    *--b2 = *--b1;
+	    *--dst = *--src;
     } else {
 	while (length--)
-	    *b2++ = *b1++;
+	    *dst++ = *src++;
     }
 }
 #endif
@@ -277,7 +277,7 @@ char *_XtRealloc(ptr, size, file, line)
    if (ptr) {
        unsigned copysize = ToStats(ptr)->size;
        if (copysize > size) copysize = size;
-       bcopy(ptr, newptr, copysize);
+       memmove(newptr, ptr, copysize);
        _XtFree(ptr);
    }
    UNLOCK_PROCESS;

@@ -1,4 +1,4 @@
-/* $XConsortium: GetResList.c,v 1.3 93/08/18 11:24:10 kaleb Exp $ */
+/* $XConsortium: GetResList.c,v 1.4 93/08/27 16:27:29 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -46,8 +46,8 @@ void XtGetResourceList(widget_class, resources, num_resources)
 	if (!widget_class->core_class.class_inited) {
 	    /* Easy case */
 
-	    bcopy((char *)widget_class->core_class.resources,
-		    (char *) *resources, size);
+	    (void) memmove((char *) *resources, 
+			   (char *)widget_class->core_class.resources, size);
 	    *num_resources = widget_class->core_class.num_resources;
 	    UNLOCK_PROCESS;
 	    return;
@@ -118,8 +118,8 @@ void XtGetConstraintResourceList(widget_class, resources, num_resources)
 	if (!class->core_class.class_inited) {
 	    /* Easy case */
 
-	    bcopy((char *)class->constraint_class.resources,
-		    (char *) *resources, size);
+	    (void) memmove((char *) *resources, 
+			   (char *)class->constraint_class.resources, size);
 	    *num_resources = class->constraint_class.num_resources;
 	    UNLOCK_PROCESS;
 	    return;

@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.137 93/08/27 16:29:42 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.138 93/09/08 08:25:24 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -726,9 +726,9 @@ static void ClassPartInitialize(widget_class)
 	XtPointer *extP
 	    = &((ShellWidgetClass)widget_class)->shell_class.extension;
 	ext = XtNew(ShellClassExtensionRec);
-	bcopy((char*)_FindClassExtension(widget_class->core_class.superclass),
-	      (char*)ext,
-	      sizeof(ShellClassExtensionRec));
+	(void) memmove((char*)ext,
+		       (char*)_FindClassExtension(widget_class->core_class.superclass),
+		       sizeof(ShellClassExtensionRec));
 	ext->next_extension = *extP;
 	*extP = (XtPointer)ext;
     }
@@ -1480,8 +1480,8 @@ static void GetGeometry(W, child)
 	if (is_wmshell) {
 	    WMShellPart* wm = &((WMShellWidget)w)->wm;
 	    EvaluateSizeHints((WMShellWidget)w);
-	    bcopy((char*)&wm->size_hints, (char*)&hints,
-		  sizeof(struct _OldXSizeHints));
+	    (void) memmove((char*)&hints, (char*)&wm->size_hints, 
+			   sizeof(struct _OldXSizeHints));
 	    hints.win_gravity = wm->win_gravity;
 	    if (wm->size_hints.flags & PBaseSize) {
 		width -= wm->base_width;

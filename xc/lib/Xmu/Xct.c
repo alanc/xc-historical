@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.16 91/06/26 19:27:55 rws Exp $
+ * $XConsortium: Xct.c,v 1.17 91/07/22 23:47:13 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -290,7 +290,7 @@ HandleExtended(data, c)
 		return 0;
 	}
 	ptr = (XctString)malloc((unsigned)len + 1);
-	bcopy((char *)enc, (char *)ptr, len);
+	(void) memmove((char *)ptr, (char *)enc, len);
 	ptr[len] = 0x00;
 	priv->enc_count++;
 	if (priv->encodings)
@@ -322,7 +322,8 @@ ShiftGRToGL(data, hasCdata)
 	else
 	    priv->itembuf = (XctString)malloc(priv->buf_count);
     }
-    bcopy((char *)data->item, (char *)priv->itembuf, data->item_length);
+    (void) memmove((char *)priv->itembuf, (char *)data->item, 
+		   data->item_length);
     data->item = priv->itembuf;
     if (hasCdata) {
 	for (i = data->item_length; --i >= 0; ) {

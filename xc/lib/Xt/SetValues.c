@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.15 92/05/22 09:50:27 rws Exp $ */
+/* $XConsortium: SetValues.c,v 1.16 93/08/27 16:29:40 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -176,7 +176,7 @@ void XtSetValues(w, args, num_args)
     UNLOCK_PROCESS;
     oldw = (Widget) XtStackAlloc(widgetSize, oldwCache);
     reqw = (Widget) XtStackAlloc (widgetSize, reqwCache);
-    bcopy((char *) w, (char *) oldw, (int) widgetSize);
+    (void) memmove((char *) oldw, (char *) w, (int) widgetSize);
 
     /* Set resource values */
 
@@ -185,7 +185,7 @@ void XtSetValues(w, args, num_args)
 	wc->core_class.num_resources, args, num_args);
     UNLOCK_PROCESS;
 
-    bcopy ((char *) w, (char *) reqw, (int) widgetSize);
+    (void) memmove ((char *) reqw, (char *) w, (int) widgetSize);
 
     /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
     hasConstraints = (!XtIsShell(w) && XtIsConstraint(XtParent(w)));
@@ -205,8 +205,8 @@ void XtSetValues(w, args, num_args)
 	/* Allocate and copy current constraints into oldw */
 	oldw->core.constraints = XtStackAlloc(constraintSize, oldcCache);
 	reqw->core.constraints = XtStackAlloc(constraintSize, reqcCache);
-	bcopy((char *) w->core.constraints, 
-		(char *) oldw->core.constraints, (int) constraintSize);
+	(void) memmove((char *) oldw->core.constraints, 
+		       (char *) w->core.constraints, (int) constraintSize);
 
 	/* Set constraint values */
 	LOCK_PROCESS;
@@ -214,8 +214,8 @@ void XtSetValues(w, args, num_args)
 	    (XrmResourceList *)(cwc->constraint_class.resources),
 	    cwc->constraint_class.num_resources, args, num_args);
 	UNLOCK_PROCESS;
-	bcopy((char *) w->core.constraints,
-	      (char *) reqw->core.constraints, (int) constraintSize);
+	(void) memmove((char *) reqw->core.constraints, 
+		       (char *) w->core.constraints, (int) constraintSize);
     }
 
     /* Inform widget of changes, then inform parent of changes */

@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.178 93/09/11 14:01:13 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.179 93/09/12 11:23:01 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -914,7 +914,7 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
     while (1) {
 	start = (String)path;
 	while (1) {
-	    colon = index(start, ':');
+	    colon = strchr(start, ':');
 	    if (colon == NULL) break;
 	    if (colon == path) {start++; path++; continue; }
 	    if (*(colon-1) != '%') break;
@@ -1031,7 +1031,7 @@ static void FillInLangSubs(subs, pd)
 
     *p1 = *p2 = *p3 = '\0';
 
-    ch = index(string, '_');
+    ch = strchr(string, '_');
     if (ch != NULL) {
 	len = ch - string;
 	(void) strncpy(p1, string, len);
@@ -1042,7 +1042,7 @@ static void FillInLangSubs(subs, pd)
 
     /* Rest points to where we put the first part */
 
-    ch = index(string, '.');
+    ch = strchr(string, '.');
     if (ch != NULL) {
 	len = ch - string;
 	strncpy(*rest, string, len);

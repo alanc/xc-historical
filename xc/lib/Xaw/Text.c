@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.184 92/11/16 15:00:13 converse Exp $ */
+/* $XConsortium: Text.c,v 1.185 93/08/17 15:24:03 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -447,8 +447,8 @@ Cardinal *num_args;		/* unused */
 
   ctx->text.lt.lines = 0;
   ctx->text.lt.info = NULL;
-  bzero((char *) &(ctx->text.origSel), sizeof(XawTextSelection));
-  bzero((char *) &(ctx->text.s), sizeof(XawTextSelection)); 
+  (void) memset((char *) &(ctx->text.origSel), 0, sizeof(XawTextSelection));
+  (void) memset((char *) &(ctx->text.s), 0, sizeof(XawTextSelection)); 
   ctx->text.s.type = XawselectPosition;
   ctx->text.salt = NULL;
   ctx->text.hbar = ctx->text.vbar = (Widget) NULL;
@@ -823,7 +823,7 @@ Boolean force_rebuild;
   }
 
   if ( force_rebuild || (position != ctx->text.lt.top) ) {
-    bzero((char *) ctx->text.lt.info, size);
+    (void) memset((char *) ctx->text.lt.info, 0, size);
     (void) _BuildLineTable(ctx, ctx->text.lt.top = position, zeroPosition, 0);
   }
 }
@@ -901,7 +901,7 @@ int line;
     }
 
   if (line < ctx->text.lt.lines) /* Clear out rest of table. */
-    bzero( (char *) (lt + 1), 
+    (void) memset( (char *) (lt + 1), 0,
 	  (ctx->text.lt.lines - line) * sizeof(XawTextLineTableEntry) );
 
   ctx->text.lt.info[ctx->text.lt.lines].position = lt->position;
@@ -1417,7 +1417,7 @@ int *format;
       *targetP++ = XA_DELETE(d);
       (*length)++;
     }
-    bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
+    (void) memmove((char*)targetP, (char*)std_targets, sizeof(Atom)*std_length);
     XtFree((char*)std_targets);
     *type = XA_ATOM;
     *format = 32;

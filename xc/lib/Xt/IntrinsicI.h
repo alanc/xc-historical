@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.49 93/08/20 16:54:20 rws Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.50 93/09/03 09:57:15 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -88,7 +88,7 @@ SOFTWARE.
  *
  ****************************************************************/
 
-#define _XBCOPYFUNC _XtBCopy
+#define _XBCOPYFUNC _XtMemmove
 #include <X11/Xfuncs.h>
 
 /* If the alignment characteristics of your machine are right, these may be
@@ -96,7 +96,7 @@ SOFTWARE.
 
 #ifdef UNALIGNED
 
-#define XtBCopy(src, dst, size)				    \
+#define XtMemmove(dst, src, size)			    \
     if (size == sizeof(int))				    \
 	*((int *) (dst)) = *((int *) (src));		    \
     else if (size == sizeof(char))			    \
@@ -104,28 +104,30 @@ SOFTWARE.
     else if (size == sizeof(short))			    \
 	*((short *) (dst)) = *((short *) (src));	    \
     else						    \
-	bcopy((char *) (src), (char *) (dst), (int) (size));
+	memmove((char *) (dst), (char *) (src), (int) (size));
 
-#define XtBZero(dst, size)				    \
+#define XtMemset(dst, val, size)			    \
     if (size == sizeof(int))				    \
-	*((int *) (dst)) = 0;				    \
+	*((int *) (dst)) = val;				    \
     else						    \
-	bzero((char *) (dst), (int) (size));
+	memset((char *) (dst), (int) val, (int) (size));
 
-#define XtBCmp(b1, b2, size)				    \
+#define XtMemcmp(b1, b2, size)				    \
     (size == sizeof(int) ?				    \
 	*((int *) (b1)) != *((int *) (b2))		    \
-    :   bcmp((char *) (b1), (char *) (b2), (int) (size))    \
+    :   memcmp((char *) (b1), (char *) (b2), (int) (size))  \
     )
 
 #else
 
-#define XtBCopy(src, dst, size)		\
-	bcopy((char *) (src), (char *) (dst), (int) (size));
+#define XtMemmove(src, dst, size)	\
+	memcpy((char *) (src), (char *) (dst), (int) (size));
 
-#define XtBZero(dst, size) bzero((char *) (dst), (int) (size));
+#define XtMemset(dst, val, size) 	\
+	memset((char *) (dst), (int) val, (int) (size));
 
-#define XtBCmp(b1, b2, size) bcmp((char *) (b1), (char *) (b2), (int) (size))
+#define XtMemcmp(b1, b2, size) 		\
+	memcmp((char *) (b1), (char *) (b2), (int) (size))
 
 #endif
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.110 93/08/27 16:29:35 kaleb Exp $ */
+/* $XConsortium: Resources.c,v 1.111 93/09/11 16:32:23 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -80,9 +80,9 @@ void _XtCopyFromArg(src, dst, size)
     else if (size == sizeof(char*))	*(char **)dst = (char*)src;
     else if (size == sizeof(XtArgVal))	*(XtArgVal *)dst = src;
     else if (size > sizeof(XtArgVal))
-	bcopy((char *)  src, (char *) dst, (int) size);
+	(void) memmove((char *) dst, (char *)  src, (int) size);
     else
-	bcopy((char *) &src, (char *) dst, (int) size);
+	(void) memmove((char *) dst, (char *) &src, (int) size);
 } /* _XtCopyFromArg */
 
 void _XtCopyToArg(src, dst, size)
@@ -100,7 +100,7 @@ void _XtCopyToArg(src, dst, size)
 	else if (size == sizeof(XtPointer)) *dst = (XtArgVal)*(XtPointer*)src;
 	else if (size == sizeof(char*))    *dst = (XtArgVal)*(char**)src;
 	else if (size == sizeof(XtArgVal)) *dst = *(XtArgVal*)src;
-	else bcopy((char*)src, (char*)dst, (int)size);
+	else (void) memmove((char*)dst, (char*)src, (int)size);
     }
     else {
 	/* proper GetValues semantics: argval is pointer to destination */
@@ -110,7 +110,7 @@ void _XtCopyToArg(src, dst, size)
 	else if (size == sizeof(XtPointer)) *((XtPointer*)*dst) = *(XtPointer*)src;
 	else if (size == sizeof(char*))    *((char**)*dst) = *(char**)src;
 	else if (size == sizeof(XtArgVal)) *((XtArgVal*)*dst)= *(XtArgVal*)src;
-	else bcopy((char*)src, (char*)*dst, (int)size);
+	else (void) memmove((char*)*dst, (char*)src, (int)size);
     }
 } /* _XtCopyToArg */
 
@@ -121,7 +121,7 @@ void _XtCopyFromArg(src, dst, size)
     register unsigned int size;
 {
     if (size > sizeof(XtArgVal))
-	bcopy((char *)  src, (char *) dst, (int) size);
+	(void) memmove((char *) dst, (char *)  src, (int) size);
     else {
 	union {
 	    long	longval;
@@ -144,7 +144,7 @@ void _XtCopyFromArg(src, dst, size)
 	else if (size == sizeof(char*))	    u.charptr = (char*)src;
 	else				    p = (char*)&src;
 
-	bcopy(p, (char *) dst, (int) size);
+	(void) memmove(dst, p, (int) size);
     }
 } /* _XtCopyFromArg */
 
@@ -168,7 +168,7 @@ void _XtCopyToArg(src, dst, size)
 	    XtPointer	ptr;
 	} u;
 	if (size <= sizeof(XtArgVal)) {
-	    bcopy( (char*)src, (char*)&u, (int)size );
+	    (void) memmove((char*)&u, (char*)src, (int)size );
 	    if	    (size == sizeof(long)) 	*dst = (XtArgVal)u.longval;
 #ifdef LONG64
 	    else if (size == sizeof(int))	*dst = (XtArgVal)u.intval;
@@ -177,14 +177,14 @@ void _XtCopyToArg(src, dst, size)
 	    else if (size == sizeof(char))	*dst = (XtArgVal)u.charval;
 	    else if (size == sizeof(char*))	*dst = (XtArgVal)u.charptr;
 	    else if (size == sizeof(XtPointer))	*dst = (XtArgVal)u.ptr;
-	    else bcopy( (char*)src, (char*)dst, (int)size );
+	    else (void) memmove((char*)dst, (char*)src, (int)size );
 	}
 	else
-	    bcopy( (char*)src, (char*)dst, (int)size );
+	    (void) memmove((char*)dst, (char*)src, (int)size );
     }
     else {
 	/* proper GetValues semantics: argval is pointer to destination */
-	bcopy( (char*)src, (char*)*dst, (int)size );
+	(void) memmove((char*)*dst, (char*)src, (int)size );
     }
 } /* _XtCopyToArg */
 
@@ -330,7 +330,8 @@ void _XtDependencies(class_resp, class_num_resp, super_res, super_num_res,
     /* Allocate and initialize new_res with superclass resource pointers */
     new_num_res = super_num_res + class_num_res;
     new_res = (XrmResourceList *) XtMalloc(new_num_res*sizeof(XrmResourceList));
-    XtBCopy(super_res, new_res, super_num_res * sizeof(XrmResourceList));
+    (void) XtMemmove(new_res, super_res, 
+		     super_num_res * sizeof(XrmResourceList));
     
     /* Put pointers to class resource entries into new_res */
     new_next = super_num_res;
@@ -478,8 +479,8 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     }
 
     /* Mark each resource as not found on arg list */
-    bzero((char *) found, (int) (num_resources * sizeof(Boolean)));
-    bzero((char *) typed, (int) (num_resources * sizeof(int)));
+    (void) memset((char *) found, 0, (int) (num_resources * sizeof(Boolean)));
+    (void) memset((char *) typed, 0, (int) (num_resources * sizeof(int)));
 
     /* Copy the args into the resources, mark each as found */
     {
@@ -789,11 +790,12 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			*((String*)(base - rx->xrm_offset - 1)) = value.addr;
 		    } else {
 			if (value.addr != NULL) {
-			    XtBCopy(value.addr, base - rx->xrm_offset - 1,
-				    rx->xrm_size);
+			    (void) XtMemmove(base - rx->xrm_offset - 1,
+					     value.addr, rx->xrm_size);
 			} else {
 			    /* didn't get value, initialize to NULL... */
-			    XtBZero(base - rx->xrm_offset - 1, rx->xrm_size);
+			    (void) XtMemset(base - rx->xrm_offset - 1, 0, 
+					    rx->xrm_size);
 			}
 		    }
 		}
@@ -844,7 +846,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	int cache_ref_size = cache_ptr - cache_ref;
 	XtCacheRef *refs = (XtCacheRef*)
 	    XtMalloc((unsigned)sizeof(XtCacheRef)*(cache_ref_size + 1));
-	bcopy( cache_ref, refs, sizeof(XtCacheRef)*cache_ref_size );
+	(void) memmove(refs, cache_ref, sizeof(XtCacheRef)*cache_ref_size );
 	refs[cache_ref_size] = NULL;
 	return refs;
     }

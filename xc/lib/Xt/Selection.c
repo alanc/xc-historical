@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.81 93/08/27 16:29:37 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.82 93/09/11 16:38:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -209,7 +209,8 @@ Boolean incremental;
 	info->callback = callback;
 	info->req_closure =
 	    (XtPointer*)XtMalloc((unsigned) (count * sizeof(XtPointer)));
-	bcopy((char*)closures, (char*)info->req_closure, count * sizeof(XtPointer));
+	(void) memmove((char*)info->req_closure, (char*)closures, 
+		       count * sizeof(XtPointer));
         info->property = GetSelectionProperty(XtDisplay(widget));
 	info->proc = HandleSelectionReplies;
 	info->widget = widget;
@@ -1135,7 +1136,7 @@ Boolean *cont;
 #ifdef XT_COPY_SELECTION
 	  int size = BYTELENGTH(length, info->format) + 1;
 	  char *tmp = XtMalloc((Cardinal) size);
-	  bcopy(value, tmp, size);
+	  (void) memmove(tmp, value, size);
 	  XFree(value);
 	  value = tmp;
 #endif
@@ -1156,8 +1157,8 @@ Boolean *cont;
 #endif
 	      info->value = XtRealloc(info->value, bytes);
           }
-          bcopy(value, &info->value[info->offset], 
-		(int) BYTELENGTH(length, info->format));
+          (void) memmove(&info->value[info->offset], value, 
+			 (int) BYTELENGTH(length, info->format));
           info->offset += BYTELENGTH(length, info->format);
          XFree(value);
      }
@@ -1206,7 +1207,8 @@ static long IncrPropSize(widget, value, format, length)
 	else {
 	    /* NOTREACHED */ /* sizeof(long)!=4 */
 	    size = 0;
-	    bcopy(value+4*(length-1), ((char*)&size)+sizeof(long)-4, 4);
+	    (void) memmove(((char*)&size)+sizeof(long)-4, 
+			   value+4*(length-1), 4);
 	}
 	return size;
     }
@@ -1251,7 +1253,7 @@ Atom selection;
     if (value) {   /* it could have been deleted after the SelectionNotify */
 	int size = BYTELENGTH(length, info->format) + 1;
 	char *tmp = XtMalloc((Cardinal) size);
-	bcopy(value, tmp, size);
+	(void) memmove(tmp, value, size);
 	XFree(value);
 	value = (unsigned char *) tmp;
     }
@@ -1454,7 +1456,7 @@ Boolean incremental;
               	        int bytelength = BYTELENGTH(length,format);
 	                /* both sides think they own this storage */
 	                temp = XtMalloc((unsigned)bytelength);
-	                bcopy(value, temp, bytelength);
+	                (void) memmove(temp, value, bytelength);
 	                value = temp;
 	              }
 		      /* use care; older clients were never warned that
@@ -1480,10 +1482,9 @@ Boolean incremental;
 		    int bytelength = BYTELENGTH(length, format);
 		    total = XtRealloc(total, 
 			    (unsigned) (totallength += bytelength));
-		    bcopy( value,
-			   (unsigned char*)total + totallength - bytelength,
-			   bytelength
-			  );
+		    (void) memmove((char*)total + totallength - bytelength,
+			    value,
+			    bytelength);
 		    (*(XtConvertSelectionIncrProc)ctx->convert)
 			   (ctx->widget, &selection, &target, 
 			    &resulttype, &value, &length, &format,
@@ -1509,7 +1510,7 @@ Boolean incremental;
                 int bytelength = BYTELENGTH(length,format);
 	        /* both sides think they own this storage; better copy */
 	        temp = XtMalloc((unsigned)bytelength);
-	        bcopy(value, temp, bytelength);
+	        (void) memmove(temp, value, bytelength);
 	        value = temp;
 	      }
 	      if (value == NULL) value = XtMalloc((unsigned)1);
@@ -1633,8 +1634,8 @@ Boolean incremental;
 			time, incremental);
 	info->target = (Atom *)XtMalloc((unsigned) ((count+1) * sizeof(Atom)));
         (*info->target) = ctx->prop_list->indirect_atom;
-	bcopy((char *) targets, (char *) info->target+sizeof(Atom),
-	      count * sizeof(Atom));
+	(void) memmove((char *) info->target+sizeof(Atom), (char *) targets, 
+		       count * sizeof(Atom));
 	pairs = (IndirectPair*)XtMalloc((unsigned)(count*sizeof(IndirectPair)));
 	for (p = &pairs[count-1], t = &targets[count-1];
 	     p >= pairs;  p--, t-- ) {

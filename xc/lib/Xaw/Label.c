@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.92 91/07/24 16:56:28 converse Exp $ */
+/* $XConsortium: Label.c,v 1.93 91/10/16 21:34:35 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -228,11 +228,11 @@ static void SetTextWidthAndHeight(lw)
 	lw->label.label_len = 0;
 	lw->label.label_width = 0;
     }
-    else if ((nl = index(lw->label.label, '\n')) != NULL) {
+    else if ((nl = strchr(lw->label.label, '\n')) != NULL) {
 	char *label;
 	lw->label.label_len = MULTI_LINE_LABEL;
 	lw->label.label_width = 0;
-	for (label = lw->label.label; nl != NULL; nl = index(label, '\n')) {
+	for (label = lw->label.label; nl != NULL; nl = strchr(label, '\n')) {
 	    int width;
 
 	    if (lw->label.encoding)
@@ -419,7 +419,7 @@ static void Redisplay(w, event, region)
 
        if (len == MULTI_LINE_LABEL) {
 	   char *nl;
-	   while ((nl = index(label, '\n')) != NULL) {
+	   while ((nl = strchr(label, '\n')) != NULL) {
 	       if (lw->label.encoding)
 		   XDrawString16(XtDisplay(w), XtWindow(w), gc,
 				 lw->label.label_x, y,

@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.25 93/08/16 14:34:45 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.26 93/08/18 15:09:52 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -180,7 +180,7 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	    *(long*)*value = time;
 	else {
 	    long temp = time;
-	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
+	    (void) memmove((char*)*value, ((char*)&temp)+sizeof(long)-4, 4);
 	}
 	*type = XA_INTEGER;
 	*length = 1;
@@ -207,7 +207,7 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	if (hostent->h_addrtype != AF_INET) return False;
 	*length = hostent->h_length;
 	*value = XtMalloc(*length);
-	bcopy (hostent->h_addr, *value, *length);
+	(void) memmove (*value, hostent->h_addr, *length);
 	*type = XA_NET_ADDRESS(d);
 	*format = 8;
 	return True;

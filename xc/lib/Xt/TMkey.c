@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.20 93/08/27 16:29:47 kaleb Exp $ */
+/* $XConsortium: TMkey.c,v 1.21 93/09/13 16:15:30 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -40,7 +40,8 @@ SOFTWARE.
 #define Const /**/
 #endif
 
-#define FLUSHKEYCACHE(ctx) bzero((char *)&ctx->keycache, sizeof(TMKeyCache))
+#define FLUSHKEYCACHE(ctx) \
+	(void) memset((char *)&ctx->keycache, 0, sizeof(TMKeyCache))
 
 /*
  * The following array reorders the modifier bits so that the most common ones
@@ -723,7 +724,8 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
 		maxcodes += KEYCODE_ARRAY_SIZE;
 		keycodes = (KeyCode*)XtMalloc(maxcodes*sizeof(KeyCode));
 		if (ncodes) {
-		    bcopy( (char *)old, (char *)keycodes, ncodes*sizeof(KeyCode) );
+		    (void) memmove((char *)keycodes, (char *)old, 
+				   ncodes*sizeof(KeyCode) );
 		    XtFree((char *)old);
 		}
 		codeP = &keycodes[ncodes];

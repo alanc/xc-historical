@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.68 93/07/12 14:52:00 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.69 93/08/27 16:27:11 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -402,11 +402,11 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     p->from.size    = from->size;
     if (from->size <= sizeof(p->from.addr)) {
 	p->from_is_value = True;
-	XtBCopy(from->addr, &p->from.addr, from->size);
+	(void) XtMemmove(&p->from.addr, from->addr, from->size);
     } else {
 	p->from_is_value = False;
 	p->from.addr = (XPointer)_XtHeapAlloc(heap, from->size);
-	bcopy((char *)from->addr, (char *)p->from.addr, from->size);
+	(void) memmove((char *)p->from.addr, (char *)from->addr, from->size);
     }
     p->num_args = num_args;
     if (num_args) {
@@ -414,7 +414,7 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	for (i = 0; i < num_args; i++) {
 	    pargs[i].size = args[i].size;
 	    pargs[i].addr = (XPointer)_XtHeapAlloc(heap, args[i].size);
-	    XtBCopy(args[i].addr, pargs[i].addr, args[i].size);
+	    (void) XtMemmove(pargs[i].addr, args[i].addr, args[i].size);
 	}
     }
     p->to.size = to->size;
@@ -423,11 +423,11 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	p->to.addr = NULL;
     } else if (to->size <= sizeof(p->to.addr)) {
 	p->to_is_value = True;
-	XtBCopy(to->addr, &p->to.addr, to->size);
+	(void) XtMemmove(&p->to.addr, to->addr, to->size);
     } else {
 	p->to_is_value = False;
 	p->to.addr = (XPointer)_XtHeapAlloc(heap, to->size);
-	bcopy((char *)to->addr, (char *)p->to.addr, to->size);
+	(void) memmove((char *)p->to.addr, (char *)to->addr, to->size);
     }
     UNLOCK_PROCESS;
     return p;
@@ -621,8 +621,8 @@ void XtDirectConvert(converter, args, num_args, from, to)
 	 && (p->converter == (XtTypeConverter)converter)
 	 && (p->from.size == from->size)
 	 && !(p->from_is_value ?
-	      XtBCmp(&p->from.addr, from->addr, from->size) :
-	      bcmp((char *)p->from.addr, (char *)from->addr, from->size))
+	      XtMemcmp(&p->from.addr, from->addr, from->size) :
+	      memcmp((char *)p->from.addr, (char *)from->addr, from->size))
          && (p->num_args == num_args)) {
 	    if (i = num_args) {
 		XrmValue *pargs = CARGS(p);
@@ -630,7 +630,7 @@ void XtDirectConvert(converter, args, num_args, from, to)
 		while (i) {
 		    i--; /* do not move to while test, broken compilers */
 		    if (pargs[i].size != args[i].size ||
-			XtBCmp(pargs[i].addr, args[i].addr, args[i].size)) {
+			XtMemcmp(pargs[i].addr, args[i].addr, args[i].size)) {
 			i++;
 			break;
 		    }
@@ -720,8 +720,8 @@ _XtCallConverter(dpy, converter,
 	     && (p->converter == converter)
 	     && (p->from.size == from->size)
 	     && !(p->from_is_value ?
-		  XtBCmp(&p->from.addr, from->addr, from->size) :
-		  bcmp((char *)p->from.addr, (char *)from->addr, from->size))
+		  XtMemcmp(&p->from.addr, from->addr, from->size) :
+		  memcmp((char *)p->from.addr, (char *)from->addr, from->size))
 	     && (p->num_args == num_args)) {
 		if (i = num_args) {
 		    XrmValue *pargs = CARGS(p);
@@ -729,7 +729,7 @@ _XtCallConverter(dpy, converter,
 		    while (i) {
 			i--; /* do not move to while test, broken compilers */
 			if (pargs[i].size != args[i].size ||
-			    XtBCmp(pargs[i].addr, args[i].addr, args[i].size)){
+			    XtMemcmp(pargs[i].addr, args[i].addr, args[i].size)){
 			    i++;
 			    break;
 			}
@@ -746,10 +746,11 @@ _XtCallConverter(dpy, converter,
 			    }
 			    to->size = p->to.size;
 			    if (p->to_is_value) {
-				XtBCopy(&p->to.addr, to->addr, to->size);
+				(void) XtMemmove(to->addr, &p->to.addr, 
+						 to->size);
 			    } else {
-				bcopy((char *)p->to.addr, (char *)to->addr,
-				      to->size);
+				(void) memmove((char *)to->addr, 
+					       (char *)p->to.addr, to->size);
 			    }
 			} else {	/* old-style call */
 			    to->size = p->to.size;
@@ -883,7 +884,8 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 			    if (to_type == _XtQString)
 				*(String*)(to->addr) = tempTo.addr;
 			    else {
-				XtBCopy(tempTo.addr, to->addr, tempTo.size);
+				(void) XtMemmove(to->addr, tempTo.addr, 
+						 tempTo.size);
 			    }
 			    retval = True;
 			}
@@ -1026,7 +1028,7 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
 	    UNLOCK_APP(app);
 	    return False;
 	}
-	bcopy( from->addr, to->addr, from->size );
+	(void) memmove(to->addr, from->addr, from->size );
 	to->size = from->size;
     } else			/* from_type == to_type */
 	*to = *from;

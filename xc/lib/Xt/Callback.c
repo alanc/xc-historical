@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.35 91/11/21 14:36:30 converse Exp $ */
+/* $XConsortium: Callback.c,v 1.36 93/08/27 16:27:05 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -77,8 +77,8 @@ void _XtAddCallback(callbacks, callback, closure)
 	icl = (InternalCallbackList)
 	    XtMalloc(sizeof(InternalCallbackRec) +
 		     sizeof(XtCallbackRec) * (count + 1));
-	bcopy((char *)ToList(*callbacks), (char *)ToList(icl),
-	      sizeof(XtCallbackRec) * count);
+	(void) memmove((char *)ToList(icl), (char *)ToList(*callbacks),
+		       sizeof(XtCallbackRec) * count);
     } else {
 	icl = (InternalCallbackList)
 	    XtRealloc((char *) icl, sizeof(InternalCallbackRec) +
@@ -157,8 +157,8 @@ static void AddCallbacks(widget, callbacks, newcallbacks)
 	icl->call_state |= _XtCBFreeAfterCalling;
 	icl = (InternalCallbackList) XtMalloc(sizeof(InternalCallbackRec) +
 					      sizeof(XtCallbackRec) * (i+j));
-	bcopy((char *)ToList(*callbacks), (char *)ToList(icl),
-	      sizeof(XtCallbackRec) * i);
+	(void) memmove((char *)ToList(*callbacks), (char *)ToList(icl), 
+		       sizeof(XtCallbackRec) * i);
     } else {
 	icl = (InternalCallbackList) XtRealloc((char *) icl,
 					       sizeof(InternalCallbackRec) + 

@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.135 93/08/05 11:54:10 kaleb Exp $ */
+/* $XConsortium: TMparse.c,v 1.136 93/08/27 16:29:49 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -647,7 +647,7 @@ static String FetchModifierToken(str, token_return)
     str = ScanIdent(str);
     if (start != str) {
 	char modStr[100];
-	bcopy(start, modStr, str-start);
+	(void) memmove(modStr, start, str-start);
 	modStr[str-start] = '\0';
 	*token_return = XrmStringToQuark(modStr);
 	return str;
@@ -747,7 +747,7 @@ static String ParseXtEventType(str, event, tmEventP,error)
     char eventTypeStr[100];
 
     ScanAlphanumeric(str);
-    bcopy(start, eventTypeStr, str-start);
+    (void) memmove(eventTypeStr, start, str-start);
     eventTypeStr[str-start] = '\0';
     *tmEventP = LookupTMEventType(eventTypeStr,error);
     if (*error) 
@@ -959,7 +959,7 @@ static String ParseKeySym(str, closure, event,error)
                 && *str != '\n'
                 && (*str != '(' || *(str+1) <= '0' || *(str+1) >= '9')
 		&& *str != '\0') str++;
-	bcopy(start, keySymName, str-start);
+	(void) memmove(keySymName, start, str-start);
 	keySymName[str-start] = '\0';
 	event->event.eventCode = StringToKeySym(keySymName, error);
 	event->event.eventCodeMask = ~0L;
@@ -999,7 +999,7 @@ static String ParseTable(str, closure, event,error)
 	*error = TRUE;
 	return str;
     }
-    bcopy(start, tableSymName, str-start);
+    (void) memmove(tableSymName, start, str-start);
     tableSymName[str-start] = '\0';
     if (! _XtLookupTableSym((NameValueTable)closure, tableSymName, 
             (Value *)&event->event.eventCode)) {
@@ -1053,7 +1053,7 @@ static String ParseAtom(str, closure, event,error)
 	    *error = TRUE;
 	    return str;
 	}
-	bcopy(start, atomName, str-start);
+	(void) memmove(atomName, start, str-start);
 	atomName[str-start] = '\0';
 	event->event.eventCode = XrmStringToQuark(atomName);
 	event->event.matchEvent = _XtMatchAtom;
@@ -1448,7 +1448,7 @@ static String ParseRepeat(str, reps, plus, error)
 	ScanNumeric(str);
 	len = (str - start);
 	if (len < sizeof repStr) {
-	    bcopy(start, repStr, len);
+	    (void) memmove(repStr, start, len);
 	    repStr[len] = '\0';
 	    *reps = StrToNum(repStr);
 	} else {
@@ -1581,7 +1581,7 @@ static String ParseActionProc(str, actionProcNameP, error)
 	*error = TRUE;
 	return str;
     }
-    bcopy(start, procName, str-start);
+    (void) memmove(procName, start, str-start);
     procName[str-start] = '\0';
     *actionProcNameP = XrmStringToQuark( procName );
     return str;
@@ -1609,7 +1609,7 @@ static String ParseString(str, strP)
 		(*(str+1) == '"' || (*(str+1) == '\\' && *(str+2) == '"'))) {
 		len = prev_len + (str-start+2);
 		*strP = XtRealloc(*strP, len);
-		bcopy(start, *strP + prev_len, str-start);
+		(void) memmove(*strP + prev_len, start, str-start);
 		prev_len = len-1;
 		str++;
 		(*strP)[prev_len-1] = *str;
@@ -1620,7 +1620,7 @@ static String ParseString(str, strP)
 	}
 	len = prev_len + (str-start+1);
 	*strP = XtRealloc(*strP, len);
-	bcopy(start, *strP + prev_len, str-start);
+	(void) memmove( *strP + prev_len, start, str-start);
 	(*strP)[len-1] = '\0';
 	if (*str == '"') str++; else
             XtWarningMsg(XtNtranslationParseError,"parseString",
@@ -1636,7 +1636,7 @@ static String ParseString(str, strP)
                 && *str != '\n'
 		&& *str != '\0') str++;
 	*strP = XtMalloc((unsigned)(str-start+1));
-	bcopy(start, *strP, str-start);
+	(void) memmove(*strP, start, str-start);
 	(*strP)[str-start] = '\0';
     }
     return str;
@@ -1768,7 +1768,7 @@ static void ShowProduction(currentProduction)
 
     eol = strchr(currentProduction, '\n');
     if (eol) len = MIN(499, eol - currentProduction);
-    bcopy(currentProduction, production, len);
+    (void) memmove(production, currentProduction, len);
     production[len] = '\0';
 
     params[0] = production;
@@ -1899,7 +1899,7 @@ static String CheckForPoundSign(str, defaultOp, actualOpRtn)
 	start = str;
 	str = ScanIdent(str);
 	len = MIN(19, str-start);
-	bcopy(start, operation, len);
+	(void) memmove(operation, start, len);
 	operation[len] = '\0';
 	if (!strcmp(operation,"replace"))
 	  opType = XtTableReplace;
