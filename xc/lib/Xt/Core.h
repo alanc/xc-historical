@@ -1,7 +1,7 @@
 /*
-* $Header: Core.h,v 1.2 88/02/03 15:10:34 swick Exp $
+* $xHeader: Core.h,v 1.2 88/08/18 15:54:32 asente Exp $
+* $oHeader: Core.h,v 1.2 88/08/18 15:54:32 asente Exp $
 */
-
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,7 +31,7 @@ SOFTWARE.
 #define _XtCore_h
 
 #ifndef CORE
-globalref WidgetClass widgetClass;
+externalref WidgetClass widgetClass;
 #endif
 
 #endif _XtCore_h
