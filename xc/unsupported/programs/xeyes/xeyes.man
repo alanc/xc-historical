@@ -1,6 +1,6 @@
 .TH XEYES 1 "Release 5" "X Version 11"
 .SH NAME
-xeyes \- watch over your shoulder
+xeyes \- a follow the mouse X demo
 .SH SYNOPSIS
 .B xeyes
 [-option ...]
