@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.16 88/08/19 17:42:51 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.17 88/08/29 12:48:02 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -194,24 +194,29 @@ register char **argv;
 	 */
 	if (client_args_given == 0) {
 	    char *cp;
+	    Bool required = False;
 
 	    xinitrcbuf[0] = '\0';
 	    if ((cp = getenv ("XINITRC")) != NULL) {
 		strcpy (xinitrcbuf, cp);
+		required = True;
 	    } else if ((cp = getenv ("HOME")) != NULL) {
 		(void) sprintf (xinitrcbuf, "%s/%s", cp, xinitrc);
 	    }
 	    if (xinitrcbuf[0]) {
-		if (access (xinitrcbuf, X_OK) == 0) {
+		if (access (xinitrcbuf, X_OK) == 0) {		/* execute */
 		    client[0] = xinitrcbuf;
 		    client[1] = NULL;
-		} else if (access (xinitrcbuf, R_OK) == 0) {
+		} else if (access (xinitrcbuf, R_OK) == 0) {	/* read */
 		    client[0] = "sh";
 		    client[1] = xinitrcbuf;
 		    client[2] = NULL;
-		} else {
+		} else if (access (xinitrcbuf, F_OK) == 0) {	/* exists */
 		    fprintf (stderr,
-	     "%s:  can't execute or read file %s, ignoring....\n",
+			     "%s:  can't execute or read init file \"%s\"\n",
+			     program, xinitrcbuf);
+		} else if (required) {			/* doesn't exist */
+		    fprintf (stderr, "%s:  no such init file \"%s\"\n",
 			     program, xinitrcbuf);
 		}
 	    }
