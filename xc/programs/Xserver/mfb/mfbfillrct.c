@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 5.6 90/05/15 18:38:23 keith Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.7 90/07/21 14:58:32 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -67,6 +67,9 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int alu;
     void (* pfn) ();
     PixmapPtr ppix;
+
+    if (!(pGC->planemask & 1))
+	return;
 
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     alu = priv->ropFillArea;
