@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.121 93/09/08 08:25:22 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.122 93/09/09 10:14:45 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,7 +40,7 @@ static SignalEventRec* freeSignalRecs;
  */
 
 #ifndef NEEDS_NTPD_FIXUP
-# if defined(sun) || defined(MOTOROLA)
+# if defined(sun) || defined(MOTOROLA) || (defined(__osf__) && defined(__alpha))
 #  define NEEDS_NTPD_FIXUP 1
 # else
 #  define NEEDS_NTPD_FIXUP 0
