@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * fsinfo -- report info about a font server
  */
