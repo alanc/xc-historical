@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.145 93/08/15 18:47:45 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.146 93/08/16 11:26:12 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -745,7 +745,7 @@ $(DEPEND):								@@\
 DependDependency()							@@\
 									@@\
 depend::								@@\
-	$(DEPEND) $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- $(SRCS)
+	RunProgram(DEPEND) $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- $(SRCS)
 #endif /* DependTarget */
 
 
@@ -757,9 +757,9 @@ depend::								@@\
 DependDependency()							@@\
 									@@\
 depend::								@@\
-	$(DEPEND) $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs1	@@\
-	$(DEPEND) -a $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs2	@@\
-	$(DEPEND) -a $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs3
+	RunProgram(DEPEND) $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs1	@@\
+	RunProgram(DEPEND) -a $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs2	@@\
+	RunProgram(DEPEND) -a $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs3
 #endif /* DependTarget3 */
 
 
