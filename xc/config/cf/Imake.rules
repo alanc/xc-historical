@@ -969,6 +969,14 @@ LintLibReferences(varname,libname,libsource)
 #endif
 
 /*
+ * CPPOnlyCompile - run C compiler's preprocessor only
+ */
+#ifndef CPPOnlyCompile
+#define CPPOnlyCompile(options) RemoveFile($@)				@@\
+	$(CC) -E $(CDEBUGFLAGS) $(ALLDEFINES) options $*.c > $@
+#endif
+
+/*
  * ObjectCompile - compile fragment for a normal object file
  */
 #ifndef ObjectCompile
@@ -1032,6 +1040,8 @@ LintLibReferences(varname,libname,libsource)
  */
 #ifndef NormalLibraryObjectRule
 #define	NormalLibraryObjectRule()					@@\
+.c.i:									@@\
+	CPPOnlyCompile($(_NOOP_))					@@\
 .c.Osuf:								@@\
 	NormalLibObjCompile($(_NOOP_))
 #endif /* NormalLibraryObjectRule */
