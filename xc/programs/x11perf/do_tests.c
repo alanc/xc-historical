@@ -1,4 +1,4 @@
-/* $XConsortium: do_tests.c,v 2.29 92/11/11 14:34:41 rws Exp $ */
+/* $XConsortium: do_tests.c,v 2.30 92/11/11 16:12:10 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -25,6 +25,7 @@ SOFTWARE.
 #include "x11perf.h"
 
 extern void DoGetAtom();
+extern void DoQueryPointer();
 
 extern void DoNoOp();
 
@@ -1211,7 +1212,11 @@ Test test[] = {
 		{1}},
   {"-atom",     "GetAtomName", NULL,
 		NullInitProc, DoGetAtom, NullProc, NullProc,
-		V1_2FEATURE, NONROP, 0,
+		VERSION1_2 | VERSION1_3, NONROP, 0,
+		{1}},
+  {"-pointer",  "QueryPointer", NULL,
+		NullInitProc, DoQueryPointer, NullProc, NullProc,
+		V1_4FEATURE, NONROP, 0,
 		{1}},
   {"-prop",     "GetProperty", NULL,
 		InitGetProperty, DoGetProperty, NullProc, NullProc,
