@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.62 88/10/21 08:15:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.63 89/02/22 09:19:41 swick Exp $";
 #endif lint
 
 
@@ -73,6 +73,7 @@ static void Realize();
 static void Resize();
 static void Redisplay();
 static Boolean SetValues();
+static Boolean SetValuesHook();
 static void ClassInitialize();
 static void Destroy();
 static XtGeometryResult QueryGeometry();
@@ -103,7 +104,7 @@ LabelClassRec labelClassRec = {
     /* resize		  	*/	Resize,
     /* expose		  	*/	Redisplay,
     /* set_values	  	*/	SetValues,
-    /* set_values_hook		*/	NULL,
+    /* set_values_hook		*/	SetValuesHook,
     /* set_values_almost	*/	XtInheritSetValuesAlmost,
     /* get_values_hook		*/	NULL,
     /* accept_focus	 	*/	NULL,
@@ -221,6 +222,7 @@ static void Initialize(request, new)
     if (lw->core.height == 0)
         lw->core.height = lw->label.label_height + 2*lw->label.internal_height;
 
+    lw->label.label_x = lw->label.label_y = 0;
     (*XtClass(new)->core_class.resize) ((Widget)lw);
 
 } /* Initialize */
@@ -364,11 +366,6 @@ static Boolean SetValues(current, request, new)
 	newlw->label.label = newlw->core.name;
     }
 
-    /* note that there is no way to change the label and force the window */
-    /* to keep it's current size (and possibly clip the text) perhaps we */
-    /* should make the user set width and height to 0 when they set the */
-    /* label if they want the label to recompute size based on the new */
-    /* label? */
     if (curlw->label.label != newlw->label.label) {
         if (curlw->label.label != curlw->core.name)
 	    XtFree( (char *)curlw->label.label );
@@ -393,13 +390,19 @@ static Boolean SetValues(current, request, new)
 
     /* calculate the window size */
     if (newlw->label.resize) {
-	if (curlw->core.width == reqlw->core.width)
+	if (curlw->core.width == reqlw->core.width) {
 	    newlw->core.width =
 		newlw->label.label_width +2*newlw->label.internal_width;
+	    if (newlw->core.width != reqlw->core.width)
+		newlw->label.resize = True+1; /* %%% hack alert! */
+	}
 
-	if (curlw->core.height == reqlw->core.height)
+	if (curlw->core.height == reqlw->core.height) {
 	    newlw->core.height =
 		newlw->label.label_height + 2*newlw->label.internal_height;
+	    if (newlw->core.height != reqlw->core.height)
+		newlw->label.resize = True+1; /* %%% hack alert! */
+	}
     }
 
     if (curlw->label.foreground != newlw->label.foreground
@@ -422,6 +425,38 @@ static Boolean SetValues(current, request, new)
 
     return was_resized || redisplay ||
 	   XtIsSensitive(current) != XtIsSensitive(new);
+}
+
+/* This entire routine is a hack.  The semantics of Label are that it
+ * resizes itself to the optimum geometry for the label, unless the
+ * client gave an explicit geometry.  Unfortunately, we can't easily
+ * distinguish the case that the explicit geometry was identical to
+ * the current geometry through the normal SetValues method.
+ */
+static Boolean SetValuesHook(w, args, num_args)
+    Widget w;
+    ArgList args;
+    Cardinal *num_args;
+{
+    if (((LabelWidget)w)->label.resize == True+1) {
+	int i;
+	Boolean have_width = False;
+	Boolean have_height = False;
+	for (i = *num_args; i; i--, args++) {
+	    if (strcmp(args->name, XtNwidth) == 0) {
+		w->core.width = (Dimension)args->value;
+		if (have_height) break;
+		have_width = True;
+	    }
+	    else if (strcmp(args->name, XtNheight) == 0) {
+		w->core.height = (Dimension)args->value;
+		if (have_width) break;
+		have_height = True;
+	    }
+	}
+	((LabelWidget)w)->label.resize = True;
+    }
+    return False;
 }
 
 
