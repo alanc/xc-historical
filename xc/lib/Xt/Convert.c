@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.32 89/10/09 11:47:05 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.33 89/10/09 14:04:37 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -662,8 +662,6 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
     register ConverterPtr	p;
     Cardinal		num_args;
     XrmValue		*args;
-    String              params[2];
-    Cardinal		num_params = 0;
 
     /* Look for type converter */
     p = app->converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
@@ -710,11 +708,15 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 	}
     }
 
+    {
+	String params[2];
+	Cardinal num_params = 2;
 	params[0] = XrmRepresentationToString(from_type);
 	params[1] = XrmRepresentationToString(to_type);
-    XtAppWarningMsg(app, "typeConversionError","noConverter","XtToolkitError",
+	XtAppWarningMsg(app, "typeConversionError", "noConverter", "XtToolkitError",
 	     "No type converter registered for '%s' to '%s' conversion.",
-             params,&num_params);
+             params, &num_params);
+    }
     return False;
 }
 
@@ -775,11 +777,17 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
 	    }
 	    if (!_XtConvert(object, from_type, from, to_type, to, &ref)) {
 		if (local && (to->size > local_valueS)) {
-		    local_valueP = _XtHeapAlloc(&globalHeap, to->size);
+		    to->addr =
+			local_valueP = _XtHeapAlloc(&globalHeap, to->size);
 		    local_valueS = to->size;
 		    continue;
-		} else
+		} else {
+		    if (local) {
+			to->addr = NULL;
+			to->size = 0;
+		    }
 		    return False;
+		}
 	    }
 	    if (ref != NULL) {
 		XtAddCallback( object, XtNdestroyCallback,
