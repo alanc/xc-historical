@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.13 88/02/03 23:10:40 swick Exp $";
+static char rcsid[] = "$Header: Converters.c,v 1.14 88/02/03 23:55:09 swick Locked $";
 #endif lint
 
 /*
@@ -31,6 +31,7 @@ static char rcsid[] = "$Header: Converters.c,v 1.13 88/02/03 23:10:40 swick Exp 
 #include	"IntrinsicI.h"
 #include	"CoreP.h"
 #include	<X/Xlib.h>
+#include	<X/Xos.h>
 #include	<X/Xutil.h>
 #include	<X/Atoms.h>
 #include	<stdio.h>
@@ -368,9 +369,9 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
 	xrm_class[0] = *((XrmClass *) args[2].addr);
 	xrm_class[1] = StringToQuark( "BitmapFilePath" );
 	xrm_class[2] = NULL;
-	rep_type = StringToQuark( XtRString );
-	XrmGetResource( XtDefaultDB, xrm_name, xrm_class, rep_type, &value );
-	if (value.addr != NULL)
+	if (XrmQGetResource( XtDefaultDB, xrm_name, xrm_class,
+			     &rep_type, &value )
+	    && rep_type == StringToQuark(XtRString))
 	    bitmap_file_path = value.addr;
 	else
 	    bitmap_file_path = "/usr/include/X/bitmaps";
