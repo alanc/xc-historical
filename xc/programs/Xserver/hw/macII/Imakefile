@@ -9,7 +9,7 @@ SRCS =	\
 	macIIGC.c \
 	macIIKMap.c \
 	Xrepair.c \
-	X11R3 \
+	X11R3.script \
 	def.x11start
 
 OFILES = macIIInit.o 
@@ -41,9 +41,10 @@ NormalLintTarget($(SRCS))
 SingleProgramTarget(Xrepair, Xrepair.o,,)
 InstallProgram(Xrepair,$(BINDIR))
 InstallScript(X11R3,$(BINDIR))
+InstallProgram($(BINDIR)/X11R3,$(BINDIR)/X11)
 InstallNonExec(def.x11start,$(LIBDIR)/.x11start)
-InstallNonExec(xterm.tic,/usr/lib/terminfo/x/xterm)
-InstallNonExec(xterms.tic,/usr/lib/terminfo/x/xterms)
+InstallNonExec(xterms.tic,$(USRLIBDIR)/terminfo/x/xterm)
+InstallNonExec(xterms.tic,$(USRLIBDIR)/terminfo/x/xterms)
 InstallNonExec(xterm.tic,$(LIBDIR))
 InstallNonExec(xterms.tic,$(LIBDIR))
 DependTarget()
