@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.55 91/02/07 19:53:20 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.56 91/02/08 17:17:33 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,7 +26,6 @@ SOFTWARE.
 
 #include	"IntrinsicI.h"
 #include	"StringDefs.h"
-#include	"Quarks.h"
 
 /* Conversion procedure hash table */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.166 91/04/11 12:10:52 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.167 91/04/17 10:52:26 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,7 +31,6 @@ SOFTWARE.
 #ifndef VMS
 #include <sys/stat.h>
 #endif /* VMS */
-#include "Quarks.h"
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>

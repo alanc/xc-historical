@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.181 91/04/08 14:45:57 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.182 91/04/15 11:12:46 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,7 +30,6 @@ SOFTWARE.
 #include "StringDefs.h"
 #include "CoreP.h"
 #include "ShellP.h"
-#include "Quarks.h"
 #include <pwd.h>
 #include <stdio.h>
 #include <X11/Xlocale.h>

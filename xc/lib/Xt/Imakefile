@@ -37,7 +37,6 @@ HEADERS = \
 	IntrinsicP.h \
 	Object.h \
 	ObjectP.h \
-	Quarks.h \
 	RectObj.h \
 	RectObjP.h \
 	Shell.h \
