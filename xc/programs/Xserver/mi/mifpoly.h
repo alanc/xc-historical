@@ -1,4 +1,4 @@
-/* $XConsortium: mifpoly.h,v 1.3 88/09/06 14:50:37 jim Exp $ */
+/* $XConsortium: mifpoly.h,v 1.4 88/10/15 17:50:06 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -40,6 +40,22 @@ SOFTWARE.
 
 #define SQSECANT 108.856472512142 /* 1/sin^2(11/2) - for 11o miter cutoff */
 #define D2SECANT 5.21671526231167 /* 1/2*sin(11/2) - max extension per width */
+
+#ifdef NOINLINEICEIL
+#define ICEIL(x) ((int)ceil(x))
+#else
+#ifdef __GNUC__
+static inline int ICEIL(x)
+    double x;
+{
+    int _cTmp = x;
+    return ((x == _cTmp) || (x < 0.0)) ? _cTmp : _cTmp+1;
+}
+#else
+#define ICEIL(x) ((((x) == (_cTmp = (x))) || ((x) < 0.0)) ? _cTmp : _cTmp+1)
+#define ICEILTEMPDECL static int _cTmp;
+#endif
+#endif
 
 /* Point with sub-pixel positioning.  In this case we use doubles, but
  * see mifpolycon.c for other suggestions 
