@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.4 89/07/11 18:51:09 jim Exp $
+ * $XConsortium: listres.c,v 1.10 89/07/11 18:52:21 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,11 +38,12 @@ static XrmOptionDescRec Options[] = {
   { "-top", "*topWidget", XrmoptionNoArg, (caddr_t) "on" },
   { "-format", "*resourceFormat", XrmoptionSepArg, (caddr_t) NULL },
   { "-nosuper", "*showSuper", XrmoptionNoArg, (caddr_t) "off" },
+  { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
 };
 
 static struct _appresources {
     Boolean known;
-    Boolean sort;
+    Boolean show_variable;
     Boolean show_superclass;
     char *top_object;
     char *format;
@@ -55,6 +56,8 @@ static XtResource Resources[] = {
       offset(known), XtRImmediate, (caddr_t) FALSE },
   { "showSuper", "ShowSuper", XtRBoolean, sizeof(Boolean),
       offset(show_superclass), XtRImmediate, (caddr_t) TRUE },
+  { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
+      offset(show_variable), XtRImmediate, (caddr_t) FALSE },
   { "topObject", "TopObject", XtRString, sizeof(char *),
       offset(top_object), XtRString, (caddr_t) "core" },
   { "resourceFormat", "ResourceFormat", XtRString, sizeof(char *),
@@ -71,13 +74,15 @@ usage ()
     fprintf(stderr, "usage:  %s [-options...]\n", ProgramName);
     fprintf(stderr, "\nwhere options include:\n");
     fprintf(stderr,
-	    "    -known            list known widget classes\n");
+	    "    -known           list known widget classes\n");
     fprintf(stderr,
-	    "    -nosuper          do not print superclass resources\n");
+	    "    -nosuper         do not print superclass resources\n");
     fprintf(stderr,
-	    "    -top name         name of top object or widget to display\n");
+	    "    -variable        show variable name instead of class name\n");
     fprintf(stderr,
-	    "    -format string    printf format for instance, class, type\n");
+	    "    -top name        name of top object or widget to display\n");
+    fprintf(stderr,
+	    "    -format string   printf format for instance, class, type\n");
     fprintf(stderr, "\n");
     exit (1);
 }
@@ -118,7 +123,8 @@ main (argc, argv)
 	WidgetNode *wn;
 	for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
 	    list_resources (wn, Appresources.format, topnode, toplevel,
-			    (Bool) Appresources.show_superclass);
+			    (Bool) Appresources.show_superclass,
+			    (Bool) Appresources.show_variable);
 	}
     } else {
 	for (; argc > 0; argc--, argv++) {
@@ -132,7 +138,8 @@ main (argc, argv)
 		continue;
 	    }
 	    list_resources (node, Appresources.format, topnode, toplevel,
-			    (Bool) Appresources.show_superclass);
+			    (Bool) Appresources.show_superclass,
+			    (Bool) Appresources.show_variable);
 	}
     }
     exit (0);
