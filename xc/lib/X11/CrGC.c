@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrGC.c,v 11.21 87/09/09 15:58:25 newman Exp $ */
+/* $Header: XCrGC.c,v 11.22 88/01/30 14:09:08 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -136,7 +136,7 @@ _XGenerateGCList (dpy, gc, req)
 
 
 _XUpdateGCCache (gc, mask, att)
-    register long mask;
+    register unsigned long mask;
     register XGCValues *att;
     register GC gc;
     {
