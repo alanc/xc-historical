@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.198 93/09/26 21:51:40 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.199 93/09/29 18:02:20 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -60,6 +60,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.198 93/09/26 21:51:40 rws Exp $
 #endif
 #ifndef BuildXKB
 #define BuildXKB		NO
+#endif
+#ifndef BuildXKBlib
+#define BuildXKBlib		NO
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
