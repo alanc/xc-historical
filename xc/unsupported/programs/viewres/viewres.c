@@ -658,41 +658,30 @@ static void toggle_callback (gw, closure, data)
     update_selection_items ();
 }
 
-static Boolean in_report = FALSE;
-static XawPannerReport lastrep;
-
 /* ARGSUSED */
-static void panner_callback (gw, closure, data)
-    Widget gw;
-    caddr_t closure;			/* undefined */
+static void panner_porthole_callback (gw, closure, data)
+    Widget gw;				/* either porthole or panner */
+    caddr_t closure;			/* unused */
     caddr_t data;			/* report */
 {
-    if (in_report) return;
-    if (portholeWidget) {
-	XawPannerReport *rep = (XawPannerReport *) data;
-	Arg args[2];
+    static Boolean in_report = FALSE;
+    XawPannerReport *rep;
+    Arg args[6];
+    Cardinal n;
+    Widget target;
 
-	in_report = TRUE;
+    if (in_report) return;
+    rep = (XawPannerReport *) data;
+    n = TWO;
+
+    if (gw == pannerWidget) {
+	if (!(target = treeWidget)) return;
+
 	XtSetArg (args[0], XtNx, -rep->slider_x);
 	XtSetArg (args[1], XtNy, -rep->slider_y);
-	XtSetValues (treeWidget, args, TWO);
-	in_report = FALSE;
-    }
-}
+    } else if (gw == portholeWidget) {
+	if (!(target = pannerWidget)) return;
 
-/* ARGSUSED */
-static void porthole_callback (gw, closure, data)
-    Widget gw;
-    caddr_t closure;			/* undefined */
-    caddr_t data;			/* report */
-{
-    if (in_report) return;
-    if (pannerWidget) {
-	XawPannerReport *rep = (XawPannerReport *) data;
-	Arg args[6];
-	Cardinal n = TWO;
-
-	in_report = TRUE;
 	XtSetArg (args[0], XtNsliderX, rep->slider_x);
 	XtSetArg (args[1], XtNsliderY, rep->slider_y);
 	if (rep->changed != (XawPRSliderX | XawPRSliderY)) {
@@ -702,9 +691,13 @@ static void porthole_callback (gw, closure, data)
 	    XtSetArg (args[5], XtNcanvasHeight, rep->canvas_height);
 	    n = SIX;
 	}
-	XtSetValues (pannerWidget, args, n);
-	in_report = FALSE;
-    }
+    } else
+      return;
+
+    in_report = TRUE;
+    XtSetValues (target, args, n);
+    in_report = FALSE;
+    return;
 }
 
 
@@ -825,15 +818,14 @@ main (argc, argv)
 #undef MAKE_SELECT
 
     XtSetArg (args[0], XtNreportCallback, callback_rec);
-    callback_rec[0].callback = (XtCallbackProc) panner_callback;
+    callback_rec[0].callback = (XtCallbackProc) panner_porthole_callback;
     callback_rec[0].closure = (caddr_t) NULL;
     XtSetArg (args[1], XtNallowResize, TRUE);
     XtSetArg (args[2], XtNresize, TRUE);
     pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, box,
 					  args, THREE);
 
-    callback_rec[0].callback = (XtCallbackProc) porthole_callback;
-    callback_rec[0].closure = (caddr_t) NULL;
+    /* use same callback arg */
     portholeWidget = XtCreateManagedWidget ("porthole", portholeWidgetClass,
 					    pane, args, ONE);
 
