@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.147 91/04/26 13:27:49 gildea Exp $
+ * $XConsortium: charproc.c,v 1.148 91/04/26 13:59:06 gildea Exp $
  */
 
 /*
@@ -2750,7 +2750,7 @@ DoSetSelectedFont(w, client_data, selection, type, value, length, format)
     if (len > 0) {
 	if (val[len-1] == '\n') val[len-1] = '\0';
 	if (!LoadNewFont (&term->screen, val, NULL, True, 
-			  fontMenu_fontescape))
+			  fontMenu_fontsel))
 	  Bell();
     }
 }
