@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.14 94/07/15 15:03:11 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.15 94/07/18 15:05:52 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -49,7 +49,7 @@ char *session_name;
     }
 
     strcpy (session_save_file, p);
-    strcat (session_save_file, "/.SM-");
+    strcat (session_save_file, "/.XSM-");
     strcat (session_save_file, session_name);
 }
 
@@ -250,7 +250,7 @@ char *session_name;
 	    dir = ".";
     }
 
-    sprintf (filename, "%s/.SM-%s", dir, session_name);
+    sprintf (filename, "%s/.XSM-%s", dir, session_name);
 
     f = fopen(filename, "r");
     if(!f) {

@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.8 94/07/18 15:08:17 mor Exp $ */
+/* $XConsortium: choose.c,v 1.9 94/07/21 14:59:07 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -66,7 +66,7 @@ String **names_ret;
 
     while ((entry = readdir (dir)) != NULL)
     {
-	if (strncmp (entry->d_name, ".SM-", 4) == 0)
+	if (strncmp (entry->d_name, ".XSM-", 4) == 0)
 	    count++;
     }
 
@@ -81,7 +81,7 @@ String **names_ret;
 
     while ((entry = readdir (dir)) != NULL && *count_ret < count)
     {
-	if (strncmp (entry->d_name, ".SM-", 4) == 0)
+	if (strncmp (entry->d_name, ".XSM-", 4) == 0)
 	    (*names_ret)[(*count_ret)++] = XtNewString (entry->d_name + 4);
     }
 
@@ -260,7 +260,7 @@ XtPointer 	callData;
     FreeSessionNames (sessionNameCount, sessionNames);
 
     StartSession (session_name,
-	False /* look for .SM-<session name> startup file */);
+	False /* look for .XSM-<session name> startup file */);
 }
 
 
@@ -318,7 +318,7 @@ XtPointer 	callData;
 		dir = ".";
 	}
 
-	sprintf (filename, "%s/.SM-%s", dir, name);
+	sprintf (filename, "%s/.XSM-%s", dir, name);
 
 	ExecuteOldDiscardCommands (name);
 
