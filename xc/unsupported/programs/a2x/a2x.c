@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.124 93/05/19 15:05:57 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.125 93/05/19 19:15:37 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -260,10 +260,12 @@ KeyCode keycodes[256];
 unsigned short modmask[256];
 unsigned short curmods = 0;
 unsigned short tempmods = 0;
+Bool meta_is_alt = False;
 KeyCode shift, control, mod1, mod2, mod3, mod4, mod5, meta;
 char control_char = standard_control_char;
 char control_end = standard_control_end;
 Bool bs_is_del = True;
+Bool bs_is_backspace = False;
 char pc_bs = '\b';
 KeySym last_sym = 0;
 KeyCode last_keycode_for_sym = 0;
@@ -540,7 +542,7 @@ Strtol(nptr, endptr, base)
 void
 usage()
 {
-    printf("%s: [-d <display>] [-c] [-e] [-E] [-b] [-C <char>] [-U] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>] [-p]\n",
+    printf("%s: [-d <display>] [-c] [-e] [-E] [-a] [-b] [-B] [-bs] [-C <char>] [-U] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>] [-p]\n",
 	   progname);
     exit(1);
 }
@@ -729,9 +731,9 @@ reset_mapping()
 	if (mmap->modifiermap[j])
 	    modmask[mod5 = mmap->modifiermap[j]] = Mod5Mask;
     XFreeModifiermap(mmap);
-    i = XKeysymToKeycode(dpy, XK_Meta_L);
+    i = XKeysymToKeycode(dpy, meta_is_alt ? XK_Alt_L : XK_Meta_L);
     if (!i)
-	i = XKeysymToKeycode(dpy, XK_Meta_R);
+	i = XKeysymToKeycode(dpy, meta_is_alt ? XK_Alt_R : XK_Meta_R);
     modsmask = modmask[i];
     switch (modsmask) {
     case Mod1Mask:
@@ -799,7 +801,16 @@ reset_mapping()
     if (bs_is_del) {
 	keycodes['\b'] = keycodes['\177'];
 	modifiers['\b'] = modifiers['\177'];
+    } else if (pc_bs == '\177') {
+	c = keycodes['\b'];
+	keycodes['\b'] = keycodes['\177'];
+	keycodes['\177'] = c;
+	modsmask = modifiers['\b'];
+	modifiers['\b'] = modifiers['\177'];
+	modifiers['\177'] = modsmask;
     }
+    if (bs_is_backspace)
+	keycodes[pc_bs] = parse_keysym("BackSpace", 9, &modifiers[pc_bs]);
     last_sym = 0;
     if (hotkeyname) {
 	hotkey = parse_keysym(hotkeyname, strlen(hotkeyname), &modsmask);
@@ -2830,76 +2841,66 @@ main(argc, argv)
     static struct timeval notime = {0, 0};
 #endif
 
-    progname = argv[0];
+    progname = *argv;
     if (s = rindex(progname, '/'))
 	progname = s + 1;
     FD_ZERO(&fdmask);
     for (argc--, argv++; argc > 0; argc--, argv++) {
-	if (argv[0][0] != '-')
-	    usage();
-	switch (argv[0][1]) {
-	case 'b':
+	if (!strcmp(*argv, "-a")) {
+	    meta_is_alt = True;
+	} else if (!strcmp(*argv, "-b")) {
 	    bs_is_del = False;
-	    break;
-	case 'B':
+	    bs_is_backspace = False;
+	} else if (!strcmp(*argv, "-bs")) {
+	    bs_is_del = False;
+	    bs_is_backspace = True;
+	} else if (!strcmp(*argv, "-B")) {
 	    pc_bs = '\177';
-	    break;
-	case 'c':
+	} else if (!strcmp(*argv, "-c")) {
 	    doclear = True;
-	    break;
-	case 'C':
+	} else if (!strcmp(*argv, "-C")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
 	    control_char = controlify(**argv);
 	    control_end = control_char + '\200';
-	    break;
-	case 'd':
+	} else if (!strcmp(*argv, "-d")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
 	    dname = *argv;
-	    break;
-	case 'e':
+	} else if (!strcmp(*argv, "-e")) {
 	    noecho = False;
-	    break;
-	case 'E':
+	} else if (!strcmp(*argv, "-E")) {
 	    fakeecho = True;
-	    break;
-	case 'f':
+	} else if (!strcmp(*argv, "-f")) {
 	    hotwinfocus = False;
-	    break;
-	case 'g':
+	} else if (!strcmp(*argv, "-g")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
 	    hotwingeom = *argv;
-	    break;
-	case 'h':
+	} else if (!strcmp(*argv, "-h")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
 	    hotkeyname = *argv;
-	    break;
-	case 'p':
+	} else if (!strcmp(*argv, "-p")) {
 	    do_mouse_fixup = True;
-	    break;
-	case 'u':
+	} else if (!strcmp(*argv, "-u")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
 	    undofile = *argv;
-	    break;
-	case 'U':
+	} else if (!strcmp(*argv, "-U")) {
 	    pc_bs = '\377';
-	    break;
-	case 'w':
+	} else if (!strcmp(*argv, "-w")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
 	    hotwinname = *argv;
 	    break;
-	default:
+	} else {
 	    usage();
 	}
     }
