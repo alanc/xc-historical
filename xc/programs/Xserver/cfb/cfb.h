@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.31 93/10/12 11:22:48 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.32 93/12/13 17:20:56 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -36,6 +36,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "servermd.h"
 #include "windowstr.h"
 #include "mfb.h"
+#undef PixelType
 
 #include "cfbmap.h"
 
