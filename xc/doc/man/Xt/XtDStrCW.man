@@ -135,7 +135,7 @@ void XtDisplayStringConversionWarning(\fIdisplay\fP, \fIfrom_value\fP, \
 .SH ARGUMENTS
 .IP \fIdisplay\fP 1i
 Specifies the displaly connection with which the conversion is associated.
-.IP \fIfrom value\fP 1i
+.IP \fIfrom_value\fP 1i
 Specifies the string that could not be converted.
 .IP \fIto_type\fP 1i
 Specifies the target representation type requested.
