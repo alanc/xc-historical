@@ -1,4 +1,4 @@
-/* $XConsortium: hpInit.c,v 1.1 93/08/08 13:00:42 rws Exp $ */
+/* $XConsortium: hpInit.c,v 1.2 93/09/26 12:34:20 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -41,6 +41,10 @@
 
 #include "hppriv.h" 
 #include "XHPproto.h"
+
+#ifndef LIBDIR
+#define LIBDIR "/usr/lib/X11"
+#endif
 
 extern char    		*display;	/* display number as a string */
 extern unsigned char 	*get_display_address();
@@ -181,7 +185,7 @@ char          **argv;
     {
 	ErrorF("Number of screens requested exceeds allowable limit of %d screens.\n", MAXSCREENS);
 	ErrorF("Please reduce the number of requested screens in your ");
-	ErrorF("'/usr/lib/X11/X%sscreens' file.\n", display);
+	ErrorF("'%s/X%sscreens' file.\n", LIBDIR, display);
 	ErrorF("Server exiting...\n");
 	Exit(UNABLE_TO_INITIALIZE_THE_DISPLAY);
     }
@@ -260,7 +264,7 @@ ScreenInfo * pScreenInfo;
     phpPriv = AllocateDataStructures();
     hpPrivates[hpNumScreens] = phpPriv;
 
-    sprintf( filename, "/usr/lib/X11/X%sscreens", display );
+    sprintf( filename, "%s/X%sscreens", LIBDIR, display );
     str = fopen( filename, "r");
     if (str == NULL) FatalError("Cannot open the %s file.\n", filename);
 
@@ -272,7 +276,7 @@ ScreenInfo * pScreenInfo;
      */
     if ( status == -1 )
       FatalError(
-	"No valid information exists in your /usr/lib/X11/Xnscreens file.\n");
+	"No valid information exists in your %s/Xnscreens file.\n", LIBDIR);
     /*
      *
      */
@@ -408,7 +412,8 @@ FILE          * str;
 		break;
 
 	    default:
-		FatalError( "An error occurred while processing /usr/lib/X11/X*screens." );
+		FatalError( "An error occurred while processing %s/X*screens.",
+			   LIBDIR);
 	    }
 	    if ( Error )
 		break;
@@ -763,8 +768,8 @@ hpPrivPtr phpPriv;
 
 {
 
-    ErrorF("Error in line %d of your /usr/lib/X11/X%sscreens file.\n", 
-		phpPriv->LineNumber, display);
+    ErrorF("Error in line %d of your %s/X%sscreens file.\n", 
+		phpPriv->LineNumber, LIBDIR, display);
     return;
 
 }
