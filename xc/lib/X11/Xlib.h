@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.148 88/09/06 16:10:06 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.149 88/09/30 14:03:09 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1022,7 +1022,7 @@ GC XCreateGC();
 GContext XGContextFromGC();
 Pixmap XCreatePixmap();
 Pixmap XCreateBitmapFromData(), XCreatePixmapFromBitmapData();
-Window XCreateSimpleWindow(), XGetSelectionOwner(), XGetIconWindow();
+Window XCreateSimpleWindow(), XGetSelectionOwner();
 Window XCreateWindow(); 
 Colormap *XListInstalledColormaps();
 char **XListFonts(), **XListFontsWithInfo(), **XGetFontPath();
