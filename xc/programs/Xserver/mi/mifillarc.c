@@ -13,9 +13,11 @@ M.I.T. makes no representation about the suitability of
 this software for any purpose. It is provided "as is"
 without any express or implied warranty.
 
+Author:  Bob Scheifler, MIT X Consortium
+
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.7 89/11/02 19:26:42 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.8 89/11/05 12:59:09 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
