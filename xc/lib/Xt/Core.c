@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.53 91/05/10 12:42:24 converse Exp $ */
+/* $XConsortium: Core.c,v 1.54 91/06/11 20:12:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -248,7 +248,7 @@ static void CoreInitialize(requested_widget, new_widget, args, num_args)
 
 static void CoreRealize(widget, value_mask, attributes)
     Widget		 widget;
-    Mask		 *value_mask;
+    XtValueMask		 *value_mask;
     XSetWindowAttributes *attributes;
 {
     XtCreateWindow(widget, (unsigned int) InputOutput,
