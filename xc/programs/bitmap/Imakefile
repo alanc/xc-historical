@@ -54,6 +54,8 @@ ComplexProgramTarget_1(bitmap, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB), -lm)
 SingleProgramTarget(bmtoa,$(OBJS2),$(XMULIB),NullParameter)
 SingleProgramTarget(atobm,$(OBJS3),NullParameter,NullParameter)
 
+BuildIncludes($(BUTTONPICTURES),bitmaps,..)
+
 InstallAppDefaults(Bitmap)
 InstallAppDefaultsLong(Bitmap-co,Bitmap-color)
 InstallMultiple($(BUTTONPICTURES),$(INCDIR)/bitmaps)
