@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.20 94/06/02 10:35:37 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.21 94/06/02 10:54:50 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1046,7 +1046,13 @@ struct t_call	*sndcall;
 	PRMSG(1, "TRANS(TLIConnect)() t_connect() failed\n", 0,0,0 );
 	PRMSG(1, "%s\n", t_errlist[t_errno], 0,0 );
 	t_free((char *)sndcall,T_CALL);
-	return -1;
+	if (t_errno == TLOOK && t_look(ciptr->fd) == T_DISCONNECT)
+	{
+	    t_rcvdis(ciptr->fd,NULL);
+	    return TRANS_TRY_CONNECT_AGAIN;
+	}
+	else
+	    return TRANS_CONNECT_FAILED;
     }
     
     t_free((char *)sndcall,T_CALL);
@@ -1060,7 +1066,7 @@ struct t_call	*sndcall;
 	PRMSG(1,
 	      "TRANS(TLIConnect): TRANS(TLIGetAddr)() failed: %d\n",
 	      errno, 0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( TRANS(TLIGetPeerAddr)(ciptr) < 0 )
@@ -1068,21 +1074,21 @@ struct t_call	*sndcall;
 	PRMSG(1,
 	      "TRANS(TLIConnect): TRANS(TLIGetPeerAddr)() failed: %d\n",
 	      errno, 0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( ioctl(ciptr->fd, I_POP,"timod") < 0 )
     {
 	PRMSG(1, "TRANS(TLIConnect)() ioctl(I_POP,\"timod\") failed %d\n",
 	      errno,0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( ioctl(ciptr->fd, I_PUSH,"tirdwr") < 0 )
     {
 	PRMSG(1, "TRANS(TLIConnect)() ioctl(I_PUSH,\"tirdwr\") failed %d\n",
 	      errno,0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     return 0;
@@ -1126,7 +1132,7 @@ char		*port;
     if( (sndcall=(struct t_call *)t_alloc(ciptr->fd,T_CALL,T_ALL)) == NULL )
     {
 	PRMSG(1, "TRANS(TLIINETConnect)() failed to allocate a t_call\n", 0,0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( TRANS(TLIAddrToNetbuf)(ciptr->index, host, portbuf, &(sndcall->addr) ) < 0 )
@@ -1134,7 +1140,7 @@ char		*port;
 	PRMSG(1, "TRANS(TLIINETConnect)() unable to resolve name:%s.%s\n",
 	      host, portbuf, 0 );
 	t_free((char *)sndcall,T_CALL);
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     return TRANS(TLIConnect)(ciptr, sndcall );
@@ -1157,7 +1163,7 @@ char		*port;
     if( (sndcall=(struct t_call *)t_alloc(ciptr->fd,T_CALL,T_OPT|T_UDATA)) == NULL )
     {
 	PRMSG(1, "TRANS(TLITLIConnect)() failed to allocate a t_call\n", 0,0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( (sunaddr=(struct sockaddr_un *)
@@ -1167,7 +1173,7 @@ char		*port;
 	      "TRANS(TLICreateListener): failed to allocate a sockaddr_un\n",
 	      0,0,0 );
 	t_free((char *)sndcall,T_CALL);
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     sunaddr->sun_family=AF_UNIX;
