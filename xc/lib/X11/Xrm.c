@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.52 90/12/12 09:20:18 rws Exp $
+ * $XConsortium: Xrm.c,v 1.53 90/12/26 10:39:20 rws Exp $
  */
 
 /***********************************************************
@@ -1547,7 +1547,7 @@ static Bool EnumNTable(table, names, classes, level, closure)
     Bool bilevel;
 
 /* find entries named ename, leafness leaf, tight or loose, and call get */
-#define ETIGHTLOOSE(ename) \
+#define ITIGHTLOOSE(ename) \
     NFIND(ename); \
     if (entry) { \
 	if (leaf == entry->leaf) { \
@@ -1575,7 +1575,7 @@ static Bool EnumNTable(table, names, classes, level, closure)
     }
 
 /* find entries named ename, leafness leaf, loose only, and call get */
-#define ELOOSE(ename) \
+#define ILOOSE(ename) \
     NFIND(ename); \
     if (entry && entry->tight && (entry = entry->next) && entry->name != q) \
 	entry = (NTable)NULL; \
@@ -1608,10 +1608,10 @@ static Bool EnumNTable(table, names, classes, level, closure)
 	    leaf = 1;
 	    bilevel = False;
 	}
-	ETIGHTLOOSE(*names);   /* do name, tight and loose */
-	ETIGHTLOOSE(*classes); /* do class, tight and loose */
+	ITIGHTLOOSE(*names);   /* do name, tight and loose */
+	ITIGHTLOOSE(*classes); /* do class, tight and loose */
 	if (table->hasany) {
-	    ETIGHTLOOSE(XrmQANY); /* do ANY, tight and loose */
+	    ITIGHTLOOSE(XrmQANY); /* do ANY, tight and loose */
 	}
 	if (table->hasloose) {
 	    while (1) {
@@ -1623,10 +1623,10 @@ static Bool EnumNTable(table, names, classes, level, closure)
 		    get = EnumLTable; /* bottom of recursion */
 		    leaf = 1;
 		}
-		ELOOSE(*names);   /* loose names */
-		ELOOSE(*classes); /* loose classes */
+		ILOOSE(*names);   /* loose names */
+		ILOOSE(*classes); /* loose classes */
 		if (table->hasany) {
-		    ELOOSE(XrmQANY); /* loose ANY */
+		    ILOOSE(XrmQANY); /* loose ANY */
 		}
 	    }
 	    names--;
@@ -1657,8 +1657,8 @@ static Bool EnumNTable(table, names, classes, level, closure)
 	return EnumLTable((LTable)entry, names, classes, level, closure);
     return False;
 
-#undef ETIGHTLOOSE
-#undef ELOOSE
+#undef ITIGHTLOOSE
+#undef ILOOSE
 }
 
 /* call the proc for every value in the database, arbitrary order.
