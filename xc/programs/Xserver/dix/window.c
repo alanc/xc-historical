@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.77 91/09/17 11:02:41 keith Exp $ */
+/* $XConsortium: window.c,v 5.78 91/11/27 15:54:50 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1214,6 +1214,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     unsigned int val;
     int error;
     Bool checkOptional = FALSE;
+    Bool borderRelative = FALSE;
 
     if ((pWin->drawable.class == InputOnly) && (vmask & (~INPUTONLY_LEGAL_MASK)))
         return BadMatch;
@@ -1231,6 +1232,8 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	  case CWBackPixmap:
 	    pixID = (Pixmap )*pVlist;
 	    pVlist++;
+	    if (pWin->backgroundState == ParentRelative)
+		borderRelative = TRUE;
 	    if (pixID == None)
 	    {
 		if (pWin->backgroundState == BackgroundPixmap)
@@ -1254,6 +1257,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    MakeRootTile(pWin);
 		else
 	            pWin->backgroundState = ParentRelative;
+		borderRelative = TRUE;
 		/* Note that the parent's backgroundTile's refcnt is NOT
 		 * incremented. */
 	    }
@@ -1283,6 +1287,8 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    }
 	    break;
 	  case CWBackPixel:
+	    if (pWin->backgroundState == ParentRelative)
+		borderRelative = TRUE;
 	    if (pWin->backgroundState == BackgroundPixmap)
 		(* pScreen->DestroyPixmap)(pWin->background.pixmap);
 	    pWin->backgroundState = BackgroundPixel;
@@ -1657,7 +1663,7 @@ PatchUp:
 	Note that this has to be done AFTER pScreen->ChangeWindowAttributes
         for the tile to be rotated, and the correct function selected.
     */
-    if ((vmaskCopy & (CWBorderPixel | CWBorderPixmap))
+    if (((vmaskCopy & (CWBorderPixel | CWBorderPixmap)) || borderRelative)
 	&& pWin->viewable && HasBorder (pWin))
     {
 	RegionRec exposed;
