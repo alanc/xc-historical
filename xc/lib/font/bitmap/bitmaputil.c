@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmaputil.c,v 1.3 91/05/31 14:23:06 rws Exp $
+ * $XConsortium: bitmaputil.c,v 1.4 93/09/17 18:26:57 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -44,6 +44,18 @@ MINSHORT, MINSHORT, MINSHORT, MINSHORT, MINSHORT, 0x0000};
 	if (maxbounds->field < (ci)->field) \
 	     maxbounds->field = (ci)->field;
 
+#define COMPUTE_MINMAX(ci) \
+    if ((ci)->ascent != -(ci)->descent || \
+	(ci)->leftSideBearing != (ci)->rightSideBearing || \
+	(ci)->characterWidth) \
+    { \
+	MINMAX(ascent, (ci)); \
+	MINMAX(descent, (ci)); \
+	MINMAX(leftSideBearing, (ci)); \
+	MINMAX(rightSideBearing, (ci)); \
+	MINMAX(characterWidth, (ci)); \
+    }
+
 void
 bitmapComputeFontBounds(pFont)
     FontPtr     pFont;
@@ -73,11 +85,7 @@ bitmapComputeFontBounds(pFont)
     maxOverlap = MINSHORT;
     nchars = bitmapFont->num_chars;
     for (i = 0, ci = bitmapFont->metrics; i < nchars; i++, ci++) {
-	MINMAX(ascent, &ci->metrics);
-	MINMAX(descent, &ci->metrics);
-	MINMAX(leftSideBearing, &ci->metrics);
-	MINMAX(rightSideBearing, &ci->metrics);
-	MINMAX(characterWidth, &ci->metrics);
+	COMPUTE_MINMAX(&ci->metrics);
 	if (ci->metrics.characterWidth < 0)
 	    numneg++;
 	else
@@ -104,11 +112,7 @@ bitmapComputeFontBounds(pFont)
 	    for (c = pFont->info.firstCol; c <= pFont->info.lastCol; c++) {
 		ci = *pci++;
 		if (ci) {
-		    MINMAX(ascent, &ci->metrics);
-		    MINMAX(descent, &ci->metrics);
-		    MINMAX(leftSideBearing, &ci->metrics);
-		    MINMAX(rightSideBearing, &ci->metrics);
-		    MINMAX(characterWidth, &ci->metrics);
+		    COMPUTE_MINMAX(&ci->metrics);
 		    if (ci->metrics.characterWidth < 0)
 			numneg++;
 		    else
@@ -165,11 +169,7 @@ bitmapComputeFontInkBounds(pFont)
 	*maxbounds = initMaxMetrics;
 	nchars = bitmapFont->num_chars;
 	for (i = 0, ci = bitmapFont->ink_metrics; i < nchars; i++, ci++) {
-	    MINMAX(ascent, ci);
-	    MINMAX(descent, ci);
-	    MINMAX(leftSideBearing, ci);
-	    MINMAX(rightSideBearing, ci);
-	    MINMAX(characterWidth, ci);
+	    COMPUTE_MINMAX(ci);
 	    minbounds->attributes &= ci->attributes;
 	    maxbounds->attributes |= ci->attributes;
 	}
@@ -185,11 +185,7 @@ bitmapComputeFontInkBounds(pFont)
 		    if (cit) {
 			offset = cit - bitmapFont->metrics;
 			ci = &bitmapFont->ink_metrics[offset];
-			MINMAX(ascent, ci);
-			MINMAX(descent, ci);
-			MINMAX(leftSideBearing, ci);
-			MINMAX(rightSideBearing, ci);
-			MINMAX(characterWidth, ci);
+			COMPUTE_MINMAX(ci);
 			minbounds->attributes &= ci->attributes;
 			maxbounds->attributes |= ci->attributes;
 		    }
