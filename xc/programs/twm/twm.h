@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.51 89/11/22 15:36:55 jim Exp $
+ * $XConsortium: twm.h,v 1.52 89/11/22 16:07:29 jim Exp $
  *
  * twm include file
  *
@@ -135,6 +135,7 @@ typedef struct ColorPair
 
 typedef struct _TitleButton {
     struct _TitleButton *next;		/* next link in chain */
+    char *name;				/* bitmap name in case of deferal */
     Pixmap bitmap;			/* image to display in button */
     int srcx, srcy;			/* from where to start copying */
     int width, height;			/* size of pixmap */
@@ -250,6 +251,11 @@ typedef struct TwmWindow
 #define DoesWmSaveYourself	(1L << 1)
 #define DoesWmDeleteWindow	(1L << 2)
 
+#define TBPM_XLOGO ":xlogo"	/* name of titlebar pixmap for xlogo */
+#define TBPM_ICONIFY ":iconify"	/* same image as xlogo */
+#define TBPM_RESIZE ":resize"	/* name of titlebar pixmap for resize button */
+#define TBPM_QUESTION ":question"	/* name of unknown titlebar pixmap */
+#define TBPM_MENU ":menu"	/* name of titlebar pixmap for menus */
 
 extern char *ProgramName;
 extern Display *dpy;

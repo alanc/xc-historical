@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.29 89/11/20 17:22:34 jim Exp $
+ * $XConsortium: util.c,v 1.30 89/11/27 18:28:00 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.29 89/11/20 17:22:34 jim Exp $";
+"$XConsortium: util.c,v 1.30 89/11/27 18:28:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -48,7 +48,10 @@ static char RCSinfo[]=
 #include "screen.h"
 #include <X11/Xatom.h>
 #include <X11/Xmu/Drawing.h>
+#include <X11/Xmu/CharSet.h>
 
+static Pixmap CreateXLogoPixmap(), CreateResizePixmap();
+static Pixmap CreateQuestionPixmap(), CreateMenuPixmap();
 int HotX, HotY;
 
 /***********************************************************************
@@ -379,21 +382,53 @@ Pixmap FindBitmap (name, widthp, heightp)
     char *bigname;
     Pixmap pm;
 
-    if (name == NULL) return None;
+    if (!name) return None;
 
+    /*
+     * Names of the form :name refer to hardcoded images that are scaled to
+     * look nice in title buttons.  Eventually, it would be nice to put in a
+     * menu symbol as well....
+     */
     if (name[0] == ':') {
-	/*
-	 * Attempt to create a hardcoded bitmap; if no size is given then
-	 * default to *widthp x *heightp
-	 */
+	int i;
+	static struct {
+	    char *name;
+	    Pixmap (*proc)();
+	} pmtab[] = {
+	    { TBPM_XLOGO,	CreateXLogoPixmap },
+	    { TBPM_ICONIFY,	CreateXLogoPixmap },
+	    { TBPM_RESIZE,	CreateResizePixmap },
+	    { TBPM_QUESTION,	CreateQuestionPixmap },
+	    { TBPM_MENU,	CreateMenuPixmap },  /* XXX - don't doc, niy */
+	};
+	
+	for (i = 0; i < (sizeof pmtab)/(sizeof pmtab[0]); i++) {
+	    if (XmuCompareISOLatin1 (pmtab[i].name, name) == 0)
+	      return (*pmtab[i].proc) (widthp, heightp);
+	}
+	fprintf (stderr, "%s:  no such built-in bitmap \"%s\"\n",
+		 ProgramName, name);
+	return None;
     }
+
+    /*
+     * Generate a full pathname if any special prefix characters (such as ~)
+     * are used.  If the bigname is different from name, bigname will need to
+     * be freed.
+     */
     bigname = ExpandFilename (name);
     if (!bigname) return None;
 
+    /*
+     * look along bitmapFilePath resource same as toolkit clients
+     */
     pm = XmuLocateBitmapFile (ScreenOfDisplay(dpy, Scr->screen), bigname,
 			      NULL, 0, widthp, heightp, &HotX, &HotY);
     if (pm == None && Scr->IconDirectory && bigname[0] != '/') {
 	if (bigname != name) free (bigname);
+	/*
+	 * Attempt to find icon in old IconDirectory (now obsolete)
+	 */
 	bigname = (char *) malloc (strlen(name) + strlen(Scr->IconDirectory) +
 				   2);
 	if (!bigname) {
@@ -682,3 +717,109 @@ putenv(s)
     return 0;
 }
 #endif /* NOPUTENV */
+
+
+static Pixmap CreateXLogoPixmap (widthp, heightp)
+    int *widthp, *heightp;
+{
+    int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
+
+    *widthp = *heightp = h;
+    if (Scr->tbpm.xlogo == None) {
+	GC gc, gcBack;
+
+	Scr->tbpm.xlogo = XCreatePixmap (dpy, Scr->Root, h, h, 1);
+	gc = XCreateGC (dpy, Scr->tbpm.xlogo, 0L, NULL);
+	XSetForeground (dpy, gc, 0);
+	XFillRectangle (dpy, Scr->tbpm.xlogo, gc, 0, 0, h, h);
+	XSetForeground (dpy, gc, 1);
+	gcBack = XCreateGC (dpy, Scr->tbpm.xlogo, 0L, NULL);
+	XSetForeground (dpy, gcBack, 0);
+
+	/*
+	 * draw the logo large so that it gets as dense as possible; then white
+	 * out the edges so that they look crisp
+	 */
+	XmuDrawLogo (dpy, Scr->tbpm.xlogo, gc, gcBack, -1, -1, h + 2, h + 2);
+	XDrawRectangle (dpy, Scr->tbpm.xlogo, gcBack, 0, 0, h - 1, h - 1);
+
+	/*
+	 * done drawing
+	 */
+	XFreeGC (dpy, gc);
+	XFreeGC (dpy, gcBack);
+    }
+    return Scr->tbpm.xlogo;
+}
+
+
+static Pixmap CreateResizePixmap (widthp, heightp)
+    int *widthp, *heightp;
+{
+    int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
+
+    *widthp = *heightp = h;
+    if (Scr->tbpm.resize == None) {
+	XSegment segs[4];
+	GC gc;
+	int w;
+
+	/*
+	 * create the pixmap
+	 */
+	Scr->tbpm.resize = XCreatePixmap (dpy, Scr->Root, h, h, 1);
+	gc = XCreateGC (dpy, Scr->tbpm.resize, 0L, NULL);
+	XSetForeground (dpy, gc, 0);
+	XFillRectangle (dpy, Scr->tbpm.resize, gc, 0, 0, h, h);
+	XSetForeground (dpy, gc, 1);
+
+	/*
+	 * draw the resize button, 
+	 */
+	w = (h * 2) / 3;
+	segs[0].x1 = w; segs[0].y1 = 0; segs[0].x2 = w; segs[0].y2 = w;
+	segs[1].x1 = 0; segs[1].y1 = w; segs[1].x2 = w; segs[1].y2 = w;
+	w = w / 2;
+	segs[2].x1 = w; segs[2].y1 = 0; segs[2].x2 = w; segs[2].y2 = w;
+	segs[3].x1 = 0; segs[3].y1 = w; segs[3].x2 = w; segs[3].y2 = w;
+	XDrawSegments (dpy, Scr->tbpm.resize, gc, segs, 4);
+
+	/*
+	 * done drawing
+	 */
+	XFreeGC(dpy, gc);
+    }
+    return Scr->tbpm.resize;
+}
+
+
+#define questionmark_width 8
+#define questionmark_height 8
+static char questionmark_bits[] = {
+   0x38, 0x7c, 0x64, 0x30, 0x18, 0x00, 0x18, 0x18};
+
+static Pixmap CreateQuestionPixmap (widthp, heightp)
+    int *widthp, *heightp;
+{
+    *widthp = questionmark_width;
+    *heightp = questionmark_height;
+    if (Scr->tbpm.question == None) {
+	Scr->tbpm.question = XCreateBitmapFromData (dpy, Scr->Root,
+						    questionmark_bits,
+						    questionmark_width,
+						    questionmark_height);
+    }
+    /*
+     * this must succeed or else we are in deep trouble elsewhere
+     */
+    return Scr->tbpm.question;
+}
+
+
+static Pixmap CreateMenuPixmap (widthp, heightp)
+    int *widthp, *heightp;
+{
+    fprintf (stderr, "%s:  built-in bitmap \"%s\" not implemented.\n",
+	     ProgramName, TBPM_MENU);
+    return None;
+}

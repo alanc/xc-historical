@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.91 89/11/27 10:37:34 jim Exp $
+ * $XConsortium: twm.c,v 1.92 89/11/27 16:45:39 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.91 89/11/27 10:37:34 jim Exp $";
+"$XConsortium: twm.c,v 1.92 89/11/27 16:45:39 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -201,7 +201,6 @@ main(argc, argv, environ)
 	exit (1);
     }
 
-
     if (fcntl(ConnectionNumber(dpy), F_SETFD, 1) == -1) {
 	fprintf (stderr, 
 		 "%s:  unable to mark display connection as close-on-exec\n",
@@ -319,7 +318,6 @@ main(argc, argv, environ)
 	Scr->StdCmapInfo.mruindex = 0;
 	LocateStandardColormaps();
 
-	Scr->TBInfo.inited = False;
 	Scr->TBInfo.nleft = Scr->TBInfo.nright = 0;
 	Scr->TBInfo.head = NULL;
 	Scr->TBInfo.border = 1;
@@ -377,6 +375,10 @@ main(argc, argv, environ)
 	Scr->siconifyPm = None;
 	Scr->pullPm = None;
 	Scr->hilitePm = None;
+	Scr->tbpm.xlogo = None;
+	Scr->tbpm.resize = None;
+	Scr->tbpm.question = None;
+	Scr->tbpm.menu = None;
 
 	InitVariables();
 
@@ -391,9 +393,8 @@ main(argc, argv, environ)
 	Scr->TitleHeight = Scr->TitleBarFont.height + Scr->FramePadding * 2;
 	/* make title height be odd so buttons look nice and centered */
 	if (!(Scr->TitleHeight & 1)) Scr->TitleHeight++;
-	if (!Scr->NoDefaults) {
-	    AddDefaultBindings ();
-	}
+
+	InitTitlebarButtons ();		/* menus are now loaded! */
 
 	XGrabServer(dpy);
 	XSync(dpy, 0);

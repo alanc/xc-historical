@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.78 89/11/20 17:22:48 jim Exp $
+ * $XConsortium: gram.y,v 1.79 89/11/21 16:41:24 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.78 89/11/20 17:22:48 jim Exp $";
+"$XConsortium: gram.y,v 1.79 89/11/21 16:41:24 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -766,10 +766,10 @@ static void GotTitleButton (bitmapname, func, rightside)
     int func;
     Bool rightside;
 {
-    if (!AddTitleButton (bitmapname, func, Action, pull, rightside)) {
+    if (!CreateTitleButton (bitmapname, func, Action, pull, rightside, True)) {
 	twmrc_error_prefix();
 	fprintf (stderr, 
-		 "unable to add %s titlebutton \"%s\"\n",
+		 "unable to create %s titlebutton \"%s\"\n",
 		 rightside ? "right" : "left", bitmapname);
     }
     Action = "";

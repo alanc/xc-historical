@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.124 89/11/27 16:45:20 jim Exp $
+ * $XConsortium: menus.c,v 1.125 89/11/27 18:28:03 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.124 89/11/27 16:45:20 jim Exp $";
+"$XConsortium: menus.c,v 1.125 89/11/27 18:28:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -54,11 +54,6 @@ static char RCSinfo[] =
 #include "screen.h"
 #include "pull.bm"
 #include "version.h"
-
-#define questionmark_width 8
-#define questionmark_height 8
-static char questionmark_bits[] = {
-   0x38, 0x7c, 0x64, 0x30, 0x18, 0x00, 0x18, 0x18};
 
 
 #define SYNC XSync(dpy, 0);
@@ -206,10 +201,8 @@ Bool AddFuncKey (name, cont, mods, func, win_name, action)
     return True;
 }
 
-int MakeTitleButton (bm, width, height, func, action, menuroot, rightside,
-		     append)
-    Pixmap bm;
-    int width, height;
+int CreateTitleButton (name, func, action, menuroot, rightside, append)
+    char *name;
     int func;
     char *action;
     MenuRoot *menuroot;
@@ -226,9 +219,10 @@ int MakeTitleButton (bm, width, height, func, action, menuroot, rightside,
     }
 
     tb->next = NULL;
-    tb->bitmap = bm;
-    tb->width = width;
-    tb->height = height;
+    tb->name = name;			/* note that we are not copying */
+    tb->bitmap = None;			/* WARNING, values not set yet */
+    tb->width = 0;			/* see InitTitlebarButtons */
+    tb->height = 0;			/* ditto */
     tb->func = func;
     tb->action = action;
     tb->menuroot = menuroot;
@@ -245,6 +239,9 @@ int MakeTitleButton (bm, width, height, func, action, menuroot, rightside,
      *     1.  empty list, prepend left       put at head of list
      *     2.  append left, prepend right     put in between left and right
      *     3.  append right                   put at tail of list
+     *
+     * Do not refer to widths and heights yet since buttons not created
+     * (since fonts not loaded and heights not known).
      */
     if ((!Scr->TBInfo.head) || ((!append) && (!rightside))) {	/* 1 */
 	tb->next = Scr->TBInfo.head;
@@ -271,28 +268,79 @@ int MakeTitleButton (bm, width, height, func, action, menuroot, rightside,
     return 1;
 }
 
-int AddTitleButton (bitmapname, func, action, menuroot, rightside)
-    char *bitmapname;
-    int func;
-    char *action;
-    MenuRoot *menuroot;
-    Bool rightside;
-{
-    int width, height;
-    Pixmap bm = FindBitmap (bitmapname, &width, &height);
 
-    if (!bm) {
-	if (!Scr->questionPm)
-	  Scr->questionPm = XCreateBitmapFromData (dpy, Scr->Root,
-						   questionmark_bits,
-						   questionmark_width,
-						   questionmark_height);
-	bm = Scr->questionPm;
-	width = questionmark_width;
-	height = questionmark_height;
+/*
+ * InitTitlebarButtons - Do all the necessary stuff to load in a titlebar
+ * button.  If we can't find the button, then put in a question; if we can't
+ * find the question mark, something is wrong and we are probably going to be
+ * in trouble later on.
+ */
+void InitTitlebarButtons ()
+{
+    TitleButton *tb;
+    int h;
+
+    /*
+     * initialize dimensions
+     */
+    Scr->TBInfo.width = (Scr->TitleHeight -
+			 2 * (Scr->FramePadding + Scr->ButtonIndent));
+    Scr->TBInfo.pad = ((Scr->TitlePadding > 1)
+		       ? ((Scr->TitlePadding + 1) / 2) : 1);
+    h = Scr->TBInfo.width - 2 * Scr->TBInfo.border;
+
+    /*
+     * add in some useful buttons and bindings so that novices can still
+     * use the system.
+     */
+    if (!Scr->NoDefaults) {
+	/* insert extra buttons */
+	if (!CreateTitleButton (TBPM_ICONIFY, F_ICONIFY, "", NULL,
+				False, False)) {
+	    fprintf (stderr, "%s:  unable to add iconify button\n",
+		     ProgramName);
+	}
+	if (!CreateTitleButton (TBPM_RESIZE, F_RESIZE, "", NULL,
+				True, True)) {
+	    fprintf (stderr, "%s:  unable to add resize button\n",
+		     ProgramName);
+	}
+	AddDefaultBindings ();
     }
-    return MakeTitleButton (bm, width, height, func, action, menuroot, 
-			    rightside, True);
+    ComputeCommonTitleOffsets ();
+
+    /*
+     * load in images and do appropriate centering
+     */
+
+    for (tb = Scr->TBInfo.head; tb; tb = tb->next) {
+	tb->bitmap = FindBitmap (tb->name, &tb->width, &tb->height);
+	if (!tb->bitmap) {
+	    tb->bitmap = FindBitmap (TBPM_QUESTION, &tb->width, &tb->height);
+	    if (!tb->bitmap) {		/* cannot happen (see util.c) */
+		fprintf (stderr,
+			 "%s:  unable to add titlebar button \"%s\"\n",
+			 ProgramName, tb->name);
+	    }
+	}
+
+	tb->dstx = (h - tb->width + 1) / 2;
+	if (tb->dstx < 0) {		/* clip to minimize copying */
+	    tb->srcx = -(tb->dstx);
+	    tb->width = h;
+	    tb->dstx = 0;
+	} else {
+	    tb->srcx = 0;
+	}
+	tb->dsty = (h - tb->height + 1) / 2;
+	if (tb->dsty < 0) {
+	    tb->srcy = -(tb->dsty);
+	    tb->height = h;
+	    tb->dsty = 0;
+	} else {
+	    tb->srcy = 0;
+	}
+    }
 }
 
 

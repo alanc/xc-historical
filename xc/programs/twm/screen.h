@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.53 89/11/27 10:37:31 jim Exp $
+ * $XConsortium: screen.h,v 1.54 89/11/27 16:45:35 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -49,6 +49,13 @@ typedef struct _StdCmap {
 #define SIZE_HINDENT 10
 #define SIZE_VINDENT 2
 
+typedef struct _TitlebarPixmaps {
+    Pixmap xlogo;
+    Pixmap resize;
+    Pixmap question;
+    Pixmap menu;
+} TitlebarPixmaps;
+
 typedef struct ScreenInfo
 {
     int screen;			/* the default screen */
@@ -65,11 +72,11 @@ typedef struct ScreenInfo
     Window InfoWindow;		/* the information window */
 
     name_list *Icons;		/* list of icon pixmaps */
+    TitlebarPixmaps tbpm;	/* titlebar pixmaps */
     Pixmap UnknownPm;		/* the unknown icon pixmap */
     Pixmap siconifyPm;		/* the icon manager iconify pixmap */
     Pixmap pullPm;		/* pull right menu arrow */
     Pixmap hilitePm;		/* focus highlight window background */
-    Pixmap questionPm;		/* unknown item pixmap */
     int hilite_pm_width, hilite_pm_height;  /* cache the size */
 
     MenuRoot *MenuList;		/* head of the menu list */
@@ -90,7 +97,6 @@ typedef struct ScreenInfo
 	int mruindex;			/* index of mru in entry */
     } StdCmapInfo;
     struct {
-	Bool inited;			/* has been initialized */
 	int nleft, nright;		/* numbers of buttons in list */
 	TitleButton *head;		/* start of list */
 	int border;			/* button border */
