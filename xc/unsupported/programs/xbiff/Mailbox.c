@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.48 91/01/02 13:51:25 gildea Exp $
+ * $XConsortium: Mailbox.c,v 1.49 91/01/04 19:54:18 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -63,9 +63,7 @@ typedef union wait	waitType;
 
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/MailboxP.h>		/* for implementation mailbox stuff */
-
-#include <X11/Xmu/Converters.h>		/* for XmuCvtStringToBitmap */
-
+#include <X11/Xmu/Drawing.h>
 #include <X11/extensions/shape.h>
 
 /*
@@ -131,7 +129,7 @@ static XtResource resources[] = {
 
 static void GetMailFile(), CloseDown();
 static void check_mailbox(), redraw_mailbox(), beep();
-static void ClassInitialize(), Initialize(), Realize(), Destroy(), Redisplay();
+static void Initialize(), Realize(), Destroy(), Redisplay();
 static Boolean SetValues();
 
 MailboxClassRec mailboxClassRec = {
@@ -139,7 +137,7 @@ MailboxClassRec mailboxClassRec = {
     /* superclass		*/	(WidgetClass) &simpleClassRec,
     /* class_name		*/	"Mailbox",
     /* widget_size		*/	sizeof(MailboxRec),
-    /* class_initialize		*/	ClassInitialize,
+    /* class_initialize		*/	XawInitializeWidgetSet,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
@@ -183,18 +181,6 @@ WidgetClass mailboxWidgetClass = (WidgetClass) &mailboxClassRec;
 /*
  * widget initialization
  */
-
-static void ClassInitialize ()
-{
-    static XtConvertArgRec screenConvertArg[] = {
-    { XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *) }
-    };
-
-    XawInitializeWidgetSet();
-    XtAddConverter (XtRString, XtRBitmap, XmuCvtStringToBitmap,
-		    screenConvertArg, XtNumber(screenConvertArg));
-    return;
-}
 
 static GC get_mailbox_gc (w)
     MailboxWidget w;
