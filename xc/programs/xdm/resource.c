@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.26 89/12/06 19:38:52 keith Exp $
+ * $XConsortium: resource.c,v 1.28 89/12/13 15:25:42 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -37,8 +37,7 @@ int	debugLevel;
 char	*errorLogFile;
 int	daemonMode;
 char	*pidFile;
-int	lockfPidFile;
-int	flockPidFile;
+int	lockPidFile;
 char	*remoteAuthDir;
 int	autoRescan;
 int	removeDomainname;
@@ -118,9 +117,7 @@ struct dmResources {
 				"true",
 "pidFile",	"PidFile",	DM_STRING,	&pidFile,
 				"",
-"lockfPidFile",	"LockFPidFile",	DM_BOOL,	(char **) &lockfPidFile,
-				"true",
-"flockPidFile",	"FlockPidFile",	DM_BOOL,	(char **) &flockPidFile,
+"lockPidFile",	"LockPidFile",	DM_BOOL,	(char **) &lockPidFile,
 				"true",
 "remoteAuthDir","RemoteAuthDir",DM_STRING,	&remoteAuthDir,
 				DEF_REMOTE_AUTH_DIR,

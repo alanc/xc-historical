@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.24 89/12/06 19:36:31 keith Exp $
+ * $XConsortium: dm.h,v 1.26 89/12/13 15:23:57 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -192,8 +192,7 @@ extern int	debugLevel;
 extern char	*errorLogFile;
 extern int	daemonMode;
 extern char	*pidFile;
-extern int	lockfPidFile;
-extern int	flockPidFile;
+extern int	lockPidFile;
 extern char	*remoteAuthDir;
 extern int	autoRescan;
 extern int	removeDomainname;
