@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.1 90/02/08 17:45:52 jim Exp $
+ * $XConsortium: Panner.c,v 1.2 90/02/09 15:24:31 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,14 +60,16 @@ static XtResource resources[] = {
 	poff(default_scale), XtRImmediate, (XtPointer) PANNER_DEFAULT_SCALE },
     { XtNdynamic, XtCDynamic, XtRBoolean, sizeof(Boolean),
 	poff(dynamic), XtRImmediate, (XtPointer) FALSE },
-    { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	poff(foreground), XtRString, (XtPointer) "XtDefaultForeground" },
+    { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel), 
+	poff(foreground), XtRImmediate, (XtPointer) "XtDefaultForeground" },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
 	poff(line_width), XtRImmediate, (XtPointer) 0 },
     { XtNcanvasWidth, XtCCanvasWidth, XtRDimension, sizeof(Dimension),
 	poff(canvas_width), XtRImmediate, (XtPointer) 0 },
     { XtNcanvasHeight, XtCCanvasHeight, XtRDimension, sizeof(Dimension),
 	poff(canvas_height), XtRImmediate, (XtPointer) 0 },
+    { XtNsliderColor, XtCBackground, XtRPixel, sizeof(Pixel),
+	poff(slider_color), XtRString, (XtPointer) "XtDefaultBackground" },
     { XtNsliderX, XtCSliderX, XtRPosition, sizeof(Position),
 	poff(slider_x), XtRImmediate, (XtPointer) 0 },
     { XtNsliderY, XtCSliderY, XtRPosition, sizeof(Position),
@@ -76,6 +78,8 @@ static XtResource resources[] = {
 	poff(slider_width), XtRImmediate, (XtPointer) 0 },
     { XtNsliderHeight, XtCSliderHeight, XtRDimension, sizeof(Dimension),
 	poff(slider_height), XtRImmediate, (XtPointer) 0 },
+    { XtNshadow, XtCShadow, XtRBoolean, sizeof(Boolean),
+	poff(shadow), XtRImmediate, (XtPointer) TRUE },
 };
 #undef poff
 
@@ -142,18 +146,34 @@ WidgetClass pannerWidgetClass = (WidgetClass) &pannerClassRec;
  *                                                                           *
  *****************************************************************************/
 
-static void reset_draw_gc (pw)		/* used when resources change */
+static void reset_shadow_gc (pw)	/* used when resources change */
     PannerWidget pw;
 {
-    XtGCMask valuemask = (GCForeground | GCFunction);
+    XtGCMask valuemask = GCForeground;
     XGCValues values;
 
-    if (pw->panner.draw_gc) XtReleaseGC ((Widget) pw, pw->panner.draw_gc);
+    if (pw->panner.shadow_gc) XtReleaseGC ((Widget) pw, pw->panner.shadow_gc);
 
     values.foreground = pw->panner.foreground;
-    values.function = GXcopy;
+    if (pw->panner.line_width > 0) {
+	values.line_width = pw->panner.line_width;
+	valuemask |= GCLineWidth;
+    }
 
-    pw->panner.draw_gc = XtGetGC ((Widget) pw, valuemask, &values);
+    pw->panner.shadow_gc = XtGetGC ((Widget) pw, valuemask, &values);
+}
+
+static void reset_slider_gc (pw)	/* used when resources change */
+    PannerWidget pw;
+{
+    XtGCMask valuemask = GCForeground;
+    XGCValues values;
+
+    if (pw->panner.slider_gc) XtReleaseGC ((Widget) pw, pw->panner.slider_gc);
+
+    values.foreground = pw->panner.slider_color;
+
+    pw->panner.slider_gc = XtGetGC ((Widget) pw, valuemask, &values);
 }
 
 static void reset_xor_gc (pw)		/* used when resources change */
@@ -207,6 +227,33 @@ static void rescale (pw)
 			  ((float) pw->panner.canvas_height));
     scale_knob (pw, TRUE, TRUE);
 }
+
+
+static void move_shadow (pw)
+    PannerWidget pw;
+{
+    XRectangle *r = pw->panner.shadow_rects;
+    int lw = (pw->panner.line_width == 0 ? 1 : pw->panner.line_width) * 4;
+
+    if (pw->panner.knob_height > lw && pw->panner.knob_width > lw) {
+#define SHADOW_WIDTH 2
+	r->x = (short) (pw->panner.knob_x + pw->panner.knob_width);
+	r->y = (short) (pw->panner.knob_y + lw);
+	r->width = SHADOW_WIDTH;
+	r->height = (unsigned short) (pw->panner.knob_height - lw);
+	r++;
+	r->x = (short) (pw->panner.knob_x + lw);
+	r->y = (short) (pw->panner.knob_y + pw->panner.knob_height);
+	r->width = (unsigned short) (pw->panner.knob_width - lw +
+				     SHADOW_WIDTH);
+	r->height = SHADOW_WIDTH;
+	pw->panner.shadow_valid = TRUE;
+#undef SHADOW_WIDTH
+    } else {
+	pw->panner.shadow_valid = FALSE;
+    }
+}
+
 
 static Boolean get_event_xy (event, x, y)
     XEvent *event;
@@ -276,13 +323,17 @@ static void Initialize (greq, gnew)
     if (req->core.height < 1)
       new->core.height = PANNER_DSCALE (req, req->panner.canvas_height);
 
-    new->panner.draw_gc = NULL;
-    reset_draw_gc (new);
+    new->panner.shadow_gc = NULL;
+    reset_shadow_gc (new);		/* foreground */
+    new->panner.slider_gc = NULL;
+    reset_slider_gc (new);		/* sliderColor */
     new->panner.xor_gc = NULL;
-    reset_xor_gc (new);
+    reset_xor_gc (new);			/* foreground ^ background */
+
     rescale (new);
     new->panner.tmp.doing = FALSE;
     new->panner.tmp.showing = FALSE;
+    move_shadow (new);
 }
 
 static void Destroy (gw)
@@ -290,6 +341,8 @@ static void Destroy (gw)
 {
     PannerWidget pw = (PannerWidget) gw;
 
+    XtReleaseGC (gw, pw->panner.shadow_gc);
+    XtReleaseGC (gw, pw->panner.slider_gc);
     XtReleaseGC (gw, pw->panner.xor_gc);
 }
 
@@ -312,9 +365,18 @@ static void Redisplay (gw, event, region)
 
     XClearArea (dpy, w, 0, 0, 0, 0, False);
     pw->panner.tmp.showing = FALSE;
-    XFillRectangle (dpy, w, pw->panner.draw_gc,
+    XFillRectangle (dpy, w, pw->panner.slider_gc,
 		    pw->panner.knob_x, pw->panner.knob_y,
 		    pw->panner.knob_width - 1, pw->panner.knob_height - 1);
+
+    XDrawRectangle (dpy, w, pw->panner.shadow_gc,
+		    pw->panner.knob_x, pw->panner.knob_y,
+		    pw->panner.knob_width - 1, pw->panner.knob_height - 1);
+
+    if (pw->panner.shadow && pw->panner.shadow_valid) {
+	XFillRectangles (dpy, w, pw->panner.shadow_gc,
+			 pw->panner.shadow_rects, 2);
+    }
     if (pw->panner.tmp.doing && !pw->panner.dynamic) DRAW_TMP (pw);
 }
 
@@ -331,12 +393,20 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
     Boolean redisplay = FALSE;
 
     if (cur->panner.foreground != new->panner.foreground) {
-	reset_draw_gc (new);
+	reset_shadow_gc (new);
 	reset_xor_gc (new);
 	redisplay = TRUE;
     } else if (cur->panner.line_width != new->panner.line_width ||
 	       cur->core.background_pixel != new->core.background_pixel) {
 	reset_xor_gc (new);
+	redisplay = TRUE;
+    }
+    if (cur->panner.slider_color != new->panner.slider_color) {
+	reset_slider_gc (new);
+	redisplay = TRUE;
+    }
+    if (cur->panner.shadow != new->panner.shadow && new->panner.shadow) {
+	move_shadow (new);
 	redisplay = TRUE;
     }
 
@@ -489,6 +559,7 @@ static void ActionNotify (gw, event, params, num_params)
 
     pw->panner.knob_x = pw->panner.tmp.x;
     pw->panner.knob_y = pw->panner.tmp.y;
+    if (pw->panner.shadow) move_shadow (pw);
 
     pw->panner.slider_x = (Position) (((float) pw->panner.knob_x) /
 				      pw->panner.haspect);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.1 90/02/08 17:45:55 jim Exp $
+ * $XConsortium: PannerP.h,v 1.2 90/02/09 15:24:35 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -42,7 +42,9 @@ typedef struct _PannerClassRec {	/* Panner widget class */
 typedef struct {			/* new fields in widget */
     /* resources... */
     XtCallbackList callbacks;		/* callback/Callback */
+    Boolean shadow;			/* shadow/Shadow */
     Pixel foreground;			/* foreground/Foreground */
+    Pixel slider_color;			/* sliderColor/sliderColor */
     Dimension default_scale;		/* defaultScale/DefaultScale */
     Dimension line_width;		/* lineWidth/LineWidth */
     Dimension canvas_width;		/* canvasWidth/CanvasWidth */
@@ -52,7 +54,8 @@ typedef struct {			/* new fields in widget */
     Dimension slider_width;		/* sliderWidth/SliderWidth */
     Dimension slider_height;		/* sliderHeight/SliderHeight */
     /* private data... */
-    GC draw_gc;				/* for doing regular graphics */
+    GC slider_gc;			/* background of slider */
+    GC shadow_gc;			/* edge of slider and shadow */
     GC xor_gc;				/* for doing XOR tmp graphics */
     float haspect, vaspect;		/* aspect ratio of core to canvas */
     Boolean dynamic;			/* true if slider should move */
@@ -65,6 +68,8 @@ typedef struct {			/* new fields in widget */
     } tmp;
     Position knob_x, knob_y;		/* real upper left of knob in canvas */
     Dimension knob_width, knob_height;	/* real size of knob in canvas */
+    Boolean shadow_valid;		/* true if rects are valid */
+    XRectangle shadow_rects[2];		/* location of shadows */
 } PannerPart;
 
 typedef struct _PannerRec {

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.1 90/02/08 17:45:54 jim Exp $
+ * $XConsortium: Panner.h,v 1.2 90/02/09 15:24:33 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,6 +45,8 @@
  *  dynamic		Dynamic		Boolean		FALSE
  *  foreground		Foreground	Pixel		XtDefaultForeground
  *  lineWidth		LineWidth	Dimension	0
+ *  shadow		Shadow		Boolean		TRUE
+ *  sliderColor		Background	Pixel		XtDefaultBackground
  *  sliderX		SliderX		Position	0
  *  sliderY		SliderY		Position	0
  *  sliderWidth		SliderWidth	Dimension	0
@@ -63,6 +65,9 @@
 #define XtCDynamic "Dynamic"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
+#define XtNshadow "shadow"
+#define XtCShadow "Shadow"
+#define XtNsliderColor "sliderColor"
 #define XtNsliderX "sliderX"
 #define XtCSliderX "SliderX"
 #define XtNsliderY "sliderY"
@@ -71,7 +76,6 @@
 #define XtCSliderWidth "SliderWidth"
 #define XtNsliderHeight "sliderHeight"
 #define XtCSliderHeight "SliderHeight"
-
 					/* external declarations */
 extern WidgetClass pannerWidgetClass;
 
