@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.36 87/09/29 07:56:36 jim Locked $ */
+/* $Header: XKeyBind.c,v 11.37 88/02/06 15:31:34 jim Locked $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -28,7 +28,7 @@ static struct XKeytrans *trans = NULL;
 
 static KeySym KeyCodetoKeySym(dpy, keycode, col)
      register Display *dpy;
-     int keycode;
+     KeyCode keycode;
      int col;
 {
      int ind;
@@ -87,6 +87,8 @@ KeySym XLookupKeysym(event, col)
 XRefreshKeyboardMapping(event)
      register XMappingEvent *event;
 {
+     extern void XFreeModifiermap();
+
      LockDisplay(event->display);
      /* XXX should really only refresh what is necessary, for now, make
 	initialize test fail */
@@ -126,7 +128,7 @@ Display *dpy;
      * lets go get the keysyms from the server.
      */
     if (dpy->keysyms == NULL) {
-	dpy->keysyms = XGetKeyboardMapping (dpy, dpy->min_keycode,
+	dpy->keysyms = XGetKeyboardMapping (dpy, (KeyCode) dpy->min_keycode,
 	dpy->max_keycode - dpy->min_keycode + 1, &dpy->keysyms_per_keycode);
 	LockDisplay(dpy);
 	nbd = (dpy->max_keycode - dpy->min_keycode + 1) * dpy->keysyms_per_keycode;
@@ -288,7 +290,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
 static CARD8 FindKeyCode(dpy, ind, code)
     register Display *dpy;
     int ind;
-    register int code;
+    register KeySym code;
 {
 
     register KeySym *kmax = dpy->keysyms + 
