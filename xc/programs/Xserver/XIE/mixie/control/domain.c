@@ -1,4 +1,4 @@
-/* $XConsortium: domain.c,v 1.1 93/10/26 09:44:37 rws Exp $ */
+/* $XConsortium: domain.c,v 1.2 93/10/31 09:42:49 dpw Exp $ */
 /**** module domain.c ****/
 /******************************************************************************
 				NOTICE
@@ -156,14 +156,14 @@ peTexPtr pet     = ped->peTex;
 bandPtr	 band	 = &pet->emitter[0];
 int b;
 
-  pet->roi     = (void *) NULL;
+  pet->roi     = (pointer) NULL;
   pet->roiinit = (Bool  (*)()) NULL;
   pet->roiget  = (INT32 (*)()) NULL;
   pet->domXoff = 0;
   pet->domYoff = 0;
 
   for(b = 0; b < ped->outFlo.bands; b++, band++) {
-      band->pcroi    = (void *)NULL;
+      band->pcroi    = (pointer)NULL;
       band->xindex  = 0;	
       band->xcount  = 0;	
       band->ypass   = FALSE;	
@@ -211,7 +211,7 @@ INT32	 ytrans;
 
 	/* Grab table if necessary */
 	if (!pet->roi) 
-	    if (!(pet->roi = GetSrcBytes(void,flo,pet,rband,0,1,KEEP)))
+	    if (!(pet->roi = GetSrcBytes(pointer,flo,pet,rband,0,1,KEEP)))
 		return (FALSE);
 
 	proi = (ROIPtr)pet->roi;
@@ -248,7 +248,7 @@ INT32	 ytrans;
 
 	/* If some domains for this line, set up for processing */
 	if (!(bnd->ypass = lp >= proi->lend || ytrans < lp->y)) {
-	  bnd->pcroi  = (void *)lp;
+	  bnd->pcroi  = (pointer)lp;
 	  bnd->xcount = (proi->x + pet->domXoff) < 0 ? 
 					 proi->x + pet->domXoff : 0;
   	  bnd->xindex = 0;	
@@ -257,7 +257,7 @@ INT32	 ytrans;
 	} else {
 	  bnd->xcount = 0;
 	  if (lp >= proi->lend) /* Tidy up garbage pointer */
-	    bnd->pcroi = (void *)NULL;  
+	    bnd->pcroi = (pointer)NULL;  
 	}
 	
 	return (TRUE);
@@ -367,7 +367,7 @@ INT32	ytrans;
 	    bnd->ypass = FALSE;
 
 	/* Grab control plane line */
-        if (!(pet->roi = bnd->pcroi = GetSrc(void,flo,pet,rband,ytrans,purge))){
+        if (!(pet->roi = bnd->pcroi = GetSrc(pointer,flo,pet,rband,ytrans,purge))){
 	    if (purge)
 		FreeData(flo,pet,rband,rband->current);
 	    else
