@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.50 91/09/06 15:03:35 rws Exp $
+ * $XConsortium: xrdb.c,v 11.51 92/03/10 12:10:34 keith Exp $
  */
 
 /*
@@ -720,6 +720,9 @@ main (argc, argv)
 	    filename = arg;
     }							/* end for */
 
+    while ((i = open("/dev/null", 0)) < 3)
+	; /* make sure later freopen won't clobber things */
+    (void) close(i);
     /* Open display  */
     if (!(dpy = XOpenDisplay (displayname)))
 	fatal("%s: Can't open display '%s'\n", ProgramName,
