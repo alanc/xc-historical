@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.28 88/10/14 15:31:37 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.29 88/12/20 10:40:02 swick Exp $";
 #endif lint
 
 
@@ -393,8 +393,7 @@ static void Resize(widget)
 	= (ViewportConstraints)clip->core.constraints;
     Boolean needshoriz, needsvert;
     int clip_width, clip_height;
-    Boolean clip_changed;
-    XtWidgetGeometry intended, preferred;
+    XtWidgetGeometry intended;
 
     clip_width = w->core.width;
     clip_height = w->core.height;
@@ -408,60 +407,68 @@ static void Resize(widget)
 	AssignMax( clip_width, 1 );
 	AssignMax( clip_height, 1 );
     }
-    if (child != (Widget)NULL) {
-	intended.request_mode = 0;
-	if (!w->viewport.allowhoriz || child->core.width < clip_width) {
-	    intended.request_mode = CWWidth;
-	    intended.width = clip_width;
-	} else intended.width = child->core.width;
-	if (!w->viewport.allowvert || child->core.height < clip_height) {
-	    intended.request_mode |= CWHeight;
-	    intended.height = clip_height;
-	} else intended.height = child->core.height;
-	XtQueryGeometry( child, &intended, &preferred );
-	clip_changed = True;
-    }
-    else clip_changed = False;
-
-    if (!w->viewport.forcebars) {
-      needshoriz = needsvert = False;
-      while (clip_changed) {
-	int lw, lh;
-	do { /* at most three times */
-	    lw = clip_width;
-	    lh = clip_height;
-	    /* note that having once decided to turn on scrollbars in this loop
-	     * we'll never change our mind, thus avoiding oscillations. */
-	    if (w->viewport.allowhoriz)
-		needshoriz |= (Boolean)(preferred.width > clip_width);
-	    if (w->viewport.allowvert)
-		needsvert |= (Boolean)(preferred.height > clip_height);
-	    if (needshoriz && w->viewport.horiz_bar == (Widget)NULL)
-		CreateScrollbar(w, True);
-	    if (needsvert && w->viewport.vert_bar == (Widget)NULL)
-		CreateScrollbar(w, False);
-	    clip_width = w->core.width -
-		(needsvert ? w->viewport.vert_bar->core.width
-			     + w->viewport.vert_bar->core.border_width : 0);
-	    clip_height = w->core.height -
-		(needshoriz ? w->viewport.horiz_bar->core.height
-			      + w->viewport.horiz_bar->core.border_width : 0);
-	    AssignMax( clip_width, 1 );
-	    AssignMax( clip_height, 1 );
-	} while (lw != clip_width || lh != clip_height);
-	clip_changed = False;
-	if (intended.request_mode & CWWidth && intended.width > clip_width) {
-	    intended.width = clip_width;
-	    clip_changed = True;
+    else {
+	needshoriz = needsvert = False;
+	if (child != (Widget)NULL) {
+	    XtWidgetGeometry preferred;
+	    Dimension prev_width, prev_height;
+	    intended.request_mode = CWWidth | CWHeight | CWBorderWidth;
+	    preferred.width = child->core.width;
+	    preferred.height = child->core.height;
+	    intended.width =
+		(!w->viewport.allowhoriz || preferred.width < clip_width)
+		    ? clip_width
+		    : preferred.width;
+	    intended.height =
+		(!w->viewport.allowvert || preferred.height < clip_height)
+		    ? clip_height
+		    : preferred.height;
+	    intended.border_width = 0;
+	    do { /* while intended != prev  */
+		Boolean clip_changed;
+		XtQueryGeometry( child, &intended, &preferred );
+		prev_width = intended.width;
+		prev_height = intended.height;
+		do { /* while (clip_changed) [at most three times] */
+		    clip_changed = False;
+		    /*
+		     * note that having once decided to turn on scrollbars
+		     * we'll not change our mind until we're next resized,
+		     * thus avoiding potential oscillations.
+		     */
+		    if (w->viewport.allowhoriz
+			&& !needshoriz
+			&& preferred.width > clip_width)
+		    {
+			needshoriz = True;
+			if (w->viewport.horiz_bar == (Widget)NULL)
+			    CreateScrollbar(w, True);
+			clip_height -= w->viewport.horiz_bar->core.height
+				    + w->viewport.horiz_bar->core.border_width;
+			if (clip_height < 1) clip_height = 1;
+			intended.width = preferred.width;
+			clip_changed = True;
+		    }
+		    if (w->viewport.allowvert
+			&& !needsvert
+			&& preferred.height > clip_height)
+		    {
+			needsvert = True;
+			if (w->viewport.vert_bar == (Widget)NULL)
+			    CreateScrollbar(w, False);
+			clip_width -= w->viewport.vert_bar->core.width
+				     + w->viewport.vert_bar->core.border_width;
+			if (clip_width < 1) clip_width = 1;
+			intended.height = preferred.height;
+			clip_changed = True;
+		    }
+		if (!w->viewport.allowhoriz || preferred.width < clip_width)
+		    intended.width = clip_width;
+		if (!w->viewport.allowvert || preferred.height < clip_height)
+		    intended.height = clip_height;
+		} while (clip_changed);
+	    } while (intended.width != prev_width || intended.height != prev_height);
 	}
-        if (intended.request_mode & CWHeight && intended.height > clip_height){
-	    intended.height = clip_height;
-	    clip_changed = True;
-	}
-	if (clip_changed) {
-	    XtQueryGeometry( child, &intended, &preferred );
-	}
-      } /* end (clip_changed) */
     }
 
     if (XtIsRealized(clip))
@@ -522,7 +529,9 @@ static void Resize(widget)
     if (child != (Widget)NULL) {
 	XtResizeWidget( child, (Dimension)intended.width,
 		        (Dimension)intended.height, (Dimension)0 );
-	MoveChild(w, child->core.x, child->core.y);
+	MoveChild(w,
+		  needshoriz ? child->core.x : 0,
+		  needsvert ? child->core.y : 0);
     }
 }
 
