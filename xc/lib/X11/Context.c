@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.10 90/12/12 09:16:33 rws Exp $ */
+/* $XConsortium: Context.c,v 1.11 91/04/12 11:22:52 rws Exp $ */
 /* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
@@ -59,7 +59,7 @@ typedef struct _XContextDB {	/* Stores hash table for one display. */
     int numentries;		/* Number of entries currently in table. */
 } DBRec, *DB;
 
-#ifdef MOTIFBUG
+#ifdef MOTIFBC
 static DB NullDB = (DB)0;
 #endif
 
@@ -145,7 +145,7 @@ int XSaveContext(display, window, context, data)
     TableEntry *head;
     register TableEntry entry;
 
-#ifdef MOTIFBUG
+#ifdef MOTIFBC
     if (!display) pdb = &NullDB; else
 #endif
     pdb = &display->context_db;
@@ -162,7 +162,7 @@ int XSaveContext(display, window, context, data)
 	}
 	db->numentries = 0;
 	*pdb = db;
-#ifdef MOTIFBUG
+#ifdef MOTIFBC
 	if (display)
 #endif
 	display->free_funcs->context_db = _XFreeContextDB;
@@ -204,7 +204,7 @@ int XFindContext(display, window, context, data)
     register DB db;
     register TableEntry entry;
 
-#ifdef MOTIFBUG
+#ifdef MOTIFBC
     if (!display) db = NullDB; else
 #endif
     db = display->context_db;
@@ -235,7 +235,7 @@ int XDeleteContext(display, window, context)
     register DB db;
     register TableEntry entry, *prev;
 
-#ifdef MOTIFBUG
+#ifdef MOTIFBC
     if (!display) db = NullDB; else
 #endif
     db = display->context_db;

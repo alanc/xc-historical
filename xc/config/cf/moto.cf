@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: moto.cf,v 1.5 91/05/09 13:42:59 rws Exp $
+XCOMM platform:  $XConsortium: moto.cf,v 1.6 91/06/10 10:19:57 rws Exp $
 
 #if defined(MotoR3Architecture)
 
@@ -12,7 +12,7 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.5 91/05/09 13:42:59 rws Exp $
 #define LnCmd                  ln -s
 #define HasSockets             YES
 #define BuildServer            NO
-#define MotifBugHacks          YES
+#define MotifBC                YES
 
 #define DefaultUserPath   	:/bin:/usr/bin:$(BINDIR)
 #define DefaultSystemPath 	/etc:/bin:/usr/bin:$(BINDIR)
@@ -31,7 +31,7 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.5 91/05/09 13:42:59 rws Exp $
 #define StandardDefines         -DSVR4 -DMOTOROLA /* -D_POSIX_SOURCE */
 #define HasSockets		YES
 #define BuildServer		NO
-#define MotifBugHacks           YES
+#define MotifBC                 YES
 
 #define CppCmd                  /usr/ccs/lib/cpp
 #define LdCmd                   /usr/ccs/bin/ld

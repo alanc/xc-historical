@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.0 91/07/03 11:28:18 rws Exp $
+XCOMM platform:  $XConsortium: x386.cf,v 1.1 91/07/05 09:14:13 rws Exp $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -17,7 +17,7 @@ XCOMM platform:  $XConsortium: x386.cf,v 1.0 91/07/03 11:28:18 rws Exp $
 #define StripInstalledPrograms	YES
 #define X386Server		YES
 #define ExtensionOSDefines	-DXTESTEXT1
-#define MotifContextBug        	YES
+#define MotifBC	        	YES
 
 /*****************************************************************************
  *                        Do not change anything below                       *
