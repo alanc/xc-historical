@@ -1,4 +1,4 @@
-/* $XConsortium: Ximint.h,v 1.6 94/03/29 22:51:06 rws Exp $ */
+/* $XConsortium: Ximint.h,v 1.7 94/05/14 15:38:50 rws Exp $ */
 /******************************************************************
 
                 Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -46,8 +46,8 @@ typedef struct _Xic	*Xic;
 /*
  * Input Method data
  */
-#include "XimintL.h"
 #include "XimintP.h"
+#include "XimintL.h"
 
 /*
  * XIM dependent data
@@ -713,7 +713,7 @@ extern Bool	_XimExtenMove(
 
 extern int	_Ximctstombs(
 #if NeedFunctionPrototypes
-    Xim		 im,
+    XIM		 im,
     char	*from,
     int		from_len,
     char	*to,
@@ -724,7 +724,29 @@ extern int	_Ximctstombs(
 
 extern int	_Ximctstowcs(
 #if NeedFunctionPrototypes
-    Xim		 im,
+    XIM		 im,
+    char	*from,
+    int		 from_len,
+    wchar_t	*to,
+    int		 to_len,
+    Status	*state
+#endif
+);
+
+extern int	_XimLcctstombs(
+#if NeedFunctionPrototypes
+    XIM		 im,
+    char	*from,
+    int		from_len,
+    char	*to,
+    int		to_len,
+    Status	*state
+#endif
+);
+
+extern int	_XimLcctstowcs(
+#if NeedFunctionPrototypes
+    XIM		 im,
     char	*from,
     int		 from_len,
     wchar_t	*to,

@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.5 94/03/27 00:39:43 rws Exp $ */
+/* $XConsortium: imCallbk.c,v 1.6 94/04/17 20:22:02 rws Exp $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -593,7 +593,7 @@ _read_text_from_packet(im, buf, text)
 	    tmp_buf[tmp_len] = '\0';
 
 	    text->encoding_is_wchar = False;
-	    text->length = _Ximctstowcs(im, 
+	    text->length = im->methods->ctstowcs((XIM)im, 
 					tmp_buf, tmp_len, 
 					(wchar_t*)NULL, 0, 
 					&s); /* CT? HM */
@@ -601,7 +601,7 @@ _read_text_from_packet(im, buf, text)
 		if (text->string.multi_byte
 		    = (char*)Xmalloc(text->length * XLC_PUBLIC(im->core.lcd,mb_cur_max))) {
 			int tmp;
-			tmp = _Ximctstombs(im,
+			tmp = im->methods->ctstombs((XIM)im,
 					   tmp_buf, tmp_len, 
 					   text->string.multi_byte, text->length, 
 					   &s);

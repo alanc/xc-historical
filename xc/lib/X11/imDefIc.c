@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.8 94/03/29 22:51:19 rws Exp $ */
+/* $XConsortium: imDefIc.c,v 1.9 94/05/14 15:40:04 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -1077,13 +1077,14 @@ _XimCommitedMbString(im, ic, buf)
     (void)memcpy(str, (char *)&buf_s[1], (int)&buf_s[0]);
     commit[len] = '\0';
 
-    new_len = _Ximctstombs(im, commit, len, NULL, 0, &status);
+    new_len = im->methods->ctstombs((XIM)im, commit, len, NULL, 0, &status);
     if (status != XLookupNone) {
 	if (!(new_commit = Xmalloc(new_len + 1))) {
 	    Xfree(commit);
 	    goto Error_On_Reset;
 	}
-	(void)_Ximctstombs(im, commit, len, new_commit, new_len, NULL);
+	(void)im->methods->ctstombs((XIM)im, commit, len,
+						new_commit, new_len, NULL);
 	new_commit[new_len] = '\0';
     }
     Xfree(commit);
@@ -1194,14 +1195,15 @@ _XimCommitedWcString(im, ic, buf)
     (void)memcpy(str, (char *)&buf_s[1], (int)&buf_s[0]);
     commit[len] = '\0';
 
-    new_len = _Ximctstowcs(im, commit, len, NULL, 0, &status);
+    new_len = im->methods->ctstowcs((XIM)im, commit, len, NULL, 0, &status);
     if (status != XLookupNone) {
 	if (!(new_commit =
 		     (wchar_t *)Xmalloc(sizeof(wchar_t) * (new_len + 1)))) {
 	    Xfree(commit);
 	    goto Error_On_Reset;
 	}
-	(void)_Ximctstowcs(im, commit, len, new_commit, new_len, NULL);
+	(void)im->methods->ctstowcs((XIM)im, commit, len,
+						new_commit, new_len, NULL);
 	new_commit[new_len] = (wchar_t)'\0';
     }
     Xfree(commit);

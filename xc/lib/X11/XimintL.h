@@ -1,4 +1,4 @@
-/* $XConsortium: XimintL.h,v 1.2 94/01/20 18:02:56 rws Exp $ */
+/* $XConsortium: XimintL.h,v 1.5 94/03/29 22:51:11 rws Exp $ */
 /******************************************************************
 
           Copyright 1991, 1992, 1993, 1994 by FUJITSU LIMITED
@@ -56,6 +56,8 @@ typedef struct _DefTree {
 typedef struct _XimLocalPrivateRec {
 	XIC			 current_ic;
 	DefTree			*top;
+	XlcConv			 ctom_conv;
+	XlcConv			 ctow_conv;
 } XimLocalPrivateRec;
 
 typedef struct _XicThaiPart {

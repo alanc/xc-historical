@@ -1,4 +1,4 @@
-/* $XConsortium: Xlcint.h,v 11.19 94/04/17 20:21:41 rws Exp $ */
+/* $XConsortium: Xlcint.h,v 11.20 94/05/14 15:39:25 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -674,9 +674,14 @@ typedef struct {
 	XIM, XIMArg*
 #endif
 	);
-    int (*lookup_string)(
+    int (*ctstombs)(
 #if NeedFunctionPrototypes
-	XKeyEvent*, char*, int, KeySym*, XComposeStatus*
+	XIM, char*, int, char*, int, Status *
+#endif
+	);
+    int (*ctstowcs)(
+#if NeedFunctionPrototypes
+	XIM, char*, int, wchar_t*, int, Status *
 #endif
 	);
 } XIMMethodsRec, *XIMMethods;

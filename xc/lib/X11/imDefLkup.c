@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.9 94/03/29 22:51:29 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.10 94/05/14 16:20:45 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -891,14 +891,15 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 #endif /* !MAXINT */
 
 Public int
-_Ximctstombs(im, from, from_len, to, to_len, state)
-    Xim		 im;
+_Ximctstombs(xim, from, from_len, to, to_len, state)
+    XIM		 xim;
     char	*from;
     int		 from_len;
     char	*to;
     int		 to_len;
     Status	*state;
 {
+    Xim		 im = (Xim)xim;
     XlcConv	 conv = im->private.proto.ctom_conv;
     int		 from_left;
     int		 to_left;
@@ -976,14 +977,15 @@ _Ximctstombs(im, from, from_len, to, to_len, state)
 }
 
 Public int
-_Ximctstowcs(im, from, from_len, to, to_len, state)
-    Xim		 im;
+_Ximctstowcs(xim, from, from_len, to, to_len, state)
+    XIM		 xim;
     char	*from;
     int		 from_len;
     wchar_t	*to;
     int		 to_len;
     Status	*state;
 {
+    Xim		 im = (Xim)xim;
     XlcConv	 conv = im->private.proto.ctow_conv;
     int		 from_left;
     int		 to_left;
@@ -1088,7 +1090,7 @@ _XimProtoMbLookupString(xic, ev, buffer, bytes, keysym, state)
 	    return 0;
 	}
 
-	ret = _Ximctstombs(im, info->string,
+	ret = im->methods->ctstombs((XIM)im, info->string,
 			 	info->string_len, buffer, bytes, state);
 	if (*state == XBufferOverflow)
 	    return 0;
@@ -1151,7 +1153,7 @@ _XimProtoWcLookupString(xic, ev, buffer, bytes, keysym, state)
 	    return 0;
 	}
 
-	ret = _Ximctstowcs(im, info->string,
+	ret = im->methods->ctstowcs((XIM)im, info->string,
 			 	info->string_len, buffer, bytes, state);
 	if (*state == XBufferOverflow)
 	    return 0;

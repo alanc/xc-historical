@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiIm.c,v 1.2 94/01/20 18:05:44 rws Exp $ */
+/* $XConsortium: imThaiIm.c,v 1.3 94/03/26 17:00:57 rws Exp $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -48,7 +48,8 @@ Private XIMMethodsRec      Xim_im_thai_methods = {
     _XimLocalSetIMValues,      /* set_values */
     _XimLocalGetIMValues,      /* get_values */
     _XimThaiCreateIC,          /* create_ic */
-    XLookupString		/* lookup_string */
+    _XimLcctstombs,            /* ctstombs */
+    _XimLcctstowcs             /* ctstowcs */
 };
 
 #define THAI_LANGUAGE_NAME 	"th"
@@ -70,6 +71,9 @@ Public Bool
 _XimThaiOpenIM(im)
     Xim		 im;
 {
+    XLCd		 lcd = im->core.lcd;
+    XlcConv		 ctom_conv;
+    XlcConv		 ctow_conv;
     XimDefIMValues	 im_values;
 
     _XimInitialResourceInfo();
@@ -91,8 +95,18 @@ _XimThaiOpenIM(im)
     }
     _XimSetCurrentIMValues(im, &im_values);
 
+    if (!(ctom_conv = _XlcOpenConverter(lcd,
+					XlcNCompoundText, lcd, XlcNMultiByte)))
+	goto Open_Error;
+    if (!(ctow_conv = _XlcOpenConverter(lcd,
+					XlcNCompoundText, lcd, XlcNWideChar)))
+	goto Open_Error;
+
     im->methods = &Xim_im_thai_methods;
     im->private.local.current_ic = (XIC)NULL;
+    im->private.local.ctom_conv = ctom_conv;
+    im->private.local.ctow_conv = ctow_conv;
+
     return(True);
 
 Open_Error :
@@ -110,6 +124,12 @@ Open_Error :
     }
     if (im->core.styles) {
 	Xfree(im->core.styles);
+    }
+    if (im->private.local.ctom_conv) {
+	_XlcCloseConverter(im->private.local.ctom_conv);
+    }
+    if (im->private.local.ctow_conv) {
+	_XlcCloseConverter(im->private.local.ctow_conv);
     }
     return(False);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: imDefFlt.c,v 1.4 94/03/26 16:57:39 rws Exp $ */
+/* $XConsortium: imDefFlt.c,v 1.5 94/05/14 15:27:52 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -50,7 +50,7 @@ _XimTriggerCheck(im, ev, len, keylist)
 				 + sizeof(CARD32)   /* sizeof modifier */
 				 + sizeof(CARD32);  /* sizeof modifier mask */
 
-    im->methods->lookup_string(ev, buf, BUFSIZE, &keysym, NULL);
+    XLookupString(ev, buf, BUFSIZE, &keysym, NULL);
     if (!keysym)
 	return -1;
 

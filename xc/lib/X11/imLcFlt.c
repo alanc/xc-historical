@@ -1,4 +1,4 @@
-/* $XConsortium: imLcFlt.c,v 1.2 94/01/20 18:04:47 rws Exp $ */
+/* $XConsortium: imLcFlt.c,v 1.3 94/03/26 17:00:28 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.
@@ -54,8 +54,7 @@ _XimLocalFilter(d, w, ev, client_data)
        || (((Xim)ic->core.im)->private.local.top == (DefTree *)NULL) )
 	return(False);
 
-    im->methods->lookup_string((XKeyEvent *)ev, buf,
-						sizeof(buf), &keysym, NULL);
+    XLookupString((XKeyEvent *)ev, buf, sizeof(buf), &keysym, NULL);
 
     if(IsModifierKey(keysym))
 	return (False);

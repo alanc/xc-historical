@@ -1,4 +1,4 @@
-/* $XConsortium: imLcIm.c,v 1.6 94/03/29 22:51:37 rws Exp $ */
+/* $XConsortium: imLcIm.c,v 1.7 94/03/30 09:09:55 rws Exp $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -177,13 +177,17 @@ Private XIMMethodsRec      Xim_im_local_methods = {
     _XimLocalSetIMValues,       /* set_values */
     _XimLocalGetIMValues,       /* get_values */
     _XimLocalCreateIC,          /* create_ic */
-    XLookupString		/* lookup_string */
+    _XimLcctstombs,		/* ctstombs */
+    _XimLcctstowcs		/* ctstowcs */
 };
 
 Public Bool
 _XimLocalOpenIM(im)
     Xim			 im;
 {
+    XLCd		 lcd = im->core.lcd;
+    XlcConv		 ctom_conv;
+    XlcConv		 ctow_conv;
     XimDefIMValues	 im_values;
 
     _XimInitialResourceInfo();
@@ -207,8 +211,18 @@ _XimLocalOpenIM(im)
 
     _XimCreateDefaultTree(im);
 
+    if (!(ctom_conv = _XlcOpenConverter(lcd,
+					XlcNCompoundText, lcd, XlcNMultiByte)))
+	goto Open_Error;
+    if (!(ctow_conv = _XlcOpenConverter(lcd,
+					XlcNCompoundText, lcd, XlcNWideChar)))
+	goto Open_Error;
+
     im->methods = &Xim_im_local_methods;
     im->private.local.current_ic = (XIC)NULL;
+    im->private.local.ctom_conv = ctom_conv;
+    im->private.local.ctow_conv = ctow_conv;
+
     return(True);
 
 Open_Error :
@@ -226,6 +240,12 @@ Open_Error :
     }
     if (im->core.styles) {
 	Xfree(im->core.styles);
+    }
+    if (im->private.local.ctom_conv) {
+	_XlcCloseConverter(im->private.local.ctom_conv);
+    }
+    if (im->private.local.ctow_conv) {
+	_XlcCloseConverter(im->private.local.ctow_conv);
     }
     return(False);
 }

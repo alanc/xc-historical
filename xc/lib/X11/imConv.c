@@ -1,4 +1,4 @@
-/* $XConsortium: imConv.c,v 1.4 94/01/20 18:03:43 rws Exp $ */
+/* $XConsortium: imConv.c,v 1.5 94/03/26 16:57:36 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by Fuji Xerox Co.,Ltd.
@@ -143,8 +143,7 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     Status	dummy;
     Xim	im = (Xim)ic->core.im;
 
-    count = im->methods->lookup_string(event, (char *)buffer,
-						nbytes, &symbol, status);
+    count = XLookupString(event, (char *)buffer, nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) {
 	return(count);
@@ -163,7 +162,7 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
 	    local_buf[local_count] = c;
 	    local_count++;
 	    local_buf[local_count] = '\0';
-	    if ((count = _Ximctstombs((Xim)ic->core.im,
+	    if ((count = im->methods->ctstombs(ic->core.im,
 				local_buf, local_count,
 				(char *)buffer, nbytes, &dummy)) < 0) {
 		count = 0;
@@ -172,7 +171,7 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     } else if ((count != 1) || (buffer[0] >= 0x80)) { /* not ASCII Encoding */
 	memcpy((char *)look, (char *)buffer,count);
 	look[count] = '\0';
-	if ((count = _Ximctstombs((Xim)ic->core.im,
+	if ((count = im->methods->ctstombs(ic->core.im,
 				(char *)look, count,
 				(char *)buffer, nbytes, &dummy)) < 0) {
 	    count = 0;
@@ -199,8 +198,7 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     Status	dummy;
     Xim	im = (Xim)ic->core.im;
 
-    count = im->methods->lookup_string(event, (char *)look,
-						nbytes, &symbol, status);
+    count = XLookupString(event, (char *)look, nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) {
 	return(count);
@@ -219,7 +217,7 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
 	    local_buf[local_count] = c;
 	    local_count++;
 	    local_buf[local_count] = '\0';
-	    if ((count = _Ximctstowcs((Xim)ic->core.im,
+	    if ((count = im->methods->ctstowcs(ic->core.im,
 				local_buf, local_count,
 				buffer, nbytes, &dummy)) < 0) {
 		count = 0;
@@ -228,7 +226,7 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     } else if ((count == 1) && (look[0] < 0x80)) { /* ASCII Encoding */
 	buffer[0] = look[0];
     } else {
-	if ((count = _Ximctstowcs((Xim)ic->core.im,
+	if ((count = im->methods->ctstowcs(ic->core.im,
 				(char *)look, count,
 				buffer, nbytes, &dummy)) < 0) {
 	    count = 0;

@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIm.c,v 1.10 94/06/03 17:33:50 rws Exp $ */
+/* $XConsortium: imDefIm.c,v 1.11 94/06/03 18:35:30 rws Exp $ */
 /******************************************************************
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
          Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -1524,7 +1524,8 @@ Private XIMMethodsRec     im_methods = {
     _XimProtoSetIMValues,       /* set_values */
     _XimProtoGetIMValues,       /* get_values */
     _XimProtoCreateIC,          /* create_ic */
-    XLookupString		/* lookup_string */
+    _Ximctstombs,		/* ctstombs */
+    _Ximctstowcs		/* ctstowcs */
 };
 
 Private Bool
