@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.78 93/09/27 13:55:04 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.79 93/11/22 13:17:57 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -327,6 +327,7 @@ typedef struct _XtPerDisplayStruct {
     XtEventDispatchProc* dispatcher_list;
     ExtSelectRec* ext_select_list;
     int ext_select_count;
+    Widget hook_object;
 } XtPerDisplayStruct, *XtPerDisplay;
 
 typedef struct _PerDisplayTable {
@@ -422,3 +423,15 @@ extern void _XtExtensionSelect(
 );
 
 #define _XtSafeToDestroy(app) ((app)->dispatch_level == 0)
+
+extern void _XtAllocWWTable(
+#if NeedFunctionPrototypes
+    XtPerDisplay pd
+#endif
+);
+
+extern void _XtFreeWWTable(
+#if NeedFunctionPrototypes
+    XtPerDisplay pd
+#endif
+);

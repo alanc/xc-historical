@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.108 93/10/13 19:16:06 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.109 93/11/22 13:19:13 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,6 +35,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
+#include "HookObj.h"
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -122,7 +123,19 @@ static void XtDeleteFromAppContext(d, app)
 	}
 }
 
-static XtPerDisplay NewPerDisplay();
+static XtPerDisplay NewPerDisplay(dpy)
+	Display *dpy;
+{
+	PerDisplayTablePtr pd;
+
+	pd = XtNew(PerDisplayTable);
+	LOCK_PROCESS;
+	pd->dpy = dpy;
+	pd->next = _XtperDisplayList;
+	_XtperDisplayList = pd;
+	UNLOCK_PROCESS;
+	return &(pd->perDpy);
+}
 
 static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     Display *dpy;
@@ -130,8 +143,9 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     String name;
     String classname;
 {
+    extern void _XtAllocTMContext();
+    extern Widget _XtCreate();
     XtPerDisplay pd;
-    extern void _XtAllocWWTable(), _XtAllocTMContext();
 
     AddToAppContext(dpy, app);
 
@@ -175,6 +189,10 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     pd->dispatcher_list = NULL;
     pd->ext_select_list = NULL;
     pd->ext_select_count = 0;
+    pd->hook_object = _XtCreate("hooks", "Hooks", hookObjectClass,
+	(Widget)NULL, (Screen*)DefaultScreenOfDisplay(dpy),
+	(ArgList)NULL, 0, (XtTypedArgList)NULL, 0, 
+	(ConstraintWidgetClass)NULL);
     return pd;
 }
 
@@ -559,20 +577,6 @@ XtAppContext XtDisplayToApplicationContext(dpy)
 	return retval;
 }
 
-static XtPerDisplay NewPerDisplay(dpy)
-	Display *dpy;
-{
-	PerDisplayTablePtr pd;
-
-	pd = XtNew(PerDisplayTable);
-	LOCK_PROCESS;
-	pd->dpy = dpy;
-	pd->next = _XtperDisplayList;
-	_XtperDisplayList = pd;
-	UNLOCK_PROCESS;
-	return &(pd->perDpy);
-}
-
 static void CloseDisplay(dpy)
 	Display *dpy;
 {
@@ -603,7 +607,7 @@ static void CloseDisplay(dpy)
 	xtpd = &(pd->perDpy);
 
         if (xtpd != NULL) {
-	    extern void _XtGClistFree(), _XtFreeWWTable();
+	    extern void _XtGClistFree();
 	    if (xtpd->destroy_callbacks != NULL) {
 		XtCallCallbackList((Widget) NULL,
 				   (XtCallbackList)xtpd->destroy_callbacks,
@@ -646,6 +650,7 @@ static void CloseDisplay(dpy)
 		XtFree((char *) xtpd->dispatcher_list);
 	    if (xtpd->ext_select_list != NULL)
 		XtFree((char *) xtpd->ext_select_list);
+	    XtDestroyWidget(xtpd->hook_object);
         }
 	XtFree((char*)pd);
 	XrmSetDatabase(dpy, (XrmDatabase)NULL);
@@ -666,7 +671,7 @@ void XtCloseDisplay(dpy)
 	    return;
 	}
 
-	if (_XtSafeToDestroy(pd->appContext)) CloseDisplay(dpy);
+	if (_XtSafeToDestroy(app)) CloseDisplay(dpy);
 	else {
 	    pd->being_destroyed = TRUE;
 	    app->dpy_destroy_count++;
@@ -755,4 +760,25 @@ XtPerDisplayInputRec* _XtGetPerDisplayInput(display)
 	      : &_XtSortPerDisplayList(display)->pdi);
     UNLOCK_PROCESS;
     return retval;
+}
+
+#if NeedFunctionPrototypes
+void XtGetDisplays(
+    XtAppContext app_context,
+    Display*** dpy_return,
+    Cardinal* num_dpy_return)
+#else
+void XtGetDisplays(app_context, dpy_return, num_dpy_return)
+    XtAppContext app_context;
+    Display*** dpy_return;
+    Cardinal* num_dpy_return;
+#endif
+{
+    int ii;
+    LOCK_APP(app_context);
+    *num_dpy_return = app_context->count;
+    *dpy_return = (Display**)XtMalloc(app_context->count * sizeof(Display*));
+    for (ii = 0; ii < app_context->count; ii++)
+	*dpy_return[ii] = app_context->list[ii];
+    UNLOCK_APP(app_context);
 }

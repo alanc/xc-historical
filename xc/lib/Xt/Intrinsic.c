@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.183 93/09/29 13:54:23 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.184 93/10/06 17:31:37 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -594,6 +594,10 @@ Display *XtDisplayOfObject(object)
      Widget object;
 {
     /* Attempts to LockApp() here will generate endless recursive loops */
+    if (XtIsSubclass(object, hookObjectClass)) {
+	HookObject hobject = (HookObject)object;
+	return hobject->hooks.screen->display;
+    }
     return XtDisplay(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
 }
 
@@ -610,6 +614,10 @@ Screen *XtScreenOfObject(object)
      Widget object;
 {
     /* Attempts to LockApp() here will generate endless recursive loops */
+    if (XtIsSubclass(object, hookObjectClass)) {
+	HookObject hobject = (HookObject)object;
+	return hobject->hooks.screen;
+    }
     return XtScreen(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
 }
 

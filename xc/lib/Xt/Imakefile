@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.103 93/09/04 16:41:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.104 93/09/09 10:14:26 kaleb Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -96,6 +96,7 @@ SRCS = \
 	GetActKey.c \
 	GetResList.c \
 	GetValues.c \
+	HookObj.c \
 	Hooks.c \
 	Initialize.c \
 	Intrinsic.c \
@@ -151,6 +152,7 @@ OBJS = \
 	GetActKey.o \
 	GetResList.o \
 	GetValues.o \
+	HookObj.o \
 	Hooks.o \
 	Initialize.o \
 	Intrinsic.o \
