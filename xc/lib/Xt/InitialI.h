@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.47 91/02/07 17:59:01 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.48 91/03/07 19:11:57 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -138,14 +138,30 @@ typedef struct _XtAppStruct {
     Widget in_phase2_destroy;
 } XtAppStruct;
 
-#ifndef _XtHeapAlloc
+#ifdef XTTRACEMEMORY
+
+
+extern char *_XtHeapMalloc(
+#if NeedFunctionPrototypes
+    Heap*	/* heap */,
+    Cardinal	/* size */,
+    char *	/* file */,
+    int		/* line */
+#endif
+);
+
+#define _XtHeapAlloc(heap,bytes) _XtHeapMalloc(heap, bytes, __FILE__, __LINE__)
+
+#else /* XTTRACEMEMORY */
+
 extern char* _XtHeapAlloc(
 #if NeedFunctionPrototypes
     Heap*	/* heap */,
     Cardinal	/* size */
 #endif
 );
-#endif
+
+#endif /* XTTRACEMEMORY */
 
 extern void _XtSetDefaultErrorHandlers(
 #if NeedFunctionPrototypes
