@@ -1,5 +1,5 @@
 /*
-* $Header: Text.h,v 1.3 87/12/23 07:51:24 swick Locked $
+* $Header: Text.h,v 1.4 87/12/23 16:29:04 swick Locked $
 */
 
 /*
@@ -62,17 +62,10 @@ typedef long XtTextPosition;
 typedef struct _XtTextSource XtTextSourceRec, *XtTextSource;
 typedef struct _XtTextSink XtTextSinkRec, *XtTextSink;
 
-extern Widget XtTextDiskCreate(); /* parent, args, argCount */
-    /* Widget   parent;     */
-    /* ArgList  args;    */
-    /* int      argCount;   */
+typedef enum {XttextRead, XttextAppend, XttextEdit} XtTextEditType;
+typedef enum {XtselectNull, XtselectPosition, XtselectChar, XtselectWord,
+    XtselectLine, XtselectParagraph, XtselectAll} XtTextSelectType;
 
-extern Widget XtTextStringCreate(); /* parent, args, argCount */
-    /* Widget   parent;     */
-    /* ArgList  args;    */
-    /* int      argCount;   */
-
-typedef enum {XttextRead, XttextAppend, XttextEdit} XtEditType;
 #define wordBreak		0x01
 #define scrollVertical		0x02
 #define scrollHorizontal	0x04
@@ -137,6 +130,8 @@ extern void XtTextInvalidate(); /* w, from, to */
 extern Window XtTextGetInnerWindow(); /* w */
     /* Widget        w;		*/
 
+extern XtTextSource XtTextGetSource() ; /* w */
+    /* Widget        w;		*/
 
 /*
  * Stuff from AsciiSink
