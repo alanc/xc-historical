@@ -60,8 +60,10 @@ static XtServerGrabPtr CheckServerGrabs(event, trace,
 static Boolean IsParent(a, b)
     Widget	a, b;
 {
-    for (b = b->core.parent; b; b = b->core.parent)
+    for (b = b->core.parent; b; b = b->core.parent) {
       if (b == a) return TRUE;
+      if (XtIsShell(b)) return FALSE;
+    }
     return FALSE;
 }
 
