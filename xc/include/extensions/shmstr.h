@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shmstr.h,v 1.0 89/08/16 16:31:37 rws Exp $ */
+/* $XConsortium: shmstr.h,v 1.0 89/08/18 17:50:00 rws Exp $ */
 
 #define _XSHM_SERVER_
 #include "XShm.h"
@@ -26,6 +26,11 @@ without any express or implied warranty.
 
 #define SHM_MAJOR_VERSION	1	/* current version numbers */
 #define SHM_MINOR_VERSION	0
+
+typedef struct _ShmFuncs {
+    PixmapPtr	(* CreatePixmap)();
+    void	(* PutImage)();
+} ShmFuncs, *ShmFuncsPtr;
 
 typedef struct _ShmQueryVersion {
     CARD8	reqType;		/* always ShmReqCode */
