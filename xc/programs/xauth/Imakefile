@@ -1,8 +1,12 @@
-    CDEBUGFLAGS = -g
-        DEFINES = ConnectionFlags
-LOCAL_LIBRARIES = $(XAUTHLIB)
+#ifdef HPArchitecture		/* need bcopy, bzero, bcmp stuff */
+     EXTRA_LIBS = $(XLIB)
+#else
+     EXTRA_LIBS = 
+#endif
+LOCAL_LIBRARIES = $(XAUTHLIB) $(EXTRA_LIBS)
            SRCS = xauth.c gethost.c process.c parsedpy.c 
            OBJS = xauth.o gethost.o process.o parsedpy.o 
+        DEFINES = ConnectionFlags
 
 ComplexProgramTarget(xauth)
 
