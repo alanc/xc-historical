@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.27 87/12/16 19:02:26 rws Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.28 87/12/22 13:29:35 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -586,7 +586,7 @@ char *trailer;
     register char *bp = buf;
 	
     if (!(flags & F_APPEND)) {
-	sprintf(bp, LN_RIS); bp += 2;
+	sprintf(bp, LN_STR); bp += 4;
 	sprintf(bp, LN_SSU, 7); bp += 5;
 	sprintf(bp, LN_PUM_SET); bp += sizeof LN_PUM_SET - 1;
     }
@@ -633,11 +633,23 @@ char *trailer;
     *left_margin = lm;
 }
 
-#define LN03_RESET "\033c"
 
 ln03_finish()
 {
-    write(1, LN03_RESET, sizeof LN03_RESET - 1);
+    char buf[256];
+    register char *bp = buf;
+
+    sprintf(bp, LN_DECOPM_RESET); bp += sizeof LN_DECOPM_SET - 1;
+    sprintf(bp, LN_LNM); bp += 5;
+    sprintf(bp, LN_PUM); bp += 5;
+    sprintf(bp, LN_PFS, "?20"); bp += 7; 
+    sprintf(bp, LN_SGR, 0); bp += strlen(bp);   
+    sprintf(bp, LN_HPA, 1); bp += strlen(bp);
+    sprintf(bp, LN_VPA, 1); bp += strlen(bp);
+
+
+    write(1, buf, bp-buf);    
+
 }
 
 la100_setup(iw, ih, scale)
@@ -1047,7 +1059,6 @@ int left_margin;
     }
 
     sprintf((char *)bp, LN_ST); bp += sizeof LN_ST - 1;
-    *bp++ = '\f';
     write(1, (char *)buf, bp-buf);
 }
 
