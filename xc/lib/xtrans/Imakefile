@@ -1,0 +1,23 @@
+DEFINES = ConnectionFlags -DTEST -DTHISHOST=\"`hostname`\"
+XCOMM	DEFINES = -DTCPCONN -DUNIXCONN -DTEST -DTHISHOST=\"`hostname`\"
+    CDEBUGFLAGS = -g
+  SYS_LIBRARIES = -ldbmalloc
+LOCAL_LIBRARIES = XawClientLibs
+
+OBJS = transport.o
+SRCS = transport.c
+
+AllTarget(transtestc)
+AllTarget(transtests)
+AllTarget(displaytest)
+AllTarget(bindanytest)
+AllTarget(parsetest)
+
+NormalProgramTarget(transtestc,$(OBJS) transtestc.o,NullParameter,NullParameter,NullParameter)
+NormalProgramTarget(transtests,$(OBJS) transtests.o,NullParameter,NullParameter,NullParameter)
+NormalProgramTarget(displaytest,displaytest.o,NullParameter,-lX11,NullParameter)
+NormalProgramTarget(bindanytest,$(OBJS) bindanytest.o,NullParameter,NullParameter,NullParameter)
+NormalProgramTarget(parsetest,$(OBJS) parsetest.o,NullParameter,NullParameter,NullParameter)
+
+DependTarget()
+BuildIncludesTop(Xtrans.h)
