@@ -1,7 +1,10 @@
 /*
- * $Header: pr.c,v 1.1 87/04/08 16:40:57 rich Exp $
+ * $Header: pr.c,v 1.1 87/08/14 18:01:02 toddb Locked $
  *
  * $Log:	pr.c,v $
+ * Revision 1.1  87/08/14  18:01:02  toddb
+ * Initial revision
+ * 
  * Revision 1.1  87/04/08  16:40:57  rich
  * Initial revision
  * 
@@ -70,7 +73,6 @@ recursive_pr_include(head, file, base)
 		pr(head, file, base);
 	for (i=0; i<head->i_listlen; i++)
 		recursive_pr_include(head->i_list[ i ], file, base);
-	head->i_marked = FALSE;
 }
 
 pr(ip, file, base)
