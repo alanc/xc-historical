@@ -38,10 +38,9 @@ NormalLibraryObjectRule()
 all:: $(OFILES) kbd_mode
 
 NormalLibraryTarget(sun,$(OBJS))
-
 SimpleProgramTarget(kbd_mode)
-
 DependTarget()
+InstallManPage(Xsun,$(MANDIR))
 
 lint: ${CFILES} ${LIBCFILES}
 	$(LINT) $(LFLAGS) -Clibsun $(INCLUDES) $(SRCS) >lint.out 2>&1
