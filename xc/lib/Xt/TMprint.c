@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.6 91/06/26 13:03:01 converse Exp $ */
+/* $XConsortium: TMprint.c,v 1.7 91/06/26 18:25:51 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -630,7 +630,10 @@ String _XtPrintXlations(w, xlations, accelWidget, includeRHS)
     PrintRec		*prints;
     TMStringBufRec	sbRec, *sb = &sbRec;
     TMShortCard		numPrints, maxPrints;
-
+#ifdef TRACE_TM
+    TMBindData		bindData = (TMBindData)w->core.tm.proc_table;
+    Boolean		hasAccel = (accelWidget ? True : False);
+#endif /* TRACE_TM */
     if (xlations == NULL) return NULL;
 
     sb->current = sb->start = XtMalloc((Cardinal)1000);
@@ -651,7 +654,17 @@ String _XtPrintXlations(w, xlations, accelWidget, includeRHS)
 	  xlations->stateTreeTbl[prints[i].tIndex];
 	TMBranchHead branchHead = 
 	  &stateTree->branchHeadTbl[prints[i].bIndex];
-	
+#ifdef TRACE_TM	
+	TMComplexBindProcs	complexBindProcs;
+
+	if (hasAccel == False) {
+	    accelWidget = NULL;
+	    if (bindData->simple.isComplex) {
+		complexBindProcs = TMGetComplexBindEntry(bindData, 0);
+		accelWidget = complexBindProcs[prints[i].tIndex].widget;
+	    }
+	}
+#endif /* TRACE_TM */
 	PrintState(sb, (TMStateTree)stateTree, branchHead,
 		   includeRHS, accelWidget, XtDisplay(w));
     }
@@ -712,7 +725,7 @@ void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
     PrintRec		stackPrints[STACKPRINTSIZE];
     PrintRec		*prints;
     TMShortCard		numPrints, maxPrints;
-    TMBindData		bindData = (TMBindData)widget->core.tm.proc_table;
+    TMBindData	bindData = (TMBindData) eventWidget->core.tm.proc_table;
     TMComplexBindProcs	complexBindProcs;
 
     if ((eventWidget == NULL) ||
@@ -721,6 +734,7 @@ void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
       return;
 
     sb->current = sb->start = XtMalloc((Cardinal)1000);
+    sb->start[0] = '\0';
     sb->max = 1000;
     maxPrints = 0;
     for (i = 0; i < xlations->numStateTrees; i++)
@@ -735,7 +749,7 @@ void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
     for (i = 0;
 	 i < xlations->numStateTrees;
 	 i++, complexBindProcs++) {
-	if (complexBindProcs->widget == eventWidget)
+	if (complexBindProcs->widget)
 	  {
 	      ProcessStateTree(prints, xlations, i, &numPrints);
 	  }
@@ -745,9 +759,12 @@ void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
 	  xlations->stateTreeTbl[prints[i].tIndex];
 	TMBranchHead branchHead = 
 	  &stateTree->branchHeadTbl[prints[i].bIndex];
+
+	complexBindProcs = TMGetComplexBindEntry(bindData, 0);
 	
-	PrintState(sb, (TMStateTree)stateTree, branchHead,
-		   True, widget, XtDisplay(widget));
+	PrintState(sb, (TMStateTree)stateTree, branchHead, True, 
+		   complexBindProcs[prints[i].tIndex].widget, 
+		   XtDisplay(widget));
     }
     XtStackFree((XtPointer)prints, (XtPointer)stackPrints);
     printf("%s\n", sb->start);
