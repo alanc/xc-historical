@@ -36,18 +36,6 @@
 #include "cfbmskbits.h"
 #include "cfbrrop.h"
 
-#if IMAGE_BYTE_ORDER == MSBFirst
-#define intToCoord(i,x,y)   (((x) = ((i) >> 16)), ((y) = ((i) & 0xFFFF)))
-#define coordToInt(x,y)	(((x) << 16) | (y))
-#define intToX(i)	((i) >> 16)
-#define intToY(i)	((i) & 0xFFFF)
-#else
-#define intToCoord(i,x,y)   (((x) = ((i) & 0xFFFF)), ((y) = ((i) >> 16)))
-#define coordToInt(x,y)	(((y) << 16) | (x))
-#define intToX(i)	((i) & 0xFFFF)
-#define intToY(i)	((i) >> 16)
-#endif
-
 void
 RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     DrawablePtr	pDrawable;

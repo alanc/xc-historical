@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.12 90/11/28 18:21:15 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.13 91/01/24 13:54:41 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -63,19 +63,6 @@
 	result |= OUT_ABOVE; \
     if (y >= box->y2) \
 	result |= OUT_BELOW;
-
-
-#if BITMAP_BIT_ORDER == MSBFirst
-#define intToCoord(i,x,y)   (((x) = ((i) >> 16)), ((y) = ((i) & 0xFFFF)))
-#define coordToInt(x,y)	(((x) << 16) | (y))
-#define intToX(i)	((i) >> 16)
-#define intToY(i)	((i) & 0xFFFF)
-#else
-#define intToCoord(i,x,y)   (((x) = ((i) & 0xFFFF)), ((y) = ((i) >> 16)))
-#define coordToInt(x,y)	(((y) << 16) | (x))
-#define intToX(i)	((i) & 0xFFFF)
-#define intToY(i)	((i) >> 16)
-#endif
 
 #define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
 
@@ -170,7 +157,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 {
     register int    e;
     register int    y1_or_e1;
-    register char   *addrb;
+    register unsigned char   *addrb;
     register int    stepmajor;
     register int    stepminor;
 #ifndef REARRANGE
@@ -211,7 +198,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 # define Y2  intToY(c2)
 #endif
     int		    ClipMask = 0x80008000;
-    char	    *addr;
+    unsigned char   *addr;
     int		    nwidth;
     cfbPrivGCPtr    devPriv;
     BoxPtr	    extents;
@@ -427,7 +414,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	else
 	{
 # ifndef POLYSEGMENT
-	    char    *t;
+	    unsigned char    *t;
 #endif
 
 # ifdef REARRANGE
@@ -718,7 +705,7 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     int		    signdx, signdy, axis, e, e1, e3, len;
     int		    adx, ady;
 
-    char	    *addr;
+    unsigned char   *addr;
     int		    nwidth;
     int		    stepx, stepy;
     int		    xorg, yorg;
@@ -821,7 +808,7 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	return;
 
     {
-    register char	*addrb;
+    register unsigned char	*addrb;
     RROP_DECLARE
 
     RROP_FETCH_GC(pGC);
