@@ -1,4 +1,4 @@
-/* $XConsortium: sm_error.c,v 1.8 94/03/16 15:51:02 mor Exp $ */
+/* $XConsortium: sm_error.c,v 1.9 94/03/18 16:03:13 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -148,7 +148,9 @@ SmPointer 	values;
     }
 
     fprintf (stderr, "\n");
-    exit (1);
+
+    if (severity != IceCanContinue)
+	exit (1);
 }
 
 
