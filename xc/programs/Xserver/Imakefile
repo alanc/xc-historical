@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.172 94/02/04 19:33:34 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.173 94/02/05 02:34:01 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -265,10 +265,12 @@ XCOMM Apple MacII server
 XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
 DDXDIR1 = hw/macII
-MACIIDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+MACIIDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 MACIIOBJS = hw/macII/macIIInitS.o hw/macII/macIIColor.o
-MACIILIBS = hw/macII/libmacII.a CFB8Libs
+MACIILIBS = hw/macII/libmacII.a CFBLibs
 MACIISYSLIBS = $(CBRT) $(SYSLIBS)
 ServerTarget(XmacII,$(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(MACIISYSLIBS))
 #ifndef ServerToInstall
