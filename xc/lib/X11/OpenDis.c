@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.140 93/09/26 15:40:55 gildea Exp $
+ * $XConsortium: OpenDis.c,v 11.141 93/09/27 22:53:03 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -632,7 +632,7 @@ _XFreeDisplayStructure(dpy)
 	   (*dpy->free_funcs->key_bindings)(dpy);
 	if (dpy->context_db)
 	   (*dpy->free_funcs->context_db)(dpy);
-	if (dpy->xkb)
+	if (dpy->xkb_info)
 	   (*dpy->free_funcs->xkb)(dpy);
 
 	if (dpy->screens) {
