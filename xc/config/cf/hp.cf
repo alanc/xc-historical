@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.64 93/09/21 11:16:51 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.65 93/10/13 15:30:59 rws Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -47,4 +47,8 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion < 6 || (OSMajorVersion == 6 && OSMinorVersion < 2)
 #define ConnectionFlags		-DTCPCONN	/* no unix sockets */
+#endif
+
+#if OSMajorVersion > 8
+#define HasWChar32             YES
 #endif

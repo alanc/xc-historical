@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsdi.cf,v 1.5 93/09/30 18:03:48 rws Exp $
+XCOMM platform:  $XConsortium: bsdi.cf,v 1.6 94/03/04 17:59:02 rws Exp $
 
 #define OSName            BSD/386 1.1
 XCOMM operating system:  OSName
@@ -19,3 +19,4 @@ XCOMM operating system:  OSName
 #define DirFailPrefix -
 #define AvoidNullMakeCommand YES
 #define BuildServer	NO
+#define HasWChar32      YES

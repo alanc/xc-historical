@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.38 94/01/20 20:09:12 kaleb Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.39 94/02/05 14:18:16 rws Exp $
 
 #define OSName			IRIX 5.1.1.1
 XCOMM operating system:  OSName
@@ -30,6 +30,10 @@ XCOMM operating system:  OSName
 #define NeedVarargsPrototypes	YES
 #define NeedConstPrototypes	YES
 #define NeedWidePrototypes	NO
+#endif
+
+#if OSMajorVersion > 4
+#define HasWChar32              YES
 #endif
 
 /* Extra libraries provide : yp, sysV malloc, shared libc, and widechar */

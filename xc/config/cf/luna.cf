@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.26 93/09/21 11:17:04 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.27 94/01/21 15:06:14 kaleb Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -81,4 +81,8 @@ XCOMM operating system:  OSName
 #ifdef Mc88000Architecture
 #define BuildPexExt		NO
 #define XlunaServer 		YES
+#endif
+
+#if ((OSMajorVersion >= 2) && (OSMinorVersion >= 0) && (OSTeenyVersion >= 1))
+#define HasWChar32              YES
 #endif

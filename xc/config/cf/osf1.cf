@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.25 94/01/21 22:13:09 dpw Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.26 94/02/06 18:27:53 rws Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #ifdef AlphaArchitecture
@@ -63,6 +63,7 @@ XCOMM operating system:  OSName
 
 #ifdef AlphaArchitecture
 #define XVirtualFramebufferServer YES
+#define HasWChar32 YES
 #define ServerExtraDefines -D_XSERVER64
 #define ServerOSDefines -DDDXTIME
 #define DefaultCCOptions -std1
