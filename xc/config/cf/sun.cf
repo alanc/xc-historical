@@ -5,15 +5,9 @@
  * full build (make World) at the top of the sources....
  */
 
-#ifdef mc68000
-#define OSName            SunOS 4.0.3
-#define OSMajorVersion    4
-#define OSMinorVersion    0
-#else
-#define OSName            SunOS 4.1
+#define OSName            SunOS 4.1.1
 #define OSMajorVersion    4
 #define OSMinorVersion    1
-#endif
 #define HasSaberC	  YES		/* for machines that have it */
 #define HasNdbm		  YES
 #define HasShm		  YES
@@ -79,7 +73,7 @@
 /* see below for ServerDefines */
 
 
-XCOMM platform:  $XConsortium: sun.cf,v 1.45 91/02/26 10:38:33 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.46 91/03/13 14:45:40 rws Exp $
 XCOMM operating system:  OSName
 
 #if HasGcc
