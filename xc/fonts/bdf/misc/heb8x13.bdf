@@ -1,5 +1,5 @@
 STARTFONT 2.1
-COMMENT $XConsortium$
+COMMENT $XConsortium: heb8x13.bdf,v 1.2 91/08/22 19:44:01 gildea Exp $
 COMMENT 
 COMMENT Characters #224--#250 designed, made, and are
 COMMENT Copyright (c) 1991 by Joseph Friedman (yossi@CS.Stanford.EDU).
@@ -32,7 +32,7 @@ CHARSET_ENCODING "8"
 DEFAULT_CHAR 0
 FONT_DESCENT 3
 FONT_ASCENT 10
-COPYRIGHT "Public domain font.  Share and enjoy."
+COPYRIGHT "Copyright (c) 1991 by Joseph Friedman."
 ENDPROPERTIES
 CHARS 186
 STARTCHAR C000
