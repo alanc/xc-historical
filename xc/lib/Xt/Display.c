@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.84 92/06/08 11:12:11 converse Exp $ */
+/* $XConsortium: Display.c,v 1.85 92/06/08 11:24:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -115,6 +115,7 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     pd->defaultKeycodeTranslator = XtTranslateKey;
     pd->keysyms_serial = 0;
     pd->keysyms = NULL;
+    XDisplayKeycodes(dpy, &pd->min_keycode, &pd->max_keycode);
     pd->modKeysyms = NULL;
     pd->modsToKeysyms = NULL;
     pd->appContext = app;
