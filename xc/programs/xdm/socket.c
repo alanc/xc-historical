@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.19 90/09/13 18:28:36 keith Exp $
+ * $XConsortium: socket.c,v 1.20 90/09/14 17:51:44 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -66,6 +66,8 @@ CreateWellKnownSockets ()
     name = localHostname ();
     registerHostname (name, strlen (name));
     RegisterCloseOnFork (socketFd);
+    /* zero out the entire structure; this avoids 4.4 incompatibilities */
+    bzero ((char *) &sock_addr, sizeof (sock_addr));
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons ((short) request_port);
     sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
@@ -234,6 +236,7 @@ sendForward (connectionType, address, closure)
 #ifdef AF_INET
     case FamilyInternet:
 	addr = (struct sockaddr *) &in_addr;
+	bzero ((char *) &in_addr, sizeof (in_addr));
 	in_addr.sin_family = AF_INET;
 	in_addr.sin_port = htons ((short) XDM_UDP_PORT);
 	if (address->length != 4)
@@ -408,6 +411,7 @@ forward_respond (from, fromlen, length)
 		    {
 			goto badAddress;
 		    }
+		    bzero ((char *) &in_addr, sizeof (in_addr));
 		    in_addr.sin_family = AF_INET;
 		    bcopy (clientAddress.data, &in_addr.sin_addr, 4);
 		    bcopy (clientPort.data, (char *) &in_addr.sin_port, 2);
@@ -423,6 +427,7 @@ forward_respond (from, fromlen, length)
 
 		    if (clientAddress.length >= sizeof (un_addr.sun_path))
 			goto badAddress;
+		    bzero ((char *) &un_addr, sizeof (un_addr));
 		    un_addr.sun_family = AF_UNIX;
 		    bcopy (clientAddress.data, un_addr.sun_path, clientAddress.length);
 		    un_addr.sun_path[clientAddress.length] = '\0';
