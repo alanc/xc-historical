@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.69 89/12/08 12:36:29 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.70 89/12/12 20:17:23 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -547,7 +547,7 @@ Widget current, request, new;
 #ifdef SHAPE
   if ( XtIsRealized(new)
        && oldcbw->command.shape_style != cbw->command.shape_style
-       && !ShapeButton(cbw))
+       && !ShapeButton(cbw, TRUE))
   {
       cbw->command.shape_style = oldcbw->command.shape_style;
   }
@@ -570,8 +570,9 @@ static void ClassInitialize()
 #ifdef SHAPE
 
 static Boolean
-ShapeButton(cbw)
+ShapeButton(cbw, checkRectangular)
 CommandWidget cbw;
+Boolean checkRectangular;
 {
     Dimension corner_size;
 
@@ -581,7 +582,7 @@ CommandWidget cbw;
 	corner_size = (corner_size * cbw->command.corner_round) / 100;
     }
 
-    if (cbw->command.shape_style != XawShapeRectangle) {
+    if (checkRectangular || cbw->command.shape_style != XawShapeRectangle) {
 	if (!XmuReshapeWidget((Widget) cbw, cbw->command.shape_style,
 			      corner_size, corner_size)) {
 	    cbw->command.shape_style = XawShapeRectangle;
@@ -599,14 +600,14 @@ static void Realize(w, valueMask, attributes)
     (*commandWidgetClass->core_class.superclass->core_class.realize)
 	(w, valueMask, attributes);
 
-    ShapeButton( (CommandWidget) w);
+    ShapeButton( (CommandWidget) w, FALSE);
 }
 
 static void Resize(w)
     Widget w;
 {
     if (XtIsRealized(w)) 
-	ShapeButton( (CommandWidget) w);
+	ShapeButton( (CommandWidget) w, FALSE);
 
     (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
 }
