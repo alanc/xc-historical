@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.39 87/09/11 21:19:15 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.40 87/09/13 19:25:14 newman Locked $";
 #endif lint
 
 /*
@@ -127,7 +127,7 @@ static XtResource resources[]=
 };
 static void Initialize();
 static void Realize();
-static void SetValues();
+static Boolean SetValues();
 static void Destroy();
 static void InsertChild();
 static void ChangeManaged(); /* XXX */
@@ -577,59 +577,66 @@ XtWidgetGeometry *reply;
 	return(XtGeometryNo);
 }
 
-static void SetValues(old,new)
-Widget old, new;
+static Boolean SetValues (current, request, new, last)
+Widget current, request, new;
+Boolean last;
 {
 	XWMHints wmhints, *oldhints;
-	TopLevelWidget nw = (TopLevelWidget) new;
-	TopLevelWidget ow = (TopLevelWidget) old;
+	TopLevelWidget cur = (TopLevelWidget) current;
+        TopLevelWidget req = (TopLevelWidget) request;
+	TopLevelWidget tnew = (TopLevelWidget) new;
 	Boolean name = FALSE;
 	Boolean pixmap = FALSE;
 	Boolean window = FALSE;
 	Boolean title = FALSE;
 	
-	ow-> top.resizeable =  nw->top.resizeable;
-	if(ow ->top.icon_name != nw->top.icon_name) {
-		ow ->top.icon_name = nw->top.icon_name;
+        /* I don't let people play with most of my values */
+        tnew->top = cur->top;
+
+        /* except these few.... */
+        
+	tnew-> top.resizeable =  req->top.resizeable;
+	if(req ->top.icon_name != cur->top.icon_name) {
+		tnew ->top.icon_name = req->top.icon_name;
 		name = TRUE;
 	}
 /*XXX Leak allert  These should be copied and freed but I am lazy */
-	if(ow ->top.icon_pixmap != nw->top.icon_pixmap) {
-		ow ->top.icon_pixmap = nw->top.icon_pixmap;
+	if(req ->top.icon_pixmap != cur->top.icon_pixmap) {
+		tnew ->top.icon_pixmap = req->top.icon_pixmap;
 		pixmap = TRUE;
 	}
-	if(ow ->top.icon_window != nw->top.icon_window) {
-		ow ->top.icon_window = nw->top.icon_window;
+	if(req ->top.icon_window != cur->top.icon_window) {
+		tnew ->top.icon_window = req->top.icon_window;
 		window = TRUE;
 	}
-	if(ow ->top.title != nw->top.title) {
-		ow ->top.title = nw->top.title;
+	if(req ->top.title != cur->top.title) {
+		tnew ->top.title = req->top.title;
 		name = TRUE;
 	}
-	if((name || pixmap || window || title) && XtIsRealized((Widget)ow)) {
+	if((name || pixmap || window || title) && XtIsRealized((Widget)tnew)) {
 		if(name) {
-			XSetIconName(XtDisplay(ow), ow->core.window, ow->top.icon_name);
+			XSetIconName(XtDisplay(tnew), tnew->core.window, tnew->top.icon_name);
 		}
 		if( title ) {
-			XStoreName(XtDisplay(ow), ow->core.window, ow->top.title);
+			XStoreName(XtDisplay(tnew), tnew->core.window, tnew->top.title);
 		}
 		if(pixmap || window) {
-			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
+			oldhints = XGetWMHints(XtDisplay(tnew), tnew->core.window);
 			wmhints = *oldhints;
 			XtFree((char *)oldhints);
 			if(pixmap) {
 				wmhints.flags |= IconPixmapHint;
-				wmhints.icon_pixmap = ow->top.icon_pixmap;
+				wmhints.icon_pixmap = tnew->top.icon_pixmap;
 			}
 			if(window) {
 				wmhints.flags |= IconWindowHint;
-				wmhints.icon_window = ow->top.icon_window;
+				wmhints.icon_window = tnew->top.icon_window;
 			}
-			XSetWMHints( XtDisplay(ow), ow->core.window, &wmhints);
+			XSetWMHints( XtDisplay(tnew), tnew->core.window, &wmhints);
 		}
 	}
 
-/* I don't let people play with my values */
+return (FALSE);  /* redisplay is never needed */
 	
 }
 
