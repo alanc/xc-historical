@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.2 88/02/12 08:51:57 jim Exp $
+ *	$Header: main.c,v 1.3 88/02/12 08:59:24 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.2 88/02/12 08:51:57 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.3 88/02/12 08:59:24 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -732,6 +732,29 @@ static void Initialize (request, new)
    new->screen.scrollkey = request->screen.scrollkey;
    new->screen.visualbell = request->screen.visualbell;
    new->screen.TekEmu = request->screen.TekEmu;
+   new->misc.re_verse = request->misc.re_verse;
+
+    /*
+     * set the colors if reverse video; this is somewhat tricky since
+     * there are 5 colors:
+     *
+     *     background - paper		white
+     *     foreground - text		black
+     *     border - border			black (foreground)
+     *     textcursor - block		black (foreground)
+     *     mousecursor - mouse		black (foreground)
+     *
+     */
+    if (new->misc.re_verse) {
+	unsigned long fg = new->screen.foreground;
+	unsigned long bg = new->core.background_pixel;
+
+	if (new->screen.mousecolor == fg) new->screen.mousecolor = bg;
+	if (new->screen.cursorcolor == fg) new->screen.cursorcolor = bg;
+	if (new->core.border_pixel == fg) new->core.border_pixel = bg;
+	new->screen.foreground = bg;
+	new->core.background_pixel = fg;
+    }	
 
    new->keyboard.flags = 0;
    new->screen.display = new->core.screen->display;
