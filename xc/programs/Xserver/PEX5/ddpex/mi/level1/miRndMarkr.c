@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miRndMarkr.c,v 5.1 91/02/16 09:55:09 rws Exp $ */
 
 
 /***********************************************************
@@ -37,8 +37,6 @@ SOFTWARE.
 #include <stdio.h>
 
 #define FULL_CIRCLE 360*64
-
-extern  ddFLOAT ident4x4[];
 
 /*++
  |
