@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.14 89/07/12 13:50:13 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.15 89/07/14 12:12:36 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -136,10 +136,10 @@ static void Highlight(), Unhighlight(), Notify(), PositionMenuAction();
 static void CalculateNewSize(), RemoveEntry(), DrawBitmaps(), FlipColors();
 static void MakeSetValuesRequest(), RefreshEntry(), DestroyEntry();
 static void SetEntryInfo(), ChangeEntryInfo(), CreateGCs(), DestroyGCs();
+static void XawCvtStringToMenuType(), MaybeCopyCallbacks(), PaintEntry();
+static void AddPositionAction(), PositionMenu(), ChangeCursorOnGrab();
 static Dimension GetMenuWidth(), GetMenuHeight();
 static MenuEntry * GetEventEntry(), * GetMenuEntry();
-static void XawCvtStringToMenuType(), MaybeCopyCallbacks();
-static void AddPositionAction(), PositionMenu(), ChangeCursorOnGrab();
 
 static XtActionsRec actionsList[] =
 {
@@ -384,62 +384,6 @@ Region region;
       } 
     } /* if (entry->type != XawMenuBlank) */
   } /* for (i = 0, entry = smw->simple_menu.entries... */
-}
-
-/*	Function Name: PaintEntry
- *	Description: Paints the text and graphics into an entry.
- *	Arguments: w - the simple menu widget.
- *                 entry - the entry to paint.
- *                 y_loc - y location for the top of the entry graphics.
- *                 e_number - the entry index.
- *	Returns: none.
- */
-
-static void
-PaintEntry(w, entry, y_loc, e_number)
-Widget w;
-MenuEntry *entry;
-int y_loc, e_number;
-{
-  GC gc;
-  SimpleMenuWidget smw = (SimpleMenuWidget) w;
-  Dimension width = w->core.width, height = smw->simple_menu.row_height;
-  int	font_ascent, font_descent, y_temp;
-  
-  font_ascent = smw->simple_menu.font->max_bounds.ascent;
-  font_descent = smw->simple_menu.font->max_bounds.descent;
-
-  switch (entry->type) {
-  case XawMenuSeparator:
-    y_temp = y_loc + height / 2;
-    XDrawLine(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
-	      0, y_temp, width, y_temp);
-    break;
-    
-  case XawMenuText:
-    if (entry->sensitive && XtIsSensitive(w) ) {
-      if (e_number == smw->simple_menu.entry_set) {
-	XFillRectangle(XtDisplay(w), XtWindow(w), 
-		       smw->simple_menu.norm_gc, 0, y_loc,
-		       width, height);
-	gc = smw->simple_menu.rev_gc;
-      }
-      else
-	gc = smw->simple_menu.norm_gc;
-    }
-    else
-      gc = smw->simple_menu.norm_grey_gc;
-    
-    y_temp = y_loc + (height - (font_ascent + font_descent)) / 2 + font_ascent;
-
-    XDrawString(XtDisplay(w), XtWindow(w), gc,
-		smw->simple_menu.left_margin, y_temp,
-		entry->label, strlen(entry->label));
-    
-    DrawBitmaps(w, gc, entry, y_loc);
-  default:			/* falling through... */
-    break;
-  } /* switch (entry->type) */
 }
 
 /*      Function Name: Realize
@@ -1101,6 +1045,62 @@ Cardinal num_args;
  * Private Functions.
  *
  ************************************************************/
+
+/*	Function Name: PaintEntry
+ *	Description: Paints the text and graphics into an entry.
+ *	Arguments: w - the simple menu widget.
+ *                 entry - the entry to paint.
+ *                 y_loc - y location for the top of the entry graphics.
+ *                 e_number - the entry index.
+ *	Returns: none.
+ */
+
+static void
+PaintEntry(w, entry, y_loc, e_number)
+Widget w;
+MenuEntry *entry;
+int y_loc, e_number;
+{
+  GC gc;
+  SimpleMenuWidget smw = (SimpleMenuWidget) w;
+  Dimension width = w->core.width, height = smw->simple_menu.row_height;
+  int	font_ascent, font_descent, y_temp;
+  
+  font_ascent = smw->simple_menu.font->max_bounds.ascent;
+  font_descent = smw->simple_menu.font->max_bounds.descent;
+
+  switch (entry->type) {
+  case XawMenuSeparator:
+    y_temp = y_loc + height / 2;
+    XDrawLine(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
+	      0, y_temp, width, y_temp);
+    break;
+    
+  case XawMenuText:
+    if (entry->sensitive && XtIsSensitive(w) ) {
+      if (e_number == smw->simple_menu.entry_set) {
+	XFillRectangle(XtDisplay(w), XtWindow(w), 
+		       smw->simple_menu.norm_gc, 0, y_loc,
+		       width, height);
+	gc = smw->simple_menu.rev_gc;
+      }
+      else
+	gc = smw->simple_menu.norm_gc;
+    }
+    else
+      gc = smw->simple_menu.norm_grey_gc;
+    
+    y_temp = y_loc + (height - (font_ascent + font_descent)) / 2 + font_ascent;
+
+    XDrawString(XtDisplay(w), XtWindow(w), gc,
+		smw->simple_menu.left_margin, y_temp,
+		entry->label, strlen(entry->label));
+    
+    DrawBitmaps(w, gc, entry, y_loc);
+  default:			/* falling through... */
+    break;
+  } /* switch (entry->type) */
+}
 
 /*	Function Name: ChangeCursorOnGrab
  *	Description: Changes the cursor on the active grab to the one
