@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: globals.h,v 1.1 93/07/19 11:39:22 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -29,6 +29,7 @@ extern void _XieElemImportROI();
 extern void _XieElemArithmetic();
 extern void _XieElemBandCombine();
 extern void _XieElemBandExtract();
+extern void _XieElemBandSelect();
 extern void _XieElemBlend();
 extern void _XieElemCompare();
 extern void _XieElemConstrain();
@@ -68,6 +69,7 @@ void (*(_XieElemFuncs[]))() =
     _XieElemArithmetic,
     _XieElemBandCombine,
     _XieElemBandExtract,
+    _XieElemBandSelect,
     _XieElemBlend,
     _XieElemCompare,
     _XieElemConstrain,

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: errors.c,v 1.1 93/07/19 11:39:19 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -36,16 +36,14 @@ xError		*wire;
      * All flo errors have this basic info.
      */
 
-    flo_host_error->request_code   = flo_wire_error->code;
-/*
-    flo_host_error->error_code     = flo_wire_error->error;
-*/
+    flo_host_error->error_code     = flo_wire_error->code;
     flo_host_error->flo_error_code = flo_wire_error->floErrorCode;
     flo_host_error->name_space     = flo_wire_error->nameSpace;
     flo_host_error->flo_id         = flo_wire_error->floID;
     flo_host_error->phototag       = flo_wire_error->phototag;
     flo_host_error->elem_type      = flo_wire_error->type;
-    flo_host_error->minor_code     = flo_wire_error->opcode;
+    flo_host_error->minor_code     = flo_wire_error->minorOpcode;
+    flo_host_error->request_code   = flo_wire_error->majorOpcode;
 
 
     /*

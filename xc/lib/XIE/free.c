@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: free.c,v 1.1 93/07/19 11:39:21 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -108,3 +108,18 @@ XieEncodeJPEGLosslessParam *param;
     }
 }
 
+
+void 
+XieFreePasteUpTiles (element)
+
+XiePhotoElement	*element;
+
+{
+    XieTile *tiles= element->data.PasteUp.tiles;
+
+    if (tiles)
+    {
+	Xfree (tiles);
+	element->data.PasteUp.tiles=NULL;
+    }
+}

@@ -1,4 +1,4 @@
-/* $XConsortium: conven.c,v 1.3 93/08/20 10:07:18 mor Exp $ */
+/* $XConsortium: conven.c,v 1.1 93/10/26 09:43:49 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -220,18 +220,36 @@ XiePhototag	src3;
 
 
 void
-XieFloBandExtract (element, src, coefficients)
+XieFloBandExtract (element, src, levels, bias, coefficients)
 
 XiePhotoElement	*element;
 XiePhototag	src;
+unsigned int	levels;
+double		bias;
 XieConstant	coefficients;
 
 {
     element->elemType			      = xieElemBandExtract;
     element->data.BandExtract.src             = src;
+    element->data.BandExtract.levels          = levels;
+    element->data.BandExtract.bias            = bias;
     element->data.BandExtract.coefficients[0] = coefficients[0];
     element->data.BandExtract.coefficients[1] = coefficients[1];
     element->data.BandExtract.coefficients[2] = coefficients[2];
+}
+
+
+void
+XieFloBandSelect (element, src, band_number)
+
+XiePhotoElement	*element;
+XiePhototag	src;
+unsigned int 	band_number;
+
+{
+    element->elemType			     = xieElemBandSelect;
+    element->data.BandSelect.src             = src;
+    element->data.BandSelect.band_number     = band_number;
 }
 
 
@@ -419,10 +437,11 @@ char			*convolve_param;
 
 
 void
-XieFloDither (element, src, levels, dither_tech, dither_param)
+XieFloDither (element, src, band_mask, levels, dither_tech, dither_param)
 
 XiePhotoElement		*element;
 XiePhototag		src;
+unsigned int		band_mask;
 XieLevels		levels;
 XieDitherTechnique	dither_tech;
 char			*dither_param;
@@ -430,6 +449,7 @@ char			*dither_param;
 {
     element->elemType		      = xieElemDither;
     element->data.Dither.src          = src;
+    element->data.Dither.band_mask    = band_mask;
     element->data.Dither.levels[0]    = levels[0];
     element->data.Dither.levels[1]    = levels[1];
     element->data.Dither.levels[2]    = levels[2];
@@ -857,38 +877,52 @@ char			*white_adjust_param;
 
 
 XieRGBToYCbCrParam *
-XieTecRGBToYCbCr (luma_red, luma_green, luma_blue)
+XieTecRGBToYCbCr (levels, luma_red, luma_green, luma_blue, bias)
 
-double	luma_red;
-double	luma_green;
-double	luma_blue;
+XieLevels	levels;
+double		luma_red;
+double		luma_green;
+double		luma_blue;
+XieConstant	bias;
 
 {
     XieRGBToYCbCrParam *param = (XieRGBToYCbCrParam *)
 	Xmalloc (sizeof (XieRGBToYCbCrParam));
 
+    param->levels[0]  = levels[0];
+    param->levels[1]  = levels[1];
+    param->levels[2]  = levels[2];
     param->luma_red   = luma_red;
     param->luma_green = luma_green;
     param->luma_blue  = luma_blue;
+    param->bias[0]    = bias[0];
+    param->bias[1]    = bias[1];
+    param->bias[2]    = bias[2];
 
     return (param);
 }
 
 
 XieRGBToYCCParam *
-XieTecRGBToYCC (luma_red, luma_green, luma_blue)
+XieTecRGBToYCC (levels, luma_red, luma_green, luma_blue, scale)
 
-double	luma_red;
-double	luma_green;
-double	luma_blue;
+XieLevels	levels;
+double		luma_red;
+double		luma_green;
+double		luma_blue;
+double		scale;
 
 {
     XieRGBToYCCParam *param = (XieRGBToYCCParam *)
 	Xmalloc (sizeof (XieRGBToYCCParam));
 
+    param->levels[0]  = levels[0];
+    param->levels[1]  = levels[1];
+    param->levels[2]  = levels[2];
     param->luma_red   = luma_red;
     param->luma_green = luma_green;
     param->luma_blue  = luma_blue;
+    param->scale      = scale;
 
     return (param);
 }
@@ -943,38 +977,62 @@ char			*gamut_param;
 
 
 XieYCbCrToRGBParam *
-XieTecYCbCrToRGB (luma_red, luma_green, luma_blue)
+XieTecYCbCrToRGB (levels, luma_red, luma_green, luma_blue, bias,
+    gamut_tech, gamut_param)
 
-double	luma_red;
-double	luma_green;
-double	luma_blue;
+XieLevels		levels;
+double			luma_red;
+double			luma_green;
+double			luma_blue;
+XieConstant		bias;
+XieGamutTechnique	gamut_tech;
+char			*gamut_param;
 
 {
     XieYCbCrToRGBParam *param = (XieYCbCrToRGBParam *)
 	Xmalloc (sizeof (XieYCbCrToRGBParam));
 
-    param->luma_red   = luma_red;
-    param->luma_green = luma_green;
-    param->luma_blue  = luma_blue;
+    param->levels[0]   = levels[0];
+    param->levels[1]   = levels[1];
+    param->levels[2]   = levels[2];
+    param->luma_red    = luma_red;
+    param->luma_green  = luma_green;
+    param->luma_blue   = luma_blue;
+    param->bias[0]     = bias[0];
+    param->bias[1]     = bias[1];
+    param->bias[2]     = bias[2];
+    param->gamut_tech  = gamut_tech;
+    param->gamut_param = gamut_param;
 
     return (param);
 }
 
 
 XieYCCToRGBParam *
-XieTecYCCToRGB (luma_red, luma_green, luma_blue)
+XieTecYCCToRGB (levels, luma_red, luma_green, luma_blue, scale,
+    gamut_tech, gamut_param)
 
-double	luma_red;
-double	luma_green;
-double	luma_blue;
+XieLevels		levels;
+double			luma_red;
+double			luma_green;
+double			luma_blue;
+double			scale;
+XieGamutTechnique	gamut_tech;
+char			*gamut_param;
 
 {
     XieYCCToRGBParam *param = (XieYCCToRGBParam *)
 	Xmalloc (sizeof (XieYCCToRGBParam));
 
-    param->luma_red   = luma_red;
-    param->luma_green = luma_green;
-    param->luma_blue  = luma_blue;
+    param->levels[0]   = levels[0];
+    param->levels[1]   = levels[1];
+    param->levels[2]   = levels[2];
+    param->luma_red    = luma_red;
+    param->luma_green  = luma_green;
+    param->luma_blue   = luma_blue;
+    param->scale       = scale;
+    param->gamut_tech  = gamut_tech;
+    param->gamut_param = gamut_param;
 
     return (param);
 }
@@ -1084,10 +1142,11 @@ unsigned char	scanline_pad[3];
 
 
 XieDecodeG31DParam *
-XieTecDecodeG31D (encoded_order, normal)
+XieTecDecodeG31D (encoded_order, normal, radiometric)
 
 XieOrientation	encoded_order;
 Bool		normal;
+Bool		radiometric;
 
 {
     XieDecodeG31DParam *param = (XieDecodeG31DParam *)
@@ -1095,16 +1154,18 @@ Bool		normal;
 
     param->encoded_order = encoded_order;
     param->normal        = normal;
+    param->radiometric   = radiometric;
 
     return (param);
 }
 
 
 XieDecodeG32DParam *
-XieTecDecodeG32D (encoded_order, normal)
+XieTecDecodeG32D (encoded_order, normal, radiometric)
 
 XieOrientation	encoded_order;
 Bool		normal;
+Bool		radiometric;
 
 {
     XieDecodeG32DParam *param = (XieDecodeG32DParam *)
@@ -1112,16 +1173,18 @@ Bool		normal;
 
     param->encoded_order = encoded_order;
     param->normal        = normal;
+    param->radiometric   = radiometric;
 
     return (param);
 }
 
 
 XieDecodeG42DParam *
-XieTecDecodeG42D (encoded_order, normal)
+XieTecDecodeG42D (encoded_order, normal, radiometric)
 
 XieOrientation	encoded_order;
 Bool		normal;
+Bool		radiometric;
 
 {
     XieDecodeG42DParam *param = (XieDecodeG42DParam *)
@@ -1129,16 +1192,18 @@ Bool		normal;
 
     param->encoded_order = encoded_order;
     param->normal        = normal;
+    param->radiometric   = radiometric;
 
     return (param);
 }
 
 
 XieDecodeTIFF2Param *
-XieTecDecodeTIFF2 (encoded_order, normal)
+XieTecDecodeTIFF2 (encoded_order, normal, radiometric)
 
 XieOrientation	encoded_order;
 Bool		normal;
+Bool		radiometric;
 
 {
     XieDecodeTIFF2Param *param = (XieDecodeTIFF2Param *)
@@ -1146,6 +1211,7 @@ Bool		normal;
 
     param->encoded_order = encoded_order;
     param->normal        = normal;
+    param->radiometric   = radiometric;
 
     return (param);
 }
@@ -1240,8 +1306,8 @@ unsigned int	scanline_pad;
 }
 
 
-XieEncodeuncompressedTripleParam *
-XieTecEncodeuncompressedTriple (fill_order, pixel_order, band_order,
+XieEncodeUncompressedTripleParam *
+XieTecEncodeUncompressedTriple (fill_order, pixel_order, band_order,
     interleave, pixel_stride, scanline_pad)
 
 XieOrientation	fill_order;
@@ -1252,9 +1318,9 @@ unsigned char	pixel_stride[3];
 unsigned char	scanline_pad[3];
 
 {
-    XieEncodeuncompressedTripleParam *param =
-	(XieEncodeuncompressedTripleParam *) Xmalloc (
-	sizeof (XieEncodeuncompressedTripleParam));
+    XieEncodeUncompressedTripleParam *param =
+	(XieEncodeUncompressedTripleParam *) Xmalloc (
+	sizeof (XieEncodeUncompressedTripleParam));
 
     param->pixel_stride[0] = pixel_stride[0];
     param->pixel_stride[1] = pixel_stride[1];
@@ -1272,16 +1338,18 @@ unsigned char	scanline_pad[3];
 
 
 XieEncodeG31DParam *
-XieTecEncodeG31D (align_eol, encoded_order)
+XieTecEncodeG31D (align_eol, radiometric, encoded_order)
 
 Bool		align_eol;
+Bool		radiometric;
 XieOrientation	encoded_order;
 
 {
     XieEncodeG31DParam *param = (XieEncodeG31DParam *)
 	Xmalloc (sizeof (XieEncodeG31DParam));
 
-    param->align_eol = align_eol;
+    param->align_eol     = align_eol;
+    param->radiometric   = radiometric;
     param->encoded_order = encoded_order;
 
     return (param);
@@ -1289,10 +1357,12 @@ XieOrientation	encoded_order;
 
 
 XieEncodeG32DParam *
-XieTecEncodeG32D (uncompressed, align_eol, encoded_order, k_factor)
+XieTecEncodeG32D (uncompressed, align_eol, radiometric,
+    encoded_order, k_factor)
 
 Bool		uncompressed;
 Bool		align_eol;
+Bool		radiometric;
 XieOrientation	encoded_order;
 unsigned long	k_factor;
 
@@ -1302,6 +1372,7 @@ unsigned long	k_factor;
 
     param->uncompressed  = uncompressed;
     param->align_eol     = align_eol;
+    param->radiometric   = radiometric;
     param->encoded_order = encoded_order;
     param->k_factor      = k_factor;
 
@@ -1310,9 +1381,10 @@ unsigned long	k_factor;
 
 
 XieEncodeG42DParam *
-XieTecEncodeG42D (uncompressed, encoded_order)
+XieTecEncodeG42D (uncompressed, radiometric, encoded_order)
 
 Bool		uncompressed;
+Bool		radiometric;
 XieOrientation	encoded_order;
 
 {
@@ -1320,6 +1392,7 @@ XieOrientation	encoded_order;
 	Xmalloc (sizeof (XieEncodeG42DParam));
 
     param->uncompressed  = uncompressed;
+    param->radiometric   = radiometric;
     param->encoded_order = encoded_order;
 
     return (param);
@@ -1389,15 +1462,17 @@ unsigned int	table_size;
 
 
 XieEncodeTIFF2Param *
-XieTecEncodeTIFF2 (encoded_order)
+XieTecEncodeTIFF2 (encoded_order, radiometric)
 
 XieOrientation	encoded_order;
+Bool		radiometric;
 
 {
     XieEncodeTIFF2Param *param = (XieEncodeTIFF2Param *)
 	Xmalloc (sizeof (XieEncodeTIFF2Param));
 
     param->encoded_order = encoded_order;
+    param->radiometric   = radiometric;
 
     return (param);
 }
@@ -1484,17 +1559,17 @@ unsigned int	modify;
 }
 
 XieHistogramGaussianParam *
-XieTecHistogramGaussian (mean, variance)
+XieTecHistogramGaussian (mean, sigma)
 
 double	mean;
-double	variance;
+double	sigma;
 
 {
     XieHistogramGaussianParam *param = (XieHistogramGaussianParam *)
 	Xmalloc (sizeof (XieHistogramGaussianParam));
 
-    param->mean     = mean;
-    param->variance = variance;
+    param->mean    = mean;
+    param->sigma   = sigma;
 
     return (param);
 }

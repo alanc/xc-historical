@@ -1,5 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.1 93/07/19 11:39:04 mor Exp $ */
-
+/* $XConsortium: XIElib.h,v 1.1 93/10/26 09:41:51 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -71,7 +70,7 @@ typedef unsigned	XieGamutTechnique;
 typedef unsigned	XieGeometryTechnique;
 
 typedef struct {
-    unsigned long	index;
+    unsigned long	value;
     unsigned long	count;
 } XieHistogramData;
 
@@ -244,15 +243,22 @@ typedef struct {
 	
 	struct {
 	    XiePhototag		src;
+	    unsigned int	levels;
+	    float		bias;
 	    XieConstant		coefficients;
 	} BandExtract;
+	
+	struct {
+	    XiePhototag		src;
+	    unsigned int	band_number;
+	} BandSelect;
 	
 	struct {
 	    XiePhototag		src1;
 	    XiePhototag		src2;
 	    XieConstant		src_constant;
 	    XiePhototag		alpha;
-	    XieFloat		alpha_constant;
+	    float		alpha_constant;
 	    XieProcessDomain	domain;
 	    unsigned int	band_mask;
 	} Blend;
@@ -315,6 +321,7 @@ typedef struct {
 	struct {
 	    XiePhototag		src;
 	    XieLevels		levels;
+	    unsigned int	band_mask;
 	    XieDitherTechnique	dither_tech;
 	    char		*dither_param;
 	} Dither;
@@ -440,6 +447,8 @@ typedef struct {
     } data;
 } XiePhotoElement;
 
+typedef XiePhotoElement *XiePhotofloGraph;
+
 
 /*--------------------------------------------------------------------------*
  * 			     Technique Parameters			    *
@@ -470,10 +479,20 @@ typedef struct {
 } XieRGBToCIELabParam, XieRGBToCIEXYZParam;
 
 typedef struct {
+    XieLevels	levels;
     float	luma_red;
     float	luma_green;
     float	luma_blue;
-} XieRGBToYCbCrParam, XieRGBToYCCParam;
+    XieConstant	bias;
+} XieRGBToYCbCrParam;
+
+typedef struct {
+    XieLevels	levels;
+    float	luma_red;
+    float	luma_green;
+    float	luma_blue;
+    float	scale;
+} XieRGBToYCCParam;
 
 
 /* Colorspace - conversion to RGB */
@@ -487,10 +506,24 @@ typedef struct {
 } XieCIELabToRGBParam, XieCIEXYZToRGBParam;
 
 typedef struct {
-    float	luma_red;
-    float	luma_green;
-    float	luma_blue;
-} XieYCbCrToRGBParam, XieYCCToRGBParam;
+    XieLevels		levels;
+    float		luma_red;
+    float		luma_green;
+    float		luma_blue;
+    XieConstant		bias;
+    XieGamutTechnique	gamut_tech;
+    char		*gamut_param;
+} XieYCbCrToRGBParam;
+
+typedef struct {
+    XieLevels		levels;
+    float		luma_red;
+    float		luma_green;
+    float		luma_blue;
+    float		scale;
+    XieGamutTechnique	gamut_tech;
+    char		*gamut_param;
+} XieYCCToRGBParam;
 
 /* Constrain */
 
@@ -530,8 +563,14 @@ typedef struct {
 typedef struct {
     XieOrientation	encoded_order;
     Bool		normal;
+    Bool		radiometric;
 } XieDecodeG31DParam, XieDecodeG32DParam, XieDecodeG42DParam,
-  XieDecodeTIFF2Param, XieDecodeTIFFPackBitsParam;
+  XieDecodeTIFF2Param;
+
+typedef struct {
+    XieOrientation	encoded_order;
+    Bool		normal;
+} XieDecodeTIFFPackBitsParam;
 
 typedef struct {
     XieInterleave	interleave;
@@ -562,22 +601,25 @@ typedef struct {
     XieOrientation	fill_order;
     XieOrientation  	band_order;
     XieInterleave	interleave;
-} XieEncodeuncompressedTripleParam;
+} XieEncodeUncompressedTripleParam;
 
 typedef struct {
     Bool		align_eol;
+    Bool		radiometric;
     XieOrientation	encoded_order;
 } XieEncodeG31DParam;
 
 typedef struct {
     Bool		uncompressed;
     Bool		align_eol;
+    Bool		radiometric;
     XieOrientation	encoded_order;
     unsigned long	k_factor;
 } XieEncodeG32DParam;
 
 typedef struct {
     Bool		uncompressed;
+    Bool		radiometric;
     XieOrientation	encoded_order;
 } XieEncodeG42DParam;
 
@@ -602,7 +644,12 @@ typedef struct {
 
 typedef struct {
     XieOrientation	encoded_order;
-} XieEncodeTIFF2Param, XieEncodeTIFFPackBitsParam;
+    Bool		radiometric;
+} XieEncodeTIFF2Param; 
+
+typedef struct {
+    XieOrientation	encoded_order;
+} XieEncodeTIFFPackBitsParam;
 
 
 /* Geometry */
@@ -631,7 +678,7 @@ typedef struct {
 
 typedef struct {
     float	mean;
-    float	variance;
+    float	sigma;
 } XieHistogramGaussianParam;
 
 typedef struct {
@@ -1198,7 +1245,17 @@ extern void XieFloBandExtract (
 #if NeedFunctionPrototypes
     XiePhotoElement *	/* element */,
     XiePhototag		/* src */,
+    unsigned int	/* levels */,
+    double		/* bias */,
     XieConstant		/* coefficients */
+#endif
+);
+
+extern void XieFloBandSelect (
+#if NeedFunctionPrototypes
+    XiePhotoElement *	/* element */,
+    XiePhototag		/* src */,
+    unsigned int	/* band_number */
 #endif
 );
 
@@ -1209,7 +1266,7 @@ extern void XieFloBlend (
     XiePhototag		/* src2 */,
     XieConstant		/* src_constant */,
     XiePhototag		/* alpha */,
-    double              /* alpha_constant */,
+    double		/* alpha_const */,
     XieProcessDomain *	/* domain */,
     unsigned int	/* band_mask */
 #endif
@@ -1295,6 +1352,7 @@ extern void XieFloDither (
 #if NeedFunctionPrototypes
     XiePhotoElement *		/* element */,
     XiePhototag			/* src */,
+    unsigned int		/* band_mask */,
     XieLevels			/* levels */,
     XieDitherTechnique		/* dither_tech */,
     char *			/* dither_param */
@@ -1503,17 +1561,21 @@ extern XieRGBToCIEXYZParam *XieTecRGBToCIEXYZ (
 
 extern XieRGBToYCbCrParam *XieTecRGBToYCbCr (
 #if NeedFunctionPrototypes
+    XieLevels		/* levels */,
     double		/* luma_red */,
     double		/* luma_green */,
-    double		/* luma_blue */
+    double		/* luma_blue */,
+    XieConstant		/* bias */
 #endif
 );
 
 extern XieRGBToYCCParam *XieTecRGBToYCC (
 #if NeedFunctionPrototypes
+    XieLevels		/* levels */,
     double		/* luma_red */,
     double		/* luma_green */,
-    double		/* luma_blue */
+    double		/* luma_blue */,
+    double		/* scale */
 #endif
 );
 
@@ -1539,17 +1601,25 @@ extern XieCIEXYZToRGBParam *XieTecCIEXYZToRGB (
 
 extern XieYCbCrToRGBParam *XieTecYCbCrToRGB (
 #if NeedFunctionPrototypes
+    XieLevels		/* levels */,
     double		/* luma_red */,
     double		/* luma_green */,
-    double		/* luma_blue */
+    double		/* luma_blue */,
+    XieConstant		/* bias */,
+    XieGamutTechnique	/* gamut_tech */,
+    char *		/* gamut_param */
 #endif
 );
 
 extern XieYCCToRGBParam *XieTecYCCToRGB (
 #if NeedFunctionPrototypes
+    XieLevels		/* levels */,
     double		/* luma_red */,
     double		/* luma_green */,
-    double		/* luma_blue */
+    double		/* luma_blue */,
+    double		/* scale */,
+    XieGamutTechnique	/* gamut_tech */,
+    char *		/* gamut_param */
 #endif
 );
 
@@ -1593,28 +1663,32 @@ extern XieDecodeUncompressedTripleParam *XieTecDecodeUncompressedTriple (
 extern XieDecodeG31DParam *XieTecDecodeG31D (
 #if NeedFunctionPrototypes
     XieOrientation	/* encoded_order */,
-    Bool		/* normal */
+    Bool		/* normal */,
+    Bool		/* radiometric */
 #endif
 );
 
 extern XieDecodeG32DParam *XieTecDecodeG32D (
 #if NeedFunctionPrototypes
     XieOrientation	/* encoded_order */,
-    Bool		/* normal */
+    Bool		/* normal */,
+    Bool		/* radiometric */
 #endif
 );
 
 extern XieDecodeG42DParam *XieTecDecodeG42D (
 #if NeedFunctionPrototypes
     XieOrientation	/* encoded_order */,
-    Bool		/* normal */
+    Bool		/* normal */,
+    Bool		/* radiometric */
 #endif
 );
 
 extern XieDecodeTIFF2Param *XieTecDecodeTIFF2 (
 #if NeedFunctionPrototypes
     XieOrientation	/* encoded_order */,
-    Bool		/* normal */
+    Bool		/* normal */,
+    Bool		/* radiometric */
 #endif
 );
 
@@ -1654,7 +1728,7 @@ extern XieEncodeUncompressedSingleParam *XieTecEncodeUncompressedSingle (
 #endif
 );
 
-extern XieEncodeuncompressedTripleParam *XieTecEncodeuncompressedTriple (
+extern XieEncodeUncompressedTripleParam *XieTecEncodeUncompressedTriple (
 #if NeedFunctionPrototypes
     XieOrientation	/* fill_order */,
     XieOrientation	/* pixel_order */,
@@ -1668,6 +1742,7 @@ extern XieEncodeuncompressedTripleParam *XieTecEncodeuncompressedTriple (
 extern XieEncodeG31DParam *XieTecEncodeG31D (
 #if NeedFunctionPrototypes
     Bool		/* align_eol */,
+    Bool		/* radiometric */,
     XieOrientation	/* encoded_order */
 #endif
 );
@@ -1676,6 +1751,7 @@ extern XieEncodeG32DParam *XieTecEncodeG32D (
 #if NeedFunctionPrototypes
     Bool		/* uncompressed */,
     Bool		/* align_eol */,
+    Bool		/* radiometric */,
     XieOrientation	/* encoded_order */,
     unsigned long	/* k_factor */
 #endif
@@ -1684,6 +1760,7 @@ extern XieEncodeG32DParam *XieTecEncodeG32D (
 extern XieEncodeG42DParam *XieTecEncodeG42D (
 #if NeedFunctionPrototypes
     Bool		/* uncompressed */,
+    Bool		/* radiometric */,
     XieOrientation	/* encoded_order */
 #endif
 );
@@ -1723,9 +1800,16 @@ extern void XieFreeEncodeJPEGLossless (
 #endif
 );
 
+extern void XieFreePasteUpTiles (
+#if NeedFunctionPrototypes
+    XiePhotoElement *	/* element */
+#endif
+);
+
 extern XieEncodeTIFF2Param *XieTecEncodeTIFF2 (
 #if NeedFunctionPrototypes
-    XieOrientation	/* encoded_order */
+    XieOrientation	/* encoded_order */,
+    Bool		/* radiometric */
 #endif
 );
 
@@ -1765,7 +1849,7 @@ extern XieGeomNearestNeighborParam *XieTecGeomNearestNeighbor (
 extern XieHistogramGaussianParam *XieTecHistogramGaussian (
 #if NeedFunctionPrototypes
     double		/* mean */,
-    double		/* variance */
+    double		/* sigma */
 #endif
 );
 

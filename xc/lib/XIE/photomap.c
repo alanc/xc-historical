@@ -1,4 +1,4 @@
-/* $XConsortium: photomap.c,v 1.1 93/07/19 11:39:29 mor Exp $ */
+/* $XConsortium: photomap.c,v 1.2 93/07/26 19:03:42 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -124,9 +124,9 @@ XieLTriplet     	levels_ret;
     height_ret[0]         = rep.height0;
     height_ret[1]         = rep.height1;
     height_ret[2]         = rep.height2;
-    levels_ret[0]         = rep.level0;
-    levels_ret[1]         = rep.level1;
-    levels_ret[2]         = rep.level2;
+    levels_ret[0]         = rep.levels0;
+    levels_ret[1]         = rep.levels1;
+    levels_ret[2]         = rep.levels2;
 
     UnlockDisplay (display);
     SYNC_HANDLE (display);

@@ -1,5 +1,4 @@
-/* $XConsortium: elements.c,v 1.1 93/07/19 11:39:17 mor Exp $ */
-
+/* $XConsortium: elements.c,v 1.1 93/10/26 09:42:17 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
 
@@ -84,6 +83,10 @@ int		elem_count;
 
 	case xieElemBandExtract:
 	    size += SIZEOF (xieFloBandExtract);
+	    break;
+
+	case xieElemBandSelect:
+	    size += SIZEOF (xieFloBandSelect);
 	    break;
 
 	case xieElemBlend:
@@ -245,9 +248,9 @@ XiePhotoElement	*elemSrc;
     elemDest->length0	= elemSrc->data.ImportClientLUT.length[0];
     elemDest->length1	= elemSrc->data.ImportClientLUT.length[1];
     elemDest->length2	= elemSrc->data.ImportClientLUT.length[2];
-    elemDest->level0	= elemSrc->data.ImportClientLUT.levels[0];
-    elemDest->level1	= elemSrc->data.ImportClientLUT.levels[1];
-    elemDest->level2	= elemSrc->data.ImportClientLUT.levels[2];
+    elemDest->levels0	= elemSrc->data.ImportClientLUT.levels[0];
+    elemDest->levels1	= elemSrc->data.ImportClientLUT.levels[1];
+    elemDest->levels2	= elemSrc->data.ImportClientLUT.levels[2];
 
     END_ELEM_HEAD (ImportClientLUT, *bufDest, elemDest);
 }
@@ -278,9 +281,9 @@ XiePhotoElement	*elemSrc;
     elemDest->height0		= elemSrc->data.ImportClientPhoto.height[0];
     elemDest->height1		= elemSrc->data.ImportClientPhoto.height[1];
     elemDest->height2		= elemSrc->data.ImportClientPhoto.height[2];
-    elemDest->level0		= elemSrc->data.ImportClientPhoto.levels[0];
-    elemDest->level1		= elemSrc->data.ImportClientPhoto.levels[1];
-    elemDest->level2		= elemSrc->data.ImportClientPhoto.levels[2];
+    elemDest->levels0		= elemSrc->data.ImportClientPhoto.levels[0];
+    elemDest->levels1		= elemSrc->data.ImportClientPhoto.levels[1];
+    elemDest->levels2		= elemSrc->data.ImportClientPhoto.levels[2];
     elemDest->decodeTechnique	= elemSrc->data.ImportClientPhoto.decode_tech;
     elemDest->lenParams		= techLen;
 
@@ -479,6 +482,9 @@ XiePhotoElement	*elemSrc;
 	LENOF (xieFloBandExtract), *bufDest, elemDest);
 
     elemDest->src	= elemSrc->data.BandExtract.src;
+    elemDest->levels	= elemSrc->data.BandExtract.levels;
+    elemDest->bias	= 
+	_XieConvertToIEEE (elemSrc->data.BandExtract.bias);
     elemDest->constant0	= 
 	_XieConvertToIEEE (elemSrc->data.BandExtract.coefficients[0]);
     elemDest->constant1	= 
@@ -486,6 +492,24 @@ XiePhotoElement	*elemSrc;
     elemDest->constant2	= 
 	_XieConvertToIEEE (elemSrc->data.BandExtract.coefficients[2]);
     END_ELEM_HEAD (BandExtract, *bufDest, elemDest);
+}
+
+void
+_XieElemBandSelect (bufDest, elemSrc)
+
+char		**bufDest;
+XiePhotoElement	*elemSrc;
+
+{
+    xieFloBandSelect	*elemDest;
+
+    BEGIN_ELEM_HEAD (BandSelect, elemSrc,
+	LENOF (xieFloBandSelect), *bufDest, elemDest);
+
+    elemDest->src	= elemSrc->data.BandSelect.src;
+    elemDest->bandNumber= elemSrc->data.BandSelect.band_number;
+
+    END_ELEM_HEAD (BandSelect, *bufDest, elemDest);
 }
 
 
@@ -570,9 +594,9 @@ XiePhotoElement	*elemSrc;
 	LENOF (xieFloConstrain) + techLen, *bufDest, elemDest);
 
     elemDest->src	= elemSrc->data.Constrain.src;
-    elemDest->level0	= elemSrc->data.Constrain.levels[0];
-    elemDest->level1 	= elemSrc->data.Constrain.levels[1];
-    elemDest->level2 	= elemSrc->data.Constrain.levels[2];
+    elemDest->levels0	= elemSrc->data.Constrain.levels[0];
+    elemDest->levels1 	= elemSrc->data.Constrain.levels[1];
+    elemDest->levels2 	= elemSrc->data.Constrain.levels[2];
     elemDest->constrain = elemSrc->data.Constrain.constrain_tech;
     elemDest->lenParams = techLen;
 
@@ -776,9 +800,10 @@ XiePhotoElement	*elemSrc;
 	LENOF (xieFloDither) + techLen, *bufDest, elemDest);
 
     elemDest->src 	= elemSrc->data.Dither.src;
-    elemDest->level0 	= elemSrc->data.Dither.levels[0];
-    elemDest->level1 	= elemSrc->data.Dither.levels[1];
-    elemDest->level2 	= elemSrc->data.Dither.levels[2];
+    elemDest->bandMask 	= elemSrc->data.Dither.band_mask;
+    elemDest->levels0 	= elemSrc->data.Dither.levels[0];
+    elemDest->levels1 	= elemSrc->data.Dither.levels[1];
+    elemDest->levels2 	= elemSrc->data.Dither.levels[2];
     elemDest->dither 	= elemSrc->data.Dither.dither_tech;
     elemDest->lenParams = techLen;
 

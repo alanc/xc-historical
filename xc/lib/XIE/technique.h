@@ -1,4 +1,4 @@
-/* $XConsortium: technique.h,v 1.1 93/07/19 11:39:33 mor Exp $ */
+/* $XConsortium: technique.h,v 1.2 93/09/23 11:43:41 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -66,13 +66,8 @@ typedef struct {
 
 
 #define _XieRGBToCIEXYZParam         _XieRGBToCIELabParam
-#define _XieRGBToYCCParam            _XieRGBToYCbCrParam
-#define _XieYCbCrToRGBParam          _XieRGBToYCbCrParam
-#define _XieYCCToRGBParam            _XieRGBToYCbCrParam
 #define _XieCIEXYZToRGBParam         _XieCIELabToRGBParam
 #define _XieDecodeG32DParam          _XieDecodeG31DParam
 #define _XieDecodeG42DParam          _XieDecodeG31DParam
 #define _XieDecodeTIFF2Param         _XieDecodeG31DParam
-#define _XieDecodeTIFFPackBitsParam  _XieDecodeG31DParam
 #define _XieDecodeJPEGLosslessParam  _XieDecodeJPEGBaselineParam
-#define _XieEncodeTIFFPackBitsParam  _XieEncodeTIFF2Param

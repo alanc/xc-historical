@@ -1,4 +1,4 @@
-/* $XConsortium: init.c,v 1.3 93/08/20 10:06:26 mor Exp $ */
+/* $XConsortium: init.c,v 1.4 93/09/23 11:43:37 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -267,6 +267,7 @@ XExtCodes	*codes;
 	return (0);
     else
     {
+	Xfree ((char *) xieExtInfo->extInfo->cnst_levels);
 	Xfree ((char *) xieExtInfo->extInfo);
 	Xfree ((char *) xieExtInfo);
 	return (1);
