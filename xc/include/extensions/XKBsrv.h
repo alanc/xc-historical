@@ -444,6 +444,45 @@ extern	int SProcXkbDispatch(
 #endif
 );
 
+#ifdef XKMFORMAT_H
+
+extern Bool	XkmReadTOC(
+#if NeedFunctionPrototypes
+    FILE *              /* file */,
+    XkbDescPtr          /* xkb */,
+    xkmFileInfo *       /* file_info */,
+    int                 /* max_toc */,
+    xkmSectionInfo *    /* toc */
+#endif
+);
+
+extern xkmSectionInfo *XkmFindTOCEntry(
+#if NeedFunctionPrototypes
+    xkmFileInfo *       /* finfo */,
+    xkmSectionInfo *    /* toc */,
+    unsigned            /* type */
+#endif
+);
+
+extern Bool	XkmReadFileSection(
+#if NeedFunctionPrototypes
+    FILE *              /* file */,
+    xkmSectionInfo *    /* toc */,
+    DeviceIntRec *      /* dev */,
+    unsigned *          /* loaded_rtrn */
+#endif
+);
+
+extern	Bool XkmReadFile(
+#if NeedFunctionPrototypes
+    FILE *              /* file */,
+    unsigned            /* type */,
+    DeviceIntRec *      /* dev */,
+    unsigned *          /* loaded_rtrn */
+#endif
+);
+#endif /* XKMFORMAT_H */
+
 _XFUNCPROTOEND
 
 	/*
