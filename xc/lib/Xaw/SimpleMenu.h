@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpMenu.h,v 1.5 89/07/06 16:53:14 kit Exp $";
+ "$XConsortium: SimpMenu.h,v 1.6 89/07/07 16:09:42 converse Exp $";
 
                         All Rights Reserved
 

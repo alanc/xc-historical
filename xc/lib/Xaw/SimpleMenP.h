@@ -1,6 +1,6 @@
 /***********************************************************
 
- "$XConsortium: SimpMenuP.h,v 1.4 89/07/06 16:53:15 kit Exp $";
+ "$XConsortium: SimpMenuP.h,v 1.5 89/07/07 16:08:37 converse Exp $";
 
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
@@ -38,7 +38,7 @@ SOFTWARE.
 #ifndef _SimpleMenuP_h
 #define _SimpleMenuP_h
 
-#include <X11/Xaw/SimpMenu.h>
+#include <X11/Xaw/SimpleMenu.h>
 #include <X11/ShellP.h>
 
 #define NO_ENTRY -1
