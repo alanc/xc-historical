@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.34 90/06/05 14:56:53 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.35 90/06/06 11:47:57 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.34 90/06/05 14:56:53 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.35 90/06/06 11:47:57 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -394,18 +394,12 @@ ScrollBarOn (xw, init, doalloc)
 
 	ScrollBarDrawThumb(screen->scrollWidget);
 	DoResizeScreen (xw);
-	XCopyArea(screen->display, XtWindow(xw), XtWindow(xw),
-		  screen->normalGC,
-		  xw->screen.border, xw->screen.border,
-		  (unsigned) (xw->core.width - screen->scrollbar),
-		  (unsigned) xw->core.height,
-		  xw->screen.border + screen->scrollbar,
-		  xw->screen.border);
-	XClearArea(screen->display, XtWindow(xw),
-		   xw->screen.border, xw->screen.border,
-		   screen->scrollbar, xw->core.height, False);
 	XtMapWidget(screen->scrollWidget);
 	update_scrollbar ();
+	if (screen->buf) {
+	    XClearWindow (screen->display, XtWindow (term));
+	    Redraw ();
+	}
 }
 
 ScrollBarOff(screen)
@@ -414,17 +408,13 @@ ScrollBarOff(screen)
 	if(!screen->scrollbar)
 		return;
 	XtUnmapWidget(screen->scrollWidget);
-	XCopyArea(screen->display, XtWindow(term), XtWindow(term),
-		  screen->normalGC,
-		  term->screen.border + screen->scrollbar,
-		  term->screen.border,
-		  (unsigned) (term->core.width - screen->scrollbar),
-		  (unsigned) term->core.height,
-		  term->screen.border,
-		  term->screen.border);
 	screen->scrollbar = 0;
 	DoResizeScreen (term);
 	update_scrollbar ();
+	if (screen->buf) {
+	    XClearWindow (screen->display, XtWindow (term));
+	    Redraw ();
+	}
 }
 
 /*ARGSUSED*/
