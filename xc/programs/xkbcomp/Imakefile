@@ -1,3 +1,5 @@
+XCOMM $XConsortium$
+
 #define IHaveSubdirs
 #define PassCDebugFlags
 

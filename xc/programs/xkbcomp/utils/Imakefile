@@ -1,3 +1,5 @@
+XCOMM $XConsortium$
+
             SRCS = storage.c hash.c strtbl.c utils.c
             OBJS = storage.o hash.o strtbl.o utils.o
         INCLUDES = -I.
