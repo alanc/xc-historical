@@ -1,5 +1,5 @@
 /*
-* $Header: ShellP.h,v 1.13 88/02/23 09:01:40 swick Exp $
+* $Header: ShellP.h,v 1.14 88/02/26 12:47:17 swick Exp $
 */
 
 /***********************************************************
@@ -73,7 +73,6 @@ typedef struct {
 	Boolean	    spring_loaded;
 	Boolean	    popped_up;
 	Boolean	    allow_shell_resize;
-	Boolean	    client_specified;
 	Boolean	    save_under;
 	Boolean	    override_redirect;
 
