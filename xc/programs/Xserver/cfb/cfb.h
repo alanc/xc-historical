@@ -58,10 +58,12 @@ extern void miPolyFillRect();
 extern void cfbPolyFillRect();
 extern void miPolyFillArc();
 extern void cfbZeroPolyArcSS8Copy();
-
-extern void cfbLineSS(), cfbDashLine();
+extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
+extern RegionPtr cfbCopyPlane();
+extern void cfbPolyFillArcSolidCopy();
 extern RegionPtr cfbCopyArea();
 
+extern void cfbPushPixels8();
 extern void cfbSetSpans();
 extern void cfbGetSpans();
 extern void cfbSolidFS();
@@ -80,6 +82,7 @@ extern void cfbRestoreAreas();
 
 /* included from mfb.h; we can't include mfb.h directly because of other 
  * conflicts */
+extern void mfbPushPixels();
 extern void mfbSetSpans();
 extern void mfbGetSpans();
 extern void mfbUnnaturalTileFS();
