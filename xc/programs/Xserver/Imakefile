@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.155 93/08/07 15:33:26 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.156 93/08/08 13:20:14 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -43,15 +43,7 @@ XCOMM $XConsortium: Imakefile,v 1.155 93/08/07 15:33:26 rws Exp $
       XIEEXT =  $(EXTENSIONSRC)/server/xie/dixie/libdixie.a \
 		$(EXTENSIONSRC)/server/xie/ddxie/mi/libddxie.a 
 #endif
-#if BuildXTrapExt
-       XTRAPEXT = $(EXTENSIONSRC)/server/xtrap/libxtrapext.a
-#endif
-#if BuildXvExt
-       XVSRC = $(EXTENSIONSRC)/xv/server
-       XVEXT = $(EXTENSIONSRC)/xv/server/libxv.a
-#endif
-      OTHEREXTS = $(XINPUTEXT) $(XIEEXT) $(XTRAPEXT) $(XVEXT)
-      OTHERDEPDIRS = $(XVSRC)
+      OTHEREXTS = $(XINPUTEXT) $(XIEEXT)
 
         DEPDIRS = $(FONTSRC)/lib/font $(EXTENSIONSRC)/server $(OTHERDEPDIRS)
      NONPEXEXTS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a
@@ -69,12 +61,12 @@ XCOMM $XConsortium: Imakefile,v 1.155 93/08/07 15:33:26 rws Exp $
             DIX = dix/libdix.a
            FONT = $(FONTSRC)/lib/font/libfont.a
 #if SystemV4 && X386Server
-        SYSLIBS = -lm /usr/ucblib/libucb.a
+        SYSLIBS = MathLibrary /usr/ucblib/libucb.a
 #else
 #if XirisServer || XhpServer || SystemV4 || defined(BSD386Architecture)
-        SYSLIBS = -lm
+        SYSLIBS = MathLibrary
 #else
-        SYSLIBS = -lm -ldbm
+        SYSLIBS = MathLibrary DBMLibrary
 #endif
 #endif
            CBRT = ddx/mi/cbrt.o
@@ -230,14 +222,10 @@ ServerTarget(Xqvss,$(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 XCOMM
 XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
 XCOMM
-#if BuildXvExt
-XVSUBDIRS = ddx/dec/tx $(XVSRC)/ddx/decrop
-XVLIBS = ddx/dec/tx/libtx.a $(XVSRC)/ddx/decrop/libdecrop.a
-#endif
-SUBDIRS0 = CFBSubdirs ddx/dec/ws $(XVSUBDIRS)
+SUBDIRS0 = CFBSubdirs ddx/dec/ws
 DECDIRS = $(SUBDIRS0) $(DEPDIRS)
 DECOBJS = ddx/dec/ws/init.o
-DECLIBS = ddx/dec/ws/libdec.a $(XVLIBS) CFBLibs
+DECLIBS = ddx/dec/ws/libdec.a CFBLibs
 
 ServerTarget(Xdec,$(DECDIRS),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
 #endif /* XdecServer */
@@ -278,16 +266,13 @@ ServerTarget(Xcfbpmax,$(PMAXCFBDIRS),$(PMAXCFBOBJS),$(PMAXCFBLIBS),$(SYSLIBS))
 XCOMM
 XCOMM Sun server
 XCOMM
-#if UseSunWindowsInServer
-SUNWINDOWSLIBS = -lsunwindow -lpixrect
-#endif
 SUBDIRS0 = MFBSubdirs
 SUBDIRS1 = ddx/cfb
 SUBDIRS2 = ddx/sun
 SUNDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
 SUNOBJS = ddx/sun/sunInit.o
 SUNLIBS = ddx/sun/libsun.a CFB8Libs
-SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
+SUNSYSLIBS = $(SYSLIBS)
 
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #else
@@ -295,20 +280,13 @@ ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 XCOMM
 XCOMM Sun server
 XCOMM
-#if UseSunWindowsInServer
-SUNWINDOWSLIBS = -lsunwindow -lpixrect
-#endif
-#if BuildXvExt
-XVSUBDIRS = $(XVSRC)/ddx/sunrop
-XVLIBS = $(XVSRC)/ddx/sunrop/libsunrop.a
-#endif
 SUBDIRS0 = MFBSubdirs
-SUBDIRS1 = ddx/cfb ddx/cfb16 ddx/cfb32 $(XVSUBDIRS)
+SUBDIRS1 = ddx/cfb ddx/cfb16 ddx/cfb32
 SUBDIRS2 = ddx/sun
 SUNDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
 SUNOBJS = ddx/sun/sunInit.o
-SUNLIBS = ddx/sun/libsun.a CFBLibs $(XVLIBS)
-SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
+SUNLIBS = ddx/sun/libsun.a CFBLibs
+SUNSYSLIBS = $(SYSLIBS)
 
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #endif /* Xsun24Server */
@@ -318,15 +296,12 @@ ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 XCOMM
 XCOMM Sun monochrome server
 XCOMM
-#if UseSunWindowsInServer
-SUNWINDOWSLIBS = -lsunwindow -lpixrect
-#endif
 SUBDIRS0 = MFBSubdirs
 SUBDIRS2 = ddx/sun
 SUNMDIRS = $(SUBDIRS0) $(SUBDIRS2) $(DEPDIRS)
 SUNMOBJS = ddx/sun/sunInitMono.o ddx/sun/sunInitExtMono.o
 SUNMLIBS = ddx/sun/libsun.a MFBBareLibs $(NONPEXEXTS)
-SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
+SUNSYSLIBS = $(SYSLIBS)
 
 ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SUNSYSLIBS))
 #endif /* XsunMonoServer */
