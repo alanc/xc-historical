@@ -30,49 +30,49 @@ or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-bitmap	Bitmap	Pixmap	None
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-callback	Callback	XtCallbackList	NULL
-colormap	Colormap	Pointer	Parent's Colormap
-cornerRoundPercent	CornerRoundPercent	Dimension	25
-cursor	Cursor	Cursor	None
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-font	Font	XFontStruct	XtDefaultFont
-foreground	Foreground	Pixel	XtDefaultForeground
-height	Height	Dimension	Font height + 2 * \fBinternalHeight\fP
-highlightThickness	Thickness	Dimension 	2 (0 if Shaped)
-insensitiveBorder	Insensitive	Pixmap	GreyPixmap
-internalHeight	Height	Dimension	2
-internalWidth	Width	Dimension	4
-justify	Justify	Justify	XtJustifyCenter (center)
-label	Label	String	NULL (name of widget)
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-menuName	MenuName	String	"menu"	
-resize	Resize	Boolean	True
-screen	Screen	Pointer	Parent's Screen
-sensitive	Sensitive	Boolean	True
-shapeStype	ShapeStyle	ShapeStyle	Rectangle
-translations	Translations	TranslationTable	See below
-width	Width	Dimension	\fBlabel\fP Width + 2 * \fBinternalWidth\fP
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable		NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+bitmap	Bitmap	Pixmap		None
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+callback	Callback	XtCallbackList		NULL
+colormap	Colormap	Pointer	Parent's 	Colormap
+cornerRoundPercent	CornerRoundPercent	Dimension		25
+cursor	Cursor	Cursor		None
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList		NULL
+font	Font	XFontStruct		XtDefaultFont
+foreground	Foreground	Pixel		XtDefaultForeground
+height	Height	Dimension	A	Font height + 2 * \fBinternalHeight\fP
+highlightThickness	Thickness	Dimension	 	2 (0 if Shaped)
+insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+internalHeight	Height	Dimension		2
+internalWidth	Width	Dimension		4
+justify	Justify	Justify		XtJustifyCenter (center)
+label	Label	String		name of widget
+mappedWhenManaged	MappedWhenManaged	Boolean		True
+menuName	MenuName	String	"menu"		
+resize	Resize	Boolean		True
+screen	Screen	Pointer	R	Parent's Screen
+sensitive	Sensitive	Boolean		True
+shapeStype	ShapeStyle	ShapeStyle		Rectangle
+translations	Translations	TranslationTable		See below
+width	Width	Dimension	A	\fBlabel\fP width + 2 * \fBinternalWidth\fP
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
