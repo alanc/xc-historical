@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.8 93/09/13 20:30:34 mor Exp $ */
+/* $XConsortium: process.c,v 1.9 93/09/22 11:17:02 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -123,7 +123,8 @@ IceReplyWaitInfo *replyWait;
     if (iceConn->swap)
     {
 	/* swap the length field */
-	;
+
+	header->length = lswapl (header->length);
     }
 
     iceConn->sequence++;
@@ -397,6 +398,12 @@ IceReplyWaitInfo *replyWait;
     IceReadCompleteMessage (iceConn,
 	SIZEOF (iceErrorMsg), iceErrorMsg, message, pData);
 
+    if (swap)
+    {
+	message->errorClass = lswaps (message->errorClass);
+	message->offendingSequenceNum = lswapl (message->offendingSequenceNum);
+    }
+
     if (!replyWait ||
 	message->offendingSequenceNum != replyWait->sequence_of_request)
     {
@@ -435,7 +442,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceAuthRejected:
 
 		prefix = "Authentication Rejected, reason : ";
-		EXTRACT_XPCS (pData, temp);
+		EXTRACT_XPCS (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -445,7 +452,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceAuthFailed:
 
 		prefix = "Authentication Failed, reason : ";
-		EXTRACT_XPCS (pData, temp);
+		EXTRACT_XPCS (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -490,7 +497,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceAuthRejected:
 
 		prefix = "Authentication Rejected, reason : ";
-		EXTRACT_XPCS (pData, temp);
+		EXTRACT_XPCS (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -500,7 +507,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceAuthFailed:
 
 		prefix = "Authentication Failed, reason : ";
-		EXTRACT_XPCS (pData, temp);
+		EXTRACT_XPCS (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -510,7 +517,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceProtocolDuplicate:
 
 		prefix = "Protocol was already registered : ";
-		EXTRACT_XPCS (pData, temp);
+		EXTRACT_XPCS (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -527,7 +534,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceUnknownProtocol:
 
 		prefix = "Unknown Protocol : ";
-		EXTRACT_XPCS (pData, temp);
+		EXTRACT_XPCS (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -558,7 +565,8 @@ IceReplyWaitInfo *replyWait;
 		    iceConn->connect_to_you->my_auth_index].auth_proc;
 
 		(*authProc) (&iceConn->connect_to_you->my_auth_state,
-		    1 /* clean up */, 0, NULL, NULL, NULL, NULL);
+		    True /* clean up */, False /* swap */,
+		    0, NULL, NULL, NULL, NULL);
 	    }
 	    else if (iceConn->protosetup_to_you &&
 		iceConn->protosetup_to_you->auth_active)
@@ -570,14 +578,15 @@ IceReplyWaitInfo *replyWait;
 		    protosetup_to_you->my_auth_index].auth_proc;
 
 		(*authProc) (&iceConn->protosetup_to_you->my_auth_state,
-		    1 /* clean up */, 0, NULL, NULL, NULL, NULL);
+		    True /* clean up */, False /* swap */,
+		    0, NULL, NULL, NULL, NULL);
 	    }
 	}
     }
 
     if (invokeHandler)
     {
-	(*_IceErrorHandler) (iceConn, message->offendingMinorOpcode,
+	(*_IceErrorHandler) (iceConn, swap, message->offendingMinorOpcode,
 	    message->offendingSequenceNum, message->errorClass,
 	    message->severity, (IcePointer) pData);
     }
@@ -609,13 +618,13 @@ Bool			swap;
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
 	iceConnectionSetupMsg, message, pData);
 
-    EXTRACT_XPCS (pData, vendor);
-    EXTRACT_XPCS (pData, release);
+    EXTRACT_XPCS (pData, swap, vendor);
+    EXTRACT_XPCS (pData, swap, release);
 
     if ((hisAuthCount = message->authCount) > 0)
     {
 	hisAuthNames = (char **) malloc (hisAuthCount * sizeof (char *));
-	EXTRACT_LISTOF_XPCS (pData, hisAuthCount, hisAuthNames);
+	EXTRACT_LISTOF_XPCS (pData, swap, hisAuthCount, hisAuthNames);
     }
 
     hisVersionCount = message->versionCount;
@@ -705,7 +714,7 @@ Bool			swap;
 
 	    authState = NULL;
 
-	    status = (*authProc) (&authState, 0, NULL,
+	    status = (*authProc) (&authState, swap, 0, NULL,
 		&authDataLen, &authData, &errorString);
 
 	    if (status == IceACLauthContinue)
@@ -847,8 +856,8 @@ IceReplyWaitInfo	*replyWait;
     authState = NULL;
     authDataLen = message->length << 3;
 
-    status = (*authProc) (&authState, 0 /* don't clean up */,
-	authDataLen, authData, &replyDataLen, &replyData, &errorString);
+    status = (*authProc) (&authState, False /* don't clean up */,
+	swap, authDataLen, authData, &replyDataLen, &replyData, &errorString);
 
     if (status == IceOCLauthHaveReply)
     {
@@ -942,7 +951,7 @@ Bool		swap;
 	IceACLauthProc authProc = _IceACLauthRecs[
 	    iceConn->connect_to_me->my_auth_index].auth_proc;
 	IceACLauthStatus status =
-	    (*authProc) (&iceConn->connect_to_me->my_auth_state,
+	    (*authProc) (&iceConn->connect_to_me->my_auth_state, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 
 	if (status == IceACLauthContinue)
@@ -988,7 +997,7 @@ Bool		swap;
 	IceACLauthProc authProc = myProtocol->auth_recs[
 	    iceConn->protosetup_to_me->my_auth_index].auth_proc;
 	IceACLauthStatus status =
-	    (*authProc) (&iceConn->protosetup_to_me->my_auth_state,
+	    (*authProc) (&iceConn->protosetup_to_me->my_auth_state, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 	int free_setup_info = 1;
 
@@ -1141,8 +1150,8 @@ IceReplyWaitInfo	*replyWait;
 
     authDataLen = message->length << 3;
 
-    status = (*authProc) (authState, 0 /* don't clean up */,
-	authDataLen, authData, &replyDataLen, &replyData, &errorString);
+    status = (*authProc) (authState, False /* don't clean up */,
+	swap, authDataLen, authData, &replyDataLen, &replyData, &errorString);
 
     if (status == IceOCLauthHaveReply)
     {
@@ -1229,7 +1238,7 @@ IceReplyWaitInfo 	*replyWait;
 		iceConn->connect_to_you->my_auth_index].auth_proc;
 
 	    (*authProc) (&iceConn->connect_to_you->my_auth_state,
-		1 /* clean up */,
+		True /* clean up */, False /* swap */,
 	        0, NULL, NULL, NULL, NULL);
 	}
 
@@ -1241,8 +1250,8 @@ IceReplyWaitInfo 	*replyWait;
 	reply->type = ICE_CONNECTION_REPLY;
         reply->connection_reply.version_index = message->versionIndex;
 
-	EXTRACT_XPCS (pData, reply->connection_reply.vendor);
-	EXTRACT_XPCS (pData, reply->connection_reply.release);
+	EXTRACT_XPCS (pData, swap, reply->connection_reply.vendor);
+	EXTRACT_XPCS (pData, swap, reply->connection_reply.release);
 
 	return (1);
     }
@@ -1302,7 +1311,7 @@ Bool			swap;
 	return;
     }
 
-    EXTRACT_XPCS (pData, protocolName);
+    EXTRACT_XPCS (pData, swap, protocolName);
 
     if (iceConn->process_msg_info)
     {
@@ -1337,13 +1346,13 @@ Bool			swap;
 	return;
     }
 
-    EXTRACT_XPCS (pData, vendor);
-    EXTRACT_XPCS (pData, release);
+    EXTRACT_XPCS (pData, swap, vendor);
+    EXTRACT_XPCS (pData, swap, release);
 
     if ((hisAuthCount = message->authCount) > 0)
     {
 	hisAuthNames = (char **) malloc (hisAuthCount * sizeof (char *));
-	EXTRACT_LISTOF_XPCS (pData, hisAuthCount, hisAuthNames);
+	EXTRACT_LISTOF_XPCS (pData, swap, hisAuthCount, hisAuthNames);
     }
 
     hisVersionCount = message->versionCount;
@@ -1428,7 +1437,7 @@ Bool			swap;
 
 	    authState = NULL;
 
-	    status = (*authProc) (&authState, 0, NULL,
+	    status = (*authProc) (&authState, swap, 0, NULL,
 	        &authDataLen, &authData, &errorString);
 
 	    if (status == IceACLauthContinue)
@@ -1557,7 +1566,7 @@ IceReplyWaitInfo 	*replyWait;
 		iceConn->protosetup_to_you->my_auth_index].auth_proc;
 
 	    (*authProc) (&iceConn->protosetup_to_you->my_auth_state,
-		1 /* clean up */,
+		True /* clean up */, False /* swap */,
 	        0, NULL, NULL, NULL, NULL);
 	}
 
@@ -1570,8 +1579,8 @@ IceReplyWaitInfo 	*replyWait;
 	reply->major_opcode = message->protocolOpcode;
         reply->version_index = message->versionIndex;
 
-	EXTRACT_XPCS (pData, reply->vendor);
-	EXTRACT_XPCS (pData, reply->release);
+	EXTRACT_XPCS (pData, swap, reply->vendor);
+	EXTRACT_XPCS (pData, swap, reply->release);
 
 	return (1);
     }
