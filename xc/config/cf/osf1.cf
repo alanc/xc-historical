@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.46 94/09/26 15:22:45 matt Exp gildea $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.47 95/02/21 21:36:15 gildea Exp gildea $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -95,6 +95,8 @@ XCOMM operating system:  OSName
 #ifndef HasWChar32
 #define HasWChar32		YES
 #endif
+#define ServerExtraDefines	-D_XSERVER64
+#define ServerOSDefines		-DDDXTIME
 #ifndef DefaultCCOptions
 #define DefaultCCOptions	-std1
 #endif
