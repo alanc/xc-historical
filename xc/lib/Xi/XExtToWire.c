@@ -1,4 +1,4 @@
-/* $XConsortium: XExtToWire.c,v 1.3 89/11/11 15:18:30 rws Exp $ */
+/* $XConsortium: XExtToWire.c,v 1.4 89/12/06 20:31:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -295,6 +295,7 @@ XInputEventToWire(dpy, re, event, count)
 		    register deviceKeyStateNotify *kev;
 
 		    sev->classes_reported |= (1 << KeyClass);
+		    sev->num_keys = k->num_keys;
 		    bcopy ( (char *) (k->keys) , (char *) (sev->keys), 4);
 		    if (k->num_keys > 32)
 			{
@@ -314,6 +315,7 @@ XInputEventToWire(dpy, re, event, count)
 		    register deviceButtonStateNotify *bev;
 
 		    sev->classes_reported |= (1 << ButtonClass);
+		    sev->num_buttons = b->num_buttons;
 		    bcopy ( (char *) (b->buttons) , (char *) (sev->buttons), 4);
 		    if (b->num_buttons > 32)
 			{
@@ -334,6 +336,8 @@ XInputEventToWire(dpy, re, event, count)
 		    register deviceValuator *vev;
 
 		    sev->classes_reported |= (1 << ValuatorClass);
+		    sev->num_valuators = val->num_valuators < 3 ?
+					 val->num_valuators : 3;
 		    for (j=0; j<val->num_valuators && j<3; j++)
 			sev->valuators[j] = val->valuators[j];
 		    if (val->num_valuators > 3)

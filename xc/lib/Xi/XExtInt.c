@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.9 89/12/08 18:17:29 converse Exp $ */
+/* $Header: XExtInt.c,v 1.10 89/11/22 15:40:15 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -161,7 +161,7 @@ XInputWireToEvent (dpy, re, event)
     xEvent	nevent;
     unsigned	int	type, reltype;
     unsigned	int	ret = 1;
-    unsigned	int	i;
+    unsigned	int	i,j;
     XExtDisplayInfo 	*info = XInput_find_display (dpy);
     XEvent		*save = (XEvent *) info->data;
 
@@ -293,30 +293,22 @@ XInputWireToEvent (dpy, re, event)
 		{
 	        XDeviceKeyEvent *kev = (XDeviceKeyEvent*) save;
 		kev->device_state = xev->device_state;
-		if (kev->axes_count == 0)
-		    {
-		    kev->axes_count = xev->num_valuators;
-		    kev->first_axis = xev->first_valuator;
-		    }
-		else if (kev->axes_count + xev->num_valuators <= 8)
-		    kev->axes_count += xev->num_valuators;
-		for (i=0; i<xev->num_valuators; i++)
-		    kev->axis_data[xev->first_valuator+i] = xev->valuators[i];
+		kev->axes_count = xev->num_valuators;
+		kev->first_axis = xev->first_valuator;
+		kev->axes_count = xev->num_valuators;
+		for (i=0; i<xev->num_valuators && i<6; i++)
+		    kev->axis_data[i] = xev->valuators[i];
 		}
 	    else if (save_type == XI_DeviceButtonPress ||
 	        save_type == XI_DeviceButtonRelease)
 		{
 	        XDeviceButtonEvent *bev = (XDeviceButtonEvent*) save;
 		bev->device_state = xev->device_state;
-		if (bev->axes_count == 0)
-		    {
-		    bev->axes_count = xev->num_valuators;
-		    bev->first_axis = xev->first_valuator;
-		    }
-		else if (bev->axes_count + xev->num_valuators <= 8)
-		    bev->axes_count += xev->num_valuators;
-		for (i=0; i<xev->num_valuators; i++)
-		    bev->axis_data[xev->first_valuator+i] = xev->valuators[i];
+		bev->axes_count = xev->num_valuators;
+		bev->first_axis = xev->first_valuator;
+		bev->axes_count = xev->num_valuators;
+		for (i=0; i<xev->num_valuators && i<6; i++)
+		    bev->axis_data[i] = xev->valuators[i];
 		for (i=0; i<xev->num_valuators; i++)
 		    bev->axis_data[xev->first_valuator+i] = xev->valuators[i];
 		}
@@ -324,15 +316,11 @@ XInputWireToEvent (dpy, re, event)
 		{
 	        XDeviceMotionEvent *mev = (XDeviceMotionEvent*) save;
 		mev->device_state = xev->device_state;
-		if (mev->axes_count == 0)
-		    {
-		    mev->axes_count = xev->num_valuators;
-		    mev->first_axis = xev->first_valuator;
-		    }
-		else if (mev->axes_count + xev->num_valuators <= 8)
-		    mev->axes_count += xev->num_valuators;
-		for (i=0; i<xev->num_valuators; i++)
-		    mev->axis_data[xev->first_valuator+i] = xev->valuators[i];
+		mev->axes_count = xev->num_valuators;
+		mev->first_axis = xev->first_valuator;
+		mev->axes_count = xev->num_valuators;
+		for (i=0; i<xev->num_valuators && i<6; i++)
+		    mev->axis_data[i] = xev->valuators[i];
 		for (i=0; i<xev->num_valuators; i++)
 		    mev->axis_data[xev->first_valuator+i] = xev->valuators[i];
 		}
@@ -342,15 +330,11 @@ XInputWireToEvent (dpy, re, event)
 	        XProximityNotifyEvent *pev = 
 			(XProximityNotifyEvent*) save;
 		pev->device_state = xev->device_state;
-		if (pev->axes_count == 0)
-		    {
-		    pev->axes_count = xev->num_valuators;
-		    pev->first_axis = xev->first_valuator;
-		    }
-		else if (pev->axes_count + xev->num_valuators <= 8)
-		    pev->axes_count += xev->num_valuators;
-		for (i=0; i<xev->num_valuators; i++)
-		    pev->axis_data[xev->first_valuator+i] = xev->valuators[i];
+		pev->axes_count = xev->num_valuators;
+		pev->first_axis = xev->first_valuator;
+		pev->axes_count = xev->num_valuators;
+		for (i=0; i<xev->num_valuators && i<6; i++)
+		    pev->axis_data[i] = xev->valuators[i];
 		}
 	    else if (save_type == XI_DeviceStateNotify)
 		{
@@ -363,19 +347,16 @@ XInputWireToEvent (dpy, re, event)
 		    if (any->class != ValuatorClass)
 			any = (XInputClass *) ((char *) any + any->length);
 		v = (XValuatorStatus *) any;
-		if (v->num_valuators + xev->num_valuators <= 6)
-		    v->num_valuators += xev->num_valuators;
-		for (i=0; i<xev->num_valuators; i++)
-		    v->valuators[xev->first_valuator+i] = xev->valuators[i];
+		for (i=v->num_valuators,j=0; 
+		     i<6 && j<xev->num_valuators; i++,j++)
+		    {
+		    v->valuators[i] = xev->valuators[j];
+		    }
+		v->num_valuators += xev->num_valuators;
 
 		}
-	    if (xev->deviceid & MORE_EVENTS)
-		return (DONT_ENQUEUE);
-	    else
-		{
-		*re = *save;
-		return (ENQUEUE_EVENT);
-		}
+	    *re = *save;
+	    return (ENQUEUE_EVENT);
 	    break;
 	    }
 	case XI_DeviceFocusIn:
@@ -414,7 +395,7 @@ XInputWireToEvent (dpy, re, event)
 	        register XKeyStatus *kstev = (XKeyStatus *) data;
 	        kstev->class = KeyClass;
 	        kstev->length = sizeof (XKeyStatus);
-	        kstev->num_keys = 32;
+	        kstev->num_keys = sev->num_keys;
 	        bcopy ((char *) &sev->keys[0], (char *) &kstev->keys[0], 4);
 	        data += sizeof (XKeyStatus);
 	        }
@@ -423,7 +404,7 @@ XInputWireToEvent (dpy, re, event)
 	        register XButtonStatus *bev = (XButtonStatus *) data;
 	        bev->class = ButtonClass;
 	        bev->length = sizeof (XButtonStatus);
-	        bev->num_buttons = 32;
+	        bev->num_buttons = sev->num_buttons;
 	        bcopy ((char *) sev->buttons, (char *) bev->buttons, 4);
 	        data += sizeof (XButtonStatus);
 	        }
@@ -432,8 +413,8 @@ XInputWireToEvent (dpy, re, event)
 	        register XValuatorStatus *vev = (XValuatorStatus *) data;
 	        vev->class = ValuatorClass;
 	        vev->length = sizeof (XValuatorStatus);
-	        vev->num_valuators = 3;
-	        for (i=0; i<3; i++)
+	        vev->num_valuators = sev->num_valuators;
+	        for (i=0; i<sev->num_valuators; i++)
 		    vev->valuators[i] = sev->valuators[i];
 	        data += sizeof (XValuatorStatus);
 	        }
