@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.72 91/05/04 13:22:50 converse Exp $ */
+/* $XConsortium: Display.c,v 1.73 91/05/17 16:54:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -34,8 +34,9 @@ extern char* getenv();
 
 static String XtNnoPerDisplay = "noPerDisplay";
 
-void _XtHeapInit();
-void _XtHeapFree();
+extern void _XtHeapInit();
+extern void _XtHeapFree();
+extern XrmDatabase _XtParseNameAndDisplay();
 
 ProcessContext _XtGetProcessContext()
 {
@@ -93,22 +94,6 @@ static void XtDeleteFromAppContext(d, app)
 	}
 }
 
-static void
-ComputeAbbrevLen(string, name, len)
-    String string;		/* the variable */
-    String name;		/* the constant */
-    int *len;			/* the current ambiguous length */
-{
-    int string_len = strlen(string);
-    int name_len = strlen(name);
-    int i;
-
-    for (i=0; i<string_len && i<name_len && *string++ == *name++; i++);
-
-    if (i < name_len && i > *len)
-	*len = i;
-}
-
 
 #if NeedFunctionPrototypes
 Display *XtOpenDisplay(
@@ -132,71 +117,19 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	String *argv;
 #endif
 {
-	char  displayCopy[256];
-	int i;
 	Display *d;
-#ifdef OLDCOLONDISPLAY
-	int squish = -1;
-	Boolean found_display = FALSE;
-#endif
-	int min_display_len = 0;
-	int min_name_len = 0;
+	XrmDatabase db = 0;
 
-	/*
-	   Find the display name and open it
-	   While we are at it we look for name because that is needed 
-	   soon after to do the argument parsing.
-	 */
+	/* parse the command line for name and display */
+	if (! displayName || !applName)
+	    db = _XtParseNameAndDisplay(&displayName, &applName, urlist,
+					num_urs, argc, argv);
 
-	displayCopy[0] = 0;
-
-	for (i = 0; i < num_urs; i++) {
-	    ComputeAbbrevLen(urlist[i].option, "-display", &min_display_len);
-	    ComputeAbbrevLen(urlist[i].option, "-name",    &min_name_len);
-	}
-
-	for(i = 1; i < *argc; i++) {
-	    int len = strlen(argv[i]);
-#ifdef OLDCOLONDISPLAY
-	    if (!found_display && index(argv[i], ':') != NULL) {
-		(void) strncpy(displayCopy, argv[i], sizeof(displayCopy));
-		squish = i;
-		continue;
-	    }
-#endif
-	    if(len > min_display_len && !strncmp("-display", argv[i], len)) {
-		i++;
-		if (i == *argc) break;
-		(void) strncpy(displayCopy, argv[i], sizeof(displayCopy));
-#ifdef OLDCOLONDISPLAY
-		found_display = TRUE;
-#endif
-		continue;
-	    }
-	    if(len > min_name_len && !strncmp("-name", argv[i], len)) {
-		i++;
-		if (i == *argc) break;
-		applName = argv[i];
-		continue;
-	    }
-	}
-
-#ifdef OLDCOLONDISPLAY
-	if(!found_display && squish != -1) {
-	    (*argc)--;
-	    for(i = squish; i < *argc; i++) {
-		argv[i] = argv[i+1];
-	    }
-	}
-#endif
-
-	if (displayName == NULL) displayName = displayCopy;
-	
 	d = XOpenDisplay(displayName);
 
-	if (applName == NULL) {
-	    if ((applName = getenv("RESOURCE_NAME")) == NULL) {
-		if (*argc > 0 && argv[0] != NULL) {
+	if (! applName) {
+	    if (! (applName = getenv("RESOURCE_NAME"))) {
+		if (*argc > 0 && argv[0]) {
 		    char *ptr = rindex(argv[0], '/');
 		    if (ptr) applName = ++ptr;
 		    else applName = argv[0];
@@ -205,10 +138,11 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	    }
 	}
 
-	if (d != NULL) {
+	if (d) {
 	    XtDisplayInitialize(app, d, applName, className,
 		    urlist, num_urs, argc, argv);
 	}
+	if (db) XrmDestroyDatabase(db);
 	return d;
 }
 
