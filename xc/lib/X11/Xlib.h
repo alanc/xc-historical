@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.228 93/09/22 09:32:41 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.229 93/09/27 19:44:01 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1022,7 +1022,10 @@ typedef struct {
     XRectangle      max_logical_extent;
 } XFontSetExtents;
 
-typedef struct _XFontSet *XFontSet;
+typedef void (*XOMProc)();
+
+typedef struct _XOM *XOM;
+typedef struct _XOC *XOC, *XFontSet;
 
 typedef struct {
     char           *chars;
@@ -1037,6 +1040,98 @@ typedef struct {
     int             delta;
     XFontSet        font_set;
 } XwcTextItem;
+
+#define XNRequiredCharSet "requiredCharSet"
+#define XNQueryOrientation "queryOrientation"
+#define XNBaseFontName "baseFontName"
+#define XNMissingCharSet "missingCharSet"
+#define XNDefaultString "defaultString"
+#define XNPostEditCallback "postEditCallback"
+#define XNOrientation "orientation"
+#define XNDirectionalDependentDrawing "directionalDependentDrawing"
+#define XNContextualDrawing "contextualDrawing"
+#define XNFontInfo "fontInfo"
+#define XNWidth "width"
+#define XNDrawingGravity "drawingGravity"
+
+typedef struct {
+    XPointer client_data;
+    XOMProc callback;
+} XOMCallback;
+
+typedef struct {
+    int charset_count;
+    char **charset_list;
+} XOMCharSetList;
+
+typedef short XOMPostEditPosition;
+
+#define XOMPostEditBuffer	1
+#define XOMPostEditLine		2
+#define XOMPostEditWord		3
+#define XOMPostEditChar		4
+
+typedef unsigned short XOMPostEditType;
+
+#define XOMPostEditSubstitution	1
+#define XOMPostEditRetrieval	2
+
+typedef unsigned short XOMPostEditOperation;
+
+#define XOMPostEditLeftEdge	(1L<<0)
+#define XOMPostEditRightEdge	(1L<<1)
+#define XOMPostEditTopEdge	(1L<<2)
+#define XOMPostEditBottomEdge	(1L<<3)
+#define XOMPostEditConcealed	(1L<<4)
+#define XOMPostEditWrapped	(1L<<5)
+
+typedef unsigned long XOMPostEditFeedback;
+
+typedef struct _XOMPostEditText {
+    unsigned short length;
+    XOMPostEditFeedback *feedback;
+    Bool encoding_is_wchar;
+    union {
+	char *mbs;
+	wchar_t *wcs;
+    } string;
+} XOMPostEditText;
+
+typedef struct _XOMPostEditCallbackStruct {
+    XOMPostEditPosition position;
+    XOMPostEditType type;
+    XOMPostEditOperation operation;
+    unsigned short length;
+    XOMPostEditText *text;
+} XOMPostEditCallbackStruct;
+
+typedef enum {
+    XOMOrientation_LTR_TTB,
+    XOMOrientation_RTL_TTB,
+    XOMOrientation_TTB_LTR,
+    XOMOrientation_TTB_RTL,
+    XOMOrientation_Context
+} XOrientation;
+
+typedef struct {
+    int num_orient;
+    XOrientation *orient;	/* Input Text description */
+} XOMOrientation;
+
+typedef struct {
+    int num_font;
+    XFontStruct **font_struct_list;
+    char **font_name_list;
+} XOMFontInfo;
+
+typedef unsigned long XOMDrawingGravity;
+
+#define XOMGravityLeft		(1L<<0)
+#define XOMGravityRight		(1L<<1)
+#define XOMGravityTop		(1L<<2)
+#define XOMGravityBottom	(1L<<3)
+#define XOMGravityConcealed	(1L<<4)
+#define XOMGravityWrapped	(1L<<5)
 
 typedef void (*XIMProc)();
 
@@ -1089,6 +1184,19 @@ typedef struct {
 #define XNFontSet "fontSet"
 #define XNLineSpace "lineSpace"
 #define XNCursor "cursor"
+#define XNDestroyCallback "destroyCallback"
+#define XNPreeditStateNotifyCallback "preeditStateNotifyCallback"
+#define XNQueryExtensionsList "queryExtensionsList"
+#define XNQueryFunctionsList "queryFunctionsList"
+#define XNQueryICAttributesList "queryICAttributesList"
+#define XNStringConversionCallback "stringConversionCallback"
+#define XNStringConversion "stringConversion"
+#define XNResetState "resetState"
+#define XNResetReturn "resetReturn"
+#define XNHotKey "hotKey"
+#define XNHotKeyState "hotKeyState"
+#define XNPreeditState "preeditState"
+#define XNSeparatorofNestedList "separatorofNestedList"
 
 #define XBufferOverflow		-1
 #define XLookupNone		1
@@ -1109,12 +1217,15 @@ typedef struct {
 
 typedef unsigned long XIMFeedback;
 
-#define XIMReverse	1
-#define XIMUnderline	(1<<1) 
-#define XIMHighlight	(1<<2)
-#define XIMPrimary 	(1<<5)
-#define XIMSecondary	(1<<6)
-#define XIMTertiary 	(1<<7)
+#define XIMReverse		1L
+#define XIMUnderline		(1L<<1) 
+#define XIMHighlight		(1L<<2)
+#define XIMPrimary	 	(1L<<5)
+#define XIMSecondary		(1L<<6)
+#define XIMTertiary	 	(1L<<7)
+#define XIMVisibleToForward 	(1L<<8)
+#define XIMVisibleToBackword 	(1L<<9)
+#define XIMVisibleToCenter 	(1L<<10)
 
 typedef struct _XIMText {
     unsigned short length;
@@ -1125,6 +1236,66 @@ typedef struct _XIMText {
 	wchar_t *wide_char;
     } string; 
 } XIMText;
+
+typedef	unsigned long	 XIMPreeditState;
+
+#define	XIMPreeditEnable	1L
+#define	XIMPreeditDisable	(1L<<1)
+
+typedef	struct	_XIMPreeditStateNotifyCallbackStruct {
+    XIMPreeditState state;
+} XIMPreeditStateNotifyCallbackStruct;
+
+typedef	unsigned long	 XIMResetState;
+
+#define	XIMInitialState		1L
+#define	XIMPreserveState	(1L<<1)
+
+typedef	unsigned short	 XIMResetReturn;
+
+#define	XIMReturnPreedit	1
+#define	XIMReturnNULL		0
+
+typedef unsigned long XIMStringConversionFeedback;
+
+#define	XIMStringConversionLeftEdge	(0x00000001)
+#define	XIMStringConversionRightEdge	(0x00000002)
+#define	XIMStringConversionTopEdge	(0x00000004)
+#define	XIMStringConversionBottomEdge	(0x00000008)
+#define	XIMStringConversionConcealed	(0x00000010)
+#define	XIMStringConversionWrapped	(0x00000020)
+
+typedef struct _XIMStringConversionText {
+    unsigned short length;
+    XIMStringConversionFeedback *feedback;
+    Bool encoding_is_wchar; 
+    union {
+	char *mbs;
+	wchar_t *wcs;
+    } string; 
+} XIMStringConversionText;
+
+typedef	unsigned short	XIMStringConversionPosition;
+
+typedef	unsigned short	XIMStringConversionType;
+
+#define	XIMStringConversionBuffer	(0x0001)
+#define	XIMStringConversionLine		(0x0002)
+#define	XIMStringConversionWord		(0x0003)
+#define	XIMStringConversionChar		(0x0004)
+
+typedef	unsigned short	XIMStringConversionOperation;
+
+#define	XIMStringConversionSubstitution	(0x0001)
+#define	XIMStringConversionRetrival	(0x0002)
+
+typedef struct _XIMStringConversionCallbackStruct {
+    XIMStringConversionPosition position;
+    XIMStringConversionType type;
+    XIMStringConversionOperation operation;
+    unsigned short factor;
+    XIMStringConversionText *text;
+} XIMStringConversionCallbackStruct;
 
 typedef struct _XIMPreeditDrawCallbackStruct {
     int caret;		/* Cursor offset within pre-edit string */
@@ -1179,12 +1350,34 @@ typedef struct _XIMHotKeyTriggers {
     XIMHotKeyTrigger	*key;
 } XIMHotKeyTriggers;
 
+typedef	unsigned long	 XIMHotKeyState;
+
+#define	XIMHotKeyStateON	(0x0001L)
+#define	XIMHotKeyStateOFF	(0x0002L)
+
+typedef unsigned char	*XIMExtensions;
+
+typedef struct _XIMExtensionsList {
+    unsigned short	 count_extensions;
+    XIMExtensions	*supported_extensions;
+} XIMExtensionsList;
+
 typedef unsigned char *XIMOptions;
+
+#define	XIMStringConversionCallback	"stringConversionCallback"
+#define	XIMHotKeyOperation		"hotKeyOperation"
 
 typedef struct _XIMOptionsList {
     unsigned short	 count_options;
     XIMOptions		*supported_options;
 } XIMOptionsList;
+
+typedef	char	*XIMICAttributes;
+
+typedef	struct _XIMICAttributesList {
+    unsigned short	 count_icattributes;
+    XIMICAttributes	*supported_icattributes;
+} XIMICAttributesList;
 
 _XFUNCPROTOBEGIN
 
@@ -4049,6 +4242,80 @@ extern char *XSetLocaleModifiers(
 #endif
 );
 
+extern XOM XOpenOM(
+#if NeedFunctionPrototypes
+    Display*			/* display */,
+    struct _XrmHashBucketRec*	/* rdb */,
+    _Xconst char*		/* res_name */,
+    _Xconst char*		/* res_class */
+#endif
+);
+
+extern Status XCloseOM(
+#if NeedFunctionPrototypes
+    XOM			/* om */
+#endif
+);
+
+extern char *XSetOMValues(
+#if NeedVarargsPrototypes
+    XOM			/* om */,
+    ...
+#endif
+);
+
+extern char *XGetOMValues(
+#if NeedVarargsPrototypes
+    XOM			/* om */,
+    ...
+#endif
+);
+
+extern Display *XDisplayOfOM(
+#if NeedFunctionPrototypes
+    XOM			/* om */
+#endif
+);
+
+extern char *XLocaleOfOM(
+#if NeedFunctionPrototypes
+    XOM			/* om */
+#endif
+);
+
+extern XOC XCreateOC(
+#if NeedVarargsPrototypes
+    XOM			/* om */,
+    ...
+#endif
+);
+
+extern void XDestroyOC(
+#if NeedFunctionPrototypes
+    XOC			/* oc */
+#endif
+);
+
+extern XOM XOMOfOC(
+#if NeedFunctionPrototypes
+    XOC			/* oc */
+#endif
+);
+
+extern char *XSetOCValues(
+#if NeedVarargsPrototypes
+    XOC			/* oc */,
+    ...
+#endif
+);
+
+extern char *XGetOCValues(
+#if NeedVarargsPrototypes
+    XOC			/* oc */,
+    ...
+#endif
+);
+
 extern XFontSet XCreateFontSet(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -4092,6 +4359,18 @@ extern Bool XContextDependentDrawing(
 #endif
 );
 
+extern Bool XDirectionalDependentDrawing(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */
+#endif
+);
+
+extern Bool XContextualDrawing(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */
+#endif
+);
+
 extern XFontSetExtents *XExtentsOfFontSet(
 #if NeedFunctionPrototypes
     XFontSet		/* font_set */
@@ -4109,7 +4388,7 @@ extern int XmbTextEscapement(
 extern int XwcTextEscapement(
 #if NeedFunctionPrototypes
     XFontSet		/* font_set */,
-    wchar_t*		/* text */,
+    _Xconst wchar_t*	/* text */,
     int			/* num_wchars */
 #endif
 );
@@ -4127,7 +4406,7 @@ extern int XmbTextExtents(
 extern int XwcTextExtents(
 #if NeedFunctionPrototypes
     XFontSet		/* font_set */,
-    wchar_t*		/* text */,
+    _Xconst wchar_t*	/* text */,
     int			/* num_wchars */,
     XRectangle*		/* overall_ink_return */,
     XRectangle*		/* overall_logical_return */
@@ -4151,7 +4430,7 @@ extern Status XmbTextPerCharExtents(
 extern Status XwcTextPerCharExtents(
 #if NeedFunctionPrototypes
     XFontSet		/* font_set */,
-    wchar_t*		/* text */,
+    _Xconst wchar_t*	/* text */,
     int			/* num_wchars */,
     XRectangle*		/* ink_extents_buffer */,
     XRectangle*		/* logical_extents_buffer */,
@@ -4207,7 +4486,7 @@ extern void XwcDrawString(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    wchar_t*		/* text */,
+    _Xconst wchar_t*	/* text */,
     int			/* num_wchars */
 #endif
 );
@@ -4233,7 +4512,7 @@ extern void XwcDrawImageString(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    wchar_t*		/* text */,
+    _Xconst wchar_t*	/* text */,
     int			/* num_wchars */
 #endif
 );
@@ -4364,16 +4643,23 @@ extern XVaNestedList XVaCreateNestedList(
 
 extern Bool XRegisterIMInstantiateCallback(
 #if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    XIMProc	/* callback */,
-    XPointer*	/* client_data */
+    Display*			/* dpy */,
+    struct _XrmHashBucketRec*	/* rdb */,
+    char*			/* res_name */,
+    char*			/* res_class */,
+    XIMProc			/* callback */,
+    XPointer*			/* client_data */
 #endif
 );
 
 extern Bool XUnregisterIMInstantiateCallback(
 #if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    XIMProc	/* callback */
+    Display*			/* dpy */,
+    struct _XrmHashBucketRec*	/* rdb */,
+    char*			/* res_name */,
+    char*			/* res_class */,
+    XIMProc			/* callback */,
+    XPointer*			/* client_data */
 #endif
 );
 
