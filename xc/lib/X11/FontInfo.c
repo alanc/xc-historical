@@ -1,4 +1,4 @@
-/* $XConsortium: XFontInfo.c,v 11.19 90/12/12 09:17:46 rws Exp $ */
+/* $XConsortium: XFontInfo.c,v 11.20 91/01/06 11:45:41 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -75,7 +75,7 @@ XFontStruct **info;	/* RETURN */
 			      (unsigned) (sizeof(XFontStruct) * size));
 		char ** tmp_flist = (char **)
 		    Xrealloc ((char *) flist,
-			      (unsigned) (sizeof(char *) * size));
+			      (unsigned) (sizeof(char *) * (size+1)));
 
 		if ((! tmp_finfo) || (! tmp_flist)) {
 		    /* free all the memory that we allocated */
@@ -98,7 +98,7 @@ XFontStruct **info;	/* RETURN */
 		       Xmalloc((unsigned) (sizeof(XFontStruct) * size))))
 		    goto clearwire;
 		if (! (flist = (char **)
-		       Xmalloc((unsigned) (sizeof(char *) * size)))) {
+		       Xmalloc((unsigned) (sizeof(char *) * (size+1))))) {
 		    Xfree((char *) finfo);
 		    goto clearwire;
 		}
@@ -156,18 +156,27 @@ XFontStruct **info;	/* RETURN */
 	} else
 	    fs->properties = NULL;
 
-	flist[i] = (char *) Xmalloc ((unsigned int) (reply.nameLength + 1));
+	j = reply.nameLength + 1;
+	if (!i)
+	    j++; /* make first string 1 byte longer, to match XListFonts */
+	flist[i] = (char *) Xmalloc ((unsigned int) j);
 	if (! flist[i]) {
 	    if (finfo[i].properties) Xfree((char *) finfo[i].properties);
 	    nbytes = reply.nameLength + 3 & ~3;
 	    _XEatData(dpy, (unsigned long) nbytes);
 	    goto badmem;
 	}
+	if (!i) {
+	    *flist[0] = 0; /* zero to distinguish from XListFonts */
+	    flist[0]++;
+	}
 	flist[i][reply.nameLength] = '\0';
 	_XReadPad (dpy, flist[i], (long) reply.nameLength);
     }
     *info = finfo;
     *actualCount = i;
+    if (flist)
+	flist[i] = NULL; /* required in case XFreeFontNames is called */
     UnlockDisplay(dpy);
     SyncHandle();
     return (flist);
@@ -207,17 +216,18 @@ XFontStruct *info;
 int actualCount;
 {
 	register int i;
-	if (names != NULL) {
-		for (i = 0; i < actualCount; i++) {
+	if (names) {
+		Xfree (names[0]-1);
+		for (i = 1; i < actualCount; i++) {
 			Xfree (names[i]);
 		}
 		Xfree((char *) names);
 	}
-	if (info != NULL) {
+	if (info) {
 		for (i = 0; i < actualCount; i++) {
-			if (info[i].per_char != NULL)
+			if (info[i].per_char)
 				Xfree ((char *) info[i].per_char);
-			if (info[i].properties != NULL) 
+			if (info[i].properties)
 				Xfree ((char *) info[i].properties);
 			}
 		Xfree((char *) info);
