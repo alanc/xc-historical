@@ -366,6 +366,12 @@ static Boolean SetValues( current, request, desired, last )
 	w->core.background_pixel != rw->core.background_pixel)
         redraw = TRUE;
 
+    if (dw->scrollbar.top < 0.0 || dw->scrollbar.top > 1.0)
+        dw->scrollbar.top = w->scrollbar.top;
+
+    if (dw->scrollbar.shown < 0.0 || dw->scrollbar.shown > 1.0)
+        dw->scrollbar.shown = w->scrollbar.shown;
+
     if (w->scrollbar.top != dw->scrollbar.top ||
         w->scrollbar.shown != dw->scrollbar.shown)
 	redraw = TRUE;
@@ -521,7 +527,8 @@ extern void XtScrollBarSetThumb( w, top, shown )
   ScrollbarWidget w;
   float top, shown;
 {
-    w->scrollbar.top = top;
-    w->scrollbar.shown = shown;
+    if (!(top < 0.0 || top > 1.0))	w->scrollbar.top = top;
+    if (!(shown < 0.0 || shown > 1.0))	w->scrollbar.shown = shown;
+
     PaintThumb( w );
 }
