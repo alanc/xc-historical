@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.47 87/09/03 15:07:02 rws Locked $ */
+/* $Header: mibitblt.c,v 1.48 87/09/07 18:58:52 drewry Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -64,6 +64,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     int 		realSrcClip = 0;
     int			srcx, srcy, dstx, dsty, i, j, y, width, height,
     			xMin, xMax, yMin, yMax;
+    unsigned int	*ordering;
 
     /* clip the left and top edges of the source */
     if (xIn < 0)
@@ -134,21 +135,82 @@ miCopyArea(pSrcDrawable, pDstDrawable,
         ALLOCATE_LOCAL(heightSrc * sizeof(DDXPointRec));
     pwidthFirst = pwidth = (unsigned int *)
         ALLOCATE_LOCAL(heightSrc * sizeof(unsigned int));
-    if(!pptFirst || !pwidthFirst)
+    ordering = (unsigned int *)
+        ALLOCATE_LOCAL(prgnSrcClip->numRects * sizeof(unsigned int));
+    if(!pptFirst || !pwidthFirst || !ordering)
     {
        if (pptFirst)
            DEALLOCATE_LOCAL(pptFirst);
        if (pwidthFirst)
            DEALLOCATE_LOCAL(pwidthFirst);
+       if (ordering)
+	   DEALLOCATE_LOCAL(ordering);
        return;
     }
 
-    prect = prgnSrcClip->rects;
-    for(i = 0; i < prgnSrcClip->numRects; i++, prect++)
-    {
-	xMin = max(prect->x1, srcBox.x1);
-	xMax = min(prect->x2, srcBox.x2);
-	yMin = max(prect->y1, srcBox.y1);
+    /* If not the same drawable then order of move doesn't matter.
+       Following assumes that prgnSrcClip->rects are sorted from top
+       to bottom and left to right.
+    */
+    if (pSrcDrawable != pDstDrawable)
+      for (i=0; i < prgnSrcClip->numRects; i++)
+        ordering[i] = i;
+    else { /* within same drawable, must sequence moves carefully! */
+      if (dsty <= srcBox.y1) { /* Scroll up or stationary vertical.
+                                  Vertical order OK */
+        if (dstx <= srcBox.x1) /* Scroll left or stationary horizontal.
+                                  Horizontal order OK as well */
+          for (i=0; i < prgnSrcClip->numRects; i++)
+            ordering[i] = i;
+        else { /* scroll right. must reverse horizontal banding of rects. */
+          for (i=0, j=1, xMax=0;
+               i < prgnSrcClip->numRects;
+               j=i+1, xMax=i) {
+            /* find extent of current horizontal band */
+            y=prgnSrcClip->rects[i].y1; /* band has this y coordinate */
+            while ((j < prgnSrcClip->numRects) &&
+                   (prgnSrcClip->rects[j].y1 == y))
+              j++;
+            /* reverse the horizontal band in the output ordering */
+            for (j-- ; j >= xMax; j--, i++)
+              ordering[i] = j;
+          }
+        }
+      }
+      else { /* Scroll down. Must reverse vertical banding. */
+        if (dstx < srcBox.x1) { /* Scroll left. Horizontal order OK. */
+          for (i=prgnSrcClip->numRects-1, j=i-1, yMin=i, yMax=0;
+              i >= 0;
+              j=i-1, yMin=i) {
+            /* find extent of current horizontal band */
+            y=prgnSrcClip->rects[i].y1; /* band has this y coordinate */
+            while ((j >= 0) &&
+                   (prgnSrcClip->rects[j].y1 == y))
+              j--;
+            /* reverse the horizontal band in the output ordering */
+            for (j++ ; j <= yMin; j++, i--, yMax++)
+              ordering[yMax] = j;
+          }
+        }
+        else /* Scroll right or horizontal stationary.
+                Reverse horizontal order as well (if stationary, horizontal
+                order can be swapped without penalty and this is faster
+                to compute). */
+          for (i=0, j=prgnSrcClip->numRects-1;
+               i < prgnSrcClip->numRects;
+               i++, j--)
+              ordering[i] = j;
+      }
+    }
+ 
+     for(i = 0;
+         i < prgnSrcClip->numRects;
+         i++)
+     {
+        prect = &prgnSrcClip->rects[ordering[i]];
+  	xMin = max(prect->x1, srcBox.x1);
+  	xMax = min(prect->x2, srcBox.x2);
+  	yMin = max(prect->y1, srcBox.y1);
 	yMax = min(prect->y2, srcBox.y2);
 	/* is there anything visible here? */
 	if(xMax <= xMin || yMax <= yMin)
@@ -191,6 +253,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 		
     DEALLOCATE_LOCAL(pptFirst);
     DEALLOCATE_LOCAL(pwidthFirst);
+    DEALLOCATE_LOCAL(ordering);
 }
 
 /* MIGETPLANE -- gets a bitmap representing one plane of pDraw
