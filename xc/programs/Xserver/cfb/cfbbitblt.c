@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.31 90/02/22 18:42:13 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.32 90/03/01 16:42:52 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -47,7 +47,21 @@ cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DDXPointPtr	    pptSrc;
     unsigned long   planemask;
 {
-    return cfbDoBitbltCopy (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
+    int	(*blt)() = cfbDoBitbltGeneral;
+    if ((planemask & PMSK) == PMSK) {
+	switch (alu) {
+	case GXcopy:
+	    blt = cfbDoBitbltCopy;
+	    break;
+	case GXxor:
+	    blt = cfbDoBitbltXor;
+	    break;
+	case GXor:
+	    blt = cfbDoBitbltOr;
+	    break;
+	}
+    }
+    return (*blt) (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
 }
 
 static int (*doBitBlt)() = cfbDoBitbltCopy;
