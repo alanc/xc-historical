@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.10 89/07/21 17:33:45 kit Exp $
+ * $XConsortium: man.c,v 1.11 89/08/30 18:24:25 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -24,6 +24,9 @@
 #endif
 
 #include "globals.h"
+#ifdef CRAY
+#include <dirent.h>
+#endif CRAY
 
 #ifdef DEBUG
 static char error_buf[BUFSIZ];		/* The buffer for error messages. */
@@ -239,6 +242,78 @@ char * path;
     AddStandardSections(section_list, path);
 }
 
+#ifdef CRAY
+/*	Function Name: AddStandardCraySections
+ *	Description: Add sections specific to the Cray.
+ *	Arguments: list - a pointer to the section list.
+ *                 path - the path to these standard sections.
+ *                 names - standard section names.
+ *	Returns: none.
+ */
+
+AddStandardCraySections(list, path)
+SectionList **list;
+char * path **names;
+{
+  sprintf(file, "%s1bsd", MAN);
+  AddNewSection(list, path, file, names[0], TRUE);
+  sprintf(file, "%s1m", MAN);
+  AddNewSection(list, path, file, names[0], TRUE);
+  sprintf(file, "%s1r", MAN);
+  AddNewSection(list, path, file, names[0], TRUE);
+  sprintf(file, "%s1rb", MAN);
+  AddNewSection(list, path, file, names[0], TRUE);
+  
+  sprintf(file, "%s3X11", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3Xt", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3bsd", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3c", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3db", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3f", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3io", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3m", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3mt", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3n", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3q", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3rpc", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3s", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3sci", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3svc", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3u", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3w", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3x", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3yp", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  sprintf(file, "%s3z", MAN);
+  AddNewSection(list, path, file, names[2], TRUE);
+  
+  sprintf(file, "%s4d", MAN);
+  AddNewSection(list, path, file, names[3], TRUE);
+  sprintf(file, "%s4f", MAN);
+  AddNewSection(list, path, file, names[3], TRUE);
+  sprintf(file, "%s4n", MAN);
+  AddNewSection(list, path, file, names[3], TRUE);
+}
+#endif /* CRAY */
+
 /*	Function Name: AddStandardSections
  *	Description: Adds all the standard sections to the list for this path.
  *	Arguments: list - a pointer to the section list.
@@ -270,7 +345,7 @@ char * path;
   for (i = 0 ; i < 8 ; i++) {
     sprintf(file, "%s%d", SEARCHDIR, i + 1);
     AddNewSection(list, path, file, names[i], TRUE);
-#ifdef hpux
+#ifdef hpux			/* Puts in in the correct order */
     if (i == 0) {
       sprintf(file, "%s1m", SEARCHDIR);
       AddNewSection(list, path, file, "(1m) Sys. Administration", TRUE);
@@ -283,6 +358,10 @@ char * path;
   AddNewSection(list, path, file, names[i++], TRUE);
   sprintf(file, "%so", SEARCHDIR);
   AddNewSection(list, path, file, names[i], TRUE);
+
+#ifdef CRAY			/* The Cray's sections are all screwed up. */
+  AddCraySections(list, path, names);
+#endif
 }
 
 /*	Function Name: AddNewSection
@@ -357,7 +436,13 @@ Manual * local_manual;
 char * path;
 {
   DIR * dir;
+
+#ifdef CRAY
+  register struct dirent *dp;
+#else
   register struct direct *dp;
+#endif
+
   register int nentries;
   register int nalloc;
   char full_name[BUFSIZ], *ptr;
