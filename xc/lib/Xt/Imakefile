@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.97 92/06/05 18:32:28 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.98 92/06/27 21:54:44 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -9,8 +9,8 @@ XCOMM $XConsortium: Imakefile,v 1.97 92/06/05 18:32:28 rws Exp $
 #define MotifBC NO
 #endif
 
-#ifdef RsArchitecture
-REQUIREDLIBS = $(XLIBSRC)/libX11.a
+#ifdef SharedXtReqs
+REQUIREDLIBS = SharedXtReqs
 #endif
 
 /* config options */
@@ -193,8 +193,8 @@ SharedLibraryTarget(Xt,$(SOXTREV),$(OBJS),shared,..)
 SharedLibraryTarget(Xt,$(SOXTREV),$(OBJS),.,.)
 #endif
 SharedLibraryDataTarget(Xt,$(SOXTREV),$(UNSHAREDOBJS))
-InstallSharedLibrary(Xt,$(SOXTREV),$(USRLIBDIR))
-InstallSharedLibraryData(Xt,$(SOXTREV),$(USRLIBDIR))
+InstallSharedLibrary(Xt,$(SOXTREV),$(SHLIBDIR))
+InstallSharedLibraryData(Xt,$(SOXTREV),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(Xt,$(OBJS))

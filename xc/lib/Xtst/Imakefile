@@ -1,12 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.1 92/01/25 16:32:08 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 92/02/25 09:34:18 rws Exp $
 #define DoNormalLib NormalLibXTest
 #define DoSharedLib SharedLibXTest
 #define DoDebugLib DebugLibXTest
 #define DoProfileLib ProfileLibXTest
 #include <Library.tmpl>
 
-#ifdef RsArchitecture
-REQUIREDLIBS = $(EXTENSIONSRC)/lib/libXext.a $(XLIBSRC)/libX11.a
+#ifdef SharedXTestReqs
+REQUIREDLIBS = SharedXTestReqs
 #endif
 
 INCLUDES = -I$(TOP) -I$(XLIBSRC) -I../../include
@@ -24,7 +24,7 @@ SharedLibraryTarget(Xtst,$(SOXTESTREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xtst,$(SOXTESTREV),$(OBJS),.,.)
 #endif
-InstallSharedLibrary(Xtst,$(SOXTESTREV),$(USRLIBDIR))
+InstallSharedLibrary(Xtst,$(SOXTESTREV),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(Xtst,$(OBJS))

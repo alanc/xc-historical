@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.131 92/05/28 12:05:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.132 92/06/27 21:53:14 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -23,6 +23,9 @@ XCOMM $XConsortium: Imakefile,v 1.131 92/05/28 12:05:15 rws Exp $
 #endif
 #endif
 
+#ifdef SharedXlibReqs
+REQUIREDLIBS = SharedXlibReqs
+#endif
 #ifdef MacIIArchitecture
 XBSDLIB = /**/
 #endif
@@ -1020,7 +1023,7 @@ SharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS),.,.)
 #endif
-InstallSharedLibrary(X11,$(SOXLIBREV),$(USRLIBDIR))
+InstallSharedLibrary(X11,$(SOXLIBREV),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))

@@ -1,12 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.20 91/07/16 22:43:15 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.21 91/09/18 14:29:40 rws Exp $
 #define DoNormalLib NormalOldLibX
 #define DoSharedLib SharedOldLibX
 #define DoDebugLib DebugOldLibX
 #define DoProfileLib ProfileOldLibX
 #include <Library.tmpl>
 
-#ifdef RsArchitecture
-REQUIREDLIBS = $(XLIBSRC)/libX11.a
+#ifdef SharedOldXReqs
+REQUIREDLIBS = SharedOldXReqs
 #endif
 
 #if Malloc0ReturnsNull
@@ -34,7 +34,7 @@ SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),.,.)
 #endif
-InstallSharedLibrary(oldX,$(SOOLDXREV),$(USRLIBDIR))
+InstallSharedLibrary(oldX,$(SOOLDXREV),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(oldX,$(OBJS))

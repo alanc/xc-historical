@@ -1,12 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.78 91/09/18 14:28:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.79 92/05/28 12:08:24 rws Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoDebugLib DebugLibXaw
 #define DoProfileLib ProfileLibXaw
 #include <Library.tmpl>
 
-#ifdef RsArchitecture
-REQUIREDLIBS = $(XMUSRC)/libXmu.a $(EXTENSIONSRC)/lib/libXext.a $(TOOLKITSRC)/libXt.a $(XLIBSRC)/libX11.a
+#ifdef SharedXawReqs
+REQUIREDLIBS = SharedXawReqs
 #endif
 
    INSTALLFLAGS = $(INSTINCFLAGS)
@@ -179,8 +179,8 @@ SharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),shared,..)
 SharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),.,.)
 #endif
 SharedLibraryDataTarget(Xaw,$(SOXAWREV),$(UNSHAREDOBJS))
-InstallSharedLibrary(Xaw,$(SOXAWREV),$(USRLIBDIR))
-InstallSharedLibraryData(Xaw,$(SOXAWREV),$(USRLIBDIR))
+InstallSharedLibrary(Xaw,$(SOXAWREV),$(SHLIBDIR))
+InstallSharedLibraryData(Xaw,$(SOXAWREV),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(Xaw,$(OBJS))

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.10 91/07/16 23:08:52 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.11 91/07/24 15:38:57 rws Exp $
 #define DoNormalLib NormalLibXinput
 #define DoSharedLib SharedLibXinput
 #define DoDebugLib DebugLibXinput
@@ -9,8 +9,8 @@ XCOMM $XConsortium: Imakefile,v 1.10 91/07/16 23:08:52 gildea Exp $
 #define NeedXinputAlias NO
 #endif
 
-#ifdef RsArchitecture
-REQUIREDLIBS = $(EXTENSIONSRC)/lib/libXext.a $(XLIBSRC)/libX11.a
+#ifdef SharedXinputReqs
+REQUIREDLIBS = SharedXinputReqs
 #endif
 
 #if Malloc0ReturnsNull
@@ -102,7 +102,7 @@ SharedLibraryTarget(Xi,$(SOXINPUTREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xi,$(SOXINPUTREV),$(OBJS),.,.)
 #endif
-InstallSharedLibrary(Xi,$(SOXINPUTREV),$(USRLIBDIR))
+InstallSharedLibrary(Xi,$(SOXINPUTREV),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(Xi,$(OBJS))

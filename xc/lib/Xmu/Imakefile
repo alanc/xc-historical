@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.75 92/05/28 12:10:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.76 92/05/28 13:07:03 rws Exp $
 XCOMM
 XCOMM This library contains miscellaneous utility routines and is not part
 XCOMM of the Xlib standard.
@@ -10,12 +10,8 @@ XCOMM
 #define DoProfileLib ProfileLibXmu
 #include <Library.tmpl>
 
-#if defined(RsArchitecture) || SunPost411FCSLd
-#if DoNormalLib
-REQUIREDLIBS = -L../$(TOOLKITSRC) -lXt -L../$(EXTENSIONSRC)/lib -lXext -L../$(XLIBSRC) -lX11
-#else
-REQUIREDLIBS = -L$(TOOLKITSRC) -lXt -L$(EXTENSIONSRC)/lib -lXext -L$(XLIBSRC) -lX11
-#endif
+#ifdef SharedXmuReqs
+REQUIREDLIBS = SharedXmuReqs
 #endif
 
 /* Since people link in Xmu without Xt, we avoid references to string data. */
@@ -156,26 +152,19 @@ SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
 
 #if DoSharedLib
-#if SunPost411FCSLd
-libXmu.so.$(SOXMUREV): $(EXTENSIONSRC)/lib/libXext.so.$(SOXEXTREV)
-
-$(EXTENSIONSRC)/lib/libXext.so.$(SOXEXTREV):
-	cd $(EXTENSIONSRC)/lib; make libXext.so.$(SOXEXTREV)
+#ifdef XmuDependencyRule
+XmuDependencyRule()
 #endif
+
 #if DoNormalLib
 SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),.,.)
 #endif
 SharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
-#ifdef RsArchitecture
-libXmu.a: $(EXTENSIONSRC)/lib/libXext.a
 
-$(EXTENSIONSRC)/lib/libXext.a:
-	cd $(EXTENSIONSRC)/lib; make libXext.a
-#endif
-InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
-InstallSharedLibraryData(Xmu,$(SOXMUREV),$(USRLIBDIR))
+InstallSharedLibrary(Xmu,$(SOXMUREV),$(SHLIBDIR))
+InstallSharedLibraryData(Xmu,$(SOXMUREV),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(Xmu,$(OBJS))

@@ -1,12 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.37 92/03/13 14:18:37 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.38 92/05/08 15:18:51 mor Exp $
 #define DoNormalLib NormalLibXext
 #define DoSharedLib SharedLibXext
 #define DoDebugLib DebugLibXext
 #define DoProfileLib ProfileLibXext
 #include <Library.tmpl>
 
-#ifdef RsArchitecture
-REQUIREDLIBS = $(XLIBSRC)/libX11.a
+#ifdef SharedXextReqs
+REQUIREDLIBS = SharedXextReqs
 #endif
 
 #define IHaveSubdirs
@@ -52,7 +52,7 @@ SharedLibraryTarget(Xext,$(SOXEXTREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xext,$(SOXEXTREV),$(OBJS),.,.)
 #endif
-InstallSharedLibrary(Xext,$(SOXEXTREV),$(USRLIBDIR))
+InstallSharedLibrary(Xext,$(SOXEXTREV),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(Xext,$(OBJS))
