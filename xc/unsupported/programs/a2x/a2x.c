@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.58 92/04/16 19:55:55 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.59 92/04/16 20:01:15 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -56,6 +56,7 @@ Syntax of magic values in the input stream:
 ^T^M			set Meta key for next character
 ^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
+^T^R<display>^T		switch to a new display
 ^T^S			set Shift key for next character
 ^T^T			^T
 ^T^U			re-read undo file
@@ -1788,6 +1789,35 @@ debug_state()
 }
 
 void
+init_display()
+{
+    reset_mapping();
+    MIT_OBJ_CLASS = XInternAtom(dpy, "_MIT_OBJ_CLASS", False);
+    Xmask = 1 << ConnectionNumber(dpy);
+    maxfd = ConnectionNumber(dpy) + 1;
+}
+
+void
+switch_display(buf)
+    char *buf;
+{
+    Display *ndpy;
+    char name[1024];
+
+    if (!index(buf, ':')) {
+	strcpy(name, buf);
+	strcat(name, ":0");
+	buf = name;
+    }
+    ndpy = XOpenDisplay(buf);
+    if (!ndpy)
+	return;
+    XCloseDisplay(dpy);
+    dpy = ndpy;
+    init_display();
+}
+
+void
 process(buf, n, len)
     char *buf;
     int n;
@@ -1895,6 +1925,9 @@ process(buf, n, len)
 	    case '\012': /* control j */
 	    	do_jump(buf + i + 1);
 		break;
+	    case '\022': /* control r */
+		switch_display(buf + i + 1);
+		break;
 	    case '\027': /* control w */
 		do_warp(buf + i + 1);
 		break;
@@ -1994,10 +2027,7 @@ main(argc, argv)
 	oldioerror = XSetIOErrorHandler(ioerror);
 	olderror = XSetErrorHandler(error);
     }
-    reset_mapping();
-    MIT_OBJ_CLASS = XInternAtom(dpy, "_MIT_OBJ_CLASS", False);
-    Xmask = 1 << ConnectionNumber(dpy);
-    maxfd = ConnectionNumber(dpy) + 1;
+    init_display();
     while (1) {
 	if (XPending(dpy)) {
 	    process_events();
