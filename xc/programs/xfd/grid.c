@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.25 91/07/18 14:59:57 rws Exp $
+ * $XConsortium: fontgrid.c,v 1.26 91/10/21 14:32:21 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -519,7 +519,8 @@ static void Notify (gw, event, params, nparams)
      * compute the callback data
      */
     {
-	int cw = fgw->fontgrid.cell_width, ch = fgw->fontgrid.cell_height;
+	int cw = fgw->fontgrid.cell_width + fgw->fontgrid.grid_width;
+	int ch = fgw->fontgrid.cell_height + fgw->fontgrid.grid_width;
 	unsigned n;
 
 	if (x > (fgw->fontgrid.cell_cols * cw)) {
