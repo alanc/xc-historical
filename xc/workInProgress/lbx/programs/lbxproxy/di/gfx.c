@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.9 94/11/09 17:16:20 mor Exp mor $ */
+/* $XConsortium: gfx.c,v 1.10 94/11/09 17:18:05 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -420,17 +420,24 @@ ClientPtr   client;
 	}
     }
 
+#ifdef LBX_STATS
+	fprintf (stderr,
+	    "PutImage (xid=%x, w=%d, h=%d, x=%d, y=%d): ",
+	    stuff->drawable, stuff->width, stuff->height,
+	    stuff->dstX, stuff->dstY);
+#endif
+
     if (status != LBX_IMAGE_COMPRESS_SUCCESS)
     {
 #ifdef LBX_STATS
-	fprintf (stderr, "PutImage: image not compressed ");
+	fprintf (stderr, "image not compressed - ");
 
 	if (status == LBX_IMAGE_COMPRESS_UNSUPPORTED_FORMAT)
-	    fprintf (stderr, "(unsupported format)\n");
+	    fprintf (stderr, "unsupported format\n");
 	else if (status == LBX_IMAGE_COMPRESS_NOT_WORTH_IT)
-	    fprintf (stderr, "(not worth it)\n");
+	    fprintf (stderr, "not worth it\n");
 	else if (status == LBX_IMAGE_COMPRESS_BAD_MALLOC)
-	    fprintf (stderr, "(bad malloc)\n");
+	    fprintf (stderr, "bad malloc\n");
 #endif
 	if (newreq)
 	    xfree (newreq);
@@ -477,7 +484,7 @@ ClientPtr   client;
 	((float) (compBytes + pad[compBytes % 4])/
 	 (float) ((stuff->length << 2) - sz_xPutImageReq)));
 
-    fprintf (stderr, "PutImage: %f percent compression ", percentCompression);
+    fprintf (stderr, "%f percent compression ", percentCompression);
     if (method == LbxImageCompressFaxG42D)
 	fprintf (stderr, "(FAX G42D)\n");
     else if (method == LbxImageCompressPackBits)
@@ -527,7 +534,11 @@ char       *data;
 	nr->extension = client->server->lbxReq;
 	nr->request_info.lbxgetimage.width = req->width;
 	nr->request_info.lbxgetimage.height = req->height;
-
+#ifdef LBX_STATS
+	nr->request_info.lbxgetimage.drawable = req->drawable;
+	nr->request_info.lbxgetimage.x = req->x;
+	nr->request_info.lbxgetimage.y = req->y;
+#endif
 	/*
 	 * this expects a reply.  since we write the data here, we have to be
 	 * sure the seq number is in sync first
@@ -616,17 +627,23 @@ char       *data;
 	SwapGetImageReply (&reply);
 
 #ifdef LBX_STATS
+    fprintf (stderr, "GetImage (xid=%x, w=%d, h=%d, x=%d, y=%d): ",
+	    nr->request_info.lbxgetimage.drawable,
+	    nr->request_info.lbxgetimage.width,
+	    nr->request_info.lbxgetimage.height,
+	    nr->request_info.lbxgetimage.x,
+	    nr->request_info.lbxgetimage.y);
+
     if (rep->compressionMethod == LbxImageCompressNone)
     {
-	fprintf (stderr, "GetImage: image not compressed\n");
+	fprintf (stderr, "image not compressed\n");
     }
     else
     {
 	float percentCompression = 100.0 * (1.0 -
 	    ((float) rep->lbxLength / (float) rep->xLength));
 
-	fprintf (stderr, "GetImage: %f percent compression ",
-	    percentCompression);
+	fprintf (stderr, "%f percent compression ", percentCompression);
 	if (rep->compressionMethod == LbxImageCompressFaxG42D)
 	    fprintf (stderr, "(FAX G42D)\n");
 	else if (rep->compressionMethod == LbxImageCompressPackBits)
