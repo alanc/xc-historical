@@ -1,4 +1,4 @@
-char man[]="\
+char *man[]={"\
 \n\
 \n\
 \n\
@@ -46,6 +46,8 @@ X DEFAULTS\n\
              RandomBounce  varies from 0.0 (no randomness) to 1.0\n\
              (completely random angle of incidence).\n\
 \n\
+",
+"\
      equilibrium\n\
              During each wall  collision,  a  molecule's  kinetic\n\
              energy approaches that corresponding to the tempera-\n\
@@ -131,4 +133,4 @@ X Version 11         Last change: Release 5                     2\n\
 \n\
 \n\
 \n\
-";
+"};

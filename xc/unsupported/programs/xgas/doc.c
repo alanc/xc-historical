@@ -1,4 +1,4 @@
-char doc1[]="\
+char *doc[]={"\
 \n\
 \n\
 \n\
@@ -49,12 +49,16 @@ char doc1[]="\
           readings under the two separately heated portions of the\n\
           chamber.  There is a wall with a hole separating the two\n\
           boxes of the chamber.\n\
+",
+"\
 \n\
 \n\
           2.1.  Widget Hierarchy\n\
 \n\
           The HP Widget set was used in the original version; a port\n\
           to the Athena Widget set was implemented by Dave Sternlicht,\n\
+",
+"\
           of the X Consortium.  The widget hierarchy is described in\n\
           Figure 1.\n\
 \n\
@@ -92,6 +96,8 @@ char doc1[]="\
                           helpText (asciiText)\n\
                   chamber[].control (scrollbar)\n\
                   chamber[].display (label)\n\
+",
+"\
                   clock (label)\n\
                   lab (gas)\n\
 \n\
@@ -110,8 +116,8 @@ char doc1[]="\
           the lab area.  The scrollbar is used to set the temperature,\n\
           which is displayed in the label below it.  Also below the\n\
           lab is the clock display, which reports the simulated time.\n\
-";
-char doc2[]="\
+",
+"\
           The other shell is a help popup.  It contains a text widget\n\
           which can scroll through the man page, quick-help (a list of\n\
           the mouse button actions), and this document.\n\
@@ -140,6 +146,8 @@ char doc2[]="\
 \n\
 \n\
           array which contains two entries for each molecule.  These\n\
+",
+"\
           entries contain the old position and the new position.  On\n\
           alternate timesteps, either the odd or even elements of this\n\
           array are updated with the new molecule positions.  The\n\
@@ -159,8 +167,8 @@ char doc2[]="\
           2.2.  The Data Structures\n\
 \n\
           There are two main data structures: the molecules and the\n\
-";
-char doc3[]="\
+",
+"\
           chamber (boxes).  These are defined in the \"gas.h\" header\n\
           file.\n\
 \n\
@@ -179,6 +187,8 @@ char doc3[]="\
           array contains the coefficients of the reflection and rota-\n\
           tion matrices used in the computation of collisions with the\n\
           walls.\n\
+",
+"\
 \n\
 \n\
           2.3.  Physics and Algorithms\n\
@@ -210,8 +220,8 @@ char doc3[]="\
           this case, the \"collide\" routine is called; otherwise the\n\
           \"inertia\" routine is called.  Note that knowing the time of\n\
           the next collision allows the timestep routines to ignore\n\
-";
-char doc4[]="\
+",
+"\
           the walls until the collision actually occurs.\n\
 \n\
           The inertia routine just solves for the molecule's location\n\
@@ -225,6 +235,8 @@ char doc4[]="\
           way it would bounce in a completely elastic collision (bil-\n\
           liard balls).\n\
 \n\
+",
+"\
           The reflection angle deviates from an exact reflection by a\n\
           random component, which is determined by the X resource\n\
           \"randomBounce.\" At the same time, the temperature of the\n\
@@ -246,8 +258,8 @@ char doc4[]="\
           (every \"delay\" milliseconds, using the X resources) via the\n\
           timeout mechanism.  The intrinsics call XtAddTimeOut causes\n\
           a callback to be called after a given delay.  In \"run\" mode,\n\
-";
-char doc5[]="\
+",
+"\
           XtAddTimeOut is automatically called at the end of each\n\
           timestep.  Switching to \"pause\" mode removes this callback\n\
           using XtRemoveTimeOut.  In \"pause\" mode, the \"step\" button\n\
@@ -267,6 +279,8 @@ char doc5[]="\
 \n\
 \n\
           Ideal Gas Simulation                                       4\n\
+",
+"\
 \n\
 \n\
 \n\
@@ -296,8 +310,8 @@ char doc5[]="\
 \n\
           A better solution was to compute the trajectories using\n\
           integer arithmetic.  The endpoints (collision positions) of\n\
-";
-char doc6[]="\
+",
+"\
           each trajectory are integer locations on the walls.  The\n\
           actual coefficients of the trajectory and the time until the\n\
           next collision are floating point numbers, but they are\n\
@@ -340,6 +354,8 @@ char doc6[]="\
 \n\
 \n\
 \n\
+",
+"\
 \n\
 \n\
 \n\
@@ -372,8 +388,8 @@ char doc6[]="\
               #             with the mouse\n\
               XGas*maxMolecules:               100\n\
               #\n\
-";
-char doc7[]="\
+",
+"\
 \n\
               ____________________________________________________\n\
 \n\
@@ -413,6 +429,8 @@ char doc7[]="\
 \n\
 \n\
 \n\
+",
+"\
               ____________________________________________________\n\
 \n\
                    p[0]                 p[2]                  p[4]\n\
@@ -472,4 +490,5 @@ char doc7[]="\
 \n\
 \n\
 \n\
-";
+",
+"\0"};

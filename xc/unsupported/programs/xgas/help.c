@@ -7,8 +7,8 @@
 #include "xgas.h"
 #include <X11/Shell.h>
 extern char quick[];
-extern char man[];
-extern char doc1[], doc2[], doc3[], doc4[], doc5[], doc6[], doc7[];
+extern char *man[];
+extern char *doc[];
 
 /* static to allow show_text callback to set its args. */
 static Widget helpText;
@@ -48,7 +48,9 @@ createHelpWidgets( parent )
   Widget help, blank1, blank2;
   Widget helpShell, helpFrame, helpQuick, helpMan;
   Widget helpDoc, helpBlank, helpQuit;
-  
+  int sizedoc = 0, sizeman;
+  char **docp, *docs, *doct, *mant;
+
   /* HELP POPUP */
   helpShell = XtVaCreatePopupShell("helpShell",
 				topLevelShellWidgetClass, parent,
@@ -77,26 +79,44 @@ createHelpWidgets( parent )
 			NULL);
   XtAddCallback(helpQuick, XtNcallback, (XtCallbackProc)show_text, 
 		(char*)quick);
+
+  sizeman = strlen(man[0]) + strlen(man[1]) + 2;
+  mant = XtMalloc(sizeman);
+  strcat(mant, man[0]);
+  strcat(mant, man[1]);
   
   /* HELP COMMAND BUTTON: MAN */
   helpMan = XtVaCreateManagedWidget("helpMan", commandWidgetClass, helpFrame,
 			XtNfromHoriz, (XtPointer)helpQuick,
 			NULL);
-  XtAddCallback(helpMan, XtNcallback, (XtCallbackProc)show_text, (char*)man);
+  XtAddCallback(helpMan, XtNcallback, (XtCallbackProc)show_text, 
+		(XtPointer)mant);
   
   /* HELP COMMAND BUTTON: DOC */
   helpDoc = XtVaCreateManagedWidget("helpDoc", commandWidgetClass, helpFrame,
 			XtNfromHoriz, (XtPointer)helpMan,
 			NULL);
-  XtAddCallback(helpDoc, XtNcallback, (XtCallbackProc)show_text, 
-		(char*)strcat(doc1, strcat(doc2, strcat(doc3, strcat(doc4,
-			 strcat(doc5, strcat(doc6, doc7)))))));
+  
+  docp = doc;
+  sizedoc = strlen(*docp) + 1;
+  doct = XtMalloc(sizedoc);
+  strcat(doct, *docp);
+  docp++;
+  while (*docp[0]) {
+    sizedoc += strlen(*docp) + 1;
+    doct = XtRealloc(doct, sizedoc);
+    strcat(doct, *docp);
+    docp++;
+  }
+  
+  XtAddCallback(helpDoc, XtNcallback, (XtCallbackProc)show_text, doct);
   
   /* HELP TEXT */
   helpText = XtVaCreateManagedWidget("helpText",
-			asciiTextWidgetClass, helpFrame,
-			XtNfromVert, (XtPointer)helpQuit,
-			/*XtNtype, XawAsciiString,*/
-			/*XtNuseStringInPlace, True,*/
-			NULL);
+				     asciiTextWidgetClass, helpFrame,
+				     XtNfromVert, (XtPointer)helpQuit,
+				     /*XtNtype, XawAsciiString,*/
+				     /*XtNuseStringInPlace, True,*/
+				     NULL);
 }
+
