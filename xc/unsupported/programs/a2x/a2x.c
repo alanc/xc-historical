@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.82 92/08/05 17:53:09 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.83 92/08/06 17:54:01 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -710,8 +710,8 @@ get_region(reg, w, wa, getshape)
     if (getshape &&
 	(rects = XShapeGetRectangles(dpy, w, ShapeBounding, &n, &order))) {
 	while (--n >= 0) {
-	    rects[n].x += wa->x;
-	    rects[n].y += wa->y;
+	    rects[n].x += wa->x + wa->border_width;
+	    rects[n].y += wa->y + wa->border_width;
 	    XUnionRectWithRegion(&rects[n], reg, reg);
 	}
 	XFree((char *)rects);
@@ -764,8 +764,8 @@ compute_box(univ, box)
     XClipBox(univ, &rect);
     box->x1 = rect.x;
     box->y1 = rect.y;
-    box->x2 = rect.x + (int)rect.width;
-    box->y2 = rect.y + (int)rect.height;
+    box->x2 = rect.x + (int)rect.width - 1;
+    box->y2 = rect.y + (int)rect.height - 1;
 }
 
 Bool
