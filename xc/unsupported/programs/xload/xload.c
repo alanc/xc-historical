@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.24 89/12/07 16:41:25 jim Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.25 89/12/08 18:15:27 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h> 
@@ -123,9 +123,8 @@ void main(argc, argv)
      */
     XtAppAddActions (XtWidgetToApplicationContext(toplevel),
 		     xload_actions, XtNumber(xload_actions));
-    XtSetArg (args[0], XtNtranslations,
-              XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
-    XtSetValues (toplevel, args, ONE);
+    XtOverrideTranslations(toplevel,
+		    XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
 
     XtSetArg (args[0], XtNiconPixmap, &icon_pixmap);
     XtGetValues(toplevel, args, ONE);

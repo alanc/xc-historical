@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.11 89/12/07 19:27:16 rws Exp $
+ * $XConsortium: xbiff.c,v 1.12 89/12/08 18:18:45 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -84,8 +84,8 @@ void main (argc, argv)
      */
     XtAppAddActions (XtWidgetToApplicationContext(toplevel),
                      xbiff_actions, XtNumber(xbiff_actions));
-    XtSetArg (args[0], XtNtranslations,
-              XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
+    XtOverrideTranslations(toplevel,
+		   XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
     XtSetValues (toplevel, args, ONE);
 
     w = XtCreateManagedWidget ("mailbox", mailboxWidgetClass, toplevel,

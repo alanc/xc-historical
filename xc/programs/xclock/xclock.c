@@ -1,9 +1,32 @@
-/* xclock -- 
- *  Hacked from Tony Della Fera's much hacked clock program.
- */
 #ifndef lint
-static char rcsid[] = "$XConsortium: xclock.c,v 1.26 89/12/08 17:57:07 jim Exp $";
+static char rcsid[] = "$XConsortium: xclock.c,v 1.27 89/12/08 18:10:14 jim Exp $";
 #endif /* lint */
+
+/*
+ * xclock --  Hacked from Tony Della Fera's much hacked clock program.
+ */
+
+/*
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
@@ -75,10 +98,8 @@ void main(argc, argv)
      * This is a hack so that f.delete will do something useful in this
      * single-window application.
      */
-    XtSetArg (arg, XtNtranslations,
-	      XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
-    XtSetValues (toplevel, &arg, ONE);
-
+    XtOverrideTranslations(toplevel, 
+		    XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
 
     XtSetArg(arg, XtNiconPixmap, &icon_pixmap);
     XtGetValues(toplevel, &arg, ONE);
