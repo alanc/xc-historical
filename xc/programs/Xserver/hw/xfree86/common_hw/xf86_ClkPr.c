@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: xf86_ClkPr.c,v 1.1 94/10/05 13:34:52 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.1 1994/09/23 10:17:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -99,7 +100,7 @@ ScrnInfoRec *InfoRec;
 	    (*ClockFunc)(CLK_REG_RESTORE);
 	    ErrorF("Failed to disable interrupts during clock probe.  If\n");
 	    ErrorF("your OS does not support disabling interrupts, then you\n");
-	    FatalError("must specify a Clocks line in the Xconfig file.\n");
+	    FatalError("must specify a Clocks line in the XF86Config file.\n");
 	}
 	while ((inb(status) & maskval) == 0x00) 
 	    if (sync-- == 0) goto finish;
@@ -143,10 +144,10 @@ finish:
 		InfoRec->clock[i] = (int)(0.5 +
                     (((float)knownclkvalue) * InfoRec->clock[knownclkindex]) / 
 	            (InfoRec->clock[i]));
-		/* Round to nearest 100KHz */
-		InfoRec->clock[i] += 50;
-		InfoRec->clock[i] /= 100;
-		InfoRec->clock[i] *= 100;
+		/* Round to nearest 10KHz */
+		InfoRec->clock[i] += 5;
+		InfoRec->clock[i] /= 10;
+		InfoRec->clock[i] *= 10;
 	    }
 	}
     }

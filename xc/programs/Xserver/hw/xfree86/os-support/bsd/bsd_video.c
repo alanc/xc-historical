@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: bsd_video.c,v 1.1 94/10/05 13:41:29 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.3 1994/09/07 15:54:02 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -33,6 +34,10 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
+#if defined(__NetBSD__) && !defined(MAP_FILE)
+#define MAP_FILE 0
+#endif
+
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
@@ -53,6 +58,12 @@ static int MapCount = 0;
 
 static Bool devMemChecked = FALSE;
 static Bool useDevMem = FALSE;
+static int  devMemFd = -1;
+
+#ifdef HAS_APERTURE_DRV
+#define DEV_APERTURE "/dev/xf86"
+#endif
+#define DEV_MEM "/dev/mem"
 
 /*
  * Check if /dev/mem can be mmap'd.  If it can't print a warning when
@@ -65,35 +76,82 @@ Bool warn;
 	pointer base;
 
 	devMemChecked = TRUE;
-	if ((fd = open("/dev/mem", O_RDWR)) < 0)
+	if ((fd = open(DEV_MEM, O_RDWR)) >= 0)
 	{
-	    if (warn)
+	    /* Try to map a page at the VGA address */
+	    base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
+				 MAP_FILE, fd, (off_t)0xA0000);
+	
+	    if (base != (pointer)-1)
 	    {
-	        ErrorF("checkDevMem: warning: failed to open /dev/mem (%s)\n",
-		       strerror(errno));
-	        ErrorF("\tlinear fb access unavailable\n");
+		munmap((caddr_t)base, 4096);
+		devMemFd = fd;
+		useDevMem = TRUE;
+		return;
+	    } else {
+		if (warn)
+		{
+		     ErrorF("checkDevMem: warning: failed to mmap %s (%s)\n",
+			    DEV_MEM, strerror(errno));
+		}
 	    }
-	    useDevMem = FALSE;
-	    return;
+	} else {
+	    if (warn)
+	    { 
+		ErrorF("checkDevMem: warning: failed to open %s (%s)\n",
+		       DEV_MEM, strerror(errno));
+	    }
 	}
-	/* Try to map a page at the VGA address */
-	base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
-			     MAP_FILE, fd, (off_t)0xA0000);
-	close(fd);
-	if (base == (pointer)-1)
+#ifndef HAS_APERTURE_DRV
+	if (warn) 
 	{
-	    if (warn)
-	    {
-	        ErrorF("checkDevMem: warning: failed to mmap /dev/mem (%s)\n",
-		       strerror(errno));
-	        ErrorF("\tlinear fb access unavailable\n");
-	    }
-	    useDevMem = FALSE;
-	    return;
-	}
-	munmap((caddr_t)base, 4096);
-	useDevMem = TRUE;
+	    ErrorF("\tlinear fb access unavailable\n");
+	} 
+	useDevMem = FALSE;
 	return;
+#else
+	/* Failed to mmap /dev/mem, try the aperture driver */
+	if (warn)
+	{
+	    ErrorF("\ttrying aperture driver\n");
+	}
+
+	if ((fd = open(DEV_APERTURE, O_RDWR)) >= 0)
+	{
+	    /* Try to map a page at the VGA address */
+	    base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
+			     MAP_FILE, fd, (off_t)0xA0000);
+	
+	    if (base != (pointer)-1)
+	    {
+		munmap((caddr_t)base, 4096);
+		devMemFd = fd;
+		useDevMem = TRUE;
+		return;
+	    } else {
+
+		if (warn)
+		{
+		    ErrorF("checkDevMem: warning: failed to mmap %s (%s)\n",
+			   DEV_APERTURE, strerror(errno));
+		}
+	    }
+	} else {
+	    if (warn)
+	    {
+		ErrorF("checkDevMem: warning: failed to open %s (%s)\n",
+		   DEV_APERTURE, strerror(errno));
+	    }
+	}
+	
+	if (warn)
+	{
+	    ErrorF("\tlinear fb access unavailable\n");
+	}
+	useDevMem = FALSE;
+	return;
+
+#endif
 }
 
 
@@ -110,20 +168,18 @@ unsigned long Size;
 
 	if (useDevMem)
 	{
-	    int memFd;
-
-	    if ((memFd = open("/dev/mem", O_RDWR)) < 0)
+	    if (devMemFd < 0) 
 	    {
-		FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
-			   strerror(errno));
+		FatalError("xf86MapVidMem: failed to open %s (%s)\n",
+			   DEV_MEM, strerror(errno));
 	    }
 	    base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-				 MAP_FILE, memFd, (off_t)Base);
-	    close(memFd);
+				 MAP_FILE, devMemFd, (off_t)Base);
 	    if (base == (pointer)-1)
 	    {
-		FatalError("%s: could not mmap /dev/mem [s=%x,a=%x] (%s)\n",
-			   "xf86MapVidMem", Size, Base, strerror(errno));
+		FatalError("%s: could not mmap %s [s=%x,a=%x] (%s)\n",
+			   "xf86MapVidMem", DEV_MEM, Size, Base, 
+			   strerror(errno));
 	    }
 	    return(base);
 	}

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: sco_init.c,v 1.1 94/10/05 13:42:34 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.1 1994/09/23 10:25:15 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -95,7 +96,7 @@ void xf86OpenConsole()
 
 	sprintf(vtname,"/dev/tty%02d", xf86Info.vtno+1); /* /dev/tty[01-12] */
 
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
 
 	if (!KeepTty)
 	{
@@ -161,7 +162,7 @@ void xf86OpenConsole()
 	/*
 	 * now get the VT
 	 */
-	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1) != 0)
+	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
 	{
 	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
@@ -173,9 +174,6 @@ void xf86CloseConsole()
 {
     struct vt_mode   VT;
 
-#if 0
-    ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1);
-#endif
     ioctl(xf86Info.consoleFd, VT_RELDISP, 1);
     if (sco_console_mode != -1)
     {

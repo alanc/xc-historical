@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: sysv_init.c,v 1.1 94/10/05 13:43:21 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_init.c,v 3.0 1994/09/23 10:25:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -113,7 +114,7 @@ void xf86OpenConsole()
 	sprintf(vtname1,"/dev/vc%02d",xf86Info.vtno); /* ESIX */
 	sprintf(vtname2,"/dev/vt%02d",xf86Info.vtno); /* rest of the world */
 
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
 
 	if (!KeepTty)
     	{

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: bsd_init.c,v 1.1 94/10/05 13:41:29 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.0 1994/09/23 10:23:58 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -367,7 +368,7 @@ void xf86OpenConsole()
 	}
 #endif /* CODRV_SUPPORT */
 
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
 
 	switch (xf86Info.consType)
 	{

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: bsdi_init.c,v 1.1 94/10/05 13:41:38 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_init.c,v 3.0 1994/09/23 10:24:39 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -76,7 +77,7 @@ void xf86OpenConsole()
 		       strerror(errno));
 	}
 
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
 
 	if (ioctl(xf86Info.consoleFd, PCCONIOCRAW, 0) < 0)
 	{

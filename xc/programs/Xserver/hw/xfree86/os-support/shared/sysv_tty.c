@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: sysv_tty.c,v 1.1 94/10/05 13:42:45 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.1 1994/09/26 15:34:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -35,6 +36,7 @@
 
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+#include "xf86_Config.h"
 
 static Bool not_a_tty = FALSE;
 
@@ -55,6 +57,26 @@ unsigned cflag;
 		ErrorF("Warning: unable to get status of mouse fd (%s)\n",
 		       strerror(errno));
 		return;
+	}
+
+	/* this will query the initial baudrate only once */
+	if (xf86Info.oldBaudRate < 0) { 
+	   switch (tty.c_cflag & CBAUD) 
+	      {
+	      case B9600: 
+		 xf86Info.oldBaudRate = 9600;
+		 break;
+	      case B4800: 
+		 xf86Info.oldBaudRate = 4800;
+		 break;
+	      case B2400: 
+		 xf86Info.oldBaudRate = 2400;
+		 break;
+	      case B1200: 
+	      default:
+		 xf86Info.oldBaudRate = 1200;
+		 break;
+	      }
 	}
 
 	tty.c_iflag = IGNBRK | IGNPAR;
@@ -107,10 +129,13 @@ unsigned cflag;
 		tty.c_cflag |= B1200;
 	}
 
-	if (write(xf86Info.mseFd, c, 2) != 2)
+	if (xf86Info.mseType == P_LOGIMAN || xf86Info.mseType == P_LOGI)
 	{
-		FatalError("Unable to write to mouse fd (%s)\n",
-			   strerror(errno));
+		if (write(xf86Info.mseFd, c, 2) != 2)
+		{
+			FatalError("Unable to write to mouse fd (%s)\n",
+				   strerror(errno));
+		}
 	}
 	usleep(100000);
 

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: am_init.c,v 1.1 94/10/05 13:41:20 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_init.c,v 3.0 1994/09/23 10:22:13 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -70,7 +71,7 @@ void xf86OpenConsole()
 		       err_why(ERR_CONVERT(seg)));
 	}
  
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
     }
     return;
 }

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: xf86_OSlib.h,v 1.1 94/10/05 13:40:57 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.5 1994/09/07 15:53:28 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -52,6 +53,9 @@
 # include <termio.h>
 # include <sys/stat.h>
 # include <sys/types.h>
+# ifdef SCO
+# include <sys/param.h>
+# endif
 
 # include <errno.h>
 
@@ -63,9 +67,9 @@
 #  include <sys/proc.h>
 #  include <sys/tss.h>
 #  include <sys/sysi86.h>
-#  ifdef SVR4
+#  if defined(SVR4) && !defined(sun)
 #   include <sys/seg.h>
-#  endif /* SVR4 */
+#  endif /* SVR4 && !sun */
 #  include <sys/v86.h>
 #  if defined(sun) && defined (i386) && defined (SVR4)
 #    include <sys/psw.h>
@@ -82,7 +86,9 @@
 #endif
 
 # define HAS_USL_VTS
-# include <sys/emap.h>
+# if !defined(sun)
+#  include <sys/emap.h>
+# endif
 # if defined(SCO)
 #  include <sys/vtkd.h>
 #  include <sys/console.h>
@@ -132,11 +138,11 @@
 extern int xf86_solx86usleep(unsigned long);
 # define usleep(usec) xf86_solx86usleep(usec) 
 #else
-# define usleep(usec) syscall(3112, (usec) / 1000)
+# define usleep(usec) syscall(3112, (usec) / 1000 + 1)
 #endif /* sun && i386 && SVR4 */
 
 # ifdef SYSV
-#  if !defined(ISC) || defined(ISC202)
+#  if !defined(ISC) || defined(ISC202) || defined(ISC22)
 #   define NEED_STRERROR
 #  endif
 # endif
@@ -319,7 +325,7 @@ extern int errno;
 /**************************************************************************/
 /* Minix                                                                  */
 /**************************************************************************/
-#if defined(_MINIX)
+#if defined(MINIX)
 # include <sys/ioctl.h>
 # include <signal.h>
 
@@ -327,7 +333,6 @@ extern int errno;
 # define termio termios
 
 # include <errno.h>
-extern int errno;
 
 # include <assert.h>
 # include <limits.h>
@@ -336,7 +341,7 @@ extern int errno;
 
 # include <sys/stat.h>
 
-#endif /* _MINIX */
+#endif /* MINIX */
 
 /**************************************************************************/
 /* Amoeba                                                                 */
@@ -413,9 +418,10 @@ extern int sys_nerr;
 #endif
 
 /* The Region arg to xf86[Un]Map* */
-#define NUM_REGIONS 2
+#define NUM_REGIONS 3
 #define VGA_REGION 0
 #define LINEAR_REGION 1
+#define EXTENDED_REGION 2
 
 #ifndef NO_OSLIB_PROTOTYPES
 /***************************************************************************/

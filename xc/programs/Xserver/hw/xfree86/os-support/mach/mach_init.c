@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach_init.c,v 1.1 94/10/05 13:42:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_init.c,v 3.0 1994/09/23 10:25:01 dawes Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -40,7 +41,7 @@ void xf86OpenConsole()
 {
     if (serverGeneration == 1)
     {
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
 	if ((xf86Info.consoleFd = open("/dev/console",O_RDWR,0)) < 0) 
 	{
 	    FatalError("xf86OpenConsole: Can't open /dev/console (%s)\n",

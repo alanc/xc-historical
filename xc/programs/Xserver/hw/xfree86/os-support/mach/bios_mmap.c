@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: bios_mmap.c,v 1.1 94/10/05 13:42:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/bios_mmap.c,v 3.0 1994/06/05 05:58:08 dawes Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -28,6 +29,7 @@
 #include "X.h"
 #include "misc.h"
 
+#define DevicePtr int
 #include "xf86_OSlib.h"
 
 #define BIOS_SIZE 0x20000

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: sco_mouse.c,v 1.1 94/10/05 13:42:34 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.1 1994/09/23 10:25:16 dawes Exp $ */
 
 /******************************************************************************/
 
@@ -13,16 +14,6 @@
 #include "xf86_OSlib.h"
 
 /******************************************************************************/
-
-extern int GetMotionEvents(
-#if NeedFunctionPrototypes
-	CARD32, CARD32,
-	xTimecoord *,
-	ScreenPtr
-#endif
-);
-
-/******************************************************************************/
 #ifdef USE_OSMOUSE
 /******************************************************************************/
 
@@ -35,7 +26,7 @@ static int		config_buttons = 0;
 
 /******************************************************************************/
 /*
- *	Handle any Xconfig options for "OsMouse", How you treat errors
+ *	Handle any XF86Config options for "OsMouse", How you treat errors
  *	is up to you, they may or may not be Fatal
  */
 

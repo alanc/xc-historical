@@ -1,4 +1,5 @@
-/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XConsortium: inout.s,v 1.1 94/10/05 13:42:45 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/inout.s,v 3.0 1994/08/31 04:40:50 dawes Exp $ */
 
 #include "assyntax.h"
 
@@ -70,5 +71,36 @@ GLNAME(outw):
 	MOV_L	(REGOFF(4,ESP),EDX)
 	MOV_L	(REGOFF(8,ESP),EAX)
 	OUT1_W	(DX)
+	RET
+
+/*
+ *-----------------------------------------------------------------------
+ * inl ---
+ *	Input one 32-bit longword.
+ *
+ * Results:
+ *      Word in eax.
+ *-----------------------------------------------------------------------
+ */
+	GLOBL	GLNAME(inl)
+GLNAME(inl):
+	MOV_L	(REGOFF(4,ESP),EDX)
+	IN1_L	(EDX)
+	RET
+
+/*
+ *-----------------------------------------------------------------------
+ * outl ---
+ *	Output one 32-bit longword.
+ *
+ * Results:
+ *      None.
+ *-----------------------------------------------------------------------
+ */
+	GLOBL	GLNAME(outl)
+GLNAME(outl):
+	MOV_L	(REGOFF(4,ESP),EDX)
+	MOV_L	(REGOFF(8,ESP),EAX)
+	OUT1_L	(EDX)
 	RET
 

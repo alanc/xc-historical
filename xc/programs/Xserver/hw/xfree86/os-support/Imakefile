@@ -1,10 +1,11 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/10/05 13:40:57 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.3 1994/06/05 13:46:28 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
 
 #if defined(SVR3Architecture) 
-# if defined(i386Sco)
+# if defined(i386ScoArchitecture)
 OS_SUBDIR = sco
 # else
 OS_SUBDIR = sysv
@@ -23,20 +24,8 @@ OS_SUBDIR = sysv
 OS_SUBDIR = linux
 #endif
 
-/*
- * This would be "cleaner", but I don't understand all of the BSD stuff yet
- *
-#if defined(BSD386Architecture)
-OS_SUBDIR = bsdi
-#endif
-
-#if defined(BSDArchitecture)
-OS_SUBDIR = bsd
-#endif
-*/
-
 #if defined(i386BsdArchitecture)
-# if defined(i386Bsdi)
+# if defined(BSD386Architecture)
 OS_SUBDIR = bsdi
 # else
 OS_SUBDIR = bsd
@@ -51,7 +40,7 @@ OS_SUBDIR = mach
 OS_SUBDIR = amoeba
 #endif
 
-#if defined(Minix)
+#if defined(MinixArchitecture)
 OS_SUBDIR = minix
 #endif
 
@@ -63,14 +52,9 @@ OBJS = $(OS_SUBDIR)/?*.o misc/?*.o
 
 DONES = $(OS_SUBDIR)/DONE misc/DONE
 
-/* Hack to force bsd make to do things in the correct order */
-all::
-
-all:: subdirs libxf86_os.a
-
-NamedMakeSubdirs(subdirs,$(SUBDIRS))
-
 NormalDepLibraryTarget(xf86_os,$(SUBDIRS) $(DONES),$(OBJS))
+
+ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(xf86_os,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(assyntax.h,$(LINKKITDIR)/include)
