@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.20 89/04/26 09:13:49 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.21 89/04/29 10:43:19 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -34,7 +34,6 @@ SOFTWARE.
 
 typedef struct _OtherClients {
     OtherClientsPtr	next;
-    ClientPtr		client;	  /* which client is slecting on this window */
     XID			resource; /* id for putting into resource manager */
     Mask		mask;
 } OtherClients;
@@ -60,13 +59,13 @@ typedef struct _DeviceIntRec *DeviceIntPtr;
   typedef struct _GrabRec {
     GrabPtr		next;		/* for chain of passive grabs */
     XID			resource;
-    ClientPtr		client;
     DeviceIntPtr	device;
     WindowPtr		window;
-    Bool		ownerEvents;
-    Bool		keyboardMode, pointerMode;
+    unsigned		ownerEvents:1;
+    unsigned		keyboardMode:1;
+    unsigned		pointerMode:1;
     DetailRec		modifiersDetail;
-    Mask		eventMask;
+    unsigned short	eventMask;
     DetailRec		detail;		/* key or button */
     WindowPtr		confineTo;	/* always NULL for keyboards */
     CursorPtr		cursor;		/* always NULL for keyboards */
