@@ -1,7 +1,7 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Initialize.c,v 1.120 88/09/02 20:10:09 swick Exp $";
-/* $oHeader: Initialize.c,v 1.6 88/08/29 16:45:39 asente Exp $ */
+    "$XConsortium: Initialize.c,v 1.121 88/09/03 17:03:56 swick Exp $";
+/* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -37,7 +37,6 @@ SOFTWARE.
 #include "StringDefs.h"
 #include "Shell.h"
 #include "ShellP.h"
-#include "ConvertI.h"
 #include "Quarks.h"
 
 /*
