@@ -1,16 +1,46 @@
 The following changes have been made to this directory since R2:
 
-     o  the Athena widgets now use the R3 Intrinsics.
+     o	the Athena widgets now use the R3 Intrinsics.
 
-     o  Scrollbar does color and reverse video properly.
+     o	many resources that the documentation said were ints are
+	really Dimensions and/or Positions.  See Xt/CHANGES for
+	the impact of this.
 
-     o  AsciiSink has been fixed to not do a bad left-bearing computation.
+     o	the header file Misc.h has been renamed to XawMisc.h.
 
-     o  Clock now handles exposures without causing its interval timer to
+     o	Scrollbar does color and reverse video properly.  SetValues on
+	an unrealized Scrollbar now works better.
+
+     o	AsciiSink (used by AsciiDisk and AsciiString) has been
+	fixed to not do a bad left-bearing computation and to get
+	the correct foreground.
+
+     o	Text, AsciiString, and AsciiDisk now get the correct background
+	resource.
+
+     o	Several key bindings in Text that were broken now work.
+
+     o	Clock now handles exposures without causing its interval timer to
 	close to zero.
 
-     o  Load now uses resource XtNhighlight to specify the label and scale
-	color.
+     o	Load now uses resource XtNhighlight to specify the label and scale
+	color.  It also updates more intelligently and scales correctly.
 
-     o  Extra spaces in Text have been removed to make it work on compilers
+     o	Extra spaces in Text have been removed to make it work on compilers
 	with small internal table space.
+
+     o	Grip has a cursor resource.
+
+     o	the Mailbox widget has a new resource to specify a shell
+	command to be executed to check for new mail.  It also now
+	uses the translation manager and no longer compresses its
+	interval timer to zero on exposures or button presses.
+
+     o	VPaned no longer assumes all it's children are
+	mapped_when_managed.  It no longer grabs the mouse when
+	resizing a pane.
+
+     o	a new routine, XtSimpleStippledPixmap, has been added.
+	(documentation not yet written).
+
+     o	a new widget, List, has been added.
