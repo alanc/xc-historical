@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.55 88/10/18 11:37:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.56 88/10/21 13:23:02 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -77,8 +77,12 @@ static void QueueTimerEvent(app, ptr)
  *
  * This routine returns when there is something to be done
  *
+ * Before calling this with ignoreInputs==False, app->outstandingQueue should
+ * be checked; this routine will not verify that an alternate input source
+ * has not already been enqueued.
  *
- * _XtWaitForSomething( ignoreTimers, ignoreInputs, block, howlong, displaySet)
+ *
+ * _XtWaitForSomething( ignoreTimers, ignoreInputs, block, howlong, appContext)
  * Boolean ignoreTimers;     (Don't return if a timer would fire
  *				Also implies forget timers exist)
  *
@@ -207,6 +211,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
 	ret = -1;
 	for (i = 0; i < app->fds.nfds && nfound > 0; i++) {
 	    if (FD_ISSET (i, &rmaskfd)) {
+		nfound--;
 		for (d = 0; d < app->count; d++) {
 		    if (i == ConnectionNumber(app->list[d])) {
 			if (ret == -1) ret = d;
@@ -216,7 +221,6 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
 
 		app->selectRqueue[i]->ie_oq = app->outstandingQueue;
 		app->outstandingQueue = app->selectRqueue[i];
-		nfound--;
 	    }
 	    if (FD_ISSET (i, &wmaskfd)) {
 		app->selectWqueue[i]->ie_oq = app->outstandingQueue;
@@ -362,7 +366,7 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	InputEvent *sptr;
 	XtInputMask condition = (XtInputMask) Condition;
 	
-	sptr = (InputEvent *)XtMalloc((unsigned) sizeof (*sptr));
+	sptr = XtNew(InputEvent);
 	if(condition == XtInputReadMask){
 	    sptr->ie_next = app->selectRqueue[source];
 	    app->selectRqueue[source] = sptr;
@@ -474,17 +478,20 @@ static void DoOtherSources(app)
 	struct timeval  cur_time;
 	struct timezone cur_timezone;
 
+#define DrainQueue() \
+	for (ie_ptr = app->outstandingQueue; ie_ptr != NULL;) { \
+	    app->outstandingQueue = ie_ptr->ie_oq;		\
+	    ie_ptr ->ie_oq = NULL;				\
+	    IeCallProc(ie_ptr);					\
+	    ie_ptr = app->outstandingQueue;			\
+	}
+/*enddef*/
+	DrainQueue();
 	if (app->fds.count > 0) {
 	    /* Call _XtwaitForSomething to get input queued up */
 	    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
 		(unsigned long *)NULL, app);
-	}
-
-	for (ie_ptr = app->outstandingQueue; ie_ptr != NULL;) {
-	    app->outstandingQueue = ie_ptr->ie_oq;
-	    ie_ptr ->ie_oq = NULL;
-	    IeCallProc(ie_ptr);
-	    ie_ptr = app->outstandingQueue;
+	    DrainQueue();
 	}
 	if (app->timerQueue != NULL) {	/* check timeout queue */
 	    (void) gettimeofday (&cur_time, &cur_timezone);
@@ -498,6 +505,7 @@ static void DoOtherSources(app)
               if (app->timerQueue == NULL) break;
 	    }
 	}
+#undef DrainQueue
 }
 
 /* If there are any work procs, call them.  Return whether we did so */
@@ -622,7 +630,7 @@ void XtAppProcessEvent(app, mask)
 	    }
     
 	    if (mask & XtIMAlternateInput) {
-		if (app->fds.count > 0) {
+		if (app->fds.count > 0 && app->outstandingQueue == NULL) {
 		    /* Call _XtwaitForSomething to get input queued up */
 		    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
 			    (unsigned long *)NULL, app);
@@ -723,13 +731,15 @@ Boolean PeekOtherSources(app)
 	struct timeval  cur_time;
 	struct timezone cur_timezone;
 
+	if (app->outstandingQueue != NULL) return TRUE;
+
 	if (app->fds.count > 0) {
 	    /* Call _XtwaitForSomething to get input queued up */
 	    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
 		    (unsigned long *)NULL, app);
+	    if (app->outstandingQueue != NULL) return TRUE;
 	}
 
-	if (app->outstandingQueue != NULL) return TRUE;
 	if (app->timerQueue != NULL) {	/* check timeout queue */
 	    (void) gettimeofday (&cur_time, &cur_timezone);
 	    if (IS_AFTER (app->timerQueue->te_timer_value, cur_time)) return TRUE;
