@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.18 94/07/18 15:26:48 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.19 94/07/19 12:36:45 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -738,8 +738,8 @@ SmPointer clientData;
     FILE *proxyFile;
     char *path, *filename;
     Bool success = True;
-    SmProp prop1, prop2, prop3, prop4, prop5, *props[5];
-    SmPropValue prop3val, prop4val, prop5val;
+    SmProp prop1, prop2, prop3, prop4, *props[4];
+    SmPropValue prop2val, prop3val, prop4val;
     char discardCommand[80], userId[20];
     int numVals, i;
     WinInfo *winptr;
@@ -812,41 +812,35 @@ SmPointer clientData;
 
     prop1.num_vals = numVals;
 
-    prop2.name = SmCloneCommand;
-    prop2.type = SmLISTofARRAY8;
-    prop2.num_vals = numVals - 4;		/* don't include restart */
-    prop2.vals = prop1.vals;
-    
-    prop3.name = SmProgram;
+    prop2.name = SmProgram;
+    prop2.type = SmARRAY8;
+    prop2.num_vals = 1;
+    prop2.vals = &prop2val;
+    prop2val.value = Argv[0];
+    prop2val.length = strlen (Argv[0]);
+
+    sprintf (discardCommand, "rm %s", filename);
+    prop3.name = SmDiscardCommand;
     prop3.type = SmARRAY8;
     prop3.num_vals = 1;
     prop3.vals = &prop3val;
-    prop3val.value = Argv[0];
-    prop3val.length = strlen (Argv[0]);
+    prop3val.value = (SmPointer) discardCommand;
+    prop3val.length = strlen (discardCommand);
 
-    sprintf (discardCommand, "rm %s", filename);
-    prop4.name = SmDiscardCommand;
+    sprintf (userId, "%d", getuid());
+    prop4.name = SmUserID;
     prop4.type = SmARRAY8;
     prop4.num_vals = 1;
     prop4.vals = &prop4val;
-    prop4val.value = (SmPointer) discardCommand;
-    prop4val.length = strlen (discardCommand);
-
-    sprintf (userId, "%d", getuid());
-    prop5.name = SmUserID;
-    prop5.type = SmARRAY8;
-    prop5.num_vals = 1;
-    prop5.vals = &prop5val;
-    prop5val.value = (SmPointer) userId;
-    prop5val.length = strlen (userId);
+    prop4val.value = (SmPointer) userId;
+    prop4val.length = strlen (userId);
 
     props[0] = &prop1;
     props[1] = &prop2;
     props[2] = &prop3;
     props[3] = &prop4;
-    props[4] = &prop5;
 
-    SmcSetProperties (smcConn, 5, props);
+    SmcSetProperties (smcConn, 4, props);
     free ((char *) prop1.vals);
 
     SmcSaveYourselfDone (smcConn, success);
