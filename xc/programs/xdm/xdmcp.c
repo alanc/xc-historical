@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.10 93/09/23 14:38:44 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.11 94/02/02 08:42:23 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,6 +35,14 @@
 #include	<netinet/in.h>
 #include	<sys/un.h>
 #include	<netdb.h>
+
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 #define getString(name,len)	((name = malloc (len + 1)) ? 1 : 0)
 
@@ -74,140 +82,10 @@ AnyWellKnownSockets ()
     return xdmcpFd != -1 || chooserFd != -1;
 }
 
-WaitForSomething ()
-{
-    FD_TYPE	reads;
-    int	nready;
-    extern int Rescan, ChildReady;
-
-    Debug ("WaitForSomething\n");
-    if (AnyWellKnownSockets () && !ChildReady) {
-	reads = WellKnownSocketsMask;
-	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
-	Debug ("select returns %d.  Rescan: %d  ChildReady: %d\n",
-		nready, Rescan, ChildReady);
-	if (nready > 0)
-	{
-	    if (xdmcpFd >= 0 && FD_ISSET (xdmcpFd, &reads))
-		ProcessRequestSocket ();
-	    if (chooserFd >= 0 && FD_ISSET (chooserFd, &reads))
-		ProcessChooserSocket (chooserFd);
-	}
-	if (ChildReady)
-	{
-	    WaitForChild ();
-	}
-    } else
-	WaitForChild ();
-}
-
-/*
- * respond to a request on the UDP socket.
- */
-
-static ARRAY8	Hostname;
-
-registerHostname (name, namelen)
-    char    *name;
-    int	    namelen;
-{
-    int	i;
-
-    if (!XdmcpReallocARRAY8 (&Hostname, namelen))
-	return;
-    for (i = 0; i < namelen; i++)
-	Hostname.data[i] = name[i];
-}
-
 static XdmcpBuffer	buffer;
 
-ProcessRequestSocket ()
-{
-    XdmcpHeader		header;
-    struct sockaddr_in	addr;
-    int			addrlen = sizeof addr;
-
-    Debug ("ProcessRequestSocket\n");
-    bzero ((char *) &addr, sizeof (addr));
-    if (!XdmcpFill (xdmcpFd, &buffer, &addr, &addrlen)) {
-	Debug ("XdmcpFill failed\n");
-	return;
-    }
-    if (!XdmcpReadHeader (&buffer, &header)) {
-	Debug ("XdmcpReadHeader failed\n");
-	return;
-    }
-    if (header.version != XDM_PROTOCOL_VERSION) {
-	Debug ("XDMCP header version read was %d, expected %d\n",
-	       header.version, XDM_PROTOCOL_VERSION);
-	return;
-    }
-    Debug ("header: %d %d %d\n", header.version, header.opcode, header.length);
-    switch (header.opcode)
-    {
-    case BROADCAST_QUERY:
-	broadcast_respond (&addr, addrlen, header.length);
-	break;
-    case QUERY:
-	query_respond (&addr, addrlen, header.length);
-	break;
-    case INDIRECT_QUERY:
-	indirect_respond (&addr, addrlen, header.length);
-	break;
-    case FORWARD_QUERY:
-	forward_respond (&addr, addrlen, header.length);
-	break;
-    case REQUEST:
-	request_respond (&addr, addrlen, header.length);
-	break;
-    case MANAGE:
-	manage (&addr, addrlen, header.length);
-	break;
-    case KEEPALIVE:
-	send_alive (&addr, addrlen, header.length);
-	break;
-    }
-}
-
-query_respond (from, fromlen, length)
-    struct sockaddr *from;
-    int		    fromlen;
-    int		    length;
-{
-    Debug ("Query respond %d\n", length);
-    direct_query_respond (from, fromlen, length, QUERY);
-}
-
-broadcast_respond (from, fromlen, length)
-    struct sockaddr *from;
-    int		    fromlen;
-    int		    length;
-{
-    direct_query_respond (from, fromlen, length, BROADCAST_QUERY);
-}
-
-direct_query_respond (from, fromlen, length, type)
-    struct sockaddr *from;
-    int		    fromlen;
-    int		    length;
-    xdmOpCode	    type;
-{
-    ARRAYofARRAY8   queryAuthenticationNames;
-    int		    expectedLen;
-    int		    i;
-    
-    if (!XdmcpReadARRAYofARRAY8 (&buffer, &queryAuthenticationNames))
-	return;
-    expectedLen = 1;
-    for (i = 0; i < (int)queryAuthenticationNames.length; i++)
-	expectedLen += 2 + queryAuthenticationNames.data[i].length;
-    if (length == expectedLen)
-	all_query_respond (from, fromlen, &queryAuthenticationNames, type);
-    XdmcpDisposeARRAYofARRAY8 (&queryAuthenticationNames);
-}
-
 /*ARGSUSED*/
-static int
+static void
 sendForward (connectionType, address, closure)
     CARD16	connectionType;
     ARRAY8Ptr	address;
@@ -270,6 +148,230 @@ ClientAddress (from, addr, port, type)
     addr->length = length;
 
     *type = family;
+}
+
+static void
+all_query_respond (from, fromlen, authenticationNames, type)
+    struct sockaddr	*from;
+    int			fromlen;
+    ARRAYofARRAY8Ptr	authenticationNames;
+    xdmOpCode		type;
+{
+    ARRAY8Ptr	authenticationName;
+    ARRAY8	status;
+    ARRAY8	addr;
+    CARD16	connectionType;
+    int		family;
+    int		length;
+
+    family = ConvertAddr(from, &length, &(addr.data));
+    addr.length = length;	/* convert int to short */
+    Debug ("all_query_respond: conntype=%d, addr=%lx, len=%d\n",
+	   family, *(addr.data), addr.length);
+    if (family < 0)
+	return;
+    connectionType = family;
+
+    if (type == INDIRECT_QUERY)
+	RememberIndirectClient (&addr, connectionType);
+    else
+	ForgetIndirectClient (&addr, connectionType);
+
+    authenticationName = ChooseAuthentication (authenticationNames);
+    if (Willing (&addr, connectionType, authenticationName, &status, type))
+	send_willing (from, fromlen, authenticationName, &status);
+    else
+	if (type == QUERY)
+	    send_unwilling (from, fromlen, authenticationName, &status);
+    XdmcpDisposeARRAY8 (&status);
+}
+
+static void
+indirect_respond (from, fromlen, length)
+    struct sockaddr *from;
+    int		    fromlen;
+    int		    length;
+{
+    ARRAYofARRAY8   queryAuthenticationNames;
+    ARRAY8	    clientAddress;
+    ARRAY8	    clientPort;
+    CARD16	    connectionType;
+    int		    expectedLen;
+    int		    i;
+    XdmcpHeader	    header;
+    int		    localHostAsWell;
+    
+    Debug ("Indirect respond %d\n", length);
+    if (!XdmcpReadARRAYofARRAY8 (&buffer, &queryAuthenticationNames))
+	return;
+    expectedLen = 1;
+    for (i = 0; i < (int)queryAuthenticationNames.length; i++)
+	expectedLen += 2 + queryAuthenticationNames.data[i].length;
+    if (length == expectedLen)
+    {
+	ClientAddress (from, &clientAddress, &clientPort, &connectionType);
+	/*
+	 * set up the forward query packet
+	 */
+    	header.version = XDM_PROTOCOL_VERSION;
+    	header.opcode = (CARD16) FORWARD_QUERY;
+    	header.length = 0;
+    	header.length += 2 + clientAddress.length;
+    	header.length += 2 + clientPort.length;
+    	header.length += 1;
+    	for (i = 0; i < (int)queryAuthenticationNames.length; i++)
+	    header.length += 2 + queryAuthenticationNames.data[i].length;
+    	XdmcpWriteHeader (&buffer, &header);
+    	XdmcpWriteARRAY8 (&buffer, &clientAddress);
+    	XdmcpWriteARRAY8 (&buffer, &clientPort);
+    	XdmcpWriteARRAYofARRAY8 (&buffer, &queryAuthenticationNames);
+
+	localHostAsWell = ForEachMatchingIndirectHost (&clientAddress, connectionType, sendForward, (char *) 0);
+	
+	XdmcpDisposeARRAY8 (&clientAddress);
+	XdmcpDisposeARRAY8 (&clientPort);
+	if (localHostAsWell)
+	    all_query_respond (from, fromlen, &queryAuthenticationNames,
+			   INDIRECT_QUERY);
+    }
+    else
+    {
+	Debug ("Indirect length error got %d expect %d\n", length, expectedLen);
+    }
+    XdmcpDisposeARRAYofARRAY8 (&queryAuthenticationNames);
+}
+
+static void
+ProcessRequestSocket ()
+{
+    XdmcpHeader		header;
+    struct sockaddr_in	addr;
+    int			addrlen = sizeof addr;
+
+    Debug ("ProcessRequestSocket\n");
+    bzero ((char *) &addr, sizeof (addr));
+    if (!XdmcpFill (xdmcpFd, &buffer, &addr, &addrlen)) {
+	Debug ("XdmcpFill failed\n");
+	return;
+    }
+    if (!XdmcpReadHeader (&buffer, &header)) {
+	Debug ("XdmcpReadHeader failed\n");
+	return;
+    }
+    if (header.version != XDM_PROTOCOL_VERSION) {
+	Debug ("XDMCP header version read was %d, expected %d\n",
+	       header.version, XDM_PROTOCOL_VERSION);
+	return;
+    }
+    Debug ("header: %d %d %d\n", header.version, header.opcode, header.length);
+    switch (header.opcode)
+    {
+    case BROADCAST_QUERY:
+	broadcast_respond (&addr, addrlen, header.length);
+	break;
+    case QUERY:
+	query_respond (&addr, addrlen, header.length);
+	break;
+    case INDIRECT_QUERY:
+	indirect_respond (&addr, addrlen, header.length);
+	break;
+    case FORWARD_QUERY:
+	forward_respond (&addr, addrlen, header.length);
+	break;
+    case REQUEST:
+	request_respond (&addr, addrlen, header.length);
+	break;
+    case MANAGE:
+	manage (&addr, addrlen, header.length);
+	break;
+    case KEEPALIVE:
+	send_alive (&addr, addrlen, header.length);
+	break;
+    }
+}
+
+WaitForSomething ()
+{
+    FD_TYPE	reads;
+    int	nready;
+    extern int Rescan, ChildReady;
+
+    Debug ("WaitForSomething\n");
+    if (AnyWellKnownSockets () && !ChildReady) {
+	reads = WellKnownSocketsMask;
+	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
+	Debug ("select returns %d.  Rescan: %d  ChildReady: %d\n",
+		nready, Rescan, ChildReady);
+	if (nready > 0)
+	{
+	    if (xdmcpFd >= 0 && FD_ISSET (xdmcpFd, &reads))
+		ProcessRequestSocket ();
+	    if (chooserFd >= 0 && FD_ISSET (chooserFd, &reads))
+		ProcessChooserSocket (chooserFd);
+	}
+	if (ChildReady)
+	{
+	    WaitForChild ();
+	}
+    } else
+	WaitForChild ();
+}
+
+/*
+ * respond to a request on the UDP socket.
+ */
+
+static ARRAY8	Hostname;
+
+void
+registerHostname (name, namelen)
+    char    *name;
+    int	    namelen;
+{
+    int	i;
+
+    if (!XdmcpReallocARRAY8 (&Hostname, namelen))
+	return;
+    for (i = 0; i < namelen; i++)
+	Hostname.data[i] = name[i];
+}
+
+static void
+direct_query_respond (from, fromlen, length, type)
+    struct sockaddr *from;
+    int		    fromlen;
+    int		    length;
+    xdmOpCode	    type;
+{
+    ARRAYofARRAY8   queryAuthenticationNames;
+    int		    expectedLen;
+    int		    i;
+    
+    if (!XdmcpReadARRAYofARRAY8 (&buffer, &queryAuthenticationNames))
+	return;
+    expectedLen = 1;
+    for (i = 0; i < (int)queryAuthenticationNames.length; i++)
+	expectedLen += 2 + queryAuthenticationNames.data[i].length;
+    if (length == expectedLen)
+	all_query_respond (from, fromlen, &queryAuthenticationNames, type);
+    XdmcpDisposeARRAYofARRAY8 (&queryAuthenticationNames);
+}
+
+query_respond (from, fromlen, length)
+    struct sockaddr *from;
+    int		    fromlen;
+    int		    length;
+{
+    Debug ("Query respond %d\n", length);
+    direct_query_respond (from, fromlen, length, QUERY);
+}
+
+broadcast_respond (from, fromlen, length)
+    struct sockaddr *from;
+    int		    fromlen;
+    int		    length;
+{
+    direct_query_respond (from, fromlen, length, BROADCAST_QUERY);
 }
 
 /* computes an X display name */
@@ -351,60 +453,6 @@ NetworkAddressToName(connectionType, connectionAddress, displayNumber)
     default:
 	return NULL;
     }
-}
-
-indirect_respond (from, fromlen, length)
-    struct sockaddr *from;
-    int		    fromlen;
-    int		    length;
-{
-    ARRAYofARRAY8   queryAuthenticationNames;
-    ARRAY8	    clientAddress;
-    ARRAY8	    clientPort;
-    CARD16	    connectionType;
-    int		    expectedLen;
-    int		    i;
-    XdmcpHeader	    header;
-    int		    localHostAsWell;
-    
-    Debug ("Indirect respond %d\n", length);
-    if (!XdmcpReadARRAYofARRAY8 (&buffer, &queryAuthenticationNames))
-	return;
-    expectedLen = 1;
-    for (i = 0; i < (int)queryAuthenticationNames.length; i++)
-	expectedLen += 2 + queryAuthenticationNames.data[i].length;
-    if (length == expectedLen)
-    {
-	ClientAddress (from, &clientAddress, &clientPort, &connectionType);
-	/*
-	 * set up the forward query packet
-	 */
-    	header.version = XDM_PROTOCOL_VERSION;
-    	header.opcode = (CARD16) FORWARD_QUERY;
-    	header.length = 0;
-    	header.length += 2 + clientAddress.length;
-    	header.length += 2 + clientPort.length;
-    	header.length += 1;
-    	for (i = 0; i < (int)queryAuthenticationNames.length; i++)
-	    header.length += 2 + queryAuthenticationNames.data[i].length;
-    	XdmcpWriteHeader (&buffer, &header);
-    	XdmcpWriteARRAY8 (&buffer, &clientAddress);
-    	XdmcpWriteARRAY8 (&buffer, &clientPort);
-    	XdmcpWriteARRAYofARRAY8 (&buffer, &queryAuthenticationNames);
-
-	localHostAsWell = ForEachMatchingIndirectHost (&clientAddress, connectionType, sendForward, (char *) 0);
-	
-	XdmcpDisposeARRAY8 (&clientAddress);
-	XdmcpDisposeARRAY8 (&clientPort);
-	if (localHostAsWell)
-	    all_query_respond (from, fromlen, &queryAuthenticationNames,
-			   INDIRECT_QUERY);
-    }
-    else
-    {
-	Debug ("Indirect length error got %d expect %d\n", length, expectedLen);
-    }
-    XdmcpDisposeARRAYofARRAY8 (&queryAuthenticationNames);
 }
 
 /*ARGSUSED*/
@@ -517,41 +565,6 @@ badAddress:
     XdmcpDisposeARRAYofARRAY8 (&authenticationNames);
 }
 
-all_query_respond (from, fromlen, authenticationNames, type)
-    struct sockaddr	*from;
-    int			fromlen;
-    ARRAYofARRAY8Ptr	authenticationNames;
-    xdmOpCode		type;
-{
-    ARRAY8Ptr	authenticationName;
-    ARRAY8	status;
-    ARRAY8	addr;
-    CARD16	connectionType;
-    int		family;
-    int		length;
-
-    family = ConvertAddr(from, &length, &(addr.data));
-    addr.length = length;	/* convert int to short */
-    Debug ("all_query_respond: conntype=%d, addr=%lx, len=%d\n",
-	   family, *(addr.data), addr.length);
-    if (family < 0)
-	return;
-    connectionType = family;
-
-    if (type == INDIRECT_QUERY)
-	RememberIndirectClient (&addr, connectionType);
-    else
-	ForgetIndirectClient (&addr, connectionType);
-
-    authenticationName = ChooseAuthentication (authenticationNames);
-    if (Willing (&addr, connectionType, authenticationName, &status, type))
-	send_willing (from, fromlen, authenticationName, &status);
-    else
-	if (type == QUERY)
-	    send_unwilling (from, fromlen, authenticationName, &status);
-    XdmcpDisposeARRAY8 (&status);
-}
-
 send_willing (from, fromlen, authenticationName, status)
     struct sockaddr *from;
     int		    fromlen;
@@ -603,6 +616,15 @@ send_unwilling (from, fromlen, authenticationName, status)
 static unsigned long	globalSessionID;
 
 #define NextSessionID()    (++globalSessionID)
+
+void init_session_id()
+{
+    /* Set randomly so we are unlikely to reuse id's from a previous
+     * incarnation so we don't say "Alive" to those displays.
+     * Start with low digits 0 to make debugging easier.
+     */
+    globalSessionID = (time((Time_t)0)&0x7fff) * 16000;
+}
     
 static ARRAY8 outOfMemory = { (CARD16) 13, (CARD8Ptr) "Out of memory" };
 static ARRAY8 noValidAddr = { (CARD16) 16, (CARD8Ptr) "No valid address" };
