@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-# $XConsortium$
+# $XConsortium: run_InsPEX,v 5.2 91/02/16 10:04:50 rws Exp $
 #
 # Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -30,8 +30,8 @@ set    SNAME=Xsun
 #	(Emptied) directory to accept InsPEX's output -- which is ***LOTS**
 setenv INSPEXDEST /tmp/inspex_test
 #	Can set the root of all evils right here....
-setenv XHOME ../../../..
-setenv PEXHOME ../../..
+setenv XHOME ../../..
+setenv PEXHOME ../..
 
 ###########################################################################
 
@@ -47,7 +47,7 @@ setenv DISPLAY localhost:0.0
 
 # PEXLIBDIR, PEXINCDIR - directories containing the PEX includes and libs.
 setenv PEXLIBDIR $PEXHOME/lib/PEX
-setenv PEXINCDIR $XINCDIR
+setenv PEXINCDIR $XINCDIR/extensions
 # SET the location of the api support files to override the default location
 # default location is where the files are installed by a 'make install'
 setenv PEXAPIDIR `cd $PEXHOME/lib/PEX/lib; pwd`
