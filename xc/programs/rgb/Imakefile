@@ -12,6 +12,6 @@ rgb.pag rgb.dir: rgb rgb.txt
 	./rgb rgb < rgb.txt
 
 clean::
-	rm -f rgb.pag rgb.dir
+	$(RM) rgb.pag rgb.dir
 
 DependTarget()
