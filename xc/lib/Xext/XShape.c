@@ -1,99 +1,103 @@
-/************************************************************
-Copyright 1989 by the Massachusetts Institute of Technology
-
-Permission  to  use,  copy,  modify,  and  distribute   this
-software  and  its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright no-
-tice  appear  in all copies and that both that copyright no-
-tice and this permission notice appear in  supporting  docu-
-mentation,  and  that  the name of MIT not be used in adver-
-tising  or publicity pertaining to distribution of the soft-
-ware without specific prior written permission. M.I.T. makes
-no representation about the suitability of this software for
-any  purpose.  It is provided "as is" without any express or
-implied warranty.
-
-MIT DISCLAIMS ALL WARRANTIES WITH REGARD TO  THIS  SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-
-NESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL MIT BE  LI-
-ABLE  FOR  ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,  DATA  OR
-PROFITS,  WHETHER  IN  AN  ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
-THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-********************************************************/
-
-/* $XConsortium: XShape.c,v 1.10 89/08/21 08:58:53 rws Exp $ */
-
+/*
+ * $XConsortium$
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
 #define NEED_EVENTS
 #define NEED_REPLIES
-#include "region.h"
-#include "shapestr.h"
+#include "region.h"			/* in Xlib sources, incs Xlibint.h */
+#include "Xext.h"			/* in ../include */
+#include "extutil.h"			/* in ../include */
+#include "shapestr.h"			/* in ../include */
 
-struct DpyHasShape {
-    struct DpyHasShape	*next;
-    Display		*dpy;
-    Bool		gotit;
-    XExtCodes		codes;
-};
+static XExtensionInfo *shape_info;	/* needs to move to globals.c */
+static /* const */ char *shape_extension_name = SHAPENAME;
 
-static struct DpyHasShape  *lastChecked, *dpysHaveShape;
+#define ShapeCheckExtension(dpy,i,val) \
+  XextCheckExtension (dpy, i, shape_extension_name, val)
 
-static XExtCodes    *queryExtension ();
 
-static XExtCodes *
-CheckExtension (dpy)
-    Display *dpy;
+/*****************************************************************************
+ *                                                                           *
+ *			   private utility routines                          *
+ *                                                                           *
+ *****************************************************************************/
+
+/*
+ * find_display - locate the display info block
+ */
+static XExtDisplayInfo *find_display (dpy)
+    register Display *dpy;
 {
-    if (lastChecked && lastChecked->dpy == dpy) {
-	if (lastChecked->gotit == 0)
-	    return 0;
-	return &lastChecked->codes;
+    XExtDisplayInfo *dpyinfo;
+    static int close_display(), wire_to_event(), event_to_wire();
+
+    if (!shape_info) {
+	shape_info = XextCreateExtension ();
+	if (!shape_info) return NULL;
     }
-    return queryExtension (dpy);
+
+    dpyinfo = XextFindDisplay (shape_info, dpy);
+    if (!dpyinfo) {
+	/* create any extension data blocks */
+	dpyinfo = XextAddDisplay (shape_info, dpy, 
+				  shape_extension_name, close_display,
+				  wire_to_event, event_to_wire, 
+				  ShapeNumberEvents, NULL);
+    }
+
+    return dpyinfo;
 }
-				    
+
+
+/*
+ * close_display - called on XCloseDisplay, this should remove the
+ * dpyinfo from the display list and clear the cached display, if necessary.
+ */
+
 /*ARGSUSED*/
-static int
-shapeCloseDisplay (dpy, codes)
-    Display	*dpy;
-    XExtCodes	*codes;
+static int close_display (dpy, codes)
+    Display *dpy;
+    XExtCodes *codes;
 {
-    struct DpyHasShape	*dpyHas, *prev;
-
-    prev = 0;
-    for (dpyHas = dpysHaveShape; dpyHas; dpyHas = dpyHas->next) {
-	if (dpyHas->dpy == dpy)
-	    break;
-	prev = dpyHas;
-    }
-    if (!dpyHas)
-	return 0;
-    if (prev)
-	prev->next = dpyHas->next;
-    else
-	dpysHaveShape = dpyHas->next;
-    if (dpyHas == lastChecked)
-	lastChecked = (struct DpyHasShape *) NULL;
-    Xfree (dpyHas);
-    return 0;
+    /* get info pointer and free any extension data, if necessary */
+    return XextRemoveDisplay (shape_info, dpy);
 }
 
+
 static int
-shapeWireToEvent (dpy, re, event)
+wire_to_event (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     XShapeEvent		*se;
     xShapeNotifyEvent	*sevent;
     XExtCodes		*codes;
 
-    codes = CheckExtension (dpy);
-    if (!codes)
-	return False;
-    switch ((event->u.u.type & 0x7f) - codes->first_event) {
+    ShapeCheckExtension (dpy, info, 0);
+
+    switch ((event->u.u.type & 0x7f) - info->codes->first_event) {
     case ShapeNotify:
     	se = (XShapeEvent *) re;
 	sevent = (xShapeNotifyEvent *) event;
@@ -111,25 +115,25 @@ shapeWireToEvent (dpy, re, event)
 	se->shaped = True;
 	if (sevent->shaped == xFalse)
 	    se->shaped = False;
-    	return True;
+    	return 1;
     }
-    return False;
+    return 0;
 }
 
 static int
-shapeEventToWire (dpy, re, event)
+event_to_wire (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     XShapeEvent		*se;
     xShapeNotifyEvent	*sevent;
     XExtCodes		*codes;
 
-    codes = CheckExtension (dpy);
-    if (!codes)
-	return False;
-    switch ((re->type & 0x7f) - codes->first_event) {
+    ShapeCheckExtension (dpy, info, 0);
+
+    switch ((re->type & 0x7f) - info->codes->first_event) {
     case ShapeNotify:
     	se = (XShapeEvent *) re;
 	sevent = (xShapeNotifyEvent *) event;
@@ -142,82 +146,56 @@ shapeEventToWire (dpy, re, event)
     	sevent->width = se->width;
     	sevent->height = se->height;
 	sevent->time = se->time;
-    	return True;
+    	return 1;
     }
-    return False;
+    return 0;
 }
 
-static XExtCodes *
-queryExtension (dpy)
-    register Display *dpy;
-{
-    struct DpyHasShape	*dpyHas;
-    XExtCodes		*codes;
-    int			i;
 
-    for (dpyHas = dpysHaveShape; dpyHas; dpyHas = dpyHas->next) {
-	if (dpyHas->dpy == dpy)
-	    break;
-    }
-    if (!dpyHas) {
-	dpyHas = (struct DpyHasShape *) Xmalloc (sizeof (struct DpyHasShape));
-	if (!dpyHas)
-	    return 0;
-	dpyHas->next = dpysHaveShape;
-	dpysHaveShape = dpyHas;
+/****************************************************************************
+ *                                                                          *
+ *			    Shape public interfaces                         *
+ *                                                                          *
+ ****************************************************************************/
 
-	dpyHas->dpy = dpy;
-	if (dpyHas->gotit = (codes = XInitExtension (dpy, SHAPENAME)) != 0) {
-	    dpyHas->codes = *codes;
-	    /*
-	     * initialize the various Xlib function vectors
-	     */
-	    XESetCloseDisplay (dpy, codes->extension, shapeCloseDisplay);
-	    for (i = 0; i < ShapeNumberEvents; i++) {
-		XESetWireToEvent (dpy, codes->first_event + i, shapeWireToEvent);
-		XESetEventToWire (dpy, codes->first_event + i, shapeEventToWire);
-	    }
-	}
-    }
-    lastChecked = dpyHas;
-    if (!dpyHas->gotit)
-	return (XExtCodes *) 0;
-    return &dpyHas->codes;
-}
-
-Bool
-XShapeQueryExtension (dpy)
+Bool XShapeQueryExtension (dpy)
     Display *dpy;
 {
-    return CheckExtension (dpy) != 0;
+    XExtDisplayInfo *info = find_display (dpy);
+
+    if (XextHasExtension(info)) {
+	return True;
+    } else {
+	return False;
+    }
 }
 
-int
-XShapeGetEventBase (dpy)
+int XShapeGetEventBase (dpy)
     Display *dpy;
 {
-    XExtCodes	*codes;
+    XExtDisplayInfo *info = find_display (dpy);
 
-    codes = CheckExtension (dpy);
-    if (!codes)
+    if (XextHasExtension(info))  {
+	return info->codes->first_event;
+    } else {
 	return -1;
-    return codes->first_event;
+    }
 }
 
-Bool
-XShapeQueryVersion(dpy, majorVersion, minorVersion)
+
+Bool XShapeQueryVersion(dpy, majorVersion, minorVersion)
     Display *dpy;
     int	    *majorVersion, *minorVersion;
 {
-    XExtCodes			    *codes;
+    XExtDisplayInfo *info = find_display (dpy);
     xShapeQueryVersionReply	    rep;
     register xShapeQueryVersionReq  *req;
 
-    if (!(codes = CheckExtension (dpy)))
-	return 0;
+    ShapeCheckExtension (dpy, info, 0);
+
     LockDisplay (dpy);
     GetReq (ShapeQueryVersion, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeQueryVersion;
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
 	UnlockDisplay (dpy);
@@ -231,7 +209,7 @@ XShapeQueryVersion(dpy, majorVersion, minorVersion)
     return 1;
 }
 
-XShapeCombineRegion(dpy, dest, destKind, xOff, yOff, r, op)
+void XShapeCombineRegion(dpy, dest, destKind, xOff, yOff, r, op)
 register Display    *dpy;
 Window		    dest;
 int		    destKind, op, xOff, yOff;
@@ -253,23 +231,24 @@ register REGION	    *r;
 			      xr, r->numRects, op, YXBanded);
 }
 
-XShapeCombineRectangles(dpy, dest, destKind, xOff, yOff,
-			rects, n_rects, op, ordering)
+
+void XShapeCombineRectangles (dpy, dest, destKind, xOff, yOff,
+			      rects, n_rects, op, ordering)
 register Display *dpy;
 XID dest;
 int op, xOff, yOff, ordering;
 XRectangle  *rects;
 int n_rects;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     register xShapeRectanglesReq *req;
     register long nbytes;
-    XExtCodes	*codes;
 
-    if (!(codes = CheckExtension (dpy)))
-	return;
+    ShapeCheckExtension (dpy, info, /**/);
+
     LockDisplay(dpy);
     GetReq(ShapeRectangles, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeRectangles;
     req->op = op;
     req->ordering = ordering;
@@ -288,21 +267,22 @@ int n_rects;
     SyncHandle();
 }
 
-XShapeCombineMask (dpy, dest, destKind, xOff, yOff, src, op)
+
+void XShapeCombineMask (dpy, dest, destKind, xOff, yOff, src, op)
 register Display *dpy;
 int destKind;
 XID dest;
 Pixmap	src;
 int op, xOff, yOff;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     register xShapeMaskReq *req;
-    XExtCodes	*codes;
 
-    if (!(codes = CheckExtension (dpy)))
-	return;
+    ShapeCheckExtension (dpy, info, /**/);
+
     LockDisplay(dpy);
     GetReq(ShapeMask, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeMask;
     req->op = op;
     req->destKind = destKind;
@@ -314,7 +294,7 @@ int op, xOff, yOff;
     SyncHandle();
 }
 
-XShapeCombineShape (dpy, dest, destKind, xOff, yOff, src, srcKind, op)
+void XShapeCombineShape (dpy, dest, destKind, xOff, yOff, src, srcKind, op)
 register Display *dpy;
 int destKind;
 XID dest;
@@ -322,14 +302,14 @@ int srcKind;
 XID src;
 int op, xOff, yOff;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     register xShapeCombineReq *req;
-    XExtCodes	*codes;
 
-    if (!(codes = CheckExtension (dpy)))
-	return;
+    ShapeCheckExtension (dpy, info, /**/);
+
     LockDisplay(dpy);
     GetReq(ShapeCombine, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeCombine;
     req->op = op;
     req->destKind = destKind;
@@ -342,20 +322,21 @@ int op, xOff, yOff;
     SyncHandle();
 }
 
-XShapeOffsetShape (dpy, dest, destKind, xOff, yOff)
+void XShapeOffsetShape (dpy, dest, destKind, xOff, yOff)
 register Display *dpy;
 int destKind;
 XID dest;
 int xOff, yOff;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     register xShapeOffsetReq *req;
     XExtCodes	*codes;
 
-    if (!(codes = CheckExtension (dpy)))
-	return;
+    ShapeCheckExtension (dpy, info, /**/);
+
     LockDisplay(dpy);
     GetReq(ShapeOffset, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeOffset;
     req->destKind = destKind;
     req->dest = dest;
@@ -365,24 +346,24 @@ int xOff, yOff;
     SyncHandle();
 }
 
-XShapeQueryExtents (dpy, window,
-		    bShaped, xbs, ybs, wbs, hbs,
-		    cShaped, xcs, ycs, wcs, hcs)    
+Status XShapeQueryExtents (dpy, window,
+			   bShaped, xbs, ybs, wbs, hbs,
+			   cShaped, xcs, ycs, wcs, hcs)    
     register Display    *dpy;
     Window		    window;
     int			    *bShaped, *cShaped;	    /* RETURN */
     int			    *xbs, *ybs, *xcs, *ycs; /* RETURN */
     unsigned int	    *wbs, *hbs, *wcs, *hcs; /* RETURN */
 {
+    XExtDisplayInfo *info = find_display (dpy);
     xShapeQueryExtentsReply	    rep;
     register xShapeQueryExtentsReq *req;
-    XExtCodes	*codes;
     
-    if (!(codes = CheckExtension (dpy)))
-	return 0;
+    ShapeCheckExtension (dpy, info, 0);
+
     LockDisplay (dpy);
     GetReq (ShapeQueryExtents, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeQueryExtents;
     req->window = window;
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
@@ -405,19 +386,20 @@ XShapeQueryExtents (dpy, window,
     return 1;
 }
 
-XShapeSelectInput (dpy, window, enable)
+
+void XShapeSelectInput (dpy, window, enable)
     register Display	*dpy;
     Window		window;
     Bool		enable;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     register xShapeSelectInputReq   *req;
-    XExtCodes			    *codes;
 
-    if (!(codes = CheckExtension (dpy)))
-	return;
+    ShapeCheckExtension (dpy, info, /**/);
+
     LockDisplay (dpy);
     GetReq (ShapeSelectInput, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeSelectInput;
     req->window = window;
     if (enable)
@@ -428,52 +410,51 @@ XShapeSelectInput (dpy, window, enable)
     SyncHandle ();
 }
 
-Bool
-XShapeInputSelected (dpy, window)
+Bool XShapeInputSelected (dpy, window)
     register Display	*dpy;
     Window		window;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     register xShapeInputSelectedReq *req;
-    XExtCodes			    *codes;
     xShapeInputSelectedReply	    rep;
 
-    if (!(codes = CheckExtension (dpy)))
-	return FALSE;
+    ShapeCheckExtension (dpy, info, False);
+
     LockDisplay (dpy);
     GetReq (ShapeInputSelected, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeInputSelected;
     req->window = window;
     if (!_XReply (dpy, (xReply *) &rep, 0, xFalse)) {
 	UnlockDisplay (dpy);
 	SyncHandle ();
-	return FALSE;
+	return False;
     }
     UnlockDisplay (dpy);
     SyncHandle ();
     return rep.enabled;
 }
 
-XRectangle *
-XShapeGetRectangles (dpy, window, kind, count, ordering)
+
+XRectangle *XShapeGetRectangles (dpy, window, kind, count, ordering)
     register Display	*dpy;
     Window		window;
     int			kind;
     int			*count;	/* RETURN */
     int			*ordering; /* RETURN */
 {
+    XExtDisplayInfo *info = find_display (dpy);
     register xShapeGetRectanglesReq   *req;
-    XExtCodes			    *codes;
     xShapeGetRectanglesReply	    rep;
     XRectangle			    *rects;
     xRectangle			    *xrects;
     int				    i;
 
-    if (!(codes = CheckExtension (dpy)))
-	return (XRectangle *)NULL;
+    ShapeCheckExtension (dpy, info, (XRectangle *)NULL);
+
     LockDisplay (dpy);
     GetReq (ShapeGetRectangles, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeGetRectangles;
     req->window = window;
     req->kind = kind;
