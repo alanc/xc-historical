@@ -1,3 +1,5 @@
+        DEFINES = ConnectionFlags
+LOCAL_LIBRARIES = $(XAUTHLIB)
            SRCS = xauth.c process.c 
            OBJS = xauth.o process.o 
 
