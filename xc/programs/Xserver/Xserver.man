@@ -1,4 +1,4 @@
-.TH XSERVER 1 "Release 4"  "X Version 11"
+.TH XSERVER 1 "Release 5"  "X Version 11"
 .SH NAME
 Xserver \- X Window System server
 .SH SYNOPSIS
@@ -8,24 +8,7 @@ Xserver \- X Window System server
 .I X
 is the generic name for the X Window System server.  It is frequently a link
 or a copy of the appropriate server binary for driving the most frequently
-used server on a given machine.  The sample server from MIT supports the
-following platforms:
-.sp
-.ta 1.25in
-.in +4
-.nf
-Xqvss	Digital monochrome vaxstationII or II
-Xqdss	Digital color vaxstationII or II
-Xsun	Sun monochrome or color Sun 2, 3, or 4
-Xibm	IBM AED, APA and megapel PC/RT, 8514 and VGA PS/2 model 80
-Xapollo	Apollo monochrome or color (Domain/OS SR10.1 or SR10.2)
-Xhp	HP Topcat 9000s300
-XmacII	Apple monochrome Macintosh II
-Xcfbpmax	Digital color DECstation 3100
-Xmfbpmax	Digital monochrome DECstation 3100
-Xtek	Tektronix 4319 (this is the only tested configuration)
-.fi
-.in -4
+used server on a given machine.
 .SH "STARTING THE SERVER"
 The server is usually started from the X Display Manager program \fIxdm\fP.
 This utility is run from the system boot files and takes care of keeping
@@ -35,16 +18,11 @@ nice, consistent interfaces for novice users (loading convenient sets of
 resources, starting up a window manager, clock, and nice selection of 
 terminal emulator windows).
 .PP
-Since \fIxdm\fP now handles automatic starting of the server in a portable
-way, the \fI\-L\fP option to \fIxterm\fP is now considered obsolete.  Support
-for starting a login window from 4.3bsd-derived \fI/etc/ttys\fP files
-is no longer included.
-.PP
 Installations that run more than one window system will still need to use the
 \fIxinit\fP utility.  However, \fIxinit\fP is to be considered a tool for
 building startup scripts and is not intended for use by end users.  Site
-administrators are \fBstrongly\fP urged to build nicer interfaces for novice
-users.
+administrators are \fBstrongly\fP urged to use \fIxdm\fP,
+or build other interfaces for novice users.
 .PP
 When the sample server starts up, it takes over the display.  If you 
 are running on a workstation whose console is the display, you cannot log into
@@ -128,16 +106,16 @@ A value of zero makes the data size as large as possible.  The default value
 of \-1 leaves the data space limit unchanged.  This option is not available in
 all operating systems.
 .TP 8
-.B \-ls \fIkilobytes\fP
-sets the stack space limit of the server to the specified number of kilobytes.
-A value of zero makes the stack size as large as possible.  The default value
-of \-1 leaves the stack space limit unchanged.  This option is not available in
-all operating systems.
-.TP 8
 .B \-lf \fIfiles\fP
 sets the number-of-open-files limit of the server to the specified number.
 A value is zero makes the limit as large as possible.  The default value
 of \-1 leaves the limit unchanged.  This option is not available in
+all operating systems.
+.TP 8
+.B \-ls \fIkilobytes\fP
+sets the stack space limit of the server to the specified number of kilobytes.
+A value of zero makes the stack size as large as possible.  The default value
+of \-1 leaves the stack space limit unchanged.  This option is not available in
 all operating systems.
 .TP 8
 .B \-logo
@@ -258,6 +236,8 @@ manual page for a description of the binary format of this file.
 Maintenance of this file, and distribution of its contents to remote sites
 for use there is left as an exercise for the reader.
 .PP
+The server also provides support for SUN-DES-1, using Sun secure RPC.
+.PP
 The sample server also uses a host-based access control list for deciding
 whether or not to accept connections from clients on a particular machine.
 This list initially consists of the host on which the server is running as
@@ -325,49 +305,69 @@ instead of the usual SIG_DFL.  In this case, the server sends a SIGUSR1 to
 its parent process after it has set up the various connection schemes.  Xdm
 uses this feature to recognize when connecting to the server is possible.
 .SH "FONTS"
-Fonts are usually stored as individual files in directories.  The list of
-directories in which the server looks when trying to open a font is controlled
-by the \fIfont path\fP.  Although most sites will choose to have the server
+Fonts are usually stored as individual files in directories.  The X server
+can obtain fonts from individual files stored in directories,
+and/or from a font server.  The list of directories and font servers
+the X server uses when trying to open a font is controlled
+by the \fIfont path\fP.  Although most sites will choose to have the X server
 start up with the appropriate font path (using the \fI\-fp\fP option mentioned
 above), it can be overridden using the \fIxset\fP program.
 .PP
 The default font path for
-the sample server contains three directories:
+the sample server contains four directories:
 .TP 8
 .I /usr/lib/X11/fonts/misc
-This directory contains several miscellaneous fonts that are useful on all
-systems.  It contains a very small family of fixed-width fonts
-(including \fB6x10\fP, 
-\fB6x12\fP, \fB6x13\fP, \fB8x13\fP, \fB8x13bold\fP, and \fB9x15\fP) and the
-cursor font.  It also has font name aliases for the commonly used fonts
+This directory contains many miscellaneous bitmap fonts that are useful on all
+systems.  It contains a family of fixed-width fonts,
+a family of fixed-width fonts from Dale Schumacher,
+several Kana fonts from Sony Corporation,
+two JIS Kanji fonts,
+two Hangul fonts from Daewoo Electronics,
+two Hebrew fonts from Joseph Friedman,
+the standard cursor font, two cursor fonts from
+Digital Equipment Corporation, and cursor and glyph fonts
+from Sun Microsystems.
+It also has various font name aliases for the fonts, including
 \fBfixed\fP and \fBvariable\fP.
 .TP 8
+.I /usr/lib/X11/fonts/Speedo
+This directory contains outline fonts for Bitstream's Speedo rasterizer.
+The Charter font, in normal, bold, italic, and bold italic, is provided,
+contributed by Bitstream, Inc.
+.TP 8
 .I /usr/lib/X11/fonts/75dpi
-This directory contains fonts contributed by Adobe Systems, Inc. and
-Digital Equipment Corporation and by Bitstream, Inc.
+This directory contains bitmap fonts contributed by Adobe Systems, Inc.,
+Digital Equipment Corporation, Bitstream, Inc.,
+Bigelow and Holmes, and Sun Microsystems, Inc.
 for 75 dots per inch displays.  An integrated selection of sizes, styles, 
 and weights are provided for each family.
 .TP 8
 .I /usr/lib/X11/fonts/100dpi
-This directory contains versions of
-the fonts in the \fI75dpi\fP directory
-for 100 dots per inch displays.
+This directory contains 100 dots per inch versions of some of the fonts in the 
+\fI75dpi\fP directory.  
 .PP
 Font databases are created by running the \fImkfontdir\fP program in the
-directory containing the compiled versions of the fonts (the \fI.snf\fP files).
+directory containing the compiled versions of the fonts (the \fI.pcf\fP files).
 Whenever fonts are added to a directory, \fImkfontdir\fP should be rerun
 so that the server can find the new fonts.  \fBIf \fImkfontdir\fP is not
 run, the server will not be able to find any fonts in the directory.\fR
 .SH DIAGNOSTICS
 Too numerous to list them all.
-If run from \fIinit(8)\fP, errors are logged in the file \fI/usr/adm/X*msgs\fP,
+If run from \fIinit(8)\fP, errors are typically logged
+in the file \fI/usr/adm/X*msgs\fP,
 .SH FILES
 .TP 30
 /etc/X*.hosts
 Initial access control list
 .TP 30
 /usr/lib/X11/fonts/misc, /usr/lib/X11/fonts/75dpi, /usr/lib/X11/fonts/100dpi 
-Font directories
+Bitmap font directories
+.TP 30
+/usr/lib/X11/fonts/Speedo
+Outline font directories
+.TP 30
+/usr/lib/X11/fonts/PEX
+PEX font directories
 .TP 30
 /usr/lib/X11/rgb.txt
 Color database
@@ -378,9 +378,10 @@ Unix domain socket
 /usr/adm/X*msgs
 Error log file
 .SH "SEE ALSO"
-X(1), xdm(1), mkfontdir(1),
-xinit(1), xterm(1), twm(1), xhost(1), xset(1), xsetroot(1), 
-ttys(5), init(8), Xqdss(1), Xqvss(1), Xsun(1), Xapollo(1), XmacII(1)
+X(1), xdm(1), bdftopcf(1), mkfontdir(1), fs(1),
+xinit(1), xterm(1), twm(1), xhost(1), xauth(1), xset(1), xsetroot(1),
+Xdec(1), Xibm(1), XmacII(1), Xmips(1),
+Xqdss(1), Xqvss(1), Xsun(1), Xtek(1), X386(1)
 .I "X Window System Protocol,"
 .I "Definition of the Porting Layer for the X v11 Sample Server,"
 .I "Strategies for Porting the X v11 Sample Server,"
@@ -396,12 +397,11 @@ If
 dies before its clients, new clients won't be able to connect until all
 existing connections have their TCP TIME_WAIT timers expire.
 .PP
-The color database is missing a large number of colors.  However, there
-doesn't seem to be a better one available that can generate RGB values
-tailorable to particular displays.
+The color database is missing a large number of colors.
 .PP
 .SH COPYRIGHT
-Copyright 1984, 1985, 1986, 1987, 1988, 1989, Massachusetts Institute of Technology.
+Copyright 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991
+Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
