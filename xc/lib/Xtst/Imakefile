@@ -1,9 +1,13 @@
-XCOMM $XConsortium: Imakefile,v 1.0 91/07/24 15:38:57 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 92/01/25 16:32:08 rws Exp $
 #define DoNormalLib NormalLibXTest
 #define DoSharedLib SharedLibXTest
 #define DoDebugLib DebugLibXTest
 #define DoProfileLib ProfileLibXTest
 #include <Library.tmpl>
+
+#ifdef RsArchitecture
+REQUIREDLIBS = $(EXTENSIONSRC)/lib/libXext.a $(XLIBSRC)/libX11.a
+#endif
 
 INCLUDES = -I$(TOP) -I$(XLIBSRC) -I../../include
 
