@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)spfile.c	4.1	91/05/02
+ * %W%	%E%
  *
  * Author: Dave Lemke, Network Computing Devices Inc
  *
@@ -30,11 +30,45 @@
 #include	"fontfilest.h"
 
 #include	"spint.h"
-#include	"keys.h"
 
 SpeedoFontPtr cur_spf = (SpeedoFontPtr) 0;
 
-static ufix8 key[] =
+#ifdef NCD
+#include	"ncdkeys.h"
+#endif
+
+#include	"keys.h"
+
+#ifdef NCD
+static ufix8 skey[] =
+{
+    SKEY0,
+    SKEY1,
+    SKEY2,
+    SKEY3,
+    SKEY4,
+    SKEY5,
+    SKEY6,
+    SKEY7,
+    SKEY8
+};				/* Sample Font decryption key */
+
+static ufix8 rkey[] =
+{
+    RKEY0,
+    RKEY1,
+    RKEY2,
+    RKEY3,
+    RKEY4,
+    RKEY5,
+    RKEY6,
+    RKEY7,
+    RKEY8
+};				/* Retail Font decryption key */
+
+#endif				/* NCD */
+
+static ufix8 mkey[] =
 {
     KEY0,
     KEY1,
@@ -113,6 +147,7 @@ open_master(filename, master)
     ufix8      *f_buffer;
     ufix8      *c_buffer;
     int         ret;
+    ufix8      *key;
 
     spmf = (SpeedoMasterFontPtr) xalloc(sizeof(SpeedoMasterFontRec));
     if (!spmf)
@@ -147,6 +182,7 @@ open_master(filename, master)
 	ret = BadFontName;
 	goto cleanup;
     }
+    spmf->copyright = (char *) (f_buffer + FH_CPYRT);
     spmf->mincharsize = mincharsize = read_2b(f_buffer + FH_CBFSZ);
 
     c_buffer = (ufix8 *) xalloc(mincharsize);
@@ -163,21 +199,51 @@ open_master(filename, master)
 
     /* XXX add custom encryption stuff here */
 
-    if (cust_no != CUS0) {
-	ErrorF("Non - standard encryption for \"%s\"\n", filename);
+#ifdef NCD
+    if (cust_no == SCUS0) {
+	key = skey;
+    } else if (cust_no == RCUS0) {
+	key = rkey;
+    } else
+#endif
+
+    if (cust_no == CUS0) {
+	key = mkey;
+    } else {
+	SpeedoErr("Non - standard encryption for \"%s\"\n", filename);
 	ret = BadFontName;
 	goto cleanup;
     }
+    spmf->key = key;
     sp_set_key(key);
 
     spmf->first_char_id = read_2b(f_buffer + FH_FCHRF);
     spmf->num_chars = read_2b(f_buffer + FH_NCHRL);
 
+
+    spmf->enc = bics_map;
+    spmf->enc_size = bics_map_size;
+
+#ifdef NCD
+    {				/* choose the proper encoding */
+	char       *f;
+
+	f = rindex(filename, '/');
+	if (f) {
+	    f++;
+	    if (strncmp(f, "bx113", 5) == 0) {
+		spmf->enc = adobe_map;
+		spmf->enc_size = adobe_map_size;
+	    }
+	}
+    }
+#endif
+
     /* XXX slam back to ISO Latin1 */
-    spmf->first_char_id = bics_map[0];
+    spmf->first_char_id = spmf->enc[0];
     /* size of extents array */
-    spmf->max_id = bics_map[(bics_map_size - 1) * 2];
-    spmf->num_chars = bics_map_size;
+    spmf->max_id = spmf->enc[(spmf->enc_size - 1) * 2];
+    spmf->num_chars = spmf->enc_size;
 
     *master = spmf;
 
@@ -199,4 +265,13 @@ close_master_font(spmf)
     xfree(spmf->f_buffer);
     xfree(spmf->c_buffer);
     xfree(spmf);
+}
+
+/*
+ * reset the encryption key, and make sure the file is opened
+ */
+sp_reset_master(spmf)
+    SpeedoMasterFontPtr spmf;
+{
+    sp_set_key(spmf->key);
 }
