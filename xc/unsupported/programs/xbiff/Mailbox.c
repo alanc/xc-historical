@@ -433,6 +433,7 @@ static void check_mailbox (w, force_redraw, reset)
     Boolean force_redraw, reset;
 {
     long mailboxsize = 0;
+    struct stat st;
 
     if (w->mailbox.check_command != NULL) {
 	switch (system(w->mailbox.check_command)) {
@@ -446,10 +447,7 @@ static void check_mailbox (w, force_redraw, reset)
 	  default:	/* treat everything else as no change */
 	    mailboxsize = w->mailbox.last_size;
 	}
-    }
-    else {
-	struct stat st;
-
+    } else {
 	if (stat (w->mailbox.filename, &st) == 0) {
 	    mailboxsize = st.st_size;
 	}
@@ -459,11 +457,13 @@ static void check_mailbox (w, force_redraw, reset)
      * Now check for changes.  If reset is set then we want to pretent that
      * there is no mail.  If the mailbox is empty then we want to turn off
      * the flag.  Otherwise if the mailbox has changed size then we want to
-     * put the flag up.
+     * put the flag up, unless the mailbox has been read since the last 
+     * write.
      *
      * The cases are:
      *    o  forced reset by user                        DOWN
      *    o  no mailbox or empty (zero-sized) mailbox    DOWN
+     *    o  if read after most recent write 		 DOWN
      *    o  same size as last time                      no change
      *    o  bigger than last time                       UP
      *    o  smaller than last time but non-zero         UP
@@ -478,6 +478,12 @@ static void check_mailbox (w, force_redraw, reset)
     } else if (mailboxsize == 0) {	/* no mailbox or empty */
 	w->mailbox.flag_up = FALSE;
 	if (w->mailbox.last_size > 0) force_redraw = TRUE;  /* if change */
+    } else if (st.st_atime > st.st_mtime) {
+	/* mailbox has been read after most recent write */
+	if (w->mailbox.flag_up) {
+	    w->mailbox.flag_up = FALSE;
+	    force_redraw = TRUE;
+	}
     } else if (mailboxsize != w->mailbox.last_size) {  /* different size */
 	if (!w->mailbox.once_only || !w->mailbox.flag_up)
 	    beep(w); 
