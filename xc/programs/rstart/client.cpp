@@ -1,5 +1,5 @@
 XCOMM! /bin/sh
-XCOMM $XConsortium: client.cpp,v 1.2 94/02/06 16:16:21 mor Exp $
+XCOMM $XConsortium: client.cpp,v 1.3 94/02/06 16:32:37 mor Exp $
 XCOMM
 
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
@@ -13,7 +13,7 @@ XCOMM Quarterdeck Office Systems, Inc. not be used in advertising or
 XCOMM publicity pertaining to distribution of this software without
 XCOMM specific, written prior permission.
 XCOMM
-XCOMM THIS SOFTWARE IS PROVIDED `AS-IS'.  QUARTERDECK OFFICE SYSTEMS,
+XCOMM THIS SOFTWARE IS PROVIDED "AS-IS".  QUARTERDECK OFFICE SYSTEMS,
 XCOMM INC., DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
 XCOMM INCLUDING WITHOUT LIMITATION ALL IMPLIED WARRANTIES OF
 XCOMM MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR

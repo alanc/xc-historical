@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: config.cpp,v 1.2 94/02/06 16:16:21 mor Exp $
 XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
@@ -11,7 +11,7 @@ XCOMM Quarterdeck Office Systems, Inc. not be used in advertising or
 XCOMM publicity pertaining to distribution of this software without
 XCOMM specific, written prior permission.
 XCOMM
-XCOMM THIS SOFTWARE IS PROVIDED `AS-IS'.  QUARTERDECK OFFICE SYSTEMS,
+XCOMM THIS SOFTWARE IS PROVIDED "AS-IS".  QUARTERDECK OFFICE SYSTEMS,
 XCOMM INC., DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
 XCOMM INCLUDING WITHOUT LIMITATION ALL IMPLIED WARRANTIES OF
 XCOMM MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
@@ -22,8 +22,8 @@ XCOMM PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS
 XCOMM OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT
 XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-XCOMM First set up some important defaults.  Can't find other config files
-XCOMM without these, and can't read some of this one without them!
+XCOMM First set up some important defaults.  Can not find other config files
+XCOMM without these, and can not read some of this one without them!
 
 internal-local-default .PACKAGEname
 internal-global-contexts LIBDIR/contexts
