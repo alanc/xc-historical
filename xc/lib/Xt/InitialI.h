@@ -1,4 +1,4 @@
-/* $xHeader$ */
+/* $xHeader: InitializeI.h,v 1.1 88/08/31 10:51:44 swick Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,7 +29,16 @@ SOFTWARE.
  *
  ****************************************************************/
 
-#include <sys/param.h>
+#include <sys/param.h>				/* to get MAXPATHLEN */
+
+#ifndef MAX
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef MIN
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
 
 #include "fd.h"
 
