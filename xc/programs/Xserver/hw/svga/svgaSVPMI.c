@@ -1,4 +1,4 @@
-/* $XConsortium: svgaSVPMI.c,v 1.1 93/09/18 16:09:03 rws Exp $ */
+/* $XConsortium: svgaSVPMI.c,v 1.2 93/09/19 12:04:19 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -747,6 +747,8 @@ static ulong *setText = NULL;
 static ulong *setGraphics = NULL;
 static ulong *setWindow = NULL;
 
+extern char *svgaconfig;
+
 /* ARGSUSED */
 Bool
 svgaSVPMIOpen(
@@ -765,7 +767,7 @@ svgaSVPMIOpen(
     int        *bitsRGB			/* RETURN */
 )
 {
-  char          *configstring, pmifile[BUFSIZ], *tag;
+  char          pmifile[BUFSIZ], *tag;
   int           width, height, textmode, tagval, w, h, d;
   ulong         modeAttributes;
   VESAContext   file, ctxt, ptxt;
@@ -774,20 +776,11 @@ svgaSVPMIOpen(
   if (setGraphics) Xfree(setGraphics);
   if (setWindow) Xfree(setWindow);
 
-  for (configstring = NULL; argc--; argv++) {
-    if (!strcmp("-config", argv[0])) {
-      configstring = argv[1];
-      break;
-    }
-  }
-
-  if (!configstring) {
-    ErrorF("bad option \"-config %s\"\n",argv[1]);
+  if (sscanf(svgaconfig, "%[0-9a-zA-Z./]:%dx%d", pmifile, &width, &height)
+      != 3) {
+    ErrorF("bad -config: %s\n", svgaconfig);
     return FALSE;
   }
-
-  if (sscanf(configstring, "%[0-9a-zA-Z./]:%dx%d", pmifile, &width, &height) != 3)
-    return FALSE;
 
   if ((memFd == -1) && (memFd = open("/dev/mem", O_RDONLY)) == -1) {
     Error("open /dev/mem");
