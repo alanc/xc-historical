@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.10 89/11/01 19:47:19 rws Exp $
+ * $XConsortium: miwideline.c,v 1.11 89/11/01 21:18:35 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -535,7 +535,7 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
     wids = widths;
     xbase = floor(xorg);
     x0 = xorg - xbase;
-    ybase = ceil(yorg);
+    ybase = ICEIL (yorg);
     y0 = floor(yorg) - yorg;
     if (pGC->miTranslate)
     {
