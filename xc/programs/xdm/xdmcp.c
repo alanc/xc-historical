@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.11 94/02/02 08:42:23 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.12 94/03/30 21:27:51 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -765,6 +765,8 @@ decline:    ;
 	    send_decline (from, fromlen, &authenticationName,
 				 &authenticationData,
 				 reason);
+            if (pdpy)
+		DisposeProtoDisplay (pdpy);
 	}
     }
 abort:
