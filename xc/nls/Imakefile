@@ -1,0 +1,8 @@
+XCOMM $XConsortium: Imakefile,v 1.29 93/08/18 21:24:04 rws Exp $
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+SUBDIRS = X11
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
