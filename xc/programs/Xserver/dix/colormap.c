@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.63 88/01/02 18:37:34 rws Locked $ */
+/* $Header: colormap.c,v 1.64 88/01/28 16:17:33 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -34,6 +34,8 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "resource.h"
 #include "windowstr.h"
+
+extern XID clientErrorValue;
 
 Pixel	FindBestPixel();
 void	CopyFree(), FreeCell(), AllocShared();
@@ -902,7 +904,10 @@ QueryColors (pmap, count, ppixIn, prgbList)
 	    pixel = *ppix;
 	    i  = (pixel & pVisual->redMask) >> pVisual->offsetRed;
 	    if (i >= pVisual->ColormapEntries)
+	    {
+		clientErrorValue = pixel;
 		errVal =  BadValue;
+	    }
 	    else
 	    {
 		prgb->red = pmap->red[i].co.local.red;
@@ -910,14 +915,20 @@ QueryColors (pmap, count, ppixIn, prgbList)
 
 		i  = (pixel & pVisual->greenMask) >> pVisual->offsetGreen;
 		if (i >= pVisual->ColormapEntries)
+		{
+		    clientErrorValue = pixel;
 		    errVal =  BadValue;
+		}
 		else
 		{
 		    prgb->green = pmap->green[i].co.local.green;
 
 		    i  = (pixel & pVisual->blueMask) >> pVisual->offsetBlue;
 		    if (i >= pVisual->ColormapEntries)
+		    {
+			clientErrorValue = pixel;
 			errVal =  BadValue;
+		    }
 		    else
 			prgb->blue = pmap->blue[i].co.local.blue;
 		}
@@ -930,7 +941,10 @@ QueryColors (pmap, count, ppixIn, prgbList)
 	{
 	    pixel = *ppix;
 	    if (pixel >= pVisual->ColormapEntries)
+	    {
+		clientErrorValue = pixel;
 		errVal = BadValue;
+	    }
 	    else
 	    {
 		pent = (EntryPtr)&pmap->red[pixel];
@@ -1683,6 +1697,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 	    pixTest = ((*pptr | bits) & cmask) >> offset;
 	    if (pixTest >= pmap->pVisual->ColormapEntries)
 	    {
+		clientErrorValue = *pptr;
 		errVal = BadValue;
 		continue;
 	    }
@@ -1794,6 +1809,7 @@ StoreColors (pmap, count, defs)
 	    pix = (pdef->pixel & pVisual->redMask) >> pVisual->offsetRed;
 	    if (pix >= pVisual->ColormapEntries )
 	    {
+		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
 		ok = FALSE;
 	    }
@@ -1810,6 +1826,7 @@ StoreColors (pmap, count, defs)
 	    pix = (pdef->pixel & pVisual->greenMask) >> pVisual->offsetGreen;
 	    if (pix >= pVisual->ColormapEntries )
 	    {
+		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
 		ok = FALSE;
 	    }
@@ -1826,6 +1843,7 @@ StoreColors (pmap, count, defs)
 	    pix = (pdef->pixel & pVisual->blueMask) >> pVisual->offsetBlue;
 	    if (pix >= pVisual->ColormapEntries )
 	    {
+		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
 		ok = FALSE;
 	    }
@@ -1858,6 +1876,7 @@ StoreColors (pmap, count, defs)
 	    ok = TRUE;
 	    if (pdef->pixel >= pVisual->ColormapEntries)
 	    {
+		clientErrorValue = pdef->pixel;
 	        errVal = BadValue;
 		ok = FALSE;
 	    }

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.104 88/01/02 18:04:55 rws Exp $ */
+/* $Header: gc.c,v 1.105 88/01/17 13:19:37 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -36,6 +36,8 @@ SOFTWARE.
 #include "region.h"
 
 #include "dix.h"
+
+extern XID clientErrorValue;
 
 #ifdef DEBUG
 extern void NotImplemented();
@@ -116,7 +118,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		if (((CARD8)*pval >= GXclear) && ((CARD8)*pval <= GXset))
 		    pGC->alu = (CARD8)*pval;
 		else
+		{
+		    clientErrorValue = (CARD8)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    case GCPlaneMask:
@@ -137,7 +142,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    && ((CARD8)*pval <= LineDoubleDash))
 		    pGC->lineStyle = (CARD8)*pval;
 		else
+		{
+		    clientErrorValue = (CARD8)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    case GCCapStyle:
@@ -145,14 +153,20 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    && ((CARD8)*pval <= CapProjecting))
 		    pGC->capStyle = (CARD8)*pval;
 		else
+		{
+		    clientErrorValue = (CARD8)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    case GCJoinStyle:
 		if (((CARD8)*pval >= JoinMiter) && ((CARD8)*pval <= JoinBevel))
 		    pGC->joinStyle = (CARD8)*pval;
 		else
+		{
+		    clientErrorValue = (CARD8)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    case GCFillStyle:
@@ -160,7 +174,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    && ((CARD8)*pval <= FillOpaqueStippled))
 		    pGC->fillStyle = (CARD8)*pval;
 		else
+		{
+		    clientErrorValue = (CARD8)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    case GCFillRule:
@@ -168,7 +185,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    ((CARD8)*pval <= WindingRule))
 		    pGC->fillRule = (CARD8)*pval;
 		else
+		{
+		    clientErrorValue = (CARD8)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    case GCTile:
@@ -177,7 +197,6 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		else
 		    pPixmap = (PixmapPtr)LookupID((CARD32)*pval, 
 					      RT_PIXMAP, RC_CORE);
-		pval++;
 		if (pPixmap)
 		{
 		    if ((pPixmap->drawable.depth != pGC->depth) ||
@@ -193,7 +212,11 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    }
 		}
 		else
+		{
+		    clientErrorValue = (CARD32)*pval;
 		    error = BadPixmap;
+		}
+		pval++;
 		break;
 	    case GCStipple:
 		if(fPointer)
@@ -201,7 +224,6 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		else
 		    pPixmap = (PixmapPtr)LookupID((CARD32)*pval, 
 					      RT_PIXMAP, RC_CORE);
-		pval++;
 		if (pPixmap)
 		{
 		    if ((pPixmap->drawable.depth != 1) ||
@@ -217,7 +239,11 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    }
 		}
 		else
+		{
+		    clientErrorValue = (CARD32)*pval;
 		    error = BadPixmap;
+		}
+		pval++;
 		break;
 	    case GCTileStipXOrigin:
 		pGC->patOrg.x = (INT16)*pval;
@@ -229,17 +255,13 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		break;
 	    case GCFont:
               {
-		CARD32 fid;
 		FontPtr	pFont;
 
 
 		if(fPointer)
-		    pFont = (FontPtr) *pval++;
+		    pFont = (FontPtr) *pval;
 		else
-		{
-		    fid = * pval++;
-		    pFont = (FontPtr)LookupID(fid, RT_FONT, RC_CORE);
-		}
+		    pFont = (FontPtr)LookupID((CARD32)*pval, RT_FONT, RC_CORE);
 
 		if (pFont)
 		{
@@ -249,15 +271,22 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    pGC->font->refcnt++;
 		 }
 		else
+		{
+		    clientErrorValue = *pval;
 		    error = BadFont;
+		}
+		pval++;
 		break;
 	      }
 	    case GCSubwindowMode:
-		if ((*pval == ClipByChildren) ||
-		    (*pval == IncludeInferiors))
-		    pGC->subWindowMode = (CARD8)(*pval);
+		if (((CARD8)*pval == ClipByChildren) ||
+		    ((CARD8)*pval == IncludeInferiors))
+		    pGC->subWindowMode = (CARD8)*pval;
 		else
+		{
+		    clientErrorValue = (CARD8)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    case GCGraphicsExposures:
@@ -266,7 +295,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		else if ((Bool)*pval == xTrue)
 		    pGC->graphicsExposures = TRUE;
 		else
+		{
+		    clientErrorValue = (Bool)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    case GCClipXOrigin:
@@ -299,7 +331,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 			pPixmap->refcnt++;
 		    }
 		    else
+		    {
+			clientErrorValue = pid;
 			error = BadPixmap;
+		    }
 		}
 		pval++;
 		if(error == Success)
@@ -324,7 +359,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    && ((CARD8)*pval <= ArcPieSlice))
 		    pGC->arcMode = (CARD8)*pval;
 		else
+		{
+		    clientErrorValue = (CARD8)*pval;
 		    error = BadValue;
+		}
 		pval++;
 		break;
 	    default:
@@ -822,6 +860,7 @@ register unsigned char *pdash;
 	if (!*p++)
 	{
 	    /* dash segment must be > 0 */
+	    clientErrorValue = 0;
 	    return BadValue;
 	}
     }
