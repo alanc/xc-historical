@@ -1,4 +1,4 @@
-/* $XConsortium: dregs.h,v 1.1 93/08/08 12:56:22 rws Exp $ */
+/* $XConsortium: dregs.h,v 1.2 94/05/28 15:45:25 dpw Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -46,55 +46,78 @@ typedef union {
     } b;
 } dreg_cplx_t;
 
-
-
+
 typedef volatile struct {
     long int pad1[70];
-    unsigned long int reg1;
-    long int pad2[217];
-    unsigned long int reg2;
+    unsigned long int	reg1;
+    long int pad2[193];
+    unsigned long int	reg28;
+    long int pad24[23];
+    unsigned long int	reg2;
     long int pad3[7];
-    unsigned long int reg3;
+    unsigned long int	reg3;
     long int pad4[63];
-    unsigned long int reg22;
+    unsigned long int	reg22;
     long int pad5[7];
-    unsigned long int reg23;
+    unsigned long int	reg23;
     long int pad6[15];
-    unsigned long int reg4;
+    unsigned long int	reg4;
     long int pad7[39];
-    unsigned long int reg5;
+    unsigned long int	reg5;
     long int pad8[87];
-    dreg_cplx_t reg6;
-    dreg_cplx_t reg7;
-    dreg_cplx_t reg24;
+    dreg_cplx_t		reg6;
+    dreg_cplx_t		reg7;
+    dreg_cplx_t		reg24;
     long int pad9[5];
-    unsigned long int reg8;
-    long int pad10[120];
-    dreg_cplx_t reg9;
+    unsigned long int	reg8;
+    long int pad10[72];
+    dreg_cplx_t		reg37;
+    long int pad13[47];
+    dreg_cplx_t		reg9;
     long int pad10a[62];
-    dreg_cplx_t reg25;
+    dreg_cplx_t		reg25;
     long int pad11[23871];
-    unsigned long int reg10;
-    unsigned long int reg11;
+    unsigned long int	reg10;
+    unsigned long int	reg11;
     long int pad12[1];
-    unsigned long int reg12;
-    long int pad13[2];
-    unsigned long int reg13;
-    dreg_cplx_t reg14;
+    unsigned long int	reg12;
+    unsigned long int	reg35;
+    unsigned long int	reg36;
+    unsigned long int	reg13;
+    dreg_cplx_t		reg14;
     long int pad15[499704];    
-    dreg_cplx_t reg15;
-    dreg_cplx_t reg16;
-    long int pad17[62];
-    dreg_cplx_t reg17;
-    dreg_cplx_t reg18;
+    dreg_cplx_t		reg15;
+    dreg_cplx_t		reg16;
+    dreg_cplx_t		reg34;
+    long int pad17[61];
+    dreg_cplx_t		reg17;
+    dreg_cplx_t		reg18;
     long int pad18[4];
-    unsigned long int reg26;
+    unsigned long int	reg26;
     long int pad19[57];
-    dreg_cplx_t reg19;
+    dreg_cplx_t		reg19;
     long int pad20[1];
-    dreg_cplx_t reg20;
+    dreg_cplx_t		reg20;
     long int pad21[3];
-    dreg_cplx_t reg21;
+    dreg_cplx_t		reg21;
     long int pad22[59];
-    dreg_cplx_t reg27;
+    dreg_cplx_t		reg27;
+    long int pad23[16189];
+    dreg_cplx_t		reg29;
+    unsigned long int	reg30;
+    unsigned long int	reg31;
+    long int pad25[5];
+    unsigned long int	reg38;
+    unsigned long int	reg41;
+    unsigned long int	reg42;
+    unsigned long int	reg43;
+    unsigned long int	reg44;
+    unsigned long int	reg45;
+    long int pad26[1];
+    unsigned long int	reg32;
+    unsigned long int	reg33;
+    long int pad27[55];
+    unsigned long int   reg39;
+    long int pad28[3];
+    unsigned long int	reg40;
 } ngle_dregs_t;
