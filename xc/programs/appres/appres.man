@@ -21,7 +21,7 @@ match particular instance names,
 .sp 1
 .in +.5i
 .nf
-%  appres myxterm XTerm
+%  appres XTerm myxterm
 .fi
 .in -.5i
 .sp 1
