@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.15 88/02/14 20:52:56 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.16 88/02/14 21:15:33 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -28,7 +28,6 @@ static char rcs_id[] = "$Header: screen.c,v 2.15 88/02/14 20:52:56 swick Exp $";
 
 /* scrn.c -- management of scrns. */
 
-#include <X/Xatom.h>
 #include "xmh.h"
 
 /* Fill in the buttons for the view commands. */
