@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.78 89/12/15 21:11:55 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.79 90/01/23 10:50:41 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -509,26 +509,24 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 }
 
 void XtRemoveInput( id )
-	XtInputId  id;
+	register XtInputId  id;
 {
-  	register InputEvent *sptr, *lptr, *iid = (InputEvent *) id;
-	XtAppContext app = iid->app;
-	register source;
-	
-	source = iid->ie_source;
+  	register InputEvent *sptr, *lptr;
+	XtAppContext app = ((InputEvent *)id)->app;
+	register int source = ((InputEvent *)id)->ie_source;
 	app->fds.count--;
 
 	sptr = app->outstandingQueue;
 	lptr = NULL;
 	for (; sptr != NULL; sptr = sptr->ie_oq) {
-	    if (sptr == iid) {
+	    if (sptr == (InputEvent *)id) {
 		if (lptr == NULL) app->outstandingQueue = sptr->ie_oq;
 		else lptr->ie_oq = sptr->ie_oq;
 	    }
 	    lptr = sptr;
 	}
 
-	if((sptr = app->selectRqueue[source]) != NULL) {
+	if(app->selectRqueue && (sptr = app->selectRqueue[source]) != NULL) {
 		for( lptr = NULL ; sptr; sptr = sptr->ie_next ){
 			if(sptr == (InputEvent *) id) {
 				if(lptr == NULL) {
@@ -543,7 +541,7 @@ void XtRemoveInput( id )
 			lptr = sptr;	      
 		}
 	}
-	if((sptr = app->selectWqueue[source]) != NULL) {
+	if(app->selectWqueue && (sptr = app->selectWqueue[source]) != NULL) {
 		for(lptr = NULL;sptr; sptr = sptr->ie_next){
 			if ( sptr ==  (InputEvent *) id) {
 				if(lptr == NULL){
@@ -559,7 +557,7 @@ void XtRemoveInput( id )
 		}
 	    
 	}
-	if((sptr = app->selectEqueue[source]) != NULL) {
+	if(app->selectEqueue && (sptr = app->selectEqueue[source]) != NULL) {
 		for(lptr = NULL;sptr; sptr = sptr->ie_next){
 			if ( sptr ==  (InputEvent *) id) {
 				if(lptr == NULL){
