@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.69 88/10/07 08:28:59 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.70 88/10/07 09:26:42 swick Exp $";
 #endif
 
 
@@ -812,10 +812,44 @@ static void LoseSelection(w, selection)
 {
     TextWidget ctx = (TextWidget)w;
     Boolean update_in_progress = (ctx->text.old_insert >= 0);
+    register Atom* atomP;
+    int i, empty;
 
     _XtTextPrepareToUpdate(ctx);
-    _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos,
-			   selection, ONE);
+
+    for (i = 0, atomP = ctx->text.s.selections;
+	 i < ctx->text.s.atom_count; i++, atomP++)
+    {
+	if (*selection == *atomP) *atomP = (Atom)0;
+	switch (*atomP) {
+	  case XA_CUT_BUFFER0:
+	  case XA_CUT_BUFFER1:
+	  case XA_CUT_BUFFER2:
+	  case XA_CUT_BUFFER3:
+	  case XA_CUT_BUFFER4:
+	  case XA_CUT_BUFFER5:
+	  case XA_CUT_BUFFER6:
+	  case XA_CUT_BUFFER7:	*atomP = (Atom)0;
+	}
+    }
+
+    for (i = ctx->text.s.atom_count; i; i--) {
+	if (ctx->text.s.selections[i-1] != 0) break;
+    }
+    ctx->text.s.atom_count = i;
+
+    for (i = 0, atomP = ctx->text.s.selections;
+	 i < ctx->text.s.atom_count; i++, atomP++)
+    {
+	if (*atomP == (Atom)0) {
+	    *atomP = ctx->text.s.selections[--ctx->text.s.atom_count];
+	}
+    }
+
+    if (ctx->text.s.atom_count == 0)
+	_XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos,
+			       NULL, ZERO);
+
     if (!update_in_progress) {
 	_XtTextExecuteUpdate(ctx);
     }
@@ -2094,8 +2128,11 @@ Cardinal num_params;
 	int fmt8 = 8;
 	Atom type = XA_STRING;
 	char *line = XFetchBuffer(XtDisplay(w), &nbytes, buffer);
-	_SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
-			  &nbytes, &fmt8);
+	if (nbytes > 0)
+	    _SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
+			       &nbytes, &fmt8);
+	else if (num_params > 1)
+	    _GetSelection(w, time, params+1, num_params-1);
     } else {
 	struct _SelectionList* list;
 	if (--num_params) {
