@@ -1,5 +1,5 @@
 /*
- *	$Header: screen.c,v 1.2 88/05/16 17:22:17 keith Exp $
+ *	$Header: screen.c,v 1.3 88/07/12 10:41:21 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.2 88/05/16 17:22:17 keith Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.3 88/07/12 10:41:21 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -239,7 +239,11 @@ int toprow, leftcol, nrows, ncols;
 	   int x, n;
 	   GC gc;
 
-	   lastind = row - scrollamt;
+	   if (row < screen->top_marg || row > screen->bot_marg)
+		lastind = row;
+	   else
+		lastind = row - scrollamt;
+
 	   if (lastind < 0 || lastind > max)
 	   	continue;
 	   chars = screen->buf [2 * (lastind + topline)];
