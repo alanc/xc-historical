@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.25 93/12/28 11:42:59 mor Exp $ */
+/* $XConsortium: process.c,v 1.26 94/02/06 17:04:53 rws Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -858,6 +858,11 @@ IceReplyWaitInfo	*replyWait;
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthRequiredMsg),
 	iceAuthRequiredMsg, message, authData);
 
+    if (swap)
+    {
+	message->authDataLength = lswaps (message->authDataLength);
+    }
+
     if (iceConn->connect_to_you)
     {
 	if ((int) message->authIndex >= _IceAuthCount)
@@ -1024,6 +1029,11 @@ Bool		swap;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthReplyMsg),
 	iceAuthReplyMsg, message, replyData);
+
+    if (swap)
+    {
+	message->authDataLength = lswaps (message->authDataLength);
+    }
 
     replyDataLen = message->authDataLength;
 
@@ -1256,6 +1266,11 @@ IceReplyWaitInfo	*replyWait;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthNextPhaseMsg),
 	iceAuthNextPhaseMsg, message, authData);
+
+    if (swap)
+    {
+	message->authDataLength = lswaps (message->authDataLength);
+    }
 
     if (iceConn->connect_to_you)
     {
