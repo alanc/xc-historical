@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.26 91/04/08 09:28:40 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.27 91/04/08 10:04:23 rws Exp $
  */
 
 /*
@@ -124,6 +124,7 @@ _XlcMapOSLocaleName(osname, siname)
 
 #else /* hpux */
 
+/*ARGSUSED*/
 char *
 _XlcMapOSLocaleName(osname, siname)
     char *osname;

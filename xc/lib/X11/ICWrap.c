@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XICWrap.c,v 11.3 91/04/07 16:10:49 rws Exp $
+ * $XConsortium: XICWrap.c,v 11.4 91/04/07 18:58:53 rws Exp $
  */
 
 /*
@@ -133,6 +133,7 @@ _XIMVaToNestedList(var, max_count, args_return)
     args->name = (char*)NULL;
 }
 
+/*ARGSUSED*/
 #if NeedVarargsPrototypes
 XVaNestedList
 XVaCreateNestedList(int dummy, ...)

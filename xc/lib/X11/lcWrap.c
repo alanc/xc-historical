@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.3 91/04/07 23:02:46 rws Exp $
+ * $XConsortium: XlcWrap.c,v 11.4 91/04/08 09:31:38 rws Exp $
  */
 
 /*
@@ -105,6 +105,7 @@ Bool _XlcValidModSyntax(mods, valid_mods)
 
 Const char *im_valid[] = {"im", (char *)NULL};
 
+/*ARGSUSED*/
 char *
 _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
     XLCd lcd;
