@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.9 88/02/16 19:25:04 rws Exp $
+ * $Header: main.c,v 1.10 88/03/03 08:58:13 swick Exp $
  *
  * $Log:	main.c,v $
+ * Revision 1.10  88/03/03  08:58:13  swick
+ * less lint; remove unused variables
+ * 
  * Revision 1.9  88/02/16  19:25:04  rws
  * more defines
  * 
@@ -75,6 +78,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef hpux
 	{"hpux", NULL},
+#endif
+#ifdef vax
+	{"vax", NULL},
 #endif
 #ifdef VMS
 	{"VMS", NULL},
@@ -191,6 +197,12 @@ main(argc, argv)
 				makefile = *(++argv);
 				argc--;
 			}
+			break;
+		/* Ignore -O, -g so we can just pass ${CFLAGS} to
+		   makedepend
+		 */
+		case 'O':
+		case 'g':
 			break;
 		default:
 	/*		log_fatal("unknown opt = %s\n", argv[0]); */
