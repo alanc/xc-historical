@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.42 91/05/22 16:12:04 gildea Exp $ */
+/* $XConsortium: command.c,v 2.43 91/07/07 16:32:28 converse Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -374,9 +374,9 @@ DEBUG("read.\n")}
 	    }
 	}
     } else {			/* We're the child process. */
-	if (*argv[0] != '/')
-	    (void) execv(FullPathOfCommand(argv[0]), argv);
+	/* take it from the user's path, else fall back to the mhPath */
 	(void) execvp(argv[0], argv);
+	(void) execv(FullPathOfCommand(argv[0]), argv);
         progName = argv[0];	/* for Punt message */
 	Punt("(cannot execvp it)");
 	return_status = -1;
@@ -393,8 +393,10 @@ CheckReadFromPipe( fd, bufP, lenP, waitEOF )
     Bool waitEOF;
 {
     long nread;
+/*  DEBUG2( " CheckReadFromPipe #%d,len=%d,", fd, *lenP )  */
 #ifdef FIONREAD
     if (!ioctl( fd, FIONREAD, &nread )) {
+/*      DEBUG1( "nread=%d ...", nread )			   */
 	if (nread) {
 	    int old_end = *lenP;
 	    *bufP = XtRealloc( *bufP, (Cardinal) ((*lenP += nread) + 1) );
