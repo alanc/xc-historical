@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: toc.c,v 2.25 89/08/31 19:11:02 converse Exp $";
+    "$XConsortium: toc.c,v 2.26 89/09/01 17:36:24 kit Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -759,8 +759,8 @@ static void TocCataclysmOkay(widget, client_data, call_data)
 	
 int TocConfirmCataclysm(toc, confirms, cancels)
     Toc			toc;
-    XtCallbackRec	confirms[];
-    XtCallbackRec	cancels[];
+    XtCallbackList	confirms;
+    XtCallbackList	cancels;
 {	
     register int	i;
     int			found = False;
@@ -768,10 +768,6 @@ int TocConfirmCataclysm(toc, confirms, cancels)
 	{TocCataclysmOkay,	(caddr_t) NULL},
 	{(XtCallbackProc) NULL,	(caddr_t) NULL},
 	{(XtCallbackProc) NULL,	(caddr_t) NULL}
-    };
-    static XtCallbackRec no_callbacks[] = {
-	{(XtCallbackProc) NULL, (caddr_t) NULL},
-	{(XtCallbackProc) NULL, (caddr_t) NULL}
     };
 
     if (toc == NULL) 
@@ -787,11 +783,8 @@ int TocConfirmCataclysm(toc, confirms, cancels)
 	yes_callbacks[0].closure = (caddr_t) toc;
 	yes_callbacks[1].callback = confirms[0].callback;
 	yes_callbacks[1].closure = confirms[0].closure;
-	if (cancels != NULL) {
-	    no_callbacks[0].callback = cancels[0].callback;
-	    no_callbacks[0].closure  = cancels[0].closure;
-	}
-	PopupConfirm(str, yes_callbacks, no_callbacks);
+
+	PopupConfirm(str, yes_callbacks, cancels);
 	return NEEDS_CONFIRMATION;
     }
     else {
