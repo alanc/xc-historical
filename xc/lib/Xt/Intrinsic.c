@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.136 89/10/02 15:30:34 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.137 89/10/04 12:33:07 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -201,8 +201,13 @@ static void RealizeWidget(widget)
     else (*realize) (widget, &value_mask, &values);
     window = XtWindow(widget);
 #ifndef NO_IDENTIFY_WINDOWS
-    if (_XtGetPerDisplay(XtDisplay(widget))->appContext->identify_windows)
-	XStoreName( XtDisplay(widget), window, widget->core.name );
+    if (_XtGetPerDisplay(XtDisplay(widget))->appContext->identify_windows) {
+	XClassHint classhint;
+
+	classhint.res_name = widget->core.name;
+	classhint.res_class = widget->core.widget_class->core_class.class_name;
+	XSetClassHint (XtDisplay(widget), window, &classhint);
+    }
 #endif
 #ifdef notdef
     _XtRegisterAsyncHandlers(widget);
