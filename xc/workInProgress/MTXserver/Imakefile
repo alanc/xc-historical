@@ -4,12 +4,24 @@
 
 #include <Server.tmpl>
 
-#ifdef XhpServer
-      OTHEREXTS = $(EXTENSIONSRC)/server/xinput/libxinput.a
-#else
-      OTHEREXTS = /* nothing */
+#if BuildPexExt
+   PEXTENSIONSRC = $(EXTENSIONSRC)/server/PEX
+         PEXLIBS = $(PEXTENSIONSRC)/dipex/dispatch/libdidipex.a \
+                   $(PEXTENSIONSRC)/dipex/swap/libdiswapex.a \
+                   $(PEXTENSIONSRC)/dipex/objects/libdiobpex.a \
+                   $(PEXTENSIONSRC)/dipex/dispatch/libdidipex.a \
+                   $(PEXTENSIONSRC)/ddpex/mi/level4/libddpex4.a \
+                   $(PEXTENSIONSRC)/ddpex/mi/level3/libddpex3.a \
+                   $(PEXTENSIONSRC)/ddpex/mi/shared/libddpexs.a \
+                   $(PEXTENSIONSRC)/ddpex/mi/level2/libddpex2.a \
+                   $(PEXTENSIONSRC)/ddpex/mi/level1/libddpex1.a \
+		   $(PEXTENSIONSRC)/ospex/4.2bsd/libospex.a 
 #endif
-     EXTENSIONS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a
+#if BuildXInputExt
+      OTHEREXTS = $(EXTENSIONSRC)/server/xinput/libxinput.a
+#endif
+
+     EXTENSIONS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a $(PEXLIBS)
          EXTDIR = $(EXTENSIONSRC)/server
             BSD = os/4.2bsd/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(TOP)/lib/Berk/Berklib.o
