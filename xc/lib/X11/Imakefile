@@ -332,6 +332,7 @@ OBJS3 = \
 	XCnvCTToWC.o \
 	XCnvMBToCT.o \
 	XCnvWCToMB.o \
+	XCnvToStr.o \
 	XConnIM.o \
 	XCrFntSet.o \
 	XCrIC.o \
@@ -353,9 +354,7 @@ OBJS3 = \
 	XSetLcMod.o \
 	XSetLocale.o \
 	XSptLocale.o \
-	XStrToList.o \
 	XlcAccess.o \
-	XlcInit.o \
 	XlcLoad.o \
 	XlcMisc.o \
 	XmbDeGlyph.o \
