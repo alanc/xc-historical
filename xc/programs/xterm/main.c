@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.31 88/04/06 16:07:53 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.32 88/04/06 17:08:47 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -814,6 +814,14 @@ spawn ()
 #ifndef SYSV
 		if((tslot = ttyslot()) <= 0)
 			SysError(ERROR_TSLOT);
+#ifdef TIOCCONS
+		if (Console) {
+			int on = 1;
+			if (ioctl (0, TIOCCONS, (char *)&on) == -1)
+				SysError(ERROR_TIOCCONS);
+		}
+#endif  /* TIOCCONS */
+
 #endif	/* SYSV */
 	} else if (am_slave) {
 		screen->respond = am_slave;
