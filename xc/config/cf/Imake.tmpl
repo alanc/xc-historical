@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.64 89/11/01 10:02:22 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.65 89/11/13 11:48:30 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -657,10 +657,10 @@ MakefileAdditions()
 
 #if HasSaberC
 saber:
-	#load $(ALLDEFINES) $(SRCS)
+	/**/#load $(ALLDEFINES) $(SRCS)
 
 osaber:
-	#load $(ALLDEFINES) $(OBJS)
+	/**/#load $(ALLDEFINES) $(OBJS)
 #endif
 
 
