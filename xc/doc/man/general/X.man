@@ -3,14 +3,24 @@
 X - a portable, network transparent window system
 .SH SYNOPSIS
 .PP
-X is a network transparent window system developed at MIT which
-runs under a wide variety of operating systems.  The standard distribution
-from MIT works on Ultrix-32 Version 1.2 (and higher), 4.3BSD Unix,
-SunOS 3.2 (and higher), HP-UX 6.01, DOMAIN/IX 9.7, and A/UX 1.0
-(and higher).  In addition, many vendors
-support the X Window System under other operating systems.
+X is a network transparent window system developed at MIT which runs on a wide
+range of computing and graphics machines.  The standard distribution from MIT
+has both client and server support for the following operating systems:
+.sp
+.in +8
+.nf
+4.3BSD
+A/UX 1.0
+DOMAIN/IX 9.7
+HP-UX 6.01
+SunOS 3.2
+Ultrix-32 Version 1.2
+.fi
+.in -8
+.sp
+Many vendors also support X on other platforms.
 .SH "THE OFFICIAL NAMES"
-The official names of the software described herein are:
+The official names for this software are:
 .sp
 .ce 5
 X
@@ -25,7 +35,8 @@ X11
 .sp
 Note that the phrases X.11, X-11, X Windows or any permutation thereof, are
 explicity excluded from this list and should not be used to describe the
-X Window System (window system should be thought of as one word).
+X Window System.  Remember, it is a Window System named X, not a System named
+X Window.
 .PP
 \fIX Window System\fP is a trademark of the
 Massachusetts Institute of Technology.
@@ -110,8 +121,9 @@ Some versions of UNIX that are derived from 4.3bsd support starting the window
 system and an initial \fIxterm\fP window from the system terminal line
 configuration file \fI/etc/ttys\fP.  As with \fIxdm\fP, there will be a 
 window requesting your username and password.  However, this window will become
-your primary window and is not configurable on a per-user basis.  Sites using
-this method should switch to \fIxdm\fP.
+your primary window and is not configurable on a per-user basis.
+Sites using this method should switch to \fIxdm\fP as \fIxterm -L\fP may not be
+supported in future releases.
 .TP 8
 .B "\fIxinit\fP (run manually from the shell)"
 Sites that support more than one window system might choose to use the
@@ -298,7 +310,7 @@ obtain resources from the following sources:
 .B "RESOURCE_MANAGER root window property"
 Any global resources that should be available to clients on all machines 
 should be stored in the RESOURCE_MANAGER property on the
-root window using the \fIxrdb(1)\fP program.  
+root window using the \fIxrdb(1)\fP program.
 .TP 8
 .B "application-specific directory"
 Any application- or machine-specific resources can be stored in
@@ -369,6 +381,9 @@ messages when error conditions arise.  The default error database is
 stored in the file XErrorDB in the directory specified by the LIBDIR
 configuration parameter (/usr/lib/X11 in the standard distribution).  If
 this file is not installed, error messages will tend to be somewhat cryptic.
+.SH BUGS
+If you encounter a \fBrepeatable\fP bug, please contact your site 
+administrator for instructions on how to submit a X Bug Report.
 .SH "SEE ALSO"
 .PP
 Xserver(1),
