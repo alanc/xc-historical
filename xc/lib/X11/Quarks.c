@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.37 93/08/14 17:40:51 rws Exp $
+ * $XConsortium: Quarks.c,v 1.38 94/03/28 21:27:16 rws Exp $
  */
 
 /***********************************************************
@@ -379,8 +379,9 @@ XrmQuark XrmUniqueQuark()
 
     _XLockMutex(_Xglobal_lock);
     if (nextUniq == nextQuark)
-	return NULLQUARK;
-    q = nextUniq--;
+	q = NULLQUARK;
+    else
+	q = nextUniq--;
     _XUnlockMutex(_Xglobal_lock);
     return q;
 }
