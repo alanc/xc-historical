@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.20 92/05/11 17:44:00 converse Exp $ */
+/* $XConsortium: PassivGrab.c,v 1.21 93/01/28 17:38:01 converse Exp $ */
 
 /********************************************************
 
@@ -29,10 +29,6 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include "PassivGraI.h"
-
-static String XtNinvalidWidget = "invalidWidget";
-static String GrabMsg      = "Widget specified in grab is not a widget";
-static String UngrabMsg    = "Widget specified in ungrab is not a widget";
 
 /* typedef unsigned long Mask; */
 #define BITMASK(i) (((Mask)1) << ((i) & 31))
@@ -672,12 +668,7 @@ void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
     XtPerDisplayInput	pdi;
     
     
-    if (!XtIsWidget(widget)){
-	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		     XtNinvalidWidget, "grabKeyOrButton", XtCXtToolkitError,
-			GrabMsg, (String *)NULL, (Cardinal *)NULL);
-	return;
-    }
+    XtCheckSubclass(widget, coreWidgetClass, "in XtGrabKey or XtGrabButton");
     
     pwi = _XtGetPerWidgetInput(widget, TRUE);
     if (isKeyboard)
@@ -723,12 +714,8 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     XtServerGrabRec 	tempGrab;
     XtPerWidgetInput	pwi;
     
-    if (!XtIsWidget(widget)){
-	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		     XtNinvalidWidget, "ungrabKeyOrButton", XtCXtToolkitError,
-			UngrabMsg, (String *)NULL, (Cardinal *)NULL);
-	return;
-    }
+    XtCheckSubclass(widget, coreWidgetClass,
+		    "in XtUngrabKey or XtUngrabButton");
     
     /* Build a temporary grab list entry */
     tempGrab.widget = widget;
@@ -877,13 +864,11 @@ static int GrabDevice (widget, owner_events,
     XtPerDisplayInput	pdi;
     int			returnVal;
     
-    if (!XtIsWidget(widget))
-      XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		    XtNinvalidWidget, "grabDevice", XtCXtToolkitError,
-		    GrabMsg, (String*)NULL, (Cardinal*)NULL);
+    XtCheckSubclass(widget, coreWidgetClass,
+		    "in XtGrabKeyboard or XtGrabPointer");
     if (!XtIsRealized(widget))
 	return GrabNotViewable;
-
+    
     pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     
     if (!isKeyboard)
@@ -922,10 +907,8 @@ static void   UngrabDevice(widget, time, isKeyboard)
     XtPerDisplayInput	pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     XtDevice		device = isKeyboard ? &pdi->keyboard : &pdi->pointer;
 
-    if (!XtIsWidget(widget))
-      XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		    XtNinvalidWidget, "ungrabDevice", XtCXtToolkitError,
-		    UngrabMsg, (String*)NULL, (Cardinal*)NULL);
+    XtCheckSubclass(widget, coreWidgetClass,
+		    "in XtUngrabKeyboard or XtUngrabPointer");
     if (!XtIsRealized(widget))
 	return;
      
