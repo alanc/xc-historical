@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.14 93/08/03 12:23:26 gildea Exp $
+ * $XConsortium: xconsole.c,v 1.15 93/09/20 18:07:43 hersh Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -43,7 +43,13 @@
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <sys/stat.h>
+#ifndef _POSIX_SOURCE
+#define _POSIX_SOURCE
 #include <stdio.h>
+#undef _POSIX_SOURCE
+#else
+#include <stdio.h>
+#endif
 #include <ctype.h>
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
@@ -130,8 +136,11 @@ static char ttydev[64], ptydev[64];
 #endif
 #endif
 
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SVR4) || (defined(SYSV) && defined(SYSV386))
 #define USE_OSM
+#include <signal.h>
+FILE *osm_pipe();
+static int child_pid;
 #endif
 
 static void inputReady ();
@@ -174,7 +183,8 @@ OpenConsole ()
 	    }
 #ifdef USE_OSM
 	    /* Don't have to be owner of /dev/console when using /dev/osm. */
-	    input = fdopen(osm_pipe(), "r");
+	    if (!input)
+		input = osm_pipe();
 #endif
 	    if (input && app_resources.verbose)
 	    {
@@ -222,6 +232,17 @@ CloseConsole ()
 #endif
 }
 
+#ifdef USE_OSM
+static void
+KillChild(sig)
+    int sig;
+{
+    if (child_pid > 0)
+	kill(child_pid, SIGTERM);
+    exit(0);
+}
+#endif
+
 /*ARGSUSED*/
 static void
 Quit (widget, event, params, num_params)
@@ -230,8 +251,25 @@ Quit (widget, event, params, num_params)
     String *params;
     Cardinal *num_params;
 {
+#ifdef USE_OSM
+    if (child_pid > 0)
+	kill(child_pid, SIGTERM);
+#endif
     exit (0);
 }
+
+static int (*ioerror)();
+
+#ifdef USE_OSM
+static int
+IOError(dpy)
+    Display *dpy;
+{
+    if (child_pid > 0)
+	kill(child_pid, SIGTERM);
+    (*ioerror)(dpy);
+}
+#endif
 
 extern char *malloc ();
 
@@ -539,6 +577,9 @@ main (argc, argv)
 		       ConvertSelection, LoseSelection, NULL);
 	OpenConsole ();
     }
+#ifdef USE_OSM
+    ioerror = XSetIOErrorHandler(IOError);
+#endif
     XtMainLoop ();
     return 0;
 }
@@ -624,7 +665,7 @@ get_pty (pty, tty, ttydev, ptydev)
 	}
 	grantpt(*pty);
 	unlockpt(*pty);
-	strcpy(ttydev, ptsname(*pty));
+	strcpy(ttydev, (char *)ptsname(*pty));
 	if ((*tty = open(ttydev, O_RDWR)) >= 0) {
 	    (void)ioctl(*tty, I_PUSH, "ttcompat");
 	    return 0;
@@ -726,25 +767,47 @@ get_pty (pty, tty, ttydev, ptydev)
  * So this routine creates a streams-pty where one end reads the device and
  * sends the output to xconsole.
  */
+FILE *
 osm_pipe()
 {
-  int tty, pid;
+  int tty;
   char ttydev[64];
     
-  if ((tty = open("/dev/ptmx", O_RDWR)) < 0)  return -1;
+  if (access("/dev/osm", R_OK) < 0) return NULL;
+  if ((tty = open("/dev/ptmx", O_RDWR)) < 0)  return NULL;
 
   grantpt(tty);
   unlockpt(tty);
   strcpy(ttydev, (char *)ptsname(tty));
 
-  if ((pid = fork()) == 0) {
-    int pty, osm, buf, nbytes;
+  if ((child_pid = fork()) == 0) {
+    int pty, osm, nbytes, skip;
+    char cbuf[128];
 
+    skip = 0;
+    osm = open("/dev/osm1", O_RDONLY);
+    if (osm >= 0) {
+	while ((nbytes = read(osm, cbuf, sizeof(cbuf))) > 0)
+	    skip += nbytes;
+	close(osm);
+    }
     pty = open(ttydev, O_RDWR);
+    if (pty < 0) exit(1);
     osm = open("/dev/osm", O_RDWR);
-    while ((nbytes = read(osm, &buf, sizeof(buf))) >= 0)
-      write(pty, &buf, nbytes);
+    if (osm < 0) exit(1);
+    for (nbytes = 0; skip > 0 && nbytes >= 0; skip -= nbytes) {
+	nbytes = skip;
+	if (nbytes > sizeof(cbuf))
+	    nbytes = sizeof(cbuf);
+	nbytes = read(osm, cbuf, nbytes);
+    }
+    while ((nbytes = read(osm, cbuf, sizeof(cbuf))) >= 0)
+      write(pty, cbuf, nbytes);
+    exit(0);
   }
-  return tty;
+  signal(SIGHUP, KillChild);
+  signal(SIGINT, KillChild);
+  signal(SIGTERM, KillChild);
+  return fdopen(tty, "r");
 }
 #endif  /* USE_OSM */
