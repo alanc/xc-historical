@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.52 94/06/04 16:44:25 rws Exp Kaleb $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.53 95/03/17 19:47:01 kaleb Exp gildea $
 
 #ifdef RsArchitecture
 #ifndef OSName
@@ -51,7 +51,7 @@ XCOMM operating system:  OSName
 #define ThreadedX		YES
 #define ThreadsLibraries -lpthreads -lc_r
 #endif
-#endif
+#endif /* OS > 3.2 */
 
 
 /*
@@ -113,7 +113,14 @@ baseobj.Osuf:	basedep.CCsuf						@@\
 #define InstallCmd              /usr/ucb/install
 #include <ibmLib.rules>
 
-#else
+#ifndef ManKeywordsTarget
+#define ManKeywordsTarget(manpath)					@@\
+man_keywords::								@@\
+	/usr/lib/makewhatis $(DESTDIR)manpath
+#endif
+
+
+#else /* end of RsArchitecture */
 
 
 #define UnixCpp /**/

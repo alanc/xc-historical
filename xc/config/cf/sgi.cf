@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.46 95/01/16 19:49:35 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.47 95/03/17 19:46:29 kaleb Exp gildea $
 
 #ifndef OSName
 #define OSName			IRIX 5.2
@@ -124,3 +124,10 @@ XCOMM operating system:  OSName
 #define	LibObjCompile(dir,options) $(RM) $@ dir/$@ \			@@\
 	&& $(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c \		@@\
 	&& $(MV) $@ dir/$@
+
+/* needs to find nroff on the system to work */
+#ifndef ManKeywordsTarget
+#define ManKeywordsTarget(manpath)					@@\
+man_keywords::								@@\
+	/usr/lib/makewhatis -M $(DESTDIR)manpath $(DESTDIR)manpath/whatis
+#endif
