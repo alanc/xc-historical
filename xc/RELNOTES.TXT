@@ -355,7 +355,7 @@ artificial emboldening and charset subsetting, are implemented.
 
 The font server has been renamed from fs to xfs to avoid confusion with
 an AFS program.  The default port has changed from 7000 (used by AFS)
-to 7100, and has been registered with the Internet IANA.
+to 7100, and has been registered with the Internet Assigned Numbers Authority.
 
 
 19. X server
