@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbcopy8.c,v 5.2 89/07/31 17:48:52 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.3 89/07/31 19:02:06 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -142,7 +142,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	    pboxBase = pboxNext = pbox+nbox-1;
 	    while (pboxBase >= pbox)
 	    {
-	        while ((pboxNext >= pbox) && 
+	        while ((pboxNext >= pbox) &&
 		       (pboxBase->y1 == pboxNext->y1))
 		    pboxNext--;
 	        pboxTmp = pboxNext+1;
@@ -475,130 +475,127 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	    pptSrc++;
 	}
     } else {
-    	while (nbox--) 
-    	{ 
-    	    w = pbox->x2 - pbox->x1; 
-    	    h = pbox->y2 - pbox->y1; 
-    	    if (ydir == -1) 
-    	    { 
-            	psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc); 
-            	pdstLine = pdstBase + ((pbox->y2-1) * -widthDst); 
-    	    } 
-    	    else 
-    	    { 
-            	psrcLine = psrcBase + (pptSrc->y * widthSrc); 
-            	pdstLine = pdstBase + (pbox->y1 * widthDst); 
-    	    } 
-    	    if (w <= PPW) 
-    	    { 
-	    	int tmpDst, tmpSrc;
-            	int srcBit, dstBit; 
-            	pdstLine += (pbox->x1 >> PWSH); 
-            	psrcLine += (pptSrc->x >> PWSH); 
-            	psrc = psrcLine; 
-            	pdst = pdstLine; 
-            	srcBit = pptSrc->x & PIM; 
-            	dstBit = pbox->x1 & PIM; 
-            	while(h--) 
-            	{ 
-	    	    getbits(psrc, srcBit, w, tmpSrc) 
-	    	    getbits(pdst, dstBit, w, tmpDst) 
-    		    putbitsrop(tmpSrc, dstBit, w, pdst, planemask, alu) 
-	    	    pdst += widthDst; 
-	    	    psrc += widthSrc; 
-            	} 
-    	    } 
-    	    else 
-    	    { 
-            	register int xoffSrc; 
-            	int nstart; 
-            	int nend; 
-            	int srcStartOver; 
-	    	int tmpDst, tmpSrc; 
-            	maskbits(pbox->x1, w, startmask, endmask, nlMiddle) 
-            	if (startmask) 
-	    	    nstart = PPW - (pbox->x1 & PIM); 
-            	else 
-	    	    nstart = 0; 
-            	if (endmask) 
-            	    nend = pbox->x2 & PIM; 
-            	else 
-	    	    nend = 0; 
-            	xoffSrc = ((pptSrc->x & PIM) + nstart) & PIM; 
-            	srcStartOver = ((pptSrc->x & PIM) + nstart) > PLST; 
-            	if (xdir == 1) 
-            	{ 
-            	    pdstLine += (pbox->x1 >> PWSH); 
-            	    psrcLine += (pptSrc->x >> PWSH); 
-	    	    while (h--) 
-	    	    { 
-	            	psrc = psrcLine; 
-	            	pdst = pdstLine; 
-	            	if (startmask) 
-	            	{ 
-		    	    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc) 
-		    	    getbits(pdst, (pbox->x1 & PIM), nstart, tmpDst) 
-    			    putbitsrop(tmpSrc, (pbox->x1 & PIM), nstart, pdst, planemask, alu) 
-		    	    pdst++; 
-		    	    if (srcStartOver) 
-		            	psrc++; 
-	            	} 
-	            	nl = nlMiddle; 
-	            	while (nl--) 
-	            	{ 
-		    	    getbits(psrc, xoffSrc, PPW, tmpSrc) 
+    	while (nbox--)
+    	{
+    	    w = pbox->x2 - pbox->x1;
+    	    h = pbox->y2 - pbox->y1;
+    	    if (ydir == -1)
+    	    {
+            	psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc);
+            	pdstLine = pdstBase + ((pbox->y2-1) * -widthDst);
+    	    }
+    	    else
+    	    {
+            	psrcLine = psrcBase + (pptSrc->y * widthSrc);
+            	pdstLine = pdstBase + (pbox->y1 * widthDst);
+    	    }
+    	    if (w <= PPW)
+    	    {
+	    	int tmpSrc;
+            	int srcBit, dstBit;
+            	pdstLine += (pbox->x1 >> PWSH);
+            	psrcLine += (pptSrc->x >> PWSH);
+            	psrc = psrcLine;
+            	pdst = pdstLine;
+            	srcBit = pptSrc->x & PIM;
+            	dstBit = pbox->x1 & PIM;
+            	while(h--)
+            	{
+	    	    getbits(psrc, srcBit, w, tmpSrc)
+    		    putbitsrop(tmpSrc, dstBit, w, pdst, planemask, alu)
+	    	    pdst += widthDst;
+	    	    psrc += widthSrc;
+            	}
+    	    }
+    	    else
+    	    {
+            	register int xoffSrc;
+            	int nstart;
+            	int nend;
+            	int srcStartOver;
+	    	int tmpSrc;
+            	maskbits(pbox->x1, w, startmask, endmask, nlMiddle)
+            	if (startmask)
+	    	    nstart = PPW - (pbox->x1 & PIM);
+            	else
+	    	    nstart = 0;
+            	if (endmask)
+            	    nend = pbox->x2 & PIM;
+            	else
+	    	    nend = 0;
+            	xoffSrc = ((pptSrc->x & PIM) + nstart) & PIM;
+            	srcStartOver = ((pptSrc->x & PIM) + nstart) > PLST;
+            	if (xdir == 1)
+            	{
+            	    pdstLine += (pbox->x1 >> PWSH);
+            	    psrcLine += (pptSrc->x >> PWSH);
+	    	    while (h--)
+	    	    {
+	            	psrc = psrcLine;
+	            	pdst = pdstLine;
+	            	if (startmask)
+	            	{
+		    	    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc)
+    			    putbitsrop(tmpSrc, (pbox->x1 & PIM), nstart, pdst, planemask, alu)
+		    	    pdst++;
+		    	    if (srcStartOver)
+		            	psrc++;
+	            	}
+	            	nl = nlMiddle;
+	            	while (nl--)
+	            	{
+		    	    getbits(psrc, xoffSrc, PPW, tmpSrc)
 			    putbitsrop (tmpSrc, 0, 32, pdst, planemask, alu)
-		    	    pdst++; 
-		    	    psrc++; 
-	            	} 
-	            	if (endmask) 
-	            	{ 
-		    	    getbits(psrc, xoffSrc, nend, tmpSrc) 
-    			    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu) 
-	            	} 
-	            	pdstLine += widthDst; 
-	            	psrcLine += widthSrc; 
-	    	    } 
-            	} 
-            	else  
-            	{ 
-            	    pdstLine += (pbox->x2 >> PWSH); 
-            	    psrcLine += (pptSrc->x+w >> PWSH); 
-	    	    if (xoffSrc + nend >= PPW) 
-	            	--psrcLine; 
-	    	    while (h--) 
-	    	    { 
-	            	psrc = psrcLine; 
-	            	pdst = pdstLine; 
-	            	if (endmask) 
-	            	{ 
-		    	    getbits(psrc, xoffSrc, nend, tmpSrc) 
-    			    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu) 
-	            	} 
-	            	nl = nlMiddle; 
-	            	while (nl--) 
-	            	{ 
-		    	    --psrc; 
-		    	    getbits(psrc, xoffSrc, PPW, tmpSrc) 
-		    	    --pdst; 
+		    	    pdst++;
+		    	    psrc++;
+	            	}
+	            	if (endmask)
+	            	{
+		    	    getbits(psrc, xoffSrc, nend, tmpSrc)
+    			    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu)
+	            	}
+	            	pdstLine += widthDst;
+	            	psrcLine += widthSrc;
+	    	    }
+            	}
+            	else
+            	{
+            	    pdstLine += (pbox->x2 >> PWSH);
+            	    psrcLine += (pptSrc->x+w >> PWSH);
+	    	    if (xoffSrc + nend >= PPW)
+	            	--psrcLine;
+	    	    while (h--)
+	    	    {
+	            	psrc = psrcLine;
+	            	pdst = pdstLine;
+	            	if (endmask)
+	            	{
+		    	    getbits(psrc, xoffSrc, nend, tmpSrc)
+    			    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu)
+	            	}
+	            	nl = nlMiddle;
+	            	while (nl--)
+	            	{
+		    	    --psrc;
+		    	    getbits(psrc, xoffSrc, PPW, tmpSrc)
+		    	    --pdst;
 			    putbitsrop(tmpSrc, 0, 32, pdst, planemask, alu);
-	            	} 
-	            	if (startmask) 
-	            	{ 
-		    	    if (srcStartOver) 
-		            	--psrc; 
-		    	    --pdst; 
-		    	    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc) 
-		    	    getbits(pdst, (pbox->x1 & PIM), nstart, tmpDst) 
-    			    putbitsrop(tmpSrc, (pbox->x1 & PIM), nstart, pdst, planemask, alu) 
-	            	} 
-	            	pdstLine += widthDst; 
-	            	psrcLine += widthSrc; 
-	    	    } 
-            	} 
-    	    } 
-    	    pbox++; 
-    	    pptSrc++; 
+	            	}
+	            	if (startmask)
+	            	{
+		    	    if (srcStartOver)
+		            	--psrc;
+		    	    --pdst;
+		    	    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc)
+    			    putbitsrop(tmpSrc, (pbox->x1 & PIM), nstart, pdst, planemask, alu)
+	            	}
+	            	pdstLine += widthDst;
+	            	psrcLine += widthSrc;
+	    	    }
+            	}
+    	    }
+    	    pbox++;
+    	    pptSrc++;
     	}
     }
 }
@@ -664,7 +661,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	    fastBox.y1 = srcy;
 	    fastBox.x2 = srcx + width;
 	    fastBox.y2 = srcy + height;
-	    
+
 	    /* Left and top are already clipped, so clip right and bottom */
 	    if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
 	      fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
@@ -706,7 +703,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	(*pGC->pScreen->RegionInit)(&rgnDst, &srcBox, 1);
 	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
     }
-    
+
     dstx += pDstDrawable->x;
     dsty += pDstDrawable->y;
 
@@ -745,7 +742,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
         if (REGION_NUM_RECTS(cclip) == 1)
         {
 	    BoxPtr pBox = REGION_RECTS(cclip);
-	  
+
 	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
 	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
 	    if (fastBox.y1 < pBox->y1) fastBox.y1 = pBox->y1;
@@ -799,7 +796,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	    ppt->x = pbox->x1 + dx;
 	    ppt->y = pbox->y1 + dy;
 	}
-    
+
 	cfbDoBitblt(pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask);
 	DEALLOCATE_LOCAL(pptSrc);
     }
