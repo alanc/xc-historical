@@ -1,4 +1,4 @@
-/* $XConsortium: mplogic.c,v 1.2 93/07/19 11:34:47 rws Exp $ */
+/* $XConsortium: mplogic.c,v 1.3 93/07/20 20:26:03 dpw Exp $ */
 /**** module mplogic.c ****/
 /******************************************************************************
 				NOTICE
@@ -777,7 +777,7 @@ static int InitializeLogic(flo,ped)
 	} else if (!hasROI) {
 	    /* gack, an alternative is to use INPLACE for SRCt1 */
     	    bandPtr tband = &(pet->receptor[SRCt2].band[band]);
-	    if (dband->format->pitch < tband->format->pitch) {
+	    if (dband->format->pitch <= tband->format->pitch) {
 		pvt->action2 = (void (*)()) NULL;
 		pvt->endix = dband->format->pitch; /* bits */
 	    } else {
