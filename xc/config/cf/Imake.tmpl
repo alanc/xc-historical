@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.208 94/02/10 17:08:56 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.209 94/02/10 19:25:15 matt Exp $
 XCOMM
 
 /*
@@ -598,9 +598,9 @@ _NULLCMD_ = @ echo -n
 #ifndef ExtraLibraries
 #if SystemV4
 #if HasSockets
-#define ExtraLibraries -lsocket -lnsl
+#define ExtraLibraries -lsocket -lnsl -lw
 #else
-#define ExtraLibraries -lnsl
+#define ExtraLibraries -lnsl -lw
 #endif
 #else
 #define ExtraLibraries /**/
