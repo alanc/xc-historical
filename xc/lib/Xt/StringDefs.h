@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.42 88/09/26 16:32:58 swick Exp $
+* $XConsortium: StringDefs.h,v 1.43 88/09/29 13:36:29 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -194,6 +194,7 @@ SOFTWARE.
 #define XtRDisplay		"Display"
 #define XtREditMode		"EditMode"
 #define XtRFile			"File"
+#define XtRFloat		"Float"
 #define XtRFont			"Font"
 #define XtRFontStruct		"FontStruct"
 #define XtRFunction		"Function"
