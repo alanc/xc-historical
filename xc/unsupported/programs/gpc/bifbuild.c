@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bifbuild.c,v 5.1 91/02/16 10:06:52 rws Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -902,8 +902,8 @@ int bif_textalign(horizontal_alignment, vertical_alignment)
 #ifndef PRINT_ONLY
     /* Fill the temp_ent then allocate and copy the entity */
     /* BIF values match the PHIGs enumerated values */
-    temp_ent.textalign.text_align.hor = (Phor_align)horizontal_alignment;
-    temp_ent.textalign.text_align.vert = (Pvert_align)vertical_alignment;
+    temp_ent.textalign.text_align.hor = (Phor_text_align)horizontal_alignment;
+    temp_ent.textalign.text_align.vert = (Pvert_text_align)vertical_alignment;
     ent = new_generic(&temp_ent,ent_size,TEXT_ALIGN, do_textalign);
     
     /* Error check for ent == NULL ( FATAL ) */
@@ -2636,7 +2636,7 @@ int bif_endtest()
 	Traverse(temp_state_ptr,bif_list);
 	
 #ifdef USING_PHIGS
-	pupd_ws((Pint)bench_setup.workid,(Pregen_flag)PUPD_PERFORM);
+	pupd_ws((Pint)bench_setup.workid,(Pregen_flag)PFLAG_PERFORM);
 #endif /* USING_PHIGS */
 	
 	temp_state_ptr->currentFrame++;
@@ -2653,7 +2653,7 @@ int bif_endtest()
     if (bench_setup.border_stid) {
 	ppost_struct((Pint)bench_setup.workid,(Pint)bench_setup.border_stid,
 		     (Pfloat)1.);
-	pupd_ws((Pint)bench_setup.workid,(Pregen_flag)PUPD_PERFORM);
+	pupd_ws((Pint)bench_setup.workid,(Pregen_flag)PFLAG_PERFORM);
     }
     /* Open the Non-Reatained Structure */
     fxopns();

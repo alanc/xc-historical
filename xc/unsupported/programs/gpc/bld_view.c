@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bld_view.c,v 5.1 91/02/16 10:07:08 rws Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -248,12 +248,12 @@ BIF_INT begin_or_end;
       mapping.win.x_max = temp_ent.viewmapping3.uvMinMax[1];
       mapping.win.y_min = temp_ent.viewmapping3.uvMinMax[2];
       mapping.win.y_max = temp_ent.viewmapping3.uvMinMax[3];
-      mapping.vp.x_min = npcMinMax[0];
-      mapping.vp.x_max = npcMinMax[1];
-      mapping.vp.y_min = npcMinMax[2];
-      mapping.vp.y_max = npcMinMax[3];
-      mapping.vp.z_min = npcMinMax[4];
-      mapping.vp.z_max = npcMinMax[5];
+      mapping.proj_vp.x_min = npcMinMax[0];
+      mapping.proj_vp.x_max = npcMinMax[1];
+      mapping.proj_vp.y_min = npcMinMax[2];
+      mapping.proj_vp.y_max = npcMinMax[3];
+      mapping.proj_vp.z_min = npcMinMax[4];
+      mapping.proj_vp.z_max = npcMinMax[5];
       mapping.proj_type = (Pproj_type)temp_ent.viewmapping3.proj_type;
       mapping.proj_ref_point.x = temp_ent.viewmapping3.proj_reference[0];
       mapping.proj_ref_point.y = temp_ent.viewmapping3.proj_reference[1];

@@ -1,4 +1,4 @@
-/* $XConsortium: auto_box.c,v 5.2 91/04/01 17:26:32 hersh Exp $ */
+/* $XConsortium: auto_box.c,v 5.3 91/04/02 08:24:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -75,7 +75,7 @@ SOFTWARE.
 #define PFILLAREASET3
 
 #ifdef PFILLAREASET3
-#define	PFILLAREA_CALL	pfill_area_set3( 1, &side )
+#define	PFILLAREA_CALL	pfill_area_set3( &side_list )
 #else /*PFILLAREASET3*/
 #define	PFILLAREA_CALL	pfill_area3( &side )
 #endif /*PFILLAREASET3*/
@@ -199,7 +199,7 @@ rotate_views()
 				&scale, &err, bldmat4);
 	pset_local_tran3(bldmat4, PTYPE_REPLACE);
 		
-	pupd_ws(WS1, PUPD_PERFORM);
+	pupd_ws(WS1, PFLAG_PERFORM);
     }
 /*
  *  close the structure being edited
@@ -277,7 +277,7 @@ float scale_factor;
 			    &scale, &err, bldmat4);
 	pset_local_tran3(bldmat4, PTYPE_REPLACE);
 
-	pupd_ws(WS1, PUPD_PERFORM);
+	pupd_ws(WS1, PFLAG_PERFORM);
     }
 /*
  *  close the structure being edited
@@ -301,10 +301,14 @@ load_box()
     Pvec3	shift;
     Pint	err;
     Pfloat	xang, yang, zang;
+    Ppoint_list_list3 side_list;
     Ppoint_list3 side;
 
     side.num_points = 4;
     side.points = p;
+    side_list.num_point_lists = 1;
+    side_list.point_lists = &side;
+
 
     setup(4, mx);
 
@@ -452,7 +456,7 @@ Pint ws_id;
 
     if (err != 0) (void) printf( "view mapping error ");
 
-    vrep.clip_limit =  view_map.vp;
+    vrep.clip_limit =  view_map.proj_vp;
     vrep.xy_clip = PIND_NO_CLIP;
     vrep.back_clip = PIND_NO_CLIP;
     vrep.front_clip = PIND_NO_CLIP;
@@ -468,7 +472,7 @@ Pint ws_id;
 
     if (err != 0) (void) printf( "view mapping error ");
 
-    vrep.clip_limit =  view_map2.vp;
+    vrep.clip_limit =  view_map2.proj_vp;
     vrep.xy_clip = PIND_NO_CLIP;
     vrep.back_clip = PIND_NO_CLIP;
     vrep.front_clip = PIND_NO_CLIP;
@@ -484,7 +488,7 @@ Pint ws_id;
 
     if (err != 0) (void) printf( "view mapping error ");
 
-    vrep.clip_limit =  view_map3.vp;
+    vrep.clip_limit =  view_map3.proj_vp;
     vrep.xy_clip = PIND_NO_CLIP;
     vrep.back_clip = PIND_NO_CLIP;
     vrep.front_clip = PIND_NO_CLIP;
@@ -500,7 +504,7 @@ Pint ws_id;
 
     if (err != 0) (void) printf( "view mapping error ");
 
-    vrep.clip_limit =  view_map4.vp;
+    vrep.clip_limit =  view_map4.proj_vp;
     vrep.xy_clip = PIND_NO_CLIP;
     vrep.back_clip = PIND_NO_CLIP;
     vrep.front_clip = PIND_NO_CLIP;

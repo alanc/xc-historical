@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ctrl.c,v 5.4 91/06/19 10:45:59 rws Exp $ */
+/* $XConsortium: cb_ctrl.c,v 5.5 91/06/26 17:02:51 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -213,14 +213,14 @@ pinq_sys_st(sys_state)
 
 
 void
-pinq_phigs_facs(length, start, error_ind, open_ws, num_names, open_ar,
+pinq_phigs_facs(length, start, error_ind, open_ws, open_ar, num_names,
     char_sets, length_list, norm_filt, inv_filt)
 Pint	length;	/* length of application list	*/
 Pint	start;	/* starting position	*/
 Pint	*error_ind;	/* OUT error indicator	*/
 Pint	*open_ws;	/* OUT max. num. simultaneously open ws	*/
-Pint	*num_names;	/* OUT number of available names for name sets */
 Pint	*open_ar;	/* OUT max. num. simultaneously open archive files */
+Pint	*num_names;	/* OUT number of available names for name sets */
 Pint_list *char_sets;	/* OUT list of character sets	*/
 Pint    *length_list;   /* OUT length of list in PHIGS  */
 Pint	*norm_filt;	/* OUT maximum length of normal filter list for ISS */

@@ -1,4 +1,4 @@
-/* $XConsortium: bld_prim.c,v 5.1 91/02/16 10:07:04 rws Exp $ */
+/* $XConsortium: bld_prim.c,v 5.2 91/04/03 09:39:59 rws Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -449,10 +449,13 @@ BIF_INT begin_or_end;
 	/* Send to PHIGs */
 #ifdef USING_PHIGS
 		{
+		    Ppoint_list_list poly_list_list;
 		    Ppoint_list poly_list;
+		    poly_list_list.num_point_lists = (Pint)1;
 		    poly_list.num_points = ent->number;
 		    poly_list.points = ent->points;
-		    pfill_area_set((Pint)1,&poly_list);
+		    poly_list_list.point_lists = &poly_list;
+		    pfill_area_set(&poly_list_list);
 		}
 #endif /* USING_PHIGS */
 		Free_NRE(traverser_state, ent);
@@ -569,7 +572,12 @@ BIF_INT begin_or_end;
 
 	/* Send to PHIGs */
 #ifdef USING_PHIGS
-		pfill_area_set(ent->numContours,ent->sets);
+	{
+		Ppoint_list_list poly_list_list;
+		poly_list_list.num_point_lists = ent->numContours;
+		poly_list_list.point_lists = ent->sets;
+		pfill_area_set(&poly_list_list);
+	}
 #endif /* USING_PHIGS */
 		Free_NRE(traverser_state, ent);
 	}

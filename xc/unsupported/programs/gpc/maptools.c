@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: maptools.c,v 5.1 91/02/16 10:07:42 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -282,24 +282,24 @@ float aspect_ratio;
 	mapping.win.x_max = uvMinMax[1];
 	mapping.win.y_min = uvMinMax[2];
 	mapping.win.y_max = uvMinMax[3];
-	mapping.vp.x_min = npcMinMax[0];
-	mapping.vp.y_min = npcMinMax[2];
+	mapping.proj_vp.x_min = npcMinMax[0];
+	mapping.proj_vp.y_min = npcMinMax[2];
 	if (aspect_ratio != 1.0) {
 	    if (aspect_ratio < 1.0) { /* Shrink X */
-		mapping.vp.x_max = npcMinMax[1] * aspect_ratio;
-		mapping.vp.y_max = npcMinMax[3];
+		mapping.proj_vp.x_max = npcMinMax[1] * aspect_ratio;
+		mapping.proj_vp.y_max = npcMinMax[3];
 	    }
 	    else { /* Shrink Y */
-		mapping.vp.x_max = npcMinMax[1];
-		mapping.vp.y_max = npcMinMax[3] / aspect_ratio;
+		mapping.proj_vp.x_max = npcMinMax[1];
+		mapping.proj_vp.y_max = npcMinMax[3] / aspect_ratio;
 	    }
 	}
 	else {
-	    mapping.vp.x_max = npcMinMax[1];
-	    mapping.vp.y_max = npcMinMax[3];
+	    mapping.proj_vp.x_max = npcMinMax[1];
+	    mapping.proj_vp.y_max = npcMinMax[3];
 	}
-	mapping.vp.z_min = npcMinMax[4];
-	mapping.vp.z_max = npcMinMax[5];
+	mapping.proj_vp.z_min = npcMinMax[4];
+	mapping.proj_vp.z_max = npcMinMax[5];
 	mapping.proj_type = (Pproj_type)ent->proj_type;
 	mapping.proj_ref_point.x = proj_reference[0];
 	mapping.proj_ref_point.y = proj_reference[1];

@@ -1,4 +1,4 @@
-/* $XConsortium: beach_ball.c,v 5.4 91/04/01 19:45:45 hersh Exp $ */
+/* $XConsortium: beach_ball.c,v 5.5 91/04/02 08:32:19 rws Exp $ */
 /***********************************************************
 Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -177,9 +177,9 @@ init_view_mapping()
     map.view_plane =  0.4 * map.proj_ref_point.z;
     map.proj_ref_point.x = (map.win.x_min + map.win.x_max) / 2.0;
     map.proj_ref_point.y = (map.win.y_min + map.win.y_max) / 2.0;
-    map.vp.x_min = 0.0; map.vp.x_max = 1.0;
-    map.vp.y_min = 0.0; map.vp.y_max = 1.0;
-    map.vp.z_min = 0.0; map.vp.z_max = 1.0;
+    map.proj_vp.x_min = 0.0; map.proj_vp.x_max = 1.0;
+    map.proj_vp.y_min = 0.0; map.proj_vp.y_max = 1.0;
+    map.proj_vp.z_min = 0.0; map.proj_vp.z_max = 1.0;
 }
 
 static void
@@ -202,7 +202,7 @@ static void
 set_view_rep()
 {
     eval_view_rep(&rep);
-    rep.clip_limit = map.vp;
+    rep.clip_limit = map.proj_vp;
     rep.xy_clip = rep.back_clip = rep.front_clip = PIND_CLIP;
     pset_view_rep3(1, 1, &rep);
 }
@@ -210,6 +210,7 @@ set_view_rep()
 static void
 build_sphere()
 {
+    Ppoint_list_list3 facets_list;
     Ppoint_list3 *facets;
     int	    num_facets, num_lat = 6, num_long = 8;
     register int   i;
@@ -219,8 +220,10 @@ build_sphere()
     popen_struct( SPHERE);
     for (i = 0; i < num_facets; i++) {
 	pset_int_colr_ind( (i % 6) + 2 );
+	facets_list.num_point_lists = 1;
+	facets_list.point_lists = &facets[i];
 #ifdef PFILLAREASET3
-	pfill_area_set3( 1, &facets[i]);
+	pfill_area_set3( &facets_list);
 #else /* PFILLAREASET3 */
 	pfill_area3(&facets[i]);
 #endif /* PFILLAREASET3 */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_ar.c,v 5.1 91/02/16 09:47:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -391,9 +391,9 @@ pinq_ar_st( archive_state)
 
 void
 pinq_ar_files( store, error_ind, ar_files)
-    Pstore              store;          /* handle to Store object */
-    Pint		*error_ind;	/* OUT error indicator	*/
-    Par_file_list	**ar_files;     /* OUT list of archive file */
+Pstore              store;          /* handle to Store object */
+Pint		*error_ind;	/* OUT error indicator	*/
+Par_file_list	**ar_files;     /* OUT list of archive file */
 {
     register	Phg_state_list	*psl;
     register	int 		i, size;
@@ -405,7 +405,7 @@ pinq_ar_files( store, error_ind, ar_files)
     } else {
 	psl = phg_cur_cph->psl;
 	*error_ind = 0;
-	*ar_files = &store->data.ar_files;
+	*ar_files = &((_Pstore *)store)->data.ar_files;
 	(*ar_files)->num_ar_files = 0;
         if ( PSL_AR_STATE( phg_cur_cph->psl) == PST_AROP) {
 	    for ( i = 0, size = 0; i < MAX_NO_OPEN_ARFILES; i++ ) {
@@ -415,8 +415,8 @@ pinq_ar_files( store, error_ind, ar_files)
 		}
 	    }
 	    size += (*ar_files)->num_ar_files * sizeof(Par_file);
-	    if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-		(*ar_files)->ar_files = (Par_file *)store->buf;
+	    if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+		(*ar_files)->ar_files = (Par_file *)((_Pstore *)store)->buf;
 		name_buf = (char *)
 		    ((*ar_files)->ar_files + (*ar_files)->num_ar_files);
 		for ( i = 0; i < MAX_NO_OPEN_ARFILES; i++ ) {
@@ -572,10 +572,10 @@ pret_paths_descs(ar_id, struct_id, po, pd, store, paths, status)
 	    cp_args.data.q_ar_hierarchy.hier.depth = pd;
 	    ret.err = 0;
 	    CP_FUNC( phg_cur_cph, CP_FUNC_OP_AR_GET_HIERARCHY, &cp_args, &ret);
-	    *paths = &store->data.struct_paths;
+	    *paths = &((_Pstore *)store)->data.struct_paths;
 	    (*paths)->num_elem_ref_lists = 0;
 	    if ( !ret.err ) {
-		phg_cb_copy_hierarchy( &ret.data.hierarchy, store, status,
+		phg_cb_copy_hierarchy( &ret.data.hierarchy, ((_Pstore *)store), status,
 		    *paths );
 	    }
 	    ERR_FLUSH( phg_cur_cph->erh);
@@ -615,10 +615,10 @@ Pint                    *status;        /* OUT status of retrieval      */
 	    cp_args.data.q_ar_hierarchy.hier.depth = pd;
 	    ret.err = 0;
 	    CP_FUNC( phg_cur_cph, CP_FUNC_OP_AR_GET_HIERARCHY, &cp_args, &ret);
-	    *paths = &store->data.struct_paths;
+	    *paths = &((_Pstore *)store)->data.struct_paths;
 	    (*paths)->num_elem_ref_lists = 0;
 	    if ( !ret.err ) {
-		phg_cb_copy_hierarchy( &ret.data.hierarchy, store, status,
+		phg_cb_copy_hierarchy( &ret.data.hierarchy, ((_Pstore *)store), status,
 		    *paths );
 	    }
 	    ERR_FLUSH( phg_cur_cph->erh);
