@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.183 91/07/10 15:32:07 dave Exp $
+ * $XConsortium: menus.c,v 1.184 91/07/10 15:34:27 dave Exp $
  *
  * twm menu code
  *
@@ -2109,7 +2109,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    if (t) {
 		if (Scr->WarpUnmapped || t->mapped) {
 		    if (!t->mapped) DeIconify (t);
-		    XRaiseWindow (dpy, t->frame);
+		    if (!Scr->NoRaiseWarp) XRaiseWindow (dpy, t->frame);
 		    WarpToWindow (t);
 		}
 	    } else {
