@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.62 89/08/10 13:27:57 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.63 89/08/10 13:36:35 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.62 89/08/10 13:27:57 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.63 89/08/10 13:36:35 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -1338,7 +1338,6 @@ static void TekRealize (gw, valuemaskp, values)
     line_pt = Tline;
     Ttoggled = TRUE;
     screen->page = screen->cur;
-    create_dummy_menu_hack ();		/* XXX - to initialize menu actions */
     return;
 }
 

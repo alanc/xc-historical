@@ -99,19 +99,6 @@ static char check_bits[] = {
  * public interfaces
  */
 
-void create_dummy_menu_hack ()
-{
-    static int called = 0;
-
-    if (!called) {
-	Widget w = XtCreateWidget ("dummyMenu", simpleMenuWidgetClass, 
-				   toplevel, NULL, 0);
-	if (w) XtDestroyWidget (w);
-	called++;
-    }
-}
-
-
 void HandleCreateMenu (w, event, params, param_count)
     Widget w;
     XEvent *event;              /* unused */

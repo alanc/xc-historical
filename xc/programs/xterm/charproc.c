@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.91 89/08/10 13:28:07 jim Exp $
+ * $XConsortium: charproc.c,v 1.92 89/08/10 13:36:43 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.91 89/08/10 13:28:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.92 89/08/10 13:36:43 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1981,8 +1981,6 @@ static void VTInitialize (request, new)
 		VTNonMaskableEvent, (Opaque)NULL);
 
    set_character_class (new->screen.charClass);
-
-   create_dummy_menu_hack ();		/* XXX - to initialize menu actions */
 
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);

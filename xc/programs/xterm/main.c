@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.123 89/07/21 16:11:35 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.124 89/07/27 18:08:14 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -691,6 +691,8 @@ char **argv;
 	    }
 	    break;
 	}
+
+	XawSimpleMenuAddGlobalActions (XtWidgetToApplicationContext(toplevel));
 
         term = (XtermWidget) XtCreateManagedWidget(
 	    "vt100", xtermWidgetClass, toplevel, NULL, 0);
