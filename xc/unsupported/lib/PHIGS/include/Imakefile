@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.15 91/07/19 19:49:52 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.16 93/09/29 22:49:23 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -31,7 +31,6 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 #define PexPhigsCDebugFlags LibraryCDebugFlags
 #endif
 
-INSTALLFLAGS = $(INSTINCFLAGS)
   CCOPTIONS = PexCCOptions
 CDEBUGFLAGS = PexPhigsCDebugFlags
     DEFINES = PexPhigsDefines
@@ -75,7 +74,7 @@ CLIENTHEADERS = phigs.h attr.h phigscfunc.h phigsextrn.h phigserr.h errnum.h
 all::
 
 BuildIncludes($(CLIENTHEADERS),phigs,..)
-InstallMultiple($(CLIENTHEADERS),$(INCDIR)/phigs)
+InstallMultipleFlags($(CLIENTHEADERS),$(INCDIR)/phigs,$(INSTINCFLAGS))
 
 lint lint-x: 
 	@echo "no include lint needed"

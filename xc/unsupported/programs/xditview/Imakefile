@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 91/07/29 14:17:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 93/08/17 21:18:05 rws Exp $
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
@@ -13,5 +13,4 @@ ComplexProgramTarget(xditview)
 BuildIncludes($(BITMAPS),bitmaps,..)
 InstallAppDefaults(Xditview)
 InstallAppDefaultsLong(Xdit-chrtr,Xditview-chrtr)
-INSTALLFLAGS = $(INSTINCFLAGS)
-InstallMultiple($(BITMAPS),$(INCDIR)/bitmaps)
+InstallMultipleFlags($(BITMAPS),$(INCDIR)/bitmaps,$(INSTINCFLAGS))
