@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.6 88/10/20 17:37:02 keith Exp $
+ * $XConsortium: greet.c,v 1.7 88/11/17 17:04:56 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -73,19 +73,22 @@ struct display	*d;
 {
 	Arg		arglist[10];
 	int		i;
-	int		argc;
+	static int	argc;
 	Screen		*scrn;
-	static char	*argv[] = { "xlogin", "-display", 0, 0 };
+	static char	*argv[] = { "xlogin", 0 };
 	Display		*dpy;
 
 	Debug ("greet %s\n", d->name);
-	argv[2] = d->name;
-	argc = 3;
+	argc = 1;
 	XtToolkitInitialize ();
+	Debug ("name: %s\n", d->name);
 	context = XtCreateApplicationContext();
+	Debug ("name: %s\n", d->name);
 	dpy = XtOpenDisplay (context, d->name, "xlogin", "Xlogin", 0,0,
 				&argc, argv);
 
+	Debug ("name: %s\n", d->name);
+	XSetAccessControl (dpy, EnableAccess);
 	SecureDisplay (d, dpy);
 
 	i = 0;
@@ -99,6 +102,8 @@ struct display	*d;
 
 	i = 0;
 	XtSetArg (arglist[i], XtNnotifyDone, GreetDone); i++;
+	if (d->authorization)
+		XtSetArg (arglist[i], XtNsecureSession, True); i++;
 	login = XtCreateManagedWidget ("login", loginWidgetClass, toplevel,
 					arglist, i);
 	XtRealizeWidget (toplevel);
@@ -119,7 +124,16 @@ struct display	*d;
 CloseGreet (d)
 struct display	*d;
 {
+	Boolean	    allow;
+	Arg	    arglist[1];
+
 	UnsecureDisplay (d, XtDisplay (toplevel));
+	XtSetArg (arglist[0], XtNallowAccess, (char *) &allow);
+	XtGetValues (login, arglist, 1);
+	if (allow) {
+		Debug ("Disabling access control\n");
+		XSetAccessControl (XtDisplay (toplevel), DisableAccess);
+	}
 	XCloseDisplay (XtDisplay (toplevel));
 }
 
@@ -130,13 +144,17 @@ struct greet_info	*greet;
 	XEvent		event;
 	Arg		arglist[1];
 
-	Debug ("dispatching\n");
+	XtSetArg (arglist[0], XtNallowAccess, False);
+	XtSetValues (login, arglist, 1);
+
+	Debug ("dispatching %s\n", d->name);
 	done = 0;
 	while (!done) {
 		XtAppNextEvent (context, &event);
 		XtDispatchEvent (&event);
 	}
 	XFlush (XtDisplay (toplevel));
+	Debug ("Done dispatch %s\n", d->name);
 	greet->name = name;
 	greet->password = password;
 	XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));

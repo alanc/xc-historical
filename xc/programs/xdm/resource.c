@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.9 88/10/25 11:48:47 keith Exp $
+ * $XConsortium: resource.c,v 1.10 88/11/17 17:05:01 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,6 +34,7 @@ int	debugLevel;
 char	*errorLogFile;
 int	daemonMode;
 char	*pidFile;
+char	*authGen;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -71,6 +72,15 @@ char	*pidFile;
 #ifndef CPP_PROGRAM
 #define CPP_PROGRAM "/lib/cpp"
 #endif
+#ifndef DEF_XDM_AUTH_GEN
+#define DEF_XDM_AUTH_GEN "/usr/lib/X11/xdm/xdmauthgen"
+#endif
+#ifndef DEF_AUTH_FILE
+#define DEF_AUTH_FILE	"/usr/lib/X11/xdm/auth-server"
+#endif
+#ifndef DEF_AUTH_DIR
+#define DEF_AUTH_DIR	"/tmp"
+#endif
 
 struct dmResources {
 	char	*name, *class;
@@ -90,6 +100,8 @@ struct dmResources {
 				"true",
 "pidFile",	"PidFile",	DM_STRING,	&pidFile,
 				"",
+"authGen",	"AuthGen",	DM_STRING,	&authGen,
+				DEF_XDM_AUTH_GEN,
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
@@ -132,6 +144,10 @@ struct displayResources {
 				DEF_FAILSAFE_CLIENT,
 "grabTimeout",	"GrabTimeout",	DM_INT,		boffset(grabTimeout),
 				"3",
+"authFile",	"AuthFile",	DM_STRING,	boffset(authFile),
+				DEF_AUTH_FILE,
+"userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
+				DEF_AUTH_DIR,
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\

@@ -397,9 +397,14 @@ the resources have been changed and you want to test them, or when
 the screen has been overwritten with system messages.
 .IP "insert-char"
 Inserts the character typed.
-.IP "set-session-argument "
+.IP "set-session-argument"
 Specifies a single word argument which is passed to the session at startup.
 See the sections on \fBXsession\fP and \fBTypical usage\fP.
+.IP "allow-all-access"
+Disables access control in the server, this can be used when
+the .Xauthority file cannot be created by xdm.  Be very careful using
+this, it might be better to disconnect the machine from the network
+before doing this.
 .SH "The Xstartup file"
 .PP
 This file is typically a shell script.  It is run as "root" and should be

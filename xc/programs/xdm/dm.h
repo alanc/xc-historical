@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.8 88/10/22 21:49:03 keith Exp $
+ * $XConsortium: dm.h,v 1.9 88/11/17 17:04:53 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,7 @@
  */
 
 # include	<X11/Xos.h>
+# include	<X11/Xauth.h>
 
 # include	<sys/param.h>	/* for NGROUPS */
 
@@ -104,6 +105,9 @@ struct display {
 	char		*systemPath;	/* path set for startup/reset */
 	char		*systemShell;	/* interpreter for startup/reset */
 	char		*failsafeClient;/* a client to start when the session fails */
+	Xauth		*authorization;	/* authorization data */
+	char		*authFile;	/* file to store authorization in */
+	char		*userAuthDir;	/* backup directory for tickets */
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
 	int		openTimeout;	/* abort open attempt timeout */
@@ -153,10 +157,18 @@ extern int	debugLevel;
 extern char	*errorLogFile;
 extern int	daemonMode;
 extern char	*pidFile;
+extern char	*authGen;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayByPid (),
 			*NewDisplay ();
+
+/*
+ * CloseOnFork flags
+ */
+
+# define CLOSE_ALWAYS	    0
+# define LEAVE_FOR_DISPLAY  1
 
 extern char	*malloc (), *realloc (), *strcpy ();
 

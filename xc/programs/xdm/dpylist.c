@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: displaylist.c,v 1.4 88/10/15 19:08:15 keith Exp $
+ * $XConsortium: displaylist.c,v 1.5 88/10/20 17:36:39 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -99,6 +99,7 @@ char	*name;
 	d->argv = 0;
 	d->status = notRunning;
 	d->pid = -1;
+	d->authorization = 0;
 	displays = d;
 	LoadDisplayResources (d);
 	return d;

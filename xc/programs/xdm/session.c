@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.8 88/11/17 17:05:04 keith Exp $
+ * $XConsortium: session.c,v 1.9 88/11/17 19:13:42 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,7 +43,9 @@ struct display	*d;
 	 * Step 5: Load system default Resources
 	 */
 	LoadXloginResources (d);
+	Debug ("name now %s\n", d->name);
 	dpy = InitGreet (d);
+	Debug ("name now %s\n", d->name);
 	for (;;) {
 		/*
 		 * Step 6: Greet user, requesting name/password
@@ -56,6 +58,7 @@ struct display	*d;
 			break;
 		else
 			FailedLogin (d, &greet);
+		Debug ("after verify, name %s\n", d->name);
 	}
 	DeleteXloginResources (d, dpy);
 	CloseGreet (d);
@@ -95,8 +98,14 @@ struct display	*d;
 	char	cmd[1024];
 
 	if (d->resources[0] && access (d->resources, 4) == 0) {
-		sprintf (cmd, "%s -display %s -load %s",
-				d->xrdb, d->name, d->resources);
+		if (d->authorization && d->authFile && d->authFile[0]) {
+			sprintf (cmd, "XAUTHORITY=%s %s -display %s -load %s",
+					d->authFile,
+					d->xrdb, d->name, d->resources);
+		} else {
+			sprintf (cmd, "%s -display %s -load %s",
+					d->xrdb, d->name, d->resources);
+		}
 		Debug ("Loading resource file: %s\n", cmd);
 		system (cmd);
 	}
@@ -121,7 +130,7 @@ SecureDisplay (d, dpy)
 struct display	*d;
 Display		*dpy;
 {
-	Debug ("SecureDisplay\n");
+	Debug ("SecureDisplay %s\n", d->name);
 	signal (SIGALRM, syncTimeout);
 	if (setjmp (syncJump)) {
 		LogError ("WARNING: display %s could not be secured\n",
@@ -129,7 +138,7 @@ Display		*dpy;
 		SessionExit (ABORT_DISPLAY);
 	}
 	alarm (d->grabTimeout);
-	Debug ("Before XGrabServer\n");
+	Debug ("Before XGrabServer %s\n", d->name);
 	XGrabServer (dpy);
 	if (XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync,
 			   GrabModeAsync, CurrentTime) != GrabSuccess)
@@ -140,10 +149,11 @@ Display		*dpy;
 				d->name);
 		SessionExit (ABORT_DISPLAY);
 	}
-	Debug ("XGrabKeyboard succeeded\n");
+	Debug ("XGrabKeyboard succeeded %s\n", d->name);
 	alarm (0);
 	signal (SIGALRM, SIG_DFL);
 	pseudoReset (dpy);
+	Debug ("done secure %s\n", d->name);
 }
 
 UnsecureDisplay (d, dpy)
@@ -169,6 +179,7 @@ int			*pidp;
 	char	*failsafeArgv[2];
 	int	pid;
 
+	SetUserAuthorization (d, verify);
 	Debug ("StartSession %s: ", verify->argv[0]);
 	for (f = verify->argv; *f; f++)
 		Debug ("%s ", *f);

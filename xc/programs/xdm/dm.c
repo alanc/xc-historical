@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.9 88/10/22 21:48:44 keith Exp $
+ * $XConsortium: dm.c,v 1.10 88/11/17 17:04:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -42,6 +42,7 @@ char	**argv;
 		BecomeDaemon ();
 	InitErrorLog ();
 	StorePid ();
+	InitAuthorization ();
 	signal (SIGTERM, TerminateAll);
 	signal (SIGINT, TerminateAll);
 	/*

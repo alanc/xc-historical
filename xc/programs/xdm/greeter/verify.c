@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.5 88/10/20 17:37:57 keith Exp $
+ * $XConsortium: verify.c,v 1.6 88/11/17 19:13:52 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -74,56 +74,30 @@ struct verify_info	*verify;
 		argv = parseArgs (argv, "xsession");
 	verify->argv = argv;
 	verify->userEnviron = userEnv (d, greet->name, home, shell);
+	Debug ("user environment:\n");
+	printEnv (verify->userEnviron);
 	verify->systemEnviron = systemEnv (d, greet->name, home);
+	Debug ("system environment:\n");
+	printEnv (verify->systemEnviron);
+	Debug ("end of environments\n");
 	return 1;
 }
 
-/*
- * build an execution environment
- */
-
-# define DISPLAY	0
-# define HOME		1
-# define PATH		2
-# define USER		3
-# define SHELL		4
-
-# define NENV		5
-
-
-char	*envname[NENV] = {
- 	"DISPLAY",
-	"HOME",
- 	"PATH",
- 	"USER",
-	"SHELL",
-};
-
-char *
-makeEnv (num, value)
-char	*value;
-{
-	char	*result, *malloc ();
-
-	result = malloc (strlen (envname[num]) + strlen (value) + 2);
-	sprintf (result, "%s=%s", envname[num], value);
-	return result;
-}
+extern char **setEnv ();
 
 char **
 userEnv (d, user, home, shell)
 struct display	*d;
 char	*user, *home, *shell;
 {
-	static char	*userEnvironment[NENV + 1];
-
-	userEnvironment[DISPLAY] = makeEnv (DISPLAY, d->name);
-	userEnvironment[HOME] = makeEnv (HOME, home);
-	userEnvironment[USER] = makeEnv (USER, user);
-	userEnvironment[PATH] = makeEnv (PATH, d->userPath);
-	userEnvironment[SHELL] = makeEnv (SHELL, shell);
-	userEnvironment[NENV] = 0;
-	return userEnvironment;
+	char	**env = 0;
+	
+	env = setEnv (env, "DISPLAY", d->name);
+	env = setEnv (env, "HOME", home);
+	env = setEnv (env, "USER", user);
+	env = setEnv (env, "PATH", d->userPath);
+	env = setEnv (env, "SHELL", shell);
+	return env;
 }
 
 char **
@@ -131,31 +105,14 @@ systemEnv (d, user, home)
 struct display	*d;
 char	*user, *home;
 {
-	static char	*systemEnvironment[NENV + 1];
+	char	**env = 0;
 	
-	systemEnvironment[DISPLAY] = makeEnv (DISPLAY, d->name);
-	systemEnvironment[HOME] = makeEnv (HOME, home);
-	systemEnvironment[USER] = makeEnv (USER, user);
-	systemEnvironment[PATH] = makeEnv (PATH, d->systemPath);
-	systemEnvironment[SHELL] = makeEnv (SHELL, d->systemShell);
-	systemEnvironment[NENV] = 0;
-	return systemEnvironment;
-}
-
-char *
-getEnv (e, name)
-	char	**e;
-	char	*name;
-{
-	int	l = strlen (name);
-
-	while (*e) {
-		if (strlen (*e) > l && !strncmp (*e, name, l) &&
-			(*e)[l] == '=')
-			return (*e) + l + 1;
-		++e;
-	}
-	return 0;
+	env = setEnv (env, "DISPLAY", d->name);
+	env = setEnv (env, "HOME", home);
+	env = setEnv (env, "USER", user);
+	env = setEnv (env, "PATH", d->systemPath);
+	env = setEnv (env, "SHELL", d->systemShell);
+	return env;
 }
 
 #ifdef NGROUPS
@@ -204,39 +161,3 @@ int			gid;
 	endgrent ();
 }
 #endif
-
-# define isblank(c)	((c) == ' ' || c == '\t')
-
-char **
-parseArgs (argv, string)
-char	**argv;
-char	*string;
-{
-	char	*word;
-	char	*save;
-	int	i;
-	char	*malloc (), *realloc (), *strcpy ();;
-
-	i = 0;
-	while (argv && argv[i])
-		++i;
-	if (!argv)
-		argv = (char **) malloc (sizeof (char *));
-	word = string;
-	for (;;) {
-		if (!*string || isblank (*string)) {
-			if (word != string) {
-				argv = (char **) realloc ((char *) argv, (i + 2) * sizeof (char *));
-				argv[i] = strncpy (malloc (string - word + 1), word, string-word);
-				argv[i][string-word] = '\0';
-				i++;
-			}
-			if (!*string)
-				break;
-			word = string + 1;
-		}
-		++string;
-	}
-	argv[i] = 0;
-	return argv;
-}
