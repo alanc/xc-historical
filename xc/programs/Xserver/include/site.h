@@ -33,5 +33,6 @@ SOFTWARE.
 #define COMPILEDDEFAULTFONT	"fixed"
 #define COMPILEDCURSORFONT	"cursorfont"
 #define RGB_DB			"/usr/lib/X11/rgb"
+#define RGB_DB_ALTERNATE	"/usr/lib/rgb"
 
 #endif SITE_H
