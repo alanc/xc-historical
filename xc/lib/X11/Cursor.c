@@ -1,11 +1,11 @@
 #include "copyright.h"
 
-/* $Header: XCursor.c,v 11.9 87/08/07 13:25:26 toddb Locked $ */
+/* $Header: XCursor.c,v 11.10 87/08/29 17:03:58 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
-static XColor foreground = { 0, 65535, 65535, 65535 };
-static XColor background = { 0,    0,     0,     0 };
+static XColor foreground = { 0,    0,     0,     0  };  /* black */
+static XColor background = { 0, 65535, 65535, 65535 };  /* white */
 
 Cursor XCreateFontCursor(dpy, which)
 	Display *dpy;
