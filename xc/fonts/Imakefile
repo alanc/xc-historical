@@ -1,9 +1,9 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-             FC = compiler/fc
+             FC = bdftosnf/bdftosnf
       MKFONTDIR = mkfontdir/mkfontdir
-        SUBDIRS = compiler mkfontdir
+        SUBDIRS = bdftosnf mkfontdir
         HEADERS = cursorfont.h
    INSTALLFLAGS = $(INSTINCFLAGS)
 
