@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.28 87/12/08 10:52:22 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.29 87/12/14 09:16:49 swick Locked $";
 #endif lint
 
 /*
@@ -215,10 +215,11 @@ static void Initialize(request, new, args, num_args)
 {
     LabelWidget lw = (LabelWidget) new;
 
-    if (lw->label.label == NULL) {
-	unsigned int	len = strlen(lw->core.name);
-	lw->label.label = XtMalloc(len+1);
-	(void) strcpy(lw->label.label, lw->core.name);
+    if (lw->label.label == NULL) 
+        lw->label.label = lw->core.name;
+    else {
+        lw->label.label = strcpy( XtMalloc( strlen(lw->label.label) + 1 ),
+				  lw->label.label );
     }
 
     GetnormalGC(lw);
@@ -324,7 +325,6 @@ static Boolean SetValues(current, request, new, last)
     Boolean was_resized;
 
     if (newlw->label.label == NULL) {
-	/* the string will be copied below... */
 	newlw->label.label = newlw->core.name;
     }
 
@@ -342,12 +342,14 @@ static Boolean SetValues(current, request, new, last)
     /* label if they want the label to recompute size based on the new */
     /* label? */
     if (curlw->label.label != newlw->label.label) {
-        if (newlw->label.label != NULL) {
+        if (curlw->label.label != curlw->core.name)
+	    XtFree( (char *)curlw->label.label );
+
+	if (newlw->label.label != newlw->core.name) {
 	    newlw->label.label = strcpy(
 	        XtMalloc((unsigned) newlw->label.label_len + 1),
 		newlw->label.label);
 	}
-	XtFree ((char *) curlw->label.label);
     }
 
     /* calculate the window size */
