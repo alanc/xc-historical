@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.19 88/09/06 16:41:12 jim Exp $
+* $XConsortium: CommandP.h,v 1.20 88/09/26 18:03:16 swick Exp $
 */
 
 
@@ -85,8 +85,6 @@ typedef struct {
     GC          inverse_GC;
     Boolean     set;
     Boolean     highlighted;
-    Boolean     display_set;
-    Boolean     display_highlighted;
 } CommandPart;
 
 
