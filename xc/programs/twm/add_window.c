@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.148 91/01/05 13:17:27 dave Exp $
+ * $XConsortium: add_window.c,v 1.149 91/01/09 17:12:49 rws Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -151,6 +151,12 @@ IconMgr *iconp;
 
     /* allocate space for the twm window */
     tmp_win = (TwmWindow *)calloc(1, sizeof(TwmWindow));
+    if (tmp_win == 0)
+    {
+	fprintf (stderr, "%s: Unable to allocate memory to manage window ID %lx.\n",
+		 ProgramName, w);
+	return NULL;
+    }
     tmp_win->w = w;
     tmp_win->zoomed = ZOOM_NONE;
     tmp_win->iconmgr = iconm;
