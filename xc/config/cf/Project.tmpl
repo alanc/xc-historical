@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.67 90/03/21 13:40:16 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.68 90/07/03 12:14:47 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -193,16 +193,16 @@
 #define GwmDir $(LIBDIR)/gwm
 #endif
 #ifndef ManPath
-#define ManPath $(DESTDIR)/**/ManDirectoryRoot
+#define ManPath Concat($(DESTDIR),ManDirectoryRoot)
 #endif
 #ifndef ManSourcePath
 #define ManSourcePath $(MANPATH)/man
 #endif
 #ifndef ManDir
-#define ManDir $(MANSOURCEPATH)/**/ManSuffix
+#define ManDir Concat($(MANSOURCEPATH),ManSuffix)
 #endif
 #ifndef LibmanDir
-#define LibmanDir $(MANSOURCEPATH)/**/LibManSuffix
+#define LibmanDir Concat($(MANSOURCEPATH),LibManSuffix)
 #endif
 #ifndef XAppLoadDir
 #define XAppLoadDir $(LIBDIR)/app-defaults
@@ -336,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.67 90/03/21 13:40:16 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.68 90/07/03 12:14:47 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -421,81 +421,105 @@ Berklib.c: sysV/Berklib.c					@@\
      EXTENSIONSRC = $(TOP)/extensions
 
 /*
- * and now a little bit of magic for using imake without source tree; if we
- * are using shared libraries, we really don't need to depend on anything
+ * _Use - makes a choice based on UseInstalled.
  */
+#ifndef _Use
 #ifdef UseInstalled
 #define _Use(a,b) a
 #else
 #define _Use(a,b) b
 #endif
+#endif
+
+/*
+ * _UseCat - combination of _Use and Concat.
+ *           exists to avoid problems with some preprocessors
+ */
+#ifndef _UseCat
+#if defined(__STDC__) && !defined(UnixCpp)
+#ifdef UseInstalled
+#define _UseCat(a,b,c) a##c
+#else
+#define _UseCat(a,b,c) b##c
+#endif
+#else
+#ifdef UseInstalled
+#define _UseCat(a,b,c) a/**/c
+#else
+#define _UseCat(a,b,c) b/**/c
+#endif
+#endif
+#endif
+
+/*
+ * and now a little bit of magic for using imake without source tree; if we
+ * are using shared libraries, we really do not need to depend on anything
+ */
 #if SharedLibXext
-  DEPEXTENSIONLIB = /* _Use($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.sa.$(SOXEXTREV) */
+  DEPEXTENSIONLIB = /* _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.sa.$(SOXEXTREV)) */
      EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC) -lXext)
 #else
-  DEPEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.a
+  DEPEXTENSIONLIB = _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.a)
      EXTENSIONLIB = LoaderLibPrefix _Use(-lXext, $(DEPEXTENSIONLIB))
 #endif
 #if SharedLibX
-          DEPXLIB = $(DEPEXTENSIONLIB) /* _Use($(USRLIBDIR),$(XLIBSRC))/libX11.sa.$(SOXLIBREV) */
+          DEPXLIB = $(DEPEXTENSIONLIB) /* _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.sa.$(SOXLIBREV)) */
              XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
 #else
-          DEPXLIB = $(DEPEXTENSIONLIB) _Use($(USRLIBDIR),$(XLIBSRC))/libX11.a 
+          DEPXLIB = $(DEPEXTENSIONLIB) _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.a)
              XLIB = $(EXTENSIONLIB) LoaderLibPrefix _Use(-lX11,$(XLIBSRC)/libX11.a)
 #endif
-      DEPXAUTHLIB = _Use($(USRLIBDIR),$(XAUTHSRC))/libXau.a
+      DEPXAUTHLIB = _UseCat($(USRLIBDIR),$(XAUTHSRC),/libXau.a)
          XAUTHLIB = LoaderLibPrefix _Use(-lXau,$(DEPXAUTHLIB))
 #if SharedLibXmu
-        DEPXMULIB = _Use($(USRLIBDIR),$(XMUSRC))/libXmu.sa.$(SOXMUREV)
+        DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV))
            XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
 #else
-        DEPXMULIB = _Use($(USRLIBDIR),$(XMUSRC))/libXmu.a
+        DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.a)
            XMULIB = LoaderLibPrefix _Use(-lXmu,$(DEPXMULIB))
 #endif
 #if SharedOldLibX
-       DEPOLDXLIB = /* _Use($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.sa.$(SOOLDXREV) */
+       DEPOLDXLIB = /* _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.sa.$(SOOLDXREV)) */
           OLDXLIB = _Use(-loldX,-L$(OLDXLIBSRC) -loldX)
 #else
-       DEPOLDXLIB = _Use($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.a
+       DEPOLDXLIB = _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.a)
           OLDXLIB = LoaderLibPrefix _Use(-loldX,$(DEPOLDXLIB))
 #endif
 #if SharedLibXt
-      DEPXTOOLLIB = _Use($(USRLIBDIR),$(TOOLKITSRC))/libXt.sa.$(SOXTREV)
+      DEPXTOOLLIB = _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.sa.$(SOXTREV))
          XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
 #else
-      DEPXTOOLLIB = _Use($(USRLIBDIR),$(TOOLKITSRC))/libXt.a
+      DEPXTOOLLIB = _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.a)
          XTOOLLIB = LoaderLibPrefix _Use(-lXt,$(DEPXTOOLLIB))
 #endif
 #if SharedLibXaw
-        DEPXAWLIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.sa.$(SOXAWREV)
+        DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sa.$(SOXAWREV))
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
 #else
-        DEPXAWLIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
+        DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.a)
            XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPXAWLIB)) 
 #endif
 
- LINTEXTENSIONLIB = _Use($(LINTLIBDIR),$(EXTENSIONSRC)/lib)/llib-lXext.ln
-         LINTXLIB = _Use($(LINTLIBDIR),$(XLIBSRC))/llib-lX11.ln
-          LINTXMU = _Use($(LINTLIBDIR),$(XMUSRC))/llib-lXmu.ln
-        LINTXTOOL = _Use($(LINTLIBDIR),$(TOOLKITSRC))/llib-lXt.ln
-          LINTXAW = _Use($(LINTLIBDIR),$(AWIDGETSRC))/llib-lXaw.ln
+ LINTEXTENSIONLIB = _UseCat($(LINTLIBDIR),$(EXTENSIONSRC)/lib,/llib-lXext.ln)
+         LINTXLIB = _UseCat($(LINTLIBDIR),$(XLIBSRC),/llib-lX11.ln)
+          LINTXMU = _UseCat($(LINTLIBDIR),$(XMUSRC),/llib-lXmu.ln)
+        LINTXTOOL = _UseCat($(LINTLIBDIR),$(TOOLKITSRC),/llib-lXt.ln)
+          LINTXAW = _UseCat($(LINTLIBDIR),$(AWIDGETSRC),/llib-lXaw.ln)
 
 
 /*
- * Contrib support - you shouldn't need to change these.
+ * Contrib support - you should not need to change these.
  */
 #if HasXwWidgets
         XWLIBSRC = $(CONTRIBSRC)/toolkits/Xw
-        DEPXWLIB = _Use($(USRLIBDIR),$(XWLIBSRC))/libXw.a
+        DEPXWLIB = _UseCat($(USRLIBDIR),$(XWLIBSRC),/libXw.a)
         XWLIB = LoaderLibPrefix _Use(-lXw,$(DEPXWLIB))
 #endif
 #if HasXcuWidget
         XCULIBSRC = $(CONTRIBSRC)/toolkits/Xcu
-        DEPXCULIB = _Use($(USRLIBDIR),$(XCULIBSRC))/libXcu.a
+        DEPXCULIB = _UseCat($(USRLIBDIR),$(XCULIBSRC),/libXcu.a)
         XCULIB = LoaderLibPrefix _Use(-lXcu,$(DEPXCULIB))
 #endif
-
-#undef _Use
 
 /*
  * the following may be removed in R4{alpha,beta,?}
