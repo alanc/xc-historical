@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.9 91/07/09 16:09:23 rws Exp $
+ * $XConsortium: cfbply1rct.c,v 1.11 92/05/18 14:37:44 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -74,6 +74,13 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     }
     
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+#ifdef NO_ONE_RECT
+    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    {
+	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
+	return;
+    }
+#endif
     origin = *((int *) &pDrawable->x);
     origin -= (origin & 0x8000) << 1;
     extents = &devPriv->pCompositeClip->extents;
