@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.16 88/09/19 12:26:53 jim Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.17 89/01/03 08:22:00 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -16,7 +16,7 @@ Philip Karlton
 Todd Newman
 .AI
 Digital Equipment Corporation
-.AI
+.sp
 minor revisions by
 .AU
 Bob Scheifler
@@ -463,20 +463,17 @@ WaitForSomething() must create new clients as they are requested (by
 whatever mechanism at the transport level).  A new client is created
 by calling the DIX routine:
 .nf
-	ClientPtr NextAvailableClient(swapped)
-		int swapped;
+
+	ClientPtr NextAvailableClient(ospriv)
+		pointer ospriv;
 .fi
 This routine returns NULL if a new client cannot be allocated (e.g. maximum
-number of clients reached).  There is an OS private
-field (pClient->osPrivate) that can be used to store information about the 
+number of clients reached).  The ospriv argument will be stored into the OS
+private field (pClient->osPrivate), to store OS private information about the 
 client.  In the sample server, the osPrivate field contains the 
 number of the socket for this client. See also "New Client Connections."
-After initializing this field, the initial connection data should be sent back
-to the client by calling the DIX routine:
-.nf
-	SendConnectionSetupInfo(client);
-		ClientPtr client;
-.fi
+NextAvailableClient() will call InsertFakeRequest(), so you must be
+prepared for this.
 .LP
 If there are outstanding input events,
 you should make sure that the two SetInputCheck() locations are unequal.
@@ -589,26 +586,42 @@ If the server does not like the authorization strings
 or the version numbers do not match within the rules,
 or if anything else is wrong, it sends a failure 
 response with a reason string.
-If the information never comes, or comes much too slowly, the connection will
-be broken off silently.
-The connection timeout can be set from the command line.
-(The sample server on the distribution tape chooses to ignore the
-authorization.)
 .LP
-All of the above happens while the server is in WaitForSomething().
-At this point, WaitForSomething() calls NextAvailableClient(),
-a DIX routine, to generate a unique ClientPtr.
-Your OS layer must be able to map from this ClientPtr
+If the information never comes, or comes much too slowly, the connection will
+should be broken off.  You must implement the connection timeout.  The
+sample server implements this by keeping a timestamp for each still-connecting
+client and, each time just before it attempts to accept new connections, it
+closes any connection that are too old.
+The connection timeout can be set from the command line.
+.LP
+You must implement whatever authorization schemes you want to support.
+The sample server on the distribution tape supports a simple authorization
+scheme.  The only interface seen by DIX is:
+.nf
+
+	char * 
+	ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
+	    ClientPtr client;
+	    char *auth_proto, *auth_string;
+	    int proto_n, string_n;
+.fi
+.LP
+DIX will only call this once per client, once it has read the full initial
+connection data from the client.  If the connection should be
+accepted ClientAuthorized() should return NULL, and otherwise should
+return an error message string.
+.LP
+Accepting new connections happens internally to WaitForSomething().
+WaitForSomething() must call the DIX routine NextAvailableClient()
+to create a client object.
+Processing of the initial connection data will be handled by DIX.
+Your OS layer must be able to map from a client
 to whatever information your OS code needs to communicate
 on the given byte stream to the client.
 DIX uses this ClientPtr to refer to
 the client from now on.   The sample server uses the osPrivate field in
-the ClientPtr to store the file descriptor for the socket.   
-.LP
-WaitForSomething() then calls the DIX routine SendConnectionSetupInfo(),
-which sends the new client the xConnSetupPrefix struct that is defined in Xproto.h.
-DIX also sends other information on visuals, etc.
-At this point, the connection is up and running.
+the ClientPtr to store the file descriptor for the socket, the
+input and output buffers, and authorization information.
 .LP
 To initialize the methods you choose to allow clients to connect to
 your server, main() calls the routine
@@ -682,6 +695,33 @@ to be free buffer space that DIX no longer needs; you can put another request th
 The sample server, however, ignores this.
 
 The sample server implementation is in server/os/4.2bsd/io.c.
+
+.XS
+Inserting Data for Clients
+.XE
+.LP
+DIX can insert data into the client stream, and can cause a "replay" of
+the current request.
+.nf
+
+	InsertFakeRequest(client, data, count)
+	    ClientPtr client;
+	    char *data;
+	    int count;
+
+	ResetCurrentRequest(client)
+	    ClientPtr client;
+.fi
+.LP
+InsertFakeRequest() must insert the specified number of bytes of data
+into the head of the input buffer for the client.  This may be a
+complete request, or it might be a partial request.  For example,
+NextAvailableCient() will insert a partial request in order to read
+the initial connection data sent by the client.  ResetCurrentRequest()
+should "back up" the input buffer so that the currently executing request
+will be reexecuted.  DIX may have altered some values (e.g. the overall
+request length), so you must recheck to see if you still have a complete
+request.  ResetCurrentRequest() should always cause a yield (isItTimeToYield).
 
 .NH 2
 Sending Events, Errors And Replies To Clients
@@ -4355,6 +4395,7 @@ ChangeClip	mi	GC
 ChangeGC	mfb	GCInterest
 ChangeWindowAttributes	mfb	Screen
 ClearToBackground	mfb	Window
+ClientAuthorized	4.2
 CloseFont	snf
 CloseScreen	hd
 ConstrainCursor	hd	Screen
@@ -4409,6 +4450,7 @@ InitInput	hd
 InitKeyboardDeviceStruct	dix	
 InitOutput	hd	
 InitPointerDeviceStruct	dix	
+InsertFakeRequest	4.2
 InstallColormap	mfb	Screen
 Intersect	mi	Screen
 Inverse	mi	Screen
@@ -4417,6 +4459,7 @@ LineHelper	mi	GC
 ListInstalledColormaps	mfb	Screen
 LookupKeyboardDevice	dix	
 LookupPointerDevice	dix	
+NextAvailableClient	dix
 OpenFont	snf
 OsInit	4.2	
 PaintWindowBackground	mi,mfb	Window
@@ -4443,8 +4486,6 @@ QueryGlyphExtents	snf
 QueryTextExtents	snf
 ReadRequestFromClient	4.2	
 RealizeCursor	hd	Screen
-RealizeFont	mfb	Screen
-RealizeWindow	mfb	Screen
 .TE
 .bp
 .TS
@@ -4453,6 +4494,8 @@ c c c
 l c l.
 Procedure	Port	Struct
 _
+RealizeFont	mfb	Screen
+RealizeWindow	mfb	Screen
 RecolorCursor	hd	Screen
 RectIn	mi	Screen
 RegionCopy	mi	Screen
@@ -4466,6 +4509,7 @@ ResolveColor	mfb	Screen
 RegisterKeyboardDevice	dix	
 RegisterPointerDevice	dix	
 RemoveEnabledDevice	4.2
+ResetCurrentRequest	4.2
 RestoreAreas	none	BackingStore
 SaveDoomedAreas	none	BackingStore
 SaveScreen	mfb	Screen
