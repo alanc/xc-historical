@@ -1,4 +1,4 @@
-/* $XConsortium: pixmap.h,v 1.4 89/06/09 14:52:58 keith Exp $ */
+/* $XConsortium: pixmap.h,v 5.0 89/06/09 15:00:34 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -42,4 +42,10 @@ SOFTWARE.
 
 typedef struct _Drawable *DrawablePtr;	
 typedef struct _Pixmap *PixmapPtr;
+
+typedef union _PixUnion {
+    PixmapPtr		pixmap;
+    unsigned long	pixel;
+} PixUnion;
+
 #endif /* PIXMAP_H */

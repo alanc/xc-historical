@@ -42,9 +42,4 @@ typedef union _DevUnion {
     unsigned long	uval;
 } DevUnion;
 
-typedef union _PixUnion {
-    PixmapPtr		pixmap;
-    unsigned long	pixel;
-} PixUnion;
-
 #endif /* MISCSTRUCT_H */
