@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.112 93/09/14 17:21:38 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.113 93/09/15 17:24:13 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -884,7 +884,7 @@ extern void (*XESetPrintErrorValues (
 #endif
 );
 
-extern int (*XESetWireToEvent(
+extern Bool (*XESetWireToEvent(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* event_number */,
@@ -906,7 +906,7 @@ extern Status (*XESetEventToWire(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* event_number */,
-    int (*) (
+    Status (*) (
 #if NeedNestedPrototypes
 	      Display*			/* display */,
               XEvent*			/* re */,
@@ -920,7 +920,7 @@ extern Status (*XESetEventToWire(
 #endif
 );
 
-extern Status (*XESetWireToError(
+extern Bool (*XESetWireToError(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* error_number */,
@@ -935,6 +935,25 @@ extern Status (*XESetWireToError(
 ))(
 #if NeedNestedPrototypes
     Display*, XErrorEvent*, xError*
+#endif
+);
+
+extern void (*XESetBeforeFlush(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* error_number */,
+    void (*) (
+#if NeedNestedPrototypes
+	       Display*			/* display */,
+	       XExtCodes*		/* codes */,
+	       char*			/* data */,
+	       long			/* len */
+#endif
+            )		/* proc */   
+#endif
+))(
+#if NeedNestedPrototypes
+    Display*, XExtCodes*, char*, long
 #endif
 );
 
