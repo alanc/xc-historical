@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.86 93/10/06 17:36:10 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.87 94/01/19 11:23:13 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1858,7 +1858,7 @@ static void AddSelectionRequests(wid, sel, count, targets, callbacks,
       if (properties != NULL)
 	newreq->param = properties[i];
       else {
-	newreq->param = GetSelectionProperty(dpy, sel);
+	newreq->param = GetSelectionProperty(dpy);
 	XDeleteProperty(dpy, window, newreq->param);
       }
       newreq->callback = callbacks[j];
@@ -2024,7 +2024,7 @@ extern void XtSendSelectionRequest(widget, selection, time)
 
 	/* special case a multiple which isn't needed */
 	GetSelectionValue(widget, selection, req[i]->target,
-			  req[i]->callback, time, 
+			  req[i]->closure, req[i]->callback, time, 
 			  req[i]->incremental, req[i]->param);
       } else {
 	Atom *targets;
