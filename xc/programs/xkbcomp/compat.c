@@ -1,4 +1,4 @@
-/* $XConsortium: compat.c,v 1.1 94/04/02 17:05:17 erik Exp $ */
+/* $XConsortium: compat.c,v 1.2 94/04/04 15:28:08 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,10 +26,11 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
+#include "indicators.h"
 #include "action.h"
 
 typedef struct _ModCompatInfo {
@@ -49,13 +50,17 @@ typedef struct _CompatInfo {
     int			nInterps;
     XkbSymInterpretPtr	interps;
     XkbSymInterpretRec	dflt;
+    XkbFileLEDInfo	ledDflt;
     ModCompatInfo *	modCompat;
+    XkbFileLEDInfo *	leds;
     VModInfo		vmods;
     ActionInfo *	act;
+    Display *		dpy;
 } CompatInfo;
 
 static void
-InitCompatInfo(info,xkb)
+InitCompatInfo(dpy,info,xkb)
+    Display *		dpy;
     CompatInfo *	info;
     XkbDescPtr		xkb;
 {
@@ -70,11 +75,14 @@ register int i;
     info->dflt.flags=	0;
     info->dflt.virtual_mod= XkbNoModifier;
     info->dflt.act.type= XkbSA_NoAction;
+    ClearIndicatorMapInfo(dpy,&info->ledDflt);
     for (i=0;i<XkbAnyActionDataSize;i++) {
 	info->dflt.act.data[i]= 0;
     }
     info->modCompat= NULL;
+    info->leds= NULL;
     InitVModInfo(&info->vmods,xkb);
+    info->dpy= dpy;
     return;
 }
 
@@ -84,7 +92,6 @@ ClearCompatInfo(info,xkb)
     XkbDescPtr		xkb;
 {
 register int i;
-ModCompatInfo *mc,*next;
 
     info->name= NullStringToken;
     info->nInterps= 0;
@@ -94,9 +101,20 @@ ModCompatInfo *mc,*next;
     for (i=0;i<XkbAnyActionDataSize;i++) {
 	info->dflt.act.data[i]= 0;
     }
-    for (mc=info->modCompat;mc!=NULL;mc=next) {
-	next= mc->next;
-	uFree(mc);
+    ClearIndicatorMapInfo(info->dpy,&info->ledDflt);
+    if (info->modCompat!=NULL) {
+	ModCompatInfo *mc,*next;
+	for (mc=info->modCompat;mc!=NULL;mc=next) {
+	    next= mc->next;
+	    uFree(mc);
+	}
+    }
+    if (info->leds!=NULL) {
+	XkbFileLEDInfo *led,*next;
+	for (led=info->leds;led!=NULL;led=next) {
+	    next= led->next;
+	    uFree(led);
+	}
     }
     /* 3/30/94 (ef) -- XXX! Should free action info here */
     ClearVModInfo(&info->vmods,xkb);
@@ -107,15 +125,26 @@ static void
 FreeCompatInfo(info)
     CompatInfo *	info;
 {
-ModCompatInfo *mc,*next;
 
     if (info->interps)
 	uFree(info->interps);
-    bzero((char *)info,sizeof(CompatInfo));
-    for (mc=info->modCompat;mc!=NULL;mc=next) {
-	next= mc->next;
-	uFree(mc);
+    if (info->modCompat!=NULL) {
+	ModCompatInfo *mc,*next;
+
+	for (mc=info->modCompat;mc!=NULL;mc=next) {
+	    next= mc->next;
+	    uFree(mc);
+	}
     }
+    if (info->leds!=NULL) {
+	XkbFileLEDInfo *led,*next;
+
+	for (led=info->leds;led!=NULL;led=next) {
+	    next= led->next;
+	    uFree(led);
+	}
+    }
+    bzero((char *)info,sizeof(CompatInfo));
     /* 3/30/94 (ef) -- XXX! Should free action info here */
     return;
 }
@@ -186,11 +215,11 @@ XkbSymInterpretPtr	new;
     clobber= (mergeMode==MergeOverride);
     collision= FindMatchingInterp(info,&ndx,interp);
     if (collision) {
-	if (reportCollisions) {
+	if ((reportCollisions)&&(warningLevel>=5)) {
 	    uWarning("Multiple interpretations of \"%s+%s(%s)\"\n",
-					keysymText(interp->sym,XkbMessage),
-					SIMatchText(interp->match,XkbMessage),
-					modMaskText(interp->mods,XkbMessage));
+				XkbKeysymText(interp->sym,XkbMessage),
+				SIMatchText(interp->match,XkbMessage),
+				XkbModMaskText(interp->mods,XkbMessage));
 	    uAction("Using %s definition\n",(clobber?"last":"first"));
 	}
 	if (clobber)	new= &info->interps[ndx];
@@ -210,21 +239,24 @@ AddModCompat(info,modCompat,mergeMode,reportCollisions)
     unsigned		mergeMode;
     Bool		reportCollisions;
 {
-ModCompatInfo *mc,*next;
+ModCompatInfo *mc;
 
-    for (mc=info->modCompat;mc!=NULL;next=mc) {
+    for (mc=info->modCompat;mc!=NULL;mc=mc->next) {
 	if ((mc->realMod==modCompat->realMod)&&(mc->ndx==modCompat->ndx)) {
 	    if ((mc->mods==modCompat->mods)&&(mc->groups==modCompat->groups))
 		return True;
-	    if (reportCollisions) {
-		uError("Compatibility map for %s modifier %s redefined\n",
+	    if ((reportCollisions)&&(warningLevel>0)) {
+		uWarning("Compatibility map for %s modifier %s redefined\n",
 						(mc->realMod?"real":"virtual"),
 						stText(mc->name));
-		uInformation("Using %s definition\n",
+		uAction("Using %s definition\n",
 				(mergeMode==MergeAugment?"first":"last"));
 	    }
-	    if (mergeMode!=MergeAugment)
+	    if (mergeMode!=MergeAugment) {
+		ModCompatInfo *next= mc->next;
 		*mc= *modCompat;
+		mc->next= next;
+	    }
 	    return True;
 	}
     }
@@ -311,7 +343,7 @@ XkbFile	*	rtrn;
     if (ProcessIncludeFile(stmt,XkmCompatMapIndex,&rtrn,&newMerge)) {
 	CompatInfo 	myInfo;
 
-	InitCompatInfo(&myInfo,xkb);
+	InitCompatInfo(info->dpy,&myInfo,xkb);
 	myInfo.dflt= info->dflt;
 	myInfo.act= info->act;
 	(*hndlr)(rtrn,xkb,MergeOverride,&myInfo);
@@ -337,6 +369,16 @@ XkbFile	*	rtrn;
 	    for (mc=myInfo.modCompat;mc!=NULL;mc=mc->next) {
 		if (!AddModCompat(info,mc,newMerge,False))
 		    info->errorCount++;
+	    }
+	}
+	if (myInfo.leds!=NULL) {
+	    XkbFileLEDInfo *led,*rtrn;
+	    for (led=myInfo.leds;led!=NULL;led=led->next) {
+		rtrn= AddIndicatorMap(led,info->leds,newMerge,False);
+		if (rtrn!=NULL) 
+		     info->leds= rtrn;
+		else info->errorCount++;
+		
 	    }
 	}
 	ClearCompatInfo(&myInfo,xkb);
@@ -405,6 +447,39 @@ ExprResult	tmp;
     return ok;
 }
 
+LookupEntry groupNames[]= {
+	{	"group1",	0x01	},
+	{	"group2",	0x02	},
+	{	"group3",	0x04	},
+	{	"group4",	0x08	},
+	{	"group5",	0x10	},
+	{	"group6",	0x20	},
+	{	"group7",	0x40	},
+	{	"group8",	0x80	},
+	{	"none",		0x00	},
+	{	"all",		0xff	},
+	{	NULL,		0	}
+};
+
+static int
+ReportNotArray(type,field,name)
+    char *	type;
+    char *	field;
+    char *	name;
+{
+    uError("The %s %s field is not an array\n",type,field);
+    uAction("Ignoring illegal assignment in definition of %s\n",name);
+    return False;
+}
+
+static int
+ReportBadType(type,field,name,wanted)
+{
+    uError("The %s %s field must be a %s\n",type,field,wanted);
+    uAction("Ignoring illegal assignment in definition of %s\n",name);
+    return False;
+}
+
 static int
 HandleInterpVar(stmt,xkb,mergeMode,info)
     VarDef *		stmt;
@@ -422,9 +497,8 @@ ExprDef *	arrayNdx;
 							     mergeMode,info);	
     }
     if (elem.str&&(uStrCaseCmp(elem.str,"indicator")==0)) {
-	uInternalError("Don't know how to set indicator map fields yet\n");
-	uAction("Default setting for %s ignored\n",field.str);
-	return True;
+	return SetIndicatorMapField(&info->ledDflt,xkb,field.str,arrayNdx,
+						stmt->value,mergeMode);
     }
     return SetActionField(xkb,elem.str,field.str,arrayNdx,stmt->value,
 							     &info->act);
@@ -492,20 +566,6 @@ XkbSymInterpretRec	interp;
     return True;
 }
 
-static LookupEntry groupNames[]= {
-	{	"group1",	0x01	},
-	{	"group2",	0x02	},
-	{	"group3",	0x04	},
-	{	"group4",	0x08	},
-	{	"group5",	0x10	},
-	{	"group6",	0x20	},
-	{	"group7",	0x40	},
-	{	"group8",	0x80	},
-	{	"none",		0x00	},
-	{	"all",		0xff	},
-	{	NULL,		0	}
-};
-
 static int
 HandleModCompatDef(def,xkb,mergeMode,info)
     ModCompatDef *	def;
@@ -569,7 +629,7 @@ ModCompatInfo	tmp;
 		uError("Index for groups field of a mod compat map\n");
 		uAction("Illegal array index ignored\n");
 	    }
-	    if (!ExprResolveModMask(body->value,elem,NULL,NULL)) {
+	    if (!ExprResolveModMask(body->value,&elem,NULL,NULL)) {
 		uError("Expected a modifier mask in map for %s modifier %s\n",
 						(tmp.realMod?"real":"virtual"),
 						stText(def->modifier));
@@ -616,7 +676,15 @@ ParseCommon	*stmt;
 		    info->errorCount++;
 		break;
 	    case StmtIndicatorMapDef:
-		uInternalError("Don't know how to make indicator maps yet\n");
+		{
+		    XkbFileLEDInfo *rtrn;
+		    rtrn= HandleIndicatorMapDef((IndicatorMapDef *)stmt,xkb,
+						&info->ledDflt,info->leds,
+						mergeMode);
+		    if (rtrn!=NULL)
+		 	 info->leds= rtrn;
+		    else info->errorCount++;
+		}
 		break;
 	    case StmtVarDef:
 		if (!HandleInterpVar((VarDef *)stmt,xkb,mergeMode,info))
@@ -675,7 +743,7 @@ XkbSymInterpretPtr	interp;
 Bool
 CompileCompatMap(file,result,mergeMode)
     XkbFile *		file;
-    XkbFileResult *	result;
+    XkbFileInfo *	result;
     unsigned	 	mergeMode;
 {
 int		errorCount= 0;
@@ -683,7 +751,7 @@ CompatInfo	info;
 XkbDescPtr	xkb;
 
     xkb= &result->xkb;
-    InitCompatInfo(&info,xkb);
+    InitCompatInfo(result->dpy,&info,xkb);
     HandleCompatMapFile(file,xkb,mergeMode,&info);
 
     if (info.errorCount==0) {
@@ -697,7 +765,7 @@ XkbDescPtr	xkb;
 	    if (XkbAllocNames(xkb,XkbSemanticsNameMask))
 		xkb->names->semantics= (Atom)info.name;
 	    else {
-		uWarning("Couldn't allocate space for semantics name\n");
+		uInternalError("Couldn't allocate space for semantics name\n");
 		uAction("Name \"%s\" (from %s) NOT assigned\n",scanFile,
 							stText(info.name));
 	    }
@@ -725,6 +793,11 @@ XkbDescPtr	xkb;
 		    xkb->compat->vmod_compat[cm->ndx].groups= cm->groups;
 		}
 	    }
+	}
+	if (info.leds!=NULL) {
+	    if (!CopyIndicatorMapDefs(result,info.leds))
+		info.errorCount++;
+	    info.leds= NULL;
 	}
 	ClearCompatInfo(&info,xkb);
 	return True;
