@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCursor.c,v 11.9 87/08/07 13:25:26 jg Exp $ */
+/* $Header: XCursor.c,v 11.9 87/08/07 13:25:26 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -17,7 +17,7 @@ Cursor XCreateFontCursor(dpy, which)
 	/* 
 	 * the cursor font contains the shape glyph followed by the mask
 	 * glyph; so character position 0 contains a shape, 1 the mask for 0,
-	 * 2 a shape, etc.  <X11/stdcursors.h> contains hash define names
+	 * 2 a shape, etc.  <X11/cursorfont.h> contains hash define names
 	 * for all of these.
 	 */
 
