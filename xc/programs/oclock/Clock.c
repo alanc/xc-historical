@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.18 91/01/09 18:31:09 gildea Exp $
+ * $XConsortium: Clock.c,v 1.19 91/01/10 18:16:05 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,34 +36,34 @@
 # include <math.h>
 # include <X11/extensions/shape.h>
 
-#define offset(field) XtOffset(ClockWidget,clock.field)
-#define goffset(field) XtOffset(Widget,core.field)
+#define Offset(field) XtOffsetOf(ClockRec, clock.field)
+#define Goffset(field) XtOffsetOf(CoreRec, core.field)
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	goffset(width), XtRString, "120"},
+	Goffset(width), XtRString, "120"},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	goffset(height), XtRString, "120"},
+	Goffset(height), XtRString, "120"},
     {XtNminute, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(minute), XtRString, XtDefaultForeground},
+	Offset(minute), XtRString, XtDefaultForeground},
     {XtNhour, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(hour), XtRString, XtDefaultForeground},
+	Offset(hour), XtRString, XtDefaultForeground},
     {XtNjewel, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(jewel), XtRString, XtDefaultForeground},
+	Offset(jewel), XtRString, XtDefaultForeground},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
-    	offset (backing_store), XtRString, "default"},
+    	Offset (backing_store), XtRString, "default"},
     {XtNborderSize, XtCBorderSize, XtRFloat, sizeof (float),
-	offset (border_size), XtRString, "0.1"},
+	Offset (border_size), XtRString, "0.1"},
     {XtNjewelSize, XtCBorderSize, XtRFloat, sizeof (float),
-	offset (jewel_size), XtRString, "0.075"},
+	Offset (jewel_size), XtRString, "0.075"},
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
-	offset (shape_window), XtRString, "TRUE"},
+	Offset (shape_window), XtRString, "TRUE"},
     {XtNtransparent, XtCTransparent, XtRBoolean, sizeof (Boolean),
-	offset (transparent), XtRString, "FALSE"},
+	Offset (transparent), XtRString, "FALSE"},
 };
 
-#undef offset
-#undef goffset
+#undef Offset
+#undef Goffset
 
 static void 	new_time();
 
