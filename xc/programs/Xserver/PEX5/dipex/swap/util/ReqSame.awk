@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: ReqSame.awk,v 5.1 91/02/16 09:57:24 rws Exp $
 ###########################################################################
 ## Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 
@@ -39,47 +39,47 @@ BEGIN {
     name = substr($0,(lend+4),(rend-lend-4))
     oname = name
     if (name == "FreeLookupTable") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "GetDefinedIndices") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "FreePipelineContext") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "FreeRenderer") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "EndRendering") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "EndStructure") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "CreateStructure") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "GetRendererDynamics") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "CreateNameSet") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "FreeNameSet") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "FreeSearchContext") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "SearchNetwork") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "GetNameSet") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "FreePhigsWks") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "RedrawAllStructures") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "UpdateWorkstation") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "ExecuteDeferredActions") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "UnpostAllStructures") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "GetWksPostings") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "FreePickMeasure") {
-	name = "GenericRequest" }
+	name = "GenericResourceRequest" }
     else if (name == "CloseFont") {
-	name = "GenericRequest"}
+	name = "GenericResourceRequest"}
     else if (name == "GetDescendants") {
 	name = "GetAncestors" } 
     else {
