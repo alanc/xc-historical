@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 1.1 92/05/07 19:12:58 mor Exp $ */
+/* $XConsortium: PEXproto.h,v 1.1 92/05/08 15:12:45 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -609,7 +609,7 @@ typedef struct {
     pexLookupTable	lut B32;
     pexTableType	tableType B16;
     CARD16		unused B16;
-} pexCreateLookUpTableReq;
+} pexCreateLookupTableReq;
 
 
 typedef struct {
@@ -618,9 +618,9 @@ typedef struct {
     CARD16		length B16;	/* 3 */
     pexLookupTable	src B32;
     pexLookupTable	dst B32;
-} pexCopyLookUpTableReq;
+} pexCopyLookupTableReq;
 
-typedef pexResourceReq pexFreeLookUpTableReq;
+typedef pexResourceReq pexFreeLookupTableReq;
 
 typedef struct {
     CARD8 		reqType;
@@ -700,7 +700,9 @@ typedef struct {
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
     pexPC		pc B32;
-    pexBitmask		itemMask[3];	/* pexBitmask Array */
+    pexBitmask		itemMask0 B32;
+    pexBitmask		itemMask1 B32;
+    pexBitmask		itemMask2 B32;
     /* SINGLE PipelineContextAttributes( itemMask ) */
 } pexCreatePipelineContextReq;
 
@@ -711,7 +713,9 @@ typedef struct {
     CARD16 	length B16;	/* 6 */
     pexPC	src B32;
     pexPC	dst B32;
-    pexBitmask	itemMask[3];		/* pexBitmask Array */
+    pexBitmask	itemMask0 B32;
+    pexBitmask	itemMask1 B32;
+    pexBitmask	itemMask2 B32;
 } pexCopyPipelineContextReq;
 
 typedef pexResourceReq  pexFreePipelineContextReq;
@@ -723,7 +727,9 @@ typedef struct {
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
     pexPC		pc B32;
-    pexBitmask		itemMask[3];	/* pexBitmask Array */
+    pexBitmask		itemMask0 B32;
+    pexBitmask		itemMask1 B32;
+    pexBitmask		itemMask2 B32;
 } pexGetPipelineContextReq;
 
 typedef struct {
@@ -733,7 +739,9 @@ typedef struct {
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
     pexPC		pc B32;
-    pexBitmask		itemMask[3];	/* pexBitmask Array */
+    pexBitmask		itemMask0 B32;
+    pexBitmask		itemMask1 B32;
+    pexBitmask		itemMask2 B32;
     /* SINGLE PipelineContextAttributes( itemMask ) */
 } pexChangePipelineContextReq;
 
@@ -1108,7 +1116,8 @@ typedef struct {
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
     pexPhigsWks		wks B32;
-    pexBitmask		itemMask[2] B32;
+    pexBitmask		itemMask0 B32;
+    pexBitmask		itemMask1 B32;
 } pexGetWorkstationAttributesReq;
 
 typedef struct {
