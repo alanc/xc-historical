@@ -3,9 +3,6 @@
        INCLUDES = -I. -I$(TOOLKITSRC) -I$(TOP) -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
-#ifdef RtArchitecture
-             CC = pcc
-#endif
 
 HEADERS = \
 	AsciiText.h \
