@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.25 89/11/28 14:48:15 jim Exp $
+ * $XConsortium: parse.c,v 1.26 89/11/29 14:48:18 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.25 89/11/28 14:48:15 jim Exp $";
+"$XConsortium: parse.c,v 1.26 89/11/29 14:48:18 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -60,6 +60,8 @@ static FILE *twmrc;
 static int ptr = 0;
 static int len = 0;
 static char buff[BUF_LEN+1];
+static char overflowbuff[20];		/* really only need one */
+static int overflowlen = 0;
 static char *stringSource, *currentString;
 static int ParseUsePPosition();
 
@@ -69,9 +71,8 @@ extern int mods;
 int ConstrainedMoveTime = 400;		/* milliseconds, event times */
 
 static int twmFileInput(), twmStringInput();
-static void twmFileUnput(), twmStringUnput();
+void twmUnput();
 int (*twmInputFunc)();
-void (*twmUnputFunc)();
 
 extern char *getenv();
 extern char *defaultTwmrc;		/* default bindings */
@@ -131,7 +132,6 @@ int ParseTwmrc(filename)
     yylineno = 0;
     ParseError = FALSE;
     twmInputFunc = twmFileInput;
-    twmUnputFunc = twmFileUnput;
 
     yyparse();
 
@@ -156,7 +156,6 @@ int ParseString (s)
     yylineno = 1;
     ParseError = FALSE;
     twmInputFunc = twmStringInput;
-    twmUnputFunc = twmStringUnput;
     stringSource = currentString = s;
     
     yyparse();
@@ -177,6 +176,8 @@ int ParseString (s)
 
 static int twmFileInput()
 {
+    if (overflowlen) return (int) overflowbuff[--overflowlen];
+
     while (ptr == len)
     {
 	if (fgets(buff, BUF_LEN, twmrc) == NULL)
@@ -192,9 +193,11 @@ static int twmFileInput()
 
 static int twmStringInput()
 {
-    unsigned int c = (unsigned int) *stringSource;
+    unsigned int c;
 
-    if (c != 0) {
+    if (overflowlen) return (int) overflowbuff[--overflowlen];
+
+    if (c = (unsigned int) *stringSource) {
 	if (c == '\n') yylineno++;
 	stringSource++;
     }
@@ -205,7 +208,7 @@ static int twmStringInput()
 /***********************************************************************
  *
  *  Procedure:
- *	twmFileUnput - redefinition of the lex unput routine
+ *	twmUnput - redefinition of the lex unput routine
  *
  *  Inputs:
  *	c	- the character to push back onto the input stream
@@ -213,18 +216,18 @@ static int twmStringInput()
  ***********************************************************************
  */
 
-static void twmFileUnput(c)
+void twmUnput (c)
     int c;
 {
-    buff[--ptr] = (char) c;
+    if (overflowlen < sizeof overflowbuff) {
+	overflowbuff[overflowlen++] = (char) c;
+    } else {
+	twmrc_error_prefix ();
+	fprintf (stderr, "unable to unput character (%d)\n",
+		 c);
+    }
 }
 
-static void twmStringUnput(c)
-    int c;
-{
-    if (stringSource > currentString)
-      *--stringSource = (char) c;
-}
 
 /***********************************************************************
  *

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: parse.h,v 1.8 89/11/13 18:23:07 jim Exp $
+ * $XConsortium: parse.h,v 1.9 89/11/21 16:41:38 jim Exp $
  *
  * .twmrc parsing externs
  *
@@ -41,7 +41,7 @@
 
 extern int ParseTwmrc(), ParseString();
 extern int (*twmInputFunc)();
-extern void (*twmUnputFunc)();
+extern void twmUnput();
 extern void TwmOutput();
 
 #define F_NOP			0
