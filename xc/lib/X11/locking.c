@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.32 94/03/24 14:45:03 gildea Exp $
+ * $XConsortium: locking.c,v 1.33 94/03/26 14:37:10 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -135,19 +135,12 @@ static struct {
 } locking_history[LOCK_HIST_SIZE];
 
 int lock_hist_loc = 0;		/* next slot to fill */
-#endif /* XTHREADS_WARN */
 
-#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-static void _XLockDisplay(dpy,file,line)
+static void _XLockDisplayWarn(dpy,file,line)
     Display *dpy;
     char *file;			/* source file, from macro */
     int line;
-#else
-static void _XLockDisplay(dpy)
-    Display *dpy;
-#endif
 {
-#ifdef XTHREADS_WARN
     xthread_t self;
     xthread_t old_locker;
 
@@ -164,11 +157,9 @@ static void _XLockDisplay(dpy)
 		   locking_file, locking_line, old_locker);
 #endif /* XTHREADS_DEBUG */
     }
-#endif /* XTHREADS_WARN */
 
     xmutex_lock(dpy->lock->mutex);
 
-#ifdef XTHREADS_WARN
     if (strcmp(file, "XlibInt.c") == 0) {
 	if (!xlibint_unlock)
 	    printf("Xlib ERROR: XlibInt.c line %d thread %x locking display it did not unlock\n",
@@ -194,8 +185,8 @@ static void _XLockDisplay(dpy)
     lock_hist_loc++;
     if (lock_hist_loc >= LOCK_HIST_SIZE)
 	lock_hist_loc = 0;
-#endif /* XTHREADS_WARN */
 }
+#endif /* XTHREADS_WARN */
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XUnlockDisplay(dpy,file,line)
@@ -456,7 +447,7 @@ static void _XDisplayLockWait(dpy)
 {
     xthread_t self;
 
-    while (xthread_have_id(dpy->lock->locking_thread)) {
+    while (dpy->lock->locking_level > 0) {
 	self = xthread_self();
 	if (xthread_equal(dpy->lock->locking_thread, self))
 	    break;
@@ -464,26 +455,23 @@ static void _XDisplayLockWait(dpy)
     }
 }
 
-/*
- * version of display locking function to use when
- * a user-level lock might be active.
- */
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-static void _XFancyLockDisplay(dpy, file, line)
+static void _XLockDisplay(dpy, file, line)
     Display *dpy;
     char *file;			/* source file, from macro */
     int line;
 #else
-static void _XFancyLockDisplay(dpy)
+static void _XLockDisplay(dpy)
     Display *dpy;
 #endif
 {
-#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-    _XLockDisplay(dpy, file, line);
+#ifdef XTHREADS_WARN
+    _XLockDisplayWarn(dpy, file, line);
 #else
-    _XLockDisplay(dpy);
+    xmutex_lock(dpy->lock->mutex);
 #endif
-    _XDisplayLockWait(dpy);
+    if (dpy->lock->locking_level > 0)
+	_XDisplayLockWait(dpy);
 }
 
 /*
@@ -502,10 +490,10 @@ static void _XInternalLockDisplay(dpy, wskip)
     Bool wskip;
 #endif
 {
-#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-    _XLockDisplay(dpy, file, line);
+#ifdef XTHREADS_WARN
+    _XLockDisplayWarn(dpy, file, line);
 #else
-    _XLockDisplay(dpy);
+    xmutex_lock(dpy->lock->mutex);
 #endif
     if (!wskip && dpy->lock->locking_level > 0)
 	_XDisplayLockWait(dpy);
@@ -520,13 +508,7 @@ static void _XUserLockDisplay(dpy)
 #endif
 {
     if (++dpy->lock->locking_level == 1) {
-	/* substitute fancier, slower lock function */
-	dpy->lock_fns->lock_display = _XFancyLockDisplay;
-	/* really only needs to be done once */
 	dpy->lock->lock_wait = _XDisplayLockWait;
-	if (xthread_have_id(dpy->lock->locking_thread)) {
-	    /* XXX - we are in XLockDisplay, error.  Print message? */
-	}
 	dpy->lock->locking_thread = xthread_self();
     }
 }
@@ -539,17 +521,11 @@ void _XUserUnlockDisplay(dpy)
     register Display* dpy;
 #endif
 {
-    if (!xthread_have_id(dpy->lock->locking_thread)) {
-	/* XXX - we are not in XLockDisplay, error.  Print message? */
-    }
-    if (--dpy->lock->locking_level <= 0) {
+    if (dpy->lock->locking_level > 0 && --dpy->lock->locking_level == 0) {
 	/* signal other threads that might be waiting in XLockDisplay */
 	ConditionBroadcast(dpy, dpy->lock->cv);
-	/* substitute function back */
-	dpy->lock_fns->lock_display = _XLockDisplay;
 	dpy->lock->lock_wait = NULL;
 	xthread_clear_id(dpy->lock->locking_thread);
-	dpy->lock->locking_level = 0; /* paranoia */
     }
 }
 
