@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.158 92/01/03 13:57:59 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.159 92/01/09 18:51:51 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 /*
- *	XlibInternal.c - Internal support routines for the C subroutine
+ *	XlibInt.c - Internal support routines for the C subroutine
  *	interface library (Xlib) to the X Window System Protocol V11.0.
  */
 #define NEED_EVENTS
@@ -27,8 +27,6 @@ without express or implied warranty.
 #include <X11/Xos.h>
 #include "Xlibnet.h"
 #include <stdio.h>
-
-static void _EatData32();
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -50,14 +48,44 @@ static void _EatData32();
 #define EMSGSIZE ERANGE
 #endif
 
+#ifdef MUSTCOPY
+
+#define STARTITERATE(tpvar,type,start,endcond) \
+  { register char *cpvar; \
+  for (cpvar = (char *) (start); endcond; ) { \
+    type dummy; bcopy (cpvar, (char *) &dummy, SIZEOF(type)); \
+    tpvar = &dummy;
+#define ITERPTR(tpvar) cpvar
+#define RESETITERPTR(tpvar,type,start) cpvar = start
+#define INCITERPTR(tpvar,type) cpvar += SIZEOF(type)
+#define ENDITERATE }}
+
+#else
+
+#define STARTITERATE(tpvar,type,start,endcond) \
+  for (tpvar = (type *) (start); endcond; )
+#define ITERPTR(tpvar) (char *)tpvar
+#define RESETITERPTR(tpvar,type,start) tpvar = (type *) (start)
+#define INCITERPTR(tpvar,type) tpvar++
+#define ENDITERATE
+
+#endif /* MUSTCOPY */
+
+typedef union {
+    xReply rep;
+    char buf[BUFSIZE];
+} _XAlignedBuffer;
+
+static char *_XAsyncReply();
+
 /*
  * The following routines are internal routines used by Xlib for protocol
  * packet transmission and reception.
  *
- * XIOError(Display *) will be called if any sort of system call error occurs.
+ * _XIOError(Display *) will be called if any sort of system call error occurs.
  * This is assumed to be a fatal condition, i.e., XIOError should not return.
  *
- * XError(Display *, XErrorEvent *) will be called whenever an X_Error event is
+ * _XError(Display *, xError *) will be called whenever an X_Error event is
  * received.  This is not assumed to be a fatal condition, i.e., it is
  * acceptable for this procedure to return.  However, XError should NOT
  * perform any operations (directly or indirectly) on the DISPLAY.
@@ -77,6 +105,98 @@ static int padlength[4] = {0, 3, 2, 1};
 static xReq _dummy_request = {
 	0, 0, 0
 };
+
+/*
+ * This is an OS dependent routine which:
+ * 1) returns as soon as the connection can be written on....
+ * 2) if the connection can be read, must enqueue events and handle errors,
+ * until the connection is writable.
+ */
+static void
+_XWaitForWritable(dpy)
+    Display *dpy;
+{
+    unsigned long r_mask[MSKCNT];
+    unsigned long w_mask[MSKCNT];
+    int nfound;
+
+    CLEARBITS(r_mask);
+    CLEARBITS(w_mask);
+
+    while (1) {
+	BITSET(r_mask, dpy->fd);
+        BITSET(w_mask, dpy->fd);
+
+	do {
+	    nfound = select (dpy->fd + 1, r_mask, w_mask,
+			     (char *)NULL, (char *)NULL);
+	    if (nfound < 0 && errno != EINTR)
+		_XIOError(dpy);
+	} while (nfound <= 0);
+
+	if (_XANYSET(r_mask)) {
+	    _XAlignedBuffer buf;
+	    int pend;
+	    register int len;
+	    register xReply *rep;
+
+	    /* find out how much data can be read */
+	    if (BytesReadable(dpy->fd, (char *) &pend) < 0)
+		_XIOError(dpy);
+	    len = pend;
+
+	    /* must read at least one xEvent; if none is pending, then
+	       we'll just block waiting for it */
+	    if (len < SIZEOF(xReply)) len = SIZEOF(xReply);
+		
+	    /* but we won't read more than the max buffer size */
+	    if (len > BUFSIZE) len = BUFSIZE;
+
+	    /* round down to an integral number of XReps */
+	    len = (len / SIZEOF(xReply)) * SIZEOF(xReply);
+
+	    _XRead (dpy, buf.buf, (long) len);
+
+	    STARTITERATE(rep,xReply,buf.buf,len > 0) {
+		if (rep->generic.type == X_Reply) {
+		    pend = len;
+		    RESETITERPTR(rep,xReply,
+				 _XAsyncReply (dpy, rep,
+					       ITERPTR(rep), &pend, True));
+		    len = pend;
+		} else {
+		    if (rep->generic.type == X_Error)
+			_XError (dpy, (xError *)rep);
+		    else	/* must be an event packet */
+			_XEnq (dpy, (xEvent *)rep);
+		    INCITERPTR(rep,xReply);
+		    len -= SIZEOF(xReply);
+		}
+	    } ENDITERATE
+	}
+	if (_XANYSET(w_mask))
+	    return;
+    }
+}
+
+
+static void
+_XWaitForReadable(dpy)
+  Display *dpy;
+{
+    unsigned long r_mask[MSKCNT];
+    int result;
+	
+    CLEARBITS(r_mask);
+    do {
+	BITSET(r_mask, dpy->fd);
+	result = select(dpy->fd + 1, r_mask,
+			(char *)NULL, (char *)NULL, (char *)NULL);
+	if (result == -1 && errno != EINTR) _XIOError(dpy);
+    } while (result <= 0);
+}
+
+
 /*
  * _XFlush - Flush the X request buffer.  If the buffer is empty, no
  * action is taken.  This routine correctly handles incremental writes.
@@ -134,7 +254,7 @@ _XEventsQueued (dpy, mode)
 {
 	register int len;
 	int pend;
-	char buf[BUFSIZE];
+	_XAlignedBuffer buf;
 	register xReply *rep;
 	
 	if (mode == QueuedAfterFlush)
@@ -185,21 +305,28 @@ _XEventsQueued (dpy, mode)
 	    len = SIZEOF(xReply);
 	else if (len > BUFSIZE)
 	    len = BUFSIZE;
-	len /= SIZEOF(xReply);
-	pend = len * SIZEOF(xReply);
+	len = (len / SIZEOF(xReply)) * SIZEOF(xReply);
 #ifdef XCONN_CHECK_FREQ
 	dpy->conn_checker = 0;
 #endif
-	_XRead (dpy, buf, (long) pend);
+	_XRead (dpy, buf.buf, (long) len);
 
-	/* no space between comma and type or else macro will die */
-	STARTITERATE (rep,xReply, buf, (len > 0), len--) {
-	    if (rep->generic.type == X_Error)
-		_XError(dpy, (xError *)rep);
-	    else   /* must be an event packet */
-		_XEnq(dpy, (xEvent *) rep);
-	}
-	ENDITERATE
+	STARTITERATE(rep,xReply,buf.buf,len > 0) {
+	    if (rep->generic.type == X_Reply) {
+		pend = len;
+		RESETITERPTR(rep,xReply,
+			     _XAsyncReply (dpy, rep,
+					   ITERPTR(rep), &pend, True));
+		len = pend;
+	    } else {
+		if (rep->generic.type == X_Error)
+		    _XError (dpy, (xError *)rep);
+		else   /* must be an event packet */
+		    _XEnq (dpy, (xEvent *)rep);
+		INCITERPTR(rep,xReply);
+		len -= SIZEOF(xReply);
+	    }
+	} ENDITERATE
 	return(dpy->qlen);
 }
 
@@ -209,22 +336,22 @@ _XEventsQueued (dpy, mode)
 _XReadEvents(dpy)
 	register Display *dpy;
 {
-	char buf[BUFSIZE];
-	long pend_not_register; /* because can't "&" a register variable */
-	register long pend;
-	register xEvent *ev;
+	_XAlignedBuffer buf;
+	int pend;
+	register int len;
+	register xReply *rep;
 	Bool not_yet_flushed = True;
 
 	do {
 	    /* find out how much data can be read */
-	    if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
+	    if (BytesReadable(dpy->fd, (char *) &pend) < 0)
 	    	_XIOError(dpy);
-	    pend = pend_not_register;
+	    len = pend;
 
 	    /* must read at least one xEvent; if none is pending, then
 	       we'll just flush and block waiting for it */
-	    if (pend < SIZEOF(xEvent)) {
-	    	pend = SIZEOF(xEvent);
+	    if (len < SIZEOF(xEvent)) {
+	    	len = SIZEOF(xEvent);
 		/* don't flush until we block the first time */
 		if (not_yet_flushed) {
 		    int qlen = dpy->qlen;
@@ -235,23 +362,30 @@ _XReadEvents(dpy)
 	    }
 		
 	    /* but we won't read more than the max buffer size */
-	    if (pend > BUFSIZE)
-	    	pend = BUFSIZE;
+	    if (len > BUFSIZE)
+	    	len = BUFSIZE;
 
 	    /* round down to an integral number of XReps */
-	    pend = (pend / SIZEOF(xEvent)) * SIZEOF(xEvent);
+	    len = (len / SIZEOF(xEvent)) * SIZEOF(xEvent);
 
-	    _XRead (dpy, buf, pend);
+	    _XRead (dpy, buf.buf, (long) len);
 
-	    /* no space between comma and type or else macro will die */
-	    STARTITERATE (ev,xEvent, buf, (pend > 0),
-			  pend -= SIZEOF(xEvent)) {
-		if (ev->u.u.type == X_Error)
-		    _XError (dpy, (xError *) ev);
-		else  /* it's an event packet; enqueue it */
-		    _XEnq (dpy, ev);
-	    }
-	    ENDITERATE
+	    STARTITERATE(rep,xReply,buf.buf,len > 0) {
+		if (rep->generic.type == X_Reply) {
+		    pend = len;
+		    RESETITERPTR(rep,xReply,
+				 _XAsyncReply (dpy, rep,
+					       ITERPTR(rep), &pend, True));
+		    len = pend;
+		} else {
+		    if (rep->generic.type == X_Error)
+			_XError (dpy, (xError *) rep);
+		    else   /* must be an event packet */
+			_XEnq (dpy, (xEvent *)rep);
+		    INCITERPTR(rep,xReply);
+		    len -= SIZEOF(xReply);
+		}
+	    } ENDITERATE
 	} while (dpy->head == NULL);
 }
 
@@ -420,7 +554,7 @@ _XRead16Pad (dpy, data, size)
 
 /*
  * _XReadPad - Read bytes from the socket taking into account incomplete
- * reads.  If the number of bytes is not 0 mod 32, read additional pad
+ * reads.  If the number of bytes is not 0 mod 4, read additional pad
  * bytes. This routine may have to be reworked if int < long.
  */
 _XReadPad (dpy, data, size)
@@ -632,9 +766,9 @@ _XSetLastRequestRead(dpy, rep)
 	newseq += 0x10000;
 	if (newseq > dpy->request) {
 	    (void) fprintf (stderr, 
-	    "Xlib:  sequence lost (0x%lx > 0x%lx) in reply type 0x%x!\n",
-	                           newseq, dpy->request, 
-				   (unsigned int) rep->type);
+	    "Xlib: sequence lost (0x%lx > 0x%lx) in reply type 0x%x!\n",
+			    newseq, dpy->request, 
+			    (unsigned int) rep->type);
 	    newseq -= 0x10000;
 	    break;
 	}
@@ -673,12 +807,16 @@ Status _XReply (dpy, rep, extra, discard)
 		 */
 	        if (rep->generic.sequenceNumber == (cur_request & 0xffff))
 		    dpy->last_request_read = cur_request;
-		else
-		    (void) _XSetLastRequestRead(dpy, &rep->generic);
+		else {
+		    int pend = SIZEOF(xReply);
+		    if (_XAsyncReply(dpy, rep, (char *)rep, &pend, False)
+			!= (char *)rep)
+			continue;
+		}
 		if (extra == 0) {
 		    if (discard && (rep->generic.length > 0))
 		       /* unexpectedly long reply! */
-		       _EatData32 (dpy, rep->generic.length);
+		       _XEatData (dpy, rep->generic.length << 2);
 		    return (1);
 		    }
 		if (extra == rep->generic.length) {
@@ -695,7 +833,7 @@ Status _XReply (dpy, rep, extra, discard)
 		    _XRead (dpy, (char *) (NEXTPTR(rep,xReply)),
 			    ((long)extra) << 2);
 		    if (discard)
-		        _EatData32 (dpy, rep->generic.length - extra);
+		        _XEatData (dpy, (rep->generic.length - extra) << 2);
 		    return (1);
 		    }
 		/* 
@@ -759,6 +897,61 @@ Status _XReply (dpy, rep, extra, discard)
 	}
 }   
 
+static char *
+_XAsyncReply(dpy, rep, buf, lenp, discard)
+    Display *dpy;
+    register xReply *rep;
+    char *buf;
+    register int *lenp;
+    Bool discard;
+{
+    register _XAsyncHandler *async, *next;
+    register int len;
+    register Bool consumed = False;
+    char *nbuf;
+
+    (void) _XSetLastRequestRead(dpy, &rep->generic);
+    len = SIZEOF(xReply) + (rep->generic.length << 2);
+
+    for (async = dpy->async_handlers; async; async = next) {
+	next = async->next;
+	if (consumed = (*async->handler)(dpy, rep, buf, *lenp, async->data))
+	    break;
+    }
+    if (!consumed) {
+	if (!discard)
+	    return buf;
+	(void) fprintf(stderr, 
+		       "Xlib: unexpected async reply (sequence 0x%lx)!\n",
+		       dpy->last_request_read);
+	if (len > *lenp)
+	    _XEatData(dpy, len - *lenp);
+    }
+    if (len >= *lenp) {
+	buf += *lenp;
+	*lenp = 0;
+	return buf;
+    }
+    *lenp -= len;
+    buf += len;
+    len = *lenp;
+    nbuf = buf;
+    while (len > SIZEOF(xReply)) {
+	if (*buf == X_Reply)
+	    return nbuf;
+	buf += SIZEOF(xReply);
+	len -= SIZEOF(xReply);
+    }
+    if (len > 0 && len < SIZEOF(xReply)) {
+	buf = nbuf;
+	len = SIZEOF(xReply) - len;
+	nbuf -= len;
+	bcopy(buf, nbuf, *lenp);
+	_XRead(dpy, nbuf + *lenp, (long)len);
+	*lenp += len;
+    }
+    return nbuf;
+}
 
 /* Read and discard "n" 8-bit bytes of data */
 
@@ -775,16 +968,6 @@ void _XEatData (dpy, n)
 	n -= bytes_read;
     }
 #undef SCRATCHSIZE
-}
-
-
-/* Read and discard "n" 32-bit words. */
-
-static void _EatData32 (dpy, n)
-    Display *dpy;
-    unsigned long n;
-{
-    _XEatData (dpy, n << 2);
 }
 
 
@@ -1391,23 +1574,25 @@ Bool _XDefaultWireError(display, he, we)
 }
 
 /*
- * _XError - prepare to upcall user protocol error handler
+ * _XError - upcall internal or user protocol error handler
  */
 int _XError (dpy, rep)
     Display *dpy;
-    xError *rep;
+    register xError *rep;
 {
     /* 
      * X_Error packet encountered!  We need to unpack the error before
      * giving it to the user.
      */
     XEvent event; /* make it a large event */
-    _XInternalErrorHandler *async;
+    register _XAsyncHandler *async, *next;
 
     event.xerror.serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
 
-    for (async = dpy->async_handlers; async; async = async->next) {
-	if ((*async->handler)(dpy, rep, async->data))
+    for (async = dpy->async_handlers; async; async = next) {
+	next = async->next;
+	if ((*async->handler)(dpy, (xReply *)rep,
+			      (char *)rep, SIZEOF(xError), async->data))
 	    return 0;
     }
 
@@ -1427,44 +1612,6 @@ int _XError (dpy, rep)
     }
 }
     
-Bool
-_XAsyncErrorHandler(dpy, rep, data)
-    register Display *dpy;
-    xError *rep;
-    XPointer data;
-{
-    _XInternalErrorState *state;
-
-    state = (_XInternalErrorState *)data;
-    if ((!state->error_code || rep->errorCode == state->error_code) &&
-	(!state->major_opcode || rep->majorCode == state->major_opcode) &&
-	(!state->minor_opcode || rep->minorCode == state->minor_opcode) &&
-	(!state->min_sequence_number ||
-	 (state->min_sequence_number <= dpy->last_request_read)) &&
-	(!state->max_sequence_number ||
-	 (state->max_sequence_number >= dpy->last_request_read))) {
-	state->last_error_received = rep->errorCode;
-	state->error_count++;
-	return 1;
-    }
-    return 0;
-}
-
-_XDeqInternalErrorHandler(dpy, handler)
-    Display *dpy;
-    _XInternalErrorHandler *handler;
-{
-    _XInternalErrorHandler **prev;
-    _XInternalErrorHandler *async;
-
-    for (prev = &dpy->async_handlers;
-	 (async = *prev) && (async != handler);
-	 prev = &async->next)
-	;
-    if (async)
-	*prev = async->next;
-}
-
 /*
  * _XIOError - call user connection error handler and exit
  */
