@@ -1,5 +1,5 @@
 #ifndef lint
-static char *sccsid = "@(#)Geometry.c	1.7	2/25/87";
+static char rcsid[] = "$Header$";
 #endif lint
 
 /*
