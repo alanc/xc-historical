@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Alloc.c,v 6.3 88/01/29 11:59:08 asente Exp $";
+static char rcsid[] = "$Header: Alloc.c,v 1.16 88/02/02 20:05:02 swick Locked $";
 #endif lint
 
 /*
@@ -29,7 +29,8 @@ static char rcsid[] = "$Header: Alloc.c,v 6.3 88/01/29 11:59:08 asente Exp $";
  */
 extern char *malloc(), *realloc(), *calloc();
 extern void exit(), free();
-#include "Xlib.h"
+
+#include <X/Xlib.h>
 #include "IntrinsicI.h"
 
 char *XtMalloc(size)
