@@ -123,13 +123,13 @@ macIIMonoInit (index, pScreen, argc, argv)
 
     if (!mfbScreenInit(pScreen,
 			   macIIFbs[index].fb,
-			   macIIFbs[index].info.v_right -
-			   macIIFbs[index].info.v_left,
-			   macIIFbs[index].info.v_bottom -
-			   macIIFbs[index].info.v_top, 
-			   macIIFbs[index].info.v_hres >> 16, 
-			   macIIFbs[index].info.v_vres >> 16,
-    			   macIIFbs[index].info.v_rowbytes * 8))
+			   macIIFbs[index].info.vpBounds.right -
+			   macIIFbs[index].info.vpBounds.left,
+			   macIIFbs[index].info.vpBounds.bottom -
+			   macIIFbs[index].info.vpBounds.top, 
+			   macIIFbs[index].info.vpHRes >> 16, 
+			   macIIFbs[index].info.vpVRes >> 16,
+    			   macIIFbs[index].info.vpRowBytes * 8))
     {
 	return (FALSE);
     }
@@ -196,7 +196,7 @@ macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
 		}
 
     		macIIFbs[index].fb = 
-		    (pointer)(video_virtaddr + fbType.v_baseoffset); 
+		    (pointer)(video_virtaddr + fbType.vpBaseOffset); 
 		(void) close(fd);
 	}
 

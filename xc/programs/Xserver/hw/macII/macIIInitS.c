@@ -90,6 +90,7 @@ extern void SetInputCheck();
 static int video_find();
 static int get_video_data();
 static int get_all_video_data();
+static long get_video_baseaddr();
 
 DevicePtr pPointerDevice, pKeyboardDevice;
 
@@ -153,6 +154,8 @@ macIIFbDataRec macIIFbData[] = {
 
 fbFd	macIIFbs[NUMSCREENS];  /* Space for descriptors of open frame buffers */
 
+static char *fb_virtaddrs[NUMSCREENS];
+
 static PixmapFormatRec	formats[] = {
     1, 1, BITMAP_SCANLINE_PAD,	/* 1-bit deep */
     8, 8, BITMAP_SCANLINE_PAD,	/* 8-bit deep */
@@ -174,7 +177,7 @@ static int screen_depth[MAXSCREENS] = {0,0,0};
 static struct video_mode_struct{
 	int depth[NUMMODES];
         int mode[NUMMODES];   
-	struct video_data  info[NUMMODES];
+	VPBlock info[NUMMODES];
 } video_modes[NUMSLOTS] = {
 	{{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}},
 	{{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}},
@@ -368,20 +371,20 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
     int		depth;
     int		depth_supported;
     char 	*video_physaddr;
-    static char *video_virtaddr = (char *)(120 * 1024 * 1024);
+    static char *video_virtaddr = (char *)(112 * 1024 * 1024);
     static long csTable[] =
 	{
 	    0x0000ffff, 0xffffffff,
 	    0x00000000, 0x00000000
 	};
 
-    static struct VDEntryRecord vde =
+    static struct VDSetEntryRecord vde =
 	{
-	    (char *) csTable,
+	    (ColorSpec *) csTable,
 	    0,              /* start = 0 */
 	    1               /* count = 1 (2 entries) */
 	};
-    struct VDPgInfo vdp;
+    struct VDPageInfo vdp;
     struct CntrlParam pb;
     struct strioctl ctl; /* Streams ioctl control structure */
     int mode_index;
@@ -462,15 +465,14 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 	}
 #endif /* VIDEO_MAP_SLOT */
 
-    	macIIFbs[index].fb = (pointer)(video_virtaddr + 
-		video[fbNum].video_data.v_baseoffset); 
+	fb_virtaddrs[index] = video_virtaddr;
 
 	macIIFbs[index].slot = fbNum;
 	macIIFbs[index].installedMap = NULL;
 
 	/* set things up for default mode */
 	macIIFbs[index].default_depth = depth;
-        macIIFbs[index].info = video[fbNum].video_data;
+        macIIFbs[index].info = video[fbNum].vpBlock;
 
 	/* check if user asks for a specific depth */
         if (screen_depth[index]) {
@@ -544,6 +546,20 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 		return (FALSE);
 	}
 
+	/* This piece of magic is shamelessly stolen from Apple's X11 Server */
+	{
+	    long baseaddr;
+
+	    macIIFbs[index].fb = (pointer)(fb_virtaddrs[index] +
+		    video_modes[fbNum].info[mode_index].vpBaseOffset);
+
+	    if ((baseaddr = get_video_baseaddr(fbNum)) != -1) {
+		macIIFbs[index].fb += (baseaddr & 0x000FFFFFL);
+		if (baseaddr == 0xFBB08000L || baseaddr == 0xFEE08000L)
+		    macIIFbs[index].fb =
+			(pointer)((long)macIIFbs[index].fb & 0xFFFF7FFFL);
+	    }
+	}
     }
 
     macIIBlackScreen(index);
@@ -588,7 +604,7 @@ video_find(slot)
 int slot;
 {
 	register struct video *vp;
-	register struct video_data *vdp;
+	register VPBlock *vdp;
 	int depth;
 
 	vp = &video[slot];
@@ -606,12 +622,12 @@ int slot;
 	vp->dce.dCtlExtDev = 0;
 	if ((depth = get_video_data(vp)) < 0)
 		return(-1);
-	vdp = &vp->video_data;
-	vp->video_mem_x = 8*vdp->v_rowbytes;
-	vp->video_mem_y = vdp->v_bottom - vdp->v_top;
-	vp->video_scr_x = vdp->v_right - vdp->v_left;
-	vp->video_scr_y = vdp->v_bottom - vdp->v_top;
-	vp->video_addr = vp->video_base + vdp->v_baseoffset;
+	vdp = &vp->vpBlock;
+	vp->video_mem_x = 8*vdp->vpRowBytes;
+	vp->video_mem_y = vdp->vpBounds.bottom - vdp->vpBounds.top;
+	vp->video_scr_x = vdp->vpBounds.right - vdp->vpBounds.left;
+	vp->video_scr_y = vdp->vpBounds.bottom - vdp->vpBounds.top;
+	vp->video_addr = vp->video_base + vdp->vpBaseOffset;
 	video_index[slot] = vp;
 	vp->video_slot = slot;
 
@@ -632,6 +648,7 @@ is a magic number understood by only a few people on earth.  These people
 have gained this knowledge only by promising to remove their tongues.
 */
 
+#include "mac/errors.h"
 #include "sys/slotmgr.h"
 static int noSlotMgr;
 
@@ -652,7 +669,7 @@ register struct video *vp;
 	int err;		/* last slot manager result */
 	int success = 0;	/* assume failure */
 	struct SpBlock pb;
-	struct video_data *vd;
+	VPBlock *vd;
 	caddr_t slotModesPointer;
 	int nextMode;
 
@@ -680,15 +697,14 @@ register struct video *vp;
 			err = slotmanager(_sFindStruct,&pb);
 			if (err == 0) {
 				pb.spID = 1;	/* mVidParams */
-				pb.spResult = 
-				    (long)malloc(sizeof(struct video_data));
+				pb.spResult = (long)malloc(sizeof(VPBlock));
 				err = slotmanager(_sGetBlock,&pb);
 				if (err == 0) {
-					vd = (struct video_data *) pb.spResult;
-					if (vd->v_pixelsize < depth) {
-						depth = vd->v_pixelsize;
+					vd = (VPBlock *) pb.spResult;
+					if (vd->vpPixelSize < depth) {
+						depth = vd->vpPixelSize;
 						default_mode = nextMode;
-						vp->video_data = *vd;
+						vp->vpBlock = *vd;
 						success = 1;
 					}
 					else free(pb.spResult);
@@ -710,7 +726,7 @@ register struct video *vp;
 	int err;		/* last slot manager result */
 	int success = 0;	/* assume failure */
 	struct SpBlock pb;
-	struct video_data *vd;
+	VPBlock *vd;
 	caddr_t slotModesPointer;
 	int nextMode;
 	int i;
@@ -745,8 +761,8 @@ register struct video *vp;
 		    pb.spResult = (long)(&video_modes[slot].info[i]);
 		    err = slotmanager(_sGetBlock,&pb);
 		    if (err == 0) {
-		        vd = (struct video_data *) pb.spResult;
-		        video_modes[slot].depth[i] = vd->v_pixelsize;
+		        vd = (VPBlock *) pb.spResult;
+		        video_modes[slot].depth[i] = vd->vpPixelSize;
 		        video_modes[slot].mode[i] = nextMode;
 			i++;
 		    }
@@ -754,6 +770,33 @@ register struct video *vp;
 	    }
 	}
 	return 0;
+}
+
+static long get_video_baseaddr(slot)
+int slot;
+{
+	int err;
+	struct SpBlock pb;
+
+	pb.spSlot = slot;
+	pb.spID = 0;
+	pb.spCategory = 3;	/* catDisplay */
+	pb.spCType = 1;		/* typeVideo */
+	pb.spDrvrSW = 1;	/* drSwApple */
+	pb.spDrvrHW = 0;
+	pb.spTBMask = 1;
+	pb.spExtDev= 0;
+
+	noSlotMgr = 0;
+	signal(SIGSYS, SigSYSHandler);
+	err = slotmanager(_sNextTypesRsrc,&pb);
+	signal(SIGSYS, SIG_DFL);
+	if (noSlotMgr) return(-1);
+
+	if (err == 0 && pb.spSlot == slot && slotmanager(_sFindDevBase,&pb) == 0)
+	    return(pb.spResult);
+	else
+	    return(-1);
 }
 
 /*-
@@ -869,13 +912,13 @@ macIIBlackScreen(index)
     pf = &macIIFbs[index];
     fb = pf->fb; /* Assumed longword aligned! */
 
-    switch (pf->info.v_pixelsize) {
+    switch (pf->info.vpPixelSize) {
     case 1:
     {
-      fbinc = pf->info.v_rowbytes;
-        for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
+      fbinc = pf->info.vpRowBytes;
+        for (line = pf->info.vpBounds.top; line < pf->info.vpBounds.bottom; line++) {
           fbt = (unsigned int *)fb;
-          lw = ((pf->info.v_right - pf->info.v_left) + 31) >> 5;
+          lw = ((pf->info.vpBounds.right - pf->info.vpBounds.left) + 31) >> 5;
           do {
               *fbt++ = 0xffffffff;
           } while (--lw);
@@ -885,10 +928,10 @@ macIIBlackScreen(index)
     }
     case 8:
     {
-      fbinc = pf->info.v_rowbytes;
-        for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
+      fbinc = pf->info.vpRowBytes;
+        for (line = pf->info.vpBounds.top; line < pf->info.vpBounds.bottom; line++) {
           fbt = (unsigned int *)fb;
-          lw = ((pf->info.v_right - pf->info.v_left) + 3) >> 2;
+          lw = ((pf->info.vpBounds.right - pf->info.vpBounds.left) + 3) >> 2;
           do {
               *fbt++ = 0x01010101;
           } while (--lw);
@@ -927,15 +970,27 @@ ddxProcessArgument (argc, argv, i)
     char *argv[];
     int       i;
 {
+    extern int optionMouse, noOsm;
+
     if ( strcmp ( argv[i], "-screen" ) == 0)
 	return 4;
+    else if ( strcmp ( argv[i], "-optionmouse" ) == 0) {
+	optionMouse = TRUE;
+	return 1;
+    }
+    else if ( strcmp ( argv[i], "-noosm" ) == 0) {
+	noOsm = TRUE;
+	return 1;
+    }
     else return 0;
 }
 
 void
 ddxUseMsg()
 {
-    ErrorF("-screen # -depth #      run screen (0-5) at depth {1,8}\n");
+    ErrorF("-screen # -depth #     run screen (0-5) at depth {1,8}\n");
+    ErrorF("-optionmouse           option-arrows for mouse buttons\n");
+    ErrorF("-noosm                 don't open /dev/osm\n");
 }
 
 void

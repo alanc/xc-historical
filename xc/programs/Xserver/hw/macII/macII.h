@@ -34,7 +34,7 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- * $XConsortium: macII.h,v 1.16 90/08/22 11:26:08 rws Exp $
+ * $XConsortium: macII.h,v 1.17 91/05/14 16:25:08 rws Exp $
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -48,7 +48,7 @@ IMPLIED.
 #include    <sys/stropts.h>
 
 /*
- * Under A/UX 2.0 struct video has been "Macintized" and now incorporates
+ * Under A/UX >=2.0 struct video has been "Macintized" and now incorporates
  * a structure called AuxDCE which is defined once and for all in
  * /usr/include/mac. Alas the definition for AuxDCE requires wheeling in
  * lots of Mac stuff including QuickDraw. This is a headache as there are
@@ -57,7 +57,50 @@ IMPLIED.
  * includes. Of course if this ever changes ...
  */
 
-#ifndef __OSUTILS__
+#if !defined(__mac_types_h) && !defined(__TYPES__)
+#define __mac_types_h
+typedef unsigned char Boolean;
+typedef long (*ProcPtr)();
+typedef short OSErr;
+typedef char *Ptr;
+
+struct Point {
+    short v;
+    short h;
+};
+
+typedef struct Point Point;
+
+struct Rect {
+    short top;
+    short left;
+    short bottom;
+    short right;
+};
+
+typedef struct Rect Rect;
+#endif /* __mac_types_h */
+
+#if !defined(__mac_quickdraw_h)
+#define __mac_quickdraw_h
+struct RGBColor {
+    unsigned short red;
+    unsigned short green;
+    unsigned short blue;
+};
+
+typedef struct RGBColor RGBColor;
+
+struct ColorSpec {
+    short value;
+    RGBColor rgb;
+};
+
+typedef struct ColorSpec ColorSpec;
+#endif /* __mac_quickdraw_h */
+
+#if !defined(__mac_osutils_h)
+#define __mac_osutils_h
 struct QElem {
     struct QElem *qLink;
     short qType;
@@ -73,66 +116,55 @@ struct QHdr {
     QElemPtr qHead;
     QElemPtr qTail;
 };
-#define __OSUTILS__
-#endif
 
-#ifndef __DEVICES__
+typedef struct QHdr QHdr;
+
+typedef QHdr *QHdrPtr;
+#endif /* __mac_osutils_h */
+
+#if !defined(__mac_files_h)
+#define __mac_files_h
 struct CntrlParam {
-        struct QElem *qLink;
-        short qType;
-        short ioTrap;
-        char *ioCmdAddr;
-        int (*ioCompletion)();
-        short ioResult;
-        char *ioNamePtr;
-        short ioVRefNum;
-        short ioCRefNum;
-        short csCode;
-        short csParam[11];
+	QElem *qLink;
+	short qType;
+	short ioTrap;
+	Ptr ioCmdAddr;
+	ProcPtr ioCompletion;
+	OSErr ioResult;
+	unsigned char *ioNamePtr;
+	short ioVRefNum;
+	short ioCRefNum;
+	short csCode;
+	short csParam[11];
 };
+#endif /* __mac_files_h */
 
-struct DCtlEntry {
-        char **dCtlDriver;
-        short dCtlFlags;
-        struct QHdr dCtlQHdr;
-        long dCtlPosition;
-        char **dCtlStorage;
-        short dCtlRefNum;
-        long dCtlCurTicks;
-        char *dCtlWindow;
-        short dCtlDelay;
-        short dCtlEMask;
-        short dCtlMenu;
-        char dCtlSlot;
-        char dCtlSlotId;
-        long dCtlDevBase;
-        long reserved;
-        char dCtlExtDev;
-        char fillByte;
-};
-
+#if !defined(__mac_devices_h)
+#define __mac_devices_h
 struct AuxDCE {
-        char **dCtlDriver;
-        short dCtlFlags;
-        struct QHdr dCtlQHdr;
-        long dCtlPosition;
-        char **dCtlStorage;
-        short dCtlRefNum;
-        long dCtlCurTicks;
-        char *dCtlWindow;
-        short dCtlDelay;
-        short dCtlEMask;
-        short dCtlMenu;
-        char dCtlSlot;
-        char dCtlSlotId;
-        long dCtlDevBase;
-        long reserved;
-        char dCtlExtDev;
-        char fillByte;
+    Ptr dCtlDriver;
+    short dCtlFlags;
+    QHdr dCtlQHdr;
+    long dCtlPosition;
+    Ptr *dCtlStorage;
+    short dCtlRefNum;
+    long dCtlCurTicks;
+    Ptr dCtlWindow;
+    short dCtlDelay;
+    short dCtlEMask;
+    short dCtlMenu;
+    char dCtlSlot;
+    char dCtlSlotId;
+    long dCtlDevBase;
+    Ptr dCtlOwner;
+    char dCtlExtDev;
+    char fillByte;
 };
 
-#define __DEVICES__
-#endif
+typedef struct AuxDCE AuxDCE;
+
+typedef AuxDCE *AuxDCEPtr;
+#endif /* __mac_devices_h */
 
 #include    <sys/video.h>
 
@@ -237,7 +269,7 @@ typedef struct ptrPrivate {
 
 #define FBTYPE_MACII 0
 
-typedef struct video_data fbtype;
+typedef struct VPBlock fbtype;
 
 typedef struct {
     pointer 	  	fb; 	    /* Frame buffer itself */

@@ -76,6 +76,8 @@ extern void	SaveScreens();
 int		consoleFd = 0;
 #define	INPBUFSIZE	3*64
 
+int		optionMouse = FALSE;
+
 /*-
  *-----------------------------------------------------------------------
  * TimeSinceLastInputEvent --
@@ -139,9 +141,6 @@ macIIEnqueueEvents ()
     DevicePtr		    pKeyboard;
     register PtrPrivPtr	    ptrPriv;
     register KbPrivPtr      kbdPriv;
-    enum {
-        NoneYet, Ptr, Kbd
-    }                       lastType = NoneYet; /* Type of last event */
 
     unsigned char macIIevents[INPBUFSIZE];
     register unsigned char *me, *meL;
@@ -149,6 +148,7 @@ macIIEnqueueEvents ()
 
     static int optionKeyUp = 1;
 
+#define IS_POWER_KEY(x)		(KEY_DETAIL(x) == 0x7f)
 #define IS_OPTION_KEY(x)	(KEY_DETAIL(x) == 0x3a)
 #define IS_LEFT_ARROW_KEY(x)	(KEY_DETAIL(x) == 0x3b)
 #define IS_RIGHT_ARROW_KEY(x)	(KEY_DETAIL(x) == 0x3c)
@@ -192,7 +192,8 @@ macIIEnqueueEvents ()
 	     * is hit in order to generate arrow key codes.
 	     */
     
-	    if (!optionKeyUp && IS_ARROW_KEY(*me)) {
+	    if (((!optionKeyUp && !optionMouse) ||
+		    (optionKeyUp && optionMouse)) && IS_ARROW_KEY(*me)) {
 	    	int keyUp = KEY_UP(*me);
     
 	    	if (IS_RIGHT_ARROW_KEY(*me))
@@ -210,22 +211,19 @@ macIIEnqueueEvents ()
 	    if (KEY_DETAIL(*me) == MOUSE_ESCAPE) { 
     	    	(* ptrPriv->EnqueueEvent) (pPointer,me);
 	    	me += 2;
-	    	lastType = Ptr;
 	    }
     
 	    else if (IS_MOUSE_KEY(*me))
             {
     	    	(* ptrPriv->EnqueueEvent) (pPointer,me);
-	    	lastType = Ptr;
 	    }
     
-	    else if (IS_OPTION_KEY(*me)) {
+	    else if (IS_OPTION_KEY(*me) || IS_POWER_KEY(*me)) {
 	    	/* do nothing */
 	    }
     
 	    else {
     	    	(* kbdPriv->EnqueueEvent) (pKeyboard,me);
-	    	lastType = Kbd;
             }
 	}
     }

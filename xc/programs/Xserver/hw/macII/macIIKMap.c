@@ -91,7 +91,7 @@ static KeySym macIIMap[] = {
 	XK_Return,	NoSymbol,		/* 0x24 */
 	XK_L,		NoSymbol,		/* 0x25 */
 	XK_J,		NoSymbol,		/* 0x26 */
-	XK_quoteright,	XK_quotedbl,		/* 0x27 */
+	XK_apostrophe,	XK_quotedbl,		/* 0x27 */
 	XK_K,		NoSymbol,		/* 0x28 */
 	XK_semicolon,	XK_colon,		/* 0x29 */
 	XK_backslash,	XK_bar,			/* 0x2a */
@@ -102,7 +102,7 @@ static KeySym macIIMap[] = {
 	XK_period,	XK_greater,		/* 0x2f */
 	XK_Tab,		NoSymbol,		/* 0x30 */
 	XK_space,	NoSymbol,		/* 0x31 */
-	XK_quoteleft,	XK_asciitilde,		/* 0x32 */
+	XK_grave,	XK_asciitilde,		/* 0x32 */
 	XK_Delete,	NoSymbol,		/* 0x33 */
 	NoSymbol,	NoSymbol,		/* 0x34 */
 	XK_Escape,	NoSymbol,		/* 0x35 */
@@ -111,8 +111,8 @@ static KeySym macIIMap[] = {
 	XK_Shift_L,	NoSymbol,		/* 0x38 */
 	XK_Caps_Lock,	NoSymbol,		/* 0x39 */
 	NoSymbol,	NoSymbol,		/* 0x3a */ /* option */
-	XK_Left,	NoSymbol,		/* 0x3b */
-	XK_Right,	NoSymbol,		/* 0x3c */
+	NoSymbol,	NoSymbol,		/* 0x3b */
+	NoSymbol,	NoSymbol,		/* 0x3c */
 	XK_Control_R,	NoSymbol,		/* 0x3d */ /* down arrow key */
 	XK_Meta_R,	NoSymbol,		/* 0x3e */ /* up arrow key */
 	NoSymbol,	NoSymbol,		/* 0x3f */

@@ -63,13 +63,6 @@ extern int TellLostMap(), TellGainedMap();
 
 extern int consoleFd;
 
-static struct ColorSpec {
-	unsigned short value;
-	unsigned short red;
-	unsigned short green;
-	unsigned short blue;
-}; 
-
 static void
 macIIColorUpdateColormap(pScreen, cmap)
     ScreenPtr	pScreen;
@@ -82,7 +75,7 @@ macIIColorUpdateColormap(pScreen, cmap)
     int fd;
     struct strioctl ctl; /* Streams ioctl control structure */
     struct CntrlParam pb;
-    struct VDEntryRecord vde;
+    struct VDSetEntryRecord vde;
 
     if ((pVisual->class | DynamicClass) == DirectColor) {
 	for (i = 0; i < 256; i++) {
@@ -90,21 +83,21 @@ macIIColorUpdateColormap(pScreen, cmap)
 	    pent = &cmap->red[(i & pVisual->redMask) >>
 			      pVisual->offsetRed];
 	    if (pent->fShared)
-		Map[i].red = pent->co.shco.red->color;
+		Map[i].rgb.red = pent->co.shco.red->color;
 	    else
-		Map[i].red = pent->co.local.red;
+		Map[i].rgb.red = pent->co.local.red;
 	    pent = &cmap->green[(i & pVisual->greenMask) >>
 				pVisual->offsetGreen];
 	    if (pent->fShared)
-		Map[i].green = pent->co.shco.green->color;
+		Map[i].rgb.green = pent->co.shco.green->color;
 	    else
-		Map[i].green = pent->co.local.green;
+		Map[i].rgb.green = pent->co.local.green;
 	    pent = &cmap->blue[(i & pVisual->blueMask) >>
 			       pVisual->offsetBlue];
 	    if (pent->fShared)
-		Map[i].blue = pent->co.shco.blue->color;
+		Map[i].rgb.blue = pent->co.shco.blue->color;
 	    else
-		Map[i].blue = pent->co.local.blue;
+		Map[i].rgb.blue = pent->co.local.blue;
 	}
     } else {
 	for (i = 0, pent = cmap->red;
@@ -112,15 +105,15 @@ macIIColorUpdateColormap(pScreen, cmap)
 	     i++, pent++) {
 	    if (pent->fShared) {
 		Map[i].value = i;
-		Map[i].red = pent->co.shco.red->color;
-		Map[i].green = pent->co.shco.green->color;
-		Map[i].blue = pent->co.shco.blue->color;
+		Map[i].rgb.red = pent->co.shco.red->color;
+		Map[i].rgb.green = pent->co.shco.green->color;
+		Map[i].rgb.blue = pent->co.shco.blue->color;
 	    }
 	    else {
 		Map[i].value = i;
-		Map[i].red = pent->co.local.red;
-		Map[i].green = pent->co.local.green;
-		Map[i].blue = pent->co.local.blue;
+		Map[i].rgb.red = pent->co.local.red;
+		Map[i].rgb.green = pent->co.local.green;
+		Map[i].rgb.blue = pent->co.local.blue;
 	    }
 	}
     }
@@ -144,7 +137,7 @@ macIIColorUpdateColormap(pScreen, cmap)
     ctl.ic_len = sizeof(pb);
     ctl.ic_dp = (char *)&pb;
 
-    vde.csTable = (char *) Map;
+    vde.csTable = (ColorSpec *) Map;
     vde.csStart = 0;
     vde.csCount = 255;	/* not actually count, but count-1 */
 
@@ -330,13 +323,13 @@ macIIColorInit (index, pScreen, argc, argv)
     pScreen->StoreColors = macIIColorStoreColors;
 
     if (!cfbScreenInit (pScreen, macIIFbs[index].fb,
-			    macIIFbs[index].info.v_right -
-			    macIIFbs[index].info.v_left,
-			    macIIFbs[index].info.v_bottom -
-		            macIIFbs[index].info.v_top,
-			    macIIFbs[index].info.v_hres >> 16,
-			    macIIFbs[index].info.v_vres >> 16,
-			    macIIFbs[index].info.v_rowbytes))
+			    macIIFbs[index].info.vpBounds.right -
+			    macIIFbs[index].info.vpBounds.left,
+			    macIIFbs[index].info.vpBounds.bottom -
+		            macIIFbs[index].info.vpBounds.top,
+			    macIIFbs[index].info.vpHRes >> 16,
+			    macIIFbs[index].info.vpVRes >> 16,
+			    macIIFbs[index].info.vpRowBytes))
     {
 	return (FALSE);
     }
