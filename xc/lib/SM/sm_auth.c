@@ -1,4 +1,4 @@
-/* $XConsortium: sm_auth.c,v 1.3 93/09/27 11:47:22 mor Exp $ */
+/* $XConsortium: sm_auth.c,v 1.4 93/11/08 16:35:17 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -33,10 +33,11 @@ typedef struct {
 
 
 IcePoAuthStatus
-_SmcAuth1proc (authStatePtr, cleanUp, swap,
+_SmcAuth1proc (authStatePtr, connectionString, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
+char		*connectionString;
 Bool 		cleanUp;
 Bool		swap;
 int     	authDataLen;
@@ -93,10 +94,11 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_SmsAuth1proc (authStatePtr, swap, replyDataLen, replyData,
+_SmsAuth1proc (authStatePtr, connectionString, swap, replyDataLen, replyData,
     authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
+char		*connectionString;
 Bool		swap;
 int     	replyDataLen;
 IcePointer	replyData;
@@ -152,10 +154,11 @@ char    	**errorStringRet;
 
 
 IcePoAuthStatus
-_SmcAuth2proc (authStatePtr, cleanUp, swap,
+_SmcAuth2proc (authStatePtr, connectionString, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
+char		*connectionString;
 Bool 		cleanUp;
 Bool		swap;
 int     	authDataLen;
@@ -212,10 +215,11 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_SmsAuth2proc (authStatePtr, swap, replyDataLen, replyData,
+_SmsAuth2proc (authStatePtr, connectionString, swap, replyDataLen, replyData,
     authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer 	*authStatePtr;
+char		*connectionString;
 Bool		swap;
 int     	replyDataLen;
 IcePointer	replyData;
