@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.11 90/05/04 16:57:13 keith Exp $
+ * $XConsortium: imakemdep.h,v 1.12 90/12/11 13:23:16 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -132,6 +132,7 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef luna
 	"-Dluna",	/* OMRON luna 68K and 88K */
+	"-DXCOMM=\\#",
 #endif
 };
 #else /* else MAKEDEPEND */
