@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.167 93/09/18 18:18:47 kaleb Exp $ */
+/* $XConsortium: TMstate.c,v 1.168 93/09/25 10:38:51 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1044,7 +1044,7 @@ static StatePtr NewState(stateTree, typeIndex, modIndex)
 #ifdef TRACE_TM
     LOCK_PROCESS;
     _XtGlobalTM.numComplexStates++;
-    LOCK_PROCESS;
+    UNLOCK_PROCESS;
 #endif /* TRACE_TM */
     state->typeIndex = typeIndex;
     state->modIndex = modIndex;
@@ -1552,6 +1552,7 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 	     */
 	    (void) GetBranchHead(stateTree, typeIndex, modIndex, True);
 	}
+	UNLOCK_PROCESS;
     }
 
     if (eventSeq && eventSeq->state) {
@@ -1561,7 +1562,6 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 	eventSeq->state->isCycleStart = True;
 	(*state)->isCycleEnd = TRUE;
     }
-    UNLOCK_PROCESS;
 }
 
 
