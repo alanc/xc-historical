@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.19 91/01/04 13:22:30 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.20 91/01/06 12:12:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,6 +30,7 @@
 #include <X11/Xmu/Converters.h>
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
+#include <X11/Xfuncs.h>
 #include "BitmapP.h"
     
 #include <stdio.h>
@@ -722,12 +723,16 @@ static void Initialize(request, new, argv, argc)
     new->bitmap.selection.own = False;
     new->bitmap.selection.limbo = False;
 
+    fprintf(stderr,"#1 GOT HERE (INIT)!\n");
     new->bitmap.request_stack = (BWRequestStack *)
 	XtMalloc(sizeof(BWRequestStack));
+    fprintf(stderr,"#2 GOT HERE (INIT)!\n");
+
     new->bitmap.request_stack[0].request = NULL;
     new->bitmap.request_stack[0].call_data = NULL;
     new->bitmap.request_stack[0].trap = False;
 
+    fprintf(stderr,"#3 GOT HERE (INIT)!\n");
     if (BWParseSize(new->bitmap.size, 
 		    &new->bitmap.width,
 		    &new->bitmap.height)
@@ -737,6 +742,7 @@ static void Initialize(request, new, argv, argc)
       new->bitmap.height = FallbackBitmapHeight;
       XtWarning("Cannot parse the size resource.  BitmapWidget");
     }
+    fprintf(stderr,"#4 GOT HERE (INIT)!\n");
 
     new->core.width = new->bitmap.width * new->bitmap.squareW + 
 	2 * new->bitmap.distance;
@@ -804,20 +810,24 @@ static void Initialize(request, new, argv, argc)
 						DefaultScreen(XtDisplay(new))),
 				     mask, &values);
 
-    image_data = CreateCleanData(Length(new->bitmap.width, new->bitmap.height));
-    buffer_data = CreateCleanData(Length(new->bitmap.width, new->bitmap.height));
+    image_data = CreateCleanData(Length(new->bitmap.width, 
+					new->bitmap.height));
+    buffer_data = CreateCleanData(Length(new->bitmap.width, 
+					 new->bitmap.height));
 
     new->bitmap.storage = NULL;
     
+    fprintf(stderr,"#5 GOT HERE (INIT)!\n");
     new->bitmap.image = CreateBitmapImage(new, 
 					  image_data,
 					  new->bitmap.width,
 					  new->bitmap.height);
-    
+    fprintf(stderr,"#6 GOT HERE (INIT)!\n");    
     new->bitmap.buffer = CreateBitmapImage(new, 
 					   buffer_data,
 					   new->bitmap.width,
 					   new->bitmap.height);
+    fprintf(stderr,"#7 GOT HERE (INIT)!\n");
 
     /* Read file */
     {
@@ -857,7 +867,10 @@ static void Initialize(request, new, argv, argc)
 	    new->bitmap.basename = StripFilename(new->bitmap.filename);
 	}
     }
+    fprintf(stderr,"#8 GOT HERE (INIT)!\n");
+
     Resize(new);
+    fprintf(stderr,"#9 GOT HERE (INIT)!\n");
 }
 
 
@@ -866,26 +879,19 @@ Boolean BWParseSize(size, width, height)
      String size;
      Dimension *width, *height;
 {
-  char c,  unparsed_size[80];
-  int w, h;
+  int x, y;
+  unsigned int w, h;
+  int status;
 
+  status = XParseGeometry(size, &x, &y, &w, &h);
 
-  sscanf(size, "%d%c%d", &w, &c, &h);
-  sprintf(unparsed_size, "%d%c%d", w, c, h);
-
-  if (w > 0 
-      && 
-      h > 0 
-      &&
-      c == 'x'
-      &&
-      !strcmp(size, unparsed_size)) {
-    *width = (Dimension)w;
-    *height = (Dimension)h;
+  if (status & (WidthValue | HeightValue)) {
+    *width = (Dimension) w;
+    *height = (Dimension) h;
     return True;
   }
-  else
-    return False;
+  else return False;
+
 }
 
 
