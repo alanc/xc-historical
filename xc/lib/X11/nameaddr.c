@@ -1,4 +1,4 @@
-/* $XConsortium: nameaddr.c,v 1.1 91/07/12 15:54:51 gildea Exp $ */
+/* $XConsortium: nameaddr.c,v 1.2 91/07/16 16:36:59 gildea Exp $ */
 /*	nameaddr.c - included by Xstreams.c			*/
 /*	Used for System V Release 4.0 networking code		*/
 
@@ -30,9 +30,9 @@
 static void   *handlep = NULL;
 static int    family = 0;
 static char   tcphalf[4];
-static int    *tcpfamilyp;
-static char   **tcpremoteaddrp;
-static int    *tcpremoteaddrlenp;
+static int    *tcpfamilyp = NULL;
+static char   **tcpremoteaddrp = NULL;
+static int    *tcpremoteaddrlenp = NULL;
 
 static int SetupNetworkStream();
 static int BindAndListen();
@@ -363,17 +363,19 @@ fprintf(stderr, "Trying to get the binding address for service %s on %s\n",
           	  )
 		{
 			memcpy(tcphalf, netbufp->buf, 4);
-			*tcpfamilyp = FamilyInternet;
-			*tcpremoteaddrlenp = 4;
-			*tcpremoteaddrp = Xmalloc(*tcpremoteaddrlenp);
-			/* This is a kludge.  What is the right way to get
-			   this info out? */
-			memcpy(*tcpremoteaddrp, netbufp->buf+4,
-			       *tcpremoteaddrlenp);
+			if (tcpfamilyp != NULL) {
+			    *tcpfamilyp = FamilyInternet;
+			    *tcpremoteaddrlenp = 4;
+			    *tcpremoteaddrp = Xmalloc(*tcpremoteaddrlenp);
+			    /* This is a kludge.  What is the right way to get
+			       this info out? */
+			    memcpy(*tcpremoteaddrp, netbufp->buf+4,
+				   *tcpremoteaddrlenp);
 #ifdef DEBUG
-			fprintf(stderr, "tcp remote addr = %0x\n",
-				*(long *)*tcpremoteaddrp);
+			    fprintf(stderr, "tcp remote addr = %0x\n",
+				    *(long *)*tcpremoteaddrp);
 #endif
+			}
 		}
 		type = 0;
 		for(i=X_TLI_STREAM; i< Network._nnets; i++)
