@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_struct.c,v 1.1 92/05/08 15:13:26 mor Exp $ */
+/* $XConsortium: pl_oc_struct.c,v 1.2 92/05/26 16:20:27 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -68,7 +68,7 @@ INPUT XID		resource_id;
 INPUT PEXOCRequestType	req_type;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCNil, 0, NULL);
+    PEXAddSimpleOC (display, resource_id, req_type, PEXOCNoop, 0, NULL);
 }
 
 
