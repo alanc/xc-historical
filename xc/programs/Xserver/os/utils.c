@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.130 93/09/23 17:42:01 rws Exp $ */
+/* $XConsortium: utils.c,v 1.131 93/09/26 12:06:40 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -144,7 +144,7 @@ AutoResetServer (sig)
     chdir ("/tmp");
     exit (0);
 #endif
-#ifdef SYSV
+#if defined(SYSV) && defined(X_NOT_POSIX)
     OsSignal (SIGHUP, AutoResetServer);
 #endif
 }
@@ -158,6 +158,10 @@ GiveUp(sig)
 {
     dispatchException |= DE_TERMINATE;
     isItTimeToYield = TRUE;
+#if defined(SYSV) && defined(X_NOT_POSIX)
+    if (sig)
+	OsSignal(sig, SIG_IGN);
+#endif
 }
 
 
