@@ -1,5 +1,5 @@
 /*
- * $XConsortium: vendor.c,v 1.0 91/11/19 08:38:02 rws Exp $
+ * $XConsortium: vendor.c,v 1.7 92/04/15 11:11:34 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -43,6 +43,44 @@ static SectionNameRec SectionNames[] = {
 
 #else
 
+#if defined(sun) && defined(SVR4)
+/* losing man.cf is useless because it has no section names */
+
+static SectionNameRec SectionNames[] = {
+    {"(1)  User Commands",			"1"},
+    {"(1b) SunOS/BSD Compatibility Commands",	"1b"},
+    {"(1c) Communication Commands",		"1c"},
+    {"(1f) FMLI Commands",			"1f"},
+    {"(1m) Maintenance Commands",		"1m"},
+    {"(1s) SunOS Specific Commands",		"1s"},
+    {"(2)  System Calls",			"2"},
+    {"(3)  C Library Functions",		"3"},
+    {"(3b) SunOS/BSD Compatibility Functions",	"3b"},
+    {"(3c) C Library Functions",		"3c"},
+    {"(3e) ELF Library Functions",		"3e"},
+    {"(3g) C Library Functions",		"3g"},
+    {"(3i) Wid Character Functions",		"3i"},
+    {"(3k) Kernel VM Library Functions",	"3k"},
+    {"(3m) Mathematical Library",		"3m"},
+    {"(3n) Network Functions",			"3n"},
+    {"(3r) RPC Services Library",		"3r"},
+    {"(3s) Standard I/O Functions",		"3s"},
+    {"(3x) Miscellaneous Library Functions",	"3x"},
+    {"(4)  File Formats",			"4"},
+    {"(4b) Misc. Reference Manual Pages",	"4b"},
+    {"(5)  Environments, Tables, and TROFF Macros", "5"},
+    {"(6)  Games and Demos",			"6"},
+    {"(7)  Special Files",			"7"},
+    {"(9)  Device Driver Information",		"9"},
+    {"(9e) DDI and DKI Driver Entry Points",	"9e"},
+    {"(9f) DDI and DKI Kernel Functions",	"9f"},
+    {"(9s) DDI and DKI Data Structures",	"9s"},
+    {"(l)  Local",				"l"},
+    {"(n)  New",				"n"},
+};
+
+#else
+
 static SectionNameRec SectionNames[] = {
     {"(1) User Commands",		"1"},
     {"(2) System Calls",		"2"},
@@ -62,7 +100,7 @@ static SectionNameRec SectionNames[] = {
 };
 
 #endif
-
+#endif
 
 /*	Function Name: AddStandardSections
  *	Description: Adds all the standard sections to the list for this path.
