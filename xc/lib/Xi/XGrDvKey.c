@@ -1,4 +1,4 @@
-/* $Header: XGrDvKey.c,v 1.2 90/08/13 17:05:46 gms ic1C-80 $ */
+/* $XConsortium: XGrDvKey.c,v 1.5 91/01/24 16:06:51 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

@@ -1,4 +1,4 @@
-/*      $Header: XExtToWire.c,v 1.12 91/07/16 20:50:33 rws Exp $ */
+/* $XConsortium: XExtToWire.c,v 1.13 91/12/26 12:17:38 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

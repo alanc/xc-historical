@@ -1,4 +1,4 @@
-/* $Header: XSetMode.c,v 1.1 90/06/20 14:11:40 xbuild ic1C-80 $ */
+/* $XConsortium: XSetMode.c,v 1.6 91/02/22 15:25:50 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

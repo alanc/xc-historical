@@ -1,4 +1,4 @@
-/* $Header: XQueryDv.c,v 1.9 91/01/26 13:36:14 rws Exp $ */
+/* $XConsortium: XQueryDv.c,v 1.10 91/02/09 17:53:04 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

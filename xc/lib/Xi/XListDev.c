@@ -1,4 +1,4 @@
-/* $Header: XListDev.c,v 1.16 91/02/09 17:52:40 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.17 91/07/23 12:28:18 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

@@ -1,4 +1,4 @@
-/* $Header: XDevBell.c,v 1.1 91/01/24 15:59:39 rws Exp $ */
+/* $XConsortium: XDevBell.c,v 1.2 91/07/23 12:26:53 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
