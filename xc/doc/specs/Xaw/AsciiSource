@@ -1,0 +1,173 @@
+.NH 2
+Ascii Source Object
+.LP
+.XS
+\*(SN AsciiSource Object
+.XE
+.IN "AsciiSource object" "" "@DEF@"
+.IN "AsciiSrc" "" "@DEF@"
+.LP
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+Application Header file	<X11/Xaw/AsciiSrc.h>
+Class Header file	<X11/Xaw/AsciiSrcP.h>
+Class		asciiSrcObjectClass
+Class Name	AsciiSrc
+Superclass	TextSource
+.sp 1
+.LP
+The AsciiSource object is used by a text widget to read the text from
+a file or string in memory.  It understands all Latin1 characters plus
+Tab and Carriage Return.
+.LP
+The AsciiSource can be either of two types:
+.IP \fBXawAsciiFile\fP 1.25i
+AsciiSource objects of this type read the text from a file and store it
+into an internal buffer.  This buffer may then be modified (provided
+the text widget is in the correct edit mode) just as if it were a
+source of type \fBXawAsciiString\fP.  Unlike previous versions of the
+AsciiSource it is now possible to specify an editable disk source.
+The file is never updated, however, until a call to \fBXawAsciiSave\fP
+is made.  When the source is in this mode the \fBuseStringInPlace\fP resource
+is ignored.
+.IP \fBXawAsciiString\fP 1.25i
+With AsciiSource objects of this type the text buffer is passed as a
+string.   This buffer normally will be copied and managed internally.
+It is also possible to use the string in place, by setting the
+\fBuseStringInPlace\fP resource, and specifying the length of the
+allocated buffer in the \fBlength\fP resource. 
+.LP
+If the application chooses to allow the AsciiSource to manage the
+string internally (the default - \fBuseStringInPlace\fP is
+\fBFalse\fP) then it need not worry about running out of buffer space
+(subject to the total memory avaliable to the application, of course).
+The performance
+does not decay linearly as the buffer grows large, as is ncessarily the
+case when the text buffer is used in place.  If this mode is used, the
+string passed to the AsciiSource at startup is not updated as the user
+types.  The only ways to get the latest version of the text string is
+with \fBXtSetValues\fP.
+.De
+.LP
+.IN "AsciiSource object" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Class	Type	Notes	Default Value
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+callback	Callback	Callback		NULL
+dataCompression	DataCompression	Boolean		True
+destroyCallback	Callback	Callback		NULL
+editType	EditType	EditMode		XawtextRead
+length	Length	Int	A	length of \fBstring\fP
+pieceSize	PieceSize	Int		BUFSIZ
+string	String	String		NULL
+type	Type	AsciiType		XawAsciiString
+useStringInPlace	UseStringInPlace	Boolean		False
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.Oc Bold
+.Dc
+.Od Bold
+.Oe
+.Ol Bold
+.Op Bold
+.Os Bold
+.Ot Bold
+.Ou Bold
+.NH 3
+Convenience Routines
+.LP
+The AsciiSource has a few convenience routines that allow the
+application programmer quicker or easier access to some of the
+commonly used functionality of the AsciiSource.
+.NH 4
+Conserving Memory
+.LP
+When the AsciiSource widget is not in \fBuseStringInPlace\fP mode
+space must be allocated whenever the file is saved, or the string is 
+requested with a call to \fBXtGetValues\fP.  This memory is allocated on the
+fly, and remains valid until the next time a string needs to be allocated.
+You may save memory by freeing this string as soon as you are done
+with it by calling \fBXawAsciiSourceFreeString\fP.
+.FD 0
+void XawAsciiSourceFreeString(\fIw\fP)
+.br
+Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the AsciiSource object.
+.LP
+This function will free the memory that contains the string pointer returned
+by \fBXtGetValues\fP.  This will normally happen automatically when
+the next call to \fBXtGetValues\fP occurs, or when the widget is destroyed.
+.NH 4
+Saving Files
+.LP
+To save the changes made in the current text source into a file use
+\fBXawAsciiSave\fP.
+.FD 0
+Boolean XawAsciiSave(\fIw\fP)
+.br
+Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the AsciiSource object.
+.LP
+\fBXawAsciiSave\fP returns \fBTrue\fP if the save was successful.
+It will update the file named in the \fBstring\fP resource.
+If the buffer has not been changed, no action will be taken.  This function
+only works on an AsciiSource of type \fBXawAsciiFile\fP.
+.LP
+.sp 1
+To save the contents of the current text buffer into a named file use 
+\fBXawAsciiSaveAsFile\fP.
+.FD 0
+Boolean XawAsciiSaveAsFile(\fIw\fP, \fIname\fP)
+.br
+Widget \fIw\fP;
+.br
+String \fIname\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the AsciiSource object.
+.IP \fIname\fP 1i
+The name of the file to save the current buffer into.
+.LP
+This function returns \fBTrue\fP if the save was successful.
+\fBXawAsciiSaveAsFile\fP will work with a buffer of either type
+\fBXawAsciiString\fP or type \fBXawAsciiFile\fP. If the buffer has not been
+changed, no action will be taken. 
+.NH 4
+Seeing if the Source has Changed
+.LP
+To find out if the text buffer in an AsciiSource object has changed
+since the last time it was saved or queried use \fBXawAsciiSourceChanged\fP.
+.FD 0
+Boolean XawAsciiSourceChanged(\fIw\fP)
+.br
+Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the AsciiSource object.
+.LP
+This function will return \fBTrue\fP if the source has changed since
+the last time it was saved or queried.  The internal change flag is
+reset whenever the string is queried via \fBXtGetValues\fP or the
+buffer is saved with one of the convenience functions described above.
