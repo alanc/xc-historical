@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.26 89/01/03 11:54:21 jim Exp $
+ * $XConsortium: process.c,v 1.27 89/12/06 20:39:06 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,12 +23,11 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#include <stdio.h>
+#include "xauth.h"
 #include <ctype.h>
 #include <errno.h>
 extern int errno;			/* for stupid errno.h files */
 #include <signal.h>
-#include "xauth.h"
 #include <X11/X.h>			/* for Family constants */
 
 extern char *get_hostname();
