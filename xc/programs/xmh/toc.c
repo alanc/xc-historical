@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.46 91/07/07 18:35:21 converse Exp $
+ * $XConsortium: toc.c,v 2.47 91/07/09 12:04:50 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -107,26 +107,17 @@ int TocFolderExists(toc)
 	    ((buf.st_mode & S_IFMT) == S_IFDIR));
 }
 
-#ifndef DEFAULT_INITIAL_INC_FILE
-#ifdef SVR4
-#define DEFAULT_INITIAL_INC_FILE "/var/mail/%s"
-#else	/* SVR4 */
-#ifdef SYSV
-#define DEFAULT_INITIAL_INC_FILE "/usr/mail/%s"
-#else	/* SYSV */
-#define DEFAULT_INITIAL_INC_FILE "/usr/spool/mail/%s"
-#endif	/* SYSV */
-#endif	/* SVR4 */
-#endif
-
 static void LoadCheckFiles()
 {
     FILE *fid;
-    char str[1024], *ptr, *ptr2;
-    int i;
+    char str[1024];
+
     (void) sprintf(str, "%s/.xmhcheck", homeDir);
     fid = myfopen(str, "r");
     if (fid) {
+	int i;
+	char *ptr, *ptr2;
+
 	while (ptr = ReadLine(fid)) {
 	    while (*ptr == ' ' || *ptr == '\t') ptr++;
 	    ptr2 = ptr;
@@ -143,22 +134,9 @@ static void LoadCheckFiles()
 	    }
 	}
 	myfclose(fid);
-    } else if (app_resources.initial_inc_file != NULL) {
-        if (*app_resources.initial_inc_file != '\0')
-	    InitialFolder->incfile = app_resources.initial_inc_file;
-    } else {
-	ptr = getenv("MAIL");
-	if (ptr == NULL) ptr = getenv("mail");
-	if (ptr == NULL) {
-	    ptr = getenv("USER");
-	    if (ptr) {
-		(void) sprintf(str, DEFAULT_INITIAL_INC_FILE, ptr);
-		ptr = str;
-	    }
-	}
-	if (ptr)
-	    InitialFolder->incfile = XtNewString(ptr);
-    }
+    } else if ( app_resources.initial_inc_file &&
+	       *app_resources.initial_inc_file)
+	InitialFolder->incfile = app_resources.initial_inc_file;
 }
 	    
 
