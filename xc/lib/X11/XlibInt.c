@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.205 94/01/15 10:09:52 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.206 94/01/16 17:00:58 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -365,7 +365,7 @@ _XNewerQueuedEvent(dpy, serial_num)
 
     qev = dpy->head;
     while (qev) {
-	if (qev->qserial_num > serial_num) {
+	if (qev->qserial_num >= serial_num) {
 	    return True;
 	}
 	qev = qev->next;
