@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Header: glyphcurs.c,v 1.7 87/08/26 16:17:50 drewry Exp $ */
+/* $Header: glyphcurs.c,v 1.7 87/09/07 18:54:16 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -36,6 +36,7 @@ SOFTWARE.
 #include "cursorstr.h"
 #include "misc.h"
 #include "opaque.h"
+#include "servermd.h"
 
 
 /*

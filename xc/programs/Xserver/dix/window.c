@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.168 87/09/03 13:25:57 toddb Locked $ */
+/* $Header: window.c,v 1.169 87/09/03 13:40:01 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -39,6 +39,7 @@ SOFTWARE.
 #include "cursorstr.h"
 #include "dixstruct.h"
 #include "gcstruct.h"
+#include "servermd.h"
 
 /******
  * Window stuff for server 

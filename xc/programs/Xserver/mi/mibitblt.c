@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.46 87/09/01 16:54:17 toddb Locked $ */
+/* $Header: mibitblt.c,v 1.47 87/09/03 15:07:02 rws Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -36,6 +36,7 @@ SOFTWARE.
 #include "regionstr.h"
 #include "Xmd.h"
 #include "../mfb/maskbits.h"
+#include "servermd.h"
 
 
 /* MICOPYAREA -- public entry for the CopyArea request 
