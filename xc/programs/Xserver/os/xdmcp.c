@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xdmcp.c,v 1.21 92/03/25 11:50:47 rws Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -251,7 +251,6 @@ XdmcpSetAuthentication (name)
 {
     int	i;
 
-    XdmcpDisposeARRAY8 (AuthenticationName);
     for (i = 0; i < AuthenticationNames.length; i++)
 	if (XdmcpARRAY8Equal (&AuthenticationNames.data[i], name))
 	{
@@ -427,14 +426,10 @@ void
 XdmcpOpenDisplay(sock)
     int	sock;
 {
-    extern void AugmentSelf();
-
     if (state != XDM_AWAIT_MANAGE_RESPONSE)
 	return;
     state = XDM_RUN_SESSION;
     sessionSocket = sock;
-    /* permit access control manipulations from this host */
-    AugmentSelf(sock);
 }
 
 void 
@@ -662,7 +657,7 @@ send_packet()
 XdmcpDeadSession (reason)
     char *reason;
 {
-    printf ("XDM: %s, declaring session dead\n", reason);
+    ErrorF ("XDM: %s, declaring session dead\n", reason);
     state = XDM_INIT_STATE;
     isItTimeToYield = TRUE;
     dispatchException |= DE_RESET;
@@ -686,7 +681,7 @@ timeout()
     }
     else if (timeOutRtx >= XDM_RTX_LIMIT)
     {
-	printf("XDM: too many retransmissions\n");
+	ErrorF("XDM: too many retransmissions\n");
 	state = XDM_AWAIT_USER_INPUT;
 	timeOutTime = 0;
 	timeOutRtx = 0;
@@ -928,6 +923,8 @@ recv_accept_msg(length)
 	    {
 		XdmcpFatal ("Authentication Failure", &AcceptAuthenticationName);
 	    }
+	    /* permit access control manipulations from this host */
+	    AugmentSelf (&req_sockaddr, req_socklen);
 	    /* if the authorization specified in the packet fails
 	     * to be acceptable, enable the local addresses
 	     */
@@ -1025,7 +1022,7 @@ recv_failed_msg(length)
     if (XdmcpReadCARD32 (&buffer, &FailedSessionID) &&
 	XdmcpReadARRAY8 (&buffer, &Status))
     {
-    	if (length == 5 + Status.length &&
+    	if (length == 6 + Status.length &&
 	    SessionID == FailedSessionID)
 	{
 	    XdmcpFatal ("Session failed", &Status);
@@ -1093,7 +1090,7 @@ XdmcpFatal (type, status)
 {
     extern void AbortDDX();
 
-    printf("XDMCP fatal error: %s %*.*s\n", type,
+    ErrorF ("XDMCP fatal error: %s %*.*s\n", type,
 	   status->length, status->length, status->data);
     AbortDDX ();
     exit (1);
@@ -1103,7 +1100,7 @@ static
 XdmcpWarning(str)
     char *str;
 {
-    printf("XDMCP warning: %s\n", str);
+    ErrorF("XDMCP warning: %s\n", str);
 }
 
 static
@@ -1115,12 +1112,12 @@ get_manager_by_name(argc, argv, i)
 
     if (i == argc)
     {
-	printf("Xserver: missing host name in command line\n");
+	ErrorF("Xserver: missing host name in command line\n");
 	exit(1);
     }
     if (!(hep = gethostbyname(argv[i])))
     {
-	printf("Xserver: unknown host: %s\n", argv[i]);
+	ErrorF("Xserver: unknown host: %s\n", argv[i]);
 	exit(1);
     }
     if (hep->h_length == sizeof (struct in_addr))
@@ -1131,7 +1128,7 @@ get_manager_by_name(argc, argv, i)
     }
     else
     {
-	printf ("Xserver: host on strange network %s\n", argv[i]);
+	ErrorF ("Xserver: host on strange network %s\n", argv[i]);
 	exit (1);
     }
 }
