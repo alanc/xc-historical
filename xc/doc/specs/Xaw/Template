@@ -416,9 +416,9 @@ or the \fBWindowColor\fP functions.  The actual window created for the
 "WindowWidget" is available by calling the
 .PN XtWindow
 function.
+.bp \" Leaves a blank page, but is necessary to reset page numbers
 .EH ''''
 .OH ''''
-.bp
 .af % i
 .pn iii
 .TC

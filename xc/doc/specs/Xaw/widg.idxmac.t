@@ -27,12 +27,12 @@
 ..
 .\" set up various parameters for the right evironment.
 .\" Your taste may be different.
-.eh '\fBX Toolkit Widgets\fP''\fBX11, Release 3\fP'
-.oh '\fBX Toolkit Widgets\fP''\fBX11, Release 3\fP'
+.eh '\fBAthena Widget Set\fP''\fBX11, Release 4\fP'
+.oh '\fBAthena Widget Set\fP''\fBX11, Release 4\fP'
 .ef ''\fB % \fP''
 .of ''\fB % \fP''
 .\" Set the page number for the index properly.
-.pn 51
+.pn 125
 .++ A
 .po 1.0i	\" physical offset
 .ta 5iR		\" right alignment tab

@@ -112,7 +112,7 @@ MIT X Consortium
 .De
 .af % i
 .pn v
-.EH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4\fP'
-.OH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4\fP'
+.EH '\fBAthena Widget Set\fP''\fBX11, Release 4\fP'
+.OH '\fBAthena Widget Set\fP''\fBX11, Release 4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
