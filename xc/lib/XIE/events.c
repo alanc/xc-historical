@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.3 94/02/22 17:41:37 mor Exp $ */
+/* $XConsortium: events.c,v 1.4 94/04/17 20:18:23 mor Exp $ */
 
 /*
 
@@ -30,6 +30,7 @@ from the X Consortium.
 
 */
 
+#define NEED_EVENTS   /* so xEvent will get pulled in */
 #include "XIElibint.h"
 
 
