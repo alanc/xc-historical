@@ -186,7 +186,7 @@ typedef struct {
 
 /* Common macros for extracting drawing information */
 
-#if !defined(SINGLEDEPTH) && PPW != 4 || defined(FORCE_SEPARATE_PRIVATE)
+#if !defined(SINGLEDEPTH) && PSZ != 8 || defined(FORCE_SEPARATE_PRIVATE)
 
 #define CFB_NEED_SCREEN_PRIVATE
 
