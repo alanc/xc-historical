@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.4 92/05/27 16:59:11 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.5 92/06/12 11:54:01 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -200,7 +200,7 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
 #define PEXFreeBuf(ptr)            Xfree(ptr)
 #define PEXReallocBuf(ptr, size)   Xrealloc(ptr, size)
 
-#define COPY_LARGE_AREA(_from, _to, _size) \
+#define COPY_AREA(_from, _to, _size) \
     bcopy (_from, _to, _size)
 
 #define COPY_SMALL_AREA(_from, _to, _size) \
@@ -208,16 +208,6 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
     register char *_f = (char *) (_from), *_t = (char *) (_to); \
     register int _c = (_size); \
     while (--_c >= 0) *_t++ = *_f++; \
-}
-
-#define LARGE_AREA_SIZE	40
-
-#define COPY_AREA(_from, _to, _size) \
-{ \
-    if ((_size) >= LARGE_AREA_SIZE) \
-        COPY_LARGE_AREA (_from, _to, _size); \
-    else \
-        COPY_SMALL_AREA (_from, _to, _size); \
 }
 
 #define PAD(_size) (3 - (((_size) + 3) & 0x3))
