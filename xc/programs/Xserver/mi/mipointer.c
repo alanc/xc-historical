@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.5 89/07/10 14:55:45 rws Exp $ */
+/* $XConsortium: mipointer.c,v 5.6 89/07/18 18:02:52 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -29,6 +29,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 # include   "scrnintstr.h"
 # include   "mipointrst.h"
 # include   "cursorstr.h"
+# include   "dixstruct.h"
 
 static int  miPointerScreenIndex;
 static unsigned long miPointerGeneration = 0;
@@ -363,6 +364,10 @@ miPointerQueueEvent (pxE, pPointer, pScreen)
     DevicePtr	pPointer;
     ScreenPtr	pScreen;
 {
+    /* Smash time to currentTime, so we can process it in the more recent
+     * past, which is the best dix knows about.
+     */
+    pxE->u.keyButtonPointer.time = currentTime.milliseconds;
     (*pPointer->processInputProc) (pxE, pPointer);
 }
 
