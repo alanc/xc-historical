@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.60 93/09/25 21:31:13 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.61 93/12/13 17:17:53 dpw Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -13,6 +13,12 @@ XCOMM operating system:  OSName
 
 #if HasDECnet
 #define ExtraLibraries -ldnet
+#endif
+
+#if ThreadedX
+/* if you want to experiment, turn this on, but no guarantees */
+#define HasPosixThreads YES
+#define ExtraLibraries -lpthreads -li
 #endif
 
 #ifdef VaxArchitecture
