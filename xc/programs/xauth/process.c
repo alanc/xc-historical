@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.6 88/12/05 19:00:29 jim Exp $
+ * $XConsortium: process.c,v 1.7 88/12/08 15:09:59 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,7 @@
 #include <errno.h>
 #include "xauth.h"
 #include <X11/X.h>
+#include <pwd.h>
 
 extern int errno;			/* for stupid errno.h files */
 
@@ -62,18 +63,19 @@ struct _extract_data {
 
 static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
 static int do_help(), do_source(), do_set(), do_info(), do_quit();
-static int do_abort(), do_questionmark();
+static int do_abort(), do_questionmark(), do_give();
 
 CommandTable command_table[] = {
     { "abort",   2, 5, do_abort },	/* abort */
     { "add",     2, 3, do_add },	/* add dpy proto hexkey */
-    { "extract", 1, 7, do_extract },	/* extract filename dpy */
+    { "extract", 1, 7, do_extract },	/* extract filename dpy... */
+    { "give",    1, 4, do_give },	/* give user filename dpy... */
     { "help",    1, 4, do_help },	/* help */
     { "info",    1, 4, do_info },	/* info */
-    { "list",    1, 4, do_list },	/* list [dpy] */
-    { "merge",   1, 5, do_merge },	/* merge filename [filename ...] */
+    { "list",    1, 4, do_list },	/* list [dpy...] */
+    { "merge",   1, 5, do_merge },	/* merge filename... */
     { "quit",    1, 4, do_quit },	/* quit */
-    { "remove",  1, 6, do_remove },	/* remove dpy */
+    { "remove",  1, 6, do_remove },	/* remove dpy... */
     { "set",     1, 3, do_set },	/* set numeric [on/off] */
     { "source",  1, 6, do_source },	/* source filename */
     { "?",       1, 1, do_questionmark },  /* print xauth commands */
@@ -127,6 +129,9 @@ static char *hex_table[] = {		/* for printing hex digits */
     "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", 
     "f8", "f9", "fa", "fb", "fc", "fd", "fe", "ff", 
 };
+
+static int original_umask = 0;
+static int real_uid = -1, effective_uid = -1;
 
 extern char *get_hostname();
 extern Bool nameserver_timedout;
@@ -460,6 +465,16 @@ int auth_initialize (authfilename)
     int n;
     AuthList *head, *tail;
 
+    real_uid = getuid ();		/* save the old uid's */
+    effective_uid = geteuid ();
+
+    if (setuid (real_uid) != 0) {	/* clear the uid */
+	fprintf (stderr, "%s:  unable to set uid to user\n", ProgramName);
+	return -1;
+    }
+
+    original_umask = umask (0077);	/* disallow non-owner access */
+
     authfp = fopen (authfilename, "r");
     if (!authfp) {
 	int olderrno = errno;
@@ -493,6 +508,7 @@ int auth_finalize ()
 	/* XXX - need to write stuff back out */
 	printf ("Writing authority file \"%s\"\n", xauth_filename);
     }
+    (void) umask (original_umask);
     return 0;
 }
 
@@ -750,28 +766,49 @@ static int iterdpy (inputfilename, lineno, start,
     return errors;
 }
 
-static int remove_entry (listp, auth)
-    AuthList **listp;
+static int remove_entry (inputfilename, lineno, auth, data)
+    char *inputfilename;
+    int lineno;
     Xauth *auth;
+    char *data;
 {
-    AuthList *prev, *list;
+    int *nremovedp = (int *) data;
+    AuthList **listp = &xauth_head;
+    AuthList *prev = NULL, *list = (*listp);
     int removed = 0, notremoved = 0;
 
-    if (!*listp) return -1;		/* if nothing to remove */
-
-    for (prev = NULL, list = *listp; list; prev = list, list = list->next) {
-	if (match_auth (list->auth, auth)) {
-	    if (prev) prev->next = list->next;
-	    XauDisposeAuth (list->auth);
-	    free (list);
-	    list = prev;		/* back it up before continuing */
-	    removed++;
-	} else
-	  notremoved++;
+    if (!list) {
+	*nremovedp = 0;
+	return 1;			/* if nothing to remove */
     }
 
-    if (notremoved == 0) *listp = NULL;
-    return removed;
+    /*
+     * run through list removing any records that match
+     */
+    while (list) {
+	if (match_auth (list->auth, auth)) {
+	    AuthList *next = list->next;	      /* next one to look at */
+	    if (prev) {
+		prev->next = next;		       /* unlink current one */
+	    } else {
+		*listp = next;			       /* bump start of list */
+	    }
+	    XauDisposeAuth (list->auth);                    /* free the auth */
+	    free (list);				    /* free the link */
+	    list = next;			  /* go look at the next one */
+	    removed++;
+	} else {
+	    notremoved++;
+	    prev = list;
+	    list = list->next;
+	}
+    }
+
+    if (notremoved == 0) {		/* if nothing left */
+	*listp = NULL;			/* then null out list */
+    }
+    *nremovedp = removed;
+    return 0;
 }
 
 /*
@@ -839,13 +876,6 @@ static int do_list (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
-    int i;
-    AuthList *l;
-    int family, dpynum, scrnum;
-    char *host = NULL, *rest = NULL;
-    Xauth proto;
-    int errors = 0;
-
     if (argc == 1) {
 	dumpauthlist (inputfilename, lineno, xauth_head);
 	return 0;
@@ -941,7 +971,6 @@ static int do_extract (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
-    Xauth proto;
     int errors;
     struct _extract_data ed;
 
@@ -968,6 +997,71 @@ static int do_extract (inputfilename, lineno, argc, argv)
 
     return errors;
 }
+
+/*
+ * give username filename displayname...
+ */
+static int do_give (inputfilename, lineno, argc, argv)
+    char *inputfilename;
+    int lineno;
+    int argc;
+    char **argv;
+{ 
+    char *user;
+    int errors, status;
+    struct _extract_data ed;
+    struct passwd *p;
+
+    if (argc < 4) {
+	prefix (inputfilename, lineno);
+	badcommandline (argv[0]);
+	return 1;
+    }
+	
+    user = argv[1];
+    setpwent ();
+    p = getpwnam (user);
+    if (!p) {
+	prefix (inputfilename, lineno);
+	fprintf (stderr, "no such user \"%s\"\n", user);
+	endpwent ();
+	return 1;
+    }
+
+    ed.fp = NULL;
+    ed.filename = argv[2];
+    ed.nwritten = 0;
+
+    errors = iterdpy (inputfilename, lineno, 3, argc, argv, 
+		      extract_entry, NULL, (char *) &ed);
+
+    if (!ed.fp) {
+	printf ("No matches found, authority file \"%s\" not written.\n",
+		ed.filename);
+    } else {
+	printf ("%d entries written to \"%s\"\n", ed.nwritten, ed.filename);
+	if (setuid (effective_uid) != 0) {
+	    prefix (inputfilename, lineno);
+	    fprintf (stderr, "unable to set uid to root\n");
+	}
+	status = fchown (fileno(ed.fp), p->pw_uid, p->pw_gid);
+	if (setuid (real_uid) != 0) {
+	    prefix (inputfilename, lineno);
+	    fprintf (stderr, "unbale to set uid to user\n");
+	}
+	if (status != 0) {
+	    prefix (inputfilename, lineno);
+	    fprintf (stderr, "unable to change owner of auth file to \"%s\"\n",
+		     user);
+	    errors++;
+	}
+	(void) fclose (ed.fp);
+    }
+
+    endpwent ();
+    return errors;
+}
+
 
 /*
  * add displayname protocolname hexkey
@@ -1078,13 +1172,19 @@ static int do_remove (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
-    if (argc != 2 || !argv[1]) {
+    int nremoved = 0;
+    int errors;
+
+    if (argc < 2) {
 	prefix (inputfilename, lineno);
 	badcommandline (argv[0]);
 	return 1;
     }
-    /* XXX */
-    return 0;
+
+    errors = iterdpy (inputfilename, lineno, 1, argc, argv,
+		      remove_entry, NULL, (char *) &nremoved);
+    printf ("%d entries removed.\n", nremoved);
+    return errors;
 }
 
 /*
