@@ -100,6 +100,8 @@ ProcXGetDeviceMotionEvents(client)
 	    BadMatch);
 	return Success;
 	}
+    if (dev->valuator->motionHintWindow)
+	MaybeStopDeviceHint(dev, client);
     axes = v->numAxes;
     rep.repType = X_Reply;
     rep.RepType = X_GetDeviceMotionEvents;
