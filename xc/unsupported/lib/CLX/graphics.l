@@ -43,7 +43,7 @@
   (let ((display (drawable-display drawable)))
     (with-display (display)
       (force-gcontext-changes gcontext)
-      (writing-buffer-send (display)
+      (writing-buffer-send (display :length *requestsize*)
 	(let* ((last-request-byte (display-last-request display))
 	       (current-boffset buffer-boffset))
 	  ;; To append or not append, that is the question
@@ -66,7 +66,7 @@
 		;; Set new request length		
 		(card16-put 2 (index+ 1 (index-ash (index- current-boffset last-request-byte)
 						   -2)))
-		(set-buffer-offset current-boffset :sizes 16)
+		(set-buffer-offset current-boffset)
 		(put-items (0)			; Insert new point
 		  (int16 x y))
 		(setf (display-boffset display) (index+ buffer-boffset 4)))
@@ -79,10 +79,10 @@
 		(drawable drawable)
 		(gcontext gcontext)
 		(int16 x y))
-	      (incf (buffer-request-number display))
+	      (buffer-new-request-number display)
 	      (setf (buffer-last-request display) buffer-boffset)
 	      (setf (display-boffset display) (index+ buffer-boffset 16)))))))
-    (display-invoke-after-function display)))
+    (display-invoke-after-function display))) 
 
 
 (defun draw-points (drawable gcontext points &optional relative-p)
@@ -108,7 +108,7 @@
       (incf y2 y1))
     (with-display (display)
       (force-gcontext-changes gcontext)
-      (writing-buffer-send (display)
+      (writing-buffer-send (display :length *requestsize*)
 	(let* ((last-request-byte (display-last-request display))
 	       (current-boffset buffer-boffset))
 	  ;; To append or not append, that is the question
@@ -117,20 +117,20 @@
 		   ;; Same request?
 		   (= (aref-card8 buffer-bbuf last-request-byte) *x-polysegment*)
 		   (progn ;; Set buffer pointers to last request
-		     (set-buffer-offset last-request-byte :sizes (16 32))
+		     (set-buffer-offset last-request-byte)
 		     ;; same drawable and gcontext?
 		     (or (compare-request (4)
 			   (drawable drawable)
 			   (gcontext gcontext))
 			 (progn ;; If failed, reset buffer pointers
-			   (set-buffer-offset current-boffset :sizes (16 32))
+			   (set-buffer-offset current-boffset)
 			   nil))))
 	      ;; Append request
 	      (progn
 		;; Set new request length
 		(card16-put 2 (index+ 2 (index-ash (index- current-boffset last-request-byte)
 						   -2)))
-		(set-buffer-offset current-boffset :sizes 16)
+		(set-buffer-offset current-boffset)
 		(put-items (0)			; Insert new point
 		  (int16 x1 y1 x2 y2))
 		(setf (display-boffset display) (index+ buffer-boffset 8)))
@@ -142,10 +142,10 @@
 		(drawable drawable)
 		(gcontext gcontext)
 		(int16 x1 y1 x2 y2))
-	      (incf (buffer-request-number display))
+	      (buffer-new-request-number display)
 	      (setf (buffer-last-request display) buffer-boffset)
 	      (setf (display-boffset display) (index+ buffer-boffset 20)))))))
-    (display-invoke-after-function display)))
+    (display-invoke-after-function display))) 
 
 (defun draw-lines (drawable gcontext points &key relative-p fill-p (shape :complex))
   (declare (type drawable drawable)
@@ -197,7 +197,7 @@
 	(request (if fill-p *x-polyfillrectangle* *x-polyrectangle*)))
     (with-display (display)
       (force-gcontext-changes gcontext)
-      (writing-buffer-send (display)
+      (writing-buffer-send (display :length *requestsize*)
 	(let* ((last-request-byte (display-last-request display))
 	       (current-boffset buffer-boffset))
 	  ;; To append or not append, that is the question
@@ -219,7 +219,7 @@
 		;; Set new request length
 		(card16-put 2 (index+ 2 (index-ash (index- current-boffset last-request-byte)
 						   -2)))
-		(set-buffer-offset current-boffset :sizes 16)
+		(set-buffer-offset current-boffset)
 		(put-items (0)			; Insert new point
 		  (int16 x y)
 		  (card16 width height))
@@ -233,10 +233,10 @@
 		(gcontext gcontext)
 		(int16 x y)
 		(card16 width height))
-	      (incf (buffer-request-number display))
+	      (buffer-new-request-number display)
 	      (setf (buffer-last-request display) buffer-boffset)
 	      (setf (display-boffset display) (index+ buffer-boffset 20)))))))
-    (display-invoke-after-function display)))
+    (display-invoke-after-function display))) 
 
 (defun draw-rectangles (drawable gcontext rectangles &optional fill-p)
   (declare (type drawable drawable)
@@ -263,7 +263,7 @@
 	(request (if fill-p *x-polyfillarc* *x-polyarc*)))
     (with-display (display)
       (force-gcontext-changes gcontext)
-      (writing-buffer-send (display)
+      (writing-buffer-send (display :length *requestsize*)
 	(let* ((last-request-byte (display-last-request display))
 	       (current-boffset buffer-boffset))
 	  ;; To append or not append, that is the question
@@ -285,7 +285,7 @@
 		;; Set new request length		
 		(card16-put 2 (index+ 3 (index-ash (index- current-boffset last-request-byte)
 						   -2)))
-		(set-buffer-offset current-boffset :sizes 16)
+		(set-buffer-offset current-boffset)
 		(put-items (0)			; Insert new point
 		  (int16 x y)
 		  (card16 width height)
@@ -301,10 +301,10 @@
 		(int16 x y)
 		(card16 width height)
 		(angle angle1 angle2))
-	      (incf (buffer-request-number display))
+	      (buffer-new-request-number display)
 	      (setf (buffer-last-request display) buffer-boffset)
 	      (setf (display-boffset display) (index+ buffer-boffset 24)))))))
-    (display-invoke-after-function display)))
+    (display-invoke-after-function display))) 
 
 (defun draw-arcs (drawable gcontext arcs &optional fill-p)
   (declare (type drawable drawable)
@@ -328,7 +328,7 @@
 	   (do ((arc arcs))
 	       ((endp arc)
 		(setf (buffer-boffset display) buffer-boffset))
-	     (set-buffer-offset buffer-boffset :sizes (16))
+	     (set-buffer-offset buffer-boffset)
 	     (int16-put 0 (pop arc))
 	     (int16-put 2 (pop arc))
 	     (card16-put 4 (pop arc))
@@ -344,9 +344,9 @@
 	  (vector  ;; Fast loop uses AREF instead of ELT
 	   (do ((n 0 (+ n 6))
 		(length (length arcs)))
-	       ((> n length)
+	       ((>= n length)
 		(setf (buffer-boffset display) buffer-boffset))
-	     (set-buffer-offset buffer-boffset :sizes (16))
+	     (set-buffer-offset buffer-boffset)
 	     (int16-put 0 (aref arcs (+ n 0)))
 	     (int16-put 2 (aref arcs (+ n 1)))
 	     (card16-put 4 (aref arcs (+ n 2)))
@@ -417,21 +417,19 @@
 	   (type array-index start)
 	   (type pixel plane-mask)
 	   (type (member :xy-pixmap :z-pixmap) format))
-  (declare-values (sequence integer) depth visual)
-  (let ((display (drawable-display drawable))
-	seq depth visual)
-    (with-display (display)
-      (with-buffer-request (display *x-getimage* :no-after)
-	((data (member error :xy-pixmap :z-pixmap)) format)
-	(drawable drawable)
-	(int16 x y)
-	(card16 width height)
-	(card32 plane-mask))
-      (with-buffer-reply (display nil :sizes (8 32))
-	(setq depth (card8-get 1)
-	      visual (resource-id-get 8))
-	(let ((length (* 4 (card32-get 4))))
-	  (setq seq (sequence-get :result-type result-type :format card8
-				  :length length :start start :data data)))))
-    (display-invoke-after-function display)
-    (values seq depth visual)))
+  (declare (values (sequence integer) depth visual-info))
+  (let ((display (drawable-display drawable)))
+    (with-buffer-request-and-reply (display *x-getimage* nil :sizes (8 32))
+	 (((data (member error :xy-pixmap :z-pixmap)) format)
+	  (drawable drawable)
+	  (int16 x y)
+	  (card16 width height)
+	  (card32 plane-mask))
+      (let ((depth (card8-get 1))
+	    (length (* 4 (card32-get 4)))
+	    (visual (resource-id-get 8)))
+	(values (sequence-get :result-type result-type :format card8
+			      :length length :start start :data data
+			      :index *replysize*)
+		depth
+		(visual-info display visual))))))

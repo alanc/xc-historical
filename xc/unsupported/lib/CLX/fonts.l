@@ -74,28 +74,26 @@
 	     `(defun ,name (font index)
 		(declare (type font font)
 			 (type array-index index))
-		(declare-values ,type)
-		(let ((char-info-vector (font-char-infos font))
-		      (char-entry (index+ (index* 6 (index+ (font-min-char font) index))
-					  ,n)))
-		  (declare (type char-info-vec char-info-vector)
-			   (type array-index char-entry))
-		  (the ,type
-		       ,(from
-			  `(the int16
-				(if (index< char-entry (length char-info-vector))
-				    ;; Variable width font
-				    (aref char-info-vector char-entry)
+		(declare (values ,type))
+		(the ,type
+		     ,(from
+			`(the int16
+			      (let ((char-info-vector (font-char-infos font)))
+				(declare (type char-info-vec char-info-vector))
+				(if (index-zerop (length char-info-vector))
 				    ;; Fixed width font
-				    (aref (the char-info-vec (font-max-bounds font))
-					  ,n)))))))
+				    (aref (the char-info-vec (font-max-bounds font)) ,n)
+				  ;; Variable width font
+				  (aref char-info-vector
+					(index+ (index* 6 (index- index (font-min-char font)))
+						,n))))))))
 	     result)
 	   (push `(proclaim '(inline ,name)) result)
 	   (setq name (xintern 'min-char- (caar field)))
 	   (push
 	     `(defun ,name (font)
 		(declare (type font font))
-		(declare-values ,type)
+		(declare (values ,type))
 		(the ,type ,(from `(the int16
 					(aref (the char-info-vec (font-min-bounds font))
 					      ,n)))))
@@ -105,7 +103,7 @@
 	   (push
 	     `(defun ,name (font)
 		(declare (type font font))
-		(declare-values ,type)
+		(declare (values ,type))
 		(the ,type ,(from `(the int16
 					(aref (the char-info-vec (font-max-bounds font))
 					      ,n)))))
@@ -119,7 +117,8 @@
 		      fields))
        (declare ,@(mapcar #'(lambda (field) `(type ,@(reverse field))) fields))
        (let ((result (make-array ,(length fields) :element-type 'int16)))
-	 (declare-array char-info-vec result)
+	 (declare (type char-info-vec result)
+		  (array-register result))
 	 ,@(do* ((field fields (cdr field))
 		 (var (caar field) (caar field))
 		 (type (cadar field) (cadar field))
@@ -148,7 +147,7 @@
   ;; The protocol QueryFont request happens on-demand under the covers.
   (declare (type display display)
 	   (type stringable name))
-  (declare-values font)
+  (declare (values font))
   (let* ((name-string (string-downcase (string name)))
 	 (font (car (member name-string (display-font-cache display)
 			    :key 'font-name
@@ -170,7 +169,7 @@
 (defun open-font-internal (font)
   ;; Called "under the covers" to open a font object
   (declare (type font font))
-  (declare-values resource-id)
+  (declare (values resource-id))
   (let* ((name-string (font-name font))
 	 (display (font-display font))
 	 (id (allocate-resource-id display font 'font)))
@@ -194,49 +193,44 @@
 (defun query-font (font)
   ;; Internal function called by font and char info accessors
   (declare (type font font))
-  (declare-values font-info)
+  (declare (values font-info))
   (let ((display (font-display font))
 	font-id
 	font-info
 	props)
-    (with-display (display)
-      (setq font-id (font-id font)) ;; May issue an open-font request
-      (with-buffer-request (display *x-queryfont* :no-after)
-	(resource-id font-id))
-      (wait-for-reply display nil)
-      (reading-buffer-reply (display)
-	(buffer-input display buffer-bbuf *replysize* 60)
-	(let* ((min-byte2 (card16-get 40))
-	       (max-byte2 (card16-get 42))
-	       (min-byte1 (card8-get 49))
-	       (max-byte1 (card8-get 50))
-	       (min-char  min-byte2)
-	       (max-char  (+ (ash max-byte1 8) max-byte2))
-	       (nfont-props (card16-get 46))
-	       (nchar-infos (* (card32-get 56) 6))
-	       (char-info (make-array nchar-infos :element-type 'int16)))
-	  (setq font-info
-		(make-font-info
-		  :direction (member8-get 48 :left-to-right :right-to-left)
-		  :min-char min-char
-		  :max-char max-char
-		  :min-byte1 min-byte1
-		  :max-byte1 max-byte1
-		  :min-byte2 min-byte2
-		  :max-byte2 max-byte2
-		  :all-chars-exist-p (boolean-get 51)
-		  :default-char (card16-get 44)
-		  :ascent (int16-get 52)
-		  :descent (int16-get 54)
-		  :min-bounds (char-info-get 8)
-		  :max-bounds (char-info-get 24)))
-	  (setq props (sequence-get :length (* 2 nfont-props) :format int32
-				    :result-type 'list))
-	  (sequence-get :length nchar-infos :format int16 :data char-info)
-	  (setf (font-char-infos-internal font) char-info)
-	  (setf (font-font-info-internal font) font-info)
-	  )))
-    (display-invoke-after-function display)
+    (setq font-id (font-id font)) ;; May issue an open-font request
+    (with-buffer-request-and-reply (display *x-queryfont* 60)
+	 ((resource-id font-id))
+      (let* ((min-byte2 (card16-get 40))
+	     (max-byte2 (card16-get 42))
+	     (min-byte1 (card8-get 49))
+	     (max-byte1 (card8-get 50))
+	     (min-char  min-byte2)
+	     (max-char  (index+ (index-ash max-byte1 8) max-byte2))
+	     (nfont-props (card16-get 46))
+	     (nchar-infos (index* (card32-get 56) 6))
+	     (char-info (make-array nchar-infos :element-type 'int16)))
+	(setq font-info
+	      (make-font-info
+		:direction (member8-get 48 :left-to-right :right-to-left)
+		:min-char min-char
+		:max-char max-char
+		:min-byte1 min-byte1
+		:max-byte1 max-byte1
+		:min-byte2 min-byte2
+		:max-byte2 max-byte2
+		:all-chars-exist-p (boolean-get 51)
+		:default-char (card16-get 44)
+		:ascent (int16-get 52)
+		:descent (int16-get 54)
+		:min-bounds (char-info-get 8)
+		:max-bounds (char-info-get 24)))
+	(setq props (sequence-get :length (index* 2 nfont-props) :format int32
+				  :result-type 'list :index 60))
+	(sequence-get :length nchar-infos :format int16 :data char-info
+		      :index (index+ 60 (index* 2 nfont-props 4)))
+	(setf (font-char-infos-internal font) char-info)
+	(setf (font-font-info-internal font) font-info)))
     ;; Replace atom id's with keywords in the plist
     (do ((p props (cddr p)))
 	((endp p))
@@ -264,19 +258,14 @@
 	   (type string pattern)
 	   (type card16 max-fonts)
 	   (type t result-type)) ;; CL type
-  (declare-values (sequence string))
-  (let ((string (string pattern))
-	result)
-    (with-display (display)
-      (with-buffer-request (display *x-listfonts* :no-after)
-	(card16 max-fonts (length string))
-	(string string))
-      (reading-buffer-reply (display :sizes 16)
-	(let ((length (- (wait-for-reply display nil) *replysize*))
-	      (nfonts (card16-get 8)))
-	  (setq result (read-sequence-string display length nfonts result-type)))))
-    (display-invoke-after-function display)
-    result))
+  (declare (values (sequence string)))
+  (let ((string (string pattern)))
+    (with-buffer-request-and-reply (display *x-listfonts* size :sizes (8 16))
+	 ((card16 max-fonts (length string))
+	  (string string))
+      (values
+	(read-sequence-string
+	  buffer-bbuf (index- size *replysize*) (card16-get 8) result-type *replysize*)))))
 
 (defun list-fonts (display pattern &key (max-fonts 65535) (result-type 'list))
   ;; Note: Was called list-fonts-with-info.
@@ -289,53 +278,49 @@
 	   (type string pattern)
 	   (type card16 max-fonts)
 	   (type t result-type)) ;; CL type
-  (declare-values (sequence font))
+  (declare (values (sequence font)))
   (let ((string (string pattern))
 	(result nil))
-    (with-display (display)
-      (with-buffer-request (display *x-listfontswithinfo* :no-after)
-	(card16 max-fonts (length string))
-	(string string))
-      (loop
-	;; The font info's come in seperate reply packets
-	(wait-for-reply display nil)
-	(reading-buffer-reply (display)
-	  (buffer-input display buffer-bbuf *replysize* 60)
-	  (when (zerop (card8-get 1))
-	    (return))
-	  (let* ((name-len (card8-get 1))
-		 (min-byte2 (card16-get 40))
-		 (max-byte2 (card16-get 42))
-		 (min-byte1 (card8-get 49))
-		 (max-byte1 (card8-get 50))
-		 (min-char  min-byte2)
-		 (max-char  (+ (ash max-byte1 8) max-byte2))
-		 (nfont-props (card16-get 46))
-		 (font
-		   (make-font
-		     :display display
-		     :name nil
-		     :font-info-internal
-		     (make-font-info
-		       :direction (member8-get 48 :left-to-right :right-to-left)
-		       :min-char min-char
-		       :max-char max-char
-		       :min-byte1 min-byte1
-		       :max-byte1 max-byte1
-		       :min-byte2 min-byte2
-		       :max-byte2 max-byte2
-		       :all-chars-exist-p (boolean-get 51)
-		       :default-char (card16-get 44)
-		       :ascent (int16-get 52)
-		       :descent (int16-get 54)
-		       :min-bounds (char-info-get 8)
-		       :max-bounds (char-info-get 24)
-		       :properties (sequence-get :length (* 2 nfont-props)
-						 :format int32
-						 :result-type 'list)))))
-	    (setf (font-name font) (string-get name-len))
-	    (push font result)))))
-    (display-invoke-after-function display)
+    (with-buffer-request-and-reply (display *x-listfontswithinfo* 60
+					    :sizes (8 16) :multiple-reply t)
+	 ((card16 max-fonts (length string))
+	  (string string))
+      (cond ((zerop (card8-get 1)) t)
+	    (t
+	(let* ((name-len (card8-get 1))
+	       (min-byte2 (card16-get 40))
+	       (max-byte2 (card16-get 42))
+	       (min-byte1 (card8-get 49))
+	       (max-byte1 (card8-get 50))
+	       (min-char  min-byte2)
+	       (max-char  (index+ (index-ash max-byte1 8) max-byte2))
+	       (nfont-props (card16-get 46))
+	       (font
+		 (make-font
+		   :display display
+		   :name nil
+		   :font-info-internal
+		   (make-font-info
+		     :direction (member8-get 48 :left-to-right :right-to-left)
+		     :min-char min-char
+		     :max-char max-char
+		     :min-byte1 min-byte1
+		     :max-byte1 max-byte1
+		     :min-byte2 min-byte2
+		     :max-byte2 max-byte2
+		     :all-chars-exist-p (boolean-get 51)
+		     :default-char (card16-get 44)
+		     :ascent (int16-get 52)
+		     :descent (int16-get 54)
+		     :min-bounds (char-info-get 8)
+		     :max-bounds (char-info-get 24)
+		     :properties (sequence-get :length (index* 2 nfont-props)
+					       :format int32
+					       :result-type 'list
+					       :index 60)))))
+	  (setf (font-name font) (string-get name-len (index+ 60 (index* 2 nfont-props 4))))
+	  (push font result))
+	nil)))
     ;; Replace atom id's with keywords in the plist
     (dolist (font result)
       (do ((p (font-properties font) (cddr p)))
@@ -343,83 +328,15 @@
 	(setf (car p) (lookup-xatom display (car p)))))
     (coerce (nreverse result) result-type)))
 
-#+comment ;beta protocol
-(defun list-fonts (display pattern &key (max-fonts 65535) (result-type 'list))
-  ;; Note: Was called list-fonts-with-info.
-  ;; Returns "pseudo" fonts that contain basic font metrics and properties, but
-  ;; no per-character metrics and no resource-ids.  These pseudo fonts will be
-  ;; converted (internally) to real fonts dynamically as needed, by issuing an
-  ;; OpenFont request.  However, the OpenFont might fail, in which case the
-  ;; invalid-font error can arise.
-  (declare (type display display)
-	   (type string pattern)
-	   (type card16 max-fonts)
-	   (type t result-type)) ;; CL type
-  (declare-values (sequence font))
-  (let ((string (string pattern))
-	result)
-    (with-display (display)
-      (with-buffer-request (display *x-listfontswithinfo* :no-after)
-	(card16 max-fonts (length string))
-	(string string))
-      (reading-buffer-reply (display :sizes (8 16))
-	(let ((length (- (wait-for-reply display nil) *replysize*))
-	      (nfonts (card16-get 8)))
-	  (setq result (read-sequence-string display length nfonts result-type))
-	  ;; The font info's come in seperate reply packets
-	  (dotimes (i nfonts)
-	    (buffer-input display buffer-bbuf 8 60)
-	    (let* ((min-byte2 (card16-get 40))
-		   (max-byte2 (card16-get 42))
-		   (min-byte1 (card8-get 49))
-		   (max-byte1 (card8-get 50))
-		   (min-char  min-byte2)
-		   (max-char  (+ (ash max-byte1 8) max-byte2))
-		   (nfont-props (card16-get 46))
-		   (font
-		     (make-font
-		       :display display
-		       :name (elt result i)
-		       :font-info-internal
-		       (make-font-info
-			 :direction (member8-get 48 :left-to-right :right-to-left)
-			 :min-char min-char
-			 :max-char max-char
-			 :min-byte1 min-byte1
-			 :max-byte1 max-byte1
-			 :min-byte2 min-byte2
-			 :max-byte2 max-byte2
-			 :all-chars-exist-p (boolean-get 51)
-			 :default-char (card16-get 44)
-			 :ascent (int16-get 52)
-			 :descent (int16-get 54)
-			 :min-bounds (char-info-get 8)
-			 :max-bounds (char-info-get 24)
-			 :properties (sequence-get :length (* 2 nfont-props)
-						   :format int32
-						   :result-type 'list)))))
-	      (setf (elt result i) font))))))
-      (display-invoke-after-function display)
-      ;; Replace atom id's with keywords in the plist
-      (dotimes (i (length result))
-	(do ((p (font-properties (elt result i)) (cddr p)))
-	    ((endp p))
-	  (setf (car p) (lookup-xatom display (car p)))))
-      result))
-
 (defun font-path (display &key (result-type 'list))
   (declare (type display display)
 	   (type t result-type)) ;; CL type
-  (declare-values (sequence (or string pathname)))
-  (let (result)
-    (with-display (display)
-      (with-buffer-request (display *x-getfontpath* :no-after))
-      (reading-buffer-reply (display :sizes 16)
-	(let ((length (- (wait-for-reply display nil) *replysize*))
-	      (nfonts (card16-get 8)))
-	  (setq result (read-sequence-string display length nfonts result-type)))))
-    (display-invoke-after-function display)
-    result))
+  (declare (values (sequence (or string pathname))))
+  (with-buffer-request-and-reply (display *x-getfontpath* size :sizes (8 16))
+       ()
+    (values
+      (read-sequence-string
+	buffer-bbuf (index- size *replysize*) (card16-get 8) result-type *replysize*))))
 
 (defun set-font-path (display paths)
   (declare (type display display)

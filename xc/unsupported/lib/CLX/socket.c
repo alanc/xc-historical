@@ -20,6 +20,9 @@
 #include <netinet/tcp.h>
 #endif
 
+extern int errno;		/* Certain (broken) OS's don't have this */
+				/* decl in errno.h */
+
 #ifdef UNIXCONN
 #include <sys/un.h>
 #ifndef X_UNIX_PATH
@@ -108,10 +111,17 @@ int connect_to_server (host, display)
       }
 #endif
     }
-    if (connect(fd, addr, addrlen) == -1) 
-      {
-	(void) close (fd);
-	return(-1); 	    /* errno set by system call. */
+
+    /*
+     * Changed 9/89 to retry connection if system call was interrupted.  This
+     * is necessary for multiprocessing implementations that use timers,
+     * since the timer results in a SIGALRM.	-- jdi
+     */
+    while (connect(fd, addr, addrlen) == -1) {
+	if (errno != EINTR) {
+  	    (void) close (fd);
+  	    return(-1); 	    /* errno set by system call. */
+	}
       }
   }
   /*

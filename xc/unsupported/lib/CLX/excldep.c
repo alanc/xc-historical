@@ -2,6 +2,13 @@
  * Allegro CL dependent C helper routines for CLX
  */
 
+/*
+ * This code requires select.  This means you probably need BSD, or a version
+ * of Unix with select and interval timers added.
+ * I only select on 32 file descriptors, so if your fd is higher than that you
+ * lose.
+ */
+
 #include <sys/types.h>
 #include <sys/errno.h>
 #include <sys/time.h>
@@ -16,141 +23,102 @@
 
 extern int errno;
 
+static struct timeval zerotimeout = {0, 0};
 
-int c_howmany_bytes(fd)
-    int fd;
+
+/*
+ * Slightly misnamed for backwards compatibility.  This function returns 0
+ * on interrupt or if there are no bytes available, ERROR on error, and 1
+ * if bytes are available.  (Note 1 is also returned if the socket becomes
+ * disconnected.  Thus it is up to the read to detect the eof)
+ */
+static int c_howmany_bytes(fd)
+    register int fd;
 {
-    int numavail;
+    register int i;
+    int readfds = 1 << fd;
 
-    if (ioctl(fd, FIONREAD, (char *)&numavail) < 0) {
+    i = select(32, &readfds, (int *)0, (int *)0, &zerotimeout);
+    if (i < 0)
+      /* error condition */
+      if (errno == EINTR)
+	return (0);
+      else
 	return (ERROR);
-    }
-
-    return (numavail);
+    return (i);
 }
 
-	   
+
 /*
- * Tries to read length characters into array at position start.  Note that
- * this function never blocks.  Return ERROR on eof or error.
+ * Tries to read length characters into array at position start.  This function
+ * will either 1: return 0 if there are no characters available on the socket
+ *	       2: return ERROR on eof or error
+ *	       3: succeed in reading all length bytes and return length
+ *
+ * Note that this implicitly assumes there will be enough bytes available if
+ * there are any bytes available.  This is safe (ie: won't block) unless CLX
+ * gets out of sync.
  */
 int c_read_bytes(fd, array, start, length)
     register int fd, start, length;
     register unsigned char *array;
 
 {
-    register int numread, numavail, totread = 0;
+    register int numread, avail, totread;
 
-    numavail = c_howmany_bytes(fd);
+    totread = length;
 
-    if (numavail <= 0) {
-	return (numavail);
+    avail = c_howmany_bytes(fd);
+
+    if (avail <= 0) {
+	return (avail);
     } else {
-	while (numavail > 0) {
-	    numread = read(fd, (char *)&array[start], min(numavail, length));
+	while (length > 0) {
+	    numread = read(fd, (char *)&array[start], length);
 	    if (numread <= 0) {
-	return (ERROR);
+		return (ERROR);
 	    } else {
-		totread += numread;
 		length -= numread;
 		start += numread;
 	    }
-	    if (length == 0) {
-		return (totread);
-	    } else {
-		numavail = c_howmany_bytes(fd);
-	    }
-}
+	}
     }
     return (totread);
 }
 
 
 /*
- * This is somewhat gross.  When the scheduler is not running we must provide
- * a way for the user to interrupt the read from the X socket from lisp.  So
- * we provide a separate reading function.  Don't return until the
- * full number of bytes have been read.
+ * When the scheduler is not running we must provide a way for the user
+ * to interrupt the read from the X socket.  So we provide a separate
+ * reading function, which returns INTERRUPT if it was interrupted.
  */
 int c_read_bytes_interruptible(fd, array, start, length)
-    int fd, start, length;
-    unsigned char *array;
+    register int fd, start, length;
+    register unsigned char *array;
 
 {
-    int numwanted, i, readfds, numread;
+    register int i, numread, totread;
+    int readfds;
 
+    totread = length;
     readfds = 1 << fd;
 
-    while (length > 0) {
     i = select(32, &readfds, (int *)0, (int *)0, (struct timeval *)0);
     if (i < 0)
-	/* error condition */
-	if (errno == EINTR)
-	    return (INTERRUPT);
-	else
-	    return (ERROR);
-
-	numread = read(fd, (char *)&array[start], length);
-	if (numread <= 0)
+      /* error condition */
+      if (errno == EINTR)
+	return (INTERRUPT);
+      else
 	return (ERROR);
-	else {
+
+    while (length > 0) {
+	numread = read(fd, (char *)&array[start], length);
+	if (numread <= 0) {
+	    return (ERROR);
+	} else {
 	    length -= numread;
 	    start += numread;
 	}
     }
-    return (0);
-}
-
-
-
-#define OBSIZE 4096	/* X output buffer size */
-
-static unsigned char output_buffer[OBSIZE];
-static int obcount = 0;
-
-
-/*
- * The inverse of above, which is simpler because there's no timeout. 
- * Don't need to block SIGIO's here, since the write either happens or it
- * fails, it doesn't block.
- */
-int c_write_bytes(fd, array, start, end)
-    int fd, start, end;
-    unsigned char *array;
-{
-    int numwanted, i;
-    void bcopy();
-
-    numwanted = end - start;
-
-    if (numwanted + obcount > OBSIZE)
-	/* too much stuff -- we gotta flush. */
-	if ((i = c_flush_bytes(fd)) < 0)
-	    return (i);
-
-    /* everything's cool, just bcopy */
-    bcopy((char *)&array[start], (char *)&output_buffer[obcount],
-	  numwanted);
-    obcount += numwanted;
-
-    return (numwanted);
-}
-
-
-int c_flush_bytes(fd)
-    int fd;
-{
-    int i = 0, j = 0;
-
-    while (obcount > 0) {
-	i = write(fd, (char *)(&output_buffer[j]), obcount);
-	if (i > 0) {
-	    obcount -= i;
-	    j += i;
-	}
-	else
-	    return (ERROR);
-    }
-
-    return (i);
+    return (totread);
 }

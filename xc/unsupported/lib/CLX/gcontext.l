@@ -140,32 +140,39 @@
 ;; Gcontext state Resource
 (defvar *gcontext-local-state-cache* nil) ;; List of unused gcontext local states
 
+(defmacro gcontext-state-next (state)
+  `(svref ,state 0))
+
 (defun allocate-gcontext-state ()
   ;; Allocate a gcontext-state
   ;; Loop until a local state is found that's large enough to hold
   ;; any extensions that may exist.
-  (do ((length (+ *gcontext-data-length* (length *gcontext-extensions*)))
-       (state (atomic-pop *gcontext-local-state-cache*)
-	      (atomic-pop *gcontext-local-state-cache*)))
-      ((or (null state) (>= (length state) length))
-       (if state
-	   (progn
-	     (fill (the gcontext-state state) nil)
-	     state)
-	 (make-array length :initial-element nil)))))
+  (let ((length (index+ *gcontext-data-length* (length *gcontext-extensions*))))
+    (declare (type array-index length))
+    (loop
+      (let ((state (or (threaded-atomic-pop *gcontext-local-state-cache*
+					    gcontext-state-next gcontext-state)
+		       (make-array length :initial-element nil))))
+	(declare (type gcontext-state state))
+	(when (index>= (length state) length)
+	  (return state))))))
 
 (defun deallocate-gcontext-state (state)
-  (atomic-push state *gcontext-local-state-cache*))
+  (declare (type gcontext-state state))
+  (fill state nil)
+  (threaded-atomic-push state *gcontext-local-state-cache*
+			gcontext-state-next gcontext-state))
 
 ;; Temp-Gcontext Resource
 (defvar *temp-gcontext-cache* nil) ;; List of unused gcontexts
 
 (defun allocate-temp-gcontext ()
-  (or (atomic-pop *temp-gcontext-cache*)
+  (or (threaded-atomic-pop *temp-gcontext-cache* gcontext-next gcontext)
       (make-gcontext :local-state '#() :server-state '#())))
 
 (defun deallocate-temp-gcontext (gc)
-  (atomic-push gc *temp-gcontext-cache*))
+  (declare (type gcontext gc))
+  (threaded-atomic-push gc *temp-gcontext-cache* gcontext-next gcontext))
 
 ;; For each argument to create-gcontext (except clip-mask and clip-ordering) declared
 ;; as (type <type> <name>), there is an accessor:
@@ -183,8 +190,6 @@
 ;  )
 
 ;; Generate all the accessors and defsetf's for GContext
-
-(eval-when (eval compile)  ;; I'd rather use macrolet, but Symbolics doesn't like it...
 
 (defmacro xgcmask->gcmask (mask)
   `(the gcmask (logand ,mask #.(1- (ash 1 *gcontext-fast-change-length*)))))
@@ -210,7 +215,7 @@
 
        (defun ,gcontext-name (gcontext)
 	 (declare (type gcontext gcontext))
-	 (declare-values (or null ,type))
+	 (declare (values (or null ,type)))
 	 (compiler-let ((*buffer* '(gcontext-display gcontext)))
 	   (let ((value (,internal-accessor (gcontext-local-state gcontext))))
 	     (declare (type (or null card32) value))
@@ -244,8 +249,6 @@
 		     (the fixnum (1+ ,ts))))
        (setf (gcontext-internal-timestamp ,state) ,ts))))
 
-) ;; End eval-when
-
 (def-gc-accessor function boole-constant)
 (def-gc-accessor plane-mask card32)
 (def-gc-accessor foreground card32)
@@ -273,8 +276,8 @@
 
 (defun gcontext-clip-mask (gcontext)
   (declare (type gcontext gcontext))
-  (declare-values (or null (member :none) pixmap rect-seq)
-		  (or null (member :unsorted :y-sorted :yx-sorted :yx-banded)))
+  (declare (values (or null (member :none) pixmap rect-seq)
+		  (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))))
   (access-gcontext (gcontext local-state)
     (compiler-let ((*buffer* '(gcontext-display gcontext)))
       (let ((clip (gcontext-internal-clip local-state)))
@@ -315,7 +318,7 @@
 
 (defun gcontext-dashes (gcontext)
   (declare (type gcontext gcontext))
-  (declare-values (or null card8 sequence))
+  (declare (values (or null card8 sequence)))
   (access-gcontext (gcontext local-state)
     (let ((dash (gcontext-internal-dash local-state)))
       (or (first dash) (second dash)))))
@@ -344,7 +347,7 @@
   ;; result in an invalid-font error.
   (declare (type gcontext gcontext)
 	   (type boolean metrics-p))
-  (declare-values (or null font))
+  (declare (values (or null font)))
   (access-gcontext (gcontext local-state)
     (let ((font (gcontext-internal-font-obj local-state)))
       (or font
@@ -365,108 +368,122 @@
 	(setf (gcontext-internal-font-obj local-state) font-object)
 	font)))
 
-(defun force-gcontext-changes (gcontext)
+(defun force-gcontext-changes-internal (gcontext)
   ;; Force any delayed changes.
   (declare (type gcontext gcontext))
   (let ((display (gcontext-display gcontext))
 	(server-state (gcontext-server-state gcontext))
 	(local-state (gcontext-local-state gcontext))
 	local-clip local-dash)
-    (declare-array gcontext-state server-state local-state)
-      ;; Update server when timestamps don't match
+    (declare (type display display)
+	     (type gcontext-state server-state local-state))
+    ;; Update server when timestamps don't match
+    (unless (= (the fixnum (gcontext-internal-timestamp local-state))
+	       (the fixnum (gcontext-internal-timestamp server-state)))
+      ;; first unpack a few things
+      (setq local-clip (gcontext-internal-clip local-state))
+      (if (setf (gcontext-internal-clip-mask local-state) (second local-clip))
+	  (setf (gcontext-internal-clip server-state) local-clip)
+	(setf (gcontext-internal-clip-mask server-state) nil))
+      (setq local-dash (gcontext-internal-dash local-state))
+      (if (setf (gcontext-internal-dashes local-state) (first local-dash))
+	  (setf (gcontext-internal-dash server-state) local-dash)
+	(setf (gcontext-internal-dashes server-state) nil))
+      (let ((local-font (gcontext-internal-font-obj local-state)))
+	(if local-font
+	    (progn
+	      (setf (gcontext-internal-font local-state) (font-id local-font))
+	      (setf (gcontext-internal-font-obj server-state) local-font))
+	  (setf (gcontext-internal-font server-state) nil)))
+	  
+      ;; Because there is no locking on the local state we have to
+      ;; assume that state will change and set timestamps up front,
+      ;; otherwise by the time we figured out there were no changes
+      ;; and tried to store the server stamp as the local stamp, the
+      ;; local stamp might have since been modified.
+      (setf (gcontext-internal-timestamp local-state)
+	    (incf-internal-timestamp server-state))
+
+      (block no-changes
+	(let ((last-request (buffer-last-request display)))
+	  (with-buffer-request (display *x-changegc*)
+	    (gcontext gcontext)
+	    (progn
+	      (do ((i 0 (index+ i 1))
+		   (bit 1 (the xgcmask (ash bit 1)))
+		   (nbyte 12)
+		   (mask 0)
+		   (local 0))
+		  ((index>= i *gcontext-fast-change-length*)
+		   (when (zerop mask)
+		     ;; If nothing changed, restore last-request and quit
+		     (setf (buffer-last-request display)
+			   (if (zerop (buffer-last-request display))
+			       nil
+			     last-request))
+		     (return-from no-changes nil))
+		   (card29-put 8 mask)
+		   (card16-put 2 (index-ash nbyte -2))
+		   (index-incf (buffer-boffset display) nbyte))
+		(declare (type array-index i nbyte)
+			 (type xgcmask bit)
+			 (type gcmask mask)
+			 (type (or null card32) local))
+		(unless (eql (the (or null card32) (svref server-state i))
+			     (setq local (the (or null card32) (svref local-state i))))
+		  (setf (svref server-state i) local)
+		  (card32-put nbyte local)
+		  (setq mask (the gcmask (logior mask bit)))
+		  (index-incf nbyte 4)))))))
+
+      ;; Update GContext extensions
+      (do ((extension *gcontext-extensions* (cdr extension))
+	   (i *gcontext-data-length* (index+ i 1))
+	   (local))
+	  ((endp extension))
+	(unless (eql (svref server-state i)
+		     (setq local (svref local-state i)))
+	  (funcall (gcontext-extension-set-function (car extension))
+		   gcontext local)
+	  (setf (svref server-state i) local)))
+
+      ;; Update clipping rectangles
+      (unless (equalp (third local-clip)
+		      (third (gcontext-internal-clip server-state)))
+	(setf (gcontext-internal-clip server-state) local-clip)
+	(with-buffer-request (display *x-setcliprectangles*)
+	  (data (first local-clip))
+	  (gcontext gcontext)
+	  ;; XXX treat nil correctly
+	  (card16 (or (gcontext-internal-clip-x local-state) 0)
+		  (or (gcontext-internal-clip-y local-state) 0))
+	  ;; XXX this has both int16 and card16 values
+	  ((sequence :format int16) (third local-clip))))
+
+      ;; Update dashes
+      (unless (equalp (second local-dash)
+		      (second (gcontext-internal-dash server-state)))
+	(setf (gcontext-internal-dash server-state) local-dash)
+	(with-buffer-request (display *x-setdashes*)
+	  (gcontext gcontext)
+	  ;; XXX treat nil correctly
+	  (card16 (or (gcontext-internal-dash-offset local-state) 0)
+		  (length (second local-dash)))
+	  ((sequence :format card8) (second local-dash))))))) 
+
+(defun force-gcontext-changes (gcontext)
+  ;; Force any delayed changes.
+  (declare (type gcontext gcontext))
+  (let ((display (gcontext-display gcontext))
+	(server-state (gcontext-server-state gcontext))
+	(local-state (gcontext-local-state gcontext)))
+    (declare (type gcontext-state server-state local-state)
+	     (array-register server-state local-state))
+    ;; Update server when timestamps don't match
     (unless (= (the fixnum (gcontext-internal-timestamp local-state))
 	       (the fixnum (gcontext-internal-timestamp server-state)))
       (with-display (display)
-	;; first unpack a few things
-	(setq local-clip (gcontext-internal-clip local-state))
-	(if (setf (gcontext-internal-clip-mask local-state) (second local-clip))
-	    (setf (gcontext-internal-clip server-state) local-clip)
-	    (setf (gcontext-internal-clip-mask server-state) nil))
-	(setq local-dash (gcontext-internal-dash local-state))
-	(if (setf (gcontext-internal-dashes local-state) (first local-dash))
-	    (setf (gcontext-internal-dash server-state) local-dash)
-	    (setf (gcontext-internal-dashes server-state) nil))
-	(let ((local-font (gcontext-internal-font-obj local-state)))
-	  (if local-font
-	      (progn
-		(setf (gcontext-internal-font local-state) (font-id local-font))
-		(setf (gcontext-internal-font-obj server-state) local-font))
-	      (setf (gcontext-internal-font server-state) nil)))
-	  
-	;; Because there is no locking on the local state we have to
-	;; assume that state will change and set timestamps up front,
-	;; otherwise by the time we figured out there were no changes
-	;; and tried to store the server stamp as the local stamp, the
-	;; local stamp might have since been modified.
-	(setf (gcontext-internal-timestamp local-state)
-	      (incf-internal-timestamp server-state))
-
-	(block no-changes
-	  (let ((last-request (buffer-last-request display)))
-	    (with-buffer-request (display *x-changegc*)
-	      (gcontext gcontext)
-	      (progn
-		(do ((i 0 (index+ i 1))
-		     (bit 1 (the xgcmask (ash bit 1)))
-		     (nbyte 12)
-		     (mask 0)
-		     (local 0))
-		    ((index>= i *gcontext-fast-change-length*)
-		     (when (zerop mask)
-		       ;; If nothing changed, restore last-request and quit
-		       (setf (buffer-last-request display)
-			     (if (zerop (buffer-last-request display))
-				 nil
-			       last-request))
-		       (return-from no-changes nil))
-		     (card29-put 8 mask)
-		     (card16-put 2 (index-ash nbyte -2))
-		     (index-incf (buffer-boffset display) nbyte))
-		  (declare (type array-index i nbyte)
-			   (type xgcmask bit)
-			   (type gcmask mask)
-			   (type (or null card32) local))
-		  (unless (eql (the (or null card32) (svref server-state i))
-			       (setq local (the (or null card32) (svref local-state i))))
-		    (setf (svref server-state i) local)
-		    (card32-put nbyte local)
-		    (setq mask (the gcmask (logior mask bit)))
-		    (index-incf nbyte 4)))))))
-
-	;; Update GContext extensions
-	(do ((extension *gcontext-extensions* (cdr extension))
-	     (i *gcontext-data-length* (index+ i 1))
-	     (local))
-	    ((endp extension))
-	  (unless (eql (svref server-state i)
-		       (setq local (svref local-state i)))
-	    (funcall (gcontext-extension-set-function (car extension))
-		     gcontext local)
-	    (setf (svref server-state i) local)))
-
-	;; Update clipping rectangles
-	(unless (equalp (third local-clip)
-			(third (gcontext-internal-clip server-state)))
-	  (setf (gcontext-internal-clip server-state) local-clip)
-	  (with-buffer-request (display *x-setcliprectangles*)
-	    (data (first local-clip))
-	    (gcontext gcontext)
-	    ;; XXX treat nil correctly
-	    (card16 (or (gcontext-internal-clip-x local-state) 0)
-		    (or (gcontext-internal-clip-y local-state) 0))
-	    ;; XXX this has both int16 and card16 values
-	    ((sequence :format int16) (third local-clip))))
-
-	;; Update dashes
-	(unless (equalp (second local-dash)
-			(second (gcontext-internal-dash server-state)))
-	  (setf (gcontext-internal-dash server-state) local-dash)
-	  (with-buffer-request (display *x-setdashes*)
-	    (gcontext gcontext)
-	    ;; XXX treat nil correctly
-	    (card16 (or (gcontext-internal-dash-offset local-state) 0)
-		    (length (second local-dash)))
-	    ((sequence :format card8) (second local-dash))))))))
+	(force-gcontext-changes-internal gcontext)))))
 
 ;;; WARNING: WITH-GCONTEXT WORKS MUCH MORE EFFICIENTLY WHEN THE OPTIONS BEING "BOUND" ARE
 ;;;	     SET IN THE GCONTEXT ON ENTRY.  BECAUSE THERE'S NO WAY TO GET THE VALUE OF AN
@@ -485,14 +502,14 @@
   ;; save/restore by creating a temporary gcontext and doing
   ;; copy-gcontext-components to and from it.
 
-  (declare-arglist (gcontext &rest options &key
+  (declare (arglist (gcontext &rest options &key
 			     function plane-mask foreground background
 			     line-width line-style cap-style join-style
 			     fill-style fill-rule arc-mode tile stipple ts-x
 			     ts-y font subwindow-mode exposures clip-x clip-y
 			     clip-mask clip-ordering dash-offset dashes
 			     &allow-other-keys)
-		   &body body)
+		   &body body))
   (remf options :clip-ordering)
 
   (let ((gc (gensym))
@@ -543,11 +560,12 @@
 (defun copy-gcontext-local-state (gcontext indexes &rest extension-indices)
   ;; Called from WITH-GCONTEXT to save the fields in GCONTEXT indicated by MASK
   (declare (type gcontext gcontext)
-	   (type list indexes))
+	   (type list indexes)
+	   (dynamic-extent extension-indices))
   (let ((local-state (gcontext-local-state gcontext))
 	(saved-state (allocate-gcontext-state))
 	(cache-p (gcontext-cache-p gcontext)))
-    (declare-array gcontext-state local-state saved-state)
+    (declare (type gcontext-state local-state saved-state))
     (setf (gcontext-internal-timestamp saved-state) 1)
     (let ((temp-gc nil)
 	  (temp-mask 0)
@@ -597,9 +615,9 @@
 		(let ((copy-function (gcontext-extension-copy-function
 				       (elt *gcontext-extensions* i))))
 		  (funcall copy-function gcontext temp-gc
-			   (svref local-state (+ i *gcontext-data-length*))))))
+			   (svref local-state (index+ i *gcontext-data-length*))))))
 	    )))
-      (values gcontext saved-state (logior temp-mask extension-mask) temp-gc))))
+      (values gcontext saved-state (logior temp-mask extension-mask) temp-gc)))) 
 
 (defun restore-gcontext-temp-state (gcontext temp-mask temp-gc)
   (declare (type gcontext gcontext temp-gc)
@@ -673,8 +691,9 @@
 	   (type (or null (member :none) pixmap rect-seq) clip-mask)
 	   (type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded)) clip-ordering)
 	   (type (or null card8 sequence) dashes)
+	   (dynamic-extent options)
 	   (type boolean cache-p))
-  (declare-values gcontext)
+  (declare (values gcontext))
   (let* ((display (drawable-display drawable))
 	 (gcontext (make-gcontext :display display :drawable drawable :cache-p cache-p))
 	 (local-state (gcontext-local-state gcontext))
@@ -682,8 +701,8 @@
 	 (gcontextid (allocate-resource-id display gcontext 'gcontext)))
     (declare (type display display)
 	     (type gcontext gcontext)
-	     (type resource-id gcontextid))
-    (declare-array gcontext-state local-state server-state)
+	     (type resource-id gcontextid)
+	     (type gcontext-state local-state server-state))
     (setf (gcontext-id gcontext) gcontextid)
 
     (unless function (setf (gcontext-function gcontext) boole-1))
@@ -777,6 +796,8 @@
     (do ((extensions *gcontext-extensions* (cdr extensions))
 	 (i *gcontext-data-length* (index+ i 1)))
 	((endp extensions))
+      (declare (type list extensions)
+	       (type array-index i))
       (setf (svref server-state i)
 	    (setf (svref local-state i)
 		  (gcontext-extension-default (car extensions)))))
@@ -786,6 +807,7 @@
 	  (option (car option-list) (car option-list))
 	  (extension))
 	 ((endp option-list))
+      (declare (type list option-list))
       (cond ((getf *gcontext-indexes* option))	; Gcontext field
 	    ((member option '(:drawable :clip-ordering :cache-p)))	; Optional parameter
 	    ((setq extension (find option *gcontext-extensions*
@@ -793,11 +815,11 @@
 	     (funcall (gcontext-extension-set-function extension)
 		      gcontext (second option-list)))
 	    (t (x-type-error option 'gcontext-key))))
-    gcontext))
+    gcontext)) 
 
 (defun copy-gcontext-components (src dst &rest keys)
   (declare (type gcontext src dst)
-	   (type list keys)) ;; list of GContext-key
+	   (dynamic-extent keys))
   ;; you might ask why this isn't just a bunch of
   ;;   (setf (gcontext-<mumble> dst) (gcontext-<mumble> src))
   ;; the answer is that you can do that yourself if you want, what we are
@@ -823,7 +845,7 @@
 		(if extension
 		    (funcall (gcontext-extension-copy-function extension)
 			     src dst (svref (gcontext-local-state src)
-					    (+ index *gcontext-data-length*)))
+					    (index+ index *gcontext-data-length*)))
 		  (x-type-error key 'gcontext-key))))))
 	
 	(when (plusp mask)

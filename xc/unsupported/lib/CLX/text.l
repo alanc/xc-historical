@@ -49,6 +49,8 @@
 ;; returned.
 
 (deftype translation-function ()
+  #+explorer t
+  #-explorer
   '(function (sequence array-index array-index (or null font) vector array-index)
 	     (values array-index (or null int16 font) (or null int32))))
 
@@ -84,7 +86,7 @@
 	   (type (or null font) font)
 	   (type vector dst)
 	   (inline graphic-char-p))
-  (declare-values integer (or null integer font) (or null integer))
+  (declare (values integer (or null integer font) (or null integer)))
   font ;;not used
   (if (stringp src)
       (do ((i src-start (index+ i 1))
@@ -124,11 +126,12 @@
   ;; maximums.  If multiple directions are involved, the direction will be nil.
   ;; Translate will always be called with a 16-bit dst buffer.
   (declare (type sequence sequence)
-	   (type (or null font gcontext) font)
-	   (type (or null translation-function) translate)) ;; Defaults to #'translate-default
-  (declare-values width ascent descent left right
+	   (type (or null font gcontext) font))
+  (declare (type (or null translation-function) translate)
+	   (downward-funarg #+Genera * #-Genera translate))
+  (declare (values width ascent descent left right
 		  font-ascent font-descent direction
-		  (or null array-index))
+		  (or null array-index)))
   (when (type? font 'gcontext)
     (force-gcontext-changes font)
     (setq font (gcontext-font font t)))
@@ -224,9 +227,10 @@
   (declare (type sequence sequence)
 	   (type (or null font gcontext) font)
 	   (type array-index start)
-	   (type (or null array-index) end)
-	   (type (or null translation-function) translate)) ;; Defaults to #'translate-default
-  (declare-values integer (or null integer))
+	   (type (or null array-index) end))
+  (declare (type (or null translation-function) translate)
+	   (downward-funarg #+Genera * #-Genera translate))
+  (declare (values integer (or null integer)))
   (when (type? font 'gcontext)
     (force-gcontext-changes font)
     (setq font (gcontext-font font t)))
@@ -269,81 +273,72 @@
 #+clx-little-endian
 (defun byte-swap-card16 (card16)
   (declare (type card16 card16))
-  (declare-values card16)
+  (declare (values card16))
   (dpb card16 (byte 8 8) (ash card16 -8)))  
 
 (defun text-extents-server (font string start end)
   (declare (type font font)
 	   (type string string)
 	   (type array-index start end))
-  (declare-values width ascent descent left right font-ascent
-		  font-descent direction)
+  (declare (values width ascent descent left right font-ascent font-descent direction))
   (let ((display (font-display font))
 	(length (index- end start))
-	width ascent descent left right font-ascent font-descent direction
 	(font-id (font-id font)))
     (declare (type display display)
 	     (type array-index length)
 	     (type resource-id font-id))
-    (with-display (display)
-      (with-buffer-request (display *x-querytextextents* :no-after)
-	((data boolean) (oddp length))
-	(length (index+ (index-ceiling length 2) 2))
-	(resource-id font-id)
-	((sequence :format card16 :start start :end end :appending t
-		   #+clx-little-endian :transform
-		   #+clx-little-endian ;; Byte swap for little-endian
-		   #'byte-swap-card16)
-	 string))
-      (with-buffer-reply (display 28 :sizes (8 16 32))
-	(setq direction (member8-get 1 :left-to-right :right-to-left)
-	      font-ascent (int16-get 8)
-	      font-descent (int16-get 10)
-	      ascent (int16-get 12)
-	      descent (int16-get 14)
-	      width (integer-get 16)
-	      left (integer-get 20)
-	      right (integer-get 24))))
-    (display-invoke-after-function display)
-    (values width ascent descent left right font-ascent font-descent direction)))
+    (with-buffer-request-and-reply (display *x-querytextextents* 28 :sizes (8 16 32))
+	 (((data boolean) (oddp length))
+	  (length (index+ (index-ceiling length 2) 2))
+	  (resource-id font-id)
+	  ((sequence :format card16 :start start :end end :appending t
+		     #+clx-little-endian :transform
+		     #+clx-little-endian ;; Byte swap for little-endian
+		     #'byte-swap-card16)
+	   string))
+      (values
+	(integer-get 16)
+	(int16-get 12)
+	(int16-get 14)
+	(integer-get 20)
+	(integer-get 24)
+	(int16-get 8)
+	(int16-get 10)
+	(member8-get 1 :left-to-right :right-to-left)))))
 
 (defun text-width-server (font string start end)
   (declare (type (or font gcontext) font)
 	   (type string string)
 	   (type array-index start end))
-  (declare-values integer)
+  (declare (values integer))
   (let ((display (font-display font))
 	(length (index- end start))
-	width
 	(font-id (font-id font)))
     (declare (type display display)
 	     (type array-index length)
 	     (type resource-id font-id))
-    (with-display (display)
-      (with-buffer-request (display *x-querytextextents* :no-after)
-	((data boolean) (oddp length))
-	(length (index+ (index-ceiling length 2) 2))
-	(resource-id font-id)
-	((sequence :format card16 :start start :end end :appending t
-		   #+clx-little-endian :transform
-		   #+clx-little-endian ;; Byte swap for little-endian
-		   #'byte-swap-card16)
-	 string))
-      (with-buffer-reply (display 28 :sizes 32)
-	(setq width (integer-get 16))))
-    (display-invoke-after-function display)
-    width))
+    (with-buffer-request-and-reply (display *x-querytextextents* 28 :sizes 32)
+	 (((data boolean) (oddp length))
+	  (length (index+ (index-ceiling length 2) 2))
+	  (resource-id font-id)
+	  ((sequence :format card16 :start start :end end :appending t
+		     #+clx-little-endian :transform
+		     #+clx-little-endian ;; Byte swap for little-endian
+		     #'byte-swap-card16)
+	   string))
+      (values (integer-get 16)))))
 
 (defun text-extents-local (font sequence start end width-only-p)
   (declare (type font font)
 	   (type sequence sequence)
 	   (type integer start end)
 	   (type boolean width-only-p))
-  (declare-values width ascent descent overall-left overall-right)
+  (declare (values width ascent descent overall-left overall-right))
   (let* ((char-infos (font-char-infos font))
 	 (font-info (font-font-info font)))
     (declare (type font-info font-info))
-    (declare-array vector char-infos)
+    (declare (type (simple-array int16 (*)) char-infos)
+	     (array-register char-infos))
     (if (zerop (length char-infos))
 	;; Fixed width font
 	(let* ((font-width (max-char-width font))
@@ -483,10 +478,11 @@
   (declare (type drawable drawable)
 	   (type gcontext gcontext)
 	   (type int16 x y)
-	   (type (or null translation-function) translate) ;; Defaults to #'translate-default
 	   (type (or null int32) width)
 	   (type index-size size))
-  (declare-values boolean (or null int32))
+  (declare (type (or null translation-function) translate)
+	   (downward-funarg #+Genera * #-Genera translate))
+  (declare (values boolean (or null int32)))
   (let* ((display (gcontext-display gcontext))
 	 (result t)
 	 (opcode *x-polytext8*))
@@ -530,10 +526,11 @@
 	   (type array-index start)
 	   (type sequence sequence)
 	   (type (or null array-index) end)
-	   (type (or null translation-function) translate) 
 	   (type (or null int32) width)
 	   (type index-size size))
-  (declare-values (or null array-index) (or null int32))
+  (declare (type (or null translation-function) translate)
+	   (downward-funarg #+Genera * #-Genera translate))
+  (declare (values (or null array-index) (or null int32)))
   (unless end (setq end (length sequence)))
   (ecase size
     ((:default 8) (draw-glyphs8 drawable gcontext x y sequence start end
@@ -549,83 +546,88 @@
 	   (type int32 x y width)
 	   (type array-index start end)
 	   (type sequence sequence))
-  (declare-values (or null array-index) (or null int32))
-  (declare-funarg translation-function translate) 
+  (declare (values (or null array-index) (or null int32)))
+  (declare (type translation-function translate)
+	   (downward-funarg translate)) 
   (let* ((src-start start)
 	 (src-end (or end (length sequence)))
 	 (next-start nil)
 	 (length (index- src-end src-start))
+	 (request-length (* length 2))		; Leave lots of room for font shifts.
 	 (display (gcontext-display gcontext))
 	 ;; Should metrics-p be T?  Don't want to pass a NIL font into translate...
 	 (font (gcontext-font gcontext t)))
     (declare (type array-index src-start src-end length)
 	     (type (or null array-index) next-start)
 	     (type display display))
-    (with-buffer-request (display *x-polytext8* :gc-force gcontext :length length)
+    (with-buffer-request (display *x-polytext8* :gc-force gcontext :length request-length)
       (drawable drawable)
       (gcontext gcontext)
       (int16 x y)
       (progn
-	(do* ((boffset (index+ buffer-boffset 16))
-	      (src-chunk 0)
-	      (dst-chunk 0)
-	      (offset 0)
-	      (overall-width 0)
-	      (stop-p nil))
-	     ((or stop-p (zerop length))
-	      ;; Ensure terminated with zero bytes
-	      (do ((end (the array-index (lround boffset))))
-		  ((index>= boffset end))
-		(setf (aref buffer-bbuf boffset) 0)
-		(index-incf boffset))
-	      (length-put 2 (index-ash (index- boffset buffer-boffset) -2))
-	      (setf (buffer-boffset display) boffset)
-	      (unless (index-zerop length) (setq next-start src-start))
-	      (when overall-width (setq width overall-width)))
+	;; Don't let any flushes happen since we manually set the request
+	;; length when we're done.
+	(with-buffer-flush-inhibited (display)
+	  (do* ((boffset (index+ buffer-boffset 16))
+		(src-chunk 0)
+		(dst-chunk 0)
+		(offset 0)
+		(overall-width 0)
+		(stop-p nil))
+	       ((or stop-p (zerop length))
+		;; Ensure terminated with zero bytes
+		(do ((end (the array-index (lround boffset))))
+		    ((index>= boffset end))
+		  (setf (aref buffer-bbuf boffset) 0)
+		  (index-incf boffset))
+		(length-put 2 (index-ash (index- boffset buffer-boffset) -2))
+		(setf (buffer-boffset display) boffset)
+		(unless (index-zerop length) (setq next-start src-start))
+		(when overall-width (setq width overall-width)))
 
-	  (declare (type array-index src-chunk dst-chunk offset)
-		   (type (or null int32) overall-width)
-		   (type boolean stop-p))
-	  (setq src-chunk (index-min length *max-string-size*))
-	  (multiple-value-bind (new-start new-font translated-width)
-	      (funcall translate
-		       sequence src-start (index+ src-start src-chunk)
-		       font buffer-bbuf (index+ boffset 2))
-	    (setq dst-chunk (index- new-start src-start)
-		  length (index- length dst-chunk)
-		  src-start new-start)
-	    (if translated-width
-		(when overall-width (incf overall-width translated-width))
-	      (setq overall-width nil))
-	    (when (index-plusp dst-chunk)
-	      (setf (aref buffer-bbuf boffset) dst-chunk)
-	      (setf (aref buffer-bbuf (index+ boffset 1)) offset)
-	      (incf boffset (index+ dst-chunk 2)))
-	    (setq offset 0)
-	    (cond ((null new-font)
-		   ;; Don't stop if translate copied whole chunk
-		   (unless (index= src-chunk dst-chunk)
-		     (setq stop-p t)))
-		  ((integerp new-font) (setq offset new-font))
-		  ((type? new-font 'font)
-		   (setq font new-font)
-		   (let ((font-id (font-id font))
-			 (buffer-boffset boffset))
-		     (declare (type resource-id font-id)
-			      (type array-index buffer-boffset))
-		     ;; This changes the gcontext font in the server
-		     ;; Update the gcontext cache (both local and server state)
-		     (setf (gcontext-internal-font-obj (gcontext-local-state gcontext)) font
-			   (gcontext-internal-font-obj (gcontext-server-state gcontext)) font
-			   (gcontext-internal-font (gcontext-local-state gcontext)) font-id
-			   (gcontext-internal-font (gcontext-server-state gcontext)) font-id)
-		     (card8-put 0 #xff)
-		     (card8-put 1 (ldb (byte 8 24) font-id))
-		     (card8-put 2 (ldb (byte 8 16) font-id))
-		     (card8-put 3 (ldb (byte 8 8) font-id))
-		     (card8-put 4 (ldb (byte 8 0) font-id)))
-		   (index-incf boffset 5)))
-	    ))))
+	    (declare (type array-index src-chunk dst-chunk offset)
+		     (type (or null int32) overall-width)
+		     (type boolean stop-p))
+	    (setq src-chunk (index-min length *max-string-size*))
+	    (multiple-value-bind (new-start new-font translated-width)
+		(funcall translate
+			 sequence src-start (index+ src-start src-chunk)
+			 font buffer-bbuf (index+ boffset 2))
+	      (setq dst-chunk (index- new-start src-start)
+		    length (index- length dst-chunk)
+		    src-start new-start)
+	      (if translated-width
+		  (when overall-width (incf overall-width translated-width))
+		(setq overall-width nil))
+	      (when (index-plusp dst-chunk)
+		(setf (aref buffer-bbuf boffset) dst-chunk)
+		(setf (aref buffer-bbuf (index+ boffset 1)) offset)
+		(incf boffset (index+ dst-chunk 2)))
+	      (setq offset 0)
+	      (cond ((null new-font)
+		     ;; Don't stop if translate copied whole chunk
+		     (unless (index= src-chunk dst-chunk)
+		       (setq stop-p t)))
+		    ((integerp new-font) (setq offset new-font))
+		    ((type? new-font 'font)
+		     (setq font new-font)
+		     (let ((font-id (font-id font))
+			   (buffer-boffset boffset))
+		       (declare (type resource-id font-id)
+				(type array-index buffer-boffset))
+		       ;; This changes the gcontext font in the server
+		       ;; Update the gcontext cache (both local and server state)
+		       (setf (gcontext-internal-font-obj (gcontext-local-state gcontext)) font
+			     (gcontext-internal-font-obj (gcontext-server-state gcontext)) font
+			     (gcontext-internal-font (gcontext-local-state gcontext)) font-id
+			     (gcontext-internal-font (gcontext-server-state gcontext)) font-id)
+		       (card8-put 0 #xff)
+		       (card8-put 1 (ldb (byte 8 24) font-id))
+		       (card8-put 2 (ldb (byte 8 16) font-id))
+		       (card8-put 3 (ldb (byte 8 8) font-id))
+		       (card8-put 4 (ldb (byte 8 0) font-id)))
+		     (index-incf boffset 5)))
+	      )))))
     (values next-start width)))
 
 ;; NOTE: After the first font change by the TRANSLATE function, characters are no-longer
@@ -639,12 +641,14 @@
 	   (type array-index start end)
 	   (type int32 width)
 	   (type sequence sequence))
-  (declare-values (or null array-index) (or null int32))
-  (declare-funarg translation-function translate)
+  (declare (values (or null array-index) (or null int32)))
+  (declare (type translation-function translate)
+	   (downward-funarg translate))
   (let* ((src-start start)
 	 (src-end (or end (length sequence)))
 	 (next-start nil)
-	 (length (- src-end src-start))
+	 (length (index- src-end src-start))
+	 (request-length (* length 3))		; Leave lots of room for font shifts.
 	 (display (gcontext-display gcontext))
 	 ;; Should metrics-p be T?  Don't want to pass a NIL font into translate...
 	 (font (gcontext-font gcontext t))
@@ -653,74 +657,77 @@
 	     (type (or null array-index) next-start)
 	     (type display display)
 	     (type buffer-text16 buffer))
-    (with-buffer-request (display *x-polytext16* :gc-force gcontext :length length)
+    (with-buffer-request (display *x-polytext16* :gc-force gcontext :length request-length)
       (drawable drawable)
       (gcontext gcontext)
       (int16 x y)
       (progn
-	(do* ((boffset (index+ buffer-boffset 16))
-	      (src-chunk 0)
-	      (dst-chunk 0)
-	      (offset 0)
-	      (overall-width 0)
-	      (stop-p nil))
-	     ((or stop-p (zerop length))
-	      ;; Ensure terminated with zero bytes
-	      (do ((end (lround boffset)))
-		  ((index>= boffset end))
-		(setf (aref buffer-bbuf boffset) 0)
-		(index-incf boffset))
-	      (length-put 2 (index-ash (index- boffset buffer-boffset) -2))
-	      (setf (buffer-boffset display) boffset)
-	      (unless (zerop length) (setq next-start src-start))
-	      (when overall-width (setq width overall-width)))
+	;; Don't let any flushes happen since we manually set the request
+	;; length when we're done.
+	(with-buffer-flush-inhibited (display)
+	  (do* ((boffset (index+ buffer-boffset 16))
+		(src-chunk 0)
+		(dst-chunk 0)
+		(offset 0)
+		(overall-width 0)
+		(stop-p nil))
+	       ((or stop-p (zerop length))
+		;; Ensure terminated with zero bytes
+		(do ((end (lround boffset)))
+		    ((index>= boffset end))
+		  (setf (aref buffer-bbuf boffset) 0)
+		  (index-incf boffset))
+		(length-put 2 (index-ash (index- boffset buffer-boffset) -2))
+		(setf (buffer-boffset display) boffset)
+		(unless (zerop length) (setq next-start src-start))
+		(when overall-width (setq width overall-width)))
 
-	  (declare (type array-index boffset src-chunk dst-chunk offset)
-		   (type (or null int32) overall-width)
-		   (type boolean stop-p))
-	  (setq src-chunk (index-min length *max-string-size*))
-	  (multiple-value-bind (new-start new-font translated-width)
-	      (funcall translate
-		       sequence src-start (index+ src-start src-chunk)
-		       font buffer 0)
-	    (setq dst-chunk (index- new-start src-start)
-		  length (index- length dst-chunk)
-		  src-start new-start)
-	    (write-sequence-card16 display (index+ boffset 2) buffer 0 dst-chunk
-				   #+clx-little-endian ;; Byte swap for little-endian
-				   #'byte-swap-card16)
-	    (if translated-width
-		(when overall-width (incf overall-width translated-width))
-	      (setq overall-width nil))
-	    (when (index-plusp dst-chunk)
-	      (setf (aref buffer-bbuf boffset) dst-chunk)
-	      (setf (aref buffer-bbuf (index+ boffset 1)) offset)
-	      (index-incf boffset (index+ dst-chunk dst-chunk 2)))
-	    (setq offset 0)
-	    (cond ((null new-font)
-		   ;; Don't stop if translate copied whole chunk
-		   (unless (index= src-chunk dst-chunk) 
-		     (setq stop-p t)))
-		  ((integerp new-font) (setq offset new-font))
-		  ((type? new-font 'font)
-		   (setq font new-font)
-		   (let ((font-id (font-id font))
-			 (buffer-boffset boffset))
-		     (declare (type resource-id font-id)
-			      (type array-index buffer-boffset))
-		     ;; This changes the gcontext font in the SERVER
-		     ;; Update the gcontext cache (both local and server state)
-		     (setf (gcontext-internal-font-obj (gcontext-local-state gcontext)) font
-			   (gcontext-internal-font-obj (gcontext-server-state gcontext)) font
-			   (gcontext-internal-font (gcontext-local-state gcontext)) font-id
-			   (gcontext-internal-font (gcontext-server-state gcontext)) font-id)
-		     (card8-put 0 #xff)
-		     (card8-put 1 (ldb (byte 8 24) font-id))
-		     (card8-put 2 (ldb (byte 8 16) font-id))
-		     (card8-put 3 (ldb (byte 8 8) font-id))
-		     (card8-put 4 (ldb (byte 8 0) font-id)))
-		   (index-incf boffset 5)))
-	    ))))
+	    (declare (type array-index boffset src-chunk dst-chunk offset)
+		     (type (or null int32) overall-width)
+		     (type boolean stop-p))
+	    (setq src-chunk (index-min length *max-string-size*))
+	    (multiple-value-bind (new-start new-font translated-width)
+		(funcall translate
+			 sequence src-start (index+ src-start src-chunk)
+			 font buffer 0)
+	      (setq dst-chunk (index- new-start src-start)
+		    length (index- length dst-chunk)
+		    src-start new-start)
+	      (write-sequence-card16 display (index+ boffset 2) buffer 0 dst-chunk
+				     #+clx-little-endian ;; Byte swap for little-endian
+				     #'byte-swap-card16)
+	      (if translated-width
+		  (when overall-width (incf overall-width translated-width))
+		(setq overall-width nil))
+	      (when (index-plusp dst-chunk)
+		(setf (aref buffer-bbuf boffset) dst-chunk)
+		(setf (aref buffer-bbuf (index+ boffset 1)) offset)
+		(index-incf boffset (index+ dst-chunk dst-chunk 2)))
+	      (setq offset 0)
+	      (cond ((null new-font)
+		     ;; Don't stop if translate copied whole chunk
+		     (unless (index= src-chunk dst-chunk) 
+		       (setq stop-p t)))
+		    ((integerp new-font) (setq offset new-font))
+		    ((type? new-font 'font)
+		     (setq font new-font)
+		     (let ((font-id (font-id font))
+			   (buffer-boffset boffset))
+		       (declare (type resource-id font-id)
+				(type array-index buffer-boffset))
+		       ;; This changes the gcontext font in the SERVER
+		       ;; Update the gcontext cache (both local and server state)
+		       (setf (gcontext-internal-font-obj (gcontext-local-state gcontext)) font
+			     (gcontext-internal-font-obj (gcontext-server-state gcontext)) font
+			     (gcontext-internal-font (gcontext-local-state gcontext)) font-id
+			     (gcontext-internal-font (gcontext-server-state gcontext)) font-id)
+		       (card8-put 0 #xff)
+		       (card8-put 1 (ldb (byte 8 24) font-id))
+		       (card8-put 2 (ldb (byte 8 16) font-id))
+		       (card8-put 3 (ldb (byte 8 8) font-id))
+		       (card8-put 4 (ldb (byte 8 0) font-id)))
+		     (index-incf boffset 5)))
+	      )))))
     (values next-start width)))
 
 (defun draw-image-glyph (drawable gcontext x y elt
@@ -731,10 +738,11 @@
   (declare (type drawable drawable)
 	   (type gcontext gcontext)
 	   (type int16 x y)
-	   (type (or null translation-function) translate) ;; Defaults to #'translate-default
 	   (type (or null int32) width)
 	   (type index-size size))
-  (declare-values boolean (or null int32))
+  (declare (type (or null translation-function) translate)
+	   (downward-funarg #+Genera * #-Genera translate))
+  (declare (values boolean (or null int32)))
   (let* ((display (gcontext-display gcontext))
 	 (result t)
 	 (opcode *x-imagetext8*))
@@ -784,9 +792,10 @@
 	   (type (or null array-index) end)
 	   (type sequence sequence)
 	   (type (or null int32) width)
-	   (type (or null translation-function) translate) 
 	   (type index-size size))
-  (declare-values (or null array-index) (or null int32))
+  (declare (type (or null translation-function) translate)
+	   (downward-funarg #+Genera * #-Genera translate))
+  (declare (values (or null array-index) (or null int32)))
   (unless end (setq end (length sequence)))
   (ecase size
     ((:default 8)
@@ -808,9 +817,10 @@
 	   (type array-index start)
 	   (type sequence sequence)
 	   (type (or null array-index) end)
-	   (type (or null int32) width)
-	   (type (or null translation-function) translate)) 
-  (declare-values (or null array-index) (or null int32))
+	   (type (or null int32) width)) 
+  (declare (type (or null translation-function) translate)
+	   (downward-funarg translate))
+  (declare (values (or null array-index) (or null int32)))
   (do* ((display (gcontext-display gcontext))
 	(length (index- end start))
 	;; Should metrics-p be T?  Don't want to pass a NIL font into translate...
@@ -830,24 +840,27 @@
 	(gcontext gcontext)
 	(int16 x y)
 	(progn
-	  ;; Translate the sequence into the buffer
-	  (multiple-value-setq (new-start font translated-width)
-	    (funcall (or translate #'translate-default) sequence start end
-		     font buffer-bbuf (index+ buffer-boffset 16)))
-	  ;; Number of glyphs translated
-	  (setq chunk (index- new-start start))		
-	  ;; Check for initial font change
-	  (when (and (index-zerop chunk) (type? font 'font))
-	    (setq font-change t) ;; Loop around changing font
-	    (return-from change-font))
-	  ;; Quit when nothing translated
-	  (when (index-zerop chunk)
-	    (return-from draw-image-glyphs8 new-start))
-	  ;; Update buffer pointers
-	  (data-put 1 chunk)
-	  (let ((blen (lround (index+ 16 chunk))))
-	    (length-put 2 (index-ash blen -2))
-	    (setf (buffer-boffset display) (index+ buffer-boffset blen)))))
+	  ;; Don't let any flushes happen since we manually set the request
+	  ;; length when we're done.
+	  (with-buffer-flush-inhibited (display)
+	    ;; Translate the sequence into the buffer
+	    (multiple-value-setq (new-start font translated-width)
+	      (funcall (or translate #'translate-default) sequence start end
+		       font buffer-bbuf (index+ buffer-boffset 16)))
+	    ;; Number of glyphs translated
+	    (setq chunk (index- new-start start))		
+	    ;; Check for initial font change
+	    (when (and (index-zerop chunk) (type? font 'font))
+	      (setq font-change t) ;; Loop around changing font
+	      (return-from change-font))
+	    ;; Quit when nothing translated
+	    (when (index-zerop chunk)
+	      (return-from draw-image-glyphs8 new-start))
+	    ;; Update buffer pointers
+	    (data-put 1 chunk)
+	    (let ((blen (lround (index+ 16 chunk))))
+	      (length-put 2 (index-ash blen -2))
+	      (setf (buffer-boffset display) (index+ buffer-boffset blen))))))
       ;; Normal exit
       (return-from draw-image-glyphs8
 	(values (if (index= chunk length) nil new-start)
@@ -867,9 +880,10 @@
 	   (type array-index start)
 	   (type sequence sequence)
 	   (type (or null array-index) end)
-	   (type (or null int32) width)
-	   (type (or null translation-function) translate))
-  (declare-values (or null array-index) (or null int32))
+	   (type (or null int32) width))
+  (declare (type (or null translation-function) translate)
+	   (downward-funarg translate))
+  (declare (values (or null array-index) (or null int32)))
   (do* ((display (gcontext-display gcontext))
 	(length (index- end start))
 	;; Should metrics-p be T?  Don't want to pass a NIL font into translate...
@@ -892,27 +906,30 @@
 	(gcontext gcontext)
 	(int16 x y)
 	(progn
-	  ;; Translate the sequence into the buffer
-	  (multiple-value-setq (new-start font translated-width)
-	    (funcall (or translate #'translate-default) sequence start end
-		     font buffer 0))
-	  ;; Number of glyphs translated
-	  (setq chunk (index- new-start start))
-	  ;; Check for initial font change
-	  (when (and (index-zerop chunk) (type? font 'font))
-	    (setq font-change t) ;; Loop around changing font
-	    (return-from change-font))
-	  ;; Quit when nothing translated
-	  (when (index-zerop chunk)
-	    (return-from draw-image-glyphs16 new-start))
-	  (write-sequence-card16 display (index+ buffer-boffset 16) buffer 0 chunk
-				 #+clx-little-endian ;; Byte swap for little-endian
-				 #'byte-swap-card16)
-	  ;; Update buffer pointers
-	  (data-put 1 chunk)
-	  (let ((blen (lround (index+ 16 (index-ash chunk 1)))))
-	    (length-put 2 (index-ash blen -2))
-	    (setf (buffer-boffset display) (index+ buffer-boffset blen)))))
+	  ;; Don't let any flushes happen since we manually set the request
+	  ;; length when we're done.
+	  (with-buffer-flush-inhibited (display)
+	    ;; Translate the sequence into the buffer
+	    (multiple-value-setq (new-start font translated-width)
+	      (funcall (or translate #'translate-default) sequence start end
+		       font buffer 0))
+	    ;; Number of glyphs translated
+	    (setq chunk (index- new-start start))
+	    ;; Check for initial font change
+	    (when (and (index-zerop chunk) (type? font 'font))
+	      (setq font-change t) ;; Loop around changing font
+	      (return-from change-font))
+	    ;; Quit when nothing translated
+	    (when (index-zerop chunk)
+	      (return-from draw-image-glyphs16 new-start))
+	    (write-sequence-card16 display (index+ buffer-boffset 16) buffer 0 chunk
+				   #+clx-little-endian ;; Byte swap for little-endian
+				   #'byte-swap-card16)
+	    ;; Update buffer pointers
+	    (data-put 1 chunk)
+	    (let ((blen (lround (index+ 16 (index-ash chunk 1)))))
+	      (length-put 2 (index-ash blen -2))
+	      (setf (buffer-boffset display) (index+ buffer-boffset blen))))))
       ;; Normal exit
       (return-from draw-image-glyphs16
 	(values (if (index= chunk length) nil new-start)
@@ -923,7 +940,7 @@
 
 (defun display-keycode-range (display)
   (declare (type display display))
-  (declare-values min max)
+  (declare (values min max))
   (values (display-min-keycode display)
 	  (display-max-keycode display)))
 
@@ -936,7 +953,7 @@
   ;; Setf ought to allow multiple values.
   (declare (type display display)
 	   (type sequence shift lock control mod1 mod2 mod3 mod4 mod5))
-  (declare-values (member :success :busy :failed))
+  (declare (values (member :success :busy :failed)))
   (let* ((keycodes-per-modifier (index-max (length shift)
 					   (length lock)
 					   (length control)
@@ -947,8 +964,7 @@
 					   (length mod5)))
 	 (data (make-array (index* 8 keycodes-per-modifier)
 			   :element-type 'card8
-			   :initial-element 0))
-	 result)
+			   :initial-element 0)))
     (replace data shift)
     (replace data lock :start1 keycodes-per-modifier)
     (replace data control :start1 (index* 2 keycodes-per-modifier))
@@ -957,92 +973,30 @@
     (replace data mod3 :start1 (index* 5 keycodes-per-modifier))
     (replace data mod4 :start1 (index* 6 keycodes-per-modifier))
     (replace data mod5 :start1 (index* 7 keycodes-per-modifier))
-    (with-display (display)
-      (with-buffer-request (display *x-setmodifiermapping* :no-after)
-	(data keycodes-per-modifier)
-	((sequence :format card8) data))
-      (with-buffer-reply (display 4 :sizes 8)
-	(setq result (member8-get 1 :success :busy :failed))))
-    (display-invoke-after-function display)
-    result))
-
-#+comment ; beta protocol
-(defun set-modifier-mapping (display &key shift lock control mod1 mod2 mod3 mod4 mod5)
-  ;; Setf ought to allow multiple values.
-  (declare (type display display)
-	   (type (or null integer) lock)
-	   ;; (list integer) is really a list of length 2
-	   (type (or null card8 list) shift control
-		 mod1 mod2 mod3 mod4 mod5))
-  (declare-values (member :success :busy :failed))
-  (let (result)
-    (with-display (display)
-      (macrolet ((a (value) `(if (consp ,value) (car ,value) (or ,value 0)))
-		 (b (value) `(if (consp ,value) (cadr ,value) 0)))
-	(with-buffer-request (display *x-setmodifiermapping* :no-after)
-	  (data (or lock 0))
-	  (card8
-	   (a shift) (b shift)
-	   (a control) (b control)
-	   (a mod1) (b mod1)
-	   (a mod2) (b mod2)
-	   (a mod3) (b mod3)
-	   (a mod4) (b mod4)
-	   (a mod5) (b mod5))))
-      (with-buffer-reply (display 4 :sizes 8)
-	(setq result (member8-get 1 :success :busy :failed))))
-    (display-invoke-after-function display)
-    result))
+    (with-buffer-request-and-reply (display *x-setmodifiermapping* 4 :sizes 8)
+	 ((data keycodes-per-modifier)
+	  ((sequence :format card8) data))
+      (values (member8-get 1 :success :busy :failed)))))
 
 (defun modifier-mapping (display)
   ;; each value is a list of integers
   (declare (type display display))
-  (declare-values shift lock control mod1 mod2 mod3 mod4 mod5)
+  (declare (values shift lock control mod1 mod2 mod3 mod4 mod5))
   (let ((lists nil))
-    (with-display (display)
-      (with-buffer-request (display *x-getmodifiermapping* :no-after)
-	)
-      (with-buffer-reply (display nil :sizes 8)
-	(do* ((keycodes-per-modifier (card8-get 1))
-	      (keys nil nil)
-	      (i 0 (index+ i 1)))
-	     ((index= i 8))
-	  (buffer-input display buffer-bbuf 0 keycodes-per-modifier)
-	  (dotimes (j keycodes-per-modifier)
-	    (let ((key (aref-card8 buffer-bbuf j)))
-	      (unless (zerop key)
-		(push key keys))))
-	  (push (nreverse keys) lists))))
-    (display-invoke-after-function display)
+    (with-buffer-request-and-reply (display *x-getmodifiermapping* nil :sizes 8)
+	 ()
+      (do* ((keycodes-per-modifier (card8-get 1))
+	    (advance-by *replysize* keycodes-per-modifier)
+	    (keys nil nil)
+	    (i 0 (index+ i 1)))
+	   ((index= i 8))
+	(advance-buffer-offset advance-by)
+	(dotimes (j keycodes-per-modifier)
+	  (let ((key (read-card8 j)))
+	    (unless (zerop key)
+	      (push key keys))))
+	(push (nreverse keys) lists)))
     (values-list (nreverse lists))))
-
-#+comment ; beta protocol
-(defun modifier-mapping (display)
-  ;; each value is either nil, a single integer, or a list of two integers
-  (declare (type display display))
-  (declare-values shift lock control mod1 mod2 mod3 mod4 mod5)
-  (let (shift lock control mod1 mod2 mod3 mod4 mod5)
-    (with-display (display)
-      (with-buffer-request (display *x-getmodifiermapping* :no-after)
-	)
-      (with-buffer-reply (display 22 :sizes 8)
-	(macrolet ((combine (a b)
-			    (let ((the-a (gensym))
-				  (the-b (gensym)))
-			      `(let ((,the-a ,a)
-				     (,the-b ,b))
-				 (if (plusp ,the-b) (list ,the-a ,the-b)
-				   (and (plusp ,the-a) ,the-a))))))
-	  (setq lock (card8-get 1)
-		shift (combine (card8-get 8) (card8-get 9))
-		control (combine (card8-get 10) (card8-get 11))
-		mod1 (combine (card8-get 12) (card8-get 13))
-		mod2 (combine (card8-get 14) (card8-get 15))
-		mod3 (combine (card8-get 16) (card8-get 17))
-		mod4 (combine (card8-get 18) (card8-get 19))
-		mod5 (combine (card8-get 20) (card8-get 21))))))
-    (display-invoke-after-function display)
-    (values shift lock control mod1 mod2 mod3 mod4 mod5)))
 
 ;; Either we will want lots of defconstants for well-known values, or perhaps
 ;; an integer-to-keyword translation function for well-known values.
@@ -1055,18 +1009,21 @@
 	   (type array-index start)
 	   (type card8 first-keycode)
 	   (type (or null array-index) end)
-	   (type (array * (* *))))
+	   (type (array * (* *)) keysyms))
   (let* ((keycode-end (or end (array-dimension keysyms 0)))
 	 (keysyms-per-keycode (array-dimension keysyms 1))
 	 (length (index- keycode-end start))
-	 (size (* length keysyms-per-keycode)))
-    (declare (type array-index keycode-end keysyms-per-keycode length))
-    (with-buffer-request (display *x-setkeyboardmapping* :sizes (32))
+	 (size (index* length keysyms-per-keycode))
+	 (request-length (index+ size 2)))
+    (declare (type array-index keycode-end keysyms-per-keycode length request-length))
+    (with-buffer-request (display *x-setkeyboardmapping*
+				  :length (index-ash request-length 2)
+				  :sizes (32))
       (data length)
-      (length (+ size 2))
+      (length request-length)
       (card8 first-keycode keysyms-per-keycode)
       (progn
-	(do ((limit (index-ash (buffer-limit display) -2))
+	(do ((limit (index-ash (buffer-size display) -2))
 	     (w (index+ 2 (index-ash buffer-boffset -2)))
 	     (i start (index+ i 1)))
 	    ((index>= i keycode-end)
@@ -1079,7 +1036,7 @@
 	      ((index>= j keysyms-per-keycode))
 	    (declare (type array-index j))
 	    (card29-put (index* w 4) (aref keysyms i j))
-	    (index-incf w)))))))
+	    (index-incf w))))))) 
 
 (defun keyboard-mapping (display &key first-keycode start end data)
   ;; First-keycode specifies which keycode to start at (defaults to min-keycode).
@@ -1090,29 +1047,27 @@
 	   (type (or null card8) first-keycode)
 	   (type (or null array-index) start end)
 	   (type (or null (array * (* *))) data))
-  (declare-values (array * (* *)))
+  (declare (values (array * (* *))))
   (unless first-keycode (setq first-keycode (display-min-keycode display)))
   (unless start (setq start first-keycode))
   (unless end (setq end (1+ (display-max-keycode display))))
-  (with-display (display)
-    (with-buffer-request (display *x-getkeyboardmapping* :no-after)
-      (card8 first-keycode (- end start)))
-    (with-buffer-reply (display nil :sizes (8 32))
-      (do* ((keysyms-per-keycode (card8-get 1))
-	    (bytes-per-keycode (* keysyms-per-keycode 4))
-	    (keycode-count (floor (card32-get 4) keysyms-per-keycode)
-			   (1- keycode-count))
-	    (result (if (and (arrayp data)
-			     (= (array-rank data) 2)
-			     (>= (array-dimension data 0) (+ start keycode-count))
-			     (>= (array-dimension data 1) keysyms-per-keycode))
-			data
-		      (make-array `(,(+ start keycode-count) ,keysyms-per-keycode)
-				  :element-type 'keysym :initial-element 0)))
-	    (i start (1+ i)))
-	   ((zerop keycode-count) (setq data result))
-	(buffer-input display buffer-bbuf 0 bytes-per-keycode)
-	(dotimes (j keysyms-per-keycode)
-	  (setf (aref result i j) (card29-get (* j 4)))))))
-  (display-invoke-after-function display)
+  (with-buffer-request-and-reply (display *x-getkeyboardmapping* nil :sizes (8 32))
+       ((card8 first-keycode (index- end start)))
+    (do* ((keysyms-per-keycode (card8-get 1))
+	  (bytes-per-keycode (* keysyms-per-keycode 4))
+	  (advance-by *replysize* bytes-per-keycode)
+	  (keycode-count (floor (card32-get 4) keysyms-per-keycode)
+			 (index- keycode-count 1))
+	  (result (if (and (arrayp data)
+			   (= (array-rank data) 2)
+			   (>= (array-dimension data 0) (index+ start keycode-count))
+			   (>= (array-dimension data 1) keysyms-per-keycode))
+		      data
+		    (make-array `(,(index+ start keycode-count) ,keysyms-per-keycode)
+				:element-type 'keysym :initial-element 0)))
+	  (i start (1+ i)))
+	 ((zerop keycode-count) (setq data result))
+      (advance-buffer-offset advance-by)
+      (dotimes (j keysyms-per-keycode)
+	(setf (aref result i j) (card29-get (* j 4))))))
   data)

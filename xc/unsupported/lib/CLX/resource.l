@@ -86,11 +86,11 @@
   (declare (type resource-database database))
   (declare (ignore depth))
   (princ "#<Resource " stream)
-  (princ (resource-database-name database))
+  (princ (resource-database-name database) stream)
   (when (resource-database-value database)
     (princ " " stream)
-    (prin1 (resource-database-value database)))
-  (princ ">"))
+    (prin1 (resource-database-value database) stream))
+  (princ ">" stream))
 
 ;; DEBUG FUNCTION  (not exported)
 (defun print-db (entry &optional (level 0) type)
@@ -143,7 +143,7 @@
   ;; Compare two stringables.
   ;; Ignore case when comparing to a symbol.
   (declare (type stringable a b))
-  (declare-values boolean)
+  (declare (values boolean))
   (macrolet (#+(or ti lmi) ;; Over twice as fast as common-lisp string-equal
 	     (string-equal (a b)
 	       `(si:%string-equal ,a 0 ,b 0 nil)))
@@ -249,7 +249,7 @@
   (declare (type resource-database database)
 	   (type stringable value-name value-class)
 	   (type list full-name full-class)) ;; (list stringable)
-  (declare-values value)
+  (declare (values value))
   (let ((names (append full-name (list (resource-key value-name))))
 	(classes (append full-class (list (resource-key value-class)))))
     (let* ((result (get-entry (resource-database-tight database) (resource-database-loose database)
@@ -351,7 +351,7 @@
   ;; Return a search table for use with get-search-resource.
   (declare (type resource-database database)
 	   (type list full-name full-class)) ;; (list stringable)
-  (declare-values value)
+  (declare (values value))
   (let* ((tight (resource-database-tight database))
 	 (loose (resource-database-loose database))
 	 (result (cons nil nil))
@@ -362,8 +362,19 @@
     (when (or tight loose)
       (when full-name
 	(get-tables tight loose full-name full-class))
-      ;;(vector-push loose table) ;; This catches entries like: (* foreground) :white
-      )
+
+      ;; Pick up bindings of the form (* name). These are the elements of top-level
+      ;; loose without further tight/loose databases.
+      ;;
+      ;; (Hack: these bindings belong in ANY search table, so recomputing them is a drag.
+      ;; True fix involves redesigning entire lookup data-structure/algorithm.)
+      ;;
+      (let ((universal-bindings
+	      (remove nil loose :test-not #'eq
+		      :key #'(lambda (database) (or (resource-database-tight database)
+						    (resource-database-loose database))))))
+	(when universal-bindings
+	  (setf (cdr *result*) (list universal-bindings)))))
     (cdr result)))
 
 (proclaim '(inline get-tables-lookup))
@@ -436,18 +447,27 @@
   ;; Call FUNCTION on each resource in DATABASE.
   ;; FUNCTION is called with arguments (name-list value . args)
   (declare (type resource-database database)
-	   (type (function (list t &rest t) t) function))
-  (declare-values nil)
+	   (type (function (list t &rest t) t) function)
+	   (downward-funarg function)
+	   (dynamic-extent args))
+  (declare (values nil))
   (labels ((map-resource-internal (database function args name)
+	     (declare (type resource-database database)
+		      (type (function (list t &rest t) t) function)
+		      (type list name)
+		      (downward-funarg function))		      
 	     (let ((tight (resource-database-tight database))
 		   (loose (resource-database-loose database)))
+	       (declare (type list tight loose))
 	       (dolist (resource tight)
+		 (declare (type resource-database resource))
 		 (let ((value (resource-database-value resource))
 		       (name (append name (list (resource-database-name resource)))))
 		   (if value
 		       (apply function name value args)
 		     (map-resource-internal resource function args name))))
 	       (dolist (resource loose)
+		 (declare (type resource-database resource))
 		 (let ((value (resource-database-value resource))
 		       (name (append name (list '* (resource-database-name resource)))))
 		   (if value
@@ -457,7 +477,7 @@
 
 (defun merge-resources (database with-database)
   (declare (type resource-database database with-database))
-  (declare-values resource-database)
+  (declare (values resource-database))
   (map-resource #'add-resource database with-database)
   with-database)
 
@@ -493,7 +513,7 @@
 	   (type (or null (function (string) t)) key)
 	   (type (or null (function (list t) boolean))
                  test test-not))
-  (declare-values resource-database)
+  (declare (values resource-database))
   (resource-with-open-file (stream pathname)
     (loop
       (let ((string (read-line stream nil :eof)))
@@ -530,12 +550,11 @@
   (declare (type string string)
 	   (type array-index start)
 	   (type (or null array-index) end))
-  (declare-values name-list value)
+  (declare (values name-list value))
   (do ((i start)
        (end (or end (length string)))
        (term)
-       (name-list)
-       (previous))
+       (name-list))
       ((>= i end))
     (declare (type array-index end)
 	     (type (or null array-index) i term))
@@ -554,9 +573,11 @@
 	   (let* ((start (position '(#\tab #\space) string
 				   :test-not #'char-memq
 				   :start (1+ term) :end end))
-		  (value (and (> end start) (subseq string start))))
-	     (return (values (nreverse name-list) (string-right-trim '(#\tab #\space) value))))))
-    (setq previous (char string term))
+		  (value (if (and start (> end start))
+			     (subseq string start)
+			   "")))
+	     (return (values (nreverse name-list)
+			     (string-right-trim '(#\tab #\space) value))))))
     (setq i (1+ term))))
 
 (defun write-resources (database pathname &key write test test-not)
@@ -603,7 +624,7 @@
 	   (type (or null (function (string) t)) key)
 	   (type (or null (function (list t) boolean))
                  test test-not))
-  (declare-values resource-database)
+  (declare (values resource-database))
   (let ((string (get-property window :resource_manager :type :string
 			      :result-type 'string :transform #'xlib::card8->char)))
     (when string
@@ -626,3 +647,34 @@
     (with-output-to-string (stream)
       (write-resources database stream :write write
 		       :test test :test-not test-not))))
+
+(defun initialize-resource-database (display)
+  ;; This function is (supposed to be) equivalent to the Xlib initialization
+  ;; code.  Note that the getenv call must be customized for your flavor of
+  ;; Lisp.
+  (declare (type display display))
+  
+  (let ((rdb (make-resource-database))
+	(homedir (user-homedir-pathname))
+	(rootwin (screen-root (car (display-roots display)))))
+    
+    ;; First read the server defaults if present, otherwise ~/.Xdefaults.
+    (if (get-property rootwin :resource_manager)
+	(xlib:wm-resources rdb rootwin)
+      (let* ((xdef (pathname ".Xdefaults"))
+	     (path (merge-pathnames homedir xdef)))
+	(when (probe-file path)
+	  (read-resources rdb path))))
+    
+    ;; Next read from XENVIRONMENT if present, otherwise ~/.Xdefaults-host.
+    (let ((xenv #+excl (sys:getenv "XENVIRONMENT")
+		#-excl nil))		; Color me in.
+      (unless xenv
+	(setq xenv (merge-pathnames
+		    homedir
+		    (pathname (concatenate 'simple-string ".Xdefaults-"
+					   (short-site-name))))))
+      (when (probe-file xenv)
+	(xlib:read-resources rdb xenv)))
+
+    (setf (display-xdefaults display) rdb)))

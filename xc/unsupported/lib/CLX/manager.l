@@ -26,18 +26,15 @@
 	  wm-command
 	  wm-hints
 	  wm-normal-hints
-	  wm-zoom-hints
 	  icon-sizes
+	  wm-protocols
+	  wm-colormap-windows
 
 	  wm-size-hints
 	  wm-size-hints-p
 	  make-wm-size-hints
 	  wm-size-hints-user-specified-position-p
 	  wm-size-hints-user-specified-size-p
-	  wm-size-hints-x
-	  wm-size-hints-y
-	  wm-size-hints-width
-	  wm-size-hints-height
 	  wm-size-hints-min-width
 	  wm-size-hints-min-height
 	  wm-size-hints-max-width
@@ -46,6 +43,9 @@
 	  wm-size-hints-height-inc
 	  wm-size-hints-min-aspect
 	  wm-size-hints-max-aspect
+	  wm-size-hints-base-width
+	  wm-size-hints-base-height
+	  wm-size-hints-win-gravity
 
 	  wm-hints
 	  wm-hints-p
@@ -62,25 +62,36 @@
 
 	  transient-for
 
-	  set-standard-properties
+	  set-wm-properties
+	  iconify-window
+	  withdraw-window
 
 	  get-wm-class
 	  set-wm-class
-	  get-standard-colormap
-	  set-standard-colormap
+	  rgb-colormaps
 
 	  cut-buffer   ;; Setf'able
 	  rotate-cut-buffers
+
+	  ;; Obsolete
+	  wm-zoom-hints
+	  wm-size-hints-x
+	  wm-size-hints-y
+	  wm-size-hints-width
+	  wm-size-hints-height
+	  set-standard-properties
+	  get-standard-colormap
+	  set-standard-colormap
 	  ))
 
 (defun wm-name (window)
   (declare (type window window))
-  (declare-values string)
+  (declare (values string))
   (get-property window :wm_name :type :string :result-type 'string :transform #'card8->char))
 
 (defsetf wm-name (window) (name)
   (declare (type window window))
-  (declare-values string)
+  (declare (values string))
   `(set-string-property ,window :wm_name ,name))
 
 (defun set-string-property (window property string)
@@ -92,7 +103,7 @@
 
 (defun wm-icon-name (window)
   (declare (type window window))
-  (declare-values string)
+  (declare (values string))
   (get-property window :wm_icon_name :type :string
 		:result-type 'string :transform #'card8->char))
 
@@ -101,7 +112,7 @@
 
 (defun wm-client-machine (window)
   (declare (type window window))
-  (declare-values string)
+  (declare (values string))
   (get-property window :wm_client_machine :type :string
 		:result-type 'string :transform #'card8->char))
 
@@ -110,7 +121,7 @@
 
 (defun get-wm-class (window)
   (declare (type window window))
-  (declare-values (or null name-string) (or null class-string))
+  (declare (values (or null name-string) (or null class-string)))
   (let ((value (get-property window :wm_class :type :string
 			     :result-type 'string :transform #'card8->char)))
     (declare (type (or null string) value))
@@ -136,7 +147,7 @@
   ;; Returns a list whose car is the command and 
   ;; whose cdr is the list of arguments
   (declare (type window window))
-  (declare-values list)
+  (declare (values list))
   (do* ((command-string (get-property window :wm_command :type :string
 				      :result-type 'string :transform #'card8->char))
 	(command nil)
@@ -189,7 +200,7 @@
 
 (defun wm-hints (window)
   (declare (type window window))
-  (declare-values wm-hints)
+  (declare (values wm-hints))
   (let ((prop (get-property window :wm_hints :type :wm_hints :result-type 'vector)))
     (when prop
       (decode-wm-hints prop (window-display window)))))
@@ -198,14 +209,14 @@
 (defun set-wm-hints (window wm-hints)
   (declare (type window window)
 	   (type wm-hints wm-hints))
-  (declare-values wm-hints)
+  (declare (values wm-hints))
   (change-property window :wm_hints (encode-wm-hints wm-hints) :wm_hints 32)
   wm-hints)
 
 (defun decode-wm-hints (vector display)
   (declare (type (simple-vector 9) vector)
 	   (type display display))
-  (declare-values wm-hints)
+  (declare (values wm-hints))
   (let ((input-hint 0)
 	(state-hint 1)
 	(icon-pixmap-hint 2)
@@ -242,7 +253,7 @@
 
 (defun encode-wm-hints (wm-hints)
   (declare (type wm-hints wm-hints))
-  (declare-values simple-vector)
+  (declare (values simple-vector))
   (let ((input-hint         #b1)
 	(state-hint         #b10)
 	(icon-pixmap-hint   #b100)
@@ -287,12 +298,12 @@
 
 (defstruct wm-size-hints
   ;; Defaulted T to put the burden of remembering these on widget programmers.
-  (user-specified-position-p t :type boolean) ;; True when user specified x y
-  (user-specified-size-p t :type boolean)     ;; True when user specified width height
-  (x nil :type (or null int16))
-  (y nil :type (or null int16))
-  (width nil :type (or null card16))
-  (height nil :type (or null card16))
+  (user-specified-position-p nil :type boolean) ;; True when user specified x y
+  (user-specified-size-p nil :type boolean)     ;; True when user specified width height
+  (x nil :type (or null int16))			;; Obsolete
+  (y nil :type (or null int16))			;; Obsolete
+  (width nil :type (or null card16))		;; Obsolete
+  (height nil :type (or null card16))		;; Obsolete
   (min-width nil :type (or null card16))
   (min-height nil :type (or null card16))
   (max-width nil :type (or null card16))
@@ -300,46 +311,55 @@
   (width-inc nil :type (or null card16))
   (height-inc nil :type (or null card16))
   (min-aspect nil :type (or null number))
-  (max-aspect nil :type (or null number)))
+  (max-aspect nil :type (or null number))
+  (base-width nil :type (or null card16))
+  (base-height nil :type (or null card16))
+  (win-gravity nil :type (or null win-gravity)))
+
 
 (defun wm-normal-hints (window)
   (declare (type window window))
-  (declare-values wm-size-hints)
+  (declare (values wm-size-hints))
   (decode-wm-size-hints (get-property window :wm_normal_hints :type :wm_size_hints :result-type 'vector)))
 
 (defsetf wm-normal-hints set-wm-normal-hints)
 (defun set-wm-normal-hints (window hints)
   (declare (type window window)
 	   (type wm-size-hints hints))
-  (declare-values wm-size-hints)
+  (declare (values wm-size-hints))
   (change-property window :wm_normal_hints (encode-wm-size-hints hints) :wm_size_hints 32)
   hints)
 
+;;; OBSOLETE
 (defun wm-zoom-hints (window)
   (declare (type window window))
-  (declare-values wm-size-hints)
+  (declare (values wm-size-hints))
   (decode-wm-size-hints (get-property window :wm_zoom_hints :type :wm_size_hints :result-type 'vector)))
 
+;;; OBSOLETE
 (defsetf wm-zoom-hints set-wm-zoom-hints)
+;;; OBSOLETE
 (defun set-wm-zoom-hints (window hints)
   (declare (type window window)
 	   (type wm-size-hints hints))
-  (declare-values wm-size-hints)
+  (declare (values wm-size-hints))
   (change-property window :wm_zoom_hints (encode-wm-size-hints hints) :wm_size_hints 32)
   hints)
 
 (defun decode-wm-size-hints (vector)
-  (declare (type (or null (simple-vector 15)) vector))
-  (declare-values (or null wm-size-hints))
+  (declare (type (or null (simple-vector *)) vector))
+  (declare (values (or null wm-size-hints)))
   (when vector
-    (let ((usposition 0)			;User Specified position
-	  (ussize 1)				;User Specified size
-	  (pposition 2)				;Program specified position
-	  (psize 3)				;Program specified size
-	  (pminsize 4)				;Program specified minimum size
-	  (pmaxsize 5)				;Program specified maximum size
-	  (presizeinc 6)			;Program specified resize increments
-	  (paspect 7)				;Program specfied min and max aspect ratios
+    (let ((usposition 0)		;User Specified position
+	  (ussize 1)			;User Specified size
+	  (pposition 2)			;Program specified position
+	  (psize 3)			;Program specified size
+	  (pminsize 4)			;Program specified minimum size
+	  (pmaxsize 5)			;Program specified maximum size
+	  (presizeinc 6)		;Program specified resize increments
+	  (paspect 7)			;Program specfied min and max aspect ratios
+	  (pbasesize 8)			;Program specified base size
+	  (pwingravity 9)		;Program specified window gravity
 	  )
       (let ((flags (aref vector 0))
 	    (hints (make-wm-size-hints)))
@@ -364,26 +384,37 @@
 	(when (logbitp presizeinc flags)
 	  (setf (wm-size-hints-width-inc hints) (aref vector 9)
 		(wm-size-hints-height-inc hints) (aref vector 10)))
-	(when (logbitp paspect flags)
-	  (setf (wm-size-hints-min-aspect hints) (/ (aref vector 11) (aref vector 12))
-		(wm-size-hints-max-aspect hints) (/ (aref vector 13) (aref vector 14))))
+  	(when (logbitp paspect flags)
+ 	  (setf (wm-size-hints-min-aspect hints) (/ (aref vector 11) (aref vector 12))
+ 		(wm-size-hints-max-aspect hints) (/ (aref vector 13) (aref vector 14))))
+ 	(when (> (length vector) 15)
+ 	  ;; This test is for backwards compatibility since old Xlib programs
+ 	  ;; can set a size-hints structure that is too small.  See ICCCM.
+  	  (when (logbitp pbasesize flags)
+  	    (setf (wm-size-hints-base-width hints) (aref vector 15)
+  		  (wm-size-hints-base-height hints) (aref vector 16)))
+  	  (when (logbitp pwingravity flags)
+  	    (setf (wm-size-hints-win-gravity hints)
+ 	      (decode-type (member-vector *win-gravity-vector*) (aref vector 17)))))
 	hints))))
 
 (defun encode-wm-size-hints (hints)
   (declare (type wm-size-hints hints))
-  (declare-values simple-vector)
-  (let ((usposition #b1)			;User Specified position
-	(ussize     #b10)			;User Specified size
-	(pposition  #b100)			;Program specified position
-	(psize      #b1000)			;Program specified size
-	(pminsize   #b10000)			;Program specified minimum size
-	(pmaxsize   #b100000)			;Program specified maximum size
-	(presizeinc #b1000000)			;Program specified resize increments
-	(paspect    #b10000000)			;Program specfied min and max aspect ratios
+  (declare (values simple-vector))
+  (let ((usposition  #b1)		;User Specified position
+	(ussize      #b10)		;User Specified size
+	(pposition   #b100)		;Program specified position
+	(psize       #b1000)		;Program specified size
+	(pminsize    #b10000)		;Program specified minimum size
+	(pmaxsize    #b100000)		;Program specified maximum size
+	(presizeinc  #b1000000)		;Program specified resize increments
+	(paspect     #b10000000)	;Program specfied min and max aspect ratios
+	(pbasesize   #b100000000)	;Program specfied base size
+	(pwingravity #b1000000000)	;Program specfied window gravity
 	)
-    (let ((vector (make-array 15 :initial-element 0))
+    (let ((vector (make-array 18 :initial-element 0))
 	  (flags 0))
-      (declare (type (simple-vector 15) vector)
+      (declare (type (simple-vector 18) vector)
 	       (type card16 flags))
       (when (and (wm-size-hints-x hints) (wm-size-hints-y hints))
 	(setq flags (if (wm-size-hints-user-specified-position-p hints) usposition pposition))
@@ -416,6 +447,16 @@
 		(aref vector 12) (denominator min-aspect)
 		(aref vector 13) (numerator max-aspect)
 		(aref vector 14) (denominator max-aspect))))
+      (when (and (wm-size-hints-base-width hints)
+		 (wm-size-hints-base-height hints))
+	(setf flags (logior flags pbasesize)
+	      (aref vector 15) (wm-size-hints-base-width hints)
+	      (aref vector 16) (wm-size-hints-base-height hints)))
+      (when (wm-size-hints-win-gravity hints)
+	(setf flags (logior flags pwingravity)
+	      (aref vector 17) (encode-type
+				(member-vector *win-gravity-vector*)
+				(wm-size-hints-win-gravity hints))))
       (setf (aref vector 0) flags)
       vector)))
 
@@ -426,7 +467,7 @@
 
 (defun icon-sizes (window)
   (declare (type window window))
-  (declare-values wm-size-hints)
+  (declare (values wm-size-hints))
   (let ((vector (get-property window :wm_icon_size :type :wm_icon_size :result-type 'vector)))
     (declare (type (or null (simple-vector 6)) vector))
     (when vector
@@ -452,6 +493,35 @@
     wm-size-hints))
 
 ;;-----------------------------------------------------------------------------
+;; WM-Protocols
+
+(defun wm-protocols (window)
+  (map 'list #'(lambda (id) (atom-name (window-display window) id))
+       (get-property window :wm_protocols :type :atom)))
+
+(defsetf wm-protocols set-wm-protocols)
+(defun set-wm-protocols (window protocols)
+  (change-property window :wm_protocols
+		   (map 'list #'(lambda (atom) (intern-atom (window-display window) atom))
+			protocols)
+		   :atom 32)
+  protocols)
+
+;;-----------------------------------------------------------------------------
+;; WM-Colormap-windows
+
+(defun wm-colormap-windows (window)
+  (values (get-property window :wm_colormap_windows :type :window
+			:transform #'(lambda (id)
+				       (lookup-window (window-display window) id)))))
+
+(defsetf wm-colormap-windows set-wm-colormap-windows)
+(defun set-wm-colormap-windows (window colormap-windows)
+  (change-property window :wm_colormap_windows colormap-windows :window 32
+		   :transform #'window-id)
+  colormap-windows)
+
+;;-----------------------------------------------------------------------------
 ;; Transient-For
 
 (defun transient-for (window)
@@ -465,20 +535,32 @@
   transient)
 
 ;;-----------------------------------------------------------------------------
-;; Set-Standard-Properties
+;; Set-WM-Properties
 
-(defun set-standard-properties (window &rest options &key 
-				name icon-name resource-name resource-class command
-				client-machine hints normal-hints zoom-hints
-				;; the following are used for wm-normal-hints
-				user-specified-position-p
-				user-specified-size-p
-				x y width height min-width min-height max-width max-height
-				width-inc height-inc min-aspect max-aspect
-				;; the following are used for wm-hints
-				input initial-state icon-pixmap icon-window
-				icon-x icon-y icon-mask window-group)
+(defun set-wm-properties (window &rest options &key 
+			  name icon-name resource-name resource-class command
+			  client-machine hints normal-hints zoom-hints
+			  ;; the following are used for wm-normal-hints
+			  user-specified-position-p
+			  user-specified-size-p
+			  x y width height min-width min-height max-width max-height
+			  width-inc height-inc min-aspect max-aspect
+			  base-width base-height win-gravity
+			  ;; the following are used for wm-hints
+			  input initial-state icon-pixmap icon-window
+			  icon-x icon-y icon-mask window-group)
   ;; Set properties for WINDOW.
+  (declare (arglist window &rest options &key 
+		   name icon-name resource-name resource-class command
+		   client-machine hints normal-hints
+		   ;; the following are used for wm-normal-hints
+		   user-specified-position-p user-specified-size-p
+		   min-width min-height max-width max-height
+		   width-inc height-inc min-aspect max-aspect
+		   base-width base-height win-gravity
+		   ;; the following are used for wm-hints
+		   input initial-state icon-pixmap icon-window
+		   icon-x icon-y icon-mask window-group))
   (declare (type window window)
 	   (type (or null stringable) name icon-name resource-name resource-class client-machine)
 	   (type (or null list) command)
@@ -486,14 +568,16 @@
 	   (type (or null wm-size-hints) normal-hints zoom-hints)
 	   (type (or null boolean) user-specified-position-p user-specified-size-p)
 	   (type (or null int16) x y)
-	   (type (or null card16) width height min-width min-height max-width max-height width-inc height-inc)
+	   (type (or null card16) width height min-width min-height max-width max-height width-inc height-inc base-width base-height)
+	   (type (or null win-gravity) win-gravity)
 	   (type (or null number) min-aspect max-aspect)
 	   (type (or null (member :off :on)) input)
 	   (type (or null (member :dont-care :normal :zoom :iconic :inactive)) initial-state)
 	   (type (or null pixmap) icon-pixmap icon-mask)
 	   (type (or null window) icon-window)
 	   (type (or null card16) icon-x icon-y)
-	   (type (or null resource-id) window-group))
+	   (type (or null resource-id) window-group)
+	   (dynamic-extent options))
   (when name (setf (wm-name window) name))
   (when icon-name (setf (wm-icon-name window) icon-name))
   (when client-machine (setf (wm-client-machine window) client-machine))
@@ -514,11 +598,12 @@
 	(when icon-mask (setf (wm-hints-icon-mask wm-hints) icon-mask))
 	(when window-group (setf (wm-hints-input wm-hints) window-group))
 	(setf (wm-hints window) wm-hints))
-    (when hints (setf (wm-hints window) hints)))
+      (when hints (setf (wm-hints window) hints)))
   ;; WM-NORMAL-HINTS
   (if (dolist (arg '(:x :y :width :height :min-width :min-height :max-width :max-height
 			:width-inc :height-inc :min-aspect :max-aspect
-			:user-specified-position-p :user-specified-size-p))
+			:user-specified-position-p :user-specified-size-p
+			:base-width :base-height :win-gravity))
 	(when (getf options arg) (return t)))
       (let ((size (if normal-hints (copy-wm-size-hints normal-hints) (make-wm-size-hints))))
 	(when x (setf (wm-size-hints-x size) x))
@@ -533,25 +618,129 @@
 	(when height-inc (setf (wm-size-hints-height-inc size) height-inc))
 	(when min-aspect (setf (wm-size-hints-min-aspect size) min-aspect))
 	(when max-aspect (setf (wm-size-hints-max-aspect size) max-aspect))
+	(when base-width (setf (wm-size-hints-base-width size) base-width))
+	(when base-height (setf (wm-size-hints-base-height size) base-height))
+	(when win-gravity (setf (wm-size-hints-win-gravity size) win-gravity))
 	(when user-specified-position-p (setf (wm-size-hints-user-specified-position-p size)
 					      user-specified-position-p))
 	(when user-specified-size-p (setf (wm-size-hints-user-specified-size-p size)
 					  user-specified-size-p))
 	(setf (wm-normal-hints window) size))
-    (when normal-hints (setf (wm-normal-hints window) normal-hints)))
+      (when normal-hints (setf (wm-normal-hints window) normal-hints)))
   (when zoom-hints (setf (wm-zoom-hints window) zoom-hints))
   )
+
+;;; OBSOLETE
+(defun set-standard-properties (window &rest options)
+  (declare (dynamic-extent options))
+  (apply #'set-wm-properties window options))
+
+;;-----------------------------------------------------------------------------
+;; WM Control
+
+(defun iconify-window (window screen)
+  (declare (type window window)
+	   (type screen screen))
+  (let ((root (screen-root screen)))
+    (declare (type window root))
+    (send-event root :client-message '(:substructure-redirect :substructure-notify)
+		:window window :format 32 :type :wm_change_state :data (list 3))))
+
+(defun withdraw-window (window screen)
+  (declare (type window window)
+	   (type screen screen))
+  (unmap-window window)
+  (let ((root (screen-root screen)))
+    (declare (type window root))
+    (send-event root :unmap-notify '(:substructure-redirect :substructure-notify)
+		:window window :event-window root :configure-p nil)))
+
 
 ;;-----------------------------------------------------------------------------
 ;; Colormaps
 
+(defstruct standard-colormap
+  (colormap nil :type (or null colormap))
+  (base-pixel 0 :type pixel)
+  (max-color nil :type (or null color))
+  (mult-color nil :type (or null color))
+  (visual nil :type (or null visual-info))
+  (kill nil :type (or (member nil :release-by-freeing-colormap)
+		      drawable gcontext cursor colormap font)))
+
+(defun rgb-colormaps (window property)
+  (declare (type window window)
+	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
+			 :rgb_green_map :rgb_blue_map) property))
+  (let ((prop (get-property window property :type :rgb_color_map :result-type 'vector)))
+    (declare (type (or null simple-vector) prop))
+    (when prop
+      (list (make-standard-colormap
+	      :colormap (lookup-colormap (window-display window) (aref prop 0))
+	      :base-pixel (aref prop 7)
+	      :max-color (make-color :red   (card16->rgb-val (aref prop 1))
+				     :green (card16->rgb-val (aref prop 3))
+				     :blue  (card16->rgb-val (aref prop 5)))
+	      :mult-color (make-color :red   (card16->rgb-val (aref prop 2))
+				      :green (card16->rgb-val (aref prop 4))
+				      :blue  (card16->rgb-val (aref prop 6)))
+	      :visual (and (<= 9 (length prop))
+			   (visual-info (window-display window) (aref prop 8)))
+	      :kill (and (<= 10 (length prop))
+			 (let ((killid (aref prop 9)))
+			   (if (= killid 1)
+			       :release-by-freeing-colormap
+			       (lookup-resource-id (window-display window) killid)))))))))
+
+(defsetf rgb-colormaps set-rgb-colormaps)
+(defun set-rgb-colormaps (window property maps)
+  (declare (type window window)
+	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
+			 :rgb_green_map :rgb_blue_map) property)
+	   (type list maps))
+  (let ((prop (make-array (* 10 (length maps)) :element-type 'card32))
+	(index -1))
+    (dolist (map maps)
+      (setf (aref prop (incf index))
+	    (encode-type colormap (standard-colormap-colormap map)))
+      (setf (aref prop (incf index))
+	    (encode-type rgb-val (color-red (standard-colormap-max-color map))))
+      (setf (aref prop (incf index))
+	    (encode-type rgb-val (color-red (standard-colormap-mult-color map))))
+      (setf (aref prop (incf index))
+	    (encode-type rgb-val (color-green (standard-colormap-max-color map))))
+      (setf (aref prop (incf index))
+	    (encode-type rgb-val (color-green (standard-colormap-mult-color map))))
+      (setf (aref prop (incf index))
+	    (encode-type rgb-val (color-blue (standard-colormap-max-color map))))
+      (setf (aref prop (incf index))
+	    (encode-type rgb-val (color-blue (standard-colormap-mult-color map))))
+      (setf (aref prop (incf index))
+	    (standard-colormap-base-pixel map))
+      (setf (aref prop (incf index))
+	    (visual-info-id (standard-colormap-visual map)))
+      (setf (aref prop (incf index))
+	    (let ((kill (standard-colormap-kill map)))
+	      (etypecase kill
+		(symbol
+		  (ecase kill
+		    ((nil) 0)
+		    ((:release-by-freeing-colormap) 1)))
+		(drawable (drawable-id kill))
+		(gcontext (gcontext-id kill))
+		(cursor (cursor-id kill))
+		(colormap (colormap-id kill))
+		(font (font-id kill))))))
+    (change-property window property prop :rgb_color_map 32)))
+
+;;; OBSOLETE
 (defun get-standard-colormap (window property)
   (declare (type window window)
 	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
 			 :rgb_green_map :rgb_blue_map) property))
-  (declare-values colormap base-pixel max-color mult-color)
+  (declare (values colormap base-pixel max-color mult-color))
   (let ((prop (get-property window property :type :rgb_color_map :result-type 'vector)))
-    (declare (type (or null (simple-vector 8)) prop))
+    (declare (type (or null simple-vector) prop))
     (when prop
       (values (lookup-colormap (window-display window) (aref prop 0))
 	      (aref prop 7)			;Base Pixel
@@ -560,9 +749,9 @@
 			  :blue  (card16->rgb-val (aref prop 5)))
 	      (make-color :red   (card16->rgb-val (aref prop 2))	;Mult color
 			  :green (card16->rgb-val (aref prop 4))
-			  :blue  (card16->rgb-val (aref prop 6)))
-	      ))))
+			  :blue  (card16->rgb-val (aref prop 6)))))))
 
+;;; OBSOLETE
 (defun set-standard-colormap (window property colormap base-pixel max-color mult-color)
   (declare (type window window)
 	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
@@ -570,14 +759,14 @@
 	   (type colormap colormap)
 	   (type pixel base-pixel)
 	   (type color max-color mult-color))
-  (let ((prop (vector (encode-type colormap colormap)
-		      (encode-type rgb-val (color-red max-color))
-		      (encode-type rgb-val (color-red mult-color))
-		      (encode-type rgb-val (color-green max-color))
-		      (encode-type rgb-val (color-green mult-color))
-		      (encode-type rgb-val (color-blue max-color))
-		      (encode-type rgb-val (color-blue mult-color))
-		      base-pixel)))
+  (let ((prop (apply #'vector (encode-type colormap colormap)
+		     (encode-type rgb-val (color-red max-color))
+		     (encode-type rgb-val (color-red mult-color))
+		     (encode-type rgb-val (color-green max-color))
+		     (encode-type rgb-val (color-green mult-color))
+		     (encode-type rgb-val (color-blue max-color))
+		     (encode-type rgb-val (color-blue mult-color))
+		     base-pixel)))
     (change-property window property prop :rgb_color_map 32)))
 
 ;;-----------------------------------------------------------------------------
@@ -593,7 +782,7 @@
 	   (type (or null array-index) end)
 	   (type t result-type)			;a sequence type
 	   (type (or null (function (integer) t)) transform))
-  (declare-values sequence type format bytes-after)
+  (declare (values sequence type format bytes-after))
   (let* ((root (screen-root (first (display-roots display))))
 	 (property (aref '#(:cut_buffer0 :cut_buffer1 :cut_buffer2 :cut_buffer3
 			    :cut_buffer4 :cut_buffer5 :cut_buffer6 :cut_buffer7)
@@ -607,6 +796,7 @@
 ;; In order to avoid having to pass positional parameters to set-cut-buffer,
 ;; We've got to do the following.  WHAT A PAIN...
 (define-setf-method cut-buffer (display &rest option-list)
+  (declare (dynamic-extent option-list))
   (do* ((options (copy-list option-list))
 	(option options (cddr option))
 	(store (gensym))

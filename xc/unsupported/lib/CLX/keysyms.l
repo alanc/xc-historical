@@ -304,7 +304,8 @@
   (define-keysym #\equivalence (keysym 008 207))	; :technical
   (define-keysym #\or-sign (keysym 008 223))	; :technical
   (define-keysym #\integral (keysym 008 191))	; :technical
-  (define-keysym #\null (keysym 255 107))	; :function
+;;  break isn't null
+;;  (define-keysym #\null (keysym 255 107))	; :function
   (define-keysym #\clear-input (keysym 255 011))	; :tty
   (define-keysym #\help (keysym 255 106))	; :function
   (define-keysym #\refresh (keysym 255 097))	; :function

@@ -87,7 +87,8 @@
 	 (error "~s Isn't the name of a keysym" keysym)))))
 )
 
-(defvar *keysym->character-map* (make-hash-table :test #'eq :size 400))
+(defvar *keysym->character-map*
+	(make-hash-table :test (keysym->character-map-test) :size 400))
 
 ;; Keysym-mappings are a list of the form (object translate lowercase modifiers mask)
 ;; With the following accessor macros. Everything after OBJECT is optional.
@@ -232,7 +233,7 @@
 (defun keysym-downcase (keysym)
   ;; If keysym has a lower-case equivalent, return it, otherwise return keysym.
   (declare (type keysym keysym))
-  (declare-values keysym)
+  (declare (values keysym))
   (let ((translations (gethash keysym *keysym->character-map*)))
     (or (and translations (keysym-mapping-lowercase (first translations))) keysym)))
 
@@ -240,7 +241,7 @@
   ;; Returns T if keysym is uppercase-alphabetic.
   ;; I.E. If it has a lowercase equivalent.
   (declare (type keysym keysym))
-  (declare-values (or null keysym))
+  (declare (values (or null keysym)))
   (let ((translations (gethash keysym *keysym->character-map*)))
     (and translations
 	 (keysym-mapping-lowercase (first translations)))))
@@ -290,7 +291,7 @@
 
 (defun display-keyboard-mapping (display)
   (declare (type display display))
-  (declare-values (simple-array keysym (display-max-keycode keysyms-per-keycode)))
+  (declare (values (simple-array keysym (display-max-keycode keysyms-per-keycode))))
   (or (display-keysym-mapping display)
       (setf (display-keysym-mapping display) (keyboard-mapping display))))
 
@@ -325,15 +326,14 @@
   (declare (type display display)
 	   (type keysym keysym)
 	   (type card16 state))
-  (declare-values (or null character))
+  (declare (values (or null character)))
   (let* ((display-mappings (cdr (assoc keysym (display-keysym-translation display))))
-	 static-mappings
 	 (mapping (or ;; Find the matching display mapping
 		      (dolist (mapping display-mappings)
 			(when (mapping-matches-p display state mapping)
 			  (return mapping)))
 		      ;; Find the matching static mapping
-		      (dolist (mapping (setq static-mappings (gethash keysym *keysym->character-map*)))
+		      (dolist (mapping (gethash keysym *keysym->character-map*))
 			(when (mapping-matches-p display state mapping)
 			  (return mapping))))))
     (when mapping
@@ -345,7 +345,7 @@
   (declare (type display display)
 	   (type mask16 state)
 	   (type list mapping))
-  (declare-values boolean)
+  (declare (values boolean))
   (flet
     ((modifiers->mask (display-mapping modifiers errorp &aux (mask 0))
        ;; Convert MODIFIERS, which is a modifier mask, or a list of state-mask-keys into a mask.
@@ -354,7 +354,7 @@
        (declare (type list display-mapping)	; Alist of (keysym . mask)
 		(type (or mask16 list) modifiers)
 		(type mask16 mask))
-       (declare-values (or null mask16))
+       (declare (values (or null mask16)))
        (if (numberp modifiers)
 	   modifiers
 	 (dolist (modifier modifiers mask)
@@ -398,7 +398,7 @@
   (declare (type display display)
 	   (type card16 state)
 	   (type t object))
-  (declare-values t) ;; Object returned by keycode->character
+  (declare (values t)) ;; Object returned by keycode->character
   (macrolet ((keystate-p (state keyword)
 			 `(the boolean
 			       (logbitp ,(position keyword *state-mask-vector*)
@@ -416,7 +416,7 @@
 
 (defun default-keysym-index (display keycode state)
   ;; Returns a keysym-index for use with keycode->character
-  (declare-values card8)
+  (declare (values card8))
   (macrolet ((keystate-p (state keyword)
 	       `(the boolean
 		     (logbitp ,(position keyword *state-mask-vector*)
@@ -444,7 +444,7 @@
 	   (type boolean uppercase-alphabetic-p)
 	   (type boolean shift-lock-xors));;; If T, both SHIFT-LOCK and SHIFT is the same
 	                                  ;;; as neither if the character is alphabetic.
-  (declare-values boolean)
+  (declare (values boolean))
   (macrolet ((keystate-p (state keyword)
 	       `(the boolean
 		     (logbitp ,(position keyword *state-mask-vector*)
@@ -460,9 +460,7 @@
 					   caps-lock-keysym)))))
       (declare (type boolean controlp shiftp lockp alphap))
       ;; Control keys aren't affected by lock
-      (if controlp
-	  ;; An alphabetic control character defaults to uppercase
-	  (when alphap (setq shiftp (not shiftp)))
+      (unless controlp
 	;; Not a control character - check state of lock modifier
 	(when (and lockp
 		   alphap
@@ -507,12 +505,12 @@
   ;;    mod-3 -> char-hyper-bit
   ;; Implementation dependent function.
   (declare (type display display)
-	   (type card8 code)
+	   (type card8 keycode)
 	   (type card16 state)
 	   (type (or null card8) keysym-index)
 	   (type (or null (function (string-char card16 boolean card8) card8))
 		 keysym-index-function))
-  (declare-values (or null character))
+  (declare (values (or null character)))
   (let* ((index (or keysym-index
 		    (funcall keysym-index-function display keycode state)))
 	 (keysym (if index (keycode->keysym display keycode index) 0)))
@@ -543,7 +541,7 @@
   (declare (type display display)
 	   (type card16 state)
 	   (type keysym keysym))
-  (declare-values boolean)
+  (declare (values boolean))
   (let* ((mapping (get-display-modifier-mapping display))
 	 (mask (assoc keysym mapping)))
     (and mask (plusp (logand state (cdr mask))))))
@@ -567,7 +565,7 @@
   (declare (type display display)
 	   (type keysym keysym)
 	   (type (bit-vector 256) keymap))
-  (declare-values boolean)
+  (declare (values boolean))
   ;; The keysym may appear in the keymap more than once,
   ;; So we have to search the entire keysym map.
   (do* ((min (display-min-keycode display))
@@ -589,7 +587,7 @@
   (declare (type display display)
 	   (type character character)
 	   (type (bit-vector 256) keymap))
-  (declare-values boolean)
+  (declare (values boolean))
   ;; Check all one bits in keymap
   (do* ((min (display-min-keycode display))
 	(max (display-max-keycode display))
@@ -608,7 +606,7 @@
   ;; Return keycodes for keysym, as multiple values
   (declare (type display display)
 	   (type keysym keysym))
-  (declare-values (or null keycode) (or null keycode) (or null keycode))
+  (declare (values (or null keycode) (or null keycode) (or null keycode)))
   ;; The keysym may appear in the keymap more than once,
   ;; So we have to search the entire keysym map.
   (do* ((min (display-min-keycode display))

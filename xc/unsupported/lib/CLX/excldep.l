@@ -1,4 +1,44 @@
-;;; -*- Mode: common-lisp; Syntax: Common-lisp; Package: USER; Base: 10; Lowercase: Yes -*-
+;;; -*- Mode: common-lisp; Package: USER; Base: 10; Lowercase: Yes -*-
+;;;
+;;; CLX -- excldep.cl
+;;;
+;;; Copyright (c) 1987, 1988, 1989 Franz Inc, Berkeley, Ca.
+;;;
+;;; Permission is granted to any individual or institution to use, copy,
+;;; modify, and distribute this software, provided that this complete
+;;; copyright and permission notice is maintained, intact, in all copies and
+;;; supporting documentation.
+;;;
+;;; Franz Incorporated provides this software "as is" without
+;;; express or implied warranty.
+;;;
+
+(in-package :xlib :use '(:foreign-functions :lisp :excl))
+
+(eval-when (load)
+  (provide :clxexcldep)
+  (provide :clx))
+
+(require :foreign)
+(require :process)			; Needed even if scheduler is not
+					; running.  (Must be able to make
+					; a process-lock.)
+
+(import '(excl::if* excl::defcmacro))
+
+;;
+;; The following is a suggestion.  If you comment out this form be
+;; prepared for possible deadlock, since no interrupts will be recognized
+;; while reading from the X socket if the scheduler is not running.
+;;
+;; Note -- this really should be in defsystem.cl, since it only matters when
+;; compiling, but it's here and loaded into CLX.fasl for safety.
+;;
+(setq compiler::generate-interrupt-checks-switch
+  (compile nil '(lambda (safety size speed)
+		   (declare (ignore size))
+		  (or (< speed 3) (> safety 0)))))
+
 
 (eval-when (eval compile load)
   (let ((x '#(1)))
@@ -8,11 +48,223 @@
 	(pushnew :clx-little-endian *features*)))
   #+allegro
   (if (not (boundp 'excl::cl-major-version-number))
-      (pushnew :allegro-v2.2 *features*)))
+      (pushnew :allegro-v2.2 *features*))
+  
+  (proclaim '(special mp::*scheduler-stack-group* mp::*current-process*))
+  (if (not (boundp 'mp::*scheduler-stack-group*))
+      (setq mp::*scheduler-stack-group* nil)))
 
 
-(eval-when (load)
-  (provide :clxexcldep))
+(defmacro define-condition (name (parent-type) &optional slots &rest args)
+  `(excl::define-condition ,name (,parent-type) ,slots ,@args))
+
+
+(defconstant type-pred-alist
+  '(
+    (card8  . card8p)
+    (card16 . card16p)
+    (card29 . card29p)
+    (card32 . card32p)
+    (int8   . int8p)
+    (int16  . int16p)
+    (int32  . int32p)
+    (mask16 . card16p)
+    (mask32 . card32p)
+    (pixel  . card32p)
+    (resource-id . card29p)
+    (keysym . card32p)
+    ))
+
+;; This (if (and ...) t nil) stuff has a purpose -- it lets the sun4 compiler
+;; opencode the `and'.
+
+(defun card8p (x)
+  (declare (optimize (speed 3) (safety 0))
+	   (fixnum x))
+  (if (and (fixnump x) (> #.(expt 2 8) x) (>= x 0))
+      t
+    nil))
+
+(defcmacro card8p (x)
+  (let ((xx (gensym)))
+    `(let ((,xx ,x))
+       (declare (optimize (speed 3) (safety 0))
+		(fixnum ,xx))
+       (and (fixnump ,xx) (> #.(expt 2 8) ,xx) (>= ,xx 0)))))
+
+(defun card16p (x)
+  (declare (optimize (speed 3) (safety 0))
+	   (fixnum x))
+  (if (and (fixnump x) (> #.(expt 2 16) x) (>= x 0))
+      t
+    nil))
+
+(defcmacro card16p (x)
+  (let ((xx (gensym)))
+    `(let ((,xx ,x))
+       (declare (optimize (speed 3) (safety 0))
+		(fixnum ,xx))
+       (and (fixnump ,xx) (> #.(expt 2 16) ,xx) (>= ,xx 0)))))
+
+;; These next two are too large to macroexpand.
+
+(defun card29p (x)
+  (declare (optimize (speed 3) (safety 0)))
+  (if (or (and (fixnump x) (>= (the fixnum x) 0))
+	  (and (bignump x) (> #.(expt 2 29) (the bignum x))
+	       (>= (the bignum x) 0)))
+      t
+    nil))
+
+(defun card32p (x)
+  (declare (optimize (speed 3) (safety 0)))
+  (if (or (and (fixnump x) (>= (the fixnum x) 0))
+	  (and (bignump x) (> #.(expt 2 32) (the bignum x))
+	       (>= (the bignum x) 0)))
+      t
+    nil))
+
+(defun int8p (x)
+  (declare (optimize (speed 3) (safety 0))
+	   (fixnum x))
+  (if (and (fixnump x) (> #.(expt 2 7) x) (>= x #.(expt -2 7)))
+      t
+    nil))
+
+(defcmacro int8p (x)
+  (let ((xx (gensym)))
+    `(let ((,xx ,x))
+       (declare (optimize (speed 3) (safety 0))
+		(fixnum ,xx))
+       (and (fixnump ,xx) (> #.(expt 2 7) ,xx) (>= ,xx #.(expt -2 7))))))
+
+(defun int16p (x)
+  (declare (optimize (speed 3) (safety 0))
+	   (fixnum x))
+  (if (and (fixnump x) (> #.(expt 2 15) x) (>= x #.(expt -2 15)))
+      t
+    nil))
+
+(defcmacro int16p (x)
+  (let ((xx (gensym)))
+    `(let ((,xx ,x))
+       (declare (optimize (speed 3) (safety 0))
+		(fixnum ,xx))
+       (and (fixnump ,xx) (> #.(expt 2 15) ,xx) (>= ,xx #.(expt -2 15))))))
+
+(defun int32p (x)
+  (declare (optimize (speed 3) (safety 0)))
+  (if (or (fixnump x)
+	  (and (bignump x) (> #.(expt 2 31) (the bignum x))
+	       (>= (the bignum x) #.(expt -2 31))))
+      t
+    nil))
+
+(comp::def-tr comp::new-tr-typep typep (form type)
+   (let (ent)
+      (if* (and (consp type)
+		(eq 'quote (car type))
+		(consp (cdr type)))
+	 then (setq ent (franz:assq (cadr type) type-pred-alist)))
+      (if* ent
+	 then `(,(cdr ent) ,form)
+	 else (if* (and (consp type)
+			(eq 'quote (car type))
+			(consp (cdr type)))
+		 then (setq ent (franz:assq (cadr type)
+					    excl::type-pred-alist)))
+	      (if* ent
+		 then `(,(cdr ent) ,form)
+		 else (comp::no-transform)))))
+
+
+(defun fd-char-avail-p (fd)
+   ;; return t if there is a character available for reading or on error
+   (multiple-value-bind (available-p errcode)
+	 (comp::.primcall-sargs 'sys::filesys excl::fs-char-avail fd)
+      (if* errcode
+	 then t
+	 else available-p)))
+
+
+(when
+    (plusp
+     (ff:get-entry-points
+      (make-array 1 :initial-contents
+		  (list (ff:convert-to-lang "c_read_bytes" :language :c)))
+      (make-array 1 :element-type '(unsigned-byte 32))))
+  (ff:remove-entry-point (ff:convert-to-lang "c_read_bytes" :language :c))
+  (ff:remove-entry-point (ff:convert-to-lang "c_read_bytes_interruptible"
+					     :language :c))
+  (load "excldep.o"))
+
+
+;;
+;; Suns need a special hack so that you can build CLX on a OS3.* machine and
+;; use it on a OS4.0 machine.  This is because the hostent structure changed
+;; incompatibly.
+;;
+#+(or :sun3 :sun4)
+(when
+    (plusp (ff:get-entry-points
+	    (make-array 1 :initial-contents
+			(list (ff:convert-to-lang "connect_to_server_3_x"
+						  :language :c)))
+	    (make-array 1 :element-type '(unsigned-byte 32))))
+
+  (ff:remove-entry-point (ff:convert-to-lang "connect_to_server_3_x"
+					     :language :c))
+  (ff:remove-entry-point (ff:convert-to-lang "connect_to_server_4_x"
+					     :language :c))
+  (load "socket3x.o")
+  (load "socket4x.o")) 
+
+#-(or :sun3 :sun4)
+(when
+    (plusp (ff:get-entry-points
+	    (make-array 1 :initial-contents
+			(list (ff:convert-to-lang "connect_to_server"
+						  :language :c)))
+	    (make-array 1 :element-type '(unsigned-byte 32))))
+  
+  (ff:remove-entry-point (ff:convert-to-lang "connect_to_server" :language :c))
+  (load "socket.o"))
+
+(ff:defforeign-list `((xlib::connect-to-server
+		       :entry-point
+		       #+(or :sun3 :sun4)
+		       ,(if (probe-file "/lib/ld.so")
+			    (ff:convert-to-lang "connect_to_server_4_x"
+						:language :c)
+			  (ff:convert-to-lang "connect_to_server_3_x"
+						:language :c))
+		       #-(or :sun3 :sun4)
+		       ,(ff:convert-to-lang "connect_to_server" :language :c)
+		       :return-type :fixnum
+		       :arg-checking nil
+		       :arguments (string fixnum))
+		      (xlib::c-read-bytes
+		       :entry-point
+		       ,(ff:convert-to-lang "c_read_bytes" :language :c)
+		       :return-type :fixnum
+		       :arg-checking nil
+		       :call-direct t
+		       :callback nil
+		       :allow-other-keys t
+		       :arguments (fixnum (simple-array (unsigned-byte 8) (*))
+				   fixnum fixnum))
+		      (xlib::c-read-bytes-interruptible
+		       :entry-point
+		       ,(ff:convert-to-lang "c_read_bytes_interruptible"
+			 :language :c)
+		       :return-type :fixnum
+		       :arg-checking nil
+		       :call-direct t
+		       :callback nil
+		       :allow-other-keys t
+		       :arguments (fixnum (simple-array (unsigned-byte 8) (*))
+				   fixnum fixnum))))
+
 
 (in-package :excl)
 
@@ -76,6 +328,7 @@
       ;(msg " resulting decriptor " res 'N)
       res))
 
+
 #+(or (not allegro) allegro-v2.2)
 (defun make-sequence (type length &rest rest &key initial-element)
   "Returns a sequence of the given Type and Length, with elements initialized
@@ -103,9 +356,3 @@
 			      (t (return-from make-sequence (make-sequence
 				   (funcall temp (list type)) length)))))))
      (error "~s is a bad type specifier for sequences." type ))))
-
-#-allegro
-(eval-when (load compile)
-  (if (not (fboundp 'excl::scheduler-running-p))
-      (defun excl::scheduler-running-p ()
-         (boundp 'mp::*scheduler-stack-group*))))

@@ -69,13 +69,17 @@
 	  bitmap-image
 	  image-pixmap))
 
-(deftype bitmap () '(array bit (* *)))
+(deftype pixarray-1  () `(array (unsigned-byte  1) (* *)))
+(deftype pixarray-4  () `(array (unsigned-byte  4) (* *)))
+(deftype pixarray-8  () `(array (unsigned-byte  8) (* *)))
+(deftype pixarray-16 () `(array (unsigned-byte 16) (* *)))
+(deftype pixarray-24 () `(array (unsigned-byte 24) (* *)))
+(deftype pixarray-32 () `(array (unsigned-byte 32) (* *)))
 
-(deftype pixarray () '(or (array pixel (* *))
-			  (array card16 (* *))
-			  (array card8 (* *))
-			  (array (unsigned-byte 4) (* *))
-			  (array bit (* *))))
+(deftype pixarray ()
+  '(or pixarray-1 pixarray-4 pixarray-8 pixarray-16 pixarray-24 pixarray-32))
+
+(deftype bitmap () 'pixarray-1)
 
 (defstruct (image (:constructor nil) (:copier nil))
   ;; Public structure
@@ -104,7 +108,7 @@
 (defvar *empty-data-x* (make-sequence '(array card8 (*)) 0))
 (proclaim '(type (array card8 (*)) *empty-data-x*))
 (defvar *empty-data-z* (make-array '(0 0) :element-type 'bit))
-(proclaim '(type pixarray *empty-data-z*))
+(proclaim '(type pixarray-1 *empty-data-z*))
 
 (defstruct (image-x (:include image))
   ;; Use this format for shoveling image data
@@ -151,7 +155,7 @@
 	  format)				; defaults to :z-pixmap
     (type (or null card16) bytes-per-line)
     (type boolean byte-lsb-first-p bit-lsb-first-p))
-  (declare-values image)
+  (declare (values image))
   (let (image)
     ;; If image is a list of one element, use image-z
     ;; (when (and (consp data) (not (cdr data))) (setq data (car data)))
@@ -174,14 +178,15 @@
        (unless width (setq width (array-dimension (car data) 1)))
        (unless height (setq height (array-dimension (car data) 0)))
        (setq image (make-image-xy :width width :height height :plist plist
-				  :depth (or depth (length image))
+				  :depth (or depth (length data))
 				  :bitmap-list data)))
       
       (pixarray					; image-z
        (unless width (setq width (array-dimension data 1)))
        (unless height (setq height (array-dimension data 0)))
        (unless depth (setq depth (pixarray-depth data)))
-       (setq bits-per-pixel (ash 1 (integer-length (1- (or bits-per-pixel depth))))) ;; round up to power of 2
+       ;; round up to power of 2
+       (setq bits-per-pixel (ash 1 (integer-length (1- (or bits-per-pixel depth))))) 
        (setq image (make-image-z :width width :height height
 				:depth depth :plist plist
 				:bits-per-pixel bits-per-pixel
@@ -215,15 +220,6 @@
 ;;;-----------------------------------------------------------------------------
 ;;; GET-IMAGE
 
-;; Should this be exported?
-(defun visual-info (display visual-id)
-  (dolist (screen (display-roots display))
-    (dolist (vis (screen-depths screen))
-      (dolist (visual-info (cdr vis))
-	(when (= visual-id (visual-info-id visual-info))
-	  (return-from visual-info visual-info)))))
-  (error "Visual info not found for id #x~x in display ~s" visual-id display))
-
 (defun get-image (drawable &key 
 		  (x (required-arg x))
 		  (y (required-arg y))
@@ -244,7 +240,7 @@
 	   (type (or null pixel) plane-mask)
 	   (type (or null (member :xy-pixmap :z-pixmap)) format)
 	   (type (or null (member image-x image-xy image-z)) result-type))
-  (declare-values image visual-id)
+  (declare (values image visual-info))
   (unless result-type
     (setq result-type (case format
 			(:xy-pixmap 'image-xy)
@@ -260,7 +256,7 @@
 	    (image-x t))
     (error "Result-type ~s is incompatable with format ~s"
 	   result-type format))
-  (multiple-value-bind (data depth visual-id)
+  (multiple-value-bind (data depth visual-info)
       (get-raw-image drawable :x x :y y :width width :height height
 		     :plane-mask (or plane-mask #xffffffff) :format format)
     (let* ((display (drawable-display drawable))
@@ -320,12 +316,11 @@
 		   (create-image :width width :height height
 				 :depth depth :data pixarray
 				 ))))))
-	(when (plusp visual-id)
-	  (let ((visual-info (visual-info display visual-id)))
-	    (setf (image-red-mask image) (visual-info-red-mask visual-info))
-	    (setf (image-green-mask image) (visual-info-green-mask visual-info))
-	    (setf (image-blue-mask image) (visual-info-blue-mask visual-info))))
-	(values image visual-id)))))
+	(when visual-info
+	  (setf (image-red-mask image) (visual-info-red-mask visual-info))
+	  (setf (image-green-mask image) (visual-info-green-mask visual-info))
+	  (setf (image-blue-mask image) (visual-info-blue-mask visual-info)))
+	(values image visual-info)))))
 
 
 ;;;-----------------------------------------------------------------------------
@@ -371,7 +366,7 @@
 
 
 (defun z-format-pixarray (data index bytes-per-line depth bits-per-pixel
-				src-x src-y width height)
+			  src-x src-y width height)
   (declare (type (simple-array card8 (*)) data)
 	   (type array-index index)
 	   (type card16 bytes-per-line)
@@ -379,28 +374,48 @@
 	   (type (member 1 4 8 16 24 32) bits-per-pixel)
 	   (type card16 src-x src-y width height))
   (let* ((row src-y)
-	 (copy-pixarray-row (cdr (assoc bits-per-pixel
-					'((1 . z-format-row-1)
-					  (4 . z-format-row-4)
-					  (8 . z-format-row-8)
-					  (16 . z-format-row-16)
-					  (24 . z-format-row-24)
-					  (32 . z-format-row-32)))))
 	 (pixarray (make-array (list height width) :element-type `(unsigned-byte ,depth))))
     (declare (type array-index row)
 	     (type pixarray pixarray))
-    (dotimes (i height)
-      ;; Copy scanline
-      (funcall copy-pixarray-row data index pixarray row src-x width)
-      (index-incf row)
-      (index-incf index bytes-per-line))
+    (macrolet ((copy (function)
+		 `(dotimes (i height)
+		    ;; Copy scanline
+		    (,function data index pixarray row src-x width)
+		    (index-incf row)
+		    (index-incf index bytes-per-line))))
+      (ecase bits-per-pixel
+	(1  (copy z-format-row-1))
+	(4  (copy z-format-row-4))
+	(8  (copy z-format-row-8))
+	(16 (copy z-format-row-16))
+	(24 (copy z-format-row-24))
+	(32 (copy z-format-row-32))))
     pixarray))
 
 (defun z-format-row-1 (data index pixarray row src-x width)
   ;; Copy 1 bit-per-pixel pixels from data to pixarray
   (declare (type (simple-array card8 (*)) data)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-1 pixarray))
+  #+Genera
+  (sys:with-data-stack
+    (let* ((index (+ index (ash src-x -3)))
+	   (src-x (logand src-x 7))
+	   (data-octets (ash (+ width 7) -3))
+	   (revdata (sys:make-stack-array data-octets :element-type 'card8))
+	   (revdata-overlay
+	     (sys:make-stack-array width :element-type 'bit
+				   :displaced-to revdata :displaced-index-offset src-x))
+	   (pixarray-overlay (sys:make-stack-array width :element-type 'bit
+						   :displaced-to pixarray
+						   :displaced-index-offset
+						   (array-row-major-index pixarray row 0))))
+      (declare (sys:array-register revdata))
+      (with-vector (data (simple-array card8 (*)))
+	(dotimes (i data-octets)
+	  (setf (aref revdata i) (byte-reverse (aref data (+ index i))))))
+      (replace pixarray-overlay revdata-overlay)))
+  #-Genera
   (with-vector (data (simple-array card8 (*)))
     (let* ((col 0)
 	   (index (+ index (ash src-x -3))) ;; starting index
@@ -422,7 +437,7 @@
 	(let ((byte (byte-reverse (aref data index))))
 	  (declare (type card8 byte))
 	  (index-incf index)
-	  (setf (aref pixarray row col) (logand byte 1))
+	  (setf (aref pixarray row col)        (logand byte 1))
 	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
 	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
 	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
@@ -444,7 +459,7 @@
   ;; Copy 1 bit-per-pixel pixels from data to pixarray
   (declare (type (simple-array card8 (*)) data)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-4 pixarray))
   (with-vector (data (simple-array card8 (*)))
     (let* ((col 0)
 	   (index (+ index (ash src-x -1))) ;; starting index
@@ -478,7 +493,7 @@
   ;; Copy 1 bit-per-pixel pixels from data to pixarray
   (declare (type (simple-array card8 (*)) data)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-8 pixarray))
   (with-vector (data (simple-array card8 (*)))
     (let* ((index (+ index src-x))) ;; starting index
       (declare (type array-index index))
@@ -490,7 +505,7 @@
   ;; Copy 1 bit-per-pixel pixels from data to pixarray
   (declare (type (simple-array card8 (*)) data)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-16 pixarray))
   (with-vector (data (simple-array card8 (*)))
     (let* ((index (+ index src-x))) ;; starting index
       (declare (type array-index index))
@@ -503,7 +518,7 @@
   ;; Copy 1 bit-per-pixel pixels from data to pixarray
   (declare (type (simple-array card8 (*)) data)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-24 pixarray))
   (with-vector (data (simple-array card8 (*)))
     (let* ((index (+ index src-x))) ;; starting index
       (declare (type array-index index))
@@ -518,7 +533,7 @@
   ;; Copy 1 bit-per-pixel pixels from data to pixarray
   (declare (type (simple-array card8 (*)) data)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-32 pixarray))
   (with-vector (data (simple-array card8 (*)))
     (let* ((index (+ index src-x))) ;; starting index
       (declare (type array-index index))
@@ -674,7 +689,7 @@
 ;;;		of depth 1 is that when sending a :bitmap format the foreground 
 ;;;		and background in the gcontext are used.
 
-(defun put-image (drawable gcontext image &rest options &key
+(defun put-image (drawable gcontext image &key
 		  (src-x 0) (src-y 0)		;Position within image
 		  (x (required-arg x))		;Position within drawable
 		  (y (required-arg y))
@@ -711,16 +726,21 @@
       (image-x
        (when (eq (image-x-format image) :z-pixmap)
 	 (setq scanline-pad (pixmap-format-scanline-pad pixmap-format)))
-       (put-image-x drawable gcontext image src-x src-y x y width height bitmap-p scanline-pad))
-      (image-xy (put-image-xy drawable gcontext image src-x src-y x y width height bitmap-p scanline-pad))
+       (put-image-x drawable gcontext image src-x src-y x y width height
+		    bitmap-p scanline-pad))
+      (image-xy
+	(put-image-xy drawable gcontext image src-x src-y x y width height
+		      bitmap-p scanline-pad))
       (image-z
        (when pixmap-format
 	 (setq scanline-pad (pixmap-format-scanline-pad pixmap-format)))
-       (put-image-z drawable gcontext image src-x src-y x y width height bitmap-p scanline-pad)))))
+       (put-image-z drawable gcontext image src-x src-y x y width height
+		    bitmap-p scanline-pad)))))
 ;;
 ;; PUT X-IMAGE
 ;;
-(defun put-image-x (drawable gcontext image src-x src-y x y width height bitmap-p scanline-pad)
+(defun put-image-x
+       (drawable gcontext image src-x src-y x y width height bitmap-p scanline-pad)
   ;; Send an X-Format image to the server
   ;; When BITMAP-P, force format to be :bitmap when depth=1
   ;; This causes gcontext to supply foreground & background pixels.
@@ -747,9 +767,11 @@
     (when (and (= depth 1)
 	       (not (eq (and bit-lsb-first-p t) (and (image-x-bit-lsb-first-p image) t))))
       (bit-reverse-image image))
-    (put-image-x-internal drawable gcontext image src-x src-y x y width height format scanline-pad)))
+    (put-image-x-internal drawable gcontext image src-x src-y x y width height
+			  format scanline-pad)))
 
-(defun put-image-x-internal (drawable gcontext image src-x src-y x y width height format scanline-pad)
+(defun put-image-x-internal
+       (drawable gcontext image src-x src-y x y width height format scanline-pad)
   ;; Send an X-Format image to the server after all image conversion has been done.
   (declare (type drawable drawable)
 	   (type gcontext gcontext)
@@ -781,7 +803,8 @@
 	  (buffer-put-image display buffer-boffset image src-x src-y width height
 			    scanline-pad 1 depth))))))
 
-(defun buffer-put-image (buffer boffset image src-x src-y width height scanline-pad bits-per-pixel nplanes)
+(defun buffer-put-image
+       (buffer boffset image src-x src-y width height scanline-pad bits-per-pixel nplanes)
   ;; copy an X-Format Z-pixmap image into the buffer
   (declare (type buffer buffer)
 	   (type array-index boffset)
@@ -847,64 +870,94 @@
 	 (depth (image-z-bits-per-pixel image))
 	 (image-width (image-width image))
 	 (image-height (image-height image))
-	 (width (min (or width image-width) (- image-width src-x)))
-	 (height (min (or height image-height) (- image-height src-y)))
+	 (width (index-min (or width image-width) (index- image-width src-x)))
+	 (height (index-min (or height image-height) (index- image-height src-y)))
 	 (format :z-pixmap)
 	 (pixarray (image-z-pixarray image))
-	 (bits-per-pixel (image-z-bits-per-pixel image)))
+	 (bits-per-pixel (image-z-bits-per-pixel image))
+	 (bytes-per-line (index-ceiling (index* width bits-per-pixel) 8))
+	 (scanline-length (scanline-byte-round bytes-per-line scanline-pad))
+	 (data-length (index* height scanline-length))
+	 (req-length (index-ceiling (index+ 24 data-length) 4))
+	 (max-length (display-max-request-length display)))
     (declare (type display display)
 	     (type card8 depth)
-	     (type card16 image-width image-height width height)
+	     (type card16 image-width image-height width height max-length)
 	     (type pixarray pixarray)
+	     (type array-index bytes-per-line scanline-length data-length req-length)
 	     (type (member 1 4 8 16 24 32) bits-per-pixel))
     (when bitmap-p
       (setq format :bitmap)
-      (unless (= depth 1) (error "Bitmaps must have depth 1")))
+      (unless (index= depth 1) (error "Bitmaps must have depth 1")))
     ;; Send image to the display
-    (with-buffer-request (display *x-putimage* :gc-force gcontext)
-      ((data (member :bitmap :xy-pixmap :z-pixmap)) format)
-      (drawable drawable)
-      (gcontext gcontext)
-      (card16 width height)
-      (int16 x y)
-      (card8 0 depth)				;left-pad, depth
-      (pad16 nil)
-      (progn
-	(buffer-put-pixarray display buffer-boffset pixarray bits-per-pixel src-x src-y width height scanline-pad)))))
+    (if (index< req-length max-length)
+	(with-buffer-request (display *x-putimage* :gc-force gcontext)
+	  ((data (member :bitmap :xy-pixmap :z-pixmap)) format)
+	  (drawable drawable)
+	  (gcontext gcontext)
+	  (card16 width height)
+	  (int16 x y)
+	  (card8 0 depth)		;left-pad, depth
+	  (pad16 nil)
+	  (progn
+	    (buffer-put-pixarray display buffer-boffset pixarray bits-per-pixel
+				 src-x src-y width height scanline-pad)))
+      ;; Break the image up into chunks.
+      (let* ((max-data-length (index- (index* max-length 4) 24))
+	     (chunk-height (index-floor max-data-length scanline-length))
+	     (top (index+ y height)))
+	(declare (type array-index max-data-length chunk-height top))
+	(do* ((send-dst-y y (index+ send-dst-y chunk-height))
+	      (send-src-y src-y (index+ send-src-y chunk-height))
+	      (send-height chunk-height (index-min chunk-height (index- top send-dst-y))))
+	    ((index>= send-dst-y top))
+	  (declare (type array-index send-dst-y send-src-y send-height))
+	  (with-buffer-request (display *x-putimage* :gc-force gcontext)
+	    ((data (member :bitmap :xy-pixmap :z-pixmap)) format)
+	    (drawable drawable)
+	    (gcontext gcontext)
+	    (card16 width send-height)
+	    (int16 x send-dst-y)
+	    (card8 0 depth)		;left-pad, depth
+	    (pad16 nil)
+	    (progn
+	      (buffer-put-pixarray display buffer-boffset pixarray
+				   bits-per-pixel src-x send-src-y width
+				   send-height scanline-pad))))))))
 
-(defun buffer-put-pixarray (display boffset pixarray bits-per-pixel src-x src-y width height scanline-pad)
+(defun buffer-put-pixarray
+       (display boffset pixarray bits-per-pixel src-x src-y width height scanline-pad)
   (declare (type display display)
 	   (type array-index boffset)
 	   (type pixarray pixarray)
 	   (type (member 1 4 8 16 24 32) bits-per-pixel)
 	   (type card16 src-x src-y width height))
   (let* ((row src-y)
-	 (copy-pixarray-row (cdr (assoc bits-per-pixel
-					'((1 . copy-pixarray-row-1)
-					  (4 . copy-pixarray-row-4)
-					  (8 . copy-pixarray-row-8)
-					  (16 . copy-pixarray-row-16)
-					  (24 . copy-pixarray-row-24)
-					  (32 . copy-pixarray-row-32)))))
-	 (bytes-per-line (ceiling (* width bits-per-pixel) 8))
+	 (bytes-per-line (index-ceiling (index* width bits-per-pixel) 8))
 	 (scanline-length (scanline-byte-round bytes-per-line scanline-pad))
-	 (length (* height scanline-length))
+	 (length (index* height scanline-length))
 	 (size (buffer-size display))
 	 (bitmap-format (display-bitmap-format display))
 	 (bit-lsb-first-p (bitmap-format-lsb-first-p bitmap-format))
 	 (byte-lsb-first-p (display-image-lsb-first-p display)))
     (declare (type array-index row bytes-per-line scanline-length length size))
     (with-buffer-output (display :index boffset :sizes (8 16))
-      (card16-put 2 (ceiling (index+ 24 length) 4)) ;; Set length
+      (card16-put 2 (index-ceiling (index+ 24 length) 4)) ;; Set length
       (index-incf boffset 24)
       (dotimes (i height)
 	;; Flush buffer when necessary
-	(when (>= (+ boffset scanline-length) size)
+	(when (index>= (index+ boffset scanline-length) size)
 	  (setf (buffer-boffset display) boffset)
 	  (buffer-flush display)
 	  (setq boffset (buffer-boffset display)))
 	;; Copy scanline
-	(funcall copy-pixarray-row buffer-bbuf boffset pixarray row src-x width)
+	(ecase bits-per-pixel
+	  (1  (copy-pixarray-row-1  buffer-bbuf boffset pixarray row src-x width))
+	  (4  (copy-pixarray-row-4  buffer-bbuf boffset pixarray row src-x width))
+	  (8  (copy-pixarray-row-8  buffer-bbuf boffset pixarray row src-x width))
+	  (16 (copy-pixarray-row-16 buffer-bbuf boffset pixarray row src-x width))
+	  (24 (copy-pixarray-row-24 buffer-bbuf boffset pixarray row src-x width))
+	  (32 (copy-pixarray-row-32 buffer-bbuf boffset pixarray row src-x width)))
 	;; Swap bytes and bits when needed
 	(ecase bits-per-pixel
 	  ((1)
@@ -925,13 +978,45 @@
   ;; Copy a row of 1 bit-per-pixel pixels from from PIXARRAY to BUFFER
   (declare (type (simple-array card8 (*)) buffer)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-1 pixarray))
+  #+Genera
+  (sys:with-data-stack
+    (let* ((buffer-overlay
+	     (sys:make-stack-array width :element-type 'bit
+				   :displaced-to buffer :displaced-index-offset (ash index 3)))
+	   (pixarray-overlay
+	     (sys:make-stack-array width :element-type 'bit
+				   :displaced-to pixarray
+				   :displaced-index-offset
+				   (array-row-major-index pixarray row src-x))))
+      (replace buffer-overlay pixarray-overlay)
+      (bit-reverse-vector buffer index (ash (+ width 7) -3))))
+  #-Genera
   (with-vector (buffer (simple-array card8 (*)))
     (let ((x (index- src-x 1))
 	  (index index)
-	  (end-bits (logand width 7))) ;; (REM width 8)
+	  (end-bits (index-logand width 7))) ;; (REM width 8)
       (declare (type array-index x index end-bits))
       (dotimes (i (ash width -3)) ;; (FLOOR width 8)
+	(macrolet ((build-byte (&rest bits)
+		     ;; Build a byte out of bits
+		     (labels ((bb (bit &rest bits)
+				(declare (dynamic-extent bits))
+			        (if bits
+				    `(setq result (index+ ,(apply #'bb bits) result ,bit))
+				  `(setq result ,bit))))
+		       `(let (result)
+			  ,(apply #'bb (reverse bits))))))
+	  (setf (aref buffer index)
+		(build-byte (aref pixarray row (index-incf x))
+			    (aref pixarray row (index-incf x))
+			    (aref pixarray row (index-incf x))
+			    (aref pixarray row (index-incf x))
+			    (aref pixarray row (index-incf x))
+			    (aref pixarray row (index-incf x))
+			    (aref pixarray row (index-incf x))
+			    (aref pixarray row (index-incf x)))))
+	#+comment ;; same results as above, but takes 50% longer
 	(setf (aref buffer index)
 	      (logior (ash (aref pixarray row (index-incf x)) 7)
 		      (ash (aref pixarray row (index-incf x)) 6)
@@ -953,7 +1038,7 @@
   ;; Copy a row of 4 bit-per-pixel pixels from from PIXARRAY to BUFFER
   (declare (type (simple-array card8 (*)) buffer)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-4 pixarray))
   (with-vector (buffer (simple-array card8 (*)))
     (let ((x (index- src-x 1))
 	  (index index))
@@ -970,7 +1055,7 @@
   ;; Copy a row of 8 bit-per-pixel pixels from from PIXARRAY to BUFFER
   (declare (type (simple-array card8 (*)) buffer)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-8 pixarray))
   (with-vector (buffer (simple-array card8 (*)))
     (let ((x (index- src-x 1))
 	  (index index))
@@ -984,7 +1069,7 @@
   ;; Copy a row of 16 bit-per-pixel pixels from from PIXARRAY to BUFFER
   (declare (type (simple-array card8 (*)) buffer)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-16 pixarray))
   (with-vector (buffer (simple-array card8 (*)))
     (let ((x (index- src-x 1))
 	  (index index))
@@ -1000,7 +1085,7 @@
   ;; Copy a row of 16 bit-per-pixel pixels from from PIXARRAY to BUFFER
   (declare (type (simple-array card8 (*)) buffer)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-24 pixarray))
   (with-vector (buffer (simple-array card8 (*)))
     (let ((x (index- src-x 1))
 	  (index index))
@@ -1018,7 +1103,7 @@
   ;; Copy a row of 16 bit-per-pixel pixels from from PIXARRAY to BUFFER
   (declare (type (simple-array card8 (*)) buffer)
 	   (type array-index index row src-x width)
-	   (type pixarray pixarray))
+	   (type pixarray-32 pixarray))
   (with-vector (buffer (simple-array card8 (*)))
     (let ((x (index- src-x 1))
 	  (index index))
@@ -1036,7 +1121,8 @@
 ;;
 ;; PUT XY-IMAGE
 ;;
-(defun put-image-xy (drawable gcontext image src-x src-y x y width height bitmap-p scanline-pad)
+(defun put-image-xy
+       (drawable gcontext image src-x src-y x y width height bitmap-p scanline-pad)
   ;; Send an XY-Format image to the server
   ;; When BITMAP-P, force format to be :bitmap when depth=1
   ;; This causes gcontext to supply foreground & background pixels.
@@ -1052,8 +1138,8 @@
 	 (depth (image-depth image))
 	 (image-width (image-width image))
 	 (image-height (image-height image))
-	 (width (min (or width image-width) (- image-width src-x)))
-	 (height (min (or height image-height) (- image-height src-y)))
+	 (width (min (or width image-width) (index- image-width src-x)))
+	 (height (min (or height image-height) (index- image-height src-y)))
 	 (format :xy-pixmap))
     (declare (type display display)
 	     (type card8 depth)
@@ -1121,7 +1207,7 @@
 	   (type card16 x y)
 	   (type (or null card16) width height) ;; Default from image
 	   (type (or null (member image-x image-xy image-z)) result-type))
-  (declare-values image)
+  (declare (values image))
   (let* ((image-width (image-width image))
 	 (image-height (image-height image))
 	 (width (or width image-width))
@@ -1153,14 +1239,12 @@
 	    copy)))))))
 
 (defun copy-pixarray (array)
-  (if #.(fboundp 'copy) ;; Some lisps may not have copy...
-      (copy array)
-    (let ((copy (make-array (array-dimensions array)
-			    :element-type (array-element-type array))))
-      (dotimes (i (array-dimension array 0))
-	(dotimes (j (array-dimension array 1))
-	  (setf (aref copy i j) (aref array i j))))
-      copy)))
+  (let ((copy (make-array (array-dimensions array)
+			  :element-type (array-element-type array))))
+    (dotimes (i (array-dimension array 0))
+      (dotimes (j (array-dimension array 1))
+	(setf (aref copy i j) (aref array i j))))
+    copy))
 
 (defun image-x->image-x (image src-x src-y width height)
   (let ((vector
@@ -1208,7 +1292,7 @@
 (defun image-x->image-z  (image x y width height)
   (declare (type image-x image)
 	   (type card16 x y width height))
-  (declare-values image-z)
+  (declare (values image-z))
   (let ((pixarray (if (and (eq (image-x-format image) :xy-pixmap)
 			   (> (image-depth image) 1))
 		      (error "Conversion from :XY-PIXMAP to image-z not supported")
@@ -1222,7 +1306,7 @@
 (defun image-x->image-xy (image x y width height)
   (declare (type image-x image)
 	   (type card16 x y width height))
-  (declare-values image-xy)
+  (declare (values image-xy))
   (if (eq (image-x-format image) :z-pixmap)
       (error "Conversion from :Z-PIXMAP to IMAGE-XY not supported")
     (do* ((depth (image-depth image))
@@ -1265,23 +1349,23 @@
 		  :format :z-pixmap :bytes-per-line bytes-per-line
 		  :data vector)))
 
-(defun copy-pixarray-to-vector (vector pixarray bits-per-pixel bytes-per-line src-x src-y width height)
+(defun copy-pixarray-to-vector
+       (vector pixarray bits-per-pixel bytes-per-line src-x src-y width height)
   (declare (type pixarray pixarray)
 	   (type (member 1 4 8 16 24 32) bits-per-pixel)
 	   (type card16 src-x src-y width height))
   (let* ((row src-y)
-	 (copy-pixarray-row (cdr (assoc bits-per-pixel
-					'((1 . copy-pixarray-row-1)
-					  (4 . copy-pixarray-row-4)
-					  (8 . copy-pixarray-row-8)
-					  (16 . copy-pixarray-row-16)
-					  (24 . copy-pixarray-row-24)
-					  (32 . copy-pixarray-row-32)))))
 	 (boffset 0))
     (declare (type array-index row boffset))
     (dotimes (i height)
       ;; Copy scanline
-      (funcall copy-pixarray-row vector boffset pixarray row src-x width)
+      (ecase bits-per-pixel
+	(1  (copy-pixarray-row-1  vector boffset pixarray row src-x width))
+	(4  (copy-pixarray-row-4  vector boffset pixarray row src-x width))
+	(8  (copy-pixarray-row-8  vector boffset pixarray row src-x width))
+	(16 (copy-pixarray-row-16 vector boffset pixarray row src-x width))
+	(24 (copy-pixarray-row-24 vector boffset pixarray row src-x width))
+	(32 (copy-pixarray-row-32 vector boffset pixarray row src-x width))) 
       (index-incf row)
       (index-incf boffset bytes-per-line))))
 
@@ -1300,8 +1384,10 @@
 
 (defun read-bitmap-file (pathname)
   ;; Creates an image from a C include file in standard X11 format
+  ;; Note: The resulting image always has a scanline-pad of 32
+  ;;       which prevents lots of calls to convert-image-scanline-pad.
   (declare (type (or pathname string stream) pathname))
-  (declare-values image)
+  (declare (values image))
   (with-open-file (fstream pathname :direction :input)
     (let ((line "")
 	  (name nil)
@@ -1337,24 +1423,33 @@
 		 (line-width (* 4 (ceiling (* width depth) 32)))
 		 (data (make-array (* line-width height)
 				   :element-type '(unsigned-byte 8)))
-		 (number-string (make-string 2))
 		 (line-base 0)
 		 (byte 0))
 	    (declare (type card16 byte-width line-width line-base byte)
-		     (type string number-string)
 		     (type (simple-array card8 (*)) data))
 	    (with-vector (data (simple-array card8 (*)))
-	      ;; Read data
-	      (dotimes (i height)
-		(dotimes (j byte-width)
-		  (loop (when (eql (read-char fstream) #\x) (return)))
-		  (setf (aref number-string 0) (read-char fstream))
-		  (setf (aref number-string 1) (read-char fstream))
-		  (setf (aref data (+ line-base byte))
-			(parse-integer number-string :radix 16. :junk-allowed t))
-		  (incf byte))
-		(setq byte 0
-		      line-base (+ line-base line-width)))
+	      (macrolet ((parse-hex (char)
+			   ;; Return the hex digit signified by CHAR.
+			   ;; Perhaps not rigorously portable, but very fast...
+			   `(let ((n (char-int ,char)))
+			      (cond ((index>= n ,(char-int #\a))
+				     (index- n ,(- (char-int #\a) 10.)))
+				    ((index>= n ,(char-int #\A))
+				     (index- n ,(- (char-int #\A) 10.)))
+				    (t 
+				     (index- n ,(char-int #\0)))))))
+		;; Read data
+		;; Note: using read-line instead of read-char would be 20% faster,
+		;;       but would cons a lot of garbage...
+		(dotimes (i height)
+		  (dotimes (j byte-width)
+		    (loop (when (eql (read-char fstream) #\x) (return)))
+		    (setf (aref data (index+ line-base byte))
+			  (index+ (index-ash (parse-hex (read-char fstream)) 4)
+				  (parse-hex (read-char fstream))))
+		    (incf byte))
+		  (setq byte 0
+			line-base (index+ line-base line-width))))
 	      (create-image :width width :height height :depth depth
 			    :plist properties :data data
 			    :bit-lsb-first-p t ;; WHY? (sounds like a bug)
@@ -1377,15 +1472,13 @@
 	 (height (image-height image))
 	 (depth (image-depth image))
 	 (data (image-x-data image))
-	 (byte-width (ceiling (* width depth) 8))
-	 (line-width (* 4 (ceiling (* width depth) 32)))
-	 (line 0)
-	 (byte-number 0)
+	 (byte-width (image-x-bytes-per-line image))
+	 (last (* byte-width height))
 	 (count 0))
     (declare (type list plist)
 	     (type stringable name)
-	     (type card16 width height)
-	     (type card16 byte-width line-width line byte-number count)
+	     (type card16 width height byte-width)
+	     (type array-index count last)
 	     (type (simple-array card8 (*)) data))
     (with-vector (data (simple-array card8 (*)))
       (setq name (string-downcase (string name)))
@@ -1403,22 +1496,20 @@
 	(format fstream "static char ~a_bits[] = {" name)
 	(dotimes (i height)
 	  (dotimes (j byte-width)
-	    (when (zerop (mod count 12)) (format fstream "~%  "))
-	    (write-string " 0x" fstream)
+	    (when (zerop (index-mod count 15))
+	      (terpri fstream)
+	      (write-char #\space fstream))
+	    (write-string "0x" fstream)
 	    ;; Faster than (format fstream "0x~2,'0x," byte)
-	    (let ((byte (aref data (+ line byte-number)))
+	    (let ((byte (aref data count))
 		  (translate "0123456789abcdef"))
-	      (write-char (aref translate (ldb (byte 4 4) byte)) fstream)
-	      (write-char (aref translate (ldb (byte 4 0) byte)) fstream)
-	      (incf byte-number)
-	      (incf count)
-	      (unless (and (= (1+ i) height)
-			   (= (1+ j) byte-width))
-		(write-char #\, fstream))))
-	  (setq byte-number 0
-		line (+ line line-width)))
+	      (declare (type card16 byte))
+	      (write-char (char translate (ldb (byte 4 4) byte)) fstream)
+	      (write-char (char translate (ldb (byte 4 0) byte)) fstream))
+	    (index-incf count)
+	    (unless (index= count last)
+	      (write-char #\, fstream))))
 	(format fstream "};~%" fstream)))))
-
 
 (defun bitmap-image (&optional plist &rest patterns)
   ;; Create an image containg pattern
@@ -1426,7 +1517,7 @@
   ;; If the first parameter is a list, its used as the image property-list.
   (declare (type (or list bit-vector) plist)
 	   (type list patterns)) ;; list of bitvector
-  (declare-values image)
+  (declare (values image))
   (unless (listp plist)
     (push plist patterns)
     (setq plist nil))
@@ -1450,7 +1541,7 @@
 	   (type (or null gcontext) gcontext)
 	   (type (or null card16) width height)
 	   (type (or null card8) depth))
-  (declare-values pixmap)
+  (declare (values pixmap))
   (let* ((image-width (image-width image))
 	 (image-height (image-height image))
 	 (image-depth (image-depth image))
@@ -1470,9 +1561,7 @@
 	  (unless gcontext (xlib::required-arg gcontext))
 	(error "Pixmap depth ~d incompatable with image depth ~d"
 	       depth image-depth)))	       
-    (put-image pixmap gc image :x 0 :y 0
-	       :bitmap-p (and (= image-depth 1)
-			      gcontext))
+    (put-image pixmap gc image :x 0 :y 0 :bitmap-p (and (= image-depth 1) gcontext))
     ;; Tile when image-width is less than the pixmap width, or
     ;; the image-height is less than the pixmap height.
     ;; ??? Would it be better to create a temporary pixmap and 

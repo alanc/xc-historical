@@ -1,4 +1,4 @@
-;;; -*- Mode: LISP; Syntax: Common-lisp; Package: (XLIB (CL)); Base: 10; Lowercase: Yes -*-
+;;; -*- Mode: LISP; Syntax: Common-lisp; Package: XLIB; Base: 10; Lowercase: Yes -*-
 
 ;;; Copyright 1987, 1988 Massachusetts Institute of Technology, and
 ;;;			 Texas Instruments Incorporated
@@ -123,7 +123,7 @@
 ;; we are explicitly using a different spectrum representation than what is actually
 ;; transmitted in the protocol.
 
-(deftype rgb-val () '(float 0.0 1.0))
+(deftype rgb-val () '(real 0 1))
 
 (defun make-color (&key red green blue &allow-other-keys)	; for expansion
   (declare (type rgb-val red green blue)
@@ -181,6 +181,9 @@
 
 (deftype array-index () `(integer 0 ,array-dimension-limit))
 
+(deftype real (&optional (min '*) (max '*))
+  `(or (real ,min ,max) (rational ,min ,max)))
+
 ;; An association list.
 
 (deftype alist (key-type-and-name datum-type-and-name) 'list)
@@ -199,7 +202,7 @@
 ;; Note that we are explicitly using a different angle representation than what
 ;; is actually transmitted in the protocol.
 
-(deftype angle () `(number ,(* -2 pi) ,(* 2 pi)))
+(deftype angle () '(real #.(* -2 pi) #.(* 2 pi)))
 
 (deftype arc-seq () '(repeat-seq (int16 x) (int16 y) (card16 width) (card16 height)
 				 (angle angle1) (angle angle2)))
@@ -275,7 +278,7 @@
   (pad <unspec> :type (member 8 16 32)))
 
 (defstruct visual-info
-  (id <unspec> :type card29)
+  (id <unspec> :type resource-id)
   (class <unspec> :type (member :static-gray :static-color :true-color
 				:gray-scale :pseudo-color :direct-color))
   (red-mask <unspec> :type pixel)
@@ -292,7 +295,7 @@
   (height-in-millimeters <unspec> :type card16)
   (depths <unspec> :type (alist (image-depth depth) ((list visual-info) visuals)))
   (root-depth <unspec> :type image-depth)
-  (root-visual <unspec> :type card29)
+  (root-visual-info <unspec> :type visual-info)
   (default-colormap <unspec> :type colormap)
   (white-pixel <unspec> :type pixel)
   (black-pixel <unspec> :type pixel)
@@ -301,6 +304,10 @@
   (backing-stores <unspec> :type (member :never :when-mapped :always))
   (save-unders-p <unspec> :type boolean)
   (event-mask-at-open <unspec> :type mask32))
+
+(defun screen-root-visual (screen)
+  (declare (type screen screen)
+	   (values resource-id)))
 
 ;; The list contains alternating keywords and integers.
 
@@ -381,6 +388,7 @@
   ;;    :minor card16
   ;;    :sequence card16
   ;;    :current-sequence card16
+  ;;	:asynchronous (member t nil)
   ;; For :colormap, :cursor, :drawable, :font, :gcontext, :id-choice, :pixmap, and
   ;; :window errors another pair is:
   ;;    :resource-id card32
@@ -393,6 +401,43 @@
 		     (function (display symbol &rest key-vals)))
 		 handler)))
 
+(defsetf display-report-asynchronous-errors (display) (when)
+  ;; Most useful in multi-process lisps.
+  ;;
+  ;; Synchronous errors are always signalled in the process that made the
+  ;; synchronous request.  An error is considered synchronous if a process is
+  ;; waiting for a reply with the same request-id as the error.
+  ;; 
+  ;; Asynchronous errors can be signalled at any one of these three times:
+  ;; 
+  ;; 1.  As soon as they are read.  They get signalled in whichever process 
+  ;; was doing the reading.  This is enabled by
+  ;;       (setf (xlib:display-report-asynchronous-errors display)
+  ;;             '(:immediately))
+  ;; This is the default.
+  ;; 
+  ;; 2.  Before any events are to be handled.  You get these by doing an
+  ;; event-listen with any timeout value other than 0, or in of the event
+  ;; processing forms.  This is useful if you using a background process to
+  ;; handle input.  This is enabled by
+  ;;       (setf (xlib:display-report-asynchronous-errors display)
+  ;;             '(:before-event-handling)) 
+  ;; 
+  ;; 3.  After a display-finish-output.  You get these by doing a
+  ;; display-finish-output.  A cliche using this might have a with-display
+  ;; wrapped around the display operations that possibly cause an asynchronous
+  ;; error, with a display-finish-output right the end of the with-display to
+  ;; catch any asynchronous errors.  This is enabled by
+  ;;       (setf (xlib:display-report-asynchronous-errors display)
+  ;;             '(:after-finish-output))
+  ;; 
+  ;; You can select any combination of the three keywords.  For example, to
+  ;; get errors reported before event handling and after finish-output,
+  ;;       (setf (xlib:display-report-asynchronous-errors display)
+  ;;             '(:before-event-handling :after-finish-output))
+  (declare (type list when))
+  )
+
 (defmacro define-condition (name base &body items)
   ;; just a place-holder here for the real thing
   )
@@ -402,7 +447,8 @@
   major
   minor
   sequence
-  current-sequence)
+  current-sequence
+  asynchronous)
 
 (defun default-error-handler (display error-key &rest key-vals)
   ;; The default display-error-handler.
@@ -494,7 +540,7 @@
 	   (type int16 x y)
 	   (type card16 width height depth border-width)
 	   (type (member :copy :input-output :input-only) class)
-	   (type (or (member :copy) visual) visual)
+	   (type (or (member :copy) visual-info) visual)
 	   (type (or null (member :none :parent-relative) pixel pixmap) background)
 	   (type (or null (member :copy) pixel pixmap) border)
 	   (type (or null win-gravity) gravity)
@@ -512,9 +558,13 @@
   (declare (type window window)
 	   (values (member :input-output :input-only))))
 
+(defun window-visual-info (window)
+  (declare (type window window)
+	   (values visual-info)))
+
 (defun window-visual (window)
   (declare (type window window)
-	   (values card29)))
+	   (values resource-id)))
 
 (defsetf window-background (window) (background)
   (declare (type window window)
@@ -637,7 +687,7 @@
   ;; (again) retained, and returned in any subsequent accessor calls.
 
   ;; Accessor Group A (for GetWindowAttributes):
-  ;; window-visual, window-class, window-gravity, window-bit-gravity,
+  ;; window-visual-info, window-visual, window-class, window-gravity, window-bit-gravity,
   ;; window-backing-store, window-backing-planes, window-backing-pixel,
   ;; window-save-under, window-colormap, window-colormap-installed-p,
   ;; window-map-state, window-all-event-masks, window-event-mask,
@@ -775,16 +825,16 @@
 (defun intern-atom (display name)
   (declare (type display display)
 	   (type xatom name)
-	   (values card29)))
+	   (values resource-id)))
 
 (defun find-atom (display name)
   (declare (type display display)
 	   (type xatom name)
-	   (values (or null card29))))
+	   (values (or null resource-id))))
 
 (defun atom-name (display atom-id)
   (declare (type display display)
-	   (type card29 atom-id)
+	   (type resource-id atom-id)
 	   (values keyword)))
 
 (defun selection-owner (display selection)
@@ -1200,7 +1250,7 @@
   ;; environment.  The values are all evaluated before bindings are performed.  The
   ;; body is not surrounded by a with-display.  If cache-p is nil or the some
   ;; component states are unknown, this will implement save/restore by creating a
-  ;; temporary gcontext and doing copy-gcontext-components to and from it.
+  ;; temporary gcontext and doing gcontext-components to and from it.
   )
 
 (defun copy-gcontext-components (src dst &rest keys)
@@ -1335,7 +1385,7 @@
 	   (type card16 width height)
 	   (type pixel plane-mask)
 	   (type (member :xy-pixmap :z-pixmap) format)
-	   (values (sequence card8) depth visual)))
+	   (values (sequence card8) depth visual-info)))
 
 (defun translate-default (src src-start src-end font dst dst-start)
   ;; dst is guaranteed to have room for (- src-end src-start) integer elements,
@@ -1467,7 +1517,7 @@
 	   (values (or null array-index) (or null int32))))
 
 (defun create-colormap (visual window &optional alloc-p)
-  (declare (type card29 visual)
+  (declare (type visual-info visual)
 	   (type window window)
 	   (type boolean alloc-p)
 	   (values colormap)))
@@ -1865,7 +1915,7 @@
   ;; arguments.
   (declare (arglist event-key-or-keys &rest (type &rest keywords))))
 
-(declare-event (:key-press :key-release :button-press :button-release)
+(declare (event (:key-press :key-release :button-press :button-release)
 	       (card16 sequence)
 	       (window (window event-window) root)
 	       ((or null window) child)
@@ -1875,9 +1925,9 @@
 	       (card32 time)
 	       ;; for key-press and key-release, code is the keycode
 	       ;; for button-press and button-release, code is the button number
-	       (card8 code))
+	       (card8 code)))
 
-(declare-event :motion-notify
+(declare (event :motion-notify
 	       (card16 sequence)
 	       (window (window event-window) root)
 	       ((or null window) child)
@@ -1885,9 +1935,9 @@
 	       (int16 x y root-x root-y)
 	       (card16 state)
 	       (card32 time)
-	       (boolean hint-p))
+	       (boolean hint-p)))
 
-(declare-event (:enter-notify :leave-notify)
+(declare (event (:enter-notify :leave-notify)
 	       (card16 sequence)
 	       (window (window event-window) root)
 	       ((or null window) child)
@@ -1897,153 +1947,153 @@
 	       (card32 time)
 	       ((member :normal :grab :ungrab) mode)
 	       ((member :ancestor :virtual :inferior :nonlinear :nonlinear-virtual) kind)
-	       (boolean focus-p))
+	       (boolean focus-p)))
 
-(declare-event (:focus-in :focus-out)
+(declare (event (:focus-in :focus-out)
 	       (card16 sequence)
 	       (window (window event-window))
 	       ((member :normal :while-grabbed :grab :ungrab) mode)
 	       ((member :ancestor :virtual :inferior :nonlinear :nonlinear-virtual
 			:pointer :pointer-root :none)
-		kind))
+		kind)))
 
-(declare-event :keymap-notify
-	       ((bit-vector 256) keymap))
+(declare (event :keymap-notify
+	       ((bit-vector 256) keymap)))
 
-(declare-event :exposure
+(declare (event :exposure
 	       (card16 sequence)
 	       (window (window event-window))
-	       (card16 x y width height count))
+	       (card16 x y width height count)))
 
-(declare-event :graphics-exposure
+(declare (event :graphics-exposure
 	       (card16 sequence)
 	       (drawable (drawable event-window))
 	       (card16 x y width height count)
 	       (card8 major)
-	       (card16 minor))
+	       (card16 minor)))
 
-(declare-event :no-exposure
+(declare (event :no-exposure
 	       (card16 sequence)
 	       (drawable (drawable event-window))
 	       (card8 major)
-	       (card16 minor))
+	       (card16 minor)))
 
-(declare-event :visibility-notify
+(declare (event :visibility-notify
 	       (card16 sequence)
 	       (window (window event-window))
-	       ((member :unobscured :partially-obscured :fully-obscured) state))
+	       ((member :unobscured :partially-obscured :fully-obscured) state)))
 
-(declare-event :create-notify
+(declare (event :create-notify
 	       (card16 sequence)
 	       (window window (parent event-window))
 	       (int16 x y)
 	       (card16 width height border-width)
-	       (boolean override-redirect-p))
+	       (boolean override-redirect-p)))
 
-(declare-event :destroy-notify
+(declare (event :destroy-notify
 	       (card16 sequence)
-	       (window event-window window))
+	       (window event-window window)))
 
-(declare-event :unmap-notify
-	       (card16 sequence)
-	       (window event-window window)
-	       (boolean configure-p))
-
-(declare-event :map-notify
+(declare (event :unmap-notify
 	       (card16 sequence)
 	       (window event-window window)
-	       (boolean override-redirect-p))
+	       (boolean configure-p)))
 
-(declare-event :map-request
+(declare (event :map-notify
 	       (card16 sequence)
-	       (window (parent event-window) window))
+	       (window event-window window)
+	       (boolean override-redirect-p)))
 
-(declare-event :reparent-notify
+(declare (event :map-request
+	       (card16 sequence)
+	       (window (parent event-window) window)))
+
+(declare (event :reparent-notify
 	       (card16 sequence)
 	       (window event-window window parent)
 	       (int16 x y)
-	       (boolean override-redirect-p))
+	       (boolean override-redirect-p)))
 
-(declare-event :configure-notify
+(declare (event :configure-notify
 	       (card16 sequence)
 	       (window event-window window)
 	       (int16 x y)
 	       (card16 width height border-width)
 	       ((or null window) above-sibling)
-	       (boolean override-redirect-p))
+	       (boolean override-redirect-p)))
 
-(declare-event :gravity-notify
+(declare (event :gravity-notify
 	       (card16 sequence)
 	       (window event-window window)
-	       (int16 x y))
+	       (int16 x y)))
 
-(declare-event :resize-request
+(declare (event :resize-request
 	       (card16 sequence)
 	       (window (window event-window))
-	       (card16 width height))
+	       (card16 width height)))
 
-(declare-event :configure-request
+(declare (event :configure-request
 	       (card16 sequence)
 	       (window (parent event-window) window)
 	       (int16 x y)
 	       (card16 width height border-width)
 	       ((member :above :below :top-if :bottom-if :opposite) stack-mode)
 	       ((or null window) above-sibling)
-	       (mask16 value-mask))
+	       (mask16 value-mask)))
 
-(declare-event :circulate-notify
+(declare (event :circulate-notify
 	       (card16 sequence)
 	       (window event-window window)
-	       ((member :top :bottom) place))
+	       ((member :top :bottom) place)))
 
-(declare-event :circulate-request
+(declare (event :circulate-request
 	       (card16 sequence)
 	       (window (parent event-window) window)
-	       ((member :top :bottom) place))
+	       ((member :top :bottom) place)))
 
-(declare-event :property-notify
+(declare (event :property-notify
 	       (card16 sequence)
 	       (window (window event-window))
 	       (keyword atom)
 	       ((member :new-value :deleted) state)
-	       (card32 time))
+	       (card32 time)))
 
-(declare-event :selection-clear
+(declare (event :selection-clear
 	       (card16 sequence)
 	       (window (window event-window))
 	       (keyword selection)
-	       (card32 time))
+	       (card32 time)))
 
-(declare-event :selection-request
+(declare (event :selection-request
 	       (card16 sequence)
 	       (window (window event-window) requestor)
 	       (keyword selection target)
 	       ((or null keyword) property)
-	       (card32 time))
+	       (card32 time)))
 
-(declare-event :selection-notify
+(declare (event :selection-notify
 	       (card16 sequence)
 	       (window (window event-window))
 	       (keyword selection target)
 	       ((or null keyword) property)
-	       (card32 time))
+	       (card32 time)))
 
-(declare-event :colormap-notify
+(declare (event :colormap-notify
 	       (card16 sequence)
 	       (window (window event-window))
 	       ((or null colormap) colormap)
-	       (boolean new-p installed-p))
+	       (boolean new-p installed-p)))
 
-(declare-event :mapping-notify
+(declare (event :mapping-notify
 	       (card16 sequence)
 	       ((member :modifier :keyboard :pointer) request)
-	       (card8 start count))
+	       (card8 start count)))
 
-(declare-event :client-message
+(declare (event :client-message
 	       (card16 sequence)
 	       (window (window event-window))
 	       ((member 8 16 32) format)
-	       ((sequence integer) data))
+	       ((sequence integer) data)))
 
 (defun queue-event (display event-key &rest args &key append-p &allow-other-keys)
   ;; The event is put at the head of the queue if append-p is nil, else the tail.
@@ -2097,9 +2147,19 @@
   (declare (type window window)
 	   (type (list stringable) command)))
 
+(defun wm-client-machine (window)
+  ;; Returns a list whose car is a command string and 
+  ;; whose cdr is the list of argument strings.
+  (declare (type window window)
+	   (values string)))
+
+(defsetf wm-client-machine (window) (string)
+  (declare (type window window)
+	   (type stringable string)))
+
 (defstruct wm-hints
   (input nil :type (or null (member :off :on)))
-  (initial-state nil :type (or null (member :dont-care :normal :zoom :iconic :inactive)))
+  (initial-state nil :type (or null (member :normal :iconic)))
   (icon-pixmap nil :type (or null pixmap))
   (icon-window nil :type (or null window))
   (icon-x nil :type (or null card16))
@@ -2121,10 +2181,10 @@
   ;; Defaulted T to put the burden of remembering these on widget programmers.
   (user-specified-position-p t :type boolean) ;; True when user specified x y
   (user-specified-size-p t :type boolean)     ;; True when user specified width height
-  (x nil :type (or null int16))
-  (y nil :type (or null int16))
-  (width nil :type (or null card16))
-  (height nil :type (or null card16))
+  (x nil :type (or null int16))		      ;; Obsolete
+  (y nil :type (or null int16))		      ;; Obsolete
+  (width nil :type (or null card16))	      ;; Obsolete
+  (height nil :type (or null card16))	      ;; Obsolete
   (min-width nil :type (or null card16))
   (min-height nil :type (or null card16))
   (max-width nil :type (or null card16))
@@ -2132,19 +2192,16 @@
   (width-inc nil :type (or null card16))
   (height-inc nil :type (or null card16))
   (min-aspect nil :type (or null number))
-  (max-aspect nil :type (or null number)))
+  (max-aspect nil :type (or null number))
+  (base-width nil :type (or null card16))
+  (base-height nil :type (or null card16))
+  (win-gravity nil :type (or null win-gravity)))
 
 (defun wm-normal-hints (window)
   (declare (type window window)
 	   (values wm-size-hints)))
 
 (defsetf wm-normal-hints (window) (wm-size-hints))
-
-(defun wm-zoom-hints (window)
-  (declare (type window window)
-	   (values wm-size-hints)))
-
-(defsetf wm-zoom-hints (window) (wm-size-hints))
 
 ;; ICON-SIZES uses the SIZE-HINTS structure
 
@@ -2154,6 +2211,22 @@
   
 (defsetf icon-sizes (window) (wm-size-hints))
 
+(defun wm-protocols (window)
+  (declare (type window window)
+	   (values protocols)))
+  
+(defsetf wm-protocols (window) (protocols)
+  (declare (type window window)
+	   (type (list keyword) protocols)))
+
+(defun wm-colormap-windows (window)
+  (declare (type window window)
+	   (values windows)))
+  
+(defsetf wm-colormap-windows (window) (windows)
+  (declare (type window window)
+	   (type (list window) windows)))
+
 (defun transient-for (window)
   (declare (type window window)
 	   (values window)))
@@ -2161,47 +2234,60 @@
 (defsetf transient-for (window) (transient)
   (declare (type window window transient)))
 
-(defun set-standard-properties (window &rest options &key 
-				name icon-name resource-name resource-class command
-				hints normal-hints zoom-hints
-				;; the following are used for wm-normal-hints
-				user-specified-position-p
-				user-specified-size-p
-				x y width height min-width min-height max-width max-height
-				width-inc height-inc min-aspect max-aspect
-				;; the following are used for wm-hints
-				input initial-state icon-pixmap icon-window
-				icon-x icon-y icon-mask window-group)
+(defun set-wm-properties (window &rest options &key 
+			  name icon-name resource-name resource-class command
+			  hints normal-hints
+			  ;; the following are used for wm-normal-hints
+			  user-specified-position-p
+			  user-specified-size-p
+			  min-width min-height max-width max-height
+			  width-inc height-inc min-aspect max-aspect
+			  base-width base-height win-gravity
+			  ;; the following are used for wm-hints
+			  input initial-state icon-pixmap icon-window
+			  icon-x icon-y icon-mask window-group)
   ;; Set properties for WINDOW.
   (declare (type window window)
 	   (type (or null stringable) name icoin-name resource-name resource-class)
 	   (type (or null list) command)
 	   (type (or null wm-hints) hints)
-	   (type (or null wm-size-hints) normal-hints zoom-hints)
+	   (type (or null wm-size-hints) normal-hints)
 	   (type (or null boolean) user-specified-position-p user-specified-size-p)
-	   (type (or null int16) x y)
-	   (type (or null card16) width height min-width min-height max-width max-height width-inc height-inc)
+	   (type (or null card16) min-width min-height max-width max-height width-inc height-inc base-width base-height win-gravity)
 	   (type (or null number) min-aspect max-aspect)
 	   (type (or null (member :off :on)) input)
-	   (type (or null (member :dont-care :normal :zoom :iconic :inactive)) initial-state)
+	   (type (or null (member :normal :iconic)) initial-state)
 	   (type (or null pixmap) icon-pixmap icon-mask)
 	   (type (or null window) icon-window)
 	   (type (or null card16) icon-x icon-y)
 	   (type (or null resource-id) window-group)))
- 
-(defun get-standard-colormap (window property)
-  (declare (type window window)
-	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
-			 :rgb_green_map :rgb_blue_map) property)
-	   (values colormap base-pixel max-color mult-color)))
 
-(defun set-standard-colormap (window property colormap base-pixel max-color mult-color)
+(defun iconify-window (window)
+  (declare (type window window)))
+
+(defun withdraw-window (window)
+  (declare (type window window)))
+ 
+(defstruct standard-colormap
+  (colormap nil :type (or null colormap))
+  (base-pixel 0 :type pixel)
+  (max-color nil :type (or null color))
+  (mult-color nil :type (or null color))
+  (visual nil :type (or null visual-info))
+  (kill nil :type (or (member nil :release-by-freeing-colormap)
+		      drawable gcontext cursor colormap font)))
+
+(defun rgb-colormaps (window property)
   (declare (type window window)
 	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
 			 :rgb_green_map :rgb_blue_map) property)
-	   (type colormap colormap)
-	   (type pixel base-pixel)
-	   (type color max-color mult-color)))
+	   (values (list standard-colormap))))
+
+(defsetf rgb-colormaps (window property) (standard-colormaps)
+  (declare (type window window)
+	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
+			 :rgb_green_map :rgb_blue_map) property)
+	   (type (list standard-colormap) standard-colormaps)))
 
 (defun cut-buffer (display &key (buffer 0) (type :string) (result-type 'string)
 		                (transform #'card8->char) (start 0) end)
@@ -2376,7 +2462,7 @@
   ;;    mod-3 -> char-hyper-bit
   ;; Implementation dependent function.
   (declare (type display display)
-	   (type card8 code)
+	   (type card8 keycode)
 	   (type card16 state)
 	   (type (or null card8) keysym-index)
 	   (type (or null (function (char0 state caps-lock-p keysyms-per-keycode) card8))
@@ -2385,7 +2471,7 @@
 
 (defun default-keysym-index (display keycode state)
   ;; Returns a keysym-index for use with keycode->character
-  (declare-values card8)
+  (declare (values card8))
 )
 
 ;;; default-keysym-index implements the following tables:
@@ -3041,7 +3127,7 @@ GetProperty             GET-PROPERTY
 GetScreenSaver          SCREEN-SAVER
 GetSelectionOwner       SELECTION-OWNER
 GetWindowAttributes     ;; See WITH-STATE
-                        WINDOW-VISUAL
+                        WINDOW-VISUAL-INFO
                         WINDOW-CLASS
                         WINDOW-BIT-GRAVITY
                         WINDOW-GRAVITY
@@ -3389,7 +3475,7 @@ GetWindowAttributes     WINDOW-GRAVITY
 GetWindowAttributes     WINDOW-MAP-STATE
 GetWindowAttributes     WINDOW-OVERRIDE-REDIRECT
 GetWindowAttributes     WINDOW-SAVE-UNDER
-GetWindowAttributes     WINDOW-VISUAL
+GetWindowAttributes     WINDOW-VISUAL-INFO
 
 ConfigureWindow         (SETF (DRAWABLE-BORDER-WIDTH DRAWABLE) INTEGER)
 ConfigureWindow         (SETF (DRAWABLE-DEPTH DRAWABLE) INTEGER)
@@ -3647,7 +3733,7 @@ SCREEN-P
 SCREEN-PLIST
 SCREEN-ROOT
 SCREEN-ROOT-DEPTH
-SCREEN-ROOT-VISUAL
+SCREEN-ROOT-VISUAL-INFO
 SCREEN-SAVE-UNDERS-P
 SCREEN-WHITE-PIXEL
 SCREEN-WIDTH
