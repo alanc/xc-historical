@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
 .\"
@@ -42,7 +43,7 @@ MIT Project Athena\s+1
 .LP
 The X Window System is a trademark of MIT.
 .LP
-Copyright \(co 1985, 1986, 1987, 1988
+Copyright \(co 1985, 1986, 1987, 1988, 1991
 Massachusetts Institute of Technology, Cambridge, Massachusetts,
 and Digital Equipment Corporation, Maynard, Massachusetts.
 .LP
@@ -143,22 +144,15 @@ the following individuals have dedicated significant time
 to suggesting improvements to the \*(xI:
 .LP
 .Ds
-Steve Pitschke (Stellar)
-C. Doug Blewett (AT&T)
-Bob Miller (HP)
-David Schiferl (Tektronix)
-Fred Taft (HP)
-Michael Squires (Sequent)
-Marcel Meth (AT&T)
-Jim Fulton (MIT)
-Kerry Kimbrough (Texas Instruments)
-Mike Collins (Digital)
-Scott McGregor (Digital)
-Phil Karlton (Digital)
-Julian Payne (ESS)
-Jacques Davy (Bull)
-Gabriel Beged-Dov (HP)
-Glenn Widener (Tektronix)
+.ta 3i
+Steve Pitschke (Stellar)	C. Doug Blewett (AT&T)
+Bob Miller (HP)	David Schiferl (Tektronix)
+Fred Taft (HP)	Michael Squires (Sequent)
+Marcel Meth (AT&T)	Jim Fulton (MIT)
+Mike Collins (Digital)	Kerry Kimbrough (Texas Instruments)
+Scott McGregor (Digital)	Phil Karlton (Digital)
+Julian Payne (ESS)	Jacques Davy (Bull)
+Gabriel Beged-Dov (HP)	Glenn Widener (Tektronix)
 .De
 .LP
 Thanks go to each of them for the countless hours spent
@@ -180,22 +174,28 @@ lengthy discussions, and in some cases implementation code contributed by each
 of the following:
 .LP
 .Ds
-Don Alecci (AT&T)
-Ellis Cohen (OSF)
-Donna Converse (MIT)
-Clive Feather (IXI)
-Nayeem Islam (Sun)
-Dana Laursen (HP)
-Keith Packard (MIT)
-Chris Peterson (MIT)
-Richard Probst (Sun)
-Larry Cable (Sun)
+.ta 3i
+Don Alecci (AT&T)	Ellis Cohen (OSF)
+Donna Converse (MIT) Clive Feather (IXI)
+Nayeem Islam (Sun)	Dana Laursen (HP)
+Keith Packard (MIT)	Chris Peterson (MIT)
+Richard Probst (Sun)	Larry Cable (Sun)
 .De
+.sp
+.LP
+In Release 5, the effort to define the internationalization additions was
+headed by Bill McMahon of Hewlett Packard and Frank Rojas of IBM.  This
+has been an educational process for many of us and Bill and Frank's
+tutelage has carried us through.  The implementation efforts of
+Bill, Gabe Beged-Dov, and especially Donna Converse for this release
+are also gratefully acknowledged.
 .sp
 .Ds 0
 Ralph R. Swick
 
 December, 1989
+and
+July, 1991
 .De
 .bp iv
 .XS iv
@@ -256,7 +256,7 @@ the explanations for all arguments that you pass start with the word
 The explanations for all arguments that are returned to you start with the
 word \fIreturns\fP or, in the case of multiple arguments, the word \fIreturn\^\fP.
 .bp 1
-.EH '\fBX Toolkit Intrinsics\fP''\fBX11 Release 4, Dec. 1989\fP'
-.OH '\fBX Toolkit Intrinsics\fP''\fBX11 Release 4, Dec. 1989\fP'
+.EH '\fBX Toolkit Intrinsics\fP''\fBX11 Release \*(Rn\fP'
+.OH '\fBX Toolkit Intrinsics\fP''\fBX11 Release \*(Rn\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
