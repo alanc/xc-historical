@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header$ */
+/* $Header: mfbimggblt.c,v 1.3 87/09/02 00:30:43 toddb Locked $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -141,9 +141,9 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     QueryGlyphExtents(pGC->font, ppci, nglyph, &info);
 
-    backrect.x = x + info.overallLeft;
+    backrect.x = x;
     backrect.y = y - pGC->font->pFI->fontAscent;
-    backrect.width = info.overallRight - info.overallLeft;
+    backrect.width = info.overallWidth;
     backrect.height = pGC->font->pFI->fontAscent + 
 		      pGC->font->pFI->fontDescent;
 
