@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.2 89/07/06 16:00:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.3 89/07/07 14:28:53 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -413,27 +413,33 @@ ArgList args;
 Cardinal * num_args;
 {
   Boolean total_reset = FALSE;
-  AsciiSourcePtr data = (AsciiSourcePtr) src;
+  AsciiSourcePtr data = (AsciiSourcePtr) src->data;
   AsciiSourcePtr old_data = XtNew(AsciiSourceData);
   XawTextEditType old_mode;
-  register int i;
 
   bcopy( (char *) data, (char *) old_data, sizeof(AsciiSourceData));
   
   XtSetSubvalues( (caddr_t) data, resources, XtNumber(resources),
 		  args, * num_args);
 
-  for (i = 0; i < *num_args ; i++ ) 
-    if (streq(args[i].name, XtNstring) || streq(args[i].name, XtNtype) ) {
+  if ( (old_data->string != data->string) || (old_data->type != data->type) ) {
+
+    if (old_data->string == data->string) {
+      data->allocated_string = FALSE; /* fool it into not freeing the string */
+      RemoveOldStringOrFile(old_data);        /* remove old info. */
+      data->allocated_string = TRUE;
+    }
+    else {
       RemoveOldStringOrFile(old_data);        /* remove old info. */
       data->allocated_string = FALSE;
-      InitStringOrFile(src);	              /* Init new info. */
-      LoadPieces(data, NULL);	     /* load new info into internal buffers. */
-      XawTextSetSource(src->widget, src, 0);   /* tell text widget 
-						 what happened. */
-      total_reset = TRUE;
-      break;
     }
+
+    InitStringOrFile(src);	              /* Init new info. */
+    LoadPieces(data, NULL);	     /* load new info into internal buffers. */
+    XawTextSetSource(src->widget, src, 0);   /* tell text widget 
+						what happened. */
+    total_reset = TRUE;
+  }
 
   if ( !total_reset && (old_data->piece_size != data->piece_size) ) {
     String string = StorePiecesInString(old_data);
@@ -478,7 +484,7 @@ ArgList args;
 Cardinal * num_args;
 {
   register int i;
-  AsciiSourcePtr data = (AsciiSourcePtr) src;
+  AsciiSourcePtr data = (AsciiSourcePtr) src->data;
 
 #ifdef ASCII_STRING
   if (!data->ascii_string)
@@ -495,7 +501,7 @@ Cardinal * num_args;
 		 args, *num_args);
 
   XtGetSubvalues((caddr_t) src, sourceResources, XtNumber(sourceResources),
-		 args, * num_args);
+		 args, *num_args);
 }
 
 /************************************************************
@@ -847,14 +853,15 @@ XawTextSource src;
     if (data->string == NULL) {
       data->string = tmpnam (XtMalloc((unsigned)TMPSIZ));
       data->is_tempfile = TRUE;
+      open_mode = "w";
     } 
-    else 
+    else {
       if (!data->allocated_string) {
 	data->allocated_string = TRUE;
 	data->string = XtNewString(data->string);
       }
-
-    open_mode = "r+";
+      open_mode = "r+";
+    }
 
     break;
   default:
