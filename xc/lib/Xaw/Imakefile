@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.80 92/06/28 17:46:42 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.81 93/09/04 16:33:10 rws Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoDebugLib DebugLibXaw
@@ -26,8 +26,6 @@ HEADERS = \
 	Box.h \
 	BoxP.h \
 	Cardinals.h \
-	Clock.h \
-	ClockP.h \
 	Command.h \
 	CommandP.h \
 	Dialog.h \
@@ -40,10 +38,6 @@ HEADERS = \
 	LabelP.h \
 	List.h \
 	ListP.h \
-	Logo.h \
-	LogoP.h \
-	Mailbox.h \
-	MailboxP.h \
 	MenuButton.h \
 	MenuButtoP.h \
 	Paned.h \
@@ -92,15 +86,12 @@ SRCS = \
 	AsciiSrc.c \
 	AsciiText.c \
 	Box.c \
-	Clock.c \
 	Command.c \
 	Dialog.c \
 	Form.c \
 	Grip.c \
 	Label.c \
 	List.c \
-	Logo.c \
-	Mailbox.c \
 	MenuButton.c \
 	Paned.c \
 	Panner.c \
@@ -136,15 +127,12 @@ OBJS = \
 	AsciiSrc.o \
 	AsciiText.o \
 	Box.o \
-	Clock.o \
 	Command.o \
 	Dialog.o \
 	Form.o \
 	Grip.o \
 	Label.o \
 	List.o \
-	Logo.o \
-	Mailbox.o \
 	MenuButton.o \
 	Paned.o \
 	Panner.o \
