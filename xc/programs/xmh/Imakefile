@@ -1,6 +1,7 @@
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
 
+    XMH_BITMAPS = black6 blank6
            SRCS = bbox.c command.c compfuncs.c folder.c init.c main.c \
                   menu.c mlist.c msg.c pick.c popup.c screen.c toc.c \
                   tocfuncs.c tocutil.c tsource.c util.c viewfuncs.c \
@@ -12,4 +13,7 @@ LOCAL_LIBRARIES = XawClientLibs
 
 
 ComplexProgramTarget(xmh)
+BuildIncludes($(XMH_BITMAPS),bitmaps,..)
 InstallAppDefaults(Xmh)
+INSTALLFLAGS = $(INSTINCFLAGS)
+InstallMultiple($(XMH_BITMAPS),$(INCDIR)/bitmaps)
