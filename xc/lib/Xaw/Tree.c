@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.36 90/04/30 17:06:11 converse Exp $
+ * $XConsortium: Tree.c,v 1.37 90/05/03 14:06:27 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -752,26 +752,27 @@ static void set_positions (tw, w, level)
     if (w) {
 	TreeConstraints tc = TREE_CONSTRAINT(w);
 
-	/*
-	 * mirror if necessary
-	 */
-	switch (tw->tree.gravity) {
-	  case EastGravity:
-	    tc->tree.x = (((Position) tw->tree.maxwidth) -
-			  ((Position) w->core.width) - tc->tree.x);
-	    break;
+	if (level > 0) {
+	    /*
+	     * mirror if necessary
+	     */
+	    switch (tw->tree.gravity) {
+	      case EastGravity:
+		tc->tree.x = (((Position) tw->tree.maxwidth) -
+			      ((Position) w->core.width) - tc->tree.x);
+		break;
 
-	  case SouthGravity:
-	    tc->tree.y = (((Position) tw->tree.maxheight) -
-			  ((Position) w->core.height) - tc->tree.y);
-	    break;
+	      case SouthGravity:
+		tc->tree.y = (((Position) tw->tree.maxheight) -
+			      ((Position) w->core.height) - tc->tree.y);
+		break;
+	    }
+
+	    /*
+	     * Move the widget into position.
+	     */
+	    XtMoveWidget (w, tc->tree.x, tc->tree.y);
 	}
-
-
-	/*
-	 * Move the widget into position.
-	 */
-	XtMoveWidget (w, tc->tree.x, tc->tree.y);
 
 	/*
 	 * Set the positions of all children.
