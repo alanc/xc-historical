@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.19 90/09/06 15:17:09 swick Exp $
+ * $XConsortium: EditresCom.c,v 1.20 90/12/28 19:53:13 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,7 +23,6 @@
  * Author:  Chris D. Peterson, MIT X Consortium
  */
 
-#include <stdio.h>
 #include <X11/IntrinsicP.h>	/* To get into the composite and core widget
 				   structures. */
 #include <X11/ObjectP.h>	/* For XtIs<Classname> macros. */
@@ -31,8 +30,11 @@
 #include <X11/ShellP.h>		/* for Application Shell Widget class. */
 
 #include <X11/Xatom.h>
+#include <X11/Xos.h>		/* for strcpy declaration */
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xmu/Editres.h>
+
+#include <stdio.h>
 
 #define _EresInsertBool _EresInsert8	
 #define _EresInsertResourceType _EresInsert8
