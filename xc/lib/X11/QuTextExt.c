@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuTextExt.c,v 11.8 87/09/11 08:06:13 rws Locked $ */
+/* $Header: XQuTextExt.c,v 11.9 88/01/04 08:59:08 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986, 1987	*/
 
 #define NEED_REPLIES
@@ -16,9 +16,9 @@ XQueryTextExtents (dpy, fid, string, nchars, dir, font_ascent, font_descent,
     int *font_ascent, *font_descent;
     register XCharStruct *overall;
 {
-    int indian;
     register int i;
-    register CARD16 *buf;
+    register char *ptr;
+    char *buf;
     xQueryTextExtentsReply rep;
     long nbytes;
     register xQueryTextExtentsReq *req;
@@ -29,21 +29,12 @@ XQueryTextExtents (dpy, fid, string, nchars, dir, font_ascent, font_descent,
     nbytes = nchars << 1;
     req->length += (nbytes + 3)>>2;
     req->oddLength = nchars & 1;
-    buf = (CARD16 *) _XAllocScratch (dpy, 
-	(unsigned long)nchars * sizeof(CARD16));
-    /*
-     * this call does not have to be all that swift, as it is doing round
-     * trip; have to expand to 16 bit anyway.
-     */
-    for (i = 0; i < nchars; i++) {
-	 buf[i] = (unsigned)*string++;
-	}
-    /*
-     * always send big indian....
-     */
-    indian = 1;
-    if (*(char *) & indian) _swapshort ((char *)buf, nbytes);
-    Data (dpy, (char *) buf, nbytes);
+    buf = _XAllocScratch (dpy, (unsigned long)nbytes);
+    for (ptr = buf, i = nchars; --i >= 0;) {
+	*ptr++ = 0;
+	*ptr++ = *string++;
+    }
+    Data (dpy, buf, nbytes);
     if (!_XReply (dpy, (xReply *)&rep, 0, xTrue))
 	return (0);
     *dir = rep.drawDirection;
@@ -57,19 +48,4 @@ XQueryTextExtents (dpy, fid, string, nchars, dir, font_ascent, font_descent,
     UnlockDisplay(dpy);
     SyncHandle();
     return (1);
-}
-
-_swapshort (bp, n)
-    register char *bp;
-    register long n;
-{
-    register char c;
-    register char *ep = bp + n;
-
-    while (bp < ep) {
-	c = *bp;
-	*bp = *(bp + 1);
-	bp++;
-	*bp++ = c;
-    }
 }
