@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.47 94/03/08 19:56:52 matt Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.48 94/03/22 16:41:01 matt Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.5
@@ -56,12 +56,12 @@ XCOMM operating system:  OSName
  * requiring users to reconfigure their C++ compilers to make them work.
  */
 #define NormalLibObjCplusplusCompile(options) test -r $*.C || $(LN) $*.CCsuf $*.C @@\
-	$(CCC) -c $(CCFLAGS) options $*.C
+	$(CXX) -c $(CXXFLAGS) options $*.C
 
 #define SpecialCplusplusObjectRule(baseobj,basedep,options)		@@\
 baseobj.Osuf:	basedep.CCsuf						@@\
 	test -r basedep.C || $(LN) basedep.CCsuf basedep.C		@@\
-	$(CCC) -c $(CCFLAGS) options basedep.C
+	$(CXX) -c $(CXXFLAGS) options basedep.C
 
 
 #define SystemV			YES

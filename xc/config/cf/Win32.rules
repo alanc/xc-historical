@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.38 94/02/08 15:27:29 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.39 94/02/10 11:31:45 rws Exp $
 
 #define HasSharedLibraries YES
 #define NeedLibInsideFlag YES
@@ -19,7 +19,7 @@ XCOMM platform:  $XConsortium: Win32.rules,v 1.38 94/02/08 15:27:29 rws Exp $
 
 #if HasCplusplus
 .CCsuf.obj:
-	$(CCC) -c $*.CCsuf @<<
+	$(CXX) -c $*.CCsuf @<<
 	$(CFLAGS)
 <<
 #endif
@@ -429,7 +429,7 @@ clean::									@@\
 #define SharedLibraryDataTarget(libname,rev,salist)
 
 #define ObjectCplusplusCompile(options) RemoveFile($@)			@@\
-	$(CCC) -c $*.CCsuf @<<						@@\
+	$(CXX) -c $*.CCsuf @<<						@@\
 	$(CFLAGS) options						@@\
 <<
 

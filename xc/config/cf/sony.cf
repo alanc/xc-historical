@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.52 94/03/08 19:20:27 matt Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.53 94/03/09 15:44:11 matt Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -72,7 +72,7 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.52 94/03/08 19:20:27 matt Exp $
 .SUFFIXES: .o .c .y .l .s .sh .h .f .Y .L .cxx
 
 #define NormalLibObjCplusplusCompile(options) test -r $*.C || $(LN) $*.CCsuf $*.C @@\
-	$(CCC) -c $(CCFLAGS) options $*.C
+	$(CXX) -c $(CXXFLAGS) options $*.C
 
 XCOMM operating system:  OSName
 
