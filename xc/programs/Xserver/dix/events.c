@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.112 87/11/05 11:13:59 rws Locked $ */
+/* $Header: events.c,v 1.113 87/11/05 17:50:36 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2113,7 +2113,7 @@ ProcChangeActivePointerGrab(client)
     if (grab->client != client)
 	return BadAccess;
     if (stuff->cursor == None)
-	grab->u.ptr.cursor = NullCursor;
+	newCursor = NullCursor;
     else
     {
 	newCursor = (CursorPtr)LookupID(stuff->cursor, RT_CURSOR, RC_CORE);
