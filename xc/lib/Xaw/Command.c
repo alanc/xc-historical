@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.50 89/05/11 01:04:56 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.51 89/05/18 16:18:16 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -385,14 +385,14 @@ Boolean change;
   very_thick = cbw->command.highlight_thickness > Min(cbw->core.width,
 						      cbw->core.height)/2;
 
-  cbw->label.normal_GC = cbw->command.normal_GC;
-
   if (cbw->command.set) {
     cbw->label.normal_GC = cbw->command.inverse_GC;
     XFillRectangle(XtDisplay(w), XtWindow(w), cbw->command.normal_GC,
 		   0, 0, cbw->core.width, cbw->core.height);
     region = NULL;		/* Force label to repaint text. */
   }
+  else
+      cbw->label.normal_GC = cbw->command.normal_GC;
 
   if (cbw->command.highlight_thickness <= 0)
     (*SuperClass->core_class.expose) (w, (XEvent *) NULL, region);
@@ -471,15 +471,20 @@ Widget current, request, new;
                                    cbw->command.highlight_thickness) ||
        (oldcbw->label.font != cbw->label.font) ) 
   {
-    if (cbw->command.set)		/* Label has release one of these */
-      XtReleaseGC(new, cbw->command.normal_GC);
-    else
+    if (oldcbw->label.normal_GC == oldcbw->command.normal_GC)
+	/* Label has release one of these */
       XtReleaseGC(new, cbw->command.inverse_GC);
+    else
+      XtReleaseGC(new, cbw->command.normal_GC);
+
     cbw->command.normal_GC = Get_GC(cbw, cbw->label.foreground, 
 				    cbw->core.background_pixel);
     cbw->command.inverse_GC = Get_GC(cbw, cbw->core.background_pixel, 
 				     cbw->label.foreground);
     XtReleaseGC(new, cbw->label.normal_GC);
+    cbw->label.normal_GC = (cbw->command.set
+			    ? cbw->command.inverse_GC
+			    : cbw->command.normal_GC);
     
     redisplay = True;
   }
