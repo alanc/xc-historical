@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.116 89/11/14 14:20:09 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.117 89/11/21 08:28:35 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -41,8 +41,13 @@ SOFTWARE.
 #define NULL 0
 #endif
 
+#ifdef VMS
+#define externalref globalref
+#define externaldef(psect) globaldef {"psect"} noshare
+#else
 #define externalref extern
 #define externaldef(psect)
+#endif /* VMS */
 
 #ifndef FALSE
 #define FALSE 0
@@ -122,6 +127,8 @@ typedef XtPointer	Opaque;
 #include <X11/Core.h>
 #include <X11/Composite.h>
 #include <X11/Constraint.h>
+#include <X11/Object.h>
+#include <X11/RectObj.h>
 
 /***************************************************************
  *
@@ -180,8 +187,8 @@ typedef struct {
     Cardinal	    size;
 } XtConvertArgRec, *XtConvertArgList;
 
-extern XtConvertArgRec colorConvertArgs[];
-extern XtConvertArgRec screenConvertArg[];
+externalref XtConvertArgRec colorConvertArgs[];
+externalref XtConvertArgRec screenConvertArg[];
 
 extern void XtAppAddConverter(); /* obsolete */
     /* XtAppContext	    app;	*/
@@ -423,11 +430,6 @@ typedef void (*XtEventHandler)(); /* widget, closure, event, continue_to_dispatc
     /* XEvent  *event;	*/
     /* Boolean *continue_to_dispatch */
 
-#ifdef notdef
-typedef void (*XtAsyncHandler)(); /* closure */
-    /* Opaque closure; */
-#endif
-
 typedef unsigned long EventMask;
 #define XtAllEvents ((EventMask) -1L)
 
@@ -523,16 +525,12 @@ extern void XtAddExposureToRegion();
     /* XEvent	*event;	*/
     /* Region	region;	*/
 
-#ifdef notdef
-extern void XtSetAsyncEventHandler(); /* handler, closure */
-    /* XtAsyncHandler handler; */
-    /* Opaque	closure; */
-
-extern void XtMakeToolkitAsync();
-#endif
-
 extern void XtSetKeyboardFocus();
     /* Widget subtree, descendent; */
+
+extern Boolean XtCallAcceptFocus();
+    /* Widget widget; */
+    /* Time *t;	*/
 
 extern Time XtLastTimestampProcessed();
     /* Display *dpy; */
@@ -1426,7 +1424,7 @@ typedef struct {
     String substitution;
 } SubstitutionRec, *Substitution;
 
-typedef Boolean (*XtFilePredicate)();
+typedef Boolean (*XtFilePredicate)( /* String filename */ );
 
 extern String XtFindFile();
 /*     String path;
@@ -1583,6 +1581,82 @@ extern XSelectionRequestEvent *XtGetSelectionRequest();
     /* Widget widget;		*/
     /* Atom selection;		*/
     /* XtRequestId request_id;	*/
+
+/* incremental selection interface */
+
+typedef void (*XtLoseSelectionIncrProc)(); 
+    /*	Widget widget */
+    /*	Atom *selection */
+    /*	XtPointer client_data */	/* selection owner specified */
+
+typedef void (*XtSelectionDoneIncrProc)();
+    /*	Widget widget */
+    /*	Atom *selection */
+    /*	Atom *target */
+    /*	XtRequestId *receiver_id */
+    /*	XtPointer client_data */
+
+typedef Boolean (*XtConvertSelectionIncrProc)();
+    /*	Widget widget */
+    /*	Atom *selection */
+    /*	Atom *target */
+    /*	Atom *type  */
+    /*	XtPointer *value  */
+    /*	unsigned long *length */
+    /*	int *format */	 
+    /*	unsigned long *max_length */
+    /*	XtPointer client_data */
+    /*	XtRequestId *receiver_id */
+
+typedef void (*XtCancelSelectionCallbackProc)();
+    /*	Widget widget */
+    /*	Atom *selection */
+    /*	XtPointer client_data */
+
+typedef void (*XtCancelConvertSelectionProc)();
+    /*	Widget widget */
+    /*	Atom *selection */
+    /*	Atom *target */
+    /*	XtRequestId *receiver_id */
+    /*	XtPointer client_data */
+
+typedef void (*XtSelectionIncrCallbackProc)();
+    /*	Widget widget */
+    /*	XtPointer client_data */
+    /*	Atom *selection */
+    /*	Atom *type */
+    /*	XtPointer *value */
+    /*	unsigned long *length */
+    /*	int *format */
+
+extern Boolean XtOwnSelectionIncremental(); 
+    /*	Widget widget  */
+    /*	Atom selection  */
+    /*	Time time  */
+    /*	XtConvertSelectionIncrProc convert_callback  */
+    /*	XtLoseSelectionIncrProc lose_callback  */
+    /*	XtSelectionDoneIncrProc done_callback  */
+    /*	XtCancelSelectionCallbackProc cancel_callback  */
+    /*	XtPointer client_data */
+
+extern void XtGetSelectionValueIncremental();
+    /*	Widget widget */
+    /*	Atom selection */
+    /*	Atom target */
+    /*	XtSelectionIncrCallbackProc selection_callback */
+    /*  XtCancelSelectionCallbackProc cancel_callback  */
+    /*	XtPointer client_data */
+    /*	Time time */
+
+extern void XtGetSelectionValuesIncremental();
+    /*  Widget widget */
+    /*  Atom selection */
+    /*  Atom *targets */
+    /*  int count */
+    /*  XtSelectionIncrCallbackProc callback */
+    /*  XtCancelSelectionCallbackProc cancel_callback */
+    /*  XtPointer *client_data */
+    /*  Time time */
 
 #endif /*_XtIntrinsic_h*/
 /* DON'T ADD STUFF AFTER THIS #endif */
