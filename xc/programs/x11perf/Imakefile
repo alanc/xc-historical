@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.29 93/08/19 10:40:17 rws Exp $
+XCOMM $XConsortium: Imakefile,v 2.30 93/08/24 18:48:22 rws Exp $
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
 #endif
@@ -13,14 +13,14 @@ XCOMM $XConsortium: Imakefile,v 2.29 93/08/19 10:40:17 rws Exp $
 		  do_simple.c do_rects.c do_valgc.c \
 		  do_lines.c do_segs.c \
 		  do_dots.c do_windows.c do_movewin.c do_text.c \
-		  do_copyarea.c do_arcs.c \
-		  do_triangles.c do_complex.c do_traps.c
+		  do_blt.c do_arcs.c \
+		  do_tris.c do_complex.c do_traps.c
            OBJS = x11perf.o bitmaps.o do_tests.o \
 		  do_simple.o do_rects.o do_valgc.o \
 		  do_lines.o do_segs.o \
 		  do_dots.o do_windows.o do_movewin.o do_text.o \
-		  do_copyarea.o do_arcs.o \
-		  do_triangles.o do_complex.o do_traps.o
+		  do_blt.o do_arcs.o \
+		  do_tris.o do_complex.o do_traps.o
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
   SYS_LIBRARIES = MathLibrary
