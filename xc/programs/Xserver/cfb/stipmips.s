@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipplemips.s,v 1.5 90/12/01 11:28:57 keith Exp $
+ * $XConsortium: stipplemips.s,v 1.6 90/12/01 15:24:42 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -98,7 +98,9 @@ stipplestack:
 	lw	shift, Shift
 	li	lshift, 4			/* compute offset within */
 	subu	lshift, lshift, shift		/*  stipple of remaining bits */
-#ifndef MIPSEL
+#ifdef MIPSEL
+	addu	shift, shift, 4			/* first shift for LSB */
+#else
 	addu	shift, shift, 24		/* first shift for MSB */
 #endif
 	/* do ... while (--count > 0); */
@@ -110,11 +112,7 @@ ForEachLine:
 	beqz	bits, NextLine			/* skip out early on 0 */
 #endif
 	addu	addr, addr, stride		/* step for the loop */
-#ifdef MIPSEL					/* get first bits */
-	sll	stemp, bits, lshift
-#else
-	srl	stemp, bits, shift
-#endif
+	BitsR	stemp, bits, shift		/* get first bits */
 	and	stemp, stemp, 0xf0		/* compute first branch */
 	addu	stemp, stemp, sbase		/*  ... */
 	j	stemp				/*  ... */
