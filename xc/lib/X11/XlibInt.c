@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.135 91/02/04 21:51:41 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.136 91/02/14 15:42:01 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -33,6 +33,17 @@ static void _EatData32();
 #if USG
 int _XReadV(), _XWriteV();
 #endif 
+
+#ifdef LACHMAN
+#ifdef EWOULDBLOCK
+#undef EWOULDBLOCK
+#endif
+#define EWOULDBLOCK EAGAIN
+#ifdef EMSGSIZE
+#undef EMSGSIZE
+#endif
+#define EMSGSIZE ERANGE
+#endif
 
 #if defined(STREAMSCONN) && (!defined(EWOULDBLOCK)) && defined(EAGAIN)
 #define EWOULDBLOCK EAGAIN
