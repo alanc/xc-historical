@@ -1,7 +1,4 @@
-/*
-* $XConsortium: Text.h,v 1.36 90/12/01 13:01:49 rws Exp $
-*/
-
+/* $XConsortium: Text.h,v 1.37 91/02/20 17:58:11 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +27,35 @@ SOFTWARE.
 #ifndef _XawText_h
 #define _XawText_h
 
+/*
+ Text widget
+
+ Class: 	textWidgetClass
+ Class Name:	Text
+ Superclass:	Simple
+
+ Resources added by the Text widget:
+
+ Name		     Class	     RepType		Default Value
+ ----		     -----	     -------		-------------
+ autoFill	    AutoFill	     Boolean		False
+ bottomMargin	    Margin	     Position		2
+ displayPosition    TextPosition     XawTextPosition	0
+ insertPosition	    TextPosition     XawTextPosition	0
+ leftMargin	    Margin	     Position		2
+ resize		    Resize	     XawTextResizeMode	XawTextResizeNever
+ rightMargin	    Margin	     Position		4
+ scrollHorizontal   Scroll	     XawTextScrollMode	XawtextScrollNever
+ scrollVertical     Scroll	     XawTextScrollMode  XawtextScrollNever
+ selectTypes        SelectTypes      Pointer            see documentation
+ textSink	    TextSink	     Widget		NULL
+ textSource	    TextSource	     Widget		NULL
+ topMargin	    Margin	     Position		2
+ unrealizeCallback  Callback	     Callback		NULL
+ wrap		    Wrap	     XawTextWrapMode	XawTextWrapNever
+
+*/
+
 typedef long XawTextPosition;
 
 typedef enum { XawtextScrollNever,
@@ -55,40 +81,6 @@ typedef struct {
 
 #include <X11/Xaw/TextSink.h>
 #include <X11/Xaw/TextSrc.h>
-
-/****************************************************************
- *
- * Text widget
- *
- ****************************************************************/
-
-/* Parameters:
-
- Name		     Class		RepType		Default Value
- ----		     -----		-------		-------------
- background	     Background		Pixel		XtDefaultBackground
- border		     BorderColor	Pixel		XtDefaultForeground
- borderWidth	     BorderWidth	Dimension	1
- destroyCallback     Callback		Pointer		NULL
- dialogHOffset	     Margin		int		10
- dialogVOffset	     Margin		int		10
- displayCaret	     Output		Boolean		True
- displayPosition     TextPosition	int		0
- editType	     EditType		XtTextEditType	XttextRead
- height		     Height		Dimension	font height
- insertPosition	     TextPosition	int		0
- leftMargin	     Margin		Dimension	2
- mappedWhenManaged   MappedWhenManaged	Boolean		True
- selectTypes	     SelectTypes	Pointer		(internal)
- selection	     Selection		Pointer		empty selection
- sensitive	     Sensitive		Boolean		True
- textSink	     TextSink		Pointer		(none)
- textSource	     TextSource		Pointer		(none)
- width		     Width		Dimension	100
- x		     Position		int		0
- y		     Position		int		0
-
-*/
 
 #define XtEtextScrollNever "never"
 #define XtEtextScrollWhenNeeded "whenneeded"
