@@ -1,4 +1,4 @@
-/* $XConsortium: xkbcomp.h,v 1.1 94/04/02 17:08:36 erik Exp $ */
+/* $XConsortium: xkbcomp.h,v 1.2 94/04/02 17:33:30 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,7 +33,6 @@
 #define	DEBUG_VAR debugFlags
 #endif
 
-#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 
