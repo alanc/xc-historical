@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.7 89/05/08 17:38:51 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.8 89/05/11 01:06:24 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -240,14 +240,14 @@ Widget request, new;
   XmuCallInitializers(XtWidgetToApplicationContext(new));
 
 /*
- * If top or bottom margins are zero then use vertical_space.
+ * If top or bottom margins are unset then use 0
  */
 
   if (smw->simple_menu.top_margin == MAGIC_DIMENSION)
-    smw->simple_menu.top_margin = smw->simple_menu.vertical_space;
+    smw->simple_menu.top_margin = 0;
 
   if (smw->simple_menu.bottom_margin == MAGIC_DIMENSION)
-    smw->simple_menu.bottom_margin = smw->simple_menu.vertical_space;
+    smw->simple_menu.bottom_margin = 0;
 
   smw->simple_menu.entry_set = NO_ENTRY;
   smw->simple_menu.entries = NULL;
@@ -289,35 +289,37 @@ Region region;
   MenuEntry * entry;
   int i;
   Dimension y = smw->simple_menu.top_margin;
-  Dimension width = w->core.width;
+  Dimension width = w->core.width, height = smw->simple_menu.row_height;
   Dimension y_temp;
+  int	font_ascent, font_descent;
+  
+  font_ascent = smw->simple_menu.font->max_bounds.ascent;
+  font_descent = smw->simple_menu.font->max_bounds.descent;
 
 /*
  * Check to see if we should paint label.
  */
 
-  y_temp = y;
-
   if (smw->simple_menu.label != NULL ) {
-    switch(XRectInRegion(region, 0, y_temp, width,
-			 smw->simple_menu.row_height)) {
+    switch(XRectInRegion(region, 0, y, width, height)) {
     case RectangleIn:
     case RectanglePart:
 
       if (XtIsSensitive(w)) {
 	XFillRectangle(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
-		       0, y_temp, width, smw->simple_menu.row_height);
+		       0, y, width, height);
 	gc = smw->simple_menu.rev_gc;
       }
       else
 	gc = smw->simple_menu.norm_grey_gc;
+	
+      /*
+       * compute y position for string -- parcel out the
+       * difference between the font height and the row height
+       * equally above and below the entry
+       */
 
-/*
- * Trust me on this one :-) 
- */
-      y_temp += (smw->simple_menu.row_height -
-		 smw->simple_menu.font->max_bounds.descent +
-		 smw->simple_menu.font->max_bounds.ascent)/2;
+      y_temp = y + (height - (font_ascent + font_descent)) / 2 + font_ascent;
 
       XDrawString(XtDisplay(w), XtWindow(w), gc,
 		  smw->simple_menu.left_margin, y_temp,
@@ -326,7 +328,8 @@ Region region;
     default:
       break;
     }
-    y += smw->simple_menu.row_height + smw->simple_menu.vertical_space;
+
+    y += height;
   }
 
  /*
@@ -335,28 +338,25 @@ Region region;
 
   for (i = 0, entry = smw->simple_menu.entries; entry != NULL;
        entry = entry->next, i++) {
-    Dimension height = (smw->simple_menu.row_height + 
-			smw->simple_menu.vertical_space);
 
     if (entry->type != XawMenuBlank) {
       switch(XRectInRegion(region, 0, y, width, height)) {
 	      
       case RectangleIn:
       case RectanglePart:
-	y_temp = y;
 	switch (entry->type) {
 	case XawMenuSeparator:
-	  y_temp += smw->simple_menu.row_height/2; 
+	  y_temp = y + height / 2;
 	  XDrawLine(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
-		    0, y_temp, smw->core.width, y_temp);
+		    0, y_temp, width, y_temp);
 	  break;
 	  
 	case XawMenuText:
 	  if (entry->sensitive && XtIsSensitive(w) ) {
 	    if (i == smw->simple_menu.entry_set) {
 	      XFillRectangle(XtDisplay(w), XtWindow(w), 
-			     smw->simple_menu.norm_gc, 0, y_temp,
-			     width, smw->simple_menu.row_height);
+			     smw->simple_menu.norm_gc, 0, y,
+			     width, height);
 	      gc = smw->simple_menu.rev_gc;
 	    }
 	    else
@@ -365,12 +365,8 @@ Region region;
 	  else
 	    gc = smw->simple_menu.norm_grey_gc;
 
-/*
- * Trust me on this one :-) 
- */
-	  y_temp += (smw->simple_menu.row_height -
-		     smw->simple_menu.font->max_bounds.descent +
-		     smw->simple_menu.font->max_bounds.ascent)/2;
+	  y_temp = y + (height - (font_ascent + font_descent)) / 2
+		   + font_ascent;
 
 	  XDrawString(XtDisplay(w), XtWindow(w), gc,
 		      smw->simple_menu.left_margin, y_temp,
@@ -387,7 +383,7 @@ Region region;
     } /* if (entry->type != XawMenuBlank) */
 
     y += height;
-  }  
+  }
 }
 
 /*      Function Name: Realize
@@ -618,10 +614,8 @@ XPoint * location;
 
     if (found_it) {
       if (smw->simple_menu.label != NULL)
-	y -= (Position) (smw->simple_menu.row_height + 
-			 smw->simple_menu.vertical_space);
-      y -= (Position) ( i * (smw->simple_menu.row_height +
-			     smw->simple_menu.vertical_space));
+	y -= (Position) smw->simple_menu.row_height;
+      y -= (Position) (i * smw->simple_menu.row_height);
     }
   }
   
@@ -1067,11 +1061,11 @@ Widget w;
 
   if ( (smw->simple_menu.auto_resize) || (smw->simple_menu.row_height == 0) )
     smw->simple_menu.row_height = (smw->simple_menu.font->max_bounds.ascent +
-				   smw->simple_menu.font->max_bounds.descent);
+				   smw->simple_menu.font->max_bounds.descent) +
+				   smw->simple_menu.vertical_space;
 
-  height = (smw->simple_menu.num_entries - 1)* smw->simple_menu.vertical_space;
-  height += smw->simple_menu.num_entries * smw->simple_menu.row_height;
-  height += smw->simple_menu.top_margin + smw->simple_menu.bottom_margin;
+  height = smw->simple_menu.num_entries * smw->simple_menu.row_height +
+	   smw->simple_menu.top_margin + smw->simple_menu.bottom_margin;
   return(height);
 }
 
@@ -1091,8 +1085,7 @@ MenuEntry * entry;
   register Position height, y = smw->simple_menu.top_margin;
   register MenuEntry * temp_entry;
 
-  height = (Position) (smw->simple_menu.row_height + 
-		       smw->simple_menu.vertical_space);
+  height = (Position) (smw->simple_menu.row_height);
 
   if ( !XtIsRealized(w) ) return;
 
@@ -1107,9 +1100,8 @@ MenuEntry * entry;
     XtAppError( XtWidgetToApplicationContext(w), 
 	       "SimpleMenuWidget: Could not find entry in FlipColors.");
 
-/*  y += (height - smw->simple_menu.font->max_bounds.ascent)/2; */
   XFillRectangle(XtDisplay(w), XtWindow(w), smw->simple_menu.invert_gc,
-		 0, y, w->core.width, smw->simple_menu.row_height);
+		 0, y, w->core.width, height);
 }
 
 /*      Function Name: DrawBitmaps
@@ -1235,31 +1227,30 @@ char * name;
 XawRefreshTypes type;
 {
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
-  register Position real_row_height, y;
+  register Position row_height, y;
   Dimension height;
   MenuEntry * entry;
 
   if ( !XtIsRealized(w) ) return;
 
   y = smw->simple_menu.top_margin;
+  row_height = (Position) smw->simple_menu.row_height;
 
   switch (type) {
   case XawErefreshAll:
     height = w->core.height;
     break;
   case XawErefreshEntry:
-    real_row_height = (Position) (smw->simple_menu.row_height + 
-				  smw->simple_menu.vertical_space);
 
     if (smw->simple_menu.label != NULL)
-      y += real_row_height;		/* Leave space for label. */
+      y += row_height;		/* Leave space for label. */
     for ( entry = smw->simple_menu.entries ; entry != NULL ;
 	 entry = entry->next ) {
       if (streq(name, entry->name)) break;
-      y += real_row_height;
+      y += row_height;
     }
   case XawErefreshLabel:	/* fall through. */
-    height = smw->simple_menu.row_height + smw->simple_menu.vertical_space;
+    height = row_height;
     break;
   default:
     XtAppError( XtWidgetToApplicationContext(w), "Unknow refresh type.");
@@ -1552,21 +1543,20 @@ XEvent * event;
     break;
   }
 
-  if ( (x_loc < 0) || (x_loc > smw->core.width) || (y_loc < 0) ||
-       (y_loc > smw->core.height) )
+  if ( (x_loc < 0) || (x_loc >= smw->core.width) || (y_loc < 0) ||
+       (y_loc >= smw->core.height) )
     return(NULL);
 
   y = smw->simple_menu.top_margin;
   if (smw->simple_menu.label != NULL)
-    y += smw->simple_menu.row_height + smw->simple_menu.vertical_space;
+    y += smw->simple_menu.row_height;
 
-  if (y_loc > y) { 
+  if (y <= y_loc) {
     for ( entry = smw->simple_menu.entries ; entry != NULL ;
 	 entry = entry->next ) {  
-      Dimension height = (smw->simple_menu.row_height + 
-			  smw->simple_menu.vertical_space);
+      Dimension height = smw->simple_menu.row_height;
       
-      if ( (y_loc > y) && (y_loc < y + (Position) height) )
+      if (y <= y_loc && y_loc < y + (Position) height)
 	return(entry);
       y += height;
     }
