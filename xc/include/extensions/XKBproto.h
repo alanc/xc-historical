@@ -132,8 +132,9 @@ typedef	struct _xkbGetStateReply {
     CARD8	lockedGroup;
     CARD8	compatState;
     CARD8	pad2;
-    CARD16	pad3;
-    CARD32	pad4[2] B32;
+    CARD16	pad3 B16;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xkbGetStateReply;
 #define	sz_xkbGetStateReply	32
 
@@ -392,7 +393,9 @@ typedef struct _xkbGetCompatMapReply {
     CARD16	nSI B16;
     CARD16	nTotalSI B16;
     CARD16	pad2 B16;
-    CARD32	pad3[3] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xkbGetCompatMapReply;
 #define	sz_xkbGetCompatMapReply		32
 
@@ -426,7 +429,11 @@ typedef struct _xkbGetIndicatorStateReply {
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     CARD32	state B32;
-    CARD32	pad[5] B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xkbGetIndicatorStateReply;
 #define	sz_xkbGetIndicatorStateReply	32
 
@@ -449,7 +456,10 @@ typedef struct _xkbGetIndicatorMapReply {
     CARD8	nRealIndicators;
     CARD8	nIndicators;
     CARD16	pad2 B16;
-    CARD32	pad3[4] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbGetIndicatorMapReply;
 #define	sz_xkbGetIndicatorMapReply	32
 
@@ -499,7 +509,8 @@ typedef	struct _xkbGetNamesReply {
     CARD8	nRadioGroups;
     CARD8	nCharSets;
     CARD32	indicators B32;
-    CARD32	pad[2] B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
 } xkbGetNamesReply;
 #define	sz_xkbGetNamesReply	32
 
@@ -574,7 +585,9 @@ typedef	struct _xkbGetAlternateSymsReply {
     CARD8	nKeys;
     CARD16	totalSyms B16;
     CARD16	pad2 B16;
-    CARD32	pad3[3] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xkbGetAlternateSymsReply;
 #define	sz_xkbGetAlternateSymsReply	32
 
@@ -602,11 +615,11 @@ typedef struct _xkbPointWireDesc {
 #define	sz_xkbPointWireDesc	4
 
 typedef struct _xkbShapeWireDesc {
-    CARD8	name[4];
     CARD8	nOutlines;
     CARD8	approxOutline;
     CARD8	primaryOutline;
     CARD8	pad;
+    CARD8	name[4];
 } xkbShapeWireDesc;
 #define	sz_xkbShapeWireDesc	8
 
