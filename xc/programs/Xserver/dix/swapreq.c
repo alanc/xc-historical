@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.31 91/05/09 16:50:48 rws Exp $ */
+/* $XConsortium: swapreq.c,v 1.32 91/06/01 12:08:44 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -225,14 +225,13 @@ SProcChangeProperty(client)
     swapl(&stuff->type, n);
     swapl(&stuff->nUnits, n);
     switch ( stuff->format ) {
-        case 8 : break;
+        case 8 :
+	    break;
         case 16:
-	    REQUEST_FIXED_SIZE(xChangePropertyReq, stuff->nUnits << 1);
-            SwapShorts((short *)(stuff + 1), stuff->nUnits);
+	    SwapRestS(stuff);
 	    break;
 	case 32:
-	    REQUEST_FIXED_SIZE(xChangePropertyReq, stuff->nUnits << 2);
-	    SwapLongs((long *)(stuff + 1), stuff->nUnits);
+	    SwapRestL(stuff);
 	    break;
 	}
     return((* ProcVector[X_ChangeProperty])(client));
@@ -1038,21 +1037,10 @@ SProcChangeKeyboardMapping   (client)
     register ClientPtr client;
 {
     register char n;
-    register long *p;
-    register int count;
-
     REQUEST(xChangeKeyboardMappingReq);
     swaps(&stuff->length, n);
     REQUEST_AT_LEAST_SIZE(xChangeKeyboardMappingReq);
-    p = (long *)&stuff[1];
-    count = stuff->keyCodes * stuff->keySymsPerKeyCode;
-    if ((stuff->length - (sizeof(xChangeKeyboardMappingReq) >> 2)) != count)
-	return BadLength;
-    while (--count >= 0)
-    {
-        swapl(p, n);
-	p++;
-    }
+    SwapRestL(stuff);
     return((* ProcVector[X_ChangeKeyboardMapping])(client));
 }
 
