@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.36 90/01/22 17:37:59 swick Exp $
+ * $XConsortium: toc.c,v 2.42 91/02/22 16:23:52 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -95,15 +95,17 @@ static void MakeSureSubfolderExists(namelistptr, numfoldersptr, name)
 	Punt("Can't create new xmh subfolder!");
 }
 
-#ifdef SYSV
+#ifndef DEFAULT_INITIAL_INC_FILE
 #ifdef SVR4
 #define DEFAULT_INITIAL_INC_FILE "/var/mail/%s"
 #else	/* SVR4 */
+#ifdef SYSV
 #define DEFAULT_INITIAL_INC_FILE "/usr/mail/%s"
-#endif	/* SVR4 */
 #else	/* SYSV */
 #define DEFAULT_INITIAL_INC_FILE "/usr/spool/mail/%s"
 #endif	/* SYSV */
+#endif	/* SVR4 */
+#endif
 
 static void LoadCheckFiles()
 {
