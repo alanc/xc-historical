@@ -1,5 +1,4 @@
-/*****************************************************************************/
-/**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
+/*****************************************************************************//**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
 /**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
@@ -28,12 +27,12 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.64 90/04/13 13:52:07 jim Exp $
+ * $XConsortium: twm.h,v 1.65 90/04/30 16:56:01 converse Exp $
  *
  * twm include file
  *
  * 28-Oct-87 Thomas E. LaStrange	File created
- *
+ * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
 
 #ifndef _TWM_
@@ -347,6 +346,7 @@ extern XErrorEvent LastErrorEvent;
 extern Bool RestartPreviousState;
 extern Bool GetWMState();
 
+extern Atom _XA_WM_PRIORITY_COLORS;
 extern Atom _XA_WM_CHANGE_STATE;
 extern Atom _XA_WM_STATE;
 extern Atom _XA_WM_COLORMAP_WINDOWS;

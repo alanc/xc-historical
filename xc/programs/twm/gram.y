@@ -28,11 +28,13 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.87 90/03/15 14:23:06 jim Exp $
+ * $XConsortium: gram.y,v 1.88 90/03/16 12:12:06 jim Exp $
  *
  * .twmrc command grammer
  *
  * 07-Jan-86 Thomas E. LaStrange	File created
+ * 11-Nov-90 Dave Sternlicht            Adding SaveColors
+ * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  *
  ***********************************************************************/
 
@@ -66,7 +68,7 @@ unsigned int mods_used = (ShiftMask | ControlMask | Mod1Mask);
 
 extern int do_single_keyword(), do_string_keyword(), do_number_keyword();
 extern name_list **do_colorlist_keyword();
-extern int do_color_keyword();
+extern int do_color_keyword(), do_string_savecolor();
 extern int yylineno;
 %}
 
@@ -77,7 +79,7 @@ extern int yylineno;
 };
 
 %token <num> LB RB LP RP MENUS MENU BUTTON DEFAULT_FUNCTION PLUS MINUS
-%token <num> ALL OR CURSORS PIXMAPS ICONS COLOR MONOCHROME FUNCTION 
+%token <num> ALL OR CURSORS PIXMAPS ICONS COLOR SAVECOLOR MONOCHROME FUNCTION 
 %token <num> ICONMGR_SHOW ICONMGR WINDOW_FUNCTION ZOOM ICONMGRS
 %token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE
 %token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
@@ -204,8 +206,10 @@ stmt		: error
 		  icon_list
 		| COLOR 		{ color = COLOR; }
 		  color_list
-		| MONOCHROME 		{ color = MONOCHROME; }
-		  color_list
+                | SAVECOLOR          
+                  save_color_list
+                | MONOCHROME 		{ color = MONOCHROME; }
+	          color_list
 		| DEFAULT_FUNCTION action { Scr->DefaultFunction.func = $2;
 					  if ($2 == F_MENU)
 					  {
@@ -397,6 +401,7 @@ cursor_entry	: FRAME string string {
 color_list	: LB color_entries RB
 		;
 
+
 color_entries	: /* Empty */
 		| color_entries color_entry
 		;
@@ -432,6 +437,16 @@ color_entry	: CLKEYWORD string	{ if (!do_colorlist_keyword ($1, color,
 					}
 		;
 
+save_color_list : LB s_color_entries RB 
+                ;
+
+s_color_entries : /* Empty */
+                | s_color_entries s_color_entry 
+                ;
+
+s_color_entry   : string            { do_string_savecolor(color, $1); }
+                | CLKEYWORD         { do_var_savecolor($1); }
+                ;
 
 win_color_list	: LB win_color_entries RB
 		;

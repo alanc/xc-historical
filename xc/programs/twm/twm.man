@@ -653,6 +653,28 @@ This variable indicates that
 to tell which windows should be iconified and which should be left visible.
 This is typically used to try to regenerate the state that the screen
 was in before the previous window manager was shutdown.
+.IP "\fBSaveColor\fP { \fIcolors-list\fP }" 8
+This variable indicates a list of color assignments to be stored as pixel
+values in the root window property WM_PRIORITY_COLORS.  Clients may elect
+to preserve these values when installing their own colormap.  Note that
+use of this mechanism is a way an for application to avoid the "technicolor" 
+problem, whereby useful screen objects such as window borders and titlebars
+disappear when a programs custom colors are installed by the window
+manager.
+For example:
+.EX 0
+\fBSaveColor\fP
+{
+        BorderColor
+        TitleBackground
+        TitleForeground
+        "red"
+        "green"
+        "blue"
+}
+.EE
+This would place on the root window 3 pixel values for borders and titlebars,
+as well as the three color strings, all taken from the default colormap.
 .IP "\fBShowIconManager\fP" 8
 This variable indicates that the icon manager window should be displayed when
 \fItwm\fP is started.  It can always be brought up using the

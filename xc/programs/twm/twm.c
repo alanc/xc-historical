@@ -28,17 +28,17 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.115 90/09/20 18:08:04 converse Exp $
+ * $XConsortium: twm.c,v 1.116 90/10/03 14:27:57 converse Exp $
  *
  * twm - "Tom's Window Manager"
  *
  * 27-Oct-87 Thomas E. LaStrange	File created
- *
+ * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.115 90/09/20 18:08:04 converse Exp $";
+"$XConsortium: twm.c,v 1.116 90/10/03 14:27:57 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -56,6 +56,7 @@ static char RCSinfo[] =
 #include "screen.h"
 #include "iconmgr.h"
 #include <X11/Xproto.h>
+#include <X11/Xatom.h>
 
 Display *dpy;			/* which display are we talking to */
 Window ResizeWindow;		/* the window we are resizing */
@@ -113,6 +114,8 @@ char **Environ;
 Bool RestartPreviousState = False;	/* try to restart in previous state */
 
 unsigned long black, white;
+
+extern void assign_var_savecolor();
 
 /***********************************************************************
  *
@@ -237,6 +240,9 @@ main(argc, argv, environ)
     FirstScreen = TRUE;
     for (scrnum = firstscrn ; scrnum <= lastscrn; scrnum++)
     {
+        /* Make sure property priority colors is empty */
+        XChangeProperty (dpy, RootWindow(dpy, scrnum), _XA_WM_PRIORITY_COLORS,
+			 XA_CARDINAL, 32, PropModeReplace, NULL, 0);
 	RedirectError = FALSE;
 	XSetErrorHandler(CatchRedirectError);
 	XSelectInput(dpy, RootWindow (dpy, scrnum),
@@ -389,6 +395,7 @@ main(argc, argv, environ)
 
 	/* Parse it once for each screen. */
 	ParseTwmrc(InitFile);
+	assign_var_savecolor(); /* storeing pixels for twmrc "entities" */
 	if (Scr->SqueezeTitle == -1) Scr->SqueezeTitle = FALSE;
 	if (!Scr->HaveFonts) CreateFonts();
 	CreateGCs();
@@ -798,7 +805,7 @@ static int CatchRedirectError(dpy, event)
     return 0;
 }
 
-
+Atom _XA_WM_PRIORITY_COLORS;
 Atom _XA_WM_CHANGE_STATE;
 Atom _XA_WM_STATE;
 Atom _XA_WM_COLORMAP_WINDOWS;
@@ -809,6 +816,10 @@ Atom _XA_WM_DELETE_WINDOW;
 
 InternUsefulAtoms ()
 {
+    /* 
+     * Create priority colors if necessary.
+     */
+    _XA_WM_PRIORITY_COLORS = XInternAtom(dpy, "WM_PRIORITY_COLORS", False);   
     _XA_WM_CHANGE_STATE = XInternAtom (dpy, "WM_CHANGE_STATE", False);
     _XA_WM_STATE = XInternAtom (dpy, "WM_STATE", False);
     _XA_WM_COLORMAP_WINDOWS = XInternAtom (dpy, "WM_COLORMAP_WINDOWS", False);

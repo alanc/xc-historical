@@ -28,17 +28,17 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.44 90/03/13 15:29:25 jim Exp $
+ * $XConsortium: parse.c,v 1.45 90/03/15 14:23:02 jim Exp $
  *
  * parse the .twmrc file
  *
- * 17-Nov-87 Thomas E. LaStrange		File created
- *
+ * 17-Nov-87 Thomas E. LaStrange       File created
+ * 10-Oct-90 David M. Sternlicht       Storing saved colors on root
  ***********************************************************************/
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.44 90/03/13 15:29:25 jim Exp $";
+"$XConsortium: parse.c,v 1.45 90/03/15 14:23:02 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -50,6 +50,7 @@ static char RCSinfo[]=
 #include "util.h"
 #include "gram.h"
 #include "parse.h"
+#include <X11/Xatom.h> 
 
 #ifndef SYSTEM_INIT_FILE
 #define SYSTEM_INIT_FILE "/usr/lib/X11/twm/system.twmrc"
@@ -523,6 +524,7 @@ static TwmKeyword keytable[] = {
     { "righttitlebutton",	RIGHT_TITLEBUTTON, 0 },
     { "root",			ROOT, 0 },
     { "s",			SHIFT, 0 },
+    { "savecolor",              SAVECOLOR, 0},
     { "select",			SELECT, 0 },
     { "shift",			SHIFT, 0 },
     { "showiconmanager",	KEYWORD, kw0_ShowIconManager },
@@ -857,7 +859,6 @@ name_list **do_colorlist_keyword (keyword, colormode, s)
 	GetColor (colormode, &Scr->IconManagerC.back, s);
 	return &Scr->IconManagerBL;
     }
-
     return NULL;
 }
 
@@ -900,7 +901,113 @@ int do_color_keyword (keyword, colormode, s)
     return 0;
 }
 
+/*
+ * put_pixel_on_root() Save a pixel value in twm root window color property.
+ */
+put_pixel_on_root(pixel)                                 
+    Pixel pixel;                                         
+{                                                        
+  int           i, addPixel = 1;
+  Atom          pixelAtom, retAtom;	                 
+  int           retFormat;
+  unsigned long nPixels, retAfter;                     
+  Pixel        *retProp;
+  pixelAtom = XInternAtom(dpy, "WM_PRIORITY_COLORS", True);        
+  XGetWindowProperty(dpy, Scr->Root, pixelAtom, 0, 8192, 
+		     False, XA_CARDINAL, &retAtom,       
+		     &retFormat, &nPixels, &retAfter,    
+		     (unsigned char **)&retProp);
 
+  for (i=0; i< nPixels; i++)                             
+      if (pixel == retProp[i]) addPixel = 0;             
+                                                         
+  if (addPixel)                                          
+      XChangeProperty (dpy, Scr->Root, _XA_WM_PRIORITY_COLORS,
+		       XA_CARDINAL, 32, PropModeAppend,  
+		       (unsigned char *)&pixel, 1);                       
+}                                                        
+
+/*
+ * do_string_savecolor() save a color from a string in the twmrc file.
+ */
+int do_string_savecolor(colormode, s)
+     int colormode;
+     char *s;
+{
+  Pixel p;
+  GetColor(colormode, &p, s);
+  put_pixel_on_root(p);
+}
+
+/*
+ * do_var_savecolor() save a color from a var in the twmrc file.
+ */
+typedef struct _cnode {int i; struct _cnode *next;} Cnode, *Cptr;
+Cptr chead = NULL;
+
+int do_var_savecolor(key)
+int key;
+{
+  Cptr cptrav, cpnew;
+  if (!chead) {
+    chead = (Cptr)malloc(sizeof(Cnode));
+    chead->i = key; chead->next = NULL;
+  }
+  else {
+    cptrav = chead;
+    while (cptrav->next != NULL) { cptrav = cptrav->next; }
+    cpnew = (Cptr)malloc(sizeof(Cnode));
+    cpnew->i = key; cpnew->next = NULL; cptrav->next = cpnew;
+  }
+}
+
+/*
+ * assign_var_savecolor() traverse the var save color list placeing the pixels
+ *                        in the root window property.
+ */
+void assign_var_savecolor()
+{
+  Cptr cp = chead;
+  while (cp != NULL) {
+    switch (cp->i) {
+    case kwcl_BorderColor:
+      put_pixel_on_root(Scr->BorderColor);
+      break;
+    case kwcl_IconManagerHighlight:
+      put_pixel_on_root(Scr->IconManagerHighlight);
+      break;
+    case kwcl_BorderTileForeground:
+      put_pixel_on_root(Scr->BorderTileC.fore);
+      break;
+    case kwcl_BorderTileBackground:
+      put_pixel_on_root(Scr->BorderTileC.back);
+      break;
+    case kwcl_TitleForeground:
+      put_pixel_on_root(Scr->TitleC.fore);
+      break;
+    case kwcl_TitleBackground:
+      put_pixel_on_root(Scr->TitleC.back);
+      break;
+    case kwcl_IconForeground:
+      put_pixel_on_root(Scr->IconC.fore);
+      break;
+    case kwcl_IconBackground:
+      put_pixel_on_root(Scr->IconC.back);
+      break;
+    case kwcl_IconBorderColor:
+      put_pixel_on_root(Scr->IconBorderColor);
+      break;
+    case kwcl_IconManagerForeground:
+      put_pixel_on_root(Scr->IconManagerC.fore);
+      break;
+    case kwcl_IconManagerBackground:
+      put_pixel_on_root(Scr->IconManagerC.back);
+      break;
+    }
+    cp = cp->next;
+  }
+  free(chead);
+}
 static int ParseUsePPosition (s)
     register char *s;
 {
