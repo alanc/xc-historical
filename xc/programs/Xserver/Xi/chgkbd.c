@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.6 89/11/10 11:58:42 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.7 89/12/02 15:20:31 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -117,29 +117,31 @@ ProcXChangeKeyboardDevice (client)
 	     ((dev->sync.state >= FROZEN) &&
 	      !SameClient(dev->grab, client))))
 	rep.status = GrabFrozen;
-
-    if (ChangeKeyboardDevice (inputInfo.keyboard, dev) != Success)
+    else
 	{
-	SendErrorToClient(client, IReqCode, X_ChangeKeyboardDevice, 0, 
+	if (ChangeKeyboardDevice (inputInfo.keyboard, dev) != Success)
+	    {
+	    SendErrorToClient(client, IReqCode, X_ChangeKeyboardDevice, 0, 
 		BadDevice);
-	return Success;
+	    return Success;
+	    }
+	dev->focus->win = inputInfo.keyboard->focus->win;
+	inputInfo.keyboard = dev;
+
+	ev.type = ChangeDeviceNotify;
+	ev.deviceid = stuff->deviceid;
+	ev.time = currentTime.milliseconds;
+	ev.request = NewKeyboard;
+
+	SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
+	SendMappingNotify (MappingKeyboard, k->curKeySyms.minKeyCode, 
+	    k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode + 1);
+
+	rep.status = 0;
 	}
-    dev->focus->win = inputInfo.keyboard->focus->win;
-    inputInfo.keyboard = dev;
 
-    ev.type = ChangeDeviceNotify;
-    ev.deviceid = stuff->deviceid;
-    ev.time = currentTime.milliseconds;
-    ev.request = NewKeyboard;
-
-    SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
-    SendMappingNotify (MappingKeyboard, k->curKeySyms.minKeyCode, 
-	k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode + 1);
-
-    rep.status = 0;
     WriteReplyToClient (client, sizeof (xChangeKeyboardDeviceReply), 
 	&rep);
-
     return Success;
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.6 89/11/08 17:54:50 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.7 89/12/02 15:20:38 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -119,30 +119,32 @@ ProcXChangePointerDevice (client)
 	     ((dev->sync.state >= FROZEN) &&
 	      !SameClient(dev->grab, client))))
 	rep.status = GrabFrozen;
-
-    if (inputInfo.pointer->focus == NULL)
-	InitFocusClassDeviceStruct (inputInfo.pointer);
-    if (ChangePointerDevice (inputInfo.pointer, dev) != Success)
+    else
 	{
-	SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, 
+	if (inputInfo.pointer->focus == NULL)
+	    InitFocusClassDeviceStruct (inputInfo.pointer);
+	if (ChangePointerDevice (inputInfo.pointer, dev) != Success)
+	    {
+	    SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, 
 		BadDevice);
-	return Success;
+	    return Success;
+	    }
+	inputInfo.pointer = dev;
+	inputInfo.pointer->focus->win = NULL;
+
+	ev.type = ChangeDeviceNotify;
+	ev.deviceid = stuff->deviceid;
+	ev.time = currentTime.milliseconds;
+	ev.request = NewPointer;
+
+	SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
+	SendMappingNotify (MappingPointer, 0, 0);
+
+	rep.status = 0;
 	}
-    inputInfo.pointer = dev;
-    inputInfo.pointer->focus->win = NULL;
 
-    ev.type = ChangeDeviceNotify;
-    ev.deviceid = stuff->deviceid;
-    ev.time = currentTime.milliseconds;
-    ev.request = NewPointer;
-
-    SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
-    SendMappingNotify (MappingPointer, 0, 0);
-
-    rep.status = 0;
     WriteReplyToClient (client, sizeof (xChangePointerDeviceReply), 
 	&rep);
-
     return Success;
     }
 
