@@ -32,7 +32,7 @@ InstallMultiple($(FILES),$(NLSDIR))
 CFILES = C/codeset.dat C/fontset.dat
 JEUCFILES = ja_JP.EUC/codeset.dat ja_JP.EUC/fontset.dat
 
-InstallMultiple($(CFILES),$(NLSDIR)/C)
-InstallMultiple($(JEUCFILES),$(NLSDIR)/ja_JP.EUC)
+InstallMultiple($(CFILES),$(LIBDIR)/C)
+InstallMultiple($(JEUCFILES),$(LIBDIR)/ja_JP.EUC)
 
 #endif /* BuildXimp */
