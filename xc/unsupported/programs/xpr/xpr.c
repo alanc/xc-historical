@@ -1,4 +1,4 @@
-/* $XConsortium: xpr.c,v 1.54 91/07/18 11:55:34 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.55 92/01/30 09:52:30 rws Exp $ */
 
 /*
  * XPR - process xwd(1) files for various printers
@@ -46,15 +46,19 @@
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
-#define XLIB_ILLEGAL_ACCESS
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
+#ifndef WIN32
 #include <pwd.h>
+#endif
 #include "lncmd.h"
 #include "xpr.h"
 #include <X11/XWDFile.h>
 #include <X11/Xmu/SysUtil.h>
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 
 #ifdef	NLS16
 #ifndef NLS
@@ -588,7 +592,7 @@ int *render;
     }
 
     if (infilename) {
-	f = open(infilename, O_RDONLY, 0);
+	f = open(infilename, O_RDONLY|O_BINARY, 0);
 	if (f < 0) {
 	    fprintf(stderr, "xpr: error opening \"%s\" for input\n",
 		    infilename);
@@ -683,6 +687,7 @@ convert_data(win, data, plane, gray, colors, flags)
     XColor *colors;
     int flags;
 {
+    XImage in_image_struct, out_image_struct;
     register XImage *in_image, *out_image;
     register int x, y;
 
@@ -696,37 +701,27 @@ convert_data(win, data, plane, gray, colors, flags)
 
     /* initialize the input image */
 
-    /* This is a crock.  Xlib does not provide a way to create an
-     * arbitrary image and get the internal image functions correctly
-     * initialized.  So, we cheat.
-     */
-    {
-	Display fakedpy;
-	ScreenFormat fakefmt;
-
-	fakedpy.byte_order = (int) win->byte_order;
-	fakedpy.bitmap_unit = (int) win->bitmap_unit;
-	fakedpy.bitmap_bit_order = (int) win->bitmap_bit_order;
-	fakedpy.pixmap_format = &fakefmt;
-	fakedpy.nformats = 1;
-	fakefmt.depth = (int) win->pixmap_depth;
-	fakefmt.bits_per_pixel = (int) win->bits_per_pixel;
-
-	in_image = XCreateImage(&fakedpy, NULL,
-				(int) win->pixmap_depth,
-				(int) win->pixmap_format,
-				(int) win->xoffset, data,
-				(int) win->pixmap_width,
-				(int) win->pixmap_height,
-				(int) win->bitmap_pad,
-				(int) win->bytes_per_line);
-    }
-
+    in_image = &in_image_struct;
+    in_image->byte_order = win->byte_order;
+    in_image->bitmap_unit = win->bitmap_unit;
+    in_image->bitmap_bit_order = win->bitmap_bit_order;
+    in_image->depth = win->pixmap_depth;
+    in_image->bits_per_pixel = win->bits_per_pixel;
+    in_image->format = win->pixmap_format,
+    in_image->xoffset = win->xoffset,
+    in_image->data = data;
+    in_image->width = win->pixmap_width;
+    in_image->height = win->pixmap_height;
+    in_image->bitmap_pad = win->bitmap_pad;
+    in_image->bytes_per_line = win->bytes_per_line;
     in_image->red_mask = win->red_mask;
     in_image->green_mask = win->green_mask;
     in_image->blue_mask = win->blue_mask;
     in_image->obdata = NULL;
-
+    if (!XInitImage(in_image)) {
+	fprintf(stderr,"xpr: bad input image header data.\n");
+	exit(1);
+    }
     if ((flags & F_GRAY) && (in_image->depth > 1) && (plane < 0)) {
 	win->pixmap_width *= gray->sizeX;
 	win->pixmap_height *= gray->sizeY;
@@ -741,38 +736,28 @@ convert_data(win, data, plane, gray, colors, flags)
     win->bits_per_pixel = 1;
     win->bytes_per_line = (win->pixmap_width + 7) >> 3;
 
-    /* This is a crock.  Xlib does not provide a way to create an
-     * arbitrary image and get the internal image functions correctly
-     * initialized.  So, we cheat.
-     */
-    {
-	Display fakedpy;
-	ScreenFormat fakefmt;
-
-	fakedpy.byte_order = (int) win->byte_order;
-	fakedpy.bitmap_unit = (int) win->bitmap_unit;
-	fakedpy.bitmap_bit_order = (int) win->bitmap_bit_order;
-	fakedpy.pixmap_format = &fakefmt;
-	fakedpy.nformats = 1;
-	fakefmt.depth = (int) win->pixmap_depth;
-	fakefmt.bits_per_pixel = (int) win->bits_per_pixel;
-
-	out_image = XCreateImage(&fakedpy, NULL,
-				 (int) win->pixmap_depth,
-				 (int) win->pixmap_format,
-				 (int) win->xoffset, NULL,
-				 (int) win->pixmap_width,
-				 (int) win->pixmap_height,
-				 (int) win->bitmap_pad,
-				 (int) win->bytes_per_line);
-    }
-
+    out_image = &out_image_struct;
+    out_image->byte_order = win->byte_order;
+    out_image->bitmap_unit = win->bitmap_unit;
+    out_image->bitmap_bit_order = win->bitmap_bit_order;
+    out_image->depth = win->pixmap_depth;
+    out_image->bits_per_pixel = win->bits_per_pixel;
+    out_image->format = win->pixmap_format;
+    out_image->xoffset = win->xoffset,
+    out_image->width = win->pixmap_width;
+    out_image->height = win->pixmap_height;
+    out_image->bitmap_pad = win->bitmap_pad;
+    out_image->bytes_per_line = win->bytes_per_line;
     out_image->red_mask = 0;
     out_image->green_mask = 0;
     out_image->blue_mask = 0;
     out_image->obdata = NULL;
     out_image->data = malloc((unsigned)out_image->bytes_per_line *
 				      out_image->height);
+    if (!XInitImage(out_image)) {
+	fprintf(stderr,"xpr: bad output image header data.\n");
+	exit(1);
+    }
 
     if ((in_image->depth > 1) && (plane > 0)) {
 	for (y = 0; y < in_image->height; y++)
@@ -1280,7 +1265,11 @@ char *trailer;
 char *name;
 {
     char    hostname[256];
+#ifdef WIN32
+    char *username;
+#else
     struct passwd  *pswd;
+#endif
     long    clock;
     int lm, bm; /* left (bottom) margin */
 
@@ -1300,10 +1289,16 @@ char *name;
 	    (flags & F_NPOSITION) ? points(lm) : 0,
 	    (flags & F_NPOSITION) ? points(bm) : 0,
 	    points(iw * scale), points(ih * scale));
-    pswd = getpwuid (getuid ());
     (void) XmuGetHostname (hostname, sizeof hostname);
+#ifdef WIN32
+    username = getenv("USERNAME");
+    printf ("%%%%Creator: %s:%s\n", hostname,
+	    username ? username : "unknown");
+#else
+    pswd = getpwuid (getuid ());
     printf ("%%%%Creator: %s:%s (%s)\n", hostname,
 	    pswd->pw_name, pswd->pw_gecos);
+#endif
     printf ("%%%%Title: %s (%s)\n", infilename,name);
     printf ("%%%%CreationDate: %s",
 		(time (&clock), ctime (&clock)));
