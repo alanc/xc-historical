@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.74 94/11/21 18:33:11 kaleb Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.75 94/12/03 13:18:15 kaleb Exp kaleb $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -69,6 +69,10 @@ SOCK_DEFINES = -DBSD44SOCKETS
 
 #ifdef i386Architecture
 FRAGILE_DEFINES = -DFRAGILE_DEV_MEM
+#endif
+
+#if HasVFork
+VFORK_DEFINES = -DHAS_VFORK
 #endif
 
    XDMCONFIGDIR = XdmConfigurationSubdirectory
@@ -158,6 +162,7 @@ SpecialCObjectRule(policy,$(ICONFIGFILES),$(_NOOP_))
 SpecialCObjectRule(resource,$(ICONFIGFILES),$(RES_DEFINES))
 SpecialCObjectRule(socket,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES))
+SpecialCObjectRule(xdmshell,$(ICONFIGFILES),$(VFORK_DEFINES))
 
 #if !SharedLibXdmGreet
 LinkSourceFile(greet.c,greeter)

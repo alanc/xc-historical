@@ -1,4 +1,4 @@
-/* $XConsortium: xdmshell.c,v 1.14 94/10/18 16:09:08 converse Exp gildea $ */
+/* $XConsortium: xdmshell.c,v 1.15 94/11/28 23:32:58 gildea Exp kaleb $ */
 /*
  * xdmshell - simple program for running xdm from login
  *
@@ -59,7 +59,7 @@ extern int errno;
 /*
  * HP-UX does have vfork, but A/UX doesn't
  */
-#if (defined(SYSV) || defined(macII)) && !defined(hpux)
+#ifndef HAS_VFORK
 #define vfork() fork()
 #endif
 
