@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Text.c,v 1.2 87/09/11 21:24:39 swick Locked $";
 #endif lint
 
 /*
@@ -28,7 +28,7 @@ static char rcsid[] = "$Header$";
 
 #include "Intrinsic.h"
 #include "Text.h"
-#include "TextPrivate.h"
+#include "TextP.h"
 #include "Scroll.h"
 #include "Atoms.h"
 #include <sys/file.h>
@@ -2369,3 +2369,4 @@ TextClassRec textClassRec = {
 
 WidgetClass textWidgetClass = (WidgetClass)&textClassRec;
 
+ 

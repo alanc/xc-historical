@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.2 87/09/11 21:18:29 swick Locked $";
 #endif lint
 
 /*
@@ -29,7 +29,7 @@ static char rcsid[] = "$Header$";
 #include "Xatom.h"
 #include "Intrinsic.h"
 #include "Text.h"
-#include "TextPrivate.h"
+#include "TextP.h"
 #include "Atoms.h"
 
 #define GETLASTPOS (*(source->scan))(source, 0, XtstFile, XtsdRight, 1, TRUE)
