@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.42 89/03/29 15:15:46 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.43 89/03/29 15:34:51 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -363,6 +363,11 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 #else
 	(void) fcntl(fd, F_SETFL, FNDELAY);
 #endif /* FIOSNBIO */
+
+	/*
+	 * set it to close-on-exec
+	 */
+	(void) fcntl(fd, F_SETFD, 1);
 
 	/*
 	 * Return the id if the connection succeeded. Rebuild the expanded
