@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Manage.c,v 6.2 88/01/26 16:18:18 asente Exp $";
+static char rcsid[] = "$Header: Manage.c,v 6.2 88/01/26 16:18:18 swick Locked $";
 #endif lint
 
 /*
@@ -108,7 +108,7 @@ void XtManageChildren(children, num_children)
 	child = children[i];
 	if (child == NULL) {
 	    XtWarning("Null child passed to XtManageChildren");
-	    return;
+	    continue;
 	}
         if ((CompositeWidget) child->core.parent != parent) {
 	    XtWarning("Not all children have same parent in XtManageChildren");
