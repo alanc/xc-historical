@@ -40,7 +40,7 @@ while [ x"$1" != x ]; do
 	-s) shift
 	    continue;;
 
-	-DIR) srcdir=`echo $2 | sed 's;/./;/;g'`
+	-DIR) srcdir=`echo $2 | sed 's;/\./;/;g'`
 	      shift
               shift
               continue;;
