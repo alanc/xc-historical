@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.14 88/07/27 09:38:55 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.15 88/08/11 20:09:52 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -19,6 +19,8 @@ extern int sys_nerr;
 #ifdef hpux
 #include <sys/utsname.h>
 #endif
+
+#include <setjmp.h>
 
 #ifdef macII
 #define vfork() fork()
@@ -383,13 +385,26 @@ startClient(client)
 #define killpg(pgrp, sig) kill(-(pgrp), sig)
 #endif /* SYSV */
 
+static jmp_buf close_env;
+
+static int ignorexio (dpy)
+    Display *dpy;
+{
+    fprintf (stderr, "%s:  connection to server lost.\n", program);
+    longjmp (close_env, 1);
+    return;
+}
+
 static
 shutdown(serverpid, clientpid)
 	int	serverpid, clientpid;
 {
 	/* have kept display opened, so close it now */
 	if (clientpid > 0) {
-		XCloseDisplay(xd);
+		XSetIOErrorHandler (ignorexio);
+		if (! setjmp(close_env)) {
+		    XCloseDisplay(xd);
+		}
 
 		/* HUP all local clients to allow them to clean up */
 		errno = 0;
