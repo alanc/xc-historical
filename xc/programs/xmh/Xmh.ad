@@ -2,6 +2,7 @@ Xmh*Geometry:			508x750
 Xmh*Command.BorderWidth:	1
 Xmh*folders.MenuButton.BorderWidth:0
 Xmh*toc*cursor:			left_ptr
+
 Xmh.*close.label:		Close Window
 Xmh*compose.label:		Compose Message
 Xmh*folderButtons.open.label:	Open Folder
@@ -36,12 +37,30 @@ Xmh*reset.label:		New Headers
 
 Xmh.notice.Dialog.Text.BorderWidth: 0
 Xmh.notice.Dialog.Text.TextSink.Font: -*-courier-bold-r-*--*-120-*-*-*-*-iso8859-1
-Xmh.notice.Dialog.confirm.label: Acknowledged
+Xmh.notice.Dialog.confirm.label:Acknowledged
 Xmh.notice.BorderWidth:		2
-Xmh.confirm.yes.label:		Yes
-Xmh.confirm.no.label:		No
-Xmh*prompt.goAhead.label:	Go Ahead
-Xmh*prompt.cancel.label:	Cancel
+Xmh.confirm.Dialog.yes.label:	Yes
+Xmh.confirm.Dialog.no.label:	No
+Xmh.prompt.Dialog.goAhead.label:Go Ahead
+Xmh.prompt.Dialog.cancel.label:	Cancel
+Xmh.error.Dialog.OK.label:	Acknowledged
+
+Xmh*toc.scrollVertical:		WhenNeeded
+Xmh*view.scrollVertical:	WhenNeeded
+Xmh*view.scrollHorizontal:	WhenNeeded
+Xmh*view.autoFill:		True
+Xmh*comp.scrollVertical:	WhenNeeded
+Xmh*comp.scrollHorizontal:	WhenNeeded
+Xmh*comp.autoFill:		True
+
+Xmh*MenuButton.translations:#override\
+        <BtnDown>:     set()PopupFolderMenu()\n\
+        <Btn2Up>:      SetCurrentFolder()reset()OpenFolderFromMenu()\n\
+        <BtnUp>:       SetCurrentFolder()reset()\n\
+        <LeaveWindow>: reset()LeaveFolderButton()\n
+Xmh*SimpleMenu.translations:#override\
+        <Btn2Up>: notify()MenuPopdown()unhighlight()OpenFolderFromMenu()\n\
+        <BtnUp>:  notify()MenuPopdown()unhighlight()\n
 
 Xmh*folderButtons.close.translations:#override\
 	<Btn1Down>,<Btn1Up>:	CloseScrn()unset()\n
@@ -55,6 +74,7 @@ Xmh*folderButtons.create.translations:#override\
 	<Btn1Down>,<Btn1Up>:	CreateFolder()unset()\n
 Xmh*folderButtons.delete.translations:#override\
 	<Btn1Down>,<Btn1Up>:	DeleteFolder()unset()\n
+
 Xmh*tocButtons.inc.translations:#override\
 	<Btn1Down>,<Btn1Up>:	Incorporate()unset()\n
 Xmh*tocButtons.next.translations:#override\
@@ -97,6 +117,7 @@ Xmh*tocButtons.removeFromSeq.translations:#override\
 	<Btn1Down>,<Btn1Up>:	RemoveFromSequence()unset()\n
 Xmh*tocButtons.deleteSeq.translations:#override\
 	<Btn1Down>,<Btn1Up>:	DeleteSequence()unset()\n
+
 Xmh*viewButtons.close.translations:#override\
 	<Btn1Down>,<Btn1Up>:	CloseView()unset()\n
 Xmh*viewButtons.reply.translations:#override\
@@ -111,6 +132,7 @@ Xmh*viewButtons.save.translations:#override\
 	<Btn1Down>,<Btn1Up>:	SaveView()unset()\n
 Xmh*viewButtons.print.translations:#override\
 	<Btn1Down>,<Btn1Up>:	PrintView()unset()\n
+
 Xmh*compButtons.close.translations:#override\
 	<Btn1Down>,<Btn1Up>:	CloseView()unset()\n
 Xmh*compButtons.send.translations:#override\
@@ -123,5 +145,3 @@ Xmh*compButtons.save.translations:#override\
 	<Btn1Down>,<Btn1Up>:	SaveDraft()unset()\n
 Xmh*compButtons.insert.translations:#override\
 	<Btn1Down>,<Btn1Up>:	MsgInsertAssoc()unset()\n
-
-
