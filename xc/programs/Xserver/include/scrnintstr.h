@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.6 89/07/18 15:22:27 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.7 89/07/26 11:47:51 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -100,6 +100,8 @@ typedef struct _Screen {
     void (* GetSpans)();		/* pDrawable, wMax, ppt, pwidth,
 					 * nspans, pdstbits */
     void (* PointerNonInterestBox)();	/* pScr, BoxPtr */
+
+    void (* SourceValidate)();		/* pDrawable, x, y, w, h */
 
     /* Window Procedures */
 
