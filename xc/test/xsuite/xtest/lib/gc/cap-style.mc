@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: cap-style.mc,v 1.16 92/06/11 18:02:17 rws Exp $
  */
 >>ASSERTION Good A
 >># this first one was in line-style but doesn't apply to rectangle(s), but
@@ -198,7 +198,11 @@ struct	area	area;
 		drawline(capx1, capy1, capx2, capy2);
 
 		/* Only the final endpoint should be set */
+#if T_XDrawArc || T_XDrawArcs
+		setarea(&area, capx2, capy1, 1, 1);
+#else
 		setarea(&area, capx2, capy2, 1, 1);
+#endif
 		if (checkarea(A_DISPLAY, A_DRAWABLE, &area, W_FG, W_BG, CHECK_ALL))
 			CHECK;
 		else {
