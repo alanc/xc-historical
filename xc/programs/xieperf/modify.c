@@ -1,4 +1,4 @@
-/* $XConsortium: modify.c,v 1.4 93/10/26 15:36:46 rws Exp $ */
+/* $XConsortium: modify.c,v 1.5 93/10/27 21:52:32 rws Exp $ */
 
 /**** module modify.c ****/
 /******************************************************************************
@@ -64,7 +64,6 @@ static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 static int flo_elements;
 
-static XieLTriplet levels;
 static XieLut XIELut;
 static int monoflag = 0;
 static XieRectangle *rects;
@@ -872,7 +871,6 @@ int InitModifyLong2(xp, p, reps)
     int     reps;
 {
 	XIEimage *image;
-	GeometryParms gp;
 
 	monoflag = 0;
 	XIEPhotomap = ( XiePhotomap ) NULL;
@@ -1038,7 +1036,7 @@ void DoModifyLong2(xp, p, reps)
                 XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
 		x = ( ( int ) RAND( 0, WIDTH ) >> 7 ) << 7;
-		y = ( 0, ( int ) RAND( 0, HEIGHT ) >> 6 ) << 6;
+		y = ( ( int ) RAND( 0, HEIGHT ) >> 6 ) << 6;
 
 		gp.geoXOffset = x;
 		gp.geoYOffset = y;
