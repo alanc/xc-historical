@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp rws $
+XCOMM $XConsortium: Imake.cf,v 1.16 94/12/01 18:26:50 kaleb Exp kaleb $
 /*
  * To add support for another platform:
  * 
@@ -46,14 +46,18 @@ XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp rws $
 #define MacroFile bsdi.cf
 #undef bsdi
 #define BSD386Architecture
+#define i386BsdArchitecture
+#define i386Architecture
 #endif /* bsdi */
 
 #ifdef __NetBSD__
 #define MacroIncludeFile <NetBSD.cf>
 #define MacroFile NetBSD.cf
 #undef __NetBSD__
+#define NetBSDArchitecture
 #ifdef __i386__
 #define i386BsdArchitecture
+#define i386Architecture
 #endif
 #endif /* NetBSD */
 
@@ -61,9 +65,10 @@ XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp rws $
 #define MacroIncludeFile <FreeBSD.cf>
 #define MacroFile FreeBSD.cf
 #undef __FreeBSD__
-#ifdef __i386__
 #define FreeBSDArchitecture
+#ifdef __i386__
 #define i386BsdArchitecture
+#define i386Architecture
 #endif
 #endif /* __FreeBSD__ */
 
@@ -263,12 +268,27 @@ XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp rws $
 # endif
 #endif /* MOTOROLA */
 
+#ifdef i386
+# ifdef SVR4
+#  define i386Architecture
+#  define i386SVR4Architecture
+#  define MacroIncludeFile <svr4.cf>
+#  define MacroFile svr4.cf
+#  undef SVR4
+# else
+#  define MacroIncludeFile <x386.cf>
+#  define MacroFile x386.cf
+#  define i386SVR3Architecture
+# endif
+#endif /* i386 */
+
 #ifdef SYSV386
 # ifdef SVR4
 #  define i386Architecture
 #  define i386SVR4Architecture
 #  define MacroIncludeFile <svr4.cf>
 #  define MacroFile svr4.cf
+#  undef SVR4
 # else
 #  define MacroIncludeFile <x386.cf>
 #  define MacroFile x386.cf
@@ -332,6 +352,7 @@ XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp rws $
 #define MacroFile linux.cf
 #undef linux
 #define LinuxArchitecture
+#define i386Architecture
 #endif /* linux */
 
 #ifdef __uxp__
