@@ -4,19 +4,23 @@
     CDEBUGFLAGS = ServerCDebugFlags
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
-     ALLDDXDIRS = ddx/mi ddx/sun ddx/cfb ddx/apollo ddx/mfb ddx/lk201 \
-                    ddx/qvss ddx/qdss ddx/ibm/apa16 ddx/ibm/rt ddx/ibm/aed
-      ALLOSDIRS = os/sysV os/4.2bsd
+     ALLDDXDIRS = ddx/mi ddx/sun ddx/apollo ddx/cfb ddx/mfb ddx/lk201 \
+                  ddx/qvss ddx/qdss ddx/ibm/apa16 ddx/ibm/rt ddx/ibm/aed \
+                  ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
+		  ddx/hp/topcat ddx/hp/catseye ddx/hp/ren
+      ALLOSDIRS = os/sysV os/4.2bsd os/hpux
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
            UNIX = os/4.2bsd/libos.a
            SYSV = os/sysV/libos.a
+           HPUX = os/hpux/libos.a
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
             SUN = ddx/sun/libsun.a
+             HP = ddx/hp/hp/libhp.a
         SYSLIBS = -lm -ldbm
-    ALLPOSSIBLE = Xqvss Xqdss Xsun Xapa16 Xapollo
+    ALLPOSSIBLE = Xqvss Xqdss Xsun Xapa16 Xapollo Xhp
 
 #ifndef	XqvssServer
 #define	XqvssServer /* as nothing */
@@ -28,6 +32,10 @@
 
 #ifndef	XsunServer
 #define	XsunServer /* as nothing */
+#endif
+
+#ifndef	XHPServer
+#define	XHPServer /* as nothing */
 #endif
 
 #ifndef	XapolloServer
@@ -42,7 +50,8 @@
 #define	XaedServer /* as nothing */
 #endif
 
-ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server XaedServer
+ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server XaedServer \
+	XHPServer
 
 #
 # This turns off the default rule for compiling .c files because
@@ -89,6 +98,26 @@ SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 XsunDIRS = $(SUNDIRS)
 
 ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+
+#
+# HP server
+#
+HPDIRS = dix ddx/mi ddx/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
+         ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/hpux
+HPOBJS = ddx/hp/hp/init.o version.o
+HPLIBS = $(HP) \
+          ddx/hp/gbx/libgbx.a \
+          ddx/hp/catseye/libcatseye.a \
+          ddx/hp/mob/libmob.a \
+          ddx/hp/topcat/libtopcat.a \
+          ddx/hp/ren/libren.a \
+          ddx/hp/mfb/libmfb.a \
+          ddx/hp/cfb/libcfb.a \
+          $(HP) \
+          $(DIX) $(HPUX) $(MI) $(EXTENSIONS)
+HPSYSLIBS = $(SYSLIBS)
+
+ServerTarget(Xhp,$(EXTDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 
 
 #
