@@ -1,4 +1,4 @@
-/* $XConsortium: medrawp.c,v 1.1 93/07/19 10:14:06 rws Exp $ */
+/* $XConsortium: medrawp.c,v 1.2 93/07/19 11:38:16 rws Exp $ */
 /**** module medrawp.c ****/
 /******************************************************************************
 				NOTICE
@@ -185,6 +185,8 @@ static int ActivateEDrawP(flo,ped,pet)
     do    
       (*pvt->pGC->ops->PutImage)(draw,			  /* drawable	 */
 				 pvt->pGC,		  /* gc		 */
+				 (pixtype == XYBitmap) ?
+				 1 :
 				 draw->depth,		  /* depth	 */
 				 raw->dstX,		  /* drawable-x	 */
 				 raw->dstY+bnd->minLocal, /* drawable-y	 */
