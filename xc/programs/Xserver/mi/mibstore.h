@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: mibstore.h,v 1.1 88/07/29 18:02:09 keith Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: mibstore.h,v 1.2 88/09/06 15:49:16 jim Exp $ SPRITE (Berkeley)"
  */
 
 #ifndef _MIBSTORE_H
@@ -36,6 +36,8 @@ typedef struct {
 				     * save the obscured areas */
     void    	  (*RestoreAreas)();/* Device-dependent function to actually
 				     * restore exposed areas */
+    void    	  (*SetClipmaskRgn)();/* Device-dependent function to set
+				     * BackingStore GC clipmask region */
 } MIBackingStoreRec, *MIBackingStorePtr;
 
 #define StatusNoPixmap	1	/* pixmap has not been created */
