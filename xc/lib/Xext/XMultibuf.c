@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.14 89/10/08 16:23:07 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.15 89/10/08 16:36:13 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -63,13 +63,20 @@ static /* const */ XExtensionHooks multibuf_extension_hooks = {
     error_string,			/* error_string */
 };
 
+static char *multibuf_error_list[] = {
+    "BadBuffer",			/* MultibufferBadBuffer */
+};
+
 static XEXT_GENERATE_FIND_DISPLAY (find_display, multibuf_info,
 				   multibuf_extension_name, 
-				   &multibuf_extension_hooks,
+				   &multibuf_extension_hooks, 
 				   MultibufferNumberOfEvents, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, multibuf_info)
 
+static XEXT_GENERATE_ERROR_STRING (error_string, multibuf_extension_name,
+				   MultibufferNumberOfErrors, 
+				   multibuf_error_list)
 
 /*
  * wire_to_event - convert a wire event in network format to a C 
@@ -158,28 +165,6 @@ static Status event_to_wire (dpy, libevent, netevent)
 	}
     }
     return 0;
-}
-
-
-static int error_string (dpy, code, codes, buffer, nbytes)
-    Display  *dpy;
-    int code;
-    XExtCodes *codes;
-    char *buffer;
-    int nbytes;
-{
-    char buf[32];
-    char *def = "";
-
-    if (code >= codes->first_error)  {
-	switch (code - codes->first_error) {
-	  case MultibufferBadBuffer:  def = "BadBuffer"; break;
-	}
-	
-	sprintf (buf, "%s.%d", multibuf_extension_name, code);
-	XGetErrorDatabaseText (dpy, "XProtoError", buf, def, buffer, nbytes);
-    }
-    return 1;
 }
 
 
