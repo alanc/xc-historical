@@ -14,6 +14,7 @@
 
 #ifdef UNIXCONN
 #include <sys/un.h>
+#include <sys/stat.h>
 #endif
 
 #ifdef hpux
@@ -701,6 +702,67 @@ memcpy(ciptr->addr,&sockname,ciptr->addrlen);
 
 return 0;
 }
+
+
+
+static
+TRANS(SocketUNIXResetListener)(ciptr)
+
+XtransConnInfo ciptr;
+
+{
+    /*
+     * See if the unix domain socket has disappeared.  If it has, recreate it.
+     */
+
+    struct sockaddr_un *unsock = (struct sockaddr_un *) ciptr->addr;
+    struct stat	statb;
+    int status = TRANS_RESET_NOOP;
+    void TRANS(FreeConnInfo)();
+
+    PRMSG(3, "TRANS(SocketUNIXResetListener)(%x,%d)\n", ciptr, fd, 0 );
+
+    if (stat (unsock->sun_path, &statb) == -1 ||
+        (statb.st_mode & S_IFMT) != S_IFSOCK)
+    {
+	int oldUmask = umask (0);
+
+#ifdef UNIX_DIR
+	if (!mkdir (UNIX_DIR, 0777))
+	    chmod (UNIX_DIR, 0777);
+#endif
+
+	close (ciptr->fd);
+	unlink (unsock->sun_path);
+
+	if ((ciptr->fd = socket (AF_UNIX, SOCK_STREAM, 0)) < 0)
+	{
+	    TRANS(FreeConnInfo) (ciptr);
+	    return TRANS_RESET_FAILURE;
+	}
+
+	if (bind (ciptr->fd, (struct sockaddr *) unsock, ciptr->addrlen) < 0)
+	{
+	    close (ciptr->fd);
+	    TRANS(FreeConnInfo) (ciptr);
+	    return TRANS_RESET_FAILURE;
+	}
+
+	if (listen (ciptr->fd, 5) < 0)
+	{
+	    close (ciptr->fd);
+	    TRANS(FreeConnInfo) (ciptr);
+	    return TRANS_RESET_FAILURE;
+	}
+
+	umask (oldUmask);
+
+	status = TRANS_RESET_NEW_FD;
+    }
+
+    return status;
+}
+
 #endif /* UNIXCONN */
 
 
@@ -1271,6 +1333,7 @@ Xtransport	TRANS(SocketINETFuncs) = {
 	TRANS(SocketOpenCLTSServer),
 	TRANS(SocketSetOption),
 	TRANS(SocketINETCreateListener),
+	NULL,		       			/* ResetListener */
 	TRANS(SocketINETAccept),
 	TRANS(SocketINETConnect),
 	TRANS(SocketBytesReadable),
@@ -1294,6 +1357,7 @@ Xtransport	TRANS(SocketTCPFuncs) = {
 	TRANS(SocketOpenCLTSServer),
 	TRANS(SocketSetOption),
 	TRANS(SocketINETCreateListener),
+	NULL,		       			/* ResetListener */
 	TRANS(SocketINETAccept),
 	TRANS(SocketINETConnect),
 	TRANS(SocketBytesReadable),
@@ -1319,6 +1383,7 @@ Xtransport	TRANS(SocketUNIXFuncs) = {
 	TRANS(SocketOpenCLTSServer),
 	TRANS(SocketSetOption),
 	TRANS(SocketUNIXCreateListener),
+	TRANS(SocketUNIXResetListener),
 	TRANS(SocketUNIXAccept),
 	TRANS(SocketUNIXConnect),
 	TRANS(SocketBytesReadable),
@@ -1343,6 +1408,7 @@ Xtransport	TRANS(SocketLocalFuncs) = {
 	TRANS(SocketOpenCLTSServer),
 	TRANS(SocketSetOption),
 	TRANS(SocketUNIXCreateListener),
+	TRANS(SocketUNIXResetListener),
 	TRANS(SocketUNIXAccept),
 	TRANS(SocketUNIXConnect),
 	TRANS(SocketBytesReadable),
