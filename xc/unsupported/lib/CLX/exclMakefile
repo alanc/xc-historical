@@ -16,7 +16,7 @@ TAGS	= /usr/local/lib/emacs/etc/etags
 CLX	= CLX
 
 CLOPTS	= -qq
-CFLAGS	= -O -DUNIXCONN
+CFLAGS	= -O -DUNIXCONN $(XCFLAGS)
 
 # Lisp optimization for compiling
 SPEED	= 3
