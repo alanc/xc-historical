@@ -1,9 +1,9 @@
 /*
- *	$Header: resize.c,v 1.1 88/02/12 08:42:27 jim Exp $
+ *	$Header: resize.c,v 1.2 88/05/11 15:48:50 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$Header: resize.c,v 1.1 88/02/12 08:42:27 jim Exp $";
+static char *rcsid_resize_c = "$Header: resize.c,v 1.2 88/05/11 15:48:50 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -45,6 +45,9 @@ static char *rcsid_resize_c = "$Header: resize.c,v 1.1 88/02/12 08:42:27 jim Exp
 #endif	/* !SYSV */
 #include <signal.h>
 #include <pwd.h>
+#ifdef macII
+#include <sys/ttold.h>
+#endif /* macII */
 #ifdef SYSV
 extern struct passwd *getpwent();
 extern struct passwd *getpwuid();
@@ -56,7 +59,7 @@ extern struct passwd *fgetpwent();
 #endif	/* SYSV */
 
 #ifndef lint
-static char rcs_id[] = "$Header: resize.c,v 1.1 88/02/12 08:42:27 jim Exp $";
+static char rcs_id[] = "$Header: resize.c,v 1.2 88/05/11 15:48:50 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
@@ -259,8 +262,13 @@ char **argv;
 #else	/* !SYSV */
  	ioctl (tty, TIOCGETP, &sgorig);
 	sg = sgorig;
+#ifdef macII
+	sg.sg_flags |= O_RAW;
+	sg.sg_flags &= ~O_ECHO;
+#else /* else not macII */
 	sg.sg_flags |= RAW;
 	sg.sg_flags &= ~ECHO;
+#endif /* macII */
 #endif	/* !SYSV */
 	signal(SIGINT, onintr);
 	signal(SIGQUIT, onintr);
