@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CloseHook.h,v 1.2 90/12/19 18:08:38 converse Exp $
+ * $XConsortium: CloseHook.h,v 1.3 91/05/28 14:55:34 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
 
 typedef caddr_t CloseHook;
 
-typedef void (*XmuCloseHookProc)(
+typedef int (*XmuCloseHookProc)(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     caddr_t	/* data */
