@@ -20,30 +20,51 @@ IMPORTS = \
 	$(TOOLKITSRC)/Atoms.h \
 	$(TOOLKITSRC)/Cardinals.h \
 	$(TOOLKITSRC)/Composite.h \
+	$(TOOLKITSRC)/CompositeP.h \
 	$(TOOLKITSRC)/Constraint.h \
+	$(TOOLKITSRC)/ConstraintP.h \
 	$(TOOLKITSRC)/Convert.h \
 	$(TOOLKITSRC)/Core.h \
+	$(TOOLKITSRC)/CoreP.h \
 	$(TOOLKITSRC)/Intrinsic.h \
 	$(TOOLKITSRC)/IntrinsicP.h \
 	$(TOOLKITSRC)/Misc.h \
 	$(TOOLKITSRC)/Quarks.h \
 	$(TOOLKITSRC)/Shell.h \
+	$(TOOLKITSRC)/ShellP.h \
 	$(TOOLKITSRC)/TM.h \
+	$(TOOLKITSRC)/Vendor.h \
+	$(TOOLKITSRC)/VendorP.h \
 	$(AWIDGETSRC)/AsciiText.h \
+	$(AWIDGETSRC)/AsciiTextP.h \
 	$(AWIDGETSRC)/Box.h \
+	$(AWIDGETSRC)/BoxP.h \
 	$(AWIDGETSRC)/Cascade.h \
+	$(AWIDGETSRC)/CascadeP.h \
 	$(AWIDGETSRC)/Clock.h \
+	$(AWIDGETSRC)/ClockP.h \
 	$(AWIDGETSRC)/Command.h \
+	$(AWIDGETSRC)/CommandP.h \
 	$(AWIDGETSRC)/Dialog.h \
+	$(AWIDGETSRC)/DialogP.h \
 	$(AWIDGETSRC)/Form.h \
+	$(AWIDGETSRC)/FormP.h \
 	$(AWIDGETSRC)/Grip.h \
+	$(AWIDGETSRC)/GripP.h \
 	$(AWIDGETSRC)/Label.h \
+	$(AWIDGETSRC)/LabelP.h \
 	$(AWIDGETSRC)/Load.h \
+	$(AWIDGETSRC)/LoadP.h \
 	$(AWIDGETSRC)/Scroll.h \
+	$(AWIDGETSRC)/ScrollP.h \
 	$(AWIDGETSRC)/Simple.h \
+	$(AWIDGETSRC)/SimpleP.h \
 	$(AWIDGETSRC)/Text.h \
+	$(AWIDGETSRC)/TextP.h \
 	$(AWIDGETSRC)/VPaned.h \
-	$(AWIDGETSRC)/Viewport.h
+	$(AWIDGETSRC)/VPanedP.h \
+	$(AWIDGETSRC)/Viewport.h \
+	$(AWIDGETSRC)/ViewportP.h
 
 SUBIMPORTS = \
 	$(EXTENSIONSRC)/include/zoid.h \
