@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.19 91/01/09 17:24:54 rws Exp $
+/* $XConsortium: xfontsel.c,v 1.20 91/01/10 12:23:25 converse Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -1090,7 +1090,7 @@ void OwnSelection(w, closure, callData)
     }
 }
 
-static void
+void
 QuitAction ()
 {
     exit (0);
