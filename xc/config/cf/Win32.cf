@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.35 94/03/05 11:54:07 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.36 94/03/26 17:12:34 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -18,6 +18,8 @@ XCOMM operating system:  OSName
 #define LnCmd copy
 #define MvCmd ren
 #define RmCmd del
+/* if you do not have deltree, substitute rd /s and suffer the prompts */
+#define RmTreeCmd deltree /y
 #define CcCmd cl
 #define HasCplusplus		YES
 #define CplusplusCmd cl
