@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.151 88/08/14 08:43:32 rws Exp $ */
+/* $Header: events.c,v 1.152 88/08/16 22:28:54 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3029,7 +3029,8 @@ ProcGetKeyboardMapping(client)
     WriteSwappedDataToClient(
 	client,
 	curKeySyms.mapWidth * stuff->count * sizeof(KeySym),
-	&curKeySyms.map[stuff->firstKeyCode - curKeySyms.minKeyCode]);
+	&curKeySyms.map[(stuff->firstKeyCode - curKeySyms.minKeyCode) *
+			curKeySyms.mapWidth]);
 
     return client->noClientException;
 }
