@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.23 94/08/10 15:12:02 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.24 94/08/10 19:41:01 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -32,6 +32,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/List.h>
+#include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/MenuButton.h>
+#include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xfuncs.h>
 #ifndef _POSIX_SOURCE
@@ -184,9 +187,12 @@ extern Widget			    chooseSessionCancelButton;
 extern Widget		    mainWindow;
 
 extern Widget		        clientInfoButton;
+extern Widget			nameSessionButton;
 extern Widget			checkPointButton;
 extern Widget			shutdownButton;
-extern Widget			nameSessionButton;
+extern Widget				shutdownMenu;
+extern Widget					shutdownSave;
+extern Widget					shutdownDontSave;
 
 extern Widget		    clientInfoPopup;
 
@@ -197,11 +203,12 @@ extern Widget			    cloneButton;
 extern Widget			    killClientButton;
 extern Widget			    clientInfoDoneButton;
 extern Widget			    clientListWidget;
-extern Widget			    restartHintLabel;
-extern Widget			    restartIfRunning;
-extern Widget			    restartAnyway;
-extern Widget			    restartImmediately;
-extern Widget			    restartNever;
+extern Widget			    restartHintButton;
+extern Widget			    	restartHintMenu;
+extern Widget			    		restartIfRunning;
+extern Widget			    		restartAnyway;
+extern Widget			    		restartImmediately;
+extern Widget			    		restartNever;
 
 extern Widget		    clientPropPopup;
 
@@ -215,7 +222,6 @@ extern Widget		    savePopup;
 extern Widget			saveForm;
 
 extern Widget			    saveTypeLabel;
-extern Widget			    saveTypeNone;
 extern Widget			    saveTypeGlobal;
 extern Widget			    saveTypeLocal;
 extern Widget			    saveTypeBoth;

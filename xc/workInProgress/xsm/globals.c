@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.9 94/08/10 15:11:41 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.10 94/08/10 19:40:25 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -93,9 +93,12 @@ Widget			    chooseSessionCancelButton;
 Widget		    mainWindow;
 
 Widget		        clientInfoButton;
+Widget			nameSessionButton;
 Widget			checkPointButton;
 Widget			shutdownButton;
-Widget			nameSessionButton;
+Widget				shutdownMenu;
+Widget					shutdownSave;
+Widget					shutdownDontSave;
 
 Widget		    clientInfoPopup;
 
@@ -106,11 +109,12 @@ Widget			    cloneButton;
 Widget			    killClientButton;
 Widget			    clientInfoDoneButton;
 Widget			    clientListWidget;
-Widget			    restartHintLabel;
-Widget			    restartIfRunning;
-Widget			    restartAnyway;
-Widget			    restartImmediately;
-Widget			    restartNever;
+Widget			    restartHintButton;
+Widget			    	restartHintMenu;
+Widget			    		restartIfRunning;
+Widget			    		restartAnyway;
+Widget			    		restartImmediately;
+Widget			    		restartNever;
 
 Widget		    clientPropPopup;
 
@@ -124,7 +128,6 @@ Widget		    savePopup;
 Widget			saveForm;
 
 Widget			    saveTypeLabel;
-Widget			    saveTypeNone;
 Widget			    saveTypeGlobal;
 Widget			    saveTypeLocal;
 Widget			    saveTypeBoth;
