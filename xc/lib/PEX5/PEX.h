@@ -60,7 +60,7 @@
 #define PEXETCounts                     0
 #define PEXETIndex                      (1L<<0)
 #define PEXETMnemonic                   (1L<<1)
-#define PEXETBoth                       (PEXETIndex | PEXETMnemonic)
+#define PEXETAll                        (PEXETIndex | PEXETMnemonic)
 
 /* enumerated types */
 #define PEXETMarkerType                 1
@@ -516,7 +516,7 @@
 #define PEXClipXY                       (1L<<0)
 #define PEXClipBack                     (1L<<1)
 #define PEXClipFront                    (1L<<2)
-#define PEXClippingOn                   (PEXClipXY | PEXClipBack | PEXClipFront)
+#define PEXClippingAll                  (PEXClipXY | PEXClipBack | PEXClipFront)
 
 #define PEXClip                         0
 #define PEXNoClip                       1
@@ -648,8 +648,7 @@
 #define PEXPCColorApproxIndex           61
 #define PEXPCRenderingColorModel        62
 #define PEXPCParaSurfCharacteristics    63
-
-#define PEXPCMaxIndex			63
+#define PEXPCMaxShift                   63
 
 
 /*
@@ -701,9 +700,7 @@
 #define PEXRAClearImage                 (1L<<27)
 #define PEXRAClearZ                     (1L<<28)
 #define PEXRAEchoMode                   (1L<<29)
-
-#define PEXRAMaxShift			29
-
+#define PEXRAMaxShift                   29
 
 /* renderer dynamics bitmask */
 /*      tables                */
@@ -842,8 +839,7 @@
 #define PEXSCStartPath                  (1L<<4)
 #define PEXSCNormalList                 (1L<<5)
 #define PEXSCInvertedList               (1L<<6)
-
-#define PEXSCMaxShift			6
+#define PEXSCMaxShift                   6
 
 
 /*
@@ -912,9 +908,7 @@
 
 #define PEXPWReqBufferMode              32
 #define PEXPWCurBufferMode              33
-
-#define PEXPWMaxIndex			33
-
+#define PEXPWMaxShift                   33
 
 /* values for indices to returned workstation dynamics */
 #define PEXPWDViewRep                   0
@@ -971,16 +965,12 @@
 #define PEXPDPromptEchoType             (1L<<6)
 #define PEXPDEchoVolume                 (1L<<7)
 #define PEXPDEchoSwitch                 (1L<<8)
-
-#define PEXPDMaxShift			8
-
+#define PEXPDMaxShift                   8
 
 /* workstation pick measure attributes bitmask */
 #define PEXPMStatus                     (1L<<0)
 #define PEXPMPath                       (1L<<1)
-
-#define PEXPMMaxShift			1
-
+#define PEXPMMaxShift                   1
 
 /*
  * events
@@ -996,7 +986,7 @@
 #define BadPEXRendererState             1
 #define BadPEXFloatingPointFormat       2
 #define BadPEXLabel                     3
-#define BadPEXLookUpTable               4
+#define BadPEXLookupTable               4
 #define BadPEXNameSet                   5
 #define BadPEXPath                      6
 #define BadPEXFont                      7
@@ -1124,13 +1114,12 @@
 /*
  * protocol request codes
  */
-
 #define PEXRCGetExtensionInfo           1
 #define PEXRCGetEnumTypeInfo            2
 #define PEXRCGetImpDepConstants         3
-#define PEXRCCreateLookUpTable          4
-#define PEXRCCopyLookUpTable            5
-#define PEXRCFreeLookUpTable            6
+#define PEXRCCreateLookupTable          4
+#define PEXRCCopyLookupTable            5
+#define PEXRCFreeLookupTable            6
 #define PEXRCGetTableInfo               7
 #define PEXRCGetPredefinedEntries       8
 #define PEXRCGetDefinedIndices          9
