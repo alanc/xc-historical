@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.24 89/11/14 13:35:22 keith Exp $
+ * $XConsortium: resource.c,v 1.25 89/11/17 18:43:14 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -40,6 +40,7 @@ int	daemonMode;
 char	*pidFile;
 char	*remoteAuthDir;
 int	autoRescan;
+int	removeDomainname;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -115,6 +116,8 @@ struct dmResources {
 "remoteAuthDir","RemoteAuthDir",DM_STRING,	&remoteAuthDir,
 				DEF_REMOTE_AUTH_DIR,
 "autoRescan",	"AutoRescan",	DM_BOOL,	(char **) &autoRescan,
+				"true",
+"removeDomainname","RemoveDomainname",DM_BOOL,	(char **) &removeDomainname,
 				"true",
 };
 
