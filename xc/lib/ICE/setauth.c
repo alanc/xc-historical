@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.13 93/11/22 16:29:18 mor Exp $ */
+/* $XConsortium: setauth.c,v 1.1 93/11/24 15:44:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -80,7 +80,7 @@ IceAuthDataEntry	*entries;
 
 
 IceAuthDataEntry *
-IceGetAuthDataEntry (listenObj, protocolName, authName)
+IceGetAuthenticationData (listenObj, protocolName, authName)
 
 IceListenObj	listenObj;
 char		*protocolName;
@@ -114,13 +114,11 @@ char		*authName;
  */
 
 void
-IceSetHostBasedAuthProc (listenObj, hostBasedAuthProc, clientData)
+IceSetHostBasedAuthProc (listenObj, hostBasedAuthProc)
 
 IceListenObj		listenObj;
 IceHostBasedAuthProc	hostBasedAuthProc;
-IcePointer		clientData;
 
 {
     listenObj->host_based_auth_proc = hostBasedAuthProc;
-    listenObj->host_based_auth_proc_client_data = clientData;
 }
