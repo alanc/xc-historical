@@ -58,7 +58,7 @@
 (defun print-resource-database (database stream depth)
   (declare (type resource-database database)
 	   (ignore depth))
-  (printing-object (database stream)
+  (print-unreadable-object (database stream :type t)
     (princ (resource-database-name database) stream)
     (when (resource-database-value database)
       (princ " " stream)

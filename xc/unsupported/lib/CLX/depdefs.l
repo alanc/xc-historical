@@ -603,21 +603,26 @@
 ;; Printing routines.
 ;;-----------------------------------------------------------------------------
 
-#-lispm
-(defmacro printing-object ((object stream) &body body)
-  `(let ((.object. ,object)
-	 (.stream. ,stream))
-     (princ "#<" .stream.)
-     (prin1 (type-of .object.) .stream.)
-     ,@(when body
-	 `((princ " " .stream.)
-	   ,@body))
-     (princ ">" .stream.)))
+#+(and (not ansi-common-lisp) Genera)
+(import 'future-common-lisp:print-unreadable-object)
 
-#+lispm
-(defmacro printing-object ((object stream) &body body)
-  `(si:printing-random-object (,object ,stream :typep :no-pointer)
-     ,@body))
+#-(or ansi-common-lisp Genera)
+(defun print-unreadable-object-function (object stream type identity function)
+  (princ "#<" stream)
+  (when type (prin1 (type-of object) stream))
+  (when (and type function) (princ " " stream))
+  (when function (funcall function))
+  (when (and (or type function) identity) (princ " " stream))
+  (when identity (princ "???" stream))
+  (princ ">" stream)
+  nil)
+  
+#-(or ansi-common-lisp Genera)
+(defmacro print-unreadable-object
+	  ((object stream &key type identity) &body body)
+  `(print-unreadable-object-function
+     ,object ,stream ,type ,identity
+     ,(and body `#'(lambda () ,@body))))
 
 
 ;;-----------------------------------------------------------------------------

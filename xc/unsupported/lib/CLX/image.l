@@ -69,7 +69,7 @@
 (defun print-image (image stream depth)
   (declare (type image image)
 	   (ignore depth))
-  (printing-object (image stream)
+  (print-unreadable-object (image stream :type t)
     (when (image-name image)
       (princ (image-name image) stream)
       (princ " " stream))

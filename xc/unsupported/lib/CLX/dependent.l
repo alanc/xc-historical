@@ -2019,7 +2019,7 @@
 	   (type stream stream)
 	   (ignore depth))
   (if *print-escape*
-      (printing-object (condition stream))
+      (print-unreadable-object (condition stream :type t))
     (funcall (x-error-report-function condition) condition stream))
   condition)
   
