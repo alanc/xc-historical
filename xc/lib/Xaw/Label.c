@@ -47,16 +47,6 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 #include "LabelPrivate.h"
 #include "Atoms.h"
 
-/****************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************/
-
-typedef struct {
-    Core	core;
-    Label	label;
-} LabelData, *LabelWidget;
 
 /****************************************************************
  *
