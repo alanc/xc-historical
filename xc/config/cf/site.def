@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.24 91/01/08 09:24:24 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.25 91/02/13 11:59:58 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -11,52 +11,11 @@ XCOMM site:  $XConsortium: site.def,v 1.24 91/01/08 09:24:24 rws Exp $
  *     #define ABuildParameter myvalue                                       *
  *     #endif                                                                *
  *                                                                           *
- * Make sure you check the following parameters:                             *
- *                                                                           *
- *     1.  HasLargeTmp                                                       *
- *     2.  ContribDir                                                        *
- *                                                                           *
  * Note on using DESTDIR:  If you want to install into a scratch directory   *
- * but will eventually move the tree back to the root, compile with DESTDIR  *
- * blank and install with "make install DESTDIR=directory".                  *
- *                                                                           *
- * We strongly recommend that you don't change the installation directories  *
- * and just use symbolic links if you want things to be installed on a       *
- * different partition.  For example,                                        *
- *                                                                           *
- *     # cd directory_containing_X_distribution                              *
- *     # make World                                                          *
- *     # mkdir /otherdisk/X                                                  *
- *     # foreach i (bin lib include)                                         *
- *     >     mkdir /otherdisk/X/$i                                           *
- *     >     ln -s /otherdisk/X/$i /usr/$i/X11                               *
- *     > end                                                                 *
- *     # make install                                                        *
+ * but will eventually move the tree back to the root, install with          *
+ * "make install DESTDIR=directory".  DESTDIR should not affect compiles.    *
  *                                                                           *
  *****************************************************************************/
-
-/*
- * SET THESE PARAMETERS FIRST !!!
- */
-
-/*
- * 1.  HasLargeTmp - if your /tmp space is less than a 1meg, you should 
- * probably set this to NO
- */
-#ifndef HasLargeTmp
-#define HasLargeTmp YES
-#endif
-
-
-/*
- * 2.  ContribDir - set ContribDir to wherever you've placed your sources; the
- * R4 tape comes with the core tree in ./mit and the contrib tree in ./contrib,
- * so to get to contrib, go up from TOP:
- */
-#ifndef ContribDir
-#define ContribDir $(TOP)/../contrib
-#endif
-
 
 /*****************************************************************************
  *                                                                           *
