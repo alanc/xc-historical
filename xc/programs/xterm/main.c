@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.139 89/12/10 20:44:23 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.140 89/12/13 11:23:57 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -698,8 +698,8 @@ char **argv;
 	    args[1].name = XtNiconY;
 	    XGeometry(XtDisplay(toplevel), scr, resource.icon_geometry, "",
 		      0, 0, 0, 0, 0, &ix, &iy, &junk, &junk);
-	    args[0].value = ix;
-	    args[1].value = iy;
+	    args[0].value = (XtArgVal) ix;
+	    args[1].value = (XtArgVal) iy;
 	    XtSetValues( toplevel, args, 2);
 	}
 
