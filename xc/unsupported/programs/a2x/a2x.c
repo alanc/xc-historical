@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.121 93/04/15 20:15:37 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.122 93/04/16 09:25:18 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -164,8 +164,8 @@ extern char *malloc(), *getenv();
 #define _POSIX_SOURCE
 #include <signal.h>
 
-#define control_char '\024' /* control T */
-#define control_end '\224'
+#define standard_control_char '\024' /* control T */
+#define standard_control_end '\224'
 
 typedef enum
 {MatchNone, MatchName, MatchNamePrefix, MatchClass, MatchClassPrefix}
@@ -257,6 +257,8 @@ unsigned short modmask[256];
 unsigned short curmods = 0;
 unsigned short tempmods = 0;
 KeyCode shift, control, mod1, mod2, mod3, mod4, mod5, meta;
+char control_char = standard_control_char;
+char control_end = standard_control_end;
 Bool bs_is_del = True;
 char pc_bs = '\b';
 KeySym last_sym = 0;
@@ -534,7 +536,7 @@ Strtol(nptr, endptr, base)
 void
 usage()
 {
-    printf("%s: [-d <display>] [-c] [-e] [-E] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>] [-p]\n",
+    printf("%s: [-d <display>] [-c] [-e] [-E] [-b] [-C <char>] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>] [-p]\n",
 	   progname);
     exit(1);
 }
@@ -2239,6 +2241,20 @@ do_backspace()
     }
 }
 
+char
+controlify(c)
+    char c;
+{
+    if (c == '?')
+	c = '\177';
+    else {
+	if (c >= 'a' && c <= 'z')
+	    c -= 'a' - 'A';
+	c -= '@';
+    }
+    return c;
+}
+
 char *
 parse_string(buf, ip, lenp, term)
     char *buf;
@@ -2252,16 +2268,9 @@ parse_string(buf, ip, lenp, term)
 
     j = 0;
     for (i = *ip; (c = buf[i]) && (c != term); i++) {
-	if (c == '^') {
-	    c = buf[++i];
-	    if (c == '?')
-		buf[j++] = '\177';
-	    else {
-		if (c >= 'a' && c <= 'z')
-		    c -= 'a' - 'A';
-		buf[j++] = c - '@';
-	    }
-	} else if (c == '\\')
+	if (c == '^')
+	    buf[j++] = controlify(buf[++i]);
+	else if (c == '\\')
 	    buf[j++] = buf[++i];
 	else
 	    buf[j++] = c;
@@ -2399,7 +2408,7 @@ debug_state()
 	if (history[i] == '\177')
 	    fprintf(stderr, "^?");
 	else if (history[i] == control_end)
-	    fprintf(stderr, "^T");
+	    fprintf(stderr, "^%c", control_end - '\200' + '@');
 	else if (iscntrl(history[i]))
 	    fprintf(stderr, "^%c", history[i] + '@');
 	else
@@ -2833,6 +2842,13 @@ main(argc, argv)
 	    break;
 	case 'c':
 	    doclear = True;
+	    break;
+	case 'C':
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    control_char = controlify(**argv);
+	    control_end = control_char + '\200';
 	    break;
 	case 'd':
 	    argc--; argv++;
