@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.37 87/11/27 09:41:11 rws Locked $ */
+/* $Header: extension.c,v 1.38 87/11/27 09:46:28 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -106,9 +106,8 @@ CloseDownExtensions()
 {
     register int i;
 
-    while (NumExtensions)
+    for (i = NumExtensions - 1; i >= 0; i--)
     {
-	i = NumExtensions - 1;
 	(* extensions[i]->CloseDown)(extensions[i]);
 	NumExtensions = i;
 	Xfree(extensions[i]->name);
