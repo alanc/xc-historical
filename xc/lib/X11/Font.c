@@ -1,4 +1,4 @@
-/* $XConsortium: XFont.c,v 11.41 92/01/19 15:04:17 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.42 92/01/19 15:10:39 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -175,7 +175,7 @@ _XQueryFont (dpy, fid, seq)
     if (reply.nCharInfos > 0){
 	nbytes = reply.nCharInfos * sizeof(XCharStruct);
 	if (! (fs->per_char = (XCharStruct *) Xmalloc ((unsigned) nbytes))) {
-	    if (fs->n_properties) Xfree((char *) fs->n_properties);
+	    if (fs->properties) Xfree((char *) fs->properties);
 	    Xfree((char *) fs);
 	    _XEatData(dpy, (unsigned long)
 			    (reply.nCharInfos * SIZEOF(xCharInfo)));
