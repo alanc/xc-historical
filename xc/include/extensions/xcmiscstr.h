@@ -1,4 +1,4 @@
-/* $XConsortium: xcmiscstr.h,v 1.1 93/10/21 10:09:45 rws Exp $ */
+/* $XConsortium: xcmiscstr.h,v 1.2 93/10/23 12:03:20 rws Exp $ */
 /*
 
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -17,13 +17,14 @@ without express or implied warranty.
 
 #define X_XCMiscGetVersion	0
 #define X_XCMiscGetXIDRange	1
+#define X_XCMiscGetXIDList	2
 
 #define XCMiscNumberEvents	0
 
 #define XCMiscNumberErrors	0
 
 #define XCMiscMajorVersion	1
-#define XCMiscMinorVersion	0
+#define XCMiscMinorVersion	1
 
 #define XCMiscExtensionName	"XC-MISC"
 
@@ -71,3 +72,26 @@ typedef struct {
     CARD32	pad4 B32;
 } xXCMiscGetXIDRangeReply;
 #define sz_xXCMiscGetXIDRangeReply 32
+
+typedef struct {
+    CARD8	reqType;	/* always XCMiscCode */
+    CARD8	miscReqType;	/* always X_XCMiscGetXIDList */
+    CARD16	length B16;
+    CARD32	count B32;	/* number of IDs requested */
+} xXCMiscGetXIDListReq;
+#define sz_xXCMiscGetXIDListReq 8
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	pad0;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	count B32;	/* number of IDs requested */
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+} xXCMiscGetXIDListReply;
+#define sz_xXCMiscGetXIDListReply 32
+
