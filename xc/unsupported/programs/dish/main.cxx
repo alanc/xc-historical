@@ -35,7 +35,7 @@
 #include <string.h>
 #include <tcl.h>
 
-#if defined(AIXV3)
+#if defined(AIXV3) || defined(__GNUC__)
 extern "C" int strcasecmp(const char*, const char*);
 #endif
 
@@ -251,14 +251,22 @@ Boolean Dish::string_to_object(char* s, BaseObjectRef& obj) {
     if (strcmp(s, "0") == 0) {
 	obj = nil;
     } else {
+#if defined(__GNUC__)
+	b = sscanf(s, "_dish_%lx", &obj) == 1;
+#else
 	b = sscanf(s, "_dish_%p", &obj) == 1;
+#endif
     }
     return b;
 }
 
 char* Dish::object_to_string(BaseObjectRef obj, char* result) {
     if (is_not_nil(obj)) {
+#if defined(__GNUC__)
+	sprintf(result, "_dish_%lx", obj);
+#else
 	sprintf(result, "_dish_%p", obj);
+#endif
     } else {
 	sprintf(result, "0");
     }
@@ -951,7 +959,11 @@ int Dish::spawn(ClientData, Tcl_Interp* interp, int argc, char* argv[]) {
 		ThreadObjRef t = threads->thread(a);
 		if (is_not_nil(t)) {
 		    t->run();
+#if defined(__GNUC__)
+		    sprintf(interp->result, "%lx", ThreadObjRef(t));
+#else
 		    sprintf(interp->result, "%p", ThreadObjRef(t));
+#endif
 		    status = TCL_OK;
 		} else {
 		    Tcl_AppendResult(interp, "No threads available", 0);
@@ -1087,26 +1099,48 @@ void DishAction::execute() {
     }
 }
 
+
+/*
+ * This is for platforms that don't have atexit()
+ */
+
+#if defined(sun) && !defined(SVR4)
+extern "C" int on_exit(void (*)(), caddr_t);
+int atexit(void (*func)(void)) {
+    return on_exit(func, NULL);
+}
+#endif
+
+
+/*
+ * This is for cfront-based compilers that need to call _main to 
+ * get static initializers run.
+ */
+
+#if defined(sun) && !defined(SVR4) && !defined(__GNUC__)
+extern "C" void _main();
+void init_static_initializers() {
+    _main();
+}
+#else
+void init_static_initializers()	{
+    /* nothing */
+}
+#endif
+
+
 /*
  *  Called by main() defined in tcl lib.
  */
 
-#if defined(sun) && !defined(SVR4)
-extern "C" {
-  void _main();
-  void on_exit(void (*)(), caddr_t);
-}
-#endif
 
 int Tcl_AppInit(Tcl_Interp* interp) {
-#if defined(sun) && !defined(SVR4)
-    _main();
-    on_exit(&Dish::cleanup, NULL);
-#else
+    init_static_initializers();
     atexit(&Dish::cleanup);
-#endif
     Dish* dish = new Dish(interp);
     dish->add_commands(interp);
     dish->add_variables(interp);
     return TCL_OK;
 }
+
+

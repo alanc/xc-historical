@@ -29,8 +29,10 @@
 
 typedef unsigned char Boolean;
 
+#if !defined(__GNUC__) && !defined(HAS_BOOL)
 static const unsigned char false = 0;
 static const unsigned char true = 1;
+#endif
 
 inline Boolean is_nil(void* v) { return v == 0; }
 inline Boolean is_not_nil(void* v) { return v != 0; }
