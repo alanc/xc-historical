@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.32 89/05/04 15:40:22 converse Exp $";
+    "$XConsortium: screen.c,v 2.33 89/05/11 19:24:48 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -359,6 +359,7 @@ void DestroyScrn(scrn)
     TocSetScrn((Toc) NULL, scrn);
     MsgSetScrnForce((Msg) NULL, scrn);
     scrn->mapped = FALSE;
+    lastInput.win = -1;
 }
 
 
