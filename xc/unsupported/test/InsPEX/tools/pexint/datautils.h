@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: datautils.h,v 5.1 91/02/16 10:00:08 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -61,6 +61,7 @@ extern Pelem_ref*     		IA_Pelem_ref();
 extern Pfilter*			IA_Pfilter();
 extern Par_file*		IA_Par_file();
 extern Ppick_path_elem*		IA_Ppick_path_elem();
+extern Ppick_path*		IA_Ppick_path();
 
 /* initialize array of data: 
    IA_...(number, union_type,list of data whose format depends on union_type) */
@@ -86,6 +87,8 @@ extern Ptrimcurve_list 		I_Ptrimcurve_list();
 extern Pparal 			I_Pparal();
 extern Ppoint_list 		I_Ppoint_list();
 extern Ppoint_list3 		I_Ppoint_list3();
+extern Ppoint_list_list 	I_Ppoint_list_list();
+extern Ppoint_list_list3 	I_Ppoint_list_list3();
 extern Pelem_type_list 		I_Pelem_type_list();
 extern Par_file_list 		I_Par_file_list();
 extern Pint_list 		I_Pint_list();

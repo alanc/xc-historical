@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: scmacro.pi,v 5.1 91/02/16 10:02:48 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -83,8 +83,8 @@ endmacro
  */
 macro im_confirm_setopenws(@num,@w1,@w2,@formatstring)
 	err = i_bogus_error();
-	pinq_set_open_ws(10,0,&err,&inqsetws,&total);
-	im_ifneq(err,0,"ERROR: %d in pinq_set_open_ws\n",err);
+	pinq_open_wss(10,0,&err,&inqsetws,&total);
+	im_ifneq(err,0,"ERROR: %d in pinq_open_wss\n",err);
 	status = i_compare_Pint_list_to_ints(inqsetws,@num,@w1,@w2);
 	im_ifneq(status,1,@formatstring,NULL);
 endmacro

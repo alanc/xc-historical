@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: dccolrep.pi,v 5.1 91/02/16 10:02:10 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -90,7 +90,7 @@ tvprintf(2,"before updatews\n");
 i_pause();
 
 #OPERATION: update workstation with PERFORM
-pupd_ws(1,PUPD_PERFORM);
+pupd_ws(1,PFLAG_PERFORM);
 
 #VERIFICATION: 
 #verify visual rep state is PVISUAL_ST_CORRECT

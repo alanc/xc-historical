@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: cull2.pi,v 5.1 91/02/16 10:03:56 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -63,7 +63,8 @@ im_confirm_point3(xdisplay,xwindow,1,0,testpoint1,@pixel,5,1,"fill area");
 # 2. fill area set
 pts2 = IA_Ppoint3(4, 0.7,0.1,0.0, 0.7,0.2,1.0, 0.8,0.2,1.0, 0.8,0.1,0.0)
 fas2 = I_Ppoint_list3(4,pts2);
-pfill_area_set3(1,&fas2);
+fas2_l = I_Ppoint_list_list3(1,&fas2);
+pfill_area_set3(&fas2_l);
 testpoint2 = I_Ppoint3(0.7,0.1,0.0);
 im_confirm_point3(xdisplay,xwindow,1,0,testpoint2,@pixel,5,1,"fill area set");
 

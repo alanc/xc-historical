@@ -1,6 +1,6 @@
 
 
-/* $XConsortium$ */
+/* $XConsortium: pdt.c,v 5.1 91/02/16 10:01:14 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -150,7 +150,7 @@ verify_phigs_facilities()
 
 	char_sets.ints = intbuf;
 	err = BOGUSERR;
-	pinq_phigs_facs(BUFSIZE,0,&err,&open_ws,&num_names,&open_ar,&char_sets,
+	pinq_phigs_facs(BUFSIZE,0,&err,&open_ws,&open_ar,&num_names,&char_sets,
 		&len_list,&norm_filt,&inv_filt);
 	ERROR("pinq_phigs_facs");
 

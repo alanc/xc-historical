@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: testutils.c,v 5.1 91/02/16 10:00:21 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -166,7 +166,7 @@ i_open_x_ws(ws,display,window,x,y,w,h)
 {
 	Pconnid_x_drawable ws_conn;
 	int wstype;
-        Pescape_out_data escout;
+        Pescape_out_data *escout;
         Pescape_in_data escin;
         Pstore     store;
         Pint       err;
@@ -185,11 +185,11 @@ i_open_x_ws(ws,display,window,x,y,w,h)
 			tabort("ERROR: i_get_ws_info: %d in pcreate_store\n",err);
         	escin.escape_in_u2.ws_id = ws;
         	pescape(PUESC_DPYINFO, &escin, store, &escout);
-        	*window = escout.escape_out_u2.drawable_id;
+        	*window = escout->escape_out_u2.drawable_id;
 		if (clientside && ! nomonitor)
-			*display = XOpenDisplay(escout.escape_out_u2.display_name);
+			*display = XOpenDisplay(escout->escape_out_u2.display_name);
 		else
-        		*display = escout.escape_out_u2.display;
+        		*display = escout->escape_out_u2.display;
 	} else {
         	i_make_xwindow(display, window, &ws_conn, x, y, w, h);
 		popen_ws(ws,&ws_conn,phigs_ws_type_x_drawable);
@@ -206,7 +206,7 @@ i_get_ws_info(ws,display,overlay)
 	Display **display;
 	Window *overlay;
 {
-        Pescape_out_data escout;
+        Pescape_out_data *escout;
         Pescape_in_data escin;
         Pstore     store;
         Pint       err;
@@ -216,11 +216,11 @@ i_get_ws_info(ws,display,overlay)
 		tabort("ERROR: i_get_ws_info: %d in pcreate_store\n",err);
         escin.escape_in_u2.ws_id = ws;
         pescape(PUESC_DPYINFO, &escin, store, &escout);
-        *overlay = escout.escape_out_u2.input_overlay_id;
+        *overlay = escout->escape_out_u2.input_overlay_id;
 	if (clientside && ! nomonitor)
-		*display = XOpenDisplay(escout.escape_out_u2.display_name);
+		*display = XOpenDisplay(escout->escape_out_u2.display_name);
 	else
-        	*display = escout.escape_out_u2.display;
+        	*display = escout->escape_out_u2.display;
 }
 
 /*

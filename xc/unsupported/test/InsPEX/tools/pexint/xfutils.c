@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: xfutils.c,v 5.1 91/02/16 10:00:20 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -429,19 +429,19 @@ i_evalviewmappingmtx3(viewmap,mtx)
 
         if (viewmap.proj_type == PTYPE_PARAL) {
             i_identity3(tempmat1);
-            tempmat1[0][3] = viewmap.vp.x_min;
-            tempmat1[1][3] = viewmap.vp.y_min;
-            tempmat1[2][3] = viewmap.vp.z_max;
+            tempmat1[0][3] = viewmap.proj_vp.x_min;
+            tempmat1[1][3] = viewmap.proj_vp.y_min;
+            tempmat1[2][3] = viewmap.proj_vp.z_max;
 
             i_identity3(tempmat2);
-            tempmat2[0][0] = (viewmap.vp.x_max - viewmap.vp.x_min) / 
+            tempmat2[0][0] = (viewmap.proj_vp.x_max - viewmap.proj_vp.x_min) / 
 		(viewmap.win.x_max - viewmap.win.x_min);
-            tempmat2[1][1] = (viewmap.vp.y_max - viewmap.vp.y_min) / 
+            tempmat2[1][1] = (viewmap.proj_vp.y_max - viewmap.proj_vp.y_min) / 
 		(viewmap.win.y_max - viewmap.win.y_min);
             if (feq(viewmap.front_plane,viewmap.back_plane))
                 tempmat2[2][2] = 0.0;
             else
-                tempmat2[2][2] = (viewmap.vp.z_max-viewmap.vp.z_min)/
+                tempmat2[2][2] = (viewmap.proj_vp.z_max-viewmap.proj_vp.z_min)/
 		 (viewmap.front_plane - viewmap.back_plane);
 
             i_multmat3(tempmat1,tempmat2,tempmat3);
@@ -474,34 +474,34 @@ i_evalviewmappingmtx3(viewmap,mtx)
                      (viewmap.win.y_max - viewmap.win.y_min);
 
             i_identity3(mtx);
-            mtx[0][0] = 0.5 * scalex * (viewmap.vp.x_max - 
-		viewmap.vp.x_min);
-            mtx[0][2] = 0.5 * (viewmap.vp.x_max-viewmap.vp.x_min) 
-		* (scalex * shearx - perp) - perp * viewmap.vp.x_min;
-            mtx[0][3] = 0.5 * (viewmap.vp.x_max - viewmap.vp.x_min)
+            mtx[0][0] = 0.5 * scalex * (viewmap.proj_vp.x_max - 
+		viewmap.proj_vp.x_min);
+            mtx[0][2] = 0.5 * (viewmap.proj_vp.x_max-viewmap.proj_vp.x_min) 
+		* (scalex * shearx - perp) - perp * viewmap.proj_vp.x_min;
+            mtx[0][3] = 0.5 * (viewmap.proj_vp.x_max - viewmap.proj_vp.x_min)
 		* (perp * viewmap.proj_ref_point.z - scalex *
                 (viewmap.proj_ref_point.x + shearx * viewmap.proj_ref_point.z)) +
-                perp * viewmap.proj_ref_point.z * viewmap.vp.x_min;
-            mtx[1][1] = 0.5 * scaley * (viewmap.vp.y_max - 
-		viewmap.vp.y_min);
-            mtx[1][2] = 0.5 * (viewmap.vp.y_max - viewmap.vp.y_min)
-		 * (scaley * sheary - perp) - perp * viewmap.vp.y_min;
-            mtx[1][3] = 0.5 * (viewmap.vp.y_max - viewmap.vp.y_min)		 * (perp * viewmap.proj_ref_point.z - scaley *
+                perp * viewmap.proj_ref_point.z * viewmap.proj_vp.x_min;
+            mtx[1][1] = 0.5 * scaley * (viewmap.proj_vp.y_max - 
+		viewmap.proj_vp.y_min);
+            mtx[1][2] = 0.5 * (viewmap.proj_vp.y_max - viewmap.proj_vp.y_min)
+		 * (scaley * sheary - perp) - perp * viewmap.proj_vp.y_min;
+            mtx[1][3] = 0.5 * (viewmap.proj_vp.y_max - viewmap.proj_vp.y_min)		 * (perp * viewmap.proj_ref_point.z - scaley *
                  (viewmap.proj_ref_point.y + sheary * viewmap.proj_ref_point.z)) +
-                 perp * viewmap.proj_ref_point.z * viewmap.vp.y_min;
+                 perp * viewmap.proj_ref_point.z * viewmap.proj_vp.y_min;
  
             perp1 = (viewmap.front_plane - viewmap.proj_ref_point.z) /
                     (viewmap.back_plane - viewmap.proj_ref_point.z);
             if (feq(perp1,1.0)) {
                 mtx[2][2] = 0.0;
-                mtx[2][3] = perp * viewmap.proj_ref_point.z * viewmap.vp.z_max;
+                mtx[2][3] = perp * viewmap.proj_ref_point.z * viewmap.proj_vp.z_max;
             }
             else {
-                mtx[2][2]=perp*((viewmap.vp.z_max-viewmap.vp.z_min) /
-			 (1.0 - perp1) - viewmap.vp.z_max);
-                mtx[2][3] = (-(viewmap.vp.z_max - viewmap.vp.z_min) /
+                mtx[2][2]=perp*((viewmap.proj_vp.z_max-viewmap.proj_vp.z_min) /
+			 (1.0 - perp1) - viewmap.proj_vp.z_max);
+                mtx[2][3] = (-(viewmap.proj_vp.z_max - viewmap.proj_vp.z_min) /
                                (1.0 - perp1)) * (perp * viewmap.proj_ref_point.z - perp1)+
-                               perp * viewmap.proj_ref_point.z * viewmap.vp.z_max;
+                               perp * viewmap.proj_ref_point.z * viewmap.proj_vp.z_max;
             }
 
             mtx[3][2] = -perp;
@@ -520,13 +520,13 @@ i_evalviewmappingmtx(viewmap,mtx)
         Pmatrix tempmat1, tempmat2, tempmat3;
 
         i_identity(tempmat1);
-        tempmat1[0][2] = viewmap.vp.x_min;
-        tempmat1[1][2] = viewmap.vp.y_min;
+        tempmat1[0][2] = viewmap.proj_vp.x_min;
+        tempmat1[1][2] = viewmap.proj_vp.y_min;
 
         i_identity(tempmat2);
-        tempmat2[0][0] = (viewmap.vp.x_max - viewmap.vp.x_min) /
+        tempmat2[0][0] = (viewmap.proj_vp.x_max - viewmap.proj_vp.x_min) /
                        (viewmap.win.x_max - viewmap.win.x_min);
-        tempmat2[1][1] = (viewmap.vp.y_max - viewmap.vp.y_min) /
+        tempmat2[1][1] = (viewmap.proj_vp.y_max - viewmap.proj_vp.y_min) /
                        (viewmap.win.y_max - viewmap.win.y_min);
         i_multmat(tempmat1,tempmat2,tempmat3);
  

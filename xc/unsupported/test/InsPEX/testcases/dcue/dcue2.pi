@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: dcue2.pi,v 5.1 91/02/16 10:03:44 rws Exp $ */
 
 ## dcue2.pi -
 ## Test depth cuing with different primitives
@@ -48,7 +48,8 @@ pfill_area3(&fa3);
 # 4. fill area set
 pts4 = IA_Ppoint3(4, 0.7,0.1,0.0, 0.7,0.2,1.0, 0.8,0.2,1.0, 0.8,0.1,0.0)
 fas4 = I_Ppoint_list3(4,pts4);
-pfill_area_set3(1,&fas4);
+fas4_l = I_Ppoint_list_list3(1,&fas4);
+pfill_area_set3(&fas4_l);
 
 # 5. fill area set with data
 ptarr5 = IA_Ppoint3(4, 0.1,0.3,0.0, 0.1,0.4,1.0, 0.2,0.4,1.0, 0.2,0.3,0.0)

@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: updatews.pi,v 5.1 91/02/16 10:02:17 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -50,14 +50,14 @@ popen_struct(1);
 
 
 #OPERATION: update workstation with POSTPONE
-pupd_ws(1,PUPD_POSTPONE);
+pupd_ws(1,PFLAG_POSTPONE);
 
 #VERIFICATION: verify visual rep state is PVISUAL_ST_CORRECT
 im_confirm_visual_rep(1,PVISUAL_ST_CORRECT,
   "failed: POSTPONE update,visual=%d,expected PVISUAL_ST_CORRECT before poststruct\n");
 
 #OPERATION: update workstation with PERFORM
-pupd_ws(1,PUPD_PERFORM);
+pupd_ws(1,PFLAG_PERFORM);
 
 #VERIFICATION: verify visual rep state is PVISUAL_ST_CORRECT
 im_confirm_visual_rep(1,PVISUAL_ST_CORRECT,
@@ -105,7 +105,7 @@ i_pause();
 
 
 #OPERATION: update workstation with POSTPONE
-pupd_ws(1,PUPD_POSTPONE);
+pupd_ws(1,PFLAG_POSTPONE);
 
 #VERIFICATION: 
 if (dynmod == PDYN_IRG) # if structure content mod's dynamic modification is IRG
@@ -132,7 +132,7 @@ i_pause();
 
 
 #OPERATION: update workstation with PERFORM
-pupd_ws(1,PUPD_PERFORM);
+pupd_ws(1,PFLAG_PERFORM);
 
 #VERIFICATION: 
 # verify visual rep state is PVISUAL_ST_CORRECT

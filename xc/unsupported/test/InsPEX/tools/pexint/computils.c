@@ -1,4 +1,4 @@
-/* $XConsortium: computils.c,v 5.2 91/05/06 11:23:00 hersh Exp $ */
+/* $XConsortium: computils.c,v 5.3 91/06/14 15:54:46 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -233,17 +233,16 @@ i_compare_Prefl_props(rep,exprep)
 	    feq(rep.ambient_coef,exprep.ambient_coef) && 
 	    feq(rep.diffuse_coef,exprep.diffuse_coef) &&
 	    feq(rep.specular_coef,exprep.specular_coef) &&
-	    feq(rep.specular_exp,exprep.specular_exp) &&
-	    feq(rep.transpar_coef,exprep.transpar_coef) )
+	    feq(rep.specular_exp,exprep.specular_exp)
+	    )
 		status = 1;
 
 	if (verbosity >=3 || (verbosity >= 1 && status == 0)) {
-		tvprintf(1,"i_compare_Prefl_props: ambient_coef,diffuse_coef,specular_coef,specular_exp,transpar_coef = (%.4f,%.4f,%.4f,%.4f,%.4f); expected (%.4f,%.4f,%.4f,%.4f,%.4f)\n",
+		tvprintf(1,"i_compare_Prefl_props: ambient_coef,diffuse_coef,specular_coef,specular_exp = (%.4f,%.4f,%.4f,%.4f); expected (%.4f,%.4f,%.4f,%.4f)\n",
 			rep.ambient_coef,rep.diffuse_coef,rep.specular_coef,
-			rep.specular_exp, rep.transpar_coef,
+			rep.specular_exp, 
 			exprep.ambient_coef,exprep.diffuse_coef,
-			exprep.specular_coef,exprep.specular_exp, 
-			exprep.transpar_coef);
+			exprep.specular_coef,exprep.specular_exp );
 	}
 	return(status);
 }
@@ -1850,9 +1849,7 @@ i_compare_element_content(type,data,expectdata, element_name)
 	    expectdata->props.specular_coef != 
 	      data->props.specular_coef ||
 	    expectdata->props.specular_exp != 
-	      data->props.specular_exp ||
-	    expectdata->props.transpar_coef != 
-	      data->props.transpar_coef) {
+	      data->props.specular_exp) {
 	    if (element_name)
 		tfprintf("failed: inquired float data for %s doesn't match expected\n", element_name);
 	    return (0);
@@ -1881,10 +1878,10 @@ i_compare_element_content(type,data,expectdata, element_name)
     case PELEM_CELL_ARRAY:
 	if (!i_compare_Ppoint(data->cell_array.rect.p, expectdata->cell_array.rect.p) ||
 	    !i_compare_Ppoint(data->cell_array.rect.q, expectdata->cell_array.rect.q) ||
-	    expectdata->cell_array.dim.size_x != data->cell_array.dim.size_x  ||
-	    expectdata->cell_array.dim.size_y != data->cell_array.dim.size_y  ||
-	    memcmp(expectdata->cell_array.colr, data->cell_array.colr,
-		   data->cell_array.dim.size_x * data->cell_array.dim.size_y 
+	    expectdata->cell_array.colr_array.dims.size_x != data->cell_array.colr_array.dims.size_x  ||
+	    expectdata->cell_array.colr_array.dims.size_y != data->cell_array.colr_array.dims.size_y  ||
+	    memcmp(expectdata->cell_array.colr_array.colr_array, data->cell_array.colr_array.colr_array,
+		   data->cell_array.colr_array.dims.size_x * data->cell_array.colr_array.dims.size_y 
 		   * sizeof(Pint))) {
 	    if (element_name)
 		tfprintf("failed: inquired data for %s doesn't match expected\n",
@@ -1899,10 +1896,10 @@ i_compare_element_content(type,data,expectdata, element_name)
 			       &(data->cell_array3.paral.q)) ||
 	    !i_compare_Ppoint3(&(expectdata->cell_array3.paral.r), 
 			       &(data->cell_array3.paral.r)) ||
-	    expectdata->cell_array3.dim.size_x != data->cell_array3.dim.size_x  ||
-	    expectdata->cell_array3.dim.size_y != data->cell_array3.dim.size_y  ||
-	    memcmp(expectdata->cell_array3.colr, data->cell_array3.colr,
-		   data->cell_array3.dim.size_x * data->cell_array3.dim.size_y
+	    expectdata->cell_array3.colr_array.dims.size_x != data->cell_array3.colr_array.dims.size_x  ||
+	    expectdata->cell_array3.colr_array.dims.size_y != data->cell_array3.colr_array.dims.size_y  ||
+	    memcmp(expectdata->cell_array3.colr_array.colr_array, data->cell_array3.colr_array.colr_array,
+		   data->cell_array3.colr_array.dims.size_x * data->cell_array3.colr_array.dims.size_y
 		   * sizeof(Pint))) {
 	    if (element_name)
 		if (element_name)
@@ -1971,17 +1968,17 @@ i_compare_element_content(type,data,expectdata, element_name)
         }    
         break;
     case PELEM_FILL_AREA_SET:
-        if (expectdata->fill_area_set.num_point_lists != data->fill_area_set.num_point_lists) {
+        if (expectdata->point_list_list.num_point_lists != data->point_list_list.num_point_lists) {
 	    if (element_name)
 		tfprintf("failed: inquired num sets for %s (%d) != expected(%d)\n",
-			 element_name, data->fill_area_set.num_point_lists,
-			 expectdata->fill_area_set.num_point_lists);
+			 element_name, data->point_list_list.num_point_lists,
+			 expectdata->point_list_list.num_point_lists);
 	    return (0);
 	} else {
-	    for (i=0; i < data->fill_area_set.num_point_lists; i++) {
-		for (j=0; j < data->fill_area_set.point_lists[i].num_points; j++) {
-		    if (!i_compare_Ppoint(data->fill_area_set.point_lists[i].points[j],
-		               expectdata->fill_area_set.point_lists[i].points[j])) {
+	    for (i=0; i < data->point_list_list.num_point_lists; i++) {
+		for (j=0; j < data->point_list_list.point_lists[i].num_points; j++) {
+		    if (!i_compare_Ppoint(data->point_list_list.point_lists[i].points[j],
+		               expectdata->point_list_list.point_lists[i].points[j])) {
 			if (element_name)
 			    tfprintf("failed: coords of inquired point %d in set %d of %s != expected \n",
 				     j, i, element_name);
@@ -1992,17 +1989,17 @@ i_compare_element_content(type,data,expectdata, element_name)
         }    
         break;
     case PELEM_FILL_AREA_SET3:
-        if (expectdata->fill_area_set3.num_point_lists != data->fill_area_set3.num_point_lists) {
+        if (expectdata->point_list_list3.num_point_lists != data->point_list_list3.num_point_lists) {
 	    if (element_name)
 		tfprintf("failed: inquired num sets for %s (%d) != expected(%d)\n",
-			 element_name, data->fill_area_set3.num_point_lists,
-			 expectdata->fill_area_set3.num_point_lists);
+			 element_name, data->point_list_list3.num_point_lists,
+			 expectdata->point_list_list3.num_point_lists);
 	    return (0);
 	} else {
-	    for (i=0; i < data->fill_area_set3.num_point_lists; i++) {
-		for (j=0; j < data->fill_area_set3.point_lists[i].num_points; j++) {
-		    inqpt3 = &data->fill_area_set3.point_lists[i].points[j];
-		    exppt3 = &expectdata->fill_area_set3.point_lists[i].points[j];
+	    for (i=0; i < data->point_list_list3.num_point_lists; i++) {
+		for (j=0; j < data->point_list_list3.point_lists[i].num_points; j++) {
+		    inqpt3 = &data->point_list_list3.point_lists[i].points[j];
+		    exppt3 = &expectdata->point_list_list3.point_lists[i].points[j];
 		    if (!feq(inqpt3->x, exppt3->x)||
 			!feq(inqpt3->y, exppt3->y)||
 			!feq(inqpt3->z, exppt3->z)) {
@@ -2208,40 +2205,40 @@ i_compare_element_content(type,data,expectdata, element_name)
 	}
 	break;
     case PELEM_LOCAL_MODEL_TRAN:
-	if (expectdata->local_tran.comp != data->local_tran.comp) {
+	if (expectdata->local_tran.compose_type != data->local_tran.compose_type) {
 	    if (element_name)
 		tfprintf("failed: inquired composition type for %s (%d) != expected (%d)\n",
-			 element_name, data->local_tran.comp,
-			 expectdata->local_tran.comp);
+			 element_name, data->local_tran.compose_type,
+			 expectdata->local_tran.compose_type);
 	    return (0);
 	}
 	for (i=0; i<3; i++)
 	    for (j=0; j<3; j++)
-		if (!feq(expectdata->local_tran.tran[i][j],
-			 data->local_tran.tran[i][j])) {
+		if (!feq(expectdata->local_tran.matrix[i][j],
+			 data->local_tran.matrix[i][j])) {
 		    if (element_name)
 			tfprintf("failed: inquired transform element [%d][%d] of %s was %f != expected %f\n",
-				 i, j, element_name, data->local_tran.tran[i][j],
-				 expectdata->local_tran.tran[i][j]);
+				 i, j, element_name, data->local_tran.matrix[i][j],
+				 expectdata->local_tran.matrix[i][j]);
 		    return (0);
 		}
 	break;
     case PELEM_LOCAL_MODEL_TRAN3:
-	if (expectdata->local_tran3.comp != data->local_tran3.comp) {
+	if (expectdata->local_tran3.compose_type != data->local_tran3.compose_type) {
 	    if (element_name)
 		tfprintf("failed: inquired composition type for %s (%d) != expected (%d)\n",
-			 element_name, data->local_tran3.comp,
-			 expectdata->local_tran3.comp);
+			 element_name, data->local_tran3.compose_type,
+			 expectdata->local_tran3.compose_type);
 	    return (0);
 	}
 	for (i=0; i<4; i++)
 	    for (j=0; j<4; j++)
-		if (!feq(expectdata->local_tran3.tran[i][j],
-			 data->local_tran3.tran[i][j])) {
+		if (!feq(expectdata->local_tran3.matrix[i][j],
+			 data->local_tran3.matrix[i][j])) {
 		    if (element_name)
 			tfprintf("failed: inquired transform element [%d][%d] of %s was %f != expected %f\n",
-				 i, j, element_name, data->local_tran3.tran[i][j],
-				 expectdata->local_tran3.tran[i][j]);
+				 i, j, element_name, data->local_tran3.matrix[i][j],
+				 expectdata->local_tran3.matrix[i][j]);
 		    return (0);
 		}
 	break;
@@ -2307,11 +2304,11 @@ i_compare_element_content(type,data,expectdata, element_name)
 	break;
     case PELEM_PAT_REF_POINT:
     case PELEM_PAT_SIZE:
-	if (!i_compare_Ppoint(data->point, expectdata->point)) {
+	if (!i_compare_Ppoint(data->pat_ref_point, expectdata->pat_ref_point)) {
 	    if (element_name)
 		tfprintf("failed: inquired %s (%f,%f) != expected (%f,%f)\n",
-			 element_name, data->point.x, data->point.y,
-			 expectdata->point.x, expectdata->point.y);
+			 element_name, data->pat_ref_point.x, data->pat_ref_point.y,
+			 expectdata->pat_ref_point.x, expectdata->pat_ref_point.y);
 	    return (0);
 	}
 	break;

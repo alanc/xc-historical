@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: datautils.c,v 5.1 91/02/16 10:00:06 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -524,6 +524,24 @@ IA_Ppick_path_elem(n,va_alist)
 	return(p);
 }
 
+Ppick_path*
+IA_Ppick_path(n,va_alist)
+	int n;
+	va_dcl
+{
+	Ppick_path *p;
+	int i;
+	va_list ap;
+
+	va_start(ap);
+	p = (Ppick_path*) malloc(sizeof(Ppick_path) * n);
+	for (i=0;i<n;++i) {
+		p[i] = va_arg(ap,Ppick_path);
+	}
+	va_end(ap);
+	return(p);
+}
+
 
 /* BEG: initialize array of data 
    IA_...(number, union_type,list of data whose format depends on union_type) */
@@ -886,6 +904,30 @@ I_Ppoint_list(n,points)
 	return(tmp);
 }
 
+Ppoint_list_list3
+I_Ppoint_list_list3(n,points)
+        Pint n;
+	Ppoint_list3 *points;
+{
+	Ppoint_list_list3 tmp;
+
+	tmp.num_point_lists = n;
+	tmp.point_lists = points;
+	return(tmp);
+}
+
+Ppoint_list_list
+I_Ppoint_list_list(n,points)
+        Pint n;
+	Ppoint_list *points;
+{
+	Ppoint_list_list tmp;
+
+	tmp.num_point_lists = n;
+	tmp.point_lists = points;
+	return(tmp);
+}
+
 Pelem_type_list
 I_Pelem_type_list(n,selems)
         Pint n;
@@ -1032,8 +1074,8 @@ I_Phalf_space(pt,normal)
 
 Ptext_align
 I_Ptext_align(hor,ver)
-	Phor_align hor;
-	Pvert_align ver;
+	Phor_text_align hor;
+	Pvert_text_align ver;
 {
         Ptext_align tmp;
 
@@ -1183,7 +1225,6 @@ I_Prefl_props(ambcoe,difcoe,specoe,specol,speexp,tracoe)
 	tmp.specular_coef = specoe;
 	tmp.specular_colr = specol;
 	tmp.specular_exp = speexp;
-	tmp.transpar_coef = tracoe;
         return(tmp); 
 } 
 
@@ -1462,7 +1503,7 @@ I_Pview_map(window,viewport)
         Pview_map tmp;
 
         tmp.win = window;
-        tmp.vp = viewport;
+        tmp.proj_vp = viewport;
         return(tmp);
 }
 
@@ -1477,7 +1518,7 @@ I_Pview_map3(window,viewport,proj,prp,view_plane,back_plane,front_plane)
         Pview_map3 tmp;
  
         tmp.win = window;
-        tmp.vp = viewport;
+        tmp.proj_vp = viewport;
         tmp.proj_type = proj;
         tmp.proj_ref_point = prp;
         tmp.view_plane = view_plane;
