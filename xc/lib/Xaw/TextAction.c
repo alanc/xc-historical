@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.23 89/12/10 11:30:43 rws Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.24 90/02/01 16:02:26 keith Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1150,7 +1150,8 @@ Cardinal * num_params;
  *	Arguments: ctx - the text widget.
  *                 from - starting point.
  *                 to - the ending point
- *	Returns: the new ending location (we may add some caracters).
+ *	Returns: the new ending location (we may add some characters),
+ *		 or XawTextReplaceError, which indicates failure.
  */
 
 static XawTextPosition
@@ -1215,7 +1216,8 @@ XawTextPosition from, to;
 
       to -= (i - text.length - 1);
       startPos = SrcScan(src, periodPos, XawstPositions, XawsdRight, i, TRUE);
-      _XawTextReplace(ctx, endPos, startPos, &text);
+      if (_XawTextReplace(ctx, endPos, startPos, &text) != XawEditDone)
+	  return XawReplaceError;
       startPos -= i - text.length;
     }
   }
@@ -1271,7 +1273,8 @@ XawTextPosition from, to;
 		     XawstPositions, XawsdRight, i, TRUE);
     XtFree(buf);
     
-    _XawTextReplace(ctx, startPos, endPos, &text);
+    if (_XawTextReplace(ctx, startPos, endPos, &text))
+	return;
     startPos = SrcScan(ctx->text.source, startPos,
 		       XawstPositions, XawsdRight, 1, TRUE);
   }
@@ -1281,22 +1284,24 @@ XawTextPosition from, to;
  *	Description: Forms up the region specified.
  *	Arguments: ctx - the text widget.
  *                 from, to - the ends of the region.
- *	Returns: none.
+ *	Returns: XawEditDone if successful, or XawReplaceError.
  */
 
-static void
+static int
 FormRegion(ctx, from, to)
 TextWidget ctx;
 XawTextPosition from, to;
 {
-  if (from >= to) return;
+  if (from >= to) return XawEditDone;
 
-  to = StripOutOldCRs(ctx, from, to);
+  if ((to = StripOutOldCRs(ctx, from, to)) == XawReplaceError)
+      return XawReplaceError;
   InsertNewCRs(ctx, from, to);
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
+  return XawEditDone;
 }
 
-/*	Function Name: FromParagraph.
+/*	Function Name: FormParagraph.
  *	Description: reforms up the current paragraph.
  *	Arguments: w - the text widget.
  *                 event - the X event.
@@ -1322,7 +1327,8 @@ Cardinal * num_params;
   to  =  SrcScan(ctx->text.source, from,
 		 XawstParagraph, XawsdRight, 1, FALSE);
 
-  FormRegion(ctx, from, to);
+  if (FormRegion(ctx, from, to) == XawReplaceError)
+      XBell(XtDisplay(w), 0);
   EndAction(ctx);
   _XawTextSetScrollBars(ctx);
 }
