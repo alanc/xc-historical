@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.36 94/03/31 18:32:40 gildea Exp $
+ * $XConsortium: greet.c,v 1.37 94/03/31 22:35:05 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -373,11 +373,11 @@ greet_user_rtn GreetUser(d, dpy, verify, greet, dlfuncs)
 	     * automatically when it reads the cache we are about
 	     * to point it at.
 	     */
-	    extern Xauth *Krb5GetAuthForUid();
+	    extern Xauth *Krb5GetAuthFor();
 
 	    XauDisposeAuth (d->authorizations[i]);
 	    d->authorizations[i] =
-		Krb5GetAuthForUid(14, "MIT-KERBEROS-5", verify->uid);
+		Krb5GetAuthFor(14, "MIT-KERBEROS-5", d->name);
 	    SaveServerAuthorizations (d, d->authorizations, d->authNum);
 	} 
 #endif
