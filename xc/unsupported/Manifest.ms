@@ -1,5 +1,5 @@
 .\" Contrib manifest  -*- Nroff -*-
-.\" $XConsortium: Manifest.ms,v 1.3 94/06/10 15:36:20 gildea Exp $
+.\" $XConsortium: Manifest.ms,v 1.4 94/06/13 15:14:42 gildea Exp $
 .\" #! troff -ms
 .nr PS 11
 .if n \{
@@ -180,6 +180,7 @@ hterm	terminal emulator for X
 i2mif	IDL to FrameMaker Interchange Format, generate docs from IDL
 ico	animate an icosahedron or other polyhedron
 ImageMagick	display and interactive manipulation of images
+iman	development toolkit, window manager, and help server
 ixx	IDL compiler, generates C++
 kgames	a collection of games, and some useful widgets
 kinput2	an input server for easy input of Japanese text
