@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.54 93/09/29 19:36:20 gildea Exp $ */
+/* $XConsortium: xhost.c,v 11.55 93/09/30 11:34:49 gildea Exp $ */
  
 /*
 
@@ -524,8 +524,9 @@ int change_host (dpy, name, add)
 	printf ("%s %s\n", name, add ? add_msg : remove_msg);
 	return 1;
     }
-#endif				/* NEEDSOCKETS */
+#else /* NEEDSOCKETS */
     return 0;
+#endif /* NEEDSOCKETS */
 }
 
 
