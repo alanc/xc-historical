@@ -18,6 +18,7 @@ HEADERS = \
 	Cascade.h \
 	Clock.h \
 	Command.h \
+	Dialog.h \
 	Form.h \
 	Intrinsic.h \
 	Knob.h \
@@ -42,6 +43,7 @@ SRCS = \
 	Clock.c \
 	Command.c \
 	Cursors.c \
+	Dialog.c \
 	DiskSrc.c \
 	Error.c \
 	Event.c \
@@ -74,6 +76,7 @@ OBJS = \
 	Clock.o \
 	Command.o \
 	Cursors.o \
+	Dialog.o \
 	DiskSrc.o \
 	Error.o \
 	Event.o \
