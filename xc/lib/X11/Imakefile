@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.134 92/07/28 12:24:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.135 92/08/10 20:50:59 eswu Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -1073,7 +1073,7 @@ includes:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
 depend:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
 
 clean::
-	$(RM) ks_tables_h ks_tables.h makekeys
+	$(RM) ks_tables_h ks_tables.h Wrap.h makekeys
 	$(RM) $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
 	$(RM) $(OBJS1)
 	$(RM) $(OBJS2)
