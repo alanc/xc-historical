@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.88 91/02/22 17:37:09 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.89 91/03/13 14:41:33 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -420,7 +420,7 @@ InstallProgramWithFlags(program,dest, /**/)
 #ifndef InstallScript
 #define	InstallScript(program,dest)					@@\
 install:: program.script						@@\
-	$(INSTALL) -c $(INSTPGMFLAGS) program.script dest/program
+	$(INSTALL) -c $(INSTBINFLAGS) program.script dest/program
 #endif /* InstallScript */
 
 
