@@ -1,0 +1,377 @@
+#ifndef lint
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.56 89/08/22 16:44:47 kit Exp $";
+#endif
+
+/***********************************************************
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
+and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the names of Digital or MIT not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************/
+
+#include <stdio.h>
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <X11/Xaw/StripCharP.h>
+
+/* Private Data */
+
+#define offset(field) XtOffset(StripChartWidget,field)
+
+static XtResource resources[] = {
+    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
+	offset(core.width), XtRImmediate, (caddr_t) 120},
+    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
+	offset(core.height), XtRImmediate, (caddr_t) 120},
+    {XtNupdate, XtCInterval, XtRInt, sizeof(int),
+        offset(strip_chart.update), XtRImmediate, (caddr_t) 5},
+    {XtNminScale, XtCScale, XtRInt, sizeof(int),
+        offset(strip_chart.min_scale), XtRImmediate, (caddr_t) 1},
+    {XtNlabel, XtCLabel, XtRString, sizeof(char *),
+        offset(strip_chart.text), XtRString, NULL},
+    {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
+        offset(strip_chart.fgpixel), XtRString, XtDefaultForeground},
+    {XtNhighlight, XtCForeground, XtRPixel, sizeof(Pixel),
+        offset(strip_chart.hipixel), XtRString, XtDefaultForeground},
+    {XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+        offset(strip_chart.font), XtRString, XtDefaultFont},
+    {XtNgetValue, XtCCallback, XtRCallback, sizeof(caddr_t),
+        offset(strip_chart.get_value), XtRImmediate, (caddr_t) NULL},
+    {XtNjumpScroll, XtCJumpScroll, XtRInt, sizeof(int),
+        offset(strip_chart.jump_val), XtRImmediate, (caddr_t) DEFAULT_JUMP},
+};
+
+#undef offset
+
+static void Initialize(), Destroy(), Redisplay();
+static Boolean SetValues();
+static int repaint_window();
+
+StripChartClassRec stripChartClassRec = {
+    { /* core fields */
+    /* superclass		*/	(WidgetClass) &simpleClassRec,
+    /* class_name		*/	"StripChart",
+    /* size			*/	sizeof(StripChartRec),
+    /* class_initialize		*/	NULL,
+    /* class_part_initialize	*/	NULL,
+    /* class_inited		*/	FALSE,
+    /* initialize		*/	Initialize,
+    /* initialize_hook		*/	NULL,
+    /* realize			*/	XtInheritRealize,
+    /* actions			*/	NULL,
+    /* num_actions		*/	0,
+    /* resources		*/	resources,
+    /* num_resources		*/	XtNumber(resources),
+    /* xrm_class		*/	NULL,
+    /* compress_motion		*/	TRUE,
+    /* compress_exposure	*/	TRUE,
+    /* compress_enterleave	*/	TRUE,
+    /* visible_interest		*/	FALSE,
+    /* destroy			*/	Destroy,
+    /* resize			*/	NULL,
+    /* expose			*/	Redisplay,
+    /* set_values		*/	SetValues,
+    /* set_values_hook		*/	NULL,
+    /* set_values_almost	*/	NULL,
+    /* get_values_hook		*/	NULL,
+    /* accept_focus		*/	NULL,
+    /* version			*/	XtVersion,
+    /* callback_private		*/	NULL,
+    /* tm_table			*/	NULL,
+    /* query_geometry		*/	XtInheritQueryGeometry,
+    /* display_accelerator	*/	XtInheritDisplayAccelerator,
+    /* extension		*/	NULL
+    }
+};
+
+WidgetClass stripChartWidgetClass = (WidgetClass) &stripChartClassRec;
+
+/****************************************************************
+ *
+ * Private Procedures
+ *
+ ****************************************************************/
+
+static void draw_it();
+
+/*	Function Name: CreateGC
+ *	Description: Creates the GC's
+ *	Arguments: w - the strip chart widget.
+ *                 which - which GC's to create.
+ *	Returns: none
+ */
+
+static void
+CreateGC(w, which)
+StripChartWidget w;
+unsigned int which;
+{
+  XGCValues	myXGCV;
+
+  if (which & FOREGROUND) {
+    myXGCV.foreground = w->strip_chart.fgpixel;
+    w->strip_chart.fgGC = XtGetGC((Widget) w, GCForeground, &myXGCV);
+  }
+
+  if (which & HIGHLIGHT) {
+    myXGCV.foreground = w->strip_chart.hipixel;
+    myXGCV.font = w->strip_chart.font->fid;
+    w->strip_chart.hiGC = XtGetGC((Widget) w, GCForeground | GCFont, &myXGCV);
+  }
+}
+
+/*	Function Name: DestroyGC
+ *	Description: Destroys the GC's
+ *	Arguments: w - the strip chart widget.
+ *                 which - which GC's to destroy.
+ *	Returns: none
+ */
+
+static void
+DestroyGC(w, which)
+StripChartWidget w;
+unsigned int which;
+{
+  if (which & FOREGROUND) 
+    XtReleaseGC((Widget) w, w->strip_chart.fgGC);
+
+  if (which & HIGHLIGHT) 
+    XtReleaseGC((Widget) w, w->strip_chart.hiGC);
+}
+
+/* ARGSUSED */
+static void Initialize (greq, gnew)
+    Widget greq, gnew;
+{
+    StripChartWidget w = (StripChartWidget)gnew;
+
+    if (w->strip_chart.update > 0)
+        w->strip_chart.interval_id =
+	    XtAddTimeOut(w->strip_chart.update*1000, draw_it, (caddr_t)gnew);
+    else
+        w->strip_chart.interval_id = 0;
+
+    CreateGC(w, ALL_GCS);
+
+    w->strip_chart.scale = w->strip_chart.min_scale;
+    w->strip_chart.interval = 0;
+    w->strip_chart.max_value = 0.0;
+}
+ 
+static void Destroy (gw)
+     Widget gw;
+{
+     StripChartWidget w = (StripChartWidget)gw;
+     if (w->strip_chart.interval_id) 
+         XtRemoveTimeOut (w->strip_chart.interval_id);
+
+     DestroyGC(w, ALL_GCS);
+}
+
+/* ARGSUSED */
+static void Redisplay(gw, event, region)
+     Widget gw;
+     XEvent *event;
+     Region region;
+{
+     (void) repaint_window ((StripChartWidget)gw, event->xexpose.x,
+			    event->xexpose.width);
+}
+
+/* ARGSUSED */
+static void draw_it(client_data, id)
+     caddr_t client_data;
+     XtIntervalId id;		/* unused */
+{
+        StripChartWidget w = (StripChartWidget)client_data;
+	double value;
+
+	if (w->strip_chart.update > 0)
+	    w->strip_chart.interval_id =
+		XtAddTimeOut(w->strip_chart.update*1000, draw_it, (caddr_t)w);
+
+	if (w->strip_chart.interval >= w->core.width) {
+	    XClearWindow(XtDisplay(w), XtWindow(w));
+	    w->strip_chart.interval = repaint_window(w, 0, w->core.width);
+	}
+
+	/* Get the value, stash the point and draw corresponding line. */
+
+	if (w->strip_chart.get_value == NULL)
+	  return;
+
+	XtCallCallbacks( (Widget)w, XtNgetValue, (caddr_t)&value );
+
+	/* 
+         * Keep w->strip_chart.max_value up to date, and if this data 
+         * point is off the graph, change the scale to make it fit. 
+	 */
+
+	if (value > w->strip_chart.max_value) {
+	    w->strip_chart.max_value = value;
+	    if (w->strip_chart.max_value > w->strip_chart.scale) {
+		w->strip_chart.scale = ((int)w->strip_chart.max_value) + 1;
+	        XClearWindow(XtDisplay(w), XtWindow(w));
+		w->strip_chart.interval = repaint_window(w, 0, w->core.width);
+	    }
+	}
+
+	w->strip_chart.valuedata[w->strip_chart.interval] = value;
+	if (XtIsRealized((Widget)w)) {
+	    XDrawLine(XtDisplay(w), XtWindow(w), w->strip_chart.fgGC,
+		      w->strip_chart.interval, w->core.height,
+		      w->strip_chart.interval, 
+		      (int)(w->core.height - (w->core.height * value) /
+			    w->strip_chart.scale));
+	    XFlush(XtDisplay(w));		    /* Flush output buffers */
+	}
+	w->strip_chart.interval++;		    /* Next point */
+} /* draw_it */
+
+/* Blts data according to current size, then redraws the stripChart window.
+ * Next represents the number of valid points in data.  Returns the (possibly)
+ * adjusted value of next.  If next is 0, this routine draws an empty window
+ * (scale - 1 lines for graph).  If next is less than the current window width,
+ * the returned value is identical to the initial value of next and data is
+ * unchanged.  Otherwise keeps half a window's worth of data.  If data is
+ * changed, then w->strip_chart.max_value is updated to reflect the largest data point.
+ */
+
+static int repaint_window(w, left, width)
+    StripChartWidget w;
+    int left, width;
+{
+    register int i, j;
+    register int next = w->strip_chart.interval;
+    int scale = w->strip_chart.scale;
+    extern void bcopy();
+    int scalewidth = 0;
+
+    if (next >= w->core.width) {
+        if (w->strip_chart.jump_val == DEFAULT_JUMP)
+	    j = w->core.width >> 1; /* Half the window width. */
+	else {
+	    j = w->core.width - w->strip_chart.jump_val;
+	    if (j < 1) j = 1;
+	}
+
+	bcopy((char *)(w->strip_chart.valuedata + next - j),
+	      (char *)(w->strip_chart.valuedata), j * sizeof(double));
+	next = j;
+	
+	/*
+	 * Since we just lost some data, recompute the 
+	 * w->strip_chart.max_value. 
+	 */
+
+	w->strip_chart.max_value = 0.0;
+	for (i = 0; i < next; i++) {
+	    if (w->strip_chart.valuedata[i] > w->strip_chart.max_value) 
+	    w->strip_chart.max_value = w->strip_chart.valuedata[i];
+	}
+
+	left = 0;
+	width = next; 
+	scalewidth = w->core.width;
+    }
+
+    /* Compute the minimum scale required to graph the data, but don't go
+       lower than min_scale. */
+    if (w->strip_chart.interval != 0 || scale <= (int)w->strip_chart.max_value)
+      scale = ((int) (w->strip_chart.max_value)) + 1;
+    if (scale < w->strip_chart.min_scale)
+      scale = w->strip_chart.min_scale;
+    if (scale != w->strip_chart.scale) {
+      w->strip_chart.scale = scale;
+      left = 0;
+      width = next;
+      scalewidth = w->core.width;
+      if (XtIsRealized ((Widget) w)) {
+	XClearWindow (XtDisplay (w), XtWindow (w));
+      }
+    }
+
+    if (XtIsRealized((Widget)w)) {
+	Display *dpy = XtDisplay(w);
+	Window win = XtWindow(w);
+
+	if (w->strip_chart.text)                  /* Print label */
+	    XDrawString(dpy, win, w->strip_chart.hiGC, 2, 
+			2 + w->strip_chart.font->ascent, 
+			w->strip_chart.text, strlen(w->strip_chart.text));
+
+	width += left - 1;
+	if (!scalewidth) scalewidth = width;
+
+	/* Draw graph reference lines */
+	for (i = 1; i < w->strip_chart.scale; i++) {
+	    j = (i * w->core.height) / w->strip_chart.scale;
+	    XDrawLine(dpy, win, w->strip_chart.hiGC, left, j, scalewidth, j);
+	}
+
+	if (next < ++width) width = next;
+
+	/* Draw data point lines. */
+	for (i = left; i < width; i++)
+	    XDrawLine(dpy, win, w->strip_chart.fgGC, i, w->core.height,
+		  i, (int) (w->core.height - 
+			    (w->strip_chart.valuedata[i] * w->core.height)
+			    /w->strip_chart.scale));
+        }
+
+    return(next);
+}
+
+/* ARGSUSED */
+static Boolean SetValues (current, request, new)
+    Widget current, request, new;
+{
+    StripChartWidget old = (StripChartWidget)current;
+    StripChartWidget w = (StripChartWidget)new;
+    Boolean ret_val = FALSE;
+    unsigned int new_gc = NO_GCS;
+
+    if (w->strip_chart.update != old->strip_chart.update) {
+	XtRemoveTimeOut (old->strip_chart.interval_id);
+	w->strip_chart.interval_id =
+	    XtAddTimeOut(w->strip_chart.update*1000, draw_it, (caddr_t)w);
+    }
+
+    if ( (w->strip_chart.text != old->strip_chart.text) ||
+	 ((w->strip_chart.text != NULL) && 
+	  (old->strip_chart.text != NULL) &&
+	  (strcmp(w->strip_chart.text, old->strip_chart.text) == 0)) )
+      ret_val = TRUE;
+
+    if ( w->strip_chart.min_scale > (int) ((w->strip_chart.max_value) + 1) )
+      ret_val = TRUE;
+     
+    if ( w->strip_chart.fgpixel != old->strip_chart.fgpixel )
+      new_gc |= FOREGROUND;
+    
+    if ( (w->strip_chart.hipixel != old->strip_chart.hipixel) ||
+	(w->strip_chart.font != old->strip_chart.font) ) 
+      new_gc |= HIGHLIGHT;
+    
+    DestroyGC(old, new_gc);
+    CreateGC(w, new_gc);
+
+    return( ret_val );
+}
