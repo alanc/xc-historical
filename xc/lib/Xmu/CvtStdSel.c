@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.2 88/09/29 18:53:53 swick Exp $
+/* $XConsortium: CvtStdSel.c,v 1.3 88/10/03 17:16:28 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -144,12 +144,12 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
     }
     if (*target == XA_TARGETS(d)) {
 #if defined(unix) && defined(DNETCONN)
-#  define NUM_TARGETS 10
+#  define NUM_TARGETS 9
 #else
 #  if defined(unix) || defined(DNETCONN)
-#    define NUM_TARGETS 9
-#  else
 #    define NUM_TARGETS 8
+#  else
+#    define NUM_TARGETS 7
 #  endif
 #endif
 	Atom* std_targets = (Atom*)XtMalloc(NUM_TARGETS*sizeof(Atom));
@@ -157,7 +157,6 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	std_targets[i++] = XA_TIMESTAMP(d);
 	std_targets[i++] = XA_HOSTNAME(d);
 	std_targets[i++] = XA_IP_ADDRESS(d);
-	std_targets[i++] = XA_OWNER_OS(d);
 	std_targets[i++] = XA_USER(d);
 	std_targets[i++] = XA_CLASS(d);
 	std_targets[i++] = XA_NAME(d);
