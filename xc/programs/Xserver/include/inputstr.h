@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.26 91/05/14 12:00:10 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.27 91/07/17 16:43:02 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -111,6 +111,8 @@ typedef struct _KeyClassRec {
 
 typedef struct _AxisInfo {
     int		resolution;
+    int		min_resolution;
+    int		max_resolution;
     int		min_value;
     int		max_value;
 } AxisInfo, *AxisInfoPtr;
