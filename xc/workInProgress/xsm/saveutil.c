@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.13 94/07/13 14:29:21 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.14 94/07/15 15:03:11 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -224,6 +224,93 @@ char *sm_id;
 	}
 	fclose(f);
     }
+}
+
+
+
+void
+ExecuteOldDiscardCommands(session_name)
+
+char *session_name;
+
+{
+    char	*buf;
+    int		buflen;
+    char	*p, *dir;
+    FILE	*f;
+    int		state;
+    int		foundDiscard;
+    char	filename[256];
+
+    dir = (char *) getenv ("SM_SAVE_DIR");
+    if (!dir)
+    {
+	dir = (char *) getenv ("HOME");
+	if (!dir)
+	    dir = ".";
+    }
+
+    sprintf (filename, "%s/.SM-%s", dir, session_name);
+
+    f = fopen(filename, "r");
+    if(!f) {
+	return;
+    }
+
+    buf = NULL;
+    buflen = 0;
+
+    /* Read SM's id */
+    getline(&buf, &buflen, f);
+    if(p = strchr(buf, '\n')) *p = '\0';
+
+    state = 0;
+    foundDiscard = 0;
+    while(getline(&buf, &buflen, f)) {
+	if(p = strchr(buf, '\n')) *p = '\0';
+	for(p = buf; *p && isspace(*p); p++) /* LOOP */;
+	if(*p == '#') continue;
+
+	if(!*p) {
+	    state = 0;
+	    foundDiscard = 0;
+	    continue;
+	}
+
+	if(!isspace(buf[0])) {
+	    switch(state) {
+		case 0:
+		    state = 1;
+		    break;
+
+		case 1:
+                    state = 2;
+                    break;
+
+		case 2:
+		case 4:
+		    if (strcmp (p, SmDiscardCommand) == 0)
+			foundDiscard = 1;
+		    state = 3;
+		    break;
+
+		case 3:
+		    state = 4;
+		    break;
+
+		default:
+		    continue;
+	    }
+	} else {
+	    if (state != 4) {
+		continue;
+	    }
+	    if (foundDiscard)
+		system (p);	/* Discard Command */
+	}
+    }
+
+    fclose(f);
 }
 
 
