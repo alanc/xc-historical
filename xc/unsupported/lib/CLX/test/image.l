@@ -12,11 +12,7 @@
 
 (defvar *image-test-host* "")
 
-(defvar *image-test-get-image-result-type-choices*
-  '(image-x image-x image-xy image-z))
-
-(defvar *image-test-get-image-image-x-format-choices*
-  '(:xy-pixmap :z-pixmap))
+(defvar *image-test-nimages* 25)
 
 (defvar *image-test-copy* t)
 
@@ -24,9 +20,16 @@
 
 (defvar *image-test-put-random-subimage* t)
 
+(defvar *image-test-get-image-result-type-choices*
+  '(image-x image-x image-xy image-z))
+
+(defvar *image-test-get-image-image-x-format-choices*
+  '(:xy-pixmap :z-pixmap))
+
 (defun image-test
        (&key
 	(host *image-test-host*)
+	(nimages *image-test-nimages*)
 	(copy *image-test-copy*)
 	(copy-random-subimage *image-test-copy-random-subimage*)
 	(put-random-subimage *image-test-put-random-subimage*)
@@ -34,32 +37,42 @@
 	  *image-test-get-image-result-type-choices*)
 	(get-image-image-x-format-choices
 	  *image-test-get-image-image-x-format-choices*))
-  (let* ((display (open-display host))
-	 (abort t))
-    (unwind-protect
-	(let* ((screen (display-default-screen display))
-	       (window (screen-root screen))
-	       (gcontext (create-gcontext
-			   :drawable window
-			   :font (open-font display "fixed"))))
-	  (dotimes (i 30)
-	    (let* ((image (image-test-get-image
-			    window
-			    get-image-result-type-choices
-			    get-image-image-x-format-choices))
-		   (copy (if copy
-			     (image-test-copy-image
-			       image
-			       copy-random-subimage)
-			   image))
-		   (info (concatenate 'string (image-info image)
-				      (image-info copy))))
-	      (image-test-put-image
-		screen gcontext copy info put-random-subimage)
-	      ))
-	  (read-char)
-	  (setq abort nil))
-      (close-display display :abort abort))))
+  (let* ((display nil)
+	 (abort t)
+	 (images nil))
+    (loop 
+      (setq images nil)
+      (unwind-protect
+	  (progn
+	    (setq display (open-display host))
+	    (let* ((screen (display-default-screen display))
+		   (window (screen-root screen))
+		   (gcontext (create-gcontext
+			       :drawable window
+			       :font (open-font display "fixed"))))
+	      (dotimes (i nimages)
+		(let ((image (image-test-get-image
+			       window
+			       get-image-result-type-choices
+			       get-image-image-x-format-choices)))
+		  (format t "~&Image=~S~%" image)
+		  (let ((copy (if copy
+				  (image-test-copy-image
+				    image
+				    copy-random-subimage)
+				image)))
+		    (format t "~&Copy=~S~%" copy)
+		    (push (list image copy) images)
+		    (image-test-put-image
+		      screen gcontext copy
+		      (concatenate
+			'string (image-info image) (image-info copy))
+		      put-random-subimage))))
+	      (unless (y-or-n-p "More ") (return))
+	      (setq abort nil)))
+	(close-display (shiftf display nil) :abort abort))
+      (sleep 10))
+    (reverse images)))
 
 (defun image-test-choose (list)
   (nth (random (length list)) list))
