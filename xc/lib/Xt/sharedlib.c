@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.8 90/03/05 17:34:01 kit Exp $
+ * $XConsortium: sharedlib.c,v 1.9 91/01/09 20:11:42 gildea Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -8,10 +8,32 @@
  * generating shared code so that this gets copied into the application binary.
  */
 
-#if defined(SUNSHLIB) && !defined(SHAREDCODE)
+#if (defined(SUNSHLIB) || defined(AIXSHLIB)) && !defined(SHAREDCODE)
 #include "IntrinsicI.h"
 #include "VarargsI.h"
 
+#ifdef AIXSHLIB
+#include "ShellP.h"
+#include "VendorP.h"
+WidgetClass vendorShellWidgetClass = (WidgetClass) &vendorShellClassRec;
+
+static void _XtVendorInitialize()
+{
+    transientShellWidgetClass->core_class.superclass =
+	(WidgetClass) &vendorShellClassRec;
+    topLevelShellWidgetClass->core_class.superclass =
+	(WidgetClass) &vendorShellClassRec;
+}
+
+#define VENDORINIT _XtVendorInitialize();
+
+#else
+
+#define VENDORINIT /* as nothing */
+
+#endif
+
+#ifdef SUNSHLIB
 /*
  * _XtInherit needs to be statically linked since it is compared against as
  * well as called.
@@ -21,6 +43,7 @@ void _XtInherit()
     extern void __XtInherit();
     __XtInherit();
 }
+#endif
 
 /*
  * The following routine will be called by every toolkit
@@ -32,6 +55,7 @@ void _XtInherit()
 void XtToolkitInitialize()
 {
     extern void _XtToolkitInitialize();
+    VENDORINIT
     _XtToolkitInitialize();
 }
 
@@ -44,6 +68,7 @@ String *argv;
 int *argc;
 {
     extern Widget _XtInitialize();
+    VENDORINIT
     return _XtInitialize (name, classname, options, num_options, argc, argv);
 }
 
@@ -60,6 +85,7 @@ String *argv_in_out, * fallback_resources;
 ArgList args_in;
 {
     extern Widget _XtAppInitialize();
+    VENDORINIT
     return _XtAppInitialize (app_context_return, application_class, options,
 			     num_options, argc_in_out, argv_in_out, 
 			     fallback_resources, args_in, num_args_in);
@@ -88,12 +114,15 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
     va_list	var;
     extern Widget _XtVaAppInitialize();
 
-    Va_start(var, fallback_resources);    
+    VENDORINIT
+    Va_start(var, fallback_resources);
     return _XtVaAppInitialize(app_context_return, application_class, options,
 			      num_options, argc_in_out, argv_in_out,
 			      fallback_resources, var);
 }
 
 #else
+
 static int dummy;			/* avoid warning from ranlib */
-#endif /* SUNSHLIB */
+
+#endif /* SUNSHLIB or AIXSHLIB */
