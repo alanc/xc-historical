@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.138 89/09/19 09:21:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.139 89/09/21 09:12:58 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -97,7 +97,7 @@ static XrmOptionDescRec opTable[] = {
  * _XtGetHostname - emulates gethostname() on non-bsd systems.
  */
 
-int _XtGetHostname (buf, maxlen)
+static int _XtGetHostname (buf, maxlen)
     char *buf;
     int maxlen;
 {
