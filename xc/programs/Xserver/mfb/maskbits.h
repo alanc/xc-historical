@@ -22,16 +22,17 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.25 91/07/05 10:56:24 rws Exp $ */
+/* $XConsortium: maskbits.h,v 1.26 91/07/09 19:44:24 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
 
-extern unsigned int starttab[];
-extern unsigned int endtab[];
-extern unsigned partmasks[32][32];
-extern unsigned int rmask[];
-extern unsigned int mask[];
+#define PixelType unsigned int
+extern PixelType starttab[];
+extern PixelType endtab[];
+extern PixelType partmasks[32][32];
+extern PixelType rmask[];
+extern PixelType mask[];
 
 
 /* the following notes use the following conventions:
@@ -220,11 +221,11 @@ getshiftedleftbits(psrc, offset, w, dst)
 #endif
 
 #if (BITMAP_BIT_ORDER == MSBFirst)	/* pc/rt, 680x0 */
-#define SCRLEFT(lw, n)	SHL((unsigned int)(lw),(n))
-#define SCRRIGHT(lw, n)	SHR((unsigned int)(lw),(n))
+#define SCRLEFT(lw, n)	SHL((PixelType)(lw),(n))
+#define SCRRIGHT(lw, n)	SHR((PixelType)(lw),(n))
 #else					/* vax, intel */
-#define SCRLEFT(lw, n)	SHR((unsigned int)(lw),(n))
-#define SCRRIGHT(lw, n)	SHL((unsigned int)(lw),(n))
+#define SCRLEFT(lw, n)	SHR((PixelType)(lw),(n))
+#define SCRRIGHT(lw, n)	SHL((PixelType)(lw),(n))
 #endif
 
 #define DoRRop(alu, src, dst) \
@@ -328,7 +329,7 @@ getshiftedleftbits(psrc, offset, w, dst)
     \
     if (n <= 0) \
     { \
-	register int tmpmask; \
+	register PixelType tmpmask; \
 	maskpartialbits((x), (w), tmpmask); \
 	*(pdst) = (*(pdst) & ~tmpmask) | \
 		(SCRRIGHT(src, x) & tmpmask); \
@@ -370,7 +371,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 #define u_putbitsrop(src, x, w, pdst, rop) \
 {\
-	register int t1, t2; \
+	register PixelType t1, t2; \
 	register int n = (x)+(w)-32; \
 	\
 	t1 = SCRRIGHT((src), (x)); \
@@ -378,7 +379,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 	\
     if (n <= 0) \
     { \
-	register int tmpmask; \
+	register PixelType tmpmask; \
 	\
 	maskpartialbits((x), (w), tmpmask); \
 	*(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
@@ -401,7 +402,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define putbitsrop(src, x, w, pdst, rop) \
 { \
-  register int _tmp, _tmp2; \
+  register PixelType _tmp, _tmp2; \
   FASTGETBITS(pdst, x, w, _tmp); \
   _tmp2 = SCRRIGHT(src, 32-(w)); \
   DoRop(_tmp, rop, _tmp2, _tmp) \
@@ -409,7 +410,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 }
 #define putbitsrrop(src, x, w, pdst, rop) \
 { \
-  register int _tmp, _tmp2; \
+  register PixelType _tmp, _tmp2; \
  \
   FASTGETBITS(pdst, x, w, _tmp); \
   _tmp2 = SCRRIGHT(src, 32-(w)); \
@@ -420,14 +421,14 @@ getshiftedleftbits(psrc, offset, w, dst)
 #else
 #define putbitsrop(src, x, w, pdst, rop) \
 { \
-  register int _tmp; \
+  register PixelType _tmp; \
   FASTGETBITS(pdst, x, w, _tmp); \
   DoRop(_tmp, rop, src, _tmp) \
   FASTPUTBITS(_tmp, x, w, pdst); \
 }
 #define putbitsrrop(src, x, w, pdst, rop) \
 { \
-  register int _tmp; \
+  register PixelType _tmp; \
  \
   FASTGETBITS(pdst, x, w, _tmp); \
   _tmp= DoRRop(rop, src, _tmp); \
@@ -444,7 +445,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 #ifndef putbitsrrop
 #define putbitsrrop(src, x, w, pdst, rop) \
 {\
-	register int t1, t2; \
+	register PixelType t1, t2; \
 	register int n = (x)+(w)-32; \
 	\
 	t1 = SCRRIGHT((src), (x)); \
@@ -452,7 +453,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 	\
     if (n <= 0) \
     { \
-	register int tmpmask; \
+	register PixelType tmpmask; \
 	\
 	maskpartialbits((x), (w), tmpmask); \
 	*(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
@@ -469,14 +470,14 @@ getshiftedleftbits(psrc, offset, w, dst)
 #endif
 
 #if GETLEFTBITS_ALIGNMENT == 1
-#define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
+#define getleftbits(psrc, w, dst)	dst = *((PixelType *) psrc)
 #endif /* GETLEFTBITS_ALIGNMENT == 1 */
 
 #if GETLEFTBITS_ALIGNMENT == 2
 #define getleftbits(psrc, w, dst) \
     { \
 	if ( ((int)(psrc)) & 0x01 ) \
-		getbits( ((unsigned int *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
+		getbits( ((PixelType *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
 	else \
 		getbits(psrc, 0, w, dst);
     }
@@ -488,7 +489,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 	int off, off_b; \
 	off_b = (off = ( ((int)(psrc)) & 0x03)) << 3; \
 	getbits( \
-		(unsigned int *)( ((char *)(psrc)) - off), \
+		(PixelType *)( ((char *)(psrc)) - off), \
 		(off_b), (w), (dst) \
 	       ); \
     }
@@ -518,14 +519,14 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 #define getandputbits(psrc, srcbit, dstbit, width, pdst) \
 { \
-    register unsigned int _tmpbits; \
+    register PixelType _tmpbits; \
     FASTGETBITS(psrc, srcbit, width, _tmpbits); \
     u_FASTPUT(_tmpbits, dstbit, width, pdst); \
 }
 
 #define getandputrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-  register unsigned int _tmpsrc, _tmpdst; \
+  register PixelType _tmpsrc, _tmpdst; \
   FASTGETBITS(pdst, dstbit, width, _tmpdst); \
   FASTGETBITS(psrc, srcbit, width, _tmpsrc); \
   DoRop(_tmpdst, rop, _tmpsrc, _tmpdst); \
@@ -534,7 +535,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 #define getandputrrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-  register unsigned int _tmpsrc, _tmpdst; \
+  register PixelType _tmpsrc, _tmpdst; \
   FASTGETBITS(pdst, dstbit, width, _tmpdst); \
   FASTGETBITS(psrc, srcbit, width, _tmpsrc); \
   _tmpdst = DoRRop(rop, _tmpsrc, _tmpdst); \
@@ -562,21 +563,21 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 #define getandputbits(psrc, srcbit, dstbit, width, pdst) \
 { \
-    register unsigned int _tmpbits; \
+    register PixelType _tmpbits; \
     getbits(psrc, srcbit, width, _tmpbits); \
     putbits(_tmpbits, dstbit, width, pdst); \
 }
 
 #define getandputrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-    register unsigned int _tmpbits; \
+    register PixelType _tmpbits; \
     getbits(psrc, srcbit, width, _tmpbits) \
     putbitsrop(_tmpbits, dstbit, width, pdst, rop) \
 }
 
 #define getandputrrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-    register unsigned int _tmpbits; \
+    register PixelType _tmpbits; \
     getbits(psrc, srcbit, width, _tmpbits) \
     putbitsrrop(_tmpbits, dstbit, width, pdst, rop) \
 }
@@ -585,7 +586,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define getandputbits0(psrc, sbindex, width, pdst) \
 {			/* unroll the whole damn thing to see how it * behaves */ \
     register int          _flag = 32 - (sbindex); \
-    register unsigned int _src; \
+    register PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \
     if ((width) > _flag) \
@@ -598,7 +599,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define getandputrop0(psrc, sbindex, width, pdst, rop) \
 {			\
     register int          _flag = 32 - (sbindex); \
-    register unsigned int _src; \
+    register PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \
     if ((width) > _flag) \
@@ -611,7 +612,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define getandputrrop0(psrc, sbindex, width, pdst, rop) \
 { \
     int             _flag = 32 - (sbindex); \
-    register unsigned int _src; \
+    register PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \
     if ((width) > _flag) \
