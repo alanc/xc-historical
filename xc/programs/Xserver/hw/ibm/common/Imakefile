@@ -4,9 +4,7 @@ SRCS =		ibmColor.c \
 		ibmInit.c \
 		ibmIO.c \
 		ibmKeybd.c \
-		ibmMalloc.c \
 		ibmMouse.c \
-		ibmPlumber.c \
 		ibmQuery.c \
 		ibmScreen.c \
 		ibmSave.c \
@@ -24,13 +22,7 @@ LIBOBJS =	ibmColor.o\
 
 OTHROBJS =
 
-ALLOCSRCS =	ibmMalloc.c \
-		ibmPlumber.c
-
-ALLOCOBJS =	ibmMalloc.o \
-		ibmPlumber.o
-
-IMMEDIATE_OBJS = $(OTHROBJS) $(LIBOBJS) $(ALLOCOBJS)
+IMMEDIATE_OBJS = $(OTHROBJS) $(LIBOBJS)
 
 INFOOBJS =	ibmDate.o
 
