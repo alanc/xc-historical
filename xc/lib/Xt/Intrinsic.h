@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.58 87/11/01 16:42:53 swick Locked $
+* $Header: Intrinsic.h,v 1.59 87/11/11 16:01:28 swick Locked $
 */
 
 /*
@@ -942,7 +942,6 @@ extern void _XtPopup(); /* widget, grab_kind, spring_loaded */
 extern void XtInheritRealize ();
 extern void XtInheritResize ();
 extern void XtInheritExpose ();
-extern void XtInheritSetValues ();
 extern void XtInheritAcceptFocus ();
 extern XtGeometryResult XtInheritGeometryManager();
 extern void XtInheritChangeManaged ();
