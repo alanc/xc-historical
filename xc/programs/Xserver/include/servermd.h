@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.22 87/09/07 18:53:24 toddb Locked $ */
+/* $Header: servermd.h,v 1.23 87/09/11 09:59:54 toddb Locked $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -55,6 +55,22 @@ SOFTWARE.
  * compiler what kind of padding you want because its defines are
  * kept separate from this.  See server/include/fonts.h for how
  * GLYPHPADBYTES is used.
+ *
+ * Along with this, you should choose an appropriate value for
+ * GETLEFTBITS_ALIGNMENT, which is used in ddx/mfb/maskbits.h.  This
+ * constant choses what kind of memory references are guarenteed during
+ * font access; either 1, 2 or 4, for byte, word or longword access,
+ * respectively.  For instance, if you have decided to to have
+ * GLYPHPADBYTES == 4, then it is pointless for you to have a
+ * GETLEFTBITS_ALIGNMENT > 1, because the padding of the fonts has already
+ * guarenteed you that your fonts are longword aligned.  On the other
+ * hand, even if you have chosen GLYPHPADBYTES == 1 to save space, you may
+ * also decide that the computing involved in aligning the pointer is more
+ * costly than an odd-address access; you choose GETLEFTBITS_ALIGNMENT == 1.
+ * 
+ * XXX: this code has changed since beta test and only GLYPHPADBYTES == 4
+ * has been tested, hence all machines have this same value.
+ *
  */
 
 #ifdef vax
@@ -62,6 +78,7 @@ SOFTWARE.
 #define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the VAX only */
 #define BITMAP_BIT_ORDER	LSBFirst
 #define	GLYPHPADBYTES		1
+#define GETLEFTBITS_ALIGNMENT	4
 
 #else
 # ifdef sun
@@ -69,6 +86,7 @@ SOFTWARE.
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the SUN only */
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		4
+#define GETLEFTBITS_ALIGNMENT	4
 
 # else
 #  ifdef apollo
@@ -76,6 +94,7 @@ SOFTWARE.
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the Apollo only*/
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		2
+#define GETLEFTBITS_ALIGNMENT	4
 
 #  else
 #   ifdef ibm032
@@ -83,7 +102,12 @@ SOFTWARE.
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the RT only*/
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		1
+#define GETLEFTBITS_ALIGNMENT	4
 /* ibm pcc doesn't understand pragmas. */
+
+#   else
+
+#include "this file must be tuned for your machine!!!"
 
 #   endif
 #  endif
