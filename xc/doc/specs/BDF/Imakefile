@@ -1,0 +1,9 @@
+SRCS = ../util/macros.t bdf.ms
+
+all: bdf
+
+bdf: $(SRCS)
+	 $(TROFF) $(MSMACROS) $(SRCS) 2> index.raw > bdf.PS
+
+clean::
+	$(RM) index.raw bdf.PS
