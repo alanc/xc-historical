@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.16 88/01/08 07:37:59 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.17 88/01/21 10:27:57 swick Locked $";
 #endif lint
 
 /*
@@ -221,6 +221,9 @@ static void Realize( w, valueMask, attributes )
    XSetWindowAttributes *attributes;
 {
    TextWidget ctx = (TextWidget)w;
+
+   *valueMask |= CWBitGravity;
+   attributes->bit_gravity = NorthWestGravity;
 
    XtCreateWindow( w, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		   *valueMask, attributes);
