@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.23 91/01/09 17:31:13 rws Exp $
+ * $XConsortium: buttons.c,v 1.24 91/01/10 22:22:00 gildea Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -494,43 +494,6 @@ Widget parent;
   }
 }
 
-/*	Function Name: CreateManpageName
- *	Description: Creates the manual page name for a given item.
- *	Arguments: entry - the entry to convert.
- *	Returns: the manual page properly allocated.
- */
-
-/*
- * If the filename is foo.3     - Create an entry of the form:  foo
- * If the filename is foo.3X11  - Create an entry of the form:  foo(X11)
- * IF the filename is a.out.1   - Create an entry of the form:  a.out
- */
-
-char *
-CreateManpageName(entry)
-char * entry;
-{
-  char * cp;
-  char page[BUFSIZ];
-
-  ParseEntry(entry, NULL, NULL, page);
-
-  if ( (cp = rindex(page, '.')) != NULL)
-    if ( (int)strlen(cp) > 2 ) {
-      *cp++ = '(';
-      while( (cp[1] != '\0') ) {
-	*cp = *(cp + 1); 
-	cp++;
-      }
-      *cp++ = ')';
-      *cp = '\0';
-    }
-    else
-      *cp = '\0';  
-  
-  return(StrAlloc(page));
-}
-
 /*	Function Name: CreateList
  *	Description: this function prints a label in the directory list
  *	Arguments: section - the manual section.
@@ -548,7 +511,8 @@ CreateList(section)
 
   for (current = ret_list, count = 0 ; count < manual[section].nentries ;
        count++, current++)
-    *current = CreateManpageName(manual[section].entries[count]);
+    *current = CreateManpageName(manual[section].entries[count], section,
+				 manual[section].flags);
  
   *current = NULL;		/* NULL terminate the list. */
   return(ret_list);
