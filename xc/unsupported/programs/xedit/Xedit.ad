@@ -1,0 +1,19 @@
+Xedit*input:				TRUE
+
+Xedit*filename*preferredPaneSize:	525
+Xedit*editWindow*preferredPaneSize:	500
+
+Xedit*labelWindow*justify:		center
+Xedit*labelWindow*label:		no file yet
+
+Xedit*quit.label:			Quit
+Xedit*save.label:			Save
+Xedit*load.label:			Load
+
+Xedit*buttons*orientation:		horizontal
+Xedit*buttons*showGrip:			False
+
+Xedit*messageWindow*preferredPaneSize:	50
+Xedit*Paned*Text*allowResize:		True
+
+Xedit*bc_label*label:			Use Control-S and Control-R to Search.
