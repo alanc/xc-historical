@@ -1,4 +1,4 @@
-.\" $XConsortium: CH2,v 1.19 94/05/01 19:20:55 gildea Exp $
+.\" $XConsortium: CH2,v 1.20 94/05/01 20:21:11 gildea Exp $
 .bp
 \&
 .sp 1
@@ -216,16 +216,6 @@ Widgets will ignore any argument that they do not understand.
 .LP
 The following resources are retrieved from the argument list
 or from the resource database by all of the Athena widgets:
-.\" .TB is used throughout this manual.  Don't know what it is,
-.\" but I'll guess "table bold".
-.\" Note that I've also used it to set the size, rather than
-.\" have (incorrect) commands sprinkled throughout the document.
-.\"   -gildea April 1994
-.de TB
-.B
-.ps 9
-.vs 11
-..
 .TS H
 lw(1.5i) lw(1i) lw(1i) lw(2i).
 _

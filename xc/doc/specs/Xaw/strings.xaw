@@ -1,4 +1,4 @@
-.\" $XConsortium: strings.xaw,v 1.23 94/04/14 18:18:14 kaleb Exp $
+.\" $XConsortium: strings.xaw,v 1.24 94/05/01 19:21:16 gildea Exp $
 \" These macros are not associated with any widget.
 
 .de Rs \" Resource Conversion message
@@ -701,4 +701,14 @@ formats, use of this resource forces application code to be cognisant as to
 which of the two is being used.  Application programming is simplified when
 use of this resource is avoided.\fP
 .So \\$1
+..
+.\" .TB is used throughout this manual.  Don't know what it is,
+.\" but I'll guess "table bold".
+.\" Note that I've also used it to set the size, rather than
+.\" have (incorrect) commands sprinkled throughout the document.
+.\"   -gildea April 1994
+.de TB
+.B
+.ps 9
+.vs 11
 ..
