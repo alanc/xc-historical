@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.32 89/12/07 11:41:31 rws Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.33 89/12/07 15:51:30 jim Exp $";
 #endif
  
 #ifdef TCPCONN
@@ -69,8 +69,18 @@ extern unsigned long inet_makeaddr();
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #endif
+#ifdef STREAMSCONN
+#include <X11/Xstreams.h>
+extern char _XsTypeOfStream[];
+#endif /* STREAMSCONN */
+
  
 static int local_xerror();
+static char *get_hostname();
+#ifdef STREAMSCONN
+static char *get_streams_hostname();
+static Bool get_streams_address();
+#endif
 
 #ifdef SIGNALRETURNSINT
 typedef int signal_t;
@@ -112,16 +122,16 @@ static int XFamily(af)
 }
 #endif /* NEEDSOCKETS */
 
+Display *dpy;
 
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	Display *dpy;
 	char host[256];
 	register char *arg;
 	int display, i, w, nhosts;
-	char *hostname, *get_hostname();
+	char *hostname;
 	XHostAddress *list;
 	Bool enabled = False;
 #ifdef DNETCONN
@@ -158,8 +168,12 @@ main(argc, argv)
 		      if (hostname) {
 			  printf ("%s", hostname);
 		      } else {
+#ifdef STREAMSCONN
+			  print_streams_hostnames (list, nhosts);
+#else
 			  printf ("<unknown address in family %d>",
 				  list[i].family);
+#endif
 		      }
 		      if (nameserver_timedout)
 			printf("\t(no nameserver response within %d seconds)\n",
@@ -264,6 +278,18 @@ int change_host (dpy, name, add)
     return 1;
   }
 #endif /* DNETCONN */
+#ifdef STREAMSCONN
+  if (get_streams_address (name, &ha)) {
+    if (add) {
+	XAddHost (dpy, &ha);
+	printf ("%s %s\n", name, add_msg);
+    } else {
+	XRemoveHost (dpy, &ha);
+	printf ("%s %s\n", name, remove_msg);
+    }
+    return 1;
+  }
+#endif
 #ifdef NEEDSOCKETS
   /*
    * First see if inet_addr() can grok the name; if so, then use it.
@@ -327,11 +353,11 @@ int change_host (dpy, name, add)
 
 jmp_buf env;
 
-char *get_hostname (ha)
-XHostAddress *ha;
+static char *get_hostname (ha)
+    XHostAddress *ha;
 {
-  struct hostent *hp = NULL;
 #ifdef TCPCONN
+  struct hostent *hp = NULL;
   char *inet_ntoa();
 #endif
 #ifdef DNETCONN
@@ -369,8 +395,11 @@ XHostAddress *ha;
     return(nodeaddr);
   }
 #endif
-
+#ifdef STREAMSCONN
+  return get_streams_hostname (ha);
+#else
   return (NULL);
+#endif
 }
 
 static signal_t nameserver_lost()
@@ -407,3 +436,151 @@ static int local_xerror (dpy, rep)
     XmuPrintDefaultErrorMessage (dpy, rep, stderr);
     return 0;
 }
+
+
+#ifdef STREAMSCONN
+static Bool get_streams_address (name, hap) 
+    char *name;
+    XHostAddress *hap;
+{
+  static char buf[128];
+  char	 *ptr, *packet, *retptr, pktbuf[128];
+  int	 n;
+
+
+  if(_XsTypeOfStream[ConnectionNumber(dpy)]  == X_LOCAL_STREAM)
+  {
+	hap->family = FamilyUname;
+	hap->length = strlen(name) +1;
+	hap->address = name;
+	return True;
+  }
+
+  packet = pktbuf;
+  ptr = &packet[2*sizeof(int)];
+
+  n = strlen(name) + 1;
+  ((xHostEntry *) ptr)->length = n;
+  ptr += sizeof(xHostEntry);
+  memcpy(ptr, name, n);
+
+  retptr = packet;
+   *(int *) retptr = n+sizeof(xHostEntry);
+   *(int *) (retptr + sizeof(int)) = 1;
+
+  if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNameToNetAddr, &packet, &retptr, NULL)<0)
+           {
+		return True;
+           }
+   hap->family = ((xHostEntry *) retptr)->family;
+   hap->length = ((xHostEntry *) retptr)->length;
+   hap->address = buf;
+  
+   if(hap->length > 127)
+   	hap->length = 127;
+
+   ptr = &retptr[sizeof(xHostEntry)];
+   ptr[hap->length] = '\0';
+   memcpy(buf, ptr, hap->length +1);
+   return True;
+}
+
+
+print_streams_hostnames (list, nhosts)
+    XHostAddress *list;
+    int nhosts;
+{
+    int  m, n, i;
+    char *ptr, *retptr;
+    static char *packet = NULL;
+    static int buflen = 0;
+ 
+    if(buflen == 0)
+		buflen = 512;
+
+    m = 2 * sizeof(int);
+    packet = (char *) malloc (buflen);
+    if(packet == NULL){
+	fprintf(stderr, "Cannot malloc %d chars \n", buflen);
+	return;
+	}
+    ptr = &packet[m];
+
+    for (i=0; i< nhosts; i++)
+    {
+	n = (((list[i].length + 3) >> 2) << 2) + sizeof(xHostEntry);
+	m += n;
+	if(m > buflen){
+		buflen = m + 128;
+		packet = (char *) realloc(packet, buflen);
+    		if(packet == NULL){
+			fprintf(stderr, "Cannot realloc %d chars \n", buflen);
+			return;
+			}
+		}
+	ptr = &packet[m - n];
+	((xHostEntry *) ptr)->length  = list[i].length;
+	((xHostEntry *) ptr)->family  = list[i].family;
+	ptr += sizeof(xHostEntry);
+	bcopy (list[i].address, ptr, list[i].length);
+    }
+    *(int *) packet = m;
+    *(int *) (packet + sizeof(int)) = nhosts;
+    if(_XsTypeOfStream[ConnectionNumber(dpy)] != X_LOCAL_STREAM){
+    	n =
+ GetNetworkInfo (ConnectionNumber(dpy), NULL,ConvertNetAddrToName, &packet, &retptr, &nhosts);
+	if( n <= 0){
+		fprintf(stderr, "No reply from the nameserver\n");
+		return;
+		}
+	}
+  	else retptr = &packet[2*sizeof(int)];
+     m = 0;
+     for(i=0; i<nhosts; i++){
+	ptr = &retptr[m];
+     	n = ((xHostEntry *) ptr)->length;
+	n = (((n + 3) >> 2) << 2) + sizeof(xHostEntry);
+	m += n;
+     	ptr += sizeof(xHostEntry);
+ 	fprintf(stderr, "%s\n", ptr);	
+ 	}		
+     free(retptr);
+}
+
+char *get_streams_hostname (ha)
+    XHostAddress *ha;
+{
+  static char buf[128];
+  char	 *ptr, *packet, pktbuf[128], *retptr;
+  int	 n;
+
+   if(_XsTypeOfStream[ConnectionNumber(dpy)] == X_LOCAL_STREAM || ha->family == FamilyUname){
+	return(ha->address);
+  }
+
+  packet = pktbuf;
+  ptr = &packet[2*sizeof(int)];
+
+  ((xHostEntry *) ptr)->length = ha->length;
+  ((xHostEntry *) ptr)->family = ha->family;
+
+  ptr += sizeof(xHostEntry);
+  memcpy(ptr, ha->address, ha->length);
+
+   retptr = packet;
+   *(int *) retptr = ha->length+sizeof(xHostEntry);
+   *(int *) (retptr + sizeof(int)) = 1;
+
+  if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNetAddrToName, &packet, &retptr, NULL)<0)
+           {
+		ha->address[ha->length] = '\0';
+		return(ha->address);
+           }
+   ptr = &retptr[sizeof(xHostEntry)];
+   ptr[((xHostEntry *) retptr)->length] = '\0';
+
+   memcpy(buf, ptr, ((xHostEntry *) retptr)->length +1);
+   return(buf);
+}
+
+#endif /* STREAMSCONN */
