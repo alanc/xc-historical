@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.23 91/02/17 12:05:43 dave Exp $
+ * $XConsortium: xclipboard.c,v 1.24 91/07/22 14:35:16 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -56,6 +56,9 @@ typedef struct _Clip {
 } ClipRec, *ClipPtr;
 
 extern char *malloc ();
+
+static Atom wm_delete_window;
+static Atom wm_protocols;
 
 static long TextLength (w)
     Widget  w;
@@ -382,6 +385,27 @@ FailContinue (w, ev, parms, np)
     XtPopdown (failDialogShell);
 }
 
+/*ARGSUSED*/
+static void WMProtocols(w, ev, params, n)
+    Widget	w;
+    XEvent	*ev;
+    String	*params;
+    Cardinal	*n;
+{
+    if (ev->type == ClientMessage &&
+	ev->xclient.message_type == wm_protocols &&
+	ev->xclient.data.l[0] == wm_delete_window) {
+	while (w && !XtIsShell(w))
+	    w = XtParent(w);
+	if (w == top)
+	    Quit(w, ev, params, n);
+	else if (w == fileDialogShell)
+	    CancelSaveFile(w, ev, params, n);
+	else if (w == failDialogShell)
+	    FailContinue(w, ev, params, n);
+    }
+}
+
 /* ARGUSED */
 static void
 NewCurrentClip (w, ev, parms, np)
@@ -441,9 +465,8 @@ XtActionsRec xclipboard_actions[] = {
     "CancelSave", CancelSaveFile,
     "FailContinue", FailContinue,
     "Quit", Quit,
+    "WMProtocols", WMProtocols
 };
-
-static Atom wm_delete_window;
 
 static XrmOptionDescRec table[] = {
     {"-w",	    "wrap",		XrmoptionNoArg,  "on"},
@@ -479,8 +502,7 @@ int *format;
     
     XtOwnSelection(top, ClipboardAtom, CurrentTime,
 		   ConvertSelection, LoseSelection, NULL);
-
-    XtFree(value);
+    XFree(value);
 }
 
 static Boolean ConvertSelection(w, selection, target,
@@ -636,8 +658,6 @@ char **argv;
     ClipboardAtom = XA_CLIPBOARD(XtDisplay(top));
     if (XGetSelectionOwner(XtDisplay(top), ManagerAtom))
 	XtError("another clipboard is already running\n");
-    XtOverrideTranslations
-	(top, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
     parent = XtCreateManagedWidget("form", formWidgetClass, top, NULL, ZERO);
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
@@ -689,6 +709,11 @@ char **argv;
 		       ConvertSelection, LoseSelection, NULL);
     }
     wm_delete_window = XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW", False);
+    wm_protocols = XInternAtom(XtDisplay(top), "WM_PROTOCOLS", False);
     (void) XSetWMProtocols(XtDisplay(top), XtWindow(top), &wm_delete_window,1);
+    (void) XSetWMProtocols(XtDisplay(top), XtWindow(fileDialogShell),
+			   &wm_delete_window,1);
+    (void) XSetWMProtocols(XtDisplay(top), XtWindow(failDialogShell),
+			   &wm_delete_window,1);
     XtAppMainLoop(xtcontext);
 }
