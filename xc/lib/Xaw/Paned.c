@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.9 89/08/24 18:46:10 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.10 89/09/19 16:30:27 kit Exp $";
 #endif /* lint */
 
 
@@ -748,6 +748,14 @@ GC gc;
     Widget *childP;
     int on_loc, off_loc;
     unsigned int on_size, off_size;
+
+/*
+ * This is an optomization.  Do not paint the internal borders if
+ * they are the same color as the background.
+ */
+
+    if (pw->core.background_pixel == pw->paned.internal_bp)
+	return;
 
     off_loc = 0; 
     off_size = (unsigned int) PaneSize( (Widget) pw, !IsVert(pw) );
