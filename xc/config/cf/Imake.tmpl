@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.104 91/03/25 10:08:44 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.105 91/03/25 10:17:04 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -714,8 +714,12 @@ XCOMM site-specific configuration parameters - edit site.def to change
        ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
+#if AlternateUsrLibDir && !defined(UseInstalled)
+           LDLIBS = -L$(USRLIBDIR) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
+#else
            LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
-#if AlternateUsrLibDir
+#endif
+#if AlternateUsrLibDir && defined(UseInstalled)
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(LOCAL_LDFLAGS) -L$(USRLIBDIR)
 #else
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(LOCAL_LDFLAGS)
