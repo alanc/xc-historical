@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.57 94/02/02 08:42:18 gildea Exp $
+ * $XConsortium: dm.h,v 1.58 94/02/10 19:04:51 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -302,6 +302,13 @@ extern struct protoDisplay	*FindProtoDisplay (),
 				*NewProtoDisplay ();
 
 extern char		*localHostname ();
+
+/* in xdmcp.c */
+extern void init_session_id();
+extern void registerHostname();
+
+/* in dm.c */
+extern void StartDisplay();
 
 /*
  * CloseOnFork flags
