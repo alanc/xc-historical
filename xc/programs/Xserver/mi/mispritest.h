@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.8 89/10/03 19:45:31 keith Exp $ */
+/* $XConsortium: mispritest.h,v 5.9 90/01/06 13:42:47 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -50,6 +50,8 @@ typedef struct {
     BoxRec	    saved;
     Bool	    isUp;
     Bool	    shouldBeUp;
+    WindowPtr	    pCacheWin;
+    Bool	    isInCacheWin;
     Bool	    checkPixels;
     xColorItem	    colors[2];
     ColormapPtr	    pInstalledMap;

@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.27 90/01/11 14:49:54 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.28 90/01/13 17:33:32 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -157,10 +157,18 @@ static GCOps miSpriteGCOps = {
     
 #define GC_CHECK(pWin)						    \
     (pScreenPriv->isUp &&					    \
-	(pWin)->drawable.x < pScreenPriv->saved.x2 &&		    \
-	pScreenPriv->saved.x1 < (pWin)->drawable.x + (int) (pWin)->drawable.width && \
-	(pWin)->drawable.y < pScreenPriv->saved.y2 &&		    \
-	pScreenPriv->saved.y1 < (pWin)->drawable.y + (int) (pWin)->drawable.height)
+        (pScreenPriv->pCacheWin == pWin ?			    \
+	    pScreenPriv->isInCacheWin : (			    \
+	    ((int) (pScreenPriv->pCacheWin = (pWin))) ,		    \
+	    (pScreenPriv->isInCacheWin =			    \
+		(pWin)->drawable.x < pScreenPriv->saved.x2 &&	    \
+		pScreenPriv->saved.x1 < (pWin)->drawable.x +	    \
+				    (int) (pWin)->drawable.width && \
+		(pWin)->drawable.y < pScreenPriv->saved.y2 &&	    \
+		pScreenPriv->saved.y1 < (pWin)->drawable.y +	    \
+				    (int) (pWin)->drawable.height &&\
+		(pWin)->drawable.pScreen->RectIn (&(pWin)->borderClip, \
+			&pScreenPriv->saved) != rgnOUT))))
 
 #define GC_OP_PROLOGUE(pGC) { \
     (pGC)->funcs = pGCPrivate->wrapFuncs; \
@@ -254,6 +262,8 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pPriv->y = 0;
     pPriv->isUp = FALSE;
     pPriv->shouldBeUp = FALSE;
+    pPriv->pCacheWin = NullWindow;
+    pPriv->isInCacheWin = FALSE;
     pPriv->checkPixels = TRUE;
     pPriv->pInstalledMap = NULL;
     pPriv->pColormap = NULL;
@@ -1822,6 +1832,7 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
     }
     pScreenPriv->x = x;
     pScreenPriv->y = y;
+    pScreenPriv->pCacheWin = NullWindow;
     if (pScreenPriv->checkPixels || pScreenPriv->pCursor != pCursor)
     {
 	pScreenPriv->pCursor = pCursor;
@@ -1917,6 +1928,7 @@ miSpriteRemoveCursor (pScreen)
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     pScreenPriv->isUp = FALSE;
+    pScreenPriv->pCacheWin = NullWindow;
     if (!(*pScreenPriv->funcs->RestoreUnderCursor) (pScreen,
 					 pScreenPriv->saved.x1,
 					 pScreenPriv->saved.y1,
