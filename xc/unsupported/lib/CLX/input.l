@@ -664,8 +664,8 @@
 		      :send-event-p (logbitp 7 (card8-get 0))
 		      ,@get-code))))
 
-       (defun ,put-function (display &key ,@(nreverse keywords) &allow-other-keys)
-	 ,(when (member :sequence keywords)
+       (defun ,put-function (display &key ,@(setq keywords (nreverse keywords)) &allow-other-keys)
+	 ,(when (member 'sequence keywords)
 	    `(unless sequence (setq sequence (display-request-number display))))
 	 (writing-buffer-send (display :sizes ,put-sizes
 				       :index (index+ (buffer-boffset display) 12))
