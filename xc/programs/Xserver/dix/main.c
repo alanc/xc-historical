@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.154 89/03/30 08:55:27 rws Exp $ */
+/* $XConsortium: main.c,v 1.155 89/04/05 10:58:05 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -183,6 +183,7 @@ main(argc, argv)
 	    serverClient->numSaved = 0;
 	    serverClient->saveSet = (pointer *)NULL;
 	    serverClient->index = 0;
+	    serverClient->clientAsMask = (Mask)0;
 	}
         clients[0] = serverClient;
         currentMaxClients = 1;
