@@ -2,6 +2,7 @@
 		       Using and Specifying X Resources
 
 				  Jim Fulton
+                               MIT X Consortium
 
 	     Copyright 1988 Massachusetts Institute of Technology
 
