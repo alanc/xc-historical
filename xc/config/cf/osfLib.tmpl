@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.7 92/05/08 09:02:55 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.1 92/06/28 17:44:43 rws Exp $
 
 /*
  * OSF/1 shared library template
@@ -7,42 +7,41 @@ XCOMM $XConsortium: osfLib.tmpl,v 1.7 92/05/08 09:02:55 rws Exp $
 #ifndef SharedXlibRev
 #define SharedXlibRev 5.0
 #endif
-#define SharedXlibReqs -lc
 #ifndef SharedOldXRev
 #define SharedOldXRev 5.0
 #endif
-#define SharedOldXReqs $(XLIBONLY) -lc
+#define SharedOldXReqs $(XLIBONLY)
 #ifndef SharedXtRev
 #define SharedXtRev 5.0
 #endif
-#define SharedXtReqs $(XLIBONLY) -lc
+#define SharedXtReqs $(XLIBONLY)
 #ifndef SharedXawRev
 #define SharedXawRev 5.0
 #endif
-#define SharedXawReqs $(XMULIB) $(XTOOLLIB) $(XLIB) -lc
+#define SharedXawReqs $(XMULIB) $(XTOOLLIB) $(XLIB)
 #ifndef SharedXmuRev
 #define SharedXmuRev 5.0
 #endif
-#define SharedXmuReqs $(XTOOLLIB) $(XLIB) -lc
+#define SharedXmuReqs $(XTOOLLIB) $(XLIB)
 #ifndef SharedXextRev
 #define SharedXextRev 5.0
-#define SharedXextReqs $(XLIBONLY) -lc
+#define SharedXextReqs $(XLIBONLY)
 #endif
 #ifndef SharedXinputRev
 #define SharedXinputRev 5.0
 #endif
-#define SharedXinputReqs $(XLIB) -lc
+#define SharedXinputReqs $(XLIB)
 #ifndef SharedXTestRev
 #define SharedXTestRev 1.0
 #endif
-#define SharedXTestReqs $(XLIB) -lc
+#define SharedXTestReqs $(XLIB)
 #ifndef SharedXTrapRev
 #define SharedXTrapRev 1.0
 #endif
 #ifndef SharedPexRev
 #define SharedPexRev 1.0
 #endif
-#define SharedPexReqs $(XLIBONLY) -lc
+#define SharedPexReqs $(XLIBONLY)
 
 SHLIBLDFLAGS = SharedLibraryLoadFlags
 PICFLAGS = PositionIndependentCFlags
