@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.105 91/01/29 19:30:09 keith Exp $
+ * $XConsortium: XOpenDis.c,v 11.106 91/02/01 16:34:31 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -181,7 +181,7 @@ Display *XOpenDisplay (display)
 	int conn_auth_namelen, conn_auth_datalen;
 	int conn_family;
 	unsigned long mask;
-	extern int _XSendClientPrefix();
+	extern Bool _XSendClientPrefix();
 	extern int _XConnectDisplay();
 	extern char *getenv();
 	extern XID _XAllocID();
@@ -360,7 +360,13 @@ Display *XOpenDisplay (display)
 	client.minorVersion = X_PROTOCOL_REVISION;
 	client.nbytesAuthProto = conn_auth_namelen;
 	client.nbytesAuthString = conn_auth_datalen;
-	_XSendClientPrefix (dpy, &client, conn_auth_name, conn_auth_data);
+	if (!_XSendClientPrefix(dpy, &client, conn_auth_name, conn_auth_data))
+	{
+	    _XDisconnectDisplay (dpy->fd);
+	    Xfree ((char *)dpy);
+	    UnlockMutex(&lock);
+	    return(NULL);
+	}	    
 	if (authptr) XauDisposeAuth (authptr);
 /*
  * Now see if connection was accepted...
@@ -381,6 +387,7 @@ Display *XOpenDisplay (display)
 	setuplength = prefix.length << 2;
 	if ( (u.setup = (xConnSetup *)
 	      (setup =  Xmalloc ((unsigned) setuplength))) == NULL) {
+		_XDisconnectDisplay (dpy->fd);
 		Xfree ((char *)dpy);
 		UnlockMutex(&lock);
 		return(NULL);
@@ -398,6 +405,7 @@ Display *XOpenDisplay (display)
 		(void) fwrite (u.failure, sizeof(char),
 			(int)prefix.lengthReason, stderr);
 		(void) fwrite ("\r\n", sizeof(char), 2, stderr);
+		_XDisconnectDisplay (dpy->fd);
 		Xfree ((char *)dpy);
 		Xfree (setup);
 		UnlockMutex(&lock);
@@ -638,8 +646,7 @@ Display *XOpenDisplay (display)
  * Make sure default screen is legal.
  */
 	if (iscreen >= dpy->nscreens) {
-	    _XDisconnectDisplay (dpy->fd);
-	    _XFreeDisplayStructure (dpy);
+	    OutOfMemory(dpy, (char *) NULL);
 	    UnlockMutex(&lock);
 	    return(NULL);
 	}
