@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.179 93/09/20 17:42:28 hersh Exp $
+ * $XConsortium: charproc.c,v 1.180 94/04/17 20:23:25 hersh Exp gildea $
  */
 
 /*
@@ -98,6 +98,9 @@ static void VTallocbuf();
 static int finput();
 static void dotext();
 static void WriteText();
+static void ToAlternate();
+static void FromAlternate();
+static void update_font_info();
 
 static void bitset(), bitclr();
     
@@ -1542,7 +1545,7 @@ WriteText(screen, str, len, flags)
  */
 ansi_modes(termw, func)
     XtermWidget	termw;
-    int		(*func)();
+    void (*func)();
 {
 	register int	i;
 
@@ -2011,8 +2014,9 @@ unparsefputs (s, fd)
 
 static void SwitchBufs();
 
+static void
 ToAlternate(screen)
-register TScreen *screen;
+    register TScreen *screen;
 {
 	extern ScrnBuf Allocate();
 
@@ -2026,8 +2030,9 @@ register TScreen *screen;
 	update_altscreen();
 }
 
+static void
 FromAlternate(screen)
-register TScreen *screen;
+    register TScreen *screen;
 {
 	if(!screen->alternate)
 		return;
@@ -3107,10 +3112,15 @@ int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     }
 
     if (!(nfs = XLoadQueryFont (screen->display, nfontname))) goto bad;
+    if (nfs->ascent + nfs->descent == 0)
+	goto bad;		/* can't use a 0-height font */
 
     if (!(bfontname && 
 	  (bfs = XLoadQueryFont (screen->display, bfontname))))
       bfs = nfs;
+    else
+	if (bfs->ascent + bfs->descent == 0)
+	    goto bad;		/* can't use a 0-height font */
 
     mask = (GCFont | GCForeground | GCBackground | GCGraphicsExposures |
 	    GCFunction);
@@ -3187,11 +3197,12 @@ int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     if (new_reverseGC && new_reverseGC != new_reverseboldGC)
       XtReleaseGC ((Widget) term, new_reverseboldGC);
     if (nfs) XFreeFont (screen->display, nfs);
-    if (nfs && nfs != bfs) XFreeFont (screen->display, bfs);
+    if (bfs && nfs != bfs) XFreeFont (screen->display, bfs);
     return 0;
 }
 
 
+static void
 update_font_info (screen, doresize)
     TScreen *screen;
     Bool doresize;
