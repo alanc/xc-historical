@@ -1,4 +1,4 @@
-/* $XConsortium: ClDisplay.c,v 11.29 94/01/11 12:35:01 mor Exp $ */
+/* $XConsortium: ClDisplay.c,v 11.30 94/04/17 20:18:50 mor Exp gildea $ */
 
 /*
 
@@ -31,6 +31,8 @@ from the X Consortium.
 */
 
 #include "Xlibint.h"
+
+extern void _XFreeDisplayStructure();
 
 /* 
  * XCloseDisplay - XSync the connection to the X Server, close the connection,
