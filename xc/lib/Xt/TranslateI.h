@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.9 89/09/28 11:59:17 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.10 89/09/29 12:11:15 swick Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -113,7 +113,6 @@ typedef struct _TranslationData {
 } TranslationData;
 
 #define _XtEventTimerEventType ((unsigned long)-1L)
-#define _XtTimerEventType ((unsigned long)-2L)
 #define StandardMask (ShiftMask | LockMask)
 #define KeysymModMask		(1<<27) /* private to TM */
 #define AnyButtonMask		(1<<28)	/* private to TM */
