@@ -1,6 +1,16 @@
 #!/bin/sh
+# $XConsortium$
 
-exec > $HOME/.xsession-errors 2>&1
+# redirect errors to a file in user's home directory if we can
+for errfile in "$HOME/.xsession-errors" "/tmp/xses-$USER"
+do
+	if ( cp /dev/null "$errfile" 2> /dev/null )
+	then
+		chmod 600 "$errfile"
+		exec > "$errfile" 2>&1
+		break
+	fi
+done
 
 case $# in
 1)
