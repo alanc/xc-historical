@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.59 91/03/13 14:05:41 gildea Exp $ */
+/* $XConsortium: button.c,v 1.60 91/03/13 17:36:51 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -57,7 +57,6 @@ extern char *malloc();
 #define	Coordinate(r,c)		((r) * (term->screen.max_col+1) + (c))
 
 extern char *xterm_name;
-extern Bogus();
 
 static void PointToRowCol();
 static void SelectionReceived();
