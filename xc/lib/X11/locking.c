@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.21 93/12/27 15:53:38 gildea Exp $
+ * $XConsortium: locking.c,v 1.22 94/01/15 10:09:31 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -71,8 +71,6 @@ static xthread_t _Xthread_self()
 }
 
 static LockInfoRec global_lock;
-
-LockInfoPtr _Xglobal_lock = &global_lock;
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XLockMutex(lip,file,line)
@@ -505,8 +503,9 @@ static int _XInitDisplayLock(dpy)
 
 Status XInitThreads()
 {
-    if (_Xglobal_lock->lock)
+    if (_Xglobal_lock)
 	return 1;
+    _Xglobal_lock = &global_lock;
 #ifdef xthread_init
     xthread_init();		/* return value? */
 #endif
