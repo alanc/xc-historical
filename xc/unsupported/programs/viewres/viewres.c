@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.8 90/02/02 15:16:40 jim Exp $
+ * $XConsortium: viewres.c,v 1.9 90/02/02 15:56:28 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,13 +29,27 @@
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Command.h>
+#include <X11/Xaw/Paned.h>
+#include <X11/Xaw/Box.h>
+#include <X11/Xmu/Converters.h>
+#include <X11/Xmu/CharSet.h>
 #include "Tree.h"
 #include <X11/Core.h>
 #include "defs.h"
 
+char *ProgramName;
+
 extern WidgetNode widget_list[];
 extern int nwidgets;
 
+static char *help_message[] = {
+    "-lbw number      label border width in pixels",
+    "-lw number       line width in pixels",
+    "-top name        object to be top of tree",
+    "-variable        show variable name instead of class name",
+    "-vertical        list the tree vertically",
+    NULL
+};
 
 static XrmOptionDescRec Options[] = {
     { "-lbw", "*Tree*Command*BorderWidth", XrmoptionSepArg, (caddr_t) NULL },
@@ -48,19 +62,29 @@ static XrmOptionDescRec Options[] = {
 static struct _appresources {
     char *top_object;
     Boolean show_variable;
+    char *label_variable;
+    char *label_class;
+    char *label_horizontal;
+    char *label_vertical;
 } Appresources;
-
 
 static XtResource Resources[] = {
 #define offset(field) XtOffset(struct _appresources *, field)
-  { "topObject", "TopObject", XtRString, sizeof(char *),
-      offset(top_object), XtRString, (caddr_t) "object" },
-  { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
-      offset(show_variable), XtRImmediate, (caddr_t) FALSE },
+    { "topObject", "TopObject", XtRString, sizeof(char *),
+	offset(top_object), XtRString, (caddr_t) "object" },
+    { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
+	offset(show_variable), XtRImmediate, (caddr_t) FALSE },
+    { "labelVariable", "LabelVariable", XtRString, sizeof(String),
+	offset(label_variable), XtRString, (caddr_t) "Variable Names" },
+    { "labelClass", "LabelClass", XtRString, sizeof(String),
+	offset(label_class), XtRString, (caddr_t) "Class Names" },
+    { "labelHorizontal", "LabelHorizontal", XtRString, sizeof(String),
+	offset(label_horizontal), XtRString, (caddr_t) "Horizontal Layout" },
+    { "labelVertical", "LabelVertical", XtRString, sizeof(String),
+	offset(label_vertical), XtRString, (caddr_t) "Vertical Layout" },
 #undef offset
 };
 
-char *ProgramName;
 
 static char *fallback_resources[] = {
     "*Viewport.allowHoriz: true",
@@ -69,22 +93,205 @@ static char *fallback_resources[] = {
     NULL
 };
 
-usage ()
+static void do_quit(), do_set_labeltype(), do_set_orientation();
+static void set_labeltype_button(), set_orientation_button();
+static void build_tree(), set_node_labels();
+
+static XtActionsRec viewres_actions[] = {
+    { "Quit", do_quit },
+    { "SetLabelType", do_set_labeltype },
+    { "SetOrientation", do_set_orientation },
+};
+
+static Widget treeWidget;
+static Widget quitButton, labeltypeButton, orientationButton;
+static WidgetNode *topnode;
+
+
+/*
+ * routines
+ */
+static void usage ()
 {
-    fprintf(stderr, "usage:  %s [-options...]\n", ProgramName);
+    char **cpp;
+    fprintf (stderr, "usage:  %s [-options...]\n", ProgramName);
     fprintf(stderr, "\nwhere options include:\n");
-    fprintf(stderr,
-	    "    -lbw number      label border width in pixels\n");
-    fprintf(stderr,
-	    "    -lw number       line width in pixels\n");
-    fprintf(stderr,
-	    "    -top name        object to be top of tree\n");
-    fprintf(stderr,
-	    "    -variable        show variable name instead of class name\n");
-    fprintf(stderr,
-	    "    -vertical        list the tree vertically\n");
+    for (cpp = help_message; *cpp; cpp++) {
+	fprintf (stderr, "%s\n", *cpp);
+    }
     fprintf(stderr, "\n");
     exit (1);
+}
+
+
+main (argc, argv)
+    int argc;
+    char **argv;
+{
+    int i;
+    Widget toplevel, pane, box, viewport;
+    XtAppContext app_con;
+
+    ProgramName = argv[0];
+
+    toplevel = XtAppInitialize (&app_con, "Viewres", 
+				Options, XtNumber (Options),
+				&argc, argv, fallback_resources,
+				NULL, ZERO);
+    if (argc != 1) usage ();
+    XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
+
+    XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
+			       Resources, XtNumber(Resources), NULL, ZERO);
+    initialize_nodes (widget_list, nwidgets);
+
+    topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
+
+    pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
+				  NULL, ZERO);
+
+    box = XtCreateManagedWidget ("buttonbox", boxWidgetClass, pane,
+				 NULL, ZERO);
+    quitButton = XtCreateManagedWidget ("quit", commandWidgetClass, box,
+					NULL, ZERO);
+    labeltypeButton = XtCreateManagedWidget ("labeltype", commandWidgetClass,
+					     box, NULL, ZERO);
+
+    orientationButton = XtCreateManagedWidget ("orientation",
+					       commandWidgetClass, box,
+					       NULL, ZERO);
+
+    viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass,
+				      pane, NULL, 0);
+    treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass, viewport,
+					NULL, 0);
+
+    set_labeltype_button ();
+    set_orientation_button ();
+    build_tree (topnode, treeWidget, NULL);
+    XtRealizeWidget (toplevel);
+    XtAppMainLoop (app_con);
+}
+
+
+
+static void do_quit (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    exit (0);
+}
+
+
+static void do_set_labeltype (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    char *cmd;
+    Arg args[1];
+    Boolean oldvar = Appresources.show_variable;
+
+    switch (*num_params) {
+      case 0:
+	cmd = "toggle";
+	break;
+      case 1:
+	cmd = params[0];
+	break;
+      default:
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+
+    if (XmuCompareISOLatin1 (cmd, "toggle") == 0) {
+	Appresources.show_variable = !Appresources.show_variable;
+    } else if (XmuCompareISOLatin1 (cmd, "variable") == 0) {
+	Appresources.show_variable = TRUE;
+    } else if (XmuCompareISOLatin1 (cmd, "class") == 0) {
+	Appresources.show_variable = FALSE;
+    } else {
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+
+    if (Appresources.show_variable != oldvar) {
+	set_labeltype_button ();
+	set_node_labels (topnode, 0);
+    }
+    return;
+}
+
+
+static void do_set_orientation (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    char *cmd;
+    Arg args[1];
+    Bool oldhoriz, horiz;
+    XtOrientation orient;
+
+    switch (*num_params) {
+      case 0:
+	cmd = "toggle";
+	break;
+      case 1:
+	cmd = params[0];
+	break;
+      default:
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+
+    XtSetArg (args[0], XtNorientation, &orient);
+    XtGetValues (treeWidget, args, ONE);
+    oldhoriz = (Bool) (orient == XtorientHorizontal);
+
+    if (XmuCompareISOLatin1 (cmd, "toggle") == 0) {
+	horiz = !oldhoriz;
+    } else if (XmuCompareISOLatin1 (cmd, "horizontal") == 0) {
+	horiz = True;
+    } else if (XmuCompareISOLatin1 (cmd, "vertical") == 0) {
+	horiz = False;
+    } else {
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+
+    if (horiz != oldhoriz) {
+	set_orientation_button (horiz);
+	XtSetArg (args[0], XtNorientation,
+		  horiz ? XtorientHorizontal : XtorientVertical);
+ 	XtSetValues (treeWidget, args, ONE);
+    }
+    return;
+}
+
+static void set_labeltype_button ()
+{
+    Arg args[1];
+
+    XtSetArg (args[0], XtNlabel, 
+	      (Appresources.show_variable ? Appresources.label_class
+	       : Appresources.label_variable));
+    XtSetValues (labeltypeButton, args, ONE);
+}
+
+static void set_orientation_button (horiz)
+    Bool horiz;
+{
+    Arg args[1];
+
+    XtSetArg (args[0], XtNlabel, 
+	      (horiz ? Appresources.label_vertical
+	       : Appresources.label_horizontal));
+    XtSetValues (orientationButton, args, ONE);
 }
 
 
@@ -104,6 +311,7 @@ static void build_tree (node, tree, super)
 				  node->label : WnClassname(node))); n++;
 
     w = XtCreateManagedWidget (node->label, commandWidgetClass, tree, args, n);
+    node->data = (char *) w;
 
     /*
      * recursively build the rest of the tree
@@ -113,36 +321,25 @@ static void build_tree (node, tree, super)
     }
 }
 
-main (argc, argv)
-    int argc;
-    char **argv;
+
+static void set_node_labels (node, depth)
+    WidgetNode *node;
+    int depth;
 {
-    int i;
-    WidgetNode *topnode;
-    Widget toplevel, viewport, tree;
-    XtAppContext app_con;
+    Arg args[1];
+    Widget w = (Widget) node->data;
+    WidgetNode *child;
 
-    ProgramName = argv[0];
+    if (!node) return;
+    XtSetArg (args[0], XtNlabel, (Appresources.show_variable ?
+				  node->label : WnClassname(node)));
+    XtSetValues (w, args, ONE);
 
-    toplevel = XtAppInitialize (&app_con, "Viewres", 
-				Options, XtNumber (Options),
-				&argc, argv, fallback_resources,
-				NULL, ZERO);
-    if (argc != 1) usage ();
+    for (child = node->children; child; child = child->siblings) {
+	set_node_labels (child, depth + 1);
+    }
 
-    XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
-			       Resources, XtNumber(Resources), NULL, ZERO);
-    initialize_nodes (widget_list, nwidgets);
-
-    topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
-
-    viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass,
-				      toplevel, NULL, 0);
-    tree = XtCreateManagedWidget ("tree", treeWidgetClass, viewport,
-				  NULL, 0);
-
-    build_tree (topnode, tree, NULL);
-    XtRealizeWidget (toplevel);
-    XtAppMainLoop (app_con);
+    if (depth == 0) {
+	XawTreeForceLayout (treeWidget);
+    }
 }
-
