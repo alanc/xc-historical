@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.21 88/07/07 11:03:58 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.22 88/09/06 16:10:15 jim Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -832,15 +832,9 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
      * the top of the rectangles of both regions and ybot clips the bottoms.
      */
     if (reg1->extents.y1 < reg2->extents.y1)
-    {
 	ybot = reg1->extents.y1;
-	ytop = reg2->extents.y1;
-    }
     else
-    {
 	ybot = reg2->extents.y1;
-	ytop = reg1->extents.y1;
-    }
     
     /*
      * prevBand serves to mark the start of the previous band so rectangles
@@ -1613,7 +1607,6 @@ XRectInRegion(region, rx, ry, rwidth, rheight)
 	     * will be uncovered in that band. partIn will have been set true
 	     * by now...
 	     */
-	    partOut = TRUE;
 	    break;
 	}
 
