@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.19 89/01/13 19:44:18 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.20 89/02/09 18:58:30 kit Exp $";
 #endif lint
 
 
@@ -53,6 +53,7 @@ static XtResource resources[] = {
 };
 
 static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget();
+static void Destroy();
 static Boolean SetValues();
 
 DialogClassRec dialogClassRec = {
@@ -75,7 +76,7 @@ DialogClassRec dialogClassRec = {
     /* compress_exposure  */    TRUE,
     /* compress_enterleave*/    TRUE,
     /* visible_interest   */    FALSE,
-    /* destroy            */    NULL,
+    /* destroy            */    Destroy,
     /* resize             */    XtInheritResize,
     /* expose             */    XtInheritExpose,
     /* set_values         */    SetValues,
@@ -116,7 +117,6 @@ DialogClassRec dialogClassRec = {
 
 WidgetClass dialogWidgetClass = (WidgetClass)&dialogClassRec;
 
-
 /* ARGSUSED */
 static void Initialize(request, new)
 Widget request, new;
@@ -125,7 +125,10 @@ Widget request, new;
     static Arg arglist[5];
     Cardinal num_args = 0;
 
-    XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
+    if (dw->dialog.label != NULL) {
+        dw->dialog.label = XtNewString(dw->dialog.label);
+	XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
+    }
     XtSetArg(arglist[num_args], XtNborderWidth, 0); num_args++;
 
     dw->dialog.labelW = XtCreateManagedWidget( "label", labelWidgetClass,
@@ -137,6 +140,14 @@ Widget request, new;
         dw->dialog.valueW = NULL;
 }
 
+static void Destroy(w)
+Widget w;
+{
+    DialogWidget dw = (DialogWidget) w;
+
+    if (dw->dialog.label != NULL) XtFree(dw->dialog.label);
+    if (dw->dialog.value != NULL) XtFree(dw->dialog.value);
+}
 
 /* ARGSUSED */
 static void ConstraintInitialize(request, new)
@@ -186,15 +197,17 @@ Widget current, request, new;
         w->dialog.max_length = old->dialog.max_length;
     }
 
-    if ( (w->dialog.label != old->dialog.label) ||
-	 (w->dialog.label != NULL && old->dialog.label != NULL &&
-	  strcmp(w->dialog.label, old->dialog.label)) ) {
+    if ( w->dialog.label != old->dialog.label ) {
+        if (old->dialog.label != NULL) 
+	    XtFree(old->dialog.label);
+	if (w->dialog.label != NULL)
+	    w->dialog.label = XtNewString( w->dialog.label);
         num_args = 0;
         XtSetArg( args[num_args], XtNlabel, w->dialog.label ); num_args++;
 	XtSetValues( w->dialog.labelW, args, num_args );
     }
 
-    if ( (w->dialog.value != old->dialog.value) ) {
+    if ( w->dialog.value != old->dialog.value ) {
         if (w->dialog.value == NULL) { /* only get here if it
 					  wasn't NULL before. */
 	    XtDestroyWidget(old->dialog.valueW);
