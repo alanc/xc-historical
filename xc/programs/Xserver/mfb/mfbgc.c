@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.116 87/12/29 18:19:12 rws Exp $ */
+/* $Header: mfbgc.c,v 1.117 88/01/16 17:37:22 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -615,13 +615,16 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    }
 	}
 	/* beyond this point, opaqueStippled ==> fg != bg */
-	else if ((pGC->fillStyle==FillTiled && pGC->tile->width!=32) ||
-		 (pGC->fillStyle==FillOpaqueStippled && pGC->stipple->width!=32)
+	else if ((pGC->fillStyle==FillTiled &&
+		  (!pGC->tile || pGC->tile->width!=32)) ||
+		 (pGC->fillStyle==FillOpaqueStippled &&
+		  (!pGC->stipple || pGC->stipple->width!=32))
 		)
 	{
 	    pGC->FillSpans = mfbUnnaturalTileFS;
 	}
-	else if (pGC->fillStyle == FillStippled && pGC->stipple->width != 32)
+	else if (pGC->fillStyle == FillStippled &&
+		 (!pGC->stipple || pGC->stipple->width != 32))
 	{
 	    pGC->FillSpans = mfbUnnaturalStippleFS;
 	}
@@ -651,8 +654,10 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	/* the rectangle code doesn't deal with opaque stipples that
 	   are two colors -- we can fool it for fg==bg, though
 	 */
-	if (((pGC->fillStyle == FillTiled) && (pGC->tile->width!=32)) ||
-	    ((pGC->fillStyle == FillStippled) && (pGC->stipple->width!=32)) ||
+	if (((pGC->fillStyle == FillTiled) &&
+	      (!pGC->tile || pGC->tile->width!=32)) ||
+	    ((pGC->fillStyle == FillStippled) &&
+	     (!pGC->stipple || pGC->stipple->width!=32)) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
 	     (pGC->fgPixel != pGC->bgPixel))
 	   )
