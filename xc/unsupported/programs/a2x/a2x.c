@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.23 92/03/24 12:29:58 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.24 92/03/24 14:50:43 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -606,6 +606,33 @@ bscount(s, len)
 }
 
 void
+mark_controls(s, len)
+    char *s;
+    int len;
+{
+    Bool in_seq = False;
+
+    for ( ; --len >= 0; s++) {
+	if (*s != control_char)
+	    continue;
+	if (in_seq)
+	    *s = control_end;
+	else
+	    switch (s[1]) {
+	    case '\003': /* control c */
+	    case '\004': /* control d */
+	    case '\007':
+	    case '\015': /* control m */
+	    case '\021': /* control q */
+	    case '\023': /* control s */
+		break;
+	    default:
+		in_seq = True;
+	    }
+    }
+}
+
+void
 get_undofile(undofile)
     char *undofile;
 {
@@ -626,10 +653,15 @@ get_undofile(undofile)
 	i = 0;
 	if (!(up[idx].seq = parse_string(buf, &i, &up[idx].seq_len, ':')) ||
 	    !(up[idx].undo = parse_string(buf, &i, &up[idx].undo_len, '\n'))) {
-	    fprintf(stderr, "bad key sequence on line %d\n", idx + 1);
+	    fprintf(stderr, "bad sequence, line %d\n", idx + 1);
 	    continue;
 	}
+	mark_controls(up[idx].seq, up[idx].seq_len);
 	up[idx].bscount = bscount(up[idx].seq, up[idx].seq_len);
+	if (!bscount) {
+	    fprintf(stderr, "bad sequence, no bs count, line %d\n", idx + 1);
+	    continue;
+	}
 	idx++;
 	up = (undo *)realloc((char *)up, (idx + 1) * sizeof(undo));
     }
