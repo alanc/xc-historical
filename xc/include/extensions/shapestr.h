@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shapestr.h,v 1.4 89/03/31 13:16:49 keith Exp $ */
+/* $XConsortium: shapestr.h,v 1.5 89/04/22 12:03:34 rws Exp $ */
 
 /*
  * Protocol requests constants and alignment values
@@ -133,8 +133,8 @@ typedef struct {
 	CARD8	unused;			/* not used */
 	CARD16	sequenceNumber B16;
 	CARD32	length B32;		/* 0 */
-	CARD8	boundingShaped B16;	/* window has bounding shape */
-	CARD8	clipShaped B16;		/* window has clip shape */
+	CARD8	boundingShaped;		/* window has bounding shape */
+	CARD8	clipShaped;		/* window has clip shape */
 	CARD16	unused1 B16;
 	INT16	xBoundingShape B16;	/* extents of bounding shape */
 	INT16	yBoundingShape B16;
