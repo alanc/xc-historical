@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.4 93/09/05 21:09:11 mor Exp $ */
+/* $XConsortium: process.c,v 1.5 93/09/08 20:03:12 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1522,6 +1522,52 @@ IceReplyWaitInfo 	*replyWait;
 
 
 
+void
+ProcessPingReply (iceConn)
+
+IceConn iceConn;
+
+{
+    if (iceConn->ping_waits)
+    {
+	_IcePingWait *next = iceConn->ping_waits->next;
+	
+	(*iceConn->ping_waits->ping_reply_cb) (iceConn,
+	    iceConn->ping_waits->client_data);
+
+	free ((char *) iceConn->ping_waits);
+	iceConn->ping_waits = next;
+    }
+    else
+    {
+	_IceErrorBadState (iceConn, ICE_PingReply, IceCanContinue);
+    }
+}
+
+
+
+void
+ProcessWantToClose (iceConn)
+
+IceConn iceConn;
+
+{
+    ;
+}
+
+
+
+void
+ProcessNoClose (iceConn)
+
+IceConn iceConn;
+
+{
+    ;
+}
+
+
+
 Bool
 _IceProcessCoreMessage (iceConn, opcode, swap, replyWait)
 
@@ -1582,28 +1628,17 @@ IceReplyWaitInfo *replyWait;
 
     case ICE_PingReply:
 
-	if (iceConn->ping_waits)
-	{
-	    _IcePingWait *next = iceConn->ping_waits->next;
-
-	    (*iceConn->ping_waits->ping_reply_cb) (iceConn,
-		iceConn->ping_waits->client_data);
-
-	    free ((char *) iceConn->ping_waits);
-	    iceConn->ping_waits = next;
-	}
-	else
-	{
-	    _IceErrorBadState (iceConn, ICE_PingReply, IceCanContinue);
-	}
+	ProcessPingReply (iceConn);
 	break;
 
     case ICE_WantToClose:
 
+	ProcessWantToClose (iceConn);
 	break;
 
     case ICE_NoClose:
 
+	ProcessNoClose (iceConn);
 	break;
 
     default:
