@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.4 89/11/21 13:44:37 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.5 89/12/06 20:44:32 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -620,8 +620,8 @@ typedef struct {
  */
 
 typedef struct {
-        Time            time;
-        unsigned int    *data;
+        Time   time;
+        int    *data;
 } XDeviceTimeCoord;
 
 
