@@ -1,7 +1,7 @@
-.\" $XConsortium: Xsun.man,v 1.12 89/12/21 10:06:58 rws Exp $
+.\" $XConsortium: Xsun.man,v 1.13 91/07/27 16:20:10 rws Exp $
 .TH XSUN 1 "Release 5" "X Version 11"
 .SH NAME
-Xsun \- Sun server for X Version 11
+Xsun, XsunMono \- Sun server for X Version 11
 .SH SYNOPSIS
 .B Xsun
 [ option ] ...
@@ -11,6 +11,12 @@ is the server for Version 11 of the X window system on Sun hardware.
 It will normally be started by the \fIxdm(1)\fP daemon or by a script
 that runs the program \fIxinit(1)\fP.
 .SH CONFIGURATIONS
+.PP
+.I Xsun
+supports both color and monochrome screens.
+.I XsunMono
+is configured to support only monochrome screens,
+for low-end systems with limited memory.
 .PP
 If a specific framebuffer device file isn't
 specified on the command line with the \fI\-dev\fP switch, the server will look
