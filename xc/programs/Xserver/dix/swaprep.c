@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.23 87/08/14 22:34:48 toddb Locked $ */
+/* $Header: swaprep.c,v 2.7 87/08/20 15:40:52 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -50,8 +50,8 @@ void SwapVisual(), SwapConnSetup(), SwapWinRoot(), WriteToClient();
 void
 Swap32Write(pClient, size, pbuf)
     ClientPtr	pClient;
-    int		size;
-    long	*pbuf;
+    int		size;  /* in bytes */
+    register long *pbuf;
 {
     int		n, i;
 
@@ -66,22 +66,81 @@ Swap32Write(pClient, size, pbuf)
 }
 
 void
-Swap16Write(pClient, size, pbuf)
+CopySwap32Write(pClient, size, pbuf)
     ClientPtr	pClient;
-    int		size;
+    int		size;   /* in bytes */
+    long	*pbuf;
+{
+    int bufsize = size;
+    long *pbufT;
+    register long *from, *to, *fromLast, *toLast;
+    
+    /* Allocate as big a buffer as we can... */
+    while ((pbufT = (long *) ALLOCATE_LOCAL(bufsize)) == NULL)
+        bufsize >>= 1;
+    
+    /* convert lengths from # of bytes to # of longs */
+    size >>= 2;
+    bufsize >>= 2;
+
+    from = pbuf;
+    fromLast = from + size;
+    while (from < fromLast) {
+	int nbytes;
+        to = pbufT;
+        toLast = to + min (bufsize, fromLast - from);
+        nbytes = (toLast - to) << 2;
+        while (to < toLast) {
+            /* can't write "cpswapl(*from++, *to++)" because cpswapl is a macro
+	       that evaulates its args more than once */
+	    cpswapl(*from, *to);
+            from++;
+            to++;
+	    }
+	WriteToClient (pClient, nbytes, (char *) pbufT);
+	}
+
+    DEALLOCATE_LOCAL ((char *) pbufT);
+}
+
+void
+CopySwap16Write(pClient, size, pbuf)
+    ClientPtr	pClient;
+    int		size;   /* in bytes */
     short	*pbuf;
 {
-    int		n, i;
-
+    int bufsize = size;
+    short *pbufT;
+    register short *from, *to, *fromLast, *toLast;
+    
+    /* Allocate as big a buffer as we can... */
+    while ((pbufT = (short *) ALLOCATE_LOCAL(bufsize)) == NULL)
+        bufsize >>= 1;
+    
+    /* convert lengths from # of bytes to # of shorts */
     size >>= 1;
-    for(i = 0; i < size; i++)
-    /* brackets are mandatory here, because "swaps" macro expands
-       to several statements */
-    {
-	swaps(&pbuf[i], n);
-    }
-    WriteToClient(pClient, size << 1, (char *) pbuf);
+    bufsize >>= 1;
+
+    from = pbuf;
+    fromLast = from + size;
+    while (from < fromLast) {
+	int nbytes;
+        to = pbufT;
+        toLast = to + min (bufsize, fromLast - from);
+        nbytes = (toLast - to) << 1;
+        while (to < toLast) {
+            /* can't write "cpswaps(*from++, *to++)" because cpswaps is a macro
+	       that evaulates its args more than once */
+	    cpswaps(*from, *to);
+            from++;
+            to++;
+	    }
+	WriteToClient (pClient, nbytes, (char *) pbufT);
+	}
+
+    DEALLOCATE_LOCAL ((char *) pbufT);
 }
+
 
 /* Extra-small reply */
 void
@@ -145,7 +204,6 @@ SQueryTreeReply(pClient, size, pRep)
     int n;
 
     swaps(&pRep->sequenceNumber, n);
-    pClient->pSwapReplyFunc = Swap32Write;
     swapl(&pRep->length, n);
     swapl(&pRep->root, n);
     swapl(&pRep->parent, n);
@@ -195,18 +253,6 @@ SGetPropertyReply(pClient, size, pRep)
     swapl(&pRep->bytesAfter, n);
     swapl(&pRep->nItems, n);
     WriteToClient(pClient, size, (char *) pRep);
-    switch(pRep->format)
-    {
-	case 8:
-            pClient->pSwapReplyFunc = WriteToClient;
-	    break;
-	case 16:
-            pClient->pSwapReplyFunc = Swap16Write;
-	    break;
-	case 32:
-            pClient->pSwapReplyFunc = Swap32Write;
-	    break;
-    }
 }
 
 void
@@ -221,7 +267,6 @@ SListPropertiesReply(pClient, size, pRep)
     swapl(&pRep->length, n);
     swaps(&pRep->nProperties, n);
     WriteToClient(pClient, size, (char *) pRep);
-    pClient->pSwapReplyFunc = Swap32Write;
 }
 
 void
@@ -288,7 +333,6 @@ SGetMotionEventsReply(pClient, size, pRep)
     swapl(&pRep->length, n);
     swapl(&pRep->nEvents, n);
     WriteToClient(pClient, size, (char *) pRep);
-    pClient->pSwapReplyFunc = SwapTimeCoordWrite;
 }
 
 void
@@ -382,8 +426,6 @@ SListFontsWithInfoReply(pClient, size, pRep)
     int				size;
     xListFontsWithInfoReply	*pRep;
 {
-    int n;
-
     SwapFont((xQueryFontReply *)pRep);
     WriteToClient(pClient, size, (char *) pRep);
 }
@@ -429,7 +471,6 @@ SListInstalledColormapsReply(pClient, size, pRep)
     swapl(&pRep->length, n);
     swaps(&pRep->nColormaps, n);
     WriteToClient(pClient, size, (char *) pRep);
-    pClient->pSwapReplyFunc = Swap32Write;
 }
 
 void
@@ -480,7 +521,6 @@ SAllocColorCellsReply(pClient, size, pRep)
     swaps(&pRep->nPixels, n);
     swaps(&pRep->nMasks, n);
     WriteToClient(pClient, size, (char *) pRep);
-    pClient->pSwapReplyFunc = Swap32Write;
 }
 
 
@@ -499,7 +539,6 @@ SAllocColorPlanesReply(pClient, size, pRep)
     swapl(&pRep->greenMask, n);
     swapl(&pRep->blueMask, n);
     WriteToClient(pClient, size, (char *) pRep);
-    pClient->pSwapReplyFunc = Swap32Write;
 }
 
 void
@@ -533,7 +572,6 @@ SQueryColorsReply(pClient, size, pRep)
     swapl(&pRep->length, n);
     swaps(&pRep->nColors, n);
     WriteToClient(pClient, size, (char *) pRep);
-    pClient->pSwapReplyFunc = SQColorsExtend;
 }
 
 void
@@ -592,7 +630,6 @@ SGetKeyboardMappingReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     WriteToClient(pClient, size, (char *) pRep);
-    pClient->pSwapReplyFunc = Swap32Write;
 }
 
 void
@@ -666,13 +703,22 @@ SGetScreenSaverReply(pClient, size, pRep)
     WriteToClient(pClient, size, (char *) pRep);
 }
 
-/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 void
-SLHostsExtend(pClient, size, pRep)
+SLHostsExtend(pClient, size, buf)
     ClientPtr		pClient;
     int			size;
-    xListHostsReply	*pRep;
+    char		*buf;
 {
+    char *bufT = buf;
+    char *endbuf = buf + size;
+    while (bufT < endbuf) {
+	xHostEntry *host = (xHostEntry *) bufT;
+	int len = host->length;
+        int n;
+	swaps (&host->length, n);
+	bufT += sizeof (xHostEntry) + (((len + 3) >> 2) << 2);
+	}
+    WriteToClient (pClient, size, buf);
 }
 
 void
@@ -687,23 +733,20 @@ SListHostsReply(pClient, size, pRep)
     swapl(&pRep->length, n);
     swaps(&pRep->nHosts, n);
     WriteToClient(pClient, size, (char *) pRep);
-    pClient->pSwapReplyFunc = SLHostsExtend;
 }
 
 
 
 void
-SErrorEvent(pClient, size, pRep)
-    ClientPtr	pClient;
-    int		size;
-    xError	*pRep;
+SErrorEvent(from, to)
+    xError	*from, *to;
 {
-    int n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->resourceID, n);
-    swaps(&pRep->minorCode, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    to->type = X_Error;
+    to->errorCode = from->errorCode;
+    cpswaps(from->sequenceNumber, to->sequenceNumber);
+    cpswapl(from->resourceID, to->resourceID);
+    cpswaps(from->minorCode, to->minorCode);
+    to->majorCode = from->majorCode;
 }
 
 void
@@ -1248,6 +1291,5 @@ WriteSConnSetupPrefix(pClient, pcsp)
     cpswaps(pcsp->minorVersion, cspT.minorVersion);
     cpswaps(pcsp->length, cspT.length);
     WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
-    pClient->pSwapReplyFunc = WriteSConnectionInfo;
 }
 
