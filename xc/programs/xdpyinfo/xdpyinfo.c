@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.24 92/09/07 14:22:57 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.25 92/10/16 14:19:27 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -195,10 +195,17 @@ print_extension_info (dpy)
 
     if (extlist) {
 	register int i;
+	int opcode, event, error;
 
 	qsort(extlist, n, sizeof(char *), StrCmp);
 	for (i = 0; i < n; i++) {
-	    printf ("    %s\n", extlist[i]);
+	    XQueryExtension(dpy, extlist[i], &opcode, &event, &error);
+	    printf ("    %s  (opcode: %d", extlist[i], opcode);
+	    if (event)
+		printf (", base event: %d", event);
+	    if (error)
+		printf (", base error: %d", error);
+	    printf(")\n");
 	}
 	/* do not free, Xlib can depend on contents being unaltered */
 	/* XFreeExtensionList (extlist); */
