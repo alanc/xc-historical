@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.37 90/03/30 11:57:02 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.38 90/05/18 15:26:38 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2519,21 +2519,18 @@ miBSFree(pWin)
     miBSWindowPtr 	pBackingStore;
     register ScreenPtr	pScreen = pWin->drawable.pScreen;
 
-    if (pWin->backStorage)
+    pBackingStore = (miBSWindowPtr)pWin->backStorage;
+    if (pBackingStore)
     {
-	pBackingStore = (miBSWindowPtr)pWin->backStorage;
-	if (pBackingStore)
-	{
-	    miDestroyBSPixmap (pWin);
-    
-	    (* pScreen->RegionUninit)(&pBackingStore->SavedRegion);
+	miDestroyBSPixmap (pWin);
 
-	    if (pBackingStore->backgroundState == BackgroundPixmap)
-		(*pScreen->DestroyPixmap) (pBackingStore->background.pixmap);
+	(* pScreen->RegionUninit)(&pBackingStore->SavedRegion);
 
-	    xfree(pBackingStore);
-	    pWin->backStorage = NULL;
-	}
+	if (pBackingStore->backgroundState == BackgroundPixmap)
+	    (*pScreen->DestroyPixmap) (pBackingStore->background.pixmap);
+
+	xfree(pBackingStore);
+	pWin->backStorage = NULL;
     }
 }
 
