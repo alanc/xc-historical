@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.57 91/02/19 22:32:34 rws Exp $
+ * $XConsortium: Xrm.c,v 1.58 91/04/23 18:38:18 rws Exp $
  */
 
 /***********************************************************
@@ -2417,6 +2417,7 @@ void XrmDestroyDatabase(db)
 	    else
 		DestroyNTable(table);
 	}
+	(*db->methods->destroy)(db->mbstate);
 	Xfree((char *)db);
     }
 }
