@@ -22,6 +22,7 @@ SOFTWARE.
 ******************************************************************************/
 
 #include "x11perf.h"
+#include "stdio.h"
 
 static XSegment *segments;
 static GC       pgc;
@@ -40,6 +41,7 @@ int InitSegments(xp, p, reps)
     int x1inc, y1inc;   /* How to get to next x1, y1			*/
     int minorphase;     /* # iterations left with current x1inc, y1inc  */
     int majorphase;     /* count 0..3 for which type of x1inc, y1inc    */
+    XGCValues   gcv;
 
     pgc = xp->fggc;
 
@@ -48,14 +50,14 @@ int InitSegments(xp, p, reps)
 
     segments = (XSegment *)malloc((p->objects) * sizeof(XSegment));
 
-    size--;		/* Because endcap counts as 1 pixel		*/
-
     /* All this x, x1, x1inc, etc. stuff is to create a pattern that
 	(1) scans down the screen vertically, with each new segment going
 	    into a square of size x size.
 
 	(2) rotates the endpoints clockwise around the square
 
+	(3) CapNotLast used so we can create segments of length 1 that
+	    nonetheless have a distince direction
     */
 
     x     = half;  y     = half;
@@ -72,6 +74,12 @@ int InitSegments(xp, p, reps)
 	segments[i].x2 = x + size - x1;
 	segments[i].y2 = y + size - y1;
 
+/*
+	if (i < 20) {
+	    printf("%d %d %d %d\n", segments[i].x1, segments[i].y1,
+		    segments[i].x2, segments[i].y2);
+	}
+*/
 	/* Change square to draw segment in */
 	rows++;
 	y += size + 1;
@@ -102,6 +110,11 @@ int InitSegments(xp, p, reps)
 	    }
 	}
     }
+
+    gcv.cap_style = CapNotLast;
+    XChangeGC(xp->d, xp->fggc, GCCapStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCCapStyle, &gcv);
+    
     return reps;
 }
    
@@ -116,8 +129,10 @@ int InitDashedSegments(xp, p, reps)
     (void)InitSegments(xp, p, reps);
 
     /* Modify GCs to draw dashed */
-    XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
-    XSetLineAttributes(xp->d, xp->fggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    XSetLineAttributes
+	(xp->d, xp->bggc, 0, LineOnOffDash, CapNotLast, JoinMiter);
+    XSetLineAttributes
+	(xp->d, xp->fggc, 0, LineOnOffDash, CapNotLast, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
@@ -134,8 +149,10 @@ int InitDoubleDashedSegments(xp, p, reps)
     (void)InitSegments(xp, p, reps);
 
     /* Modify GCs to draw dashed */
-    XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
-    XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes
+	(xp->d, xp->bggc, 0, LineDoubleDash, CapNotLast, JoinMiter);
+    XSetLineAttributes
+	(xp->d, xp->fggc, 0, LineDoubleDash, CapNotLast, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
