@@ -17,12 +17,16 @@
 #define NeedBerklibInXlib YES
 #define HasSockets        YES
 
+#ifdef POSIX
 #define SignalReturnProcType void
+#else
+#define SignalReturnProcType int
+#endif
 
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: macII.cf,v 1.7 89/03/20 13:43:09 jim Exp $
+/**/# platform:  $XConsortium: macII.cf,v 1.8 89/03/20 13:47:44 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
