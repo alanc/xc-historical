@@ -15,7 +15,13 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.10 89/09/10 13:50:26 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.11 89/09/10 16:00:26 rws Exp $ */
+
+/* Derived from:
+ * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
+ * by M. L. V. Pitteway
+ * The Computer Journal, November 1967, Volume 10, Number 3, pp. 282-289
+ */
 
 #include <math.h>
 #include "X.h"
