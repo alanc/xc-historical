@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.32 91/01/08 12:02:51 converse Exp $*/
+/* $XConsortium: xprop.c,v 1.33 91/01/09 17:40:06 rws Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -751,7 +751,7 @@ char Get_Format_Char(format, i)
     Fatal_Error("bad format: %s", format);
 
   /* Last character repeats forever... */
-  if (i>=strlen(format))
+  if (i >= (int)strlen(format))
     i=strlen(format)-1;
 
   return(format[i]);
@@ -801,7 +801,7 @@ long Mask_Word(thunks, format)
 {
 	int j;
 
-	for (j=0; j<strlen(format); j++)
+	for (j=0; j<(int)strlen(format); j++)
 	  if (Get_Format_Char(format, j) == 'm')
 	    return(thunks[j].value);
 	return(0L);
