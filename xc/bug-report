@@ -1,8 +1,8 @@
 To: xbugs@expo.lcs.mit.edu
-Subject: AREA: SYNOPSIS   [replace with actual area and short description]
+Subject: [area]: [synopsis]   [replace with actual area and short description]
 
 VERSION:
-    R5beta
+    R5beta [with any patches?]
 
 CLIENT MACHINE and OPERATING SYSTEM:
     [e.g. Sparc/SunOS 4.1.1, DECstation 3100/Ultrix 4.1, ...]
