@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phg.h,v 5.1 91/02/16 09:49:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -35,6 +35,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xfuncs.h>
 
 /* Xos.h defines index to be strchr.  We don't need to do that because all
  * uses of index and strchr are #ifdef-ed in the SI API code.
