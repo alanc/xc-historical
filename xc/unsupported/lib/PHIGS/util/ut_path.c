@@ -1,4 +1,4 @@
-/* $XConsortium: ut_path.c,v 5.1 91/02/16 09:50:12 rws Exp $ */
+/* $XConsortium: ut_path.c,v 5.2 91/04/04 15:33:33 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -68,8 +68,10 @@ phg_path( fname, erh, test)
 	if ( !(str = getenv("PEXAPIDIR"))) {
 	    str = PHG_DEFAULT_PEXAPIDIR;
 	    strncat( dir, str, PHG_MAXPATH - 1);
+#ifdef VERSION_PEXAPIDIR
 	    strncat(dir, phg_version_number_string, PHG_MAXPATH - 1);
             strncat (dir, "/lib", PHG_MAXPATH - 1);
+#endif
 	} else 
 	    strncat( dir, str, PHG_MAXPATH - 1);
 
