@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.88 93/09/18 14:11:00 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.89 93/10/06 17:04:10 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1542,12 +1542,12 @@ void _XtAddDefaultConverters(table)
 #define Add(from, to, proc, convert_args, num_args, cache) \
     _XtTableAddConverter(table, from, to, proc, \
 	    (XtConvertArgList) convert_args, (Cardinal)num_args, \
-	    True, cache, (XtDestructor)NULL)
+	    True, cache, (XtDestructor)NULL, True)
 
 #define Add2(from, to, proc, convert_args, num_args, cache, destructor) \
     _XtTableAddConverter(table, from, to, proc, \
 	    (XtConvertArgList) convert_args, (Cardinal)num_args, \
-	    True, cache, destructor)
+	    True, cache, destructor, True)
 
     Add(XtQColor, XtQPixel,       XtCvtColorToPixel,   NULL, 0, XtCacheNone);
 

@@ -1,4 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.14 91/05/11 14:53:10 converse Exp $ */
+/* $XConsortium: ConvertI.h,v 1.15 93/08/27 16:21:57 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -62,7 +62,8 @@ extern void _XtTableAddConverter(
     Cardinal             	/* num_args */,
     _XtBoolean              	/* new_style */,
     XtCacheType	    		/* cache_type */,
-    XtDestructor         	/* destructor */
+    XtDestructor         	/* destructor */,
+    _XtBoolean			/* global */
 #endif
 );
 
