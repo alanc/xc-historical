@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.6 89/09/14 16:26:48 rws Exp $ */
+/* $XConsortium: mfbline.c,v 5.7 89/09/15 08:13:07 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -644,14 +644,24 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 #ifdef POLYSEGMENT
 		if (pGC->capStyle != CapNotLast)
 		    unclippedlen++;
-#endif
+		dashIndexTmp = dashIndex;
+		dashOffsetTmp = dashOffset;
 		mfbBresD (fgrop, bgrop,
-		      dashIndex, pDash, numInDashList,
-		      dashOffset, isDoubleDash,
+		      &dashIndexTmp, pDash, numInDashList,
+		      &dashOffsetTmp, isDoubleDash,
 		      addrl, nlwidth,
 		      signdx, signdy, axis, x1, y1,
 		      e, e1, e2, unclippedlen);
 		break;
+#else
+		mfbBresD (fgrop, bgrop,
+		      &dashIndex, pDash, numInDashList,
+		      &dashOffset, isDoubleDash,
+		      addrl, nlwidth,
+		      signdx, signdy, axis, x1, y1,
+		      e, e1, e2, unclippedlen);
+		goto dontStep;
+#endif
 	    }
 	    else if (oc1 & oc2)
 	    {
@@ -729,8 +739,8 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		    	else
 			    err = e;
 		    	mfbBresD (fgrop, bgrop,
-			      	  dashIndexTmp, pDash, numInDashList,
-			      	  dashOffsetTmp, isDoubleDash,
+			      	  &dashIndexTmp, pDash, numInDashList,
+			      	  &dashOffsetTmp, isDoubleDash,
 			      	  addrl, nlwidth,
 			      	  signdx, signdy, axis, pt1Copy.x, pt1Copy.y,
 			      	  err, e1, e2, len);
@@ -740,8 +750,12 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	    }
 	} /* while (nbox--) */
 #ifndef POLYSEGMENT
+	/*
+	 * walk the dash list around to the next line
+	 */
 	miStepDash (unclippedlen, &dashIndex, pDash,
 		    numInDashList, &dashOffset);
+dontStep:	;
 #endif
     } /* while (nline--) */
 

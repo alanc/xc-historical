@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbresd.c,v 1.1 89/09/05 20:13:02 keith Exp $ */
+/* $XConsortium: mfbbresd.c,v 1.2 89/09/14 16:26:59 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -40,14 +40,14 @@ SOFTWARE.
     }
 
 mfbBresD(fgrop, bgrop,
-	 dashIndex, pDash, numInDashList, dashOffset, isDoubleDash,
+	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
 	 addrl, nlwidth,
 	 signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int fgrop, bgrop;
-int dashIndex;		/* current dash */
+int *pdashIndex;	/* current dash */
 unsigned char *pDash;	/* dash list */
 int numInDashList;	/* total length of dash list */
-int dashOffset;		/* offset into current dash */
+int *pdashOffset;	/* offset into current dash */
 int isDoubleDash;
 int *addrl;		/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
@@ -65,8 +65,13 @@ int len;		/* length of line */
     register unsigned long bit;
     unsigned int leftbit = mask[0]; /* leftmost bit to process in new word */
     unsigned int rightbit = mask[31]; /* rightmost bit to process in new word */
+    int dashIndex;
+    int dashOffset;
     int dashRemaining;
     int	rop;
+
+    dashOffset = *pdashOffset;
+    dashIndex = *pdashIndex;
     dashRemaining = pDash[dashIndex] - dashOffset;
     rop = fgrop;
     if (!isDoubleDash)
@@ -169,4 +174,6 @@ int len;		/* length of line */
 	    }
 	}
     } /* else Y_AXIS */
+    *pdashIndex = dashIndex;
+    *pdashOffset = pDash[dashIndex] - dashRemaining;
 } 
