@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFetchName.c,v 11.17 87/08/08 16:40:23 ham Exp $ */
+/* $Header: XFetchName.c,v 11.17 87/09/01 14:46:31 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -25,7 +25,7 @@ Status XFetchName (dpy, w, name)
         *name = NULL;
 	return (0);
 	}
-    if ( (actual_type == XA_STRING) &&  (actual_format != 32) ) {
+    if ( (actual_type == XA_STRING) &&  (actual_format == 8) ) {
 
 	/* The data returned by XGetWindowProperty is guarranteed to
 	contain one extra byte that is null terminated to make retrieveing
@@ -56,7 +56,7 @@ Status XGetIconName (dpy, w, icon_name)
         *icon_name = NULL;
 	return (0);
 	}
-    if ( (actual_type == XA_STRING) &&  (actual_format != 32) ) {
+    if ( (actual_type == XA_STRING) &&  (actual_format == 8) ) {
 
 	/* The data returned by XGetWindowProperty is guarranteed to
 	contain one extra byte that is null terminated to make retrieveing
