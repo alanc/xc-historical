@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.42 89/07/09 15:43:01 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.43 89/07/09 18:17:18 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -787,9 +787,15 @@ miRegionOp(newReg, reg1, reg2, overlapFunc, appendNon1, appendNon2)
     else if ((newReg->data->numRects < (newReg->data->size >> 1)) &&
 	     (newReg->data->size > 50))
     {
-	newReg->data = (RegDataPtr)xrealloc(newReg->data,
-					  REGION_SZOF(newReg->data->numRects));
-	newReg->data->size = newReg->data->numRects;
+	RegDataPtr data;
+
+	data = (RegDataPtr)xrealloc(newReg->data,
+				    REGION_SZOF(newReg->data->numRects));
+	if (data)
+	{
+	    data->size = data->numRects;
+	    newReg->data = data;
+	}
     }
 
     return overlap;
@@ -952,7 +958,7 @@ miIntersect(newReg, reg1, reg2)
     else
     {
 	/* General purpose intersection */
-	miRegionOp(newReg, reg1, reg2, miIntersectO, FALSE, FALSE);
+	(void)miRegionOp(newReg, reg1, reg2, miIntersectO, FALSE, FALSE);
 	miSetExtents(newReg);
     }
 
@@ -1060,6 +1066,8 @@ miUnion(newReg, reg1, reg2)
     register RegionPtr 	reg1;
     register RegionPtr	reg2;             /* source regions     */
 {
+    Bool overlap;
+
     /* Return TRUE if some overlap between reg1, reg2 */
     good(reg1);
     good(reg2);
@@ -1115,14 +1123,14 @@ miUnion(newReg, reg1, reg2)
         return(TRUE);
     }
 
-    miRegionOp(newReg, reg1, reg2, miUnionO, TRUE, TRUE);
+    overlap = miRegionOp(newReg, reg1, reg2, miUnionO, TRUE, TRUE);
 
     newReg->extents.x1 = min(reg1->extents.x1, reg2->extents.x1);
     newReg->extents.y1 = min(reg1->extents.y1, reg2->extents.y1);
     newReg->extents.x2 = max(reg1->extents.x2, reg2->extents.x2);
     newReg->extents.y2 = max(reg1->extents.y2, reg2->extents.y2);
     good(newReg);
-    return(1);
+    return(overlap);
 }
 
 
@@ -1326,14 +1334,16 @@ miRegionValidate(badreg)
 
     /* Set up the first region to be the first rectangle in badreg */
     /* Note that step 2 code will never overflow the badreg rects array */
-    ri      = (RegionInfo *) xalloc(4 * sizeof(RegionInfo));
-    sizeRI  = 4;
-    numRI   = 1;
-    ri[0].prevBand   = 0;
-    ri[0].curBand    = 0;
-    ri[0].reg	     = badreg;
+    Must_have_memory = TRUE; /* XXX */
+    ri = (RegionInfo *) xalloc(4 * sizeof(RegionInfo));
+    Must_have_memory = FALSE; /* XXX */
+    sizeRI = 4;
+    numRI = 1;
+    ri[0].prevBand = 0;
+    ri[0].curBand = 0;
+    ri[0].reg = badreg;
     box = REGION_BOXPTR(badreg);
-    badreg->extents  = *box;
+    badreg->extents = *box;
     badreg->data->numRects = 1;
 
     /* Now scatter rectangles into the minimum set of valid regions.  If the
@@ -1388,7 +1398,9 @@ miRegionValidate(badreg)
 	{
 	    /* Oops, allocate space for new region information */
 	    sizeRI <<= 1;
+	    Must_have_memory = TRUE; /* XXX */
 	    ri = (RegionInfo *) xrealloc(ri, sizeRI * sizeof(RegionInfo));
+	    Must_have_memory = FALSE; /* XXX */
 	    rit = &(ri[numRI]);
 	}
 	numRI++;
@@ -1655,7 +1667,7 @@ miSubtract(regD, regM, regS)
     /* Add those rectangles in region 1 that aren't in region 2,
        do yucky substraction for overlaps, and
        just throw away rectangles in region 2 that aren't in region 1 */
-    miRegionOp(regD, regM, regS, miSubtractO, TRUE, FALSE);
+    (void)miRegionOp(regD, regM, regS, miSubtractO, TRUE, FALSE);
 
     /*
      * Can't alter RegD's extents before we call miRegionOp because
@@ -1713,7 +1725,7 @@ miInverse(newReg, reg1, invRect)
        just throw away rectangles in region 2 that aren't in region 1 */
     invReg.extents = *invRect;
     invReg.data = (RegDataPtr)NULL;
-    miRegionOp(newReg, &invReg, reg1, miSubtractO, TRUE, FALSE);
+    (void)miRegionOp(newReg, &invReg, reg1, miSubtractO, TRUE, FALSE);
 
     /*
      * Can't alter newReg's extents before we call miRegionOp because
