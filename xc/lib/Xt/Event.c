@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.51 88/02/03 23:13:09 rws Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.52 88/02/04 09:09:53 swick Locked $";
 #endif lint
 
 /*
@@ -356,27 +356,28 @@ static void DispatchEvent(event, widget, mask)
     static Region exposeRegion = NULL;
 
     if (mask == ExposureMask) {
-	if (widget->core.widget_class->core_class.compress_exposure) {
-	    if (event->xexpose.count != 0) {
+	XtExposeProc expose = widget->core.widget_class->core_class.expose;
+	if (expose != NULL) {
+	    if (!widget->core.widget_class->core_class.compress_exposure) {
+		(*expose)(widget, event, (Region)NULL);
+	    }
+	    else {
 		if (exposeRegion == NULL) exposeRegion = XCreateRegion();
 		XtAddExposureToRegion(event, exposeRegion);
-		return;
+		if (event->xexpose.count == 0) {
+		    /* Patch event to have the new bounding box.  Unless
+		       someone's goofed, it can only be an Expose event */
+		    XRectangle rect;
+		    XClipBox(exposeRegion, &rect);
+		    event->xexpose.x = rect.x;
+		    event->xexpose.y = rect.y;
+		    event->xexpose.width = rect.width;
+		    event->xexpose.height = rect.height;
+		    (*expose)(widget, event, exposeRegion);
+		    XDestroyRegion(exposeRegion);
+		    exposeRegion = NULL;
+		}
 	    }
-	    if (exposeRegion != NULL) {
-		/* Patch event to have the new bounding box */
-		XRectangle rect;
-		XtAddExposureToRegion(event, exposeRegion);
-		XClipBox(exposeRegion, &rect);
-		event->xexpose.x = rect.x;
-		event->xexpose.y = rect.y;
-		event->xexpose.width = rect.width;
-		event->xexpose.height = rect.height;
-		XDestroyRegion(exposeRegion);
-		exposeRegion = NULL;
-	    }
-	}
-	if (widget->core.widget_class->core_class.expose != NULL) {
-	    (*widget->core.widget_class->core_class.expose)(widget,event);
 	}
     }
 
