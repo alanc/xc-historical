@@ -185,6 +185,8 @@ InitOutput(pScreenInfo, argc, argv)
     int		  nonBlockConsole = 1;
     static int	  setup_on_exit = 0;
 
+    if (!monitorResolution)
+	monitorResolution = 90;
     while (ac--) {
 	if (!strcmp(*av,"-debug")) {
 	    nonBlockConsole = 0;
