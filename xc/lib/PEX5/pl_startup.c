@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.6 92/08/05 11:16:44 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.7 92/08/10 15:59:43 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -109,7 +109,7 @@ OUTPUT char		*error_string;
 
     pexDisplayInfo->extCodes = pExtCodes;
     pexDisplayInfo->extOpcode = pExtCodes->major_opcode;
-    pexDisplayInfo->lastResID = NULL;
+    pexDisplayInfo->lastResID = 0;
     pexDisplayInfo->lastReqType = -1;
     pexDisplayInfo->lastReqNum = -1;
 
