@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.53 94/07/15 15:03:03 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.54 94/07/18 15:08:03 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -699,6 +699,39 @@ Bool        global;
 
 
 void
+SaveYourselfPhase2ReqProc (smsConn, managerData)
+
+SmsConn     smsConn;
+SmPointer   managerData;
+
+{
+    ClientRec	*client = (ClientRec *) managerData;
+
+    if (verbose) {
+	printf ("Client Id = %s, received SAVE YOURSELF PHASE 2 REQUEST\n",
+	    client->clientId);
+    }
+
+    if (!saveInProgress)
+    {
+	/*
+	 * If we are not in the middle of a checkpoint (ie. we just
+	 * started the client and sent the initial save yourself), just
+	 * send the save yourself phase2 now.
+	 */
+	 
+	SmsSaveYourselfPhase2 (client->smsConn);
+    }
+    else if (!client->wantsPhase2)
+    {
+	client->wantsPhase2 = True;
+	phase2RequestCount++;
+    }
+}
+
+
+
+void
 SaveYourselfDoneProc (smsConn, managerData, success)
     SmsConn     smsConn;
     SmPointer 	managerData;
@@ -902,6 +935,7 @@ char 		**failureReasonRet;
     newClient->clientId = NULL;
     newClient->clientHostname = NULL;
     newClient->interactPending = False;
+    newClient->wantsPhase2 = False;
     newClient->numProps = 0;
     newClient->discardCommand = NULL;
     newClient->saveDiscardCommand = NULL;
@@ -934,6 +968,12 @@ char 		**failureReasonRet;
     *maskRet |= SmsSaveYourselfRequestProcMask;
     callbacksRet->save_yourself_request.callback     = SaveYourselfReqProc;
     callbacksRet->save_yourself_request.manager_data = (SmPointer) newClient;
+
+    *maskRet |= SmsSaveYourselfP2RequestProcMask;
+    callbacksRet->save_yourself_phase2_request.callback =
+	SaveYourselfPhase2ReqProc;
+    callbacksRet->save_yourself_phase2_request.manager_data =
+	(SmPointer) newClient;
 
     *maskRet |= SmsSaveYourselfDoneProcMask;
     callbacksRet->save_yourself_done.callback 	   = SaveYourselfDoneProc;
