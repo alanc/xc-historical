@@ -1014,6 +1014,7 @@ Xtransport	TRANS(TLIINETFuncs) = {
 	TRANS(TLIOpenCLTSServer),
 	TRANS(TLISetOption),
 	TRANS(TLIINETCreateListener),
+	NULL,		       			/* ResetListener */
 	TRANS(TLIAccept),
 	TRANS(TLIINETConnect),
 	TRANS(TLIBytesReadable),
@@ -1037,6 +1038,7 @@ Xtransport	TRANS(TLITCPFuncs) = {
 	TRANS(TLIOpenCLTSServer),
 	TRANS(TLISetOption),
 	TRANS(TLIINETCreateListener),
+	NULL,		       			/* ResetListener */
 	TRANS(TLIAccept),
 	TRANS(TLIINETConnect),
 	TRANS(TLIBytesReadable),
@@ -1060,6 +1062,7 @@ Xtransport	TRANS(TLITLIFuncs) = {
 	TRANS(TLIOpenCLTSServer),
 	TRANS(TLISetOption),
 	TRANS(TLITLICreateListener),
+	NULL,		       			/* ResetListener */
 	TRANS(TLIAccept),
 	TRANS(TLITLIConnect),
 	TRANS(TLIBytesReadable),
