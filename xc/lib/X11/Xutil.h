@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.67 91/04/11 20:18:38 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.68 91/04/13 11:27:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -134,6 +134,7 @@ typedef struct {
     unsigned long nitems;		/* number of data items in value */
 } XTextProperty;
 
+#define XSuccess 0
 #define XNoMemory -1
 #define XLocaleNotSupported -2
 #define XConverterNotFound -3
@@ -144,7 +145,6 @@ typedef enum {
     XTextStyle,			/* text in owner's encoding (current locale)*/
     XStdICCTextStyle		/* STRING, else COMPOUND_TEXT */
 } XICCEncodingStyle;
-
 
 typedef struct {
 	int min_width, min_height;
