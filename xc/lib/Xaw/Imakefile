@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.78 91/09/18 14:28:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.83 94/02/06 09:20:02 kaleb Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoDebugLib DebugLibXaw 
@@ -83,7 +83,7 @@ HEADERS = \
 	VendorEP.h \
 	Viewport.h \
 	ViewportP.h \
-	XawImP.h\
+	XawImP.h \
 	XawInit.h
 
 SRCS = \
