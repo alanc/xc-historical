@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.29 89/05/20 10:51:23 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.30 89/05/31 18:10:12 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -407,6 +407,7 @@ main(argc, argv)
 				 XBitmapPad(dpy), 0);
 	out_image->data = malloc(Image_Size(out_image));
 	Extract_Plane(&in_image, out_image, plane);
+	ncolors = 0;
     } else if (rawbits || newmap) {
 	out_image = &in_image;
     } else {
