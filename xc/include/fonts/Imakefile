@@ -1,6 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/03/29 15:54:34 gildea Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.4 94/11/21 18:20:14 kaleb Exp kaleb $
 
-    HEADERS = FS.h FSproto.h
+    HEADERS = FS.h FSproto.h fsmasks.h
 
 all::
     
