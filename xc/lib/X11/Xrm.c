@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.45 90/10/30 10:09:14 rws Exp $
+ * $XConsortium: Xrm.c,v 1.46 90/10/30 10:28:43 rws Exp $
  */
 
 /***********************************************************
@@ -202,20 +202,18 @@ static XrmQuark maxResourceQuark = -1;
 			     resourceQuarks[(q) >> 3] & (1 << ((q) & 7)))
 
 /* parsing types */
-static unsigned short Const _xrmtypes[256] = {
+static XrmBits Const _xrmtypes[256] = {
     _EOF,0,0,0,0,0,0,0,0,SPACE,					/*   0. */
     EOL,0,0,0,0,0,0,0,0,0,					/*  10. */
     0,0,0,0,0,0,0,0,0,0,					/*  20. */
-    0,0,SPACE,COMMENT,0,0,0,0,0,0,				/*  30. */
+    0,0,SPACE,0,0,0,0,0,0,0,					/*  30. */
     0,0,LOOSE,0,0,0,TIGHT,0,ODIGIT,ODIGIT,
     ODIGIT,ODIGIT,ODIGIT,ODIGIT,ODIGIT,  			/*  50. */
     ODIGIT,0,0,SEP,0,						/*  55. */
     0,0,0,0,0,0,0,0,0,0,					/*  60. */
     0,0,0,0,0,0,0,0,0,0,					/*  70. */
     0,0,0,0,0,0,0,0,0,0,					/*  80. */
-    0,0,BSLASH,0,0,0,0,0,0,0,				        /*  90. */
-    0,0,0,0,0,0,0,0,0,0,					/*  100. */
-    N,0,0,0,0,0,0,0,0,0						/*  110. */
+    0,0,BSLASH,0,0,0,0,0,0,0				        /*  90. */
     /* The rest will be automatically initialized to zero. */
 };
 
@@ -234,7 +232,7 @@ void XrmStringToQuarkList(name, quarks)
     register XrmQuarkList quarks;   /* RETURN */
 #endif
 {
-    register unsigned short	bits;
+    register XrmBits		bits;
     register Signature  	sig = 0;
     register char       	ch, *tname;
     register int 		i = 0;
@@ -274,7 +272,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
     register XrmQuarkList   quarks;     /* RETURN */
 #endif
 {
-    register unsigned short	bits;
+    register XrmBits		bits;
     register Signature  	sig = 0;
     register char       	ch, *tname;
     register XrmBinding 	binding;
@@ -437,12 +435,11 @@ static void GrowTable(prev)
     }
 }
 
-/* merge values from ftable into *pprev, overriding any in *pprev.
- * destroy ftable in the process
- */
-static void MergeValues(ftable, pprev)
+/* merge values from ftable into *pprev, destroy ftable in the process */
+static void MergeValues(ftable, pprev, override)
     LTable ftable;
     NTable *pprev;
+    Bool override;
 {
     register VEntry fentry, tentry;
     register VEntry *prev;
@@ -471,21 +468,29 @@ static void MergeValues(ftable, pprev)
 		    tentry = *(prev = &tentry->next);
 		    continue;
 		}
-		/* do half of chaining fentry in */
-		*prev = fentry;
-		prev = &fentry->next;
 		if (fentry->tight != tentry->tight) {
-		    /* no match, get next fentry */
+		    /* no match, chain in fentry */
+		    *prev = fentry;
+		    prev = &fentry->next;
 		    fentry = *prev;
-		    /* chain old one rest of way in */
 		    *prev = tentry;
 		    ttable->table.entries++;
-		} else {
-		    /* get next fentry */
+		} else if (override) {
+		    /* match, chain in fentry, splice out and free tentry */
+		    *prev = fentry;
+		    prev = &fentry->next;
 		    fentry = *prev;
-		    /* chain old one rest of way in, splice out tentry */
 		    *prev = tentry->next;
 		    /* free the overridden entry */
+		    Xfree(tentry);
+		    /* get next tentry */
+		    tentry = *prev;
+		} else {
+		    /* match, discard fentry */
+		    prev = &tentry->next;
+		    tentry = fentry; /* use as a temp var */
+		    fentry = fentry->next;
+		    /* free the overpowered entry */
 		    Xfree(tentry);
 		    /* get next tentry */
 		    tentry = *prev;
@@ -511,9 +516,10 @@ static void MergeValues(ftable, pprev)
 }
 
 /* merge tables from ftable into *pprev, destroy ftable in the process */
-static void MergeTables(ftable, pprev)
+static void MergeTables(ftable, pprev, override)
     NTable ftable;
     NTable *pprev;
+    Bool override;
 {
     register NTable fentry, tentry;
     NTable nfentry;
@@ -553,9 +559,9 @@ static void MergeTables(ftable, pprev)
 		    ttable->entries++;
 		} else {
 		    if (fentry->leaf)
-			MergeValues((LTable)fentry, prev);
+			MergeValues((LTable)fentry, prev, override);
 		    else
-			MergeTables(fentry, prev);
+			MergeTables(fentry, prev, override);
 		    /* bump to next tentry */
 		    tentry = *(prev = &(*prev)->next);
 		}
@@ -580,8 +586,9 @@ static void MergeTables(ftable, pprev)
     GROW(pprev);
 }
 
-void XrmMergeDatabases(from, into)
+void XrmCombineDatabase(from, into, override)
     XrmDatabase	from, *into;
+    Bool override;
 {
     register NTable *prev;
     register NTable ftable, ttable, nftable;
@@ -596,7 +603,7 @@ void XrmMergeDatabases(from, into)
 		nftable = ftable->next;
 		if (ttable && !ttable->leaf) {
 		    /* both have node tables, merge them */
-		    MergeTables(ftable, prev);
+		    MergeTables(ftable, prev, override);
 		    /* bump to into's leaf table, if any */
 		    ttable = *(prev = &(*prev)->next);
 		} else {
@@ -614,13 +621,19 @@ void XrmMergeDatabases(from, into)
 	    if (ftable) {
 		/* if into has a leaf, merge, else insert */
 		if (ttable)
-		    MergeValues((LTable)ftable, prev);
+		    MergeValues((LTable)ftable, prev, override);
 		else
 		    *prev = ftable;
 	    }
 	}
 	Xfree(from);
     }
+}
+
+void XrmMergeDatabases(from, into)
+    XrmDatabase	from, *into;
+{
+    XrmCombineDatabase(from, into, True);
 }
 
 /* store a value in the database, overriding any existing entry */
@@ -865,6 +878,7 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
  *	Description: Parses a string and stores it as a database.
  *	Arguments: db - the database.
  *                 str - a pointer to the string containing the database.
+ *                 filename - source filename, if any.
  *	Returns: 0 if failure, 1 if totally sucessful.
  */
 
@@ -879,12 +893,13 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
 #define LIST_SIZE 101
 #define BUFFER_SIZE 100
 
-static int GetDatabase(db, str)
+static int GetDatabase(db, str, filename)
     XrmDatabase db;
     register char *str;
+    char *filename;
 {
     register char *ptr;
-    register unsigned short bits = 0;
+    register XrmBits bits = 0;
     register char c;
     register Signature sig;
     register char *ptr_max;
@@ -896,6 +911,7 @@ static int GetDatabase(db, str)
     XrmQuark quarks[LIST_SIZE];
     XrmBinding bindings[LIST_SIZE];
     XrmValue value;
+    static void GetIncludeFile();
 
     if (!db)
 	return 0;
@@ -906,34 +922,56 @@ static int GetDatabase(db, str)
     while (!xrm_is_EOF(bits)) {
 
 	/*
-	 * First: check the first character in a line to see if it is
-	 * a "!" which will signify a comment.
+	 * First: Remove extra whitespace. 
 	 */
 
-	if (xrm_is_EOF(bits = get_next_char(c, str)))
-	    goto done;		/* End of file, we're done. */
-	    
-	if (xrm_is_comment(bits)) { /* Comment, spin to next '\n' */
-	    while (!xrm_is_EOL(bits = get_next_char(c, str))) {}
+	do {
+	    bits = get_next_char(c, str);
+	} while xrm_is_space(bits);
 
-	    continue;		/* start a new line. */
-	}
-
-	/*
-	 * Second: Remove extra whitespace. 
-	 */
-
-	if (xrm_is_space(bits))
-	    while (xrm_is_space((bits = get_next_char(c, str)))) {};
-	
 	/*
 	 * Ignore empty lines.
 	 */
 
-	if (xrm_is_EOL(bits)) 
+	if (xrm_is_EOL(bits))
 	    continue;		/* start a new line. */
-	    
-	    
+
+	/*
+	 * Second: check the first character in a line to see if it is
+	 * "!" signifying a comment, or "#" signifying a directive.
+	 */
+
+	if (c == '!') { /* Comment, spin to next newline */
+	    while (!xrm_is_EOL(bits = get_next_char(c, str))) {}
+	    continue;		/* start a new line. */
+	}
+
+	if (c == '#') { /* Directive */
+	    /* remove extra whitespace */
+	    while (xrm_is_space(bits = get_next_char(c, str))) {};
+	    /* only "include" directive is currently defined */
+	    if (!strncmp(str-1, "include", 7)) {
+		str += (7-1);
+		/* remove extra whitespace */
+		while (xrm_is_space(bits = get_next_char(c, str))) {};
+		/* must have a starting " */
+		if (c == '"') {
+		    char *fname = str;
+		    do {
+			bits = get_next_char(c, str);
+		    } while (c != '"' && !xrm_is_EOL(bits));
+		    /* must have an ending " */
+		    if (c == '"')
+			GetIncludeFile(db, filename, fname, str - fname - 1);
+		}
+	    }
+	    /* spin to next newline */
+	    if (xrm_is_EOL(bits))
+		continue;
+	    while (!xrm_is_EOL(bits = get_next_char(c, str))) {}
+	    continue;		/* start a new line. */
+	}
+
 	/*
 	 * Third: loop through the LHS of the resource specification
 	 * storing characters and converting this to a Quark.
@@ -1016,7 +1054,7 @@ static int GetDatabase(db, str)
 	 */
 
 	if (!xrm_is_real_separator(bits)) {
-	    unsigned short old_bits;
+	    XrmBits old_bits;
 
 	    if (xrm_is_EOL(bits)) 
 		continue;
@@ -1047,7 +1085,7 @@ static int GetDatabase(db, str)
 	 */
 
 	for(;;) {
-	    unsigned short old_bits;
+	    XrmBits old_bits;
 
 	    if (xrm_is_space(bits = get_next_char(c, str)))
 		continue;
@@ -1107,7 +1145,7 @@ static int GetDatabase(db, str)
 		 * "\n" means insert a newline.
 		 */
 		  
-		if (xrm_is_n(bits)) {
+		if (c == 'n') {
 		    *ptr++ = A_NEW_LINE;
 		    bits = get_next_char(c, str);
 		    continue;
@@ -1238,7 +1276,7 @@ void XrmPutLineResource(pdb, line)
 #endif
 {
     if (!*pdb) *pdb = NewDatabase();
-    (void) GetDatabase(*pdb, line);
+    (void) GetDatabase(*pdb, line, (char *)NULL);
 } 
 
 #if NeedFunctionPrototypes
@@ -1252,7 +1290,7 @@ XrmDatabase XrmGetStringDatabase(data)
     XrmDatabase     db;
 
     db = NewDatabase();
-    (void) GetDatabase(db, data);
+    (void) GetDatabase(db, data, (char *)NULL);
     return db;
 }
 
@@ -1291,24 +1329,80 @@ char * filename;
     return filebuf;
 }
 
+static void
+GetIncludeFile(db, base, fname, fnamelen)
+    XrmDatabase db;
+    char *base;
+    char *fname;
+    int fnamelen;
+{
+    int len;
+    char *str;
+    char realfname[BUFSIZ];
+
+    if (fnamelen <= 0 || fnamelen >= BUFSIZ)
+	return;
+    if (*fname != '/' && base && (str = rindex(base, '/'))) {
+	len = str - base + 1;
+	if (len + fnamelen >= BUFSIZ)
+	    return;
+	strncpy(realfname, base, len);
+	strncpy(realfname + len, fname, fnamelen);
+	realfname[len + fnamelen] = '\0';
+    } else {
+	strncpy(realfname, fname, fnamelen);
+	realfname[fnamelen] = '\0';
+    }
+    if (!(str = ReadInFile(realfname)))
+	return;
+    (void) GetDatabase(db, str, realfname);
+    Xfree(str);
+}
+
 #if NeedFunctionPrototypes
 XrmDatabase XrmGetFileDatabase(
-    const char 	    *fileName)
+    const char 	    *filename)
 #else
-XrmDatabase XrmGetFileDatabase(fileName)
-    char 	    *fileName;
+XrmDatabase XrmGetFileDatabase(filename)
+    char 	    *filename;
 #endif
 {
     XrmDatabase db;
     char *str;
 
-    if (!(str = ReadInFile(fileName)))
+    if (!(str = ReadInFile(filename)))
 	return (XrmDatabase)NULL;
 
     db = NewDatabase();
-    (void) GetDatabase(db, str);
+    (void) GetDatabase(db, str, filename);
     Xfree(str);
     return db;
+}
+
+#if NeedFunctionPrototypes
+void XrmCombineFileDatabase(
+    const char 	    *filename,
+    XrmDatabase     *target,
+    Bool             override)
+#else
+void XrmCombineFileDatabase(filename, target, override)
+    char        *filename;
+    XrmDatabase *target;
+    Bool         override;
+#endif
+{
+    char *str;
+
+    if (!override) {
+	XrmCombineDatabase(XrmGetFileDatabase(filename), target, False);
+	return;
+    }
+    if (!(str = ReadInFile(filename)))
+	return;
+    if (!*target)
+	*target = NewDatabase();
+    (void) GetDatabase(*target, str, filename);
+    Xfree(str);
 }
 
 /* call the user proc for every value in the table, arbitrary order.
