@@ -12,12 +12,19 @@ target=$1
 shift
 label=$target
 resource=xterm-$label
+rcmd="rsh $target"
+case $DISPLAY in
+unix:*)
+	DISPLAY=`echo $DISPLAY | sed 's/unix//'`
+	;;
+esac
 case $DISPLAY in
 :*)
 	fullname=`hostname`
-	hostname=`basename $fullname .lcs.mit.edu`
+	hostname=`echo $fullname | sed 's/\..*$//'`
 	if [ $hostname = $target -o $fullname = $target ]; then
 		DISPLAY=$DISPLAY
+		rcmd="sh -c"
 	else
 		DISPLAY=$hostname$DISPLAY
 	fi
@@ -33,9 +40,9 @@ x)
 	xpath='HOME=${HOME-`pwd`} XUSERFILESEARCHPATH=${XUSERFILESEARCHPATH-"'"$XUSERFILESEARCHPATH"'"} '
 	;;
 esac
-rcmd="rsh $target"
 redirect=" < /dev/null > /dev/null 2>&1 &"
 command=
+ls=-ls
 continue=:
 while $continue; do
 	case $1 in
@@ -64,6 +71,10 @@ while $continue; do
 		resource="$1"
 		shift
 		;;
+	-nols)
+		shift
+		ls=
+		;;
 	-debug)
 		shift
 		redirect=
@@ -88,7 +99,7 @@ esac
 vars="$xpath$xauth"DISPLAY="$DISPLAY"
 case $# in
 0)
-	$rcmd 'sh -c '"'$vars"' xterm -ls -name "'"$resource"'" -T "'"$label"'" -n "'"$label"'" '"$redirect'"
+	$rcmd 'sh -c '"'$vars"' xterm '$ls' -name "'"$resource"'" -T "'"$label"'" -n "'"$label"'" '"$redirect'"
 	;;
 *)
 	$rcmd 'sh -c '"'$vars"' '"$*$redirect'"
