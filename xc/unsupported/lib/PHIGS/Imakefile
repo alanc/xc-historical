@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.10 91/02/19 11:30:04 rws Exp $
+# $XConsortium: Imakefile,v 5.11 91/02/19 11:34:37 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,8 +37,13 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
 
 .SUFFIXES: .o
 
+#if HasLargeTmp | SystemV4
+     ARADD = ar ru
+     AREXT = ar x
+#else
      ARADD = ar rul
      AREXT = ar xl
+#endif
      LIBDIRS = archive c_binding css cp error input pex util ws ws_type
      SUBDIRS = include $(LIBDIRS)
 
