@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.7 89/07/28 11:59:33 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.8 89/09/13 18:58:36 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -101,6 +101,8 @@ mfbPositionWindow(pWin, x, y)
 
     if (!pWin->borderIsPixel && pPrivWin->fastBorder)
     {
+	while (pWin->backgroundState == ParentRelative)
+	    pWin = pWin->parent;
 	mfbXRotatePixmap(pPrivWin->pRotatedBorder,
 			 pWin->drawable.x - pPrivWin->oldRotate.x);
 	mfbYRotatePixmap(pPrivWin->pRotatedBorder,
@@ -195,33 +197,33 @@ mfbChangeWindowAttributes(pWin, mask)
 {
     register unsigned long index;
     register mfbPrivWin *pPrivWin;
+    WindowPtr	pBgWin;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
+    /*
+     * When background state changes from ParentRelative and
+     * we had previously rotated the fast border pixmap to match
+     * the parent relative origin, rerotate to match window
+     */
+    if (mask & (CWBackPixmap | CWBackPixel) &&
+	pWin->backgroundState != ParentRelative &&
+	pPrivWin->fastBorder &&
+	pPrivWin->oldRotate.x != pWin->drawable.x ||
+	pPrivWin->oldRotate.y != pWin->drawable.y)
+    {
+	mfbXRotatePixmap(pPrivWin->pRotatedBorder,
+		      pWin->drawable.x - pPrivWin->oldRotate.x);
+	mfbYRotatePixmap(pPrivWin->pRotatedBorder,
+		      pWin->drawable.y - pPrivWin->oldRotate.y);
+	pPrivWin->oldRotate.x = pWin->drawable.x;
+	pPrivWin->oldRotate.y = pWin->drawable.y;
+    }
     while(mask)
     {
 	index = lowbit (mask);
 	mask &= ~index;
 	switch(index)
 	{
-#ifdef NOTDEF
-	  case CWBackingStore:
-	      if (pWin->backingStore != NotUseful)
-	      {
-		  miInitBackingStore(pWin, mfbSaveAreas, mfbRestoreAreas, (void (*)()) 0);
-	      }
-	      else
-	      {
-		  miFreeBackingStore(pWin);
-	      }
-	      /*
-	       * XXX: The changing of the backing-store status of a window
-	       * is serious enough to warrant a validation, since otherwise
-	       * the backing-store stuff won't work.
-	       */
-	      pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	      break;
-#endif
-
 	  case CWBackPixmap:
 	      if (pWin->backgroundState == None)
 	      {
@@ -230,6 +232,16 @@ mfbChangeWindowAttributes(pWin, mask)
 	      else if (pWin->backgroundState == ParentRelative)
 	      {
 		  pPrivWin->fastBackground = FALSE;
+		  /* Rotate border to match parent origin */
+		  if (pPrivWin->pRotatedBorder) {
+		      for (pBgWin = pWin->parent;
+			   pBgWin->backgroundState == ParentRelative;
+			   pBgWin = pBgWin->parent);
+		      mfbXRotatePixmap(pPrivWin->pRotatedBorder,
+				    pBgWin->drawable.x - pPrivWin->oldRotate.x);
+		      mfbYRotatePixmap(pPrivWin->pRotatedBorder,
+				    pBgWin->drawable.y - pPrivWin->oldRotate.y);
+		  }
 	      }
 	      else if ((pWin->background.pixmap->drawable.width <= 32) &&
 		       !(pWin->background.pixmap->drawable.width &
@@ -265,15 +277,18 @@ mfbChangeWindowAttributes(pWin, mask)
 		  !(pWin->border.pixmap->drawable.width &
 		    (pWin->border.pixmap->drawable.width - 1)))
 	      {
+		  for (pBgWin = pWin;
+		       pBgWin->backgroundState == ParentRelative;
+		       pBgWin = pBgWin->parent);
 		  mfbCopyRotatePixmap(pWin->border.pixmap,
 				      &pPrivWin->pRotatedBorder,
-				      pWin->drawable.x,
-				      pWin->drawable.y);
+				      pBgWin->drawable.x,
+				      pBgWin->drawable.y);
 		  if (pPrivWin->pRotatedBorder)
 		  {
 		      pPrivWin->fastBorder = TRUE;
-		      pPrivWin->oldRotate.x = pWin->drawable.x;
-		      pPrivWin->oldRotate.y = pWin->drawable.y;
+		      pPrivWin->oldRotate.x = pBgWin->drawable.x;
+		      pPrivWin->oldRotate.y = pBgWin->drawable.y;
 		  }
 		  else
 		  {
