@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.7 88/01/22 20:26:07 swick Locked $";
+static char rcsid[] = "$Header: Form.c,v 1.8 88/02/01 12:03:28 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -23,21 +23,22 @@ static char rcsid[] = "$Header: Form.c,v 1.7 88/01/22 20:26:07 swick Locked $";
  * SOFTWARE.
  */
 
-#include <X/Xlib.h>
-#include <X/Intrinsic.h>
+#include "IntrinsicP.h"
 #include <X/Atoms.h>
-#include <X/Form.h>
 #include "FormP.h"
 
 /* Private Definitions */
 
-#define DEFAULTVALUE	-9999
+
+static int def0 = 0;
+static int def4 = 4;
+static int DEFAULTVALUE = -99999;
 
 
 #define Offset(field) XtOffset(FormWidget, form.field)
 static XtResource resources[] = {
-    {XtNdefaultDistance, XtCThickness, XrmRInt, sizeof(int),
-	Offset(default_spacing), XrmRString, "4"},
+    {XtNdefaultDistance, XtCThickness, XtRInt, sizeof(int),
+	Offset(default_spacing), XtRInt, (caddr_t)&def4}
 };
 #undef Offset
 
@@ -53,16 +54,16 @@ static XtResource formConstraintResources[] = {
 	Offset(left), XtREdgeType, (caddr_t)&defEdge},
     {XtNright, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
 	Offset(right), XtREdgeType, (caddr_t)&defEdge},
-    {XtNhorizDistance, XtCThickness, XrmRInt, sizeof(int),
-	Offset(dx), XrmRString, "-9999" /*DEFAULTVALUE*/ },
+    {XtNhorizDistance, XtCThickness, XtRInt, sizeof(int),
+	Offset(dx), XtRInt, (caddr_t)&DEFAULTVALUE},
     {XtNfromHoriz, XtCWidget, XtRWidget, sizeof(Widget),
 	Offset(horiz_base), XtRWidget, (caddr_t)NULL},
-    {XtNvertDistance, XtCThickness, XrmRInt, sizeof(int),
-	Offset(dy), XrmRString, "-9999" /*DEFAULTVALUE*/ },
+    {XtNvertDistance, XtCThickness, XtRInt, sizeof(int),
+	Offset(dy), XtRInt, (caddr_t)&DEFAULTVALUE},
     {XtNfromVert, XtCWidget, XtRWidget, sizeof(Widget),
 	Offset(vert_base), XtRWidget, (caddr_t)NULL},
-    {XtNresizable, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-	Offset(allow_resize), XrmRString, "FALSE"},
+    {XtNresizable, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	Offset(allow_resize), XtRInt, (caddr_t)&def0},
 };
 #undef Offset
 
@@ -78,8 +79,10 @@ FormClassRec formClassRec = {
     /* class_name         */    "Form",
     /* widget_size        */    sizeof(FormRec),
     /* class_initialize   */    NULL,
+    /* class_part_init    */    NULL,
     /* class_inited       */    FALSE,
     /* initialize         */    Initialize,
+    /* initialize_hook    */    NULL,
     /* realize            */    XtInheritRealize,
     /* actions            */    NULL,
     /* num_actions        */    0,
@@ -88,14 +91,19 @@ FormClassRec formClassRec = {
     /* xrm_class          */    NULLQUARK,
     /* compress_motion    */    TRUE,
     /* compress_exposure  */    TRUE,
+    /* compress_enterleave*/    TRUE,
     /* visible_interest   */    FALSE,
     /* destroy            */    NULL,
     /* resize             */    Resize,
     /* expose             */    XtInheritExpose,
     /* set_values         */    SetValues,
+    /* set_values_hook    */    NULL,
+    /* set_values_almost  */    XtInheritSetValuesAlmost,
+    /* get_values_hook    */    NULL,
     /* accept_focus       */    NULL,
+    /* version            */    XtVersion,
     /* callback_private   */    NULL,
-    /* reserved_private   */    NULL
+    /* tm_table           */    NULL,
   },
   { /* composite_class fields */
     /* geometry_manager   */   GeometryManager,
@@ -128,10 +136,8 @@ WidgetClass formWidgetClass = (WidgetClass)&formClassRec;
 
 
 /* ARGSUSED */
-static void Initialize(request, new, args, num_args)
+static void Initialize(request, new)
     Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
 {
     FormWidget fw = (FormWidget)new;
 
@@ -285,19 +291,16 @@ static XtGeometryResult GeometryManager(w, request, reply)
 
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new, last)
+static Boolean SetValues(current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
     return( FALSE );
 }
 
 
 /* ARGSUSED */
-static void ConstraintInitialize(request, new, args, num_args)
+static void ConstraintInitialize(request, new)
     Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
 {
     FormConstraints form = (FormConstraints)new->core.constraints;
     FormWidget fw = (FormWidget)new->core.parent;
@@ -311,9 +314,8 @@ static void ConstraintInitialize(request, new, args, num_args)
 
 
 /* ARGSUSED */
-static Boolean ConstraintSetValues(current, request, new, last)
+static Boolean ConstraintSetValues(current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
     return( FALSE );
 }
