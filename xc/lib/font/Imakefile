@@ -1,14 +1,14 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.5 91/07/16 23:04:33 gildea Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
 
 SUBDIRS = bitmap fontfile fc Speedo util
 OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o Speedo/?*.o util/?*.o
+DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE util/DONE
 
-MakeSubdirs($(SUBDIRS))
+NormalDepLibraryTarget(font,$(SUBDIRS) $(DONES),$(OBJS))
 
-NormalLibraryTarget(font,$(OBJS))
+ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
-
