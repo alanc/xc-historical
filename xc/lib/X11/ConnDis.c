@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.110 94/01/14 19:10:25 gildea Exp $
+ * $XConsortium: ConnDis.c,v 11.111 94/01/17 21:29:31 mor Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -501,6 +501,16 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
 #endif
 #endif
 
+#ifdef HASXDMAUTH
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
+#endif
+
 /*
  * First, a routine for setting authorization data
  */
@@ -952,7 +962,7 @@ GetAuthorization(trans_conn, family, saddr, saddrlen, idisplay,
     if (auth_namelen == 19 && !strncmp (auth_name, "XDM-AUTHORIZATION-1", 19))
     {
 	int     j;
-	long    now;
+	Time_t  now;
 	for (j = 0; j < 8; j++)
 	    xdmcp_data[j] = auth_data[j];
 	{
