@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.51 94/02/02 08:42:20 gildea Exp $
+ * $XConsortium: auth.c,v 1.52 94/03/31 23:14:35 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -227,10 +227,10 @@ SetProtoDisplayAuthorization (pdpy,
 
 #endif /* XDMCP */
 
-static
+void
 CleanUpFileName (src, dst, len)
-char	*src, *dst;
-int	len;
+    char *src, *dst;
+    int	 len;
 {
     while (*src) {
 	if (--len <= 0)
@@ -858,7 +858,7 @@ static void
 writeRemoteAuth (file, auth, peer, peerlen, name)
     FILE	    *file;
     Xauth	    *auth;
-    struct sockaddr *peer;
+    XdmcpNetaddr    peer;
     int		    peerlen;
     char	    *name;
 {
