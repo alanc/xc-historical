@@ -1,12 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/12 21:09:52 rws Exp $
-#if BuildPhigs
+XCOMM $XConsortium: Imakefile,v 1.2 94/03/07 18:24:43 matt Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-SUBDIRS = PHIGS
+#if BuildPhigs
+PHIGSDIRS = PHIGS
+#endif
+
+SUBDIRS = $(PHIGSDIRS) IMdkit
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
-#else
-all::
-#endif
