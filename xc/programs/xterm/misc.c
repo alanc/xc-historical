@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.24 88/10/07 13:25:28 jim Exp $
+ *	$XConsortium: misc.c,v 1.25 88/11/07 11:16:44 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.24 88/10/07 13:25:28 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.25 88/11/07 11:16:44 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -68,7 +68,12 @@ xevents()
 		if (waitingForTrackInfo)
 			return;
 		XNextEvent (screen->display, &event);
-		XtDispatchEvent(&event);
+		if (!event.xany.send_event ||
+		    ((event.xany.type != KeyPress) &&
+		     (event.xany.type != KeyRelease) &&
+		     (event.xany.type != ButtonPress) &&
+		     (event.xany.type != ButtonRelease)))
+		    XtDispatchEvent(&event);
 	} while (QLength(screen->display) > 0);
 }
 
