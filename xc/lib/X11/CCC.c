@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCCC.c,v 1.6 91/02/12 16:12:26 dave Exp $" */
+/* $XConsortium: XcmsCCC.c,v 1.8 91/05/13 23:04:18 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -37,6 +37,8 @@
 #include <stdio.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"
+
+extern XcmsIntensityMap *_XcmsGetIntensityMap();
 
 
 
@@ -77,6 +79,8 @@ XcmsCreateCCC(dpy, screenNumber, visual, clientWhitePt, gamutCompProc,
 {
     XcmsCCC pDefaultCCC = XcmsDefaultCCC(dpy, screenNumber);
     XcmsCCC newccc;
+    XcmsIntensityMap *pIMap;
+    XcmsPerScrnInfo *pNewScrnInfo;
 
     if (pDefaultCCC == NULL ||
 	    !(newccc = (XcmsCCC) Xcalloc(1, (unsigned) sizeof(XcmsCCCRec)))) {
@@ -105,6 +109,22 @@ XcmsCreateCCC(dpy, screenNumber, visual, clientWhitePt, gamutCompProc,
     }
     if (whitePtAdjClientData) {
 	newccc->whitePtAdjClientData = whitePtAdjClientData;
+    }
+
+    /*
+     * Now check our list of per-Visual Intensity tables.
+     * If one exists replace the pPerScrnInfo.
+     */
+    if ((pIMap = _XcmsGetIntensityMap(dpy, visual)) != NULL) {
+	if (!(pNewScrnInfo = (XcmsPerScrnInfo *)
+		Xcalloc(1, (unsigned) sizeof(XcmsPerScrnInfo)))) {
+	    Xfree(newccc);
+	    return(NULL);
+	}
+	bcopy((char *)newccc->pPerScrnInfo, (char *)pNewScrnInfo, 
+		sizeof(XcmsPerScrnInfo));
+	pNewScrnInfo->screenData = pIMap->screenData;
+	newccc->pPerScrnInfo = pNewScrnInfo;
     }
 
     /*
@@ -222,12 +242,17 @@ XcmsFreeCCC(ccc)
 	return;
     }
 
-    Xfree(ccc);
-
     /*
-     * Note that XcmsPerScrnInfo sub-structures are not freed here.
-     * There is only one allocated per Screen and it just so happens
-     * that we place its initial reference is placed in the default CCC.
-     * The routine _XcmsFreeDefaultCCCs frees them.
+     * Note that XcmsPerScrnInfo sub-structures are freed here only if
+     * they are for visuals that have per-Visual intensity tables.
+     * Otherwise the XcmsPerScrnInfo structure is being shared!
+     * For the latter, there is only one allocated per Screen and it just
+     * so happens * that we place its initial reference is placed in the
+     * 	default CCC.  The routine _XcmsFreeDefaultCCCs frees them.
      */
+    if (_XcmsGetIntensityMap(ccc->dpy, ccc->visual) != NULL) {
+	Xfree(ccc->pPerScrnInfo);
+    }
+
+    Xfree(ccc);
 }
