@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.36 88/02/02 10:03:59 rws Exp $ */
+/* $Header: dispatch.c,v 1.37 88/02/02 11:47:51 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -279,7 +279,7 @@ Dispatch()
 	    client = clientReady[nready];
 	    if (! client)
 	    {
-		ErrorF( "HORRIBLE ERROR, unused client %d\n", nready);
+		/* KillClient can cause this to happen */
 		continue;
 	    }
 	    /* GrabServer activation can cause this to be true */
@@ -2957,7 +2957,7 @@ ProcKillClient(client)
     REQUEST(xResourceReq);
 
     pointer *pResource;
-    int clientIndex;
+    int clientIndex, myIndex;
 
     REQUEST_SIZE_MATCH(xResourceReq);
     if (stuff->id == AllTemporary)
@@ -2971,9 +2971,18 @@ ProcKillClient(client)
 
     if (clientIndex && pResource)
     {
+	myIndex = client->index;
     	if (clients[clientIndex] && !clients[clientIndex]->clientGone)
  	{
 	    CloseDownClient(clients[clientIndex]);
+	}
+	if (myIndex == clientIndex)
+	{
+	    /* force yield and return Success, so that Dispatch()
+	     * doesn't try to touch client
+	     */
+	    isItTimeToYield = TRUE;
+	    return (Success);
 	}
 	return (client->noClientException);
     }
