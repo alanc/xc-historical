@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.15 88/02/27 09:38:23 rws Exp $
+ *	$Header: misc.c,v 1.16 88/05/11 15:48:46 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.15 88/02/27 09:38:23 rws Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.16 88/05/11 15:48:46 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -521,6 +521,12 @@ register TScreen *screen;
 	static char *log_default;
 	char *malloc(), *rindex();
 	extern logpipe();
+#ifdef SYSV
+	/* SYSV has another pointer which should be part of the
+	** FILE structure but is actually a separate array.
+	*/
+	unsigned char *old_bufend;
+#endif	/* SYSV */
 
 	if(screen->logging || (screen->inhibit & I_LOG))
 		return;
@@ -545,8 +551,14 @@ register TScreen *screen;
 			close(p[0]);
 			dup2(fileno(stderr), 1);
 			dup2(fileno(stderr), 2);
+#ifdef SYSV
+			old_bufend = _bufend(stderr);
+#endif	/* SYSV */
 			close(fileno(stderr));
 			fileno(stderr) = 2;
+#ifdef SYSV
+			_bufend(stderr) = old_bufend;
+#endif	/* SYSV */
 			close(screen->display->fd);
 			close(screen->respond);
 			if(!shell) {
@@ -622,6 +634,9 @@ logpipe()
 {
 	register TScreen *screen = &term->screen;
 
+#ifdef SYSV
+	(void) signal(SIGPIPE, SIG_IGN);
+#endif	/* SYSV */
 	if(screen->logging)
 		CloseLog(screen);
 }
@@ -713,20 +728,12 @@ SysError (i)
 int i;
 {
 	int oerrno;
-#ifdef SYSV
 	extern char *sys_errlist[];
-#endif	/* SYSV */
 
 	oerrno = errno;
-#ifdef SYSV
-	/* SYSV perror write(2)s to file descriptor 2 */
+	/* perror(3) write(2)s to file descriptor 2 */
 	fprintf (stderr, "%s: Error %d, errno %d: ", xterm_name, i, oerrno);
 	fprintf (stderr, "%s\n", sys_errlist[oerrno]);
-#else	/* !SYSV */
-	fprintf (stderr, "%s: Error %d, errno %d:\n", xterm_name, i, oerrno);
-	errno = oerrno;
-	perror ("");
-#endif	/* !SYSV */
 	Cleanup(i);
 }
 
@@ -827,7 +834,18 @@ register XErrorEvent *ev;
 xioerror(d)
 Display *d;
 {
-	perror(xterm_name);
+	/* Perror(3) writes to fd 2.  What we want to do is
+	** to write to stderr's fd.  Since the original code used
+	** perror which uses write(2), let's not use fprintf(3).
+	*/
+	int oerrno;
+	
+	oerrno = errno;
+	write(fileno(stderr), xterm_name, strlen(xterm_name));
+	write(fileno(stderr), ": ", 2);
+	write(fileno(stderr), sys_errlist[oerrno], strlen(sys_errlist[oerrno]));
+	write(fileno(stderr), "\n", 1);
+
 	Exit(ERROR_XIOERROR);
 }
 
