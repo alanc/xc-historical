@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.20 90/09/14 16:30:07 rws Exp $
+ * $XConsortium: dpylist.c,v 1.21 90/12/06 20:36:52 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -142,6 +142,7 @@ struct display	*old;
 	    IfFree (d->systemPath);
 	    IfFree (d->systemShell);
 	    IfFree (d->failsafeClient);
+	    IfFree (d->chooser);
 	    if (d->authorizations)
 	    {
 		for (i = 0; i < d->authNum; i++)
@@ -159,6 +160,7 @@ struct display	*old;
 	    IfFree (d->authNameLens);
 	    IfFree (d->peer);
 	    IfFree (d->from);
+	    XdmcpDisposeARRAY8 (&d->clientAddr);
 	    free ((char *) d);
 	    break;
 	}
@@ -218,6 +220,7 @@ char		*class;
     d->systemPath = NULL;
     d->systemShell = NULL;
     d->failsafeClient = NULL;
+    d->chooser = NULL;
     d->authorize = FALSE;
     d->authorizations = NULL;
     d->authNum = 0;
@@ -227,6 +230,7 @@ char		*class;
     d->userAuthDir = NULL;
     d->authNames = NULL;
     d->authNameLens = NULL;
+    d->authComplain = 1;
     d->openDelay = 0;
     d->openRepeat = 0;
     d->openTimeout = 0;
@@ -240,6 +244,10 @@ char		*class;
     d->from = 0;
     d->fromlen = 0;
     d->displayNumber = 0;
+    d->useChooser = 0;
+    d->clientAddr.data = NULL;
+    d->clientAddr.length = 0;
+    d->connectionType = 0;
     displays = d;
     return d;
 }

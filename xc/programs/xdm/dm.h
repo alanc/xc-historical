@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.36 90/11/19 17:34:45 keith Exp $
+ * $XConsortium: dm.h,v 1.37 90/12/10 15:45:27 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -120,6 +120,9 @@ struct display {
 	struct sockaddr	*from;		/* XDMCP port of display */
 	int		fromlen;
 	CARD16		displayNumber;
+	int		useChooser;	/* Run the chooser for this display */
+	ARRAY8		clientAddr;	/* for chooser picking */
+	CARD16		connectionType;	/* ... */
 
 	/* server management resources */
 	int		serverAttempts;	/* number of attempts at running X */
@@ -148,6 +151,7 @@ struct display {
 	char		*systemPath;	/* path set for startup/reset */
 	char		*systemShell;	/* interpreter for startup/reset */
 	char		*failsafeClient;/* a client to start when the session fails */
+	char		*chooser;	/* chooser program */
 
 	/* authorization resources */
 	int		authorize;	/* enable authorization */
@@ -155,6 +159,7 @@ struct display {
 	unsigned short	*authNameLens;	/* authorization protocol name lens */
 	char		*clientAuthFile;/* client specified auth file */
 	char		*userAuthDir;	/* backup directory for tickets */
+	int		authComplain;	/* complain when no auth for XDMCP */
 
 	/* information potentially derived from resources */
 	int		authNameNum;	/* number of protocol names */
