@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cfbpntwin.c,v 5.15 92/02/11 15:04:23 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -323,7 +323,7 @@ cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
 		{
 		    Expand (StepTile
 			    RROP_SOLID_MASK(pdst, leftMask); pdst++;,
-			    ,
+			    ;,
 			    1)
 		}
 	    }
@@ -340,7 +340,7 @@ cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
 		{
 		    Expand (StepTile
 			    ,
-			    ,
+			    ;,
 			    0)
 		}
 	    }
