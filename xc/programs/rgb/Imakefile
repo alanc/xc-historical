@@ -19,6 +19,7 @@ InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
 InstallProgramWithFlags(showrgb,$(BINDIR),)
 
 rgb.pag rgb.dir: rgb rgb.txt
+	$(RM) rgb.pag rgb.dir
 	./rgb rgb < rgb.txt
 
 clean::
