@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.157 94/03/09 14:38:42 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.158 94/03/21 16:25:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2542,9 +2542,10 @@ static void ApplicationShellInsertChild(widget)
 extern String _XtGetUserName();
 
 static void CallSaveCallbacks();
-static void XtCallSaveCallbacks();
 static void XtCallCancelCallbacks();
 static void XtCallDieCallbacks();
+static void XtCallSaveCallbacks();
+static void XtCallSaveCompleteCallbacks();
 static void GetIceEvent();
 static XtCheckpointToken GetToken();
 
@@ -2574,21 +2575,23 @@ static void JoinSession(w)
 
     smcb.save_yourself.callback = XtCallSaveCallbacks;
     smcb.die.callback = XtCallDieCallbacks;
+    smcb.save_complete.callback = XtCallSaveCompleteCallbacks;
     smcb.shutdown_cancelled.callback = XtCallCancelCallbacks;
-    smcb.save_yourself.client_data =
-	smcb.die.client_data =
+    smcb.save_yourself.client_data = smcb.die.client_data =
+	smcb.save_complete.client_data = 
 	    smcb.shutdown_cancelled.client_data = (SmPointer) w;
+    mask = SmcSaveYourselfProcMask | SmcDieProcMask |
+	SmcSaveCompleteProcMask | SmcShutdownCancelledProcMask;
 
     if (w->session.connection) {
-	mask = SmcSaveYourselfProcMask | SmcDieProcMask |
-	    SmcShutdownCancelledProcMask;
 	SmcModifyCallbacks(w->session.connection, mask, &smcb);
 	sm_client_id = SmcClientID(w->session.connection);
     } else if (getenv("SESSION_MANAGER")) {
 	char error_msg[XT_MSG_LENGTH];
 	error_msg[0] = '\0';
 	w->session.connection =
-	    SmcOpenConnection(NULL, &smcb, w->session.session_id,
+	    SmcOpenConnection(NULL, SmProtoMajor, SmProtoMinor,
+			      mask, &smcb, w->session.session_id,
 			      &sm_client_id, XT_MSG_LENGTH, error_msg);
 	if (error_msg[0]) {
 	    String params[1];
@@ -2888,6 +2891,18 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
 
     if (w->session.checkpoint_state == XtSaveInactive)
 	CallSaveCallbacks(w);
+}
+
+/*ARGSUSED*/
+static void XtCallSaveCompleteCallbacks(connection, client_data)
+    SmcConn	connection;
+    SmPointer	client_data;
+{
+    SessionShellWidget w =  (SessionShellWidget) client_data;
+/*
+    XtCallCallbackList((Widget)w, w->session.save_complete_callbacks,
+		       (XtPointer) NULL);
+*/
 }
 
 /*ARGSUSED*/
