@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.29 91/08/25 14:11:45 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.30 91/08/26 10:28:30 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -621,7 +621,7 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
     if (i == 5)
 	return;
     pt = startPts[i];
-    for (j = 4; startPts[j] == endPts[i]; j--)
+    for (j = 4; startPts[j] == endPts[j]; j--)
 	;
     lastPt = endPts[j] - deltas[j];
     if ((pt->x == dinfo->endPt.x) && (pt->y == dinfo->endPt.y))
