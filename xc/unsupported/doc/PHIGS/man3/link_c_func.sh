@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ##
+## $XConsortium$
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
