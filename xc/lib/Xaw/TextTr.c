@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.12 89/10/19 15:02:22 kit Exp $ */
+/* $XConsortium: TextTr.c,v 1.13 89/11/01 17:01:24 kit Exp $ */
 
 char *_XawDefaultTextTranslations1 =
 "\
@@ -47,13 +47,19 @@ Meta<Key>Z:	scroll-one-line-down() \n\
  Shift Meta<Key>BackSpace:	backward-kill-word() \n\
 ", *_XawDefaultTextTranslations3 = "\
 <Key>Right:	forward-character() \n\
+<Key>KP_Right:	forward-character() \n\
 <Key>Left:	backward-character() \n\
+<Key>KP_Left:	backward-character() \n\
 <Key>Down:	next-line() \n\
+<Key>KP_Down:	next-line() \n\
 <Key>Up:	previous-line() \n\
+<Key>KP_Up:	previous-line() \n\
 <Key>Delete:	delete-previous-character() \n\
+<Key>KP_Delete:	delete-previous-character() \n\
 <Key>BackSpace:	delete-previous-character() \n\
 <Key>Linefeed:	newline-and-indent() \n\
 <Key>Return:	newline() \n\
+<Key>KP_Enter:	newline() \n\
 <Key>:		insert-char() \n\
 <FocusIn>:	focus-in() \n\
 <FocusOut>:	focus-out() \n\
