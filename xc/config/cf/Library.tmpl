@@ -6,7 +6,7 @@
  * DoNormalLib, DoSharedLib, DoDebugLib, DoProfileLib
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.5 91/03/25 15:02:36 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.6 91/03/25 21:53:49 rws Exp $
 
          CC = LibraryCcCmd
   CCOPTIONS = LibraryCCOptions
@@ -57,10 +57,10 @@ all::									@@\
 	_SharedLibMkdir()						@@\
 									@@\
 .c.o:									@@\
-	_DebuggedObjCompile( /**/)					@@\
-	_ProfiledObjCompile( /**/)					@@\
-	_SharedObjCompile( /**/)					@@\
-	_NormalObjCompile( /**/)					@@\
+	_DebuggedObjCompile($(_NOOP_))					@@\
+	_ProfiledObjCompile($(_NOOP_))					@@\
+	_SharedObjCompile($(_NOOP_))					@@\
+	_NormalObjCompile($(_NOOP_))					@@\
 									@@\
 clean::									@@\
 	_DebuggedCleanDir()						@@\
