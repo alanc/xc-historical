@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.133 89/09/21 09:14:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.134 89/09/29 12:09:58 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -31,8 +31,6 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
-
-static void SetAncestorSensitive();
 
 Boolean XtIsSubclass(widget, widgetClass)
     Widget    widget;
@@ -330,56 +328,7 @@ void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
 		window_class, visual, value_mask, attributes);
     }
 } /* XtCreateWindow */
-			
-void XtSetSensitive(widget, sensitive)
-    register Widget widget;
-    Boolean	    sensitive;
-{
-    Arg			args[1];
-    register Cardinal   i;
-    register WidgetList children;
 
-    if (widget->core.sensitive == sensitive) return;
-
-    XtSetArg(args[0], XtNsensitive, sensitive);
-    XtSetValues(widget, args, XtNumber(args));
-
-    /* If widget's ancestor_sensitive is TRUE, propagate new sensitive to
-       children's ancestor_sensitive; else do nothing as children's
-       ancestor_sensitive is already FALSE */
-    
-    if (widget->core.ancestor_sensitive && XtIsComposite (widget)) {
-	children = ((CompositeWidget) widget)->composite.children;
-	for (i = 0; i < ((CompositeWidget)widget)->composite.num_children; i++){
-	    SetAncestorSensitive (children[i], sensitive);
-	}
-    }
-} /* XtSetSensitive */
-
-static void SetAncestorSensitive(widget, ancestor_sensitive)
-    register Widget widget;
-    Boolean	    ancestor_sensitive;
-{
-    Arg			args[1];
-    register Cardinal   i;
-    register WidgetList children;
-
-    if (widget->core.ancestor_sensitive == ancestor_sensitive) return;
-
-    XtSetArg(args[0], XtNancestorSensitive, ancestor_sensitive);
-    XtSetValues(widget, args, XtNumber(args));
-
-    /* If widget's sensitive is TRUE, propagate new ancestor_sensitive to
-       children's ancestor_sensitive; else do nothing as children's
-       ancestor_sensitive is already FALSE */
-    
-    if (widget->core.sensitive && XtIsComposite(widget)) {
-	children = ((CompositeWidget) widget)->composite.children;
-	for (i = 0; i < ((CompositeWidget)widget)->composite.num_children; i++){
-	    SetAncestorSensitive (children[i], ancestor_sensitive);
-	}
-    }
-} /* SetAncestorSensitive */
 
 /* ---------------- XtNameToWidget ----------------- */
 
