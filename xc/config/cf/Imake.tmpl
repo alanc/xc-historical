@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.12 89/01/19 15:25:31 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.13 89/01/19 16:37:57 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -345,7 +345,7 @@
                CC = CcCmd
          COMPRESS = CompressCmd
               CPP = CppCmd
-    PREPROCESSCMD = PreProcessCmd
+    PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)
           INSTALL = InstallCmd
                LD = LdCmd
              LINT = LintCmd
