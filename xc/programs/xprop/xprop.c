@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.33 91/01/09 17:40:06 rws Exp $*/
+/* $XConsortium: xprop.c,v 1.34 91/01/22 18:23:35 gildea Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -21,9 +21,9 @@
  *
  */
 	
+#include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
-#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -32,6 +32,12 @@
 #include <X11/Xmu/WinUtil.h>
 
 #include "dsimple.h"
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *getenv();
+#endif
 
 #define MAXSTR 10000
 
@@ -1168,7 +1174,7 @@ int argc;
 char **argv;
 {
   FILE *stream;
-  char *name, *getenv();
+  char *name;
   thunk *props, *Handle_Prop_Requests();
   char *remove_propname = NULL;
   Bool frame_only = False;
