@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.178 87/11/11 14:14:31 rws Locked $ */
+/* $Header: window.c,v 1.179 87/11/17 11:47:23 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -541,28 +541,28 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     pWin->borderPixel = pParent->borderPixel;
     pWin->visibility = VisibilityFullyObscured;
 		
-    pWin->clientWinSize.x = x + bw;
-    pWin->clientWinSize.y = y + bw;
+    pWin->clientWinSize.x = x + (int)bw;
+    pWin->clientWinSize.y = y + (int)bw;
     pWin->clientWinSize.height = h;
     pWin->clientWinSize.width = w;
-    pWin->absCorner.x = pWin->oldAbsCorner.x = pParent->absCorner.x + x + bw;
-    pWin->absCorner.y = pWin->oldAbsCorner.y = pParent->absCorner.y + y + bw;
+    pWin->absCorner.x = pWin->oldAbsCorner.x = pParent->absCorner.x + x + (int)bw;
+    pWin->absCorner.y = pWin->oldAbsCorner.y = pParent->absCorner.y + y + (int)bw;
 
         /* set up clip list correctly for unobscured WindowPtr */
     pWin->clipList = (* pScreen->RegionCreate)(NULL, 1);
     pWin->borderClip = (* pScreen->RegionCreate)(NULL, 1);
     box.x1 = pWin->absCorner.x;
     box.y1 = pWin->absCorner.y;
-    box.x2 = box.x1 + w;
-    box.y2 = box.y1 + h;
+    box.x2 = box.x1 + (int)w;
+    box.y2 = box.y1 + (int)h;
     pWin->winSize = (* pScreen->RegionCreate)(&box, 1);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize,  pParent->winSize);
     if (bw)
     {
-	box.x1 -= bw;
-	box.y1 -= bw;
-	box.x2 += bw;
-	box.y2 += bw;
+	box.x1 -= (int)bw;
+	box.y1 -= (int)bw;
+	box.x2 += (int)bw;
+	box.y2 += (int)bw;
         pWin->borderSize = (* pScreen->RegionCreate)(&box, 1);
         (* pScreen->Intersect)(pWin->borderSize, pWin->borderSize, 
 			       pParent->winSize);
@@ -807,8 +807,8 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     pVlist = vlist;
     while (vmask) 
     {
-	index = ffs(vmask) - 1;
-	vmask &= ~(index = (1 << index));
+	index = 1 << (ffs(vmask) - 1);
+	vmask &= ~index;
 	switch (index) 
         {
 	  case CWBackPixmap: 
@@ -1026,7 +1026,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	     */
 	    if ( cursorID == None)
 	    {
-	        if ( pWin->cursor != None)
+	        if (pWin->cursor != (CursorPtr)None)
 		    FreeCursor( pWin->cursor);
                 if (pWin == &WindowTable[pWin->drawable.pScreen->myNum])
 		   MakeRootCursor( pWin);
@@ -1038,7 +1038,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	        pCursor = (CursorPtr)LookupID(cursorID, RT_CURSOR, RC_CORE);
                 if (pCursor) 
 		{
-    	            if ( pWin->cursor != None)
+    	            if (pWin->cursor != (CursorPtr)None)
 			FreeCursor( pWin->cursor);
                     pWin->cursor = pCursor;
                     pWin->cursor->refcnt++;
@@ -1226,26 +1226,26 @@ MoveWindow(pWin, x, y, pNextSib)
         pBox = (* pScreen->RegionExtents)(pWin->borderSize);
 	anyMarked = MarkSiblingsBelowMe(pWin, pBox);
     }
-    pWin->clientWinSize.x = x + bw;
-    pWin->clientWinSize.y = y + bw;
+    pWin->clientWinSize.x = x + (int)bw;
+    pWin->clientWinSize.y = y + (int)bw;
     pWin->oldAbsCorner.x = oldx;
     pWin->oldAbsCorner.y = oldy;
-    pWin->absCorner.x = pParent->absCorner.x + x +bw;
-    pWin->absCorner.y = pParent->absCorner.y + y + bw;
+    pWin->absCorner.x = pParent->absCorner.x + x + (int)bw;
+    pWin->absCorner.y = pParent->absCorner.y + y + (int)bw;
 
     box.x1 = pWin->absCorner.x;
     box.y1 = pWin->absCorner.y;
-    box.x2 = box.x1 + pWin->clientWinSize.width;
-    box.y2 = box.y1+ pWin->clientWinSize.height;
+    box.x2 = box.x1 + (int)pWin->clientWinSize.width;
+    box.y2 = box.y1 + (int)pWin->clientWinSize.height;
     (* pScreen->RegionReset)(pWin->winSize, &box);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize, pParent->winSize); 
 
     if (bw)
     {
-	box.x1 -= bw;
-	box.y1 -= bw;
-	box.x2 += bw;
-	box.y2 += bw;
+	box.x1 -= (int)bw;
+	box.y1 -= (int)bw;
+	box.x2 += (int)bw;
+	box.y2 += (int)bw;
 	(* pScreen->RegionReset)(pWin->borderSize, &box);
         (* pScreen->Intersect)(pWin->borderSize, pWin->borderSize, 
 			       pParent->winSize);
@@ -1360,8 +1360,8 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh, useGravity)
  
 	box.x1 = x + cwsx;
 	box.y1 = y + cwsy;
-	box.x2 = box.x1 + pSib->clientWinSize.width;
-	box.y2 = box.y1 + pSib->clientWinSize.height;
+	box.x2 = box.x1 + (int)pSib->clientWinSize.width;
+	box.y2 = box.y1 + (int)pSib->clientWinSize.height;
 
 	pSib->oldAbsCorner.x = pSib->absCorner.x;
 	pSib->oldAbsCorner.y = pSib->absCorner.y;
@@ -1428,8 +1428,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     unsigned short width = pWin->clientWinSize.width,
                    height = pWin->clientWinSize.height;    
     short oldx = pWin->absCorner.x,
-          oldy = pWin->absCorner.y,
-          bw = pWin->borderWidth;
+          oldy = pWin->absCorner.y;
+    int bw = pWin->borderWidth;
     short dw, dh;
     Bool XYSame = FALSE;
     DDXPointRec oldpt;
@@ -1468,8 +1468,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
     box.x1 = pWin->absCorner.x;
     box.y1 = pWin->absCorner.y;
-    box.x2 = pWin->absCorner.x + w;
-    box.y2 = pWin->absCorner.y + h;
+    box.x2 = pWin->absCorner.x + (int)w;
+    box.y2 = pWin->absCorner.y + (int)h;
     (* pScreen->RegionReset)(pWin->winSize, &box);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize, pParent->winSize);
 
@@ -1486,8 +1486,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     else
         (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
 
-    dw = w - width;
-    dh = h - height;
+    dw = (int)w - (int)width;
+    dh = (int)h - (int)height;
     ResizeChildrenWinSize(pWin, XYSame, dw, dh, USE_GRAVITY);
 
     /* let the hardware adjust background and border pixmaps, if any */
@@ -1633,8 +1633,8 @@ ChangeBorderWidth(pWin, width)
 
     box.x1 = pWin->absCorner.x;
     box.y1 = pWin->absCorner.y;
-    box.x2 = box.x1 + pWin->clientWinSize.width;
-    box.y2 = box.y1 + pWin->clientWinSize.height;
+    box.x2 = box.x1 + (int)pWin->clientWinSize.width;
+    box.y2 = box.y1 + (int)pWin->clientWinSize.height;
     (* pScreen->RegionReset)(pWin->winSize, &box);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize, pParent->winSize);
 
@@ -1801,7 +1801,8 @@ IOverlapAnyWindow(pWin, box)
 static WindowPtr 
 WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
     WindowPtr pWin, pSib;
-    short x, y, w, h;
+    short x, y;
+    unsigned short w, h;
     int smode;
 {
     BoxRec box;
@@ -1813,8 +1814,8 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
     pScreen = pWin->drawable.pScreen;
     box.x1 = x;
     box.y1 = y;
-    box.x2= x + w;
-    box.y2 = y + h;
+    box.x2 = x + (int)w;
+    box.y2 = y + (int)h;
     switch (smode)
     {
       case Above:
@@ -1957,8 +1958,8 @@ ConfigureWindow(pWin, mask, vlist, client)
 
     if (pWin->parent)
     {
-        x = pWin->absCorner.x - pWin->parent->absCorner.x - bw;
-        y = pWin->absCorner.y - pWin->parent->absCorner.y - bw;
+        x = pWin->absCorner.x - pWin->parent->absCorner.x - (int)bw;
+        y = pWin->absCorner.y - pWin->parent->absCorner.y - (int)bw;
     }
     else
     {
@@ -1988,8 +1989,8 @@ ConfigureWindow(pWin, mask, vlist, client)
     tmask = mask & ~ChangeMask;
     while (tmask) 
     {
-	index = ffs(tmask) - 1;
-	tmask &= ~(index = (1 << index));
+	index = 1 << (ffs(tmask) - 1);
+	tmask &= ~index;
 	switch (index) 
         {
           case CWBorderWidth:   
@@ -2024,7 +2025,8 @@ ConfigureWindow(pWin, mask, vlist, client)
            make the changes to the window if event sent */
 
     if (mask & CWStackMode)
-        pSib = WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode);
+        pSib = WhereDoIGoInTheStack(pWin, pSib, x, y,
+				    w + (bw << 1), h + (bw << 1), smode);
     else
         pSib = pWin->nextSib;
 
@@ -2072,7 +2074,7 @@ ConfigureWindow(pWin, mask, vlist, client)
         if (!size_change) {
 	    if (mask & (CWX | CWY))
     	        action = MOVE_WIN;
-	    else if (mask & (CWStackMode | CWSibling | CWBorderWidth))
+	    else if (mask & (CWStackMode | CWBorderWidth))
 	        action = RESTACK_WIN;
             else   /* really nothing to do */
                 return(Success) ;        
@@ -2141,102 +2143,36 @@ ActuallyDoSomething:
  *
  ******/
 
-/* XXX shouldn't this be a case for the stack mode stuff?? */
-
 int
 CirculateWindow(pParent, direction, client)
     WindowPtr pParent;
     int direction;
     ClientPtr client;
 {
-    WindowPtr pChild, pSib;
+    register WindowPtr pWin;
     xEvent event;
     register ScreenPtr pScreen;
 
-    if (pParent->firstChild == pParent->lastChild) 
-        return(Success) ;
-
     pScreen = pParent->drawable.pScreen;
     if (direction == RaiseLowest)
-    {
-        pChild = pParent->lastChild;
-    	while (pChild)
-	{
-	    if (pChild->mapped && (pChild->visibility != VisibilityUnobscured))
-	    {
-                if (pParent->firstChild != pChild)
-                {        
-		    if (pParent->lastChild == pChild)
-			pParent->lastChild = pChild->prevSib;
-                    if (pChild->nextSib) 
-                        pChild->nextSib->prevSib = pChild->prevSib;
-                    if (pChild->prevSib) 
-                        pChild->prevSib->nextSib = pChild->nextSib;
-                    pChild->nextSib = pParent->firstChild;
-                    pChild->prevSib = (WindowPtr ) NULL;
-		    pParent->firstChild->prevSib = pChild;
-                    pParent->firstChild = pChild;
-		    pChild->mapped = 0;   /* to fool MapWindow */
-		    pSib = pChild;
-		    break;
-		}
-		return Success;
-	    }
-	    pChild = pChild->prevSib;
-	}
-    }
-    else if (direction == LowerHighest)
-    {
-        BoxPtr pBox;
+	for (pWin = pParent->lastChild;
+	     pWin &&
+	     !(pWin->mapped &&
+	       AnyWindowOverlapsMe(pWin,
+				   (*pScreen->RegionExtents)(pWin->borderSize)));
+	     pWin = pWin->prevSib) ;
+    else
+	for (pWin = pParent->firstChild;
+	     pWin &&
+	     !(pWin->mapped &&
+	       IOverlapAnyWindow(pWin,
+				 (*pScreen->RegionExtents)(pWin->borderSize)));
+	     pWin = pWin->nextSib) ;
 
-        pChild = pParent->firstChild;
-    	while (pChild)
-	{
-	    if (pChild->mapped && (pChild->visibility == VisibilityUnobscured))
-	    {
-		int result;
+    if (!pWin)
+	return Success;
 
-                   /* HACK -- this search is n squared */
-
-		pSib = pChild->nextSib;
-
-                   /* find a sibling that pChild overlaps */
-
-                pBox = (* pScreen->RegionExtents)(pChild->borderSize);
-		while (pSib)
-	        {
-		    if (pSib->realized && (pSib->visibility != VisibilityUnobscured))
-		    {
-			result = (* pScreen->RectIn)(pSib->borderSize, 
-					&pBox);
-			if (result != rgnOUT) 
-			    break;
-		    }
-		    pSib = pSib->nextSib;
-		}
-                if (pSib)
-		{
-		    WindowPtr pNext;
-		    pNext = pChild->nextSib;
-		    if (pParent->firstChild == pChild)
-			pParent->firstChild = pNext;
-                    pNext->prevSib = pChild->prevSib;
-                    if (pChild->prevSib) 
-                        pChild->prevSib->nextSib = pNext;
-                    pChild->nextSib = (WindowPtr ) NULL;
-                    pChild->prevSib = pParent->lastChild;
-		    pParent->lastChild->nextSib = pChild;
-                    pParent->lastChild = pChild;
-		    pSib->mapped = 0;  /* to fool mapWindow */
-    		    break;
-		}
-	    }
-	    pChild = pChild->nextSib;
-	}
-    }
-    if (!pChild)
-        return(Success) ;
-    event.u.circulate.window = pChild->wid;
+    event.u.circulate.window = pWin->wid;
     event.u.circulate.parent = pParent->wid;
     event.u.circulate.event = pParent->wid;
     if (direction == RaiseLowest)
@@ -2251,9 +2187,10 @@ CirculateWindow(pParent, direction, client)
 	        SubstructureRedirectMask, client) == 1)
     	    return(Success);            
     }
-    if (pParent->realized)
-        MapWindow(pSib, HANDLE_EXPOSURES, BITS_DISCARDED,
-	      DONT_SEND_NOTIFICATION, client);
+
+    ReflectStackChange(pWin, (direction == RaiseLowest) ? pParent->firstChild
+						        : (WindowPtr)NULL);
+
     event.u.u.type = CirculateNotify;
     DeliverEvents(pParent, &event, 1, NullWindow);
     return(Success);
@@ -2323,7 +2260,7 @@ ReparentWindow(pWin, pParent, x, y, client)
     /* insert at begining of pParent */
     pWin->parent = pParent;
     pWin->nextSib = pParent->firstChild;
-    pWin->prevSib = (WindowPtr )NULL;
+    pWin->prevSib = (WindowPtr)NULL;
     if (pParent->firstChild) 
 	pParent->firstChild->prevSib = pWin;
     else
@@ -2333,8 +2270,8 @@ ReparentWindow(pWin, pParent, x, y, client)
     /* clip to parent */
     box.x1 = x + pParent->absCorner.x;
     box.y1 = y + pParent->absCorner.y;
-    box.x2 = box.x1 + pWin->clientWinSize.width;
-    box.y2 = box.y1+ pWin->clientWinSize.height;
+    box.x2 = box.x1 + (int)pWin->clientWinSize.width;
+    box.y2 = box.y1 + (int)pWin->clientWinSize.height;
     (* pScreen->RegionReset)(pWin->winSize, &box);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize, 
 					  pParent->winSize); 
