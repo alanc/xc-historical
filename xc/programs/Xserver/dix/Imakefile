@@ -13,6 +13,7 @@ EXT_DEFINES = ExtensionDefines
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dix,$(OBJS))
+LintLibraryTarget(dix,$(SRCS))
 
 DependTarget()
 
