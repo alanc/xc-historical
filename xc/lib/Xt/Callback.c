@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.9 88/09/06 16:26:49 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.10 88/09/21 13:03:56 swick Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif lint
 
@@ -270,7 +270,7 @@ void XtRemoveAllCallbacks(widget, name)
 
 void _XtCallCallbacks (callbacks, call_data)
     CallbackList *callbacks;
-    Opaque       call_data;
+    caddr_t       call_data;
 {
     register CallbackRec *cl;
     CallbackRec		 stack_cache [CALLBACK_CACHE_SIZE];
@@ -383,7 +383,7 @@ XtCallbackList _XtGetCallbackList(list)
 void XtCallCallbacks(widget, name, call_data)
     Widget   widget;
     String   name;
-    Opaque  call_data;
+    caddr_t  call_data;
 {
     CallbackList *callbacks;
 

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.86 88/09/26 11:43:05 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.87 88/10/09 11:14:38 rws Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -376,25 +376,25 @@ typedef unsigned long	XtInputMask;
 #define XtInputExceptMask	(1L<<2)
 
 typedef void (*XtTimerCallbackProc)();
-    /* opaque closure         */
+    /* caddr_t closure         */
     /* XtIntervalId   *id      */
 
 extern XtIntervalId XtAddTimeOut();
     /* unsigned long interval */
     /* XtTimerCallbackProc  proc  */
-    /* Opaque   closure       */
+    /* caddr_t   closure      */
 
 extern XtIntervalId XtAppAddTimeOut();
     /* XtAppContext app */
     /* unsigned long interval */
     /* XtTimerCallbackProc  proc  */
-    /* Opaque   closure       */
+    /* caddr_t   closure       */
 
 extern void XtRemoveTimeOut();
     /* XtIntervalId timer;      */
 
 typedef void (* XtInputCallbackProc)();
-    /* Opaque closure;          */
+    /* caddr_t closure;          */
     /* int    *source;           */
     /* XtInputId  *id;           */
 
@@ -402,14 +402,14 @@ extern XtInputId XtAddInput(); /* source, condition, proc, closure */
     /* int source;		*/
     /* Opaque condition;        */
     /* XtInputCallbackProc proc;*/
-    /* Opaque closure;          */
+    /* caddr_t closure;         */
 
 extern XtInputId XtAppAddInput(); /* source, condition, proc, closure */
     /*  XtAppContext app; */
     /* int source;		*/
     /* Opaque condition;        */
     /* XtInputCallbackProc proc;*/
-    /* Opaque closure;          */
+    /* caddr_t closure;         */
 
 extern void XtRemoveInput(); /* id */
     /* XtInputid id;		*/
@@ -567,12 +567,12 @@ extern void XtRemoveCallback ();
 extern void XtAddCallbacks ();
     /* Widget           widget;         */
     /* String           callback_name;  */
-    /* XtCallbackList   callbacks;       */
+    /* XtCallbackList   callbacks;      */
 
 extern void XtRemoveCallbacks ();
     /* Widget           widget;         */
     /* String           callback_name;  */
-    /* XtCallbackList   callbacks;       */
+    /* XtCallbackList   callbacks;      */
 
 extern void XtRemoveAllCallbacks ();
     /* Widget           widget;         */
@@ -1006,17 +1006,17 @@ extern void XtFree(); /* ptr */
  **************************************************************/
 
 typedef Boolean (*XtWorkProc)();
-    /* Opaque closure;  data the application registered */
+    /* caddr_t closure;  data the application registered */
     /* returns whether to remove this work procedure or not */
 
 extern XtWorkProcId XtAddWorkProc();
     /*  XtWorkProc proc; */
-    /*  Opaque closure; */
+    /*  caddr_t closure; */
 
 extern XtWorkProcId XtAppAddWorkProc();
     /*  XtAppContext app; */
     /*  XtWorkProc proc; */
-    /*  Opaque closure; */
+    /*  caddr_t closure; */
 
 extern void  XtRemoveWorkProc();
     /*  XtWorkProcId id; */

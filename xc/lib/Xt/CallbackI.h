@@ -1,4 +1,4 @@
-/* $XConsortium: CallbackI.h,v 1.5 88/09/06 16:26:53 jim Exp $ */
+/* $XConsortium: CallbackI.h,v 1.6 88/09/20 17:49:41 swick Exp $ */
 /* $oHeader: CallbackI.h,v 1.2 88/08/18 15:53:53 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,14 +41,14 @@ extern void _XtRemoveAllCallbacks (); /* callbackList */
 
 extern void _XtCallCallbacks (); /* callbacks, call_data */
     /* CallbackList     *callbacks;     */
-    /* Opaque           callData;       */
+    /* caddr_t          callData;       */
 
 
 extern void _XtAddCallback(); /* widget, callbacks, callback, closure */
     /* Widget           widget; */
     /* CallbackList     *callbacks; */
     /* XtCallbackProc   callback; */
-    /* Opaque           closure; */
+    /* caddr_t          closure; */
 
 typedef struct _CallbackRec *CallbackList;
 
