@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.28 89/07/19 22:25:55 rws Exp $ */
+/* $XConsortium: window.c,v 5.29 89/07/24 10:01:03 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1569,6 +1569,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 			FreeCursor (pWin->optional->cursor, (Cursor)0);
 		    pWin->optional->cursor = pCursor;
 		    pCursor->refcnt++;
+		    pWin->cursorIsNone = FALSE;
 		    /*
 		     * check on any children now matching the new cursor
 		     */
