@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: listbufs.c,v 5.1 91/02/16 10:07:40 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -119,19 +119,6 @@ SOFTWARE.
 	if ( (list_current + n - input_buffer) > INPUT_BUFFER_SIZE )\
 		ERROR("FATAL: Input Buffer Overflow.");\
 }
-
-#define BEGEND(what) \
-{\
-	switch ( begin_or_end )\
-	{\
-	case BIF_P_BEGIN:\
-		printf("Beginning what \n");\
-		break;\
-	case BIF_P_END:\
-		printf("End what \n");\
-		break;\
-	}\
-} /* End macro BEGEND */
 
 #define PRINT_MATRIX44(mat) \
 {\
