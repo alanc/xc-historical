@@ -35,9 +35,11 @@ CDEBUGFLAGS = ServerCDebugFlags
 
 NormalLibraryObjectRule()
 
-all:: $(OFILES)
+all:: $(OFILES) kbd_mode
 
 NormalLibraryTarget(sun,$(OBJS))
+
+SimpleProgramTarget(kbd_mode)
 
 DependTarget()
 
