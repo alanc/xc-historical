@@ -207,7 +207,7 @@ static void Resize (gw)
 	    x += parent->core.y + parent->core.border_width;
 	}
     	XShapeCombineMask (XtDisplay (parent), XtWindow (parent), ShapeBounding,
-		       	   w->eyes.shape_mask, ShapeSet, x, y);
+		       	   x, y, w->eyes.shape_mask, ShapeSet);
     	XFreePixmap (XtDisplay (w), w->eyes.shape_mask);
     }
 #endif

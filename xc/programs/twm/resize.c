@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.15 89/04/12 19:00:07 jim Exp $
+ * $XConsortium: resize.c,v 1.16 89/04/13 16:36:15 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.15 89/04/12 19:00:07 jim Exp $";
+"$XConsortium: resize.c,v 1.16 89/04/13 16:36:15 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -852,22 +852,22 @@ TwmWindow   *tmp_win;
 	op = ShapeSet;
 	if (tmp_win->title_height) {
 	    XShapeCombineShape (dpy, dest, ShapeBounding,
-			    	tmp_win->title_w, ShapeBounding,
-			    	ShapeSet,
 			    	tmp_win->title_x + tmp_win->title_bw,
-			    	tmp_win->title_y + tmp_win->title_bw);
+			    	tmp_win->title_y + tmp_win->title_bw,
+			    	tmp_win->title_w, ShapeBounding,
+			    	ShapeSet);
 	    op = ShapeUnion;
 	}
 	XShapeCombineShape (dpy, dest, ShapeBounding,
-			    tmp_win->w, ShapeBounding,
-			    op,
 			    0,
-			    tmp_win->title_height);
+			    tmp_win->title_height,
+			    tmp_win->w, ShapeBounding,
+			    op);
 	tmp_win->fShaped = 1;
     } else {
 	if (tmp_win->fShaped) {
 	    XShapeCombineMask (dpy, dest, ShapeBounding,
-			    	None, ShapeSet, 0, 0);
+			    	0, 0, None, ShapeSet);
 	    tmp_win->fShaped = 0;
 	}
     }

@@ -248,7 +248,7 @@ static void Resize (w)
 	}
 
 	XShapeCombineMask (XtDisplay (parent), XtWindow (parent), ShapeBounding,
-			    shape_mask, ShapeSet, x, y);
+			    x, y, shape_mask, ShapeSet);
 
 	/* erase the pixmap */
     	XSetForeground (XtDisplay (w), w->clock.shapeGC, 0);
@@ -267,7 +267,7 @@ static void Resize (w)
 			0, 360 * 64);
 
 	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeClip, 
-		    shape_mask, ShapeSet, 0, 0);
+		    0, 0, shape_mask, ShapeSet);
 
 	XFreePixmap (XtDisplay (w), shape_mask);
 
