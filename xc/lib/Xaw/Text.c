@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.156 90/06/18 14:11:08 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.157 90/06/29 16:00:10 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2535,15 +2535,15 @@ TextWidget ctx;
     y -= ctx->text.hbar->core.height + 2 * ctx->text.hbar->core.border_width;
   
   max_pos = PositionForXY (ctx, x, y);
-  lines = LineForPosition(ctx, max_pos); /* number of visable lines. */
+  lines = LineForPosition(ctx, max_pos) + 1; /* number of visable lines. */
   
   if ( (ctx->text.insertPos >= ctx->text.lt.top) &&
-       (ctx->text.insertPos <= max_pos))
+       (ctx->text.insertPos < max_pos))
     return;
 
   first = ctx->text.lt.top;
 
-  if (ctx->text.insertPos < first) { /* We need to scroll up. */
+  if (ctx->text.insertPos < first) { /* We need to scroll down. */
       top = SrcScan(ctx->text.source, ctx->text.insertPos,
 		    XawstEOL, XawsdLeft, 1, FALSE);
 
@@ -2559,32 +2559,26 @@ TextWidget ctx;
 
 	  number--;
       }
-     
-      if (first <= top) {	/* If we did not break out early. */
-	  /* Back up to just before the last CR. */
 
-	  if (first > 0) 
-	      first = SrcScan(ctx->text.source, first,
-			      XawstPositions, XawsdRight, 1, TRUE);
+      if (first <= top) {	/* If we found the proper number
+				   of lines. */
+     
+	  /* Back up to just before the last CR. */
+      
+	  first = SrcScan(ctx->text.source, first,
+			  XawstPositions, XawsdRight, 1, TRUE);
 	  
 	  /* Check to make sure the cursor is visable. */
 	  
-	  if (first > top) {
-	      /*
-	       * Not visable, back out of previous backup. 
-	       */
-	      first = SrcScan(ctx->text.source, first,
-			      XawstPositions, XawsdLeft, 1, TRUE);
-	  }
-	  else			/* we are okay, back up line counter. */
+	  if (first <= top)
 	      number++;
-
+	  
 	  lines = number;
       }
       else
 	  lines = 0;
   }
-  else {			/* We need to Scroll down */
+  else {			/* We need to Scroll up */
       top = SrcScan(ctx->text.source, ctx->text.insertPos,
 		    XawstEOL, XawsdLeft, lines, FALSE);
 
