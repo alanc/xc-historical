@@ -13,6 +13,7 @@
 
 #define SystemV           NO
 #define HasPutenv YES
+#define HasBsearch YES
 
 #if OSMajorVersion >= 4
 #define HasSunOSSharedLibraries YES
@@ -46,7 +47,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.19 89/07/12 08:38:08 rws Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.20 89/07/12 09:50:42 rws Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform

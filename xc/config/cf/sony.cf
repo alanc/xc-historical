@@ -8,9 +8,10 @@
 #define OSMinorVersion    2
 #define BuildServer       NO
 
+
 #define SignalReturnProcType int
 
-/**/# platform:  $XConsortium: bsd.cf,v 1.5 89/07/11 11:32:59 jim Exp $
+/**/# platform:  $XConsortium: sony.cf,v 1.1 89/07/11 14:35:45 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
@@ -19,5 +20,5 @@
 
 #define UnalignedReferencesAllowed NO	       /* if arbitrary deref is okay */
 #define SetTtyGroup YES
-
+#define HasBsearch NO
 

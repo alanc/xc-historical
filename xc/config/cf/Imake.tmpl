@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.38 89/06/13 18:44:45 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.39 89/07/11 14:38:44 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -232,6 +232,13 @@
 #endif
 #ifndef HasPutenv
 #define HasPutenv		NO	/* assume not */
+#endif
+#ifndef HasBsearch
+#if SystemV
+#define HasBsearch		YES
+#else
+#define HasBsearch		NO	/* stupid systems */
+#endif
 #endif
 #ifndef HasSaberC
 #define HasSaberC		NO	/* silly people */

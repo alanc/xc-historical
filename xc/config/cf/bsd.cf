@@ -14,7 +14,7 @@
 
 #define SignalReturnProcType int
 
-/**/# platform:  $XConsortium: bsd.cf,v 1.4 89/05/10 14:58:12 jim Exp $
+/**/# platform:  $XConsortium: bsd.cf,v 1.5 89/07/11 11:32:59 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
@@ -28,3 +28,5 @@
 #if OSMajorVersion >= 4 && OSMinorVersion >= 3
 #define SetTtyGroup YES
 #endif
+
+#define HasBsearch NO
