@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.92 89/10/06 19:15:15 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.93 89/11/01 10:22:30 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -2852,8 +2852,8 @@ void XtCallActionProc(widget, action, event, params, num_params)
     do {
 	WidgetClass class = XtClass(w);
 	do {
-	    for (actionP = (CompiledActionTable)class->core_class.actions;
-		 actionP->name != NULL; actionP++) {
+	    if (actionP = (CompiledActionTable)class->core_class.actions)
+	      for (; actionP->name != NULL; actionP++) {
 
 		if (actionP->signature == q) {
 		    ActionHook hook = app->action_hook_list;
