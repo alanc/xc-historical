@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: xgetselev.c,v 1.5 89/10/10 16:10:19 gms Exp $ */
+/* $XConsortium: xgetselev.c,v 1.6 89/12/02 15:21:06 rws Exp $ */
 
 /***********************************************************************
  *
@@ -73,7 +73,7 @@ ProcXGetSelectedExtensionEvents(client)
     register ClientPtr client;
     {
     int					i;
-    int					total_length;
+    int					total_length = 0;
     xGetSelectedExtensionEventsReply	rep;
     WindowPtr				pWin;
     XEventClass				*buf;
@@ -132,8 +132,9 @@ ProcXGetSelectedExtensionEvents(client)
 
 	tclient = buf;
 	aclient = buf + rep.this_client_count;
-	for (i=0; i<EMASKSIZE; i++)
-	    tclient = ClassFromMask (tclient, others->mask[i], i, NULL, CREATE);
+	if (others)
+	    for (i=0; i<EMASKSIZE; i++)
+		tclient = ClassFromMask (tclient, others->mask[i], i, NULL, CREATE);
 
 	for (others = pOthers->inputClients; others; others=others->next)
 	    for (i=0; i<EMASKSIZE; i++)
@@ -142,7 +143,7 @@ ProcXGetSelectedExtensionEvents(client)
 
     WriteReplyToClient (client, sizeof(xGetSelectedExtensionEventsReply), &rep);
 
-    if (pOthers)
+    if (total_length)
 	{
 	client->pSwapReplyFunc = Swap32Write;
 	WriteSwappedDataToClient( client, total_length, buf);
