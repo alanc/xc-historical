@@ -1,5 +1,5 @@
 
-/* $XConsortium: wdt.h,v 5.2 91/07/08 18:14:42 hersh Exp $ */
+/* $XConsortium: wdt.h,v 5.3 91/07/15 12:19:22 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1071,7 +1071,6 @@ Pint_bundle_plus pred_interior_reps_plus[5];
 	pred_interior_reps_plus[0].refl_props.specular_colr.type = PINDIRECT;\
 	pred_interior_reps_plus[0].refl_props.specular_colr.val.ind = 1;\
 	pred_interior_reps_plus[0].refl_props.specular_exp = 0.0;\
-	pred_interior_reps_plus[0].refl_props.transpar_coef = 0.0;\
 	pred_interior_reps_plus[0].colr.type = PINDIRECT;\
 	pred_interior_reps_plus[0].colr.val.ind = 1;\
 	pred_interior_reps_plus[0].back_style = PSTYLE_SOLID;\
@@ -1084,7 +1083,6 @@ Pint_bundle_plus pred_interior_reps_plus[5];
 	pred_interior_reps_plus[0].back_refl_props.specular_colr.type = PINDIRECT;\
 	pred_interior_reps_plus[0].back_refl_props.specular_colr.val.ind = 1;\
 	pred_interior_reps_plus[0].back_refl_props.specular_exp = 0.0;\
-	pred_interior_reps_plus[0].back_refl_props.transpar_coef = 0.0;\
 	pred_interior_reps_plus[0].back_colr.type = PINDIRECT;\
 	pred_interior_reps_plus[0].back_colr.val.ind = 1;\
 	pred_interior_reps_plus[0].approx_type = PSURF_WS_DEP;\

@@ -1,4 +1,4 @@
-/* $XConsortium: elemcon9.c,v 5.1 91/02/16 10:00:42 rws Exp $ */
+/* $XConsortium: elemcon9.c,v 5.2 91/07/15 12:18:35 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1083,7 +1083,6 @@ main(argc,argv)
 		pgcolr.val.general.z = 0.35;
 		parea_props.specular_colr = pgcolr;
 		parea_props.specular_exp = 1.2;
-		parea_props.transpar_coef = 0.8;
 		pset_refl_props(&parea_props);
 		peldata.props = parea_props;
 		element_test(testcase, STR1, ++curr_element,
@@ -1101,7 +1100,6 @@ main(argc,argv)
 		pgcolr.val.ind = 5;
 		parea_props.specular_colr = pgcolr;
 		parea_props.specular_exp = 1.0;
-		parea_props.transpar_coef = 0.7;
 		pset_back_refl_props(&parea_props);
 		peldata.props = parea_props;
 		element_test(testcase, STR1, ++curr_element,
