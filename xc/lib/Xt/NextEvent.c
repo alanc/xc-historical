@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.68 89/10/04 15:23:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.69 89/10/04 16:09:25 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -288,6 +288,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 
 		app->selectRqueue[i]->ie_oq = app->outstandingQueue;
 		app->outstandingQueue = app->selectRqueue[i];
+		found_input = True;
 	    }
 	    if (FD_ISSET (i, &wmaskfd)) {
 		app->selectWqueue[i]->ie_oq = app->outstandingQueue;
@@ -312,7 +313,11 @@ ENDILOOP:   ;
 static void IeCallProc(ptr)
 	InputEvent *ptr;
 {
+    while (ptr != NULL) {
+	InputEvent *next = ptr->ie_next;
 	(* (ptr->ie_proc))( ptr->ie_closure, &ptr->ie_source, &ptr);
+	ptr = next;
+    }
 }
 
 static void TeCallProc(ptr)
@@ -438,16 +443,26 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	InputEvent *sptr;
 	XtInputMask condition = (XtInputMask) Condition;
 	
+#define CondAllocateQueue(queue) \
+	if (queue == NULL) { \
+	    queue = (InputEvent**) \
+		_XtHeapAlloc(&app->heap,(Cardinal)NOFILE*sizeof(InputEvent*));\
+	    bzero( (char*)queue, (unsigned)NOFILE*sizeof(InputEvent*) ); \
+	}
+
 	sptr = XtNew(InputEvent);
 	if(condition == XtInputReadMask){
+	    CondAllocateQueue(app->selectRqueue);
 	    sptr->ie_next = app->selectRqueue[source];
 	    app->selectRqueue[source] = sptr;
 	    FD_SET(source, &app->fds.rmask);
 	} else if(condition == XtInputWriteMask) {
+	    CondAllocateQueue(app->selectWqueue);
 	    sptr->ie_next = app->selectWqueue[source];
 	    app->selectWqueue[source] = sptr;
 	    FD_SET(source, &app->fds.wmask);
 	} else if(condition == XtInputExceptMask) {
+	    CondAllocateQueue(app->selectEqueue);
 	    sptr->ie_next = app->selectEqueue[source];
 	    app->selectEqueue[source] = sptr;
 	    FD_SET(source, &app->fds.emask);
@@ -571,8 +586,8 @@ static void DoOtherSources(app)
 		te_ptr = app->timerQueue;
 		app->timerQueue = te_ptr->te_next;
 		te_ptr->te_next = NULL;
-               if (te_ptr->te_proc != 0)
-		  TeCallProc(te_ptr);
+		if (te_ptr->te_proc != NULL)
+		    TeCallProc(te_ptr);
 		XtFree((char*)te_ptr);
               if (app->timerQueue == NULL) break;
 	    }
