@@ -48,11 +48,16 @@ typedef struct _TimeStamp {
 #define MAX_REQUEST_LOG 100
 #endif
 
+extern CallbackListPtr ClientStateCallback;
+
+typedef enum {ClientStateInitial,
+	      ClientStateAuthenticating,
+	      ClientStateRunning,
+	      ClientStateRetained,
+	      ClientStateGone} ClientState;
+
 typedef struct _Client {
     int         index;
-#ifdef XTHREADS
-    unsigned long serialNumber;  /* for validateGC */
-#endif
     Mask        clientAsMask;
     pointer     requestBuffer;
     pointer     osPrivate;	/* for OS layer, including scheduler */
@@ -70,10 +75,6 @@ typedef struct _Client {
     int         clientGone;
     int         noClientException;	/* this client died or needs to be
 					 * killed */
-#ifdef XTHREADS
-    pointer	msgBuffer;
-    pointer	pConflict;
-#endif /* XTHREADS */
     DrawablePtr lastDrawable;
     Drawable    lastDrawableID;
     GCPtr       lastGC;
@@ -89,10 +90,17 @@ typedef struct _Client {
     CARD32	req_len;		/* length of current request */
     Bool	big_requests;		/* supports large requests */
     int		priority;
+    ClientState clientState;
+    DevUnion	*devPrivates;
 #ifdef XKB
     unsigned short xkbClientFlags;
     unsigned short mapNotifyMask;
 #endif
+#ifdef XTHREADS
+    unsigned	long serialNumber;	/* for validateGC */
+    pointer	msgBuffer;
+    pointer	pConflict;
+#endif /* XTHREADS */
 
 #ifdef DEBUG
     unsigned char requestLog[MAX_REQUEST_LOG];
