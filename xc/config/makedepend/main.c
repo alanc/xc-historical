@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.57 91/10/31 09:23:25 rws Exp $
+ * $XConsortium: main.c,v 1.58 92/06/01 19:59:25 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -216,35 +216,18 @@ main(argc, argv)
 			warning("ignoring option %s\n", argv[0]);
 		}
 	}
-#ifdef __GNUC__
+#ifdef PREINCDIR
 	if (incp >= includedirs + MAXDIRS)
 	    fatal("Too many -I flags.\n");
-#ifdef luna88k
-	*incp++ = "/usr/local/lib/gcc/gcc-include";
-#else
-	*incp++ = "/usr/local/lib/gcc-include";
-#endif
-#else
-#ifdef luna88k
-	if (incp >= includedirs + MAXDIRS)
-	    fatal("Too many -I flags.\n");
-	*incp++ = "/usr/lib/ccom/include";
-#endif
+	*incp++ = PREINCDIR;
 #endif
 	if (incp >= includedirs + MAXDIRS)
 	    fatal("Too many -I flags.\n");
 	*incp++ = INCLUDEDIR;
-#ifdef CRAY
+#ifdef POSTINCDIR
 	if (incp >= includedirs + MAXDIRS)
 	    fatal("Too many -I flags.\n");
-	*incp++ = "/usr/include/stdc";
-#endif
-#ifdef Mips
-# ifdef BSD43
-	if (incp >= includedirs + MAXDIRS)
-	    fatal("Too many -I flags.\n");
-	*incp++ = "/usr/include/bsd43";
-# endif
+	*incp++ = POSTINCDIR;
 #endif
 
 	redirect(startat, makefile);
