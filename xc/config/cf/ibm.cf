@@ -4,18 +4,33 @@
 
 #ifdef AIXArchitecture
 #ifdef RtArchitecture
-#define OSMajorVersion         2	/* RT AIX v2.2 */
-#define OSMinorVersion         2
+#define OSName		AIX 2.2
+#define OSMajorVersion	2
+#define OSMinorVersion	2
 #else
-#define OSMajorVersion         1	/* PS/2 AIX v1.1 (same as rt v2.2) */
-#define OSMinorVersion         1
+#ifdef RsArchitecture
+#define OSName		AIX 3.1.5
+#define OSMajorVersion	3
+#define OSMinorVersion	1
+#else
+#define OSName		AIX 1.1
+#define OSMajorVersion	1
+#define OSMinorVersion	1
+#endif
 #endif
 #else
-#define OSMajorVersion         4	/* AOS 4.3 (going away) */
-#define OSMinorVersion         3
+#define OSName		AOS 4.3
+#define OSMajorVersion	4
+#define OSMinorVersion	3
 #endif
+XCOMM operating system:  OSName
 
 #define UnixCpp /**/
+#ifdef RsArchitecture
+#define cppdefs /**/
+#else
+#define cppdefs -DUNIXCPP
+#endif
 
 #ifdef ATHENA
 #define ibmAthenaDefs -DATHENA
@@ -25,42 +40,63 @@
 
 #ifdef AIXArchitecture
 #define SystemV YES
-#define OSName AIX
-#define BootstrapCFlags -Daix
-#define HasNdbm NO
+#define LnCmd ln -s
+#define HasSockets YES
+#define HasVFork YES
 #ifdef RtArchitecture
+#define BootstrapCFlags -Daix
 #define OSDefines -DAIX -DAIXrt -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
+#else
+#ifdef RsArchitecture
+/* #define BootstrapCFlags -D_IBMR2 */
+#define OSDefines -DAIX -DAIXrs -DIBM_OS_HAS_HFT
+#define LdCombineFlags -r /* RS-6000 doesn't do ld -X */
 #else
 #define OSDefines -DAIX -DAIX386 -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
 #define LdCombineFlags -r /* PS/2 doesn't do ld -X */
+#endif
 #endif
 #define OPERATING_SYSTEM AIX /* directory name under server/ddx/ibm/ */
 
 #ifdef USE_PCC
 #define CcCmd i386cc
-#define ibmosdefs -DHCVERSION=HCRevision
+#define ibmosdefs -Dibm -DHCVERSION=HCRevision
 #else
 #ifdef RtArchitecture
 #define CcCmd cc -Nd4000 -Nn3000 -DBSD_INCLUDES
-#define ibmosdefs -DSYSV -Nd4000 -Nn3000
+#define ibmosdefs -Dibm -DSYSV -Nd4000 -Nn3000
+#else
+#ifdef RsArchitecture
+/* #define CcCmd xlc */
+#define ibmosdefs -DSYSV /* -Dibm -D_IBMR2 -DAIXV3 */
+#define Malloc0ReturnsNull   YES
+#define CppCmd /usr/lpp/X11/Xamples/util/cpp/cpp
 #else
 #define CcCmd cc -DBSD_INCLUDES -D_BSD
-#define ibmosdefs -DSYSV
+#define ibmosdefs -Dibm -DSYSV
 #endif
+#endif
+#ifndef RsArchitecture
 #define ibmlibdefs -Hcpp
+#endif
 #endif /* USE_PCC */
 
 #else /* else AOS - warning: AOS is going away... */
-#define OSName AOS
 #define HasNdbm YES
 #define CcCmd hc
-#define ibmosdefs -DHCVERSION=HCRevision
+#define ibmosdefs -Dibm -DHCVERSION=HCRevision
 #define OSDefines -DBSDrt
 #define OPERATING_SYSTEM BSDrt
 #define BootstrapCFlags -Dibm
 #endif /* AIXArchitecture */
 
+#ifndef RsArchitecture
 #define HasVoidSignalReturn    NO
+#endif
+
+#ifdef RsArchitecture
+#define TermcapLibrary	       -lcurses
+#endif
 
 #ifdef RtArchitecture
 /*
@@ -85,7 +121,6 @@
 #define LdCmd /bin.386/i386ld
 #define ExtraLibraries /lib.386/libtcp.a
 */
-#define LnCmd ln -s			/* no symbolic links */
 #define ibmarchdefs -Di386 -DiAPX386
 /*
  * These define the screens the server will allow
@@ -124,9 +159,12 @@
 #endif
 
 
-#define StandardDefines -Dibm ibmosdefs ibmarchdefs
-#define LintOpts -ax -Dibm ibmosdefs ibmarchdefs
+#define StandardDefines ibmosdefs ibmarchdefs
+#define LintOpts -ax ibmosdefs ibmarchdefs
 
+#ifdef RsArchitecture
+#define BuildServer NO
+#endif
 /* 
  * This defines the name of server you want.
  * affected: .../X11/server/Makefile
@@ -192,7 +230,7 @@
  * define this as you like for server compilation 
  * affected: all makefiles in .../X11/server
  */
-#define ServerOSDefines  -DUNIXCPP -DNOSTDHDRS OSDefines
+#define ServerOSDefines  cppdefs -DNOSTDHDRS OSDefines
 
 
 #define FontOSDefines StandardDefines
@@ -207,8 +245,7 @@
 #define	ServerCDebugFlags -O ibmAthenaDefs
 
 /* define this as you like for normal library compilation */
-#define LibraryDefines -DUNIXCPP ibmlibdefs StandardDefines
+#define LibraryDefines cppdefs ibmlibdefs StandardDefines
 
-XCOMM platform:  $XConsortium: ibm.cf,v 1.16 91/01/08 09:42:11 converse Exp $
-XCOMM operating system:  OSName
+XCOMM platform:  $XConsortium: ibm.cf,v 1.17 91/01/08 12:22:08 rws Exp $
 
