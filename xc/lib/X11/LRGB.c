@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.12 91/07/14 13:29:34 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.13 91/07/22 16:00:38 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -588,7 +588,7 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	switch (format_return) {
 	  case 8:
 	    /*
-	     * Must have at lease:
+	     * Must have at least:
 	     *		VisualID0
 	     *		VisualID1
 	     *		VisualID2
@@ -607,7 +607,7 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	    break;
 	  case 16:
 	    /*
-	     * Must have at lease:
+	     * Must have at least:
 	     *		VisualID0
 	     *		VisualID3
 	     *		type
@@ -624,7 +624,7 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	    break;
 	  case 32:
 	    /*
-	     * Must have at lease:
+	     * Must have at least:
 	     *		VisualID0
 	     *		type
 	     *		count
@@ -649,7 +649,7 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	 */
 	visualID = _XcmsGetElement(format_return, &pChar, &nitems);
 	while (count--) {
-	    visualID = visualID << 8;
+	    visualID = visualID << format;
 	    visualID |= _XcmsGetElement(format_return, &pChar, &nitems);
 	}
 
