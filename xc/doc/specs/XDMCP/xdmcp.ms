@@ -17,11 +17,12 @@ define cc % "\\fR}\\fP" %
 .ce 1
 \s+2\fBX Display Manager Control Protocol\fP\s-2
 .sp 6
-.ce 3
+.ce 4
 Keith Packard
 .sp 6p
-Massachusetts Institute of Technology
+X Consortium
 Laboratory for Computer Science
+Massachusetts Institute of Technology
 .sp 8
 .LP
 Copyright \(co 1989 by the Massachusetts Institute of Technology
@@ -44,7 +45,7 @@ as X terminals), a protocol for requesting service over the network is
 needed.  Since the display manager is a scarce resource, the X Display
 Manager Control Protocol (also called XDMCP) is designed to use unreliable
 datagrams and places the bulk of the burden for sequencing and retransmission
-on the display.  A standard byte order and syncronous responses reduces the
+on the display.  A standard byte order and synchronous responses reduces the
 complexity of the protocol.
 .AE
 .de PT
@@ -103,7 +104,7 @@ Data Types
 XDMCP packets contain several types of data.  For multi-byte integers, the
 values are stored in ``Big Endian'' order; most significant byte first.
 As XDMCP will not be used to transport large quantities of data, this
-restriction will not substantially hamper the effiency of any
+restriction will not substantially hamper the efficiency of any
 implementation.  Also, no padding of any sort will occur within the packets.
 .TS
 expand;
@@ -133,15 +134,21 @@ Packet Format
 All XDMCP packets have the following information:
 .TS
 expand;
-c c c
-c c c
-c l l.
+c c c c
+c c c c
+_ _ _
+| c l l | c
+| c l l | c
+| c l l | c
+_ _ _
+c l l c.
 Length in	Field	Description of field
 Bytes	Type	
 
 2	CARD16	version number
-2	CARD16	opcode
+2	CARD16	opcode	packet header
 2	CARD16	n = length of remaining data in bytes
+
 n	???	packet-specific data
 .TE
 .LP
@@ -167,8 +174,8 @@ contain one of the following values (encoding provided in section below):
 Length of data in bytes
 .RS
 This specifies the length of the information following the first 6 bytes.
-Each packet-type has a different format, and will need to be seperately
-length checked against this value.  As every data item has either an
+Each packet-type has a different format, and will need to be separately
+length-checked against this value.  As every data item has either an
 explicit length, or an implicit length, this can be easily accomplished.
 Packets that have too little or too much data should be ignored.
 .RE
@@ -179,8 +186,8 @@ conditions:
 .IP 1
 They must contain valid opcodes.
 .IP 2
-The length of the remaining data should coorespond to the sum of the 
-lengths of the individual remaining data items;
+The length of the remaining data should correspond to the sum of the 
+lengths of the individual remaining data items.
 .IP 3
 The
 \f7opcode\fP
@@ -188,14 +195,14 @@ should be expected (a finite state diagram is given
 in a later section).
 .IP 4
 If the packet is of type \f8Manage\fP or \f8Refuse\fP, the \f7Session ID\fP
-should match the value sent in the preceeding \f8Accept\fP packet.
+should match the value sent in the preceding \f8Accept\fP packet.
 .RE
 .NH 1
 Protocol
 .LP
 Each of the opcodes is described below.  Since a given packet type is only
 ever sent one way, each packet description below indicates the direction.
-Most of the packets have addtional information included beyond the
+Most of the packets have additional information included beyond the
 description above.  The additional information is appended to the packet
 header in the order described without padding, and the length field is
 computed accordingly.
@@ -245,7 +252,7 @@ is instructed to \f8Query\fP multiple managers, it will send multiple
 the manager, either \f8Willing\fP or \f8Unwilling\fP.
 .IP
 The \f8BroadcastQuery\fP packet is sent to many hosts.  Each manager which
-receives this packet will not respond with a \f8Unwilling\fP packet.
+receives this packet will not respond with an \f8Unwilling\fP packet.
 .IP
 The \f8IndirectQuery\fP packet is sent to only one manager, with the request
 that the request be forwarded to a larger list of managers using
@@ -345,7 +352,7 @@ retransmitted.
 .RS
 Manager \(-> Display
 .br
-Addtional Fields:
+Additional Fields:
 .RS
 \f7Authentication Name\fP:
 ARRAY8
@@ -353,9 +360,9 @@ ARRAY8
 This specifies the authentication method, selected from the list offered in
 the \f8Query\fP, \f8BroadcastQuery\fP or \f8IndirectQuery\fP packet that the
 manger expects the display to use in the subsequent \f8Request\fP packet.
-This choice should remain as constant as feasible; a display which receives
-a delayed \f8Willing\fP packet should not confuse the manager by using an
-inappropriate \f7Authentication Name\fP.
+This choice should remain as constant as feasible so that displays which
+send multiple \f8Query\fP packets can use the \f7Authentication Name\fP from
+any \f8Willing\fP packet which arrives.
 .LP
 The display is free to ignore managers which request an insufficient level
 of authentication.
@@ -377,9 +384,10 @@ protocol specifies no interpretation of the data in this field.
 Semantics:
 .RS
 A \f8Willing\fP packet is sent by managers that may service connections from
-this display.  It is sent in response to either a \f8Query\fP or a
-\f8BroadcastQuery\fP but does not imply a commitment to provide service (it
-may later decide that it has accepted enough connections already).
+this display.  It is sent in response to either a \f8Query\fP,
+\f8BroadcastQuery\fP or \f8ForwardQuery\fP but does not imply a commitment
+to provide service (e.g. it may later decide that it has accepted enough
+connections already).
 .RE
 Problems/Solutions:
 .RS
@@ -588,7 +596,7 @@ Semantics:
 .RS
 An \f8Accept\fP packet is sent by a manager in response to a \f8Request\fP
 packet if the manager is willing to establish a connection for the display.
-The \f7Session ID\fP is used to identify this connection from any preceeding
+The \f7Session ID\fP is used to identify this connection from any preceding
 ones and will be used by the display in its subsequent \f8Manage\fP packet.
 The \f7Session ID\fP is a 32 bit number which is incremented each time an
 \f8Accept\fP packet is sent as it must be reasonably unique over a long
@@ -896,9 +904,6 @@ receive \f8Willing\fP \(-> \f6start-connection\fP
 receive \f8Unwilling\fP \(-> \f6stop-connection\fP
 
 .br
-receive other \(-> \f6collect-query\fP
-
-.br
 timeout \(-> \f6query\fP
 .RE	
 
@@ -906,14 +911,6 @@ timeout \(-> \f6query\fP
 \f6broadcast\fP:
 .RS
 Send \f8BroadcastQuery\fP packet
-.br
-\(-> \f6collect-broadcast-query\fP
-.RE
-
-.LP
-\f6indirect\fP:
-.RS
-Send \f8IndirectQuery\fP packet
 .br
 \(-> \f6collect-broadcast-query\fP
 .RE
@@ -936,6 +933,34 @@ timeout \(-> \f6broadcast\fP
 Add new host to the host list presented to the user.
 .br
 \(-> \f6collect-broadcast-query\fP
+.RE
+
+.LP
+\f6indirect\fP:
+.RS
+Send \f8IndirectQuery\fP packet
+.br
+\(-> \f6collect-indirect-query\fP
+.RE
+
+.LP
+\f6collect-indirect-query\fP:
+.RS
+receive \f8Willing\fP \(-> \f6update-indirect-willing\fP
+
+.br
+user-requested connect to one host \(-> \f6start-connection\fP
+
+.br
+timeout \(-> \f6indirect\fP
+.RE
+
+.LP
+\f6update-indirect-willing\fP:
+.RS
+Add new host to the host list presented to the user.
+.br
+\(-> \f6collect-indirect-query\fP
 .RE
 
 .LP
@@ -979,7 +1004,7 @@ receive XOpenDisplay: \(-> \f6run-session\fP
 receive \f8Refuse\fP with matching \f7Session ID\fP \(-> \f6start-connection\fP
 
 .br
-received \f8Failed\fP with matching \f7Session ID\fP \(-> \f6stop-connection\fP
+receive \f8Failed\fP with matching \f7Session ID\fP \(-> \f6stop-connection\fP
 
 .br
 timeout \(-> \f6manage\fP
@@ -1026,7 +1051,7 @@ receive \f8BroadcastQuery\fP \(-> \f6broadcast-respond\fP
 receive \f8IndirectQuery\fP \(-> \f6indirect-respond\fP
 
 .br
-received \f8ForwardQuery\fP \(-> \f6forward-respond\fP
+receive \f8ForwardQuery\fP \(-> \f6forward-respond\fP
 
 .br
 receive \f8Request\fP \(-> \f6request-respond\fP
@@ -1073,10 +1098,10 @@ if willing to manage \(-> \f6send-willing\fP
 .LP
 \f6forward-respond\fP:
 .RS
-Decode destination address
+Decode destination address, if willing to manage \(-> \f6send-willing\fP
 
 .br
-\(-> \f6send-willing\fP
+\(-> \f6idle\fP
 .RE
 
 .LP
@@ -1309,7 +1334,7 @@ _
 2 \(mu m	CARD16	\f7Connection Types\fP
 1	CARD8	Count of \f7Connection Addresses\fP (n)
 1	CARD8	Length of first \f7Connection Address\fP (n\s-2\d1\u\s+2)
-n\s-2\d1\u\s+2	CARD8	First \f7Connnection Address\fP
+n\s-2\d1\u\s+2	CARD8	First \f7Connection Address\fP
 \&...		Other connection addresses
 1	CARD8	Length of \f7Authentication Name\fP (o)
 o	CARD8	\f7Authentication Name\fP
@@ -1335,7 +1360,7 @@ _
 n	CARD8	\f7Authentication Name\fP
 1	CARD8	Length of \f7Authentication Data\fP (m)
 m	CARD8	\f7Authentication Data\fP
-1	CARD8	Length of \f7Authorization Name (o)
+1	CARD8	Length of \f7Authorization Name\fP (o)
 o	CARD8	\f7Authorization Name\fP
 1	CARD8	Length of \f7Authorization Data\fP (p)
 p	CARD8	\f7Authorization Data\fP
@@ -1413,19 +1438,19 @@ Display Class Format
 The
 \f7Display Class\fP
 packet field is used by the display manager to collect common sorts of
-displays into managable groups.  This field is a string encoded of
+displays into manageable groups.  This field is a string encoded of
 ISO-LATIN-1 characters in the following format:
 .nf
 .sp
 .ta 1i
-	ManufactureID-ModelNumber
+	ManufacturerID-ModelNumber
 .fi
 .sp
 .LP
 Both elements of this string must exclude characters of the set { \fB-\fP,
-\&\fB.\fP, \fB:\fP, \fB*\fP, \fB?\fP, \fI<space>\fP }.  The ManufactureID is a
+\&\fB.\fP, \fB:\fP, \fB*\fP, \fB?\fP, \fI<space>\fP }.  The ManufacturerID is a
 string which should be registered with the X Consortium.  The ModelNumber is
-designed to identify characteristics of the display within the manufacture's
+designed to identify characteristics of the display within the manufacturer's
 product line.  This string should be documented in the users manual for the
 particular device.  This string should probably not be specifiable by the
 display user to avoid unexpected configuration errors.
@@ -1482,7 +1507,7 @@ Assumptions:
 .IP
 The display and manager share a private key.  This key could be programmed
 into the display by the manufacturer and shipped with the unit.  It must not
-be availible from the display itself, but should allow the value to be
+be available from the display itself, but should allow the value to be
 modified in some way.  The system administrator would be responsible for
 managing a database of terminal keys.
 .IP
@@ -1527,7 +1552,8 @@ alpha sub roman Request mark = oc rho cc sup tau
 .LP
 For the
 \f8Accept\fP
-packet, the manager decrypts the initial message and returns:
+packet, the manager decrypts the initial message and returns
+@alpha sub roman Accept@:
 .EQ
 rho lineup = oc alpha sub roman Request cc * sup tau
 .EN C
