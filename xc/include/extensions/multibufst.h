@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.11 93/02/08 09:57:26 rws Exp $
+ * $XConsortium: multibufst.h,v 1.12 93/09/11 14:56:08 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -496,7 +496,7 @@ typedef struct _mbufBufferPriv
     void (* ClearToBackground)();       /* pWin, x,y,w,h, sendExpose */
     Bool (* ChangeWindowAttributes)();	/* pWin, vmask */
     long funcsWrapped;			/* flags which functions are wrapped */
-    int  inClearToBackground:1;		/* used by WindowExposure */
+    unsigned  inClearToBackground:1;	/* used by WindowExposure */
 } mbufBufferPrivRec, *mbufBufferPrivPtr;
 #endif /* _MULTIBUF_BUFFER_ */
 
