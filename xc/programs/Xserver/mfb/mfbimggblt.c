@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.0 89/06/09 15:06:42 keith Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.1 89/07/09 15:57:20 rws Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -157,7 +157,8 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     /* UNCLEAN CODE
        we know the mfbPolyFillRect uses only three fields in
-       devPrivate[mfbGCPrivateIndex].ptr, two of which (ppPixmap and ropFillArea) are 
+       devPrivate[mfbGCPrivateIndex].ptr, two of which (the rotated
+       tile/stipple and the ropFillArea) are 
        irrelevant for solid filling, so we just poke the FillArea
        field.  the GC is now in an inconsistent state, but we'll fix
        it as soon as PolyFillRect returns.  fortunately, the server
