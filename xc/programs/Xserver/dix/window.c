@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.87 92/03/31 17:49:24 keith Exp $ */
+/* $XConsortium: window.c,v 5.88 92/05/01 17:10:19 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -4247,7 +4247,9 @@ CheckWindowOptionalNeed (w)
     parentOptional = FindWindowWithOptional(w)->optional;
     if (optional->visual != parentOptional->visual)
 	return;
-    if (optional->cursor != None && optional->cursor != parentOptional->cursor)
+    if (optional->cursor != None &&
+	(optional->cursor != parentOptional->cursor ||
+	 w->parent->cursorIsNone))
 	return;
     if (optional->colormap != parentOptional->colormap)
 	return;
