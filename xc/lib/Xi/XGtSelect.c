@@ -1,4 +1,4 @@
-/* $XConsortium: XGtSelect.c,v 1.4 89/12/06 20:38:42 rws Exp $ */
+/* $XConsortium: XGtSelect.c,v 1.5 90/05/18 11:23:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -47,7 +47,7 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
     int		*all_clients_count;
     XEventClass	**all_clients_list;
     {
-    int		rlen;
+    int		tlen, alen;
     register 	xGetSelectedExtensionEventsReq *req;
     xGetSelectedExtensionEventsReply rep;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
@@ -71,15 +71,24 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
     *this_client_count = rep.this_client_count;
     *all_clients_count = rep.all_clients_count;
 
-    rlen = rep.length << 2;
-    *this_client_list = (XEventClass *) Xmalloc (rlen);
-    *all_clients_list = (XEventClass *) ((char *) *this_client_list + 
-	(*this_client_count * sizeof (XEventClass)));
+    tlen = (*this_client_count) * sizeof(XEventClass);
+    alen = (rep.length << 2) - tlen;
 
-    if (*this_client_list)
-	_XRead (dpy, *this_client_list, rlen);
+    *this_client_list = (XEventClass *) Xmalloc (tlen);
+    if (*this_client_list) {
+	*all_clients_list = (XEventClass *) Xmalloc (alen);
+	if (!*all_clients_list) {
+	    Xfree((char *)*this_client_list);
+	    *this_client_list = NULL;
+	}
+    }
+
+    if (*this_client_list) {
+	_XRead (dpy, *this_client_list, tlen);
+	_XRead (dpy, *all_clients_list, alen);
+    }
     else
-	_XEatData (dpy, (unsigned long) rlen);
+	_XEatData (dpy, (unsigned long) tlen+alen);
 
     UnlockDisplay(dpy);
     SyncHandle();
