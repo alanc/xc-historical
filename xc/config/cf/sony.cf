@@ -1,6 +1,6 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.27 91/06/06 14:13:05 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.28 91/07/15 11:54:33 rws Exp $
 
-#ifndef SYSTYPE_SYSV
+#ifdef bsd43
 #define OSName                  NEWS-OS 3.3
 #define OSMajorVersion          3
 #define OSMinorVersion          3
