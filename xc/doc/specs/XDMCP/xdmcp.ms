@@ -190,8 +190,8 @@ Type Name	Length	Description
 CARD8	1	A single byte unsigned integer
 CARD16	2	Two byte unsigned integer
 CARD32	4	Four byte unsigned integer
-ARRAY8	n+1	This is actually a CARD8 followed by
-		a collection of CARD8.  The value of the first CARD8
+ARRAY8	n+2	This is actually a CARD16 followed by
+		a collection of CARD8.  The value of the CARD16
 		field (n) specifies the number of CARD8 values to
 		follow
 ARRAY16	2*m+1	This is a CARD8 (m) which specifies the
@@ -1478,7 +1478,7 @@ _
 2	CARD16	opcode (always \f8Query\fP, \f8BroadcastQuery\fP or \f8IndirectQuery\fP)
 2	CARD16	length
 1	CARD8	number of \f7Authentication Names\fP sent (m)
-1	CARD8	length of first \f7Authentication Name\fP (m\d\s-21\s+2\u)
+2	CARD16	length of first \f7Authentication Name\fP (m\d\s-21\s+2\u)
 m\d\s-21\s+2\u	CARD8	first \f7Authentication Name\fP
 \&...		Other \f7Authentication Names\fP
 .TE
@@ -1494,12 +1494,12 @@ _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8ForwardQuery\fP)
 2	CARD16	length
-1	CARD8	length of \f7Client Address\fP (m)
+2	CARD16	length of \f7Client Address\fP (m)
 m	CARD8	\f7Client Address\fP
-1	CARD8	length of \f7Client Port\fP (n)
+2	CARD16	length of \f7Client Port\fP (n)
 n	CARD8	\f7Client Port\fP
 1	CARD8	number of \f7Authentication Names\fP sent (o)
-1	CARD8	length of first \f7Authentication Name\fP (o\d\s-21\s+2\u)
+2	CARD16	length of first \f7Authentication Name\fP (o\d\s-21\s+2\u)
 o\d\s-21\s+2\u	CARD8	first \f7Authentication Name\fP
 \&...		Other \f7Authentication Names\fP
 .TE
@@ -1514,12 +1514,12 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8Willing\fP)
-2	CARD16	length (3 + m + n + o)
-1	CARD8	Length of \f7Authentication Name\fP (m)
+2	CARD16	length (6 + m + n + o)
+2	CARD16	Length of \f7Authentication Name\fP (m)
 m	CARD8	\f7Authentication Name\fP
-1	CARD8	\f7Hostname\fP length (n)
+2	CARD16	\f7Hostname\fP length (n)
 n	CARD8	\f7Hostname\fP
-1	CARD8	\f7Status\fP length (o)
+2	CARD16	\f7Status\fP length (o)
 o	CARD8	\f7Status\fP
 .TE
 .RE
@@ -1533,10 +1533,10 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8Unwilling\fP)
-2	CARD16	length (2 + m + n)
-1	CARD8	\f7Hostname\fP length (m)
+2	CARD16	length (4 + m + n)
+2	CARD16	\f7Hostname\fP length (m)
 m	CARD8	\f7Hostname\fP
-1	CARD8	\f7Status\fP length (n)
+2	CARD16	\f7Status\fP length (n)
 n	CARD8	\f7Status\fP
 .TE
 .RE
@@ -1555,14 +1555,14 @@ _
 1	CARD8	Count of \f7Connection Types\fP (m)
 2 \(mu m	CARD16	\f7Connection Types\fP
 1	CARD8	Count of \f7Connection Addresses\fP (n)
-1	CARD8	Length of first \f7Connection Address\fP (n\s-2\d1\u\s+2)
+2	CARD16	Length of first \f7Connection Address\fP (n\s-2\d1\u\s+2)
 n\s-2\d1\u\s+2	CARD8	First \f7Connection Address\fP
 \&...		Other connection addresses
-1	CARD8	Length of \f7Authentication Name\fP (o)
+2	CARD16	Length of \f7Authentication Name\fP (o)
 o	CARD8	\f7Authentication Name\fP
-1	CARD8	Length of \f7Authentication Data\fP (p)
+2	CARD16	Length of \f7Authentication Data\fP (p)
 p	CARD8	\f7Authentication Data\fP
-1	CARD8	Length of \f7Manufacturer Display ID\fP (q)
+2	CARD16	Length of \f7Manufacturer Display ID\fP (q)
 q	CARD8	\f7Manufacturer Display ID\fP
 .TE
 .RE
@@ -1576,15 +1576,15 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8Accept\fP)
-2	CARD16	length (8 + n + m + o + p)
+2	CARD16	length (12 + n + m + o + p)
 4	CARD32	\f7Session ID\fP
-1	CARD8	Length of \f7Authentication Name\fP (n)
+2	CARD16	Length of \f7Authentication Name\fP (n)
 n	CARD8	\f7Authentication Name\fP
-1	CARD8	Length of \f7Authentication Data\fP (m)
+2	CARD16	Length of \f7Authentication Data\fP (m)
 m	CARD8	\f7Authentication Data\fP
-1	CARD8	Length of \f7Authorization Name\fP (o)
+2	CARD16	Length of \f7Authorization Name\fP (o)
 o	CARD8	\f7Authorization Name\fP
-1	CARD8	Length of \f7Authorization Data\fP (p)
+2	CARD16	Length of \f7Authorization Data\fP (p)
 p	CARD8	\f7Authorization Data\fP
 .TE
 .RE
@@ -1598,12 +1598,12 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8Decline\fP)
-2	CARD16	length (3 + m + n + o)
-1	CARD8	Length of \f7Status\fP (m)
+2	CARD16	length (6 + m + n + o)
+2	CARD16	Length of \f7Status\fP (m)
 m	CARD8	\f7Status\fP
-1	CARD8	Length of \f7Authentication Name\fP (n)
+2	CARD16	Length of \f7Authentication Name\fP (n)
 n	CARD8	\f7Authentication Name\fP
-1	CARD8	Length of \f7Authentication Data\fP (o)
+2	CARD16	Length of \f7Authentication Data\fP (o)
 o	CARD8	\f7Authentication Data\fP
 .TE
 .RE
@@ -1617,10 +1617,10 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8Manage\fP)
-2	CARD16	length (7 + m)
+2	CARD16	length (8 + m)
 4	CARD32	\f7Session ID\fP
 2	CARD16	\f7Display Number\fP
-1	CARD8	Length of \f7Display Class\fP (m)
+2	CARD16	Length of \f7Display Class\fP (m)
 m	CARD8	\f7Display Class\fP
 .TE
 .RE
@@ -1648,9 +1648,9 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8Failed\fP)
-2	CARD16	length (5 + m)
+2	CARD16	length (6 + m)
 4	CARD32	\f7Session ID\fP
-1	CARD8	Length of \f7Status\fP (m)
+2	CARD16	Length of \f7Status\fP (m)
 m	CARD8	\f7Status\fP
 .TE
 .RE
