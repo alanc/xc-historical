@@ -16,6 +16,7 @@ typedef struct {
     long	(*EventTime)();		/* pScreen */
     Bool	(*CursorOffScreen)();	/* pScreen, x, y */
     void	(*CrossScreen)();	/* pScreen, entering */
+    void	(*QueueEvent)();	/* pxE, pPointer, pScreen */
 } miPointerCursorFuncRec, *miPointerCursorFuncPtr;
 
 extern void miPointerPosition (),	miRegisterPointerDevice();
