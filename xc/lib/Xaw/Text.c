@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.182 91/07/24 22:56:47 converse Exp $ */
+/* $XConsortium: Text.c,v 1.183 92/08/31 10:58:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1754,7 +1754,8 @@ XawTextBlock *text;
   Widget src = ctx->text.source;
   XawTextEditType edit_mode;
   Arg args[1];
-  
+  Boolean tmp = ctx->text.update_disabled;
+
   ctx->text.update_disabled = True; /* No redisplay during replacement. */
 
 /*
@@ -1770,7 +1771,7 @@ XawTextBlock *text;
 		   (ctx->text.insertPos - pos1), TRUE);
     pos1 = ctx->text.insertPos;
     if ( (pos1 == pos2) && (text->length == 0) ) {
-      ctx->text.update_disabled = FALSE; /* rearm redisplay. */
+      ctx->text.update_disabled = tmp; /* restore redisplay */
       return( XawEditError );
     }
   }
@@ -1780,7 +1781,7 @@ XawTextBlock *text;
 
   line1 = LineForPosition(ctx, updateFrom);
   if ( (error = SrcReplace(src, pos1, pos2, text)) != 0) {
-    ctx->text.update_disabled = FALSE; /* rearm redisplay. */
+    ctx->text.update_disabled = tmp; /* restore redisplay */
     return(error);
   }
 
@@ -1790,7 +1791,7 @@ XawTextBlock *text;
   if (ctx->text.lt.top >= ctx->text.lastPos) {
     _XawTextBuildLineTable(ctx, ctx->text.lastPos, FALSE);
     ClearWindow( (Widget) ctx);
-    ctx->text.update_disabled = FALSE; /* rearm redisplay. */
+    ctx->text.update_disabled = tmp; /* restore redisplay */
     return(0);			/* Things are fine. */
   }
 
@@ -1831,7 +1832,7 @@ XawTextBlock *text;
     _XawTextNeedsUpdating(ctx, updateFrom, updateTo);
   }
 
-  ctx->text.update_disabled = FALSE; /* rearm redisplay. */
+  ctx->text.update_disabled = tmp; /* restore redisplay */
   return(0);			/* Things are fine. */
 }
 
