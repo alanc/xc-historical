@@ -847,6 +847,8 @@ SendEvent (client, d, dest, propagate, ev, mask, count)
 		return Success;
 	    if (wOtherInputMasks(pWin))
 		mask &= ~wOtherInputMasks(pWin)->dontPropagateMask[d->id];
+	    if (!mask)
+		break;
 	}
     }
     else
