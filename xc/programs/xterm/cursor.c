@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: cursor.c,v 1.4 88/09/06 17:07:58 jim Exp $
+ *	$XConsortium: cursor.c,v 1.5 88/10/07 14:16:09 swick Exp $
  */
 
 #ifndef lint
-static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.4 88/09/06 17:07:58 jim Exp $";
+static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.5 88/10/07 14:16:09 swick Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -35,7 +35,7 @@ static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.4 88/09/06 17:07:58 ji
 
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: cursor.c,v 1.4 88/09/06 17:07:58 jim Exp $";
+static char rcs_id[] = "$XConsortium: cursor.c,v 1.5 88/10/07 14:16:09 swick Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -255,5 +255,6 @@ register SavedCursor *sc;
 	screen->curgr = sc->curgr;
 	term->flags &= ~(BOLD|INVERSE|UNDERLINE|ORIGIN);
 	term->flags |= sc->flags & (BOLD|INVERSE|UNDERLINE|ORIGIN);
-	CursorSet(screen, sc->row - screen->top_marg, sc->col, term->flags);
+	CursorSet (screen, (term->flags & ORIGIN) ? sc->row - screen->top_marg
+			   : sc->row, sc->col, term->flags);
 }
