@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: session.c,v 1.1 93/07/19 10:10:46 rws Exp $ */
 /**** session.c ****/
 /****************************************************************************
 				NOTICE
@@ -72,7 +72,7 @@ static	int	XieDispatch(),	/* dispatcher for XIE opcodes */
 		SXieDispatch(),	/* dispatcher for swapped code */
 		DeleteXieClient(); /* Clean up routine */
 static void	XieReset();	/* reset the XIE code, eg, on reboot */
-
+static int	DdxInit();
 
 ExtensionEntry	*extEntry;
 RESTYPE		RC_XIE;			/* XIE Resource Class		*/
@@ -243,7 +243,7 @@ ProcQueryImageExtension(client)
       if( client->swapped )
 	CopySwap32Write(client, sizeof(Preferred_levels), Preferred_levels);
       else
-	WriteToClient(client, sizeof(Preferred_levels), Preferred_levels);
+	WriteToClient(client, sizeof(Preferred_levels), (char *)Preferred_levels);
   
   return(Success);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: technq.c,v 1.1 93/07/19 10:10:59 rws Exp $ */
 /**** module technq.c ****/
 /****************************************************************************
 				NOTICE
@@ -129,7 +129,7 @@ int ProcQueryTechniques(client)
     swaps(&rep.numTechniques,n);
   }
 
-  WriteToClient(client, sz_xieQueryTechniquesReply, &rep);
+  WriteToClient(client, sz_xieQueryTechniquesReply, (char *)&rep);
 
   send_technique_replies(stuff->techniqueGroup,client);
 
@@ -300,9 +300,9 @@ ClientPtr client;
 	rep.nameLength = tech.nameLength;
 
 	/* Send everything except the name */
-  	WriteToClient(client, sz_xieTypTechniqueRec, &rep);
+  	WriteToClient(client, sz_xieTypTechniqueRec, (char *)&rep);
 	/* Send the name */
-  	WriteToClient(client, tech.nameLength, tech.name);
+  	WriteToClient(client, tech.nameLength, (char *)tech.name);
 
 }
 
