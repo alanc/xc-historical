@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
@@ -142,7 +143,8 @@ public:
 	const char* trail
     );
     Boolean emit_scope(Scope*);
-
+    Boolean need_ifndef();
+    
     Boolean emit_extern_stubs(Expr* type);
     void emit_put(Expr* type, char* format, Expr* value);
     void emit_array_setup(Declarator* d, Expr* t, Boolean is_put);
@@ -196,6 +198,7 @@ private:
     Boolean cstubs_;
     const char* ptr_;
     Boolean source_;
+    Boolean need_ifndef_;
     Boolean qualify_;
     Boolean concat_;
     Boolean need_sep_;

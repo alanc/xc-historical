@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
@@ -840,7 +841,7 @@ Boolean SrcPos::generate(Generator* g) {
     FileName name = p->filename();
     LineNumber n = p->lineno();
     if (g->is_source()) {
-	if (n == 1) {
+	if (g->need_ifndef()) {
 	    g->emit_ifndef(name);
 	    g->emit_includes();
 	} else {

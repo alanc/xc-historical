@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
@@ -80,6 +81,7 @@ Generator::Generator(ErrorHandler* h, const ConfigInfo& i) {
     cstubs_ = i.cstubs;
     ptr_ = nil;
     source_ = true;
+    need_ifndef_ = true;
     qualify_ = true;
     concat_ = false;
     varying_ = do_varying();
@@ -156,6 +158,9 @@ Boolean Generator::set_source(SourcePosition* p) {
 
 Boolean Generator::is_source() { return source_; }
 
+Boolean Generator::need_ifndef() { return need_ifndef_; }
+
+     
 Boolean Generator::begin_file(FILE* f) {
     if (f != nil) {
 	fflush(out_);
@@ -677,6 +682,7 @@ void Generator::emit_ifndef(String* filename) {
     emit_filename(filename);
     emit("\n\n");
     files_->prepend(new CopyString(*filename));
+    need_ifndef_ = false;
 }
 
 void Generator::emit_endif(String* filename) {
