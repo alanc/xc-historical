@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.23 93/09/11 18:18:01 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.24 93/09/11 18:39:12 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -129,7 +129,7 @@ XVARdef0 = $(DESTDIR)dest						@@\
 									@@\
 step:: list								@@\
 	MakeDir($(XVARuse0:/=\))					@@\
-	!$(INSTALL) $** $(XVARuse0:/=\)
+	!$(INSTALL) $(INSTALLFLAGS) flags $** $(XVARuse0:/=\)
 
 #define	CleanTarget()							@@\
 clean::									@@\
@@ -319,7 +319,7 @@ XVARdef0 = $(DESTDIR)dest/						@@\
 									@@\
 step:: srcname								@@\
 	MakeDir($(XVARuse0:/=\))					@@\
-	$(INSTALL) srcname $(XVARuse0:/=\)dstname
+	$(INSTALL) $(INSTALLFLAGS) flags srcname $(XVARuse0:/=\)dstname
 
 
 #define	InstallLibrary(libname,dest)					@@\
