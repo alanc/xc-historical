@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.50 89/12/08 18:29:18 converse Exp $ */
+/* $XConsortium: Xutil.h,v 11.51 89/12/09 13:45:23 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -436,22 +436,6 @@ extern Status XGetWMCommand(
     XTextProperty*	/* text_prop_return */
 #endif
 );
-extern Status XGetWMColormapWindows(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    Window		/* w */,
-    Window**		/* windows_return */,
-    int*		/* count_return */
-#endif
-);
-extern Status XSetWMColormapWindows(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    Window		/* w */,
-    Window*		/* colormap_windows */,
-    int			/* count */
-#endif
-);
 extern void XSetWMProperties(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -537,11 +521,6 @@ extern Status XTextPropertyToStringList(
     XTextProperty*	/* text_prop */,
     char***		/* list_return */,
     int*		/* count_return */
-#endif
-);
-extern void XFreeStringList(
-#if NeedFunctionPrototypes
-    char**		/* list */
 #endif
 );
 
@@ -652,19 +631,6 @@ extern Status XMatchVisualInfo(
 #endif
 );
 
-extern int XReadBitmapFile(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    Drawable 		/* d */,
-    char*		/* filename */,
-    unsigned int*	/* width_return */,
-    unsigned int*	/* height_return */,
-    Pixmap*		/* bitmap_return */,
-    int*		/* x_hot_return */,
-    int*		/* y_hot_return */
-#endif
-);
-
 extern XOffsetRegion(
 #if NeedFunctionPrototypes
     Region		/* r */,
@@ -683,7 +649,7 @@ extern Bool XPointInRegion(
 
 extern Region XPolygonRegion(
 #if NeedFunctionPrototypes
-    XPoint []		/* points */,
+    XPoint*		/* points */,
     int			/* n */,
     int			/* fill_rule */
 #endif
@@ -751,14 +717,6 @@ extern XSetWMHints(
     Display*		/* display */,
     Window		/* w */,
     XWMHints*		/* wm_hints */
-#endif
-);
-
-extern XSetTransientForHint(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    Window		/* w */,
-    Window		/* prop_window */
 #endif
 );
 
@@ -832,18 +790,6 @@ extern int XWMGeometry(
     int*		/* width_return */,
     int*		/* height_return */,
     int*		/* gravity_return */
-#endif
-);
-
-extern int XWriteBitmapFile(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    char*		/* filename */,
-    Pixmap		/* bitmap */,
-    unsigned int	/* width */,
-    unsigned int	/* height */,
-    int			/* x_hot */,
-    int			/* y_hot */		     
 #endif
 );
 
