@@ -1,36 +1,43 @@
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- */
+XCOMM platform:  $XConsortium: ibm.cf,v 1.17 91/01/08 12:22:08 rws Exp $
 
-#ifdef AIXArchitecture
-#ifdef RtArchitecture
-#define OSName		AIX 2.2
-#define OSMajorVersion	2
-#define OSMinorVersion	2
-#else
 #ifdef RsArchitecture
 #define OSName		AIX 3.1.5
 #define OSMajorVersion	3
 #define OSMinorVersion	1
+#else
+#ifdef RtArchitecture
+#ifdef AIXArchitecture
+#define OSName		AIX 2.2
+#define OSMajorVersion	2
+#define OSMinorVersion	2
+#else
+#define OSName		AOS 4.3
+#define OSMajorVersion	4
+#define OSMinorVersion	3
+#endif
 #else
 #define OSName		AIX 1.1
 #define OSMajorVersion	1
 #define OSMinorVersion	1
 #endif
 #endif
-#else
-#define OSName		AOS 4.3
-#define OSMajorVersion	4
-#define OSMinorVersion	3
-#endif
 XCOMM operating system:  OSName
 
-#define UnixCpp /**/
 #ifdef RsArchitecture
-#define cppdefs /**/
+
+#define SystemV			YES
+#define LnCmd			ln -s
+#define HasSockets		YES
+#define LdCombineFlags		-r
+#define Malloc0ReturnsNull	YES
+#define CppCmd			/usr/lpp/X11/Xamples/util/cpp/cpp
+#define BuildServer		NO
+
 #else
+
+
+#define UnixCpp /**/
 #define cppdefs -DUNIXCPP
-#endif
 
 #ifdef ATHENA
 #define ibmAthenaDefs -DATHENA
@@ -47,56 +54,35 @@ XCOMM operating system:  OSName
 #define BootstrapCFlags -Daix
 #define OSDefines -DAIX -DAIXrt -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
 #else
-#ifdef RsArchitecture
-/* #define BootstrapCFlags -D_IBMR2 */
-#define OSDefines -DAIX -DAIXrs -DIBM_OS_HAS_HFT
-#define LdCombineFlags -r /* RS-6000 doesn't do ld -X */
-#else
 #define OSDefines -DAIX -DAIX386 -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
 #define LdCombineFlags -r /* PS/2 doesn't do ld -X */
-#endif
 #endif
 #define OPERATING_SYSTEM AIX /* directory name under server/ddx/ibm/ */
 
 #ifdef USE_PCC
 #define CcCmd i386cc
-#define ibmosdefs -Dibm -DHCVERSION=HCRevision
+#define ibmosdefs -DHCVERSION=HCRevision
 #else
 #ifdef RtArchitecture
 #define CcCmd cc -Nd4000 -Nn3000 -DBSD_INCLUDES
-#define ibmosdefs -Dibm -DSYSV -Nd4000 -Nn3000
-#else
-#ifdef RsArchitecture
-/* #define CcCmd xlc */
-#define ibmosdefs -DSYSV /* -Dibm -D_IBMR2 -DAIXV3 */
-#define Malloc0ReturnsNull   YES
-#define CppCmd /usr/lpp/X11/Xamples/util/cpp/cpp
+#define ibmosdefs -DSYSV -Nd4000 -Nn3000
 #else
 #define CcCmd cc -DBSD_INCLUDES -D_BSD
-#define ibmosdefs -Dibm -DSYSV
+#define ibmosdefs -DSYSV
 #endif
-#endif
-#ifndef RsArchitecture
 #define ibmlibdefs -Hcpp
-#endif
 #endif /* USE_PCC */
 
 #else /* else AOS - warning: AOS is going away... */
 #define HasNdbm YES
 #define CcCmd hc
-#define ibmosdefs -Dibm -DHCVERSION=HCRevision
+#define ibmosdefs -DHCVERSION=HCRevision
 #define OSDefines -DBSDrt
 #define OPERATING_SYSTEM BSDrt
 #define BootstrapCFlags -Dibm
 #endif /* AIXArchitecture */
 
-#ifndef RsArchitecture
 #define HasVoidSignalReturn    NO
-#endif
-
-#ifdef RsArchitecture
-#define TermcapLibrary	       -lcurses
-#endif
 
 #ifdef RtArchitecture
 /*
@@ -159,12 +145,9 @@ XCOMM operating system:  OSName
 #endif
 
 
-#define StandardDefines ibmosdefs ibmarchdefs
-#define LintOpts -ax ibmosdefs ibmarchdefs
+#define StandardDefines -Dibm ibmosdefs ibmarchdefs
+#define LintOpts -ax -Dibm ibmosdefs ibmarchdefs
 
-#ifdef RsArchitecture
-#define BuildServer NO
-#endif
 /* 
  * This defines the name of server you want.
  * affected: .../X11/server/Makefile
@@ -247,5 +230,4 @@ XCOMM operating system:  OSName
 /* define this as you like for normal library compilation */
 #define LibraryDefines cppdefs ibmlibdefs StandardDefines
 
-XCOMM platform:  $XConsortium: ibm.cf,v 1.17 91/01/08 12:22:08 rws Exp $
-
+#endif /* non RsArchitecture */
