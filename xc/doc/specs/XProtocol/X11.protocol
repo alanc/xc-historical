@@ -5196,6 +5196,11 @@ However, if the total path consists of (or is reduced to) a single point
 joined with itself, 
 the effect is the same as when the cap-style is applied at both endpoints.
 .LP
+The tile/stipple represents an infinite 2D plane, with the tile/stipple
+replicated in all dimensions.  When that plane is superimposed on
+the drawable for use in a graphics operation, the upper left corner
+of some instance of the tile/stipple is at the coordinates within
+the drawable specified by the tile/stipple origin.
 The tile/stipple and clip origins are interpreted relative to the
 origin of whatever destination drawable is specified in a graphics
 request.
