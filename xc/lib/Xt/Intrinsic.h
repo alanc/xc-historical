@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.103 89/09/26 10:54:43 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.104 89/09/26 17:59:40 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -29,10 +29,13 @@ SOFTWARE.
 
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h
+
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
 #include	<X11/Xresource.h>
 #include	<X11/Xos.h>
+
+#define XtSpecificationRelease 4
 
 #ifndef NULL
 #define NULL 0
@@ -315,6 +318,10 @@ extern void XtSetMultiClickTime();
 
 extern int XtGetMultiClickTime();
     /* Display *dpy;	*/
+
+extern KeySym XtGetActionKeysym();
+    /* XEvent *event;		    */
+    /* Modifiers *modifiers_return; */
 
 /***************************************************************
  *
@@ -1229,11 +1236,14 @@ extern GC XtGetGC(); /* widget, valueMask, values */
     /* XtGCMask valueMask; */
     /* XGCValues *values; */
 
-extern void XtDestroyGC(); /* widget, gc */
-    /* Widget widget; */
+extern void XtDestroyGC(); /* gc */
     /* GC gc; */
-/* we pass in the widget because XFreeGC needs a display, and there isn't */
-/* one stored in the GC record. */
+
+extern void XtReleaseGC(); /* object, gc */
+    /* Widget object;	*/
+    /* GC gc;		*/
+
+
 
 extern void XtReleaseCacheRef(); /* cache_ref */
     /* XtCacheRef *cache_ref; */
@@ -1273,6 +1283,149 @@ extern String XtResolvePathname();
        String type, filename, suffix, path;
        XtFilePredicate predicate;
 */
+
+
+/****************************************************************
+ *
+ * Selections
+ *****************************************************************/
+
+#define XT_CONVERT_FAIL (Atom)0x80000001
+
+typedef XtPointer XtRequestId;
+
+/*
+ * Routine to get the value of a selection as a given type.  Returns
+ * TRUE if it successfully got the value as requested, FALSE otherwise.  
+ * selection is the atom describing the type of selection (e.g. 
+ * primary or secondary). value is set to the pointer of the converted 
+ * value, with length elements of data, each of size indicated by format.
+ * (This pointer will be freed using XtFree when the selection has
+ *  been delivered to the requestor.)  target is
+ * the type that the conversion should use if possible; type is returned as
+ * the actual type returned.  Format should be either 8, 16, or 32, and
+ * specifies the word size of the selection, so that Xlib and the server can
+ * convert it between different machine types. */
+
+typedef Boolean (*XtConvertSelectionProc)(); /* widget, selection, target,
+					      type, value, length, format */
+    /* Widget widget; */
+    /* Atom *selection; */
+    /* Atom *target; */
+    /* Atom *type; */	     /* RETURN */
+    /* XtPointer *value; */    /* RETURN */
+    /* unsigned long *length; */       /* RETURN */
+    /* int *format; */	     /* RETURN */
+
+/*
+ * Routine to inform a widget that it no longer owns the given selection.
+ */
+
+typedef void (*XtLoseSelectionProc)(); /* widget, selection */
+    /* Widget widget; */
+    /* Atom *selection; */
+
+
+/*
+ * Routine to inform the selection owner when a selection requestor
+ * has successfully retrieved the selection value.
+ */
+
+typedef void (*XtSelectionDoneProc)(); /* widget, selection, target */
+    /* Widget widget; */
+    /* Atom *selection; */
+    /* Atom *target; */
+
+
+/*
+ * Routine to call back when a requested value has been obtained for a
+ *  selection.
+ */
+
+typedef void (*XtSelectionCallbackProc)(); /* widget, closure, selection,
+					    type, value, length, format,  */
+    /* Widget widget; */
+    /* XtPointer closure; */
+    /* Atom *selection; */
+    /* Atom *type; */
+    /* XtPointer value; */
+    /* unsigned long *length; */
+    /* int *format; */
+    
+
+/*
+ * Set the given widget to own the selection.  The convertProc should
+ * be called when someone wants the current value of the selection. If it
+ * is not NULL, the
+ * losesSelection gets called whenever the window no longer owns the selection
+ * (because someone else took it). If it is not NULL, the doneProc gets
+ * called when the widget has provided the current value of the selection
+ * to a requestor and the requestor has indicated that it has succeeded
+ * in reading it by deleting the property.
+ */
+
+extern Boolean XtOwnSelection(); /* widget, selection, time, convertProc, losesSelection, doneProc */
+    /* Widget widget; */
+    /* Atom selection; */
+    /* Time time; */
+    /* XtConvertSelectionProc convertProc; */
+    /* XtLosesSelectionProc losesSelection; */
+    /* XtSelectionDoneProc doneProc; */
+
+/*
+ * The given widget no longer wants the selection.  If it still owns it, then
+ * the selection owner is cleared, and the window's losesSelection is called.
+ */
+
+extern void XtDisownSelection(); /* widget, selection, time */
+    /* Widget widget; */
+    /* Atom selection; */
+    /* Time time; */
+
+/*
+ * Get the value of the given selection.  
+ */
+
+extern void XtGetSelectionValue(); /* widget, selection, target,
+				      callback, closure, time */
+    /* Widget widget; */
+    /* Atom selection; */
+    /* Atom target; */
+    /* XtSelectionCallbackProc callback; */
+    /* XtPointer closure; */
+    /* Time time; */
+
+extern void XtGetSelectionValues(); /* widget, selection, targets, count, 
+			callback, closures, time */
+    /* Widget widget; */
+    /* Atom selection; */
+    /* Atom *targets; */
+    /* int count; */
+    /* XtSelectionCallbackProc callback; */
+    /* XtPointer *closures; */
+    /* Time time; */
+
+
+/* Set the selection timeout value, in units of milliseconds */
+
+extern void XtAppSetSelectionTimeout(); /* app, timeout */
+	/* XtAppContext app; */
+	/* unsigned long timeout; */
+
+extern void XtSetSelectionTimeout(); /* timeout */
+	/* unsigned long timeout; */
+
+ /* Return the selection timeout value, in units of milliseconds */
+
+extern unsigned int XtAppGetSelectionTimeout(); /* app */
+	/* XtAppContext app; */
+
+extern unsigned int XtGetSelectionTimeout();
+
+extern XSelectionRequestEvent *XtGetSelectionRequest();
+    /* Widget widget;		*/
+    /* Atom selection;		*/
+    /* XtRequestId request_id;	*/
 
 #endif /*_XtIntrinsic_h*/
 /* DON'T ADD STUFF AFTER THIS #endif */
