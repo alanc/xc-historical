@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.13 89/12/06 18:20:00 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.14 90/01/29 20:35:51 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -2770,7 +2770,7 @@ realFindSpan (y)
 			change = finalMiny - y;
 		else
 			change = y - finalMaxy;
-		if (change > SPAN_REALLOC)
+		if (change >= SPAN_REALLOC)
 			change += SPAN_REALLOC;
 		else
 			change = SPAN_REALLOC;
