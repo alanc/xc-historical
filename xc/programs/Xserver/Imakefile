@@ -26,6 +26,7 @@
             SUN = ddx/sun/libsun.a
           MACII = ddx/macII/libmacII.a
             TEK = ddx/tek/libtek.a
+           LUNA = ddx/omron/libomron.a
           HPMIT = ddx/hp.mit/libhp.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
        XDMCPLIB = $(TOP)/lib/Xdmcp/libXdmcp.a
@@ -34,7 +35,7 @@
 /**/#
 /**/# This turns off the default rule for compiling .c files because
 /**/# this makefile does not really know how to build it.  This is really
-/**/# just a hack because of sun's version of make and nfs.
+/**/# just a hack because of the Sun version of make and nfs.
 /**/#
 .c.o:
 
@@ -126,6 +127,12 @@
 #define	XmacIIServer /* as nothing */
 #endif
 
+#ifdef XlunaServer
+#define dolunaServer
+#else
+#define	XlunaServer /* as nothing */
+#endif
+
 /*****************************************************************************
  *                                                                           *
  * Now add X<what>Server to the ALL line; do NOT split across lines or you   *
@@ -133,8 +140,8 @@
  *                                                                           *
 /*****************************************************************************
  */
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XhpMitServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer
-ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XhpMitServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer
+ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek Xluna
 
 all: $(ALL)
 
@@ -427,6 +434,34 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 #endif /* domacIIServer */
 
 
+#ifdef dolunaServer
+/**/#
+/**/# luna server
+/**/#
+#define need_dix
+#define need_ddx_snf
+#define need_ddx_mi
+#define need_ddx_omron
+#define need_ddx_mfb
+#define need_os_42bsd
+#ifdef UniOSU
+#define need_os_bsdemul
+LUNADIRS = dix ddx/snf ddx/mi ddx/mfb ddx/omron os/4.2bsd \
+	    os/bsdemul
+#else
+LUNADIRS = dix ddx/snf ddx/mi ddx/mfb ddx/omron os/4.2bsd
+#endif
+LUNAOBJS = $(FONTUTIL)
+#ifdef	need_os_bsdemul
+LUNALIBS = $(DIX) $(LUNA) $(BSD) $(BSDEMUL) $(SNF) $(MFB) $(MI) \
+	    $(EXTENSIONS)
+#else
+LUNALIBS = $(DIX) $(LUNA) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
+#endif
+XlunaDIRS = $(LUNADIRS)
+
+ServerTarget(Xluna,$(EXTDIR) $(FONTUTILDIR) $(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
+#endif /* dolunaServer */
 
 /*****************************************************************************
  *                                                                           *
@@ -540,12 +575,18 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 #define dir_ddx_sun /**/
 #endif
 
+#ifdef need_ddx_omron
+#define dir_ddx_omron ddx/omron
+#else
+#define dir_ddx_omron /**/
+#endif
+
 OURDIX = dir_dix
 OURDDX = dir_ddx_snf dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
 OUROS = dir_os_42bsd dir_os_bsdemul
 DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
 HPDDX = dir_ddx_hp dir_ddx_hpMit
-OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek
+OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek dir_ddx_omron
 
 SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
 
@@ -556,7 +597,7 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
                   ddx/ibm \
 		  ddx/dec/mfbpmax ddx/dec/cfbpmax \
                   ddx/hp ddx/hp.mit ddx/tek \
-                  ddx/macII
+                  ddx/macII ddx/omron
       ALLOSDIRS = os/4.2bsd os/bsdemul
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
 
@@ -587,7 +628,7 @@ InstallManPage(Xserver,$(MANDIR))
 install::
 	@echo "************************************************************"
 	@echo "* "
-	@echo "*     Don't forget to create a link called $(BINDIR)/X"
+	@echo "*     Do not forget to create a link called $(BINDIR)/X"
 	@echo "*     pointing to the default server, if there is one."
 	@echo "* "
 	@echo "************************************************************"
