@@ -589,12 +589,12 @@ typedef struct {
  */
 
 typedef struct {
-    XFontSet self;			/* for compatibility */
     XOM om;				/* XOM */
     XOC next;				/* next XOC */
     XlcResourceList resources;		/* xoc resources */
     int num_resources;			/* number of xoc resources */
     char *base_name_list;     		/* base font name list */
+    Bool om_automatic;			/* OM Automatic */
     XOMFontInfo font_info;		/* font info */
     XFontSetExtents font_set_extents;  	/* font set extents */
     char *default_string;     		/* default string */
@@ -602,12 +602,9 @@ typedef struct {
     Bool directional_dependent;		/* directional-dependent */
     Bool contextual_drawing;		/* contextual drawing */
     XOMCharSetList missing_list;	/* missing charset list */
-    XOMCallback post_edit_callback;	/* post edit callback */
     XOrientation orientation;		/* orientation */
     char *res_name;			/* resource name */
     char *res_class;			/* resource class */
-    unsigned short width;
-    XOMDrawingGravity drawing_gravity;
 } XOCCoreRec, *XOCCore;
 
 typedef struct _XOC {

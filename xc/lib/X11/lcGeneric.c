@@ -1,4 +1,4 @@
-/* $XConsortium: lcGeneric.c,v 1.2 93/09/23 12:31:27 rws Exp $ */
+/* $XConsortium: lcGeneric.c,v 1.4 94/01/20 18:06:53 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -309,6 +309,20 @@ load_generic(lcd)
 	gen->wc_shift_bits = atoi(value[0]);
     if (gen->wc_shift_bits < 1)
 	gen->wc_shift_bits = 8;
+#ifndef X_NOT_STDC_ENV
+    /***** use_stdc_env *****/
+    _XlcGetResource(lcd, "XLC_XLOCALE", "use_stdc_env", &value, &num);
+    if (num > 0 && !_XlcCompareISOLatin1(value[0], "True"))
+	gen->use_stdc_env = True;
+    else
+	gen->use_stdc_env = False;
+    /***** force_convert_to_mb *****/
+    _XlcGetResource(lcd, "XLC_XLOCALE", "force_convert_to_mb", &value, &num);
+    if (num > 0 && !_XlcCompareISOLatin1(value[0], "True"))
+	gen->force_convert_to_mb = True;
+    else
+	gen->force_convert_to_mb = False;
+#endif
     
     for (i = 0; ; i++) {
 	CodeSetRec *codeset = NULL;

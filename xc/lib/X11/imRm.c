@@ -1,4 +1,4 @@
-/* $XConsortium: imRm.c,v 1.4 94/03/26 19:58:43 rws Exp $ */
+/* $XConsortium: imRm.c,v 1.2 94/01/20 18:05:20 rws Exp $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
@@ -92,29 +92,6 @@ _XimCheckBool(str)
        !strcmp(str, "Yes")  || !strcmp(str, "yes")  ||
        !strcmp(str, "ON")   || !strcmp(str, "on"))
 	return(True);
-    return(False);
-}
-
-Public Bool
-_XimLocalProcessingResource(im)
-    Xim		 im;
-{
-    char	 res_name[256];
-    char	 res_class[256];
-    char	*str_type;
-    XrmValue	 value;
-
-    if (!im->core.rdb)
-	return(False);
-
-    _XimGetResourceName(im, res_name, res_class);
-    strcat(res_name, "localProcessing");
-    strcat(res_class, "LocalProcessing");
-    bzero(&value, sizeof(XrmValue));
-    if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
-	if(_XimCheckBool(value.addr))
-	    return(True);
-    }
     return(False);
 }
 
@@ -655,19 +632,10 @@ _XimDefaultFontSet(info, top, parm, mode)
     XPointer	 	 parm;
     unsigned long	 mode;
 {
-    Xic			 ic = (Xic)parm;
-    Xim			 im = (Xim)ic->core.im;
-    char		**missing_list;
-    int			 missing_count;
-    char		*def_string;
-    XFontSet		 fontset;
     XFontSet		*out;
 
-    fontset = XCreateFontSet(im->core.display, XIM_LOCAL_DEFAULT_FONT_NAME,
-			&missing_list, &missing_count, &def_string);
-    
     out = (XFontSet *)((char *)top + info->offset);
-    *out = fontset;
+    *out = 0;
     return(True);
 }
 
@@ -682,7 +650,7 @@ _XimDefaultLineSpace(info, top, parm, mode)
     Xim			 im = (Xim)ic->core.im;
     XFontSet		 fontset;
     XFontSetExtents	*fset_extents;
-    int			 line_space;
+    int			 line_space = 0;
     int			*out;
 
     if(mode & XIM_PREEDIT_ATTR) {
@@ -692,11 +660,10 @@ _XimDefaultLineSpace(info, top, parm, mode)
     } else {
 	return(True);
     }
-
-    if (!fontset)
-	return(True);
-    fset_extents = XExtentsOfFontSet(fontset);
-    line_space = fset_extents->max_logical_extent.height;
+    if (fontset) {
+	fset_extents = XExtentsOfFontSet(fontset);
+	line_space = fset_extents->max_logical_extent.height;
+    }
     out = (int *)((char *)top + info->offset);
     *out = line_space;
     return(True);

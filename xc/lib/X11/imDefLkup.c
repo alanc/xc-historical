@@ -1089,6 +1089,9 @@ _XimProtoMbLookupString(xic, ev, buffer, bytes, keysym, state)
     Status		 tmp_state;
     XimCommitInfo	 info;
 
+    if (!IS_SERVER_CONNECTED(im))
+	return 0;
+
     if (!state)
 	state = &tmp_state;
 
@@ -1148,6 +1151,9 @@ _XimProtoWcLookupString(xic, ev, buffer, bytes, keysym, state)
     int			 ret;
     Status		 tmp_state;
     XimCommitInfo	 info;
+
+    if (!IS_SERVER_CONNECTED(im))
+	return 0;
 
     if (!state)
 	state = &tmp_state;

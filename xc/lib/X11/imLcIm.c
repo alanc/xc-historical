@@ -61,12 +61,7 @@ _XimCheckIfLocalProcessing(im)
 	    if (fp != (FILE *)NULL)
 		return(True);
 	}
-	if(im->core.rdb != NULL)
-	    return(_XimLocalProcessingResource(im));
 	return(False);
-    } else if(strcmp(im->core.im_name, "local") == 0 ||
-	      strcmp(im->core.im_name, "none" ) == 0 ) {
-	return(True);
     }
     return(False);
 }

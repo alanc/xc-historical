@@ -350,7 +350,7 @@ euc_mbtocs(conv, from, from_left, to, to_left, args, num_args)
 
     min_ch = 0x20;
     if (charset->set_size == 94)
-	if (length > 1 || charset->side == XlcGR)
+	if (charset->char_size > 1 || charset->side == XlcGR)
 	    min_ch = 0x21;
 
     length = charset->char_size;
@@ -845,8 +845,14 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 		{
 		    inbufptr += ctdp->ct_encoding_len;
 		    (*from_left) -= ctdp->ct_encoding_len;
-		    if (ctdp->length)
+		    if (ctdp->length) {
 			length = ctdp->length;
+			if( *from_left < length ) {
+			    *to = (XPointer)outbufptr;
+			    *to_left -= outbufptr - outbuf_base;
+			    return( unconv_num + *from_left );
+			}
+		    }
 		    ct_type = ctdp->ct_type;
 		    break;
 		}
@@ -861,7 +867,6 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
  */
 	switch (ct_type) {
 	case CT_STD:
-	    ct_type = 0;
 	    break;
 	case CT_EXT2:
 	    inbufptr++;
@@ -870,7 +875,6 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    ct_seglen = (BIT8OFF(*inbufptr) << 7) + BIT8OFF(*(inbufptr+1)) + 2;
 	    inbufptr += ct_seglen;
 	    (*from_left) -= ct_seglen;
-	    ct_type = 0;
 	    continue;
 	case CT_EXT0:
 	    inbuf_base = inbufptr;
@@ -878,7 +882,6 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    inbufptr++;
 	    ct_seglen = (unsigned)(inbufptr - inbuf_base);
 	    *(from_left) -= ct_seglen;
-	    ct_type = 0;
 	    continue;
 	case CT_EXT1:
 	    inbuf_base = inbufptr;
@@ -887,13 +890,10 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    inbufptr++;
 	    ct_seglen = (unsigned)(inbufptr - inbuf_base);
 	    *(from_left) -= ct_seglen;
-	    ct_type = 0;
 	    continue;
 	case CT_DIR:
-	    ct_type = 0;
 	    continue;
 	case CT_VER:
-	    ct_type = 0;
 	    inbufptr += 2;
 	    *(from_left) -= 2;
 	    continue;
@@ -1096,8 +1096,14 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 		{
 		    inbufptr += ctdp->ct_encoding_len;
 		    (*from_left) -= ctdp->ct_encoding_len - 1;
-		    if (ctdp->length)
+		    if (ctdp->length) {
 			length = ctdp->length;
+			if( *from_left < length ) {
+			    *to = (XPointer)outbufptr;
+			    *to_left -= outbufptr - outbuf_base;
+			    return( unconv_num + *from_left );
+			}
+		    }
 		    ct_type = ctdp->ct_type;
 		    break;
 		}
@@ -1111,7 +1117,6 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
  */
 	switch (ct_type) {
 	case CT_STD:
-	    ct_type = 0;
 	    break;
 	case CT_EXT2:
 	    inbufptr++;
@@ -1120,7 +1125,6 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 	    ct_seglen = (BIT8OFF(*inbufptr) << 7) + BIT8OFF(*(inbufptr+1)) + 2;
 	    inbufptr += ct_seglen;
 	    (*from_left) -= ct_seglen;
-	    ct_type = 0;
 	    continue;
 	case CT_EXT0:
 	    inbuf_base = inbufptr;
@@ -1128,7 +1132,6 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 	    inbufptr++;
 	    ct_seglen = (unsigned)(inbufptr - inbuf_base);
 	    *(from_left) -= ct_seglen;
-	    ct_type = 0;
 	    continue;
 	case CT_EXT1:
 	    inbuf_base = inbufptr;
@@ -1137,13 +1140,10 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 	    inbufptr++;
 	    ct_seglen = (unsigned)(inbufptr - inbuf_base);
 	    *(from_left) -= ct_seglen;
-	    ct_type = 0;
 	    continue;
 	case CT_DIR:
-	    ct_type = 0;
 	    continue;
 	case CT_VER:
-	    ct_type = 0;
 	    inbufptr += 2;
 	    *(from_left) -= 2;
 	    continue;

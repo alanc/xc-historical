@@ -341,12 +341,6 @@ extern void _XimInitialResourceInfo(
 #endif
 );
 
-extern Bool	 _XimLocalProcessingResource(
-#if NeedFunctionPrototypes
-    Xim im
-#endif
-);
-
 extern int	 XimParseStringFile(
 #if NeedFunctionPrototypes
     FILE        *fp,

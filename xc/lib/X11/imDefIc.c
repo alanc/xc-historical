@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.6 94/03/26 16:57:41 rws Exp $ */
+/* $XConsortium: imDefIc.c,v 1.5 94/01/20 18:03:56 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -301,7 +301,10 @@ _XimProtoGetICValues(xic, arg)
     CARD16		*data = NULL;
     INT16		 data_len = 0;
 
-#ifdef XIM_CONNECTABLE
+#ifndef XIM_CONNECTABLE
+    if (!IS_IC_CONNECTED(ic))
+	return arg->name;
+#else
     if (!IS_IC_CONNECTED(ic)) {
 	if (IS_CONNECTABLE(im)) {
 	    if (_XimConnectServer(im)) {
@@ -673,7 +676,10 @@ _XimProtoSetICValues(xic, arg)
     BITMASK32		 flag = 0L;
     char		*name;
 
-#ifdef XIM_CONNECTABLE
+#ifndef XIM_CONNECTABLE
+    if (!IS_IC_CONNECTED(ic))
+	return arg->name;
+#else
     if (!_XimSaveICValues(ic, arg))
 	return False;
 
@@ -923,7 +929,10 @@ _XimProtoSetFocus(xic)
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
  
-#ifdef XIM_CONNECTABLE
+#ifndef XIM_CONNECTABLE
+    if (!IS_IC_CONNECTED(ic))
+	return;
+#else
     if (!IS_IC_CONNECTED(ic)) {
 	if (IS_CONNECTABLE(im)) {
 	    if (_XimConnectServer(im)) {
@@ -964,7 +973,10 @@ _XimProtoUnsetFocus(xic)
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
 
-#ifdef XIM_CONNECTABLE
+#ifndef XIM_CONNECTABLE
+    if (!IS_IC_CONNECTED(ic))
+	return;
+#else
     if (!IS_IC_CONNECTED(ic)) {
 	if (IS_CONNECTABLE(im)) {
 	    if (_XimConnectServer(im)) {

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: FSWrap.c,v 11.9 93/09/18 10:26:48 rws Exp $
+ * $XConsortium: FSWrap.c,v 11.10 94/01/20 18:01:37 rws Exp $
  */
 
 /*
@@ -161,9 +161,10 @@ XCreateFontSet (dpy, base_font_name_list, missing_charset_list,
     if (om == NULL)
 	return (XFontSet) NULL;
     
-    if (oc = XCreateOC(om, XNBaseFontName, base_font_name_list, NULL))
+    if (oc = XCreateOC(om, XNBaseFontName, base_font_name_list, NULL)) {
 	list = &oc->core.missing_list;
-    else
+	oc->core.om_automatic = True;
+    } else
 	list = &om->core.required_charset;
     
     *missing_charset_list = copy_string_list(list->charset_list,

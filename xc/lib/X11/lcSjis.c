@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.11 94/03/26 17:01:15 rws Exp $ */
+/* $XConsortium: lcSjis.c,v 1.10 94/02/10 19:36:09 rws Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -1162,8 +1162,14 @@ sjis_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 		{
 		    inbufptr += ctdp->ct_encoding_len;
 		    (*from_left) -= ctdp->ct_encoding_len;
-		    if (ctdp->length)
+		    if( ctdp->length ) {
 			length = ctdp->length;
+			if( *from_left < length ) {
+			    *to = (XPointer)outbufptr;
+			    *to_left -= outbufptr - outbuf_base;
+			    return( unconv_num + *from_left );
+			}
+		    }
 		    ct_type = ctdp->ct_type;
 		    break;
 		}
@@ -1269,8 +1275,14 @@ sjis_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 		{
 		    inbufptr += ctdp->ct_encoding_len;
 		    (*from_left) -= ctdp->ct_encoding_len;
-		    if (ctdp->length)
+		    if( ctdp->length ) {
 			length = ctdp->length;
+			if( *from_left < length ) {
+			    *to = (XPointer)outbufptr;
+			    *to_left -= outbufptr - outbuf_base;
+			    return( unconv_num + *from_left );
+			}
+		    }
 		    ct_type = ctdp->ct_type;
 		    break;
 		}

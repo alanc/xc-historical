@@ -274,7 +274,7 @@ _XimPreConnectionIM(im, selection)
 	return False;
 
     for( i = 0; i < 4; i++ )
-      locale_name[i] = NULL;
+	locale_name[i] = NULL;
     /* requestor window */
     if(!(window = XCreateSimpleWindow(display, DefaultRootWindow(display),
 			 				0, 0, 1, 1, 1, 0, 0)))
@@ -1013,10 +1013,6 @@ _XimProtoIMFree(im)
 	Xfree(im->private.proto.locale_name);
 	im->private.proto.locale_name = 0;
     }
-    if (im->private.proto.saved_imvalues) {
-	Xfree(im->private.proto.saved_imvalues);
-	im->private.proto.saved_imvalues = 0;
-    }
     if (im->private.proto.ctom_conv) {
 	_XlcCloseConverter(im->private.proto.ctom_conv);
 	im->private.proto.ctom_conv = 0;
@@ -1028,7 +1024,7 @@ _XimProtoIMFree(im)
 
 #ifdef XIM_CONNECTABLE
     if (!IS_SERVER_CONNECTED(im) && IS_RECONNECTABLE(im)) {
-        return;
+	return;
     }
 #endif /* XIM_CONNECTABLE */
 
@@ -1256,7 +1252,10 @@ _XimProtoSetIMValues(xim, arg)
     int			 ret_code;
     char		*name;
 
-#ifdef XIM_CONNECTABLE
+#ifndef XIM_CONNECTABLE
+    if (!IS_SERVER_CONNECTED(im))
+	return arg->name;
+#else
     if (!_XimSaveIMValues(im, arg))
 	return arg->name;
 
@@ -1425,7 +1424,10 @@ _XimProtoGetIMValues(xim, arg)
     CARD16		*data = NULL;
     INT16		 data_len = 0;
 
-#ifdef XIM_CONNECTABLE
+#ifndef XIM_CONNECTABLE
+    if (!IS_SERVER_CONNECTED(im))
+	return arg->name;
+#else
     if (!IS_SERVER_CONNECTED(im)) {
 	if (IS_CONNECTABLE(im)) {
 	    if (!_XimConnectServer(im)) {

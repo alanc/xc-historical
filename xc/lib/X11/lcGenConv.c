@@ -1,4 +1,4 @@
-/* $XConsortium: lcGenConv.c,v 1.2 93/09/23 12:31:24 rws Exp $ */
+/* $XConsortium: lcGenConv.c,v 1.3 94/01/20 18:06:47 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -26,6 +26,7 @@
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
+#include <stdio.h>
 
 typedef struct _StateRec {
     XLCd lcd;
@@ -92,9 +93,6 @@ mbtocs(conv, from, from_left, to, to_left, args, num_args)
     src = *((char **) from);
     dst = *((char **) to);
 
-    if (*from_left < 1 || (dst && *to_left < 1))
-	return -1;
-
     if (mb_parse_table = XLC_GENERIC(lcd, mb_parse_table)) {
 	number = mb_parse_table[(unsigned char) *src];
 	if (number > 0) {
@@ -135,7 +133,8 @@ mbtocs(conv, from, from_left, to, to_left, args, num_args)
 	charset = state->GL_charset;
 
 found:
-    if (charset == NULL)
+    if (charset == NULL ||
+	(num_args == 2 && (XlcCharSet) args[1] != charset))
 	return -1;
 
     length = charset->char_size;
@@ -162,7 +161,7 @@ end:
     *from = (XPointer) src;
     *from_left -= encoding_len + length;
     state->charset = charset;
-    if (num_args > 0)
+    if (num_args == 1)
 	*((XlcCharSet *) args[0]) = charset;
 
     return 0;
@@ -178,48 +177,25 @@ mbstocs(conv, from, from_left, to, to_left, args, num_args)
     XPointer *args;
     int num_args;
 {
-    State state = (State) conv->state;
-    XPointer tmp_from, tmp_to;
-    int tmp_from_left, tmp_to_left;
-    XlcCharSet charset, tmp_charset;
-    StateRec tmp_state;
-    XPointer tmp_args[1];
-    int unconv_num = 0, ret;
+    XlcCharSet charset = NULL;
+    XPointer tmp_args[2], save_from = *from;
+    int ret, unconv_num = 0, tmp_num = 1;
 
     tmp_args[0] = (XPointer) &charset;
 
-    do {
-	ret = mbtocs(conv, from, from_left, to, to_left, tmp_args, 1);
+    while (*from_left > 0 && *to_left > 0) {
+	ret = mbtocs(conv, from, from_left, to, to_left, tmp_args, tmp_num);
 	if (ret < 0)
-	    return ret;
-	unconv_num += ret;
-    } while (ret > 0) ;
-
-    tmp_from = *from;
-    tmp_from_left = *from_left;
-    tmp_to = *to;
-    tmp_to_left = *to_left;
-    tmp_state = *state;
-    tmp_args[0] = (XPointer) &tmp_charset;
-    
-    while (1) {
-	ret = mbtocs(conv, &tmp_from, &tmp_from_left, &tmp_to,
-		     &tmp_to_left, tmp_args, 1);
-	if (ret > 0) {
-	    unconv_num += ret;
-	    continue;
-	}
-	if (ret < 0 || tmp_charset != charset)
 	    break;
-	
-	*from = tmp_from;
-	*from_left = tmp_from_left;
-	*to = tmp_to;
-	*to_left = tmp_to_left;
-	tmp_state = *state;
+	unconv_num += ret;
+	if (tmp_num == 1 && charset) {
+	    tmp_args[1] = (XPointer) charset;
+	    tmp_num = 2;
+	}
     }
 
-    *state = tmp_state;
+    if (save_from == *from)
+	return -1;
 
     if (num_args > 0)
 	*((XlcCharSet *) args[0]) = charset;
@@ -278,6 +254,8 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
     buf_len = *to_left;
 
     codeset = wc_parse_codeset(lcd, wcptr);
+    if (codeset == NULL)
+	return -1;
     wc_encoding = codeset->wc_encoding;
 
     if (wcstr_len < buf_len / codeset->length)
@@ -641,23 +619,289 @@ open_cstowcs(from_lcd, from_type, to_lcd, to_type)
     return create_conv(from_lcd, &cstowcs_methods);
 }
 
+#ifndef X_NOT_STDC_ENV
+static int
+stdc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
+    XlcConv conv;
+    XPointer *from;
+    int *from_left;
+    XPointer *to;
+    int *to_left;
+    XPointer *args;
+    int num_args;
+{
+    char *src = *((char **) from);
+    wchar_t *dst = *((wchar_t **) to);
+    int src_left = *from_left;
+    int dst_left = *to_left;
+    int length;
+
+    while (src_left > 0 && dst_left > 0) {
+	length = mbtowc(dst, src, src_left);
+	if (length < 0)
+	    break;
+
+	src += length;
+	src_left -= length;
+	if (dst)
+	    dst++;
+	dst_left--;
+
+	if (length == 0) {
+	    src++;
+	    src_left--;
+	    break;
+	}
+    }
+
+    if (*from_left == src_left)
+	return -1;
+
+    *from = (XPointer) src;
+    if (dst)
+	*to = (XPointer) dst;
+    *from_left = src_left;
+    *to_left = dst_left;
+
+    return 0;
+}
+
+static int
+stdc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
+    XlcConv conv;
+    XPointer *from;
+    int *from_left;
+    XPointer *to;
+    int *to_left;
+    XPointer *args;
+    int num_args;
+{
+    wchar_t *src = *((wchar_t **) from);
+    char *dst = *((char **) to);
+    int src_left = *from_left;
+    int dst_left = *to_left;
+    int length;
+
+    while (src_left > 0 && dst_left > 0) {
+	length = wctomb(dst, *src);		/* XXX */
+	if (length < 0 || dst_left < length)
+	    break;
+
+	src++;
+	src_left--;
+	dst += length;
+	dst_left -= length;
+
+	if (length == 0) {
+	    dst++;
+	    dst_left--;
+	    break;
+	}
+    }
+
+    if (*from_left == src_left)
+	return -1;
+
+    *from = (XPointer) src;
+    *to = (XPointer) dst;
+    *from_left = src_left;
+    *to_left = dst_left;
+
+    return 0;
+}
+
+static int
+stdc_wcstocs(conv, from, from_left, to, to_left, args, num_args)
+    XlcConv conv;
+    XPointer *from;
+    int *from_left;
+    XPointer *to;
+    int *to_left;
+    XPointer *args;
+    int num_args;
+{
+    wchar_t wch, *src = *((wchar_t **) from);
+    XlcCharSet charset = NULL;
+    XPointer tmp_args[2], tmp_from, save_from = *from;
+    char tmp[32];
+    int length, ret, src_left = *from_left;
+    int unconv_num = 0, tmp_num = 1;
+
+    tmp_args[0] = (XPointer) &charset;
+
+    while (src_left > 0 && *to_left > 0) {
+	if (wch = *src) {
+	    length = wctomb(tmp, wch);
+	} else {
+	    length = 1;
+	    *tmp = '\0';
+	}
+		
+	if (length < 0)
+	    break;
+
+	tmp_from = (XPointer) tmp;
+	ret = mbtocs(conv, &tmp_from, &length, to, to_left, tmp_args, tmp_num);
+	if (ret < 0)
+	    break;
+	unconv_num += ret;
+	if (tmp_num == 1 && charset) {
+	    tmp_args[1] = (XPointer) charset;
+	    tmp_num = 2;
+	}
+
+	src++;
+	src_left--;
+    }
+
+    if (save_from == (XPointer) src)
+	return -1;
+
+    *from = (XPointer) src;
+    *from_left = src_left;
+
+    if (num_args > 0)
+	*((XlcCharSet *) args[0]) = charset;
+    
+    return unconv_num;
+}
+
+#define DefineLocalBuf		char local_buf[BUFSIZ]
+#define AllocLocalBuf(length)	(length > BUFSIZ ? Xmalloc(length) : local_buf)
+#define FreeLocalBuf(ptr)	if (ptr != local_buf) Xfree(ptr)
+
+static int
+stdc_cstowcs(conv, from, from_left, to, to_left, args, num_args)
+    XlcConv conv;
+    XPointer *from;
+    int *from_left;
+    XPointer *to;
+    int *to_left;
+    XPointer *args;
+    int num_args;
+{
+    XLCd lcd = ((State) conv->state)->lcd;
+    DefineLocalBuf;
+    XPointer buf, save_buf;
+    int length, left, ret;
+    
+    left = length = *to_left * XLC_PUBLIC(lcd, mb_cur_max);
+    buf = save_buf = (XPointer) AllocLocalBuf(length);
+    if (buf == NULL)
+	return -1;
+
+    ret = cstombs(conv, from, from_left, &buf, &left, args, num_args);
+    if (ret < 0)
+	goto err;
+    
+    buf = save_buf;
+    length -= left;
+    if (stdc_mbstowcs(conv, &buf, &length, to, to_left, args, num_args) < 0)
+	ret = -1;
+
+err:
+    FreeLocalBuf(save_buf);
+
+    return ret;
+}
+
+static XlcConvMethodsRec stdc_mbstowcs_methods = {
+    close_converter,
+    stdc_mbstowcs,
+    NULL
+} ;
+
+static XlcConv
+open_stdc_mbstowcs(from_lcd, from_type, to_lcd, to_type)
+    XLCd from_lcd;
+    char *from_type;
+    XLCd to_lcd;
+    char *to_type;
+{
+    return create_conv(from_lcd, &stdc_mbstowcs_methods);
+}
+
+static XlcConvMethodsRec stdc_wcstombs_methods = {
+    close_converter,
+    stdc_wcstombs,
+    NULL
+} ;
+
+static XlcConv
+open_stdc_wcstombs(from_lcd, from_type, to_lcd, to_type)
+    XLCd from_lcd;
+    char *from_type;
+    XLCd to_lcd;
+    char *to_type;
+{
+    return create_conv(from_lcd, &stdc_wcstombs_methods);
+}
+
+static XlcConvMethodsRec stdc_wcstocs_methods = {
+    close_converter,
+    stdc_wcstocs,
+    NULL
+} ;
+
+static XlcConv
+open_stdc_wcstocs(from_lcd, from_type, to_lcd, to_type)
+    XLCd from_lcd;
+    char *from_type;
+    XLCd to_lcd;
+    char *to_type;
+{
+    return create_conv(from_lcd, &stdc_wcstocs_methods);
+}
+
+static XlcConvMethodsRec stdc_cstowcs_methods = {
+    close_converter,
+    stdc_cstowcs,
+    NULL
+} ;
+
+static XlcConv
+open_stdc_cstowcs(from_lcd, from_type, to_lcd, to_type)
+    XLCd from_lcd;
+    char *from_type;
+    XLCd to_lcd;
+    char *to_type;
+{
+    return create_conv(from_lcd, &stdc_cstowcs_methods);
+}
+#endif
+
 XLCd
 _XlcGenericLoader(name)
     char *name;
 {
     XLCd lcd;
+    XLCdGenericPart *gen;
 
     lcd = _XlcCreateLC(name, _XlcGenericMethods);
     if (lcd == NULL)
 	return lcd;
 
-    _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNCharSet, open_mbstocs);
-    _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNCharSet, open_wcstocs);
-
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNChar, open_mbtocs);
-
+    _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNCharSet, open_mbstocs);
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNMultiByte, open_cstombs);
+
+#ifndef X_NOT_STDC_ENV
+    gen = XLC_GENERIC_PART(lcd);
+
+    if (gen->use_stdc_env == True) {
+	_XlcSetConverter(lcd,XlcNMultiByte,lcd,XlcNWideChar,open_stdc_mbstowcs);
+	_XlcSetConverter(lcd,XlcNWideChar,lcd,XlcNMultiByte,open_stdc_wcstombs);
+    }
+    if (gen->force_convert_to_mb == True) {
+	_XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNCharSet,open_stdc_wcstocs);
+	_XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNWideChar,open_stdc_cstowcs);
+    } else {
+#endif
+    _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNCharSet, open_wcstocs);
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNWideChar, open_cstowcs);
+#ifndef X_NOT_STDC_ENV
+    }
+#endif
 
     return lcd;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c,v 1.4 94/01/20 18:08:03 rws Exp $ */
+/* $XConsortium: omGeneric.c,v 1.5 94/01/23 16:45:48 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -688,14 +688,12 @@ static XOCMethodsListRec oc_methods_list[] = {
 static XlcResource oc_resources[] = {
     { XNBaseFontName, NULLQUARK, sizeof(char *),
       XOffsetOf(XOCRec, core.base_name_list), XlcCreateMask | XlcGetMask },
-    { XNFontSet, NULLQUARK, sizeof(XFontSet),
-      XOffsetOf(XOCRec, core.self), XlcGetMask },
+    { XNOMAutomatic, NULLQUARK, sizeof(Bool),
+      XOffsetOf(XOCRec, core.om_automatic), XlcGetMask },
     { XNMissingCharSet, NULLQUARK, sizeof(XOMCharSetList),
       XOffsetOf(XOCRec, core.missing_list), XlcGetMask },
     { XNDefaultString, NULLQUARK, sizeof(char *),
       XOffsetOf(XOCRec, core.default_string), XlcGetMask },
-    { XNPostEditCallback, NULLQUARK, sizeof(XOMCallback),
-      XOffsetOf(XOCRec, core.post_edit_callback), XlcSetMask | XlcGetMask },
     { XNOrientation, NULLQUARK, sizeof(XOrientation),
       XOffsetOf(XOCRec, core.orientation), XlcSetMask | XlcGetMask },
     { XNDirectionalDependentDrawing, NULLQUARK, sizeof(Bool),
@@ -707,11 +705,7 @@ static XlcResource oc_resources[] = {
     { XNResourceClass, NULLQUARK, sizeof(char *),
       XOffsetOf(XOCRec, core.res_class), XlcSetMask | XlcGetMask },
     { XNFontInfo, NULLQUARK, sizeof(XOMFontInfo),
-      XOffsetOf(XOCRec, core.font_info), XlcGetMask },
-    { XNWidth, NULLQUARK, sizeof(unsigned short),
-      XOffsetOf(XOCRec, core.width), XlcDefaultMask | XlcSetMask | XlcGetMask },
-    { XNDrawingGravity, NULLQUARK, sizeof(XOMDrawingGravity),
-      XOffsetOf(XOCRec, core.drawing_gravity), XlcSetMask | XlcGetMask }
+      XOffsetOf(XOCRec, core.font_info), XlcGetMask }
 };
 
 static XOC
@@ -744,7 +738,6 @@ create_oc(om, args, num_args)
 
     oc->core.resources = oc_resources;
     oc->core.num_resources = XlcNumber(oc_resources);
-    oc->core.self = oc;
 
     if (create_fontset(oc) == False)
 	goto err;

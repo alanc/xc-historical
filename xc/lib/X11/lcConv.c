@@ -1,4 +1,4 @@
-/* $XConsortium: lcConv.c,v 1.3 93/09/17 18:25:03 rws Exp $ */
+/* $XConsortium: lcConv.c,v 1.4 94/01/20 18:06:24 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -226,18 +226,21 @@ open_indirect_converter(from_lcd, from, to_lcd, to)
     XLCd to_lcd;
     char *to;
 {
-    XlcConv lc_conv;
+    XlcConv lc_conv, from_conv, to_conv;
     Conv conv;
     XrmQuark from_type, to_type;
-    static XrmQuark QCharSet = (XrmQuark) 0;
+    static XrmQuark QChar, QCharSet = (XrmQuark) 0;
 
-    if (QCharSet == (XrmQuark) 0)
+    if (QCharSet == (XrmQuark) 0) {
 	QCharSet = XrmStringToQuark(XlcNCharSet);
+	QChar = XrmStringToQuark(XlcNChar);
+    }
 
     from_type = XrmStringToQuark(from);
     to_type = XrmStringToQuark(to);
 
-    if (from_type == QCharSet || to_type == QCharSet)
+    if (from_type == QCharSet || from_type == QChar || to_type == QCharSet ||
+	to_type == QChar)
 	return (XlcConv) NULL;
 
     lc_conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
@@ -251,19 +254,22 @@ open_indirect_converter(from_lcd, from, to_lcd, to)
 	goto err;
     
     conv = (Conv) lc_conv->state;
-    conv->from_conv = conv->to_conv = NULL;
 
-    conv->from_conv = get_converter(from_lcd, from_type, from_lcd, QCharSet);
-    if (conv->from_conv == NULL)
-	conv->from_conv = get_converter((XLCd) NULL, from_type, (XLCd) NULL, QCharSet);
-    if (conv->from_conv == NULL)
+    from_conv = get_converter(from_lcd, from_type, from_lcd, QChar);
+    if (from_conv == NULL)
+	from_conv = get_converter(from_lcd, from_type, from_lcd, QCharSet);
+    if (from_conv == NULL)
+	from_conv = get_converter((XLCd)NULL, from_type, (XLCd)NULL, QCharSet);
+    if (from_conv == NULL)
 	goto err;
+    conv->from_conv = from_conv;
 
-    conv->to_conv = get_converter(to_lcd, QCharSet, to_lcd, to_type);
-    if (conv->to_conv == NULL)
-	conv->to_conv = get_converter((XLCd) NULL, QCharSet, (XLCd) NULL, to_type);
-    if (conv->to_conv == NULL)
+    to_conv = get_converter(to_lcd, QCharSet, to_lcd, to_type);
+    if (to_conv == NULL)
+	to_conv = get_converter((XLCd) NULL, QCharSet, (XLCd) NULL, to_type);
+    if (to_conv == NULL)
 	goto err;
+    conv->to_conv = to_conv;
 
     return lc_conv;
 

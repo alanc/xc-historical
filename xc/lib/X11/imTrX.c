@@ -182,48 +182,17 @@ _XimXConnect(im)
     major_code = (CARD32)event.xclient.data.l[1];
     minor_code = (CARD32)event.xclient.data.l[2];
 
-    if (major_code > spec->major_code) {
-	spec->major_code = 0;
-	spec->minor_code = 0;
-    } else {
+    if (((major_code == 0) && (minor_code <= 2)) ||
+	((major_code == 1) && (minor_code == 0)) ||
+	((major_code == 2) && (minor_code <= 1))) {
 	spec->major_code = major_code;
-	switch (major_code) {
-	case 0:
-	    if (minor_code > 2) {
-		spec->major_code = 0;
-		spec->minor_code = 0;
-	    } else if (minor_code == 2) {
-		spec->BoundarySize = (CARD32)event.xclient.data.l[3];
-		spec->minor_code = 2;
-	    } else {
-		spec->minor_code = minor_code;
-	    }
-	    break;
-	case 1:
-	    if (minor_code > 0) {
-	        spec->major_code = 0;
-	        spec->minor_code = 0;
-	    } else {
-	        spec->minor_code = 0;
-	    }
-	    break;
-        case 2:
-	    if (minor_code > 1) {
-	        spec->major_code = 0;
-	        spec->minor_code = 0;
-	    } else if (minor_code == 1) {
-	        spec->BoundarySize = (CARD32)event.xclient.data.l[3];
-	        spec->minor_code = 1;
-	    } else {
-	        spec->minor_code = 0;
-	    }
-	    break;
-        default:
-	    spec->major_code = 0;
-	    spec->minor_code = 0;
-        }
+	spec->minor_code = minor_code;
     }
-
+    if (((major_code == 0) && (minor_code == 2)) ||
+	((major_code == 2) && (minor_code == 1))) {
+	spec->BoundarySize = (CARD32)event.xclient.data.l[3];
+    }
+	
     /* ClientMessage Event Filter */
     _XRegisterFilterByType(im->core.display, spec->lib_connect_wid,
 			ClientMessage, ClientMessage,
@@ -520,36 +489,16 @@ _XimXConf(im, address)
     char	 res_class[256];
     char	*str_type;
     XrmValue	 value;
-    CARD32	 major_version = MAJOR_TRANSPORT_VERSION;
-    CARD32	 minor_version = MINOR_TRANSPORT_VERSION;
 
     if (!(spec = (XSpecRec *)Xmalloc(sizeof(XSpecRec))))
 	return False;
     bzero(spec, sizeof(XSpecRec));
 
-    if (im->core.rdb) {
-        _XimGetResourceName(im, xim_res_name, xim_res_class);
-        sprintf(res_name, "%s%s", xim_res_name, "xTransportMajorVersion");
-        sprintf(res_class, "%s%s", xim_res_class, "XTransportMajorVersion");
-	bzero(&value, sizeof(XrmValue));
-        if(XrmGetResource(im->core.rdb, res_name,
-						res_class, &str_type, &value)) {
-	    major_version = atoi(value.addr);
-        }
-        sprintf(res_name, "%s%s", xim_res_name, "xTransportMinorVersion");
-        sprintf(res_class, "%s%s", xim_res_class, "XTransportMinorVersion");
-	bzero(&value, sizeof(XrmValue));
-        if(XrmGetResource(im->core.rdb, res_name,
-						res_class, &str_type, &value)) {
-	    minor_version = atoi(value.addr);
-        }
-    }
-
     spec->improtocolid = XInternAtom(im->core.display, _XIM_PROTOCOL, False);
     spec->imconnectid  = XInternAtom(im->core.display, _XIM_XCONNECT, False);
     spec->immoredataid = XInternAtom(im->core.display, _XIM_MOREDATA, False);
-    spec->major_code = major_version;
-    spec->minor_code = minor_version;
+    spec->major_code = MAJOR_TRANSPORT_VERSION;
+    spec->minor_code = MINOR_TRANSPORT_VERSION;
 
     im->private.proto.spec     = (XPointer)spec;
     im->private.proto.connect  = _XimXConnect;

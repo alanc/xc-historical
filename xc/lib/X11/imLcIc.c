@@ -158,11 +158,12 @@ _XimLocalCreateIC(im, values)
 			values, XIM_CREATEIC, True)) {
 	goto Set_Error;
     }
+    ic_values.filter_events = KeyPressMask;
+    _XimSetCurrentICValues(ic, &ic_values);
     if(_XimSetICDefaults(ic, (XPointer)&ic_values,
 				XIM_SETICDEFAULTS, res, num) == False) {
 	goto Set_Error;
     }
-    ic_values.filter_events = KeyPressMask;
     _XimSetCurrentICValues(ic, &ic_values);
 
     return((XIC)ic);
