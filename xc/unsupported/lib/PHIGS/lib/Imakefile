@@ -1,3 +1,5 @@
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+
 all:: PHIGSerr.txt PHIGSfnc.txt phigsmon
 
 LinkSourceFile(phigsmon,../cp)
