@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.136 93/09/07 21:32:06 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.137 93/09/14 17:25:02 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -197,6 +197,7 @@ Display *XOpenDisplay (display)
 	dpy->watcher_count	= 0;
 	dpy->in_process_conni	= False;
 	dpy->filedes		= NULL;
+	dpy->flushes		= NULL;
 
 /*
  * Setup other information in this display structure.
