@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.38 91/12/10 11:18:10 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.39 91/12/23 12:09:58 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -592,16 +592,26 @@ ProcGetGeometry(client)
 
     rep.width = pDraw->width;
     rep.height = pDraw->height;
-    if (pDraw->type == DRAWABLE_PIXMAP)
-    {
-	rep.x = rep.y = rep.borderWidth = 0;
-    }
-    else
+
+    /* XXX - Because the pixmap-implementation of the multibuffer extension 
+     *       may have the buffer-id's drawable resource value be a pointer
+     *       to the buffer's window instead of the buffer itself
+     *       (this happens if the buffer is the displayed buffer),
+     *       we also have to check that the id matches before we can
+     *       truly say that it is a DRAWABLE_WINDOW.
+     */
+
+    if ((pDraw->type == UNDRAWABLE_WINDOW) ||
+        ((pDraw->type == DRAWABLE_WINDOW) && (stuff->id == pDraw->id)))
     {
         register WindowPtr pWin = (WindowPtr)pDraw;
 	rep.x = pWin->origin.x - wBorderWidth (pWin);
 	rep.y = pWin->origin.y - wBorderWidth (pWin);
 	rep.borderWidth = pWin->borderWidth;
+    }
+    else /* DRAWABLE_PIXMAP or DRAWABLE_BUFFER */
+    {
+	rep.x = rep.y = rep.borderWidth = 0;
     }
     WriteReplyToClient(client, sizeof(xGetGeometryReply), &rep);
     return(client->noClientException);
