@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.64 92/11/05 14:32:27 rws Exp $
+ * $XConsortium: xrdb.c,v 11.65 92/12/18 19:19:41 gildea Exp $
  */
 
 /*
@@ -102,6 +102,9 @@ char *backup_suffix = BACKUP_SUFFIX;
 Bool dont_execute = False;
 char defines[4096];
 int defines_base;
+char *cmd_defines[512];
+int num_cmd_defines = 0;
+char includes[4096];
 Display *dpy;
 Buffer buffer;
 Entries newDB;
@@ -375,6 +378,11 @@ AddDef(buff, title, value)
 AddDefQ(buff, title, value)
     char *buff, *title, *value;
 {
+#ifdef PATHETICCPP
+    if (need_real_defines)
+	AddDef(buff, title, value);
+    else
+#endif
     if (value && (value[0] != '\0')) {
 	AddDef(buff, title, "\"");
 	strcat(buff, value);
@@ -412,6 +420,47 @@ AddDefTok(buff, prefix, title)
 	    *s = '_';
     }
     AddSimpleDef(buff, name);
+}
+
+AddUndef(buff, title)
+    char *buff, *title;
+{
+#ifdef PATHETICCPP
+    if (need_real_defines) {
+	strcat(buff, "\n#undef ");
+	strcat(buff, title);
+	return;
+    }
+#endif
+    if (buff[0]) {
+	if (oper == OPSYMBOLS)
+	    strcat(buff, "\n-U");
+	else
+	    strcat(buff, " -U");
+    } else
+	strcat(buff, "-U");
+    strcat(buff, title);
+}
+
+DoCmdDefines(buff)
+    char *buff;
+{
+    int i;
+    char *arg, *val;
+
+    for (i = 0; i < num_cmd_defines; i++) {
+	arg = cmd_defines[i];
+	if (arg[1] == 'D') {
+	    val = index(arg, '=');
+	    if (val) {
+		*val = '\0';
+		AddDefQ(buff, arg + 2, val + 1);
+		*val = '=';
+	    } else
+		AddSimpleDef(buff, arg + 2);
+	} else
+	    AddUndef(buff, arg + 2);
+    }
 }
 
 int Resolution(pixels, mm)
@@ -684,6 +733,7 @@ main (argc, argv)
     ProgramName = argv[0];
 
     defines[0] = '\0';
+    includes[0] = '\0';
 
     /* needs to be replaced with XrmParseCommand */
 
@@ -760,10 +810,12 @@ main (argc, argv)
 	    } else if (isabbreviation ("-quiet", arg, 2)) {
 		quiet = True;
 		continue;
-	    } else if (arg[1] == 'I' || arg[1] == 'U' || arg[1] == 'D') {
-		strcat(defines, " \"");
-		strcat(defines, arg);
-		strcat(defines, "\"");
+	    } else if (arg[1] == 'I') {
+		strcat(includes, " ");
+		strcat(includes, arg);
+		continue;
+	    } else if (arg[1] == 'U' || arg[1] == 'D') {
+		cmd_defines[num_cmd_defines++] = arg;
 		continue;
 	    }
 	    Syntax ();
@@ -945,6 +997,7 @@ Process(scrno, doScreen, execute)
     buffer.used = 0;
     InitEntries(&newDB);
     DoScreenDefines(dpy, scrno, defines);
+    DoCmdDefines(defines);
     if (doScreen) {
 	xdefs = XScreenResourceString (ScreenOfDisplay(dpy, scrno));
 	root = RootWindow(dpy, scrno);
@@ -1020,7 +1073,7 @@ Process(scrno, doScreen, execute)
 	    fprintf(stdin, "\n#include \"%s\"\n", filename);
 	    fflush(stdin);
 	    fseek(stdin, 0, 0);
-	    sprintf(cmd, "%s", cpp_program);
+	    sprintf(cmd, "%s%s", cpp_program, includes);
 	    if (!(input = popen(cmd, "r")))
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
 	} else {
@@ -1030,7 +1083,7 @@ Process(scrno, doScreen, execute)
 		fatal("%s: can't open file '%s'\n", ProgramName, filename);
 	}
 	if (cpp_program) {
-	    sprintf(cmd, "%s %s", cpp_program, defines);
+	    sprintf(cmd, "%s%s %s", cpp_program, includes, defines);
 	    if (!(input = popen(cmd, "r")))
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
 	} else {
