@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.44 88/10/18 12:29:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.44 88/10/18 12:37:46 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -80,9 +80,11 @@ static XtActionsRec actionsList[] =
   {"unhighlight",	Unhighlight},
 };
 
+#define SuperClass ((LabelWidgetClass)&labelClassRec)
+
 CommandClassRec commandClassRec = {
   {
-    (WidgetClass) &labelClassRec,	/* superclass		  */	
+    (WidgetClass) SuperClass,		/* superclass		  */	
     "Command",				/* class_name		  */
     sizeof(CommandRec),			/* size			  */
     NULL,				/* class_initialize	  */
@@ -325,7 +327,7 @@ static void Redisplay(w, event, region)
        }
    }
 
-   (*XtSuperclass(w)->core_class.expose) (w, event, region);
+   (*SuperClass->core_class.expose) (w, event, region);
 }
 
 

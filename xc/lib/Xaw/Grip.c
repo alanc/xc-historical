@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Grip.c,v 1.19 88/09/06 16:41:29 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Grip.c,v 1.20 88/09/26 13:51:57 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -63,10 +63,12 @@ static XtActionsRec actionsList[] =
 
 static void Realize();
 
+#define SuperClass (&widgetClassRec)
+
 GripClassRec gripClassRec = {
    {
 /* core class fields */
-    /* superclass         */   (WidgetClass) &widgetClassRec,
+    /* superclass         */   (WidgetClass) SuperClass,
     /* class name         */   "Grip",
     /* size               */   sizeof(GripRec),
     /* class initialize   */   NULL,
@@ -130,5 +132,5 @@ static void Realize( w, valueMask, attributes )
     attributes->cursor = gw->grip.cursor;
     *valueMask |= CWCursor;
     
-    (*XtSuperclass(w)->core_class.realize) (w, valueMask, attributes);
+    (*SuperClass->core_class.realize) (w, valueMask, attributes);
 }
