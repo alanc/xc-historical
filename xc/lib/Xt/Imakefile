@@ -165,20 +165,6 @@ InstallSharedLibraryData(Xt,$(SOXTREV),$(USRLIBDIR))
 NormalLibraryTarget(Xt,$(OBJS) $(UNSHAREDOBJS))
 InstallLibrary(Xt,$(USRLIBDIR))
 
-#if defined(SunArchitecture) && defined(SparcArchitecture)
-/* the Sun C optimizer is broken on just this file */
-TMparse.o:  TMparse.c
-	$(MAKE) $(MFLAGS) CDEBUGFLAGS= nooptTMparse.o
-	mv nooptTMparse.o TMparse.o
-	$(RM) nooptTMparse.c
-
-nooptTMparse.c:
-	$(LN) TMparse.c nooptTMparse.c
-
-clean::
-	$(RM) nooptRMparse.c
-#endif
-
 LintLibraryTarget(Xt,$(SRCS))
 InstallLintLibrary(Xt,$(LINTLIBDIR))
 
