@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.94 89/07/16 16:20:33 kit Exp $";
+static char Xrcsid[] = "$XConsortium: commands.c,v 1.22 89/07/21 19:52:50 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -80,7 +80,7 @@ caddr_t junk, garbage;
 void
 DoQuit()
 {
-  if( double_click || !XawAsciiSourceChanged(textwindow) ) {
+  if( double_click || !XawAsciiSourceChanged(XawTextGetSource(textwindow)) ) {
     exit(0); 
   } 
   XeditPrintf("Unsaved changes. Save them, or press Quit again.\n");
@@ -110,7 +110,7 @@ DoSave()
     return;
   }
   
-  if( !XawAsciiSourceChanged(textwindow) ) {
+  if( !XawAsciiSourceChanged(XawTextGetSource(textwindow)) ) {
     XeditPrintf("Save:  no changes to save -- nothing saved\n");
     Feep();
     return;
@@ -126,7 +126,7 @@ DoSave()
     }
   }
   
-  if (XawAsciiSave(textwindow)) 
+  if ( XawAsciiSave(XawTextGetSource(textwindow)) ) 
     sprintf(buf, "Saved file:  %s\n", filename);
   else 
     sprintf(buf, "Error saving file:  %s\n",  filename);
@@ -141,7 +141,7 @@ DoLoad()
   Cardinal num_args = 0;
   String filename = GetString(filenamewindow);
 
-  if ( XawAsciiSourceChanged(textwindow) && !double_click) {
+  if ( XawAsciiSourceChanged(XawTextGetSource(textwindow)) && !double_click) {
     XeditPrintf("Unsaved changes. Save them, or press Load again.\n");
     Feep();
     double_click = TRUE;
@@ -152,7 +152,7 @@ DoLoad()
 
   if ((strlen(filename)&&access(filename, R_OK) == 0)) {
     XtSetArg(args[num_args], XtNstring, filename); num_args++;
-    XtSetValues(textwindow, args, num_args);
+    XtSetValues( textwindow, args, num_args);
 
     num_args = 0;
     XtSetArg(args[num_args], XtNlabel, filename); num_args++;
