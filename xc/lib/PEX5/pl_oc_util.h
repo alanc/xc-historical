@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.h,v 1.9 93/02/08 10:59:02 rws Exp $ */
+/* $XConsortium: pl_oc_util.h,v 1.9 93/02/23 14:52:07 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -50,7 +50,7 @@ SOFTWARE.
 { \
     if ((int) (_numBytes) <= (int) BytesLeftInXBuffer (_display)) \
     { \
-	COPY_AREA (_data, _display->bufptr, _numBytes); \
+	memcpy (_display->bufptr, _data, _numBytes); \
 	_display->bufptr += _numBytes; \
     } \
     else \
@@ -243,7 +243,7 @@ SOFTWARE.
     _pReq = &tReq;
 
 #define END_NEW_OCREQ_HEADER(_pBuf, _pReq) \
-    COPY_AREA ((char *) _pReq, _pBuf, SIZEOF (pexOCRequestHeader)); \
+    memcpy (_pBuf, _pReq, SIZEOF (pexOCRequestHeader)); \
 }
 
 #endif /* WORD64 */
@@ -266,10 +266,10 @@ SOFTWARE.
 { \
     pexOCRequestHeader tReq; \
     _pReq = &tReq; \
-    COPY_AREA (_pBuf, (char *) _pReq, SIZEOF (pexOCRequestHeader));
+    memcpy (_pReq, _pBuf, SIZEOF (pexOCRequestHeader));
 
 #define END_UPDATE_OCREQ_HEADER(_pBuf, _pReq) \
-    COPY_AREA ((char *) _pReq, _pBuf, SIZEOF (pexOCRequestHeader)); \
+    memcpy (_pBuf, _pReq, SIZEOF (pexOCRequestHeader)); \
 }
 
 #endif /* WORD64 */
@@ -298,7 +298,7 @@ SOFTWARE.
     _pOC->oc_length = OCLEN(_name) + _dataLength;
 
 #define END_OC_HEADER(_name, _pBuf, _pOC) \
-    COPY_AREA ((char *) _pOC, _pBuf, OCSIZE(_name)); \
+    memcpy (_pBuf, _pOC, OCSIZE(_name)); \
 }
 
 #endif /* WORD64 */
@@ -346,7 +346,7 @@ SOFTWARE.
     _pOC->oc_length = OCLEN(_name) + _dataLength;
 
 #define END_ENCODE_OCHEADER(_name, _pBuf, _pOC) \
-    COPY_AREA ((char *) _pOC, _pBuf, OCSIZE(_name)); \
+    memcpy (_pBuf, _pOC, OCSIZE(_name)); \
     _pBuf += OCSIZE(_name); \
 }
 
@@ -384,7 +384,7 @@ SOFTWARE.
     _pTrim = &tTrim;
 
 #define END_TRIMCURVE_HEAD(_pBuf, _pTrim) \
-    COPY_AREA ((char *) _pTrim, _pBuf, SIZEOF (pexTrimCurve)); \
+    memcpy (_pBuf, _pTrim, SIZEOF (pexTrimCurve)); \
 }
 
 #endif /* WORD64 */
@@ -787,7 +787,7 @@ SOFTWARE.
     tMonoEncoding.characterSetWidth = (CARD8) PEXCSByte; \
     tMonoEncoding.encodingState = 0;   \
     tMonoEncoding.numChars = (CARD16) (_count); \
-    COPY_AREA ((char *) &tMonoEncoding, pBuf, SIZEOF (pexMonoEncoding)); \
+    memcpy (pBuf, &tMonoEncoding, SIZEOF (pexMonoEncoding)); \
 \
     _PEXCopyPaddedBytesToOC (display, _count, _string); \
 }

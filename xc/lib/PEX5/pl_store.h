@@ -1,4 +1,4 @@
-/* $XConsortium: pl_store.h,v 1.4 93/02/08 10:59:58 rws Exp $ */
+/* $XConsortium: pl_store.h,v 1.1 93/02/23 14:38:22 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -77,25 +77,25 @@ without express or implied warranty.
 
 #define STORE_LISTOF_CARD32(_count, _pList, _pBuf) \
 { \
-    COPY_AREA ((char *) _pList, _pBuf, _count * SIZEOF (CARD32)); \
+    memcpy (_pBuf, _pList, _count * SIZEOF (CARD32)); \
     _pBuf += (_count * SIZEOF (CARD32)); \
 }
 
 #define STORE_LISTOF_CARD16(_count, _pList, _pBuf) \
 { \
-    COPY_AREA ((char *) _pList, _pBuf, _count * SIZEOF (CARD16)); \
+    memcpy (_pBuf, _pList, _count * SIZEOF (CARD16)); \
     _pBuf += (_count * SIZEOF (CARD16)); \
 }
 
 #define STORE_LISTOF_INT32(_count, _pList, _pBuf) \
 { \
-    COPY_AREA ((char *) _pList, _pBuf, _count * SIZEOF (INT32)); \
+    memcpy (_pBuf, _pList, _count * SIZEOF (INT32)); \
     _pBuf += (_count * SIZEOF (INT32)); \
 }
 
 #define STORE_LISTOF_INT16(_count, _pList, _pBuf) \
 { \
-    COPY_AREA ((char *) _pList, _pBuf, _count * SIZEOF (INT16)); \
+    memcpy (_pBuf, _pList, _count * SIZEOF (INT16)); \
     _pBuf += (_count * SIZEOF (INT16)); \
 }
 
@@ -152,7 +152,7 @@ without express or implied warranty.
 { \
     if (!_fpConvert) \
     { \
-        COPY_AREA ((char *) _pList, _pBuf, _count * SIZEOF (float)); \
+        memcpy (_pBuf, _pList, _count * SIZEOF (float)); \
         _pBuf += (_count * SIZEOF (float)); \
     } \
     else \
@@ -211,13 +211,13 @@ without express or implied warranty.
 
 #define STORE_FOO(_pexType, _foo, _pBuf) \
 { \
-    COPY_AREA ((char *) &(_foo), _pBuf, SIZEOF (_pexType)); \
+    memcpy (_pBuf, &(_foo), SIZEOF (_pexType)); \
     _pBuf += SIZEOF (_pexType); \
 }
 
 #define STORE_LISTOF_FOO(_pexType, _count, _fooList, _pBuf) \
 { \
-    COPY_AREA ((char *) _fooList, _pBuf, _count * SIZEOF (_pexType)); \
+    memcpy (_pBuf, _fooList, _count * SIZEOF (_pexType)); \
     _pBuf += (_count * SIZEOF (_pexType)); \
 }
 
@@ -227,7 +227,7 @@ without express or implied warranty.
 { \
     _pexType	tFoo; \
     PUT_TEMP(_pexType, _foo, tFoo); \
-    COPY_AREA ((char *) &tFoo, _pBuf, SIZEOF (_pexType)); \
+    memcpy (_pBuf, &tFoo, SIZEOF (_pexType)); \
     _pBuf += SIZEOF (_pexType); \
 }
 
@@ -239,7 +239,7 @@ without express or implied warranty.
     for (_i = 0; _i < (int) _count; _i++) \
     { \
         PUT_TEMP(_pexType, _fooList[_i], tFoo); \
-        COPY_AREA ((char *) &tFoo, _pBuf, SIZEOF (_pexType)); \
+        memcpy (_pBuf, &tFoo, SIZEOF (_pexType)); \
         _pBuf += SIZEOF (_pexType); \
     } \
 }
@@ -343,7 +343,7 @@ without express or implied warranty.
 { \
     if (!_fpConvert) \
     { \
-        COPY_AREA ((char *) &(_foo), _pBuf, SIZEOF (_pexType)); \
+        memcpy (_pBuf, &(_foo), SIZEOF (_pexType)); \
     } \
     else \
     { \
@@ -357,7 +357,7 @@ without express or implied warranty.
 { \
     if (!_fpConvert) \
     { \
-        COPY_AREA ((char *) _fooList, _pBuf, _count * SIZEOF (_pexType)); \
+        memcpy (_pBuf, _fooList, _count * SIZEOF (_pexType)); \
         _pBuf += (_count * SIZEOF (_pexType)); \
     } \
     else \
@@ -379,7 +379,7 @@ without express or implied warranty.
     _pexType tFoo; \
     _pexType *pFoo = &tFoo; \
     DOSTORE (_pexType, _foo, pFoo, _fpConvert, _fpFormat); \
-    COPY_AREA ((char *) pFoo, _pBuf, SIZEOF (_pexType)); \
+    memcpy (_pBuf, pFoo, SIZEOF (_pexType)); \
     _pBuf += SIZEOF (_pexType); \
 }
 
@@ -391,7 +391,7 @@ without express or implied warranty.
     for (_i = 0; _i < (int) _count; _i++) \
     { \
         DOSTORE (_pexType, _fooList[_i], pFoo, _fpConvert, _fpFormat); \
-        COPY_AREA ((char *) pFoo, _pBuf, SIZEOF (_pexType)); \
+        memcpy (_pBuf, pFoo, SIZEOF (_pexType)); \
         _pBuf += SIZEOF (_pexType); \
     } \
 }
@@ -718,7 +718,7 @@ without express or implied warranty.
     if (!_fpConvert) \
     { \
 	int sizeColor = GetColorSize (_colType); \
-        COPY_SMALL_AREA ((char *) &(_colVal), _pBuf, sizeColor); \
+        memcpy (_pBuf, &(_colVal), sizeColor); \
 	_pBuf += sizeColor; \
     } \
     else \
@@ -746,7 +746,7 @@ without express or implied warranty.
 \
         case PEXColorTypeRGB8: \
 \
-	    COPY_SMALL_AREA ((char *) &(_colVal.rgb8), _pBuf, 4); \
+	    memcpy (_pBuf, &(_colVal.rgb8), 4); \
 	    _pBuf += 4; \
 	    break; \
 \
@@ -767,7 +767,7 @@ without express or implied warranty.
     if (!_fpConvert) \
     { \
 	int bytes = _count * GetColorSize (_colType); \
-        COPY_AREA ((char *) _pList.indexed, _pBuf, bytes); \
+        memcpy (_pBuf, _pList.indexed, bytes); \
 	_pBuf += bytes; \
     } \
     else \
@@ -811,7 +811,7 @@ without express or implied warranty.
     { \
 	int lenofFacet = GetFacetDataLength (_facetAttr, \
 	    GetColorLength (_colorType)); \
-        COPY_AREA ((char *) &_facetData, _pBuf, NUMBYTES (lenofFacet)); \
+        memcpy (_pBuf, &_facetData, NUMBYTES (lenofFacet)); \
         _pBuf += NUMBYTES (lenofFacet); \
     } \
 }
@@ -827,7 +827,7 @@ without express or implied warranty.
     else \
     { \
 	int bytes = _count * _facetSize; \
-        COPY_AREA ((char *) _facetData.index, _pBuf, bytes); \
+        memcpy (_pBuf, _facetData.index, bytes); \
         _pBuf += bytes; \
     } \
 }
@@ -847,7 +847,7 @@ without express or implied warranty.
     else \
     { \
 	int bytes = _count * _vertexSize; \
-        COPY_AREA ((char *) _vertexData.no_data, _pBuf, bytes); \
+        memcpy (_pBuf, _vertexData.no_data, bytes); \
         _pBuf += bytes; \
     } \
 }
@@ -868,7 +868,7 @@ without express or implied warranty.
     } \
     else \
     { \
-	COPY_AREA ((char *) _pickRec, _pBuf, _numBytes); \
+	memcpy (_pBuf, _pickRec, _numBytes); \
     } \
     _pBuf += _numBytes; \
 }
@@ -926,7 +926,7 @@ without express or implied warranty.
 	    npc_vol.zmax = _pickRec->volume.max.z; \
 	} \
     } \
-    COPY_AREA (recPtr, _pBuf, _numBytes); \
+    memcpy (_pBuf, recPtr, _numBytes); \
 }
 
 
@@ -960,7 +960,7 @@ without express or implied warranty.
 	else /* nextString->character_set_width == PEXCSByte) */ \
 	    size = nextString->length; \
 \
-        COPY_AREA (nextString->ch, _pBuf, size); \
+        memcpy (_pBuf, nextString->ch, size); \
 	_pBuf += PADDED_BYTES (size); \
     } \
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.7 93/02/23 14:40:52 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.8 93/06/09 15:54:59 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -818,7 +818,7 @@ char		**ocDest;
 
     END_ENCODE_OCHEADER (ApplicationData, *ocDest, oc);
 
-    COPY_AREA (ocSrc->data.ApplicationData.data, *ocDest,
+    memcpy (*ocDest, ocSrc->data.ApplicationData.data,
 	ocSrc->data.ApplicationData.length);
 
     *ocDest += PADDED_BYTES (ocSrc->data.ApplicationData.length);
@@ -844,7 +844,7 @@ char		**ocDest;
 
     END_ENCODE_OCHEADER (GSE, *ocDest, oc);
 
-    COPY_AREA (ocSrc->data.GSE.data, *ocDest, ocSrc->data.GSE.length);
+    memcpy (*ocDest, ocSrc->data.GSE.data, ocSrc->data.GSE.length);
     *ocDest += PADDED_BYTES (ocSrc->data.GSE.length);
 }
 
@@ -1695,8 +1695,7 @@ char		**ocDest;
 
     if (edgeAttributes)
     {
-	COPY_AREA (ocSrc->data.SetOfFillAreaSets.edge_flags,
-	    *ocDest, numIndices);
+	memcpy (*ocDest, ocSrc->data.SetOfFillAreaSets.edge_flags, numIndices);
 
 	*ocDest += PADDED_BYTES (numIndices);
     }
@@ -2082,7 +2081,7 @@ char		**ocDest;
     STORE_LISTOF_COORD3D (ocSrc->data.GDP.count, ocSrc->data.GDP.points,
 	*ocDest, fpConvert, fpFormat);
 
-    COPY_AREA (ocSrc->data.GDP.data, *ocDest, ocSrc->data.GDP.length);
+    memcpy (*ocDest, ocSrc->data.GDP.data, ocSrc->data.GDP.length);
     *ocDest += PADDED_BYTES (ocSrc->data.GDP.length);
 }
 
@@ -2112,7 +2111,7 @@ char		**ocDest;
     STORE_LISTOF_COORD2D (ocSrc->data.GDP2D.count, ocSrc->data.GDP2D.points,
 	*ocDest, fpConvert, fpFormat);
 
-    COPY_AREA (ocSrc->data.GDP2D.data, *ocDest, ocSrc->data.GDP2D.length);
+    memcpy (*ocDest, ocSrc->data.GDP2D.data, ocSrc->data.GDP2D.length);
     *ocDest += PADDED_BYTES (ocSrc->data.GDP2D.length);
 }
 

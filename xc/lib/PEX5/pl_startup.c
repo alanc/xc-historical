@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.12 93/08/15 10:50:08 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.13 93/09/04 20:36:56 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -540,7 +540,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 
 		penum->descriptor = pstring =
 		    (char *) PEXAllocBuf (length + 1);
-		COPY_AREA (pBuf, pstring, length);
+		memcpy (pstring, pBuf, length);
 		pstring[length] = '\0';       /* null terminate */
 
 		pBuf += (PADDED_BYTES (SIZEOF (CARD16) + length) - 
@@ -556,7 +556,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 
 		penum->descriptor = pstring =
 		    (char *) PEXAllocBuf (length + 1);
-		COPY_AREA (pBuf, pstring, length);
+		memcpy (pstring, pBuf, length);
 		pstring[length] = '\0';       /* null terminate */
 
 		pBuf += PADDED_BYTES (length);

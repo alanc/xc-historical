@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.h,v 1.3 92/11/04 11:40:33 mor Exp $ */
+/* $XConsortium: pl_lut.h,v 1.1 93/02/23 14:39:03 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -32,7 +32,7 @@ without express or implied warranty.
     _pEntry = &tEntry;
 
 #define END_LUTENTRY_HEADER(_name, _pBuf, _pEntry) \
-    COPY_AREA ((char *) _pEntry, _pBuf, SIZEOF (_name)); \
+    memcpy (_pBuf, _pEntry, SIZEOF (_name)); \
     _pBuf += SIZEOF (_name); \
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_escape.c,v 1.5 93/02/23 14:40:15 mor Exp $ */
+/* $XConsortium: pl_escape.c,v 1.6 93/04/26 18:51:44 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -122,7 +122,7 @@ OUTPUT unsigned long	*escapeOutDataSize;
 
     escRepData = escRepDataRet = PEXAllocBuf (*escapeOutDataSize);
 
-    COPY_AREA ((char *) rep.escape_specific, escRepData, 20);
+    memcpy (escRepData, rep.escape_specific, 20);
     escRepData += 20;
 
     if (rep.length)

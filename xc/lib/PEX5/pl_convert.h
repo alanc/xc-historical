@@ -1,4 +1,4 @@
-/* $XConsortium: pl_convert.h,v 1.1 92/11/03 13:52:54 mor Exp $ */
+/* $XConsortium: pl_convert.h,v 1.1 93/02/23 14:36:02 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -157,28 +157,28 @@ typedef struct {
 { \
     Long _d; \
     _d.value = _val; \
-    COPY_AREA (&_d, _pBuf, SIZEOF (CARD32)); \
+    memcpy (_pBuf, &_d, SIZEOF (CARD32)); \
 }
 
 #define CARD64_TO_16(_val, _pBuf) \
 { \
     Short _d; \
     _d.value = _val; \
-    COPY_AREA (&_d, _pBuf, SIZEOF (CARD16)); \
+    memcpy (_pBuf, &_d, SIZEOF (CARD16)); \
 }
 
 #define INT64_TO_32(_val, _pBuf) \
 { \
     Long _d; \
     _d.value = _val; \
-    COPY_AREA (&_d, _pBuf, SIZEOF (INT32)); \
+    memcpy (_pBuf, &_d, SIZEOF (INT32)); \
 }
 
 #define INT64_TO_16(_val, _pBuf) \
 { \
     Short _d; \
     _d.value = _val; \
-    COPY_AREA (&_d, _pBuf, SIZEOF (INT16)); \
+    memcpy (_pBuf, &_d, SIZEOF (INT16)); \
 }
 
 

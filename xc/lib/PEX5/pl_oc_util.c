@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.13 92/12/07 19:41:41 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.14 93/02/23 14:40:58 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -141,7 +141,7 @@ INPUT char		*data;
 	 * There is room in the X buffer to do the copy.
 	 */
 
-	COPY_AREA (data, display->bufptr, numBytes);
+	memcpy (display->bufptr, data, numBytes);
 	display->bufptr += numBytes;
     }
     else
@@ -1737,7 +1737,7 @@ INPUT char		*data;
 	 * There is room in the X buffer to do the copy.
 	 */
 
-	COPY_AREA (data, display->bufptr, numBytes);
+	memcpy (display->bufptr, data, numBytes);
 	display->bufptr += paddedBytes;
     }
     else
@@ -1785,7 +1785,7 @@ INPUT char		*data;
 	if (mod4bytes > BytesLeftInXBuffer (display))
 	    _XFlush (display);
 
-	COPY_SMALL_AREA (data, display->bufptr, mod4bytes);
+	memcpy (display->bufptr, data, mod4bytes);
 	display->bufptr += mod4bytes;
 
 	data += mod4bytes;
@@ -1854,7 +1854,7 @@ INPUT int		fpFormat;
 
         case PEXColorTypeRGB8:
 
-            COPY_SMALL_AREA ((char *) &(facetData->rgb8), ocAddr, 4);
+            memcpy (ocAddr, &(facetData->rgb8), 4);
             ocAddr += 4;
     	    normal = &(facetData->rgb8_normal.normal);
             break;
@@ -1948,7 +1948,7 @@ INPUT int			fpFormat;
 
 		case PEXColorTypeRGB8:
 
-		    COPY_SMALL_AREA (data, ocAddr, 4);
+		    memcpy (ocAddr, data, 4);
 		    ocAddr += 4;
 		    data += sizeof (PEXColorRGB8);
 		    break;
@@ -2066,7 +2066,7 @@ INPUT int			fpFormat;
 
 		case PEXColorTypeRGB8:
 
-		    COPY_SMALL_AREA (data, ocAddr, 4);
+		    memcpy (ocAddr, data, 4);
 		    ocAddr += 4;
 		    data += sizeof (PEXColorRGB8);
 		    break;
@@ -2175,7 +2175,7 @@ INPUT int			fpFormat;
 
     	    case PEXColorTypeRGB8:
 
-    	        COPY_SMALL_AREA (data, ocAddr, 4);
+    	        memcpy (ocAddr, data, 4);
     	        ocAddr += 4;
     	        data += sizeof (PEXColorRGB8);
     	        break;
@@ -2247,7 +2247,7 @@ INPUT int		fpFormat;
 
         case PEXColorTypeRGB8:
 
-            COPY_SMALL_AREA ((char *) &(facetData->rgb8), pBuf, 4);
+            memcpy (pBuf, &(facetData->rgb8), 4);
             pBuf += 4;
     	    normal = &(facetData->rgb8_normal.normal);
             break;
@@ -2331,7 +2331,7 @@ INPUT int			fpFormat;
 
 	    case PEXColorTypeRGB8:
 
-		COPY_SMALL_AREA (data, pBuf, 4);
+		memcpy (pBuf, data, 4);
 	        pBuf += 4;
 		data += sizeof (PEXColorRGB8);
 		break;
@@ -2433,7 +2433,7 @@ INPUT int			fpFormat;
 
 	    case PEXColorTypeRGB8:
 
-		COPY_SMALL_AREA (data, pBuf, 4);
+		memcpy (pBuf, data, 4);
 		pBuf += 4;
 	        data += sizeof (PEXColorRGB8);
 		break;
@@ -2526,7 +2526,7 @@ INPUT int			fpFormat;
 
         case PEXColorTypeRGB8:
 
-    	    COPY_SMALL_AREA (data, pBuf, 4);
+    	    memcpy (pBuf, data, 4);
     	    pBuf += 4;
     	    data += sizeof (PEXColorRGB8);
     	    break;
@@ -2595,7 +2595,7 @@ INPUT int		fpFormat;
 
         case PEXColorTypeRGB8:
 
-            COPY_SMALL_AREA (pBuf, (char *) &(facetData->rgb8), 4);
+            memcpy (&(facetData->rgb8), pBuf, 4);
             pBuf += 4;
     	    normal = &(facetData->rgb8_normal.normal);
             break;
@@ -2679,7 +2679,7 @@ INPUT int			fpFormat;
 
 	    case PEXColorTypeRGB8:
 
-		COPY_SMALL_AREA (pBuf, data, 4);
+		memcpy (data, pBuf, 4);
 	        pBuf += 4;
 		data += sizeof (PEXColorRGB8);
 		break;
@@ -2781,7 +2781,7 @@ INPUT int			fpFormat;
 
 	    case PEXColorTypeRGB8:
 
-		COPY_SMALL_AREA (pBuf, data, 4);
+		memcpy (data, pBuf, 4);
 		pBuf += 4;
 	        data += sizeof (PEXColorRGB8);
 		break;
@@ -2874,7 +2874,7 @@ INPUT int			fpFormat;
 
         case PEXColorTypeRGB8:
 
-    	    COPY_SMALL_AREA (pBuf, data, 4);
+    	    memcpy (data, pBuf, 4);
     	    pBuf += 4;
     	    data += sizeof (PEXColorRGB8);
     	    break;

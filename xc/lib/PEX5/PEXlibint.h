@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.14 93/02/16 14:11:13 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.11 93/02/23 14:54:10 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -145,15 +145,6 @@ typedef struct PEXDisplayInfo
 #define PEXAllocBuf(_size)          Xmalloc ((unsigned) (_size))
 #define PEXFreeBuf(_ptr)            Xfree (_ptr)
 
-#define COPY_AREA(_from, _to, _size) \
-    bcopy (_from, _to, _size)
-
-#define COPY_SMALL_AREA(_from, _to, _size) \
-{ \
-    register char *_f = (char *) (_from), *_t = (char *) (_to); \
-    register int _c = (_size); \
-    while (--_c >= 0) *_t++ = *_f++; \
-}
 
 #define PAD(_size) (3 - (((_size) + 3) & 0x3))
 
@@ -325,7 +316,7 @@ typedef struct pexOCRequestHeader
     _pReq = &tReq;
 
 #define END_REQUEST_HEADER(_name, _pBuf, _pReq) \
-    COPY_AREA ((char *) _pReq, _pBuf, REQSIZE(_name)); \
+    memcpy (_pBuf, _pReq, REQSIZE(_name)); \
     _pBuf += REQSIZE(_name); \
 }
 
@@ -391,7 +382,7 @@ typedef struct pexOCRequestHeader
 
 #define GET_STRUCT_PTR(_name, _pBuf, _pStruct) \
     _name tStruct; \
-    COPY_AREA (_pBuf, (char *) &tStruct, SIZEOF (_name)); \
+    memcpy (&tStruct, _pBuf, SIZEOF (_name)); \
     _pStruct = &tStruct;
 
 #endif /* WORD64 */

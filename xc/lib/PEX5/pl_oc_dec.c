@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_dec.c,v 1.10 93/02/23 14:40:50 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.11 93/06/09 15:55:03 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -733,7 +733,7 @@ PEXOCData	*ocDest;
     ocDest->data.ApplicationData.data =
 	(PEXPointer) PEXAllocBuf (oc->numElements);
     
-    COPY_AREA (*ocSrc, ocDest->data.ApplicationData.data, oc->numElements);
+    memcpy (ocDest->data.ApplicationData.data, *ocSrc, oc->numElements);
     *ocSrc += PADDED_BYTES (oc->numElements);
 }
 
@@ -754,7 +754,7 @@ PEXOCData	*ocDest;
     ocDest->data.GSE.length = oc->numElements;
     ocDest->data.GSE.data = (char *) PEXAllocBuf (oc->numElements);
     
-    COPY_AREA (*ocSrc, ocDest->data.GSE.data, oc->numElements);
+    memcpy (ocDest->data.GSE.data, *ocSrc, oc->numElements);
     *ocSrc += PADDED_BYTES (oc->numElements);
 }
 
@@ -1515,7 +1515,7 @@ PEXOCData	*ocDest;
 	unsigned int size = oc->numEdges * sizeof (CARD8);
 	ocDest->data.SetOfFillAreaSets.edge_flags =
 	    (PEXSwitch *) PEXAllocBuf (size);
-	COPY_AREA (*ocSrc, ocDest->data.SetOfFillAreaSets.edge_flags, size);
+	memcpy (ocDest->data.SetOfFillAreaSets.edge_flags, *ocSrc, size);
 	*ocSrc += PADDED_BYTES (size);
     }
     else
@@ -1870,7 +1870,7 @@ PEXOCData	*ocDest;
 
     ocDest->data.GDP.data = (char *) PEXAllocBuf (oc->numBytes);
 
-    COPY_AREA (*ocSrc, ocDest->data.GDP.data, oc->numBytes);
+    memcpy (ocDest->data.GDP.data, *ocSrc, oc->numBytes);
     *ocSrc += PADDED_BYTES (oc->numBytes);
 }
 
@@ -1900,7 +1900,7 @@ PEXOCData	*ocDest;
 
     ocDest->data.GDP2D.data = (char *) PEXAllocBuf (oc->numBytes);
 
-    COPY_AREA (*ocSrc, ocDest->data.GDP2D.data, oc->numBytes);
+    memcpy (ocDest->data.GDP2D.data, *ocSrc, oc->numBytes);
     *ocSrc += PADDED_BYTES (oc->numBytes);
 }
 
