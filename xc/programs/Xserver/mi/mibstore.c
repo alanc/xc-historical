@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.18 88/10/13 21:25:33 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.19 88/10/15 17:48:37 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -57,6 +57,13 @@ implied warranty.
  *	    of the areas to restore (in the screen's coordinate system) and the
  *	    origin of the pixmap on the screen. It should copy the areas from
  *	    the pixmap into the screen.
+ *	- Provide a SetClipmaskRgn function that takes a gc and a region
+ *	    and merges the region into any CT_PIXMAP client clip that
+ *	    is specified in the GC.  This routine is only needed if
+ *	    miValidateBackingStore will see CT_PIXMAP clip lists; not
+ *	    true for any of the sample servers (which convert the PIXMAP
+ *	    clip lists into CT_REGION clip lists; an expensive but simple
+ *	    to code option).
  *	- ValidateGC must call miValidateBackingStore for any GC that is now
  *	    being, or has been, used with a window with backing-store enabled.
  *	    How the library keeps track of this is its own business, but these
@@ -73,8 +80,6 @@ implied warranty.
  *	    when backing-store changes.
  *	- The DestroyWindow function should call miFreeBackingStore if
  *	    backingStore != NotUseful.
- *	- The clientClipType of the GC must *always* be either CT_NONE or
- *	    CT_REGION, with appropriate values in the clientClip field.
  *	- The GetSpans function must call miBSGetSpans at the end of its
  *	    operation, passing in the source drawable, a pixmap via which
  *	    spans from the backing store may be drawn into those fetched from
@@ -1276,42 +1281,51 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
 	     * from the backing store saved region.  So, copying
 	     * *to* the backing store is always safe
 	     */
-	    /*
-	     * adjust srcx, srcy, w, h, dstx, dsty to be clipped to
-	     * the backing store.  An unnecessary optimisation,
-	     * but a useful one when GetSpans is slow.
-	     */
-	    pExtents = (*pDst->pScreen->RegionExtents) (pBackingGC->clientClip);
-	    bsrcx = srcx;
-	    bsrcy = srcy;
-	    bw = w;
-	    bh = h;
-	    bdstx = dstx;
-	    bdsty = dsty;
-	    dx = pExtents->x1 - bdstx;
-	    if (dx > 0)
- 	    {
-		bsrcx += dx;
-		bdstx += dx;
-		bw -= dx;
-	    }
-	    dy = pExtents->y1 - bdsty;
-	    if (dy > 0)
+	    if (pGC->clientClipType != CT_PIXMAP)
 	    {
-		bsrcy += dy;
-		bdsty += dy;
-		bh -= dy;
+		/*
+		 * adjust srcx, srcy, w, h, dstx, dsty to be clipped to
+		 * the backing store.  An unnecessary optimisation,
+		 * but a useful one when GetSpans is slow.
+		 */
+		pExtents = (*pDst->pScreen->RegionExtents)
+			(pBackingGC->clientClip);
+		bsrcx = srcx;
+		bsrcy = srcy;
+		bw = w;
+		bh = h;
+		bdstx = dstx;
+		bdsty = dsty;
+		dx = pExtents->x1 - bdstx;
+		if (dx > 0)
+		{
+		    bsrcx += dx;
+		    bdstx += dx;
+		    bw -= dx;
+		}
+		dy = pExtents->y1 - bdsty;
+		if (dy > 0)
+		{
+		    bsrcy += dy;
+		    bdsty += dy;
+		    bh -= dy;
+		}
+		dx = (bdstx + bw) - pExtents->x2;
+		if (dx > 0)
+		    bw -= dx;
+		dy = (bdsty + bh) - pExtents->y2;
+		if (dy > 0)
+		    bh -= dy;
+		if (bw > 0 && bh > 0)
+		    pixExposed = (* pBackingGC->CopyArea) (pSrc, 
+				pBackingStore->pBackingPixmap, pBackingGC, 
+				bsrcx, bsrcy, bw, bh, bdstx, bdsty);
 	    }
-	    dx = (bdstx + bw) - pExtents->x2;
-	    if (dx > 0)
-	        bw -= dx;
-	    dy = (bdsty + bh) - pExtents->y2;
-	    if (dy > 0)
-	        bh -= dy;
-	    if (bw > 0 && bh > 0)
-		pixExposed = (* pBackingGC->CopyArea) (pSrc, pBackingStore->pBackingPixmap,
-					  pBackingGC, bsrcx, bsrcy, bw, bh,
-					  bdstx, bdsty);
+	    else
+		pixExposed = (* pBackingGC->CopyArea) (pSrc, 
+				pBackingStore->pBackingPixmap, pBackingGC,
+				srcx, srcy, w, h, dstx, dsty);
+
 	    winExposed = (* pPriv->CopyArea) (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty);
 	}
 	pPriv->inUse = FALSE;
@@ -1378,42 +1392,52 @@ miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 	     * from the backing store saved region.  So, copying
 	     * *to* the backing store is always safe
 	     */
-	    /*
-	     * adjust srcx, srcy, w, h, dstx, dsty to be clipped to
-	     * the backing store.  An unnecessary optimisation,
-	     * but a useful one when GetSpans is slow.
-	     */
-	    pExtents = (*pDst->pScreen->RegionExtents) (pBackingGC->clientClip);
-	    bsrcx = srcx;
-	    bsrcy = srcy;
-	    bw = w;
-	    bh = h;
-	    bdstx = dstx;
-	    bdsty = dsty;
-	    dx = pExtents->x1 - bdstx;
-	    if (dx > 0)
- 	    {
-		bsrcx += dx;
-		bdstx += dx;
-		bw -= dx;
-	    }
-	    dy = pExtents->y1 - bdsty;
-	    if (dy > 0)
+	    if (pGC->clientClipType != CT_PIXMAP)
 	    {
-		bsrcy += dy;
-		bdsty += dy;
-		bh -= dy;
+		/*
+		 * adjust srcx, srcy, w, h, dstx, dsty to be clipped to
+		 * the backing store.  An unnecessary optimisation,
+		 * but a useful one when GetSpans is slow.
+		 */
+		pExtents = (*pDst->pScreen->RegionExtents) (pBackingGC->clientClip);
+		bsrcx = srcx;
+		bsrcy = srcy;
+		bw = w;
+		bh = h;
+		bdstx = dstx;
+		bdsty = dsty;
+		dx = pExtents->x1 - bdstx;
+		if (dx > 0)
+		{
+		    bsrcx += dx;
+		    bdstx += dx;
+		    bw -= dx;
+		}
+		dy = pExtents->y1 - bdsty;
+		if (dy > 0)
+		{
+		    bsrcy += dy;
+		    bdsty += dy;
+		    bh -= dy;
+		}
+		dx = (bdstx + bw) - pExtents->x2;
+		if (dx > 0)
+		    bw -= dx;
+		dy = (bdsty + bh) - pExtents->y2;
+		if (dy > 0)
+		    bh -= dy;
+		if (bw > 0 && bh > 0)
+		    pixExposed = (* pBackingGC->CopyPlane) (pSrc, 
+					pBackingStore->pBackingPixmap,
+					pBackingGC, bsrcx, bsrcy, bw, bh,
+					bdstx, bdsty, plane);
 	    }
-	    dx = (bdstx + bw) - pExtents->x2;
-	    if (dx > 0)
-	        bw -= dx;
-	    dy = (bdsty + bh) - pExtents->y2;
-	    if (dy > 0)
-	        bh -= dy;
-	    if (bw > 0 && bh > 0)
-		pixExposed = (* pBackingGC->CopyPlane) (pSrc, pBackingStore->pBackingPixmap,
-					  pBackingGC, bsrcx, bsrcy, bw, bh,
-					  bdstx, bdsty, plane);
+	    else
+		pixExposed = (* pBackingGC->CopyPlane) (pSrc, 
+					pBackingStore->pBackingPixmap,
+					pBackingGC, srcx, srcy, w, h,
+					dstx, dsty, plane);
+
 	    winExposed = (* pPriv->CopyPlane) (pSrc, pDst, pGC, srcx, srcy, w, h,
 				  dstx, dsty, plane);
 	    
@@ -2252,10 +2276,11 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
  *-----------------------------------------------------------------------
  */
 void
-miInitBackingStore(pWin, SaveAreas, RestoreAreas)
+miInitBackingStore(pWin, SaveAreas, RestoreAreas, SetClipmaskRgn)
     WindowPtr 	  pWin;
     void    	  (*SaveAreas)();
     void    	  (*RestoreAreas)();
+    void    	  (*SetClipmaskRgn)();
 {
     register MIBackingStorePtr pBackingStore;
     register ScreenPtr 	    pScreen;
@@ -2277,6 +2302,7 @@ miInitBackingStore(pWin, SaveAreas, RestoreAreas)
 					 &status);
 	pBackingStore->SaveAreas = SaveAreas;
 	pBackingStore->RestoreAreas = RestoreAreas;
+	pBackingStore->SetClipmaskRgn = SetClipmaskRgn;
 	pBackingStore->viewable = (Bool)pWin->viewable;
 	pBackingStore->status = StatusNoPixmap;
 	pBackingStore->backgroundTile = NullPixmap;
@@ -2911,10 +2937,9 @@ miBSDrawGuarantee (pWin, pGC, guarantee)
  * miValidateBackingStore --
  *	Called from output-library's ValidateGC routine once it has done
  *	what it needs to do. Takes note of changes in the GC and updates
- *	pGC in the GC's devBackingStore accordingly. pGC->clientClipType
- *	must be either CT_REGION or CT_NONE. Once this function has been
- *	called when validating a GC, it must be called every time the GC
- *	is validated. It's addictive...
+ *	pGC in the GC's devBackingStore accordingly.
+ *	Once this function has been called when validating a GC, it must 
+ *	be called every time the GC is validated. It's addictive...
  *
  * Results:
  *	None.
@@ -2954,6 +2979,7 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
     int	    	  	stateChanges;
     register int  	index, mask;
     int			lift_functions;
+    RegionPtr		backingCompositeClip = NULL;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -3023,18 +3049,23 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
     if (pPriv->guarantee == GuaranteeVisBack)
         lift_functions = TRUE;
 
+    /*
+     * check to see if a new backingCompositeClip region must
+     * be generated
+     */
+
     if (!lift_functions && 
         ((pDrawable->serialNumber != pPriv->serialNumber) ||
 	 (stateChanges&(GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode))))
     {
 	if ((*pGC->pScreen->RegionNotEmpty) (pBackingStore->pSavedRegion))
  	{
-	    RegionPtr tempRgn;
 	
-	    tempRgn = (*pGC->pScreen->RegionCreate) (NULL, 1);
-	    if (pGC->clientClipType == CT_NONE)
+	    backingCompositeClip = (*pGC->pScreen->RegionCreate) (NULL, 1);
+	    if ((pGC->clientClipType == CT_NONE) || 
+		(pGC->clientClipType == CT_PIXMAP))
 	    {
-		(*pGC->pScreen->RegionCopy) (tempRgn, pBackingStore->pSavedRegion); 
+		(*pGC->pScreen->RegionCopy) (backingCompositeClip, pBackingStore->pSavedRegion); 
 	    }
 	    else
 	    {
@@ -3043,17 +3074,12 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 		 * its proper origin.
 		 */
 
-		if (pGC->clientClipType != CT_REGION) {
-		    FatalError("miValidateBackingStore: client clip not a region");
-		    /*NOTREACHED*/
-		}
-	    
-		(*pGC->pScreen->RegionCopy) (tempRgn, pGC->clientClip);
-		(*pGC->pScreen->TranslateRegion) (tempRgn,
+		(*pGC->pScreen->RegionCopy) (backingCompositeClip, pGC->clientClip);
+		(*pGC->pScreen->TranslateRegion) (backingCompositeClip,
 						  pGC->clipOrg.x,
 						  pGC->clipOrg.y);
-		(*pGC->pScreen->Intersect) (tempRgn, tempRgn,
- 	    			pBackingStore->pSavedRegion);
+		(*pGC->pScreen->Intersect) (backingCompositeClip, backingCompositeClip,
+					    pBackingStore->pSavedRegion);
 	    }
 	    if (pGC->subWindowMode == IncludeInferiors)
  	    {
@@ -3061,26 +3087,31 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 
 		/* XXX
 		 * any output in IncludeInferiors mode will not
-		 * be redirected to Inferiors backing store
+		 * be redirected to Inferiors backing store.  This
+		 * can be fixed only at great cost to the shadow routines.
 		 */
 		translatedClip = NotClippedByChildren (pWin);
 		(*pGC->pScreen->TranslateRegion) (translatedClip,
 						  pGC->clipOrg.x,
 						  pGC->clipOrg.y);
-		(*pGC->pScreen->Subtract) (tempRgn, tempRgn, translatedClip);
+		(*pGC->pScreen->Subtract) (backingCompositeClip, backingCompositeClip, translatedClip);
 		(*pGC->pScreen->RegionDestroy) (translatedClip);
 	    }
 
-	    /*
-	     * Finally, install the new clip list as the clientClip for the
-	     * backing GC. The output library is responsible for destroying
-	     * tempRgn when the time comes.
-	     */
-
-	    (*pBackingGC->ChangeClip) (pBackingGC, CT_REGION, tempRgn, 0);
-
-	    if (!(*pGC->pScreen->RegionNotEmpty) (tempRgn)) {
+	    if (!(*pGC->pScreen->RegionNotEmpty) (backingCompositeClip)) {
 		lift_functions = TRUE;
+	    }
+
+	    if (pGC->clientClipType != CT_PIXMAP)
+	    {
+		/*
+		 * Finally, install the new clip list as the clientClip for the
+		 * backing GC. The output library is responsible for destroying
+		 * backingCompositeClip when the time comes.
+		 */
+
+		(*pBackingGC->ChangeClip) (pBackingGC, CT_REGION, backingCompositeClip, 0);
+		backingCompositeClip = NULL;
 	    }
 
 	    pPriv->serialNumber = pDrawable->serialNumber;
@@ -3093,7 +3124,7 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 	/* Reset the status when drawing to an unoccluded window so that
 	 * future SaveAreas will actually copy bits from the screen.  Note that
 	 * output to root window in IncludeInferiors mode will not cause this
-	 * to change.  This causes all trasient graphics by the window
+	 * to change.  This causes all transient graphics by the window
 	 * manager to the root window to not enable backing store.
 	 */
 	if (lift_functions && (pBackingStore->status == StatusVirtual) &&
@@ -3101,12 +3132,18 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 	    pBackingStore->status = StatusVDirty;
     }
 
-    /*
-     * all of these bits have already been dealt with for
-     * pBackingGC above and needn't be looked at again
-     */
 
-    stateChanges &= ~(GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode);
+    if (pGC->clientClipType != CT_PIXMAP)
+    {
+	/*
+	 * all of these bits have already been dealt with for
+	 * pBackingGC above and needn't be looked at again
+	 */
+	pPriv->changes &= 
+		~(GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode);
+	stateChanges &= 
+		~(GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode);
+    }
 
     if (!lift_functions && (pWin->backingStore == NotUseful ||
         ((pWin->backingStore & 3) == WhenMapped && !pWin->realized)))
@@ -3213,6 +3250,9 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 	    }
 	    pPriv->gcHooked = FALSE;
 	}
+	if (backingCompositeClip)
+	    (* pGC->pScreen->RegionDestroy) (backingCompositeClip);
+
 	return;
     }
 
@@ -3332,12 +3372,25 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
     }
 
     if (pBackingStore->pBackingPixmap->drawable.serialNumber
-        != pBackingGC->serialNumber)
+    	!= pBackingGC->serialNumber)
+    {
 	ValidateGC((DrawablePtr)pBackingStore->pBackingPixmap, pBackingGC);
 
-    if (pBackingGC->clientClip == 0) {
-    	ErrorF ("backing store clip list nil");
+	/*
+	 * This function has the dubious duty of merging this
+	 * region into the PIXMAP clip list for the GC.
+	 */
+
+	if ((pGC->clientClipType == CT_PIXMAP) && backingCompositeClip)
+	    (* pBackingStore->SetClipmaskRgn) (pBackingGC, backingCompositeClip);
+
     }
+
+    if (backingCompositeClip)
+	(* pGC->pScreen->RegionDestroy) (backingCompositeClip);
+
+    if (pBackingGC->clientClip == 0)
+    	ErrorF ("backing store clip list nil");
 }
 
 
