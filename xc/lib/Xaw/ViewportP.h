@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ViewportP.h,v 1.10 89/05/11 01:07:15 kit Exp $
+ * $XConsortium: ViewportP.h,v 1.11 90/02/12 18:37:16 jim Exp $
  * Private declarations for ViewportWidgetClass
  */
 
@@ -49,7 +49,6 @@ typedef struct _ViewportPart {
     /* resources */
     Boolean forcebars;		/* Whether we should always display */
 				/* the selected scrollbars. */
-    Boolean usepanner;		/* Whether we use panner or scrollbars */
     Boolean allowhoriz;		/* Whether we allow horizontal scrollbars. */
     Boolean allowvert;		/* Whether we allow vertical scrollbars. */
     Boolean usebottom;		/* True iff horiz bars appear at bottom. */

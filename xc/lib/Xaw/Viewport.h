@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.11 89/07/21 01:55:47 kit Exp $
+ * $XConsortium: Viewport.h,v 1.12 90/02/12 18:37:14 jim Exp $
  * Public definitions for Viewport widget
  */
 
@@ -49,7 +49,6 @@ SOFTWARE.
  sensitive	     Sensitive		Boolean		True
  useBottom	     Boolean		Boolean		False
  useRight	     Boolean		Boolean		False
- usePanner	     UsePanner		Boolean		FALSE
  width		     Width		Dimension	0
  x		     Position		Position	0
  y		     Position		Position	0
@@ -62,8 +61,6 @@ SOFTWARE.
 #define XtNallowVert "allowVert"
 #define XtNuseBottom "useBottom"
 #define XtNuseRight "useRight"
-#define XtNusePanner "usePanner"
-#define XtCUsePanner "UsePanner"
 
 #define XtNnotifyCallback "notifyCallback"
 #define XtCNotifyCallback "NotifyCallback"
