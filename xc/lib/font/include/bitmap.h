@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmap.h,v 1.3 91/02/27 17:42:01 keith Exp $
+ * $XConsortium: bitmap.h,v 1.1 91/05/11 09:11:56 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 #ifndef _BITMAP_H_
 #define _BITMAP_H_
 
-#include    <stdio.h>
+#include <fontfileio.h>
 
 /*
  * Internal format used to store bitmap fonts
@@ -58,16 +58,5 @@ extern void bitmapUnloadFont();
 
 extern void bitmapComputeFontBounds();
 extern void bitmapComputeFontInkBounds();
-
-typedef FILE	*FontFilePtr;
-
-#define FontFileGetc(f)	    getc(f)
-#define FontFilePutc(c,f)   putc(c,f)
-#define FontFileRead(f,b,n) fread((char *) b, 1, n, f)
-#define FontFileWrite(f,b,n)	fwrite ((char *) b, 1, n, f)
-#define FontFileSkip(f,n)   (fseek(f,n,1) != -1)
-#define FontFileSeek(f,n)   (fseek(f,n,0) != -1)
-
-#define FontFileEOF	EOF
 
 #endif				/* _BITMAP_H_ */
