@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.61 89/10/20 09:38:55 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.62 89/10/26 17:31:38 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -579,14 +579,20 @@
 
           DESTDIR = DestDir		/* root of install */
 #ifdef UseInstalled
-         INCLUDES = -I$(INCROOT)
+         INCLUDES = -I$(INCROOT)	/* def: for alternative /usr/include */
 #else
-         INCLUDES = -I$(TOP)
+         INCLUDES = -I$(TOP)		/* def: for builds within tree */
 #endif
       CDEBUGFLAGS = DefaultCDebugFlags
         CCOPTIONS = DefaultCCOptions	/* to distinguish from param flags */
       COMPATFLAGS = CompatibilityFlags
-       ALLDEFINES = $(STD_INCLUDES) $(INCLUDES) $(STD_DEFINES) $(DEFINES) $(COMPATFLAGS)
+/*
+ * STD_INCLUDES contains system-specific includes
+ * EXTRA_INCLUDES contains project-specific includes set in project incfiles
+ * INCLUDES contains client-specific includes set in Imakefile
+ */
+      ALLINCLUDES = $(STD_INCLUDES) $(INCLUDES) $(EXTRA_INCLUDES) 
+       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(DEFINES) $(COMPATFLAGS)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
            LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
