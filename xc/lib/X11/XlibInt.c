@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.87 88/09/30 10:05:44 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.88 88/09/30 10:09:52 jim Exp $
  */
 
 #include "copyright.h"
@@ -1170,7 +1170,7 @@ _XIOError (dpy)
 	 "XIO:  fatal IO error %d (%s) on X server \"%s\"\r\n",
 			errno, _SysErrorMsg (errno), DisplayString (dpy));
 	(void) fprintf (stderr, 
-	 "      after %lu requests (%lu known processed); %d events remaining\r\n",
+	 "      after %lu requests (%lu known processed) with %d events remaining.\r\n",
 			NextRequest(dpy) - 1, LastKnownRequestProcessed(dpy),
 			QLength(dpy));
 
