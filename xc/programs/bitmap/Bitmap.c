@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.5 90/03/30 15:26:08 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.6 90/03/31 03:17:51 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -647,6 +647,7 @@ Boolean BWRemoveRequest(w)
 }
 
 void BWRemoveAllRequests(w)
+    Widget w;
 {
     while (BWRemoveRequest(w)) {/* removes all requests from the stack */}
 }
