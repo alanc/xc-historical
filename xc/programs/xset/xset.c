@@ -1,12 +1,12 @@
 /* 
- * $XHeader: xset.c,v 1.33 88/07/07 14:42:22 jim Exp $ 
+ * $XHeader: xset.c,v 1.34 88/07/15 12:06:19 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XHeader: xset.c,v 1.33 88/07/07 14:42:22 jim Exp $";
+static char *rcsid_xset_c = "$XHeader: xset.c,v 1.34 88/07/15 12:06:19 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -268,6 +268,29 @@ for (i = 1; i < argc; ) {
       i++;
     }
   } 
+  else if (arg[0] == 'p' && arg[1] == 'm') {	/* arg is "pm" */
+    int j;
+    unsigned char pmap[256];
+
+    if (i >= argc) {
+	set_pointer_map (dpy, NULL, 0);		/* restore defaults */
+	break;
+    }
+    
+    if (strcmp (argv[i], "default") == 0) {
+	set_pointer_map (dpy, NULL, 0);		/* restore defaults */
+	i++;
+    } else {
+	j = 0;
+	do {
+	    arg = argv[i];
+	    if (!isnumber (arg)) break;	/* all done */
+	    pmap[j++] = atoi (arg);
+	    i++;
+	} while (j < 256 && i < argc);
+	set_pointer_map (dpy, pmap, j);
+    }
+  }
   else if (*arg == 'p') {           /*  If arg starts with "p"       */
     if (i + 1 >= argc)
       usage(argv[0]);
@@ -319,6 +342,45 @@ isnumber(arg, maximum)
 
 /*  These next few functions do the real work (xsetting things).
  */
+set_pointer_map(dpy, map, n)
+Display *dpy;
+unsigned char *map;
+int n;
+{
+    unsigned char defmap[256];
+    int j;
+    int retries, timeout;
+
+    if (n == 0) {				/* reset to default */
+	n = XGetPointerMapping (dpy, defmap, 256);
+	for (j = 0; j < n; j++) defmap[j] = (unsigned char) (j + 1);
+	map = defmap;
+    }
+
+    for (retries = 5, timeout = 2; retries > 0; retries--, timeout <<= 1) {
+	int result;
+
+	switch (result = XSetPointerMapping (dpy, map, n)) {
+	  case MappingSuccess:
+	    return;
+	  case MappingBusy:
+	    fprintf (stderr, "%s:  You have %d seconds to list your hands\n",
+		     progName, timeout);
+	    sleep (timeout);
+	    continue;
+	  case MappingFailed:
+	    fprintf (stderr, "%s:  bad pointer mapping\n", progName);
+	    return;
+	  default:
+	    fprintf (stderr, "%s:  bad return %d from XSetPointerMapping\n",
+		     progName, result);
+	    return;
+	}
+    }
+    fprintf (stderr, "%s:  unable to set pointer mapping\n", progName);
+    return;
+}
+
 set_click(dpy, percent)
 Display *dpy;
 int percent;
@@ -637,6 +699,8 @@ char *prog;
 	printf("\t s [timeout [cycle]]  s default\n");
 	printf("\t s blank              s noblank\n");
 	printf("\t s expose             s noexpose\n");
+	printf("    To set the pointer mapping:\n");
+	printf("\t pm [number ...]      pm default\n");
 	printf("    For status information:  q   or  query\n");
 	exit(0);
 }
