@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.198 91/04/10 10:44:22 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.199 91/04/11 20:15:55 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1053,8 +1053,7 @@ typedef struct {
 typedef struct _XFontSet *XFontSet;
 
 #define XBufferOverflow -4
-#define XNoContextDependencies 0
-#define XIsContextDependent -1
+#define XSuccess 0
 
 typedef struct {
     char           *chars;
