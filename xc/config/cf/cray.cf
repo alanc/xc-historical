@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.41 93/10/13 15:30:46 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.42 94/02/05 17:10:10 rws Exp $
 
 #define OSName			UNICOS 8.0
 XCOMM operating system:  OSName
@@ -15,9 +15,10 @@ XCOMM operating system:  OSName
 #define HasPoll			NO
 #define HasXServer		NO
 #define BuildPex		NO
+#if OSMajorVersion < 8
 #define CcCmd			scc
 #define PostIncDir		/usr/include/stdc
-#define ConnectionFlags		-DTCPCONN
+#endif
 #define HasShm			NO
 #define PexNativeFPFormat	PEXCRAY_Floating
 #define NativeFPFormat		CRAY_Float
