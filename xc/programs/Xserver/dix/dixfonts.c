@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.12 91/02/16 16:33:18 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.13 91/02/20 19:40:00 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -316,8 +316,8 @@ CloseFont(pfont, fid)
 	if (pfont == defaultFont)
 	    defaultFont = NULL;
 	fpe = pfont->fpe;
-	(*pfont->UnloadFont) (pfont);
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
+	(*pfont->UnloadFont) (pfont);
 	FreeFPE (fpe);
     }
     return (Success);
@@ -376,6 +376,7 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 
     ninfos = 0;
     ncols = pFont->info.lastCol - pFont->info.firstCol + 1;
+    prCI = (xCharInfo *) (prFP);
     for (r = pFont->info.firstRow;
 	 ninfos < nProtoCCIStructs && r <= pFont->info.lastRow;
 	 r++)
@@ -389,7 +390,6 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 	(*pFont->GetMetrics) (pFont, ncols, chars, TwoD16Bit,
 			      &count, charInfos);
 	i = 0;
-	prCI = (xCharInfo *) (prFP);
 	for (i = 0;  i < count && ninfos < nProtoCCIStructs; i++)
 	{
 	    if (charInfos[i])
