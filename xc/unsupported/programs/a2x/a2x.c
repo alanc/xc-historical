@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.20 92/03/23 21:02:51 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.21 92/03/24 12:08:50 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -481,7 +481,7 @@ Bool
 has_bs(c)
     char c;
 {
-    return (c != control_end) && (!iscntrl(c) || isspace(c));
+    return (c != control_end) && (!iscntrl(c) || (c == '\r'));
 }
 
 void
