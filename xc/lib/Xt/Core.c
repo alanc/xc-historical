@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 6.40 88/02/01 17:39:34 swick Locked $";
+static char rcsid[] = "$Header: Core.c,v 1.4 88/02/03 09:44:12 swick Locked $";
 #endif lint
 
 /*
@@ -162,11 +162,8 @@ static void CoreClassPartInitialize(wc)
     register WidgetClass wc;
 {
     register WidgetClass super = wc->core_class.superclass;
-#ifdef lint
-    /* ||| GROSS!!! do the right thing after .h split!!! */
     extern void  XrmCompileResourceList();
     extern Opaque _CompileActionTable();
-#endif
 
     /* We don't need to check for null super since we'll get to core
        eventually, and it had better define them!  */
