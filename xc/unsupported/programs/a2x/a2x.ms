@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.38 93/07/20 12:53:42 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.39 93/08/04 17:30:02 rws Exp $
 .de Ds
 .RS
 .nf
@@ -1172,7 +1172,7 @@ Backspace when you type {Del}, then use this option so that \fBa2x\fP knows.
 .B \-bs
 .IP
 Causes \fBa2x\fP to translate Backspace characters on output into
-a key labeled with keysym "Backspace", rather than to {c\-h}.
+a key labeled with keysym "BackSpace", rather than to {c\-h}.
 .LP
 .B \-c
 .IP
