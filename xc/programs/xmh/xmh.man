@@ -1,15 +1,15 @@
-.\" $XConsortium: xmh.man,v 1.12 88/05/13 13:15:09 swick Exp $
-.TH XMH 1 "13 May 1988" "X Version 11"
+.\" $XConsortium: xmh.man,v 1.13 88/09/06 17:23:59 jim Exp $
+.TH XMH 1 "22 October 1988" "X Version 11"
 .SH NAME
-\fIxmh\fR \- X window interface to the mh Mail Handler
+\fIxmh\fR \- X window interface to the MH message handling system.
 .SH SYNOPSIS
 .B xmh
 [-path \fImailpath\fR] [-initial \fIfoldername\fR] [-flag] [-\fItoolkitoption\fR ...]
 .SH DESCRIPTION
 The
 .I xmh
-program provides a window-oriented front end to the mh
-Mail Handler. It is designed to take advantage of a large graphical
+program provides a window-oriented front end to the MH message handling
+system. It is designed to take advantage of a large graphical
 display and pointer; it will not function on an ordinary terminal at all.
 
 \fIXmh\fR consists of user-interface code only.  To actually do things
@@ -30,7 +30,7 @@ stderr, which can hang \fIxmh\fR depending on your setup.)
 If you do not already have a .mh_profile, you can create one (and
 everything else you need) by typing ``inc'' to the shell.
 
-For more information, refer to the \fImh\fR documentation.
+For more information, refer to the \fImh (1)\fR documentation.
 
 .SH RUNNING XMH
 Run \fIxmh\fR as you would any other X application (e.g., xterm).  It will
@@ -134,7 +134,7 @@ move a border past the point where it would make a window have an invalid
 size.
 
 .SH SELECTED FOLDER
-The selected folder is whichever foldername is hilighted in the top
+The selected folder is whichever foldername is highlighted in the top
 buttonbox.  Note that this is not necessarily the same folder that is
 being viewed.  To change the selected folder, just press on the desired
 folder button.
@@ -400,7 +400,7 @@ Kill the rest of this line.
 .PP
 .TP 8
 .B Control-L
-Repaint this window.
+Refresh.  Repaint this window.
 .PP
 .TP 8
 .B Control-M, Return
@@ -420,7 +420,7 @@ Move up to the previous line.
 .PP
 .TP 8
 .B Control-V
-Move down to the next screenfull of text.
+Move down to the next screen-full of text.
 .PP
 .TP 8
 .B Control-W
@@ -474,7 +474,7 @@ filename.
 .PP
 .TP 8
 .B Meta-V
-Move up to the previous screenfull of text.
+Move up to the previous screen-full of text.
 .PP
 .TP 8
 .B Meta-Y
@@ -494,12 +494,13 @@ Delete the previous character.
 .SH CONFIRMATION WINDOWS
 Whenever you press a button that may cause you to lose some work or is
 otherwise dangerous, a window will appear asking you to confirm the
-action.  This window will contain an ``Abort'' button and a ``Confirm''
+action.  This window will contain an ``Abort'' or ``No''button and a
+``Confirm'' or ``Yes''
 button.  Pressing the ``Abort'' button cancels the operation, and pressing
 the ``Confirm'' will proceed with the operation.  (A very handy shortcut
-exists: if you press the offending button again, it will be interpreted as
-a ``Confirm''.  If you press any other command button, it will be
-interpreted as an ``Abort''.)
+exists: if you press the original, offending button again, it will be
+interpreted as a ``Confirm''.  If you press any other command button, it
+will be interpreted as an ``Abort''.)
 
 .SH MESSAGE-SEQUENCES
 A mh message sequence is just a set of messages associated with some name.
@@ -732,12 +733,12 @@ Initial geometry for master \fIxmh\fR windows.
 .PP
 .TP 8
 .B TocLines
-How messages to display in a folder's table of contents.  (Default is 10.)
+How many messages to display in a folder's table of contents.  (Default is 10.)
 .PP
 .TP 8
 .B TocWidth
 How many characters to generate for each message in a folder's table of
-contents.  (Default is 100.  Use 80 if you plan to use \fImhe\fR a lot.)
+contents.  (Default is 100.  Use 80 if you plan to use \fImhl\fR a lot.)
 .PP
 .TP 8
 .B ViewButtonLines
@@ -784,7 +785,7 @@ successive new composition.
 ~/.mh_profile
 
 .SH SEE ALSO
-X(1), xrdb(1), X Toolkit, mh(1) - the mh Mail Handler
+X(1), xrdb(1), X Toolkit, mh(1) - the mh Message Handler
 
 .SH BUGS
 Printing support is minimal.
