@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.69 90/07/11 08:29:24 rws Exp $
+/**/# $XConsortium: Project.tmpl,v 1.70 90/07/15 16:07:51 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -204,8 +204,21 @@
 #ifndef LibmanDir
 #define LibmanDir Concat($(MANSOURCEPATH),LibManSuffix)
 #endif
+#ifndef XFileSearchPathDefault
+#ifdef XAppLoadDir
+#define XFileSearchPathDefault XAppLoadDir/%N%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S
+#else
+#define XFileSearchPathDefault $(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S
+#endif
+#endif
 #ifndef XAppLoadDir
 #define XAppLoadDir $(LIBDIR)/app-defaults
+#endif
+#ifndef XtErrorPrefix
+#define XtErrorPrefix /* as empty string */
+#endif
+#ifndef XtWarningPrefix
+#define XtWarningPrefix /* as empty string */
 #endif
 #ifndef OsNameDefines
 #define OsNameDefines /* as nothing */
@@ -336,7 +349,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.69 90/07/11 08:29:24 rws Exp $
+/**/# $XConsortium: Project.tmpl,v 1.70 90/07/15 16:07:51 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -365,7 +378,10 @@ Berklib.c: sysV/Berklib.c					@@\
     MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
-      XAPPLOADDIR = XAppLoadDir		/* application default resources */
+      XAPPLOADDIR = XAppLoadDir		/* application default resource dir */
+XFILESEARCHPATHDEFAULT = XFileSearchPathDefault /* app default resource path */
+    XTERRORPREFIX = XtErrorPrefix
+  XTWARNINGPREFIX = XtWarningPrefix
 #if HasSunOSSharedLibraries
         SOXLIBREV = SharedXlibRev
           SOXTREV = SharedXtRev
