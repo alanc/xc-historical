@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.155 92/04/27 11:00:03 dave Exp $
+ * $XConsortium: add_window.c,v 1.3 94/06/16 16:33:14 mor Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -169,6 +169,9 @@ IconMgr *iconp;
     int gravx, gravy;			/* gravity signs for positioning */
     int namelen;
     int bw2;
+    unsigned short saved_x, saved_y, saved_width, saved_height;
+    Bool restore_iconified = 0;
+    int restoredFromPrevSession;
 
 #ifdef DEBUG
     fprintf(stderr, "AddWindow: w = 0x%x\n", w);
@@ -189,12 +192,29 @@ IconMgr *iconp;
     tmp_win->cmaps.number_cwins = 0;
 
     XSelectInput(dpy, tmp_win->w, PropertyChangeMask);
+
     XGetWindowAttributes(dpy, tmp_win->w, &tmp_win->attr);
+
     XFetchName(dpy, tmp_win->w, &tmp_win->name);
     tmp_win->class = NoClass;
     XGetClassHint(dpy, tmp_win->w, &tmp_win->class);
     FetchWmProtocols (tmp_win);
     FetchWmColormapWindows (tmp_win);
+
+    if (GetWindowConfig (tmp_win,
+	&saved_x, &saved_y, &saved_width, &saved_height, &restore_iconified))
+    {
+	tmp_win->attr.x = saved_x;
+	tmp_win->attr.y = saved_y;
+	tmp_win->attr.width = saved_width;
+	tmp_win->attr.height = saved_height;
+	restoredFromPrevSession = 1;
+    }
+    else
+    {
+	restoredFromPrevSession = 0;
+    }
+
 
     /*
      * do initial clip; should look at window gravity
@@ -205,6 +225,13 @@ IconMgr *iconp;
       tmp_win->attr.height = Scr->MaxWindowHeight;
 
     tmp_win->wmhints = XGetWMHints(dpy, tmp_win->w);
+
+    if (restore_iconified)
+    {
+	tmp_win->wmhints->initial_state = IconicState;
+	tmp_win->wmhints->flags |= StateHint;
+    }
+
     if (tmp_win->wmhints && (tmp_win->wmhints->flags & WindowGroupHint)) 
       tmp_win->group = tmp_win->wmhints->window_group;
     else
@@ -343,7 +370,7 @@ IconMgr *iconp;
     /*
      * do any prompting for position
      */
-    if (HandlingEvents && ask_user) {
+    if (HandlingEvents && ask_user && !restoredFromPrevSession) {
       if (Scr->RandomPlacement) {	/* just stick it somewhere */
 	if ((PlaceX + tmp_win->attr.width) > Scr->MyDisplayWidth)
 	    PlaceX = 50;

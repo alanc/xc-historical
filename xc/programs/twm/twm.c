@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.129 93/11/19 09:39:32 kaleb Exp $
+ * $XConsortium: twm.c,v 1.4 94/07/05 11:16:46 mor Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -77,6 +77,9 @@ in this Software without prior written authorization from the X Consortium.
 #include "iconmgr.h"
 #include <X11/Xproto.h>
 #include <X11/Xatom.h>
+#include <X11/SM/SMlib.h>
+
+XtAppContext appContext;	/* Xt application context */
 
 Display *dpy;			/* which display are we talking to */
 Window ResizeWindow;		/* the window we are resizing */
@@ -137,10 +140,10 @@ unsigned long black, white;
 
 extern void assign_var_savecolor();
 
-Atom TwmAtoms[8];
+Atom TwmAtoms[9];
 
 /* don't change the order of these strings */
-static char* atom_names[8] = {
+static char* atom_names[9] = {
     "_MIT_PRIORITY_COLORS",
     "WM_CHANGE_STATE",
     "WM_STATE",
@@ -148,7 +151,8 @@ static char* atom_names[8] = {
     "WM_PROTOCOLS",
     "WM_TAKE_FOCUS",
     "WM_SAVE_YOURSELF",
-    "WM_DELETE_WINDOW" };
+    "WM_DELETE_WINDOW",
+    "SM_CLIENT_ID" };
 
 /***********************************************************************
  *
@@ -171,6 +175,9 @@ main(argc, argv, environ)
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int numManaged, firstscrn, lastscrn, scrnum;
     extern ColormapWindow *CreateColormapWindow();
+    int zero = 0;
+    char *restore_filename = NULL;
+    char *client_id = NULL;
 
     ProgramName = argv[0];
     Argc = argc;
@@ -194,6 +201,14 @@ main(argc, argv, environ)
 	      case 'v':				/* -verbose */
 		PrintErrorMessages = True;
 		continue;
+	      case 'c':				/* -clientId */
+		if (++i >= argc) goto usage;
+		client_id = argv[i];
+		continue;
+	      case 'r':				/* -restore */
+		if (++i >= argc) goto usage;
+		restore_filename = argv[i];
+		continue;
 	      case 'q':				/* -quiet */
 		PrintErrorMessages = False;
 		continue;
@@ -201,7 +216,7 @@ main(argc, argv, environ)
 	}
       usage:
 	fprintf (stderr,
-		 "usage:  %s [-display dpy] [-f file] [-s] [-q] [-v]\n",
+		 "usage:  %s [-display dpy] [-f file] [-s] [-q] [-v] [-clientId id] [-restore file]\n",
 		 ProgramName);
 	exit (1);
     }
@@ -225,7 +240,11 @@ main(argc, argv, environ)
     NoClass.res_name = NoName;
     NoClass.res_class = NoName;
 
-    if (!(dpy = XOpenDisplay(display_name))) {
+    XtToolkitInitialize ();
+    appContext = XtCreateApplicationContext ();
+
+    if (!(dpy = XtOpenDisplay (appContext, display_name, "twm", "twm",
+	NULL, 0, &zero, NULL))) {
 	fprintf (stderr, "%s:  unable to open display \"%s\"\n",
 		 ProgramName, XDisplayName(display_name));
 	exit (1);
@@ -237,6 +256,11 @@ main(argc, argv, environ)
 		 ProgramName);
 	exit (1);
     }
+
+    if (restore_filename)
+	ReadWinConfigFile (restore_filename);
+
+    ConnectToSessionManager (client_id);
 
     HasShape = XShapeQueryExtension (dpy, &ShapeEventBase, &ShapeErrorBase);
     HasSync = XSyncQueryExtension(dpy,  &SyncEventBase, &SyncErrorBase);
@@ -546,9 +570,11 @@ main(argc, argv, environ)
     } /* for */
 
     if (numManaged == 0) {
+	extern SmcConn smcConn;
 	if (MultiScreen && NumScreens > 0)
 	  fprintf (stderr, "%s:  unable to find any unmanaged screens\n",
 		   ProgramName);
+	SmcCloseConnection (smcConn, 0, NULL);
 	exit (1);
     }
 
