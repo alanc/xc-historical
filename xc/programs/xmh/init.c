@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.77 94/09/07 19:58:54 swick Exp swick $
+ * $XConsortium: init.c,v 2.78 95/01/06 16:39:19 swick Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -371,27 +371,6 @@ char **argv, **envp;
     ptr = strrchr(argv[0], '/');
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
-
-#ifdef BOGUS_XSMP_SPEC
-    {
-	int i;
-	char **ep, **nep;
-	for (i=1,ep=envp; *ep; ep++)i++;
-	nep = (char**)XtMalloc(i*2*sizeof(char*));
-	for (ep=nep; *envp; envp++) {
-	    char *cp = strchr(*envp, '=');
-	    if (cp) {
-		int l = cp - *envp;
-		*ep = (char*)XtMalloc(l);
-		strncpy(*ep, *envp, l);
-		(*ep++)[l] = '\0';
-		*ep++ = cp+1;
-	    }
-	    else *ep++ = *envp;
-	}
-	envp = nep;
-    }
-#endif
 
     shell_args[2].value = (XtArgVal)envp;
     toplevel = XtOpenApplication(&app, "Xmh", table, XtNumber(table),
