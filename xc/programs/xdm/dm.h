@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.27 89/12/15 20:12:23 keith Exp $
+ * $XConsortium: dm.h,v 1.28 90/02/12 17:56:30 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -119,6 +119,7 @@ struct display {
 	char		*userAuthDir;	/* backup directory for tickets */
 	char		*authName;	/* authorization protocol name */
 	unsigned short	authNameLen;	/* authorization protocol name len */
+	int		serverAttempts;	/* number of attempts at running X */
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
 	int		openTimeout;	/* abort open attempt timeout */
@@ -129,6 +130,7 @@ struct display {
 	int		terminateServer;/* restart for each session */
 	int		grabServer;	/* keep server grabbed for Login */
 	int		grabTimeout;	/* time to wait for grab */
+	int		dontHUPServer;	/* don't send SIGHUP for reset */
 	int		resetForAuth;	/* server reads auth file at reset */
 	DisplayType	displayType;	/* method to handle with */
 	CARD32		sessionID;	/* ID of active session */

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.6 90/02/07 18:47:25 keith Exp $
+ * $XConsortium: server.c,v 1.7 90/02/12 17:56:38 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -53,7 +53,7 @@ static char *_SysErrorMsg (n)
     return (s ? s : "no such error");
 }
 
-StartServer (d)
+StartServerOnce (d)
 struct display	*d;
 {
     char	**f;
@@ -103,6 +103,23 @@ struct display	*d;
     if (serverPause ((unsigned) d->openDelay, pid))
 	return FALSE;
     return TRUE;
+}
+
+StartServer (d)
+struct display *d;
+{
+    int	i;
+    int	ret = FALSE;
+
+    i = 0;
+    while (d->serverAttempts == 0 || i < d->serverAttempts)
+    {
+	if ((ret = StartServerOnce (d)) == TRUE)
+	    break;
+	sleep (d->openDelay);
+	i++;
+    }
+    return ret;
 }
 
 /*

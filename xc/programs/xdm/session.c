@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.29 90/02/07 18:47:19 keith Exp $
+ * $XConsortium: session.c,v 1.30 90/02/12 17:56:24 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -279,7 +279,7 @@ SessionExit (d, status)
     struct display  *d;
 {
     /* make sure the server gets reset after the session is over */
-    if (d->serverPid >= 2)
+    if (d->serverPid >= 2 && !d->dontHUPServer)
 	kill (d->serverPid, SIGHUP);
     else
 	ResetServer (d);
