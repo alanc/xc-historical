@@ -1,4 +1,4 @@
-/* $XConsortium: phigspex.h,v 5.3 91/07/01 16:21:38 hersh Exp $ */
+/* $XConsortium: phigspex.h,v 5.4 91/07/12 20:23:03 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -557,138 +557,114 @@ SOFTWARE.
 #define PEX_CONV_FROM_Pinq_type( _t ) \
     ((_t) == PINQ_SET ? PEXSetValue : PEXRealizedValue)
 
+/* this macro is "unformatted" to minimize its length, because at least one
+ * preprocessor we encountered could not handle it when formatted.
+ */
 #define PEX_CONV_FROM_Psrcheltype( _s, _d ) \
-    switch ( _s ) { \
-	case PELEM_ALL: (_d) = PEXOCAll; break; \
-	case PELEM_NIL: (_d) = PEXOCNil; break; \
-	case PELEM_POLYLINE3: (_d) = PEXOCPolyline; break; \
-	case PELEM_POLYLINE: (_d) = PEXOCPolyline2D; break; \
-	case PELEM_POLYMARKER3: (_d) = PEXOCMarker; break; \
-	case PELEM_POLYMARKER: (_d) = PEXOCMarker2D; break; \
-	case PELEM_TEXT3: (_d) = PEXOCText; break; \
-	case PELEM_TEXT: (_d) = PEXOCText2D; break; \
-	case PELEM_ANNO_TEXT_REL3: \
-	    (_d) = PEXOCAnnotationText; break; \
-	case PELEM_ANNO_TEXT_REL: \
-	    (_d) = PEXOCAnnotationText2D; break; \
-	case PELEM_FILL_AREA3: (_d) = PEXOCFillArea; break; \
-	case PELEM_FILL_AREA: (_d) = PEXOCFillArea2D; break; \
-	case PELEM_FILL_AREA_SET3: (_d) = PEXOCFillAreaSet; break; \
-	case PELEM_FILL_AREA_SET: (_d) = PEXOCFillAreaSet2D; break; \
-	case PELEM_CELL_ARRAY3: (_d) = PEXOCCellArray; break; \
-	case PELEM_CELL_ARRAY: (_d) = PEXOCCellArray2D; break; \
-	case PELEM_GDP3: (_d) = PEXOCGdp; break; \
-	case PELEM_GDP: (_d) = PEXOCGdp2D; break; \
-	case PELEM_LINE_IND: (_d) = PEXOCLineBundleIndex; break; \
-	case PELEM_MARKER_IND: (_d) = PEXOCMarkerBundleIndex; break; \
-	case PELEM_TEXT_IND: (_d) = PEXOCTextBundleIndex; break; \
-	case PELEM_INT_IND: (_d) = PEXOCInteriorBundleIndex; break; \
-	case PELEM_EDGE_IND: (_d) = PEXOCEdgeBundleIndex; break; \
-	case PELEM_LINETYPE: (_d) = PEXOCLineType; break; \
-	case PELEM_LINEWIDTH: (_d) = PEXOCLineWidth; break; \
-	case PELEM_LINE_COLR_IND: (_d) = PEXOCLineColourIndex; break; \
-	case PELEM_MARKER_TYPE: (_d) = PEXOCMarkerType; break; \
-	case PELEM_MARKER_SIZE: (_d) = PEXOCMarkerScale; break; \
-	case PELEM_MARKER_COLR_IND: (_d) = PEXOCMarkerColourIndex; break; \
-	case PELEM_TEXT_FONT: (_d) = PEXOCTextFontIndex; break; \
-	case PELEM_TEXT_PREC: (_d) = PEXOCTextPrecision; break; \
-	case PELEM_CHAR_EXPAN: \
-	    (_d) = PEXOCCharExpansion; break; \
-	case PELEM_CHAR_SPACE: (_d) = PEXOCCharSpacing; break; \
-	case PELEM_TEXT_COLR_IND: (_d) = PEXOCTextColourIndex; break; \
-	case PELEM_CHAR_HT: (_d) = PEXOCCharHeight; break; \
-	case PELEM_CHAR_UP_VEC: (_d) = PEXOCCharUpVector; break; \
-	case PELEM_TEXT_PATH: (_d) = PEXOCTextPath; break; \
-	case PELEM_TEXT_ALIGN: (_d) = PEXOCTextAlignment; break; \
-	case PELEM_ANNO_CHAR_HT: \
-	    (_d) = PEXOCAtextHeight; break; \
-	case PELEM_ANNO_CHAR_UP_VEC: \
-	    (_d) = PEXOCAtextUpVector; break; \
-	case PELEM_ANNO_PATH: (_d) = PEXOCAtextPath; break; \
-	case PELEM_ANNO_ALIGN: \
-	    (_d) = PEXOCAtextAlignment; break; \
-	case PELEM_ANNO_STYLE: (_d) = PEXOCAtextStyle; break; \
-	case PELEM_INT_STYLE: (_d) = PEXOCInteriorStyle; break; \
-	case PELEM_INT_STYLE_IND: (_d) = PEXOCInteriorStyleIndex; break; \
-	case PELEM_INT_COLR_IND: \
-	    (_d) = PEXOCSurfaceColourIndex; break; \
-	case PELEM_EDGE_FLAG: (_d) = PEXOCSurfaceEdgeFlag; break; \
-	case PELEM_EDGETYPE: (_d) = PEXOCSurfaceEdgeType; break; \
-	case PELEM_EDGEWIDTH: (_d) = PEXOCSurfaceEdgeWidth; break; \
-	case PELEM_EDGE_COLR_IND: \
-	    (_d) = PEXOCSurfaceEdgeColourIndex; break; \
-	case PELEM_PAT_SIZE: (_d) = PEXOCPatternSize; break; \
-	case PELEM_PAT_REF_POINT_VECS: \
-	    (_d) = PEXOCPatternAttr; break; \
-	case PELEM_PAT_REF_POINT: (_d) = PEXOCPatternRefPt; break; \
-	case PELEM_ADD_NAMES_SET: (_d) = PEXOCAddToNameSet; break; \
-	case PELEM_REMOVE_NAMES_SET: (_d) = PEXOCRemoveFromNameSet; break; \
-	case PELEM_INDIV_ASF: (_d) = PEXOCSetAsfValues; break; \
-	case PELEM_HLHSR_ID: (_d) = PEXOCHlhsrIdentifier; break; \
-	case PELEM_LOCAL_MODEL_TRAN3: \
-	    (_d) = PEXOCLocalTransform; break; \
-	case PELEM_LOCAL_MODEL_TRAN: \
-	    (_d) = PEXOCLocalTransform2D; break; \
-	case PELEM_GLOBAL_MODEL_TRAN3: \
-	    (_d) = PEXOCGlobalTransform; break; \
-	case PELEM_GLOBAL_MODEL_TRAN: \
-	    (_d) = PEXOCGlobalTransform2D; break; \
-	case PELEM_MODEL_CLIP_VOL3: \
-	    (_d) = PEXOCModelClipVolume; break; \
-	case PELEM_MODEL_CLIP_VOL: \
-	    (_d) = PEXOCModelClipVolume2D; break; \
-	case PELEM_MODEL_CLIP_IND: \
-	    (_d) = PEXOCModelClip; break; \
-	case PELEM_RESTORE_MODEL_CLIP_VOL: \
-	    (_d) = PEXOCRestoreModelClip; break; \
-	case PELEM_VIEW_IND: (_d) = PEXOCViewIndex; break; \
-	case PELEM_EXEC_STRUCT: (_d) = PEXOCExecuteStructure; break; \
-	case PELEM_LABEL: (_d) = PEXOCLabel; break; \
-	case PELEM_APPL_DATA: (_d) = PEXOCApplicationData; break; \
-	case PELEM_GSE: (_d) = PEXOCGse; break; \
-	case PELEM_PICK_ID: (_d) = PEXOCPickId; break; \
-	case PELEM_POLYLINE_SET3_DATA: (_d) = PEXOCPolylineSet; break; \
-	case PELEM_FILL_AREA_SET3_DATA: (_d) = PEXOCExtFillAreaSet; break; \
-	case PELEM_TRI_STRIP3_DATA: (_d) = PEXOCTriangleStrip; break; \
-	case PELEM_QUAD_MESH3_DATA: \
-	    (_d) = PEXOCQuadrilateralMesh; break; \
-	case PELEM_NUNI_BSP_CURVE: (_d) = PEXOCNurbCurve; break; \
-	case PELEM_NUNI_BSP_SURF: \
-	    (_d) = PEXOCNurbSurface; break; \
-	case PELEM_CELL_ARRAY3_PLUS: (_d) = PEXOCExtCellArray; break; \
-	case PELEM_TEXT_COLR: (_d) = PEXOCTextColour; break; \
-	case PELEM_MARKER_COLR: (_d) = PEXOCMarkerColour; break; \
-	case PELEM_EDGE_COLR: (_d) = PEXOCSurfaceEdgeColour; break; \
-	case PELEM_LINE_COLR: (_d) = PEXOCLineColour; break; \
-	case PELEM_CURVE_APPROX_CRIT: \
-	    (_d) = PEXOCCurveApproximation; break; \
-	case PELEM_LINE_SHAD_METH: (_d) = PEXOCPolylineInterp; break; \
-	case PELEM_INT_COLR: (_d) = PEXOCSurfaceColour; break; \
-	case PELEM_BACK_INT_COLR: (_d) = PEXOCBfSurfaceColour; break; \
-	case PELEM_BACK_INT_STYLE: (_d) = PEXOCBfInteriorStyle; break; \
-	case PELEM_BACK_INT_STYLE_IND: \
-	    (_d) = PEXOCBfInteriorStyleIndex; break; \
-	case PELEM_REFL_PROPS: (_d) = PEXOCSurfaceReflAttr; break; \
-	case PELEM_BACK_REFL_PROPS: (_d) = PEXOCBfSurfaceReflAttr; break; \
-	case PELEM_INT_SHAD_METH: (_d) = PEXOCSurfaceInterp; break; \
-	case PELEM_BACK_INT_SHAD_METH: \
-	    (_d) = PEXOCBfSurfaceInterp; break; \
-	case PELEM_INT_REFL_EQN: \
-	    (_d) = PEXOCSurfaceReflModel; break; \
-	case PELEM_BACK_INT_REFL_EQN: \
-	    (_d) = PEXOCBfSurfaceReflModel; break; \
-	case PELEM_SURF_APPROX_CRIT: \
-	    (_d) = PEXOCSurfaceApproximation; break; \
-	case PELEM_FACE_DISTING_MODE: \
-	    (_d) = PEXOCDistinguishFlag; break; \
-	case PELEM_FACE_CULL_MODE: (_d) = PEXOCCullingMode; break; \
-	case PELEM_LIGHT_SRC_STATE: (_d) = PEXOCLightState; break; \
-	case PELEM_DCUE_IND: (_d) = PEXOCDepthCueIndex; break; \
-	case PELEM_COLR_MAP_IND: (_d) = PEXOCColourApproxIndex; break; \
-	case PELEM_SET_OF_FILL_AREA_SET3_DATA: (_d) = PEXOCSOFAS; break; \
-	case PELEM_RENDERING_COLR_MODEL: \
-	    (_d) = PEXOCRenderingColourModel; break; \
-    }
+switch ( _s ) { \
+case PELEM_ALL: (_d) = PEXOCAll; break;\
+case PELEM_NIL: (_d) = PEXOCNil; break;\
+case PELEM_POLYLINE3: (_d) = PEXOCPolyline; break;\
+case PELEM_POLYLINE: (_d) = PEXOCPolyline2D; break;\
+case PELEM_POLYMARKER3: (_d) = PEXOCMarker; break;\
+case PELEM_POLYMARKER: (_d) = PEXOCMarker2D; break;\
+case PELEM_TEXT3: (_d) = PEXOCText; break;\
+case PELEM_TEXT: (_d) = PEXOCText2D; break;\
+case PELEM_ANNO_TEXT_REL3: (_d) = PEXOCAnnotationText; break;\
+case PELEM_ANNO_TEXT_REL: (_d) = PEXOCAnnotationText2D; break;\
+case PELEM_FILL_AREA3: (_d) = PEXOCFillArea; break;\
+case PELEM_FILL_AREA: (_d) = PEXOCFillArea2D; break;\
+case PELEM_FILL_AREA_SET3: (_d) = PEXOCFillAreaSet; break;\
+case PELEM_FILL_AREA_SET: (_d) = PEXOCFillAreaSet2D; break;\
+case PELEM_CELL_ARRAY3: (_d) = PEXOCCellArray; break;\
+case PELEM_CELL_ARRAY: (_d) = PEXOCCellArray2D; break;\
+case PELEM_GDP3: (_d) = PEXOCGdp; break;\
+case PELEM_GDP: (_d) = PEXOCGdp2D; break;\
+case PELEM_LINE_IND: (_d) = PEXOCLineBundleIndex; break;\
+case PELEM_MARKER_IND: (_d) = PEXOCMarkerBundleIndex; break;\
+case PELEM_TEXT_IND: (_d) = PEXOCTextBundleIndex; break;\
+case PELEM_INT_IND: (_d) = PEXOCInteriorBundleIndex; break;\
+case PELEM_EDGE_IND: (_d) = PEXOCEdgeBundleIndex; break;\
+case PELEM_LINETYPE: (_d) = PEXOCLineType; break;\
+case PELEM_LINEWIDTH: (_d) = PEXOCLineWidth; break;\
+case PELEM_LINE_COLR_IND: (_d) = PEXOCLineColourIndex; break;\
+case PELEM_MARKER_TYPE: (_d) = PEXOCMarkerType; break;\
+case PELEM_MARKER_SIZE: (_d) = PEXOCMarkerScale; break;\
+case PELEM_MARKER_COLR_IND: (_d) = PEXOCMarkerColourIndex; break;\
+case PELEM_TEXT_FONT: (_d) = PEXOCTextFontIndex; break;\
+case PELEM_TEXT_PREC: (_d) = PEXOCTextPrecision; break;\
+case PELEM_CHAR_EXPAN: (_d) = PEXOCCharExpansion; break;\
+case PELEM_CHAR_SPACE: (_d) = PEXOCCharSpacing; break;\
+case PELEM_TEXT_COLR_IND: (_d) = PEXOCTextColourIndex; break;\
+case PELEM_CHAR_HT: (_d) = PEXOCCharHeight; break;\
+case PELEM_CHAR_UP_VEC: (_d) = PEXOCCharUpVector; break;\
+case PELEM_TEXT_PATH: (_d) = PEXOCTextPath; break;\
+case PELEM_TEXT_ALIGN: (_d) = PEXOCTextAlignment; break;\
+case PELEM_ANNO_CHAR_HT: (_d) = PEXOCAtextHeight; break;\
+case PELEM_ANNO_CHAR_UP_VEC: (_d) = PEXOCAtextUpVector; break;\
+case PELEM_ANNO_PATH: (_d) = PEXOCAtextPath; break;\
+case PELEM_ANNO_ALIGN: (_d) = PEXOCAtextAlignment; break;\
+case PELEM_ANNO_STYLE: (_d) = PEXOCAtextStyle; break;\
+case PELEM_INT_STYLE: (_d) = PEXOCInteriorStyle; break;\
+case PELEM_INT_STYLE_IND: (_d) = PEXOCInteriorStyleIndex; break;\
+case PELEM_INT_COLR_IND: (_d) = PEXOCSurfaceColourIndex; break;\
+case PELEM_EDGE_FLAG: (_d) = PEXOCSurfaceEdgeFlag; break;\
+case PELEM_EDGETYPE: (_d) = PEXOCSurfaceEdgeType; break;\
+case PELEM_EDGEWIDTH: (_d) = PEXOCSurfaceEdgeWidth; break;\
+case PELEM_EDGE_COLR_IND: (_d) = PEXOCSurfaceEdgeColourIndex; break;\
+case PELEM_PAT_SIZE: (_d) = PEXOCPatternSize; break;\
+case PELEM_PAT_REF_POINT_VECS: (_d) = PEXOCPatternAttr; break;\
+case PELEM_PAT_REF_POINT: (_d) = PEXOCPatternRefPt; break;\
+case PELEM_ADD_NAMES_SET: (_d) = PEXOCAddToNameSet; break;\
+case PELEM_REMOVE_NAMES_SET: (_d) = PEXOCRemoveFromNameSet; break;\
+case PELEM_INDIV_ASF: (_d) = PEXOCSetAsfValues; break;\
+case PELEM_HLHSR_ID: (_d) = PEXOCHlhsrIdentifier; break;\
+case PELEM_LOCAL_MODEL_TRAN3: (_d) = PEXOCLocalTransform; break;\
+case PELEM_LOCAL_MODEL_TRAN: (_d) = PEXOCLocalTransform2D; break;\
+case PELEM_GLOBAL_MODEL_TRAN3: (_d) = PEXOCGlobalTransform; break;\
+case PELEM_GLOBAL_MODEL_TRAN: (_d) = PEXOCGlobalTransform2D; break;\
+case PELEM_MODEL_CLIP_VOL3: (_d) = PEXOCModelClipVolume; break;\
+case PELEM_MODEL_CLIP_VOL: (_d) = PEXOCModelClipVolume2D; break;\
+case PELEM_MODEL_CLIP_IND: (_d) = PEXOCModelClip; break;\
+case PELEM_RESTORE_MODEL_CLIP_VOL: (_d) = PEXOCRestoreModelClip; break;\
+case PELEM_VIEW_IND: (_d) = PEXOCViewIndex; break;\
+case PELEM_EXEC_STRUCT: (_d) = PEXOCExecuteStructure; break;\
+case PELEM_LABEL: (_d) = PEXOCLabel; break;\
+case PELEM_APPL_DATA: (_d) = PEXOCApplicationData; break;\
+case PELEM_GSE: (_d) = PEXOCGse; break;\
+case PELEM_PICK_ID: (_d) = PEXOCPickId; break;\
+case PELEM_POLYLINE_SET3_DATA: (_d) = PEXOCPolylineSet; break;\
+case PELEM_FILL_AREA_SET3_DATA: (_d) = PEXOCExtFillAreaSet; break;\
+case PELEM_TRI_STRIP3_DATA: (_d) = PEXOCTriangleStrip; break;\
+case PELEM_QUAD_MESH3_DATA: (_d) = PEXOCQuadrilateralMesh; break;\
+case PELEM_NUNI_BSP_CURVE: (_d) = PEXOCNurbCurve; break;\
+case PELEM_NUNI_BSP_SURF: (_d) = PEXOCNurbSurface; break;\
+case PELEM_CELL_ARRAY3_PLUS: (_d) = PEXOCExtCellArray; break;\
+case PELEM_TEXT_COLR: (_d) = PEXOCTextColour; break;\
+case PELEM_MARKER_COLR: (_d) = PEXOCMarkerColour; break;\
+case PELEM_EDGE_COLR: (_d) = PEXOCSurfaceEdgeColour; break;\
+case PELEM_LINE_COLR: (_d) = PEXOCLineColour; break;\
+case PELEM_CURVE_APPROX_CRIT: (_d) = PEXOCCurveApproximation; break;\
+case PELEM_LINE_SHAD_METH: (_d) = PEXOCPolylineInterp; break;\
+case PELEM_INT_COLR: (_d) = PEXOCSurfaceColour; break;\
+case PELEM_BACK_INT_COLR: (_d) = PEXOCBfSurfaceColour; break;\
+case PELEM_BACK_INT_STYLE: (_d) = PEXOCBfInteriorStyle; break;\
+case PELEM_BACK_INT_STYLE_IND: (_d) = PEXOCBfInteriorStyleIndex; break;\
+case PELEM_REFL_PROPS: (_d) = PEXOCSurfaceReflAttr; break;\
+case PELEM_BACK_REFL_PROPS: (_d) = PEXOCBfSurfaceReflAttr; break;\
+case PELEM_INT_SHAD_METH: (_d) = PEXOCSurfaceInterp; break;\
+case PELEM_BACK_INT_SHAD_METH: (_d) = PEXOCBfSurfaceInterp; break;\
+case PELEM_INT_REFL_EQN: (_d) = PEXOCSurfaceReflModel; break;\
+case PELEM_BACK_INT_REFL_EQN: (_d) = PEXOCBfSurfaceReflModel; break;\
+case PELEM_SURF_APPROX_CRIT: (_d) = PEXOCSurfaceApproximation; break;\
+case PELEM_FACE_DISTING_MODE: (_d) = PEXOCDistinguishFlag; break;\
+case PELEM_FACE_CULL_MODE: (_d) = PEXOCCullingMode; break;\
+case PELEM_LIGHT_SRC_STATE: (_d) = PEXOCLightState; break;\
+case PELEM_DCUE_IND: (_d) = PEXOCDepthCueIndex; break;\
+case PELEM_COLR_MAP_IND: (_d) = PEXOCColourApproxIndex; break;\
+case PELEM_SET_OF_FILL_AREA_SET3_DATA: (_d) = PEXOCSOFAS; break;\
+case PELEM_RENDERING_COLR_MODEL: (_d) = PEXOCRenderingColourModel; break;\
+}
 
 #define PEX_CONV_FROM_Ppathorder( _o ) \
     ((_o) == PORDER_TOP_FIRST ? PEXTopPart : PEXBottomPart)
