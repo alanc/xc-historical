@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CloseHook.c,v 1.3 89/05/11 14:52:44 kit Exp $
+ * $XConsortium: CloseHook.c,v 1.4 89/07/16 14:25:48 jim Exp $
  *
  * CloseDisplayHook package - provide callback on XCloseDisplay
  *
@@ -72,6 +72,7 @@ typedef struct _DisplayEntry {
     Display *dpy;			/* the display this represents */
     int extension;			/* from XAddExtension */
     struct _CallbackRec *start, *end;	/* linked list of callbacks */
+    struct _CallbackRec *calling;	/* currently being called back */
 } DisplayEntry;
 
 
@@ -121,6 +122,7 @@ CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
 	}
 	de->dpy = dpy;
 	de->start = de->end = NULL;
+	de->calling = NULL;
 	de->next = elist;
 	elist = de;
     }
@@ -174,7 +176,7 @@ Bool XmuRemoveCloseDisplayHook (dpy, handle, func, arg)
 	prev->next = h->next;
     }
     if (de->end == h) de->end = prev;
-    free ((char *) h);
+    if (de->calling != h) free ((char *) h);
     return True;
 }
 
@@ -240,6 +242,7 @@ static DisplayEntry *_FindDisplayEntry (dpy, prevp)
  * _DoCallbacks - process all of the callbacks for this display and free
  * the associated callback data (callback records and display entries).
  */
+/* ARGSUSED */
 static int _DoCallbacks (dpy, codes)
     Display *dpy;
     XExtCodes *codes;
@@ -252,10 +255,12 @@ static int _DoCallbacks (dpy, codes)
 
     /* walk the list doing the callbacks and freeing callback record */
     for (h = de->start; h;) {
-	register CallbackRec *oldh = h;
+	register CallbackRec *nexth = h->next;
+	de->calling = h;		/* let remove know we'll free it */
 	(*(h->func)) (dpy, h->arg);
+	de->calling = NULL;
 	free ((char *) h);
-	h = oldh->next;
+	h = nexth;
     }
 
     /* unlink this display from chain */
