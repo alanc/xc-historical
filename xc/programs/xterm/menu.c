@@ -101,9 +101,14 @@ static char check_bits[] = {
 
 void create_dummy_menu_hack ()
 {
-    Widget w = XtCreateWidget ("dummyMenu", simpleMenuWidgetClass, 
-			       toplevel, NULL, 0);
-    XtDestroyWidget (w);
+    static int called = 0;
+
+    if (!called) {
+	Widget w = XtCreateWidget ("dummyMenu", simpleMenuWidgetClass, 
+				   toplevel, NULL, 0);
+	if (w) XtDestroyWidget (w);
+	called++;
+    }
 }
 
 
