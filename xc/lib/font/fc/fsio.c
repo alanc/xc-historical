@@ -434,7 +434,7 @@ _fs_eat_rest_of_error(conn, err)
     int         len = (err->length - (sizeof(fsReplyHeader) >> 2)) << 2;
 
     while (len > 0) {
-        _fs_read(conn, buf, MIN(len, 128));
+        _fs_read(conn, buf, len < 128 ? len : 128);
 	len -= 128;
     }
 }
