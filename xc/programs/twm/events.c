@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.120 89/11/30 18:58:03 jim Exp $
+ * $XConsortium: events.c,v 1.121 89/12/06 12:06:36 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.120 89/11/30 18:58:03 jim Exp $";
+"$XConsortium: events.c,v 1.121 89/12/06 12:06:36 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -74,6 +74,7 @@ int DragWidth;
 int DragHeight;
 
 static int enter_flag;
+static int ColortableThrashing;
 static TwmWindow *enter_win, *raise_win;
 
 ScreenInfo *FindScreenInfo();
@@ -87,6 +88,8 @@ void HandleCreateNotify();
 void HandleShapeNotify ();
 extern int ShapeEventBase, ShapeErrorBase;
 #endif
+
+static void ReinstallWindowColormaps();
 
 void AutoRaiseWindow (tmp)
     TwmWindow *tmp;
@@ -146,6 +149,7 @@ InitEvents()
     EventHandler[PropertyNotify] = HandlePropertyNotify;
     EventHandler[KeyPress] = HandleKeyPress;
     EventHandler[ColormapNotify] = HandleColormapNotify;
+    EventHandler[VisibilityNotify] = HandleVisibilityNotify;
 #ifdef SHAPE
     if (HasShape)
 	EventHandler[ShapeEventBase+ShapeNotify] = HandleShapeNotify;
@@ -305,6 +309,9 @@ HandleEvents()
 		    enter_flag = FALSE;
 		}
 	    }
+	    if (ColortableThrashing && !QLength(dpy)) {
+		ReinstallWindowColormaps();
+	    }
 	    WindowMoved = FALSE;
 	    XNextEvent(dpy, &Event);
 	    (void) DispatchEvent ();
@@ -331,55 +338,152 @@ HandleColormapNotify()
     XColormapEvent *cevent = (XColormapEvent *) &Event;
     Bool sameScreen;
     Window child;
+    ColormapWindow *cwin, **cwins;
+    TwmColormap *cmap;
+    int i, j, n, number_cwins;
+    extern TwmColormap *CreateTwmColormap();
 
-    if (cevent->window == Scr->Root)
+    if (XFindContext(dpy, cevent->window, ColormapContext, &cwin) == XCNOENT)
+	return;
+    cmap = cwin->colormap;
+
+    if (cevent->new)
     {
-	/* Did the colormap change? */
-	if (cevent->new == True)
-	    Scr->CMap = cevent->colormap;
+	if (XFindContext(dpy, cevent->colormap, ColormapContext,
+			 &cwin->colormap) == XCNOENT)
+	    cwin->colormap = CreateTwmColormap(cevent->colormap);
+	else
+	    cwin->colormap->refcnt++;
 
-	/* If the pointer is not over a child, install it */
+	cmap->refcnt--;
+
 	if (cevent->state == ColormapUninstalled)
+	    cmap->state &= ~CM_INSTALLED;
+	else
+	    cmap->state |= CM_INSTALLED;
+
+	if (cmap->state & CM_INSTALLABLE)
+	    InstallWindowColormaps(ColormapNotify, (char *) cwin);
+
+	if (cmap->refcnt == 0)
 	{
-	    sameScreen = XQueryPointer (dpy, Scr->Root, &JunkRoot, &child,
-					&JunkX, &JunkY, &JunkX, &JunkY,
-					&JunkMask);
-	    if (sameScreen && child == None)
-	    {
-		InstallAColormap(dpy, Scr->CMap);
+	    XDeleteContext(dpy, cmap->c, ColormapContext);
+	    free((char *) cmap);
 	    }
-	}
+
 	return;
     }
 
-    if (Tmp_win == NULL)
-	return;
-
-    if (cevent->window == Tmp_win->w)
+    if (cevent->state == ColormapUninstalled &&
+	(cmap->state & CM_INSTALLABLE) &&
+	cevent->serial >= Scr->cmapInfo.first_req)
     {
-	/* Did the client change its colormap? */
-	if (cevent->new == True)
-	    Tmp_win->attr.colormap = cevent->colormap;
+	if (!(cmap->state & CM_INSTALLED))
+	return;
+	cmap->state &= ~CM_INSTALLED;
 
+	number_cwins = Scr->cmapInfo.number_cwins;
+
+	if (!ColortableThrashing)
+    {
+	    ColortableThrashing = TRUE;
+	    XSync(dpy, 0);
+
+	    if (Scr->cmapInfo.first_pass)
+	    {
+		if (Scr->cmapInfo.max_cwins < number_cwins)
+		{
+		    Scr->cmapInfo.scoreboard = (char *)
+			realloc(Scr->cmapInfo.scoreboard,
+				number_cwins*(number_cwins-1)/2);
+		    Scr->cmapInfo.max_cwins = number_cwins;
+		}
+
+		bzero(Scr->cmapInfo.scoreboard,
+		      number_cwins*(number_cwins-1)/2);
+
+		Scr->cmapInfo.first_pass = FALSE;
+	    }
+	}
 
 	/*
-	 * Either somebody changed it, or somebody did an explicit install.
-	 * It isn't enough to know that the window has focus;  we also need
-	 * to know that the pointer isn't in the title bar (in which case
-	 * the twm colormap should be used).  If the pointer is in the client
-	 * window, install the correct colormap.
+	 * Find out which colortables collided.
 	 */
-	if (cevent->state == ColormapUninstalled && Tmp_win == Scr->Focus)
+
+	cwins = Scr->cmapInfo.cwins;
+	for (i = j = -1, n = 0; (i == -1 || j == -1) && n < number_cwins; n++)
 	{
-	    sameScreen = XQueryPointer (dpy, Tmp_win->frame, &JunkRoot, &child,
-					&JunkX, &JunkY, &JunkX, &JunkY,
-					&JunkMask);
-	    if (sameScreen && child == Tmp_win->w)
+	    if (i == -1 && cwins[n] == cwin)
 	    {
-		InstallAColormap(dpy, Tmp_win->attr.colormap);
+		i = n;
+		continue;
 	    }
+
+	    if (j == -1 && cwins[n]->colormap->install_req == cevent->serial)
+	    {
+		j = n;
+		continue; /* for symetry and later added code */
 	}
     }
+
+	/* need if test in case client was fooling arround w/
+	 * XInstallColormap() or XUninstallColormap()
+	 */
+	if (i != -1 && j != -1)
+	{
+	    /* lower diagonal index calculation */
+	    if (i > j)
+		n = i*(i-1)/2 + j;
+	    else
+		n = j*(j-1)/2 + i;
+	    Scr->cmapInfo.scoreboard[n] = 1;
+	} else {
+	    fprintf (stderr, 
+		     "%s:  client illegally changed colormap (i = %d, j = %d\n", 
+		     ProgramName, i, j);
+	    InstallWindowColormaps(ColormapNotify, (char *) cwin);
+	}
+    }
+
+    else if (cevent->state == ColormapUninstalled)
+	cmap->state &= ~CM_INSTALLED;
+
+    else if (cevent->state == ColormapInstalled)
+	cmap->state |= CM_INSTALLED;
+}
+
+/***********************************************************************
+ *
+ *  Procedure:
+ *	HandleVisibilityNotify - visibility notify event handler
+ *
+ * This routine keeps track of visibility events so that colormap
+ * installation can keep the maximum number of useful colormaps
+ * installed at one time.
+ *
+ ***********************************************************************
+ */
+
+void
+HandleVisibilityNotify()
+{
+    XVisibilityEvent *vevent = (XVisibilityEvent *) &Event;
+    ColormapWindow *cwin;
+    TwmColormap *cmap;
+
+    if (XFindContext(dpy, vevent->window, ColormapContext, &cwin) == XCNOENT)
+	return;
+    
+    cmap = cwin->colormap;
+    if ((cmap->state & CM_INSTALLABLE) &&
+	vevent->state != cwin->visibility &&
+	(vevent->state == VisibilityFullyObscured ||
+	 cwin->visibility == VisibilityFullyObscured) &&
+	cmap->w == cwin->w) {
+	cwin->visibility = vevent->state;
+	InstallWindowColormaps(VisibilityNotify, (char *) cwin);
+    } else
+	cwin->visibility = vevent->state;
 }
 
 /***********************************************************************
@@ -523,20 +627,28 @@ static void free_window_names (tmp, nukefull, nukename, nukeicon)
     return;
 }
 
-void free_colormap_windows (tmp)
+void free_cwins (tmp)
     TwmWindow *tmp;
 {
-    if (tmp->cmap_windows) {
-	if (tmp->xfree_cmap_windows) {
-	    XFree ((char *) tmp->cmap_windows);
-	} else {
-	    free ((char *) tmp->cmap_windows);
+    int i;
+    TwmColormap *cmap;
+
+    if (tmp->number_cwins) {
+	for (i = 0; i < tmp->number_cwins; i++) {
+	     if (--tmp->cwins[i]->refcnt == 0) {
+		cmap = tmp->cwins[i]->colormap;
+		if (--cmap->refcnt == 0) {
+		    XDeleteContext(dpy, cmap->c, ColormapContext);
+		    free((char *) cmap);
 	}
-	tmp->cmap_windows = NULL;
+		XDeleteContext(dpy, tmp->cwins[i]->w, ColormapContext);
+		free((char *) tmp->cwins[i]);
     }
-    tmp->number_cmap_windows = 0;
-    tmp->current_cmap_window = 0;
-    tmp->xfree_cmap_windows = False;
+	}
+	free((char *) tmp->cwins);
+	tmp->cwins = NULL;
+	tmp->number_cwins = 0;
+    }
 }
 
 /***********************************************************************
@@ -945,6 +1057,9 @@ HandleDestroyNotify()
         }
     }
 
+    if (Scr->cmapInfo.cwins == Tmp_win->cwins)
+	InstallWindowColormaps(DestroyNotify, (char *) &Scr->TwmRoot);
+
     /*
      * TwmWindows contain the following pointers
      * 
@@ -956,7 +1071,7 @@ HandleDestroyNotify()
      *     6.  class.res_class
      *     7.  list
      *     8.  iconmgrp
-     *     9.  cmap_windows
+     *     9.  cwins
      *     10. titlebuttons
      */
     if (Tmp_win->gray) XFreePixmap (dpy, Tmp_win->gray);
@@ -979,7 +1094,7 @@ HandleDestroyNotify()
       XFree ((char *)Tmp_win->class.res_name);
     if (Tmp_win->class.res_class && Tmp_win->class.res_class != NoName) /* 6 */
       XFree ((char *)Tmp_win->class.res_class);
-    free_colormap_windows (Tmp_win);				/* 9 */
+    free_cwins (Tmp_win);				/* 9 */
     if (Tmp_win->titlebuttons)					/* 10 */
       free ((char *) Tmp_win->titlebuttons);
     free((char *)Tmp_win);
@@ -1616,7 +1731,7 @@ HandleEnterNotify()
 	 * titlebars are legible
 	 */
 	if (ewp->window == Scr->Root) {
-	    InstallAColormap (dpy, Scr->CMap);
+	    InstallWindowColormaps(EnterNotify, (char *) &Scr->TwmRoot);
 	    return;
 	}
 
@@ -1652,7 +1767,8 @@ HandleEnterNotify()
 			(Tmp_win->list && ewp->window == Tmp_win->list->w)) {
 			if (Tmp_win->hilite_w)				/* 1 */
 			  XMapWindow (dpy, Tmp_win->hilite_w);
-			InstallAColormap (dpy, Scr->CMap);		/* 2 */
+			InstallWindowColormaps (EnterNotify,		/* 2 */
+						(char *) &Scr->TwmRoot);
 			SetBorder (Tmp_win, True);			/* 3 */
 			if (Tmp_win->title_w && Scr->TitleFocus)	/* 4 */
 			  SetFocus (Tmp_win);
@@ -1664,7 +1780,7 @@ HandleEnterNotify()
 			 * If we are entering the application window, install
 			 * its colormap(s).
 			 */
-			InstallAColormap (dpy, Tmp_win->attr.colormap);
+			InstallWindowColormaps(EnterNotify, (char *) Tmp_win);
 		    }
 		}			/* end if Tmp_win->mapped */
 	    }				/* end if FocusRoot */
@@ -1745,7 +1861,8 @@ HandleLeaveNotify()
 		      SetFocus (NULL);
 		    Scr->Focus = NULL;
 		} else if (Event.xcrossing.window == Tmp_win->w) {
-		    InstallAColormap(dpy, Scr->CMap);
+		    InstallWindowColormaps (LeaveNotify,
+					    (char *) &Scr->TwmRoot);
 		}
 	    }
 	}
@@ -1975,56 +2092,122 @@ static void flush_expose (w)
 }
 
 
-
-InstallWindowColormaps (tmp_win)
-    TwmWindow *tmp_win;
+static void
+ReinstallWindowColormaps ()
 {
-    Screen *s = ScreenOfDisplay (dpy, Scr->screen);
-    int maxcmaps = MaxCmapsOfScreen (s);
-    int i, n;
+    int i, j, n, number_cwins, state;
+    ColormapWindow **cwins, *cwin, **maxcwin;
+    TwmColormap *cmap;
+    TwmWindow *tmp;
+    char *row;
 
-    if (tmp_win->cmap_windows) {
-	/*
-	 * keep track of how many there are and then only install
-	 * the last max colormaps; we'll also need track the colormap
-	 * notify events to know which colormaps are present.
-	 */
-	n = tmp_win->number_cmap_windows;
-	for (i = tmp_win->current_cmap_window - 1; i >= 0; i--) {
-	    if (n-- <= maxcmaps)
-	      InstallWindowColormap (tmp_win->cmap_windows[i]);
+    ColortableThrashing = FALSE; /* till this pass starts thrashing */
+
+    number_cwins = Scr->cmapInfo.number_cwins;
+    cwins = Scr->cmapInfo.cwins;
+
+    state = CM_INSTALLED;
+
+    for (i = n = 0; i < number_cwins && n < Scr->cmapInfo.maxCmaps; i++) {
+	cwin = cwins[i];
+	cmap = cwin->colormap;
+	cmap->state &= ~CM_INSTALLED;
+	if (cwin->visibility != VisibilityFullyObscured) {
+	    row = Scr->cmapInfo.scoreboard + (i*(i-1)/2);
+	    for (j = 0; j < i; j++)
+		if (row[j] && (cwins[j]->colormap->state & CM_INSTALL))
+		    break;
+	    if (j != i)
+		continue;
+	    n++;
+	    maxcwin = &cwins[i];
+	    state &= (cmap->state & CM_INSTALLED);
+	    cmap->state |= CM_INSTALL;
 	}
-	for (i = tmp_win->number_cmap_windows - 1;
-	     i >= tmp_win->current_cmap_window; i--) {
-	    if (n-- <= maxcmaps)
-	      InstallWindowColormap (tmp_win->cmap_windows[i]);
 	}
-    } else {
-	InstallWindowColormap (tmp_win->attr.colormap);
+
+    if (!(state & CM_INSTALLED))
+	Scr->cmapInfo.first_req = NextRequest(dpy);
+
+    for ( ; n > 0; maxcwin--) {
+	cmap = (*maxcwin)->colormap;
+	if (cmap->state & CM_INSTALL) {
+	    cmap->state &= ~CM_INSTALL;
+	    if (!(state & CM_INSTALLED)) {
+		cmap->install_req = NextRequest(dpy);
+		XInstallColormap(dpy, cmap->c);
+    }
+	    cmap->state |= CM_INSTALLED;
+	    n--;
+	}
     }
 }
 
-InstallWindowColormap (w)
-    Window w;
+InstallWindowColormaps (type, opaque)
+    int type;
+    char *opaque;
 {
-    XWindowAttributes attr;
+    int i, n, number_cwins, state;
+    ColormapWindow **cwins, *cwin, **maxcwin;
+    TwmColormap *cmap;
+    TwmWindow *tmp;
 
-    if (XGetWindowAttributes (dpy, w, &attr)) {
-	InstallAColormap (dpy, attr.colormap);
+    switch (type) {
+    case EnterNotify:
+    case LeaveNotify:
+    case DestroyNotify:
+    default:
+	for (i = 0, cwins = Scr->cmapInfo.cwins; i < Scr->cmapInfo.number_cwins;
+	     i++, cwins++)
+	    (*cwins)->colormap->state &= ~CM_INSTALLABLE;
+	tmp = (TwmWindow *) opaque;
+	number_cwins = Scr->cmapInfo.number_cwins = tmp->number_cwins;
+	cwins = Scr->cmapInfo.cwins = tmp->cwins;
+	break;
+    
+    case PropertyNotify:
+    case VisibilityNotify:
+    case ColormapNotify:
+	number_cwins = Scr->cmapInfo.number_cwins;
+	cwins = Scr->cmapInfo.cwins;
+	break;
+    }
+
+    Scr->cmapInfo.first_pass = TRUE;
+    ColortableThrashing = FALSE; /* in case installation aborted */
+
+    state = CM_INSTALLED;
+
+    for (i = n = 0; i < number_cwins; i++) {
+	cwin = cwins[i];
+	cmap = cwin->colormap;
+	cmap->state |= CM_INSTALLABLE;
+	cmap->w = cwin->w;
+	if (cwin->visibility != VisibilityFullyObscured &&
+	    n < Scr->cmapInfo.maxCmaps) {
+	    n++;
+	    maxcwin = &cwins[i];
+	    state &= (cmap->state & CM_INSTALLED);
+	    cmap->state |= CM_INSTALL;
+	}
+    }
+
+    if (!(state & CM_INSTALLED))
+	Scr->cmapInfo.first_req = NextRequest(dpy);
+
+    for ( ; n > 0; maxcwin--) {
+	cmap = (*maxcwin)->colormap;
+	if (cmap->state & CM_INSTALL) {
+	    cmap->state &= ~CM_INSTALL;
+	    if (!(state & CM_INSTALLED)) {
+		cmap->install_req = NextRequest(dpy);
+		XInstallColormap(dpy, cmap->c);
+	    }
+	    cmap->state |= CM_INSTALLED;
+	    n--;
+	}
     }
 }
-
-InstallAColormap (dpy, cmap)
-    Display *dpy;
-    Colormap cmap;
-{
-#ifdef DEBUG_EVENTS
-    printf ("Installing colormap 0x%lx\n", cmap);
-#endif
-
-    XInstallColormap (dpy, cmap);
-}
-
 
 #ifdef TRACE
 dumpevent (e)

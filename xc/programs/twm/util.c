@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.31 89/11/28 11:32:52 jim Exp $
+ * $XConsortium: util.c,v 1.32 89/11/28 15:42:43 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.31 89/11/28 11:32:52 jim Exp $";
+"$XConsortium: util.c,v 1.32 89/11/28 15:42:43 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -548,6 +548,7 @@ char *name;
 {
     XColor color, junkcolor;
     Status stat = 0;
+    Colormap cmap = Scr->TwmRoot.cwins[0]->colormap->c;
 
 #ifndef TOM
     if (!Scr->FirstTime)
@@ -561,9 +562,9 @@ char *name;
      * small hack to avoid extra roundtrip for color allocation
      */
     if (!((name[0] == '#')
-	  ? ((stat = XParseColor (dpy, Scr->CMap, name, &color)) &&
-	     XAllocColor (dpy, Scr->CMap, &color))
-	  : XAllocNamedColor (dpy, Scr->CMap, name, &color, &junkcolor)))
+	  ? ((stat = XParseColor (dpy, cmap, name, &color)) &&
+	     XAllocColor (dpy, cmap, &color))
+	  : XAllocNamedColor (dpy, cmap, name, &color, &junkcolor)))
     {
 	/* if we could not allocate the color, let's see if this is a
 	 * standard colormap
@@ -572,7 +573,7 @@ char *name;
 
 	/* parse the named color */
 	if (name[0] != '#')
-	    stat = XParseColor (dpy, Scr->CMap, name, &color);
+	    stat = XParseColor (dpy, cmap, name, &color);
 	if (!stat)
 	{
 	    fprintf (stderr, "%s:  invalid color name \"%s\"\n", 
@@ -585,7 +586,7 @@ char *name;
 	 */
 	if (Scr->StdCmapInfo.mru && Scr->StdCmapInfo.mru->maps &&
 	    (Scr->StdCmapInfo.mru->maps[Scr->StdCmapInfo.mruindex].colormap ==
-	     Scr->CMap)) {
+	     cmap)) {
 	    stdcmap = &(Scr->StdCmapInfo.mru->maps[Scr->StdCmapInfo.mruindex]);
 	} else {
 	    StdCmap *sc;
@@ -594,7 +595,7 @@ char *name;
 		int i;
 
 		for (i = 0; i < sc->nmaps; i++) {
-		    if (sc->maps[i].colormap == Scr->CMap) {
+		    if (sc->maps[i].colormap == cmap) {
 			Scr->StdCmapInfo.mru = sc;
 			Scr->StdCmapInfo.mruindex = i;
 			stdcmap = &(sc->maps[i]);

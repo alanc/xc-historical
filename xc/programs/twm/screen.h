@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.56 89/11/29 14:48:21 jim Exp $
+ * $XConsortium: screen.h,v 1.57 89/12/08 19:18:39 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -92,12 +92,23 @@ typedef struct ScreenInfo
     MouseButton DefaultFunction;
     MouseButton WindowFunction;
 
-    Colormap CMap;		/* default color map */
+    struct {
+      ColormapWindow **cwins;	/* current list of colormap windows */
+      int number_cwins;		/* number of elements in current list */
+      int maxCmaps;		/* maximum number of installed colormaps */
+      int first_pass;		/* first pass thru loading algorithm? */
+      int first_req;		/* seq # for first XInstallColormap() req in
+				   pass thru loading a colortable list */
+      int max_cwins;		/* maximum number of cwins in a list, so far */
+      char *scoreboard;		/* conflicts between installable colortables */
+    } cmapInfo;
+
     struct {
 	StdCmap *head, *tail;		/* list of maps */
 	StdCmap *mru;			/* most recently used in list */
 	int mruindex;			/* index of mru in entry */
     } StdCmapInfo;
+
     struct {
 	int nleft, nright;		/* numbers of buttons in list */
 	TitleButton *head;		/* start of list */

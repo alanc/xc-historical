@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.52 89/11/22 16:07:29 jim Exp $
+ * $XConsortium: twm.h,v 1.53 89/11/28 11:33:12 jim Exp $
  *
  * twm include file
  *
@@ -161,7 +161,29 @@ typedef struct _SqueezeInfo {
 #define J_CENTER		2
 #define J_RIGHT			3
 
+/* Colormap window entry for each window in WM_COLORMAP_WINDOWS
+ * ICCCM property.
+ */
+typedef struct TwmColormap
+{	
+    Colormap c;			/* Colormap id */
+    int state;			/* install(ability) state */
+    unsigned long install_req;	/* request number which installed it */
+    Window w;			/* window causing load of color table */
+    int refcnt;
+} TwmColormap;
 
+#define CM_INSTALLABLE		1
+#define CM_INSTALLED		2
+#define CM_INSTALL		4
+
+typedef struct ColormapWindow
+{
+    Window w;
+    TwmColormap *colormap;
+    int visibility;
+    int refcnt;
+} ColormapWindow;
 
 /* for each window that is on the display, one of these structures
  * is allocated and linked into a list 
@@ -234,10 +256,8 @@ typedef struct TwmWindow
     short wShaped;		/* this window has a bounding shape */
 #endif
     unsigned long protocols;	/* which protocols this window handles */
-    Window *cmap_windows;	/* WM_COLORMAP_WINDOWS list */
-    int number_cmap_windows;	/* number of elements in cmapws */
-    int current_cmap_window;	/* current index into cmapws list */
-    Bool xfree_cmap_windows;	/* t if need to XFree prop instead of free */
+    ColormapWindow **cwins;	/* WM_COLORMAP_WINDOWS list */
+    int number_cwins;		/* number of elements in cmapws */
     TBWindow *titlebuttons;
     SqueezeInfo *squeeze_info;	/* should the title be squeezed? */
     struct {
@@ -277,6 +297,7 @@ extern XContext TwmContext;
 extern XContext MenuContext;
 extern XContext IconManagerContext;
 extern XContext ScreenContext;
+extern XContext ColormapContext;
 
 extern char *Home;
 extern int HomeLen;

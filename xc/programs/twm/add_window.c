@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.122 89/12/04 21:58:42 jim Exp $
+ * $XConsortium: add_window.c,v 1.123 89/12/08 19:18:27 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.122 89/12/04 21:58:42 jim Exp $";
+"$XConsortium: add_window.c,v 1.123 89/12/08 19:18:27 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -160,7 +160,7 @@ IconMgr *iconp;
     tmp_win->zoomed = ZOOM_NONE;
     tmp_win->iconmgr = iconm;
     tmp_win->iconmgrp = iconp;
-    tmp_win->cmap_windows = NULL;
+    tmp_win->number_cwins = 0;
 
     XSelectInput(dpy, tmp_win->w, PropertyChangeMask);
     XGetWindowAttributes(dpy, tmp_win->w, &tmp_win->attr);
@@ -687,7 +687,7 @@ IconMgr *iconp;
 
     valuemask = (CWEventMask | CWDontPropagate);
     attributes.event_mask = (StructureNotifyMask | PropertyChangeMask |
-			     ColormapChangeMask |
+			     ColormapChangeMask | VisibilityChangeMask |
 			     EnterWindowMask | LeaveWindowMask);
     attributes.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask;
     XChangeWindowAttributes (dpy, tmp_win->w, valuemask, &attributes);
@@ -1373,46 +1373,168 @@ FetchWmProtocols (tmp)
     tmp->protocols = flags;
 }
 
+TwmColormap *
+CreateTwmColormap(c)
+    Colormap c;
+{
+    TwmColormap *cmap;
+    cmap = (TwmColormap *) malloc(sizeof(TwmColormap));
+    if (!cmap ||
+	XSaveContext(dpy, c, ColormapContext, (caddr_t) cmap)) {
+	if (cmap) free((char *) cmap);
+	return (NULL);
+    }
+    cmap->c = c;
+    cmap->state = 0;
+    cmap->refcnt = 1;
+    return (cmap);
+}
 
+ColormapWindow *
+CreateColormapWindow(w, creating_parent, property_window)
+    Window w;
+    Bool creating_parent;
+    Bool property_window;
+{
+    ColormapWindow *cwin;
+    TwmColormap *cmap;
+    XWindowAttributes attributes;
+
+    cwin = (ColormapWindow *) malloc(sizeof(ColormapWindow));
+    if (cwin) {
+	if (!XGetWindowAttributes(dpy, w, &attributes) ||
+	    XSaveContext(dpy, w, ColormapContext, (caddr_t) cwin)) {
+	    free((char *) cwin);
+	    return (NULL);
+	}
+
+	if (XFindContext(dpy, attributes.colormap,  ColormapContext,
+		&cwin->colormap) == XCNOENT) {
+	    cwin->colormap = cmap = CreateTwmColormap(attributes.colormap);
+	    if (!cmap) {
+		XDeleteContext(dpy, w, ColormapContext);
+		free((char *) cwin);
+		return (NULL);
+	    }
+	} else {
+	    cwin->colormap->refcnt++;
+	}
+
+	cwin->w = w;
+	/*
+	 * Assume that windows in colormap list are
+	 * obscured if we are creating the parent window.
+	 * Otherwise, we assume they are unobscured.
+	 */
+	cwin->visibility = creating_parent ?
+	    VisibilityFullyObscured : VisibilityUnobscured;
+	cwin->refcnt = 1;
+
+	/*
+	 * If this is a ColormapWindow property window and we
+	 * are not monitoring ColormapNotify or VisibilityNotify
+	 * events, we need to.
+	 */
+	if (property_window &&
+	    (attributes.your_event_mask &
+		(ColormapChangeMask|VisibilityChangeMask)) !=
+		    (ColormapChangeMask|VisibilityChangeMask)) {
+	    XSelectInput(dpy, w, attributes.your_event_mask |
+		(ColormapChangeMask|VisibilityChangeMask));
+	}
+    }
+
+    return (cwin);
+}
+		
 FetchWmColormapWindows (tmp)
     TwmWindow *tmp;
 {
-    register int i;
-    extern void free_colormap_windows();
+    register int i, j;
+    Window *cmap_windows;
+    int number_cmap_windows;
+    ColormapWindow **cwins;
+    int previously_installed;
+    extern void free_cwins();
 
-    free_colormap_windows (tmp);
+    number_cmap_windows = 0;
 
-    if (XGetWMColormapWindows (dpy, tmp->w, &tmp->cmap_windows, 
-			       &tmp->number_cmap_windows) &&
-	tmp->number_cmap_windows > 0) {
-	Bool has_top_cmap = False;
+    if (previously_installed = (Scr->cmapInfo.cwins == tmp->cwins &&
+				tmp->number_cwins)) {
+	cwins = Scr->cmapInfo.cwins;
+	for (i = 0; i < Scr->cmapInfo.number_cwins; i++)
+	    cwins[i]->colormap->state = 0;
+    }
 
-	for (i = 0; i < tmp->number_cmap_windows; i++) {
-	    if (tmp->w == tmp->cmap_windows[i]) {
-		has_top_cmap = True;
+    if (XGetWMColormapWindows (dpy, tmp->w, &cmap_windows, 
+			       &number_cmap_windows) &&
+	number_cmap_windows > 0) {
+
+	cwins = (ColormapWindow **) malloc(sizeof(ColormapWindow *) *
+		number_cmap_windows);
+	if (cwins) {
+	    for (i = 0; i < number_cmap_windows; i++) {
+
+		/*
+		 * Copy any existing entries into new list.
+		 */
+		for (j = 0; j < tmp->number_cwins; j++) {
+		    if (tmp->cwins[j]->w == cmap_windows[i]) {
+			cwins[i] = tmp->cwins[j];
+			cwins[i]->refcnt++;
 		break;
 	    }
 	}
-	if (has_top_cmap) {
-	    tmp->xfree_cmap_windows = True;
-	} else {
-	    Window *wl = (Window *) malloc ((tmp->number_cmap_windows + 1) *
-					    sizeof (Window));
 
-	    if (wl) {				/* insert new element */
-		Window *src, *dst;
-
-		wl[0] = tmp->w;
-		for (i = 0, src = tmp->cmap_windows, dst = wl + 1; 
-		     i < tmp->number_cmap_windows; i++, src++, dst++) {
-		    *dst = *src;
+		/*
+		 * If the colormap window is not being pointed by
+		 * some other applications colormap window list,
+		 * create a new entry.
+		 */
+		if (j == tmp->number_cwins)
+		    if (XFindContext(dpy, cmap_windows[i], ColormapContext,
+				     &cwins[i]) == XCNOENT) {
+			if ((cwins[i] = CreateColormapWindow(cmap_windows[i],
+				    (Bool) tmp->number_cwins == 0,
+				    True)) == NULL) {
+			    int k;
+			    for (k = i + 1; k < number_cmap_windows; k++)
+				cmap_windows[k-1] = cmap_windows[k];
+			    i--;
+			    number_cmap_windows--;
 		}
+		    } else
+			cwins[i]->refcnt++;
 	    }
-	    XFree ((char*) tmp->cmap_windows);
-	    tmp->cmap_windows = wl;
-	    tmp->number_cmap_windows++;
 	}
     }
+
+    /* No else here, in case we bailed out of clause above.
+     */
+    if (number_cmap_windows == 0) {
+
+	number_cmap_windows = 1;
+
+	cwins = (ColormapWindow **) malloc(sizeof(ColormapWindow *));
+	if (XFindContext(dpy, tmp->w, ColormapContext, &cwins[0]) == XCNOENT)
+	    cwins[0] = CreateColormapWindow(tmp->w,
+			    (Bool) tmp->number_cwins == 0, False);
+	else
+	    cwins[0]->refcnt++;
+    }
+
+    if (tmp->number_cwins)
+	free_cwins(tmp);
+
+    tmp->cwins = cwins;
+    tmp->number_cwins = number_cmap_windows;
+
+    if (previously_installed) {
+	Scr->cmapInfo.cwins = cwins;
+	Scr->cmapInfo.number_cwins = number_cmap_windows;
+	InstallWindowColormaps(PropertyNotify, (char *) tmp);
+    }
+
     return;
 }
 

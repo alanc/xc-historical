@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.80 89/11/28 11:33:00 jim Exp $
+ * $XConsortium: gram.y,v 1.81 89/11/30 20:03:25 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.80 89/11/28 11:33:00 jim Exp $";
+"$XConsortium: gram.y,v 1.81 89/11/30 20:03:25 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -552,17 +552,6 @@ action		: FKEYWORD	{ $$ = $1; }
 					fprintf (stderr, 
 			"ignoring invalid f.warptoscreen argument \"%s\"\n", 
 					         Action);
-					$$ = F_NOP;
-				    }
-				    break;
-				  case F_COLORMAP:
-				    if (CheckColormapArg (Action)) {
-					$$ = F_COLORMAP;
-				    } else {
-					twmrc_error_prefix();
-					fprintf (stderr,
-			"ignoring invalid f.colormap argument \"%s\"\n", 
-						 Action);
 					$$ = F_NOP;
 				    }
 				    break;

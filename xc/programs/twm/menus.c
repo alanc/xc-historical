@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.132 89/11/30 20:03:28 jim Exp $
+ * $XConsortium: menus.c,v 1.133 89/12/06 12:01:11 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.132 89/11/30 20:03:28 jim Exp $";
+"$XConsortium: menus.c,v 1.133 89/12/06 12:01:11 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -742,6 +742,7 @@ MenuRoot *mr;
     int width;
     unsigned long valuemask;
     XSetWindowAttributes attributes;
+    Colormap cmap = Scr->TwmRoot.cwins[0]->colormap->c;
 
     Scr->EntryHeight = Scr->MenuFont.height + 4;
 
@@ -867,14 +868,14 @@ MenuRoot *mr;
 	num = end->item_num - start->item_num;
 
 	f1.pixel = start->fore;
-	XQueryColor(dpy, Scr->CMap, &f1);
+	XQueryColor(dpy, cmap, &f1);
 	f2.pixel = end->fore;
-	XQueryColor(dpy, Scr->CMap, &f2);
+	XQueryColor(dpy, cmap, &f2);
 
 	b1.pixel = start->back;
-	XQueryColor(dpy, Scr->CMap, &b1);
+	XQueryColor(dpy, cmap, &b1);
 	b2.pixel = end->back;
-	XQueryColor(dpy, Scr->CMap, &b2);
+	XQueryColor(dpy, cmap, &b2);
 
 	fred = ((int)f2.red - (int)f1.red) / num;
 	fgreen = ((int)f2.green - (int)f1.green) / num;
@@ -903,8 +904,8 @@ MenuRoot *mr;
 	    b3.blue += bblue;
 	    save_back = b3;
 
-	    XAllocColor(dpy, Scr->CMap, &f3);
-	    XAllocColor(dpy, Scr->CMap, &b3);
+	    XAllocColor(dpy, cmap, &f3);
+	    XAllocColor(dpy, cmap, &b3);
 	    cur->fore = f3.pixel;
 	    cur->back = b3.pixel;
 	    cur->user_colors = True;
@@ -1188,7 +1189,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_WARPTO:
     case F_WARPRING:
     case F_WARPTOICONMGR:
-    case F_COLORMAP:
 	break;
     default:
         XGrabPointer(dpy, Scr->Root, True,
@@ -1664,9 +1664,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		      XUnmapWindow (dpy, Scr->Focus->hilite_w);
 		}
 
-		XGetWindowAttributes (dpy, tmp_win->w, &attr);
-		tmp_win->attr.colormap = attr.colormap;
-		InstallAColormap (dpy, tmp_win->attr.colormap);
+		InstallWindowColormaps (0, (char *) tmp_win);
 		if (tmp_win->hilite_w) XMapWindow (dpy, tmp_win->hilite_w);
 		SetBorder (tmp_win, True);
 		SetFocus (tmp_win);
@@ -1767,18 +1765,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		WarpToScreen (PreviousScreen, 0);
 	    } else {
 		WarpToScreen (atoi (action), 0);
-	    }
-	}
-	break;
-
-    case F_COLORMAP:
-	{
-	    if (strcmp (action, COLORMAP_NEXT) == 0) {
-		BumpWindowColormap (tmp_win, 1);
-	    } else if (strcmp (action, COLORMAP_PREV) == 0) {
-		BumpWindowColormap (tmp_win, -1);
-	    } else {
-		BumpWindowColormap (tmp_win, 0);
 	    }
 	}
 	break;
@@ -2101,7 +2087,7 @@ FocusOnRoot()
 	SetBorder (Scr->Focus, False);
 	if (Scr->Focus->hilite_w) XUnmapWindow (dpy, Scr->Focus->hilite_w);
     }
-    InstallAColormap(dpy, Scr->CMap);
+    InstallWindowColormaps(0, (char *) &Scr->TwmRoot);
     Scr->Focus = NULL;
     Scr->FocusRoot = TRUE;
 }
@@ -2417,34 +2403,6 @@ WarpToScreen (n, inc)
     return;
 }
 
-
-/*
- * BumpWindowColormap - adjust the colormap according to WM_COLORMAP_WINDOWS;
- * this makes use of the fact that we inserted the top level window's colormap
- * into the list implicitly.
- */
-
-BumpWindowColormap (tmp_win, inc)
-    TwmWindow *tmp_win;
-    int inc;
-{
-    if (tmp_win->cmap_windows) {
-	XWindowAttributes attr;
-	int newi = (inc ? tmp_win->current_cmap_window + inc : 0);
-
-	if (newi < 0) {
-	    newi = tmp_win->number_cmap_windows - 1;
-	} else if (newi >= tmp_win->number_cmap_windows) {
-	    newi = 0;
-	}
-
-	if (XGetWindowAttributes (dpy, tmp_win->cmap_windows[newi], &attr)) {
-	    tmp_win->attr.colormap = attr.colormap;
-	    tmp_win->current_cmap_window = newi;
-	    InstallAColormap (dpy, attr.colormap);
-	}
-    }
-}
 
 HideIconManager ()
 {

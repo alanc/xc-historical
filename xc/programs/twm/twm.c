@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.99 89/12/08 19:18:24 jim Exp $
+ * $XConsortium: twm.c,v 1.100 89/12/09 16:18:11 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.99 89/12/08 19:18:24 jim Exp $";
+"$XConsortium: twm.c,v 1.100 89/12/09 16:18:11 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -89,6 +89,7 @@ XContext TwmContext;		/* context for twm windows */
 XContext MenuContext;		/* context for all menu windows */
 XContext IconManagerContext;	/* context for all window list windows */
 XContext ScreenContext;		/* context to get screen data */
+XContext ColormapContext;	/* context for colormap operations */
 
 XClassHint NoClass;		/* for applications with no class */
 
@@ -140,6 +141,7 @@ main(argc, argv, environ)
     XSetWindowAttributes attributes;	/* attributes for create windows */
     SigProc old_handler;
     int numManaged, firstscrn, lastscrn, scrnum;
+    extern ColormapWindow *CreateColormapWindow();
 
     ProgramName = argv[0];
     Argc = argc;
@@ -215,6 +217,7 @@ main(argc, argv, environ)
     MenuContext = XUniqueContext();
     IconManagerContext = XUniqueContext();
     ScreenContext = XUniqueContext();
+    ColormapContext = XUniqueContext();
 
     InternUsefulAtoms ();
 
@@ -242,8 +245,6 @@ main(argc, argv, environ)
     FirstScreen = TRUE;
     for (scrnum = firstscrn ; scrnum <= lastscrn; scrnum++)
     {
-	XWindowAttributes attr;
-
 	RedirectError = FALSE;
 	XSetErrorHandler(CatchRedirectError);
 	XSelectInput(dpy, RootWindow (dpy, scrnum),
@@ -307,12 +308,20 @@ main(argc, argv, environ)
 	Scr->d_visual = DefaultVisual(dpy, scrnum);
 	Scr->Root = RootWindow(dpy, scrnum);
 	XSaveContext (dpy, Scr->Root, ScreenContext, Scr);
-	XGetWindowAttributes(dpy, Scr->Root, &attr);
-	/* use the colormap on the root window instead of the
-	 * DefaultColormap
-	 */
-	Scr->CMap = attr.colormap;
-	XInstallColormap(dpy, Scr->CMap);
+
+	Scr->TwmRoot.number_cwins = 1;
+	Scr->TwmRoot.cwins =
+		(ColormapWindow **) malloc(sizeof(ColormapWindow *));
+	Scr->TwmRoot.cwins[0] = CreateColormapWindow(Scr->Root, True, False);
+	Scr->TwmRoot.cwins[0]->visibility = VisibilityPartiallyObscured;
+
+	Scr->cmapInfo.number_cwins = 0;
+	Scr->cmapInfo.maxCmaps =
+		MaxCmapsOfScreen(ScreenOfDisplay(dpy, Scr->screen));
+	Scr->cmapInfo.scoreboard = (char *) malloc(1);
+	Scr->cmapInfo.max_cwins = 1;
+	InstallWindowColormaps(0, &Scr->TwmRoot);
+
 	Scr->StdCmapInfo.head = Scr->StdCmapInfo.tail = 
 	  Scr->StdCmapInfo.mru = NULL;
 	Scr->StdCmapInfo.mruindex = 0;
