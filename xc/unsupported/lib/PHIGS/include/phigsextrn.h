@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phigsextrn.h,v 5.1 91/02/16 09:49:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -164,7 +164,7 @@ extern void pinq_text_rep_plus();
 extern void pinq_ext_wss_ttable();
 extern void pinq_gdp();
 extern void pinq_gdp3();
-extern void pinq_gse();
+extern void pinq_list_avail_gse();
 extern void pinq_gse_facs();
 extern void pinq_highl_filter();
 extern void pinq_hlhsr_id_facs();

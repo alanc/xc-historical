@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_wst.c,v 5.1 91/02/16 09:48:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1906,7 +1906,7 @@ pinq_gdp( ws_type, gdp, error_ind, num_attrs, attrs )
 }
 
 void
-pinq_gse(ws_type, length, start, error_ind, gses, total_length)
+pinq_list_avail_gse(ws_type, length, start, error_ind, gses, total_length)
 Pint	ws_type;		/* workstation type	*/
 Pint	length;		/* length of application list	*/
 Pint	start;		/* starting position	*/
