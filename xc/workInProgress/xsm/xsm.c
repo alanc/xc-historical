@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.10 94/01/20 17:53:03 converse Exp $ */
+/* $XConsortium: xsm.c,v 1.11 94/01/21 17:36:28 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -29,6 +29,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/SM/SMlib.h>
+#include <X11/Xfuncs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
@@ -1331,19 +1332,51 @@ restart_everything()
     char	**pp;
     int		cnt;
     extern char **environ;
-    char	*p;
+    char	*p, *temp;
     static char	envDISPLAY[]="DISPLAY";
     static char	envSESSION_MANAGER[]="SESSION_MANAGER";
     static char	envAUDIOSERVER[]="AUDIOSERVER";
-    char	*display_env;
-    char	*session_env;
+    char	*display_env, *non_local_display_env;
+    char	*session_env, *non_local_session_env;
     char	*audio_env;
+    int		remote_allowed = 1;
 
     display_env = NULL;
     if(p = getenv(envDISPLAY)) {
 	display_env = malloc(strlen(envDISPLAY)+1+strlen(p)+1);
 	if(!display_env) nomem();
 	sprintf(display_env, "%s=%s", envDISPLAY, p);
+
+	/*
+	 * When we restart a remote client, we have to make sure the
+	 * display environment we give it has the SM's hostname.
+	 */
+
+	if ((temp = strchr (p, '/')) == 0)
+	    temp = p;
+	else
+	    temp++;
+
+	if (*temp != ':')
+	{
+	    /* we have a host name */
+
+	    non_local_display_env = malloc (strlen (display_env) + 1);
+	    if (!non_local_display_env) nomem();
+
+	    strcpy (non_local_display_env, display_env);
+	}
+	else
+	{
+	    char hostnamebuf[256];
+
+	    gethostname (hostnamebuf, sizeof hostnamebuf);
+	    non_local_display_env = malloc (strlen (envDISPLAY) + 1 +
+		strlen (hostnamebuf) + strlen (temp) + 1);
+	    if (!non_local_display_env) nomem();
+	    sprintf(non_local_display_env, "%s=%s%s",
+		envDISPLAY, hostnamebuf, temp);
+	}
     }
 
     session_env = NULL;
@@ -1351,6 +1384,37 @@ restart_everything()
 	session_env = malloc(strlen(envSESSION_MANAGER)+1+strlen(p)+1);
 	if(!session_env) nomem();
 	sprintf(session_env, "%s=%s", envSESSION_MANAGER, p);
+
+	/*
+	 * When we restart a remote client, we have to make sure the
+	 * session environment does not have the SM's local connection port.
+	 */
+
+	non_local_session_env = malloc (strlen (session_env) + 1);
+	if (!non_local_session_env) nomem();
+	strcpy (non_local_session_env, session_env);
+
+	if ((temp = strstr (non_local_session_env, "local/")) != NULL)
+	{
+	    char *delim = strchr (temp, ',');
+	    if (delim == NULL)
+	    {
+		if (temp == non_local_session_env +
+		    strlen (envSESSION_MANAGER) + 1)
+		{
+		    *temp = '\0';
+		    remote_allowed = 0;
+		}
+		else
+		    *(temp - 1) = '\0';
+	    }
+	    else
+	    {
+		int bytes = strlen (delim + 1);
+		memmove (temp, delim + 1, bytes);
+		*(temp + bytes) = '\0';
+	    }
+	}
     }
 
     audio_env = NULL;
@@ -1435,15 +1499,34 @@ restart_everything()
 		    break;
 		}
 	    }
+	    else if (!remote_allowed)
+	    {
+		fprintf(stderr,
+		   "Can't remote start client ID '%s': only local supported\n",
+			c->clientId);
+	    }
 	    else
 	    {
 		/*
 		 * The client is being restarted on a remote machine.
-		 * Use the xrsh protocol to do the restart.
+		 * Use the rstart protocol to do the restart.
 		 */
 
 		int pipefd[2], i;
+		char *hostname, *tmp;
 		FILE *fp;
+
+		if ((tmp = strchr (c->clientHostname, '/')) == NULL)
+		    hostname = c->clientHostname;
+		else
+		    hostname = tmp + 1;
+
+		if (app_resources.verbose)
+		{
+		    printf ("Attempting to restart remote client on %s\n",
+			hostname);
+		    printf ("execlp (%s, %s, rstartd 0)\n", RSHCMD, hostname);
+		}
 
 		if (pipe (pipefd) < 0)
 		{
@@ -1461,10 +1544,12 @@ restart_everything()
 			dup (pipefd[0]);
 			close (pipefd[0]);
 
-			execlp ("remsh", c->clientHostname,
-			    "xrshsrv", (char *) 0);
-			perror("execlp");
+			execlp (RSHCMD, hostname, "rstartd", (char *) 0);
+
+			perror(
+			 "failed to start remote client with rstart protocol");
 			_exit(255);
+
 		    default:		/* parent */
 			close (pipefd[0]);
 			fp = fdopen (pipefd[1], "w");
@@ -1472,7 +1557,7 @@ restart_everything()
 			fprintf (fp, "DIR %s\n", cwd);
 
 /*
- * There are spaces inside some of the damn env values, and xrshsrv
+ * There are spaces inside some of the damn env values, and rstartd
  * will barf on spaces.  Need to fix this, but for now, just set the
  * important env variables.
  */
@@ -1480,8 +1565,8 @@ restart_everything()
 			for (i = 0; env[i]; i++)
 			    if (strstr (env[i], "PATH"))
 				fprintf (fp, "MISC X %s\n", env[i]);
-			fprintf (fp, "MISC X %s\n", display_env);
-			fprintf (fp, "MISC X %s\n", session_env);
+			fprintf (fp, "MISC X %s\n", non_local_display_env);
+			fprintf (fp, "MISC X %s\n", non_local_session_env);
 /*
  * To do: set the auth data.
  *   use AUTH authscheme authdata
@@ -1506,6 +1591,8 @@ restart_everything()
     }
     if(display_env) free(display_env);
     if(session_env) free(session_env);
+    if(non_local_display_env) free(non_local_display_env);
+    if(non_local_session_env) free(non_local_session_env);
     if(audio_env) free(audio_env);
 }
 
