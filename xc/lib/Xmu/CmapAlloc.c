@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CmapAlloc.c,v 1.4 91/07/19 16:36:50 gildea Exp $
+ * $XConsortium: CmapAlloc.c,v 1.5 92/11/23 15:42:57 rws Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -27,6 +27,8 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
+
+#define lowbit(x) ((x) & (~(x) + 1))
 
 static int default_allocation();
 static void best_allocation();
@@ -143,6 +145,13 @@ static int default_allocation(vinfo, red, green, blue)
       case DirectColor:
 
 	*red = *green = *blue = vinfo->colormap_size / 2;
+	break;
+
+      case TrueColor:
+
+	*red = vinfo->red_mask / lowbit(vinfo->red_mask);
+	*green = vinfo->green_mask / lowbit(vinfo->green_mask);
+	*blue = vinfo->blue_mask / lowbit(vinfo->blue_mask);
 	break;
 
       case GrayScale:
