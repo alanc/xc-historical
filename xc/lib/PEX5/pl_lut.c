@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.c,v 1.6 92/07/24 14:03:43 mor Exp $ */
+/* $XConsortium: pl_lut.c,v 1.7 92/08/26 13:06:07 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -735,7 +735,7 @@ INPUT PEXPointer	entries;
 
 	    sizeColor = GetColorSize (src->color_type);
 	    sizeColor *= (src->col_count * src->row_count);
-	    COPY_AREA ((char *) src->colors, &dst[1], sizeColor);
+	    COPY_AREA ((char *) src->colors.indexed, &dst[1], sizeColor);
 
 	    dst = (pexPatternEntry *) ((char *) dst + 
 		sizeof (pexPatternEntry) + sizeColor);
@@ -1163,8 +1163,9 @@ INPUT  int		type;
 
 	    sizeColor = GetColorSize (src->colorType);
 	    sizeColor *= (src->numx * src->numy);
-	    dst->colors = (char *) PEXAllocBuf ((unsigned) sizeColor);
-	    COPY_AREA (&src[1], (char *) dst->colors, sizeColor);
+	    dst->colors.indexed =
+		(PEXColorIndexed *) PEXAllocBuf ((unsigned) sizeColor);
+	    COPY_AREA (&src[1], (char *) dst->colors.indexed, sizeColor);
 
 	    src = (pexPatternEntry *) ((char *) src +
 		sizeof (pexPatternEntry) + sizeColor);

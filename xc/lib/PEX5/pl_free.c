@@ -1,4 +1,4 @@
-/* $XConsortium: pl_free.c,v 1.5 92/06/30 15:53:03 mor Exp $ */
+/* $XConsortium: pl_free.c,v 1.6 92/07/16 11:04:44 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -246,7 +246,7 @@ INPUT PEXPointer	tableEntries;
 	PEXPatternEntry *entries = (PEXPatternEntry *) tableEntries;
 	
 	for (i = 0; i < numTableEntries; i++)
-	    CHECK_AND_FREE ((char *) entries[i].colors);
+	    CHECK_AND_FREE ((char *) entries[i].colors.indexed);
 	break;
     }
     
