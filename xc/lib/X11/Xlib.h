@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.212 91/06/27 16:36:56 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.213 91/07/05 09:49:50 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -529,6 +529,7 @@ typedef struct _XDisplay {
 	   XPointer defaultCCCs;  /* pointer to an array of default XcmsCCC */
 	   XPointer clientCmaps;  /* pointer to linked list of XcmsCmapRec */
 	} cms;
+	int conn_checker;         /* ugly thing used by _XEventsQueued */
 	struct _XIMFilter *im_filters;
 } Display;
 
