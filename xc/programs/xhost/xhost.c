@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.21 88/08/15 18:11:56 jim Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.22 88/08/18 17:47:50 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -78,6 +78,7 @@ static int XFamily(af)
     return -1;
 }
 
+
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -86,7 +87,6 @@ main(argc, argv)
 	char host[256];
 	register char *arg;
 	int display, i, w, nhosts;
-	XHostAddress *address, *get_address();
 	char *hostname, *get_hostname();
 	XHostAddress *list;
 	Bool enabled = False;
@@ -101,7 +101,7 @@ main(argc, argv)
 
 	if ((dpy = XOpenDisplay(NULL)) == NULL) {
 	    fprintf(stderr, "%s:  unable to open display \"%s\"\n",
-		    argv[0], XDisplayName (NULL));
+		    ProgramName, XDisplayName (NULL));
 	    exit(1);
 	}
 
@@ -144,11 +144,9 @@ main(argc, argv)
 		    XEnableAccessControl(dpy);
 		} else {
 		    arg = argv[i][1]? &argv[i][1] : argv[++i];
-                    if ((address = get_address(arg)) == NULL) 
-		         fprintf(stderr, "%s: bad host: %s\n", argv[0], arg);
-                    else {
-			printf ("%s removed from access control list.\n", arg);
-			XRemoveHost(dpy, address);
+		    if (!change_host (dpy, arg, False)) {
+			fprintf (stderr, "%s:  bad hostname \"%s\"\n",
+				 ProgramName, arg);
 		    }
 		}
 	    } else {
@@ -159,11 +157,9 @@ main(argc, argv)
 		    if (*arg == '+') {
 		      arg = argv[i][1]? &argv[i][1] : argv[++i];
 		    }
-                    if ((address = get_address(arg)) == NULL) 
-		         fprintf(stderr, "%s: bad host: %s\n", argv[0], arg);
-                    else {
-			printf ("%s added to access control list.\n", arg);
-			XAddHost(dpy, address);
+		    if (!change_host (dpy, arg, True)) {
+			fprintf (stderr, "%s:  bad hostname \"%s\"\n",
+				 ProgramName, arg);
 		    }
 		}
 	    }
@@ -175,16 +171,20 @@ main(argc, argv)
  
 
 /*
- * get_address - return a pointer to an internet address given
- * either a name (CHARON.MIT.EDU) or a string with the raw
- * address (18.58.0.13)
+ * change_host - edit the list of hosts that may connect to the server;
+ * it parses DECnet names (expo::), Internet addresses (18.30.0.212), or
+ * Internet names (expo.lcs.mit.edu); if 4.3bsd macro h_addr is defined
+ * (from <netdb.h>), it will add or remove all addresses with the given
+ * address.
  */
 
-XHostAddress *get_address (name) 
-char *name;
+int change_host (dpy, name, add)
+    Display *dpy;
+    char *name;
+    Bool add;
 {
   struct hostent *hp;
-  static XHostAddress ha;
+  XHostAddress ha;
   static struct in_addr addr;	/* so we can point at it */
 #ifdef DNETCONN
   struct dn_naddr *dnaddrp;
@@ -192,6 +192,8 @@ char *name;
   char *cp;
   static struct dn_naddr dnaddr;
 #endif /* DNETCONN */
+  static char *add_msg = "added to access control list";
+  static char *remove_msg = "removed from access control list";
 
 #ifdef DNETCONN
   if ((cp = index (name, ':')) && (*(cp + 1) == ':')) {
@@ -200,14 +202,24 @@ char *name;
     if (dnaddrp = dnet_addr(name)) {
       dnaddr = *dnaddrp;
     } else {
-      if ((np = getnodebyname (name)) == NULL)
-	return (NULL);
+      if ((np = getnodebyname (name)) == NULL) {
+	  fprintf (stderr, "%s:  unble to get node name for \"%s::\"\n",
+		   ProgramName, name);
+	  return 0;
+      }
       dnaddr.a_len = np->n_length;
       bcopy (np->n_addr, dnaddr.a_addr, np->n_length);
     }
     ha.length = sizeof(struct dn_naddr);
     ha.address = (char *)&dnaddr;
-    return(&ha);	/* Found it */
+    if (add) {
+	XAddHost (dpy, &ha);
+	printf ("%s:: %s\n", name, add_msg);
+    } else {
+	XRemoveHost (dpy, &ha);
+	printf ("%s:: %s\n", name, remove_msg);
+    }
+    return 1;
   }
 #endif /* DNETCONN */
   /*
@@ -217,20 +229,50 @@ char *name;
     ha.family = FamilyInternet;
     ha.length = sizeof(addr.s_addr);
     ha.address = (char *)&addr.s_addr;
-    return(&ha);	/* Found it */
+    if (add) {
+	XAddHost (dpy, &ha);
+	printf ("%s %s\n", name, add_msg);
+    } else {
+	XRemoveHost (dpy, &ha);
+	printf ("%s %s\n", name, remove_msg);
+    }
+    return 1;
   } 
   /*
    * Is it in the namespace?
    */
   else if (((hp = gethostbyname(name)) == (struct hostent *)NULL)
        || hp->h_addrtype != AF_INET) {
-    return (NULL);		/* Sorry, you lose */
+    return 0;
   } else {
     ha.family = XFamily(hp->h_addrtype);
     ha.length = hp->h_length;
+#ifdef h_addr				/* new 4.3bsd version of gethostent */
+    {
+	char **list;
+
+	/* iterate over the hosts */
+	for (list = hp->h_addr_list; *list; list++) {
+	    ha.address = *list;
+	    if (add) {
+		XAddHost (dpy, &ha);
+	    } else {
+		XRemoveHost (dpy, &ha);
+	    }
+	}
+    }
+#else
     ha.address = hp->h_addr;
-    return (&ha);	/* Found it. */
+    if (add) {
+	XAddHost (dpy, &ha);
+    } else {
+	XRemoveHost (dpy, &ha);
+    }
+#endif
+    printf ("%s %s\n", name, add ? add_msg : remove_msg);
+    return 1;
   }
+  /* NOTREACHED */
 }
 
 
