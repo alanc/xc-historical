@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.67 91/06/09 17:52:26 rws Exp $ */
+/* $XConsortium: window.c,v 5.68 91/06/10 09:59:22 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1957,7 +1957,7 @@ GravityTranslate (x, y, oldx, oldy, dw, dh, gravity, destx, desty)
 {
     switch (gravity) {
     case NorthGravity:
-	*destx = x + (dw >> 1);
+	*destx = x + dw / 2;
 	*desty = y;
 	break;
     case NorthEastGravity:
@@ -1966,22 +1966,22 @@ GravityTranslate (x, y, oldx, oldy, dw, dh, gravity, destx, desty)
 	break;
     case WestGravity:
 	*destx = x;
-	*desty = y + (dh >> 1);
+	*desty = y + dh / 2;
 	break;
     case CenterGravity:
-	*destx = x + (dw >> 1);
-	*desty = y + (dh >> 1);
+	*destx = x + dw / 2;
+	*desty = y + dh / 2;
 	break;
     case EastGravity:
 	*destx = x + dw;
-	*desty = y + (dh >> 1);
+	*desty = y + dh / 2;
 	break;
     case SouthWestGravity:
 	*destx = x;
 	*desty = y + dh;
 	break;
     case SouthGravity:
-	*destx = x + (dw >> 1);
+	*destx = x + dw / 2;
 	*desty = y + dh;
 	break;
     case SouthEastGravity:
