@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.11 93/08/24 18:49:20 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.12 93/09/04 09:45:06 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -159,7 +159,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		(vals.values_supplied & POINTSIZE_MASK) == POINTSIZE_ARRAY ||
 		(vals.values_supplied &
 		 ~SIZE_SPECIFY_MASK & ~CHARSUBSET_SPECIFIED))
-		scaled = NULL;
+		scaled = 0;
 	    else
 	        scaled = FontFileFindScaledInstance (entry, &vals,
 						     noSpecificSize);
@@ -239,7 +239,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		    {
 		    	if (FontFileAddScaledInstance (entry, &vals,
 						    *pFont, (char *) 0))
-			    ranges = NULL;
+			    ranges = 0;
 			else
 			    (*pFont)->fpePrivate = (pointer) 0;
 		    }
