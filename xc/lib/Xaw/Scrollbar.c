@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Scroll.c,v 1.35 88/08/27 17:25:50 jim Exp $";
+    "$XConsortium: Scroll.c,v 1.39 88/09/04 12:40:43 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -165,50 +165,9 @@ WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
 #define MIN(x,y)	((x) < (y) ? (x) : (y))
 #define MAX(x,y)	((x) > (y) ? (x) : (y))
 
-
-/* Orientation enumeration constants */
-
-static	XrmQuark  XtQEhorizontal;
-static	XrmQuark  XtQEvertical;
-
-/*ARGSUSED*/
-#define	done(address, type) \
-	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
-
-extern void LowerCase();
-
-/* ARGSUSED */
-static void CvtStringToOrientation(args, num_args, fromVal, toVal)
-    XrmValuePtr *args;		/* unused */
-    Cardinal	*num_args;	/* unused */
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
-{
-    static XtOrientation orient;
-    XrmQuark	q;
-    char	lowerName[1000];
-
-/* ||| where to put LowerCase */
-    LowerCase((char *) fromVal->addr, lowerName);
-    q = XrmStringToQuark(lowerName);
-    if (q == XtQEhorizontal) {
-    	orient = XtorientHorizontal;
-	done(&orient, XtOrientation);
-	return;
-    }
-    if (q == XtQEvertical) {
-    	orient = XtorientVertical;
-	done(&orient, XtOrientation);
-	return;
-    }
-};
-
-
 static void ClassInitialize()
 {
-    XtQEhorizontal = XrmStringToQuark(XtEhorizontal);
-    XtQEvertical   = XrmStringToQuark(XtEvertical);
-    XtAddConverter( XtRString, XtROrientation, CvtStringToOrientation,
+    XtAddConverter( XtRString, XtROrientation, XmuCvtStringToOrientation,
 		    NULL, (Cardinal)0 );
 }
 
