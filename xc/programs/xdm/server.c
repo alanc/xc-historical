@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.13 91/04/01 10:29:05 rws Exp $
+ * $XConsortium: server.c,v 1.14 91/07/16 22:19:47 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -277,6 +277,14 @@ GetRemoteAddress (d, fd)
 
 #endif /* XDMCP */
 
+static int
+openErrorHandler (dpy)
+    Display *dpy;
+{
+    LogError ("IO Error in XOpenDisplay\n");
+    exit (OPENFAILED_DISPLAY);
+}
+
 int
 WaitForServer (d)
     struct display  *d;
@@ -289,6 +297,7 @@ WaitForServer (d)
     	if (!setjmp (openAbort)) {
 	    Debug ("Before XOpenDisplay(%s)\n", d->name);
 	    errno = 0;
+	    (void) XSetIOErrorHandler (openErrorHandler);
 	    dpy = XOpenDisplay (d->name);
 #ifdef STREAMSCONN
 	    {
@@ -303,6 +312,7 @@ WaitForServer (d)
 #endif
 	    (void) alarm ((unsigned) 0);
 	    (void) Signal (SIGALRM, SIG_DFL);
+	    (void) XSetIOErrorHandler ((int (*)()) 0);
 	    Debug ("After XOpenDisplay(%s)\n", d->name);
 	    if (dpy) {
 #ifdef XDMCP

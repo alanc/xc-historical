@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.62 91/07/18 18:55:52 rws Exp $
+ * $XConsortium: dm.c,v 1.63 91/07/18 21:31:05 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -393,6 +393,7 @@ WaitForChild ()
 		StopDisplay (d);
 		break;
 	    case OBEYSESS_DISPLAY:
+		d->startTries = 0;
 		Debug ("Display exited with OBEYSESS_DISPLAY\n");
 		if (d->displayType.lifetime != Permanent ||
 		    d->status == zombie)
@@ -407,7 +408,9 @@ WaitForChild ()
 		StopDisplay (d);
 		break;
 	    case OPENFAILED_DISPLAY:
-		Debug ("Display exited with OPENFAILED_DISPLAY\n");
+		Debug ("Display exited with OPENFAILED_DISPLAY, try %d of %d\n",
+		       d->startTries, d->startAttempts);
+		LogError ("Display %s cannot be opened\n", d->name);
 		/*
  		 * no display connection was ever made, tell the
 		 * terminal that the open attempt failed
@@ -420,6 +423,7 @@ WaitForChild ()
 		    d->status == zombie ||
 		    ++d->startTries >= d->startAttempts)
 		{
+		    LogError ("Display %s is being disabled\n", d->name);
 		    StopDisplay (d);
 		}
 		else
@@ -428,6 +432,7 @@ WaitForChild ()
 		}
 		break;
 	    case RESERVER_DISPLAY:
+		d->startTries = 0;
 		Debug ("Display exited with RESERVER_DISPLAY\n");
 		if (d->displayType.origin == FromXDMCP || d->status == zombie)
 		    StopDisplay(d);
@@ -435,6 +440,7 @@ WaitForChild ()
 		    RestartDisplay (d, TRUE);
 		break;
 	    case waitCompose (SIGTERM,0,0):
+		d->startTries = 0;
 		Debug ("Display exited on SIGTERM\n");
 		if (d->displayType.origin == FromXDMCP || d->status == zombie)
 		    StopDisplay(d);
@@ -442,6 +448,7 @@ WaitForChild ()
 		    RestartDisplay (d, TRUE);
 		break;
 	    case REMANAGE_DISPLAY:
+		d->startTries = 0;
 		Debug ("Display exited with REMANAGE_DISPLAY\n");
 		/*
  		 * XDMCP will restart the session if the display
@@ -521,7 +528,6 @@ struct display	*d;
     int	pid;
 
     Debug ("StartDisplay %s\n", d->name);
-    d->startTries = 0;
     LoadServerResources (d);
     if (d->displayType.location == Local)
     {
