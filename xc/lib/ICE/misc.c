@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.12 93/12/07 11:04:11 mor Exp $ */
+/* $XConsortium: misc.c,v 1.13 93/12/30 11:04:55 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -19,50 +19,8 @@ Author: Ralph Mor, X Consortium
 
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
+#include <X11/Xtrans.h>
 #include <stdio.h>
-#include <sys/types.h>
-
-
-#ifndef WIN32
-
-#include <sys/socket.h>
-
-#ifdef UNIXCONN
-#include <sys/un.h>
-#endif
-
-#ifdef TCPCONN
-# include <sys/param.h>
-# include <netinet/in.h>
-# ifndef hpux
-#  ifdef apollo
-#   ifndef NO_TCP_H
-#    include <netinet/tcp.h>
-#   endif
-#  else
-#   include <netinet/tcp.h>
-#  endif
-# endif
-#endif
-
-#ifdef DNETCONN
-#include <netdnet/dn.h>
-#endif
-
-#else /* WIN32 */
-
-#include <errno.h>
-#define BOOL wBOOL
-#undef Status
-#define Status wStatus
-#include <winsock.h>
-#undef Status
-#define Status int
-#undef BOOL
-#undef close
-#define close closesocket
-
-#endif
 
 
 
@@ -161,7 +119,7 @@ IceConnectionNumber (iceConn)
 IceConn iceConn;
 
 {
-    return (iceConn->fd);
+    return (_ICETransGetConnectionNumber (iceConn->trans_conn));
 }
 
 
@@ -198,8 +156,7 @@ IceConn iceConn;
 
 
 /*
- * Read "n" bytes from a descriptor.
- * Use in place of read() when fd is a stream socket.
+ * Read "n" bytes from a connection.
  *
  * Return Status 0 if we detected an EXPECTED closed connection.
  *
@@ -218,11 +175,8 @@ register char	 *ptr;
     nleft = nbytes;
     while (nleft > 0)
     {
-#ifdef WIN32
-	int nread = recv (iceConn->fd, ptr, (int) nleft, 0);
-#else
-	int nread = read (iceConn->fd, ptr, (int) nleft);
-#endif
+	int nread = _ICETransRead (iceConn->trans_conn, ptr, (int) nleft);
+
 	if (nread <= 0)
 	{
 #ifdef WIN32
@@ -319,8 +273,7 @@ register unsigned long	nbytes;
 
 
 /*
- * Write "n" bytes to a descriptor.
- * Use in place of write() when fd is a stream socket.
+ * Write "n" bytes to a connection.
  */
 
 void
@@ -336,11 +289,7 @@ register char	 *ptr;
     nleft = nbytes;
     while (nleft > 0)
     {
-#ifdef WIN32
-	int nwritten = send (iceConn->fd, ptr, (int) nleft, 0);
-#else
-	int nwritten = write (iceConn->fd, ptr, (int) nleft);
-#endif
+	int nwritten = _ICETransWrite (iceConn->trans_conn, ptr, (int) nleft);
 
 	if (nwritten <= 0)
 	{
@@ -485,62 +434,23 @@ _IceGetPeerName (iceConn)
 IceConn iceConn;
 
 {
-    char *name = NULL;
-    char *temp;
+    int		family, peer_addrlen;
+    Xtransaddr	*peer_addr;
+    char 	*networkId;
 
-    union {
-	struct sockaddr sa;
-#ifdef TCPCONN
-	struct sockaddr_in in;
-#endif /* TCPCONN */
-#ifdef DNETCONN
-	struct sockaddr_dn dn;
-#endif /* DNETCONN */
-    } from;
-    int	fromlen = sizeof (from);
 
-#ifdef UNIXCONN
-    if (iceConn->listen_obj->local_conn)
+    if (_ICETransGetPeerAddr (iceConn->trans_conn,
+	&family, &peer_addrlen, &peer_addr) < 0)
     {
-	char hostnamebuf[256];
-
-	if (gethostname (hostnamebuf, sizeof (hostnamebuf)) == 0)
-	{
-	    name = (char *) malloc (7 + strlen (hostnamebuf));
-	    if (name)
-		sprintf (name, "local/%s", hostnamebuf);
-	}
+	return (NULL);
     }
     else
-#endif
     {
-	if (getpeername (iceConn->fd, &from.sa, &fromlen) == -1)
-	    return (NULL);
+	networkId = _ICETransGetPeerNetworkId (
+	    family, peer_addrlen, peer_addr);
 
-	switch (from.sa.sa_family)
-	{
-#ifdef TCPCONN
-	case AF_INET:
-	    temp = (char *) inet_ntoa (from.in.sin_addr);
-	    name = (char *) malloc (strlen (temp) + 5);
-	    if (name)
-		sprintf (name, "tcp/%s", temp);
-	    break;
-#endif
+	free (peer_addr);
 
-#ifdef DNETCONN
-	case AF_DECnet:
-	    temp = (char *) dnet_ntoa (&from.dn.sdn_add);
-	    name = (char *) malloc (strlen (temp) + 8);
-	    if (name)
-		sprintf (name, "decnet/%s", temp);
-	    break;
-#endif
-
-	default:
-	    break;
-	}
+	return (networkId);
     }
-
-    return (name);
 }

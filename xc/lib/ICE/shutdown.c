@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.8 93/11/24 14:44:54 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.9 93/12/07 11:04:17 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -202,8 +202,8 @@ Bool	ignoreWatchProcs;
 	}
     }
 
-    if (iceConn->fd >= 0)
-	close (iceConn->fd);
+    if (iceConn->trans_conn)
+	_ICETransClose (iceConn->trans_conn);
 
     if (iceConn->connection_string)
 	free (iceConn->connection_string);
