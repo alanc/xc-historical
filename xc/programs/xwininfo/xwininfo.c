@@ -487,15 +487,3 @@ Display_WM_Info(window)
 	  printf("             ==> Initial state is %s\n",
 		 Lookup(wmhints->initial_state, _state_hints));
 }
-
-
-/*
- * Tempary replace for not implemented Xlib routine.
- */
-char *XGetDefault(dpy, name, option_name)
-Display *dpy;
-char *name;
-char *option_name;
-{
-	return(NULL);
-}
