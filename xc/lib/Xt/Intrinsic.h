@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.109 89/10/04 16:03:29 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.110 89/10/05 11:16:25 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -961,6 +961,9 @@ extern void XtAppSetFallbackResources();
 
 extern void XtDestroyApplicationContext();
     /* XtAppContext appContext	*/
+
+extern void XtInitializeWidgetClass();
+    /* WidgetClass wc; */
 
 extern XtAppContext XtWidgetToApplicationContext();
     /* Widget	widget */
