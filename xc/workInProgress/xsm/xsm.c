@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.18 94/02/07 18:51:04 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.19 94/02/07 19:10:23 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1856,8 +1856,11 @@ main(argc, argv)
 
     p = strrchr(argv[0], '/');
     progName = (p ? p + 1 : argv[0]);
-    topLevel = XtAppInitialize (&appContext, "SAMPLE-SM", options, 
-				XtNumber(options), &argc, argv, NULL, NULL, 0);
+    topLevel = XtVaAppInitialize (&appContext, "SAMPLE-SM", options, 
+	XtNumber(options), &argc, argv, NULL,
+        XtNjoinSession, 0,	/* We are the SM */
+	NULL);
+	
     if (argc > 1) Syntax(progName);
     XtGetApplicationResources(topLevel, (XtPointer) &app_resources,
 			      resources, XtNumber(resources), NULL, 0);
