@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.139 91/09/16 08:52:48 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.140 91/10/28 19:00:32 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -245,13 +245,13 @@ XCOMM
 # define ConvexArchitecture
 #endif
 
-#ifdef __osf__
+#ifdef __OSF1__
 #define MacroIncludeFile <osf1.cf>
 #define MacroFile osf1.cf
 #define OSF1Architecture
-#undef __osf__
-#ifdef mips
-#undef mips
+#undef __OSF1__
+#ifdef __mips__
+#undef __mips__
 #define MipsArchitecture
 #endif
 #endif
