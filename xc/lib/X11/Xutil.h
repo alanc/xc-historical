@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.59 90/12/11 11:02:56 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.60 90/12/11 22:39:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -281,9 +281,13 @@ typedef struct {
 #define BitmapOpenFailed 	1
 #define BitmapFileInvalid 	2
 #define BitmapNoMemory		3
-/*
- * Declare the routines that don't return int.
- */
+
+/* for XFindFile */
+
+typedef struct {
+    char 	match;
+    char 	*substitution;
+} XSubstitution;
 
 /****************************************************************
  *
@@ -796,6 +800,19 @@ extern XXorRegion(
     Region		/* sra */,
     Region		/* srb */,
     Region		/* dr_return */
+#endif
+);
+
+extern char *XFindFile(
+#if NeedFunctionPrototypes
+    _Xconst char*	/* path */,
+    XSubstitution*	/* substitutions */,
+    int 		/* num_substitutions */,
+    Bool (*)(
+#if NeedNestedPrototypes
+	     char*
+#endif
+	     )		/* predicate */
 #endif
 );
 
