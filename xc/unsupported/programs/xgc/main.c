@@ -1,5 +1,5 @@
 /*
-** xbench
+** xgc
 **
 ** main.c
 **
@@ -14,7 +14,7 @@
 #include <X11/StringDefs.h>
 #include <stdio.h>
 
-#include "xbench.h"
+#include "xgc.h"
 #include "tile"
 #include "parse.h"
 #include "main.h"
@@ -87,14 +87,16 @@ void main(argc,argv)
 
   int i;
 
-  bigdaddy = XtInitialize(NULL,"XBench",NULL,0,&argc,argv);
+  bigdaddy = XtInitialize(NULL,"Xgc",NULL,0,&argc,argv);
   
-  topform = XtCreateManagedWidget("topform",formWidgetClass,bigdaddy,
-				  NULL,0);
-  X.dpy = XtDisplay(topform);
+  X.dpy = XtDisplay(bigdaddy);
   X.scr = DefaultScreenOfDisplay(X.dpy);
   X.gc = XCreateGC(X.dpy,RootWindowOfScreen(X.scr),0,(XGCValues *) NULL);
   X.miscgc = XCreateGC(X.dpy,RootWindowOfScreen(X.scr),0,(XGCValues *) NULL);
+  set_foreground_and_background();
+
+  topform = XtCreateManagedWidget("topform",formWidgetClass,bigdaddy,
+				  NULL,0);
 
   GCform = XtCreateManagedWidget("GCform",formWidgetClass,topform,
 				NULL,0);
@@ -189,8 +191,6 @@ void main(argc,argv)
 
   XtRealizeWidget(bigdaddy);
 
-  set_foreground_and_background();
-
   X.win = XtWindow(test);
   X.tile = XCreatePixmapFromBitmapData(X.dpy,X.win,tile_bits,tile_width,
 				       tile_height,Black,White,
@@ -203,7 +203,11 @@ void main(argc,argv)
   XSetTile(X.dpy,X.miscgc,X.tile);
   XSetStipple(X.dpy,X.miscgc,X.stipple);
 
+  GC_change_foreground(X.foreground);
+  GC_change_background(X.background);
+    
   /* Act like the user picked the first choice in each group */
+
   choose_defaults(GCform,NUMCHOICES);
   choose_defaults(Testform,1);
   
@@ -302,7 +306,7 @@ void fill_up_commandform(w)
 
   quitargs[0].value = (XtArgVal) quitcallbacklist;
   quitargs[1].value = (XtArgVal) keyinputbutton; /* under */
-  quitbutton = XtCreateManagedWidget("Quit Xbench",commandWidgetClass,
+  quitbutton = XtCreateManagedWidget("Quit Xgc",commandWidgetClass,
    			      w,quitargs,XtNumber(quitargs));
     
 }    
@@ -328,31 +332,41 @@ void clear_result_window()
   XClearWindow(X.dpy,XtWindow(result));
 }
 
+typedef struct {
+  Pixel foreground;
+  Pixel background;
+} ColorResources;
+  
 void set_foreground_and_background()
 {
-  static Arg shellargs[] = {
-    {XtNforeground,   (XtArgVal) NULL},
-    {XtNbackground,   (XtArgVal) NULL},
+#ifdef notdef
+  static XtResource resources[] = {
+    {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
+       XtOffset(ColorResources *, foreground), XtRString, XtDefaultForeground},
+    {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
+       XtOffset(ColorResources *, background), XtRString, XtDefaultBackground}
   };
+  
+  ColorResources colors;
+  
+  XtGetApplicationResources(bigdaddy, (caddr_t) &colors, resources,
+			    XtNumber(resources), NULL, (Cardinal) 0);
 
-  Pixel foreground,background;
+  X.foreground = colors.foreground;
+  X.background = colors.background;
+#endif
 
-/*
-  shellargs[0].value = (XtArgVal) &foreground;
-  shellargs[1].value = (XtArgVal) &background;
+  static XtResource resources[] = {
+    {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
+       XtOffset(XStuff *, foreground), XtRString, XtDefaultForeground},
+    {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
+       XtOffset(XStuff *, background), XtRString, XtDefaultBackground}
+  };
+  
+  XtGetApplicationResources(bigdaddy, (caddr_t) &X, resources,
+			    XtNumber(resources), NULL, (Cardinal) 0);
 
-  XtGetValues(bigdaddy,shellargs,XtNumber(shellargs));
-*/
-
-  foreground = Black;
-  background = White;
-
-  X.foreground = foreground;
-  X.background = background;
-
-  printf("Foreground: %d\n", (int) foreground);
-  printf("Background: %d\n", (int) background);
-
-  GC_change_foreground(foreground);
-  GC_change_background(background);
+  
+  X.gcv.foreground = X.foreground;
+  X.gcv.background = X.background;
 }
