@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.25 91/05/09 17:26:25 converse Exp $
+ * $XConsortium: EditresCom.c,v 1.26 91/05/22 16:25:21 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,7 +32,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xos.h>		/* for strcpy declaration */
 #include <X11/Xaw/Cardinals.h>
-#include <X11/Xmu/Editres.h>
+#include <X11/Xmu/EditresP.h>
 
 #include <stdio.h>
 
