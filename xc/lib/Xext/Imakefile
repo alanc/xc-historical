@@ -1,12 +1,14 @@
-# $XConsortium: Imakefile,v 1.13 89/08/18 18:00:49 rws Exp $
-    STD_DEFINES = LibraryDefines ExtensionDefines
-    CDEBUGFLAGS = LibraryCDebugFlags
-       INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
-           SRCS = XFillZoids.c XBezier.c XPlxVideo.c XTestExt1.c\
- 	   	  XShape.c XShm.c XBuffer.c
-           OBJS = XFillZoids.o XBezier.o XPlxVideo.o XTestExt1.o\
- 	   	  XShape.o XShm.o XBuffer.o
-       LINTLIBS = $(LINTXLIB)
+/* $XConsortium: Imakefile,v 1.14 89/09/18 19:15:01 keith Exp $ */
+  STD_DEFINES = LibraryDefines ExtensionDefines
+  CDEBUGFLAGS = LibraryCDebugFlags
+     INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
+         SRCS = globals.c extutil.c XMultibuf.c \
+		XFillZoids.c XBezier.c XPlxVideo.c XTestExt1.c \
+		XShape.c XShm.c XBuffer.c
+         OBJS = globals.o extutil.o XMultibuf.o \
+		XFillZoids.o XBezier.o XPlxVideo.o XTestExt1.o \
+		XShape.o XShm.o XBuffer.o
+     LINTLIBS = $(LINTXLIB)
 
 #if DebugLibXext && ProfileLibXext
 DebuggedAndProfiledLibraryObjectRule()
