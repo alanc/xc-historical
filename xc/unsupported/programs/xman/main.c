@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.20 91/09/03 17:42:49 dave Exp $
+ * $XConsortium: main.c,v 1.21 91/09/03 18:16:55 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -165,7 +165,7 @@ int argc;
 
   default_width = DEFAULT_WIDTH;
   default_height=DisplayHeight(XtDisplay(initial_widget), 
-			       XtDisplay(initial_widget)->default_screen);
+			       DefaultScreen(XtDisplay(initial_widget)));
   default_height *= 3;
   default_height /= 4;
 
