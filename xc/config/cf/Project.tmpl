@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.99 91/02/18 11:48:35 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.100 91/02/23 20:10:08 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -262,6 +262,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.99 91/02/18 11:48:35 rws Exp $
 #ifndef LibmanDir
 #define LibmanDir Concat($(MANSOURCEPATH),LibManSuffix)
 #endif
+#ifndef NlsDir
+#define NlsDir $(LIBDIR)/nls
+#endif
 #ifndef XFileSearchPathBase
 #define XFileSearchPathBase $(LIBDIR)/%L/%T/%N%C%S:$(LIBDIR)/%l/%T/%N%C%S:$(LIBDIR)/%T/%N%C%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S
 #endif
@@ -387,7 +390,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.99 91/02/18 11:48:35 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.99 91/02/18 11:48:35 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.100 91/02/23 20:10:08 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -414,6 +417,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.99 91/02/18 11:48:35 rws Exp $
     MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
+           NLSDIR = NlsDir		/* nls files */
       XAPPLOADDIR = XAppLoadDir		/* application default resource dir */
        FONTCFLAGS = FontCompilerFlags
 
