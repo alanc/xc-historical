@@ -1,4 +1,4 @@
-/* $XConsortium: imRmAttr.c,v 1.2 93/09/18 10:14:31 rws Exp $ */
+/* $XConsortium: imRmAttr.c,v 1.3 93/09/18 11:01:00 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -699,7 +699,7 @@ _XimEncodePreeditValue(ic, res, p, valid)
 	if(!(tmp = Xmalloc(len)))
 	     return False;
 
-	tmp[0] = NULL;
+	tmp[0] = '\0';
 	for(i = 0; i < list_ret; i++) {
 	    strcat(tmp, name_list[i]);
 	    strcat(tmp, ",");
@@ -797,7 +797,7 @@ _XimEncodeStatusValue(ic, res, p, valid)
 	if(!(tmp = Xmalloc(len)))
 	     return False;
 
-	tmp[0] = NULL;
+	tmp[0] = '\0';
 	for(i = 0; i < list_ret; i++) {
 	    strcat(tmp, name_list[i]);
 	    strcat(tmp, ",");
