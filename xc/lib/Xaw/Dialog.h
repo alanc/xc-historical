@@ -1,7 +1,4 @@
-/* $Header$ */
-/*
- *	sccsid:	@(#)Dialog.h	1.7	5/18/87
- */
+/* $Header: Dialog.h,v 1.1 87/09/11 07:57:32 swick Locked $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * 
@@ -32,9 +29,17 @@
 #ifndef _Dialog_h
 #define _Dialog_h
 
+#include <X/Form.h>
+
 #define XtNgrabFocus	"grabFocus"
 #define XtCGrabFocus	"GrabFocus"
 
+typedef struct _DialogClassRec	*DialogWidgetClass;
+typedef struct _DialogRec	*DialogWidget;
+
+extern WidgetClass dialogWidgetClass;
+
+/* oldXtk compatability routines */
 extern Window XtDialogCreate();
 			/* parent, description, valueinit, args, argCount */
     /* Window parent; */
@@ -55,3 +60,4 @@ extern char *XtDialogGetValueString(); /* dpy, window */
     /* Window window; */
 
 #endif _Dialog_h
+/* DON'T ADD STUFF AFTER THIS #endif */
