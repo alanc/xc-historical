@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.107 89/12/13 17:19:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.108 89/12/14 07:44:35 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -31,11 +31,6 @@ SOFTWARE.
 #include "Shell.h"
 #include "StringDefs.h"
 
-#ifdef notdef
-static XtAsyncHandler asyncHandler = NULL;
-static XtPointer asyncClosure = NULL;
-#endif
-
 /*
  * These are definitions to make the code that handles exposure compresssion
  * easier to read.
@@ -56,7 +51,7 @@ static XtPointer asyncClosure = NULL;
 
 
 extern void 			bzero();
-typedef struct _XtPerDisplayInputRec *XtPerDisplayInput;
+typedef struct XtPerDisplayInputRec *XtPerDisplayInput;
 extern XtPerDisplayInput 	_XtGetPerDisplayInput();
 extern XtGrabList *		_XtGetGrabList();
 
@@ -883,7 +878,7 @@ static Boolean DecideToDispatch(event)
 		
 		/* Also dispatch to nearest accessible spring_loaded. */
 		/* Fetch this afterward to reflect modal list changes */
-		widget = LookupSpringLoaded();
+		widget = LookupSpringLoaded(grabList);
 		if (widget != NULL && widget != dspWidget) {
 		    was_dispatched |= DispatchEvent(event, widget,
 						    mask, pd);
@@ -997,18 +992,19 @@ void XtAddGrab(widget, exclusive, spring_loaded)
     XtAddCallback (widget, XtNdestroyCallback, 
 	    GrabDestroyCallback, (XtPointer) NULL);
 }
+
 static Boolean RemoveGrab(widget)
     Widget  widget;
     /* returns False if no grab entry was found, True otherwise */
 {
-    register XtGrabList gl, prev;
+    register XtGrabList gl;
     register Boolean done;
     XtGrabList	*grabListPtr;
 
     grabListPtr = 
       _XtGetGrabList(_XtGetPerDisplayInput(XtDisplay(widget)));
       
-    for (prev = NULL, gl = *grabListPtr; gl != NULL; prev = gl, gl = gl->next) {
+    for (gl = *grabListPtr; gl != NULL; gl = gl->next) {
 	if (gl->widget == widget) break;
     }
 
@@ -1108,26 +1104,28 @@ Time XtLastTimestampProcessed(dpy)
 }
       
 
-void _XtSendCrossingEvent(child, type, pdi)
+void _XtSendFocusEvent(child, type)
     Widget child;
     int type;
-    XtPerDisplayInput pdi;
 {
-    XEvent event;
-    EventMask mask;
-    GrabType grabType;
 
     child = XtIsWidget(child) ? child : _XtWindowedAncestor(child);
-    if (XtBuildEventMask(child) & FocusChangeMask) {
-	event.xcrossing.serial = LastKnownRequestProcessed(XtDisplay(child));
-	event.xcrossing.send_event = True;
-	event.xcrossing.display = XtDisplay(child);
-	event.xcrossing.window = XtWindow(child);
-	event.xcrossing.type = type;
-	event.xcrossing.mode = NotifyNormal;
-	event.xcrossing.detail = NotifyAncestor;
+    if (XtIsSensitive(child) && !child->core.being_destroyed
+	&& (XtBuildEventMask(child) & FocusChangeMask))
+    {
+	EventMask mask;
+	GrabType grabType;
+	XFocusChangeEvent event;
+
+	event.type = type;
+	event.serial = LastKnownRequestProcessed(XtDisplay(child));
+	event.send_event = True;
+	event.display = XtDisplay(child);
+	event.window = XtWindow(child);
+	event.mode = NotifyNormal;
+	event.detail = NotifyAncestor;
 	ConvertTypeToMask(type, &mask, &grabType);
-	if (XtIsSensitive(child) && !child->core.being_destroyed)
-	  DispatchEvent(&event, child, mask, pdi);
+	DispatchEvent((XEvent*)&event, child, mask,
+		      _XtGetPerDisplay(XtDisplay(child)));
     }
 }
