@@ -12,6 +12,7 @@ HEADERS = \
 	AsciiTextP.h \
 	Box.h \
 	BoxP.h \
+	Cardinals.h \
 	Cascade.h \
 	CascadeP.h \
 	Clock.h \
