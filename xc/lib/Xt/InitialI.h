@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.39 90/12/03 16:28:40 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.40 90/12/12 14:51:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,10 +30,19 @@ SOFTWARE.
  *
  ****************************************************************/
 
-#include <sys/param.h>				/* to get MAXPATHLEN */
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 256
+#ifndef PATH_MAX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#include <sys/param.h>
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
 #endif
+#endif /* _POSIX_SOURCE */
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+#endif /* PATH_MAX */
 
 #ifndef MAX
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
