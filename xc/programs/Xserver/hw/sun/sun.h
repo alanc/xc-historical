@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.0 89/06/09 15:10:00 keith Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.1 89/07/03 15:43:25 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -254,7 +254,6 @@ extern Bool	  sunChangeWindowAttributes();
 extern void 	  sunGetImage();
 extern unsigned int *sunGetSpans();
 
-extern int	  isItTimeToYield;
 extern int  	  sunCheckInput;    /* Non-zero if input is available */
 
 extern fbFd 	  sunFbs[];
