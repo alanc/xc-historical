@@ -22,13 +22,13 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: resource.c,v 1.59 87/08/12 09:41:35 ham Exp $ */
+/* $Header: resource.c,v 1.59 87/08/12 09:41:35 toddb Locked $ */
 
 /*	Routines to manage various kinds of resources:
  *
- *	InitClientResources, AddResource, FreeResource, FreeClientResources,
- *	DefineSelf, ResetHosts, AddHost, RemoveHost, InvalidHost,
- *	Xalloc, Xrealloc, Xfree
+ *	CreateNewResourceType, CreateNewResourceClass, InitClientResources,
+ *	FakeClientID, AddResource, FreeResource, FreeClientResources,
+ *	FreeAllResources, LookupID
  */
 
 /* 
