@@ -1,8 +1,9 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 91/07/17 16:10:31 gildea Exp $
 #include <Server.tmpl>
 
        SRCS = 	xallowev.c \
 		xchgkbd.c \
+		xchgdctl.c \
 		xchgfctl.c \
 		xchgkmap.c \
 		xchgprop.c \
@@ -11,6 +12,7 @@ XCOMM $XConsortium$
 		xdevbell.c \
 		xexevents.c \
 		xextinit.c \
+		xgetdctl.c \
 		xgetfctl.c \
 		xgetfocus.c \
 		xgetbmap.c \
@@ -40,6 +42,7 @@ XCOMM $XConsortium$
 
        OBJS =   xallowev.o \
 		xchgkbd.o \
+		xchgdctl.o \
 		xchgfctl.o \
 		xchgkmap.o \
 		xchgprop.o \
@@ -48,6 +51,7 @@ XCOMM $XConsortium$
 		xdevbell.o \
 		xexevents.o \
 		xextinit.o \
+		xgetdctl.o \
 		xgetfctl.o \
 		xgetfocus.o \
 		xgetbmap.o \

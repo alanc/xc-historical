@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.10 91/07/16 23:08:52 gildea Exp $
 #define DoNormalLib NormalLibXinput
 #define DoSharedLib SharedLibXinput
 #define DoDebugLib DebugLibXinput
@@ -18,6 +18,7 @@ REQUIREDLIBS = $(EXTENSIONSRC)/lib/libXext.a $(XLIBSRC)/libX11.a
 #endif
 INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
 SRCS = XAllowDv.c \
+		  XChgDCtl.c \
 		  XChgFCtl.c \
 		  XChgKbd.c \
 		  XChgKMap.c \
@@ -27,6 +28,7 @@ SRCS = XAllowDv.c \
 		  XDevBell.c \
 		  XExtToWire.c \
 		  XGetBMap.c \
+		  XGetDCtl.c \
 		  XGetFCtl.c \
 		  XGetKMap.c \
 		  XGetMMap.c \
@@ -53,6 +55,7 @@ SRCS = XAllowDv.c \
 		  XUngrDvK.c \
 		  XExtInt.c 
 OBJS = XAllowDv.o \
+		  XChgDCtl.o \
 		  XChgFCtl.o \
 		  XChgKbd.o \
 		  XChgKMap.o \
@@ -62,6 +65,7 @@ OBJS = XAllowDv.o \
 		  XDevBell.o \
 		  XExtToWire.o \
 		  XGetBMap.o \
+		  XGetDCtl.o \
 		  XGetFCtl.o \
 		  XGetKMap.o \
 		  XGetMMap.o \
@@ -87,41 +91,7 @@ OBJS = XAllowDv.o \
 		  XUngrDvB.o \
 		  XUngrDvK.o \
 		  XExtInt.o 
-LOBJS = XAllowDv.ln \
-		  XChgFCtl.ln \
-		  XChgKbd.ln \
-		  XChgKMap.ln \
-		  XChgPnt.ln \
-		  XChgProp.ln \
-		  XCloseDev.ln \
-		  XDevBell.ln \
-		  XExtToWire.ln \
-		  XGetBMap.ln \
-		  XGetFCtl.ln \
-		  XGetKMap.ln \
-		  XGetMMap.ln \
-		  XGetProp.ln \
-		  XGetVers.ln \
-		  XGMotion.ln \
-		  XGrabDev.ln \
-		  XGrDvBut.ln \
-		  XGrDvKey.ln \
-		  XGtFocus.ln \
-		  XGtSelect.ln \
-		  XListDev.ln \
-		  XOpenDev.ln \
-		  XQueryDv.ln \
-		  XSelect.ln \
-		  XSetBMap.ln \
-		  XSetDVal.ln \
-		  XSetMMap.ln \
-		  XSetMode.ln \
-		  XSndExEv.ln \
-		  XStFocus.ln \
-		  XUngrDev.ln \
-		  XUngrDvB.ln \
-		  XUngrDvK.ln \
-		  XExtInt.ln 
+
        LINTLIBS = $(LINTXLIB) $(LINTXEXT)
 
 LibraryObjectRule()
