@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.7 91/07/16 22:19:58 gildea Exp $
+ * $XConsortium: chooser.c,v 1.8 91/07/18 18:36:02 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -206,10 +206,9 @@ RebuildTable (size)
 }
 
 static int
-AddHostname (hostname, status, addr, addrlen, willing)
+AddHostname (hostname, status, addr, willing)
     ARRAY8Ptr	    hostname, status;
     struct sockaddr *addr;
-    int		    addrlen;
     int		    willing;
 {
     HostName	*new, **names, *name;
@@ -392,7 +391,7 @@ ReceivePacket (closure, source, id)
 	    if (header.length == 6 + authenticationName.length +
 	    	hostname.length + status.length)
 	    {
-		if (AddHostname (&hostname, &status, &addr, addrlen, header.opcode == (int) WILLING))
+		if (AddHostname (&hostname, &status, &addr, header.opcode == (int) WILLING))
 		    saveHostname = 1;
 	    }
     	}
@@ -404,7 +403,7 @@ ReceivePacket (closure, source, id)
     	{
 	    if (header.length == 4 + hostname.length + status.length)
 	    {
-		if (AddHostname (&hostname, &status, &addr, addrlen, header.opcode == (int) WILLING))
+		if (AddHostname (&hostname, &status, &addr, header.opcode == (int) WILLING))
 		    saveHostname = 1;
 
 	    }
@@ -462,7 +461,6 @@ RegisterHostname (name)
     struct sockaddr	broad_addr;
     char		buf[2048];
     int			n;
-    int			len;
 
     if (!strcmp (name, BROADCAST_HOSTNAME))
     {
@@ -473,7 +471,6 @@ RegisterHostname (name)
 	for (ifr = ifc.ifc_req, n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0;
 	    ifr++)
 	{
-	    len = sizeof(ifr->ifr_addr);
 	    if (ifr->ifr_addr.sa_family != AF_INET)
 		continue;
 
@@ -600,7 +597,8 @@ InitXDMCP (argv)
 	++argv;
     }
     pingTry = 0;
-    PingHosts ();
+    PingHosts ((XtPointer)NULL, (XtIntervalId *)NULL);
+    return 1;
 }
 
 Boolean
@@ -670,7 +668,6 @@ DoAccept (w, event, params, num_params)
 {
     XawListReturnStruct	*r;
     HostName		*h;
-    int			i;
 
     r = XawListShowCurrent (list);
     if (r->list_index == XAW_LIST_NONE)
@@ -727,7 +724,7 @@ DoPing (w, event, params, num_params)
 {
     EmptyHostnames ();
     pingTry = 0;
-    PingHosts ();
+    PingHosts ((XtPointer)NULL, (XtIntervalId *)NULL);
 }
 
 static XtActionsRec app_actions[] = {
@@ -782,6 +779,8 @@ main (argc, argv)
     XtMapWidget(toplevel);
     InitXDMCP (argv + 1);
     XtMainLoop ();
+    exit(0);
+    /*NOTREACHED*/
 }
 
 FromHex (s, d, len)
@@ -801,6 +800,7 @@ FromHex (s, d, len)
     }
 }
 
+/*ARGSUSED*/
 static void
 CvtStringToARRAY8 (args, num_args, fromVal, toVal)
     XrmValuePtr	args;
@@ -811,8 +811,6 @@ CvtStringToARRAY8 (args, num_args, fromVal, toVal)
     static ARRAY8Ptr	dest;
     char	*s;
     int		len;
-    char	*d;
-    int		t;
 
     dest = (ARRAY8Ptr) XtMalloc (sizeof (ARRAY8));
     len = fromVal->size;
