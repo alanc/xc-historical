@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.1 93/08/18 00:41:35 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.1 93/08/19 18:25:16 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -53,10 +53,17 @@ typedef enum {
 } IceConnectStatus;
 
 typedef struct {
-    int			opcode_of_request;
     unsigned long	sequence_of_request;
+    int			major_opcode_of_request;
+    int			minor_opcode_of_request;
     IcePointer		reply;
 } IceReplyWaitInfo;
+
+typedef struct _IceSavedReplyWait {
+    IceReplyWaitInfo		*reply_wait;
+    Bool			reply_ready;
+    struct _IceSavedReplyWait	*next;
+} _IceSavedReplyWait;
 
 typedef struct _IceConn *IceConn;
 
@@ -234,7 +241,6 @@ typedef struct {
 } _IceProtoSetupToYouInfo;
 
 
-
 /*
  * ICE connection object
  */
@@ -288,6 +294,14 @@ struct _IceConn {
     _IceProcessMsgInfo		*process_msg_info;
     char 			his_min_opcode;   /* [1..255] */
     char			his_max_opcode;	  /* [1..255] */
+
+
+    /*
+     * We need to keep track of all the replies we're waiting for.
+     * Check the comments in process.c for how this works.
+     */
+
+    _IceSavedReplyWait		*saved_reply_waits;
 
 
     /*
