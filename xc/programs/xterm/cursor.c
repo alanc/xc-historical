@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: cursor.c,v 1.3 88/07/12 11:47:40 jim Exp $
+ *	$XConsortium: cursor.c,v 1.4 88/09/06 17:07:58 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.3 88/07/12 11:47:40 jim Exp $";
+static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.4 88/09/06 17:07:58 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -35,7 +35,7 @@ static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.3 88/07/12 11:47:40 ji
 
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: cursor.c,v 1.3 88/07/12 11:47:40 jim Exp $";
+static char rcs_id[] = "$XConsortium: cursor.c,v 1.4 88/09/06 17:07:58 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -44,6 +44,20 @@ static char rcs_id[] = "$XConsortium: cursor.c,v 1.3 88/07/12 11:47:40 jim Exp $
 #include "ptyx.h"
 
 extern void Bcopy();
+
+static void _CheckSelection(screen)
+register TScreen *screen;
+{
+    extern XtermWidget term;	/* %%% gross */
+
+    if (screen->cur_row > screen->endHRow ||
+	(screen->cur_row == screen->endHRow &&
+	 screen->cur_col >= screen->endHCol)) {}
+    else
+	DisownSelection(term);
+}
+
+
 
 /*
  * Moves the cursor to the specified position, checking for bounds.
@@ -67,6 +81,7 @@ unsigned	flags;
 	row = (row < 0 ? 0 : row);
 	screen->cur_row = (row <= maxr ? row : maxr);
 	screen->do_wrap = 0;
+	_CheckSelection(screen);
 }
 
 /*
@@ -95,6 +110,7 @@ int		n;
 			screen->cur_col = 0;
 	}
 	screen->do_wrap = 0;
+	_CheckSelection(screen);
 }
 
 /*
@@ -108,6 +124,7 @@ int		n;
 	if (screen->cur_col > screen->max_col)
 		screen->cur_col = screen->max_col;
 	screen->do_wrap = 0;
+	_CheckSelection(screen);
 }
 
 /* 
@@ -127,6 +144,7 @@ int		n;
 	if (screen->cur_row > max)
 		screen->cur_row = max;
 	screen->do_wrap = 0;
+	_CheckSelection(screen);
 }
 
 /* 
@@ -146,6 +164,7 @@ int		n;
 	if (screen->cur_row < min)
 		screen->cur_row = min;
 	screen->do_wrap = 0;
+	_CheckSelection(screen);
 }
 
 /* 
@@ -202,6 +221,7 @@ register TScreen *screen;
 {
 	screen->cur_col = 0;
 	screen->do_wrap = 0;
+	_CheckSelection(screen);
 }
 
 /*
