@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfutils.c,v 1.7 92/05/29 17:10:13 gildea Exp $ */
+/* $XConsortium: bdfutils.c,v 1.8 93/09/17 18:26:51 gildea Exp $ */
 
 #include <ctype.h>
 
@@ -32,6 +32,8 @@ SOFTWARE.
 /* use bitmap structure */
 #include "bitmap.h"
 #include "bdfint.h"
+
+int bdfFileLineNum;
 
 /***====================================================================***/
 
@@ -46,7 +48,7 @@ bdfError(message, a0, a1, a2, a3, a4, a5)
                 a4,
                 a5;
 {
-    fprintf(stderr, "BDF Error: ");
+    fprintf(stderr, "BDF Error on line %d: ", bdfFileLineNum);
     fprintf(stderr, message, a0, a1, a2, a3, a4, a5);
 }
 
@@ -63,29 +65,9 @@ bdfWarning(message, a0, a1, a2, a3, a4, a5)
                 a4,
                 a5;
 {
-    fprintf(stderr, "BDF Warning: ");
+    fprintf(stderr, "BDF Warning on line %d: ", bdfFileLineNum);
     fprintf(stderr, message, a0, a1, a2, a3, a4, a5);
 }
-
-/***====================================================================***/
-
-/* ARGSUSED */
-/* VARARGS1 */
-void
-bdfInformation(pFile, message, a0, a1, a2, a3, a4, a5)
-    char       *message;
-    pointer     a0,
-                a1,
-                a2,
-                a3,
-                a4,
-                a5;
-{
-    fprintf(stderr, "BDF Information: ");
-    fprintf(stderr, message, a0, a1, a2, a3, a4, a5);
-}
-
-/***====================================================================***/
 
 /*
  * read the next (non-comment) line and keep a count for error messages.
@@ -106,8 +88,10 @@ bdfGetLine(file, buf, len)
 	while ((c = FontFileGetc(file)) != FontFileEOF) {
 	    if (c == '\r')
 		continue;
-	    if (c == '\n')
+	    if (c == '\n') {
+		bdfFileLineNum++;
 		break;
+	    }
 	    if (b - buf >= (len - 1))
 		break;
 	    *b++ = c;
