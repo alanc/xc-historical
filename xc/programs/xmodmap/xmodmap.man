@@ -68,6 +68,11 @@ standard output.
 This option indicates that the current keymap table should be printed on the
 standard output.
 .TP 8
+.B \-pke
+This option indicates that the current keymap table should be printed on the
+standard output in the form of expressions that can be fed back to
+\fIxmodmap\fP.
+.TP 8
 .B \-pp
 This option indicates that the current pointer map should be printed on the
 standard output.
