@@ -183,9 +183,6 @@
 
 (deftype array-index () `(integer 0 ,array-dimension-limit))
 
-(deftype real (&optional (min '*) (max '*))
-  `(or (real ,min ,max) (rational ,min ,max)))
-
 ;; An association list.
 
 (deftype alist (key-type-and-name datum-type-and-name) 'list)
@@ -2397,7 +2394,7 @@
   ;;      when mask and modifiers aren't lists of keysyms]
   ;; The default is #'default-keysym-translate
   ;;
-  (declare (type (or string-char t) object)
+  (declare (type (or base-char t) object)
 	   (type keysym keysym)
 	   (type (or null mask16 list) ;; (list (or keysym state-mask-key))
 	         modifiers)
@@ -2415,7 +2412,7 @@
 (defun undefine-keysym (object keysym &key display modifiers &allow-other-keys)	              
   ;; Undefine the keysym-translation translating KEYSYM to OBJECT with MODIFIERS.
   ;; If DISPLAY is non-nil, undefine the translation for DISPLAY if it exists.
-  (declare (type (or string-char t) object)
+  (declare (type (or base-char t) object)
 	   (type keysym keysym)
 	   (type (or null mask16 list) ;; (list (or keysym state-mask-key))
 	         modifiers)
@@ -2424,7 +2421,7 @@
 (defun default-keysym-translate (display state object)
   ;; If object is a character, char-bits are set from state.
   ;; If object is a list, it is an alist with entries:
-  ;; (string-char [modifiers] [mask-modifiers)
+  ;; (base-char [modifiers] [mask-modifiers)
   ;; When MODIFIERS are specified, this character translation
   ;; will only take effect when the specified modifiers are pressed.
   ;; MASK-MODIFIERS can be used to specify a set of modifiers to ignore.
