@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.43 94/01/30 14:24:59 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.44 94/01/30 14:28:14 rws Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -55,7 +55,7 @@ NormalLintTarget($(SRCS))
 
 SpecialCObjectRule(globals,$(ICONFIGFILES),$(SITE_DEFINES))
 SpecialCObjectRule(tables,$(ICONFIGFILES),$(K5DEFS))
-SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(K5DEFS))
+SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(K5DEFS) $(EXT_DEFINES))
 SpecialCObjectRule(events,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(devices,$(ICONFIGFILES),$(EXT_DEFINES))
 
