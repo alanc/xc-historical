@@ -1,7 +1,7 @@
 /*
-* $Header: Shell.h,v 1.11 88/02/02 08:29:52 swick Exp $
+* $xHeader: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
+* $oHeader: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
 */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -67,15 +67,20 @@ SOFTWARE.
  * The following are only used at creation and can not be changed via 
  * SetValues.
  */
+
+#define XtNargc		"argc"
+#define XtCArgc		"Argc"
+#define XtNargv		"argv"
+#define XtCArgv		"Argv"
 #define XtNiconX	"iconX"
-#define XtCIconX	"iconX"
+#define XtCIconX	"IconX"
 #define XtNiconY	"iconY"
-#define XtCIconY	"iconY"
+#define XtCIconY	"IconY"
 #define XtNinput	"input"
 #define XtCInput	"Input"
 #define XtNiconic	"iconic"
 #define XtCIconic	"Iconic"
-#define XtNinitialState	"initialstate"
+#define XtNinitialState	"initialState"
 #define XtCInitialState	"InitialState"
 #define XtNgeometry	"geometry"
 #define XtCGeometry	"Geometry"
@@ -95,14 +100,14 @@ SOFTWARE.
 #define XtCMinAspectY	"MinAspectY"
 #define XtNmaxAspectY	"maxAspectY"
 #define XtCMaxAspectY	"MaxAspectY"
-#define XtNminAspectX	"minAspectX"
-#define XtCMinAspectX	"MinAspectX"
-#define XtNmaxAspectX	"maxAspectX"
-#define XtCMaxAspectX	"MaxAspectX"
-#define XtNwmTimeout	"wmTimeout"
-#define XtCWmTimeout	"WmTimeout"
-#define XtNwaitForWm	"waitForWm"
-#define XtCWaitForWm	"WaitForWm"
+#define XtNminAspectX		"minAspectX"
+#define XtCMinAspectX		"MinAspectX"
+#define XtNmaxAspectX		"maxAspectX"
+#define XtCMaxAspectX		"MaxAspectX"
+#define XtNwmTimeout		"wmTimeout"
+#define XtCWmTimeout		"WmTimeout"
+#define XtNwaitForWm		"waitforwm"
+#define XtCWaitForWm		"Waitforwm"
 
 /* Class record constants */
 
@@ -114,12 +119,12 @@ typedef struct _TopLevelShellClassRec *TopLevelShellWidgetClass;
 typedef struct _ApplicationShellClassRec *ApplicationShellWidgetClass;
 
 #ifndef SHELL
-globalref WidgetClass shellWidgetClass;
-globalref WidgetClass overrideShellWidgetClass;
-globalref WidgetClass wmShellWidgetClass;
-globalref WidgetClass transientShellWidgetClass;
-globalref WidgetClass topLevelShellWidgetClass;
-globalref WidgetClass applicationShellWidgetClass;
+externalref WidgetClass shellWidgetClass;
+externalref WidgetClass overrideShellWidgetClass;
+externalref WidgetClass wmShellWidgetClass;
+externalref WidgetClass transientShellWidgetClass;
+externalref WidgetClass topLevelShellWidgetClass;
+externalref WidgetClass applicationShellWidgetClass;
 #endif
 
 #endif _XtShell_h
