@@ -80,11 +80,3 @@ Status XGetWMClientMachine (dpy, w, tp)
     return (XGetTextProperty (dpy, w, tp, XA_WM_CLIENT_MACHINE));
 }
 
-Status XGetWMCommand (dpy, w, tp)
-    Display *dpy;
-    Window w;
-    XTextProperty *tp;
-{
-    return (XGetTextProperty (dpy, w, tp, XA_WM_COMMAND));
-}
-

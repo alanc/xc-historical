@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.56 89/12/11 10:56:34 jim Exp $ */
+/* $XConsortium: Xutil.h,v 11.57 89/12/11 18:16:24 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -433,13 +433,6 @@ extern Status XGetWMClientMachine(
     XTextProperty*	/* text_prop_return */
 #endif
 );
-extern Status XGetWMCommand(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    Window		/* w */,
-    XTextProperty*	/* text_prop_return */
-#endif
-);
 extern void XSetWMProperties(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -500,13 +493,6 @@ extern void XSetWMIconName(
 #endif
 );
 extern void XSetWMClientMachine(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    Window		/* w */,
-    XTextProperty*	/* text_prop */
-#endif
-);
-extern void XSetWMCommand(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,

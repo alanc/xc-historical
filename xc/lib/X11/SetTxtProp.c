@@ -64,11 +64,3 @@ void XSetWMClientMachine (dpy, w, tp)
     XSetTextProperty (dpy, w, tp, XA_WM_CLIENT_MACHINE);
 }
 
-void XSetWMCommand (dpy, w, tp)
-    Display *dpy;
-    Window w;
-    XTextProperty *tp;
-{
-    XSetTextProperty (dpy, w, tp, XA_WM_COMMAND);
-}
-
