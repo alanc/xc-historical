@@ -1,8 +1,8 @@
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC)
-        DEFINES = -DUNIXCONN
    INSTALLFLAGS = -m 0644
            SRCS = *.c
         HEADERS = X10.h
+       LINTLIBS =
 
 OBJS =\
 	XDraw.o \
@@ -47,5 +47,4 @@ DependTarget()
 # structure alignment errors can safely be ignored.
 # complaints about qevent can be ignored too.
 
-lint:
-	$(LINT) -hubz ${INCLUDES} *.c > lint.log
+NormalLintTarget(*.c)
