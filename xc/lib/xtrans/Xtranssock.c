@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.26 94/05/02 11:01:17 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.27 94/05/02 11:44:22 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -113,6 +113,7 @@ from the X Consortium.
 #undef close
 #define close closesocket
 #define ECONNREFUSED WSAECONNREFUSED
+#define EADDRINUSE WSAEADDRINUSE
 #define EPROTOTYPE WSAEPROTOTYPE
 #undef EWOULDBLOCK
 #define EWOULDBLOCK WSAEWOULDBLOCK
@@ -716,11 +717,14 @@ int		socknamelen;
 
     while (bind (fd, (struct sockaddr *) sockname, namelen) < 0)
     {
+	if (errno == EADDRINUSE)
+	    return TRANS_ADDR_IN_USE;
+
 	if (retry-- == 0) {
 	    PRMSG (1, "TRANS(SocketCreateListener): failed to bind listener\n",
 		0, 0, 0);
 	    close (fd);
-	    return -1;
+	    return TRANS_BIND_FAILED;
 	}
 #ifdef SO_REUSEADDR
 	sleep (1);
@@ -747,7 +751,7 @@ int		socknamelen;
     {
 	PRMSG (1, "TRANS(SocketCreateListener): listen() failed\n", 0, 0, 0);
 	close (fd);
-	return -1;
+	return TRANS_BIND_FAILED;
     }
 	
     /* Set a flag to indicate that this connection is a listener */
@@ -768,7 +772,7 @@ char 		*port;
 {
     struct sockaddr_in	sockname;
     int		namelen = sizeof(sockname);
-    int		ret;
+    int		status;
     short	tmpport;
     struct	servent	*servp;
 
@@ -831,13 +835,13 @@ char 		*port;
     sockname.sin_family = AF_INET;
     sockname.sin_addr.s_addr = htonl (INADDR_ANY);
 
-    if (TRANS(SocketCreateListener) (ciptr,
-	(struct sockaddr *) &sockname, namelen) < 0)
+    if ((status = TRANS(SocketCreateListener) (ciptr,
+	(struct sockaddr *) &sockname, namelen)) < 0)
     {
 	PRMSG (1,
     "TRANS(SocketINETCreateListener): TRANS(SocketCreateListener) () failed\n",
 	    0, 0, 0);
-	return -1;
+	return status;
     }
 
     if (TRANS(SocketINETGetAddr) (ciptr) < 0)
@@ -866,6 +870,7 @@ char *port;
     struct sockaddr_un	sockname;
     int			namelen;
     int			oldUmask;
+    int			status;
 
     PRMSG (2, "TRANS(SocketUNIXCreateListener) (%s)\n",
 	port ? port : "NULL", 0, 0);
@@ -900,13 +905,13 @@ char *port;
 
     unlink (sockname.sun_path);
 
-    if (TRANS(SocketCreateListener) (ciptr,
-	(struct sockaddr *) &sockname, namelen) < 0)
+    if ((status = TRANS(SocketCreateListener) (ciptr,
+	(struct sockaddr *) &sockname, namelen)) < 0)
     {
 	PRMSG (1,
     "TRANS(SocketUNIXCreateListener): TRANS(SocketCreateListener) () failed\n",
 	    0, 0, 0);
-	return -1;
+	return status;
     }
 
     /*

@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.18 94/05/04 15:20:12 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.19 94/05/05 11:44:11 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -752,7 +752,7 @@ struct t_bind	*req;
 	      req, 0,0 );
 	t_free((char *)req,T_BIND);
 	t_free((char *)ret,T_BIND);
-	return -1;
+	return TRANS_ADDR_IN_USE;
     }
     
     /*

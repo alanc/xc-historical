@@ -189,6 +189,14 @@ typedef struct _XtransConnInfo *XtransConnInfo;
 
 
 /*
+ * Return values of Bind (0 is success)
+ */
+
+#define TRANS_BIND_FAILED 	-1
+#define TRANS_ADDR_IN_USE	-2
+
+
+/*
  * Return values of Accept (0 is success)
  */
 
