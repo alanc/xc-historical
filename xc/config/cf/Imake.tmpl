@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.204 94/02/07 17:04:43 kaleb Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.205 94/02/08 15:28:31 rws Exp $
 XCOMM
 
 /*
@@ -786,9 +786,9 @@ _NULLCMD_ = @ echo -n
           FCFLAGS = FortranFlags $(FDEBUGFLAGS)
 #endif
 #if HasCplusplus
-#if defined(SunArchitecture) || defined(Win32Architecture)
+
 .SUFFIXES: .CCsuf
-#endif
+
               CCC = CplusplusCmd
      CCDEBUGFLAGS = DefaultCplusplusDebugFlags
  CCEXTRA_INCLUDES = CplusplusExtraIncludes
