@@ -1,4 +1,4 @@
-/* $Header: Form.h,v 1.2 87/12/22 08:53:13 swick Locked $ */
+/* $Header: Form.h,v 1.3 87/12/23 07:45:22 swick Locked $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -31,15 +31,6 @@
  *
  ***********************************************************************/
 
-#define XtNname			"name"
-#define XtNx			"x"
-#define XtNy			"y"
-#define XtNwindow		"window"
-#define XtNborderWidth		"borderWidth"
-#define XtNwidth		"width"
-#define XtNheight		"height"
-#define XtNbackground		"background"
-#define XtNborder		"border"
 #define XtNdefaultDistance	"defaultDistance"
 #define XtNtop			"top"
 #define XtNbottom		"bottom"
@@ -84,36 +75,5 @@ typedef struct _FormRec		*FormWidget;
 
 extern WidgetClass formWidgetClass;
  
-/* oldXtk compatability routines */
-extern Window XtFormCreate(); /* parent, args, argCount */
-    /* Window   parent;     */
-    /* ArgList  args;       */
-    /* int      argCount;   */
-
-extern void XtFormGetValues(); /* dpy, w, args, argCount */
-    /* Display *dpy; */
-    /* Window w; */
-    /* ArgList  args;       */
-    /* int      argCount;   */
-
-extern void XtFormSetValues(); /* dpy, w, args, argCount */
-    /* Display *dpy; */
-    /* Window w; */
-    /* ArgList  args;       */
-    /* int      argCount;   */
-
-extern void XtFormAddWidget(); /* mywin, w, args, argCount */
-    /* Window mywin, w; */
-    /* ArgList  args;       */
-    /* int      argCount;   */
-
-extern void XtFormRemoveWidget(); /* mywin, w */
-    /* Window mywin, w; */
-
-extern void XtFormDoLayout(); /* dpy, mywin, doit */
-    /* Display *dpy; */
-    /* Window mywin; */
-    /* Boolean doit; */
-
 #endif _Form_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+
