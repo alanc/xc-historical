@@ -337,7 +337,7 @@ XCOMM
 SUBDIRS0 = CFBSubdirs ddx/x386
 X386DIRS = $(SUBDIRS0) $(DEPDIRS)
 X386OBJS = ddx/x386/init.o
-X386LIBS = ddx/x386/libx386.a ddx/x386/vga/libvga.a ddx/x386/tfb/libtfb.a ddx/x386/vga/libvga.a CFBLibs
+X386LIBS = $(DIX) $(OS) $(FONT) ddx/x386/libx386.a ddx/x386/vga/libvga.a ddx/x386/tfb/libtfb.a ddx/x386/vga/libvga.a $(CFB) $(MFB) $(MI) $(EXTENSIONS)
 X386SYSLIBS = $(SYSLIBS) -lc
 
 ServerTarget(X386,$(X386DIRS),$(X386OBJS),$(X386LIBS),$(X386SYSLIBS))
