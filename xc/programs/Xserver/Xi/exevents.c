@@ -104,12 +104,15 @@ ProcessOtherEvent (xE, other, count)
     register CARD16 	mask;
     GrabPtr         	grab = other->grab;
     Bool            	deactivateDeviceGrab = FALSE;
-    int             	key, bit;
+    int             	key, bit, rootX, rootY;
     ButtonClassPtr	b = other->button;
     KeyClassPtr		k = other->key;
     void		NoticeEventTime();
     deviceValuator	*xV = (deviceValuator *) xE;
 
+    GetSpritePosition(&rootX, &rootY);
+    xE->root_x = rootX;
+    xE->root_y = rootY;
     key = xE->detail;
     NoticeEventTime(xE);
     xE->state = inputInfo.keyboard->key->state | 
