@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XawInit.c,v 1.1 89/10/09 14:59:47 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,8 +31,8 @@
  */
 
 #include <X11/Intrinsic.h>
-#include <Xt/Vendor.h>
-#include "XawInit.h"
+#include <X11/Vendor.h>
+#include <X11/Xaw/XawInit.h>
 
 void XawInitializeWidgetSet ()
 {
