@@ -36,8 +36,6 @@
 #include	<sys/socket.h>
 #include	<netinet/tcp.h>
 #include	<errno.h>
-#include	<fcntl.h>
-#include	<sys/file.h>
 #include	"FSlibos.h"
 #include	"fsio.h"
 
