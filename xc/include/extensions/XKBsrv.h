@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.5 93/09/27 22:49:57 rws Exp $ */
+/* $XConsortium: XKBsrv.h,v 1.6 93/09/28 19:48:09 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -117,6 +117,7 @@ typedef struct _XkbSrvInfoRec {
 	    CARD32		 usesCompat;
 	    CARD32		 usesControls;
 	    CARD32		 usedComponents;
+	    CARD32		 haveMap;
 	} iAccel;
 	CARD32		 iState;
 
