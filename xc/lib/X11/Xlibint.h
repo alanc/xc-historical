@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.118 93/09/20 20:22:34 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.119 93/09/21 11:00:19 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -128,6 +128,7 @@ struct _XDisplay
 	int watcher_count;	/* number of conn_watchers */
 	Bool in_process_conni;	/* in XProcessInternalConnection */
 	XPointer filedes;	/* struct pollfd cache for _XWaitForReadable */
+	struct _XkbInfoRec *xkb_info; /* XKB info */
 };
 
 /*
@@ -305,6 +306,7 @@ extern int errno;			/* Internal system error number. */
  */
 #define XlibDisplayIOError	(1L << 0)
 #define XlibDisplayClosing	(1L << 1)
+#define XlibDisplayNoXkb	(1L << 2)
 
 /*
  * X Protocol packetizing macros.
@@ -654,6 +656,7 @@ typedef struct _XFreeFuncs {
     void (*clientCmaps)();	/* _XcmsFreeClientCmaps */
     void (*intensityMaps)();	/* _XcmsFreeIntensityMaps */
     void (*im_filters)();	/* _XFreeIMFilters */
+    void (*xkb)();		/* _XkbFreeInfo */
 } _XFreeFuncRec;
 
 /*
