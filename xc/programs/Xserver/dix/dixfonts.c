@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.10 91/01/27 13:01:01 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.11 91/02/14 19:35:36 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -39,6 +39,9 @@ SOFTWARE.
 #include "closestr.h"
 
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics
+
+static int FinishListFontsWithInfo();
+static int finishOpenFont();
 
 extern pointer fosNaturalParams;
 extern EncodedFontPtr defaultFont;
