@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.2 93/09/19 09:18:16 rws Exp $ */
+/* $XConsortium: lcSjis.c,v 1.3 93/09/20 10:33:39 rws Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -31,6 +31,7 @@ OF THIS SOFTWARE.
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
+#include <ctype.h>
 
 #define CS0	codesets[0]		/* Codeset 0 - 7-bit ASCII	*/
 #define CS1	codesets[1]		/* Codeset 1 - Kanji		*/
