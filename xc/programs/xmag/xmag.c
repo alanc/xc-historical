@@ -1,4 +1,4 @@
-/* $XConsortium: xmag.c,v 1.24 92/02/03 12:23:26 gildea Exp $ */
+/* $XConsortium: xmag.c,v 1.25 92/05/19 09:28:21 dave Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -149,9 +149,9 @@ static XtResource resources[] = {
 #undef Offset
 
 static XrmOptionDescRec optionDesc[] = {
-  {"-bd",         "*boarderColor", XrmoptionSepArg, (XtPointer)NULL},
+  {"-bd",         "*borderColor", XrmoptionSepArg, (XtPointer)NULL},
   {"-bg",         "*background",   XrmoptionSepArg, (XtPointer)NULL},
-  {"-bw",         "*boarderWidth", XrmoptionSepArg, (XtPointer)NULL},
+  {"-bw",         "*borderWidth", XrmoptionSepArg, (XtPointer)NULL},
   
   {"-geometry", "*geometry", XrmoptionSepArg, (XtPointer)NULL},
   {"-mag",      "*mag",                XrmoptionSepArg, (XtPointer)NULL},
