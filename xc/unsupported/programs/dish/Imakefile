@@ -1,4 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/03/22 14:34:42 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/03/22 17:59:51 matt Exp $
+
+#include <Fresco.tmpl>
 
 /*
  * You must be able to find the tcl headers and libraries to build dish.
@@ -10,19 +12,9 @@ XCOMM $XConsortium: Imakefile,v 1.5 94/03/22 14:34:42 matt Exp $
    TCL_INCLUDES = -I/usr/local/include
   TCL_LIBRARIES = -L/usr/local/lib -ltcl
 
-        DEPLIBS = FrescoClientDepLibs
 LOCAL_LIBRARIES = $(TCL_LIBRARIES) FrescoClientLibs
        INCLUDES = $(TCL_INCLUDES)
            SRCS = main.CCsuf
            OBJS = main.o
-
-#if ThreadedX
-  LOCAL_LDFLAGS = ThreadsLoadFlags
-  SYS_LIBRARIES = ThreadsLibraries
-#endif
-
-#define CplusplusSource
-
-NormalCplusplusObjectRule()
 
 ComplexCplusplusProgramTarget(dish)
