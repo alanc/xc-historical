@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.117 87/11/24 10:32:12 rws Locked $ */
+/* $Header: events.c,v 1.118 87/11/25 07:36:52 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2054,7 +2054,7 @@ ProcGrabPointer(client)
 	confineTo = NullWindow;
     else
     {
-	confineTo = LookupWindow(stuff->grabWindow, client);
+	confineTo = LookupWindow(stuff->confineTo, client);
 	if (!confineTo)
 	{
 	    client->errorValue = stuff->grabWindow;
