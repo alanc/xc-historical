@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium$
+/**/# $XConsortium: Project.tmpl,v 1.2 89/01/17 14:40:25 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -143,17 +143,20 @@
 #ifndef IncDir
 #define IncDir $(INCROOT)/X11
 #endif
-#ifndef AdmDir
-#define AdmDir $(DESTDIR)/usr/adm
-#endif
 #ifndef LibDir
 #define LibDir $(USRLIBDIR)/X11
+#endif
+#ifndef ConfigDir
+#define ConfigDir $(LIBDIR)/config
 #endif
 #ifndef LintlibDir
 #define LintlibDir $(USRLIBDIR)/lint
 #endif
 #ifndef FontDir
 #define FontDir $(LIBDIR)/fonts
+#endif
+#ifndef AdmDir
+#define AdmDir $(DESTDIR)/usr/adm
 #endif
 #ifndef XinitDir
 #define XinitDir $(LIBDIR)/xinit
@@ -217,7 +220,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium$
+/**/# $XConsortium: Project.tmpl,v 1.2 89/01/17 14:40:25 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -228,6 +231,7 @@ Berklib.c: sysV/Berklib.c					@@\
            INCDIR = IncDir		/* header files */
            ADMDIR = AdmDir		/* server log files */
            LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
+        CONFIGDIR = ConfigDir		/* build configuration information */
        LINTLIBDIR = LintlibDir		/* lint libraries */
           FONTDIR = FontDir		/* font directories */
          XINITDIR = XinitDir		/* xinit config files */
@@ -252,7 +256,7 @@ Berklib.c: sysV/Berklib.c					@@\
         MKDIRHIER = BourneShell $(SCRIPTSSRC)/mkdirhier.sh
 
               TOP = TOPDIR
-        CONFIGSRC = $(TOP)/conf
+        CONFIGSRC = $(TOP)/config
         CLIENTSRC = $(TOP)/clients
           DEMOSRC = $(TOP)/demos
            LIBSRC = $(TOP)/lib
@@ -267,7 +271,6 @@ Berklib.c: sysV/Berklib.c					@@\
            RGBSRC = $(TOP)/rgb
         DEPENDSRC = $(UTILSRC)/makedepend
          IMAKESRC = $(UTILSRC)/imake
-         IRULESRC = $(CONFIGSRC)
          XAUTHSRC = $(LIBSRC)/Xau
           XLIBSRC = $(LIBSRC)/X
            XMUSRC = $(LIBSRC)/Xmu
@@ -277,12 +280,16 @@ Berklib.c: sysV/Berklib.c					@@\
       BDFTOSNFSRC = $(FONTSRC)/bdftosnf
      MKFONTDIRSRC = $(FONTSRC)/mkfontdir
      EXTENSIONSRC = $(TOP)/extensions
-     ICONFIGFILES = $(IRULESRC)/X.itmpl \
-			$(IRULESRC)/$(MACROFILE) \
-			$(IRULESRC)/site.def $(IRULESRC)/global.def
     IMAKE_DEFINES = /* leave blank, for command line use only */
         IMAKE_CMD = $(NEWTOP)$(IMAKE) -TX.itmpl -I$(NEWTOP)$(IRULESRC) \
 			-s Makefile $(IMAKE_DEFINES)
+#ifdef UseInstalled
+         IRULESRC = $(CONFIGDIR)
+#else
+         IRULESRC = $(CONFIGSRC)
+#endif
+     ICONFIGFILES = $(IRULESRC)/X.itmpl $(IRULESRC)/$(MACROFILE) \
+			$(IRULESRC)/site.def $(IRULESRC)/Project.tmpl
 
 /*
  * and now a little bit of magic for using imake without source tree
