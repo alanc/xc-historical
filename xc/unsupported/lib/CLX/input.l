@@ -560,7 +560,9 @@
   (let* ((current-event-symbol (car (display-current-event-symbol display)))
 	 (current-event (and (boundp current-event-symbol)
 			     (symbol-value current-event-symbol)))
-	 (queue (or current-event (display-event-queue-head display))))
+	 (queue (if current-event
+		    (reply-next (the reply-buffer current-event))
+		  (display-event-queue-head display))))
     (declare (type symbol current-event-symbol)
 	     (type (or null reply-buffer) current-event queue))
     (if queue
