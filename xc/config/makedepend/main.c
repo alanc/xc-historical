@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.66 93/03/29 18:54:04 rws Exp $
+ * $XConsortium: main.c,v 1.67 93/08/17 21:35:06 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -494,10 +494,10 @@ redirect(line, makefile)
 	 * use a default makefile is not specified.
 	 */
 	if (!makefile) {
-		if (stat("makefile", &st) == 0)
-			makefile = "makefile";
-		else if (stat("Makefile", &st) == 0)
+		if (stat("Makefile", &st) == 0)
 			makefile = "Makefile";
+		else if (stat("makefile", &st) == 0)
+			makefile = "makefile";
 		else
 			fatalerr("[mM]akefile is not present\n");
 	}
