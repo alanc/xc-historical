@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.52 89/07/21 12:06:06 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.53 89/08/10 12:16:44 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -51,7 +51,7 @@ void XtInitializeWidgetClass(wc)
 {
     String param[3];
     Cardinal num_params=3;
-    if (widgetClass->core_class.class_inited) return;
+    if (wc->core_class.class_inited) return;
     if (wc->core_class.version != XtVersion &&
 	    wc->core_class.version != XtVersionDontCheck) {
         param[0] =  wc->core_class.class_name;
