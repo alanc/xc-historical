@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.205 88/07/06 10:56:41 rws Exp $ */
+/* $Header: window.c,v 1.206 88/07/29 12:13:42 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3514,13 +3514,6 @@ DrawLogo(pWin)
     poly[1].x = x + size / 2;                    poly[1].y = y + size/2;
     poly[2].x = x + (size/2)-(d31-(d31/2));      poly[2].y = y + size/2;
     poly[3].x = x + size - d31;                  poly[3].y = y;
-    ValidateGC(pDraw, pGC);
-    (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
-
-    poly[0].x = x + size - poly[0].x;            poly[0].y = y;
-    poly[1].x = x + size - poly[1].x;            poly[1].y = y + size/2;
-    poly[2].x = x + size - poly[2].x;            poly[2].y = y + size/2;
-    poly[3].x = x + size - poly[3].x;            poly[3].y = y;
     ValidateGC(pDraw, pGC);
     (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
