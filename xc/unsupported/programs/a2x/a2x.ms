@@ -1,3 +1,21 @@
+				Using a2x
+
+Copyright 1992 by the Massachusetts Institute of Technology
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+
+DragonDictate is a trademark of Dragon Systems, Inc.
+X Window System is a trademark of the Massachusetts Institute of Technology
+
+
 			     Getting Started
 
 A2x is designed to interface DragonDictate to the X Window System.  A2x
@@ -106,6 +124,11 @@ and "[back 5]", replacing each "{Backspace}" with "{Del}" to generate
 delete instead of backspace.  If you really want to generate backspace,
 then replace each "{Backspace}" with the sequence "{c-t}{c-c}h" instead.
 
+If you are using a terminal program over a serial line, make sure your
+program is not automatically converting backspace to delete, as this
+will cause a2x's undo mechanism to not work.
+
+
 			     Keyboard Control
 
 To "type" a non-ASCII key on the keyboard, use the following control
@@ -180,16 +203,23 @@ would not output any backspaces.  Instead, you should define:
 
 	add-word /t "[move right]" "{c-t}{c-c}f" invisible
 
-This way, DragonDictate will output a backspace, and a2x will recognize
-that a control sequence is attached to the 'f' character and treat the
-sequence as a single entity for undo purposes.  Of course, if no undo
-action is desired for control characters, you can represent them directly.
-For example,
+This way, DragonDictate will output a backspace for correction, and a2x
+will recognize that a control sequence is attached to the 'f' character
+and treat the sequence as a single entity for undo purposes.  Of course,
+if no undo action is desired for control characters, you can represent
+them directly.  For example,
 
 	add-word /t "[move end]" "{c-e}" invisible
 
 is reasonable for emacs-style positioning control because there is
-normally no way to return to the original position.
+normally no way to return to the original position.  You also don't need
+to expand control characters if there are noncontrol characters in the
+sequence.  For example:
+
+	add-word /t "[split window]" "{c-x}2" invisible
+
+DragonDictate will output a backspace for the '2', so the {c-x} does not
+need to be expanded to "{c-t}{c-c}x" (although it doesn't hurt).
 
 It is convenient at times to be able to autorepeat a keystroke, e.g., when
 using incremental search in emacs or when paging through a document.  To
@@ -313,10 +343,144 @@ described earlier can also be used for pointer motion:
 	{c-t}{c-a}<kdelay> <delta> <pdelay>{c-t}
 
 where <kdelay> is the keyboard autorepeat rate in seconds (as before),
-<delta> is a pointer motion substitution value, and <pdelay> is the
-pointer autorepeat rate in seconds.
+<delta> is a nonnegative integer specifying a new distance, and <pdelay>
+is the pointer autorepeat rate in seconds.  Both <kdelay> and <pdelay> are
+floating point numbers.  The <kdelay> value is only used if the event
+being autorepeated is a keystroke; the <delta> and <pdelay> values are
+only used if the event being autorepeated is pointer motion.  When any
+value is 0, it means "don't change the value from what it already is".  If
+a nonzero <delta> value is specified, it becomes the new magnitude of
+motion in both x and y dimensions.  For example, if the current motion is
+5 pixels in the x dimension, and -4 pixels in the y dimension, and a
+<delta> of 7 is given, the new motion will be 7 pixels in the x dimension
+and -7 pixels in the y dimension.
+
+Examples of using autorepeat:
+
+	add-word /t "[go down right]" "{c-t}{c-d}5 5{c-t}{c-t}{c-a}0 0 .1{c-t}" invisible
+	add-word /t "[go up slow]" "{c-t}{c-d}0 -1{c-t}{c-t}{c-a}0 0 .1{c-t}" invisible
+	add-word /t "[go left]" "{c-t}{c-d}-5 0{c-t}{c-t}{c-a}0 0 .1{c-t}" invisible
+	add-word /t "[autorepeat]" "{c-t}{c-a}1 5 .1{c-t}" invisible
+	add-word /t "[slow down]" "{c-t}{c-a}2 1 0{c-t}" invisible
+
+The autorepeat sequence is designed to cover both keystrokes and motion so
+that you can use a single voice command to govern speed.  For example, you
+might say "[search for]", "[autorepeat]", then "[slow down]" if things are
+going by too fast, and finally "[stop moving]".  Similarly, you might say
+"[go left]", then "[slow down]" when you get close, and finally "[stop
+moving]".
 
 
+				   Undo
 
-DragonDictate is a trademark of Dragon Systems, Inc.
-X Window System is a trademark of the Massachusetts Institute of Technology
+The normal mode for using DragonDictate with X is to have DragonDictate's
+"keys-immediate" parameter set to 1, so that actions happen immediately
+without confirmation.  But, when DragonDictate matches on the wrong
+utterance, the wrong action is executed.  Although DragonDictate will
+generate backspaces when you use "choose <n>" to make corrections, these
+backspaces seldom correctly undo the action that was executed.  There is
+no perfect solution to this problem, but a2x has an undo facility that can
+help in many cases.
+
+When a2x starts up, it reads an undo file.  By default, it reads the file
+".a2x" from your home directory, but you can supply an alternative file on
+the command line using the "-u" option.  The syntax of this file is simple;
+each line is of the form:
+
+<dd-sequence>:<a2x-sequence>
+
+The <dd-sequence> is the sequence that is being undone; the <a2x-sequence>
+is the sequence that a2x should generate to "undo" that sequence.  Each
+sequence is specified as a string of characters.  Control characters are
+specified as '^' followed by a single character, e.g., "^T" for {c-t}.
+Comments can be inserted in the file as lines beginning with '!'.
+
+When a2x receives backspaces, it searches the undo file for the longest
+<dd-sequence> that generates that many backspaces, and then processes the
+corresponding <a2x-sequence> just as if it had come from DragonDictate.
+
+As a simple example, the undo entries for emacs-style forward/backward
+character motion ({c-f} and {c-b}) are:
+
+	^T^Cb:^T^Cf
+	^T^Cf:^T^Cb
+
+Note that these are specified for undoing "{c-t}{c-c}b" and "{c-t}{c-c}f",
+not for {c-b} and {c-f}.  This is because {c-b} and {c-f} will not have
+backspaces generated for them by DragonDictate (refer to the backspace
+discussion earlier).
+
+While you are building up your voice macros for a2x, you will probably be
+editing your undo file from time to time.  To tell a2x to reload the file,
+use the control sequence:
+
+	{c-t}{c-u}
+
+For example:
+
+	add-word /t "[dragon reload]" "{c-t}{c-u}" invisible
+
+
+			  Moving Between Windows
+
+TBD.
+
+
+				 Triggers
+
+TBD.
+
+
+				  Macros
+
+TBD.
+
+
+			    Changing Displays
+
+If you use more than one display in your work, you can dynamically point
+a2x at whatever display you want to interact with, using the control
+sequence:
+
+	{c-t}{c-r}D<display>{c-t}
+
+where <display> is standard display name string or just a host name.  If
+the string does not contain a colon (:), ":0" is appended to the string.
+The string can be empty, in which case it is equivalent to ":0".  For
+example:
+
+	add-word /t "[start display]" "{c-t}{c-r}D" left right
+	add-word /t "[go there]" "{c-t}" invisible
+
+permits you to say "[start display]", "expo", "[go there]" to go to the
+display "expo:0".  Note that in this example, the terminating {c-t} of the
+control sequence is in a separate voice macro, and is part of a separate
+utterance.  This is fine, a2x does not know where utterance boundaries
+are, it simply interprets a stream of characters.  If you make a mistake
+saying the display name, you can use "choose <n>" to make corrections.
+
+
+			      Miscellaneous
+
+You can terminate a2x using the control sequence:
+
+	{c-t}{c-e}
+
+For example:
+
+	add-word /t "[dragon quit]" "{c-t}{c-e}{Dcom}dkey {Enter}{Dcom}" invisible
+
+If a2x seems to be doing strange things, you can dump recent history of
+characters received using the control sequence:
+
+	{c-t}{c-p}
+
+This will print out on your PC screen.
+
+You can generate a {c-t} with the control sequence:
+
+	{c-t}{c-t}
+
+or with:
+
+	{c-t}{c-c}t
