@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrGC.c,v 11.23 88/02/07 11:07:50 jim Exp $ */
+/* $Header: XCrGC.c,v 11.24 88/06/20 12:08:13 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -262,12 +262,12 @@ _XUpdateGCCache (gc, mask, att)
 	    gc->dirty |= GCClipYOrigin;
 	  }
 
-    if (mask & GCClipMask) 
-        if ((gv->clip_mask != att->clip_mask) || (gc->rects == True)) {
-           gv->clip_mask = att->clip_mask;
-	   gc->dirty |= GCClipMask;
-	   gc->rects = 0;
-	   }
+    /* always write through mask change, since client may have changed pixmap contents */
+    if (mask & GCClipMask) {
+	    gv->clip_mask = att->clip_mask;
+	    gc->dirty |= GCClipMask;
+	    gc->rects = 0;
+	  }
 
     if (mask & GCDashOffset)
         if (gv->dash_offset != att->dash_offset) {
