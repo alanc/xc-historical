@@ -24,11 +24,11 @@ The StripChart widget is used to provide a real time graphical chart of
 a single value.  This widget is used by \fBxload\fP to provide the
 load graph.  It will read data from an application, and update
 the chart at the \fBupdate\fP interval specified.
+.NH 3
+Resources
 .LP
 When creating a StripChart widget instance, the following resources are
 retrieved from the argument list or from the resource database:
-.NH 3
-Resources
 .LP
 .IN "StripChart widget" "resources"
 .ps 9

@@ -26,11 +26,11 @@ multiple lines of Latin1 characters.  The Label widget will allow its
 string to be left, right, or center justified.  Normally, this widget
 can be neither selected nor directly edited by the user.  It is
 intended for use as an output device only.
+.NH 3
+Resources
 .LP
 When creating a Label widget instance, the following resources are
 retrieved from the argument list or from the resource database:
-.NH 3
-Resources
 .LP
 .IN "Label widget" "resources"
 .ps 9

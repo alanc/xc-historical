@@ -24,11 +24,11 @@ The Simple widget is not very useful by itself, as it has no semantics
 of its own.  It main purpose is to be used as a common superclass for
 the other \fIsimple\fP Athena widgets.  This widget adds a cursor and
 an insensitive border to the resource list provided by the Core widget.
+.NH 3
+Resources
 .LP
 When creating a Simple widget instance, the following resources are
 retrieved from the argument list or from the resource database:
-.NH 3
-Resources
 .LP
 .IN "Simple widget" "resources"
 .ps 9

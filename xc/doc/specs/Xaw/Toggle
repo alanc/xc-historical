@@ -42,11 +42,11 @@ list of Toggle buttons in which no more than one Toggle may be set at
 any time.  A radio group is identified by the widget ID of any one of
 its members.  The convenience routine \fBXawToggleGetCurrent\fP will
 return information about the Toggle button in the radio group.
+.NH 3
+Resources
 .LP
 When creating a Toggle widget instance, the following resources are
 retrieved from the argument list or from the resource database:
-.NH 3
-Resources
 .LP
 .IN "Toggle widget" "resources"
 .ps 9

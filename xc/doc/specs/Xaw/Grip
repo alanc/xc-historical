@@ -24,11 +24,11 @@ The Grip widget provides a small rectangular region in which user input
 events (such as ButtonPress or ButtonRelease) may be handled.  The most
 common use for the Grip widget is as an attachment point for visually
 repositioning an object, such as the pane border in a Paned widget.
+.NH 3
+Resources
 .LP
 When creating a Grip widget instance, the following resources are
 retrieved from the argument list or from the resource database:
-.NH 3
-Resources
 .LP
 .IN "Grip widget" "resources"
 .ps 9

@@ -33,11 +33,11 @@ moved out of the widget before the button is released, the widget
 reverts to its normal foreground and background colors, and releasing
 the button has no effect.  This behavior allows the user to cancel an
 action.
+.NH 3
+Resources
 .LP
 When creating a Command widget instance, the following resources are
 retrieved from the argument list or from the resource database:
-.NH 3
-Resources
 .LP
 .IN "Command widget" "resources"
 .ps 9

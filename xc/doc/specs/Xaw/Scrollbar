@@ -58,11 +58,11 @@ thumb is moved using pointer button 2, the callback procedure is invoked
 continuously.  When either button 1 or 3 is pressed, the callback
 procedure is invoked only when the button is released and the client
 callback procedure is responsible for moving the thumb.
+.NH 3
+Resources
 .LP
 When creating a Scrollbar widget instance, the following resources are
 retrieved from the argument list or from the resource database:
-.NH 3
-Resources
 .LP
 .IN "Scrollbar widget" "resources"
 .ps 9
