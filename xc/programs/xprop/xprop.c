@@ -929,9 +929,10 @@ thunk *Break_Down_Property(pointer, length, format, size)
 
 usage()
 {
-	outl("\n%s: usage: %s [<select option>] <option>* <mapping>* <spec>*",
+	outl("\n%s: usage: %s [<disp>] [<select option>] <option>* <mapping>* <spec>*",
 	     program_name, program_name);
-	outl("\n\tselect option ::= -root | -id <id> | -font <font> | -name <name>\
+	outl("\n\tdisp ::= -display host:dpy\
+\n\tselect option ::= -root | -id <id> | -font <font> | -name <name>\
 \n\toption ::= -len <n> | -notype | -spy | {-formats|-fs} <format file>\
 \n\tmapping ::= {-f|-format} <atom> <format> [<dformat>]\
 \n\tspec ::= [<format> [<dformat>]] <atom>\
