@@ -1,4 +1,4 @@
-/* $XConsortium: Text.h,v 1.39 91/05/04 18:59:03 rws Exp $ */
+/* $XConsortium: Text.h,v 1.40 91/07/22 18:45:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,8 @@ SOFTWARE.
 
 #ifndef _XawText_h
 #define _XawText_h
+
+#include <X11/Xfuncproto.h>
 
 /*
  Text widget
