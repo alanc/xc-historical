@@ -1,4 +1,4 @@
-.\" $XConsortium: CH02,v 1.8 91/07/31 20:23:44 swick Exp $
+.\" $XConsortium: CH02,v 1.9 91/08/26 13:27:37 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -130,7 +130,7 @@ which creates the root of a widget tree.
 or an application can call the convenience procedure
 .PN XtAppInitialize
 which combines the functions of the preceding procedures.
-An application withing to use the ANSI C locale mechanism should call
+An application wishing to use the ANSI C locale mechanism should call
 .PN XtSetLanguageProc
 prior to calling
 .PN XtDisplayInitialize ,
@@ -586,7 +586,8 @@ When the resource database for a particular screen on the display
 is needed (either internally, or when
 .PN XtScreenDatabase
 is called),
-it is created in the following manner:
+it is created in the following manner using the sources listed
+above in the same order:
 
 .IP \(bu 5
 A temporary database, the ``server resource database'', is
@@ -730,7 +731,7 @@ following directory prefixes and substitutions:
 
 .ne 1.1
 .nf
-.ta .3i 1.6i 2i 3.1i 3.5i
+.ta .3i 1.6i 2.2i 3.3i 3.7i
 1.	$XAPPLRESDIR	with	%C, %N, %L	or	%C, %N, %l, %t, %c
 2.	$XAPPLRESDIR	with	%C, %N, %l
 3.	$XAPPLRESDIR	with	%C, %N
@@ -786,7 +787,7 @@ Specifies the screen whose resource database is to be returned.
 .LP
 The
 .PN XtScreenDatabase
-function returns the fully merged resource database
+function returns the fully merged resource database as specified above,
 associated with the specified screen.  If the specified \fIscreen\fP
 does not belong to a
 .PN Display
