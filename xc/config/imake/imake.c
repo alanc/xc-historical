@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.22 88/02/11 16:55:08 rws Exp $
- * $Locker: rws $
+ * $Header: imake.c,v 1.23 88/02/12 09:00:44 rws Exp $
+ * $Locker:  $
  *
  * Author:
  *	Todd Brunhoff
@@ -210,7 +210,7 @@ showit(fd)
 	while ((red = fread(buf, 1, BUFSIZ, fd)) > 0)
 		fwrite(buf, red, 1, stdout);
 	if (red < 0)
-		LogFatal("Cannot write stdout.");
+		LogFatal("Cannot write stdout.", "");
 }
 
 wrapup()
@@ -224,7 +224,7 @@ catch(sig)
 	int	sig;
 {
 	errno = 0;
-	LogFatal("Signal %d.", sig);
+	LogFatalI("Signal %d.", sig);
 }
 
 /*
@@ -233,7 +233,6 @@ catch(sig)
 init()
 {
 	char	*p;
-	int	i;
 
 	make_argindex=0;
 	while (make_argv[ make_argindex ] != NULL)
@@ -272,7 +271,7 @@ AddMakeArg(arg)
 {
 	errno = 0;
 	if (make_argindex >= ARGUMENTS-1)
-		LogFatal("Out of internal storage.");
+		LogFatal("Out of internal storage.", "");
 	make_argv[ make_argindex++ ] = arg;
 	make_argv[ make_argindex ] = NULL;
 }
@@ -282,7 +281,7 @@ AddCppArg(arg)
 {
 	errno = 0;
 	if (cpp_argindex >= ARGUMENTS-1)
-		LogFatal("Out of internal storage.");
+		LogFatal("Out of internal storage.", "");
 	cpp_argv[ cpp_argindex++ ] = arg;
 	cpp_argv[ cpp_argindex ] = NULL;
 }
@@ -311,7 +310,7 @@ SetOpts(argc, argv)
 		    else {
 			argc--, argv++;
 			if (! argc)
-			    LogFatal("No description arg after -f flag\n");
+			    LogFatal("No description arg after -f flag\n", "");
 			Imakefile = argv[0];
 		    }
 		} else if (argv[0][1] == 's') {
@@ -328,7 +327,7 @@ SetOpts(argc, argv)
 		    else {
 			argc--, argv++;
 			if (! argc)
-			    LogFatal("No description arg after -T flag\n");
+			    LogFatal("No description arg after -T flag\n", "");
 			Template = argv[0];
 		    }
 		} else if (argv[0][1] == 'v') {
@@ -351,7 +350,7 @@ char *FindImakefile(Imakefile)
 	} else {
 		if ((fd = open("Imakefile", O_RDONLY)) < 0)
 			if ((fd = open("imakefile", O_RDONLY)) < 0)
-				LogFatal("No description file.");
+				LogFatal("No description file.", "");
 			else
 				Imakefile = "imakefile";
 		else
@@ -361,7 +360,16 @@ char *FindImakefile(Imakefile)
 	return(Imakefile);
 }
 
-LogFatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+LogFatalI(s, i)
+	char *s;
+	int i;
+{
+	/*NOSTRICT*/
+	LogFatal(s, (char *)i);
+}
+
+LogFatal(x0,x1)
+	char *x0, *x1;
 {
 	extern char	*sys_errlist[];
 	static boolean	entered = FALSE;
@@ -373,7 +381,7 @@ LogFatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 	fprintf(stderr, "%s: ", program);
 	if (errno)
 		fprintf(stderr, "%s: ", sys_errlist[ errno ]);
-	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+	fprintf(stderr, x0,x1);
 	fprintf(stderr, "  Stop.\n");
 	wrapup();
 	exit(1);
@@ -405,19 +413,19 @@ cppit(Imakefile, template, outfd)
 	 * Get a pipe.
 	 */
 	if (pipe(pipefd) < 0)
-		LogFatal("Cannot make a pipe.");
+		LogFatal("Cannot make a pipe.", "");
 
 	/*
 	 * Fork and exec cpp
 	 */
 	pid = vfork();
 	if (pid < 0)
-		LogFatal("Cannot fork.");
+		LogFatal("Cannot fork.", "");
 	if (pid) {	/* parent */
 		close(pipefd[0]);
 		cleanedImakefile = CleanCppInput(Imakefile);
 		if ((pipeFile = fdopen(pipefd[1], "w")) == NULL)
-			LogFatal("Cannot fdopen fd %d for output.", outfd);
+			LogFatalI("Cannot fdopen fd %d for output.", pipefd[1]);
 		fprintf(pipeFile, "#define IMAKE_TEMPLATE\t\"%s\"\n",
 			template);
 		fprintf(pipeFile, "#define INCLUDE_IMAKEFILE\t\"%s\"\n",
@@ -428,14 +436,14 @@ cppit(Imakefile, template, outfd)
 			errno = 0;
 #ifdef SYSV
 			if ((status >> 8) & 0xff)
-				LogFatal("Signal %d.", (status >> 8) & 0xff);
+				LogFatalI("Signal %d.", (status >> 8) & 0xff);
 			if (status & 0xff)
-				LogFatal("Exit code %d.", status & 0xff);
+				LogFatalI("Exit code %d.", status & 0xff);
 #else	/* !SYSV */
 			if (status.w_termsig)
-				LogFatal("Signal %d.", status.w_termsig);
+				LogFatalI("Signal %d.", status.w_termsig);
 			if (status.w_retcode)
-				LogFatal("Exit code %d.", status.w_retcode);
+				LogFatalI("Exit code %d.", status.w_retcode);
 #endif	/* !SYSV */
 		}
 		CleanCppOutput(outfd);
@@ -464,20 +472,20 @@ makeit()
 	 */
 	pid = vfork();
 	if (pid < 0)
-		LogFatal("Cannot fork.");
+		LogFatal("Cannot fork.", "");
 	if (pid) {	/* parent... simply wait */
 		while (wait(&status) > 0) {
 			errno = 0;
 #ifdef SYSV
 			if ((status >> 8) & 0xff)
-				LogFatal("Signal %d.", (status >> 8) & 0xff);
+				LogFatalI("Signal %d.", (status >> 8) & 0xff);
 			if (status & 0xff)
-				LogFatal("Exit code %d.", status & 0xff);
+				LogFatalI("Exit code %d.", status & 0xff);
 #else	/* !SYSV */
 			if (status.w_termsig)
-				LogFatal("Signal %d.", status.w_termsig);
+				LogFatalI("Signal %d.", status.w_termsig);
 			if (status.w_retcode)
-				LogFatal("Exit code %d.", status.w_retcode);
+				LogFatalI("Exit code %d.", status.w_retcode);
 #endif	/* !SYSV */
 		}
 	} else {	/* child... dup and exec cpp */
@@ -495,7 +503,7 @@ char *CleanCppInput(Imakefile)
 	char	*Imakefile;
 {
 	FILE	*outFile = NULL;
-	int	infd, got;
+	int	infd;
 	char	*buf,		/* buffer for file content */
 		*pbuf,		/* walking pointer to buf */
 		*punwritten,	/* pointer to unwritten portion of buf */
@@ -512,9 +520,8 @@ char *CleanCppInput(Imakefile)
 		LogFatal("Cannot open %s for input.", Imakefile);
 	fstat(infd, &st);
 	buf = Emalloc(st.st_size+1);
-	if ((got = read(infd, buf, st.st_size)) != st.st_size)
-		LogFatal("Cannot read all of %s: want %d, got %d\n",
-			Imakefile, st.st_size, got);
+	if (read(infd, buf, st.st_size) != st.st_size)
+		LogFatal("Cannot read all of %s:", Imakefile);
 	close(infd);
 	buf[ st.st_size ] = '\0';
 
@@ -697,7 +704,7 @@ char *Emalloc(size)
 	char	*p, *malloc();
 
 	if ((p = malloc(size)) == NULL)
-		LogFatal("Cannot allocate %d bytes\n", size);
+		LogFatalI("Cannot allocate %d bytes\n", size);
 	return(p);
 }
 
