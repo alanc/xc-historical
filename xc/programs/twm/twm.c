@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.95 89/11/28 15:43:01 jim Exp $
+ * $XConsortium: twm.c,v 1.96 89/11/29 14:48:23 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.95 89/11/28 15:43:01 jim Exp $";
+"$XConsortium: twm.c,v 1.96 89/11/29 14:48:23 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -722,6 +722,7 @@ Reborder ()
 
     /* put a border back around all windows */
 
+    XGrabServer (dpy);
     for (scrnum = 0; scrnum < NumScreens; scrnum++)
     {
 	if ((Scr = ScreenList[scrnum]) == NULL)
@@ -730,9 +731,11 @@ Reborder ()
 	for (tmp = Scr->TwmRoot.next; tmp != NULL; tmp = tmp->next)
 	{
 	    RestoreWithdrawnLocation (tmp);
+	    XMapWindow (dpy, tmp->w);
 	}
     }
 
+    XUngrabServer (dpy);
     SetFocus (NULL);
 }
 
