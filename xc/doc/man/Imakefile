@@ -1,11 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.5 91/09/09 15:42:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/08/19 09:48:12 rws Exp $
 
 #if InstallLibManPages
 #define IHaveSubdirs
 #define PassCDebugFlags
 #endif
 
-SUBDIRS = Xlib Xt Xext XI
+SUBDIRS = general X11 Xt Xext Xi
 
 all::
 
@@ -15,8 +15,3 @@ DependSubdirs($(SUBDIRS))
 #else
 depend:
 #endif
-
-InstallManPage(X,$(MANDIR))
-InstallManPageLong(Consortium,$(MANDIR),XConsortium)
-InstallManPageLong(Standards,$(MANDIR),XStandards)
-InstallManPageLong(security,$(MANDIR),Xsecurity)
