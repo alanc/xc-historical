@@ -1,4 +1,4 @@
-/* $XConsortium: xpr.c,v 1.52 91/05/10 12:21:30 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.53 91/06/30 18:49:40 rws Exp $ */
 
 /*
  * XPR - process xwd(1) files for various printers
@@ -1281,11 +1281,24 @@ char *name;
     char    hostname[256];
     struct passwd  *pswd;
     long    clock;
-    int lm, bm; /* left (bottom) margin (paper in portrait orientation) */
+    int lm, bm; /* left (bottom) margin */
 
+    /* calculate margins */
+    if (orientation==PORTRAIT) {
+	lm = (left > 0)? left : ((PAPER_WIDTH - scale * iw) / 2);
+	bm = (top > 0)? (PAPER_LENGTH - top - scale * ih)
+		: ((PAPER_LENGTH - scale * ih) / 2);
+    } else { /* orientation == LANDSCAPE */
+	lm = (top > 0)? (PAPER_WIDTH - top - scale * ih)
+		: ((PAPER_WIDTH - scale * ih) / 2);
+	bm = (left > 0)? (PAPER_LENGTH - left - scale * iw)
+		: ((PAPER_LENGTH - scale * iw) / 2);
+    }
     printf ("%%!%s\n", COMMENTVERSION);
-    printf ("%%%%BoundingBox: 0 0 %d %d\n",
-	    (iw * scale * 72)/300, (ih * scale * 72)/300);
+    printf ("%%%%BoundingBox: %d %d %d %d\n",
+	    (flags & F_NPOSITION) ? points(lm) : 0,
+	    (flags & F_NPOSITION) ? points(bm) : 0,
+	    points(iw * scale), points(ih * scale));
     pswd = getpwuid (getuid ());
     (void) XmuGetHostname (hostname, sizeof hostname);
     printf ("%%%%Creator: %s:%s (%s)\n", hostname,
@@ -1298,9 +1311,6 @@ char *name;
     dump_prolog(flags);
 
     if (orientation==PORTRAIT) {
-	lm = (left > 0)? left : ((PAPER_WIDTH - scale * iw) / 2);
-	bm = (top > 0)? (PAPER_LENGTH - top - scale * ih)
-		: ((PAPER_LENGTH - scale * ih) / 2);
 	if (header || trailer) {
 	    printf("gsave\n");
 	    printf("/Times-Roman findfont 15 scalefont setfont\n");
@@ -1328,12 +1338,6 @@ char *name;
 	/* dump the bitmap */
 	printf("%d %d %d bitdump\n",iw,ih,scale);
     } else { /* orientation == LANDSCAPE */
-	/* calculate margins */
-	lm = (top > 0)? (PAPER_WIDTH - top - scale * ih)
-		: ((PAPER_WIDTH - scale * ih) / 2);
-	bm = (left > 0)? (PAPER_LENGTH - left - scale * iw)
-		: ((PAPER_LENGTH - scale * iw) / 2);
-
 	if (header || trailer) {
 	    printf("gsave\n");
 	    printf("/Times-Roman findfont 15 scalefont setfont\n");
