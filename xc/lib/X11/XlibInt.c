@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.155 91/07/23 12:14:32 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.156 91/11/08 15:15:12 eswu Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1254,17 +1254,19 @@ static char *_SysErrorMsg (n)
 _XDefaultIOError (dpy)
 	Display *dpy;
 {
-	(void) fprintf (stderr, 
-	 "XIO:  fatal IO error %d (%s) on X server \"%s\"\r\n",
+	if (errno == EPIPE) {
+	    (void) fprintf (stderr,
+	"X connection to %s broken (explicit kill or server shutdown).\r\n",
+			    DisplayString (dpy));
+	} else {
+	    (void) fprintf (stderr, 
+			"XIO:  fatal IO error %d (%s) on X server \"%s\"\r\n",
 			errno, _SysErrorMsg (errno), DisplayString (dpy));
-	(void) fprintf (stderr, 
+	    (void) fprintf (stderr, 
 	 "      after %lu requests (%lu known processed) with %d events remaining.\r\n",
 			NextRequest(dpy) - 1, LastKnownRequestProcessed(dpy),
 			QLength(dpy));
 
-	if (errno == EPIPE) {
-	    (void) fprintf (stderr,
-	 "      The connection was probably broken by a server shutdown or KillClient.\r\n");
 	}
 	exit(1);
 }
