@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Header: glyphcurs.c,v 1.7 87/09/07 18:54:16 rws Locked $ */
+/* $Header: glyphcurs.c,v 1.8 87/09/07 18:54:49 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -67,7 +67,7 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
     PixmapPtr ppix;
     int nby;
     unsigned char *pbits;
-    int gcval[3];
+    XID gcval[3];
     unsigned char char2b[2];
 
     /* this takes in a short, which needs to be made into a char2b 
@@ -85,7 +85,7 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
 
     pScreen = &screenInfo.screen[0];
     nby = PixmapBytePad(cm->width, 1) * cm->height;
-    pbits = (unsigned char *)Xalloc(nby);
+    pbits = (unsigned char *)xalloc(nby);
     if (!pbits)
 	return BadAlloc;
 
@@ -93,7 +93,7 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
 					       cm->height, 1);
     if (!ppix)
     {
-	Xfree(pbits);
+	xfree(pbits);
 	return BadAlloc;
     }
     pGC = GetScratchGC(1, pScreen);
@@ -140,7 +140,7 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
 Bool
 CursorMetricsFromGlyph( pfont, ch, cm)
     register FontPtr 	pfont;
-    int		ch;
+    unsigned		ch;
     register CursorMetricPtr cm;
 {
     register CharInfoPtr 	pci = ADDRXTHISCHARINFO(pfont, ch);

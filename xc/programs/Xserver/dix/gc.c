@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.100 87/11/05 16:15:37 rws Exp $ */
+/* $Header: gc.c,v 1.101 87/12/31 17:27:02 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -70,7 +70,7 @@ ValidateGC(pDraw, pGC)
 ChangeGC(pGC, mask, pval)
     register GC 	*pGC;
     register BITS32	mask;
-    CARD32		*pval;
+    XID			*pval;
 {
     return (DoChangeGC(pGC, mask, pval, 0));
 }
@@ -91,10 +91,10 @@ int
 DoChangeGC(pGC, mask, pval, fPointer)
     register GC 	*pGC;
     register BITS32	mask;
-    CARD32		*pval;
+    XID			*pval;
     int			fPointer;
 {
-    register int 	index;
+    register BITS32 	index;
     register int 	error = 0;
     PixmapPtr 		pPixmap;
     BITS32		maskQ;
@@ -105,8 +105,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
     maskQ = mask;	/* save these for when we walk the GCque */
     while (mask && !error) 
     {
-	index = ffs(mask) - 1;
-	mask &= ~(index = (1 << index));
+	index = (BITS32)1 << (ffs(mask) - 1);
+	mask &= ~index;
 	pGC->stateChanges |= index;
 	switch (index)
 	{
@@ -311,9 +311,9 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    case GCDashList:
-		Xfree(pGC->dash);
+		xfree(pGC->dash);
 		pGC->numInDashList = 2;
-		pGC->dash = (unsigned char *)Xalloc(2 * sizeof(unsigned char));
+		pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
 		pGC->dash[0] = (CARD8)(*pval);
 		pGC->dash[1] = (CARD8)(*pval++);
 		break;
@@ -357,8 +357,8 @@ GC *
 CreateGC(pDrawable, mask, pval, pStatus)
     DrawablePtr	pDrawable;
     BITS32	mask;
-    long	*pval;
-    BITS32	*pStatus;
+    XID		*pval;
+    int		*pStatus;
 {
     register GC *pGC;
     extern FontPtr defaultFont;
@@ -366,7 +366,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     void 	(**j)();
 #endif /* DEBUG */
 
-    pGC = (GC *)Xalloc(sizeof(GC));
+    pGC = (GC *)xalloc(sizeof(GC));
     if (!pGC)
 	return (GC *)NULL;
 
@@ -409,7 +409,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->clientClipType = CT_NONE;
     pGC->clientClip = (pointer)NULL;
     pGC->numInDashList = 2;
-    pGC->dash = (unsigned char *)Xalloc(2 * sizeof(unsigned char));
+    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
     pGC->dash[0] = 4;
     pGC->dash[1] = 4;
     pGC->dashOffset = 0;
@@ -419,7 +419,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     */
     if(!mask & GCTile)
     {
-	CARD32		tmpval[3];
+	XID		tmpval[3];
 	PixmapPtr 	pTile;
 	GCPtr		pgcScratch;
 	xRectangle	rect;
@@ -440,7 +440,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	pgcScratch = GetScratchGC(pGC->depth, pGC->pScreen);
 	ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
 		 tmpval);
-	ValidateGC(pTile, pgcScratch);
+	ValidateGC((DrawablePtr)pTile, pgcScratch);
 	rect.x = 0;
 	rect.y = 0;
 	rect.width = w;
@@ -466,10 +466,10 @@ void
 CopyGC(pgcSrc, pgcDst, mask)
     register GC		*pgcSrc;
     register GC		*pgcDst;
-    register int	mask;
+    register BITS32	mask;
 {
-    register int	index;
-    int			maskQ;
+    register BITS32	index;
+    BITS32		maskQ;
     GCInterestPtr	pQ, pQInit;
     int i;
 
@@ -478,8 +478,8 @@ CopyGC(pgcSrc, pgcDst, mask)
     maskQ = mask;
     while (mask)
     {
-	index = ffs(mask) - 1;
-	mask &= ~(index = (1 << index));
+	index = (BITS32)1 << (ffs(mask) - 1);
+	mask &= ~index;
 	switch (index)
 	{
 	    case GCFunction:
@@ -565,9 +565,9 @@ CopyGC(pgcSrc, pgcDst, mask)
 		pgcDst->dashOffset = pgcSrc->dashOffset;
 		break;
 	    case GCDashList:
-		Xfree(pgcDst->dash);
+		xfree(pgcDst->dash);
 		pgcDst->dash = (unsigned char *)
-				Xalloc(pgcSrc->numInDashList * sizeof(unsigned char));
+				xalloc(pgcSrc->numInDashList * sizeof(unsigned char));
 		pgcDst->numInDashList = pgcSrc->numInDashList;
 		for (i=0; i<pgcSrc->numInDashList; i++)
 		    pgcDst->dash[i] = pgcSrc->dash[i];
@@ -605,10 +605,10 @@ CopyGC(pgcSrc, pgcDst, mask)
  ***************/
 
 /*ARGSUSED*/
-void
+int
 FreeGC(pGC, gid)
     GC *pGC;
-    int gid;
+    GContext gid;
 {
     GCInterestPtr	pQ, pQInit, pQnext;
 
@@ -628,8 +628,9 @@ FreeGC(pGC, gid)
 	pQ = pQnext;
     }
     while(pQ != pQInit);
-    Xfree(pGC->dash);
-    Xfree(pGC);
+    xfree(pGC->dash);
+    xfree(pGC);
+    return(Success);
 }
 
 void
@@ -670,7 +671,7 @@ CreateScratchGC(pScreen, depth)
     void 	(**j)();
 #endif /* DEBUG */
 
-    pGC = (GC *)Xalloc(sizeof(GC));
+    pGC = (GC *)xalloc(sizeof(GC));
     if (!pGC)
 	return (GC *)NULL;
 
@@ -709,7 +710,7 @@ CreateScratchGC(pScreen, depth)
     pGC->clipOrg.y = 0;
     pGC->clientClipType = CT_NONE;
     pGC->numInDashList = 2;
-    pGC->dash = (unsigned char *)Xalloc(2 * sizeof(unsigned char));
+    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
     pGC->dash[0] = 4;
     pGC->dash[1] = 4;
     pGC->dashOffset = 0;
@@ -731,11 +732,11 @@ FreeGCperDepth(screenNum)
     ppGC = (GCPtr *) pScreen->GCperDepth;
 
     /* do depth 1 seperately because it's not included in list */
-    FreeGC(ppGC[0], 0);
+    (void)FreeGC(ppGC[0], 0);
 
     for (i = 0; i < pScreen-> numDepths; i++)
     {
-	FreeGC(ppGC[i+1], 0);
+	(void)FreeGC(ppGC[i+1], 0);
     }
 }
 
@@ -766,7 +767,7 @@ CreateDefaultStipple(screenNum)
     int screenNum;
 {
     register ScreenPtr pScreen;
-    int tmpval[3];
+    XID tmpval[3];
     xRectangle rect;
     short w, h;
     GCPtr pgcScratch;
@@ -783,7 +784,7 @@ CreateDefaultStipple(screenNum)
     tmpval[0] = GXcopy; tmpval[1] = 1; tmpval[2] = FillSolid;
     pgcScratch = GetScratchGC(1, pScreen);
     ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, tmpval);
-    ValidateGC(pScreen->PixmapPerDepth[0], pgcScratch);
+    ValidateGC((DrawablePtr)pScreen->PixmapPerDepth[0], pgcScratch);
     rect.x = 0;
     rect.y = 0;
     rect.width = w;
@@ -803,11 +804,11 @@ FreeDefaultStipple(screenNum)
 
 SetDashes(pGC, offset, ndash, pdash)
 register GCPtr pGC;
-int offset;
-register int ndash;
+unsigned offset;
+register unsigned ndash;
 register unsigned char *pdash;
 {
-    register int i;
+    register long i;
     register unsigned char *p;
     GCInterestPtr	pQ, pQInit;
     BITS32 maskQ = 0;
@@ -831,8 +832,8 @@ register unsigned char *pdash;
 	maskQ |= GCDashOffset;
     }
 
-    p = (unsigned char *)Xalloc(ndash * sizeof(unsigned char));
-    Xfree(pGC->dash);
+    p = (unsigned char *)xalloc(ndash * sizeof(unsigned char));
+    xfree(pGC->dash);
     pGC->dash = p;
     pGC->numInDashList = ndash;
     while(ndash--)
@@ -920,8 +921,8 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
     pGC->stateChanges |= GCClipYOrigin;
 
     size = nrects * sizeof(xRectangle);
-    prectsNew = (xRectangle *) Xalloc(size);
-    bcopy(prects, prectsNew, size);
+    prectsNew = (xRectangle *) xalloc(size);
+    bcopy((char *)prects, (char *)prectsNew, size);
     (*pGC->ChangeClip)(pGC, newct, prectsNew, nrects);
     pQ = pGC->pNextGCInterest;
     pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
@@ -1007,7 +1008,7 @@ FreeScratchGC(pGC)
 	    return;
 	}
     }
-    FreeGC(pGC, 0);
+    (void)FreeGC(pGC, 0);
 }
 
 
