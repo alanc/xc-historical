@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.14 90/10/30 17:38:35 dave Exp $
+ * $XConsortium: Bitmap.c,v 1.15 90/10/31 18:26:21 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -283,6 +283,7 @@ BitmapClassRec bitmapClassRec = {
  
 WidgetClass bitmapWidgetClass = (WidgetClass) &bitmapClassRec;
     
+/* ARGSUSED */
 void BWDebug(w)
     Widget w;
 {
@@ -496,8 +497,6 @@ void BWSelect(w, from_x, from_y, to_x, to_y, btime)
 	     to_x, to_y;
     Time btime;
 {
-    BitmapWidget BW = (BitmapWidget) w;
-    
     BWMark(w, from_x, from_y, to_x, to_y);
 
     BWGrabSelection(w, btime);
@@ -634,6 +633,7 @@ static void ClassInitialize()
   
 }
 
+/* ARGSUSED */
 static void Initialize(request, new, argv, argc)
     BitmapWidget request, new;
     ArgList argv;
@@ -810,6 +810,7 @@ void FixMark(BW)
     }
 }
 
+/* ARGSUSED */
 int BWStoreFile(w, filename, basename)
     Widget w;
     String filename, *basename;
@@ -985,6 +986,8 @@ int BWWriteFile(w, filename, basename)
     int status;
     
     if (BW->bitmap.zooming) {
+        data = XtMalloc(Length(BW->bitmap.zoom.image->width, 
+			       BW->bitmap.zoom.image->height));
 	bcopy(BW->bitmap.zoom.image->data, data,
 	      Length(BW->bitmap.zoom.image->width, 
 		     BW->bitmap.zoom.image->height));
@@ -1347,6 +1350,7 @@ static void Resize(BW)
 			(BW->bitmap.squareH > BW->bitmap.grid_tolerance));
 }
 
+/* ARGSUSED */
 static void Redisplay(BW, event, region)
      BitmapWidget BW;
      XEvent      *event;

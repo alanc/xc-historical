@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.h,v 1.1 90/03/29 15:21:43 dmatic Exp $
+ * $XConsortium: Dialog.h,v 1.2 90/04/25 08:30:56 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,15 +41,6 @@ typedef struct {
     String name;
     unsigned long flag;
 } DialogButton;
-
-static DialogButton dialog_buttons[] = {
-    {"yes", Yes},
-    {"no", No},
-    {"okay", Okay},
-    {"abort", Abort},
-    {"cancel", Cancel},
-    {"retry", Retry},
-};
 
 extern Dialog CreateDialog();
 extern int PopupDialog();

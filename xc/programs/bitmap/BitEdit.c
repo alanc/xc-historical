@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.9 90/10/30 17:38:05 dave Exp $
+ * $XConsortium: BitEdit.c,v 1.10 90/10/31 18:25:49 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -381,6 +381,7 @@ void FixEntry(w, id)
     XtSetValues(w, wargs, n);
 }
 
+/* ARGSUSED */
 void FixMenu(w, event)
     Widget w;
     XEvent *event;
@@ -431,6 +432,7 @@ void DoQuit()
 
 static int zero = 0;
 #define Plain  &zero,sizeof(int)
+/* ARGSUSED */
 void TheCallback(w, id)
      Widget w;
      int   *id;
@@ -838,6 +840,7 @@ void TheCallback(w, id)
     }
 }
 
+/* ARGSUSED */
 void BAPopdownImage(w, call_data, event)
     Widget  w;
     caddr_t call_data;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.2 90/09/14 13:38:59 dmatic Exp $
+ * $XConsortium: Graphics.c,v 1.3 90/10/31 18:26:30 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,10 +41,9 @@
 #define abs(x)                        (((x) > 0) ? (x) : -(x))
 #define min(x, y)                     (((x) < (y)) ? (x) : (y))
 #define max(x, y)                     (((x) > (y)) ? (x) : (y))
-
-
-static Boolean DEBUG = False;
-
+#ifdef SYSV 
+#define rint(x)                       floor(x + 0.5)
+#endif
 
 /*****************************************************************************\
  *                                   Graphics                                *
@@ -222,8 +221,6 @@ void BWSetHotSpot(w, x, y)
     else
 	BWClearHotSpot(w);
 }
-
-void CopyImageData();
 
 /* high level procedures */
 
@@ -586,7 +583,6 @@ void BWFloodFill(w, x, y, value)
 	FloodLoop(BW, x, y, value); 
 }
 
-Boolean BWQueryMarked();
 #define QueryHotInMark(BW)\
     ((BW->bitmap.hot.x == max(BW->bitmap.mark.from_x,\
 			      min(BW->bitmap.hot.x, BW->bitmap.mark.to_x)))\

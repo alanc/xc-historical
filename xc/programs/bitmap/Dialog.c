@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.c,v 1.3 90/06/09 20:20:23 dmatic Exp $
+ * $XConsortium: Dialog.c,v 1.4 90/09/14 13:38:56 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -42,8 +42,18 @@ static XtActionsRec actions_table[] = {
   {"set-okay", SetOkay},
 };
 
+static DialogButton dialog_buttons[] = {
+    {"yes", Yes},
+    {"no", No},
+    {"okay", Okay},
+    {"abort", Abort},
+    {"cancel", Cancel},
+    {"retry", Retry},
+};
+
 static int selected;
 
+/* ARGSUSED */
 static void SetSelected(w, name)
      Widget w;
      String name;
@@ -68,9 +78,10 @@ Dialog CreateDialog(top_widget, name, options)
 {
     int i;
     Dialog popup;
-    
-    if (popup = (Dialog) XtMalloc(sizeof(_Dialog))) {
-	
+
+    popup = (Dialog) XtMalloc(sizeof(_Dialog));
+
+    if (popup) {
 	XtAddActions(actions_table, XtNumber(actions_table));
 	
 	popup->top_widget = top_widget;

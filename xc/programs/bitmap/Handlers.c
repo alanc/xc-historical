@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.1 90/06/09 20:20:35 dmatic Exp $
+ * $XConsortium: Handlers.c,v 1.2 90/10/30 17:38:55 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -89,8 +89,8 @@ void DragOnePointHandler(w, status, event)
 	    status->at_x = InBitmapX(BW, event->xbutton.x);
 	    status->at_y = InBitmapY(BW, event->xbutton.y);
 	    status->success = (Boolean) status->draw;
-      
-	    BWTerminateRequest(w, TRUE);
+	    /* SUPPRESS 701 */
+	    BWTerminateRequest(w, TRUE); 
 	}
 	break;
 
@@ -128,6 +128,7 @@ void DragOnePointEngage(w, status, draw, state)
 		      FALSE, DragOnePointHandler, status);
 }
 
+/* ARGSUSED */
 void DragOnePointTerminate(w, status, client_data)
     Widget     w;
     BWStatus  *status;
@@ -499,6 +500,7 @@ void TwoPointsTerminateTimed(w, status, draw)
 			 FALSE, TwoPointsHandler, status);
 }
 
+/* ARGSUSED */
 void Interface(w, status, action)
     Widget     w;
     caddr_t    status;
@@ -535,7 +537,7 @@ void Paste(w, at_x, at_y, value)
 	if (DEBUG)
 	    fprintf(stderr, "Prepaste request: %s\n", request);
 	
-	BWEngageRequest(w, request, False, &(my_status->state), sizeof(int));
+	BWEngageRequest(w, request, False, (char *)&(my_status->state), sizeof(int));
 	
 	status = (BWStatus *) 
 	    BW->bitmap.request_stack[BW->bitmap.current].status;
@@ -549,7 +551,7 @@ void Paste(w, at_x, at_y, value)
 
 	BWStatus *status;
 	
-      BWEngageRequest(w, MarkRequest, False, &(my_status->state), sizeof(int));
+      BWEngageRequest(w, MarkRequest, False, (char *)&(my_status->state), sizeof(int));
 	
 	status = (BWStatus *) 
 	    BW->bitmap.request_stack[BW->bitmap.current].status;
@@ -685,7 +687,7 @@ void BWTPaste(w, event)
 	return;
     
     BWEngageRequest(w, RestoreRequest, False, 
-		    &(event->xbutton.state), sizeof(int));
+		    (char *)&(event->xbutton.state), sizeof(int));
     
     OnePointHandler(w,
 	       (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
@@ -699,7 +701,7 @@ void BWTMark(w, event)
     BitmapWidget BW = (BitmapWidget) w;
 
     BWEngageRequest(w, MarkRequest, False,
-		    &(event->xbutton.state), sizeof(int));
+		    (char *)&(event->xbutton.state), sizeof(int));
     TwoPointsHandler(w,
             (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
 	     event);

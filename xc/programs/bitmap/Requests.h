@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Requests.h,v 1.2 90/06/09 20:20:44 dmatic Exp $
+ * $XConsortium: Requests.h,v 1.3 90/10/30 17:39:01 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -22,8 +22,6 @@
  *
  * Author:  Davor Matic, MIT X Consortium
  */
-
-
 
 typedef struct {
     Boolean  success;
@@ -70,7 +68,7 @@ void BWDrawHotSpot();
 void BWChangeNotify();
 void BWZoomIn();
 
-static BWRequestRec requests[] =
+static BWRequestRec requests[] = /* SUPPRESS 592 */
 {
 {MarkRequest, sizeof(BWStatus),
      TwoPointsEngage, (caddr_t) BWDrawRectangle,
@@ -137,3 +135,4 @@ static BWRequestRec requests[] =
      TwoPointsTerminate, (caddr_t) BWZoomIn,
      NULL, (caddr_t) NULL},
 };
+

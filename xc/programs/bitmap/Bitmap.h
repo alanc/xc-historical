@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.h,v 1.4 90/04/25 08:30:49 dmatic Exp $
+ * $XConsortium: Bitmap.h,v 1.5 90/10/31 18:26:25 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -206,6 +206,43 @@ extern String BWGetFilename();
 extern String BWGetBasename();
 extern void BWChangeBasename();
 extern void BWRemoveAllRequests();
+extern void BWClearHotSpot();
+extern Boolean BWQueryMarked();
+extern void BWFold();
+extern void BWClear();
+extern void BWSet();
+extern void BWInvert();
+extern void BWFlipHoriz();
+extern void BWFlipVert();
+extern void BWClearMarked();
+extern Boolean BWAddRequest();
+extern void BWChangeNotify();
+extern Pixmap BWGetUnzoomedPixmap();
+extern void BWClearChanged();
+extern Boolean BWQueryStored();
+extern Boolean BWQueryStippled();
+extern void BWSwitchStippled();
+extern void BWRedrawMark();
+extern Boolean BWQueryAxes();
+extern void BWHighlightAxes();
+extern void CopyImageData();
+extern void BWChangedFilename();
+extern String BWGetFilepath();
+extern void BWZoomOut();
+extern void BWZoomMarked();
+extern void BWRescale();
+extern Boolean BWQueryZooming();
+extern void BWRedrawGrid();
+extern void BWRedrawSquares();
+extern void BWRedrawHotSpot();
+extern Boolean BWQueryGrid();
+extern Boolean BWQueryDashed();
+extern Boolean BWQueryProportional();
+extern void BWSwitchProportional();
+extern void BWDrawGrid();
+extern void BWChangeFilename();
+extern void Notify();
+extern void TransferImageData();
 
 typedef struct _BWRequestRec BWRequestRec;
 typedef char *BWRequest;

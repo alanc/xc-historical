@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.1 90/06/09 20:20:41 dmatic Exp $
+ * $XConsortium: ReqMach.c,v 1.2 90/10/31 18:26:36 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -79,7 +79,8 @@ Boolean BWAddRequest(w, name, trap, call_data, call_data_size)
     BitmapWidget BW = (BitmapWidget) w;
     BWRequestRec *request;
     
-    if(request = FindRequest(name)) {
+    request = FindRequest(name);
+    if(request) {
 	if (DEBUG)
 	  fprintf(stderr, "Adding... Cardinal: %d\n", BW->bitmap.cardinal + 1);
 
@@ -241,7 +242,7 @@ Boolean BWRemoveRequest(w)
 
 void BWRemoveAllRequests(w)
     Widget w;
-{
+{				/* SUPPRESS 530 */
     while (BWRemoveRequest(w)) {/* removes all requests from the stack */}
 }
 
