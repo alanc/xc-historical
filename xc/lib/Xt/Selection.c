@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.58 90/12/26 16:39:18 rws Exp $ */
+/* $XConsortium: Selection.c,v 1.59 90/12/28 16:05:11 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -731,6 +731,10 @@ Boolean incremental;
 				     WidgetDestroyed, (XtPointer)ctx);
 		    replacement = TRUE;
 		}
+		else if (!ctx->was_disowned) {
+		    oldctx = *ctx;
+		    old_context = TRUE;
+		}
 		ctx->free_when_done = TRUE;
 		ctx = NewContext(XtDisplay(widget), selection);
 	    }
@@ -744,7 +748,8 @@ Boolean incremental;
 			      HandleSelectionEvents, (XtPointer)ctx);
 	    XtAddCallback(widget, XtNdestroyCallback,
 			  WidgetDestroyed, (XtPointer)ctx);
-	    if (ctx->widget && !ctx->was_disowned && !replacement) {
+	    if (ctx->widget && !ctx->was_disowned && !replacement && 
+		!old_context) {
 		oldctx = *ctx;
 		old_context = TRUE;
 	    }
