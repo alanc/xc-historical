@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.210 94/01/16 15:00:41 gildea Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.211 94/01/19 12:19:10 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -844,6 +844,13 @@ UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
 #endif
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#endif
+
+#ifndef XawSessionClientDepLibs
+#define XawSessionClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPSMLIB) $(DEPICELIB)
+#endif
+#ifndef XawSessionClientLibs
+#define XawSessionClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(SMLIB) $(ICELIB)
 #endif
 
 #ifndef NeedDefaultDepLibs
