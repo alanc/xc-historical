@@ -38,6 +38,7 @@ hpLib.tmpl \
 ibmLib.tmpl \
 necLib.tmpl \
 osfLib.tmpl \
+sgiLib.tmpl \
 sunLib.tmpl \
 sv4Lib.tmpl
 

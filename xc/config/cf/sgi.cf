@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.48 95/03/17 20:53:33 gildea Exp kaleb $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.49 95/04/07 18:59:01 kaleb Exp kaleb $
 
 #ifndef OSName
 #define OSName			IRIX 5.2
@@ -33,6 +33,7 @@ XCOMM operating system:  OSName
 #define HasWChar32              YES
 #define HasVFork		NO
 #define XawI18nDefines		-DHAS_WCTYPE_H -DHAS_ISW_FUNCS
+#define AllocateLocalDefines	-DINCLUDE_ALLOCA_H
 #endif
 
 #if OSMajorVersion == 6
@@ -73,7 +74,7 @@ XCOMM operating system:  OSName
 #define ExtraLibraries -lsun -lmalloc -lc_s -lw
 #define sgiCCOptions -xansi -D__STDC__=1 -float
 #else
-#define sgiCCOptions
+#define sgiCCOptions -xansi
 /* SGI's -lsocket -lnsl is broken, at least in 5.2, so override here */
 #define ExtraLibraries -lw
 #endif
@@ -109,9 +110,9 @@ XCOMM operating system:  OSName
 #define DefaultSystemPath /usr/sbin:/usr/bsd:/bin:/etc:/usr/bin:/usr/etc:$(BINDIR)
 
 #define BuildServer             NO
-#define ServerOSDefines		-DDDXTIME
+#define ServerOSDefines		-DDDXTIME 
 /* only need this for binary compatibility with their ddx */
-#define ServerExtraDefines	-DNEED_LINEHELPER
+#define ServerExtraDefines	-DNEED_LINEHELPER AllocateLocalDefines
 
 /* Changed to a single shell command for pmake/smake */
 #if OSMajorVersion < 5
