@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.19 91/04/02 17:37:22 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.20 91/04/02 19:15:01 rws Exp $
  */
 
 /*
@@ -252,10 +252,18 @@ static int lock_name;
 #endif
 
 /*ARGSUSED*/
+#if NeedFunctionPrototypes
 char *
-_XSetLocale(category, name)
+_X_setlocale(
+    int		  category,
+    _Xconst char *name
+)
+#else
+char *
+_X_setlocale(category, name)
     int		category;
     char       *name;
+#endif
 {
     extern char *getenv();
     char	*lang;
