@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.86 93/08/23 13:54:06 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.87 93/08/24 12:14:47 rws Exp $ */
 
 				  X Registry
 
@@ -84,6 +84,7 @@ Name						Reference
 "WRI"						[102]
 "WYSE"						[68]
 "X3D"						[8]
+"XC"						[104]
 "Xerox"						[91]
 "XUG"						[31]
 
@@ -1404,3 +1405,8 @@ REFERENCES
 
 [103]	University of Washington
 	for WM Tamil fonts
+
+[104]	X Consortium
+	One Memorial Drive
+	PO Box 546
+	Cambridge MA 02142-0004
