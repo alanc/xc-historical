@@ -1,4 +1,4 @@
-/* $XConsortium: Popup.c,v 1.30 91/05/09 18:07:59 swick Exp $ */
+/* $XConsortium: Popup.c,v 1.31 92/03/30 11:53:19 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -72,9 +72,13 @@ void _XtPopup(widget, grab_kind, spring_loaded)
 
 } /* _XtPopup */
 
+#if NeedFunctionPrototypes
+void XtPopup (Widget widget, XtGrabKind grab_kind)
+#else
 void XtPopup (widget, grab_kind)
     Widget  widget;
     XtGrabKind grab_kind;
+#endif
 {
     switch (grab_kind) {
 
