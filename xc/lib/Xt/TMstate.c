@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.94 89/12/03 13:36:44 jim Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.95 89/12/09 23:02:46 rws Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -2380,9 +2380,8 @@ static void GrabAllCorrectKeys(widget, event, grabP)
 	    XtTranslateKeycode( dpy, *keycodeP, (Modifiers)0,
 			        &modifiers_return, &keysym );
 	    if (keysym == event->eventCode) {
-		XGrabKey( dpy, *keycodeP,
+		XtGrabKey(widget, *keycodeP,
 			  (unsigned)event->modifiers,
-			  XtWindow(widget),
 			  grabP->owner_events,
 			  grabP->pointer_mode,
 			  grabP->keyboard_mode
@@ -2398,9 +2397,8 @@ static void GrabAllCorrectKeys(widget, event, grabP)
 					(Modifiers)std_mods,
 					&modifiers_return, &keysym );
 		    if (keysym == event->eventCode) {
-			XGrabKey( dpy, *keycodeP,
+			XtGrabKey(widget, *keycodeP,
 				  (unsigned)event->modifiers | std_mods,
-				  XtWindow(widget),
 				  grabP->owner_events,
 				  grabP->pointer_mode,
 				  grabP->keyboard_mode
@@ -2410,9 +2408,8 @@ static void GrabAllCorrectKeys(widget, event, grabP)
 		}
 	    }
 	} else /* !event->standard */ {
-	    XGrabKey( dpy, *keycodeP,
+	    XtGrabKey(widget, *keycodeP,
 		      (unsigned)event->modifiers,
-		      XtWindow(widget),
 		      grabP->owner_events,
 		      grabP->pointer_mode,
 		      grabP->keyboard_mode
@@ -2458,11 +2455,10 @@ void _XtRegisterGrabs(widget,tm)
 			switch (event->eventType) {
 			    case ButtonPress:
 			    case ButtonRelease:
-				XGrabButton(
-				    XtDisplay(widget),
+				XtGrabButton(
+				    widget,
 				    (unsigned) event->eventCode,
 				    (unsigned) event->modifiers,
-				    XtWindow(widget),
 				    grabP->owner_events,
 				    grabP->event_mask,
 				    grabP->pointer_mode,
