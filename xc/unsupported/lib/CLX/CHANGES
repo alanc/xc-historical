@@ -141,10 +141,10 @@ o Fixed typo in DEFINE-CONDITION for #-(or lispm clx-ansi-common-lisp excl lcl3.
 
 o Fixed typo in MERGE-RESOURCES 
 
-o In Lucid lisp, the functions aref-card16, aref-int16, aref-card32, aref-int32, 
-  aref-card29, aset-card16, aset-int16, aset-card32, aset-int32, and aset-card29
-  are no longer declared inline since people were haing problems with them
-  when using the compiler in development mode.
+o In Lucid lisp, the functions aref-card8, aref-int8, aset-card8, aset-int8,
+  aref-card16, aref-int16, aref-card32, aref-int32, aref-card29, aset-card16,
+  aset-int16, aset-card32, aset-int32, and aset-card29 Have been fixed so that
+  they can be used inline with the development compiler.
 
 o The default value of the BYTE-LSB-FIRST-P argument to CREATE-IMAGE has been
   changed from always T to T on LSBFirst machines and NIL on MSBFirst machines.
