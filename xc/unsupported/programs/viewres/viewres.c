@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.55 90/03/09 18:03:08 jim Exp $
+ * $XConsortium: viewres.c,v 1.56 90/03/09 18:09:35 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -116,6 +116,24 @@ static XtResource Resources[] = {
 
 static char *fallback_resources[] = {
     "*allowShellResize: true",
+    "*Porthole.top: ChainTop",
+    "*Porthole.left: ChainLeft",
+    "*Porthole.bottom: ChainBottom",
+    "*Porthole.right:  ChainRight",
+    "*Porthole.resizable: on",
+    "*Panner.top: ChainTop",
+    "*Panner.left: ChainLeft",
+    "*Panner.bottom: ChainTop",
+    "*Panner.right:  ChainLeft",
+    "*Panner.resizable: on",
+    "*Tree*ShapeStyle: rectangle",
+    "*Tree*Toggle*BorderWidth: 0",
+    "*Porthole*Box.BorderWidth: 0",
+    "*Porthole*Box.HSpace: 0",
+    "*Porthole*Box.VSpace: 0",
+    "*Paned*allowResize: true",
+    "*buttonbox.quit.Translations:  #override \\n <Btn1Down>,<Btn1Up>: Quit() unset()",
+    "*Toggle.Translations: #augment \\n <Btn2Down>,<Btn2Up>: set() notify() Resources(toggle)",
     (char *) NULL
 };
 
