@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.110 92/03/13 16:07:53 rws Exp $ */
+/* $XConsortium: utils.c,v 1.111 92/03/31 17:50:08 keith Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -90,8 +90,6 @@ extern int SelectWaitTime;
 #ifdef MEMBUG
 #define MEM_FAIL_SCALE 100000
 long Memory_fail = 0;
-
-#include <util/memleak/memleak.h>
 
 #endif
 
@@ -530,12 +528,9 @@ Xalloc (amount)
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
 	return (unsigned long *)NULL;
-    if (ptr = (pointer)fmalloc(amount))
-	return (unsigned long *) ptr;
-#else
+#endif
     if (ptr = (pointer)malloc(amount))
 	return (unsigned long *)ptr;
-#endif
     if (Must_have_memory)
 	FatalError("Out of memory");
     return (unsigned long *)NULL;
@@ -573,10 +568,7 @@ Xrealloc (ptr, amount)
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
 	return (unsigned long *)NULL;
-    ptr = (pointer)frealloc((char *) ptr, amount);
-    if (ptr)
-	return (unsigned long *) ptr;
-#else
+#endif
     if ((long)amount <= 0)
     {
 	if (ptr && !amount)
@@ -590,7 +582,6 @@ Xrealloc (ptr, amount)
 	ptr = (pointer)malloc(amount);
     if (ptr)
         return (unsigned long *)ptr;
-#endif
     if (Must_have_memory)
 	FatalError("Out of memory");
     return (unsigned long *)NULL;
@@ -605,13 +596,8 @@ void
 Xfree(ptr)
     register pointer ptr;
 {
-#ifdef MEMBUG
-    if (ptr)
-	ffree ((char *) ptr);
-#else
     if (ptr)
 	free((char *)ptr); 
-#endif
 }
 
 OsInitAllocator ()
