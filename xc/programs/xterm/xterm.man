@@ -1,9 +1,9 @@
-.TH XTERM 1 "Release 4" "X Version 11"
+.TH XTERM 1 "Release 5" "X Version 11"
 .SH NAME
 xterm \- terminal emulator for X
 .SH SYNOPSIS
 .B xterm
-[-\fItoolkitoption\fP ...] [-option ...]
+[\-\fItoolkitoption\fP ...] [\-option ...]
 .SH DESCRIPTION
 The \fIxterm\fP program is a terminal emulator for the X Window System.
 It provides DEC VT102 and Tektronix 4014 
@@ -23,8 +23,80 @@ Although both windows may be displayed at the same time, one of them is
 considered the ``active'' window for receiving keyboard input and terminal
 output.  This is the window that contains the text cursor.
 The active window can be chosen through escape sequences,
-the ``Modes'' menu in the VT102 window, and the ``Tektronix''
+the ``VT Options'' menu in the VT102 window, and the ``Tek Options''
 menu in the 4014 window.
+.SH EMULATIONS
+The VT102 emulation is fairly complete, but does not support the blinking
+character attribute nor the double-wide and double-size character sets.
+.IR Termcap (5)
+entries that work with
+.I xterm
+include ``xterm,'' ``vt102,'' ``vt100'' and ``ansi,'' and
+.I xterm
+automatically searches the termcap file in this order for these entries and then
+sets the ``TERM'' and the ``TERMCAP'' environment variables.
+.PP
+Many of the special
+.I xterm
+features (like logging) may be modified under program control
+through a set of escape sequences different from the standard VT102 escape
+sequences.  
+(See the
+.I "Xterm Control Sequences"
+document.)
+.PP
+The Tektronix 4014 emulation is also fairly good.
+Four different font sizes and five different lines types are supported.
+The Tektronix text and graphics commands are recorded internally by
+.I xterm
+and may be written to a file by sending the COPY escape sequence (or through
+the
+.B Tektronix
+menu; see below).
+The name of the file will be
+``\fBCOPY\fIyy\fB\-\fIMM\fB\-\fIdd\fB.\fIhh\fB:\fImm\fB:\fIss\fR'', where
+.IR yy ,
+.IR MM ,
+.IR dd ,
+.IR hh ,
+.I mm
+and
+.I ss
+are the year, month, day, hour, minute and second when the COPY was performed
+(the file is created in the directory
+.I xterm
+is started in, or the home directory for a login
+.IR xterm ).
+.SH "OTHER FEATURES"
+.I Xterm
+automatically highlights the text cursor when the
+pointer enters the window (selected) and unhighlights it when the pointer
+leaves the window (unselected).
+If the window is the focus window, then the text cursor is
+highlighted no matter where the pointer is.
+.PP
+In VT102 mode, there are escape sequences to activate and deactivate
+an alternate screen buffer, which is the same size as the display area
+of the window.
+When activated, the current screen is saved and replaced with the alternate
+screen.
+Saving of lines scrolled off the top of the window is disabled until the
+normal screen is restored.
+The
+.IR termcap (5)
+entry for
+.I xterm
+allows the visual editor
+.IR vi (1)
+to switch to the alternate screen for editing and to restore the screen
+on exit.  
+.PP
+In either VT102 or Tektronix mode, there are escape sequences to change the
+name of the windows and to specify a new log file name.
+See \fIXterm Control Sequences\fP for details.
+Enabling the escape sequence to change the
+log file name is a compile-time option;
+by default this escape sequence is ignored for security reasons.
 .SH OPTIONS
 The \fIxterm\fP terminal emulator 
 accepts all of the standard X Toolkit command line options as well as
@@ -94,8 +166,8 @@ bug mentioned above.
 .BI \-e " program \[arguments \.\.\.\]"
 This option specifies the program (and its command line arguments) to be
 run in the \fIxterm\fP window.  It also sets the window title and icon
-name to be the basename of the program being executed if neither \fI-T\fP
-nor \fI-n\fP are given on the command line.  \fBThis must be the last 
+name to be the basename of the program being executed if neither \fI\-T\fP
+nor \fI\-n\fP are given on the command line.  \fBThis must be the last 
 option on the command line.\fP
 .TP 8
 .BI \-fb " font"
@@ -111,7 +183,8 @@ text is scrolled one line at a time; this option allows \fIxterm\fP to move
 multiple lines at a time so that it doesn't fall as far behind.  Its use is
 strongly recommended since it make \fIxterm\fP much faster when scanning
 through large amounts of text.  The VT100 escape sequences for enabling and
-disabling smooth scroll as well as the ``Modes'' menu can be used to turn this
+disabling smooth scroll as well as the ``VT Options''
+menu can be used to turn this
 feature on or off.
 .TP 8
 .B \+j
@@ -120,7 +193,7 @@ This option indicates that \fIxterm\fP should not do jump scrolling.
 .B \-l
 This option indicates that \fIxterm\fP should send all terminal output to
 a log file as well as to the screen.  This option can be enabled or disabled
-using the ``xterm X11'' menu.
+using the ``VT Options'' menu.
 .TP 8
 .B \+l
 This option indicates that \fIxterm\fP should not do logging.
@@ -129,6 +202,8 @@ This option indicates that \fIxterm\fP should not do logging.
 This option specifies the name of the file to which the output log described
 above is written.  If \fIfile\fP begins with a pipe symbol (|), the rest of 
 the string is assumed to be a command to be used as the endpoint of a pipe.
+The ability to log to a pipe is a compile-time option which is
+disabled by default for security reasons.
 The default filename is ``\fBXtermLog.\fIXXXXX\fR'' (where \fIXXXXX\fP
 is the process id of \fIxterm\fP) and is created in the directory from which
 \fIxterm\fP was started (or the user's home directory in the case of a
@@ -146,7 +221,7 @@ shell (i.e. it will be a normal ``subshell'').
 .B \-mb
 This option indicates that \fIxterm\fP should ring a margin bell when
 the user types near the right end of a line.  This option can be turned on 
-and off from the ``Modes'' menu.
+and off from the ``VT Options'' menu.
 .TP 8
 .B \+mb
 This option indicates that margin bell should not be rung.
@@ -167,7 +242,7 @@ This option indicates that reverse-wraparound should be allowed.  This allows
 the cursor to back up from the leftmost column of one line to the rightmost
 column of the previous line.  This is very useful for editing long shell
 command lines and is encouraged.  This option can be turned on and off from
-the ``Modes'' menu.
+the ``VT Options'' menu.
 .TP 8
 .B \+rw
 This option indicates that reverse-wraparound should not be allowed.
@@ -195,7 +270,7 @@ This option indicates that \fIxterm\fP should scroll synchronously.
 This option indicates that some number of lines that are scrolled off the top 
 of the window should be saved and that a scrollbar should be displayed so that
 those lines can be viewed.  This option may be turned on and off from the
-``Modes'' menu.
+``VT Options'' menu.
 .TP 8
 .B \+sb
 This option indicates that a scrollbar should not be displayed.
@@ -211,7 +286,7 @@ function keys.
 .B \-si
 This option indicates that output to a window should not automatically
 reposition the screen to the bottom of the scrolling region.  
-This option can be turned on and off from the ``Modes'' menu.
+This option can be turned on and off from the ``VT Options'' menu.
 .TP 8
 .B \+si
 This option indicates that output to a window should cause it to
@@ -234,7 +309,7 @@ off the top of the screen.  The default is 64.
 .B \-t
 This option indicates that \fIxterm\fP should start in Tektronix mode, rather
 than in VT102 mode.  Switching between the two windows is done using the
-``Modes'' menus.
+``Options'' menus.
 .TP 8
 .B \+t
 This option indicates that \fIxterm\fP should start in VT102 mode.
@@ -289,7 +364,7 @@ ownership of the console device in order to get this option to work.
 .B \-S\fIccn\fP
 This option specifies the last two letters of the name of a pseudoterminal
 to use in slave mode, plus the number of the inherited file descriptor.
-The option is parsed "%c%c%d".
+The option is parsed ``%c%c%d''.
 This allows \fIxterm\fP to be used as an input and
 output channel for an existing program and is sometimes used in specialized
 applications.
@@ -300,30 +375,30 @@ Toolkit provides standard options that accomplish the same task.
 .TP 8
 .B "%\fIgeom\fP"
 This option specifies the preferred size and position of the Tektronix window.
-It is shorthand for specifying the "\fI*tekGeometry\fP" resource.
+It is shorthand for specifying the ``\fI*tekGeometry\fP'' resource.
 .TP 8
 .B \#\fIgeom\fP
 This option specifies the preferred position of the icon window.
-It is shorthand for specifying the "\fI*iconGeometry\fP" resource.
+It is shorthand for specifying the ``\fI*iconGeometry\fP'' resource.
 .TP 8
 .BI \-T " string"
 This option specifies the title for \fIxterm\fP's windows.
-It is equivalent to \fB-title\fP.
+It is equivalent to \fB\-title\fP.
 .TP 8
 .BI \-n " string"
 This option specifies the icon name for \fIxterm\fP's windows.
-It is shorthand for specifying the "\fI*iconName\fP" resource.
-Note that this is not the same as the toolkit option \fB-name\fP (see below).
+It is shorthand for specifying the ``\fI*iconName\fP'' resource.
+Note that this is not the same as the toolkit option \fB\-name\fP (see below).
 The default icon name is the application name.
 .TP 8
 .B \-r
 This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.  It is equivalent to
-\fB-reversevideo\fP or \fB-rv\fP.
+\fB\-reversevideo\fP or \fB\-rv\fP.
 .TP 8
 .BI \-w " number"
 This option specifies the width in pixels of the border surrounding the window.
-It is equivalent to \fB-borderwidth\fP or \fB-bw\fP.
+It is equivalent to \fB\-borderwidth\fP or \fB\-bw\fP.
 .PP
 The following standard X Toolkit command line arguments are commonly used 
 with \fIxterm\fP:
@@ -341,7 +416,7 @@ This option specifies the width in pixels of the border surrounding the window.
 .TP 8
 .B \-fg \fIcolor\fP
 This option specifies the color to use for displaying text.  The default is 
-``black''.
+``black.''
 .TP 8
 .B \-fn \fIfont\fP
 This option specifies the font to be used for displaying normal text.  The
@@ -355,7 +430,7 @@ obtained, rather than the default executable file name.
 .B \-title \fIstring\fP
 This option specifies the window title string, which may be displayed by
 window managers if the user so chooses.  The default title is the command
-line specified after the \fB-e\fP option, if any, otherwise the application
+line specified after the \fB\-e\fP option, if any, otherwise the application
 name.
 .TP 8
 .B \-rv
@@ -397,7 +472,7 @@ Specifies a string containing terminal setting keywords and the characters
 to which they may be bound.  Allowable keywords include: intr, quit, 
 erase, kill, eof, eol, swtch, start, stop, brk, susp, dsusp, rprnt, flush, 
 weras, and lnext.  Control characters may be specified as ^char (e.g. ^c or ^u)
-and ^? may be used to indicate delete.  This is very useful for overriding
+and ^? may be used to indicate Delete.  This is very useful for overriding
 the default terminal settings without having to do an \fIstty\fP every time
 an \fIxterm\fP is started.
 .TP 8
@@ -432,7 +507,15 @@ Specifies whether or not \fIxterm\fP should always display a highlighted
 text cursor.  By default, a hollow text cursor is displayed whenever the
 pointer moves out of the window or the window loses the input focus.
 .TP 8
-.B "boldFont (\fPclass\fB Font)"
+.B "bellSuppressTime (\fPclass\fB BellSuppressTime)"
+Number of milliseconds after a bell command is sent during which additional
+bells will be suppressed.  Default is 200.  If set non-zero,
+additional bells
+will also be suppressed until the server reports that processing of
+the first bell has been completed; this feature is most useful with
+the visible bell.
+.TP 8
+.B "boldFont (\fPclass\fB BoldFont)"
 Specifies the name of the bold font to use instead of overstriking.
 .TP 8
 .B "c132 (\fPclass\fB C132)"
@@ -479,16 +562,22 @@ accepted as is or stripped when printed.  The default is ``true.''
 Specifies the name of the normal font.  The default is ``fixed.''
 .TP 8
 .B "font1 (\fPclass\fB Font1)"
-Specifies the name of the first alternate font.
+Specifies the name of the first alternative font.
 .TP 8
 .B "font2 (\fPclass\fB Font2)"
-Specifies the name of the second alternate font.
+Specifies the name of the second alternative font.
 .TP 8
 .B "font3 (\fPclass\fB Font3)"
-Specifies the name of the third alternate font.
+Specifies the name of the third alternative font.
 .TP 8
 .B "font4 (\fPclass\fB Font4)"
-Specifies the name of the fourth alternate font.
+Specifies the name of the fourth alternative font.
+.TP 8
+.B "font5 (\fPclass\fB Font5)"
+Specifies the name of the fifth alternative font.
+.TP 8
+.B "font6 (\fPclass\fB Font6)"
+Specifies the name of the sixth alternative font.
 .TP 8
 .B "geometry (\fPclass\fB Geometry)"
 Specifies the preferred size and position of the VT102 window.
@@ -498,7 +587,7 @@ Specifies the number of pixels between the characters and the window border.
 The default is 2.
 .TP 8
 .B "jumpScroll (\fPclass\fB JumpScroll)"
-Specifies whether or not jump scroll should be used.  The default is ``true''.
+Specifies whether or not jump scroll should be used.  The default is ``true.''
 .TP 8
 .B "logFile (\fPclass\fB Logfile)"
 Specifies the name of the file to which a terminal session is logged.  The
@@ -521,10 +610,6 @@ as a login shell.  The default is ``false.''
 Specifies whether or not the bell should be run when the user types near the
 right margin.  The default is ``false.''
 .TP 8
-.B "multiScroll (\fPclass\fB MultiScroll)"
-Specifies whether or not asynchronous scrolling is allowed.  The default is
-``false.''
-.TP 8
 .B "multiClickTime (\fPclass\fB MultiClickTime)"
 Specifies the maximum time in milliseconds between multi-click select
 events.  The default is 250 milliseconds.
@@ -535,7 +620,7 @@ is ``false.''
 .TP 8
 .B "nMarginBell (\fPclass\fB Column)"
 Specifies the number of characters from the right margin at which the margin
-bell should be run, when enabled.
+bell should be rung, when enabled.
 .TP 8
 .B "pointerColor (\fPclass\fB Foreground)"
 Specifies the foreground color of the pointer.  The default is 
@@ -547,6 +632,18 @@ Specifies the background color of the pointer.  The default is
 .TP 8
 .B "pointerShape (\fPclass\fB Cursor)"
 Specifies the name of the shape of the pointer.  The default is ``xterm.''
+.TP 8
+.B "resizeGravity (\fPclass\fB ResizeGravity)"
+Affects the behavior when the window is resized to be taller or
+shorter.  \fBNorthWest\fP
+specifies that the top line of text on the screen stay fixed.  If the window
+is made shorter, lines are dropped from the bottom; if the window is
+made taller, blank lines are added at the bottom.  This is compatible
+with the behavior in R4.  \fBSouthWest\fP (the default) specifies that
+the bottom line of text on the screen stay fixed.  If the window is
+made taller, additional saved lines will be scrolled down onto the
+screen; if the window is made shorter, lines will be scrolled off the
+top of the screen, and the top saved lines will be dropped.
 .TP 8
 .B "reverseVideo (\fPclass\fB ReverseVideo)"
 Specifies whether or not reverse video should be simulated.  The default is
@@ -583,7 +680,7 @@ Specifies the number of lines that the \fIscroll-back\fP and
 \fIscroll-forw\fP actions should use as a default.  The default value is 1.
 .TP 8
 .B "signalInhibit (\fPclass\fB SignalInhibit)"
-Specifies whether or not the entries in the ``xterm X11'' menu for sending
+Specifies whether or not the entries in the ``Main Options'' menu for sending
 signals to \fIxterm\fP should be disallowed.  The default is ``false.''
 .TP 8
 .B "tekGeometry (\fPclass\fB Geometry)"
@@ -603,13 +700,15 @@ Specifies whether or not \fIxterm\fP should start up in Tektronix mode.
 The default is ``false.''
 .TP 8
 .B "titeInhibit (\fPclass\fB TiteInhibit)"
-Specifies whether or not \fIxterm\fP should remove remove \fIti\fP or \fIte\fP
+Specifies whether or not \fIxterm\fP should remove remove \fIti\fP and \fIte\fP
 termcap entries (used to switch between alternate screens on startup of many
-screen-oriented programs) from the TERMCAP string.
+screen-oriented programs) from the TERMCAP string.  If set,
+\fIxterm\fP also ignores the escape sequence to switch to the
+alternate screen.
 .TP 8
 .B "translations (\fPclass\fB Translations)"
 Specifies the key and button bindings for menus, selections, ``programmed
-strings'', etc.  See \fBACTIONS\fP below.
+strings,'' etc.  See \fBACTIONS\fP below.
 .TP 8
 .B "visualBell (\fPclass\fB VisualBell)"
 Specifies whether or not a visible bell (i.e. flashing) should be used instead
@@ -663,7 +762,7 @@ This entry invokes the \fBredraw()\fP action.
 This is a separator.
 .TP 8
 .B "suspend (\fPclass\fB SmeBSB)"
-This entry invokes the \fBsend-signal(suspend)\fP action on systems that
+This entry invokes the \fBsend-signal(tstp)\fP action on systems that
 support job control.
 .TP 8
 .B "continue (\fPclass\fB SmeBSB)"
@@ -779,6 +878,12 @@ This entry invokes the \fBset-vt-font(3)\fP action.
 .B "font4 (\fPclass\fB SmeBSB)"
 This entry invokes the \fBset-vt-font(4)\fP action.
 .TP 8
+.B "font5 (\fPclass\fB SmeBSB)"
+This entry invokes the \fBset-vt-font(5)\fP action.
+.TP 8
+.B "font6 (\fPclass\fB SmeBSB)"
+This entry invokes the \fBset-vt-font(6)\fP action.
+.TP 8
 .B "fontescape (\fPclass\fB SmeBSB)"
 This entry invokes the \fBset-vt-font(e)\fP action.
 .TP 8
@@ -843,48 +948,6 @@ Specifies the color to use for the foreground of the scrollbar.  The ``thumb''
 of the scrollbar is a simple checkerboard pattern alternating pixels for
 foreground and background color.
 .\".in -1in
-.SH EMULATIONS
-The VT102 emulation is fairly complete, but does not support the blinking
-character attribute nor the double-wide and double-size character sets.
-.IR Termcap (5)
-entries that work with
-.I xterm
-include ``xterm'', ``vt102'', ``vt100'' and ``ansi'', and
-.I xterm
-automatically searches the termcap file in this order for these entries and then
-sets the ``TERM'' and the ``TERMCAP'' environment variables.
-.PP
-Many of the special
-.I xterm
-features (like logging) may be modified under program control
-through a set of escape sequences different from the standard VT102 escape
-sequences.  
-(See the
-.I ``Xterm Control Sequences''
-document.)
-.PP
-The Tektronix 4014 emulation is also fairly good.
-Four different font sizes and five different lines types are supported.
-The Tektronix text and graphics commands are recorded internally by
-.I xterm
-and may be written to a file by sending the COPY escape sequence (or through
-the
-.B Tektronix
-menu; see below).
-The name of the file will be
-``\fBCOPY\fIyy\fB\-\fIMM\fB\-\fIdd\fB.\fIhh\fB:\fImm\fB:\fIss\fR'', where
-.IR yy ,
-.IR MM ,
-.IR dd ,
-.IR hh ,
-.I mm
-and
-.I ss
-are the year, month, day, hour, minute and second when the COPY was performed
-(the file is created in the directory
-.I xterm
-is started in, or the home directory for a login
-.IR xterm ).
 .SH "POINTER USAGE"
 .PP
 Once the VT102 window is created,
@@ -917,8 +980,8 @@ inserting it as keyboard input.
 .PP
 Pointer button three (usually right) extends the current selection.
 (Without loss of generality,
-that is you can swap ``right'' and ``left'' everywhere in the rest of this
-paragraph...)  If pressed while closer to
+you can swap ``right'' and ``left'' everywhere in the rest of this
+paragraph.)  If pressed while closer to
 the right edge of the selection than the left, it extends/contracts the
 right edge of the selection.  If you contract the selection past
 the left edge of the selection,
@@ -936,7 +999,7 @@ your favorite editor.
 Since the cut buffer is globally shared among different applications,
 you should regard it as a `file' whose contents you know.
 The terminal emulator and other text programs should be treating it as if it
-were a text file, i.e. the text is delimited by new lines.
+were a text file, i.e., the text is delimited by new lines.
 .PP
 The scroll region displays the position and amount of text currently showing
 in the window (highlighted) relative to the amount of text actually saved.
@@ -1029,6 +1092,10 @@ to their initial states just after
 has finished processing the command line options.
 .PP
 The \fIfontMenu\fP sets the font used in the VT102 window.
+In addition to the default font and a number of alternatives that are
+set with resources, the menu offers the font last specified by the Set
+Font escape sequence (see the document \fIXterm Control Sequences\fP)
+and the current selection as a font name (if the PRIMARY selection is owned).
 .PP
 The
 .I tekMenu
@@ -1111,7 +1178,7 @@ static int charClass[128] = {
      1,   1,   1,   1,   1,   1,   1,   1,
 /*  SP    !    "    #    $    %    &    ' */
     32,  33,  34,  35,  36,  37,  38,  39,
-/*   (    )    *    +    ,    -    .    / */
+/*   (    )    *    +    ,    \-    .    / */
     40,  41,  42,  43,  44,  45,  46,  47,
 /*   0    1    2    3    4    5    6    7 */
     48,  48,  48,  48,  48,  48,  48,  48,
@@ -1210,20 +1277,20 @@ selection at the current text cursor position.
 This action is similar to \fBselect-end\fP except that it should be used
 with \fBselect-cursor-start\fP.
 .TP 8
-.B "set-vt-font(\fId/1/2/3/4/e/s\fP [,\fInormalfont\fP [, \fIboldfont\fP]])"
+.B "set-vt-font(\fId/1/2/3/4/5/6/e/s\fP [,\fInormalfont\fP [, \fIboldfont\fP]])"
 This action sets the font or fonts currently being used in the VT102 window.
 The first argument is a single character that specifies the font to be 
 used: \fId\fP or \fID\fP indicate the default font (the font initially 
 used when
-\fIxterm\fP was started), \fI1\fP through \fI4\fP indicate the fonts 
-specified by the \fIfont1\fP through \fIfont4\fP resources, \fIe\fP or \fIE\fP
-indicate the normal and bold fonts that may be set through escape codes 
+\fIxterm\fP was started), \fI1\fP through \fI6\fP indicate the fonts 
+specified by the \fIfont1\fP through \fIfont6\fP resources, \fIe\fP or \fIE\fP
+indicate the normal and bold fonts that have been set through escape codes 
 (or specified as the second and third action arguments, respectively), and
-\fIi\fP or \fII\fP indicate the font selection (as made by programs such as
+\fIs\fP or \fIS\fP indicate the font selection (as made by programs such as
 \fIxfontsel(1)\fP) indicated by the second action argument.
 .TP 8
 .B "start-extend()"
-This action is similar to \fBselect-start\fB except that the 
+This action is similar to \fBselect-start\fP except that the 
 selection is extended to the current pointer location.
 .TP 8
 .B "start-cursor-extend()"
@@ -1260,9 +1327,9 @@ This action redraws the window and is also invoked by the
 \fIredraw\fP entry in \fImainMenu\fP.
 .TP 8
 .B "send-signal(\fIsigname\fP)"
-This action sends the signal named by \fIsigname\fP (which may also be a 
-number) to the \fIxterm\fP subprocess (the shell or program specified with
-the \fI-e\fP command line option) and is also invoked by the
+This action sends the signal named by \fIsigname\fP
+to the \fIxterm\fP subprocess (the shell or program specified with
+the \fI\-e\fP command line option) and is also invoked by the
 .BR suspend ,
 .BR continue ,
 .BR interrupt ,
@@ -1272,9 +1339,11 @@ and
 .I kill 
 entries in \fImainMenu\fP.  Allowable signal names are (case is
 not significant):
-\fIsuspend\fP, \fItstp\fP (if supported by the operating system), \fIcont\fP
+\fItstp\fP (if supported by the operating system), \fIsuspend\fP (same
+as \fItstp\fP), \fIcont\fP
 (if supported by the operating system), \fIint\fP, \fIhup\fP, \fIterm\fP,
-and \fIkill\fP.
+\fIquit\fP,
+\fIalrm\fP, \fIalarm\fP (same as \fIalrm\fP) and \fIkill\fP.
 .TP 8
 .B "quit()"
 This action sends a SIGHUP to the subprogram and exits.  It is also invoked
@@ -1337,7 +1406,7 @@ This action toggles the \fBmarginBell\fP resource and is also invoked from
 the \fBmarginbell\fP entry in \fIvtMenu\fP.
 .TP 8
 .B "set-altscreen(\fIon/off/toggle\fP)"
-This action toggles between the alternative and current screens.
+This action toggles between the alternate and current screens.
 .TP 8
 .B "soft-reset()"
 This action resets the scrolling region and is also invoked from the 
@@ -1396,18 +1465,21 @@ The default bindings in the VT102 window are:
 Shift <KeyPress> Select:	select-cursor-start() \\
 	select-cursor-end(PRIMARY, CUT_BUFFER0) \\n\\
 Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
-        ~Meta<KeyPress>: 	insert-seven-bit() \\n\\
-         Meta<KeyPress>: 	insert-eight-bit() \\n\\
-   Ctrl ~Meta<Btn1Down>:	popup-menu(mainMenu) \\n\\
+        ~Meta<KeyPress>:	insert-seven-bit() \\n\\
+         Meta<KeyPress>:	insert-eight-bit() \\n\\
+       !Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
+  !Lock Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
        ~Meta <Btn1Down>:	select-start() \\n\\
      ~Meta <Btn1Motion>:	select-extend() \\n\\
-  Ctrl ~Meta <Btn2Down>:	popup-menu(vtMenu) \\n\\
+       !Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
+  !Lock Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
  ~Ctrl ~Meta <Btn2Down>:	ignore() \\n\\
    ~Ctrl ~Meta <Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
-  Ctrl ~Meta <Btn3Down>:	popup-menu(fontMenu) \\n\\
+       !Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
+  !Lock Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
  ~Ctrl ~Meta <Btn3Down>:	start-extend() \\n\\
      ~Meta <Btn3Motion>:	select-extend() \\n\\
-    ~Ctrl ~Meta <BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \\n\\
+    	        <BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \\n\\
               <BtnDown>:	bell(0)
 .fi
 .DE
@@ -1422,9 +1494,11 @@ The default bindings in the Tektronix window are:
 .ta 2.5i
 .nf
       ~Meta<KeyPress>: 	insert-seven-bit() \\n\\
-       Meta<KeyPress>: 	insert-eight-bit()\\n\\
- Ctrl ~Meta<Btn1Down>:	popup-menu(mainMenu) \\n\\
-Ctrl ~Meta <Btn2Down>:	popup-menu(tekMenu) \\n\\
+       Meta<KeyPress>: 	insert-eight-bit() \\n\\
+     !Ctrl <Btn1Down>: 	popup-menu(mainMenu) \\n\\
+!Lock Ctrl <Btn1Down>: 	popup-menu(mainMenu) \\n\\
+     !Ctrl <Btn2Down>: 	popup-menu(tekMenu) \\n\\
+!Lock Ctrl <Btn2Down>: 	popup-menu(tekMenu) \\n\\
 Shift ~Meta<Btn1Down>:	gin-press(L) \\n\\
       ~Meta<Btn1Down>:	gin-press(l) \\n\\
 Shift ~Meta<Btn2Down>:	gin-press(M) \\n\\
@@ -1456,32 +1530,6 @@ keys for entering commonly-typed works:
 .DE
 .sp
 .in -4
-.SH "OTHER FEATURES"
-.I Xterm
-automatically highlights the text cursor when the
-pointer enters the window (selected) and unhighlights it when the pointer
-leaves the window (unselected).
-If the window is the focus window, then the text cursor is
-highlighted no matter where the pointer is.
-.PP
-In VT102 mode, there are escape sequences to activate and deactivate
-an alternate screen buffer, which is the same size as the display area
-of the window.
-When activated, the current screen is saved and replace with the alternate
-screen.
-Saving of lines scrolled off the top of the window is disabled until the
-normal screen is restored.
-The
-.IR termcap (5)
-entry for
-.I xterm
-allows the visual editor
-.IR vi (1)
-to switch to the alternate screen for editing, and restore the screen
-on exit.  
-.PP
-In either VT102 or Tektronix mode, there are escape sequences to change the
-name of the windows and to specify a new log file name.
 .SH ENVIRONMENT
 .I Xterm
 sets the environment variables ``TERM'' and ``TERMCAP'' properly for the
@@ -1495,17 +1543,8 @@ window.
 .SH "SEE ALSO"
 resize(1), X(1), pty(4), tty(4)
 .br
-.I \fIXterm Control Sequences\fP
+\fIXterm Control Sequences\fP (in the \fIxterm\fP source directory)
 .SH BUGS
-.PP
-The \fIXterm Control Sequences\fP document has yet to be converted from X10.
-The old version, along with a first stab at an update, are available in
-the sources.
-.PP
-The class name is \fIXTerm\fP instead of \fIXterm\fP.
-.PP
-\fBXterm will hang forever if you try to paste too much text at one time.\fP
-It is both producer and consumer for the pty and can deadlock.
 .PP
 Variable-width fonts are not handled.
 .PP
@@ -1513,10 +1552,6 @@ This program still needs to be rewritten.  It should be split into very
 modular sections, with the various emulators being completely separate
 widgets that don't know about each other.  Ideally, you'd like to be able to
 pick and choose emulator widgets and stick them into a single control widget.
-.PP
-The focus is considered lost if some other client (e.g., the window manager)
-grabs the pointer; it is difficult to do better without an addition to the
-protocol.
 .PP
 There needs to be a dialog box to allow entry of log file name
 and the COPY file name.
