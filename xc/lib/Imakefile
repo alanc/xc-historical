@@ -1,6 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.17 91/07/16 22:54:04 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.18 91/07/22 22:53:06 rws Exp $
 #define IHaveSubdirs
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#define PassCDebugFlags
 
 #ifndef NeedBerklib
 #define NeedBerklib NO
