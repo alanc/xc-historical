@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.39 89/09/01 14:30:07 kit Exp $
+* $XConsortium: TextP.h,v 1.40 89/09/06 17:30:18 kit Exp $
 */
 
 
@@ -173,6 +173,7 @@ typedef struct _TextPart {
     Boolean	    update_disabled; /* TRUE if display updating turned off */
     XawTextPosition  old_insert;      /* Last insertPos for batched updates */
     short           mult;	      /* Multiplier. */
+    Boolean         single_char;    /* Single character replaced. */
 } TextPart;
 
 /*************************************************************

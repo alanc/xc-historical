@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.122 89/11/07 18:11:14 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.123 89/11/07 18:38:09 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -491,6 +491,7 @@ Widget request, new;
   ctx->text.update_disabled = FALSE;
   ctx->text.old_insert = -1;
   ctx->text.mult = 1;
+  ctx->text.single_char = FALSE;
 
 #ifdef XAW_BC
 /*******************************
@@ -1615,6 +1616,12 @@ XawTextBlock *text;
   }
 
   delta = text->length - (pos2 - pos1);
+
+  if ( abs(delta) <= 1 )
+      ctx->text.single_char = TRUE;
+  else
+      ctx->text.single_char = FALSE;
+
   if (delta < ctx->text.lastPos) {
     for (pos2 += delta, i = 0; i < ctx->text.numranges; i++) {
       if (ctx->text.updateFrom[i] > pos1)
@@ -1683,7 +1690,8 @@ XawTextPosition pos1, pos2;
 
     
     if ( (endPos = ctx->text.lt.info[i + 1].position) > pos2 )
-      clear_eol = ( (endPos = pos2) >= lastPos);
+      clear_eol = ( ((endPos = pos2) >= lastPos) && 
+		    !ctx->text.single_char);
     else 
       clear_eol = TRUE;
 
@@ -1718,6 +1726,7 @@ XawTextPosition pos1, pos2;
     if ( !clear_eol || (y >= ctx->core.height - ctx->text.margin.bottom) )
       break;
   }
+  ctx->text.single_char = FALSE;
 }
 
 /*
