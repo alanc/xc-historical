@@ -1,4 +1,4 @@
-/* $XConsortium: man.c,v 1.4 91/08/30 12:06:50 dave Exp $ */
+/* $XConsortium: man.c,v 1.5 91/09/13 17:59:51 dave Exp $ */
 char *man[]={"\
 \n\
 \n\
@@ -102,9 +102,6 @@ BUGS\n\
      When the chamber is resized, molecules should be  rearranged\n\
      appropriately.   Instead, the molecule arrays are reinitial-\n\
      ized.\n\
-\n\
-COPYRIGHT\n\
-     Copyright 1991, Massachusetts Institute of Technology.\n\
 \n\
 AUTHOR\n\
      Larry Medwin\n\
