@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.23 89/02/14 13:27:21 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.24 89/03/30 16:53:35 jim Exp $";
 #endif /* lint */
 
 
@@ -50,7 +50,7 @@ static XtResource resources[] = {
   {XtNvalue, XtCValue, XtRString, sizeof(String),
      XtOffset(DialogWidget, dialog.value), XtRString, NULL},
   {XtNmaximumLength, XtCMax, XtRInt, sizeof(int),
-     XtOffset(DialogWidget, dialog.max_length), XtRString, "256"}
+     XtOffset(DialogWidget, dialog.max_length), XtRImmediate, 0}
 };
 
 static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget();
