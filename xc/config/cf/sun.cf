@@ -1,3 +1,12 @@
+#ifdef sparc
+#undef sparc
+#define SparcArchitecture
+#endif
+#ifdef sun386
+#undef sun386
+#define i386Architecture
+#endif
+
 /*
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  *
@@ -8,35 +17,35 @@
 #define OSName            SunOS 3.4
 #define OSMajorVersion    3
 #define OSMinorVersion    4
-
 #define SystemV           NO
-#define XsunServer Xsun
-/* #define Xplx Xplx */
-
-#ifdef sparc
-#undef sparc
-#define SparcArchitecture
-#endif
-
 #define SignalReturnProcType int
 
-/**/# platform:  $XConsortium: sun.cf,v 1.10 89/03/20 13:47:45 jim Exp $
+#define XsunServer Xsun
+
+#ifdef SparcArchitecture
+#define FloatingPointOptions -pipe
+#else
+#define FloatingPointOptions -f68881 -pipe
+#endif
+
+
+
+/**/# platform:  $XConsortium: sun.cf,v 1.11 89/04/07 10:25:39 jim Exp $
 /**/# operating system:  OSName
 
-
-#if SunOSPlatform && OSMajorVersion == 3 && OSMinorVersion <= 2
+#if SunOSPlatform
+/*
+ * SunOS-specific parameters
+ */
+#if OSMajorVersion == 3 && OSMinorVersion <= 2
 #define OptimizedCDebugFlags /* as nothing */
 #endif
 
-#define FloatingPointOptions -f68881 -pipe
 #define StandardDefines FloatingPointOptions
 #define LibraryDefines  /**/
 /* see below for ServerDefines */
 #define ExtraLoadFlags  FloatingPointOptions
 
-/*
- * Sun-specific parameters
- */
 #define UseSunWindowsInServer	NO	/* link in SunWindows support? */
 
 #if UseSunWindowsInServer
@@ -46,7 +55,7 @@
 #endif
 
 /* define this as you like for server compilation */
-#if SunOSPlatform && (OSMajorVersion >= 4 || defined(sparc))
+#if OSMajorVersion >= 4 || defined(SparcArchitecture)
 #define ServerDefines SunWindowsDefines ExtensionDefines -DINCLUDE_ALLOCA_H
 #else
 #define ServerDefines SunWindowsDefines ExtensionDefines FloatingPointOptions -DPURDUE
@@ -56,3 +65,4 @@
 #define SetTtyGroup YES
 #endif
 
+#endif /* SunOSPlatform */
