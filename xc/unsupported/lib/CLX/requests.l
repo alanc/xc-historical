@@ -788,7 +788,7 @@
 	   (values
 	     (int16-get 12)
 	     (int16-get 14)
-	     (window-get 8))))))
+	     (or-get 8 null window))))))
 
 (defun warp-pointer (dst dst-x dst-y)
   (declare (type window dst)
