@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.23 88/02/14 14:53:02 rws Exp $";
+static char rcsid[] = "$Header: Converters.c,v 1.24 88/02/14 17:56:52 jim Exp $";
 #endif lint
 
 /*
@@ -43,41 +43,12 @@ static char rcsid[] = "$Header: Converters.c,v 1.23 88/02/14 14:53:02 rws Exp $"
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
 
+static void CvtStringToBoolean();
+
 void XtStringConversionWarning(from, toType)
     char *from, *toType;
 {
     char message[1000];
-    
-    (void) sprintf(message, "Cannot convert string \"%s\" to type %s",
-	    from, toType);
-    XtWarning(message);
-}
-
-static void CvtXColorToPixel();
-static void CvtDefaultColorToPixel();
-static void CvtIntToBoolean();
-static void CvtIntToLongBoolean();
-static void CvtIntToPixmap();
-static void CvtIntToFont();
-static void CvtIntOrPixelToXColor();
-static void CvtIntToPixel();
-
-static void CvtStringToBoolean();
-static void CvtStringToLongBoolean();
-static void CvtStringToXColor();
-static void CvtStringToCursor();
-static void CvtStringToDisplay();
-static void CvtStringToFile();
-static void CvtStringToFont();
-static void CvtStringToFontStruct();
-static void CvtStringToInt();
-static void CvtStringToPixel();
-
-void XtCondStringConversionWarning(from, toType, name, class)
-    char *from, *toType;
-    XrmName name;
-    XrmClass class;
-{
     static enum {Check, Report, Ignore} report_it = Check;
 
     if (report_it == Check) {
@@ -85,10 +56,10 @@ void XtCondStringConversionWarning(from, toType, name, class)
 	XrmClass xrm_class[3];
 	XrmRepresentation rep_type;
 	XrmValue value;
-	xrm_name[0] = name;
+	xrm_name[0] = XtApplicationName;
 	xrm_name[1] = StringToQuark( "stringConversionWarnings" );
 	xrm_name[2] = NULL;
-	xrm_class[0] = class;
+	xrm_class[0] = XtApplicationClass;
 	xrm_class[1] = StringToQuark( "StringConversionWarnings" );
 	xrm_class[2] = NULL;
 	if (XrmQGetResource( XtDefaultDB, xrm_name, xrm_class,
@@ -105,9 +76,32 @@ void XtCondStringConversionWarning(from, toType, name, class)
 	}
     }
 
-    if (report_it == Report)
-	XtStringConversionWarning(from, toType);
+    if (report_it == Report) {
+	(void) sprintf(message, "Cannot convert string \"%s\" to type %s",
+		       from, toType);
+	XtWarning(message);
+    }
 }
+
+static void CvtXColorToPixel();
+static void CvtDefaultColorToPixel();
+static void CvtIntToBoolean();
+static void CvtIntToLongBoolean();
+static void CvtIntToPixmap();
+static void CvtIntToFont();
+static void CvtIntOrPixelToXColor();
+static void CvtIntToPixel();
+
+static void CvtStringToLongBoolean();
+static void CvtStringToXColor();
+static void CvtStringToCursor();
+static void CvtStringToDisplay();
+static void CvtStringToFile();
+static void CvtStringToFont();
+static void CvtStringToFontStruct();
+static void CvtStringToInt();
+static void CvtStringToPixel();
+
 
 /*ARGSUSED*/
 static void CvtIntToBoolean(args, num_args, fromVal, toVal)
@@ -271,12 +265,6 @@ static XtConvertArgRec screenConvertArg[] = {
     {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)}
 };
 
-static XtConvertArgRec applicationConvertArgs[] = {
-    {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)},
-    {XtAddress, (caddr_t) &XtApplicationName, sizeof(XrmName)},
-    {XtAddress, (caddr_t) &XtApplicationClass, sizeof(XrmClass)}
-};
-
 #ifndef BITMAPDIR
 #define BITMAPDIR "/usr/include/X11/bitmaps"
 #endif
@@ -385,8 +373,8 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     static XColor fgColor = {0, ~0, ~0, ~0};
     int width, height, xhot, yhot;
 
-    if (*num_args != 3)
-     XtError("String to cursor conversion needs screen, name and class arguments");
+    if (*num_args != 1)
+     XtError("String to cursor conversion needs screen argument");
 
     screen = *((Screen **) args[0].addr);
     for (i=0, cache=cursor_names; i < XtNumber(cursor_names); i++, cache++ ) {
@@ -398,17 +386,15 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
 	}
     }
     /* isn't a standard cursor in cursorfont; try to open a bitmap file */
-    app_name = *((XrmName *) args[1].addr);
-    app_class = *((XrmClass *) args[2].addr);
     if (bitmap_file_path == NULL) {
 	XrmName xrm_name[3];
 	XrmClass xrm_class[3];
 	XrmRepresentation rep_type;
 	XrmValue value;
-	xrm_name[0] = app_name;
+	xrm_name[0] = XtApplicationName;
 	xrm_name[1] = StringToQuark( "bitmapFilePath" );
 	xrm_name[2] = NULL;
-	xrm_class[0] = app_class;
+	xrm_class[0] = XtApplicationClass;
 	xrm_class[1] = StringToQuark( "BitmapFilePath" );
 	xrm_class[2] = NULL;
 	if (XrmQGetResource( XtDefaultDB, xrm_name, xrm_class,
@@ -423,7 +409,7 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
 			 filename, &width, &height, &source, &xhot, &yhot )
 	!= BitmapSuccess) {
-	XtCondStringConversionWarning( name, "Cursor", app_name, app_class );
+	XtStringConversionWarning( name, "Cursor" );
 	cursor = None;		/* absolute fall-back for failed conversion */
 	done(&cursor, Cursor);
 	return;
@@ -728,7 +714,7 @@ void _XtConvertInitialize()
     Add(XtQString,  XtQColor,       CvtStringToXColor,      
 	colorConvertArgs, XtNumber(colorConvertArgs));
     Add(XtQString,  XtQCursor,      CvtStringToCursor,      
-	applicationConvertArgs, XtNumber(applicationConvertArgs));
+	screenConvertArg, XtNumber(screenConvertArg));
     Add(XtQString,  XtQDisplay,     CvtStringToDisplay,     NULL, 0);
     Add(XtQString,  XtQFile,	    CvtStringToFile,	    NULL, 0);
     Add(XtQString,  XtQFont,	    CvtStringToFont,	    
