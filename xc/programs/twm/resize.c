@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.45 89/11/03 19:03:44 jim Exp $
+ * $XConsortium: resize.c,v 1.46 89/11/03 21:57:39 keith Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.45 89/11/03 19:03:44 jim Exp $";
+"$XConsortium: resize.c,v 1.46 89/11/03 21:57:39 keith Exp $";
 #endif
 
 #include <stdio.h>
@@ -670,10 +670,19 @@ int x, y, w, h;
 
     xwcm = CWWidth;
 
+    if (tmp_win->title_x < 0)
+        xwc.width = w;
+    else
+	xwc.width = w - 2 * tmp_win->title_bw;
+    title_width = xwc.width;
+
 #ifdef SHAPE
     if (!HasShape)
 	Scr->SqueezeTitle = FALSE;
 
+    reShape = FALSE;
+    if (tmp_win->wShaped && w != tmp_win->frame_width)
+	reShape = TRUE;
     if (Scr->SqueezeTitle)
     {
     	title_width =   Scr->FramePadding +	    /* frame pad */
@@ -686,22 +695,22 @@ int x, y, w, h;
 		    	Scr->TBInfo.totalwidth +/* RHS title widgets */
 		    	Scr->FramePadding;	    /* RHS frame pad */
 		    	
-    	reShape = FALSE;
-    	if (w != tmp_win->frame_width ||
- 	    h != tmp_win->frame_height ||
-	    title_width != tmp_win->title_width)
-	    reShape = TRUE;
-    	xwc.width = title_width;
+	if (title_width < xwc.width)
+	{
+	    xwc.width = title_width;
+	    if (tmp_win->frame_height != h ||
+	    	tmp_win->frame_width != w ||
+	    	title_width != tmp_win->title_width)
+	    	reShape = TRUE;
+	}
+	else
+	{
+	    if (!tmp_win->wShaped && tmp_win->fShaped)
+		reShape = TRUE;
+	    title_width = xwc.width;
+	}
     }
-    else
 #endif
-    {
-    	if (tmp_win->title_x < 0)
-            xwc.width = w;
-    	else
-            xwc.width = w - 2 * tmp_win->title_bw;
-    	title_width = xwc.width;
-    }
 
     tmp_win->title_width = title_width;
     if (tmp_win->title_w)
@@ -908,6 +917,8 @@ TwmWindow   *tmp_win;
 {
     Window  dest = tmp_win->frame;
     int	    op;
+    int	    expect_title_width;
+
     if (tmp_win->wShaped) {
 	op = ShapeSet;
 	if (tmp_win->title_height) {
@@ -928,7 +939,10 @@ TwmWindow   *tmp_win;
 			       None, ShapeSet);
 	tmp_win->fShaped = 1;
     } else {
-	if (Scr->SqueezeTitle)
+	expect_title_width = tmp_win->frame_width;
+	if (tmp_win->title_x >= 0)
+	    expect_title_width -= 2 * tmp_win->title_bw;
+	if (Scr->SqueezeTitle && tmp_win->title_width != expect_title_width)
 	{
 	    XRectangle  newBounding[2];
 	    XRectangle  newClip[2];
