@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Vendor.c,v 1.28 88/02/07 13:50:14 rws Exp $";
+static char rcsid[] = "$Header: Vendor.c,v 1.29 88/02/26 12:49:17 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -45,8 +45,6 @@ SOFTWARE.
  * Vendor shell class record
  *
  ***************************************************************************/
-
-#define Offset(x)	(XtOffset(VendorShellWidget, x))
 
 static void _VendorShellInitialize();
 static Boolean _VendorShellSetValues();
