@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdev.c,v 1.11 92/11/14 10:47:26 rws Exp $ */
+/* $XConsortium: xgrabdev.c,v 1.12 93/02/25 14:08:48 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -199,5 +199,5 @@ SRepXGrabDevice (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: xsetmode.c,v 1.9 92/11/14 10:53:54 rws Exp $ */
+/* $XConsortium: xsetmode.c,v 1.10 92/11/14 11:01:09 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -125,5 +125,5 @@ SRepXSetDeviceMode (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

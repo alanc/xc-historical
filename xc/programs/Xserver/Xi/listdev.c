@@ -1,4 +1,4 @@
-/* $XConsortium: xlistdev.c,v 1.15 92/10/20 17:11:59 rws Exp $ */
+/* $XConsortium: xlistdev.c,v 1.16 93/02/25 15:00:45 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -383,5 +383,5 @@ SRepXListInputDevices (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

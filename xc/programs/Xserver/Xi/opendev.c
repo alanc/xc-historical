@@ -1,4 +1,4 @@
-/* $XConsortium: xopendev.c,v 1.10 90/05/18 10:54:00 rws Exp $ */
+/* $XConsortium: xopendev.c,v 1.11 90/05/18 15:24:17 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -153,7 +153,7 @@ ProcXOpenDevice(client)
     rep.length = (j * sizeof (xInputClassInfo) + 3) >> 2;
     rep.num_classes = j;
     WriteReplyToClient (client, sizeof (xOpenDeviceReply), &rep);
-    WriteToClient(client, j * sizeof (xInputClassInfo), evbase);
+    WriteToClient(client, j * sizeof (xInputClassInfo), (char *)evbase);
     return (Success);
     }
 
@@ -173,5 +173,5 @@ SRepXOpenDevice (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: xsetdval.c,v 1.1 91/02/22 15:34:21 rws Exp $ */
+/* $XConsortium: xsetdval.c,v 1.2 92/11/14 10:53:09 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -141,5 +141,5 @@ SRepXSetDeviceValuators (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

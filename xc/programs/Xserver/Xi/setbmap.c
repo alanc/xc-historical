@@ -1,4 +1,4 @@
-/* $XConsortium: xsetbmap.c,v 1.5 89/11/07 19:40:44 rws Exp $ */
+/* $XConsortium: xsetbmap.c,v 1.6 89/12/02 15:21:33 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -137,5 +137,5 @@ SRepXSetDeviceButtonMapping (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }
