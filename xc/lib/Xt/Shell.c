@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.153 94/03/08 11:11:10 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.154 94/03/08 12:20:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2709,7 +2709,7 @@ static void GetIceEvent(client_data, source, id)
     XtInputId *	id;
 {
     IceConn	ice_conn = (IceConn) client_data;
-    IceProcessMessage(ice_conn, NULL);
+    IceProcessMessages(ice_conn, NULL);
 }
 
 static void CleanUpSave(w)
