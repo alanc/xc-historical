@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: frclrs.m,v 1.13 92/06/11 16:16:00 rws Exp $
  */
 >>TITLE XFreeColors CH05
 void
@@ -436,7 +436,7 @@ unsigned long	vmask = (1<<DirectColor)|(1<<PseudoColor)|(1<<GrayScale);
 			CHECK;
 
 		pixels = cptr;
-		npixels = size;
+		npixels = size + 1;
 		planes = 0L;
 
 		startcall(disp2);
