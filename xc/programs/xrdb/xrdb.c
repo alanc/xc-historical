@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.5 87/09/11 19:57:36 rws Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.6 87/12/21 12:05:15 jim Locked $";
 #endif
 
 /*
@@ -43,7 +43,13 @@ static char rcs_id[] = "$Header: xrdb.c,v 11.5 87/09/11 19:57:36 rws Locked $";
 #define MAXRDB 100000
 #define DBOK 0
 
+static resource_buffer[MAXRDB];		/* what a crock, should be dynamic */
+/* note that there is an implicit limit of BUFSIZ characters per line
+   down in SanityCheck */
+
 char *SanityCheck();
+
+char *ProgramName;
 
 main (argc, argv)
     int argc;
@@ -56,19 +62,50 @@ main (argc, argv)
     FILE *fp;
     int nbytes;
     char *bptr, *endptr;
-    char buffer[MAXRDB];
     int printit = 0;
 
-    for (i = 1; i < argc; i++) {
-	if (index (argv[i], ':') != NULL) displayname = argv[i];
-	else filename = argv[i];
-	if (strcmp ("-q", argv[i]) == NULL) printit = 1;
-    }
+    ProgramName = argv[0];
+
+    for (i = 1; i < argc; i++) {	/* get args */
+	char *arg = argv[i];
+
+	if (arg[0] == '-') {
+	    switch (arg[1]) {
+		case '\0':		/* - meaning use stdin */
+		    filename = NULL;
+		    break;
+		case 'q':
+		    printit = 1;
+		    break;
+		case 'd':		/* -d display */
+		    if (++i >= argc) goto usage;
+		    displayname = argv[i];
+		    break;
+		case 'g':		/* -g geometry, for consistency only */
+		    if (++i >= argc) goto usage;
+		    /* ignore */
+		    break;
+		default:
+		  usage:
+		    (void) fprintf (stderr, 
+	    	     "usage:  %s [-q] [-d display] [-g geometry] [filename]\n",
+			     ProgramName);
+		    (void) fprintf (stderr, 
+ "\nThe geometry argument is ignored as is for consistency only.  If no\n");
+		    (void) fprintf (stderr,
+		    "filename is given, the standard input will be read.\n");
+		    exit (1);
+	    }						/* end switch */
+	} else {
+	    if (index (arg, ':') != NULL) displayname = arg;	/* old style */
+	    else filename = arg;
+	} 						/* end if */
+    }							/* end for */
 
     /* Open display  */
     if (!(dpy = XOpenDisplay (displayname))) {
 	(void) fprintf (stderr, "%s: Can't open display '%s'\n",
-		argv[0], XDisplayName (displayname));
+		ProgramName, XDisplayName (displayname));
 	exit (1);
     }
 
@@ -76,7 +113,6 @@ main (argc, argv)
 	/* user wants to print contents */
 	if (dpy->xdefaults)
 	    fputs(dpy->xdefaults, stdout);
-	exit(0);
 	}
     else {
 	if (filename != NULL) {
@@ -87,17 +123,18 @@ main (argc, argv)
 			exit(1);
 			}
 		}
-	nbytes = fread(buffer, sizeof(char), MAXRDB, stdin);
-	if ((bptr = SanityCheck (buffer)) != DBOK) {
+	nbytes = fread(resource_buffer, sizeof(char), MAXRDB, stdin);
+	if ((bptr = SanityCheck (resource_buffer)) != DBOK) {
 		fprintf(stderr, "%s: database fails sanity check \n'%s'\n", 
 			argv[0], bptr);
 		exit(1);
 		}
 	XChangeProperty (dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER,
-		XA_STRING, 8, PropModeReplace, buffer, nbytes);
+		XA_STRING, 8, PropModeReplace, resource_buffer, nbytes);
 	}
-	XCloseDisplay(dpy);
 
+    XCloseDisplay(dpy);
+    exit (0);
 }
 
 char *getline(buffer, buf)
