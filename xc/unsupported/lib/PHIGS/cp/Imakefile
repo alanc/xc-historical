@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.11 91/07/08 16:07:43 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.12 91/07/12 17:38:07 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -49,11 +49,7 @@ SRCS = $(CSRCS) phigsmon.c
 
 MONDEPLIBS = ../libphigs.a XawClientDepLibs
 MONLIBS = ../libphigs.a XawClientLibs
-#if HasSockets || !SystemV4
 SYSLIBS = -lm
-#else
-SYSLIBS = -lm -lsocket
-#endif
 
 .SUFFIXES: .o .lint
 
