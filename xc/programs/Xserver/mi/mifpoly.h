@@ -1,4 +1,4 @@
-/* $XConsortium: mifpoly.h,v 1.5 89/07/28 12:05:47 rws Exp $ */
+/* $XConsortium: mifpoly.h,v 1.6 90/05/15 18:37:06 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -69,4 +69,17 @@ typedef struct _SppArc {
 	double	angle1, angle2;
 } SppArcRec, *SppArcPtr;
 
-extern SppPointRec miExtendSegment();
+/* mifpolycon.c */
+
+extern void miFillSppPoly(
+#if NeedFunctionPrototypes
+    DrawablePtr /*dst*/,
+    GCPtr /*pgc*/,
+    int /*count*/,
+    SppPointPtr /*ptsIn*/,
+    int /*xTrans*/,
+    int /*yTrans*/,
+    double /*xFtrans*/,
+    double /*yFtrans*/
+#endif
+);

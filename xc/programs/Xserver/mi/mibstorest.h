@@ -4,7 +4,7 @@
  * internal structure definitions for mi backing store
  */
 
-/* $XConsortium: mibstorest.h,v 5.7 90/06/12 17:46:12 rws Exp $ */
+/* $XConsortium: mibstorest.h,v 5.8 90/06/12 19:18:09 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -67,12 +67,12 @@ typedef struct {
     /*
      * screen func wrappers
      */
-    Bool	    (*CloseScreen)();
-    void	    (*GetImage)();
-    void	    (*GetSpans)();
-    Bool	    (*ChangeWindowAttributes)();
-    Bool	    (*CreateGC)();
-    Bool	    (*DestroyWindow)();
+    CloseScreenProcPtr	CloseScreen;
+    GetImageProcPtr	GetImage;
+    GetSpansProcPtr	GetSpans;
+    ChangeWindowAttributesProcPtr ChangeWindowAttributes;
+    CreateGCProcPtr	CreateGC;
+    DestroyWindowProcPtr DestroyWindow;
     /*
      * pointer to vector of device-specific backing store functions
      */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.h,v 1.7 90/11/19 15:16:41 keith Exp $
+ * $XConsortium: miwideline.h,v 1.8 91/12/17 19:39:09 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,8 +25,6 @@
 typedef struct _SpanData {
     SpanGroup	fgGroup, bgGroup;
 } SpanDataRec, *SpanDataPtr;
-
-extern SpanDataPtr  miSetupSpanData ();
 
 #define AppendSpanGroup(pGC, pixel, spanPtr, spanData) { \
 	SpanGroup   *group, *othergroup = NULL; \
@@ -157,3 +155,77 @@ static __inline int ICEIL(x)
 #define ICEILTEMPDECL static int _cTmp;
 #endif
 #endif
+
+extern void miFillPolyHelper(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    unsigned long /*pixel*/,
+    SpanDataPtr /*spanData*/,
+    int /*y*/,
+    int /*overall_height*/,
+    PolyEdgePtr /*left*/,
+    PolyEdgePtr /*right*/,
+    int /*left_count*/,
+    int /*right_count*/
+#endif
+);
+extern int miRoundJoinFace(
+#if NeedFunctionPrototypes
+    LineFacePtr /*face*/,
+    PolyEdgePtr /*edge*/,
+    Bool * /*leftEdge*/
+#endif
+);
+
+extern int miRoundJoinClip(
+#if NeedFunctionPrototypes
+    LineFacePtr /*pLeft*/,
+    LineFacePtr /*pRight*/,
+    PolyEdgePtr /*edge1*/,
+    PolyEdgePtr /*edge2*/,
+    int * /*y1*/,
+    int * /*y2*/,
+    Bool * /*left1*/,
+    Bool * /*left2*/
+#endif
+);
+
+extern int miRoundCapClip(
+#if NeedFunctionPrototypes
+    LineFacePtr /*face*/,
+    Bool /*isInt*/,
+    PolyEdgePtr /*edge*/,
+    Bool * /*leftEdge*/
+#endif
+);
+
+extern int miLineProjectingCap(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    unsigned long /*pixel*/,
+    SpanDataPtr /*spanData*/,
+    LineFacePtr /*face*/,
+    Bool /*isLeft*/,
+    double /*xorg*/,
+    double /*yorg*/,
+    Bool /*isInt*/
+#endif
+);
+
+extern SpanDataPtr miSetupSpanData(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    SpanDataPtr /*spanData*/,
+    int /*npt*/
+#endif
+);
+
+extern void miCleanupSpanData(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    SpanDataPtr /*spanData*/
+#endif
+);

@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.9 89/10/24 18:29:39 rws Exp $ */
+/* $XConsortium: mizerarc.h,v 5.10 91/06/13 09:42:11 rws Exp $ */
 
 typedef struct {
     int x;
@@ -110,3 +110,21 @@ extern Bool miZeroArcSetup();
 	d -= a; \
 	clause \
     }
+
+/* mizerarc.c */
+
+extern Bool miZeroArcSetup(
+#if NeedFunctionPrototypes
+    xArc * /*arc*/,
+    miZeroArcRec * /*info*/,
+    Bool /*ok360*/
+#endif
+);
+
+extern DDXPointPtr miZeroArcPts(
+#if NeedFunctionPrototypes
+    xArc * /*arc*/,
+    DDXPointPtr /*pts*/
+#endif
+);
+

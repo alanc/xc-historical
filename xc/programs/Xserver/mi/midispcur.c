@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.11 91/04/26 21:45:56 keith Exp $ */
+/* $XConsortium: midispcur.c,v 5.12 93/07/12 09:28:34 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -30,8 +30,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 # include   "dixstruct.h"
 # include   "scrnintstr.h"
 # include   "servermd.h"
-# include   "misprite.h"
 # include   "mipointer.h"
+# include   "misprite.h"
 # include   "gcstruct.h"
 
 extern WindowPtr    *WindowTable;
@@ -48,7 +48,7 @@ typedef struct {
     GCPtr	    pSaveGC, pRestoreGC;
     GCPtr	    pMoveGC;
     GCPtr	    pPixSourceGC, pPixMaskGC;
-    Bool	    (*CloseScreen)();
+    CloseScreenProcPtr CloseScreen;
     PixmapPtr	    pSave, pTemp;
 } miDCScreenRec, *miDCScreenPtr;
 
@@ -292,6 +292,7 @@ static Bool
 miDCPutUpCursor (pScreen, pCursor, x, y, source, mask)
     ScreenPtr	    pScreen;
     CursorPtr	    pCursor;
+    int		    x, y;
     unsigned long   source, mask;
 {
     miDCScreenPtr   pScreenPriv;
@@ -382,6 +383,7 @@ miDCRestoreUnderCursor (pScreen, x, y, w, h)
 static Bool
 miDCChangeSave (pScreen, x, y, w, h, dx, dy)
     ScreenPtr	    pScreen;
+    int		    x, y, w, h, dx, dy;
 {
     miDCScreenPtr   pScreenPriv;
     PixmapPtr	    pSave;
@@ -514,6 +516,7 @@ static Bool
 miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
     ScreenPtr	    pScreen;
     CursorPtr	    pCursor;
+    int		    x, y, w, h, dx, dy;
     unsigned long   source, mask;
 {
     miDCCursorPtr   pPriv;

@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointrst.h,v 5.4 92/01/30 19:21:32 keith Exp $ */
+/* $XConsortium: mipointrst.h,v 5.5 92/04/06 18:16:22 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -46,6 +46,6 @@ typedef struct {
 typedef struct {
     miPointerSpriteFuncPtr  spriteFuncs;	/* sprite-specific methods */
     miPointerScreenFuncPtr  screenFuncs;	/* screen-specific methods */
-    Bool		    (*CloseScreen)();
+    CloseScreenProcPtr	    CloseScreen;
     Bool		    waitForUpdate;	/* don't move cursor in SIGIO */
 } miPointerScreenRec, *miPointerScreenPtr;

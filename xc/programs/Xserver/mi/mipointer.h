@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointer.h,v 5.3 91/04/26 21:46:00 keith Exp $ */
+/* $XConsortium: mipointer.h,v 5.4 91/07/19 23:20:09 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -19,14 +19,14 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-typedef struct {
+typedef struct _miPointerSpriteFuncRec {
     Bool	(*RealizeCursor)();	/* pScreen, pCursor */
     Bool	(*UnrealizeCursor)();	/* pScreen, pCursor */
     void	(*SetCursor)();		/* pScreen, pCursor, x, y */
     void	(*MoveCursor)();	/* pScreen, x, y */
 } miPointerSpriteFuncRec, *miPointerSpriteFuncPtr;
 
-typedef struct {
+typedef struct _miPointerScreenFuncRec {
     Bool	(*CursorOffScreen)();	/* ppScreen, px, py */
     void	(*CrossScreen)();	/* pScreen, entering */
     void	(*WarpCursor)();	/* pScreen, x, y */
@@ -34,12 +34,78 @@ typedef struct {
     void	(*NewEventScreen)();	/* pScreen */
 } miPointerScreenFuncRec, *miPointerScreenFuncPtr;
 
-extern Bool miPointerInitialize ();
-extern void miPointerWarpCursor ();
-extern void miPointerUpdate ();
-extern void miPointerDeltaCursor ();
-extern void miPointerAbsoluteCursor();
-extern void miPointerPosition ();
-extern void miRegisterPointerDevice();
-extern int  miPointerGetMotionEvents();
-extern int  miPointerGetMotionBufferSize();
+extern Bool miDCInitialize(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    miPointerScreenFuncPtr /*screenFuncs*/
+#endif
+);
+
+extern Bool miPointerInitialize(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    miPointerSpriteFuncPtr /*spriteFuncs*/,
+    miPointerScreenFuncPtr /*screenFuncs*/,
+    Bool /*waitForUpdate*/
+#endif
+);
+
+extern void miPointerWarpCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    int /*x*/,
+    int /*y*/
+#endif
+);
+
+extern int miPointerGetMotionBufferSize(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int miPointerGetMotionEvents(
+#if NeedFunctionPrototypes
+    DevicePtr /*pPtr*/,
+    xTimecoord * /*coords*/,
+    unsigned long /*start*/,
+    unsigned long /*stop*/,
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern void miPointerUpdate(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void miPointerDeltaCursor(
+#if NeedFunctionPrototypes
+    int /*dx*/,
+    int /*dy*/,
+    unsigned long /*time*/
+#endif
+);
+
+extern void miPointerAbsoluteCursor(
+#if NeedFunctionPrototypes
+    int /*x*/,
+    int /*y*/,
+    unsigned long /*time*/
+#endif
+);
+
+extern void miPointerPosition(
+#if NeedFunctionPrototypes
+    int * /*x*/,
+    int * /*y*/
+#endif
+);
+
+extern void miRegisterPointerDevice(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    DevicePtr /*pDevice*/
+#endif
+);

@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.9 93/09/29 17:20:49 dpw Exp $ */
+/* $XConsortium: mi.h,v 1.10 93/09/29 18:58:20 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,64 +29,171 @@ SOFTWARE.
 #include "validate.h"
 #include "window.h"
 #include "gc.h"
+#include "font.h"
+#include "input.h"
+#include "cursor.h"
 
 typedef struct _miDash *miDashPtr;
 #define EVEN_DASH	0
 #define ODD_DASH	~0
 
-extern void  miPutImage();
-extern void  miGetImage();
-extern RegionPtr  miCopyArea();
-extern RegionPtr  miCopyPlane();
-extern int   miValidateTree();
-extern void  miPolySegment();
-extern void  miPolyRectangle();
-extern void  miFillPolygon();
-extern int   miPolyText8();
-extern int   miPolyText16();
-extern void  miImageText8();
-extern void  miImageText16();
-extern int   miFillConvexPoly();
-extern int   miFillGeneralPoly();
-extern void miNotMiter();
-extern void miMiter();
-extern void miWideLine();
-extern void miWideDash();
-extern void  miPolyArc();
-extern void  miZeroPolyArc();
-extern void miPolyFillRect();
-extern void miPolyFillArc();
-extern void  miPolyGlyphBlt();
-extern void  miImageGlyphBlt();
-extern void  miZeroLine();
-extern void  miPaintWindow();
-extern miDashPtr   miDashLine();
-extern void  miPushPixels();
-extern int   miPtToAngle();
-extern RegionPtr miRegionCreate();
-extern void miRegionInit();
-extern Bool miRegionCopy();
-extern void miRegionDestroy();
-extern void miRegionUninit();
-extern Bool miIntersect();
-extern Bool miInverse();
-extern Bool miUnion();
-extern int miSubtract();
-extern void miRegionReset();
-extern void miTranslateRegion();
-extern int miRectIn();
-extern Bool miRegionAppend();
-extern Bool miRegionValidate();
-extern RegionPtr miRectsToRegion();
-extern Bool miPointInRegion();
-extern Bool miRegionNotEmpty();
-extern void miRegionEmpty();
-extern BoxPtr miRegionExtents();
-extern Bool miRectAlloc();
-#ifdef DEBUG
-extern Bool miValidRegion();
+/* miarc.c */
+
+extern void miPolyArc(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc * /*parcs*/
 #endif
-extern RegionPtr miHandleExposures();
+);
+
+/* mibitblt.c */
+
+extern RegionPtr miCopyArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    int /*xIn*/,
+    int /*yIn*/,
+    int /*widthSrc*/,
+    int /*heightSrc*/,
+    int /*xOut*/,
+    int /*yOut*/
+#endif
+);
+
+extern void miOpqStipDrawable(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    RegionPtr /*prgnSrc*/,
+    unsigned long * /*pbits*/,
+    int /*srcx*/,
+    int /*w*/,
+    int /*h*/,
+    int /*dstx*/,
+    int /*dsty*/
+#endif
+);
+
+extern RegionPtr miCopyPlane(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/,
+    unsigned long /*bitPlane*/
+#endif
+);
+
+extern void miGetImage(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*sx*/,
+    int /*sy*/,
+    int /*w*/,
+    int /*h*/,
+    unsigned int /*format*/,
+    unsigned long /*planeMask*/,
+    pointer /*pdstLine*/
+#endif
+);
+
+extern void miPutImage(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*depth*/,
+    int /*x*/,
+    int /*y*/,
+    int /*w*/,
+    int /*h*/,
+    int /*leftPad*/,
+    unsigned int /*format*/,
+    unsigned char * /*pImage*/
+#endif
+);
+
+/* miclipn.c */
+
+extern void miClipNotify(
+#if NeedFunctionPrototypes
+    void (* /*func*/)()
+#endif
+);
+
+/* micursor.c */
+
+extern void miRecolorCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScr*/,
+    CursorPtr /*pCurs*/,
+    Bool /*displayed*/
+#endif
+);
+
+/* midash.c */
+
+extern miDashPtr miDashLine(
+#if NeedFunctionPrototypes
+    int /*npt*/,
+    DDXPointPtr /*ppt*/,
+    unsigned int /*nDash*/,
+    unsigned char * /*pDash*/,
+    unsigned int /*offset*/,
+    int * /*pnseg*/
+#endif
+);
+
+extern void miStepDash(
+#if NeedFunctionPrototypes
+    int /*dist*/,
+    int * /*pDashIndex*/,
+    unsigned char * /*pDash*/,
+    int /*numInDashList*/,
+    int * /*pDashOffset*/
+#endif
+);
+
+/* mieq.c */
+
+
+#ifndef INPUT_H
+typedef struct _DeviceRec *DevicePtr;
+#endif
+
+extern Bool mieqInit(
+#if NeedFunctionPrototypes
+    DevicePtr /*pKbd*/,
+    DevicePtr /*pPtr*/
+#endif
+);
+
+extern void mieqEnqueue(
+#if NeedFunctionPrototypes
+    xEventPtr /*e*/
+#endif
+);
+
+extern void mieqSwitchScreen(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    Bool /*fromDIX*/
+#endif
+);
+
+extern int mieqProcessInputEvents(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 /* miexpose.c */
 
@@ -147,6 +254,474 @@ extern int miClearDrawable(
 #endif
 );
 
+/* mifillrct.c */
+
+extern void miPolyFillRect(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nrectFill*/,
+    xRectangle * /*prectInit*/
+#endif
+);
+
+/* miglblt.c */
+
+extern void miPolyGlyphBlt(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
+#endif
+);
+
+extern void miImageGlyphBlt(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
+#endif
+);
+
+/* mipoly.c */
+
+extern void miFillPolygon(
+#if NeedFunctionPrototypes
+    DrawablePtr /*dst*/,
+    GCPtr /*pgc*/,
+    int /*shape*/,
+    int /*mode*/,
+    int /*count*/,
+    DDXPointPtr /*pPts*/
+#endif
+);
+
+/* mipolycon.c */
+
+extern Bool miFillConvexPoly(
+#if NeedFunctionPrototypes
+    DrawablePtr /*dst*/,
+    GCPtr /*pgc*/,
+    int /*count*/,
+    DDXPointPtr /*ptsIn*/
+#endif
+);
+
+/* mipolygen.c */
+
+extern Bool miFillGeneralPoly(
+#if NeedFunctionPrototypes
+    DrawablePtr /*dst*/,
+    GCPtr /*pgc*/,
+    int /*count*/,
+    DDXPointPtr /*ptsIn*/
+#endif
+);
+
+/* mipolypnt.c */
+
+extern void miPolyPoint(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    xPoint * /*pptInit*/
+#endif
+);
+
+/* mipolyrect.c */
+
+extern void miPolyRectangle(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*nrects*/,
+    xRectangle * /*pRects*/
+#endif
+);
+
+/* mipolyseg.c */
+
+extern void miPolySegment(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment * /*pSegs*/
+#endif
+);
+
+/* mipolytext.c */
+
+extern int miPolyText(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    int /*count*/,
+    char * /*chars*/,
+    FontEncoding /*fontEncoding*/
+#endif
+);
+
+extern int miPolyText8(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    int /*count*/,
+    char * /*chars*/
+#endif
+);
+
+extern int miPolyText16(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    int /*count*/,
+    unsigned short * /*chars*/
+#endif
+);
+
+extern int miImageText(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    int /*count*/,
+    char * /*chars*/,
+    FontEncoding /*fontEncoding*/
+#endif
+);
+
+extern void miImageText8(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    int /*count*/,
+    char * /*chars*/
+#endif
+);
+
+extern void miImageText16(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    int /*count*/,
+    unsigned short * /*chars*/
+#endif
+);
+
+/* mipushpxl.c */
+
+extern void miPushPixels(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    PixmapPtr /*pBitMap*/,
+    DrawablePtr /*pDrawable*/,
+    int /*dx*/,
+    int /*dy*/,
+    int /*xOrg*/,
+    int /*yOrg*/
+#endif
+);
+
+/* miregion.c */
+
+extern RegionPtr miRegionCreate(
+#if NeedFunctionPrototypes
+    BoxPtr /*rect*/,
+    int /*size*/
+#endif
+);
+
+extern void miRegionInit(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/,
+    BoxPtr /*rect*/,
+    int /*size*/
+#endif
+);
+
+extern void miRegionDestroy(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/
+#endif
+);
+
+extern void miRegionUninit(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/
+#endif
+);
+
+extern Bool miRectAlloc(
+#if NeedFunctionPrototypes
+    RegionPtr /*pRgn*/,
+    int /*n*/
+#endif
+);
+
+extern Bool miRegionCopy(
+#if NeedFunctionPrototypes
+    RegionPtr /*dst*/,
+    RegionPtr /*src*/
+#endif
+);
+
+extern void miSetExtents(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/
+#endif
+);
+
+extern Bool miIntersect(
+#if NeedFunctionPrototypes
+    RegionPtr /*newReg*/,
+    RegionPtr /*reg1*/,
+    RegionPtr /*reg2*/
+#endif
+);
+
+extern Bool miUnion(
+#if NeedFunctionPrototypes
+    RegionPtr /*newReg*/,
+    RegionPtr /*reg1*/,
+    RegionPtr /*reg2*/
+#endif
+);
+
+extern Bool miRegionAppend(
+#if NeedFunctionPrototypes
+    RegionPtr /*dstrgn*/,
+    RegionPtr /*rgn*/
+#endif
+);
+
+extern Bool miRegionValidate(
+#if NeedFunctionPrototypes
+    RegionPtr /*badreg*/,
+    Bool * /*pOverlap*/
+#endif
+);
+
+extern RegionPtr miRectsToRegion(
+#if NeedFunctionPrototypes
+    int /*nrects*/,
+    xRectangle * /*prect*/,
+    int /*ctype*/
+#endif
+);
+
+extern Bool miSubtract(
+#if NeedFunctionPrototypes
+    RegionPtr /*regD*/,
+    RegionPtr /*regM*/,
+    RegionPtr /*regS*/
+#endif
+);
+
+extern Bool miInverse(
+#if NeedFunctionPrototypes
+    RegionPtr /*newReg*/,
+    RegionPtr /*reg1*/,
+    BoxPtr /*invRect*/
+#endif
+);
+
+extern int miRectIn(
+#if NeedFunctionPrototypes
+    RegionPtr /*region*/,
+    BoxPtr /*prect*/
+#endif
+);
+
+extern void miTranslateRegion(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/,
+    int /*x*/,
+    int /*y*/
+#endif
+);
+
+extern void miRegionReset(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern Bool miPointInRegion(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/,
+    int /*x*/,
+    int /*y*/,
+    BoxPtr /*box*/
+#endif
+);
+
+extern Bool miRegionNotEmpty(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/
+#endif
+);
+
+extern void miRegionEmpty(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/
+#endif
+);
+
+extern BoxPtr miRegionExtents(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/
+#endif
+);
+
+extern int miFindMaxBand(
+#if NeedFunctionPrototypes
+    RegionPtr /*prgn*/
+#endif
+);
+
+#ifdef DEBUG
+extern Bool miValidRegion(
+#if NeedFunctionPrototypes
+    RegionPtr /*prgn*/
+#endif
+);
+#endif
+
+/* miscrinit.c */
+
+extern Bool miModifyPixmapHeader(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/,
+    int /*width*/,
+    int /*height*/,
+    int /*depth*/,
+    int /*bitsPerPixel*/,
+    int /*devKind*/,
+    pointer /*pPixData*/
+#endif
+);
+
+extern Bool miCloseScreen(
+#if NeedFunctionPrototypes
+    int /*index*/,
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern Bool miCreateScreenResources(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern Bool miScreenDevPrivateInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    int /*width*/,
+    pointer /*pbits*/
+#endif
+);
+
+#ifndef _XTYPEDEF_MIBSFUNCPTR
+typedef struct _miBSFuncRec *miBSFuncPtr;
+#define _XTYPEDEF_MIBSFUNCPTR
+#endif
+
+extern Bool miScreenInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    pointer /*pbits*/,
+    int /*xsize*/,
+    int /*ysize*/,
+    int /*dpix*/,
+    int /*dpiy*/,
+    int /*width*/,
+    int /*rootDepth*/,
+    int /*numDepths*/,
+    DepthPtr /*depths*/,
+    VisualID /*rootVisual*/,
+    int /*numVisuals*/,
+    VisualPtr /*visuals*/,
+    miBSFuncPtr /*bsfuncs*/
+#endif
+);
+
+/* mivaltree.c */
+
+extern int miShapedWindowIn(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    RegionPtr /*universe*/,
+    RegionPtr /*bounding*/,
+    BoxPtr /*rect*/,
+    int /*x*/,
+    int /*y*/
+#endif
+);
+
+extern int miValidateTree(
+#if NeedFunctionPrototypes
+    WindowPtr /*pParent*/,
+    WindowPtr /*pChild*/,
+    VTKind /*kind*/
+#endif
+);
+
+extern void miWideLine(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pPts*/
+#endif
+);
+
+extern void miWideDash(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pPts*/
+#endif
+);
+
+extern void miMiter(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void miNotMiter(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
 /* miwindow.c */
 
 extern void miClearToBackground(
@@ -162,7 +737,7 @@ extern void miClearToBackground(
 
 extern Bool miChangeSaveUnder(
 #if NeedFunctionPrototypes
-    register WindowPtr /*pWin*/,
+    WindowPtr /*pWin*/,
     WindowPtr /*first*/
 #endif
 );
@@ -185,6 +760,12 @@ extern Bool miMarkOverlappedWindows(
     WindowPtr /*pWin*/,
     WindowPtr /*pFirst*/,
     WindowPtr * /*ppLayerWin*/
+#endif
+);
+
+extern void miHandleValidateExposures(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
 #endif
 );
 
@@ -215,32 +796,64 @@ extern WindowPtr miGetLayerWindow(
 #endif
 );
 
-extern void miHandleValidateExposures(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/
-#endif
-);
-
 extern void miSetShape(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/
 #endif
 );
 
-void
-miChangeBorderWidth(
+extern void miChangeBorderWidth(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
     unsigned int /*width*/
 #endif
 );
 
-void
-miMarkUnrealizedWindow(
+extern void miMarkUnrealizedWindow(
 #if NeedFunctionPrototypes
     WindowPtr /*pChild*/,
     WindowPtr /*pWin*/,
     Bool /*fromConfigure*/
+#endif
+);
+
+extern void miZeroPolyArc(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc * /*parcs*/
+#endif
+);
+
+/* mizerline.c */
+
+extern void miZeroLine(
+#if NeedFunctionPrototypes
+    DrawablePtr /*dst*/,
+    GCPtr /*pgc*/,
+    int /*mode*/,
+    int /*nptInit*/,
+    DDXPointRec * /*pptInit*/
+#endif
+);
+
+extern int miZeroDashLine(
+#if NeedFunctionPrototypes
+    DrawablePtr /*dst*/,
+    GCPtr /*pgc*/,
+    int /*mode*/,
+    int /*nptInit*/,
+    DDXPointRec * /*pptInit*/
+#endif
+);
+
+extern void miPolyFillArc(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc * /*parcs*/
 #endif
 );
 

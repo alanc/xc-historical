@@ -21,13 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyutil.c,v 1.13 88/09/06 14:49:24 jim Exp $ */
+/* $XConsortium: mipolyutil.c,v 1.14 89/03/22 10:50:55 rws Exp $ */
 #include "miscstruct.h"
 #include "gc.h"
 #include "miscanfill.h"
 #include "mipoly.h"
-
-extern void  miFreeStorage();
 
 #define MAXINT 0x7fffffff
 #define MININT -MAXINT

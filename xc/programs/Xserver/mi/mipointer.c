@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.18 92/01/30 19:21:30 keith Exp $ */
+/* $XConsortium: mipointer.c,v 5.19 92/04/06 18:16:20 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -55,10 +55,8 @@ static Bool miPointerCloseScreen();
 
 static void miPointerMove ();
 
-extern void miRecolorCursor ();
 extern void ProcessInputEvents ();
 extern void NewCurrentScreen ();
-extern void mieqEnqueue (), mieqSwitchScreen ();
 
 Bool
 miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.45 93/09/03 08:09:28 dpw Exp $ */
+/* $XConsortium: miarc.c,v 5.46 93/09/18 10:14:01 dpw Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -216,7 +216,6 @@ typedef struct _miPolyArc {
 				 GCLineWidth | GCCapStyle | GCJoinStyle)
 static XID gcvals[6];
 
-extern void miFillSppPoly();
 static void fillSpans(), newFinalSpan();
 static void drawArc(), drawQuadrant(), drawZeroArc();
 static void miArcJoin(), miArcCap(), miRoundCap(), miFreeArcs();

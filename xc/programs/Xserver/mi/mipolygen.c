@@ -21,14 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolygen.c,v 1.21 89/03/22 10:50:48 rws Exp $ */
+/* $XConsortium: mipolygen.c,v 5.0 89/06/09 15:08:35 keith Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "miscanfill.h"
 #include "mipoly.h"
 #include "pixmap.h"
-
-extern void miloadAET(), micomputeWAET(), miFreeStorage();
 
 /*
  *

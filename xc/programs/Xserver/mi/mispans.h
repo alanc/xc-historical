@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mispans.h,v 5.0 89/11/05 13:52:39 rws Exp $ */
+/* $XConsortium: mispans.h,v 5.1 91/12/17 19:39:14 keith Exp $ */
 
 typedef struct {
     int         count;		/* number of spans		    */
@@ -38,20 +38,72 @@ typedef struct {
 } SpanGroup;
 
 /* Initialize SpanGroup.  MUST BE DONE before use. */
-extern void miInitSpanGroup(/* spanGroup */);
+extern void miInitSpanGroup(
+#if NeedFunctionPrototypes
+    SpanGroup * /*spanGroup*/
+#endif
+);
 
 /* Add a Spans to a SpanGroup. The spans MUST BE in y-sorted order */
-extern void miAppendSpans(/* spanGroup, otherGroup, spans */);
+extern void miAppendSpans(
+#if NeedFunctionPrototypes
+    SpanGroup * /*spanGroup*/,
+    SpanGroup * /*otherGroup*/,
+    Spans * /*spans*/
+#endif
+);
 
 /* Paint a span group, possibly with some overlap */
-extern void miFillSpanGroup(/* spanGroup */);
+extern void miFillSpanGroup(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    SpanGroup * /*spanGroup*/
+#endif
+);
 
 /* Paint a span group, insuring that each pixel is painted at most once */
-extern void miFillUniqueSpanGroup(/* spanGroup */);
+extern void miFillUniqueSpanGroup(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    SpanGroup * /*spanGroup*/
+#endif
+);
 
 /* Free up data in a span group.  MUST BE DONE or you'll suffer memory leaks */
-extern void miFreeSpanGroup(/* spanGroup */);
+extern void miFreeSpanGroup(
+#if NeedFunctionPrototypes
+    SpanGroup * /*spanGroup*/
+#endif
+);
+
+extern void miSubtractSpans(
+#if NeedFunctionPrototypes
+    SpanGroup * /*spanGroup*/,
+    Spans * /*sub*/
+#endif
+);
+
+extern void miDisposeSpanGroup(
+#if NeedFunctionPrototypes
+    SpanGroup * /*spanGroup*/
+#endif
+);
+
+extern int miClipSpans(
+#if NeedFunctionPrototypes
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*ppt*/,
+    int * /*pwidth*/,
+    int /*nspans*/,
+    DDXPointPtr /*pptNew*/,
+    int * /*pwidthNew*/,
+    int /*fSorted*/
+#endif
+);
 
 /* Rops which must use span groups */
 #define miSpansCarefulRop(rop)	(((rop) & 0xc) == 0x8 || ((rop) & 0x3) == 0x2)
 #define miSpansEasyRop(rop)	(!miSpansCarefulRop(rop))
+

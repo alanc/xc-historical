@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.10 90/02/02 19:07:57 keith Exp $ */
+/* $XConsortium: mispritest.h,v 5.11 91/04/26 21:46:09 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -27,22 +27,20 @@ purpose.  It is provided "as is" without express or implied warranty.
  */
 
 typedef struct {
-    Bool	    (*CloseScreen)();
-    void	    (*GetImage)();
-    void	    (*GetSpans)();
-    void	    (*SourceValidate)();
-    Bool	    (*CreateGC)();
-    void	    (*BlockHandler)();
-    void	    (*InstallColormap)();
-    void	    (*StoreColors)();
-
-    void	    (* PaintWindowBackground)();
-    void	    (* PaintWindowBorder)();
-    void	    (* CopyWindow)();
-    void	    (* ClearToBackground)();
-
-    void	    (* SaveDoomedAreas)();
-    RegionPtr	    (* RestoreAreas)();
+    CloseScreenProcPtr			CloseScreen;
+    GetImageProcPtr			GetImage;
+    GetSpansProcPtr			GetSpans;
+    SourceValidateProcPtr		SourceValidate;
+    CreateGCProcPtr			CreateGC;
+    ScreenBlockHandlerProcPtr		BlockHandler;
+    InstallColormapProcPtr		InstallColormap;
+    StoreColorsProcPtr			StoreColors;
+    PaintWindowBackgroundProcPtr	PaintWindowBackground;
+    PaintWindowBorderProcPtr		PaintWindowBorder;
+    CopyWindowProcPtr			CopyWindow;
+    ClearToBackgroundProcPtr		ClearToBackground;
+    SaveDoomedAreasProcPtr		SaveDoomedAreas;
+    RestoreAreasProcPtr			RestoreAreas;
 
     CursorPtr	    pCursor;
     int		    x;

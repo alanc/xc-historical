@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.h,v 5.3 90/08/14 09:40:32 rws Exp $ */
+/* $XConsortium: mifillarc.h,v 5.4 90/10/06 13:55:43 rws Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 
@@ -157,3 +157,44 @@ typedef struct _miArcSlice {
 
 #define miFillInArcLower(slw) (((iny + dy) != 0) && \
 			       ((slw > 1) || (ine != inxk)))
+
+extern int miFreeArcCache(
+#if NeedFunctionPrototypes
+    pointer /*data*/,
+    XID /*id*/
+#endif
+);
+
+extern struct finalSpan *realAllocSpan(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void miFillArcSetup(
+#if NeedFunctionPrototypes
+    xArc * /*arc*/,
+    miFillArcRec * /*info*/
+#endif
+);
+
+extern void miEllipseAngleToSlope(
+#if NeedFunctionPrototypes
+    int /*angle*/,
+    int /*width*/,
+    int /*height*/,
+    int * /*dxp*/,
+    int * /*dyp*/,
+    double * /*d_dxp*/,
+    double * /*d_dyp*/
+#endif
+);
+
+extern void miFillArcSliceSetup(
+#if NeedFunctionPrototypes
+    xArc * /*arc*/,
+    miArcSliceRec * /*slice*/,
+    GCPtr /*pGC*/
+#endif
+);
+

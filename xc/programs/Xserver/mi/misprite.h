@@ -6,7 +6,7 @@
  * mi versions of these routines exist.
  */
 
-/* $XConsortium: misprite.h,v 5.2 89/08/30 19:24:05 keith Exp $ */
+/* $XConsortium: misprite.h,v 5.3 91/04/26 21:46:02 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -23,11 +23,78 @@ purpose.  It is provided "as is" without express or implied warranty.
 */
 
 typedef struct {
-    Bool	(*RealizeCursor)();	/* pScreen, pCursor */
-    Bool	(*UnrealizeCursor)();	/* pScreen, pCursor */
-    Bool	(*PutUpCursor)();	/* pScreen, pCursor, x, y */
-    Bool	(*SaveUnderCursor)();	/* pScreen, x, y, w, h */
-    Bool	(*RestoreUnderCursor)();/* pScreen, x, y, w, h */
-    Bool	(*MoveCursor)();	/* pScreen, pCursor, x, y, w, h, dx, dy */
-    Bool	(*ChangeSave)();	/* pScreen, x, y, w, h, dx, dy */
+    Bool	(*RealizeCursor)(
+#if NeedNestedPrototypes
+		ScreenPtr /*pScreen*/,
+		CursorPtr /*pCursor*/
+#endif
+);
+    Bool	(*UnrealizeCursor)(
+#if NeedNestedPrototypes
+		ScreenPtr /*pScreen*/,
+		CursorPtr /*pCursor*/
+#endif
+);
+    Bool	(*PutUpCursor)(
+#if NeedNestedPrototypes
+		ScreenPtr /*pScreen*/,
+		CursorPtr /*pCursor*/,
+		int /*x*/,
+		int /*y*/,
+		unsigned long /*source*/,
+		unsigned long /*mask*/
+#endif
+);
+    Bool	(*SaveUnderCursor)(
+#if NeedNestedPrototypes
+		ScreenPtr /*pScreen*/,
+		int /*x*/,
+		int /*y*/,
+		int /*w*/,
+		int /*h*/
+#endif
+);
+    Bool	(*RestoreUnderCursor)(
+#if NeedNestedPrototypes
+		ScreenPtr /*pScreen*/,
+		int /*x*/,
+		int /*y*/,
+		int /*w*/,
+		int /*h*/
+#endif
+);
+    Bool	(*MoveCursor)(
+#if NeedNestedPrototypes
+		ScreenPtr /*pScreen*/,
+		CursorPtr /*pCursor*/,
+		int /*x*/,
+		int /*y*/,
+		int /*w*/,
+		int /*h*/,
+		int /*dx*/,
+		int /*dy*/,
+		unsigned long /*source*/,
+		unsigned long /*mask*/
+#endif
+);
+    Bool	(*ChangeSave)(
+#if NeedNestedPrototypes
+		ScreenPtr /*pScreen*/,
+		int /*x*/,
+		int /*y*/,
+		int /*w*/,
+		int /*h*/,
+		int /*dx*/,
+		int /*dy*/
+#endif
+);
+
 } miSpriteCursorFuncRec, *miSpriteCursorFuncPtr;
+
+extern Bool miSpriteInitialize(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    miSpriteCursorFuncPtr /*cursorFuncs*/,
+    miPointerScreenFuncPtr /*screenFuncs*/
+#endif
+);

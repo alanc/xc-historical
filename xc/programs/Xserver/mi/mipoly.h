@@ -1,4 +1,4 @@
-/* $XConsortium: mipoly.h,v 1.1 87/09/11 07:20:03 toddb Exp $ */
+/* $XConsortium: mipoly.h,v 1.2 88/09/06 14:49:30 jim Exp $ */
 /*
  *     fill.h
  *
@@ -149,3 +149,51 @@ typedef struct _ScanLineListBlock {
       pAET = pAET->next; \
    } \
 }
+
+/* mipolyutil.c */
+
+extern Bool miInsertEdgeInET(
+#if NeedFunctionPrototypes
+    EdgeTable * /*ET*/,
+    EdgeTableEntry * /*ETE*/,
+    int /*scanline*/,
+    ScanLineListBlock ** /*SLLBlock*/,
+    int * /*iSLLBlock*/
+#endif
+);
+
+extern Bool miCreateETandAET(
+#if NeedFunctionPrototypes
+    int /*count*/,
+    DDXPointPtr /*pts*/,
+    EdgeTable * /*ET*/,
+    EdgeTableEntry * /*AET*/,
+    EdgeTableEntry * /*pETEs*/,
+    ScanLineListBlock * /*pSLLBlock*/
+#endif
+);
+
+extern void miloadAET(
+#if NeedFunctionPrototypes
+    EdgeTableEntry * /*AET*/,
+    EdgeTableEntry * /*ETEs*/
+#endif
+);
+
+extern void micomputeWAET(
+#if NeedFunctionPrototypes
+    EdgeTableEntry * /*AET*/
+#endif
+);
+
+extern int miInsertionSort(
+#if NeedFunctionPrototypes
+    EdgeTableEntry * /*AET*/
+#endif
+);
+
+extern void miFreeStorage(
+#if NeedFunctionPrototypes
+    ScanLineListBlock * /*pSLLBlock*/
+#endif
+);

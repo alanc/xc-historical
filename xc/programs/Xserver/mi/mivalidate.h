@@ -1,4 +1,4 @@
-/* $XConsortium: mivalidate.h,v 5.2 90/03/16 17:17:01 keith Exp $ */
+/* $XConsortium: mivalidate.h,v 1.1 93/09/28 17:55:26 dpw Exp $ */
 
 /*
  * Copyright 1993 Massachusetts Institute of Technology
