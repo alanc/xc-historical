@@ -294,10 +294,11 @@ char *name;
 }
 
 static void
-Initialize(wid) 
-Widget wid;
+Initialize(request, new) 
+Widget request, new;
 {
-	TopLevelWidget w = (TopLevelWidget) wid;
+	TopLevelWidget w = (TopLevelWidget) new;
+	
 	int flag;
 
 	if(w->top.icon_name == NULL) {
