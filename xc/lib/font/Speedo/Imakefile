@@ -2,7 +2,6 @@
 
         INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
          HEADERS = 
-   EXTRA_DEFINES = -DEXTRAFONTS
       SPEEDOSRCS = do_char.c do_trns.c out_bl2d.c out_blk.c \
 		   out_scrn.c out_util.c reset.c set_spcs.c set_trns.c 
       SPEEDOOBJS = do_char.o do_trns.o out_bl2d.o out_blk.o \
