@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.1 93/06/21 15:26:13 gildea Exp $
+ * $XConsortium: locking.h,v 1.2 93/07/10 19:12:12 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -29,37 +29,51 @@
 #ifndef _X_locking_H_
 #define _X_locking_H_
 
-#include <X11/Xfuncproto.h>
 #ifdef CTHREADS
 #include <cthreads.h>
-typedef struct mutex mutex_rep_t;
-typedef struct condition condition_rep_t;
 typedef cthread_t xthread_t;
+#define condition_malloc() (condition_t)Xmalloc(sizeof(struct condition))
+#define mutex_malloc() (mutex_t)Xmalloc(sizeof(struct mutex))
 #define xthread_self() cthread_self()
 #define xthread_init() cthread_init()
-#define have_thread_id(id) id
-#define clear_thread_id(id) id = 0
-#define same_thread_id(id1,id2) id1 == id2
 #else
 #include <pthread.h>
 typedef pthread_mutex_t *mutex_t;
-typedef pthread_mutex_t mutex_rep_t;
 typedef pthread_cond_t *condition_t;
-typedef pthread_cond_t condition_rep_t;
 typedef pthread_t xthread_t;
 #define xthread_self() pthread_self()
+#define condition_malloc() (condition_t)Xmalloc(sizeof(pthread_cond_t))
 #define condition_init(c) pthread_cond_init(c, pthread_condattr_default)
 #define condition_clear(c) pthread_cond_destroy(c)
 #define condition_wait(c,m) pthread_cond_wait(c,m)
+#define condition_signal(c) pthread_cond_signal(c)
 #define condition_broadcast(c) pthread_cond_broadcast(c)
+#define mutex_malloc() (mutex_t)Xmalloc(sizeof(pthread_mutex_t))
 #define mutex_init(m) pthread_mutex_init(m, pthread_mutexattr_default)
 #define mutex_clear(m) pthread_mutex_destroy(m)
 #define mutex_lock(m) pthread_mutex_lock(m)
 #define mutex_unlock(m) pthread_mutex_unlock(m)
-extern pthread_t _X_no_thread_id;
-#define have_thread_id(id) memcmp(&id, &_X_no_thread_id, sizeof(xthread_t))
-#define clear_thread_id(id) id = _X_no_thread_id
-#define same_thread_id(id1,id2) !memcmp(&id1, &id2, sizeof(xthread_t))
+#ifdef __OSF1__
+extern xthread_t _X_no_thread_id;
+#define xthread_have_id(id) !pthread_equal(id, _X_no_thread_id)
+#define xthread_clear_id(id) id = _X_no_thread_id
+#define xthread_equal(id1,id2) pthread_equal(id1, id2)
+#endif
+#endif
+#ifndef condition_free
+#define condition_free(c) Xfree((char *)c)
+#endif
+#ifndef mutex_free
+#define mutex_free(m) Xfree((char *)m)
+#endif
+#ifndef xthread_have_id
+#define xthread_have_id(id) id
+#endif
+#ifndef xthread_clear_id
+#define xthread_clear_id(id) id = 0
+#endif
+#ifndef xthread_equal
+#define xthread_equal(id1,id2) id1 == id2
 #endif
 
 struct _XCVList {
@@ -83,21 +97,16 @@ struct _XLockInfo {
 	condition_t cv;		/* wait if another thread has XLockDisplay */
 };
 
+#ifdef XTHREADS_WARN
 #define ConditionWait(d,c) if ((d)->lock_fns) \
 	(*(d)->lock_fns->condition_wait)((c)->cv, (d)->lock->mutex,__FILE__,__LINE__)
 #define ConditionSignal(d,c) if ((d)->lock_fns) \
 	(*(d)->lock_fns->condition_signal)((c)->cv,__FILE__,__LINE__)
-
-_XFUNCPROTOBEGIN
-
-extern void _XLockDisplay(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    char*		/* file */,
-    int			/* line */
+#else
+#define ConditionWait(d,c) if ((d)->lock_fns) \
+	(*(d)->lock_fns->condition_wait)((c)->cv, (d)->lock->mutex)
+#define ConditionSignal(d,c) if ((d)->lock_fns) \
+	(*(d)->lock_fns->condition_signal)((c)->cv)
 #endif
-);
-
-_XFUNCPROTOEND
 
 #endif /* _X_locking_H_ */
