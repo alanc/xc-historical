@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.8 91/01/25 11:06:12 dmatic Exp $
+ * $XConsortium: ReqMach.c,v 1.9 91/04/16 09:06:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,13 +23,8 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-
-
-#include <X11/IntrinsicP.h>
-#include <X11/Xaw/XawInit.h>
-#include <X11/Xmu/Converters.h>
 #include <X11/StringDefs.h>
-#include <X11/Xatom.h>
+#include <X11/IntrinsicP.h>
 #include <X11/Xfuncs.h>
 #include "BitmapP.h"
     
@@ -37,7 +32,6 @@
 #include <string.h>
 #include <math.h>
 
-#define XtStrlen(s)                   ((s) ? strlen(s) : 0)
 #ifndef abs
 #define abs(x)                        (((x) > 0) ? (x) : -(x))
 #endif
