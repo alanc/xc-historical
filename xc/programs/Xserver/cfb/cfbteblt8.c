@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.10 90/03/21 13:45:00 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.11 90/04/02 18:33:29 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -290,7 +290,7 @@ extern long endtab[];
 #define FirstStep	c = BitLeft (c, 2);
 #endif
 
-extern void miImageGlyphBlt();
+extern void cfbImageGlyphBlt8();
 
 void
 CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
@@ -364,7 +364,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
                 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnPART:
-	miImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
       case rgnOUT:
 	return;
     }
