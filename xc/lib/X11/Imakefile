@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.141 93/07/28 19:05:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.142 93/08/13 14:10:09 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -39,6 +39,9 @@ XBSDLIB = /**/
 #endif
 #if HasSecureRPC
         RPCDEFS = -DSECURE_RPC
+#endif
+#if HasPoll
+   POLL_DEFINES = -DUSE_POLL
 #endif
    CONN_DEFINES = ConnectionFlags
 #if HasBSD44Sockets
@@ -1027,11 +1030,11 @@ LibraryObjectRule()
 
 SpecialCLibObjectRule(XErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(XStrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialCLibObjectRule(XConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCLibObjectRule(XConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES) $(POLL_DEFINES))
 SpecialCLibObjectRule(XOpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(DEPEND_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES) $(MTT_DEFINES))
+SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES) $(MTT_DEFINES) $(POLL_DEFINES))
 SpecialCLibObjectRule(XcmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.169 93/07/20 12:58:09 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.170 93/07/22 13:29:46 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -153,12 +153,21 @@ _XWaitForWritable(dpy
     condition_t cv;		/* our reading condition variable */
 #endif
 {
+#ifdef USE_POLL
+    struct pollfd filedes;
+#else
     unsigned long r_mask[MSKCNT];
     unsigned long w_mask[MSKCNT];
+#endif
     int nfound;
 
+#ifdef USE_POLL
+    filedes.fd = dpy->fd;
+    filedes.events = 0;
+#else
     CLEARBITS(r_mask);
     CLEARBITS(w_mask);
+#endif
 
     while (1) {
 #ifdef XTHREADS
@@ -185,17 +194,30 @@ _XWaitForWritable(dpy
 	    (!dpy->lock->event_awaiters &&
 	     (!dpy->lock->reply_awaiters || dpy->lock->reply_awaiters->cv == cv)))
 #endif
+#ifdef USE_POLL
+	    filedes.events = POLLIN;
+	filedes.events |= POLLOUT;
+#else
 	    BITSET(r_mask, dpy->fd);
         BITSET(w_mask, dpy->fd);
+#endif
 
 	do {
+#ifdef USE_POLL
+	    nfound = poll (&filedes, 1, -1);
+#else
 	    nfound = select (dpy->fd + 1, r_mask, w_mask,
 			     (char *)NULL, (char *)NULL);
+#endif
 	    if (nfound < 0 && errno != EINTR)
 		_XIOError(dpy);
 	} while (nfound <= 0);
 
+#ifdef USE_POLL
+	if (filedes.revents & POLLIN) {
+#else
 	if (_XANYSET(r_mask)) {
+#endif
 	    _XAlignedBuffer buf;
 	    int pend;
 	    register int len;
@@ -235,7 +257,11 @@ _XWaitForWritable(dpy
 		}
 	    } ENDITERATE
 	}
+#ifdef USE_POLL
+	if (filedes.revents & POLLOUT)
+#else
 	if (_XANYSET(w_mask))
+#endif
 	    return;
     }
 }
@@ -245,16 +271,33 @@ static void
 _XWaitForReadable(dpy)
   Display *dpy;
 {
+#ifdef USE_POLL
+    struct pollfd filedes;
+#else
     unsigned long r_mask[MSKCNT];
+#endif
     int result;
     int fd = dpy->fd;
 	
+#ifdef USE_POLL
+    filedes.fd = fd;
+    filedes.events = 0;
+#else
     CLEARBITS(r_mask);
+#endif
     do {
+#ifdef USE_POLL
+	filedes.events = POLLIN;
+#else
 	BITSET(r_mask, fd);
+#endif
 	UnlockDisplay(dpy);
+#ifdef USE_POLL
+	result = poll(&filedes, 1, -1);
+#else
 	result = select(fd + 1, r_mask,
 			(char *)NULL, (char *)NULL, (char *)NULL);
+#endif
 	LockDisplay(dpy);
 	if (result == -1 && errno != EINTR) _XIOError(dpy);
     } while (result <= 0);
@@ -416,14 +459,24 @@ _XEventsQueued (dpy, mode)
 	 */
 	if (!pend && !dpy->qlen && ++dpy->conn_checker >= XCONN_CHECK_FREQ)
 	{
+#ifdef USE_POLL
+	    struct pollfd filedes;
+#else
 	    unsigned long r_mask[MSKCNT];
 	    static struct timeval zero_time;
+#endif
 
 	    dpy->conn_checker = 0;
+#ifdef USE_POLL
+	    filedes.fd = dpy->fd;
+	    filedes.events = POLLIN;
+	    if (pend = poll(&filedes, 1, 0))
+#else
 	    CLEARBITS(r_mask);
 	    BITSET(r_mask, dpy->fd);
 	    if (pend = select(dpy->fd + 1, (int *)r_mask, NULL, NULL,
 			      &zero_time))
+#endif
 	    {
 		if (pend > 0)
 		{
