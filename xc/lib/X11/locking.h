@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.2 93/07/10 19:12:12 rws Exp $
+ * $XConsortium: locking.h,v 1.3 93/07/11 13:37:16 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -53,7 +53,7 @@ typedef pthread_t xthread_t;
 #define mutex_clear(m) pthread_mutex_destroy(m)
 #define mutex_lock(m) pthread_mutex_lock(m)
 #define mutex_unlock(m) pthread_mutex_unlock(m)
-#ifdef __OSF1__
+#ifdef _DECTHREADS_
 extern xthread_t _X_no_thread_id;
 #define xthread_have_id(id) !pthread_equal(id, _X_no_thread_id)
 #define xthread_clear_id(id) id = _X_no_thread_id

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.4 93/07/10 19:11:31 rws Exp $
+ * $XConsortium: locking.c,v 1.5 93/07/11 13:39:57 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@
 extern int  (*_XInitDisplayLock_fn)();
 extern void (*_XFreeDisplayLock_fn)();
 
-#if defined(__OSF1__)
+#ifdef _DECTHREADS_
 xthread_t _X_no_thread_id;
 #endif
 
