@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.12 94/07/21 16:49:23 gildea Exp gildea $
+XCOMM site:  $XConsortium: site.sample,v 1.13 94/08/02 16:01:35 gildea Exp matt $
 
 /*****************************************************************************
  *                                                                           *
@@ -49,6 +49,21 @@ XCOMM site:  $XConsortium: site.sample,v 1.12 94/07/21 16:49:23 gildea Exp gilde
 #endif 
 */
 
+/*
+ * If you are building Fresco you really want a C++ compiler whose
+ * preprocessor includes ANSI features like token-pasting.  For most
+ * C++ compilers, this is the default behavior.  For some compilers,
+ * you might have to throw an extra flag to enable ANSI cpp behavior.
+ * In the unlikely event that your compiler can't do ANSI cpp stuff
+ * at all, you need to define the symbol UNIXCPP when compiling C++
+ * code, like this:
+ */
+
+/*
+#ifndef CplusplusStandardDefines
+#define CplusplusStandardDefines -DUNIXCPP StandardDefines
+#endif
+*/
 
 #endif /* BeforeVendorCF */
 
