@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.244 94/08/17 18:57:34 matt Exp gildea $
+XCOMM $XConsortium: Project.tmpl,v 1.245 94/10/04 18:43:14 gildea Exp gildea $
 
 /***************************************************************************
  *                                                                         *
@@ -1088,7 +1088,7 @@ clean::									@@\
 all:: file.PS								@@\
 									@@\
 file.dvi: srcs  							@@\
-	latex srcs							@@\
+	$(LATEX) srcs							@@\
 									@@\
 file.PS: file.dvi							@@\
 	$(DVIPS) -o file.nPS file && $(MV) file.nPS $@			@@\

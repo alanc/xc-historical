@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.222 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM $XConsortium: Imake.tmpl,v 1.223 94/12/01 16:06:21 kaleb Exp gildea $
 XCOMM
 
 /*
@@ -698,6 +698,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef DvipsCmd
 #define DvipsCmd dvips
 #endif
+#ifndef LatexCmd
+#define LatexCmd latex
+#endif
 #if HasSentinel
 #ifndef SentinelCmd
 #define SentinelCmd sentinel
@@ -849,6 +852,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
               EQN = EqnCmd
 #if HasLatex
             DVIPS = DvipsCmd
+            LATEX = LatexCmd
 #endif
 #if HasSentinel
          SENTINEL = SentinelCmd
