@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.11 90/02/02 18:56:33 jim Exp $
+ * $XConsortium: viewres.c,v 1.12 90/02/05 11:50:12 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -226,6 +226,7 @@ static void do_set_labeltype (w, event, params, num_params)
 	set_labeltype_button ();
 	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
 	set_node_labels (topnode, 0);
+	XawTreeForceLayout (treeWidget);
 	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
     }
     return;
@@ -271,13 +272,12 @@ static void do_set_orientation (w, event, params, num_params)
     }
 
     if (horiz != oldhoriz) {
-	set_orientation_button (horiz);
 	XtSetArg (args[0], XtNorientation,
 		  horiz ? XtorientHorizontal : XtorientVertical);
 	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
  	XtSetValues (treeWidget, args, ONE);
 	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
-
+	set_orientation_button ();
     }
     return;
 }
@@ -292,13 +292,16 @@ static void set_labeltype_button ()
     XtSetValues (labeltypeButton, args, ONE);
 }
 
-static void set_orientation_button (horiz)
-    Bool horiz;
+static void set_orientation_button ()
 {
+    XtOrientation orient;
     Arg args[1];
 
+    XtSetArg (args[0], XtNorientation, &orient);
+    XtGetValues (treeWidget, args, ONE);
+
     XtSetArg (args[0], XtNlabel, 
-	      (horiz ? Appresources.label_vertical
+	      (orient == XtorientHorizontal ? Appresources.label_vertical
 	       : Appresources.label_horizontal));
     XtSetValues (orientationButton, args, ONE);
 }
@@ -346,9 +349,5 @@ static void set_node_labels (node, depth)
 
     for (child = node->children; child; child = child->siblings) {
 	set_node_labels (child, depth + 1);
-    }
-
-    if (depth == 0) {
-	XawTreeForceLayout (treeWidget);
     }
 }
