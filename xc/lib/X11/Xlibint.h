@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.84 90/12/12 11:55:29 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.85 90/12/26 11:10:30 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -417,6 +417,8 @@ typedef struct _XFreeFuncs {
     int (*modifiermap)();	/* XFreeModifierMap */
     void (*key_bindings)();	/* _XFreeKeyBindings */
     void (*context_db)();	/* _XFreeContextDB */
+    void (*defaultCCCs)();	/* _XcmsFreeDefaultCCCs */
+    void (*clientCmaps)();	/* _XcmsFreeClientCmaps */
 } _XFreeFuncRec;
 
 /*
