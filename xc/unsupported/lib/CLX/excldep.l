@@ -55,6 +55,15 @@
 	  ,str)))))
 
 
+(defun underlying-simple-vector (array)
+  (cond ((excl::svectorp array)
+	 array)
+	((arrayp array)
+	 (cdr (excl::ah_data array)))
+	(t
+	 (error "~s is not an array" array))))
+
+
 (defconstant type-pred-alist
   '(
     (card8  . card8p)
@@ -324,7 +333,7 @@
 ;; restrictions of Restricted Rights for Commercial Software developed
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 
-;; $Header: excldep.l,v 1.8 89/11/02 16:32:03 cjl Exp $
+;; $Header: excldep.l,v 1.9 89/11/15 20:32:55 cjl Exp $
 
 (in-package 'patch :use '(lisp excl))
 

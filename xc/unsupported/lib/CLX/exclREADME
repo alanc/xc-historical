@@ -17,7 +17,9 @@ moving files around.  In this directory, execute (assuming you using csh):
 
      The second is compiling the source files into fasl files.  The fasl files
 will be combined into one big fasl file, CLX.fasl.  This file is then installed
-in your Common Lisp library directory in the next step.
+in your Common Lisp library directory in the next step.  You may need to edit
+the Makefile to select the proper CFLAGS for your machine -- look in Makefile
+for examples.  Then just:
 
 % make
 

@@ -9,6 +9,7 @@
 CL	= /usr/local/bin/cl
 
 RM	= /bin/rm
+SHELL	= /bin/sh
 ECHO	= /bin/echo
 TAGS	= /usr/local/lib/emacs/etc/etags
 
@@ -16,7 +17,14 @@ TAGS	= /usr/local/lib/emacs/etc/etags
 CLX	= CLX
 
 CLOPTS	= -qq
-CFLAGS	= -O -DUNIXCONN $(XCFLAGS)
+
+# Use this one for Suns
+CFLAGS	= -O -DUNIXCONN
+# Use this one for Silicon Graphics Mips based machines
+# CFLAGS = -O -G 0 -I/usr/include/bsd
+# Use this one for DEC Mips based machines
+# CFLAGS = -O -G 0 -DUNIXCONN
+
 
 # Lisp optimization for compiling
 SPEED	= 3
