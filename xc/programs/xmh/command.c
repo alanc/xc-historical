@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 1.13 87/09/11 08:18:00 toddb Exp $";
+static char rcs_id[] = "$Header: command.c,v 1.8 88/01/06 08:15:12 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,16 +29,11 @@ static char rcs_id[] = "$Header: command.c,v 1.13 87/09/11 08:18:00 toddb Exp $"
 /* command.c -- interface to exec mh commands. */
 
 #include "xmh.h"
-#ifdef X10
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/file.h>
-#endif	/* X10 */
 #include <sys/stat.h>
 #include <sys/signal.h>
 #ifndef SYSV
 #include <sys/wait.h>
-#endif	/* !SYSV */
+#endif	/* SYSV */
 #include <sys/resource.h>
 
 #ifndef FD_SET
@@ -48,7 +43,7 @@ static char rcs_id[] = "$Header: command.c,v 1.13 87/09/11 08:18:00 toddb Exp $"
 #define FD_CLR(n, p)    ((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
 #define FD_ISSET(n, p)  ((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
 #define FD_ZERO(p)      bzero((char *)(p), sizeof(*(p)))
-#endif
+#endif FD_SET
 
 
 
@@ -84,8 +79,8 @@ DoCommand(argv, inputfile, outputfile)
     int pid;
     fd_set readfds, fds;
     FD_ZERO(&fds);
-    FD_SET(QConnectionNumber(theDisplay), &fds);
-if (debug) {(void)fprintf(stderr, "Executing %s ...", argv[0]); (void) fflush(stderr);}
+    FD_SET(ConnectionNumber(theDisplay), &fds);
+    DEBUG1("Executing %s ...", argv[0])
     childdone = FALSE;
     (void) signal(SIGCHLD, ChildDone);
     pid = fork();
@@ -93,18 +88,19 @@ if (debug) {(void)fprintf(stderr, "Executing %s ...", argv[0]); (void) fflush(st
     if (pid) {			/* We're the parent process. */
 	while (!childdone) {
 	    readfds = fds;
-	    (void) select(QConnectionNumber(theDisplay)+1, (int *) &readfds,
+	    (void) select(ConnectionNumber(theDisplay)+1, (int *) &readfds,
 			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
-	    if (FD_ISSET(QConnectionNumber(theDisplay), &readfds)) {
-		(void) QXPending(theDisplay);
+	    if (FD_ISSET(ConnectionNumber(theDisplay), &readfds)) {
+		(void) XPending(theDisplay);
 	    }
 	}
 #ifdef SYSV
 	(void) wait((int *) NULL);
-#else	/* SYSV */
+#else /* !SYSV */
 	(void) wait((union wait *) NULL);
-#endif	/* SYSV */
-if (debug) (void)fprintf(stderr, " done\n");
+#endif /* !SYSV */
+
+	DEBUG(" done\n")
     } else {			/* We're the child process. */
 	if (inputfile) {
 	    fid = FOpenAndCheck(inputfile, "r");
@@ -118,7 +114,7 @@ if (debug) (void)fprintf(stderr, " done\n");
 	    fid = FOpenAndCheck("/dev/null", "w");
 	    (void) dup2(fileno(fid), fileno(stderr));
 	    if (!outputfile)
-		(void) dup2(fileno(fid), fileno(stderr));
+		(void) dup2(fileno(fid), fileno(stdout));
 	}
 	(void) execv(FullPathOfCommand(argv[0]), argv);
 	(void) execvp(argv[0], argv);
@@ -144,7 +140,7 @@ char ** argv;
     if (length != read(fid, result, length))
 	Punt("Couldn't read result from DoCommandToString");
     result[length] = 0;
-if (debug) (void) fprintf(stderr, "('%s')\n", result);
+    DEBUG1("('%s')\n", result)
     (void) myclose(fid);
     DeleteFileAndCheck(file);
     return result;
@@ -157,23 +153,23 @@ char *DoCommandToString(argv)
 {
     static char result[1030];
     int fildes[2], pid, l;
-if (debug) {(void)fprintf(stderr, "Executing %s ...", argv[0]); (void) fflush(stderr);}
+    DEBUG1("Executing %s ...", argv[0])
     (void) pipe(fildes);
     pid = vfork();
     if (pid == -1) Punt("Couldn't fork!");
     if (pid) {
 #ifdef SYSV
-	while (wait((int *) 0) == -1) ;
-#else	/* !SYSV */
+        while (wait((int *) 0) == -1) ;
+#else /* !SYSV */
 	while (wait((union wait *) 0) == -1) ;
-#endif	/* !SYSV */
+#endif /* !SYSV */
 	l = read(fildes[0], result, 1024);
 	if (l <= 0) Punt("Couldn't read result from DoCommandToString");
 	(void) myclose(fildes[0]);
 	result[l] = 0;
 	while (result[--l] == 0) ;
 	while (result[l] == '\n') result[l--] = 0;
-if (debug) (void)fprintf(stderr, " done: '%s'\n", result);
+	DEBUG1(" done: '%s'\n", result)
 	return result;
     } else {
 	(void) dup2(fildes[1], fileno(stdout));
@@ -183,7 +179,7 @@ if (debug) (void)fprintf(stderr, " done: '%s'\n", result);
 	return NULL;
     }
 }
-#endif
+#endif NOTDEF
 
 
 
