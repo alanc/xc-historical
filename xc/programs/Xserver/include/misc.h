@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.53 89/07/18 13:33:56 rws Exp $ */
+/* $XConsortium: misc.h,v 1.54 90/03/08 14:14:45 keith Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -85,7 +85,7 @@ typedef unsigned long ATOM;
 #define fabs(a) ((a) > 0.0 ? (a) : -(a))	/* floating absolute value */
 #define sign(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
 /* this assumes b > 0 */
-#define modulus(a, b)	((a) < 0 ? ((b) - (-(a) % (b))) : ((a) % (b)))
+#define modulus(a, b, d)    if (((d) = (a) % (b)) < 0) (d) += (b)
 /*
  * return the least significant bit in x which is set
  *
