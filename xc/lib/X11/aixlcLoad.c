@@ -1,4 +1,4 @@
-/* $XConsortium: aixlcLoad.c,v 1.4 93/12/09 15:02:19 kaleb Exp $ */
+/* $XConsortium: aixlcLoad.c,v 1.5 94/01/20 18:03:37 rws Exp Kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -229,15 +229,15 @@ get_ldxversion(ldx)
 	return	LDX_INVALID_VERSION;
     }
 
-    if(ldx->lc_object_header.type_id == _LC_LDX_R6 &&
-       ldx->lc_object_header.magic   == _LC_MAGIC &&
-       ldx->lc_object_header.version == _LC_VERSION_R6){
+    if(ldx->lc_object_header.__type_id == _LC_LDX_R6 &&
+       ldx->lc_object_header.__magic   == _LC_MAGIC &&
+       ldx->lc_object_header.__version == _LC_VERSION_R6){
 	return	LDX_R6;
     }
 
-    if(ldx->lc_object_header.type_id == _LC_LDX &&
-       ldx->lc_object_header.magic   == _LC_MAGIC &&
-       ldx->lc_object_header.version == _LC_VERSION){
+    if(ldx->lc_object_header.__type_id == _LC_LDX &&
+       ldx->lc_object_header.__magic   == _LC_MAGIC &&
+       ldx->lc_object_header.__version == _LC_VERSION){
 	return	LDX_R5;
     }
 

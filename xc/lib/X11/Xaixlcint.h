@@ -1,4 +1,4 @@
-/* $XConsortium: Xaixlcint.h,v 1.1 93/09/17 13:25:26 rws Exp $ */
+/* $XConsortium: Xaixlcint.h,v 1.2 94/01/20 18:02:13 rws Exp Kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -44,5 +44,11 @@ typedef	struct	_LC_core_ldx_t	{
     XLCd		(*default_loader)();
     Bool		sticky;
 } _XlcCoreObjRec, *_XlcCoreObj;
+
+#if _LC_VERSION < 0x40000000
+#define __type_id type_id
+#define __magic magic
+#define __version version
+#endif
 
 #endif	/*_Xaixlcint_h*/

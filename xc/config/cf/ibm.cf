@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.53 95/03/17 19:47:01 kaleb Exp gildea $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.54 95/03/17 20:53:33 gildea Exp kaleb $
 
 #ifdef RsArchitecture
 #ifndef OSName
@@ -43,7 +43,7 @@ XCOMM operating system:  OSName
  * #define HasPosixThreads NO
  * in the BeforeVendorCF section of your site.def.
  */
-#if !defined(HasPosixThreads) && (OSMajorVersion > 3 || (OSMajorVersion == 3 && (OSMinorVersion > 2 || (OSMinorVersion == 2 && OSTeenyVersion > 4))))
+#if !defined(HasPosixThreads) && ((OSMajorVersion == 3 && (OSMinorVersion > 2 || (OSMinorVersion == 2 && OSTeenyVersion > 4))) || (OSMajorVersion == 4 && (OSMinorVersion > 1 || (OSMinorVersion == 1 && OSTeenyVersion > 1))))
 #define HasPosixThreads		YES
 #endif
 #if HasPosixThreads
