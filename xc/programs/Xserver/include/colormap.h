@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $Header: colormap.h,v 1.16 87/07/17 11:01:25 todd Exp $ */
+/* $Header: colormap.h,v 1.16 87/09/11 07:50:36 rws Locked $ */
 #ifndef CMAP_H
 #define CMAP_H 1
 
@@ -36,7 +36,7 @@ SOFTWARE.
 #define AllocPrivate (-1)
 #define DynamicClass  1
 
-
+#ifdef notdef
 /* Gets the color from a cell as an Rvalue */
 #define RRED(cell) (((cell)->fShared) ? ((cell)->co.shco.red->color): \
 		    ((cell)->co.local.red))
@@ -52,6 +52,7 @@ SOFTWARE.
 		    (&((cell)->co.local.green)))
 #define LBLUE(cell) (((cell)->fShared) ? (&((cell)->co.shco.blue->color)) : \
 		    (&((cell)->co.local.blue)))
+#endif
 
 /* Values for the flags field of a colormap. These should have 1 bit set
  * and not overlap */
@@ -65,17 +66,11 @@ typedef struct _CMEntry *EntryPtr;
 typedef struct _ColormapRec *ColormapPtr;
 
 extern int CreateColormap();
-extern unsigned long FindColor();
-extern void FreeColormap();
+extern Pixel FindColor();
+extern int FreeColormap();
 extern int TellNoMap();
 extern int TellNewMap();
 extern int IsMapInstalled();
-extern void CopyFree();
-extern void FreeCell();
 extern void UninstallColormap();
-extern int     AllComp(), RedComp(), GreenComp(), BlueComp();
-extern void    FreeClientPixels(), AllocShared();
-extern ColormapPtr CreateStaticColormap();
-extern void InitializeLinearColormap();
 
 #endif /* CMAP_H */
