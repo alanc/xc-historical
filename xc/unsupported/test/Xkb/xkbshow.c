@@ -676,10 +676,10 @@ unsigned	 query;
 	ctrls= desc->ctrls;
 	printf("Device ID:     %d\n",desc->device_spec);
 	printf("keycodes type: %s\n",atomText(dpy,desc->names->keycodes));
-	printf("geometry type: %s (%s)\n",atomText(dpy,desc->names->geometry),
-				atomText(dpy,desc->names->phys_geometry));
-	printf("symbols type:  %s (%s)\n",atomText(dpy,desc->names->symbols),
-				atomText(dpy,desc->names->phys_symbols));
+	printf("geometry type: %s ",atomText(dpy,desc->names->geometry));
+	printf("(%s)\n",atomText(dpy,desc->names->phys_geometry));
+	printf("symbols type:  %s ",atomText(dpy,desc->names->symbols));
+	printf("(%s)\n",atomText(dpy,desc->names->phys_symbols));
 	printf("semantics:     %s\n",atomText(dpy,desc->names->semantics));
 	printf("keycode range: %d-%d\n",desc->min_key_code,desc->max_key_code);
 	printf("audible bell:      %s\n",
@@ -745,7 +745,7 @@ unsigned	 query;
 	    printf("keys:\n");
 	    for (i1=0;i1<nKeys;i1++) {
 		memcpy(buf,desc->names->keys[i1+desc->min_key_code].name,4);
-		printf("%4s ",buf);
+		printf("%-4s ",buf);
 		if ((i1&0x7)==7)
 		    printf("\n");
 	    }
