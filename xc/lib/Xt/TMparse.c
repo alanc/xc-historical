@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: TMparse.c,v 1.62 88/08/31 10:26:13 swick Exp $";
+static char rcsid[] = "$xHeader: TMparse.c,v 1.63 88/08/31 11:44:08 swick Exp $";
 /* $oHeader: TMparse.c,v 1.2 88/08/18 15:51:46 asente Exp $ */
 #endif lint
 
@@ -150,6 +150,7 @@ static String ParseKeySym();
 static String ParseKeyAndModifiers();
 static String ParseTable();
 static String ParseImmed();
+static String ParseAddModifier();
 static String ParseNone();
 
 static EventKey events[] = {
@@ -187,6 +188,13 @@ static EventKey events[] = {
 {"PtrMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"Motion", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"MouseMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
+{"BtnMotion",       NULL, MotionNotify, ParseAddModifier, (Opaque)
+	(Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask)},
+{"Btn1Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button1Mask},
+{"Btn2Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button2Mask},
+{"Btn3Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button3Mask},
+{"Btn4Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button4Mask},
+{"Btn5Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button5Mask},
 
 {"EnterNotify",     NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
 {"Enter",	    NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
@@ -779,6 +787,20 @@ static String ParseImmed(str, closure, event,error)
 
     return str;
 }
+
+/* ARGSUSED */
+static String ParseAddModifier(str, closure, event, error)
+    String str;
+    Opaque closure;
+    EventPtr event;
+    Boolean* error;
+{
+    event->event.modifiers |= (unsigned long)closure;
+    event->event.modifierMask |= (unsigned long)closure;
+
+    return str;
+}
+
 
 static String ParseKeyAndModifiers(str, closure, event,error)
     String str;
