@@ -1,0 +1,156 @@
+XCOMM $XConsortium: sv4Lib.rules,v 1.1 91/03/23 16:48:43 rws Exp $
+
+/*
+ * SVR4 shared library rules
+ */
+
+#ifndef HasSharedLibraries
+#define HasSharedLibraries YES
+#endif
+#ifndef SharedCodeDef
+#define SharedCodeDef /**/
+#endif
+#ifndef SharedLibraryDef
+#define SharedLibraryDef /**/
+#endif
+#ifndef ShLibIncludeFile
+#define ShLibIncludeFile <sv4Lib.tmpl>
+#endif
+#ifndef SharedLibraryLoadFlags
+#define SharedLibraryLoadFlags -G
+#endif
+#ifndef PositionIndependentCFlags
+#define PositionIndependentCFlags -K PIC
+#endif
+
+/*
+ * InstallSharedLibrary - generate rules to install the shared library.
+ */
+#ifndef InstallSharedLibrary
+#define	InstallSharedLibrary(libname,rev,dest)				@@\
+install:: Concat(lib,libname.so.rev) 					@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
+	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
+	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
+
+#endif /* InstallSharedLibrary */
+
+/*
+ * InstallSharedLibraryData - generate rules to install the shared library data
+ */
+#ifndef InstallSharedLibraryData
+#define	InstallSharedLibraryData(libname,rev,dest)
+#endif /* InstallSharedLibraryData */
+
+
+/*
+ * SharedLibraryObjectRule - generate make rules to build shared and "normal"
+ * object files.
+ */
+#ifndef SharedLibraryObjectRule
+#define SharedLibraryObjectRule()					@@\
+all::									@@\
+	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ shared/$@						@@\
+	$(CC) $(PICFLAGS) -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) $*.c	@@\
+	$(MV) $*.o shared/$*.o						@@\
+	$(CC) -c $(SHLIBDEF) $(CFLAGS) $*.c				@@\
+									@@\
+clean::									@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \		@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
+
+#endif /* SharedLibraryObjectRule */
+
+/*
+ * SharedAndDebuggedLibraryObjectRule - generate make rules to build shared,
+ * debuggable, and "normal" object files.
+ */
+#ifndef SharedAndDebuggedLibraryObjectRule
+#define SharedAndDebuggedLibraryObjectRule()				@@\
+all::									@@\
+	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
+	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ shared/$@ debugger/$@					@@\
+	$(CC) $(PICFLAGS) -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) $*.c	@@\
+	$(MV) $*.o shared/$*.o						@@\
+	$(CC) -g -c $(SHLIBDEF) $(CFLAGS) $*.c				@@\
+	$(MV) $*.o debugger/$*.o					@@\
+	$(CC) -c $(SHLIBDEF) $(CFLAGS) $*.c				@@\
+									@@\
+clean::									@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \	@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+
+#endif /* SharedAndDebuggedLibraryObjectRule */
+
+/*
+ * SpecialSharedAndDebuggedObjectRule - generate rules to compile a file 
+ * with special flags and to make shared and debuggable versions.
+ */
+#ifndef SpecialSharedAndDebuggedObjectRule
+#define	SpecialSharedAndDebuggedObjectRule(objs,depends,options)	@@\
+all::									@@\
+	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
+	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ shared/$@ debugger/$@					@@\
+	$(CC) $(PICFLAGS) -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) options $*.c @@\
+	$(MV) $*.o shared/$*.o						@@\
+	$(CC) -g -c $(SHLIBDEF) $(CFLAGS) options $*.c			@@\
+	$(MV) $*.o debugger/$*.o					@@\
+	$(CC) -c $(SHLIBDEF) $(CFLAGS) options $*.c
+#endif /* SpecialDebuggedAndProfiledObjectRule */
+
+/*
+ * SpecialSharedObjectRule - generate rules to compile a file 
+ * with special flags and to make shared and debuggable versions.
+ */
+#ifndef SpecialSharedObjectRule
+#define	SpecialSharedObjectRule(objs,depends,options)			@@\
+all::									@@\
+	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ shared/$@ 						@@\
+	$(CC) $(PICFLAGS) -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) options $*.c @@\
+	$(MV) $*.o shared/$*.o						@@\
+	$(CC) -c $(SHLIBDEF) $(CFLAGS) options $*.c
+#endif /* SpecialSharedObjectRule */
+
+
+/*
+ * NormalSharedLibraryTarget - generate rules to create a shared library;
+ * build it into a different name so that the we do not hose people by having
+ * the library gone for long periods.
+ */
+#ifndef NormalSharedLibraryTarget
+#define NormalSharedLibraryTarget(libname,rev,solist)			@@\
+AllTarget(Concat(lib,libname.so.rev))					@@\
+									@@\
+Concat(lib,libname.so.rev):  solist					@@\
+	$(RM) $@~							@@\
+	(cd shared; $(LD) -o ../$@~ $(SHLIBLDFLAGS) -h $@ solist)	@@\
+	$(RM) $@ 							@@\
+	$(MV) $@~ $@							@@\
+	$(RM) Concat(lib,libname.so)					@@\
+	$(LN) $@ Concat(lib,libname.so)					@@\
+									@@\
+clean::									@@\
+	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
+
+#endif
+
+/*
+ * NormalSharedLibraryDataTarget - generate rules to create shlib data file;
+ */
+#ifndef NormalSharedLibraryDataTarget
+#define NormalSharedLibraryDataTarget(libname,rev,salist)
+#endif /* NormalSharedLibraryTarget */
