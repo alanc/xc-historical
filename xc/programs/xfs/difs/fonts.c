@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.5 91/06/17 17:17:42 keith Exp $ */
+/* $XConsortium: fonts.c,v 1.7 91/07/16 20:23:29 keith Exp $ */
 /*
  * font control
  */
@@ -526,27 +526,10 @@ static int
 determine_fpe_type(name)
     char       *name;
 {
-    int         i,
-                j,
-                len;
-    FontNamesPtr names;
-    char        namebuf[64];
-    char       *t;
-
-    /* copy the prefix */
-    t = index(name, ':');
-    len = t - name;
-    bcopy(name, namebuf, len);
-    namebuf[len] = '\0';
-
+    int	i;
     for (i = 0; i < num_fpe_types; i++) {
-	names = fpe_functions[i].renderer_names;
-	for (j = 0; j < names->nnames; j++) {
-	    if (strncmp(namebuf, names->names[j],
-			min(len, names->length[j])) == 0) {
-		return i;
-	    }
-	}
+	if ((*fpe_functions[i].name_check) (name))
+	    return i;
     }
     return -1;
 }
@@ -595,8 +578,8 @@ set_font_path_elements(npaths, paths, bad)
 {
     int         i,
                 err;
-    unsigned int len,
-                sublen;
+    int		len;
+    int		type;
     char       *cp = paths;
     char       *colon;
     FontPathElementPtr fpe,
@@ -609,7 +592,7 @@ set_font_path_elements(npaths, paths, bad)
 	return FSBadAlloc;
     }
     for (i = 0; i < npaths; i++) {
-	len = (unsigned int) (*cp++);
+	len = *cp++;
 	if (len) {
 	    /* if its already in our active list, just reset it */
 	    /*
@@ -628,25 +611,20 @@ set_font_path_elements(npaths, paths, bad)
 		}
 		/* can't do it, so act like its a new one */
 	    }
-	    sublen = len;
-	    colon = cp;
-	    while (sublen && *colon != ':') {
-		sublen--;
-		colon++;
-	    }
-	    if (!sublen) {
+	    type = determine_fpe_type(cp);
+	    if (type == -1)
+	    {
 		err = FSBadName;
 		goto bail;
 	    }
-	    colon++;
-	    sublen = len - (colon - cp);
 	    /* must be new -- make it */
 	    fpe = (FontPathElementPtr) fsalloc(sizeof(FontPathElementRec));
 	    if (!fpe) {
 		err = FSBadAlloc;
 		goto bail;
 	    }
-	    fpe->name = (char *) fsalloc(sublen + 1);
+	    fpe->type = type;
+	    fpe->name = (char *) fsalloc(len + 1);
 	    if (!fpe->name) {
 		fsfree(fpe);
 		err = FSBadAlloc;
@@ -654,18 +632,11 @@ set_font_path_elements(npaths, paths, bad)
 	    }
 	    fpe->refcount = 1;
 	    fplist[i] = fpe;
-	    fpe->type = determine_fpe_type(cp);
 
-	    strncpy(fpe->name, (char *) colon, (int) sublen);
+	    strncpy(fpe->name, (char *) cp, len);
+	    fpe->name[len] = '\0';
 	    cp += len;
-	    fpe->name[sublen] = '\0';
-	    fpe->name_length = sublen;
-	    if (fpe->type == -1) {
-		fsfree(fpe->name);
-		fsfree(fpe);
-		err = FSBadName;
-		goto bail;
-	    }
+	    fpe->name_length = len;
 	    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
 	    if (err != Successful) {
 		fsfree(fpe->name);
@@ -1108,7 +1079,7 @@ badAlloc:
 int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, render_names, client_died)
+		     wakeup_func, client_died)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1120,7 +1091,6 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*next_lfwi_func) ();
     int         (*wakeup_func) ();
     int         (*client_died) ();
-    FontNamesPtr render_names;
 {
     FPEFunctions *new;
 
@@ -1145,7 +1115,6 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     fpe_functions[num_fpe_types].reset_fpe = reset_func;
 
     fpe_functions[num_fpe_types].client_died = client_died;
-    fpe_functions[num_fpe_types].renderer_names = render_names;
     return num_fpe_types++;
 }
 
