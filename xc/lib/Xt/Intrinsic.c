@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.168 91/04/30 12:25:59 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.169 91/05/11 14:55:07 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -337,7 +337,7 @@ void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
     Widget		 widget;
     unsigned int	 window_class;
     Visual		 *visual;
-    Mask		 value_mask;
+    XtValueMask		 value_mask;
     XSetWindowAttributes *attributes;
 {
     if (widget->core.window == None) {
