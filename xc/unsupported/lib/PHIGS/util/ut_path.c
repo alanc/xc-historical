@@ -1,4 +1,4 @@
-/* $XConsortium: ut_path.c,v 5.2 91/04/04 15:33:33 gildea Exp $ */
+/* $XConsortium: ut_path.c,v 5.3 91/04/10 13:25:14 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -33,6 +33,10 @@ SOFTWARE.
 extern char *getenv();
 #endif
 
+#ifndef PEXAPIDIR
+#define PEXAPIDIR "/usr/lib/X11/PEX"
+#endif
+
 /* The constant below is based on the max value given in access(1) */
 #define PHG_MAXPATH	1023
 
@@ -45,7 +49,7 @@ phg_path( fname, erh, test)
 {
     /* Return a full path to "fname" and possibly test for existence of
      * the file.  The path is made from the environment variable PEXAPIDIR
-     * if it's specified, else from PHG_DEFAULT_PEXAPIDIR.
+     * if it's specified, else from the PEXAPIDIR define.
      *
      * The PEXAPIDIR path is stored in a static area to avoid lookup next
      * time it's needed.
@@ -66,7 +70,7 @@ phg_path( fname, erh, test)
 
     if ( !*dir) {	/* get the path based on the version */
 	if ( !(str = getenv("PEXAPIDIR"))) {
-	    str = PHG_DEFAULT_PEXAPIDIR;
+	    str = PEXAPIDIR;
 	    strncat( dir, str, PHG_MAXPATH - 1);
 #ifdef VERSION_PEXAPIDIR
 	    strncat(dir, phg_version_number_string, PHG_MAXPATH - 1);
