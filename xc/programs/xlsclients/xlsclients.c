@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsclients.c,v 1.4 89/04/10 14:08:38 jim Exp $
+ * $XConsortium: xlsclients.c,v 1.5 89/04/11 15:05:48 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,7 +34,8 @@ char *ProgramName;
 
 static void usage ()
 {
-    fprintf (stderr, "usage:  %s  [-display dpy] [-[a][l]]\r\n", ProgramName);
+    fprintf (stderr,
+	     "usage:  %s  [-display dpy] [-m len] [-[a][l]]\n", ProgramName);
     exit (1);
 }
 
@@ -145,6 +146,7 @@ print_client_properties (dpy, w, verbose, maxcmdlen)
     char **cliargv = NULL;
     int i, cliargc;
     XTextProperty nametp, machtp, tp;
+    int charsleft = maxcmdlen;
 
     /*
      * get the WM_MACHINE and WM_COMMAND list of strings
@@ -190,9 +192,12 @@ print_client_properties (dpy, w, verbose, maxcmdlen)
     if (verbose) {
 	printf ("  Command:  ");
     }
-    for (i = 0; i < cliargc; i++) {
-	print_quoted_word (cliargv[i]);
-	putchar (' ');
+    for (i = 0; i < cliargc && charsleft > 0; ) {
+	charsleft -= print_quoted_word (cliargv[i], charsleft);
+	i++;
+	if (i < cliargc  &&  charsleft > 0) {
+	    putchar (' '); charsleft--;
+	}
     }
     putchar ('\n');
     XFreeStringList (cliargv);
@@ -234,13 +239,16 @@ print_text_field (dpy, s, tp)
     if (s) putchar ('\n');
 }
 
-
-print_quoted_word (s)
+/* returns the number of characters printed */
+int
+print_quoted_word (s, maxlen)
     char *s;
+    int maxlen;			/* max number of chars we can print */
 {
     register char *cp;
     Bool need_quote = False, in_quote = False;
     char quote_char = '\'', other_quote = '"';
+    int charsprinted = 0;
 
     /*
      * walk down seeing whether or not we need to quote
@@ -260,11 +268,18 @@ print_quoted_word (s)
      * emit the other quote, swap quotes and continue on.
      */
     in_quote = need_quote;
-    if (need_quote) putchar (quote_char);
-    for (cp = s; *cp; cp++) {
+    if (need_quote) {
+	putchar (quote_char);
+	charsprinted++; maxlen--;
+    }
+    for (cp = s; *cp && maxlen>0; cp++) {
 	if (*cp == quote_char) {
-	    if (in_quote) putchar (quote_char);
+	    if (in_quote) {
+		putchar (quote_char);
+		charsprinted++; maxlen--;
+	    }
 	    putchar (other_quote);
+	    charsprinted++; maxlen--;
 	    { 
 		char tmp = other_quote; 
 		other_quote = quote_char; quote_char = tmp;
@@ -272,8 +287,15 @@ print_quoted_word (s)
 	    in_quote = True;
 	}
 	putchar (*cp);
+	charsprinted++; maxlen--;
     }
-    if (in_quote) putchar (quote_char);
+    /* close the quote if we opened one and if we printed the whole string */
+    if (in_quote && maxlen>0) {
+	putchar (quote_char);
+	charsprinted++; maxlen--;
+    }
+
+    return charsprinted;
 }
 
 unknown (dpy, actual_type, actual_format)
