@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.41 89/01/16 13:47:54 rws Exp $ */
+/* $XConsortium: globals.c,v 1.42 89/03/18 16:23:59 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -79,9 +79,13 @@ char *rgbPath = RGB_DB;
 FontPtr defaultFont;   /* not declared in dix.h to avoid including font.h in
 			every compilation of dix code */
 CursorPtr rootCursor;
-ClientPtr requestingClient;	/* many nasty things hidden under this rock */
+ClientPtr requestingClient;	/* XXX this should be obsolete now, remove? */
 
 TimeStamp currentTime;
+
+Bool permitOldBugs = FALSE; /* turn off some error checking, to permit certain
+			     * old broken clients (like R2/R3 xterms) to work
+			     */
 
 char *display;
 
