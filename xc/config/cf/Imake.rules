@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.150 93/08/18 14:19:54 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.151 93/08/20 10:30:16 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1487,14 +1487,20 @@ MakeMakeSubdirs(dirs,Makefiles)
 dst::  src deplist							@@\
 	RemoveFile($@)							@@\
 	$(CPP) defs <src | CppSedMagic >$@				@@\
-	chmod a+x $@
+	chmod a+x $@							@@\
+									@@\
+clean::									@@\
+	RemoveFile(dst)
 #else
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
 dst::  src deplist							@@\
 	RemoveFile($@)							@@\
 	echo \: >$@							@@\
 	sed '1d' src | $(CPP) defs | CppSedMagic >>$@			@@\
-	chmod a+x $@
+	chmod a+x $@							@@\
+									@@\
+clean::									@@\
+	RemoveFile(dst)
 #endif /* ExecableScripts */
 #endif /* CppScriptTarget */
 
@@ -1512,7 +1518,10 @@ CppScriptTarget(name,name.cpp,defs,NullParameter)
 #define CppFileTarget(dst,src,defs,deplist)				@@\
 dst::  src deplist							@@\
 	RemoveFile($@)							@@\
-	$(CPP) defs <src | CppSedMagic >$@
+	$(CPP) defs <src | CppSedMagic >$@				@@\
+									@@\
+clean::									@@\
+	RemoveFile(dst)
 #endif /* CppFileTarget */
 
 /*
