@@ -29,7 +29,7 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%\t\\$1\t\\$2
+.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
