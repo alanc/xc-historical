@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.174 94/02/06 12:17:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.175 94/03/28 16:52:34 gildea Exp $
 /*
  * Server Master Makefile
  */
@@ -48,11 +48,6 @@ XCOMM $XConsortium: Imakefile,v 1.174 94/02/06 12:17:38 rws Exp $
         DEPDIRS = $(LBXUTILDIR)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
-#if HasKrb5
-         DBMLIB =
-#else
-         DBMLIB = -ldbm
-#endif
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
              OS = os/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(DEPXBSDLIB)
@@ -64,10 +59,13 @@ XCOMM $XConsortium: Imakefile,v 1.174 94/02/06 12:17:38 rws Exp $
              MI = mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(DEPFONTLIB)
-#if XirisServer || XhpServer || SystemV4 || defined(BSD386Architecture)
-        SYSLIBS = MathLibrary Krb5Libraries
+#ifdef ServerExtraSysLibs
+   EXTRASYSLIBS = ServerExtraSysLibs
+#endif
+#if XirisServer || XhpServer || SystemV4 || defined(BSD386Architecture) || defined(i386BsdArchitecture) || defined(NetBSDArchitecture) || defined(FreeBSDArchitecture)
+        SYSLIBS = MathLibrary Krb5Libraries $(EXTRASYSLIBS)
 #else
-        SYSLIBS = MathLibrary Krb5Libraries DBMLibrary
+        SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
            CBRT = mi/cbrt.o
         STDDIRS = dix os mi $(EXTDIRS)
@@ -156,7 +154,11 @@ MFBDIR = mfb
 CFB8DIR = cfb
 DDXDIR1 = hw/sun
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+#ifndef AmoebaArchitecture
 SUNOBJS = hw/sun/sunInit.o
+#else
+SUNOBJS = hw/sun/sunInitColor.o
+#endif
 SUNLIBS = hw/sun/libsun.a CFB8Libs
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
@@ -380,6 +382,159 @@ ServerTarget(Xsvga,$(SVGASUBDIRS),$(SVGAOBJS),$(SVGALIBS),$(SVGASYSLIBS))
 #define ServerToInstall Xsvga
 #endif
 #endif	/* XsvgaServer */
+
+
+#if XF86SVGAServer
+XCOMM
+XCOMM XFree86 SVGA Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/xfree86
+XF86SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF86SVGAOBJS = $(XF86COMSRC)/XF86_SVGA.o $(XF86SRC)/vga256/vga256Conf.o
+XF86SVGALIBS = $(VGADRIVERSRC)/libdriver256.a $(XF86SRC)/vga256/libvga256.a $(XF86LIBS) MFBLibs
+XF86SVGASYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),$(XF86SVGASYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_SVGA
+#endif
+#endif	/* XF86SVGAServer */
+
+
+#if XF86VGA16Server
+XCOMM
+XCOMM XFree86 VGA 16 color Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/xfree86
+XF86VGA16SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF86VGA16OBJS = $(XF86COMSRC)/XF86_VGA16.o $(XF86SRC)/vga16/vga16Conf.o \
+                $(XF86SRC)/vga16/misc/vga16misc.o
+XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(XF86SRC)/vga16/libvga16.a $(XF86MLIBS) MFBBareLibs $(OTHEREXTS)
+XF86VGA16SYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LIBS),$(XF86VGA16SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_VGA16
+#endif
+#endif	/* XF86VGA16Server */
+
+
+#if XF86MonoServer
+XCOMM
+XCOMM XFree86 Monochrome VGA Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+MFBDIR  = mfb
+DDXDIR1 = hw/xfree86
+XF86MONOSUBDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
+XF86MONOOBJS = $(XF86COMSRC)/XF86_Mono.o $(XF86SRC)/vga2/vga2Conf.o \
+               $(XF86SRC)/vga2/misc/vga2misc.o
+XF86MONOLIBS = $(VGA2DRIVERSRC)/libdriver2.a $(XF86SRC)/vga2/libvga2.a $(XF86MLIBS) MFBBareLibs $(OTHEREXTS)
+XF86MONOSYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_Mono,$(XF86MONOSUBDIRS),$(XF86MONOOBJS),$(XF86MONOLIBS),$(XF86MONOSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_Mono
+#endif
+#endif	/* XF86MonoServer */
+
+
+#if XF86BdmServer
+XCOMM
+XCOMM XFree86 Banked Monochrome Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+DDXDIR1 = hw/xfree86
+XF86BDMSUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS)
+XF86BDMOBJS = $(XF86COMSRC)/XF86_Bdm.o $(XF86SRC)/bdm2/bdm2Conf.o \
+              $(XF86SRC)/bdm2/misc/bdm2misc.o
+XF86BDMLIBS = $(BDM2DRIVERSRC)/libbdm2drv.a $(XF86SRC)/bdm2/libbdm2.a \
+              $(XF86MLIBS) $(DIX) $(OS) $(FONT) $(MI) $(OTHEREXTS)
+XF86BDMSYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_Bdm,$(XF86BDMSUBDIRS),$(XF86BDMOBJS),$(XF86BDMLIBS),$(XF86BDMSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_Bdm
+#endif
+#endif	/* XF86BdmServer */
+
+
+#if XF86S3Server
+XCOMM
+XCOMM XFree86 S3 Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/xfree86
+XF86S3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF86S3OBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3/s3Conf.o $(S3DRIVERSRC)/mmio_928/mmio_928.o $(S3DRIVERSRC)/s3_generic/s3_generic.o
+XF86S3LIBS = $(XF86ACCELSRC)/s3/libs3.a $(XF86ACCELSRC)/s3/s3mmio/libs3mmio.a $(XF86LIBS) CFB8Libs
+XF86S3SYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_S3,$(XF86S3SUBDIRS),$(XF86S3OBJS),$(XF86S3LIBS),$(XF86S3SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_S3
+#endif
+#endif	/* XF86SVGAServer */
+
+
+#if XF86I8514Server
+XCOMM
+XCOMM XFree86 8514 Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/xfree86
+XF868514SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF868514OBJS = $(XF86COMSRC)/XF86_8514.o
+XF868514LIBS = $(XF86ACCELSRC)/ibm8514/lib8514.a $(XF86LIBS) CFB8Libs $(XF86ACCELSRC)/cache/libxf86cache.a
+XF868514SYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_8514,$(XF868514SUBDIRS),$(XF868514OBJS),$(XF868514LIBS),$(XF868514SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_8514
+#endif
+#endif	/* XF86SVGAServer */
+
+
+#if XF86Mach8Server
+XCOMM
+XCOMM XFree86 Mach8 Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/xfree86
+XF86MACH8SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF86MACH8OBJS = $(XF86COMSRC)/XF86_Mach8.o
+XF86MACH8LIBS = $(XF86ACCELSRC)/mach8/libmach8.a $(XF86LIBS) CFB8Libs $(XF86ACCELSRC)/cache/libxf86cache.a
+XF86MACH8SYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_Mach8,$(XF86MACH8SUBDIRS),$(XF86MACH8OBJS),$(XF86MACH8LIBS),$(XF86MACH8SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_Mach8
+#endif
+#endif	/* XF86SVGAServer */
+
+
+#if XF86Mach32Server
+XCOMM
+XCOMM XFree86 Mach32 Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/xfree86
+XF86MACH32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF86MACH32OBJS = $(XF86COMSRC)/XF86_Mach32.o
+XF86MACH32LIBS = $(XF86ACCELSRC)/mach32/libmach32.a $(XF86LIBS) CFB8Libs
+XF86MACH32SYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_Mach32,$(XF86MACH32SUBDIRS),$(XF86MACH32OBJS),$(XF86MACH32LIBS),$(XF86MACH32SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_Mach32
+#endif
+#endif	/* XF86SVGAServer */
 
 
 #if XnestServer
