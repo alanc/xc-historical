@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.4 90/02/26 16:25:04 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.5 90/03/27 12:58:02 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -133,7 +133,7 @@ void XtSetValues(w, args, num_args)
     double	    oldwCache[100], reqwCache[100];
     double	    oldcCache[20], reqcCache[20];
     Cardinal	    widgetSize, constraintSize;
-    Boolean	    redisplay, cleared_rect_obj, reconfigured = False;
+    Boolean	    redisplay, cleared_rect_obj = False, reconfigured = False;
     XtGeometryResult result;
     XtWidgetGeometry geoReq, geoReply;
     WidgetClass     wc = XtClass(w);
