@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XRegstFlt.c,v 1.9 91/05/28 09:49:40 rws Exp $
+ * $XConsortium: XRegstFlt.c,v 1.10 91/06/05 09:15:25 rws Exp $
  */
 
  /*
@@ -125,12 +125,12 @@ _XUnregisterFilter(display, window, filter, client_data)
 {
     register XFilterEventList	*prev, fl;
 
-    for (prev = &display->im_filters; fl = *prev; prev = &fl->next) {
+    for (prev = &display->im_filters; fl = *prev; ) {
 	if (fl->window == window &&
 	    fl->filter == filter && fl->client_data == client_data) {
 	    *prev = fl->next;
 	    Xfree((char *)fl);
-	    break;
-	}
+	} else
+	    prev = &fl->next;
     }
 }
