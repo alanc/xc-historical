@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.59 90/12/28 17:01:02 rws Exp $ */
+/* $XConsortium: Display.c,v 1.60 90/12/29 12:16:22 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,18 +27,10 @@ SOFTWARE.
 #include <X11/Xlib.h>
 #include "IntrinsicI.h"
 
-#ifndef HEAP_SEGMENT_SIZE
-#define HEAP_SEGMENT_SIZE 1492
-#endif
-
 static String XtNnoPerDisplay = "noPerDisplay";
 
-static void _XtHeapInit();
-#ifdef _XtHeapAlloc
+void _XtHeapInit();
 void _XtHeapFree();
-#else
-static void _XtHeapFree();
-#endif
 
 ProcessContext _XtGetProcessContext()
 {
@@ -424,77 +416,6 @@ XtAppContext XtDisplayToApplicationContext(dpy)
 {
 	return _XtGetPerDisplay(dpy)->appContext;
 }
-
-static void _XtHeapInit(heap)
-    Heap*	heap;
-{
-    heap->start = NULL;
-    heap->bytes_remaining = 0;
-}
-
-#ifndef _XtHeapAlloc
-
-char* _XtHeapAlloc(heap, bytes)
-    Heap*	heap;
-    Cardinal	bytes;
-{
-    register char* heap_loc;
-    if (heap == NULL) return XtMalloc(bytes);
-    if (heap->bytes_remaining < bytes) {
-	if ((bytes + sizeof(char*)) >= (HEAP_SEGMENT_SIZE>>1)) {
-	    /* preserve current segment; insert this one in front */
-#ifdef _TRACE_HEAP
-	    printf( "allocating large segment (%d bytes) on heap %#x\n",
-		    bytes, heap );
-#endif
-	    heap_loc = XtMalloc(bytes + sizeof(char*));
-	    if (heap->start) {
-		*(char**)heap_loc = *(char**)heap->start;
-		*(char**)heap->start = heap_loc;
-	    }
-	    else {
-		*(char**)heap_loc = NULL;
-		heap->start = heap_loc;
-	    }
-	    return heap_loc + sizeof(char*);
-	}
-	/* else discard remainder of this segment */
-#ifdef _TRACE_HEAP
-	printf( "allocating new segment on heap %#x\n", heap );
-#endif
-	heap_loc = XtMalloc((unsigned)HEAP_SEGMENT_SIZE);
-	*(char**)heap_loc = heap->start;
-	heap->start = heap_loc;
-	heap->current = heap_loc + sizeof(char*);
-	heap->bytes_remaining = HEAP_SEGMENT_SIZE - sizeof(char*);
-    }
-#ifdef WORD64
-    /* round to nearest 8-byte boundary */
-    bytes = (bytes + 7) & (~7);
-#else
-    /* round to nearest 4-byte boundary */
-    bytes = (bytes + 3) & (~3);
-#endif /* WORD64 */
-    heap_loc = heap->current;
-    heap->current += bytes;
-    heap->bytes_remaining -= bytes; /* can be negative, if rounded */
-    return heap_loc;
-}
-
-static void _XtHeapFree(heap)
-    Heap*	heap;
-{
-    char* segment = heap->start;
-    while (segment != NULL) {
-	char* next_segment = *(char**)segment;
-	XtFree(segment);
-	segment = next_segment;
-    }
-    heap->start = NULL;
-    heap->bytes_remaining = 0;
-}
-
-#endif /* ifndef _XtHeapAlloc */
 
 static XtPerDisplay NewPerDisplay(dpy)
 	Display *dpy;
