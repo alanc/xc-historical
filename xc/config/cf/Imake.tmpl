@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.143 92/01/02 15:35:08 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.144 92/05/09 13:43:53 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -358,8 +358,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasLargeTmp
 #define HasLargeTmp		NO	/* be paranoid */
 #endif
+
+#ifndef HasBSD44Sockets
+#define HasBSD44Sockets		NO
+#endif
 #ifndef HasSockets
-#if SystemV || SystemV4
+#if (SystemV || SystemV4) && (!HasBSD44Sockets)
 #define HasSockets		NO	/* do not assume it has them */
 #else
 #define HasSockets		YES	/* bsd does have them */
