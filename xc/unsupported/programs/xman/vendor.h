@@ -1,3 +1,10 @@
+#define SUFFIX "suffix"
+#define FOLD "fold"
+#define FOLDSUFFIX "foldsuffix"
+#define MNULL 0
+#define MSUFFIX 1
+#define MFOLD 2
+#define MFOLDSUFFIX 3
 
 /* Vendor-specific definitions */
 
