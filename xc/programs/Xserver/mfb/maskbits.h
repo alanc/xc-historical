@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.21 89/11/13 09:36:56 rws Exp $ */
+/* $XConsortium: maskbits.h,v 1.22 90/02/22 18:46:34 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -247,20 +247,20 @@ getshiftedleftbits(psrc, offset, w, dst)
 #ifdef __GNUC__
 #ifdef vax
 #define FASTGETBITS(psrc,x,w,dst) \
-    asm ("extzv %1,%2,%3,%0" \
+    __asm ("extzv %1,%2,%3,%0" \
 	 : "=g" (dst) \
 	 : "g" (x), "g" (w), "m" (*(char *)(psrc)))
 #define getbits(psrc,x,w,dst) FASTGETBITS(psrc,x,w,dst)
 
 #define FASTPUTBITS(src, x, w, pdst) \
-    asm ("insv %3,%1,%2,%0" \
+    __asm ("insv %3,%1,%2,%0" \
 	 : "=m" (*(char *)(pdst)) \
 	 : "g" (x), "g" (w), "g" (src))
 #define putbits(src, x, w, pdst) FASTPUTBITS(src, x, w, pdst)
 #endif /* vax */
 #ifdef mc68020
 #define FASTGETBITS(psrc, x, w, dst) \
-    asm ("bfextu %3{%1:%2},%0" \
+    __asm ("bfextu %3{%1:%2},%0" \
     : "=d" (dst) : "di" (x), "di" (w), "o" (*(char *)(psrc)))
 
 #define getbits(psrc,x,w,dst) \
@@ -270,7 +270,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 }
 
 #define FASTPUTBITS(src, x, w, pdst) \
-    asm ("bfins %3,%0{%1:%2}" \
+    __asm ("bfins %3,%0{%1:%2}" \
 	 : "=o" (*(char *)(pdst)) \
 	 : "di" (x), "di" (w), "d" (src), "0" (*(char *) (pdst)))
 
