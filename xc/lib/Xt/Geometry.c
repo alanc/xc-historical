@@ -28,7 +28,6 @@ static char *sccsid = "@(#)Geometry.c	1.7	2/25/87";
 
 /* File: Geometry.c */
 
-#include "Xlib.h"
 #include "Intrinsic.h"
 
 /* Private  Definitions */
@@ -49,7 +48,7 @@ XtGeometryReturnCode XtMakeGeometryRequest (widget, request, reply)
     if (widget->core.being_destroyed || !widget->core.managed)
         return XtgeometryNo;
     return ((CompositeWidgetClass) (widget->core.parent->core.widget_class))
-    		->compositeClass.geometry_manager (widget, request, reply);
+    		->composite_class.geometry_manager (widget, request, reply);
 } /* XtMakeGeometryRequest */
 
 XtGeometryReturnCode XtMakeResizeRequest
@@ -74,7 +73,7 @@ void
 XtResizeWidget(w)
     Widget w;
 {
-    w->core.widget_class->coreClass.resize(w);
+    w->core.widget_class->core_class.resize(w);
 
     if (XtIsRealized(w)) {
 	XWindowChanges changes;
