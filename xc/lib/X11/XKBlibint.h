@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XKBlibint.h,v 1.1 93/09/28 00:01:45 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -69,16 +69,13 @@ typedef struct _XkbConverters {
 } XkbConverters;
 
 typedef struct _XkbInfoRec {
-	unsigned	 xkb_flags;
-	int		 xkb_ext_number;
-	int		 xkb_ext_major_opcode;
-	int		 xkb_ext_event_base;
-	int		 xkb_ext_error_base;
-	int		 xkb_srv_major;
-	int		 xkb_srv_minor;
-	unsigned	 xkb_selected_events;
-	XkbDescRec		*desc;
-	XkbMapChangesRec	 changes;
+	unsigned	 flags;
+	XExtCodes	 *codes;
+	int		 srv_major;
+	int		 srv_minor;
+	unsigned	 selected_events;
+	XkbDescRec	*desc;
+	XkbMapChangesRec changes;
 
 	char		*modmap;
 	char		*charset;
