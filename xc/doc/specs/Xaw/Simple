@@ -8,7 +8,8 @@ Simple Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	<Xaw/Simple.h>
+Application Header file	<Xaw/Simple.h>
+Class Header file	<Xaw/SimpleP.h>
 Class		simpleWidgetClass
 Class Name	Simple
 Superclass	Core
@@ -27,36 +28,36 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-colormap	Colormap	Pointer	Parent's Colormap
-cursor	Cursor	Cursor	None
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-height	Height	Dimension	0
-insensitiveBorder	Insensitive	Pixmap	GreyPixmap
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-screen	Screen	Pointer	Parent's Screen
-sensitive	Sensitive	Boolean	True
-translations	Translations	TranslationTable	NULL
-width	Width	Dimension	0
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable		NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+colormap	Colormap	Pointer		Parent's Colormap
+cursor	Cursor	Cursor		None
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList		NULL
+height	Height	Dimension		0
+insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+mappedWhenManaged	MappedWhenManaged	Boolean		True
+screen	Screen	Pointer	R	Parent's Screen
+sensitive	Sensitive	Boolean		True
+translations	Translations	TranslationTable		NULL
+width	Width	Dimension		0
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -64,67 +65,21 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of event to action bindings to be executed by this widget, even
-though the event occurred in another widget.  See Section 10.4 in the
-\fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-The width of this widget's window border.
-.IP \fBcallback\fP 1.5i
-All routines on this list are called whenever the \fBGripAction\fP
-action routine is invoked.  The \fIcall_data\fP contains all
-information passed to the action routines.  A more thorough description
-is given below in the \fBGrip Actions\fP section.
-.IP colormap 1.5i
-The colormap that this widget will use.
-.IP \fBcursor\fP 1.5i
-The cursor that will be displayed as the pointer, whenever the pointer
-is in this widget.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All functions on this list are called when this widget is destroyed.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
-.IP \fBinsensitiveBorder\fP 1.5i
-This pixmap will be tiled into the widget's border if the widget becomes
-insensitive.
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP, then the widget's window will automatically be
-mapped by the toolkit when it is realized and managed.
-.IP screen 1.5i
-The screen on which this widget is displayed.  This is not a settable
-resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass user events to this widget.  The
-widget will not get input events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left outside corner of this widget in its parent.
+.Ac
+.As
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
+.Cm
+.Cu Bold
+.De
+.Dc
+.Hw
+.Ib Bold
+.Mm
+.Sc
+.Se
+.Tr
+.Xy

@@ -67,46 +67,46 @@ lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Notes Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	""	NULL
+accelerators	Accelerators	AcceleratorTable		NULL
 ancestorSensitive	AncestorSensitive	Boolean	D	True
-background	Background	Pixel	""	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	""	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	""	1
-colormap	Colormap	Pointer	""	Parent's Colormap
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+colormap	Colormap	Pointer		Parent's Colormap
 depth	Depth	int	C	Parent's Depth
-destroyCallback	Callback	XtCallbackList	""	NULL
-foreground	Foreground	Pixel	""	XtDefaultForeground
+destroyCallback	Callback	XtCallbackList		NULL
+foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	depends on orientation
-jumpProc	Callback	Callback	""	NULL
-length	Length	Dimension	""	1
-mappedWhenManaged	MappedWhenManaged	""	Boolean	True
-minimumThumb	MinimumThumb	Dimension	""	7
-orientation	Orientation	Orientation	""	XtOrientVertical (vertical)
+jumpProc	Callback	Callback		NULL
+length	Length	Dimension		1
+mappedWhenManaged	MappedWhenManaged		Boolean	True
+minimumThumb	MinimumThumb	Dimension		7
+orientation	Orientation	Orientation		XtOrientVertical (vertical)
 screen	Screen	Pointer	R	Parent's Screen
-scrollDCursor	Cursor	Cursor	""	XC_sb_down_arrow
-scrollHCursor	Cursor	Cursor	""	XC_sb_h_double_arrow
-scrollLCursor	Cursor	Cursor	""	XC_sb_left_arrow
-scrollProc	Callback	Callback	""	NULL
-scrollRCursor	Cursor	Cursor	""	XC_sb_right_arrow
-scrollUCursor	Cursor	Cursor	""	XC_sb_up_arrow
-scrollVCursor	Cursor	Cursor	""	XC_sb_v_arrow
-sensitive	Sensitive	Boolean	""	True
-shown	Shown	Float	""	0.0
-thickness	Thickness	Dimension	""	14
-thumb	Thumb	Pixmap	""	GreyPixmap
-topOfThumb	TopOfThumb	Float	""	0.0
-translations	Translations	TranslationTable	""	See above
+scrollDCursor	Cursor	Cursor		XC_sb_down_arrow
+scrollHCursor	Cursor	Cursor		XC_sb_h_double_arrow
+scrollLCursor	Cursor	Cursor		XC_sb_left_arrow
+scrollProc	Callback	Callback		NULL
+scrollRCursor	Cursor	Cursor		XC_sb_right_arrow
+scrollUCursor	Cursor	Cursor		XC_sb_up_arrow
+scrollVCursor	Cursor	Cursor		XC_sb_v_arrow
+sensitive	Sensitive	Boolean		True
+shown	Shown	Float		0.0
+thickness	Thickness	Dimension		14
+thumb	Thumb	Pixmap		GreyPixmap
+topOfThumb	TopOfThumb	Float		0.0
+translations	Translations	TranslationTable		See above
 width	Width	Dimension	A	depends on orientation
-x	X	Position	""	0
-y	Y	Position	""	0
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -114,45 +114,21 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of event to action bindings to be executed by this widget, even
-though the event occurred in another widget.  See Section 10.4 in the
-\fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-The width of this widget's window border.
-.IP colormap 1.5i
-The colormap that this widget will use.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All functions on this list are called when this widget is destroyed.
+.Ac
+.As
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
+.Cm
+.Cu
+.De
+.Dc
 .IP \fBforeground\fP 1.5i
 An index into this widget's colormap specifying the color that will be
 used to draw the thumb.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
+.Hw
 .IP \fBjumpProc\fP 1.5i
 All functions on this callback list are called when the
 \fBNotifyThumb\fP action is invoked.  See the \fBScrollbar
@@ -161,9 +137,7 @@ Actions\fP section for details.
 The height of a vertical scrollbar or the width of a horizontal scrollbar.
 .IP \fBminimumThumb\fP 1.5i
 The smallest size, in pixels, to which the thumb can shrink.
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the toolkit when it is realized and managed.
+.Mm
 .IP \fBorientation\fP 1.5i
 The orientation is the direction that the thumb will be allowed to move.
 This value can be either \fBXtOrientVertical\fP or
@@ -187,13 +161,8 @@ This cursor is used when scrolling forward in a vertical scrollbar, or when
 thumbing a horizontal scrollbar.
 .IP \fBscrollVCursor\fP 1.5i
 This cursor is used when a vertical scrollbar is inactive.
-.IP screen 1.5i
-The screen on which this widget is displayed.  This is not a settable
-resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass user events to this widget.  The
-widget will not get input events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
+.Sc
+.Se
 .IP \fBshown\fP 1.5i
 This is the size of the thumb, expressed as a percentage (0.0 - 1.0)
 of the length of the scrollbar. 
@@ -211,13 +180,8 @@ The location of the top of the thumb, as a percentage (0.0 - 1.0)
 of the length of the scrollbar.  This resource was called \fBtop\fP in 
 previous versions of the Athena widget set.  The name collided with the
 a Form widget constraint resource, and had to be changed.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left outside corner of this widget in its parent.
+.Tr
+.Xy
 .NH 3 
 Scrollbar Actions
 .LP

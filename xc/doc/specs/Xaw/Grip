@@ -38,28 +38,28 @@ _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	""	NULL
+accelerators	Accelerators	AcceleratorTable		NULL
 ancestorSensitive	AncestorSensitive	Boolean	D	True
-background	Background	Pixel	""	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	""	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	""	0
-callback	Callback	Callback	""	NULL
-colormap	Colormap	Pointer	""	Parent's Colormap
-cursor	Cursor	Cursor	""	None
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		0
+callback	Callback	Callback		NULL
+colormap	Colormap	Pointer		Parent's Colormap
+cursor	Cursor	Cursor		None
 depth	Depth	int	C	Parent's Depth
-destroyCallback	Callback	XtCallbackList	""	NULL
-foreground	Foreground	Pixel	""	XtDefaultForeground
-height	Height	Dimension	""	8
-insensitiveBorder	Insensitive	Pixmap	""	GreyPixmap
-mappedWhenManaged	MappedWhenManaged	Boolean	""	True
+destroyCallback	Callback	XtCallbackList		NULL
+foreground	Foreground	Pixel		XtDefaultForeground
+height	Height	Dimension		8
+insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+mappedWhenManaged	MappedWhenManaged	Boolean		True
 screen	Screen	Pointer	R	Parent's Screen
-sensitive	Sensitive	Boolean	""	True
-translations	Translations	TranslationTable	""	NULL
-width	Width	Dimension	""	8
-x	X	Position	""	0
-y	Y	Position	""	0
+sensitive	Sensitive	Boolean		True
+translations	Translations	TranslationTable		NULL
+width	Width	Dimension		8
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -67,72 +67,31 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of event to action bindings to be executed by this widget, even
-though the event occurred in another widget.  See Section 10.4 in the
-\fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-The width of this widget's window border.
+.Ac
+.As
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
 .IP \fBcallback\fP 1.5i
 All routines on this list are called whenever the \fBGripAction\fP
 action routine is invoked.  The \fIcall_data\fP contains all
 information passed to the action routine.  A more thorough description
 is given below in the \fBGrip Actions\fP section.
-.IP colormap 1.5i
-The colormap that this widget will use.
-.IP cursor 1.5i
-The cursor that will be displayed as the pointer, whenever the pointer
-is in this widget.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All functions on this list are called when this widget is destroyed.
+.Cm
+.Cu
+.De
+.Dc
 .IP \fBforeground\fP 1.5i
 An index to the color used to flood fill the entire Grip widget.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
-.IP insensitiveBorder 1.5i
-This pixmap will be tiled into the widget's border if the widget becomes
-insensitive.
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP, then the widget's window will
-automatically be mapped by the toolkit when it is realized and managed.
-.IP screen 1.5i
-The screen on which this widget is displayed.  This is not a settable
-resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass user events to this widget.  The
-widget will not get input events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left outside corner of this widget in its parent.
+.Hw
+.Ib
+.Mm
+.Sc
+.Se
+.Tr
+.Xy
 .NH 3
 Grip Actions
 .IN "Grip widget" "Grip Actions"

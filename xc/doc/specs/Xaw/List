@@ -33,46 +33,46 @@ lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Notes Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	""	NULL
+accelerators	Accelerators	AcceleratorTable		NULL
 ancestorSensitive	AncestorSensitive	Boolean	D	True
-background	Background	Pixel	""	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	""	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	""	1
-callback	Callback	Callback	""	NULL
-colormap	Colormap	Pointer	""	Parent's Colormap
-columnSpacing	Spacing	Dimension	""	6
-cursor	Cursor	Cursor	""	None
-defaultColumns	Columns	Int	""	2
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+callback	Callback	Callback		NULL
+colormap	Colormap	Pointer		Parent's Colormap
+columnSpacing	Spacing	Dimension		6
+cursor	Cursor	Cursor		None
+defaultColumns	Columns	Int		2
 depth	Depth	int	C	Parent's Depth
-destroyCallback	Callback	XtCallbackList	""	NULL
-font	Font	FontStruct	""	XtDefaultFont
-forceColumns	Columns	Boolean	""	False
-foreground	Foreground	Pixel	""	XtDefaultForeground
+destroyCallback	Callback	XtCallbackList		NULL
+font	Font	FontStruct		XtDefaultFont
+forceColumns	Columns	Boolean		False
+foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	Enough space to contain the list
-insensitiveBorder	Insensitive	Pixmap	""	GreyPixmap
-internalHeight	Height	Dimension	""	2
-internalWidth	Width	Dimension	""	4
-list	List	Pointer	""	name of widget
+insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+internalHeight	Height	Dimension		2
+internalWidth	Width	Dimension		4
+list	List	Pointer		name of widget
 longest	Longest	Int	A	computed at runtime
 mappedWhenManaged	MappedWhenManaged	Boolean	True
 numberStrings	NumberStrings	Int	A	computed for NULL terminated list
-pasteBuffer	Boolean	Boolean	""	False
-rowSpacing	Spacing	Dimension	""	2
-verticalList	Boolean	Boolean	""	False
+pasteBuffer	Boolean	Boolean		False
+rowSpacing	Spacing	Dimension		2
+verticalList	Boolean	Boolean		False
 screen	Screen	Pointer	R	Parent's Screen
-sensitive	Sensitive	Boolean	""	True
-translations	Translations	TranslationTable	""	See below
-width	Width	Dimension	""	Enough space to contain the list
-x	X	Position	""	0
-y	Y	Position	""	0
+sensitive	Sensitive	Boolean		True
+translations	Translations	TranslationTable		See below
+width	Width	Dimension		Enough space to contain the list
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -80,68 +80,39 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of event to action bindings to be executed by this widget, even
-though the event occurred in another widget.  See Section 10.4 in the
-\fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-The width of this widget's window border.
+.Ac
+.As
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
 .IP \fBcallback\fP 1.5i
 All functions on this list are called whenever the \fBNotify\fP action is
 invoked.
 The call data argument contains information about the element selected
 and is described in detail in the \fBList Callbacks\fP section.
-.IP colormap 1.5i
-The colormap that this widget will use.
+.Cm
 .IP \fBcolumnSpacing\fP 1.5i
 .br
 .ns
 .IP \fBrowSpacing\fP 1.5i
 The amount of space, in pixels, between each of the rows and columns
 in the list. 
-.IP cursor 1.5i
-The cursor that will be displayed as the pointer, whenever the pointer
-is in this widget.
+.Cu
 .IP \fBdefaultColumns\fP 1.5i
 The default number of columns.  This value is used when neither the
 width nor the height of the List widget is specified or when
 \fBforceColumns\fP is \fBTrue\fP.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All functions on this list are called when this widget is destroyed.
+.De
+.Dc
 .IP \fBforceColumns\fP
 Forces the default number of columns to be used regardless of the
 List widget's current size. 
 .IP \fBforeground\fP 1.5i
 The color used to paint the text of the list elements.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
-.IP insensitiveBorder 1.5i
-This pixmap will be tiled into the widget's border if the widget becomes
-insensitive.
+.Hw
+.Ib
 .IP \fPinternalHeight\fP 1.5i
 .br
 .ns
@@ -160,9 +131,7 @@ changed with \fBXtSetValues\fP or \fBXawListChange\fP.
 Specifies the width, in pixels, of the longest string in the current
 list.  The List widget will compute this value if a zero (the default)
 is specified.
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will
-automatically be mapped by the Toolkit when it is realized and managed.
+.Mm
 .IP \fBnumberStrings\fP 1.5i
 The number of strings in the current list.  If a value of zero (the
 default) is specified, the List widget will compute it.  When computing
@@ -171,25 +140,10 @@ terminated.
 .IP \fBpasteBuffer\fP 1.5i
 If this resource is set to \fBTrue\fP then the name of the currently
 selected list element will be put into X cut buffer 0.
-.IP screen 1.5i
-The screen on which this widget is displayed.  This is not a settable
-resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass user events to this widget.  The
-widget will not get input events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.  When the List widget is insensitive
-all its elements will be drawn through a gray stipple.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP \fBverticalList\fP 1.5i
-If this resource is \fBTrue\fP then the list will be sorted
-vertically (element 2 under element 1).  Otherwise the list will be
-displayed horizontally (element 2 to the right of element 1).
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left outside corner of this widget in its parent.
+.Sc
+.Se
+.Tr
+.Xy
 .NH 3
 List Actions
 .LP
