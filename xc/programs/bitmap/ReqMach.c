@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.5 90/12/08 17:29:54 dmatic Exp $
+ * $XConsortium: ReqMach.c,v 1.6 91/01/06 12:13:00 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,6 +30,7 @@
 #include <X11/Xmu/Converters.h>
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
+#include <X11/Xfuncs.h>
 #include "BitmapP.h"
     
 #include <stdio.h>

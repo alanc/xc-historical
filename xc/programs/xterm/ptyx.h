@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.43 90/06/07 15:49:49 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.44 91/01/06 12:39:18 rws Exp $
  */
 
 /*
@@ -30,6 +30,7 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/Xmu/Misc.h>	/* For Max() and Min(). */
+#include <X11/Xfuncs.h>
 #include <signal.h>		/* for SIGTSTP */
 
 /* Extra Xlib definitions */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.6 90/12/08 17:29:41 dmatic Exp $
+ * $XConsortium: Graphics.c,v 1.7 91/01/06 12:11:38 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,6 +30,7 @@
 #include <X11/Xmu/Converters.h>
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
+#include <X11/Xfuncs.h>
 #include "BitmapP.h"
     
 #include <stdio.h>
