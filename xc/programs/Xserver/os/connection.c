@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.133 91/05/10 07:11:55 jap Exp $ */
+/* $XConsortium: connection.c,v 1.134 91/05/11 17:35:19 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -108,7 +108,7 @@ typedef long CCID;      /* mask of indices into client socket table */
 #endif
 #endif
 
-char *display;			/* The display number */
+extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */
 
 long WellKnownConnections;	/* Listener mask */
