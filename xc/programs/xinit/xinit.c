@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.41 89/12/15 18:16:49 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.42 90/03/01 15:21:36 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -78,12 +78,10 @@ char xserverrcbuf[256];
 #define	FALSE		0
 #define	OK_EXIT		0
 #define	ERR_EXIT	1
-char displayname[100] = "unix";
-char client_display[100];
 
 char *default_server = "X";
 char *default_display = ":0";		/* choose most efficient */
-char *default_client[] = {"xterm", "-geometry", "+1+1", "-n", "login", "-display", NULL};
+char *default_client[] = {"xterm", "-geometry", "+1+1", "-n", "login", NULL};
 char *serverargv[100];
 char *clientargv[100];
 char **server = serverargv + 2;		/* make sure room for sh .xserverrc args */
@@ -156,9 +154,6 @@ register char **argv;
 	program = *argv++;
 	argc--;
 
-#ifndef UNIXCONN
-	(void) XmuGetHostname (displayname, sizeof(displayname));
-#endif /* UNIXCONN */
 	/*
 	 * copy the client args.
 	 */
@@ -166,9 +161,6 @@ register char **argv;
 	    (**argv != '/' && **argv != '.')) {
 		for (ptr = default_client; *ptr; )
 			*cptr++ = *ptr++;
-		strcpy(client_display, displayname);
-		strcat(client_display, default_display);
-		*cptr++ = client_display;
 #ifdef sun
 		/* 
 		 * If running on a sun, and if WINDOW_PARENT isn't defined, 
@@ -215,9 +207,6 @@ register char **argv;
 		*sptr++ = *argv++;
 	}
 	*sptr = NULL;
-
-
-	strcat(displayname, displayNum);
 
 	/*
 	 * if no client arguments given, check for a startup file and copy
@@ -318,7 +307,7 @@ waitforserver(serverpid)
 	int	cycles;			/* Wait cycle count */
 
 	for (cycles = 0; cycles < ncycles; cycles++) {
-		if (xd = XOpenDisplay(displayname)) {
+		if (xd = XOpenDisplay(displayNum)) {
 			return(TRUE);
 		}
 		else {
@@ -568,7 +557,7 @@ set_environment ()
 
     /* put DISPLAY=displayname as first element */
     strcpy (displaybuf, "DISPLAY=");
-    strcpy (displaybuf + 8, displayname);
+    strcpy (displaybuf + 8, displayNum);
     newPtr = newenviron;
     *newPtr++ = displaybuf;
 
