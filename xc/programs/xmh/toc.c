@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.43 91/04/12 13:59:44 converse Exp $
+ * $XConsortium: toc.c,v 2.44 91/06/14 18:15:50 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -228,7 +228,6 @@ char *foldername;
 }
 
 
-
 /* Check to see if what folders have new mail, and highlight their
    folderbuttons appropriately. */
 
@@ -237,7 +236,7 @@ void TocCheckForNewMail()
     Toc toc;
     Scrn scrn;
     int i, j, hasmail;
-    static Arg arglist[] = {XtNiconPixmap, NULL};
+    static Arg arglist[] = {XtNiconPixmap, (XtArgVal) None};
 
     if (!app_resources.new_mail_check) return;
 
@@ -672,7 +671,7 @@ MsgList TocCurMsgList(toc)
     MsgList result;
     XawTextPosition pos1, pos2;
     extern Msg MsgFromPosition();
-    if (toc->num_scrns == NULL) return NULL;
+    if (toc->num_scrns == 0) return NULL;
     result = MakeNullMsgList();
     XawTextGetSelectionPos( toc->scrn[0]->tocwidget, &pos1, &pos2); /* %%% */
     if (pos1 < pos2) {
