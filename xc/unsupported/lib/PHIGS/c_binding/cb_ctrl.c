@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ctrl.c,v 5.5 91/06/26 17:02:51 hersh Exp $ */
+/* $XConsortium: cb_ctrl.c,v 5.6 91/07/12 18:09:22 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -56,7 +56,7 @@ static XrmOptionDescRec	options[] = {
 merge_args( xinfo )
     Pxphigs_info	*xinfo;
 {
-    XrmDatabase		db;
+    XrmDatabase		db = NULL;
 
     if ( !xinfo->rmdb ) {
 	XrmInitialize();
