@@ -1,12 +1,9 @@
-.\" $XConsortium: Framework.ms,v 1.1 94/04/08 23:39:45 rws Exp $
+.\" $XConsortium: Framework.ms,v 1.2 94/04/17 20:05:59 rws Exp $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''
 .EF ''''
 .OF ''''
-.fp 6 I
-.fp 7 C
-.fp 8 CB
 .ps 11
 .nr PS 11
 \&
@@ -26,7 +23,7 @@ IBM Japan
 .br
 \&
 .sp 15
-.PS 9
+.ps 9
 .nr PS 9
 .LP
 Copyright \(co 1994 by TOSHIBA Corporation
@@ -85,8 +82,8 @@ the components within the sample implementation.
 .LP
 .\" figure start
 .in +1c
-... 0.237 5.796 5.24 10.14
-... 0.000i 4.344i 5.003i 0.000i
+\^... 0.237 5.796 5.24 10.14
+\^... 0.000i 4.344i 5.003i 0.000i
 .nr 00 \n(.u
 .nf
 .PS 4.344i 5.003i 
@@ -381,8 +378,8 @@ implementation dependent.
 .Ds 0
 .TA .5i 2.5i
 .ta .5i 2.5i
-typedef XLCd (*XLCdLoadProc)(\f6name\fP);
-      char \f6*name\fP;
+typedef XLCd (*XLCdLoadProc)(\fIname\fP);
+      char \fI*name\fP;
 
 typedef int XlcPosition;
 .De
@@ -405,18 +402,18 @@ T}
 .TE
 .LP
 .FD 0
-Bool _XlcAddLoader(\f6proc, position\fP)
+Bool _XlcAddLoader(\fIproc, position\fP)
 .br
-      XLCdLoadProc \f6proc\fP;
+      XLCdLoadProc \fIproc\fP;
 .br
-      XlcPosition \f6position\fP;
+      XlcPosition \fIposition\fP;
 .FN
 .LP
 The 
 .PN _XlcAddLoader
-function registers the specified locale loader ``\f6proc\fP'' to the 
+function registers the specified locale loader ``\fIproc\fP'' to the 
 internal loader list.  The position specifies that the loader 
-``\f6proc\fP'' should be placed in the top of the loader list(XlcHead) 
+``\fIproc\fP'' should be placed in the top of the loader list(XlcHead) 
 or last(XlcTail).
 .LP
 The object loader is called from the top of the loader list in order,
@@ -426,14 +423,14 @@ when calling time.
 \fBRemove a loader\fP
 .LP
 .FD 0
-void _XlcRemoveLoader(\f6proc\fP)
+void _XlcRemoveLoader(\fIproc\fP)
 .br
-      XLCdLoadProc \f6proc\fP;
+      XLCdLoadProc \fIproc\fP;
 .FN
 .LP
 The 
 .PN _XlcRemoveLoader
-function removes the locale loader specified by ``\f6proc\fP'' from the 
+function removes the locale loader specified by ``\fIproc\fP'' from the 
 loader list.
 .LP
 Current implementation provides following locale loaders;
@@ -467,10 +464,10 @@ Locale Method Functions
 .LP 
 \fBOpen a Locale Method\fP
 .LP
-.FN 0
-XLCd _XOpenLC(\f6name\fP)
+.FD 0
+XLCd _XOpenLC(\fIname\fP)
 .br
-      char \f6*name\fP;
+      char \fI*name\fP;
 .FN
 .LP
 The 
@@ -499,10 +496,10 @@ function returns an XLCd that are bound to current locale.
 .LP
 \fBClose a Locale Method\fP
 .LP
-.FN 0
-void _XCloseLC(\f6lcd\fP)
+.FD 0
+void _XCloseLC(\fIlcd\fP)
 .br
-      XLCd \f6lcd\fP;
+      XLCd \fIlcd\fP;
 .FN
 .LP
 The 
@@ -512,10 +509,10 @@ function close a locale method the specified lcd.
 .LP
 \fBObtain Locale Method values\fP
 .LP
-.FN 0
-char * _XGetLCValues(\f6lcd\fP, ...)
+.FD 0
+char * _XGetLCValues(\fIlcd\fP, ...)
 .br
-      XLCd \f6lcd\fP;
+      XLCd \fIlcd\fP;
 .FN
 .LP
 The 
@@ -571,10 +568,10 @@ typedef struct {
       XPointer value;
 } XlcArg, *XlcArgList;
 
-typedef char* (*XlcGetCSValuesProc)(\f6charset\fP, \f6args\fP, \f6num_args\fP);
-      XlcCharSet \f6charset\fP;
-      XlcArgList \f6args\fP;
-      int \f6num_args\fP;
+typedef char* (*XlcGetCSValuesProc)(\fIcharset\fP, \fIargs\fP, \fInum_args\fP);
+      XlcCharSet \fIcharset\fP;
+      XlcArgList \fIargs\fP;
+      int \fInum_args\fP;
 
 typedef struct _XlcCharSetRec {
       char *name;
@@ -593,17 +590,17 @@ typedef struct _XlcCharSetRec {
 \fBGet an XlcCharSet\fP
 .LP
 .FD 0
-XlcCharSet _XlcGetCharSet(\f6name\fP)
+XlcCharSet _XlcGetCharSet(\fIname\fP)
 .br
-      char \f6*name\fP;
+      char \fI*name\fP;
 .FN
 .LP
 The 
 .PN _XlcGetCharSet
 function gets an XlcCharSet which corresponds to the charset name 
-specified by ``\f6name\fP''.  
+specified by ``\fIname\fP''.  
 .PN _XlcGetCharSet 
-returns NULL, if no XlcCharSet bound to specified ``\f6name\fP''.
+returns NULL, if no XlcCharSet bound to specified ``\fIname\fP''.
 .LP
 The following character sets are pre-registered.
 .LP
@@ -661,21 +658,21 @@ _
 \fBAdd an XlcCharSet\fP
 .LP
 .FD 0
-Bool _XlcAddCharSet(\f6charset\fP)
-      XlcCharSet \f6charset\fP;
+Bool _XlcAddCharSet(\fIcharset\fP)
+      XlcCharSet \fIcharset\fP;
 .FN
 .LP
 The 
 .PN _XlcAddCharSet
-function registers XlcCharSet specified by ``\f6charset\fP''.
+function registers XlcCharSet specified by ``\fIcharset\fP''.
 .LP
 .sp
 \fBObtain Character Set values\fP
 .LP
 .FD 0
-char * _XlcGetCSValues(\f6charset\fP, ...)
+char * _XlcGetCSValues(\fIcharset\fP, ...)
 .br
-      XlcCharSet \f6charset\fP;
+      XlcCharSet \fIcharset\fP;
 .FN
 .LP
 The 
@@ -720,20 +717,20 @@ from both of source and destination text type.
 .ta .5i 2.5i
 typedef struct _XlcConvRec *XlcConv;
 
-typedef void (*XlcCloseConverterProc)(\f6conv\fP);
-      XlcConv \f6conv\fP;
+typedef void (*XlcCloseConverterProc)(\fIconv\fP);
+      XlcConv \fIconv\fP;
 
-typedef int (*XlcConvertProc)(\f6conv\fP, \f6from\fP, \f6from_left\fP, \f6to\fP, \f6to_left\fP, \f6args\fP, \f6num_args\fP);
-      XlcConv \f6conv\fP;
-      XPointer \f6*from\fP;
-      int \f6*from_left\fP;
-      XPointer \f6*to\fP;
-      int \f6*to_left\fP;
-      XPointer \f6*args\fP;
-      int \f6num_args\fP;
+typedef int (*XlcConvertProc)(\fIconv\fP, \fIfrom\fP, \fIfrom_left\fP, \fIto\fP, \fIto_left\fP, \fIargs\fP, \fInum_args\fP);
+      XlcConv \fIconv\fP;
+      XPointer \fI*from\fP;
+      int \fI*from_left\fP;
+      XPointer \fI*to\fP;
+      int \fI*to_left\fP;
+      XPointer \fI*args\fP;
+      int \fInum_args\fP;
 
-typedef void (*XlcResetConverterProc)(\f6conv\fP);
-      XlcConv \f6conv\fP;
+typedef void (*XlcResetConverterProc)(\fIconv\fP);
+      XlcConv \fIconv\fP;
 
 typedef struct _XlcConvMethodsRec {
       XlcCloseConverterProc close;
@@ -751,20 +748,20 @@ typedef struct _XlcConvRec {
 \fBOpen a converter\fP
 .LP
 .FD 0
-XlcConv _XlcOpenConverter(\f6from_lcd\fP, \f6from_type\fP, \f6to_lcd\fP, \f6to_type\fP)
+XlcConv _XlcOpenConverter(\fIfrom_lcd\fP, \fIfrom_type\fP, \fIto_lcd\fP, \fIto_type\fP)
 .br
-      XLCd \f6from_lcd\fP;
+      XLCd \fIfrom_lcd\fP;
 .br
-      char \f6*from_type\fP;
+      char \fI*from_type\fP;
 .br
-      XLCd \f6to_lcd\fP;
+      XLCd \fIto_lcd\fP;
 .br
-      char \f6*to_type\fP;
+      char \fI*to_type\fP;
 .FN
 .LP
 .PN _XlcOpenConverter 
 function opens the converter which converts a text from specified 
-``\f6from_type\fP'' to specified ``\f6to_type\fP'' encoding.  If the 
+``\fIfrom_type\fP'' to specified ``\fIto_type\fP'' encoding.  If the 
 function cannot find proper converter or cannot open a corresponding 
 converter, it returns NULL.  Otherwise, it returns the conversion 
 descriptor.
@@ -798,50 +795,50 @@ _
 \fBClose a converter\fP
 .LP
 .FD 0
-void _XlcCloseConverter(\f6conv\fP)
+void _XlcCloseConverter(\fIconv\fP)
 .br
-      XlcConv \f6conv\fP;
+      XlcConv \fIconv\fP;
 .FN
 .LP
 The 
 .PN _XlcCloseConverter
-function closes the specified converter ``\f6conv\fP''.
+function closes the specified converter ``\fIconv\fP''.
 .LP
 .sp
 \fBCode conversion\fP
 .LP
 .FD 0
-int _XlcConvert(\f6conv\fP, \f6from\fP, \f6from_left\fP, \f6to\fP, \f6to_left\fP, \f6args\fP, \f6num_args\fP)
+int _XlcConvert(\fIconv\fP, \fIfrom\fP, \fIfrom_left\fP, \fIto\fP, \fIto_left\fP, \fIargs\fP, \fInum_args\fP)
 .br
-      XlcConv \f6conv\fP;
+      XlcConv \fIconv\fP;
 .br
-      XPointer \f6*from\fP;
+      XPointer \fI*from\fP;
 .br
-      int \f6*from_left\fP;
+      int \fI*from_left\fP;
 .br
-      XPointer \f6*to\fP;
+      XPointer \fI*to\fP;
 .br
-      int \f6*to_left\fP;
+      int \fI*to_left\fP;
 .br
-      XPointer \f6*args\fP;
+      XPointer \fI*args\fP;
 .br
-      int \f6num_args\fP;
+      int \fInum_args\fP;
 .FN
 .LP
 The 
 .PN _XlcConvert
 function converts a sequence of characters from one type, in the array 
-specified by ``\f6from\fP'', into a sequence of corresponding characters 
-in another type, in the array specified by ``\f6to\fP''.  The types are 
+specified by ``\fIfrom\fP'', into a sequence of corresponding characters 
+in another type, in the array specified by ``\fIto\fP''.  The types are 
 those specified in the 
 .PN _XlcOpenConverter() 
-call that returned the conversion descriptor, ``\f6conv\fP''.
-The arguments ``\f6from\fP'', ``\f6from_left\fP'', ``\f6to\fP'' and 
-``\f6to_left\fP'' have the same specification of XPG4 iconv function.
+call that returned the conversion descriptor, ``\fIconv\fP''.
+The arguments ``\fIfrom\fP'', ``\fIfrom_left\fP'', ``\fIto\fP'' and 
+``\fIto_left\fP'' have the same specification of XPG4 iconv function.
 .LP
-For state-dependent encodings, the conversion descriptor ``\f6conv\fP''
-is placed into its initial shift state by a call for which ``\f6from\fP'' 
-is a NULL pointer, or for which ``\f6from\fP'' points to a null pointer.
+For state-dependent encodings, the conversion descriptor ``\fIconv\fP''
+is placed into its initial shift state by a call for which ``\fIfrom\fP'' 
+is a NULL pointer, or for which ``\fIfrom\fP'' points to a null pointer.
 .LP
 The following 2 converters prepared by locale returns appropriate 
 charset (XlcCharSet) in an area pointed by args[0].
@@ -871,14 +868,14 @@ More than one segment cannot be converted in a call.
 \fBReset a converter\fP
 .LP
 .FD 0
-void _XlcResetConverter(\f6conv\fP)
+void _XlcResetConverter(\fIconv\fP)
 .br
-      XlcConv \f6conv\fP;
+      XlcConv \fIconv\fP;
 .FN
 .LP
 The 
 .PN _XlcResetConverter 
-function reset the specified converter ``\f6conv\fP''.
+function reset the specified converter ``\fIconv\fP''.
 .LP
 .sp
 \fBRegister a converter\fP
@@ -886,29 +883,29 @@ function reset the specified converter ``\f6conv\fP''.
 .Ds 0
 .TA .5i 2.5i
 .ta .5i 2.5i
-typedef XlcConv (*XlcOpenConverterProc)(\f6from_lcd\fP, \f6from_type\fP, \f6to_lcd\fP, \f6to_type\fP);
-      XLCd \f6from_lcd\fP;
-      char \f6*from_type\fP;
-      XLCd \f6to_lcd\fP;
-      char \f6*to_type\fP;
+typedef XlcConv (*XlcOpenConverterProc)(\fIfrom_lcd\fP, \fIfrom_type\fP, \fIto_lcd\fP, \fIto_type\fP);
+      XLCd \fIfrom_lcd\fP;
+      char \fI*from_type\fP;
+      XLCd \fIto_lcd\fP;
+      char \fI*to_type\fP;
 .De
 .LP
 .FD 0
-Bool _XlcSetConverter(\f6from_lcd\fP, \f6from\fP, \f6to_lcd\fP, \f6to\fP, \f6converter\fP)
+Bool _XlcSetConverter(\fIfrom_lcd\fP, \fIfrom\fP, \fIto_lcd\fP, \fIto\fP, \fIconverter\fP)
 .br
-      XLCd \f6from_lcd\fP;
+      XLCd \fIfrom_lcd\fP;
 .br
-      char \f6*from\fP;
+      char \fI*from\fP;
 .br
-      XLCd \f6to_lcd\fP;
+      XLCd \fIto_lcd\fP;
 .br
-      char \f6*to\fP;
+      char \fI*to\fP;
 .br
-      XlcOpenConverterProc \f6converter\fP;
+      XlcOpenConverterProc \fIconverter\fP;
 .FN
 .LP
 The \fBXlcSetConverter\fP function registers a converter which convert 
-from ``\f6from_type\fP'' to ``\f6to_type\fP'' into the converter list 
+from ``\fIfrom_type\fP'' to ``\fIto_type\fP'' into the converter list 
 (in the specified XLCd).
 .LP
 .NH 1
@@ -927,27 +924,27 @@ X Locale Database Definition document.
 \fBGet a resource from database\fP
 .LP
 .FD 0
-void _XlcGetResource(\f6lcd\fP, \f6category\fP, \f6class\fP, \f6value\fP, \f6count\fP)
+void _XlcGetResource(\fIlcd\fP, \fIcategory\fP, \fIclass\fP, \fIvalue\fP, \fIcount\fP)
 .br
-      XLCd \f6lcd\fP;
+      XLCd \fIlcd\fP;
 .br
-      char \f6*category\fP;
+      char \fI*category\fP;
 .br
-      char \f6*class\fP;
+      char \fI*class\fP;
 .br
-      char \f6***value\fP;
+      char \fI***value\fP;
 .br
-      int \f6*count\fP;
+      int \fI*count\fP;
 .FN
 .LP
 The 
 .PN _XlcGetResource
 function obtains a locale dependent data which is associated with the 
-locale of specified ``\f6lcd\fP''.
+locale of specified ``\fIlcd\fP''.
 The locale data is provided by system locale or by X Locale Database 
 file, and what kind of data is available is implementation dependent.
 .LP
-The specified ``\f6category\fP'' and ``\f6class\fP'' are used for 
+The specified ``\fIcategory\fP'' and ``\fIclass\fP'' are used for 
 finding out the objective locale data.
 .LP
 The returned  value is returned in value argument in string list form,
@@ -960,17 +957,17 @@ or freed by caller.
 \fBGet a locale relative file name\fP
 .LP
 .FD 0
-char * _XlcFileName(\f6lcd\fP, \f6category\fP)
+char * _XlcFileName(\fIlcd\fP, \fIcategory\fP)
 .br
-      XLCd \f6lcd\fP;
+      XLCd \fIlcd\fP;
 .br
-      char \f6*category\fP;
+      char \fI*category\fP;
 .FN
 .LP
 The 
 .PN _XlcFileName 
-functions returns a file name which is bound to the specified ``\f6lcd\fP'' 
-and ``\f6category\fP'', as a null-terminated string.  If no file name can 
+functions returns a file name which is bound to the specified ``\fIlcd\fP'' 
+and ``\fIcategory\fP'', as a null-terminated string.  If no file name can 
 be found, or there is no readable file for the found file name, 
 .PN _XlcFileName
 returns NULL.  The returned file name should be freed by caller.
@@ -989,16 +986,16 @@ Utility Functions
 \fBCompare Latin-1 strings\fP
 .LP
 .FD 0
-int _XlcCompareISOLatin1(\f6str1\fP, \f6str2\fP)
+int _XlcCompareISOLatin1(\fIstr1\fP, \fIstr2\fP)
 .br
-      char \f6*str1\fP, \f6*str2\fP;
+      char \fI*str1\fP, \fI*str2\fP;
 .FN
 .FD 0
-int _XlcNCompareISOLatin1(\f6str1\fP, \f6str2\fP, \f6len\fP)
+int _XlcNCompareISOLatin1(\fIstr1\fP, \fIstr2\fP, \fIlen\fP)
 .br
-      char \f6*str1\fP, \f6*str2\fP;
+      char \fI*str1\fP, \fI*str2\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
@@ -1006,42 +1003,42 @@ The
 function to compares two ISO-8859-1 strings.  Bytes representing lower 
 case letters are converted to upper case before making the comparison.  
 The value returned is an integer less than, equal to, or greater than 
-zero, depending on whether ``\f6str1\fP'' is lexicographicly less than, 
-equal to, or greater than ``\f6str2\fP''.
+zero, depending on whether ``\fIstr1\fP'' is lexicographicly less than, 
+equal to, or greater than ``\fIstr2\fP''.
 .LP 
 The 
 .PN _XlcNCompareIsoLatin1
 function is identical to 
 .PN _XlcCompareISOLatin1,
-except that at most ``\f6len\fP'' bytes are compared.
+except that at most ``\fIlen\fP'' bytes are compared.
 .LP
 .sp
 \fBResource Utility\fP
 .LP
 .FD 0
-int XlcNumber(\f6array\fP)
-      ArrayType \f6array\fP;
+int XlcNumber(\fIarray\fP)
+      ArrayType \fIarray\fP;
 .FN
 .LP
 Similar to XtNumber.
 .LP
 .FD 0
-void _XlcCopyFromArg(\f6src\fP, \f6dst\fP, \f6size\fP)
+void _XlcCopyFromArg(\fIsrc\fP, \fIdst\fP, \fIsize\fP)
 .br
-      char \f6*src\fP;
+      char \fI*src\fP;
 .br
-      char \f6*dst\fP;
+      char \fI*dst\fP;
 .br
-      int \f6size\fP;
+      int \fIsize\fP;
 .FN
 .FD 0
-void _XlcCopyToArg(\f6src\fP, \f6dst\fP, \f6size\fP)
+void _XlcCopyToArg(\fIsrc\fP, \fIdst\fP, \fIsize\fP)
 .br
-      char \f6*src\fP;
+      char \fI*src\fP;
 .br
-      char \f6**dst\fP;
+      char \fI**dst\fP;
 .br
-      int \f6size\fP;
+      int \fIsize\fP;
 .FN
 .LP
 Similar to 
@@ -1050,24 +1047,24 @@ and
 .PN _XtCopyToArg.
 .LP
 .FD 0
-void _XlcCountVaList(\f6var\fP, \f6count_ret\fP)
+void _XlcCountVaList(\fIvar\fP, \fIcount_ret\fP)
 .br
-      va_list \f6var\fP;
+      va_list \fIvar\fP;
 .br
-      int \f6*count_ret\fP;
+      int \fI*count_ret\fP;
 .FN
 .LP
 Similar to 
 .PN _XtCountVaList.
 .LP
 .FD 0
-void _XlcVaToArgList(\f6var\fP, \f6count\fP, \f6args_ret\fP)
+void _XlcVaToArgList(\fIvar\fP, \fIcount\fP, \fIargs_ret\fP)
 .br
-      va_list \f6var\fP;
+      va_list \fIvar\fP;
 .br
-      int \f6count\fP;
+      int \fIcount\fP;
 .br
-      XlcArgList \f6*args_ret\fP;
+      XlcArgList \fI*args_ret\fP;
 .FN
 .LP
 Similar to 
@@ -1125,48 +1122,48 @@ T}
 .TE
 .LP
 .FD 0
-void _XlcCompileResourceList(\f6resources\fP, \f6num_resources\fP)
+void _XlcCompileResourceList(\fIresources\fP, \fInum_resources\fP)
 .br
-      XlcResourceList \f6resources\fP;
+      XlcResourceList \fIresources\fP;
 .br
-      int \f6num_resources\fP;
+      int \fInum_resources\fP;
 .FN
 .LP
 Similar to 
 .PN _XtCompileResourceList.
 .LP
 .FD 0
-char * _XlcGetValues(\f6base\fP, \f6resources\fP, \f6num_resources\fP, \f6args\fP, \f6num_args\fP, \f6mask\fP)
+char * _XlcGetValues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \fIargs\fP, \fInum_args\fP, \fImask\fP)
 .br
-      XPointer \f6base\fP;
+      XPointer \fIbase\fP;
 .br
-      XlcResourceList \f6resources\fP;
+      XlcResourceList \fIresources\fP;
 .br
-      int \f6num_resources\fP;
+      int \fInum_resources\fP;
 .br
-      XlcArgList \f6args\fP;
+      XlcArgList \fIargs\fP;
 .br
-      int \f6num_args\fP;
+      int \fInum_args\fP;
 .br
-      unsigned long \f6mask\fP;
+      unsigned long \fImask\fP;
 .FN
 .LP
 Similar to XtGetSubvalues.
 .LP
 .FD 0
-char * _XlcSetValues(\f6base\fP, \f6resources\fP, \f6num_resources\fP, \f6args\fP, \f6num_args\fP, \f6mask\fP)
+char * _XlcSetValues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \fIargs\fP, \fInum_args\fP, \fImask\fP)
 .br
-      XPointer \f6base\fP;
+      XPointer \fIbase\fP;
 .br
-      XlcResourceList \f6resources\fP;
+      XlcResourceList \fIresources\fP;
 .br
-      int \f6num_resources\fP;
+      int \fInum_resources\fP;
 .br
-      XlcArgList \f6args\fP;
+      XlcArgList \fIargs\fP;
 .br
-      int \f6num_args\fP;
+      int \fInum_args\fP;
 .br
-      unsigned long \f6mask\fP;
+      unsigned long \fImask\fP;
 .FN
 .LP
 Similar to XtSetSubvalues.
@@ -1177,68 +1174,68 @@ Similar to XtSetSubvalues.
 The following are ANSI C/MSE Compatible Functions for non-ANSI C environment.
 .LP
 .FD 0
-int _Xmblen(\f6str\fP, \f6len\fP)
+int _Xmblen(\fIstr\fP, \fIlen\fP)
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xmblen 
-function returns the number of characters pointed to by ``\f6str\fP''.  
-Only ``\f6len\fP'' bytes in ``\f6str\fP'' are used in determining the 
-character count returned.  ``\f6Str\fP'' may point at characters from 
+function returns the number of characters pointed to by ``\fIstr\fP''.  
+Only ``\fIlen\fP'' bytes in ``\fIstr\fP'' are used in determining the 
+character count returned.  ``\fIStr\fP'' may point at characters from 
 any valid codeset in the current locale.
 .LP 
 The call 
 .PN _Xmblen
 is equivalent to
 .RS
-_Xmbtowc(_Xmbtowc((\f6wchar_t*\fP)NULL, \f6str\fP, \f6len\fP))
+_Xmbtowc(_Xmbtowc((\fIwchar_t*\fP)NULL, \fIstr\fP, \fIlen\fP))
 .RE
 .LP
 .FD 0
-int _Xmbtowc(\f6wstr\fP, \f6str\fP, \f6len\fP)
+int _Xmbtowc(\fIwstr\fP, \fIstr\fP, \fIlen\fP)
 .br
-      wchar_t \f6*wstr\fP;
+      wchar_t \fI*wstr\fP;
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xmbtowc
-function converts the character(s) pointed to by ``\f6str\fP'' 
-to their wide character representation(s) pointed to by ``\f6wstr\fP''.  
-``\f6Len\fP'' is the number of bytes in ``\f6str\fP'' to be converted.  
+function converts the character(s) pointed to by ``\fIstr\fP'' 
+to their wide character representation(s) pointed to by ``\fIwstr\fP''.  
+``\fILen\fP'' is the number of bytes in ``\fIstr\fP'' to be converted.  
 The return value is the number of characters converted.
 .LP 
 The call 
 .PN _Xmbtowc
 is equivalent to
 .RS
-_Xlcmbtowc((XLCd)NULL, \f6wstr\fP, \f6str\fP, \f6len\fP)
+_Xlcmbtowc((XLCd)NULL, \fIwstr\fP, \fIstr\fP, \fIlen\fP)
 .RE
 .LP
 .FD 0
-int _Xlcmbtowc(\f6lcd\fP, \f6wstr\fP, \f6str\fP, \f6len\fP)
+int _Xlcmbtowc(\fIlcd\fP, \fIwstr\fP, \fIstr\fP, \fIlen\fP)
 .br
-      XLCd \f6lcd\fP;
+      XLCd \fIlcd\fP;
 .br
-      wchar_t \f6*wstr\fP;
+      wchar_t \fI*wstr\fP;
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xlcmbtowc
 function is identical to 
 .PN _Xmbtowc, 
-except that it requires the ``\f6lcd\fP'' argument.  If ``\f6lcd\fP'' 
+except that it requires the ``\fIlcd\fP'' argument.  If ``\fIlcd\fP'' 
 is (XLCd) NULL, 
 .PN _Xlcmbtowc, 
 calls 
@@ -1246,251 +1243,251 @@ calls
 to determine the current locale.
 .LP 
 .FD 0
-int _Xwctomb(\f6str\fP, \f6wc\fP)
+int _Xwctomb(\fIstr\fP, \fIwc\fP)
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      wchar_t \f6wc\fP;
+      wchar_t \fIwc\fP;
 .FN
 .LP
 The 
 .PN _Xwctomb 
-function converts a single wide character pointed to by ``\f6wc\fP'' to 
-its multibyte representation pointed to by ``\f6str\fP''.  
+function converts a single wide character pointed to by ``\fIwc\fP'' to 
+its multibyte representation pointed to by ``\fIstr\fP''.  
 On success, the return value is 1.
 .LP 
 The call 
 .PN _Xwctomb
 is equivalent to
 .RS
-_Xlcwctomb((XLCd)NULL, \f6str\fP, \f6wstr\fP)
+_Xlcwctomb((XLCd)NULL, \fIstr\fP, \fIwstr\fP)
 .RE
 .LP
 .FD 0
-int _Xlcwctomb(\f6lcd\fP, \f6str\fP, \f6wc\fP)
+int _Xlcwctomb(\fIlcd\fP, \fIstr\fP, \fIwc\fP)
 .br
-      XLCd \f6lcd\fP;
+      XLCd \fIlcd\fP;
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      wchar_t \f6wc\fP;
+      wchar_t \fIwc\fP;
 .FN
 .LP
 The 
 .PN _Xlcwctomb
 function is identical to _Xwctomb, except that it requires the 
-``\f6lcd\fP'' argument.  If ``\f6lcd\fP'' is (XLCd) NULL, 
+``\fIlcd\fP'' argument.  If ``\fIlcd\fP'' is (XLCd) NULL, 
 .PN _Xlcwctomb, 
 calls 
 .PN _XlcCurrentLC 
 to determine the current locale.
 .LP
 .FD 0
-int _Xmbstowcs(\f6wstr\fP, \f6str\fP, \f6len\fP)
+int _Xmbstowcs(\fIwstr\fP, \fIstr\fP, \fIlen\fP)
 .br
-      wchar_t \f6*wstr\fP;
+      wchar_t \fI*wstr\fP;
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xmbstowcs
-function converts the NULL-terminated string pointed to by ``\f6str\fP'' 
-to its wide character string representation pointed to by ``\f6wstr\fP''.
-``\f6Len\fP'' is the number of characters in ``\f6str\fP'' to be converted.
+function converts the NULL-terminated string pointed to by ``\fIstr\fP'' 
+to its wide character string representation pointed to by ``\fIwstr\fP''.
+``\fILen\fP'' is the number of characters in ``\fIstr\fP'' to be converted.
 .LP
 The call 
 .PN _Xmbstowcs
 is equivalent to
 .RS
-_Xlcmbstowcs((XLCd)NULL, \f6wstr\fP, \f6str\fP, \f6len\fP)
+_Xlcmbstowcs((XLCd)NULL, \fIwstr\fP, \fIstr\fP, \fIlen\fP)
 .RE
 .LP
 .FD 0
-int _Xlcmbstowcs(\f6lcd\fP, \f6wstr\fP, \f6str\fP, \f6len\fP)
+int _Xlcmbstowcs(\fIlcd\fP, \fIwstr\fP, \fIstr\fP, \fIlen\fP)
 .br
-      XLCd \f6lcd\fP;
+      XLCd \fIlcd\fP;
 .br
-      wchar_t \f6*wstr\fP;
+      wchar_t \fI*wstr\fP;
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xlcmbstowcs 
 function is identical to _Xmbstowcs, except that it requires the 
-``\f6lcd\fP'' argument.  If ``\f6lcd\fP'' is (XLCd) NULL, 
+``\fIlcd\fP'' argument.  If ``\fIlcd\fP'' is (XLCd) NULL, 
 .PN _Xlcmbstowcs, 
 calls 
 .PN _XlcCurrentLC
 to determine the current locale.
 .LP
 .FD 0
-int _Xwcstombs(\f6str\fP, \f6wstr\fP, \f6len\fP)
+int _Xwcstombs(\fIstr\fP, \fIwstr\fP, \fIlen\fP)
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      wchar_t \f6*wstr\fP;
+      wchar_t \fI*wstr\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xwcstombs 
 function converts the (wchar_t) NULL terminated wide character string 
-pointed to by ``\f6wstr\fP'' to the NULL terminated multibyte string 
-pointed to by ``\f6str\fP''.
+pointed to by ``\fIwstr\fP'' to the NULL terminated multibyte string 
+pointed to by ``\fIstr\fP''.
 .LP 
 The call 
 .PN _Xwcstombs 
 is equivalent to
 .RS
-_Xlcwcstombs((XLCd)NULL, \f6str\fP, \f6wstr\fP, \f6len\fP)
+_Xlcwcstombs((XLCd)NULL, \fIstr\fP, \fIwstr\fP, \fIlen\fP)
 .RE
 .LP
 .FD 0
-int _Xlcwcstombs(\f6lcd\fP, \f6str\fP, \f6wstr\fP, \f6len\fP)
+int _Xlcwcstombs(\fIlcd\fP, \fIstr\fP, \fIwstr\fP, \fIlen\fP)
 .br
-      XLCd \f6lcd\fP;
+      XLCd \fIlcd\fP;
 .br
-      char \f6*str\fP;
+      char \fI*str\fP;
 .br
-      wchar_t \f6*wstr\fP;
+      wchar_t \fI*wstr\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xlcwcstombs 
 function is identical to _Xwcstombs, except that it requires the 
-``\f6lcd\fP'' argument.  If ``\f6lcd\fP'' is (XLCd) NULL, 
+``\fIlcd\fP'' argument.  If ``\fIlcd\fP'' is (XLCd) NULL, 
 .PN _Xlcwcstombs, 
 calls 
 .PN _XlcCurrentLC 
 to determine the current locale.
 .LP
 .FD 0
-int _Xwcslen(\f6wstr\fP)
+int _Xwcslen(\fIwstr\fP)
 .br
-      wchar_t \f6*wstr\fP;
+      wchar_t \fI*wstr\fP;
 .FN
 .LP
 The 
 .PN _Xwcslen 
 function returns the count of wide characters in the (wchar_t) NULL 
-terminated wide character string pointed to by ``\f6wstr\fP''.
+terminated wide character string pointed to by ``\fIwstr\fP''.
 .LP
 .FD 0
-wchar_t * _Xwcscpy(\f6wstr1\fP, \f6wstr2\fP)
+wchar_t * _Xwcscpy(\fIwstr1\fP, \fIwstr2\fP)
 .br
-      wchar_t \f6*wstr1\fP, \f6*wstr2\fP;
+      wchar_t \fI*wstr1\fP, \fI*wstr2\fP;
 .FN
 .FD 0
-wchar_t * _Xwcsncpy(\f6wstr1\fP, \f6wstr2\fP, \f6len\fP)
+wchar_t * _Xwcsncpy(\fIwstr1\fP, \fIwstr2\fP, \fIlen\fP)
 .br
-      wchar_t \f6*wstr1\fP, \f6*wstr2\fP;
+      wchar_t \fI*wstr1\fP, \fI*wstr2\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xwcscpy 
 function copies the (wchar_t) NULL terminated wide character string 
-pointed to by ``\f6wstr2\fP'' to the object pointed at by ``\f6wstr1\fP''.
-``\f6Wstr1\fP'' is (wchar_t) NULL terminated.  The return value is a 
-pointer to ``\f6wstr1\fP''.
+pointed to by ``\fIwstr2\fP'' to the object pointed at by ``\fIwstr1\fP''.
+``\fIWstr1\fP'' is (wchar_t) NULL terminated.  The return value is a 
+pointer to ``\fIwstr1\fP''.
 .LP
 The 
 .PN _Xwcsncpy
 function is identical to 
 .PN _Xwcscpy, 
-except that it copies ``\f6len\fP'' wide characters from the object 
-pointed to by ``\f6wstr2\fP'' to the object pointed to ``\f6wstr1\fP''.
+except that it copies ``\fIlen\fP'' wide characters from the object 
+pointed to by ``\fIwstr2\fP'' to the object pointed to ``\fIwstr1\fP''.
 .LP
 .FD 0
-int _Xwcscmp(\f6wstr1\fP, \f6wstr2\fP)
+int _Xwcscmp(\fIwstr1\fP, \fIwstr2\fP)
 .br
-      wchar_t \f6*wstr1\fP, \f6*wstr2\fP;
+      wchar_t \fI*wstr1\fP, \fI*wstr2\fP;
 .FN
 .FD 0
-int _Xwcsncmp(\f6wstr1\fP, \f6wstr2\fP, \f6len\fP)
+int _Xwcsncmp(\fIwstr1\fP, \fIwstr2\fP, \fIlen\fP)
 .br
-      wchar_t \f6*wstr1\fP, \f6*wstr2\fP;
+      wchar_t \fI*wstr1\fP, \fI*wstr2\fP;
 .br
-      int \f6len\fP;
+      int \fIlen\fP;
 .FN
 .LP
 The 
 .PN _Xwcscmp 
 function  compares two (wchar_t) NULL terminated wide character strings.  
 The value returned is an integer less than, equal to, or greater than zero, 
-depending on whether ``\f6wstr1\fP'' is lexicographicly less then, equal to,
-or greater than ``\f6str2\fP''.
+depending on whether ``\fIwstr1\fP'' is lexicographicly less then, equal to,
+or greater than ``\fIstr2\fP''.
 .LP 
 The 
 .PN _Xwcsncmp 
 function is identical to 
 .PN _XlcCompareISOLatin1, 
-except that at most ``\f6len\fP'' wide characters are compared.
+except that at most ``\fIlen\fP'' wide characters are compared.
 .sp
 .\" --------------------------------------------------------------------
 .\" .LP
 .\" \fBLocale Method Internal Functions\fP
 .\" .LP
 .\" .FD 0
-.\" XlcCharSet _XlcCreateDefaultCharSet(\f6name\fP, \f6ct_sequence\fP)
+.\" XlcCharSet _XlcCreateDefaultCharSet(\fIname\fP, \fIct_sequence\fP)
 .\" .br
-.\"       char \f6*name\fP;
+.\"       char \fI*name\fP;
 .\" .br
-.\"       char \f6*ct_sequence\fP;
+.\"       char \fI*ct_sequence\fP;
 .\" .FN
 .\" .FD 0
-.\" Bool _XlcParseCharSet(\f6charset\fP)
+.\" Bool _XlcParseCharSet(\fIcharset\fP)
 .\" .br
-.\"       XlcCharSet \f6charset\fP;
+.\"       XlcCharSet \fIcharset\fP;
 .\" .FN
 .\" .FD 0
-.\" void _XlcGetLocaleDataBase(\f6lcd\fP, \f6category\fP, \f6name\fP, \f6value\fP, \f6count\fP)
+.\" void _XlcGetLocaleDataBase(\fIlcd\fP, \fIcategory\fP, \fIname\fP, \fIvalue\fP, \fIcount\fP)
 .\" .br
-.\"       XLCd \f6lcd\fP;
+.\"       XLCd \fIlcd\fP;
 .\" .br
-.\"       char \f6*category\fP;
+.\"       char \fI*category\fP;
 .\" .br
-.\"       char \f6*name\fP;
+.\"       char \fI*name\fP;
 .\" .br
-.\"       char \f6***value\fP;
+.\"       char \fI***value\fP;
 .\" .br
-.\"       int \f6*count\fP;
+.\"       int \fI*count\fP;
 .\" .FN
 .\" .FD 0
-.\" void _XlcDestroyLocaleDataBase(\f6lcd\fP)
+.\" void _XlcDestroyLocaleDataBase(\fIlcd\fP)
 .\" .br
-.\"       XLCd \f6lcd\fP;
+.\"       XLCd \fIlcd\fP;
 .\" .FN
 .\" .FD 0
-.\" XPointer _XlcCreateLocaleDataBase(\f6lcd\fP)
+.\" XPointer _XlcCreateLocaleDataBase(\fIlcd\fP)
 .\" .br
-.\"       XLCd \f6lcd\fP;
+.\"       XLCd \fIlcd\fP;
 .\" .FN
 .\" .LP
 .\" .sp
 .\" \fBObtain an locale database path\fP
 .\" .LP
 .\" .FD 0
-.\" int _XlcResolveI18NPath(\f6dir\fP)
+.\" int _XlcResolveI18NPath(\fIdir\fP)
 .\" .br
-.\"       char \f6*dir\fP;
+.\"       char \fI*dir\fP;
 .\" .FN
 .\" .LP
 .\" The 
 .\" .PN _XlcResolveI18NPath 
 .\" function returns path name list that is related to X Locale Database.
 .\" The obtained path is stored into the array which is pointed by
-.\" specified ``\f6dir\fP''.  The path consists of directory paths which 
+.\" specified ``\fIdir\fP''.  The path consists of directory paths which 
 .\" are separated with colon.
 .\" If the environment variable XLOCALEDIR is specified, the path
 .\" contains its contents.
@@ -1499,7 +1496,7 @@ except that at most ``\f6len\fP'' wide characters are compared.
 .\" In current implementation, it's determined in build time.
 .\" .LP
 .\" .PN _XlcResolveI18NPath 
-.\" does not check overflow of the array to which the ``\f6dir\fP'' 
+.\" does not check overflow of the array to which the ``\fIdir\fP'' 
 .\" parameter points.  Caller should provide enough buffer to store this 
 .\" string.
 .\" .LP
@@ -1507,27 +1504,27 @@ except that at most ``\f6len\fP'' wide characters are compared.
 .\" \fBObtain a full locale name\fP
 .\" .LP
 .\" .FD 0
-.\" int _XlcResolveLocaleName(\f6lc_name\fP, \f6full_name\fP, \f6language\fP, \f6territory\fP, \f6codeset\fP)
+.\" int _XlcResolveLocaleName(\fIlc_name\fP, \fIfull_name\fP, \fIlanguage\fP, \fIterritory\fP, \fIcodeset\fP)
 .\" .br
-.\"       char \f6*lc_name\fP;
+.\"       char \fI*lc_name\fP;
 .\" .br
-.\"       char \f6*full_name\fP;
+.\"       char \fI*full_name\fP;
 .\" .br
-.\"       char \f6*language\fP;
+.\"       char \fI*language\fP;
 .\" .br
-.\"       char \f6*territory\fP;
+.\"       char \fI*territory\fP;
 .\" .br
-.\"       char \f6*codeset\fP;
+.\"       char \fI*codeset\fP;
 .\" .FN
 .\" .LP
 .\" The 
 .\" .PN _XlcResolveLocaleName 
 .\" function returns a full locale name.
 .\" The obtained full locale name is stored into the array which is
-.\" pointed by specified ``\f6full_name\fP''.
+.\" pointed by specified ``\fIfull_name\fP''.
 .\" The language, territory and codeset part of the full locale name
-.\" are copied to the return arguments, ``\f6language\fP'', 
-.\" ``\f6territory\fP'' and ``\f6codeset\fP'', respectively.
+.\" are copied to the return arguments, ``\fIlanguage\fP'', 
+.\" ``\fIterritory\fP'' and ``\fIcodeset\fP'', respectively.
 .\" NULL can be specified for these arguments.
 .\" .LP
 .\" The rule for mapping from locale name to full locale name is
@@ -1535,8 +1532,8 @@ except that at most ``\f6len\fP'' wide characters are compared.
 .\" .LP
 .\" .PN _XlcResolveLocaleName 
 .\" does not check overflow of the array to which
-.\" ``\f6full_name\fP'', ``\f6language\fP'', ``\f6territory\fP'' and 
-.\" ``\f6codeset\fP'' parameter point.
+.\" ``\fIfull_name\fP'', ``\fIlanguage\fP'', ``\fIterritory\fP'' and 
+.\" ``\fIcodeset\fP'' parameter point.
 .\" Caller should provide enough buffer to store those string.
 .\" .LP
 .\" In current implementation, 
@@ -1545,23 +1542,23 @@ except that at most ``\f6len\fP'' wide characters are compared.
 .\" a locale name and a full locale name.
 .\" .LP
 .\" .FD 0
-.\" int _XlcResolveDBName(\f6lc_name\fP, \f6file_name\fP)
+.\" int _XlcResolveDBName(\fIlc_name\fP, \fIfile_name\fP)
 .\" .br
-.\"       char \f6*lc_name\fP;
+.\"       char \fI*lc_name\fP;
 .\" .br
-.\"       char \f6*file_name\fP;
+.\"       char \fI*file_name\fP;
 .\" .FN
 .\" .FD 0 
-.\" XLCd _XlcCreateLC(\f6name\fP, \f6methods\fP)
+.\" XLCd _XlcCreateLC(\fIname\fP, \fImethods\fP)
 .\" .br
-.\"       char \f6*name\fP;
+.\"       char \fI*name\fP;
 .\" .br
-.\"       XLCdMethods \f6methods\fP;
+.\"       XLCdMethods \fImethods\fP;
 .\" .FN
 .\" .FD 0
-.\" void _XlcDestroyLC(\f6lcd\fP)
+.\" void _XlcDestroyLC(\fIlcd\fP)
 .\" .br
-.\"       XLCd \f6lcd\fP;
+.\"       XLCd \fIlcd\fP;
 .\" .FN
 .\" .LP
 .\" 
