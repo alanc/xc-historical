@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.105 91/02/20 22:02:27 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.106 91/03/28 15:42:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -126,13 +126,13 @@ static NameValueRec buttonNames[] = {
     {"Button3", 0,	Button3},
     {"Button4", 0,	Button4},
     {"Button5", 0,	Button5},
-    {NULL, NULL, NULL},
+    {NULL, NULLQUARK, 0},
 };
 
 static NameValueRec motionDetails[] = {
     {"Normal",		0,	NotifyNormal},
     {"Hint",		0,	NotifyHint},
-    {NULL, NULL, NULL},
+    {NULL, NULLQUARK, 0},
 };
 
 static NameValueRec notifyModes[] = {
@@ -140,7 +140,7 @@ static NameValueRec notifyModes[] = {
     {"Grab",		0,	NotifyGrab},
     {"Ungrab",		0,	NotifyUngrab},
     {"WhileGrabbed",    0,	NotifyWhileGrabbed},
-    {NULL, NULL, NULL},
+    {NULL, NULLQUARK, 0},
 };
 
 #if 0
@@ -153,26 +153,26 @@ static NameValueRec notifyDetail[] = {
     {"Pointer",		    0,	NotifyPointer},
     {"PointerRoot",	    0,	NotifyPointerRoot},
     {"DetailNone",	    0,	NotifyDetailNone},
-    {NULL, NULL, NULL},
+    {NULL, NULLQUARK, 0},
 };
 
 static NameValueRec visibilityNotify[] = {
     {"Unobscured",	    0,	VisibilityUnobscured},
     {"PartiallyObscured",   0,	VisibilityPartiallyObscured},
     {"FullyObscured",       0,	VisibilityFullyObscured},
-    {NULL, NULL, NULL},
+    {NULL, NULLQUARK, 0},
 };
 
 static NameValueRec circulation[] = {
     {"OnTop",       0,	PlaceOnTop},
     {"OnBottom",    0,	PlaceOnBottom},
-    {NULL, NULL, NULL},
+    {NULL, NULLQUARK, 0},
 };
 
 static NameValueRec propertyChanged[] = {
     {"NewValue",    0,	PropertyNewValue},
     {"Delete",      0,	PropertyDelete},
-    {NULL, NULL, NULL},
+    {NULL, NULLQUARK, 0},
 };
 #endif /*0*/
 
@@ -180,7 +180,7 @@ static NameValueRec mappingNotify[] = {
     {"Modifier",	0,	MappingModifier},
     {"Keyboard",	0,	MappingKeyboard},
     {"Pointer",	0,	MappingPointer},
-    {NULL, NULL, NULL},
+    {NULL, NULLQUARK, 0},
 };
 
 static String ParseKeySym();
@@ -195,140 +195,140 @@ static EventKey events[] = {
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
-{"KeyPress",	    NULL, KeyPress,	ParseKeySym,	NULL},
-{"Key", 	    NULL, KeyPress,	ParseKeySym,	NULL},
-{"KeyDown",	    NULL, KeyPress,	ParseKeySym,	NULL},
-{"Ctrl",            NULL, KeyPress,  ParseKeyAndModifiers,(Opaque)ControlMask},
-{"Shift",           NULL, KeyPress,    ParseKeyAndModifiers,(Opaque)ShiftMask},
-{"Meta",            NULL, KeyPress,     ParseKeyAndModifiers,(Opaque)NULL},
-{"KeyUp",	    NULL, KeyRelease,	ParseKeySym,	NULL},
-{"KeyRelease",	    NULL, KeyRelease,	ParseKeySym,	NULL},
+{"KeyPress",	    NULLQUARK, KeyPress,	ParseKeySym,	NULL},
+{"Key", 	    NULLQUARK, KeyPress,	ParseKeySym,	NULL},
+{"KeyDown",	    NULLQUARK, KeyPress,	ParseKeySym,	NULL},
+{"Ctrl",            NULLQUARK, KeyPress, ParseKeyAndModifiers,(Opaque)ControlMask},
+{"Shift",           NULLQUARK, KeyPress, ParseKeyAndModifiers,(Opaque)ShiftMask},
+{"Meta",            NULLQUARK, KeyPress,   ParseKeyAndModifiers,(Opaque)NULL},
+{"KeyUp",	    NULLQUARK, KeyRelease,	ParseKeySym,	NULL},
+{"KeyRelease",	    NULLQUARK, KeyRelease,	ParseKeySym,	NULL},
 
-{"ButtonPress",     NULL, ButtonPress,  ParseTable,(Opaque)buttonNames},
-{"BtnDown",	    NULL, ButtonPress,  ParseTable,(Opaque)buttonNames},
-{"Btn1Down",	    NULL, ButtonPress,	ParseImmed,(Opaque)Button1},
-{"Btn2Down", 	    NULL, ButtonPress,	ParseImmed,(Opaque)Button2},
-{"Btn3Down", 	    NULL, ButtonPress,	ParseImmed,(Opaque)Button3},
-{"Btn4Down", 	    NULL, ButtonPress,	ParseImmed,(Opaque)Button4},
-{"Btn5Down", 	    NULL, ButtonPress,	ParseImmed,(Opaque)Button5},
-
-/* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
-
-{"ButtonRelease",   NULL, ButtonRelease,    ParseTable,(Opaque)buttonNames},
-{"BtnUp", 	    NULL, ButtonRelease,    ParseTable,(Opaque)buttonNames},
-{"Btn1Up", 	    NULL, ButtonRelease,    ParseImmed,(Opaque)Button1},
-{"Btn2Up", 	    NULL, ButtonRelease,    ParseImmed,(Opaque)Button2},
-{"Btn3Up", 	    NULL, ButtonRelease,    ParseImmed,(Opaque)Button3},
-{"Btn4Up", 	    NULL, ButtonRelease,    ParseImmed,(Opaque)Button4},
-{"Btn5Up", 	    NULL, ButtonRelease,    ParseImmed,(Opaque)Button5},
-
-{"MotionNotify",    NULL, MotionNotify,	ParseTable,	(Opaque)motionDetails},
-{"PtrMoved", 	    NULL, MotionNotify,	ParseTable,	(Opaque)motionDetails},
-{"Motion", 	    NULL, MotionNotify,	ParseTable,	(Opaque)motionDetails},
-{"MouseMoved", 	    NULL, MotionNotify,	ParseTable,	(Opaque)motionDetails},
-{"BtnMotion",       NULL, MotionNotify,ParseAddModifier,(Opaque)AnyButtonMask},
-{"Btn1Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button1Mask},
-{"Btn2Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button2Mask},
-{"Btn3Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button3Mask},
-{"Btn4Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button4Mask},
-{"Btn5Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button5Mask},
-
-{"EnterNotify",     NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
-{"Enter",	    NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
-{"EnterWindow",     NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
-
-{"LeaveNotify",     NULL, LeaveNotify,    ParseTable,(Opaque)notifyModes},
-{"LeaveWindow",     NULL, LeaveNotify,    ParseTable,(Opaque)notifyModes},
-{"Leave",	    NULL, LeaveNotify,    ParseTable,(Opaque)notifyModes},
+{"ButtonPress",     NULLQUARK, ButtonPress,  ParseTable,(Opaque)buttonNames},
+{"BtnDown",	    NULLQUARK, ButtonPress,  ParseTable,(Opaque)buttonNames},
+{"Btn1Down",	    NULLQUARK, ButtonPress,	ParseImmed,(Opaque)Button1},
+{"Btn2Down", 	    NULLQUARK, ButtonPress,	ParseImmed,(Opaque)Button2},
+{"Btn3Down", 	    NULLQUARK, ButtonPress,	ParseImmed,(Opaque)Button3},
+{"Btn4Down", 	    NULLQUARK, ButtonPress,	ParseImmed,(Opaque)Button4},
+{"Btn5Down", 	    NULLQUARK, ButtonPress,	ParseImmed,(Opaque)Button5},
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
-{"FocusIn",	    NULL, FocusIn,	  ParseTable,(Opaque)notifyModes},
+{"ButtonRelease",   NULLQUARK, ButtonRelease,  ParseTable,(Opaque)buttonNames},
+{"BtnUp", 	    NULLQUARK, ButtonRelease,  ParseTable,(Opaque)buttonNames},
+{"Btn1Up", 	    NULLQUARK, ButtonRelease,    ParseImmed,(Opaque)Button1},
+{"Btn2Up", 	    NULLQUARK, ButtonRelease,    ParseImmed,(Opaque)Button2},
+{"Btn3Up", 	    NULLQUARK, ButtonRelease,    ParseImmed,(Opaque)Button3},
+{"Btn4Up", 	    NULLQUARK, ButtonRelease,    ParseImmed,(Opaque)Button4},
+{"Btn5Up", 	    NULLQUARK, ButtonRelease,    ParseImmed,(Opaque)Button5},
 
-{"FocusOut",	    NULL, FocusOut,       ParseTable,(Opaque)notifyModes},
+{"MotionNotify",    NULLQUARK, MotionNotify, ParseTable, (Opaque)motionDetails},
+{"PtrMoved", 	    NULLQUARK, MotionNotify, ParseTable, (Opaque)motionDetails},
+{"Motion", 	    NULLQUARK, MotionNotify, ParseTable, (Opaque)motionDetails},
+{"MouseMoved", 	    NULLQUARK, MotionNotify, ParseTable, (Opaque)motionDetails},
+{"BtnMotion",  NULLQUARK, MotionNotify, ParseAddModifier, (Opaque)AnyButtonMask},
+{"Btn1Motion", NULLQUARK, MotionNotify, ParseAddModifier, (Opaque)Button1Mask},
+{"Btn2Motion", NULLQUARK, MotionNotify, ParseAddModifier, (Opaque)Button2Mask},
+{"Btn3Motion", NULLQUARK, MotionNotify, ParseAddModifier, (Opaque)Button3Mask},
+{"Btn4Motion", NULLQUARK, MotionNotify, ParseAddModifier, (Opaque)Button4Mask},
+{"Btn5Motion", NULLQUARK, MotionNotify, ParseAddModifier, (Opaque)Button5Mask},
 
-{"KeymapNotify",    NULL, KeymapNotify,	ParseNone,	NULL},
-{"Keymap",	    NULL, KeymapNotify,	ParseNone,	NULL},
+{"EnterNotify",     NULLQUARK, EnterNotify,    ParseTable,(Opaque)notifyModes},
+{"Enter",	    NULLQUARK, EnterNotify,    ParseTable,(Opaque)notifyModes},
+{"EnterWindow",     NULLQUARK, EnterNotify,    ParseTable,(Opaque)notifyModes},
 
-{"Expose", 	    NULL, Expose,		ParseNone,	NULL},
-
-{"GraphicsExpose",  NULL, GraphicsExpose,	ParseNone,	NULL},
-{"GrExp",	    NULL, GraphicsExpose,	ParseNone,	NULL},
-
-{"NoExpose",	    NULL, NoExpose,	ParseNone,	NULL},
-{"NoExp",	    NULL, NoExpose,	ParseNone,	NULL},
-
-{"VisibilityNotify",NULL, VisibilityNotify,ParseNone,	NULL},
-{"Visible",	    NULL, VisibilityNotify,ParseNone,	NULL},
-
-{"CreateNotify",    NULL, CreateNotify,	ParseNone,	NULL},
-{"Create",	    NULL, CreateNotify,	ParseNone,	NULL},
-
-/* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
-
-{"DestroyNotify",   NULL, DestroyNotify,	ParseNone,	NULL},
-{"Destroy",	    NULL, DestroyNotify,	ParseNone,	NULL},
-
-{"UnmapNotify",     NULL, UnmapNotify,	ParseNone,	NULL},
-{"Unmap",	    NULL, UnmapNotify,	ParseNone,	NULL},
-
-{"MapNotify",	    NULL, MapNotify,	ParseNone,	NULL},
-{"Map",		    NULL, MapNotify,	ParseNone,	NULL},
-
-{"MapRequest",	    NULL, MapRequest,	ParseNone,	NULL},
-{"MapReq",	    NULL, MapRequest,	ParseNone,	NULL},
-
-{"ReparentNotify",  NULL, ReparentNotify,	ParseNone,	NULL},
-{"Reparent",	    NULL, ReparentNotify,	ParseNone,	NULL},
-
-{"ConfigureNotify", NULL, ConfigureNotify,	ParseNone,	NULL},
-{"Configure",	    NULL, ConfigureNotify,	ParseNone,	NULL},
-
-{"ConfigureRequest",NULL, ConfigureRequest,ParseNone,	NULL},
-{"ConfigureReq",    NULL, ConfigureRequest,ParseNone,	NULL},
+{"LeaveNotify",     NULLQUARK, LeaveNotify,    ParseTable,(Opaque)notifyModes},
+{"LeaveWindow",     NULLQUARK, LeaveNotify,    ParseTable,(Opaque)notifyModes},
+{"Leave",	    NULLQUARK, LeaveNotify,    ParseTable,(Opaque)notifyModes},
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
-{"GravityNotify",   NULL, GravityNotify,	ParseNone,	NULL},
-{"Grav",	    NULL, GravityNotify,	ParseNone,	NULL},
+{"FocusIn",	    NULLQUARK, FocusIn,	  ParseTable,(Opaque)notifyModes},
 
-{"ResizeRequest",   NULL, ResizeRequest,	ParseNone,	NULL},
-{"ResReq",	    NULL, ResizeRequest,	ParseNone,	NULL},
+{"FocusOut",	    NULLQUARK, FocusOut,       ParseTable,(Opaque)notifyModes},
 
-{"CirculateNotify", NULL, CirculateNotify,	ParseNone,	NULL},
-{"Circ",	    NULL, CirculateNotify,	ParseNone,	NULL},
+{"KeymapNotify",    NULLQUARK, KeymapNotify,	ParseNone,	NULL},
+{"Keymap",	    NULLQUARK, KeymapNotify,	ParseNone,	NULL},
 
-{"CirculateRequest",NULL, CirculateRequest,ParseNone,	NULL},
-{"CircReq",	    NULL, CirculateRequest,ParseNone,	NULL},
+{"Expose", 	    NULLQUARK, Expose,		ParseNone,	NULL},
 
-{"PropertyNotify",  NULL, PropertyNotify,	ParseAtom,	NULL},
-{"Prop",	    NULL, PropertyNotify,	ParseAtom,	NULL},
+{"GraphicsExpose",  NULLQUARK, GraphicsExpose,	ParseNone,	NULL},
+{"GrExp",	    NULLQUARK, GraphicsExpose,	ParseNone,	NULL},
 
-{"SelectionClear",  NULL, SelectionClear,	ParseAtom,	NULL},
-{"SelClr",	    NULL, SelectionClear,	ParseAtom,	NULL},
+{"NoExpose",	    NULLQUARK, NoExpose,	ParseNone,	NULL},
+{"NoExp",	    NULLQUARK, NoExpose,	ParseNone,	NULL},
 
-{"SelectionRequest",NULL, SelectionRequest,	ParseAtom,	NULL},
-{"SelReq",	    NULL, SelectionRequest,	ParseAtom,	NULL},
+{"VisibilityNotify",NULLQUARK, VisibilityNotify,ParseNone,	NULL},
+{"Visible",	    NULLQUARK, VisibilityNotify,ParseNone,	NULL},
+
+{"CreateNotify",    NULLQUARK, CreateNotify,	ParseNone,	NULL},
+{"Create",	    NULLQUARK, CreateNotify,	ParseNone,	NULL},
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
-{"SelectionNotify", NULL, SelectionNotify,	ParseAtom,	NULL},
-{"Select",	    NULL, SelectionNotify,	ParseAtom,	NULL},
+{"DestroyNotify",   NULLQUARK, DestroyNotify,	ParseNone,	NULL},
+{"Destroy",	    NULLQUARK, DestroyNotify,	ParseNone,	NULL},
 
-{"ColormapNotify",  NULL, ColormapNotify,	ParseNone,	NULL},
-{"Clrmap",	    NULL, ColormapNotify,	ParseNone,	NULL},
+{"UnmapNotify",     NULLQUARK, UnmapNotify,	ParseNone,	NULL},
+{"Unmap",	    NULLQUARK, UnmapNotify,	ParseNone,	NULL},
 
-{"ClientMessage",   NULL, ClientMessage,	ParseAtom,	NULL},
-{"Message",	    NULL, ClientMessage,	ParseAtom,	NULL},
+{"MapNotify",	    NULLQUARK, MapNotify,	ParseNone,	NULL},
+{"Map",		    NULLQUARK, MapNotify,	ParseNone,	NULL},
 
-{"MappingNotify",   NULL,MappingNotify, ParseTable,	(Opaque)mappingNotify},
-{"Mapping",	    NULL,MappingNotify,	ParseTable,	(Opaque)mappingNotify},
+{"MapRequest",	    NULLQUARK, MapRequest,	ParseNone,	NULL},
+{"MapReq",	    NULLQUARK, MapRequest,	ParseNone,	NULL},
+
+{"ReparentNotify",  NULLQUARK, ReparentNotify,	ParseNone,	NULL},
+{"Reparent",	    NULLQUARK, ReparentNotify,	ParseNone,	NULL},
+
+{"ConfigureNotify", NULLQUARK, ConfigureNotify,	ParseNone,	NULL},
+{"Configure",	    NULLQUARK, ConfigureNotify,	ParseNone,	NULL},
+
+{"ConfigureRequest",NULLQUARK, ConfigureRequest,ParseNone,	NULL},
+{"ConfigureReq",    NULLQUARK, ConfigureRequest,ParseNone,	NULL},
+
+/* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
+
+{"GravityNotify",   NULLQUARK, GravityNotify,	ParseNone,	NULL},
+{"Grav",	    NULLQUARK, GravityNotify,	ParseNone,	NULL},
+
+{"ResizeRequest",   NULLQUARK, ResizeRequest,	ParseNone,	NULL},
+{"ResReq",	    NULLQUARK, ResizeRequest,	ParseNone,	NULL},
+
+{"CirculateNotify", NULLQUARK, CirculateNotify,	ParseNone,	NULL},
+{"Circ",	    NULLQUARK, CirculateNotify,	ParseNone,	NULL},
+
+{"CirculateRequest",NULLQUARK, CirculateRequest,ParseNone,	NULL},
+{"CircReq",	    NULLQUARK, CirculateRequest,ParseNone,	NULL},
+
+{"PropertyNotify",  NULLQUARK, PropertyNotify,	ParseAtom,	NULL},
+{"Prop",	    NULLQUARK, PropertyNotify,	ParseAtom,	NULL},
+
+{"SelectionClear",  NULLQUARK, SelectionClear,	ParseAtom,	NULL},
+{"SelClr",	    NULLQUARK, SelectionClear,	ParseAtom,	NULL},
+
+{"SelectionRequest",NULLQUARK, SelectionRequest,ParseAtom,	NULL},
+{"SelReq",	    NULLQUARK, SelectionRequest,ParseAtom,	NULL},
+
+/* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
+
+{"SelectionNotify", NULLQUARK, SelectionNotify,	ParseAtom,	NULL},
+{"Select",	    NULLQUARK, SelectionNotify,	ParseAtom,	NULL},
+
+{"ColormapNotify",  NULLQUARK, ColormapNotify,	ParseNone,	NULL},
+{"Clrmap",	    NULLQUARK, ColormapNotify,	ParseNone,	NULL},
+
+{"ClientMessage",   NULLQUARK, ClientMessage,	ParseAtom,	NULL},
+{"Message",	    NULLQUARK, ClientMessage,	ParseAtom,	NULL},
+
+{"MappingNotify",   NULLQUARK, MappingNotify, ParseTable, (Opaque)mappingNotify},
+{"Mapping",	    NULLQUARK, MappingNotify, ParseTable, (Opaque)mappingNotify},
 
 #ifdef DEBUG
 # ifdef notdef
-{"Timer",	    NULL, _XtTimerEventType,ParseNone,	NULL},
+{"Timer",	    NULLQUARK, _XtTimerEventType,ParseNone,	NULL},
 # endif /* notdef */
-{"EventTimer",	    NULL, _XtEventTimerEventType,ParseNone,NULL},
+{"EventTimer",	    NULLQUARK, _XtEventTimerEventType,ParseNone,NULL},
 #endif /* DEBUG */
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
