@@ -1,3 +1,4 @@
+/* $Header: tocintrnl.h,v 1.3 88/01/25 16:06:27 swick Locked $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
