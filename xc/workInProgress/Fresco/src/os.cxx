@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1991 Stanford University
  * Copyright (c) 1991-93 Silicon Graphics, Inc.
  *
