@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sperr.c,v 1.2 91/05/11 09:57:16 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -31,7 +31,7 @@ SpeedoErr(str, a1)
     char       *str;
     char       *a1;
 {
-    ErrorF("Speedo: %s %d", str, a1);
+    ErrorF("Speedo: %s %d\n", str, a1);
 }
 
 

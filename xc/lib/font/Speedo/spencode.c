@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spencode.c,v 1.3 91/05/11 09:56:46 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,17 +21,19 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ * $NCDId: @(#)spencode.c,v 4.3 1991/05/29 17:29:22 lemke Exp $
+ *
  */
 
 #include	"spint.h"
 
 #include	"bics-iso.h"
 
-int bics_map_size = (sizeof(bics_map)/(sizeof(int) * 2));
+int         bics_map_size = (sizeof(bics_map) / (sizeof(int) * 2));
 
-#ifdef NCD
-#include "adobe-iso.h"
+#ifdef EXTRAFONTS
+#include	"adobe-iso.h"
 
 int         adobe_map_size = (sizeof(adobe_map) / (sizeof(int) * 2));
 
-#endif				/* NCD */
+#endif				/* EXTRAFONTS */
