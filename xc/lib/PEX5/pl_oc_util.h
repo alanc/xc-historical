@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.h,v 1.2 92/05/20 21:12:25 mor Exp $ */
+/* $XConsortium: pl_oc_util.h,v 1.3 92/06/12 12:37:29 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -95,7 +95,7 @@ software without specific, written prior permission.
         _display->bufptr += sizeof (pexElementInfo); \
         if (_numBytes > 0) \
 	{ \
-	    COPY_AREA (_ocData, _display->bufptr, _numBytes); \
+	    COPY_SMALL_AREA (_ocData, _display->bufptr, _numBytes); \
 	    _display->bufptr += PADDED_BYTES (_numBytes); \
 	} \
         PEXFinishOC (_display); \
@@ -244,7 +244,7 @@ software without specific, written prior permission.
     STORE_ELEMENT_INFO (_bufPtr, _ocType, ocLength); \
     _bufPtr += sizeof (pexElementInfo); \
     if (_numBytes > 0) { \
-	COPY_AREA (_ocData, _bufPtr, _numBytes); \
+	COPY_SMALL_AREA (_ocData, _bufPtr, _numBytes); \
         _bufPtr += PADDED_BYTES (_numBytes); \
     } \
 }
