@@ -94,11 +94,11 @@ NormalLibraryObjectRule()
 #endif
 
 NormalLibraryTarget(Xt,$(OBJS))
-#if InstallLintLibs
 LintLibraryTarget(Xt,$(SRCS))
-#endif
 InstallLibrary(Xt,$(USRLIBDIR))
+#if InstallLintLibs
 InstallLintLibrary(Xt,$(LINTLIBDIR))
+#endif
 
 #if ProfileLibXt
 ProfiledLibraryTarget(Xt,$(OBJS))
