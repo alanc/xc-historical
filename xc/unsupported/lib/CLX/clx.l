@@ -1,7 +1,5 @@
 ;;; -*- Mode: LISP; Syntax: Common-lisp; Package: XLIB; Base: 10; Lowercase: Yes -*-
 
-;; Version 4
-
 ;;;
 ;;;			 TEXAS INSTRUMENTS INCORPORATED
 ;;;				  P.O. BOX 2909
@@ -81,6 +79,7 @@
 (pushnew :xlib *features*)
 
 (export '(
+	  *version*
 	  card32
 	  card29
 	  int32
@@ -277,6 +276,8 @@
 	  make-state-mask
 	  make-state-keys
 	  ))
+
+(defparameter *version* "MIT R4 Beta 10/89")
 
 (defparameter *protocol-major-version* 11.)
 (defparameter *protocol-minor-version* 0)
