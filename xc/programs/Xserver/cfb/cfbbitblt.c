@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.3 89/07/31 19:02:06 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.4 89/08/01 08:45:32 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -545,7 +545,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	            	while (nl--)
 	            	{
 		    	    getbits(psrc, xoffSrc, PPW, tmpSrc)
-			    putbitsrop (tmpSrc, 0, 32, pdst, planemask, alu)
+			    putbitsrop (tmpSrc, 0, PPW, pdst, planemask, alu)
 		    	    pdst++;
 		    	    psrc++;
 	            	}
@@ -579,7 +579,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 		    	    --psrc;
 		    	    getbits(psrc, xoffSrc, PPW, tmpSrc)
 		    	    --pdst;
-			    putbitsrop(tmpSrc, 0, 32, pdst, planemask, alu);
+			    putbitsrop(tmpSrc, 0, PPW, pdst, planemask, alu);
 	            	}
 	            	if (startmask)
 	            	{
