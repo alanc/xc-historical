@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.12 89/05/05 16:43:46 jim Exp $
+ *	$XConsortium: util.c,v 1.1 89/05/24 18:11:58 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.12 89/05/05 16:43:46 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.1 89/05/24 18:11:58 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -42,6 +42,7 @@ typedef int *jmp_ptr;
 #include "ptyx.h"
 #include "data.h"
 #include "error.h"
+#include "menu.h"
 
 /*
  * These routines are used for the jump scroll feature
@@ -924,10 +925,11 @@ ReverseVideo (term)
 	XDefineCursor(screen->display, TextWindow(screen), screen->pointer_cursor);
 	if(tek)
 		XDefineCursor(screen->display, tek, screen->arrow);
-#ifdef MODEMENU
+
+#ifdef notdef
 	MenuNewCursor(screen->arrow);
 	ReverseVideoAllMenus ();
-#endif	/* MODEMENU */
+#endif
 
 	
 	if (term) {
@@ -955,6 +957,7 @@ ReverseVideo (term)
 	    XClearWindow(screen->display, tek);
 	    TekExpose((XExposeEvent *) NULL);
 	}
+	update_reversevideo();
 }
 
 

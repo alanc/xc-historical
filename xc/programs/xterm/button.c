@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.37 89/04/18 17:43:47 jim Exp $
+ *	$XConsortium: button.c,v 1.2 89/05/25 14:44:34 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.37 89/04/18 17:43:47 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.2 89/05/25 14:44:34 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -49,9 +49,7 @@ static char rcs_id[] = "$XConsortium: button.c,v 1.37 89/04/18 17:43:47 jim Exp 
 
 #include "data.h"
 #include "error.h"
-#ifdef MODEMENU
 #include "menu.h"
-#endif	/* MODEMENU */
 
 extern char *malloc();
 
@@ -72,33 +70,10 @@ extern char *malloc();
 char *SaveText();
 extern EditorButton();
 
-extern ModeMenu();
 extern char *xterm_name;
 extern Bogus();
-extern GINbutton();
 
 static PointToRowCol();
-
-/* button and shift keys for Tek mode */
-static int (*Tbfunc[SHIFTS][NBUTS])() = {
-/*	left		middle		right	*/
-	GINbutton,	GINbutton,	GINbutton,	/* down	|no shift   */
-
-	GINbutton,	GINbutton,	GINbutton,	/* down |shift	    */
-
-	Bogus,		Bogus,		Bogus,		/* down	|meta	    */
-
-	Bogus,		Bogus,		Bogus,		/* down	|meta shift */
-
-	ModeMenu,	ModeMenu,	ModeMenu,	/* down	|control    */
-
-	ModeMenu,	ModeMenu,	ModeMenu,	/* down	|ctl shift  */
-
-	Bogus,		Bogus,		Bogus,		/* down	|ctl meta   */
-
-	Bogus,		Bogus,		Bogus,		/* down	| all       */
-
-};	/* button and shift keys */
 
 extern XtermWidget term;
 
@@ -291,21 +266,6 @@ Cardinal *num_params;
 
 
 
-/*ARGSUSED*/
-void TekButtonPressed(w, eventdata, event)
-Widget w;
-caddr_t eventdata;
-register XButtonEvent *event;
-{
-	register TScreen *screen = &term->screen;
-	/* so table above will be nice, we index from 0 */
-	int button = event->button - 1; 
-	int shift = KeyState(event->state);
-
-	if (screen->incopy)
-		CopyWait (screen);
-	(*(Tbfunc[shift][button]))(event);
-}
 
 struct _SelectionList {
     String *params;
@@ -1350,355 +1310,30 @@ register XButtonEvent *event;
 	v_write(pty, line, 6);
 }
 
-#ifdef MODEMENU
-#define FIRSTMENU	0
-#define	XTERMMENU	0
-#define	VTMENU		1
-#define	TEKMENU		2
-#define	NMENUS		3
 
-static Menu *menus[NMENUS];
-static int type;
-extern TekLink *TekRefresh;
-
-/* ARGSUSED */
-void HandleModeMenu(w, event, params, num_params)
-Widget w;
-XEvent *event;
-String *params;			/* unused */
-Cardinal *num_params;		/* unused */
+void HandleGINInput (w, event, param_list, nparamsp)
+    Widget w;
+    XEvent *event;
+    String *param_list;
+    Cardinal *nparamsp;
 {
-    ModeMenu(event);		/* %%% hack 'till TekWidget uses TM */
-}
-
-ModeMenu(event)
-register XButtonEvent *event;
-{
-	register TScreen *screen = &term->screen;
-	register Menu *menu;
-	register int item;
-	static int inited;
-	extern Menu *setupmenu(), *Tsetupmenu(), *xsetupmenu();
-
-
-	if(!inited) {
-		extern Pixmap Gray_Tile;
-		extern Cursor Menu_DefaultCursor;
-		extern char *Menu_DefaultFont;
-		extern XFontStruct *Menu_DefaultFontInfo;
-
-		inited++;
-		Gray_Tile = make_gray(BlackPixel(screen->display,
-					         DefaultScreen(screen->display)), 
-		 WhitePixel(screen->display, DefaultScreen(screen->display)), 1);
-		InitMenu(xterm_name);
-		Menu_DefaultCursor = screen->arrow;
-/*		if(XStrCmp(Menu_DefaultFont, f_t) == 0)
-			Menu_DefaultFontInfo = screen->fnt_norm;
- */
+    if (term->screen.TekGIN && *nparamsp == 1) {
+	int c = param_list[0][0];
+	switch (c) {
+	  case 'l': case 'm': case 'r':
+	  case 'L': case 'M': case 'R':
+	    break;
+	  default:
+	    Bell ();			/* let them know they goofed */
+	    c = 'l';			/* provide a default */
 	}
-	if((event->button) == Button1)
-		type = XTERMMENU;
-	else if((event->button) == Button3)
-		{
-		    Bell();
-		    return;
-		}
-	else if(event->window == VWindow(screen))
-		type = VTMENU;
-	else if(event->window == TWindow(screen))
-		type = TEKMENU;
-	else
-		SysError(ERROR_BADMENU);
-	switch(type) {
-	 case XTERMMENU:
-		if((menu = xsetupmenu(&menus[XTERMMENU])) == NULL)
-			return;
-		break;
-	 case VTMENU:
-		if((menu = setupmenu(&menus[VTMENU])) == NULL)
-			return;
-		break;
-	 case TEKMENU:
-		if((menu = Tsetupmenu(&menus[TEKMENU])) == NULL)
-			return;
-		screen->waitrefresh = TRUE;
-		break;
-	}
-	/*
-	 * Set the select mode manually.
-	 */
-	TrackMenu(menu, event); /* MenuButtonReleased calls FinishModeMenu */
-}
-
-FinishModeMenu(item, time)
-register int item;
-Time time;
-{
-	TScreen *screen = &term->screen;
-
-	menusync();
-	screen->waitrefresh = FALSE;
-	reselectwindow(screen);
-
-	if (item < 0) {
-		if(type == TEKMENU && TekRefresh)
-			dorefresh();
-		return;
-	}
-	switch(type) {
-	 case XTERMMENU:
-		xdomenufunc(item, time);
-		break;
-	 case VTMENU:
-		domenufunc(item);
-		break;
-	 case TEKMENU:
-		Tdomenufunc(item);
-		break;
-	}
-}
-
-menusync()
-{
-	TScreen *screen = &term->screen;
-	XSync(screen->display, 0);
-	if (QLength(screen->display) > 0)
-		xevents();
-}
-
-#define XMENU_GRABKBD	0
-#define	XMENU_VISUALBELL (XMENU_GRABKBD+1)
-#define	XMENU_LOG	(XMENU_VISUALBELL+1)
-#define	XMENU_REDRAW	(XMENU_LOG+1)
-#define	XMENU_LINE	(XMENU_REDRAW+1)
-#define	XMENU_SUSPEND	(XMENU_LINE+1)
-#define	XMENU_RESUME	(XMENU_SUSPEND+1)
-#define	XMENU_INTR	(XMENU_RESUME+1)
-#define	XMENU_HANGUP	(XMENU_INTR+1)
-#define	XMENU_TERM	(XMENU_HANGUP+1)
-#define	XMENU_KILL	(XMENU_TERM+1)
-#define XMENU_LINE2	(XMENU_KILL+1)
-#define XMENU_EXIT	(XMENU_LINE2+1)
-
-static char *xtext[] = {
-	"Secure Keyboard",
-	"Visual Bell",
-	"Logging",
-	"Redraw",
-	"-",
-	"Suspend program",
-	"Continue program",
-	"Interrupt program",
-	"Hangup program",
-	"Terminate program",
-	"Kill program",
-	"-",
-	"Quit",
-	0,
-};
-
-static int xbell;
-static int xlog;
-static int xkgrab;
-
-Menu *xsetupmenu(menu)
-register Menu **menu;
-{
-	register TScreen *screen = &term->screen;
-	register char **cp;
-	register int i;
-
-	if (*menu == NULL) {
-		if ((*menu = NewMenu("xterm X11")) == NULL)
-			return(NULL);
-		for(cp = xtext ; *cp ; cp++)
-			AddMenuItem(*menu, *cp);
-		if(xkgrab = screen->grabbedKbd)
-			CheckItem(*menu, XMENU_GRABKBD);
-		if(xbell = screen->visualbell)
-			CheckItem(*menu, XMENU_VISUALBELL);
-		if(xlog = screen->logging)
-			CheckItem(*menu, XMENU_LOG);
-		DisableItem(*menu, XMENU_LINE);
-		DisableItem(*menu, XMENU_LINE2);
-		if(screen->inhibit & I_LOG)
-			DisableItem(*menu, XMENU_LOG);
-		if(screen->inhibit & I_SIGNAL)
-			for(i = XMENU_SUSPEND ; i <= XMENU_KILL ; i++)
-				DisableItem(*menu, i);
-#if defined(SYSV) && !defined(JOBCONTROL)
-		DisableItem(*menu, XMENU_RESUME);
-		DisableItem(*menu, XMENU_SUSPEND);
-#endif	/* defined(SYSV) && !defined(JOBCONTROL) */
-		return(*menu);
-	}
-	if (xkgrab != screen->grabbedKbd)
-		SetItemCheck(*menu, XMENU_GRABKBD, (xkgrab =
-		 screen->grabbedKbd));
-	if (xbell != screen->visualbell)
-		SetItemCheck(*menu, XMENU_VISUALBELL, (xbell =
-		 screen->visualbell));
-	if (xlog != screen->logging)
-		SetItemCheck(*menu, XMENU_LOG, (xlog = screen->logging));
-	return(*menu);
-}
-
-xdomenufunc(item, time)
-int item;
-Time time;
-{
-	register TScreen *screen = &term->screen;
-
-	switch (item) {
-	case XMENU_GRABKBD:
-		if (screen->grabbedKbd) {
-		    XUngrabKeyboard(screen->display, time);
-		    ReverseVideo(term);
-		    screen->grabbedKbd = FALSE;
-		} else {
-		    if (XGrabKeyboard(screen->display,
-				      term->core.parent->core.window,
-				      True, GrabModeAsync, GrabModeAsync, time)
-			  != GrabSuccess) {
-		        XBell(screen->display, 100);
-		    } else {
-			ReverseVideo(term);
-			screen->grabbedKbd = TRUE;
-		    }
-		}
-		break;
-
-	case XMENU_VISUALBELL:
-		screen->visualbell = !screen->visualbell;
-		break;
-
-	case XMENU_LOG:
-		if(screen->logging)
-			CloseLog(screen);
-		else
-			StartLog(screen);
-		break;
-
-	case XMENU_REDRAW:
-		Redraw();
-		break;
-
-/*
- * The following cases use the pid instead of the process group so that we
- * don't get hosed by programs that change their process group
- */
-
-	case XMENU_RESUME:
-#if !defined(SYSV) || defined(JOBCONTROL)
-		if(screen->pid > 1)
-			killpg (screen->pid, SIGCONT);
-#endif	/* !defined(SYSV) || defined(JOBCONTROL) */
-		break;
-
-	case XMENU_SUSPEND:
-#if !defined(SYSV) || defined(JOBCONTROL)
-		if(screen->pid > 1)
-			killpg (screen->pid, SIGTSTP);
-#endif	/* !defined(SYSV) || defined(JOBCONTROL) */
-		break;
-
-	case XMENU_INTR:
-		if(screen->pid > 1)
-			killpg (screen->pid, SIGINT);
-		break;
-
-	case XMENU_HANGUP:
-		if(screen->pid > 1)
-			killpg (screen->pid, SIGHUP);
-		break;
-
-	case XMENU_TERM:
-		if(screen->pid > 1)
-			killpg (screen->pid, SIGTERM);
-		break;
-
-	case XMENU_KILL:
-		if(screen->pid > 1)
-			killpg (screen->pid, SIGKILL);
-		break;
-
-	case XMENU_EXIT:
-		Cleanup (0);
-		/* NOTREACHED */
-	}
-}
-
-
-MenuNewCursor(cur)
-register Cursor cur;
-{
-	register Menu **menu;
-	register int i;
-	register TScreen *screen = &term->screen;
-	extern Cursor Menu_DefaultCursor;
-
-	Menu_DefaultCursor = cur;
-	for(i = XTERMMENU, menu = menus ; i <= TEKMENU ; menu++, i++) {
-		if(!*menu)
-			continue;
-		(*menu)->menuCursor = cur;
-		if((*menu)->menuWindow)
-			XDefineCursor(screen->display, (*menu)->menuWindow, 
-			 cur);
-	}
-}
-
-ReverseVideoAllMenus ()
-{
-    int i;
-    XtermWidget xw = term;
-    Display *dpy = XtDisplay (xw);
-    Pixel fg, bg;
-
-    MenuResetGCs (&bg, &fg);
-
-    for (i = FIRSTMENU; i < NMENUS; i++) {
-	Menu *menu = menus[i];
-
-	if (menu) {
-	    menu->menuBgColor = bg;
-	    menu->menuFgColor = fg;
-	    XSetWindowBackground (dpy, menu->menuWindow, menu->menuBgColor);
-	    menu->menuFlags |= menuChanged;
-	}
+	TekEnqMouse (c | 0x80);
+	TekGINoff();
+    } else {
+	Bell ();
     }
-    return;
 }
 
-#else	/* MODEMENU */
-
-/*ARGSUSED*/
-ModeMenu(event) register XButtonEvent *event; { Bell(); }
-#endif	/* MODEMENU */
-
-GINbutton(event)
-XButtonEvent *event;
-{
-	register TScreen *screen = &term->screen;
-	register int i;
-
-	if(screen->TekGIN) {
-		i = "rml"[event->button - 1];
-		if(event->state & ShiftMask)
-			i = toupper(i);
-		TekEnqMouse(i | 0x80);	/* set high bit */
-		TekGINoff();
-	} else
-		Bell();
-}
-
-/*ARGSUSED*/
-Bogus(event)
-XButtonEvent *event;
-{
-	Bell();
-}
 
 /* ARGSUSED */
 void HandleSecure(w, event, params, param_count)
@@ -1715,5 +1350,5 @@ void HandleSecure(w, event, params, param_count)
     else if ((event->xany.type == ButtonPress) ||
 	     (event->xany.type == ButtonRelease))
       time = event->xbutton.time;
-    xdomenufunc(XMENU_GRABKBD, time);
+    DoSecureKeyboard (time);
 }

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.c,v 1.5 89/03/01 20:00:31 jim Exp $
+ *	$XConsortium: data.c,v 1.1 89/05/24 18:11:46 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: data.c,v 1.5 89/03/01 20:00:31 jim Exp $";
+static char rcs_id[] = "$XConsortium: data.c,v 1.1 89/05/24 18:11:46 jim Exp $";
 #endif	/* lint */
 
 XPoint T_boxlarge[NBOX] = {
@@ -115,6 +115,5 @@ GC visualBellGC;
 
 int VTgcFontMask = GCFont;
 int TEKgcFontMask = GCFont;
-int MenugcFontMask = GCFont;
 
 TekWidget tekWidget;

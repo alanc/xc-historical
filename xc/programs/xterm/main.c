@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.110 89/03/23 09:55:57 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.2 89/05/25 14:14:03 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -118,6 +118,7 @@ SOFTWARE.
 #include "data.h"
 #include "error.h"
 #include "main.h"
+#include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 
@@ -698,12 +699,22 @@ char **argv;
         screen = &term->screen;
 
 	term->flags = WRAPAROUND;
-	if (!screen->jumpscroll)	term->flags |= SMOOTHSCROLL;
-	if (term->misc.reverseWrap)		term->flags |= REVERSEWRAP;
-	if (term->misc.re_verse)	term->flags |= REVERSE_VIDEO;
+	update_autowrap();
+	if (!screen->jumpscroll) {
+	    term->flags |= SMOOTHSCROLL;
+	    update_jumpscroll();
+	}
+	if (term->misc.reverseWrap) {
+	    term->flags |= REVERSEWRAP;
+	    update_reversewrap();
+	}
+	if (term->misc.re_verse) {
+	    term->flags |= REVERSE_VIDEO;
+	    update_reversevideo();
+	}
 
 	inhibit = 0;
-	if (term->misc.logInhibit)			inhibit |= I_LOG;
+	if (term->misc.logInhibit) 	    inhibit |= I_LOG;
 	if (term->misc.signalInhibit)		inhibit |= I_SIGNAL;
 	if (term->misc.tekInhibit)			inhibit |= I_TEK;
 
@@ -810,11 +821,12 @@ char **argv;
 #endif	/* DEBUG */
 	XSetErrorHandler(xerror);
 	XSetIOErrorHandler(xioerror);
-	for( ; ; )
+	for( ; ; ) {
 		if(screen->TekEmu) {
 			TekRun();
 		} else
 			VTRun();
+	}
 }
 
 char *basename(name)

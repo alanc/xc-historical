@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.38 89/05/16 14:26:55 kit Exp $
+ *	$XConsortium: misc.c,v 1.2 89/05/25 14:14:15 jim Exp $
  */
 
 
@@ -47,6 +47,7 @@
 #include "gray.ic"
 #include "wait.ic"
 #include "waitmask.ic"
+#include "menu.h"
 
 extern char *malloc();
 extern char *mktemp();
@@ -55,7 +56,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.38 89/05/16 14:26:55 kit Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.2 89/05/25 14:14:15 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -267,40 +268,6 @@ register int flag;
 	if(screen->cursor_state)
 	  ShowCursor();
     }
-}
-
-/*ARGSUSED*/
-reselectwindow(screen)
-register TScreen *screen;
-{
-#ifdef obsolete
-	Window root, win;
-	int rootx, rooty, x, y;
-	int doselect = 0;
-	unsigned int mask;
-
-	if(XQueryPointer(
-	    screen->display, 
-	    DefaultRootWindow(screen->display), 
-	    &root, &win,
-	    &rootx, &rooty,
-	    &x, &y,
-	    &mask)) {
-		XtTranslateCoords(term, 0, 0, &x, &y);
-		if ((rootx >= x) && (rootx < x + term->core.width) &&
-		    (rooty >= y) && (rooty < y + term->core.height))
-		    doselect = 1;
-		else if (tekWidget) {
-		    XtTranslateCoords(tekWidget, 0, 0, &x, &y);
-		    if ((rootx >= x) && (rootx < x + tekWidget->core.width) &&
-			(rooty >= y) && (rooty < y + tekWidget->core.height))
-			doselect = 1;
-		}
-		if (doselect)
-			selectwindow(screen, INWINDOW);
-		else	unselectwindow(screen, INWINDOW);
-	}
-#endif /* obsolete */
 }
 
 Pixmap Make_tile(width, height, bits, foreground, background, depth)
@@ -562,6 +529,7 @@ register TScreen *screen;
 	}
 	screen->logstart = screen->TekEmu ? Tbptr : bptr;
 	screen->logging = TRUE;
+	update_logging();
 }
 
 CloseLog(screen)
@@ -572,6 +540,7 @@ register TScreen *screen;
 	FlushLog(screen);
 	close(screen->logfd);
 	screen->logging = FALSE;
+	update_logging();
 }
 
 FlushLog(screen)
@@ -860,6 +829,11 @@ void set_vt_visibility (on)
 	    screen->Vshow = FALSE;
 	}
     }
+    set_vthide_sensitivity();
+    set_tekhide_sensitivity();
+    update_vttekmode();
+    update_tekshow();
+    update_vtshow();
     return;
 }
 
@@ -882,6 +856,11 @@ void set_tek_visibility (on)
 	    screen->Tshow = FALSE;
 	}
     }
+    set_tekhide_sensitivity();
+    set_vthide_sensitivity();
+    update_vtshow();
+    update_tekshow();
+    update_vttekmode();
     return;
 }
 

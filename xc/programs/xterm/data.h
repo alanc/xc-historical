@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.h,v 1.4 89/03/01 20:00:33 jim Exp $
+ *	$XConsortium: data.h,v 1.1 89/05/24 18:11:47 jim Exp $
  */
 
 
@@ -75,7 +75,6 @@ extern GC visualBellGC;
 
 extern int VTgcFontMask;
 extern int TEKgcFontMask;
-extern int MenugcFontMask;
 
 extern XtermWidget term;
 extern TekWidget tekWidget;

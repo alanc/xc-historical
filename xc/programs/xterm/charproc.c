@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.80 89/05/05 16:43:27 jim Exp $
+ * $XConsortium: charproc.c,v 1.2 89/05/25 14:13:54 jim Exp $
  */
 
 
@@ -55,10 +55,9 @@
 #include "error.h"
 #include "main.h"
 #include <X11/StringDefs.h>
-#ifdef MODEMENU
 #include "menu.h"
-#endif	/* MODEMENU */
 
+extern Widget toplevel;
 extern void exit(), Bcopy();
 static void VTallocbuf();
 
@@ -140,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.80 89/05/05 16:43:27 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.2 89/05/25 14:13:54 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -170,7 +169,6 @@ extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
 extern void HandleFocusChange();
 static void HandleKeymapChange();
-extern void HandleModeMenu();
 extern void HandleInsertSelection();
 extern void HandleSelectStart(), HandleKeyboardSelectStart();
 extern void HandleSelectExtend();
@@ -206,10 +204,10 @@ static char defaultTranslations[] =
   Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
         Meta<KeyPress>: 	insert-eight-bit()	\n\
- Ctrl ~Meta <Btn1Down>:		mode-menu()	\n\
+ Ctrl ~Meta<Btn1Down>:          XawPositionSimpleMenu(mainMenu) MenuPopup(mainMenu) \n\
       ~Meta <Btn1Down>:		select-start()	\n\
       ~Meta <Btn1Motion>:	select-extend() \n\
- Ctrl ~Meta <Btn2Down>:		mode-menu()	\n\
+ Ctrl ~Meta <Btn2Down>:         XawPositionSimpleMenu(vtMenu) MenuPopup(vtMenu) \n\
 ~Ctrl ~Meta <Btn2Down>:		ignore()	\n\
       ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \n\
 ~Ctrl ~Meta <Btn3Down>:		start-extend()	\n\
@@ -226,7 +224,7 @@ static XtActionsRec actionsList[] = {
     { "insert-eight-bit", HandleEightBitKeyPressed },
     { "insert-selection", HandleInsertSelection },
     { "keymap", 	  HandleKeymapChange },
-    { "mode-menu",	  HandleModeMenu },
+/*  { "mode-menu",	  HandleModeMenu },     */
     { "secure",		  HandleSecure },
     { "select-start",	  HandleSelectStart },
     { "select-extend",	  HandleSelectExtend },
@@ -849,12 +847,14 @@ VTparse()
 		 case CASE_DECKPAM:
 			/* DECKPAM */
 			term->keyboard.flags |= KYPD_APL;
+			update_appkeypad();
 			parsestate = groundtable;
 			break;
 
 		 case CASE_DECKPNM:
 			/* DECKPNM */
 			term->keyboard.flags &= ~KYPD_APL;
+			update_appkeypad();
 			parsestate = groundtable;
 			break;
 
@@ -1288,6 +1288,7 @@ int		(*func)();
 
 		case 20:		/* LNM				*/
 			(*func)(&term->flags, LINEFEED);
+			update_autolinefeed();
 			break;
 		}
 	}
@@ -1358,12 +1359,14 @@ int		(*func)();
 			} else
 				screen->jumpscroll = 1;
 			(*func)(&term->flags, SMOOTHSCROLL);
+			update_jumpscroll();
 			break;
 		case 5:			/* DECSCNM			*/
 			j = term->flags;
 			(*func)(&term->flags, REVERSE_VIDEO);
 			if ((term->flags ^ j) & REVERSE_VIDEO)
 				ReverseVideo(term);
+			/* update_reversevideo done in RevVid */
 			break;
 
 		case 6:			/* DECOM			*/
@@ -1373,6 +1376,7 @@ int		(*func)();
 
 		case 7:			/* DECAWM			*/
 			(*func)(&term->flags, WRAPAROUND);
+			update_autowrap();
 			break;
 		case 8:			/* DECARM			*/
 			/* ignore autorepeat */
@@ -1394,17 +1398,21 @@ int		(*func)();
 			break;
 		case 40:		/* 132 column mode		*/
 			(*func)(&screen->c132, 1);
+			update_allow132();
 			break;
 		case 41:		/* curses hack			*/
 			(*func)(&screen->curses, 1);
+			update_cursesemul();
 			break;
 		case 44:		/* margin bell			*/
 			(*func)(&screen->marginbell, 1);
 			if(!screen->marginbell)
 				screen->bellarmed = -1;
+			update_marginbell();
 			break;
 		case 45:		/* reverse wraparound	*/
 			(*func)(&term->flags, REVERSEWRAP);
+			update_reversewrap();
 			break;
 		case 46:		/* logging		*/
 			if(func == bitset)
@@ -1514,6 +1522,7 @@ XtermWidget term;
 			term->keyboard.flags &= ~CURSOR_APL;
 			term->keyboard.flags |= screen->save_modes[0] &
 			 CURSOR_APL;
+			update_appcursor();
 			break;
 		case 3:			/* DECCOLM			*/
 			if(screen->c132) {
@@ -1556,6 +1565,7 @@ XtermWidget term;
 				screen->jumpscroll = 1;
 			term->flags &= ~SMOOTHSCROLL;
 			term->flags |= screen->save_modes[2] & SMOOTHSCROLL;
+			update_jumpscroll();
 			break;
 		case 5:			/* DECSCNM			*/
 			if((screen->save_modes[3] ^ term->flags) &
@@ -1564,6 +1574,7 @@ XtermWidget term;
 				term->flags |= screen->save_modes[3] &
 				 REVERSE_VIDEO;
 				ReverseVideo(term);
+				/* update_reversevideo done in RevVid */
 			}
 			break;
 		case 6:			/* DECOM			*/
@@ -1575,6 +1586,7 @@ XtermWidget term;
 		case 7:			/* DECAWM			*/
 			term->flags &= ~WRAPAROUND;
 			term->flags |= screen->save_modes[5] & WRAPAROUND;
+			update_autowrap();
 			break;
 		case 8:			/* DECARM			*/
 			/* ignore autorepeat */
@@ -1584,29 +1596,35 @@ XtermWidget term;
 			break;
 		case 40:		/* 132 column mode		*/
 			screen->c132 = screen->save_modes[8];
+			update_allow132();
 			break;
 		case 41:		/* curses hack			*/
 			screen->curses = screen->save_modes[9];
+			update_cursesemul();
 			break;
 		case 44:		/* margin bell			*/
 			if(!(screen->marginbell = screen->save_modes[12]))
 				screen->bellarmed = -1;
+			update_visualbell();
 			break;
 		case 45:		/* reverse wraparound	*/
 			term->flags &= ~REVERSEWRAP;
 			term->flags |= screen->save_modes[13] & REVERSEWRAP;
+			update_reversewrap();
 			break;
 		case 46:		/* logging		*/
 			if(screen->save_modes[14])
 				StartLog(screen);
 			else
 				CloseLog(screen);
+			/* update_logging done by StartLog and CloseLog */
 			break;
 		case 47:		/* alternate buffer		*/
 			if(screen->save_modes[15])
 				ToAlternate(screen);
 			else
 				FromAlternate(screen);
+			/* update_altscreen done by ToAlt and FromAlt */
 			break;
 		case 1000:		/* mouse bogus sequence		*/
 		case 1001:
@@ -1706,6 +1724,7 @@ register TScreen *screen;
 		 + 1, &screen->abuf_address);
 	SwitchBufs(screen);
 	screen->alternate = TRUE;
+	update_altscreen();
 }
 
 FromAlternate(screen)
@@ -1715,6 +1734,7 @@ register TScreen *screen;
 		return;
 	screen->alternate = FALSE;
 	SwitchBufs(screen);
+	update_altscreen();
 }
 
 SwitchBufs(screen)
@@ -1759,6 +1779,10 @@ VTRun()
 	    XtRealizeWidget (term->core.parent);
 	    set_vt_visibility (TRUE);
 	} 
+	update_vttekmode();
+	update_vtshow();
+	update_tekshow();
+	set_vthide_sensitivity();
 
 	if (screen->allbuf == NULL) VTallocbuf ();
 
@@ -1779,7 +1803,6 @@ VTRun()
 		VTparse();
 	HideCursor();
 	screen->cursor_set = OFF;
-	reselectwindow (screen);
 }
 
 /*ARGSUSED*/
@@ -1956,9 +1979,34 @@ static void VTInitialize (request, new)
 
    set_character_class (new->screen.charClass);
 
+   new->screen.mainMenu = CreateMainMenu (new, toplevel);
+   new->screen.vtMenu = CreateVTMenu (new, toplevel);
+
+    /* and turn off the alternate screen entry */
+   set_sensitivity (new->screen.vtMenu,
+		    vtMenuEntries[vtMenu_altscreen].name, FALSE);
+
+#define term new			/* for macros */
+    update_securekbd();
+    update_visualbell();
+    update_logging();
+    update_scrollbar();
+    update_jumpscroll();
+    update_reversevideo();
+    update_autowrap();
+    update_reversewrap();
+    update_autolinefeed();
+    update_appcursor();
+    update_appkeypad();
+    update_scrollkey();
+    update_scrollinput();
+    update_allow132();
+    update_cursesemul();
+    update_marginbell();
+#undef term
+
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);
-
    return;
 }
 
@@ -2434,278 +2482,6 @@ int full;
 }
 
 
-#ifdef MODEMENU
-#define	MMENU_SCROLLBAR		0
-#define	MMENU_SCROLL		(MMENU_SCROLLBAR+1)
-#define	MMENU_VIDEO		(MMENU_SCROLL+1)
-#define	MMENU_WRAP		(MMENU_VIDEO+1)
-#define	MMENU_REVERSEWRAP	(MMENU_WRAP+1)
-#define	MMENU_NLM		(MMENU_REVERSEWRAP+1)
-#define	MMENU_CURSOR		(MMENU_NLM+1)
-#define	MMENU_PAD		(MMENU_CURSOR+1)
-#define MMENU_SCROLLKEY		(MMENU_PAD+1)
-#define	MMENU_SCROLLINPUT	(MMENU_SCROLLKEY+1)
-#define	MMENU_C132		(MMENU_SCROLLINPUT+1)
-#define	MMENU_CURSES		(MMENU_C132+1)
-#define	MMENU_MARGBELL		(MMENU_CURSES+1)
-#define	MMENU_TEKWIN		(MMENU_MARGBELL+1)
-#define	MMENU_ALTERN		(MMENU_TEKWIN+1)
-#define	MMENU_LINE		(MMENU_ALTERN+1)
-#define	MMENU_RESET		(MMENU_LINE+1)
-#define	MMENU_FULLRESET		(MMENU_RESET+1)
-#define	MMENU_TEKMODE		(MMENU_FULLRESET+1)
-#define	MMENU_HIDEVT		(MMENU_TEKMODE+1)
-
-static char *vtext[] = {
-	"Scrollbar",
-	"Jump Scroll",
-	"Reverse Video",
-	"Auto Wraparound",
-	"Reverse Wraparound",
-	"Auto Linefeed",
-	"Application Cursor Mode",
-	"Application Keypad Mode",
-	"Scroll to bottom on key press",
-	"Scroll to bottom on tty output",
-	"Allow 80/132 switching",
-	"Curses Emulation",
-	"Margin Bell",
-	"Tek Window Showing",
-	"Alternate Screen",
-	"-",
-	"Soft Reset",
-	"Full Reset",
-	"Select Tek Mode",
-	"Hide VT Window",
-	0,
-};
-
-
-static int menutermflags;
-static int menukbdflags;
-static int t132;
-static int taltern;
-static int tcurses;
-static int tmarginbell;
-static int tscrollbar;
-static int tscrollkey;
-static int tscrollinput;
-static Boolean tshow;
-
-Menu *setupmenu(menu)
-register Menu **menu;
-{
-	register TScreen *screen = &term->screen;
-	register char **cp;
-	register int flags = term->flags;
-	register int kflags = term->keyboard.flags;
-
-	if (*menu == NULL) {
-		if ((*menu = NewMenu("Modes")) == NULL)
-			return(NULL);
-		for(cp = vtext ; *cp ; cp++)
-			AddMenuItem(*menu, *cp);
-		if(!(flags & SMOOTHSCROLL))
-			CheckItem(*menu, MMENU_SCROLL);
-		if(flags & REVERSE_VIDEO)
-			CheckItem(*menu, MMENU_VIDEO);
-		if(flags & WRAPAROUND)
-			CheckItem(*menu, MMENU_WRAP);
-		if(flags & REVERSEWRAP)
-			CheckItem(*menu, MMENU_REVERSEWRAP);
-		if(flags & LINEFEED)
-			CheckItem(*menu, MMENU_NLM);
-		if(kflags & CURSOR_APL)
-			CheckItem(*menu, MMENU_CURSOR);
-		if(kflags & KYPD_APL)
-			CheckItem(*menu, MMENU_PAD);
-		if(tscrollbar = (screen->scrollbar > 0)) {
-			CheckItem(*menu, MMENU_SCROLLBAR);
-			if(tscrollkey = screen->scrollkey)
-				CheckItem(*menu, MMENU_SCROLLKEY);
-			if(tscrollinput = screen->scrollinput)
-				CheckItem(*menu, MMENU_SCROLLINPUT);
-		} else {
-			tscrollkey = FALSE;
-			DisableItem(*menu, MMENU_SCROLLKEY);
-			tscrollinput = FALSE;
-			DisableItem(*menu, MMENU_SCROLLINPUT);
-		}
-		if(t132 = screen->c132)
-			CheckItem(*menu, MMENU_C132);
-		if(tcurses = screen->curses)
-			CheckItem(*menu, MMENU_CURSES);
-		if(tmarginbell = screen->marginbell)
-			CheckItem(*menu, MMENU_MARGBELL);
-		if(tshow = screen->Tshow)
-			CheckItem(*menu, MMENU_TEKWIN);
-		else
-			DisableItem(*menu, MMENU_HIDEVT);
-		DisableItem(*menu, MMENU_ALTERN);
-		if(taltern = screen->alternate) {
-			CheckItem(*menu, MMENU_ALTERN);
-		}
-		DisableItem(*menu, MMENU_LINE);
-		if(screen->inhibit & I_TEK) {
-			DisableItem(*menu, MMENU_TEKWIN);
-			DisableItem(*menu, MMENU_TEKMODE);
-		}
-		menutermflags = flags;
-		menukbdflags = kflags;
-		return(*menu);
-	}
-	menutermflags ^= flags;
-	menukbdflags ^= kflags;
-	if (menutermflags & SMOOTHSCROLL)
-		SetItemCheck(*menu, MMENU_SCROLL, !(flags & SMOOTHSCROLL));
-	if (menutermflags & REVERSE_VIDEO)
-		SetItemCheck(*menu, MMENU_VIDEO, flags & REVERSE_VIDEO);
-	if (menutermflags & WRAPAROUND)
-		SetItemCheck(*menu, MMENU_WRAP, flags & WRAPAROUND);
-	if (menutermflags & REVERSEWRAP)
-		SetItemCheck(*menu, MMENU_REVERSEWRAP, flags & REVERSEWRAP);
-	if (menutermflags & LINEFEED)
-		SetItemCheck(*menu, MMENU_NLM, flags & LINEFEED);
-	if (menukbdflags & CURSOR_APL)
-		SetItemCheck(*menu, MMENU_CURSOR, kflags & CURSOR_APL);
-	if (menukbdflags & KYPD_APL)
-		SetItemCheck(*menu, MMENU_PAD, kflags & KYPD_APL);
-	if(tscrollbar != (screen->scrollbar > 0)) {
-		SetItemCheck(*menu, MMENU_SCROLLBAR, (tscrollbar =
-		 (screen->scrollbar > 0)));
-		SetItemDisable(*menu, MMENU_SCROLLKEY, !tscrollbar);
-		SetItemCheck(*menu, MMENU_SCROLLKEY,
-		 tscrollkey = (tscrollbar && screen->scrollkey));
-		SetItemDisable(*menu, MMENU_SCROLLINPUT, !tscrollbar);
-		SetItemCheck(*menu, MMENU_SCROLLINPUT,
-		 tscrollinput = (tscrollbar && screen->scrollinput));
-	} else if (tscrollbar) {
-		if (tscrollkey != screen->scrollkey)
-			SetItemCheck(*menu, MMENU_SCROLLKEY,
-			 tscrollkey = screen->scrollkey);
-		if (tscrollinput != screen->scrollinput)
-			SetItemCheck(*menu, MMENU_SCROLLINPUT,
-			 tscrollinput = screen->scrollinput);
-	}
-	if(t132 != screen->c132)
-		SetItemCheck(*menu, MMENU_C132, (t132 = screen->c132));
-	if(tcurses != screen->curses)
-		SetItemCheck(*menu, MMENU_CURSES, (tcurses = screen->curses));
-	if(tmarginbell != screen->marginbell)
-		SetItemCheck(*menu, MMENU_MARGBELL, (tmarginbell =
-		screen->marginbell));
-	if(tshow != screen->Tshow) {
-		SetItemCheck(*menu, MMENU_TEKWIN, (tshow = screen->Tshow));
-		SetItemDisable(*menu, MMENU_HIDEVT, !tshow);
-	}
-	if(taltern != screen->alternate) {
-		SetItemCheck(*menu, MMENU_ALTERN, (taltern =
-		 screen->alternate));
-	}
-	menutermflags = flags;
-	menukbdflags = kflags;
-	return(*menu);
-}
-
-domenufunc(item)
-int item;
-{
-	register TScreen *screen = &term->screen;
-
-	switch (item) {
-	case MMENU_SCROLL:
-		term->flags ^= SMOOTHSCROLL;
-		if (term->flags & SMOOTHSCROLL) {
-			screen->jumpscroll = FALSE;
-			if (screen->scroll_amt)
-				FlushScroll(screen);
-		} else
-			screen->jumpscroll = TRUE;
-		break;
-
-	case MMENU_VIDEO:
-		term->flags ^= REVERSE_VIDEO;
-		ReverseVideo(term);
-		break;
-
-	case MMENU_WRAP:
-		term->flags ^= WRAPAROUND;
-		break;
-
-	case MMENU_REVERSEWRAP:
-		term->flags ^= REVERSEWRAP;
-		break;
-
-	case MMENU_NLM:
-		term->flags ^= LINEFEED;
-		break;
-
-	case MMENU_CURSOR:
-		term->keyboard.flags ^= CURSOR_APL;
-		break;
-
-	case MMENU_PAD:
-		term->keyboard.flags ^= KYPD_APL;
-		break;
-
-	case MMENU_SCROLLBAR:
-		if(screen->scrollbar)
-			ScrollBarOff(screen);
-		else
-			ScrollBarOn (term, FALSE, FALSE);
-		break;
-
-	case MMENU_SCROLLKEY:
-		screen->scrollkey = !screen->scrollkey;
-		break;
-
-	case MMENU_SCROLLINPUT:
-		screen->scrollinput = !screen->scrollinput;
-		break;
-
-		
-	case MMENU_C132:
-		screen->c132 = !screen->c132;
-		break;
-
-	case MMENU_MARGBELL:
-		if(!(screen->marginbell = !screen->marginbell))
-			screen->bellarmed = -1;
-		break;
-
-	case MMENU_CURSES:
-		screen->curses = !screen->curses;
-		break;
-
-	case MMENU_FULLRESET:
-		VTReset(TRUE);
-		break;
-
-	case MMENU_RESET:
-		VTReset(FALSE);
-		break;
-
-	case MMENU_HIDEVT:
-		set_vt_visibility (FALSE);
-		reselectwindow(screen);
-		/* drop through */
-
-	case MMENU_TEKMODE:
-		end_vt_mode ();
-		break;
-
-	case MMENU_TEKWIN:
-		if (!screen->Tshow) {
-		    set_tek_visibility (TRUE);
-		} else {
-		    set_tek_visibility (FALSE);
-		    end_tek_mode ();
-		}
-		reselectwindow(screen);
-		break;
-	}
-}
-#endif	/* MODEMENU */
 
 /*
  * set_character_class - takes a string of the form

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.21 89/05/14 12:35:31 rws Exp $
+ *	$XConsortium: scrollbar.c,v 1.1 89/05/24 18:11:56 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -41,11 +41,12 @@
 
 #include "data.h"
 #include "error.h"
+#include "menu.h"
 
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.21 89/05/14 12:35:31 rws Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.1 89/05/24 18:11:56 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -353,6 +354,7 @@ ScrollBarOn (xw, init, doalloc)
 	ResizeScreen (xw, border + screen->scrollWidget->core.width, border);
 	/* map afterwards so BitGravity can be used profitably */
 	XMapWindow(screen->display, XtWindow(screen->scrollWidget));
+	update_scrollbar ();
 }
 
 ScrollBarOff(screen)
@@ -365,6 +367,7 @@ ScrollBarOff(screen)
 	screen->scrollbar = 0;
 	XUnmapWindow(screen->display, XtWindow(screen->scrollWidget));
 	ResizeScreen( term, border, border );
+	update_scrollbar ();
 }
 
 /*ARGSUSED*/

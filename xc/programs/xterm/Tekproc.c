@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.54 89/03/23 11:59:59 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.4 89/05/25 15:09:49 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -56,16 +56,13 @@
 #include <pwd.h>
 #include "data.h"
 #include "error.h"
+#include "menu.h"
 
 #ifdef macII
 #undef FIOCLEX					/* redefined from sgtty.h */
 #undef FIONCLEX					/* redefined from sgtty.h */
 #include <sys/ioctl.h>				/* to get FIONREAD */
 #endif /* macII */
-
-#ifdef MODEMENU
-#include "menu.h"
-#endif	/* MODEMENU */
 
 extern void exit();
 extern long time();
@@ -121,8 +118,10 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.54 89/03/23 11:59:59 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.4 89/05/25 15:09:49 jim Exp $";
 #endif	/* lint */
+
+extern Widget toplevel;
 
 static XPoint *T_box[TEKNUMFONTS] = {
 	T_boxlarge,
@@ -169,18 +168,28 @@ extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
 extern void HandleFocusChange();
 extern void HandleSecure();
-extern void TekButtonPressed();
+extern void HandleGINInput();
 
 static char defaultTranslations[] = "\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
-        Meta<KeyPress>: 	insert-eight-bit()";
+        Meta<KeyPress>: 	insert-eight-bit()\n\
+ Ctrl ~Meta<Btn1Down>:          XawPositionSimpleMenu(mainMenu) MenuPopup(mainMenu) \n\
+ Ctrl ~Meta <Btn2Down>:         XawPositionSimpleMenu(tekMenu) MenuPopup(tekMenu) \n\
+ Shift ~Meta<Btn1Down>:         gin-press(L) \n\
+       ~Meta<Btn1Down>:         gin-press(l) \n\
+ Shift ~Meta<Btn2Down>:         gin-press(M) \n\
+       ~Meta<Btn2Down>:         gin-press(m) \n\
+ Shift ~Meta<Btn3Down>:         gin-press(R) \n\
+       ~Meta<Btn3Down>:         gin-press(r)";
+
 
 static XtActionsRec actionsList[] = { 
     { "string",	HandleStringEvent },
     { "insert",	HandleKeyPressed },	/* alias for insert-seven-bit */
     { "insert-seven-bit",	HandleKeyPressed },
     { "insert-eight-bit",	HandleEightBitKeyPressed },
-    { "secure", HandleSecure }
+    { "gin-press",		HandleGINInput },
+    { "secure", 		HandleSecure }
 };
 
 static Dimension defOne = 1;
@@ -243,10 +252,15 @@ TekWidget CreateTekWidget ()
     extern int number_ourTopLevelShellArgs;
 
     /* this causes the Initialize method to be called */
+    tekshellwidget = XtCreatePopupShell ("tektronix", topLevelShellWidgetClass,
+					 toplevel, ourTopLevelShellArgs, 
+					 number_ourTopLevelShellArgs);
+/*				 
     tekshellwidget = XtCreateApplicationShell ("tektronix",
 					       topLevelShellWidgetClass,
 					       ourTopLevelShellArgs, 
 					       number_ourTopLevelShellArgs);
+ */
     /* this causes the Realize method to be called */
     tekWidget = (TekWidget) XtCreateManagedWidget ("tek4014", tekWidgetClass,
 						   tekshellwidget, NULL, 0);
@@ -1020,6 +1034,10 @@ TekRun()
 	    XtRealizeWidget (tekWidget->core.parent);
 	    set_tek_visibility (TRUE);
 	} 
+	update_vttekmode();
+	update_vtshow();
+	update_tekshow();
+	set_tekhide_sensitivity();
 
 	Tpushback = Tpushb;
 	Tbptr = Tbuffer;
@@ -1034,7 +1052,6 @@ TekRun()
 		Ttoggled = TRUE;
 	}
 	screen->TekEmu = FALSE;
-	reselectwindow (screen);
 }
 
 #define DOTTED_LENGTH 2
@@ -1079,8 +1096,6 @@ static void TekInitialize(request, new)
 		      HandleLeaveWindow, (caddr_t)NULL);
     XtAddEventHandler(XtParent(new), FocusChangeMask, FALSE,
 		      HandleFocusChange, (caddr_t)NULL);
-    XtAddEventHandler(new, ButtonPressMask, FALSE,
-		      TekButtonPressed, (caddr_t)NULL);
 }
 
 
@@ -1103,6 +1118,11 @@ static void TekRealize (gw, valuemaskp, values)
     XSizeHints sizehints;
     char Tdefault[32];
     extern char *malloc();
+
+    screen->tekMenu = CreateTekMenu (term, toplevel);
+    /*
+     * XXX - need to set menu checkmark
+     */
 
     tw->core.border_pixel = term->core.border_pixel;
 
@@ -1303,7 +1323,23 @@ static void TekRealize (gw, valuemaskp, values)
     screen->cur_Y = TEKHOME;
     line_pt = Tline;
     Ttoggled = TRUE;
+    set_tekfont_menu_item (screen->cur.fontsize, TRUE);
     return;
+}
+
+void TekSetFontSize (gw, newitem)
+    Widget gw;
+    int newitem;
+{
+    register TScreen *screen = &term->screen;
+    int oldsize = screen->cur.fontsize;
+    int newsize = MI2FS(newitem);
+    
+    if (oldsize == newsize) return;
+    set_tekfont_menu_item (oldsize, FALSE);
+    TekSetGCFont (newsize);
+    screen->cur.fontsize = newsize;
+    set_tekfont_menu_item (newsize, TRUE);
 }
 
 TekReverseVideo(screen)
@@ -1400,6 +1436,23 @@ int toggle;
 	}
 }
 
+void TekSimulatePageButton (reset)
+    Bool reset;
+{
+    register TScreen *screen = &term->screen;
+
+    if (reset) {
+/*      bzero ((char *)&curmodes, sizeof(Tmodes));             */
+	bzero ((char *) &screen->cur, sizeof screen->cur);
+    }
+    TekRefresh = (TekLink *)0;
+/*    screen->cur = curmodes; */
+    TekPage ();
+    screen->cur_X = 0;
+    screen->cur_Y = TEKHOME;
+}
+
+
 TekCopy()
 {
 	register TekLink *Tp;
@@ -1437,149 +1490,5 @@ TekCopy()
 	close(fd);
 }
 
-#ifdef MODEMENU
-/*
- * TMENU_LARGE through TMENU_SMALL must be first, as they must be the same
- * as the font size values LARGEFONT through SMALLFONT
- */
-#define	TMENU_LARGE	0
-#define	TMENU_NUM2	(TMENU_LARGE+1)
-#define	TMENU_NUM3	(TMENU_NUM2+1)
-#define	TMENU_SMALL	(TMENU_NUM3+1)
-#define	TMENU_VTWIN	(TMENU_SMALL+1)
-#define	TMENU_LINE	(TMENU_VTWIN+1)
-#define	TMENU_PAGE	(TMENU_LINE+1)
-#define	TMENU_RESET	(TMENU_PAGE+1)
-#define	TMENU_COPY	(TMENU_RESET+1)
-#define	TMENU_VTMODE	(TMENU_COPY+1)
-#define	TMENU_HIDETEK	(TMENU_VTMODE+1)
-
-static char *Ttext[] = {
-	"Large Characters",
-	"#2 Size Characters",
-	"#3 Size Characters",
-	"Small Characters",
-	"VT Window Showing",
-	"-",
-	"PAGE",
-	"RESET",
-	"COPY",
-	"Select VT Mode",
-	"Hide Tek Window",
-	0,
-};
-
-static Tmodes curmodes;
-static int Tsize;
-static Boolean vshow;
-
-Menu *Tsetupmenu(menu)
-register Menu **menu;
-{
-	register TScreen *screen = &term->screen;
-	register char **cp;
-	register int size = screen->cur.fontsize;
-
-	curmodes = screen->cur;
-	if (*menu == NULL) {
-		if ((*menu = NewMenu("Tektronix")) == NULL)
-			return(NULL);
-		for(cp = Ttext ; *cp ; cp++)
-			AddMenuItem(*menu, *cp);
-		CheckItem(*menu, size);
-		if(vshow = screen->Vshow)
-			CheckItem(*menu, TMENU_VTWIN);
-		else
-			DisableItem(*menu, TMENU_HIDETEK);
-
-		DisableItem(*menu, TMENU_LINE);
-		Tsize = size;
-		return(*menu);
-	}
-	if (Tsize != size) {
-		UncheckItem(*menu, Tsize);
-		CheckItem(*menu, Tsize = size);
-	}
-	if(vshow != screen->Vshow) {
-		SetItemCheck(*menu, TMENU_VTWIN, (vshow = screen->Vshow));
-		SetItemDisable(*menu, TMENU_HIDETEK, !vshow);
-	}
-
-	return(*menu);
-}
-
-static char *changesize[] = {
-	"\0338",
-	"\0339",
-	"\033:",
-	"\033;",
-};
-
-Tdomenufunc(item)
-int item;
-{
-	register TScreen *screen = &term->screen;
-	register Char *tp;
-	register Char *fp;
-
-	switch (item) {
-	case TMENU_LARGE:
-	case TMENU_NUM2:
-	case TMENU_NUM3:
-	case TMENU_SMALL:
-		if(!Ttoggled) {
-			TCursorToggle(TOGGLE);
-			Ttoggled = TRUE;
-		}
-		if(Tbcnt < 0)
-			Tbcnt = 0;
-		for(fp = (Char *) changesize[item], tp = &Tbptr[Tbcnt] ; *fp ; ) {
-			*tp++ = *fp++;
-			Tbcnt++;
-		}
-		break;
-
-	case TMENU_RESET:
-		bzero((char *)&curmodes, sizeof(Tmodes));
-			/* drop through */
-	case TMENU_PAGE:
-		TekRefresh = (TekLink *)0;
-		screen->cur = curmodes;
-		TekPage();
-		screen->cur_X = 0;
-		screen->cur_Y = TEKHOME;
-		break;
-
-	case TMENU_COPY:
-		TekCopy();
-		break;
-
-	case TMENU_HIDETEK:
-		set_tek_visibility (FALSE);
-		reselectwindow(screen);
-		TekRefresh = (TekLink *)0;
-			/* drop through */
-	case TMENU_VTMODE:
-		if(TekRefresh)
-			dorefresh();
-		end_tek_mode ();
-		break;
-
-	case TMENU_VTWIN:
-		if (!screen->Vshow) {
-		    set_vt_visibility (TRUE);
-		} else {
-		    set_vt_visibility (FALSE);
-		    if (!screen->TekEmu && TekRefresh) dorefresh ();
-		    end_vt_mode ();
-		}
-
-		reselectwindow(screen);
-		break;
-	}
-	if(TekRefresh)
-		dorefresh();
-}
-#endif	/* MODEMENU */
 
 
