@@ -201,7 +201,7 @@
   ;; exclusive access to event queue
   (macrolet ((with-event-queue ((display &key timeout) &body body)
 	       ;; Speedup hack for lexically nested with-event-queues
-	       `(progn ,display ,(and timeout `(,timeout)) ,@body)))
+	       `(progn ,display ,@(and timeout `(,timeout)) ,@body)))
     (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
       `(let (,@(unless (eq disp display) `((,disp ,display))))
 	 (holding-lock ((display-event-lock ,disp) ,disp "CLX Event Lock"
@@ -267,12 +267,11 @@
   (unless authorization-name (setq authorization-name ""))
   (unless authorization-data (setq authorization-data ""))
   (writing-buffer-send (display :sizes (8 16))
-    (card8-put 0
-	       #+clx-little-endian
-	       #x6c ;; Ascii lowercase l - Least Significant byte first
-	       #-clx-little-endian
-	       #x42 ;; Ascii uppercase B -  Most Significant Byte First
-	       )
+    (card8-put
+      0
+      (ecase (display-byte-order display)
+	(:lsbfirst #x6c)   ;; Ascii lowercase l - Least Significant Byte First
+	(:msbfirst #x42))) ;; Ascii uppercase B -  Most Significant Byte First
     (card16-put 2 *protocol-major-version*)
     (card16-put 4 *protocol-minor-version*)
     (card16-put 6 (length authorization-name))
