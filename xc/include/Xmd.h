@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.27 88/08/13 12:13:40 jim Exp $ */
+/* $Header: Xmd.h,v 1.28 88/08/15 11:50:30 jim Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -56,14 +56,12 @@ pragma off(char_default_unsigned);
 #endif /* WORD64 */
 
 #if defined(WORD64) && defined(UNSIGNEDBITFIELDS)
-#define bitExtend(val,bit,mask) (((val) & (bit)) ? ((val) | (mask)) : (val))
-#define cvtINT8toInt(val)   bitExtend (val, 0x0080, 0xffffffffffffff00)
-#define cvtINT16toInt(val)  bitExtend (val, 0x8000, 0xffffffffffff0000)
-#define cvtINT32toInt(val)  bitExtend (val, 0x8000, 0xffffffff00000000)
+#define cvtINT8toInt(val)   (((val) & 0x00000080) ? ((val) | 0xffffffffffffff00) : (val))
+#define cvtINT16toInt(val)  (((val) & 0x00008000) ? ((val) | 0xffffffffffff0000) : (val))
+#define cvtINT32toInt(val)  (((val) & 0x80000000) ? ((val) | 0xffffffff00000000) : (val))
 #define cvtINT8toLong(val)  cvtINT8ToInt(val)
 #define cvtINT16toLong(val) cvtINT16ToInt(val)
 #define cvtINT32toLong(val) cvtINT32ToInt(val)
-#undef bitExtend
 #else
 #define cvtINT8toInt(val) (val)
 #define cvtINT16toInt(val) (val)
