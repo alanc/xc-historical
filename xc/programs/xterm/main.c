@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.104 89/03/06 10:38:12 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.105 89/03/06 11:05:07 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -56,6 +56,7 @@ SOFTWARE.
  * now get system-specific includes
  */
 #ifdef macII
+#define HAS_UTMP_UT_HOST
 #include <sys/ttychars.h>
 #undef USE_SYSV_ENVVARS
 #undef FIOCLEX
@@ -1547,10 +1548,16 @@ spawn ()
 			       (pw && pw->pw_name) ? pw->pw_name : "????",
 			       sizeof(utmp.ut_user));
 		    
-		(void) strncmp(utmp.ut_id, ttydev + strlen(ttydev) - 2,
+		(void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - 2,
 			sizeof(utmp.ut_id));
 		(void) strncpy (utmp.ut_line,
 			ttydev + strlen("/dev/"), sizeof (utmp.ut_line));
+#ifdef HAS_UTMP_UT_HOST
+		(void) strncpy(utmp.ut_host, DisplayString(screen->display),
+			       sizeof(utmp.ut_host));
+#endif
+		(void) strcpy(utmp.ut_name, pw->pw_name);
+
 		utmp.ut_pid = getpid();
 		utmp.ut_time = time ((long *) 0);
 
@@ -1714,8 +1721,6 @@ spawn ()
 			 * due to an error, we will catch the death of child
 			 * and clean up.
 			 */
-			close(cp_pipe[0]);
-			close(pc_pipe[1]);
 			break;
 		}
 
@@ -1724,8 +1729,6 @@ spawn ()
 			/* Success!  Let's free up resources and
 			 * continue.
 			 */
-			close(cp_pipe[0]);
-			close(pc_pipe[1]);
 			done = 1;
 			break;
 
@@ -1749,6 +1752,8 @@ spawn ()
 
 		case PTY_FATALERROR:
 			errno = handshake.error;
+			close(cp_pipe[0]);
+			close(pc_pipe[1]);
 			SysError(handshake.fatal_error);
 
 		case UTMP_ADDED:
@@ -1823,7 +1828,9 @@ int n;
 #ifdef USE_SYSV_UTMP
 	struct utmp utmp;
 	struct utmp *utptr;
-
+#ifdef WTMP
+	int fd;			/* for /etc/wtmp */
+#endif
 	/* cleanup the utmp entry we forged earlier */
 	if (!resource.utmpInhibit && added_utmp_entry) {
 	    utmp.ut_type = USER_PROCESS;
@@ -1836,6 +1843,14 @@ int n;
 		    utptr->ut_type = DEAD_PROCESS;
 		    utptr->ut_time = time((long *) 0);
 		    (void) pututline(utptr);
+#ifdef WTMP
+		    /* set wtmp entry if wtmp file exists */
+		    if ((fd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
+		      (void) write(fd, utptr, sizeof(utmp));
+		      (void) close(fd);
+		    }
+#endif
+
 	    }
 	    (void) endutent();
 	}
