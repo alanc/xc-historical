@@ -1,10 +1,11 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.37 92/05/31 15:44:45 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.38 92/06/01 18:35:22 rws Exp $
 
 #ifdef SonyBsdArchitecture
 
-#define OSName                  NEWS-OS 4.1
+#define OSName                  NEWS-OS 4.2.1C
 #define OSMajorVersion          4
-#define OSMinorVersion          1
+#define OSMinorVersion          2
+#define OSTeenyVersion          1
 #define SetTtyGroup             YES
 #define HasVoidSignalReturn     NO
 #define HasNdbm                 YES
