@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.29 88/05/16 11:00:50 swick Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.30 88/09/06 17:20:33 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -72,6 +72,8 @@ enum device {LN01, LN03, LA100, PS, PP};
 
 char *infilename = "stdin", *whoami;
 
+char *malloc();
+
 main(argc, argv)
 char **argv;
 {
@@ -88,11 +90,14 @@ char **argv;
     int top_margin, left_margin;
     int hpad;
     char *header, *trailer;
+    int plane = 0;
+    char *tmpbuf;
+    int size;
     enum orientation orientation;
     enum device device;
     
     parse_args (argc, argv, &scale, &width, &height, &left, &top, &device, 
-		&flags, &split, &header, &trailer);
+		&flags, &split, &header, &trailer, &plane);
     
     if (device == PP) {
 	x2pmp(stdin, stdout, scale,
@@ -122,14 +127,14 @@ char **argv;
     }
 
     if (win.pixmap_depth != 1 && win.pixmap_format != XYPixmap) {
-        fprintf(stderr,"xpr: image is not in XY format");
+        fprintf(stderr,"xpr: image is not in XY format\n");
 	exit(1);
     }
 
     if (win.byte_order != win.bitmap_bit_order)
         fprintf(stderr,"xpr: image will be incorrect, byte swapping required but not performed.\n");
 
-    w_name = (char *)malloc((unsigned)(win.header_size - sizeof win));
+    w_name = malloc((unsigned)(win.header_size - sizeof win));
     fullread(0, w_name, (int) (win.header_size - sizeof win));
     
     if(win.ncolors) {
@@ -144,6 +149,17 @@ char **argv;
 	}
 	if (win.ncolors == 2 && INTENSITY(colors[0]) > INTENSITY(colors[1]))
 	    flags ^= F_INVERT;
+    }
+    if (plane >= win.pixmap_depth) {
+	fprintf(stderr,"xpr: plane number exceeds image depth\n");
+	exit(1);
+    }
+    if (plane < win.pixmap_depth - 1) {
+	size = win.bytes_per_line * win.pixmap_height;
+	tmpbuf = malloc(size);
+	for (i = win.pixmap_depth; --i != plane;)
+	    fullread(0, tmpbuf, size);
+	free(tmpbuf);
     }
 
     /* calculate orientation and scale */
@@ -198,7 +214,7 @@ char **argv;
 }
 
 parse_args(argc, argv, scale, width, height, left, top, device, flags, 
-	   split, header, trailer)
+	   split, header, trailer, plane)
 register int argc;
 register char **argv;
 int *scale;
@@ -211,6 +227,7 @@ int *flags;
 int *split;
 char **header;
 char **trailer;
+int *plane;
 {
     register char *output_filename;
     register int f;
@@ -316,9 +333,14 @@ char **trailer;
 	    }
 	    break;
 
-	case 'p':		/* -portrait */
+	case 'p':		/* -portrait | -plane <n> */
 	    if (!bcmp(*argv, "-portrait", len)) {
 		*flags |= F_PORTRAIT;
+	    }
+	    if (!bcmp(*argv, "-plane", len)) {
+		*flags |= F_PORTRAIT;
+		argc--; argv++;
+		*plane = atoi(*argv);
 	    }
 	    break;
 
@@ -382,7 +404,7 @@ char **trailer;
 	close(f);
 	infilename = *argv;
 /*	if (output_filename == NULL) {
-	    output_filename = (char *)malloc(strlen(*argv)+10);
+	    output_filename = malloc(strlen(*argv)+10);
 	    build_output_filename(*argv, *device, output_filename);
 	} */
     }
@@ -1161,7 +1183,7 @@ enum orientation orientation;
 	 * Owidth and Oheight are rounded up to a multiple of 32 bits,
 	 * to avoid special cases at the boundaries
 	 */
-	obuf = (char *)malloc((unsigned)(owidth*oheight));
+	obuf = malloc((unsigned)(owidth*oheight));
 	if (obuf==0) {
 	    fprintf(stderr,"xpr: cannot allocate %d bytes\n",owidth*oheight);
 	    exit(1);

@@ -27,6 +27,10 @@ xpr \- print an X window dump
 ] [
 .B \-landscape
 ] [
+.B \-plane
+.I number
+] [
+] [
 .B \-portrait
 ] [
 .B \-rv
@@ -95,6 +99,9 @@ Specifies a trailer string to be printed below the window.
 Forces the window to printed in landscape mode.  By default
 a window is printed such that its longest side follows the long side of
 the paper.
+.IP "\fB\-plane\fP \fInumber\fP"
+Specifies which bit plane to use in a Z format image.  The default is
+bit plane zero, which is the least significant bit plane.
 .IP "\fB\-portrait\fP"
 Forces the window to be printed in portrait mode.  By default
 a window is printed such that its longest side follows the long side of
