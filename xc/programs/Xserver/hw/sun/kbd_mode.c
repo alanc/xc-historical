@@ -1,4 +1,4 @@
-/* $XConsortium: kbd_mode.c,v 4.3 92/12/14 14:34:11 rws Exp $ */
+/* $XConsortium: kbd_mode.c,v 4.4 94/02/01 12:01:56 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -54,10 +54,12 @@ static void         die(), usage();
 static int          kbd_fd;
 
 main(argc, argv)
-    int             argc;
-    char          **argv;
+    int    argc;
+    char** argv;
 {
-    int             code, translate, direct = -1;
+    int    code, translate, direct = -1;
+    char   led;
+    int    click;
 
     if ((kbd_fd = open("/dev/kbd", O_RDONLY, 0)) < 0) {
 	die("Couldn't open /dev/kbd");
@@ -89,13 +91,21 @@ main(argc, argv)
       default:
 	usage();
     }
-    if (ioctl(kbd_fd, KIOCTRANS, (caddr_t) &translate)) {
+#ifdef KIOCSLED
+    led = 0;
+    if (ioctl(kbd_fd, KIOCSLED, &led))
+	die("Couldn't set LEDs");
+#endif
+#ifdef KIOCCMD
+    click = KBD_CMD_NOCLICK;
+    if (ioctl(kbd_fd, KIOCCMD, &click))
+	die("Couldn't set click");
+#endif
+    if (ioctl(kbd_fd, KIOCTRANS, (caddr_t) &translate))
 	die("Couldn't set translation");
-    }
-    if (direct != -1 && ioctl(kbd_fd, KIOCSDIRECT, (caddr_t) &direct)) {
+    if (direct != -1 && ioctl(kbd_fd, KIOCSDIRECT, (caddr_t) &direct))
 	die("Couldn't set redirect");
-    }
-    exit(0);
+    return 0;
 }
 
 static void
