@@ -1,4 +1,4 @@
-/* $XConsortium: thr_stubs.c,v 1.0 93/10/25 15:35:10 kaleb Exp $ */
+/* $XConsortium: thr_stubs.c,v 1.1 93/12/06 16:24:21 kaleb Exp $ */
 /*
  * Stub interface to thread routines that Solaris needs but shipped
  * broken/buggy versions in 5.2 and 5.3
@@ -10,14 +10,16 @@
  * at link time by non-threaded programs.
  */
 
-void thr_self(void) {}
-void thr_create(void) {}
-void mutex_init(void) {}
-void mutex_destroy(void) {}
-void mutex_lock(void) {}
-void mutex_unlock(void) {}
-void cond_init(void) {}
-void cond_destroy(void) {}
-void cond_wait(void) {}
-void cond_signal(void) {}
-void cond_broadcast(void) {}
+typedef int thread_t;
+
+thread_t thr_self(void) { return 0; }
+int thr_create(void) { return 0; }
+int mutex_init(void) { return 0; }
+int mutex_destroy(void) { return 0; }
+int mutex_lock(void) { return 0; }
+int mutex_unlock(void) { return 0; }
+int cond_init(void) { return 0; }
+int cond_destroy(void) { return 0; }
+int cond_wait(void) { return 0; }
+int cond_signal(void) { return 0; }
+int cond_broadcast(void) { return 0; }
