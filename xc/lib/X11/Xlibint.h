@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.94 92/01/19 15:00:59 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.95 92/01/19 17:32:49 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -26,6 +26,95 @@ without express or implied warranty.
 #endif
 
 #include <X11/Xlib.h>
+
+struct _XGC {
+    XExtData *ext_data;	/* hook for extension to hang data */
+    GContext gid;	/* protocol ID for graphics context */
+    Bool rects;		/* boolean: TRUE if clipmask is list of rectangles */
+    Bool dashes;	/* boolean: TRUE if dash-list is really a list */
+    unsigned long dirty;/* cache dirty bits */
+    XGCValues values;	/* shadow structure of values */
+};
+
+struct _XDisplay {
+	XExtData *ext_data;	/* hook for extension to hang data */
+	struct _XFreeFuncs *free_funcs; /* internal free functions */
+	int fd;			/* Network socket. */
+	int conn_checker;         /* ugly thing used by _XEventsQueued */
+	int proto_major_version;/* maj. version of server's X protocol */
+	int proto_minor_version;/* minor version of servers X protocol */
+	char *vendor;		/* vendor of the server hardware */
+        XID resource_base;	/* resource ID base */
+	XID resource_mask;	/* resource ID mask bits */
+	XID resource_id;	/* allocator current ID */
+	int resource_shift;	/* allocator shift to correct bits */
+	XID (*resource_alloc)(); /* allocator function */
+	int byte_order;		/* screen byte order, LSBFirst, MSBFirst */
+	int bitmap_unit;	/* padding and data requirements */
+	int bitmap_pad;		/* padding requirements on bitmaps */
+	int bitmap_bit_order;	/* LeastSignificant or MostSignificant */
+	int nformats;		/* number of pixmap formats in list */
+	ScreenFormat *pixmap_format;	/* pixmap format list */
+	int vnumber;		/* Xlib's X protocol version number. */
+	int release;		/* release of the server */
+	struct _XSQEvent *head, *tail;	/* Input event queue. */
+	int qlen;		/* Length of input event queue */
+	unsigned long last_request_read; /* seq number of last event read */
+	unsigned long request;	/* sequence number of last request. */
+	char *last_req;		/* beginning of last request, or dummy */
+	char *buffer;		/* Output buffer starting address. */
+	char *bufptr;		/* Output buffer index pointer. */
+	char *bufmax;		/* Output buffer maximum+1 address. */
+	unsigned max_request_size; /* maximum number 32 bit words in request*/
+	struct _XrmHashBucketRec *db;
+	int (*synchandler)();	/* Synchronization handler */
+	char *display_name;	/* "host:display" string used on this connect*/
+	int default_screen;	/* default screen for operations */
+	int nscreens;		/* number of screens on this server*/
+	Screen *screens;	/* pointer to list of screens */
+	unsigned long motion_buffer;	/* size of motion buffer */
+	unsigned long flags;	   /* internal connection flags */
+	int min_keycode;	/* minimum defined keycode */
+	int max_keycode;	/* maximum defined keycode */
+	KeySym *keysyms;	/* This server's keysyms */
+	XModifierKeymap *modifiermap;	/* This server's modifier keymap */
+	int keysyms_per_keycode;/* number of rows */
+	char *xdefaults;	/* contents of defaults from server */
+	char *scratch_buffer;	/* place to hang scratch buffer */
+	unsigned long scratch_length;	/* length of scratch buffer */
+	int ext_number;		/* extension number on this display */
+	struct _XExten *ext_procs; /* extensions initialized on this display */
+	/*
+	 * the following can be fixed size, as the protocol defines how
+	 * much address space is available. 
+	 * While this could be done using the extension vector, there
+	 * may be MANY events processed, so a search through the extension
+	 * list to find the right procedure for each event might be
+	 * expensive if many extensions are being used.
+	 */
+	Bool (*event_vec[128])();  /* vector for wire to event */
+	Status (*wire_vec[128])(); /* vector for event to wire */
+	KeySym lock_meaning;	   /* for XLookupString */
+	XPointer lock;		/* is someone in critical section? */
+	struct _XInternalAsync *async_handlers; /* for internal async */
+	/* things above this line should not move, for binary compatibility */
+	struct _XKeytrans *key_bindings; /* for XLookupString */
+	Font cursor_font;	   /* for XCreateFontCursor */
+	struct _XDisplayAtoms *atoms; /* for XInternAtom */
+	unsigned int mode_switch;  /* keyboard group modifiers */
+	struct _XContextDB *context_db; /* context database */
+	Bool (**error_vec)();      /* vector for wire to error */
+	/*
+	 * Xcms information
+	 */
+	struct {
+	   XPointer defaultCCCs;  /* pointer to an array of default XcmsCCC */
+	   XPointer clientCmaps;  /* pointer to linked list of XcmsCmapRec */
+	   XPointer perVisualIntensityMaps;
+				  /* linked list of XcmsIntensityMap */
+	} cms;
+	struct _XIMFilter *im_filters;
+};
 
 /*
  * define the following if you want the Data macro to be a procedure instead
