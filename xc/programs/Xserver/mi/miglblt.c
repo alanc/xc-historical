@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 1.19 89/03/22 10:50:32 rws Exp $ */
+/* $XConsortium: miglblt.c,v 1.20 89/03/23 18:27:32 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -126,26 +126,29 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	pglyph = pglyphBase + pci->byteOffset;
 	gWidth = GLYPHWIDTHPIXELS(pci);
 	gHeight = GLYPHHEIGHTPIXELS(pci);
-	nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
-	nbyPadGlyph = PixmapBytePad(gWidth, 1);
+	if (gWidth && gHeight)
+	{
+	    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
+	    nbyPadGlyph = PixmapBytePad(gWidth, 1);
 
-	for (i=0, pb = pbits; i<gHeight; i++, pb = pbits+(i*nbyPadGlyph))
-	    for (j = 0; j < nbyGlyphWidth; j++)
-		*pb++ = *pglyph++;
+	    for (i=0, pb = pbits; i<gHeight; i++, pb = pbits+(i*nbyPadGlyph))
+		for (j = 0; j < nbyGlyphWidth; j++)
+		    *pb++ = *pglyph++;
 
 
-	if ((pGCtmp->serialNumber) != (pPixmap->drawable.serialNumber))
-	    ValidateGC((DrawablePtr)pPixmap, pGCtmp);
-	(*pGCtmp->PutImage)(pPixmap, pGCtmp, pPixmap->drawable.depth,
-			    0, 0, gWidth, gHeight, 
-			    0, XYBitmap, pbits);
+	    if ((pGCtmp->serialNumber) != (pPixmap->drawable.serialNumber))
+		ValidateGC((DrawablePtr)pPixmap, pGCtmp);
+	    (*pGCtmp->PutImage)(pPixmap, pGCtmp, pPixmap->drawable.depth,
+				0, 0, gWidth, gHeight, 
+				0, XYBitmap, pbits);
 
-	if ((pGC->serialNumber) != (pDrawable->serialNumber))
-	    ValidateGC(pDrawable, pGC);
-	(*pGC->PushPixels)(pGC, pPixmap, pDrawable,
-			   gWidth, gHeight,
-			   x + pci->metrics.leftSideBearing,
-			   y - pci->metrics.ascent);
+	    if ((pGC->serialNumber) != (pDrawable->serialNumber))
+		ValidateGC(pDrawable, pGC);
+	    (*pGC->PushPixels)(pGC, pPixmap, pDrawable,
+			       gWidth, gHeight,
+			       x + pci->metrics.leftSideBearing,
+			       y - pci->metrics.ascent);
+	}
 	x += pci->metrics.characterWidth;
     }
     (*pDrawable->pScreen->DestroyPixmap)(pPixmap);
