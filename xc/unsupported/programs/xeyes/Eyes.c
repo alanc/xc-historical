@@ -121,6 +121,9 @@ static void Initialize (greq, gnew)
     EyesWidget w = (EyesWidget)gnew;
     XtGCMask	valuemask;
     XGCValues	myXGCV;
+#ifdef SHAPE
+    int shape_event_base, shape_error_base;
+#endif
 
     /*
      * set the colors if reverse video; these are the colors used:
@@ -168,7 +171,9 @@ static void Initialize (greq, gnew)
     w->eyes.pupil[0].y = w->eyes.pupil[1].y = -1000;
 
 #ifdef SHAPE
-    if (w->eyes.shape_window && !XShapeQueryExtension (XtDisplay (w)))
+    if (w->eyes.shape_window && !XShapeQueryExtension (XtDisplay (w),
+						       &shape_event_base,
+						       &shape_error_base))
 	w->eyes.shape_window = False;
     w->eyes.shape_mask = 0;
     w->eyes.shapeGC = 0;
