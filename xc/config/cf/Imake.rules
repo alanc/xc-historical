@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.68 90/02/08 13:22:45 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.69 90/05/04 16:03:04 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -643,7 +643,7 @@ dst.c:  src.c								@@\
 	$(RM) $@							@@\
 	$(LN) src.c dst.c						@@\
 									@@\
-dst.o::  dst.c								@@\
+dst.o:  dst.c								@@\
 	$(CC) -c $(CFLAGS) flags dst.c					@@\
 									@@\
 depend::  dst.c								@@\
