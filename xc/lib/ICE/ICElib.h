@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.3 93/09/03 16:29:45 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.4 93/09/08 20:00:53 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -65,7 +65,8 @@ typedef void (*IceWatchProc) (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     IcePointer		/* clientData */,
-    Bool		/* open */
+    Bool		/* opening */,
+    IcePointer *	/* watchData */
 #endif
 );
 
@@ -267,7 +268,6 @@ struct _IceConn {
     char waiting_for_byteorder; 	/* waiting for a ByteOrder message? */
     char swap;  		        /* do we need to swap on reads? */
     unsigned char my_ice_version_index; /* which version are we using? */
-    unsigned char ref_count;            /* might be used by several libs */
 
     int fd;				/* Socket descriptor */
     unsigned long sequence;     	/* Sequence number of last message */
@@ -286,6 +286,8 @@ struct _IceConn {
 
     char *scratch;			/* scratch buffer */
     unsigned long scratch_size;		/* scratch size */
+
+    IcePointer watch_data;		/* Watch Procedure sets this pointer */
 
 
     /*
@@ -307,6 +309,38 @@ struct _IceConn {
     _IceProcessMsgInfo		*process_msg_info;
     char 			his_min_opcode;   /* [1..255] */
     char			his_max_opcode;	  /* [1..255] */
+
+
+    /*
+     * Number of times this iceConn was returned in IceOpenConnection
+     * or IceAcceptConnection.
+     */
+
+    unsigned char		open_ref_count;
+
+
+    /*
+     * Number of active protocols.
+     */
+
+    unsigned char		proto_ref_count;
+
+
+    /*
+     * iceConn_type = 1 if this iceConn was created using IceOpenConnection.
+     * iceConn_type = 2 if this iceConn was created using IceAcceptConnection.
+     */
+
+    char			iceConn_type;
+
+
+    /*
+     * Did we send a WantToClose message?  This will get cancelled if we
+     * receive a NoClose or a ProtocolSetup.  If this is the case, the
+     * other side will be responsible for sending a WantToClose.
+     */
+
+    char			want_to_close;
 
 
     /*
@@ -347,8 +381,7 @@ struct _IceConn {
  * Function prototypes
  */
 
-extern int
-IceRegisterForProtocolSetup (
+extern int IceRegisterForProtocolSetup (
 #if NeedFunctionPrototypes
     char *			/* protocolName */,
     char *			/* vendor */,
@@ -360,8 +393,7 @@ IceRegisterForProtocolSetup (
 #endif
 );
 
-extern int
-IceRegisterForProtocolReply (
+extern int IceRegisterForProtocolReply (
 #if NeedFunctionPrototypes
     char *			/* protocolName */,
     char *			/* vendor */,
@@ -374,8 +406,7 @@ IceRegisterForProtocolReply (
 #endif
 );
 
-extern IceConn
-IceOpenConnection (
+extern IceConn IceOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
     int			/* errorLength */,
@@ -383,31 +414,7 @@ IceOpenConnection (
 #endif
 );
 
-extern void
-IceCloseConnection (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */
-#endif
-);
-
-extern Status
-IceAddConnectionWatch (
-#if NeedFunctionPrototypes
-    IceWatchProc		/* watchProc */,
-    IcePointer			/* clientData */
-#endif
-);
-
-extern void
-IceRemoveConnectionWatch (
-#if NeedFunctionPrototypes
-    IceWatchProc		/* watchProc */,
-    IcePointer			/* clientData */
-#endif
-);
-
-extern Status
-IceListenForConnections (
+extern Status IceListenForConnections (
 #if NeedFunctionPrototypes
     int *		/* countRet */,
     int **		/* descripsRet */,
@@ -417,22 +424,33 @@ IceListenForConnections (
 #endif
 );
 
-extern IceConn
-IceAcceptConnection (
+extern IceConn IceAcceptConnection (
 #if NeedFunctionPrototypes
     int			/* fd */
 #endif
 );
 
-extern void
-IceDestroyConnection (
+extern void IceCloseConnection (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern Status
-IceProtocolSetup (
+extern Status IceAddConnectionWatch (
+#if NeedFunctionPrototypes
+    IceWatchProc		/* watchProc */,
+    IcePointer			/* clientData */
+#endif
+);
+
+extern void IceRemoveConnectionWatch (
+#if NeedFunctionPrototypes
+    IceWatchProc		/* watchProc */,
+    IcePointer			/* clientData */
+#endif
+);
+
+extern Status IceProtocolSetup (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int 		/* myOpcode */,
@@ -447,16 +465,21 @@ IceProtocolSetup (
 #endif
 );
 
-extern Bool
-IceProcessMessage (
+extern Status IceDoneWithProtocol (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* majorOpcode */
+#endif
+);
+
+extern Bool IceProcessMessage (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     IceReplyWaitInfo *	/* replyWait */
 #endif
 );
 
-extern void
-IcePing (
+extern void IcePing (
 #if NeedFunctionPrototypes
    IceConn		/* iceConn */,
    IcePingReplyCB	/* pingReplyCB */,
@@ -464,78 +487,67 @@ IcePing (
 #endif
 );
 
-extern IceConnectStatus
-IceConnectionStatus (
+extern IceConnectStatus IceConnectionStatus (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern char *
-IceVendor (
+extern char *IceVendor (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern char *
-IceRelease (
+extern char *IceRelease (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern int
-IceProtocolVersion (
+extern int IceProtocolVersion (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern int
-IceProtocolRevision (
+extern int IceProtocolRevision (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern int
-IceConnectionNumber (
+extern int IceConnectionNumber (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern char *
-IceConnectionString (
+extern char *IceConnectionString (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern unsigned long
-IceLastSequenceNumber (
+extern unsigned long IceLastSequenceNumber (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern IceErrorHandler
-IceSetErrorHandler (
+extern IceErrorHandler IceSetErrorHandler (
 #if NeedFunctionPrototypes
     IceErrorHandler 	/* handler */
 #endif
 );
 
-extern IceIOErrorHandler
-IceSetIOErrorHandler (
+extern IceIOErrorHandler IceSetIOErrorHandler (
 #if NeedFunctionPrototypes
     IceIOErrorHandler 	/* handler */
 #endif
 );
 
-extern char *
-IceAllocScratch (
+extern char *IceAllocScratch (
 #if NeedFunctionPrototypes
    IceConn		/* iceConn */,
    unsigned long	/* size */
