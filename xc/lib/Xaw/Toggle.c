@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.46 88/11/01 16:57:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.1 89/01/12 18:48:59 kit Exp $";
 #endif lint
 
 /***********************************************************
@@ -64,7 +64,7 @@ extern XtActionList xt_command_actions_list;
  */
 
 static char defaultTranslations[] =
-    "<EnterWindow>:	    highlight(always)	\n\
+    "<EnterWindow>:	    highlight(Always)	\n\
      <LeaveWindow>:	    unhighlight()	\n\
      <Btn1Down>,<Btn1Up>:   toggle() notify()";
 
