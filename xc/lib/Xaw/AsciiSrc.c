@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.22 89/10/05 19:31:56 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.23 89/10/09 16:21:00 jim Exp $";
 #endif 
 
 /*
@@ -612,7 +612,7 @@ Widget current, request, new;
        src->ascii_src.use_string_in_place ) {
       XtAppWarning( XtWidgetToApplicationContext(new),
 	   "AsciiSrc: The XtNuseStrinInPlace resources may not be changed.");
-       src->ascii_src.use_string_in_place != 
+       src->ascii_src.use_string_in_place = 
 	   old_src->ascii_src.use_string_in_place;
   }
 
