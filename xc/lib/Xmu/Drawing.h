@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Drawing.h,v 1.3 89/10/03 08:37:53 rws Exp $
+ * $XConsortium: Drawing.h,v 1.4 90/02/26 17:02:38 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,12 +22,138 @@
 #ifndef _XMU_DRAWING_H_
 #define _XMU_DRAWING_H_
 
-void XmuDrawRoundedRectangle();
-void XmuFillRoundedRectangle();
-void XmuDrawLogo();
-Pixmap XmuCreatePixmapFromBitmap();
-Pixmap XmuCreateStippledPixmap();
-Pixmap XmuLocateBitmapFile(), XmuLocatePixmapFile();
-int XmuReadBitmapData(), XmuReadBitmapDataFromFile();
+#if NeedFunctionPrototypes
+#include <stdio.h>
+#ifndef _XtIntrinsic_h
+typedef unsigned long Pixel;
+#endif
+#endif
+
+void XmuDrawRoundedRectangle(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    Drawable 	/* draw */,
+    GC 		/* gc */,
+    int		/* x */,
+    int		/* y */,
+    int		/* w */,
+    int		/* h */,
+    int		/* ew */,
+    int		/* eh */
+#endif
+);
+
+void XmuFillRoundedRectangle(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    Drawable 	/* draw */,
+    GC 		/* gc */,
+    int		/* x */,
+    int		/* y */,
+    int		/* w */,
+    int		/* h */,
+    int		/* ew */,
+    int		/* eh */
+#endif
+);
+
+void XmuDrawLogo(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    Drawable 	/* drawable */,
+    GC		/* gcFore */,
+    GC		/* gcBack */,
+    int		/* x */,
+    int		/* y */,
+    unsigned int /* width */,
+    unsigned int /* height */
+#endif
+);
+
+Pixmap XmuCreatePixmapFromBitmap(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Drawable 		/* d */,
+    Pixmap 		/* bitmap */,
+    unsigned int	/* width */,
+    unsigned int	/* height */,
+    unsigned int	/* depth */,
+    unsigned long	/* fore */,
+    unsigned long	/* back */
+#endif
+);
+
+Pixmap XmuCreateStippledPixmap(
+#if NeedFunctionPrototypes
+    Screen*		/* screen */,
+    Pixel		/* fore */,
+    Pixel		/* back */,
+    unsigned int	/* depth */
+#endif
+);
+
+void XmuReleaseStippledPixmap(
+#if NeedFunctionPrototypes
+    Screen*		/* screen */,
+    Pixmap 		/* pixmap */
+#endif
+);
+
+Pixmap XtGrayPixmap(
+#if NeedFunctionPrototypes
+    Screen*		/* screen */
+#endif
+);
+
+Pixmap XmuLocateBitmapFile(
+#if NeedFunctionPrototypes
+    Screen*		/* screen */,
+    char*		/* name */,
+    char*		/* srcname_return */,
+    int 		/* srcnamelen */,
+    int*		/* width_return */,
+    int*		/* height_return, */,
+    int*		/* xhot_return */,
+    int*		/* yhot_return */
+#endif
+);
+
+Pixmap XmuLocatePixmapFile(
+#if NeedFunctionPrototypes
+    Screen*		/* screen */,
+    char*		/* name */,
+    unsigned long	/* fore */,
+    unsigned long	/* back */,
+    unsigned int	/* depth */,
+    char*		/* srcname_return */,
+    int 		/* srcnamelen */,
+    int*		/* width_return */,
+    int*		/* height_return, */,
+    int*		/* xhot_return */,
+    int*		/* yhot_return */
+#endif
+);
+
+int XmuReadBitmapData(
+#if NeedFunctionPrototypes
+    FILE*		/* fstream */,
+    unsigned int*	/* width_return */,
+    unsigned int*	/* height_return */,
+    unsigned char**	/* datap_return */,
+    int*		/* xhot_return */,
+    int*		/* yhot_return */
+#endif
+);
+
+int XmuReadBitmapDataFromFile(
+#if NeedFunctionPrototypes
+    char*		/* filename */,
+    unsigned int*	/* width_return */,
+    unsigned int*	/* height_return */,
+    unsigned char**	/* datap_return */,
+    int*		/* xhot_return */,
+    int*		/* yhot_return */
+#endif
+);
 
 #endif /* _XMU_DRAWING_H_ */
