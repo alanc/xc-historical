@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/MailboxP.h,v $
- * $Header: MailboxP.h,v 1.1 88/02/23 15:15:42 jim Exp $
+ * $Header: MailboxP.h,v 1.2 88/02/23 15:52:42 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,12 +27,14 @@
 #define MAILBOX_VOLUME 33		/* percentage */
 
 typedef struct {			/* new fields for mailbox widget */
-    Pixel foreground_pixel;		/* color index of normal state fg */
-    GC gc;				/* normal GC to use */
+    /* resources */
     int update;				/* seconds between updates */
+    Pixel foreground_pixel;		/* color index of normal state fg */
     String filename;			/* filename to watch */
-    long last_size;			/* size in bytes of mailboxname */
     Boolean reverseVideo;		/* do reverse video? */
+    /* local state */
+    GC gc;				/* normal GC to use */
+    long last_size;			/* size in bytes of mailboxname */
     XtIntervalId interval_id;		/* time between checks */
     Boolean flag_up;			/* is the flag up? */
     Pixmap flagup_pixmap;		/* for when there is mail */
