@@ -1,9 +1,13 @@
-/* $Header: */
+/* $Header$ */
+/* Copyright	Massachusetts Institute of Technology	1987 */
 
 /* Private definitions for Dialog widget */
 
 #ifndef _DialogP_h
 #define _DialogP_h
+
+#include <X/Dialog.h>
+#include "FormP.h"
 
 typedef struct {int empty;} DialogClassPart;
 
@@ -43,4 +47,3 @@ typedef struct _DialogConstraintsRec {
 } DialogConstraintsRec, *DialogConstraints;
 
 #endif _DialogP_h
-/* DON'T ADD STUFF AFTER THIS #endif */
