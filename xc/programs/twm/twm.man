@@ -1220,4 +1220,4 @@ Technology,  See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 Tom LaStrange, Solbourne Computer; Jim Fulton, MIT X Consortium;
 Steve Pitschke, Stardent Computer; Keith Packard, MIT X Consortium;
-Dave Payne, Apple Computer.
+Dave Sternlicht, MIT X Consortium; Dave Payne, Apple Computer.
