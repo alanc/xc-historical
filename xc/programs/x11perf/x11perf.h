@@ -18,10 +18,11 @@ typedef void (*Proc)(/* Display *dpy; int numObjects */);
 #define NullProc ((Proc)0)
 
 typedef struct _Parms {
-    int reps;			/* required of all */
-    int objects;		/* required of all */
-    int special;
+    int  reps;		/* required of all  */
+    int  objects;       /* required of all  */
+    int  special;
     char *font, *bfont;
+    int  stipple;       /* Do stipple?      */
 } ParmRec, *Parms;
 
 typedef struct _Test {
