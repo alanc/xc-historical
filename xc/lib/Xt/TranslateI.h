@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.14 89/10/05 13:52:08 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.15 89/10/05 19:00:59 rws Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,6 +32,9 @@ SOFTWARE.
  * 		Western Research Laboratory
  * Date:	Sat Aug 29 1987
  */
+
+/*#define REFCNT_TRANSLATIONS*/
+#define CACHE_TRANSLATIONS
 
 typedef Boolean (*MatchProc)();
   /* Event parsed;
