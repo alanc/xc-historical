@@ -1,4 +1,4 @@
-/* $XConsortium: pexPc.c,v 5.5 91/11/22 14:38:36 hersh Exp $ */
+/* $XConsortium: pexPc.c,v 5.6 92/03/03 16:20:45 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -51,20 +51,20 @@ SOFTWARE.
 #endif
 
 /* need to do this to return correct ASF_ENABLES bits per Encoding */
-#define ASF_ALL   0x01FFFFFF
+#define ASF_ALL   0x3FFFFFFF
 
-#define CHK_PEX_BUF(SIZE,INCR,REPLY,TYPE,PTR) \
+#define CHK_PEX_BUF(SIZE,INCR,REPLY,TYPE,PTR) {\
     (SIZE)+=(INCR); \
-/*    if (pPEXBuffer->dataSize < (SIZE)) { \
-*/    if (pPEXBuffer->bufSize < (SIZE)) { \
-	int check_size = 0; \
+      if (pPEXBuffer->bufSize < (SIZE)) { \
+	ErrorCode err = Success; \
 	int offset = (int)(((unsigned char *)(PTR)) - ((unsigned char *)(pPEXBuffer->pHead))); \
-	check_size = puBuffRealloc(pPEXBuffer,(ddULONG)(SIZE)); \
-/*	if (check_size <= 0) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr); \
-*/	if (!check_size) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr); \
+	err = puBuffRealloc(pPEXBuffer,(ddULONG)(SIZE)); \
+	if (err) PEX_ERR_EXIT(err,0,cntxtPtr); \
 	(REPLY) = (TYPE *)(pPEXBuffer->pHead); \
-	(PTR) = (unsigned char *)(pPEXBuffer->pHead + offset); }
+	(PTR) = (unsigned char *)(pPEXBuffer->pHead + offset); } \
+}
 
+#define PADDING(n) ( (n)&3 ? (4 - (n)&3) : 0)
 
 ErrorCode
 UpdatePCRefs (pc, pr, action)
@@ -86,7 +86,7 @@ static ErrorCode
 UpdatePipelineContext (cntxtPtr, pca, itemMask, ptr)
 pexContext	*cntxtPtr;
 ddPCAttr	*pca;
-CARD32		itemMask[2];
+CARD32		itemMask[3];
 unsigned char	*ptr;
 {
     ErrorCode err = Success;
@@ -409,18 +409,20 @@ unsigned char	*ptr;
 		SKIP_PADDING(ptr,2);
 		EXTRACT_CARD16(pca->psc.data.isoCurves.numUcurves, ptr);
 		EXTRACT_CARD16(pca->psc.data.isoCurves.numVcurves, ptr);
+		break;
 	    }
 	    case PEXPSCMcLevelCurves: {
 		EXTRACT_COORD3D((&(pca->psc.data.mcLevelCurves.origin)),ptr);
 		EXTRACT_COORD3D((&(pca->psc.data.mcLevelCurves.direction)),ptr);
 		EXTRACT_CARD16(pca->psc.data.mcLevelCurves.numberIntersections,ptr);
 		SKIP_PADDING(ptr,2);
-		pca->psc.data.mcLevelCurves.pPoints = (ddCoord3D *)
-		    Xalloc((unsigned long) (sizeof(ddCoord3D) *
+		pca->psc.data.mcLevelCurves.pPoints = (ddFLOAT *)
+		    Xalloc((unsigned long) (sizeof(ddFLOAT) *
 			    pca->psc.data.mcLevelCurves.numberIntersections));
 		EXTRACT_STRUCT(	pca->psc.data.mcLevelCurves.numberIntersections,
-				pexCoord3D, pca->psc.data.mcLevelCurves.pPoints,
+				PEXFLOAT, pca->psc.data.mcLevelCurves.pPoints,
 				ptr);
+		break;
 	    }
 
 	    case PEXPSCWcLevelCurves: {
@@ -428,12 +430,13 @@ unsigned char	*ptr;
 		EXTRACT_COORD3D(&(pca->psc.data.wcLevelCurves.direction),ptr);
 		EXTRACT_CARD16(pca->psc.data.wcLevelCurves.numberIntersections,ptr);
 		SKIP_PADDING(ptr,2);
-		pca->psc.data.wcLevelCurves.pPoints = (ddCoord3D *)
-		    Xalloc((unsigned long) (sizeof(ddCoord3D) *
+		pca->psc.data.wcLevelCurves.pPoints = (ddFLOAT *)
+		    Xalloc((unsigned long) (sizeof(ddFLOAT) *
 			    pca->psc.data.wcLevelCurves.numberIntersections));
 		EXTRACT_STRUCT(	pca->psc.data.wcLevelCurves.numberIntersections,
-				pexCoord3D, pca->psc.data.wcLevelCurves.pPoints,
+				PEXFLOAT, pca->psc.data.wcLevelCurves.pPoints,
 				ptr);
+		break;
 	    }
 
 	}
@@ -1316,13 +1319,13 @@ pexGetPipelineContextReq 	*strmPtr;
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCModelClipVolume) {
 	int i;
-	pexHalfSpace **pphs = (pexHalfSpace **)(pca->modelClipVolume->pList);
+	pexHalfSpace *pphs = (pexHalfSpace *)(pca->modelClipVolume->pList);
 	CHK_PEX_BUF(size, sizeof(CARD32)+(pca->modelClipVolume->numObj * sizeof(pexHalfSpace)),
 	    reply, pexGetPipelineContextReply, replyPtr);
 	PACK_CARD32 ( pca->modelClipVolume->numObj, replyPtr);
-	for (i=0; i<pca->modelClipVolume->numObj; i++) {
-	    PACK_COORD3D( (&((*pphs)->point)), replyPtr);
-	    PACK_VECTOR3D( (&((*pphs)->vector)), replyPtr);
+	for (i=0; i<pca->modelClipVolume->numObj; i++, pphs++) {
+	    PACK_COORD3D( &pphs->point, replyPtr);
+	    PACK_VECTOR3D( &pphs->vector, replyPtr);
 	}
     }
 
@@ -1337,12 +1340,13 @@ pexGetPipelineContextReq 	*strmPtr;
 		    replyPtr);
 	PACK_CARD32 ( pca->lightState, replyPtr);
 */	int i;
+	int sz = pca->lightState->numObj*sizeof(CARD16);
 	CARD16 *pLS = (CARD16 *)(pca->lightState->pList);
-	CHK_PEX_BUF(size,sizeof(CARD32)+(pca->lightState->numObj*sizeof(CARD16)),
+	CHK_PEX_BUF(size,sizeof(CARD32)+sz+PADDING(sz),
 		    reply, pexGetPipelineContextReply, replyPtr);
 	PACK_CARD32(pca->lightState->numObj, replyPtr);
-	for (i=0; i<pca->lightState->numObj; i++) {
-	    PACK_CARD16(pLS, replyPtr); 
+	for (i=0; i<pca->lightState->numObj; i++, pLS++) {
+	    PACK_CARD16(*pLS, replyPtr); 
 	}
         if (pca->lightState->numObj % 2)
 	    SKIP_PADDING(replyPtr,2);
@@ -1403,13 +1407,13 @@ pexGetPipelineContextReq 	*strmPtr;
 		sze = 8;
 		break;
             case PEXPSCMcLevelCurves: 
-		sze = (6 * sizeof(PEXFLOAT)) + 4 + (3 * 
-		  pca->psc.data.mcLevelCurves.numberIntersections *
+		sze = (6 * sizeof(PEXFLOAT)) + 4 +  
+		  (pca->psc.data.mcLevelCurves.numberIntersections *
 		  sizeof(PEXFLOAT)) ;
 		break;
 	    case PEXPSCWcLevelCurves: 
-		sze = (6 * sizeof(PEXFLOAT)) + 4 + (3 * 
-		  pca->psc.data.wcLevelCurves.numberIntersections *
+		sze = (6 * sizeof(PEXFLOAT)) + 4 +  
+		  (pca->psc.data.wcLevelCurves.numberIntersections *
 		  sizeof(PEXFLOAT)) ;
 		break;
 	    default:
@@ -1430,6 +1434,7 @@ pexGetPipelineContextReq 	*strmPtr;
 		SKIP_PADDING(replyPtr,2);
 		PACK_CARD16(pca->psc.data.isoCurves.numUcurves, replyPtr);
 		PACK_CARD16(pca->psc.data.isoCurves.numVcurves, replyPtr);
+		break;
 	    }
 	    case PEXPSCMcLevelCurves: {
 		PACK_COORD3D(&(pca->psc.data.mcLevelCurves.origin),replyPtr);
@@ -1437,8 +1442,9 @@ pexGetPipelineContextReq 	*strmPtr;
 		PACK_CARD16(pca->psc.data.mcLevelCurves.numberIntersections,replyPtr);
 		SKIP_PADDING(replyPtr,2);
 		PACK_LISTOF_STRUCT(pca->psc.data.mcLevelCurves.numberIntersections,
-			    pexCoord3D, pca->psc.data.mcLevelCurves.pPoints,
+			    PEXFLOAT, pca->psc.data.mcLevelCurves.pPoints,
 			    replyPtr);
+		break;
 	    }
 
 	    case PEXPSCWcLevelCurves: {
@@ -1447,8 +1453,9 @@ pexGetPipelineContextReq 	*strmPtr;
 		PACK_CARD16(pca->psc.data.wcLevelCurves.numberIntersections,replyPtr);
 		SKIP_PADDING(replyPtr,2);
 		PACK_LISTOF_STRUCT(pca->psc.data.wcLevelCurves.numberIntersections,
-				pexCoord3D, pca->psc.data.wcLevelCurves.pPoints,
+				PEXFLOAT, pca->psc.data.wcLevelCurves.pPoints,
 				replyPtr);
+		break;
 	    }
 	}
     }
