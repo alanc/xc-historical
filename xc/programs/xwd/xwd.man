@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH XWD 1 "Release 5" "X Version 11"
 .SH NAME
 xwd - dump an image of an X window

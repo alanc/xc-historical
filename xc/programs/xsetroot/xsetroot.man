@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH XSETROOT 1 "Release 5" "X Version 11"
 .SH NAME
 xsetroot \- root window parameter setting utility for X

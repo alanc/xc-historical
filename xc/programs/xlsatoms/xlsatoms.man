@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH XLSATOMS 1 "Release 5" "X Version 11"
 .SH NAME
 xlsatoms - list interned atoms defined on server

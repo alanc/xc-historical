@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH SESSREG 1 "Release 5" "X Version 11"
 .SH NAME
 sessreg \- manage utmp/wtmp entries for non-init clients

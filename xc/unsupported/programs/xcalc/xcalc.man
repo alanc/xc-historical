@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1

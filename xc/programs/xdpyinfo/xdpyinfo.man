@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH XDPYINFO 1 "Release 5" "X Version 11"
 .SH NAME
 xdpyinfo \- display information utility for X
