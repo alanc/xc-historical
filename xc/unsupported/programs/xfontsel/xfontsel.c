@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.14 89/11/16 18:47:34 swick Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.15 89/12/09 17:29:47 rws Exp $";
 #endif
 
 /*
@@ -294,7 +294,7 @@ static WorkPiece workQueue = NULL;
 
 
 /*
- * ScheduleWork( XtProc *proc, XtPointer closure, int priority )
+ * ScheduleWork( XtProc proc, XtPointer closure, int priority )
  *
  * Adds a WorkPiece to the workQueue in FIFO order by priority.
  * Lower numbered priority work is completed before higher numbered
@@ -421,7 +421,7 @@ void GetFontNames( closure )
     }
     parseRec->end = numFonts;
     ScheduleWork(ParseFontNames,(XtPointer)parseRec,work_priority);
-    ScheduleWork(XFreeFontNames,(XtPointer)fontNames,work_priority);
+    ScheduleWork((XtProc)XFreeFontNames,(XtPointer)fontNames,work_priority);
     ScheduleWork(XtFree, (XtPointer)parseRec, work_priority);
     SetParsingFontCount(matchingFontCount);
     if (AppRes.pattern != defaultPattern) {

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.11 89/12/11 20:35:52 keith Exp $
+ * $XConsortium: xclipboard.c,v 1.13 89/12/11 21:46:11 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.11 89/12/11 20:35:52 keith Exp $ */
+/* $XConsortium: xclipboard.c,v 1.13 89/12/11 21:46:11 keith Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -52,6 +52,14 @@ typedef struct _Clip {
 } ClipRec, *ClipPtr;
 
 extern char *malloc ();
+
+static long TextLength (w)
+    Widget  w;
+{
+    return XawTextSourceScan (XawTextGetSource (w),
+			      (XawTextPosition) 0,
+ 			      XawstAll, XawsdRight, 1, TRUE);
+}
 
 SaveClip (w, clip)
     Widget  w;
@@ -87,7 +95,6 @@ RestoreClip (w, clip)
     ClipPtr clip;
 {
     Arg	    args[1];
-    int	    len;
     Widget  source;
 
     source = XawTextGetSource (w);
@@ -104,7 +111,7 @@ NewClip (w, old)
 
     newClip = (ClipPtr) malloc (sizeof (ClipRec));
     if (!newClip)
-	return;
+	return newClip;
     newClip->clip = 0;
     newClip->avail = 0;
     newClip->prev = old;
@@ -265,14 +272,6 @@ static XrmOptionDescRec table[] = {
     {"-w",	    "*text*wrap",		XrmoptionNoArg,  "Word"},
     {"-nw",	    "*text*wrap",		XrmoptionNoArg,  "Never"},
 };
-
-static long TextLength (w)
-    Widget  w;
-{
-    return XawTextSourceScan (XawTextGetSource (w),
-			      (XawTextPosition) 0,
- 			      XawstAll, XawsdRight, 1, TRUE);
-}
 
 static void	LoseSelection ();
 static void	InsertClipboard ();
