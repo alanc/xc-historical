@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xeyes.c,v 1.9 90/09/29 11:22:01 rws Exp $";
+static char rcsid[] = "$XConsortium: xeyes.c,v 1.10 90/12/01 13:04:49 rws Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -59,12 +59,13 @@ void main(argc, argv)
     XtSetArg (arg[i], XtNiconPixmap, 
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     eyes_bits, eyes_width, eyes_height));
+				     (char *)eyes_bits, eyes_width, eyes_height));
     i++;
     XtSetArg (arg[i], XtNiconMask, 
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     eyesmask_bits, eyesmask_width, eyesmask_height));
+				     (char *)eyesmask_bits,
+				     eyesmask_width, eyesmask_height));
     i++;
     XtSetValues (toplevel, arg, i);
 
