@@ -157,6 +157,15 @@ InitOutput(pScreenInfo, argc, argv)
 {
     int     	  i, index;
 
+    /*
+     *	Writes to /dev/console can block - causing an
+     *	excess of error messages to hang the server in
+     *	deadlock.  So.......
+     */
+    if (fcntl(fileno(stderr), F_SETFL, O_NDELAY) < 0) {
+	perror("fcntl");
+	ErrorF("InitOutput: can't put stderr in non-block mode\n");
+    }
     pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
     pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
     pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
