@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.52 91/02/09 17:57:53 rws Exp $
+ * $XConsortium: init.c,v 2.53 91/02/17 16:49:50 dave Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -30,7 +30,7 @@
 
 #include "xmh.h"
 #include "actions.h"
-#include <sys/errno.h>
+#include <errno.h>
 
 #define MIN_APP_DEFAULTS_VERSION 1
 
@@ -146,7 +146,6 @@ static XrmOptionDescRec table[] = {
 Syntax(call)
     char *call;
 {
-    extern void exit();
     (void) fprintf(stderr, "usage: %s [-path <path>] [-initial <folder>]\n",
 		   call);
     exit(2);
