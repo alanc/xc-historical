@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.46 94/01/21 18:45:29 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.47 94/02/01 11:02:30 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -316,7 +316,9 @@ static int OpenFrameBuffer(device, screen)
 static void SigIOHandler(sig)
     int		sig;
 {
+    int olderrno = errno;
     sunEnqueueEvents ();
+    errno = olderrno;
 }
 
 /*-
