@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.62 91/07/12 17:08:36 converse Exp $
+ * $XConsortium: init.c,v 2.63 91/07/13 14:38:41 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -58,10 +58,13 @@ static unsigned char check_bits[] = {
 static XtResource resources[] = {
     {"debug", "Debug", XtRBoolean, sizeof(Boolean),
 	 Offset(debug), XtRImmediate, (XtPointer)False},
+
     {"tempDir", "TempDir", XtRString, sizeof(char *),
 	 Offset(temp_dir), XtRString, "/tmp"},
     {"mhPath", "MhPath", XtRString, sizeof(char *),
 	 Offset(mh_path), XtRString, "/usr/local/mh6"},
+    {"mailPath", "MailPath", XtRString, sizeof(char *),
+	 Offset(mail_path), XtRString, NULL},
     {"initialFolder", "InitialFolder", XtRString, sizeof(char *),
 	 Offset(initial_folder_name), XtRString, "inbox"},
     {"initialIncFile", "InitialIncFile", XtRString, sizeof(char *),
@@ -70,13 +73,14 @@ static XtResource resources[] = {
 	 Offset(insert_filter), XtRString, NULL},
     {"draftsFolder", "DraftsFolder", XtRString, sizeof(char *),
 	 Offset(drafts_folder_name), XtRString, "drafts"},
+    {"printCommand", "PrintCommand", XtRString, sizeof(char *),
+	 Offset(print_command), XtRString,
+	 "enscript > /dev/null 2>/dev/null"},
+
     {"sendWidth", "SendWidth", XtRInt, sizeof(int),
 	 Offset(send_line_width), XtRImmediate, (XtPointer)72},
     {"sendBreakWidth", "SendBreakWidth", XtRInt, sizeof(int),
 	 Offset(break_send_line_width), XtRImmediate, (XtPointer)85},
-    {"printCommand", "PrintCommand", XtRString, sizeof(char *),
-	 Offset(print_command), XtRString,
-	 "enscript > /dev/null 2>/dev/null"},
     {"tocWidth", "TocWidth", XtRInt, sizeof(int),
 	 Offset(toc_width), XtRImmediate, (XtPointer)100},
     {"skipDeleted", "SkipDeleted", XtRBoolean, sizeof(Boolean),
@@ -87,6 +91,7 @@ static XtResource resources[] = {
 	 Offset(skip_copied), XtRImmediate, (XtPointer)False},
     {"hideBoringHeaders", "HideBoringHeaders", XtRBoolean, sizeof(Boolean),
 	 Offset(hide_boring_headers), XtRImmediate, (XtPointer)True},
+
     {"geometry", "Geometry", XtRString, sizeof(char *),
 	 Offset(geometry), XtRString, NULL},
     {"tocGeometry", "TocGeometry", XtRString, sizeof(char *),
@@ -99,14 +104,19 @@ static XtResource resources[] = {
 	 Offset(pick_geometry), XtRString, NULL},
     {"tocPercentage", "TocPercentage", XtRInt, sizeof(int),
 	 Offset(toc_percentage), XtRImmediate, (XtPointer)33},
+
     {"checkNewMail", "CheckNewMail", XtRBoolean, sizeof(Boolean),
 	 Offset(new_mail_check), XtRImmediate, (XtPointer)True},
+    {"mailInterval", "Interval", XtRInt, sizeof(int),
+	 Offset(mail_interval), XtRImmediate, (XtPointer)-1},
     {"makeCheckpoints", "MakeCheckpoints", XtRBoolean, sizeof(Boolean),
 	 Offset(make_checkpoints), XtRImmediate, (XtPointer)False},
+    {"checkpointInterval", "Interval", XtRInt, sizeof(int),
+	 Offset(checkpoint_interval), XtRImmediate, (XtPointer)-1},
+    {"rescanInterval", "Interval", XtRInt, sizeof(int),
+	 Offset(rescan_interval), XtRImmediate, (XtPointer)-1},
     {"checkFrequency", "CheckFrequency", XtRInt, sizeof(int),
 	 Offset(check_frequency), XtRImmediate, (XtPointer)1},
-    {"mailPath", "MailPath", XtRString, sizeof(char *),
-	 Offset(mail_path), XtRString, NULL},
     {"mailWaitingFlag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
 	 Offset(mail_waiting_flag), XtRImmediate, (XtPointer)False},
     {"newMailIconBitmap", "NewMailBitmap", XtRBitmap, sizeof(Pixmap),
@@ -117,6 +127,7 @@ static XtResource resources[] = {
 	 Offset(flag_up), XtRString, (XtPointer)"black6"},
     {"noMailBitmap", "NoMailBitmap", XtRBitmap, sizeof(Pixmap),
 	 Offset(flag_down), XtRString, (XtPointer)"blank6"},
+
     {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
 	 Offset(cursor), XtRString, "left_ptr"},
     {"pointerColor", "PointerColor", XtRPixel, sizeof(Pixel),
@@ -352,6 +363,12 @@ char **argv;
 			  PopupAppDefaultsWarning, NULL);
 
     if (app_resources.mail_waiting_flag) app_resources.new_mail_check = True;
+    if (app_resources.mail_interval == -1)
+	app_resources.mail_interval = app_resources.check_frequency;
+    if (app_resources.checkpoint_interval == -1)
+	app_resources.checkpoint_interval = 5 * app_resources.check_frequency;
+    if (app_resources.rescan_interval == -1)
+	app_resources.rescan_interval = 5 * app_resources.check_frequency;
 
     (void) sprintf(str, "%s/.mh_profile", homeDir);
     fid = myfopen(str, "r");
