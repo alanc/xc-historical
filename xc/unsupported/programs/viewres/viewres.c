@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.30 90/02/07 18:23:47 jim Exp $
+ * $XConsortium: viewres.c,v 1.31 90/02/08 09:33:01 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -227,7 +227,7 @@ static void update_selection_items ()
 {
     register int i;
     static Arg args[1] = {{ XtNsensitive, (XtArgVal) FALSE }};
-    Boolean show = FALSE, hide = FALSE;
+    Boolean show = FALSE, hide = FALSE, parents = FALSE, children = FALSE;
 
     for (i = 0; i < selected_list.n_elements; i++) {
 	WidgetNode *node = selected_list.elements[i];
@@ -243,12 +243,20 @@ static void update_selection_items ()
 		show = TRUE;
 	    }
 	}
+	if (node != topnode) parents = TRUE;
+	if (node->children) children = TRUE;
     }
 	    
     args[0].value = (XtArgVal) show;
     XtSetValues (view_widgets[VIEW_SHOW_RESOURCES], args, ONE);
     args[0].value = (XtArgVal) hide;
     XtSetValues (view_widgets[VIEW_HIDE_RESOURCES], args, ONE);
+    args[0].value = (XtArgVal) (selected_list.n_elements > 0 ? TRUE : FALSE);
+    XtSetValues (select_widgets[SELECT_NOTHING], args, ONE);
+    args[0].value = (XtArgVal) parents;
+    XtSetValues (select_widgets[SELECT_PARENTS], args, ONE);
+    args[0].value = (XtArgVal) children;
+    XtSetValues (select_widgets[SELECT_CHILDREN], args, ONE);
 }
 
 
