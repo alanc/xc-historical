@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: daemon.c,v 1.1 88/09/23 14:21:53 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,11 +18,9 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include <sys/param.h>
+#include <X11/Xos.h>
 #include <sys/ioctl.h>
-#include <sys/file.h>
 #ifdef SYSV
-#include <fcntl.h>
 #include <sys/ptyio.h>
 #endif
 
