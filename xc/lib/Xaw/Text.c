@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.132 89/12/11 19:36:59 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.133 89/12/13 14:17:35 keith Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1369,17 +1369,16 @@ int *format;
     Atom* targetP, * std_targets;
     unsigned long std_length;
 
-    if ( SrcCvtSel(src, selection, target, type, value, length, format) ) {
-      *value = NULL;
-      *length = 0;
-    }
+    if ( SrcCvtSel(src, selection, target, type, value, length, format) ) 
+	return True;
+
     XmuConvertStandardSelection(w, ctx->text.time, selection, 
 				target, type, (caddr_t*)&std_targets,
 				&std_length, format);
     
-    *value = XtRealloc(*value, sizeof(Atom)*(std_length + 7 + *length));
+    *value = XtRealloc(*value, sizeof(Atom)*(std_length + 7));
     targetP = *(Atom**)value + *length;
-    *length += std_length + 6;
+    *length = std_length + 6;
     *targetP++ = XA_STRING;
     *targetP++ = XA_TEXT(d);
     *targetP++ = XA_COMPOUND_TEXT(d);
