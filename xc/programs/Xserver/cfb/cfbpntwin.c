@@ -43,12 +43,10 @@ cfbPaintWindow(pWin, pRegion, what)
     RegionPtr	pRegion;
     int		what;
 {
-    void    (*painter)();
     register cfbPrivWin	*pPrivWin;
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
-    
-    painter = miPaintWindow;
+
     switch (what) {
     case PW_BACKGROUND:
 	switch (pWin->backgroundState) {
@@ -63,136 +61,32 @@ cfbPaintWindow(pWin, pRegion, what)
 	    return;
 	case BackgroundPixmap:
 	    if (pPrivWin->fastBackground)
-		painter = cfbPaintArea32;
+	    {
+		cfbPaintArea32 (pWin, pRegion, what);
+		return;
+	    }
 	    break;
 	case BackgroundPixel:
-	    painter = cfbPaintAreaSolid;
-	    break;
+	    cfbFillBox (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
+		pWin->background.pixel, TRUE);
+	    return;
     	}
     	break;
     case PW_BORDER:
 	if (pWin->borderIsPixel)
-	    painter = cfbPaintAreaSolid;
+	{
+	    cfbFillBox (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
+		pWin->border.pixel, TRUE);
+	    return;
+	}
 	else if (pPrivWin->fastBorder)
-	    painter = cfbPaintArea32;
+	{
+	    cfbPaintArea32 (pWin, pRegion, what);
+	    return;
+	}
 	break;
     }
-    (*painter) (pWin, pRegion, what);
-}
-
-static void
-cfbPaintAreaSolid(pWin, pRegion, what)
-    WindowPtr pWin;
-    RegionPtr pRegion;
-    int what;		
-{
-    int nbox;		/* number of boxes to fill */
-    register BoxPtr pbox;	/* pointer to list of boxes to fill */
-    register int srcpix;/* source pixel of the window */
-
-    PixmapPtr pPixmap;
-    int nlwScreen;	/* width in longwords of the screen's pixmap */
-    int w;		/* width of current box */
-    register int h;	/* height of current box */
-    int startmask;
-    int endmask;	/* masks for reggedy bits at either end of line */
-    int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlwExtra;	
-		        /* to get from right of box to left of next span */
-    register int nlw;	/* loop version of nlwMiddle */
-    register int *p;	/* pointer to bits we're writing */
-    int *pbits;		/* pointer to start of screen */
-
-    if ( pWin->drawable.depth != PSZ )
-	FatalError( "cfbPaintAreaSolid: invalid depth\n" );
-
-    if (what == PW_BACKGROUND)
-    {
-        srcpix = PFILL(pWin->background.pixel);
-    } 
-    else
-    {
-        srcpix = PFILL(pWin->border.pixel);
-    } 
-
-    pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
-    pbits = (int *)pPixmap->devPrivate.ptr;
-    nlwScreen = (pPixmap->devKind) >> 2;
-    nbox = REGION_NUM_RECTS(pRegion);
-    pbox = REGION_RECTS(pRegion);
-
-    while (nbox--)
-    {
-	w = pbox->x2 - pbox->x1;
-	h = pbox->y2 - pbox->y1;
-	p = pbits + (pbox->y1 * nlwScreen) + (pbox->x1 >> PWSH);
-
-	if ( ((pbox->x1 & PIM) + w) < PPW)
-	{
-	    maskpartialbits(pbox->x1, w, startmask);
-	    nlwExtra = nlwScreen;
-	    while (h--)
-	    {
-		*p = (*p & ~startmask) | (srcpix & startmask);
-		p += nlwExtra;
-	    }
-	}
-	else
-	{
-	    maskbits(pbox->x1, w, startmask, endmask, nlwMiddle);
-	    nlwExtra = nlwScreen - nlwMiddle;
-
-	    if (startmask && endmask)
-	    {
-		nlwExtra -= 1;
-		while (h--)
-		{
-		    nlw = nlwMiddle;
-		    *p = (*p & ~startmask) | (srcpix & startmask);
-		    p++;
-		    while (nlw--)
-			*p++ = srcpix;
-		    *p = (*p & ~endmask) | (srcpix & endmask);
-		    p += nlwExtra;
-		}
-	    }
-	    else if (startmask && !endmask)
-	    {
-		nlwExtra -= 1;
-		while (h--)
-		{
-		    nlw = nlwMiddle;
-		    *p = (*p & ~startmask) | (srcpix & startmask);
-		    p++;
-		    while (nlw--)
-			*p++ = srcpix;
-		    p += nlwExtra;
-		}
-	    }
-	    else if (!startmask && endmask)
-	    {
-		while (h--)
-		{
-		    nlw = nlwMiddle;
-		    while (nlw--)
-			*p++ = srcpix;
-		    *p = (*p & ~endmask) | (srcpix & endmask);
-		    p += nlwExtra;
-		}
-	    }
-	    else /* no ragged bits at either end */
-	    {
-		while (h--)
-		{
-		    nlw = nlwMiddle;
-		    while (nlw--)
-			*p++ = srcpix;
-		    p += nlwExtra;
-		}
-	    }
-	}
-        pbox++;
-    }
+    miPaintWindow (pWin, pRegion, what);
 }
 
 /* Tile area with a 32 bit wide tile */
