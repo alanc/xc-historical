@@ -1,4 +1,4 @@
-/* $XConsortium: xteststr.h,v 1.3 92/02/05 16:18:15 rws Exp $ */
+/* $XConsortium: xteststr.h,v 1.4 92/03/19 11:27:05 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -15,20 +15,7 @@ without express or implied warranty.
 
 */
 
-#define X_XTestGetVersion	0
-#define X_XTestCompareCursor	1
-#define X_XTestFakeInput	2
-
-#define XTestNumberEvents	0
-
-#define XTestNumberErrors	0
-
-#define XTEST_MAJOR	2
-#define XTEST_MINOR	0
-
 #define XTestCurrentCursor ((Cursor)1)
-
-#define XTESTNAME "XTEST"
 
 typedef struct {
     CARD8	reqType;	/* always XTestReqCode */
