@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.182 93/08/17 20:48:50 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.186 93/09/04 15:57:22 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -893,8 +893,15 @@ _NULLCMD_ = @ echo -n
 #ifndef ExtraFilesToClean
 #define ExtraFilesToClean /**/
 #endif
+#ifndef PureFilesToClean
+#if HasPurify
+#define PureFilesToClean .pure
+#else
+#define PureFilesToClean /**/
+#endif
+#endif
 #ifndef FilesToClean
-#define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
+#define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut PureFilesToClean
 #endif
 
           PATHSEP = PathSeparator
@@ -1085,7 +1092,7 @@ PICFLAGS = PositionIndependentCFlags
       DEPENDFLAGS = DependFlags
 
         MACROFILE = MacroFile
-           RM_CMD = $(RM) FilesToClean ExtraFilesToClean
+           RM_CMD = $(RM)
 
     IMAKE_DEFINES = /* leave blank, for command line use only */
 #ifdef UseInstalled
