@@ -1,7 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$Header: ArgList.c,v 1.11 88/02/14 14:52:47 rws Exp $";
+static char rcsid[] = "$xHeader: ArgList.c,v 1.13 88/08/31 09:47:25 swick Exp $";
+/* $oHeader: ArgList.c,v 1.2 88/08/18 15:34:52 asente Exp $ */
 #endif lint
-
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
