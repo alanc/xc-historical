@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.54 88/10/05 12:04:27 swick Exp $
+ * $XConsortium: charproc.c,v 1.55 88/10/05 15:13:20 swick Exp $
  */
 
 
@@ -128,7 +128,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.54 88/10/05 12:04:27 swick Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.55 88/10/05 15:13:20 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -157,9 +157,6 @@ extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
 extern void HandleFocusChange();
-extern void VTButtonPressed();
-extern void VTMouseMoved();
-extern void VTButtonReleased();
        void HandleKeymapChange();
 extern void HandleModeMenu();
 extern void HandleInsertSelection();
@@ -167,7 +164,8 @@ extern void HandleSelectStart();
 extern void HandleSelectExtend();
 extern void HandleSelectEnd();
 extern void HandleStartExtend();
-
+       void HandleBell();
+       void HandleIgnore();
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 
@@ -186,18 +184,22 @@ static  int	defaultMultiClickTime = MULTICLICKTIME;
 
 static char defaultTranslations[] =
 "\
-	<KeyPress>:	insert()	\n\
-Ctrl	<Btn1Down>:	mode-menu()	\n\
-	<Btn1Down>:	select-start()	\n\
-	<Btn1Motion>:	select-extend() \n\
-Ctrl	<Btn2Down>:	mode-menu()	\n\
-	<Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
-	<Btn3Down>:	start-extend()	\n\
-	<Btn3Motion>:	select-extend()	\n\
-	<BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \
+	    <KeyPress>:		insert()	\n\
+ Ctrl ~Meta <Btn1Down>:		mode-menu()	\n\
+      ~Meta <Btn1Down>:		select-start()	\n\
+      ~Meta <Btn1Motion>:	select-extend() \n\
+ Ctrl ~Meta <Btn2Down>:		mode-menu()	\n\
+~Ctrl ~Meta <Btn2Down>:		ignore()	\n\
+      ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \n\
+~Ctrl ~Meta <Btn3Down>:		start-extend()	\n\
+      ~Meta <Btn3Motion>:	select-extend()	\n\
+      ~Meta <BtnUp>:		select-end(PRIMARY, CUT_BUFFER0) \n\
+	    <BtnDown>:		bell(0)		\
 ";
 
 static XtActionsRec actionsList[] = { 
+    { "bell",		  HandleBell },
+    { "ignore",		  HandleIgnore },
     { "insert",		  HandleKeyPressed },
     { "insert-selection", HandleInsertSelection },
     { "keymap", 	  HandleKeymapChange },
@@ -2816,7 +2818,7 @@ int set_character_class (s)
 }
 
 /* ARGSUSED */
-void HandleKeymapChange(w, event, params, param_count)
+static void HandleKeymapChange(w, event, params, param_count)
     Widget w;
     XEvent *event;
     String *params;
@@ -2845,4 +2847,28 @@ void HandleKeymapChange(w, event, params, param_count)
 		       resources, (Cardinal)1, NULL, (Cardinal)0 );
     if (keymap != NULL)
 	XtOverrideTranslations(w, keymap);
+}
+
+
+/* ARGSUSED */
+static void HandleBell(w, event, params, param_count)
+    Widget w;
+    XEvent *event;		/* unused */
+    String *params;		/* [0] = volume */
+    Cardinal *param_count;	/* 0 or 1 */
+{
+    int percent = (*param_count) ? atoi(params[0]) : 0;
+
+    XBell( XtDisplay(w), percent );
+}
+
+
+/* ARGSUSED */
+static void HandleIgnore(w, event, params, param_count)
+    Widget w;
+    XEvent *event;		/* unused */
+    String *params;		/* unused */
+    Cardinal *param_count;	/* unused */
+{
+    /* do nothing */
 }
