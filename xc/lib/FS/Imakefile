@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.10 91/07/24 18:36:33 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.11 92/05/28 12:58:31 rws Exp $
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
@@ -17,11 +17,14 @@ OBJS =	FSClServ.o FSCloseFt.o FSConnServ.o FSErrDis.o FSErrHndlr.o\
 	FSSetCats.o FSSync.o FSSynchro.o FSlibInt.o
 
 CONN_DEFINES = ConnectionFlags
+#if HasBSD44Sockets
+SOCK_DEFINES = -DBSD44SOCKETS
+#endif
 
 NormalLibraryTarget(FS,$(OBJS))
 
 SpecialCObjectRule(FSlibInt,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCObjectRule(FSConnServ,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCObjectRule(FSConnServ,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
 
 LinkFileList(includes,FSlib.h,../../include,../lib/fs)
 

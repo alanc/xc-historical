@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.22 92/05/12 18:07:34 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.23 92/05/14 16:52:27 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -114,6 +114,9 @@ _fs_name_to_address(servername, inaddr)
 	inaddr->sin_family = AF_INET;
     }
     inaddr->sin_port = htons(servernum);
+#ifdef BSD44SOCKETS
+    inaddr->sin_len = sizeof(*inaddr);
+#endif
 
     return 1;
 }

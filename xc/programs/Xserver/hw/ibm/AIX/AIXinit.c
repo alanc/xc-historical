@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: AIXinit.c,v 1.3 91/07/16 12:56:15 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -82,6 +82,9 @@ int sockNum, sockFD ;
     }
 
     bzero( (char *)&insock, sizeof insock );
+#ifdef BSD44SOCKETS
+    insock.sin_len = sizeof(insock);
+#endif
     insock.sin_family = AF_INET;
     insock.sin_addr.s_addr = htonl(INADDR_ANY);
 

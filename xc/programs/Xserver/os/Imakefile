@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.54 92/05/28 12:22:22 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.55 92/07/26 14:22:15 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -51,6 +51,10 @@ RPCSRCS = rpcauth.c
 RPCDEFS =
 RPCOBJS =
 RPCSRCS =
+#endif
+
+#if HasBSD44Sockets
+   SOCK_DEFINES = -DBSD44SOCKETS
 #endif
 
 BOOTSTRAPCFLAGS = 
@@ -135,6 +139,8 @@ alloca.o:  $(PWLIB)
 	ar x $(PWLIB) alloca.o
 #endif /* NEED_ALLOCA_FROM_LIBPW */
 
+SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES))
+SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(fonttype,$(ICONFIGFILES),$(FONT_DEFINES))

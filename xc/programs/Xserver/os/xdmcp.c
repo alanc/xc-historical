@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.21 92/03/25 11:50:47 rws Exp $ */
+/* $XConsortium: xdmcp.c,v 1.22 92/05/19 17:22:10 keith Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -169,6 +169,9 @@ XdmcpRegisterBroadcastAddress (addr)
 	return;
     bcast = &BroadcastAddresses[NumBroadcastAddresses++];
     bzero (bcast, sizeof (struct sockaddr_in));
+#ifdef BSD44SOCKETS
+    bcast->sin_len = addr->sin_len;
+#endif
     bcast->sin_family = addr->sin_family;
     bcast->sin_port = htons (xdm_udp_port);
     bcast->sin_addr = addr->sin_addr;
@@ -1123,6 +1126,9 @@ get_manager_by_name(argc, argv, i)
     if (hep->h_length == sizeof (struct in_addr))
     {
 	bcopy(hep->h_addr, &ManagerAddress.sin_addr, hep->h_length);
+#ifdef BSD44SOCKETS
+	ManagerAddress.sin_len = sizeof(ManagerAddress);
+#endif
 	ManagerAddress.sin_family = AF_INET;
 	ManagerAddress.sin_port = htons (xdm_udp_port);
     }

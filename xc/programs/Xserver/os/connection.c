@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.145 92/05/26 16:00:16 rws Exp $ */
+/* $XConsortium: connection.c,v 1.146 92/06/11 10:38:45 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -190,6 +190,9 @@ open_tcp_socket ()
 #endif
     {
     bzero ((char *)&insock, sizeof (insock));
+#ifdef BSD44SOCKETS
+    insock.sin_len = sizeof(insock);
+#endif
     insock.sin_family = AF_INET;
     insock.sin_port = htons ((unsigned short)(X_TCP_PORT + atoi (display)));
     insock.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -246,6 +249,9 @@ open_unix_socket ()
 #endif
     strcpy (unsock.sun_path, X_UNIX_PATH);
     strcat (unsock.sun_path, display);
+#ifdef BSD44SOCKETS
+    unsock.sun_len = strlen(unsock.sun_path);
+#endif
 #ifdef hpux
     {  
         /*    The following is for backwards compatibility
@@ -273,7 +279,11 @@ open_unix_socket ()
 	Error ("Creating Unix socket");
 	return -1;
     } 
+#ifdef BSD44SOCKETS
+    if (bind(request, (struct sockaddr *)&unsock, SUN_LEN(&unsock)))
+#else
     if (bind(request, (struct sockaddr *)&unsock, strlen(unsock.sun_path)+2))
+#endif
     {
 	Error ("Binding Unix socket");
 	close (request);

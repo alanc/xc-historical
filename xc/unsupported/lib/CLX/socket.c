@@ -66,7 +66,12 @@ int connect_to_server (host, display)
 	(void) strcpy(unaddr.sun_path, X_UNIX_PATH);
 	(void) sprintf(&unaddr.sun_path[strlen(unaddr.sun_path)], "%d", display);
 	addr = (struct sockaddr *) &unaddr;
+#ifdef BSD44SOCKETS
+	unaddr.sun_len = strlen(unaddr.sun_path);
+	addrlen = SUN_LEN(&unaddr);
+#else
 	addrlen = strlen(unaddr.sun_path) + 2;
+#endif
 	/*
 	 * Open the network connection.
 	 */
@@ -116,6 +121,9 @@ int connect_to_server (host, display)
 	{
 	  inaddr.sin_family = AF_INET;
 	}
+#ifdef BSD44SOCKETS
+      inaddr.sin_len = sizeof(inaddr);
+#endif
       addr = (struct sockaddr *) &inaddr;
       addrlen = sizeof (struct sockaddr_in);
       inaddr.sin_port = display + X_TCP_PORT;

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.11 91/08/22 14:18:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.12 92/05/28 10:06:41 gildea Exp $
 XCOMM
 XCOMM Make file for font handling routines
 XCOMM
@@ -10,10 +10,13 @@ XCOMM
             OBJS = fsconvert.o fserve.o fsio.o
          DEFINES = $(SIGNAL_DEFINES)
     CONN_DEFINES = ConnectionFlags
+#if HasBSD44Sockets
+    SOCK_DEFINES = -DBSD44SOCKETS
+#endif
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
-SpecialCObjectRule(fsio,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCObjectRule(fsio,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
 
 NormalLintTarget($(SRCS))
 
