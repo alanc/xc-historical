@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xf86Init.c,v 1.3 94/10/12 20:33:21 kaleb Exp kaleb $
+ * $XConsortium: xf86Init.c,v 1.4 94/12/13 20:12:32 kaleb Exp kaleb $
  * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.10 1994/10/23 12:58:46 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -363,8 +363,6 @@ AbortDDX()
 
   xf86Exiting = TRUE;
 
-  xf86UnlockServer();
-
   /*
    * try to deinitialize all input devices
    */
@@ -560,4 +558,16 @@ xf86PrintConfig()
   for (i = 0; i < xf86MaxScreens; i++)
     if (xf86Screens[i])
       (xf86Screens[i]->PrintIdent)();
+}
+
+void
+OsVendorInit()
+{
+    extern void xf86LockServer();
+    static int been_here = FALSE;
+
+    if (!been_here) {
+	xf86LockServer();
+	been_here = TRUE;
+    }
 }
