@@ -716,7 +716,7 @@ void XtManageChildren(children, num_children)
     Cardinal num_children;
 {
 
-    Widget		parent, *parentP, realize;
+    Widget		*parentP, parent, realize;
     register Widget	*realizeP;
     Cardinal		i;
     WidgetList		realizeList, parentList;
@@ -730,8 +730,8 @@ void XtManageChildren(children, num_children)
 		    (Widget*)XtMalloc( num_children*sizeof(Widget) );
     }
     else {
-	parentP = &parent;
-	realizeP = &realize;
+	parentP = parentList = &parent;
+	realizeP = realizeList = &realize;
     }
     *parentP = children[0]->core.parent;
 
