@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.6 89/03/31 13:16:33 keith Exp $ */
+/* $XConsortium: shape.h,v 1.7 89/08/21 08:57:57 rws Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_
@@ -65,6 +65,20 @@ typedef struct {
     Time time;		    /* server timestamp when region changed */
     Bool shaped;	    /* true if the region exists */
 } XShapeEvent;
-#endif
 
-#endif
+extern Bool XShapeQueryExtension ();
+extern int XShapeGetEventBase ();
+extern Bool XShapeQueryVersion ();
+extern void XShapeCombineRegion ();
+extern void XShapeCombineRectangles ();
+extern void XShapeCombineMask ();
+extern void XShapeCombineShape ();
+extern void XShapeOffsetShape ();
+extern Status XShapeQueryExtents ();
+extern void XShapeSelectInput ();
+extern Bool XShapeInputSelected ();
+extern XRectangle *XShapeGetRectangles ();
+
+#endif /* _SHAPE_SERVER_ */
+
+#endif /* _SHAPE_H_ */
