@@ -1,4 +1,4 @@
-/* $XConsortium: Xkb.h,v 1.1 93/09/26 21:12:18 rws Exp $ */
+/* $XConsortium: XKB.h,v 1.2 93/09/27 22:49:48 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,29 +28,29 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _XKB_H_
 #define	_XKB_H_
 
-#define	X_KBUseExtension		 0
-#define	X_KBSelectEvents	 	 1
-#define	X_KBSendEvent			 2
-#define	X_KBBell			 3
-#define	X_KBGetState			 4
-#define	X_KBLatchLockState		 5
-#define	X_KBGetControls			 6
-#define	X_KBSetControls			 7
-#define	X_KBGetMap			 8
-#define	X_KBSetMap			 9
-#define	X_KBGetCompatMap		10
-#define	X_KBSetCompatMap		11
-#define	X_KBGetIndicatorState		12
-#define	X_KBGetIndicatorMap		13
-#define	X_KBSetIndicatorMap		14
-#define	X_KBGetNames			15
-#define	X_KBSetNames			16
-#define	X_KBListAlternateSyms		17
-#define	X_KBGetAlternateSyms		18
-#define	X_KBSetAlternateSyms		19
-#define	X_KBGetGeometry			20
-#define	X_KBSetGeometry			21
-#define	X_KBSetDebuggingFlags		101
+#define	X_kbUseExtension		 0
+#define	X_kbSelectEvents	 	 1
+#define	X_kbSendEvent			 2
+#define	X_kbBell			 3
+#define	X_kbGetState			 4
+#define	X_kbLatchLockState		 5
+#define	X_kbGetControls			 6
+#define	X_kbSetControls			 7
+#define	X_kbGetMap			 8
+#define	X_kbSetMap			 9
+#define	X_kbGetCompatMap		10
+#define	X_kbSetCompatMap		11
+#define	X_kbGetIndicatorState		12
+#define	X_kbGetIndicatorMap		13
+#define	X_kbSetIndicatorMap		14
+#define	X_kbGetNames			15
+#define	X_kbSetNames			16
+#define	X_kbListAlternateSyms		17
+#define	X_kbGetAlternateSyms		18
+#define	X_kbSetAlternateSyms		19
+#define	X_kbGetGeometry			20
+#define	X_kbSetGeometry			21
+#define	X_kbSetDebuggingFlags		101
 
 #define	XkbEventCode			0
 #define	XkbNumberEvents			(XkbEventCode+1)
