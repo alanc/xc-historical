@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.46 89/08/02 21:53:52 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.47 89/08/07 10:17:55 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -216,6 +216,9 @@
 #endif
 #endif
 
+#ifndef HasLargeTmp
+#define HasLargeTmp		NO	/* be paranoid */
+#endif
 #ifndef HasSockets
 #if SystemV
 #define HasSockets		NO	/* not yet... */
@@ -312,7 +315,11 @@
 #define InstKmemFlags InstUidFlags    /* put -g kmem -m 2755 in site.def... */
 #endif
 #ifndef ArCmd
-#define ArCmd                  ar clq
+#if HasLargeTmp
+#define ArCmd                  ar cq	/* use /tmp for temp files */
+#else
+#define ArCmd                  ar clq	/* use local dir for temp files */
+#endif
 #endif
 #ifndef BootstrapCFlags
 #define BootstrapCFlags        /**/

@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.5 89/05/26 11:26:27 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.6 89/07/26 09:00:05 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -33,6 +33,14 @@
 /*
  * place site-specific definitions here
  */
+
+/*
+ * If your /tmp space is less than a 1meg, you should probably set this to NO
+ */
+#ifndef HasLargeTmp
+#define HasLargeTmp YES
+#endif
+
 
 #ifndef ExtensionDefines
 #define ExtensionDefines -DSHAPE
