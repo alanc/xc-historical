@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.16 88/10/18 14:07:18 swick Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.17 89/05/11 18:43:37 kit Exp $";
 #endif  lint
 
 #include <stdio.h> 
@@ -12,6 +12,8 @@ static char rcsid[] = "$XConsortium: xload.c,v 1.16 88/10/18 14:07:18 swick Exp 
 
 #include "xload.bit"
 
+char *ProgramName;
+
 extern void exit();
 
 /* Command line options table.  Only resources are entered here...there is a
@@ -22,6 +24,7 @@ static XrmOptionDescRec options[] = {
 {"-update",	"*load.update",		XrmoptionSepArg,	 NULL},
 {"-hl",		"*load.highlight",	XrmoptionSepArg,	 NULL},
 {"-highlight",	"*load.highlight",	XrmoptionSepArg,	 NULL},
+{"-label",	"*load.label",		XrmoptionSepArg,	 NULL},
 };
 
 
@@ -29,14 +32,23 @@ static XrmOptionDescRec options[] = {
 
 void usage()
 {
-    fprintf(stderr,
-"usage: xload [-fn {font}] [-update {seconds}] [-scale {integer}] [-rv]\n"
-);
-    fprintf(stderr,
-"             [-geometry [{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [-display [{host}]:[{vs}]]\n"
-);
-    fprintf(stderr,
-"             [-fg {color}] [-bg {color}] [-bd {color}] [-bw {pixels}]\n");
+    fprintf (stderr, "usage:  %s [-options ...]\n\n", ProgramName);
+    fprintf (stderr, "where options include:\n");
+    fprintf (stderr, 
+	"    -fn font                font to use in label\n");
+    fprintf (stderr, 
+	"    -scale number           minimum number of scale lines\n");
+    fprintf (stderr, 
+	"    -update seconds         interval between updates\n");
+    fprintf (stderr,
+	"    -label string           annotation text\n");
+    fprintf (stderr, 
+	"    -bg color               background color\n");
+    fprintf (stderr, 
+	"    -fg color               graph color\n");
+    fprintf (stderr, 
+	"    -hl color               scale and text color\n");
+    fprintf (stderr, "\n");
     exit(1);
 }
 
@@ -62,6 +74,7 @@ void main(argc, argv)
     char *labelname = NULL;
     Pixmap icon_pixmap = None;
     
+    ProgramName = argv[0];
     toplevel = XtInitialize("main", "XLoad", options, XtNumber(options), &argc, argv);
       
     if (argc != 1) usage();
