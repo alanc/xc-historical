@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.18 89/01/16 17:11:53 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.19 89/08/03 20:25:13 rws Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -137,6 +137,7 @@ SOFTWARE.
 #endif
 
 typedef struct _connectionInput {
+    struct _connectionInput *next;
     char *buffer;               /* contains current client input */
     char *bufptr;               /* pointer to current start of data */
     int  bufcnt;                /* count of bytes in buffer */
@@ -145,6 +146,7 @@ typedef struct _connectionInput {
 } ConnectionInput, *ConnectionInputPtr;
 
 typedef struct _connectionOutput {
+    struct _connectionOutput *next;
     int size;
     unsigned char *buf;
     int count;
