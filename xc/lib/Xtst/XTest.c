@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.9 93/02/05 17:09:43 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.10 93/02/17 19:49:02 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -252,11 +252,12 @@ XTestFakeRelativeMotionEvent(dpy, dx, dy, delay)
 }
 
 static void
-send_axes(dpy, info, req, dev, axes, n_axes)
+send_axes(dpy, info, req, dev, first_axis, axes, n_axes)
     Display *dpy;
     XExtDisplayInfo *info;
     xXTestFakeInputReq *req;
     XDevice *dev;
+    int first_axis;
     int *axes;
     int n_axes;
 {
@@ -268,7 +269,7 @@ send_axes(dpy, info, req, dev, axes, n_axes)
     ev.type = XI_DeviceValuator + (int)info->data;
     ev.deviceid = dev->device_id;
     ev.num_valuators = n_axes;
-    ev.first_valuator = 0;
+    ev.first_valuator = first_axis;
     while (n_axes > 0) {
 	n = n_axes;
 	if (n > 6)
@@ -294,11 +295,13 @@ send_axes(dpy, info, req, dev, axes, n_axes)
     }
 }
 
-XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
+XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press,
+			first_axis, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
     unsigned int keycode;
     Bool is_press;
+    int first_axis;
     int *axes;
     int n_axes;
     unsigned long delay;
@@ -318,17 +321,19 @@ XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
     req->time = delay;
     req->deviceid = dev->device_id;
     if (n_axes)
-	send_axes(dpy, info, req, dev, axes, n_axes);
+	send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
 }
 
-XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
+XTestFakeDeviceButtonEvent(dpy, dev, button, is_press,
+			   first_axis, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
     unsigned int button;
     Bool is_press;
+    int first_axis;
     int *axes;
     int n_axes;
     unsigned long delay;
@@ -348,16 +353,17 @@ XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
     req->time = delay;
     req->deviceid = dev->device_id;
     if (n_axes)
-	send_axes(dpy, info, req, dev, axes, n_axes);
+	send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
 }
 
-XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
+XTestFakeProximityEvent(dpy, dev, in_prox, first_axis, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
     Bool in_prox;
+    int first_axis;
     int *axes;
     int n_axes;
     unsigned long delay;
@@ -376,16 +382,16 @@ XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
     req->time = delay;
     req->deviceid = dev->device_id;
     if (n_axes)
-	send_axes(dpy, info, req, dev, axes, n_axes);
+	send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
 }
 
-XTestFakeDeviceMotionEvent(dpy, dev, is_relative, axes, n_axes, delay)
+XTestFakeDeviceMotionEvent(dpy, dev, first_axis, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
-    Bool is_relative;
+    int first_axis;
     int *axes;
     int n_axes;
     unsigned long delay;
@@ -400,10 +406,37 @@ XTestFakeDeviceMotionEvent(dpy, dev, is_relative, axes, n_axes, delay)
     req->reqType = info->codes->major_opcode;
     req->xtReqType = X_XTestFakeInput;
     req->type = XI_DeviceMotionNotify + (int)info->data;
-    req->detail = is_relative;
+    req->detail = False;
     req->time = delay;
     req->deviceid = dev->device_id;
-    send_axes(dpy, info, req, dev, axes, n_axes);
+    send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return 1;
+}
+
+XTestFakeRelativeDeviceMotionEvent(dpy, dev, first_axis, axes, n_axes, delay)
+    Display *dpy;
+    XDevice *dev;
+    int first_axis;
+    int *axes;
+    int n_axes;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+
+    XTestICheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = XI_DeviceMotionNotify + (int)info->data;
+    req->detail = True;
+    req->time = delay;
+    req->deviceid = dev->device_id;
+    send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
