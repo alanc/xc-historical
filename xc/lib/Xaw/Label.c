@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.34 88/01/28 07:51:46 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.35 88/02/04 15:18:48 swick Locked $";
 #endif lint
 
 /*
@@ -31,14 +31,12 @@ static char rcsid[] = "$Header: Label.c,v 1.34 88/01/28 07:51:46 swick Locked $"
 
 #define XtStrlen(s)		((s) ? strlen(s) : 0)
 
+#include "IntrinsicP.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <X/Intrinsic.h>
 #include <X/Atoms.h>
 #include "LabelP.h"
-
-#define IsSensitive(w)	((w)->core.sensitive && (w)->core.ancestor_sensitive)
 
 /****************************************************************
  *
@@ -48,21 +46,24 @@ static char rcsid[] = "$Header: Label.c,v 1.34 88/01/28 07:51:46 swick Locked $"
 
 /* Private Data */
 
-#define XtRjustify		"Justify"
+static int defIWidth = 4;
+static int defIHeight = 2;
+static XtJustify defJustify = XtJustifyCenter;
 
+#define offset(field) XtOffset(LabelWidget, field)
 static XtResource resources[] = {
-    {XtNforeground, XtCForeground, XrmRPixel, sizeof(Pixel),
-	XtOffset(LabelWidget, label.foreground), XrmRString, "Black"},
-    {XtNfont,  XtCFont, XrmRFontStruct, sizeof(XFontStruct *),
-	XtOffset(LabelWidget, label.font),XrmRString, "Fixed"},
-    {XtNlabel,  XtCLabel, XrmRString, sizeof(String),
-	XtOffset(LabelWidget, label.label), XrmRString, NULL},
+    {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
+	offset(label.foreground), XtRString, "Black"},
+    {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+	offset(label.font),XtRString, "Fixed"},
+    {XtNlabel,  XtCLabel, XtRString, sizeof(String),
+	offset(label.label), XtRString, NULL},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
-	XtOffset(LabelWidget, label.justify), XrmRString, "Center"},
-    {XtNinternalWidth, XtCWidth, XrmRInt,  sizeof(Dimension),
-	XtOffset(LabelWidget, label.internal_width),XrmRString, "4"},
-    {XtNinternalHeight, XtCHeight, XrmRInt, sizeof(Dimension),
-	XtOffset(LabelWidget, label.internal_height),XrmRString, "2"},
+	offset(label.justify), XtRJustify, (caddr_t)&defJustify},
+    {XtNinternalWidth, XtCWidth, XtRInt,  sizeof(Dimension),
+	offset(label.internal_width), XtRInt, (caddr_t)&defIWidth},
+    {XtNinternalHeight, XtCHeight, XtRInt, sizeof(Dimension),
+	offset(label.internal_height), XtRInt, (caddr_t)&defIHeight},
 };
 
 static void Initialize();
@@ -76,28 +77,35 @@ LabelClassRec labelClassRec = {
   {
 /* core_class fields */	
 #define superclass		(&simpleClassRec)
-    /* superclass	  */	(WidgetClass) superclass,
-    /* class_name	  */	"Label",
-    /* widget_size	  */	sizeof(LabelRec),
-    /* class_initialize   */    ClassInitialize,
-    /* class_inited       */	FALSE,
-    /* initialize	  */	Initialize,
-    /* realize		  */	Realize,
-    /* actions		  */	NULL,
-    /* num_actions	  */	0,
-    /* resources	  */	resources,
-    /* num_resources	  */	XtNumber(resources),
-    /* xrm_class	  */	NULLQUARK,
-    /* compress_motion	  */	TRUE,
-    /* compress_exposure  */	TRUE,
-    /* visible_interest	  */	FALSE,
-    /* destroy		  */	NULL,
-    /* resize		  */	Resize,
-    /* expose		  */	Redisplay,
-    /* set_values	  */	SetValues,
-    /* accept_focus	  */	NULL,
-    /* callback_private   */	NULL,
-    /* reserved_private   */	NULL,
+    /* superclass	  	*/	(WidgetClass) superclass,
+    /* class_name	  	*/	"Label",
+    /* widget_size	  	*/	sizeof(LabelRec),
+    /* class_initialize   	*/	ClassInitialize,
+    /* class_part_initialize	*/	NULL,
+    /* class_inited       	*/	FALSE,
+    /* initialize	  	*/	Initialize,
+    /* initialize_hook		*/	NULL,
+    /* realize		  	*/	Realize,
+    /* actions		  	*/	NULL,
+    /* num_actions	  	*/	0,
+    /* resources	  	*/	resources,
+    /* num_resources	  	*/	XtNumber(resources),
+    /* xrm_class	  	*/	NULLQUARK,
+    /* compress_motion	  	*/	TRUE,
+    /* compress_exposure  	*/	TRUE,
+    /* compress_enterleave	*/	TRUE,
+    /* visible_interest	  	*/	FALSE,
+    /* destroy		  	*/	NULL,
+    /* resize		  	*/	Resize,
+    /* expose		  	*/	Redisplay,
+    /* set_values	  	*/	SetValues,
+    /* set_values_hook		*/	NULL,
+    /* set_values_almost	*/	XtInheritSetValuesAlmost,
+    /* get_values_hook		*/	NULL,
+    /* accept_focus	 	*/	NULL,
+    /* version			*/	XtVersion,
+    /* callback_private   	*/	NULL,
+    /* tm_table		   	*/	NULL,
   }
 };
 WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
@@ -120,12 +128,13 @@ static void ClassInitialize()
     XrmQEcenter = XrmAtomToQuark("center");
     XrmQEright  = XrmAtomToQuark("right");
 
-    XrmRegisterTypeConverter(XrmRString, XtRJustify, CvtStringToJustify);
+    XtAddConverter( XtRString, XtRJustify, CvtStringToJustify, NULL, 0 );
 } /* ClassInitialize */
 
 /* ARGSUSED */
-static void CvtStringToJustify(screen, fromVal, toVal)
-    Screen	*screen;
+static void CvtStringToJustify(args, num_args, fromVal, toVal)
+    XrmValuePtr *args;		/* unused */
+    Cardinal	*num_args;	/* unused */
     XrmValuePtr fromVal;
     XrmValuePtr toVal;
 {
@@ -201,10 +210,8 @@ static void GetgrayGC(lw)
 }
 
 /* ARGSUSED */
-static void Initialize(request, new, args, num_args)
+static void Initialize(request, new)
  Widget request, new;
- ArgList args;
- Cardinal *num_args;
 {
     LabelWidget lw = (LabelWidget) new;
 
@@ -253,15 +260,16 @@ static void Realize(w, valueMask, attributes)
  */
 
 /* ARGSUSED */
-static void Redisplay(w, event)
+static void Redisplay(w, event, region)
     Widget w;
     XEvent *event;
+    Region region;
 {
    LabelWidget lw = (LabelWidget) w;
 
    XDrawString(
 	XtDisplay(w), XtWindow(w),
-	IsSensitive(lw) ? lw->label.normal_GC : lw->label.gray_GC,
+	XtIsSensitive(lw) ? lw->label.normal_GC : lw->label.gray_GC,
 	lw->label.label_x, lw->label.label_y,
 	lw->label.label, (int) lw->label.label_len);
 }
@@ -297,26 +305,18 @@ static void Resize(w)
  */
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new, last)
+static Boolean SetValues(current, request, new)
     Widget current, request, new;
     Boolean last;
 {
     LabelWidget curlw = (LabelWidget) current;
+    LabelWidget reqlw = (LabelWidget) request;
     LabelWidget newlw = (LabelWidget) new;
     Boolean was_resized = False;
 
     if (newlw->label.label == NULL) {
 	newlw->label.label = newlw->core.name;
     }
-
-    if ((curlw->label.label != newlw->label.label)
-	|| (curlw->label.font != newlw->label.font)
-	|| (curlw->label.justify != newlw->label.justify)) {
-
-	SetTextWidthAndHeight(newlw);
-	was_resized = True;
-
-	}
 
     /* note that there is no way to change the label and force the window */
     /* to keep it's current size (and possibly clip the text) perhaps we */
@@ -334,42 +334,23 @@ static Boolean SetValues(current, request, new, last)
 	}
     }
 
+    if ((curlw->label.label != newlw->label.label)
+	|| (curlw->label.font != newlw->label.font)
+	|| (curlw->label.justify != newlw->label.justify)) {
+
+	SetTextWidthAndHeight(newlw);
+	was_resized = True;
+
+	}
+
     /* calculate the window size */
-    if (curlw->core.width == newlw->core.width)
+    if (curlw->core.width == reqlw->core.width)
 	newlw->core.width =
 	    newlw->label.label_width +2*newlw->label.internal_width;
 
-    if (curlw->core.height == newlw->core.height)
+    if (curlw->core.height == reqlw->core.height)
 	newlw->core.height =
 	    newlw->label.label_height + 2*newlw->label.internal_height;
-
-    was_resized |= (XtSetValuesGeometryRequest( curlw, newlw,
-					        (XtWidgetGeometry *)NULL )
-		    == XtGeometryYes);
-
-    if (newlw->core.depth != curlw->core.depth) {
-	XtWarning("SetValues: Attempt to change existing widget depth.");
-	newlw->core.depth = curlw->core.depth;
-    }
-
-    if (((curlw->core.background_pixel != newlw->core.background_pixel)
-	 || (curlw->core.border_pixel != newlw->core.border_pixel))
-	&& XtIsRealized(newlw)) {
-
-	Mask valueMask = 0;
-	XSetWindowAttributes attributes;
-
-	if (curlw->core.background_pixel != newlw->core.background_pixel) {
-	    valueMask |= CWBackPixel;
-	    attributes.background_pixel = newlw->core.background_pixel;
-	}
-	if (curlw->core.border_pixel != newlw->core.border_pixel) {
-	    valueMask |= CWBorderPixel;
-	    attributes.border_pixel = newlw->core.border_pixel;
-	}
-	XChangeWindowAttributes(
-	    XtDisplay(newlw), newlw->core.window, valueMask, &attributes);
-    }
 
     if (curlw->label.foreground != newlw->label.foreground
 	|| curlw->label.font->fid != newlw->label.font->fid) {
@@ -386,5 +367,5 @@ static Boolean SetValues(current, request, new, last)
 	Resize((Widget)newlw);
     }
 
-    return( True );		/* want Redisplay */
+    return( was_resized );
 }
