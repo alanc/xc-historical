@@ -19,6 +19,12 @@ IconFont	"-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
 ResizeFont	"6x10"
 NoSaveUnders
 
+# interlaced screens look really awful with striped lines
+Pixmaps
+{
+    TitleHighlight "gray1"
+}
+
 ###############################################################################
 #                                                                             #
 #                           Declare some nice colors                          #
@@ -61,11 +67,11 @@ Monochrome
 ###############################################################################
 
 MoveDelta 3
-Function "move-or-raise"
+Function "move-or-raiselower"
 {
     f.move
     f.deltastop
-    f.raise
+    f.raiselower
 }
 
 
@@ -78,10 +84,10 @@ Button2 =      : root                     : f.menu "windowops"
 Button2 = m    : window                   : f.resize
 Button2 =      : icon                     : f.iconify
 Button2 = m    : icon                     : f.iconify
-Button3 =      : root                     : f.showiconmgr
+Button3 =      : root                     : f.menu "apps"
+Button3 = m    : root                     : f.showiconmgr
 Button3 =      : iconmgr                  : f.hideiconmgr
-Button3 = m    : root                     : f.menu "apps"
-Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
+Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
 
 
 ###############################################################################
@@ -103,6 +109,7 @@ DontIconifyByUnmapping
   "oclock"
   "TWM Icon Manager"
   "expo"
+  "XClipboard"
 }
 IconManagerDontShow
 {
@@ -112,6 +119,7 @@ IconManagerDontShow
   "oclock"
   "TWM Icon Manager"
   "expo"
+  "XClipboard"
 }
 NoTitle
 {
@@ -120,6 +128,7 @@ NoTitle
   "xload"
   "oclock"
   "TWM Icon Manager"
+  "XClipboard"
 }
 
 IconDirectory "/users/jim/icons"
@@ -155,14 +164,15 @@ menu "windowops"
 "Window Operations"	f.title
 "Kill Window"		f.destroy
 ""			f.nop
+"Refresh"		f.refresh
 "Identify Window"	f.identify
-"Refresh Screen"	f.refresh
 ""			f.nop
-"Move Window"		f.move
+"Iconify Window"	f.iconify
 "Lower Window"		f.lower
 "Raise Window"		f.raise
-"Iconify Window"	f.iconify
+"Circulate Window"	f.raiselower
 "Resize Window"		f.resize
+"Move Window"		f.move
 ""			f.nop
 "Focus on Window"	f.focus
 "Unfocus"		f.unfocus
