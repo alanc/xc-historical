@@ -14,10 +14,9 @@ that use multiple window systems.  When this first client exits,
 If no client arguments are specified on the command line, \fIxinit\fP will
 look for a file called \fI\.xinitrc\fP in the user's home directory (or the
 file given by the XINITRC environment variable).  If the file exists and is 
-executable, \fIxinit\fP will use it as the default client to run.  If the file
-is not executable, but is readable, \fIxinit\fP will
-run it as a Bourne shell script.  If no such file is found, \fIxinit\fP
-will use the following command as a default:
+readable, \fIxinit\fP will treat it as a Bourne shell script that should be
+run using the command \fBsh -c .xinitrc\fP.  Otherwise, \fIxinit\fP will
+use the following as the client command to execute:
 .sp
 	xterm -geometry +1+1 -n login -display :0
 .sp
@@ -76,7 +75,7 @@ arguments to the default \fIxterm\fP command.  It will ignore \fI\.xinitrc\fP.
 This will use the command \fI\.\/Xsun -l -c\fP to start the server and will
 append the arguments \fI-e widgets\fP to the default \fIxterm\fP command.
 .TP 8
-.B "xinit /usr/ucb/rsh fasthost cpupig -display myws:1 -- :1 -a 2 -t 5"
+.B "xinit /usr/ucb/rsh fasthost cpupig -display ws:1 -- :1 -a 2 -t 5"
 This will start a server named \fIX\fP on display 1 with the arguments
 \fI-a 2 -t 5\fP.  It will then start a remote shell on the machine
 \fBfasthost\fP in which it will run the command \fIcpupig\fP, telling it
@@ -89,7 +88,6 @@ then choose the ``Exit'' menu item to shut down X.
 .sp
 .in +8
 .nf
-#!/bin/sh
 xrdb -load $HOME/.Xres
 xsetroot -solid gray &
 xclock -g 50x50-0+0 -bw 0 &
@@ -105,8 +103,7 @@ a default \fI\.xinitrc\fP that referenced a site-wide startup file:
 .sp
 .in +8
 .nf
-#!/bin/sh
-sh /usr/local/lib/site.xinitrc
+\. /usr/local/lib/site.xinitrc
 .fi
 .in -8
 .sp
