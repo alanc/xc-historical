@@ -194,7 +194,7 @@ initially sizing the window with pointer Button2 or when resizing it)
 should not wait until the pointer has crossed the window edges.
 Instead, moving
 the pointer automatically causes the nearest edge or edges to move by the
-same amount.  This allows allows the resizing windows that extend off 
+same amount.  This allows the resizing of windows that extend off 
 the edge of the screen.
 If the pointer is
 in the center of the window, or if the resize is begun by pressing a 
