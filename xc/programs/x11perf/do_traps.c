@@ -22,6 +22,7 @@ SOFTWARE.
 ******************************************************************************/
 
 #include "x11perf.h"
+#include "bitmaps.h"
 
 #define NUM_POINTS 4   /* 4 points to a trapezoid */
 static XPoint *points;
@@ -73,6 +74,8 @@ int InitTrapezoids(xp, p, reps)
 	    }
 	}
     }
+
+    SetFillStyle(xp, p);
     return reps;
 }
 
