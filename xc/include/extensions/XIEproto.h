@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XIEproto.h,v 1.1 93/07/19 11:43:46 mor Exp $ */
 
 /******************************************************************************
 
@@ -47,6 +47,10 @@ terms and conditions:
 
 #ifndef XIEPROTO_H
 #define XIEPROTO_H
+
+#define Drawable CARD32
+#define Colormap CARD32
+#define GContext CARD32
 
 #include <X11/extensions/XIEprotost.h>
 
@@ -483,7 +487,7 @@ typedef struct {
     CARD8	      error;
     CARD8             code;
     CARD16            sequenceNum B16;
-    XID               resourceID B32;
+    CARD32            resourceID B32;
     CARD8	      opcode;
     CARD8             pad[23];
 } xieResourceErr;
@@ -513,7 +517,7 @@ typedef struct {
     CARD8             floErrorCode;
     CARD8             opcode;
     CARD8             pad1[2];
-    XID		      resourceID B32;
+    CARD32	      resourceID B32;
     CARD8             pad2[8];
 } xieFloResourceErr;
 
@@ -574,6 +578,9 @@ typedef struct {
     CARD8             pad[8];
 } xieFloValueErr;
 
+#undef Drawable
+#undef Colormap
+#undef GContext
 
 
 /*
