@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.144 92/05/19 17:23:21 keith Exp $ */
+/* $XConsortium: connection.c,v 1.145 92/05/26 16:00:16 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -241,8 +241,8 @@ open_unix_socket ()
     unsock.sun_family = AF_UNIX;
     oldUmask = umask (0);
 #ifdef X_UNIX_DIR
-    mkdir (X_UNIX_DIR, 0777);
-    chmod (X_UNIX_DIR, 0777);
+    if (!mkdir (X_UNIX_DIR, 0777))
+	chmod (X_UNIX_DIR, 0777);
 #endif
     strcpy (unsock.sun_path, X_UNIX_PATH);
     strcat (unsock.sun_path, display);
@@ -258,8 +258,8 @@ open_unix_socket ()
 
         uname(&systemName);
         strcpy(oldLinkName, OLD_UNIX_DIR);
-        mkdir(oldLinkName, 0777);
-        chown(oldLinkName, 2, 3);
+        if (!mkdir(oldLinkName, 0777))
+	    chown(oldLinkName, 2, 3);
         strcat(oldLinkName, "/");
         strcat(oldLinkName, systemName.nodename);
         strcat(oldLinkName, display);
