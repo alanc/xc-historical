@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.2 89/10/26 17:34:05 jim Exp $
+ * $XConsortium: showrgb.c,v 1.3 89/10/26 17:44:28 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -46,13 +46,11 @@ main (argc, argv)
     char *argv[];
 {
     int i;
-    char *dbname = "/usr/lib/X11/rgb";
+    char *dbname = RGB_DB;
 
     ProgramName = argv[0];
     if (argc == 2)
 	dbname = argv[1];
-    else
-	dbname = RGB_DB;
 
     dumprgb (dbname);
     exit (0);
