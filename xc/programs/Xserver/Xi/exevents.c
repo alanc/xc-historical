@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.44 93/02/26 11:37:22 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.45 93/03/29 18:58:35 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -320,12 +320,12 @@ static void FixDeviceStateNotify (dev, ev, k, b, v, first)
     if (b) {
 	ev->classes_reported |= (1 << ButtonClass);
 	ev->num_buttons = b->numButtons;
-	bcopy((char *) b->down, (char *) &ev->buttons[0], 4);
+	memmove((char *) &ev->buttons[0], (char *) b->down, 4);
 	}
     else if (k) {
 	ev->classes_reported |= (1 << KeyClass);
 	ev->num_keys = k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode;
-	bcopy((char *) k->down, (char *) &ev->keys[0], 4);
+	memmove((char *) &ev->keys[0], (char *) k->down, 4);
 	}
     if (v) {
 	int nval = v->numAxes - first;
@@ -452,7 +452,7 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 		bev = (deviceButtonStateNotify *) ev++; 
 		bev->type = DeviceButtonStateNotify;
 		bev->deviceid = dev->id;
-		bcopy((char *) &b->down[4], (char *) &bev->buttons[0], 28);
+		memmove((char *) &bev->buttons[0], (char *) &b->down[4], 28);
 	    }
 	    if (nval > 0) {
 		(ev-1)->deviceid |= MORE_EVENTS;
@@ -471,7 +471,7 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 		kev = (deviceKeyStateNotify *) ev++; 
 		kev->type = DeviceKeyStateNotify;
 		kev->deviceid = dev->id;
-		bcopy((char *) &k->down[4], (char *) &kev->keys[0], 28);
+		memmove((char *) &kev->keys[0], (char *) &k->down[4], 28);
 	    }
 	    if (nval > 0) {
 		(ev-1)->deviceid |= MORE_EVENTS;
@@ -1024,7 +1024,7 @@ SetModifierMapping(client, dev, len, rlen, numKeyPerModifier, inputMap, k)
         xfree((*k)->modifierKeyMap);
     if (inputMapLen) {
         (*k)->modifierKeyMap = map;
-        bcopy((char *)inputMap, (char *)(*k)->modifierKeyMap, inputMapLen);
+        memmove((char *)(*k)->modifierKeyMap, (char *)inputMap, inputMapLen);
     } else
 	(*k)->modifierKeyMap = NULL;
 
