@@ -1,4 +1,4 @@
-/* $XConsortium: Eyes.c,v 1.22 91/03/26 11:58:31 converse Exp $ */
+/* $XConsortium: Eyes.c,v 1.23 91/05/22 19:26:09 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -249,7 +249,8 @@ static void Realize (gw, valueMask, attrs)
 		     *valueMask, attrs );
     Resize (gw);
     w->eyes.interval_id =
-	    XtAddTimeOut(delays[w->eyes.update], draw_it, (XtPointer)gw);
+	XtAppAddTimeOut(XtWidgetToApplicationContext(gw),
+			delays[w->eyes.update], draw_it, (XtPointer)gw);
 }
 
 static void Destroy (gw)
@@ -378,7 +379,8 @@ static void draw_it(client_data, id)
 		}
 	}
 	w->eyes.interval_id =
-		XtAddTimeOut(delays[w->eyes.update], draw_it, (XtPointer)w);
+		XtAppAddTimeOut(XtWidgetToApplicationContext((Widget) w),
+				delays[w->eyes.update], draw_it, (XtPointer)w);
 } /* draw_it */
 
 static
