@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.73 89/06/30 19:33:19 jim Exp $
+ * $XConsortium: menus.c,v 1.74 89/07/05 11:56:33 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.73 89/06/30 19:33:19 jim Exp $";
+"$XConsortium: menus.c,v 1.74 89/07/05 11:56:33 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1236,31 +1236,6 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
 	EventHandler[EnterNotify] = HandleUnknown;
 	EventHandler[LeaveNotify] = HandleUnknown;
-
-#ifdef NOT_NEEDED
-	/* redraw the text in the title bar or the icon window if
-	 * needed, we have disabled expose event handling so we must
-	 * do it here
-	 */
-	if (context == C_TITLE)
-	{
-	    FBF(tmp_win->title.fore, tmp_win->title.back,
-		Scr->TitleBarFont.font->fid);
-	    XDrawImageString(dpy, tmp_win->title_w,
-		Scr->NormalGC,
-		TitleBarX, Scr->TitleBarFont.y,
-		tmp_win->name, strlen(tmp_win->name));
-	}
-	else if (context == C_ICON && tmp_win->icon_w)
-	{
-	    FBF(tmp_win->iconc.fore, tmp_win->iconc.back,
-		Scr->IconFont.font->fid);
-	    XDrawImageString(dpy, tmp_win->icon_w,
-		Scr->NormalGC,
-		tmp_win->icon_x, tmp_win->icon_y,
-		tmp_win->icon_name, strlen(tmp_win->icon_name));
-	}
-#endif
 
 	if (!Scr->NoGrabServer || !Scr->OpaqueMove) {
 	    XGrabServer(dpy);
