@@ -1,5 +1,5 @@
 /*
- * $XConsortium: popup.c,v 2.26 89/12/10 17:38:59 converse Exp $
+ * $XConsortium: popup.c,v 2.27 90/04/17 15:04:08 swick Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -152,10 +152,10 @@ static void InsureVisibility(popup, popup_child, x, y, centerX, centerY)
     if (root_y < 0) root_y = 0;
     border <<= 1;
 
-    if ((root_x + width + border) > WidthOfScreen(XtScreen(toplevel))) {
+    if ((int)(root_x + width + border) > WidthOfScreen(XtScreen(toplevel))) {
 	root_x = WidthOfScreen(XtScreen(toplevel)) - width - border;
     }
-    if ((root_y + height + border) > HeightOfScreen(XtScreen(toplevel))) {
+    if ((int)(root_y + height + border) > HeightOfScreen(XtScreen(toplevel))) {
 	root_y = HeightOfScreen(XtScreen(toplevel)) - height - border;
     }
 
