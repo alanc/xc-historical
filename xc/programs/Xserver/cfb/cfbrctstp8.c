@@ -18,7 +18,9 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.12 90/02/09 13:14:28 rws Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.13 91/04/10 11:41:33 keith Exp $ */
+
+#if PSZ == 8
 
 #include "X.h"
 #include "Xmd.h"
@@ -32,9 +34,6 @@ Author: Keith Packard, MIT X Consortium
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
-
-#if (PPW == 4)
-
 
 void
 cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)

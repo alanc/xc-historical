@@ -18,7 +18,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.11 91/07/11 17:58:48 keith Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.12 91/12/19 14:15:30 keith Exp $ */
 
 #include "servermd.h"
 
@@ -42,7 +42,7 @@ purpose.  It is provided "as is" without express or implied warranty.
  				: "0" (x), "dI" (k))
 #endif
 
-#if (PPW == 4)
+#if PSZ == 8
 
 #define GetFourPixels(x)	(cfb8StippleXor[GetFourBits(x)])
 #define RRopPixels(dst,x)	(DoRRop(dst,cfb8StippleAnd[x], cfb8StippleXor[x]))
@@ -164,9 +164,9 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
     register int    _bitsTmp = (bits);				\
     *(dst) = MaskRRopPixels(*(dst),bits,mask);			\
     }
-#endif /* PPW == 4 */
+#endif /* PSZ == 8 */
 
-#if !defined(AVOID_MEMORY_READ) && PPW == 4
+#if !defined(AVOID_MEMORY_READ) && PSZ == 8
 
 #define WriteFourBits(dst,pixel,bits)				\
     {								\
@@ -208,7 +208,7 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 #define Long2	2
 #define Long3	3
 
-#if PPW == 4
+#if PSZ == 8
 
 #define WriteFourBits(dst,pixel,bits) \
 	switch (bits) {			\
@@ -329,9 +329,9 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 	    break; \
 	} \
 }
-#endif /* PPW == 4 */
+#endif /* PSZ == 8 */
 
-#if PPW == 2
+#if PSZ == 16
 
 #define WriteFourBits(dst,pixel,bits) \
 	switch (bits) {			\
@@ -454,8 +454,8 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 	} \
 }
 
-#endif /* PPW == 2 */
-#if PPW == 1
+#endif /* PSZ == 16 */
+#if PSZ == 32
 
 #define WriteFourBits(dst,pixel,bits) \
 	switch (bits) {			\
@@ -594,7 +594,7 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 	} \
 }
 
-#endif /* PPW == 1 */
+#endif /* PSZ == 32 */
 #endif /* AVOID_MEMORY_READ */
 
 extern unsigned long	cfb8BitLenMasks[32];

@@ -4,7 +4,9 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: cfb8bit.c,v 1.5 91/01/27 13:02:56 keith Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.6 91/12/19 14:15:28 keith Exp $ */
+
+#if PSZ == 8
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -17,8 +19,6 @@
 #include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
-
-#if (PPW == 4)
 
 unsigned long cfb8StippleMasks[16] = {
     0x00000000, 0x000000ff, 0x0000ff00, 0x0000ffff,
@@ -222,4 +222,4 @@ cfb8ComputeClipMasks32 (pBox, numRects, x, y, w, h, clips)
     return result;
 }
 
-#endif /* PPW == 4 */
+#endif /* PSZ == 8 */

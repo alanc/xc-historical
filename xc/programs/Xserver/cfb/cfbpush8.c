@@ -15,7 +15,9 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.8 91/01/27 13:02:54 keith Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.9 91/04/10 11:41:54 keith Exp $ */
+
+#if PSZ == 8
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -28,8 +30,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
-
-#if PPW == 4
 
 extern void mfbPushPixels();
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.4 91/04/26 21:33:55 keith Exp $
+ * $XConsortium: cfbsolid.c,v 1.5 91/07/11 21:48:24 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -132,7 +132,7 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
     	pdstRect = pdstBase + pBox->y1 * widthDst;
     	h = pBox->y2 - pBox->y1;
 	w = pBox->x2 - pBox->x1;
-#if PPW == 4
+#if PSZ == 8
 	if (w == 1)
 	{
 	    register char    *pdstb = ((char *) pdstRect) + pBox->x1;
@@ -187,7 +187,7 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 		}
 	    }
 	}
-#if PPW == 4
+#if PSZ == 8
 	}
 #endif
     }
@@ -248,7 +248,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	w = *pwidth++;
 	if (!w)
 	    continue;
-#if PPW == 4
+#if PSZ == 8
 	if (w <= 4)
 	{
 	    register char   *addrb;

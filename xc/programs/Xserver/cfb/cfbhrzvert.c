@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbhrzvert.c,v 1.4 89/11/19 18:41:52 rws Exp $ */
+/* $XConsortium: cfbhrzvert.c,v 1.5 90/01/31 12:31:37 keith Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -108,10 +108,10 @@ register int nlwidth;	/* width in longwords of bitmap */
 int x1, y1;		/* initial point */
 register int len;	/* length of line */
 {
-#if (PPW == 4)
-    register unsigned char    *bits = (unsigned char *) addrl;
+#ifdef PIXEL_ADDR
+    register PixelType    *bits = (PixelType *) addrl;
 
-    nlwidth <<= 2;
+    nlwidth <<= PWSH;
     bits = bits + (y1 * nlwidth) + x1;
 
     /*

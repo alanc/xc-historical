@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.17 91/07/18 23:31:04 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.18 91/12/19 14:16:13 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -66,7 +66,7 @@ SOFTWARE.
 
 #include "mergerop.h"
 
-#if PPW == 4
+#if PSZ == 8
 #include "cfb8bit.h"
 #endif
 
@@ -174,7 +174,7 @@ int fSorted;
     DEALLOCATE_LOCAL(pwidth);
 }
 
-#if PPW == 4
+#if PSZ == 8
 
 void
 cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
@@ -530,9 +530,9 @@ int fSorted;
     DEALLOCATE_LOCAL(pwidthFree);
 }
 
-#endif /* PPW == 4 */
+#endif /* PSZ == 8 */
 
-#if PPW == 4
+#if PSZ == 8
 
 void
 cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)

@@ -78,7 +78,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     
     cfbGetLongWidthAndPointer (pDrawable, widthSrc, psrcBase)
 
-#if PPW == 4
+#if PSZ == 8
     if ((nspans == 1) && (*pwidth == 1))
     {
 	tmpSrc = *((unsigned char *)(psrcBase + (ppt->y * (widthSrc >> 2)))

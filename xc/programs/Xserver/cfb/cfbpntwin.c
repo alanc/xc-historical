@@ -188,7 +188,7 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
     	pdst = pdstBase + pBox->y1 * widthDst;
     	h = pBox->y2 - pBox->y1;
 	w = pBox->x2 - pBox->x1;
-#if PPW == 4
+#if PSZ == 8
 	if (w == 1)
 	{
 	    register char    *pdstb = ((char *) pdst) + pBox->x1;
@@ -246,7 +246,7 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
 		}
 	    }
 	}
-#if PPW == 4
+#if PSZ == 8
 	}
 #endif
     }

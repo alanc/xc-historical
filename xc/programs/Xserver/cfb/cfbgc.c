@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.51 91/07/18 23:36:42 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.53 91/12/19 14:16:21 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -45,7 +45,7 @@ SOFTWARE.
 void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 
-#if PPW == 4
+#if PSZ == 8
 # define useTEGlyphBlt  cfbTEGlyphBlt8
 #else
 # ifdef WriteFourBits

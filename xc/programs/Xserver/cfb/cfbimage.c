@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.7 91/07/18 23:36:48 keith Exp $ */
+/* $XConsortium: cfbimage.c,v 1.8 91/12/19 14:16:34 keith Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -167,7 +167,7 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     }
     else
     {
-#if PPW == 4
+#if PSZ == 8
     	FakePixmap.drawable.type = DRAWABLE_PIXMAP;
     	FakePixmap.drawable.class = 0;
     	FakePixmap.drawable.pScreen = pDrawable->pScreen;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.5 91/08/22 15:41:05 keith Exp $
+ * $XConsortium: cfb8cppl.c,v 1.6 91/12/19 14:15:32 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#if PPW == 4
+#if PSZ == 8
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -32,7 +32,7 @@
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "cfb.h"
-#undef PPW /* for maskbits.h */
+#undef PSZ /* for maskbits.h */
 #include "maskbits.h"
 #include "mergerop.h"
 

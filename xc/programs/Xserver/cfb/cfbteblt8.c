@@ -17,7 +17,9 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.14 91/04/10 11:41:38 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.15 91/12/19 14:17:20 keith Exp $ */
+
+#if PSZ == 8
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -32,8 +34,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"regionstr.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
-
-#if (PPW == 4)
 
 /*
  * this code supports up to 5 characters at a time.  The performance
@@ -551,4 +551,4 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	}
     }
 }
-#endif /* PPW == 4 */
+#endif /* PSZ == 8 */

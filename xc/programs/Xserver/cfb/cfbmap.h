@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.1 91/12/19 14:16:37 keith Exp $
+ * $XConsortium: cfbmap.h,v 1.2 91/12/19 14:41:46 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -41,7 +41,7 @@
 #endif
 
 #ifndef NAME
-cfb can not hack PPW yet
+cfb can not hack PSZ yet
 #endif
 
 #if __STDC__ && !defined(UNIXCPP)
@@ -178,4 +178,4 @@ cfb can not hack PPW yet
 #define cfbZeroPolyArcSS8Xor NAME(ZeroPolyArcSSXor)
 #define cfbZeroPolyArcSS8General NAME(ZeroPolyArcSSGeneral)
 
-#endif /* PPW != 4 */
+#endif /* PSZ != 8 */

@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.19 91/06/28 12:40:07 keith Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.20 91/12/19 14:17:17 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -139,7 +139,7 @@ cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     VisualID	defaultVisual;
 
     rootdepth = 0;
-    if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth, &defaultVisual, 1<<PSZ))
+    if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth, &defaultVisual, 1<<(PSZ-1)))
 	return FALSE;
 #ifdef NEED_CFB_SCREEN_PRIVATE
     oldDevPrivate = pScreen->devPrivate;
