@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.20 88/08/22 13:05:38 swick Exp $";
+static char rcs_id[] =
+    "$XConsortium: init.c,v 2.21 88/08/26 13:26:06 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -115,11 +116,10 @@ Syntax(call)
 
 static char *FixUpGeometry(geo, defwidth, defheight)
 char *geo;
-Dimension defwidth, defheight;
+int defwidth, defheight;
 {
     int gbits;
-    Position x, y;
-    Dimension width, height;
+    int x, y, width, height;
     if (geo == NULL) geo = app_resources.defGeometry;
     x = y = 0;
     gbits = XParseGeometry(geo, &x, &y, &width, &height);

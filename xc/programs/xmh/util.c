@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 2.17 88/08/22 13:14:02 swick Exp $";
+static char rcs_id[] =
+    "$XConsortium: util.c,v 2.18 88/08/26 13:27:01 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -253,8 +254,7 @@ char *MallocACopy(str)
 
 char *CreateGeometry(gbits, x, y, width, height)
   int gbits;
-  Position x, y;
-  Dimension width, height;
+  int x, y, width, height;
 {
     char   *result, str1[10], str2[10], str3[10], str4[10];
     if (gbits & WidthValue)
