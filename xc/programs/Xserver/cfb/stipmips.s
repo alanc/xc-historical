@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: stipplemips.s,v 1.3 90/11/30 15:24:42 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
