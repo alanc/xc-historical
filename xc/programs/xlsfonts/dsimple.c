@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.c,v 1.6 88/05/18 16:27:14 jim Exp $ */
+/* $XConsortium: dsimple.c,v 1.7 88/09/06 17:38:13 jim Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -427,30 +427,28 @@ Window Select_Window(dpy)
   int status;
   Cursor cursor;
   XEvent event;
-  Window target_win = None;
+  Window target_win = None, root = RootWindow(dpy,screen);
   int buttons = 0;
 
   /* Make the target cursor */
   cursor = XCreateFontCursor(dpy, XC_crosshair);
 
   /* Grab the pointer using target cursor, letting it room all over */
-  status = XGrabPointer(dpy, RootWindow(dpy, screen), False,
+  status = XGrabPointer(dpy, root, False,
 			ButtonPressMask|ButtonReleaseMask, GrabModeSync,
-			GrabModeAsync, None, cursor, CurrentTime);
+			GrabModeAsync, root, cursor, CurrentTime);
   if (status != GrabSuccess) Fatal_Error("Can't grab the mouse.");
 
   /* Let the user select a window... */
   while ((target_win == None) || (buttons != 0)) {
     /* allow one more event */
     XAllowEvents(dpy, SyncPointer, CurrentTime);
-    XWindowEvent(dpy, RootWindow(dpy, screen),
-		 ButtonPressMask|ButtonReleaseMask, &event);
+    XWindowEvent(dpy, root, ButtonPressMask|ButtonReleaseMask, &event);
     switch (event.type) {
     case ButtonPress:
       if (target_win == None) {
 	target_win = event.xbutton.subwindow; /* window selected */
-	if (target_win == None)
-	  target_win = RootWindow(dpy, screen);
+	if (target_win == None) target_win = root;
       }
       buttons++;
       break;
