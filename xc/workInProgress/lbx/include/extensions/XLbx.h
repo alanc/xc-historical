@@ -1,5 +1,6 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
- * $NCDId: @(#)XLbx.h,v 1.11 1994/01/21 22:04:31 lemke Exp $
+ * $NCDId: @(#)XLbx.h,v 1.13 1994/02/10 01:53:09 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -50,6 +51,10 @@
 #define X_LbxPolyFillRectangle		19
 #define X_LbxPolyFillArc		20
 #define	X_LbxGetKeyboardMapping		21
+#define	X_LbxQueryFont			22
+#define	X_LbxChangeProperty		23
+#define	X_LbxGetProperty		24
+#define	X_LbxPropertyData		25
 
 #define LbxEvent			0
 #define LbxNumberEvents			(LbxEvent + 1)
@@ -74,6 +79,7 @@
 #define	LbxTagTypeModmap		1
 #define	LbxTagTypeKeymap		2
 #define	LbxTagTypeProperty		3
+#define	LbxTagTypeFont			4
 
 #ifndef _XLBX_SERVER_
 typedef struct {

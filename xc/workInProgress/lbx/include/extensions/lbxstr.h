@@ -1,5 +1,6 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
- * $NCDId: @(#)lbxstr.h,v 1.11 1994/01/21 22:04:50 lemke Exp $
+ * $NCDId: @(#)lbxstr.h,v 1.14 1994/02/11 00:12:19 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -27,7 +28,7 @@
 
 #define LBXNAME "LBX"
 
-#define LBX_MAJOR_VERSION	1	/* current version numbers */
+#define LBX_MAJOR_VERSION	0	/* current version numbers */
 #define LBX_MINOR_VERSION	0
 
 typedef struct _LbxQueryVersion {
@@ -174,6 +175,100 @@ typedef struct {
 } xLbxGetKeyboardMappingReply;
 #define sz_xLbxGetKeyboardMappingReply	32
 
+typedef struct _LbxQueryFont {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;	/* always X_LbxQueryFont */
+    CARD16	length B16;
+    CARD32	fid B32;
+} xLbxQueryFontReq;
+#define	sz_xLbxQueryFontReq	8
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	pad;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	tag B32;
+    CARD32	pad0 B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    /* X_QueryFont sticks much of the data in the base reply packet,
+     * but we hope that it won't be needed, (and it won't fit in 32 bytes
+     * with the tag anyways)
+     *
+     * if additional data is needed, its sent just like X_QueryFont, with
+     * an xQueryFontReply struct plus the xCharInfos
+     */
+} xLbxQueryFontReply;
+#define sz_xLbxQueryFontReply	32
+
+typedef struct _LbxChangeProperty {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;	/* always X_LbxChangeProperty */
+    CARD16	length B16;
+    Window	window B32;
+    Atom	property B32;
+    Atom	type B32;
+    CARD8	format;
+    CARD8	mode;
+    BYTE	pad[2];
+    CARD32	nUnits B32;
+} xLbxChangePropertyReq;
+#define	sz_xLbxChangePropertyReq	24
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	pad;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	tag B32;
+    CARD32	pad0 B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+} xLbxChangePropertyReply;
+#define sz_xLbxChangePropertyReply	32
+
+typedef struct _LbxGetProperty {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;	/* always X_LbxGetProperty */
+    CARD16	length B16;
+    Window	window B32;
+    Atom	property B32;
+    Atom	type B32;
+    CARD8	delete;
+    BYTE	pad[3];
+    CARD32	longOffset B32;
+    CARD32	longLength B32;
+} xLbxGetPropertyReq;
+#define	sz_xLbxGetPropertyReq	24
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	format;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    Atom	propertyType B32;
+    CARD32	bytesAfter B32;
+    CARD32	nItems B32;
+    CARD32	tag B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+} xLbxGetPropertyReply;
+#define sz_xLbxGetPropertyReply	32
+
+typedef struct _LbxPropertyData {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;	/* always X_LbxPropertyData */
+    CARD16	length B16;
+    XID		tag B32;
+    /* data */
+} xLbxPropertyDataReq;
+#define	sz_xLbxPropertyDataReq	8
+
 typedef struct _LbxQueryTag {
     CARD8	reqType;	/* always LbxReqCode */
     CARD8	lbxReqType;	/* always X_LbxQueryTag */
@@ -271,8 +366,8 @@ typedef struct _LbxEvent {
     BYTE	lbxType;
     CARD16	sequenceNumber B16;
     CARD32	client B32;	/* client */
-    CARD32	detail B32;
-    CARD32	pad0 B32;
+    CARD32	detail1 B32;
+    CARD32	detail2 B32;
     CARD32	pad1 B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
