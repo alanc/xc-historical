@@ -25,6 +25,10 @@
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
 
+#ifdef att
+#define LOADSTUB
+#endif
+
 #ifdef apollo
 #include <apollo/base.h>
 #include <apollo/time.h>
@@ -181,7 +185,11 @@ void GetLoadPoint( w, closure, call_data )
  * provide default for everyone else
  */
 #ifndef KERNEL_FILE
+#ifdef SYSV
+#define KERNEL_FILE "/unix"
+#else
 #define KERNEL_FILE "/vmunix"
+#endif /* SYSV */
 #endif /* KERNEL_FILE */
 #endif /* KERNEL_FILE */
 
@@ -224,7 +232,12 @@ void GetLoadPoint( w, closure, call_data )
  */
 
 #ifndef KERNEL_LOAD_VARIABLE
+#ifdef USG
+#define KERNEL_LOAD_VARIABLE "sysinfo"
+#define SYSINFO
+#else
 #define KERNEL_LOAD_VARIABLE "_avenrun"
+#endif
 #endif
 
 #endif /* KERNEL_LOAD_VARIABLE */
@@ -299,13 +312,13 @@ void GetLoadPoint( w, closure, call_data )
 		exit(-1);
 	    }
 	    loadavg_seek = namelist[LOADAV].n_value;
-# if defined(mips) && defined(SYSTYPE_SYSV)
+#if defined(mips) && defined(SYSTYPE_SYSV)
 	    loadavg_seek &= 0x7fffffff;
-# endif /* mips && SYSTYPE_SYSV */
-# if defined (CRAY) && defined (SYSINFO)
+#endif /* mips && SYSTYPE_SYSV */
+#if defined(CRAY && defined(SYSINFO)
  	    loadavg_seek += ((char *) (((struct sysinfo *)NULL)->avenrun)) -
 	                    ((char *) NULL);
-# endif /* CRAY */
+#endif /* SYSINFO */
   
 	    kmem = open(KMEM_FILE, O_RDONLY);
 	    if (kmem < 0) xload_error("cannot open", KMEM_FILE);
