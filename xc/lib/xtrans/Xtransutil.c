@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xtransutil.c,v 1.11 94/02/06 16:03:28 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -243,7 +243,7 @@ Xtransaddr	*addr;
 static jmp_buf env;
 
 #ifdef SIGALRM
-int nameserver_timedout = 0;
+static int nameserver_timedout = 0;
 
 static 
 #ifdef SIGNALRETURNSINT
