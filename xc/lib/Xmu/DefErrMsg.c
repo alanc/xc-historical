@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DefErrMsg.c,v 1.3 89/11/14 16:16:32 jim Exp $
+ * $XConsortium: DefErrMsg.c,v 1.4 89/11/20 16:19:35 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -32,20 +32,38 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
     char mesg[BUFSIZ];
     char number[32];
     char *mtype = "XlibMessage";
+    register _XExtension *ext = (_XExtension *)NULL;
     XGetErrorText(dpy, event->error_code, buffer, BUFSIZ);
     XGetErrorDatabaseText(dpy, mtype, "XError", "X Error", mesg, BUFSIZ);
     (void) fprintf(fp, "%s:  %s\n  ", mesg, buffer);
     XGetErrorDatabaseText(dpy, mtype, "MajorCode", "Request Major code %d", 
 	mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->request_code);
-    sprintf(number, "%d", event->request_code);
-    XGetErrorDatabaseText(dpy, "XRequest", number, "", 	buffer, BUFSIZ);
+    if (event->request_code < 128) {
+	sprintf(number, "%d", event->request_code);
+	XGetErrorDatabaseText(dpy, "XRequest", number, "", buffer, BUFSIZ);
+    } else {
+	/* XXX need an Xlib interface for this */
+	for (ext = dpy->ext_procs;
+	     ext && (ext->codes.major_opcode != event->request_code);
+	     ext = ext->next)
+	  ;
+	if (ext)
+	    strcpy(buffer, ext->name);
+	else
+	    buffer[0] = '\0';
+    }
     (void) fprintf(fp, " (%s)", buffer);
     fputs("\n  ", fp);
-    XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code", 
+    XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code %d",
 	mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->minor_code);
     fputs("\n  ", fp);
+    if (ext) {
+	sprintf(mesg, "%s.%d", ext->name, event->minor_code);
+	XGetErrorDatabaseText(dpy, "XRequest", mesg, "", buffer, BUFSIZ);
+	(void) fprintf(fp, " (%s)", buffer);
+    }
     XGetErrorDatabaseText(dpy, mtype, "ResourceID", "ResourceID 0x%x",
 	mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->resourceid);
