@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.14 88/02/18 16:47:46 jim Exp $
+ *	$Header: main.c,v 1.16 88/02/20 16:34:15 swick Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.14 88/02/18 16:47:46 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.16 88/02/20 16:34:15 swick Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -322,12 +322,8 @@ static XtResource resources[] = {
 
 static XrmOptionDescRec optionDescList[] = {
 {"-geometry",	"*vt100.geometry",XrmoptionSepArg,	(caddr_t) NULL},
-{"=",		"*vt100.geometry",XrmoptionIsArg,	(caddr_t) NULL},
-{"%",		"*tekGeometry",	XrmoptionIsArg,		(caddr_t) NULL},
-{"#",		".iconGeometry",XrmoptionIsArg,		(caddr_t) NULL},
 {"-132",	"*c132",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+132",	"*c132",	XrmoptionNoArg,		(caddr_t) "off"},
-{"-T",		"*title",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-b",		"*internalBorder",XrmoptionSepArg,	(caddr_t) NULL},
 {"-cr",		"*cursor",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-cu",		"*curses",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -344,12 +340,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-mb",		"*marginBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+mb",		"*marginBell",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-ms",		"*mouse",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-n",		"*iconName",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-nb",		"*nMarginBell",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "on"},
-{"+r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "off"},
-{"-rv",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "on"},
-{"+rv",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "off"},
 {"-rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-s",		"*multiScroll",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -365,6 +356,19 @@ static XrmOptionDescRec optionDescList[] = {
 {"+t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "off"},
+/* bogus old compatibility stuff for which there are
+   standard XtInitialize options now */
+#ifndef TRASHEQUALGEOMETRY
+{"=",		"*vt100.geometry",XrmoptionStickyArg,	(caddr_t) NULL},
+#endif
+{"%",		"*tekGeometry",	XrmoptionStickyArg,	(caddr_t) NULL},
+{"#",		".iconGeometry",XrmoptionStickyArg,	(caddr_t) NULL},
+{"-T",		"*title",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-n",		"*iconName",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "on"},
+{"+r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "off"},
+{"-rv",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "on"},
+{"+rv",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "off"},
 {"-w",		".TopLevelShell.borderWidth", XrmoptionSepArg, (caddr_t) NULL},
 };
 
