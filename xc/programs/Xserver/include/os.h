@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.47 92/08/21 19:27:08 rws Exp $ */
+/* $XConsortium: os.h,v 1.48 92/10/20 09:27:53 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -116,23 +116,254 @@ char *alloca();
 #endif
 #endif
 
-int		ReadRequestFromClient();
-void		CloseDownConnection();
-FontPathPtr	ExpandFontNamePattern();
-FID		FiOpenForRead();
-void		CreateWellKnownSockets();
-int		SetDefaultFontPath();
-void		FreeFontRecord();
-int		SetFontPath();
-void		ErrorF();
-void		Error();
-void		FatalError();
-void		ProcessCommandLine();
-void		Xfree();
-void		FlushAllOutput();
-void		FlushIfCriticalOutputPending();
-unsigned long	*Xalloc();
-unsigned long	*Xrealloc();
-long		GetTimeInMillis();
+/* have to put $(SIGNAL_DEFINES) in DEFINES in Imakefile to get this right */
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+
+extern int WaitForSomething(
+#if NeedFunctionPrototypes
+    int */*pClientsReady*/
+#endif
+);
+
+extern int ReadRequestFromClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern Bool InsertFakeRequest(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    char */*data*/,
+    int /*count*/
+#endif
+);
+
+extern int ResetCurrentRequest(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern void FlushAllOutput(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void FlushIfCriticalOutputPending(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void SetCriticalOutputPending(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int WriteToClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*who*/,
+    int /*count*/,
+    char */*buf*/
+#endif
+);
+
+extern void ResetOsBuffers(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void CreateWellKnownSockets(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ResetWellKnownSockets(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern char *ClientAuthorized(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    unsigned int /*proto_n*/,
+    char */*auth_proto*/,
+    unsigned int /*string_n*/,
+    char */*auth_string*/
+#endif
+);
+
+extern Bool EstablishNewConnections(
+#if NeedFunctionPrototypes
+    ClientPtr /*clientUnused*/,
+    pointer /*closure*/
+#endif
+);
+
+extern void CheckConnections(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void CloseDownConnection(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int AddEnabledDevice(
+#if NeedFunctionPrototypes
+    int /*fd*/
+#endif
+);
+
+extern int RemoveEnabledDevice(
+#if NeedFunctionPrototypes
+    int /*fd*/
+#endif
+);
+
+extern int OnlyListenToOneClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int ListenToAllClients(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int IgnoreClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int AttendClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int MakeClientGrabImpervious(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int MakeClientGrabPervious(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern void Error(
+#if NeedFunctionPrototypes
+    char */*str*/
+#endif
+);
+
+extern long GetTimeInMillis(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int AdjustWaitForDelay(
+#if NeedFunctionPrototypes
+    pointer /*waitTime*/,
+    unsigned long /*newdelay*/
+#endif
+);
+
+extern SIGVAL AutoResetServer(
+#if NeedFunctionPrototypes
+    int /*sig*/
+#endif
+);
+
+extern SIGVAL GiveUp(
+#if NeedFunctionPrototypes
+    int /*sig*/
+#endif
+);
+
+extern void UseMsg(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ProcessCommandLine(
+#if NeedFunctionPrototypes
+    int /*argc*/,
+    char */*argv*/[]
+#endif
+);
+
+extern unsigned long *Xalloc(
+#if NeedFunctionPrototypes
+    unsigned long /*amount*/
+#endif
+);
+
+extern unsigned long *Xcalloc(
+#if NeedFunctionPrototypes
+    unsigned long /*amount*/
+#endif
+);
+
+extern unsigned long *Xrealloc(
+#if NeedFunctionPrototypes
+    pointer /*ptr*/,
+    unsigned long /*amount*/
+#endif
+);
+
+extern void Xfree(
+#if NeedFunctionPrototypes
+    pointer /*ptr*/
+#endif
+);
+
+extern int OsInitAllocator(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void AuditF(
+#if NeedVarargsPrototypes
+    char */*f*/,
+    ...
+#endif
+);
+
+extern void FatalError(
+#if NeedVarargsPrototypes
+    char */*f*/,
+    ...
+#endif
+);
+
+extern void ErrorF(
+#if NeedVarargsPrototypes
+    char */*f*/,
+    ...
+#endif
+);
 
 #endif /* OS_H */
