@@ -12,11 +12,7 @@
 			<Leave>:popdown-pixel()\n\
 			<Key>q:close()\n\
 			Ctrl<Key>c:close()\n\
-			<Key>space:replace()\n\
-			<Btn2Up>:replace()\n\
-                        <Btn3Down>:request-selection()\n\
-                        <Btn3Up>:grab-selection()
-
+			<Key>space:replace()\n
 *close.accelerators:#augment\
 			<Key>q:set()notify()unset()\n\
 			Ctrl<Key>c:set()notify()unset()
