@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.186 93/09/20 20:28:52 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.187 93/09/22 22:01:14 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -3047,7 +3047,7 @@ static char workarea[MAX_WORKAREA];
 int
 _XReadV (fd, v, n)
     int		fd;
-    struct iovec v[];
+    struct iovec *v;
     int		n;
 {
 	int i, rc, len, size = 0;
@@ -3091,7 +3091,7 @@ _XReadV (fd, v, n)
 int
 _XWriteV (fd, v, n)
     int fd;
-    struct iovec v[];
+    struct iovec *v;
     int n;
 {
 	int i, rc, len, size = 0;
