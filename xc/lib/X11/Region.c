@@ -1,4 +1,4 @@
-/* $Header: XRegion.c,v 11.13 87/09/03 17:20:59 rws Locked $ */
+/* $Header: XRegion.c,v 11.14 87/11/11 15:38:29 rws Locked $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1418,11 +1418,13 @@ XXorRegion( sra, srb, dr )
 {
     Region tra, trb;
 
-    tra = (Region)Xmalloc((unsigned) sizeof(REGION));
-    trb = (Region)Xmalloc((unsigned) sizeof(REGION));
+    tra = XCreateRegion();
+    trb = XCreateRegion();
     (void) XSubtractRegion(sra,srb,tra);
     (void) XSubtractRegion(srb,sra,trb);
     (void) XUnionRegion(tra,trb,dr);
+    XDestroyRegion(tra);
+    XDestroyRegion(trb);
 }
 
 /*
