@@ -1,4 +1,4 @@
-.\" $XConsortium: CH09,v 1.9 92/11/16 17:45:32 converse Exp $
+.\" $XConsortium: CH09,v 1.10 94/01/07 19:36:30 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -912,7 +912,6 @@ Predefined Resource Converters
 The \*(xI define all the representations used in the 
 Object,
 RectObj,
-Session,
 Core, 
 Composite, 
 Constraint, 
@@ -952,6 +951,11 @@ T}	T{
 .PN XtCvtStringToBool
 T}
 T{
+.PN XtRCommandArgArray
+T}	T{
+.PN XtCvtStringToCommandArgArray
+T}
+T{
 .PN XtRCursor
 T}	T{
 .PN XtCvtStringToCursor
@@ -960,6 +964,11 @@ T{
 .PN XtRDimension
 T}	T{
 .PN XtCvtStringToDimension
+T}
+T{
+.PN XtRDirectoryString
+T}	T{
+.PN XtCvtStringToDirectoryString
 T}
 T{
 .PN XtRDisplay
@@ -1133,41 +1142,42 @@ that the converter is invoked again if the same conversion
 is required in a different locale.
 .LP
 The String-to-Gravity conversion accepts string values which are the
-names of window and bit gravities and their corresponding integer names,
+names of window and bit gravities and their numerical equivalents,
 as defined in \*(xL;
 .PN ForgetGravity ,
 .PN UnmapGravity ,
-.PN 0 ,
 .PN NorthWestGravity ,
-.PN 1 ,
 .PN NorthGravity ,
-.PN 2 ,
 .PN NorthEastGravity ,
-.PN 3 ,
 .PN WestGravity ,
-.PN 4 ,
 .PN CenterGravity ,
-.PN 5 ,
 .PN EastGravity ,
-.PN 6 ,
 .PN SouthWestGravity ,
-.PN 7 ,
 .PN SouthGravity , 
-.PN 8 , 
 .PN SouthEastGravity , 
-.PN 9 ,
+and
 .PN StaticGravity ,
-and 
-.PN 10 .
 Alphabetic case is not significant in the conversion.
 .LP
+The String-to-CommandArgArray conversion parses a String into an
+array of strings.
+White space characters separate elements of the command line.
+The converter recognizes the backslash character `\\' as an escape
+character to allow the following white space character to be part of the
+array element.
+.LP
+.IN "XtCurrentDirectory" "" "@DEF@"
+The String-to-DirectoryString conversion recognizes the
+string "XtCurrentDirectory"
+and returns the result of a call to get the current directory.
 .LP
 The String-to-RestartStyle conversion accepts the values 
 .PN RestartIfRunning ,
 .PN RestartAnyway ,
+.PN RestartImmediately ,
 and
-.PN RestartImmediately
-as defined by the X Session Management Protocol.
+.PN RestartNever
+as defined by the \fIX Session Management Protocol\fP.
 .LP
 The String-to-InitialState conversion accepts the values
 .PN NormalState
@@ -1366,7 +1376,7 @@ Specifies a list of additional
 .PN XrmValue
 arguments to the converter if additional context is needed
 to perform the conversion, or NULL.
-For example, the String-to-Font converter needs the widget's \fIscreen\fP,
+For example, the String-to-Font converter needs the widget's \fIdisplay\fP,
 and the String-to-Pixel converter needs the widget's \fIscreen\fP and \fIcolormap\fP.
 .IP \fInum_args\fP 1i
 Specifies the number of entries in \fIargs\fP.
@@ -1485,38 +1495,44 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, converter_d
 	Screen		*screen;
 	Colormap		colormap;
 	Status			status;
-	char			message[1000];
 
 	if (*num_args != 2)
-		XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
-			"cvtStringToPixel", "wrongParameters", "XtToolkitError",
+		XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+			"wrongParameters", "cvtStringToPixel", "XtToolkitError",
 			"String to pixel conversion needs screen and colormap arguments",
 			(String *)NULL, (Cardinal *)NULL);
 
 	screen = *((Screen**) args[0].addr);
 	colormap = *((Colormap *) args[1].addr);
 
-	LowerCase((char *) fromVal->addr, message);
+	if (CompareISOLatin1(str, XtDefaultBackground) == 0) {
+		*closure_ret = False;
+		done(Pixel, WhitePixelOfScreen(screen));
+	}
+	if (CompareISOLatin1(str, XtDefaultForeground) == 0) {
+		*closure_ret = False;
+		done(Pixel, BlackPixelOfScreen(screen));
+	}
 
-	if (strcmp(message, "xtdefaultbackground") == 0) done(&WhitePixelOfScreen(screen), Pixel);
-	if (strcmp(message, "xtdefaultforeground") == 0) done(&BlackPixelOfScreen(screen), Pixel);
 
 	status = XAllocNamedColor(DisplayOfScreen(screen), colormap, (char*)fromVal->addr, 
-				&screenColor, &exactColor);
+				       &screenColor, &exactColor);
 
 	if (status == 0) {
 		String params[1];
 		Cardinal num_params = 1;
 		params[0] = (String)fromVal->addr;
 		XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-			"cvtStringToPixel", "noColormap", "XtToolkitError",
-			"Cannot allocate colormap entry for \\"%s\\"", params, &num_params);
+			"noColormap", "cvtStringToPixel", "XtToolkitError",
+			"Cannot allocate colormap entry for \\"%s\\"", params,
+&num_params);
+	        *converter_data = False;
+                return False;
 	} else {
-		done( &screenColor.pixel, Pixel );
+                *converter_data = (char *) True;
+		done(Pixel, &screenColor.pixel);
 	}
-
-	/* converter_data not used here */
-};
+}
 .De
 .LP
 All type converters should define some set of conversion values for which they
@@ -2002,8 +2018,9 @@ typedef XtPointer XtCacheRef;
 .De
 .IN "XtCallConverter" "" "@DEF@"
 .FD 0
-Boolean XtCallConverter( \fIdisplay\fP, \fIconverter\fP, \fIconversion_args\fP, \
-\fInum_args\fP, \fIfrom\fP, \fIto_in_out\fP, \fIcache_ref_return\fP )
+Boolean XtCallConverter( \fIdisplay\fP, \fIconverter\fP, \
+\fIconversion_args\fP, \fInum_args\fP, \fIfrom\fP, \fIto_in_out\fP,
+                                              \fIcache_ref_return\fP )
 .br
       Display* \fIdisplay\fP;
 .br
