@@ -38,6 +38,7 @@
             TEK = ddx/tek/libtek.a
            MIPS = ddx/mips/libmips.a
            LUNA = ddx/omron/libomron.a
+          DECWS = ddx/dec/ws/libdec.a
           HPMIT = ddx/hp.mit/libhp.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
        XDMCPLIB = $(TOP)/lib/Xdmcp/libXdmcp.a
@@ -83,6 +84,12 @@ XCOMM
 #define doqdssServer
 #else
 #define	XqdssServer /* as nothing */
+#endif
+
+#ifdef XdecServer
+#define dodecServer
+#else
+#define XdecServer /* as nothing */
 #endif
 
 #ifdef XmfbpmaxServer
@@ -158,8 +165,8 @@ XCOMM
  *                                                                           *
 /*****************************************************************************
  */
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer XmipsServer XnonServer
-ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek Xluna Xmips Xnon
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XdecServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer XmipsServer XnonServer
+ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xdec Xcfbpmax Xmfbpmax Xtek Xluna Xmips Xnon
 
 all: $(ALL)
 
@@ -210,6 +217,24 @@ XqdssDIRS = $(QDSSDIRS)
 
 ServerTarget(Xqdss,$(EXTDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
 #endif /* doqdssServer */
+
+#ifdef dodecServer
+XCOMM
+XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
+XCOMM
+#define need_dix
+#define need_ddx_mi
+#define need_ddx_mfb
+#define need_ddx_cfb
+#define need_ddx_dec_ws
+#define need_os_42bsd
+DECDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/dec/ws os/4.2bsd
+DECOBJS = ddx/dec/ws/init.o $(FONTUTIL)
+DECLIBS = $(DECWS) $(DIX) $(BSD) $(FONT) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
+XcfbpmaxDIRS = $(DECDIRS)
+
+ServerTarget(Xdec,$(EXTDIR) $(DECDIRS),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
+#endif /* dodecServer */
 
 #ifdef domfbpmaxServer
 XCOMM
@@ -541,6 +566,11 @@ Xnon: $(EXTDIR) dix ddx/mi ddx/mfb ddx/cfb os/4.2bsd
 #else
 #define dir_ddx_dec_qvss /**/
 #endif
+#ifdef need_ddx_dec_ws
+#define dir_ddx_dec_ws ddx/dec/ws
+#else
+#define dir_ddx_dec_ws /**/
+#endif
 #ifdef need_ddx_dec_mfbpmax
 #define dir_ddx_dec_mfbpmax ddx/dec/mfbpmax
 #else
@@ -592,7 +622,7 @@ Xnon: $(EXTDIR) dix ddx/mi ddx/mfb ddx/cfb os/4.2bsd
 OURDIX = dir_dix
 OURDDX = dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
 OUROS = dir_os_42bsd
-DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
+DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_ws dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
 HPDDX = dir_ddx_hp dir_ddx_hpMit
 OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek dir_ddx_omron dir_ddx_mips
 
@@ -603,7 +633,7 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
                   ddx/sun \
                   ddx/apollo ddx/apollo/apc \
                   ddx/ibm \
-		  ddx/dec/mfbpmax ddx/dec/cfbpmax \
+		  ddx/dec/ws ddx/dec/mfbpmax ddx/dec/cfbpmax \
                   ddx/hp ddx/hp.mit ddx/tek \
                   ddx/macII ddx/omron ddx/mips
       ALLOSDIRS = os/4.2bsd
