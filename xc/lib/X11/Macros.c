@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMacros.c,v 11.15 87/09/01 14:55:55 toddb Locked $ */
+/* $Header: XMacros.c,v 11.16 87/09/01 14:56:28 swick Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -132,6 +132,16 @@ int XHeightMMOfScreen(s) Screen *s; { return (HeightMMOfScreen(s)); }
 int XPlanesOfScreen(s) Screen *s; { return (PlanesOfScreen(s)); }
 
 int XCellsOfScreen(s) Screen *s; { return (CellsOfScreen(s)); }
+
+int XMinCmapsOfScreen(s) Screen *s; { return (MinCmapsOfScreen(s)); }
+
+int XMaxCmapsOfScreen(s) Screen *s; { return (MaxCmapsOfScreen(s)); }
+
+Bool XDoesSaveUnders(s) Screen *s; { return (DoesSaveUnders(s)); }
+
+Bool XDoesBackingStore(s) Screen *s; { return (DoesBackingStore(s)); }
+
+long XEventMaskOfScreen(s) Screen *s; { return (EventMaskOfScreen(s)); }
 
 /*
  * These macros are used to give some sugar to the image routines so that
