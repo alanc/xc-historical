@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.6 88/09/06 15:02:53 jim Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.7 88/10/03 08:26:17 rws Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -34,6 +34,8 @@ extern int cfbstartpartial[];
 extern int cfbendpartial[];
 extern int cfbrmask[];
 extern int cfbmask[];
+extern unsigned int QuartetBitsTable[];
+extern unsigned int QuartetPixelMaskTable[];
 
 
 /*
@@ -302,50 +304,6 @@ else \
 
 #define getleftbits(psrc, w, dst) \
     dst = *(psrc);
-
-/*
- * QuartetBitsTable contains four masks whose binary values are masks in the
- * low order quartet that contain the number of bits specified in the
- * index.  This table is used by getstipplepixels.
- */
-static unsigned int QuartetBitsTable[5] = {
-#if (BITMAP_BIT_ORDER == MSBFirst)
-    0x00000000,                         /* 0 - 0000 */
-    0x00000008,                         /* 1 - 1000 */
-    0x0000000C,                         /* 2 - 1100 */
-    0x0000000E,                         /* 3 - 1110 */
-    0x0000000F                          /* 4 - 1111 */
-#else /* (BITMAP_BIT_ORDER == LSBFirst */
-    0x00000000,                         /* 0 - 0000 */
-    0x00000001,                         /* 1 - 0001 */
-    0x00000003,                         /* 2 - 0011 */
-    0x00000007,                         /* 3 - 0111 */
-    0x0000000F                          /* 4 - 1111 */
-#endif (BITMAP_BIT_ORDER == MSBFirst)
-};
-/*
- * QuartetPixelMaskTable is used by getstipplepixels to get a pixel mask
- * corresponding to a quartet of bits.
- */
-static unsigned int QuartetPixelMaskTable[16] = {
-    0x00000000,
-    0x000000FF,
-    0x0000FF00,
-    0x0000FFFF,
-    0x00FF0000,
-    0x00FF00FF,
-    0x00FFFF00,
-    0x00FFFFFF,
-    0xFF000000,
-    0xFF0000FF,
-    0xFF00FF00,
-    0xFF00FFFF,
-    0xFFFF0000,
-    0xFFFF00FF,
-    0xFFFFFF00,
-    0xFFFFFFFF
-};
-
 
 #if (PPW*PSZ==32)
 #define GET_VALID_BITS_FROM_LONG(l) (l)

@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.c,v 4.3 87/09/10 17:53:31 sun Exp $ */
+/* $XConsortium: cfbmskbits.c,v 4.4 88/09/06 15:02:50 jim Exp $ */
 
 /*
  * ==========================================================================
@@ -136,7 +136,7 @@ int cfbendpartial[] =
 	0x0000FFFF,
 	0x00FFFFFF
 	};
-#endif	(BITMAP_BIT_ORDER == MSBFirst)
+#endif	/* (BITMAP_BIT_ORDER == MSBFirst) */
 
 
 /* used for masking bits in bresenham lines
@@ -164,7 +164,51 @@ int cfbrmask[] =
     {
 	0xFFFFFF00, 0xFFFF00FF, 0xFF00FFFF, 0x00FFFFFF
     };
-#endif	(BITMAP_BIT_ORDER == MSBFirst)
+#endif	/* (BITMAP_BIT_ORDER == MSBFirst) */
+
+/*
+ * QuartetBitsTable contains four masks whose binary values are masks in the
+ * low order quartet that contain the number of bits specified in the
+ * index.  This table is used by getstipplepixels.
+ */
+unsigned int QuartetBitsTable[5] = {
+#if (BITMAP_BIT_ORDER == MSBFirst)
+    0x00000000,                         /* 0 - 0000 */
+    0x00000008,                         /* 1 - 1000 */
+    0x0000000C,                         /* 2 - 1100 */
+    0x0000000E,                         /* 3 - 1110 */
+    0x0000000F                          /* 4 - 1111 */
+#else /* (BITMAP_BIT_ORDER == LSBFirst */
+    0x00000000,                         /* 0 - 0000 */
+    0x00000001,                         /* 1 - 0001 */
+    0x00000003,                         /* 2 - 0011 */
+    0x00000007,                         /* 3 - 0111 */
+    0x0000000F                          /* 4 - 1111 */
+#endif /* (BITMAP_BIT_ORDER == MSBFirst) */
+};
+
+/*
+ * QuartetPixelMaskTable is used by getstipplepixels to get a pixel mask
+ * corresponding to a quartet of bits.
+ */
+unsigned int QuartetPixelMaskTable[16] = {
+    0x00000000,
+    0x000000FF,
+    0x0000FF00,
+    0x0000FFFF,
+    0x00FF0000,
+    0x00FF00FF,
+    0x00FFFF00,
+    0x00FFFFFF,
+    0xFF000000,
+    0xFF0000FF,
+    0xFF00FF00,
+    0xFF00FFFF,
+    0xFFFF0000,
+    0xFFFF00FF,
+    0xFFFFFF00,
+    0xFFFFFFFF
+};
 
 #ifdef	vax
 #undef	VAXBYTEORDER

@@ -305,8 +305,8 @@ cfbXRotatePixmap(pPix, rw)
     PixmapPtr	pPix;
     register int rw;
 {
-    register long	*pw, *pwFinal, *pwNew;
-    register unsigned long	t;
+    register unsigned int	*pw, *pwFinal, *pwNew;
+    register unsigned int	t;
     int			size;
 
     if (pPix == NullPixmap)
@@ -322,7 +322,7 @@ cfbXRotatePixmap(pPix, rw)
 	    ErrorF("cfbXRotatePixmap: unsupported depth %d\n", ((DrawablePtr) pPix)->depth);
 	    return;
     }
-    pw = (long *)pPix->devPrivate;
+    pw = (unsigned int *)pPix->devPrivate;
     rw %= pPix->width;
     if (rw < 0)
 	rw += pPix->width;
@@ -332,13 +332,13 @@ cfbXRotatePixmap(pPix, rw)
 	while(pw < pwFinal)
 	{
 	    t = *pw;
-	    *pw++ = SCRRIGHT(t, rw) | 
+	    *pw++ = SCRRIGHT(t, rw) |
 		    (SCRLEFT(t, (PPW-rw)) & cfbendtab[rw]);
 	}
     }
     else
     {
-	pwNew = (long *) xalloc( pPix->height * pPix->devKind);
+	pwNew = (unsigned int *) xalloc( pPix->height * pPix->devKind);
 	if (!pwNew)
 	    return;
 
@@ -349,12 +349,12 @@ cfbXRotatePixmap(pPix, rw)
 	 * now hook in the new part and throw away the old. All done.
 	 */
 	size = PixmapBytePad(pPix->width, PSZ) >> 2;
-        cfbQuickBlt(pw, pwNew, 0, 0, rw, 0, pPix->width - rw, pPix->height,
-		    size, size);
-        cfbQuickBlt(pw, pwNew, pPix->width - rw, 0, 0, 0, rw, pPix->height,
-	            size, size);
+        cfbQuickBlt((int *)pw, (int *)pwNew, 0, 0, rw, 0,
+		    pPix->width - rw, pPix->height, size, size);
+        cfbQuickBlt((int *)pw, (int *)pwNew, pPix->width - rw, 0, 0, 0,
+		    rw, pPix->height, size, size);
 	pPix->devPrivate = (pointer) pwNew;
-	xfree((char *) pw);
+	xfree(pw);
 
     }
 

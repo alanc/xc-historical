@@ -735,11 +735,12 @@ cfbCopyClip (pgcDst, pgcSrc)
         prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
         (*pgcSrc->pScreen->RegionCopy)(prgnNew,
                                        (RegionPtr)(pgcSrc->clientClip));
-        cfbChangeClip(pgcDst, CT_REGION, prgnNew, 0);
+        cfbChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
         break;
     }
 }
 
+/*ARGSUSED*/
 void
 cfbCopyGCDest (pGC, pQ, changes, pGCSrc)
     GCPtr	pGC;

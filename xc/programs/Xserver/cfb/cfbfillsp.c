@@ -154,19 +154,19 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
 #ifdef	notdef
     dumpspans(n, pptInit, pwidthInit);
 #endif
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
@@ -271,16 +271,16 @@ int fSorted;
 	return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
@@ -467,16 +467,16 @@ int fSorted;
 	return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);

@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 1.1 88/02/01 20:37:53 rws Exp $ */
+/* $XConsortium: cfbtegblt.c,v 1.2 88/09/06 15:02:48 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -64,7 +64,6 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {
     CharInfoPtr pci;
     FontInfoPtr pfi = pGC->font->pFI;
-    int xorg, yorg;
     int widthDst;
     unsigned int *pdstBase;	/* pointer to longword with top row 
 				   of current glyph */
@@ -78,8 +77,6 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     register unsigned int *pdst;/* pointer to current longword in dst */
     int hTmp;			/* counter for height */
-    int nfirst;			/* used if glyphs spans a longword boundary */
-    register unsigned int tmpSrc;
     BoxRec bbox;		/* for clipping */
 
     register int wtmp,xtemp,width;

@@ -16,7 +16,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 1.3 88/09/06 15:02:51 jim Exp $ SPRITE (Berkeley)";
+"$XConsortium: cfbbstore.c,v 1.4 89/03/21 10:13:18 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "cfb.h"
@@ -75,7 +75,7 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
 
 
     cfbDoBitblt((DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
-		pPixmap,
+		(DrawablePtr)pPixmap,
 		GXcopy,
 		prgnSave,
 		pPtsInit);
@@ -130,7 +130,7 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     }
 
 
-    cfbDoBitblt(pPixmap,
+    cfbDoBitblt((DrawablePtr)pPixmap,
 		(DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
 		GXcopy,
 		prgnRestore,

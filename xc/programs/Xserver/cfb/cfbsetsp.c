@@ -52,7 +52,7 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
     register int	alu;		/* raster op */
     int			*pdstBase;	/* start of the drawable */
     int			widthDst;	/* width of drawable in words */
-    long		planemask;
+    unsigned long	planemask;
 {
     int			w;		/* width of scanline in bits */
     register int	*pdst;		/* where to put the bits */

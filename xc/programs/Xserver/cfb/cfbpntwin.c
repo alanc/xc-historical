@@ -39,6 +39,7 @@ cfbPaintAreaOther(), however, needs to rotate things.
 */
 
 /* Paint Area None -- just return */
+/*ARGSUSED*/
 void
 cfbPaintAreaNone(pWin, pRegion, what)
     WindowPtr pWin;
@@ -463,8 +464,10 @@ cfbTileOddWin(pSrc, pDstWin, tileWidth, tileHeight, x, y)
 			         * fetch whole longwords fetched in src */
 	int nstart;		/* number of ragged bits at start of dst */
 	int nend;		/* number of regged bits at end of dst */
+#ifdef notdef
 	int srcStartOver;	/* pulling nstart bits from src overflows
 			         * into the next word? */
+#endif
 
 	maskbits(x, tileWidth, startmask, endmask, nlMiddle);
 	if (startmask)
@@ -475,7 +478,9 @@ cfbTileOddWin(pSrc, pDstWin, tileWidth, tileHeight, x, y)
 	    nend = (x + tileWidth) & PIM;
 
 	xoffSrc = nstart & PIM;
+#ifdef notdef
 	srcStartOver = nstart > PLST;
+#endif
 
 	pdstLine += (x >> PWSH);
 
