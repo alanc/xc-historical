@@ -102,7 +102,7 @@ macIIBW2SaveScreen (pScreen, on)
  *-----------------------------------------------------------------------
  */
 /*ARGSUSED*/
-static Bool
+Bool
 macIIBW2CloseScreen(i, pScreen)
     int		i;
     ScreenPtr	pScreen;
@@ -214,7 +214,7 @@ macIIBW2DestroyColormap(pmap)
  *-----------------------------------------------------------------------
  */
 /*ARGSUSED*/
-static Bool
+Bool
 macIIBW2Init (index, pScreen, argc, argv)
     int	    	  index;    	/* The index of pScreen in the ScreenInfo */
     ScreenPtr	  pScreen;  	/* The Screen to initialize */
