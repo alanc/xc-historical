@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.13 94/02/09 15:42:19 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.14 94/02/09 16:20:35 gildea Exp $ */
 /*
  * misc os utilities
  */
@@ -60,6 +60,10 @@
 #define SIGVAL void
 #endif
 
+#if defined(X_NOT_POSIX) && (defined(SYSV) || defined(SVR4))
+#define SIGNALS_RESET_WHEN_CAUGHT
+#endif
+
 extern char *configfilename;
 char       *progname;
 Bool        CloneSelf;
@@ -79,7 +83,7 @@ AutoResetServer(n)
     dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
 
-#ifdef SYSV
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
     signal(SIGHUP, AutoResetServer);
 #endif
 }
@@ -109,7 +113,7 @@ ServerReconfig(n)
     dispatchException |= DE_RECONFIG;
     isItTimeToYield = TRUE;
 
-#ifdef SYSV
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
     signal(SIGUSR1, ServerReconfig);
 #endif
 }
@@ -127,7 +131,7 @@ ServerCacheFlush(n)
     dispatchException |= DE_FLUSH;
     isItTimeToYield = TRUE;
 
-#ifdef SYSV
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
     signal(SIGUSR2, ServerCacheFlush);
 #endif
 }
@@ -144,7 +148,7 @@ CleanupChild(n)
 
     wait(NULL);
 
-#ifdef SYSV
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
     signal(SIGCHLD, CleanupChild);
 #endif
 }
