@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.74 89/03/27 18:27:36 rws Exp $ */
+/* $XConsortium: utils.c,v 1.75 89/03/30 17:42:04 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -41,7 +41,7 @@ extern Bool disableSaveUnders;
 extern int logoScreenSaver;
 #endif
 #ifndef SYSV
-extern Bool LimitAddressSpace;
+extern int limitDataSpace, limitStackSpace;
 #endif
 
 extern long ScreenSaverTime;		/* for forcing reset */
@@ -174,7 +174,8 @@ void UseMsg()
     ErrorF("-fn string             default font name\n");
     ErrorF("-fp string             default font path\n");
 #ifndef SYSV
-    ErrorF("limit                  retain stack and data space limits\n");
+    ErrorF("-ld int                limit data space to N Kb\n");
+    ErrorF("-ls int                limit stack space to N Kb\n");
 #endif
 #ifndef NOLOGOHACK
     ErrorF("-logo                  enable logo in screen saver\n");
@@ -326,9 +327,27 @@ char	*argv[];
 	    exit(0);
 	}
 #ifndef SYSV
-	else if ( strcmp( argv[i], "limit") == 0)
+	else if ( strcmp( argv[i], "-ld") == 0)
 	{
-	    LimitAddressSpace = TRUE;
+	    if(++i < argc)
+	    {
+	        limitDataSpace = atoi(argv[i]);
+		if (limitDataSpace > 0)
+		    limitDataSpace *= 1024;
+	    }
+	    else
+		UseMsg();
+	}
+	else if ( strcmp( argv[i], "-ls") == 0)
+	{
+	    if(++i < argc)
+	    {
+	        limitStackSpace = atoi(argv[i]);
+		if (limitStackSpace > 0)
+		    limitStackSpace *= 1024;
+	    }
+	    else
+		UseMsg();
 	}
 #endif
 #ifndef NOLOGOHACK
