@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.13 87/09/13 16:42:33 swick Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.14 87/09/13 18:50:07 newman Locked $";
 #endif lint
 
 /*
@@ -130,10 +130,10 @@ static void EventHandler(gw, closure, event)
         clock_tic((ClockWidget)gw);
 }
 
-static void Initialize (gw)
-    Widget gw;
+static void Initialize (request, new)
+    Widget request, new;
 {
-    ClockWidget w = (ClockWidget)gw;
+    ClockWidget w = (ClockWidget)new;
     XtGCMask		valuemask;
     XGCValues	myXGCV;
 
@@ -623,11 +623,12 @@ double x;
 	return(x >= 0.0 ? (int)(x + .5) : (int)(x - .5));
 }
 
-static void SetValues (gw, gnewvals)
-    Widget gw, gnewvals;
+static void SetValues (gcurrent, grequest, gnew, last)
+    Widget gcurrent, grequest, gnew;
+    Boolean last;
 {
-      ClockWidget w = (ClockWidget) gw;
-      ClockWidget newvals = (ClockWidget) gnewvals;
+      ClockWidget current = (ClockWidget) gcurrent;
+      ClockWidget new = (ClockWidget) gnew;
       int redisplay = FALSE;
       XtGCMask valuemask;
       XGCValues	myXGCV;
@@ -635,73 +636,71 @@ static void SetValues (gw, gnewvals)
       /* first check for changes to clock-specific resources.  We'll accept all
          the changes, but may need to do some computations first. */
 
-      if (newvals->clock.update != w->clock.update) {
-	    XtRemoveTimeOut (newvals->clock.interval_id);
-	    newvals->clock.interval_id = XtAddTimeOut(w, newvals->clock.update*1000);
-	    newvals->clock.show_second_hand = (newvals->clock.update <= SECOND_HAND_TIME);
+      if (new->clock.update != current->clock.update) {
+	    XtRemoveTimeOut (current->clock.interval_id);
+	    new->clock.interval_id = XtAddTimeOut(gnew, new->clock.update*1000);
+	    new->clock.show_second_hand = (new->clock.update <= SECOND_HAND_TIME);
       }
 
-      if (newvals->clock.analog != w->clock.analog)
+      if (new->clock.analog != current->clock.analog)
 	   redisplay = TRUE;
 
-      if (newvals->clock.padding != w->clock.padding) {
-	   Resize(gw);
+      if (new->clock.padding != current->clock.padding) {
+	   Resize(gnew);
 	   redisplay = TRUE;
 	   }
 
-      if (newvals->clock.font != w->clock.font)
+      if (new->clock.font != current->clock.font)
 	   redisplay = TRUE;
 
-      if ((newvals->clock.fgpixel != w->clock.fgpixel)
-          || (newvals->core.background_pixel != w->core.background_pixel)) {
+      if ((new->clock.fgpixel != current->clock.fgpixel)
+          || (new->core.background_pixel != current->core.background_pixel)) {
           valuemask = GCForeground | GCBackground | GCFont | GCLineWidth;
-	  myXGCV.foreground = w->clock.fgpixel;
-	  myXGCV.background = w->core.background_pixel;
-          myXGCV.font = w->clock.font->fid;
+	  myXGCV.foreground = new->clock.fgpixel;
+	  myXGCV.background = new->core.background_pixel;
+          myXGCV.font = new->clock.font->fid;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (w->clock.myGC);
-	  newvals->clock.myGC = XtGetGC(w, valuemask, &myXGCV);
+	  XtDestroyGC (current->clock.myGC);
+	  new->clock.myGC = XtGetGC(gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
 
-      if (newvals->clock.Hipixel != w->clock.Hipixel) {
+      if (new->clock.Hipixel != current->clock.Hipixel) {
           valuemask = GCForeground | GCLineWidth;
-	  myXGCV.foreground = w->clock.fgpixel;
-          myXGCV.font = w->clock.font->fid;
+	  myXGCV.foreground = new->clock.fgpixel;
+          myXGCV.font = new->clock.font->fid;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (w->clock.HighGC);
-	  newvals->clock.HighGC = XtGetGC(w, valuemask, &myXGCV);
+	  XtDestroyGC (current->clock.HighGC);
+	  new->clock.HighGC = XtGetGC(gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
 
-      if (newvals->clock.Hdpixel != w->clock.Hdpixel) {
+      if (new->clock.Hdpixel != current->clock.Hdpixel) {
           valuemask = GCForeground;
-	  myXGCV.foreground = w->clock.fgpixel;
-	  XtDestroyGC (w->clock.HandGC);
-	  newvals->clock.HandGC = XtGetGC(w, valuemask, &myXGCV);
+	  myXGCV.foreground = new->clock.fgpixel;
+	  XtDestroyGC (current->clock.HandGC);
+	  new->clock.HandGC = XtGetGC(gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
 
-      if (newvals->core.background_pixel != w->core.background_pixel) {
+      if (new->core.background_pixel != current->core.background_pixel) {
           valuemask = GCForeground | GCLineWidth;
-	  myXGCV.foreground = w->core.background_pixel;
+	  myXGCV.foreground = new->core.background_pixel;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (w->clock.EraseGC);
-	  newvals->clock.EraseGC = XtGetGC(w, valuemask, &myXGCV);
+	  XtDestroyGC (current->clock.EraseGC);
+	  new->clock.EraseGC = XtGetGC(gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
 	  }
 
-     w->clock = newvals->clock;
-
-     if ((newvals->core.x != w->core.x)
-       || (newvals->core.y != w->core.y)
-       || (newvals->core.width != w->core.width)
-       || (newvals->core.height != w->core.height))
+     if ((new->core.x != current->core.x)
+       || (new->core.y != current->core.y)
+       || (new->core.width != current->core.width)
+       || (new->core.height != current->core.height))
          redisplay = TRUE;
          /* need to make geometry request?? */
      
-     if(redisplay) {
-	XClearWindow(XtDisplay(w), XtWindow(w));
-	Redisplay(gw);
+     if(redisplay && last) {
+	XClearWindow(XtDisplay(new), XtWindow(new));
+	Redisplay(gnew);
         }
 }
