@@ -1,4 +1,4 @@
-/* $XConsortium: XFontNames.c,v 11.23 90/12/26 10:08:49 rws Exp $ */
+/* $XConsortium: XFontNames.c,v 11.24 91/01/06 11:45:42 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -69,6 +69,7 @@ int *actualCount;	/* RETURN */
 	 * unpack into null terminated strings.
 	 */
 	length = *ch;
+	*ch = 1; /* make sure it is non-zero for XFreeFontNames */
 	for (i = 0; i < rep.nFonts; i++) {
 	    flist[i] = ch + 1;  /* skip over length */
 	    ch += length + 1;  /* find next length ... */
@@ -86,7 +87,12 @@ int *actualCount;	/* RETURN */
 XFreeFontNames(list)
 char **list;
 {       
-	if (list != NULL) {
+	if (list) {
+		if (!*(list[0]-1)) { /* from ListFontsWithInfo */
+			register char **names;
+			for (names = list+1; *names; names++)
+				Xfree (*names);
+		}
 		Xfree (list[0]-1);
 		Xfree ((char *)list);
 	}
