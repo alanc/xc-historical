@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.48 88/07/12 11:20:50 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.49 88/07/12 15:32:21 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -79,6 +79,7 @@ SOFTWARE.
 extern Pixmap make_gray();
 extern char *malloc();
 extern char *calloc();
+extern char *realloc();
 extern char *ttyname();
 extern void exit();
 extern void sleep();
@@ -269,7 +270,6 @@ char **argv;
 	register TScreen *screen;
 	register int i, pty;
 	int Xsocket, mode;
-	char *malloc();
 	char *basename();
 	int xerror(), xioerror();
 	int fd1 = -1;
@@ -277,6 +277,17 @@ char **argv;
 	int fd3 = -1;
 
 	ProgramName = argv[0];
+
+	ttydev = (char *) malloc (strlen (TTYDEV) + 1);
+	ptydev = (char *) malloc (strlen (PTYDEV) + 1);
+	if (!ttydev || !ptydev) {
+	    fprintf (stderr, 
+	    	     "%s:  unable to allocate memory for ttydev or ptydev\n",
+		     ProgramName);
+	    exit (1);
+	}
+	strcpy (ttydev, TTYDEV);
+	strcpy (ptydev, PTYDEV);
 
 #ifdef SYSV
 	/* Initialization is done here rather than above in order
@@ -395,8 +406,21 @@ char **argv;
 #endif	/* TIOCCONS */
 	     case 'L':
 		{
-		static char *t_ptydev = PTYDEV;
-		static char *t_ttydev = TTYDEV;
+		static char *t_ptydev = NULL;
+		static char *t_ttydev = NULL;
+
+		if (!t_ptydev) {
+		    t_ptydev = malloc (strlen (PTYDEV) + 1);
+		    t_ttydev = malloc (strlen (TTYDEV) + 1);
+		    if (!t_ptydev || !t_ttydev) {
+			fprintf (stderr, 
+				 "%s:  unable to memory for t_ttydev or t_ptydev\n",
+				 ProgramName);
+			exit (1);
+		    }
+		    strcpy (t_ptydev, PTYDEV);
+		    strcpy (t_ttydev, TTYDEV);
+		}
 
 		L_flag = 1;
 		get_ty = argv[--argc];
@@ -416,7 +440,7 @@ char **argv;
 
 			if (ptr = ttyname(loginpty)) {
 				/* it may be bigger! */
-				t_ptydev = malloc((unsigned) (strlen(ptr) + 1));
+				t_ptydev = realloc(t_ptydev, (unsigned) (strlen(ptr) + 1));
 				(void) strcpy(t_ptydev, ptr);
 			}
 		}
@@ -725,7 +749,6 @@ get_terminal ()
  */
 {
 	register TScreen *screen = &term->screen;
-	char *malloc();
 	
 	screen->graybordertile = make_gray(term->core.border_pixel,
 		term->core.background_pixel,
@@ -869,7 +892,7 @@ spawn ()
 		*/
 		if (ptr = ttyname(ttydev)) {
 			/* it may be bigger! */
-			ttydev = malloc((unsigned) (strlen(ptr) + 1));
+			ttydev = realloc(ttydev, (unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
 #ifndef SYSV
@@ -963,7 +986,7 @@ spawn ()
 		*/
 		if (ptr = ttyname(tty)) {
 			/* it may be bigger */
-			ttydev = malloc((unsigned) (strlen(ptr) + 1));
+			ttydev = realloc (ttydev, (unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
 		if (screen->respond < 3) {
