@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.73 88/02/09 14:27:35 swick Exp $
+* $Header: Intrinsic.h,v 1.74 88/02/14 14:53:40 rws Exp $
 */
 
 /*
@@ -435,6 +435,11 @@ extern void XtTransformCoords();
     /* register Widget w;	*/
     /* Position x, y;		*/
     /* register Position *rootx, *rooty; */
+
+extern XtGeometryResult XtQueryGeometry();
+    /* Widget	widget;			*/
+    /* XtWidgetGeometry *intended;	*/
+    /* XtWidgetGeometry *reply_return;	*/
 
 
 /****************************************************************
