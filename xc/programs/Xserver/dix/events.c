@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.167 88/12/31 15:49:46 rws Exp $ */
+/* $XConsortium: events.c,v 1.168 89/02/06 17:43:34 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -133,7 +133,7 @@ static  struct {
 
 static WindowPtr motionHintWindow;
 
-extern void DoEnterLeaveEvents();	/* merely forward declarations */
+static void DoEnterLeaveEvents();	/* merely forward declarations */
 static WindowPtr XYToWindow();
 extern Bool CheckKeyboardGrabs();
 static void NormalKeyboardEvent();
