@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.7 87/10/09 14:01:38 weissman Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.8 88/01/19 14:37:21 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -40,17 +40,14 @@ static XtIntervalId timerid;
 static void NeedToCheckScans()
 {
     int i;
-    if (debug) {
-	(void) fprintf(stderr, "[magic toc check ...");
-	(void) fflush(stderr);
-    }
+    DEBUG("[magic toc check ...")
     for (i = 0; i < numScrns; i++) {
 	if (scrnList[i]->toc)
 	    TocRecheckValidity(scrnList[i]->toc);
 	if (scrnList[i]->msg)
 	    TocRecheckValidity(MsgGetToc(scrnList[i]->msg));
     }
-    if (debug) {(void)fprintf(stderr, "done]\n");(void)fflush(stderr);}
+    DEBUG(" done]\n")
 }
 
 
@@ -67,18 +64,18 @@ XEvent *event;
 	    ((int)event->xclient.message_type) == XtTimerExpired) {
 	timerid = XtAddTimeOut(toplevel, (int)60000);
 	if (defNewMailCheck) {
-if (debug) {(void)fprintf(stderr, "(Checking for new mail..."); (void)fflush(stderr);}
+	    DEBUG("(Checking for new mail...")
 	    TocCheckForNewMail();
-if (debug) (void)fprintf(stderr, "done)\n");
+	    DEBUG(" done)\n")
 	}
 	if (count++ % 5 == 0) {
 	    NeedToCheckScans();
 	    if (defMakeCheckpoints) {
-if (debug) {(void)fprintf(stderr, "(Checkpointing..."); (void)fflush(stderr);}
+	        DEBUG("(Checkpointing...")
 		for (i=0 ; i<numScrns ; i++)
 		    if (scrnList[i]->msg) 
 			MsgCheckPoint(scrnList[i]->msg);
-if (debug) (void)fprintf(stderr, "done)\n");
+		DEBUG(" done)\n")
 	    }
 	}
     }
