@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.97 93/10/28 14:51:17 gildea Exp $
+ *	$XConsortium: misc.c,v 1.98 93/11/04 08:45:05 gildea Exp $
  */
 
 /*
@@ -325,7 +325,11 @@ Bell()
 		return;
 	    }
 	}
+#if defined(SVR4) || defined(WIN32) || defined(VMS)
+	gettimeofday(&curtime);
+#else
 	gettimeofday(&curtime, NULL);
+#endif
 	now_msecs = 1000*curtime.tv_sec + curtime.tv_usec/1000;
 	if(lastBellTime != 0  &&  now_msecs - lastBellTime >= 0  &&
 	   now_msecs - lastBellTime < screen->bellSuppressTime) {
