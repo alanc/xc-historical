@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$XConsortium: menu.c,v 1.11 88/11/16 13:47:32 rws Exp $
+ *	$XConsortium: menu.c,v 1.12 89/03/11 10:02:16 rws Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: menu.c,v 1.11 88/11/16 13:47:32 rws Exp $";
+static char rcs_id[] = "$XConsortium: menu.c,v 1.12 89/03/11 10:02:16 rws Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -571,7 +571,7 @@ register XButtonPressedEvent *event;
 
 	in_window = TRUE;
 	XGrabPointer(XtDisplay(xw), menu->menuWindow, FALSE,
-	 ExposureMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask
+	 EnterWindowMask | LeaveWindowMask | PointerMotionMask
 	 | ButtonReleaseMask | ButtonPressMask,
 	 GrabModeAsync, GrabModeAsync, None, menu->menuCursor, CurrentTime
 	 );
