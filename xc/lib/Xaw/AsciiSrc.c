@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.44 91/01/06 16:08:28 rws Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.45 91/02/17 14:45:54 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -631,16 +631,8 @@ Cardinal * num_args;
       }
   
   if ( string_set || (old_src->ascii_src.type != src->ascii_src.type) ) {
-    if (string_set) {
-      /* Fool it into not freeing the string */
-      old_src->ascii_src.allocated_string = FALSE; 
+    if (string_set)
       RemoveOldStringOrFile(old_src);        /* remove old info. */
-      old_src->ascii_src.allocated_string = TRUE;
-    }
-    else {
-      RemoveOldStringOrFile(old_src);        /* remove old info. */
-      src->ascii_src.allocated_string = FALSE;
-    }
 
     file = InitStringOrFile(src);    /* Init new info. */
     LoadPieces(src, file, NULL);    /* load new info into internal buffers. */
@@ -849,8 +841,11 @@ AsciiSrcObject src;
 {
   FreeAllPieces(src);
 
-  if (src->ascii_src.allocated_string) 
+  if (src->ascii_src.allocated_string) {
     XtFree(src->ascii_src.string);
+    src->ascii_src.allocated_string = False;
+    src->ascii_src.string = NULL;
+  }
 }
 
 /*	Function Name: WriteToFile
@@ -946,8 +941,6 @@ AsciiSrcObject src;
  */
     
     src->ascii_src.is_tempfile = FALSE;
-    if (src->ascii_src.allocated_string)
-	XtFree(src->ascii_src.string);
 
     switch (src->text_src.edit_mode) {
     case XawtextRead:
