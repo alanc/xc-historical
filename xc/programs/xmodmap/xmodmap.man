@@ -13,38 +13,23 @@
 ..
 .TH XMODMAP 1 "1 March 1988" "X Version 11"
 .SH NAME
-xmodmap, xprkbd - keyboard modifier utilities for X
+xmodmap - utility for modifying keymaps in X
 .SH SYNOPSIS
 .B xmodmap
 [-options ...] [filename]
-.sp
-.B xprkbd
-[-display \fIdisplay\fP]
 .SH DESCRIPTION
 .PP
-.I Xmodmap
-is a utility for displaying and altering the X keyboard modifier map and
-keysym table on the specified display and host.  It is intended to be run
-from a user's X startup script to setup the keyboard according to personal
-tastes.
-.PP
-With no arguments,
-.I xmodmap
-displays the current map.
-.PP
-.I Xprkbd
-prints on the standard output a table of the keycodes,  the keysym code,
-and the keynames for the keyboard on the appropriate X server.
+The \fIxmodmap\fP program is used to edit and display the 
+keyboard \fImodifier map\fP and \fIkeymap table\fP that are used by client 
+applications to convert event keycodes into keysyms.  It is usually run from 
+the user's session startup script to configure the keyboard according to 
+personal tastes.
 .SH OPTIONS
 .PP
-Both programs accept the following option:
+The following options may be used with \fIxmodmap\fP:
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the host and display to use; see \fIX(1)\fP.
-.PP
-The
-.I xmodmap
-program also accepts:
+This option specifies the host and display to use.
 .TP 8
 .B \-help
 This option indicates that a brief description of the command line arguments
@@ -74,8 +59,16 @@ should not change the mappings, but should display what it would do, like
 This option specifies an expression to be executed.  Any number of expressions
 may be specified from the command line.
 .TP 8
-.B \-p
+.B \-pm
 This option indicates that the current modifier map should be printed on the
+standard output.
+.TP 8
+.B \-pk
+This option indicates that the current key table map should be printed on the
+standard output.
+.TP 8
+.B \-pp
+This option indicates that the current pointer map should be printed on the
 standard output.
 .TP 8
 .B \-
@@ -83,28 +76,7 @@ A lone dash means that the standard input should be used as the input file.
 .PP
 The \fIfilename\fP specifies a file containing \fIxmodmap\fP expressions
 to be executed.  This file is usually kept in the user's home directory with
-a name like ``\fI.keymap.km\fP''.
-.PP
-For compatibility with an older version,
-.I xmodmap
-also accepts the following obsolete single letter options:
-.TP 8
-.B "-[SLC12345]"
-These options indicate that all current keys for the Shift, Lock, Control, or 
-Mod modifier sets should be removed from the modifier map.  These are
-equivalent to \fBclear\fP expressions.
-.TP 8
-.B "-[slc]" \fIkeysym\fP
-These options specify a
-.I keysym
-to be removed from the Shift, Lock, or Control modifier sets.
-These are equivalent to \fBremove\fP expressions.
-.TP 8
-.B "+[slc12345]" \fIkeysym\fP
-These options specify a 
-.I keysym
-to be added to the Shift, Lock, or Control modifier sets.
-These are equivalent to \fBadd\fP expressions.
+a name like \fI.xmodmaprc\fP.
 .SH EXPRESSION GRAMMAR
 .PP
 The
@@ -153,12 +125,31 @@ If you want to change the binding of a modifier key, you must also remove it
 from the appropriate modifier map.
 .SH EXAMPLES
 .PP
-To make the backspace key generate a delete instead, use 
+One of the more simple, yet convenient, uses of \fIxmodmap\fP is to set the
+keyboard's "rubout" key to generate an alternate keysym.  This frequently
+involves exchanging Backspace with Delete to be more comfortable to the user.
+If the \fIttyModes\fP resource in \fIxterm\fP is set as well, all terminal 
+emulator windows will use the same key for erasing characters:
 .EX
-% xmodmap -e "keysym BackSpace = Delete"
+%  xmodmap -e "keysym BackSpace = Delete"
+%  echo "XTerm*ttyModes:  erase ^?" | xrdb -merge
 .EE
 .PP
-To swap the left control and caps lock keys you could use:
+Some keyboards do not automatically generate less than and greater than
+characters when the comma and period keys are shifted.  This can be remedied
+with \fIxmodmap\fP by resetting the bindings for the comma and period with
+the following scripts:
+.EX
+!
+! make shift-, be < and shift-. be >
+!
+keysym comma = comma less
+keysym period = period greater
+.EE
+.PP
+One of the more irritating differences between keyboards is the location of the
+Control and Shift Lock keys.  A common use of \fIxmodmap\fP is to swap these
+two keys as follows:
 .EX
 !
 ! Swap Caps_Lock and Control_L
@@ -171,7 +162,13 @@ add Lock = Caps_Lock
 add Control = Control_L
 .EE
 .PP
-As a more complicated example, the following is what the author uses:
+The \fIkeycode\fP command is useful for assigning the same keysym to
+multiple keycodes.  Although unportable, it also makes it possible to write
+scripts that can reset the keyboard to a known state.  The following script
+sets the backspace key to generate Delete (as shown above), flushes all 
+existing caps lock bindings, makes the CapsLock
+key be a control key, make F5 generate Escape, and makes Break/Reset be a
+shift lock.
 .EX
 !
 ! On the HP, the following keycodes have key caps as listed:
@@ -183,13 +180,6 @@ As a more complicated example, the following is what the author uses:
 !      86  Stop
 !      89  F5
 !
-! I prefer using ``keycode'' over ``keysym'' so that I can rerun the file to
-! fix up my keyboard.
-!
-! This sets the backspace key to generate Delete, flushes all caps lock
-! bindings, assigned a control key to what used to be the caps lock key,
-! makes the F1 generate ESC, and makes the Break/Reset key be a shift lock.
-
 keycode 101 = Delete
 keycode 55 = Control_R
 clear Lock
