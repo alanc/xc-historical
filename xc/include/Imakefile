@@ -8,6 +8,7 @@ HEADERS = DECkeysym.h \
 	X.h \
 	XWDFile.h \
 	Xatom.h \
+	Xdefs.h \
 	Xmd.h \
 	Xos.h \
 	Xproto.h \
