@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.15 90/02/02 18:59:58 jim Exp $
+ * $XConsortium: Tree.c,v 1.16 90/02/05 11:51:13 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -201,6 +201,7 @@ static void Initialize(request, new)
    * Allocate the tables used by the layout
    * algorithm.
    */
+  new->tree.largest = NULL;
   new->tree.n_largest = 0;
   initialize_dimensions (&new->tree.largest, &new->tree.n_largest, 
 			 TREE_INITIAL_DEPTH);
@@ -254,7 +255,7 @@ static Boolean SetValues (current, request, new)
     if (new->tree.vpad != current->tree.vpad ||
 	new->tree.hpad != current->tree.hpad ||
 	new->tree.orientation != current->tree.orientation) {
-	new_layout (new);
+	new_layout (new, TRUE);
 	redraw = FALSE;
     }
     return redraw;
@@ -283,7 +284,7 @@ static Boolean ConstraintSetValues(current, request, new, args, num_args)
     * compute new layout.
     */
    if(XtIsRealized(tw))
-     new_layout(tw);
+     new_layout (tw, FALSE);
   }               
   return (False);
 }
@@ -364,7 +365,7 @@ static void ConstraintDestroy(w)
       insert_new_node(tree_const->tree.parent, 
                       tree_const->tree.children[i]);
   }
-  new_layout(w->core.parent);
+  new_layout (w->core.parent, FALSE);
 }
 
 static XtGeometryResult GeometryManager(w, request, reply)
@@ -390,14 +391,14 @@ static XtGeometryResult GeometryManager(w, request, reply)
  if (request->request_mode & CWBorderWidth)
    w->core.border_width = request->border_width;
 
- if (tw->tree.auto_reconfigure) new_layout (tw);
+ if (tw->tree.auto_reconfigure) new_layout (tw, FALSE);
  return (XtGeometryYes);
 }
 
 static void ChangeManaged(tw)
     TreeWidget tw;
 {
-  new_layout(tw);
+  new_layout (tw, FALSE);
 }
 
 
@@ -688,8 +689,9 @@ static void arrange_subtree (tree, w, depth, x, y)
     }
 }
 
-static void new_layout (tw)
+static void new_layout (tw, insetvalues)
     TreeWidget tw;
+    Boolean insetvalues;
 {
     TreeConstraints tc;
 
@@ -714,7 +716,7 @@ static void new_layout (tw)
     /*
      * Move each widget into place.
      */
-    set_tree_size (tw, tw->tree.maxwidth, tw->tree.maxheight);
+    set_tree_size (tw, insetvalues, tw->tree.maxwidth, tw->tree.maxheight);
     set_positions (tw, tw->tree.tree_root, 0, 0);
 
     /*
@@ -742,19 +744,25 @@ static GC get_tree_gc (w)
 }
 
 
-static void set_tree_size (tw, width, height)
+static void set_tree_size (tw, insetvalues, width, height)
     TreeWidget tw;
+    Boolean insetvalues;
     Dimension width, height;
 {
-    Dimension replyWidth = 0, replyHeight = 0;
-    XtGeometryResult result = XtMakeResizeRequest (tw, width, height,
-						   &replyWidth, &replyHeight);
-
-    /*
-     * Accept any compromise.
-     */
-    if (result == XtGeometryAlmost)
-      XtMakeResizeRequest (tw, replyWidth, replyHeight, NULL, NULL);
+    if (insetvalues) {
+	tw->core.width = width;
+	tw->core.height = height;
+    } else {
+	Dimension replyWidth = 0, replyHeight = 0;
+	XtGeometryResult result = XtMakeResizeRequest (tw, width, height,
+						       &replyWidth,
+						       &replyHeight);
+	/*
+	 * Accept any compromise.
+	 */
+	if (result == XtGeometryAlmost)
+	  XtMakeResizeRequest (tw, replyWidth, replyHeight, NULL, NULL);
+    }
     return;
 }
 
@@ -791,7 +799,7 @@ static XtGeometryResult QueryGeometry (w, intended, preferred)
 void XawTreeForceLayout (tree)
     TreeWidget tree;
 {
-    new_layout (tree);
+    new_layout (tree, FALSE);
 }
 
 
