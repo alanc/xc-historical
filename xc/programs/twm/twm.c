@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.106 90/03/13 15:28:53 jim Exp $
+ * $XConsortium: twm.c,v 1.107 90/03/15 14:22:42 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.106 90/03/13 15:28:53 jim Exp $";
+"$XConsortium: twm.c,v 1.107 90/03/15 14:22:42 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -760,6 +760,7 @@ void Reborder ()
 	if ((Scr = ScreenList[scrnum]) == NULL)
 	    continue;
 
+	InstallWindowColormaps (0, &Scr->TwmRoot);	/* force reinstall */
 	for (tmp = Scr->TwmRoot.next; tmp != NULL; tmp = tmp->next)
 	{
 	    RestoreWithdrawnLocation (tmp);
