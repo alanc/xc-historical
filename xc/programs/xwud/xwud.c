@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.53 93/09/13 12:02:48 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.54 93/09/29 17:49:25 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -399,7 +399,7 @@ main(argc, argv)
     } else {
 	/* get best visual */
 	vinfo = vinfos[0];
-	for (i = 1; i < count; i++) {
+	for (i = 0; i < count; i++) {
 	    int z1, z2;
 	    z2 = EffectiveSize(&vinfos[i]);
 	    if ((z2 >= ncolors) &&
