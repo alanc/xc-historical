@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.10 91/02/16 16:32:39 rws Exp $
+ * $XConsortium: util.c,v 1.11 91/03/19 15:17:07 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,8 +25,7 @@
  */
 
 # include   "dm.h"
-#if defined(SVR4) && __STDC__ && !defined(_POSIX_SOURCE)
-/* SVR4 is stupid */
+#ifndef X_NOT_POSIX
 #define _POSIX_SOURCE
 # include   <signal.h>
 #undef _POSIX_SOURCE
@@ -228,7 +227,7 @@ SIGVAL (*Signal (sig, handler))()
     int sig;
     SIGVAL (*handler)();
 {
-#ifdef POSIXSIG
+#ifndef X_NOT_POSIX
     struct sigaction sigact, osigact;
     sigact.sa_handler = handler;
     sigemptyset(&sigact.sa_mask);

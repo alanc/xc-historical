@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.53 91/02/16 13:24:54 rws Exp $
+ * $XConsortium: dm.c,v 1.54 91/02/16 16:31:58 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,8 +25,7 @@
 # include	"dm.h"
 
 # include	<stdio.h>
-#if defined(SVR4) && __STDC__ && !defined(_POSIX_SOURCE)
-/* SVR4 is stupid */
+#ifndef X_NOT_POSIX
 #define _POSIX_SOURCE
 # include	<signal.h>
 #undef _POSIX_SOURCE
@@ -43,10 +42,7 @@
 # include	<varargs.h>
 
 #ifndef F_TLOCK
-#ifdef SYSV
-# include	<unistd.h>
-#endif
-#ifdef SVR4
+#ifndef X_NOT_POSIX
 # include	<unistd.h>
 #endif
 #endif
@@ -70,7 +66,7 @@ static char *Title;
 static int TitleLen;
 #endif
 
-#ifndef SYSV
+#ifndef UNRELIABLE_SIGNALS
 static SIGVAL ChildNotify ();
 #endif
 
@@ -136,7 +132,7 @@ char	**argv;
     ScanServers ();
     StartDisplays ();
     (void) Signal (SIGHUP, RescanNotify);
-#ifndef SYSV
+#ifndef UNRELIABLE_SIGNALS
     (void) Signal (SIGCHLD, ChildNotify);
 #endif
     while (
@@ -150,7 +146,7 @@ char	**argv;
 	    RescanServers ();
 	    Rescan = 0;
 	}
-#if defined(SYSV) || !defined(XDMCP)
+#if defined(UNRELIABLE_SIGNALS) || !defined(XDMCP)
 	WaitForChild ();
 #else
 	WaitForSomething ();
@@ -321,7 +317,7 @@ StopAll (n)
 
 int	ChildReady;
 
-#ifndef SYSV
+#ifndef UNRELIABLE_SIGNALS
 /* ARGSUSED */
 static SIGVAL
 ChildNotify (n)
@@ -336,7 +332,7 @@ WaitForChild ()
     int		pid;
     struct display	*d;
     waitType	status;
-#ifdef POSIXSIG
+#ifndef X_NOT_POSIX
     sigset_t mask, omask;
 #else
     int		omask;
@@ -346,7 +342,7 @@ WaitForChild ()
     /* XXX classic System V signal race condition here with RescanNotify */
     if ((pid = wait (&status)) != -1)
 #else
-#ifdef POSIXSIG
+#ifndef X_NOT_POSIX
     sigemptyset(&mask);
     sigaddset(&mask, SIGCHLD);
     sigaddset(&mask, SIGHUP);
@@ -356,18 +352,18 @@ WaitForChild ()
 #endif
     Debug ("signals blocked, mask was 0x%x\n", omask);
     if (!ChildReady && !Rescan)
-#ifdef POSIXSIG
+#ifndef X_NOT_POSIX
 	sigsuspend(&omask);
 #else
 	sigpause (omask);
 #endif
     ChildReady = 0;
-#ifdef POSIXSIG
+#ifndef X_NOT_POSIX
     sigprocmask(SIG_SETMASK, &omask, (sigset_t *)NULL);
 #else
     sigsetmask (omask);
 #endif
-#ifdef USE_POSIX_STYLE_WAIT
+#ifndef X_NOT_POSIX
     while ((pid = waitpid (-1, &status, WNOHANG)) > 0)
 #else
     while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) > 0)

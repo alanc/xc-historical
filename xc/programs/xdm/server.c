@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.11 91/02/04 19:18:25 gildea Exp $
+ * $XConsortium: server.c,v 1.12 91/02/13 19:15:18 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -177,19 +177,19 @@ int	    serverPid;
 	    Debug ("Already received USR1\n");
 #endif
 	for (;;) {
-#ifdef SYSV
+#if defined(SYSV) && defined(X_NOT_POSIX)
 	    pid = wait ((waitType *) 0);
 #else
 	    if (!receivedUsr1)
 		pid = wait ((waitType *) 0);
 	    else
-#ifdef USE_POSIX_STYLE_WAIT
+#ifndef X_NOT_POSIX
 		pid = waitpid (-1, (int *) 0, WNOHANG);
 #else
 		pid = wait3 ((waitType *) 0, WNOHANG,
 			     (struct rusage *) 0);
-#endif /* USE_POSIX_STYLE_WAIT else */
-#endif /* SYSV else */
+#endif /* X_NOT_POSIX */
+#endif /* SYSV */
 	    if (pid == serverPid ||
 		pid == -1 && errno == ECHILD)
 	    {
@@ -197,7 +197,7 @@ int	    serverPid;
 		serverPauseRet = 1;
 		break;
 	    }
-#ifndef SYSV
+#if !defined(SYSV) || !defined(X_NOT_POSIX)
 	    if (pid == 0) {
 		Debug ("Server alive and kicking\n");
 		break;

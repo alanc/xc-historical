@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.41 91/02/04 19:17:33 gildea Exp $
+ * $XConsortium: dm.h,v 1.42 91/02/13 19:12:32 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,26 +39,35 @@
 # include	<X11/Xdmcp.h>
 #endif
 
-# include	<sys/param.h>	/* for NGROUPS */
+#ifndef X_NOT_POSIX
+#define _POSIX_SOURCE
+# include	<limits.h>
+#undef _POSIX_SOURCE
+#endif
+#ifndef NGROUPS_MAX
+# include	<sys/param.h>
+#ifdef NGROUPS
+#define NGROUPS_MAX NGROUPS
+#endif
+#endif
 
 #ifdef pegasus
 #undef dirty		/* Some bozo put a macro called dirty in sys/param.h */
 #endif /* pegasus */
 
-#ifdef SVR4
-#define USE_POSIX_STYLE_WAIT
-#endif
-#ifdef _POSIX_SOURCE
-#define USE_POSIX_STYLE_WAIT
-#endif
-
-#ifdef USE_POSIX_STYLE_WAIT
+#ifndef X_NOT_POSIX
+#ifndef macII
 #include <sys/wait.h>
+#else
+#define _POSIX_SOURCE
+#include <sys/wait.h>
+#undef _POSIX_SOURCE
+#endif
 # define waitCode(w)	WEXITSTATUS(w)
 # define waitSig(w)	WTERMSIG(w)
 # define waitCore(w)    0	/* not in POSIX.  so what? */
 typedef int		waitType;
-#else /* USE_POSIX_STYLE_WAIT */
+#else /* X_NOT_POSIX */
 #ifdef SYSV
 # define waitCode(w)	(((w) >> 8) & 0x7f)
 # define waitSig(w)	((w) & 0xff)
@@ -71,7 +80,7 @@ typedef int		waitType;
 # define waitCore(w)	((w).w_T.w_Coredump)
 typedef union wait	waitType;
 #endif
-#endif /* USE_POSIX_STYLE_WAIT else */
+#endif /* X_NOT_POSIX */
 
 #ifdef UDP_SOCKET
 #include	<sys/types.h>
@@ -223,8 +232,8 @@ struct greet_info {
 
 struct verify_info {
 	int		uid;		/* user id */
-#ifdef NGROUPS
-	int		groups[NGROUPS];/* group list */
+#ifdef NGROUPS_MAX
+	int		groups[NGROUPS_MAX];/* group list */
 	int		ngroups;	/* number of elements in groups */
 #else
 	int		gid;		/* group id */
@@ -294,13 +303,11 @@ extern char	*malloc (), *realloc ();
 #define SIGVAL void
 #endif
 
+#ifdef X_NOT_POSIX
 #ifdef SYSV
 #define SIGNALS_RESET_WHEN_CAUGHT
 #define UNRELIABLE_SIGNALS
 #endif
-
-#if defined(SVR4) || defined(_POSIX_SOURCE)
-#define POSIXSIG
 #endif
 
 SIGVAL (*Signal())();
