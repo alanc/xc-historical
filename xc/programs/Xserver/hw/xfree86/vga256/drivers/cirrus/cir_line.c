@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.23 94/04/17 20:28:53 dpw Exp $ */
+/* $XConsortium: cir_line.c,v 1.1 95/01/06 20:37:49 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.0 1994/12/25 12:35:06 dawes Exp $ */
 
 /*
@@ -150,6 +150,8 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
     int		    alu;
     int	adir, xdir, ydir;
     int destpitch, busy;
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 
     if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW ||
     (pGC->planemask & 0xFF) != 0xFF) {
@@ -384,26 +386,13 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
 	}
 	else	/* sloped line */
 	{
-	    signdx = 1;
-	    if ((adx = x2 - x1) < 0)
-	    {
-		adx = -adx;
-		signdx = -1;
-	    }
-	    signdy = 1;
-	    if ((ady = y2 - y1) < 0)
-	    {
-		ady = -ady;
-		signdy = -1;
-	    }
-
-	    if (adx >= ady)
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
+	    if (adx > ady)
 	    {
 		axis = X_AXIS;
 		e1 = ady << 1;
 		e2 = e1 - (adx << 1);
 		e = e1 - adx;
-		FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
  	    }
 	    else
 	    {
@@ -411,8 +400,10 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
 		e1 = adx << 1;
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
-		FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+		SetYMajorOctant(octant);
 	    }
+
+	    FIXUP_ERROR(e, octant, bias);
 
 	    /* we have bresenham parameters and two points.
 	       all we have to do now is clip and draw.
@@ -486,8 +477,9 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1,
 				       pbox->y2-1,
 				       &new_x1, &new_y1, &new_x2, &new_y2,
-				       adx, ady, &clip1, &clip2, axis,
-				       (signdx == signdy), oc1, oc2) == -1)
+				       adx, ady, 
+				       &clip1, &clip2, 
+				       octant, bias, oc1, oc2) == -1)
 		    {
 			pbox++;
 			continue;
