@@ -56,7 +56,8 @@ extern int	sunSigIO;
 extern void	SaveScreens();
 
 #ifdef SUN_WINDOWS
-int		windowFd = 0;
+int	windowFd = 0;
+int	sunIgnoreEvent = TRUE;
 #define	INPBUFSIZE	128
 #endif SUN_WINDOWS
 
@@ -128,7 +129,6 @@ ProcessInputEvents ()
     struct inputevent sunevents[INPBUFSIZE];
     register struct inputevent *se = sunevents, *seL;
     int         n;
-    static int event_ignore = TRUE;
 #endif SUN_WINDOWS
 
     /*
@@ -149,6 +149,8 @@ ProcessInputEvents ()
 	    /*
 	     * Error reading events; should do something. XXX
 	     */
+/*debug*/
+	ErrorF("ProcessInputEvents: read(windowFd)  n=%d\n",n);
 	    return;
 	}
 
@@ -156,6 +158,8 @@ ProcessInputEvents ()
 		/* fake a sunwindows kbd event */
 		n = sizeof(struct inputevent);
 		se->ie_code = AUTOREPEAT_EVENTID;
+		tvplus(event_time(se), autoRepeatLastKeyDownTv,
+							autoRepeatDeltaTv);
 		if (autoRepeatDebug)
 		    ErrorF("ProcessInputEvents: sw auto event\n");
 	}
@@ -177,14 +181,14 @@ ProcessInputEvents ()
 		    sunChangeKbdTranslation( pKeyboard, TRUE );
 		    break;
 		case LOC_WINENTER:
-		    event_ignore = FALSE;
+		    sunIgnoreEvent = FALSE;
 		    break;
 		case LOC_WINEXIT:
-		    event_ignore = TRUE;
+		    sunIgnoreEvent = TRUE;
 		    break;
 	    }
 
-	    if (event_ignore) {
+	    if (sunIgnoreEvent) {
 		continue;
 	    }
 
