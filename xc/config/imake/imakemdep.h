@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.2 89/10/16 12:09:27 jim Exp $
+ * $XConsortium: imakemdep.h,v 1.3 89/10/16 13:25:02 jim Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -129,55 +129,58 @@ char *cpp_argv[ARGUMENTS] = {
  */
 struct symtab	predefs[] = {
 #ifdef apollo
-	{"apollo", NULL},
+	{"apollo", "1"},
 #endif
 #ifdef ibm032
-	{"ibm032", NULL},
+	{"ibm032", "1"},
 #endif
 #ifdef ibm
-	{"ibm", NULL},
+	{"ibm", "1"},
 #endif
 #ifdef aix
-	{"aix", NULL},
+	{"aix", "1"},
 #endif
 #ifdef sun
-	{"sun", NULL},
+	{"sun", "1"},
 #endif
 #ifdef hpux
-	{"hpux", NULL},
+	{"hpux", "1"},
 #endif
 #ifdef vax
-	{"vax", NULL},
+	{"vax", "1"},
 #endif
 #ifdef VMS
-	{"VMS", NULL},
+	{"VMS", "1"},
 #endif
 #ifdef cray
-	{"cray", NULL},
+	{"cray", "1"},
 #endif
 #ifdef CRAY
-	{"CRAY", NULL},
+	{"CRAY", "1"},
 #endif
 #ifdef att
-	{"att", NULL},
+	{"att", "1"},
 #endif
 #ifdef mips
-	{"mips", NULL},
+	{"mips", "1"},
 #endif
 #ifdef ultrix
-	{"ultrix", NULL},
+	{"ultrix", "1"},
 #endif
 #ifdef mc68000
-	{"mc68000", NULL},
+	{"mc68000", "1"},
 #endif
 #ifdef mc68020
-	{"mc68020", NULL},
+	{"mc68020", "1"},
 #endif
 #ifdef __GNUC__
-	{"__GNUC__", NULL},
+	{"__GNUC__", "1"},
 #endif
 #ifdef __STDC__
-	{"__STDC__", NULL},
+	{"__STDC__", "1"},
+#endif
+#ifdef CMU
+	{"CMU", "1"},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}
