@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.25 93/08/30 16:10:28 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.26 93/09/03 14:54:17 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -486,7 +486,7 @@ pexRenderer id;
             if (err) return(err);
 	  }
 	}
-	for (i = 0;  i < DD_MAX_FILTERS; i++ ) {
+	for (i = 0;  i != DD_MAX_FILTERS; i++ ) {
 	  if (prend->ns[(unsigned)i]) { 
 	    err = UpdateNSRefs(	prend->ns[(unsigned)i], 
 			       (diResourceHandle)(prend), 
