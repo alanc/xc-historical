@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.146 92/05/26 11:50:07 eswu Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.147 92/05/26 11:58:01 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -372,11 +372,13 @@ XCOMM $XConsortium: Project.tmpl,v 1.146 92/05/26 11:50:07 eswu Exp $
 #define PexApiDir $(LIBDIR)/PEX
 #endif
 #ifndef XFileSearchPathBase
-#define XFileSearchPathBase $(LIBDIR)/%L/%T/%N%C%S:$(LIBDIR)/%l/%T/%N%C%S:$(LIBDIR)/%T/%N%C%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S
+/* avoid SCCS keyword */
+#define XFileSearchPathBase Concat4($(LIBDIR)/%L/%T/%N%C,%S:$(LIBDIR)/%l/%T/%N%C,%S:$(LIBDIR)/%T/%N%C,%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S)
 #endif
 #ifndef XFileSearchPathDefault
 #ifdef XAppLoadDir
-#define XFileSearchPathDefault XAppLoadDir/%N%C%S:XAppLoadDir/%N%S:XFileSearchPathBase
+/* avoid SCCS keyword */
+#define XFileSearchPathDefault XAppLoadDir/Concat(%N%C,%S):XAppLoadDir/%N%S:XFileSearchPathBase
 #else
 #define XFileSearchPathDefault XFileSearchPathBase
 #endif
