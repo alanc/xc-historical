@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bufio.c,v 1.3 92/02/11 17:17:39 eswu Exp $
+ * $XConsortium: bufio.c,v 1.4 92/05/29 18:00:40 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,6 +24,7 @@
  */
 
 
+#include    <X11/Xos.h>
 #include    <fontmisc.h>
 #include    <bufio.h>
 #include    <errno.h>
