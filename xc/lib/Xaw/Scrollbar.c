@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.49 89/07/16 14:42:18 jim Exp $";
+    "$XConsortium: Scroll.c,v 1.50 89/08/24 16:37:39 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -294,9 +294,7 @@ static void Initialize( request, new )
 
     gcValues.fill_style = FillTiled;
     gcValues.tile = w->scrollbar.thumb;
-    w->scrollbar.gc = XtGetGC( new,
-			       GCForeground | GCFillStyle | GCTile,
-			       &gcValues);
+    w->scrollbar.gc = XtGetGC( new, GCFillStyle | GCTile, &gcValues);
 
     if (w->core.width == 0)
 	w->core.width = (w->scrollbar.orientation == XtorientVertical)
