@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.62 92/08/21 19:24:23 rws Exp $ */
+/* $XConsortium: dix.h,v 1.63 93/07/12 09:44:55 dpw Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -163,6 +163,12 @@ extern pointer LookupDrawable(
 #if NeedFunctionPrototypes
     XID /*rid*/,
     ClientPtr /*client*/
+#endif
+);
+
+extern ClientPtr LookupClient(
+#if NeedFunctionPrototypes
+    XID /*rid*/
 #endif
 );
 
