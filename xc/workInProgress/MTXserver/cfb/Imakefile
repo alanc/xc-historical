@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.41 93/09/06 18:37:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 6.1 94/01/11 18:33:42 gildea Exp $
 #define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
 
@@ -79,7 +79,6 @@ NormalLintTarget($(SRCS))
 #define LinkNonThreadedOnly
 #endif
 
-LinkSourceFile(cfb.h,LinkDirectory)
 LinkSourceFile(cfbmap.h,LinkDirectory)
 LinkSourceFile(cfballpriv.c,LinkDirectory)
 #ifndef LinkNonThreadedOnly
