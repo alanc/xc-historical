@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.8 89/05/09 16:35:08 kit Exp $
+ * $XConsortium: main.c,v 1.9 89/08/30 19:20:07 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -24,6 +24,9 @@
 #endif
 
 #include "globals.h"
+#ifndef ZERO
+#include <X11/Xaw/Cardinals.h>
+#endif /* ZERO */
 
 #if ( !defined(lint) && !defined(SABER)) /* Version can be retrieve */
   static char version[] = XMAN_VERSION;  /* via strings. */
@@ -58,6 +61,21 @@ static XtResource my_resources[] = {
      Offset(top_box_active), XtRString, "True"},
   {"clearSearchString", "ClearSearchString", XtRBoolean, sizeof(Boolean),
      Offset(clear_search_string), XtRImmediate, (caddr_t) TRUE},
+};
+
+/*
+ * The resource that we absolutely need.
+ */
+
+static char * fallback_resources[] = {
+ "Xman*quitButton.translations:	#override \\n   <Btn1Up>: Quit() reset()",
+ "Xman*helpButton.sensitive:                    FALSE",
+ "Xman*manpageButton.sensitive:                 FALSE",
+ "Xman*helpButton.Label:			Help",
+ "Xman*quitButton.Label:			Quit",
+ "Xman*manpageButton.Label:		        Manual Page",
+ "Xman*topLabel.label:         		        No App-Defaults File",
+ NULL,
 };
 
 /*
@@ -98,9 +116,12 @@ main(argc,argv)
 char ** argv;
 int argc;
 {
-  initial_widget = XtInitialize(NULL, "Xman", 
-				xman_options, XtNumber(xman_options),
-				(unsigned int*) &argc,argv);
+  XtAppContext app_con;
+
+  initial_widget = XtAppInitialize(&app_con, "Xman", 
+				   xman_options, XtNumber(xman_options),
+				   (Cardinal *) &argc, argv,
+				   fallback_resources, NULL, ZERO);
 
   manglobals_context = XStringToContext(MANNAME);
 
@@ -113,8 +134,7 @@ int argc;
     exit(42);
   }
 
-  XtAppAddActions(XtWidgetToApplicationContext(initial_widget),
-		  xman_actions, XtNumber(xman_actions));
+  XtAppAddActions(app_con, xman_actions, XtNumber(xman_actions));
 
   if (!resources.fonts.directory)
 	PrintError("Failed to get the directory font.");
@@ -156,7 +176,7 @@ int argc;
 
   man_pages_shown = 1;		
 
-  XtMainLoop();
+  XtAppMainLoop(app_con);
 }
 
 /*	Function Name: ArgError
