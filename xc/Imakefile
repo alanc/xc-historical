@@ -41,6 +41,7 @@ install::
 	-mkdir $(USRLIBDIR)
 	-mkdir $(BINDIR)
 	-mkdir $(LIBDIR)
+	-mkdir $(LINTLIBDIR)
 	-mkdir $(XAPPLOADDIR)
 	-mkdir $(INCDIR)
 	-mkdir $(FONTDIR)
