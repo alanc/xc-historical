@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.63 89/09/12 16:48:24 swick Exp $";
+    "$XConsortium: Resources.c,v 1.64 89/09/14 10:33:36 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -917,7 +917,8 @@ void XtGetValues(w, args, num_args)
 	wc->core_class.num_resources, args, num_args);
 
     /* Get constraint values if necessary */
-    if (XtIsConstraint(w->core.parent)) {
+    /* if (!XtIsShell(w) && XtIsConstraint(w->core.parent)) */
+    if (w->core.constraints != NULL) {
 	ConstraintWidgetClass cwc
 	    = (ConstraintWidgetClass) XtClass(w->core.parent);
 	GetValues((char*)w->core.constraints, 
@@ -928,7 +929,8 @@ void XtGetValues(w, args, num_args)
     CallGetValuesHook(wc, w, args, num_args);
 
     /* Notify constraint get_values if necessary */
-    if (XtIsConstraint(w->core.parent))
+    /* if (!XtIsShell(w) && XtIsConstraint(w->core.parent)) */
+    if (w->core.constraints != NULL)
 	CallConstraintGetValuesHook(XtClass(w->core.parent), w, args,num_args);
 } /* XtGetValues */
 
