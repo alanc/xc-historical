@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.172 91/01/09 17:16:35 dave Exp $
+ * $XConsortium: events.c,v 1.173 91/01/10 09:54:08 rws Exp $
  *
  * twm event handling
  *
@@ -1805,6 +1805,10 @@ HandleButtonPress()
 	     */
 	    if (Event.xbutton.subwindow == Tmp_win->w) {
 	      Event.xbutton.window = Tmp_win->w;
+              Event.xbutton.y -= Tmp_win->title_height;
+/*****
+              Event.xbutton.x -= Tmp_win->frame_bw;
+*****/
 	      Context = C_WINDOW;
 	    }
             else Context = C_FRAME;
