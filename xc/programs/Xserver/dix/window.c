@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.199 88/02/23 19:38:31 rws Exp $ */
+/* $Header: window.c,v 1.200 88/02/25 17:48:36 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2326,8 +2326,8 @@ ReparentWindow(pWin, pParent, x, y, client)
 	pParent->firstChild = pWin;
     }
 
-    pWin->clientWinSize.x = x;
-    pWin->clientWinSize.y = y;
+    pWin->clientWinSize.x = x + bw;
+    pWin->clientWinSize.y = y + bw;
     pWin->oldAbsCorner.x = oldx;
     pWin->oldAbsCorner.y = oldy;
     pWin->absCorner.x = x + bw + pParent->absCorner.x;
