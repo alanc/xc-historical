@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.26 91/05/10 16:57:42 gildea Exp $
+ *	$XConsortium: util.c,v 1.27 91/05/22 15:19:50 gildea Exp $
  */
 
 /*
@@ -33,6 +33,9 @@
 #include "menu.h"
 
 #include <stdio.h>
+
+static void horizontal_copy_area();
+static void vertical_copy_area();
 
 /*
  * These routines are used for the jump scroll feature
@@ -215,6 +218,14 @@ register int amount;
 			}
 		}
 	}
+
+	if (screen->multiscroll && amount == 1 &&
+	    screen->topline == 0 && screen->top_marg == 0 &&
+	    screen->bot_marg == screen->max_row) {
+	    if (screen->incopy < 0 && screen->scrolls == 0)
+		CopyWait(screen);
+	    screen->scrolls++;
+	}
 	scrolling_copy_area(screen, scrolltop+amount, scrollheight, amount);
 	if(refreshheight > 0) {
 		XClearArea (
@@ -287,6 +298,14 @@ register int amount;
 		scrollheight -= i;
 	if((i = screen->top_marg + refreshheight - 1 - bot) > 0)
 		refreshheight -= i;
+
+	if (screen->multiscroll && amount == 1 &&
+	    screen->topline == 0 && screen->top_marg == 0 &&
+	    screen->bot_marg == screen->max_row) {
+	    if (screen->incopy < 0 && screen->scrolls == 0)
+		CopyWait(screen);
+	    screen->scrolls++;
+	}
 	scrolling_copy_area(screen, scrolltop-amount, scrollheight, -amount);
 	if(refreshheight > 0)
 		XClearArea (
@@ -747,7 +766,7 @@ copy_area(screen, src_x, src_y, width, height, dest_x, dest_y)
 /*
  * use when inserting or deleting characters on the current line
  */
-static
+static void
 horizontal_copy_area(screen, firstchar, nchars, amount)
     TScreen *screen;
     int firstchar;		/* char pos on screen to start copying at */
@@ -765,7 +784,7 @@ horizontal_copy_area(screen, firstchar, nchars, amount)
 /*
  * use when inserting or deleting lines from the screen
  */
-static
+static void
 vertical_copy_area(screen, firstline, nlines, amount)
     TScreen *screen;
     int firstline;		/* line on screen to start copying at */
@@ -793,13 +812,6 @@ scrolling_copy_area(screen, firstline, nlines, amount)
 {
 
     if(nlines > 0) {
-	if (screen->multiscroll && amount == 1 &&
-	    screen->topline == 0 && screen->top_marg == 0 &&
-	    screen->bot_marg == screen->max_row) {
-	    if (screen->incopy < 0 && screen->scrolls == 0)
-		CopyWait(screen);
-	    screen->scrolls++;
-	}
 	vertical_copy_area(screen, firstline, nlines, amount);
     }
 }
