@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 94/06/01 15:57:45 kaleb Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.15 94/08/02 19:03:32 kaleb Exp kaleb $
 
 MANDIR = $(LIBMANDIR)
 MANSUFFIX = $(LIBMANSUFFIX)
@@ -42,7 +42,7 @@ InstallManPageLong(XtCallAFoc,$(MANDIR),XtCallAcceptFocus)
 InstallManPageLong(XtCallCbks,$(MANDIR),XtCallCallbacks)
 InstallManPageAliases(XtCallCallbacks,$(MANDIR),XtCallCallbackList XtHasCallbacks)
 InstallManPageLong(XtClass,$(MANDIR),XtClass)
-InstallManPageAliases(XtClass,$(MANDIR),XtSuperclass XtIsSubclass XtCheckSubclass XtIsComposite XtIsObject XtIsRectObj XtIsWidget XtIsComposite XtIsConstraint XtIsShell XtIsOverrideShell XtIsWMShell XtIsVendorShell XtIsTransientShell XtIsTopLevelShell XtIsApplicationShell)
+InstallManPageAliases(XtClass,$(MANDIR),XtSuperclass XtIsSubclass XtCheckSubclass XtIsObject XtIsRectObj XtIsWidget XtIsComposite XtIsConstraint XtIsShell XtIsOverrideShell XtIsWMShell XtIsVendorShell XtIsTransientShell XtIsTopLevelShell XtIsApplicationShell)
 InstallManPageLong(XtConfWid,$(MANDIR),XtConfigureWidget)
 InstallManPageAliases(XtConfigureWidget,$(MANDIR),XtMoveWidget XtResizeWidget)
 InstallManPageLong(XtConvert,$(MANDIR),XtConvert)
@@ -79,7 +79,7 @@ InstallManPageAliases(XtManageChildren,$(MANDIR),XtManageChild XtUnmanageChildre
 InstallManPageLong(XtMapWid,$(MANDIR),XtMapWidget)
 InstallManPageAliases(XtMapWidget,$(MANDIR),XtSetMappedWhenManaged XtUnmapWidget)
 InstallManPageLong(XtNameTWid,$(MANDIR),XtNameToWidget)
-InstallManPageAliases(XtNameToWidget,$(MANDIR),XtWidgetToWindow)
+InstallManPageAliases(XtNameToWidget,$(MANDIR),XtWindowToWidget)
 InstallManPageLong(XtOffset,$(MANDIR),XtOffset)
 InstallManPageAliases(XtOffset,$(MANDIR),XtOffsetOf XtNumber)
 InstallManPageLong(XtOwnSel,$(MANDIR),XtOwnSelection)
