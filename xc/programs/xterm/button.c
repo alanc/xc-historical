@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.41 89/06/12 11:29:13 swick Exp $
+ *	$XConsortium: button.c,v 1.42 89/07/16 15:24:11 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.41 89/06/12 11:29:13 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.42 89/07/16 15:24:11 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -487,6 +487,12 @@ Bool use_cursor_loc;
 	lastButtonUpTime = event->xbutton.time;
 	/* Only do select stuff if non-null select */
 	if (startSRow != endSRow || startSCol != endSCol) {
+	        int tmp;
+		if (startSCol > endSCol) {  /* handle eoline extending */
+		    tmp = startSCol;
+		    startSCol = endSCol;
+		    endSCol = tmp;
+		}
 		if (replyToEmacs) {
 			if (rawRow == startSRow && rawCol == startSCol 
 			 && row == endSRow && col == endSCol) {
@@ -958,7 +964,7 @@ register int frow, fcol, trow, tcol;
 }
 
 SaltTextAway(crow, ccol, row, col, params, num_params)
-register crow, ccol, row, col;
+/*register*/ int crow, ccol, row, col;
 String *params;			/* selections */
 Cardinal num_params;
 /* Guaranteed that (crow, ccol) <= (row, col), and that both points are valid
@@ -990,6 +996,9 @@ Cardinal num_params;
 	    screen->selection = line;
 	    screen->selection_size = j + 1;
 	} else line = screen->selection;
+	if (!line) {
+	    return;
+	}
 	line[j] = '\0';		/* make sure it is null terminated */
 	lp = line;		/* lp points to where to save the text */
 	if ( row == crow ) lp = SaveText(screen, row, ccol, col, lp);
