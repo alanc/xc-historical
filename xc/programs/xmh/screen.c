@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.59 91/07/14 18:53:40 converse Exp $
+ * $XConsortium: screen.c,v 2.60 91/07/17 21:34:07 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -361,7 +361,8 @@ ScrnKind kind;
 
 	  case STcomp:
 	    BBoxLockSize(scrn->viewbuttons);
-	    XtInstallAllAccelerators(scrn->widget, scrn->widget);
+	    XtInstallAllAccelerators(scrn->viewwidget, scrn->widget);
+	    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
 	    break;
 	}
 
