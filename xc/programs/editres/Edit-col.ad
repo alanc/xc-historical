@@ -1,6 +1,7 @@
 ! Here are some suggested resources if you are using a color workstation.
 ! They look pretty good on my display, your mileage may vary.
 
+#include "Editres"
 
 *flashColor:			Yellow
 
