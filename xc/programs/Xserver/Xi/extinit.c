@@ -1,4 +1,4 @@
-/* $XConsortium: xextinit.c,v 1.7 90/05/18 10:56:34 rws Exp $ */
+/* $XConsortium: xextinit.c,v 1.8 90/05/18 11:37:05 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -51,23 +51,23 @@ struct  dev_type
     Atom	type;
     char	*name;
     }dev_type [] = {{0,"KEYBOARD"},
-	    {0,"MOUSE"},
-	    {0,"TABLET"},
-	    {0,"TOUCHSCREEN"},
-	    {0,"TOUCHPAD"},
-	    {0,"BARCODE"},
-	    {0,"BUTTONBOX"},
-	    {0,"KNOB_BOX"},
-	    {0,"ONE_KNOB"},
-	    {0,"NINE_KNOB"},
-	    {0,"TRACKBALL"},
-	    {0,"QUADRATURE"},
-	    {0,"ID_MODULE"},
-	    {0,"SPACEBALL"},
-	    {0,"DATAGLOVE"},
-	    {0,"EYETRACKER"},
-	    {0,"CURSORKEYS"},
-	    {0,"FOOTMOUSE"}};
+	    {0,XI_MOUSE},
+	    {0,XI_TABLET},
+	    {0,XI_TOUCHSCREEN},
+	    {0,XI_TOUCHPAD},
+	    {0,XI_BARCODE},
+	    {0,XI_BUTTONBOX},
+	    {0,XI_KNOB_BOX},
+	    {0,XI_ONE_KNOB},
+	    {0,XI_NINE_KNOB},
+	    {0,XI_TRACKBALL},
+	    {0,XI_QUADRATURE},
+	    {0,XI_ID_MODULE},
+	    {0,XI_SPACEBALL},
+	    {0,XI_DATAGLOVE},
+	    {0,XI_EYETRACKER},
+	    {0,XI_CURSORKEYS},
+	    {0,XI_FOOTMOUSE}};
 
 CARD8  event_base [numInputClasses];
 XExtEventInfo EventInfo[32];
