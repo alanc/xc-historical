@@ -1,4 +1,4 @@
-.TH XHOST 1 "25 January 1986" "X Version 10"
+.TH XHOST 1 "1 March 1988" "X Version 11"
 .SH NAME
 xhost - X window system access control program
 .SH SYNOPSIS
@@ -31,6 +31,10 @@ It is possible to remove the current host from the access list.
 Be warned that you can't undo this without logging out.
 .PP
 .I Xhost
+with a lone ``+'' will turn off access control (i.e. it gives everybody
+access) while a lone ``-'' will turn it back on.
+.PP
+.I Xhost
 with no arguments will print the current hosts allowed to access your
 display.
 .SH FILES
@@ -38,7 +42,9 @@ display.
 .SH "SEE ALSO"
 X(8C), xterm(1)
 .SH ENVIRONMENT
-DISPLAY	-	To find out which X you are using.
+.TP 8
+.B DISPLAY
+to get the default host and display to use.
 .SH BUGS
 .PP
 You can't specify a display on the command line.  Furthermore, 
@@ -49,9 +55,7 @@ to remove the machine named
 from the access list).
 .SH AUTHOR
 Copyright 1985 by Massachusetts Institute of Technology.
-.PP
-See \fIX(1)\fP for a complete copyright notice.
-.PP
+.br
 Bob Scheifler, MIT Laboratory for Computer Science,
 .br
 Jim Gettys, MIT Project Athena (DEC).
