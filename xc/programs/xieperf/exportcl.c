@@ -1,4 +1,4 @@
-/* $XConsortium: exportcl.c,v 1.3 93/10/26 15:08:29 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.4 93/10/26 21:08:38 rws Exp $ */
 
 /**** module exportcl.c ****/
 /******************************************************************************
@@ -485,7 +485,7 @@ InitExportClientHistogram(xp, p, reps)
                 rect.width = parms->width;
                 rect.height = parms->height;
 
-                if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) ==
+                if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) ==
                         ( XieRoi ) NULL )
                 {
 			reps = 0;
