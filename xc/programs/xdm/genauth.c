@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: genauth.c,v 1.11 93/09/20 18:03:19 hersh Exp $
+ * $XConsortium: genauth.c,v 1.12 94/01/01 17:30:14 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -93,7 +93,7 @@ InitXdmcpWrapper ()
 
 #endif
 
-GenerateAuthorization (auth, len)
+GenerateAuthData (auth, len)
 char	*auth;
 int	len;
 {

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.9 91/07/24 00:06:43 keith Exp $
+ * $XConsortium: mitauth.c,v 1.10 93/09/20 18:02:46 hersh Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -73,7 +73,7 @@ MitGetAuth (namelen, name)
     }
     memmove( (char *)new->name, name, namelen);
     new->name_length = namelen;
-    GenerateAuthorization (new->data, AUTH_DATA_LEN);
+    GenerateAuthData (new->data, AUTH_DATA_LEN);
     new->data_length = AUTH_DATA_LEN;
     return new;
 }

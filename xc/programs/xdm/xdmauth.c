@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.9 92/05/19 17:27:04 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.10 93/09/20 18:03:23 hersh Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -117,7 +117,7 @@ XdmGetAuthHelper (namelen, name, includeRho)
     }
     memmove( (char *)new->name, name, namelen);
     new->name_length = namelen;
-    GenerateAuthorization ((char *)new->data, new->data_length);
+    GenerateAuthData ((char *)new->data, new->data_length);
     /*
      * set the first byte of the session key to zero as it
      * is a DES key and only uses 56 bits
