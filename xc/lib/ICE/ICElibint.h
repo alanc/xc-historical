@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.1 93/08/19 18:29:15 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.2 93/08/20 10:13:59 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -17,6 +17,9 @@ purpose.  It is provided "as is" without express or implied warranty.
 #ifndef ICELIBINT_H
 #define ICELIBINT_H
 
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xmd.h>
