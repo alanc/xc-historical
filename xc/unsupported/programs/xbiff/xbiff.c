@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.13 89/12/11 15:56:26 kit Exp $
+ * $XConsortium: xbiff.c,v 1.14 89/12/11 16:01:25 kit Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -70,7 +70,6 @@ void main (argc, argv)
     char **argv;
 {
     Widget toplevel, w;
-    Arg args[1];
 
     ProgramName = argv[0];
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.20 89/11/21 11:43:11 rws Exp $
+ * $XConsortium: XMultibuf.c,v 1.21 89/12/08 18:15:49 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -343,7 +343,6 @@ void XmbufDestroyBuffers (dpy, window)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xMbufDestroyImageBuffersReq *req;
-    int i;
 
     MbufSimpleCheckExtension (dpy, info);
 
@@ -370,7 +369,6 @@ void XmbufDisplayBuffers (dpy, count, buffers, min_delay, max_delay)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xMbufDisplayImageBuffersReq *req;
-    int i;
 
     MbufSimpleCheckExtension (dpy, info);
 

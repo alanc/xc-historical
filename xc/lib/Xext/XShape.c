@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.17 89/11/21 11:36:40 rws Exp $
+ * $XConsortium: XShape.c,v 1.18 89/11/24 11:58:24 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -77,7 +77,6 @@ static Bool wire_to_event (dpy, re, event)
     XExtDisplayInfo *info = find_display (dpy);
     XShapeEvent		*se;
     xShapeNotifyEvent	*sevent;
-    XExtCodes		*codes;
 
     ShapeCheckExtension (dpy, info, False);
 
@@ -112,7 +111,6 @@ static Status event_to_wire (dpy, re, event)
     XExtDisplayInfo *info = find_display (dpy);
     XShapeEvent		*se;
     xShapeNotifyEvent	*sevent;
-    XExtCodes		*codes;
 
     ShapeCheckExtension (dpy, info, 0);
 
@@ -304,7 +302,6 @@ int xOff, yOff;
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xShapeOffsetReq *req;
-    XExtCodes	*codes;
 
     ShapeSimpleCheckExtension (dpy, info);
 

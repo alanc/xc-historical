@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.7 88/11/23 17:00:44 keith Exp $
+ * $XConsortium: verify.c,v 1.8 89/04/12 19:38:08 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,8 +34,6 @@
 struct passwd joeblow = {
 	"Nobody", "***************"
 };
-
-static int * parseGroups ();
 
 Verify (d, greet, verify)
 struct display		*d;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.19 89/12/06 19:35:21 keith Exp $
+ * $XConsortium: Login.c,v 1.20 89/12/10 16:21:46 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -140,7 +140,6 @@ static XtResource resources[] = {
 	
 static void Initialize(), Realize(), Destroy(), Redisplay();
 static Boolean SetValues();
-static int repaint_window();
 static void draw_it ();
 
 static void ClassInitialize();
