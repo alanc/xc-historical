@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.45 88/10/19 09:21:48 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.46 89/01/18 17:04:58 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -1056,7 +1056,6 @@ static void ChangeManaged(wid)
 {
     register ShellWidget w = (ShellWidget) wid;
     Widget childwid = NULL;
-    Boolean needresize = FALSE;
     int i;
 
     for (i = 0; i < w->composite.num_children; i++) {
@@ -1094,7 +1093,7 @@ static void ChangeManaged(wid)
 		WMShellWidget wmshell = (WMShellWidget) wid;
 		wmshell->wm.size_hints.flags |= PSize;
 	    }
-	} else needresize = TRUE;
+	}
 
 	if(flag & XNegative) 
 	    w->core.x += WidthOfScreen(XtScreen(w))
@@ -1102,21 +1101,11 @@ static void ChangeManaged(wid)
 	if(flag & YNegative) 
 	    w->core.y += HeightOfScreen(XtScreen(w))
 			 - w->core.height - (2*w->core.border_width);
-
-	if (childwid != NULL && childwid->core.border_width != 0)
-	    needresize = TRUE;
-
-	if (childwid != NULL && needresize) {
-	    /* our child gets our attributes */
-	    XtResizeWidget (childwid, w->core.width,
-		    w->core.height, (Dimension) 0);
-	}
     }
 
     if (childwid != NULL) {
-	XtMoveWidget (childwid,
-		      (int)(-childwid->core.border_width),
-		      (int)(-childwid->core.border_width));
+	XtConfigureWidget (childwid, (Position)0, (Position)0,
+			   w->core.width, w->core.height, (Dimension)0 );
 	XtSetKeyboardFocus(wid, childwid);
     }
 }
