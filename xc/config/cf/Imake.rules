@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.110 91/07/01 15:44:07 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.111 91/07/09 15:27:22 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -91,6 +91,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.110 91/07/01 15:44:07 rws Exp $
  *	MakefileSubdirs				(dirs)
  *	CppScriptTarget				(dst,src,defs,deplist)
  *	MakeScriptFromCpp			(name,defs)
+ *	CppFileTarget				(dst,src,defs,deplist)
  *	MakeDirectories				(step,dirs)
  *	MakeFontsDir				(deplist)
  *	MakeFonts				()
@@ -1248,6 +1249,13 @@ dst::  src deplist							@@\
 CppScriptTarget(name,name.cpp,defs,NullParameter)
 #endif /* MakeScriptFromCpp */
 
+#ifndef CppFileTarget
+#define CppFileTarget(dst,src,defs,deplist)				@@\
+dst::  src deplist							@@\
+	$(RM) $@							@@\
+	$(CPP) defs <src | \						@@\
+		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >$@
+#endif /* CppFileTarget */
 
 /*
  * MakeDirectories - generate rules to create a hierarchy of directories.
