@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.20 93/08/08 18:03:48 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.21 93/08/13 14:33:41 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -107,10 +107,8 @@ extern int getpagesize();
 /* 
  * ddx specific headers 
  */
-#ifndef PSZ
-/* MIT ddx/sun only knows 8-bit deep devices :-( */
-# define PSZ 8
-#endif
+#define PSZ 8
+
 #include "mipointer.h"
 
 /* 
@@ -249,12 +247,10 @@ typedef struct _sunFbDataRec {
     char	*name;		/* /usr/include/fbio names */
 } sunFbDataRec;
 
-extern Bool		sunSupportsDepth8;
-extern Bool		sunSupportsDepth24;
 extern Bool		sunAutoRepeatHandlersInstalled;
 extern sunFbDataRec	sunFbData[];
 extern fbFd		sunFbs[];
-extern Bool		sunDoF11;
+extern Bool		sunSwapLkeys;
 extern long		sunAutoRepeatInitiate;
 extern long		sunAutoRepeatDelay;
 extern int		sunScreenIndex;
