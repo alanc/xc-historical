@@ -181,22 +181,20 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 
-						       pWin->borderClip->numRects);
+    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
     (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, pWin->borderClip, prgnSrc);
+    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc);
 
-    pbox = prgnDst->rects;
-    nbox = prgnDst->numRects;
-    if(!(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL( prgnDst->numRects *
-      sizeof(DDXPointRec))))
+    pbox = REGION_RECTS(prgnDst);
+    nbox = REGION_NUM_RECTS(prgnDst);
+    if(!(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec))))
 	return;
     ppt = pptSrc;
 
-    for (i=0; i<nbox; i++, ppt++, pbox++)
+    for (i = nbox; --i >= 0; ppt++, pbox++)
     {
 	ppt->x = pbox->x1 + dx;
 	ppt->y = pbox->y1 + dy;

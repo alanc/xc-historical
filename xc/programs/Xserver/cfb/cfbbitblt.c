@@ -152,7 +152,7 @@ int dstx, dsty;
         }
         else
         {
-            prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
+            prgnSrcClip = &((WindowPtr)pSrcDrawable)->clipList;
         }
     }    
 
@@ -187,19 +187,19 @@ int dstx, dsty;
                 prgnDst,
                 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
 
-    if (prgnDst->numRects)
+    i = REGION_NUM_RECTS(prgnDst);
+    if (i)
     {
-	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL( prgnDst->numRects *
-	    sizeof(DDXPointRec))))
+	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(i * sizeof(DDXPointRec))))
 	{
 	    (*pGC->pScreen->RegionDestroy)(prgnDst);
 	    if (realSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	    return NULL;
 	}
-	pbox = prgnDst->rects;
+	pbox = REGION_RECTS(prgnDst);
 	ppt = pptSrc;
-	for (i=0; i<prgnDst->numRects; i++, pbox++, ppt++)
+	for (; --i >= 0; pbox++, ppt++)
 	{
 	    ppt->x = pbox->x1 + dx;
 	    ppt->y = pbox->y1 + dy;
@@ -486,8 +486,8 @@ DDXPointPtr pptSrc;
 	       ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
 		(pDstDrawable->type == DRAWABLE_WINDOW)));
 
-    pbox = prgnDst->rects;
-    nbox = prgnDst->numRects;
+    pbox = REGION_RECTS(prgnDst);
+    nbox = REGION_NUM_RECTS(prgnDst);
 
     pboxNewX = NULL;
     pboxNewY = NULL;
