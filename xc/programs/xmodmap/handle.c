@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.25 91/07/18 10:26:00 rws Exp $
+ * $XConsortium: handle.c,v 1.26 92/04/17 14:29:09 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1126,6 +1126,14 @@ void print_opcode (op)
 	break;
       case doClearModifier:
 	printf ("clear %s\n", modifier_table[op->clearmodifier.modifier].name);
+	break;
+      case doPointer:
+	printf ("pointer = ");
+	if (op->pointer.count == 0)
+	    printf(" default");
+	else for (i=0; i < op->pointer.count; i++)
+	    printf(" %d", op->pointer.button_codes[i]);
+	printf ("\n");
 	break;
       default:
 	printf ("! unknown opcode %d\n", op->generic.type);
