@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.27 88/01/02 15:04:46 rws Exp $ */
+/* $XConsortium: swapreq.c,v 1.28 88/09/06 15:41:29 jim Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -35,21 +35,6 @@ extern int (* ProcVector[256]) ();
 extern void (* EventSwapVector[128]) ();  /* for SendEvent */
 
 /* Thanks to Jack Palevich for testing and subsequently rewriting all this */
-
-#define LengthRestB(stuff) \
-    (((unsigned long)stuff->length << 2) - sizeof(*stuff))
-
-#define LengthRestS(stuff) \
-    (((unsigned long)stuff->length << 1) - (sizeof(*stuff) >> 1))
-
-#define LengthRestL(stuff) \
-    ((unsigned long)stuff->length - (sizeof(*stuff) >> 2))
-
-#define SwapRestS(stuff) \
-    SwapShorts((short *)(stuff + 1), LengthRestS(stuff))
-
-#define SwapRestL(stuff) \
-    SwapLongs((long *)(stuff + 1), LengthRestL(stuff))
 
 /* Byte swap a list of longs */
 

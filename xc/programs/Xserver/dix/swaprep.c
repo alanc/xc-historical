@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.34 89/03/22 07:22:01 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.35 89/03/24 07:42:06 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -34,18 +34,6 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 void SwapVisual(), SwapConnSetup(), SwapWinRoot();
-
-/* copy long from src to dst byteswapping on the way */
-#define cpswapl(src, dst) \
-                 ((char *)&(dst))[0] = ((char *) &(src))[3];\
-                 ((char *)&(dst))[1] = ((char *) &(src))[2];\
-                 ((char *)&(dst))[2] = ((char *) &(src))[1];\
-                 ((char *)&(dst))[3] = ((char *) &(src))[0];
-
-/* copy short from src to dst byteswapping on the way */
-#define cpswaps(src, dst)\
-		 ((char *) &(dst))[0] = ((char *) &(src))[1];\
-		 ((char *) &(dst))[1] = ((char *) &(src))[0];
 
 /* Thanks to Jack Palevich for testing and subsequently rewriting all this */
 void
