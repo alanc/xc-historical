@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.84 91/01/06 21:04:56 rws Exp $
+ * $XConsortium: Tekproc.c,v 1.86 91/02/05 19:44:18 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -31,8 +31,8 @@
 
 /* Tekproc.c */
 
-#include <X11/Xos.h>
 #include "ptyx.h"
+#include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
@@ -41,10 +41,8 @@
 #include <X11/Xmu/CharSet.h>
 #include "Tekparse.h"
 #include <stdio.h>
-#include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
-#include <pwd.h>
 #include "data.h"
 #include "error.h"
 #include "menu.h"
@@ -52,6 +50,8 @@
 #if !defined(EWOULDBLOCK) && defined(EAGAIN)
 #define EWOULDBLOCK EAGAIN
 #endif
+
+extern jmp_buf Tekend;
 
 extern void exit();
 extern long time();

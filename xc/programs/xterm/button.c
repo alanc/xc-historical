@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.54 91/01/24 19:31:29 gildea Exp $ */
+/* $XConsortium: button.c,v 1.56 91/02/05 19:44:58 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -32,8 +32,6 @@ button.c	Handles button events in the terminal emulator.
 #include "ptyx.h"		/* Xlib headers included here. */
 #include <X11/Xatom.h>
 #include <stdio.h>
-#include <setjmp.h>
-#include <ctype.h>
 
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/StdSel.h>
