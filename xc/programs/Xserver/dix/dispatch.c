@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.90 89/03/23 09:06:29 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.91 89/03/24 07:38:55 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3439,8 +3439,10 @@ ProcEstablishConnection(client)
 	(prefix->minorVersion != X_PROTOCOL_REVISION))
 	reason = "Protocol version mismatch";
     else
-	reason = ClientAuthorized(client, (int)prefix->nbytesAuthProto,
-				  auth_proto, (int)prefix->nbytesAuthString,
+	reason = ClientAuthorized(client,
+				  (unsigned short)prefix->nbytesAuthProto,
+				  auth_proto,
+				  (unsigned short)prefix->nbytesAuthString,
 				  auth_string);
     if (reason)
     {

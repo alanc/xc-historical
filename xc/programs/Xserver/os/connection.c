@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.97 89/03/23 18:37:35 rws Exp $ */
+/* $XConsortium: connection.c,v 1.98 89/03/24 09:17:46 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -120,6 +120,7 @@ extern ClientPtr NextAvailableClient();
 
 extern int AutoResetServer();
 extern int GiveUp();
+extern XID CheckAuthorization();
 static void CloseDownFileDescriptor(), ErrorConnMax();
 
 #ifdef UNIXCONN
