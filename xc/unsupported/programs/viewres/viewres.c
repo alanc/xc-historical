@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.66 90/11/06 18:02:36 dave Exp $
+ * $XConsortium: viewres.c,v 1.67 91/01/09 18:45:44 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -875,7 +875,7 @@ main (argc, argv)
 
     toplevel = XtAppInitialize (&app_con, "Viewres", 
 				Options, XtNumber (Options),
-				(Cardinal *) &argc, argv, fallback_resources, 
+				&argc, argv, fallback_resources, 
 				(ArgList) NULL, ZERO);
     if (argc != 1) usage ();
     XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
