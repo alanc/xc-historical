@@ -540,55 +540,20 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
       ALLOSDIRS = os/4.2bsd os/bsdemul
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
 
-
-MakeMakeSubdirs($(SERVERSUBDIRS),RealMakefiles)
-MakeNsubdirMakefiles()
 InstallMultiple($(ALL),$(BINDIR))
 
-/**/#
-/**/# Gad, but I wish this wasn't so complicated.  All this because
-/**/# If we are making two servers, then there may be two lists of
-/**/# directories to depend or whatever, most of which are duplicates
-/**/#
-#define DoServerSubdirList(target)					@@\
-target::								@@\
-	@for i in $(ALL); do \						@@\
-		dirs="$$dirs \$$($${i}DIRS)"; \				@@\
-	done; \								@@\
-	$(MAKE) $(MFLAGS) Real/**/target \				@@\
-		"SERVERSUBDIRS=$$dirs" \				@@\
-		LINT=$(LINT) DESTDIR=$(DESTDIR)				@@\
-									@@\
-Real/**/target:								@@\
-	@subdirs=`ls -d $(SERVERSUBDIRS) | sort -u`; \			@@\
-	for i in $$subdirs; do \					@@\
-		echo "target""ing $(CURRENT_DIR)/$$i"; \		@@\
-		(cd $$i ; $(MAKE) $(MFLAGS) target \			@@\
-			LINT=$(LINT) DESTDIR=$(DESTDIR) ); \		@@\
-	done
+#define IHaveSubdirs
 
-Makefiles::
-	@for i in $(ALL); do \
-		dirs="$$dirs \$$($${i}DIRS)"; \
-	done; \
-	$(MAKE) $(MFLAGS) RealMakefiles "SERVERSUBDIRS=$$dirs"
+DependSubdirs($(SUBDIRS))
+MakeLintLibSubdirs($(SUBDIRS))
+LintSubdirs($(SUBDIRS))
 
-AllMakefiles::
-	@$(MAKE) $(MFLAGS) RealMakefiles "SERVERSUBDIRS=$(ALLSUBDIRS)"
+NamedCleanSubdirs(AllClean,$(ALLSUBDIRS))
+NamedTagSubdirs(AllTags,$(ALLSUBDIRS))
 
-AllClean::
-	@$(MAKE) $(MFLAGS) Realclean "SERVERSUBDIRS=$(ALLSUBDIRS)"
-
-AllTags::
-	@$(MAKE) $(MFLAGS) Realtags "SERVERSUBDIRS=$(ALLSUBDIRS)"
+MakeMakeSubdirs($(ALLSUBDIRS),AllMakefiles)
 
 
-DoServerSubdirList(clean)
-DoServerSubdirList(tags)
-DoServerSubdirList(depend)
-DoServerSubdirList(install)
-DoServerSubdirList(lintlib)
-DoServerSubdirList(lint)
 
 $(EXTDIR) $(FONTUTILDIR) $(SUBDIRS): FRC
 	@cd $@ ; echo "making $@"; \
