@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.61 94/01/10 20:26:44 converse Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.62 94/01/21 19:11:59 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -193,6 +193,8 @@ typedef void (*XtDeallocateProc)(
     XtPointer		/* more_bytes */
 #endif
 );
+
+struct _XtStateRec;	/* Forward declare before use for C++ */
 
 typedef struct _XtTMRec {
     XtTranslations  translations;	/* private to Translation Manager    */
