@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.4 92/02/28 17:54:56 keith Exp $
+ * $XConsortium: saver.c,v 1.5 92/02/28 18:08:24 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -395,6 +395,7 @@ UninstallSaverColormap (pScreen)
     ScreenPtr	pScreen;
 {
     SetupScreen(pScreen);
+    ColormapPtr			pCmap;
 
     if (pPriv && pPriv->installedMap != None)
     {
@@ -533,7 +534,6 @@ DestroySaverWindow (pScreen)
 {
     SetupScreen(pScreen);
     ScreenSaverStuffPtr		pSaver;
-    ColormapPtr			pCmap;
 
     if (!pPriv || !pPriv->hasWindow)
 	return FALSE;
