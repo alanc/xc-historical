@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Oki.cf,v 1.7 93/08/19 16:30:49 kaleb Exp $
+XCOMM platform:  $XConsortium: Oki.cf,v 1.8 93/09/18 11:07:08 rws Exp $
 
 #define OSName			Unix System V/860 Release 4.0 Version 3
 XCOMM operating system:  OSName
@@ -8,6 +8,7 @@ XCOMM operating system:  OSName
 
 #define BootstrapCFlags		-DOki
 #define SystemV4		YES
+#define HasSockets		NO
 #define ExtraLibraries		-lsocket -lnsl
 #define SetTtyGroup		YES
 #define HasPutenv		YES
