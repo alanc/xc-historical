@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.242 94/04/13 14:58:40 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.243 94/08/17 02:45:50 mor Exp matt $
 
 /****************************************************************************
  *                                                                          *
@@ -71,7 +71,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.242 94/04/13 14:58:40 rws Exp $
 #define BuildXKBlib		NO	/* not yet a standard part of Xlib */
 #endif
 #ifndef BuildFresco
-#if HasCplusplus && !HasGcc2ForCplusplus
+#if HasCplusplus 
 #define BuildFresco		YES
 #else
 #define BuildFresco		NO
