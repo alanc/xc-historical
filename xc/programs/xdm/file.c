@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: file.c,v 1.3 88/09/23 14:21:25 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,6 +87,8 @@ acceptable:;
 #ifdef UDP_SOCKET
 			if (sockaddr)
 				d->addr = *(struct sockaddr_in *) sockaddr;
+			else
+				bzero (d->addr, sizeof (d->addr));
 #endif
 			i = 0;
 			args = (char **) malloc (sizeof (char *));
