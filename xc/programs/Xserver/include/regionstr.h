@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: regionstr.h,v 1.1 87/09/11 07:50:10 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -32,8 +32,8 @@ SOFTWARE.
  */
 
 typedef struct _Region {
-    short	size;
-    short 	numRects;
+    long	size;
+    long 	numRects;
     BoxPtr	rects;
     BoxRec 	extents;
 } RegionRec;
