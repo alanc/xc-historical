@@ -1,0 +1,456 @@
+/*
+ * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
+ */
+
+#ifdef SYSV
+#define SystemV           YES
+#endif
+
+#define OSName            RISCOS
+#define OSMajorVersion    4
+#define OSMinorVersion    5
+
+/**/# platform:  $XConsortium: Mips.cf,v 1.2 89/01/11 14:58:19 jim Exp $
+/**/# operating system:  OSName
+
+/*****************************************************************************
+ *			  Platform-specific parameters                       *
+ *****************************************************************************/
+
+#define HasVoidSignalReturn		NO
+#define SetTtyGroup			YES
+#define UnalignedReferencesAllowed	NO     /* if arbitrary deref is okay */
+#define HasBsearch			NO
+
+#define MipsArchitecture
+#define MakeEnv ETCDIR='$(ETCDIR)' ULIBDIR='$(ULIBDIR)' -e
+#define CrossEnvEnable		YES
+#ifndef DSOEnable
+#define DSOEnable		YES
+#endif
+
+         SYSVTYPE = -systype sysv
+          BSDTYPE = -systype bsd43
+         SYSVDEFS = -DMips -DSYSV
+          BSDDEFS = -DMips -DBSD43
+         SYSVINCS = -I$(DESTDIR)/usr/include/bsd
+          BSDINCS =
+         SYSVLIBS = -lPW -lbsd -lmld
+          BSDLIBS = -lmld
+
+#ifdef MipsSysvArchitecture
+#  define SystemV YES
+          SYSTYPE = $(SYSVTYPE)
+          SYSDEFS = $(SYSVDEFS)
+          SYSINCS = $(SYSVINCS)
+          SYSLIBS = $(SYSVLIBS)
+#  define LintLibFlag -o
+#  define LintOpts -ax
+#else /* MipsSysvArchitecture */
+#  define SystemV NO
+          SYSTYPE = $(BSDTYPE)
+          SYSDEFS = $(BSDDEFS)
+          SYSINCS = $(BSDINCS)
+          SYSLIBS = $(BSDLIBS)
+#  define LintLibFlag -C
+#  define LintOpts -axz
+#endif /* MipsSysvArchitecture */
+     OPTIM = -O -Olimit 2000 -Wf,-XNd8400,-XNp12000
+#if DSOEnable
+     CCOPT = -signed -Wl,-no_library_replacement
+#else
+     CCOPT = -signed
+#endif
+   DEFINES = -D_NO_PROTO /* For Motif.  Hope it doesn't mess anything up */
+SYSVCFLAGS = $(OPTIM) $(CCOPT) $(SYSVTYPE) $(INCLUDES) $(SYSVDEFS) $(SYSVINCS) $(DEFINES)
+ BSDCFLAGS = $(OPTIM) $(CCOPT) $(BSDTYPE)  $(INCLUDES) $(BSDDEFS)  $(BSDINCS)  $(DEFINES)
+
+/* Override macros defined in Imake.tmpl */
+#define InstDatFlags -m 0444 
+#define ArCmd ar clr
+#define BootstrapCFlags $(SYSDEFS)
+#define CcCmd cc
+#define InstallCmd $(ETCDIR)/mipsinstall
+#define LdCmd ld
+#define LnCmd ln -s
+#define MakeCmd make MakeEnv
+#define RanlibCmd /bin/true
+#define StandardCppDefines $(SYSDEFS)
+#define StandardDefines $(SYSDEFS) $(SYSINCS)
+#define ExtraLibraries $(SYSLIBS)
+
+#if DSOEnable
+#define FilesToClean *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut *.u *.b *.so
+#endif
+
+#ifdef UseInstalled
+#define _Use(a,b) a
+#else
+#define _Use(a,b) b
+#endif
+
+#if DSOEnable
+#define LibSuffix so
+#else
+#define LibSuffix a
+#endif
+
+           ETCDIR = /etc
+          ULIBDIR = /usr/lib
+  
+      XINSTALLDIR = RISCwindows4.1
+     INSTALLFLAGS = -m 0555
+        RS1210DIR = $(DESTDIR)/usr/$(XINSTALLDIR)/RS1210
+    CONTRIBBINDIR = $(DESTDIR)/usr/$(XINSTALLDIR)/contrib/bin
+CONTRIBAPPSDEFDIR = $(DESTDIR)/usr/$(XINSTALLDIR)/contrib/lib/app-defaults
+    CONTRIBMANDIR = $(DESTDIR)/usr/$(XINSTALLDIR)/contrib/man
+    CONTRIBSRCDIR = $(DESTDIR)/usr/$(XINSTALLDIR)/contrib/src
+      EXTRABINDIR = $(BINDIR)/extra
+     RS1210LIBDIR = $(LIBDIR)/ncd
+
+          BINPATH = /usr/bin/X11
+          LIBPATH = /usr/lib/X11
+          ETCPATH = /usr/etc/X11
+          ADMPATH = /usr/adm
+          NCDPATH = /usr/X11/ncd
+     EXTRABINPATH = $(BINPATH)/extra
+       NCDLIBPATH = $(LIBPATH)/ncd
+        XINITPATH = $(LIBPATH)/xinit
+          XDMPATH = $(ETCPATH)/xdm
+          UWMPATH = $(LIBPATH)/uwm
+          AWMPATH = $(LIBPATH)/awm
+          MWMPATH = $(LIBPATH)/mwm
+          TWMPATH = $(LIBPATH)/twm
+     XAPPLOADPATH = $(LIBPATH)/app-defaults
+        RS1210SRC = $(TOP)/rs1210
+
+/** some additional Motif stuff        **/
+
+/* #define ToolKitSrc $(MLIBSRC)/Xt  MLIBSRC uses Motif libXt for build */
+
+       MOTIFSRC = $(TOP)/motif
+        MLIBSRC = $(MOTIFSRC)/lib
+     MCLIENTSRC = $(MOTIFSRC)/clients
+       MDEMOSRC = $(MOTIFSRC)/demos
+    MTOOLKITSRC = $(MOTIFSRC)/X11R4/lib/Xt
+     MWIDGETSRC = $(MLIBSRC)/Xm
+   INCLUDEXMSRC = $(MLIBSRC)/Xm
+   MRESOURCESRC = $(MLIBSRC)/Mrm
+         MWMDIR = $(LIBDIR)/Mwm
+     DEMOBINDIR = $(DESTDIR)/usr/$(XINSTALLDIR)/demos/bin
+     DEMOSRCDIR = $(DESTDIR)/usr/$(XINSTALLDIR)/demos/src
+       MINCLUDE = $(TOP)/include
+         UILSRC = $(MCLIENTSRC)/uil
+#if CrossEnvEnable
+            UIL = $(BUILDTOOLSDIR)/uil
+#else
+            UIL = _Use( , $(UILSRC)/)uil
+#endif
+      XMTOOLLIB = _Use(-lXt,$(MTOOLKITSRC)/libXt.LibSuffix)
+          XMLIB = _Use(-lXm,$(MWIDGETSRC)/libXm.LibSuffix)
+   MRESOURCELIB = _Use(-lMrm,$(MRESOURCESRC)/libMrm.LibSuffix)
+         UILLIB = _Use(-lUil,$(UILSRC)/libUil.LibSuffix) 
+
+/* WCM/MRI widget creation library stuff (for mvd and xdm) */
+     DEPXWCMLIB = $(XWCMSRC)/libXwcm.a
+        XWCMSRC = $(LIBSRC)/Xwcm
+        XWCMLIB = _Use(-lXwcm,$(DEPXWCMSRC)) 
+
+/* SYSV Library macros */
+SYSVDEPEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libsysvXext.LibSuffix
+   SYSVEXTENSIONLIB = _Use(-lXext,$(SYSVDEPEXTENSIONLIB))
+        SYSVDEPXLIB = $(SYSVDEPEXTENSIONLIB) _Use($(USRLIBDIR),$(XLIBSRC))/libsysvX11.LibSuffix
+           SYSVXLIB = $(SYSVEXTENSIONLIB) _Use(-lX11,$(XLIBSRC)/libsysvX11.LibSuffix)
+    SYSVDEPXAUTHLIB = _Use($(USRLIBDIR),$(XAUTHSRC))/libsysvXau.LibSuffix
+       SYSVXAUTHLIB = _Use(-lXau,$(SYSVDEPXAUTHLIB))
+      SYSVDEPXMULIB = _Use($(USRLIBDIR),$(XMUSRC))/libsysvXmu.LibSuffix
+         SYSVXMULIB = _Use(-lXmu,$(SYSVDEPXMULIB))
+     SYSVDEPOLDXLIB = _Use($(USRLIBDIR),$(OLDXLIBSRC))/libsysvoldX.LibSuffix
+        SYSVOLDXLIB = _Use(-loldX,$(SYSVDEPOLDXLIB))
+    SYSVDEPXTOOLLIB = _Use($(USRLIBDIR),$(TOOLKITSRC))/libsysvXt.LibSuffix
+       SYSVXTOOLLIB = _Use(-lXt,$(SYSVDEPXTOOLLIB))
+      SYSVDEPXAWLIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libsysvXaw.LibSuffix
+         SYSVXAWLIB = _Use(-lXaw,$(SYSVDEPXAWLIB))
+
+   SYSVDEPXMTOOLLIB = _Use($(USRLIBDIR),$(MTOOLKITSRC))/libsysvXt.LibSuffix
+      SYSVXMTOOLLIB = _Use(-lXt,$(SYSVDEPXMTOOLLIB))
+       SYSVDEPXMLIB = _Use($(USRLIBDIR),$(MWIDGETSRC))/libsysvXm.LibSuffix
+          SYSVXMLIB = _Use(-lXm,$(SYSVDEPXMLIB))
+SYSVDEPMRESOURCELIB = _Use($(USRLIBDIR),$(MRESOURCESRC))/libsysvMrm.LibSuffix
+   SYSVMRESOURCELIB = _Use(-lMrm,$(SYSVDEPMRESOURCELIB))
+      SYSVDEPUILLIB = _Use($(USRLIBDIR),$(UILSRC))/libsysUil.LibSuffix
+         SYSVUILLIB = _Use(-lUil,$(SYSVDEPUILLIB))
+
+     SYSVDEPXWCMLIB = _Use($(USRLIBDIR),$(XWCMSRC))/libsysvXwcm.a
+        SYSVXWCMLIB = _Use(-lXwcm,$(SYSVDEPXWCMLIB))
+
+/* BSD Library macros */
+ BSDDEPEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libbsdXext.LibSuffix
+    BSDEXTENSIONLIB = _Use(-lXext,$(BSDDEPEXTENSIONLIB))
+         BSDDEPXLIB = $(BSDDEPEXTENSIONLIB) _Use($(USRLIBDIR),$(XLIBSRC))/libbsdX11.LibSuffix
+            BSDXLIB = $(BSDEXTENSIONLIB) _Use(-lX11,$(XLIBSRC)/libbsdX11.LibSuffix)
+     BSDDEPXAUTHLIB = _Use($(USRLIBDIR),$(XAUTHSRC))/libbsdXau.LibSuffix
+        BSDXAUTHLIB = _Use(-lXau,$(BSDDEPXAUTHLIB))
+       BSDDEPXMULIB = _Use($(USRLIBDIR),$(XMUSRC))/libbsdXmu.LibSuffix
+          BSDXMULIB = _Use(-lXmu,$(BSDDEPXMULIB))
+      BSDDEPOLDXLIB = _Use($(USRLIBDIR),$(OLDXLIBSRC))/libbsdoldX.LibSuffix
+         BSDOLDXLIB = _Use(-loldX,$(BSDDEPOLDXLIB))
+     BSDDEPXTOOLLIB = _Use($(USRLIBDIR),$(TOOLKITSRC))/libbsdXt.LibSuffix
+        BSDXTOOLLIB = _Use(-lXt,$(BSDDEPXTOOLLIB))
+       BSDDEPXAWLIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libbsdXaw.LibSuffix
+          BSDXAWLIB = _Use(-lXaw,$(BSDDEPXAWLIB))
+ 
+    BSDDEPXMTOOLLIB = _Use($(USRLIBDIR),$(MTOOLKITSRC))/libbsdXt.LibSuffix
+       BSDXMTOOLLIB = _Use(-lXt,$(BSDDEPXMTOOLLIB))
+        BSDDEPXMLIB = _Use($(USRLIBDIR),$(MWIDGETSRC))/libbsdXm.LibSuffix
+           BSDXMLIB = _Use(-lXm,$(BSDDEPXMLIB))
+ BSDDEPMRESOURCELIB = _Use($(USRLIBDIR),$(MRESOURCESRC))/libbsdMrm.LibSuffix
+    BSDMRESOURCELIB = _Use(-lMrm,$(BSDDEPMRESOURCELIB))
+       BSDDEPUILLIB = _Use($(USRLIBDIR),$(UILSRC))/libsysUil.LibSuffix
+          BSDUILLIB = _Use(-lUil,$(BSDDEPUILLIB))
+ 
+      BSDDEPXWCMLIB = _Use($(USRLIBDIR),$(XWCMSRC))/libbsdXwcm.a
+         BSDXWCMLIB = _Use(-lXwcm,$(BSDDEPXWCMLIB))
+
+#if CrossEnvEnable
+  BUILDTOOLSDIR = $(TOP)/buildtools
+CROSSENVOVERRIDE= CC="cc -non_shared" DESTROOT=/ COMP_TARGET_ROOT=/ ETCDIR=/etc ULIBDIR=/usr/lib OPTIM=
+#endif /* CrossEnvEnable */
+
+#define BandAidLibraryNeeded		YES
+
+/*****************************************************************************
+ *                                                                           *
+ *			DEFINE PARAMETERS FOR BUILDING                       *
+ *                                                                           *
+ *****************************************************************************/
+
+#define XmipsServer	Xmips		/* if BuildServer isn't set false */
+#define LibraryDefines	$(SYSDEFS) $(SYSINCS)
+#define ServerDefines	$(SYSDEFS) $(SYSINCS) 
+#define ConnectionFlags	-DTCPCONN -DUNIXCONN	/* -DDNETCONN */
+#define FontDefines	-DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
+#define ExtensionDefines -DXTESTEXT1 -DSHAPE -DMITMISC
+/* #define ExtensionDefines -DSHAPE -DMITSHM -DMULTIBUFFER -DMITMISC */
+
+
+/*****************************************************************************
+ *                                                                           *
+ *	      OVERRIDE ANY CONFIGURATION PARAMETERS FROM Imake.tmpl          *
+ *                                                                           *
+ *****************************************************************************/
+
+
+#define BuildServer		YES
+#define BuildExamples		NO
+#define SpecialMalloc		NO
+#define ExpandManNames		YES	/* expand Xlib man page filenames */
+#define InstallXinitConfig	NO	/* install sample xinit config */
+#define InstallXdmConfig	YES	/* install sample xdm config */
+
+#define PrimaryScreenResolution	110
+#define DefaultFontPath	/usr/X11/lib/X11/fonts/misc/,/usr/X11/lib/X11/fonts/100dpi/,/usr/X11/lib/X11/fonts/75dpi/,/usr/X11/lib/X11/fonts/oldX11/
+#define DefaultRGBDatabase	/usr/X11/lib/X11/rgb
+
+/* Don't add anything after '1' and '3X' */
+#define ManSuffix	1
+#define LibManSuffix	3X
+#define UNCOMPRESSPATH	/usr/ucb/uncompress
+#define ConstructMFLAGS	NO		/* build MFLAGS from MAKEFLAGS */
+#define BDFTOSNFFILT -DBDFTOSNFFILT=\"$(BINPATH)/bdftosnf\"
+#define ZBDFTOSNFFILT -DZBDFTOSNFFILT=\"UNCOMPRESSPATH" | $(BINPATH)/bdftosnf $(FCFLAGS)\""
+
+#define OptimizedCDebugFlags	$(OPTIM) $(CCOPT) $(SYSTYPE)
+#define DefaultCDebugFlags	OptimizedCDebugFlags
+#define LibraryCDebugFlags	OptimizedCDebugFlags
+#define ServerCDebugFlags	OptimizedCDebugFlags -G 4000
+
+#define DestDir $(DESTROOT)
+#define UsrLibDir $(DESTDIR)/usr/$(XINSTALLDIR)/lib
+#define BinDir $(DESTDIR)/usr/$(XINSTALLDIR)/bin
+#define IncRoot $(DESTDIR)/usr/$(XINSTALLDIR)/include
+#define	XdmDir $(DESTDIR)/usr/X11/etc/xdm
+
+#define DefaultUserPath /usr/net:/bin:/usr/bin:$(BINPATH):/usr/ucb
+#define DefaultSystemPath /usr/net:/bin:/usr/bin:/etc:$(BINPATH):/usr/ucb
+
+#define ManPath $(DESTDIR)/usr/$(XINSTALLDIR)/**/ManDirectoryRoot
+#define ManDirectoryRoot /man/cat
+#define ManSourcePath $(MANPATH)/man
+#define ManDir $(MANSOURCEPATH)1
+#define LibmanDir $(MANSOURCEPATH)3
+
+#define InstManFlags -m 0444
+#define InstAppFlags -m 0444 -f
+#define InstKmemFlags -g sys -m 2755
+
+#if CrossEnvEnable
+#define FCCmd $(BUILDTOOLSDIR)/bdftosnf
+#define MkfontdirCmd $(BUILDTOOLSDIR)/mkfontdir
+#endif /* CrossEnvEnable */
+
+#define ExtensionLib -L$(EXTENSIONSRC)/lib -lXext
+#define XLib -L$(XLIBSRC) -lX11
+#define XmuLib -L$(XMUSRC) -lXmu
+#define OldxLib -L$(OLDXLIBSRC) -loldX
+#define XtoolLib -L$(TOOLKITSRC) -lXt
+#define XawLib -L$(AWIDGETSRC) -lXaw
+/*****************************************************************************
+ *                                                                           *
+ *			   DEFINE OS DEPENDENT RULES			     					 *
+ *                                                                           *
+ *****************************************************************************/
+
+#define	MipsLibraryTarget(lib,cflags,objs)				@@\
+AllTarget(lib)								@@\
+									@@\
+.s.a:									@@\
+	@																		@@\
+									@@\
+.c.a:									@@\
+	@								@@\
+									@@\
+lib:: objs								@@\
+	$(CC) -c cflags $(?:.o=.[cs])					@@\
+	$(AR) $@ $?							@@\
+	$(RM) $?
+
+#define	MipsStrippedLibraryTarget(lib,cflags,objs)			@@\
+AllTarget(lib)								@@\
+									@@\
+.s.a:									@@\
+	@								@@\
+									@@\
+.c.a:									@@\
+	@								@@\
+									@@\
+lib:: objs								@@\
+	$(CC) -c cflags $(?:.o=.[cs])					@@\
+	$(AR) `echo $@ | sed -e 's/\.a/.ns.a/'` $?			@@\
+	for i in $? ; do \						@@\
+		$(LD) -x -r $$i ; \					@@\
+		mv a.out $$i ; \					@@\
+	done								@@\
+	$(AR) $@ $?							@@\
+	$(RM) $?
+
+#define	MipsLibraryDependTarget(lib,cflags,srcs)			@@\
+depend:: $(DEPEND)							@@\
+									@@\
+depend::								@@\
+	$(DEPEND) -A lib -s "# lib dependencies" -- cflags -- srcs	@@\
+									@@\
+$(DEPEND):								@@\
+	@echo "making $@"; \						@@\
+	cd $(DEPENDSRC); $(MAKE)					@@\
+
+/*
+ * This target is the general interface for building a single program
+ */
+#define	ComplexProgramTargetWithFlags(program,flags)			@@\
+       PROGRAM = program						@@\
+									@@\
+AllTarget(program)							@@\
+									@@\
+program: $(OBJS)							@@\
+	$(RM) $@							@@\
+	$(CC) -o $@ $(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+relink::								@@\
+	$(RM) $(PROGRAM)						@@\
+	$(MAKE) $(MFLAGS) MakeEnv $(PROGRAM)				@@\
+									@@\
+InstallProgramWithFlags(program,$(BINDIR),flags)			@@\
+InstallManPage(program,$(MANDIR))					@@\
+DependTarget()								@@\
+LintTarget()                                                            @@\
+									@@\
+clean::									@@\
+	$(RM) $(PROGRAM)
+
+/*
+ * InstallManPageLong - generate rules to install the indicated manual page,
+ * giving it an alternate name.  This is used for installing man pages whose
+ * base name without the .man suffix would normally be longer than 8 characters
+ * (the limit for using source code control systems on files systems with 
+ * short file names).
+ */
+#define	InstallManPageLong(file,destdir,dest)				@@\
+file.ManSuffix:: file.man						@@\
+	nroff -man $? > $@						@@\
+																			@@\
+all:: file.ManSuffix							@@\
+									@@\
+clean::									@@\
+	rm -f file.ManSuffix						@@\
+									@@\
+install.man:: file.ManSuffix						@@\
+	$(INSTALL) -c $(INSTMANFLAGS) -f file.ManSuffix destdir/dest.ManSuffix
+
+#if CrossEnvEnable
+#define MipsMakeBuildTools(tool)					@@\
+buildtools: tool							@@\
+	$(INSTALL) -c -s $(INSTALLFLAGS) tool $(BUILDTOOLSDIR)		@@\
+	$(RM) tool							@@\
+	$(RM_CMD) \#*
+#endif /* CrossEnvEnable */
+
+#if DSOEnable
+#define MipsDSOLibraryTarget(libname,libdep,syslibdep,syst)		@@\
+AllTarget(lib/**/libname.so)						@@\
+									@@\
+lib/**/libname.so:: lib/**/libname.ns.a					@@\
+	$(LD) -L -shared -no_archive -update_registry $(DESTROOT)//**/syst/**//usr/lib/so_locations -set_version syst/**/_3.20 -o $@ -all $? libdep -soname lib/**/libname.so -L$(DESTROOT)//**/syst/**//usr/lib -L$(DESTROOT)//**/syst/**//usr/lib/cmplrs/cc syslibdep
+
+#define MipsInstallDSOLibrary(libname,dest)				@@\
+install:: lib/**/libname.so						@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so dest
+
+#define MipsAliasedDSOLibraryTarget(libname,alias)			@@\
+AllTarget(lib/**/alias.so)						@@\
+									@@\
+lib/**/alias.so: lib/**/libname.so					@@\
+	$(RM) $@							@@\
+	$(LN) lib/**/libname.so $@
+
+#define	MipsInstallDSOLibraryAlias(libname,alias,dest)			@@\
+install::								@@\
+	-(cd dest; $(LN) lib/**/libname.so lib/**/alias.so)
+#endif /* DSOEnable */
+
+/*
+ * MipsSpecialObjectRule - generate rules to compile a file with special flags.
+ */
+#ifndef MipsSpecialObjectRule
+#define MipsSpecialObjectRule(lib,objs,cflags,depends,options)		@@\
+lib:: lib(objs)								@@\
+									@@\
+lib(objs):	depends							@@\
+	$(CC) -c cflags options $(<:.o=.c)				@@\
+	$(AR) `echo lib | sed -e 's/\.a/.ns.a/'` $%			@@\
+	$(LD) -x -r $%							@@\
+	mv a.out $% 							@@\
+	$(AR) lib $%							@@\
+	$(RM) $%							@@\
+	$(RANLIB) lib
+#endif /* MipsSpecialObjectRule */
+
+/*
+ * MipsSourceInstall - used to install source for contrib and demo programs.
+ *		       You must have Makefile.independent and source.list.
+ */
+#define MipsSourceInstall(dir)						@@\
+install::								@@\
+	$(INSTALL) -c $(INSTALLFLAGS) -f Makefile.independent dir/Makefile @@\
+	cpio -pduvL dir < source.list
+
+/*
+ * MipsInstallExec - generate rules to install an executable file.
+ *	(not a program that can be stripped and
+ *	 not a shell script ending in .script)
+ */
+#ifndef MipsInstallExec
+#define	MipsInstallExec(file,dest)					@@\
+install:: file								@@\
+	$(INSTALL) -c $(INSTALLFLAGS) file dest
+#endif /* MipsInstallExec */
