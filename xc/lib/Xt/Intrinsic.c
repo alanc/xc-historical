@@ -172,7 +172,7 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
 
     if(!(widget->core.widget_class->core_class.class_inited))
 	 ClassInit(widgetClass);
-   if (XtIsSubClass (widget,compositeWidgetClass)) {
+   if (XtIsSubclass (widget,compositeWidgetClass)) {
                 ((CompositeWidget)widget)->composite.num_children = 0;
                ((CompositeWidget)widget)->composite.num_managed_children = 0;
                 ((CompositeWidget)widget)->composite.children = NULL;
@@ -272,7 +272,7 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
     widget->core.destroy_callbacks = NULL;
     widget->core.being_destroyed = parent -> core.being_destroyed;
     /* ||| Should be in CompositeInitialize */
-    if (XtIsSubClass (widget,compositeWidgetClass)) {
+    if (XtIsSubclass (widget,compositeWidgetClass)) {
 		((CompositeWidget)widget)->composite.num_children = 0;
 		((CompositeWidget)widget)->composite.num_managed_children = 0;
 		((CompositeWidget)widget)->composite.children = NULL;
@@ -312,7 +312,7 @@ Boolean XtIsRealized (widget)
    return (widget->core.window != NULL);
 }
 
-Boolean XtIsSubClass(widget, widgetClass)
+Boolean XtIsSubclass(widget, widgetClass)
     Widget    widget;
     WidgetClass widgetClass;
 {
@@ -334,7 +334,7 @@ void XtRealizeWidget (widget)
    FillInParameters (widget,&valuemask,&values);
    widget->core.widget_class->core_class.realize(widget,valuemask,&values);
    RegisterWindow(widget->core.window, widget);
-   if (XtIsSubClass (widget, compositeWidgetClass)) {
+   if (XtIsSubclass (widget, compositeWidgetClass)) {
         cwidget = (CompositeWidget)widget;
 	for (i= cwidget->composite.num_children;i!=0;--i) 
 		XtRealizeWidget(cwidget->composite.children[i-1]);
@@ -439,7 +439,7 @@ void XtSetSensitive(widget,sensitive)
     int i;
     widget->core.sensitive = sensitive;
     if ((widget->core.sensitive == widget->core.ancestor_sensitive) 
-                                 && XtIsSubClass (widget,compositeWidgetClass))
+                                 && XtIsSubclass (widget,compositeWidgetClass))
       for (i= ((CompositeWidget)widget)->composite.num_children;i != 0; --i)
         XtSetSensitive (((CompositeWidget)widget)->composite.children[i-1],sensitive);
       
@@ -451,11 +451,65 @@ void XtSetSensitive(widget,sensitive)
                          widgetClass = widgetClass ->core_class.superclass) \
                          widgetClass->core_class.proc; \
 }
+#define TABLESIZE 20
+static unsigned long listSize;
+typedef struct {
+         int offset;
+         WidgetClass widgetClass;
+}CallbackTableRec,*CallbackTable;
 
-void XtAddCallback (callbackList,callback,widget,closure)
+static CallbackTable callbackTable = NULL;
+static CallbackType currentIndex = 1;
+static CallbackType maxIndex;
+InitializeCallbackTable ()
+{
+  callbackTable = (CallbackTable) XtMalloc(TABLESIZE*sizeof(CallbackTableRec));
+   maxIndex = TABLESIZE;
+}
+
+static void ExpandTable()
+{
+   CallbackTable oldTable = callbackTable;
+   int i;
+   callbackTable = (CallbackTable)XtMalloc((currentIndex+TABLESIZE)
+                                                *sizeof(CallbackTableRec));
+   for (i=0;i<currentIndex;i++) {
+            callbackTable[i].offset = oldTable[i].offset;
+            callbackTable[i].widgetClass = oldTable[i].widgetClass;
+   }
+   XtFree((char*)oldTable);
+   maxIndex = currentIndex + TABLESIZE;
+} 
+                                             
+
+CallbackType XtNewCallbackType(widgetClass,offset)
+    WidgetClass widgetClass;
+    Cardinal  offset;
+{
+    if (currentIndex =  maxIndex) ExpandTable();
+    callbackTable[currentIndex].offset = offset;
+    callbackTable[currentIndex].widgetClass = widgetClass;
+    return(currentIndex++);
+}
+
+
+
+CallbackList *FetchCallbackList (widget,callbackType)
+    Widget  widget;
+    CallbackType  callbackType;
+{
+    if ( callbackType >= listSize ||
+       !XtIsSubclass(widget,callbackTable[callbackType].widgetClass) )
+          return(NULL);
+
+    return ((CallbackList*)((int)widget + callbackTable[callbackType].offset));
+}
+
+
+void AddCallback (widget,callbackList,callback,closure)
+    Widget widget;
     CallbackList *callbackList;
     CallbackProc callback;
-    Widget widget;
     Opaque closure;
 {
 
@@ -474,11 +528,28 @@ void XtAddCallback (callbackList,callback,widget,closure)
     return;
 }
 
-void XtRemoveCallback (callbackList, callback, widget, closure)
+void XtAddCallback(widget, callbackType,callback,closure)
+    Widget    widget;
+    CallbackType callbackType;
+    CallbackProc callback;
+    caddr_t      closure;
+{
+    CallbackList *callbackList;
+    callbackList = FetchCallbackList(widget,callbackType);
+    if (callbackList == NULL) {
+       XtError("invalid parameters to XtAddCallback");
+       return;
+    }
+    AddCallback(widget,callbackList,callback,closure);
+    return;
+}
+
+void RemoveCallback (widget,callbackList, callback, closure)
+    Widget  widget;
     CallbackList *callbackList;
     CallbackProc callback;
-    Widget widget;
     Opaque closure;
+
 {
    CallbackRec *cl;
    if (*callbackList == NULL) return;
@@ -491,7 +562,24 @@ void XtRemoveCallback (callbackList, callback, widget, closure)
    return;
 }
 
-void XtRemoveAllCallbacks (callbackList)
+void XtRemoveCallback (widget, callbackType, callback, closure)
+    Widget    widget;
+    CallbackType callbackType;
+    CallbackProc callback;
+    caddr_t      closure;
+{
+   CallbackList *callbackList;
+   callbackList = FetchCallbackList(widget,callbackType);
+   if (callbackList == NULL) {
+      XtError("invalid parameters to XtRemoveCallback");
+      return;
+   }
+   RemoveCallback(widget,callbackList,callback,closure);
+    return;
+}
+
+
+void RemoveAllCallbacks (callbackList)
     CallbackList *callbackList;
 
 {
@@ -503,14 +591,46 @@ void XtRemoveAllCallbacks (callbackList)
    return;
 }
 
-void XtCallCallbacks (callbackList)
+void XtRemoveAllCallbacks(widget, callbackType)
+    Widget widget;
+    CallbackType  callbackType;
+{
+   CallbackList *callbackList;
+   callbackList = FetchCallbackList(widget,callbackType);
+   if (callbackList == NULL) {
+      XtError("invalid parameters to XtRemoveAllCallbacks");
+     return;
+   }
+   RemoveAllCallbacks(callbackList);
+   return;
+}
+
+
+void CallCallbacks (callbackList,callData)
     CallbackList *callbackList;
+    caddr_t callData;
 {
     CallbackRec *cl;
     if ((*callbackList) == NULL )return;
     for (cl = (*callbackList); cl != NULL; cl = cl->next) 
-             cl->callback(cl->widget,cl->closure);
+             cl->callback(cl->widget,cl->closure,callData);
 }
+
+void XtCallCallbacks (widget, callbackType, callData)
+    Widget   widget;
+    CallbackType callbackType;
+    caddr_t  callData;
+{
+   CallbackList *callbackList;
+   callbackList = FetchCallbackList(widget,callbackType);
+   if (callbackList == NULL) {
+     XtError("invalid parameters to XtRemoveAllCallbacks");
+     return;
+   }
+   CallCallbacks(callbackList,callData);
+   return;
+}
+
 
 void DestroyChildren (widget)
     Widget    widget;
@@ -518,7 +638,7 @@ void DestroyChildren (widget)
     int i;
     if (widget->core.being_destroyed) return;
     widget-> core.being_destroyed = TRUE;
-    if (XtIsSubClass (widget,compositeWidgetClass))
+    if (XtIsSubclass (widget,compositeWidgetClass))
         for (i= ((CompositeWidget)widget)->composite.num_children; i != 0; --i)
             DestroyChildren (((CompositeWidget)widget)->composite.children[i-1]);
     return;
@@ -530,7 +650,7 @@ void Phase2ChildrenCallbacks(widget)
 {
      CompositeWidget cwidget;
      int i;
-    if (XtIsSubClass(widget,compositeWidgetClass))
+    if (XtIsSubclass(widget,compositeWidgetClass))
      cwidget = (CompositeWidget)widget;
        for (i=cwidget->composite.num_children; i!=0; --i) {
   XtCallCallbacks(cwidget->composite.children[i-1]->core.destroy_callbacks);
@@ -544,7 +664,7 @@ void Phase2ChildrenDestroy(widget)
 {
       CompositeWidget cwidget;
       int i;
-   if (XtIsSubClass(widget,compositeWidgetClass))
+   if (XtIsSubclass(widget,compositeWidgetClass))
        cwidget = (CompositeWidget)widget;
        for (i=cwidget->composite.num_children; i!=0; --i) {
            Phase2ChildrenDestroy(cwidget->composite.children[i-1]);
