@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.97 89/09/19 09:57:33 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.98 89/09/19 11:32:04 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -339,6 +339,19 @@ extern void XtConvertCase();
     KeySym keysym;
     KeySym *lower_return;
     KeySym *upper_return;
+*/
+
+extern KeySym* XtGetKeysymTable();
+/*  Display *dpy;
+    KeyCode *min_keycode_return;
+    int *keysyms_per_keycode_return;
+*/
+
+extern void XtKeysymToKeycodeList();
+/*  Display *dpy;
+    KeySym keysym;
+    KeyCode *keycodes;
+    Cardinal *keycount;
 */
 
 /****************************************************************
