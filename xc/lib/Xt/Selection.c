@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.74 92/11/13 17:34:44 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.74 92/11/13 17:40:46 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -69,6 +69,10 @@ static void HandleGetIncrement();
 static HandleIncremental();
 
 static XContext selectPropertyContext = 0;
+
+static int StorageSize[3] = {1, sizeof(short), sizeof(long)};
+#define BYTELENGTH(length, format) ((length) * StorageSize[(format)>>4])
+#define NUMELEM(bytelength, format) ((bytelength) / StorageSize[(format)>>4])
 
 /*ARGSUSED*/
 static void FreePropList(w, closure, callData)

@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.33 92/11/13 17:29:56 converse Exp $ */
+/* $XConsortium: SelectionI.h,v 1.33 92/11/13 17:38:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,9 +28,6 @@ SOFTWARE.
 #define _XtselectionI_h
 
 #include "Intrinsic.h"
-
-#define BYTELENGTH(length, format) ((length)*((format)>>3))
-#define NUMELEM(bytelength, format) ((bytelength) / ((format)>>3))
 
 typedef struct _RequestRec *Request;
 typedef struct _SelectRec *Select;
