@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.8 89/10/31 17:38:46 keith Exp $
+ * $XConsortium: miwideline.c,v 1.9 89/11/01 13:29:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -575,6 +575,153 @@ miLineRoundCapJoin (pDraw, pGC, pixel, spanData, xorg, yorg)
     }
 }
 
+miLineRoundCapD(pDraw, pGC, pixel, spanData, xorg, yorg, radius)
+    DrawablePtr	    pDraw;
+    GCPtr	    pGC;
+    unsigned long   pixel;
+    SpanDataPtr	    spanData;
+    double xorg, yorg, radius;
+{
+    DDXPointPtr points;
+    register DDXPointPtr pts;
+    int *widths;
+    register int *wids;
+    unsigned long oldPixel;
+    Spans spanRec;
+    double x0, y0, el, er, yk, xlk, xrk, k;
+    int xbase, ybase, y, boty, xl, xr;
+
+    if (!spanData)
+    {
+    	points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * pGC->lineWidth);
+    	if (!points)
+	    return;
+    	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * pGC->lineWidth);
+    	if (!widths)
+    	{
+	    DEALLOCATE_LOCAL(points);
+	    return;
+    	}
+    	pts = points;
+    	wids = widths;
+    	oldPixel = pGC->fgPixel;
+    	if (pixel != oldPixel)
+    	{
+	    DoChangeGC(pGC, GCForeground, (XID *)&pixel, FALSE);
+	    ValidateGC (pDraw, pGC);
+    	}
+    }
+    else
+    {
+	spanRec.points = (DDXPointPtr) xalloc (pGC->lineWidth * sizeof (DDXPointRec));
+	if (!spanRec.points)
+	    return;
+	spanRec.widths = (int *) xalloc (pGC->lineWidth * sizeof (int));
+	if (!spanRec.widths)
+	{
+	    xfree (spanRec.points);
+	    return;
+	}
+	pts = spanRec.points;
+	wids = spanRec.widths;
+    }
+    xbase = floor(xorg);
+    x0 = xorg - xbase;
+    ybase = ceil(yorg);
+    y0 = floor(yorg) - yorg;
+    if (pGC->miTranslate)
+    {
+	xbase += pDraw->x;
+	ybase += pDraw->y;
+    }
+    xlk = x0 + x0 + 1.0;
+    xrk = x0 + x0 - 1.0;
+    yk = y0 + y0 - 1.0;
+    y = floor(radius - y0 + 1.0);
+    el = radius * radius - ((y + y0) * (y + y0)) - (x0 * x0);
+    er = el + xrk;
+    xl = 1;
+    xr = 0;
+    if (x0 < 0.5)
+    {
+	xl = 0;
+	el -= xlk;
+    }
+    boty = floor(-y0 - radius + 1.0);
+    while (y > 0)
+    {
+	k = (y << 1) + yk;
+	er += k;
+	while (er > 0.0)
+	{
+	    xr++;
+	    er += xrk - (xr << 1);
+	}
+	el += k;
+	while (el >= 0.0)
+	{
+	    xl--;
+	    el += (xl << 1) - xlk;
+	}
+	y--;
+	if (xr >= xl)
+	{
+	    pts->x = xbase + xl;
+	    pts->y = ybase - y;
+	    pts++;
+	    *wids++ = xr - xl + 1;
+	}
+    }
+    er = xrk - (xr << 1) - er;
+    el = (xl << 1) - xlk - el;
+    while (y > boty)
+    {
+	k = (y << 1) + yk;
+	er -= k;
+	while ((er >= 0.0) && (xr >= 0))
+	{
+	    xr--;
+	    er += xrk - (xr << 1);
+	}
+	el -= k;
+	while ((el > 0.0) && (xl <= 0))
+	{
+	    xl++;
+	    el += (xl << 1) - xlk;
+	}
+	y--;
+	if (xr >= xl)
+	{
+	    pts->x = xbase + xl;
+	    pts->y = ybase - y;
+	    pts++;
+	    *wids++ = xr - xl + 1;
+	}
+    }
+    if (!spanData)
+    {
+    	(*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
+    	DEALLOCATE_LOCAL(widths);
+    	DEALLOCATE_LOCAL(points);
+    	if (pixel != oldPixel)
+    	{
+	    DoChangeGC(pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	    ValidateGC (pDraw, pGC);
+    	}
+    }
+    else
+    {
+	SpanGroup   *group;
+
+	spanRec.count = pts - spanRec.points;
+	if (pixel == pGC->fgPixel)
+	    group = &spanData->fgGroup;
+	else
+	    group = &spanData->bgGroup;
+	miAppendSpans (group, &spanRec);
+    }
+}
+
 miLineCapRound (pDraw, pGC, pixel, spanData, face, left)
     DrawablePtr	    pDraw;
     GCPtr	    pGC;
@@ -819,19 +966,18 @@ miSetupSpanData (pGC, spanData)
     case GXcopy:		/* src */
     case GXcopyInverted:	/* NOT src */
     case GXset:		/* 1 */
+    case GXand:		/* src AND dst */
+    case GXnoop:		/* dst */
+    case GXor:		/* src OR dst */
+    case GXorInverted:	/* NOT src OR dst */
+    case GXandInverted:	/* NOT src AND dst */
 	spanData = (SpanDataPtr) NULL;
 	break;
-    case GXand:		/* src AND dst */
     case GXandReverse:	/* src AND NOT dst */
-    case GXandInverted:	/* NOT src AND dst */
-    case GXnoop:		/* dst */
-    case GXxor:		/* src XOR dst */
-    case GXor:		/* src OR dst */
     case GXnor:		/* NOT src AND NOT dst */
     case GXequiv:		/* NOT src XOR dst */
     case GXinvert:		/* NOT dst */
     case GXorReverse:		/* src OR NOT dst */
-    case GXorInverted:	/* NOT src OR dst */
     case GXnand:		/* NOT src OR NOT dst */
 	if (pGC->lineStyle == LineDoubleDash)
 	    miInitSpanGroup (&spanData->bgGroup);
@@ -966,6 +1112,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     double	    rdx, rdy;
     double	    dashDx, dashDy;
     Bool	    first = TRUE;
+    double	    lcenterx, lcentery, rcenterx, rcentery;
     
     dx = x2 - x1;
     dy = y2 - y1;
@@ -1008,8 +1155,8 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     leftFace->dx = dx;
     leftFace->dy = dy;
 
-    rightFace->x = x1;	/* for round dash caps */
-    rightFace->y = y1;
+    rightFace->x = x2;	/* for round dash caps */
+    rightFace->y = y2;
     rightFace->dx = -dx;
     rightFace->dy = -dy;
 
@@ -1029,10 +1176,16 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	vertices[V_LEFT].y -= rdy;
     }
 
+    lcenterx = x1;
+    lcentery = y1;
+
     while (LRemain > dashRemain)
     {
 	dashDx = (dashRemain * dx) / L;
 	dashDy = (dashRemain * dy) / L;
+
+	rcenterx = lcenterx + dashDx;
+	rcentery = lcentery + dashDy;
 
 	vertices[V_RIGHT].x += dashDx;
 	vertices[V_RIGHT].y += dashDy;
@@ -1078,12 +1231,10 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 		    vertices[V_RIGHT] = saveRight;
 		    break;
 		case CapRound:
-		    leftFace->xa = vertices[V_TOP].x;
-		    leftFace->ya = vertices[V_TOP].y;
-		    miLineCapRound (pDrawable, pGC, pixel, spanData, leftFace, TRUE);
-		    rightFace->xa = vertices[V_BOTTOM].x;
-		    rightFace->ya = vertices[V_BOTTOM].y;
-		    miLineCapRound (pDrawable, pGC, pixel, spanData, rightFace, FALSE);
+		    miLineRoundCapD (pDrawable, pGC, pixel, spanData,
+				     lcenterx, lcentery, l);
+		    miLineRoundCapD (pDrawable, pGC, pixel, spanData,
+				     rcenterx, rcentery, l);
 		    break;
 		}
 	    }
@@ -1093,6 +1244,9 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	if (dashIndex == pGC->numInDashList)
 	    dashIndex = 0;
 	dashRemain = pDash[dashIndex];
+
+	lcenterx = rcenterx;
+	lcentery = rcentery;
 
 	vertices[V_TOP] = vertices[V_RIGHT];
 	vertices[V_LEFT] = vertices[V_BOTTOM];
@@ -1140,9 +1294,8 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	if (!first && pGC->lineStyle == LineOnOffDash &&
 	    pGC->capStyle == CapRound)
 	{
-	    leftFace->xa = vertices[V_TOP].x;
-	    leftFace->ya = vertices[V_TOP].y;
-	    miLineCapRound (pDrawable, pGC, pixel, spanData, leftFace, TRUE);
+	    miLineRoundCapD (pDrawable, pGC, pixel, spanData,
+			     lcenterx, lcentery, l);
 	}
     }
     dashRemain = ((double) dashRemain) - LRemain;
