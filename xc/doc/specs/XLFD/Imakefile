@@ -1,10 +1,14 @@
-XCOMM $XConsortium$
-SRCS = ../util/macros.t xlfd.tbl.ms
+XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:02:02 gildea Exp $
+SRCS = $(DOCUTILSRC)/macros.t xlfd.tbl.ms
 
 all: xlfd.PS
 
-xlfd.PS:
-	$(TBL) $(SRCS) | $(TROFF) $(MSMACROS) 2> index.raw > xlfd.PS
+xlfd.PS: $(SRCS)
+	$(TBL) $(SRCS) | $(TROFF) $(MSMACROS) 2> index.raw > xlfd-new.PS
+	mv xlfd-new.PS $@
+
+xlfd.txt: $(SRCS)
+	$(TBL) $(SRCS) | nroff $(MSMACROS) 2> index.raw | col > xlfd.txt
 
 clean::
 	$(RM) index.raw xlfd.PS
