@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: midash.c,v 5.0 89/06/09 15:08:17 keith Exp $ */
+/* $XConsortium: midash.c,v 5.1 89/07/16 14:17:07 keith Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"
@@ -244,4 +244,40 @@ int *pnsegMax;			/* size (in segments) of list so far */
 	*ppseg = newppseg;
     }
     return(*ppseg+(nseg-1));
+}
+
+miStepDash (dist, pDashIndex, pDash, numInDashList, pDashOffset)
+    int dist;			/* distance to step */
+    int *pDashIndex;		/* current dash */
+    unsigned char *pDash;	/* dash list */
+    int numInDashList;		/* total length of dash list */
+    int *pDashOffset;		/* offset into current dash */
+{
+    int	dashIndex, dashOffset;
+    int totallen;
+    int	i;
+    
+    dashIndex = *pDashIndex;
+    dashOffset = *pDashOffset;
+    if (dist < pDash[dashIndex] - dashOffset)
+    {
+	*pDashOffset = dashOffset + dist;
+	return;
+    }
+    dist -= pDash[dashIndex] - dashOffset;
+    if (++dashIndex == numInDashList)
+	dashIndex = 0;
+    totallen = 0;
+    for (i = 0; i < numInDashList; i++)
+	totallen += pDash[i];
+    if (totallen <= dist)
+	dist = dist % totallen;
+    while (dist >= pDash[dashIndex])
+    {
+	dist -= pDash[dashIndex];
+	if (++dashIndex == numInDashList)
+	    dashIndex = 0;
+    }
+    *pDashIndex = dashIndex;
+    *pDashOffset = dist;
 }
