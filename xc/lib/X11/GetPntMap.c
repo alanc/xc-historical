@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetPntMap.c,v 1.9 88/09/06 16:10:20 jim Exp $ */
+/* $XConsortium: XGetPntMap.c,v 1.10 89/11/08 17:06:51 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -13,7 +13,7 @@
 
 int XGetPointerMapping (dpy, map, nmaps)
     register Display *dpy;
-    unsigned char map[];	/* RETURN */
+    unsigned char *map;	/* RETURN */
     int nmaps;
 
 {

@@ -1,4 +1,4 @@
-/* $XConsortium: XStBytes.c,v 11.14 88/02/07 13:03:39 jim Exp $ */
+/* $XConsortium: XStBytes.c,v 11.15 88/09/06 16:10:55 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -57,7 +57,7 @@ char *XFetchBytes (dpy, nbytes)
 
 XStoreBuffer (dpy, bytes, nbytes, buffer)
     register Display *dpy;
-    char bytes[];
+    char *bytes;
     int nbytes;
     register int buffer;
 {
@@ -68,7 +68,7 @@ XStoreBuffer (dpy, bytes, nbytes, buffer)
 
 XStoreBytes (dpy, bytes, nbytes)
     register Display *dpy;
-    char bytes[];
+    char *bytes;
     int nbytes;
 {
     XStoreBuffer (dpy, bytes, nbytes, 0);

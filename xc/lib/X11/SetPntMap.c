@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetPntMap.c,v 11.8 88/08/29 16:53:13 jim Exp $ */
+/* $XConsortium: XSetPntMap.c,v 11.9 88/09/06 16:10:23 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -10,7 +10,7 @@
 
 int XSetPointerMapping (dpy, map, nmaps)
     register Display *dpy;
-    unsigned char map[];
+    unsigned char *map;
     int nmaps;
     {
     register xSetPointerMappingReq *req;
@@ -20,7 +20,7 @@ int XSetPointerMapping (dpy, map, nmaps)
     GetReq (SetPointerMapping, req);
     req->nElts = nmaps;
     req->length += (nmaps + 3)>>2;
-    Data (dpy, (char *)map, (long) nmaps);	/* note that map is char[] */
+    Data (dpy, (char *)map, (long) nmaps);
     if (_XReply (dpy, (xReply *)&rep, 0, xFalse) == 0) 
 	rep.success = MappingSuccess;
     UnlockDisplay(dpy);

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.35 89/10/09 17:39:59 jim Exp $ */
+/* $XConsortium: XImUtil.c,v 11.36 89/11/08 17:06:57 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -826,9 +826,9 @@ _XInitImageFuncPtrs (image)
 
 void exit();
 static int _XReportBadImage (errtype, error, routine)
-    char errtype[];
+    char *errtype;
     int error;
-    char routine[];
+    char *routine;
 {
 	(void) fprintf(stderr, "Bad image %s: %d found in routine: %s\n",
 	    errtype, error, routine );

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XStColors.c,v 11.11 88/08/10 16:08:45 jim Exp $ */
+/* $XConsortium: XStColors.c,v 11.12 88/09/06 16:10:35 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -8,7 +8,7 @@
 XStoreColors(dpy, cmap, defs, ncolors)
 register Display *dpy;
 Colormap cmap;
-XColor defs[];
+XColor *defs;
 int ncolors;
 {
     register int i;

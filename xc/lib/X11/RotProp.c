@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XRotProp.c,v 11.11 88/08/11 14:52:20 jim Exp $ */
+/* $XConsortium: XRotProp.c,v 11.12 88/09/06 16:10:21 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -8,7 +8,7 @@
 XRotateWindowProperties(dpy, w, properties, nprops, npositions)
     register Display *dpy;
     Window w;
-    Atom properties[];
+    Atom *properties;
     register int nprops;
     int npositions;
     {

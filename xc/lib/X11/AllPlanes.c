@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XAllPlanes.c,v 11.14 88/08/11 11:18:17 jim Exp $ */
+/* $XConsortium: XAllPlanes.c,v 11.15 88/09/06 16:11:45 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -10,7 +10,7 @@ Status XAllocColorPlanes(dpy, cmap, contig, pixels, ncolors, nreds, ngreens,
 register Display *dpy;
 Colormap cmap;
 Bool contig;
-unsigned long pixels[]; /* LISTofCARD32 */ /* RETURN */
+unsigned long *pixels; /* LISTofCARD32 */ /* RETURN */
 int ncolors;
 int nreds, ngreens, nblues;
 unsigned long *rmask, *gmask, *bmask; /* CARD32 */ /* RETURN */

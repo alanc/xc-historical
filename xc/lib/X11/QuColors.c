@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuColors.c,v 11.17 88/09/06 16:09:54 jim Exp $ */
+/* $XConsortium: XQuColors.c,v 11.18 89/11/08 17:07:41 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -9,7 +9,7 @@
 XQueryColors(dpy, cmap, defs, ncolors)
     register Display *dpy;
     Colormap cmap;
-    XColor defs[]; 		/* RETURN */
+    XColor *defs; 		/* RETURN */
     int ncolors;
 {
     register int i;

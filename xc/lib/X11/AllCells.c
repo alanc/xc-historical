@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XAllCells.c,v 11.16 88/08/11 15:15:15 jim Exp $ */
+/* $XConsortium: XAllCells.c,v 11.17 88/09/06 16:03:58 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 
@@ -12,8 +12,8 @@ Colormap cmap;
 Bool contig;
 unsigned int ncolors; /* CARD16 */
 unsigned int nplanes; /* CARD16 */
-unsigned long masks[]; /* LISTofCARD32 */ /* RETURN */
-unsigned long pixels[]; /* LISTofCARD32 */ /* RETURN */
+unsigned long *masks; /* LISTofCARD32 */ /* RETURN */
+unsigned long *pixels; /* LISTofCARD32 */ /* RETURN */
 {
 
     Status status;
