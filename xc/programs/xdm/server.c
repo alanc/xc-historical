@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.15 91/07/31 16:55:04 keith Exp $
+ * $XConsortium: server.c,v 1.16 91/09/12 19:56:09 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -132,7 +132,7 @@ struct display *d;
  * the sleep finishes, 0 else
  */
 
-static jmp_buf	pauseAbort;
+static Jmp_buf	pauseAbort;
 static int	serverPauseRet;
 
 /* ARGSUSED */
@@ -223,7 +223,7 @@ int	    serverPid;
  * inside Xlib) and give up, terminating the server.
  */
 
-static jmp_buf	openAbort;
+static Jmp_buf	openAbort;
 
 /* ARGSUSED */
 static SIGVAL
@@ -346,7 +346,7 @@ ResetServer (d)
 	pseudoReset (dpy);
 }
 
-static jmp_buf	pingTime;
+static Jmp_buf	pingTime;
 
 static void
 PingLost ()

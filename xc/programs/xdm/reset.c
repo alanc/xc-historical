@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: reset.c,v 1.8 91/02/13 19:15:31 rws Exp $
+ * $XConsortium: reset.c,v 1.9 91/09/12 19:56:12 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -63,7 +63,7 @@ Window	window;
 	}
 }
 
-static jmp_buf	resetJmp;
+static Jmp_buf	resetJmp;
 
 /* ARGSUSED */
 static SIGVAL

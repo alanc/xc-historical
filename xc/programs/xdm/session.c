@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.53 91/07/18 18:51:07 rws Exp $
+ * $XConsortium: session.c,v 1.54 91/09/12 19:55:51 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -40,7 +40,7 @@ static int			clientPid;
 static struct greet_info	greet;
 static struct verify_info	verify;
 
-static jmp_buf	abortSession;
+static Jmp_buf	abortSession;
 
 /* ARGSUSED */
 static SIGVAL
@@ -50,7 +50,7 @@ catchTerm (n)
     Longjmp (abortSession, 1);
 }
 
-static jmp_buf	pingTime;
+static Jmp_buf	pingTime;
 
 /* ARGSUSED */
 static SIGVAL
@@ -278,7 +278,7 @@ Display		*dpy;
     }
 }
 
-static jmp_buf syncJump;
+static Jmp_buf syncJump;
 
 /* ARGSUSED */
 static SIGVAL
@@ -440,7 +440,7 @@ char			*passwd;
     }
 }
 
-static jmp_buf	tenaciousClient;
+static Jmp_buf	tenaciousClient;
 
 /* ARGSUSED */
 static SIGVAL
