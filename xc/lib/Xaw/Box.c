@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.14 87/12/01 15:49:21 swick Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.15 87/12/08 07:53:50 swick Locked $";
 #endif lint
 
 /*
@@ -187,8 +187,8 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
         h += lh + bbw->button_box.v_space;
     }
 
-    *replyWidth = w;
-    *replyHeight = h;
+    *replyWidth = Max(w, 1);
+    *replyHeight = Max(h, 1);
 }
 
 /*
