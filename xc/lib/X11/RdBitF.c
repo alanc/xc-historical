@@ -1,4 +1,4 @@
-/* $XConsortium: XRdBitF.c,v 1.14 91/01/06 11:47:43 rws Exp $ */
+/* $XConsortium: XRdBitF.c,v 1.15 91/02/01 16:34:46 gildea Exp $ */
 /* Copyright, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -153,7 +153,8 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
     }
 
     /* error cleanup and return macro	*/
-#define	RETURN(code) { if (data) free (data); fclose (fstream); return code; }
+#define	RETURN(code) \
+{ if (data) Xfree ((char *)data); fclose (fstream); return code; }
 
     while (fgets(line, MAX_SIZE, fstream)) {
 	if (strlen(line) == MAX_SIZE-1) {
