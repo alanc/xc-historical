@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.22 94/03/16 15:49:34 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.23 94/03/18 16:03:11 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -22,12 +22,17 @@ Author: Ralph Mor, X Consortium
 #include "globals.h"
 #include <locale.h>
 
+static void set_callbacks();
 
+
 SmcConn
-SmcOpenConnection (networkIdsList, callbacks,
+SmcOpenConnection (networkIdsList, xsmpMajorRev, xsmpMinorRev, mask, callbacks,
     previousId, clientIdRet, errorLength, errorStringRet)
 
 char 		*networkIdsList;
+int		xsmpMajorRev;
+int		xsmpMinorRev;
+unsigned long   mask;
 SmcCallbacks	*callbacks;
 char 		*previousId;
 char 		**clientIdRet;
@@ -55,18 +60,15 @@ char 		*errorStringRet;
     if (errorStringRet && errorLength > 0)
 	*errorStringRet = '\0';
 
-    if (!callbacks || !callbacks->save_yourself.callback ||
-        !callbacks->die.callback || !callbacks->shutdown_cancelled.callback)
-    {
-	/* We need callbacks!  Otherwise, we can't do anything */
-
-	strncpy (errorStringRet,
-	    "All of the callbacks must be specified", errorLength);
-	return (NULL);
-    }
-
     if (!_SmcOpcode)
     {
+	/*
+	 * For now, there is only one version of XSMP, so we don't
+	 * have to check {xsmpMajorRev, xsmpMinorRev}.  In the future,
+	 * we will check against _SmcVersions and generate the list
+	 * of versions the application actually supports.
+	 */
+
 	if ((_SmcOpcode = IceRegisterForProtocolSetup ("XSMP",
 	    SmVendorString, SmReleaseString, _SmVersionCount, _SmcVersions,
             _SmAuthCount, _SmAuthNames, _SmcAuthProcs, NULL)) < 0)
@@ -140,9 +142,11 @@ char 		*errorStringRet;
     smcConn->release = release;
     smcConn->client_id = NULL;
 
-    memcpy (&smcConn->callbacks, callbacks, sizeof (SmcCallbacks));
+    bzero ((char *) &smcConn->callbacks, sizeof (SmcCallbacks));
+    set_callbacks (smcConn, mask, callbacks);
 
     smcConn->interact_waits = NULL;
+    smcConn->phase2_wait = NULL;
     smcConn->prop_reply_waits = NULL;
 
     smcConn->shutdown_in_progress = False;
@@ -286,27 +290,7 @@ unsigned long 	mask;
 SmcCallbacks	*callbacks;
 
 {
-    if (mask & SmcSaveYourselfProcMask)
-    {
-	smcConn->callbacks.save_yourself.callback =
-	    callbacks->save_yourself.callback;
-	smcConn->callbacks.save_yourself.client_data =
-	    callbacks->save_yourself.client_data;
-    }
-
-    if (mask & SmcDieProcMask)
-    {
-	smcConn->callbacks.die.callback = callbacks->die.callback;
-	smcConn->callbacks.die.client_data = callbacks->die.client_data;
-    }
-
-    if (mask & SmcShutdownCancelledProcMask)
-    {
-	smcConn->callbacks.shutdown_cancelled.callback =
-	    callbacks->shutdown_cancelled.callback;
-	smcConn->callbacks.shutdown_cancelled.client_data =
-	    callbacks->shutdown_cancelled.client_data;
-    }
+    set_callbacks (smcConn, mask, callbacks);
 }
 
 
@@ -374,7 +358,7 @@ char	**propNames;
 
 
 
-void
+Status
 SmcGetProperties (smcConn, propReplyProc, clientData)
 
 SmcConn		 smcConn;
@@ -385,7 +369,12 @@ SmPointer	 clientData;
     IceConn		iceConn = smcConn->iceConn;
     _SmcPropReplyWait 	*wait, *ptr;
 
-    wait = (_SmcPropReplyWait *) malloc (sizeof (_SmcPropReplyWait));
+    if ((wait = (_SmcPropReplyWait *) malloc (
+	sizeof (_SmcPropReplyWait))) == NULL)
+    {
+	return (0);
+    }
+
     wait->prop_reply_proc = propReplyProc;
     wait->client_data = clientData;
     wait->next = NULL;
@@ -401,11 +390,13 @@ SmPointer	 clientData;
 
     IceSimpleMessage (iceConn, _SmcOpcode, SM_GetProperties);
     IceFlush (iceConn);
+
+    return (1);
 }
 
 
 
-void
+Status
 SmcInteractRequest (smcConn, dialogType, interactProc, clientData)
 
 SmcConn 	smcConn;
@@ -418,7 +409,12 @@ SmPointer	clientData;
     smInteractRequestMsg	*pMsg;
     _SmcInteractWait 		*wait, *ptr;
 
-    wait = (_SmcInteractWait *) malloc (sizeof (_SmcInteractWait));
+    if ((wait = (_SmcInteractWait *) malloc (
+	sizeof (_SmcInteractWait))) == NULL)
+    {
+	return (0);
+    }
+
     wait->interact_proc = interactProc;
     wait->client_data = clientData;
     wait->next = NULL;
@@ -438,6 +434,8 @@ SmPointer	clientData;
     pMsg->dialogType = dialogType;
 
     IceFlush (iceConn);
+
+    return (1);
 }
 
 
@@ -491,6 +489,41 @@ Bool	global;
 
 
 
+Status
+SmcSaveYourselfPhase2Request (smcConn, saveYourselfPhase2Proc, clientData)
+
+SmcConn 			smcConn;
+SmcSaveYourselfPhase2Proc	saveYourselfPhase2Proc;
+SmPointer			clientData;
+
+{
+    IceConn		iceConn = smcConn->iceConn;
+    _SmcPhase2Wait 	*wait;
+
+    if (smcConn->phase2_wait)
+	wait = smcConn->phase2_wait;
+    else
+    {
+	if ((wait = (_SmcPhase2Wait *) malloc (
+	    sizeof (_SmcPhase2Wait))) == NULL)
+	{
+	    return (0);
+	}
+    }
+
+    wait->phase2_proc = saveYourselfPhase2Proc;
+    wait->client_data = clientData;
+
+    smcConn->phase2_wait = wait;
+
+    IceSimpleMessage (iceConn, _SmcOpcode, SM_SaveYourselfPhase2Request);
+    IceFlush (iceConn);
+
+    return (1);
+}
+
+
+
 void
 SmcSaveYourselfDone (smcConn, success)
 
@@ -507,4 +540,45 @@ Bool	success;
     pMsg->success = success;
 
     IceFlush (iceConn);
+}
+
+
+
+static void
+set_callbacks (smcConn, mask, callbacks)
+
+SmcConn    	smcConn;
+unsigned long 	mask;
+SmcCallbacks	*callbacks;
+
+{
+    if (mask & SmcSaveYourselfProcMask)
+    {
+	smcConn->callbacks.save_yourself.callback =
+	    callbacks->save_yourself.callback;
+	smcConn->callbacks.save_yourself.client_data =
+	    callbacks->save_yourself.client_data;
+    }
+
+    if (mask & SmcDieProcMask)
+    {
+	smcConn->callbacks.die.callback = callbacks->die.callback;
+	smcConn->callbacks.die.client_data = callbacks->die.client_data;
+    }
+
+    if (mask & SmcSaveCompleteProcMask)
+    {
+	smcConn->callbacks.save_complete.callback =
+	    callbacks->save_complete.callback;
+	smcConn->callbacks.save_complete.client_data =
+	    callbacks->save_complete.client_data;
+    }
+
+    if (mask & SmcShutdownCancelledProcMask)
+    {
+	smcConn->callbacks.shutdown_cancelled.callback =
+	    callbacks->shutdown_cancelled.callback;
+	smcConn->callbacks.shutdown_cancelled.client_data =
+	    callbacks->shutdown_cancelled.client_data;
+    }
 }
