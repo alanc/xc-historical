@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.3 89/10/09 17:50:29 rws Exp $ */
+/* $XConsortium: devices.c,v 5.4 89/10/30 19:16:49 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -68,6 +68,7 @@ AddInputDevice(deviceProc, autoStart)
     dev->sync.frozen = FALSE;
     dev->sync.other = NullGrab;
     dev->sync.state = NOT_GRABBED;
+    dev->sync.event = (xEvent *) NULL;
     dev->grab = NullGrab;
     dev->fromPassiveGrab = FALSE;
     dev->key = (KeyClassPtr)NULL;
