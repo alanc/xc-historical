@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/04 16:30:15 rws Exp $
 
 #define DoNormalLib NormalLibSM
 #define DoSharedLib SharedLibSM
@@ -17,19 +17,19 @@ HEADERS = SM.h \
           SMlib.h \
           SMlibint.h
 
-SRCS = client.c \
-       manager.c \
-       process.c \
-       error.c \
-       misc.c \
-       smauth.c
+SRCS = sm_client.c \
+       sm_manager.c \
+       sm_process.c \
+       sm_error.c \
+       sm_misc.c \
+       sm_auth.c
 
-OBJS = client.o \
-       manager.o \
-       process.o \
-       error.o \
-       misc.o \
-       smauth.o
+OBJS = sm_client.o \
+       sm_manager.o \
+       sm_process.o \
+       sm_error.o \
+       sm_misc.o \
+       sm_auth.o
 
 #include <Library.tmpl>
 
