@@ -225,31 +225,6 @@
 #define XtNdestroyHook "destroyHook"
 #define XtNshells "shells"
 #define XtNnumShells "numShells"
-#define XtNcancelCallback "cancelCallback"
-#define XtNcloneCommand "cloneCommand"
-#define XtNconnection "connection"
-#define XtNcurrentDirectory "currentDirectory"
-#define XtNdieCallback "dieCallback"
-#define XtNdiscardCommand "discardCommand"
-#define XtNenvironment "environment"
-#define XtNresignCommand "resignCommand"
-#define XtNrestartCommand "restartCommand"
-#define XtNrestartStyle "restartStyle"
-#define XtNsaveCallback "saveCallback"
-#define XtNsessionID "sessionID"
-#define XtNshutdownCommand "shutdownCommand"
-#define XtCCloneCommand "CloneCommand"
-#define XtCConnection "Connection"
-#define XtCCurrentDirectory "CurrentDirectory"
-#define XtCDiscardCommand "DiscardCommand"
-#define XtCEnvironment "Environment"
-#define XtCResignCommand "ResignCommand"
-#define XtCRestartCommand "RestartCommand"
-#define XtCRestartStyle "RestartStyle"
-#define XtCSessionID "SessionID"
-#define XtCShutdownCommand "ShutdownCommand"
-#define XtRRestartStyle "RestartStyle"
-#define XtRSmcConn "SmcConn"
 #else
 #if __STDC__
 #define _XtConst_ const
@@ -919,81 +894,6 @@ extern _XtConst_ char XtStrings[];
 #endif
 #ifndef XtNnumShells
 #define XtNnumShells ((char*)&XtStrings[2118])
-#endif
-#ifndef XtNcancelCallback
-#define XtNcancelCallback ((char*)&XtStrings[2128])
-#endif
-#ifndef XtNcloneCommand
-#define XtNcloneCommand ((char*)&XtStrings[2143])
-#endif
-#ifndef XtNconnection
-#define XtNconnection ((char*)&XtStrings[2156])
-#endif
-#ifndef XtNcurrentDirectory
-#define XtNcurrentDirectory ((char*)&XtStrings[2167])
-#endif
-#ifndef XtNdieCallback
-#define XtNdieCallback ((char*)&XtStrings[2184])
-#endif
-#ifndef XtNdiscardCommand
-#define XtNdiscardCommand ((char*)&XtStrings[2196])
-#endif
-#ifndef XtNenvironment
-#define XtNenvironment ((char*)&XtStrings[2211])
-#endif
-#ifndef XtNresignCommand
-#define XtNresignCommand ((char*)&XtStrings[2223])
-#endif
-#ifndef XtNrestartCommand
-#define XtNrestartCommand ((char*)&XtStrings[2237])
-#endif
-#ifndef XtNrestartStyle
-#define XtNrestartStyle ((char*)&XtStrings[2252])
-#endif
-#ifndef XtNsaveCallback
-#define XtNsaveCallback ((char*)&XtStrings[2265])
-#endif
-#ifndef XtNsessionID
-#define XtNsessionID ((char*)&XtStrings[2278])
-#endif
-#ifndef XtNshutdownCommand
-#define XtNshutdownCommand ((char*)&XtStrings[2288])
-#endif
-#ifndef XtCCloneCommand
-#define XtCCloneCommand ((char*)&XtStrings[2304])
-#endif
-#ifndef XtCConnection
-#define XtCConnection ((char*)&XtStrings[2317])
-#endif
-#ifndef XtCCurrentDirectory
-#define XtCCurrentDirectory ((char*)&XtStrings[2328])
-#endif
-#ifndef XtCDiscardCommand
-#define XtCDiscardCommand ((char*)&XtStrings[2345])
-#endif
-#ifndef XtCEnvironment
-#define XtCEnvironment ((char*)&XtStrings[2360])
-#endif
-#ifndef XtCResignCommand
-#define XtCResignCommand ((char*)&XtStrings[2372])
-#endif
-#ifndef XtCRestartCommand
-#define XtCRestartCommand ((char*)&XtStrings[2386])
-#endif
-#ifndef XtCRestartStyle
-#define XtCRestartStyle ((char*)&XtStrings[2401])
-#endif
-#ifndef XtCSessionID
-#define XtCSessionID ((char*)&XtStrings[2414])
-#endif
-#ifndef XtCShutdownCommand
-#define XtCShutdownCommand ((char*)&XtStrings[2424])
-#endif
-#ifndef XtRRestartStyle
-#define XtRRestartStyle ((char*)&XtStrings[2440])
-#endif
-#ifndef XtRSmcConn
-#define XtRSmcConn ((char*)&XtStrings[2453])
 #endif
 #undef _XtConst_
 #endif
