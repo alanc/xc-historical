@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.8 87/12/30 07:41:04 swick Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 1.9 88/01/07 16:50:16 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -157,29 +157,21 @@ Button button;
 static ProcessAddedButtons(buttonbox)
 ButtonBox buttonbox;
 {
-    int i, position, index;
+    int i;
     WidgetList widgetlist, ptr;
     Button button;
     if (buttonbox->updatemode == FALSE) {
 	buttonbox->needsadding = TRUE;
 	return;
     }
-    position = 0;
     ptr = widgetlist = (WidgetList)
 	XtMalloc((unsigned)sizeof(Widget) * (buttonbox->numbuttons + 1));
     for (i=0 ; i<buttonbox->numbuttons ; i++) {
-	button = buttonbox->button[i];
+	button = buttonbox->button[i]; /* %%% position? */
 	if (button->needsadding) {
-	    if (ptr == widgetlist) {
-		index = position;
-	    }
 	    *ptr++ = (Widget) button->widget;
 	    button->needsadding = FALSE;
-	} else if (ptr != widgetlist) {
-	    (void)XtManageChildren(widgetlist, ptr-widgetlist);
-	    ptr = widgetlist;
 	}
-	position++;
     }
     if (ptr != widgetlist)
 	XtManageChildren(widgetlist, (Cardinal) (ptr-widgetlist));
@@ -382,7 +374,7 @@ void BBoxLockSize(buttonbox)
 ButtonBox buttonbox;
 {
     buttonbox->maxheight = GetHeight((Widget) buttonbox->inner);
-    XtPaneSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
+    XtPanedSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
     buttonbox->fullsized = FALSE;
 }
 
