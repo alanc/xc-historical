@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.83 89/12/15 19:11:16 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.84 90/03/19 13:02:01 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -118,6 +118,7 @@ static void Resize();
 static Boolean SetValues();
 static void ChangeManaged(); /* XXX */
 static XtGeometryResult GeometryManager(), RootGeometryManager();
+static void Destroy();
 
 static ShellClassExtensionRec shellClassExtRec = {
     NULL,
@@ -147,7 +148,7 @@ externaldef(shellclassrec) ShellClassRec shellClassRec = {
     /* compress_exposure  */	TRUE,
     /* compress_enterleave*/	FALSE,
     /* visible_interest	  */	FALSE,
-    /* destroy		  */	NULL,
+    /* destroy		  */	Destroy,
     /* resize		  */	Resize,
     /* expose		  */	NULL,
     /* set_values	  */	SetValues,
@@ -1289,6 +1290,13 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
                  XtClass(wid)->core_class.resize != (XtWidgetProc) NULL)
                     (*(XtClass(wid)->core_class.resize))(wid);
 
+}
+
+static void Destroy(wid)
+	Widget wid;
+{
+	if (XtIsRealized(wid))
+	    XDestroyWindow( XtDisplay(wid), XtWindow(wid) );
 }
 
 static void WMDestroy(wid)

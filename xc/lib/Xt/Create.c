@@ -432,13 +432,6 @@ static void RemovePopupFromParent(widget,closure,call_data)
         return;
     }
     if (parent->core.being_destroyed) {
-	/* then we're (probably) not the target of the XtDestroyWidget,
-	 * so our window won't get destroyed automatically...
-	 */
-	Window win;
-        if ((win = XtWindow(widget)) != NULL)
-	    XDestroyWindow( XtDisplay(widget), win );
-
 	return;
 	/* don't update parent's popup_list, as we won't then be able to find
 	 * this child for Phase2Destroy.  This also allows for the possibility
