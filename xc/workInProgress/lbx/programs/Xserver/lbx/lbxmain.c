@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.10 94/03/17 19:45:20 dpw Exp $ */
+/* $XConsortium: lbxmain.c,v 1.11 94/03/27 13:09:25 dpw Exp mor $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.45 1994/03/24 17:54:24 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -1494,6 +1494,13 @@ ProcLbxPolyFillArc(client)
 }
 
 int
+ProcLbxPutImage(client)
+    register ClientPtr	client;
+{
+    return LbxDecodePutImage(client);
+}
+
+int
 ProcLbxDispatch (client)
     register ClientPtr	client;
 {
@@ -1552,6 +1559,8 @@ ProcLbxDispatch (client)
 	return ProcLbxGetProperty (client);
     case X_LbxTagData:
 	return ProcLbxTagData (client);
+    case X_LbxPutImage:
+	return ProcLbxPutImage (client);
     default:
 	return BadRequest;
     }
