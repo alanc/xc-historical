@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pr.c,v 1.11 91/04/05 17:34:24 rws Exp $
+ * $XConsortium: pr.c,v 1.12 91/04/05 17:40:37 rws Exp $
  */
 #include "def.h"
 
@@ -42,7 +42,7 @@ add_include(file, file_red, include, dot, failOK)
 		if (!newfile->i_searched) {
 			newfile->i_searched = TRUE;
 			content = getfile(newfile->i_file);
-			find_includes(content, newfile, file_red, 0);
+			find_includes(content, newfile, file_red, 0, failOK);
 			freefile(content);
 		}
 	}
