@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.12 89/09/14 18:02:34 rws Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.13 89/11/21 15:30:46 keith Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -206,6 +206,8 @@ getleftbits(psrc, w, dst)
 #include	"X.h"
 #include	"Xmd.h"
 #include	"servermd.h"
+#include	"mergerop.h"
+
 #if	(BITMAP_BIT_ORDER == MSBFirst)
 #define BitRight(lw,n)	((lw) >> (n))
 #define BitLeft(lw,n)	((lw) << (n))
@@ -317,35 +319,27 @@ else \
 
 #endif /* mc68020 */
 
-#define putbitsrop(src, x, w, pdst, planemask, rop) \
+#define putbitsrop(src, x, w, pdst, planemask, rop) { \
+MROP_DECLARE(register) \
+MROP_INITIALIZE(rop, planemask) \
 if ( ((x)+(w)) <= PPW) \
 { \
-    unsigned long tmpmask; \
-    unsigned long t1, t2; \
-    maskpartialbits((x), (w), tmpmask); \
-    PFILL2(planemask, t1); \
-    tmpmask &= t1; \
+    unsigned long _tmpmask; \
+    unsigned long t1; \
+    maskpartialbits((x), (w), _tmpmask); \
     t1 = SCRRIGHT((src), (x)); \
-    t2 = DoRop(rop, t1, *(pdst)); \
-    *(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
+    *(pdst) = MROP_MASK (t1, *(pdst), _tmpmask); \
 } \
 else \
 { \
-    unsigned long m; \
-    unsigned long n; \
-    unsigned long t1, t2; \
-    unsigned long pm; \
-    PFILL2(planemask, pm); \
-    m = PPW-(x); \
-    n = (w) - m; \
+    unsigned long _startmask, _endmask; \
+    unsigned long t1; \
+    mask32bits ((x), (w), _startmask, _endmask); \
     t1 = SCRRIGHT((src), (x)); \
-    t2 = DoRop(rop, t1, *(pdst)); \
-    *(pdst) = (*(pdst) & (cfbendtab[x] | ~pm)) | (t2 & (cfbstarttab[x] & pm));\
-    t1 = SCRLEFT((src), m); \
-    t2 = DoRop(rop, t1, *((pdst) + 1)); \
-    *((pdst)+1) = (*((pdst)+1) & (cfbstarttab[n] | ~pm)) | \
-	(t2 & (cfbendtab[n] & pm)); \
-}
+    *(pdst) = MROP_MASK (t1, *(pdst), _startmask); \
+    t1 = SCRLEFT((src), PPW-(x)); \
+    *((pdst)+1) = MROP_MASK (t1, *((pdst)+1), _endmask); \
+} }
 
 #if GETLEFTBITS_ALIGNMENT == 1
 #define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
