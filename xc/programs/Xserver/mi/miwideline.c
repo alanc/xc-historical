@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.11 89/11/01 21:18:35 rws Exp $
+ * $XConsortium: miwideline.c,v 1.12 89/11/01 21:38:51 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -484,6 +484,13 @@ miLineArcI (pDraw, pGC, xorg, yorg, points, widths)
 	xorg += pDraw->x;
 	yorg += pDraw->y;
     }
+    if (pGC->lineWidth == 1)
+    {
+	pts->x = xorg;
+	pts->y = yorg;
+	*wids = 1;
+	return 1;
+    }
     y = (pGC->lineWidth >> 1) + 1;
     if (pGC->lineWidth & 1)
 	e = - ((y << 2) + 3);
@@ -536,7 +543,7 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
     xbase = floor(xorg);
     x0 = xorg - xbase;
     ybase = ICEIL (yorg);
-    y0 = floor(yorg) - yorg;
+    y0 = yorg - ybase;
     if (pGC->miTranslate)
     {
 	xbase += pDraw->x;
@@ -547,6 +554,7 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
     yk = y0 + y0 - 1.0;
     radius = ((double)pGC->lineWidth) / 2.0;
     y = floor(radius - y0 + 1.0);
+    ybase -= y;
     el = radius * radius - ((y + y0) * (y + y0)) - (x0 * x0);
     er = el + xrk;
     xl = 1;
@@ -556,8 +564,8 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
 	xl = 0;
 	el -= xlk;
     }
-    boty = floor(-y0 - radius + 1.0);
-    while (y > 1)
+    boty = (y0 < -0.5) ? 1 : 0;
+    while (y > boty)
     {
 	k = (y << 1) + yk;
 	er += k;
@@ -573,16 +581,18 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
 	    el += (xl << 1) - xlk;
 	}
 	y--;
+	ybase++;
 	if (xr >= xl)
 	{
 	    pts->x = xbase + xl;
-	    pts->y = ybase - y;
+	    pts->y = ybase;
 	    pts++;
 	    *wids++ = xr - xl + 1;
 	}
     }
     er = xrk - (xr << 1) - er;
     el = (xl << 1) - xlk - el;
+    boty = floor(-y0 - radius + 1.0);
     while (y > boty)
     {
 	k = (y << 1) + yk;
@@ -599,10 +609,11 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
 	    el += (xl << 1) - xlk;
 	}
 	y--;
+	ybase++;
 	if (xr >= xl)
 	{
 	    pts->x = xbase + xl;
-	    pts->y = ybase - y;
+	    pts->y = ybase;
 	    pts++;
 	    *wids++ = xr - xl + 1;
 	}
