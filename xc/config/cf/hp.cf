@@ -21,7 +21,7 @@
 #define ExecableScripts        YES
 #define HasSockets             YES
 #define HasVFork               YES
-#define HasVoidSignalReturn    NO
+#define HasVoidSignalReturn    YES
 #define RemoveTargetProgramByMoving YES
 
 /* This defines the server you want */
@@ -32,7 +32,7 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.17 89/10/08 11:12:17 keith Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.18 89/10/08 19:09:08 jim Exp $
 /**/# operating system:  OSName
 
 /*
