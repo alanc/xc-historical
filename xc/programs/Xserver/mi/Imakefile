@@ -24,6 +24,6 @@ NormalLibraryTarget(mi,$(OBJS))
 LintLibraryTarget(mi,$(SRCS))
 NormalLintTarget($(SRCS))
 
-SpecialObjectRule(miinitext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
+SpecialObjectRule(miinitext.o, $(ICONFIGFILES), $(EXT_DEFINES))
 
 DependTarget()
