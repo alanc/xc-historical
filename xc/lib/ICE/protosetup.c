@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.8 93/11/08 16:34:15 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.9 93/11/18 16:50:07 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,7 +19,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 
 IceProtocolSetupStatus
-IceProtocolSetup (iceConn, myOpcode, authCount, authIndices,
+IceProtocolSetup (iceConn, myOpcode, authCount, authIndices, mustAuthenticate,
     majorVersionRet, minorVersionRet, vendorRet, releaseRet,
     errorLength, errorStringRet)
 
@@ -27,6 +27,7 @@ IceConn	iceConn;
 int 	myOpcode;
 int	authCount;
 int	*authIndices;
+Bool    mustAuthenticate;
 int	*majorVersionRet;
 int	*minorVersionRet;
 char	**vendorRet;
@@ -128,6 +129,7 @@ char 	*errorStringRet;
     pMsg->protocolOpcode = myOpcode;
     pMsg->versionCount = myProtocol->orig_client->version_count;
     pMsg->authCount = authCount;
+    pMsg->mustAuthenticate = mustAuthenticate;
 
     STORE_XPCS (pData, myProtocol->protocol_name);
     STORE_XPCS (pData, myProtocol->orig_client->vendor);
