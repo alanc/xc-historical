@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.12 88/02/17 18:06:50 jim Exp $
+ *	$Header: main.c,v 1.13 88/02/17 19:05:31 jim Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.12 88/02/17 18:06:50 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.13 88/02/17 19:05:31 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -208,9 +208,9 @@ static	int	defaultNMarginBell = N_MARGINBELL;
 
 
 /*
- * NOTE: Initialize() zeros out the entire ".screen" component of the XtermWidget, so make
- * sure to add an assignment statement in Initialize() for each new ".screen" field
- * added to this resource list.
+ * NOTE: VTInitialize zeros out the entire ".screen" component of the 
+ * XtermWidget, so make sure to add an assignment statement in VTInitialize() 
+ * for each new ".screen" field added to this resource list.
  */
 
 static XtResource resources[] = {
@@ -364,8 +364,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"-w",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
 };
 
-extern void VTInit(), VTExpose(), VTConfigure();
-static void Initialize();
+extern void VTRealize(), VTExpose(), VTConfigure();
+static void VTInitialize();
 
 WidgetClassRec xtermClassRec = {
   {
@@ -376,9 +376,9 @@ WidgetClassRec xtermClassRec = {
     /* class_initialize   */    NULL,
     /* class_part_initialize */ NULL,
     /* class_inited       */	FALSE,
-    /* initialize	  */	Initialize,
+    /* initialize	  */	VTInitialize,
     /* initialize_hook    */    NULL,				
-    /* realize		  */	VTInit,
+    /* realize		  */	VTRealize,
     /* actions		  */	NULL,
     /* num_actions	  */	0,
     /* resources	  */	resources,
@@ -402,11 +402,6 @@ WidgetClassRec xtermClassRec = {
   }
 };
 #define xtermWidgetClass ((WidgetClass)&xtermClassRec)
-
-/* |||
-struct timeval startT, initT, endT;
-struct timezone tz;
- */
 
 Arg ourTopLevelShellArgs[] = {
 	{ XtNallowShellResize, (XtArgVal) TRUE },	
@@ -492,9 +487,6 @@ char **argv;
 
 	xterm_name = (XStrCmp(*argv, "-") == 0) ? "xterm" : basename(*argv);
 
-/* ||| 
-gettimeofday(&startT, &tz);
-*/
 	/* This is ugly.  When running under init, we need to make sure
 	 * Xlib/Xt won't use file descriptors 0/1/2, because we need to
 	 * stomp on them.  This check doesn't guarantee a -L found is
@@ -521,9 +513,6 @@ gettimeofday(&startT, &tz);
 	if (fd3 >= 0)
 	    (void)close(fd3);
 
-/* ||| 
-gettimeofday(&initT, &tz);
-*/
 
 	/* Parse the rest of the command line */
 	for (argc--, argv++ ; argc > 0 ; argc--, argv++) {
@@ -617,19 +606,9 @@ gettimeofday(&initT, &tz);
 	    break;
 	}
 
-/* ||| 
-    gettimeofday(&endT, &tz);
-    printf("init: %8.3f,   total: %8.3f\n",
-        ((initT.tv_sec*1000000.0+initT.tv_usec)
-          - (startT.tv_sec*1000000.0+startT.tv_usec))/1000000.0,
-        ((endT.tv_sec*1000000.0+endT.tv_usec)
-          - (startT.tv_sec*1000000.0+startT.tv_usec))/1000000.0);
-   exit(0);
-*/
-
         term = (XtermWidget) XtCreateManagedWidget(
 	    xterm_name, xtermWidgetClass, toplevel, NULL, 0);
-            /* this causes "Initialize" to be called */
+            /* this causes the initialize method to be called */
 
         screen = &term->screen;
 
@@ -742,7 +721,7 @@ gettimeofday(&initT, &tz);
 			VTRun();
 }
 
-static void Initialize (request, new)
+static void VTInitialize (request, new)
    XtermWidget request, new;
    {
    /* Zero out the entire "screen" component of "new" widget,
@@ -795,7 +774,7 @@ static void Initialize (request, new)
    new->core.height = new->core.width = 1;
       /* dummy values so that we don't try to Realize the parent shell 
 	 with height or width of 0, which is illegal in X.  The real
-	 size is computed in the xtermWidget's Realize proc (VTInit),
+	 size is computed in the xtermWidget's Realize proc,
 	 but the shell's Realize proc is called first, and must see
 	 a valid size. */
    }
@@ -1266,7 +1245,7 @@ spawn ()
 	}
 
         /* Realize the Tek or VT widget, depending on which mode we're in.
-           If VT mode, this calls VTInit (the widget's Realize proc) */
+           If VT mode, this calls VTRealize (the widget's Realize proc) */
         XtRealizeWidget (screen->TekEmu ? tekWidget->core.parent :
 			 term->core.parent);
 
