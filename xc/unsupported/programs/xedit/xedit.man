@@ -1,5 +1,5 @@
-.\" $Header: puzzle.man,v 1.1 87/09/13 20:11:38 toddb Exp $
-.TH PUZZLE "13 June 1987" "X Version 11"
+.\" $Header: xedit.man,v 1.1 87/09/13 20:11:38 toddb Locked $
+.TH XEDIT "13 June 1987" "X Version 11"
 .UC 4
 .SH NAME
 xedit \- animate text
