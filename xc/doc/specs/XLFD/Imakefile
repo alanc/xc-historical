@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 SRCS = ../util/macros.t xlfd.tbl.ms
 
 all: xlfd.PS

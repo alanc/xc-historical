@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 INCLUDES = -I$(FONTSRC)/include
 
 SRCS =	FSClServ.c FSCloseFt.c FSConnServ.c FSErrDis.c FSErrHndlr.c\

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 all: ddx.PS r5.PS gdz.PS strat.PS
 
 ddx.PS:

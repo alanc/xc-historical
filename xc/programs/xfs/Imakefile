@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs

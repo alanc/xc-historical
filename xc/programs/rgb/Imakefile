@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
         RGB_DB = DefaultRGBDatabase
    SITE_RGB_DB = -DRGB_DB=\"$(RGB_DB)\"
       DEPLIBS = 

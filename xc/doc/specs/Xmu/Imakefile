@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 SRCS = ../util/macros.t Xmu.ms
 
 all: xmu.PS

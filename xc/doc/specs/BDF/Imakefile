@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 SRCS = ../util/macros.t bdf.ms
 
 all: bdf.PS

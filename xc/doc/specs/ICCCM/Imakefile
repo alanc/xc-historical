@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 SRCS = ../util/macros.t icccm.ms
 ISRCS = indexmacros.t ../util/indexmacros.t
 

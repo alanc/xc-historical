@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 SRCS = ../util/macros.t X11.protocol X11.keysyms X11.encoding glossary postproc
 ISRCS = indexmacros.t ../util/indexmacros.t
 

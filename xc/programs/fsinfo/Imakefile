@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 LOCAL_LIBRARIES = $(FSLIBSRC)/libFS.a
 DEPLIBS = $(LOCAL_LIBRARIES)
 SRCS = fsinfo.c

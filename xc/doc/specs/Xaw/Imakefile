@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 EVERYWHERE=../util/macros.t strings.mit strings.xaw
 CHAPTER1=CH1
 CHAPTER2=CH2
