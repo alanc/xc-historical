@@ -2,6 +2,7 @@
 #include BandAidCompiler
 #endif
 
+DEFINES = -DSHAPE
 INCLUDES = -I$(TOP) -I$(TOP)/X11
 SYS_LIBRARIES = -lm
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
