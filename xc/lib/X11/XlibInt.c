@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.97 89/03/29 15:34:58 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.98 89/04/20 16:47:09 rws Exp $
  */
 
 #include "copyright.h"
@@ -531,7 +531,7 @@ _XSend (dpy, data, size)
 #ifdef EWOULDBLOCK
 	    } else if (errno == EWOULDBLOCK) {
 #ifdef apollo /* stupid sr10.1 UDS bug - supposedly fixed in sr10.2 */
-		if (todo > 4096))
+		if (todo > 4096)
 		    todo = 4096;
 		else
 #endif
