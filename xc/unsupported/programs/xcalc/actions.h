@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.3 89/05/08 17:38:33 converse Exp $
+ * $XConsortium: actions.h,v 1.4 91/01/10 11:35:18 rws Exp $
  * 
  * actions.h - action table declaring externally available procedures for xcalc
  *
@@ -26,7 +26,7 @@
  */
 
 extern void
-    add(), back(), bell(), clear(), cosine(), decimal(),
+    add(), back(), bell(), clearit(), cosine(), decimal(),
     degree(), digit(), divide(), e(), enter(), epower(), equal(),
     exchange(), factorial(), 
     inverse(), leftParen(), logarithm(), multiply(), naturalLog(),
