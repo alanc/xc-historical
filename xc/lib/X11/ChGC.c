@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChGC.c,v 11.6 87/05/26 16:55:09 jg Exp $ */
+/* $Header: XChGC.c,v 11.6 87/09/11 08:01:32 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -13,6 +13,7 @@ XChangeGC (dpy, gc, valuemask, values)
 {
     LockDisplay(dpy);
 
+    valuemask &= (1L << (GCLastBit + 1)) - 1;
     if (valuemask) _XUpdateGCCache (gc, valuemask, values);
 
     /* if any Resource ID changed, must flush */

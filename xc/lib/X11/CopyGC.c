@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCopyGC.c,v 11.9 87/10/19 17:40:39 newman Locked $ */
+/* $Header: XCopyGC.c,v 11.10 87/10/20 14:34:51 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -17,6 +17,7 @@ XCopyGC (dpy, srcGC, mask, destGC)
 
     LockDisplay(dpy);
 
+    mask &= (1L << (GCLastBit + 1)) - 1;
     /* if some of the source values to be copied are "dirty", flush them 
        out before sending the CopyGC request. */
     if (srcGC->dirty & mask)

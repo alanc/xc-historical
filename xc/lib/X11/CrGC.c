@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrGC.c,v 11.20 87/09/08 14:30:38 newman Locked $ */
+/* $Header: XCrGC.c,v 11.21 87/09/09 15:58:25 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -54,6 +54,7 @@ GC XCreateGC (dpy, d, valuemask, values)
     gc->values = initial_GC;
     gc->dirty = 0L;
 
+    valuemask &= (1L << (GCLastBit + 1)) - 1;
     if (valuemask) _XUpdateGCCache (gc, valuemask, values);
 
     GetReq(CreateGC, req);
