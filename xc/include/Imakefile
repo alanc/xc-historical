@@ -114,7 +114,6 @@ clean::
 	@-(list=`echo $(IMPORTS2) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 	@-(list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
 		set -x; cd extensions; $(RM) $$list)
-	$(RM) Atoms.h
 
 install::
 	-cd $(INCDIR); mkdir $(SUBDIRS)
