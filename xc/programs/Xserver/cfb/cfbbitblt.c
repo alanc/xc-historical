@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.40 91/06/28 12:40:40 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.41 91/07/14 13:50:43 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -624,7 +624,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 #if (PPW == 4)
     extern cfbCopyPlane8to1();
 
-    if (pSrcDrawable->depth == 1 && pDstDrawable->depth == 8)
+    if (pSrcDrawable->bitsPerPixel == 1 && pDstDrawable->bitsPerPixel == 8)
     {
     	if (bitPlane == 1)
 	{
@@ -639,7 +639,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    ret = miHandleExposures (pSrcDrawable, pDstDrawable,
 	    	pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
     }
-    else if (pSrcDrawable->depth == 8 && pDstDrawable->depth == 1)
+    else if (pSrcDrawable->bitsPerPixel == 8 && pDstDrawable->bitsPerPixel == 1)
     {
 	extern	int InverseAlu[16];
 	int oldalu;
