@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.4 89/11/10 19:59:33 swick Exp $
+* $XConsortium: Xtos.h,v 1.5 89/11/14 10:10:17 swick Exp $
 */
 
 /***********************************************************
@@ -48,7 +48,6 @@ SOFTWARE.
 # endif
 
 # ifdef MISSING_STDARG_H
-/* from gnu/gcc stdarg.h */
 
 #ifndef _STDARG_H
 #define _STDARG_H
