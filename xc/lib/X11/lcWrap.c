@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.1 91/04/06 13:18:51 rws Exp $
+ * $XConsortium: XlcWrap.c,v 11.2 91/04/07 22:54:32 rws Exp $
  */
 
 /*
@@ -159,7 +159,7 @@ _XlcAddLoader (proc)
  */
 
 XLCd
-_XlcCurrentLocale ()
+_XlcCurrentLC ()
 {
     char *name;
     XLCd lcd;
