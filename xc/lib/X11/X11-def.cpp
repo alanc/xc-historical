@@ -539,30 +539,40 @@ EXPORTS
  XcmsTekHVCToCIEuvY
  XcmsTekHVCWhiteShiftColors
  XcmsVisualOfCCC
+ XkbAllocClientMap
+ XkbAllocCompatMap
+ XkbAllocKeyType
+ XkbAllocNames
+ XkbAllocServerMap
  XkbBell
  XkbChangeMap
  XkbChangeSymsForKey
  XkbChangeTypeOfKey
+ XkbComputeEffectiveMap
  XkbDeviceBell
  XkbEnlargeKeyActions
- XkbEnlargeKeySymbols
+ XkbEnlargeKeySyms
+ XkbForceBell
+ XkbForceDeviceBell
+ XkbFreeCompatMap
+ XkbFreeNames
  XkbGetAutoRepeatRate
  XkbGetCompatMap
  XkbGetControls
  XkbGetIndicatorMap
  XkbGetIndicatorState
- XkbGetKbdGeometry
  XkbGetKeyActions
  XkbGetKeyBehaviors
+ XkbGetKeyExplicitComponents
  XkbGetKeySyms
  XkbGetKeyTypes
  XkbGetMap
  XkbGetNames
  XkbGetState
  XkbGetUpdatedMap
+ XkbGetVirtualMods
  XkbIgnoreExtension
- XkbKbdNextKey
- XkbKbdZoom
+ XkbInitCanonicalKeyTypes
  XkbKeysymToModifiers
  XkbLatchModifiers
  XkbLibraryVersion
@@ -578,8 +588,8 @@ EXPORTS
  XkbSetCompatMap
  XkbSetControls
  XkbSetDebuggingFlags
+ XkbSetIgnoreLockMods
  XkbSetIndicatorMap
- XkbSetKeyOnlyMods
  XkbSetMap
  XkbSetNames
  XkbSetServerInternalMods
@@ -587,6 +597,7 @@ EXPORTS
  XkbTranslateKey
  XkbTranslateKeySym
  XkbUseExtension
+ XkbVirtualModsToReal
  XmbDrawImageString
  XmbDrawString
  XmbDrawText
@@ -639,6 +650,7 @@ EXPORTS
  XwcTextPerCharExtents
  XwcTextPropertyToTextList
  _XAllocID
+ _XAllocIDs
  _XAllocScratch
  _XAllocTemp
  _XAsyncErrorHandler
