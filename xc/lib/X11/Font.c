@@ -1,4 +1,4 @@
-/* $XConsortium: XFont.c,v 11.43 92/05/19 11:06:49 rws Exp $ */
+/* $XConsortium: Font.c,v 11.44 92/12/31 15:44:55 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -189,7 +189,7 @@ _XQueryFont (dpy, fid, seq)
 	    for (i = 0; i < reply.nCharInfos; i++, cs++) {
 		xCharInfo xcip;
 
-		_XRead(dpy, &xcip, SIZEOF(xCharInfo));
+		_XRead(dpy, (char *)&xcip, SIZEOF(xCharInfo));
 		cs->lbearing = cvtINT16toShort(xcip.leftSideBearing);
 		cs->rbearing = cvtINT16toShort(xcip.rightSideBearing);
 		cs->width =  cvtINT16toShort(xcip.characterWidth);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Flush.c,v 1.7 93/08/19 09:04:48 rws Exp $
+ * $XConsortium: Flush.c,v 1.8 93/08/20 17:06:32 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -64,7 +64,7 @@ XdmcpFlush (fd, buffer, to, tolen)
     if (result < 0)
 	return FALSE;
 #else
-    result = sendto (fd, buffer->data, buffer->pointer, 0,
+    result = sendto (fd, (char *)buffer->data, buffer->pointer, 0,
 		     (struct sockaddr *)to, tolen);
     if (result != buffer->pointer)
 	return FALSE;
