@@ -34,7 +34,7 @@ versions are available for both R4 and R5.  The XTEST extension is best to
 use, but XTRAP is perfectly adequate.  (The main difference as far as a2x
 is concerned is that XTEST permits time delays inside the X server, while
 with XTRAP the delays are handled on the client side and hence can be
-somewhat less accurate.)
+somewhat less accurate, but time delays are rarely needed.)
 
 The Imakefile for a2x comes configured for building with XTEST; to build
 with XTRAP change the line
@@ -430,8 +430,8 @@ To warp the pointer to a new window, use the control sequence:
 or
 	{c-t}{c-j}<options> <mult>{c-t}
 
-where <mult> is a positive floating point number, and <options> consists
-of some subset of the following options:
+where <mult> is a positive floating point number, and <options> consists of
+some subset of the following options:
 
 	Z  (this is optional)
 	one of {C, D, L, R, U} or {c, d, l, r, u}  (one is required)
@@ -481,19 +481,19 @@ r		widget going right
 u		widget going up
 
 These options permit you to jump to a new widget within the current
-top-level window that the pointer is in.  The direction of motion
-is the same as for the top-level jump options.  For example:
+top-level window that the pointer is in.  The direction of motion is the
+same as for the top-level jump options.  For example:
 
 	add-word /t "[jump close]" "{c-t}{c-j}c{c-t}" invisible
 	add-word /t "[jump down]" "{c-t}{c-j}d{c-t}" invisible
 
-The distance between a window and the pointer position is computed by
-using the closest visible point of the window.  When computing the
-distance metricdistance, a2x employs a scale factor in the "off axis" to
-skew the computation, which favors windows farther away but in the desired
-direction over windows closer but in the wrong direction.  For example, if
-you are moving in the "up" direction, the distance between two points is
-computed as:
+The distance between a window and the pointer position is computed by using
+the closest visible point of the window.  When computing the distance
+metricdistance, a2x employs a scale factor in the "off axis" to skew the
+computation, which favors windows farther away but in the desired direction
+over windows closer but in the wrong direction.  For example, if you are
+moving in the "up" direction, the distance between two points is computed
+as:
 
 square_root((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) * multiplier)
 
@@ -505,12 +505,12 @@ b		require button interest
 
 It is often useful to restrict the set of windows to those that select for
 keyboard and/or button events.  Specifying 'k' requires that the window
-select for KeyPress or KeyRelease events.  Specifying 'b' requires that
-the window select for ButtonPress or ButtonRelease events.  Specifying
-both 'k' and 'b' requires that the window select for KeyPress or
-KeyRelease or ButtonPress or ButtonRelease (i.e., "kb" means 'k' or 'b',
-not 'k' and 'b').  For example, when jumping between widgets it is
-usually more useful to require some form of input:
+select for KeyPress or KeyRelease events.  Specifying 'b' requires that the
+window select for ButtonPress or ButtonRelease events.  Specifying both 'k'
+and 'b' requires that the window select for KeyPress or KeyRelease or
+ButtonPress or ButtonRelease (i.e., "kb" means 'k' or 'b', not 'k' and
+'b').  For example, when jumping between widgets it is usually more useful
+to require some form of input:
 
 	add-word /t "[jump left]" "{c-t}{c-j}lkb{c-t}" invisible
 	add-word /t "[jump right]" "{c-t}{c-j}rkb{c-t}" invisible
@@ -531,20 +531,20 @@ all jumps.  If one of these options is used, it must be the last option.
 
 The 'n' and 'p' options look at the WM_NAME property on the top-level
 window.  The <name> must match exactly (for 'n') or be a prefix of (for
-'p') the WM_NAME string value for the window to be considered.  The 'N'
-and 'P' options look at both the WM_CLASS property of the window and at
-the _MIT_OBJ_CLASS property of the window.  Both of these properties
-contain a name/class pair.  The <name>, if specified, must match exactly
-(for 'N') or be a prefix of (for 'P') the name of the window, and the
-<class>, if specified, must match exactly (for 'N') or be a prefix of (for
-'P') the class of the window, for a window to be considered.
+'p') the WM_NAME string value for the window to be considered.  The 'N' and
+'P' options look at both the WM_CLASS property of the window and at the
+_MIT_OBJ_CLASS property of the window.  Both of these properties contain a
+name/class pair.  The <name>, if specified, must match exactly (for 'N') or
+be a prefix of (for 'P') the name of the window, and the <class>, if
+specified, must match exactly (for 'N') or be a prefix of (for 'P') the
+class of the window, for a window to be considered.
 
 The _MIT_OBJ_CLASS property is set by a nonstandard addition to the Xt
 Intrinsics.  If the application resource "xtIdentifyWindows" is set to
 true, then every widget created will have this property placed on it
-automatically by the Intrinsics.  (You need R5 with public patches at
-least up through 16 for Xt to generate this property; earlier versions of
-Xt either do not have this support or generate a WM_CLASS instead, which
+automatically by the Intrinsics.  (You need R5 with public patches at least
+up through 16 for Xt to generate this property; earlier versions of Xt
+either do not have this support or generate a WM_CLASS instead, which
 clobbers the real WM_CLASS on shell windows.)
 
 For example:
@@ -553,61 +553,27 @@ For example:
 	add-word /t "[start skip]" "{c-t}{c-j}ZCN" left right
 	add-word /t "[go there]" "{c-t}" invisible
 
-With these macros, you can say sequences like "[start skip]", "emacs",
-"[go there]", to jump to the closest emacs application window, or "[start
+With these macros, you can say sequences like "[start skip]", "emacs", "[go
+there]", to jump to the closest emacs application window, or "[start
 jump]", "inbox", "[go there]" within an xmh application to jump to the
 folder button named "inbox".  Note that it is OK to split a control
 sequence across utterances, a2x cannot tell the difference.  If you make a
 mistake saying the name, you can use "choose <n>" to make corrections.
 
 
-				  Delays
+				 Triggers
 
 Consider the following:
 
-	add-word /t "[paste single]" "{c-@}{c-e}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-m}{c-y}" invisible
-
-This macro selects text in the current window (assume that {c-@} sets a
-mark at the current text position, {c-e} moves to the end of the text
-line, and {c-t}{c-m}{c-w} selects the text between the mark and the
-current text position), then jumps to a top-level window with "drafts:" as
-a name prefix, and then pastes the selection into that window (assume that
-{c-t}{c-m}{c-y} causes a paste).  Unfortunately, if you try this, you
-probably discover that it doesn't work correctly.  The problem is that, it
-takes an application a while to actually assert a selection in X, and a2x
-can usually jump to the new window and cause the next application to ask
-for the selection faster than the first application can assert the
-selection.  The result is that you will often get the previous selection
-contents, rather than the expected contents.
-
-In this situation, the simplest solution is simply to delay the paste
-operation until you are reasonably sure the selection is asserted.  This
-can be done with a delay control sequence:
-
-	{c-t}{c-z}<delay>{c-t}
-
-where <delay> is a floating point number specifying the amount of time in
-seconds a2x should wait before generating more events.  For example:
-
-	add-word /t "[paste single]" "{c-@}{c-e}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}" invisible
-
-
-				 Triggers
-
-Delays are not a perfect mechanism, because different machines or
-different loads on the same machine may require different delay times.  In
-many cases, it is possible to do better with the a2x trigger mechanism.
-For example, consider the following:
-
-	add-word /t "[reply to]" "{c-t}F17{c-t}{c-t}{c-j}Cpdrafts:{c-t}" capitalize left right
+	add-word /t "[bad reply to]" "{c-t}F17{c-t}{c-t}{c-j}Cpdrafts:{c-t}" capitalize left right
 
 Assume that F17 is sent to an xmh application to start a reply to a
-message.  It will take xmh some time to create the window, and it will
-take further time for the window manager to decorate the window and make
-it visible.  If the jump control sequence is executed too soon, it will
-fail to jump to the desired window.  It would be inconvenient to have to
-guess how long this will take.  Instead, the a2x trigger mechanism can be
-used to delay until the desired window is mapped.
+message.  It will take xmh some time to create the window, and it will take
+further time for the window manager to decorate the window and make it
+visible.  If the jump control sequence is executed too soon, it will fail
+to jump to the desired window.  It would be inconvenient to have to guess
+how long this will take.  Instead, the a2x trigger mechanism can be used to
+delay until the desired window is mapped.
 
 To establish a trigger for a window mapping, use the control sequence:
 
@@ -632,6 +598,14 @@ These options have the same interpretation as in the jump control
 sequence.  If no option is supplied, any window that is mapped/unmapped
 will satisfy the trigger.
 
+To establish a trigger for a selection ownership, use the control sequence:
+
+	{c-t}{c-y}S<selection>{c-t}
+
+where <selection> is the name of the selection (e.g., PRIMARY).  A2x will
+take ownership of the specified selection; the trigger will be satisfied
+when a2x loses ownership (usually when some other client takes ownership).
+
 Once a trigger has been set, you can delay until the trigger is satisfied
 (or 10 seconds elapse) with the control sequence:
 
@@ -652,11 +626,11 @@ satisfied.  For example:
 
 As a more complex example, consider searching for the letter '@' in an
 Athena Text widget and then selecting text surrounding it.  The search
-command will pop up a search dialogue box, and you must wait for the box
-to appear before entering the '@'.  After entering the Return key at the
-box, you must wait for the box to pop down before generating further
-commands to the text widget (or else they would be executed by the search
-box).  For example:
+command will pop up a search dialogue box, and you must wait for the box to
+appear before entering the '@'.  After entering the Return key at the box,
+you must wait for the box to pop down before generating further commands to
+the text widget (or else they would be executed by the search box).  For
+example:
 
 	add-word /t "[select address]" "{c-t}{c-y}Mnsearch{c-t}{c-s}{c-t}{c-y}W{c-t}@{c-t}{c-y}Unsearch{c-t}{Enter}{c-t}{c-y}W{c-t}{c-t}{c-m}@" invisible
 
@@ -664,16 +638,50 @@ This sets a map trigger before typing {c-s}, waits for the map before
 entering the '@', sets an unmap trigger before typing Return, then waits
 for the unmap before selecting text (assume that {c-t}{c-m}@ does this).
 
+Another example:
+
+	add-word /t "[bad paste single]" "{c-@}{c-e}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-m}{c-y}" invisible
+
+This macro selects text in the current window (assume that {c-@} sets a
+mark at the current text position, {c-e} moves to the end of the text line,
+and {c-t}{c-m}{c-w} selects the text between the mark and the current text
+position), then jumps to a top-level window with "drafts:" as a name
+prefix, and then pastes the selection into that window (assume that
+{c-t}{c-m}{c-y} causes a paste).  Unfortunately, if you try this, you
+probably discover that it doesn't work correctly.  The problem is that, it
+takes an application a while to actually assert a selection in X, and a2x
+can usually jump to the new window and cause the next application to ask
+for the selection faster than the first application can assert the
+selection.  The result is that you will often get the previous selection
+contents, rather than the expected contents.  So, you need to wait for the
+application to take ownership of the selection.  For example:
+
+	add-word /t "[paste single]" "{c-@}{c-e}{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}" invisible
+
+
+				  Delays
+
+Sometimes the trigger mechanism may not be sufficient for your needs.  You
+can also simply delay for a fixed period of time, using the control
+sequence:
+
+	{c-t}{c-z}<delay>{c-t}
+
+where <delay> is a floating point number specifying the amount of time in
+seconds a2x should wait before generating more events.  For example:
+
+	add-word /t "[timed click]" "{c-t}{c-b}1{c-t}{c-t}{c-z}.3{c-t}{c-t}{c-b}1{c-t}" invisible
+
 
 				  Macros
 
 There are occasions when you want to repeat some sequence of actions
-multiple times, but it isn't worth creating a permanent DragonDictate
-voice macro because you are unlikely to need the sequence again.  If all
-of the actions occur within one window, and that application supports a
-macro record/playback mechanism, you can use that.  But if the actions
-span multiple windows or applications, you can use a2x to record and
-playback sequences.
+multiple times, but it isn't worth creating a permanent DragonDictate voice
+macro because you are unlikely to need the sequence again.  If all of the
+actions occur within one window, and that application supports a macro
+record/playback mechanism, you can use that.  But if the actions span
+multiple windows or applications, you can use a2x to record and playback
+sequences.
 
 To start recording a macro, use the control sequence:
 
@@ -683,8 +691,8 @@ For example:
 
 	add-word /t "[record macro]" "{c-t}{c-f}r{c-t}" invisible
 
-Then, speak all of the actions you wish to record.  When you have
-finished, stop recording and save the macro with the control sequence:
+Then, speak all of the actions you wish to record.  When you have finished,
+stop recording and save the macro with the control sequence:
 
 	{c-t}{c-f}s<digit>{c-t}
 
@@ -714,16 +722,16 @@ For example:
 
 If an application grabs exclusive control of the server (using the Xlib
 function XGrabServer), a2x will not be able to function; protocol requests
-from a2x will be suspended just as other X clients will have their
-requests suspended.  This may be a problem, depending on whether the
-applications you use grab the server during the time you need to generate
-input.  For example, many window managers will grab the server when they
-resize or move windows, or perhaps even when displaying menus.  In that
-case, you will be unable to use voice control for those operations.  Some
-applications may provide options to disable server grabs; for example, twm
-provides the NoGrabServer option to not use server grabs for menus or
-opaque window moves, and olwm provides a "ServerGrabs" boolean resource
-for menus and notices.
+from a2x will be suspended just as other X clients will have their requests
+suspended.  This may be a problem, depending on whether the applications
+you use grab the server during the time you need to generate input.  For
+example, many window managers will grab the server when they resize or move
+windows, or perhaps even when displaying menus.  In that case, you will be
+unable to use voice control for those operations.  Some applications may
+provide options to disable server grabs; for example, twm provides the
+NoGrabServer option to not use server grabs for menus or opaque window
+moves, and olwm provides a "ServerGrabs" boolean resource for menus and
+notices.
 
 
 			    Changing Displays
@@ -745,9 +753,9 @@ example:
 permits you to say "[start display]", "expo", "[go there]" to go to the
 display "expo:0".  Note that in this example, the terminating {c-t} of the
 control sequence is in a separate voice macro, and is part of a separate
-utterance.  This is fine, a2x does not know where utterance boundaries
-are, it simply interprets a stream of characters.  If you make a mistake
-saying the display name, you can use "choose <n>" to make corrections.
+utterance.  This is fine, a2x does not know where utterance boundaries are,
+it simply interprets a stream of characters.  If you make a mistake saying
+the display name, you can use "choose <n>" to make corrections.
 
 
 			      Miscellaneous
@@ -803,9 +811,9 @@ For example:
 
 If you frequently use programs that use the Athena Text widget, you will
 probably find it useful to manipulate selections through the keyboard.
-Unfortunately, the Text widget up through R5 does not provide this
-support.  A patch for the R5 Text widget is available with the a2x
-distribution.  With this patch, you can use translations such as:
+Unfortunately, the Text widget up through R5 does not provide this support.
+A patch for the R5 Text widget is available with the a2x distribution.
+With this patch, you can use translations such as:
 
 *Text.translations: #override\n\
 	!:Ctrl<Key>@: select-start()\n\
