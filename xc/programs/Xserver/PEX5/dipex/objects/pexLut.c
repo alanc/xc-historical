@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexLut.c,v 5.1 91/02/16 09:56:53 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -255,6 +255,18 @@ pexGetTableEntryReq	*strmPtr;
 			    &status, pPEXBuffer);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
 
+    /*
+     * If this is a font table, we have to convert font handles to font ids.
+     */
+
+    if (pf->lutType == PEXTextFontLUT) {
+	int i;
+	pexTextFontEntry *ptfe = (pexTextFontEntry *)(pPEXBuffer->pBuf);
+	pexFont *ptr = (pexFont *)(ptfe + 1);
+	for (i=0; i<ptfe->numFonts; i++, ptr++)
+	    *ptr = ((diFontHandle) *ptr)->id;
+    }
+
     {
 	SETUP_VAR_REPLY(pexGetTableEntryReply);
 	reply->status = status;
@@ -285,6 +297,21 @@ pexGetTableEntriesReq 	*strmPtr;
 				strmPtr->valueType, &numEntries, pPEXBuffer);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
 
+    /*
+     * If this is a font table, we have to convert font handles to font ids.
+     */
+
+    if (pf->lutType == PEXTextFontLUT) {
+	int i, j;
+	pexTextFontEntry *ptfe = (pexTextFontEntry *)(pPEXBuffer->pBuf);
+ 	for (i=0; i<strmPtr->count; i++) {
+ 	    pexFont *ptr = (pexFont *)(ptfe + 1);
+ 	    for (j=0; j<ptfe->numFonts; j++, ptr++)
+ 		*ptr = ((diFontHandle) *ptr)->id;
+ 	    ptfe = (pexTextFontEntry *) ptr;
+  	}
+    }
+
     {
 	SETUP_VAR_REPLY(pexGetTableEntriesReply);
 	reply->tableType = pf->lutType;
@@ -314,13 +341,17 @@ pexSetTableEntriesReq 	*strmPtr;
 	the that longword, so ddpex gets its handles instead of ids.
      */
     if (pf->lutType == PEXTextFontLUT) {
-	int i;
+	int i, j;
 	diFontHandle fh;
-	pexFont *ptr = (pexFont *)(strmPtr + 1);
-	for (i=0; i<strmPtr->count; i++, ptr++) {
-	    LU_PEXFONT(*ptr, fh);
-	    ptr = (pexFont *)fh;
-	}
+	pexTextFontEntry *ptfe = (pexTextFontEntry *)(strmPtr + 1);
+ 	for (i=0; i<strmPtr->count; i++) {
+ 	    pexFont *ptr = (pexFont *)(ptfe + 1);
+ 	    for (j=0; j<ptfe->numFonts; j++, ptr++) {
+ 		LU_PEXFONT(*ptr, fh);
+ 		*ptr = (pexFont) fh;
+ 	    }
+ 	    ptfe = (pexTextFontEntry *) ptr;
+  	}
     }
 
     err = SetLUTEntries(    pf, strmPtr->start, strmPtr->count,
