@@ -26,21 +26,32 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: shape.h,v 1.1 89/02/07 13:26:17 keith Exp $ */
 
 /*
  * Protocol requests constants and alignment values
  * These would really be in SHAPE's X.h and Xproto.h equivalents
  */
 
+#define SHAPENAME "ShapeExtension"
+
 #define X_SetWindowShapeRectangles	    1
-#define X_SetWindowShapeMask		    2
-#define X_SetBorderShapeRectangles	    3
-#define X_SetBorderShapeMask		    4
-#define X_GetWindowShapeRectangles	    5
-#define X_GetWindowShapeMask		    6
-#define X_GetBorderShapeRectangles	    7
-#define X_GetBorderShapeMask		    8
+#define X_IntersectWindowShapeRectangles    2
+#define X_UnionWindowShapeRectangles	    3
+#define X_SetWindowShapeMask		    4
+#define X_IntersectWindowShapeMask	    5
+#define X_UnionWindowShapeMask		    6
+#define X_GetWindowShapeRectangles	    7
+#define X_GetWindowShapeMask		    8
+
+#define X_SetBorderShapeRectangles	    (1 + 8)
+#define X_IntersectBorderShapeRectangles    (2 + 8)
+#define X_UnionBorderShapeRectangles	    (3 + 8)
+#define X_SetBorderShapeMask		    (4 + 8)
+#define X_IntersectBorderShapeMask	    (5 + 8)
+#define X_UnionBorderShapeMask		    (6 + 8)
+#define X_GetBorderShapeRectangles	    (7 + 8)
+#define X_GetBorderShapeMask		    (8 + 8)
 
 typedef struct _SetWindowShapeRectangles {
     CARD8 reqType;		/* always ShapeReqCode */
@@ -49,6 +60,22 @@ typedef struct _SetWindowShapeRectangles {
     CARD32 window B32;
 } xSetWindowShapeRectanglesReq;		/* followed by xRects */
 #define sz_xSetWindowShapeRectanglesReq 8
+
+typedef struct _IntersectWindowShapeRectangles {
+    CARD8 reqType;		/* always ShapeReqCode */
+    CARD8 shapeReqType;     /* always X_IntersectWindowShapeRectangles */
+    CARD16 length B16;
+    CARD32 window B32;
+} xIntersectWindowShapeRectanglesReq;		/* followed by xRects */
+#define sz_xIntersectWindowShapeRectanglesReq 8
+
+typedef struct _UnionWindowShapeRectangles {
+    CARD8 reqType;		/* always ShapeReqCode */
+    CARD8 shapeReqType;     /* always X_UnionWindowShapeRectangles */
+    CARD16 length B16;
+    CARD32 window B32;
+} xUnionWindowShapeRectanglesReq;		/* followed by xRects */
+#define sz_xUnionWindowShapeRectanglesReq 8
 
 typedef struct _SetWindowShapeMask {
     CARD8 reqType;		/* always ShapeReqCode */
@@ -60,6 +87,28 @@ typedef struct _SetWindowShapeMask {
     CARD32 mask   B32;
 } xSetWindowShapeMaskReq;
 #define sz_xSetWindowShapeMaskReq 16
+
+typedef struct _IntersectWindowShapeMask {
+    CARD8 reqType;		/* always ShapeReqCode */
+    CARD8 shapeReqType;     /* always X_IntersectWindowShapeMask */
+    CARD16 length B16;
+    INT16  xOff   B16;
+    INT16  yOff   B16;
+    CARD32 window B32;
+    CARD32 mask   B32;
+} xIntersectWindowShapeMaskReq;
+#define sz_xIntersectWindowShapeMaskReq 16
+
+typedef struct _UnionWindowShapeMask {
+    CARD8 reqType;		/* always ShapeReqCode */
+    CARD8 shapeReqType;     /* always X_UnionWindowShapeMask */
+    CARD16 length B16;
+    INT16  xOff   B16;
+    INT16  yOff   B16;
+    CARD32 window B32;
+    CARD32 mask   B32;
+} xUnionWindowShapeMaskReq;
+#define sz_xUnionWindowShapeMaskReq 16
 
 typedef struct _GetWindowShapeRectangles {
     CARD8 reqType;		/* always ShapeReqCode */
@@ -88,6 +137,22 @@ typedef struct _SetBorderShapeRectangles {
 } xSetBorderShapeRectanglesReq;		/* followed by xRects */
 #define sz_xSetBorderShapeRectanglesReq 8
 
+typedef struct _IntersectBorderShapeRectangles {
+    CARD8 reqType;		/* always ShapeReqCode */
+    CARD8 shapeReqType;     /* always X_IntersectBorderShapeRectangles */
+    CARD16 length B16;
+    CARD32 window B32;
+} xIntersectBorderShapeRectanglesReq;		/* followed by xRects */
+#define sz_xIntersectBorderShapeRectanglesReq 8
+
+typedef struct _UnionBorderShapeRectangles {
+    CARD8 reqType;		/* always ShapeReqCode */
+    CARD8 shapeReqType;     /* always X_UnionBorderShapeRectangles */
+    CARD16 length B16;
+    CARD32 window B32;
+} xUnionBorderShapeRectanglesReq;		/* followed by xRects */
+#define sz_xUnionBorderShapeRectanglesReq 8
+
 typedef struct _SetBorderShapeMask {
     CARD8 reqType;		/* always ShapeReqCode */
     CARD8 shapeReqType;     /* always X_SetBorderShapeMask */
@@ -98,6 +163,28 @@ typedef struct _SetBorderShapeMask {
     CARD32 mask   B32;
 } xSetBorderShapeMaskReq;
 #define sz_xSetBorderShapeMaskReq 16
+
+typedef struct _IntersectBorderShapeMask {
+    CARD8 reqType;		/* always ShapeReqCode */
+    CARD8 shapeReqType;     /* always X_IntersectBorderShapeMask */
+    CARD16 length B16;
+    INT16  xOff   B16;
+    INT16  yOff   B16;
+    CARD32 window B32;
+    CARD32 mask   B32;
+} xIntersectBorderShapeMaskReq;
+#define sz_xIntersectBorderShapeMaskReq 16
+
+typedef struct _UnionBorderShapeMask {
+    CARD8 reqType;		/* always ShapeReqCode */
+    CARD8 shapeReqType;     /* always X_UnionBorderShapeMask */
+    CARD16 length B16;
+    INT16  xOff   B16;
+    INT16  yOff   B16;
+    CARD32 window B32;
+    CARD32 mask   B32;
+} xUnionBorderShapeMaskReq;
+#define sz_xUnionBorderShapeMaskReq 16
 
 typedef struct _GetBorderShapeRectangles {
     CARD8 reqType;		/* always ShapeReqCode */
@@ -117,5 +204,3 @@ typedef struct _GetBorderShapeMask {
     CARD32 mask   B32;
 } xGetBorderShapeMaskReq;
 #define sz_xGetBorderShapeMaskReq 16
-
-#define SHAPENAME "ShapeExtension"
