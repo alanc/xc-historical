@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.10 89/12/18 16:56:38 jim Exp $
+ * $XConsortium: imakemdep.h,v 1.11 90/05/04 16:57:13 keith Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -193,7 +193,7 @@ struct symtab	predefs[] = {
 #ifdef __GNUC__
 	{"__GNUC__", "1"},
 #endif
-#ifdef __STDC__
+#if __STDC__
 	{"__STDC__", "1"},
 #endif
 #ifdef __HIGHC__

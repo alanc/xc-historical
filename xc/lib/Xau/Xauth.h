@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.5 90/09/13 18:23:54 keith Exp $
+ * $XConsortium: Xauth.h,v 1.6 90/09/14 17:53:06 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,7 +22,7 @@
 #define _Xauth_h
 
 #ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
+#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0
