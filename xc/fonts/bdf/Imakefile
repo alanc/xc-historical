@@ -2,10 +2,6 @@
 #define PassCDebugFlags /* as nothing */
 
         SUBDIRS = misc 75dpi 100dpi scaled
-    ALLFONTDIRS = $(FONTDIR)/misc $(FONTDIR)/75dpi $(FONTDIR)/100dpi \
-                  $(FONTDIR)/scaled
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
-
-MakeDirectories(install,$(ALLFONTDIRS))

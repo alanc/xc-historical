@@ -20,8 +20,6 @@ DOCDIRS = doc
 
 MakeSubdirs($(SUBDIRS))
 
-MakeDirectories(install.ln, $(LINTLIBDIR))
-
 MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
 
 MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
@@ -45,30 +43,6 @@ XCOMM
 DependSubdirs($(SUBDIRS))
 
 
-XCOMM 
-XCOMM install stuff; create the directories that we are going to need
-XCOMM 
-
-#if BuildPexExt | BuildBdfFonts
-  DIRS_FONTS = $(FONTDIR)
-#endif
-#if InstallxinitConfig
-   DIRS_XINIT = $(XINITDIR)
-#endif
-#if InstallxdmConfig
-     DIRS_XDM = $(XDMDIR)
-#endif
-#if InstallAppDefFiles
-  DIRS_APPDEF = $(XAPPLOADDIR)
-#endif
-
-DIRS_TO_CREATE = $(DIRS_FONTS)
-	$(USRLIBDIR) $(BINDIR) $(INCDIR) $(LIBDIR) $(CONFIGDIR) \
-	$(DIRS_XINIT) $(DIRS_XDM) $(DIRS_APPDEF)
-
-MakeDirectories(install, $(DIRS_TO_CREATE))
-
-MakeDirectories(install.man, $(MANPATH) $(MANDIR) $(LIBMANDIR))
 InstallManPage(X,$(MANDIR))
 InstallManPageLong(Consortium,$(MANDIR),XConsortium)
 InstallManPageLong(Standards,$(MANDIR),XStandards)

@@ -74,7 +74,6 @@ all::
 
 BuildIncludes($(HEADERS),bitmaps,..)
 
-MakeDirectories(install,$(INCDIR)/bitmaps)
 InstallMultiple($(HEADERS),$(INCDIR)/bitmaps)
 
 depend::

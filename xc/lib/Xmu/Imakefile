@@ -175,8 +175,6 @@ InstallLintLibrary(Xmu,$(LINTLIBDIR))
 
 BuildIncludes($(HEADERS),Xmu,..)
 
-MakeDirectories(install,$(INCDIR)/Xmu)
-
 InstallMultiple($(HEADERS),$(INCDIR)/Xmu)
 
 DependTarget()

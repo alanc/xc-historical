@@ -83,10 +83,6 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DDEF_ACCESS_FILE="$(XDMDIR)/Xaccess"' \
 		  '-DCPP_PROGRAM="$(CPP_PROGRAM)"'
 
-#if InstallXdmConfig || BuildChooser
-AllTarget( /* kludge to avoid install rule being first */)
-MakeDirectories(install,$(XDMDIR))
-#endif
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES), /**/)
 SingleProgramTarget(xdmshell,$(OBJS2), /**/, /**/)
 SingleProgramTarget(sessreg,$(OBJS4), /**/, /**/)

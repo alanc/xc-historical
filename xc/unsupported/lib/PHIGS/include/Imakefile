@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.8 91/02/22 15:15:11 rws Exp $
+# $XConsortium: Imakefile,v 5.9 91/03/15 17:35:42 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -101,6 +101,5 @@ depend::
 CLIENTHEADERS = phigs.h attr.h phigscfunc.h phigsextrn.h phigserr.h errnum.h
 
 BuildIncludes($(CLIENTHEADERS),phigs,..)
-MakeDirectories(install,$(INCDIR)/phigs)
 InstallMultiple($(CLIENTHEADERS),$(INCDIR)/phigs)
 

@@ -23,7 +23,6 @@ all::
 
 BuildIncludes($(HEADERS),.,.)
 
-MakeDirectories(install,$(INCDIR))
 InstallMultiple($(HEADERS),$(INCDIR))
 MakeSubdirs($(SUBDIRS))
 

@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.4 91/02/16 11:37:38 rws Exp $
+# $XConsortium: Imakefile,v 5.5 91/03/21 18:33:42 rws Exp $
 ## 
 ## Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 
@@ -72,5 +72,4 @@ depend:: lex.c to_wfont.c
 
 DependTarget()
 
-MakeDirectories(install, $(FONTDIR)/PEX)
 InstallMultipleFlags($(FONTS_BINARY),$(FONTDIR)/PEX,$(INSTDATFLAGS))

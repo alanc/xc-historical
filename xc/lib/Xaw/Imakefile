@@ -197,8 +197,6 @@ InstallLintLibrary(Xaw,$(LINTLIBDIR))
 
 BuildIncludes($(HEADERS),Xaw,..)
 
-MakeDirectories(install,$(INCDIR)/Xaw)
-
 InstallMultiple($(HEADERS),$(INCDIR)/Xaw)
 
 DependTarget()
