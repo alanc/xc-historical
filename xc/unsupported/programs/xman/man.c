@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.13 89/12/06 20:41:56 jim Exp $
+ * $XConsortium: man.c,v 1.14 89/12/07 16:03:43 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -253,7 +253,7 @@ char * path;
 
 AddStandardCraySections(list, path, names)
 SectionList **list;
-char * path **names;
+char *path, **names;
 {
   char file[BUFSIZ];
 
