@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: Xstlib.h,v 1.10 92/06/11 15:31:40 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -40,7 +40,7 @@
  */
 
 /*
- *	$Header: Xstlib.h 1.8 89/04/17 $
+ *	$Header: Xstlib.h,v 1.10 92/06/11 15:31:40 rws Exp $
  */
 
 /*
@@ -201,13 +201,13 @@ extern CL Xst_clients[MAX_CLIENTS];
  *      type - type of request (e.g. GrabButton)
  */
 
-#if __STDC__ == 1
+#if __STDC__
 #define Get_Value_Ptr(rp,type) ((unsigned long *) (((unsigned long) (rp) +   				  sizeof (x##type##Req))))
 #else
 #define Get_Value_Ptr(rp,type) ((unsigned long *) (((unsigned long) (rp) +   				  sizeof (x/**/type/**/Req))))
 #endif
 
-#if __STDC__ == 1
+#if __STDC__
 #define Get_Value_Len(rp,type) ((unsigned long) (((rp)->length<<2) - \
 				   sizeof (x##type##Req)))
 #else
