@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.15 89/10/29 16:47:16 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.16 89/11/05 15:12:46 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -39,10 +39,6 @@ SOFTWARE.
 #include "maskbits.h"
 
 static void mfbDestroyOps();
-
-static void mfbValidateGC(),	mfbChangeGC(),	    mfbCopyGC();
-static void mfbDestroyGC();
-static void mfbChangeClip(),	mfbDestroyClip(),   mfbCopyClip();
 
 static GCFuncs	mfbFuncs = {
 	mfbValidateGC,
@@ -409,7 +405,7 @@ mfbCreateGC(pGC)
 }
 
 /*ARGSUSED*/
-static void
+void
 mfbChangeGC(pGC, mask)
     GC	    *pGC;
     BITS32  mask;
@@ -418,7 +414,7 @@ mfbChangeGC(pGC, mask)
 }
 
 /*ARGSUSED*/
-static void
+void
 mfbCopyGC (pGCSrc, changes, pGCDst)
     GCPtr	pGCSrc;
     Mask 	changes;
@@ -442,7 +438,7 @@ mfbCopyGC (pGCSrc, changes, pGCDst)
     }
 }
 
-static void
+void
 mfbDestroyGC(pGC)
     GC 			*pGC;
 {
@@ -496,7 +492,7 @@ mfbDestroyOps (ops)
 */
 
 /*ARGSUSED*/
-static void
+void
 mfbValidateGC(pGC, changes, pDrawable)
     register GCPtr 	pGC;
     Mask 		changes;
@@ -1225,7 +1221,7 @@ mfbReduceRop(alu, src)
     return rop;
 }
 
-static void
+void
 mfbDestroyClip(pGC)
     GCPtr	pGC;
 {
@@ -1246,7 +1242,7 @@ mfbDestroyClip(pGC)
     pGC->clientClipType = CT_NONE;
 }
 
-static void
+void
 mfbChangeClip(pGC, type, pvalue, nrects)
     GCPtr	    pGC;
     unsigned int    type;
@@ -1280,7 +1276,7 @@ mfbChangeClip(pGC, type, pvalue, nrects)
     pGC->stateChanges |= GCClipMask;
 }
 
-static void
+void
 mfbCopyClip (pgcDst, pgcSrc)
     GCPtr pgcDst, pgcSrc;
 {
