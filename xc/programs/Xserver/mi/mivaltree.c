@@ -1,4 +1,4 @@
-/* $XConsortium: mivaltree.c,v 5.29 91/12/17 19:34:15 keith Exp $ */
+/* $XConsortium: mivaltree.c,v 5.30 92/03/13 16:00:03 eswu Exp $ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function
@@ -44,6 +44,7 @@
 #include    "windowstr.h"
 #include    "mi.h"
 #include    "regionstr.h"
+#include    "mivalidate.h"
 
 #ifdef SHAPE
 /*
