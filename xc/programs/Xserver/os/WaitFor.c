@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.57 92/03/13 15:47:39 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.58 93/08/07 11:31:21 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -240,11 +240,6 @@ WaitForSomething(pClientsReady)
 	    }
 
 	    MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
-#ifdef	hpux
-		    /* call the HIL driver to gather inputs. 	*/
-	    if (ANYSET(devicesReadable)) store_inputs (devicesReadable);
-#endif /* hpux */
-
 	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 	    if (LastSelectMask[0] & WellKnownConnections) 
 		QueueWorkProc(EstablishNewConnections, NULL,
