@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.83 90/12/30 16:28:52 rws Exp $ */
+/* $XConsortium: Create.c,v 1.84 91/02/05 13:56:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -182,27 +182,33 @@ static Widget _XtCreate(
     double                  constraint_cache[20];
     Widget                  req_widget;
     XtPointer               req_constraints;
-    Cardinal                size;
+    Cardinal                wsize, csize;
     register Widget	    widget;
     XtCacheRef		    *cache_refs;
     register int	    i;
 
     if (! (widget_class->core_class.class_inited))
 	XtInitializeWidgetClass(widget_class);
-    size = 0;
-    if (parent_constraint_class)
-	size = parent_constraint_class->constraint_class.constraint_size;
-    widget = (Widget) XtMalloc((unsigned)widget_class->core_class.widget_size
-			       + size);
+    wsize = widget_class->core_class.widget_size;
+    csize = 0;
+    if (parent_constraint_class) {
+	csize = parent_constraint_class->constraint_class.constraint_size;
+	if (sizeof(double) != sizeof(unsigned long) &&
+	    sizeof(struct _dt1 {char a; double b;}) ==
+	    sizeof(struct _dt2 {double a, b;})) {
+	    if (csize && !(csize & (sizeof(double) - 1)))
+		wsize = (wsize + sizeof(double) - 1) & ~sizeof(double);
+	}
+    }
+    widget = (Widget) XtMalloc((unsigned)(wsize + csize));
     widget->core.self = widget;
     widget->core.parent = parent;
     widget->core.widget_class = widget_class;
     widget->core.xrm_name = StringToName((name != NULL) ? name : "");
     widget->core.being_destroyed =
 	(parent != NULL ? parent->core.being_destroyed : FALSE);
-    if (size)
-	widget->core.constraints = (XtPointer)((char *)widget +
-				       widget_class->core_class.widget_size);
+    if (csize)
+	widget->core.constraints = (XtPointer)((char *)widget + wsize);
     else
 	widget->core.constraints = NULL;
     if (XtIsWidget(widget)) {
@@ -252,9 +258,9 @@ static Widget _XtCreate(
 		       XtCallbackReleaseCacheRefList, (XtPointer)cache_refs );
     }
 
-    size = XtClass(widget)->core_class.widget_size;
-    req_widget = (Widget) XtStackAlloc(size, widget_cache);
-    bcopy ((char *) widget, (char *) req_widget, (int) size);
+    wsize = widget_class->core_class.widget_size;
+    req_widget = (Widget) XtStackAlloc(wsize, widget_cache);
+    bcopy ((char *) widget, (char *) req_widget, (int) wsize);
     CallInitialize (XtClass(widget), req_widget, widget, args, num_args);
 
     if (typed_args != NULL) {
@@ -277,14 +283,14 @@ static Widget _XtCreate(
     }
 
     if (parent_constraint_class != NULL) {
-	if (size = parent_constraint_class->constraint_class.constraint_size){
-	    req_constraints = XtStackAlloc(size, constraint_cache);
-	    bcopy(widget->core.constraints, (char*)req_constraints,(int)size);
+	if (csize) {
+	    req_constraints = XtStackAlloc(csize, constraint_cache);
+	    bcopy(widget->core.constraints, (char*)req_constraints,(int)csize);
 	    req_widget->core.constraints = req_constraints;
 	} else req_widget->core.constraints = NULL;
 	CallConstraintInitialize(parent_constraint_class, req_widget, widget,
 				 args, num_args);
-	if (size) XtStackFree(req_constraints, constraint_cache);
+	if (csize) XtStackFree(req_constraints, constraint_cache);
     }
     XtStackFree((XtPointer)req_widget, widget_cache);
     return (widget);
