@@ -1002,7 +1002,6 @@ RasterLUT::~RasterLUT() {
 	Fresco::unref(lut_[i]);
 	lut_[i] = nil;
     }
-    delete[] lut_;
 }
 
 void RasterLUT::peek(
