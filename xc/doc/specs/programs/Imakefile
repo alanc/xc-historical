@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/07/22 13:43:22 gildea Exp gildea $
+XCOMM $XConsortium: Imakefile,v 1.2 94/09/02 20:24:39 gildea Exp dpw $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -51,6 +51,7 @@ MANUALS = \
   $(TOP)/programs/Xserver/hw/xfree86/XFree86.man \
   $(TOP)/programs/xfs/xfs.man \
   $(TOP)/programs/xhost/xhost.man \
+  $(TOP)/programs/Xserver/hw/hp/Xhp.man \
   $(TOP)/programs/xieperf/xieperf.man \
   $(TOP)/programs/xinit/xinit.man \
   $(TOP)/programs/xkbcomp/xkbcomp.man \
