@@ -77,3 +77,7 @@ of bit planes needed is more than what is available, the server hangs
 .LP
 A separate color cell is allocated for each name in the -colors list,
 even when the same name may be specified twice.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.

@@ -143,7 +143,7 @@ a directory to search for files that are referenced with
 .SH FILES
 Generalizes ~/.Xdefaults
 .SH "SEE ALSO"
-XGetDefault(3X)
+X(1), XGetDefault(3X), Xlib Resource Manager documentation
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY
@@ -152,10 +152,9 @@ to figure out which display to use.
 .PP
 The default for no arguments should be to query, not to overwrite, so that
 it is consistent with other programs.
-.SH AUTHORS
-Copyright (c) 1987, 1988 by Digital Equipment Corporation
+.SH COPYRIGHT
+Copyright 1988, Digital Equipment Corporation.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
 Phil Karlton, rewritten from the original by Jim Gettys
-
-
-

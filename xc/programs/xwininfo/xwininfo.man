@@ -134,7 +134,9 @@ DISPLAY, and therefore this argument is not normally specified.
 To get default host and display number.
 .SH SEE ALSO
 X(1), xprop(1)
-.SH AUTHOR
-Copyright 1987, 1988, Massachusetts Institute of Technology.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Mark Lillibridge, MIT Project Athena

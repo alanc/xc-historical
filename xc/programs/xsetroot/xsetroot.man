@@ -73,8 +73,10 @@ This option is unused since you can't iconify the background.
 Defaults to the DISPLAY environment variable, which is usually set
 to be one's own workstation host, display 0.  
 .SH "SEE ALSO"
-xset(1), X(1)
-.SH AUTHOR
-Copyright (c) 1987 by Massachusetts Institute of Technology.
+X(1), xset(1), xrdb(1)
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Mark Lillibridge, MIT Project Athena

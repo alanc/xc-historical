@@ -149,10 +149,12 @@ These settings will be reset to default values when you log out.
 Note that not all X implementations are guaranteed to honor all of these
 options.
 .SH "SEE ALSO"
-X(8C)
-.SH AUTHOR
-Copyright (c) 1988 by Massachusetts Institute of Technology.
+X(1), Xserver(1), xmodmap(1), xrdb(1), xsetroot(1)
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Bob Scheifler, MIT Laboratory for Computer Science
 .br
 David Krikorian, MIT Project Athena (X11 version)

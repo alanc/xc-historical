@@ -61,9 +61,11 @@ To get default host and display number.
 X Window Dump File format definition file.
 .SH SEE ALSO
 xwud(1), xpr(1), xdpr(1), X(1)
-.SH AUTHOR
-Copyright 1985, 1986, Massachusetts Institute of Technology.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Tony Della Fera, Digital Equipment Corp., MIT Project Athena
 .br
 William F. Wyatt, Smithsonian Astrophysical Observatory

@@ -673,9 +673,11 @@ starts.
 .PP
 This manual page is too long.  There should be a separate users manual
 defining all of the non-standard escape sequences.
-.SH AUTHORS
+.SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
-.sp
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
 Far too many people, including:
 .sp
 Loretta Guarino Reid (DEC-UEG-WSL), 

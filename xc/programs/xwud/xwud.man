@@ -65,14 +65,13 @@ colors since the original pixel\-to\-color correspondence will be lost
 if new color\-map pixels have to be allocated.
 .SH SEE ALSO
 xwd(1), xpr(1), xdpr(1), X(1)
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
-.PP
-Copyright 1985, 1986, Massachusetts Institute of Technology.
-.PP
-See \fIX(1)\fP for a full copyright notice.
-.PP
 Tony Della Fera, Digital Equipment Corp., MIT Project Athena
-.PP
+.br
 William F. Wyatt, Smithsonian Astrophysical Observatory
 
 

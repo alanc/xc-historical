@@ -79,10 +79,11 @@ X(1), uwm(1), X(8)
 .SH BUGS
 .PP
 It should have just one default type for the background.
-.SH AUTHORS
-.PP
-Copyright 1988 Massachusetts Institute of Technology.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
 Jim Gettys, Digital Equipment Corp., MIT Project Athena
 .br
 Jim Fulton, MIT X Consortium

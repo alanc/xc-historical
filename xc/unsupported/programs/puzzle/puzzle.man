@@ -35,5 +35,9 @@ control bar causes puzzle to exit.
 Clicking in the tiled region moves the empty spot to that
 location if the region you click in is in the same row or column as the
 empty slot. 
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Don Bennett, HP Labs
