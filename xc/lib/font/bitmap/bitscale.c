@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.18 93/09/29 16:21:32 rws Exp $
+ * $XConsortium: bitscale.c,v 1.19 94/02/04 17:07:12 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -1489,7 +1489,7 @@ BitmapGetInfoScalable (fpe, pFontInfo, entry, fontName, fileName, vals)
     int ret;
 
     ret = BitmapOpenScalable(fpe, &pfont, flags, entry, fileName, vals,
-			     format, fmask);
+			     format, fmask, NULL);
     if (ret != Successful)
         return ret;
     *pFontInfo = pfont->info;
