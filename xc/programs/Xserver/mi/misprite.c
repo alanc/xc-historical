@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.4 89/07/03 13:29:33 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.5 89/07/04 16:11:54 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -626,13 +626,14 @@ miSpriteFindColors (pScreen)
  */
 
 static void
-miSpriteSaveDoomedAreas (pWin)
+miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
     WindowPtr	pWin;
+    RegionPtr	pObscured;
+    int		dx, dy;
 {
     ScreenPtr		pScreen;
     miSpriteScreenPtr   pScreenPriv;
     BoxRec		cursorBox;
-    int			dx, dy;
 
     BSTORE_PROLOGUE (pWin);
 
@@ -643,9 +644,6 @@ miSpriteSaveDoomedAreas (pWin)
     {
 	cursorBox = pScreenPriv->saved;
 
-	dx = pWin->drawable.x - pWin->backStorage->oldAbsCorner.x;
-	dy = pWin->drawable.y - pWin->backStorage->oldAbsCorner.y;
-
 	if (dx || dy)
  	{
 	    cursorBox.x1 += dx;
@@ -653,11 +651,11 @@ miSpriteSaveDoomedAreas (pWin)
 	    cursorBox.x2 += dx;
 	    cursorBox.y2 += dy;
 	}
-	if ((* pScreen->RectIn) (pWin->backStorage->obscured, &cursorBox) != rgnOUT)
+	if ((* pScreen->RectIn) (pObscured, &cursorBox) != rgnOUT)
 	    miSpriteRemoveCursor (pScreen);
     }
 
-    (*pWin->backStorage->funcs->SaveDoomedAreas) (pWin);
+    (*pWin->backStorage->funcs->SaveDoomedAreas) (pWin, pObscured, dx, dy);
 
     BSTORE_EPILOGUE (pWin);
 }
