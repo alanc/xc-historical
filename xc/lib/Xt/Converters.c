@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.19 88/02/07 13:20:24 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.20 88/02/08 17:43:26 swick Exp $";
 #endif lint
 
 /*
@@ -277,6 +277,10 @@ static XtConvertArgRec applicationConvertArgs[] = {
     {XtAddress, (caddr_t) &XtApplicationClass, sizeof(XrmClass)}
 };
 
+#ifndef BITMAPDIR
+#define BITMAPDIR "/usr/include/X11/bitmaps"
+#endif
+
 /*ARGSUSED*/
 static void CvtStringToCursor(args, num_args, fromVal, toVal)
     XrmValuePtr args;
@@ -412,7 +416,7 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
 	    && rep_type == StringToQuark(XtRString))
 	    bitmap_file_path = value.addr;
 	else
-	    bitmap_file_path = "/usr/include/X/bitmaps";
+	    bitmap_file_path = BITMAPDIR;
     }
 
     sprintf( filename, "%s/%s", bitmap_file_path, name );
