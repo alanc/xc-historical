@@ -267,7 +267,7 @@ void usage()
 "    -time <s>			do tests for <s> seconds each (default = 5)",
 /*"    -draw			draw after each test -- pmax only",*/
 "    -all			do all tests",
-"    -labels			generate test labels for use by mungeall.sh",
+"    -labels			generate test labels for use by fillblanks.sh",
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
 "    -xor			use GXxor mode to draw",
