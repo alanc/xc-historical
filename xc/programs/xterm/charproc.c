@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.173 91/07/22 11:32:49 gildea Exp $
+ * $XConsortium: charproc.c,v 1.174 91/10/21 14:25:18 eswu Exp $
  */
 
 /*
@@ -1253,7 +1253,7 @@ in_put()
 	if (select_mask & pty_mask && eventMode == NORMAL) {
 	    if (screen->logging)
 		FlushLog(screen);
-	    bcnt = read(screen->respond, bptr = buffer, BUF_SIZE);
+	    bcnt = read(screen->respond, (char *)(bptr = buffer), BUF_SIZE);
 	    if (bcnt < 0) {
 		if (errno == EIO)
 		    Cleanup (0);
