@@ -45,7 +45,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.43 89/12/07 12:13:09 jim Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.44 89/12/07 12:16:20 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -1230,7 +1230,6 @@ char *s;
     return buf;
 }
 
-/* ARGSUSED */
 ps_setup(iw, ih, orientation, scale, left, top, 
 	   flags, header, trailer, name)
 int iw;
