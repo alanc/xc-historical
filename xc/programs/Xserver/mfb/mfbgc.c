@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.22 91/05/03 17:00:22 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.23 91/05/04 23:11:08 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -1114,7 +1114,7 @@ mfbReduceRop(alu, src)
     register Pixel src;
 {
     int rop;
-    if (src == 0)	/* src is black */
+    if ((src & 1) == 0)	/* src is black */
     {
 	switch(alu)
 	{
