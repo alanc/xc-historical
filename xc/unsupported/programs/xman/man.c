@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.25 91/06/24 11:21:25 dave Exp $
+ * $XConsortium: man.c,v 1.26 91/07/10 10:47:59 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -421,8 +421,8 @@ SortAndRemove(man, number)
 Manual *man;
 int number;
 {
-  int i;
-  char *l1, *l2;
+  int i,j;
+  char *l1, *l2, **s1;
   
   for ( i = 0; i < number; man++, i++) { /* sort each section */
     register int j = 0;      
@@ -430,8 +430,22 @@ int number;
 #ifdef DEBUG
     printf("sorting section %d - %s\n", i, man->blabel);
 #endif /* DEBUG */
+
+    s1 = (char **)malloc(man->nentries * sizeof(char *));
     
+    /* temporarily remove suffixes of entries, preventing them from */
+    /* being used in alpabetic comparison ie sccs-delta.1 vs sccs.1 */
+    for (j=0; j<man->nentries; j++)
+      if ((s1[j] = rindex(man->entries_less_paths[j], '.')) != NULL)
+	*s1[j] = '\0';  
+
     sortstrs ( man->entries_less_paths, man->nentries, man->entries );
+
+    /* put back suffixes */
+    for (j=0; j<man->nentries; j++) 
+      if (s1[j] != NULL) *s1[j] = '.';      
+
+    free(s1); 
     
 #ifdef DEBUG
     printf("removing from section %d.\n", i);
