@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.105 89/06/15 15:58:58 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.106 89/06/15 18:44:37 jim Exp $
  */
 
 #include "copyright.h"
@@ -39,7 +39,7 @@ static int readv(), write();
  * the object they have created.
  */
 
-_XQEvent *_qfree = NULL;			/* NULL _XQEvent. */
+extern _XQEvent *_qfree;
 
 static int padlength[4] = {0, 3, 2, 1};
     /* lookup table for adding padding bytes to data that is read from

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.3 89/06/15 18:44:50 jim Exp $
+ * $XConsortium: globals.c,v 1.4 89/06/15 18:49:08 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -47,6 +47,7 @@
 typedef int (*funcptr)();
 INIT (funcptr, _XErrorFunction, NULL);
 INIT (funcptr, _XIOErrorFunction, NULL);
+INIT (_XQEvent *, _qfree, NULL);
 
 
 /*
