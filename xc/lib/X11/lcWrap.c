@@ -1,5 +1,5 @@
 /*
- * $XConsortium: lcWrap.c,v 11.15 94/01/20 18:07:52 rws Exp $
+ * $XConsortium: lcWrap.c,v 11.16 94/01/28 23:30:31 rws Exp $
  */
 
 /*
@@ -101,7 +101,11 @@ Bool _XlcValidModSyntax(mods, valid_mods)
 	    break;
 	for (ptr = valid_mods; *ptr; ptr++) {
 	    i = strlen(*ptr);
-	    if (strncmp(mods, *ptr, i) || (mods[i] != '='))
+	    if (strncmp(mods, *ptr, i) || ((mods[i] != '=')
+#ifdef WIN32
+					   && (mods[i] != '#')
+#endif
+					   ))
 		continue;
 	    mods = strchr(mods+i+1, '@');
 	    break;
@@ -134,6 +138,19 @@ _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
 	strcpy(mods, prog_mods);
 	if (user_mods)
 	    strcat(mods, user_mods);
+#ifdef WIN32
+	{
+	    char *s;
+	    for (s = mods; s = strchr(s, '@'); s++) {
+		for (s++; *s && *s != '='; s++) {
+		    if (*s == '#') {
+			*s = '=';
+			break;
+		    }
+		}
+	    }
+	}
+#endif
     }
     return mods;
 }
