@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: x11perf.c,v 2.33 92/07/31 16:44:17 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -33,6 +33,7 @@ SOFTWARE.
 #include <decw$include/Xatom.h>
 #endif
 #include "x11perf.h"
+#include <X11/Xmu/SysUtil.h>
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
@@ -960,14 +961,9 @@ main(argc, argv)
     }
 
     printf("x11perf - X11 performance program, version 1.3\n");
-#ifndef VMS
-    gethostname (hostname, 100);
+    XmuGetHostname(hostname, 100);
     printf ("%s server on %s\nfrom %s\n",
 	    ServerVendor (xparms.d), DisplayString (xparms.d), hostname);
-#else
-    printf ("%s server on %s\n",
-	    ServerVendor (xparms.d), DisplayString (xparms.d));
-#endif
     PrintTime ();
 
     /* Force screen out of screen-saver mode, grab current data, and set
