@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.99 91/02/05 16:58:43 gildea Exp $ */
+/* $XConsortium: Resources.c,v 1.100 91/02/07 21:09:54 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -948,7 +948,7 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
     cache_refs = GetResources(w, (char*)w, names, classes,
 	(XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, quark_args, args, num_args,
-	typed_args, num_typed_args, True);
+	typed_args, num_typed_args, XtIsWidget(w));
 
     if (w->core.constraints != NULL) {
 	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
