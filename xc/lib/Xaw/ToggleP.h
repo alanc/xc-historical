@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: ToggleP.h,v 1.6 89/12/11 15:23:04 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@
  *
  ***********************************************************************/
 
-#define streq(a,b) ( strcmp( (a), (b) ) == 0)
+#define streq(a, b) ( strcmp((a), (b)) == 0 )
 
 typedef struct _RadioGroup {
   struct _RadioGroup *prev, *next; /* Pointers to other elements in group. */
