@@ -1,12 +1,17 @@
-XCOMM platform:  $XConsortium: bsdi.cf,v 1.4 93/07/29 13:43:57 rws Exp $
+XCOMM platform:  $XConsortium: bsdi.cf,v 1.5 93/09/30 18:03:48 rws Exp $
 
-#define OSName            BSD/386 1.0
+#define OSName            BSD/386 1.1
 XCOMM operating system:  OSName
 #define OSMajorVersion    1
-#define OSMinorVersion    0
+#define OSMinorVersion    1
 
 #define HasPutenv	YES
 #define HasBSD44Sockets	YES
+#if OSMinorVersion >= 1
+#define HasGcc2		YES
+#define HasGcc2ForCplusplus YES
+#define CcCmd		gcc2
+#endif
 #define CppCmd		/usr/bin/cpp
 #define TroffCmd	groff -Tps
 #define SetTtyGroup	YES
