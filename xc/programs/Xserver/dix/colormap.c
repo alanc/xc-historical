@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.21 91/07/12 20:23:41 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.22 91/11/29 18:55:03 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -991,7 +991,8 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	{
     	    if ((*comp) (pent, prgb))
 	    {
-    	        pent->refcnt++;
+		if (client >= 0)
+		    pent->refcnt++;
 		*pPixel = pixel;
 		switch(channel)
 		{
