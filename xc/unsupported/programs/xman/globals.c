@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $Header: globals.c,v 4.0 88/08/31 22:11:49 kit Exp $
+ * $XConsortium: globals.c,v 1.1 88/08/31 22:52:32 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *

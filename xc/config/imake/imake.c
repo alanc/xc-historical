@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.30 88/07/19 18:29:53 jim Exp $
- * $Locker: rws $
+ * $XConsortium: imake.c,v 1.31 88/08/21 12:31:47 rws Exp $
+ * $Locker: jim $
  *
  * Author:
  *	Todd Brunhoff

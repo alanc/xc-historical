@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $Header: version.h,v 4.0 88/08/31 22:13:33 kit Exp $
+ * $XConsortium: version.h,v 1.1 88/08/31 22:52:48 jim Exp $
  * $Athena: version.h,v 4.0 88/08/31 22:13:33 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology

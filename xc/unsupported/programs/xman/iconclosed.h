@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $Header: iconclosed.h,v 4.0 88/08/31 22:12:21 kit Exp $
+ * $XConsortium: iconclosed.h,v 1.1 88/08/31 22:52:41 jim Exp $
  * $Athena: iconclosed.h,v 4.0 88/08/31 22:12:21 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
