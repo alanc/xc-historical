@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.6 91/03/29 09:33:05 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.7 91/03/29 14:51:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,21 +37,20 @@ SOFTWARE.
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif /* ! PEX_API_SOCKET_IPC */
-#ifdef SVR4
-#define USE_POSIX_STYLE_WAIT
-#endif
-#ifdef _POSIX_SOURCE
-#define USE_POSIX_STYLE_WAIT
-#endif
-#ifdef USE_POSIX_STYLE_WAIT
+#ifndef X_NOT_POSIX
 #include <sys/wait.h>
 # define waitSig(w)	WTERMSIG(w)
 typedef int		waitType;
-#else /* USE_POSIX_STYLE_WAIT */
+#else
+#ifdef SYSV
+# define waitSig(w)	((w) & 0xff)
+typedef int		waitType;
+#else
 # include	<sys/wait.h>
 # define waitSig(w)	((w).w_T.w_Termsig)
 typedef union wait	waitType;
-#endif /* USE_POSIX_STYLE_WAIT else */
+#endif
+#endif
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -1069,7 +1068,7 @@ phg_cpc_inp_request( cph, args, ret)
     }
 }
 
-#ifdef USE_POSIX_STYLE_WAIT
+#ifndef X_NOT_POSIX
 #define WAIT_FOR_IT(p,s,o) waitpid(p,s,o)
 #else
 #define WAIT_FOR_IT(p,s,o) wait3(s, o, (struct rusage *) 0)
@@ -1337,6 +1336,10 @@ fork_monitor( cph, argv )
 	     */
 	    cph->erh->data.client.sfd = spe[0];
 	    {   int	fdflags;
+#if defined(hpux) && defined(FIOSNBIO)
+		fdflags = 1;
+		ioctl (spe[0], FIOSNBIO, &fdflags);
+#else
 		fdflags = fcntl( spe[0], F_GETFL, 0);
 #ifdef O_NONBLOCK
 		fdflags |= O_NONBLOCK;
@@ -1344,6 +1347,7 @@ fork_monitor( cph, argv )
 		fdflags |= FNDELAY;
 #endif
 		(void)fcntl( spe[0], F_SETFL, fdflags);
+#endif
 	    }
 	    phg_register_signal_func((unsigned long)pid, sig_wait, SIGCHLD);
 	    (void)close( sp[1]); (void)close( spe[1]);
