@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.68 92/04/30 19:48:33 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.69 92/05/03 14:36:25 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -207,7 +207,8 @@ int (*oldioerror)();
 char history[4096];
 int history_end = 0;
 char *undofile = NULL;
-UndoRec *undos[256];
+#define UNDO_SIZE 256
+UndoRec *undos[UNDO_SIZE];
 int curbscount = 0;
 Bool in_control_seq = False;
 Bool skip_next_control_char = False;
@@ -286,7 +287,7 @@ generate_warp(screen, x, y)
     XTestFakeMotionEvent(dpy, screen, x, y, time_delay);
 #else
     delay_time();
-    XESimulateXEventRequest(tc, MotionNotify, 0, x, y, screen);
+    XESimulateXEventRequest(tc, MotionNotify, 0, x, y, 0);
 #endif
     time_delay = 0;
 }
@@ -1808,7 +1809,7 @@ get_undofile()
     fp = fopen(undofile, "r");
     if (!fp)
 	return;
-    for (i = 0; i < sizeof(undos); i++) {
+    for (i = 0; i < UNDO_SIZE; i++) {
 	while (up = undos[i]) {
 	    undos[i] = up->next;
 	    free_undo(up);
@@ -1914,8 +1915,8 @@ init_display(dname)
 	XCloseDisplay(dpy);
     dpy = ndpy;
     reset_mapping();
-    MIT_OBJ_CLASS = XInternAtom(ndpy, "_MIT_OBJ_CLASS", False);
-    Xmask = 1 << ConnectionNumber(ndpy);
+    MIT_OBJ_CLASS = XInternAtom(dpy, "_MIT_OBJ_CLASS", False);
+    Xmask = 1 << ConnectionNumber(dpy);
     maxfd = ConnectionNumber(dpy) + 1;
     return True;
 }
