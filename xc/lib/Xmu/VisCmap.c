@@ -1,4 +1,4 @@
-/* $XConsortium: VisCmap.c,v 1.8 89/05/24 11:08:54 converse Exp $ 
+/* $XConsortium: VisCmap.c,v 1.9 89/07/16 18:10:43 jim Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -71,7 +71,7 @@ Status XmuVisualStandardColormaps(dpy, screen, visualid, depth, replace,
     Status		status;
     int			n;
     long		vinfo_mask;
-    XVisualInfo		vinfo_template, *vinfo = NULL;
+    XVisualInfo		vinfo_template, *vinfo;
         
     vinfo_template.screen = screen;
     vinfo_template.visualid = visualid;
