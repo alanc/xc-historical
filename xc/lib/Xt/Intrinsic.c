@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.31 87/09/11 21:19:17 newman Locked $";
 #endif lint
 
 /*
@@ -177,6 +177,20 @@ void ClassInit(widgetClass)
     return;
 }
 
+static void RecurseInitialize (widget, newWidget, args, num_args, class)
+    Widget widget;
+    Widget newWidget;
+    ArgList args;
+    Cardinal num_args;
+    WidgetClass class;
+{
+    if (class->core_class.superclass)
+       	RecurseInitialize (widget, newWidget, args, num_args, 
+           class->core_class.superclass);
+    if (class->core_class.initialize)
+       	(*class->core_class.initialize) (widget, newWidget, args, num_args);
+}
+
 Widget TopLevelCreate(name,widgetClass,screen,args,num_args)
     char *name;
     WidgetClass widgetClass;
@@ -184,8 +198,12 @@ Widget TopLevelCreate(name,widgetClass,screen,args,num_args)
     ArgList args;
     Cardinal num_args;
 {
-   Widget widget;
-    widget = (Widget)XtMalloc((unsigned)widgetClass->core_class.widget_size);
+    Widget widget, newWidget;
+    unsigned widget_size;
+    if(!(widgetClass->core_class.class_inited))
+	 ClassInit(widgetClass);
+    widget_size = widgetClass->core_class.widget_size;
+    widget = (Widget)XtMalloc(widget_size);
     widget->core.window = (Window) NULL;
     widget->core.name = strcpy(XtMalloc((unsigned) strlen(name)+1), name);
     widget->core.widget_class = widgetClass;
@@ -202,19 +220,22 @@ Widget TopLevelCreate(name,widgetClass,screen,args,num_args)
     widget->core.destroy_callbacks = NULL;
     widget->core.being_destroyed = FALSE;
 
-    if(!(widget->core.widget_class->core_class.class_inited))
-	 ClassInit(widgetClass);
    if (XtIsComposite(widget)) {
                 ((CompositeWidget)widget)->composite.num_children = 0;
                ((CompositeWidget)widget)->composite.num_mapped_children = 0;
                 ((CompositeWidget)widget)->composite.children = NULL;
                 }
-   XtGetResources(widget,args,num_args);
-   if (widget->core.depth == 0)
+    XtGetResources(widget,args,num_args);
+    if (widget->core.depth == 0)
     /* ||| gross kludge! fix this!!! */
 	widget->core.depth = XtScreen(widget)->root_depth;
-   widgetClass->core_class.initialize(widget);
-   return (widget);
+    newWidget = (Widget)XtMalloc(widget_size);
+    bcopy ((char *) widget, (char *) newWidget, widget_size);
+    RecurseInitialize (widget, newWidget, args, num_args, widgetClass);
+    bcopy ((char *) newWidget, (char *) widget, widget_size);
+    XtFree ((char *) newWidget);
+
+    return (widget);
 }
 
 static void CompositeDestroy(w)
@@ -280,8 +301,8 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
     Cardinal    num_args;
 
 {
-    Widget    widget;
-
+    Widget    widget, newWidget;
+    unsigned widget_size;
     if (widgetClass == NULL || parent == NULL || ! XtIsComposite(parent))  {
 			XtError("invalid parameters to XtCreateWidget");
 			return NULL;
@@ -289,7 +310,8 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
     if (! (widgetClass->core_class.class_inited))
 	ClassInit(widgetClass);
 
-    widget = (Widget)XtMalloc((unsigned)widgetClass->core_class.widget_size); 
+    widget_size = widgetClass->core_class.widget_size;
+    widget = (Widget)XtMalloc(widget_size);
     widget->core.window = (Window) NULL;
     widget->core.name = strcpy(XtMalloc((unsigned)strlen(name)+1), name);
     widget->core.widget_class = widgetClass;
@@ -317,8 +339,11 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
     /* ||| gross kludge! fix this!!! */
 	widget->core.depth = widget->core.parent->core.depth;
     DefineTranslation(widget);
-    widgetClass->core_class.initialize(widget, args, num_args);
-
+    newWidget = (Widget)XtMalloc(widget_size);
+    bcopy ((char *) widget, (char *) newWidget, widget_size);
+    RecurseInitialize (widget, newWidget, args, num_args, widgetClass);
+    bcopy ((char *) newWidget, (char *) widget, widget_size);
+    XtFree ((char *) newWidget);
     ((CompositeWidgetClass)(widget->core.parent->core.widget_class))
     	->composite_class.insert_child(widget, args, num_args);
     return (widget);
@@ -379,6 +404,25 @@ void XtRealizeWidget (widget)
     if (widget->core.parent == NULL) XtMapWidget(widget);
    return;
 }
+
+void XtCreateWindow(widget, windowClass, visual, valueMask, attributes)
+Widget widget;
+unsigned int windowClass;
+Visual *visual;
+Mask valueMask;
+XSetWindowAttributes *attributes;
+{
+    if (widget->core.window == None) {
+	widget->core.window = 
+	    XCreateWindow(XtDisplay(widget), (widget->core.parent ?
+					      widget->core.parent->core.window:
+					      widget->core.screen->root),
+			  widget->core.x, widget->core.y,
+			  widget->core.width, widget->core.height,
+			  widget->core.border_width, (int)widget->core.depth,
+			  windowClass, visual, valueMask, attributes);
+    }
+}	
 			
 		
 void XtUnmanageChildren(children, num_children)
