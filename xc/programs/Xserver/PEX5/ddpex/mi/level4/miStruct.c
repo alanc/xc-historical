@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miStruct.c,v 5.1 91/02/16 09:56:03 rws Exp $ */
 
 
 /***********************************************************
@@ -1305,13 +1305,10 @@ SetEditMode(pStruct, editMode)
 	case PEXStructureReplace:
 		MISTR_EDIT_MODE(pheader) = editMode;
 		return (Success);
-		break;
 
 	default:
 		return (BadValue);
-		break;
 	}
-	return (Success);
 }				/* SetEditMode */
 
 /*++
