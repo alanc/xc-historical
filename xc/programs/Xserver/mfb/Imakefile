@@ -24,6 +24,7 @@ INCLUDES = -I. -I../../include -I../../../include
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mfb,$(OBJS))
+LintLibraryTarget(mfb,$(SRCS))
 
 DependTarget()
 
@@ -107,6 +108,6 @@ mfbteblack.o: mfbtegblt.c mfbtegblt.o
 	rm -f mfbteblack.c
 
 lint:
-	lint -Clibmfb $(INCLUDES) -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
+	lint -Cmfb $(INCLUDES) -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite -DEQWHOLEWORD=\=~0 \\
 	   -DOPEQ=\|= $(SRCS)  > lint.out
