@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.42 90/06/26 09:37:41 swick Exp $
+ * $XConsortium: tocutil.c,v 2.43 90/08/03 17:50:35 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -391,14 +391,22 @@ void TULoadTocFile(toc)
 	msg->toc = toc;
 	msg->position = position;
 	msg->length = l = strlen(ptr);
-	msg->buf = strcpy(XtMalloc((Cardinal) l + 1), ptr);
-	msg->msgid = atoi(ptr);
-	while (l == app_resources.toc_width && buf[bufsiz-2] != '\n' && ptr)
-	    ptr = fgets(buf, bufsiz, fid);
+	position += l;
+	if (buf[bufsiz-2] != '\n' && l == app_resources.toc_width) {
+	    buf[bufsiz-2] = '\n';
+	    msg->buf = strcpy(XtMalloc((Cardinal) ++l), ptr);
+	    msg->msgid = atoi(ptr);
+	    do 
+		ptr = fgets(buf, bufsiz, fid);
+	    while (ptr && strlen(ptr) == app_resources.toc_width
+		   && buf[bufsiz-2] != '\n');
+	} else {
+	    msg->buf = strcpy(XtMalloc((Cardinal) ++l), ptr);
+	    msg->msgid = atoi(ptr);
+	}
 	if (msg->msgid == origcurmsgid)
 	    curmsg = msg;
 	msg->buf[MARKPOS] = ' ';
-	position += l;
 	msg->changed = FALSE;
 	msg->fate = Fignore;
 	msg->desttoc = NULL;
