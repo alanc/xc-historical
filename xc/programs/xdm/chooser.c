@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.14 92/08/10 20:47:27 eswu Exp $
+ * $XConsortium: chooser.c,v 1.15 93/09/20 18:03:28 hersh Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -515,7 +515,7 @@ RegisterHostname (name)
 
 	/* address as hex string, e.g., "12180022" (depreciated) */
 	if (strlen(name) == 8 &&
-	    FromHex(name, &in_addr.sin_addr.s_addr, strlen(name)) == 0)
+	    FromHex(name, &in_addr.sin_addr, strlen(name)) == 0)
 	{
 	    in_addr.sin_family = AF_INET;
 	}
@@ -624,7 +624,7 @@ Choose (h)
 #endif
 	    in_addr.sin_family = family;
 	    memmove( &in_addr.sin_port, xdm + 2, 2);
-	    memmove( &in_addr.sin_addr.s_addr, xdm + 4, 4);
+	    memmove( &in_addr.sin_addr, xdm + 4, 4);
 	    addr = (struct sockaddr *) &in_addr;
 	    len = sizeof (in_addr);
 	    break;
