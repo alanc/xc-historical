@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.119 91/05/06 19:01:20 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.120 91/05/06 20:31:02 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -196,6 +196,18 @@ XCOMM
 #    define MipsSysvArchitecture
 #  endif /* BSD */
 #endif /* Mips */
+
+#ifdef MOTOROLA
+# define MacroIncludeFile <moto.cf>
+# define MacroFile moto.cf
+# undef MOTOROLA	
+# ifdef SYSV
+#  define MotoR3Architecture
+# endif
+# ifdef SVR4
+#  define MotoR4Architecture
+# endif
+#endif /* MOTOROLA */
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.tmpl not configured; guessing at definitions!!!
