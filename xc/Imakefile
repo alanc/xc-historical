@@ -111,6 +111,13 @@ Everything::
 	$(MAKE) depend
 	$(MAKE) $(WORLDOPTS)
 
+CHANGES.ALL::
+	$(RM) $@
+	(for i in `find . -name CHANGES -print`; do \
+	echo $$i; echo ""; cat $$i; echo ""; \
+	echo "==========================================================="; \
+	done) >$@
+
 /*
  * This section used for generating distributions will not be useful to most
  * people.
