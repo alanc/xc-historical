@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.56 89/09/11 17:42:26 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.57 89/09/12 16:46:36 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -121,11 +121,11 @@ static void CallConstraintInitialize (class, req_widget, new_widget)
         (*class->constraint_class.initialize) (req_widget, new_widget);
 }
 
-Widget _XtCreate(
-	name, class, widgetClass, parent, default_screen,
+static Widget _XtCreate(
+	name, class, widget_class, parent, default_screen,
 	args, num_args, parent_constraint_class)
     char        *name, *class;
-    WidgetClass widgetClass;
+    WidgetClass widget_class;
     Widget      parent;
     Screen*     default_screen;
     ArgList     args;
@@ -144,12 +144,12 @@ Widget _XtCreate(
     XtCacheRef		    *cache_refs;
     extern XtCacheRef* _XtGetResources();
 
-    if (! (widgetClass->core_class.class_inited))
-	XtInitializeWidgetClass(widgetClass);
-    widget = (Widget) XtMalloc((unsigned)widgetClass->core_class.widget_size);
+    if (! (widget_class->core_class.class_inited))
+	XtInitializeWidgetClass(widget_class);
+    widget = (Widget) XtMalloc((unsigned)widget_class->core_class.widget_size);
     widget->core.self = widget;
     widget->core.parent = parent;
-    widget->core.widget_class = widgetClass;
+    widget->core.widget_class = widget_class;
     widget->core.xrm_name = StringToName((name != NULL) ? name : "");
     widget->core.being_destroyed =
 	(parent != NULL ? parent->core.being_destroyed : FALSE);
@@ -166,7 +166,7 @@ Widget _XtCreate(
     if (XtIsSubclass(widget, applicationShellWidgetClass)) {
 	ApplicationShellWidget a = (ApplicationShellWidget) widget;
 	if (class != NULL) a->application.class = XtNewString(class);
-	else a->application.class = widgetClass->core_class.class_name;
+	else a->application.class = widget_class->core_class.class_name;
 	a->application.xrm_class = StringToClass(a->application.class);
     }
 
@@ -208,9 +208,9 @@ Widget _XtCreate(
 }
 
 
-Widget XtCreateWidget(name, widgetClass, parent, args, num_args)
+Widget XtCreateWidget(name, widget_class, parent, args, num_args)
     String      name;
-    WidgetClass widgetClass;
+    WidgetClass widget_class;
     Widget      parent;
     ArgList     args;
     Cardinal    num_args;
@@ -224,19 +224,43 @@ Widget XtCreateWidget(name, widgetClass, parent, args, num_args)
 	XtErrorMsg("invalidParent","xtCreateWidget","XtToolkitError",
                 "XtCreateWidget requires non-NULL parent",
                   (String *)NULL, (Cardinal *)NULL);
-    } else if (widgetClass == NULL) {
+    } else if (widget_class == NULL) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
 		"invalidClass","xtCreateWidget","XtToolkitError",
                 "XtCreateWidget requires non-NULL widget class",
                   (String *)NULL, (Cardinal *)NULL);
     }
+    if (!widget_class->core_class.class_inited)
+	XtInitializeWidgetClass(widget_class);
+    if ((widget_class->core_class.class_inited & 0x04) == 0) {
+	/* not a widget */
+	if (XtIsComposite(parent)) {
+	    CompositeClassExtension ext;
+	    for (ext = (CompositeClassExtension)
+		       ((CompositeWidgetClass)XtClass(parent))
+			 ->composite_class.extension;
+		 ext != NULL && ext->record_type != NULLQUARK;
+		 ext = (CompositeClassExtension)ext->next_extension);
+	    if (ext == NULL || !ext->accepts_objects) {
+		String params[2];
+		Cardinal num_params = 2;
+		params[0] = name;
+		params[1] = XtName(parent);
+		XtAppErrorMsg(XtWidgetToApplicationContext(parent),
+			      "nonWidget","xtCreateWidget","XtToolkitError",
+			      "attempt to add non-widget child \"%s\" to parent \"%s\" which supports only widgets",
+			      params, &num_params);
+	    }
+	}
+    }
+
     if (XtIsConstraint(parent)) {
 	cwc = (ConstraintWidgetClass) parent->core.widget_class;
     } else {
 	cwc = NULL;
     }
     default_screen = parent->core.screen;
-    widget = _XtCreate(name, (char *)NULL, widgetClass, parent,
+    widget = _XtCreate(name, (char *)NULL, widget_class, parent,
                           default_screen,args, num_args, cwc);
     if (XtIsComposite(parent)) {
         insert_child = ((CompositeWidgetClass) parent->core.widget_class)->
@@ -255,16 +279,16 @@ Widget XtCreateWidget(name, widgetClass, parent, args, num_args)
     return (widget);
 }
 
-Widget XtCreateManagedWidget(name, widgetClass, parent, args, num_args)
+Widget XtCreateManagedWidget(name, widget_class, parent, args, num_args)
     String      name;
-    WidgetClass widgetClass;
+    WidgetClass widget_class;
     Widget      parent;
     ArgList     args;
     Cardinal    num_args;
 {
     register Widget	    widget;
 
-    widget = XtCreateWidget(name, widgetClass, parent, args, num_args);
+    widget = XtCreateWidget(name, widget_class, parent, args, num_args);
     XtManageChild(widget);
     return widget;
 }
@@ -317,9 +341,9 @@ static void RemovePopupFromParent(widget,closure,call_data)
 
 }
 
-Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
+Widget XtCreatePopupShell(name, widget_class, parent, args, num_args)
     String      name;
-    WidgetClass widgetClass;
+    WidgetClass widget_class;
     Widget      parent;
     ArgList     args;
     Cardinal    num_args;
@@ -331,7 +355,7 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
 	XtErrorMsg("invalidParent","xtCreatePopupShell","XtToolkitError",
                 "XtCreatePopupShell requires non-NULL parent",
                   (String *)NULL, (Cardinal *)NULL);
-    } else if (widgetClass == NULL) {
+    } else if (widget_class == NULL) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
 		"invalidClass","xtCreatePopupShell","XtToolkitError",
                 "XtCreatePopupShell requires non-NULL widget class",
@@ -339,7 +363,7 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
     }
     default_screen = parent->core.screen;
     widget = _XtCreate(
-        name, (char *)NULL, widgetClass, parent, default_screen,
+        name, (char *)NULL, widget_class, parent, default_screen,
 	args, num_args, (ConstraintWidgetClass) NULL);
 
     parent->core.popup_list =
@@ -351,15 +375,15 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
     return(widget);
 } /* XtCreatePopupShell */
 
-Widget XtAppCreateShell(name, class, widgetClass, display, args, num_args)
+Widget XtAppCreateShell(name, class, widget_class, display, args, num_args)
     String      name, class;
-    WidgetClass widgetClass;
+    WidgetClass widget_class;
     Display*    display;
     ArgList     args;
     Cardinal    num_args;
 
 {
-    if (widgetClass == NULL) {
+    if (widget_class == NULL) {
 	XtAppErrorMsg(XtDisplayToApplicationContext(display),
 	       "invalidClass","xtAppCreateShell","XtToolkitError",
                "XtAppCreateShell requires non-NULL widget class",
@@ -369,15 +393,15 @@ Widget XtAppCreateShell(name, class, widgetClass, display, args, num_args)
     if (name == NULL)
 	name = XrmNameToString(_XtGetPerDisplay(display)->name);
 
-    return _XtCreate(name, class, widgetClass, (Widget)NULL,
+    return _XtCreate(name, class, widget_class, (Widget)NULL,
 	    (Screen*)DefaultScreenOfDisplay(display),
 	    args, num_args, (ConstraintWidgetClass) NULL);
 } /* XtAppCreateShell */
 
 /* ARGSUSED */
-Widget XtCreateApplicationShell(name, widgetClass, args, num_args)
+Widget XtCreateApplicationShell(name, widget_class, args, num_args)
     String      name;		/* unused in R3 and later */
-    WidgetClass widgetClass;
+    WidgetClass widget_class;
     ArgList     args;
     Cardinal    num_args;
 {
@@ -385,6 +409,6 @@ Widget XtCreateApplicationShell(name, widgetClass, args, num_args)
     XrmClass class = _XtGetPerDisplay(dpy)->class;
 
     return XtAppCreateShell(NULL, XrmQuarkToString((XrmQuark)class),
-			    widgetClass, dpy, args, num_args);
+			    widget_class, dpy, args, num_args);
 }
 
