@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.2 89/07/10 17:39:51 jim Exp $
+ * $XConsortium: listres.c,v 1.3 89/07/10 17:43:30 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,13 +32,21 @@
 #include "widgets.h"
 
 
+static XrmOptionDescRec listres_options[] = {
+  { "-known", "*listKnown", XrmoptionNoArg, (caddr_t) "on" },
+  { "-objects", "*showObjects", XrmoptionNoArg, (caddr_t) "on" },
+};
+
 static struct _appresources {
+    Boolean known;
     Boolean objects;
 } listres_resources;
 
 static XtResource Resources[] = {
 #define offset(field) XtOffset(struct _appresources *, field)
-  { "objects", "Objects", XtRBoolean, sizeof(Boolean),
+  { "listKnown", "ListKnown", XtRBoolean, sizeof(Boolean),
+      offset(known), XtRString, "FALSE" },
+  { "showObjects", "ShowObjects", XtRBoolean, sizeof(Boolean),
       offset(objects), XtRString, "FALSE" },
 #undef offset
 };
@@ -49,8 +57,13 @@ char *ProgramName;
 
 usage ()
 {
-    fprintf (stderr, "usage:  %s [-objects] [-widgets]\n",
-	     ProgramName);
+    fprintf (stderr, "usage:  %s [-options...]\n", ProgramName);
+    fprintf (stderr, "\nwhere options include:\n");
+    fprintf (stderr,
+	     "    -known            list known widget classes\n");
+    fprintf (stderr,
+	     "    -objects          include object prefixes in listings\n");
+    fprintf (stderr, "\n");
     exit (1);
 }
 
@@ -74,24 +87,83 @@ main (argc, argv)
     WidgetClass top;
     WidgetNameList *wl;
     Widget toplevel;
+    struct _extra { 
+	int off_cl;
+	char data[2];	/* nuls plus alloced off end */
+    } *ep;
 
     ProgramName = argv[0];
 
-    toplevel = XtInitialize (NULL, "Listres", NULL, 0, &argc, argv);
+    toplevel = XtInitialize (NULL, "Listres", listres_options, 
+			     XtNumber(listres_options), &argc, argv);
     XtGetApplicationResources (toplevel, (caddr_t) &listres_resources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
 
-    for (i = 1; i < argc; i++) {
-	if (strncmp ("-widgets", argv[i], strlen(argv[i])) == 0) 
-	  list_known_widgets ();
-	else usage ();
-    }
-
+    if (listres_resources.known) list_known_widgets ();
     top = (listres_resources.objects ? NULL : coreWidgetClass);
+    argc--, argv++;
 
-    for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
-	list_resources (wl->label, wl->widget_class[0], top, toplevel);
+    if (argc == 0) {
+	for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
+	    list_resources (wl->label, wl->widget_class[0], top, toplevel);
+	}
+    } else {
+	char tmpbuf[1024];
+	char *buf = tmpbuf;
+	int len = sizeof tmpbuf - 1;
+
+	for (; argc > 0; argc--, argv++) {
+	    int found = 0;
+
+	    if (argv[0][0] == '-') usage ();
+
+	    if (strlen(*argv) > len) {
+		len = strlen (*argv) * 2 + 2;
+		if (buf != tmpbuf) free (buf);
+		buf = (char *) malloc (len);
+		if (!buf) {
+		    fprintf (stderr, "%s: can't alloc %d byte argv buffer\n",
+			     ProgramName, len);
+		    exit (1);
+		}
+	    }
+	    XmuCopyISOLatin1Lowered (buf, *argv);
+	    for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
+		CoreClassPart *cl = &wl->widget_class[0]->core_class;
+
+		if (!wl->extra) {
+		    int lablen = strlen (wl->label);
+		    int cllen = strlen (cl->class_name);
+
+		    ep = (struct _extra *) malloc (sizeof(struct _extra) +
+						   lablen + cllen);
+		    if (!ep) {
+			fprintf (stderr,
+				 "%s:  unable to alloc %d byte name buffer\n",
+				 ProgramName, (sizeof(struct _extra) + 
+					       lablen + cllen));
+			exit (1);
+		    }
+		    ep->off_cl = lablen + 1;
+		    XmuCopyISOLatin1Lowered (ep->data, wl->label);
+		    XmuCopyISOLatin1Lowered (ep->data + ep->off_cl,
+					     cl->class_name);
+		    wl->extra = (caddr_t) ep;
+		}
+		ep = (struct _extra *) wl->extra;
+		if (strcmp (*argv, ep->data) == 0 ||
+		    strcmp (*argv, ep->data + ep->off_cl) == 0) {
+		    list_resources (wl->label, wl->widget_class[0], top,
+				    toplevel);
+		    found++;
+		}
+	    }
+	    if (found == 0) {
+		fprintf (stderr, "%s:  unable to find widget \"%s\"\n",
+			 ProgramName, *argv);
+	    }
+	}
+	if (buf != tmpbuf) free (buf);
     }
-
     exit (0);
 }
