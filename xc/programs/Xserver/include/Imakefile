@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.0 94/00/00 10:51:26 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.1 1994/09/11 11:16:13 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 94/11/21 16:24:12 kaleb Exp kaleb $
+XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.2 1994/12/02 05:48:52 dawes Exp $
 
 all::
 
