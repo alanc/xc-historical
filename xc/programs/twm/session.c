@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: session.c,v 1.2 94/07/07 11:18:15 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -479,10 +479,11 @@ Bool fast;
     FILE *configFile;
     char *path, *filename;
     Bool success = True;
-    SmProp prop1, prop2, prop3, prop4, prop5, *props[5];
-    SmPropValue prop3val, prop4val, prop5val;
+    SmProp prop1, prop2, prop3, prop4, prop5, prop6, *props[6];
+    SmPropValue prop3val, prop4val, prop5val, prop6val;
     char discardCommand[80], userId[20];
     int numVals, i;
+    char yes = 1;
 
     path = getenv ("SM_SAVE_DIR");
     if (!path)
@@ -583,13 +584,21 @@ Bool fast;
     prop5val.value = (SmPointer) userId;
     prop5val.length = strlen (userId);
 
+    prop6.name = "_XC_IsManager";
+    prop6.type = SmCARD8;
+    prop6.num_vals = 1;
+    prop6.vals = &prop6val;
+    prop6val.value = (SmPointer) &yes;
+    prop6val.length = 1;
+
     props[0] = &prop1;
     props[1] = &prop2;
     props[2] = &prop3;
     props[3] = &prop4;
     props[4] = &prop5;
+    props[5] = &prop6;
 
-    SmcSetProperties (smcConn, 5, props);
+    SmcSetProperties (smcConn, 6, props);
     free (prop1.vals);
 
     SmcSaveYourselfDone (smcConn, success);
