@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: clsdsply.m,v 1.22 92/06/11 15:56:15 rws Exp $
  */
 >>TITLE XCloseDisplay CH02
 
@@ -161,7 +161,9 @@ Atom	selection = XA_PRIMARY;
 	} else
 		CHECK;
 
+	regdisable();
 	client = defwin(display);
+	regenable();
 
 	XSetSelectionOwner(display, selection, client, CurrentTime);
 	
@@ -203,8 +205,10 @@ Window	gw, ow;
 	} else
 		CHECK;
 
+	regdisable();
 	gw = defwin(display);
 	ow = defwin(Dsp);
+	regenable();
 
 	if(XGrabPointer(display, gw, True, 0L, GrabModeAsync, GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
 		delete("XGrabPointer did not return GrabSuccess.");
@@ -254,8 +258,10 @@ Window	gw, ow;
 	} else
 		CHECK;
 
+	regdisable();
 	gw = defwin(display);
 	ow = defwin(Dsp);
+	regenable();
 
 	if(XGrabKeyboard(display, gw, True, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess) {
 		delete("XGrabKeyboard did not return GrabSuccess.");
