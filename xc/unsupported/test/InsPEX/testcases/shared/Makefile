@@ -1,4 +1,4 @@
-# $XConsortium: Makefile,v 5.6 91/02/19 20:38:16 hersh Exp $
+# $XConsortium: Makefile,v 5.7 93/01/04 18:19:19 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -8,8 +8,8 @@
 # documentation for any purpose and without fee is hereby granted, 
 # provided that the above copyright notice appear in all copies and that
 # both that copyright notice and this permission notice appear in 
-# supporting documentation, and that the names of Sun Microsystems,
-# the X Consortium, and MIT not be used in advertising or publicity 
+# supporting documentation, and that the names of Sun Microsystems
+# and the X Consortium not be used in advertising or publicity 
 # pertaining to distribution of the software without specific, written 
 # prior permission.  
 # 

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-# $XConsortium: link_man7.sh,v 5.1 91/02/16 09:45:11 rws Exp $
+# $XConsortium: link_man7.sh,v 5.2 91/07/26 15:53:09 hersh Exp $
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -12,8 +12,8 @@
 ## documentation for any purpose and without fee is hereby granted, 
 ## provided that the above copyright notice appear in all copies and that
 ## both that copyright notice and this permission notice appear in 
-## supporting documentation, and that the names of Sun Microsystems,
-## the X Consortium, and MIT not be used in advertising or publicity 
+## supporting documentation, and that the names of Sun Microsystems
+## and the X Consortium not be used in advertising or publicity 
 ## pertaining to distribution of the software without specific, written 
 ## prior permission.  
 ## 

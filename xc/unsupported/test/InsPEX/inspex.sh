@@ -1,5 +1,5 @@
 #!/bin/sh 
-# $XConsortium: inspex.sh,v 5.5 91/05/10 19:52:35 hersh Exp $
+# $XConsortium: inspex.sh,v 5.6 91/07/08 18:12:04 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -9,8 +9,8 @@
 # documentation for any purpose and without fee is hereby granted, 
 # provided that the above copyright notice appear in all copies and that
 # both that copyright notice and this permission notice appear in 
-# supporting documentation, and that the names of Sun Microsystems,
-# the X Consortium, and MIT not be used in advertising or publicity 
+# supporting documentation, and that the names of Sun Microsystems
+# and the X Consortium not be used in advertising or publicity 
 # pertaining to distribution of the software without specific, written 
 # prior permission.  
 # 
