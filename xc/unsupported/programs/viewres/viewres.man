@@ -134,12 +134,50 @@ This action turns \fIon\fP, \fIoff\fP, or \fItoggles\fP the resource boxes
 for the selected nodes.
 If invoked from within one of the nodes (through the keyboard or pointer),
 only that node is used.
+.SH "WIDGET HIERARCHY"
+Resources may be specified for the following widgets:
+.sp
+.nf
+.ta .5i 1.0i 1.5i 2.0i 2.5i 3.0i 3.5i 4.0i 4.5i 5.0i 5.5i 6.0i 6.5i 7.0i
+Viewres viewres
+	Paned pane
+		Box buttonbox
+			Command quit
+			MenuButton view
+				SimpleMenu viewMenu
+					SmeBSB namesVariable
+					SmeBSB namesClass
+					SmeLine line1
+					SmeBSB layoutHorizontal
+					SmeBSB layoutVertical
+					SmeLine line2
+					SmeBSB viewResources
+					SmeBSB viewNoResources
+			MenuButton select
+				SimpleMenu selectMenu
+					SmeBSB unselect
+					SmeBSB selectAll
+					SmeBSB selectInvert
+					SmeLine line1
+					SmeBSB selectParent
+					SmeBSB selectAncestors
+					SmeBSB selectChildren
+					SmeBSB selectDescendants
+					SmeLine line2
+					SmeBSB selectHasResources
+					SmeBSB selectShownResources
+		Form treeform
+			Porthole porthole
+				Tree tree
+					Box \fIvariable-name\fP
+						Toggle \fIvariable-name\fP
+						List \fIvariable-name\fP
+			Panner panner
+.fi
+.sp
+where \fIvariable-name\fP is the widget variable name of each node.
 .SH "SEE ALSO"
 X(1), xrdb(1), listres(1), editres(1), appres(1), appropriate widget documents
-.SH "BUGS"
-On operating systems that do not support dynamic linking of run-time routines,
-this program must have all of its known widgets compiled in.  The sources
-provide several tools for automating this process for various widget sets.
 .SH COPYRIGHT
 Copyright 1990, Massachusetts Institute of Technology.
 .br
