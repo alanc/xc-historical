@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.16 90/06/29 15:53:45 kit Exp $
+ * $XConsortium: EditresCom.c,v 1.17 90/07/03 16:16:18 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -359,8 +359,8 @@ FreeEvent(event)
 EditresEvent * event;
 {
     if (event->any_event.widgets != NULL) {
-	XtFree(event->any_event.widgets->ids);
-	XtFree(event->any_event.widgets);
+	XtFree((char *)event->any_event.widgets->ids);
+	XtFree((char *)event->any_event.widgets);
     }
 
     if (event->any_event.type == SetValues) {
@@ -368,7 +368,7 @@ EditresEvent * event;
 	XtFree(event->set_values_event.res_type); /* value is NULL. */
     }
 	
-    XtFree(event);
+    XtFree((char *)event);
 }
 
 /*	Function Name: GetCommand
@@ -1348,7 +1348,7 @@ Widget w;
     for (i = 0; i < num_widgets; i++) /* insert Widgets themselves. */
 	_EresInsert32(stream, widget_list[i]);
     
-    XtFree(widget_list);
+    XtFree((char *)widget_list);
 }
 
 /************************************************************
@@ -1392,7 +1392,8 @@ unsigned int value;
 
     if (stream->size >= stream->alloc) {
 	stream->alloc += 100;
-	stream->real_top = (unsigned char *) XtRealloc(stream->real_top, 
+	stream->real_top = (unsigned char *) XtRealloc(
+						  (char *)stream->real_top,
 						  stream->alloc + HEADER_SIZE);
 	stream->top = stream->real_top + HEADER_SIZE;
 	stream->current = stream->top + stream->size;
@@ -1475,7 +1476,8 @@ ProtocolStream * stream;
     stream->current = stream->top;
     stream->size = 0;
     if (stream->real_top == NULL) {
-	stream->real_top = (unsigned char *) XtRealloc(stream->real_top, 
+	stream->real_top = (unsigned char *) XtRealloc(
+						  (char *)stream->real_top,
 						  stream->alloc + HEADER_SIZE);
 	stream->top = stream->real_top + HEADER_SIZE;
 	stream->current = stream->top + stream->size;
@@ -1638,7 +1640,7 @@ WidgetInfo * info;
 
     for (i = 0; i < info->num_widgets; i++) {
 	if (!_EresRetrieve32(stream, info->ids + i)) {
-	    XtFree(info->ids);
+	    XtFree((char *)info->ids);
 	    info->ids = NULL;
 	    return(FALSE);
 	}
