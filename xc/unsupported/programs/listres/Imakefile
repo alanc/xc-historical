@@ -1,27 +1,8 @@
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
-SYS_LIBRARIES = -lm
-SRCS1 = listres.c util.c widgets.c 
-OBJS1 = listres.o util.o widgets.o 
-SRCS2 = viewres.c util.c widgets.c 
-OBJS2 = viewres.o util.o widgets.o 
-PLACESTOLOOK = $(AWIDGETSRC)\/libXaw.a $(TOOLKITSRC)\/libXt.a
-PROGRAMS = viewres listres
+  SYS_LIBRARIES = -lm
+           SRCS = listres.c 
+           OBJS = listres.o 
 
+ComplexProgramTarget(listres)
 
-AllTarget($(PROGRAMS))
-
-ComplexProgramTarget_1(listres, $(LOCAL_LIBRARIES), /**/)
-NormalProgramTarget(viewres, $(OBJS2), $(DEPLIBS), $(LOCAL_LIBRARIES), /**/)
-SaberProgramTarget(viewres, $(SRCS2), $(OBJS2), $(LOCAL_LIBRARIES), /**/)
-
-/*
-clean:: 
-	$(RM) widgets.c
-
-depend:: widgets.c
-
-widgets.c: genlist.sh
-	$(RM) $@
-	sh genlist.sh $(PLACESTOLOOK) >$@
-*/
