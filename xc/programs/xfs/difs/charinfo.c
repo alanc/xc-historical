@@ -1,21 +1,21 @@
-/* $XConsortium: charinfo.c,v 1.4 92/05/13 17:53:34 keith Exp $ */
+/* $XConsortium: charinfo.c,v 1.5 92/05/15 12:01:05 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the names of Network Computing Devices, Digital
- * or MIT not be used in advertising or publicity pertaining to distribution
+ * documentation, and that the names of Network Computing Devices, Digital or
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
  * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
  * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
- * DIGITAL OR MIT BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
  * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
  * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
@@ -34,6 +34,9 @@
 #include "clientstr.h"
 #define FSMD_H
 #include "FSproto.h"
+
+extern void TwoByteSwap();
+extern void FourByteSwap();
 
 #define GLWIDTHBYTESPADDED(bits,nbytes) \
 	((nbytes) == 1 ? (((bits)+7)>>3)        /* pad to 1 byte */ \
@@ -63,7 +66,7 @@ getCharInfos (pfont, num_ranges, range, ink_metrics, nump, retp)
     CharInfoPtr	*xchars, *xci;
     int		nchars;
     FontInfoPtr pinfo = &pfont->info;
-    int		r, c;
+    unsigned int r, c;
     unsigned char   ch[2];
     int         firstCol = pinfo->firstCol;
     int         firstRow = pinfo->firstRow;
@@ -183,7 +186,6 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
     unsigned long size;
     fsCharInfo *ci,
     *pci;
-    fsRange    *rp;
     CharInfoPtr	*xchars, *xcharsFree, xci;
     int		nchars;
     int		err;
@@ -239,19 +241,15 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     pointer    *data;
     int		*freeData;
 {
-    unsigned long start,
-    end;
     int         i;
     fsOffset	*lengths, *l;
     unsigned long size = 0;
     pointer     gdata,
     gd;
-    long        ch;
     int         bitorder, byteorder, scanlinepad, scanlineunit, mappad;
     int		height, dstbpr, charsize;
     int		dst_off, src_off;
     Bool	contiguous, reformat;
-    fsRange    *rp = range;
     int		nchars;
     int         src_glyph_pad = pfont->glyph;
     int         src_bit_order = pfont->bit;
@@ -261,14 +259,13 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     int		min_left, max_right;
     int		srcbpr;
     int		lshift = 0, rshift = 0, dst_left_bytes = 0, src_left_bytes = 0;
-    unsigned char   *src;
-    unsigned char   *dst;
+    unsigned char   *srcp;
+    unsigned char   *dstp;
     unsigned char   bits1, bits2;
     int		    width;
     int		    src_extra;
     int		    dst_extra;
     int		    r, w;
-    fsRange	allRange;
     CharInfoPtr	*bitChars, *bitCharsFree, bitc;
     CharInfoPtr	*inkChars, *inkCharsFree = 0, inkc;
     FontInfoPtr	pinfo = &pfont->info;
@@ -417,13 +414,13 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 
 	/* start address for the destination of bits for this char */
 
-	dst = gd;
+	dstp = gd;
 
 	/* adjust destination and calculate shift offsets */
 	switch (mappad) {
 	case BitmapFormatImageRectMax:
 	    /* leave the first padded rows blank */
-	    dst += dstbpr * (max_ascent - inkm->ascent);
+	    dstp += dstbpr * (max_ascent - inkm->ascent);
 	    /* fall thru */
 	case BitmapFormatImageRectMaxWidth:
 	    dst_off = inkm->leftSideBearing - min_left;
@@ -435,13 +432,13 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	}
 
 	srcbpr = GLYPH_SIZE (bitc, src_glyph_pad);
-	src = (unsigned char *) bitc->bits;
+	srcp = (unsigned char *) bitc->bits;
 
 	/* adjust source */
 	src_off = 0;
 	if (inkm != bitm)
 	{
-	    src += (bitm->ascent - inkm->ascent) * srcbpr;
+	    srcp += (bitm->ascent - inkm->ascent) * srcbpr;
 	    src_off = inkm->leftSideBearing - bitm->leftSideBearing;
 	}
 
@@ -467,20 +464,20 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	{
 	    if (srcbpr == dstbpr && src_left_bytes == dst_left_bytes)
 	    {
-		r = (bitm->ascent + bitm->descent) * width;
-		bcopy (src, dst, r);
-		dst += r;
+		r = (inkm->ascent + inkm->descent) * width;
+		bcopy (srcp, dstp, r);
+		dstp += r;
 	    }
 	    else
 	    {
-		for (r = bitm->ascent + bitm->descent; r; r--)
+		for (r = inkm->ascent + inkm->descent; r; r--)
 		{
-		    dst += dst_left_bytes;
-		    src += src_left_bytes;
+		    dstp += dst_left_bytes;
+		    srcp += src_left_bytes;
 		    for (w = width; w; w--)
-			*dst++ = *src++;
-		    dst += dst_extra;
-		    src += src_extra;
+			*dstp++ = *srcp++;
+		    dstp += dst_extra;
+		    srcp += src_extra;
 		}
 	    }
 	}
@@ -505,29 +502,29 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 		    src_extra--;
 	    }
 	    
-	    for (r = bitm->ascent + bitm->descent; r; r--)
+	    for (r = inkm->ascent + inkm->descent; r; r--)
 	    {
-		dst += dst_left_bytes;
-		src += src_left_bytes;
+		dstp += dst_left_bytes;
+		srcp += src_left_bytes;
 		bits2 = 0;
 		/* fetch first part of source when necessary */
 		if (dst_off < src_off)
-		    bits2 = *src++;
+		    bits2 = *srcp++;
 		/*
  		 * XXX I bet this does not work when
 		 * src_bit_order != src_byte_order && scanlineunit > 1
 		 */
 		for (w = width; w; w--)
 		{
-		    bits1 = *src++;
+		    bits1 = *srcp++;
 		    if (src_bit_order == MSBFirst)
 		    {
-			*dst++ = MSBBitRight(bits1, rshift) |
+			*dstp++ = MSBBitRight(bits1, rshift) |
 				 MSBBitLeft (bits2, lshift);
 		    }
 		    else
 		    {
-			*dst++ = LSBBitRight(bits1, rshift) |
+			*dstp++ = LSBBitRight(bits1, rshift) |
 				 LSBBitLeft (bits2, lshift);
 		    }
 		    bits2 = bits1;
@@ -536,12 +533,12 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 		if (dst_extra > 0)
 		{
 		    if (src_bit_order == MSBFirst)
-			*dst = MSBBitLeft (bits2, lshift);
+			*dstp = MSBBitLeft (bits2, lshift);
 		    else
-			*dst = LSBBitLeft (bits2, lshift);
+			*dstp = LSBBitLeft (bits2, lshift);
 		}
-		dst += dst_extra;
-		src += src_extra;
+		dstp += dst_extra;
+		srcp += src_extra;
 	    }
 	}
 	/* skip the amount we just filled in */
