@@ -58,13 +58,6 @@ terms and conditions:
  */
 #include <stdio.h>
 
-#ifndef XoftWare
-#define XoftWare
-#endif
-
-#ifdef XoftWare
-#define _NO_FLOATING_PT
-#endif
 /*
  *  Core X Includes
  */
@@ -525,7 +518,7 @@ static int InitializeGeomAA(flo,ped)
 
 	   if (a == 1 && d == 1) {
 	       /* just Cropping, no real resampling to be done */
-             /* will come up with a special case for this in Beta */
+	       /* will come up with a special case for this in Beta */
 	   }
 	   pvtband->linefunc =
 		scale_lines[IndexClass(pet->emitter[band].format->class)]; 
@@ -904,64 +897,113 @@ DO_FL	(FL_Q, QuadPixel, int_constant)
 /**********************************************************************/
 /* (x,y) separable routines (eg, scale, mirror_x, mirror_y)  */
 
+/**********************************************************************/
+/* NOTE - see caveat for GL_b for why the user shouldn't really be
+ * asking for antialias in the first place...
+ */
 static void SL_b (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)
-	register void *OUTP, **srcimg;
-	register int width,sline;
-	mpAntiAliasDefPtr pvt;
-	pGeomDefPtr pedpvt; 
-	mpAntiAliasBandPtr pvtband;
+register void *OUTP, **srcimg;
+register int width,sline;
+pGeomDefPtr pedpvt; 
+mpAntiAliasDefPtr pvt;
+mpAntiAliasBandPtr pvtband;
 {
-	register int	xbeg	= pvtband->x_start;
-	register int	xend	= pvtband->x_end;
-	register int	*x_locs	= pvtband->x_locs;
-	register LogInt constant = (LogInt) pvtband->int_constant;
-	register LogInt *src	= (LogInt *) (srcimg[sline]);
-	register LogInt *outp	= (LogInt *) OUTP;
-	register LogInt outval, M, fill;
-	register int	i= 0, w;
+double d  = 	pedpvt->coeffs[3];
 
-	fill = (constant ? ~(LogInt)0 : 0);
+/* These variables describe the limits of the bounding rectangle */
+
+/* since x and y separable, x limits are precalculated once */
+register int *ixminptr=pvtband->ixmin;
+register int *ixmaxptr=pvtband->ixmax;
+register int ixmin,ixmax;	
+
+/* since x and y separable, y limits will be set once this line */
+register int iymin,iymax;
+
+/* some variables which describe available input data (for clipping) */
+register int 	minline  = pvtband->lo_src_available;
+register int 	maxline  = pvtband->hi_src_available;
 
 
-	for (w = xbeg >> LOGSHIFT; w > 0; w--, i+=32)  *outp++ = fill;
+/* cast of constant, output and input pointers to correct type */
+register LogInt *outp	= (LogInt *) OUTP;
+register LogInt *ptrIn;
+register LogInt constant;
+register LogInt value,outval,M;
+register int	nfound;
+register int	i= 0, w;
 
-	if (xbeg & LOGMASK)  {
-	    /* XXX Do funny word */
-	    outval = BitLeft(fill,LOGSIZE-i);
-	    for (i = xbeg, M=LOGBIT(i) ; M && i <= xend ; LOGRIGHT(M), i++)
-		if (LOG_tstbit(src,x_locs[i]))
-		    outval |= M;
-	    if (i > xend) {
-	        if (fill) outval |= ~BitLeft(fill,LOGSIZE-i);
-		i = (i+LOGMASK) & ~LOGMASK;
+    	constant = pvtband->int_constant ? ~(LogInt) 0 : 0;
+
+	/* round bounding rectangle limits to ints */
+	iymin=pvtband->left_br.ymin;
+	iymax=pvtband->left_br.ymax;
+
+	/* clip to available src data */
+	if (iymin < minline) 	iymin = 0;
+	if (iymax > maxline) 	iymax = maxline;
+	if (iymax > iymin)	iymax--;
+
+	/* M is a number that encodes the "active" bit */ 
+	M=LOGLEFT; 
+	
+	/* val accumulates the output bits */
+	outval = 0;
+
+	/* loop through all the output pixels on this line */
+	while ( width-- > 0 ) { 
+	    register int 	ix,iy;
+
+   	    /* make use of precalculated X limits */
+	    ixmin = *ixminptr++;
+	    ixmax = *ixmaxptr++;
+
+	    nfound = 0;   
+	    value = 0;   
+	    for (iy=iymin; iy<=iymax; ++iy) {
+		ptrIn = (LogInt *) srcimg[iy]; 
+
+		for (ix=ixmin; ix<=ixmax; ++ix) {
+		  ++nfound;
+		  if (LOG_tstbit(ptrIn,ix)) {
+		    ++value;
+		  }
+		}
+	    } /* end of iy loop */
+
+/* See GL_b() for an explanation of the kludge below */
+
+#define kludge 8/7
+    /* note: 4/3 relies on C evaluating left to right */
+
+	    if (!nfound)
+		outval |= (constant&M);	/* set to background */
+	    else if (value*kludge >= nfound)
+		outval |= M;
+	    /* shift our active bit over one */
+	    LOGRIGHT(M); 
+		
+	    /* if we hit the end of a word, output what we have */
+	    if (!M) { 
+		*outp++ = outval; 	/* record output data   */
+		M=LOGLEFT; 		/* reset active bit  	*/
+		outval = 0; 		/* reset accumulator 	*/
 	    }
-	    *outp++ = outval;
-	}
 
-	if ( i <= xend) {
-	    w = (xend - i + 1) >> LOGSHIFT;
-	    for ( ; w > 0; w--, *outp++ = outval)
-		for (outval = 0, M=LOGLEFT ; M ; LOGRIGHT(M), i++)
-		    if (LOG_tstbit(src,x_locs[i]))
-			    outval |= M;
+	} /* end of line loop */
 
-	    for (outval = 0, M=LOGLEFT; i <= xend; LOGRIGHT(M), i++)
-	        if (LOG_tstbit(src,x_locs[i]))
-		    outval |= M;
+	/* if we didn't write all the pixels out, do so now */
+	if (M != LOGLEFT) *outp = outval;
 
-	    if (i & LOGMASK) {
-	        if (fill) outval |= ~BitLeft(fill,LOGSIZE-i);
-		i = (i+LOGMASK) & ~LOGMASK;
-		*outp++ = outval;
-	    }
-	}
-	for ( ; i < width; i += 32) *outp++ = fill;
+	/* before leaving, update bounding rect for next line */
+	pvtband->left_br.ymin += d;
+	pvtband->left_br.ymax += d;
 }
 
 /* NOTE: too bad paper is white is 255, otherwise you can often avoid the
 ** divide by "if (value) value /= nfound;"
 */
-#define nnlinsep_func(funcname, iotype, valtype, CONST)			\
+#define aalinsep_func(funcname, iotype, valtype, CONST)			\
 									\
 	/* round bounding rectangle limits to ints */			\
 	iymin = pvtband->left_br.ymin;					\
@@ -1038,7 +1080,7 @@ register iotype *ptrIn;							\
 register valtype value; 						\
 register int	i,nfound;						\
 									\
-	nnlinsep_func(funcname, iotype, valtype, CONST)			\
+	aalinsep_func(funcname, iotype, valtype, CONST)			\
 }
 
 DO_SL	(SL_R, RealPixel, RealPixel, flt_constant)
@@ -1049,59 +1091,158 @@ DO_SL	(SL_Q, QuadPixel, QuadPixel, int_constant)
 /**********************************************************************/
 /* general routines (should be able to handle any valid map) */
 
-/* XXX - this routine isn't real, it's just a copy of scale so far */
+/* CAVEAT - antialias doesn't really make much sense for bit-bit,
+ * because you can't represent any intermediate values.  This means
+ * you can choose between line dropouts (bad) or making your image
+ * overly bold (also bad).  The algorithm here assumes that if you
+ * were worried about being too bold, you would use the default
+ * sampling technique (eg, nearest neighbor). So it attempts to
+ * eliminate line dropouts at the expense of decreasing fine 
+ * image detail.
+ */
 static void GL_b (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)
-	register void *OUTP, **srcimg;
-	register int width,sline;
-	pGeomDefPtr pedpvt; 
-	mpAntiAliasDefPtr pvt;
-	mpAntiAliasBandPtr pvtband;
+register void *OUTP, **srcimg;
+register int width,sline;
+pGeomDefPtr pedpvt; 
+mpAntiAliasDefPtr pvt;
+mpAntiAliasBandPtr pvtband;
 {
-	register int	xbeg	= pvtband->x_start;
-	register int	xend	= pvtband->x_end;
-	register int	*x_locs	= pvtband->x_locs;
-	register LogInt constant = (LogInt) pvtband->int_constant;
-	register LogInt *src	= (LogInt *) (srcimg[sline]);
-	register LogInt *outp	= (LogInt *) OUTP;
-	register LogInt outval, M, fill;
-	register int	i= 0, w;
+/* Mapping coefficients */
+double a  = 	pedpvt->coeffs[0]; 
+double b  = 	pedpvt->coeffs[1];
+double c  = 	pedpvt->coeffs[2];
+double d  = 	pedpvt->coeffs[3];
+int a_not_zero = pvt->a_not_zero;
+int c_not_zero = pvt->c_not_zero;
 
-	fill = (constant ? ~(LogInt)0 : 0);
+/* These variables describe the limits of the bounding rectangle */
+double xmin = 	pvtband->left_br.xmin;
+double ymin = 	pvtband->left_br.ymin;
+double xmax = 	pvtband->left_br.xmax;
+double ymax = 	pvtband->left_br.ymax;
+register int ixmin,iymin,ixmax,iymax;	
 
+/* loop variables for roaming through the bounding rectangle */
+register int 	ix,iy;
 
-	for (w = xbeg >> LOGSHIFT; w > 0; w--, i+=32)  *outp++ = fill;
+/* some variables which describe available input data (for clipping) */
+register int 	maxpixl  = pvtband->in_width - 1;
+register int 	minline  = pvtband->lo_src_available;
+register int 	maxline  = pvtband->hi_src_available;
 
-	if (xbeg & LOGMASK)  {
-	    /* XXX Do funny word */
-	    outval = BitLeft(fill,LOGSIZE-i);
-	    for (i = xbeg, M=LOGBIT(i) ; M && i <= xend ; LOGRIGHT(M), i++)
-		if (LOG_tstbit(src,x_locs[i]))
-		    outval |= M;
-	    if (i > xend) {
-	        if (fill) outval |= ~BitLeft(fill,LOGSIZE-i);
-		i = (i+LOGMASK) & ~LOGMASK;
+/* cast of constant, output and input pointers to correct type */
+register LogInt *outp	= (LogInt *) OUTP;
+register LogInt *ptrIn;
+register LogInt constant;
+register LogInt value,outval,M;
+register int	nfound;
+register int	i= 0, w;
+
+    	constant = pvtband->int_constant ? ~(LogInt) 0 : 0;
+
+	/* round bounding rectangle limits to ints */
+	ixmin = xmin;
+	iymin = ymin;
+	ixmax = xmax;
+	iymax = ymax; 
+
+	/* clip to available src data */
+	if (ixmin < 0) 	 	ixmin = 0;
+	if (iymin < minline) 	iymin = 0;
+	if (ixmax > maxpixl) 	ixmax = maxpixl;
+	if (iymax > maxline) 	iymax = maxline;
+
+	/* M is a number that encodes the "active" bit */ 
+	M=LOGLEFT; 
+	
+	/* val accumulates the output bits */
+	outval = 0;
+
+	/* loop through all the output pixels on this line */
+	while ( width > 0 ) { 
+
+	    xmin += a; 
+	    xmax += a; 
+	    nfound = 0;   
+	    value = 0;   
+	    for (iy=iymin; iy<=iymax; ++iy) {
+		ptrIn = (LogInt *) srcimg[iy]; 
+
+		for (ix=ixmin; ix<=ixmax; ++ix) {
+		  ++nfound;
+		  if (LOG_tstbit(ptrIn,ix)) {
+		    ++value;
+		  }
+		}
+	    } /* end of iy loop */
+
+/* on the kludge below:  antialias is weird when you are going from
+   1 bit to 1 bit.  A straight generalization of the n-bit algorithm
+   would have us find the average value in the bounding rect, and
+   then round to 0 or 1.  This corresponds to kludge = 2.  However,
+   it may be desirable to choose black if a much smaller number of
+   pixels in the bounding rect are off.  For example, we may want to
+   have black output if less than 3 out of every four pixels in the
+   input bounding rect are on.  (value <= 3/4 nfound) which would
+   correspond to value *4/3 < nfound.
+
+   The problem with choosing anything other than 2 is that we are
+   treating black and white asymmetrically:   the algorithm will
+   perform well for black lines on a white background, and poorly
+   for white pixels on a black background.  Granted, one could use
+   Point or Constrain to flip, but.... ugh.
+
+   Note that if the bounding rectangle is completely off the input
+   image, then we should set 'val' to the background value (constant).
+*/
+
+#define kludge 8/7
+    /* note: 4/3 relies on C evaluating left to right */
+
+	    if (!nfound)
+		outval |= (constant&M);	/* set to background */
+	    else if (value*kludge >= nfound)
+		outval |= M;
+	    /* shift our active bit over one */
+	    LOGRIGHT(M); 
+		
+	    /* if we hit the end of a word, output what we have */
+	    if (!M) { 
+		*outp++ = outval; 	/* record output data   */
+		M=LOGLEFT; 		/* reset active bit  	*/
+		outval = 0; 		/* reset accumulator 	*/
 	    }
-	    *outp++ = outval;
+
+	    /* prepare geometry stuff for next loop */
+	    width--; 
+	    ixmin = xmin;
+	    ixmax = xmax;     
+	    if (c_not_zero) {
+		ymin += c; 
+		ymax += c; 
+		iymin = ymin;     
+		iymax = ymax;    
+		if (iymin < minline)	iymin = minline;
+	       	if (iymax >= maxline)	iymax = maxline;
+		if (iymax > iymin)	iymax--;
+	    } 
+		if (ixmin < 0)		ixmin = 0;
+		if (ixmax >= maxpixl)	ixmax = maxpixl;
+		if (ixmax > ixmin)	ixmax--;
+	} /* end of line loop */
+
+	/* if we didn't write all the pixels out, do so now */
+	if (M != LOGLEFT) *outp = outval;
+
+	/* before leaving, update bounding rect for next line */
+	if (pvt->b_not_zero) {
+	   pvtband->left_br.xmin += b;
+	   pvtband->left_br.xmax += b;
 	}
-
-	if ( i <= xend) {
-	    w = (xend - i + 1) >> LOGSHIFT;
-	    for ( ; w > 0; w--, *outp++ = outval)
-		for (outval = 0, M=LOGLEFT ; M ; LOGRIGHT(M), i++)
-		    if (LOG_tstbit(src,x_locs[i]))
-			    outval |= M;
-
-	    for (outval = 0, M=LOGLEFT; i <= xend; LOGRIGHT(M), i++)
-	        if (LOG_tstbit(src,x_locs[i]))
-		    outval |= M;
-
-	    if (i & LOGMASK) {
-	        if (fill) outval |= ~BitLeft(fill,LOGSIZE-i);
-		i = (i+LOGMASK) & ~LOGMASK;
-		*outp++ = outval;
-	    }
+	if (pvt->d_not_zero) {
+	   pvtband->left_br.ymin += d;
+	   pvtband->left_br.ymax += d;
 	}
-	for ( ; i < width; i += 32) *outp++ = fill;
 }
 
 /* NOTE: too bad paper is white is 255, otherwise you can often avoid the
@@ -1216,5 +1357,6 @@ DO_GL	(GL_R, RealPixel, RealPixel, flt_constant)
 DO_GL	(GL_B, BytePixel, QuadPixel, int_constant)
 DO_GL	(GL_P, PairPixel, QuadPixel, int_constant)
 DO_GL	(GL_Q, QuadPixel, QuadPixel, int_constant)
+
 /**********************************************************************/
-/* end module mpgeomnn.c */
+/* end module mpgeomaa.c */
