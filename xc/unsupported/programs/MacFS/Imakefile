@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Imakefile,v 1.2 93/09/19 14:50:23 rws Exp $ */
 #include <Server.tmpl>
 
 REZ = /mac/bin/rez -i /:mac:lib:rincludes -d AUX
@@ -7,7 +7,7 @@ OSDIR = $(FONTSERVERSRC)/os
 OSLIB = $(OSDIR)/libos.a
 DIFSDIR = $(FONTSERVERSRC)/difs
 DIFSLIB = $(DIFSDIR)/libdifs.a
-SYSLIBS =
+SYSLIBS = MathLibrary
 
 INCLUDES = -I/usr/include/mac -I$(FONTLIBSRC)/include \
 	-I$(FONTINCSRC) -I$(FONTSERVERSRC)/include \
@@ -33,7 +33,7 @@ clean::
 
 MacFS:		${DEPFSLIBS} ${OBJS} MacFontUIError.o
 		ld /usr/lib/maccrt0.o /lib/crt2.o -o MacFS MacFontUIError.o \
-		${OBJS} ${FSLIBS} \
+		${OBJS} $(LDPRELIB) ${FSLIBS} $(SYSLIBS) $(EXTRA_LIBRARIES) \
 		/usr/lib/low.o -lmac_s -lat -lld -lmr -lc_s \
 		/lib/crtn.o /usr/lib/low.ld -ll -ly
 
