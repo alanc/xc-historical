@@ -1,4 +1,4 @@
-/* $XConsortium: charinfo.c,v 1.6 92/05/28 15:57:19 gildea Exp $ */
+/* $XConsortium: charinfo.c,v 1.7 92/11/18 21:30:12 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -187,7 +187,8 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
     fsXCharInfo *ci;
     fsXCharInfo cilocal;
     char *pci;
-    CharInfoPtr	*xchars, xci;
+    CharInfoPtr	*xchars, *xchars_cur;
+    CharInfoPtr xci;
     int		nchars;
     int		err;
     
@@ -210,8 +211,9 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
     *num_extents = nchars;
     
     /* pack the data */
+    xchars_cur = xchars;
     while (nchars--) {
-	xci = *xchars++;
+	xci = *xchars_cur++;
 	cilocal.ascent = xci->metrics.ascent;
 	cilocal.descent = xci->metrics.descent;
 	cilocal.left = xci->metrics.leftSideBearing;
