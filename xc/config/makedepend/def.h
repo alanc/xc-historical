@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.11 89/12/12 12:19:56 jim Exp $
+ * $XConsortium: def.h,v 1.12 89/12/12 12:44:24 jim Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -9,7 +9,7 @@
 
 #define MAXDEFINES	512
 #define MAXFILES	512
-#define MAXDIRS		10
+#define MAXDIRS		20
 #define SYMTABINC	10	/* must be > 1 for define() to work right */
 #define	TRUE		1
 #define	FALSE		0
