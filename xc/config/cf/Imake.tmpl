@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.172 93/07/14 19:23:18 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.173 93/07/15 17:13:26 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -137,7 +137,6 @@ XCOMM
 #endif /* M4330 */
 
 #ifdef macII
-/* A/UX cpp has no unique symbol:  build imake with BOOTSTRAPCFLAGS=-DmacII */
 #define MacroIncludeFile <macII.cf>
 #define MacroFile macII.cf
 #undef  macII
