@@ -1,4 +1,4 @@
-/* $Header: Xutil.h,v 11.37 87/09/03 17:19:43 rws Locked $ */
+/* $Header: Xutil.h,v 11.38 87/09/12 02:27:19 rws Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -266,4 +266,6 @@ extern int XDeleteContext(); /* window, context */
 XWMHints *XGetWMHints();
 Region XCreateRegion(), XPolygonRegion();
 XImage *XCreateImage();
+
+XVisualInfo *XGetVisualInfo();
 #endif _XUTIL_H_
