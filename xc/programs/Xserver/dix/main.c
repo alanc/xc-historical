@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.12 91/02/05 17:15:26 rws Exp $ */
+/* $XConsortium: main.c,v 5.13 91/02/14 19:35:26 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -36,6 +36,7 @@ SOFTWARE.
 #include "extension.h"
 #include "colormap.h"
 #include "cursorstr.h"
+#include "font.h"
 #include "opaque.h"
 #include "servermd.h"
 #include "site.h"
