@@ -804,12 +804,13 @@ static void CacheArgs(args, num_args, typed_args, num_typed_args, quark_cache,
     }
     *pQuarks = quarks;
 
-    for (i = 0; i < count; i++) {
-	if (args != NULL) {
-	    quarks[i] = StringToQuark(args[i].name);
-	} else {
-	    quarks[i] = StringToQuark(typed_args[i].name);
-	}
+    if (args != NULL) {
+	for (i = count; i; i--)
+	    *quarks++ = StringToQuark((args++)->name);
+    }
+    else {
+	for (i = count; i; i--)
+	    *quarks++ = StringToQuark((typed_args++)->name);
     }
 }
 
