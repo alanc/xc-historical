@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.57 89/04/25 20:39:28 rws Exp $ */
+/* $XConsortium: io.c,v 1.58 89/05/10 23:56:53 keith Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -192,6 +192,8 @@ ReadRequestFromClient(client, status, oldbuf)
 	    YieldControlAndReturnNull();
 	}
     }
+    if (needed == 0)
+	needed = sizeof(xReq);
     *status = needed;
     oc->input.lenLastReq = needed;
 
