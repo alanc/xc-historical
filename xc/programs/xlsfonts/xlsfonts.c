@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.29 89/12/10 17:13:05 rws Exp $
+ * $XConsortium: xlsfonts.c,v 1.30 90/01/09 16:44:31 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -403,11 +403,11 @@ static int IgnoreError(dpy, event)
 }
 
 static char *bounds_metrics_title =
-                      "width   left    right    asc    desc   attr\n";
+                      "width left  right  asc  desc   attr   keysym\n";
 static char *char_metrics_fmt = 
-"\t0x%02x%02x (%u)\t%4d    %4d    %4d    %4d    %4d    0x%x\n";
+"\t0x%02x%02x (%u)\t%4d  %4d  %4d  %4d  %4d  0x%04x  %s\n";
 static char *bounds_metrics_fmt =
-"\t%3s\t\t%4d    %4d    %4d    %4d    %4d    0x%x\n";
+"\t%3s\t\t%4d  %4d  %4d  %4d  %4d  0x%04x\n";
 
 
 #define PrintBounds(_what,_ptr) \
@@ -557,8 +557,10 @@ print_character_metrics (info)
     for (j = info->min_byte1; j <= info->max_byte1; j++) {
 	n = saven;
 	for (i = info->min_char_or_byte2; i <= info->max_char_or_byte2; i++) {
+	    char *s = XKeysymToString ((KeySym) n);
 	    printf (char_metrics_fmt, j, i, n, pc->width, pc->lbearing,
-		    pc->rbearing, pc->ascent, pc->descent, pc->attributes);
+		    pc->rbearing, pc->ascent, pc->descent, pc->attributes,
+		    s ? s : ".");
 	    pc++;
 	    n++;
 	}
