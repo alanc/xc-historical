@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.142 89/12/14 17:37:09 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.143 89/12/15 18:17:42 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -76,6 +76,7 @@ SOFTWARE.
  * now get system-specific includes
  */
 #ifdef CRAY
+#define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
 #endif
 #ifdef macII
