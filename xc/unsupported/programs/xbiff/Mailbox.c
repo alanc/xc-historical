@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.11 88/09/06 09:57:05 swick Exp $
+ * $XConsortium: Mailbox.c,v 1.12 88/09/06 16:42:08 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -449,8 +449,8 @@ static void redraw_mailbox (w)
 
     /* center the picture in the window */
 
-    x = (w->core.width - PictureWidth) / 2;
-    y = (w->core.height - PictureHeight) / 2;
+    x = (((int)w->core.width) - PictureWidth) / 2;
+    y = (((int)w->core.height) - PictureHeight) / 2;
 
     if (w->mailbox.flag_up) {		/* paint the "up" position */
 	back = w->mailbox.foreground_pixel;
