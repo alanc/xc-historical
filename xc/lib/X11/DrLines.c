@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrLines.c,v 11.11 88/08/11 14:55:17 jim Exp $ */
+/* $XConsortium: XDrLines.c,v 11.12 88/09/06 16:06:49 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -21,6 +21,8 @@ XDrawLines (dpy, d, gc, points, npoints, mode)
     req->drawable = d;
     req->gc = gc->gid;
     req->coordMode = mode;
+    if ((req->length + npoints) > 65535)
+	npoints = 65535 - req->length; /* force BadLength, if possible */
     req->length += npoints;
        /* each point is 2 16-bit integers */
     length = npoints << 2;		/* watch out for macros... */
