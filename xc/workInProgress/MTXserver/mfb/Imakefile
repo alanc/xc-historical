@@ -21,10 +21,14 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 
 CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../../include -I../../../include
+LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
+	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
+	   -DEQWHOLEWORD=\=~0 -DOPEQ=\|=
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mfb,$(OBJS))
-LintLibraryTarget(mfb,$(SRCS))
+LintLibraryTarget(mfb,$(LINTDEFS) $(SRCS))
+NormalLintTarget($(LINTDEFS) $(SRCS))
 
 DependTarget()
 
@@ -106,8 +110,3 @@ mfbteblack.o: mfbtegblt.c mfbtegblt.o
 	${CC} -DMFBTEGLYPHBLT=mfbTEGlyphBltBlack \
 	   -DOP=~ -DCLIPTETEXT=mfbImageGlyphBltBlack $(CFLAGS) -c mfbteblack.c
 	rm -f mfbteblack.c
-
-lint:
-	lint -Cmfb $(INCLUDES) -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
-	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite -DEQWHOLEWORD=\=~0 \\
-	   -DOPEQ=\|= $(SRCS)  > lint.out
