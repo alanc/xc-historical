@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.57 89/08/16 10:07:25 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.58 89/10/04 15:01:37 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -101,7 +101,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
     Bool dnet = False;			/* if true, then DECnet format */
     int idisplay;			/* required display number */
     int iscreen = 0;			/* optional screen number */
-    int (*connfunc)() = NULL;		/* method to create connection */
+    int (*connfunc)();			/* method to create connection */
     int fd = -1;			/* file descriptor to return */
     int len;				/* length tmp variable */
     int retries = X_CONNECTION_RETRIES;

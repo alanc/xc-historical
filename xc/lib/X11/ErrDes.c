@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.34 89/05/08 16:52:42 jim Exp $
+ * $XConsortium: XErrDes.c,v 11.35 89/05/08 17:19:01 jim Exp $
  */
 
 /***********************************************************
@@ -68,16 +68,14 @@ XGetErrorText(dpy, code, buffer, nbytes)
     char *buffer;
     int nbytes;
 {
-
-    char *defaultp = NULL;
     char buf[32];
     register _XExtension *ext;
 
     if (nbytes == 0) return;
     sprintf(buf, "%d", code);
     if (code <= (_XErrorListSize/ sizeof (char *)) && code > 0) {
-	defaultp =  _XErrorList[code];
-	XGetErrorDatabaseText(dpy, "XProtoError", buf, defaultp, buffer, nbytes);
+	XGetErrorDatabaseText(dpy, "XProtoError", buf, _XErrorList[code],
+			      buffer, nbytes);
 	}
     ext = dpy->ext_procs;
     while (ext) {		/* call out to any extensions interested */
