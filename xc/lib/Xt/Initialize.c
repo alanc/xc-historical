@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.171 90/12/31 13:02:03 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.172 91/01/04 19:55:20 gildea Exp $ */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -455,7 +455,7 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	String name, class;
 	XrmOptionDescRec *urlist;
 	Cardinal num_urs;
-	Cardinal *argc;
+	int *argc;
 	char *argv[];
 {
 	Boolean tmp_bool;
@@ -479,7 +479,7 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	   This routine parses the command line arguments and removes them from
 	   argv.
 	 */
-	XrmParseCommand(&cmd_db, options, num_options, name, (int*)argc, argv);
+	XrmParseCommand(&cmd_db, options, num_options, name, argc, argv);
 
 	name_list[0] = pd->name;
 	name_list[1] = XrmPermStringToQuark("xnlLanguage");
@@ -613,7 +613,7 @@ XtAppContext * app_context_return,
 _Xconst char* application_class,
 XrmOptionDescRec *options,
 Cardinal num_options,
-Cardinal *argc_in_out,
+int *argc_in_out,
 String *argv_in_out,
 String *fallback_resources,
 ArgList args_in,
@@ -627,7 +627,8 @@ XtAppInitialize(app_context_return, application_class, options, num_options,
 XtAppContext * app_context_return;
 String application_class;
 XrmOptionDescRec *options;
-Cardinal num_options, *argc_in_out, num_args_in;
+Cardinal num_options, num_args_in;
+int *argc_in_out;
 String *argv_in_out, * fallback_resources;     
 ArgList args_in;
 #endif
@@ -701,7 +702,7 @@ _Xconst char* name,
 _Xconst char* classname,
 XrmOptionDescRec *options,
 Cardinal num_options,
-Cardinal *argc,
+int *argc,
 String *argv
 )
 #else
@@ -709,8 +710,9 @@ Widget
 XtInitialize(name, classname, options, num_options, argc, argv)
 String name, classname;
 XrmOptionDescRec *options;
-Cardinal num_options, *argc;
+Cardinal num_options;
 String *argv;
+int *argc;
 #endif
 {
     Widget root;

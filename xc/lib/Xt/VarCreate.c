@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.16 90/12/20 10:41:24 converse Exp $ */
+/* $XConsortium: VarCreate.c,v 1.17 91/01/06 13:32:51 rws Exp $ */
 
 /*
 
@@ -274,7 +274,7 @@ _XtVaAppInitialize(
     _Xconst char* application_class,
     XrmOptionDescList options,
     Cardinal num_options,
-    Cardinal *argc_in_out,
+    int *argc_in_out,
     String *argv_in_out,
     String *fallback_resources,
     va_list var_args)
@@ -287,7 +287,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     _Xconst char *application_class;
     XrmOptionDescList options;
     Cardinal num_options;
-    Cardinal *argc_in_out;
+    int *argc_in_out;
     String *argv_in_out;
     String *fallback_resources;
     va_list var_args;
@@ -378,7 +378,7 @@ XtVaAppInitialize(
     _Xconst char* application_class,
     XrmOptionDescList options,
     Cardinal num_options,
-    Cardinal *argc_in_out,
+    int *argc_in_out,
     String *argv_in_out,
     String *fallback_resources,
     ...)
@@ -390,7 +390,7 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
     String application_class;
     XrmOptionDescList options;
     Cardinal num_options;
-    Cardinal *argc_in_out;
+    int *argc_in_out;
     String *argv_in_out;
     String *fallback_resources;
     va_dcl

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.7 89/10/09 14:31:16 jim Exp $
+ * $XConsortium: sharedlib.c,v 1.8 90/03/05 17:34:01 kit Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,8 +39,9 @@ Widget
 XtInitialize(name, classname, options, num_options, argc, argv)
 String name, classname;
 XrmOptionDescRec *options;
-Cardinal num_options, *argc;
+Cardinal num_options;
 String *argv;
+int *argc;
 {
     extern Widget _XtInitialize();
     return _XtInitialize (name, classname, options, num_options, argc, argv);
@@ -53,7 +54,8 @@ XtAppInitialize(app_context_return, application_class, options, num_options,
 XtAppContext * app_context_return;
 String application_class;
 XrmOptionDescRec *options;
-Cardinal num_options, *argc_in_out, num_args_in;
+Cardinal num_options, num_args_in;
+int *argc_in_out;
 String *argv_in_out, * fallback_resources;     
 ArgList args_in;
 {
@@ -67,7 +69,7 @@ ArgList args_in;
 Widget
 XtVaAppInitialize(XtAppContext *app_context_return, String application_class,
 		  XrmOptionDescList options, Cardinal num_options,
-		  Cardinal *argc_in_out, String *argv_in_out,
+		  int *argc_in_out, String *argv_in_out,
 		  String *fallback_resources, ...)
 #else
 Widget XtVaAppInitialize(app_context_return, application_class, options,
@@ -77,7 +79,7 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
     String application_class;
     XrmOptionDescList options;
     Cardinal num_options;
-    Cardinal *argc_in_out;
+    int *argc_in_out;
     String *argv_in_out;
     String *fallback_resources;
     va_dcl

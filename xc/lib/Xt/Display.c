@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.61 90/12/30 15:04:50 rws Exp $ */
+/* $XConsortium: Display.c,v 1.62 91/01/08 17:09:52 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -112,7 +112,7 @@ Display *XtOpenDisplay(
 	_Xconst char* className,
 	XrmOptionDescRec *urlist,
 	Cardinal num_urs,
-	Cardinal *argc,
+	int *argc,
 	String *argv
 	)
 #else
@@ -122,7 +122,7 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	String displayName, applName, className;
 	XrmOptionDescRec *urlist;
 	Cardinal num_urs;
-	Cardinal *argc;
+	int *argc;
 	String *argv;
 #endif
 {
@@ -218,7 +218,7 @@ XtDisplayInitialize(
 	_Xconst char* classname,
 	XrmOptionDescRec *urlist,
 	Cardinal num_urs,
-	Cardinal *argc,
+	int *argc,
 	String *argv
 	)
 #else
@@ -229,7 +229,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	String name, classname;
 	XrmOptionDescRec *urlist;
 	Cardinal num_urs;
-	Cardinal *argc;
+	int *argc;
 	String *argv;
 #endif
 {

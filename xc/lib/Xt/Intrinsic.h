@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.146 90/12/19 15:16:46 converse Exp $
+* $XConsortium: Intrinsic.h,v 1.147 90/12/19 20:05:51 rws Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -1664,7 +1664,7 @@ extern void XtDisplayInitialize(
     _Xconst String	/* class */,
     XrmOptionDescRec* 	/* options */,
     Cardinal 		/* num_options */,
-    Cardinal*		/* argc */,
+    int*		/* argc */,
     char**		/* argv */
 #endif
 );
@@ -1675,7 +1675,7 @@ extern Widget XtAppInitialize(
     _Xconst String	/* application_class */,
     XrmOptionDescList 	/* options */,
     Cardinal 		/* num_options */,
-    Cardinal*		/* argc_in_out */,
+    int*		/* argc_in_out */,
     String*		/* argv_in_out */,
     String*		/* fallback_resources */,
     ArgList 		/* args */,
@@ -1689,7 +1689,7 @@ extern Widget XtVaAppInitialize(
     _Xconst String	/* application_class */,
     XrmOptionDescList	/* options */,
     Cardinal		/* num_options */,
-    Cardinal*		/* argc_in_out */,
+    int*		/* argc_in_out */,
     String*		/* argv_in_out */,
     String*		/* fallback_resources */,
     ...
@@ -1702,7 +1702,7 @@ extern Widget XtInitialize(
     _Xconst String 	/* class */,
     XrmOptionDescRec* 	/* options */,
     Cardinal 		/* num_options */,
-    Cardinal*		/* argc */,
+    int*		/* argc */,
     char**		/* argv */
 #endif
 );
@@ -1715,7 +1715,7 @@ extern Display *XtOpenDisplay(
     _Xconst String	/* className */,
     XrmOptionDescRec*	/* urlist */,
     Cardinal 		/* num_urs */,
-    Cardinal*		/* argc */,
+    int*		/* argc */,
     char**		/* argv */
 #endif
 );

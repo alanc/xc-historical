@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.42 90/12/28 17:48:00 gildea Exp $ */
+/* $XConsortium: InitialI.h,v 1.43 91/01/08 15:05:26 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -289,7 +289,7 @@ extern void _XtDisplayInitialize(
     String		/* classname */,
     XrmOptionDescRec*	/* urlist */,
     Cardinal 		/* num_urs */,
-    Cardinal*		/* argc */,
+    int*		/* argc */,
     char** 		/* argv */
 #endif
 );
