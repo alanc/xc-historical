@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XIElib.h,v 1.1 93/07/19 11:39:04 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -168,14 +168,14 @@ typedef struct {
 	 */
 	
 	struct {
-	    XieDataClass	class;
+	    XieDataClass	data_class;
 	    XieOrientation	band_order;
 	    XieLTriplet		length;
 	    XieLevels		levels;
 	} ImportClientLUT;
 	
 	struct {
-	    XieDataClass 	class;
+	    XieDataClass 	data_class;
 	    XieLTriplet		width;
 	    XieLTriplet		height;
 	    XieLevels		levels;
@@ -277,7 +277,7 @@ typedef struct {
 	struct {
 	    XiePhototag		src;
 	    Colormap		colormap;
-	    XieDataClass	class;
+	    XieDataClass	data_class;
 	    unsigned int	precision;
 	} ConvertFromIndex;
 	
@@ -1097,7 +1097,7 @@ extern void XieAwait (
 extern void XieFloImportClientLUT (
 #if NeedFunctionPrototypes
     XiePhotoElement *	/* element */,
-    XieDataClass 	/* class */,
+    XieDataClass 	/* data_class */,
     XieOrientation	/* band_order */,
     XieLTriplet		/* length */,
     XieLevels		/* levels */
@@ -1107,7 +1107,7 @@ extern void XieFloImportClientLUT (
 extern void XieFloImportClientPhoto (
 #if NeedFunctionPrototypes
     XiePhotoElement *	/* element */,
-    XieDataClass 	/* class */,
+    XieDataClass 	/* data_class */,
     XieLTriplet		/* width */,
     XieLTriplet		/* height */,
     XieLevels		/* levels */,
@@ -1243,7 +1243,7 @@ extern void XieFloConvertFromIndex (
     XiePhotoElement *	/* element */,
     XiePhototag		/* src */,
     Colormap		/* colormap */,
-    XieDataClass	/* class */,
+    XieDataClass	/* data_class */,
     unsigned int	/* precision */
 #endif
 );
