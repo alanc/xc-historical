@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.69 91/05/01 08:40:59 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.70 91/05/05 21:21:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -134,7 +134,6 @@ typedef struct {
     unsigned long nitems;		/* number of data items in value */
 } XTextProperty;
 
-#define XSuccess 0
 #define XNoMemory -1
 #define XLocaleNotSupported -2
 #define XConverterNotFound -3
