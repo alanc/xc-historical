@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.18 90/02/06 14:59:54 jim Exp $
+ * $XConsortium: Tree.c,v 1.19 90/02/07 11:09:47 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -296,22 +296,29 @@ static Boolean ConstraintSetValues(current, request, new, args, num_args)
 static void insert_new_node(parent, node)
      Widget parent, node;
 {
-  TreeConstraints pc = TREE_CONSTRAINT(parent);
+  TreeConstraints pc;
   TreeConstraints nc = TREE_CONSTRAINT(node);
-  int nindex = pc->tree.n_children;
+  int nindex;
   
   nc->tree.parent = parent;
+
+  if (parent == NULL) 
+      return;
+
   /*
    * If there isn't more room in the children array, 
    * allocate additional space.
    */  
-  if(pc->tree.n_children == pc->tree.max_children){
-    pc->tree.max_children += 
-                    (pc->tree.max_children / 2) + 2;
+
+  pc = TREE_CONSTRAINT(parent);
+  nindex = pc->tree.n_children;
+  
+  if(pc->tree.n_children == pc->tree.max_children) {
+    pc->tree.max_children +=  (pc->tree.max_children / 2) + 2;
     pc->tree.children = 
-     (WidgetList) XtRealloc(pc->tree.children, 
-                           (pc->tree.max_children) *
-                            sizeof(Widget));
+	(WidgetList) XtRealloc(pc->tree.children, 
+			       (pc->tree.max_children) *
+			       sizeof(Widget));
   } 
   /*
    * Add the sub_node in the next available slot and 
@@ -354,20 +361,29 @@ static void delete_node(parent, node)
 }
 
 static void ConstraintDestroy(w) 
-     TreeWidget w;
+Widget w;
 { 
   TreeConstraints tree_const = TREE_CONSTRAINT(w);
+  TreeWidget tw = (TreeWidget) XtParent(w);
   int i;
+
  /* 
   * Remove the widget from its parent's sub-nodes list and
   * make all this widget's sub-nodes sub-nodes of the parent.
   */
-  if(tree_const->tree.parent) { 
-    delete_node(tree_const->tree.parent, (Widget) w);
-    for(i=0;i< tree_const->tree.n_children; i++)
+  
+  if (tw->tree.tree_root == w) {
+      if (tree_const->tree.n_children > 0)
+	  tw->tree.tree_root = tree_const->tree.children[0];
+      else
+	  tw->tree.tree_root = NULL;
+  }
+
+  delete_node(tree_const->tree.parent, (Widget) w);
+  for(i=0;i< tree_const->tree.n_children; i++)
       insert_new_node(tree_const->tree.parent, 
                       tree_const->tree.children[i]);
-  }
+
   new_layout (w->core.parent, FALSE);
 }
 
@@ -624,6 +640,7 @@ static void arrange_subtree (tree, w, depth, x, y)
     Bool horiz = IsHorizontal (tree);
     Widget child = NULL;
     Dimension tmp;
+    Dimension bw2 = w->core.border_width * 2;
 
 #ifdef padparallelsubtrees
     if (tc->tree.n_children > 1) {
@@ -704,6 +721,9 @@ static void new_layout (tw, insetvalues)
      * box for the tree at that position (and below).  Then, walk again using
      * this information to layout the children at each level.
      */
+
+    if (tw->tree.tree_root == NULL)
+	return;
 
     tw->tree.maxwidth = tw->tree.maxheight = 0;
     initialize_dimensions (&tw->tree.largest, &tw->tree.n_largest, 
