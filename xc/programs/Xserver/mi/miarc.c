@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miarc.c,v 1.44 87/07/15 15:52:34 toddb Locked $ */
+/* $Header: miarc.c,v 1.45 87/08/29 16:24:17 todd Exp $ */
 /* Author: Todd Newman */
 #include "X.h"
 #include "Xprotostr.h"
@@ -246,7 +246,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		    ifirst++;
 		cptAll = polyarcs[ilast].cpt;
 		pAllPts = polyarcs[ilast].pPts;
-		polyarcs[ilast++].pPts= NULL;
+		polyarcs[ilast++].pPts = (DDXPointPtr) NULL;
 		for(; ilast < narcs; ilast++)
 		{
 		    cpt = polyarcs[ilast].cpt;
@@ -269,6 +269,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		}
 		(*pGCTo->Polylines)(pDrawTo, pGCTo, CoordModeOrigin,
 				    cptAll, pAllPts);
+		/* Don't need to free pAllPts, because we're sure to
+		 * Xrealloc it again */
 		if(fTricky)
 		{
 		    (*pGC->PushPixels)(pGC, pDrawTo, pDraw, dx, dy,
@@ -304,6 +306,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		{
 		    (*pGC->Polylines)(pDrawTo, pGCTo, CoordModeOrigin,
 				      cptAll, pAllPts);
+		    Xfree(pAllPts);
 		    if(fTricky)
 		    {
 		        (*pGC->PushPixels)(pGC, pDrawTo, pDraw, dx, dy,
@@ -311,9 +314,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		        miClearDrawable(pDrawTo, pGCTo);
 		    }
 		}
-		Xfree(pAllPts);
-		polyarcs[i].pPts= NULL;
-
 		cptAll = cpt;
 		pAllPts = pPts;
 	    }
@@ -324,6 +324,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	if(cptAll > 0)
 	{
 	    (*pGC->Polylines)(pDrawTo,pGCTo, CoordModeOrigin, cptAll, pAllPts);
+	    Xfree(pAllPts);
 	}
 	if(fTricky)
 	    (*pGC->PushPixels)(pGC, pDrawTo, pDraw, dx, dy, xOrg, yOrg);
@@ -331,7 +332,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	{
 	    Xfree(polyarcs[i].pPts);
 	}
-	Xfree(pAllPts);
 	DEALLOCATE_LOCAL(polyarcs);
 	if(fTricky)
 	{
