@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.9 88/10/06 12:01:09 swick Exp $
+ *	$XConsortium: util.c,v 1.10 88/10/07 08:20:08 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.9 88/10/06 12:01:09 swick Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.10 88/10/07 08:20:08 swick Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -845,6 +845,7 @@ register TScreen *screen;
 register XExposeEvent *reply;
 {
 	register int toprow, leftcol, nrows, ncols;
+	extern Bool waiting_for_initial_map;
 
 	if((toprow = (reply->y - screen->border) /
 	 FontHeight(screen)) < 0)
@@ -869,11 +870,15 @@ register XExposeEvent *reply;
 
 	if (nrows > 0 && ncols > 0) {
 		ScrnRefresh (screen, toprow, leftcol, nrows, ncols, False);
+		if (waiting_for_initial_map) {
+		    first_map_occurred ();
+		}
 		if (screen->cur_row >= toprow &&
 		    screen->cur_row < toprow + nrows &&
 		    screen->cur_col >= leftcol &&
 		    screen->cur_col < leftcol + ncols)
 			return (1);
+
 	}
 	return (0);
 }

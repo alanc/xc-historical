@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: error.h,v 1.3 88/09/06 17:08:03 jim Exp $
+ *	$XConsortium: error.h,v 1.4 89/03/06 11:03:12 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@
 #define	ERROR_OPDEVTTY3	31	/* spawn: third open() failed on /dev/tty */
 #define	ERROR_PTYS	32	/* get_pty: not enough ptys */
 #define	ERROR_NOX	33	/* get_terminal: can't connect to server */
-
+#define ERROR_PTY_EXEC	34	/* waiting for initial map */
 
 #define	ERROR_INIT	36	/* spawn: can't initialize window */
 #define	ERROR_NOCO	37	/* resize: no `co' in termcap */

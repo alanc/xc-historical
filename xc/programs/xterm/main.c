@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.105 89/03/06 11:05:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.106 89/03/22 14:53:54 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -262,6 +262,7 @@ static struct _resource {
     char *tty_modes;
     Boolean utmpInhibit;
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
+    Boolean wait_for_map;
 } resource;
 
 /* used by VT (charproc.c) */
@@ -285,6 +286,8 @@ static XtResource application_resources[] = {
 	offset(utmpInhibit), XtRString, "false"},
     {"sunFunctionKeys", "SunFunctionKeys", XtRBoolean, sizeof (Boolean),
 	offset(sunFunctionKeys), XtRString, "false"},
+    {"waitForMap", "WaitForMap", XtRBoolean, sizeof (Boolean),
+        offset(wait_for_map), XtRString, "false"},
 };
 #undef offset
 
@@ -341,6 +344,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"+ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-wf",		"*waitForMap",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+wf",		"*waitForMap",	XrmoptionNoArg,		(caddr_t) "off"},
 /* bogus old compatibility stuff for which there are
    standard XtInitialize options now */
 {"%",		"*tekGeometry",	XrmoptionStickyArg,	(caddr_t) NULL},
@@ -488,6 +493,7 @@ Arg ourTopLevelShellArgs[] = {
 int number_ourTopLevelShellArgs = 2;
 	
 Widget toplevel;
+Bool waiting_for_initial_map;
 
 main (argc, argv)
 int argc;
@@ -600,6 +606,8 @@ char **argv;
 
 	XtGetApplicationResources( toplevel, &resource, application_resources,
 				   XtNumber(application_resources), NULL, 0 );
+
+	waiting_for_initial_map = resource.wait_for_map;
 
 	/*
 	 * fill in terminal modes
@@ -930,6 +938,7 @@ typedef enum {		/* c == child, p == parent                        */
 	PTY_NOMORE,	/* p->c; no more pty's, terminate                 */
 	UTMP_ADDED,	/* c->p: utmp entry has been added                */
 	UTMP_TTYSLOT,	/* c->p: here is my ttyslot                       */
+	PTY_EXEC,	/* p->c: window has been mapped the first time    */
 } status_t;
 
 typedef struct {
@@ -937,6 +946,8 @@ typedef struct {
 	int error;
 	int fatal_error;
 	int tty_slot;
+	int rows;
+	int cols;
 	char buffer[1024];
 } handshake_t;
 
@@ -963,6 +974,26 @@ int error;
 	exit(error);
 }
 
+static int pc_pipe[2];	/* this pipe is used for parent to child transfer */
+static int cp_pipe[2];	/* this pipe is used for child to parent transfer */
+
+first_map_occurred ()
+{
+    handshake_t handshake;
+    register TScreen *screen = &term->screen;
+
+    if (screen->max_row > 0 && screen->max_col > 0) {
+	handshake.status = PTY_EXEC;
+	handshake.rows = screen->max_row;
+	handshake.cols = screen->max_col;
+	write (pc_pipe[1], (char *) &handshake, sizeof(handshake));
+	close (cp_pipe[0]);
+	close (pc_pipe[1]);
+	waiting_for_initial_map = False;
+    }
+}
+
+
 spawn ()
 /* 
  *  Inits pty and tty and forks a login process.
@@ -975,8 +1006,6 @@ spawn ()
 	int Xsocket = screen->display->fd;
 	handshake_t handshake;
 	int index1, tty = -1;
-	int pc_pipe[2];	/* this pipe is used for parent to child transfer */
-	int cp_pipe[2];	/* this pipe is used for child to parent transfer */
 	int discipline;
 	int done;
 #ifdef USE_SYSV_TERMIO
@@ -1475,18 +1504,6 @@ spawn ()
 		Setenv ("TERM=", TermName);
 		if(!TermName)
 			*newtc = 0;
-#ifdef USE_SYSV_ENVVARS
-		sprintf (numbuf, "%d", screen->max_col + 1);
-		Setenv("COLUMNS=", numbuf);
-		sprintf (numbuf, "%d", screen->max_row + 1);
-		Setenv("LINES=", numbuf);
-#else
-		if (term->misc.titeInhibit) {
-		    remove_termcap_entry (newtc, ":ti=");
-		    remove_termcap_entry (newtc, ":te=");
-		}
-		Setenv ("TERMCAP=", newtc);
-#endif /* USE_SYSV_ENVVAR */
 
 		sprintf (buf, "%lu", screen->TekEmu ? 
 			 ((unsigned long) XtWindow (XtParent(tekWidget))) :
@@ -1658,6 +1675,49 @@ spawn ()
 		(void) strcpy(handshake.buffer, ttydev);
 		(void) write(cp_pipe[1], &handshake, sizeof(handshake));
 
+		if (waiting_for_initial_map) {
+		    i = read (pc_pipe[0], (char *) &handshake,
+			      sizeof(handshake));
+		    if (i != sizeof(handshake) ||
+			handshake.status != PTY_EXEC) {
+			/* some very bad problem occurred */
+			exit (ERROR_PTY_EXEC);
+		    }
+		    screen->max_row = handshake.rows;
+		    screen->max_col = handshake.cols;
+#ifdef sun
+#ifdef TIOCCSSIZE
+		    ts.ts_lines = screen->max_row + 1;
+		    ts.ts_cols = screen->max_col + 1;
+#endif
+#else
+#ifdef TIOCSWINSZ
+		    ws.ws_row = screen->max_row + 1;
+		    ws.ws_col = screen->max_col + 1;
+		    ws.ws_xpixel = FullWidth(screen);
+		    ws.ws_ypixel = FullHeight(screen);
+#endif
+#endif
+		}
+
+#ifdef USE_SYSV_ENVVARS
+		sprintf (numbuf, "%d", screen->max_col + 1);
+		Setenv("COLUMNS=", numbuf);
+		sprintf (numbuf, "%d", screen->max_row + 1);
+		Setenv("LINES=", numbuf);
+#else
+		if(!screen->TekEmu) {
+		    strcpy (termcap, newtc);
+		    resize (screen, TermName, termcap, newtc);
+		}
+		if (term->misc.titeInhibit) {
+		    remove_termcap_entry (newtc, ":ti=");
+		    remove_termcap_entry (newtc, ":te=");
+		}
+		Setenv ("TERMCAP=", newtc);
+#endif /* USE_SYSV_ENVVAR */
+
+
 		/* need to reset after all the ioctl bashing we did above */
 #ifdef sun
 #ifdef TIOCSSIZE
@@ -1771,8 +1831,10 @@ spawn ()
 		}
 	    }
 	    /* close our sides of the pipes */
-	    close (cp_pipe[0]);
-	    close (pc_pipe[1]);
+	    if (!waiting_for_initial_map) {
+		close (cp_pipe[0]);
+		close (pc_pipe[1]);
+	    }
 	}
 
 	/*
