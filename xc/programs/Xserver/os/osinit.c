@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.19 88/10/12 11:12:37 jim Exp $ */
+/* $XConsortium: osinit.c,v 1.20 88/11/14 12:05:17 keith Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -71,7 +71,7 @@ OsInit()
 	     */
 	    if (!(err = fopen (fname, "a+")))
 		err = fopen ("/dev/null", "w");
-	    if (err) {
+	    if (err && (fileno(err) != 2)) {
 		dup2 (fileno (err), 2);
 		fclose (err);
 	    }
