@@ -482,7 +482,7 @@ static unsigned int StrToNum(str)
 
     if (*str == '0') {
 	str++;
-	if (*str == 'x' || *str == 'X') return StrToHex(str++);
+	if (*str == 'x' || *str == 'X') return StrToHex(++str);
 	else return StrToOct(str);
     }
 
