@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.47 89/11/05 18:10:58 jim Exp $
+ * $XConsortium: screen.h,v 1.48 89/11/05 18:17:43 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -93,7 +93,7 @@ typedef struct ScreenInfo
 	TitleButton *head;		/* start of list */
 	int border;			/* button border */
 	int pad;			/* button-padding */
-	int width;			/* width of single button w/o border */
+	int width;			/* width of single button & border */
 	int leftx;			/* start of left buttons */
 	int titlex;			/* start of title string */
 	int rightoff;			/* offset back from right edge */
