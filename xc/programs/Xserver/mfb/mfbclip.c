@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 1.18 89/03/21 15:08:20 rws Exp $ */
+/* $XConsortium: mfbclip.c,v 1.19 89/04/05 19:10:22 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -53,6 +53,7 @@ mfbPixmapToRegion(pPix)
     register BoxPtr	prectO, prectN;
     BoxPtr		FirstRect, rects, prectLineStart;
     Bool		fInBox, fSame;
+    register unsigned	mask0 = mask[0];
 
 
     pReg = (*pPix->drawable.pScreen->RegionCreate)(NULL, 1);
@@ -76,7 +77,7 @@ mfbPixmapToRegion(pPix)
 	pwLineStart = pw;
 	/* If the Screen left most bit of the word is set, we're starting in
 	 * a box */
-	if(*pw & mask[0])
+	if(*pw & mask0)
 	{
 	    fInBox = TRUE;
 	    rx1 = 0;
@@ -88,11 +89,21 @@ mfbPixmapToRegion(pPix)
 	{
 	    base = (pw - pwLineStart) * 32;
 	    w = *pw++;
+	    if (fInBox)
+	    {
+		if (w == 0xFFFFFFFF)
+		    continue;
+	    }
+	    else
+	    {
+		if (w == 0)
+		    continue;
+	    }
 	    for(ib = 0; ib < 32; ib++)
 	    {
 	        /* If the Screen left most bit of the word is set, we're
 		 * starting a box */
-		if(w & mask[0])
+		if(w & mask0)
 		{
 		    if(!fInBox)
 		    {
@@ -124,7 +135,7 @@ mfbPixmapToRegion(pPix)
 	    {
 	        /* If the Screen left most bit of the word is set, we're
 		 * starting a box */
-		if(w & mask[0])
+		if(w & mask0)
 		{
 		    if(!fInBox)
 		    {
