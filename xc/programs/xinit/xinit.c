@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.12 88/07/01 14:55:46 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.13 88/07/27 09:38:27 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -216,7 +216,7 @@ processTimeout(pid, timeout, string)
 			if (i == 0 && string != laststring)
 				fprintf(stderr, "\nwaiting for %s ", string);
 			else
-				fprintf(stderr, ".", string);
+				fprintf(stderr, ".");
 			fflush(stderr);
 		}
 		if (timeout)
