@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.124 94/04/07 17:12:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.125 94/04/08 19:57:43 rws Exp gildea $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -161,4 +161,8 @@ install::
 	MakeDir($(USRLIBDIR:/=\))
 	MakeDir($(LIBDIR:/=\))
 
+#endif
+
+#ifndef MakeManKeywords
+#define MakeManKeywords YES	/* install.man rebuilds "man -k" database? */
 #endif
