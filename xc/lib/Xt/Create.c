@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Create.c,v 6.29 88/02/01 18:33:01 swick Locked $";
+static char rcsid[] = "$Header: Create.c,v 6.30 88/02/03 09:53:04 swick Locked $";
 #endif lint
 
 /*
@@ -25,7 +25,7 @@ static char rcsid[] = "$Header: Create.c,v 6.29 88/02/01 18:33:01 swick Locked $
  * SOFTWARE.
  */
 #include "IntrinsicI.h"
-#include "Atoms.h"
+#include <X/Atoms.h>
 #include <X/Xos.h>
 #include <stdio.h>
 #include "Resource.h"
@@ -287,7 +287,7 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
                (unsigned) (parent->core.num_popups+1) * sizeof(Widget));
     parent->core.popup_list[parent->core.num_popups++] = widget;
     XtAddCallback(
-       widget,XtNdestroyCallback,RemovePopupFromParent, (Opaque)NULL);
+       widget,XtNdestroyCallback,RemovePopupFromParent, (caddr_t)NULL);
     return(widget);
 } /* XtCreatePopupShell */
 
