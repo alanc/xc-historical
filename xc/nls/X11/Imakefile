@@ -15,7 +15,7 @@ depend::
 
 #if BuildXsi
 
-FILES = Xsi/C \
+LCFILES = Xsi/C \
 	Xsi/ja_JP.jis7 Xsi/ja_JP.jis8 Xsi/ja_JP.mscode Xsi/ja_JP.ujis \
 	Xsi/ko_KR.euc \
 	Xsi/lt_LN.bit7 Xsi/lt_LN.bit8 \
@@ -23,7 +23,11 @@ FILES = Xsi/C \
 	Xsi/zh_CN.ugb Xsi/zh_TW.big5 \
 	Xsi/nls.dir Xsi/nls.alias
 
-InstallMultiple($(FILES),$(NLSDIR))
+IMFILES = Xsi/local_im_tbl/lt_LN.bit7 \
+	Xsi/local_im_tbl/lt_LN.bit8
+
+InstallMultiple($(LCFILES),$(NLSDIR))
+InstallMultiple($(IMFILES),$(NLSDIR)/local_im_tbl)
 
 #endif /* BuildXsi */
 
