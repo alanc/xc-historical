@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.3 92/01/25 17:16:48 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.4 92/02/01 15:07:41 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -79,8 +79,8 @@ XTestQueryExtension (dpy, event_basep, error_basep, majorp, minorp)
 	GetReq(XTestGetVersion, req);
 	req->reqType = info->codes->major_opcode;
 	req->xtReqType = X_XTestGetVersion;
-	req->major = XTEST_MAJOR;
-	req->minor = XTEST_MINOR;
+	req->majorVersion = XTEST_MAJOR;
+	req->minorVersion = XTEST_MINOR;
 	if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	    UnlockDisplay(dpy);
 	    SyncHandle();
@@ -90,8 +90,8 @@ XTestQueryExtension (dpy, event_basep, error_basep, majorp, minorp)
 	SyncHandle();
 	*event_basep = info->codes->first_event;
 	*error_basep = info->codes->first_error;
-	*majorp = rep.major;
-	*minorp = rep.minor;
+	*majorp = rep.majorVersion;
+	*minorp = rep.minorVersion;
 	return True;
     } else {
 	return False;

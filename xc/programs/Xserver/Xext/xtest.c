@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.2 92/01/27 11:41:39 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.3 92/02/01 15:07:10 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -64,11 +64,11 @@ ProcXTestGetVersion(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.major = XTEST_MAJOR;
-    rep.minor = XTEST_MINOR;
+    rep.majorVersion = XTEST_MAJOR;
+    rep.minorVersion = XTEST_MINOR;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
-	swaps(&rep.minor, n);
+	swaps(&rep.minorVersion, n);
     }
     WriteToClient(client, sizeof(xXTestGetVersionReply), (char *)&rep);
     return(client->noClientException);
@@ -233,7 +233,7 @@ SProcXTestGetVersion(client)
 
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXTestGetVersionReq);
-    swaps(&stuff->minor, n);
+    swaps(&stuff->minorVersion, n);
     return ProcXTestGetVersion(client);
 }
 

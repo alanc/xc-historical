@@ -1,4 +1,4 @@
-/* $XConsortium: xteststr.h,v 1.1 92/01/25 16:33:33 rws Exp $ */
+/* $XConsortium: xteststr.h,v 1.2 92/02/01 15:06:32 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -34,18 +34,18 @@ typedef struct {
     CARD8	reqType;	/* always XTestReqCode */
     CARD8	xtReqType;	/* always X_XTestGetVersion */
     CARD16	length B16;
-    CARD8	major;
+    CARD8	majorVersion;
     CARD8	pad;
-    CARD16	minor B16;
+    CARD16	minorVersion B16;
 } xXTestGetVersionReq;
 #define sz_xXTestGetVersionReq 8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
-    CARD8	major;
+    CARD8	majorVersion;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD16	minor B16;
+    CARD16	minorVersion B16;
     CARD16	pad0 B16;
     CARD32	pad1 B32;
     CARD32	pad2 B32;
