@@ -1,4 +1,4 @@
-.\" $XConsortium: ICElib.ms,v 1.14 94/04/06 12:26:58 mor Exp $
+.\" $XConsortium: ICElib.ms,v 1.15 94/04/11 15:42:37 mor Exp $
 .\" 
 .\" Use tbl, -ms, and macros.t
 .\" 
@@ -24,9 +24,11 @@
 .TL
 \s+2\fBInter-Client Exchange (ICE) Library\fP\s-2
 .sp
-Version 0.13
+Version 1.0
 .sp
-X Consortium Draft Standard
+X Consortium Standard
+.sp
+X Version 11, Release 6
 .AU
 Ralph Mor
 .AI

@@ -1,4 +1,4 @@
-.\" $XConsortium: SMlib.ms,v 1.8 94/03/29 18:22:20 mor Exp $
+.\" $XConsortium: SMlib.ms,v 1.9 94/04/12 19:27:51 mor Exp $
 .\" 
 .\" Use tbl, -ms, and macros.t
 .\" 
@@ -24,9 +24,11 @@
 .TL
 \s+2\fBX Session Management Library\fP\s-2
 .sp
-Version 0.12
+Version 1.0
 .sp
-X Consortium Draft Standard
+X Consortium Standard
+.sp
+X Version 11, Release 6
 .AU
 Ralph Mor
 .AI
