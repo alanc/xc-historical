@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: fujitsu.cf,v 1.1 94/02/04 19:47:34 rws Exp $
+XCOMM platform:  $XConsortium: fujitsu.cf,v 1.2 94/04/02 17:10:36 rws Exp $
 
 #ifdef SparcArchitecture
 
@@ -40,6 +40,6 @@ XCOMM operating system:    OSName
 #define BuildServer        NO
 #define HasSymLinks        NO
 #define HasVFork           NO
-#define XawI18nDefines     -DUSE_X_WCHAR_STRING
+#define XawI18nDefines     -DUSE_X_WCHAR_STRING -DUSE_XMBTOWC
 
 #endif
