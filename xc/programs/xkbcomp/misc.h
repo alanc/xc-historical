@@ -1,4 +1,4 @@
-/* $XConsortium: misc.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: misc.h,v 1.1 94/04/02 17:07:31 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,33 +28,6 @@
 #ifndef MISC_H
 #define MISC_H 1
 
-extern char *	configText(
-#if NeedFunctionPrototypes
-    unsigned	/* config */
-#endif
-);
-
-extern char *	keysymText(
-#if NeedFunctionPrototypes
-    KeySym	/* sym */,
-    unsigned	/* format */
-#endif
-);
-
-extern char *	modIndexText(
-#if NeedFunctionPrototypes
-    unsigned	/* ndx */,
-    unsigned	/* format */
-#endif
-);
-
-extern char *	modMaskText(
-#if NeedFunctionPrototypes
-    unsigned	/* mask */,
-    unsigned	/* format */
-#endif
-);
-
 extern char *	SIMatchText(
 #if NeedFunctionPrototypes
     unsigned	/* type */,
@@ -68,6 +41,7 @@ extern char *	actionTypeText(
     unsigned	/* format */
 #endif
 );
+
 
 extern char *	DirectoryForInclude(
 #if NeedFunctionPrototypes
