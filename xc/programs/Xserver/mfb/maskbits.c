@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.5 89/09/13 18:57:32 rws Exp $ */
+/* $XConsortium: maskbits.c,v 1.6 89/11/13 09:37:34 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -950,3 +950,51 @@ int rmask[] =
     0xffffffff ^ LONG2CHARS( 1<<30), 0xffffffff ^ LONG2CHARS( 1<<31)
     };
 #endif
+
+
+/*
+ * Merge raster ops for full src + dest + plane mask
+ *
+ * More clever usage of boolean arithmetic to reduce the
+ * cost of complex raster ops.  This is for bitblt and
+ * reduces all 16 raster ops + planemask to a single
+ * expression:
+ *
+ *  dst = dst & (src & ca1 ^ cx1) ^ (src & ca2 ^ cx2)
+ *
+ * The array below contains the values for c?? for each
+ * raster op.  Those values are further modified by
+ * planemasks on multi-plane displays as follows:
+ *
+ *  ca1 &= pm;
+ *  cx1 |= ~pm;
+ *  ca2 &= pm;
+ *  cx2 &= pm;
+ */
+
+#include "mergerop.h"
+
+#define O 0
+#define I ~0
+
+mergeRopRec mergeRopBits[16] = {
+O,O,O,O,	/* clear	0x0		0 */
+I,O,O,O,	/* and		0x1		src AND dst */
+I,O,I,O,	/* andReverse	0x2		src AND NOT dst */
+O,O,I,O,	/* copy		0x3		src */
+I,I,O,O,	/* andInverted	0x4		NOT src AND dst */
+O,I,O,O,	/* noop		0x5		dst */
+O,I,I,O,	/* xor		0x6		src XOR dst */
+I,I,I,O,	/* or		0x7		src OR dst */
+I,I,I,I,	/* nor		0x8		NOT src AND NOT dst */
+O,I,I,I,	/* equiv	0x9		NOT src XOR dst */
+O,I,O,I,	/* invert	0xa		NOT dst */
+I,I,O,I,	/* orReverse	0xb		src OR NOT dst */
+O,O,I,I,	/* copyInverted	0xc		NOT src */
+I,O,I,I,	/* orInverted	0xd		NOT src OR dst */
+I,O,O,I,	/* nand		0xe		NOT src OR NOT dst */
+O,O,O,I,	/* set		0xf		1 */
+};
+
+#undef O
+#undef I

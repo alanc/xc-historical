@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.20 89/09/13 18:57:38 rws Exp $ */
+/* $XConsortium: maskbits.h,v 1.21 89/11/13 09:36:56 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -188,6 +188,17 @@ getshiftedleftbits(psrc, offset, w, dst)
 	and SCRLEFT().
 	psrc is declared (unsigned char *).
 */
+
+/* to match CFB and allow algorithm sharing ... */
+
+#define PPW	32
+#define PLST	31
+#define PIM	0x1f
+#define PWSH	5
+#define PSZ	1
+#define PMSK	0x01
+#define BitLeft(b,s)	SCRLEFT(b,s)
+#define BitRight(b,s)	SCRRIGHT(b,s)
 
 #if (BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER)
 #define LONG2CHARS(x) (x)
