@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.82 89/09/28 17:14:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.83 89/10/02 15:40:54 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -32,6 +32,7 @@ SOFTWARE.
 #include "StringDefs.h"
 #include <stdio.h>
 #include "IntrinsicI.h"
+#include <ctype.h>
 #ifndef NOTASCII
 #define XK_LATIN1
 #endif
@@ -807,33 +808,44 @@ static void ParseModSym (name,value,lateBindings,notFlag,valueP)
     *valueP = 0;
 }
 
+#ifdef sparc
+/*
+ * The stupid optimizer in SunOS 4.0.3 and below generates bogus code that
+ * causes the value of the most recently used variable to be returned instead
+ * of the value passed in.
+ */
+static String stupid_optimizer_kludge;
+#define BROKEN_OPTIMIZER_HACK(val) stupid_optimizer_kludge = (val)
+#else
+#define BROKEN_OPTIMIZER_HACK(val) val
+#endif
+
 /* ARGSUSED */
 static String ParseImmed(str, closure, event,error)
-    String str;
-    Opaque closure;
-    EventPtr event;
+    register String str;
+    register Opaque closure;
+    register EventPtr event;
     Boolean* error;
 {
     event->event.eventCode = (unsigned long)closure;
     event->event.eventCodeMask = (unsigned long)~0L;
 
-    return str;
+    return BROKEN_OPTIMIZER_HACK(str);
 }
 
 /* ARGSUSED */
 static String ParseAddModifier(str, closure, event, error)
-    String str;
-    Opaque closure;
-    EventPtr event;
+    register String str;
+    register Opaque closure;
+    register EventPtr event;
     Boolean* error;
 {
-    event->event.modifiers |= (unsigned long)closure;
-    if (((unsigned long)closure) != AnyButtonMask) {
-	/* AnyButtonMask is really a don't-care mask */
-	event->event.modifierMask |= (unsigned long)closure;
-    }
+    register unsigned long modval = (unsigned long)closure;
+    event->event.modifiers |= modval;
+    if (modval != AnyButtonMask) /* AnyButtonMask is don't-care mask */
+	event->event.modifierMask |= modval;
 
-    return str;
+    return BROKEN_OPTIMIZER_HACK(str);
 }
 
 
@@ -943,7 +955,7 @@ static String ParseNone(str, closure, event,error)
     event->event.eventCode = 0;
     event->event.eventCodeMask = 0;
 
-    return str;
+    return BROKEN_OPTIMIZER_HACK(str);
 }
 
 /*ARGSUSED*/
@@ -1376,23 +1388,42 @@ static String ParseRepeat(str, eventP, actionsP)
 {
     int reps;
     Boolean plus = FALSE;
+    String right_paren;
 
     /*** Parse the repetitions, for double click etc... ***/
     if (*str != '(') return str;
     str++;
-    if (*str >= '0' && *str <= '9') {
+    right_paren = ScanFor (str, ')');
+    if (isascii(*str) && isdigit(*str)) {
 	String start = str;
 	char repStr[100];
+	int len;
 
 	str = ScanNumeric(str);
-	(void) strncpy(repStr, start, str-start);
-	repStr[str-start] = '\0';
-	reps = StrToNum(repStr);
+	len = (str - start);
+	if (len < sizeof repStr) {
+	    (void) strncpy (repStr, start, len);
+	    repStr[len] = '\0';
+	    reps = StrToNum(repStr);
+	} else {
+	    Syntax ("Repeat count too large; ignored.", "");
+	    return right_paren;
+	}
+    } else {
+	Syntax("Missing repeat count.","");
+	return right_paren;
     }
-    else { Syntax("Missing number.",""); return ScanFor(str, ')'); }
-    if (*str == '+') { plus = TRUE; str++; };
-    if (*str == ')') str++;
-    else { Syntax("Missing ')'.",""); return ScanFor(str, ')'); };
+
+    if (*str == '+') {
+	plus = TRUE;
+	str++;
+    }
+    if (*str == ')')
+	str++;
+    else {
+	Syntax("Missing ')'.","");
+	return right_paren;
+    }
 
     if (reps > 1 || plus) RepeatEvent(eventP, reps, plus, actionsP);
 
