@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.18 90/06/04 15:06:40 kit Exp $ */
+/* $XConsortium: TranslateI.h,v 1.19 90/07/03 08:17:14 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -36,7 +36,7 @@ SOFTWARE.
 /*#define REFCNT_TRANSLATIONS*/
 #define CACHE_TRANSLATIONS
 
-#define _XtRTranslationTablePair "_XtTranslationTablePair"
+#define _XtRStateTablePair "_XtStateTablePair"
 
 typedef Boolean (*MatchProc)();
   /* Event parsed;
@@ -70,12 +70,6 @@ typedef struct _EventRec {
 
 typedef enum _TMkind {override,augment} TMkind;
 
-typedef struct _TMConvertRec {
-   XtTranslations old; /* table to merge into */
-   XtTranslations new; /* table to merge from */
-   TMkind  operation; /* merge or augment     */
-} TMConvertRec;
-
 typedef struct _EventObjRec {
     Event event;	/* X event description */
     StatePtr state;	/* pointer to linked lists of state info */
@@ -100,11 +94,6 @@ typedef struct _StateRec {
 }  StateRec;
 typedef enum {XtTableReplace,XtTableAugment,XtTableOverride} _XtTranslateOp;
 
-typedef struct _TranslationData {
-    struct _StateTableData*	stateTable;
-    struct _XtBoundAccActionRec* accProcTbl;
-} TranslationData;
-
 typedef struct _StateTableData {
     _XtTranslateOp	operation; /*replace,augment,override*/
     unsigned int	numEvents;
@@ -119,6 +108,22 @@ typedef struct _StateTableData {
     StatePtr		head;	/* head of list of all states */
     Boolean		mappingNotifyInterest;
 } StateTableData, *StateTablePtr;
+
+typedef struct _XtBoundAccActionRec {
+    Widget widget;    /*widgetID to pass to action Proc*/
+    XtActionProc proc; /*action procedure */
+} XtBoundAccActionRec;
+
+typedef struct _TranslationData {
+    StateTablePtr	 stateTable;
+    XtBoundAccActionRec* accProcTbl;
+} TranslationData;
+
+typedef struct _TMConvertRec {
+   StateTablePtr old; /* table to merge into */
+   StateTablePtr new; /* table to merge from */
+   TMkind  operation; /* merge or augment     */
+} TMConvertRec;
 
 #define _XtEventTimerEventType ((unsigned long)-1L)
 #define KeysymModMask		(1<<27) /* private to TM */
@@ -138,12 +143,6 @@ typedef struct _TMEventRec {
     XEvent *xev;
     Event event;
 }TMEventRec,*TMEventPtr;
-
-typedef struct _XtBoundAccActionRec {
-    Widget widget;    /*widgetID to pass to action Proc*/
-    XtActionProc proc; /*action procedure */
-} XtBoundAccActionRec;
-
 
 extern void _XtAddEventSeqToStateTable();
 extern void _XtInitializeStateTable(); /* stateTable */
@@ -201,3 +200,9 @@ extern void _XtPopup(); /* widget, grab_kind, spring_loaded */
     /* Widget      widget; */
     /* XtGrabKind  grab_kind; */
     /* Boolean     spring_loaded; */
+
+extern XtTranslations _XtCondCopyTranslations(
+#if NeedFunctionPrototypes
+    XtTranslations	translations
+#endif
+);
