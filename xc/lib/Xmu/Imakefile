@@ -60,6 +60,7 @@ SRCS = \
 	Lower.c \
 	RdBitF.c \
 	ScrOfWin.c \
+	ShapeWidg.c \
 	StdCmap.c \
 	StrToBS.c \
 	StrToBmap.c \
@@ -67,6 +68,7 @@ SRCS = \
 	StrToJust.c \
 	StrToLong.c \
 	StrToOrnt.c \
+	StrToShap.c \
 	StrToWidg.c \
 	UpdMapHint.c \
 	VisCmap.c \
@@ -98,6 +100,7 @@ OBJS = \
 	Lower.o \
 	RdBitF.o \
 	ScrOfWin.o \
+	ShapeWidg.o \
 	StdCmap.o \
 	StrToBS.o \
 	StrToBmap.o \
@@ -105,6 +108,7 @@ OBJS = \
 	StrToJust.o \
 	StrToLong.o \
 	StrToOrnt.o \
+	StrToShap.o \
 	StrToWidg.o \
 	UpdMapHint.o \
 	VisCmap.o \
