@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.4 94/09/12 20:27:09 mor Exp mor $ */
+/* $XConsortium: gfx.c,v 1.5 94/09/13 16:10:05 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -361,7 +361,7 @@ ClientPtr   client;
 {
     REQUEST		(xPutImageReq);
     XServerPtr  	server = client->server;
-    int         	len = stuff->length << 2;
+    int			len = stuff->length << 2;
     xLbxPutImageReq	*newreq = NULL;
     int         	method, bytes = 0;
     int			compressIt = 1;
@@ -372,7 +372,7 @@ ClientPtr   client;
     if (DELTA_CACHEABLE (&server->outdeltas, len) ||
         !((stuff->format == ZPixmap && stuff->depth == 8) ||
 	   stuff->depth == 1) ||
-	((newreq = (xLbxPutImageReq *) xalloc (len * 5)) == NULL))
+	((newreq = (xLbxPutImageReq *) xalloc (len)) == NULL))
     {
 	compressIt = 0;
     }
@@ -382,7 +382,8 @@ ClientPtr   client;
 	{
 	    bytes = ImageEncodeFaxG42D ((unsigned char *) &stuff[1],
 		      (unsigned char *) newreq + sz_xLbxPutImageReq,
-		      (long) ((stuff->length << 2) - sz_xPutImageReq),
+		      len - sz_xLbxPutImageReq,
+		      len - sz_xPutImageReq,
 		      (int) stuff->width);
 
 	    method = LbxImageCompressFaxG42D;
@@ -391,6 +392,7 @@ ClientPtr   client;
 	{
 	    bytes = ImageEncodePackBits ((char *) &stuff[1],
 		      (char *) newreq + sz_xLbxPutImageReq,
+		      len - sz_xLbxPutImageReq,
 		      (int) stuff->height, (int) stuff->width);
 
 	    method = LbxImageCompressPackBits;
