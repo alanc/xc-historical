@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.26 89/12/08 18:27:46 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.27 90/01/11 14:49:54 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -529,8 +529,6 @@ miSpriteFindColors (pScreen)
 			    pScreen->devPrivates[miSpriteScreenIndex].ptr;
     CursorPtr		pCursor;
     xColorItem		*sourceColor, *maskColor;
-    unsigned short	red, green, blue;
-    Bool		read_only;
 
     pCursor = pScreenPriv->pCursor;
     sourceColor = &pScreenPriv->colors[SOURCE_COLOR];
@@ -544,16 +542,17 @@ miSpriteFindColors (pScreen)
 	 pScreenPriv->pColormap != pScreenPriv->pInstalledMap)
     {
 	pScreenPriv->pColormap = pScreenPriv->pInstalledMap;
-	red = sourceColor->red = pCursor->foreRed;
-	green = sourceColor->green = pCursor->foreGreen;
-	blue = sourceColor->blue = pCursor->foreBlue;
-	FakeAllocColor (pScreenPriv->pColormap, &red, &green, &blue,
-			&sourceColor->pixel, &read_only);
-	red = maskColor->red = pCursor->backRed;
-	green = maskColor->green = pCursor->backGreen;
-	blue = maskColor->blue = pCursor->backBlue;
-	FakeAllocColor (pScreenPriv->pColormap, &red, &green, &blue,
-			&maskColor->pixel, &read_only);
+	sourceColor->red = pCursor->foreRed;
+	sourceColor->green = pCursor->foreGreen;
+	sourceColor->blue = pCursor->foreBlue;
+	FakeAllocColor (pScreenPriv->pColormap, sourceColor);
+	maskColor->red = pCursor->backRed;
+	maskColor->green = pCursor->backGreen;
+	maskColor->blue = pCursor->backBlue;
+	FakeAllocColor (pScreenPriv->pColormap, maskColor);
+	/* "free" the pixels right away, don't let this confuse you */
+	FakeFreeColor(pScreenPriv->pColormap, sourceColor->pixel);
+	FakeFreeColor(pScreenPriv->pColormap, maskColor->pixel);
     }
     pScreenPriv->checkPixels = FALSE;
 }
