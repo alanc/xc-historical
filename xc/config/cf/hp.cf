@@ -5,9 +5,9 @@
 
 #define SystemV                YES
 
-#define OSName                 HP-UX 6.5
-#define OSMajorVersion         6
-#define OSMinorVersion         5
+#define OSName                 HP-UX 7.0
+#define OSMajorVersion         7
+#define OSMinorVersion         0
 #ifdef hp9000s800
 #define StandardDefines        -DSYSV
 #define LintOpts               -ax -DSYSV
@@ -32,7 +32,7 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.23 89/12/09 21:17:04 rws Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.24 89/12/10 11:57:02 rws Exp $
 /**/# operating system:  OSName
 
 /*
