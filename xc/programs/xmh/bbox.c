@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: bbox.c,v 2.26 89/07/09 16:22:01 converse Exp $";
+    "$XConsortium: bbox.c,v 2.27 89/07/20 21:15:37 converse Exp $";
 #endif
 /*
  *
@@ -34,7 +34,7 @@ static char rcs_id[] =
  * the toolkit interfaces. 
  *
  * Buttonboxes contain buttons which may be one of three kinds: command,
- * toggle, or menuButton.
+ * toggle, or menuButton.  
  */
 
 #include <X11/Xaw/Cardinals.h>
@@ -67,9 +67,9 @@ static ButtonBox buttonboxCreate(scrn, name, button_type)
 			      arglist, XtNumber(arglist));
     buttonbox->inner =
 	XtCreateManagedWidget(name, boxWidgetClass, buttonbox->outer,
-			      (ArgList)NULL, (Cardinal)0);
+			      (ArgList)NULL, (Cardinal) 0);
     buttonbox->numbuttons = 0;
-    buttonbox->button = (Button *) XtMalloc((unsigned) 1);
+    buttonbox->button = (Button *) XtMalloc((Cardinal) 1);
     buttonbox->maxheight = 5;
     buttonbox->button_type = button_type;
     return buttonbox;
@@ -175,11 +175,6 @@ int enabled;			/* Whether button is initially enabled. */
     if (buttonbox->button_type == toggleWidgetClass)
 	XtOverrideTranslations(button->widget, XtParseTranslationTable
 			       ("<Btn1Down>,<Btn1Up>:set()\n"));
-    else if (buttonbox->button_type == menuButtonWidgetClass)
-	XtOverrideTranslations(button->widget, XtParseTranslationTable
-                               ("<LeaveWindow>:reset()leave()\n\
-			         <BtnDown>:set()folder-menu()\n\
-                                 <BtnUp>:folder-button()reset()\n"));
 }
 
 
