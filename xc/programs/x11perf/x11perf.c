@@ -22,6 +22,7 @@ SOFTWARE.
 ******************************************************************************/
 
 #include <stdio.h>
+#include <ctype.h>
 #ifndef VMS
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
@@ -42,6 +43,8 @@ static char **saveargv;
 
 static char *foreground = NULL;
 static char *background = NULL;
+
+static int  fixedReps = 0;
 
 static Bool *doit;
 
@@ -262,6 +265,8 @@ void usage()
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
 "    -xor			use GXxor mode to draw",
+"    -reps <n>			fix the rep count (default = auto scale)",
+"    -subs <s0 s1 ...>		a list of the number of sub-windows to use",
 NULL};
 
     fflush(stdout);
@@ -418,6 +423,10 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
        If init call to test ever fails, return False and test will be skipped.
     */
 
+    if (fixedReps) {
+	test->parms.reps = fixedReps;
+	return True;
+    }
     reps = 1;
     for (;;) {
 	test->parms.reps = reps;
@@ -620,6 +629,26 @@ main(argc, argv)
 	    background = argv[i];
 	} else if (strcmp(argv[i], "-xor") == 0) {
 	    xorMode = True;
+	} else if (strcmp(argv[i], "-reps") == 0) {
+	    if (argc <= i)
+		usage ();
+	    fixedReps = atoi (argv[++i]);
+	    if (fixedReps <= 0)
+		usage ();
+	} else if (strcmp(argv[i], "-subs") == 0) {
+	    int	j = 0;
+	    if (argc <= i)
+		usage ();
+	    i++;
+	    while (i < argc && isdigit (argv[i][0]))
+	    {
+		if (subs[j] != 0) {
+		    subs[j] = atoi (argv[i++]);
+		    j++;
+		}
+		i++;
+	    }
+	    --i;
 	} else {
 	    ForEachTest (j) {
 		if (strcmp (argv[i], test[j].option) == 0) {
