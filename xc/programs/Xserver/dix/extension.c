@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.32 87/09/02 18:22:29 toddb Locked $ */
+/* $Header: extension.c,v 1.33 87/09/03 09:48:08 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -37,7 +37,7 @@ SOFTWARE.
 #define LAST_EVENT  128
 #define LAST_ERROR 255
 
-static ScreenProcEntry AuxillaryScreenProcs[MAXSCREENS];
+ScreenProcEntry AuxillaryScreenProcs[MAXSCREENS];
 
 static ExtensionEntry **extensions = (ExtensionEntry **)NULL;
 extern int (* ProcVector[]) ();
