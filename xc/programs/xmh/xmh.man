@@ -1,4 +1,15 @@
-.\" $XConsortium: xmh.man,v 1.31 94/04/11 14:26:35 gildea Exp $
+.\" $XConsortium: xmh.man,v 1.32 94/04/11 16:02:54 matt Exp $
+.\" Copyright 1989, 1991 Massachusetts Institute of Technology
+.\" Copyright 1988, 1989, Digital Equipment Corporation.
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XMH 1 "Release 6" "X Version 11"
 .SH NAME
 \fIxmh\fR \- send and read mail with an X interface to MH
@@ -1488,13 +1499,6 @@ of the first toc and view, while trying to keep other \fIxmh\fP windows around.
 if any sequence definition in a particular folder contains more
 than \fIBUFSIZ\fP characters.  \fIxmh\fP tries to capture these messages
 and display them when they occur, but it cannot correct the problem.
-.sp
-.SH COPYRIGHT
-Copyright 1988, 1989, Digital Equipment Corporation.
-.br
-Copyright 1989, 1991 Massachusetts Institute of Technology
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Terry Weissman, formerly of Digital Western Research Laboratory
 .br
