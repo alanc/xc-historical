@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.5 93/09/22 17:58:26 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.6 93/09/24 12:08:42 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -222,7 +222,7 @@ struct _SmcConn {
  * Session manager callbacks
  */
 
-typedef void (*SmsRegisterClientProc) (
+typedef Status (*SmsRegisterClientProc) (
 #if NeedFunctionPrototypes
     SmsConn 		/* smsConn */,
     SmPointer		/* managerData */,
