@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.25 94/08/11 18:56:09 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.26 94/08/17 17:40:42 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -123,6 +123,7 @@ extern char		*display_env, *non_local_display_env;
 extern char		*session_env, *non_local_session_env;
 extern char		*audio_env;
 
+extern Bool		naming_session;
 extern Bool		need_to_name_session;
 
 extern Bool		shutdown_after_name;
@@ -162,6 +163,8 @@ extern Bool		wantShutdown;
 extern int		sessionNameCount;
 extern String		*sessionNames;
 
+extern int		num_clients_restarted;
+
 extern Widget		topLevel;
 
 extern Widget		    chooseSessionPopup;
@@ -200,13 +203,13 @@ extern Widget			    viewPropButton;
 extern Widget			    cloneButton;
 extern Widget			    killClientButton;
 extern Widget			    clientInfoDoneButton;
-extern Widget			    clientListWidget;
 extern Widget			    restartHintButton;
 extern Widget			    	restartHintMenu;
 extern Widget			    		restartIfRunning;
 extern Widget			    		restartAnyway;
 extern Widget			    		restartImmediately;
 extern Widget			    		restartNever;
+extern Widget			    clientListWidget;
 
 extern Widget		    clientPropPopup;
 
@@ -218,6 +221,8 @@ extern Widget			    clientPropTextWidget;
 extern Widget		    savePopup;
 
 extern Widget			saveForm;
+
+extern Widget			    saveMessageLabel;
 
 extern Widget			    saveTypeLabel;
 extern Widget			    saveTypeGlobal;
@@ -243,6 +248,7 @@ extern Widget		    nameSessionPopup;
 
 extern Widget			nameSessionDialog;
 
+extern Widget			    nameSessionCheckpointButton;
 extern Widget			    nameSessionOkButton;
 extern Widget			    nameSessionCancelButton;
 

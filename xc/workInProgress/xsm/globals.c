@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.11 94/08/11 18:55:47 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.12 94/08/17 17:39:26 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -61,10 +61,13 @@ int		current_client_selected;
 int		sessionNameCount = 0;
 String		*sessionNames = NULL;
 
+int		num_clients_restarted = 0;
+
 char		*display_env = NULL, *non_local_display_env = NULL;
 char		*session_env = NULL, *non_local_session_env = NULL;
 char		*audio_env = NULL;
 
+Bool		naming_session = False;
 Bool		need_to_name_session = False;
 Bool		shutdown_after_name = False;
 Bool		checkpoint_after_name = False;
@@ -111,13 +114,13 @@ Widget			    viewPropButton;
 Widget			    cloneButton;
 Widget			    killClientButton;
 Widget			    clientInfoDoneButton;
-Widget			    clientListWidget;
 Widget			    restartHintButton;
 Widget			    	restartHintMenu;
 Widget			    		restartIfRunning;
 Widget			    		restartAnyway;
 Widget			    		restartImmediately;
 Widget			    		restartNever;
+Widget			    clientListWidget;
 
 Widget		    clientPropPopup;
 
@@ -129,6 +132,8 @@ Widget			    clientPropTextWidget;
 Widget		    savePopup;
 
 Widget			saveForm;
+
+Widget			    saveMessageLabel;
 
 Widget			    saveTypeLabel;
 Widget			    saveTypeGlobal;
@@ -147,5 +152,6 @@ Widget		    nameSessionPopup;
 
 Widget			nameSessionDialog;
 
+Widget			    nameSessionCheckpointButton;
 Widget			    nameSessionOkButton;
 Widget			    nameSessionCancelButton;
