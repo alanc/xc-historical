@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.11 90/03/28 17:14:35 keith Exp $ */
+/* $XConsortium: colormap.c,v 5.12 90/05/03 17:23:30 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -45,6 +45,10 @@ static Bool  AllocCP(), AllocShared();
 static int   TellNoMap();
 
 int   FreeClientPixels();
+
+#define NUMRED(vis) ((vis->redMask >> vis->offsetRed) + 1)
+#define NUMGREEN(vis) ((vis->greenMask >> vis->offsetGreen) + 1)
+#define NUMBLUE(vis) ((vis->blueMask >> vis->offsetBlue) + 1)
 
 /* GetNextBitsOrBreak(bits, mask, base)  -- 
  * (Suggestion: First read the macro, then read this explanation.
@@ -135,6 +139,8 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
     pmap->pScreen = pScreen;
     pmap->pVisual = pVisual;
     pmap->class = class;
+    if ((class | DynamicClass) == DirectColor)
+	size = NUMRED(pVisual);
     pmap->freeRed = size;
     bzero ((char *) pmap->red, (int)sizebytes);
     bzero((char *) pmap->numPixelsRed, MAXCLIENTS * sizeof(int));
@@ -160,13 +166,13 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 
     if ((class | DynamicClass) == DirectColor)
     {
-	pmap->freeGreen = size;
+	pmap->freeGreen = NUMGREEN(pVisual);
 	pmap->green = (EntryPtr)((char *)pmap->numPixelsRed +
 				 (MAXCLIENTS * sizeof(int)));
 	pmap->clientPixelsGreen = (Pixel **)((char *)pmap->green + sizebytes);
 	pmap->numPixelsGreen = (int *)((char *)pmap->clientPixelsGreen +
 				       (MAXCLIENTS * sizeof(Pixel *)));
-	pmap->freeBlue = size;
+	pmap->freeBlue = NUMBLUE(pVisual);
 	pmap->blue = (EntryPtr)((char *)pmap->numPixelsGreen +
 				(MAXCLIENTS * sizeof(int)));
 	pmap->clientPixelsBlue = (Pixel **)((char *)pmap->blue + sizebytes);
@@ -188,13 +194,10 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	/* If every cell is allocated, mark its refcnt */
 	if (alloc == AllocAll)
 	{
+	    size = pmap->freeGreen;
 	    for(pent = &pmap->green[size-1]; pent >= pmap->green; pent--)
 		pent->refcnt = AllocPrivate;
-	    for(pent = &pmap->blue[size-1]; pent >= pmap->blue; pent--)
-		pent->refcnt = AllocPrivate;
 	    pmap->freeGreen = 0;
-	    pmap->freeBlue = 0;
-
 	    ppix = (Pixel *) xalloc(size * sizeof(Pixel));
 	    if (!ppix)
 	    {
@@ -207,6 +210,10 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 		ppix[i] = i;
 	    pmap->numPixelsGreen[client] = size;
 
+	    size = pmap->freeBlue;
+	    for(pent = &pmap->blue[size-1]; pent >= pmap->blue; pent--)
+		pent->refcnt = AllocPrivate;
+	    pmap->freeBlue = 0;
 	    ppix = (Pixel *) xalloc(size * sizeof(Pixel));
 	    if (!ppix)
 	    {
@@ -216,7 +223,6 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 		return(BadAlloc);
 	    }
 	    pmap->clientPixelsBlue[client] = ppix;
-
 	    for(i = 0; i < size; i++)
 		ppix[i] = i;
 	    pmap->numPixelsBlue[client] = size;
@@ -668,9 +674,9 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
 
     case TrueColor:
 	/* Look up each component in its own map, then OR them together */
-	pixR = FindBestPixel(pmap->red, entries, &rgb, REDMAP);
-	pixG = FindBestPixel(pmap->green, entries, &rgb, GREENMAP);
-	pixB = FindBestPixel(pmap->blue, entries, &rgb, BLUEMAP);
+	pixR = FindBestPixel(pmap->red, NUMRED(pVisual), &rgb, REDMAP);
+	pixG = FindBestPixel(pmap->green, NUMGREEN(pVisual), &rgb, GREENMAP);
+	pixB = FindBestPixel(pmap->blue, NUMBLUE(pVisual), &rgb, BLUEMAP);
 	*pPix = (pixR << pVisual->offsetRed) |
 		(pixG << pVisual->offsetGreen) |
 		(pixB << pVisual->offsetBlue);
@@ -712,18 +718,18 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
 
     case DirectColor:
 	pixR = (*pPix & pVisual->redMask) >> pVisual->offsetRed; 
-	if (FindColor(pmap, pmap->red, entries, &rgb, &pixR, REDMAP,
+	if (FindColor(pmap, pmap->red, NUMRED(pVisual), &rgb, &pixR, REDMAP,
 		      client, RedComp) != Success)
 	    return (BadAlloc);
 	pixG = (*pPix & pVisual->greenMask) >> pVisual->offsetGreen; 
-	if (FindColor(pmap, pmap->green, entries, &rgb, &pixG, GREENMAP,
-		      client, GreenComp) != Success)
+	if (FindColor(pmap, pmap->green, NUMGREEN(pVisual), &rgb, &pixG,
+		      GREENMAP, client, GreenComp) != Success)
 	{
 	    (void)FreeCo(pmap, client, REDMAP, 1, &pixR, (Pixel)0);
 	    return (BadAlloc);
 	}
 	pixB = (*pPix & pVisual->blueMask) >> pVisual->offsetBlue; 
-	if (FindColor(pmap, pmap->blue, entries, &rgb, &pixB, BLUEMAP,
+	if (FindColor(pmap, pmap->blue, NUMBLUE(pVisual), &rgb, &pixB, BLUEMAP,
 		      client, BlueComp) != Success)
 	{
 	    (void)FreeCo(pmap, client, GREENMAP, 1, &pixG, (Pixel)0);
@@ -801,15 +807,16 @@ FakeAllocColor (pmap, item)
 	pixR = (item->pixel & pVisual->redMask) >> pVisual->offsetRed; 
 	pixG = (item->pixel & pVisual->greenMask) >> pVisual->offsetGreen; 
 	pixB = (item->pixel & pVisual->blueMask) >> pVisual->offsetBlue; 
-	if (FindColor(pmap, pmap->red, entries, &rgb, &pixR, REDMAP,
+	if (FindColor(pmap, pmap->red, NUMRED(pVisual), &rgb, &pixR, REDMAP,
 		      -1, RedComp) != Success)
-	    pixR = FindBestPixel(pmap->red, entries, &rgb, REDMAP);
-	if (FindColor(pmap, pmap->green, entries, &rgb, &pixG, GREENMAP,
-		      -1, GreenComp) != Success)
-	    pixG = FindBestPixel(pmap->green, entries, &rgb, GREENMAP);
-	if (FindColor(pmap, pmap->blue, entries, &rgb, &pixB, BLUEMAP,
+	    pixR = FindBestPixel(pmap->red, NUMRED(pVisual), &rgb, REDMAP);
+	if (FindColor(pmap, pmap->green, NUMGREEN(pVisual), &rgb, &pixG,
+		      GREENMAP, -1, GreenComp) != Success)
+	    pixG = FindBestPixel(pmap->green, NUMGREEN(pVisual), &rgb,
+				 GREENMAP);
+	if (FindColor(pmap, pmap->blue, NUMBLUE(pVisual), &rgb, &pixB, BLUEMAP,
 		      -1, BlueComp) != Success)
-	    pixB = FindBestPixel(pmap->blue, entries, &rgb, BLUEMAP);
+	    pixB = FindBestPixel(pmap->blue, NUMBLUE(pVisual), &rgb, BLUEMAP);
 	item->pixel = (pixR << pVisual->offsetRed) |
 		      (pixG << pVisual->offsetGreen) |
 		      (pixB << pVisual->offsetBlue);
@@ -817,9 +824,9 @@ FakeAllocColor (pmap, item)
 
     case TrueColor:
 	/* Look up each component in its own map, then OR them together */
-	pixR = FindBestPixel(pmap->red, entries, &rgb, REDMAP);
-	pixG = FindBestPixel(pmap->green, entries, &rgb, GREENMAP);
-	pixB = FindBestPixel(pmap->blue, entries, &rgb, BLUEMAP);
+	pixR = FindBestPixel(pmap->red, NUMRED(pVisual), &rgb, REDMAP);
+	pixG = FindBestPixel(pmap->green, NUMGREEN(pVisual), &rgb, GREENMAP);
+	pixB = FindBestPixel(pmap->blue, NUMBLUE(pVisual), &rgb, BLUEMAP);
 	item->pixel = (pixR << pVisual->offsetRed) |
 		      (pixG << pVisual->offsetGreen) |
 		      (pixB << pVisual->offsetBlue);
@@ -1274,12 +1281,16 @@ QueryColors (pmap, count, ppixIn, prgbList)
     pVisual = pmap->pVisual;
     if ((pmap->class | DynamicClass) == DirectColor)
     {
+	int numred, numgreen, numblue;
 
+	numred = NUMRED(pVisual);
+	numgreen = NUMGREEN(pVisual);
+	numblue = NUMBLUE(pVisual);
 	for( ppix = ppixIn, prgb = prgbList; --count >= 0; ppix++, prgb++)
 	{
 	    pixel = *ppix;
 	    i  = (pixel & pVisual->redMask) >> pVisual->offsetRed;
-	    if (i >= pVisual->ColormapEntries)
+	    if (i >= numred)
 	    {
 		clientErrorValue = pixel;
 		errVal =  BadValue;
@@ -1290,7 +1301,7 @@ QueryColors (pmap, count, ppixIn, prgbList)
 
 
 		i  = (pixel & pVisual->greenMask) >> pVisual->offsetGreen;
-		if (i >= pVisual->ColormapEntries)
+		if (i >= numgreen)
 		{
 		    clientErrorValue = pixel;
 		    errVal =  BadValue;
@@ -1300,7 +1311,7 @@ QueryColors (pmap, count, ppixIn, prgbList)
 		    prgb->green = pmap->green[i].co.local.green;
 
 		    i  = (pixel & pVisual->blueMask) >> pVisual->offsetBlue;
-		    if (i >= pVisual->ColormapEntries)
+		    if (i >= numblue)
 		    {
 			clientErrorValue = pixel;
 			errVal =  BadValue;
@@ -2233,6 +2244,11 @@ StoreColors (pmap, count, defs)
     idef = 0;
     if((class | DynamicClass) == DirectColor)
     {
+	int numred, numgreen, numblue;
+
+	numred = NUMRED(pVisual);
+	numgreen = NUMGREEN(pVisual);
+	numblue = NUMBLUE(pVisual);
         for (pdef = defs, n = 0; n < count; pdef++, n++)
 	{
 	    ok = TRUE;
@@ -2240,7 +2256,7 @@ StoreColors (pmap, count, defs)
 	        (&pdef->red, &pdef->green, &pdef->blue, pmap->pVisual);
 
 	    pix = (pdef->pixel & pVisual->redMask) >> pVisual->offsetRed;
-	    if (pix >= pVisual->ColormapEntries )
+	    if (pix >= numred)
 	    {
 		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
@@ -2261,7 +2277,7 @@ StoreColors (pmap, count, defs)
 	    }
 
 	    pix = (pdef->pixel & pVisual->greenMask) >> pVisual->offsetGreen;
-	    if (pix >= pVisual->ColormapEntries )
+	    if (pix >= numgreen)
 	    {
 		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
@@ -2282,7 +2298,7 @@ StoreColors (pmap, count, defs)
 	    }
 
 	    pix = (pdef->pixel & pVisual->blueMask) >> pVisual->offsetBlue;
-	    if (pix >= pVisual->ColormapEntries )
+	    if (pix >= numblue)
 	    {
 		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
