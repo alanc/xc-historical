@@ -97,6 +97,9 @@ typedef struct {
     void	(*PaintWindowBackground)();
     void	(*PaintWindowBorder)();
     void	(*CopyWindow)();
+    void    	(*SaveAreas)();
+    RegionPtr  	(*RestoreAreas)();
+    void	(*DrawGuarantee)();
 } WinPrivRec, *WinPrivPtr;
 
 static int	wPrivClass;		/* Resource class for icky private
@@ -1091,12 +1094,130 @@ sunCopyWindow (pWin, ptOldOrg, prgnSrc)
     (* pPriv->CopyWindow) (pWin, ptOldOrg, prgnSrc);
 }
 
+
+/*-
+ *-----------------------------------------------------------------------
+ * sunSaveAreas --
+ *	Keep the cursor from getting in the way of any SaveAreas operation
+ *	by backing-store.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	The cursor may be removed.
+ *
+ *-----------------------------------------------------------------------
+ */
+void
+sunSaveAreas(pWin)
+    WindowPtr	  pWin;
+{
+    BoxRec  	  cursorBox;
+    WinPrivPtr	  pPriv;
+    ScreenPtr	  pScreen;
+
+    pScreen = pWin->drawable.pScreen;
+
+    if (sunCursorLoc(pScreen, &cursorBox)) {
+	/*
+	 * If the areas are obscured because the window moved, we need to
+	 * translate the box to the correct relationship with the region,
+	 * which is at the new window coordinates.
+	 */
+	int dx, dy;
+
+	dx = pWin->absCorner.x - pWin->backStorage->oldAbsCorner.x;
+	dy = pWin->absCorner.y - pWin->backStorage->oldAbsCorner.y;
+
+	if (dx || dy) {
+	    cursorBox.x1 += dx;
+	    cursorBox.y1 += dy;
+	    cursorBox.x2 += dx;
+	    cursorBox.y2 += dy;
+	}
+	if ((* pScreen->RectIn) (pWin->backStorage->obscured, &cursorBox) != rgnOUT) {
+	    sunRemoveCursor();
+	}
+    }
+    pPriv = (WinPrivPtr) LookupID (pWin->wid, RT_WINDOW, wPrivClass);
+    (* pPriv->SaveAreas) (pWin);
+}
+
+/*-
+ *-----------------------------------------------------------------------
+ * sunRestoreAreas --
+ *	Keep the cursor from getting in the way of any RestoreAreas operation
+ *	by backing-store.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	The cursor may be removed.
+ *
+ *-----------------------------------------------------------------------
+ */
+RegionPtr
+sunRestoreAreas(pWin)
+    WindowPtr	  pWin;
+{
+    BoxRec  	  cursorBox;
+    WinPrivPtr	  pPriv;
+    ScreenPtr	  pScreen;
+
+    pScreen = pWin->drawable.pScreen;
+
+    if (sunCursorLoc(pScreen, &cursorBox)) {
+	/*
+	 * The exposed region is now window-relative, so we have to make the
+	 * cursor box window-relative too.
+	 */
+	cursorBox.x1 -= pWin->absCorner.x;
+	cursorBox.x2 -= pWin->absCorner.x;
+	cursorBox.y1 -= pWin->absCorner.y;
+	cursorBox.y2 -= pWin->absCorner.y;
+	if ((* pScreen->RectIn) (pWin->exposed, &cursorBox) != rgnOUT) {
+	    sunRemoveCursor();
+	}
+    }
+    pPriv = (WinPrivPtr) LookupID (pWin->wid, RT_WINDOW, wPrivClass);
+    return (* pPriv->RestoreAreas) (pWin);
+}
+
+/*-
+ *-----------------------------------------------------------------------
+ * sunDrawGuarantee --
+ *	Makes any DrawGuarantee operation see the shadow GC
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	The cursor may be removed.
+ *
+ *-----------------------------------------------------------------------
+ */
+
+void
+sunDrawGuarantee(pWin, pGC, guarantee)
+    WindowPtr	  pWin;
+    GCPtr	  pGC;
+    int		  guarantee;
+{
+    WinPrivPtr	  pPriv;
+
+    pPriv = (WinPrivPtr) LookupID (pWin->wid, RT_WINDOW, wPrivClass);
+    (* pPriv->DrawGuarantee) (pWin, (GCPtr) pGC->devPriv, guarantee);
+}
+
 /*-
  * sunCreateWindow --
  *	Allow the output library to do its thing and then make sure
  *	we intercept calls to PaintWindow{Border,Background} and
  *	ClearToBackground
  */
+
 Bool
 sunCreateWindow (pWin)
     WindowPtr	pWin;
@@ -1114,6 +1235,13 @@ sunCreateWindow (pWin)
     pWin->PaintWindowBorder = 	    sunPaintWindowBorder;
     pWin->CopyWindow =	    	    sunCopyWindow;
 
+    if (pWin->backStorage) {
+	pPriv->SaveAreas = pWin->backStorage->SaveDoomedAreas;
+	pWin->backStorage->SaveDoomedAreas = sunSaveAreas;
+	pPriv->RestoreAreas = pWin->backStorage->RestoreAreas;
+	pWin->backStorage->DrawGuarantee = sunDrawGuarantee;
+	pPriv->DrawGuarantee = pWin->backStorage->DrawGuarantee;
+    }
     AddResource (pWin->wid, RT_WINDOW, (pointer)pPriv, Xfree, 
 		 wPrivClass);
 }
@@ -1155,6 +1283,21 @@ sunChangeWindowAttributes (pWin, mask)
 	pWin->CopyWindow = sunCopyWindow;
     }
 
+    if (pWin->backStorage &&
+	((void (*)())pWin->backStorage->SaveDoomedAreas != (void (*)())sunSaveAreas)){
+	    pPriv->SaveAreas = pWin->backStorage->SaveDoomedAreas;
+	    pWin->backStorage->SaveDoomedAreas = sunSaveAreas;
+    }
+    if (pWin->backStorage &&
+	(pWin->backStorage->RestoreAreas != sunRestoreAreas)){
+	    pPriv->RestoreAreas = pWin->backStorage->RestoreAreas;
+	    pWin->backStorage->RestoreAreas = sunRestoreAreas;
+    }
+    if (pWin->backStorage &&
+	((void (*) ())pWin->backStorage->DrawGuarantee != (void (*)())sunDrawGuarantee)){
+	    pPriv->DrawGuarantee = pWin->backStorage->DrawGuarantee;
+	    pWin->backStorage->DrawGuarantee = sunDrawGuarantee;
+    }
+    
     return (TRUE);
 }
-
