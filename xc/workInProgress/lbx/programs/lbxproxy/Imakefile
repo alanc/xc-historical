@@ -1,21 +1,12 @@
 XCOMM $XConsortium: Imakefile,v 1.4 91/07/17 00:47:39 gildea Exp $
-         XAULIB = -lXau
-       XDMCPLIB = -lXdmcp
-             OS = $(SERVERSRC)/os/libos.a $(XAULIB) $(XDMCPLIB)
-         LZWLIB	= $(EXTENSIONSRC)/lbxcommon/lzw/liblzw.a
-       DELTALIB = $(EXTENSIONSRC)/lbxcommon/delta/libdelta.a
-LOCAL_LIBRARIES = $(EXTENSIONSRC)/lib/libXext.a $(XLIB) $(OS) $(LZWLIB) \
-		  $(DELTALIB)
-CDEBUGFLAGS = -g
-DEFINES=-DDEBUG  -DINCLUDE_ALLOCA_H
-INCLUDESRC = /usr/include/X11
-INCLUDES = \
-	-I$(EXTENSIONSRC)/lbxcommon/delta \
-	-I$(EXTENSIONSRC)/include \
-	-I$(EXTENSIONSRC)/include/lbx \
-	-I$(INCLUDESRC) \
-	-I$(SERVERSRC)/include
 
+             OS = $(SERVERSRC)/os/libos.a 
+     LBXUTILLIB = $(LIBSRC)/lbxutil/liblbxutil.a
+LOCAL_LIBRARIES = $(XEXTLIB) $(XLIB) $(OS) $(XAULIB) $(XDMCPLIB) $(LBXUTILLIB)
+        DEPLIBS = $(DEPXEXTLIB) $(DEPXLIB) $(OS) $(DEPXAULIB) $(DEPXDMCPLIB) \
+                  $(LBXUTILLIB)
+  EXTRA_DEFINES = -DLBX
+INCLUDES = -I$(TOP)/include -I$(SERVERSRC)/include -I$(EXTINCSRC)
     SRCS = main.c dispatch.c wire.c globals.c \
 		utils.c stubs.c tables.c init.c \
 		cache.c colormap.c lbxfuncs.c reqtype.c \
@@ -25,4 +16,4 @@ INCLUDES = \
 		cache.o colormap.o lbxfuncs.o reqtype.o \
                 resource.o tags.o atomcache.o
 	
-ComplexProgramTarget(lbx)
+ComplexProgramTarget(lbxproxy)
