@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.93 89/10/30 09:44:30 jim Exp $
+ * $XConsortium: add_window.c,v 1.94 89/11/01 17:27:41 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.93 89/10/30 09:44:30 jim Exp $";
+"$XConsortium: add_window.c,v 1.94 89/11/01 17:27:41 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1025,8 +1025,9 @@ TwmWindow *tmp_win;
 				  TITLEBUTTON_BORDERWIDTH));
 	Scr->TBInfo.pad = ((Scr->TitlePadding > 1)
 			   ? (Scr->TitlePadding / 2) : 1);
-	Scr->TBInfo.totalwidth = (Scr->TBInfo.nbuttons * h +
-				  Scr->TBInfo.pad + Scr->TBInfo.border * 2);
+	Scr->TBInfo.totalwidth = (Scr->TBInfo.nbuttons *
+				  (h + Scr->TBInfo.pad +
+				   Scr->TBInfo.border * 2));
 	for (tb = Scr->TBInfo.head; tb; tb = tb->next) {
 	    tb->dstx = (h - tb->width) / 2;
 	    if (tb->dstx < 0) {		/* clip to minimize copy */
