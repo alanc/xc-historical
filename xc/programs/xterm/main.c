@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.85 88/09/12 17:17:52 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.86 88/09/13 16:02:47 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -930,8 +930,10 @@ static char *tekterm[] = {
 };
 
 static char *vtterm[] = {
-	"xterm",
-	"x11term",
+#ifdef USE_X11TERM
+	"x11term",		/* for people who want special term name */
+#endif
+	"xterm",		/* the prefered name, should be fastest */
 	"vt102",
 	"vt100",
 	"ansi",
