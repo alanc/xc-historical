@@ -21,6 +21,12 @@ minor revisions by
 Bob Scheifler
 .AI
 Massachusetts Institute of Technology
+.AI
+Revised for Release 4 by
+.AU
+Keith Packard
+.AI
+MIT X Consortium
 
 .LP
 X is a graphic user interface system enabling an application
@@ -117,14 +123,19 @@ to compile them into a binary format that your server uses.
 fonts/bdf
 .RS
 .RE
-This directory contains font files.
+This directory contains directories of font files.
 The font files are in a text format called "bdf." (See the 
 "Definition of the Porting Layer" document, section 5.2.8.)
-There are fixed width and variable width fonts, and a special
-font full of useful cursor images.
+There are three sections:  misc, 75dpi and 100dpi.  The misc
+directory contains fonts which do not fit a particular resolution; the
+cursor font, various fixed-pixel-size fonts and fonts which are needed
+by various toolkits for icon images.  75dpi and 100dpi contain identical
+font sets at 75 dots-per-inch and 100 dots-per-inch respectively.  All of
+these fonts conform to the XLFD standard; most of them are in ISO-8859-1
+(Latin-1) encoding.
 
 .LP
-fonts/compiler
+fonts/bdftosnf
 .RS
 .RE
 This directory has the font compiler source.
@@ -132,13 +143,12 @@ Be sure to change the bit-order and byte-order defines for the target machine
 that the font files are destined for
 before compiling.
 
-
 .LP
-fonts/snf
+fonts/mkfontdir
 .RS
 .RE
-This is an empty directory you can use to store binary
-font files that the font compiler generates.
+mkfontdir is run over a directory containing font files.  It produces
+the database which the server uses to map font-names to file-names.
 
 .LP
 X11/
@@ -146,7 +156,8 @@ X11/
 .RE
 This is an important directory because it has some include files
 that are actually shared between client (Xlib) and server, such as
-X.h, Xproto.h.
+X.h, Xproto.h.  The files in this directory are actually installed from
+include/ during the initial build process.
 
 .LP
 server/
@@ -165,14 +176,6 @@ This directory has all the Device Dependent X server code.
 Operating System dependent code is under server/os.
 
 .LP
-server/ddx/dec/lk201
-.RS
-.RE
-This directory has code to handle the
-Digital 
-LK201 keyboard.
-
-.LP
 server/ddx/cfb
 .RS
 .RE
@@ -183,8 +186,7 @@ You may be able to simply plug in a few
 special numbers into defines, then compile it and have it work for your
 display.
 Otherwise, it will serve as no more than an example of what you should
-implement as Pixblit routines for your own frame buffer.  Much of this
-code was originally derived from the mfb code.
+implement as Pixblit routines for your own frame buffer.
 
 .LP
 server/ddx/mfb
@@ -221,14 +223,13 @@ server/ddx/snf
 This directory has code to handle SNF font files.
 
 .LP
-server/ddx/dec/qvss
+server/ddx/apollo,dec,hp,ibm,macII,sun,tek
 .RS
 .RE
-This code handles the Digital 
-QVSS video display.
-It is supplied as an implementation example.
-Production-executable code supplied by Digital
-may not exactly conform to this source.
+These directories contain device-specific code which runs
+on a wide variety of machines.  All of these directories
+were, at least originally, contributed by the various hardware vendors.
+None of them represent actual production code entirely.
 
 .LP
 server/dix
@@ -244,7 +245,12 @@ server/include
 This directory has dozens of includes that are specific to the server.
 Many of them are pairs in the form of XXX.h and XXXstr.h,
 the former having #defines for the XXX topic, and the latter having
-struct definitions.
+struct definitions.  This naming convention could not be carried out
+systematically as SysV allows only 14 character filenames, which truncates
+some of the XXXstr.h file names.  The include files in this directory are
+only for DIX and DIX/DDX interfaces; individual modules which export
+functionality (such as mi) include the interface-definition header files in
+their own directories.
 
 .LP
 server/os
@@ -258,15 +264,11 @@ server/os/4.2bsd
 .RS
 .RE
 This is source for UNIX 4.2 BSD (Berkeley UNIX) source.
-It will also run on 4.3 BSD and ULTRIX.
-
-.LP
-server/os/sysV
-.RS
-.RE
-Operating System dependent code for System V from AT&T resides in this directory.
-This does not constitute a complete implementation; 
-we welcome contributions from other development groups.
+It will also run on 4.3 BSD and ULTRIX.  This code will also
+run on several vendors mixed SysV/4BSD systems.  It provides
+many routines which are not very OS specific, but which haven't
+been moved elsewhere yet for lack of need (i.e. it runs on
+every device which is supported by the sample DDX directories).
 
 .LP
 This software is contributed to the public as a service.
@@ -309,7 +311,7 @@ output:
 .RS
 .RE
 This is potentially the largest section of code you will need to
-write.  If you have a monochrome frame buffer display, most of the
+write.  If you have a memory-mapped frame buffer display, most of the
 code has already been written for you (but optimization may be desired).
 If you have color and/or a special-purpose graphics
 processor that insists upon doing all of the
@@ -331,25 +333,27 @@ conceptual machine built out of very simple primatives such as GetSpans,
 SetSpans, FillSpans, PushPixels, etc., which we call the Pixblit routines.
 
 The mfb layer is one implementation of the software interface that connects
-to monochrome (one bit deep) framebuffers.
-The cfb layer is one implementation that connects to multi-bit framebuffers.
-In both cases, some functionality is provided by
-writing directly to the framebuffer. Some more esoteric functionality is
-achieved by calling the mi  routines.  In order to be able to use the mi
-routines, they must also implement Pixblit routines.
+to monochrome (one bit deep) framebuffers.  The cfb layer is one
+implementation that connects to multi-bit framebuffers.  In both cases, some
+functionality is provided by writing directly to the framebuffer. Some more
+esoteric functionality is achieved by calling the mi routines.  In order to
+be able to use the mi routines, they must also implement Pixblit routines.
+Both cfb and mfb have been extensively tuned for Release 4 to run as quickly
+as portably possible on a wide variety of machines.  Mfb, in particular, has
+some Gnu C Compiler "asm" statements which substantially increase
+performance of some operations on both Vax and 68020 CPUs.  Cfb, on the
+other hand, can be tuned for new architectures by describing some CPU
+characteristics in server/include/servermd.h.
 
 The mi code should be portable to all systems.
 It calls the Pixblit routines to apply the pixels,
 all device dependencies are contained in there.
 
-The Pixblit routines supplied work on most monochrome  screens with minimal
-modification.  Other depths require a reimplementation.
-
-Some routines in mi are not used by the mfb or cfb DDX implementations.  They are
-provided to make it easier for you to get a simple port running quickly.
-Unfortunately, it is not reasonable to provide a complete DDX implementation
-in mi, you need the Pixblit routines which actually know how the hardware
-looks.
+Some routines in mi are not used by the mfb or cfb DDX implementations.
+They are provided to make it easier for you to get a simple port running
+quickly.  Unfortunately, it is not possible to provide a complete DDX
+implementation in mi, you need the Pixblit routines which actually know how
+the hardware looks.
 
 The mi, mfb, and cfb routines were designed for portability over performance.
 Therefore, you may want to spend time optimizing them if you choose to use
@@ -414,21 +418,22 @@ defines and recompiling the mfb files may be all you need.
 (See "Porting MFB" in the Details, below.)
 For color screens, setting a few
 defines and recompiling the cfb files may be all you need.
+(See "Porting CFB" in the Details, below.)
 
 The xclock program is a good candidate for testing graphical output.
 Depending on your networking software, it might be easiest to
 have this test client on the same machine as your server.
 
-Finally, work on the input.
-Fill in code to handle the keyboard and mouse (or other pointing device).
-The cursor that echoes the position of the pointing device 
-may be nontrivial, especially if you do not have a hardware cursor.
-See the section on cursors below.
+Finally, work on the input.  Fill in code to handle the keyboard and mouse
+(or other pointing device).  The cursor that echoes the position of the
+pointing device is better implemented in hardware, but mi does provides
+support for a primitive software cursor which is very easy to use.  See the
+section on cursors below.
 
 Next, optimize.
 
 You are done!
-For more explaination, see the Details section, below.
+For more explanation, see the Details section, below.
 
 .NH 2
 Cost
@@ -436,12 +441,12 @@ Cost
 Cost
 .XE
 .LP
-We estimate that a basic monochrome server will 
+We estimate that a basic monochrome or color server will 
 take one to two months to develop if done on
 a UNIX 4.2 BSD system by an experienced C programmer who knows the hardware
 quite well.
 
-The more software you have to write, the longer 
+The more software you have to write, the longer it will take.
 If it is a non-4.2 UNIX system, add one to four weeks.
 If it is a non-UNIX system, add one to two months.
 If your operating system does not have a network, 
@@ -449,7 +454,6 @@ that must be taken into consideration.
 If you buy someone else's implementation, add one to four months.
 If you decide to write it yourself, add six months to two years.
 
-If color or gray scales are involved, it will take longer.
 If special graphics hardware (a graphics processor, not just unusual
 bitplanes) is involved, it will take much longer.
 If you want the code optimized for maximum performance, it will take much,
@@ -521,7 +525,7 @@ If this causes problems on your machine, you might need to change the code
 or get another compiler.
 
 If you are using an 8086 architecture, we recommend you use "large" model 
-to get the server running, then switch to mixed model for speend and
+to get the server running, then switch to mixed model for speed and
 space efficiency.
 
 .NH 3
@@ -633,11 +637,25 @@ Profiling Tools
 .XE
 .LP
 After you have an initial implementation running, you may want to improve its
-performance.
-A profiler is invaluable for this purpose because it tells you where you are actually
-consuming CPU cycles.
-You can then change code based upon hard evidence.
-On UNIX systems, you might use the prof and gprof programs.
+performance.  A profiler is invaluable for this purpose because it tells you
+where you are actually consuming CPU cycles.  You can then change code based
+upon hard evidence.  On UNIX systems, you might use the prof and gprof
+programs.  To really analyze the code, it is very useful to use a
+basic-block profiler (like the MIPS pixie system); most of the frame-buffer
+graphics primitives are large functions wrapped around multiple small inner
+loops which perform the actual rendering.
+
+To gain more insight into performance deficits, the X client "x11perf"
+(contrib/demos/x11perf), contributed by DEC, offers a wide array of
+measurement tools and an easy base to add more to.  It was used extensively
+in the development of the current cfb and mfb drivers, along with the
+release 4 changes to various data structures and mi algorithms with
+frequently astounding revelations.  It is hard to recommend this program too
+much.  Each time you sit down to optimize some area of the server, first
+develop a test case and integrate it into x11perf; measuring before and after
+to discover performance changes.  X11perf is also useful in profiling the
+server as it provides a repeatable sequence of graphics requests; set it up
+to use a fixed number of iterations.
 
 .NH 2
 Operating System Details
@@ -659,12 +677,16 @@ CPU you have.
 First, edit Xmd.h.
 Change the following:
 
-INT32, INT16, INT8 should be signed integers of 32, 16 and 8 bytes.
-CARD32, CARD16 and CARD8 should be equivalent unsigned integers.
-BITS32, BITS16 and BYTE should be types that are 
-most convenient for bit-oriented data.
-BOOL is the most convenient boolean value type that fits in 8 bits.
-Change them according to your compiler.
+INT32, INT16, INT8 should be signed integers of 32, 16 and 8 bytes.  CARD32,
+CARD16 and CARD8 should be equivalent unsigned integers.  BITS32, BITS16 and
+BYTE should be types that are most convenient for bit-oriented data.  BOOL
+is the most convenient boolean value type that fits in 8 bits.  Change them
+according to your compiler.  Unfortunately, most of the mfb and cfb code
+"knows" that both int and long are 32 bits and will not work on systems where
+this is not the case.  The rest of the server is less encumbered, but as the
+sample code has never been run on such machines, it is unknown whether it
+will work.  It will certainly not work if long != 32 bits or short != 16
+bits.
 
 IMAGE_BUFSIZE is the size of a buffer of bytes that GetImage will return.
 Smaller systems may want to keep this at 1k or less;
@@ -680,11 +702,10 @@ On VAXen, this is LSBFirst because the least significant bit is most
 toward the left on the screen.
 On 68000s it is MSBFirst.
 
-BITMAP_SCANLINE_UNIT is the biggest piece of memory in 
-which IMAGE_BYTE_ORDER applies (in bits).
-For most hardware, 32 is a good value.
-Note that mfb assumes that addresses ascend across the screen from left to
-right and then proceed down the screen.
+BITMAP_SCANLINE_UNIT is the biggest piece of memory in which
+IMAGE_BYTE_ORDER applies (in bits).  For most hardware, 32 is a good value.
+Note that mfb and cfb both assume that addresses ascend across the screen
+from left to right and then proceed down the screen.
 
 BITMAP_SCANLINE_PAD is the chunk size to which
 bitmaps sent over the bytestream should be padded.
@@ -771,11 +792,9 @@ If another CPU or a graphics processor were
 available for these tasks, a significant gain in performance
 could be realized.
 
-Graphics processors, in particular, offer a unique opportunity
-to create a very high-performance X server.
-See the section "Implementing On Top of
-Another Graphics System"
-for more details if you have a graphics processor.
+Graphics processors, in particular, can offer a unique opportunity to create
+a very high-performance X server.  See the section "Implementing On Top of
+Another Graphics System" for more details if you have a graphics processor.
 
 The X sample server was written as a single-threaded program for a single processor.
 A multi-processor system with a core processor (running the main server
@@ -1038,11 +1057,15 @@ Porting MFB
 Porting MFB
 .XE
 .LP
-If your screen is a simple monochrome frame buffer, you probably want to start
-by porting the mi and mfb routines.
-These will get you up quickly so you have something that works on which to build.
-Although we recommend optimizing it, many server implementations may choose
-to keep the mfb routines the way they are.
+If your screen is a simple monochrome frame buffer, you probably want to
+start by porting the mi and mfb routines.  These will get you up quickly so
+you have something that works on which to build.  Mfb has been extensively
+tuned for a few environments; in particular mfb runs very well on 68020 and
+vax CPUs where GNU CC is available.  It also runs quite well on many RISC
+processors, where C compiler technology is more able to optimize some of the
+common operations.  Although you could easily expend considerable time
+optimizing it, it is not unreasonable to leave most mfb routines the way
+they are.
 
 The mfb routines are extremely portable.
 Most monochrome screens need only a half-dozen defines changed
@@ -1054,24 +1077,30 @@ the same as byte ordering in main memory.)
 
 First, make sure you have edited Xmd.h for your CPU.
 See the section "Machine Dependencies" for instructions on how to do this.
+Then edit server/include/servermd.h to set up bit/byte orders and font
+padding information (mfb will work with any font padding, but MSBFirst
+machines work best with GLYPHPADBYTES == 4, GETLEFTBITS_ALIGNMENT == 1).
 
-Change the frame buffer address, which is passed to 
-mfbScreenInit().
-This routine is defined in the mfb code but is called from 
-qvssScreenInit() in init.c in the qvss directory.
-The third argument passed in is the starting address of the 
-screen buffer (even though it looks like a sterile struct
-component).
-You could just type in a literal
-address in hexadecimal, but you may want to be a bit more
-sophisticated.  (Do not change the qvss code;
-copy the files into
-a directory for your own hardware.)
+Next, write a screen initialization routine which sets the whitePixel and
+blackPixel values in the screen structure and calls mfbScreenInit with
+appropriate parameters; in particular you'll need to pass the address
+of the frame buffer, the screen size in pixels, both horizontal and
+vertical resolution in dots/inch (truncated to an int, which limits the
+accuracy a bit) and the frame buffer width in pixels.  This last parameter
+may seem redundant, but many displays have extra framebuffer memory per
+scanline which is not visible on the display.  Set this final parameter to
+the total pixel width of the display and mfb will ignore the invisible
+space.  You could just type in a literal address in hexadecimal for the
+frame buffer address, but you may want to be a bit more sophisticated.
 
-Next, declare what is white and what is black.
-Edit the file mfbscrinit.c, and search for "whitePixel".
-You will see where the pixel values for white and black are set.
-Set them appropriately for your machine.
+In this screen initialization routine, you'll want to initialize the various
+screen functions which apply to your hardware; hardware cursor routines
+(or mi software cursors) should be set up here.  Mfb requires that the
+CloseScreen function which it stores in the screen be called at server reset
+time, make sure you wrap it if you need your own hooks here.  If
+mfbScreenInit returns without troubles (TRUE), call
+mfbCreateDefColormap(pScreen) to initialize the default colormap with
+appropriate values.
 
 That's it!  All other machine dependencies should be 
 taken care of, for
@@ -1085,18 +1114,59 @@ address.  Look for places where we multiply by devKind or width.
 
 
 .NH 3
+Porting CFB
+.XS
+Porting CFB
+.XE
+.LP
+If your screen is a simple packed-pixel frame buffer (either gray scale or
+color), you will want to start by porting the mi, cfb and mfb routines.
+You'll need to use mfb, even though your screen is color, as each server is
+required to support 1-bit pixmaps.  The cfb routines have been extensively
+tuned for 1-byte-per-pixel displays and will work quite well with little
+change.  On other displays (2 bit up to 32 bit), the existing code will
+still work, but in many areas performance will be disappointing.
+
+The cfb routines are also extremely portable.  Most color screens need only
+a few changes to Xmd.h and server/include/servermd.h.  The 8-bit specific
+cfb text code works best with GLYPHPADBYTES == 4, GETLEFT_BITS_ALIGNMENT ==
+1, but will function with any padding.  Also in servermd.h are several
+CPU specific tuning parameters.  Read the comments carefully at the top of
+the file and set the ones appropriate for your CPU.  They do not affect the
+correctness of the code, but can offer substantial performance gains if set
+correctly.  If you are unsure, guess and use a profiling tool to discover
+which set work best.  As with the mfb code, you could spend almost unbounded
+effort tuning various portions of the cfb layer for your particular system;
+but most of the code should run well enough unchanged to not warrant the
+effort.
+
+Finally, set up an initialization routine which calls cfbScreenInit which
+uses arguments similar to those used by mfbScreenInit, the sizes are all
+still in pixels.  CfbScreenInit does take an additional parameter before the
+framebuffer width, the visual class of the default visual.  Set this
+appropriately (probably PseudoColor).  You needn't set up
+whitePixel/blackPixel on pseudo color machines as cfbCreateDefColormap()
+will pick appropriate values and store them in the colormap when called
+after cfbScreenInit returns success.  If you want to force the values for
+whitePixel/blackPixel, set them in the screen structure after cfbScreenInit
+and before cfbCreateDefColormap.
+
+.NH 3
 Implementing On Top of Another Graphics System
 .XS
 Implementing On Top of Another Graphics System
 .XE
 .LP
-Many workstations already have their own graphics library
-or even their own windowing system.
-In order to coexist with the rest of the
-world as peacefully as possible, you may want
-to implement your X server on top of such a library.
-In fact, your machine may come with its own graphics processor
-that can greatly speed up graphics.
+Many workstations already have their own graphics library or even their own
+windowing system.  In order to coexist with the rest of the world as
+peacefully as possible, you may want to implement your X server on top of
+such a library.  In fact, your machine may come with its own graphics
+processor that can greatly speed up graphics if used judiciously.  Beware,
+however, that many X clients draw small objects, or only a few at a time.
+The overhead for translating X requests into graphics-system primitives may
+dominate the drawing time and cause the resultant server to be slower than a
+simple dumb frame-buffer system.  Do not casually assume that the graphics
+processor is the fastest way to do things.  Profile, profile, profile.
 
 Since such graphic systems usually perform high level operations such
 as line drawing, text drawing, and area fill,
@@ -1123,7 +1193,7 @@ There are several approaches to this problem.
 First, you can recognize the 80 percent of the situations
 that can be executed by your graphics system, using the graphics system
 for those cases, and then executing the remaining 20 percent
-with mi (and possibly even mfb) code.
+with mi (and possibly even cfb or mfb) code.
 Your GC validate routine can route
 different requests to various 
 routines to do things differently.
@@ -1132,7 +1202,7 @@ routines to do things differently.
 Secondly, you can supplement the graphics processor's work.
 You can implement each X primative call for with
 more than one call to your graphics system, possibly with
-some auxilliary touch-up.
+some auxiliary touch-up.
 
 Third, request changes in your graphics processor or library.
 
@@ -1163,14 +1233,11 @@ routines borrowed from the sample server.
 (Depending upon the application, much text on the screen may be fixed width
 in the default font.)
 
-Example:
-The graphics processor cannot clip to an irregular region as the
-entire Drawing Primitive set must do.
-Each routine checks the clipping region and ascertains 
-whether the entity to be drawn falls
-entirely within the region.
-If so, the drawing is executed by the graphics processor.
-If any part of the entity is clipped, it is handled by the mi and mfb code.
+Example:  The graphics processor cannot clip to an irregular region as the
+entire Drawing Primitive set must do.  Each routine checks the clipping
+region and ascertains whether the entity to be drawn falls entirely within
+the region.  If so, the drawing is executed by the graphics processor.  If
+any part of the entity is clipped, it is handled by the mi, cfb or mfb code.
 
 Example:
 A graphics processor can draw text only with its own hardwired font.
@@ -1196,7 +1263,8 @@ line by 1/2 line width).
 Imagine your graphics processor draws lines by smearing
 a rectangle from the source to destination.
 You get to set the height and width of the rectangle, but nothing else.
-Clearly, for wide lines, you will have some problems.
+You will not be able to use this operation for X wide lines in any but
+the simplest (i.e. horizontal/vertical or zero-width) cases.
 
 In X there are few requirements placed on zero-width lines.
 (If you get a line width of zero, the intent is that it be "the fastest,
@@ -1206,8 +1274,11 @@ The line style (dash style) should still be processed.
 The join style can be ignored because all join 
 styles look the same at this resolution (except that miter joins for acute
 angles can get very long; you can ignore this effect).
-Your algorithm can be anything reasonable, provided that 
-you include the starting and ending pixels.
+Your algorithm can be anything reasonable, it is desirable
+that you obey the cap style "NotLast" which indicates whether the
+ending pixel should be drawn.  There is also a requirement that
+the lines be identical in the face of clipping; and a suggestion that
+the lines be identical when drawn in the reverse direction.
 Client programs that are picky about the lines they draw can draw width 1
 lines.  Your GC Validate routine can change the line-drawing
 routine pointer in the GC so that zero width lines get drawn by
@@ -1290,15 +1361,20 @@ and GC B and kept switching between aA and bB without changing the GC's,
 each would no longer need to be
 validated because their serial numbers would match.
 
-To ensure that the validate routines are called for each change of the GC in use also,
-your validate routine must keep a static GC pointer variable
-that points to the last GC used.
-When a new GC is validated, the serial number of the last GC should be changed
-(change the high bit -- do not change the rest which is clipping information).
-Once this has been done, set your static GC pointer to point to the new GC.
-
-The validate routine will then be called whenever the hardware
-GC information needs to be changed.
+You could ensure that the validate routines are called for each change of
+the GC in use by keeping a static GC pointer variable that points to the
+last GC used.  When a new GC is validated, the serial number of the last GC
+would be changed (change the high bit -- do not change the rest which is
+clipping information).  Once this has been done, set your static GC pointer
+to point to the new GC.  The validate routine will then be called whenever
+the hardware GC information needs to be changed.  Unfortunately, the
+validate routine is probably much more involved than is necessary for this
+process.  Instead, keep a global variable which points at the current GC in
+use and check in each graphics operation that the global GC pointer matches
+the GC passed in.  If not, call a function to reload the hardware state from
+the new GC and change the global pointer to point at the new GC.  DestroyGC
+would then check to ensure the cached GC pointer was invalidated when the GC
+was deleted.
 
 If you have a sophisticated graphics processor that
 has, for instance, eight "contexts" of graphic parameters among which it
@@ -1334,44 +1410,13 @@ and changing their attributes.
 See the Definition document section on windows for more details.
 
 .NH 3
-Deep Frame Buffers
-.XS
-Deep Frame Buffers
-.XE
-.LP
-If your screen has more than one bit per pixel, you need to rewrite
-certain parts of the DDX code supplied.
-The mi code is portable to deeper frame buffers.
-Start with the cfb code, as it affords you a good starting point,
-and it will show you the subtle details of the interface.
-
-Have your initialization code specify that your screen supports
-the depth (or depths) that are applicable.
-(If the screen supports
-more than one mode at the same number of bits per pixel, all count as one
-depth but as more than one visual associated with that depth- see the section
-on color.)
-Have it also specify that pixmap image formats can come in
-more than one depth (because it always must support depth 1
-for pixmap images).
-
-You may want to start by rewriting the sample server DDX code to simplify
-the GC validation code so that it does not use the glyph Pixblit routines,
-and instead uses mi glyph routines.  Thus, text will be drawn through the
-span routines.  It will execute more slowly, but you can concentrate on the
-simplest form of the problem first.  Later, you can write the glyph routines
-and restore the extra code in the validate routine.
-
-.NH 3
 Color
 .XS
 Color
 .XE
 .LP
 Color requires special considerations.
-First, you almost certainly have a frame buffer deeper than one (see the section
-on deep frame buffers).
-Then, you need to decide what class of display you have (see the Definition
+You need to decide what class of display you have (see the Definition
 document, the section on Visuals and Depths).
 
 Next, set up all of the visuals you will support.
@@ -1380,12 +1425,14 @@ if your screen has several modes, you can list them all.
 As with depths, it may be best to begin with the simplest
 and then add visuals one at a time.
 
-If you have a Pseudocolor display, get the pixel drawing
-routines working first with a preprogrammed color lookup table in your hardware.
-Thus, the only color routine you will need to implement is GetStaticColormap().
-Declare yourself to be Static Color class while this is true.
-When that operates at thick depths, add color and
-change your class to PseudoColor, implementing the remaining color routines.
+Cfb has quite a range of support for colormaps.  It has routines
+which emulate any visual type on a pseudo color system, most of which are
+also appropriate for other hardware types.  You'll need to implement
+StoreColors, InstallColormap, UninstallColormap and ListInstalledColormaps;
+all of which are typically quite short.  Place pointers to these routines in
+the screen structure before calling cfbScreenInit.  If you are not using
+cfb, you may want to extract the colormap code anyway; it is not dependent
+on the rest of that directory.
 
 You might want to construct your server so that
 it appears to support multiple lookup tables simultaneously, so you can have 
@@ -1397,7 +1444,7 @@ and four lookup tables.
 The extra two bits in each pixel would determine the lookup table
 to use for that pixel.
 Each time you wrote into windows on this screen, you would need to write
-those extra two bits serreptitiously to indicate the lookup table 
+those extra two bits surreptitiously to indicate the lookup table 
 to use for this pixel.
 When copying pixel data off the screen onto pixmaps, the window would
 be considered eight deep, the extra two bits would be ignored.
@@ -1491,6 +1538,33 @@ Thus, it is usually most practical simply to discard parts of backing
 store that are drawn onto while hidden;
 an expose event will always execute properly.
 
+The sample implementation of backing store is very device-independent.
+All that is needed to use it is a small vector of device-specific functions,
+only two of which are typically used; SaveAreas and RestoreAreas:
+.nf
+
+	(*miBSFuncs->SaveAreas) (pixmap, region, x, y);
+		PixmapPtr pixmap;
+		RegionPtr region;
+		int x, y;
+
+	(*miBSFuncs->RestoreAreas) (pixmap, region, x, y);
+		PixmapPtr pixmap;
+		RegionPtr region;
+		int x, y;
+.fi
+(*SaveAreas) copies the specified region (which is pixmap relative) from the
+screen starting at (x,y) to the pixmap; (*RestoreAreas) copies the specific
+region (which is screen relative) from the pixmap to the screen, starting at
+(x,y).  If you can provide these two functions; call
+miInitializeBackingStore(pScreen, funcs) and the rest will be taken care
+of.  Cfb and mfb already call miInitializeBackingStore.
+
+DIX provides SaveUnders when DDX provides BackingStore.  This implementation
+is not as optimal as a real save unders implementation would be, but is
+better than nothing in most cases; the mi backing store implementation
+changes its behavior when bits are saved because of save unders instead
+of backing store.
 .NH 3
 Software Cursors
 .XS
@@ -1501,51 +1575,70 @@ The sample server is designed for a hardware cursor that maintains
 a separate cursor bit map
 in hardware so that the video electronics mixes the image of the normal display
 and the cursor before being displayed.
-Nevertheless, a software cursor can be made to operate in X Windows.
+Nevertheless, a software cursor module is provided with hooks which require
+various levels of support.
 
-The problem with a software cursor is that you must have software
-that is constantly drawing and undrawing the cursor at the appropriate location 
-on the screen.
-In addition, you must have a save-unders scheme to recall the pixels
-beneath the cursor.
-Each time the cursor is moved, you must restore the save-unders, save
-the pixels beneath the new location, and redraw the cursor onto the new location.
+The easiest to use level is the DispCur module (server/ddx/mi/midispcur.c).
+This provides software cursors with nearly no device-specific code.  All
+that is required is that you read events from the pointer device and send
+position update events to the mi routines.  Four routines are required, one
+of which is implemented in mi for the truly meek.  The relevant header file
+is "server/ddx/mi/mipointer.h"; this file contains the function vector
+definition and some useful function defines.
+.nf
 
-Additonally, you need to deal with situations in which normal graphics
-intended for the display is drawn where the cursor is.
-You can either intercept such commands and have them also write into your
-save-unders for the cursor, or you can temporarily restore the screen, allow
-the graphics to draw, and replace the cursor (remembering save-unders again).
-Even though it produces a small amount of flicker, the latter method is usually much
-easier to implement.
-(See the section on save-unders for more details.)
+	typedef struct {
+    	    long	(*EventTime)();		/* pScreen */
+    	    Bool	(*CursorOffScreen)();	/* ppScreen, px, py */
+    	    void	(*CrossScreen)();	/* pScreen, entering */
+    	    void	(*QueueEvent)();	/* pxE, pPointer, pScreen */
+	} miPointerCursorFuncRec, *miPointerCursorFuncPtr;
+.fi
+An initialized structure of this type is passed, along with the screen which
+needs cursors to miDCInitialize(pScreen, &pointerCursorFuncs).  (*EventTime)
+is required to return the time of the last event processed (as 32 bits of
+milliseconds).  This allows the mi cursor support to build events and fill
+in the appropriate data.
 
-You need not invoke the full capabilities of bitblt software to recall save-unders.
-For instance, the 16 by 16 cursor of the Apple Macintosh is handled in firmware.
-The cursor-handling software can always locate a convenient longword boundary
-to use; it need only move 16 rows of one longword apiece.
-(It is a 32 bit processor on a 16-bit bus, so it can execute 32-bit addressing
-on 16-bit boundaries.)
-The flicker is much faster than the 60Hz refresh rate of the screen, and the cursor
-appears quite solid, with some minor flicker during drawing.
+(*CursorOffScreen) is called whenever the cursor would be off of the
+current screen if the user motion were tracked exactly.  This routine
+returns FALSE if the cursor should be confined to the screen, TRUE if cursor
+should wander to some other screen.  ppScreen should be smashed to indicate
+the new screen, px and py should indicate the position on that screen; they
+are initialized to be the position of the cursor on the old screen if the
+cursor were not confined or warped (i.e.  (x,y) is not on the screen).
 
-The only remaining task is to locate a place in the code
-to remove the cursor before graphics and restore
-it afterward.
-This should be done only upon graphic operations on the screen, avoiding operations on
-pixmaps, but including internal graphics that draw window borders and similar operations.
-Also, it need not be done if the graphic command is such that what is being drawn
-is nowhere near the cursor.
+(*CrossScreen) is called whenever the cursor is moved on/off of the screen.
+entering is TRUE when pScreen is the screen now containing the cursor and
+FALSE when pScreen used to contain the cursor.
 
-The appropriate place to include this code is at the Pixblit routines.
-If the drawable is a window and if the span or glyph
-includes the rectangle from which the
-cursor save-unders have been saved,
-then restore the part of the frame buffer that you saved,
-perform the graphics, then redraw the cursor on top after saving it.
-For the span routines that deal only with a single row of
-pixels at a time, you may be able to restore only 
-that row - merely a longword move.
+(*QueueEvent) is called in response to WarpPointer protocol requests.  It
+should place the event at the tail of the input queue to be processed in
+series with the other events; this is frequently quite difficult to
+implement, however, and the mi routine, miPointerQueueEvent, simply
+processes the motion event immediately can be used (this may cause occasional
+small protocol violations).
+
+When your pointer device moves, call
+.nf
+
+	miPointerDeltaCursor (pScreen, dx, dy, generateEvent)
+		ScreenPtr pScreen;
+		int dx, dy;
+		Bool generateEvent;
+.fi
+with the distance the device has moved and TRUE for generateEvent.  If you
+device reports absolute coordinates instead, use miPointerMoveCursor
+instead (which replaces the delta coordinates with absolute ones).
+
+To fill in the current pointer position for other event types, use
+miPointerPosition (pScreen, &rootX, &rootY), passing the address of
+the event rootX, rootY fields which will be filled in as appropriate.
+
+The other two cursor layers can be investigated by looking through the
+miDispCur layer which uses them.  In particular, you may want to
+use miSprite which allows you to provide device-specific cursor
+drawing primitives to speed up cursor rendering.
 
 .NH 3
 Limited Hardware Cursors
@@ -1661,10 +1754,13 @@ Graphic Output Tuning
 Graphic Output Tuning
 .XE
 .LP
-The mi (and mfb or cfb, if used) code is designed to be portable by sacrificing 
+The mi code is designed to be portable by sacrificing 
 a certain amount of performance.
 Once you have got it running and have a large user base,
-it might be appropriate to make it run faster.
+it might be appropriate to make it run faster.  Mfb and cfb have already
+been extensively tuned for many platforms; it is unlikely that you could
+increase performance by substantial amounts without resorting to assembly or
+gratuitous code expansion.
 
 The overall rule in optimizing software is to collect experimental data.
 Do not subjectively judge whether something "feels" faster;
@@ -1700,7 +1796,7 @@ Most drawing is executed with a plane mask of all 1s, and with an alu mode of
 Copy.  Most drawing is done with a solid fill style.
 If draw is done with another fill style, the tile or stipple frequently
 has a size that is a byte or word multiple.
-The mfb routines have already been optimized for some of these 
+The cfb and mfb routines have already been optimized for some of these 
 special cases.
 
 In general, start optimizing where you have a better algorithm or know more
@@ -1721,10 +1817,11 @@ You may want to rewrite them in assembly language or implement them in
 hardware.
 Since most glyphs are written with solid fill styles and the glyph images
 usually do not lie on a clip-region boundary, you may want to make your speedy
-routine handle just this special case, and handle everything else with mi and
+routine handle just this special case, and handle everything else with mi,
+cfb and
 mfb routines.
 
-You can even optimize the mfb glyph routines to your machine without 
+You can even optimize the mfb and cfb glyph routines to your machine without 
 changing much.
 Fonts glyphs are
 padded to byte boundaries for each scanline.
@@ -1760,72 +1857,41 @@ Painting window backgrounds is executed from a routine in the WindowRec.
 Since it can be changed when the background is changed, you can substitute
 different routines optimized to do solid colors, stipples or tiles, as appropriate.
 
-Wide lines present a good opportunity to invest a great deal of 
+Wide lines no longer present much of an opportunity
+to invest a great deal of 
 work into an optimization and 
-receive much benefit from it (if you use many wide lines).
-The mi code, to be portable, uses floating-point
-operations to make everything work.
+receive much benefit from it.
+The mi code now uses integer arithmetic for nearly all of the
+wide line computations and provides nearly-perfect protocol-conforming
+lines.  Experimentation with moving the rendering into cfb or mfb has shown
+that not much performance is to be gained; if you want to try, the polygon
+edge walking code is written using macros which could easily be used directly
+inside the graphics layer.
 
-The first problem is that there must be sub-pixel coordinates.
-When you make a wide line from point A to point B, you are actually asking for 
-a filled rectangle, the ends of which center at A and B. (The exact shape and 
-proportions depend
-upon the line width, cap style, line style options, and join style for joined lines.)
-To estimate the locations of the corners of this rectangle to one-pixel resolution
-yields unsatisfactory results, so for coordinates you must use a longer 
-integer than 16 bits,
-possibly 32 bits.
+The code you want to look at is in miwideline.c and miwideline.h
 
-The best algorithm for walking a line is a Bresenham algorithm (see references below).
-This is an algorithm that can use integer arithmetic and requires only addition
-and subtraction for each raster line iteration.
-Unfortunately, it requires multiplication and division for part of its preparation.
-In particular, it must multiply two coordinates, keeping full precision,
-then perform addition and subtraction operations on the full precision 
-numbers, then divide by
-a coordinate-sized number again.
-That means that for the 32-bit coordinates, you need to be able to multiply two
-of them together to yield a 64-bit product, then add and subtract them, then
-divide the 64-bit result by a 32-bit number to yield a 32-bit number.
+Wide arcs could use some substantial speedups though.  Unfortunately,
+the protocol defines an object which is quartic in description, the solution
+of which can be generated in closed form, but is larger than reasonably
+implementable (13 pages of macsyma output described a small portion of the
+solution).  If you examine the implementation in miarc.c, you'll see a
+nightmare of complicated floating point arithmetic.  These routines attempt
+to come as close as possible to the protocol definition for a wide arc, and
+suffer tremendously in performance because of it.  Wide circles, however, do
+provide a reasonable opportunity for optimization.  As the both inner and
+outer edges of a wide circle are circular (unlike elliptical arcs), a
+fully-integer circle edge walker could be used to scan-convert them.  Look
+at the code in server/ddx/mi/mifillarc.c to discover some amazing integer
+code which draws protocol-conforming filled arcs and could be extended to
+draw protocol-conforming wide arcs.  New for R4 is a large body of code
+which implements zero-width ellipses and circles.  Mfb, cfb and mi all have
+sample implementations which you should examine closely.  The relevant files
+are ddx/mi/mizerarc.c,mizerarc.h, ddx/mfb/mfbzerarc.c and
+ddx/cfb/cfbzerarc.c.  X11perf shows a 5950 times speedup between using the
+cfb-specific zero-width arc code in R4 and using the mi wide-arc code in
+R3 on a sun 3/60 CG4 display for large (500 pixel) circles.
 
-Since 64-bit integer arithmetic is not portable, the wide-line routines in 
-the mi code use a different algorithm with floating point (double) values.
-The algorithm is a linear Digital Difference Algorithm, which is just
-as fast as a floating-point Bresenham could be.
-
-First write a fast, fixed-point arithmetic library
-that works on 64 bit quantities, probably in assembly language.
-Using these, implement a Bresenham edge walker.
-
-The code you want to rewrite is in mifpolycon.c and mifpoly.h.
-You will also need to make minor changes to milines.c, miarc.c and miwidedash.c.
-(Remove the "mi" prefix when you change them.)
-
-Arcs consist of several small line segments.
-The algorithm that generates lines for arcs dictates the number of lines to
-create based upon curvature.
-If you need to change this algorithm, see the routine miGetArcPts() in miarc.c.
-
-PushPixels is also an important routine to optimize.  This is because it is
-used in many places in the mi code.
-
-
-References on Bresenham's algorithm:
-.XP
-Bresenham, J. E.  
-"Algorithm for Computer Control fo Digital Plotter."
-IBM Systems Journal.
-4(1) 1965, pp. 25-30.
-.XP
-Foley, J. D. and van Dam, V.  
-Fundamentals of Interactive Computer Graphics.
-Addison-Wesley Publishing Co., 1984, p. 435.
-.XP
-Newman, William M. and Robert F. Sproull.
-Principles of Interactive Computer Graphics, 2nd edition.
-McGraw-Hill Book Co.,
-1979, p. 25.
-.LP
-.fi
-.TC
-
+PushPixels may also be an important routine to optimize.  This is because it
+is used in some places in the mi, most notably the software cursor
+code.  Both mfb and cfb have heavily tuned PushPixels routines which work in
+solid fill/copy mode and provide adequate performance for software cursors.
