@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.186 87/12/09 20:42:10 rws Locked $ */
+/* $Header: window.c,v 1.187 87/12/10 13:38:26 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2268,7 +2268,7 @@ ReparentWindow(pWin, pParent, x, y, client)
     ClientPtr client;
 {
     WindowPtr pPrev;
-    Bool WasMapped = (Bool)(pWin->realized);
+    Bool WasMapped = (Bool)(pWin->mapped);
     BoxRec box;
     xEvent event;
     short oldx, oldy;
