@@ -1,7 +1,7 @@
 XCOMM $XConsortium: Imakefile,v 5.21 93/04/27 16:43:54 rws Exp $
 #include <Server.tmpl>
 
-#if BuildXInputExt || BuildPexExt || BuildPexClients
+#if BuildXInputExt || BuildPexExt || BuildPexClients || BuildXIE
 #define IHaveSubdirs
 #endif
 
@@ -15,20 +15,29 @@ XCOMM $XConsortium: Imakefile,v 5.21 93/04/27 16:43:54 rws Exp $
   PEXDIRS = PEX/dipex/swap
 #endif
 #endif
+#if BuildXIE
+  XIEDIRS = xiesi
+#endif
 #if BuildXTrapExt
   XTRAPDIRS = xtrap
+#endif
+#if BuildScreenSaverExt
+SAVERSRCS = saver.c
+SAVEROBJS = saver.o
 #endif
 #if HasShm
   SHMSRCS = shm.c
   SHMOBJS = shm.o
 #endif
-       SRCS = shape.c $(SHMSRCS) multibuf.c mitmisc.c xtest.c \
-              xtest1di.c xtest1dd.c sleepuntil.c bigreq.c
-       OBJS = shape.o $(SHMOBJS) multibuf.o mitmisc.o xtest.o \
-              xtest1di.o xtest1dd.o sleepuntil.o bigreq.o
+       SRCS = shape.c $(SHMSRCS) multibuf.c multibufpx.c multibufbf.c	\
+              mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c	\
+	      bigreq.c $(SAVERSRCS)
+       OBJS = shape.o $(SHMOBJS) multibuf.o multibufpx.o multibufbf.o	\
+              mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o	\
+              bigreq.o $(SAVEROBJS)
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
    LINTLIBS = ../../server/dix/llib-ldix.ln ../../server/os/4.2bsd/llib-los.ln
-        SUBDIRS = $(XINPUTDIRS) $(PEXDIRS) $(XTRAPDIRS)
+        SUBDIRS = $(XINPUTDIRS) $(PEXDIRS) $(XIEDIRS) $(XTRAPDIRS)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(ext,$(OBJS))
