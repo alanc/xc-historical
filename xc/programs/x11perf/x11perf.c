@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.38 92/11/11 16:44:05 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.39 93/01/15 11:09:55 gildea Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -1056,7 +1056,11 @@ main(argc, argv)
 	}
     }
 
-    printf("x11perf - X11 performance program, version 1.3\n");
+    printf("x11perf - X11 performance program, version %s\n",
+	   xparms.version & VERSION1_4 ? "1.4" :
+	   xparms.version & VERSION1_3 ? "1.3" :
+	   "1.2"
+	   );
     XmuGetHostname(hostname, 100);
     printf ("%s server version %d on %s\nfrom %s\n",
 	    ServerVendor (xparms.d), VendorRelease (xparms.d),
