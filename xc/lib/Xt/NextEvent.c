@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.66 89/09/28 17:12:16 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.67 89/10/03 17:34:07 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -153,7 +153,6 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	Fd_set rmaskfd, wmaskfd, emaskfd;
 	static Fd_set zero = { 0 };
 	int nfound, i, d;
-	int ret;
 	
  	if (block) {
 		(void) gettimeofday (&cur_time, &cur_timezone);
@@ -169,6 +168,8 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 		max_wait_time = zero_time;
 		wait_time_ptr = &max_wait_time;
 	}
+
+      WaitLoop:
 	while (1) {
 		if (app->timerQueue != NULL && !ignoreTimers && block) {
 		    if(IS_AFTER(cur_time, app->timerQueue->te_timer_value)) {
@@ -223,9 +224,10 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 			    String param = Errno;
 			    Cardinal param_count = 1;
 			    sprintf( Errno, "%.8d", errno);
-			    XtAppErrorMsg(app, "communicationError","select",
+			    XtAppWarningMsg(app, "communicationError","select",
 			       "XtToolkitError","Select failed; error code %s",
 			       &param, &param_count);
+			    continue;
 			}
 		} /* timed out or input available */
 		break;
@@ -249,19 +251,36 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	if(ignoreInputs) {
 	    if (ignoreEvents) return -1; /* then only doing timers */
 	    for (d = 0; d < app->count; d++) {
-		if (FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)) {
+		/*
+		 * Have to be VERY careful here:  an error event
+		 * could have arrived without any real events.
+		 */
+		if ( FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)
+		    && XEventsQueued( ConnectionNumber(app->list[d]),
+				      QueuedAfterReading ) ) {
 		    return d;
 		}
 	    }
+	    goto WaitLoop;	/* must have been only error events */
         }
-	ret = -1;
+	{
+	int ret = -1;
+	Boolean found_input = False;
+
 	for (i = 0; i < app->fds.nfds && nfound > 0; i++) {
 	    if (FD_ISSET (i, &rmaskfd)) {
 		nfound--;
 		if (!ignoreEvents) {
 		    for (d = 0; d < app->count; d++) {
 			if (i == ConnectionNumber(app->list[d])) {
-			    if (ret == -1) ret = d;
+			    /*
+			     * Have to be VERY careful here:  an error event
+			     * could have arrived without any real events.
+			     */
+			    if ( ret == -1
+				&& XEventsQueued(i, QueuedAfterReading) ) {
+				ret = d;
+			    }
 			    goto ENDILOOP;
 			}
 		    }
@@ -274,15 +293,20 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 		app->selectWqueue[i]->ie_oq = app->outstandingQueue;
 		app->outstandingQueue = app->selectWqueue[i];
 		nfound--;
+		found_input = True;
 	    }
 	    if (FD_ISSET (i, &emaskfd)) {
 		app->selectEqueue[i]->ie_oq = app->outstandingQueue;
 		app->outstandingQueue = app->selectEqueue[i];
 		nfound--;
+		found_input = True;
 	    }
 ENDILOOP:   ;
+	} /* endfor */
+	if (ret >= 0 || found_input)
+	    return ret;
+	goto WaitLoop;		/* must have been only error events */
 	}
-	return ret;
 }
 
 static void IeCallProc(ptr)
@@ -716,7 +740,7 @@ void XtAppProcessEvent(app, mask)
 				    (mask & XtIMXEvent ? FALSE : TRUE),
 				    TRUE,
 				    (unsigned long *) NULL, app);
-	    
+
 	    if (mask & XtIMXEvent && d != -1) {
 	      GotEvent:
 		XNextEvent(app->list[d], &event);
