@@ -600,7 +600,6 @@ ResizeEH(w, closure, event, continue_to_dispatch)	/* ARGSUSED */
     XtRemoveEventHandler(w, PointerMotionMask|ButtonReleaseMask,
 			 True, ResizeEH, (XtPointer)data);
     data->selectMode = done;
-    XUndefineCursor(dpy, XtWindow(w));  
     break;
   }
 }
@@ -641,7 +640,6 @@ DragEH(w, closure, event, continue_to_dispatch) /* ARGSUSED */
 			      ButtonReleaseMask, True, DragEH,
 			      (XtPointer)data);
       data->selectMode = done;
-      XUndefineCursor(dpy, XtWindow(w));
     }
 
     break;
