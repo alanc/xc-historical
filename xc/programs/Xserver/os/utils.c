@@ -23,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.143 94/03/28 18:27:38 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.144 94/04/02 01:14:07 erik Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -255,10 +255,8 @@ void UseMsg()
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-I                     ignore all remaining arguments\n");
     ErrorF("-kb                    disable XKB extension\n");
-#ifndef NO_XKB_EXTENSION
-    ErrorF("-xkbdir                base directory for XKB layout files\n");
-    ErrorF("-xkbmap                XKB keyboard description to load on startup\n");
-    ErrorF("[+-]accessx            enable/disable accessx key sequences\n");
+#ifdef XKB
+    XkbUseMsg();
 #endif
 #ifdef RLIMIT_DATA
     ErrorF("-ld int                limit data space to N Kb\n");
@@ -448,27 +446,10 @@ char	*argv[];
 #endif
 	}
 #ifdef XKB
-        else if (strncmp(argv[i], "-xkbdir", 7) == 0) {
-	    if(++i < argc) {
-		extern char	*XkbBaseDirectory;
-		XkbBaseDirectory= argv[i];
-	    }
-	    else
-		UseMsg();
-	}
-        else if (strncmp(argv[i], "-xkbdir", 7) == 0) {
-	    if(++i < argc) {
-		extern char	*XkbInitialMap;
-		XkbInitialMap= argv[i];
-	    }
-	    else
-		UseMsg();
-	}
-	else if ((strncmp(argv[i],"-accessx",8)==0)||
-		 (strncmp(argv[i],"+accessx",8)==0)) {
-	    extern int XkbWantAccessX;
-	    if (argv[i][0]=='-')	XkbWantAccessX=	0;
-	    else			XkbWantAccessX= 1;
+        else if ( (skip=XkbProcessArguments(argc,argv,i))!=0 ) {
+	    if (skip>0)
+		 i+= skip-1;
+	    else UseMsg();
 	}
 #endif
 #ifdef RLIMIT_DATA

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.74 94/03/31 12:28:34 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.75 94/03/31 17:50:46 mor Exp $
 #include <Server.tmpl>
 
 /*
@@ -107,7 +107,7 @@ LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
-SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES))
+SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES) $(EXT_DEFINES))
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: oscolor.c $(ICONFIGFILES)
 	$(RM) $@
