@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.29 87/09/01 21:13:39 toddb Locked $ */
+/* $Header: extension.c,v 1.30 87/09/01 22:16:18 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -137,8 +137,9 @@ ProcQueryExtension(client)
     {
         for (i=0; i<NumExtensions; i++)
 	{
-            if (! strncmp(&stuff[1], extensions[i].name, stuff->nbytes))
-                break;
+            if ((strlen(extensions[i].name) == stuff->nbytes) &&
+                 !strncmp(&stuff[1], extensions[i].name, stuff->nbytes))
+                 break;
 	}
         if (i == NumExtensions)
             reply.present = xFalse;
@@ -150,7 +151,7 @@ ProcQueryExtension(client)
 	    reply.first_error = extensions[i].errorBase;
 	}
     }
-    WriteToClient(client, sizeof(xQueryExtensionReply), &reply);
+    WriteReplyToClient(client, sizeof(xQueryExtensionReply), &reply);
     return(client->noClientException);
 }
 
@@ -168,6 +169,7 @@ ProcListExtensions(client)
     reply.type = X_Reply;
     reply.nExtensions = NumExtensions;
     reply.length = 0;
+    reply.sequenceNumber = client->sequence;
     buffer = NULL;
 
     if ( NumExtensions )
