@@ -18,6 +18,7 @@ HEADERS = \
 	Cascade.h \
 	Clock.h \
 	Command.h \
+	Form.h \
 	Intrinsic.h \
 	Knob.h \
 	Label.h \
@@ -44,6 +45,7 @@ SRCS = \
 	DiskSrc.c \
 	Error.c \
 	Event.c \
+	Form.c \
 	GCManager.c \
 	Geometry.c \
 	GrayPixmap.c \
@@ -75,6 +77,7 @@ OBJS = \
 	DiskSrc.o \
 	Error.o \
 	Event.o \
+	Form.o \
 	GCManager.o \
 	Geometry.o \
 	GrayPixmap.o \
