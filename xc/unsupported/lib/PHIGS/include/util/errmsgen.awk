@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: errmsgen.awk,v 5.2 91/02/16 09:49:34 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -27,27 +27,16 @@
 # Generate error message file from the phigs error file.
 # Lines starting with non-numerics are ignored.
 #usage:
-# awk -f errmsggen.awk DATE=`date +%y/%m/%d` phigserr.h > perrmsgs
+# awk -f errmsggen.awk phigserr.h > PHIGSerr.txt
 
 BEGIN {
     FS = " ";\
-    DATE = "(undefined date)"		# DATE to mark the file
-    WHAT_STRING = "@(#)"		# Magic string "what" will know
-    PERCENT = "%"
     endcomment = 1;
-    # THIS_PROGRAM's SCCS keywords should be % signs if editing this file.
-    # They will be expanded by SCCS when it's checked in.
-    THIS_PROGRAM = "@(#)errmsggen.awk 2.2 89/03/07 SMI" # Expanded SCCS "keywords".
 }
 
 (NR == 1) {	# First line of file
-    # SCCS_IDS will NOT be expanded by SCCS when this file is checked in.
-    printf "#  %s %sM%s %sI%s %sE%s\n",\
-	    WHAT_STRING, \
-	    PERCENT, PERCENT,	PERCENT, PERCENT,	PERCENT, PERCENT
     printf "#\n# Copyright (c) 1988-1991 by Sun Microsystems, Inc.\n"
-    printf "# %s Generated on %s by %s.\n#\n",\
-	      WHAT_STRING, DATE, THIS_PROGRAM
+    printf "# Automatically generated file, do not edit.\n\n\n"
 }
 
 "#define" == $1	{

@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: errgen.awk,v 5.2 91/02/16 09:49:25 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,23 +26,13 @@
 
 # Generate internal error numbers from the phigs error file.
 #usage:
-# awk -f errgen.awk DATE=`date +%y/%m/%d` phigserr.h > errnum.h
+# awk -f errgen.awk phigserr.h > errnum.h
 
 BEGIN {FS = " ";\
-    DATE = "(undefined date)"			# DATE to mark the file
-    WHAT_STRING = "@(#)"			# Magic string "what" will know
-    PERCENT = "%"
-    #THIS_PROGRAM's SCCS keywords will be expanded by SCCS when it's checked in.
-    THIS_PROGRAM = "errgen.awk 2.1 88/06/02"		# Expanded SCCS "keywords".
  } 
 (NR == 1) {	# First line of file
-    #SCCS_IDS will NOT be expanded by SCCS when this file is checked in.
-    printf "/* %s %sM%s %sI%s %sE%s */\n",\
-	  WHAT_STRING, \
-		PERCENT, PERCENT,	PERCENT, PERCENT,	PERCENT, PERCENT
     printf "\n/*\n * Copyright (c) 1988-1991 by Sun Microsystems, Inc.\n"
-    printf " * %s Generated on %s by %s.\n */\n\n",\
-	      WHAT_STRING, DATE, THIS_PROGRAM
+    printf " * Automatically generated file, do not edit.\n */\n\n"
 }
 $1 == "#define" {
     if (substr($3,1,1) == "-")
