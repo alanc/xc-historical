@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.1 88/08/31 22:52:41 jim Exp $
+ * $XConsortium: main.c,v 1.2 88/09/06 17:48:09 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -30,6 +30,8 @@
 #endif
 
 static void ArgError();
+
+/* XtOffset() hack for ibmrt BandAidCompiler */
 
 static XtResource my_resources[] = {
   {"manualFontNormal", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
