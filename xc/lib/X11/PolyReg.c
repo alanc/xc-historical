@@ -1,4 +1,4 @@
-/* $Header: XPolyReg.c,v 11.13 88/01/30 15:02:04 rws Exp $ */
+/* $Header: XPolyReg.c,v 11.13 88/01/31 10:50:39 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -23,8 +23,8 @@ SOFTWARE.
 
 ************************************************************************/
 
-#define MAXINT 1000000
-#define MININT -MAXINT
+#define LARGE_COORDINATE 1000000
+#define SMALL_COORDINATE -LARGE_COORDINATE
 
 #include "region.h"
 #include "poly.h"
@@ -150,14 +150,14 @@ CreateETandAET(count, pts, ET, AET, pETEs, pSLLBlock)
     AET->next = (EdgeTableEntry *)NULL;
     AET->back = (EdgeTableEntry *)NULL;
     AET->nextWETE = (EdgeTableEntry *)NULL;
-    AET->bres.minor_axis = MININT;
+    AET->bres.minor_axis = SMALL_COORDINATE;
 
     /*
      *  initialize the Edge Table.
      */
     ET->scanlines.next = (ScanLineList *)NULL;
-    ET->ymax = MININT;
-    ET->ymin = MAXINT;
+    ET->ymax = SMALL_COORDINATE;
+    ET->ymin = LARGE_COORDINATE;
     pSLLBlock->next = (ScanLineListBlock *)NULL;
 
     PrevPt = &pts[count-1];
