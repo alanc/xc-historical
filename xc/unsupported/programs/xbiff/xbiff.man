@@ -35,9 +35,6 @@ This option specifies the name of the file which should be monitored.  By
 default, it watches /usr/spool/mail/\fIusername\fP, where \fIusername\fP
 is your login name.
 .TP 8
-.B \-nobell
-This option indicates that the bell should not be rung when new mail is found.
-.TP 8
 .B \-volume \fIpercentage\fP
 This option specifies how loud the bell should be rung when new mail comes in.
 .PP
@@ -98,10 +95,6 @@ Specifies the height of the mailbox.
 .TP 8
 .B update (\fPclass\fB Interval)
 Specifies the frequency in seconds at which the mail should be checked.
-.TP 8
-.B bell (\fPclass\fB Bell)
-Specifies whether or not the bell should be rung when new mail comes in.  The
-default is \fIon\fP.
 .TP 8
 .B volume (\fPclass\fB Volume)
 Specifies how load the bell should be rung.  The default is 33 percent.
