@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.29 88/09/06 16:27:56 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.30 89/01/18 10:40:07 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif lint
 
@@ -48,6 +48,7 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
            "XtMakeGeometryRequest - NULL parent.  Use SetValues instead",
             (String *)NULL, (Cardinal *)NULL); 
     }
+    managed = XtIsManaged(widget);
 
     if (XtIsComposite(parent)) {
 	parentRealized = XtIsRealized(parent);
@@ -60,14 +61,14 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 	manager = ((CompositeObjectClass) (parent->core.widget_class))
     		->composite_class.geometry_manager;
 	
-    } else {
+    } else if (managed) {
 	/* Should never happen - XtManageChildren should have checked */
 	XtErrorMsg("invalidParent","xtMakeGeometryRequest","XtToolkitError",
              "XtMakeGeometryRequest - parent not composite",
               (String *)NULL, (Cardinal *)NULL);
     }
 
-    if (manager == (XtGeometryHandler) NULL) {
+    if (managed && manager == (XtGeometryHandler) NULL) {
 	XtErrorMsg("invalidGeometryManager","xtMakeGeometryRequest",
                  "XtToolkitError",
                  "XtMakeGeometryRequest - parent has no geometry manager",
@@ -81,7 +82,6 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     } else {
         widgetRealized = FALSE;
     };
-    managed = XtIsManaged(widget);
 
     /* see if requesting anything to change */
     changeMask = 0;
@@ -121,7 +121,9 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 		widget->core.height = request->height;
 	    if (request->request_mode & CWBorderWidth)
 		widget->core.border_width = request->border_width;
-	    if (!parentRealized) return XtGeometryYes;
+	    /* if child is unmanaged, we may not have assigned parentRealized,
+	     * so we'll fall through and check widgetRealized below */
+	    if (managed && !parentRealized) return XtGeometryYes;
 	    else returnCode = XtGeometryYes;
 	}
     } else {
