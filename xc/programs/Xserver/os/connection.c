@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.113 89/09/21 20:25:29 keith Exp $ */
+/* $XConsortium: connection.c,v 1.114 89/09/29 10:46:13 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -242,6 +242,37 @@ open_unix_socket ()
     return request;
 }
 #endif /*UNIXCONN */
+
+#ifdef hpux
+/*
+ * hpux returns EOPNOTSUPP when using getpeername on a unix-domain
+ * socket.  In this case, smash the socket address with the address
+ * used to bind the connection socket and return success.
+ */
+hpux_getpeername(fd, from, fromlen)
+    int	fd;
+    struct sockaddr *from;
+    int		    *fromlen;
+{
+    int	    ret;
+    int	    len;
+
+    ret = getpeername(fd, from, fromlen);
+    if (ret == -1 && errno == EOPNOTSUPP)
+    {
+	ret = 0;
+	len = strlen(unsock.sun_path)+2;
+	if (len > *fromlen)
+	    len = *fromlen;
+	bcopy ((char *) &unsock, (char *) from, len);
+	*fromlen = len;
+    }
+    return ret;
+}
+
+#define getpeername(fd, from, fromlen)	hpux_getpeername(fd, from, fromlen)
+
+#endif
 
 #ifdef DNETCONN
 static int
