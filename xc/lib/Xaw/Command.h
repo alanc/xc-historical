@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.21 89/07/21 01:51:24 kit Exp $
+* $XConsortium: Command.h,v 1.22 89/09/23 00:36:28 swick Exp $
 */
 
 
@@ -71,9 +71,10 @@ SOFTWARE.
 
 #define XtNshapeStyle "shapeStyle"
 #define XtCShapeStyle "ShapeStyle"
+#define XtRShapeStyle "ShapeStyle"
 
-#define XawCommandShapeRectangular	1
-#define XawCommandShapeOval		2
+#define XawShapeRectangular 1
+#define XawShapeOval 2
 
 extern WidgetClass     commandWidgetClass;
 
