@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.42 89/09/21 09:19:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.43 89/09/25 17:38:50 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -115,7 +115,6 @@ void XtStringConversionWarning(from, toType)
 		    params,&num_params);
 }
 
-void LowerCase();
 static int CompareISOLatin1();
 
 static Boolean CvtXColorToPixel();
@@ -205,25 +204,24 @@ static Boolean CvtStringToBoolean(dpy, args, num_args, fromVal, toVal, closure_r
     XrmValuePtr	toVal;
     XtPointer	*closure_ret;
 {
-    XrmQuark	q;
-    char	lowerName[1000];
-
+    String str = (String)fromVal->addr;
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		  "wrongParameters","cvtStringToBoolean","XtToolkitError",
                   "String to Boolean conversion needs no extra arguments",
                    (String *)NULL, (Cardinal *)NULL);
 
-    LowerCase((char *) fromVal->addr, lowerName);
-    q = XrmStringToQuark(lowerName);
+    if (   (CompareISOLatin1(str, "true") == 0)
+	|| (CompareISOLatin1(str, "yes") == 0)
+	|| (CompareISOLatin1(str, "on") == 0)
+	|| (CompareISOLatin1(str, "1") == 0))	done( Boolean, True );
 
-    if (q == XtQEtrue || q == XtQEon || q == XtQEyes)
-	done(Boolean, True);
+    if (   (CompareISOLatin1(str, "false") == 0)
+	|| (CompareISOLatin1(str, "no") == 0)
+	|| (CompareISOLatin1(str, "off") == 0)
+	|| (CompareISOLatin1(str, "0") == 0))	done( Boolean, False );
 
-    if (q == XtQEfalse || q ==XtQEoff || q == XtQEno)
-	done(Boolean, False);
-
-    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Boolean");
+    XtDisplayStringConversionWarning(dpy, str, "Boolean");
     return False;
 }
 
@@ -255,9 +253,7 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     XrmValuePtr	toVal;
     XtPointer	*closure_ret;
 {
-    XrmQuark	q;
-    char	lowerName[1000];
-
+    String str = (String)fromVal->addr;
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		"wrongParameters","cvtStringToBool",
@@ -265,14 +261,15 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
                  "String to Bool conversion needs no extra arguments",
                   (String *)NULL, (Cardinal *)NULL);
 
-    LowerCase((char *) fromVal->addr, lowerName);
-    q = XrmStringToQuark(lowerName);
+    if (   (CompareISOLatin1(str, "true") == 0)
+	|| (CompareISOLatin1(str, "yes") == 0)
+	|| (CompareISOLatin1(str, "on") == 0)
+	|| (CompareISOLatin1(str, "1") == 0))	done( Boolean, True );
 
-    if (q == XtQEtrue || q == XtQEon || q == XtQEyes)
-	done(Bool, True);
-
-    if (q == XtQEfalse || q ==XtQEoff || q == XtQEno)
-	done(Bool, False);
+    if (   (CompareISOLatin1(str, "false") == 0)
+	|| (CompareISOLatin1(str, "no") == 0)
+	|| (CompareISOLatin1(str, "off") == 0)
+	|| (CompareISOLatin1(str, "0") == 0))	done( Boolean, False );
 
     XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Bool");
     return False;
@@ -320,14 +317,13 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
     XrmValuePtr	toVal;
     XtPointer	*closure_ret;
 {
+    String	    str = (String)fromVal->addr;
     XColor	    screenColor;
     XColor	    exactColor;
     Screen	    *screen;
     XtPerDisplay    pd = _XtGetPerDisplay(dpy);
     Colormap	    colormap;
     Status	    status;
-    char	    message[1000];
-    XrmQuark	    q;
     String          params[1];
     Cardinal	    num_params=1;
 
@@ -340,24 +336,21 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
     screen = *((Screen **) args[0].addr);
     colormap = *((Colormap *) args[1].addr);
 
-    LowerCase((char *) fromVal->addr, message);
-    q = XrmStringToQuark(message);
-
-    if (q == XtQExtdefaultbackground) {
+    if (CompareISOLatin1(str, XtDefaultBackground) == 0) {
 	*closure_ret = False;
 	if (pd->rv) done(Pixel, BlackPixelOfScreen(screen))
 	else	    done(Pixel, WhitePixelOfScreen(screen));
     }
-    if (q == XtQExtdefaultforeground) {
+    if (CompareISOLatin1(str, XtDefaultForeground) == 0) {
 	*closure_ret = False;
 	if (pd->rv) done(Pixel, WhitePixelOfScreen(screen))
         else	    done(Pixel, BlackPixelOfScreen(screen));
     }
 
-    if ((char) fromVal->addr[0] == '#') {  /* some color rgb definition */
+    if (*str == '#') {  /* some color rgb definition */
 
         status = XParseColor(DisplayOfScreen(screen), colormap,
-                 (String) fromVal->addr, &screenColor);
+			     (char*)str, &screenColor);
 
         if (status != 0)
            status = XAllocColor(DisplayOfScreen(screen), colormap,
@@ -365,10 +358,9 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
     } else  /* some color name */
 
         status = XAllocNamedColor(DisplayOfScreen(screen), colormap,
-                                  (String) fromVal->addr, &screenColor,
-				  &exactColor);
+                                  (char*)str, &screenColor, &exactColor);
     if (status == 0) {
-	params[0]=(String)fromVal->addr;
+	params[0] = str;
 	XtAppWarningMsg(pd->appContext, "noColormap", "cvtStringToPixel",
 			"XtToolkitError",
                  "Cannot allocate colormap entry for \"%s\"",
@@ -634,17 +626,49 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 
     screen = *((Screen **) args[0].addr);
 
-    if (CompareISOLatin1((String)fromVal->addr, "XtDefaultFont") != 0) {
+    if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
 	f = XLoadFont(DisplayOfScreen(screen), (char *)fromVal->addr);
-	if (f != 0)
-	    done(Font, f);
-
+	if (f != 0) {
+  Done:	    done( Font, f );
+	}
 	XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Font");
     }
     /* try and get the default font */
 
-    f = XLoadFont(dpy,"fixed");
-    if (f != 0) done(Font, f);
+    {
+	XrmName xrm_name[2];
+	XrmClass xrm_class[2];
+	XrmRepresentation rep_type;
+	XrmValue value;
+
+	xrm_name[0] = XrmStringToName ("xtDefaultFont");
+	xrm_name[1] = NULL;
+	xrm_class[0] = XrmStringToClass ("XtDefaultFont");
+	xrm_class[1] = NULL;
+	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
+			    &rep_type, &value)) {
+	    if (rep_type == XtQString) {
+		f = XLoadFont(DisplayOfScreen(screen), (char *)value.addr);
+		if (f != 0) goto Done;
+	    } else if (rep_type == XtQFont) {
+		f = *(Font*)value.addr;
+		goto Done;
+	    } else if (rep_type == XtQFontStruct) {
+		f = ((XFontStruct*)value.addr)->fid;
+		goto Done;
+	    }
+	}
+    }
+    /* Should really do XListFonts, but most servers support this */
+    f = XLoadFont(dpy,"-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
+    if (f != 0)
+	goto Done;
+
+    XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+	     "noFont","cvtStringToFont","XtToolkitError",
+             "Unable to load any useable ISO8859-1 font",
+              (String *) NULL, (Cardinal *)NULL);
+    
     return False;
 }
 
@@ -686,7 +710,8 @@ static Boolean CvtIntToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 
 
 /*ARGSUSED*/
-static Boolean CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
+static Boolean
+CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -705,21 +730,51 @@ static Boolean CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closur
 
     screen = *((Screen **) args[0].addr);
 
-    if (CompareISOLatin1((String)fromVal->addr, "XtDefaultFont") != 0) {
+    if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
 	f = XLoadQueryFont(DisplayOfScreen(screen), (char *)fromVal->addr);
-	if (f != NULL)
-	    done(XFontStruct*, f);
+	if (f != NULL) {
+  Done:	    done( XFontStruct*, f);
+	}
 
 	XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr, "XFontStruct");
     }
 
     /* try and get the default font */
 
-    f = XLoadQueryFont(DisplayOfScreen(screen), "fixed");
+    {
+	XrmName xrm_name[2];
+	XrmClass xrm_class[2];
+	XrmRepresentation rep_type;
+	XrmValue value;
 
+	xrm_name[0] = XrmStringToName ("xtDefaultFont");
+	xrm_name[1] = NULL;
+	xrm_class[0] = XrmStringToClass ("XtDefaultFont");
+	xrm_class[1] = NULL;
+	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
+			    &rep_type, &value)) {
+	    if (rep_type == XtQString) {
+		f = XLoadQueryFont(DisplayOfScreen(screen), (char*)value.addr);
+		if (f != NULL) goto Done;
+	    } else if (rep_type == XtQFont) {
+		f = XQueryFont(dpy, *(Font*)value.addr );
+		if (f != NULL) goto Done;
+	    } else if (rep_type == XtQFontStruct) {
+		f = (XFontStruct*)value.addr;
+		goto Done;
+	    }
+	}
+    }
+    /* Should really do XListFonts, but most servers support this */
+    f = XLoadQueryFont(dpy,"-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
     if (f != NULL)
-	done(XFontStruct*, f);
+	goto Done;
 
+    XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+	     "noFont","cvtStringToFontStruct","XtToolkitError",
+             "Unable to load any useable ISO8859-1 font",
+              (String *) NULL, (Cardinal *)NULL);
+    
     return False;
 }
 
@@ -884,7 +939,7 @@ CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
     done(String, *(String*)fromVal->addr);
 }
 
-void LowerCase(source, dest)
+void LowerCase(source, dest)	/* %%% shouldn't be global */
     register char  *source, *dest;
 {
     register char ch;
@@ -1037,20 +1092,6 @@ XrmQuark  XtQUnsignedChar;
 XrmQuark  XtQVisual;
 XrmQuark  XtQWindow;
 
-XrmQuark  XtQEoff;
-XrmQuark  XtQEfalse;
-XrmQuark  XtQEno;
-XrmQuark  XtQEon;
-XrmQuark  XtQEtrue;
-XrmQuark  XtQEyes;
-XrmQuark  XtQEnotUseful;
-XrmQuark  XtQEwhenMapped;
-XrmQuark  XtQEalways;
-XrmQuark  XtQEdefault;
-
-XrmQuark  XtQExtdefaultbackground;
-XrmQuark  XtQExtdefaultforeground;
-
 void _XtConvertInitialize()
 {
 /* Representation types */
@@ -1076,20 +1117,6 @@ void _XtConvertInitialize()
     XtQUnsignedChar     = XrmStringToQuark(XtRUnsignedChar);
     XtQVisual	        = XrmStringToQuark(XtRVisual);
     XtQWindow		= XrmStringToQuark(XtRWindow);
-
-/* Boolean enumeration constants */
-
-    XtQEfalse		= XrmStringToQuark(XtEfalse);
-    XtQEno		= XrmStringToQuark(XtEno);
-    XtQEoff		= XrmStringToQuark(XtEoff);
-    XtQEon		= XrmStringToQuark(XtEon);
-    XtQEtrue		= XrmStringToQuark(XtEtrue);
-    XtQEyes		= XrmStringToQuark(XtEyes);
-
-/* Default color and font  enumeration constants */
-
-    XtQExtdefaultbackground = XrmStringToQuark(XtExtdefaultbackground);
-    XtQExtdefaultforeground = XrmStringToQuark(XtExtdefaultforeground);
 }
 
 _XtAddDefaultConverters(table)
