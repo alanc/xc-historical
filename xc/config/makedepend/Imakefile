@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.15 91/12/02 08:48:08 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.16 92/08/22 11:44:18 rws Exp $
 /*
  * NOTE: CppSourcesPresent IS NO LONGER TESTED OR SUPPORTED,
  * and is nearly guaranteed to not work.
@@ -20,8 +20,8 @@ XCOMM $XConsortium: Imakefile,v 1.15 91/12/02 08:48:08 rws Exp $
 /*
  * But if you do not have cpp source...
  */
-    SRCS = include.c main.c parse.c pr.c cppsetup.c
-    OBJS = include.o main.o parse.o pr.o cppsetup.o
+    SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
+    OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
 #endif
 
 #if HasGcc && !defined(PreIncDir)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cppsetup.c,v 1.6 89/11/03 10:21:20 jim Exp $
+ * $XConsortium: cppsetup.c,v 1.7 89/12/12 12:44:17 jim Exp $
  */
 #include "def.h"
 
@@ -97,4 +97,113 @@ yyerror(s)
 {
 	fatal("Fatal error: %s\n", s);
 }
+#else /* not CPP */
+
+#include "ifparser.h"
+struct _parse_data {
+    struct filepointer *filep;
+    struct inclist *inc;
+    const char *line;
+};
+
+static const char *
+_my_if_errors (ip, cp, expecting)
+    IfParser *ip;
+    const char *cp;
+    const char *expecting;
+{
+    struct _parse_data *pd = (struct _parse_data *) ip->data;
+    int lineno = pd->filep->f_line;
+    char *filename = pd->inc->i_file;
+    char prefix[300];
+    int prefixlen;
+    int i;
+
+    sprintf (prefix, "\"%s\":%d", filename, lineno);
+    prefixlen = strlen(prefix);
+    fprintf (stderr, "%s:  %s", prefix, pd->line);
+    i = cp - pd->line;
+    if (i > 0 && pd->line[i-1] != '\n') {
+	putc ('\n', stderr);
+    }
+    for (i += prefixlen + 3; i > 0; i--) {
+	putc (' ', stderr);
+    }
+    fprintf (stderr, "^--- expecting %s\n", expecting);
+    return NULL;
+}
+
+
+#define MAXNAMELEN 256
+
+static struct symtab *
+_lookup_variable (ip, var, len)
+    IfParser *ip;
+    const char *var;
+    int len;
+{
+    char tmpbuf[MAXNAMELEN + 1];
+    struct _parse_data *pd = (struct _parse_data *) ip->data;
+
+    if (len > MAXNAMELEN)
+	return 0;
+
+    strncpy (tmpbuf, var, len);
+    tmpbuf[len] = '\0';
+    return isdefined (tmpbuf, pd->inc);
+}
+
+
+static int
+_my_eval_defined (ip, var, len)
+    IfParser *ip;
+    const char *var;
+    int len;
+{
+    if (_lookup_variable (ip, var, len))
+	return 1;
+    else
+	return 0;
+}
+
+
+static int
+_my_eval_variable (ip, var, len)
+    IfParser *ip;
+    const char *var;
+    int len;
+{
+    struct symtab *s = _lookup_variable (ip, var, len);
+
+    if (!s)
+	return 0;
+
+    return atoi(s->s_value);
+}
+
+
+cppsetup(line, filep, inc)
+	register char	*line;
+	register struct filepointer	*filep;
+	register struct inclist		*inc;
+{
+    IfParser ip;
+    struct _parse_data pd;
+    int val = 0;
+
+    pd.filep = filep;
+    pd.inc = inc;
+    pd.line = line;
+    ip.funcs.handle_error = _my_if_errors;
+    ip.funcs.eval_defined = _my_eval_defined;
+    ip.funcs.eval_variable = _my_eval_variable;
+    ip.data = (char *) &pd;
+
+    (void) ParseIfExpression (&ip, line, &val);
+    if (val)
+	return IF;
+    else
+	return IFFALSE;
+}
 #endif /* CPP */
+
