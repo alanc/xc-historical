@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.156 90/07/15 18:09:18 rws Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.157 90/08/23 09:26:03 rws Exp $";
 #endif	/* lint */
 
 /*
@@ -563,6 +563,34 @@ XtAppContext app_con;
 Widget toplevel;
 Bool waiting_for_initial_map;
 
+/*
+ * DeleteWindow(): Action proc to implement ICCCM delete_window.
+ */
+void
+DeleteWindow(w, event, params, num_params)
+Widget w;
+XEvent * event;
+String * params;
+Cardinal * num_params;
+{
+  if (w == toplevel)
+    if (term->screen.Tshow)
+      set_vt_visibility(FALSE);
+    else
+      exit(0);
+  else
+    if (term->screen.Vshow)
+      set_tek_visibility(FALSE);
+    else
+      exit(0);
+}
+
+XtActionsRec actionProcs[] = {
+  "DeleteWindow", DeleteWindow,
+};
+
+Atom wm_delete_window;
+
 main (argc, argv)
 int argc;
 char **argv;
@@ -680,7 +708,22 @@ char **argv;
 				  application_resources,
 				   XtNumber(application_resources), NULL, 0 );
 
+	XtAppAddActions(XtWidgetToApplicationContext(toplevel), 
+			actionProcs, XtNumber(actionProcs));
+	XtOverrideTranslations
+	  (toplevel, XtParseTranslationTable
+	   ("<Message>WM_PROTOCOLS: DeleteWindow()"));
+
 	waiting_for_initial_map = resource.wait_for_map;
+
+       /*
+	* ICCCM delete_window.
+	*/
+	XtAppAddActions(XtWidgetToApplicationContext(toplevel), 
+			actionProcs, XtNumber(actionProcs));
+	XtOverrideTranslations
+	  (toplevel, 
+	   XtParseTranslationTable("<Message>WM_PROTOCOLS: DeleteWindow()"));
 
 	/*
 	 * fill in terminal modes
@@ -1317,7 +1360,10 @@ spawn ()
            If VT mode, this calls VTRealize (the widget's Realize proc) */
         XtRealizeWidget (screen->TekEmu ? XtParent(tekWidget) :
 			 XtParent(term));
-
+	wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				       False);
+	(void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+				&wm_delete_window, 1);
 	if(screen->TekEmu) {
 		envnew = tekterm;
 		ptr = newtc;

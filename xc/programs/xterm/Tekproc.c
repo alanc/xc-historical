@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.80 90/06/07 15:49:52 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.81 90/06/08 13:58:07 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.80 90/06/07 15:49:52 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.81 90/06/08 13:58:07 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -284,9 +284,10 @@ WidgetClassRec tekClassRec = {
 
 static Boolean Tfailed = FALSE;
 
+Widget tekshellwidget;
+
 TekWidget CreateTekWidget ()
 {
-    Widget tekshellwidget;
     extern Arg ourTopLevelShellArgs[];
     extern int number_ourTopLevelShellArgs;
 
@@ -298,6 +299,7 @@ TekWidget CreateTekWidget ()
     /* this causes the Realize method to be called */
     tekWidget = (TekWidget) XtCreateManagedWidget ("tek4014", tekWidgetClass,
 						   tekshellwidget, NULL, 0);
+
     return (tekWidget);
 }
 

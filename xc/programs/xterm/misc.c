@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.66 90/04/30 16:53:26 converse Exp $
+ *	$XConsortium: misc.c,v 1.67 90/07/15 18:09:40 rws Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.66 90/04/30 16:53:26 converse Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.67 90/07/15 18:09:40 rws Exp $";
 #endif	/* lint */
 
 xevents()
@@ -804,15 +804,24 @@ void set_vt_visibility (on)
     return;
 }
 
+				/* for ICCCM delete window */
+extern Atom wm_delete_window;
+
 void set_tek_visibility (on)
     Boolean on;
 {
     register TScreen *screen = &term->screen;
-
     if (on) {
 	if (!screen->Tshow && (tekWidget || TekInit())) {
-	    XtRealizeWidget (tekWidget->core.parent);
-	    XtMapWidget (tekWidget->core.parent);
+	    Widget tekParent = tekWidget->core.parent;
+	    XtRealizeWidget (tekParent);
+	    XtMapWidget (tekParent);
+	    XtOverrideTranslations(tekParent,
+				   XtParseTranslationTable
+				   ("<Message>WM_PROTOCOLS: DeleteWindow()"));
+	    (void) XSetWMProtocols (XtDisplay(tekParent), 
+				    XtWindow(tekParent),
+				    &wm_delete_window, 1);
 	    screen->Tshow = TRUE;
 	}
     } else {
