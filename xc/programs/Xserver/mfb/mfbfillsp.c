@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.10 94/01/12 18:04:52 dpw Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.11 94/02/23 15:50:53 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -792,8 +792,8 @@ mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		       or a longword worth, starting at the appropriate
 		       offset in the tile.
 		    */
-		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
-		    endinc = rem / BITMAP_SCANLINE_UNIT;
+		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_PAD);
+		    endinc = rem / BITMAP_SCANLINE_PAD;
 		    getandputrop((psrc+endinc), (rem&PIM), (x & PIM), w, pdst, rop);
 		    if((x & PIM) + w >= PPW)
 			pdst++;
@@ -939,8 +939,8 @@ mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		       or a longword worth, starting at the appropriate
 		       offset in the tile.
 		    */
-		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
-		    endinc = rem / BITMAP_SCANLINE_UNIT;
+		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_PAD);
+		    endinc = rem / BITMAP_SCANLINE_PAD;
 		    getandputrrop((psrc + endinc), (rem & PIM), (x & PIM),
 				 w, pdst, rop)
 		    if((x & PIM) + w >= PPW)
