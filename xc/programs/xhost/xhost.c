@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.37 91/01/09 17:26:35 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.38 91/02/06 20:51:02 rws Exp $ */
  
 /*
 
@@ -40,6 +40,8 @@ without express or implied warranty.
 #include <signal.h>
 #include <setjmp.h>
 #include <ctype.h>
+#include <X11/Xauth.h>
+
 #ifdef NEEDSOCKETS
 #ifdef att
 typedef unsigned short unsign16;
@@ -276,6 +278,22 @@ int change_host (dpy, name, add)
     return 1;
   }
 #endif /* DNETCONN */
+    /*
+     * If it has an '@',  its a netname
+     */
+    if (index(name, '@')) {
+        ha.family = FamilySecureRPC;
+        ha.length = strlen(name);
+        ha.address = name;
+        if (add) {
+            XAddHost (dpy, &ha);
+            printf ("%s %s\n", name, add_msg);
+        } else {
+            XRemoveHost (dpy, &ha);
+            printf ("%s %s\n", name, remove_msg);
+        }
+        return 1;
+    }
 #ifdef STREAMSCONN
   if (get_streams_address (name, &ha)) {
     if (add) {
@@ -383,6 +401,18 @@ static char *get_hostname (ha)
     else return (inet_ntoa(*((struct in_addr *)(ha->address))));
   }
 #endif
+  if (ha->family == FamilySecureRPC) {
+    static char netname[120];
+    int len;
+
+    if (ha->length < sizeof(netname) - 1)
+        len = ha->length;
+    else
+        len = sizeof(netname) - 1;
+    memcpy(netname, ha->address, len);
+    netname[len] = '\0';
+    return (netname);
+  }
 #ifdef DNETCONN
   if (ha->family == FamilyDECnet) {
     if (np = getnodebyaddr(ha->address, ha->length, AF_DECnet)) {
