@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.71 89/03/22 11:24:14 rws Exp $ */
+/* $XConsortium: miarc.c,v 1.72 89/03/22 13:25:46 rws Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -129,7 +129,7 @@ typedef struct _miPolyArc {
 static XID gcvals[6];
 
 extern double sqrt(), cos(), sin(), atan(), atan2(), pow(), acos(), asin();
-extern double ceil(), floor();
+extern double ceil(), floor(), hypot();
 extern void miFillSppPoly();
 static void fillSpans(), span(), drawArc(), drawQuadrant(), drawZeroArc();
 static void miFreeArcs();
@@ -532,12 +532,16 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 		arc.height = width;
 		arc.angle1 = -atan2 (corner.y - center.y, corner.x - center.x);
 		arc.angle2 = a;
-		pArcPts = (SppPointPtr) xalloc (sizeof (SppPointRec));
+		pArcPts = (SppPointPtr) xalloc (3 * sizeof (SppPointRec));
 		if (!pArcPts)
 		    return;
-		pArcPts->x = center.x;
-		pArcPts->y = center.y;
-		if( cpt = miGetArcPts(&arc, 1, &pArcPts))
+		pArcPts[0].x = otherCorner.x;
+		pArcPts[0].y = otherCorner.y;
+		pArcPts[1].x = center.x;
+		pArcPts[1].y = center.y;
+		pArcPts[2].x = corner.x;
+		pArcPts[2].y = corner.y;
+		if( cpt = miGetArcPts(&arc, 3, &pArcPts))
 		{
 			/* by drawing with miFillSppPoly and setting the endpoints of the arc
 			 * to be the corners, we assure that the cap will meet up with the
@@ -950,8 +954,48 @@ miFreeArcs(arcs, pGC)
 }
 
 /*
- * this routine is a bit gory
+ * map angles to radial distance.  This only deals with the first quadrant
  */
+
+/*
+ * a polygonal approximation to the arc for computing arc lengths
+ */
+
+# define DASH_MAP_SIZE	91
+
+# define dashIndexToAngle(di)	((((double) (di)) * M_PI_2) / ((double) DASH_MAP_SIZE - 1))
+# define xAngleToDashIndex(xa)	((((long) (xa)) * (DASH_MAP_SIZE - 1)) / (90 * 64))
+# define dashIndexToXAngle(di)	((((long) (di)) * (90 * 64)) / (DASH_MAP_SIZE - 1))
+# define dashXAngleStep	(((double) (90 * 64)) / ((double) (DASH_MAP_SIZE - 1)))
+
+typedef struct {
+	double	map[DASH_MAP_SIZE];
+} dashMap;
+
+static void
+computeDashMap (arcp, map)
+	xArc	*arcp;
+	dashMap	*map;
+{
+	int	di;
+	double	a, x, y, prevx, prevy, dist;
+
+	for (di = 0; di < DASH_MAP_SIZE; di++) {
+		a = dashIndexToAngle (di);
+		x = ((double) arcp->width / 2.0) * cos (a);
+		y = ((double) arcp->height / 2.0) * sin (a);
+		if (di == 0) {
+			map->map[di] = 0.0;
+		} else {
+			dist = hypot (x - prevx, y - prevy);
+			map->map[di] = map->map[di - 1] + dist;
+		}
+		prevx = x;
+		prevy = y;
+	}
+}
+
+/* this routine is a bit gory */
 
 static miPolyArcPtr
 miComputeArcs (parcs, narcs, pGC)
@@ -979,6 +1023,7 @@ miComputeArcs (parcs, narcs, pGC)
 	int		iDashStart, dashRemainingStart, iphaseStart;
 	int		startAngle, spanAngle, endAngle, backwards;
 	int		prevDashAngle, dashAngle;
+	dashMap		map;
 
 	isDashed = !(pGC->lineStyle == LineSolid);
 	isDoubleDash = (pGC->lineStyle == LineDoubleDash);
@@ -1031,6 +1076,8 @@ miComputeArcs (parcs, narcs, pGC)
 				dashOffset -= dashRemaining;
 				iphase = iphase ? 0 : 1;
 				iDash++;
+				if (iDash == pGC->numInDashList)
+				    iDash = 0;
 				dashRemaining = pGC->dash[iDash];
 			} else {
 				dashRemaining -= dashOffset;
@@ -1069,6 +1116,10 @@ miComputeArcs (parcs, narcs, pGC)
 			nexti = 0;
 		if (isDashed) {
 			/*
+			 * precompute an approximation map
+			 */
+			computeDashMap (&parcs[i], &map);
+			/*
 			 * compute each individual dash segment using the path
 			 * length function
 			 */
@@ -1084,25 +1135,24 @@ miComputeArcs (parcs, narcs, pGC)
 				startAngle = startAngle % FULLCIRCLE;
 			endAngle = startAngle + spanAngle;
 			backwards = spanAngle < 0;
-			prevDashAngle = startAngle;
+			dashAngle = startAngle;
 			selfJoin = data[i].selfJoin &&
  				    (iphase == 0 || isDoubleDash);
-			arc = 0;
-			while (prevDashAngle != endAngle) {
-				dashAngle = computeAngleFromPath
- 						(prevDashAngle, endAngle,
-						 (int)parcs[i].width,
-						 (int)parcs[i].height,
-						 &dashRemaining, backwards);
+			/*
+			 * add dashed arcs to each bucket
+			 */
+			while (dashAngle != endAngle) {
+				prevDashAngle = dashAngle;
+				dashAngle = computeAngleFromPath (prevDashAngle, endAngle,
+							&map, &dashRemaining, backwards);
 				if (iphase == 0 || isDoubleDash) {
 					xarc = parcs[i];
 					xarc.angle1 = prevDashAngle;
+					spanAngle = dashAngle - prevDashAngle;
 					if (backwards) {
-						spanAngle = dashAngle - prevDashAngle;
 						if (dashAngle > prevDashAngle)
 							spanAngle = - 360 * 64 + spanAngle;
 					} else {
-						spanAngle = dashAngle - prevDashAngle;
 						if (dashAngle < prevDashAngle)
 							spanAngle = 360 * 64 + spanAngle;
 					}
@@ -1144,12 +1194,12 @@ miComputeArcs (parcs, narcs, pGC)
 					iphase = iphase ? 0:1;
 					dashRemaining = pGC->dash[iDash];
 				}
-				prevDashAngle = dashAngle;
 			}
 			/*
-			 * make sure a place exists for the position data
+			 * make sure a place exists for the position data when
+			 * drawing a zero-length arc
 			 */
-			if (!arc) {
+			if (startAngle == endAngle) {
 				prevphase = iphase;
 				if (!isDoubleDash && iphase == 1)
 					prevphase = 0;
@@ -1282,12 +1332,118 @@ arcfail:
 
 # define mod(a,b)	((a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 
+static double
+angleToLength (angle, map)
+	int	angle;
+	dashMap	*map;
+{
+	double	len, excesslen, sidelen = map->map[DASH_MAP_SIZE - 1], totallen;
+	int	di;
+	int	excess;
+	Bool	oddSide = FALSE;
+
+	totallen = 0;
+	if (angle >= 0) {
+		while (angle >= 90 * 64) {
+			angle -= 90 * 64;
+			totallen += sidelen;
+			oddSide = !oddSide;
+		}
+	} else {
+		while (angle < 0) {
+			angle += 90 * 64;
+			totallen -= sidelen;
+			oddSide = !oddSide;
+		}
+	}
+	if (oddSide)
+		angle = 90 * 64 - angle;
+		
+	di = xAngleToDashIndex (angle);
+	excess = angle - dashIndexToXAngle (di);
+
+	len = map->map[di];
+	/*
+	 * linearly interpolate between this point and the next
+	 */
+	if (excess > 0) {
+		excesslen = (map->map[di + 1] - map->map[di]) *
+				((double) excess) / dashXAngleStep;
+		len += excesslen;
+	}
+	if (oddSide)
+		totallen += (sidelen - len);
+	else
+		totallen += len;
+	return totallen;
+}
+
+/*
+ * len is along the arc, but may be more than one rotation
+ */
+
+static int
+lengthToAngle (len, map)
+	double	len;
+	dashMap	*map;
+{
+	double	sidelen = map->map[DASH_MAP_SIZE - 1];
+	int	angle, angleexcess;
+	Bool	oddSide = FALSE;
+	int	a0, a1, a;
+
+	angle = 0;
+	/*
+	 * step around the ellipse, subtracting sidelens and
+	 * adding 90 degrees.  oddSide will tell if the
+	 * map should be interpolated in reverse
+	 */
+	if (len >= 0) {
+		while (len >= sidelen) {
+			angle += 90 * 64;
+			len -= sidelen;
+			oddSide = !oddSide;
+		}
+	} else {
+		while (len < 0) {
+			angle -= 90 * 64;
+			len += sidelen;
+			oddSide = !oddSide;
+		}
+	}
+	if (oddSide)
+		len = sidelen - len;
+	a0 = 0;
+	a1 = DASH_MAP_SIZE - 1;
+	/*
+	 * binary search for the closest pre-computed length
+	 */
+	while (a1 - a0 > 1) {
+		a = (a0 + a1) / 2;
+		if (len > map->map[a])
+			a0 = a;
+		else
+			a1 = a;
+	}
+	angleexcess = dashIndexToXAngle (a0);
+	/*
+	 * linearly interpolate to the next point
+	 */
+	angleexcess += (len - map->map[a0]) /
+			(map->map[a0+1] - map->map[a0]) * dashXAngleStep;
+	if (oddSide)
+		angle += (90 * 64) - angleexcess;
+	else
+		angle += angleexcess;
+	return angle;
+}
+
 /*
  * compute the angle of an ellipse which cooresponds to
  * the given path length.  Note that the correct solution
  * to this problem is an eliptic integral, we'll punt and
- * approximate (it's only for dashes anyway).  The approximation
- * used is a diamond (well, sort of anyway)
+ * approximate (it's only for dashes anyway).  This
+ * approximation uses a polygon.
  *
  * The remaining portion of len is stored in *lenp -
  * this will be negative if the arc extends beyond
@@ -1295,147 +1451,41 @@ arcfail:
  */
 
 static int
-computeAngleFromPath (startAngle, endAngle, w, h, lenp, backwards)
-	int	startAngle, endAngle;	/* normalized absolute angles in *64 degrees;
-	int	w, h;		/* ellipse width and height */
+computeAngleFromPath (startAngle, endAngle, map, lenp, backwards)
+	int	startAngle, endAngle;	/* normalized absolute angles in *64 degrees */
+	dashMap	*map;
 	int	*lenp;
 	int	backwards;
 {
-	double	len;
-	double	t0, t1, x0, y0, x1, y1, sidelen;
 	int	startq, endq, q;
-	int	a0, a1;
+	int	a0, a1, a;
+	double	len0, len1;
+	int	len;
 
 	a0 = startAngle;
 	a1 = endAngle;
 	len = *lenp;
 	if (backwards) {
+		/*
+		 * flip the problem around to always be
+		 * forwards
+		 */
 		a0 = FULLCIRCLE - a0;
 		a1 = FULLCIRCLE - a1;
 	}
 	if (a1 < a0)
 		a1 += FULLCIRCLE;
-	startq = floor ((double) a0 / (90.0 * 64.0));
-	endq = floor ((double) a1 / (90.0 * 64.0));
-	a0 = a0 - startq * 90 *64;
-	a1 = a1 - endq * 90 * 64;
-	for (q = startq; q <= endq && len > 0; ++q) {
-		/*
-		 * compute the end points of this arc
-		 * in this quadrant
-		 */
-		if (q == startq && a0 != 0) {
-			t0 = torad (a0 + startq * 90 * 64);
-			x0 = (double) w / 2 * cos (t0);
-			y0 = (double) h / 2* sin (t0);
-		} else {
-			x0 = 0;
-			y0 = 0;
-			switch (mod (q, 4)) {
-			case 0: x0 = (double) w/2;	break;
-			case 2:	x0 = - (double) w/2;	break;
-			case 1:	y0 = (double) h/2;	break;
-			case 3:	y0 = -(double) h/2;	break;
-			}
-		}
-		if (q == endq) {
- 			if (a1 == 0) {
-				x1 = 0;
-				y1 = 0;
-				switch (mod (q, 4)) {
-				case 0: x1 = (double) w/2;	break;
-				case 2:	x1 = - (double) w/2;	break;
-				case 1:	y1 = (double) h/2;	break;
-				case 3:	y1 = -(double) h/2;	break;
-				}
-			} else {
-				t1 = torad (a1 + endq * 90 * 64);
-				x1 = (double) w / 2 * cos(t1);
-				y1 = (double) h / 2 * sin(t1);
-			}
-		} else {
-			x1 = 0;
-			y1 = 0;
-			switch (mod (q, 4)) {
-			case 0:	y1 = (double) h/2;	break;
-			case 2:	y1 = - (double) h/2;	break;
-			case 1:	x1 = -(double) w/2;	break;
-			case 3:	x1 = (double) w/2;	break;
-			}
-		}
-		/*
-		 * compute the "length" of the arc in this quadrant --
-		 * this should be the eliptic integral, we'll
-		 * punt and assume it's close to a straight line
-		 */
-		sidelen = sqrt ((x1-x0)*(x1-x0) + (y1-y0) * (y1-y0));
-		if (sidelen >= len) {
-			/*
-			 * compute the distance to the next axis
-			 */
-			x1 = 0;
-			y1 = 0;
-			switch (mod (q, 4)) {
-			case 0:	y1 = (double) h/2;	break;
-			case 2:	y1 = -(double) h/2;	break;
-			case 1:	x1 = -(double) w/2;	break;
-			case 3:	x1 = (double) w/2;	break;
-			}
-			sidelen = sqrt ((x1-x0) * (x1-x0) + (y1-y0) * (y1-y0));
-			/*
-			 * now pick the point "len" away from x0,y0
-			 */
-			y1 = y0 + (y1 - y0) * len / sidelen;
-			x1 = x0 + (x1 - x0) * len / sidelen;
-			/*
-			 * translate the point to the angle on the
-			 * ellipse
-			 * match the actual angle)
-			 */
-			if (x1 == (double) w/2 && y1 == 0)
-				a1 = 0;
-			else if (x1 == -(double) w/2 && y1 == 0)
-				a1 = 180 * 64;
-			else if (y1 == (double) h/2 && x1 == 0)
-				a1 = 90 * 64;
-			else if (y1 == -(double) h/2 && x1 == 0)
-				a1 = 270 * 64;
-			else {
-				if (w == 0) {
-					t1 = asin (y1 / ((double) h/2));
-					switch (mod (q, 4)) {
-					case 1:
-					case 2:
-						t1 = M_PI - t1;
-					}
-				} else if (h == 0) {
-					t1 = acos (x1 / ((double) w/2));
-					switch (mod (q, 4)) {
-					case 2:
-					case 3:
-						t1 = 2 * M_PI - t1;
-					}
- 				} else {
-					/*
-					 * for round arcs, convert
-					 * to eliptical angles
-					 */
-					t1 = atan2 (y1 * w, x1 * h);
-				}
-				a1 = (t1 * 180/M_PI) * 64.0;
-				if (a1 < 0)
-					a1 += FULLCIRCLE;
-			}
- 			a1 -= mod (q, 4) * 90 * 64;
-			len = 0;
-		} else
-			len -= sidelen;
-	}
-	*lenp = len;
-	a1 = a1 + (q-1) * (90*64);
+	len0 = angleToLength (a0, map);
+	a = lengthToAngle (len0 + len, map);
+	if (a > a1) {
+		a = a1;
+		len -= angleToLength (a1, map) - len0;
+	} else
+		len = 0;
 	if (backwards)
-		a1 = FULLCIRCLE - a1;
-	return a1;
+		a = FULLCIRCLE - a;
+	*lenp = len;
+	return a;
 }
 
 /*
@@ -2035,20 +2085,76 @@ ellipseY (edge_y, def, acc, outer, y0, y1)
 	w2 = acc->w2;
 	w4 = acc->w4;
 
-	index0 = binaryIndexFromY (y0, def);
-	index1 = binaryIndexFromY (y1, def);
-	value0 = binaryValue (index0, def, acc, valid, table, f) - edge_y;
-	value1 = binaryValue (index1, def, acc, valid, table, f) - edge_y;
+	/*
+	 * make sure the arguments are in the right order
+	 */
+	if (y0 > y1) {
+		binaryy = y0;
+		y0 = y1;
+		y1 = binaryy;
+	}
 	maxY = y1;
 	minY = y0;
-	if (y0 > y1) {
-		maxY = y0;
-		minY = y1;
+
+	index0 = binaryIndexFromY (y0, def);
+	index1 = binaryIndexFromY (y1, def);
+	if (index0 == index1) {
+		value0 = f (y0, def, acc) - edge_y;
+		if (value0 == 0)
+			return y0;
+		value1 = f (y1, def, acc) - edge_y;
+		if (value1 == 0)
+			return y1;
+		if (value0 > 0 == value1 > 0)
+			return -1.0;
+	} else {
+		/*
+	 	 * round index0 up, index1 down
+	 	 */
+		index0++;
+		value0 = binaryValue (index0, def, acc, valid, table, f) - edge_y;
+		if (value0 == 0)
+			return yFromBinaryIndex (index0, def);
+		value1 = binaryValue (index1, def, acc, valid, table, f) - edge_y;
+		if (value1 == 0)
+			return yFromBinaryIndex (index1, def);
+		/*
+	 	 * make sure the result lies between the restricted end points
+	 	 */
+		if (value0 > 0 == value1 > 0) {
+			if (y0 == y1)
+				return -1.0;
+			binaryvalue = f(y0, def, acc) - edge_y;
+			if (binaryvalue > 0 != value0 > 0) {
+				/*
+			 	 * restrict the search to the small portion at
+			 	 * the begining
+			 	 */
+				index1 = index0;
+				value1 = value0;
+				value0 = binaryvalue;
+				y1 = yFromBinaryIndex (index0, def);
+			} else {
+				binaryvalue = f(y1, def, acc) - edge_y;
+				if (binaryvalue > 0 == value1 > 0)
+					return -1.0;	/* an illegal value */
+				/*
+			 	 * restrict the search to the small portion at
+			 	 * the end
+			 	 */
+				index0 = index1;
+				value0 = value1;
+				value1 = binaryvalue;
+				y0 = yFromBinaryIndex (index1, def);
+			}
+		} else {
+			/*
+		 	 * restrict the search to the inside portion
+		 	 */
+			y0 = yFromBinaryIndex (index0, def);
+			y1 = yFromBinaryIndex (index1, def);
+		}
 	}
-	y0 = yFromBinaryIndex (index0, def);
-	y1 = yFromBinaryIndex (index1, def);
-	if (value1 > 0 == value0 > 0)
-		return -1.0;	/* an illegal value */
 	binarylimit = (value1 - value0) / 25.0;
 	binarylimit = fabs (binarylimit);
 	if (binarylimit < BINARY_LIMIT)
@@ -2056,11 +2162,11 @@ ellipseY (edge_y, def, acc, outer, y0, y1)
 	/*
 	 * binary search for a while
 	 */
-	do {
+	while (fabs (value1) > binarylimit) {
 		if (y0 == y1 || value0 == value1)
-			return maxY+1;
+			return -1.0;
 
-		if (abs (index0 - index1) > 1) {
+		if (index1 > index0 + 1) {
 			newindex = (index1 + index0) / 2;
 			binaryy = yFromBinaryIndex (newindex, def);
 			binaryvalue = binaryValue (newindex,
@@ -2089,7 +2195,7 @@ ellipseY (edge_y, def, acc, outer, y0, y1)
 			if (newindex > 0)
 				index1 = newindex;
 		}
-	} while (fabs (value1) > binarylimit);
+	}
 
 	/*
 	 * clean up the estimate with newtons method
@@ -2959,15 +3065,17 @@ drawQuadrant (def, acc, a0, a1, mask, right, left)
 	struct arc_bound	bound;
 	double			miny, maxy, y;
 	int			minIsInteger;
+	double			fromInt;
 
 	def->a0 = ((double) a0) / 64.0;
 	def->a1 = ((double) a1) / 64.0;
+	fromInt = def->h - floor (def->h);
 	computeBound (def, &bound, acc, right, left);
 	y = fmin (bound.inner.min, bound.outer.min);
-	miny = ceil(y) +  def->w - floor (def->w);
+	miny = ceil(y - fromInt) + fromInt;
 	minIsInteger = y == miny;
 	y = fmax (bound.inner.max, bound.outer.max);
-	maxy = floor (y) +  def->w - floor (def->w);
+	maxy = floor (y - fromInt) + fromInt;
 	for (y = miny; y <= maxy; y = y + 1.0) {
 		if (y == miny && minIsInteger)
 			quadrantMask = mask & 0xc;
