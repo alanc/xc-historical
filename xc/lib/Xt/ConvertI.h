@@ -1,5 +1,5 @@
-/* $XConsortium: ConvertI.h,v 1.8 89/07/21 12:06:41 swick Exp $ */
-/* $oHeader: ConvertI.h,v 1.3 88/08/31 16:11:04 asente Exp $ */
+/* $XConsortium: ConvertI.h,v 1.9 90/06/04 15:06:49 kit Exp $ */
+
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,35 +24,46 @@ SOFTWARE.
 
 ******************************************************************/
 
-/**************************************************************
+/*
  * Resource conversions
- *
- **************************************************************/
+ */
 
 typedef struct _ConverterRec **ConverterTable;
 
-extern void _XtTableAddConverter();
-    /* ConverterTable	    table;	    */
-    /* XrmRepresentation    from_type;      */
-    /* XrmRepresentation    to_type;        */
-    /* XtConverter          converter;      */
-    /* XtConvertArgList     convert_args;   */
-    /* Cardinal             num_args;       */
-    /* Boolean              new_style;      */
-    /* XtCacheType	    cache_type;	    */
-    /* XtDestructor         destructor;     */
+extern void _XtSetDefaultConverterTable(
+#if NeedFunctionPrototypes
+    ConverterTable* 		/* table */
+#endif
+);
 
-extern Boolean _XtConvert();
-    /* Widget               widget;         */
-    /* XtAppContext         app;            */
-    /* XrmRepresentation    from_type       */
-    /* XrmValue             *from;          */
-    /* XrmRepresentation    to_type;        */
-    /* XrmValue             *to;            */  /* RETURN */
+extern void _XtFreeConverterTable(
+#if NeedFunctionPrototypes
+    ConverterTable 		/* table */
+#endif
+);
 
-typedef struct _ConverterRec *ConverterPtr;
+extern void _XtTableAddConverter(
+#if NeedFunctionPrototypes
+    ConverterTable		/* table */,
+    XrmRepresentation    	/* from_type */,
+    XrmRepresentation    	/* to_type */,
+    XtTypeConverter      	/* converter */,
+    XtConvertArgList     	/* convert_args */,
+    Cardinal             	/* num_args */,
+    _XtBoolean              	/* new_style */,
+    XtCacheType	    		/* cache_type */,
+    XtDestructor         	/* destructor */
+#endif
+);
 
-#define CONVERTHASHSIZE	((unsigned)512)
-#define CONVERTHASHMASK	511
+extern Boolean _XtConvert(
+#if NeedFunctionPrototypes
+    Widget			/* widget */,
+    XrmRepresentation    	/* from_type */,
+    XrmValuePtr			/* from */,
+    XrmRepresentation		/* to_type */,
+    XrmValuePtr			/* to */,
+    XtCacheRef*			/* cache_ref_return */
+#endif			  
+);
 
-#define ProcHash(from_type, to_type) (2 * (from_type) + to_type)
