@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.27 89/12/21 17:11:20 rws Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.28 89/12/21 22:13:39 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -1733,8 +1733,9 @@ once for each screen to add it to the
 screenInfo database.
 The first argument is an initialization procedure for the screen that you supply.
 The second and third are the argc and argv from main().
-It returns the number of screens installed so far,
-or -1 if there is insufficient memory to add the screen.
+It returns the screen number of the screen installed,
+or -1 if there is either insufficient memory to add the screen, or
+(*scrInitProc) returned FALSE.
 
 The scrInitProc should be of the following form:
 .nf
