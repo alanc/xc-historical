@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 93/09/04 16:27:30 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.15 93/09/04 19:36:57 rws Exp $
 
 #define DoNormalLib NormalLibPex
 #define DoSharedLib SharedLibPex
@@ -33,7 +33,7 @@ HEADERS = PEXlib.h \
 SRCS =  pl_convert.c \
 	pl_escape.c \
 	pl_font.c \
-	pl_free.c\
+	pl_free.c \
 	pl_lut.c \
 	pl_nameset.c \
         pl_oc_attr.c \
@@ -42,7 +42,7 @@ SRCS =  pl_convert.c \
 	pl_oc_prim.c \
 	pl_oc_str.c \
 	pl_oc_util.c \
-	pl_pc.c\
+	pl_pc.c \
 	pl_pick.c \
         pl_rdr.c \
 	pl_sc.c \
@@ -54,7 +54,7 @@ SRCS =  pl_convert.c \
 OBJS =  pl_convert.o \
 	pl_escape.o \
 	pl_font.o \
-	pl_free.o\
+	pl_free.o \
 	pl_lut.o \
 	pl_nameset.o \
         pl_oc_attr.o \
@@ -63,7 +63,7 @@ OBJS =  pl_convert.o \
 	pl_oc_prim.o \
 	pl_oc_str.o \
 	pl_oc_util.o \
-	pl_pc.o\
+	pl_pc.o \
 	pl_pick.o \
         pl_rdr.o \
 	pl_sc.o \
