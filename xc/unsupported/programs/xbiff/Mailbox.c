@@ -1,6 +1,5 @@
 /*
- * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.c,v $
- * $Header: Mailbox.c,v 1.6 88/03/03 16:41:43 swick Exp $
+ * $XHeader: Mailbox.c,v 1.7 88/03/07 14:45:47 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,6 +33,25 @@
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
+
+
+/*
+ * The default user interface is to have the mailbox turn itself off whenever
+ * the user presses a button in it.  Expert users might want to make this 
+ * happen on EnterWindow.  It might be nice to provide support for some sort of
+ * exit callback so that you can do things like press q to quit.
+ */
+
+static char defaultTranslations[] = 
+  "<ButtonPress>:  unset()";
+
+static void Check(), Set(), Unset();
+
+static XtActionsRec actionsList[] = { 
+    { "check",	Check },
+    { "unset",	Unset },
+    { "set",	Set },
+};
 
 
 /* Initialization of defaults */
@@ -79,8 +97,8 @@ MailboxClassRec mailboxClassRec = {
     /* initialize		*/	Initialize,
     /* initialize_hook		*/	NULL,
     /* realize			*/	Realize,
-    /* actions			*/	NULL,
-    /* num_actions		*/	0,
+    /* actions			*/	actionsList,
+    /* num_actions		*/	XtNumber(actionsList),
     /* resources		*/	resources,
     /* resource_count		*/	XtNumber(resources),
     /* xrm_class		*/	NULL,
@@ -98,7 +116,7 @@ MailboxClassRec mailboxClassRec = {
     /* accept_focus		*/	NULL,
     /* version			*/	XtVersion,
     /* callback_private		*/	NULL,
-    /* tm_table			*/	NULL,
+    /* tm_table			*/	defaultTranslations,
     /* query_geometry		*/	XtInheritQueryGeometry,
     }
 };
@@ -107,7 +125,7 @@ WidgetClass mailboxWidgetClass = (WidgetClass) &mailboxClassRec;
 
 
 /*
- * private procedures
+ * widget initialization
  */
 
 static void Initialize (request, new)
@@ -134,16 +152,68 @@ static void Initialize (request, new)
 }
 
 
-static void HandleButtonPress (gw, closure, event)
+/*
+ * action procedures
+ */
+
+/*
+ * pretend there is new mail; put widget in flagup state
+ */
+
+/* ARGSUSED */
+static void Set (gw, event, params, nparams)
     Widget gw;
-    char *closure;
     XEvent *event;
+    String *params;
+    Cardinal *nparams;
 {
     MailboxWidget w = (MailboxWidget) gw;
 
-    check_mailbox (w, TRUE, TRUE);
+    w->mailbox.last_size = -1;
+
+    check_mailbox (w, TRUE, FALSE);	/* redraw, no reset */
+
     return;
 }
+
+
+/*
+ * ack the existing mail; put widget in flagdown state
+ */
+
+/* ARGSUSED */
+static void Unset (gw, event, params, nparams)
+    Widget gw;
+    XEvent *event;
+    String *params;
+    Cardinal *nparams;
+{
+    MailboxWidget w = (MailboxWidget) gw;
+
+    check_mailbox (w, TRUE, TRUE);	/* redraw, reset */
+
+    return;
+}
+
+
+/*
+ * look to see if there is new mail; if so, Set, else Unset
+ */
+
+/* ARGSUSED */
+static void Check (gw, event, params, nparams)
+    Widget gw;
+    XEvent *event;
+    String *params;
+    Cardinal *nparams;
+{
+    MailboxWidget w = (MailboxWidget) gw;
+
+    check_mailbox (w, TRUE, FALSE);	/* redraw, no reset */
+
+    return;
+}
+
 
 
 static void clock_tic (client_data, id)
@@ -152,7 +222,7 @@ static void clock_tic (client_data, id)
 {
     MailboxWidget w = (MailboxWidget) client_data;
 
-    check_mailbox (w, FALSE, FALSE);
+    check_mailbox (w, FALSE, FALSE);	/* no redraw, no reset */
 
     /*
      * and reset the timer
@@ -213,8 +283,6 @@ static void Realize (gw, valuemaskp, attr)
 				   depth);
 
     w->mailbox.gc = get_mailbox_gc (w);
-
-    XtAddEventHandler (gw, ButtonPressMask, FALSE, HandleButtonPress, NULL);
 
     w->mailbox.interval_id = XtAddTimeOut (w->mailbox.update * 1000,
 					   clock_tic, (caddr_t) w);
