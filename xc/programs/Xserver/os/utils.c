@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.108 91/12/29 14:06:33 rws Exp $ */
+/* $XConsortium: utils.c,v 1.109 92/02/24 19:03:14 keith Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -143,13 +143,7 @@ Error(str)
     perror(str);
 }
 
-#if defined (UTEK) || defined (UTEKV) || defined(sgi)
-/*
- * Tektronix has a shared-memory time value which doesn't
- * match gettimeofday at all, but it is only accessible
- * inside the driver.  SGI has their own GetTimeInMillis.
- */
-#else
+#ifndef DDXTIME
 long
 GetTimeInMillis()
 {
