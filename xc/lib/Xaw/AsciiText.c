@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.22 89/07/06 16:00:34 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.23 89/07/16 14:54:13 jim Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -52,7 +52,7 @@ SOFTWARE.
 
 #include <X11/Xaw/AsciiTextP.h>
 
-extern void ForceBuildLineTable(); /* in Text.c */
+extern void _XawTextForceBuildLineTable(); /* in Text.c */
 
 static void ClassInitialize(), Initialize(), CreateSourceSink(), Destroy();
 
@@ -148,7 +148,7 @@ Cardinal *num_args;
 #undef TAB_COUNT
     }
 
-    ForceBuildLineTable( (TextWidget)w );
+    _XawTextForceBuildLineTable( (TextWidget) w );
 }
 
 static void 
