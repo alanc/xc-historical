@@ -328,12 +328,10 @@ OBJS3 = \
 	XcmsColNm.o \
 	XcmsCvColW.o \
 	XcmsCvCols.o \
-	XcmsDefSD.o \
 	XcmsGlobls.o \
 	XcmsIdOfPr.o \
 	XcmsInt.o \
 	XcmsLRGB.o \
-	XcmsLRGBFr.o \
 	XcmsLkCol.o \
 	XcmsMath.o \
 	XcmsOfCCC.o \
