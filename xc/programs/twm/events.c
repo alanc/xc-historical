@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.90 89/10/05 18:31:36 jim Exp $
+ * $XConsortium: events.c,v 1.91 89/10/27 13:44:12 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.90 89/10/05 18:31:36 jim Exp $";
+"$XConsortium: events.c,v 1.91 89/10/27 13:44:12 jim Exp $";
 #endif
 
 #include <stdio.h>

@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.6 89/07/27 13:59:39 jim Exp $
+ * $XConsortium: parse.c,v 1.7 89/07/27 15:28:22 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.6 89/07/27 13:59:39 jim Exp $";
+"$XConsortium: parse.c,v 1.7 89/07/27 15:28:22 jim Exp $";
 #endif
 
 #include <stdio.h>

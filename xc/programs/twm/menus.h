@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.17 89/07/18 17:16:07 jim Exp $
+ * $XConsortium: menus.h,v 1.18 89/08/14 18:16:48 jim Exp $
  *
  * twm menus include file
  *

@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: resize.h,v 1.4 89/07/14 11:10:46 jim Exp $
+ * $XConsortium: resize.h,v 1.5 89/07/18 17:16:13 jim Exp $
  *
  * resize function externs
  *

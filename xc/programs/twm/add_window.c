@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.90 89/09/19 17:51:27 jim Exp $
+ * $XConsortium: add_window.c,v 1.91 89/10/05 18:31:32 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.90 89/09/19 17:51:27 jim Exp $";
+"$XConsortium: add_window.c,v 1.91 89/10/05 18:31:32 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>

@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.7 89/07/26 11:02:26 jim Exp $
+ * $XConsortium: events.h,v 1.8 89/08/21 19:08:05 jim Exp $
  *
  * twm event handler include file
  *

@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: list.h,v 1.9 89/04/13 15:48:25 jim Exp $
+ * $XConsortium: list.h,v 1.10 89/07/18 17:16:02 jim Exp $
  *
  * TWM list handling external definitions
  *

@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.23 89/08/18 13:04:52 jim Exp $
+ * $XConsortium: util.c,v 1.24 89/10/27 13:44:10 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.23 89/08/18 13:04:52 jim Exp $";
+"$XConsortium: util.c,v 1.24 89/10/27 13:44:10 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -427,7 +427,7 @@ int kind;
 int *what;
 char *name;
 {
-    static XStandardColormap last = {0,0,0,0,0,0,0,0};
+    static XStandardColormap last = {0,0,0,0,0,0,0,0,0,0};
     XColor color, junkcolor;
     Status stat;
 

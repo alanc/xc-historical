@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: parse.h,v 1.4 89/07/18 17:16:10 jim Exp $
+ * $XConsortium: parse.h,v 1.5 89/07/27 13:59:43 jim Exp $
  *
  * .twmrc parsing externs
  *

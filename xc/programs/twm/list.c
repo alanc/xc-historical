@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: list.c,v 1.12 89/04/13 15:48:23 jim Exp $
+ * $XConsortium: list.c,v 1.13 89/07/18 17:16:01 jim Exp $
  *
  * TWM code to deal with the name lists for the NoTitle list and
  * the AutoRaise list
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: list.c,v 1.12 89/04/13 15:48:23 jim Exp $";
+"$XConsortium: list.c,v 1.13 89/07/18 17:16:01 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>

@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -27,7 +27,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: version.h,v 1.5 89/08/15 11:24:20 jim Exp $
+ * $XConsortium: version.h,v 1.6 89/08/15 11:41:59 jim Exp $
  *
  * TWM version externs
  *

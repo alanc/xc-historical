@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
-/**  Portions Copyright 1989 by the Massachusetts Institute Of Technology   **/
+/**  Portions Copyright 1989 by the Massachusetts Institute of Technology   **/
 /**                        Cambridge, Massachusetts                         **/
 /**                                                                         **/
 /**                           All Rights Reserved                           **/
@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: gc.c,v 1.16 89/07/06 18:34:46 jim Exp $
+ * $XConsortium: gc.c,v 1.17 89/07/18 17:15:49 jim Exp $
  *
  * Open the fonts and create the GCs
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: gc.c,v 1.16 89/07/06 18:34:46 jim Exp $";
+"$XConsortium: gc.c,v 1.17 89/07/18 17:15:49 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
