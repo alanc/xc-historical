@@ -12,11 +12,14 @@
      PROGRAMS = rgb showrgb
     DATAFILES = rgb.pag rgb.dir
       DATADEP = rgb.dir		/* just want one run of rgb */
+#ifndef SGIArchitecture
+       DBMLIB = -ldbm
+#endif
 
 all:: $(PROGRAMS) $(DATADEP)
 
-SingleProgramTarget(rgb,$(OBJS1),/**/,-ldbm)
-SingleProgramTarget(showrgb,$(OBJS2),/**/,-ldbm)
+SingleProgramTarget(rgb,$(OBJS1),/**/,$(DBMLIB))
+SingleProgramTarget(showrgb,$(OBJS2),/**/,$(DBMLIB))
 SpecialObjectRule(rgb.o,$(ICONFIGFILES), /**/)
 SpecialObjectRule(showrgb.o,$(ICONFIGFILES), /**/)
 InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
