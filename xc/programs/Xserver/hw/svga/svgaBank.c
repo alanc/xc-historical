@@ -1,4 +1,4 @@
-/* $XConsortium: svgaBank.c,v 1.2 93/09/18 17:59:55 rws Exp $ */
+/* $XConsortium: svgaBank.c,v 1.3 93/09/19 09:43:59 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -260,7 +260,7 @@ svgaBankGetImage(
     int         h,
     uint        format,
     ulong       planemask,
-    pointer     pImage
+    char       *pImage
 )
 {
   ScreenPtr pScreen = pDrawable->pScreen;
@@ -313,8 +313,8 @@ svgaBankGetImage(
 			       csy2 - csy1,
 			       format,
 			       planemask,
-			       (pointer)((char *)pImage +
-				((csy1 - sy) * rowOffset) + (csx1 - sx)));
+			       pImage +
+				  ((csy1 - sy) * rowOffset) + (csx1 - sx));
 	}
       }
     }
@@ -330,7 +330,7 @@ svgaBankGetSpans(
     DDXPointPtr	ppt,
     int		*pwidth,
     int		nspans,
-    uint       *pImage
+    char       *pImage
 )
 {
   ScreenPtr pScreen = pDrawable->pScreen;
@@ -375,13 +375,12 @@ svgaBankGetSpans(
 
 	      (*pScreen->GetSpans)(pDrawable,
 				   wMax, &pt, &width, 1,
-				   (uint *)((char *)pImage + (cx1 - ppt->x)));
+				   pImage + (cx1 - ppt->x));
 	    }
 	  }
 	}
 
-	pImage = (uint *)((char *)pImage +
-			  PixmapBytePad(*pwidth, pDrawable->depth));
+	pImage = pImage + PixmapBytePad(*pwidth, pDrawable->depth);
       }
   }
 
@@ -774,7 +773,7 @@ static void
 svgaBankSetSpans(
     DrawablePtr	pDrawable,
     GCPtr	pGC,
-    uint	*psrc,
+    char	*psrc,
     DDXPointPtr ppt,
     int		*pwidth,
     int		nspans,
@@ -1116,7 +1115,7 @@ svgaBankCopyArea(
 			       pQueue->y1 - dy,
 			       pQueue->x2 - pQueue->x1,
 			       pQueue->y2 - pQueue->y1,
-			       ZPixmap, ~0L, (pointer)pImage);
+			       ZPixmap, ~0L, pImage);
 
 	  (*pGC->ops->PutImage)((DrawablePtr)pScreenPixmap, pGC, pDst->depth,
 				pQueue->x1,
@@ -1458,7 +1457,7 @@ svgaBankImageGlyphBlt(
     int          y,
     uint         nglyph,
     CharInfoPtr  *ppci,
-    char 	 *pglyphBase
+    pointer	 pglyphBase
 )
 {
   OP_SIMPLE(pDrawable,
@@ -1476,7 +1475,7 @@ svgaBankPolyGlyphBlt(
     int          y,
     uint         nglyph,
     CharInfoPtr  *ppci,
-    char 	 *pglyphBase
+    pointer	 pglyphBase
 )
 {
   OP_SIMPLE(pDrawable,
