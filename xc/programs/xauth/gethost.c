@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: gethost.c,v 1.3 88/12/12 13:58:37 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -32,6 +32,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <errno.h>
+extern int errno;			/* for stupid errno.h files */
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
