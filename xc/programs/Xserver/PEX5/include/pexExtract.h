@@ -1,4 +1,4 @@
-/* $XConsortium: pexExtract.h,v 5.1 91/02/16 09:57:39 rws Exp $ */
+/* $XConsortium: pexExtract.h,v 5.2 91/05/02 13:36:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -36,37 +36,37 @@ SOFTWARE.
  ** incremented by the appropriate number of bytes.
  **/
  
-#define REFER_COORD3D(dstPtr, srcPtr)	    \
+#define REFER_COORD3D(dstPtr, srcPtr) {	    \
     (dstPtr) = (ddCoord3D *)(srcPtr);	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexCoord3D);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexCoord3D); }
 
-#define REFER_LISTOF_COORD3D(num, dstPtr, srcPtr)	\
+#define REFER_LISTOF_COORD3D(num, dstPtr, srcPtr) {	\
     (dstPtr) = (ddCoord3D *)(srcPtr);			\
-    (srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(pexCoord3D);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(pexCoord3D); }
 
-#define REFER_LISTOF_COORD2D(num, dstPtr, srcPtr)	\
+#define REFER_LISTOF_COORD2D(num, dstPtr, srcPtr) {	\
     (dstPtr) = (ddCoord2D *)(srcPtr);			\
-    (srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(pexCoord2D);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(pexCoord2D); }
 
-#define REFER_LISTOF_CARD16(num, dstPtr, srcPtr)	\
+#define REFER_LISTOF_CARD16(num, dstPtr, srcPtr) {	\
     (dstPtr) = (CARD16 *)(srcPtr);			\
-    (srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(CARD16);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(CARD16); }
 
-#define REFER_CARD8(dst, srcPtr)	    \
+#define REFER_CARD8(dst, srcPtr) {	    \
     (dst) = *((CARD8 *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD8);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD8); }
 
-#define REFER_CARD16(dst, srcPtr)	    \
+#define REFER_CARD16(dst, srcPtr) {	    \
     (dst) = *((CARD16 *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD16);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD16); }
 
-#define REFER_CARD32(dst, srcPtr)	    \
+#define REFER_CARD32(dst, srcPtr) {	    \
     (dst) = *((CARD32 *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32); }
 
-#define REFER_FLOAT(dst, srcPtr)	    \
+#define REFER_FLOAT(dst, srcPtr) {	    \
     (dst) = *((FLOAT *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(FLOAT);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(FLOAT); }
 
 /** This is a very general macro which will set the destination pointer to
  ** be whatever the src pointer is, typecast to the specified type.  The
@@ -75,9 +75,9 @@ SOFTWARE.
  ** be skipped over.
  **/
 
-#define REFER_STRUCT(num, data_type, dstPtr, srcPtr)	    \
+#define REFER_STRUCT(num, data_type, dstPtr, srcPtr) {	    \
     (dstPtr) = (data_type *)(srcPtr);			    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(data_type);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(data_type); }
 
 
 /*
@@ -85,56 +85,56 @@ SOFTWARE.
     into the destination data structure.
 */
 
-#define EXTRACT_COORD3D(dstPtr, srcPtr)    \
+#define EXTRACT_COORD3D(dstPtr, srcPtr) {  \
     (dstPtr)->x = ((pexCoord3D *)((srcPtr)))->x;  \
     (dstPtr)->y = ((pexCoord3D *)(srcPtr))->y;  \
     (dstPtr)->z = ((pexCoord3D *)(srcPtr))->z;  \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexCoord3D);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexCoord3D); }
 
-#define EXTRACT_VECTOR3D(dstPtr, srcPtr)    \
+#define EXTRACT_VECTOR3D(dstPtr, srcPtr) {  \
     (dstPtr)->x = ((pexVector3D *)((srcPtr)))->x;  \
     (dstPtr)->y = ((pexVector3D *)(srcPtr))->y;  \
     (dstPtr)->z = ((pexVector3D *)(srcPtr))->z;  \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexVector3D);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexVector3D); }
 
 #define EXTRACT_LISTOF_COORD3D(num, dstPtr, srcPtr) \
     EXTRACT_STRUCT(num, ddCoord3D, dstPtr, srcPtr)
 
-#define EXTRACT_COORD2D(dstPtr, srcPtr)    \
+#define EXTRACT_COORD2D(dstPtr, srcPtr) {  \
     (dstPtr)->x = ((pexCoord2D *)(srcPtr))->x;  \
     (dstPtr)->y = ((pexCoord2D *)(srcPtr))->y;  \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexCoord2D);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexCoord2D); }
 
-#define EXTRACT_VECTOR2D(dstPtr, srcPtr)    \
+#define EXTRACT_VECTOR2D(dstPtr, srcPtr) {  \
     (dstPtr)->x = ((pexVector2D *)(srcPtr))->x;  \
     (dstPtr)->y = ((pexVector2D *)(srcPtr))->y;  \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexVector2D);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(pexVector2D); }
 
 #define EXTRACT_LISTOF_COORD2D(num, dstPtr, srcPtr) \
     EXTRACT_STRUCT(num, ddCoord2D, dstPtr, srcPtr)
 
-#define EXTRACT_CARD8(dst, srcPtr)	    \
+#define EXTRACT_CARD8(dst, srcPtr)	{   \
     (dst) = *((CARD8 *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD8);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD8); }
 
-#define EXTRACT_CARD16(dst, srcPtr)	    \
+#define EXTRACT_CARD16(dst, srcPtr)	{   \
     (dst) = *((CARD16 *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD16);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD16); }
 
-#define EXTRACT_INT16(dst, srcPtr)	    \
+#define EXTRACT_INT16(dst, srcPtr)	{   \
     (dst) = *((INT16 *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(INT16);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(INT16); }
 
-#define EXTRACT_CARD32(dst, srcPtr)	    \
+#define EXTRACT_CARD32(dst, srcPtr)	{   \
     (dst) = *((CARD32 *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32); }
 
-#define EXTRACT_FLOAT(dst, srcPtr)	    \
+#define EXTRACT_FLOAT(dst, srcPtr)	{   \
     (dst) = *((FLOAT *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(FLOAT);
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(FLOAT); }
 
 
-#define EXTRACT_COLOUR_SPECIFIER(dst, srcPtr)\
+#define EXTRACT_COLOUR_SPECIFIER(dst, srcPtr) { \
 	EXTRACT_CARD16 ((dst).colourType, (srcPtr));\
 	SKIP_PADDING ((srcPtr), 2);\
 	switch ((dst).colourType) {\
@@ -181,69 +181,69 @@ SOFTWARE.
 		SKIP_PADDING((srcPtr),2);\
 		break;\
 	    }\
-	}
+	}}
 
-#define EXTRACT_STRUCT(num, data_type, dstPtr, srcPtr)\
+#define EXTRACT_STRUCT(num, data_type, dstPtr, srcPtr) {\
 	bcopy(	(char *)(srcPtr), (char *)(dstPtr), \
 		(int)(num * sizeof(data_type)));\
-	(srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(data_type)
+	(srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(data_type); }
 
 /*
     The next set of macros actually copy the data from a structure
     into the destination reply packet.
 */
 
-#define PACK_COORD3D(srcPtr, dstPtr)	        \
+#define PACK_COORD3D(srcPtr, dstPtr)	{       \
     ((pexCoord3D *)(dstPtr))->x = (srcPtr)->x;  \
     ((pexCoord3D *)(dstPtr))->y = (srcPtr)->y;  \
     ((pexCoord3D *)(dstPtr))->z = (srcPtr)->z;  \
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(pexCoord3D);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(pexCoord3D); }
 
 #define PACK_LISTOF_COORD3D(NUM, SRC, DST)  \
     PACK_LISTOF_STRUCT(NUM, pexCoord3D, SRC, DST)
 
-#define PACK_COORD2D(srcPtr, dstPtr)	        \
+#define PACK_COORD2D(srcPtr, dstPtr)	{       \
     ((pexCoord2D *)(dstPtr))->x = (srcPtr)->x;  \
     ((pexCoord2D *)(dstPtr))->y = (srcPtr)->y;  \
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(pexCoord2D);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(pexCoord2D); }
 
 #define PACK_LISTOF_COORD2D(NUM, SRC, DST)  \
     PACK_LISTOF_STRUCT(NUM, pexCoord2D, SRC, DST)
 
-#define PACK_VECTOR3D(srcPtr, dstPtr)	        \
+#define PACK_VECTOR3D(srcPtr, dstPtr)	{       \
     ((pexVector3D *)(dstPtr))->x = (srcPtr)->x; \
     ((pexVector3D *)(dstPtr))->y = (srcPtr)->y; \
     ((pexVector3D *)(dstPtr))->z = (srcPtr)->z; \
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(pexCoord3D);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(pexCoord3D); }
 
-#define PACK_VECTOR2D(srcPtr, dstPtr)           \
+#define PACK_VECTOR2D(srcPtr, dstPtr) {         \
     ((pexVector2D *)(dstPtr))->x = (srcPtr)->x; \
     ((pexVector2D *)(dstPtr))->y = (srcPtr)->y; \
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(pexCoord2D);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(pexCoord2D); }
 
 
-#define PACK_CARD8(src, dstPtr)		\
+#define PACK_CARD8(src, dstPtr)	{\
     *((CARD8 *)(dstPtr)) = (CARD8)(src);\
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(CARD8);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(CARD8); }
 
-#define PACK_CARD16(src, dstPtr)	    \
+#define PACK_CARD16(src, dstPtr)	{   \
     *((CARD16 *)(dstPtr)) = (CARD16)(src);  \
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(CARD16);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(CARD16); }
 
-#define PACK_INT16(src, dstPtr)	    	\
+#define PACK_INT16(src, dstPtr)	{   	\
     *((INT16 *)(dstPtr)) = (INT16)(src);\
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(INT16);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(INT16); }
 
-#define PACK_CARD32(src, dstPtr)	    \
+#define PACK_CARD32(src, dstPtr)	{   \
     *((CARD32 *)(dstPtr)) = (CARD32)(src);  \
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(CARD32);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(CARD32); }
 
-#define PACK_FLOAT(src, dstPtr)		\
+#define PACK_FLOAT(src, dstPtr)	{\
     *((FLOAT *)(dstPtr)) = (FLOAT)(src);\
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(FLOAT);
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(FLOAT); }
 
 
-#define PACK_COLOUR_SPECIFIER(src, dstPtr)\
+#define PACK_COLOUR_SPECIFIER(src, dstPtr) {\
 	PACK_CARD16 ((src).colourType, (dstPtr));\
 	SKIP_PADDING ((dstPtr), 2);\
 	switch ((src).colourType) {\
@@ -290,23 +290,23 @@ SOFTWARE.
 		SKIP_PADDING((dstPtr),2);\
 		break;\
 	    }\
-	}
+	}}
 
-#define PACK_STRUCT(data_type,srcPtr,dstPtr)		\
+#define PACK_STRUCT(data_type,srcPtr,dstPtr)	{       \
     bcopy(  (char *)(srcPtr), (char *)(dstPtr),		\
 	    sizeof(data_type));				\
-    SKIP_STRUCT(dstPtr, 1, data_type)
+    SKIP_STRUCT(dstPtr, 1, data_type); }
 
-#define PACK_LISTOF_STRUCT(num,data_type,srcPtr,dstPtr)	\
+#define PACK_LISTOF_STRUCT(num,data_type,srcPtr,dstPtr){\
     bcopy(  (char *)(srcPtr), (char *)(dstPtr),		\
 	    ((*((int *)&(num)) * sizeof(data_type))));	\
-    SKIP_STRUCT(dstPtr, num, data_type)
+    SKIP_STRUCT(dstPtr, num, data_type); }
 /*
 	Other useful macros
  */
 
 #define SKIP_PADDING(skipPtr, bytesToSkip) \
-  (skipPtr) = ((CARD8 *) (skipPtr)) + bytesToSkip;
+  (skipPtr) = ((CARD8 *) (skipPtr)) + bytesToSkip
 
 #define SKIP_STRUCT(skipPtr, num, data_type) \
    (skipPtr) = (unsigned char *)(((data_type *)skipPtr) + (num))
