@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.107 90/03/15 14:22:42 jim Exp $
+ * $XConsortium: twm.c,v 1.108 90/03/15 17:14:31 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.107 90/03/15 14:22:42 jim Exp $";
+"$XConsortium: twm.c,v 1.108 90/03/15 17:14:31 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -486,7 +486,8 @@ main(argc, argv, environ)
 	attributes.cursor = XCreateFontCursor (dpy, XC_hand2);
 	valuemask = (CWBorderPixel | CWBackPixel | CWEventMask | 
 		     CWBackingStore | CWCursor);
-	Scr->InfoWindow = XCreateWindow (dpy, Scr->Root, 0, 0, 5, 5, 
+	Scr->InfoWindow = XCreateWindow (dpy, Scr->Root, 0, 0, 
+					 (unsigned int) 5, (unsigned int) 5,
 					 (unsigned int) BW, 0,
 					 (unsigned int) CopyFromParent,
 					 (Visual *) CopyFromParent,
