@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.48 91/05/10 14:21:18 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.49 91/06/07 12:09:33 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -429,9 +429,15 @@ static unsigned long _XGetPixel32 (ximage, x, y)
 	    else
 #endif
 	    if (ximage->byte_order == MSBFirst)
-		pixel = addr[0] << 24 | addr[1] << 16 | addr[2] << 8 | addr[3];
+		pixel = ((unsigned long)addr[0] << 24 |
+			 (unsigned long)addr[1] << 16 |
+			 (unsigned long)addr[2] << 8 |
+			 addr[3]);
 	    else
-		pixel = addr[3] << 24 | addr[2] << 16 | addr[1] << 8 | addr[0];
+		pixel = ((unsigned long)addr[3] << 24 |
+			 (unsigned long)addr[2] << 16 |
+			 (unsigned long)addr[1] << 8 |
+			 addr[0]);
 	    if (ximage->depth != 32)
 		pixel &= low_bits_table[ximage->depth];
 	    return pixel;
