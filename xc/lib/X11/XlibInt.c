@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.201 93/11/05 11:20:57 kaleb Exp $
+ * $XConsortium: XlibInt.c,v 11.202 93/11/15 11:17:59 kaleb Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -354,13 +354,38 @@ void _XPollfdCacheDel(dpy, fd)
 #endif
 }
 
-static void
+/* returns True iff there is an event in the queue newer than serial_num */
+
+static Bool
+_XNewerQueuedEvent(dpy, serial_num)
+    Display *dpy;
+    int serial_num;
+{
+    _XQEvent *qev;
+
+    if (dpy->next_event_serial_num == serial_num)
+	return False;
+
+    qev = dpy->head;
+    while (qev) {
+	if (qev->qserial_num > serial_num) {
+	    return True;
+	}
+	qev = qev->next;
+    }
+    return False;
+}
+
+static int
 _XWaitForReadable(dpy)
   Display *dpy;
 {
     int result;
     int fd = dpy->fd;
     struct _XConnectionInfo *ilist;  
+    register int saved_event_serial;
+    int in_read_events;
+    register Bool did_proc_conni = False;
 #ifdef USE_POLL
     struct pollfd *filedes;
 #else
@@ -369,7 +394,8 @@ _XWaitForReadable(dpy)
 #endif
 
 #ifdef USE_POLL
-    if (dpy->im_fd_length + 1 > POLLFD_CACHE_SIZE && !dpy->in_process_conni) {
+    if (dpy->im_fd_length + 1 > POLLFD_CACHE_SIZE
+	&& !(dpy->flags & XlibDisplayProcConni)) {
 	/* XXX - this fallback is gross */
 	int i;
 
@@ -389,7 +415,7 @@ _XWaitForReadable(dpy)
     for (;;) {
 #ifndef USE_POLL
 	BITSET(r_mask, fd);
-	if (!dpy->in_process_conni)
+	if (!(dpy->flags & XlibDisplayProcConni))
 	    for (ilist=dpy->im_fd_info; ilist; ilist=ilist->next) {
 		BITSET(r_mask, ilist->fd);
 		if (ilist->fd > highest_fd)
@@ -399,7 +425,7 @@ _XWaitForReadable(dpy)
 	UnlockDisplay(dpy);
 #ifdef USE_POLL
 	result = poll(filedes,
-		      dpy->in_process_conni ? 1 : 1+dpy->im_fd_length,
+		      (dpy->flags & XlibDisplayProcConni) ? 1 : 1+dpy->im_fd_length,
 		      -1);
 #else
 #ifdef WIN32
@@ -414,35 +440,52 @@ _XWaitForReadable(dpy)
 	    continue;
 #ifdef USE_POLL
 	if (filedes[0].revents & (POLLIN|POLLHUP))
-	    break;
-	if (!dpy->in_process_conni) {
-	    int i;
-	    struct _XConnectionInfo *ilist;  
-
-	    for (ilist=dpy->im_fd_info, i=1; ilist; ilist=ilist->next, i++) {
-		if (filedes[i].revents & POLLIN) {
-		    _XProcessInternalConnection(dpy, ilist);
-		}
-	    }
-	    if (dpy->im_fd_length + 1 > POLLFD_CACHE_SIZE)
-		Xfree(filedes);
-	}
 #else
 	if (GETBIT(r_mask, fd))
+#endif
 	    break;
-	if (!dpy->in_process_conni)
-	    for (ilist=dpy->im_fd_info; ilist; ilist=ilist->next) {
-		if (GETBIT(r_mask, ilist->fd)) {
+	if (!(dpy->flags & XlibDisplayProcConni)) {
+	    int i;
+
+	    saved_event_serial = dpy->next_event_serial_num;
+	    /* dpy flags can be clobbered by internal connection callback */
+	    in_read_events = dpy->flags & XlibDisplayReadEvents;
+	    for (ilist=dpy->im_fd_info, i=1; ilist; ilist=ilist->next, i++) {
+#ifdef USE_POLL
+		if (filedes[i].revents & POLLIN)
+#else
+		if (GETBIT(r_mask, ilist->fd))
+#endif
+		{
 		    _XProcessInternalConnection(dpy, ilist);
+		    did_proc_conni = True;
 		}
 	    }
+#ifdef USE_POLL
+	    if (dpy->im_fd_length + 1 > POLLFD_CACHE_SIZE)
+		Xfree(filedes);
 #endif
+	}
+	if (did_proc_conni) {
+	    /* some internal connection callback might have done an
+	       XPutBackEvent.  We notice it here and if we needed an event,
+	       we can return all the way. */
+	    if (_XNewerQueuedEvent(dpy, saved_event_serial)
+		&& (in_read_events
+#ifdef XTHREADS
+		    || (dpy->lock && dpy->lock->event_awaiters)
+#endif
+		    ))
+		return -2;
+	    did_proc_conni = False;
+	}
     }
 #ifdef XTHREADS
 #ifdef XTHREADS_DEBUG
     printf("thread %x _XWaitForReadable returning\n", xthread_self());
 #endif
 #endif
+    return 0;
 }
 
 static
@@ -607,16 +650,10 @@ _XEventsQueued (dpy, mode)
 	}
 	
 	/* did _XReply read an event we can return? */
-	if (dpy->next_event_serial_num > entry_event_serial_num) {
-	    /* yes, find the event */
-	    _XQEvent *qev = dpy->head;
-	    while (qev) {
-		if (qev->qserial_num > entry_event_serial_num) {
-		    UnlockNextEventReader(dpy);
-		    return 0;
-		}
-		qev = qev->next;
-	    }
+	if (_XNewerQueuedEvent(dpy, entry_event_serial_num))
+	{
+	    UnlockNextEventReader(dpy);
+	    return 0;
 	}
 #endif /* XTHREADS*/
 
@@ -744,6 +781,7 @@ _XReadEvents(dpy)
 	register xReply *rep;
 	Bool not_yet_flushed = True;
 	char *read_buf;
+	int i;
 #ifdef XTHREADS
 	struct _XCVList *cvl = NULL;
 	int entry_event_serial_num;
@@ -781,15 +819,9 @@ _XReadEvents(dpy)
 	    }
 
 	    /* did _XReply read an event we can return? */
-	    if (dpy->next_event_serial_num > entry_event_serial_num) {
-		/* yes, find the event */
-		_XQEvent *qev = dpy->head;
-		while (qev) {
-		    if (qev->qserial_num > entry_event_serial_num) {
-			goto got_event;
-		    }
-		    qev = qev->next;
-		}
+	    if (_XNewerQueuedEvent(dpy, entry_event_serial_num))
+	    {
+		goto got_event;
 	    }
 	    if (!first_time)
 		ConditionWait(dpy, cvl);
@@ -808,9 +840,10 @@ _XReadEvents(dpy)
 	    	len = SIZEOF(xEvent);
 		/* don't flush until the first time we would block */
 		if (not_yet_flushed) {
-		    int qlen = dpy->qlen;
+		    int preflush_serial_num = dpy->next_event_serial_num;
 		    _XFlush (dpy);
-		    if (qlen != dpy->qlen) {
+		    if (_XNewerQueuedEvent(dpy, preflush_serial_num))
+		    {
 			/* _XReply has read an event for us */
 			goto got_event;
 		    }
@@ -843,7 +876,14 @@ _XReadEvents(dpy)
 		/* save value we may have to stick in conni_thread */
 		dpy->lock->reading_thread = self;
 #endif /* XTHREADS */
-	    _XRead (dpy, read_buf, (long) len);
+	    dpy->flags |= XlibDisplayReadEvents;
+	    i = _XRead (dpy, read_buf, (long) len);
+	    dpy->flags &= ~XlibDisplayReadEvents;
+	    if (i == -2) {
+		/* special flag from _XRead to say that internal connection has
+		   done XPutBackEvent.  Which we can use so we're done. */
+		goto got_event;
+	    }
 #ifdef XTHREADS
 	    if (xthread_have_id(self))
 		xthread_clear_id(dpy->lock->reading_thread);
@@ -901,7 +941,8 @@ _XRead (dpy, data, size)
 	int original_size = size;
 #endif
 
-	if ((dpy->flags & XlibDisplayIOError) || size == 0) return 0;
+	if ((dpy->flags & XlibDisplayIOError) || size == 0)
+	    return 0;
 	ESET(0);
 	while ((bytes_read = ReadFromServer(dpy->fd, data, (int)size))
 		!= size) {
@@ -911,12 +952,14 @@ _XRead (dpy, data, size)
 		    data += bytes_read;
 		    }
 		else if (ETEST()) {
-		    _XWaitForReadable(dpy);
+		    if (_XWaitForReadable(dpy) == -2)
+			return -2; /* internal connection did XPutBackEvent */
 		    ESET(0);
 		}
 #ifdef SUNSYSV
 		else if (ECHECK(0)) {
-		    _XWaitForReadable(dpy);
+		    if (_XWaitForReadable(dpy) == -2)
+			return -2; /* internal connection did XPutBackEvent */
 		}
 #endif
 		else if (bytes_read == 0) {
@@ -1806,7 +1849,7 @@ static void _XProcessInternalConnection(dpy, conn_info)
     Display *dpy;
     struct _XConnectionInfo *conn_info;
 {
-    dpy->in_process_conni = True;
+    dpy->flags |= XlibDisplayProcConni;
 #ifdef XTHREADS
     if (dpy->lock) {
 	/* check cache to avoid call to thread_self */
@@ -1823,7 +1866,7 @@ static void _XProcessInternalConnection(dpy, conn_info)
     if (dpy->lock)
 	xthread_clear_id(dpy->lock->conni_thread);
 #endif /* XTHREADS */
-    dpy->in_process_conni = False;
+    dpy->flags &= ~XlibDisplayProcConni;
 }
 
 /* XProcessInternalConnection
@@ -2550,7 +2593,7 @@ static int _XPrintDefaultError (dpy, event, fp)
 		break;
 	    }
 	    if (ext->codes.first_error &&
-		ext->codes.first_error < event->error_code &&
+		ext->codes.first_error < (int)event->error_code &&
 		(!bext || ext->codes.first_error > bext->codes.first_error))
 		bext = ext;
 	}    
