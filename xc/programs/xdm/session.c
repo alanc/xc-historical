@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.46 91/02/28 09:37:43 keith Exp $
+ * $XConsortium: session.c,v 1.47 91/02/28 11:57:00 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -154,8 +154,8 @@ struct display	*d;
 #ifdef SECURE_RPC
     for (i = 0; i < d->authNum; i++)
     {
-	if (d->authorizations[i]->name_length == 10 &&
-	    bcmp (d->authorizations[i]->name, "SECURE-RPC", 10) == 0)
+	if (d->authorizations[i]->name_length == 9 &&
+	    bcmp (d->authorizations[i]->name, "SUN-DES-1", 9) == 0)
 	{
 	    XHostAddress	addr;
 	    char		netname[MAXNETNAMELEN+1];
@@ -165,7 +165,7 @@ struct display	*d;
     
 	    getdomainname(domainname, sizeof domainname);
 	    user2netname (netname, verify.uid, domainname);
-	    addr.family = FamilySecureRPC;
+	    addr.family = FamilyNetname;
 	    addr.length = strlen (netname);
 	    addr.address = netname;
 	    XAddHost (dpy, &addr);
