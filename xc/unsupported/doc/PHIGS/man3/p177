@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p177,v 5.1 91/02/16 09:40:03 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -22,7 +22,7 @@
 .\" USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 .\" OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\" PERFORMANCE OF THIS SOFTWARE.
-.TH "INQUIRE PHIGS FACILITIES" 3P "29 February 1991"
+.TH "INQUIRE PHIGS FACILITIES" 3P "26 July 1991"
 .SH NAME
 INQUIRE PHIGS FACILITIES\- inquire the current list of \s-2PHIGS\s+2 facilities defined in the \s-2PHIGS\s+2 description table
 .SH SYNOPSIS
@@ -31,13 +31,13 @@ INQUIRE PHIGS FACILITIES\- inquire the current list of \s-2PHIGS\s+2 facilities 
 .ta 1.25i 3i
 .nf
 void
-pinq_phigs_facs ( length, start, error_ind, open_ws, num_names, open_ar, char_sets, length_list, norm_filt, inv_filt )
+pinq_phigs_facs ( length, start, error_ind, open_ws, open_ar, num_names, char_sets, length_list, norm_filt, inv_filt )
 Pint	length;	\fIlength of application list\fP
 Pint	start;	\fIstarting position\fP
 Pint	*error_ind;	\fIOUT error indicator\fP
 Pint	*open_ws;	\fIOUT max. num. simultaneously open ws\fP
-Pint	*num_names;	\fIOUT number of available names for name sets\fP      
 Pint	*open_ar;	\fIOUT max. num. simultaneously open archive files\fP
+Pint	*num_names;	\fIOUT number of available names for name sets\fP      
 Pint_list	*char_sets;	\fIOUT list of character sets\fP
 Pint	*length_list;	\fIOUT length of list in PHIGS\fP
 Pint	*norm_filt;	\fIOUT maximum length of norm filter list for ISS\fP
@@ -65,11 +65,11 @@ detected by this function.
 .IP \fIopen_ws\fP
 A pointer to an integer that returns the
 \fImaximum number of simultaneously open workstations\fP supported.
-.IP \fInum_names\fP
-A pointer to an integer that returns the number of available names for name sets.
 .IP \fIopen_ar\fP
 A pointer to an integer that returns the
 \fImaximum number of simultaneously open archive files\fP supported.
+.IP \fInum_names\fP
+A pointer to an integer that returns the number of available names for name sets.
 .IP \fIchar_sets\fP
 A pointer to a data structure that returns a portion
 of the list of available character sets, starting with
