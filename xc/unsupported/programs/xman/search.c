@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.2 88/09/04 20:27:33 swick Exp $
+ * $XConsortium: search.c,v 1.3 89/01/06 18:42:28 kit Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -304,7 +304,7 @@ ManpageGlobals *man_globals;
 {
   char *string;
   int e_num = NO_ENTRY;
-  int i, initial_entry;
+  int i;
 
 /* search current section first. */
   
