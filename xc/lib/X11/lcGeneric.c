@@ -1,4 +1,4 @@
-/* $XConsortium: lcGeneric.c,v 1.1 93/09/17 13:30:29 rws Exp $ */
+/* $XConsortium: lcGeneric.c,v 1.2 93/09/23 12:31:27 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -351,12 +351,12 @@ load_generic(lcd)
 	_XlcGetResource(lcd, "XLC_XLOCALE", name, &value, &num);
 	if (num > 0) {
 	    static struct { 
-		char str[8];
+		char str[6];
 		int type;
 	    } shifts[] = {
 		{"<SS>", E_SS},
 		{"<LSL>", E_LSL},
-		{"<LSR", E_LSR},
+		{"<LSR>", E_LSR},
 		0
 	    };
 	    int j;
@@ -367,7 +367,7 @@ load_generic(lcd)
 		char encoding[256];
 		char *tmp = *value;
 		int type = E_SS;    /* for BC */
-		for (j = 0; shifts[j].str; j++) {
+		for (j = 0; shifts[j].str[0]; j++) {
 		    if (!_XlcNCompareISOLatin1(tmp, shifts[j].str,
 					       strlen(shifts[j].str))) {
 			type = shifts[j].type;
