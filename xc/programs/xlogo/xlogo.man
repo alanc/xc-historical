@@ -11,25 +11,25 @@ program displays the X Window System logo.  This program is
 nothing more than a wrapper around the Athena Logo widget.
 .SH OPTIONS
 .I Xlogo
-accepts all of the standard X Toolkit command line options, of which
-the following are commonly used:
+accepts all of the X Toolkit command line options described in \fIX(1)\fP,
+of which the following are used most frequently:
 .TP 8
 .B \-bg \fIcolor\fP
 This option specifies the color to use for the background of the window.  
-The default is ``white.''
-A correct color for the background is something like ``maroon.''
+The default is \fIwhite\fP.
+A correct color for the background is something like \fImaroon\fP.
 .TP 8
 .B \-bd \fIcolor\fP
 This option specifies the color to use for the border of the window.
-The default is ``black.''
+The default is \fIblack\fP.
 .TP 8
 .B \-bw \fInumber\fP
 This option specifies the width in pixels of the border surrounding the window.
 .TP 8
 .B \-fg \fIcolor\fP
 This option specifies the color to use for displaying the logo.
-The default is ``black''.
-A correct color for the background is something like ``silver,''
+The default is \fIblack\fP.
+A correct color for the background is something like \fIsilver,\fP
 which you can approximate with a shade of gray, like \#aa9.
 .TP 8
 .B \-rv
@@ -37,11 +37,10 @@ This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the logo window;
-see \fIX(1)\fP.
+This option specifies the prefered size and position of the logo window.
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the X server to contact; see \fIX(1)\fP.
+This option specifies the X server to contact.
 .TP 8
 .B \-xrm \fIresourcestring\fP
 This option specifies a resource string to be used.  This is especially
@@ -54,14 +53,15 @@ classes as well as:
 .PP
 .TP 8
 .B width (\fPclass\fB Width)
-Specifies the width of the logo.
+Specifies the width of the logo.  The default width is 100 pixels.
 .TP 8
 .B height (\fPclass\fB Height)
-Specifies the height of the logo.
+Specifies the height of the logo.  The default height is 100 pixels.
 .TP 8
 .B foreground (\fPclass\fB Foreground)
 Specifies the color for the logo.
-The default is ``black'' since the core default for background is ``white.''
+The default is \fIblack\fP since the core default for background 
+is \fIwhite\fP.
 .TP 8
 .B reverseVideo (\fPclass\fB ReverseVideo)
 Specifies that the foreground and background should be reversed.
