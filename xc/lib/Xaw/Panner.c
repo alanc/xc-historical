@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.26 90/03/01 17:33:11 jim Exp $
+ * $XConsortium: Panner.c,v 1.27 90/03/07 17:09:04 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -116,6 +116,7 @@ static void Destroy();			/* clean up widget */
 static void Resize();			/* need to rescale ourselves */
 static void Redisplay();		/* draw ourselves */
 static Boolean SetValues();		/* set all of the resources */
+static void SetValuesAlmost();		/* deal with failed setval geom req */
 static XtGeometryResult QueryGeometry();  /* say how big we would like to be */
 
 PannerClassRec pannerClassRec = {
@@ -143,7 +144,7 @@ PannerClassRec pannerClassRec = {
     /* expose			*/	Redisplay,
     /* set_values		*/	SetValues,
     /* set_values_hook		*/	NULL,
-    /* set_values_almost	*/	XtInheritSetValuesAlmost,
+    /* set_values_almost	*/	SetValuesAlmost,
     /* get_values_hook		*/	NULL,
     /* accept_focus		*/	NULL,
     /* version			*/	XtVersion,
@@ -607,7 +608,6 @@ static Boolean SetValues (gcur, greq, gnew)
 	 cur->panner.canvas_height != new->panner.canvas_height ||
 	 cur->panner.resize_to_pref != new->panner.resize_to_pref)) {
 	get_default_size (new, &new->core.width, &new->core.height);
-	Resize (gnew);
 	redisplay = TRUE;
     } else if (cur->panner.canvas_width != new->panner.canvas_width ||
 	cur->panner.canvas_height != new->panner.canvas_height ||
@@ -628,6 +628,17 @@ static Boolean SetValues (gcur, greq, gnew)
     }
 
     return redisplay;
+}
+
+static void SetValuesAlmost (gold, gnew, req, reply)
+    Widget gold, gnew;
+    XtWidgetGeometry *req, *reply;
+{
+    if (reply->request_mode == 0) {	/* got turned down, so cope */
+	Resize (gnew);
+    }
+    (*(XtSuperclass(gnew)->core_class.set_values_almost)) (gold, gnew,
+							   req, reply);
 }
 
 static XtGeometryResult QueryGeometry (gw, intended, pref)
