@@ -6,7 +6,7 @@
  * DoNormalLib, DoSharedLib, DoDebugLib, DoProfileLib
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.14 92/06/28 17:39:33 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.15 93/01/25 16:27:13 mor Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -91,7 +91,7 @@ includes::								@@\
 	_ProfiledLibMkdir()						@@\
 	_SharedLibMkdir()						@@\
 									@@\
-.c.o:									@@\
+.c.Osuf:								@@\
 	_DebuggedObjCompile($(_NOOP_))					@@\
 	_ProfiledObjCompile($(_NOOP_))					@@\
 	_SharedObjCompile($(_NOOP_))					@@\
@@ -116,7 +116,7 @@ objs: depends								@@\
 
 #ifndef SpecialCLibObjectRule
 #define SpecialCLibObjectRule(basename,depends,options)			@@\
-SpecialLibObjectRule(basename.o,basename.c depends,options)		@@\
+SpecialLibObjectRule(basename.Osuf,basename.c depends,options)		@@\
 									@@\
 SaberLoadTarget(saber,basename.c,NullParameter,$(ALLDEFINES) options)
 #endif /* SpecialCLibObjectRule */
