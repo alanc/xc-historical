@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.3 88/07/20 14:16:14 keith Exp $ */
+/* $Header: mibstore.c,v 1.4 88/07/29 12:08:35 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -184,7 +184,8 @@ typedef struct {
 
 static RegionPtr miRestoreAreas();
 static void miSaveAreas(), miBSDrawGuarantee(),
-	    miTranslateBackingStore(), miExposeCopy();
+	    miTranslateBackingStore(), miExposeCopy(),
+	    miCreateBSPixmap(), miDestroyBSPixmap(), miTileVirtualBS();
 
 /*-
  *-----------------------------------------------------------------------
@@ -198,7 +199,7 @@ static void miSaveAreas(), miBSDrawGuarantee(),
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
     GCPtr	pGC;
@@ -251,7 +252,7 @@ miBSFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
@@ -362,7 +363,7 @@ miBSGetSpans(pDrawable, pPixmap, wMax, ppt, pwidth, pwidthPadded, nspans)
     }
 
     pGC = GetScratchGC(pDrawable->depth, pDrawable->pScreen);
-    ValidateGC(pPixmap, pGC);
+    ValidateGC((DrawablePtr)pPixmap, pGC);
     
     /*
      * For each span, translate it into the backing pixmap's coordinates and
@@ -443,7 +444,7 @@ miBSGetSpans(pDrawable, pPixmap, wMax, ppt, pwidth, pwidthPadded, nspans)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPutImage(pDst, pGC, depth, x, y, w, h, leftPad, format, pBits)
     DrawablePtr	  pDst;
     GCPtr   	  pGC;
@@ -480,6 +481,7 @@ miBSPutImage(pDst, pGC, depth, x, y, w, h, leftPad, format, pBits)
  * backing stored window
  */
 
+void
 miGetImageWithBS ( pDraw, x, y, w, h, format, planemask, pImage)
     DrawablePtr		pDraw;
     int			x, y, w, h;
@@ -491,7 +493,8 @@ miGetImageWithBS ( pDraw, x, y, w, h, format, planemask, pImage)
     if ((pDraw->type == DRAWABLE_WINDOW) &&
 	(((WindowPtr)pDraw)->backingStore != NotUseful))
     {
-	miBSGetImage( pDraw, (PixmapPtr) 0, x, y, w, h, format, planemask, pImage);
+	miBSGetImage((WindowPtr) pDraw, NullPixmap, x, y, w, h,
+		     format, planemask, pImage);
     }
 }
 
@@ -538,13 +541,13 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
      * by taking the inverse of the not-clipped-by-children region.
      */
 
-    pRgn = NotClippedByChildren (pWin);
+    pRgn = (* pScreen->RegionCreate)(NULL, 1);
     box.x1 = x + pWin->absCorner.x;
     box.y1 = y + pWin->absCorner.y;
     box.x2 = box.x1 + w;
     box.y2 = box.y1 + h;
     
-    (* pScreen->Inverse)(pRgn, pRgn, &box);
+    (* pScreen->Inverse)(pRgn, pWin->borderClip, &box);
 
     /*
      * Nothing that wasn't visible -- return immediately.
@@ -559,27 +562,28 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
      * if no pixmap was given to us, create one now
      */
 
-    if (!pOldPixmapPtr) {
-	pNewPixmapPtr = (*pScreen->CreatePixmap) (pScreen, w, h, pWin->drawable.depth);
-	pGC = GetScratchGC (pNewPixmapPtr->drawable.depth, pScreen);
-	ValidateGC (pNewPixmapPtr, pGC);
-	(*pGC->PutImage) (pNewPixmapPtr, pGC,
- 		pWin->drawable.depth, 0, 0, w, h, 0, format, pImage);
-	pPixmapPtr = pNewPixmapPtr;
-    }
-    else
-    {
-	pGC = GetScratchGC (pOldPixmapPtr->drawable.depth, pScreen);
-	pNewPixmapPtr = 0;
-	pPixmapPtr = pOldPixmapPtr;
-	ValidateGC (pPixmapPtr, pGC);
-    }
+    pGC = GetScratchGC (pWin->drawable.depth, pScreen);
     /*
      * make sure the CopyArea operations below never
      * end up sending NoExpose or GraphicsExpose events.
      */
-
     pGC->graphicsExposures = FALSE;
+    if (!pOldPixmapPtr) {
+	pNewPixmapPtr = (*pScreen->CreatePixmap) (pScreen, w, h, pWin->drawable.depth);
+	pGC->fgPixel = planeMask;
+	pGC->bgPixel = 0;
+	ValidateGC ((DrawablePtr)pNewPixmapPtr, pGC);
+	(*pGC->PutImage) (pNewPixmapPtr, pGC,
+ 		pWin->drawable.depth, 0, 0, w, h, 0,
+		(format == XYPixmap) ? XYBitmap : format, pImage);
+	pPixmapPtr = pNewPixmapPtr;
+    }
+    else
+    {
+	pNewPixmapPtr = NullPixmap;
+	pPixmapPtr = pOldPixmapPtr;
+	ValidateGC ((DrawablePtr)pPixmapPtr, pGC);
+    }
 
     /*
      * translate to window-relative coordinates
@@ -706,11 +710,6 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
     ScreenPtr	pScreen;
     int		dx, dy;
     int		n;
-    XID		gcval[4];
-    BITS32	gcmask;
-    int		i;
-    xRectangle	*pRect;
-		
     
     pBox = pRgn->rects;
     pScreen = pWin->drawable.pScreen;
@@ -726,7 +725,7 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
 	    if (!pBackingStore->pBackingPixmap &&
  		pBackingStore->backgroundTile != (PixmapPtr) ParentRelative)
 	    {
-		miBSFillVirtualBits (pPixmap, pGC, pBackRgn, x, y,
+		miBSFillVirtualBits ((DrawablePtr)pPixmap, pGC, pBackRgn, x, y,
 	    			     pBackingStore->backgroundPixel,
 				     pBackingStore->backgroundTile,
 				     (PixmapPtr) USE_BACKGROUND_PIXEL);
@@ -739,8 +738,6 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
 		if (pBackingStore->pBackingPixmap != NullPixmap)
 		{
 		    pBox = pBackRgn->rects;
-		    i = 0;
-		    gcmask = 0;
 		    for (n = 0; n < pBackRgn->numRects; n++)
 		    {
 			(*pGC->CopyArea) (pBackingStore->pBackingPixmap,
@@ -764,8 +761,8 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
 	    pBox = (*pScreen->RegionExtents) (pRgn);
 
 	    if (pBox->x1 < 0 || pBox->y1 < 0 ||
-		pWin->clientWinSize.width < pBox->x2 ||
- 		pWin->clientWinSize.height < pBox->y2)
+		pWin->borderWidth + pWin->clientWinSize.width < pBox->x2 ||
+ 		pWin->borderWidth + pWin->clientWinSize.height < pBox->y2)
 	    {
 		/*
 		 * compute areas of border to display
@@ -787,7 +784,8 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
 
 		if ((*pScreen->RegionNotEmpty) (pBackRgn))
 		{
-		    miBSFillVirtualBits (pPixmap, pGC, pBackRgn, x, y,
+		    miBSFillVirtualBits ((DrawablePtr)pPixmap, pGC, pBackRgn,
+					 x, y,
 					 pWin->borderPixel,
 					 pWin->borderTile,
 					 (PixmapPtr) USE_BORDER_PIXEL);
@@ -1192,7 +1190,7 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     DrawablePtr	  pSrc;
     DrawablePtr	  pDst;
@@ -1280,7 +1278,7 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
     DrawablePtr	  pSrc;
     DrawablePtr	  pDst;
@@ -1373,7 +1371,7 @@ miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPolyPoint (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
     GCPtr	pGC;
@@ -1418,7 +1416,7 @@ miBSPolyPoint (pDrawable, pGC, mode, npt, pptInit)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPolylines (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr	  pDrawable;
     GCPtr   	  pGC;
@@ -1462,7 +1460,7 @@ miBSPolylines (pDrawable, pGC, mode, npt, pptInit)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPolySegment(pDraw, pGC, nseg, pSegs)
     DrawablePtr pDraw;
     GCPtr 	pGC;
@@ -1506,7 +1504,7 @@ miBSPolySegment(pDraw, pGC, nseg, pSegs)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPolyRectangle(pDraw, pGC, nrects, pRects)
     DrawablePtr	pDraw;
     GCPtr	pGC;
@@ -1549,7 +1547,7 @@ miBSPolyRectangle(pDraw, pGC, nrects, pRects)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPolyArc(pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
     GCPtr	pGC;
@@ -1593,7 +1591,7 @@ miBSPolyArc(pDraw, pGC, narcs, parcs)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSFillPolygon(pDraw, pGC, shape, mode, count, pPts)
     DrawablePtr		pDraw;
     register GCPtr	pGC;
@@ -1639,7 +1637,7 @@ miBSFillPolygon(pDraw, pGC, shape, mode, count, pPts)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     DrawablePtr pDrawable;
     GCPtr	pGC;
@@ -1685,7 +1683,7 @@ miBSPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPolyFillArc(pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
     GCPtr	pGC;
@@ -1729,7 +1727,7 @@ miBSPolyFillArc(pDraw, pGC, narcs, parcs)
  *
  *-----------------------------------------------------------------------
  */
-int
+static int
 miBSPolyText8(pDraw, pGC, x, y, count, chars)
     DrawablePtr pDraw;
     GCPtr	pGC;
@@ -1764,7 +1762,7 @@ miBSPolyText8(pDraw, pGC, x, y, count, chars)
  *
  *-----------------------------------------------------------------------
  */
-int
+static int
 miBSPolyText16(pDraw, pGC, x, y, count, chars)
     DrawablePtr pDraw;
     GCPtr	pGC;
@@ -1799,7 +1797,7 @@ miBSPolyText16(pDraw, pGC, x, y, count, chars)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSImageText8(pDraw, pGC, x, y, count, chars)
     DrawablePtr pDraw;
     GCPtr	pGC;
@@ -1834,7 +1832,7 @@ miBSImageText8(pDraw, pGC, x, y, count, chars)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSImageText16(pDraw, pGC, x, y, count, chars)
     DrawablePtr pDraw;
     GCPtr	pGC;
@@ -1869,7 +1867,7 @@ miBSImageText16(pDraw, pGC, x, y, count, chars)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GC 		*pGC;
@@ -1908,7 +1906,7 @@ miBSImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GCPtr	pGC;
@@ -1947,7 +1945,7 @@ miBSPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSPushPixels(pGC, pBitMap, pDst, w, h, x, y)
     GCPtr	pGC;
     PixmapPtr	pBitMap;
@@ -1989,7 +1987,7 @@ miBSPushPixels(pGC, pBitMap, pDst, w, h, x, y)
  *
  *-----------------------------------------------------------------------
  */
-void
+static void
 miBSClearToBackground(pWin, x, y, w, h, generateExposures)
     WindowPtr	  	pWin;
     int	    	  	x;
@@ -2100,7 +2098,7 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
 		gcvalues[3] = ts_y_origin;
 		gcmask |= GCTileStipXOrigin|GCTileStipYOrigin;
 		DoChangeGC(pGC, gcmask, gcvalues, TRUE);
-		ValidateGC(pBackingStore->pBackingPixmap, pGC);
+		ValidateGC((DrawablePtr)pBackingStore->pBackingPixmap, pGC);
     
 		/*
 		 * Figure out the array of rectangles to fill and fill them with
@@ -2192,7 +2190,7 @@ miInitBackingStore(pWin, SaveAreas, RestoreAreas)
 	pBackingStore->pBackingPixmap = NullPixmap;
 	pBackingStore->pSavedRegion = (* pScreen->RegionCreate)(NullBox, 1);
 	pBackingStore->pgcBlt = CreateGC((DrawablePtr)pWin,
-					 GCGraphicsExposures, &false,
+					 (BITS32)GCGraphicsExposures, &false,
 					 &status);
 	pBackingStore->SaveAreas = SaveAreas;
 	pBackingStore->RestoreAreas = RestoreAreas;
@@ -2355,7 +2353,7 @@ miResizeBackingStore(pWin, dx, dy)
 					 pWin->clientWinSize.height, 
 					 pWin->drawable.depth);
 
-	ValidateGC(pNewPixmap, pGC);
+	ValidateGC((DrawablePtr)pNewPixmap, pGC);
 
 	if ((* pScreen->RegionNotEmpty) (pBackingStore->pSavedRegion))
 	{
@@ -3241,7 +3239,7 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 
     if (pBackingStore->pBackingPixmap->drawable.serialNumber
         != pBackingGC->serialNumber)
-	ValidateGC(pBackingStore->pBackingPixmap, pBackingGC);
+	ValidateGC((DrawablePtr)pBackingStore->pBackingPixmap, pBackingGC);
 
     if (pBackingGC->clientClip == 0) {
     	ErrorF ("backing store clip list nil");
@@ -3249,6 +3247,7 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 }
 
 
+static void
 miDestroyBSPixmap (pWin)
     WindowPtr	pWin;
 {
@@ -3267,6 +3266,7 @@ miDestroyBSPixmap (pWin)
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 }
 
+static void
 miTileVirtualBS (pWin)
     WindowPtr	pWin;
 {
@@ -3295,6 +3295,7 @@ static int BSAllocationsFailed = 0;
 static struct { int w, h; } failedRecord[FAILEDSIZE];
 static int failedIndex;
 
+static void
 miCreateBSPixmap (pWin)
     WindowPtr	pWin;
 {
