@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.34 89/12/07 16:22:57 jim Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.35 89/12/10 17:12:07 rws Exp $";
 #endif
  
 #ifdef TCPCONN
@@ -83,9 +83,9 @@ static Bool get_streams_address();
 #endif
 
 #ifdef SIGNALRETURNSINT
-typedef int signal_t;
+#define signal_t int
 #else
-typedef void signal_t;
+#define signal_t void
 #endif
 static signal_t nameserver_lost();
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.29 89/12/10 16:59:22 rws Exp $
+ * $XConsortium: process.c,v 1.31 89/12/16 20:38:10 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -584,9 +584,9 @@ static char *xauth_filename = NULL;
 static Bool dieing = False;
 
 #ifdef SIGNALRETURNSINT
-typedef int _signal_t;
+#define _signal_t int
 #else
-typedef void _signal_t;
+#define _signal_t void
 #endif
 
 static _signal_t die ()
