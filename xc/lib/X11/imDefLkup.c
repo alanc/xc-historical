@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.7 94/02/08 10:09:27 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.9 94/03/29 22:51:29 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -633,7 +633,7 @@ _XimRegCommitInfo(ic, string, string_len, keysym, keysym_len)
     info->string	= string;
     info->string_len	= string_len;
     info->keysym	= keysym;
-    info->keysym_len	= string_len;
+    info->keysym_len	= keysym_len;
     info->next = ic->private.proto.commit_info;
     ic->private.proto.commit_info = info;
 }
@@ -669,31 +669,22 @@ _XimFreeCommitInfo(ic)
 }
 
 Private Bool
-_XimProcKeySym(ic, buf, len, xim_keysym, xim_keysym_len)
+_XimProcKeySym(ic, sym, xim_keysym, xim_keysym_len)
     Xic			  ic;
-    CARD32		 *buf;
-    int			  len;
+    CARD32		  sym;
     KeySym		**xim_keysym;
     int			 *xim_keysym_len;
 {
     Xim			 im = (Xim)ic->core.im;
-    int			 num = len / sizeof(CARD32);
-    int			 alloc_len;
-    KeySym		*keysym;
-    register int	 i;
 
-    alloc_len = sizeof(KeySym) * num;
-    if (!(keysym = (KeySym *)Xmalloc(alloc_len))) {
+    if (!(*xim_keysym = (KeySym *)Xmalloc(sizeof(KeySym)))) {
 	_XimError(im, ic, XIM_BadAlloc, (INT16)0, (CARD16)0, (char *)NULL);
 	return False;
     }
 
-    for (i = 0; i < num; i++) {
-	keysym[i] = (KeySym)buf[i];
-    }
+    **xim_keysym = (KeySym)sym;
+    *xim_keysym_len = 1;
 
-    *xim_keysym = keysym;
-    *xim_keysym_len = alloc_len;
     return True;
 }
 
@@ -729,32 +720,27 @@ _XimCommitRecv(im, ic, buf)
 {
     CARD16	*buf_s = (CARD16 *)buf;
     BITMASK16	 flag = buf_s[0];
-    int		 len;
     XKeyEvent	 ev;
-    char	*string;
-    int		 string_len;
-    KeySym	*keysym;
-    int		 keysym_len;
+    char	*string = NULL;
+    int		 string_len = 0;
+    KeySym	*keysym = NULL;
+    int		 keysym_len = 0;
 
-    if (flag & XimLookupChars) {
+    if ((flag & XimLookupBoth) == XimLookupChars) {
 	if (!(_XimProcCommit(ic, (BYTE *)&buf_s[2],
 			 		(int)buf_s[1], &string, &string_len)))
 	    return False;
 
-    } else if (flag & XimLookupKeySym) {
-	if (!(_XimProcKeySym(ic, (CARD32 *)&buf_s[2],
-			 		(int)buf_s[1], &keysym, &keysym_len)))
+    } else if ((flag & XimLookupBoth) == XimLookupKeySym) {
+	if (!(_XimProcKeySym(ic, *(CARD32 *)&buf_s[2], &keysym, &keysym_len)))
 	    return False;
 
-    } else if (flag & XimLookupBoth) {
-	len = (int)buf_s[1];
-	if (!(_XimProcKeySym(ic, (CARD32 *)&buf_s[2],
-			 		len, &keysym, &keysym_len)))
+    } else if ((flag & XimLookupBoth) == XimLookupBoth) {
+	if (!(_XimProcKeySym(ic, *(CARD32 *)&buf_s[2], &keysym, &keysym_len)))
 	    return False;
 
-	buf_s = (CARD16 *)((char *)&buf_s[2] + len);
-	if (!(_XimProcCommit(ic, (BYTE *)&buf_s[1],
-			 		(int)buf_s[0], &string, &string_len)))
+	if (!(_XimProcCommit(ic, (BYTE *)&buf_s[5],
+			 		(int)buf_s[4], &string, &string_len)))
 	    return False;
     }
 
