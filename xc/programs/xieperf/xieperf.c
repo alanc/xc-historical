@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.32 94/03/02 16:20:34 kaleb Exp $ */
+/* $XConsortium: xieperf.c,v 1.33 94/03/10 11:57:50 kaleb Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -4504,6 +4504,9 @@ Atom	atom;
 else if ( lutCellSize == sizeof( short ) ) { \
         *( ( unsigned short * ) ptr ) = val; \
 	ptr+=sizeof(short); } \
+else if ( lutCellSize == sizeof( int ) ) { \
+        *( ( unsigned int * ) ptr ) = val; \
+	ptr+=sizeof(int); } \
 else { \
         *( ( unsigned long * ) ptr) = val; \
 	ptr+=sizeof(long); }
@@ -4518,6 +4521,11 @@ else if ( lutCellSize == sizeof( short ) ) { \
 	*( ( unsigned short * ) ptr ) |= val * lowbit( DCGreenMask ); \
 	*( ( unsigned short * ) ptr ) |= val * lowbit( DCBlueMask ); \
 	ptr+=sizeof(short); } \
+else if ( lutCellSize == sizeof( int ) ) { \
+        *( ( unsigned int * ) ptr ) = val * lowbit( DCRedMask ); \
+	*( ( unsigned int * ) ptr ) |= val * lowbit( DCGreenMask ); \
+	*( ( unsigned int * ) ptr ) |= val * lowbit( DCBlueMask ); \
+	ptr+=sizeof(int); } \
 else { \
         *( ( unsigned long * ) ptr ) = val * lowbit( DCRedMask ); \
 	*( ( unsigned long * ) ptr ) |= val * lowbit( DCGreenMask ); \
