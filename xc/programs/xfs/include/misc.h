@@ -1,28 +1,25 @@
-/* $XConsortium$ */
+/* $XConsortium: misc.h,v 1.3 91/05/13 16:48:58 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)misc.h	4.1	91/05/02
- *
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #ifndef _MISC_H_
@@ -76,22 +73,6 @@ typedef unsigned long Atom;
 /* byte swap a short literal */
 #define lswaps(x) ((((x) & 0xff) << 8) | (((x) >> 8) & 0xff))
 
-/* some macros to help swap requests, replies, and events */
-
-#define LengthRestB(stuff) \
-    (((unsigned long)stuff->length << 2) - sizeof(*stuff))
-
-#define LengthRestS(stuff) \
-    (((unsigned long)stuff->length << 1) - (sizeof(*stuff) >> 1))
-
-#define LengthRestL(stuff) \
-    ((unsigned long)stuff->length - (sizeof(*stuff) >> 2))
-
-#define SwapRestS(stuff) \
-    SwapShorts((short *)(stuff + 1), LengthRestS(stuff))
-
-#define SwapRestL(stuff) \
-    SwapLongs((long *)(stuff + 1), LengthRestL(stuff))
 
 /* byte swap a long */
 #define swapl(x, n) n = ((char *) (x))[0];\
@@ -118,6 +99,7 @@ typedef unsigned long Atom;
 		 ((char *) &(dst))[0] = ((char *) &(src))[1];\
 		 ((char *) &(dst))[1] = ((char *) &(src))[0];
 
+
 extern void SwapLongs();
 extern void SwapShorts();
 
@@ -129,5 +111,55 @@ extern void TwoByteInvert();
 extern void FourByteInvert();
 
 extern long GetTimeInMillis();
+
+
+#if __STDC__ && !defined(UNIXCPP)
+#define fsCat(x,y) x##_##y
+#else
+#define fsCat(x,y) x/**/_/**/y
+#endif
+
+/* copy a xCharInfo into a XCharInfo */
+
+#define fsPack_XCharInfo(structure, packet) \
+    fsCat(packet,left) = (structure)->leftSideBearing; \
+    fsCat(packet,right) = (structure)->rightSideBearing; \
+    fsCat(packet,width) = (structure)->characterWidth; \
+    fsCat(packet,ascent) = (structure)->ascent; \
+    fsCat(packet,descent) = (structure)->descent; \
+    fsCat(packet,attributes) = (structure)->attributes
+
+
+/* copy a FontInfoRec into a XFontInfoHeader */
+
+#define fsPack_XFontInfoHeader(structure, packet, clientversion) \
+    (packet)->font_header_flags = ((structure)->allExist) ? FontInfoAllCharsExist : 0; \
+    (packet)->font_header_draw_direction = ((structure)->drawDirection == LeftToRight) \
+               ? LeftToRightDrawDirection : RightToLeftDrawDirection; \
+ \
+    if ((structure)->inkInside) \
+	(packet)->font_header_flags |= FontInfoInkInside; \
+ \
+    if (clientversion > 1) { \
+	(packet)->font_header_char_range_min_char_high = (structure)->firstRow; \
+        (packet)->font_header_char_range_min_char_low = (structure)->firstCol; \
+        (packet)->font_header_char_range_max_char_high = (structure)->lastRow; \
+        (packet)->font_header_char_range_max_char_low = (structure)->lastCol; \
+        (packet)->font_header_default_char_high = (structure)->defaultCh >> 8; \
+        (packet)->font_header_default_char_low = (structure)->defaultCh & 0xff; \
+    } else { \
+	(packet)->font_header_char_range_min_char_high = (structure)->firstCol; \
+	(packet)->font_header_char_range_min_char_low = (structure)->firstRow; \
+	(packet)->font_header_char_range_max_char_high = (structure)->lastCol; \
+	(packet)->font_header_char_range_max_char_low = (structure)->lastRow; \
+	(packet)->font_header_default_char_high = (structure)->defaultCh & 0xff; \
+	(packet)->font_header_default_char_low = (structure)->defaultCh >> 8; \
+    } \
+ \
+    fsPack_XCharInfo(&(structure)->ink_minbounds, (packet)->font_header_min_bounds); \
+    fsPack_XCharInfo(&(structure)->ink_maxbounds, (packet)->font_header_max_bounds); \
+ \
+    (packet)->font_header_font_ascent = (structure)->fontAscent; \
+    (packet)->font_header_font_descent = (structure)->fontDescent
 
 #endif				/* _MISC_H_ */
