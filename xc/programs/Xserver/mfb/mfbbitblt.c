@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.42 87/08/09 13:58:52 ham Exp $ */
+/* $Header: mfbbitblt.c,v 1.42 87/08/09 13:58:52 rws Locked $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -74,9 +74,6 @@ int dstx, dsty;
     xRectangle origSource;
     DDXPointRec origDest;
 
-    if (!(pGC->planemask & 1))
-	return;
-
     origSource.x = srcx;
     origSource.y = srcy;
     origSource.width = width;
@@ -102,21 +99,45 @@ int dstx, dsty;
 
     if (pSrcDrawable->type == DRAWABLE_PIXMAP)
     {
-	BoxRec box;
+	if ((pSrcDrawable == pDstDrawable) &&
+	    (pGC->clientClipType == CT_NONE))
+	{
+	    prgnSrcClip = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+	}
+	else
+	{
+	    BoxRec box;
 
-	box.x1 = 0;
-	box.y1 = 0;
-	box.x2 = ((PixmapPtr)pSrcDrawable)->width;
-	box.y2 = ((PixmapPtr)pSrcDrawable)->height;
+	    box.x1 = 0;
+	    box.y1 = 0;
+	    box.x2 = ((PixmapPtr)pSrcDrawable)->width;
+	    box.y2 = ((PixmapPtr)pSrcDrawable)->height;
 
-	prgnSrcClip = miRegionCreate(&box, 1);
-	realSrcClip = 1;
+	    prgnSrcClip = miRegionCreate(&box, 1);
+	    realSrcClip = 1;
+	}
     }
     else
     {
 	srcx += ((WindowPtr)pSrcDrawable)->absCorner.x;
 	srcy += ((WindowPtr)pSrcDrawable)->absCorner.y;
-	prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    if ((pSrcDrawable == pDstDrawable) &&
+		(pGC->clientClipType == CT_NONE))
+	    {
+		prgnSrcClip = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+	    }
+	    else
+	    {
+		prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+		realSrcClip = 1;
+	    }
+	}
+	else
+	{
+	    prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
+	}
     }
 
     srcBox.x1 = srcx;
@@ -174,7 +195,8 @@ int dstx, dsty;
 	ppt->y = pbox->y1 + dy;
     }
 
-    mfbDoBitblt(pSrcDrawable, pDstDrawable, pGC->alu, prgnDst, pptSrc);
+    if (pGC->planemask & 1)
+	mfbDoBitblt(pSrcDrawable, pDstDrawable, pGC->alu, prgnDst, pptSrc);
 
     if (((mfbPrivGC *)(pGC->devPriv))->fExpose)
         miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
@@ -282,10 +304,10 @@ DDXPointPtr pptSrc;
     pbox = prgnDst->rects;
     nbox = prgnDst->numRects;
 
-    pboxNew1 = 0;
-    pptNew1 = 0;
-    pboxNew2 = 0;
-    pptNew2 = 0;
+    pboxNew1 = NULL;
+    pptNew1 = NULL;
+    pboxNew2 = NULL;
+    pptNew2 = NULL;
     if (pptSrc->y < pbox->y1) 
     {
         /* walk source botttom to top */
@@ -297,10 +319,11 @@ DDXPointPtr pptSrc;
 	{
 	    /* keep ordering in each band, reverse order of bands */
 	    pboxNew1 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    if(!pboxNew1)
+		return;
 	    pptNew1 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    if(!pboxNew1 || !pptNew1)
+	    if(!pptNew1)
 	    {
-	        DEALLOCATE_LOCAL(pptNew1);
 	        DEALLOCATE_LOCAL(pboxNew1);
 	        return;
 	    }
@@ -341,13 +364,18 @@ DDXPointPtr pptSrc;
 	    /* reverse order of rects in each band */
 	    pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
 	    pptNew2 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    pboxBase = pboxNext = pbox;
 	    if(!pboxNew2 || !pptNew2)
 	    {
-	        DEALLOCATE_LOCAL(pptNew2);
-	        DEALLOCATE_LOCAL(pboxNew2);
+		if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
+		if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
+		if (pboxNew1)
+		{
+		    DEALLOCATE_LOCAL(pptNew1);
+		    DEALLOCATE_LOCAL(pboxNew1);
+		}
 	        return;
 	    }
+	    pboxBase = pboxNext = pbox;
 	    while (pboxBase < pbox+nbox)
 	    {
 	        while ((pboxNext < pbox+nbox) &&
@@ -658,21 +686,15 @@ DDXPointPtr pptSrc;
     }
 
     /* free up stuff */
-    if (pptNew1)
+    if (pboxNew2)
     {
-	DEALLOCATE_LOCAL(pptNew1);
+	DEALLOCATE_LOCAL(pptNew2);
+	DEALLOCATE_LOCAL(pboxNew2);
     }
     if (pboxNew1)
     {
+	DEALLOCATE_LOCAL(pptNew1);
 	DEALLOCATE_LOCAL(pboxNew1);
-    }
-    if (pptNew2)
-    {
-	DEALLOCATE_LOCAL(pptNew2);
-    }
-    if (pboxNew2)
-    {
-	DEALLOCATE_LOCAL(pboxNew2);
     }
 }
 
@@ -701,9 +723,6 @@ int dstx, dsty;
 unsigned int plane;
 {
     int alu;
-
-    if (!(pGC->planemask & 1))
-	return;
 
     if (plane != 1)
 	return;
