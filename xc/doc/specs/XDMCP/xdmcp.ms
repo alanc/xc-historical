@@ -272,15 +272,134 @@ indicates the direction in which it is sent.
 
 
 
-[XXX - need to spell out unmanaging by closing all connections - XXX]
+When the session is over, the initial connection with the display (the
+one which ack's the manage packet) will be closed.  At this point,
+all other display connections should be closed and the terminal
+can request another session.
+
+These state diagrams are designed to cover all actions of both
+the terminal and the manager.
+
+Terminal:
+
+	[start]:
+		user-requested connect to some host -> [broadcast]
+		user-requested connedt to one host -> [query]
+	
+	[broadcast]:
+		Send BroadcastQuery packet
+ 		-> [collect-broadcast-query]
+	
+	[collect-broadcast]:
+		receive Willing -> [update-broadcast-willing]
+		user-requested connect to one host -> [start-connection]
+		receive other -> [collect-broadcast]
+		timeout -> [broadcast]
+		
+	[update-broadcast-willing]:
+		Add new host to host-list.
+		Display host-list.
+		-> [collect-broadcast]
+	
+	[query]:
+		Send Query packet
+		-> [collect-query]
+	
+	[collect-query]:
+		receive Willing -> [start-connection]
+		receive Unwilling -> [stop-connection]
+		receive other -> [collect-query]
+		timeout -> [query]
+	
+	[start-connection]:
+		Send Request packet
+		-> [await-request-response]
+	
+	[await-request-response]:
+		receive Accept -> [manage]
+		receive Decline -> [stop-connection]
+		timeout -> [start-connection]
+	
+	[manage]:
+		Save session ID
+		Close all display connections
+		Send Manage packet with session ID
+		-> [await-manage-response]
+	
+	[await-manage-response]:
+		receive XOpenDisplay: -> [run-session]
+		receive Refuse with matching session ID: -> [start-connection]
+		timeout -> [manage]
+	
+	[stop-connection]:
+		Display cause of termination
+		-> [start]
+	
+	[run-session]:
+		await close of first display connection
+		-> [reset-terminal]
+	
+	[reset-terminal]:
+		close all display connections
+		-> [start]
+	
+Manager:
 
 
-State Diagram
-
-[XXX - need to make up a drawing - XXX]
-
-
-
+	[idle]:
+		receive BroadcaseQuery -> [broadcast-respond]
+		receive Query -> [query-respond]
+		receive Request -> [request-respond]
+		receive Manage -> [manage]
+		-> [idle]
+	
+	[broadcast-respond]:
+		if willing to manage -> [send-willing]
+		-> [idle]
+	
+	[query-respond]:
+		if willing to manage -> [send-willing]
+		-> [send-unwilling]
+	
+	[send-willing]:
+		Send Willing packet
+		-> [idle]
+	
+	[send-unwilling]:
+		Send Unwilling packet
+		-> [idle]
+	
+	[request-respond]:
+		if acceptable-to-manage -> [accept-session]
+		-> [decline-session]
+	
+	[accept-session]:
+		Generate session ID.  Save session ID/display name somewhere
+		Send Accept packet
+ 		-> [idle]
+		
+	[decline-session]:
+		Send Decline packet
+		-> [idle]
+	
+	[manage]:
+		If session ID matches saved session ID -> [run-session]
+		-> [refuse]
+	
+	[refuse]:
+		Send Refuse packet
+		-> [idle]
+	
+	[run-session]:
+		Terminate any session in progress
+		open display succeeds -> [session]
+		-> [refuse]
+	
+	[session]:
+		Start a new session
+		XCloseDisplay
+		-> [idle]
+	
 Examples
 
 Here are some scenarios illustrating how the protocol works:
@@ -723,3 +842,16 @@ This protocol is designed to satisfy the following constraints:
 	cannot retain permanent state this cannot work.  Instead, the
 	manager assumes the responsibility for permanent state, when
 	generating session IDs.
+
+	The Manager must not be responsible for packet reception.  To
+	prevent the Manager from becoming stuck because of a hostile
+	Terminal, no portion of the protocol requires the Manager to retry
+	transmission.  Part of this means that any valid packet which the
+	Manager does receive *must* be acknowledged in some way, to prevent
+	the Terminal from continuously resending packets.  The Terminal
+	can keep the protocol running as it will always know when the
+	Manager has received (at least one copy of) a packet.  On the
+	Manager side, this means that any packet may be received
+	more than once (if the response was lost) and duplicates must
+	be ignored.
+	
