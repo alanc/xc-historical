@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.19 93/09/18 21:10:51 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.20 93/09/18 22:10:22 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -11,8 +11,6 @@
 #include <sys/types.h>
 
 #ifdef hpux
-#define WANT_BFUNCS
-#define WANT_FFS
 #define WANT_RANDOM
 #define WANT_QUE
 #endif
@@ -178,7 +176,7 @@ unsigned int	mask;
 #endif
 
 #ifdef WANT_RANDOM
-#if defined(SYSV) || defined(SVR4)
+#if defined(SYSV) || defined(SVR4) || defined(hpux)
 
 long lrand48();
 
