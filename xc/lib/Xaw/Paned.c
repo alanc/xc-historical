@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.6 89/05/11 01:06:02 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.7 89/07/16 14:47:21 jim Exp $";
 #endif /* lint */
 
 
@@ -1608,10 +1608,12 @@ static void ChangeManaged(w)
  * If the size is zero then set it to the size of the widest or tallest pane.
  */
 
-   if ( (size = PaneSize( (Widget) pw, !vert ) + 1) == 1) 
+   if ( (size = PaneSize( (Widget) pw, !vert )) == 0) {
+       size = 1;
        ForAllChildren(pw, childP)
 	   if ( XtIsManaged(*childP) && (PaneSize( *childP, !vert ) > size) )
 	       size = PaneSize( *childP, !vert );
+   }
 
    ManageAndUnmanageGrips(pw);
    pw->paned.recursively_called = False;
@@ -1624,12 +1626,11 @@ static void ChangeManaged(w)
 	       Pane pane = PaneInfo(*childP);
 	       if (HasGrip(*childP))
 		   PaneInfo(pane->grip)->position = pw->paned.num_panes;
-	       pane->position = pw->paned.num_panes; /* TEMPORY - CDP 3/89 */ 
+	       pane->position = pw->paned.num_panes; /*TEMPORY -CDP 3/89 */
 	       pw->paned.num_panes++;
 	   }
 	   else
-	     break;		/* This list is already sorted. */
-
+	       break;		/* This list is already sorted. */
 
    SetChildrenPrefSizes( (PanedWidget) w, size);
 
@@ -1637,7 +1638,9 @@ static void ChangeManaged(w)
  * ForAllPanes can now be used. 
  */
 
-   AdjustPanedSize(pw, size, NULL, NULL, NULL);
+   if ( PaneSize((Widget) pw, vert) == 0 ) 
+       AdjustPanedSize(pw, size, NULL, NULL, NULL);
+
    if (XtIsRealized( (Widget) pw)) 
        RefigureLocationsAndCommit( (Widget) pw); 
 
