@@ -36,6 +36,8 @@ HEADERS = \
 	ScrollP.h \
 	Simple.h \
 	SimpleP.h \
+	SimpleMenu.h \
+	SimpleMenuP.h \
 	Template.c \
 	Template.h \
 	TemplateP.h \
@@ -67,6 +69,7 @@ SRCS = \
 	Paned.c \
 	Scroll.c \
 	Simple.c \
+	SimpleMenu.c \
 	StringSrc.c \
 	Text.c \
 	TextTr.c \
@@ -94,6 +97,7 @@ OBJS = \
 	Paned.o \
 	Scroll.o \
 	Simple.o \
+	SimpleMenu.o \
 	StringSrc.o \
 	Text.o \
 	TextTr.o \
