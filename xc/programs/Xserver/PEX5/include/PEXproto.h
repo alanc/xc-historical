@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 5.4 92/03/04 14:07:30 hersh Exp $ */
+/* $XConsortium: PEXproto.h,v 5.5 92/04/23 16:11:29 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -74,7 +74,7 @@ SOFTWARE.
  * the parentheses.  (number of bytes of padding = n?(3-((n-1)%4):0 , where
  * n is the parenthetical value.)
  */
-#include <X11/extensions/PEXprotost.h>
+#include "PEXprotost.h"
 
 /* Matches revision 5.1C */
 
