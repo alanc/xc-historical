@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.188 94/06/02 11:36:56 mor Exp dpw $ */
+/* $XConsortium: connection.c,v 1.189 94/08/11 15:26:33 dpw Exp mor $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -205,6 +205,7 @@ void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
 #ifdef LBX
 extern int  StandardReadRequestFromClient();
 extern int  StandardWriteToClient ();
+extern int  UncompressWriteToClient ();
 extern unsigned long  StandardRequestLength ();
 extern int  StandardFlushClient ();
 #endif
@@ -588,6 +589,7 @@ AllocNewConnection (trans_conn, fd, Read, Writev, Close)
     }
     client->public.readRequest = StandardReadRequestFromClient;
     client->public.writeToClient = StandardWriteToClient;
+    client->public.uncompressedWriteToClient = UncompressWriteToClient;
     client->public.requestLength = StandardRequestLength;
     return client;
 }
