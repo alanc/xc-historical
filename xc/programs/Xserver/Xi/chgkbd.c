@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.15 92/11/14 10:46:59 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.16 92/11/14 11:13:00 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -74,11 +74,15 @@ SProcXChangeKeyboardDevice(client)
 ProcXChangeKeyboardDevice (client)
     register ClientPtr client;
     {
+    int				i;
     DeviceIntPtr 		xkbd = inputInfo.keyboard;
     DeviceIntPtr 		dev;
+    FocusClassPtr		xf = xkbd->focus;
+    FocusClassPtr		df;
     KeyClassPtr 		k;
     xChangeKeyboardDeviceReply	rep;
     changeDeviceNotify		ev;
+    extern Bool Must_have_memory;
 
     REQUEST(xChangeKeyboardDeviceReq);
     REQUEST_SIZE_MATCH(xChangeKeyboardDeviceReq);
@@ -126,7 +130,21 @@ ProcXChangeKeyboardDevice (client)
 	    InitFocusClassDeviceStruct (dev);
 	if (!dev->kbdfeed)
 	   InitKbdFeedbackClassDeviceStruct(dev, NoopDDA, NoopDDA);
-	dev->focus->win = xkbd->focus->win;
+	df = dev->focus;
+	df->win = xf->win;
+	df->revert = xf->revert;
+	df->time = xf->time;
+	df->traceGood = xf->traceGood;
+	if (df->traceSize != xf->traceSize)
+	    {
+	    Must_have_memory = TRUE; /* XXX */
+	    df->trace = (WindowPtr *) xrealloc(df->trace, 
+		xf->traceSize * sizeof(WindowPtr));
+	    Must_have_memory = FALSE; /* XXX */
+	    }
+	df->traceSize = xf->traceSize;
+	for (i=0; i<df->traceSize; i++)
+	    df->trace[i] = xf->trace[i];
 	RegisterOtherDevice (xkbd);
 	RegisterKeyboardDevice (dev);
 
