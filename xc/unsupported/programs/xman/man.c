@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.7 89/02/15 16:06:44 kit Exp $
+ * $XConsortium: man.c,v 1.8 89/04/28 15:05:43 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -250,17 +250,17 @@ SectionList **list;
 char * path;
 {
   static char * names[] = {
-    "User Commands       (1)",
-    "System Calls        (2)",
-    "Subroutines         (3)",
-    "Devices             (4)",
-    "File Formats        (5)",
-    "Games               (6)",
-    "Miscellaneous       (7)",
-    "Sys. Administration (8)",
-    "Local               (l)",
-    "New                 (n)",
-    "Old                 (o)",
+    "(1) User Commands",
+    "(2) System Calls",
+    "(3) Subroutines",
+    "(4) Devices",
+    "(5) File Formats",
+    "(6) Games",
+    "(7) Miscellaneous",
+    "(8) Sys. Administration",
+    "(l) Local",
+    "(n) New",
+    "(o) Old",
     };
   register int i;
   char file[BUFSIZ];
