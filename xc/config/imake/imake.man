@@ -1,4 +1,4 @@
-.\" $XConsortium: imake.man,v 1.14 91/07/30 10:50:45 gildea Exp $
+.\" $XConsortium: imake.man,v 1.15 91/07/30 14:12:26 gildea Exp $
 .TH IMAKE 1 "Release 5" "X Version 11"
 .SH NAME
 imake \- C preprocessor interface to the make utility
@@ -132,15 +132,7 @@ generated automatically to build the \fIMakefile\fP in the directory
 When building X programs outside the source tree, a special symbol
 \fIUseInstalled\fP is defined and \fITOPDIR\fP and
 \fICURDIR\fP are omitted.  If the configuration files have been
-properly installed, the script \fIxmkmf(1)\fP may be used to specify
-the proper options:
-.sp
-.nf
-	%  xmkmf
-.fi
-.sp
-The command \fImake Makefiles\fP can then be used to generate \fIMakefiles\fP
-in any subdirectories.
+properly installed, the script \fIxmkmf\fP(1) may be used.
 .SH "INPUT FILES"
 Here is a summary of the files read by
 .I imake
