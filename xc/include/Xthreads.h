@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.10 93/09/15 13:23:52 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.11 94/01/20 18:44:50 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -43,6 +43,7 @@ typedef mutex_t xmutex_t;
 #define xthread_init() cthread_init()
 #define xthread_self cthread_self
 #define xthread_fork(func,closure) cthread_fork(func,closure)
+#define xthread_yield() cthread_yield()
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(struct mutex))
 #define xmutex_init(m) mutex_init(m)
 #define xmutex_clear(m) mutex_clear(m)
@@ -62,6 +63,7 @@ typedef cond_t *xcondition_t;
 typedef mutex_t *xmutex_t;
 #define xthread_self thr_self
 #define xthread_fork(func,closure) thr_create(NULL,0,func,closure,THR_DETACHED,NULL)
+#define xthread_yield() thr_yield()
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(mutex_t))
 #define xmutex_init(m) mutex_init(m,USYNC_THREAD,0)
 #define xmutex_clear(m) mutex_destroy(m)
@@ -103,6 +105,7 @@ typedef CRITICAL_SECTION *xmutex_t;
     CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, (LPVOID)closure, 0, \
 		 &_tmptid); \
 }
+#define xthread_yield() Sleep(0)
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(CRITICAL_SECTION))
 #define xmutex_init(m) InitializeCriticalSection(m)
 #define xmutex_clear(m) DeleteCriticalSection(m)
@@ -150,6 +153,7 @@ typedef pthread_mutex_t *xmutex_t;
 #define xthread_self pthread_self
 #define xthread_fork(func,closure) { pthread_t _tmpxthr; \
 	pthread_create(&_tmpxthr,pthread_attr_default,func,closure); }
+#define xthread_yield() pthread_yield()
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(pthread_mutex_t))
 #define xmutex_init(m) pthread_mutex_init(m, pthread_mutexattr_default)
 #define xmutex_clear(m) pthread_mutex_destroy(m)
