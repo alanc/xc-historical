@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.7 89/07/09 15:40:18 rws Exp $ */
+/* $XConsortium: window.c,v 5.8 89/07/10 15:30:42 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3410,7 +3410,7 @@ UnmapSubwindows(pWin)
     {
 	if (anyMarked)
 	{
-	    MarkWindow(pWin->parent);
+	    MarkWindow(pWin);
 	    (* pWin->drawable.pScreen->ValidateTree)(pWin, pHead, VTUnmap);
 	    HandleExposures(pWin);
 	}
