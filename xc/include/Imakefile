@@ -17,8 +17,8 @@ IMPORTS1 = \
 	$(XLIBSRC)/Xlib.h \
 	$(XLIBSRC)/Xresource.h \
 	$(XLIBSRC)/Xutil.h \
+	$(XLIBSRC)/cursorfont.h \
 	$(XMUSRC)/Xmu.h \
-	$(FONTSRC)/cursorfont.h \
 	$(TOOLKITSRC)/Composite.h \
 	$(TOOLKITSRC)/CompositeP.h \
 	$(TOOLKITSRC)/Constraint.h \
