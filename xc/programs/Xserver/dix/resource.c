@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.77 89/09/10 14:05:45 keith Exp $ */
+/* $XConsortium: resource.c,v 1.78 89/09/19 11:41:41 keith Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -352,13 +352,10 @@ FreeResourceByType(id, type, skipFree)
     int		cid;
     register    ResourcePtr res;
     register	ResourcePtr *prev, *head;
-    register	int *eltptr;
-    int		elements;
 
     if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	head = &clientTable[cid].resources[Hash(cid, id)];
-	eltptr = &clientTable[cid].elements;
 
 	prev = head;
 	while (res = *prev)
@@ -366,14 +363,11 @@ FreeResourceByType(id, type, skipFree)
 	    if (res->id == id && res->type == type)
 	    {
 		*prev = res->next;
-		elements = --*eltptr;
 		if (type & RC_CACHED)
 		    FlushClientCaches(res->id);
 		if (!skipFree)
 		    (*DeleteFuncs[type & TypeMask])(res->value, res->id);
 		xfree(res);
-		if (*eltptr != elements)
-		    prev = head; /* prev may no longer be valid */
 		break;
 	    }
 	    else
