@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.20 91/05/29 10:46:20 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.21 91/07/12 20:23:41 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -2049,7 +2049,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 
     Pixel	*ppixClient, pixTest;
     int		npixClient, npixNew, npix;
-    Pixel	bits, base, cmask;
+    Pixel	bits, base, cmask, rgbbad;
     Pixel	*pptr, *cptr;
     int 	n, zapped;
     int		errVal = Success;
@@ -2065,6 +2065,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
     {
       case REDMAP:
 	cmask = pmap->pVisual->redMask;
+	rgbbad = ~RGBMASK(pmap->pVisual);
 	offset = pmap->pVisual->offsetRed;
 	numents = (cmask >> offset) + 1;
 	ppixClient = pmap->clientPixelsRed[client];
@@ -2072,6 +2073,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 	break;
       case GREENMAP:
 	cmask = pmap->pVisual->greenMask;
+	rgbbad = ~RGBMASK(pmap->pVisual);
 	offset = pmap->pVisual->offsetGreen;
 	numents = (cmask >> offset) + 1;
 	ppixClient = pmap->clientPixelsGreen[client];
@@ -2079,6 +2081,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 	break;
       case BLUEMAP:
 	cmask = pmap->pVisual->blueMask;
+	rgbbad = ~RGBMASK(pmap->pVisual);
 	offset = pmap->pVisual->offsetBlue;
 	numents = (cmask >> offset) + 1;
 	ppixClient = pmap->clientPixelsBlue[client];
@@ -2086,6 +2089,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 	break;
       case PSEUDOMAP:
 	cmask = ~((Pixel)0);
+	rgbbad = 0;
 	offset = 0;
 	numents = pmap->pVisual->ColormapEntries;
 	ppixClient = pmap->clientPixelsRed[client];
@@ -2100,7 +2104,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
         for (pptr = ppixIn, n = npixIn; --n >= 0; pptr++)
 	{
 	    pixTest = ((*pptr | bits) & cmask) >> offset;
-	    if (pixTest >= numents)
+	    if ((pixTest >= numents) || (*pptr & rgbbad))
 	    {
 		clientErrorValue = *pptr | bits;
 		errVal = BadValue;
