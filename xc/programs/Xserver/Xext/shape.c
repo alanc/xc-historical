@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.6 89/03/31 13:17:14 keith Exp $ */
+/* $XConsortium: shape.c,v 1.7 89/04/09 17:24:59 rws Exp $ */
 #define NEED_REPLIES
 #include <stdio.h>
 #include "X.h"
@@ -286,7 +286,7 @@ ProcShapeRectangles (client)
 			 stuff->xOff, stuff->yOff, createDefault);
     if (ret == Success) {
 	SetShape (pWin);
-	SendShapeNotify (pWin, stuff->destKind);
+	SendShapeNotify (pWin, (int)stuff->destKind);
     }
     return ret;
 }
@@ -338,7 +338,7 @@ ProcShapeMask (client)
 			 stuff->xOff, stuff->yOff, createDefault);
     if (ret == Success) {
 	SetShape (pWin);
-	SendShapeNotify (pWin, stuff->destKind);
+	SendShapeNotify (pWin, (int)stuff->destKind);
     }
     return ret;
 }
@@ -408,7 +408,7 @@ ProcShapeCombine (client)
 			 stuff->xOff, stuff->yOff, createDefault);
     if (ret == Success) {
 	SetShape (pDestWin);
-	SendShapeNotify (pDestWin, stuff->destKind);
+	SendShapeNotify (pDestWin, (int)stuff->destKind);
     }
     return ret;
 }
@@ -443,7 +443,7 @@ ProcShapeOffset (client)
     pScreen = pWin->drawable.pScreen;
     (*pScreen->TranslateRegion) (srcRgn, stuff->xOff, stuff->yOff);
     SetShape (pWin);
-    SendShapeNotify (pWin, stuff->destKind);
+    SendShapeNotify (pWin, (int)stuff->destKind);
     return Success;
 }
 
@@ -506,6 +506,7 @@ ProcShapeQueryExtents (client)
     return (client->noClientException);
 }
 
+/*ARGSUSED*/
 static int
 ShapeFreeClient (data, id)
     pointer	    data;
@@ -825,10 +826,10 @@ ProcShapeGetRectangles (client)
 	swaps (&rep.sequenceNumber, n);
 	swapl (&rep.length, n);
 	swapl (&rep.nrects, n);
-	SwapShorts (rects, nrects * 4);
+	SwapShorts ((short *)rects, (unsigned long)nrects * 4);
     }
-    WriteToClient (client, (char *) &rep, sizeof (rep));
-    WriteToClient (client, (char *) rects, nrects * sizeof (xRectangle));
+    WriteToClient (client, sizeof (rep), (char *) &rep);
+    WriteToClient (client, nrects * sizeof (xRectangle), (char *) rects);
     return client->noClientException;
 }
 
