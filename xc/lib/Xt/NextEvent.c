@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.102 91/04/17 10:16:45 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.103 91/05/08 17:38:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,6 +33,8 @@ extern int errno;
 static TimerEventRec* freeTimerRecs;
 static WorkProcRec* freeWorkRecs;
 
+#undef MIN
+#undef MAX
 #ifndef OPEN_MAX
 #ifndef NOFILE
 #include <sys/param.h>
