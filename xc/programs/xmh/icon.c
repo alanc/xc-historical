@@ -1,4 +1,4 @@
-/* $XConsortium: icon.c,v 2.6 89/07/21 18:56:33 converse Exp $ */
+/* $XConsortium: icon.c,v 2.7 91/01/06 21:08:50 rws Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -36,11 +36,11 @@ void IconInit()
 {
     NoMailPixmap = XCreateBitmapFromData( theDisplay,
 					  DefaultRootWindow(theDisplay),
-					  nomail_bits,
+					  (char *)nomail_bits,
 					  nomail_width, nomail_height );
 
     NewMailPixmap = XCreateBitmapFromData( theDisplay,
 					   DefaultRootWindow(theDisplay),
-					   newmail_bits,
+					   (char *)newmail_bits,
 					   newmail_width, newmail_height);
 }
