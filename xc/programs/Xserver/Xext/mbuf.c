@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.8 90/07/31 09:48:31 rws Exp $ */
+/* $XConsortium: multibuf.c,v 1.9 91/01/05 16:33:35 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -1382,6 +1382,8 @@ DisposeMultibuffers (pWin)
     WindowPtr	pWin;
 {
     FreeResourceByType (pWin->drawable.id, MultibuffersResType, FALSE);
+    /* Zero out the window's pointer to the buffers so they won't be reused */
+    pWin->devPrivates[MultibufferWindowIndex].ptr = NULL;
 }
 
 /*
