@@ -11,11 +11,11 @@
 #
 # If you have source for cpp...
 #
-#ifdef CppSourcesPresent
+#if CppSourcesPresent
     SRCS = include.c main.c parse.c pr.c cppsetup.c cpp.c cpy.y
     OBJS = include.o main.o parse.o pr.o cppsetup.o cpp.o cpy.o
  DEFINES = -DCPP '-DINCLUDEDIR="/usr/include"'
-  CPPSRC = CppSourcesPresent
+  CPPSRC = CppSources
 
 #else
 
