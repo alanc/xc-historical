@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.34 91/07/13 17:51:19 converse Exp $ */
+/* $XConsortium: ico.c,v 1.35 91/07/19 23:08:43 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,6 +44,7 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/Xfuncs.h>
+#include <X11/Xos.h>
 #include <stdio.h>
 #ifdef MULTIBUFFER
 #include <X11/extensions/multibuf.h>
