@@ -194,7 +194,7 @@ Add_Mapping(atom, format, dformat)
  * 
  */
 
-typedef struct { Atom atom; char *format; char *dformat } _default_mapping;
+typedef struct { Atom atom; char *format; char *dformat; } _default_mapping;
 _default_mapping _default_mappings[] = {
 
 	/*
