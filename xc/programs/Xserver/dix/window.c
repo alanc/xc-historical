@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.216 88/10/08 17:05:42 rws Exp $ */
+/* $XConsortium: window.c,v 1.217 88/10/13 20:17:02 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2004,19 +2004,26 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 				pWin->borderClip, pWin->winSize);
 
 	(* pScreen->RegionCopy) (pWin->exposed, pWin->clipList);
+    }
  
-	if (pWin->backStorage && (pWin->backingStore != NotUseful))
-	{
-	    if (pWin->bitGravity == ForgetGravity)
-        	(* pWin->backStorage->TranslateBackingStore) (pWin, 0, 0,
-							  (RegionPtr)NULL);
-	    else
-                (* pWin->backStorage->TranslateBackingStore) (pWin, 
-							      x - oldx,
-							      y - oldy,
-							      pRegion);
-	}
+    if (pWin->backStorage &&
+	((pWin->backingStore == Always) ||
+	 (WasViewable && (pWin->backingStore != NotUseful))))
+    {
+	if (!WasViewable)
+	    pRegion = pWin->clipList; /* a convenient empty region */
+	if (pWin->bitGravity == ForgetGravity)
+	    (* pWin->backStorage->TranslateBackingStore) (pWin, 0, 0,
+						      (RegionPtr)NULL);
+	else
+	    (* pWin->backStorage->TranslateBackingStore) (pWin, 
+							  x - oldx,
+							  y - oldy,
+							  pRegion);
+    }
 
+    if (WasViewable)
+    {
 	/*
 	 * add screen bits to the appropriate bucket
 	 */
