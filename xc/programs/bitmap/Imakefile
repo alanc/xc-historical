@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.16 91/07/17 00:51:15 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.17 91/07/19 15:44:53 rws Exp $
 INSTALLFLAGS = $(INSTINCFLAGS)
 BUTTONPICTURES = \
 	Dashes \
@@ -40,3 +40,4 @@ InstallMultiple($(BUTTONPICTURES),$(INCDIR)/bitmaps)
 
 InstallProgramWithFlags(bmtoa,$(BINDIR),NullParameter)
 InstallProgramWithFlags(atobm,$(BINDIR),NullParameter)
+InstallManPageAliases(bitmap,$(MANDIR),bmtoa atobm)
