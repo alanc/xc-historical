@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.59 88/10/07 13:24:56 jim Exp $
+ * $XConsortium: charproc.c,v 1.60 88/10/10 13:02:12 swick Exp $
  */
 
 
@@ -132,7 +132,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.59 88/10/07 13:24:56 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.60 88/10/10 13:02:12 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -170,6 +170,7 @@ extern void HandleSelectEnd();
 extern void HandleStartExtend();
        void HandleBell();
        void HandleIgnore();
+extern void HandleSecure();
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 
@@ -208,6 +209,7 @@ static XtActionsRec actionsList[] = {
     { "insert-selection", HandleInsertSelection },
     { "keymap", 	  HandleKeymapChange },
     { "mode-menu",	  HandleModeMenu },
+    { "secure",		  HandleSecure },
     { "select-start",	  HandleSelectStart },
     { "select-extend",	  HandleSelectExtend },
     { "select-end",	  HandleSelectEnd },

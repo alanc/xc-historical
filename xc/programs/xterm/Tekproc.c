@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.42 88/10/07 11:01:56 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.43 88/10/07 13:28:23 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.42 88/10/07 11:01:56 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.43 88/10/07 13:28:23 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -168,6 +168,7 @@ extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
 extern void HandleFocusChange();
+extern void HandleSecure();
 extern void TekButtonPressed();
 
 static char defaultTranslations[] = 
@@ -176,6 +177,7 @@ static char defaultTranslations[] =
 static XtActionsRec actionsList[] = { 
     { "string",	HandleStringEvent },
     { "insert",	HandleKeyPressed },
+    { "secure", HandleSecure }
 };
 
 static Dimension defOne = 1;
