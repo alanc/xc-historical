@@ -233,7 +233,8 @@ UpdatePixelAP(w, event)
 						  DefaultScreen(XtDisplay(w))),
 		    &color);
 	sprintf(string, "Pixel %d at (%d,%d) colored (%x,%x,%x).", 
-		pixel, x, y, color.red, color.green, color.blue);
+		pixel, x + data->x, y + data->y,
+		color.red, color.green, color.blue);
 	
 	n = 0;
 	XtSetArg(wargs[n], XtNlabel, string); n++;    
@@ -557,6 +558,7 @@ GetImage(x, y, width, height, data)
   if (x < 0) x = 0; if (y < 0) y = 0;
   if (x + width > DisplayWidth(dpy,scr)) x = DisplayWidth(dpy,scr) - width;
   if (y + height > DisplayHeight(dpy,scr)) y = DisplayHeight(dpy,scr) - height;
+  data->x = x; data->y = y;
   image = XGetImage (dpy,
 		     RootWindow(dpy, scr),
 		     x, y,
@@ -665,12 +667,13 @@ main(argc, argv)
 {
 				/* SUPPRESS 594 */
   toplevel = XtAppInitialize(&app, "Xmag", optionDesc, XtNumber(optionDesc),
-			     (Cardinal *)&argc, argv, (String *) NULL,
-			     (ArgList) NULL, 0);
+			     (Cardinal *)argc, argv, NULL,
+			      NULL, 0);
+
   dpy = XtDisplay(toplevel);
   scr = DefaultScreen(dpy);
   XtGetApplicationResources(toplevel, (XtPointer) &options, resources,
-			    XtNumber(resources), (Arg *) NULL, 0);
+			    XtNumber(resources), NULL, 0);
   ParseSourceGeom();
   XtAppAddActions(app, actions_table, XtNumber(actions_table));
   InitCursors();
