@@ -3,9 +3,9 @@
 #ifndef TEKCMS_TCI
 #define TEKCMS_TCI
 
-char	TekCMS_idir[BUFSIZ];
-char	TekCMS_vdir[BUFSIZ];
-char	TekCMS_rdir[BUFSIZ];
+extern char	TekCMS_idir[BUFSIZ];
+extern char	TekCMS_vdir[BUFSIZ];
+extern char	TekCMS_rdir[BUFSIZ];
 
 
 
