@@ -33,9 +33,6 @@ SpecialObjectRule(parse.o, ,'-DSYSTEM_INIT_FILE="'$(TWMDIR)'/system.twmrc"')
 #if !HasPutenv
 SpecialObjectRule(util.o, ,-DNOPUTENV)
 #endif
-#if !HasSystem
-SpecialObjectRule(menus.o, ,-DNOSYSTEM)
-#endif
 
 depend:: lex.c gram.c deftwmrc.c 
 
