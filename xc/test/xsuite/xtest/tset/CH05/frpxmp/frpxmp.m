@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: frpxmp.m,v 1.5 92/06/11 16:16:16 rws Exp $
  */
 >>TITLE XFreePixmap CH05
 void
@@ -79,7 +79,12 @@ GC		gc, gc2;
 		gcv.tile = pixmap;
 		gcv.foreground = W_FG;
 		gcv.background = W_BG;
-		gc = XCreateGC(display, DRW(display), GCFillStyle|GCTile|GCForeground|GCBackground, &gcv);
+
+                /*
+                 * Create the GC with the window of the same depth because
+                 * the root window could be of a different depth.
+                 */
+		gc = XCreateGC(display, win, GCFillStyle|GCTile|GCForeground|GCBackground, &gcv);
 		XCALL;
 	
 		XFillRectangle(display, win, gc, 0, 0, W_STDWIDTH+1, W_STDHEIGHT+1);		
