@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.165 93/09/29 18:56:35 gildea Exp $ */
+/* $XConsortium: connection.c,v 1.166 93/10/11 11:01:31 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -427,7 +427,7 @@ xlocalMsg(lvl,str,a,b,c,d,e,f,g,h)
 	fprintf(stderr,str,a,b,c,d,e,f,g,h);
     }
 }
-#endif /* NO_XLOCAL_MSG */
+#endif /* XLOCAL_VERBOSE */
 
 /*
  * We have a conflict between ISC and UNIX connections over the use
