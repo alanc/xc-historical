@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.88 88/10/22 22:06:31 keith Exp $ */
+/* $XConsortium: connection.c,v 1.89 88/12/08 16:39:29 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -117,7 +117,7 @@ static int SavedAllSockets[mskcnt];
 static int SavedClientsWithInput[mskcnt];
 static Bool GrabDone = FALSE;
 
-ClientPtr ConnectionTranslation[MAXSOCKS];
+int ConnectionTranslation[MAXSOCKS];
 extern ClientPtr NextAvailableClient();
 
 extern ConnectionInput inputBuffers[];
@@ -192,7 +192,7 @@ CreateWellKnownSockets()
     CLEARBITS(LastSelectMask);
     CLEARBITS(ClientsWithInput);
 
-    for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = (ClientPtr)NULL;
+    for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
     
 #ifdef	hpux
 	lastfdesc = _NFILE - 1;
@@ -545,9 +545,7 @@ static int padlength[4] = {0, 3, 2, 1};
  *****************/
 
 void
-EstablishNewConnections(newclients, nnew)
-    ClientPtr	        *newclients;
-    int 		*nnew;
+EstablishNewConnections()
 {
     long readyconnections;     /* mask of listeners that are ready */
     long curconn;                  /* fd of listener that's ready */
@@ -575,7 +573,6 @@ EstablishNewConnections(newclients, nnew)
     int	fromlen;
 #endif TCP_NODELAY
 
-    *nnew = 0;
     if (readyconnections = (LastSelectMask[0] & WellKnownConnections)) 
     {
 	while (readyconnections) 
@@ -640,14 +637,12 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			    BITSET(AllClients, newconn);
 			    BITSET(AllSockets, newconn);
 		        }
-			next = NextAvailableClient();
+			next = NextAvailableClient(swapped);
 			if (next != (ClientPtr)NULL)
 			{
 			   OsCommPtr priv;
 
-			   newclients[(*nnew)++] = next;
-			   next->swapped = swapped;
-			   ConnectionTranslation[newconn] = next;
+			   ConnectionTranslation[newconn] = next->index;
 			   priv =  (OsCommPtr)xalloc(sizeof(OsCommRec));
 			   priv->fd = newconn;
 			   priv->buf = (unsigned char *)
@@ -656,6 +651,8 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			   priv->auth_id = auth_id;
 			   priv->count = 0;
 			   next->osPrivate = (pointer)priv;
+
+			   SendConnectionSetupInfo(next);
 		        }
 			else
 			{
@@ -752,7 +749,7 @@ CheckConnections()
     register int	curclient;
     int			i;
     struct timeval	notime;
-    ClientPtr           bad;
+    int			index;
     int r;
 
     notime.tv_sec = 0;
@@ -770,8 +767,8 @@ CheckConnections()
 			&notime);
             if (r < 0)
             {
-	        if (bad = ConnectionTranslation[curclient])
-    		    CloseDownClient(bad);
+		if (index = ConnectionTranslation[curclient])
+    		    CloseDownClient(clients[index]);
                 else
                     CloseDownFileDescriptor(curclient);
             }
@@ -791,7 +788,7 @@ CloseDownConnection(client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
 
-    ConnectionTranslation[oc->fd] = (ClientPtr)NULL;
+    ConnectionTranslation[oc->fd] = 0;
     CloseDownFileDescriptor(oc->fd);
     if (oc->buf != NULL) /* an Xrealloc may have returned NULL */
 	xfree(oc->buf);
