@@ -13,8 +13,7 @@ SRCS = FontSrc(5x8) FontSrc(6x9) FontSrc(6x10) FontSrc(6x12) FontSrc(6x13) \
 	FontSrc(clR8x14) FontSrc(clR8x16) FontSrc(clR8x8) FontSrc(clR9x15) \
 	FontSrc(k14) FontSrc(7x14) FontSrc(7x14rk) FontSrc(12x24) \
 	FontSrc(12x24rk) FontSrc(8x16) FontSrc(8x16rk) FontSrc(jiskan16) \
-	FontSrc(jiskan24) FontSrc(16x16hangulg) FontSrc(16x16hangulm) \
-	FontSrc(24x24hangulm)
+	FontSrc(jiskan24) FontSrc(hanglg16) FontSrc(hanglm16) FontSrc(hanglm24)
 
 OBJS = FontObj(5x8) FontObj(6x9) FontObj(6x10) FontObj(6x12) FontObj(6x13) \
 	FontObj(6x13B) FontObj(7x13) FontObj(7x13B) FontObj(8x13) \
@@ -31,8 +30,7 @@ OBJS = FontObj(5x8) FontObj(6x9) FontObj(6x10) FontObj(6x12) FontObj(6x13) \
 	FontObj(clR8x14) FontObj(clR8x16) FontObj(clR8x8) FontObj(clR9x15) \
 	FontObj(k14) FontObj(7x14) FontObj(7x14rk) FontObj(12x24) \
 	FontObj(12x24rk) FontObj(8x16) FontObj(8x16rk) FontObj(jiskan16) \
-	FontObj(jiskan24) FontObj(16x16hangulg) FontObj(16x16hangulm) \
-	FontObj(24x24hangulm)
+	FontObj(jiskan24) FontObj(hanglg16) FontObj(hanglm16) FontObj(hanglm24)
 
 FONTINSTDIR = $(FONTDIR)/misc
 
@@ -100,9 +98,9 @@ FontTarget(8x16)
 FontTarget(8x16rk)
 FontTarget(jiskan16)
 FontTarget(jiskan24)
-FontTarget(16x16hangulg)
-FontTarget(16x16hangulm)
-FontTarget(24x24hangulm)
+FontTarget(hanglg16)
+FontTarget(hanglm16)
+FontTarget(hanglm24)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontAliases($(FONTINSTDIR))
