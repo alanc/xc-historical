@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.92 89/07/28 17:22:44 jim Exp $
+ * $XConsortium: menus.c,v 1.93 89/07/28 17:33:56 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.92 89/07/28 17:22:44 jim Exp $";
+"$XConsortium: menus.c,v 1.93 89/07/28 17:33:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -274,8 +274,9 @@ int exposure;
 	{
 	    XSetForeground(dpy, Scr->NormalGC, mi->fore);
 	    /* now draw the dividing lines */
-	    XDrawLine(dpy, mr->w, Scr->NormalGC, 0, y_offset,
-		mr->width, y_offset);
+	    if (y_offset)
+	      XDrawLine (dpy, mr->w, Scr->NormalGC, 0, y_offset,
+			 mr->width, y_offset);
 	    y = ((mi->item_num+1) * Scr->EntryHeight)-1;
 	    XDrawLine(dpy, mr->w, Scr->NormalGC, 0, y, mr->width, y);
 	}
