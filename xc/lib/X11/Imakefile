@@ -418,6 +418,10 @@ AuRead.c:  $(XAUTHSRC)/AuRead.c
 	$(RM) $@
 	$(LN) $? $@
 
+des.h: $(XDMCPLIBSRC)/des.h
+	$(RM) $@
+	$(LN) $? $@
+
 Encrypt.c:  $(XDMCPLIBSRC)/Encrypt.c
 	$(RM) $@
 	$(LN) $? $@
@@ -435,9 +439,9 @@ ks_tables.h: $(INCLUDESRC)/keysymdef.h makekeys.C
 	$(MV) ks_tables_h $@
 	$(RM) makekeys ks_tables_h
 
-includes:: ks_tables.h
+includes:: ks_tables.h des.h
 
-depend:: ks_tables.h
+depend:: ks_tables.h des.h
 
 clean::
 	$(RM) ks_tables_h ks_tables.h makekeys.c makekeys
