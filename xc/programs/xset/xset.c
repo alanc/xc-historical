@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.4 87/05/08 18:51:42 dkk Locked $ 
+ * $Header: xset.c,v 1.5 87/05/12 12:25:41 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.4 87/05/08 18:51:42 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.5 87/05/12 12:25:41 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -24,7 +24,7 @@ static char *rcsid_xset_c = "$Header: xset.c,v 1.4 87/05/08 18:51:42 dkk Locked 
 #define FALSE 0
 
 XKeyboardControl values;
-unsigned long  value_mask;  /*  Was int but ulong according to Xlib  %%*/
+unsigned long  value_mask;
 
 #define	nextarg(i, argv) \
 	argv[i]; \
@@ -52,13 +52,15 @@ char **argv;
 	int pixels[512];
 	caddr_t colors[512];
 /*
- *  These next two are for mouse (pointer) control.
+ *  These next two lines are for mouse (pointer) control.
  */
-	unsigned char map[];
-	int nmap;
+	int do_acc, do_thresh;     /* Boolean */
+	int acc_num, acc_denom, thresh;
+	int status = FALSE;
 	int numpixels = 0;
 	XColor def;  /* was Color, but only XColor, Colormap exist %%*/
-	value_mask = 0;          /*  initialize mask  %*/
+	value_mask = 0;          /*  initialize mask for LED changes */
+	do_acc = do_thresh = FALSE;
 
 	if (argc == 1)  usage(argv[0]);
 
@@ -157,29 +159,33 @@ char **argv;
 			}
 		}
 		else if (strcmp(arg, "m") == 0 || strcmp(arg, "mouse") == 0) {
-		        nmap = 6;
-		}
-/*			acc = 4;
- *			thresh = 2;
- *			if (i >= argc)
- *				break;
- *			arg = argv[i];
- *			if (strcmp(arg, "default") == 0) {
- *				i++;
+
+			acc_num = 4;
+			acc_denom = 1;
+			thresh = -1;
+			if (i >= argc){
+			        do_acc = do_thresh = TRUE;
+				break;
+			}
+		        arg = argv[i];
+			if (strcmp(arg, "default") == 0) {
+				do_acc = do_thresh = TRUE;
+				i++;
 			} 
- *			else if (*arg >= '0' && *arg <= '9') {
-				acc = atoi(arg);
- *				i++;
+			else if (*arg >= '0' && *arg <= '9') {
+				acc_num = atoi(arg);
+				do_acc = TRUE;
+				i++;
 				if (i >= argc)
- *					break;
+					break;
 				arg = argv[i];
- *				if (*arg >= '0' && *arg <= '9') {
+				if (*arg >= '0' && *arg <= '9') {
 					thresh = atoi(arg);
- *					i++;
+				        do_thresh = TRUE;
+					i++;
 				}
- *			}
- *		} 
- %*/
+			}
+		} 
 
 		else if (strcmp(arg, "s") == 0 || strcmp(arg, "saver") == 0 ||
 		    strcmp(arg, "v") == 0 || strcmp(arg, "video") == 0) {
@@ -224,24 +230,27 @@ char **argv;
  			}
 		} 
 
-/*		else if (strcmp(arg, "p") == 0 || strcmp(arg, "pixel") == 0) {
+		else if (strcmp(arg, "p") == 0 || strcmp(arg, "pixel") == 0) {
 			if (i + 1 >= argc)
 				usage(argv[0]);
- *			arg = argv[i];
+		       		arg = argv[i];
 			if (*arg >= '0' && *arg <= '9')
 				pixels[numpixels] = atoi(arg);
- *			else
+			else
 				usage(argv[0]);
 			i++;
- *			colors[numpixels] = argv[i];
+			colors[numpixels] = argv[i];
 			i++;
 			numpixels++;
 		} 
-%*/
+
 
 		else if (index(arg, ':')) {
 			disp = arg;
 		} 
+		else if (strcmp(arg, "?") == 0) {
+		        status = TRUE;
+		}
 		else
 			usage(argv[0]);
 	}
@@ -258,56 +267,47 @@ char **argv;
 
 	XChangeKeyboardControl(dpy, value_mask, &values);
 
-	if (value_mask){
+	if (status){
 	XGetKeyboardControl(dpy, &values);
+	XGetPointerControl(dpy, &acc_num, &acc_denom, &thresh);
+	XGetScreenSaver(dpy, dummy1, dummy2, &prefer_blank, &allow_exp);
 
-	printf ("Display: %d \n", *dpy);
+	printf ("Keyboard Control Values:");
+	printf ("Display: %d \t", *dpy);
 	printf ("Key Click Percent: %d \n", values.key_click_percent);
-	printf ("Bell Percent: %d \n", values.bell_percent);
+	printf ("Bell Percent: %d \t", values.bell_percent);
 	printf ("Bell Pitch (Hz): %d \n", values.bell_pitch);
-	printf ("Bell Duration (msec): %d \n", values.bell_duration);
+	printf ("Bell Duration (msec): %d \t", values.bell_duration);
 	printf ("LED: %d \n", values.led);
-	printf ("LED Mode: %d \n", values.led_mode);
-	printf ("Key: %d \n", values.key);
+	printf ("LED Mode: %o \t", values.led_mode);
+	printf ("Key: %d \t", values.key);
 	printf ("Auto Repeat: %d \n", values.auto_repeat_mode);
+
+	printf ("Pointer (Mouse) Control Values:");
+	printf ("Acceleration: %d \t", acc_num / acc_denom);
+	printf ("Threshold: %d \n", thresh);
+
+	printf ("Screen Saver: (yes = %d, no = %d, default = %d)\n",
+		PreferBlanking, DontPreferBlanking, DefaultBlanking);
+	printf ("Prefer Blanking: %d \t", prefer_blank);
+	printf ("Allow Exposures: %d \n", allow_exp);
+
         }
 
-	if (nmap){
-	  XGetPointerMapping(dpy, map, nmap);
-	  printf ("nmap: %d \n", nmap);
-	  printf ("map: %c, %c, %c, %c, %c, %c, %c", map[0], map[1],
-		  map[2], map[3], map[4], map[5], map[6]);
+	if (do_acc || do_thresh){
+	  XChangePointerControl(dpy, do_acc, do_thresh, acc_num, 
+				acc_denom, thresh);
 	}
 
-/*
- *      OBSOLETE -- TO BE DELETED
- *	if (doclick) XKeyClickControl(click);
- *	if (dolock) {
- *		if (lock)  XLockToggle();
- *		else XLockUpDown();
- *	}
- */
 	if (repeat == TRUE)
 	        XAutoRepeatOn(dpy);
 	else if (repeat == FALSE)
 		XAutoRepeatOff(dpy);
 
-/*
- *     OBSOLETE -- DELETE
- *	if (dobell) XFeepControl(bell);
- *	if (domouse) XMouseControl(acc, thresh);
- */
-/*
- *    The following function sets the ScreenSaver parameters to their
- *  pre-xset values; so if they aren't specified in xset, they don't
- *  get changed.
- */
-/*	XGetScreenSaver(dpy, dummy1, dummy2, &prefer_blank, &allow_exp); %%*/
-
 	if (dosaver) XSetScreenSaver(dpy, timeout, interval, 
 				     prefer_blank, allow_exp);
 
-/*	screen = DefaultScreen(dpy);
+	screen = DefaultScreen(dpy);
 	if (DisplayCells(dpy, screen) >= 2) {
 		while (--numpixels >= 0) {
 			def.pixel = pixels[numpixels];
@@ -317,7 +317,7 @@ char **argv;
 				fprintf(stderr, "%s: No such color\n", colors[numpixels]);
 		}
 	}
- %%*/
+
 	XSync(dpy, discard);
 	exit(0);
 }
