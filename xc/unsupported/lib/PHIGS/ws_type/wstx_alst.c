@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_alst.c,v 5.1 91/02/16 09:50:44 rws Exp $ */
+/* $XConsortium: wstx_alst.c,v 5.2 91/03/29 17:43:21 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,16 +29,20 @@ SOFTWARE.
 #include <stdio.h>
 #include <sys/types.h>
 #include "attr.h"
-#include <varargs.h>
 #include <X11/Xfuncs.h>
+#if NeedVarargsPrototypes
+# include <stdarg.h>
+# define Va_start(a,b) va_start(a,b)
+#else
+# include <varargs.h>
+# define Va_start(a,b) va_start(a)
+#endif
 
 /* NON_PORTABLE means that the var-args list is treated
  * as an avlist.  This is known to work for Sun1/2/3/4.
- * If the implementation of varargs.h does not have va_arg()
- * equivalent to an array access (e.g. *avlist++), then
- * NON_PORTABLE should NOT be defined.
+ * If you want to live dangerously, define NON_PORTABLE.
  */
-#define	NON_PORTABLE
+/* #define	NON_PORTABLE */
 
 /* size of an attribute */
 #define	PHG_ATTR_SIZE	(sizeof(caddr_t))
@@ -52,10 +56,13 @@ SOFTWARE.
 #endif /* LINT_CAST */
 
 /* package private routines */
+#ifdef NON_PORTABLE
 extern Phg_attr_avlist	phg_attr_copy_avlist();
+#else
+extern Phg_attr_avlist	phg_attr_copy_valist();
+#endif
 extern void		phg_attr_check_pkg();
 extern int		phg_attr_count_avlist();
-extern Phg_attr_avlist	phg_attr_copy_valist();
 
 /* Note that changes to the basic attribute-value traversal
  * should also be made in attr_portable.c for portable implmentations.
@@ -65,17 +72,22 @@ extern Phg_attr_avlist	phg_attr_copy_valist();
 /* phg_attr_create creates an avlist from the VARARGS passed
  * on the stack.
  */
+#if NeedVarargsPrototypes
+Phg_attr_avlist
+phg_attr_create(caddr_t *listhead, int listlen, ...)
+#else
 /*VARARGS2*/
 Phg_attr_avlist
 phg_attr_create(listhead, listlen, va_alist)
 caddr_t	*listhead; 
 int	 listlen; 
 va_dcl
+#endif
 {
    Phg_attr_avlist	avlist;
    va_list	valist;
 
-   va_start(valist);
+   Va_start(valist,listlen);
    avlist = phg_attr_make(listhead, listlen, valist);
    va_end(valist);
    return avlist;
@@ -127,6 +139,8 @@ int		*count_ptr;
    return(listhead);
 }
 
+
+#ifdef NON_PORTABLE
 
 #define	avlist_get(avlist)	*(avlist)++
 
@@ -246,7 +260,6 @@ register Phg_attr_avlist	avlist;
     return(dest);
 }
 
-
 /* phg_attr_count counts the number of slots in the av-list avlist.
  * Recursive lists are counted as being collapsed inline.
  */
@@ -257,6 +270,7 @@ Phg_attr_avlist avlist;
    /* count the null termination */
   return(phg_attr_count_avlist(avlist, 0) + 1);
 }
+#endif
 
 static char *attr_names[PHG_ATTR_PKG_LAST-PHG_ATTR_PKG_FIRST+1] = {
     "Generic"
@@ -568,6 +582,7 @@ copy_null_list(attr, source, dest)
 
 /* From attr_util.c */
 
+#ifdef notdef
 /* attr_create_list creates an avlist from the VARARGS passed
  * on the stack.  The storage is always allocated.
  */
@@ -584,6 +599,7 @@ va_dcl
     va_end(valist);
     return avlist;
 }
+#endif
 
 /* attr_find searches and avlist for the first occurrence of
  * a specified attribute.
@@ -713,7 +729,7 @@ register va_list	valist;
 				* Here both the attribute and null
 				* terminator will be stripped away.
 				*/
-			       dest = phg_attr_copy_avlist(dest, new_avlist);
+			       dest = phg_attr_copy_valist(dest, new_avlist);
 		       }
 	               break;
 	       }
