@@ -79,8 +79,8 @@ cfbUninstallColormap(pmap)
     {
         /* Uninstall pmap */
 	WalkTree(pmap->pScreen, TellLostMap, (char *)&pmap->mid);
-	curpmap = (ColormapPtr) LookupID(pmap->pScreen->defColormap,
-					 RT_COLORMAP, RC_CORE);
+	curpmap = (ColormapPtr) LookupIDByType(pmap->pScreen->defColormap,
+					       RT_COLORMAP);
 	/* Install default map */
 	InstalledMaps[index] = curpmap;
 	WalkTree(pmap->pScreen, TellGainedMap, (char *)&curpmap->mid);
@@ -198,5 +198,33 @@ cfbInitializeColormap(pmap)
 	    pmap->red[i].co.local.blue = pmap->red[i].co.local.red;
 	}
     }
+    return TRUE;
+}
+
+Bool
+cfbCreateDefColormap(pScreen)
+    ScreenPtr pScreen;
+{
+    unsigned short	zero = 0, ones = ~0;
+    VisualPtr	pVisual;
+    ColormapPtr	cmap;
+    
+    for (pVisual = pScreen->visuals;
+	 pVisual->vid != pScreen->rootVisual;
+	 pVisual++)
+	;
+
+    if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &cmap,
+		       (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
+		       0)
+	!= Success)
+	return FALSE;
+    pScreen->whitePixel = pScreen->blackPixel = (Pixel)0;
+    if ((AllocColor(cmap, &ones, &ones, &ones, &(pScreen->whitePixel), 0) !=
+       	   Success) ||
+    	(AllocColor(cmap, &zero, &zero, &zero, &(pScreen->blackPixel), 0) !=
+       	   Success))
+    	return FALSE;
+    (*pScreen->InstallColormap)(cmap);
     return TRUE;
 }
