@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.1 89/07/03 15:43:25 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.2 89/07/03 20:42:47 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -224,18 +224,6 @@ extern sunFbDataRec sunFbData[];
  * Cursor functions
  */
 extern void 	  sunInitCursor();
-extern Bool 	  sunRealizeCursor();
-extern Bool 	  sunUnrealizeCursor();
-extern Bool 	  sunDisplayCursor();
-extern Bool 	  sunSetCursorPosition();
-extern void 	  sunCursorLimits();
-extern void 	  sunPointerNonInterestBox();
-extern void 	  sunConstrainCursor();
-extern void 	  sunRecolorCursor();
-extern Bool	  sunCursorLoc();
-extern void 	  sunRemoveCursor();
-extern void	  sunRestoreCursor();
-extern void 	  sunMoveCursor();
 
 /*
  * Initialization

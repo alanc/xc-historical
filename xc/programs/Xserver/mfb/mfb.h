@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.0 89/06/09 15:05:59 keith Exp $ */
+/* $XConsortium: mfb.h,v 5.1 89/06/16 16:58:04 keith Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -47,8 +47,6 @@ extern Bool mfbDestroyWindow();
 
 extern Bool mfbRealizeFont();
 extern Bool mfbUnrealizeFont();
-extern Bool mfbRealizeCursor();
-extern Bool mfbUnrealizeCursor();
 extern Bool mfbScreenSaver();
 extern Bool mfbCreateGC();
 extern int  mfbReduceRop();
