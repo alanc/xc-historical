@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.16 92/05/19 11:16:48 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.17 92/11/23 15:44:37 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -86,6 +86,8 @@ FM(0x1f), FM(0x9f), FM(0x5f), FM(0xdf), FM(0x3f), FM(0xbf), FM(0x7f), FM(0xff)
 };
 #undef FM
 
+#define MOD_RETURN(ctx, key) (ctx)->keycache.modifiers_return[key]
+
 #define TRANSLATE(ctx,pd,dpy,key,mod,mod_ret,sym_ret) \
 { \
     int _i_ = (((key) - (pd)->min_keycode + modmix[(mod) & 0xff]) & \
@@ -93,15 +95,25 @@ FM(0x1f), FM(0x9f), FM(0x5f), FM(0xdf), FM(0x3f), FM(0xbf), FM(0x7f), FM(0xff)
     if ((key) != 0 && /* Xlib XIM composed input */ \
 	(ctx)->keycache.keycode[_i_] == (key) && \
 	(ctx)->keycache.modifiers[_i_] == (mod)) { \
-	mod_ret = (ctx)->keycache.modifiers_return; \
+	mod_ret = MOD_RETURN(ctx, key); \
 	sym_ret = (ctx)->keycache.keysym[_i_]; \
     } else { \
 	XtTranslateKeycode(dpy, key, mod, &mod_ret, &sym_ret); \
 	(ctx)->keycache.keycode[_i_] = key; \
-	(ctx)->keycache.modifiers[_i_] = (unsigned short)(mod); \
+	(ctx)->keycache.modifiers[_i_] = (unsigned char)(mod); \
 	(ctx)->keycache.keysym[_i_] = sym_ret; \
-	(ctx)->keycache.modifiers_return = mod_ret; \
+	MOD_RETURN(ctx, key) = (unsigned char)mod_ret; \
     } \
+}
+
+#define UPDATE_CACHE(ctx, pd, key, mod, mod_ret, sym_ret) \
+{ \
+    int _i_ = (((key) - (pd)->min_keycode + modmix[(mod) & 0xff]) & \
+	       (TMKEYCACHESIZE-1)); \
+    (ctx)->keycache.keycode[_i_] = key; \
+    (ctx)->keycache.modifiers[_i_] = (unsigned char)(mod); \
+    (ctx)->keycache.keysym[_i_] = sym_ret; \
+    MOD_RETURN(ctx, key) = (unsigned char)mod_ret; \
 }
 
 /* usual number of expected keycodes in XtKeysymToKeycodeList */
@@ -267,12 +279,25 @@ Boolean _XtMatchUsingStandardMods (typeMatch, modMatch, eventSeq)
     TMKeyContext tm_context = pd->tm_context;
     Modifiers translateModifiers;
 
-    _InitializeKeysymTables(dpy, pd);
-    translateModifiers =(Modifiers)
-      (eventSeq->event.modifiers & ((ShiftMask|LockMask) | pd->mode_switch));
+    /* To maximize cache utilization, we mask off nonstandard modifiers
+       before cache lookup.  For a given key translator, standard modifiers
+       are constant per KeyCode.  If a key translator uses no standard
+       modifiers this implementation will never reference the cache.
+     */
 
-    TRANSLATE(tm_context, pd, dpy, (KeyCode)eventSeq->event.eventCode,
-			translateModifiers, modifiers_return, keysym_return);
+    modifiers_return = MOD_RETURN(tm_context, eventSeq->event.eventCode);
+    if (!modifiers_return) {
+	XtTranslateKeycode(dpy, (KeyCode)eventSeq->event.eventCode, 
+			   eventSeq->event.modifiers, &modifiers_return,
+			   &keysym_return);
+	translateModifiers = eventSeq->event.modifiers & modifiers_return;
+	UPDATE_CACHE(tm_context, pd, eventSeq->event.eventCode, 
+		     translateModifiers, modifiers_return, keysym_return);
+    } else {
+	translateModifiers = eventSeq->event.modifiers & modifiers_return;
+	TRANSLATE(tm_context, pd, dpy, (KeyCode)eventSeq->event.eventCode,
+		  translateModifiers, modifiers_return, keysym_return);
+    }
 
     if ((typeMatch->eventCode & typeMatch->eventCodeMask) ==
              (keysym_return & typeMatch->eventCodeMask)) {
