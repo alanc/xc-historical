@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.87 89/07/27 17:41:50 jim Exp $
+ * $XConsortium: add_window.c,v 1.88 89/08/14 18:16:18 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.87 89/07/27 17:41:50 jim Exp $";
+"$XConsortium: add_window.c,v 1.88 89/08/14 18:16:18 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -66,7 +66,7 @@ int AddingH;
 static int PlaceX = 50;
 static int PlaceY = 50;
 
-char NoName[] = "No Name"; /* name if no name is specified */
+char NoName[] = "Untitled"; /* name if no name is specified */
 
 
 /************************************************************************
