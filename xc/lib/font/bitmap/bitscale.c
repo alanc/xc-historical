@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.23 94/02/10 19:45:28 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.24 94/02/14 17:33:55 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -1058,7 +1058,11 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
 	    *sWidth = -*sWidth;
 	}
 
-	vals->width = doround((double)*sWidth * vals->pixel_matrix[0] / 1000.0);
+	if (pfi->minbounds.characterWidth == pfi->maxbounds.characterWidth)
+	    vals->width = pfi->minbounds.characterWidth * 10;
+	else
+	    vals->width = doround((double)*sWidth * vals->pixel_matrix[0] /
+				  1000.0);
     }
     else
     {

@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.14 94/02/08 11:57:53 gildea Exp $ */
+/* $XConsortium: t1info.c,v 1.15 94/02/08 12:29:56 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -210,6 +210,11 @@ ComputeBounds(pInfo, pChars, Vals)
         }
         else pInfo->allExist = 0;
     }
+
+    /* If we're monospaced, round the average width field to the
+       nearest pixel */
+    if (minchar.characterWidth == maxchar.characterWidth)
+	Vals->width = minchar.characterWidth * 10;
  
     pInfo->maxbounds = maxchar;
     pInfo->minbounds = minchar;
