@@ -1,4 +1,4 @@
-/* $XConsortium: XKBproto.h,v 1.3 93/09/28 19:25:46 rws Exp $ */
+/* $XConsortium: XKBproto.h,v 1.4 93/09/28 19:48:05 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -245,7 +245,7 @@ typedef struct _SetControls {
     CARD16	accessXTimeout B16;
     CARD32	accessXTimeoutMask B32;
 } xkbSetControlsReq;
-#define	sz_xkbSetControlsReq	48
+#define	sz_xkbSetControlsReq	52
 
 typedef struct _GetMap {
     CARD8	reqType;
