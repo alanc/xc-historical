@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.43 93/12/24 11:28:43 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.44 94/03/07 19:33:50 matt Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.5
@@ -37,16 +37,17 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
-/*
- * We define the standard C++ compiler as "xlC -+" because otherwise
- * xlC refuses to compile files unless their names end in .C; since
- * Fresco uses .cxx as the extension on its source files, this is a 
- * problem.  As an alternative to this fix, one could edit /etc/xlC.cfg
- * to change the suffix accepted by the compiler, but we prefer not 
- * requiring users to reconfigure their C++ compilers.
- */
 #define CcCmd xlc
-#define CplusplusCmd xlC -+
+
+#define CplusplusCmd xlC
+/*
+ * Losing xlC refuses to compile files unless their names end in ".C".
+ * As an alternative to this fix, one could edit /etc/xlC.cfg
+ * to change the suffix accepted by the compiler, but we prefer not 
+ * requiring users to reconfigure their C++ compilers to make them work.
+ */
+#define NormalLibObjCplusplusCompile(options) test -r $*.C || $(LN) $*.cxx $*.C @@\
+	$(CCC) -c $(CCFLAGS) options $*.C
 
 #define SystemV			YES
 #define LdCombineFlags		-r
