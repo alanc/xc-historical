@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.22 94/03/30 10:38:54 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.23 94/03/31 10:53:05 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -127,6 +127,61 @@ static Sockettrans2dev Sockettrans2devtab[] = {
 };
 
 #define NUMSOCKETFAMILIES (sizeof(Sockettrans2devtab)/sizeof(Sockettrans2dev))
+
+
+#ifdef UNIXCONN
+
+#ifdef hpux
+
+#if defined(X11_t)
+#define UNIX_PATH "/usr/spool/sockets/X11/"
+#define UNIX_DIR "/usr/spool/sockets/X11"
+#define OLD_UNIX_PATH "/tmp/.X11-unix/X"
+#endif /* X11_t */
+#if defined(XIM_t)
+#define UNIX_PATH "/usr/spool/sockets/XIM/"
+#define UNIX_DIR "/usr/spool/sockets/XIM"
+#define OLD_UNIX_PATH "/tmp/.XIM-unix/XIM"
+#endif /* XIM_t */
+#if defined(FS_t) || defined(FONT_t)
+#define UNIX_PATH "/usr/spool/sockets/fontserv/"
+#define UNIX_DIR "/usr/spool/sockets/fontserv"
+#endif /* FS_t || FONT_t */
+#if defined(ICE_t)
+#define UNIX_PATH "/usr/spool/sockets/ICE/"
+#define UNIX_DIR "/usr/spool/sockets/ICE"
+#endif /* ICE_t */
+#if defined(TEST_t)
+#define UNIX_PATH "/usr/spool/sockets/xtrans_test/"
+#define UNIX_DIR "/usr/spool/sockets/xtrans_test"
+#endif
+
+#else /* !hpux */
+
+#if defined(X11_t)
+#define UNIX_PATH "/tmp/.X11-unix/X"
+#define UNIX_DIR "/tmp/.X11-unix"
+#endif /* X11_t */
+#if defined(XIM_t)
+#define UNIX_PATH "/tmp/.XIM-unix/XIM"
+#define UNIX_DIR "/tmp/.XIM-unix"
+#endif /* XIM_t */
+#if defined(FS_t) || defined(FONT_t)
+#define UNIX_PATH "/tmp/.font-unix/fs"
+#define UNIX_DIR "/tmp/.font-unix"
+#endif /* FS_t || FONT_t */
+#if defined(ICE_t)
+#define UNIX_PATH "/tmp/.ICE-unix/"
+#define UNIX_DIR "/tmp/.ICE-unix"
+#endif /* ICE_t */
+#if defined(TEST_t)
+#define UNIX_PATH "/tmp/.Test-unix/test"
+#define UNIX_DIR "/tmp/.Test-unix"
+#endif
+
+#endif /* hpux */
+
+#endif /* UNIXCONN */
 
 
 /*
@@ -331,6 +386,8 @@ char *port;
  * These functions are the interface supplied in the Xtransport structure
  */
 
+#ifdef TRANS_CLIENT
+
 static XtransConnInfo
 TRANS(SocketOpenCOTSClient) (thistrans, protocol, host, port)
 
@@ -368,6 +425,11 @@ char       *port;
 
     return ciptr;
 }
+
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
 
 static XtransConnInfo
 TRANS(SocketOpenCOTSServer) (thistrans, protocol, host, port)
@@ -420,6 +482,10 @@ char 	   *port;
     return ciptr;
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
 
 static XtransConnInfo
 TRANS(SocketOpenCLTSClient) (thistrans, protocol, host, port)
@@ -458,6 +524,11 @@ char 	   *port;
     return ciptr;
 }
 
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
+
 static XtransConnInfo
 TRANS(SocketOpenCLTSServer) (thistrans, protocol, host, port)
 
@@ -494,6 +565,8 @@ char 	   *port;
 
     return ciptr;
 }
+
+#endif /* TRANS_SERVER */
 
 
 #ifdef TRANS_REOPEN
@@ -591,6 +664,8 @@ int 		arg;
     return -1;
 }
 
+
+#ifdef TRANS_SERVER
 
 static int
 TRANS(SocketCreateListener) (ciptr, sockname, socknamelen)
@@ -752,57 +827,6 @@ char 		*port;
 
 
 #ifdef UNIXCONN
-
-#ifdef hpux
-
-#if defined(X11_t)
-#define UNIX_PATH "/usr/spool/sockets/X11/"
-#define UNIX_DIR "/usr/spool/sockets/X11"
-#define OLD_UNIX_PATH "/tmp/.X11-unix/X"
-#endif /* X11_t */
-#if defined(XIM_t)
-#define UNIX_PATH "/usr/spool/sockets/XIM/"
-#define UNIX_DIR "/usr/spool/sockets/XIM"
-#define OLD_UNIX_PATH "/tmp/.XIM-unix/XIM"
-#endif /* XIM_t */
-#if defined(FS_t) || defined(FONT_t)
-#define UNIX_PATH "/usr/spool/sockets/fontserv/"
-#define UNIX_DIR "/usr/spool/sockets/fontserv"
-#endif /* FS_t || FONT_t */
-#if defined(ICE_t)
-#define UNIX_PATH "/usr/spool/sockets/ICE/"
-#define UNIX_DIR "/usr/spool/sockets/ICE"
-#endif /* ICE_t */
-#if defined(TEST_t)
-#define UNIX_PATH "/usr/spool/sockets/xtrans_test/"
-#define UNIX_DIR "/usr/spool/sockets/xtrans_test"
-#endif
-
-#else /* !hpux */
-
-#if defined(X11_t)
-#define UNIX_PATH "/tmp/.X11-unix/X"
-#define UNIX_DIR "/tmp/.X11-unix"
-#endif /* X11_t */
-#if defined(XIM_t)
-#define UNIX_PATH "/tmp/.XIM-unix/XIM"
-#define UNIX_DIR "/tmp/.XIM-unix"
-#endif /* XIM_t */
-#if defined(FS_t) || defined(FONT_t)
-#define UNIX_PATH "/tmp/.font-unix/fs"
-#define UNIX_DIR "/tmp/.font-unix"
-#endif /* FS_t || FONT_t */
-#if defined(ICE_t)
-#define UNIX_PATH "/tmp/.ICE-unix/"
-#define UNIX_DIR "/tmp/.ICE-unix"
-#endif /* ICE_t */
-#if defined(TEST_t)
-#define UNIX_PATH "/tmp/.Test-unix/test"
-#define UNIX_DIR "/tmp/.Test-unix"
-#endif
-
-#endif /* hpux */
-
 
 static
 TRANS(SocketUNIXCreateListener) (ciptr, port)
@@ -1097,6 +1121,10 @@ int	       *status;
 
 #endif /* UNIXCONN */
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
 
 #ifdef TCPCONN
 static int
@@ -1408,6 +1436,8 @@ char *port;
 
 #endif /* UNIXCONN */
 
+#endif /* TRANS_CLIENT */
+
 
 static int
 TRANS(SocketBytesReadable) (ciptr, pend)
@@ -1583,19 +1613,31 @@ Xtransport	TRANS(SocketINETFuncs) = {
 	/* Socket Interface */
 	"inet",
 	0,
+#ifdef TRANS_CLIENT
 	TRANS(SocketOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(SocketOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(SocketOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(SocketOpenCLTSServer),
+#endif /* TRANS_SERVER */
 #ifdef TRANS_REOPEN
 	TRANS(SocketReopenCOTSServer),
 	TRANS(SocketReopenCLTSServer),
 #endif
 	TRANS(SocketSetOption),
+#ifdef TRANS_SERVER
 	TRANS(SocketINETCreateListener),
 	NULL,		       			/* ResetListener */
 	TRANS(SocketINETAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(SocketINETConnect),
+#endif /* TRANS_CLIENT */
 	TRANS(SocketBytesReadable),
 	TRANS(SocketRead),
 	TRANS(SocketWrite),
@@ -1610,19 +1652,31 @@ Xtransport	TRANS(SocketTCPFuncs) = {
 	/* Socket Interface */
 	"tcp",
 	TRANS_ALIAS,
+#ifdef TRANS_CLIENT
 	TRANS(SocketOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(SocketOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(SocketOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(SocketOpenCLTSServer),
+#endif /* TRANS_SERVER */
 #ifdef TRANS_REOPEN
 	TRANS(SocketReopenCOTSServer),
 	TRANS(SocketReopenCLTSServer),
 #endif
 	TRANS(SocketSetOption),
+#ifdef TRANS_SERVER
 	TRANS(SocketINETCreateListener),
 	NULL,		       			/* ResetListener */
 	TRANS(SocketINETAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(SocketINETConnect),
+#endif /* TRANS_CLIENT */
 	TRANS(SocketBytesReadable),
 	TRANS(SocketRead),
 	TRANS(SocketWrite),
@@ -1639,19 +1693,31 @@ Xtransport	TRANS(SocketUNIXFuncs) = {
 	/* Socket Interface */
 	"unix",
 	0,
+#ifdef TRANS_CLIENT
 	TRANS(SocketOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(SocketOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(SocketOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(SocketOpenCLTSServer),
+#endif /* TRANS_SERVER */
 #ifdef TRANS_REOPEN
 	TRANS(SocketReopenCOTSServer),
 	TRANS(SocketReopenCLTSServer),
 #endif
 	TRANS(SocketSetOption),
+#ifdef TRANS_SERVER
 	TRANS(SocketUNIXCreateListener),
 	TRANS(SocketUNIXResetListener),
 	TRANS(SocketUNIXAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(SocketUNIXConnect),
+#endif /* TRANS_CLIENT */
 	TRANS(SocketBytesReadable),
 	TRANS(SocketRead),
 	TRANS(SocketWrite),
@@ -1667,19 +1733,31 @@ Xtransport	TRANS(SocketLocalFuncs) = {
 	/* Socket Interface */
 	"local",
 	TRANS_ALIAS,
+#ifdef TRANS_CLIENT
 	TRANS(SocketOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(SocketOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(SocketOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(SocketOpenCLTSServer),
+#endif /* TRANS_SERVER */
 #ifdef TRANS_REOPEN
 	TRANS(SocketReopenCOTSServer),
 	TRANS(SocketReopenCLTSServer),
 #endif
 	TRANS(SocketSetOption),
+#ifdef TRANS_SERVER
 	TRANS(SocketUNIXCreateListener),
 	TRANS(SocketUNIXResetListener),
 	TRANS(SocketUNIXAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(SocketUNIXConnect),
+#endif /* TRANS_CLIENT */
 	TRANS(SocketBytesReadable),
 	TRANS(SocketRead),
 	TRANS(SocketWrite),
