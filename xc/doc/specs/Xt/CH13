@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH13,v 1.4 91/07/31 20:24:48 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -358,7 +358,6 @@ their own
 and
 .PN XUSERFILESEARCHPATH
 values when overriding the system defaults.
-
 
 .NH 3
 Customization Resource
