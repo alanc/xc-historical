@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.140 90/03/23 11:42:33 jim Exp $
+ * $XConsortium: add_window.c,v 1.141 90/04/13 13:27:01 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.140 90/03/23 11:42:33 jim Exp $";
+"$XConsortium: add_window.c,v 1.141 90/04/13 13:27:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1296,7 +1296,7 @@ CreateColormapWindow(w, creating_parent, property_window)
 	 * Otherwise, we assume they are unobscured.
 	 */
 	cwin->visibility = creating_parent ?
-	    VisibilityFullyObscured : VisibilityUnobscured;
+	    VisibilityPartiallyObscured : VisibilityUnobscured;
 	cwin->refcnt = 1;
 
 	/*

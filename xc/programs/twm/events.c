@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.151 90/04/13 13:27:23 jim Exp $
+ * $XConsortium: events.c,v 1.152 90/04/13 13:32:59 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.151 90/04/13 13:27:23 jim Exp $";
+"$XConsortium: events.c,v 1.152 90/04/13 13:32:59 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1926,6 +1926,10 @@ HandleEnterNotify()
 			    InstallWindowColormaps(EnterNotify, Tmp_win);
 		    }
 		}			/* end if Tmp_win->mapped */
+		if (Tmp_win->wmhints != NULL &&
+			ewp->window == Tmp_win->wmhints->icon_window &&
+			(!scanArgs.leaves || scanArgs.inferior))
+			    InstallWindowColormaps(EnterNotify, Tmp_win);
 	    }				/* end if FocusRoot */
 	    /*
 	     * If this window is to be autoraised, mark it so

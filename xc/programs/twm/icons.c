@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.19 90/03/13 15:28:58 jim Exp $
+ * $XConsortium: icons.c,v 1.20 90/03/27 13:51:34 jim Exp $
  *
  * Icon releated routines
  *
@@ -508,6 +508,7 @@ int def_x, def_y;
 	else
 	{
 	    tmp_win->icon_not_ours = TRUE;
+	    event_mask = EnterWindowMask | LeaveWindowMask;
 	}
     }
     else
