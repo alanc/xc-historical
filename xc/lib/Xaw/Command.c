@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.32 88/02/18 14:30:07 swick Exp $";
+static char rcsid[] = "$Header: Command.c,v 1.33 88/02/24 15:58:37 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -119,6 +119,7 @@ CommandClassRec commandClassRec = {
     XtVersion,				/* version		  */
     NULL,				/* callback_private	  */
     defaultTranslations,		/* tm_table		  */
+    NULL,				/* query_geometry	  */
   },  /* CoreClass fields initialization */
   {
     0,                                     /* field not used    */
