@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.2 90/02/28 18:46:55 jim Exp $
+ * $XConsortium: Porthole.c,v 1.3 90/02/28 19:51:10 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -125,6 +125,20 @@ static void SendReport (pw, changed)
     }
 }
 
+static Widget find_child (pw)
+    PortholeWidget pw;
+{
+    register Widget *children;
+    int i;
+
+    for (i = 0, children = pw->composite.children;
+	 i < pw->composite.num_children; i++, children++) {
+	if (XtIsManaged(*children)) return *children;
+    }
+
+    return (Widget) NULL;
+}
+
 
 /*****************************************************************************
  *                                                                           *
@@ -159,10 +173,9 @@ static XtGeometryResult QueryGeometry (gw, intended, preferred)
     XtWidgetGeometry *intended, *preferred;
 {
     register PortholeWidget pw = (PortholeWidget) gw;
+    Widget child = find_child (pw);
 
-    if (pw->composite.num_children > 0) {
-	Widget child = pw->composite.children[0];
-
+    if (child) {
 #define SIZEONLY (CWWidth | CWHeight)
 	preferred->request_mode = SIZEONLY;
 	preferred->width = child->core.width;
@@ -189,22 +202,19 @@ static XtGeometryResult GeometryManager (w, req, reply)
 {
     PortholeWidget pw = (PortholeWidget) w->core.parent;
     unsigned int changed = 0;
+    int i;
+    Widget child = find_child (pw);
 
-    /*
-     * check to see if this is the right child
-     */
-    if (pw->composite.num_children < 1 || w != pw->composite.children[0])
+    if (child != w ||
+	req->request_mode == CWBorderWidth)
       return XtGeometryNo;
 
-    if (req->request_mode == CWBorderWidth) return XtGeometryNo;
-
     /*
-     * XXX - need to handle query only...
+     * allow everything except non-zero border widths
      */
     *reply = *req;
-    if (req->request_mode & CWBorderWidth) {
-	reply->request_mode &= ~CWBorderWidth;
-	reply->border_width = 0;
+    if ((req->request_mode & CWBorderWidth) && req->border_width != 0) {
+	reply->border_width = 0;	/* require border width of 0 */
 	return XtGeometryAlmost;
     }
 
@@ -240,21 +250,12 @@ static void ChangeManaged (gw)
     Widget gw;
 {
     PortholeWidget pw = (PortholeWidget) gw;
-    Widget child;
+    Widget child = find_child (pw);
 
-    if (pw->composite.num_children > 1) {
-#include <stdio.h>
-	fprintf (stderr, "Porthole:  got %d children.\n",
-		 pw->composite.num_children);
-	return;
-    }
-    
+    if (child) {
+	child->core.border_width = 0;
 
-    child = pw->composite.children[0];
-    child->core.border_width = 0;
-
-    if (!XtIsRealized (gw)) {
-	if (child) {
+	if (!XtIsRealized (gw)) {
 	    XtWidgetGeometry geom, retgeom;
 
 	    geom.request_mode = 0;
