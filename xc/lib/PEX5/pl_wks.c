@@ -1,4 +1,4 @@
-/* $XConsortium: pl_wks.c,v 1.3 92/05/18 14:19:22 mor Exp $ */
+/* $XConsortium: pl_wks.c,v 1.4 92/05/20 20:28:50 mor Exp $ */
 
 /****************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -85,12 +85,12 @@ INPUT int		bufferMode;
     req->textBundle = textBundle;
     req->interiorBundle = interiorBundle;
     req->edgeBundle = edgeBundle;
-    req->colourTable = colorTable;
+    req->colorTable = colorTable;
     req->patternTable = patternTable;
     req->textFontTable = textFontTable;
     req->depthCueTable = depthCueTable;
     req->lightTable = lightTable;
-    req->colourApproxTable = colorApproxTable;
+    req->colorApproxTable = colorApproxTable;
     req->highlightIncl = highlightIncl;
     req->highlightExcl = highlightExcl;
     req->invisIncl = invisibilityIncl;
@@ -423,7 +423,7 @@ INPUT PEXWorkstationDynamics	*dynamics;
     dynamics->line_bundle = rep.lineBundle;
     dynamics->interior_bundle = rep.interiorBundle;
     dynamics->edge_bundle = rep.edgeBundle;
-    dynamics->color_table = rep.colourTable;
+    dynamics->color_table = rep.colorTable;
     dynamics->pattern_table = rep.patternTable;
     dynamics->wks_transform = rep.wksTransform;
     dynamics->highlight_filter = rep.highlightFilter;
@@ -437,7 +437,7 @@ INPUT PEXWorkstationDynamics	*dynamics;
     dynamics->buffer_modify = rep.bufferModify;
     dynamics->light_table = rep.lightTable;
     dynamics->depth_cue_table = rep.depthCueTable;
-    dynamics->color_approx_table = rep.colourApproxTable;
+    dynamics->color_approx_table = rep.colorApproxTable;
 
 
     /*

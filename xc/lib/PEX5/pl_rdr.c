@@ -1,4 +1,4 @@
-/* $XConsortium: pl_rdr.c,v 1.2 92/05/18 14:21:35 mor Exp $ */
+/* $XConsortium: pl_rdr.c,v 1.3 92/05/20 20:39:26 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -320,7 +320,7 @@ INPUT unsigned long		valueMask;
 	    case PEXRABackgroundColor:
 		PackColorSpecifier (pv, &(prdra->background_color),
 		    sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
 	    case PEXRAClearImage:
 		prdra->clear_image = *pv;
@@ -745,7 +745,7 @@ INPUT PEXRendererAttributes 	*values;
     size =  n * sizeof (CARD32) + 
 	sizeof (pexNpcSubvolume) +
 	sizeof (pexViewport) +
-	sizeof (pexColourSpecifier);
+	sizeof (pexColorSpecifier);
 
     if (valueMask & PEXRAClipList)
     {
@@ -899,7 +899,7 @@ INPUT PEXRendererAttributes 	*values;
 	    case PEXRABackgroundColor:
 		PackColorSpecifier (&(values->background_color),
 		    pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
 	    case PEXRAClearImage:
 		*pv = values->clear_image;
