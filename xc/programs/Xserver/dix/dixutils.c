@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.45 93/09/03 07:59:14 dpw Exp $ */
+/* $XConsortium: dixutils.c,v 1.46 93/09/18 13:38:33 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -303,7 +303,7 @@ pointer pReadmask;	/* nor how it represents the set of descriptors */
 
 void
 WakeupHandler(result, pReadmask)
-unsigned long	result;	/* 32 bits of undefined result from the wait */
+int	result;	/* 32 bits of undefined result from the wait */
 pointer pReadmask;	/* the resulting descriptor mask */
 {
     register int i, j;
