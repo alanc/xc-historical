@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.39 90/04/26 17:35:28 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.41 90/09/10 11:39:14 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,6 +29,19 @@
 #include <X11/StringDefs.h>		/* for useful atom names */
 #include <X11/IntrinsicP.h>		/* for toolkit stuff */
 #include <sys/stat.h>			/* for stat() ** needs types.h ***/
+
+#ifdef SYSV
+# define waitCode(w)	(((w) >> 8) & 0x7f)
+# define waitSig(w)	((w) & 0xff)
+# define waitCore(w)	(((w) >> 15) & 0x01)
+typedef int		waitType;
+#else
+# include	<sys/wait.h>
+# define waitCode(w)	((w).w_T.w_Retcode)
+# define waitSig(w)	((w).w_T.w_Termsig)
+# define waitCore(w)	((w).w_T.w_Coredump)
+typedef union wait	waitType;
+#endif
 
 #include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
 #include <X11/bitmaps/mailempty>	/* for flag down (mail not here) */
@@ -225,7 +238,8 @@ static void Initialize (request, new)
     w->mailbox.interval_id = (XtIntervalId) 0;
     w->mailbox.full.pixmap = None;
     w->mailbox.empty.pixmap = None;
-
+    w->mailbox.flag_up = FALSE;
+    w->mailbox.last_size = 0;
     return;
 }
 
@@ -295,7 +309,7 @@ static void Check (gw, event, params, nparams)
 
 /* ARGSUSED */
 static void clock_tic (client_data, id)
-    caddr_t client_data;
+    XtPointer client_data;
     XtIntervalId *id;
 {
     MailboxWidget w = (MailboxWidget) client_data;
@@ -306,8 +320,9 @@ static void clock_tic (client_data, id)
      * and reset the timer
      */
 
-    w->mailbox.interval_id = XtAddTimeOut (w->mailbox.update * 1000,
-					   clock_tic, (caddr_t) w);
+    w->mailbox.interval_id =
+	XtAppAddTimeOut (XtWidgetToApplicationContext((Widget) w),
+			 w->mailbox.update * 1000, clock_tic, client_data);
 
     return;
 }
@@ -384,8 +399,9 @@ static void Realize (gw, valuemaskp, attr)
       w->mailbox.shapeit = False;
 #endif
 
-    w->mailbox.interval_id = XtAddTimeOut (w->mailbox.update * 1000,
-					   clock_tic, (caddr_t) w);
+    w->mailbox.interval_id = 
+	XtAppAddTimeOut (XtWidgetToApplicationContext((Widget) w),
+			 w->mailbox.update * 1000, clock_tic, (XtPointer) w);
 
 #ifdef SHAPE
     w->mailbox.shape_cache.mask = None;
@@ -433,23 +449,34 @@ static void check_mailbox (w, force_redraw, reset)
     Boolean force_redraw, reset;
 {
     long mailboxsize = 0;
-    struct stat st;
+    Boolean readSinceLastWrite = FALSE;
 
     if (w->mailbox.check_command != NULL) {
-	switch (system(w->mailbox.check_command)) {
+	waitType wait_status;
+	int	check_status;
+	wait_status.w_status = system(w->mailbox.check_command);
+	check_status = waitCode(wait_status);
+
+	/* error in sh checkCommand execution */
+	if (waitSig(wait_status) || waitCore(wait_status))
+	    check_status = 2;		/* act as if there is no mail */
+
+	switch (check_status) {
 	  case 0:
 	    mailboxsize = w->mailbox.last_size + 1;
 	    break;
 	  case 2:
 	    mailboxsize = 0;
 	    break;
-	  case 1:	/* case 1 is no change */
 	  default:	/* treat everything else as no change */
+	    	        /* case 1 is no change */
 	    mailboxsize = w->mailbox.last_size;
 	}
     } else {
+	struct stat st;
 	if (stat (w->mailbox.filename, &st) == 0) {
 	    mailboxsize = st.st_size;
+	    readSinceLastWrite = (st.st_atime > st.st_mtime);
 	}
     }
 
@@ -478,7 +505,7 @@ static void check_mailbox (w, force_redraw, reset)
     } else if (mailboxsize == 0) {	/* no mailbox or empty */
 	w->mailbox.flag_up = FALSE;
 	if (w->mailbox.last_size > 0) force_redraw = TRUE;  /* if change */
-    } else if (st.st_atime > st.st_mtime) {
+    } else if (readSinceLastWrite) { 	/* only when checkCommand is NULL */
 	/* mailbox has been read after most recent write */
 	if (w->mailbox.flag_up) {
 	    w->mailbox.flag_up = FALSE;
@@ -548,9 +575,10 @@ static Boolean SetValues (gcurrent, grequest, gnew)
     if (current->mailbox.update != new->mailbox.update) {
 	if (current->mailbox.interval_id) 
 	  XtRemoveTimeOut (current->mailbox.interval_id);
-	new->mailbox.interval_id = XtAddTimeOut (new->mailbox.update * 1000,
-						 clock_tic,
-						 (caddr_t) gnew);
+	new->mailbox.interval_id =
+	    XtAppAddTimeOut (XtWidgetToApplicationContext(gnew),
+			     new->mailbox.update * 1000, clock_tic,
+			     (XtPointer) gnew);
     }
 
     if (current->mailbox.foreground_pixel != new->mailbox.foreground_pixel ||
