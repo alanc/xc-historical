@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.30 89/07/16 15:16:42 jim Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.31 89/09/09 19:08:24 keith Exp $";
 #endif
  
 #include <signal.h>
@@ -136,6 +136,11 @@ main(argc, argv)
 		exit(0);
 	}
  
+	if (argc == 2 && !strcmp(argv[1], "-help")) {
+	    fprintf(stderr, "usage: %s [[+-]hostname ...]\n", argv[0]);
+	    exit(1);
+	}
+
 	for (i = 1; i < argc; i++) {
 	    arg = argv[i];
 	    if (*arg == '-') {
