@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.48 91/05/03 17:02:31 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.49 91/06/28 12:39:17 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -817,7 +817,12 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillTiled:
 	    if (devPriv->pRotatedPixmap)
-		pGC->ops->FillSpans = cfbTile32FS;
+	    {
+		if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
+		    pGC->ops->FillSpans = cfbTile32FSCopy;
+		else
+		    pGC->ops->FillSpans = cfbTile32FSGeneral;
+	    }
 	    else
 		pGC->ops->FillSpans = cfbUnnaturalTileFS;
 	    break;
