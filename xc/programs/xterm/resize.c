@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: resize.c,v 1.4 88/07/22 12:50:12 jim Exp $
+ *	$XConsortium: resize.c,v 1.5 88/09/06 17:08:27 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.4 88/07/22 12:50:12 jim Exp $";
+static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.5 88/09/06 17:08:27 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -41,6 +41,7 @@ static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.4 88/07/22 12:50:12 ji
 
 #ifdef macII
 #define USE_SYSV_TERMIO
+#undef SYSV				/* pretend to be bsd */
 #endif /* macII */
 
 #ifdef SYSV
@@ -70,7 +71,7 @@ extern struct passwd *fgetpwent();
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: resize.c,v 1.4 88/07/22 12:50:12 jim Exp $";
+static char rcs_id[] = "$XConsortium: resize.c,v 1.5 88/09/06 17:08:27 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
