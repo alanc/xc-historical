@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.17 92/03/17 15:45:43 keith Exp $ */
+/* $XConsortium: fserve.c,v 1.18 92/03/23 17:02:04 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -274,6 +274,7 @@ fs_close_conn(conn)
 	nclient = client->next;
 	xfree (client);
     }
+    conn->clients = NULL;
 }
 
 /*
