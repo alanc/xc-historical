@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: conven.c,v 1.1 93/07/19 11:39:15 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -23,17 +23,17 @@ without express or implied warranty.
  */
 
 void
-XieFloImportClientLUT (element, class, band_order, length, levels)
+XieFloImportClientLUT (element, data_class, band_order, length, levels)
 
 XiePhotoElement	*element;
-XieDataClass 	class;
+XieDataClass 	data_class;
 XieOrientation	band_order;
 XieLTriplet	length;
 XieLevels	levels;
 
 {
     element->elemType 			     = xieElemImportClientLUT;
-    element->data.ImportClientLUT.class      = class;
+    element->data.ImportClientLUT.data_class = data_class;
     element->data.ImportClientLUT.band_order = band_order;
     element->data.ImportClientLUT.length[0]  = length[0];
     element->data.ImportClientLUT.length[1]  = length[1];
@@ -45,11 +45,11 @@ XieLevels	levels;
 
 
 void
-XieFloImportClientPhoto (element, class, width, height,
+XieFloImportClientPhoto (element, data_class, width, height,
     levels, notify, decode_tech, decode_param)
 
 XiePhotoElement		*element;
-XieDataClass 		class;
+XieDataClass 		data_class;
 XieLTriplet		width;
 XieLTriplet		height;
 XieLevels		levels;
@@ -59,7 +59,7 @@ char			*decode_param;
 
 {
     element->elemType				 = xieElemImportClientPhoto;
-    element->data.ImportClientPhoto.class        = class;
+    element->data.ImportClientPhoto.data_class   = data_class;
     element->data.ImportClientPhoto.width[0]     = width[0];
     element->data.ImportClientPhoto.width[1]     = width[1];
     element->data.ImportClientPhoto.width[2]     = width[2];
@@ -314,20 +314,20 @@ char			*constrain_param;
 
 
 void
-XieFloConvertFromIndex (element, src, colormap, class, precision)
+XieFloConvertFromIndex (element, src, colormap, data_class, precision)
 
 XiePhotoElement	*element;
 XiePhototag	src;
 Colormap	colormap;
-XieDataClass	class;
+XieDataClass	data_class;
 unsigned int	precision;
 
 {
-    element->elemType			     = xieElemConvertFromIndex;
-    element->data.ConvertFromIndex.src       = src;
-    element->data.ConvertFromIndex.colormap  = colormap;
-    element->data.ConvertFromIndex.class     = class;
-    element->data.ConvertFromIndex.precision = precision;
+    element->elemType			      = xieElemConvertFromIndex;
+    element->data.ConvertFromIndex.src        = src;
+    element->data.ConvertFromIndex.colormap   = colormap;
+    element->data.ConvertFromIndex.data_class = data_class;
+    element->data.ConvertFromIndex.precision  = precision;
 }
 
 
@@ -614,24 +614,29 @@ XieExportNotify		notify;
 
 
 void
-XieFloExportClientLUT (element, src, band_order, notify,start,length)
-XieLTriplet 	start,length;
+XieFloExportClientLUT (element, src, band_order, notify, start, length)
 
 XiePhotoElement	*element;
 XiePhototag	src;
 XieOrientation	band_order;
 XieExportNotify	notify;
+XieLTriplet 	start;
+XieLTriplet     length;
 
 {
-int i;
-    for (i=0; i<3; ++i) {
-	element->data.ExportClientLUT.start[i] = start[i];
-	element->data.ExportClientLUT.length[i] = length[i];
-    }
+    int i;
+
     element->elemType                        = xieElemExportClientLUT;
     element->data.ExportClientLUT.src        = src;
     element->data.ExportClientLUT.band_order = band_order;
     element->data.ExportClientLUT.notify     = notify;
+
+    for (i = 0; i < 3; i++)
+    {
+	element->data.ExportClientLUT.start[i] = start[i];
+	element->data.ExportClientLUT.length[i] = length[i];
+    }
+
 }
 
 
@@ -708,21 +713,22 @@ int		dst_y;
 
 
 void
-XieFloExportLUT (element, src, lut, merge,start)
-XieLTriplet 	start;
-Bool 		merge;
+XieFloExportLUT (element, src, lut, merge, start)
 
 XiePhotoElement	*element;
 XiePhototag	src;
 XieLut		lut;
+Bool 		merge;
+XieLTriplet 	start;
 
 {
-int i;
-    for (i=0; i<3; ++i)
+    int i;
+
+    for (i = 0; i < 3; i++)
 	element->data.ExportLUT.start[i] = start[i];
 
-    element->data.ExportLUT.merge  = merge;
     element->elemType              = xieElemExportLUT;
+    element->data.ExportLUT.merge  = merge;
     element->data.ExportLUT.src    = src;
     element->data.ExportLUT.lut    = lut;
 }
@@ -973,25 +979,32 @@ double	luma_blue;
     return (param);
 }
 
+
 XieClipScaleParam *
-XieTecClipScale (in_low,in_high,out_low,out_high)
-XieConstant in_low,in_high;
-XieLTriplet out_low,out_high;
+XieTecClipScale (in_low, in_high, out_low, out_high)
+
+XieConstant in_low;
+XieConstant in_high;
+XieLTriplet out_low;
+XieLTriplet out_high;
+
 {
-int i;
+    int i;
 
     XieClipScaleParam *param = (XieClipScaleParam *)
 	Xmalloc (sizeof (XieClipScaleParam));
 
-    for (i=0; i<3; ++i) {
+    for (i = 0; i < 3; i++)
+    {
     	param->input_low[i]   = in_low[i];
     	param->input_high[i]  = in_high[i];
     	param->output_low[i]  = out_low[i];
     	param->output_high[i] = out_high[i];
-   }
+    }
 
     return (param);
 }
+
 
 XieConvolveConstantParam *
 XieTecConvolveConstant (constant)
