@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.30 89/01/18 10:40:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.31 89/01/18 12:17:19 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif lint
 
@@ -66,6 +66,13 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 	XtErrorMsg("invalidParent","xtMakeGeometryRequest","XtToolkitError",
              "XtMakeGeometryRequest - parent not composite",
               (String *)NULL, (Cardinal *)NULL);
+    } else {
+	/* no need to waste time checking if parent is actually realized
+	 * at this point; since the child is unmanaged we need to perform
+	 * the configure iff the child is realized, so we dummy the
+	 * parentRealized checks below.
+	 */
+	parentRealized = TRUE;
     }
 
     if (managed && manager == (XtGeometryHandler) NULL) {
@@ -121,9 +128,7 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 		widget->core.height = request->height;
 	    if (request->request_mode & CWBorderWidth)
 		widget->core.border_width = request->border_width;
-	    /* if child is unmanaged, we may not have assigned parentRealized,
-	     * so we'll fall through and check widgetRealized below */
-	    if (managed && !parentRealized) return XtGeometryYes;
+	    if (!parentRealized) return XtGeometryYes;
 	    else returnCode = XtGeometryYes;
 	}
     } else {
