@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.123 87/11/27 11:04:44 rws Locked $ */
+/* $Header: events.c,v 1.124 87/11/27 16:27:17 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -452,12 +452,6 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     WindowPtr oldWin = (mouse->grab) ? mouse->grab->window
 				     : sprite.win;
 
-    motionHintWindow = NullWindow;
-    mouse->grabTime = time;
-    ptrGrab = *grab;
-    mouse->grab = &ptrGrab;
-    mouse->u.ptr.autoReleaseGrab = autoGrab;
-    PostNewCursor();
     if (w = grab->u.ptr.confineTo)
     {
 	NewCursorConfines(
@@ -465,6 +459,12 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
 	    w->absCorner.y, w->absCorner.y + (int)w->clientWinSize.height);
     }
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
+    motionHintWindow = NullWindow;
+    mouse->grabTime = time;
+    ptrGrab = *grab;
+    mouse->grab = &ptrGrab;
+    mouse->u.ptr.autoReleaseGrab = autoGrab;
+    PostNewCursor();
     CheckGrabForSyncs(
 	mouse->grab, mouse, grab->pointerMode,
 	inputInfo.keyboard, grab->keyboardMode);
@@ -478,12 +478,12 @@ DeactivatePointerGrab(mouse)
     DeviceIntPtr keybd = inputInfo.keyboard;
 
     motionHintWindow = NullWindow;
-    DoEnterLeaveEvents(grab->window, sprite.win, NotifyUngrab);
     mouse->grab = NullGrab;
     mouse->sync.state = NOT_GRABBED;
     mouse->u.ptr.autoReleaseGrab = FALSE;
     if (keybd->sync.other == grab)
 	keybd->sync.other = NullGrab;
+    DoEnterLeaveEvents(grab->window, sprite.win, NotifyUngrab);
     ComputeFreezes(keybd, mouse);
     if (grab->u.ptr.confineTo)
 	NewCursorConfines(0, currentScreen->width, 0, currentScreen->height);
@@ -517,12 +517,12 @@ DeactivateKeyboardGrab(keybd)
     DeviceIntPtr mouse = inputInfo.pointer;
     GrabPtr grab = keybd->grab;
 
-    DoFocusEvents(grab->window, keybd->u.keybd.focus.win, NotifyUngrab);
     keybd->grab = NullGrab;
     keybd->sync.state = NOT_GRABBED;
     keybd->u.keybd.passiveGrab = FALSE;
     if (mouse->sync.other == grab)
 	mouse->sync.other = NullGrab;
+    DoFocusEvents(grab->window, keybd->u.keybd.focus.win, NotifyUngrab);
     ComputeFreezes(keybd, mouse);
 }
 
