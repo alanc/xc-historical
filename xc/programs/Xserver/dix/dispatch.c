@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.67 88/10/05 10:49:54 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.68 88/10/11 20:49:46 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2970,7 +2970,8 @@ extern int GetHosts();
     WriteReplyToClient(client, sizeof(xListHostsReply), &reply);
     client->pSwapReplyFunc = SLHostsExtend;
     WriteSwappedDataToClient(client, len, pdata);
-    xfree(pdata);
+    if (len != 0)
+	xfree(pdata);
     return (client->noClientException);
 }
 
