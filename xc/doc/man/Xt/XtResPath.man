@@ -134,9 +134,9 @@ Specifies the number of entries in \fIsubstitutions\fP.
 Specifies a procedure called to judge each potential file name, or NULL.
 .SH DESCRIPTION
 The substitutions specified by
-.PN XtResolvePathname
+.ZN XtResolvePathname
 are determined from the value of the language string retrieved by
-.PN XtDisplayInitialize
+.ZN XtDisplayInitialize
 for the specified display.
 To set the
 language for all applications specify ``*xnlLanguage: \fIlang\fP'' in the
@@ -150,12 +150,12 @@ this composition is accomplished is implementation-defined
 and the \*(xI make no interpretation of the parts other
 than to use them in substitutions as described below.
 .LP
-.PN XtResolvePathname
+.ZN XtResolvePathname
 calls
-.PN XtFindFile
+.ZN XtFindFile
 with the following substitutions
 in addition to any passed by the caller and returns the value returned by
-.PN XtFindFile :
+.ZN XtFindFile :
 .IP %N 5
 The value of the \fIfilename\fP parameter, or the application's
 class name if \fIfilename\fP is NULL.
@@ -178,16 +178,16 @@ database associated with \fIdisplay\fP.
 The value of the implementation-specific default path.
 .LP
 If a path is passed to
-.PN XtResolvePathname ,
+.ZN XtResolvePathname ,
 it will be passed along to
-.PN XtFindFile .
+.ZN XtFindFile .
 If the \fIpath\fP argument is NULL, the value of the
-.PN \s-1XFILESEARCHPATH\s+1
+.ZN \s-1XFILESEARCHPATH\s+1
 .IN "XFILESEARCHPATH" "" "@DEF@"
 environment variable will be passed to
-.PN XtFindFile .
+.ZN XtFindFile .
 If
-.PN \s-1XFILESEARCHPATH\s+1
+.ZN \s-1XFILESEARCHPATH\s+1
 is not defined, an implementation-specific default path will be used
 which contains at least 6 entries.  These entries
 must contain the following substitutions:
@@ -239,22 +239,22 @@ allow additional directories to be searched without preventing
 resources in the system directories from being found.  For example, a
 user installing resource files under a directory called ``ourdir''
 might set
-.PN \s-1XFILESEARCHPATH\s+1
+.ZN \s-1XFILESEARCHPATH\s+1
 to
 .IP
 %D:ourdir/%T/%N%C:ourdir/%T/%N
 .LP
 The customization string is obtained by querying the resource database
 currently associated with the display (the database returned by
-.PN XrmGetDatabase )
+.ZN XrmGetDatabase )
 for the resource \fIapplication_name\fP.customization, class
 \fIapplication_class\fP.Customization where \fIapplication_name\fP
 and \fIapplication_class\fP are the values returned by
-.PN XtGetApplicationNameAndClass .
+.ZN XtGetApplicationNameAndClass .
 If no value is specified in the database, the empty string is used.
 .LP
 It is the responsibility of the caller to free the returned string using
-.PN XtFree
+.ZN XtFree
 when it is no longer needed.
 .SH "SEE ALSO"
 .br
