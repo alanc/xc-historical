@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.43 89/04/10 14:36:23 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.44 89/04/10 14:50:49 jim Exp $";
 #endif
 
 /*%
@@ -126,7 +126,7 @@ main(argc, argv)
 	    add_pixel_value = parse_long (argv[i]);
 	    continue;
 	}
-	if (!strcmp(argv[0], "-frame")) {
+	if (!strcmp(argv[i], "-frame")) {
 	    frame_only = True;
 	    continue;
 	}
@@ -186,7 +186,7 @@ Window_Dump(window, out)
     unsigned width, height;
     int dwidth, dheight;
     int bw;
-
+    Window dummywin;
     XWDFileHeader header;
 
     
@@ -202,12 +202,30 @@ Window_Dump(window, out)
     if(!XGetWindowAttributes(dpy, window, &win_info)) 
       Fatal_Error("Can't get target window attributes.");
 
-    absx = win_info.x + (nobdrs ? win_info.border_width : 0);
-    absy = win_info.y + (nobdrs ? win_info.border_width : 0);
-    width = win_info.width + (nobdrs ? 0 : (2 * win_info.border_width));
-    height = win_info.height + (nobdrs ? 0 : (2 * win_info.border_width));
+    /* handle any frame window */
+    if (!XTranslateCoordinates (dpy, window, RootWindow (dpy, screen), 0, 0,
+				&absx, &absy, &dummywin)) {
+	fprintf (stderr, 
+		 "%s:  unable to translate window coordinates (%d,%d)\n",
+		 program_name, absx, absy);
+	exit (1);
+    }
+    win_info.x = absx;
+    win_info.y = absy;
+    width = win_info.width;
+    height = win_info.height;
+    bw = 0;
+
+    if (!nobdrs) {
+	absx -= win_info.border_width;
+	absy -= win_info.border_width;
+	bw = win_info.border_width;
+	width += (2 * bw);
+	height += (2 * bw);
+    }
     dwidth = DisplayWidth (dpy, screen);
     dheight = DisplayHeight (dpy, screen);
+
 
     /* clip to window */
     if (absx < 0) width += absx, absx = 0;
@@ -230,9 +248,8 @@ Window_Dump(window, out)
      * Snarf the pixmap with XGetImage.
      */
 
-    bw = nobdrs ? 0 : win_info.border_width;
-    x = absx - win_info.x - bw;
-    y = absy - win_info.y - bw;
+    x = absx - win_info.x;
+    y = absy - win_info.y;
     image = XGetImage (dpy, window, x, y, width, height, AllPlanes, format);
     if (!image) {
 	fprintf (stderr, "%s:  unable to get image at %dx%d+%d+%d\n",
