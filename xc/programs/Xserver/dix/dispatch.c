@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.17 89/12/20 20:55:09 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.18 90/03/20 11:56:53 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3008,6 +3008,7 @@ ProcKillClient(client)
     clientIndex = CLIENT_ID(stuff->id);
 
     if (clientIndex && pResource && clients[clientIndex] &&
+	!(stuff->id & SERVER_BIT) &&
 	(clients[clientIndex]->requestVector != InitialVector))
     {
 	myIndex = client->index;
@@ -3394,7 +3395,7 @@ ProcEstablishConnection(client)
     client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
     client->sequence = 0;
     ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
-    ((xConnSetup *)ConnectionInfo)->ridMask = 0xfffff;
+    ((xConnSetup *)ConnectionInfo)->ridMask = RESOURCE_ID_MASK;
     /* fill in the "currentInputMask" */
     root = (xWindowRoot *)(ConnectionInfo + connBlockScreenStart);
     for (i=0; i<screenInfo.numScreens; i++) 
