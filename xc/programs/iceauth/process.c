@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.5 94/08/02 17:26:11 mor Exp mor $
+ * $XConsortium: process.c,v 1.6 94/11/14 20:31:28 mor Exp gildea $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -610,19 +610,19 @@ int auth_initialize (authfilename)
     return 0;
 }
 
-static int write_auth_file (tmpnam)
-    char *tmpnam;
+static int write_auth_file (tmp_nam)
+    char *tmp_nam;
 {
     FILE *fp;
     AuthList *list;
 
-    strcpy (tmpnam, iceauth_filename);
-    strcat (tmpnam, "-n");		/* for new */
-    (void) unlink (tmpnam);
-    fp = fopen (tmpnam, "wb");		/* umask is still set to 0077 */
+    strcpy (tmp_nam, iceauth_filename);
+    strcat (tmp_nam, "-n");		/* for new */
+    (void) unlink (tmp_nam);
+    fp = fopen (tmp_nam, "wb");		/* umask is still set to 0077 */
     if (!fp) {
 	fprintf (stderr, "%s:  unable to open tmp file \"%s\"\n",
-		 ProgramName, tmpnam);
+		 ProgramName, tmp_nam);
 	return -1;
     } 
 
@@ -635,7 +635,7 @@ static int write_auth_file (tmpnam)
 
 int auth_finalize ()
 {
-    char tmpnam[1024];			/* large filename size */
+    char temp_name[1024];			/* large filename size */
 
     if (iceauth_modified) {
 	if (dieing) {
@@ -653,23 +653,24 @@ int auth_finalize ()
 			ignore_locks ? "Ignoring locks and writing" :
 			"Writing", iceauth_filename);
 	    }
-	    tmpnam[0] = '\0';
-	    if (write_auth_file (tmpnam) == -1) {
+	    temp_name[0] = '\0';
+	    if (write_auth_file (temp_name) == -1) {
 		fprintf (stderr,
 			 "%s:  unable to write authority file %s\n",
-			 ProgramName, tmpnam);
+			 ProgramName, temp_name);
 	    } else {
 		(void) unlink (iceauth_filename);
 #ifdef WIN32
-		if (rename(tmpnam, iceauth_filename) == -1) {
+		if (rename(temp_name, iceauth_filename) == -1)
 #else
-		if (link (tmpnam, iceauth_filename) == -1) {
+		if (link (temp_name, iceauth_filename) == -1)
 #endif
+		{
 		    fprintf (stderr,
 		     "%s:  unable to link authority file %s, use %s\n",
-			     ProgramName, iceauth_filename, tmpnam);
+			     ProgramName, iceauth_filename, temp_name);
 		} else {
-		    (void) unlink (tmpnam);
+		    (void) unlink (temp_name);
 		}
 	    }
 	}
