@@ -1111,6 +1111,18 @@ DeleteDeviceFromAnyExtEvents(pWin, dev)
 		dev->focus->win = PointerRootWin;
 		dev->focus->traceGood = 0;
 		break;
+	    case RevertToFollowKeyboard:
+		if (inputInfo.keyboard->focus->win) {
+		    DoFocusEvents(dev, pWin, inputInfo.keyboard->focus->win,
+				  focusEventMode);
+		    dev->focus->win = inputInfo.keyboard->focus->win;
+		    dev->focus->traceGood = 0;
+		} else {
+		    DoFocusEvents(dev, pWin, NoneWin, focusEventMode);
+		    dev->focus->win = NoneWin;
+		    dev->focus->traceGood = 0;
+		}
+		break;
 	    }
 	}
 
