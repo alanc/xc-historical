@@ -1,9 +1,9 @@
 #ifndef HILDEF_H
 #define HILDEF_H
-/* $XConsortium: hildef.h,v 8.33 93/08/08 12:58:47 rws Exp $ */
+/* $Header: hildef.h,v 1.2 94/12/15 08:50:48 gms Exp $ */
 /*
 
-Copyright (c) 1986, 1987  X Consortium
+Copyright (c) 1988  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -30,23 +30,23 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 
-Copyright (c) 1986, 1987 by Hewlett-Packard Company
+Copyright (c) 1988 by Hewlett-Packard Company
 
-Permission to use, copy, modify, and distribute this
-software and its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright
-notice and this permission notice appear in supporting
-documentation, and that the name of Hewlett-Packard not be used in
-advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.
+Permission to use, copy, modify, and distribute this software 
+and its documentation for any purpose and without fee is hereby 
+granted, provided that the above copyright notice appear in all 
+copies and that both that copyright notice and this permission 
+notice appear in supporting documentation, and that the name of 
+Hewlett-Packard not be used in advertising or publicity 
+pertaining to distribution of the software without specific, written 
+prior permission.
 
 HEWLETT-PACKARD MAKES NO WARRANTY OF ANY KIND WITH REGARD
-TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
-PURPOSE.  Hewlett-Packard shall not be liable for errors 
-contained herein or direct, indirect, special, incidental or 
-consequential damages in connection with the furnishing, 
+TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  Hewlett-Packard shall not be liable for errors
+contained herein or direct, indirect, special, incidental or
+consequential damages in connection with the furnishing,
 performance, or use of this material.
 
 This software is not subject to any license of the American
@@ -54,7 +54,6 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-
 /*
 ** 	File: hildefs.h
 **
@@ -62,6 +61,7 @@ University of California.
 **
 */
 
+#include  "x_serialdrv.h"
 #include  "sys/param.h"
 #include  "X.h"
 #include  "scrnintstr.h"
@@ -72,6 +72,7 @@ University of California.
 /* KEEP THE FOLLOWING IN SYNC WITH THE DIX DEFINITION          */
 /***************************************************************/
 
+#define	MAXNAMLEN		255
 #define READ_SIZ	     	2000	/* leave room for partial packets*/
 #define BUF_SIZ			2048	/* size of static buffer to use  */
 
@@ -132,64 +133,49 @@ University of California.
 #define NLOCK		3
 #define CAPSCODE	0x37
 #define KBSIZE		32	/* bytes to hold 256 bits (1 per key/button */
-#define LedOn(dev, d,cd,data) \
-(dev->key->modifierMap[cd] & d->led[0] ? ioctl(d->file_ds,LedCmd[0].on,data) : \
- dev->key->modifierMap[cd] & d->led[1] ? ioctl(d->file_ds,LedCmd[1].on,data) : \
- dev->key->modifierMap[cd] & d->led[2] ? ioctl(d->file_ds,LedCmd[2].on,data) : \
- ioctl(d->file_ds, LedCmd[3].on, data))
-#define LedOff(dev, d,cd,data) \
-(dev->key->modifierMap[cd] & d->led[0] ? ioctl(d->file_ds,LedCmd[0].off,data): \
- dev->key->modifierMap[cd] & d->led[1] ? ioctl(d->file_ds,LedCmd[1].off,data): \
- dev->key->modifierMap[cd] & d->led[2] ? ioctl(d->file_ds,LedCmd[2].off,data): \
- ioctl(d->file_ds, LedCmd[3].off, data))
-#define LatchKey(d,code) (d->kb_latched[code>>3] |= (1<<(code & 7)))
-#define LatchButton(d,code) (LatchKey(d,code))
-#define UnlatchKey(d,code) (d->kb_latched[code>>3] &= ~(1<<(code & 7)))
-#define UnlatchButton(d,code) (UnlatchKey(d,code))
-#define DeviceHasLeds(d) (d->hil_header.iob & HILIOB_NPA)
+#define ExpectUpKey(d,code) (d->kb_exp_up[code>>3] |= (1<<(code & 7)))
+#define DontExpectUpKey(d,code) (d->kb_exp_up[code>>3] &= ~(1<<(code & 7)))
+#define DeviceHasLeds(d) (d->iob & HILIOB_NPA)
 #define KeyHasLed(dev,d,cd) ((dev->key->modifierMap[cd] & d->led[0]) || \
 (dev->key->modifierMap[cd] & d->led[1]) || \
 (dev->key->modifierMap[cd] & d->led[2]) || \
 (dev->key->modifierMap[cd] & d->led[3]))
 
-#define KeyIsLatched(d,code) (d->kb_latched[code>>3] & (1<<(code & 7)))
+#define UpIsExpected(d,code) (d->kb_exp_up[code>>3] & (1<<(code & 7)))
 #define KeyIsIgnored(d,code) (d->kb_ignore[code>>3] & (1<<(code & 7)))
 #define IgnoreKey(d,code) (d->kb_ignore[code>>3] |= (1<<(code & 7)))
 #define UnignoreKey(d,code) (d->kb_ignore[code>>3] &= ~(1<<(code & 7)))
-#define ButtonIsLatched(d,code) (KeyIsLatched(d,code))
-#define ButtonIsIgnored(d,code) (KeyIsIgnored(d,code))
-#define IgnoreButton(d,code) (IgnoreKey(d,code))
-#define UnignoreButton(d,code) (UnignoreKey(d,code))
 
 #define KeyDownEvent(ev) (ev->u.u.type==KeyPress | ev->u.u.type==DeviceKeyPress)
 #define ButtonDownEvent(ev) (ev->u.u.type==ButtonPress | \
 			     ev->u.u.type==DeviceButtonPress)
 #define KeyUpEvent(ev) (ev->u.u.type==KeyRelease | \
 			     ev->u.u.type==DeviceKeyRelease)
-#define IsLockKey(dev,code) (dev->key->modifierMap[code] & LockMask)
+
+#define ITF_KATAKANA	0xdd
+#define ITF_JAPANESE	0xc2
+#define PS2_HIL_JIS	0xc1
+#define PS2_DIN_JIS	"PS2_DIN_JIS"
+#define IsLockKey(dev,code) (dev->key->modifierMap[code] & LockMask ? \
+				LockMapIndex : 0)
+#define IsMod2Key(dev,code) (dev->key->modifierMap[code] & Mod2Mask ? \
+				Mod2MapIndex : 0)
+#define IsJapaneseEnv(pHP)  (pHP->id == ITF_KATAKANA || \
+                             pHP->id == ITF_JAPANESE || \
+                             pHP->id == PS2_HIL_JIS || \
+                             !strcmp(pHP->d.keymap_name, PS2_DIN_JIS))
+
+#define IsToggleKey(dev,pHP,code) (IsLockKey(dev,code))
+
+/* This is the Kana Lock solution that APPO initially wanted.
+#define IsToggleKey(dev,pHP,code) (IsLockKey(dev,code) || \
+       (IsJapaneseEnv(pHP) && IsMod2Key(dev,code)))
+*/
 
 #define KeyIsDown(dev, code) (dev->key && \
     (dev->key->down[code >> 3] & (1 << (code & 7))))
 #define KeyIsRepeating(dev, code) (dev->kbdfeed && \
     (dev->kbdfeed->ctrl.autoRepeats[code >> 3] & (1 << (code & 7))))
-
-struct	hil_desc_record {
-    int		resx;		/* x-axis counts / meter	*/
-    int		resy;		/* x-axis counts / meter	*/
-    int		size_x;		/* maximum x value   		*/
-    int		size_y;		/* maximum y value   		*/
-    char	*keymap_name;	/* name of keymap               */
-    u_char	flags; 		/* device characteristics	*/
-    u_char	ax_num;		/* number of axes		*/
-    u_short 	min_kcode;	/* minimum keycode           	*/
-    u_short 	max_kcode;	/* maximum keycode           	*/
-    u_char	id;		/* device HIL id		*/
-    u_char	iob;		/* I/O descriptor Byte 		*/
-    u_char	p_button_count;	 /* count of physical buttons 	*/
-    u_char	v_button_count;	 /* count of virtual buttons  	*/
-    u_char 	num_keys; 	 /* number of keys            	*/
-    u_char 	num_leds; 	 /* number of leds            	*/
-} ;
 
 typedef struct _DeviceClients *DeviceClientsPtr;
 
@@ -202,13 +188,12 @@ typedef struct _DeviceClients {
 } DeviceClients;
 
 typedef  struct	 _indevices {
-    struct  	hil_desc_record hil_header;  /* HIL hdr 	*/
+    u_char	id;		/* device HIL id		*/
+    u_char	iob;		/* I/O descriptor Byte 		*/
     float	scaleX; 	/* Tablet scaling 		*/
     float	scaleY; 	/* Tablet scaling 		*/
-    int	        file_ds;        /* file descriptor              */
     DeviceClientsPtr clients;	/* clients using device 	*/
     ScreenPtr	pScreen;  	/* Screen pointer is on         */
-    int   	repeat_rate;	/* keyboard repeat rate         */
     int   	coords[MAX_AXES];/* current coords of device    */
     Atom	x_atom;		/* atom for x type		*/
     u_int	button_state;   /* device button state          */
@@ -223,22 +208,21 @@ typedef  struct	 _indevices {
     u_char  	ignoremask;	/* for button emulation         */
     u_char  	savebutton;	/* saved button			*/
     char	x_type;		/* MOUSE or KEYBOARD		*/ 
-    u_char	dev_id;	  	/* device X id			*/ 
     u_char	mode;     	/* abs or rel movement  	*/
-    u_char	sndx;		/* index of serialproc entry    */
-    u_char	pad1;		/* reserved                     */
+    u_char	use;		/* device use                   */
     u_char	pad2;		/* reserved              	*/
-    char	open_cnt;	/* # clients accessing device   */
-    char	dev_name[MAX_X_NAMELEN];
-    char	x_name[MAX_X_NAMELEN];
-    u_char	bell1[4];	/* arrays for the s300 beeper params */
-    u_char	bell2[4];
-    u_char	bell3[4];
     u_char	hpflags;	/* hp-specific feature flags    */
     u_char	led[NLOCK+1];
-    u_char	kb_latched[KBSIZE];
+    u_char	kb_exp_up[KBSIZE];
     u_char	kb_ignore[KBSIZE];
+    char 	entry[MAX_NM];
+    char	driver_name[MAX_NM];   /* filled in by X server	*/
+    int		*dpmotionBuf;
+    int		*dheadmotionBuf;
+    HPInputDeviceHeader d;
+    SerialProcs s;
 }  HPInputDevice;
+
 
 struct	dev_info {
     unsigned int	timestamp;

@@ -1,4 +1,4 @@
-/* $XConsortium: getkeysym.c,v 1.5 93/08/08 12:58:54 rws Exp $ */
+/* $XConsortium: getkeysym.c,v 1.6 94/05/28 15:50:21 dpw Exp $ */
 /*
 
 Copyright (c) 1986, 1987 by Hewlett-Packard Company
@@ -33,6 +33,7 @@ University of California.
 #define LIBDIR "/usr/lib/X11"
 #endif
 #endif
+
 #include <stdio.h>
 #include <X11/XHPlib.h>
 
@@ -196,10 +197,9 @@ int HPKsetup(file_name) char *file_name;
 
     if (name[0] != '/')
     {
-	sprintf(filename, "%s/%s",LIBDIR,name);
+      sprintf(filename, "%s/%s",LIBDIR,name);
     }
-    else
-	strcpy(filename, name);
+    else strcpy(filename, name);
 
     if (NULL == (keysym_file = fopen(filename,"r")))
 	return False;
