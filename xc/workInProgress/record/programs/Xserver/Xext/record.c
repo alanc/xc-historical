@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: record.c,v 1.1 94/01/29 17:47:05 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -36,6 +36,36 @@
 #define _XRECORD_SERVER_
 #include "record.h"
 #include "recordstr.h" 
+
+extern int XRecordRequestVector(
+#if NeedFunctionPrototypes
+	ClientPtr client
+#endif
+);
+
+extern int  XRecordEventVector(
+#if NeedFunctionPrototypes
+	ClientPtr client, 
+        xEvent *x_event
+#endif
+);
+extern int XRecordErrorVector(
+#if NeedFunctionPrototypes
+	ClientPtr client, 
+        xError *x_error
+#endif
+); 
+
+static int ProcRecordDispatch(
+#if NeedFunctionPrototypes
+	ClientPtr client
+#endif
+);
+static int sProcRecordDispatch(
+#if NeedFunctionPrototypes
+	ClientPtr client
+#endif
+);
 
 /*
  * Local Global Variables
@@ -272,7 +302,7 @@ XRecordDestroyEnv(value, id)
     return;
 }
                        
-static int 
+static void
 XRecordCloseDown(extEntry)
     ExtensionEntry *extEntry;
 {                                           
@@ -616,44 +646,6 @@ void XRecordExtensionInit()
 }
 
 /*
-* ** Protocol dispatch procedure   
-*/
-static int ProcRecordDispatch(client)
-    ClientPtr client;
-{
-    REQUEST(xReq);
-    register int status = Success;
-
-    if (XTenv[client->index] == NULL)
-        status = XRecordCreateEnv(client);
-    if (status == Success)
-    {
-        switch (stuff->data)
-    	{
-      	    case X_RecordQueryVersion:
-		return ProcRecordQueryVersion(client);
-      	    case X_RecordCreateConfig:
-		return ProcRecordCreateConfig(client);
-      	    case X_RecordFreeConfig:
-		return ProcRecordFreeConfig(client);
-      	    case X_RecordChangeConfig:
-		return ProcRecordChangeConfig(client);
-      	    case X_RecordGetConfig:
-		return ProcRecordGetConfig(client);
-      	    case X_RecordEnableConfig:
-		return ProcRecordEnableConfig(client);
-           default:
-#ifdef VERBOSE
-            ErrorF("%s:  Invalid Request.  Minor opcode=%d\n",
-                   XRecordExtName, stuff->data);
-#endif 
-		return BadRequest;
-        } 
-    }
-    return (client->noClientException);
-}
-
-/*
 * ** Protocol requests    
 */
 
@@ -908,6 +900,44 @@ ProcRecordEnableConfig(client)
 }
 
 /*
+* ** Protocol dispatch procedure   
+*/
+static int ProcRecordDispatch(client)
+    ClientPtr client;
+{
+    REQUEST(xReq);
+    register int status = Success;
+
+    if (XTenv[client->index] == NULL)
+        status = XRecordCreateEnv(client);
+    if (status == Success)
+    {
+        switch (stuff->data)
+    	{
+      	    case X_RecordQueryVersion:
+		return ProcRecordQueryVersion(client);
+      	    case X_RecordCreateConfig:
+		return ProcRecordCreateConfig(client);
+      	    case X_RecordFreeConfig:
+		return ProcRecordFreeConfig(client);
+      	    case X_RecordChangeConfig:
+		return ProcRecordChangeConfig(client);
+      	    case X_RecordGetConfig:
+		return ProcRecordGetConfig(client);
+      	    case X_RecordEnableConfig:
+		return ProcRecordEnableConfig(client);
+           default:
+#ifdef VERBOSE
+            ErrorF("%s:  Invalid Request.  Minor opcode=%d\n",
+                   XRecordExtName, stuff->data);
+#endif 
+		return BadRequest;
+        } 
+    }
+    return (client->noClientException);
+}
+
+/*
 * ** Procedures to support swapping   
 */
 
@@ -919,42 +949,6 @@ static void _SwapProc(f1,f2)
     *f2 = t1;
 
     return;
-}
-
-static int 
-sProcRecordDispatch(client)
-    ClientPtr client;
-{
-    REQUEST(xReq);
-    register int status = Success;
-
-    if (XTenv[client->index] == NULL)     
-        status = XRecordCreateEnv(client);    
-    if (status == Success)
-    {
-        switch (stuff->data)
-    	{
-      	    case X_RecordQueryVersion:
-		return sProcRecordQueryVersion(client);
-      	    case X_RecordCreateConfig:
-		return sProcRecordCreateConfig(client);
-      	    case X_RecordFreeConfig:
-		return sProcRecordFreeConfig(client);
-      	    case X_RecordChangeConfig:
-		return sProcRecordChangeConfig(client);
-      	    case X_RecordGetConfig:
-		return sProcRecordGetConfig(client);
-      	    case X_RecordEnableConfig:
-		return sProcRecordEnableConfig(client);
-           default:
-#ifdef VERBOSE
-            ErrorF("%s:  Invalid Request.  Minor opcode=%d\n",
-                   XRecordExtName, stuff->data);
-#endif 
-		return BadRequest;
-        } 
-    }
-    return(client->noClientException);
 }
 
 static int 
@@ -1045,3 +1039,38 @@ sProcRecordEnableConfig(request,client)
     return ProcRecordEnableConfig(client);
 }
 
+static int 
+sProcRecordDispatch(client)
+    ClientPtr client;
+{
+    REQUEST(xReq);
+    register int status = Success;
+
+    if (XTenv[client->index] == NULL)     
+        status = XRecordCreateEnv(client);    
+    if (status == Success)
+    {
+        switch (stuff->data)
+    	{
+      	    case X_RecordQueryVersion:
+		return sProcRecordQueryVersion(client);
+      	    case X_RecordCreateConfig:
+		return sProcRecordCreateConfig(client);
+      	    case X_RecordFreeConfig:
+		return sProcRecordFreeConfig(client);
+      	    case X_RecordChangeConfig:
+		return sProcRecordChangeConfig(client);
+      	    case X_RecordGetConfig:
+		return sProcRecordGetConfig(client);
+      	    case X_RecordEnableConfig:
+		return sProcRecordEnableConfig(client);
+           default:
+#ifdef VERBOSE
+            ErrorF("%s:  Invalid Request.  Minor opcode=%d\n",
+                   XRecordExtName, stuff->data);
+#endif 
+		return BadRequest;
+        } 
+    }
+    return(client->noClientException);
+}
