@@ -73,7 +73,7 @@
 	  value-error
 	  window-error
 	  implementation-error
-	  type-error
+	  #-ansi-common-lisp type-error
 	  closed-display
 	  lookup-error
 	  connection-failure
@@ -1593,7 +1593,7 @@
       (when (= code (second extension))
 	(return (first extension))))))
 
-#-clx-cl-error
+#-(or ansi-common-lisp excl lcl3.0)
 (define-condition request-error (x-error)
   (display
    error-key
@@ -1618,7 +1618,7 @@
 
 ;; Since the :report arg is evaluated as (function report-request-error) the
 ;; define-condition must come after the function definition.
-#+clx-cl-error
+#+(or ansi-common-lisp excl lcl3.0)
 (define-condition request-error (x-error)
   (display
    error-key
@@ -1686,6 +1686,7 @@
 ;;-----------------------------------------------------------------------------
 ;; Internal error conditions signaled by CLX
 
+#-(or ansi-common-lisp excl lcl3.0)
 (define-condition type-error (x-error)
   (object
    type
