@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.138 91/03/28 15:42:35 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.139 91/04/08 19:30:27 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1359,6 +1359,7 @@ static void FreeActions(actions)
 	    XtFree( action->params[--i] );
 	}
 	XtFree( (char*)action->params );
+	XtFree((char*) action);
 	action = nextAction;
     }
 }
@@ -1391,6 +1392,7 @@ static void AmbigActions(initialEvent, state, stateTree)
 		  (String *)NULL, (Cardinal *)NULL);
 
     FreeActions((*state)->actions);
+    (*state)->actions = NULL;
 }
 
 
@@ -1434,6 +1436,7 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 	  branchHead->hasActions = True;
 	  branchHead->more = eventSeq->actions->idx;
 	  FreeActions(eventSeq->actions);
+	  eventSeq->actions = NULL;
 	  return;
       }
     
@@ -1908,6 +1911,7 @@ static void RemoveStateTree(tree)
 		    stateTree->complexBranchHeadTbl[i];
 		for (; nextState;){
 		    FreeActions(currState->actions);
+		    currState->actions = NULL;
 		    if (!currState->isCycleEnd)
 		      nextState = currState->nextLevel;
 		    else
