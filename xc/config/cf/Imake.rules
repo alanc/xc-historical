@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.131 93/03/29 18:51:14 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.132 93/05/28 11:45:07 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -14,6 +14,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.131 93/03/29 18:51:14 rws Exp $
  * 
  * SaberLoadTarget		(target,srclist,libs,defines)
  * SaberProgramTarget		(program,srclist,objlist,locallibs,syslibs)
+ * PurifyLinkTarget		(step,program,linklist)
+ * PurifyProgramTarget		(program,deplist,linklist)
  * RemoveTargetProgram		(program)
  * MakeDir			(dir)
  * BuildIncludes		(srclist,dstsubdir,dstupdir)
@@ -158,7 +160,7 @@ target:: srclist							@@\
 #else
 #define SaberLoadTarget(target,srclist,libs,defines) /**/
 #endif
-#endif
+#endif /* SaberLoadTarget */
 
 /*
  * SaberProgramTarget - generate rules to make Saber-C read in sources and
@@ -169,7 +171,35 @@ target:: srclist							@@\
 SaberLoadTarget(Concat(saber_,program),srclist,$(LDOPTIONS) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES))					@@\
 									@@\
 SaberLoadTarget(Concat(osaber_,program),objlist,$(LDOPTIONS) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES))
+#endif /* SaberProgramTarget */
+
+#ifndef PurifyLinkTarget
+#if HasPurify
+#define PurifyLinkTarget(step,program,linklist)				@@\
+step.pure:								@@\
+	RemoveTargetProgram($@)						@@\
+	$(PURIFY) $(PURIFYOPTIONS) $(CC) -o program.pure linklist
+#else
+#define PurifyLinkTarget(step,program,linklist) /**/
 #endif
+#endif /* PurifyLinkTarget */
+
+/*
+ * PurifyProgramTarget - generate rules to make Purify'ed image
+ */
+#ifndef PurifyProgramTarget
+#if HasPurify
+#define	PurifyProgramTarget(program,deplist,linklist)			@@\
+program.pure: deplist							@@\
+	RemoveTargetProgram($@)						@@\
+	$(PURIFY) $(PURIFYOPTIONS) $(CC) -o $@ linklist			@@\
+									@@\
+clean::									@@\
+	$(RM) program.pure
+#else
+#define	PurifyProgramTarget(program,deplist,linklist) /**/
+#endif
+#endif /* PurifyProgramTarget */
 
 #ifndef RemoveTargetProgram
 #if RemoveTargetProgramByMoving
@@ -205,6 +235,8 @@ includes::								@@\
 program: objects deplibs						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+PurifyProgramTarget(program,objects deplibs,objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS)) @@\
 									@@\
 clean::									@@\
 	$(RM) program
@@ -257,6 +289,7 @@ program: $(OBJS) $(DEPLIBS)						@@\
 	$(CC) -o $@ $(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES),NullParameter) @@\
+PurifyProgramTarget(program,$(OBJS) $(DEPLIBS),$(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS)) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
@@ -290,6 +323,7 @@ InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
 									@@\
 SaberProgramTarget(program,$(SRCS1),$(OBJS1),locallib,syslib)		@@\
+PurifyProgramTarget(program,$(OBJS1) $(DEPLIBS1),$(LDOPTIONS) $(OBJS1) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 DependTarget()								@@\
 LintTarget()								@@\
@@ -312,6 +346,7 @@ program: $(OBJS2) $(DEPLIBS2)						@@\
 	$(CC) -o $@ $(LDOPTIONS) $(OBJS2) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 SaberProgramTarget(program,$(SRCS2),$(OBJS2),locallib,syslib)		@@\
+PurifyProgramTarget(program,$(OBJS2) $(DEPLIBS2),$(LDOPTIONS) $(OBJS2) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
@@ -331,12 +366,11 @@ program: $(OBJS3) $(DEPLIBS3)						@@\
 	$(CC) -o $@ $(LDOPTIONS) $(OBJS3) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 SaberProgramTarget(program,$(SRCS3),$(OBJS3),locallib,syslib)		@@\
+PurifyProgramTarget(program,$(OBJS3) $(DEPLIBS3),$(LDOPTIONS) $(OBJS3) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 #endif /* ComplexProgramTarget_3 */
-
-
 
 /*
  * ServerTarget - generate rules to compile, link, and relink an X server.
@@ -351,7 +385,10 @@ server: subdirs objects libs						@@\
 Concat(load,server):							@@\
 	-@if [ -f server ]; then set -x; \				@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
-	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)
+	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+PurifyProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
+PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS))
 #endif /* ServerTarget */
 
 
