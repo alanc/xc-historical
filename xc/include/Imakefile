@@ -124,6 +124,7 @@ clean::
 	@-(list=`echo $(IMPORTSXMU) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 
 all::
+	@-$(RM) XawMisc.h
 	$(LN) Xmu/Misc.h XawMisc.h
 
 clean::
