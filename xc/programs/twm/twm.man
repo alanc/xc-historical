@@ -869,6 +869,11 @@ This function causes the top window that is obscuring another window to
 drop to the bottom of the stack of windows.
 .IP "\fBf.circleup\fP" 8
 This function raises the lowest window that is obscured by other windows.
+.IP "\fBf.colormap\fP \fIstring\fP" 8
+This function rotates the colormaps (obtained from the WM_COLORMAP_WINDOWS
+property on the window) that twm will display when the pointer
+is in this window.  Valid Values for \fIstring\fP include: \fB\"next\"\fP,
+\fB\"prev\"\fP, and \fB"default"\fP.
 .IP "\fBf.cut\fP \fIstring\fP" 8
 This function puts \fIstring\fP into the server's cut buffer.
 .IP "\fBf.cutfile\fP" 8
