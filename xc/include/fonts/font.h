@@ -37,6 +37,7 @@ typedef struct _ExtentInfo *ExtentInfoPtr;
 typedef struct _FontPathElement *FontPathElementPtr;
 typedef struct _CharInfo *CharInfoPtr;
 typedef struct _FontNames *FontNamesPtr;
+typedef struct _FontResolution *FontResolutionPtr;
 
 #define NullCharInfo	((CharInfoPtr) 0)
 #define NullFont	((FontPtr) 0)
@@ -88,5 +89,7 @@ extern int  AddFontNamesName();
 extern void CopyCharInfo();
 
 extern int  FontToFSError();
+
+extern FontResolutionPtr GetClientResolution();
 
 #endif				/* FONT_H */

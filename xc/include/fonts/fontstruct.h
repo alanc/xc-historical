@@ -1,4 +1,4 @@
-/* $Header: fontstruct.h,v 1.2 91/02/22 21:51:53 keith Exp $ */
+/* $Header: fontstruct.h,v 1.3 91/05/10 11:39:44 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -48,6 +48,12 @@ typedef struct _FontProp {
     long        name;
     long        value;		/* assumes ATOM is not larger than INT32 */
 }           FontPropRec;
+
+typedef struct _FontResolution {
+    unsigned short x_resolution;
+    unsigned short y_resolution;
+    unsigned short point_size;
+}           FontResolutionRec;
 
 typedef struct _ExtentInfo {
     DrawDirection drawDirection;
