@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.3 89/11/08 17:28:28 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.4 89/11/21 13:44:37 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -28,6 +28,11 @@ SOFTWARE.
 
 #ifndef _XLIB_H_
 #include <X11/Xlib.h>
+#endif
+
+#ifndef _EXTUTIL_H_
+#include "extutil.h"
+#define _EXTUTIL_H_
 #endif
 
 #ifndef _XI_H_
@@ -124,6 +129,26 @@ SOFTWARE.
 
 #define DeviceButtonPressGrab(d, type, class) \
     { class =  ((XDevice *) d)->device_id << 8 | _deviceButtonGrab;}
+
+#define BadDevice(dpy, error) \
+    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
+     error = info->codes->first_error + XI_BadDevice;}
+
+#define BadClass(dpy, error) \
+    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
+     error = info->codes->first_error + XI_BadClass;}
+
+#define BadEvent(dpy, error) \
+    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
+     error = info->codes->first_error + XI_BadEvent;}
+
+#define BadMode(dpy, error) \
+    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
+     error = info->codes->first_error + XI_BadMode;}
+
+#define DeviceBusy(dpy, error) \
+    {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
+     error = info->codes->first_error + XI_DeviceBusy;}
 
 /***************************************************************
  *
@@ -309,21 +334,20 @@ typedef struct {
     unsigned char	class;
     unsigned char	length;
     unsigned char	num_valuators;
-    unsigned char	mode;
     int        		valuators[6];
 } XValuatorStatus;
 
 typedef struct {
     unsigned char	class;
     unsigned char	length;
-    short		num_keys;
+    unsigned char	num_keys;
     char        	keys[32];
 } XKeyStatus;
 
 typedef struct {
     unsigned char	class;
     unsigned char	length;
-    short		num_buttons;
+    unsigned char	num_buttons;
     char        	buttons[32];
 } XButtonStatus;
 
