@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.3 93/11/06 15:57:49 rws Exp $ */
+/* $XConsortium: session.c,v 1.4 94/01/12 19:57:21 rws Exp $ */
 /**** session.c ****/
 /****************************************************************************
 				NOTICE
@@ -308,6 +308,8 @@ static void XieReset (extEntry)
 
   /* memory leak debug code
    */
+  /* Initialize client table */
+  bzero((char *)client_table, sizeof(client_table));
   if(ALLOCS)		/* check on outstanding mallocs and callocs */
     ErrorF("XieReset: %d allocs still outstanding.\n", ALLOCS);
 
