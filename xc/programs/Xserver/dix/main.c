@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.145 89/01/16 13:47:30 rws Exp $ */
+/* $XConsortium: main.c,v 1.146 89/03/11 16:49:29 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -213,7 +213,8 @@ main(argc, argv)
 	InitInput(argc, argv);
 	InitAndStartDevices(argc, argv);
 
-	SetDefaultFontPath(defaultFontPath);	/* default path has no nulls */
+	if (SetDefaultFontPath(defaultFontPath) != Success)
+	    ErrorF("failed to set default font path\n");
 	if ( ! SetDefaultFont(defaultTextFont))
 	    FatalError("could not open default font '%s'", defaultTextFont);
 	if ( ! (rootCursor = CreateRootCursor(defaultCursorFont, 0)))
