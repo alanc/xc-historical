@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.39 89/09/08 17:20:21 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.40 89/09/11 13:58:40 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -123,7 +123,7 @@ static int
 CharWidth (w, x, c)
 Widget w;
 int x;
-char c;
+unsigned char c;
 {
     register int    i, width, nonPrinting;
     AsciiSinkWidget sink = (AsciiSinkWidget) w;
@@ -149,14 +149,13 @@ char c;
 	return 0;
     }
 
-    if ( (nonPrinting = (c < SP)) ) {         /* Yes, This is right. */
+    if ( (nonPrinting = (c < (unsigned char) SP)) )
 	if (sink->ascii_sink.display_nonprinting)
 	    c += '@';
 	else {
 	    c = SP;
 	    nonPrinting = False;
 	}
-    }
 
     if (font->per_char &&
 	    (c >= font->min_char_or_byte2 && c <= font->max_char_or_byte2))
@@ -231,7 +230,7 @@ XawTextPosition pos1, pos2;
 {
     AsciiSinkWidget sink = (AsciiSinkWidget) w;
     Widget source = XawTextGetSource(XtParent(w));
-    char buf[BUFSIZ];
+    unsigned char buf[BUFSIZ];
 
     int j, k;
     XawTextBlock blk;
@@ -269,7 +268,7 @@ XawTextPosition pos1, pos2;
 		x += width;
 		j = -1;
 	    }
-	    else if (buf[j] < ' ') {
+	    else if ( buf[j] < (unsigned char) ' ' ) {
 	        if (sink->ascii_sink.display_nonprinting) {
 		    buf[j + 1] = buf[j] + '@';
 		    buf[j] = '^';
@@ -362,7 +361,7 @@ int *resHeight;			/* Height required. */
     Widget source = XawTextGetSource(XtParent(w));
 
     register XawTextPosition index, lastPos;
-    register char   c;
+    register unsigned char c;
     XawTextBlock blk;
 
     /* we may not need this */
@@ -373,12 +372,11 @@ int *resHeight;			/* Height required. */
 	if (index - blk.firstPos >= blk.length)
 	    XawTextSourceRead(source, index, &blk, toPos - fromPos);
 	c = blk.ptr[index - blk.firstPos];
+	*resWidth += CharWidth(w, fromx + *resWidth, c);
 	if (c == LF) {
-	    *resWidth += CharWidth(w, fromx + *resWidth, SP);
 	    index++;
 	    break;
 	}
-	*resWidth += CharWidth(w, fromx + *resWidth, c);
     }
     *resPos = index;
     *resHeight = sink->text_sink.font->ascent +sink->text_sink.font->descent;
@@ -404,7 +402,7 @@ int *resHeight;			/* Height required. */
     XawTextPosition lastPos, index, whiteSpacePosition;
     int     lastWidth, whiteSpaceWidth;
     Boolean whiteSpaceSeen;
-    char    c;
+    unsigned char c;
     XawTextBlock blk;
 
     lastPos = GETLASTPOS;

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.16 89/09/01 14:28:26 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.17 89/09/01 18:31:02 kit Exp $";
 #endif 
 
 /*
@@ -434,7 +434,7 @@ Boolean	              include;
     for ( ; count > 0 ; count-- ) {
       Boolean non_space = FALSE, first_eol = TRUE;
       while (TRUE) {
-	register char c = *ptr;
+	register unsigned char c = *ptr;
 
 	ptr += inc;
 	position += inc;
@@ -534,7 +534,7 @@ XawTextBlock *        text;
     position--;
   }
 
-  buf = XtMalloc(sizeof(char) * text->length);
+  buf = XtMalloc(sizeof(unsigned char) * text->length);
   strncpy(buf, (text->ptr + text->firstPos), text->length);
   piece = FindPiece(src, position, &first);
   ptr = (position - first) + piece->text;
@@ -817,11 +817,11 @@ WriteToFile(src, string, name)
 AsciiSrcWidget src;
 String string, name;
 {
-  char buf[BUFSIZ];
+  char unsigned buf[BUFSIZ];
   int fd;
   
   if ( ((fd = creat(name, 0666)) == -1 ) ||
-       (write(fd, string, sizeof(char) * strlen(string)) == -1) ) {
+       (write(fd, string, sizeof(unsigned char) * strlen(string)) == -1) ) {
     sprintf(buf, "Error, while attempting to write to the file %s.", name);
     XtAppWarning(XtWidgetToApplicationContext((Widget) src), buf); 
     return(FALSE);
@@ -849,7 +849,7 @@ AsciiSrcWidget src;
   XawTextPosition first;
   Piece * piece;
 
-  string = XtMalloc(sizeof(char) * src->ascii_src.length + 1);
+  string = XtMalloc(sizeof(unsigned char) * src->ascii_src.length + 1);
   
   for (first = 0, piece = src->ascii_src.first_piece ; piece != NULL; 
        first += piece->used, piece = piece->next) 
@@ -974,11 +974,11 @@ char * string;
 
   if (string == NULL) {
     if (src->ascii_src.type == XawAsciiFile) {
-      local_str = XtMalloc((src->ascii_src.length + 1) * sizeof(char));
+      local_str = XtMalloc((src->ascii_src.length + 1) *sizeof(unsigned char));
       if (src->ascii_src.length != 0) {
 	fseek(file, 0L, 0);
-	if ( fread(local_str, sizeof(char), src->ascii_src.length, file) != 
-	     src->ascii_src.length ) 
+	if ( fread(local_str, sizeof(unsigned char),
+		   src->ascii_src.length, file) != src->ascii_src.length ) 
 	  XtErrorMsg("readError", "asciiSourceCreate", "XawError",
 		     "fread returned error.", NULL, NULL);
       }
@@ -1013,7 +1013,7 @@ char * string;
   do {
     piece = AllocNewPiece(src, piece);
 
-    piece->text = XtMalloc(src->ascii_src.piece_size * sizeof(char));
+    piece->text = XtMalloc(src->ascii_src.piece_size * sizeof(unsigned char));
     piece->used = Min(left, src->ascii_src.piece_size);
     if (piece->used != 0)
       strncpy(piece->text, ptr, piece->used);
@@ -1143,7 +1143,7 @@ MyStrncpy(s1, s2, n)
 char * s1, * s2;
 int n;
 {
-  char * temp = XtMalloc(sizeof(char) * n);
+  char * temp = XtMalloc(sizeof(unsigned char) * n);
 
   strncpy(temp, s2, n);		/* Saber has a bug that causes it to generate*/
   strncpy(s1, temp, n);		/* a bogus warning message here (CDP 6/32/89)*/
@@ -1167,7 +1167,7 @@ Piece * piece;
 {
   Piece * new = AllocNewPiece(src, piece);
   
-  new->text = XtMalloc(src->ascii_src.piece_size * sizeof(char));
+  new->text = XtMalloc(src->ascii_src.piece_size * sizeof(unsigned char));
   strncpy(new->text, piece->text + HALF_PIECE,
 	  src->ascii_src.piece_size - HALF_PIECE);
   piece->used = HALF_PIECE;
