@@ -118,7 +118,8 @@ new resource specification:
 
 Because class and instance names are distinguishable by case, both types of
 names may be given in a single resource specification.  Section 10.11 of the
-Xlib manual gives the following additional examples:
+Xlib manual gives the following additional examples (note, the "xmh" program
+may use other names, these are for example only):
 
 	xmh*background:                      red
 	*command.font:                       8x13
@@ -175,19 +176,19 @@ following on my desktop workstation to get my base environment going:
 	xmodmap -p $HOME/.Xkm
 	xset b 100 400 c 50 s 1800
 	uwm &
-	xclock =48x48-1+1 &
-	xload =48x48-1+100 &
+	xclock -geometry 48x48-1+1 &
+	xload -geometry 48x48-1+100 &
 
 The xrdb program reads my global defaults from $HOME/.Xres.  This is where
 I define resources that I want to have used by clients on every machine:
 
 	bitmap*Dashed:  off
-	xterm*multiScroll:  on
-	xterm*jumpScroll:  on
-	xterm*reverseWrap:  on
-	xterm*curses:  on
-	xterm*font:  6x10
-	emacs*Geometry:  65x80-10-10
+	XTerm*multiScroll:  on		[that the class name is XTerm instead
+	XTerm*jumpScroll:  on		 of Xterm is a bug in xterm]
+	XTerm*reverseWrap:  on
+	XTerm*curses:  on
+	XTerm*font:  6x10
+	emacs*Geometry:  80x65-0-0
 	emacs*Background:  #5b7686
 	emacs*Foreground:  white
 	emacs*Cursor:  white
@@ -199,9 +200,9 @@ distinguish windows on various machines) in a file called ~/.Xenv and
 set the XENVIRONMENT variable in my .login to point to that file.  For 
 example, I use the following defaults on my desktop workstation:
 
-	xterm*Background:  black
-	xterm*Foreground:  green
-	xterm*BorderColor:  white
+	XTerm*Background:  black
+	XTerm*Foreground:  green
+	XTerm*BorderColor:  white
 	xclock*analog:  on
 	xclock*borderWidth: 0
 	xclock*padding: 2
@@ -216,17 +217,21 @@ allows me to just login, type "xsetup", and get right to work.  Continuing
 the example started above, here is the xsetup file that I use on my server:
 
 	#!/bin/sh
-	xterm -geometry =80x55+0+0 &
-	xterm -geometry =80x65+488+1 &
-	xterm -geometry =80x20+0-0  &
+	xterm -geometry 80x55+0+0 &
+	xterm -geometry 80x65+488+1 &
+	xterm -geometry 80x20+0-0  &
 	xload =48x48-1+150 &
 	xbiff -rv =48x48-1+50 &
 
 and the corresponding .Xenv file:
 
-	xterm*Foreground:  white
-	xterm*Background:  #c00
-	xterm*BorderColor:  white
+	XTerm*Foreground:  white
+	XTerm*Background:  #c00
+	XTerm*BorderColor:  white
+	tinyxterm*Font: 3x5
+	tinyxterm*Geometry: 80x24
+	bigxterm*Font: 9x15
+	bigxterm*Geometry:  80x55
 	xload*Background: black
 	xload*Foreground: red
 	xbiff*borderWidth: 0
@@ -234,9 +239,14 @@ and the corresponding .Xenv file:
 	xbiff*Foreground: blue
 	xbiff*reverseVideo: on
 
-The xrdb program uses the C preprocessor to provide conditionals so that you
-can define different defaults for different types of servers.  See the manual
-page for more details.
+Note the use of the alternative instance names "tinyxterm" and "bigxterm".
+This allows me to quickly get a different "flavor" of xterm by simply 
+invoking "xterm -name tinyxterm" or "xterm -name bigxterm".
+
+The xrdb program uses the C preprocessor to provide conditionals based on
+the configuration of the server being used.  This is very useful if you 
+commonly use different types of servers (such as monochrome and color) 
+from the same account.  See the xrdb(1) manual page for more details.
 
 
 
