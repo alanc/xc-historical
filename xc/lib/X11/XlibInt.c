@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.126 90/12/09 16:29:28 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.127 90/12/13 15:54:45 rws Exp $
  */
 
 #include "copyright.h"
@@ -1201,9 +1201,7 @@ static char *_SysErrorMsg (n)
 
 /*
  * _XDefaultIOError - Default fatal system error reporting routine.  Called 
- * when an X internal system error is encountered.  Note that the Xlib manual
- * specifies that this routine will print an error message and then exit.
- * People who don't like it should install their own error handler.
+ * when an X internal system error is encountered.
  */
 _XDefaultIOError (dpy)
 	Display *dpy;
@@ -1220,8 +1218,6 @@ _XDefaultIOError (dpy)
 	    (void) fprintf (stderr,
 	 "      The connection was probably broken by a server shutdown or KillClient.\r\n");
 	}
-
-	exit (1);
 }
 
 
@@ -1374,17 +1370,18 @@ int _XError (dpy, rep)
 }
     
 /*
- * _XIOError - prepare to upcall user connection error handler
+ * _XIOError - call user connection error handler and exit
  */
 int _XIOError (dpy)
     Display *dpy;
 {
     dpy->flags |= XlibDisplayIOError;
     if (_XIOErrorFunction != NULL) {
-	return ((*_XIOErrorFunction)(dpy));		/* upcall */
+	return ((*_XIOErrorFunction)(dpy));
     } else {
-	return _XDefaultIOError(dpy);			/* exits */
+	return _XDefaultIOError(dpy);
     }
+    exit (1);
 }
 
 
