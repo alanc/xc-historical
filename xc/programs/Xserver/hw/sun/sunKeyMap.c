@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.15 93/09/28 14:29:11 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.17 93/12/08 12:03:58 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -32,43 +32,36 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include	"keysym.h"
 #include	"Sunkeysym.h"
 
-/*
- * Which keyboards should we support?
- * Default is that all keyboards are supported
- * Each keyboard type occupies approx 2.5K so you are recomended
- * to remove support for all keyboards except those you are going
- * to use. To remove support for a keyboard type just remove the
- * corresponding define below.
- */
-#define CANADA4
-#define DENMARK4
-#define DENMARK5
-#define FRANCE5
-#define FRANCEBELG4
-#define GERMANY4
-#define GERMANY5
+/* By default all keyboards are supported */
+#define CAN4
+#define DEN4
+#define DEN5
+#define FR5
+#define FRBE4
+#define GER4
+#define GER5
 #define ITALY4
 #define ITALY5
 #define JAPAN4
 #define JAPAN5
 #define KOREA4
 #define KOREA5
-#define NETHERLAND4
-#define NETHERLAND5
-#define NORWAY4
-#define NORWAY5
-#define PORTUGAL4
-#define PORTUGAL5
+#define NETH4
+#define NETH5
+#define NORW4
+#define NORW5
+#define PORT4
+#define PORT5
 #define SPAIN5
 #define SPAINLATAM4 
-#define SWEDEN5
-#define SWEDENFIN4
-#define SWISSFR4
-#define SWISSFR5
-#define SWISSGE4
-#define SWISSGE5
-#define TAIWAN4
-#define TAIWAN5
+#define SWED5
+#define SWEDFIN4
+#define SWFR4
+#define SWFR5
+#define SWGE4
+#define SWGE5
+#define TAI4
+#define TAI5
 #define UK4
 #define UK5
 #define US101A
@@ -245,10 +238,10 @@ static KeySym US2Keymap[] = {
 };
 
 static SunModmapRec US2Modmap[] = {
-	106,	(ShiftMask),
-	117,	(ShiftMask),
-	83,	(ControlMask),
-	127,	(Mod1Mask),
+	106,	ShiftMask,
+	117,	ShiftMask,
+	83,	ControlMask,
+	127,	Mod1Mask,
 	0,	0
 };
 
@@ -392,11 +385,11 @@ static KeySym US3Keymap[] = {
 };
 
 static SunModmapRec US3Modmap[] = {
-	106,	(ShiftMask),
-	117,	(ShiftMask),
-	83,	(ControlMask),
-	126,	(LockMask),
-	127,	(Mod1Mask),
+	106,	ShiftMask,
+	117,	ShiftMask,
+	83,	ControlMask,
+	126,	LockMask,
+	127,	Mod1Mask,
 	0,	0
 };
 
@@ -424,7 +417,88 @@ SunModmapRec *sunModMaps[] = {
     NULL
 };
 
-#ifdef CANADA4
+static SunModmapRec Generic5Modmap[] = {
+	99,	ShiftMask,
+	110,	ShiftMask,
+	119,	LockMask,
+	76,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	13,	Mod2Mask,
+	19,	Mod3Mask,
+	98,	Mod4Mask,
+	0,	0
+};
+
+#if defined(JAPAN4) || defined(TAI4) || defined(UK4) || defined(US4)
+
+static SunModmapRec JapanTaiUKUS4Modmap[] = {
+	99,	ShiftMask,
+	110,	ShiftMask,
+	119,	LockMask,
+	76,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	13,	Mod2Mask,
+	19,	Mod3Mask,
+	98,	Mod4Mask,
+	0,	0
+};
+
+#endif
+
+#if defined(DEN4) || defined(SWEDFIN4) || defined(SWFR4) || defined(SWGE4)
+
+static SunModmapRec DenSwedFinSw4Modmap[] = {
+	99,	ShiftMask,
+	110,	ShiftMask,
+	76,	LockMask,
+	119,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	67,	Mod2Mask,
+	19,	Mod3Mask,
+	98,	Mod4Mask,
+	0,	0
+};
+
+#endif
+
+#if defined(FRBE4) || defined(NETH4)
+
+static SunModmapRec FrBeNeth4Modmap[] = {
+	99,	ShiftMask,
+	110,	ShiftMask,
+	13,	LockMask,
+	76,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	119,	Mod2Mask,
+	19,	Mod3Mask,
+	98,	Mod4Mask,
+	0,	0
+};
+
+#endif
+
+#if defined(ITALY4) || defined(NOR4) || defined(PORT4) || defined(SPAINLATAM4)
+
+static SunModmapRec ItNorPortSp4Modmap[] = {
+	99,	ShiftMask,
+	110,	ShiftMask,
+	76,	LockMask,
+	119,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	13,	Mod2Mask,
+	19,	Mod3Mask,
+	98,	Mod4Mask,
+	0,	0
+};
+
+#endif
+
+#ifdef CAN4
 
 static KeySym Canada4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -555,14 +629,15 @@ static KeySym Canada4Keymap[] = {
 };
 
 static SunModmapRec Canada4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	13,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	119,	(Mod2Mask),
-	19,	(Mod3Mask),
+	99,	ShiftMask,
+	110,	ShiftMask,
+	76,	LockMask,
+	13,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	119,	Mod2Mask,
+	19,	Mod3Mask,
+	98,	Mod4Mask,
 	0,	0
 };
 
@@ -574,7 +649,7 @@ static SunModmapRec Canada4Modmap[] = {
 #endif /* CANADA4 */
 
 
-#ifdef DENMARK4
+#ifdef DEN4
 
 static KeySym Denmark4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -704,17 +779,7 @@ static KeySym Denmark4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Denmark4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	67,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Denmark4Modmap DenSwedFinSw4Modmap
 
 #else
 
@@ -724,7 +789,7 @@ static SunModmapRec Denmark4Modmap[] = {
 #endif /* DENMARK4 */
 
 
-#ifdef DENMARK5
+#ifdef DENMK5
 
 static KeySym Denmark5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -854,17 +919,7 @@ static KeySym Denmark5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Denmark5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Denmark5Modmap Generic5Modmap
 
 #else
 
@@ -874,7 +929,7 @@ static SunModmapRec Denmark5Modmap[] = {
 #endif /* DENMARK5 */
 
 
-#ifdef FRANCE5
+#ifdef FR5
 
 static KeySym France5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -1004,17 +1059,7 @@ static KeySym France5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec France5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define France5Modmap Generic5Modmap
 
 #else
 
@@ -1024,7 +1069,7 @@ static SunModmapRec France5Modmap[] = {
 #endif /* FRANCE5 */
 
 
-#ifdef FRANCEBELG4
+#ifdef FRBE4
 
 static KeySym FranceBelg4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -1154,17 +1199,7 @@ static KeySym FranceBelg4Keymap[] = {
 	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec FranceBelg4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	13,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	119,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define FranceBelg4Modmap FrBeNeth4Modmap
 
 #else
 
@@ -1174,7 +1209,7 @@ static SunModmapRec FranceBelg4Modmap[] = {
 #endif /* FRANCEBELG4 */
 
 
-#ifdef GERMANY4
+#ifdef GER4
 
 static KeySym Germany4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -1305,14 +1340,15 @@ static KeySym Germany4Keymap[] = {
 };
 
 static SunModmapRec Germany4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	19,	(Mod2Mask),
-	13,	(Mod3Mask),
+	99,	ShiftMask,
+	110,	ShiftMask,
+	76,	LockMask,
+	119,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	19,	Mod2Mask,
+	13,	Mod3Mask,
+	98,	Mod4Mask,
 	0,	0
 };
 
@@ -1324,7 +1360,7 @@ static SunModmapRec Germany4Modmap[] = {
 #endif /* GERMANY4 */
 
 
-#ifdef GERMANY5
+#ifdef GER5
 
 static KeySym Germany5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -1454,17 +1490,7 @@ static KeySym Germany5Keymap[] = {
 	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Germany5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Germany5Modmap Generic5Modmap
 
 #else
 
@@ -1604,17 +1630,7 @@ static KeySym Italy4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Italy4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Italy4Modmap ItNorPortSp4Modmap
 
 #else
 
@@ -1754,17 +1770,7 @@ static KeySym Italy5Keymap[] = {
 	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Italy5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Italy5Modmap Generic5Modmap
 
 #else
 
@@ -1904,17 +1910,7 @@ static KeySym Japan4Keymap[] = {
 	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Japan4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Japan4Modmap JapanTaiUKUS4Modmap
 
 #else
 
@@ -2054,17 +2050,7 @@ static KeySym Japan5Keymap[] = {
 	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Japan5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Japan5Modmap Generic5Modmap
 
 #else
 
@@ -2205,14 +2191,15 @@ static KeySym Korea4Keymap[] = {
 };
 
 static SunModmapRec Korea4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	111,	(Mod2Mask),
-	19,	(Mod3Mask),
+	99,	ShiftMask,
+	110,	ShiftMask,
+	119,	LockMask,
+	76,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	111,	Mod2Mask,
+	19,	Mod3Mask,
+	98,	Mod4Mask,
 	0,	0
 };
 
@@ -2354,17 +2341,7 @@ static KeySym Korea5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Korea5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Korea5Modmap Generic5Modmap
 
 #else
 
@@ -2374,7 +2351,7 @@ static SunModmapRec Korea5Modmap[] = {
 #endif /* KOREA5 */
 
 
-#ifdef NETHERLAND4
+#ifdef NETH4
 
 static KeySym Netherland4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -2504,17 +2481,7 @@ static KeySym Netherland4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Netherland4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	13,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	119,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Netherland4Modmap FrBeNeth4Modmap
 
 #else
 
@@ -2524,7 +2491,7 @@ static SunModmapRec Netherland4Modmap[] = {
 #endif /* NETHERLAND4 */
 
 
-#ifdef NETHERLAND5
+#ifdef NETH5
 
 static KeySym Netherland5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -2654,17 +2621,7 @@ static KeySym Netherland5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Netherland5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Netherland5Modmap Generic5Modmap
 
 #else
 
@@ -2674,7 +2631,7 @@ static SunModmapRec Netherland5Modmap[] = {
 #endif /* NETHERLAND5 */
 
 
-#ifdef NORWAY4
+#ifdef NOR4
 
 static KeySym Norway4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -2804,17 +2761,7 @@ static KeySym Norway4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Norway4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Norway4Modmap ItNorPortSp4Modmap
 
 #else
 
@@ -2824,7 +2771,7 @@ static SunModmapRec Norway4Modmap[] = {
 #endif /* NORWAY4 */
 
 
-#ifdef NORWAY5
+#ifdef NOR5
 
 static KeySym Norway5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -2954,17 +2901,7 @@ static KeySym Norway5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Norway5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Norway5Modmap Generic5Modmap
 
 #else
 
@@ -2974,7 +2911,7 @@ static SunModmapRec Norway5Modmap[] = {
 #endif /* NORWAY5 */
 
 
-#ifdef PORTUGAL4
+#ifdef PORT4
 
 static KeySym Portugal4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -3104,17 +3041,7 @@ static KeySym Portugal4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Portugal4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Portugal4Modmap ItNorPortSp4Modmap
 
 #else
 
@@ -3124,7 +3051,7 @@ static SunModmapRec Portugal4Modmap[] = {
 #endif /* PORTUGAL4 */
 
 
-#ifdef PORTUGAL5
+#ifdef PORT5
 
 static KeySym Portugal5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -3254,17 +3181,7 @@ static KeySym Portugal5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Portugal5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Portugal5Modmap Generic5Modmap
 
 #else
 
@@ -3404,17 +3321,7 @@ static KeySym Spain5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Spain5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Spain5Modmap Generic5Modmap
 
 #else
 
@@ -3554,17 +3461,7 @@ static KeySym SpainLatAm4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec SpainLatAm4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define SpainLatAm4Modmap ItNorPortSp4Modmap
 
 #else
 
@@ -3574,7 +3471,7 @@ static SunModmapRec SpainLatAm4Modmap[] = {
 #endif /* SPAINLATAM4 */
 
 
-#ifdef SWEDEN5
+#ifdef SWED5
 
 static KeySym Sweden5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -3704,17 +3601,7 @@ static KeySym Sweden5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Sweden5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Sweden5Modmap Generic5Modmap
 
 #else
 
@@ -3724,7 +3611,7 @@ static SunModmapRec Sweden5Modmap[] = {
 #endif /* SWEDEN5 */
 
 
-#ifdef SWEDENFIN4
+#ifdef SWEDFIN4
 
 static KeySym SwedenFin4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -3854,17 +3741,7 @@ static KeySym SwedenFin4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec SwedenFin4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	67,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define SwedenFin4Modmap DenSwedFinSw4Modmap
 
 #else
 
@@ -3874,7 +3751,7 @@ static SunModmapRec SwedenFin4Modmap[] = {
 #endif /* SWEDENFIN4 */
 
 
-#ifdef SWISSFR4
+#ifdef SWFR4
 
 static KeySym SwissFr4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -4004,17 +3881,7 @@ static KeySym SwissFr4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec SwissFr4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	67,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define SwissFr4Modmap DenSwedFinSw4Modmap
 
 #else
 
@@ -4024,7 +3891,7 @@ static SunModmapRec SwissFr4Modmap[] = {
 #endif /* SWISSFR4 */
 
 
-#ifdef SWISSFR5
+#ifdef SWFR5
 
 static KeySym SwissFr5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -4154,17 +4021,7 @@ static KeySym SwissFr5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec SwissFr5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define SwissFr5Modmap Generic5Modmap
 
 #else
 
@@ -4174,7 +4031,7 @@ static SunModmapRec SwissFr5Modmap[] = {
 #endif /* SWISSFR5 */
 
 
-#ifdef SWISSGE4
+#ifdef SWGE4
 
 static KeySym SwissGe4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -4304,17 +4161,7 @@ static KeySym SwissGe4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec SwissGe4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	76,	(LockMask),
-	119,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	67,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define SwissGe4Modmap DenSwedFinSw4Modmap
 
 #else
 
@@ -4324,7 +4171,7 @@ static SunModmapRec SwissGe4Modmap[] = {
 #endif /* SWISSGE4 */
 
 
-#ifdef SWISSGE5
+#ifdef SWGE5
 
 static KeySym SwissGe5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -4454,17 +4301,7 @@ static KeySym SwissGe5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec SwissGe5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define SwissGe5Modmap Generic5Modmap
 
 #else
 
@@ -4474,7 +4311,7 @@ static SunModmapRec SwissGe5Modmap[] = {
 #endif /* SWITZER_GE5 */
 
 
-#ifdef TAIWAN4
+#ifdef TAI4
 
 static KeySym Taiwan4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -4604,17 +4441,7 @@ static KeySym Taiwan4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Taiwan4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Taiwan4Modmap JapanTaiUKUS4Modmap
 
 #else
 
@@ -4624,7 +4451,7 @@ static SunModmapRec Taiwan4Modmap[] = {
 #endif /* TAIWAN4 */
 
 
-#ifdef TAIWAN5
+#ifdef TAI5
 
 static KeySym Taiwan5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -4754,17 +4581,7 @@ static KeySym Taiwan5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec Taiwan5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define Taiwan5Modmap Generic5Modmap
 
 #else
 
@@ -4904,17 +4721,7 @@ static KeySym UK4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec UK4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define UK4Modmap JapanTaiUKUS4Modmap
 
 #else
 
@@ -5054,17 +4861,7 @@ static KeySym UK5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec UK5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define UK5Modmap Generic5Modmap
 
 #else
 
@@ -5205,12 +5002,13 @@ static KeySym US101AKeymap[] = {
 };
 
 static SunModmapRec US101AModmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	122,	(Mod1Mask),
-	120,	(Mod3Mask),
+	99,	ShiftMask,
+	110,	ShiftMask,
+	119,	LockMask,
+	76,	ControlMask,
+	122,	Mod1Mask,
+	120,	Mod3Mask,
+	98,	Mod4Mask,
 	0,	0
 };
 
@@ -5352,17 +5150,7 @@ static KeySym US4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec US4Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define US4Modmap JapanTaiUKUS4Modmap
 
 #else
 
@@ -5450,7 +5238,7 @@ static KeySym US5Keymap[] = {
 	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
-	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
+	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
 	XK_A,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 77*/
 	XK_S,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 78*/
 	XK_D,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 79*/
@@ -5493,7 +5281,7 @@ static KeySym US5Keymap[] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
 	XK_Help,	NoSymbol,	NoSymbol,	NoSymbol,	/*118*/
-	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/*119*/
+	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/*119*/
 	XK_Meta_L,	NoSymbol,	NoSymbol,	NoSymbol,	/*120*/
 	XK_space,	NoSymbol,	NoSymbol,	NoSymbol,	/*121*/
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
@@ -5503,14 +5291,15 @@ static KeySym US5Keymap[] = {
 };
 
 static SunModmapRec US5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
+	99,	ShiftMask,
+	110,	ShiftMask,
+	76,	LockMask,
+	119,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
+	13,	Mod2Mask,
+	19,	Mod3Mask,
+	98,	Mod4Mask,
 	0,	0
 };
 
@@ -5520,7 +5309,6 @@ static SunModmapRec US5Modmap[] = {
 #define US5Modmap NULL
 
 #endif /* US5 */
-
 
 #ifdef US_UNIX5
 
@@ -5652,17 +5440,7 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec US_UNIX5Modmap[] = {
-	99,	(ShiftMask),
-	110,	(ShiftMask),
-	119,	(LockMask),
-	76,	(ControlMask),
-	120,	(Mod1Mask),
-	122,	(Mod1Mask),
-	13,	(Mod2Mask),
-	19,	(Mod3Mask),
-	0,	0
-};
+#define US_UNIX5Modmap Generic5Modmap
 
 #else
 
