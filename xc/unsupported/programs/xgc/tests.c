@@ -1,5 +1,5 @@
 /*
-** tests.c
+** $XConsortium$
 **
 */
 
@@ -26,7 +26,9 @@
 #define random lrand48
 #endif
 
+#ifndef sgi
 extern long random();
+#endif
 
 extern XStuff X;
 extern Widget result;
