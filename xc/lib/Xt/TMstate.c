@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.105 90/07/03 08:12:54 swick Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.106 90/07/03 17:27:49 swick Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1881,8 +1881,8 @@ static void MergeAccProcTbls (mergedT, oldT, newT)
     XtBoundAccActions accProcTbl;
     int i;
 
-    if (oldT == NULL && newT == NULL) return;
     if (stateTable->accNumQuarks == 0) return;
+    if (oldT == NULL && newT == NULL) return;
     *mergedT = (XtTranslations)XtMalloc(
 	     (stateTable->accNumQuarks * (Cardinal)sizeof(XtBoundAccActionRec))
 	      + sizeof(TranslationData));
@@ -1920,13 +1920,11 @@ Widget acceleratorSource; /* Non-NULL if new_translations are an unbound
     ConverterPtr cP;
     Boolean        free_bound_translations = FALSE;
 
-    static XrmQuark from_type, to_type;
-    static Boolean initialized = FALSE;
+    static XrmQuark from_type = NULLQUARK, to_type;
 
-    if (!initialized) {
+    if (from_type == NULLQUARK) {
 	from_type = XrmStringToRepresentation(_XtRStateTablePair);
 	to_type = XrmStringToRepresentation(XtRTranslationTable);
-	initialized = TRUE;
     }
 
     from.addr = (XtPointer)&convert_rec;
