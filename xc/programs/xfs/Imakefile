@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 91/07/31 22:36:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 91/09/08 14:13:39 rws Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -46,6 +46,28 @@ InstallManPage(fs,$(MANDIR))
 
 #if InstallFSConfig
 InstallNonExecFile(config,$(FSLIBDIR))
+#endif
+
+#if HasSaberC
+saber_fs:
+	# cd difs
+	# make saber
+	# cd ../os
+	# make saber
+	# cd ../../lib/font/bitmap
+	# make saber
+	# cd ../fontfile
+	# make saber
+	# cd ../fc
+	# make saber
+	# cd ../Speedo
+	# make saber
+	# cd ../Type1
+	# make saber
+	# cd ../util
+	# make saber
+	# unload atom.c miscutil.c
+	# cd ../../../server
 #endif
 
 DependSubdirs($(SUBDIRS))
