@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.18 93/08/06 15:24:14 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 5.19 93/08/06 15:35:23 kaleb Exp $
 #include <Server.tmpl>
 
 #if defined(SparcArchitecture)
@@ -47,8 +47,8 @@ OBJS = 	sunCfb.o \
 	$(GXOBJ) \
 	sunKeyMap.o
 
-   INCLUDES = -I. -I../mfb -I../mi -I../cfb -I../../include\
-   		-I$(INCLUDESRC) -I$(FONTSRC)/include
+   INCLUDES = -I. -I../../mfb -I../../mi -I../../cfb -I../../include\
+   		-I$(INCLUDESRC) -I$(FONTINCSRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 
@@ -67,7 +67,7 @@ LinkFile(sunGX.o,$(GXOBJDIST))
 
 #ifndef i386Architecture
 sunInitExtMono.o: $(ICONFIGFILES)
-ObjectFromSpecialSource(sunInitExtMono,../mi/miinitext,-UPEXEXT)
+ObjectFromSpecialSource(sunInitExtMono,../../mi/miinitext,-UPEXEXT)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DMONO_ONLY)
 #endif
 

@@ -1,7 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.5 91/07/17 16:04:23 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/08/20 11:37:04 rws Exp $
 LOCAL_LIBRARIES = $(FONTLIB)
 DEPLIBS = $(DEPFONTLIB)
-INCLUDES = -I$(FONTSRC)/include -I$(FONTLIBSRC)/include
+INCLUDES = -I$(FONTINCSRC) -I$(FONTLIBSRC)/include
 SRCS = bdftopcf.c
 OBJS = bdftopcf.o
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Imakefile,v 1.1 93/08/08 12:58:19 rws Exp $ */
+/* $XConsortium: Imakefile,v 1.2 93/08/08 13:12:47 rws Exp $ */
 #include <Server.tmpl>
 
 ORIG_SRCS =	nglescreen.c	\
@@ -28,9 +28,9 @@ OBJS = $(ORIG_OBJS) $(SCROLLING_OBJ)
 
 DEFINES = $(FAST_SCROLLING_DEFINES)
 
-INCLUDES = -I. -I.. -I../include -I../../mfb -I../../cfb -I../../mi \
-	-I../../../include -I$(INCLUDESRC) -I../../../../extensions/include \
-	-I../../../../fonts/include
+INCLUDES = -I. -I.. -I../include -I../../../mfb -I../../../cfb -I../../../mi \
+	-I../../../include -I$(INCLUDESRC) -I$(EXTINCSRC) \
+	-I$(FONTINCSRC)
 
 LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/4.2bsd/llib-los.ln \
 	../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln ../../cfb/llib-lcfb.ln

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.10 92/05/28 16:33:04 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.11 92/06/01 14:05:26 gildea Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 
@@ -11,7 +11,7 @@ OBJS =  main.o dispatch.o extensions.o globals.o events.o tables.o \
 	fonts.o difsutils.o cache.o initfonts.o atom.o
 
 
-INCLUDES = -I../include -I$(FONTSRC)/include
+INCLUDES = -I../include -I$(FONTINCSRC)
 FONTDEFINES = -DFONT_PCF -DFONT_FS -DFONT_SPEEDO
 #ifdef DefaultFSConfigFile
 DEFAULTCONFIGFILE = DefaultFSConfigFile

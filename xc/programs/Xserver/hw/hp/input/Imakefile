@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/08/08 12:58:22 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/08/08 13:11:07 rws Exp $
 #include <Server.tmpl>
 
 #if defined(HPArchitecture) || defined(HPOSFArchitecture)
@@ -81,8 +81,8 @@ LOBJS = \
 	getkeysym.ln
 
    INCLUDES = -I. -I.. -I../include -I../../../include -I./X11 \
-	      -I../../cfb -I../../mfb -I../../mi \
-	      -I$(INCLUDESRC) -I../../../../extensions/include
+	      -I../../../cfb -I../../../mfb -I../../../mi \
+	      -I$(INCLUDESRC) -I$(EXTINCSRC)
    LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/hpux/llib-los.ln
 
 NormalLibraryObjectRule()

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/07/12 15:29:07 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/07/19 17:48:55 rws Exp $
 #include <Server.tmpl>
 
 SRCS = 	Args.c \
@@ -38,9 +38,9 @@ OBJS = 	Args.o \
 	Window.o
 
 
-INCLUDES = -I. -I../../../X11 -I../../../fonts/include \
-	   -I../mi -I../../include -I../../os  \
-           -I../../../extensions/include -I$(INCLUDESRC)
+INCLUDES = -I. -I$(BUILDINCDIR) -I$(FONTINCSRC) \
+	   -I../../mi -I../../include -I../../os  \
+           -I$(EXTINCSRC) -I$(INCLUDESRC)
 
 all:: $(OBJS)
 

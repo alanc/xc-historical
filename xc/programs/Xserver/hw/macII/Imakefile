@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.22 91/07/16 22:51:42 gildea Exp $
 #include <Server.tmpl>
 
 SRCS =	\
@@ -23,7 +23,7 @@ OBJS = \
 	macIIUtils.o \
 	macIIKMap.o
 
-   INCLUDES = -I.  -I../../include -I../mi -I../mfb -I../../dix -I$(INCLUDESRC)
+   INCLUDES = -I.  -I../../include -I../../mi -I../../mfb -I$(INCLUDESRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 

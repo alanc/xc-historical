@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.19 93/08/24 18:54:50 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.18 93/08/20 11:43:24 rws Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -13,7 +13,7 @@ BSDEMUL = $(LIBSRC)/Berk/Berklib.o
 #endif
 
 FSDIRS = $(OSDIR) $(DIFSDIR) $(PCFDIRS)
-FSLIBS = $(DIFSLIB) $(FONTLIB) $(DIFSLIB) $(OSLIB) $(BSDEMUL)
+FSLIBS = $(DIFSLIB) $(DEPFONTLIB) $(DIFSLIB) $(OSLIB) $(BSDEMUL)
 #ifdef MacIIArchitecture
 MFSDIRS = MacFS
 #endif
@@ -25,25 +25,25 @@ FSERRORS = $(FSLIBDIR)/fs-errors
 DEFAULTFONTPATH = DefaultFontPath
 SITE_CONFIG = -DDEFAULTFONTPATH=$(DEFAULTFONTPATH) -DFSERRORS=$(FSERRORS)
 
-all:: fs config $(MFSDIRS)
+all:: xfs config $(MFSDIRS)
 
-ServerTarget(fs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
+ServerTarget(xfs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
 
 CppFileTarget(config,config.cpp,$(SITE_CONFIG),$(ICONFIGFILES))
 
-InstallManPage(fs,$(MANDIR))
+InstallManPage(xfs,$(MANDIR))
 
 #if InstallFSConfig
 InstallNonExecFile(config,$(FSLIBDIR))
 #endif
 
 #if HasSaberC
-saber_fs:
+saber_xfs:
 	XCOMM cd difs
 	XCOMM make saber
 	XCOMM cd ../os
 	XCOMM make saber
-	XCOMM cd ../../lib/font/bitmap
+	XCOMM cd ../../../lib/font/bitmap
 	XCOMM make saber
 	XCOMM cd ../fontfile
 	XCOMM make saber
@@ -56,7 +56,7 @@ saber_fs:
 	XCOMM cd ../util
 	XCOMM make saber
 	XCOMM unload atom.c miscutil.c
-	XCOMM cd ../../../server
+	XCOMM cd ../../../programs/xfs
 #endif
 
 DependSubdirs($(SUBDIRS))

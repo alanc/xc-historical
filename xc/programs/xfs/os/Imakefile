@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 92/05/27 18:03:34 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 92/08/10 20:49:37 eswu Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 
@@ -7,7 +7,7 @@ SRCS =	connection.c waitfor.c io.c utils.c osinit.c \
 OBJS =  connection.o waitfor.o io.o utils.o osinit.o \
 	config.o access.o osglue.o error.o
 
-INCLUDES = -I../include -I$(FONTSRC)/include
+INCLUDES = -I../include -I$(FONTINCSRC)
 
 CONN_DEFINES = ConnectionFlags
 

@@ -8,7 +8,7 @@ OBJS =  omronUtils.o omronDtBm.o omronFsBm.o omron88kBm.o \
 	omronInit.o omronIo.o omronKMap.o \
 	omronKbd.o omronMouse.o
 
-INCLUDES = -I. -I../../include -I../mfb -I../mi -I../../os -I$(INCLUDESRC) -I$(TOP)
+INCLUDES = -I. -I../../include -I../../mfb -I../../mi -I../../os -I$(INCLUDESRC)
 
 NormalLibraryObjectRule()
 
