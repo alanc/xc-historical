@@ -589,7 +589,32 @@ that are read in from various places when an application is run.  By
 convention, the application name is the same as the program name, but with 
 the first letter capitalized (e.g. \fIBitmap\fP or \fIEmacs\fP) although
 some programs that begin with the letter ``x'' also capitalize the second
-letter for historical reasons.
+letter for historical reasons.  The precise syntax for resources is:
+.PP
+.nf
+.ta 1.5i 1.75i
+ResourceLine	=	Comment | ResourceSpec
+Comment	=	"!" string | <empty line>
+ResourceSpec	=	WhiteSpace ResourceName WhiteSpace ":" WhiteSpace value
+ResourceName	=	[Binding] ComponentName {Binding ComponentName}
+Binding	=	"\&." | "*"
+WhiteSpace	=	{" " | "\\t"}
+ComponentName	=	{"a"\-"z" | "A"\-"Z" | "0"\-"9" | "_" | "-"}
+value	=	string
+string	=	{<any character not including "\\n">}
+.fi
+.PP
+Note that elements enclosed in curly braces ({\&.\&.\&.}) indicate
+zero or more occurrences of the enclosed elements
+.PP
+To allow values to contain arbitrary octets,
+the 4-character sequence \\\fInnn\fP\^,
+where n is a digit in the range of "0"\-"7",
+is recognized and replaced with a single byte that contains
+this sequence interpreted as an octal number.
+For example,
+a value containing a NULL byte can be stored by specifying "\\000".
+.PP
 The \fIXlib\fP routine
 .I XGetDefault(3X)
 and the resource utilities within Xlib and the X Toolkit Intrinsics
