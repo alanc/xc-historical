@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.12 91/04/13 14:24:48 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.13 91/06/08 18:08:45 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -28,6 +28,12 @@
 
 #ifdef hcx
 #define WANT_FFS
+#endif
+
+#ifdef SYSV386
+#ifdef SYSV
+#define WANT_FFS
+#endif
 #endif
 
 /* you should use Xfuncs.h in code instead of relying on Berklib */
