@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.21 90/09/13 18:28:41 keith Exp $
+ * $XConsortium: auth.c,v 1.22 90/09/15 12:13:36 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -416,6 +416,8 @@ struct addrList {
 	char	*address;
 	unsigned short	number_length;
 	char	*number;
+	unsigned short	name_length;
+	char	*name;
 	struct addrList	*next;
 };
 
@@ -442,61 +444,71 @@ doneAddrs ()
 }
 
 static
-saveAddr (family, address_length, address, number_length, number)
-unsigned short	family;
-unsigned short	address_length, number_length;
-char	*address, *number;
+saveEntry (auth)
+Xauth	*auth;
 {
 	struct addrList	*new;
 	char		*malloc ();
 
-	if (checkAddr (family, address_length, address, number_length, number))
+	if (checkEntry (auth))
 		return;
 	new = (struct addrList *) malloc (sizeof (struct addrList));
 	if (!new) {
-		LogOutOfMem ("saveAddr");
+		LogOutOfMem ("saveEntry");
 		return;
 	}
-	if ((new->address_length = address_length) > 0) {
-		new->address = malloc (address_length);
+	if ((new->address_length = auth->address_length) > 0) {
+		new->address = malloc (auth->address_length);
 		if (!new->address) {
-			LogOutOfMem ("saveAddr");
+			LogOutOfMem ("saveEntry");
 			free ((char *) new);
 			return;
 		}
-		bcopy (address, new->address, (int) address_length);
+		bcopy (auth->address, new->address, (int) auth->address_length);
 	} else
 		new->address = 0;
-	if ((new->number_length = number_length) > 0) {
-		new->number = malloc (number_length);
+	if ((new->number_length = auth->number_length) > 0) {
+		new->number = malloc (auth->number_length);
 		if (!new->number) {
-			LogOutOfMem ("saveAddr");
+			LogOutOfMem ("saveEntry");
 			free (new->address);
 			free ((char *) new);
 			return;
 		}
-		bcopy (number, new->number, (int) number_length);
+		bcopy (auth->number, new->number, (int) auth->number_length);
 	} else
 		new->number = 0;
-	new->family = family;
+	if ((new->name_length = auth->name_length) > 0) {
+		new->name = malloc (auth->name_length);
+		if (!new->name) {
+			LogOutOfMem ("saveEntry");
+			free (new->number);
+			free (new->address);
+			free ((char *) new);
+			return;
+		}
+		bcopy (auth->name, new->name, (int) auth->name_length);
+	} else
+		new->name = 0;
+	new->family = auth->family;
 	new->next = addrs;
 	addrs = new;
 }
 
 static
-checkAddr (family, address_length, address, number_length, number)
-unsigned short	family;
-unsigned short	address_length, number_length;
-char	*address, *number;
+checkEntry (auth)
+Xauth	*auth;
 {
 	struct addrList	*a;
 
 	for (a = addrs; a; a = a->next) {
-		if (a->family == family &&
-		    a->address_length == address_length &&
- 		    binaryEqual (a->address, address, address_length) &&
-		    a->number_length == number_length &&
- 		    binaryEqual (a->number, number, number_length))
+		if (a->family == auth->family &&
+		    a->address_length == auth->address_length &&
+ 		    binaryEqual (a->address, auth->address, auth->address_length) &&
+		    a->number_length == auth->number_length &&
+ 		    binaryEqual (a->number, auth->number, auth->number_length) &&
+		    a->name_length == auth->name_length &&
+		    binaryEqual (a->name, auth->name, auth->name_length))
 		{
 			return 1;
 		}
@@ -511,8 +523,7 @@ writeAuth (file, auth)
 FILE	*file;
 Xauth	*auth;
 {
-	saveAddr (auth->family, auth->address_length, auth->address,
-				auth->number_length,  auth->number);
+	saveEntry (auth);
 	if (doWrite)
 	    XauWriteAuth (file, auth);
 }
@@ -901,9 +912,7 @@ struct verify_info	*verify;
 		chmod (new_name, (int) (statb.st_mode & 0777));
 	    /*SUPPRESS 560*/
 	    while (entry = XauReadAuth (old)) {
-		if (!checkAddr (entry->family,
-			       entry->address_length, entry->address,
-			       entry->number_length, entry->number))
+		if (!checkEntry (entry))
 		{
 		    Debug ("Saving an entry\n");
 		    dumpAuth (entry);
@@ -989,9 +998,7 @@ RemoveUserAuthorization (d, verify)
 		chmod (new_name, (int) (statb.st_mode & 0777));
 	    /*SUPPRESS 560*/
 	    while (entry = XauReadAuth (old)) {
-		if (!checkAddr (entry->family,
-			       entry->address_length, entry->address,
-			       entry->number_length, entry->number))
+		if (!checkEntry (entry))
 		{
 		    Debug ("Saving an entry\n");
 		    dumpAuth (entry);
