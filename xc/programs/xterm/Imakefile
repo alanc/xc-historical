@@ -34,6 +34,7 @@
 #endif
 
    MAIN_DEFINES = -DUTMP $(TTYGROUPDEF) $(PUCCPTYDDEF)
+   MISC_DEFINES = /* -DALLOWLOGFILEEXEC */
 
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
@@ -59,6 +60,7 @@
 AllTarget($(PROGRAMS))
 
 SpecialObjectRule(main.o, ,$(MAIN_DEFINES))
+SpecialObjectRule(misc.o, ,$(MISC_DEFINES))
 
 NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 InstallProgramWithFlags(xterm, $(BINDIR), $(INSTUIDFLAGS))
