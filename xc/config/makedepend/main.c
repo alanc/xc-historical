@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.10 88/03/03 08:58:13 swick Exp $
+ * $Header: main.c,v 1.11 88/05/04 13:35:32 jim Exp $
  *
  * $Log:	main.c,v $
+ * Revision 1.11  88/05/04  13:35:32  jim
+ * fix from bug #120; added vax predefine
+ * 
  * Revision 1.10  88/03/03  08:58:13  swick
  * less lint; remove unused variables
  * 
@@ -128,15 +131,25 @@ main(argc, argv)
 	char	*makefile = NULL;
 	struct filepointer	*filecontent;
 	struct symtab *psymp = predefs;
+	char *endmarker = NULL;
 
 	while (psymp->s_name)
 	    *symp++ = *psymp++;
 	for(argc--, argv++; argc; argc--, argv++) {
+	    	/* if looking for endmarker then check before parsing */
+		if (endmarker && strcmp (endmarker, *argv) == 0) {
+		    endmarker = NULL;
+		    continue;
+		}
 		if (**argv != '-') {
 			*fp++ = argv[0];
 			continue;
 		}
 		switch(argv[0][1]) {
+		case '-':
+			endmarker = &argv[0][2];
+			if (endmarker[0] == '\0') endmarker = "--";
+			break;
 		case 'D':
 			symp->s_name = argv[0]+2;
 			if (*symp->s_name == '\0') {
@@ -158,7 +171,9 @@ main(argc, argv)
 				argc--;
 			}
 			break;
+		/* do not use if endmarker processing */
 		case 'w':
+			if (endmarker) break;
 			if (argv[0][2] == '\0') {
 				argv++;
 				argc--;
@@ -167,6 +182,7 @@ main(argc, argv)
 				width = atoi(argv[0]+2);
 			break;
 		case 'o':
+			if (endmarker) break;
 			if (argv[0][2] == '\0') {
 				argv++;
 				argc--;
@@ -175,6 +191,7 @@ main(argc, argv)
 				objfile = argv[0]+2;
 			break;
 		case 'v':
+			if (endmarker) break;
 			verbose = TRUE;
 #ifdef DEBUG
 			if (argv[0][2])
@@ -182,6 +199,7 @@ main(argc, argv)
 #endif
 			break;
 		case 's':
+			if (endmarker) break;
 			startat = argv[0]+2;
 			if (*startat == '\0') {
 				startat = *(++argv);
@@ -192,12 +210,14 @@ main(argc, argv)
 					"with '#'.");
 			break;
 		case 'f':
+			if (endmarker) break;
 			makefile = argv[0]+2;
 			if (*makefile == '\0') {
 				makefile = *(++argv);
 				argc--;
 			}
 			break;
+		
 		/* Ignore -O, -g so we can just pass ${CFLAGS} to
 		   makedepend
 		 */
@@ -205,6 +225,7 @@ main(argc, argv)
 		case 'g':
 			break;
 		default:
+			if (endmarker) break;
 	/*		log_fatal("unknown opt = %s\n", argv[0]); */
 			log("ignoring option %s\n", argv[0]);
 		}
