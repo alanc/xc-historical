@@ -1,4 +1,4 @@
-.\" $XConsortium: relnote.mm,v 1.1 92/06/11 15:33:11 rws Exp $
+.\" $XConsortium: relnotes.mm,v 1.2 92/06/30 19:29:25 rws Exp $
 .de TP
 .sp 1
 .tl \\*(}t
@@ -95,7 +95,7 @@ that way or if you require more details.
 .HU "Submitting bug reports"
 Please submit bug reports on this release
 to MIT using the email address xtest-bugs@expo.lcs.mit.edu.
-Use the report template provided in the file xtest/doc/bug-report.
+Use the report template provided in the file bug-report.
 .P
 UniSoft will continue to provide support for the \*(xT release 1.1 for MIT 
 until June 29th, 1992. Until then, 
