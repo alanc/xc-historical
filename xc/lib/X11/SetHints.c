@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetHints.c,v 11.20 87/11/11 14:40:14 rws Exp $ */
+/* $Header: XSetHints.c,v 11.21 88/01/30 10:44:20 jim Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -147,7 +147,7 @@ XSetCommand (dpy, w, argv, argc)
 	int argc;
 {
 	register int i;
-	register unsigned nbytes;
+	register int nbytes;
 	register char *buf, *bp;
 	for (i = 0, nbytes = 0; i < argc; i++) {
 		nbytes += safestrlen(argv[i]) + 1;
@@ -214,7 +214,7 @@ XSetTransientForHint(dpy, w, propWindow)
 	Window propWindow;
 {
 	XChangeProperty(dpy, w, XA_WM_TRANSIENT_FOR, XA_WINDOW, 32,
-		PropModeReplace, (char *) &propWindow, 1);
+		PropModeReplace, (unsigned char *) &propWindow, 1);
 }
 
 void
@@ -241,6 +241,7 @@ XSetClassHint(dpy, w, classhint)
 	else
 	     *s = '\0';
 	XChangeProperty(dpy, w, XA_WM_CLASS, XA_STRING, 8,
-		PropModeReplace, class_string, len_nm+len_cl+2);
+		PropModeReplace, (unsigned char *) class_string, 
+		len_nm+len_cl+2);
 	Xfree(class_string);
 }
