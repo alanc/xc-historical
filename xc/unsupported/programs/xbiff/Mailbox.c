@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.12 88/09/06 16:42:08 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.13 88/09/23 12:07:40 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -78,6 +78,11 @@ static XtResource resources[] = {
 	offset (filename), XtRString, NULL },
     { XtNcheckCommand, XtCCheckCommand, XtRString, sizeof(char*),
 	offset (check_command), XtRString, NULL},
+    { XtNvolume, XtCVolume, XtRInt, sizeof(int),
+	offset (volume), XtRString, "33"},
+    { XtNbell, XtCBell, XtRBoolean, sizeof(Boolean),
+	offset (bell), XtRString, "on"},
+
 };
 
 #undef offset
@@ -470,6 +475,6 @@ static void redraw_mailbox (w)
 static void beep (w)
     MailboxWidget w;
 {
-    XBell (XtDisplay (w), MAILBOX_VOLUME);
+    if (w->mailbox.bell) XBell (XtDisplay (w), w->mailbox.volume);
     return;
 }

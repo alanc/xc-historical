@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.7 88/09/06 16:42:15 jim Exp $
+ * $XConsortium: MailboxP.h,v 1.8 88/09/06 18:14:27 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,7 +23,6 @@
 #include <X11/CoreP.h>
 
 #define MAILBOX_DIRECTORY "/usr/spool/mail"
-#define MAILBOX_VOLUME 33		/* percentage */
 
 typedef struct {			/* new fields for mailbox widget */
     /* resources */
@@ -39,6 +38,8 @@ typedef struct {			/* new fields for mailbox widget */
     Boolean flag_up;			/* is the flag up? */
     Pixmap flagup_pixmap;		/* for when there is mail */
     Pixmap flagdown_pixmap;		/* for when there isn't mail */
+    int volume;				/* bell volume */
+    Boolean bell;			/* t:ring bell, f:don't */
 } MailboxPart;
 
 typedef struct _MailboxRec {		/* full instance record */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.7 88/09/06 16:42:13 jim Exp $
+ * $XConsortium: Mailbox.h,v 1.8 88/09/06 18:14:22 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,8 +28,12 @@
 #define XtNupdate "update"		/* Int: how often to check mail */
 #define XtNfile "file"			/* String:  file name to check */
 #define XtNcheckCommand "checkCommand"	/* command to exec for mail check */
+#define XtNvolume "volume"		/* Int: volume for bell */
+#define XtNbell "bell"			/* Boolean: t:ring bell, f:don't */
 
 #define XtCCheckCommand "CheckCommand"
+#define XtCVolume "Volume"
+#define XtCBell "Bell"
 
 
 /* structures */
