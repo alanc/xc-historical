@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.58 89/09/19 12:09:23 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.59 89/10/03 08:49:58 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -157,10 +157,6 @@ program: objects deplibs						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ objects locallibs $(LDFLAGS) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
-relink::								@@\
-	$(RM) program							@@\
-	$(MAKE) $(MFLAGS) program					@@\
-									@@\
 clean::									@@\
 	$(RM) program
 #endif /* NormalProgramTarget */
@@ -206,10 +202,6 @@ program: $(OBJS) $(DEPLIBS)						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ $(OBJS) $(LOCAL_LIBRARIES) $(LDFLAGS) $(EXTRA_LOAD_FLAGS) @@\
 									@@\
-relink::								@@\
-	$(RM) $(PROGRAM)						@@\
-	$(MAKE) $(MFLAGS) $(PROGRAM)					@@\
-									@@\
 SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES),)		@@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
@@ -242,10 +234,6 @@ program: $(OBJS1) $(DEPLIBS1)						@@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
-									@@\
-relink::								@@\
-	$(RM) $(PROGRAMS)						@@\
-	$(MAKE) $(MFLAGS) $(PROGRAMS)					@@\
 									@@\
 SaberProgramTarget(program,$(SRCS1),$(OBJS1),locallib,syslib)		@@\
 									@@\
