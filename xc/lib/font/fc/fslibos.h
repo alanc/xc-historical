@@ -1,4 +1,4 @@
-/* $XConsortium: fslibos.h,v 1.10 93/09/23 17:08:41 gildea Exp $ */
+/* $XConsortium: fslibos.h,v 1.11 93/09/25 13:40:07 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -9,42 +9,9 @@
  * FSlib networking & os include file
  */
 
+#include <X11/Xtrans.h>
+
 #ifndef WIN32
-
-/* Sorry, we do not really support streams yet */
-#ifdef STREAMSCONN
-#undef STREAMSCONN
-#endif
-
-#ifdef STREAMSCONN
-#ifdef SYSV
-/*
- * UNIX System V Release 3.2
- */
-#include <sys/stropts.h>
-#define MALLOC_0_RETURNS_NULL
-#include <sys/ioctl.h>
-#endif
-#else
-/*
- * 4.2BSD-based systems
- */
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#include <netdb.h>
-#include <sys/uio.h>
-#ifdef SVR4
-#include <sys/filio.h>
-#endif
-
-#if defined(SYSV386) && defined(SYSV)
-#include <net/errno.h>
-#include <sys/stropts.h>
-#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
-#else
-#define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
-#endif
-#endif				/* streams else tcp */
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -56,12 +23,16 @@
 #endif
 #endif
 #ifndef OPEN_MAX
+#ifdef SVR4
+#define OPEN_MAX 256
+#else
 #include <sys/param.h>
 #ifndef OPEN_MAX
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif
@@ -194,8 +165,6 @@ typedef FdSet FdSetPtr;
 #define Status int
 #undef BOOL
 #include <X11/Xw32defs.h>
-
-#define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
 
 typedef fd_set FdSet;
 typedef FdSet *FdSetPtr;
