@@ -109,14 +109,17 @@ a \fIclient-ID\fP\^ which uniquely identifies them in the session.
 The session manager maintains a list of properties for each client in
 the session.  These properties describe the client's environment,
 and most importantly, describe how the client can be restarted (via an
-\fISmRestartCommand\fP\^).  Clients are expected to initialize a set of
-required properties when they start up.  They should make sure that they encode
-their \fIclient-ID\fP\^ in the \fISmRestartCommand\fP\^, to insure that they
-retain the same ID the next time they are started.  The
-\fISmRestartCommand\fP\^
-will most likely refer to a file which was used to save the local state
-of the client.  In order to disambiguate multiple instantiations of the client,
-the file should have the \fIclient-ID\fP\^ encoded in it's filename.
+\fISmRestartCommand\fP\^).
+Clients are expected to save their state in such a way as to allow multiple
+instantiations of themselves to be managed independently.  For example,
+clients may use their \fIclient-ID\fP\^ as part of a filename in which
+to store the state for a particular instantiation.  The \fIclient-ID\fP\^
+should be saved as part of the \fISmRestartCommand\fP\^ so that the
+client will retain the same ID after it is restarted.  Certain small pieces
+of state may also be stored in the \fISmRestartCommand\fP\^.  For example,
+an X11 client
+may place the `\-iconic' option in its \fISmRestartCommand\fP\^ to indicate
+that it should appear as an icon when it is restarted.
 .LP
 Once the client initializes itself with the session manager, it must be
 ready to respond to messages from the session manager.  For example, it
@@ -167,10 +170,11 @@ which will in turn determine if an ICE connection already exists between
 the client and session manager.  Most likely, a connection will not already
 exist and a new ICE connection will be created.  The main point to be aware
 of is that on the client side, it is not obvious when ICE connections get
-created, since connections are shared when possible.  To solve this problem,
-the ICE library lets the application register \fIwatch procedures\fP\^ which
+created or destroyed, since connections are shared when possible.
+To deal with this, the ICE library lets the application register
+\fIwatch procedures\fP\^ which
 will be invoked each time an ICE connection is opened or closed.  These watch
-procedure could be used to add or remove ICE file descriptors from the list of
+procedures could be used to add or remove ICE file descriptors from the list of
 descriptors to select() on.
 .LP
 On the session manager side, things work a bit differently.  The session
@@ -200,6 +204,7 @@ header file \fI<X11/SM/SM.h>\fP\^ which defines all of the SMlib constants.
 Since SMlib is depended on ICE, applications should link against
 SMlib and ICElib by using \fI-lSM -lICE\fP\^.
 .LP
+.bp
 .NH 1
 Session Management Client (Smc) Functions
 .XS
@@ -218,40 +223,40 @@ function.
 .LP
 .sM
 .FD 0
-SmcConn SmcOpenConnection\^(\^\fInetworkIdsList\fP, \fIcallbacks\fP\^, \fIpreviousId\fP\^, \fIclientIdRet\fP\^, \fIerrorLength\fP\^, \fIerrorStringRet\fP\^)
+SmcConn SmcOpenConnection\^(\^\fInetwork_ids_list\fP, \fIcallbacks\fP\^, \fIprevious_id\fP\^, \fIclient_id_ret\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
-    char *\fInetworkIdsList\fP\^;
+    char *\fInetwork_ids_list\fP\^;
 .br
     SmcCallbacks *\fIcallbacks\fP\^;
 .br
-    char *\fIpreviousId\fP\^;
+    char *\fIprevious_id\fP\^;
 .br
-    char **\fIclientIdRet\fP\^;
+    char **\fIclient_id_ret\fP\^;
 .br
-    int \fIerrorLength\fP\^;
+    int \fIerror_length\fP\^;
 .br
-    char *\fIerrorStringRet\fP\^;
+    char *\fIerror_string_ret\fP\^;
 .FN
-.IP \fInetworkIdsList\fP 1i
+.IP \fInetwork_ids_list\fP 1.1i
 Specifies the network ID(s) of the session manager.
-.IP \fIcallbacks\fP 1i
+.IP \fIcallbacks\fP 1.1i
 A set of mandatory callbacks used to respond to messages from the
 session manager.
-.IP \fIpreviousId\fP 1i
+.IP \fIprevious_id\fP 1.1i
 The client ID from the previous session.
-.IP \fIclientIdRet\fP 1i
+.IP \fIclient_id_ret\fP 1.1i
 The client ID for the current session is returned.
-.IP \fIerrorLength\fP 1i
-Length of the \fIerrorStringRet\fP\^ argument passed in.
-.IP \fIerrorStringRet\fP 1i
-Returns a null terminated error message, if any.  \fIerrorStringRet\fP
-points to user supplied memory.  No more than \fIerrorLength\fP\^ bytes
+.IP \fIerror_length\fP 1.1i
+Length of the \fIerror_string_ret\fP\^ argument passed in.
+.IP \fIerror_string_ret\fP 1.1i
+Returns a null terminated error message, if any.  \fIerror_string_ret\fP
+points to user supplied memory.  No more than \fIerror_length\fP\^ bytes
 are used.
 .LP
 .eM
-\fInetworkIdsList\fP\^ is a null terminated string containing a list of
+\fInetwork_ids_list\fP\^ is a null terminated string containing a list of
 network IDs for the session manager, separated by commas.
-If \fInetworkIdsList\fP\^ is
+If \fInetwork_ids_list\fP\^ is
 .PN NULL ,
 the value of the
 .PN SESSION_MANAGER
@@ -275,26 +280,26 @@ object is returned and this function has no further effect.
 After the connection is established,
 .PN SmcOpenConnection
 registers the client with the session manager.  If the client is being
-restarted from a previous session, \fIpreviousId\fP\^ should contain a null
+restarted from a previous session, \fIprevious_id\fP\^ should contain a null
 terminated string representing the client ID from the previous session.
-If the client is first joining the session, \fIpreviousId\fP\^ should be
+If the client is first joining the session, \fIprevious_id\fP\^ should be
 set to
 .PN NULL .
-If \fIpreviousId\fP\^ is specified, but is determined to be invalid by the
+If \fIprevious_id\fP\^ is specified, but is determined to be invalid by the
 session manager, SMlib will re-register
-the client with \fIpreviousId\fP\^ set to
+the client with \fIprevious_id\fP\^ set to
 .PN NULL .
 .LP
 If
 .PN SmcOpenConnection
 succeeds, the function returns an opaque connection object and the
-\fIclientIdRet\fP\^ argument contains the client ID to be used for
-this session.  \fIclientIdRet\fP\^ should be freed with a call to free()
+\fIclient_id_ret\fP\^ argument contains the client ID to be used for
+this session.  \fIclient_id_ret\fP\^ should be freed with a call to free()
 when no longer needed.  On failure,
 .PN SmcOpenConnection
 returns
 .PN NULL
-and the reason for failure is returned in \fIerrorStringRet\fP\^.
+and the reason for failure is returned in \fIerror_string_ret\fP\^.
 .LP
 Note that SMlib used the ICE protocol to establish a connection with
 the session manager.  If an ICE connection already exists between the
@@ -353,7 +358,7 @@ When SMlib invokes the callback, it will pass the client data pointer.
 	} SmcCallbacks;
 .LP
 .eM
-.bp
+.LP
 .NH 3
 The Save Yourself Callback
 .XS
@@ -367,29 +372,29 @@ The \fISave Yourself\fP\^ callback is of type
 typedef void (*SmcSaveYourselfProc)();
 .LP
 .FD 0
-void SaveYourselfProc\^(\^\fIsmcConn\fP, \fIclientData\fP\^, \fIsaveType\fP\^, \fIshutdown\fP\^, \fIinteractStyle\fP\^, \fIfast\fP\^)
+void SaveYourselfProc\^(\^\fIsmc_conn\fP, \fIclient_data\fP\^, \fIsave_type\fP\^, \fIshutdown\fP\^, \fIinteract_style\fP\^, \fIfast\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    SmPointer \fIclientData\fP\^;
+    SmPointer \fIclient_data\fP\^;
 .br
-    int \fIsaveType\fP\^;
+    int \fIsave_type\fP\^;
 .br
     Bool \fIshutdown\fP\^;
 .br
-    int \fIinteractStyle\fP\^;
+    int \fIinteract_style\fP\^;
 .br
     Bool \fIfast\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 Client data specified when the callback was registered.
-.IP \fIsaveType\fP 1i
+.IP \fIsave_type\fP 1i
 Specifies the type of information that should be saved.
 .IP \fIshutdown\fP 1i
 Specifies if a shutdown is taking place.
-.IP \fIinteractStyle\fP 1i
+.IP \fIinteract_style\fP 1i
 The type of interaction allowed with the user.
 .IP \fIfast\fP 1i
 If
@@ -406,14 +411,14 @@ to update the properties indicating how to restart the client.
 When all the properties have been set, the client should call
 .PN SmcSaveYourselfDone .
 .LP
-If \fIinteractStyle\fP\^ is
+If \fIinteract_style\fP\^ is
 .PN SmInteractStyleNone ,
 the client must not interact with the
 user while saving state.
-If \fIinteractStyle\fP\^ is 
+If \fIinteract_style\fP\^ is 
 .PN SmInteractStyleErrors ,
 the client may interact with the user only if an error condition arises.  If
-\fIinteractStyle\fP\^ is 
+\fIinteract_style\fP\^ is 
 .PN SmInteractStyleAny ,
 then the client may interact with the user for any purpose.
 Since only one client can interact with the user at a time, the client
@@ -428,18 +433,34 @@ after it received a \fISave Yourself\fP\^ message, and before it
 calls
 .PN SmcSaveYourselfDone .
 .LP
-If \fIsaveType\fP\^ is
+If \fIsave_type\fP\^ is
 .PN SmSaveLocal ,
 the client must update the properties to reflect its current state.
 Specifically, it should save enough information to restore
 the state as seen by the user of this client.  It should not affect the
-state as seen by other users.  If \fIsaveType\fP\^ is
+state as seen by other users.  If \fIsave_type\fP\^ is
 .PN SmSaveGlobal
 the user wants the client to commit all of its data to permanent,
-globally accessible storage.  If \fIsaveType\fP\^ is
+globally accessible storage.  If \fIsave_type\fP\^ is
 .PN SmSaveBoth ,
 the client should do both of these (it should first commit the data to
 permanent storage before updating its properties).
+.LP
+Some of the SMlib functions require the sequence number of the
+\fISave Yourself\fP\^ message being acted on.  In order to get
+this sequence number (while in the
+.PN SmcSaveYourselfProc
+callback), call
+.PN SmcGetIceConnection
+to get the ICE connection in use, then call
+.PN IceLastSequenceNumber
+to get the last sequence number.  Check this document for more
+details on
+.PN SmcGetIceConnection ,
+and check the \fIInter-Client Exchange Library\fP\^ document for more
+details on the
+.PN IceLastSequenceNumber
+function.
 .LP
 .NH 3
 The Die Callback
@@ -454,15 +475,15 @@ The \fIDie\fP\^ callback is of type
 typedef void (*SmcDieProc)();
 .LP
 .FD 0
-void DieProc\^(\^\fIsmcConn\fP, \fIclientData\fP\^)
+void DieProc\^(\^\fIsmc_conn\fP, \fIclient_data\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    SmPointer \fIclientData\fP\^;
+    SmPointer \fIclient_data\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 Client data specified when the callback was registered.
 .LP
 .eM
@@ -485,15 +506,15 @@ The \fIShutdown Cancelled\fP\^ callback is of type
 typedef void (*SmcShutdownCancelledProc)();
 .LP
 .FD 0
-void ShutdownCancelledProc\^(\^\fIsmcConn\fP, \fIclientData\fP\^)
+void ShutdownCancelledProc\^(\^\fIsmc_conn\fP, \fIclient_data\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    SmPointer \fIclientData\fP\^;
+    SmPointer \fIclient_data\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 Client data specified when the callback was registered.
 .LP
 .eM
@@ -523,30 +544,24 @@ function.
 .LP
 .sM
 .FD 0
-void SmcCloseConnection\^(\^\fIsmcConn\fP, \fIcount\fP\^, \fIreasonMsgs\fP\^)
+void SmcCloseConnection\^(\^\fIsmc_conn\fP, \fIcount\fP\^, \fIreason_msgs\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
     int \fIcount\fP\^;
 .br
-    char **\fIreasonMsgs\fP\^;
+    char **\fIreason_msgs\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
 .IP \fIcount\fP 1i
 The number of reason messages.
-.IP \fIreasonMsgs\fP 1i
+.IP \fIreason_msgs\fP 1i
 The reasons for closing the connection.
 .LP
 .eM
-If
-.PN SmcCloseConnection
-is being called in response to a \fIDie\fP\^ message,
-the connection is simply closed, and the reason messages are not sent
-to the session manager.
-.LP
-Otherwise, \fIreasonMsgs\fP\^ contains a list of null terminated
-string encoded in the current locale.  The session manager should
+\fIreason_msgs\fP\^ contains a list of null terminated
+compound text strings.  The session manager should
 display these reason messages to the user.
 .LP
 Note that SMlib used the ICE protocol to establish a connection with
@@ -561,7 +576,7 @@ and
 .PN IceRemoveConnectionWatch
 to learn how to set up a callback to be invoked each time an ICE connection is
 opened or closed.  Typically this callback adds/removes the ICE file
-descriptor from the list of active descriptors (or calls
+descriptor from the list of active descriptors to select() on (or calls
 .PN XtAppAddInput
 /
 .PN XtRemoveInput ).
@@ -580,15 +595,15 @@ function.
 .LP
 .sM
 .FD 0
-void SmcModifyCallbacks\^(\^\fIsmcConn\fP, \fImask\fP\^, \fIcallbacks\fP\^)
+void SmcModifyCallbacks\^(\^\fIsmc_conn\fP, \fImask\fP\^, \fIcallbacks\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
     unsigned long \fImask\fP\^;
 .br
     SmcCallbacks *\fIcallbacks\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
 .IP \fImask\fP 1i
 A mask indicating which callbacks to modify.
@@ -613,7 +628,7 @@ When changing all of the callbacks, the mask value of
 .PN SmcAllProcMask
 may be used.
 .LP
-The
+The callbacks in
 .PN SmcCallbacks
 are defined in the description of
 .PN SmcOpenConnection .
@@ -629,53 +644,38 @@ To set session management properties for this client, call the
 function.
 .sM
 .FD 0
-void SmcSetProperties\^(\^\fIsmcConn\fP, \fIsequenceRef\fP\^, \fInumProps\fP\^, \fIprops\fP\^)
+void SmcSetProperties\^(\^\fIsmc_conn\fP, \fIsequence_ref\fP\^, \fInum_props\fP\^, \fIprops\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    unsigned long \fIsequenceRef\fP\^;
+    unsigned long \fIsequence_ref\fP\^;
 .br
-    int \fInumProps\fP\^;
+    int \fInum_props\fP\^;
 .br
     SmProp **\fIprops\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fIsequenceRef\fP 1i
+.IP \fIsequence_ref\fP 1i
 The sequence number of the message that caused the \fISet Properties\fP\^
 request.  If 0, then not responding to a previous message.
-.IP \fInumProps\fP 1i
+.IP \fInum_props\fP 1i
 The number of properties.
 .IP \fIprops\fP 1i
 The list of properties to set.
 .LP
 .eM
 The properties are specified as an array of property pointers.
+Previously set property values may be over-written using the
+.PN SmcSetProperties
+function.  Note that the session manager is not
+expected to restore property values when the session is restarted.  Because
+of this, clients should not try to use the session manager as
+a database for storing application specific state.
+.LP
 For a description of session management properties and the
 .PN SmProp
 structure, refer to the section titled \fISession Management Properties\fP\^.
-.LP
-Previously set property values may be over-written using the
-.PN SmcSetProperties
-function.  Some properties have pre-specified semantics.
-The session manager is required to store
-non-predefined properties.  Note that the session manager is not
-expected to restore the property values when the session is restarted.  As a
-result, clients should not try to use the session manager as
-a database for storing application specific state.
-.LP
-In order to get the sequence number of a \fISave Yourself\fP\^ message,
-the client would call
-.PN SmcGetIceConnection
-and
-.PN IceLastSequenceNumber
-within the
-.PN SmcSaveYourselfProc
-callback.  Check the documentation for
-.PN SmcGetIceConnection
-below, and check the ICElib documentation for more details on the
-.PN IceLastSequenceNumber
-function.
 .LP
 .sp 0.5
 To get session management properties previously stored by the client, call the
@@ -683,19 +683,19 @@ To get session management properties previously stored by the client, call the
 function.
 .sM
 .FD 0
-void SmcGetProperties\^(\^\fIsmcConn\fP, \fIpropReplyProc\fP\^, \fIclientData\fP\^)
+void SmcGetProperties\^(\^\fIsmc_conn\fP, \fIprop_reply_proc\fP\^, \fIclient_data\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    SmcPropReplyProc \fIpropReplyProc\fP\^;
+    SmcPropReplyProc \fIprop_reply_proc\fP\^;
 .br
-    SmPointer \fIclientData\fP\^;
+    SmPointer \fIclient_data\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1.1i
 The session management connection object.
-.IP \fIpropReplyProc\fP 1i
+.IP \fIprop_reply_proc\fP 1.1i
 The callback to be invoked when the properties reply comes back.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1.1i
 This pointer to client data will be passed to the
 .PN SmcPropReplyProc
 callback.
@@ -710,21 +710,21 @@ is invoked when the data is ready.
 typedef void (*SmcPropReplyProc)();
 .LP
 .FD 0
-void PropReplyProc\^(\^\fIsmcConn\fP, \fIclientData\fP\^, \fInumProps\fP\^, \fIprops\fP\^)
+void PropReplyProc\^(\^\fIsmc_conn\fP, \fIclient_data\fP\^, \fInum_props\fP\^, \fIprops\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    SmPointer \fIclientData\fP\^;
+    SmPointer \fIclient_data\fP\^;
 .br
-    int \fInumProps\fP\^;
+    int \fInum_props\fP\^;
 .br
     SmProp **\fIprops\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 Client data specified when the callback was registered.
-.IP \fInumProps\fP 1i
+.IP \fInum_props\fP 1i
 The number of properties returned.
 .IP \fIprops\fP 1i
 The list of properties returned.
@@ -733,8 +733,9 @@ The list of properties returned.
 For a description of session management properties and the
 .PN SmProp
 structure, refer to the section titled
-\fISession Management Properties\fP\^.  In order to free each
-property, call the
+\fISession Management Properties\fP\^.
+.LP
+In order to free each property, call the
 .PN SmFreeProperty
 function (see the section titled \fIFree Functions\fP\^).
 Free the actual array of pointers with a call to free().
@@ -745,7 +746,7 @@ Interacting With the User
 \*(SN Interacting With the User
 .XE
 .LP
-After receiving a \fISave Yourself\fP\^ message with an \fIinteractStyle\fP\^
+After receiving a \fISave Yourself\fP\^ message with an \fIinteract_style\fP\^
 of
 .PN SmInteractStyleError
 or
@@ -757,30 +758,35 @@ must call
 and wait for an \fIInteract\fP\^ message from the session manager.
 .sM
 .FD 0
-void SmcInteractRequest\^(\^\fIsmcConn\fP, \fIdialogType\fP\^, \fIinteractProc\fP\^, \fIclientData\fP\^)
+void SmcInteractRequest\^(\^\fIsmc_conn\fP, \fIsequence_ref\fP\^, \fIdialog_type\fP\^, \fIinteract_proc\fP\^, \fIclient_data\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    int \fIdialogType\fP\^;
+    unsigned long \fIsequence_ref\fP\^;
 .br
-    SmcInteractProc \fIinteractProc\fP\^;
+    int \fIdialog_type\fP\^;
 .br
-    SmPointer \fIclientData\fP\^;
+    SmcInteractProc \fIinteract_proc\fP\^;
+.br
+    SmPointer \fIclient_data\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fIdialogType\fP 1i
+.IP \fIsequence_ref\fP 1i
+The sequence number of the \fISave Yourself\fP\^ message that caused this
+\fIInteract Request\fP\^.
+.IP \fIdialog_type\fP 1i
 The type of dialog the client wishes to present to the user.
-.IP \fIinteractProc\fP 1i
+.IP \fIinteract_proc\fP 1i
 The callback to be invoked when the \fIInteract\fP\^ message arrives from
 the session manager.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 This pointer to client data will be passed to the
 .PN SmcInteractProc
 callback when the \fIInteract\fP\^ message arrives.
 .LP
 .eM
-The \fIdialogType\fP argument specifies either
+The \fIdialog_type\fP argument specifies either
 .PN SmDialogError
 indicating that the client wants to start an error dialog,
 or
@@ -801,18 +807,22 @@ the session manager.
 typedef void (*SmcInteractProc)();
 .LP
 .FD 0
-void InteractProc\^(\^\fIsmcConn\fP, \fIclientData\fP\^)
+void InteractProc\^(\^\fIsmc_conn\fP, \fIclient_data\fP\^, \fIsequence_ref\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    SmPointer \fIclientData\fP\^;
+    SmPointer \fIclient_data\fP\^;
+.br
+    unsigned long \fIsequence_ref\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 Client data specified when the callback was registered.
+.IP \fIsequence_ref\fP 1i
+The sequence number of the \fISave Yourself\fP\^ message that caused this
+\fIInteract\fP\^ message.
 .LP
-.sp 0.5
 .eM
 After interacting with the user (in response to an \fIInteract\fP\^ message),
 call the
@@ -821,22 +831,26 @@ function.
 .PN 
 .sM
 .FD 0
-void SmcInteractDone\^(\^\fIsmcConn\fP, \fIcancelShutdown\fP\^)
+void SmcInteractDone\^(\^\fIsmc_conn\fP, \fIsequence_ref\fP\^, \fIcancel_shutdown\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .br
-    Bool \fIcancelShutdown\fP\^;
+    unsigned long \fIsequence_ref\fP\^;
+.br
+    Bool \fIcancel_shutdown\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1.1i
 The session management connection object.
-.IP \fIcancelShutdown\fP 1i
+.IP \fIsequence_ref\fP 1.1i
+The sequence number of the \fISave Yourself\fP\^ message that caused this
+interaction.
+.IP \fIcancel_shutdown\fP 1.1i
 If
 .PN True ,
 indicates that the user requests that the entire shutdown be cancelled.
 .LP
 .eM
-.LP
-\fIcancelShutdown\fP may only be
+\fIcancel_shutdown\fP may only be
 .PN True
 if the corresponding \fISave Yourself\fP specified
 .PN True
@@ -844,7 +858,67 @@ for \fIshutdown\fP\^ and
 .PN SmInteractStyleErrors
 or
 .PN SmInteractStyleAny
-for the \fIinteractStyle\fP\^.
+for the \fIinteract_style\fP\^.
+.LP
+.sp 0.5
+.NH 2
+Requesting a Save Yourself
+.XS
+\*(SN Requesting a Save Yourself
+.XE
+.LP
+To request a checkpoint from the session manager, call the
+.PN SmcRequestSaveYourself
+function.
+.LP
+.sM
+.FD 0
+void SmcRequestSaveYourself\^(\^\fIsmc_conn\fP, \fIsave_type\fP\^, \fIshutdown\fP\^, \fIinteract_style\fP\^, \fIfast\fP\^, \fIglobal\fP\^)
+.br
+    SmcConn \fIsmc_conn\fP\^;
+.br
+    int \fIsave_type\fP\^;
+.br
+    Bool \fIshutdown\fP\^;
+.br
+    int \fIinteract_style\fP\^;
+.br
+    Bool \fIfast\fP\^;
+.br
+    Bool \fIglobal\fP\^;
+.FN
+.IP \fIsmc_conn\fP 1i
+The session management connection object.
+.IP \fIsave_type\fP 1i
+Specifies the type of information that should be saved.
+.IP \fIshutdown\fP 1i
+Specifies if a shutdown is taking place.
+.IP \fIinteract_style\fP 1i
+The type of interaction allowed with the user.
+.IP \fIfast\fP 1i
+If
+.PN True ,
+the client should save its state as quickly as possible.
+.IP \fIglobal\fP 1i
+Controls who gets the \fISave Yourself\fP\^.
+.LP
+.eM
+The \fIsave_type\fP\^, \fIshutdown\fP\^, \fIinteract_style\fP\^, and
+\fIfast\fP\^ parameters are discussed in the previous section titled
+\fIThe Save Yourself Callback\fP\^.
+.LP
+If \fIglobal\fP\^ is set to
+.PN True ,
+then the resulting \fISave Yourself\fP\^ should be
+sent to all clients in the session.  For example, a vendor of a
+UPS (Uninteruptible Power Supply) might include an
+SM client that would monitor the status of the UPS and generate
+a fast shutdown if the power is about to be lost.
+.LP
+If \fIglobal\fP\^ is set to
+.PN False ,
+then the \fISave Yourself\fP\^ should only be sent to the client which
+requested the \fISave Yourself\fP\^.
 .LP
 .sp 0.5
 .NH 2
@@ -859,14 +933,19 @@ call the
 function.
 .sM
 .FD 0
-void SmcSaveYourselfDone\^(\^\fIsmcConn\fP, \fIsuccess\fP\^)
+void SmcSaveYourselfDone\^(\^\fIsmc_conn\fP, \fIsequence_ref\fP\^, \fIsuccess\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
+.br
+    unsigned long \fIsequence_ref\fP\^;
 .br
     Bool \fIsuccess\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
+.IP \fIsequence_ref\fP 1i
+The sequence number of the \fISave Yourself\fP\^ message that is being
+completed.
 .IP \fIsuccess\fP 1i
 If
 .PN True ,
@@ -887,9 +966,9 @@ Informational Functions
 .LP
 .sM
 .FD 0
-int SmcProtocolVersion\^(\^\fIsmcConn\fP\^)
+int SmcProtocolVersion\^(\^\fIsmc_conn\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .FN
 .eM
 Returns the major version of the session management protocol
@@ -898,9 +977,9 @@ associated with this session.
 .sp 0.5
 .sM
 .FD 0
-int SmcProtocolRevision\^(\^\fIsmcConn\fP\^)
+int SmcProtocolRevision\^(\^\fIsmc_conn\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .FN
 .eM
 Returns the minor version of the session management protocol
@@ -909,9 +988,9 @@ associated with this session.
 .sp 0.5
 .sM
 .FD 0
-char *SmcVendor\^(\^\fIsmcConn\fP\^)
+char *SmcVendor\^(\^\fIsmc_conn\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .FN
 .eM
 Returns a string that provides some identification of the owner of
@@ -920,9 +999,9 @@ the session manager.  The string should be freed with a call to free().
 .sp 0.5
 .sM
 .FD 0
-char *SmcRelease\^(\^\fIsmcConn\fP\^)
+char *SmcRelease\^(\^\fIsmc_conn\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .FN
 .eM
 Returns a string that provides the release number of the session manager.
@@ -931,9 +1010,9 @@ The string should be freed with a call to free().
 .sp 0.5
 .sM
 .FD 0
-char *SmcClientID\^(\^\fIsmcConn\fP\^)
+char *SmcClientID\^(\^\fIsmc_conn\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .FN
 .eM
 Returns a null terminated string for the client Id associated with
@@ -946,9 +1025,9 @@ Call free() on this pointer when the client Id is no longer needed.
 .sp 0.5
 .sM
 .FD 0
-IceConn SmcGetIceConnection\^(\^\fIsmcConn\fP\^)
+IceConn SmcGetIceConnection\^(\^\fIsmc_conn\fP\^)
 .br
-    SmcConn \fIsmcConn\fP\^;
+    SmcConn \fIsmc_conn\fP\^;
 .FN
 .eM
 Returns the ICE connection object associated with this session management
@@ -1017,7 +1096,7 @@ The session management connection object.
 .IP \fIswap\fP 1i
 A flag which indicates if the \fIvalues\fP\^ need byte swapping.
 .IP \fIoffending_minor_opcode\fP 1i
-The ICE minor opcode of the offending message.
+The minor opcode of the offending message.
 .IP \fIoffending_sequence_num\fP 1i
 The sequence number of the offending message.
 .IP \fIerror_class\fP 1i
@@ -1037,7 +1116,7 @@ the
 .PN IceSetIOErrorHandler
 function described in the \fIInter-Client Exchange Library\fP\^ document.
 .LP
-.sp 0.5
+.bp
 .NH 1
 Session Management Server (Sms) Functions
 .XS
@@ -1058,74 +1137,85 @@ time a new client connects to the session manager.
 .LP
 .sM
 .FD 0
-Status SmsInitialize\^(\^\fIvendor\fP, \fIrelease\fP\^, \fInewClientProc\fP\^, \fImanagerData\fP\^, \fIerrorLength\fP\^, \fIerrorStringRet\fP\^)
+Status SmsInitialize\^(\^\fIvendor\fP, \fIrelease\fP\^, \fInew_client_proc\fP\^, \fImanager_data\fP\^,
+.br
+                    \fIhost_based_auth_proc\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
     char *\fIvendor\fP\^;
 .br
     char *\fIrelease\fP\^;
 .br
-    SmsNewClientProc \fInewClientProc\fP\^;
+    SmsNewClientProc \fInew_client_proc\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
+    SmPointer \fImanager_data\fP\^;
 .br
-    int \fIerrorLength\fP\^;
+    IceHostBasedAuthProc \fIhost_based_auth_proc\fP\^;
 .br
-    char *\fIerrorStringRet\fP\^;
+    int \fIerror_length\fP\^;
+.br
+    char *\fIerror_string_ret\fP\^;
 .FN
 .IP \fIvendor\fP 1i
 A string specifying the session manager vendor.
 .IP \fIrelease\fP 1i
 A string specifying the session manager release number.
-.IP \fInewClientProc\fP 1i
+.IP \fInew_client_proc\fP 1i
 Callback to be invoked each time a new client connects to the session manager.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1i
 When the
 .PN SmsNewClientProc
 callback is invoked, this pointer to manager data will be passed.
-.IP \fIerrorLength\fP 1i
-Length of the \fIerrorStringRet\fP\^ argument passed in.
-.IP \fIerrorStringRet\fP 1i
-Returns a null terminated error message, if any.  \fIerrorStringRet\fP
-points to user supplied memory.  No more than \fIerrorLength\fP\^ bytes
+.IP \fIhost_based_auth_proc\fP 1i
+Host based authentication callback.
+.IP \fIerror_length\fP 1i
+Length of the \fIerror_string_ret\fP\^ argument passed in.
+.IP \fIerror_string_ret\fP 1i
+Returns a null terminated error message, if any.  \fIerror_string_ret\fP
+points to user supplied memory.  No more than \fIerror_length\fP\^ bytes
 are used.
 .LP
 .eM
 After the
 .PN SmsInitialize
-function is called, the session manager should use the
+function is called, the session manager should call the
 .PN IceListenForConnections
-function to listen for new connections, and
-.PN IceAcceptConnection
-to accept connections.  Refer to the section of this document titled
-\fIUnderstanding SMlib's Dependence on ICE\fP\^ to learn more on how
-SMlib and ICElib work together.  Also refer to the \fIInter-Client
-Exchange Library\fP\^ document for further details on accepting ICE
-connections.
+function to listen for new connections.  Next, it should call
+.PN IceSetPaAuthData
+to provide authentication data to the ICE library.
+Afterwards, each time a client connects, the session manager should call
+.PN IceAcceptConnection .
+.LP
+Refer to the section of this document titled \fIAuthentication of Clients\fP\^
+for more details on authentication (including host based authentication).
+Also refer to the \fIInter-Client
+Exchange Library\fP\^ document for further details on listening for and
+accepting ICE connections.
 .LP
 Each time a new client connects to the session manager, the
 .PN SmsNewClientProc
 callback is invoked.  The session manager obtains a new opaque connection
-object which it should use for all future interaction with the client.  The
-session manager is also required to register additional callbacks for the
-different messages that the client might send.
-.bp
+object which it should use for all future interaction with the client.  At
+this time, the session manager must also register a set of callbacks to
+respond to the different messages that the client might send.
+.LP
 .sM
 typedef void (*SmsNewClientProc)();
 .LP
 .FD 0
-void NewClientProc\^(\^\fIsmsConn\fP, \fImanagerData\fP\^, \fIcallbacksRet\fP\^)
+void NewClientProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIcallbacks_ret\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
+    SmPointer \fImanager_data\fP\^;
 .br
-    SmsCallbacks *\fIcallbacksRet\fP\^;
+    SmsCallbacks *\fIcallbacks_ret\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.bp
+.IP \fIsms_conn\fP 1i
 A new opaque connection object.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1i
 Manager data specified when the callback was registered.
-.IP \fIcallbacksRet\fP 1i
+.IP \fIcallbacks_ret\fP 1i
 Mandatory set of callbacks to be registered by the session manager.
 .LP
 .eM
@@ -1159,6 +1249,14 @@ when it is invoked by SMlib.
 			SmPointer manager_data;
 .br
 		} interact_done;
+.sp 0.5
+		struct {
+.br
+			SmsSaveYourselfRequestProc callback;
+.br
+			SmPointer manager_data;
+.br
+		} save_yourself_request;
 .sp 0.5
 		struct {
 .br
@@ -1205,23 +1303,24 @@ The \fIRegister Client\fP\^ callback is the first callback that will be
 invoked after the client connects to the session manager.  It's type is
 .PN SmsRegisterClientProc .
 .LP
+.bp
 .sM
 typedef Status (*SmsRegisterClientProc();
 .LP
 .FD 0
-Status RegisterClientProc\^(\^\fIsmsConn\fP, \fImanagerData\fP\^, \fIpreviousId\fP\^)
+Status RegisterClientProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIprevious_id\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
+    SmPointer \fImanager_data\fP\^;
 .br
-    char *\fIpreviousId\fP\^;
+    char *\fIprevious_id\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1i
 Manager data specified when the callback was registered.
-.IP \fIpreviousId\fP 1i
+.IP \fIprevious_id\fP 1i
 The client ID from the previous session.
 .LP
 .eM
@@ -1229,16 +1328,16 @@ Before any further interaction takes place with the client,
 the client must be registered with the session manager.
 .LP
 If the client is being restarted from a previous session,
-\fIpreviousId\fP\^ will contain a null terminated string representing
+\fIprevious_id\fP\^ will contain a null terminated string representing
 the client ID from the previous session.  Call free() on the
-\fIpreviousId\fP\^ pointer when it is no longer needed.
-If the client is first joining the session, \fIpreviousId\fP\^ will be
+\fIprevious_id\fP\^ pointer when it is no longer needed.
+If the client is first joining the session, \fIprevious_id\fP\^ will be
 .PN NULL .
 .LP
-If \fIpreviousId\fP\^ is invalid, the session manager should not register
+If \fIprevious_id\fP\^ is invalid, the session manager should not register
 the client at this time.  This callback should return a status of 0, which
 will cause an error message to be sent to the client.  The client should
-re-register with \fIpreviousId\fP\^ set to
+re-register with \fIprevious_id\fP\^ set to
 .PN NULL .
 .LP
 Otherwise, the session manager should register the client with a
@@ -1262,24 +1361,29 @@ The \fIInteract Request\fP\^ callback is of type
 typedef void (*SmsInteractRequestProc)();
 .LP
 .FD 0
-void InteractRequestProc\^(\^\fIsmsConn\fP, \fImanagerData\fP\^, \fIdialogType\fP\^)
+void InteractRequestProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIsequence_ref\fP\^, \fIdialog_type\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
+    SmPointer \fImanager_data\fP\^;
 .br
-    int \fIdialogType\fP\^;
+    unsigned long \fIsequence_ref\fP\^;
+.br
+    int \fIdialog_type\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1i
 Manager data specified when the callback was registered.
-.IP \fIdialogType\fP 1i
+.IP \fIsequence_ref\fP 1i
+The sequence number of the \fISave Yourself\fP\^ message that caused this
+\fIInteract Request\fP\^.
+.IP \fIdialog_type\fP 1i
 The type of dialog the client wishes to present to the user.
 .LP
 .eM	  
 When a client receives a \fISave Yourself\fP\^ message with an
-\fIinteractStyle\fP\^ of
+\fIinteract_style\fP\^ of
 .PN SmInteractStyleErrors
 or
 .PN SmInteractStyleAny ,
@@ -1290,7 +1394,7 @@ a queue of all clients wishing to interact.  It should send an \fIInteract\fP\^
 message to one client at a time and wait for an \fIInteract Done\fP\^ message
 before continuing with the next client.
 .LP
-The \fIdialogType\fP argument specifies either
+The \fIdialog_type\fP argument specifies either
 .PN SmDialogError
 indicating that the client wants to start an error dialog,
 or
@@ -1317,19 +1421,24 @@ callback will be invoked.
 typedef void (*SmsInteractDoneProc)();
 .LP
 .FD 0
-void InteractDoneProc\^(\^\fIsmsConn\fP, \fImanagerData\fP\^, \fIcancelShutdown\fP\^)
+void InteractDoneProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIsequence_ref\fP\^, \fIcancel_shutdown\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
+    SmPointer \fImanager_data\fP\^;
 .br
-    int \fIcancelShutdown\fP\^;
+    unsigned long \fIsequence_ref\fP\^;
+.br
+    Bool \fIcancel_shutdown\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1.1i
 The session management connection object.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1.1i
 Manager data specified when the callback was registered.
-.IP \fIcancelShutdown\fP 1i
+.IP \fIsequence_ref\fP 1.1i
+The sequence number of the \fISave Yourself\fP\^ message that caused this
+interaction.
+.IP \fIcancel_shutdown\fP 1.1i
 Specifies if the user requests that the entire shutdown be cancelled.
 .LP
 .eM
@@ -1340,7 +1449,69 @@ for \fIshutdown\fP\^ and
 .PN SmInteractStyleErrors
 or
 .PN SmInteractStyleAny
-for the \fIinteractStyle\fP\^.
+for the \fIinteract_style\fP\^.
+.LP
+.sp 0.5
+.NH 3
+The Save Yourself Request Callback
+.XS
+\*(SN The Save Yourself Request Callback
+.XE
+.LP
+The \fISave Yourself Request\fP\^ callback is of type
+.PN SmsSaveYourselfRequestProc .
+.LP
+.sM
+typedef void (*SmsSaveYourselfRequestProc)();
+.LP
+.FD 0
+void SaveYourselfRequestProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIsave_type\fP\^, \fIshutdown\fP\^, \fIinteract_style\fP\^, \fIfast\fP\^, \fIglobal\fP\^)
+.br
+    SmsConn \fIsms_conn\fP\^;
+.br
+    SmPointer \fImanager_data\fP\^;
+.br
+    int \fIsave_type\fP\^;
+.br
+    Bool \fIshutdown\fP\^;
+.br
+    int \fIinteract_style\fP\^;
+.br
+    Bool \fIfast\fP\^;
+.br
+    Bool \fIglobal\fP\^;
+.FN
+.IP \fIsms_conn\fP 1i
+The session management connection object.
+.IP \fIclient_data\fP 1i
+Manager data specified when the callback was registered.
+.IP \fIsave_type\fP 1i
+Specifies the type of information that should be saved.
+.IP \fIshutdown\fP 1i
+Specifies if a shutdown is taking place.
+.IP \fIinteract_style\fP 1i
+The type of interaction allowed with the user.
+.IP \fIfast\fP 1i
+If
+.PN True ,
+the client should save its state as quickly as possible.
+.IP \fIglobal\fP 1i
+Controls who gets the \fISave Yourself\fP\^.
+.LP
+.eM
+The \fISave Yourself Request\fP\^ prompts the session manager to
+initiate a checkpoint or shutdown.
+The \fIsave_type\fP\^, \fIshutdown\fP\^, \fIinteract_style\fP\^, and
+\fIfast\fP\^ parameters are discussed in the upcoming section titled
+\fISending a Save Yourself Message\fP\^.
+.LP
+If \fIglobal\fP\^ is set to
+.PN True ,
+then the resulting \fISave Yourself\fP\^ should be
+sent to all applications.  If \fIglobal\fP\^ is set to
+.PN False ,
+then the \fISave Yourself\fP\^ should only be sent to the client which
+requested the \fISave Yourself\fP\^.
 .LP
 .sp 0.5
 .NH 3
@@ -1358,18 +1529,23 @@ will be invoked.
 typedef void (*SmsSaveYourselfDoneProc)();
 .LP
 .FD 0
-void SaveYourselfDoneProc\^(\^\fIsmsConn\fP, \fImanagerData\fP\^, \fIsuccess\fP\^)
+void SaveYourselfDoneProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIsequence_ref\fP\^, \fIsuccess\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
+    SmPointer \fImanager_data\fP\^;
+.br
+    unsigned long \fIsequence_ref\fP\^;
 .br
     Bool \fIsuccess\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1i
 Manager data specified when the callback was registered.
+.IP \fIsequence_ref\fP 1i
+The sequence number of the \fISave Yourself\fP\^ message that is being
+completed.
 .IP \fIsuccess\fP 1i
 If
 .PN True ,
@@ -1387,8 +1563,9 @@ The Connection Closed Callback
 \*(SN The Connection Closed Callback
 .XE
 .LP
-If the client decides to terminate (not as a result of a \fIDie\fP\^
-message), the
+If the client properly terminates (ie. it calls
+.PN SmcCloseConnection ),
+the
 .PN SmsCloseConnectionProc
 callback is invoked.
 .LP
@@ -1396,38 +1573,36 @@ callback is invoked.
 typedef void (*SmsCloseConnectionProc)();
 .LP
 .FD 0
-void CloseConnectionProc\^(\^\fIsmsConn\fP, \fImanagerData\fP\^, \fIlocale\fP\^, \fIcount\fP\^, \fIreasonMsgs\fP\^)
+void CloseConnectionProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIcount\fP\^, \fIreason_msgs\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
-.br
-    char *\fIlocale\fP\^;
+    SmPointer \fImanager_data\fP\^;
 .br
     int \fIcount\fP\^;
 .br
-    char **\fIreasonMsgs\fP\^;
+    char **\fIreason_msgs\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1i
 Manager data specified when the callback was registered.
-.IP \fIlocale\fP 1i
-The locale in which the \fIreasonMsgs\fP\^ are encoded.
 .IP \fIcount\fP 1i
 The number of reason messages.
-.IP \fIreasonMsgs\fP 1i
-The reasons the client is closing the connection.
+.IP \fIreason_msgs\fP 1i
+The reasons for closing the connection.
 .LP
 .eM
-The session manager should display the reason messages to the user.
+\fIreason_msgs\fP\^ contains a list of null terminated
+compound text strings.  The session manager should
+display these reason messages to the user.
 .LP
-The \fIlocale\fP\^ string should be freed with a call to free().
 Call
 .PN SmFreeReasons
 to free the reason messages.  See the section titled \fIFree Functions\fP\^.
 .LP
 .sp 0.5
+.bp
 .NH 3
 The Set Properties Callback
 .XS
@@ -1442,26 +1617,26 @@ callback will be invoked.
 typedef void (*SmsSetPropertiesProc)();
 .LP
 .FD 0
-void SetPropertiesProc\^(\^\fIsmsConn\fP, \fImanagerData\fP\^, \fIsequenceRef\fP\^, \fInumProps\fP\^, \fIprops\fP\^)
+void SetPropertiesProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIsequence_ref\fP\^, \fInum_props\fP\^, \fIprops\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
+    SmPointer \fImanager_data\fP\^;
 .br
-    unsigned long \fIsequenceRef\fP\^;
+    unsigned long \fIsequence_ref\fP\^;
 .br
-    int \fInumProps\fP\^;
+    int \fInum_props\fP\^;
 .br
     SmProp **\fIprops\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1i
 Manager data specified when the callback was registered.
-.IP \fIsequenceRef\fP 1i
+.IP \fIsequence_ref\fP 1i
 The sequence number of the message that caused the \fISet Properties\fP\^
 request.  If 0, then not responding to a previous message.
-.IP \fInumProps\fP 1i
+.IP \fInum_props\fP 1i
 The number of properties.
 .IP \fIprops\fP 1i
 The list of properties to set.
@@ -1490,29 +1665,29 @@ The Get Properties Callback
 \*(SN The Get Properties Callback
 .XE
 .LP
-When the client wants to retrieve properties that it previously set, the
+The
 .PN SmsGetPropertiesProc
-callback is invoked.
+callback is invoked when the client wants to retrieve properties it set.
 .LP
 .sM
 typedef void (*SmsGetPropertiesProc)();
 .LP
 .FD 0
-void GetPropertiesProc\^(\^\fIsmsConn\fP, \fImanagerData\fP\^)
+void GetPropertiesProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    SmPointer \fImanagerData\fP\^;
+    SmPointer \fImanager_data\fP\^;
 .FN
-.IP \fIsmcConn\fP 1i
+.IP \fIsmc_conn\fP 1i
 The session management connection object.
-.IP \fImanagerData\fP 1i
+.IP \fImanager_data\fP 1i
 Manager data specified when the callback was registered.
 .LP
 .eM
 The session manager should respond by calling
 .PN SmsReturnProperties .
-\fIAll\fP\^ of the properties set for this client should be returned.
+All of the properties set for this client should be returned.
 .LP
 .sp 0.5
 .NH 2
@@ -1523,30 +1698,84 @@ Registering the Client
 .LP
 In order to register a client (in response to a
 .PN SmsRegisterClientProc
-callback, call the
+callback), call the
 .PN SmsRegisterClientReply
 function.
 .LP
 .sM
 .FD 0
-void SmsRegisterClientReply\^(\^\fIsmsConn\fP, \fIclientId\fP\^)
+void SmsRegisterClientReply\^(\^\fIsms_conn\fP, \fIclient_id\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    char *\fIclientId\fP\^;
+    char *\fIclient_id\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
-.IP \fIclientId\fP 1i
+.IP \fIclient_id\fP 1i
 A null terminated string representing a unique client ID.
 .LP
 .eM
+If a non-NULL \fIprevious_id\fP\^ was specified when the client registered
+itself, \fIclient_id\fP\^ should be identical to \fIprevious_id\fP\^.
+Otherwise, \fIclient_id\fP\^ should be a unique ID freshly generated by
+the session manager.
+.LP
+The client ID should be globally unique. This means that any client
+ID generated on any system anywhere should be unique throughout all
+machines in the universe.
+.LP
+A client ID is a string of XPCS characters encoded in ISO Latin 1 (ISO
+8859-1).  No null characters are allowed in this string.
+.LP
+Certain portions of client ID strings are constructed from numbers.  These
+portions will be encoded either as decimal or hexadecimal character strings,
+padded with leading zeroes so as to fill the specified length.  Hexadecimal
+encodings will use the characters `0' through `9' and `A' through `F'.
+.LP
+Client IDs consist of the pieces described below.  The ID is formed by
+concatenating the pieces in sequence, without separator characters.
+.LP
+.IP -
+Version.  This is currently the character `1'.
+.LP
+.IP -
+Address type and address.  The address type will be one of
+.sp
+.nf
+.ta .2i .5i 2.0i
+	'1'	a 4-byte IP address encoded as 8 hexadecimal digits
+	'2'	a 6-byte DECNET address encoded as 12 hexadecimal digits
+.fi
+.sp
+The address is the one of the network addresses of the machine where the
+session manager (not the client) is running.  For example, the IP address
+198.112.45.11 would be encoded as the string "1C6702D0B".
+.LP
+.IP -
+Time stamp.  A 13-digit decimal number specifying the number of
+milliseconds since 00:00:00 UTC, January 1, 1970.
+.LP
+.IP -
+Process-ID type and process-ID.  The process-ID type will be one of
+.sp
+.nf
+.ta .2i .5i 2.0i
+	`1'	a POSIX process-ID encoded as a 10-digit decimal number.
+.fi
+.sp
+The process-ID is the process-ID of the session manager, not of a client.
+.LP
+.IP -
+Sequence number.  This is a four-digit decimal number.  It is incremented
+every time the session manager creates an ID.  After reaching "9999" it
+should wrap to "0000".
 .LP
 .sp 0.5
 .NH 2
-Sending a Save Yourself
+Sending a Save Yourself Message
 .XS
-\*(SN Sending a Save Yourself message
+\*(SN Sending a Save Yourself Message
 .XE
 .LP
 In order to send a \fISave Yourself\fP\^ to a client, call the
@@ -1555,25 +1784,25 @@ function.
 .LP
 .sM
 .FD 0
-void SmsSaveYourself\^(\^\fIsmsConn\fP, \fIsaveType\fP\^, \fIshutdown\fP\^, \fIinteractStyle\fP\^, \fIfast\fP\^)
+void SmsSaveYourself\^(\^\fIsms_conn\fP, \fIsave_type\fP\^, \fIshutdown\fP\^, \fIinteract_style\fP\^, \fIfast\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    int \fIsaveType\fP\^;
+    int \fIsave_type\fP\^;
 .br
     Bool \fIshutdown\fP\^;
 .br
-    int \fIinteractStyle\fP\^;
+    int \fIinteract_style\fP\^;
 .br
     Bool \fIfast\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
-.IP \fIsaveType\fP 1i
+.IP \fIsave_type\fP 1i
 Specifies the type of information that should be saved.
 .IP \fIshutdown\fP 1i
 Specifies if a shutdown is taking place.
-.IP \fIinteractStyle\fP 1i
+.IP \fIinteract_style\fP 1i
 The type of interaction allowed with the user.
 .IP \fIfast\fP 1i
 If
@@ -1584,19 +1813,19 @@ the client should save its state as quickly as possible.
 The session manager sends a \fISave Yourself\fP\^ message to a client 
 either to checkpoint it or just before
 termination so that it can save its state.
-The client responds with zero or more /fISet Properties\fP\^ messages
+The client responds with zero or more \fISet Properties\fP\^ messages
 to update the properties indicating how to restart the client.
 When all the properties have been set, the client sends a
 \fISave Yourself Done\fP\^ message.
 .LP
-If \fIinteractStyle\fP\^ is
+If \fIinteract_style\fP\^ is
 .PN SmInteractStyleNone ,
 the client must not interact with the
 user while saving state.
-If \fIinteractStyle\fP\^ is 
+If \fIinteract_style\fP\^ is 
 .PN SmInteractStyleErrors ,
 the client may interact with the user only if an error condition arises.  If
-\fIinteractStyle\fP\^ is 
+\fIinteract_style\fP\^ is 
 .PN SmInteractStyleAny ,
 then the client may interact with the user for any purpose.
 The client must send an \fIInteract Request\fP\^ message
@@ -1606,19 +1835,35 @@ interacting with the user, it should send an \fIInteract Done\fP\^ message.
 The \fIInteract Request\fP\^ message can be sent any time after a
 \fISave Yourself\fP\^ and before a \fISave Yourself Done\fP\^.
 .LP
-If \fIsaveType\fP\^ is
+If \fIsave_type\fP\^ is
 .PN SmSaveLocal ,
 the client must update the properties to reflect its current state.
 Specifically, it should save enough information to restore
 the state as seen by the user of this client.  It should not affect the
-state as seen by other users.  If \fIsaveType\fP\^ is
+state as seen by other users.  If \fIsave_type\fP\^ is
 .PN SmSaveGlobal
 the user wants the client to commit all of its data to permanent,
-globally accessible storage.  If \fIsaveType\fP\^ is
+globally accessible storage.  If \fIsave_type\fP\^ is
 .PN SmSaveBoth ,
 the client should do both of these (it should first commit the data to
 permanent storage before updating its properties).
-.bp
+.LP
+Some of the SMlib functions require the sequence number of the
+\fISave Yourself\fP\^ message being acted on.  In order to get
+this sequence number (immediately after calling the
+.PN SmsSaveYourself
+function), call
+.PN SmsGetIceConnection
+to get the ICE connection in use, then call
+.PN IceLastSequenceNumber
+to get the last sequence number.  Check this document for more
+details on
+.PN SmsGetIceConnection ,
+and check the \fIInter-Client Exchange Library\fP\^ document for more
+details on the
+.PN IceLastSequenceNumber
+function.
+.LP
 .NH 2
 Sending an Interact Message
 .XS
@@ -1630,12 +1875,17 @@ To send an \fIInteract\fP\^ message to a client, call the
 function.
 .sM
 .FD 0
-void SmsInteract\^(\^\fIsmsConn\fP\^)
+void SmsInteract\^(\^\fIsms_conn\fP\^, \fIsequence_ref\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
+.br
+    unsigned long \fIsequence_ref\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
+.IP \fIsequence_ref\fP 1i
+The sequence number of the \fISave Yourself\fP\^ message that caused this
+\fIInteract\fP\^ message to be sent.
 .LP
 .eM
 The \fIInteract\fP\^ message grants the client the privilege of interacting
@@ -1655,17 +1905,17 @@ function.
 .LP
 .sM
 .FD 0
-void SmsDie\^(\^\fIsmsConn\fP\^)
+void SmsDie\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
 .LP
 .eM
-It is expected that the session manager would send a \fISave Yourself\fP\^
-message to the client before sending the \fIDie\fP\^ message.
-<ISSUE - wait for Connection Closed>
+Before the session manager terminates, it should wait for a
+\fIConnection Closed\fP\^ message from each client that it sent
+a \fIDie\fP\^ message to, timing out appropriately.
 .LP
 .sp 0.5
 .NH 2
@@ -1680,11 +1930,11 @@ function.
 .LP
 .sM
 .FD 0
-void SmsShutdownCancelled\^(\^\fIsmsConn\fP\^)
+void SmsShutdownCancelled\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
 .LP
 .eM
@@ -1710,18 +1960,17 @@ function.
 .LP
 .sM
 .FD 0
-void SmsReturnProperties\^(\^\fIsmsConn\fP\^, \fInumProps\fP\^, \fIprops\fP\^)
+void SmsReturnProperties\^(\^\fIsms_conn\fP\^, \fInum_props\fP\^, \fIprops\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .br
-    int \fInumProps\fP\^;
+    int \fInum_props\fP\^;
 .br
     SmProp **\fIprops\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
-.LP
-.IP \fInumProps\fP 1i
+.IP \fInum_props\fP 1i
 The number of properties.
 .IP \fIprops\fP 1i
 The list of properties to return to the client.
@@ -1732,6 +1981,63 @@ For a description of session management properties and the
 .PN SmProp
 structure, refer to the section titled
 \fISession Management Properties\fP\^.
+.LP
+.sp 0.5
+.NH 2
+Pinging a client
+.XS
+\*(SN Pinging a client
+.XE
+.LP
+In order to check that a client is still alive, use the
+.PN IcePing
+function provided by the ICE library.  In order to do so, the ICE
+connection must be obtained using the
+.PN SmsGetIceConnection
+discussed in a later section.
+.LP
+.sM
+.FD 0
+void IcePing\^(\^\fIice_conn\fP, \fIping_reply_proc\fP\^, \fIclient_data\fP\^)
+.br
+    IceConn \fIice_conn\fP\^;
+.br
+    IcePingReplyProc \fIping_reply_proc\fP\^;
+.br
+    IcePointer \fIclient_data\fP\^;
+.FN
+.IP \fIice_conn\fP 1i
+A valid ICE connection object.
+.IP \fIping_reply_proc\fP 1i
+The callback to invoke when the \fIPing\fP\^ reply arrives.
+.IP \fIclient_data\fP 1i
+This pointer will be passed to the
+.PN IcePingReplyProc
+callback.
+.LP
+.eM
+When the Ping reply is ready (if ever), the
+.PN IcePingReplyProc
+callback will be invoked.  A session manager should have some sort
+of timeout period, after which it assumes the client has unexpectidly died.
+.LP
+.sM
+typedef void (*IcePingReplyProc)();
+.LP
+.FD 0
+void PingReplyProc\^(\^\fIice_conn\fP, \fIclient_data\fP\^)
+.br
+    IceConn \fIice_conn\fP\^;
+.br
+    IcePointer \fIclient_data\fP\^;
+.FN
+.IP \fIice_conn\fP 1i
+The ICE connection object.
+.IP \fIclient_data\fP 1i
+The client data specified in the call to
+.PN IcePing .
+.LP
+.eM
 .LP
 .sp 0.5
 .NH 2
@@ -1748,11 +2054,11 @@ function in order to free up the connection object.
 .LP
 .sM
 .FD 0
-void SmsCleanUp\^(\^\fIsmsConn\fP\^)
+void SmsCleanUp\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
-.IP \fIsmsConn\fP 1i
+.IP \fIsms_conn\fP 1i
 The session management connection object.
 .LP
 .eM
@@ -1766,9 +2072,9 @@ Informational Functions
 .LP
 .sM
 .FD 0
-int SmsProtocolVersion\^(\^\fIsmsConn\fP\^)
+int SmsProtocolVersion\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
 .eM
 Returns the major version of the session management protocol
@@ -1777,9 +2083,9 @@ associated with this session.
 .sp 0.5
 .sM
 .FD 0
-int SmsProtocolRevision\^(\^\fIsmsConn\fP\^)
+int SmsProtocolRevision\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
 .eM
 Returns the minor version of the session management protocol
@@ -1788,9 +2094,9 @@ associated with this session.
 .sp 0.5
 .sM
 .FD 0
-char *SmsVendor\^(\^\fIsmsConn\fP\^)
+char *SmsVendor\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
 .eM
 Returns a string that provides some identification of the owner of
@@ -1800,9 +2106,9 @@ a call to free().
 .sp 0.5
 .sM
 .FD 0
-char *SmsRelease\^(\^\fIsmsConn\fP\^)
+char *SmsRelease\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
 .eM
 Returns a string that provides some identification of the release
@@ -1812,9 +2118,9 @@ freed with a call to free().
 .sp 0.5
 .sM
 .FD 0
-char *SmsClientID\^(\^\fIsmsConn\fP\^)
+char *SmsClientID\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
 .eM
 Returns a null terminated string for the client Id associated with
@@ -1825,17 +2131,17 @@ Call free() on this pointer when the client Id is no longer needed.
 .sp 0.5
 .sM
 .FD 0
-IceConn SmsGetIceConnection\^(\^\fIsmsConn\fP\^)
+IceConn SmsGetIceConnection\^(\^\fIsms_conn\fP\^)
 .br
-    SmsConn \fIsmsConn\fP\^;
+    SmsConn \fIsms_conn\fP\^;
 .FN
 .eM
 Returns the ICE connection object associated with this session management
 connection object.  The ICE connection object can be used to get some
 additional information about the connection.  Some of the more useful
 functions which can be used on the IceConn are IceConnectionNumber,
-and IceLastSequenceNumber.  Check the ICElib documentation for more
-details on these functions.
+and IceLastSequenceNumber.  Check the \fIInter-Client Exchange Library\fP\^
+document for more details on these functions.
 .LP
 .sp 0.5
 .NH 2
@@ -1846,8 +2152,8 @@ Error Handling
 .LP
 If the session manager receives an unexpected protocol error from a client,
 an error handler is invoked by SMlib.  A default error handler exists which
-simply prints the error message and exits.  The session manager can change
-this error handler by calling the
+simply prints the error message (it does not exit).  The session manager can
+change this error handler by calling the
 .PN SmsSetErrorHandler
 function.
 .LP
@@ -1891,12 +2197,13 @@ void ErrorHandler\^(\^\fIsms_conn\fP, \fIswap\fP\^, \fIoffending_minor_opcode\fP
 .br
     IcePointer \fIvalues\fP\^;
 .FN
+.bp
 .IP \fIsms_conn\fP 1i
 The session management connection object.
 .IP \fIswap\fP 1i
 A flag which indicates if the \fIvalues\fP\^ need byte swapping.
 .IP \fIoffending_minor_opcode\fP 1i
-The ICE minor opcode of the offending message.
+The minor opcode of the offending message.
 .IP \fIoffending_sequence_num\fP 1i
 The sequence number of the offending message.
 .IP \fIerror_class\fP 1i
@@ -1917,13 +2224,16 @@ the
 function described in the \fIInter-Client Exchange Library\fP\^ document.
 .LP
 .sp 0.5
+.bp
 .NH 1
 Session Management Properties
 .XS
 \*(SN Session Management Properties
 .XE
 .LP
-Each property is defined by the following structure:
+Each property is defined by the
+.PN SmProc
+structure:
 .LP
 	typedef struct {
 .br
@@ -1947,32 +2257,176 @@ Each property is defined by the following structure:
 	} SmPropValue;
 .LP
 .sp 0.5
-In all of the SMlib functions related to properties, the properties are
-passed as an array of
-.PN SmProp
-pointers.
-.LP
-	int numProps;
-.br
-	SmProp **props;
-.LP
-Specifying the properties in this format is ideal for
-.PN SmsSetPropertiesProc
-callback, and has been adapted for all other property related functions.
-.LP
-When the client sets properties in the session manager, some of the properties
-may have been previously set, and some of the properties will be set for the
-first time.  As a result, the session manager must \fImerge\fP the properties
-in it's current database.  Specifying the properties as an array of
-.PN SmProp
-pointers makes this much simpler for the session manager.
-.LP
 The X Session Management Protocol defines a list of predefined properties,
-several of which are required to be set by the client.
+several of which are required to be set by the client.  Below is a table
+which specifes the predefined properties, indicating which ones are required.
+
+.TS H
+l l c .
+_
+.sp 6p
+.B
+Name	Type	Required?
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+SmCloneCommand	OS-specific	Yes
+SmCurrentDirectory	OS-specific	No
+SmDiscardCommand	OS-specific	No
+SmEnvironment	OS-specific	No
+SmOperatingSystemName	ARRAY8	Yes
+SmProcessID	OS-specific	No
+SmProgram	OS-specific	Yes
+SmRestartCommand	OS-specific	Yes
+SmResignCommand	OS-specific	No
+SmRestartStyleHint	CARD8	No
+SmShutdownCommand	OS-specific	No
+SmUserID	ARRAY8	Yes
+.sp 6p
+_
+.TE
+.IP SmCloneCommand 3
+This is like the 
+.PN SmRestartCommand 
+except it restarts a copy of the
+application.  The only difference is that the application doesn't
+supply its client id at register time.  On POSIX systems this should
+be an LISTofARRAY8.
+.IP SmCurrentDirectory 3
+On POSIX-based systems specifies the value of the current directory that
+needs to be set up prior to starting the Program and should of type
+ARRAY8.
+.IP SmDiscardCommand 3
+The discard command contains a string that when delivered to the host that 
+the client is running on (determined from the connection), will
+cause it to discard any information about the current state.  If this command
+is not specified, the SM will assume that all of the clients state is encoded
+in the 
+.PN SmRestartCommand.
+On POSIX systems the type should be LISTofARRAY8.
+.IP SmEnvironment 3
+On POSIX based systems, this will contain an LISTofARRAY8 where
+the ARRAY8s alternate between environment variable name and environment
+variable value.  
+.IP SmOperatingSystemName 3
+This property describes which operating system the client is on in order
+to aid the SM in restarting the client.
+.IP SmProcessID 3
+This specifies an OS specific identifier for the process.  On POSIX
+systems this should contain the return value of getpid() turned into
+an ISO 8859-1 (decimal) string.
+.IP SmProgram 3
+The name of the program that is running.  On POSIX systems this should be 
+first parameter passed to execve and should be of type ARRAY8.
+.IP SmRestartCommand 3
+The restart command contains a string that when delivered to the
+host that the client is running on (determined from the connection),
+will cause the client to restart in
+its current state.  On POSIX-based systems this is of type LISTofARRAY8
+and each of the elements in the array represents an element in
+the argv array.
+This restart command should ensure that the client restarts with the specified
+client-ID.
+.IP SmResignCommand 3
+A client that sets the
+.PN SmRestartStyleHint
+to
+.PN SmRestartAnway
+uses this property to specify command 
+that undoes the effect of the client and removes
+any saved state.
+As an example, consider a user that runs xmodmap.
+xmodmap registers with the SM, sets 
+.PN SmRestartStyleHint
+to 
+.PN SmRestartAnyway,
+and then terminates. In order to allow the SM (at the
+user's request) to undo this, xmodmap would register a
+.PN SmResignCommand
+that undoes the effects of the xmodmap.
+.IP SmRestartStyleHint 3
+.RS
 .LP
-<paste from XSMP>
+If the RestartStyleHint property is present, it will contain the 
+style of restarting the client prefers.  If this flag isn't specified,
+.PN SmRestartIfRunning
+is assumed.
+The possible values are as follows:
+.TS H
+l n.
+_
+.sp 6p
+.B
+Name	Value
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+SmRestartIfRunning	0
+SmRestartAnyway	1
+SmRestartImmediately	2
+.sp 6p
+_
+.TE
 .LP
-.sp 0.5
+The
+.PN SmRestartIfRunning
+style is used in the usual case.  The client should
+be restarted in the next session if it was running at the end of the
+current session.
+.LP
+The
+.PN SmRestartAnyway
+style is used to tell the SM that the application
+should be restarted in the next session even if it exits before the 
+current session is terminated.  
+It should be noted that this is only a hint and the SM
+will follow the policies specified by its users in determining what applications
+to restart.
+.LP
+A client that uses
+.PN SmRestartAnyway
+should also set the
+.PN SmResignCommand
+and
+.PN SmShutdownCommand
+properties to commands that undo the state of the client
+after it exits.
+.LP
+The
+.PN SmRestartImmediately
+style is like
+.PN SmRestartAnyway ,
+but in addition, the
+client is meant to run continuously.  If the client exits, the
+SM should try to restart it in the current session.
+.RE
+.IP SmShutdownCommand
+This command is executed at shutdown time to clean up after a client that
+is no longer running but retained its state by setting
+.PN SmRestartStyleHint
+to 
+.PN SmRestartAnyway.
+The client must not remove any saved state as the client is still part of
+the session.  As an example, consider a client that turns on a camera
+at start up time.  This client then
+exits. At session shutdown, the user wants the camera turned off. This client
+would set the 
+.PN SmRestartStyleHint
+to 
+.PN SmRestartAnyway
+and would register a 
+.PN SmShutdownCommand
+that would turn off the camera.
+.NE
+.IP SmUserID 3
+Specifies the user's ID.  On POSIX-based systems this
+will contain the the user's name (the pw_name field of struct passwd).
+.LP
+.LP
 .NH 1
 Free Functions
 .XS
@@ -2012,19 +2466,117 @@ void SmFreeReasons\^(\^\fIcount\fP, \fIreasons\fP\^)
 The number of reason strings.
 .IP \fIreasons\fP 1i
 The list of reason strings to free.
-
-.bp
-authentication
-
-client ids
-
-
-.bp
-
-
-
 .LP
 .eM
+.LP
+.NH 1
+Authentication of Clients
+.XS
+\*(SN Authentication of Clients
+.XE
+.LP
+As you will recall, the session management protocol is layered on top
+of ICE.  Authentication occurs at two levels in the ICE protocol.  The first is
+when an ICE connection is opened.  The second is when a \fIProtocol
+Setup\fP\^ occurs on an ICE connection.  The authentication methods that
+are available are implementation dependent (ie. dependent on the ICElib
+and SMlib implementations in use).
+.LP
+In general, the session manager must supply it's clients with some
+initial authentication data (for example, a key).  The means by which it
+supplies this data is implementation dependent.  The ICElib sample
+implementation provides a set of utility functions which manipulate
+an .ICEauthority file.  If the session manager is starting a client on a
+local machine, it may provide the authentication data in a
+local .ICEauthority file.  If the session manager is starting a remote client,
+it would probably use some sort of remote execution mechanism to add an
+entry to the .ICEauthority file on the remote machine.  For more information
+refer to the \fIInter-Client Exchange Library\fP\^ document,
+Appendix A - Authentication Utility Functions\fP\^.
+.LP
+In addition to the session manager providing the initial authentication
+data to it's clients, it must also provide this data to the ICE library by
+calling the
+.PN IceSetPaAuthData
+function.
+.LP
+.sM
+.FD 0
+void IceSetPaAuthData\^(\^\fInum_entries\fP, \fIentries\fP\^)
+.br
+    int \fInum_entries\fP\^;
+.br
+    IceAuthDataEntry *\fIentries\fP\^;
+.FN
+.IP \fInum_entries\fP 1i
+The number of authentication data entries.
+.IP \fIentries\fP 1i
+The list of authentication data entries.
+.LP
+.eM
+Each entry has associated with it a protocol name ("ICE" for ICE
+connection setup authentication, "XSMP" for session management
+authentication), a network ID for the session manager, an authentication
+name (eg. ICE-MAGIC-COOKIE-1), and authentication data.  The ICE library
+will merge these entries with previously set entries, based on the
+(protocol_name, address, auth_name) tuple.
+.LP
+An entry is defined by the
+.PN IceAuthDataEntry
+structure:
+.bp
+.sM
+typedef struct {
+.br
+	char *protocol_name;
+.br
+	char *address;
+.br
+	char *auth_name;
+.br
+	unsigned short auth_data_length;
+.br
+	char *auth_data;
+.br
+} IceAuthDataEntry;
+.LP
+.sp 0.5
+If authentication fails for any reason at the ICE connection setup level
+or at the session management \fIProtocol Setup\fP\^ level, a host based
+authentication procedure will be invoked (if specified) as a last resort
+to let the client authenticate.
+.LP
+The host based authentication procedure for ICE connection setup is set
+by calling the
+.PN IceSetHostBasedAuthProc
+function.  Refer to the \fIInter-Client Exchange Library\fP\^ document for
+more details.
+.LP
+The host based authentication procedure for the session management
+\fIProtocol Setup\fP\^ is specified in the
+.PN SmsInitialize
+function discussed earlier.
+.LP
+In both cases, the host based authentication procedure invoked is of type
+.PN IceHostBasedAuthProc .
+.LP
+.sM
+typedef Bool (*IceHostBasedAuthProc) ();
+.FD 0
+Bool HostBasedAuthProc\^(\^\fIhost_name\fP\^)
+.FN
+.IP \fIhost_name\fP 1i
+The host name of the client.  This is either a dotted decimal internet
+address string, or "local" for a local connection.
+.LP
+.eM
+.LP
+The callback should return
+.PN True
+if the client is allowed to connect.  Note that "null" authentication
+can be achieved using this callback by always returning
+.PN True .
+.LP
 .EH ''''
 .OH ''''
 .EF ''''
