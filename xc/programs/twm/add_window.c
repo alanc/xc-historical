@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.151 91/05/01 11:00:48 dave Exp $
+ * $XConsortium: add_window.c,v 1.152 91/05/31 17:39:06 dave Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -419,12 +419,31 @@ IconMgr *iconp;
 			if (Event.type == ButtonPress)
 			    break;
 		}
-
-
+		
 		if (event.type == ButtonPress) {
-		    AddingX = event.xbutton.x_root;
-		    AddingY = event.xbutton.y_root;
-		    break;
+		  AddingX = event.xbutton.x_root;
+		  AddingY = event.xbutton.y_root;
+		  
+		  /* DontMoveOff prohibits user form off-screen placement */
+		  if (Scr->DontMoveOff)	
+  		    {
+		      int AddingR, AddingB;
+		      
+		      AddingR = AddingX + AddingW;
+		      AddingB = AddingY + AddingH;
+		      
+		      if (AddingX < 0)
+			AddingX = 0;
+		      if (AddingR > Scr->MyDisplayWidth)
+			AddingX = Scr->MyDisplayWidth - AddingW;
+		      
+		      if (AddingY < 0)
+			AddingY = 0;
+		      if (AddingB > Scr->MyDisplayHeight)
+			AddingY = Scr->MyDisplayHeight - AddingH;
+		      
+ 		    }
+		  break;
 		}
 
 		if (event.type != MotionNotify) {
@@ -433,6 +452,24 @@ IconMgr *iconp;
 
 		XQueryPointer(dpy, Scr->Root, &JunkRoot, &JunkChild,
 		    &JunkX, &JunkY, &AddingX, &AddingY, &JunkMask);
+
+		if (Scr->DontMoveOff)
+		{
+		    int AddingR, AddingB;
+
+		    AddingR = AddingX + AddingW;
+		    AddingB = AddingY + AddingH;
+		    
+		    if (AddingX < 0)
+		        AddingX = 0;
+		    if (AddingR > Scr->MyDisplayWidth)
+		        AddingX = Scr->MyDisplayWidth - AddingW;
+
+		    if (AddingY < 0)
+			AddingY = 0;
+		    if (AddingB > Scr->MyDisplayHeight)
+			AddingY = Scr->MyDisplayHeight - AddingH;
+		}
 
 		MoveOutline(Scr->Root, AddingX, AddingY, AddingW, AddingH,
 			    tmp_win->frame_bw, tmp_win->title_height);
