@@ -1,10 +1,17 @@
-/* $XConsortium: evtomask.c,v 1.2 88/09/06 16:11:28 jim Exp $ */
+/* $XConsortium: evtomask.c,v 1.3 89/09/19 11:55:31 rws Exp $ */
 #include "X.h"
+
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
 /*
  * This array can be used given an event type to determine the mask bits
  * that could have generated it.
  */
-long _event_to_mask [LASTEvent] = {
+long Const _event_to_mask [LASTEvent] = {
 	0,						/* no event 0 */
 	0,						/* no event 1 */
 	KeyPressMask,					/* KeyPress */
