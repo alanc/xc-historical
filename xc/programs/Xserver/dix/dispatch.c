@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.33 91/06/21 18:17:36 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.34 91/07/18 22:41:32 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -930,6 +930,8 @@ int
 ProcGrabServer(client)
     register ClientPtr client;
 {
+    REQUEST(xReq);
+    REQUEST_SIZE_MATCH(xReq);
     OnlyListenToOneClient(client);
     grabbingClient = TRUE;
     onlyClient = client;
