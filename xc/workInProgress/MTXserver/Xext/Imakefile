@@ -1,7 +1,7 @@
-STD_DEFINES = ServerDefines
+#include <Server.tmpl>
+
        SRCS = shape.c shm.c multibuf.c mitmisc.c
        OBJS = shape.o shm.o multibuf.o mitmisc.o
-CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
    LINTLIBS = ../../server/dix/llib-ldix.ln ../../server/os/4.2bsd/llib-los.ln
 
