@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.83 93/12/09 15:01:43 kaleb Exp $
+ * $XConsortium: Xrm.c,v 1.84 93/12/09 16:26:01 kaleb Exp $
  */
 
 /***********************************************************
@@ -761,12 +761,7 @@ void XrmCombineDatabase(from, into, override)
 	    }
 	}
 	(from->methods->destroy)(from->mbstate);
-#ifdef XTHREADS
-	if (_XLockMutex_fn) {
-	    xmutex_clear(from->linfo.lock);
-	    xmutex_free(from->linfo.lock);
-	}
-#endif
+	XFreeMutex(&from->linfo);
 	Xfree((char *)from);
 	_XUnlockMutex(&(*into)->linfo);
     }
