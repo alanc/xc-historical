@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.198 88/02/04 17:54:28 rws Exp $ */
+/* $Header: window.c,v 1.199 88/02/23 19:38:31 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2934,10 +2934,10 @@ DrawLogo(pWin)
     height = pScreen->height;
     pGC = GetScratchGC(pScreen->rootDepth, pScreen);
 
-    if (random() & 1)
-	fore[0] = pScreen->blackPixel;
-    else
+    if ((random() % 100) == 17) /* make the probability for white fairly low */
 	fore[0] = pScreen->whitePixel;
+    else
+	fore[0] = pScreen->blackPixel;
     if ((pWin->backgroundTile == (PixmapPtr)USE_BACKGROUND_PIXEL) &&
 	(cmap = (ColormapPtr)LookupID(pWin->colormap, RT_COLORMAP, RC_CORE))) {
 	fore[1] = pWin->backgroundPixel;
