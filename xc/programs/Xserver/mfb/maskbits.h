@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.15 89/07/13 13:49:28 keith Exp $ */
+/* $XConsortium: maskbits.h,v 1.16 89/07/16 21:59:37 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -454,6 +454,7 @@ else \
  */
 
 #if defined(FASTPUTBITS) && defined(FASTGETBITS) && defined(NO_3_60_CG4)
+#if (BITMAP_BIT_ORDER == MSBFirst)
 #define putbitsrop(src, x, w, pdst, rop) \
 { \
   register int _tmp, _tmp2; \
@@ -472,6 +473,24 @@ else \
   FASTPUTBITS(_tmp, x, w, pdst); \
 }
 #undef u_putbitsrop
+#else
+#define putbitsrop(src, x, w, pdst, rop) \
+{ \
+  register int _tmp; \
+  FASTGETBITS(pdst, x, w, _tmp); \
+  DoRop(_tmp, rop, src, _tmp) \
+  FASTPUTBITS(_tmp, x, w, pdst); \
+}
+#define putbitsrrop(src, x, w, pdst, rop) \
+{ \
+  register int _tmp; \
+ \
+  FASTGETBITS(pdst, x, w, _tmp); \
+  _tmp= DoRRop(rop, src, _tmp); \
+  FASTPUTBITS(_tmp, x, w, pdst); \
+}
+#undef u_putbitsrop
+#endif
 #endif
 
 #ifndef putbitsrop
