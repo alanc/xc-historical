@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.27 89/12/07 11:14:24 rws Exp $ */
+/* $XConsortium: ico.c,v 1.28 89/12/12 14:16:36 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -340,7 +340,7 @@ char **argv;
 		    InputOutput, DefaultVisual(dpy, DefaultScreen(dpy)),
 		    CWEventMask | CWBackPixel | CWBorderPixel, &xswa);
 		XChangeProperty(dpy, draw_window, XA_WM_NAME, XA_STRING, 8, 
-				PropModeReplace, "Ico", 3);
+				PropModeReplace, (unsigned char *)"Ico", 3);
 		XMapWindow(dpy, draw_window);
 		while (1) {
 		    XNextEvent(dpy, &xev);
