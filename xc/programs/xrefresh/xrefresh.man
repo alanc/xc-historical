@@ -1,35 +1,80 @@
-.TH XREFRESH 1 "October 25" "X Version 10"
+.TH XREFRESH 1 "January 22" "X Version 11"
 .SH NAME
-xrefresh - refresh all windows on the screen.
+xrefresh - refresh all or part of the screen.
 .SH SYNOPSIS
 .B "xrefresh"
-[ \fIhost\fP:\fIdisplay\fP ]
+[ option ] 
 .SH DESCRIPTION
 .PP
 .I Xrefresh
-is a trivial X program to cause your screen to be completely repainted.
+is a simple X program that causes all or part of your screen to be repainted.
 .I Xrefresh
-just throws a window over the whole screen and unmaps it, causing refresh
-events to be sent to all applications.
-.SH ARGUMENT SUMMARY
-.B "\fIhost\fP:\fIdisplay\fP"
+maps a window on top of the desired area of the screen and then immediately
+unmaps it, 
+causing refresh events to be sent to all applications.  By default, a
+a window with no background is used, causing all applications to repaint
+``smoothly.''
+However, the various options can be used to indicate that a solid background 
+(of any color) or the root window background should be used instead.
+.SH ARGUMENTS
+.PP
+.TP 10
+.B \-white
+Use a white background.  The screen just appears to flash quickly, and then
+repaint.
+.PP
+.TP 10
+.B \-black
+Use a black background (in effect, turning off all of the electron guns to
+the tube).  This can be somewhat disorienting as everything goes black for
+a moment.
+.PP
+.TP 10
+.B \-solid \fIcolor\fP
+Use a solid background of the specified color.  Try green.
+.PP
+.TP 10
+.B \-background
+Use the root window background.
+.PP
+.TP 10
+.B \-none
+This is the default.  All of the windows simply repaint.
+.PP
+.TP 10
+.B \-geometry \fIWxH+X+Y\fP
+Specifies the portion of the screen to be repainted.  This superceeds the
+old style \fB=WxH+X+Y\fP.
+.PP
+.TP 10
+.B \-display \fIhost\fP:\fIdisplay\fP
 This  argument  allow  you  to  specify the host and display number on
-which to display the window dump.  For example ``xrefresh orpheus:1''
-would specify that the dump will appear on display `1' on the machine
-`orpheus'.  By default,
+which to display the refresh window.  For example ``xrefresh orpheus:1''
+would specify that the display `1' on the machine
+`orpheus' will be refreshed.  By default,
 .I xrefresh
 uses the host and display number stored in the environment variable
 DISPLAY, and therefore this argument is not normally specified.
+.SH X DEFAULTS
+.PP
+.TP 8
+.B Black\fP, \fBWhite\fP, \fBSolid\fP, \fBNone\fP, \fBBackground
+Determines what sort of window background to use.
+.PP
+.TP 8
+.B Geometry
+Determines the area to refresh.  Not very useful.
 .SH ENVIRONMENT
 .PP
 .TP 8
 DISPLAY - To get default host and display number.
 .SH SEE ALSO
 X(1), uwm(1), X(8)
-.SH AUTHOR
+.SH AUTHORS
 .PP
-Copyright 1985, Massachusetts Institute of Technology.
+Copyright 1985, 1986, 1987, 1988 Massachusetts Institute of Technology.
 .PP
 Jim Gettys, Digital Equipment Corp., MIT Project Athena
-
+.PP
+Jim Fulton, MIT X Consortium
 
