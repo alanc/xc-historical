@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.23 93/08/24 18:49:46 gildea Exp $ */
+/* $XConsortium: main.c,v 5.24 93/09/03 07:58:42 dpw Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -40,6 +40,7 @@ SOFTWARE.
 #include "opaque.h"
 #include "servermd.h"
 #include "site.h"
+#include "dixfont.h"
 
 extern long defaultScreenSaverTime;
 extern long defaultScreenSaverInterval;
@@ -209,7 +210,7 @@ main(argc, argv)
 
 	InitAtoms();
 	InitEvents();
-	InitGlyphCaching(&screenInfo);
+	InitGlyphCaching();
 	ResetScreenPrivates();
 	ResetWindowPrivates();
 	ResetGCPrivates();
@@ -240,7 +241,7 @@ main(argc, argv)
 	if (InitAndStartDevices() != Success)
 	    FatalError("failed to initialize core devices");
 
-	InitFonts (&screenInfo);
+	InitFonts();
 	if (SetDefaultFontPath(defaultFontPath) != Success)
 	    ErrorF("failed to set default font path '%s'", defaultFontPath);
 	if (!SetDefaultFont(defaultTextFont))
