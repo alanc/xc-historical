@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.3 94/03/31 23:22:54 rws Exp $ */
+/* $XConsortium: access.c,v 1.4 94/04/17 21:17:11 rws Exp kaleb $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -77,10 +77,10 @@ SOFTWARE.
 #  include <net/if.h>
 # endif
 #else
-#if defined(SVR4) || defined(SYSV386)
+#if defined(SVR4) || (defined(SYSV) && defined(i386))
 # include <sys/utsname.h>
 #endif
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(i386)
 # include <sys/stream.h>
 #endif
 #ifdef ESIX
