@@ -3,7 +3,7 @@
 xlsfonts - server font list displayer for X
 .SH SYNOPSIS
 .B xlsfonts
-[-options ...] [pattern]
+[-options ...] [-fn pattern]
 .SH DESCRIPTION
 .I Xlsfonts
 lists the fonts that match the given \fIpattern\fP.

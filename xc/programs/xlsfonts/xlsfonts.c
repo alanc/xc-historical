@@ -20,7 +20,7 @@ FontList	*font_list;
 
 usage()
 {
-	fprintf (stderr,"usage:  %s [-options] [pattern]\n", program_name,
+	fprintf (stderr,"usage:  %s [-options] [-fn pattern]\n", program_name,
 		 program_name);
 	fprintf (stderr, "where options include:\n");
 	fprintf (stderr,
@@ -67,6 +67,12 @@ char **argv;
 					force_1column++;
 					force_columns = 0;
 					break;
+				case 'f':
+					if (--argc <= 0) usage ();
+					argcnt++;
+					argv++;
+					get_list(argv[0]);
+					goto done;	/* stupid C */
 				default:
 					usage();
 					break;
@@ -77,6 +83,7 @@ char **argv;
 			argcnt++;
 			get_list(argv[0]);
 		}
+	  done: ;
 	}
 	if (argcnt == 0)
 		get_list("*");
