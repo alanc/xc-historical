@@ -69,7 +69,7 @@ ClockClassRec clockClassRec = {
     { /* core fields */
     /* superclass */ 	  &widgetClassRec,
     /* class_name */      "Clock",
-    /* size */		   sizeof(ClockClassRec),
+    /* size */		   sizeof(ClockRec),
     /* class_initialize */ NULL,
     /* class_inited */     FALSE,
     /* initialize */	   Initialize,
@@ -147,7 +147,7 @@ static void Initialize (gw)
     myXGCV.foreground = w->clock.Hdpixel;
     w->clock.HandGC = XtGetGC(w, valuemask, &myXGCV);
 
-    XtSetEventHandler (w, EventHandler, 0, TRUE);
+    XtSetEventHandler (w, 0, TRUE, EventHandler, NULL);
 
     w->clock.interval_id = XtAddTimeOut(w, w->clock.update*1000);
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
