@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.133 89/12/13 14:17:35 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.134 89/12/13 19:05:51 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1376,8 +1376,8 @@ int *format;
 				target, type, (caddr_t*)&std_targets,
 				&std_length, format);
     
-    *value = XtRealloc(*value, sizeof(Atom)*(std_length + 7));
-    targetP = *(Atom**)value + *length;
+    *value = XtMalloc((unsigned) sizeof(Atom)*(std_length + 7));
+    targetP = *(Atom**)value;
     *length = std_length + 6;
     *targetP++ = XA_STRING;
     *targetP++ = XA_TEXT(d);
