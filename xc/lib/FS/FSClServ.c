@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSClServ.c,v 1.2 91/05/13 15:11:23 gildea Exp $ */
 
 /* @(#)FSClServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -43,7 +43,7 @@ FSCloseServer(svr)
 	    (*ext->close_server) (svr, &ext->codes);
 	ext = ext->next;
     }
-    _FSDisconnectServer(svr->fd);
+    _FSDisconnectServer(svr->trans_conn);
     while (s != NULL) {
 	if (s == svr) {
 	    *sv = s->next;
