@@ -22,11 +22,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: access.c,v 1.8 88/08/16 08:05:04 jim Exp $ */
+/* $Header: access.c,v 1.24 88/08/29 16:08:52 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
+#include "site.h"
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -64,7 +65,7 @@ typedef struct _host {
 
 static HOST *selfhosts = NULL;
 static HOST *validhosts = NULL;
-static int AccessEnabled = TRUE;
+static int AccessEnabled = DEFAULT_ACCESS_CONTROL;
 
 typedef struct {
     int af, xf;
@@ -216,6 +217,7 @@ ResetHosts (display)
     pointer		addr;
     register struct hostent *hp;
 
+    AccessEnabled = DEFAULT_ACCESS_CONTROL;
     while (host = validhosts)
     {
         validhosts = host->next;
