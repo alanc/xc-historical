@@ -1,4 +1,4 @@
-/* $XConsortium: attr.h,v 5.3 91/05/30 08:51:27 jap Exp $ */
+/* $XConsortium: attr.h,v 5.4 91/07/05 15:57:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -171,7 +171,6 @@ typedef enum {
 
 typedef union {
     struct {
-#ifdef AIXV3
 	unsigned		pkg		: 8;
 	unsigned		ordinal		: 8;
 	unsigned		list_type	: 2;
@@ -180,16 +179,6 @@ typedef union {
 	unsigned		base_type	: 7;
 	unsigned		spare2		: 1;	/* unused */
 	unsigned		cardinality	: 4;
-#else /* AIXV3 */
-	Phg_attr_pkg		pkg		: 8;
-	unsigned		ordinal		: 8;
-	Phg_attr_list_type	list_type	: 2;
-	Phg_attr_list_ptr_type	list_ptr_type	: 1;
-	unsigned		spare1		: 1;	/* unused */
-	Phg_attr_base_type	base_type	: 7;
-	unsigned		spare2		: 1;	/* unused */
-	unsigned		cardinality	: 4;
-#endif /* AIXV3 */
     } 			info;
     Phg_attr_attribute	code;
 } Phg_attr_union;
