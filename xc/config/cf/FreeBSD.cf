@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp kaleb $
+XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.2 94/11/21 17:13:14 kaleb Exp kaleb $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
@@ -46,6 +46,7 @@ XCOMM operating system:  OSName
 #define ServerExtraDefines GccGasOption
 
 #define StandardDefines	-DCSRG_BASED
+#define XawI18nDefines  -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 #define TroffCmd        groff -Tps
 #define SetTtyGroup     YES
@@ -61,3 +62,4 @@ XCOMM operating system:  OSName
 #ifdef __i386__
 #include <xfree86.cf>
 #endif
+#define HasWChar32      YES
