@@ -5,8 +5,8 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.9 89/07/06 16:24:59 kit Exp $";
-#endif  lint
+static char rcsid[] = "$XConsortium: xditview.c,v 1.10 89/07/12 13:57:05 kit Exp $";
+#endif /* lint */
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
