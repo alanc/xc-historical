@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.12 93/02/25 18:08:33 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.13 93/02/26 12:10:45 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -57,7 +57,7 @@ static /* const */ XExtensionHooks xtest_extension_hooks = {
     NULL				/* error_string */
 };
 
-static caddr_t
+static XPointer
 get_xinput_base(dpy)
     Display *dpy;
 {
@@ -65,7 +65,7 @@ get_xinput_base(dpy)
     first_event = 0;
 
     XQueryExtension(dpy, INAME, &major_opcode, &first_event, &first_error);
-    return (caddr_t)first_event;
+    return (XPointer)first_event;
 }
 
 static XEXT_GENERATE_FIND_DISPLAY (find_display, xtest_info,
