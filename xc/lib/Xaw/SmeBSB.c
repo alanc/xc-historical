@@ -1,4 +1,4 @@
-/* $XConsortium: SmeBSB.c,v 1.13 90/12/31 17:40:30 gildea Exp $ */
+/* $XConsortium: SmeBSB.c,v 1.14 91/02/17 16:11:02 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -50,21 +50,21 @@ static XtResource resources[] = {
   {XtNlabel,  XtCLabel, XtRString, sizeof(String),
      offset(label), XtRString, NULL},
   {XtNvertSpace,  XtCVertSpace, XtRInt, sizeof(int),
-     offset(vert_space), XtRImmediate, (caddr_t) 25},
+     offset(vert_space), XtRImmediate, (XtPointer) 25},
   {XtNleftBitmap, XtCLeftBitmap, XtRBitmap, sizeof(Pixmap),
-     offset(left_bitmap), XtRImmediate, (caddr_t)None},
+     offset(left_bitmap), XtRImmediate, (XtPointer)None},
   {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
-     offset(justify), XtRImmediate, (caddr_t) XtJustifyLeft},
+     offset(justify), XtRImmediate, (XtPointer) XtJustifyLeft},
   {XtNrightBitmap, XtCRightBitmap, XtRBitmap, sizeof(Pixmap),
-     offset(right_bitmap), XtRImmediate, (caddr_t)None},
+     offset(right_bitmap), XtRImmediate, (XtPointer)None},
   {XtNleftMargin,  XtCHorizontalMargins, XtRDimension, sizeof(Dimension),
-     offset(left_margin), XtRImmediate, (caddr_t) 4},
+     offset(left_margin), XtRImmediate, (XtPointer) 4},
   {XtNrightMargin,  XtCHorizontalMargins, XtRDimension, sizeof(Dimension),
-     offset(right_margin), XtRImmediate, (caddr_t) 4},
+     offset(right_margin), XtRImmediate, (XtPointer) 4},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-     offset(foreground), XtRString, "XtDefaultForeground"},
+     offset(foreground), XtRString, XtDefaultForeground},
   {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     offset(font), XtRString, "XtDefaultFont"},
+     offset(font), XtRString, XtDefaultFont},
 };   
 #undef offset
 
