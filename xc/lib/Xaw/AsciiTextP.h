@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: AsciiTextP.h,v 1.3 88/02/14 13:58:32 rws Exp $ */
+/* $Header: AsciiTextP.h,v 1.4 88/02/25 12:14:51 swick Exp $ */
 
 
 /***********************************************************
@@ -39,8 +39,9 @@ extern Cardinal textActionsTableCount;
 typedef struct {int empty;} AsciiStringClassPart;
 
 typedef struct _AsciiStringClassRec {
-    CoreClassPart	 core_class;
-    TextClassPart	 text_class;
+    CoreClassPart	core_class;
+    SimpleClassPart	simple_class;
+    TextClassPart	text_class;
     AsciiStringClassPart ascii_string_class;
 } AsciiStringClassRec;
 
@@ -52,6 +53,7 @@ typedef struct {
 
 typedef struct _AsciiStringRec {
     CorePart		core;
+    SimplePart		simple;
     TextPart		text;
     AsciiStringPart	ascii_string;
 } AsciiStringRec;
@@ -60,6 +62,7 @@ typedef struct {int empty;} AsciiDiskClassPart;
 
 typedef struct _AsciiDiskClassRec {
     CoreClassPart	core_class;
+    SimpleClassPart	simple_class;
     TextClassPart	text_class;
     AsciiDiskClassPart	ascii_disk_class;
 } AsciiDiskClassRec;
@@ -72,6 +75,7 @@ typedef struct {
 
 typedef struct _AsciiDiskRec {
     CorePart		core;
+    SimplePart		simple;
     TextPart		text;
     AsciiDiskPart	ascii_disk;
 } AsciiDiskRec;

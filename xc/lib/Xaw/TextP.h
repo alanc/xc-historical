@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.14 88/02/14 14:16:13 rws Exp $
+* $Header: TextP.h,v 1.15 88/02/26 10:09:33 swick Exp $
 */
 
 
@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include <X11/Text.h>
 #include <X11/CoreP.h>
+#include <X11/SimpleP.h>
 
 /****************************************************************
  *
@@ -140,6 +141,7 @@ typedef struct {int empty;} TextClassPart;
 /* Full class record declaration */
 typedef struct _TextClassRec {
     CoreClassPart	core_class;
+    SimpleClassPart	simple_class;
     TextClassPart	text_class;
 } TextClassRec;
 
@@ -194,6 +196,7 @@ typedef struct _TextPart {
 
 typedef struct _TextRec {
     CorePart	core;
+    SimplePart	simple;
     TextPart	text;
 } TextRec;
 
