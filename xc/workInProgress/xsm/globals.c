@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.3 94/07/15 14:11:27 mor Exp $ */
+/* $XConsortium: globals.c,v 1.4 94/07/18 15:01:49 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -30,6 +30,7 @@ ClientRec	*ClientList = NULL;
 int		numClients = 0;
 int		saveDoneCount = 0;
 int		interactCount = 0;
+int		phase2RequestCount = 0;
 Bool		shutdownDialogUp = False;
 Bool		shutdownInProgress = False;
 Bool		saveInProgress = False;
