@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.57 89/05/11 16:18:15 jim Exp $
+ * $XConsortium: menus.c,v 1.59 89/05/15 17:21:38 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.57 89/05/11 16:18:15 jim Exp $";
+"$XConsortium: menus.c,v 1.59 89/05/15 17:21:38 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2358,7 +2358,7 @@ SetMapStateProp(tmp_win, state)
 TwmWindow *tmp_win;
 int state;
 {
-    unsigned long data[2];
+    unsigned long data[2];		/* "suggested" by ICCCM version 1 */
   
     if (tmp_win->iconmgr) return;
 
@@ -2381,6 +2381,7 @@ Bool GetWMState (w, statep, iwp)
     int actual_format;
     long nitems, bytesafter;
     unsigned long *datap = NULL;
+    Bool retval = False;
 
     if (wmStateAtom == None &&
         (wmStateAtom = XInternAtom (dpy, "WM_STATE", False)) == None)
@@ -2388,13 +2389,15 @@ Bool GetWMState (w, statep, iwp)
 
     if (XGetWindowProperty (dpy, w, wmStateAtom, 0, 2, False, wmStateAtom,
 			    &actual_type, &actual_format, &nitems, &bytesafter,
-			    (unsigned char **) &datap) != Success)
+			    (unsigned char **) &datap) != Success || !datap)
       return False;
 
-    *statep = (int) datap[0];
-    *iwp = (Window) datap[1];
+    if (nitems <= 2) {			/* "suggested" by ICCCM version 1 */
+	*statep = (int) datap[0];
+	*iwp = (Window) datap[1];
+	retval = True;
+    }
+
     XFree ((char *) datap);
-    return True;
+    return retval;
 }
-
-
