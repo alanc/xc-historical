@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.105 89/09/28 11:40:07 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.106 89/10/03 17:41:11 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -479,7 +479,7 @@ extern void XtAddGrab();
 extern void XtRemoveGrab();
     /* Widget	widget;		    */
 
-extern void XtDispatchEvent(); /* event */
+extern Boolean XtDispatchEvent(); /* event */
     /* XEvent	*event; */
 
 extern void XtProcessEvent();
