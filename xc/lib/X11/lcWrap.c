@@ -1,5 +1,5 @@
 /*
- * $XConsortium: lcWrap.c,v 11.13 93/11/11 17:45:16 kaleb Exp $
+ * $XConsortium: lcWrap.c,v 11.14 93/12/09 15:02:26 kaleb Exp $
  */
 
 /*
@@ -139,7 +139,13 @@ _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
 static lock;
 #endif /* lint */
 
-static XLCd *lcd_list;
+typedef struct _XLCdListRec {
+    struct _XLCdListRec *next;
+    XLCd lcd;
+    int ref_count;
+} XLCdListRec, *XLCdList;
+
+static XLCdList lcd_list = NULL;
 
 typedef struct _XlcLoaderListRec {
     struct _XlcLoaderListRec *next;
@@ -210,32 +216,27 @@ _XlcAddLoader(proc, position)
 }
 
 XLCd
-_XlcGetLC(name)
+_XOpenLC(name)
     char *name;
 {
     XLCd lcd;
-    int i;
     XlcLoaderList loader;
+    XLCdList cur;
+
+    if (name == NULL)
+	name = setlocale (LC_CTYPE, (char *)NULL);
 
     _XLockMutex(_Xglobal_lock);
 
     /*
-     * if first-time, build a list and load the one needed
-     */
-    if (!lcd_list) {
-	lcd_list = (XLCd *) Xmalloc (sizeof(XLCd));
-	if (!lcd_list)
-	    goto bad;
-	lcd_list[0] = (XLCd) NULL;
-    }
-
-    /*
      * search for needed lcd, if found return it
      */
-    for (i = 0; lcd_list[i]; i++) {
-	lcd = lcd_list[i];
-	if (!strcmp (lcd->core->name, name))
+    for (cur = lcd_list; cur; cur = cur->next) {
+	if (!strcmp (cur->lcd->core->name, name)) {
+	    lcd = cur->lcd;
+	    cur->ref_count++;
 	    goto found;
+	}
     }
 
     if (!loader_list)
@@ -247,25 +248,41 @@ _XlcGetLC(name)
     for (loader = loader_list; loader; loader = loader->next) {
 	lcd = (*loader->proc)(name);
 	if (lcd) {
-	    XLCd *new_list;
-
-	    new_list = (XLCd *) Xrealloc ((char *)lcd_list,
-					  (sizeof (XLCd) * (i+2)));
-	    if (!new_list)
-		goto bad;
-	    lcd_list = new_list;
-	    lcd_list[i]   = lcd;
-	    lcd_list[i+1] = (XLCd) NULL;
-	    goto found;
+	    cur = (XLCdList) Xmalloc (sizeof(XLCdListRec));
+	    if (cur) {
+		cur->lcd = lcd;
+		cur->ref_count = 1;
+		cur->next = lcd_list;
+		lcd_list = cur;
+	    } else {
+		(*lcd->methods->close)(lcd);
+		lcd = (XLCd) NULL;
+	    }
+	    break;
 	}
     }
-
-bad:
-    lcd = (XLCd) NULL;
 
 found:
     _XUnlockMutex(_Xglobal_lock);
     return lcd;
+}
+
+void
+_XCloseLC(lcd)
+    XLCd lcd;
+{
+    XLCdList cur, *prev;
+
+    for (prev = &lcd_list; cur = *prev; prev = &cur->next) {
+	if (cur->lcd == lcd) {
+	    if (--cur->ref_count < 1) {
+		(*lcd->methods->close)(lcd);
+		*prev = cur->next;
+		Xfree(cur);
+	    }
+	    break;
+	}
+    }
 }
 
 /*
@@ -275,14 +292,24 @@ found:
 XLCd
 _XlcCurrentLC()
 {
-    return _XlcGetLC(setlocale(LC_CTYPE, (char *) NULL));
+    XLCd lcd;
+    static XLCd last_lcd = NULL;
+
+    lcd = _XOpenLC((char *) NULL);
+
+    if (last_lcd)
+	_XCloseLC(last_lcd);
+    
+    last_lcd = lcd;
+
+    return lcd;
 }
 
 XrmMethods
 _XrmInitParseInfo(state)
     XPointer *state;
 {
-    XLCd lcd =  _XlcCurrentLC();
+    XLCd lcd = _XOpenLC((char *) NULL);
     
     if (lcd == (XLCd) NULL)
 	return (XrmMethods) NULL;
@@ -377,4 +404,146 @@ XDefaultString()
 	return (char *) NULL;
     
     return (*lcd->methods->default_string)(lcd);
+}
+
+void
+_XlcCopyFromArg(src, dst, size)
+    char *src;
+    register char *dst;
+    register int size;
+{
+    if (size == sizeof(long))
+	*((long *) dst) = (long) src;
+    else if (size == sizeof(short))
+	*((short *) dst) = (short) src;
+    else if (size == sizeof(char))
+	*((char *) dst) = (char) src;
+    else if (size == sizeof(XPointer))
+	*((XPointer *) dst) = (XPointer) src;
+    else if (size > sizeof(XPointer))
+	memcpy(dst, (char *) src, size);
+    else
+	memcpy(dst, (char *) &src, size);
+}
+
+void
+_XlcCopyToArg(src, dst, size)
+    register char *src;
+    register char **dst;
+    register int size;
+{
+    if (size == sizeof(long))
+	*((long *) *dst) = *((long *) src);
+    else if (size == sizeof(short))
+	*((short *) *dst) = *((short *) src);
+    else if (size == sizeof(char))
+	*((char *) *dst) = *((char *) src);
+    else if (size == sizeof(XPointer))
+	*((XPointer *) *dst) = *((XPointer *) src);
+    else
+	memcpy(*dst, src, size);
+}
+
+void
+_XlcCountVaList(var, count_ret)
+    va_list var;
+    int *count_ret;
+{
+    register int count;
+
+    for (count = 0; va_arg(var, char *); count++)
+	va_arg(var, XPointer);
+    
+    *count_ret = count;
+}
+
+void
+_XlcVaToArgList(var, count, args_ret)
+    va_list var;
+    register int count;
+    XlcArgList *args_ret;
+{
+    register XlcArgList args;
+
+    *args_ret = args = (XlcArgList) Xmalloc(sizeof(XlcArg) * count);
+    if (args == (XlcArgList) NULL)
+	return;
+    
+    for ( ; count-- > 0; args++) {
+	args->name = va_arg(var, char *);
+	args->value = va_arg(var, XPointer);
+    }
+}
+
+void
+_XlcCompileResourceList(resources, num_resources)
+    register XlcResourceList resources;
+    register int num_resources;
+{
+    for ( ; num_resources-- > 0; resources++)
+	resources->xrm_name = XrmPermStringToQuark(resources->name);
+}
+
+char *
+_XlcGetValues(base, resources, num_resources, args, num_args, mask)
+    XPointer base;
+    XlcResourceList resources;
+    int num_resources;
+    XlcArgList args;
+    int num_args;
+    unsigned long mask;
+{
+    XlcResourceList res;
+    XrmQuark xrm_name;
+    int count;
+
+    for ( ; num_args-- > 0; args++) {
+	res = resources;
+	count = num_resources;
+	xrm_name = XrmPermStringToQuark(args->name);
+
+	for ( ; count-- > 0; res++) {
+	    if (xrm_name == res->xrm_name && (mask & res->mask)) {
+		    _XlcCopyToArg(base + res->offset, &args->value, res->size);
+		break;
+	    }
+	}
+
+	if (count < 0)
+	    return args->name;
+    }
+
+    return NULL;
+}
+
+char *
+_XlcSetValues(base, resources, num_resources, args, num_args, mask)
+    XPointer base;
+    XlcResourceList resources;
+    int num_resources;
+    XlcArgList args;
+    int num_args;
+    unsigned long mask;
+{
+    XlcResourceList res;
+    XrmQuark xrm_name;
+    int count;
+
+    for ( ; num_args-- > 0; args++) {
+	res = resources;
+	count = num_resources;
+	xrm_name = XrmPermStringToQuark(args->name);
+
+	for ( ; count-- > 0; res++) {
+	    if (xrm_name == res->xrm_name && (mask & res->mask)) {
+		_XlcCopyFromArg(args->value, base + res->offset, res->size);
+		break;
+	    }
+	}
+
+	if (count < 0)
+	    return args->name;
+    }
+
+    return NULL;
 }

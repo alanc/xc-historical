@@ -1,34 +1,28 @@
 /* $XConsortium: lcStd.c,v 1.2 93/09/17 14:24:19 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -308,141 +302,4 @@ _Xwcsncmp(wstr1, wstr2, len)
 	return 0;
 
     return *wstr1 - *wstr2;
-}
-
-
-#ifndef MAXINT
-#define MAXINT		(~((unsigned int)1 << (8 * sizeof(int)) - 1))
-#endif /* !MAXINT */
-
-int
-_Xlcctstombs(lcd, to, from, to_len)
-    XLCd lcd;
-    char *to;
-    char *from;
-    int to_len;
-{
-    XlcConv conv;
-    int from_left, to_left, ret;
-
-    conv = _XlcOpenConverter(lcd, XlcNCompoundText, lcd, XlcNMultiByte);
-    if (conv == NULL)
-	return -1;
-
-    from_left = strlen(from);
-    if (to == NULL)
-	to_len = MAXINT;
-    to_left = to_len;
-
-    if (_XlcConvert(conv, (XPointer *) &from, &from_left, (XPointer *) &to,
-		    &to_left, NULL, 0) < 0)
-	ret = -1;
-    else {
-	ret = to_len - to_left;
-	if (to && to_left > 0)
-	    *to = '\0';
-    }
-
-    _XlcCloseConverter(conv);
-
-    return ret;
-}
-
-int
-_Xlcctstowcs(lcd, to, from, to_len)
-    XLCd lcd;
-    wchar_t *to;
-    char *from;
-    int to_len;
-{
-    XlcConv conv;
-    int from_left, to_left, ret;
-
-    conv = _XlcOpenConverter(lcd, XlcNCompoundText, lcd, XlcNWideChar);
-    if (conv == NULL)
-	return -1;
-
-    from_left = strlen(from);
-    if (to == NULL)
-	to_len = MAXINT;
-    to_left = to_len;
-
-    if (_XlcConvert(conv, (XPointer *) &from, &from_left, (XPointer *) &to,
-		    &to_left, NULL, 0) < 0)
-	ret = -1;
-    else {
-	ret = to_len - to_left;
-	if (to && to_left > 0)
-	    *to = (wchar_t) 0;
-    }
-
-    _XlcCloseConverter(conv);
-
-    return ret;
-}
-
-int
-_Xlcmbstocts(lcd, to, from, to_len)
-    XLCd lcd;
-    char *to;
-    char *from;
-    int to_len;
-{
-    XlcConv conv;
-    int from_left, to_left, ret;
-
-    conv = _XlcOpenConverter(lcd, XlcNMultiByte, lcd, XlcNCompoundText);
-    if (conv == NULL)
-	return -1;
-
-    from_left = strlen(from);
-    if (to == NULL)
-	to_len = MAXINT;
-    to_left = to_len;
-
-    if (_XlcConvert(conv, (XPointer *) &from, &from_left, (XPointer *) &to,
-		    &to_left, NULL, 0) < 0)
-	ret = -1;
-    else {
-	ret = to_len - to_left;
-	if (to && to_left > 0)
-	    *to = '\0';
-    }
-
-    _XlcCloseConverter(conv);
-
-    return ret;
-}
-
-int
-_Xlcwcstocts(lcd, to, from, to_len)
-    XLCd lcd;
-    char *to;
-    wchar_t *from;
-    int to_len;
-{
-    XlcConv conv;
-    int from_left, to_left, ret;
-
-    conv = _XlcOpenConverter(lcd, XlcNWideChar, lcd, XlcNCompoundText);
-    if (conv == NULL)
-	return -1;
-
-    from_left = _Xwcslen(from);
-    if (to == NULL)
-	to_len = MAXINT;
-    to_left = to_len;
-
-    if (_XlcConvert(conv, (XPointer *) &from, &from_left, (XPointer *) &to,
-		    &to_left, NULL, 0) < 0)
-	ret = -1;
-    else {
-	ret = to_len - to_left;
-	if (to && to_left > 0)
-	    *to = '\0';
-    }
-
-    _XlcCloseConverter(conv);
-
-    return ret;
 }

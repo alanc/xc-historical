@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imInt.c,v 1.1 93/09/17 13:29:37 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -32,8 +32,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xmd.h>
 #include "Xlibint.h"
 #include "Xlcint.h"
-#include "XimImSw.h"
 #include "Ximint.h"
+#include "XimImSw.h"
 
 Private Xim 		*_XimCurrentIMlist  = (Xim *)NULL;
 Private int		 _XimCurrentIMcount = 0;
@@ -90,16 +90,27 @@ _XimServerDestroy()
 {
     register int  i;
     Xim		  im;
+    XIC		  ic;
 
     for(i = 0; i < _XimCurrentIMcount; i++) {
 	if(!(im = _XimCurrentIMlist[i]))
 	    continue;
 
+	if (im->core.destroy_callback.callback)
+	    (*im->core.destroy_callback.callback)(im,
+			im->core.destroy_callback.client_data, NULL);
+	for (ic = im->core.ic_chain; ic; ic = ic->core.next) {
+	    if (ic->core.destroy_callback.callback) {
+		(*ic->core.destroy_callback.callback)(ic,
+			ic->core.destroy_callback.client_data, NULL);
+	    }
+	}
 	_XimResetIMInstantiateCallback( im );
 	(void)im->methods->close((XIM)im);
 	Xfree(im);
     }
     Xfree(_XimCurrentIMlist);
+    _XimCurrentIMlist  = (Xim *)NULL;
     return;
 }
 
@@ -201,4 +212,16 @@ Error1:
 	Xfree(im->core.res_name);
     Xfree(im);
     return NULL;
+}
+
+Public Bool
+_XInitIM(lcd)
+    XLCd	 lcd;
+{
+    if(lcd == (XLCd)NULL)
+	return False;
+    lcd->methods->open_im = _XimOpenIM;
+    lcd->methods->register_callback = _XimRegisterIMInstantiateCallback;
+    lcd->methods->unregister_callback = _XimUnRegisterIMInstantiateCallback;
+    return True;
 }

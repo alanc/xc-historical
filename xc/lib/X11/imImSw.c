@@ -1,7 +1,7 @@
-/* $XConsortium$ */
+/* $XConsortium: imImSw.c,v 1.1 93/09/17 13:26:33 rws Exp $ */
 /******************************************************************
 
-          Copyright 1992 by FUJITSU LIMITED
+          Copyright 1992, 1993 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -34,19 +34,9 @@ THIS SOFTWARE.
 ******************************************************************/
 
 #include "Xlibint.h"
-#include "XimImSw.h"
 #include "Xlcint.h"
 #include "Ximint.h"
-
-extern Bool		_XimCheckIfLocalProcessing();
-extern Bool		_XimLocalOpenIM();
-extern void		_XimLocalIMFree();
-extern Bool		_XimProtoOpenIM();
-extern void		_XimProtoIMFree();
-
-extern Bool		_XimCheckIfThaiProcessing();
-extern Bool		_XimThaiOpenIM();
-extern void		_XimThaiIMFree();
+#include "XimImSw.h"
 
 Private Bool
 _XimCheckIfDefault(im)
@@ -60,5 +50,4 @@ XimImsportSW _XimImSportRec[] = {
     _XimCheckIfThaiProcessing,	_XimThaiOpenIM,	 _XimThaiIMFree,
     _XimCheckIfDefault,         _XimProtoOpenIM, _XimProtoIMFree,
     NULL,                       NULL,		 NULL,
-    };
-
+};

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: IMWrap.c,v 11.6 93/09/18 10:27:30 rws Exp $
+ * $XConsortium: IMWrap.c,v 11.7 93/09/24 10:27:45 rws Exp $
  */
 
 /*
@@ -34,7 +34,7 @@
 #include "Xlcint.h"
 
 /*
- * Compile the resource list. (XIMResourceList ---> XIMrmResourceList)
+ * Compile the resource name. (resource_name ---> xrm_name)
  */
 void
 _XIMCompileResourceList(res, num_res)
@@ -43,13 +43,9 @@ _XIMCompileResourceList(res, num_res)
 {
     register unsigned int count;
 
-#define	xrmres	((XIMrmResourceList) res)
-
     for (count = 0; count < num_res; res++, count++) {
-	xrmres->xrm_name = XrmStringToQuark(res->resource_name);
-	xrmres->xrm_offset = -res->resource_offset - 1;
+	res->xrm_name = XrmStringToQuark(res->resource_name);
     }
-#undef	xrmres
 }
 
 void
@@ -88,16 +84,18 @@ _XCopyToArg(src, dst, size)
  */
 
 XIM 
-XOpenIM(display, rdb, res_name, res_class)
-    Display *display;
-    XrmDatabase rdb;
-    char *res_name;
-    char *res_class;
+XOpenIM( display, rdb, res_name, res_class )
+    Display	*display;
+    XrmDatabase	 rdb;
+    char	*res_name;
+    char	*res_class;
 {
-    XLCd lcd = _XlcCurrentLC();
+    XLCd	lcd = _XOpenLC( (char *)NULL );
 
-    if (!lcd)
-	return (XIM) NULL;
+    if( !lcd )
+	return( (XIM)NULL );
+    if( lcd->methods->open_im == NULL )
+	_XInitIM( lcd );
     return (*lcd->methods->open_im) (lcd, display, rdb, res_name, res_class);
 }
 
@@ -110,11 +108,13 @@ XCloseIM(im)
 {
     Status s;
     XIC ic;
+    XLCd lcd = im->core.lcd;
   
     s = (im->methods->close) (im);
     for (ic = im->core.ic_chain; ic; ic = ic->core.next)
 	ic->core.im = (XIM)NULL;
     Xfree ((char *) im);
+    _XCloseLC (lcd);
     return (s);
 }
 
@@ -143,31 +143,47 @@ XLocaleOfIM(im)
  * on-demand input method instantiation.
  */
 Bool
-XRegisterIMInstantiateCallback(display, callback, client_data)
-    Display *display;
-    XIMProc callback;
-    XPointer *client_data;
+XRegisterIMInstantiateCallback( display, rdb, res_name, res_class, callback,
+				client_data)
+    Display	*display;
+    XrmDatabase	 rdb;
+    char	*res_name;
+    char	*res_class;
+    XIMProc	 callback;
+    XPointer	*client_data;
 {
-    XLCd lcd = _XlcCurrentLC();
+    XLCd	lcd = _XOpenLC( (char *)NULL );
 
-    if (!lcd)
-	return False;
-    return (*lcd->methods->register_callback) (lcd, display, callback,
-					       client_data);
+    if( !lcd )
+	return( False );
+    if( lcd->methods->register_callback == NULL )
+	_XInitIM( lcd );
+    return( (*lcd->methods->register_callback)( lcd, display, rdb, res_name,
+						res_class, callback,
+						client_data ) );
 }
 
 /*
  * Unregister to a input method instantiation callback.
  */
 Bool
-XUnregisterIMInstantiateCallback(display, callback)
-    Display *display;
-    XIMProc callback;
+XUnregisterIMInstantiateCallback( display, rdb, res_name, res_class, callback,
+				  client_data )
+    Display	*display;
+    XrmDatabase	 rdb;
+    char	*res_name;
+    char	*res_class;
+    XIMProc	 callback;
+    XPointer	*client_data;
 {
-    XLCd lcd = _XlcCurrentLC();
+    XLCd	lcd = _XlcCurrentLC();
 
-    if (!lcd)
-	return False;
-    return (*lcd->methods->unregister_callback) (lcd, display, callback );
+    if( !lcd )
+	return( False );
+    if( lcd->methods->unregister_callback == NULL )
+	return( False );
+    return( (*lcd->methods->unregister_callback)( lcd, display, rdb, res_name,
+						  res_class, callback,
+						  client_data ) );
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.4 93/09/18 12:36:08 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.5 93/09/24 10:32:08 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -54,7 +54,19 @@ _XimICOfXICID(im, icid)
 }
 
 Private void
-_XimProcSetEventMask(ic, buf)
+_XimProcIMSetEventMask(im, buf)
+    Xim		 im;
+    XPointer	 buf;
+{
+    EVENTMASK	*buf_l = (EVENTMASK *)buf;
+
+    im->private.proto.forward_event_mask     = buf_l[0];
+    im->private.proto.synchronous_event_mask = buf_l[1];
+    return;
+}
+
+Private void
+_XimProcICSetEventMask(ic, buf)
     Xic		 ic;
     XPointer	 buf;
 {
@@ -62,6 +74,7 @@ _XimProcSetEventMask(ic, buf)
 
     ic->private.proto.forward_event_mask     = buf_l[0];
     ic->private.proto.synchronous_event_mask = buf_l[1];
+    _XimReregisterFilter(ic);
     return;
 }
 
@@ -86,9 +99,12 @@ _XimSetEventMaskCallback(xim, len, data, call_data)
     Xim		 im = (Xim)call_data;
     Xic		 ic;
 
-    if ((imid == im->private.proto.imid)
-     && (ic = _XimICOfXICID(im, icid))) {
-	_XimProcSetEventMask(ic, (XPointer)&buf_s[2]);
+    if (imid == im->private.proto.imid) {
+	if (ic = _XimICOfXICID(im, icid)) {
+	    _XimProcICSetEventMask(ic, (XPointer)&buf_s[2]);
+	} else {
+	    _XimProcIMSetEventMask(im, (XPointer)&buf_s[2]);
+	}
 	Xfree(data);
 	return True;
     }
@@ -96,11 +112,19 @@ _XimSetEventMaskCallback(xim, len, data, call_data)
 }
 
 Private Bool
+#if NeedFunctionPrototypes
+_XimSyncCheck(
+    Xim          im,
+    INT16        len,
+    XPointer	 data,
+    XPointer     arg)
+#else
 _XimSyncCheck(im, len, data, arg)
     Xim          im;
-    INT16       *len;
+    INT16        len;
     XPointer	 data;
     XPointer     arg;
+#endif
 {
     Xic		 ic  = (Xic)arg;
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
@@ -112,6 +136,13 @@ _XimSyncCheck(im, len, data, arg)
     if ((major_opcode == XIM_SYNC_REPLY)
      && (minor_opcode == 0)
      && (imid == im->private.proto.imid)
+     && (icid == ic->private.proto.icid))
+	return True;
+    if ((major_opcode == XIM_ERROR)
+     && (minor_opcode == 0)
+     && (buf_s[2] & XIM_IMID_VALID)
+     && (imid == im->private.proto.imid)
+     && (buf_s[2] & XIM_ICID_VALID)
      && (icid == ic->private.proto.icid))
 	return True;
     return False;
@@ -134,12 +165,17 @@ _XimSync(im, ic)
 	+ sizeof(CARD16);			/* sizeof icid */
 
     _XimSetHeader((XPointer)buf, XIM_SYNC, 0, &len);
-    if (!(im->private.proto.send(im, len, (XPointer)buf)))
+    if (!(_XimSend(im, len, (XPointer)buf)))
 	return False;
-    im->private.proto.flush(im);
-    if (!(im->private.proto.recv(im, &len, &reply,
-					_XimSyncCheck, (XPointer)ic)))
+    _XimFlush(im);
+    if (!(_XimRecv(im, &len, &reply, _XimSyncCheck, (XPointer)ic)))
 	return False;
+    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
+    if (*((CARD8 *)reply) == XIM_ERROR) {
+	_XimProcError(im, 0, (XPointer)&buf_s[3]);
+	Xfree(reply);
+	return False;
+    }
     Xfree(reply);
     return True;
 }
@@ -160,9 +196,9 @@ _XimProcSyncReply(im, ic)
 	+ sizeof(CARD16);			/* sizeof icid */
 
     _XimSetHeader((XPointer)buf, XIM_SYNC_REPLY, 0, &len);
-    if (!(im->private.proto.send(im, len, (XPointer)buf)))
+    if (!(_XimSend(im, len, (XPointer)buf)))
 	return False;
-    im->private.proto.flush(im);
+    _XimFlush(im);
     return True;
 }
 
@@ -246,14 +282,19 @@ _XimForwardEventCore(ic, ev, sync)
 	 + sizeof(CARD16);			/* sizeof serila number */
 
     _XimSetHeader((XPointer)buf, XIM_FORWARD_EVENT, 0, &len);
-    if (!(im->private.proto.send(im, len, (XPointer)buf)))
+    if (!(_XimSend(im, len, (XPointer)buf)))
 	return False;
-    im->private.proto.flush(im);
+    _XimFlush(im);
 
     if (sync) {
-	if (!(im->private.proto.recv(im, &len, &reply,
-					_XimSyncCheck, (XPointer)ic)))
+	if (!(_XimRecv(im, &len, &reply, _XimSyncCheck, (XPointer)ic)))
 	    return False;
+	buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
+	if (*((CARD8 *)reply) == XIM_ERROR) {
+	    _XimProcError(im, 0, (XPointer)&buf_s[3]);
+	    Xfree(reply);
+	    return False;
+	}
 	Xfree(reply);
     }
     return True;
@@ -267,9 +308,7 @@ _XimForwardEvent(ic, ev, sync)
 {
     Xim		 im = (Xim)ic->core.im;
 
-    MARK_PREVIOUS_FORWARDEVENT(im);
-
-#ifndef NOT_EXT_FORWARD
+#ifdef EXT_FORWARD
     if (((ev->type == KeyPress) || (ev->type == KeyRelease)))
 	if (_XimExtForwardKeyEvent(ic, (XKeyEvent *)ev, sync))
 	    return True;
@@ -278,32 +317,21 @@ _XimForwardEvent(ic, ev, sync)
 }
 
 Private void
-_XimSetWireToEvent(d, event, ev, serial)
-    Display	*d;
-    xEvent	*event;
-    XEvent	*ev;
-    INT16	 serial;
-{
-    _XimProtoWireToEvent(ev, event, False);
-    ev->xany.serial |= serial << 16;
-    ev->xany.send_event = False;
-    ev->xany.display = d;
-    return;
-}
-
-Private Bool
-_XimProcKey(d, ic, kev, buf)
+_XimProcEvent(d, ic, ev, buf)
     Display		*d;
     Xic			 ic;
-    XKeyEvent		*kev;
+    XEvent		*ev;
     CARD16		*buf;
 {
     INT16	 serial = buf[0];
-    xEvent	*ev = (xEvent *)&buf[1];
+    xEvent	*xev = (xEvent *)&buf[1];
 
-    _XimSetWireToEvent(d, ev, (XEvent *)kev, serial);
+    _XimProtoWireToEvent(ev, xev, False);
+    ev->xany.serial |= serial << 16;
+    ev->xany.send_event = False;
+    ev->xany.display = d;
     MARK_FABLICATED(ic);
-    return True;
+    return;
 }
 
 Private Bool
@@ -316,13 +344,12 @@ _XimForwardEventRecv(im, ic, buf)
     Display	*d = im->core.display;
     XEvent	 ev;
 
-    /* XXX  Only KeyEvent !!!  FIX ME !!! */
-    if (!(_XimProcKey(d, ic, (XKeyEvent *)&ev, &buf_s[1])))
-	return False;
+    _XimProcEvent(d, ic, &ev, &buf_s[1]);
 
     (void)_XimRespSyncReply(ic, buf_s[0]);
 
     XPutBackEvent(d, &ev);
+
     return True;
 }
 
@@ -375,8 +402,10 @@ _XimRegisterTriggerkey(im, buf)
     len = buf_l[0];				/* length of on-keys */
     len += sizeof(INT32);			/* sizeof length of on-keys */
 
-    if (!(key = (CARD32 *)Xmalloc(len)))
+    if (!(key = (CARD32 *)Xmalloc(len))) {
+	_XimError(im, 0, XIM_BadAlloc, (INT16)0, (CARD16)0, (char *)NULL);
 	return False;
+    }
     memcpy((char *)key, (char *)buf, len);
     im->private.proto.im_onkeylist	     = key;
 
@@ -390,8 +419,10 @@ _XimRegisterTriggerkey(im, buf)
     len = buf_l[0];				/* length of off-keys */
     len += sizeof(INT32);			/* sizeof length of off-keys */
 
-    if (!(key = (CARD32 *)Xmalloc(len)))
+    if (!(key = (CARD32 *)Xmalloc(len))) {
+	_XimError(im, 0, XIM_BadAlloc, (INT16)0, (CARD16)0, (char *)NULL);
 	return False;
+    }
 
     memcpy((char *)key, (char *)buf, len);
     im->private.proto.im_offkeylist = key;
@@ -440,11 +471,19 @@ _XimGetWindowEventmask(ic)
 
 
 Private Bool
+#if NeedFunctionPrototypes
+_XimTriggerNotifyCheck(
+    Xim          im,
+    INT16        len,
+    XPointer	 data,
+    XPointer     arg)
+#else
 _XimTriggerNotifyCheck(im, len, data, arg)
     Xim          im;
-    INT16       *len;
+    INT16        len;
     XPointer	 data;
     XPointer     arg;
+#endif
 {
     Xic		 ic  = (Xic)arg;
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
@@ -456,6 +495,13 @@ _XimTriggerNotifyCheck(im, len, data, arg)
     if ((major_opcode == XIM_TRIGGER_NOTIFY_REPLY)
      && (minor_opcode == 0)
      && (imid == im->private.proto.imid)
+     && (icid == ic->private.proto.icid))
+	return True;
+    if ((major_opcode == XIM_ERROR)
+     && (minor_opcode == 0)
+     && (buf_s[2] & XIM_IMID_VALID)
+     && (imid == im->private.proto.imid)
+     && (buf_s[2] & XIM_ICID_VALID)
      && (icid == ic->private.proto.icid))
 	return True;
     return False;
@@ -488,42 +534,121 @@ _XimTriggerNotify(im, ic, mode, idx)
 	+ sizeof(EVENTMASK);		/* sizeof select-event-mask */
 
     _XimSetHeader((XPointer)buf, XIM_TRIGGER_NOTIFY, 0, &len);
-    if (!(im->private.proto.send(im, len, (XPointer)buf)))
+    if (!(_XimSend(im, len, (XPointer)buf)))
 	return False;
-    im->private.proto.flush(im);
-    if (!(im->private.proto.recv(im, &len, &reply,
-				_XimTriggerNotifyCheck, (XPointer)ic)))
+    _XimFlush(im);
+    if (!(_XimRecv(im, &len, &reply, _XimTriggerNotifyCheck, (XPointer)ic)))
 	return False;
+    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
+    if (*((CARD8 *)reply) == XIM_ERROR) {
+	_XimProcError(im, 0, (XPointer)&buf_s[3]);
+	Xfree(reply);
+	return False;
+    }
     Xfree(reply);
     return True;
 }
 
 Private Bool
-_XimProcCommit(d, ic, ev, buf)
-    Display	*d;
-    Xic		 ic;
-    XKeyEvent	*ev;
-    CARD16	*buf;
+_XimRegCommitInfo(ic, string, string_len, keysym, keysym_len)
+    Xic			 ic;
+    char		*string;
+    int			 string_len;
+    KeySym		*keysym;
+    int			 keysym_len;
 {
-    int		 len = buf[0];
-    char	*commit;
+    XimCommitInfo	info;
 
-    if (ic->private.proto.xim_commit)
+    if (!(info = (XimCommitInfo)Xmalloc(sizeof(XimCommitInfoRec))))
 	return False;
+    info->string	= string;
+    info->string_len	= string_len;
+    info->keysym	= keysym;
+    info->keysym_len	= string_len;
+    info->next = ic->private.proto.commit_info;
+    ic->private.proto.commit_info = info;
+}
 
-    if (!(commit = Xmalloc(len + 1)))
+Private void
+_XimUnregCommitInfo(ic)
+    Xic			ic;
+{
+    XimCommitInfo	info;
+
+    if (!(info = ic->private.proto.commit_info))
+	return;
+
+    if (info->string)
+	Xfree(info->string);
+    if (info->keysym)
+	Xfree(info->keysym);
+    ic->private.proto.commit_info = info->next;
+    Xfree(info);
+    return;
+}
+
+Public void
+_XimFreeCommitInfo(ic)
+    Xic			ic;
+{
+    register int	i;
+    XimCommitInfo	info;
+
+    while (ic->private.proto.commit_info)
+	_XimUnregCommitInfo(ic);
+    return;
+}
+
+Private Bool
+_XimProcKeySym(ic, buf, len, xim_keysym, xim_keysym_len)
+    Xic			  ic;
+    CARD32		 *buf;
+    int			  len;
+    KeySym		**xim_keysym;
+    int			 *xim_keysym_len;
+{
+    Xim			 im = (Xim)ic->core.im;
+    int			 num = len / sizeof(CARD32);
+    int			 alloc_len;
+    KeySym		*keysym;
+    register int	 i;
+
+    alloc_len = sizeof(KeySym) * num;
+    if (!(keysym = (KeySym *)Xmalloc(alloc_len))) {
+	_XimError(im, ic, XIM_BadAlloc, (INT16)0, (CARD16)0, (char *)NULL);
 	return False;
+    }
 
-    memcpy(commit, (char *)&buf[1], len);
-    commit[len] = 0;
-    ic->private.proto.xim_commit = commit;
-    MARK_FABLICATED(ic);
+    for (i = 0; i < num; i++) {
+	keysym[i] = (KeySym)buf[i];
+    }
 
-    ev->type = KeyPress;
-    ev->send_event = False;
-    ev->display = d;
-    ev->window = ic->core.focus_window;
-    ev->keycode = 0;
+    *xim_keysym = keysym;
+    *xim_keysym_len = alloc_len;
+    return True;
+}
+
+Private Bool
+_XimProcCommit(ic, buf, len, xim_string, xim_string_len)
+    Xic		  ic;
+    BYTE	 *buf;
+    int		  len;
+    char	**xim_string;
+    int		 *xim_string_len;
+{
+    Xim		 im = (Xim)ic->core.im;
+    char	*string;
+
+    if (!(string = (char *)Xmalloc(len + 1))) {
+	_XimError(im, ic, XIM_BadAlloc, (INT16)0, (CARD16)0, (char *)NULL);
+	return False;
+    }
+
+    (void)memcpy(string, (char *)buf, len);
+    string[len] = '\0';
+
+    *xim_string = string;
+    *xim_string_len = len;
     return True;
 }
 
@@ -534,15 +659,57 @@ _XimCommitRecv(im, ic, buf)
     XPointer	 buf;
 {
     CARD16	*buf_s = (CARD16 *)buf;
-    Display	*d = im->core.display;
-    XEvent	 ev;
+    BITMASK16	 flag = buf_s[0];
+    int		 len;
+    XKeyEvent	 ev;
+    char	*string;
+    int		 string_len;
+    KeySym	*keysym;
+    int		 keysym_len;
 
-    if (!(_XimProcCommit(d, ic, (XKeyEvent *)&ev, &buf_s[1])))
+    if (flag & XimLookupChars) {
+	if (!(_XimProcCommit(ic, (BYTE *)&buf_s[2],
+			 		(int)buf_s[1], &string, &string_len)))
+	    return False;
+
+    } else if (flag & XimLookupKeySym) {
+	if (!(_XimProcKeySym(ic, (CARD32 *)&buf_s[2],
+			 		(int)buf_s[1], &keysym, &keysym_len)))
+	    return False;
+
+    } else if (flag & XimLookupBoth) {
+	len = (int)buf_s[1];
+	if (!(_XimProcKeySym(ic, (CARD32 *)&buf_s[2],
+			 		len, &keysym, &keysym_len)))
+	    return False;
+
+	buf_s = (CARD16 *)((char *)&buf_s[2] + len);
+	if (!(_XimProcCommit(ic, (BYTE *)&buf_s[1],
+			 		(int)buf_s[0], &string, &string_len)))
+	    return False;
+    }
+
+    if (!(_XimRegCommitInfo(ic, string, string_len, keysym, keysym_len))) {
+	if (string)
+	    Xfree(string);
+	if (keysym)
+	    Xfree(keysym);
+	_XimError(im, ic, XIM_BadAlloc, (INT16)0, (CARD16)0, (char *)NULL);
 	return False;
+    }
 
-    (void)_XimRespSyncReply(ic, buf_s[0]);
+    (void)_XimRespSyncReply(ic, flag);
 
-    XPutBackEvent(d, &ev);
+    MARK_FABLICATED(ic);
+
+    ev.type = KeyPress;
+    ev.send_event = False;
+    ev.display = im->core.display;
+    ev.window = ic->core.focus_window;
+    ev.keycode = 0;
+
+    XPutBackEvent(im->core.display, (XEvent *)&ev);
+
     return True;
 }
 
@@ -576,16 +743,16 @@ _XimCommitCallback(xim, len, data, call_data)
     return False;
 }
 
-Private Bool
-_XimProcError(im, ic, buf)
+Public void
+_XimProcError(im, ic, data)
     Xim		 im;
     Xic		 ic;
-    XPointer	 buf;
+    XPointer	 data;
 {
     /*
      * Not yet
      */
-    return True;
+    return;
 }
 
 Public Bool
@@ -620,7 +787,7 @@ _XimErrorCallback(xim, len, data, call_data)
 	if (!(ic = _XimICOfXICID(im, icid)))
 	    return False;
     }
-    (void)_XimProcError(im, ic, (XPointer)&buf_s[3]);
+    _XimProcError(im, ic, (XPointer)&buf_s[3]);
     Xfree(data);
 
     return True;
@@ -663,131 +830,241 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 	 + sizeof(CARD16);		/* sizeof type */
 
     _XimSetHeader((XPointer)buf, XIM_ERROR, 0, &len);
-    if (!(im->private.proto.send(im, len, (XPointer)buf)))
+    if (!(_XimSend(im, len, (XPointer)buf)))
 	return False;
-    im->private.proto.flush(im);
+    _XimFlush(im);
     return True;
 }
 
+#ifndef MAXINT
+#define MAXINT		(~((unsigned int)1 << (8 * sizeof(int)) - 1))
+#endif /* !MAXINT */
+
 Public int
-_XimProtoMbLookupString(xic, ev, buffer, bytes, keysym, status)
-    XIC		 xic;
-    XKeyEvent	*ev;
-    char	*buffer;
-    int		 bytes;
-    KeySym	*keysym;
-    Status	*status;
+_Ximctstombs(im, from, from_len, to, to_len, state)
+    Xim		 im;
+    char	*from;
+    int		 from_len;
+    char	*to;
+    int		 to_len;
+    Status	*state;
 {
-    Xic		 ic = (Xic)xic;
-    Xim		 im = (Xim)ic->core.im;
+    XlcConv	 conv = im->private.proto.ctom_conv;
+    int		 from_left;
+    int		 to_left;
     int		 ret;
-    Status	 tmp_status;
 
-    if (!status)
-	status = &tmp_status;
-
-    if (IS_FABLICATED(ic)) {
-	_XimPendingFilter(ic);
-	UNMARK_FABLICATED(ic);
+    if (!conv || !from) {
+	*state = XLookupNone;
+	return 0;
     }
+
+    if (to) {
+	from_left = from_len;
+	to_left = to_len;
+	if (_XlcConvert(conv, (XPointer *)&from, &from_left,
+				 (XPointer *)&to, &to_left, NULL, 0) < 0) {
+	    *state = XLookupNone;
+	    return 0;
+	}
+	if (from_left == 0) {
+	    ret = to_len - to_left;
+	    if (to_left > 0)
+		to[ret] = '\0';
+	    if (ret > 0)
+		*state = XLookupChars;
+	    else
+		*state = XLookupNone;
+	    return ret;
+	}
+    }
+
+    from_left = from_len;
+    to_left = MAXINT;
+    to = NULL;
+    if (_XlcConvert(conv, (XPointer *)&from, &from_left,
+				 (XPointer *)&to, &to_left, NULL, 0) < 0) {
+	*state = XLookupNone;
+	return 0;
+    }
+    ret = to_len - to_left;
+    if (ret > 0)
+	*state = XBufferOverflow;
+    else
+	*state = XLookupNone;
+    return ret;
+}
+
+Public int
+_Ximctstowcs(im, from, from_len, to, to_len, state)
+    Xim		 im;
+    char	*from;
+    int		 from_len;
+    wchar_t	*to;
+    int		 to_len;
+    Status	*state;
+{
+    XlcConv	 conv = im->private.proto.ctow_conv;
+    int		 from_left;
+    int		 to_left;
+    int		 ret;
+
+    if (!conv || !from) {
+	*state = XLookupNone;
+	return 0;
+    }
+
+    if (to) {
+	from_left = from_len;
+	to_left = to_len;
+	if (_XlcConvert(conv, (XPointer *)&from, &from_left,
+				 (XPointer *)&to, &to_left, NULL, 0) < 0) {
+	    *state = XLookupNone;
+	    return 0;
+	}
+	if (from_left == 0) {
+	    ret = to_len - to_left;
+	    if (to_left > 0)
+		to[ret] = (wchar_t)'\0';
+	    if (ret > 0)
+		*state = XLookupChars;
+	    else
+		*state = XLookupNone;
+	    return ret;
+	}
+    }
+
+    from_left = from_len;
+    to_left = MAXINT;
+    to = NULL;
+    if (_XlcConvert(conv, (XPointer *)&from, &from_left,
+				 (XPointer *)&to, &to_left, NULL, 0) < 0) {
+	*state = XLookupNone;
+	return 0;
+    }
+    ret = to_len - to_left;
+    if (ret > 0)
+	*state = XBufferOverflow;
+    else
+	*state = XLookupNone;
+    return ret;
+}
+
+Public int
+_XimProtoMbLookupString(xic, ev, buffer, bytes, keysym, state)
+    XIC			 xic;
+    XKeyEvent		*ev;
+    char		*buffer;
+    int			 bytes;
+    KeySym		*keysym;
+    Status		*state;
+{
+    Xic			 ic = (Xic)xic;
+    Xim			 im = (Xim)ic->core.im;
+    int			 ret;
+    Status		 tmp_state;
+    XimCommitInfo	 info;
+
+    if (!state)
+	state = &tmp_state;
+
     if ((ev->type == KeyPress) && (ev->keycode == 0)) { /* Filter function */
-	if (!ic->private.proto.xim_commit) {
-	    *status = XLookupNone;
+	if (!(info = ic->private.proto.commit_info)) {
+	    if (state)
+		*state = XLookupNone;
 	    return 0;
 	}
 
-	ret = _Xlcctstombs(ic->core.im->core.lcd, buffer,
-					ic->private.proto.xim_commit, bytes);
-	if (ret > 0)
-	    *status = XLookupChars;
-	else
-	    *status = XLookupNone;
+	ret = _Ximctstombs(im, info->string,
+			 	info->string_len, buffer, bytes, state);
+	if (*state == XBufferOverflow)
+	    return 0;
+	if (keysym && (info->keysym && *(info->keysym))) {
+	    *keysym = *(info->keysym);
+	    if (*state == XLookupChars)
+		*state = XLookupBoth;
+	    else
+		*state = XLookupKeySym;
+	}
+	_XimUnregCommitInfo(ic);
 
-	Xfree(ic->private.proto.xim_commit);
-	ic->private.proto.xim_commit = NULL;
-	return ret;
     } else  if (ev->type == KeyPress) {
 	ret = _XimLookupMBText(ic, ev, (unsigned char *)buffer,
 							bytes, keysym, NULL);
 	if (ret > 0) {
 	    if (keysym && *keysym != NoSymbol)
-		*status = XLookupBoth;
+		*state = XLookupBoth;
 	    else
-		*status = XLookupChars;
+		*state = XLookupChars;
 	} else {
 	    if (keysym && *keysym != NoSymbol)
-		*status = XLookupKeySym;
+		*state = XLookupKeySym;
 	    else
-		*status = XLookupNone;
+		*state = XLookupNone;
 	}
-    } else
-	*status = XLookupNone;
+    } else {
+	*state = XLookupNone;
+	ret = 0;
+    }
 
     return ret;
 }
 
 Public int
-_XimProtoWcLookupString(xic, ev, buffer, bytes, keysym, status)
-    XIC		 xic;
-    XKeyEvent	*ev;
-    wchar_t	*buffer;
-    int		 bytes;
-    KeySym	*keysym;
-    Status	*status;
+_XimProtoWcLookupString(xic, ev, buffer, bytes, keysym, state)
+    XIC			 xic;
+    XKeyEvent		*ev;
+    wchar_t		*buffer;
+    int			 bytes;
+    KeySym		*keysym;
+    Status		*state;
 {
-    Xic		 ic = (Xic)xic;
-    Xim		 im = (Xim)ic->core.im;
-    int		 ret;
-    Status	 tmp_status;
+    Xic			 ic = (Xic)xic;
+    Xim			 im = (Xim)ic->core.im;
+    int			 ret;
+    Status		 tmp_state;
+    XimCommitInfo	 info;
 
-    if (!status)
-	status = &tmp_status;
+    if (!state)
+	state = &tmp_state;
 
-    if (IS_FABLICATED(ic)) {
-	_XimPendingFilter(ic);
-	UNMARK_FABLICATED(ic);
-    }
     if (ev->type == KeyPress && ev->keycode == 0) { /* Filter function */
-	if (!ic->private.proto.xim_commit) {
-	    *status = XLookupNone;
+	if (!(info = ic->private.proto.commit_info)) {
+	    if (state)
+		*state = XLookupNone;
 	    return 0;
 	}
 
-	ret = _Xlcctstowcs(ic->core.im->core.lcd, buffer,
-					ic->private.proto.xim_commit, bytes);
-	if (ret > 0)
-	    *status = XLookupChars;
-	else
-	    *status = XLookupNone;
+	ret = _Ximctstowcs(im, info->string,
+			 	info->string_len, buffer, bytes, state);
+	if (*state == XBufferOverflow)
+	    return 0;
+	if (keysym && (info->keysym && *(info->keysym))) {
+	    *keysym = *(info->keysym);
+	    if (*state == XLookupChars)
+		*state = XLookupBoth;
+	    else
+		*state = XLookupKeySym;
+	}
+	_XimUnregCommitInfo(ic);
 
-	Xfree(ic->private.proto.xim_commit);
-	ic->private.proto.xim_commit = NULL;
-	return ret;
     } else if (ev->type == KeyPress) {
 	ret = _XimLookupWCText(ic, ev, buffer, bytes, keysym, NULL);
 	if (ret > 0) {
 	    if (keysym && *keysym != NoSymbol)
-		*status = XLookupBoth;
+		*state = XLookupBoth;
 	    else
-		*status = XLookupChars;
+		*state = XLookupChars;
 	} else {
 	    if (keysym && *keysym != NoSymbol)
-		*status = XLookupKeySym;
+		*state = XLookupKeySym;
 	    else
-		*status = XLookupNone;
+		*state = XLookupNone;
 	}
-    } else
-	*status = XLookupNone;
+    } else {
+	*state = XLookupNone;
+	ret = 0;
+    }
 
     return ret;
-}
-
-Public Bool
-_XimEncodingNegitiation(im)
-    Xim		 im;
-{
-    /*
-     * Not yet
-     */
-    return True;
 }

@@ -1,7 +1,7 @@
-/* $XConsortium$ */
+/* $XConsortium: XimintL.h,v 1.1 93/09/17 13:33:19 rws Exp $ */
 /******************************************************************
 
-          Copyright 1991, 1992 by FUJITSU LIMITED
+          Copyright 1991, 1992, 1993 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -53,9 +53,8 @@ typedef struct _DefTree {
 } DefTree;
 
 typedef struct _XimLocalPrivateRec {
-	XIMStyles	*styles;
-	XIC		current_ic;
-	DefTree		*top;
+	XIC			 current_ic;
+	DefTree			*top;
 } XimLocalPrivateRec;
 
 typedef struct _XicThaiPart {
@@ -69,18 +68,13 @@ typedef struct _XicLocalPrivateRec {
 	DefTree			*context;
 	DefTree			*composed;
 	XicThaiPart		 thai;
+
+	XIMResourceList		 ic_resources;
+	unsigned int		 ic_num_resources;
 } XicLocalPrivateRec;
 
-#define XIM_CREATEIC		0
-#define XIM_SETICVALUES		1
-
-#define XIM_INPUTSTYLE		(1L << 0)
-#define XIM_CLIENTWINDOW	(1L << 1)
-#define XIM_FOCUSWINDOW		(1L << 2)
-#define XIM_RESOURCENAME	(1L << 3)
-#define XIM_RESOURCECLASS	(1L << 4)
-#define XIM_GEOMETRYCALLBACK	(1L << 5)
-#define XIM_PREEDITCALLBACK	(1L << 6)
-#define XIM_STATUSCALLBACK	(1L << 7)
+#define XIM_LOCAL_DEFAULT_FONT_NAME \
+ "-*-fixed-medium-r-normal--14-*-*-*-*-*-jisx0201.1976-* \
+, -*-fixed-medium-r-normal--14-*-*-*-*-*-jisx0208.1983-*"
 
 #endif /* _XIMINTL_H */

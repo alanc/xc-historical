@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiFlt.c,v 1.5 93/09/29 15:11:57 rws Exp $ */
+/* $XConsortium: imThaiFlt.c,v 1.6 93/09/29 20:30:22 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,7 +41,6 @@ SOFTWARE.
 **/
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/keysym.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: aixlcLoad.c,v 1.3 93/11/11 17:45:15 kaleb Exp $ */
+/* $XConsortium: aixlcLoad.c,v 1.4 93/12/09 15:02:19 kaleb Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -31,509 +31,488 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "Xlibint.h"
-#include "Xlcint.h"
 #include "Xaixlcint.h"
 
 /************************************************************************/
 /*	Private defines							*/
 /************************************************************************/
 enum {
-	LDX_INVALID_TYPE,
-	LDX_DYNAMIC,
-	LDX_STATIC_SIM,
-	LDX_STATIC_MIM
+    LDX_INVALID_TYPE,
+    LDX_DYNAMIC,
+    LDX_STATIC_SIM,
+    LDX_STATIC_MIM
 };
 
 enum {
-	LDX_INVALID_VERSION,
-	LDX_R5,
-	LDX_R6
+    LDX_INVALID_VERSION,
+    LDX_R5,
+    LDX_R6
 };
 
-typedef struct _ldxDB {
-	char	*lc_name;
-	int	type;
-	char	*option;
-} ldxDBRec, *ldxDB;
-
-static ldxDB	_ldxdb = (ldxDB)NULL;
-static int	_ldxdb_size = 0;
-
 typedef XLCd (*XLCdLoader)();
+typedef _XlcCoreObj (*XdlEntry)();
 
-#define	LDXDBPATH_DEFAULT	"/usr/lib/nls/loc/X11/"
+#define	SECURE_PATH	"/usr/lib/nls/loc/X11"
+#ifndef	LDXDBFILE
 #define	LDXDBFILE	"ldx.dir"
-#define	LDXPATH_DEFAULT	LDXDBPATH_DEFAULT
+#endif
 #define	LDXFILE_SUFFIX	".ldx"
 
-#ifndef	_POSIX_MAX_PATH
-#define	_POSIX_MAX_PATH	1024
+#ifndef	_POSIX_PATH_MAX
+#define	_POSIX_PATH_MAX	1024
 #endif
 
-#define	is_comment(s)	(*(s) == '\0' || *(s) == '#')
+#define	iscomment(ch)	((ch) == '\0' || (ch) == '#')
 
-#define	_REALLOC(p, n)	((p) == NULL ? Xmalloc(n) : Xrealloc((p), (n)))
+/* standard AIX interfaces */
+extern void *__lc_load();
+extern int __issetuid();
 
 /************************************************************************/
 /*	Private functions						*/
 /************************************************************************/
 
-static char *
-read_line(line, linesize, fp)
-	char	*line;
-	int	linesize;
-	FILE	*fp;
-{
-	while(fgets(line, linesize, fp) != NULL){
-		if(! is_comment(line)){
-			return	line;
-		}
-	}
-
-	return	NULL;
-}
-
 static int
 parse_line(line, argv, argsize)
-	char	*line;
-	char	**argv;
-	int	argsize;
+    char *line;
+    char **argv;
+    int argsize;
 {
-	int	argc = 0;
-	char	*p = line;
+    int argc = 0;
+    char *p = line;
 
-	while(argc < argsize){
-		while(isspace(*p)){
-			++p;
-		}
-		if(*p == '\0'){
-			break;
-		}
-		argv[argc++] = p;
-		while(! isspace(*p)){
-			++p;
-		}
-		if(*p == '\0'){
-			break;
-		}
-		*p++ = '\0';
+    while(argc < argsize){
+	while(isspace(*p)){
+	    ++p;
 	}
+	if(*p == '\0'){
+	    break;
+	}
+	argv[argc++] = p;
+	while(! isspace(*p)){
+	    ++p;
+	}
+	if(*p == '\0'){
+	    break;
+	}
+	*p++ = '\0';
+    }
 
-	return	argc;
+    return argc;
 }
 
 static int
-set_entries(db, argc, argv)
-	ldxDB	db;
-	int	argc;
-	char	**argv;
+parse_path(path, argv, argsize)
+    char *path;
+    char **argv;
+    int argsize;
 {
-	char	*p;
+    char *p = path;
+    int i, n;
 
-	if(argc < 1){
-		return	0;
+    while((p = strchr(p, ':')) != NULL){
+	*p = ' ';	/* place space on delimter */
+    }
+    n = parse_line(path, argv, argsize);
+    if(n == 0){
+	return 0;
+    }
+    for(i = 0; i < n; ++i){
+	int len;
+	p = argv[i];
+	len = strlen(p);
+	if(p[len - 1] == '/'){
+	    /* eliminate slash */
+	    p[len - 1] = '\0';
 	}
-
-	/* Column 1: full locale name */
-	p = Xmalloc(strlen(argv[0]) + 1);
-	if(p == NULL){
-		return	0;
-	}
-	strcpy(p, argv[0]);
-	db->lc_name = p;
-
-	/* Column 2: ldx type   (optional) */
-	db->type = LDX_STATIC_SIM;	/* default type */
-	if(argc < 2){
-		db->option = NULL;
-		return	1;
-	}
-	if(! strcmp(argv[1], "LDX_DYNAMIC")){
-		db->type = LDX_DYNAMIC;
-	}else if(! strcmp(argv[1], "LDX_STATIC_MIM")){
-		db->type = LDX_STATIC_MIM;
-	}
-
-	/* Column 3: ldx option (optional) */
-	if(argc < 3 || ! strcmp(argv[2], "NONE")){
-		db->option = NULL;
-		return	1;
-	}
-	p = Xmalloc(strlen(argv[2]) + 1);
-	if(p == NULL){
-		Xfree(db->lc_name);
-		return	0;
-	}
-	strcpy(p, argv[2]);
-	db->option = p;
-
-	return	1;
+    }
+    return n;
 }
 
-static void
-read_ldxdb(path)
-	char	*path;
+static int
+read_ldxdb(lc_name, path, type, option)
+    char *lc_name;
+    char *path;
+    int *type;
+    char *option;
 {
-	char	filename[_POSIX_PATH_MAX];
-	FILE	*fp;
-	ldxDB	db = _ldxdb;
-	int	db_size = _ldxdb_size;
-	char	line[_POSIX_PATH_MAX];
-	int	cnt;
+    char filename[_POSIX_PATH_MAX];
+    FILE *fp;
+    char buf[BUFSIZE];
+    int found = 0;
 
-	/* Construct database file name */
-	strcpy(filename, path);
-	if(path[strlen(path) - 1] != '/'){
-		strcat(filename, "/");
+    sprintf(filename, "%s/%s", path, LDXDBFILE);
+    fp = fopen(filename, "r");
+    if(fp == (FILE *)NULL){
+	return 0;
+    }
+
+    while(fgets(buf, BUFSIZE, fp) != NULL){
+	char *p = buf;
+	int n;
+	char *args[3];
+	while(isspace(*p)){
+	    ++p;
 	}
-	strcat(filename, LDXDBFILE);
-
-	/* Open database file */
-	fp = fopen(filename, "r");
-	if(fp == (FILE *)NULL){
-		return;
+	if(iscomment(*p)){
+	    continue;
 	}
-
-	/* find top */
-	for(cnt = 0; cnt < db_size; ++cnt){
-		if(db[cnt].lc_name == NULL){
-			break;
+	n = parse_line(p, args, 3);
+	if(n == 0){
+	    continue;
+	}
+	if(! strcmp(args[0], lc_name)){
+	    char *str;
+	    *type = LDX_STATIC_SIM;
+	    if(n > 1){
+		str = args[1];
+		if(! _XlcCompareISOLatin1(str, "LDX_DYNAMIC")){
+		    *type = LDX_DYNAMIC;
+		}else if(! _XlcCompareISOLatin1(str, "LDX_STATIC_MIM")){
+		    *type = LDX_STATIC_MIM;
 		}
-	}
-
-	/* Read database file and set entry */
-	for(;;){
-		int	argc;
-		char	*argv[10];
-
-		if(! read_line(line, _POSIX_PATH_MAX, fp)){
-			/* No more line */
-			break;
+	    }
+	    *option = '\0';
+	    if(n > 2){
+		str = args[2];
+		if(! _XlcCompareISOLatin1(str, "NONE")){
+		    ; /* ignore option */
+		}else{
+		    strcpy(option, str);
 		}
-
-		argc = parse_line(line, argv, 10);
-		if(argc == 0){
-			continue;
-		}
-		if(cnt >= db_size){
-			int	size = db_size + 16;
-
-			db = (ldxDB)_REALLOC(db, sizeof(ldxDBRec) * size);
-			if(db == (ldxDB)NULL){
-				goto err;
-			}
-			db_size = size;
-			bzero(db + cnt, sizeof(ldxDBRec) * (db_size - cnt));
-		}
-		if(! set_entries(db + cnt, argc, argv)){
-			goto err;	/* fatal error */
-		}
-
-		++cnt;
+	    }
+	    found = 1;
+	    break;
 	}
-
-	fclose(fp);
-
-	_ldxdb = db;
-	_ldxdb_size = db_size;
-
-	return;
-
- err:;
-	/* discard entries extracted from database file */
-	if(db != (ldxDB)NULL){
-		int	i;
-		for(i = 0; i < db_size; ++i){
-			if(db[i].lc_name == NULL){
-				break;
-			}
-			Xfree(db[i].lc_name);
-			Xfree(db[i].option);
-		}
-		Xfree((char *)db);
-	}
-
-	if(fp != (FILE *)NULL){
-		fclose(fp);
-	}
-
-	_ldxdb = NULL;
-	_ldxdb_size = 0;
-
-	return;
-}
-
-static void
-create_ldxdb()
-{
-	char	*pathlist, *path;
-	char	buffer[_POSIX_PATH_MAX];
-
-	_XLockMutex(_Xglobal_lock);
-
-	if(_ldxdb != (ldxDB)NULL){
-		/* ldx database is already created */
-		_XUnlockMutex(_Xglobal_lock);
-		return;
-	}
-
-	pathlist = getenv("LDXDBPATH");
-	if(pathlist == NULL){
-		pathlist = LDXDBPATH_DEFAULT;
-	}
-
-	strcpy(buffer, pathlist);
-	pathlist = buffer;
-
-	while((path = pathlist) != NULL){
-		pathlist = strchr(pathlist, ':');
-		if(pathlist != NULL){
-			*pathlist++ = '\0';
-		}
-		read_ldxdb(path);
-	}
-
-	_XUnlockMutex(_Xglobal_lock);
+    }
+    fclose(fp);
+    return found;
 }
 
 static int
 resolve_ldxinfo(lc_name, type, option)
-	char	*lc_name;
-	int	*type;
-	char	**option;
+    char *lc_name;
+    int *type;
+    char *option;
 {
-	ldxDB	db;
+    char buf[BUFSIZE], *dir;
+    int i, n;
+    char *args[256];
 
-	if(_ldxdb == (ldxDB)NULL){
-		create_ldxdb();
+    dir = getenv("LDXDBPATH");
+    if(dir != NULL){
+	strcpy(buf, dir);
+    }else{
+	/* Resolve default path for database */
+	_XlcResolveI18NPath(buf);
+    }
+    n = parse_path(buf, args, 256);
+    for(i = 0; i < n; ++i){
+	if(read_ldxdb(lc_name, args[i], type, option)){
+	    if(*type == LDX_DYNAMIC && *option != '/'){
+		/* the option should be absolute path */
+		char tmp[_POSIX_PATH_MAX];
+		sprintf(tmp, "%s/%s", args[i], option);
+		strcpy(option, tmp);
+	    }
+	    return 1;
 	}
-
-	for(db = _ldxdb; db->lc_name != NULL; ++db){
-		if(! strcmp(lc_name, db->lc_name)){
-			*type = db->type;
-			*option = db->option;
-			return	1;
-		}
-	}
-
-	return	0;
+    }
+    return 0;
 }
 
 static int
 get_ldxversion(ldx)
-	_XlcCoreObj	ldx;
+    _XlcCoreObj ldx;
 {
-	if(ldx == (_XlcCoreObj)NULL){
-		return	LDX_INVALID_VERSION;
-	}
-
-	if(ldx->lc_object_header.type_id == _LC_LDX_R6 &&
-	   ldx->lc_object_header.magic   == _LC_MAGIC &&
-	   ldx->lc_object_header.version == _LC_VERSION_R6){
-		return	LDX_R6;
-	}
-
-	if(ldx->lc_object_header.type_id == _LC_LDX &&
-	   ldx->lc_object_header.magic   == _LC_MAGIC &&
-	   ldx->lc_object_header.version == _LC_VERSION){
-		return	LDX_R5;
-	}
-
+    if(ldx == (_XlcCoreObj)NULL){
 	return	LDX_INVALID_VERSION;
+    }
+
+    if(ldx->lc_object_header.type_id == _LC_LDX_R6 &&
+       ldx->lc_object_header.magic   == _LC_MAGIC &&
+       ldx->lc_object_header.version == _LC_VERSION_R6){
+	return	LDX_R6;
+    }
+
+    if(ldx->lc_object_header.type_id == _LC_LDX &&
+       ldx->lc_object_header.magic   == _LC_MAGIC &&
+       ldx->lc_object_header.version == _LC_VERSION){
+	return	LDX_R5;
+    }
+
+    return LDX_INVALID_VERSION;
 }
 
-typedef struct _ldxCache{
-	char	*path;
-	_XlcCoreObj	(*entrypoint)();
-	int	ref_count;
-	struct _ldxCache	*next;
-} ldxCache;
-
-static ldxCache	*_ldxcache = (ldxCache *)NULL;
-
-static char *
-complete_path(path, lc_name)
-	char	*path;
-	char	*lc_name;
+static int
+complete_path(lc_name, path)
+    char *lc_name;
+    char *path;
 {
-	static char	buffer[_POSIX_PATH_MAX];
-
-	if(getuid() != geteuid() || getgid() != getegid()){
-		/* The loadable module name must be restricted for
-		   security issue. */
-		strcpy(buffer, LDXPATH_DEFAULT);
-		strcat(buffer, lc_name);
-		strcat(buffer, LDXFILE_SUFFIX);
-		path = buffer;
-	}else if(path == NULL || *path == '\0'){
-		strcpy(buffer, lc_name);
-		strcat(buffer, LDXFILE_SUFFIX);
-		path = buffer;
-	}else{
-		int	len, idx;
-
-		len = strlen(path);
-		idx = len - strlen(LDXFILE_SUFFIX);
-		if(idx < 0 || strcmp(path + idx, LDXFILE_SUFFIX)){
-			strcpy(buffer, path);
-			if(buffer[len - 1] == '/'){
-				strcat(buffer, lc_name);
-			}
-			strcat(buffer, LDXFILE_SUFFIX);
-			path = buffer;
-		}
+    if(path == NULL){
+	return 0;
+    }
+    if(*path == '\0' ||
+#ifdef	never
+       getuid() != geteuid() || getgid() != getegid()
+#else
+       __issetuid()
+#endif
+       ){
+	/* use secure path */
+	sprintf(path, "%s/%s%s", SECURE_PATH, lc_name, LDXFILE_SUFFIX);
+    }else{
+	int i, len;
+	len = strlen(path);
+	i = len - strlen(LDXFILE_SUFFIX);
+	if(i < 0 || strcmp(path + i, LDXFILE_SUFFIX)){
+	    if(path[len - 1] == '/'){
+		strcpy(path + len, lc_name);
+		len += strlen(lc_name);
+	    }
+	    strcpy(path + len, LDXFILE_SUFFIX);
 	}
+    }
+    return (*path != '\0') ? 1 : 0;
+}
 
-	return	path;
+/************************************************************************/
+
+typedef struct _ldxList{
+    char *path;
+    XdlEntry entrypoint;
+    _XlcCoreObj obj;
+    int ref_count;
+    struct _ldxList *next;
+} ldxList;
+
+static ldxList	*_ldxlist = (ldxList *)NULL;
+
+static void
+unload_ldx(obj)
+    _XlcCoreObj obj;
+{
+    ldxList *pre, *ptr;
+
+    for(pre = (ldxList *)NULL, ptr = _ldxlist; ptr != (ldxList *)NULL;
+	pre = ptr, ptr = ptr->next){
+	if(ptr->obj == obj){
+	    if((-- ptr->ref_count) < 1){
+		/* free and rechain cache list */
+		Xfree(ptr->path);
+		unload((void *)ptr->entrypoint);
+		if(pre != (ldxList *)NULL){
+		    pre->next = ptr->next;
+		}else{
+		    _ldxlist = ptr->next;
+		}
+		Xfree((char *)ptr);
+	    }
+	    return;
+	}
+    }
+}
+
+static void *
+instantiate(path, p)
+    char *path;
+    void *(*p)();
+{
+    /* return entry point simply */
+    return (void *)p;
 }
 
 static _XlcCoreObj
 load_ldx(path)
-	char	*path;
+    char *path;
 {
-	ldxCache	*ptr;
-	char	*searchpath = NULL;
-	_XlcCoreObj	ldx, (*entry)();
+    ldxList *ptr = (ldxList *)NULL;
+    XdlEntry entry;
+    _XlcCoreObj ldx = (_XlcCoreObj)NULL;
 
-	for(ptr = _ldxcache; ptr != (ldxCache *)NULL; ptr = ptr->next){
-		if(! strcmp(path, ptr->path)){
-			++ptr->ref_count;
-			return	(*ptr->entrypoint)();
-		}
+    for(ptr = _ldxlist; ptr != (ldxList *)NULL; ptr = ptr->next){
+	if(! strcmp(path, ptr->path)){
+	    ++ (ptr->ref_count);
+	    return ptr->obj;
 	}
+    }
 
-	/* Load ldx module dynamically */
-	if(strchr(path, '/') == NULL){
-		searchpath = getenv("LDXPATH");
-		if(searchpath == NULL){
-			searchpath = LDXPATH_DEFAULT;
-		}
-	}
-	entry = (_XlcCoreObj (*)())load(path, 1, searchpath);
-	if(entry == (_XlcCoreObj (*)())NULL){
-		return	(_XlcCoreObj)NULL;
-	}
+    /* dynamic load */
+    /* the given path should be absolute path */
+#ifdef	never
+    entry = (XdlEntry)load(path, 1, NULL);
+#else
+    entry = (XdlEntry)__lc_load(path, instantiate);
+#endif
+    if(entry == (XdlEntry)NULL){
+	goto err;
+    }
+    ldx = (*entry)();
+    if(ldx == (_XlcCoreObj)NULL){
+	goto err;
+    }
 
-	/* Create cache */
-	ptr = (ldxCache *)Xmalloc(sizeof(ldxCache));
-	if(ptr == (ldxCache *)NULL){
-		goto err;
-	}
-	ptr->path = Xmalloc(strlen(path) + 1);
-	if(ptr->path == NULL){
-		Xfree((char *)ptr);
-		goto err;
-	}
-	strcpy(ptr->path, path);
-	ptr->entrypoint = entry;
-	ptr->ref_count = 1;
-	ptr->next = _ldxcache;
-	_ldxcache = ptr;
+    /* create cache list */
+    ptr = (ldxList *)Xmalloc(sizeof(ldxList));
+    if(ptr == (ldxList *)NULL){
+	goto err;
+    }
+    ptr->path = Xmalloc(strlen(path) + 1);
+    if(ptr->path == NULL){
+	goto err;
+    }
+    strcpy(ptr->path, path);
+    ptr->entrypoint = entry;
+    ptr->obj = ldx;
+    ptr->ref_count = 1;
+    ptr->next = _ldxlist;
+    _ldxlist = ptr;
 
-	return	(*entry)();
+    return ldx;
 
  err:;
-	/* Unload ldx */
-	if(entry != (_XlcCoreObj (*)())NULL){
-		unload((void *)entry);
-	}
-	return	(_XlcCoreObj)NULL;
-}
-
-static void
-unload_ldx(path)
-	char	*path;
-{
-	ldxCache	*pre, *ptr;
-
-	for(pre = (ldxCache *)NULL, ptr = _ldxcache; ptr != (ldxCache *)NULL;
-	    pre = ptr, ptr = ptr->next){
-		if(! strcmp(path, ptr->path)){
-			if((--ptr->ref_count) < 1){
-				/* Free and rechain cache list */
-				Xfree(ptr->path);
-				unload((void *)ptr->entrypoint);
-				if(pre != (ldxCache *)NULL){
-					pre->next = ptr->next;
-				}else{
-					_ldxcache = ptr->next;
-				}
-				Xfree((char *)ptr);
-			}
-			return;
-		}
-	}
-}
-
-static XLCd
-instantiate_xlcd(lc_name)
-	char	*lc_name;
-{
-	int	type;
-	char	*option;
-	char	*path;
-	_XlcCoreObj	ldx;
-	XLCdLoader	_XlcInstantiate = (XLCdLoader)NULL;
-
-	if(! resolve_ldxinfo(lc_name, &type, &option)){
-		return	(XLCd)NULL;
-	}
-
-	switch(type){
-	case LDX_STATIC_SIM:
-		/* Use default(hardcoded) LDX which has
-		   NO preedit feedback. TBD. */
-		break;
-	case LDX_STATIC_MIM:
-		/* Use default(hardcoded) LDX which has
-		   preedit feedback. TBD. */
-		break;
-	case LDX_DYNAMIC:
-		path = complete_path(option, lc_name);
-		if(path == NULL){
-			break;
-		}
-
-		ldx = load_ldx(path);
-		if(ldx == (_XlcCoreObj)NULL){
-			break;
-		}
-
-		switch(get_ldxversion(ldx)){
-		case LDX_R5:
-			/* R5LDX is not supported yet. TBD. */
-			break;
-		case LDX_R6:
-			_XlcInstantiate = (XLCdLoader)ldx->default_loader;
-			break;
-		default:
-			/* Invalid version */
-			break;
-		}
-
-		if(_XlcInstantiate == (XLCdLoader)NULL){
-			unload_ldx(path);
-		}
-		break;
-	}
-
-	if(_XlcInstantiate == (XLCdLoader)NULL){
-		/* Fallback to LDX_STATIC_SIM. TBD. */
-		return	(XLCd)NULL;
-	}
-
-	return	(*_XlcInstantiate)(lc_name);
+    if(entry != (XdlEntry)NULL){
+	unload((void *)entry);
+    }
+    if(ptr != (ldxList *)NULL){
+	Xfree((char *)ptr);
+    }
+    return (_XlcCoreObj)NULL;
 }
 
 /************************************************************************/
-/*	_XaixOSDynamicLoad()						*/
+
+typedef struct _lcdList {
+    XLCd lcd;
+    _XlcCoreObj ldx;
+    XCloseLCProc close;
+    struct _lcdList *next;
+} lcdList;
+
+static lcdList *_lcdlist = (lcdList *)NULL;
+
+static void
+close_xlcd(lcd)
+    XLCd lcd;
+{
+    lcdList *pre, *ptr;
+
+    for(pre = (lcdList *)NULL, ptr = _lcdlist; ptr != (lcdList *)NULL;
+	pre = ptr, ptr = ptr->next){
+	if(lcd == ptr->lcd){
+	    /* free and rechain cache list */
+	    (*ptr->close)(lcd);
+	    unload_ldx(ptr->ldx);
+	    if(pre != (lcdList *)NULL){
+		pre->next = ptr->next;
+	    }else{
+		_lcdlist = ptr->next;
+	    }
+	    Xfree((char *)ptr);
+	    return;
+	}
+    }
+}
+
+/************************************************************************/
+
+#ifdef	STATIC_LOAD
+extern XLCd _XaixlcSIMLoader();
+extern XLCd _XaixlcMIMLoader();
+#endif
+
+static XLCd
+instantiate_xlcd(lc_name)
+    char *lc_name;
+{
+    int type;
+    char path[_POSIX_PATH_MAX];
+    _XlcCoreObj ldx = (_XlcCoreObj)NULL;
+    XLCdLoader _XlcInstantiate = (XLCdLoader)NULL;
+    XLCd lcd = (XLCd)NULL;
+
+    if(! resolve_ldxinfo(lc_name, &type, path)){
+	return (XLCd)NULL;
+    }
+
+    switch(type){
+#ifdef	STATIC_LOAD
+    case LDX_STATIC_SIM:
+	_XlcInstantiate = _XaixlcSIMLoader;
+	break;
+    case LDX_STATIC_MIM:
+	_XlcInstantiate = _XaixlcMIMLoader;
+	break;
+#endif
+    case LDX_DYNAMIC:
+	if(! complete_path(lc_name, path)){
+	    break;
+	}
+	ldx = load_ldx(path);
+	if(ldx == (_XlcCoreObj)NULL){
+	    break;
+	}
+	switch(get_ldxversion(ldx)){
+	case LDX_R5:
+	    /* X11.5 LDX is not supported. */
+	    break;
+	case LDX_R6:
+	    _XlcInstantiate = (XLCdLoader)ldx->default_loader;
+	    break;
+	default:
+	    break;
+	}
+	break;
+    }
+
+    if(_XlcInstantiate != (XLCdLoader)NULL){
+	lcd = (*_XlcInstantiate)(lc_name);
+    }
+
+    switch(type){
+    case LDX_STATIC_SIM:
+	break;
+    case LDX_STATIC_MIM:
+	break;
+    case LDX_DYNAMIC:
+	if(ldx != (_XlcCoreObj)NULL){
+	    if(ldx->sticky){
+		break;
+	    }
+	    if(lcd != (XLCd)NULL){
+		lcdList *ptr = (lcdList *)Xmalloc(sizeof(lcdList));
+		if(ptr != (lcdList *)NULL){
+		    ptr->lcd = lcd;
+		    ptr->ldx = ldx;
+		    ptr->close = lcd->methods->close;
+		    lcd->methods->close = (XCloseLCProc)close_xlcd;
+		    ptr->next = _lcdlist;
+		    _lcdlist = ptr;
+		}else{
+		    (*lcd->methods->close)(lcd);
+		    lcd = (XLCd)NULL;
+		}
+	    }
+	    if(lcd == (XLCd)NULL){
+		/* fail to instantiate lcd */
+		unload_ldx(ldx);
+	    }
+	}
+	break;
+    }
+
+    return lcd;
+}
+
+/************************************************************************/
+/*	_XaixOsDynamicLoad()						*/
 /*----------------------------------------------------------------------*/
 /*	This loader creates XLCd with using AIX dynamic loading 	*/
 /*	feature.							*/
 /************************************************************************/
 XLCd
 _XaixOsDynamicLoad(name)
-	char	*name;
+    char *name;
 {
-	return	instantiate_xlcd(name);
+    return instantiate_xlcd(name);
 }

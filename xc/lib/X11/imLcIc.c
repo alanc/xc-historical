@@ -1,7 +1,7 @@
-/* $XConsortium$ */
+/* $XConsortium: imLcIc.c,v 1.1 93/09/17 13:26:59 rws Exp $ */
 /******************************************************************
 
-                Copyright 1992 by FUJITSU LIMITED
+                Copyright 1992,1993 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -30,8 +30,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
-#include "Xlcint.h"
 #include "Xlibint.h"
+#include "Xlcint.h"
 #include "Ximint.h"
 
 Private void		_XimLocalDestroyIC( );
@@ -58,49 +58,61 @@ Private XICMethodsRec Local_ic_methods = {
     _XimLocalWcLookupString,	/* wc_lookup_string */
 };
 
-XIC
+Public XIC
 _XimLocalCreateIC(im, values)
     XIM			 im;
     XIMArg		*values;
 {
     Xic			 ic;
+    XimDefICValues	 ic_values;
+    XIMResourceList	 res;
+    unsigned int	 num;
+    int			 len;
 
     if((ic = (Xic)Xmalloc(sizeof(XicRec))) == (Xic)NULL) {
 	return ((XIC)NULL);
     }
-    bzero((char *)ic,      sizeof(XicRec));
+    bzero((char *)ic, sizeof(XicRec));
 
     ic->methods = &Local_ic_methods;
     ic->core.im = im;
-    ic->core.filter_events = KeyPressMask;
-    ic->private.local.context    = ((Xim)im)->private.local.top;
-    ic->private.local.composed   = (DefTree *)NULL;
+    ic->private.local.context   = ((Xim)im)->private.local.top;
+    ic->private.local.composed  = (DefTree *)NULL;
 
-    if(_XimSetICValueData(ic, values,
-		XIM_CREATEIC, &(ic->private.local.value_mask)))
+    num = im->core.ic_num_resources;
+    len = sizeof(XIMResource) * num;
+    if((res = (XIMResourceList)Xmalloc(len)) == (XIMResourceList)NULL) {
 	goto Set_Error;
+    }
+    (void)memcpy((char *)res, (char *)im->core.ic_resources, len);
+    ic->private.local.ic_resources     = res;
+    ic->private.local.ic_num_resources = num;
 
-    /* The Value must be set */
-    if(!(ic->private.local.value_mask & XIM_INPUTSTYLE))
+    bzero((char *)&ic_values, sizeof(XimDefICValues));
+    if(_XimCheckLocalInputStyle(ic, (XPointer)&ic_values, values,
+					 im->core.styles) == False) {
 	goto Set_Error;
-    if(!(   (ic->core.input_style == (XIMPreeditNothing | XIMStatusNothing))
-         || (ic->core.input_style == (XIMPreeditNone | XIMStatusNone)) ) )
-	goto Set_Error;
+    }
 
-    if(ic->core.input_style & XIMPreeditCallbacks)
-	/* Preedit Callback */
-	if(!(ic->private.local.value_mask & XIM_PREEDITCALLBACK))
-	    goto Set_Error;
-    if(ic->core.input_style & XIMStatusCallbacks)
-	/* Status Callback */
-	if(!(ic->private.local.value_mask & XIM_STATUSCALLBACK))
-	    goto Set_Error;
+    _XimSetICMode(res, num, ic_values.input_style);
+
+    if(_XimSetICValueData(ic, (XPointer)&ic_values, values, XIM_CREATEIC)) {
+	goto Set_Error;
+    }
+    if(_XimSetICDefaults(ic, (XPointer)&ic_values, XIM_SETICDEFAULTS) == False) {
+	goto Set_Error;
+    }
+    ic_values.filter_events = KeyPressMask;
+    _XimSetCurrentICValues(ic, &ic_values);
 
     _XRegisterFilterByType(ic->core.im->core.display, ic->core.focus_window,
 			   KeyPress, KeyPress, _XimLocalFilter, (XPointer)ic);
-    return ((XIC)ic);
+    return((XIC)ic);
 
 Set_Error :
+    if (ic->private.local.ic_resources) {
+	Xfree(ic->private.local.ic_resources);
+    }
     Xfree(ic);
     return((XIC)NULL);
 }
@@ -113,6 +125,8 @@ _XimLocalDestroyIC(xic)
     if(((Xim)ic->core.im)->private.local.current_ic == (XIC)ic) {
 	_XimLocalUnSetFocus(ic);
     }
+    if(ic->private.local.ic_resources)
+	Xfree(ic->private.local.ic_resources);
     return;
 }
 

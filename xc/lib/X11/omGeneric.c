@@ -1,307 +1,240 @@
-/* $XConsortium: omGeneric.c,v 1.2 93/09/24 10:52:42 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: omGeneric.c,v 1.3 93/09/24 14:56:31 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
-#include "XlcGeneric.h"
 #include "XomGeneric.h"
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
+#include <stdio.h>
 
-#define MAXFONTS		1000
-#define AVERAGE_WIDTH_FIELD	12
-#define CHARSET_REGISTRY_FIELD	(AVERAGE_WIDTH_FIELD + 1)
+#define MAXFONTS		100
 
-static void free_fontset();
+extern int _XmbDefalutTextEscapement(), _XwcDefalutTextEscapement();
+extern int _XmbDefalutTextExtents(), _XwcDefalutTextExtents();
+extern Status _XmbDefalutTextPerCharExtents(), _XwcDefalutTextPerCharExtents();
+extern int _XmbDefalutDrawString(), _XwcDefalutDrawString();
+extern void _XmbDefalutDrawImageString(), _XwcDefalutDrawImageString();
+
 extern int _XmbGenericTextEscapement(), _XwcGenericTextEscapement();
 extern int _XmbGenericTextExtents(), _XwcGenericTextExtents();
 extern Status _XmbGenericTextPerCharExtents(), _XwcGenericTextPerCharExtents();
 extern int _XmbGenericDrawString(), _XwcGenericDrawString();
 extern void _XmbGenericDrawImageString(), _XwcGenericDrawImageString();
-extern int _XlcCompareISOLatin1();
-
-/* method list */
-static XFontSetMethodsRec fontset_methods = {
-    free_fontset,
-    _XmbGenericTextEscapement,
-    _XmbGenericTextExtents,
-    _XmbGenericTextPerCharExtents,
-    _XmbGenericDrawString,
-    _XmbGenericDrawImageString,
-    _XwcGenericTextEscapement,
-    _XwcGenericTextExtents,
-    _XwcGenericTextPerCharExtents,
-    _XwcGenericDrawString,
-    _XwcGenericDrawImageString
-};
-
-static void
-free_fontset(dpy, font_set)
-    Display *dpy;
-    XFontSet font_set;
-{
-    XomGenericPart *gen = XOM_GENERIC(font_set);
-    FontData font_data;
-    int count;
-
-    if (font_data = gen->font_data) {
-	for (count = gen->font_data_num; count-- > 0; font_data++) {
-	    if (font_data->charset_name)
-		XFree(font_data->charset_name);
-	}
-	XFree(gen->font_data);
-    }
-}
-
-static FontData
-add_fontset(font_set)
-    XFontSet font_set;
-{
-    XomGenericPart *gen = XOM_GENERIC(font_set);
-    FontData new;
-    int num;
-
-    if (num = gen->font_data_num)
-        new = (FontData) Xrealloc(gen->font_data,
-                                 (num + 1) * sizeof(FontDataRec));
-    else
-        new = (FontData) Xmalloc(sizeof(FontDataRec));
-
-    if (new == NULL)
-        return NULL;
-
-    gen->font_data_num = num + 1;
-    gen->font_data = new;
-
-    new += num;
-    bzero((char *) new, sizeof(FontDataRec));
-
-    return new;
-}
 
 static Bool
-load_fontset(font_set)
-    XFontSet font_set;
+init_fontset(oc)
+    XOC oc;
 {
-    XomGenericPart *gen = XOM_GENERIC(font_set);
-    FontData font_data;
-    XLCd lcd = font_set->core.lcd;
-    char **value;
-    int num, i;
+    XOCGenericPart *gen;
+    FontSet font_set;
+    OMData data;
+    int count;
 
-    gen->font_data_num = 0;
+    count = XOM_GENERIC(oc->core.om)->data_num;
+    data = XOM_GENERIC(oc->core.om)->data;
 
-    for (i = 0; ; i++) {
-	char name[8];
+    font_set = (FontSet) Xmalloc(sizeof(FontSetRec) * count);
+    if (font_set == NULL)
+	return False;
+    bzero((char *) font_set, sizeof(FontSetRec) * count);
 
-	sprintf(name, "cs%d", i);
-	_XlcGetResource(lcd, "XLC_FONTSET", name, &value, &num);
-	if (num > 0) {
-	    char *tmp;
-	    int len, side;
+    gen = XOC_GENERIC(oc);
+    gen->font_set_num = count;
+    gen->font_set = font_set;
 
-	    for ( ; num-- > 0; value++) {
-		if ((font_data = add_fontset(font_set)) == NULL)
-		    goto err;
-		tmp = strrchr(*value, ':');
-		len = tmp ? (tmp - *value) : strlen(*value);
-		font_data->charset_name = (char *) Xmalloc(len + 1);
-		if (font_data->charset_name == NULL)
-		    goto err;
-		strncpy(font_data->charset_name, *value, len);
-		font_data->charset_name[len] = '\0';
-		font_data->side = XlcGL;
-		if (tmp) 
-		    font_data->side = _XlcNCompareISOLatin1(tmp+1, "GR", 2) ?
-				      XlcGL : XlcGR;
-		font_data->cs_num = i;
-	    }
-	} else
-	    break;	/* XXX */
+    for ( ; count-- > 0; data++, font_set++) {
+	font_set->charset_count = data->charset_count;
+	font_set->charset_list = data->charset_list;
+	font_set->font_data_count = data->font_data_count;
+	font_set->font_data = data->font_data;
     }
 
     return True;
-
-err:
-    free_fontset(lcd);
-
-    return False;
-}
-
-static XFontSet
-init_fontset(lcd)
-    XLCd lcd;
-{
-    XFontSet fontset;
-
-    fontset = (XFontSet) Xmalloc(sizeof(XomGenericRec));
-    if (fontset == NULL)
-	return NULL;
-    bzero(fontset, sizeof(XomGenericRec));
-
-    fontset->methods = &fontset_methods;
-    fontset->core.lcd = lcd;
-
-    return fontset;
-
-err:
-    Xfree(fontset);
-
-    return NULL;
 }
 
 static char *
-get_fontname(dpy, fs)
+get_prop_name(dpy, fs)
     Display *dpy;
     XFontStruct	*fs;
 {
     unsigned long fp;
-    char *fname = NULL;
 
     if (XGetFontProperty(fs, XA_FONT, &fp))
-	fname = XGetAtomName(dpy, fp); 
+	return XGetAtomName(dpy, fp); 
 
-    return fname;
+    return (char *) NULL;
 }
 
-static Bool
-check_charset(xlfd_name, charset)
-    char *xlfd_name;
-    char *charset;
+static FontData
+check_charset(font_set, font_name)
+    FontSet font_set;
+    char *font_name;
 {
-    char *charset_field;
-    int len1, len2;
+    FontData font_data;
+    char *last;
+    int count, length, name_len;
 
-    len1 = strlen(xlfd_name);
-    len2 = strlen(charset);
-    if (len1 < len2)
-	return False;
+    name_len = strlen(font_name);
+    last = font_name + name_len;
 
-    /* XXX */
-    charset_field = xlfd_name + (len1 - len2);
-    if (!_XlcCompareISOLatin1(charset_field, charset))
-	return True;
-    return False;
+    count = font_set->font_data_count;
+    font_data = font_set->font_data;
+    for ( ; count-- > 0; font_data++) {
+	length = strlen(font_data->name);
+	if (length > name_len)
+	    continue;
+	
+	if (_XlcCompareISOLatin1(last - length, font_data->name) == 0)
+	    return font_data;
+    }
+
+    return (FontData) NULL;
 }
 
 static int
-check_fontname(dpy, font_set, fn_list, fs_list, list_num, found_num)
-    Display *dpy;
-    XFontSet font_set;
-    char **fn_list;
-    XFontStruct *fs_list;
-    int list_num;
+check_fontname(oc, name, found_num)
+    XOC oc;
+    char *name;
     int found_num;
 {
-    XomGenericPart *gen = XOM_GENERIC(font_set);
+    Display *dpy = oc->core.om->core.display;
+    XOCGenericPart *gen = XOC_GENERIC(oc);
     FontData data;
-    char *fname, *prop_fname;
-    int data_num;
+    FontSet font_set;
+    XFontStruct *fs_list;
+    char **fn_list, *fname, *prop_fname;
+    int list_num, font_set_num, i;
 
-    while (list_num--) {
-	fname = *fn_list++;
- 	prop_fname = get_fontname(dpy, fs_list);
+    fn_list = XListFontsWithInfo(dpy, name, MAXFONTS, &list_num, &fs_list);
+    if (fn_list == NULL)
+	return found_num;
 
-	data = gen->font_data;
-	data_num = gen->font_data_num;
+    for (i = 0; i < list_num; i++) {
+	fname = fn_list[i];
+ 	prop_fname = get_prop_name(dpy, fs_list + i);
 
-	for ( ; data_num-- > 0; data++) {
-	    if (data->font_name)
+	font_set = gen->font_set;
+	font_set_num = gen->font_set_num;
+
+	for ( ; font_set_num-- > 0; font_set++) {
+	    if (font_set->font_name)
 		continue;
 
-	    if (check_charset(fname, data->charset_name))
+	    if (data = check_charset(font_set, fname))
 		goto found;
-	    else if (prop_fname && 
-		     check_charset(prop_fname, data->charset_name)) {
+	    else if (prop_fname &&
+		     (data = check_charset(font_set, prop_fname))) {
 		fname = prop_fname;
 found:
-		if (data->font_name = Xmalloc(strlen(fname) + 1)) {
-		    strcpy(data->font_name, fname);
+		font_set->side = data->side;
+		font_set->font_name = (char *) Xmalloc(strlen(fname) + 1);
+		if (font_set->font_name) {
+		    strcpy(font_set->font_name, fname);
 		    found_num++;
 		}
-		break;
+		if (found_num == gen->font_set_num)
+		    break;
 	    }
 	}
 	if (prop_fname)
 	    Xfree(prop_fname);
-	if (found_num == gen->font_data_num)
-	    return found_num;
-	fs_list++;
     }
+
+    XFreeFontInfo(fn_list, fs_list, list_num);
 
     return found_num;
 }
 
 static Bool
-init_generic_part(dpy, font_set)
-    Display *dpy;
-    XFontSet font_set;
+load_font(oc)
+    XOC oc;
 {
-    XomGenericPart *gen = XOM_GENERIC(font_set);
-    FontData font_data = gen->font_data;
-    int num = gen->font_data_num;
-    XLCd lcd = font_set->core.lcd;
-    CodeSet codeset;
+    Display *dpy = oc->core.om->core.display;
+    XOCGenericPart *gen = XOC_GENERIC(oc);
+    FontSet font_set = gen->font_set;
+    int num = gen->font_set_num;
 
-    for ( ; num-- > 0; font_data++) {
-	if (font_data->font_name == NULL)
+    for ( ; num-- > 0; font_set++) {
+	if (font_set->font_name == NULL)
 	    continue;
 
-	if (font_data->font == NULL) {
-	    font_data->font = XLoadQueryFont(dpy, font_data->font_name);
-	    if (font_data->font->min_byte1 || font_data->font->max_byte1)
-		font_data->is_xchar2b = True;
+	if (font_set->font == NULL) {
+	    font_set->font = XLoadQueryFont(dpy, font_set->font_name);
+	    if (font_set->font == NULL)
+		return False;
+	    
+	    if (font_set->font->min_byte1 || font_set->font->max_byte1)
+		font_set->is_xchar2b = True;
 	    else
-		font_data->is_xchar2b = False;
+		font_set->is_xchar2b = False;
 	}
+    }
 
-	codeset = *(XLC_GENERIC(lcd, codeset_list) + font_data->cs_num);
-	font_data->charset = *codeset->charset_list;
+    return True;
+}
+
+static Bool
+load_font_info(oc)
+    XOC oc;
+{
+    Display *dpy = oc->core.om->core.display;
+    XOCGenericPart *gen = XOC_GENERIC(oc);
+    FontSet font_set = gen->font_set;
+    char **fn_list;
+    int fn_num, num = gen->font_set_num;
+
+    for ( ; num-- > 0; font_set++) {
+	if (font_set->font_name == NULL)
+	    continue;
+
+	if (font_set->info == NULL) {
+	    fn_list = XListFontsWithInfo(dpy, font_set->font_name, 1, &fn_num,
+					 &font_set->info);
+	    if (font_set->info == NULL)
+		return False;
+	    
+	    XFreeFontNames(fn_list);
+	}
     }
 
     return True;
 }
 
 static void
-set_fontset_extents(font_set)
-    XFontSet font_set;
+set_fontset_extents(oc)
+    XOC oc;
 {
-    XRectangle *ink = &font_set->core.font_set_extents.max_ink_extent;
-    XRectangle *logical = &font_set->core.font_set_extents.max_logical_extent;
+    XRectangle *ink = &oc->core.font_set_extents.max_ink_extent;
+    XRectangle *logical = &oc->core.font_set_extents.max_logical_extent;
     XFontStruct **font_list, *font;
     XCharStruct overall;
     int logical_ascent, logical_descent;
-    int	num = font_set->core.num_of_fonts;
+    int	num = oc->core.font_info.num_font;
 
-    font_list = font_set->core.font_struct_list;
+    font_list = oc->core.font_info.font_struct_list;
     font = *font_list++;
     overall = font->max_bounds;
     overall.lbearing = font->min_bounds.lbearing;
@@ -331,26 +264,25 @@ set_fontset_extents(font_set)
 }
 
 static Bool
-init_core_part(font_set, base_name)
-    XFontSet font_set;
-    char *base_name;
+init_core_part(oc)
+    XOC oc;
 {
-    XomGenericPart *gen = XOM_GENERIC(font_set);
-    FontData font_data;
-    int font_data_num;
+    XOCGenericPart *gen = XOC_GENERIC(oc);
+    FontSet font_set;
+    int font_set_num;
     XFontStruct **font_struct_list;
     char **font_name_list, *font_name_buf;
     int	count, length;
 
-    font_data = gen->font_data;
-    font_data_num = gen->font_data_num;
+    font_set = gen->font_set;
+    font_set_num = gen->font_set_num;
     count = length = 0;
 
-    for ( ; font_data_num-- > 0; font_data++) {
-	if (font_data->font == NULL)
+    for ( ; font_set_num-- > 0; font_set++) {
+	if (font_set->font_name == NULL)
 	    continue;
 
-	length += strlen(font_data->font_name) + 1;
+	length += strlen(font_set->font_name) + 1;
 	count++;
     }
     if (count == 0)
@@ -368,28 +300,30 @@ init_core_part(font_set, base_name)
     if (font_name_buf == NULL)
 	goto err;
 
-    font_set->core.base_name_list = base_name;
-    font_set->core.num_of_fonts = count;
-    font_set->core.font_name_list = font_name_list;
-    font_set->core.font_struct_list = font_struct_list;
-    font_set->core.context_dependent = False;
+    oc->core.font_info.num_font = count;
+    oc->core.font_info.font_name_list = font_name_list;
+    oc->core.font_info.font_struct_list = font_struct_list;
+    oc->core.context_dependent = False;
 
-    font_data = gen->font_data;
-    font_data_num = gen->font_data_num;
+    font_set = gen->font_set;
+    font_set_num = gen->font_set_num;
 
-    for ( ; font_data_num-- > 0; font_data++) {
-	if (font_data->font == NULL)
+    for (count = 0; font_set_num-- > 0; font_set++, count++) {
+	if (font_set->font_name == NULL)
 	    continue;
 
-	*font_struct_list++ = font_data->font;
-	strcpy(font_name_buf, font_data->font_name);
-	Xfree(font_data->font_name);
-	font_data->font_name = font_name_buf;
-	*font_name_list++ = font_name_buf;
+	font_set->id = count;
+	if (font_set->font)
+	    *font_struct_list++ = font_set->font;
+	else
+	    *font_struct_list++ = font_set->info;
+	strcpy(font_name_buf, font_set->font_name);
+	Xfree(font_set->font_name);
+	*font_name_list++ = font_set->font_name = font_name_buf;
 	font_name_buf += strlen(font_name_buf) + 1;
     }
 
-    set_fontset_extents(font_set);
+    set_fontset_extents(oc);
 
     return True;
 
@@ -401,26 +335,171 @@ err:
     return False;
 }
 
-static Bool
-set_missing_list(font_set, missing_charset_list, missing_charset_count)
-    XFontSet font_set;
-    char ***missing_charset_list;
-    int *missing_charset_count;
+static char *
+get_font_name(oc, pattern)
+    XOC oc;
+    char *pattern;
 {
-    XomGenericPart *gen = XOM_GENERIC(font_set);
-    FontData font_data;
-    char **charset_list, *charset_buf;
-    int	count, length, font_data_num;
+    char **list, *name;
+    int count;
 
-    font_data = gen->font_data;
-    font_data_num = gen->font_data_num;
+    list = XListFonts(oc->core.om->core.display, pattern, 1, &count);
+    if (list == NULL)
+	return NULL;
+
+    name = (char *) Xmalloc(strlen(*list) + 1);
+    if (name)
+	strcpy(name, *list);
+    
+    XFreeFontNames(list);
+
+    return name;
+}
+
+static int
+parse_fontname(oc)
+    XOC oc;
+{
+    XOCGenericPart *gen = XOC_GENERIC(oc);
+    FontSet font_set;
+    FontData font_data;
+    char *pattern, *last, buf[BUFSIZ];
+    int font_set_num, font_data_count, length, found_num = 0;
+    Bool is_found;
+    int count;
+    char *base_name, *font_name, **name_list, **cur_name_list;
+
+    name_list = _XParseBaseFontNameList(oc->core.base_name_list, &count);
+    if (name_list == NULL)
+	return -1;
+    cur_name_list = name_list;
+
+    while (count-- > 0) {
+        pattern = *cur_name_list++;
+	if (pattern == NULL || *pattern == '\0')
+	    continue;
+
+ 	is_found = False;
+
+	if (strchr(pattern, '*') == NULL &&
+	    (font_name = get_font_name(oc, pattern))) {
+
+	    font_set = gen->font_set;
+	    font_set_num = gen->font_set_num;
+
+	    for ( ; font_set_num-- > 0; font_set++) {
+ 		if (font_set->font_name)
+ 		    continue;
+		font_data = check_charset(font_set, font_name);
+		if (font_data == NULL)
+ 		    continue;
+
+		font_set->side = font_data->side;
+		font_set->font_name = (char *) Xmalloc(strlen(font_name) + 1);
+		if (font_set->font_name == NULL) {
+		    Xfree(font_name);
+		    goto err;
+		}
+		strcpy(font_set->font_name, font_name);
+
+ 		found_num++;
+ 		is_found = True;
+	    }
+
+	    Xfree(font_name);
+
+	    if (is_found)
+		continue;
+	}
+
+ 	strcpy(buf, pattern);
+ 	length = strlen(pattern);
+	last = buf + length - 1;
+
+ 	if (length > 1 && *last == '*' && *(last - 1) == '-') {
+	    if (length > 3 && *(last - 2) == '*' && *(last - 3) == '-')
+		last -= 2;
+	} else {
+	    ++last;
+	    *last++ = '-';
+	}
+
+	font_set = gen->font_set;
+	font_set_num = gen->font_set_num;
+
+	for ( ; font_set_num-- > 0; font_set++) {
+ 	    if (font_set->font_name)
+ 		continue;
+	    
+	    font_data = font_set->font_data;
+	    font_data_count = font_set->font_data_count;
+
+	    for ( ; font_data_count-- > 0; font_data++) {
+		strcpy(last, font_data->name);
+		if (font_set->font_name = get_font_name(oc, buf))
+		    break;
+
+		*last = '*';
+		*(last + 1) = '-';
+		strcpy(last + 2, font_data->name);
+		if (font_set->font_name = get_font_name(oc, buf))
+		    break;
+	    }
+
+	    if (font_set->font_name == NULL)
+ 		continue;
+
+	    font_set->side = font_data->side;
+ 
+ 	    found_num++;
+ 	    is_found = True;
+ 	}
+
+ 	if (found_num == gen->font_set_num)
+ 	    break;
+ 	if (is_found == True)
+ 	    continue;
+ 
+	found_num = check_fontname(oc, pattern, found_num);
+	if (found_num == gen->font_set_num)
+	    break;
+    }
+
+    base_name = (char *) Xmalloc(strlen(oc->core.base_name_list) + 1);
+    if (base_name == NULL)
+	goto err;
+
+    strcpy(base_name, oc->core.base_name_list);
+    oc->core.base_name_list = base_name;
+
+    XFreeStringList(name_list);		
+
+    return found_num;
+
+err:
+    XFreeStringList(name_list);		
+
+    return -1;
+}
+
+static Bool
+set_missing_list(oc)
+    XOC oc;
+{
+    XOCGenericPart *gen = XOC_GENERIC(oc);
+    FontSet font_set;
+    char **charset_list, *charset_buf;
+    int	count, length, font_set_num;
+
+    font_set = gen->font_set;
+    font_set_num = gen->font_set_num;
     count = length = 0;
 
-    for ( ; font_data_num-- > 0; font_data++) {
-	if (font_data->font) 
+    for ( ; font_set_num-- > 0; font_set++) {
+	if (font_set->info || font_set->font) 
 	    continue;
 	
-	length += strlen(font_data->charset_name) + 1;
+	length += strlen(font_set->font_data->name) + 1;
 	count++;
     }
 
@@ -437,17 +516,17 @@ set_missing_list(font_set, missing_charset_list, missing_charset_count)
 	return False;
     }
 
-    *missing_charset_list = charset_list;
-    *missing_charset_count = count;
+    oc->core.missing_list.charset_list = charset_list;
+    oc->core.missing_list.charset_count = count;
 
-    font_data = gen->font_data;
-    font_data_num = gen->font_data_num;
+    font_set = gen->font_set;
+    font_set_num = gen->font_set_num;
 
-    for ( ; font_data_num-- > 0; font_data++) {
-	if (font_data->font) 
+    for ( ; font_set_num-- > 0; font_set++) {
+	if (font_set->info || font_set->font) 
 	    continue;
 
-	strcpy(charset_buf, font_data->charset_name);
+	strcpy(charset_buf, font_set->font_data->name);
 	*charset_list++ = charset_buf;
 	charset_buf += strlen(charset_buf) + 1;
     } 
@@ -455,142 +534,538 @@ set_missing_list(font_set, missing_charset_list, missing_charset_count)
     return True;
 }
 
-XFontSet
-_XomGenericCreateFontSet(lcd, dpy, base_name, name_list, count,
-			 missing_list, missing_count)
-    XLCd lcd;
-    Display *dpy;
-    char *base_name;
-    char **name_list;		
-    int count;
-    char ***missing_list;
-    int *missing_count;	
+static Bool
+create_fontset(oc)
+    XOC oc;
 {
-    XFontSet font_set;
-    XomGenericPart *gen;
-    FontData font_data;
-    char *name, **name_list_ptr, **fn_list, buf[BUFSIZE];
-    XFontStruct *fs_list;
-    int font_data_num, length, fn_num, found_num = 0;
-    Bool is_found;
-    int dash_num;
-    char *name_tmp;
+    XOMGenericPart *gen = XOM_GENERIC(oc->core.om);
+    int found_num;
 
-    *missing_list = NULL;
-    *missing_count = 0;
+    if (init_fontset(oc) == False)
+        return False;
 
-    if ((font_set = init_fontset(lcd)) == NULL)
-        return (XFontSet) NULL;
+    found_num = parse_fontname(oc);
+    if (found_num <= 0) {
+	if (found_num == 0)
+	    set_missing_list(oc);
+	return False;
+    }
 
-    if (load_fontset(font_set) == False)
-	goto err;
-    gen = XOM_GENERIC(font_set);
+    if (gen->on_demand_loading == True) {
+	if (load_font_info(oc) == False)
+	    return False;
+    } else {
+	if (load_font(oc) == False)
+	    return False;
+    }
 
-    name_list_ptr = name_list;
-    while (count--) {
-        name = *name_list_ptr++;
- 	length = strlen(name);
- 	/* XXX */
- 	if (length > 1 && name[length - 1] == '*' &&  name[length - 2] == '-') {
- 	    (void) strcpy(buf, name);
- 	    is_found = False;
- 
-	    font_data = gen->font_data;
-	    font_data_num = gen->font_data_num;
+    if (init_core_part(oc) == False)
+	return False;
 
-	    dash_num = 0;
-	    name_tmp = buf;
-	    while (name_tmp = strchr(name_tmp, '-')) {
-		name_tmp++;
-		dash_num++;
+    if (set_missing_list(oc) == False)
+	return False;
+
+    return True;
+}
+
+static void
+destroy_oc(oc)
+    XOC oc;
+{
+    Display *dpy = oc->core.om->core.display;
+    XOCGenericPart *gen = XOC_GENERIC(oc);
+    XFontStruct **font_list, *font;
+    int count;
+
+    if (gen->mbs_to_cs)
+	_XlcCloseConverter(gen->mbs_to_cs);
+
+    if (gen->wcs_to_cs)
+	_XlcCloseConverter(gen->wcs_to_cs);
+
+    if (gen->font_set)
+	Xfree(gen->font_set);
+
+    if (oc->core.base_name_list)
+	Xfree(oc->core.base_name_list);
+
+    if (oc->core.font_info.font_name_list)
+	XFreeStringList(oc->core.font_info.font_name_list);
+
+    if (font_list = oc->core.font_info.font_struct_list) {
+	for (count = oc->core.font_info.num_font; count-- > 0; font_list++) {
+	    if (font = *font_list) {
+		if (font->fid)
+		    XFreeFont(dpy, font);
+		else
+		    XFreeFontInfo(NULL, font, 1);
 	    }
-	    for ( ; font_data_num-- > 0; font_data++) {
- 		if (font_data->font_name)
- 		    continue;
-
- 		if (length > 2 && name[length - 3] == '*')
-		    (void) strcpy(buf + length - ((dash_num==14)?3:1), 
-				  font_data->charset_name);
- 		else {
- 		    buf[length] = '-';
- 		    (void) strcpy(buf + length + 1, font_data->charset_name);
- 		}
- 		fn_list = XListFonts(dpy, buf, 1, &fn_num);
- 		if (fn_num == 0)
- 		    continue;
- 
-		font_data->font_name = (char *) Xmalloc(strlen(*fn_list) + 1);
- 		if (font_data->font_name == NULL)
- 		    goto err;
- 		(void) strcpy(font_data->font_name, *fn_list);
- 
- 		XFreeFontNames(fn_list);
- 		found_num++;
- 		is_found = True;
- 	    }
- 	    if (found_num == gen->font_data_num)
- 		break;
- 	    if (is_found == True)
- 		continue;
- 	}
- 
-	fn_list = XListFontsWithInfo(dpy, name, MAXFONTS, &fn_num, &fs_list);
-	if (fn_num == 0) {
-	    char *p;
-	    int n = 0;
-
-	    (void) strcpy(buf, name);
-
-	    p = name = buf;
-	    while (p = (char *)strchr(p, '-')) {
-		p++;
-		n++;
-	    }
-	    p = name + strlen(name) - 1;
-	    if (n == AVERAGE_WIDTH_FIELD && *p != '-')
-		(void) strcat(name, "-*");
-	    else if (n == CHARSET_REGISTRY_FIELD && *p == '-')
-		(void) strcat(name, "*");
-	    else
-		continue;
-
-	    fn_list = XListFontsWithInfo(dpy, name, MAXFONTS,
-							&fn_num, &fs_list);
-	    if (fn_num == 0)
-		continue;
 	}
-	found_num = check_fontname(dpy, font_set, fn_list, fs_list, fn_num,
-				   found_num);
-	XFreeFontInfo(fn_list, fs_list, fn_num);
-	if (found_num == gen->font_data_num)
-	    break;
+	Xfree(oc->core.font_info.font_struct_list);
     }
 
-    if (found_num == 0) {
-	set_missing_list(font_set, missing_list, missing_count);
+    if (oc->core.missing_list.charset_list)
+	XFreeStringList(oc->core.missing_list.charset_list);
+
+#ifdef notdef
+    if (oc->core.res_name)
+	Xfree(oc->core.res_name);
+    if (oc->core.res_class)
+	Xfree(oc->core.res_class);
+#endif
+    
+    Xfree(oc);
+}
+
+static char *
+set_oc_values(oc, args, num_args)
+    XOC oc;
+    XlcArgList args;
+    int num_args;
+{
+    if (oc->core.resources == NULL)
+	return NULL;
+
+    return _XlcSetValues((XPointer) oc, oc->core.resources,
+			 oc->core.num_resources, args, num_args, XlcSetMask);
+}
+
+static char *
+get_oc_values(oc, args, num_args)
+    XOC oc;
+    XlcArgList args;
+    int num_args;
+{
+    if (oc->core.resources == NULL)
+	return NULL;
+
+    return _XlcGetValues((XPointer) oc, oc->core.resources,
+			 oc->core.num_resources, args, num_args, XlcGetMask);
+}
+
+static XOCMethodsRec oc_default_methods = {
+    destroy_oc,
+    set_oc_values,
+    get_oc_values,
+    _XmbDefalutTextEscapement,
+    _XmbDefalutTextExtents,
+    _XmbDefalutTextPerCharExtents,
+    _XmbDefalutDrawString,
+    _XmbDefalutDrawImageString,
+    _XwcDefalutTextEscapement,
+    _XwcDefalutTextExtents,
+    _XwcDefalutTextPerCharExtents,
+    _XwcDefalutDrawString,
+    _XwcDefalutDrawImageString
+};
+
+static XOCMethodsRec oc_generic_methods = {
+    destroy_oc,
+    set_oc_values,
+    get_oc_values,
+    _XmbGenericTextEscapement,
+    _XmbGenericTextExtents,
+    _XmbGenericTextPerCharExtents,
+    _XmbGenericDrawString,
+    _XmbGenericDrawImageString,
+    _XwcGenericTextEscapement,
+    _XwcGenericTextExtents,
+    _XwcGenericTextPerCharExtents,
+    _XwcGenericDrawString,
+    _XwcGenericDrawImageString
+};
+
+typedef struct _XOCMethodsListRec {
+    char *name;
+    XOCMethods methods;
+} XOCMethodsListRec, *XOCMethodsList;
+
+static XOCMethodsListRec oc_methods_list[] = {
+    { "default", &oc_default_methods },
+    { "generic", &oc_generic_methods }
+};
+
+static XlcResource oc_resources[] = {
+    { XNBaseFontName, NULLQUARK, sizeof(char *),
+      XOffsetOf(XOCRec, core.base_name_list), XlcCreateMask | XlcGetMask },
+    { XNFontSet, NULLQUARK, sizeof(XFontSet),
+      XOffsetOf(XOCRec, core.self), XlcGetMask },
+    { XNMissingCharSet, NULLQUARK, sizeof(XOMCharSetList),
+      XOffsetOf(XOCRec, core.missing_list), XlcGetMask },
+    { XNDefaultString, NULLQUARK, sizeof(char *),
+      XOffsetOf(XOCRec, core.default_string), XlcGetMask },
+    { XNPostEditCallback, NULLQUARK, sizeof(XOMCallback),
+      XOffsetOf(XOCRec, core.post_edit_callback), XlcSetMask | XlcGetMask },
+    { XNOrientation, NULLQUARK, sizeof(XOrientation),
+      XOffsetOf(XOCRec, core.orientation), XlcSetMask | XlcGetMask },
+    { XNDirectionalDependentDrawing, NULLQUARK, sizeof(Bool),
+      XOffsetOf(XOCRec, core.directional_dependent), XlcGetMask },
+    { XNContextualDrawing, NULLQUARK, sizeof(Bool),
+      XOffsetOf(XOCRec, core.contextual_drawing), XlcGetMask },
+    { XNResourceName, NULLQUARK, sizeof(char *),
+      XOffsetOf(XOCRec, core.res_name), XlcSetMask | XlcGetMask },
+    { XNResourceClass, NULLQUARK, sizeof(char *),
+      XOffsetOf(XOCRec, core.res_class), XlcSetMask | XlcGetMask },
+    { XNFontInfo, NULLQUARK, sizeof(XOMFontInfo),
+      XOffsetOf(XOCRec, core.font_info), XlcGetMask },
+    { XNWidth, NULLQUARK, sizeof(unsigned short),
+      XOffsetOf(XOCRec, core.width), XlcDefaultMask | XlcSetMask | XlcGetMask },
+    { XNDrawingGravity, NULLQUARK, sizeof(XOMDrawingGravity),
+      XOffsetOf(XOCRec, core.drawing_gravity), XlcSetMask | XlcGetMask }
+};
+
+static XOC
+create_oc(om, args, num_args)
+    XOM om;
+    XlcArgList args;
+    int num_args;
+{
+    XOC oc;
+    XOMGenericPart *gen = XOM_GENERIC(om);
+    XOCMethodsList methods_list = oc_methods_list;
+    int count;
+
+    oc = (XOC) Xmalloc(sizeof(XOCGenericRec));
+    if (oc == NULL)
+	return (XOC) NULL;
+    bzero((char *) oc, sizeof(XOCGenericRec));
+    
+    oc->core.om = om;
+
+    if (oc_resources[0].xrm_name == NULLQUARK)
+	_XlcCompileResourceList(oc_resources, XlcNumber(oc_resources));
+    
+    if (_XlcSetValues((XPointer) oc, oc_resources, XlcNumber(oc_resources),
+		      args, num_args, XlcCreateMask | XlcDefaultMask))
 	goto err;
+
+    if (oc->core.base_name_list == NULL)
+	goto err;
+
+    oc->core.resources = oc_resources;
+    oc->core.num_resources = XlcNumber(oc_resources);
+    oc->core.self = oc;
+
+    if (create_fontset(oc) == False)
+	goto err;
+
+    oc->methods = &oc_generic_methods;
+
+    if (gen->object_name) {
+	count = XlcNumber(oc_methods_list);
+
+	for ( ; count-- > 0; methods_list++) {
+	    if (!_XlcCompareISOLatin1(gen->object_name, methods_list->name)) {
+		oc->methods = methods_list->methods;
+		break;
+	    }
+	}
     }
 
-    if (init_generic_part(dpy, font_set) == False)
-	goto err;
-
-    if (init_core_part(font_set, base_name) == False)
-	goto err;
-
-    if (set_missing_list(font_set, missing_list, missing_count) == False)
-	goto err;
-
-    XFreeStringList(name_list);		
-
-    return font_set;
+    return oc;
 
 err:
-    if (font_set->core.font_name_list)
-	XFreeStringList(font_set->core.font_name_list);
-    if (font_set->core.font_struct_list)
-	Xfree(font_set->core.font_struct_list);
+    destroy_oc(oc);
 
-    free_fontset(dpy, font_set);
+    return (XOC) NULL;
+}
 
-    return (XFontSet) NULL;
+static Status
+close_om(om)
+    XOM om;
+{
+    XOMGenericPart *gen = XOM_GENERIC(om);
+    OMData data;
+    int count;
+
+    if (data = gen->data) {
+	for (count = gen->data_num; count-- > 0; data++) {
+	    if (data->charset_list)
+		Xfree(data->charset_list);
+
+	    if (data->font_data) {
+		if (data->font_data->name)
+		    Xfree(data->font_data->name);
+		Xfree(data->font_data);
+	    }
+	}
+	Xfree(gen->data);
+    }
+
+    if (gen->object_name)
+	Xfree(gen->object_name);
+
+    if (om->core.res_name)
+	Xfree(om->core.res_name);
+    if (om->core.res_class)
+	Xfree(om->core.res_class);
+    if (om->core.required_charset.charset_list)
+	XFreeStringList(om->core.required_charset.charset_list);
+    if (om->core.orientation_list.orient)
+	Xfree(om->core.orientation_list.orient);
+
+    Xfree(om);
+
+    return 0;
+}
+
+static char *
+set_om_values(om, args, num_args)
+    XOM om;
+    XlcArgList args;
+    int num_args;
+{
+    if (om->core.resources == NULL)
+	return NULL;
+
+    return _XlcSetValues((XPointer) om, om->core.resources,
+			 om->core.num_resources, args, num_args, XlcSetMask);
+}
+
+static char *
+get_om_values(om, args, num_args)
+    XOM om;
+    XlcArgList args;
+    int num_args;
+{
+    if (om->core.resources == NULL)
+	return NULL;
+
+    return _XlcGetValues((XPointer) om, om->core.resources,
+			 om->core.num_resources, args, num_args, XlcGetMask);
+}
+
+static XOMMethodsRec methods = {
+    close_om,
+    set_om_values,
+    get_om_values,
+    create_oc
+};
+
+static XlcResource om_resources[] = {
+    { XNRequiredCharSet, NULLQUARK, sizeof(XOMCharSetList),
+      XOffsetOf(XOMRec, core.required_charset), XlcGetMask },
+    { XNQueryOrientation, NULLQUARK, sizeof(XOMOrientation),
+      XOffsetOf(XOMRec, core.orientation_list), XlcGetMask }
+};
+
+static XOM
+create_om(lcd, dpy, rdb, res_name, res_class)
+    XLCd lcd;
+    Display *dpy;
+    XrmDatabase rdb;
+    char *res_name;
+    char *res_class;
+{
+    XOM om;
+
+    om = (XOM) Xmalloc(sizeof(XOMGenericRec));
+    if (om == NULL)
+	return (XOM) NULL;
+    bzero((char *) om, sizeof(XOMGenericRec));
+    
+    om->methods = &methods;
+    om->core.lcd = lcd;
+    om->core.display = dpy;
+    om->core.rdb = rdb;
+    if (res_name) {
+	om->core.res_name = (char *) Xmalloc(strlen(res_name) + 1);
+	if (om->core.res_name == NULL)
+	    goto err;
+	strcpy(om->core.res_name, res_name);
+    }
+    if (res_class) {
+	om->core.res_class = (char *) Xmalloc(strlen(res_class) + 1);
+	if (om->core.res_class == NULL)
+	    goto err;
+	strcpy(om->core.res_class, res_class);
+    }
+
+    if (om_resources[0].xrm_name == NULLQUARK)
+	_XlcCompileResourceList(om_resources, XlcNumber(om_resources));
+    
+    om->core.resources = om_resources;
+    om->core.num_resources = XlcNumber(om_resources);
+
+    return om;
+
+err:
+    close_om(om);
+
+    return (XOM) NULL;
+}
+
+static OMData
+add_data(om)
+    XOM om;
+{
+    XOMGenericPart *gen = XOM_GENERIC(om);
+    OMData new;
+    int num;
+
+    if (num = gen->data_num)
+        new = (OMData) Xrealloc(gen->data, (num + 1) * sizeof(OMDataRec));
+    else
+        new = (OMData) Xmalloc(sizeof(OMDataRec));
+
+    if (new == NULL)
+        return NULL;
+
+    gen->data_num = num + 1;
+    gen->data = new;
+
+    new += num;
+    bzero((char *) new, sizeof(OMDataRec));
+
+    return new;
+}
+
+static Bool
+init_om(om)
+    XOM om;
+{
+    XLCd lcd = om->core.lcd;
+    XOMGenericPart *gen = XOM_GENERIC(om);
+    OMData data;
+    XlcCharSet *charset_list;
+    FontData font_data;
+    char **required_list;
+    XOrientation *orientation;
+    char **value, buf[BUFSIZ], *bufptr;
+    int count, num, length = 0;
+
+    _XlcGetResource(lcd, "XLC_FONTSET", "on_demand_loading", &value, &count);
+    if (count > 0 && _XlcCompareISOLatin1(*value, "True") == 0)
+	gen->on_demand_loading = True;
+
+    _XlcGetResource(lcd, "XLC_FONTSET", "object_name", &value, &count);
+    if (count > 0) {
+	gen->object_name = (char *) Xmalloc(strlen(*value) + 1);
+	if (gen->object_name == NULL)
+	    return False;
+	strcpy(gen->object_name, *value);
+    }
+
+    for (num = 0; ; num++) {
+	sprintf(buf, "fs%d.charset", num);
+	_XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
+	if (count < 1)
+	    break;
+
+	data = add_data(om);
+	if (data == NULL)
+	    return False;
+	
+	charset_list = (XlcCharSet *) Xmalloc(sizeof(XlcCharSet) * count);
+	if (charset_list == NULL)
+	    return False;
+	data->charset_list = charset_list;
+	data->charset_count = count;
+
+	while (count-- > 0)
+	    *charset_list++ = _XlcGetCharSet(*value++);
+
+	sprintf(buf, "fs%d.font", num);
+	_XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
+	if (count < 1)
+	    return False;
+
+	font_data = (FontData) Xmalloc(sizeof(FontDataRec) * count);
+	if (font_data == NULL)
+	    return False;
+	bzero((char *) font_data, sizeof(FontDataRec) * count);
+	data->font_data = font_data;
+	data->font_data_count = count;
+
+	for ( ; count-- > 0; font_data++) {
+	    strcpy(buf, *value++);
+	    if (bufptr = strrchr(buf, ':'))
+		*bufptr++ = '\0';
+	    font_data->name = (char *) Xmalloc(strlen(buf) + 1);
+	    if (font_data->name == NULL)
+		return False;
+	    strcpy(font_data->name, buf);
+	    if (bufptr && _XlcCompareISOLatin1(bufptr, "GL") == 0)
+		font_data->side = XlcGL;
+	    else if (bufptr && _XlcCompareISOLatin1(bufptr, "GR") == 0)
+		font_data->side = XlcGR;
+	    else
+		font_data->side = XlcGLGR;
+	}
+
+	length += strlen(data->font_data->name) + 1;
+    }
+
+    /* required charset list */
+    required_list = (char **) Xmalloc(sizeof(char *) * gen->data_num);
+    if (required_list == NULL)
+	return False;
+
+    bufptr = (char *) Xmalloc(length);
+    if (bufptr == NULL) {
+	Xfree(required_list);
+	return False;
+    }
+
+    om->core.required_charset.charset_list = required_list;
+    om->core.required_charset.charset_count = gen->data_num;
+
+    count = gen->data_num;
+    data = gen->data;
+
+    for ( ; count-- > 0; data++) {
+	strcpy(bufptr, data->font_data->name);
+	*required_list++ = bufptr;
+	bufptr += strlen(bufptr) + 1;
+    }
+
+    /* orientation list */
+    orientation = (XOrientation *) Xmalloc(sizeof(XOrientation));
+    if (orientation == NULL)
+	return False;
+
+    *orientation = XOMOrientation_LTR_TTB;
+    om->core.orientation_list.orient = orientation;
+    om->core.orientation_list.num_orient = 1;
+
+    return True;
+}
+
+XOM
+#if NeedFunctionPrototypes
+_XomGenericOpenOM(XLCd lcd, Display *dpy, XrmDatabase rdb,
+		  _Xconst char *res_name, _Xconst char *res_class)
+#else
+_XomGenericOpenOM(lcd, dpy, rdb, res_name, res_class)
+    XLCd lcd;
+    Display *dpy;
+    XrmDatabase rdb;
+    char *res_name;
+    char *res_class;
+#endif
+{
+    XOM om;
+
+    om = create_om(lcd, dpy, rdb, res_name, res_class);
+    if (om == NULL)
+	return (XOM) NULL;
+    
+    if (init_om(om) == False)
+	goto err;
+
+    return om;
+
+err:
+    close_om(om);
+
+    return (XOM) NULL;
+}
+
+Bool
+_XInitOM(lcd)
+    XLCd lcd;
+{
+    lcd->methods->open_om = _XomGenericOpenOM;
+
+    return True;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XimTrInt.h,v 1.1 93/09/17 13:28:40 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -48,5 +48,52 @@ typedef struct {
 } TransportSW;
 
 extern TransportSW _XimTransportRec[];
+
+/*
+ * Global symbols
+ */
+
+extern Bool	_XimXConf(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    char	*address
+#endif
+);
+
+#ifdef TCPCONN
+extern Bool	_XimInetConf(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    char	*address
+#endif
+);
+#endif /* TCPCONN */
+
+#ifdef UNIXCONN
+extern Bool	_XimInternalConf(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    char	*address
+#endif
+);
+#endif
+
+#ifdef DNETCONN
+extern Bool	_XimDecnetConf(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    char	*address
+#endif
+);
+#endif /* DNETCONN */
+
+#ifdef STREAMSCONN
+extern Bool	_XimStreamsConf(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    char	*address
+#endif
+);
+#endif /* STREAMSCONN */
 
 #endif /* _XIMTRINT_H */

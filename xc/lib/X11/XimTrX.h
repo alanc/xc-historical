@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XimTrX.h,v 1.1 93/09/17 13:29:24 rws Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -35,7 +35,11 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 typedef struct _XIntrCallbackRec	*XIntrCallbackPtr;
 
 typedef struct _XIntrCallbackRec {
-    Bool		 (*func)();
+    Bool		 (*func)(
+#if NeedFunctionPrototypes
+				 Xim, INT16, XPointer, XPointer
+#endif
+);
     XPointer		 call_data;
     XIntrCallbackPtr	 next;
 } XIntrCallbackRec ;

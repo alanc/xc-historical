@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XwcWrap.c,v 11.3 91/05/01 09:20:55 rws Exp $
+ * $XConsortium: wcWrap.c,v 11.4 91/05/01 10:57:25 rws Exp $
  */
 
 /*
@@ -63,71 +63,129 @@ XwcDrawText(dpy, d, gc, x, y, text_items, nitems)
     }
 }
 
+#if NeedFunctionPrototypes
+void
+XwcDrawString(
+    Display            *dpy,
+    Drawable            d,
+    XFontSet            font_set,
+    GC                  gc,
+    int                 x,
+    int                 y,
+    _Xconst wchar_t    *text,
+    int                 text_len)
+#else
 void
 XwcDrawString(dpy, d, font_set, gc, x, y, text, text_len)
-    register Display   *dpy;
+    Display            *dpy;
     Drawable            d;
     XFontSet            font_set;
     GC                  gc;
     int                 x, y;
     wchar_t            *text;
     int                 text_len;
+#endif
 {
     (void)(*font_set->methods->wc_draw_string) (dpy, d, font_set, gc, x, y,
 						text, text_len);
 }
 
+#if NeedFunctionPrototypes
+void
+XwcDrawImageString(
+    Display            *dpy,
+    Drawable            d,
+    XFontSet            font_set,
+    GC                  gc,
+    int                 x,
+    int                 y,
+    _Xconst wchar_t    *text,
+    int                 text_len)
+#else
 void
 XwcDrawImageString(dpy, d, font_set, gc, x, y, text, text_len)
-    register Display   *dpy;
+    Display            *dpy;
     Drawable            d;
     XFontSet            font_set;
     GC                  gc;
     int                 x, y;
     wchar_t            *text;
     int                 text_len;
+#endif
 {
     (*font_set->methods->wc_draw_image_string) (dpy, d, font_set, gc, x, y,
 						text, text_len);
 }
 
+#if NeedFunctionPrototypes
+int 
+XwcTextEscapement(
+    XFontSet            font_set,
+    _Xconst wchar_t    *text,
+    int                 text_len)
+#else
 int 
 XwcTextEscapement(font_set, text, text_len)
-    XFontSet        font_set;
-    wchar_t        *text;
-    int             text_len;
+    XFontSet            font_set;
+    wchar_t            *text;
+    int                 text_len;
+#endif
 {
     return (*font_set->methods->wc_escapement) (font_set, text, text_len);
 }
 
+#if NeedFunctionPrototypes
+int
+XwcTextExtents(
+    XFontSet            font_set,
+    _Xconst wchar_t    *text,
+    int                 text_len,
+    XRectangle         *overall_ink_extents,
+    XRectangle         *overall_logical_extents)
+#else
 int
 XwcTextExtents(font_set, text, text_len,
 	       overall_ink_extents, overall_logical_extents)
-    XFontSet        font_set;
-    wchar_t        *text;
-    int             text_len;
-    XRectangle      *overall_ink_extents;
-    XRectangle      *overall_logical_extents;
+    XFontSet            font_set;
+    wchar_t            *text;
+    int                 text_len;
+    XRectangle         *overall_ink_extents;
+    XRectangle         *overall_logical_extents;
+#endif
 {
     return (*font_set->methods->wc_extents) (font_set, text, text_len,
 					     overall_ink_extents,
 					     overall_logical_extents);
 }
 
+#if NeedFunctionPrototypes
+Status
+XwcTextPerCharExtents(
+    XFontSet            font_set,
+    _Xconst wchar_t    *text,
+    int                 text_len,
+    XRectangle         *ink_extents_buffer,
+    XRectangle         *logical_extents_buffer,
+    int                 buffer_size,
+    int                *num_chars,
+    XRectangle         *max_ink_extents,
+    XRectangle         *max_logical_extents)
+#else
 Status
 XwcTextPerCharExtents(font_set, text, text_len,
 		      ink_extents_buffer, logical_extents_buffer,
 		      buffer_size, num_chars,
 		      max_ink_extents, max_logical_extents)
-    XFontSet        font_set;
-    wchar_t        *text;
-    int             text_len;
-    XRectangle     *ink_extents_buffer;
-    XRectangle     *logical_extents_buffer;
-    int             buffer_size;
-    int            *num_chars;
-    XRectangle     *max_ink_extents;
-    XRectangle     *max_logical_extents;
+    XFontSet            font_set;
+    wchar_t            *text;
+    int                 text_len;
+    XRectangle         *ink_extents_buffer;
+    XRectangle         *logical_extents_buffer;
+    int                 buffer_size;
+    int                *num_chars;
+    XRectangle         *max_ink_extents;
+    XRectangle         *max_logical_extents;
+#endif
 {
     return (*font_set->methods->wc_extents_per_char) 
 	      (font_set, text, text_len, 

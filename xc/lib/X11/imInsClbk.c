@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imInsClbk.c,v 1.1 93/09/17 13:33:32 rws Exp $ */
 /******************************************************************
 
            Copyright 1993 by Sony Corporation
@@ -33,25 +33,36 @@ PERFORMANCE OF THIS SOFTWARE.
 #include	"Xlcint.h"
 #include	"XlcPublic.h"
 #include	"Ximint.h"
-#include	"XimInsClbk.h"
 
-extern XIM _XimOpenIM(
-#if NeedFunctionPrototypes
-    XLCd lcd,
-    Display *dpy,
-    XrmDatabase rdb,
-    char *res_name,
-    char *res_class
+
+typedef struct _XimInstCallback {
+    Bool			 call;
+    Bool			 destroy;
+    Display			*display;
+    XLCd			 lcd;
+    char			 name[XIM_MAXLCNAMELEN];
+    char			*modifiers;
+    XrmDatabase			 rdb;
+    char			*res_name;
+    char			*res_class;
+    void			(*callback)(
+#if NeedNestedPrototype
+				    Display*	/* display */,
+				    XPointer	/* client_data */,
+				    XPointer	/* call_data */
 #endif
-);
+				);
+    XPointer			*client_data;
+    struct _XimInstCallback	*next;
+} XimInstCallbackRec, *XimInstCallback;
+
 
 Private XimInstCallback	callback_list	= NULL;
-Private XimInstCallback destory_list	= NULL;
-Private Window		requestor	= None;
 Private Bool		lock		= False;
 
+
 Private void
-#if NeedFunctionPrototype
+#if NeedFunctionPrototypes
 MakeLocale( XLCd lcd, char locale[] )
 #else
 MakeLocale( lcd, locale )
@@ -61,7 +72,7 @@ MakeLocale( lcd, locale )
 {
     char	*language, *territory, *codeset;
 
-    _XlcGetLCValues( lcd, XlcNLanguage, &language, XlcNTerritory, &territory,
+    _XGetLCValues( lcd, XlcNLanguage, &language, XlcNTerritory, &territory,
 		     XlcNCodeset, &codeset, NULL );
 
     strcpy( locale, language );
@@ -77,87 +88,20 @@ MakeLocale( lcd, locale )
 
 
 Private Bool
-#if NeedFunctionPrototypes
-CallCallback( Display *display, Atom locale )
-#else
-CallCallback( display, locale )
-    Display	*display;
-    Atom	 locale;
-#endif
-{
-    char		*str;
-    int			 length;
-    Bool		 flag = False;
-    XimInstCallback	 icb, picb, tmp;
-
-    if( !(str = XGetAtomName( display, locale )) )
-	return( False );
-
-    length = strlen( XIM_LOCAL_CATEGORY );
-    if( strncmp( str, XIM_LOCAL_CATEGORY, length ) )
-	return( False );
-    str += length;
-
-    str = strtok( str, "," );
-    lock = True;
-    do {
-	for( icb = callback_list; icb; icb = icb->next ) {
-	    if( icb->name  &&  !icb->call  &&  !icb->destroy  &&
-		!strcmp( str, icb->name ) ) {
-		flag = True;
-		icb->call = True;
-		icb->callback( icb->display, icb->client_data, NULL );
-	    }
-	}
-    } while( str = strtok( NULL, "," ) );
-
-    for( icb = callback_list, picb = NULL; icb; ) {
-	if( icb->destroy ) {
-	    if( picb )
-		picb->next = icb->next;
-	    else
-		callback_list = icb->next;
-	    tmp = icb;
-	    icb = icb->next;
-	    XFree( tmp );
-	}
-	else {
-	    picb = icb;
-	    icb = icb->next;
-	}
-    }
-    lock = False;
-    return( flag );
-}
-
-
-Private Bool
-CheckSNEvent( display, event, arg )
-    Display	*display;
-    XEvent	*event;
-    XPointer	 arg;
-{
-    if( event->type == SelectionNotify  &&
-	(Window)arg == event->xselection.requestor )
-	return( True );
-    return( False );
-}
-
-
-Private Bool
 _XimFilterPropertyNotify( display, window, event, client_data )
     Display	*display;
     Window	 window;
     XEvent	*event;
     XPointer	 client_data;
 {
-    Atom		ims, actual_type, *atoms, locales, *locale;
+    Atom		ims, actual_type, *atoms;
     int			actual_format;
     unsigned long	nitems, bytes_after;
     Window		ims_window;
-    XEvent		xevent;
     int			ii;
+    XIM			xim;
     Bool		flag = False;
+    XimInstCallback	icb, picb, tmp;
 
     if( (ims = XInternAtom( display, XIM_SERVERS, True )) == None  ||
 	event->xproperty.atom != ims  ||
@@ -175,40 +119,64 @@ _XimFilterPropertyNotify( display, window, event, client_data )
 	return( False );
     }
 
-    if( (locales = XInternAtom( display, XIM_LOCALES, True )) == None ) {
-	XFree( atoms );
-	return( False );
-    }
+    lock = True;
     for( ii = 0; ii < nitems; ii++, atoms ) {
 	if( ims_window = XGetSelectionOwner( display, atoms[ii] ) ) {
-	    XConvertSelection( display, atoms[ii], locales, locales, requestor,
-			       CurrentTime );
-	    XIfEvent( display, &xevent, CheckSNEvent, (XPointer)requestor );
-	    if( xevent.xselection.property == None )
-		continue;
-	    if( XGetWindowProperty( display, requestor, locales, 0L, 1000000L,
-				    True, locales, &actual_type, &actual_format,
-				    &nitems, &bytes_after,
-				    (unsigned char **)&locale ) != Success )
-		continue;
-	    flag |= CallCallback( display, *locale );
+	    for( icb = callback_list; icb; icb = icb->next ) {
+		if( !icb->call  &&  !icb->destroy ) {
+		    xim = (*icb->lcd->methods->open_im)( icb->lcd, display,
+							 icb->rdb,
+							 icb->res_name,
+							 icb->res_class );
+		    if( xim ) {
+			xim->methods->close( (XIM)xim );
+			flag = True;
+			icb->call = True;
+			icb->callback( icb->display, icb->client_data, NULL );
+		    }
+		}
+	    }
+	    break;
 	}
     }
     XFree( atoms );
+
+    for( icb = callback_list, picb = NULL; icb; ) {
+	if( icb->destroy ) {
+	    if( picb )
+		picb->next = icb->next;
+	    else
+		callback_list = icb->next;
+	    tmp = icb;
+	    icb = icb->next;
+	    XFree( tmp );
+	}
+	else {
+	    picb = icb;
+	    icb = icb->next;
+	}
+    }
+    lock = False;
+
     return( flag );
 }
 
 
 Public Bool
-_XimRegisterIMInstantiateCallback( lcd, display, callback, client_data )
+_XimRegisterIMInstantiateCallback( lcd, display, rdb, res_name, res_class,
+				   callback, client_data )
     XLCd	 lcd;
     Display	*display;
+    XrmDatabase	 rdb;
+    char	*res_name, *res_class;
     XIMProc	 callback;
     XPointer	*client_data;
 {
     XimInstCallback	icb, tmp;
     XIM			xim;
     int			ii;
+    Window		root;
+    XWindowAttributes	attr;
 
     if( lock )
 	return( False );
@@ -218,8 +186,12 @@ _XimRegisterIMInstantiateCallback( lcd, display, callback, client_data )
 	return( False );
     icb->call = icb->destroy = False;
     icb->display = display;
+    icb->lcd = lcd;
     MakeLocale( lcd, icb->name );
     icb->modifiers = lcd->core->modifiers;	/* XXXXX */
+    icb->rdb = rdb;
+    icb->res_name = res_name;
+    icb->res_class = res_class;
     icb->callback = callback;
     icb->client_data = client_data;
     icb->next = NULL;
@@ -231,17 +203,15 @@ _XimRegisterIMInstantiateCallback( lcd, display, callback, client_data )
 	tmp->next = icb;
     }
 
-    xim = _XimOpenIM( lcd, display, NULL, NULL, NULL );	/* XXXXX */
+    xim = (*lcd->methods->open_im)( lcd, display, rdb, res_name, res_class );
 
     if( icb == callback_list ) {
-	if( requestor == None )
-	    requestor = XCreateSimpleWindow( display, RootWindow(display, 0),
-					     0, 0, 1, 1, 1, 0, 0 );
-	_XRegisterFilterByType( display, RootWindow(display, 0),
-				PropertyNotify, PropertyNotify,
-				_XimFilterPropertyNotify,
-				(XPointer)NULL );
-	XSelectInput( display, RootWindow(display, 0), PropertyChangeMask );
+	root = RootWindow( display, 0 );
+	XGetWindowAttributes( display, root, &attr );
+	_XRegisterFilterByType( display, root, PropertyNotify, PropertyNotify,
+				_XimFilterPropertyNotify, (XPointer)NULL );
+	XSelectInput( display, root,
+		      attr.your_event_mask | PropertyChangeMask );
     }
 
     if( xim ) {
@@ -257,10 +227,14 @@ _XimRegisterIMInstantiateCallback( lcd, display, callback, client_data )
 
 
 Public Bool
-_XimUnRegisterIMInstantiateCallback( lcd, display, callback )
+_XimUnRegisterIMInstantiateCallback( lcd, display, rdb, res_name, res_class,
+				     callback, client_data )
     XLCd	 lcd;
     Display	*display;
+    XrmDatabase	 rdb;
+    char	*res_name, *res_class;
     XIMProc	 callback;
+    XPointer	*client_data;
 {
     char		locale[XIM_MAXLCNAMELEN];
     XimInstCallback	icb, picb;
@@ -275,7 +249,16 @@ _XimUnRegisterIMInstantiateCallback( lcd, display, callback )
 	    (lcd->core->modifiers == icb->modifiers  ||		/* XXXXX */
 	     (lcd->core->modifiers  &&  icb->modifiers  &&
 	      !strcmp( lcd->core->modifiers, icb->modifiers )))  &&
-	    callback == icb->callback  &&  !icb->destroy ) {
+	    rdb == icb->rdb  &&					/* XXXXX */
+	    ((res_name == NULL  &&  icb->res_name == NULL)  ||
+	     (res_name != NULL  &&  icb->res_name != NULL  &&
+	      !strcmp( res_name, icb->res_name )))  &&
+	    ((res_class == NULL  &&  icb->res_class == NULL)  ||
+	     (res_class != NULL  &&  icb->res_class != NULL  &&
+	      !strcmp( res_class, icb->res_class )))  &&
+	    callback == icb->callback  &&
+	    client_data  ==  icb->client_data  &&		/* XXXXX */
+	    !icb->destroy ) {
 	    if( lock )
 		icb->destroy = True;
 	    else {
@@ -289,6 +272,7 @@ _XimUnRegisterIMInstantiateCallback( lcd, display, callback )
 		}
 		else
 		    picb->next = icb->next;
+		_XCloseLC( icb->lcd );
 		XFree( icb );
 	    }
 	    return( True );
@@ -303,9 +287,9 @@ _XimResetIMInstantiateCallback( xim )
     Xim		xim;
 {
     char		*language, *territory;
-    char		locale[XIM_MAXLCNAMELEN];
-    XimInstCallback	icb;
-    XLCd	 	lcd = xim->core.lcd;
+    char		 locale[XIM_MAXLCNAMELEN];
+    XimInstCallback	 icb;
+    XLCd	 	 lcd = xim->core.lcd;
 
     if( !callback_list  &&  lock )
 	return;

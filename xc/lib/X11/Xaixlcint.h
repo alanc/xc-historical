@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xaixlcint.h,v 1.1 93/09/17 13:25:26 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -31,6 +31,7 @@
 #ifndef	_Xaixlcint_h
 #define	_Xaixlcint_h
 
+#include "Xlcint.h"
 #include <sys/lc_core.h>
 
 #define	_LC_LDX		11
@@ -39,8 +40,9 @@
 #define	_LC_VERSION_R6	6
 
 typedef	struct	_LC_core_ldx_t	{
-	_LC_object_t	lc_object_header;
-	XLCd		(*default_loader)();
+    _LC_object_t	lc_object_header;
+    XLCd		(*default_loader)();
+    Bool		sticky;
 } _XlcCoreObjRec, *_XlcCoreObj;
 
 #endif	/*_Xaixlcint_h*/

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XICWrap.c,v 11.6 91/04/10 20:33:08 rws Exp $
+ * $XConsortium: ICWrap.c,v 11.7 91/05/30 13:10:36 rws Exp $
  */
 
 /*
@@ -7,6 +7,7 @@
  *                      and Nippon Telegraph and Telephone Corporation
  * Copyright 1991 by the Massachusetts Institute of Technology
  * Copyright 1991 by the Open Software Foundation
+ * Copyright 1993 by the FUJITSU LIMITED
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -35,18 +36,12 @@
  *		 Muneiyoshi Suzuki	Nippon Telegraph and Telephone Co.
  * 
  *		 M. Collins		OSF  
+ *		 Takashi Fujiwara	FUJITSU LIMITED
  */				
 
 #define NEED_EVENTS
 #include "Xlibint.h"
 #include "Xlcint.h"
-#if NeedVarargsPrototypes
-# include <stdarg.h>
-# define Va_start(a,b) va_start(a,b)
-#else
-# include <varargs.h>
-# define Va_start(a,b) va_start(a)
-#endif
 
 static int
 _XIMNestedListToNestedList(nlist, list)
@@ -164,6 +159,40 @@ XVaCreateNestedList(dummy, va_alist)
     va_end(var);
 
     return (XVaNestedList)args;
+}
+
+#if NeedVarargsPrototypes
+char *
+XSetIMValues(XIM im, ...)
+#else				/* NeedVarargsPrototypes */
+char *
+XSetIMValues(im, va_alist)
+    XIM im;
+    va_dcl
+#endif				/* NeedVarargsPrototypes */
+{
+    va_list var;
+    int     total_count;
+    XIMArg *args;
+    char   *ret;
+
+    /*
+     * so count the stuff dangling here
+     */
+    Va_start(var, im);
+    _XIMCountVaList(var, &total_count);
+    va_end(var);
+
+    /*
+     * now package it up so we can send it along
+     */
+    Va_start(var, im);
+    _XIMVaToNestedList(var, total_count, &args);
+    va_end(var);
+
+    ret = (*im->methods->set_values) (im, args);
+    if (args) Xfree((char *)args);
+    return ret;
 }
 
 #if NeedVarargsPrototypes

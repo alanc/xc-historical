@@ -1,7 +1,7 @@
-/* $XConsortium: imLcIm.c,v 1.2 93/09/24 10:40:03 rws Exp $ */
+/* $XConsortium: imLcIm.c,v 1.3 93/09/24 12:00:41 rws Exp $ */
 /******************************************************************
 
-          Copyright 1992 by FUJITSU LIMITED
+          Copyright 1992, 1993 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -34,7 +34,9 @@ THIS SOFTWARE.
 ******************************************************************/
 
 #include <stdio.h>
+/*
 #include <X11/Xlib.h>
+*/
 #include <X11/Xmd.h>
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
@@ -44,71 +46,19 @@ THIS SOFTWARE.
 #include "Ximint.h"
 #include <ctype.h>
 
-Public  char *		_XimLocalGetIMValues( );
-Public  Status		_XimLocalCloseIM( );
-extern  XIC		_XimLocalCreateIC( );
-
-Private XIMMethodsRec      Xim_im_local_methods = {
-    _XimLocalCloseIM,           /* close */
-    _XimLocalGetIMValues,       /* get_values */
-    _XimLocalCreateIC,          /* create_ic */
-};
-
-extern Bool _XimLocalProcessingResource(
-#if NeedFunctionPrototypes
-    Xim	im
-#endif
-);
-
-extern int XimParseStringFile(
-#if NeedFunctionPrototypes
-    FILE	*fp,
-    DefTree	**ptop
-#endif
-);
-
-extern void _XimDestroyIMStructureList(
-#if NeedFunctionPrototypes
-    Xim	im
-#endif
-);
-
-extern FILE *_XlcOpenLocaleFile(
-#if NeedFunctionPrototypes
-    char *dir,
-    char *locale,
-    char *name
-#endif
-);
-
-Bool
+Public Bool
 _XimCheckIfLocalProcessing(im)
     Xim          im;
 {
     FILE        *fp;
-    char	*language, *codeset;
-    char         buf[BUFSIZE];
-    int          i, len;
+    char        *name;
 
     if(strcmp(im->core.im_name, "") == 0) {
-	_XlcGetLCValues(im->core.lcd, XlcNLanguage, &language, NULL);
-	fp = _XlcOpenLocaleFile(NULL, language, COMPOSE_FILE);
-	if( fp != NULL ) {
-	    fclose( fp );
+	name = _XlcFileName(im->core.lcd, COMPOSE_FILE);
+	if (name != (char *)NULL) {
+	    Xfree(name);
 	    return(True);
 	}
-        /* XXX --- */
-	_XlcGetLCValues(im->core.lcd, XlcNCodeset, &codeset, NULL);
-        len = strlen(codeset);
-        for (i = 0; i < len; i++)
-	    buf[i] = isupper(codeset[i]) ? tolower(codeset[i]) : codeset[i];
-        buf[i] = '\0';
-	fp = _XlcOpenLocaleFile(NULL, buf, COMPOSE_FILE);
-	if( fp != NULL ) {
-	    fclose( fp );
-	    return(True);
-	}
-        /* --- XXX */
 	if(im->core.rdb != NULL)
 	    return(_XimLocalProcessingResource(im));
 	return(False);
@@ -120,63 +70,6 @@ _XimCheckIfLocalProcessing(im)
 }
 
 Private void
-_XimCreateDefaultTree(im)
-    Xim		im;
-{
-    FILE *fp;
-    char *language, *codeset;
-    char         buf[BUFSIZE];
-    int          i, len;
-
-    _XlcGetLCValues(im->core.lcd, XlcNLanguage, &language, NULL);
-    fp = _XlcOpenLocaleFile(NULL, language, COMPOSE_FILE);
-    im->private.local.top = (DefTree *)NULL;
-    if (fp == (FILE *)NULL) {
-        /* XXX --- */
-	_XlcGetLCValues(im->core.lcd, XlcNCodeset, &codeset, NULL);
-        len = strlen(codeset);
-        for (i = 0; i < len; i++)
-	    buf[i] = isupper(codeset[i]) ? tolower(codeset[i]) : codeset[i];
-        buf[i] = '\0';
-	fp = _XlcOpenLocaleFile(NULL, buf, COMPOSE_FILE);
-        if (fp == (FILE *)NULL) return;
-        /* --- XXX */
-    }
-    (void)XimParseStringFile(fp, &im->private.local.top);
-    fclose(fp);
-}
-
-Bool
-_XimLocalOpenIM(im)
-    Xim		 im;
-{
-    im->methods = &Xim_im_local_methods;
-
-    im->private.local.styles = (XIMStyles *)Xmalloc(sizeof(XIMStyles));
-    if(im->private.local.styles) {
-	im->private.local.styles->supported_styles = 
-			(XIMStyle *)Xmalloc(sizeof(XIMStyle) * 2);
-	im->private.local.styles->count_styles = 2;
-	if(im->private.local.styles->supported_styles == NULL) {
-	    Xfree(im->private.local.styles);
-	    im->private.local.styles = NULL;
-	    return(False);
-	}
-	im->private.local.styles->supported_styles[0] =
-					XIMPreeditNone | XIMStatusNone;
-	im->private.local.styles->supported_styles[1] =
-					XIMPreeditNothing | XIMStatusNothing;
-    } else {
-	return(False);
-    }
-
-    _XimCreateDefaultTree(im);
-
-    im->private.local.current_ic = (XIC)NULL;
-    return(True);
-}
-
-Public void
 XimFreeDefaultTree(top)
     DefTree *top;
 {
@@ -193,14 +86,28 @@ _XimLocalIMFree(im)
     Xim		im;
 {
     XimFreeDefaultTree(im->private.local.top);
-    Xfree(im->private.local.styles->supported_styles);
-    Xfree(im->private.local.styles);
+    if(im->core.im_resources)
+	Xfree(im->core.im_resources);
+    if(im->core.ic_resources)
+	Xfree(im->core.ic_resources);
+    if(im->core.extensions)
+	Xfree(im->core.extensions);
+    if(im->core.options)
+	Xfree(im->core.options);
+    if(im->core.icattributes)
+	Xfree(im->core.icattributes);
+    if(im->core.styles)
+	Xfree(im->core.styles);
+    if(im->core.res_name)
+	Xfree(im->core.res_name);
+    if(im->core.res_class)
+	Xfree(im->core.res_class);
     if(im->core.im_name)
 	Xfree(im->core.im_name);
     return;
 }
 
-Public Status
+Private Status
 _XimLocalCloseIM(xim)
     XIM		xim;
 {
@@ -214,35 +121,164 @@ _XimLocalCloseIM(xim)
     return(True);
 }
 
-Public char *
-_XimLocalGetIMValues(xim, values)
-    XIM		 xim;
-    XIMArg	*values;
+Private char *
+_XimGetIMValueData(im, top, values)
+    Xim			 im;
+    XPointer		 top;
+    XIMArg		*values;
 {
-    Xim		 im = (Xim)xim;
-    XIMArg	*p;
-    XIMStyles	**value;
-    XIMStyles	*styles;
-    unsigned short	i;
+    register XIMArg	*p;
+    XIMResourceList	 res;
+    int			 check;
 
     for(p = values; p->name != NULL; p++) {
-	if(strcmp(p->name, XNQueryInputStyle) == 0) {
-	    if((styles = (XIMStyles *)Xmalloc(sizeof(XIMStyles) +
-	        sizeof(XIMStyle) *
-		im->private.local.styles->count_styles)) == NULL) {
-		break;
-	    }
-	    styles->count_styles = im->private.local.styles->count_styles;
-	    styles->supported_styles = (XIMStyle *)((char *)styles + sizeof(XIMStyles));
-	    for(i=0; i < styles->count_styles; i++) {
-		styles->supported_styles[i] = 
-			im->private.local.styles->supported_styles[i];
-	    }
-	    value = (XIMStyles **)p->value;
-	    *value = styles;
-	} else {
-	    break;
+	if((res = _XimGetIMResourceListRec(im, p->name))
+						 == (XIMResourceList)NULL) {
+	    return(p->value);
+	}
+	check = _XimCheckIMMode(res, XIM_GETIMVALUES);	
+	if(check == XIM_CHECK_INVALID) {
+	    continue;
+	} else if (check == XIM_CHECK_ERROR) {
+	    return(p->value);
+	}
+	    
+	if(_XimEncodeLocalIMAttr(res, top, p->value) == False) {
+	    return(p->value);
 	}
     }
-    return(p->name);
+    return(NULL);
+}
+
+Public char *
+_XimLocalGetIMValues(xim, values)
+    XIM			 xim;
+    XIMArg		*values;
+{
+    Xim			 im = (Xim)xim;
+    XimDefIMValues	 im_values;
+
+    _XimGetCurrentIMValues(im, &im_values);
+    return(_XimGetIMValueData(im, (XPointer)&im_values, values));
+}
+
+Private char *
+_XimSetIMValueData(im, top, values)
+    Xim			 im;
+    XPointer		 top;
+    XIMArg		*values;
+{
+    register XIMArg	*p;
+    XIMResourceList	 res;
+    int			 check;
+
+    for(p = values; p->name != NULL; p++) {
+	if((res = _XimGetIMResourceListRec(im, p->name))
+						 == (XIMResourceList)NULL) {
+	    return(p->value);
+	}
+	check = _XimCheckIMMode(res, XIM_SETIMVALUES);	
+	if(check == XIM_CHECK_INVALID) {
+	    continue;
+	} else if (check == XIM_CHECK_ERROR) {
+	    return(p->value);
+	}
+	    
+	if(_XimDecodeLocalIMAttr(res, top, p->value) == False) {
+	    return(p->value);
+	}
+    }
+    return(NULL);
+}
+
+Public char *
+_XimLocalSetIMValues(xim, values)
+    XIM			 xim;
+    XIMArg		*values;
+{
+    Xim			 im = (Xim)xim;
+    XimDefIMValues	 im_values;
+    char		*name = (char *)NULL;
+
+    _XimGetCurrentIMValues(im, &im_values);
+    name = _XimSetIMValueData(im, (XPointer)&im_values, values);
+    _XimSetCurrentIMValues(im, &im_values);
+    return(name);
+}
+
+Private void
+_XimCreateDefaultTree(im)
+    Xim		im;
+{
+    FILE *fp;
+    char *name;
+
+    name = _XlcFileName(im->core.lcd, COMPOSE_FILE);
+    if (name == (char *)NULL)
+         return;
+    fp = fopen(name, "r");
+    Xfree(name);
+    if (fp == (FILE *)NULL)
+	 return;
+    (void)XimParseStringFile(fp, &im->private.local.top);
+    fclose(fp);
+}
+
+Private XIMMethodsRec      Xim_im_local_methods = {
+    _XimLocalCloseIM,           /* close */
+    _XimLocalSetIMValues,       /* set_values */
+    _XimLocalGetIMValues,       /* get_values */
+    _XimLocalCreateIC,          /* create_ic */
+};
+
+Public Bool
+_XimLocalOpenIM(im)
+    Xim			 im;
+{
+    XimDefIMValues	 im_values;
+
+    _XimInitialResourceInfo();
+    if(_XimSetIMResourceList(&im->core.im_resources,
+		 		&im->core.im_num_resources) == False) {
+	goto Open_Error;
+    }
+    if(_XimSetICResourceList(&im->core.ic_resources,
+				&im->core.ic_num_resources) == False) {
+	goto Open_Error;
+    }
+
+    _XimSetIMMode(im->core.im_resources, im->core.im_num_resources);
+
+    _XimGetCurrentIMValues(im, &im_values);
+    if(_XimSetLocalIMDefaults(im, (XPointer)&im_values) == False) {
+	goto Open_Error;
+    }
+    _XimSetCurrentIMValues(im, &im_values);
+
+    _XimCreateDefaultTree(im);
+
+    im->methods = &Xim_im_local_methods;
+    im->private.local.current_ic = (XIC)NULL;
+    return(True);
+
+Open_Error :
+    if (im->core.im_resources) {
+	Xfree(im->core.im_resources);
+    }
+    if (im->core.ic_resources) {
+	Xfree(im->core.ic_resources);
+    }
+    if (im->core.extensions) {
+	Xfree(im->core.extensions);
+    }
+    if (im->core.options) {
+	Xfree(im->core.options);
+    }
+    if (im->core.icattributes) {
+	Xfree(im->core.icattributes);
+    }
+    if (im->core.styles) {
+	Xfree(im->core.styles);
+    }
+    return(False);
 }

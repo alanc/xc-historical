@@ -1,4 +1,4 @@
-/* $XConsortium: imTrX.c,v 1.3 93/09/18 11:01:14 rws Exp $ */
+/* $XConsortium: imTrX.c,v 1.4 93/09/18 13:16:59 rws Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -39,62 +39,52 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XimTrX.h"
 
 Private Bool
-_GetReadData(im, event, len, data, prop)
-    Xim			  im;
-    XEvent		 *event;
-    INT16		 *len;
-    XPointer		 *data;
-    Atom		 *prop;
+_XimXIntrCallback(im, callback, call_data)
+    Xim			 im;
+    Bool		 (*callback)(
+#if NeedNestedPrototypes
+				     Xim, INT16, XPointer, XPointer
+#endif
+				     );
+    XPointer		 call_data;
 {
-    unsigned long	  reply_length;
-    unsigned char	 *buf;
-    XPointer		  reply_data;
-    int			  return_code;
-    Atom		  type_ret;
-    int			  format_ret;
-    unsigned long	  bytes_after_ret;
-    XSpecRec		 *spec = (XSpecRec *)im->private.proto.spec;
-    unsigned long	  length;
+    XIntrCallbackPtr	 rec;
+    XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
 
-    if (event->xclient.format == 8) {
-	reply_length = XIM_CM_DATA_SIZE; /* XXX */
-	*prop = (Atom)0;
-	if (!(reply_data = (XPointer)Xmalloc(reply_length)))
-	    return False;
-	memcpy(reply_data, event->xclient.data.b, reply_length);
-    } else {
-	length = (unsigned long)event->xclient.data.l[0];
-	*prop = (Atom)event->xclient.data.l[1];
-	return_code = XGetWindowProperty(im->core.display,
-		spec->lib_connect_wid, *prop, 0L,
-		length, False, AnyPropertyType, &type_ret,
-		&format_ret, &reply_length, &bytes_after_ret, &buf);
-	if (return_code != Success || format_ret == 0 || reply_length == 0) {
-	    if (return_code == Success)
-		XFree(buf);
-	    return False;
-	}
-	if ((int)reply_length < (int)length)
-	    return False;
+    if (!(rec = (XIntrCallbackPtr)Xmalloc(sizeof(XIntrCallbackRec))))
+        return False;
 
-	if (!(reply_data = (XPointer)Xmalloc(reply_length))) {
-	    XFree(buf);
-	    return False;
-	}
-	memcpy(reply_data, (char *)buf, reply_length);
-	XFree(buf);
-    }
-
-    *len  = (INT16)reply_length;
-    *data = reply_data;
+    rec->func       = callback;
+    rec->call_data  = call_data;
+    rec->next       = spec->intr_cb;
+    spec->intr_cb   = rec;
     return True;
 }
 
+Private void
+_XimXFreeIntrCallback(im)
+    Xim			 im;
+{
+    XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
+    register XIntrCallbackPtr rec, next;
+
+    for (rec = spec->intr_cb; rec;) {
+	next = rec->next;
+	Xfree(rec);
+	rec = next;
+    }
+    return;
+}
+
 Private Bool
-_IntrCallbackCheck(im, len, data)
+#if NeedFunctionPrototypes
+_XimXIntrCallbackCheck(Xim im, INT16 len, XPointer data)
+#else
+_XimXIntrCallbackCheck(im, len, data)
     Xim			 	 im;
     INT16			 len;
     XPointer			 data;
+#endif
 {
     register XIntrCallbackRec	*rec;
     XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
@@ -107,31 +97,19 @@ _IntrCallbackCheck(im, len, data)
 }
 
 Private Bool
-_FilterWaitEvent(d, w, ev, xim)
+_XimXFilterWaitEvent(d, w, ev, arg)
     Display	*d;
     Window	 w;
     XEvent	*ev;
-    XPointer	 xim;
+    XPointer	 arg;
 {
-    INT16	len;
-    XPointer	data;
-    Atom	 prop;
-    Xim		 im = (Xim)xim;
-    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
+    Xim		 im = (Xim)arg;
 
-    if (!(_GetReadData(im, ev, &len, &data, &prop)))
-	return False;
-    if (_IntrCallbackCheck(im, len, data)) {
-	if (prop)
-	    XDeleteProperty(im->core.display, spec->lib_connect_wid, prop);
-	return True;
-    }
-    Xfree(data);
-    return False;
+    return _XimFilterWaitEvent(im, (XPointer)ev);
 }
 
 Private Bool
-_CheckCMEvent(display, event, xim)
+_CheckConnect(display, event, xim)
     Display	*display;
     XEvent	*event;
     XPointer	 xim;
@@ -140,44 +118,73 @@ _CheckCMEvent(display, event, xim)
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
     if ((event->type == ClientMessage)
-     && (event->xclient.message_type == spec->improtocolid))
+     && (event->xclient.message_type == spec->imconnectid))
 	return True;
     return False;
 }
 
 Private Bool
-_XimXRecv(im, len, data, predicate, arg)
-    Xim		 im;
-    INT16	*len;
-    XPointer	*data;
-    Bool	(*predicate)();
-    XPointer	 arg;
+#if NeedFunctionPrototypes
+_XimXConnect(Xim im)
+#else
+_XimXConnect(im)
+    Xim im;
+#endif
 {
     XEvent	 event;
-    Atom	 prop;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
+    if (!(spec->lib_connect_wid = XCreateSimpleWindow(im->core.display,
+		DefaultRootWindow(im->core.display), 0, 0, 1, 1, 1, 0, 0)))
+	return False;
+
+    event.xclient.type         = ClientMessage;
+    event.xclient.display      = im->core.display;
+    event.xclient.window       = im->private.proto.im_window;
+    event.xclient.message_type = spec->imconnectid;
+    event.xclient.format       = 32;
+    event.xclient.data.l[0]    = (CARD32)spec->lib_connect_wid;
+
+    XSendEvent(im->core.display, im->private.proto.im_window,
+		 False, NoEventMask, &event);
+    XFlush(im->core.display);
+
     for (;;) {
-	XIfEvent(im->core.display, &event, _CheckCMEvent, (XPointer)im);
-
-	if (!(_GetReadData(im, &event, len, data, &prop)))
+	XIfEvent(im->core.display, &event, _CheckConnect, (XPointer)im);
+	if (event.xclient.type != ClientMessage)
 	    return False;
-
-	if ((*predicate)(im, *len, *data, arg)) {
-	    if (prop)
-		XDeleteProperty(im->core.display, spec->lib_connect_wid, prop);
-	    return True;
-	}
-
-	if (_IntrCallbackCheck(im, *len, *data)) {
-	    if (prop)
-		XDeleteProperty(im->core.display, spec->lib_connect_wid, prop);
-	    continue;
-	}
-
-	XPutBackEvent(im->core.display, &event);
-	Xfree(*data);
+	if (event.xclient.message_type == spec->imconnectid)
+	    break;
     }
+
+    spec->ims_connect_wid = (Window)event.xclient.data.l[0];
+
+    /* ClientMessage Event Filter */
+    _XRegisterFilterByType(im->core.display, spec->lib_connect_wid,
+			ClientMessage, ClientMessage,
+			 _XimXFilterWaitEvent, (XPointer)im);
+    return True;
+}
+
+Private Bool
+#if NeedFunctionPrototypes
+_XimXShutdown(Xim im)
+#else
+_XimXShutdown(im)
+    Xim		 im;
+#endif
+{
+    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
+
+    /* ClientMessage Event Filter */
+    _XUnregisterFilter(im->core.display,
+	    ((XSpecRec *)im->private.proto.spec)->lib_connect_wid,
+	    _XimXFilterWaitEvent, (XPointer)im);
+    XDestroyWindow(im->core.display,
+	    ((XSpecRec *)im->private.proto.spec)->lib_connect_wid);
+    _XimXFreeIntrCallback(im);
+    Xfree(spec);
+    return True;
 }
 
 Private char *
@@ -192,10 +199,14 @@ _NewAtom(atomName)
 }
 
 Private Bool
+#if NeedFunctionPrototypes
+_XimXSend(Xim im, INT16 len, XPointer data)    
+#else
 _XimXSend(im, len, data)    
     Xim		 im;
     INT16	 len;
     XPointer	 data;
+#endif
 {
     Atom	 atom;
     char	 atomName[16];
@@ -228,49 +239,86 @@ _XimXSend(im, len, data)
     return True;
 }
 
-Private void
-_XimXFlush(im)
-    Xim		 im;
-{
-    XFlush(im->core.display);
-    return;
-}
-
 Private Bool
-_XimXIntrCallBack(im, callback, call_data)
-    Xim			 im;
-    Bool		 (*callback)();
-    XPointer		 call_data;
+_XimXGetReadData(im, buf, buf_len, ret_len, event)
+    Xim			  im;
+    char		 *buf;
+    int			  buf_len;
+    int			 *ret_len;
+    XEvent		 *event;
 {
-    XIntrCallbackPtr	 rec;
-    XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
+    char		 *data;
+    int			  len;
 
-    if (!(rec = (XIntrCallbackPtr)Xmalloc(sizeof(XIntrCallbackRec))))
-        return False;
+    char		  tmp_buf[XIM_CM_DATA_SIZE];
+    XSpecRec		 *spec = (XSpecRec *)im->private.proto.spec;
+    unsigned long	  length;
+    Atom		  prop;
+    int			  return_code;
+    Atom		  type_ret;
+    int			  format_ret;
+    unsigned long	  nitems;
+    unsigned long	  bytes_after_ret;
+    unsigned char	 *prop_ret;
 
-    rec->func       = callback;
-    rec->call_data  = call_data;
-    rec->next       = spec->intr_cb;
-    spec->intr_cb   = rec;
+    if (event->xclient.format == 8) {
+	data = event->xclient.data.b;
+	if (buf_len >= XIM_CM_DATA_SIZE) {
+	    (void)memcpy(buf, data, XIM_CM_DATA_SIZE);
+	    *ret_len = XIM_CM_DATA_SIZE;
+	} else {
+	    (void)memcpy(buf, data, buf_len);
+	    len = XIM_CM_DATA_SIZE - buf_len;
+	    (void)memcpy(tmp_buf, &data[buf_len], len);
+	    bzero(data, XIM_CM_DATA_SIZE);
+	    (void)memcpy(data, tmp_buf, len);
+	    XPutBackEvent(im->core.display, event);
+	    *ret_len = buf_len;
+	}
+    } else {
+	length = (unsigned long)event->xclient.data.l[0];
+	prop = (Atom)event->xclient.data.l[1];
+	return_code = XGetWindowProperty(im->core.display,
+		spec->lib_connect_wid, prop, 0L,
+		((length + 3)/ 4), True, AnyPropertyType,
+		&type_ret, &format_ret, &nitems, &bytes_after_ret, &prop_ret);
+	if (return_code != Success || format_ret == 0 || nitems == 0) {
+	    if (return_code == Success)
+		XFree(prop_ret);
+	    return False;
+	}
+	if (buf_len >= length) {
+	    (void)memcpy(buf, prop_ret, (int)nitems);
+	    *ret_len  = (int)nitems;
+	} else {
+	    (void)memcpy(buf, prop_ret, buf_len);
+	    *ret_len  = buf_len;
+	    len = nitems - buf_len;
+	    prop = XInternAtom(im->core.display, "_XimXSaveProp", False);	
+	    XChangeProperty(im->core.display, spec->ims_connect_wid, prop,
+		XA_STRING, 8, PropModeReplace, &prop_ret[buf_len], len); 
+	    event->xclient.data.l[0] = (long)len;
+	    event->xclient.data.l[1] = (long)prop;
+	    XPutBackEvent(im->core.display, event);
+	}
+	XFree(prop_ret);
+
+	if (bytes_after_ret > 0) {
+	    XGetWindowProperty(im->core.display,
+		spec->lib_connect_wid, prop, 0L,
+		((length + bytes_after_ret + 3)/ 4), True, AnyPropertyType,
+		&type_ret, &format_ret, &nitems, &bytes_after_ret, &prop_ret);
+	    XChangeProperty(im->core.display, spec->ims_connect_wid, prop,
+		XA_STRING, 8, PropModeReplace, &prop_ret[length],
+		(nitems - length)); 
+	    XFree(prop_ret);
+	}
+    }
     return True;
 }
 
-Private void
-_XimXFreeIntrCallBack(spec)
-   XSpecRec	 	      *spec;
-{
-    register XIntrCallbackPtr rec, next;
-
-    for (rec = spec->intr_cb; rec;) {
-	next = rec->next;
-	Xfree(rec);
-	rec = next;
-    }
-    return;
-}
-
 Private Bool
-_CheckConnect(display, event, xim)
+_CheckCMEvent(display, event, xim)
     Display	*display;
     XEvent	*event;
     XPointer	 xim;
@@ -279,64 +327,63 @@ _CheckConnect(display, event, xim)
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
     if ((event->type == ClientMessage)
-     && (event->xclient.message_type == spec->imconnectid))
+     && (event->xclient.message_type == spec->improtocolid))
 	return True;
     return False;
 }
 
 Private Bool
-_XimXConnect(im)
-    Xim im;
+#if NeedFunctionPrototypes
+_XimXRecv(Xim im, XPointer recv_buf, int recv_point, int min_len, int buf_len, int *ret_len, XPointer arg)
+#else
+_XimXRecv(im, recv_buf, recv_point, min_len, buf_len, ret_len, arg)
+    Xim		 im;
+    XPointer	 recv_buf;
+    int		 recv_point;
+    int		 min_len;
+    int		 buf_len;
+    int		*ret_len;
+    XPointer	 arg;
+#endif
 {
+    XEvent	*ev;
     XEvent	 event;
-    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
+    Atom	 prop;
+    int		 len;
 
-    if (!(spec->lib_connect_wid = XCreateSimpleWindow(im->core.display,
-		DefaultRootWindow(im->core.display), 0, 0, 1, 1, 1, 0, 0)))
+    if ((min_len > buf_len) || (recv_point > buf_len))
 	return False;
 
-    event.xclient.type         = ClientMessage;
-    event.xclient.display      = im->core.display;
-    event.xclient.window       = im->private.proto.im_window;
-    event.xclient.message_type = spec->imconnectid;
-    event.xclient.format       = 32;
-    event.xclient.data.l[0]    = (CARD32)spec->lib_connect_wid;
-
-    XSendEvent(im->core.display, im->private.proto.im_window,
-		 False, NoEventMask, &event);
-    XFlush(im->core.display);
-
-    for (;;) {
-	XIfEvent(im->core.display, &event, _CheckConnect, (XPointer)im);
-	if (event.xclient.type != ClientMessage)
+   if (!arg) {
+	ev = &event;
+	while (recv_point < min_len) {
+	    XIfEvent(im->core.display, ev, _CheckCMEvent, (XPointer)im);
+	    if (!(_XimXGetReadData(im, &recv_buf[recv_point],
+			 		(buf_len - recv_point), &len, ev)))
+		return False;
+	    recv_point += len;
+	}
+	*ret_len = recv_point;
+    } else {
+	ev = (XEvent *)arg;
+	if (!(_XimXGetReadData(im, &recv_buf[recv_point],
+			 		(buf_len - recv_point), &len, ev)))
 	    return False;
-	if (event.xclient.message_type == spec->imconnectid)
-	    break;
+	*ret_len = recv_point + len;
     }
-
-    spec->ims_connect_wid = (Window)event.xclient.data.l[0];
-
-    /* ClientMessage Event Filter */
-    _XRegisterFilterByType(im->core.display, spec->lib_connect_wid,
-		ClientMessage, ClientMessage, _FilterWaitEvent, (XPointer)im);
     return True;
 }
 
-Private Bool
-_XimXShutdown(im)
+Private void
+#if NeedFunctionPrototypes
+_XimXFlush(Xim im)
+#else
+_XimXFlush(im)
     Xim		 im;
+#endif
 {
-    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
-
-    /* ClientMessage Event Filter */
-    _XUnregisterFilter(im->core.display,
-	    ((XSpecRec *)im->private.proto.spec)->lib_connect_wid,
-	    _FilterWaitEvent, (XPointer)im);
-    XDestroyWindow(im->core.display,
-	    ((XSpecRec *)im->private.proto.spec)->lib_connect_wid);
-    _XimXFreeIntrCallBack(spec);
-    Xfree(spec);
-    return True;
+    XFlush(im->core.display);
+    return;
 }
 
 Public Bool
@@ -357,9 +404,10 @@ _XimXConf(im, address)
     im->private.proto.connect  = _XimXConnect;
     im->private.proto.shutdown = _XimXShutdown;
     im->private.proto.send     = _XimXSend;
-    im->private.proto.flush    = _XimXFlush;
     im->private.proto.recv     = _XimXRecv;
-    im->private.proto.intr_cb  = _XimXIntrCallBack;
+    im->private.proto.flush    = _XimXFlush;
+    im->private.proto.intr_cb  = _XimXIntrCallback;
+    im->private.proto.check_cb = _XimXIntrCallbackCheck;
 
     return True;
 }

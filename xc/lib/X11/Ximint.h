@@ -1,7 +1,7 @@
-/* $XConsortium: Ximint.h,v 1.2 93/09/17 17:50:19 rws Exp $ */
+/* $XConsortium: Ximint.h,v 1.3 93/09/18 10:14:02 rws Exp $ */
 /******************************************************************
 
-                Copyright 1992 by FUJITSU LIMITED
+                Copyright 1992, 1993 by FUJITSU LIMITED
                 Copyright 1993 by Sony Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -33,6 +33,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #ifndef _XIMINT_H
 #define _XIMINT_H
 
+#include <stdio.h>
 #include <X11/Xutil.h>
 
 #define Public /**/
@@ -81,6 +82,80 @@ typedef struct _Xic {
 	XICPrivateRec	private;
 } XicRec;
 
+typedef struct _XimDefIMValues {
+	XIMExtensionsList	*extensions;
+	XIMOptionsList		*options;
+	XIMICAttributesList	*icattributes;
+	XIMStyles		*styles;
+	XIMCallback		 destroy_callback;
+	char			*res_name;
+	char			*res_class;
+} XimDefIMValues;
+
+typedef struct _XimDefICValues {
+    XIMStyle			 input_style;
+    Window			 client_window;
+    Window			 focus_window;
+    unsigned long		 filter_events;
+    XIMCallback			 geometry_callback;
+    char			*res_name;
+    char			*res_class;
+    XIMCallback			 destroy_callback;
+    XIMCallback			 preedit_state_notify_callback;
+    XIMCallback			 string_conversion_callback;
+    XIMStringConversionText	 string_conversion;
+    XIMResetState		 reset_state;
+    XIMResetReturn		 reset_return;
+    XIMHotKeyTriggers		*hotkey;
+    XIMHotKeyState		 hotkey_state;
+    ICPreeditAttributes		 preedit_attr;
+    ICStatusAttributes		 status_attr;
+} XimDefICValues;
+
+#define XIM_MODE_IM_GET		(1 << 0)
+#define XIM_MODE_IM_SET		(1 << 1)
+#define XIM_MODE_IM_DEFAULT	(1 << 2)
+
+#define XIM_MODE_PRE_GET	(1 << 0)
+#define XIM_MODE_PRE_SET	(1 << 1)
+#define XIM_MODE_PRE_CREATE	(1 << 2)
+#define XIM_MODE_PRE_ONCE	(1 << 3)
+#define XIM_MODE_PRE_DEFAULT	(1 << 4)
+
+#define XIM_MODE_STS_GET	(1 << 5)
+#define XIM_MODE_STS_SET	(1 << 6)
+#define XIM_MODE_STS_CREATE	(1 << 7)
+#define XIM_MODE_STS_ONCE	(1 << 8)
+#define XIM_MODE_STS_DEFAULT	(1 << 9)
+
+#define XIM_MODE_IC_GET		(XIM_MODE_PRE_GET      | XIM_MODE_STS_GET)
+#define XIM_MODE_IC_SET		(XIM_MODE_PRE_SET      | XIM_MODE_STS_SET)
+#define XIM_MODE_IC_CREATE	(XIM_MODE_PRE_CREATE   | XIM_MODE_STS_CREATE)
+#define XIM_MODE_IC_ONCE	(XIM_MODE_PRE_ONCE     | XIM_MODE_STS_ONCE)
+#define XIM_MODE_IC_DEFAULT	(XIM_MODE_PRE_DEFAULT  | XIM_MODE_STS_DEFAULT)
+
+#define XIM_MODE_PRE_MASK	(XIM_MODE_PRE_GET    | XIM_MODE_PRE_SET    | \
+				 XIM_MODE_PRE_CREATE | XIM_MODE_PRE_ONCE   | \
+				 XIM_MODE_PRE_DEFAULT)
+#define XIM_MODE_STS_MASK	(XIM_MODE_STS_GET    | XIM_MODE_STS_SET    | \
+				 XIM_MODE_STS_CREATE | XIM_MODE_STS_ONCE   | \
+				 XIM_MODE_STS_DEFAULT)
+
+#define XIM_SETIMDEFAULTS	(1L << 0)
+#define XIM_SETIMVALUES		(1L << 1)
+#define XIM_GETIMVALUES		(1L << 2)
+
+#define XIM_SETICDEFAULTS	(1L << 0)
+#define XIM_CREATEIC		(1L << 1)
+#define XIM_SETICVALUES		(1L << 2)
+#define XIM_GETICVALUES		(1L << 3)
+#define XIM_PREEDIT_ATTR	(1L << 4)
+#define XIM_STATUS_ATTR		(1L << 5)
+
+#define XIM_CHECK_VALID		0
+#define XIM_CHECK_INVALID	1
+#define XIM_CHECK_ERROR		2
+
 #define FILTERD         True
 #define NOTFILTERD      False
 
@@ -89,6 +164,266 @@ typedef struct _Xic {
 /*
  * Global symbols
  */
+
+extern Bool _XimSetIMResourceList(
+#if NeedFunctionPrototypes
+    XIMResourceList	*res_list,
+    unsigned int	*list_num
+#endif
+);
+
+extern Bool _XimSetICResourceList(
+#if NeedFunctionPrototypes
+    XIMResourceList	*res_list,
+    unsigned int	*list_num
+#endif
+);
+
+extern Bool _XimSetInnerIMResourceList(
+#if NeedFunctionPrototypes
+    XIMResourceList	*res_list,
+    unsigned int	*list_num
+#endif
+);
+
+extern Bool _XimSetInnerICResourceList(
+#if NeedFunctionPrototypes
+    XIMResourceList	*res_list,
+    unsigned int	*list_num
+#endif
+);
+
+extern Bool cw_XimCheckCreateICValues(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res_list,
+    unsigned int	 list_num
+#endif
+);
+
+extern XIMResourceList _XimGetResourceListRec(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res_list,
+    unsigned int	 list_num,
+    char		*name
+#endif
+);
+
+extern XIMResourceList _XimGetIMResourceListRec(
+#if NeedFunctionPrototypes
+    Xim			 im,
+    char		*name
+#endif
+);
+
+extern XIMResourceList _XimGetICResourceListRec(
+#if NeedFunctionPrototypes
+    Xic			 ic,
+    char		*name
+#endif
+);
+
+extern void _XimSetIMMode(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res_list,
+    unsigned int	 list_num
+#endif
+);
+
+extern void _XimSetICMode(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res_list,
+    unsigned int	 list_num,
+    XIMStyle		 style
+#endif
+);
+
+extern int _XimCheckIMMode(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res_list,
+    unsigned long	 mode
+#endif
+);
+
+extern int _XimCheckICMode(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res_list,
+    unsigned long	 mode
+#endif
+);
+
+extern Bool _XimSetlocalIMDefaults(
+#if NeedFunctionPrototypes
+    Xim			 im,
+    XPointer		 top
+#endif
+);
+
+extern Bool _XimSetICDefaults(
+#if NeedFunctionPrototypes
+    Xic			 ic,
+    XPointer		 top,
+    unsigned long	 mode
+#endif
+);
+
+extern Bool _XimDecodeLocalIMAttr(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res,
+    XPointer		 top,
+    XPointer		 val
+#endif
+);
+
+extern Bool _XimDecodeLocalICAttr(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res,
+    XPointer		 top,
+    XPointer		 val,
+    unsigned long	 mode
+#endif
+);
+
+extern Bool _XimCheckLocalInputStyle(
+#if NeedFunctionPrototypes
+    Xic			 ic,
+    XPointer		 top,
+    XIMArg		*values,
+    XIMStyles           *styles
+#endif
+);
+
+extern Bool _XimEncodeLocalIMAttr(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res,
+    XPointer		 top,
+    XPointer		 val
+#endif
+);
+
+extern Bool _XimEncodeLocalICAttr(
+#if NeedFunctionPrototypes
+    XIMResourceList	 res,
+    XPointer		 top,
+    XPointer		 val,
+    unsigned long	mode
+#endif
+);
+
+extern void _XimGetCurrentIMValues(
+#if NeedFunctionPrototypes
+    Xim			 im,
+    XimDefIMValues	*im_values
+#endif
+);
+
+extern void _XimSetCurrentIMValues(
+#if NeedFunctionPrototypes
+    Xim			 im,
+    XimDefIMValues	*im_values
+#endif
+);
+
+extern void _XimGetCurrentICValues(
+#if NeedFunctionPrototypes
+    Xic			 ic,
+    XimDefICValues	*ic_values
+#endif
+);
+
+extern void _XimSetCurrentICValues(
+#if NeedFunctionPrototypes
+    Xic			 ic,
+    XimDefICValues	*ic_values
+#endif
+);
+
+extern void _XimInitialResourceInfo(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern Bool	 _XimLocalProcessingResource(
+#if NeedFunctionPrototypes
+    Xim im
+#endif
+);
+
+extern int	 XimParseStringFile(
+#if NeedFunctionPrototypes
+    FILE        *fp,
+    DefTree     **ptop
+#endif
+);
+
+extern Bool	 _XimCheckIfLocalProcessing(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern Bool	 _XimCheckIfThaiProcessing(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern Bool	 _XimLocalOpenIM(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern Bool	 _XimThaiOpenIM(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern Bool	 _XimProtoOpenIM(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern void	 _XimLocalIMFree(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern void	 _XimThaiIMFree(
+#if NeedFunctionPrototypes
+    Xim	         im
+#endif
+);
+
+extern void	 _XimProtoIMFree(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern char *	 _XimLocalSetIMValues(
+#if NeedFunctionPrototypes
+    XIM		 im,
+    XIMArg	*arg
+#endif
+);
+
+extern char *	 _XimLocalGetIMValues(
+#if NeedFunctionPrototypes
+    XIM		 im,
+    XIMArg	*arg
+#endif
+);
+
+extern XIC	 _XimLocalCreateIC(
+#if NeedFunctionPrototypes
+    XIM		 im,
+    XIMArg	*arg
+#endif
+);
 
 extern Bool	_XimDispatchInit(
 #if NeedFunctionPrototypes
@@ -115,17 +450,43 @@ extern void	_XimDestroyIMStructureList(
 #endif
 );
 
-extern char *	_XimEncodeAttrIDList(
+extern char *	_XimEncodeIMAttrIDList(
 #if NeedFunctionPrototypes
+    Xim			 im,
+    XIMResourceList	 res_list,
+    unsigned int	 res_num,
+    XIMArg		*arg,
+    CARD16		*buf,
+    INT16		*len,
+    unsigned long        mode
+#endif
+);
+
+extern char *	_XimEncodeICAttrIDList(
+#if NeedFunctionPrototypes
+    Xic                  ic,
     XIMResourceList	 res_list,
     unsigned int	 res_num,
     XIMArg		*arg,
     CARD16		*idList,
-    INT16		*num
+    INT16		*num,
+    unsigned long	 mode
 #endif
 );
 
-extern char *	_XimDecodeATTRIBUTE(
+extern char *	_XimDecodeIMATTRIBUTE(
+#if NeedFunctionPrototypes
+    Xim			 im,
+    XIMResourceList	 res_list,
+    unsigned int	 res_num,
+    CARD16		*buf,
+    INT16		 buf_len,
+    XIMArg		*arg,
+    BITMASK32		 mode
+#endif
+);
+
+extern char *	_XimDecodeICATTRIBUTE(
 #if NeedFunctionPrototypes
     Xic			 ic,
     XIMResourceList	 res_list,
@@ -211,12 +572,6 @@ extern void	_XimFreeProtoIntrCallback(
 #endif
 );
 
-extern void	_XimFreePendingProc(
-#if NeedFunctionPrototypes
-    Xim		 im
-#endif
-);
-
 extern XIC	 _XimProtoCreateIC(
 #if NeedFunctionPrototypes
     XIM		 im,
@@ -231,12 +586,6 @@ extern void	_XimRegisterServerFilter(
 );
 
 extern void	_XimUnregisterServerFilter(
-#if NeedFunctionPrototypes
-    Xim		 im
-#endif
-);
-
-extern Bool	_XimEncodingNegitiation(
 #if NeedFunctionPrototypes
     Xim		 im
 #endif
@@ -285,22 +634,32 @@ extern void	_XimServerDestroy(
 #endif
 );
 
-extern char *	_XimEncodeATTRIBUTE(
+extern char *	_XimEncodeIMATTRIBUTE(
+#if NeedFunctionPrototypes
+    Xim			 im,
+    XIMResourceList	 res_list,
+    unsigned int	 res_num,
+    XIMArg		*arg,
+    XPointer		*data,
+    INT16		*data_len,
+    unsigned long	 mode
+#endif
+);
+
+extern char *	_XimEncodeICATTRIBUTE(
 #if NeedFunctionPrototypes
     Xic			 ic,
     XIMResourceList	 res_list,
     unsigned int	 res_num,
-    CARD16		*buf,
-    INT16		 buf_size,
-    XIMArg		*arg,
-    INT16		*total_length,
+    XIMArg               *arg, 
+    char                **data,
+    INT16                *data_len,
     BITMASK32		*flag,
-    int			*is_window,
-    BITMASK32		 mode
+    unsigned long	 mode
 #endif
 );
 
-#ifndef NOT_EXT_MOVE
+#ifdef EXT_MOVE
 extern Bool	_XimExtenMove(
 #if NeedFunctionPrototypes
     Xim		 im,
@@ -312,21 +671,25 @@ extern Bool	_XimExtenMove(
 );
 #endif
 
-extern int	_Xlcctstombs(
+extern int	_Ximctstombs(
 #if NeedFunctionPrototypes
-    XLCd	 lcd,
-    char	*to,
+    Xim		 im,
     char	*from,
-    int		 to_len
+    int		from_len,
+    char	*to,
+    int		to_len,
+    Status	*state
 #endif
 );
 
-extern int	_Xlcctstowcs(
+extern int	_Ximctstowcs(
 #if NeedFunctionPrototypes
-    XLCd	 lcd,
-    wchar_t	*to,
+    Xim		 im,
     char	*from,
-    int		 to_len
+    int		 from_len,
+    wchar_t	*to,
+    int		 to_len,
+    Status	*state
 #endif
 );
 
@@ -353,7 +716,7 @@ extern int	_XimProtoMbLookupString(
     char	*buffer,
     int		 bytes,
     KeySym	*keysym,
-    Status	*status
+    Status	*state
 #endif
 );
 
@@ -364,20 +727,23 @@ extern int	_XimProtoWcLookupString(
     wchar_t	*buffer,
     int		 bytes,
     KeySym	*keysym,
-    Status	*status
+    Status	*state
 #endif
 );
 
-extern int	_XimRegPendingProc(
+extern void	_XimRegisterFilter(
 #if NeedFunctionPrototypes
-    Xim		 im,
-    Xic		 ic,
-    XIMArg	*arg,
-    void	 (*proc)()
+    Xic		 ic
 #endif
 );
 
-extern void	_XimUnregisterKeyFilter(
+extern void	_XimUnregisterFilter(
+#if NeedFunctionPrototypes
+    Xic		 ic
+#endif
+);
+
+extern void	_XimReregisterFilter(
 #if NeedFunctionPrototypes
     Xic		 ic
 #endif
@@ -399,7 +765,7 @@ extern Bool	_XimProtoWireToEvent(
 #endif
 );
 
-#ifndef NOT_EXT_FORWARD
+#ifdef EXT_FORWARD
 extern Bool	_XimExtForwardKeyEvent(
 #if NeedFunctionPrototypes
     Xic		 ic,
@@ -431,12 +797,6 @@ extern int	_XimLookupWCText(
 #endif
 );
 
-extern void	_XimPendingFilter(
-#if NeedFunctionPrototypes
-    Xic			 ic
-#endif
-);
-
 extern EVENTMASK	_XimGetWindowEventmask(
 #if NeedFunctionPrototypes
     Xic		 ic
@@ -450,24 +810,124 @@ extern Xic	_XimICOfXICID(
 #endif
 );
 
-extern void	_XimRegisterKeyFilter(
-#if NeedFunctionPrototypes
-    Xic		 ic
-#endif
-);
-
 extern void	_XimResetIMInstantiateCallback(
 #if NeedFunctionPrototypes
     Xim         xim
 #endif
 );
 
-#ifndef NOT_EXT_MOVE
+extern Bool	_XimRegisterIMInstantiateCallback(
+#if NeedFunctionPrototypes
+    XLCd	 lcd,
+    Display	*display,
+    XrmDatabase	 rdb,
+    char	*res_name,
+    char	*res_class,
+    XIMProc	 callback,
+    XPointer	*client_data
+#endif
+);
+
+extern Bool	_XimUnRegisterIMInstantiateCallback(
+#if NeedFunctionPrototypes
+    XLCd	 lcd,
+    Display	*display,
+    XrmDatabase	 rdb,
+    char	*res_name,
+    char	*res_class,
+    XIMProc	 callback,
+    XPointer	*client_data
+#endif
+);
+
+extern void	_XimFreeCommitInfo(
+#if NeedFunctionPrototypes
+    Xic		 ic
+#endif
+);
+
+extern Bool	_XimConnect(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern Bool	_XimShutdown(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern Bool	_XimSend(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    INT16	 len,
+    XPointer	 data
+#endif
+);
+
+extern Bool	_XimRecv(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    INT16	*len,
+    XPointer	*data,
+    Bool	 (*predicate)(
+#if NeedNestedPrototypes
+			      Xim, INT16, XPointer, XPointer
+#endif
+			      ),
+    XPointer	 arg
+#endif
+);
+
+extern Bool	_XimIntrCallback(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    Bool	 (*callback)(
+#if NeedNestedPrototypes
+			     Xim, INT16, XPointer, XPointer
+#endif
+			     ),
+    XPointer	 call_data
+#endif
+);
+
+extern void	_XimFlush(
+#if NeedFunctionPrototypes
+    Xim		 im
+#endif
+);
+
+extern Bool	_XimFilterWaitEvent(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    XPointer	 arg
+#endif
+);
+
+extern void   _XimProcError(
+#if NeedFunctionPrototypes
+    Xim		im,
+    Xic		ic,
+    XPointer	data
+#endif
+);
+
+#ifdef EXT_MOVE
 extern CARD32	_XimExtenArgCheck(
 #if NeedFunctionProtoTypes
     XIMArg	*arg
 #endif
 );
 #endif
+
+extern Bool _XimCbDispatch(
+#if NeedFunctionPrototypes
+    Xim im, 
+    INT16 len, 
+    XPointer data, 
+    XPointer call_data
+#endif
+);
 
 #endif /* _XIMINT_H */

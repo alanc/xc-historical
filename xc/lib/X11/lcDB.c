@@ -1,4 +1,4 @@
-/* $XConsortium: lcDB.c,v 1.2 93/09/17 14:24:05 rws Exp $ */
+/* $XConsortium: lcDB.c,v 1.3 93/09/29 15:14:38 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -232,7 +232,6 @@ _XlcCreateLocaleDataBase(lcd)
      XLocaleDataBase	xlocale_db = (XLocaleDataBase) 0;
      XLocaleDBCache	db, new_db;
      FILE	*fd;
-     char	*file_name;
      int	line_count = 0;
      char	buffer[BUFSIZ];
      char	*buf_ptr;
@@ -242,15 +241,14 @@ _XlcCreateLocaleDataBase(lcd)
      char	value[BUFSIZ];
      int	value_len = 0;
      XrmQuark	db_name_q;
-     char	*fullname, *filename, *pathname;
+     char	pathname[256], *name;
 
-     /* Resolve XLocale database name from OS locale name */
-     fullname = _XlcResolveLocaleName(XLC_PUBLIC(lcd, siname),NULL,NULL,NULL);
-     if (fullname == (char*)NULL) return (XPointer)NULL;
-     filename = _XlcResolveDBName(fullname);
-     if (filename == (char*)NULL) return (XPointer)NULL;
-     pathname = _XlcResolveI18NPath(filename);
-     if (pathname == (char*)NULL) return (XPointer)NULL;
+     name = _XlcFileName(lcd, "locale");
+     if(name == NULL){
+	 return (XPointer)NULL;
+     }
+     strcpy(pathname, name);
+     Xfree(name);
 
      /* Find cached XLocale database */
      db_name_q = XrmStringToQuark(pathname);

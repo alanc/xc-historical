@@ -1,4 +1,4 @@
-/* $XConsortium: XlcUTF.h,v 1.2 93/09/19 09:16:31 rws Exp $ */
+/* $XConsortium: XlcUTF.h,v 1.3 93/09/25 15:28:37 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -58,69 +58,6 @@ typedef unsigned short Rune;		/* 16 bits */
 
 #define emit(x)    *r = (Rune)x;
 
-static long	getutfrune();
-static void our_wctomb(
-#if NeedFunctionPrototypes
-		       unsigned short r, 
-		       char **bufptr, 
-		       int *buf_len
-#endif
-);
-static int our_mbtowc(
-#if NeedFunctionPrototypes   
-		      unsigned long *p, 
-		      char *s, 
-		      size_t n
-#endif
-);
-static char	*int_locale = NULL;
-static long	*tabkuten = NULL;
-static long	*tabksc5601 = NULL;
-static long	*tabgb = NULL;
-static void	latin2rune(
-#if NeedFunctionPrototypes
-			   unsigned char c, 
-			   Rune *r
-#endif
-);
-static void	jis02012rune(
-#if NeedFunctionPrototypes
-			     unsigned char c, 
-			     Rune *r
-#endif
-);
-static void	jis02082rune(
-#if NeedFunctionPrototypes
-			     unsigned char c, 
-			     Rune *r
-#endif
-);
-static void	ksc2rune(
-#if NeedFunctionPrototypes
-			 unsigned char c, 
-			 Rune *r
-#endif
-);
-static void	gb2rune(
-#if NeedFunctionPrototypes
-			unsigned char c, 
-			Rune *r
-#endif
-);
-static void	init_latin1tab();
-static void	init_latin2tab();
-static void	init_latin3tab();
-static void	init_latin4tab();
-static void	init_latin5tab();
-static void	init_latin6tab();
-static void	init_latin7tab();
-static void	init_latin8tab();
-static void	init_latin9tab();
-static void	init_jis0201tab();
-static void	init_jis0208tab();
-static void	init_ksc5601tab();
-static void	init_gb2312tab();
-
 typedef enum {
 	N11n_none,		/* No need to normalize (1byte) */
 	N11n_ja,		/* Normalize for ja */
@@ -132,7 +69,8 @@ typedef struct  _UtfDataRec {
 	XlcCharSet		charset;
 	void			(*initialize)( /* Table Initializer */
 #if NeedFunctionPrototypes
-					      long *tbl
+					      long *tbl,
+					      long fallback
 #endif
 						);
 	long			*fromtbl;	/* UTF -> CharSet */
@@ -147,8 +85,6 @@ typedef struct  _UtfDataRec {
         struct _UtfDataRec	*next;		/* next entry     */
 } UtfDataRec, *UtfData;
 
-static UtfData utfdata_list = (UtfData)NULL;
-
 typedef struct _XlcUTFDataRec {
     char	*name;
     XlcSide	side;
@@ -160,37 +96,8 @@ typedef struct _XlcUTFDataRec {
 #endif
 			    );
     NormalizeType	type;
+    long		fallback_value;
 } XlcUTFDataRec, *XlcUTFData;
-
-static XlcUTFDataRec default_utf_data[] = 
-{
-    {"ISO8859-1", XlcGL, init_latin1tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin1tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGL, init_latin2tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin2tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGL, init_latin3tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin3tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGL, init_latin4tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin4tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGL, init_latin5tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin5tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGL, init_latin6tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin6tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGL, init_latin7tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin7tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGL, init_latin8tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin8tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGL, init_latin9tab, latin2rune, N11n_none},
-    {"ISO8859-1", XlcGR, init_latin9tab, latin2rune, N11n_none},
-    {"JISX0201.1976-0", XlcGL, init_jis0201tab, jis02012rune, N11n_none},
-    {"JISX0201.1976-0", XlcGR, init_jis0201tab, jis02012rune, N11n_none},
-    {"JISX0208.1983-0", XlcGL, init_jis0208tab, jis02082rune, N11n_ja},
-    {"JISX0208.1983-0", XlcGR, init_jis0208tab, jis02082rune, N11n_ja},
-    {"KSC5601.1987-0", XlcGL, init_ksc5601tab, ksc2rune, N11n_ko},
-    {"KSC5601.1987-0", XlcGR, init_ksc5601tab, ksc2rune, N11n_ko},
-    {"GB2312.1980-0", XlcGL, init_gb2312tab, gb2rune, N11n_zh},
-    {"GB2312.1980-0", XlcGR, init_gb2312tab, gb2rune, N11n_zh},
-};
 
 typedef struct _StateRec {
     XlcCharSet charset;

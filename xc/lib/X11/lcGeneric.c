@@ -1,34 +1,28 @@
 /* $XConsortium: lcGeneric.c,v 1.2 93/09/23 12:31:27 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -38,7 +32,7 @@ static XLCd create();
 static Bool initialize();
 static void destroy();
 
-static XLCdPublicMethodsRec methods = {
+static XLCdPublicMethodsRec genericMethods = {
     { NULL },                   /* use default methods */
     {
 	NULL,
@@ -49,7 +43,7 @@ static XLCdPublicMethodsRec methods = {
     }
 };
 
-XLCdMethods _XlcGenericMethods = (XLCdMethods) &methods;
+XLCdMethods _XlcGenericMethods = (XLCdMethods) &genericMethods;
 
 static XLCd
 create(name, methods)
@@ -57,6 +51,7 @@ create(name, methods)
     XLCdMethods methods;
 {
     XLCd lcd;
+    XLCdPublicMethods new;
 
     lcd = (XLCd) Xmalloc(sizeof(XLCdRec));
     if (lcd == NULL)
@@ -68,10 +63,16 @@ create(name, methods)
 	goto err;
     bzero((char *) lcd->core, sizeof(XLCdGenericRec));
 
+    new = (XLCdPublicMethods) Xmalloc(sizeof(XLCdPublicMethodsRec));
+    if (new == NULL)
+	goto err;
+    *new = *((XLCdPublicMethods) methods);
+    lcd->methods = (XLCdMethods) new;
+
     return lcd;
 
 err:
-    XFree(lcd);
+    Xfree(lcd);
     return (XLCd) NULL;
 }
 
@@ -189,7 +190,7 @@ add_codeset(gen)
     return new;
 
 err:
-    XFree(new);
+    Xfree(new);
 
     return NULL;
 }
@@ -252,9 +253,9 @@ add_parse_list(gen, type, encoding, codeset)
     return True;
 
 err:
-    XFree(str);
+    Xfree(str);
     if (new)
-        XFree(new);
+        Xfree(new);
 
     return False;
 }
@@ -269,18 +270,18 @@ free_charset(lcd)
     int num;
 
     if (gen->mb_parse_table)
-        XFree(gen->mb_parse_table);
+        Xfree(gen->mb_parse_table);
     if (num = gen->mb_parse_list_num) {
         for (parse_info = gen->mb_parse_list; num-- > 0; parse_info++) {
             if ((*parse_info)->encoding)
-                XFree((*parse_info)->encoding);
-            XFree(*parse_info);
+                Xfree((*parse_info)->encoding);
+            Xfree(*parse_info);
         }
-        XFree(gen->mb_parse_list);
+        Xfree(gen->mb_parse_list);
     }
 
     if (num = gen->codeset_num)
-        XFree(gen->codeset_list);
+        Xfree(gen->codeset_list);
 }
 
 static Bool
@@ -351,7 +352,7 @@ load_generic(lcd)
 	_XlcGetResource(lcd, "XLC_XLOCALE", name, &value, &num);
 	if (num > 0) {
 	    static struct { 
-		char str[6];
+		char *str;
 		int type;
 	    } shifts[] = {
 		{"<SS>", E_SS},
@@ -367,7 +368,7 @@ load_generic(lcd)
 		char encoding[256];
 		char *tmp = *value;
 		int type = E_SS;    /* for BC */
-		for (j = 0; shifts[j].str[0]; j++) {
+		for (j = 0; shifts[j].str; j++) {
 		    if (!_XlcNCompareISOLatin1(tmp, shifts[j].str,
 					       strlen(shifts[j].str))) {
 			type = shifts[j].type;

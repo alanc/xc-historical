@@ -1,29 +1,34 @@
-/* $XConsortium: imConv.c,v 1.2 93/09/18 11:00:38 rws Exp $ */
+/* $XConsortium: imConv.c,v 1.3 93/09/18 12:33:34 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by Fuji Xerox Co.,Ltd.
+	      Copyright 1993 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
 provided that the above copyright notice appear in all copies and
 that both that copyright notice and this permission notice appear
 in supporting documentation, and that the name of Fuji Xerox Co.,Ltd.
-not be used in advertising or publicity pertaining to distribution
-of the software without specific, written prior permission.
-Fuji Xerox Co.,Ltd. makes no representations about the suitability of
-this software for any purpose.
+, and that the name of FUJITSU LIMITED not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+ written prior permission.
+Fuji Xerox Co.,Ltd. , and FUJITSU LIMITED makes no representations about
+the suitability of this software for any purpose.
 It is provided "as is" without express or implied warranty.
 
-FUJI XEROX CO.,LTD. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
-IN NO EVENT SHALL FUJI XEROX CO.,LTD. BE LIABLE FOR ANY SPECIAL, INDIRECT
+FUJI XEROX CO.,LTD. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL FUJI XEROX CO.,LTD.
+AND FUJITSU LIMITED BE LIABLE FOR ANY SPECIAL, INDIRECT
 OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-  Auther: Kazunori Nishihara,  Fuji Xerox Co.,Ltd.
-                               kaz@ssdev.ksp.fujixerox.co.jp
+  Auther:   Kazunori Nishihara, Fuji Xerox Co.,Ltd.
+                                kaz@ssdev.ksp.fujixerox.co.jp
+  Modifier: Takashi Fujiwara    FUJITSU LIMITED
+                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
 
@@ -117,46 +122,6 @@ KeySym keysym;
     return(greek[keysym & 0x7f]);
 }
 
-int
-XLookupCompundText(event, buffer, nbytes, keysym, status)
-XKeyEvent *event;
-char *buffer;
-int nbytes;
-KeySym *keysym;
-XComposeStatus *status;
-{
-    int count;
-    KeySym symbol;
-    unsigned long kset;
-    struct CodesetRec *cset = (struct CodesetRec *)NULL;
-    int i;
-    unsigned char c;
-
-    count = XLookupString(event, (char *)buffer, nbytes, &symbol, status);
-    if (keysym) *keysym = symbol;
-    if ((nbytes == 0) || (symbol == NoSymbol)) {
-	return(count);
-    }
-    if (count == 0) {
-	kset = (symbol >> 8) & 0xffffff;
-	for (i = 0; i < codeset_size; i++) {
-	    if (kset == codeset[i].kset) {
-		cset = &codeset[i];
-		break;
-	    }
-	}
-	if (cset) {
-	    strcpy(buffer, cset->designator);
-	    count = strlen(cset->designator);
-	    if (c = (*cset->char_code)(symbol)) {
-		buffer[count] = c;
-		count++;
-	    }
-	}
-    }
-    return(c);
-}
-
 #define BUF_SIZE (20)
 static char local_buf[BUF_SIZE] = {0};	/* Clean up bss */
 static unsigned char look[BUF_SIZE] = {0};	/* Clean up bss */
@@ -176,6 +141,7 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     struct CodesetRec *cset = (struct CodesetRec *)NULL;
     int i;
     unsigned char c;
+    Status	dummy;
 
     count = XLookupString(event, (char *)buffer, nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
@@ -196,17 +162,18 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
 	    local_buf[local_count] = c;
 	    local_count++;
 	    local_buf[local_count] = '\0';
-	    count = BUF_SIZE;
-	    if ((count = _Xlcctstombs(ic->core.im->core.lcd,
-			      (char *)buffer, local_buf, nbytes)) < 0) {
+	    if ((count = _Ximctstombs((Xim)ic->core.im,
+				local_buf, local_count,
+				(char *)buffer, nbytes, &dummy)) < 0) {
 		count = 0;
 	    }
 	}
     } else if ((count != 1) || (buffer[0] >= 0x80)) { /* not ASCII Encoding */
 	memcpy((char *)look, (char *)buffer,count);
 	look[count] = '\0';
-	if ((count = _Xlcctstombs(ic->core.im->core.lcd, (char *)buffer,
-			  (char *)look, nbytes)) < 0) {
+	if ((count = _Ximctstombs((Xim)ic->core.im,
+				(char *)look, count,
+				(char *)buffer, nbytes, &dummy)) < 0) {
 	    count = 0;
 	}
     }
@@ -228,6 +195,7 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     struct CodesetRec *cset = (struct CodesetRec *)NULL;
     int i;
     unsigned char c;
+    Status	dummy;
 
     count = XLookupString(event, (char *)look, nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
@@ -248,17 +216,18 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
 	    local_buf[local_count] = c;
 	    local_count++;
 	    local_buf[local_count] = '\0';
-	    count = BUF_SIZE;
-	    if ((count = _Xlcctstowcs(ic->core.im->core.lcd,
-			buffer, local_buf, nbytes)) < 0) {
+	    if ((count = _Ximctstowcs((Xim)ic->core.im,
+				local_buf, local_count,
+				buffer, nbytes, &dummy)) < 0) {
 		count = 0;
 	    }
 	}
     } else if ((count == 1) && (look[0] < 0x80)) { /* ASCII Encoding */
 	buffer[0] = look[0];
     } else {
-	if ((count = _Xlcctstowcs(ic->core.im->core.lcd,
-			  buffer, (char *)look, nbytes)) < 0) {
+	if ((count = _Ximctstowcs((Xim)ic->core.im,
+				(char *)look, count,
+				buffer, nbytes, &dummy)) < 0) {
 	    count = 0;
 	}
     }

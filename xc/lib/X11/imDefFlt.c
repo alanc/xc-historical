@@ -1,4 +1,4 @@
-/* $XConsortium: imDefFlt.c,v 1.1 93/09/17 13:25:39 rws Exp $ */
+/* $XConsortium: imDefFlt.c,v 1.2 93/09/18 09:32:36 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -54,7 +54,7 @@ _XimTriggerCheck(im, ev, len, keylist)
     if (!keysym)
 	return -1;
 
-    for (i = 0; len > min_len; i++, len -= min_len) {
+    for (i = 0; len >= min_len; i += 3, len -= min_len) {
 	modifier      = keylist[i + 1];
 	modifier_mask = keylist[i + 2];
 	if (((KeySym)keylist[i] == keysym)
@@ -120,59 +120,7 @@ _XimOffKeysCheck(ic, ev)
     return False;
 }
 
-Public Bool
-_XimRegPendingProc(im, ic, arg, proc)
-    Xim		   im;
-    Xic		   ic;
-    XIMArg	  *arg;
-    void	   (*proc)();
-{
-    XimPendingRec *rec;
-
-    if (!(rec = (XimPendingRec *)Xmalloc(sizeof(XimPendingRec))))
-        return False;
-
-    rec->func	   = proc;
-    rec->ic	   = (XIC)ic;
-    rec->arg	   = arg;
-    rec->next	   = im->private.proto.pending;
-    im->private.proto.pending = rec;
-    return True;
-}
-
-Public void
-_XimFreePendingProc(im)
-    Xim		 	    im;
-{
-    register XimPendingRec *rec, *next;
-
-    for (rec = im->private.proto.pending; rec;) {
-	next = rec->next;
-	Xfree(rec);
-	rec = next;
-    }
-    im->private.proto.pending = NULL;
-    return;
-}
-
-Private Bool
-_XimCallPendingProc(im)
-    Xim			    im;
-{
-    register XimPendingRec *rec = im->private.proto.pending;
-
-    for (; rec; rec = rec->next) {
-	if (rec->arg) {
-	    (*rec->func)(rec->ic, rec->arg);	/* SetICValues */
-	    _XimFreeRemakeArg(rec->arg);
-	} else
-	    (*rec->func)(rec->ic);		/* SetFocus or  UnsetFocus */
-    }
-    _XimFreePendingProc(im);
-    return True;
-}
-
-Public void
+Private void
 _XimPendingFilter(ic)
     Xic	 	 ic;
 {
@@ -181,10 +129,6 @@ _XimPendingFilter(ic)
     if (IS_NEED_SYNC_REPLY(ic)) {
 	(void)_XimProcSyncReply(im, ic);
 	UNMARK_NEED_SYNC_REPLY(ic);
-    }
-    if (IS_NEED_PENDING_CALL(im)) {
-	(void)_XimCallPendingProc(im);
-	UNMARK_NEED_PENDING_CALL(im);
     }
     return;
 }
@@ -195,15 +139,13 @@ _XimProtoKeypressFilter(ic, ev)
     XKeyEvent	*ev;
 {
     Xim		im = (Xim)ic->core.im;
-    EVENTMASK	target_mask = XIM_FORWARD_EVENT_MASKS; /* XXX */
 
     if (IS_FABLICATED(ic)) {
-	_XimPendingFilter(ic); /* XXX */
+	_XimPendingFilter(ic);
 	UNMARK_FABLICATED(ic);
 	return NOTFILTERD;
     }
-    if ((IS_NEGLECT_EVENT(ic, KeyPressMask))
-     && (KeyPressMask & target_mask))
+    if (IS_NEGLECT_EVENT(ic, KeyPressMask))
 	return FILTERD;
     if (IS_IC_CONNECTED(ic)) {
 	if (!IS_FORWARD_EVENT(ic, KeyPressMask)) {
@@ -213,17 +155,14 @@ _XimProtoKeypressFilter(ic, ev)
 	}
 	if (_XimOffKeysCheck(ic, ev))
 	    return FILTERD;
-	if (IS_SYNCHRONOUS_EVENT(ic, KeyPressMask))
-	    return _XimForwardEvent(ic, (XEvent *)ev, True);
-	else
-	    return _XimForwardEvent(ic, (XEvent *)ev, False);
+	return _XimForwardEvent(ic, (XEvent *)ev,
+					IS_SYNCHRONOUS_EVENT(ic, KeyPressMask));
 
     } else if (IS_RECONNECTABLE(im)) {
 	/* 
 	 * Not yet
 	 */
 	return FILTERD;
-
     }
     return NOTFILTERD;
 }
@@ -235,8 +174,7 @@ _XimFilterKeypress (d, w, ev, client_data)
     XEvent		*ev;
     XPointer		 client_data;
 {
-    return _XimProtoKeypressFilter((Xic)client_data,
-				   (XKeyEvent *)ev );
+    return _XimProtoKeypressFilter((Xic)client_data, (XKeyEvent *)ev );
 }
 
 Private Bool
@@ -245,10 +183,8 @@ _XimProtoKeyreleaseFilter( ic, ev )
     XKeyEvent	*ev;
 {
     Xim		im = (Xim)ic->core.im;
-    EVENTMASK	target_mask = XIM_FORWARD_EVENT_MASKS; /* XXX */
 
-    if ((IS_NEGLECT_EVENT(ic, KeyReleaseMask))
-     && (KeyReleaseMask & target_mask))
+    if (IS_NEGLECT_EVENT(ic, KeyReleaseMask))
 	return FILTERD;
     if (IS_IC_CONNECTED(ic)) {
 	if (!IS_FORWARD_EVENT(ic, KeyReleaseMask)) {
@@ -258,17 +194,14 @@ _XimProtoKeyreleaseFilter( ic, ev )
 	}
 	if (_XimOffKeysCheck(ic, ev))
 	    return FILTERD;
-	_XimPendingFilter(ic); /* XXX */
-	if (IS_SYNCHRONOUS_EVENT(ic, KeyReleaseMask))
-	    return _XimForwardEvent(ic, (XEvent *)ev, True);
-	else
-	    return _XimForwardEvent(ic, (XEvent *)ev, False);
+	return _XimForwardEvent(ic, (XEvent *)ev,
+					IS_SYNCHRONOUS_EVENT(ic, KeyPressMask));
+
     } else if (IS_RECONNECTABLE(im)) {
 	/* 
 	 * Not yet
 	 */
 	return FILTERD;
-
     }
     return NOTFILTERD;
 }
@@ -280,55 +213,103 @@ _XimFilterKeyrelease (d, w, ev, client_data)
     XEvent		*ev;
     XPointer		 client_data;
 {
-    return _XimProtoKeyreleaseFilter((Xic)client_data,
-				     (XKeyEvent *)ev);
+    return _XimProtoKeyreleaseFilter((Xic)client_data, (XKeyEvent *)ev);
 }
 
-Public void 
-_XimRegisterKeyFilter(ic)
+Private void 
+_XimRegisterKeyPressFilter(ic)
     Xic		 ic ;
 {
     if (ic->core.focus_window) {
-	if (!(ic->private.proto.register_filter_event & KEYPRESS_MASK)) {
+	if (!(ic->private.proto.registed_filter_event & KEYPRESS_MASK)) {
 	    _XRegisterFilterByType (ic->core.im->core.display,
 				    ic->core.focus_window,
 				    KeyPress, KeyPress,
 				    _XimFilterKeypress,
 				    (XPointer)ic);
-	    ic->private.proto.register_filter_event |= KEYPRESS_MASK;
-	}
-	if (!(ic->private.proto.register_filter_event & KEYRELEASE_MASK)) {
-	    _XRegisterFilterByType (ic->core.im->core.display,
-				    ic->core.focus_window,
-				    KeyRelease, KeyRelease,
-				    _XimFilterKeyrelease,
-				    (XPointer)ic);
-	    ic->private.proto.register_filter_event |= KEYRELEASE_MASK;
+	    ic->private.proto.registed_filter_event |= KEYPRESS_MASK;
 	}
     }
     return;
 }
 
-Public void 
-_XimUnregisterKeyFilter(ic)
+Private void 
+_XimRegisterKeyReleaseFilter(ic)
     Xic		 ic ;
 {
     if (ic->core.focus_window) {
-	if (ic->private.proto.register_filter_event & KEYPRESS_MASK) {
+	if (!(ic->private.proto.registed_filter_event & KEYRELEASE_MASK)) {
+	    _XRegisterFilterByType (ic->core.im->core.display,
+				    ic->core.focus_window,
+				    KeyRelease, KeyRelease,
+				    _XimFilterKeyrelease,
+				    (XPointer)ic);
+	    ic->private.proto.registed_filter_event |= KEYRELEASE_MASK;
+	}
+    }
+    return;
+}
+
+Private void 
+_XimUnregisterKeyPressFilter(ic)
+    Xic		 ic ;
+{
+    if (ic->core.focus_window) {
+	if (ic->private.proto.registed_filter_event & KEYPRESS_MASK) {
 	    _XUnregisterFilter (ic->core.im->core.display,
 				ic->core.focus_window,
 				_XimFilterKeypress,
 				(XPointer)ic);
-	    ic->private.proto.register_filter_event &= ~KEYPRESS_MASK;
+	    ic->private.proto.registed_filter_event &= ~KEYPRESS_MASK;
 	}
-	if (ic->private.proto.register_filter_event & KEYRELEASE_MASK) {
+    }
+    return;
+}
+
+Private void 
+_XimUnregisterKeyReleaseFilter(ic)
+    Xic		 ic ;
+{
+    if (ic->core.focus_window) {
+	if (ic->private.proto.registed_filter_event & KEYRELEASE_MASK) {
 	    _XUnregisterFilter (ic->core.im->core.display,
 				ic->core.focus_window,
 				_XimFilterKeyrelease,
 				(XPointer)ic);
-	    ic->private.proto.register_filter_event &= ~KEYRELEASE_MASK;
+	    ic->private.proto.registed_filter_event &= ~KEYRELEASE_MASK;
 	}
     }
+    return;
+}
+
+Public void
+_XimRegisterFilter(ic)
+    Xic		 ic;
+{
+    _XimRegisterKeyPressFilter(ic);
+    if (IS_FORWARD_EVENT(ic, KeyRelease))
+	_XimRegisterKeyReleaseFilter(ic);
+    return;
+}
+
+Public void
+_XimUnregisterFilter(ic)
+    Xic		 ic;
+{
+    _XimUnregisterKeyPressFilter(ic);
+    _XimUnregisterKeyReleaseFilter(ic);
+    return;
+}
+
+Public void
+_XimReregisterFilter(ic)
+    Xic		 ic;
+{
+    if (IS_FORWARD_EVENT(ic, KeyRelease))
+	_XimRegisterKeyReleaseFilter(ic);
+    else
+	_XimUnregisterKeyReleaseFilter(ic);
+
     return;
 }
 
@@ -339,8 +320,13 @@ _XimFilterServerDestroy (d, w, ev, client_data)
     XEvent		*ev;
     XPointer		 client_data;
 {
-    _XimServerDestroy();
-    return False;
+    Xim			 im = (Xim)client_data;
+
+    if (ev->type == DestroyNotify) {
+	UNMARK_SERVER_CONNECTED(im);
+	_XimServerDestroy();
+    }
+    return True;
 }
 
 Public void 
@@ -348,13 +334,15 @@ _XimRegisterServerFilter(im)
     Xim		 im ;
 {
     if (im->private.proto.im_window) {
-	if (!(im->private.proto.register_filter_event & DESTROYNOTIFY_MASK)) {
-	    _XRegisterFilterByType(im->core.display,
+	if (!(im->private.proto.registed_filter_event & DESTROYNOTIFY_MASK)) {
+	    _XRegisterFilterByMask(im->core.display,
 		    im->private.proto.im_window,
-		    DestroyNotify, DestroyNotify,
+		    StructureNotifyMask,
 		    _XimFilterServerDestroy,
 		    (XPointer)im);
-	    im->private.proto.register_filter_event |= DESTROYNOTIFY_MASK;
+	    XSelectInput(im->core.display, im->private.proto.im_window,
+			 StructureNotifyMask);
+	    im->private.proto.registed_filter_event |= DESTROYNOTIFY_MASK;
 	}
     }
     return;
@@ -365,12 +353,12 @@ _XimUnregisterServerFilter(im)
     Xim		 im ;
 {
     if (im->private.proto.im_window) {
-	if (im->private.proto.register_filter_event & DESTROYNOTIFY_MASK) {
+	if (im->private.proto.registed_filter_event & DESTROYNOTIFY_MASK) {
 	    _XUnregisterFilter(im->core.display,
 		    im->private.proto.im_window,
 		    _XimFilterServerDestroy,
 		    (XPointer)im);
-	    im->private.proto.register_filter_event &= ~DESTROYNOTIFY_MASK;
+	    im->private.proto.registed_filter_event &= ~DESTROYNOTIFY_MASK;
 	}
     }
     return;

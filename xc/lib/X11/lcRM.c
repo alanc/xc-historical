@@ -1,37 +1,32 @@
-/* $XConsortium: lcRM.c,v 1.1 93/09/17 13:31:23 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: lcRM.c,v 1.2 93/09/17 14:24:17 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
+#include <stdio.h>
 
 typedef struct _StateRec {
     XLCd lcd;
@@ -53,14 +48,14 @@ mbchar(state, str, lenp)
 {
     XlcConv conv = ((State) state)->conv;
     XlcCharSet charset;
-    char *from, *to, buf[BUFSIZE];
+    char *from, *to, buf[BUFSIZ];
     int from_left, to_left;
     XPointer args[1];
 
     from = str;
     *lenp = from_left = XLC_PUBLIC(((State) state)->lcd, mb_cur_max);
     to = buf;
-    to_left = BUFSIZE;
+    to_left = BUFSIZ;
     args[0] = (XPointer) &charset;
 
     _XlcConvert(conv, (XPointer *) &from, &from_left, (XPointer *) &to,
@@ -90,8 +85,8 @@ destroy(state)
     XPointer state;
 {
     _XlcCloseConverter(((State) state)->conv);
-
-    _XlcFree((char *) state);
+    _XCloseLC(((State) state)->lcd);
+    Xfree((char *) state);
 }
 
 static XrmMethodsRec rm_methods = {
@@ -109,14 +104,14 @@ _XrmDefaultInitParseInfo(lcd, rm_state)
 {
     State state;
 
-    state = (State) _XlcAlloc(sizeof(StateRec));
+    state = (State) Xmalloc(sizeof(StateRec));
     if (state == NULL)
 	return (XrmMethods) NULL;
 
     state->lcd = lcd;
     state->conv = _XlcOpenConverter(lcd, XlcNMultiByte, lcd, XlcNChar);
     if (state->conv == NULL) {
-	_XlcFree((char *) state);
+	Xfree((char *) state);
 
 	return (XrmMethods) NULL;
     }

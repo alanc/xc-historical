@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XmbWrap.c,v 11.3 91/05/01 09:20:41 rws Exp $
+ * $XConsortium: mbWrap.c,v 11.4 91/05/01 10:57:18 rws Exp $
  */
 
 /*

@@ -1,44 +1,38 @@
-/* $XConsortium$ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: omTextExt.c,v 1.1 93/09/17 13:32:52 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
-#include "XlcPublic.h"
-#include "XomPublic.h"
+#include "XomGeneric.h"
+#include <stdio.h>
 
 int
-_XomGenericTextExtents(font_set, type, text, length, overall_ink,
+_XomGenericTextExtents(oc, type, text, length, overall_ink,
 		       overall_logical)
-    XFontSet font_set;
-    char *type;
+    XOC oc;
+    XOMTextType type;
     XPointer text;
     int length;
     XRectangle *overall_ink;
@@ -48,17 +42,17 @@ _XomGenericTextExtents(font_set, type, text, length, overall_ink,
     XFontStruct *font;
     Bool is_xchar2b;
     XPointer args[2];
-    XChar2b xchar2b_buf[BUFSIZE], *buf;
+    XChar2b xchar2b_buf[BUFSIZ], *buf;
     int direction, logical_ascent, logical_descent, tmp_ascent, tmp_descent;
     XCharStruct overall, tmp_overall;
     int buf_len, left;
     Bool first = True;
 
-    conv = _XomOpenConverter(font_set, type, XomNGlyphIndex);
+    conv = _XomInitConverter(oc, type);
     if (conv == NULL)
-	return 0;	/* XXX */
-    
-    bzero(&overall, sizeof(XCharStruct));
+	return 0;
+
+    bzero((char *) &overall, sizeof(XCharStruct));
     logical_ascent = logical_descent = 0;
 
     args[0] = (XPointer) &font;
@@ -66,10 +60,10 @@ _XomGenericTextExtents(font_set, type, text, length, overall_ink,
 
     while (length > 0) {
 	buf = xchar2b_buf;
-	left = buf_len = BUFSIZE;
+	left = buf_len = BUFSIZ;
 
-	if (_XomConvert(conv, (XPointer *) &text, &length, (XPointer *) &buf,
-			&left, args, 2) < 0)
+	if (_XomConvert(oc, conv, (XPointer *) &text, &length,
+			(XPointer *) &buf, &left, args, 2) < 0)
 	    break;
 	buf_len -= left;
 
@@ -98,8 +92,6 @@ _XomGenericTextExtents(font_set, type, text, length, overall_ink,
 	}
     }
 
-    _XomCloseConverter(conv);
-
     if (overall_ink) {
 	overall_ink->x = overall.lbearing;
 	overall_ink->y = -(overall.ascent);
@@ -118,25 +110,35 @@ _XomGenericTextExtents(font_set, type, text, length, overall_ink,
 }
 
 int
-_XmbGenericTextExtents(font_set, text, length, overall_ink, overall_logical)
-    XFontSet font_set;
+#if NeedFunctionPrototypes
+_XmbGenericTextExtents(XOC oc, _Xconst char *text, int length,
+		       XRectangle *overall_ink, XRectangle *overall_logical)
+#else
+_XmbGenericTextExtents(oc, text, length, overall_ink, overall_logical)
+    XOC oc;
     char *text;
     int length;
     XRectangle *overall_ink;
     XRectangle *overall_logical;
+#endif
 {
-    return _XomGenericTextExtents(font_set, XlcNMultiByte, (XPointer) text,
-				  length, overall_ink, overall_logical);
+    return _XomGenericTextExtents(oc, XOMMultiByte, (XPointer) text, length,
+				  overall_ink, overall_logical);
 }
 
 int
-_XwcGenericTextExtents(font_set, text, length, overall_ink, overall_logical)
-    XFontSet font_set;
+#if NeedFunctionPrototypes
+_XwcGenericTextExtents(XOC oc, _Xconst wchar_t *text, int length,
+		       XRectangle *overall_ink, XRectangle *overall_logical)
+#else
+_XwcGenericTextExtents(oc, text, length, overall_ink, overall_logical)
+    XOC oc;
     wchar_t *text;
     int length;
     XRectangle *overall_ink;
     XRectangle *overall_logical;
+#endif
 {
-    return _XomGenericTextExtents(font_set, XlcNWideChar, (XPointer) text,
-				  length, overall_ink, overall_logical);
+    return _XomGenericTextExtents(oc, XOMWideChar, (XPointer) text, length,
+				  overall_ink, overall_logical);
 }

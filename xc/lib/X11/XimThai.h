@@ -1,4 +1,4 @@
-/* $XConsortium: XimThai.h,v 1.1 93/09/17 13:28:01 rws Exp $ */
+/* $XConsortium: XimThai.h,v 1.2 93/09/23 12:26:03 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

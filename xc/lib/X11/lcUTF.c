@@ -1,4 +1,4 @@
-/* $XConsortium: lcUTF.c,v 1.4 93/09/23 12:31:35 rws Exp $ */
+/* $XConsortium: lcUTF.c,v 1.5 93/09/25 10:41:22 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -27,10 +27,120 @@ OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 #include "XlcUTF.h"
 
+static long	getutfrune();
+static void our_wctomb(
+#if NeedFunctionPrototypes
+		       unsigned short r, 
+		       char **bufptr, 
+		       int *buf_len
+#endif
+);
+static int our_mbtowc(
+#if NeedFunctionPrototypes   
+		      unsigned long *p, 
+		      char *s, 
+		      size_t n
+#endif
+);
+static void	latin2rune(
+#if NeedFunctionPrototypes
+			   unsigned char c, 
+			   Rune *r
+#endif
+);
+static void	jis02012rune(
+#if NeedFunctionPrototypes
+			     unsigned char c, 
+			     Rune *r
+#endif
+);
+static void	jis02082rune(
+#if NeedFunctionPrototypes
+			     unsigned char c, 
+			     Rune *r
+#endif
+);
+static void	ksc2rune(
+#if NeedFunctionPrototypes
+			 unsigned char c, 
+			 Rune *r
+#endif
+);
+static void	gb2rune(
+#if NeedFunctionPrototypes
+			unsigned char c, 
+			Rune *r
+#endif
+);
+static void	init_latin1tab();
+static void	init_latin2tab();
+static void	init_latin3tab();
+static void	init_latin4tab();
+static void	init_latin5tab();
+static void	init_latin6tab();
+static void	init_latin7tab();
+static void	init_latin8tab();
+static void	init_latin9tab();
+static void	init_jis0201tab();
+static void	init_jis0208tab();
+static void	init_ksc5601tab();
+static void	init_gb2312tab();
+
+
+static char	*int_locale = NULL;
+static long	*tabkuten = NULL;
+static long	*tabksc5601 = NULL;
+static long	*tabgb = NULL;
+
+static UtfData utfdata_list = (UtfData)NULL;
+
+static XlcUTFDataRec default_utf_data[] = 
+{
+    {"ISO8859-1", XlcGL, init_latin1tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin1tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGL, init_latin2tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin2tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGL, init_latin3tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin3tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGL, init_latin4tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin4tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGL, init_latin5tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin5tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGL, init_latin6tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin6tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGL, init_latin7tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin7tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGL, init_latin8tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin8tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGL, init_latin9tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-1", XlcGR, init_latin9tab, latin2rune, N11n_none, 0x20},
+    {"JISX0201.1976-0", XlcGL, init_jis0201tab, jis02012rune, N11n_none, 0x20},
+    {"JISX0201.1976-0", XlcGR, init_jis0201tab, jis02012rune, N11n_none, 0x20},
+    {"JISX0208.1983-0", XlcGL, init_jis0208tab, jis02082rune, N11n_ja, 0x2222},
+    {"JISX0208.1983-0", XlcGR, init_jis0208tab, jis02082rune, N11n_ja, 0x2222},
+    {"KSC5601.1987-0", XlcGL, init_ksc5601tab, ksc2rune, N11n_ko, 0x2160},
+    {"KSC5601.1987-0", XlcGR, init_ksc5601tab, ksc2rune, N11n_ko, 0x2160},
+    {"GB2312.1980-0", XlcGL, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
+    {"GB2312.1980-0", XlcGR, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
+};
+
+
 static void
-set_latin_tab(fptr, table)
+set_latin_nop(table, default_val)
+long	*table;
+long	default_val;
+{
+    register int i;
+    for(i = 0; i < 0x1fff; i++)
+	table[i] = default_val;
+    return;
+}
+
+static void
+set_latin_tab(fptr, table, fb_default)
 FILE	*fptr;
 long	*table;
+long	fb_default;
 {
     int		i = 0;
     int		j = 0;
@@ -43,144 +153,334 @@ long	*table;
 	if(rv != 0 && value >= 0) {
 	    table[value] = j++;
 	} else {
-	    perror("table initializer: failed to extract from data file.");
-	    exit(1);
+	    set_latin_nop(table, fb_default);
+	    return;
 	}
     }
 }
-	
-extern FILE *_XlcOpenLocaleFile();
+
+extern int _XlcResolveI18NPath();
 #define TBL_DATA_DIR	"tbl_data"
 
 static void
-init_latin1tab(tbl)
+init_latin1tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
-    FILE	*fp;
+    FILE	*fp = NULL;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_1);
-    if(!fp) {
-	perror("latin_1 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_1);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_latin2tab(tbl)
+init_latin2tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_2);
-    if(!fp) {
-	perror("latin_2 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_2);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_latin3tab(tbl)
+init_latin3tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_3);
-    if(!fp) {
-	perror("latin_3 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_3);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_latin4tab(tbl)
+init_latin4tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_4);
-    if(!fp) {
-	perror("latin_4 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_4);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_latin5tab(tbl)
+init_latin5tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_5);
-    if(!fp) {
-	perror("latin_5 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_5);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_latin6tab(tbl)
+init_latin6tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_6);
-    if(!fp) {
-	perror("latin_6 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_6);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_latin7tab(tbl)
+init_latin7tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_7);
-    if(!fp) {
-	perror("latin_7 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_7);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_latin8tab(tbl)
+init_latin8tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_8);
-    if(!fp) {
-	perror("latin_8 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_8);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_latin9tab(tbl)
+init_latin9tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, tab8859_9);
-    if(!fp) {
-	perror("latin_9 table initializer");
-	exit(1);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_9);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_latin_tab(fp, tbl, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
     }
-    set_latin_tab(fp, tbl);
+    if(!fp) {
+	set_latin_nop(tbl, fb_default);
+    }
 }
 
 static void
-init_jis0201tab(tbl)
+init_jis0201tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
 	int i;
 	for(i = 0; i < NRUNE; i++)
@@ -188,28 +488,37 @@ long	*tbl;
 }
 
 static void
-set_table(fptr, to_tbl, from_tbl, to_max)
+set_cjk_nop(to_tbl, to_max, default_val)
+long	**to_tbl;
+long	default_val;
+int	to_max;
+{
+    register int i;
+    for(i = 0; i < to_max; i++)
+	(*to_tbl)[i] = default_val;
+    return;
+}
+
+static void
+set_table(fptr, to_tbl, from_tbl, to_max, fb_default)
 FILE	*fptr;
 long	**to_tbl, *from_tbl;
 int	to_max;
+long	fb_default;
 {
-    int		i = 0;
+    register int	i = 0;
     int		j = 0;
     int		rv = 0;
     long	value;
 
-    if((*to_tbl = (long *)Xmalloc(to_max * sizeof(long))) == NULL) {
-	perror("multi-byte table initializer");
-	exit(1);
-    }
     for(i = 0; i < NRUNE; i++)
 	from_tbl[i] = -1;
     while((rv = fscanf(fptr, "%x", &value)) != EOF) {
 	if(rv != 0) {
 	    (*to_tbl)[j++] = value;
 	} else {
-	    perror("multi-byte table initializer");
-	    exit(1);
+	    set_cjk_nop(to_tbl, to_max, fb_default);
+	    break;
 	}
     }
     for(i = 0; i < to_max; i++) {
@@ -222,45 +531,117 @@ int	to_max;
 
 	
 static void
-init_jis0208tab(tbl)
+init_jis0208tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, jis0208);
-    if(!fp) {
-	perror("jis_0208 table initializer");
-	exit(1);
+    if((tabkuten = (long *)Xmalloc(KUTENMAX * sizeof(long))) == NULL) {
+	return;
     }
-    set_table(fp, &tabkuten, tbl, KUTENMAX);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, jis0208);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_table(fp, &tabkuten, tbl, KUTENMAX, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
+    }
+    if(!fp) {
+	set_cjk_nop(&tabkuten, KUTENMAX, fb_default);
+    }
 }
 
 static void
-init_ksc5601tab(tbl)
+init_ksc5601tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, ksc5601);
-    if(!fp) {
-	perror("jis_0208 table initializer");
-	exit(1);
+    if((tabksc5601 = (long *)Xmalloc(KSCMAX * sizeof(long))) == NULL) {
+	return;
     }
-    set_table(fp, &tabksc5601, tbl, KSCMAX);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, ksc5601);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_table(fp, &tabksc5601, tbl, KSCMAX, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
+    }
+    if(!fp) {
+	set_cjk_nop(&tabksc5601, KSCMAX, fb_default);
+    }
 }
 
 static void
-init_gb2312tab(tbl)
+init_gb2312tab(tbl, fb_default)
 long	*tbl;
+long	fb_default;
 {
     FILE	*fp;
+    char	dirname[BUFSIZE];
+    char	filename[BUFSIZE];
+    char	*p, *q;
 
-    fp = _XlcOpenLocaleFile((char *)NULL, TBL_DATA_DIR, gb2312);
-    if(!fp) {
-	perror("jis_0208 table initializer");
-	exit(1);
+    if((tabgb = (long *)Xmalloc(GBMAX * sizeof(long))) == NULL) {
+	return;
     }
-    set_table(fp, &tabgb, tbl, GBMAX);
+    _XlcResolveI18NPath(dirname);
+    p = dirname;
+    while(p) {
+	q = strchr(p, ':');
+	if(q) {
+	    *q = '\0';
+	}
+	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, gb2312);
+	fp = fopen(filename, "r");
+	if(fp) {
+	    set_table(fp, &tabgb, tbl, GBMAX, fb_default);
+	    fclose(fp);
+	    return;
+	}
+	if(q) {
+	    p = q + 1;
+	} else {
+	    p = q;
+	}
+    }
+    if(!fp) {
+	set_cjk_nop(&tabgb, GBMAX, fb_default);
+    }
 }
 
 static UtfData
@@ -305,7 +686,7 @@ XLCd	lcd;
 		    } else {
  			pdata->initialize = default_utf_data[j].initialize;
 			pdata->fromtbl = (long *)Xmalloc(NRUNE * sizeof(long));
-			(*pdata->initialize)(pdata->fromtbl);
+			(*pdata->initialize)(pdata->fromtbl, default_utf_data[j].fallback_value);
 			pdata->already_init = True;
 			pdata->charset = charset;
 			pdata->cstorune = default_utf_data[j].cstorune;
@@ -1027,7 +1408,7 @@ static void
 close_converter(conv)
     XlcConv conv;
 {
-    _XlcFree((char *) conv);
+    Xfree((char *) conv);
 }
 
 static XlcConv
@@ -1037,7 +1418,7 @@ create_conv(lcd, methods)
 {
     XlcConv conv;
 
-    conv = (XlcConv) _XlcAlloc(sizeof(XlcConvRec));
+    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
     if (conv == (XlcConv) NULL)
 	return (XlcConv) NULL;
 

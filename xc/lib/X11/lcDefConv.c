@@ -1,37 +1,31 @@
-/* $XConsortium: lcDefConv.c,v 1.1 93/09/17 13:30:06 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: lcDefConv.c,v 1.2 93/09/23 12:31:16 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
-#include "XlcGeneric.h"
+#include "XlcPubI.h"
 
 typedef struct _StateRec {
     XlcCharSet charset;
@@ -51,7 +45,8 @@ strtostr(conv, from, from_left, to, to_left, args, num_args)
     XPointer *args;
     int num_args;
 {
-    register char *src, *dst, side;
+    register char *src, *dst;
+    unsigned char side;
     register length;
 
     if (from == NULL || *from == NULL)
@@ -63,8 +58,8 @@ strtostr(conv, from, from_left, to, to_left, args, num_args)
     length = min(*from_left, *to_left);
 
     if (num_args > 0) {
-	side = *src & 0x80;
-	while (side == (*src & 0x80) && length-- > 0)
+	side = *((unsigned char *) src) & 0x80;
+	while (side == (*((unsigned char *) src) & 0x80) && length-- > 0)
 	    *dst++ = *src++;
     } else {
 	while (length-- > 0)
@@ -140,7 +135,8 @@ cstostr(conv, from, from_left, to, to_left, args, num_args)
     XPointer *args;
     int num_args;
 {
-    register char *src, *dst, side;
+    register char *src, *dst;
+    unsigned char side;
     register length;
 
     if (from == NULL || *from == NULL)
@@ -160,8 +156,8 @@ cstostr(conv, from, from_left, to, to_left, args, num_args)
     length = min(*from_left, *to_left);
 
     if (num_args > 0) {
-	side = *src & 0x80;
-	while (side == (*src & 0x80) && length-- > 0)
+	side = *((unsigned char *) src) & 0x80;
+	while (side == (*((unsigned char *) src) & 0x80) && length-- > 0)
 	    *dst++ = *src++;
     } else {
 	while (length-- > 0)
@@ -229,9 +225,9 @@ close_converter(conv)
     XlcConv conv;
 {
     if (conv->state)
-	_XlcFree((char *) conv->state);
+	Xfree((char *) conv->state);
 
-    _XlcFree((char *) conv);
+    Xfree((char *) conv);
 }
 
 static XlcConv
@@ -248,11 +244,11 @@ create_conv(methods)
 	GR_charset = _XlcGetCharSet("ISO8859-1:GR");
     }
 
-    conv = (XlcConv) _XlcAlloc(sizeof(XlcConvRec));
+    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
     if (conv == NULL)
 	return (XlcConv) NULL;
 
-    state = (State) _XlcAlloc(sizeof(StateRec));
+    state = (State) Xmalloc(sizeof(StateRec));
     if (state == NULL)
 	goto err;
     
@@ -343,7 +339,7 @@ _XlcDefaultLoader(name)
     if (strcmp(name, "C"))
 	return (XLCd) NULL;
 
-    lcd = _XlcCreateLC(name, _XlcGenericMethods);
+    lcd = _XlcCreateLC(name, _XlcPublicMethods);
 
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNWideChar, open_strtowcs);
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNCompoundText, open_strtostr);

@@ -1,7 +1,7 @@
-/* $XConsortium$ */
+/* $XConsortium: imThaiIc.c,v 1.1 93/09/17 13:28:14 rws Exp $ */
 /******************************************************************
 
-          Copyright 1992 by FUJITSU LIMITED
+          Copyright 1992, 1993 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -36,8 +36,8 @@ THIS SOFTWARE.
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
-#include "Xlcint.h"
 #include "Xlibint.h"
+#include "Xlcint.h"
 #include "Ximint.h"
 
 Private void		_XimThaiDestroyIC( );
@@ -70,6 +70,10 @@ _XimThaiCreateIC(im, values)
     XIMArg		*values;
 {
     Xic			 ic;
+    XimDefICValues	 ic_values;
+    XIMResourceList	 res;
+    unsigned int	 num;
+    int			 len;
 
     if((ic = (Xic)Xmalloc(sizeof(XicRec))) == (Xic)NULL) {
 	return ((XIC)NULL);
@@ -102,31 +106,41 @@ _XimThaiCreateIC(im, values)
     ic->private.local.thai.keysym = 0;
     ic->private.local.thai.input_mode = 0;
 
-    if(_XimSetICValueData(ic, values,
-		XIM_CREATEIC, &(ic->private.local.value_mask)))
+    num = im->core.ic_num_resources;
+    len = sizeof(XIMResource) * num;
+    if((res = (XIMResourceList)Xmalloc(len)) == (XIMResourceList)NULL) {
 	goto Set_Error;
+    }
+    (void)memcpy((char *)res, (char *)im->core.ic_resources, len);
+    ic->private.local.ic_resources     = res;
+    ic->private.local.ic_num_resources = num;
 
-    /* The Value must be set */
-    if(!(ic->private.local.value_mask & XIM_INPUTSTYLE))
+    bzero((char *)&ic_values, sizeof(XimDefICValues));
+    if(_XimCheckLocalInputStyle(ic, (XPointer)&ic_values, values,
+					 im->core.styles) == False) {
 	goto Set_Error;
-    if(!(   (ic->core.input_style == (XIMPreeditNothing | XIMStatusNothing))
-         || (ic->core.input_style == (XIMPreeditNone | XIMStatusNone)) ) )
-	goto Set_Error;
+    }
 
-    if(ic->core.input_style & XIMPreeditCallbacks)
-	/* Preedit Callback */
-	if(!(ic->private.local.value_mask & XIM_PREEDITCALLBACK))
-	    goto Set_Error;
-    if(ic->core.input_style & XIMStatusCallbacks)
-	/* Status Callback */
-	if(!(ic->private.local.value_mask & XIM_STATUSCALLBACK))
-	    goto Set_Error;
+    _XimSetICMode(res, num, ic_values.input_style);
+
+    if(_XimSetICValueData(ic, (XPointer)&ic_values, values, XIM_CREATEIC)) {
+	goto Set_Error;
+    }
+    if(_XimSetICDefaults(ic,
+			 (XPointer)&ic_values, XIM_SETICDEFAULTS) == False) {
+	goto Set_Error;
+    }
+    ic_values.filter_events = KeyPressMask;
+    _XimSetCurrentICValues(ic, &ic_values);
 
     _XRegisterFilterByType(ic->core.im->core.display, ic->core.focus_window,
 			   KeyPress, KeyPress, _XimThaiFilter, (XPointer)ic);
     return ((XIC)ic);
 
 Set_Error :
+    if (ic->private.local.ic_resources) {
+	Xfree(ic->private.local.ic_resources);
+    }
     Xfree(ic);
     return((XIC)NULL);
 }
@@ -138,6 +152,9 @@ _XimThaiDestroyIC(xic)
     Xic	 ic = (Xic)xic;
     if(((Xim)ic->core.im)->private.local.current_ic == (XIC)ic) {
 	_XimThaiUnSetFocus(ic);
+    }
+    if(ic->private.local.ic_resources) {
+	Xfree(ic->private.local.ic_resources);
     }
 
     Xfree(ic->private.local.context->mb);

@@ -1,38 +1,33 @@
-/* $XConsortium: lcCT.c,v 1.1 93/09/17 13:27:54 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: lcCT.c,v 1.2 93/09/17 14:23:59 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include <X11/Xos.h>
+#include <stdio.h>
 
 typedef struct _StateRec {
     XlcCharSet charset;
@@ -155,7 +150,7 @@ _XlcParseCT(parse, text, length)
     unsigned char ch;
     register unsigned char *str = (unsigned char *) *text;
 
-    bzero(parse, sizeof(CTParseRec));
+    bzero((char *) parse, sizeof(CTParseRec));
 
     switch (ch = *str++) {
 	case XctESC:
@@ -364,7 +359,7 @@ _XlcParseCharSet(charset)
     XlcCharSet charset;
 {
     CTParseRec parse;
-    char *ptr, buf[BUFSIZE];
+    char *ptr, buf[BUFSIZ];
     unsigned int type;
     int length;
 
@@ -710,9 +705,9 @@ close_converter(conv)
     XlcConv conv;
 {
     if (conv->state)
-	_XlcFree((char *) conv->state);
+	Xfree((char *) conv->state);
 
-    _XlcFree((char *) conv);
+    Xfree((char *) conv);
 }
 
 static XlcConv
@@ -721,11 +716,11 @@ create_conv(methods)
 {
     register XlcConv conv;
 
-    conv = (XlcConv) _XlcAlloc(sizeof(XlcConvRec));
+    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
     if (conv == NULL)
 	return (XlcConv) NULL;
 
-    conv->state = (XPointer) _XlcAlloc(sizeof(StateRec));
+    conv->state = (XPointer) Xmalloc(sizeof(StateRec));
     if (conv->state == NULL)
 	goto err;
     

@@ -1,82 +1,62 @@
-/* $XConsortium: lcPubWrap.c,v 1.1 93/09/17 13:30:57 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: lcPubWrap.c,v 1.2 93/09/17 14:24:11 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
 
 #if NeedVarargsPrototypes
-#include <stdarg.h>
-#define Va_start(a, b)	va_start(a, b)
-#else
-#include <varargs.h>
-#define Va_start(a, b)	va_start(a)
-#endif
-
-#if NeedVarargsPrototypes
 char *
-_XlcGetLCValues(XLCd lcd, ...)
+_XGetLCValues(XLCd lcd, ...)
 #else
 char *
-_XlcGetLCValues(lcd, va_alist)
+_XGetLCValues(lcd, va_alist)
     XLCd lcd;
     va_dcl
 #endif
 {
     va_list var;
-    XlcArgList arg_list, list;
+    XlcArgList args;
     char *ret;
-    int count;
+    int num_args;
     XLCdPublicMethodsPart *methods = XLC_PUBLIC_METHODS(lcd);
 
     Va_start(var, lcd);
-
-    for (count = 0; va_arg(var, char *); count++)
-	va_arg(var, XPointer);
-
+    _XlcCountVaList(var, &num_args);
     va_end(var);
 
-    arg_list = (XlcArgList) Xmalloc(sizeof(XlcArg) * count + 1);
-    if (arg_list == (XlcArgList) NULL)
+    Va_start(var, lcd);
+    _XlcVaToArgList(var, num_args, &args);
+    va_end(var);
+
+    if (args == (XlcArgList) NULL)
 	return (char *) NULL;
     
-    Va_start(var, lcd);
+    ret = (*methods->get_values)(lcd, args, num_args);
 
-    for (list = arg_list; list->name = va_arg(var, char *); list++)
-	list->value = va_arg(var, XPointer);
-
-    va_end(var);
-
-    ret = (*methods->get_values)(lcd, arg_list);
-
-    Xfree(arg_list);
+    Xfree(args);
 
     return ret;
 }

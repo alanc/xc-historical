@@ -1,37 +1,32 @@
-/* $XConsortium: lcConv.c,v 1.2 93/09/17 14:24:03 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: lcConv.c,v 1.3 93/09/17 18:25:03 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
+#include <stdio.h>
 
 typedef XlcConv (*XlcConverter)();
 
@@ -143,7 +138,7 @@ indirect_convert(lc_conv, from, from_left, to, to_left, args, num_args)
     XlcConv from_conv = conv->from_conv;
     XlcConv to_conv = conv->to_conv;
     XlcCharSet charset;
-    char buf[BUFSIZE], *cs;
+    char buf[BUFSIZ], *cs;
     XPointer tmp_args[1];
     int cs_left, ret, length, unconv_num = 0;
 
@@ -159,7 +154,7 @@ indirect_convert(lc_conv, from, from_left, to, to_left, args, num_args)
 
     while (*from_left > 0) {
 	cs = buf;
-	cs_left = BUFSIZE;
+	cs_left = BUFSIZ;
 	tmp_args[0] = (XPointer) &charset;
 
 	ret = (*from_conv->methods->convert)(from_conv, from, from_left, &cs,
@@ -198,10 +193,10 @@ close_indirect_converter(lc_conv)
 	if (conv->to_conv)
 	    close_converter(conv->to_conv);
 
-	_XlcFree((char *) conv);
+	Xfree((char *) conv);
     }
 
-    _XlcFree((char *) lc_conv);
+    Xfree((char *) lc_conv);
 }
 
 static void
@@ -245,13 +240,13 @@ open_indirect_converter(from_lcd, from, to_lcd, to)
     if (from_type == QCharSet || to_type == QCharSet)
 	return (XlcConv) NULL;
 
-    lc_conv = (XlcConv) _XlcAlloc(sizeof(XlcConvRec));
+    lc_conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
     if (lc_conv == NULL)
 	return (XlcConv) NULL;
     
     lc_conv->methods = &conv_methods;
 
-    lc_conv->state = (XPointer) _XlcAlloc(sizeof(ConvRec));
+    lc_conv->state = (XPointer) Xmalloc(sizeof(ConvRec));
     if (lc_conv->state == NULL)
 	goto err;
     
@@ -324,84 +319,4 @@ _XlcResetConverter(conv)
 {
     if (conv->methods->reset)
 	(*conv->methods->reset)(conv);
-}
-
-typedef struct _AllocListRec {
-  Bool is_used;
-  int length;
-  char *ptr;
-  struct _AllocListRec *next;
-} AllocListRec, *AllocList;
-
-static AllocList alloc_list = NULL;
-
-char *
-_XlcAlloc(length)
-    int length;
-{
-    register AllocList list, min_list, max_list;
-    char *ptr;
-
-    min_list = max_list = NULL;
-
-    for (list = alloc_list; list; list = list->next) {
-	if (list->is_used == False) {
-	    if (length == list->length) {
-		min_list = list;
-		break;
-	    }
-	    if (length < list->length) {
-		if (min_list && list->length > min_list->length)
-		    continue;
-		min_list = list;
-	    } else if (min_list == NULL) {
-		if (max_list && list->length < max_list->length)
-		    continue;
-		max_list = list;
-	    }
-	}
-    }
-
-    if (min_list) {
-	list = min_list;
-	goto done;
-    } else if (max_list) {
-	list = max_list;
-	ptr = Xrealloc(list->ptr, length);
-	if (ptr == NULL)
-	    return NULL;
-    } else {
-	list = (AllocList) Xmalloc(sizeof(AllocListRec));
-	if (list == NULL)
-	    return NULL;
-
-	ptr = Xmalloc(length);
-	if (ptr == NULL) {
-	    Xfree(list);
-	    return NULL;
-	}
-
-	list->next = alloc_list;
-	alloc_list = list;
-    }
-
-    list->ptr = ptr;
-    list->length = length;
-done:
-    list->is_used = True;
-
-    return list->ptr;
-}
-
-void
-_XlcFree(ptr)
-    register char *ptr;
-{
-    register AllocList list;
-
-    for (list = alloc_list; list; list = list->next)
-	if (list->ptr == ptr && list->is_used == True) {
-	    list->is_used = False;
-	    return;
-	}
 }

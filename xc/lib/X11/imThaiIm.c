@@ -1,7 +1,7 @@
-/* $XConsortium$ */
+/* $XConsortium: imThaiIm.c,v 1.1 93/09/17 13:28:21 rws Exp $ */
 /******************************************************************
 
-          Copyright 1992 by FUJITSU LIMITED
+          Copyright 1992, 1993 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -43,13 +43,13 @@ THIS SOFTWARE.
 #include "XlcPublic.h"
 #include "Ximint.h"
 
-Public  char *		_XimLocalGetIMValues( );
 Public  Status		_XimThaiCloseIM( );
 extern  XIC		_XimThaiCreateIC( );
 
 Private XIMMethodsRec      Xim_im_thai_methods = {
     _XimThaiCloseIM,           /* close */
-    _XimLocalGetIMValues,       /* get_values */
+    _XimLocalSetIMValues,      /* set_values */
+    _XimLocalGetIMValues,      /* get_values */
     _XimThaiCreateIC,          /* create_ic */
 };
 
@@ -67,47 +67,83 @@ _XimCheckIfThaiProcessing(im)
 {
     char *language;
 
-    _XlcGetLCValues(im->core.lcd, XlcNLanguage, &language, NULL);
+    _XGetLCValues(im->core.lcd, XlcNLanguage, &language, NULL);
     if(strcmp(language, THAI_LANGUAGE_NAME) == 0) {
 	return(True);
     }
     return(False);
 }
 
-Bool
+Public Bool
 _XimThaiOpenIM(im)
     Xim		 im;
 {
-    im->methods = &Xim_im_thai_methods;
+    XimDefIMValues	 im_values;
 
-    im->private.local.styles = (XIMStyles *)Xmalloc(sizeof(XIMStyles));
-    if(im->private.local.styles) {
-	im->private.local.styles->supported_styles = 
-			(XIMStyle *)Xmalloc(sizeof(XIMStyle) * 2);
-	im->private.local.styles->count_styles = 2;
-	if(im->private.local.styles->supported_styles == NULL) {
-	    Xfree(im->private.local.styles);
-	    im->private.local.styles = NULL;
-	    return(False);
-	}
-	im->private.local.styles->supported_styles[0] =
-					XIMPreeditNone | XIMStatusNone;
-	im->private.local.styles->supported_styles[1] =
-					XIMPreeditNothing | XIMStatusNothing;
-    } else {
-	return(False);
+    _XimInitialResourceInfo();
+    if(_XimSetIMResourceList(&im->core.im_resources,
+		 		&im->core.im_num_resources) == False) {
+	goto Open_Error;
+    }
+    if(_XimSetICResourceList(&im->core.ic_resources,
+				&im->core.ic_num_resources) == False) {
+	goto Open_Error;
     }
 
+    _XimSetIMMode(im->core.im_resources, im->core.im_num_resources);
+
+    _XimGetCurrentIMValues(im, &im_values);
+    if(_XimSetLocalIMDefaults(im, (XPointer)&im_values) == False) {
+	goto Open_Error;
+    }
+    _XimSetCurrentIMValues(im, &im_values);
+
+    im->methods = &Xim_im_thai_methods;
     im->private.local.current_ic = (XIC)NULL;
     return(True);
+
+Open_Error :
+    if (im->core.im_resources) {
+	Xfree(im->core.im_resources);
+    }
+    if (im->core.ic_resources) {
+	Xfree(im->core.ic_resources);
+    }
+    if (im->core.extensions) {
+	Xfree(im->core.extensions);
+    }
+    if (im->core.options) {
+	Xfree(im->core.options);
+    }
+    if (im->core.icattributes) {
+	Xfree(im->core.icattributes);
+    }
+    if (im->core.styles) {
+	Xfree(im->core.styles);
+    }
+    return(False);
 }
 
 Public void
 _XimThaiIMFree(im)
     Xim		im;
 {
-    Xfree(im->private.local.styles->supported_styles);
-    Xfree(im->private.local.styles);
+    if(im->core.im_resources)
+	Xfree(im->core.im_resources);
+    if(im->core.ic_resources)
+	Xfree(im->core.ic_resources);
+    if(im->core.extensions)
+	Xfree(im->core.extensions);
+    if(im->core.options)
+	Xfree(im->core.options);
+    if(im->core.icattributes)
+	Xfree(im->core.icattributes);
+    if(im->core.styles)
+	Xfree(im->core.styles);
+    if(im->core.res_name)
+	Xfree(im->core.res_name);
+    if(im->core.res_class)
+	Xfree(im->core.res_class);
     if(im->core.im_name)
 	Xfree(im->core.im_name);
     return;

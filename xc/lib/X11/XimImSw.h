@@ -1,7 +1,7 @@
-/* $XConsortium$ */
+/* $XConsortium: XimImSw.h,v 1.1 93/09/17 13:26:39 rws Exp $ */
 /******************************************************************
 
-                Copyright 1992 by FUJITSU LIMITED
+                Copyright 1992, 1993 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -31,9 +31,21 @@ PERFORMANCE OF THIS SOFTWARE.
 #define _XIMIMSW_H
 
 typedef struct {
-    Bool	(*checkprocessing)();
-    Bool	(*im_open)();
-    void	(*im_free)();
+    Bool	(*checkprocessing)(
+#if NeedFunctionPrototypes
+	Xim   im
+#endif
+		);
+    Bool	(*im_open)(
+#if NeedFunctionPrototypes
+	Xim   im
+#endif
+		);
+    void	(*im_free)(
+#if NeedFunctionPrototypes
+	Xim   im
+#endif
+		);
 } XimImsportSW;
 
 extern XimImsportSW _XimImSportRec[];

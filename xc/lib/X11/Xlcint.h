@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.14 93/09/17 13:24:53 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.15 93/09/18 10:28:49 rws Exp $
  */
 
 /*
@@ -9,6 +9,7 @@
  * Copyright 1991 by the Open Software Foundation
  * Copyright 1993 by the TOSHIBA Corp.
  * Copyright 1993 by the Sony Corporation
+ * Copyright 1993 by the FUJITSU LIMITED
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -39,6 +40,7 @@
  *		 M. Collins		OSF  
  *		 Katsuhisa Yano		TOSHIBA Corp.
  *               Makoto Wakamatsu       Sony Corporation
+ *               Takashi Fujiwara	FUJITSU LIMITED
  */				
 
 
@@ -47,22 +49,23 @@
 
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
+#include "Xvarargs.h"
 
-/* current Ultrix compiler gets horribly confused */
-#if defined(FUNCPROTO) && defined(ultrix)
-#undef NeedFunctionPrototypes
+typedef Bool (*XFilterEventProc)(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* window */,
+    XEvent*		/* event */,
+    XPointer		/* client_data */
 #endif
+);
 
 typedef struct _XIMFilter {
     struct _XIMFilter *next;
     Window window;
     unsigned long event_mask;
     int start_type, end_type;
-    Bool (*filter)(
-#if NeedFunctionPrototypes
-	Display*, Window, XEvent*, XPointer
-#endif
-	);
+    XFilterEventProc filter;
     XPointer client_data;
 } XFilterEventRec, *XFilterEventList;
 
@@ -79,36 +82,18 @@ typedef struct {
 
 #define XIMNumber(arr) ((unsigned int) (sizeof(arr) / sizeof(arr[0])))
 
-#define IMResourceWrite		1
-#define IMResourceRead 		2
-#define IMResourceReadWrite	3
-
 /*
  * define secondary data structs which are part of Input Methods
  * and Input Context
  */
 typedef struct {
-    XrmQuark		xrm_name;		/* Resource name quark */
-    int			xrm_size;		/* Size in bytes of data */
-    long		xrm_offset;		/* -offset-1 */
-    unsigned short 	mode;			/* Read Write Permission */
-    unsigned short 	id;			/* Input Method Protocol */
-} XIMrmResource, *XIMrmResourceList;
-
-typedef struct {
     char		*resource_name;		/* Resource string */
+    XrmQuark		xrm_name;		/* Resource name quark */
     int			resource_size;		/* Size in bytes of data */
     long		resource_offset;	/* Offset from base */
     unsigned short 	mode;			/* Read Write Permission */
     unsigned short 	id;			/* Input Method Protocol */
 } XIMResource, *XIMResourceList;
-
-typedef struct {
-    XIMCallback start;
-    XIMCallback done;
-    XIMCallback draw;
-    XIMCallback caret;
-} ICCallbacks;
 
 /*
  * data block describing the visual attributes associated with
@@ -124,43 +109,73 @@ typedef struct {
     unsigned long	background;
     Pixmap		background_pixmap;
     XFontSet            fontset;
-    int	       		line_space;
+    int	       		line_spacing;
     Cursor		cursor;
-    ICCallbacks		callbacks;
-} ICAttributes, *ICAttributesPtr;
+    XIMCallback		start_callback;
+    XIMCallback		done_callback;
+    XIMCallback		draw_callback;
+    XIMCallback		caret_callback;
+    XIMPreeditState	preedit_state;
+} ICPreeditAttributes, *ICPreeditAttributesPtr;
+
+typedef struct {
+    XRectangle		area;
+    XRectangle		area_needed;
+    Colormap		colormap;
+    Atom		std_colormap;
+    unsigned long	foreground;
+    unsigned long	background;
+    Pixmap		background_pixmap;
+    XFontSet            fontset;
+    int	       		line_spacing;
+    Cursor		cursor;
+    XIMCallback		start_callback;
+    XIMCallback		done_callback;
+    XIMCallback		draw_callback;
+} ICStatusAttributes, *ICStatusAttributesPtr;
 
 /*
  * Methods for Xrm parsing
  */
 
+typedef void (*XmbInitProc)(
+#if NeedFunctionPrototypes
+    XPointer		/* state */
+#endif
+);
+
+typedef char (*XmbCharProc)(
+#if NeedFunctionPrototypes
+    XPointer		/* state */,
+    char*		/* str */,
+    int*		/* lenp */
+#endif
+);
+
+typedef void (*XmbFinishProc)(
+#if NeedFunctionPrototypes
+    XPointer		/* state */
+#endif
+);
+
+typedef char* (*XlcNameProc)(
+#if NeedFunctionPrototypes
+    XPointer		/* state */
+#endif
+);
+
+typedef void (*XrmDestroyProc)(
+#if NeedFunctionPrototypes
+    XPointer		/* state */
+#endif
+);
+
 typedef struct {
-    void (*mbinit)(
-#if NeedFunctionPrototypes
-	XPointer	/* state */
-#endif
-	);
-    char (*mbchar)(
-#if NeedFunctionPrototypes
-	XPointer	/* state */,
-	char*		/* str */,
-	int*		/* lenp */
-#endif
-	);
-    void (*mbfinish)(
-#if NeedFunctionPrototypes
-	XPointer /* state */
-#endif
-	);
-    char* (*lcname)(
-#if NeedFunctionPrototypes
-	XPointer /* state */
-#endif
-	);
-    void (*destroy)(
-#if NeedFunctionPrototypes
-	XPointer /* state */
-#endif
-	);
+    XmbInitProc		mbinit;
+    XmbCharProc		mbchar;
+    XmbFinishProc	mbfinish;
+    XlcNameProc		lcname;
+    XrmDestroyProc	destroy;
 } XrmMethodsRec, *XrmMethods;
 
 typedef struct _XLCd *XLCd; /* need forward reference */
@@ -169,67 +184,140 @@ typedef struct _XLCd *XLCd; /* need forward reference */
  * define an LC, it's methods, and data.
  */
 
+typedef void (*XCloseLCProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */
+#endif
+);
+
+typedef char* (*XlcMapModifiersProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    char*		/* user_mods */,
+    char*		/* prog_mods */
+#endif
+);
+
+typedef XOM (*XOpenOMProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    Display*		/* display */,
+    XrmDatabase		/* rdb */,
+    _Xconst char*	/* res_name */,
+    _Xconst char*	/* res_class */
+#endif
+);
+
+typedef XIM (*XOpenIMProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    Display*		/* display */,
+    XrmDatabase		/* rdb */,
+    char*		/* res_name */,
+    char*		/* res_class */
+#endif
+);
+
+typedef Bool (*XRegisterIMInstantiateCallbackProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    Display*		/* display */,
+    XrmDatabase		/* rdb */,
+    char*		/* res_name */,
+    char*		/* res_class */,
+    XIMProc		/* callback */,
+    XPointer*		/* client_data */
+#endif
+);
+
+typedef Bool (*XUnregisterIMInstantiateCallbackProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    Display*		/* display */,
+    XrmDatabase		/* rdb */,
+    char*		/* res_name */,
+    char*		/* res_class */,
+    XIMProc		/* callback */,
+    XPointer*		/* client_data */
+#endif
+);
+
+typedef XrmMethods (*XrmInitParseInfoProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    XPointer*		/* state */
+#endif
+);
+
+typedef int (*XmbTextPropertyToTextListProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    Display*		/* display */,
+    XTextProperty*	/* text_prop */,
+    char***		/* list_return */,
+    int*		/* count_return */
+#endif
+);
+
+typedef int (*XwcTextPropertyToTextListProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    Display*		/* display */,
+    XTextProperty*	/* text_prop */,
+    wchar_t***		/* list_return */,
+    int*		/* count_return */
+#endif
+);
+
+typedef int (*XmbTextListToTextPropertyProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    Display*		/* display */,
+    char**		/* list */,
+    int			/* count */,
+    XICCEncodingStyle	/* style */,
+    XTextProperty*	/* text_prop_return */
+#endif
+);
+
+typedef int (*XwcTextListToTextPropertyProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    Display*		/* display */,
+    wchar_t**		/* list */,
+    int			/* count */,
+    XICCEncodingStyle	/* style */,
+    XTextProperty*	/* text_prop_return */
+#endif
+);
+
+typedef void (*XwcFreeStringListProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */,
+    wchar_t**		/* list */
+#endif
+);
+
+typedef char* (*XDefaultStringProc)(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */
+#endif
+);
+
 typedef struct {
-  char* (*map_modifiers)(		/* called by XSetModifiers */
-#if NeedFunctionPrototypes
-	XLCd, char*, char*
-#endif
-	);
-    XFontSet (*create_fontset)(
-#if NeedFunctionPrototypes
-	XLCd, Display*, char*, char**, int, char***, int*
-#endif
-	);
-    XIM (*open_im)(
-#if NeedFunctionPrototypes
-	XLCd, Display*, XrmDatabase, char*, char*
-#endif
-	);
-    Bool (*register_callback)(
-#if NeedFunctionPrototypes
-	XLCd, Display*, XIMProc, XPointer*
-#endif
-	);
-    Bool (*unregister_callback)(
-#if NeedFunctionPrototypes
-	XLCd, Display*, XIMProc
-#endif
-	);
-    XrmMethods (*init_parse_info)(
-#if NeedFunctionPrototypes
-	XLCd, XPointer*
-#endif
-	);
-    int (*mb_text_prop_to_list)(
-#if NeedFunctionPrototypes
-	XLCd, Display*, XTextProperty*, char***, int*
-#endif
-	);
-    int (*wc_text_prop_to_list)(
-#if NeedFunctionPrototypes
-	XLCd, Display*, XTextProperty*, wchar_t***, int*
-#endif
-	);
-    int (*mb_text_list_to_prop)(
-#if NeedFunctionPrototypes
-	XLCd, Display*, char**, int, XICCEncodingStyle, XTextProperty*
-#endif
-	);
-    int (*wc_text_list_to_prop)(
-#if NeedFunctionPrototypes
-	XLCd, Display*, wchar_t**, int, XICCEncodingStyle, XTextProperty*
-#endif
-	);
-    void (*wc_free_string_list)(
-#if NeedFunctionPrototypes
-	XLCd, wchar_t**
-#endif
-	);
-    char* (*default_string)(
-#if NeedFunctionPrototypes
-	XLCd
-#endif
-	);
+    XCloseLCProc			close;
+    XlcMapModifiersProc			map_modifiers;
+    XOpenOMProc				open_om;
+    XOpenIMProc				open_im;
+    XrmInitParseInfoProc		init_parse_info;
+    XmbTextPropertyToTextListProc	mb_text_prop_to_list;
+    XwcTextPropertyToTextListProc	wc_text_prop_to_list;
+    XmbTextListToTextPropertyProc	mb_text_list_to_prop;
+    XwcTextListToTextPropertyProc	wc_text_list_to_prop;
+    XwcFreeStringListProc		wc_free_string_list;
+    XDefaultStringProc			default_string;
+    XRegisterIMInstantiateCallbackProc	register_callback;
+    XUnregisterIMInstantiateCallbackProc unregister_callback;
 } XLCdMethodsRec, *XLCdMethods;
 
 
@@ -250,6 +338,103 @@ typedef int XlcPosition;
 #define XlcHead		0
 #define XlcTail		-1
 
+typedef struct {
+    char *name;
+    XPointer value;
+} XlcArg, *XlcArgList;
+
+typedef struct _XlcResource {
+    char *name;
+    XrmQuark xrm_name;
+    int size;
+    int offset;
+    unsigned long mask;
+} XlcResource, *XlcResourceList;
+
+#define XlcCreateMask	(1L<<0)
+#define XlcDefaultMask	(1L<<1)
+#define XlcGetMask	(1L<<2)
+#define XlcSetMask	(1L<<3)
+#define XlcIgnoreMask	(1L<<4)
+
+#define XlcNumber(arr)	(sizeof(arr) / sizeof(arr[0]))
+
+typedef Status (*XCloseOMProc)(
+#if NeedFunctionPrototypes
+    XOM			/* om */
+#endif
+);
+
+typedef char* (*XSetOMValuesProc)(
+#if NeedFunctionPrototypes
+    XOM			/* om */,
+    XlcArgList		/* args */,
+    int			/* num_args */
+#endif
+);
+
+typedef char* (*XGetOMValuesProc)(
+#if NeedFunctionPrototypes
+    XOM			/* om */,
+    XlcArgList		/* args */,
+    int			/* num_args */
+#endif
+);
+
+typedef XOC (*XCreateOCProc)(
+#if NeedFunctionPrototypes
+    XOM			/* om */,
+    XlcArgList		/* args */,
+    int			/* num_args */
+#endif
+);
+
+typedef struct _XOMMethodsRec {
+    XCloseOMProc	close;
+    XSetOMValuesProc	set_values;
+    XGetOMValuesProc	get_values;
+    XCreateOCProc	create_oc;
+} XOMMethodsRec, *XOMMethods;
+
+typedef struct _XOMCoreRec {
+    XLCd lcd;				/* lcd */
+    Display *display;			/* display */
+    XrmDatabase rdb;			/* database */
+    char *res_name;			/* resource name */
+    char *res_class;			/* resource class */
+    XOC oc_list;			/* xoc list */
+    XlcResourceList resources;		/* xom resources */
+    int num_resources;			/* number of xom resources */
+    XOMCharSetList required_charset;	/* required charset list */
+    XOMOrientation orientation_list;	/* orientation list */
+} XOMCoreRec, *XOMCore;
+
+typedef struct _XOM {
+    XOMMethods methods;
+    XOMCoreRec core;
+} XOMRec;
+
+typedef void (*XDestroyOCProc)(
+#if NeedFunctionPrototypes
+    XOC			/* oc */
+#endif
+);
+
+typedef char* (*XSetOCValuesProc)(
+#if NeedFunctionPrototypes
+    XOC			/* oc */,
+    XlcArgList		/* args */,
+    int			/* num_args */
+#endif
+);
+
+typedef char* (*XGetOCValuesProc)(
+#if NeedFunctionPrototypes
+    XOC			/* oc */,
+    XlcArgList		/* args */,
+    int			/* num_args */
+#endif
+);
 
 /*
  * X Font Sets are an instantiable object, so we define it, the 
@@ -259,100 +444,182 @@ typedef int XlcPosition;
 /* 
  * XFontSet object method list
  */
-typedef struct {
-    /* pure font methods */
 
-    void (*free)(
+typedef int (*XmbTextEscapementProc)(
 #if NeedFunctionPrototypes
-	Display*, XFontSet
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* text_len */
 #endif
-	);
-    
+);
+
+typedef int (*XmbTextExtentsProc)(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* text_len */,
+    XRectangle*		/* overall_ink_extents */,
+    XRectangle*		/* overall_logical_extents */
+#endif
+);
+
+typedef Status (*XmbTextPerCharExtentsProc)(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* text_len */,
+    XRectangle*		/* ink_extents_buffer */,
+    XRectangle*		/* logical_extents_buffer */,
+    int			/* buffer_size */,
+    int*		/* num_chars */,
+    XRectangle*		/* max_ink_extents */,
+    XRectangle*		/* max_logical_extents */
+#endif
+);
+
+typedef int (*XmbDrawStringProc)(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* drawable */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    _Xconst char*	/* text */,
+    int			/* text_len */
+#endif
+);
+
+typedef void (*XmbDrawImageStringProc)(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* drawable */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    _Xconst char*	/* text */,
+    int			/* text_len */
+#endif
+);
+
+typedef int (*XwcTextEscapementProc)(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */,
+    _Xconst wchar_t*	/* text */,
+    int			/* text_len */
+#endif
+);
+
+typedef int (*XwcTextExtentsProc)(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */,
+    _Xconst wchar_t*	/* text */,
+    int			/* text_len */,
+    XRectangle*		/* overall_ink_extents */,
+    XRectangle*		/* overall_logical_extents */
+#endif
+);
+
+typedef Status (*XwcTextPerCharExtentsProc)(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */,
+    _Xconst wchar_t*	/* text */,
+    int			/* text_len */,
+    XRectangle*		/* ink_extents_buffer */,
+    XRectangle*		/* logical_extents_buffer */,
+    int			/* buffer_size */,
+    int*		/* num_chars */,
+    XRectangle*		/* max_ink_extents */,
+    XRectangle*		/* max_logical_extents */
+#endif
+);
+
+typedef int (*XwcDrawStringProc)(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* drawable */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    _Xconst wchar_t*	/* text */,
+    int			/* text_len */
+#endif
+);
+
+typedef void (*XwcDrawImageStringProc)(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* drawable */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    _Xconst wchar_t*	/* text */,
+    int			/* text_len */
+#endif
+);
+
+typedef struct {
+    XDestroyOCProc 		destroy;
+    XSetOCValuesProc 		set_values;
+    XGetOCValuesProc 		get_values;
+
     /* multi-byte text drawing methods */
 
-    int (*mb_escapement)(
-#if NeedFunctionPrototypes
-	XFontSet, char*, int
-#endif
-	);
-    int (*mb_extents)(
-#if NeedFunctionPrototypes
-	XFontSet, char*, int, XRectangle*, XRectangle*
-#endif
-	);
-    Status (*mb_extents_per_char)(
-#if NeedFunctionPrototypes
-	XFontSet, char*, int, XRectangle*, XRectangle*, int, int*,
-	XRectangle*, XRectangle*
-#endif
-	);
-    int (*mb_draw_string)(
-#if NeedFunctionPrototypes
-	Display*, Drawable, XFontSet, GC, int, int, char*, int
-#endif
-	);
-    void (*mb_draw_image_string)(
-#if NeedFunctionPrototypes
-	Display*, Drawable, XFontSet, GC, int, int, char*, int
-#endif
-	);
+    XmbTextEscapementProc	mb_escapement;
+    XmbTextExtentsProc		mb_extents;
+    XmbTextPerCharExtentsProc	mb_extents_per_char;
+    XmbDrawStringProc		mb_draw_string;
+    XmbDrawImageStringProc	mb_draw_image_string;
 
     /* wide character text drawing methods */
 
-    int (*wc_escapement)(
-#if NeedFunctionPrototypes
-	XFontSet, wchar_t*, int
-#endif
-	);
-    int (*wc_extents)(
-#if NeedFunctionPrototypes
-	XFontSet, wchar_t*, int, XRectangle*, XRectangle*
-#endif
-	);
-    Status (*wc_extents_per_char)(
-#if NeedFunctionPrototypes
-	XFontSet, wchar_t*, int, XRectangle*, XRectangle*, int, int*,
-	XRectangle*, XRectangle*
-#endif
-	);
-    int (*wc_draw_string)(
-#if NeedFunctionPrototypes
-	Display*, Drawable, XFontSet, GC, int, int, wchar_t*, int
-#endif
-	);
-    void (*wc_draw_image_string)(
-#if NeedFunctionPrototypes
-	Display*, Drawable, XFontSet, GC, int, int, wchar_t*, int
-#endif
-	);
-} XFontSetMethodsRec, *XFontSetMethods;
+    XwcTextEscapementProc	wc_escapement;
+    XwcTextExtentsProc		wc_extents;
+    XwcTextPerCharExtentsProc	wc_extents_per_char;
+    XwcDrawStringProc		wc_draw_string;
+    XwcDrawImageStringProc	wc_draw_image_string;
+} XOCMethodsRec, *XOCMethods;
 
 
 /*
- * XFontSet LC independent data
+ * XOC independent data
  */
 
 typedef struct {
-    XLCd		lcd;			/* LC of this font set */
-    char *		base_name_list;     	/* base font name list */
-    int            	num_of_fonts;       	/* number of fonts */
-    char **		font_name_list;     	/* font names list */
-    XFontStruct **	font_struct_list;   	/* font struct list */
-    XFontSetExtents  	font_set_extents;   	/* font set extents */
-    char *		default_string;     	/* default string */
-    Bool		context_dependent;	/* context-dependent drawing */
-} XFontSetCoreRec, *XFontSetCore;
+    XFontSet self;			/* for compatibility */
+    XOM om;				/* XOM */
+    XOC next;				/* next XOC */
+    XlcResourceList resources;		/* xoc resources */
+    int num_resources;			/* number of xoc resources */
+    char *base_name_list;     		/* base font name list */
+    XOMFontInfo font_info;		/* font info */
+    XFontSetExtents font_set_extents;  	/* font set extents */
+    char *default_string;     		/* default string */
+    Bool context_dependent;		/* context-dependent drawing */
+    Bool directional_dependent;		/* directional-dependent */
+    Bool contextual_drawing;		/* contextual drawing */
+    XOMCharSetList missing_list;	/* missing charset list */
+    XOMCallback post_edit_callback;	/* post edit callback */
+    XOrientation orientation;		/* orientation */
+    char *res_name;			/* resource name */
+    char *res_class;			/* resource class */
+    unsigned short width;
+    XOMDrawingGravity drawing_gravity;
+} XOCCoreRec, *XOCCore;
+
+typedef struct _XOC {
+    XOCMethods methods;
+    XOCCoreRec core;
+} XOCRec;
 
 
-/*
- * An XFontSet.  Implementations may need to extend this data structure to
- * accomodate additional data, state information etc.
- */
-typedef struct _XFontSet {
-    XFontSetMethods	methods;		/* methods of this font set */
-    XFontSetCoreRec	core;			/* data of this font set */
-} XFontSetRec;
-
+/* current Ultrix compiler gets horribly confused */
+#if defined(FUNCPROTO) && defined(ultrix)
+#undef NeedFunctionPrototypes
+#endif
 
 
 /*
@@ -367,6 +634,11 @@ typedef struct {
     Status (*close)(
 #if NeedFunctionPrototypes
 	XIM
+#endif
+	);
+    char* (*set_values)(
+#if NeedFunctionPrototypes
+	XIM, XIMArg*
 #endif
 	);
     char* (*get_values)(
@@ -393,6 +665,11 @@ typedef struct {
     char *		res_name;
     char *		res_class;
 
+    XIMExtensionsList	*extensions;
+    XIMOptionsList	*options;
+    XIMICAttributesList	*icattributes;
+    XIMStyles		*styles;
+    XIMCallback		 destroy_callback;
     char *		im_name;		/* XIMMODIFIER name */
     XIMResourceList	im_resources;		/* compiled IM resource list */
     unsigned int	im_num_resources;
@@ -470,7 +747,6 @@ typedef struct {
 } XICMethodsRec, *XICMethods;
 
 
-
 /*
  * Input Context LC independent data
  */
@@ -487,8 +763,17 @@ typedef struct {
     char *		res_name;
     char *		res_class;
 
-    ICAttributes	preedit_attr;		/* visuals of preedit area */
-    ICAttributes	status_attr;		/* visuals of status area */
+    XIMCallback		destroy_callback;
+    XIMCallback		preedit_state_notify_callback;
+    XIMCallback		string_conversion_callback;
+    XIMStringConversionText	 string_conversion;
+    XIMResetState	reset_state;
+    XIMResetReturn	reset_return;
+    XIMHotKeyTriggers  *hotkey;
+    XIMHotKeyState	hotkey_state;
+
+    ICPreeditAttributes	preedit_attr;		/* visuals of preedit area */
+    ICStatusAttributes	status_attr;		/* visuals of status area */
 } XICCoreRec, *XICCore;
 
 
@@ -513,6 +798,18 @@ typedef XLCd (*XLCdLoadProc)(
 );
 
 _XFUNCPROTOBEGIN
+
+extern XLCd _XOpenLC(
+#if NeedFunctionPrototypes
+    char*		/* name */
+#endif
+);
+
+extern void _XCloseLC(
+#if NeedFunctionPrototypes
+    XLCd		/* lcd */
+#endif
+);
 
 extern XLCd _XlcCurrentLC(
 #if NeedFunctionPrototypes
@@ -614,9 +911,47 @@ extern void _XUnregisterFilter(
 #endif
 );
 
-extern XLCd _XlcGetLC(
+extern void _XlcCountVaList(
 #if NeedFunctionPrototypes
-    char*		/* name */
+    va_list		/* var */,
+    int*		/* count_return */
+#endif
+);
+
+extern void _XlcVaToArgList(
+#if NeedFunctionPrototypes
+    va_list		/* var */,
+    int			/* count */,
+    XlcArgList*		/* args_return */
+#endif
+);
+
+extern void _XlcCompileResourceList(
+#if NeedFunctionPrototypes
+    XlcResourceList	/* resources */,
+    int			/* num_resources */
+#endif
+);
+
+extern char *_XlcGetValues(
+#if NeedFunctionPrototypes
+    XPointer		/* base */,
+    XlcResourceList	/* resources */,
+    int			/* num_resources */,
+    XlcArgList		/* args */,
+    int			/* num_args */,
+    unsigned long	/* mask */
+#endif
+);
+
+extern char *_XlcSetValues(
+#if NeedFunctionPrototypes
+    XPointer		/* base */,
+    XlcResourceList	/* resources */,
+    int			/* num_resources */,
+    XlcArgList		/* args */,
+    int			/* num_args */,
+    unsigned long	/* mask */
 #endif
 );
 

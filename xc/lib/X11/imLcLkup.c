@@ -1,4 +1,4 @@
-/* $XConsortium: imLcLkup.c,v 1.2 93/09/18 11:00:55 rws Exp $ */
+/* $XConsortium: imLcLkup.c,v 1.3 93/09/18 13:14:43 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.

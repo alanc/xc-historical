@@ -1,4 +1,4 @@
-/* $XConsortium: imDispch.c,v 1.1 93/09/17 13:26:06 rws Exp $ */
+/* $XConsortium: imDispch.c,v 1.2 93/09/18 10:14:26 rws Exp $ */
 /******************************************************************
 
                 Copyright 1993 by FUJITSU LIMITED
@@ -84,19 +84,28 @@ _XimFreeProtoIntrCallback(im)
 }
 
 Private Bool
-_XimTransportIntr(im, len, data, call_im)
+#if NeedFunctionPrototypes
+_XimTransportIntr(
+    Xim		 im,
+    INT16	 len,
+    XPointer	 data,
+    XPointer	 call_data)
+#else
+_XimTransportIntr(im, len, data, call_data)
     Xim		 im;
     INT16	 len;
     XPointer	 data;
-    Xim		 call_im;
+    XPointer	 call_data;
+#endif
 {
+    Xim			 call_im = (Xim)call_data;
     XimProtoIntrRec	*rec = call_im->private.proto.intrproto;
     CARD8		 major_opcode = *((CARD8 *)data);
     CARD8		 minor_opcode = *((CARD8 *)data + 1);
 
     for (; rec; rec = rec->next) {
-	if ((major_opcode == rec->major_code)
-	 && (minor_opcode == rec->minor_code))
+	if ((major_opcode == (CARD8)rec->major_code)
+	 && (minor_opcode == (CARD8)rec->minor_code))
 	    if ((*rec->func)(call_im, len, data, rec->call_data))
 		return True;
     }
@@ -107,7 +116,7 @@ Public Bool
 _XimDispatchInit(im)
     Xim		 im;
 {
-    if (im->private.proto.intr_cb(im, _XimTransportIntr, im))
+    if (_XimIntrCallback(im, _XimTransportIntr, (XPointer)im))
 	return True;
     return False;
 }

@@ -1,38 +1,31 @@
-/* $XConsortium$ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: omImText.c,v 1.1 93/09/17 13:32:26 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
-#include "XlcPublic.h"
-#include "XomPublic.h"
+#include "XomGeneric.h"
 
 extern int _XomGenericTextExtents(), _XomGenericDrawString();
 
@@ -40,13 +33,13 @@ extern int _XomGenericTextExtents(), _XomGenericDrawString();
 #define SET_VALUE_MASK	(GCFunction | GCForeground | GCFillStyle)
 
 static void
-_XomGenericDrawImageString(dpy, d, font_set, gc, x, y, type, text, length)
+_XomGenericDrawImageString(dpy, d, oc, gc, x, y, type, text, length)
     Display *dpy;
     Drawable d;
-    XFontSet font_set;
+    XOC oc;
     GC gc;
     int x, y;
-    char *type;
+    XOMTextType type;
     XPointer text;
     int length;
 {
@@ -59,39 +52,49 @@ _XomGenericDrawImageString(dpy, d, font_set, gc, x, y, type, text, length)
     XSetForeground(dpy, gc, values.background);
     XSetFillStyle(dpy, gc, FillSolid);
 
-    _XomGenericTextExtents(font_set, type, text, length, 0, &extent);
+    _XomGenericTextExtents(oc, type, text, length, 0, &extent);
     XFillRectangle(dpy, d, gc, x + extent.x, y + extent.y, extent.width,
 		   extent.height);
 
     XChangeGC(dpy, gc, SET_VALUE_MASK, &values);
 
-    _XomGenericDrawString(dpy, d, font_set, gc, x, y, type, text, length);
+    _XomGenericDrawString(dpy, d, oc, gc, x, y, type, text, length);
 }
 
 void
-_XmbGenericDrawImageString(dpy, d, font_set, gc, x, y, text, length)
+#if NeedFunctionPrototypes
+_XmbGenericDrawImageString(Display *dpy, Drawable d, XOC oc, GC gc, int x,
+			   int y, _Xconst char *text, int length)
+#else
+_XmbGenericDrawImageString(dpy, d, oc, gc, x, y, text, length)
     Display *dpy;
     Drawable d;
-    XFontSet font_set;
+    XOC oc;
     GC gc;
     int x, y;
     char *text;
     int length;
+#endif
 {
-    _XomGenericDrawImageString(dpy, d, font_set, gc, x, y, XlcNMultiByte,
+    _XomGenericDrawImageString(dpy, d, oc, gc, x, y, XOMMultiByte,
 			       (XPointer) text, length);
 }
 
 void
-_XwcGenericDrawImageString(dpy, d, font_set, gc, x, y, text, length)
+#if NeedFunctionPrototypes
+_XwcGenericDrawImageString(Display *dpy, Drawable d, XOC oc, GC gc, int x,
+			   int y, _Xconst wchar_t *text, int length)
+#else
+_XwcGenericDrawImageString(dpy, d, oc, gc, x, y, text, length)
     Display *dpy;
     Drawable d;
-    XFontSet font_set;
+    XOC oc;
     GC gc;
     int x, y;
     wchar_t *text;
     int length;
+#endif
 {
-    _XomGenericDrawImageString(dpy, d, font_set, gc, x, y, XlcNWideChar,
+    _XomGenericDrawImageString(dpy, d, oc, gc, x, y, XOMWideChar,
 			       (XPointer) text, length);
 }

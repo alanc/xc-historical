@@ -1,58 +1,52 @@
-/* $XConsortium$ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
-                                 mopi@osa.ilab.toshiba.co.jp
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: omXChar.c,v 1.1 93/09/17 13:33:06 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include "Xlibint.h"
 #include "XlcPublic.h"
 #include "XomGeneric.h"
 
-typedef struct _StateRec {
-    XLCd lcd;
-    XlcConv conv;
-    XomGeneric font_set;
-} StateRec, *State;
-
-static FontData
-_XomGetFontDataFromCharSet(font_set, charset)
-    XomGeneric font_set;
+static FontSet
+_XomGetFontSetFromCharSet(oc, charset)
+    XOC oc;
     XlcCharSet charset;
 {
-    register FontData font_data = XOM_GENERIC(font_set)->font_data;
-    register num = XOM_GENERIC(font_set)->font_data_num;
+    register FontSet font_set = XOC_GENERIC(oc)->font_set;
+    register num = XOC_GENERIC(oc)->font_set_num;
+    XlcCharSet *charset_list;
+    int charset_count;
 
-    for ( ; num-- > 0; font_data++)
-	if (font_data->charset == charset)
-	    return font_data;
+    for ( ; num-- > 0; font_set++) {
+	charset_count = font_set->charset_count;
+	charset_list = font_set->charset_list;
+	for ( ; charset_count-- > 0; charset_list++)
+	    if (*charset_list == charset)
+		return font_set;
+    }
 
-    return (FontData) NULL;
+    return (FontSet) NULL;
 }
 
 #ifdef MUSTCOPY
@@ -114,8 +108,31 @@ shift_to_gr(text, length)
 	*text++ |= 0x80;
 }
 
+static Bool
+load_font(oc, font_set)
+    XOC oc;
+    FontSet font_set;
+{
+    font_set->font = XLoadQueryFont(oc->core.om->core.display,
+			oc->core.font_info.font_name_list[font_set->id]);
+    if (font_set->font == NULL)
+	return False;
+    
+    oc->core.font_info.font_struct_list[font_set->id] = font_set->font;
+    XFreeFontInfo(NULL, font_set->info, 1);
+    font_set->info = NULL;
+
+    if (font_set->font->min_byte1 || font_set->font->max_byte1)
+	font_set->is_xchar2b = True;
+    else
+	font_set->is_xchar2b = False;
+
+    return True;
+}
+
 int
-_XomConvert(conv, from, from_left, to, to_left, args, num_args)
+_XomConvert(oc, conv, from, from_left, to, to_left, args, num_args)
+    XOC oc;
     XlcConv conv;
     XPointer *from;
     int *from_left;
@@ -124,34 +141,35 @@ _XomConvert(conv, from, from_left, to, to_left, args, num_args)
     XPointer *args;
     int num_args;
 {
-    State state = (State) conv->state;
     XPointer cs, lc_args[1];
     XlcCharSet charset;
     int length, cs_left, ret;
-    FontData font_data;
-    XomGeneric fontset = state->font_set;
+    FontSet font_set;
 #ifdef MUSTCOPY
     XChar2b *xchar2b;
-    char *buf, buf_local[BUFSIZE];
+    char *buf, buf_local[BUFSIZ];
 #endif
     
     cs = *to;
     cs_left = *to_left;
     lc_args[0] = (XPointer) &charset;
 
-    ret = _XlcConvert(state->conv, from, from_left, &cs, &cs_left, lc_args, 1);
+    ret = _XlcConvert(conv, from, from_left, &cs, &cs_left, lc_args, 1);
     if (ret < 0)
 	return -1;
 
-    font_data = _XomGetFontDataFromCharSet((XomGeneric) fontset, charset);
-    if (font_data == NULL || font_data->font == NULL)
+    font_set = _XomGetFontSetFromCharSet(oc, charset);
+    if (font_set == NULL)
+	return -1;
+
+    if (font_set->font == NULL && load_font(oc, font_set) == False)
 	return -1;
 
     length = *to_left - cs_left;
 
 #ifdef MUSTCOPY
-    if (font_data->is_xchar2b) {
-	buf = (length > BUFSIZE) ? Xmalloc(length) : buf_local;
+    if (font_set->is_xchar2b) {
+	buf = (length > BUFSIZ) ? Xmalloc(length) : buf_local;
 	if (buf == NULL)
 	    return -1;
 	memcpy(buf, (char *) *to, length);
@@ -159,101 +177,76 @@ _XomConvert(conv, from, from_left, to, to_left, args, num_args)
 	xchar2b = (XChar2b *) *to;
 	length >>= 1;
 
-	if (font_data->side == charset->side)
+	if (font_set->side == charset->side)
 	    cs_to_xchar2b(buf, xchar2b, length);
-	else if (font_data->side == XlcGL)
+	else if (font_set->side == XlcGL)
 	    cs_to_xchar2b_gl(buf, xchar2b, length);
-	else if (font_data->side == XlcGR)
+	else if (font_set->side == XlcGR)
 	    cs_to_xchar2b_gr(buf, xchar2b, length);
 	else
 	    cs_to_xchar2b(buf, xchar2b, length);
 	
 	if (buf != buf_local)
-	    XFree(buf);
+	    Xfree(buf);
 
 	*to = (XPointer) (xchar2b + length);
 	*to_left -= length;
     } else
 #endif
     {
-	if (font_data->side != charset->side) {
-	    if (font_data->side == XlcGL)
+	if (font_set->side != charset->side) {
+	    if (font_set->side == XlcGL)
 		shift_to_gl(*to, length);
-	    else if (font_data->side == XlcGR)
+	    else if (font_set->side == XlcGR)
 		shift_to_gr(*to, length);
 	}
 
-	if (font_data->is_xchar2b)
+	if (font_set->is_xchar2b)
 	    length >>= 1;
 
 	*to = cs;
 	*to_left -= length;
     }
 
-    *((XFontStruct **) args[0]) = font_data->font;
-    *((Bool *) args[1]) = font_data->is_xchar2b;
+    *((XFontStruct **) args[0]) = font_set->font;
+    *((Bool *) args[1]) = font_set->is_xchar2b;
 
     return ret;
 }
 
-void
-_XomCloseConverter(conv)
-    XlcConv conv;
-{
-    State state = (State) conv->state;
-    
-    _XlcResetConverter(state->conv);
-}
-
 XlcConv
-_XomOpenConverter(xfontset, from_type, to_type)
-    XFontSet xfontset;
-    char *from_type;
-    char *to_type;
+_XomInitConverter(oc, type)
+    XOC oc;
+    XOMTextType type;
 {
-    XomGeneric fontset = (XomGeneric) xfontset;
-    XomGenericPart *gen = XOM_GENERIC(fontset);
-    XLCd lcd = fontset->core.lcd;
+    XOCGenericPart *gen = XOC_GENERIC(oc);
     XlcConv conv;
-    State state;
+    char *conv_type;
+    XLCd lcd;
 
-    if (strcmp(from_type, XlcNWideChar) == 0)
-	conv = gen->wc_to_glyph;
-    else
-	conv = gen->mb_to_glyph;
-
-    if (conv)
-	return conv;
-
-    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
-    if (conv == NULL)
-	return (XlcConv) NULL;
-
-    conv->state = (XPointer) Xmalloc(sizeof(StateRec));
-    if (conv->state == NULL)
-	goto err;
-    
-    state = (State) conv->state;
-    state->lcd = lcd;
-    state->conv = _XlcOpenConverter(lcd, from_type, lcd, XlcNCharSet);
-    if (state->conv == NULL)
-	goto err;
-    state->font_set = fontset;
-    
-    if (strcmp(from_type, XlcNWideChar) == 0)
-	gen->wc_to_glyph = conv;
-    else
-	gen->mb_to_glyph = conv;
-
-    return conv;
-
-err:
-    if (conv) {
-	if (conv->state)
-	    XFree(conv->state);
-
-	XFree(conv);
+    if (type == XOMWideChar) {
+	conv = gen->wcs_to_cs;
+	conv_type = XlcNWideChar;
+    } else {
+	conv = gen->mbs_to_cs;
+	conv_type = XlcNMultiByte;
     }
 
-    return (XlcConv) NULL;
+    if (conv) {
+	_XlcResetConverter(conv);
+	return conv;
+    }
+
+    lcd = oc->core.om->core.lcd;
+
+    conv = _XlcOpenConverter(lcd, conv_type, lcd, XlcNCharSet);
+    if (conv == (XlcConv) NULL)
+	return (XlcConv) NULL;
+
+    if (type == XOMWideChar)
+	gen->wcs_to_cs = conv;
+    else
+	gen->mbs_to_cs = conv;
+
+    return conv;
 }

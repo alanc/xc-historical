@@ -1,33 +1,28 @@
-/* $XConsortium: lcPublic.c,v 1.2 93/09/17 14:24:14 rws Exp $ */
-/******************************************************************
-
-              Copyright 1991, 1992 by TOSHIBA Corp.
-              Copyright 1992 by FUJITSU LIMITED
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and
- that both that copyright notice and this permission notice appear
- in supporting documentation, and that the name of TOSHIBA Corp. and
- FUJITSU LIMITED not be used in advertising or publicity pertaining to
- distribution of the software without specific, written prior permission.
- TOSHIBA Corp. and FUJITSU LIMITED makes no representations about the
- suitability of this software for any purpose.
- It is provided "as is" without express or implied warranty.
- 
- TOSHIBA CORP. AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD
- TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS, IN NO EVENT SHALL TOSHIBA CORP. AND FUJITSU LIMITED BE
- LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
- IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
- Author   : Katsuhisa Yano       TOSHIBA Corp.
- Modifier : Takashi Fujiwara     FUJITSU LIMITED 
-                                 fujiwara@a80.tech.yk.fujitsu.co.jp
-
-******************************************************************/
+/* $XConsortium: lcPublic.c,v 1.3 93/09/23 12:31:41 rws Exp $ */
+/*
+ * Copyright 1992, 1993 by TOSHIBA Corp.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of TOSHIBA not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. TOSHIBA make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * TOSHIBA DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * TOSHIBA BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Author: Katsuhisa Yano	TOSHIBA Corp.
+ *			   	mopi@osa.ilab.toshiba.co.jp
+ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -42,18 +37,19 @@ static char *get_values();
 
 static XLCdPublicMethodsRec publicMethods = {
     {
+	destroy,
 	_XlcDefaultMapModifiers,
-	_XomGenericCreateFontSet,
-	_XimOpenIM,
-	_XimRegisterIMInstantiateCallback,
-	_XimUnRegisterIMInstantiateCallback,
+	NULL,
+	NULL,
 	_XrmDefaultInitParseInfo,
 	_XmbTextPropertyToTextList,
 	_XwcTextPropertyToTextList,
 	_XmbTextListToTextProperty,
 	_XwcTextListToTextProperty,
 	_XwcFreeStringList,
-	default_string
+	default_string,
+	NULL,
+	NULL
     }, 
     {
 	NULL,
@@ -80,6 +76,7 @@ create(name, methods)
     XLCdMethods methods;
 {
     XLCd lcd;
+    XLCdPublicMethods new;
 
     lcd = (XLCd) Xmalloc(sizeof(XLCdRec));
     if (lcd == NULL)
@@ -91,10 +88,16 @@ create(name, methods)
 	goto err;
     bzero((char *) lcd->core, sizeof(XLCdPublicRec));
 
+    new = (XLCdPublicMethods) Xmalloc(sizeof(XLCdPublicMethodsRec));
+    if (new == NULL)
+	goto err;
+    *new = *((XLCdPublicMethods) methods);
+    lcd->methods = (XLCdMethods) new;
+
     return lcd;
 
 err:
-    XFree(lcd);
+    Xfree(lcd);
     return (XLCd) NULL;
 }
 
@@ -140,20 +143,14 @@ initialize_core(lcd)
     XLCdMethods methods = lcd->methods;
     XLCdMethods core = &publicMethods.core;
 
+    if (methods->close == NULL)
+	methods->close = core->close;
+
     if (methods->map_modifiers == NULL)
 	methods->map_modifiers = core->map_modifiers;
 
-    if (methods->create_fontset == NULL)
-	methods->create_fontset = core->create_fontset;
-
-    if (methods->open_im == NULL)
-	methods->open_im = core->open_im;
-
-    if (methods->register_callback == NULL)
-	methods->register_callback = core->register_callback;
-
-    if (methods->unregister_callback == NULL)
-	methods->unregister_callback = core->unregister_callback;
+    if (methods->open_om == NULL)
+	_XInitOM(lcd);
 
     if (methods->init_parse_info == NULL)
 	methods->init_parse_info = core->init_parse_info;
@@ -205,7 +202,7 @@ initialize(lcd)
     name = _XlcMapOSLocaleName(name, siname);
 #endif
 	
-    if (_XlcResolveLocaleName(name, lang, terr, code) == NULL)
+    if (_XlcResolveLocaleName(name, NULL, lang, terr, code) == 0)
 	return False;
 
     str = (char*) Xmalloc(strlen(name) + strlen(lang) + strlen(terr) +
@@ -246,11 +243,14 @@ destroy_core(lcd)
 {
     if (lcd->core) {
 	if (lcd->core->name)
-            XFree(lcd->core->name);
-	XFree(lcd->core);
+            Xfree(lcd->core->name);
+	Xfree(lcd->core);
     }
 
-    XFree(lcd);
+    if (lcd->methods)
+	Xfree(lcd->methods);
+
+    Xfree(lcd);
 }
 
 static void
@@ -262,35 +262,39 @@ destroy(lcd)
     _XlcDestroyLocaleDataBase(lcd);
 
     if (pub->siname)
-	XFree(pub->siname);
+	Xfree(pub->siname);
 
     destroy_core(lcd);
 }
 
-static char *
-get_values(lcd, arg_list)
-    register XLCd lcd;
-    register XlcArgList arg_list;
-{
-    /* XXX */
-    for ( ; arg_list->name; arg_list++) {
-	if (!strcmp(arg_list->name, XlcNCodeset))
-	    *((char **) arg_list->value) = XLC_PUBLIC(lcd, codeset);
-	else if (!strcmp(arg_list->name, XlcNDefaultString))
-	    *((char **) arg_list->value) = XLC_PUBLIC(lcd, default_string);
-	else if (!strcmp(arg_list->name, XlcNEncodingName))
-	    *((char **) arg_list->value) = XLC_PUBLIC(lcd, encoding_name);
-	else if (!strcmp(arg_list->name, XlcNLanguage))
-	    *((char **) arg_list->value) = XLC_PUBLIC(lcd, language);
-	else if (!strcmp(arg_list->name, XlcNMbCurMax))
-	    *((int *) arg_list->value) = XLC_PUBLIC(lcd, mb_cur_max);
-	else if (!strcmp(arg_list->name, XlcNStateDependentEncoding))
-	    *((Bool *) arg_list->value) = XLC_PUBLIC(lcd, is_state_depend);
-	else if (!strcmp(arg_list->name, XlcNTerritory))
-	    *((char **) arg_list->value) = XLC_PUBLIC(lcd, territory);
-	else
-	    return arg_list->name;
-    }
+static XlcResource resources[] = {
+    { XlcNCodeset, NULLQUARK, sizeof(char *),
+      XOffsetOf(XLCdPublicRec, pub.codeset), XlcGetMask },
+    { XlcNDefaultString, NULLQUARK, sizeof(char *),
+      XOffsetOf(XLCdPublicRec, pub.default_string), XlcGetMask },
+    { XlcNEncodingName, NULLQUARK, sizeof(char *),
+      XOffsetOf(XLCdPublicRec, pub.encoding_name), XlcGetMask },
+    { XlcNLanguage, NULLQUARK, sizeof(char *),
+      XOffsetOf(XLCdPublicRec, pub.language), XlcGetMask },
+    { XlcNMbCurMax, NULLQUARK, sizeof(int),
+      XOffsetOf(XLCdPublicRec, pub.mb_cur_max), XlcGetMask },
+    { XlcNStateDependentEncoding, NULLQUARK, sizeof(Bool),
+      XOffsetOf(XLCdPublicRec, pub.is_state_depend), XlcGetMask },
+    { XlcNTerritory, NULLQUARK, sizeof(char *),
+      XOffsetOf(XLCdPublicRec, pub.territory), XlcGetMask }
+};
 
-    return (char *) NULL;
+static char *
+get_values(lcd, args, num_args)
+    register XLCd lcd;
+    register XlcArgList args;
+    register int num_args;
+{
+    XLCdPublic pub = (XLCdPublic) lcd->core;
+
+    if (resources[0].xrm_name == NULLQUARK)
+	_XlcCompileResourceList(resources, XlcNumber(resources));
+
+    return _XlcGetValues((XPointer) pub, resources, XlcNumber(resources), args,
+			 num_args, XlcGetMask);
 }
