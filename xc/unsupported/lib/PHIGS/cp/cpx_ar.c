@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_ar.c,v 5.5 91/07/12 20:34:39 hersh Exp $ */
+/* $XConsortium: cpx_ar.c,v 5.6 91/07/15 18:37:48 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -972,8 +972,10 @@ Pint_list		*out;		/* list of sids in network */
 
     merge_and_remove_duplicates(nl, lsts, out);
 
-    for (i = 0; i < nl; i++)
-	free((char *)lsts[i].ints);
+    for (i = 0; i < nl; i++) {
+	if (lsts[i].num_ints)
+	    free((char *)lsts[i].ints);
+    }
 	
     free((char *)lsts);
     
