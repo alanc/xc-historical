@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.63 87/10/03 15:38:59 swick Locked $ */
+/* $Header: connection.c,v 1.64 87/10/29 07:47:14 rws Locked $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -150,7 +150,8 @@ CreateWellKnownSockets()
     if (lastfdesc > MAXSOCKS)
     {
 	lastfdesc = MAXSOCKS;
-	ErrorF( "GOT TO END OF SOCKETS %d\n", MAXSOCKS);
+	if (debug_conns)
+	    ErrorF( "GOT TO END OF SOCKETS %d\n", MAXSOCKS);
     }
 
     WellKnownConnections = 0;
