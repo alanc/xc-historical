@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.71 89/03/11 09:57:50 rws Exp $
+ * $XConsortium: charproc.c,v 1.72 89/03/15 17:02:59 jim Exp $
  */
 
 
@@ -138,7 +138,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.71 89/03/11 09:57:50 rws Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.72 89/03/15 17:02:59 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -198,6 +198,10 @@ static  int	defaultMultiClickTime = MULTICLICKTIME;
 
 static char defaultTranslations[] =
 "\
+  Shift <KeyPress> Prior:	scroll-back(1,halfpage) \n\
+  Shift <KeyPress> Next:	scroll-forw(1,halfpage) \n\
+  Shift <KeyPress> Select:	select-start() \n\
+  Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
         Meta<KeyPress>: 	insert-eight-bit()	\n\
  Ctrl ~Meta <Btn1Down>:		mode-menu()	\n\
