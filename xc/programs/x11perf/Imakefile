@@ -21,9 +21,6 @@ all:: x11perf_labels
 x11perf_labels: do_tests.c
 	./x11perf -labels > x11perf_labels
 
-lint::
-	$(LINT) -u $(SRCS)
-
 clean::
 	$(RM) $(PROGRAMS)
 
