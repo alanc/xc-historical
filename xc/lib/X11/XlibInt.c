@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.191 93/10/20 19:24:11 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.192 93/10/21 09:54:52 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -134,7 +134,6 @@ typedef union {
 
 static char *_XAsyncReply();
 static void _XProcessInternalConnection();
-extern int _XSyncFunction();
 #define SEQLIMIT (65535 - (BUFSIZE / SIZEOF(xReq)) - 10)
 
 /*
@@ -444,6 +443,23 @@ _XWaitForReadable(dpy)
 #endif
 }
 
+static
+int _XSeqSyncFunction(dpy)
+    register Display *dpy;
+{
+    xGetInputFocusReply rep;
+    register xReq *req;
+    int (*func)();
+
+    LockDisplay(dpy);
+    GetEmptyReq(GetInputFocus, req);
+    (void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
+    dpy->synchandler = func = dpy->savedsynchandler;
+    UnlockDisplay(dpy);
+    if (func) (*func)(dpy);
+    return 0;
+}
+
 #ifdef XTHREADS
 static _XFlushInt();
 #endif
@@ -531,7 +547,7 @@ static _XFlushInt (dpy, cv)
 	if ((dpy->request - dpy->last_request_read) >= SEQLIMIT &&
 	    !dpy->savedsynchandler) {
 	    dpy->savedsynchandler = dpy->synchandler;
-	    dpy->synchandler = _XSyncFunction;
+	    dpy->synchandler = _XSeqSyncFunction;
 	}
 }
 
@@ -1250,7 +1266,7 @@ _XSend (dpy, data, size)
 	if ((dpy->request - dpy->last_request_read) >= SEQLIMIT &&
 	    !dpy->savedsynchandler) {
 	    dpy->savedsynchandler = dpy->synchandler;
-	    dpy->synchandler = _XSyncFunction;
+	    dpy->synchandler = _XSeqSyncFunction;
 	}
 }
 
