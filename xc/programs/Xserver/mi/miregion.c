@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.27 87/09/03 13:25:15 rws Locked $ */
+/* $Header: miregion.c,v 1.28 87/10/08 13:48:14 rws Locked $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -1542,8 +1542,9 @@ RegionPtr prgn;
     {
 	yThisBand = pbox->y1;
 	nThisBand = 0;
-	while((nbox--) && (pbox->y1 == yThisBand))
+	while((nbox > 0) && (pbox->y1 == yThisBand))
 	{
+	    nbox--;
 	    pbox++;
 	    nThisBand++;
 	}
