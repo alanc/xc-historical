@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.18 89/09/08 14:34:00 keith Exp $
+ * $XConsortium: dm.c,v 1.19 89/10/09 14:56:47 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -59,6 +59,14 @@ char	**argv;
      */
     InitResources (argc, argv);
     LoadDMResources ();
+    /*
+     * Only allow root to run in non-debug mode to avoid problems
+     */
+    if (debugLevel == 0 && getuid() != 0)
+    {
+	fprintf (stderr, "Only root wants to run %s\n", argv[0]);
+	exit (1);
+    }
     if (debugLevel == 0 && daemonMode)
 	    BecomeDaemon ();
     CreateWellKnownSockets ();
