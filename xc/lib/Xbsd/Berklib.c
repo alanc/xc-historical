@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.11 91/04/02 11:18:54 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.12 91/04/13 14:24:48 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -24,6 +24,10 @@
 #define WANT_BFUNCS
 #define WANT_FFS
 #define WANT_RANDOM
+#endif
+
+#ifdef hcx
+#define WANT_FFS
 #endif
 
 /* you should use Xfuncs.h in code instead of relying on Berklib */
