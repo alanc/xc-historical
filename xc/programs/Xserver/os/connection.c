@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.130 91/03/29 15:21:08 rws Exp $ */
+/* $XConsortium: connection.c,v 1.131 91/04/14 15:43:29 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -619,15 +619,16 @@ EstablishNewConnections()
 	    }
 	}
 #endif /* TCP_NODELAY */
-#if defined(hpux) && defined(FIOSNBIO)
+    /* ultrix reads hang on Unix sockets, hpux reads fail */
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+	(void) fcntl (newconn, F_SETFL, O_NONBLOCK);
+#else
+#ifdef FIOSNBIO
 	{
 	    int	arg;
 	    arg = 1;
 	    ioctl(newconn, FIOSNBIO, &arg);
 	}
-#else
-#ifdef O_NONBLOCK
-	(void) fcntl (newconn, F_SETFL, O_NONBLOCK);
 #else
 	fcntl (newconn, F_SETFL, FNDELAY);
 #endif
