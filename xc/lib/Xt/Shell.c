@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.109 91/07/20 17:02:24 rws Exp $ */
+/* $XConsortium: Shell.c,v 1.109 91/07/20 17:06:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1016,7 +1016,6 @@ static void _SetTransientForHint(w, delete)
 			    XtCXtToolkitError,
 			    "Widget %s has XtUnspecifiedWindow as transient_for",
 			    &w->core.name, &count);
-	    return;
 	}
 
 	XSetTransientForHint( XtDisplay((Widget)w),
