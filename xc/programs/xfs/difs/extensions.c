@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: extensions.c,v 1.2 91/05/13 16:55:16 gildea Exp $ */
 /*
  * font server extensions
  *
@@ -197,7 +197,7 @@ ProcQueryExtension(client)
     REQUEST_AT_LEAST_SIZE(fsQueryExtensionReq);
 
     reply.type = FS_Reply;
-    reply.length = 0;
+    reply.length = sizeof(fsQueryExtensionReply) >> 2;
     reply.major_opcode = 0;
     reply.sequenceNumber = client->sequence;
 
@@ -246,7 +246,7 @@ ProcListExtensions(client)
 
     reply.type = FS_Reply;
     reply.nExtensions = NumExtensions;
-    reply.length = 0;
+    reply.length = sizeof(fsListExtensionsReply) >> 2;
     reply.sequenceNumber = client->sequence;
     buffer = NULL;
 
@@ -260,7 +260,7 @@ ProcListExtensions(client)
 	    for (j = extensions[i]->num_aliases; --j >= 0;)
 		total_length += strlen(extensions[i]->aliases[j]) + 1;
 	}
-	reply.length = (total_length + 3) >> 2;
+	reply.length += (total_length + 3) >> 2;
 	buffer = bufptr = (char *) ALLOCATE_LOCAL(total_length);
 	if (!buffer) {
 	    SendErrToClient(client, FSBadAlloc, NULL);
