@@ -1,4 +1,4 @@
-/* $XConsortium$ 
+/* $XConsortium: math.c,v 1.1 89/05/04 11:44:10 jim Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -16,7 +16,7 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <X11/Xos.h>
 #include <math.h>
 #include <signal.h>
 #include <setjmp.h>
