@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.176 91/04/16 17:59:48 converse Exp $ */
+/* $XConsortium: Text.c,v 1.177 91/05/03 19:49:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +30,7 @@ SOFTWARE.
 #include <X11/Shell.h>
 #include <X11/Xatom.h>
 
+#include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/StdSel.h>
