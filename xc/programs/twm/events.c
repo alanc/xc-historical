@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.162 90/09/20 16:59:44 converse Exp $
+ * $XConsortium: events.c,v 1.163 90/09/20 18:07:14 converse Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.162 90/09/20 16:59:44 converse Exp $";
+"$XConsortium: events.c,v 1.163 90/09/20 18:07:14 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -1939,7 +1939,7 @@ HandleEnterNotify()
 						    &Scr->TwmRoot);
 			SetBorder (Tmp_win, True);			/* 3 */
 			if (Tmp_win->title_w && Scr->TitleFocus &&	/* 4 */
-			    Tmp_win->wmhints->input)
+			    Tmp_win->wmhints && Tmp_win->wmhints->input)
 			  SetFocus (Tmp_win, ewp->time);
 			if (Tmp_win->protocols & DoesWmTakeFocus)	/* 5 */
 			  SendTakeFocusMessage (Tmp_win, ewp->time);
