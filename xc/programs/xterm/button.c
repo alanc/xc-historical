@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.10 88/10/05 12:04:10 swick Exp $
+ *	$XConsortium: button.c,v 1.11 88/10/05 15:12:27 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.10 88/10/05 12:04:10 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.11 88/10/05 15:12:27 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -247,35 +247,107 @@ register XButtonEvent *event;
 	(*(Tbfunc[shift][button]))(event);
 }
 
+struct _SelectionList {
+    String *params;
+    Cardinal count;
+    Time time;
+};
+
+
+static void _GetSelection(w, time, params, num_params)
+Widget w;
+Time time;
+String *params;			/* selections in precedence order */
+Cardinal num_params;
+{
+    void SelectionReceived();
+    Atom selection;
+    int buffer;
+
+    XmuInternStrings(XtDisplay(w), params, (Cardinal)1, &selection);
+    switch (selection) {
+      case XA_CUT_BUFFER0: buffer = 0; break;
+      case XA_CUT_BUFFER1: buffer = 1; break;
+      case XA_CUT_BUFFER2: buffer = 2; break;
+      case XA_CUT_BUFFER3: buffer = 3; break;
+      case XA_CUT_BUFFER4: buffer = 4; break;
+      case XA_CUT_BUFFER5: buffer = 5; break;
+      case XA_CUT_BUFFER6: buffer = 6; break;
+      case XA_CUT_BUFFER7: buffer = 7; break;
+      default:	       buffer = -1;
+    }
+    if (buffer >= 0) {
+	register TScreen *screen = &((XtermWidget)w)->screen;
+	unsigned long nbytes;
+	int fmt8 = 8;
+	Atom type = XA_STRING;
+	char *line = XFetchBuffer(screen->display, &nbytes, buffer);
+	SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
+			  &nbytes, &fmt8);
+    } else {
+	struct _SelectionList* list;
+	if (--num_params) {
+	    list = XtNew(struct _SelectionList);
+	    list->params = params + 1;
+	    list->count = num_params;
+	    list->time = time;
+	} else list = NULL;
+	XtGetSelectionValue(w, selection, XA_STRING, SelectionReceived,
+			    (caddr_t)list, time);
+    }
+}
+
+
+/* ARGSUSED */
+static void SelectionReceived(w, client_data, selection, type,
+			      value, length, format)
+Widget w;
+caddr_t client_data;
+Atom *selection, *type;
+caddr_t value;
+unsigned long *length;
+int *format;
+{
+    int pty = ((XtermWidget)w)->screen.respond;	/* file descriptor of pty */
+    register char *lag, *cp, *end;
+    char *line = (char*)value;
+				  
+    if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0) {
+	struct _SelectionList* list = (struct _SelectionList*)client_data;
+	if (list != NULL) {
+	    _GetSelection(w, list->time, list->params, list->count);
+	    XtFree(client_data);
+	}
+	return;
+    }
+
+    end = &line[*length];
+    lag = line;
+    for (cp = line; cp != end; cp++)
+	{
+	    if (*cp != '\n') continue;
+	    *cp = '\r';
+	    v_write(pty, lag, cp - lag + 1);
+	    lag = cp + 1;
+	}
+    if (lag != end)
+	v_write(pty, lag, end - lag);
+
+    XtFree(client_data);
+    XtFree(*value);
+}
+
 
 /* ARGSUSED */
 HandleInsertSelection(w, event, params, num_params)
 Widget w;
-XEvent *event;
-String *params;
+XEvent *event;			/* assumed to be XButtonEvent* */
+String *params;			/* selections in precedence order */
 Cardinal *num_params;
 {
-	register TScreen *screen = &((XtermWidget)w)->screen;
-	int pty = screen->respond;	/* file descriptor of pty */
-	char *line;
-	int nbytes;
-	register char *lag, *cp, *end;
-
-	line = XFetchBytes(screen->display,&nbytes);
-	if (!nbytes) return;
-	end = &line[nbytes];
-	lag = line;
-	for (cp = line; cp != end; cp++)
-	{
-		if (*cp != '\n') continue;
-		*cp = '\r';
-		v_write(pty, lag, cp - lag + 1);
-		lag = cp + 1;
-	}
-	if (lag != end)
-		v_write(pty, lag, end - lag);
-	free (line);	/* free text from fetch */
+    _GetSelection(w, event->xbutton.time, params, *num_params);
 }
+
 
 SetSelectUnit(buttonDownTime, defaultUnit)
 unsigned long buttonDownTime;
