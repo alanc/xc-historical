@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.23 94/03/18 16:03:11 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.24 94/03/30 21:03:32 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -149,6 +149,7 @@ char 		*errorStringRet;
     smcConn->phase2_wait = NULL;
     smcConn->prop_reply_waits = NULL;
 
+    smcConn->save_yourself_in_progress = False;
     smcConn->shutdown_in_progress = False;
 
 
