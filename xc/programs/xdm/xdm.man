@@ -309,6 +309,14 @@ When sent a SIGTERM,
 .I xdm
 terminates all sessions in progress and exits.  This can be used when
 shutting down the system.
+.PP
+.I Xdm
+attempts to mark the various sub-processes for ps(1) by editing the
+command line argument list in place.  Because xdm can't allocate additional
+space for this task, it is useful to start xdm with a reasonably long
+command line (15 to 20 characters should be enough).  The per-display
+process is marked "-<Display-Name> display" and the per-session process
+is marked "-<Display-Name> session".
 .SH "AUTHENTICATION WIDGET"
 The authentication widget is an application which reads a name/password pair
 from the keyboard.  As this is a toolkit client, nearly every imaginable
