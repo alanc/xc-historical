@@ -4,7 +4,7 @@
  * internal structure definitions for mi backing store
  */
 
-/* $XConsortium: mibstorestr.h,v 1.1 89/06/09 14:53:05 keith Exp $ */
+/* $XConsortium: mibstorestr.h,v 5.0 89/06/09 15:00:39 keith Exp $ */
 
 # include   "mibstore.h"
 
@@ -20,6 +20,7 @@ typedef struct {
 				     * backing pixmap. */
     int		    guarantee;      /* GuaranteeNothing, etc. */
     unsigned long   serialNumber;   /* clientClip computed time */
+    unsigned long   stateChanges;   /* changes in parent gc since last copy */
     GCOps	    *wrapOps;	    /* wrapped ops */
     GCFuncs	    *wrapFuncs;	    /* wrapped funcs */
 } miBSGCRec, *miBSGCPtr;
@@ -55,6 +56,7 @@ typedef struct {
     unsigned int    *(*GetSpans)();
     Bool	    (*ChangeWindowAttributes)();
     Bool	    (*CreateGC)();
+    Bool	    (*DestroyWindow)();
     /*
      * pointer to vector of device-specific backing store functions
      */

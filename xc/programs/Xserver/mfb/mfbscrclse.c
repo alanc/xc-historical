@@ -1,4 +1,4 @@
-/* $XConsortium: mfbscrclse.c,v 1.2 88/09/06 14:54:02 jim Exp $ */
+/* $XConsortium: mfbscrclse.c,v 1.3 89/03/18 12:25:32 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -26,7 +26,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 void
-mfbScreenClose(pScreen)
+mfbCloseScreen(index, pScreen)
     register ScreenPtr pScreen;
 {
 

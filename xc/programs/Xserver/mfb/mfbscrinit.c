@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 1.58 89/03/18 12:27:54 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.0 89/06/09 15:07:02 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -132,6 +132,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
 
     pScreen->RealizeFont = mfbRealizeFont;
     pScreen->UnrealizeFont = mfbUnrealizeFont;
+    pScreen->CloseScreen = mfbCloseScreen;
     pScreen->QueryBestSize = mfbQueryBestSize;
     pScreen->GetImage = mfbGetImage;
     pScreen->GetSpans = mfbGetSpans;

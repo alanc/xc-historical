@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.0 89/06/09 15:08:19 keith Exp $ */
+/* $XConsortium: miexpose.c,v 5.1 89/06/12 16:26:27 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -368,35 +368,20 @@ miWindowExposures(pWin)
 	RegionPtr exposures = prgn;
 
 	/*
-	 * Restore from backing-store FIRST. Note that while the double
-	 * translation is somewhat expensive, it's not as expensive as
-	 * the double refresh. In addition, much of the time, pWin->exposed
-	 * will come back empty from RestoreAreas, so the second
-	 * translation won't happen.
+	 * Restore from backing-store FIRST.
 	 */
  	if (pWin->backStorage)
-	{
 	    /*
-	     * RestoreAreas needs the region window-relative, but
-	     * PaintWindowBackground needs it absolute, so translate down
-	     * then back again. Note that RestoreAreas modifies prgn
-	     * (pWin->exposed).
+	     * in some cases, backing store will cause a different
+	     * region to be exposed than needs to be repainted
+	     * (like when a window is mapped).  RestoreAreas is
+	     * allowed to return a region other than pWin->exposed,
+	     * in which case this routine will free the resultant
+	     * region.  If exposures is null, then no events will
+	     * be sent to the client; if pWin->exposed is empty
+	     * no areas will be repainted.
 	     */
-	    (* pWin->drawable.pScreen->TranslateRegion)(prgn,
-							-pWin->drawable.x,
-							-pWin->drawable.y);
 	    exposures = (*pWin->backStorage->funcs->RestoreAreas)(pWin);
-	    if (prgn->numRects == 0)
-	    {
-		return;
-	    }
-	    else
-	    {
-		(* pWin->drawable.pScreen->TranslateRegion)(prgn,
-							    pWin->drawable.x,
-							    pWin->drawable.y);
-	    }
-	}
 	if (exposures && (exposures->numRects > RECTLIMIT))
 	{
 	    /*
@@ -427,7 +412,8 @@ miWindowExposures(pWin)
 					     box.y2 - box.y1,
 					     FALSE);
 	}
-        (*pWin->funcs->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
+	if (prgn->numRects > 0)
+	    (*pWin->funcs->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
 	if (exposures && exposures->numRects > 0)
 	{
 	    (* pWin->drawable.pScreen->TranslateRegion)(exposures,

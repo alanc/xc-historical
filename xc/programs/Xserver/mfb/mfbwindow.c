@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.0 89/06/09 15:07:08 keith Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.1 89/06/12 16:28:37 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -96,6 +96,8 @@ mfbDestroyWindow(pWin)
     if (pPrivWin->pRotatedBackground)
 	mfbDestroyPixmap(pPrivWin->pRotatedBackground);
     xfree(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
+    if (pWin->funcs->devPrivate.val)
+	xfree (pWin->funcs);
     return (TRUE);
 }
 

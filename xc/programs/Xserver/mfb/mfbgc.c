@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.0 89/06/09 15:06:29 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.1 89/06/12 16:28:23 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -731,7 +731,7 @@ mfbValidateGC(pGC, changes, pDrawable)
        depend on it.
     */
 
-    if(new_rotate)
+    if(new_rotate || new_fill)
     {
 	/* figure out how much to rotate */
 	xrot = pGC->patOrg.x;
@@ -751,36 +751,58 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    devPriv->pRotatedStipple = (PixmapPtr)NULL;
 	}
 
-	/* copy current tile and stipple */
-	if (!pGC->tileIsPixel && (pGC->tile.pixmap->drawable.width <= 32) &&
-	    !(pGC->tile.pixmap->drawable.width & (pGC->tile.pixmap->drawable.width - 1)))
+	switch (pGC->fillStyle)
 	{
-	    devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile.pixmap);
-	    if (devPriv->pRotatedTile)
-		(void)mfbPadPixmap(devPriv->pRotatedTile);
-	}
-	if (pGC->stipple && (pGC->stipple->drawable.width <= 32) &&
-	    !(pGC->stipple->drawable.width & (pGC->stipple->drawable.width - 1)))
-	{
-	    devPriv->pRotatedStipple = mfbCopyPixmap(pGC->stipple);
-	    if (devPriv->pRotatedStipple)
-		(void)mfbPadPixmap(devPriv->pRotatedStipple);
-	}
-	if (xrot)
-	{
-	    if (devPriv->pRotatedTile)
-		mfbXRotatePixmap(devPriv->pRotatedTile, xrot);
-	    if (devPriv->pRotatedStipple)
-		mfbXRotatePixmap(devPriv->pRotatedStipple, xrot);
-	}
-	if (yrot)
-	{
-	    if (devPriv->pRotatedTile)
-		mfbYRotatePixmap(devPriv->pRotatedTile, yrot);
-	    if (devPriv->pRotatedStipple)
-		mfbYRotatePixmap(devPriv->pRotatedStipple, yrot);
+	case FillTiled:
+	    /* copy current tile and stipple */
+	    if (!pGC->tileIsPixel && (pGC->tile.pixmap->drawable.width <= 32) &&
+	    	!(pGC->tile.pixmap->drawable.width & (pGC->tile.pixmap->drawable.width - 1)))
+	    {
+	    	devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile.pixmap);
+	    	if (devPriv->pRotatedTile)
+		{
+		    (void)mfbPadPixmap(devPriv->pRotatedTile);
+		    if (xrot)
+			mfbXRotatePixmap(devPriv->pRotatedTile, xrot);
+		    if (yrot)
+			mfbYRotatePixmap(devPriv->pRotatedTile, yrot);
+		}
+	    }
+	    break;
+	case FillStippled:
+	case FillOpaqueStippled:
+	    if (pGC->stipple && (pGC->stipple->drawable.width <= 32) &&
+	    	!(pGC->stipple->drawable.width & (pGC->stipple->drawable.width - 1)))
+	    {
+	    	if (pGC->stipple == pGC->pScreen->PixmapPerDepth[0])
+	    	{
+		    if (pGC->stipple->drawable.width != 32)
+			mfbPadPixmap(pGC->stipple);
+		    devPriv->pRotatedStipple = pGC->stipple;
+		    ++devPriv->pRotatedStipple->refcnt;
+	    	}
+	    	else
+	    	{
+		    devPriv->pRotatedStipple = mfbCopyPixmap(pGC->stipple);
+		    if (devPriv->pRotatedStipple)
+		    {
+		    	(void)mfbPadPixmap(devPriv->pRotatedStipple);
+			if (xrot)
+			    mfbXRotatePixmap(devPriv->pRotatedStipple, xrot);
+			if (yrot)
+			    mfbYRotatePixmap(devPriv->pRotatedStipple, yrot);
+		    }
+	    	}
+	    }
 	}
     }
+
+    /*
+     * duck out here when the GC is unchanged
+     */
+
+    if (!changes)
+	return;
 
     if (new_rrop || new_fill)
     {

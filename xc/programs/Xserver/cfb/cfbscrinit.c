@@ -88,6 +88,21 @@ miBSFuncRec cfbBSFuncRec = {
     (PixmapPtr (*)()) 0,
 };
 
+static Bool
+cfbCloseScreen (index, pScreen)
+    int		index;
+    ScreenPtr	pScreen;
+{
+    int	    i;
+
+    for (i = 0; i < NUMDEPTHS; i++)
+	xfree (depths[i].vids);
+    for (i = 0; i < NUMVISUALS; i++)
+	FreeResource (visuals[i].vid, RC_NONE);
+    xfree (pScreen->devPrivate);
+    return TRUE;
+}
+
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
 cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
@@ -150,6 +165,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 
     pScreen->RealizeFont = mfbRealizeFont;
     pScreen->UnrealizeFont = mfbUnrealizeFont;
+    pScreen->CloseScreen = cfbCloseScreen;
     pScreen->QueryBestSize = mfbQueryBestSize;
     pScreen->GetImage = miGetImage;
     pScreen->GetSpans = cfbGetSpans;	/* XXX */

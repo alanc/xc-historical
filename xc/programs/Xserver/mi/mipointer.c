@@ -138,7 +138,8 @@ miPointerDisplayCursor (pScreen, pCursor)
     pPriv = (miPointerScreenPtr) pScreen->devPrivates[miPointerScreenIndex].ptr;
     pPointer = pPriv->pPointer;
     pPointer->pCursor = pCursor;
-    (*pPriv->funcs->DisplayCursor) (pScreen, pCursor, pPointer->x, pPointer->y);
+    if (pCursor)
+	(*pPriv->funcs->DisplayCursor) (pScreen, pCursor, pPointer->x, pPointer->y);
 }
 
 static void
@@ -337,7 +338,8 @@ miPointerSetCursor (pScreen, x, y, generateEvent, afterEvents)
      * avoid problems when this routine recurses
      */
     pPriv = (miPointerScreenPtr) pPointer->pScreen->devPrivates[miPointerScreenIndex].ptr;
-    (*pPriv->funcs->DisplayCursor) (pPointer->pScreen, pPointer->pCursor, pPointer->x, pPointer->y);
+    if (pPointer->pCursor)
+	(*pPriv->funcs->DisplayCursor) (pPointer->pScreen, pPointer->pCursor, pPointer->x, pPointer->y);
 }
 
 /*ARGSUSED*/

@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.0 89/06/09 15:07:53 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.2 89/06/12 16:26:05 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -111,20 +111,19 @@ implied warranty.
  */
 
 #define SETUP_BACKING_TERSE(pGC) \
-    miBSGCPtr	pGCPrivate = (miBSGCPtr)(pGC)->devPrivates[miBSGCIndex].ptr;
+    miBSGCPtr	pGCPrivate = (miBSGCPtr)(pGC)->devPrivates[miBSGCIndex].ptr; \
+    GCFuncs	*oldFuncs = pGC->funcs;
 
 #define SETUP_BACKING(pDrawable,pGC) \
-    miBSGCPtr	pGCPrivate = (miBSGCPtr)(pGC)->devPrivates[miBSGCIndex].ptr; \
     DrawablePtr	  pBackingDrawable = (DrawablePtr) \
     	((miBSWindowPtr)((WindowPtr)(pDrawable))->backStorage->devPrivate.ptr)->pBackingPixmap; \
+    SETUP_BACKING_TERSE(pGC) \
     GCPtr	pBackingGC = pGCPrivate->pBackingGC;
 
 #define SETUP_BACKING_VERBOSE(pDrawable,pGC) \
     miBSWindowPtr pBackingStore = \
     	(miBSWindowPtr)((WindowPtr)(pDrawable))->backStorage->devPrivate.ptr; \
-    DrawablePtr	pBackingDrawable = (DrawablePtr) pBackingStore->pBackingPixmap; \
-    miBSGCPtr	pGCPrivate = (miBSGCPtr)(pGC)->devPrivates[miBSGCIndex].ptr; \
-    GCPtr	pBackingGC = pGCPrivate->pBackingGC;
+    SETUP_BACKING(pDrawable, pGC)
 
 #define PROLOGUE(pGC) \
     pGC->ops = pGCPrivate->wrapOps;\
@@ -132,7 +131,7 @@ implied warranty.
 
 #define EPILOGUE(pGC) \
     (pGC->ops = &miBSGCOps), \
-    (pGC->funcs = &miBSGCFuncs)
+    (pGC->funcs = oldFuncs)
    
 static void	    miCreateBSPixmap();
 static void	    miDestroyBSPixmap();
@@ -150,6 +149,7 @@ static void	    miBSGetImage();
 static unsigned int *miBSGetSpans();
 static Bool	    miBSChangeWindowAttributes();
 static Bool	    miBSCreateGC();
+static Bool	    miBSDestroyWindow();
 
 /*
  * wrapper vectors for GC funcs and ops
@@ -276,6 +276,7 @@ miInitializeBackingStore (pScreen, funcs)
     pScreenPriv->GetSpans = pScreen->GetSpans;
     pScreenPriv->ChangeWindowAttributes = pScreen->ChangeWindowAttributes;
     pScreenPriv->CreateGC = pScreen->CreateGC;
+    pScreenPriv->DestroyWindow = pScreen->DestroyWindow;
     pScreenPriv->funcs = funcs;
 
     pScreen->CloseScreen = miBSCloseScreen;
@@ -283,6 +284,7 @@ miInitializeBackingStore (pScreen, funcs)
     pScreen->GetSpans = miBSGetSpans;
     pScreen->ChangeWindowAttributes = miBSChangeWindowAttributes;
     pScreen->CreateGC = miBSCreateGC;
+    pScreen->DestroyWindow = miBSDestroyWindow;
     pScreen->devPrivates[miBSScreenIndex].ptr = (pointer) pScreenPriv;
 }
 
@@ -545,6 +547,24 @@ miBSCreateGC (pGC)
     return ret;
 }
 
+static Bool
+miBSDestroyWindow (pWin)
+    WindowPtr	pWin;
+{
+    ScreenPtr	pScreen = pWin->drawable.pScreen;
+    Bool	ret;
+
+    SCREEN_PROLOGUE (pScreen, DestroyWindow);
+    
+    ret = (*pScreen->DestroyWindow) (pWin);
+
+    miBSFree (pWin);
+
+    SCREEN_EPILOGUE (pScreen, DestroyWindow, miBSDestroyWindow);
+
+    return ret;
+}
+
 /*
  * cheap GC func wrappers.  Simply track validation on windows
  * with backing store to enable the real func/op wrappers
@@ -658,6 +678,7 @@ miBSCreateGCPrivate (pGC)
     pPriv->pBackingGC = NULL;
     pPriv->guarantee = GuaranteeNothing;
     pPriv->serialNumber = 0;
+    pPriv->stateChanges = (1 << GCLastBit + 1) - 1;
     pPriv->wrapOps = pGC->ops;
     pPriv->wrapFuncs = pGC->funcs;
     pGC->funcs = &miBSGCFuncs;
@@ -2716,9 +2737,11 @@ miBSFree(pWin)
 	    miDestroyBSPixmap (pWin);
     
 	    (* pScreen->RegionDestroy)(pBackingStore->pSavedRegion);
+
+	    if (pBackingStore->backgroundState == BackgroundPixmap)
+		(*pScreen->DestroyPixmap) (pBackingStore->background.pixmap);
+
 	    xfree(pBackingStore);
-	    
-	    pWin->backStorage->devPrivate.ptr = (pointer)NULL;
 	}
 	(*pScreen->RegionDestroy) (pWin->backStorage->obscured);
 	xfree(pWin->backStorage);
@@ -2942,6 +2965,7 @@ miBSSaveDoomedAreas(pWin)
  *-----------------------------------------------------------------------
  * miBSRestoreAreas --
  *	Restore areas from backing-store that are no longer obscured.
+ *	expects pWin->exposed to contain a screen-relative area.
  *
  * Results:
  *	The region to generate exposure events on (which may be
@@ -2975,24 +2999,23 @@ miBSRestoreAreas(pWin)
     RegionPtr prgnRestored;
     register ScreenPtr pScreen;
     RegionPtr exposures = pWin->exposed;
+    Bool retile;
 
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
     pBackingPixmap = pBackingStore->pBackingPixmap;
 
+    prgnSaved = pBackingStore->pSavedRegion;
+    prgnExposed = pWin->exposed;
+
     if (pBackingStore->status == StatusContents)
     {
 	miBSScreenPtr	pScreenPriv;
 
-	/*
-	 * We can only restore things if we have a pixmap from which to do
-	 * so...
-	 */
-	prgnSaved = pBackingStore->pSavedRegion;
-	prgnExposed = pWin->exposed;
+	(*pScreen->TranslateRegion) (prgnSaved, pWin->drawable.x, pWin->drawable.y);
+
 	prgnRestored = (* pScreen->RegionCreate)((BoxPtr)NULL, 1);
-	
-	(* pScreen->Intersect)(prgnRestored, prgnSaved, prgnExposed);
+	(* pScreen->Intersect)(prgnRestored, prgnExposed, prgnSaved);
 	
 	/*
 	 * Since pWin->exposed is no longer obscured, we no longer
@@ -3004,23 +3027,10 @@ miBSRestoreAreas(pWin)
 	(* pScreen->Subtract)(prgnSaved, prgnSaved, prgnExposed);
 	(* pScreen->Subtract)(prgnExposed, prgnExposed, prgnRestored);
 	
-#ifdef NOTDEF
 	/*
-	 * Again, we've changed the clip-list for the backing pixmap, so update
-	 * its serial number
+	 * Do the actual restoration
 	 */
 
-	pBackingPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-#endif
-	
-	/*
-	 * Do the actual restoration after translating the region-to-be-
-	 * restored into screen coordinates.
-	 */
-
-	(* pScreen->TranslateRegion) (prgnRestored,
-				      pWin->drawable.x,
-				      pWin->drawable.y);
 	pScreenPriv = (miBSScreenPtr)
 	    pScreen->devPrivates[miBSScreenIndex].ptr;
 	(* pScreenPriv->funcs->RestoreAreas) (pBackingPixmap,
@@ -3032,26 +3042,28 @@ miBSRestoreAreas(pWin)
 
 	/*
 	 * if the saved region is completely empty, dispose of the
-	 * backing pixmap
+	 * backing pixmap, otherwise, retranslate the saved
+	 * region to window relative
 	 */
 
 	if (!(*pScreen->RegionNotEmpty) (prgnSaved))
-	{
 	    miDestroyBSPixmap (pWin);
-	}
+	else
+	    (*pScreen->TranslateRegion) (prgnSaved,
+					 -pWin->drawable.x, -pWin->drawable.y);
     }
     else if ((pBackingStore->status == StatusVirtual) ||
 	     (pBackingStore->status == StatusVDirty))
     {
+	(*pScreen->TranslateRegion) (prgnSaved,
+				     pWin->drawable.x, pWin->drawable.y);
 	exposures = (* pScreen->RegionCreate)(NullBox, 1);
 	if (SameBackground (pBackingStore->backgroundState,
 			    pBackingStore->background,
 			    pWin->backgroundState,
  			    pWin->background))
 	{
-	    (* pScreen->Subtract)(exposures,
-				  pWin->exposed,
-				  pBackingStore->pSavedRegion);
+	    (* pScreen->Subtract)(exposures, prgnExposed, prgnSaved);
 	}
 	else
 	{
@@ -3061,16 +3073,11 @@ miBSRestoreAreas(pWin)
 	    miTileVirtualBS(pWin);
 
 	    /* we need to expose all we have (virtually) retiled */
-	    (* pScreen->Union) (exposures,
-				pWin->exposed,
-				pBackingStore->pSavedRegion);
+	    (* pScreen->Union) (exposures, prgnExposed, prgnSaved);
 	}
-	(* pScreen->TranslateRegion) (exposures,
-				      pWin->drawable.x,
-				      pWin->drawable.y);
-	(* pScreen->Subtract)(pBackingStore->pSavedRegion,
-			      pBackingStore->pSavedRegion,
-			      pWin->exposed);
+	(* pScreen->Subtract)(prgnSaved, prgnSaved, prgnExposed);
+	(*pScreen->TranslateRegion) (prgnSaved,
+				     -pWin->drawable.x, -pWin->drawable.y);
     }
     else if (pWin->viewable && !pBackingStore->viewable &&
 	     pWin->backingStore != Always)
@@ -3415,7 +3422,6 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 	int status;
 
 	pBackingGC = CreateGC (pWindowPriv->pBackingPixmap, 0, NULL, &status);
-	stateChanges = (1 << (GCLastBit+1)) - 1;
 	if (status != Success)
 	    lift_functions = TRUE;
 	else
@@ -3423,6 +3429,8 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
     }
 
     pBackingGC = pPriv->pBackingGC;
+
+    pPriv->stateChanges |= stateChanges;
 
     if (lift_functions)
     {
@@ -3443,7 +3451,9 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
      * into shape for possible draws
      */
 
-    CopyGC(pGC, pBackingGC, stateChanges);
+    CopyGC(pGC, pBackingGC, pPriv->stateChanges);
+
+    pPriv->stateChanges = 0;
 
     /*
      * We never want operations with the backingGC to generate GraphicsExpose
@@ -3546,7 +3556,7 @@ miBSChangeClip(pGC, type, pvalue, nrects)
 
     (* pGC->funcs->ChangeClip)(pGC, type, pvalue, nrects);
 
-    EPILOGUE (pGC);
+    FUNC_EPILOGUE (pGC, pPriv);
 }
 
 static void

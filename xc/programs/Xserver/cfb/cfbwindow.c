@@ -93,6 +93,8 @@ cfbDestroyWindow(pWin)
     if (pPrivWin->pRotatedBackground)
 	cfbDestroyPixmap(pPrivWin->pRotatedBackground);
     xfree(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    if (pWin->funcs->devPrivate.val)
+	xfree (pWin->funcs);
     return(TRUE);
 }
 

@@ -4,9 +4,10 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.0 89/06/09 15:09:27 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.1 89/06/12 16:26:49 keith Exp $ */
 
 # include   "X.h"
+# include   "Xproto.h"
 # include   "misc.h"
 # include   "pixmapstr.h"
 # include   "input.h"
@@ -14,6 +15,7 @@
 # include   "cursorstr.h"
 # include   "font.h"
 # include   "scrnintstr.h"
+# include   "colormapst.h"
 # include   "windowstr.h"
 # include   "gcstruct.h"
 # include   "mipointer.h"
@@ -32,6 +34,8 @@ static Bool	    miSpriteCreateGC();
 static Bool	    miSpriteCreateWindow();
 static Bool	    miSpriteChangeWindowAttributes();
 static void	    miSpriteBlockHandler();
+static void	    miSpriteInstallColormap();
+static void	    miSpriteStoreColors();
 
 #define SCREEN_PROLOGUE(pScreen, field)\
   ((pScreen)->field = \
@@ -161,30 +165,34 @@ static GCOps miSpriteGCOps = {
  * the saved cursor area
  */
 
-#define GC_SETUP(pDrawable)					    \
+#define GC_SETUP_CHEAP(pDrawable)				    \
     miSpriteScreenPtr	pScreenPriv = (miSpriteScreenPtr)	    \
-	(pDrawable)->pScreen->devPrivates[miSpriteScreenIndex].ptr;
+	(pDrawable)->pScreen->devPrivates[miSpriteScreenIndex].ptr; \
 
-#define GC_SETUP_AND_CHECK(pDrawable)				    \
-    GC_SETUP(pDrawable);					    \
+#define GC_SETUP(pDrawable, pGC)				    \
+    GC_SETUP_CHEAP(pDrawable)					    \
+    miSpriteGCPtr	pGCPrivate = (miSpriteGCPtr)		    \
+	(pGC)->devPrivates[miSpriteGCIndex].ptr;		    \
+    GCFuncs *oldFuncs = pGC->funcs;
+
+#define GC_SETUP_AND_CHECK(pDrawable, pGC)			    \
+    GC_SETUP(pDrawable, pGC);					    \
     if (GC_CHECK((WindowPtr)pDrawable))				    \
 	miSpriteRemoveCursor (pDrawable->pScreen);
     
 #define GC_CHECK(pWin)						    \
-    (pScreenPriv->isUp && (pWin)->viewable &&			    \
+    (pScreenPriv->isUp &&					    \
 	(pWin)->drawable.x < pScreenPriv->saved.x2 &&		    \
 	pScreenPriv->saved.x1 < (pWin)->drawable.x + (int) (pWin)->drawable.width && \
 	(pWin)->drawable.y < pScreenPriv->saved.y2 &&		    \
 	pScreenPriv->saved.y1 < (pWin)->drawable.y + (int) (pWin)->drawable.height)
 
 #define GC_OP_PROLOGUE(pGC) (\
-    ((pGC)->funcs = \
-	((miSpriteGCPtr) (pGC)->devPrivates[miSpriteGCIndex].ptr)->wrapFuncs), \
-    ((pGC)->ops = \
-	((miSpriteGCPtr) (pGC)->devPrivates[miSpriteGCIndex].ptr)->wrapOps))
+    ((pGC)->funcs = pGCPrivate->wrapFuncs), \
+    ((pGC)->ops = pGCPrivate->wrapOps))
 
 #define GC_OP_EPILOGUE(pGC) (\
-    ((pGC)->funcs = &miSpriteGCFuncs), \
+    ((pGC)->funcs = oldFuncs), \
     ((pGC)->ops = &miSpriteGCOps))
 
 /*
@@ -220,6 +228,8 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     miPointerCursorFuncPtr  pointerFuncs;
 {
     miSpriteScreenPtr	pPriv;
+    VisualPtr		pVisual;
+    int			i;
     
     if (miSpriteScreenIndex == -1)
     {
@@ -234,7 +244,16 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pPriv = (miSpriteScreenPtr) xalloc (sizeof (miSpriteScreenRec));
     if (!pPriv)
 	return FALSE;
-    miPointerInitialize (pScreen, &miSpritePointerFuncs, pointerFuncs);
+    if (!miPointerInitialize (pScreen, &miSpritePointerFuncs, pointerFuncs))
+    {
+	xfree ((pointer) pPriv);
+	return FALSE;
+    }
+    pVisual = pScreen->visuals;
+    for (i = 0; i < pScreen->numVisuals; i++)
+	if (pVisual->vid == pScreen->rootVisual)
+	    break;
+    pPriv->pVisual = pVisual;
     pPriv->CloseScreen = pScreen->CloseScreen;
     pPriv->GetImage = pScreen->GetImage;
     pPriv->GetSpans = pScreen->GetSpans;
@@ -242,11 +261,14 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pPriv->CreateWindow = pScreen->CreateWindow;
     pPriv->ChangeWindowAttributes = pScreen->ChangeWindowAttributes;
     pPriv->BlockHandler = pScreen->BlockHandler;
+    pPriv->InstallColormap = pScreen->InstallColormap;
+    pPriv->StoreColors = pScreen->StoreColors;
     pPriv->pCursor = NULL;
     pPriv->x = 0;
     pPriv->y = 0;
     pPriv->isUp = FALSE;
     pPriv->shouldBeUp = FALSE;
+    pPriv->checkPixels = TRUE;
     pPriv->funcs = spriteFuncs;
     pScreen->devPrivates[miSpriteScreenIndex].ptr = (pointer) pPriv;
     pScreen->CloseScreen = miSpriteCloseScreen;
@@ -256,6 +278,8 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pScreen->CreateWindow = miSpriteCreateWindow;
     pScreen->ChangeWindowAttributes = miSpriteChangeWindowAttributes;
     pScreen->BlockHandler = miSpriteBlockHandler;
+    pScreen->InstallColormap = miSpriteInstallColormap;
+    pScreen->StoreColors = miSpriteStoreColors;
     return TRUE;
 }
 
@@ -458,11 +482,10 @@ miSpriteCreateGC (pGC)
     pPriv = (miSpriteGCPtr) xalloc (sizeof (miSpriteGCRec));
     if (pPriv && (*pScreen->CreateGC) (pGC))
     {
-	pPriv->wrapOps = pGC->ops;
+	pPriv->wrapOps = NULL;
 	pPriv->wrapFuncs = pGC->funcs;
     	pGC->devPrivates[miSpriteGCIndex].ptr = (pointer) pPriv;
     	pGC->funcs = &miSpriteGCFuncs;
-	pGC->ops = &miSpriteGCOps;
 	ret = TRUE;
     }
 
@@ -491,6 +514,97 @@ miSpriteBlockHandler (i, blockData, pTimeout, pReadmask)
 
     if (!pPriv->isUp && pPriv->shouldBeUp)
 	miSpriteRestoreCursor (pScreen);
+}
+
+static void
+miSpriteInstallColormap (pMap)
+    ColormapPtr	pMap;
+{
+    ScreenPtr		pScreen = pMap->pScreen;
+    miSpriteScreenPtr	pPriv;
+
+    pPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
+
+    SCREEN_PROLOGUE(pScreen, InstallColormap);
+    
+    (*pScreen->InstallColormap) (pMap);
+
+    SCREEN_EPILOGUE(pScreen, InstallColormap, miSpriteInstallColormap);
+
+    pPriv->pColormap = pMap;
+    pPriv->checkPixels = TRUE;
+}
+
+static void
+miSpriteStoreColors (pMap, ndef, pdef)
+    ColormapPtr	pMap;
+    int		ndef;
+    xColorItem	*pdef;
+{
+    ScreenPtr		pScreen = pMap->pScreen;
+    miSpriteScreenPtr	pPriv;
+    int			i;
+
+    pPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
+
+    SCREEN_PROLOGUE(pScreen, StoreColors);
+    
+    (*pScreen->StoreColors) (pMap, ndef, pdef);
+
+    SCREEN_EPILOGUE(pScreen, StoreColors, miSpriteStoreColors);
+
+    if (pPriv->pColormap == pMap)
+    {
+	for (i = 0; i < ndef; i++)
+	    /*
+	     * XXX direct color will affect pixels other than
+	     * pdef[i].pixel -- this will be more difficult...
+	     */
+	    if (pdef[i].pixel == pPriv->colors[SOURCE_COLOR].pixel ||
+	        pdef[i].pixel == pPriv->colors[MASK_COLOR].pixel)
+	    {
+		pPriv->checkPixels = TRUE;
+		if (pPriv->isUp && pPriv->shouldBeUp)
+		    miSpriteRemoveCursor (pScreen);
+		break;
+	    }
+    }
+}
+
+static void
+miSpriteFindColors (pScreen)
+    ScreenPtr	pScreen;
+{
+    miSpriteScreenPtr	pScreenPriv = (miSpriteScreenPtr)
+			    pScreen->devPrivates[miSpriteScreenIndex].ptr;
+    CursorPtr		pCursor;
+    xColorItem		*sourceColor, *maskColor;
+    unsigned short	red, green, blue;
+    Pixel		pixel;
+    Bool		read_only;
+
+    pCursor = pScreenPriv->pCursor;
+    sourceColor = &pScreenPriv->colors[SOURCE_COLOR];
+    maskColor = &pScreenPriv->colors[MASK_COLOR];
+    if (!(pCursor->foreRed == sourceColor->red &&
+	  pCursor->foreGreen == sourceColor->green &&
+          pCursor->foreBlue == sourceColor->blue &&
+	  pCursor->backRed == maskColor->red &&
+	  pCursor->backGreen == maskColor->green &&
+	  pCursor->backBlue == maskColor->blue))
+    {
+	red = sourceColor->red = pCursor->foreRed;
+	green = sourceColor->green = pCursor->foreGreen;
+	blue = sourceColor->blue = pCursor->foreBlue;
+	FakeAllocColor (pScreenPriv->pColormap, &red, &green, &blue,
+			&sourceColor->pixel, &read_only);
+	red = maskColor->red = pCursor->backRed;
+	green = maskColor->green = pCursor->backGreen;
+	blue = maskColor->blue = pCursor->backBlue;
+	FakeAllocColor (pScreenPriv->pColormap, &red, &green, &blue,
+			&maskColor->pixel, &read_only);
+    }
+    pScreenPriv->checkPixels = FALSE;
 }
 
 /*
@@ -540,7 +654,6 @@ miSpriteRestoreAreas (pWin)
 {
     ScreenPtr		pScreen;
     miSpriteScreenPtr   pScreenPriv;
-    BoxRec		cursorBox;
     RegionPtr		result;
 
     BSTORE_PROLOGUE (pWin);
@@ -550,16 +663,7 @@ miSpriteRestoreAreas (pWin)
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
     {
-	cursorBox = pScreenPriv->saved;
-	/*
-	 * The exposed region is now window-relative, so we have to make the
-	 * cursor box window-relative too.
-	 */
-	cursorBox.x1 -= pWin->drawable.x;
-	cursorBox.x2 -= pWin->drawable.x;
-	cursorBox.y1 -= pWin->drawable.y;
-	cursorBox.y2 -= pWin->drawable.y;
-	if ((* pScreen->RectIn) (pWin->exposed, &cursorBox) != rgnOUT)
+	if ((* pScreen->RectIn) (pWin->exposed, &pScreenPriv->saved) != rgnOUT)
 	    miSpriteRemoveCursor (pScreen);
     }
 
@@ -783,16 +887,18 @@ miSpriteValidateGC (pGC, changes, pDrawable)
 
     (*pGC->funcs->ValidateGC) (pGC, changes, pDrawable);
     
-    if (pDrawable->type == DRAWABLE_WINDOW)
+    pGCPriv->wrapOps = NULL;
+    if (pDrawable->type == DRAWABLE_WINDOW && ((WindowPtr) pDrawable)->viewable)
     {
-	pGCPriv->wrapOps = pGC->ops;
-    }
-    else
-    {
-	/*
-	 * leave the ops unwrapped
-	 */
-	pGCPriv->wrapOps = NULL;
+	WindowPtr   pWin;
+	RegionPtr   pRegion;
+
+	pWin = (WindowPtr) pDrawable;
+	pRegion = pWin->clipList;
+	if (pGC->subWindowMode == IncludeInferiors)
+	    pRegion = pWin->borderClip;
+	if ((*pDrawable->pScreen->RegionNotEmpty) (pRegion))
+	    pGCPriv->wrapOps = pGC->ops;
     }
 
     GC_FUNC_EPILOGUE (pGC);
@@ -884,7 +990,7 @@ miSpriteFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		*pwidthInit;		/* pointer to list of n widths */
     int 	fSorted;
 {
-    GC_SETUP(pDrawable);
+    GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
@@ -921,7 +1027,7 @@ miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     int			nspans;
     int			fSorted;
 {
-    GC_SETUP(pDrawable);
+    GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
@@ -960,7 +1066,7 @@ miSpritePutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
     int	    	  format;
     char    	  *pBits;
 {
-    GC_SETUP(pDrawable);
+    GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
@@ -990,7 +1096,7 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     int	    	  dstx;
     int	    	  dsty;
 {
-    GC_SETUP(pDst);
+    GC_SETUP(pDst, pGC);
 
     /*
      * check both destination and source for overlap.  Avoid
@@ -1005,7 +1111,7 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     }
     else if (pSrc != pDst && pSrc->type == DRAWABLE_WINDOW)
     {
-	GC_SETUP(pSrc);
+	GC_SETUP_CHEAP(pSrc);
 
     	if (GC_CHECK((WindowPtr) pSrc) &&
 	    ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))
@@ -1034,7 +1140,7 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 		  dsty;
     unsigned long  plane;
 {
-    GC_SETUP(pDst);
+    GC_SETUP(pDst, pGC);
 
     /*
      * check both destination and source for overlap.  Avoid
@@ -1049,7 +1155,7 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
     }
     else if (pSrc != pDst && pSrc->type == DRAWABLE_WINDOW)
     {
-	GC_SETUP(pSrc);
+	GC_SETUP_CHEAP(pSrc);
 
     	if (GC_CHECK((WindowPtr) pSrc) &&
 	    ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))
@@ -1073,7 +1179,7 @@ miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
     int		npt;
     xPoint 	*pptInit;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1090,7 +1196,7 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
     int	    	  npt;
     DDXPointPtr	  pptInit;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1106,7 +1212,7 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
     int		nseg;
     xSegment	*pSegs;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1122,7 +1228,7 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
     int		nrects;
     xRectangle	*pRects;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1138,7 +1244,7 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1155,7 +1261,7 @@ miSpriteFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
     register int	count;
     DDXPointPtr		pPts;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1171,7 +1277,7 @@ miSpritePolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		nrectFill; 	/* number of rectangles to fill */
     xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
 {
-    GC_SETUP(pDrawable);
+    GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
@@ -1204,7 +1310,7 @@ miSpritePolyFillArc(pDrawable, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1223,7 +1329,7 @@ miSpritePolyText8(pDrawable, pGC, x, y, count, chars)
 {
     int	ret;
 
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1243,7 +1349,7 @@ miSpritePolyText16(pDrawable, pGC, x, y, count, chars)
 {
     int	ret;
 
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1261,7 +1367,7 @@ miSpriteImageText8(pDrawable, pGC, x, y, count, chars)
     int		count;
     char	*chars;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1278,7 +1384,7 @@ miSpriteImageText16(pDrawable, pGC, x, y, count, chars)
     int		count;
     unsigned short *chars;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1296,7 +1402,7 @@ miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     pointer 	pglyphBase;	/* start of array of glyphs */
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1314,7 +1420,7 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     char 	*pglyphBase;	/* start of array of glyphs */
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1330,7 +1436,7 @@ miSpritePushPixels(pGC, pBitMap, pDrawable, w, h, x, y)
     DrawablePtr pDrawable;
     int		w, h, x, y;
 {
-    GC_SETUP (pDrawable);
+    GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable) &&
 	ORG_OVERLAP(&pScreenPriv->saved,pDrawable->x,pDrawable->y,x,y,w,h))
@@ -1354,7 +1460,7 @@ miSpriteLineHelper(pDrawable, pGC, cap, npts, pts, xOrg, yOrg)
     pointer	pts;
     int		xOrg, yOrg;
 {
-    GC_SETUP_AND_CHECK(pDrawable);
+    GC_SETUP_AND_CHECK(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1395,18 +1501,26 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
     CursorPtr	pCursor;
 {
     miSpriteScreenPtr	pScreenPriv;
+    xColorItem		*sourceColor, *maskColor;
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     pScreenPriv->shouldBeUp = TRUE;
     if (pScreenPriv->x == x &&
 	pScreenPriv->y == y &&
-	pScreenPriv->pCursor == pCursor)
+	pScreenPriv->pCursor == pCursor &&
+	!pScreenPriv->checkPixels)
     {
 	return;
     }
     pScreenPriv->x = x;
     pScreenPriv->y = y;
-    pScreenPriv->pCursor = pCursor;
+    if (pScreenPriv->checkPixels || pScreenPriv->pCursor != pCursor)
+    {
+	pScreenPriv->pCursor = pCursor;
+	miSpriteFindColors (pScreen);
+    }
+    else
+	pScreenPriv->pCursor = pCursor;
     if (pScreenPriv->isUp) {
 	int	sx, sy;
 	/*
@@ -1428,17 +1542,18 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
 				  pScreenPriv->saved.x2 - pScreenPriv->saved.x1,
 				  pScreenPriv->saved.y2 - pScreenPriv->saved.y1,
 				  sx - pScreenPriv->saved.x1,
-				  sy - pScreenPriv->saved.y1);
+				  sy - pScreenPriv->saved.y1,
+				  pScreenPriv->colors[SOURCE_COLOR].pixel,
+				  pScreenPriv->colors[MASK_COLOR].pixel);
 	    pScreenPriv->isUp = TRUE;
 	}
 	else
 	{
-	    /*
-	     * let the block handler put the cursor up
-	     */
 	    miSpriteRemoveCursor (pScreen);
 	}
     }
+    if (!pScreenPriv->isUp && pScreenPriv->pCursor)
+	miSpriteRestoreCursor (pScreen);
 }
 
 /*ARGSUSED*/
@@ -1506,7 +1621,11 @@ miSpriteRestoreCursor (pScreen)
 				      pScreenPriv->saved.x2 - pScreenPriv->saved.x1,
 				      pScreenPriv->saved.y2 - pScreenPriv->saved.y1))
     {
-	if ((*pScreenPriv->funcs->PutUpCursor) (pScreen, pCursor, x, y))
+	if (pScreenPriv->checkPixels)
+	    miSpriteFindColors (pScreen);
+	if ((*pScreenPriv->funcs->PutUpCursor) (pScreen, pCursor, x, y,
+				  pScreenPriv->colors[SOURCE_COLOR].pixel,
+				  pScreenPriv->colors[MASK_COLOR].pixel))
 	    pScreenPriv->isUp = TRUE;
     }
 }

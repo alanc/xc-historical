@@ -26,18 +26,19 @@ extern WindowPtr    *WindowTable;
 
 static int	miDCScreenIndex = -1;
 
+static Bool	miDCCloseScreen();
+
 typedef struct {
-    GCPtr	pSourceGC, pMaskGC;
-    GCPtr	pSaveGC, pRestoreGC;
-    GCPtr	pMoveGC;
-    GCPtr	pPixSourceGC, pPixMaskGC;
-    PixmapPtr	pSave, pTemp;
-    Bool	(*CloseScreen)();
+    GCPtr	    pSourceGC, pMaskGC;
+    GCPtr	    pSaveGC, pRestoreGC;
+    GCPtr	    pMoveGC;
+    GCPtr	    pPixSourceGC, pPixMaskGC;
+    Bool	    (*CloseScreen)();
+    PixmapPtr	    pSave, pTemp;
 } miDCScreenRec, *miDCScreenPtr;
 
 /* per-cursor per-screen private data */
 typedef struct {
-    unsigned long	source, mask;	    /* pixel values to color cursor */
     PixmapPtr		sourceBits;	    /* source bits */
     PixmapPtr		maskBits;	    /* mask bits */
 } miDCCursorRec, *miDCCursorPtr;
@@ -49,8 +50,6 @@ typedef struct {
 static Bool	miDCRealizeCursor(),	    miDCUnrealizeCursor();
 static Bool	miDCPutUpCursor(),	    miDCSaveUnderCursor();
 static Bool	miDCRestoreUnderCursor(),   miDCMoveCursor();
-
-static Bool	miDCCloseScreen();
 
 static miSpriteCursorFuncRec miDCFuncs = {
     miDCRealizeCursor,
@@ -188,11 +187,6 @@ miDCRealizeCursor (pScreen, pCursor)
     (*pGC->ops->PutImage) (pPriv->maskBits, pGC, 1,
 			   0, 0, pCursor->width, pCursor->height,
  			   0, XYPixmap, pCursor->source);
-    /*
-     * XXX - this makes all cursors black-on-white
-     */
-    pPriv->source = pScreen->blackPixel;
-    pPriv->mask = pScreen->whitePixel;
     FreeScratchGC (pGC);
     return TRUE;
 }
@@ -212,24 +206,25 @@ miDCUnrealizeCursor (pScreen, pCursor)
 }
 
 static void
-miDCPutBits (pDrawable, pPriv, sourceGC, maskGC, x, y, w, h)
+miDCPutBits (pDrawable, pPriv, sourceGC, maskGC, x, y, w, h, source, mask)
     DrawablePtr	    pDrawable;
     GCPtr	    sourceGC, maskGC;
     miDCCursorPtr   pPriv;
+    unsigned long   source, mask;
 {
     XID	    gcvals[1];
 
-    if (sourceGC->fgPixel != pPriv->source)
+    if (sourceGC->fgPixel != source)
     {
-	gcvals[0] = pPriv->source;
+	gcvals[0] = source;
 	DoChangeGC (sourceGC, GCForeground, gcvals, 0);
     }
     if (sourceGC->serialNumber != pDrawable->serialNumber)
 	ValidateGC (pDrawable, sourceGC);
     (*sourceGC->ops->PushPixels) (sourceGC, pPriv->sourceBits, pDrawable, w, h, x, y);
-    if (maskGC->fgPixel != pPriv->mask)
+    if (maskGC->fgPixel != mask)
     {
-	gcvals[0] = pPriv->mask;
+	gcvals[0] = mask;
 	DoChangeGC (maskGC, GCForeground, gcvals, 0);
     }
     if (maskGC->serialNumber != pDrawable->serialNumber)
@@ -238,9 +233,10 @@ miDCPutBits (pDrawable, pPriv, sourceGC, maskGC, x, y, w, h)
 }
 
 static Bool
-miDCPutUpCursor (pScreen, pCursor, x, y)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
+miDCPutUpCursor (pScreen, pCursor, x, y, source, mask)
+    ScreenPtr	    pScreen;
+    CursorPtr	    pCursor;
+    unsigned long   source, mask;
 {
     miDCScreenPtr   pScreenPriv;
     miDCCursorPtr   pPriv;
@@ -269,7 +265,7 @@ miDCPutUpCursor (pScreen, pCursor, x, y)
 	}
     }
     miDCPutBits (pWin, pPriv, pScreenPriv->pSourceGC, pScreenPriv->pMaskGC,
-		 x, y, pCursor->width, pCursor->height);
+		 x, y, pCursor->width, pCursor->height, source, mask);
     return TRUE;
 }
 
@@ -349,9 +345,10 @@ miDCRestoreUnderCursor (pScreen, x, y, w, h)
 }
 
 static Bool
-miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
+miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
+    ScreenPtr	    pScreen;
+    CursorPtr	    pCursor;
+    unsigned long   source, mask;
 {
     miDCCursorPtr   pPriv;
     miDCScreenPtr   pScreenPriv;
@@ -416,7 +413,7 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy)
 	    return FALSE;
     }
     miDCPutBits (pTemp, pPriv, pScreenPriv->pPixSourceGC, pScreenPriv->pPixMaskGC,
- 		 dx, dy, pCursor->width, pCursor->height);
+ 		 dx, dy, pCursor->width, pCursor->height, source, mask);
 
     /*
      * copy the temporary pixmap onto the screen

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 1.10 89/03/16 14:46:49 jim Exp $ */
+/* $XConsortium: mfb.h,v 5.0 89/06/09 15:05:59 keith Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -36,6 +36,7 @@ SOFTWARE.
 extern int InverseAlu[];
 
 extern Bool mfbScreenInit();
+extern Bool mfbCloseScreen();
 extern void mfbQueryBestSize();
 extern Bool mfbCreateWindow();
 extern Bool mfbPositionWindow();
