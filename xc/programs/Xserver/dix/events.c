@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.5 87/08/14 22:04:25 newman Locked $ */
+/* $Header: events.c,v 1.94 87/08/18 19:55:48 toddb Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -71,6 +71,7 @@ extern void (* ReplySwapVector[256]) ();
 	(((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
 
 static debug_events = 0;
+static debug_modifiers = 0;
 static InputInfo inputInfo;
 
 static lastInputFocusChangeMode = NotifyNormal; /* Useful for avoiding sending
@@ -107,6 +108,11 @@ static int focusTraceSize = 0;
 static int focusTraceGood;
 
 static CARD16 keyButtonState = 0;
+/*
+ *	For each modifier,  we keep a count of the number of keys that
+ *	are currently setting it.
+ */
+static int modifierKeyCount[8];
 static int buttonsDown = 0;		/* number of buttons currently down */
 static Mask buttonMotionMask = 0;
 
@@ -133,7 +139,18 @@ extern void DoFocusEvents();
 
 static ScreenPtr currentScreen;
 
-static CARD16 stateMasks[MAP_LENGTH];	/* only for default keyboard ? XXX */
+/*
+ *	For each key,  we keep a bitmap showing the modifiers it sets
+ *	This is a CARD16 bitmap 'cos it includes the mouse buttons to
+ *	make grab processing simpler.
+ */
+static CARD16 keyModifiersList[MAP_LENGTH];
+static CARD16 maxKeysPerModifier;
+/*
+ *	We also keep a copy of the modifier map in the format
+ *	used by the protocol.
+ */
+static KeyCode *modifierKeyMap;
 
 static int lastEventMask;
 
@@ -1059,7 +1076,7 @@ IsGrabbed(key, modifiers, dev, grab, keybd)
     if (keybd)
     {
 	if ((key != grab->u.keybd.key) &&
-	    (grab->u.keybd.key != AnyKey))
+	    (grab->u.keybd.key != AnyKey || keyModifiersList[key]))
 	    return FALSE;
     }
     else
@@ -1086,8 +1103,8 @@ MatchingGrab(key, modifiers, dev, grab, keybd)
     if (keybd)
     {
 	if ((key != grab->u.keybd.key) &&
-	    (grab->u.keybd.key != AnyKey) &&
-	    (key != AnyKey))
+	    (grab->u.keybd.key != AnyKey || keyModifiersList[key]) &&
+	    (key != AnyKey || keyModifiersList[grab->u.keybd.key]))
 	    return FALSE;
     }
     else
@@ -1254,7 +1271,22 @@ ProcessKeyboardEvent (xE, keybd)
 	    if (!xE->u.u.detail)
 		return;
 	    BitOn(keybd->down, xE->u.u.detail);
-	    keyButtonState |= stateMasks[xE->u.u.detail];
+		{
+		    register int i = 0;
+		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
+		    register CARD16 mask = 1;
+
+		    while (modifiers) {
+			if (mask & modifiers) {
+			    /* This key affects modifier "i" */
+			    modifierKeyCount[i]++;
+			    keyButtonState |= mask;
+			}
+			i++;
+			modifiers &= ~mask;
+			mask <<= 1;
+		    }
+		}
 	    if (!grab)
 		if (CheckDeviceGrabs(keybd, xE, 0, TRUE))
 		    return;
@@ -1264,7 +1296,24 @@ ProcessKeyboardEvent (xE, keybd)
 	    if (!xE->u.u.detail)
 		return;
 	    BitOff(keybd->down, xE->u.u.detail);
-	    keyButtonState &= ~stateMasks[xE->u.u.detail];
+		{
+		    register int i = 0;
+		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
+		    register CARD16 mask = 1;
+
+		    while (modifiers) {
+			if (mask & modifiers) {
+			    /* This key affects modifier "i" */
+			    if (--modifierKeyCount[i] <= 0) {
+				keyButtonState &= ~mask;
+				modifierKeyCount[i] = 0;
+			    }
+			}
+			i++;
+			modifiers &= ~mask;
+			mask <<= 1;
+		    }
+		}
 	    if ((keybd->u.keybd.passiveGrab) &&
 			(xE->u.u.detail == grab->u.keybd.key))
 		deactiveGrab = TRUE;
@@ -1348,7 +1397,7 @@ ProcessPointerEvent (xE, mouse)
 	    filterToUse = filters[ButtonPress];
 	    xE->u.u.detail = mouse->u.ptr.map[key];
 	    if (xE->u.u.detail <= 5)
-		keyButtonState |= stateMasks[xE->u.u.detail];
+		keyButtonState |= keyModifiersList[xE->u.u.detail];
 	    if (!grab)
 		if (CheckDeviceGrabs(mouse, xE, 0, FALSE))
 		    return;
@@ -1359,7 +1408,7 @@ ProcessPointerEvent (xE, mouse)
 	    filterToUse = filters[ButtonRelease];
 	    xE->u.u.detail = mouse->u.ptr.map[key];
 	    if (xE->u.u.detail <= 5)
-		keyButtonState &= ~stateMasks[xE->u.u.detail];
+		keyButtonState &= ~keyModifiersList[xE->u.u.detail];
 	    if ((!(keyButtonState & AllButtonsMask)) &&
 		(mouse->u.ptr.autoReleaseGrab))
 		deactivateGrab = TRUE;
@@ -2185,49 +2234,27 @@ SetPointerStateMasks(ptr)
     DevicePtr ptr;
 {
  /* all have to be defined since some button might be mapped here */
-    stateMasks[1] = Button1Mask;
-    stateMasks[2] = Button2Mask;
-    stateMasks[3] = Button3Mask;
-    stateMasks[4] = Button4Mask;
-    stateMasks[5] = Button5Mask;
+    keyModifiersList[1] = Button1Mask;
+    keyModifiersList[2] = Button2Mask;
+    keyModifiersList[3] = Button3Mask;
+    keyModifiersList[4] = Button4Mask;
+    keyModifiersList[5] = Button5Mask;
 }
 
 static void
 SetKeyboardStateMasks(keybd)
     DeviceIntPtr keybd;
 {
-#define SET_MOD_STATE(entry, mask) \
-    if (keybd->u.keybd.modMap.entry != NoSymbol)\
-        stateMasks[keybd->u.keybd.modMap.entry] = mask;
+    int	i;
 
-    /* Note that 1-5 entries are buttons */
-
-    int     i;
+    /*
+     *	For all valid keys (from 8 up) copy the bitmap of the modifiers
+     *	it sets from the keyboard info into the array we use internally.
+     *  No need to test for bad entries - these are detected when the
+     *	array in the kbd struct is built.
+     */
     for (i = 8; i < MAP_LENGTH; i++)
-	stateMasks[i] = 0;
-    SET_MOD_STATE(lock,   LockMask);
-
-    SET_MOD_STATE(shiftA, ShiftMask);
-    SET_MOD_STATE(shiftB, ShiftMask);
-
-    SET_MOD_STATE(controlA, ControlMask);
-    SET_MOD_STATE(controlB, ControlMask);
-
-    SET_MOD_STATE(mod1A,    Mod1Mask);
-    SET_MOD_STATE(mod1B,    Mod1Mask);
-
-    SET_MOD_STATE(mod2A,    Mod2Mask);
-    SET_MOD_STATE(mod2B,    Mod2Mask);
-
-    SET_MOD_STATE(mod3A,    Mod3Mask);
-    SET_MOD_STATE(mod3B,    Mod3Mask);
-
-    SET_MOD_STATE(mod4A,    Mod4Mask);
-    SET_MOD_STATE(mod4B,    Mod4Mask);
-
-    SET_MOD_STATE(mod5A,    Mod5Mask);
-    SET_MOD_STATE(mod5B,    Mod5Mask);
-#undef SET_MOD_STATE
+	keyModifiersList[i] = (CARD16) keybd->u.keybd.modifierMap[i];
 }
 
 DevicePtr
@@ -2462,18 +2489,65 @@ SetKeySymsMap(pKeySyms)
 	    curKeySyms.mapWidth * sizeof(KeySym));
 }
 
+static int
+WidthOfModifierTable(modifierMap)
+    CARD8 modifierMap[];
+{
+    int         i, keysPerModifier[8], maxKeysPerModifier;
+
+    maxKeysPerModifier = 0;
+    bzero((char *)keysPerModifier, sizeof keysPerModifier);
+
+    for (i = 8; i < MAP_LENGTH; i++) {
+	int         j;
+	CARD8       mask;
+
+	for (j = 0, mask = 1; j < 8; j++, mask <<= 1) {
+	    if (mask & modifierMap[i]) {
+		if (++keysPerModifier[j] > maxKeysPerModifier) {
+		    maxKeysPerModifier = keysPerModifier[j];
+		}
+		if (debug_modifiers)
+		    ErrorF("Key 0x%x modifier %d sequence %d\n",
+			i, j, keysPerModifier[j]);
+	    }
+	}
+    }
+    if (debug_modifiers)
+	ErrorF("Max Keys per Modifier = %d\n", maxKeysPerModifier);
+    if (modifierKeyMap)
+	Xfree(modifierKeyMap);
+    modifierKeyMap = (KeyCode *)Xalloc(8*maxKeysPerModifier);
+    bzero((char *)modifierKeyMap, 8*maxKeysPerModifier);
+    bzero((char *)keysPerModifier, sizeof keysPerModifier);
+
+    for (i = 8; i < MAP_LENGTH; i++) {
+	int         j;
+	CARD8       mask;
+
+	for (j = 0, mask = 1; j < 8; j++, mask <<= 1) {
+	    if (mask & modifierMap[i]) {
+		if (debug_modifiers)
+		    ErrorF("Key 0x%x modifier %d index %d\n", i, j,
+			   j*maxKeysPerModifier+keysPerModifier[j]);
+		modifierKeyMap[j*maxKeysPerModifier+keysPerModifier[j]] = i;
+		keysPerModifier[j]++;
+	    }
+	}
+    }
+
+    return (maxKeysPerModifier);
+}
 
 void 
 InitKeyboardDeviceStruct(device, pKeySyms, pModifiers,
 			      bellProc, controlProc)
     DevicePtr device;
     KeySymsPtr pKeySyms;
-    ModifierMapPtr pModifiers;
+    CARD8	pModifiers[];
     void (*bellProc)();
     void (*controlProc)();
 {
-#define SET_MOD(entry)  (keybd->u.keybd.modMap.entry = pModifiers->entry)
-
     DeviceIntPtr keybd = (DeviceIntPtr)device;
 
     keybd->grab = NullGrab;
@@ -2488,28 +2562,23 @@ InitKeyboardDeviceStruct(device, pKeySyms, pModifiers,
     keybd->u.keybd.passiveGrab = FALSE;
     curKeySyms.minKeyCode = pKeySyms->minKeyCode;
     curKeySyms.maxKeyCode = pKeySyms->maxKeyCode;
-    SET_MOD(lock);
-    SET_MOD(shiftA);
-    SET_MOD(shiftB);
-    SET_MOD(controlA);
-    SET_MOD(controlB);
-    SET_MOD(mod1A);
-    SET_MOD(mod1B);
-    SET_MOD(mod2A);
-    SET_MOD(mod2B);
-    SET_MOD(mod3A);
-    SET_MOD(mod3B);
-    SET_MOD(mod4A);
-    SET_MOD(mod4B);
-    SET_MOD(mod5A);
-    SET_MOD(mod5B);
+    /*
+     *	Copy the modifier info into the kdb stuct.
+     */
+    {
+	int i;
+
+	for (i = 8; i < MAP_LENGTH; i++) {
+	    keybd->u.keybd.modifierMap[i] = pModifiers[i];
+	}
+	maxKeysPerModifier = WidthOfModifierTable(pModifiers);
+    }
     if (keybd == inputInfo.keyboard)
     {
 	SetKeyboardStateMasks(keybd);
 	SetKeySymsMap(pKeySyms);
 	(*keybd->u.keybd.CtrlProc)(keybd, &keybd->u.keybd.ctrl);  
     }
-#undef SET_MOD
 }
 
 void
@@ -2592,7 +2661,7 @@ SendMappingNotify(request, firstKeyCode, count)
     }
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
-        if (! clients[i]->clientGone)
+        if (clients[i] && ! clients[i]->clientGone)
             WriteEventsToClient(clients[i], 1, &event);
 }
 
@@ -2620,84 +2689,107 @@ BadDeviceMap(buff, length, low, high)
     return FALSE;
 }
 
+static Bool
+AllModifierKeysAreUp(map, len)
+    CARD8 *map;
+    int len;
+{
+    while (len--) {
+	if (*map && IsOn(inputInfo.keyboard->down, *map))
+	    return FALSE;
+	map++;
+    }
+    return TRUE;
+}
+
 int 
 ProcSetModifierMapping(client)
     ClientPtr client;
 {
-#define LEGAL_MOD(mod) \
-    if (modMap.mod != NoSymbol)\
-    {\
-        if (!LegalModifier(modMap.mod))\
-        {\
-            rep.success = MappingFailed;\
-	    goto WriteMappingReply;\
-	}\
-	if ((inputInfo.keyboard->u.keybd.modMap.mod != modMap.mod) &&\
-		IsOn(inputInfo.keyboard->down, modMap.mod))\
-        {\
-            rep.success = MappingBusy;\
-	    goto WriteMappingReply;\
-	}\
-    }\
-
     xSetModifierMappingReply rep;
     REQUEST(xSetModifierMappingReq);
-    ModifierMapRec modMap;
+    KeyCode *inputMap;
+    int inputMapLen;
     
-    REQUEST_SIZE_MATCH(xSetModifierMappingReq);
+    REQUEST_AT_LEAST_SIZE(xSetModifierMappingReq);
 
-    modMap.lock = stuff->lock;
-    modMap.shiftA = stuff->shiftA;
-    modMap.shiftB = stuff->shiftB;
-    modMap.controlA = stuff->controlA;
-    modMap.controlB = stuff->controlB;
-    modMap.mod1A = stuff->mod1A;
-    modMap.mod1B = stuff->mod1B;
-    modMap.mod2A = stuff->mod2A;
-    modMap.mod2B = stuff->mod2B;
-    modMap.mod3A = stuff->mod3A;
-    modMap.mod3B = stuff->mod3B;
-    modMap.mod4A = stuff->mod4A;
-    modMap.mod4B = stuff->mod4B;
-    modMap.mod5A = stuff->mod5A;
-    modMap.mod5B = stuff->mod5B;
+    if (stuff->length != ((stuff->numKeyPerModifier<<1) +
+			  (sizeof (xSetModifierMappingReq)>>2)))
+	return BadLength;
 
-    if (BadDeviceMap (&modMap, 15, curKeySyms.minKeyCode, 
+    inputMapLen = 8*stuff->numKeyPerModifier;
+    inputMap = (KeyCode *)&stuff[1];
+
+    /*
+     *	Now enforce the restriction that "a given non-zero keycode value
+     *	cannot appear more than once in a set,  or in more than one set
+     *	(else a Value error),  and all of the non-zero keycodes must be
+     *	in the range specified by min-keycode and max-keycode in the
+     *	connection setup (else a Value error).
+     *
+     *	I think all but the last part of the restriction are onerous
+     *	and uneccessary.  But here goes anyway - we use the n-squared
+     *	algorithm......
+     */
+    if (BadDeviceMap (inputMap, inputMapLen, curKeySyms.minKeyCode, 
 		      curKeySyms.maxKeyCode))
         return BadValue;    
-
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
     rep.success = MappingSuccess;
 
-    LEGAL_MOD(lock); 
-    LEGAL_MOD(shiftA);
-    LEGAL_MOD(shiftB);
-    LEGAL_MOD(controlA);
-    LEGAL_MOD(controlB);
-    LEGAL_MOD(mod1A);
-    LEGAL_MOD(mod1B);
-    LEGAL_MOD(mod2A);
-    LEGAL_MOD(mod2B);
-    LEGAL_MOD(mod3A);
-    LEGAL_MOD(mod3B);
-    LEGAL_MOD(mod4A);
-    LEGAL_MOD(mod4B);
-    LEGAL_MOD(mod5A);
-    LEGAL_MOD(mod5B);
+    /*
+     *	Now enforce the restriction that none of the old or new
+     *	modifier keys may be down while we change the mapping,  and
+     *	that the DDX layer likes the choice.
+     */
+    if (!AllModifierKeysAreUp(modifierKeyMap, 8*maxKeysPerModifier)
+	    || !AllModifierKeysAreUp(inputMap, inputMapLen)) {
+	if (debug_modifiers)
+	    ErrorF("Busy\n");
+	rep.success = MappingBusy;
+    } else {
+	register int i;
 
-WriteMappingReply:
+	for (i = 0; i < inputMapLen; i++) {
+	    if (inputMap[i] && !LegalModifier(inputMap[i])) {
+		if (debug_modifiers)
+		    ErrorF("Key 0x%x refused\n", inputMap[i]);
+		rep.success = MappingFailed;
+		break;
+	    }
+	}
+    }
+
     WriteReplyToClient(client, sizeof(xSetModifierMappingReply), &rep);
 
     if (rep.success == MappingSuccess)
     {
-	inputInfo.keyboard->u.keybd.modMap = modMap;
+	/*
+	 *	Now build the keyboard's modifier bitmap from the
+	 *	list of keycodes.
+	 */
+	register int i;
+
+	if (modifierKeyMap)
+	    Xfree(modifierKeyMap);
+	modifierKeyMap = (KeyCode *)Xalloc(inputMapLen);
+	bcopy(inputMap, modifierKeyMap, inputMapLen);
+
+	maxKeysPerModifier = stuff->numKeyPerModifier;
+	for (i = 0; i < MAP_LENGTH; i++)
+	    inputInfo.keyboard->u.keybd.modifierMap[i] = 0;
+	for (i = 0; i < inputMapLen; i++) if (inputMap[i]) {
+	    inputInfo.keyboard->u.keybd.modifierMap[inputMap[i]]
+	      |= (1<<(i/maxKeysPerModifier));
+	    if (debug_modifiers)
+		ErrorF("Key 0x%x mod %d\n", inputMap[i], i/maxKeysPerModifier);
+	}
 	SetKeyboardStateMasks(inputInfo.keyboard);
         SendMappingNotify(MappingModifier, 0, 0);
     }
     return(client->noClientException);
-#undef LEGAL_MOD
 }
 
 int
@@ -2709,26 +2801,15 @@ ProcGetModifierMapping(client)
 
     REQUEST_SIZE_MATCH(xReq);
     rep.type = X_Reply;
-    rep.length = 0;
+    rep.numKeyPerModifier = maxKeysPerModifier;
     rep.sequenceNumber = client->sequence;
-    rep.lock = inputInfo.keyboard->u.keybd.modMap.lock;
-    rep.shiftA = inputInfo.keyboard->u.keybd.modMap.shiftA;
-    rep.shiftB = inputInfo.keyboard->u.keybd.modMap.shiftB;
-    rep.controlA = inputInfo.keyboard->u.keybd.modMap.controlA;
-    rep.controlB = inputInfo.keyboard->u.keybd.modMap.controlB;
-    rep.mod1A = inputInfo.keyboard->u.keybd.modMap.mod1A;
-    rep.mod1B = inputInfo.keyboard->u.keybd.modMap.mod1B;
-    rep.mod2A = inputInfo.keyboard->u.keybd.modMap.mod2A;
-    rep.mod2B = inputInfo.keyboard->u.keybd.modMap.mod2B;
-    rep.mod3A = inputInfo.keyboard->u.keybd.modMap.mod3A;
-    rep.mod3B = inputInfo.keyboard->u.keybd.modMap.mod3B;
-    rep.mod4A = inputInfo.keyboard->u.keybd.modMap.mod4A;
-    rep.mod4B = inputInfo.keyboard->u.keybd.modMap.mod4B;
-    rep.mod5A = inputInfo.keyboard->u.keybd.modMap.mod5A;
-    rep.mod5B = inputInfo.keyboard->u.keybd.modMap.mod5B;
+    /* length counts 4 byte quantities - there are 8 modifiers 1 byte big */
+    rep.length = 2*maxKeysPerModifier;
 
     WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
 
+    /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
+    WriteReplyToClient(client, 8*maxKeysPerModifier, modifierKeyMap);
     return client->noClientException;
 }
 
