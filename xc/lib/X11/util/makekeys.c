@@ -1,4 +1,4 @@
-/* $XConsortium: makekeys.c,v 1.0 89/12/22 16:11:28 rws Exp $ */
+/* $XConsortium: makekeys.C,v 11.0 90/07/26 18:34:05 rws Exp $ */
 /*
 Copyright 1990 by the Massachusetts Institute of Technology
 
@@ -20,6 +20,7 @@ without express or implied warranty.
 #include <stdio.h>
 
 extern char *malloc();
+extern char *strcpy();
 
 typedef unsigned long Signature;
 
@@ -52,18 +53,30 @@ main()
     int num_found;
     KeySym val;
 
-    ksnum = 0;
-    while (1) {
-	i = scanf("#define XK_%s 0x%x", buf, &info[ksnum].val);
+    for (ksnum = 0; 1; gets(buf)) {
+	i = scanf("#define XK_%s 0x%lx", buf, &info[ksnum].val);
 	if (i == EOF)
 	    break;
-	if (i == 2) {
-	    name = malloc(strlen(buf)+1);
-	    strcpy(name, buf);
-	    info[ksnum].name = name;
-	    ksnum++;
+	if (i != 2)
+	    continue;
+	if ((info[ksnum].val > 0xffff) && (info[ksnum].val != XK_VoidSymbol)) {
+	    fprintf(stderr,
+		    "ignoring illegal keysym (%s), remove it from .h file!\n",
+		    buf);
+	    continue;
 	}
-	gets(buf);
+	name = malloc((unsigned)strlen(buf)+1);
+	if (!name) {
+	    fprintf(stderr, "makekeys: out of memory!\n");
+	    exit(1);
+	}
+	(void)strcpy(name, buf);
+	info[ksnum].name = name;
+	ksnum++;
+	if (ksnum == KTNUM) {
+	    fprintf(stderr, "makekeys: too many keysyms!\n");
+	    exit(1);
+	}
     }
 
     printf("/* This file is generated from keysymdef.h. */\n");
@@ -123,11 +136,8 @@ next1:	;
 	offsets[j] = k;
 	indexes[i] = k;
 	val = info[i].val;
-	if (val > 0xffff) {
-	    if (val != XK_VoidSymbol)
-		exit(1);
+	if (val == XK_VoidSymbol)
 	    val = 0;
-	}
 	printf("0x%.2x, 0x%.2x, 0x%.2x, 0x%.2x, ",
 	       (sig >> 8) & 0xff, sig & 0xff,
 	       (val >> 8) & 0xff, val & 0xff);
@@ -158,6 +168,8 @@ next1:	;
 	max_rehash = 0;
 	bzero(tab, z);
 	for (i = 0; i < ksnum; i++) {
+	    if (i && (info[i].val == info[i-1].val))
+		continue;
 	    first = j = info[i].val % z;
 	    for (k = 0; tab[j]; k++) {
 		j += first + 1;
