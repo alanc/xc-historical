@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: MakeReq.c,v 1.18 92/12/21 09:22:01 rws Exp $
+ * $XConsortium: MakeReq.c,v 1.19 92/12/22 09:12:43 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -52,7 +52,7 @@
 #define TEST16_2 0x2129   /* ? character in test16 (16 bit) font */
 #define TEST16_3 0x212a   /* ! character in test16 (16 bit) font */
 
-unsigned long reply_pixel;
+CARD32 reply_pixel;
 Atom Test_Atom1;
 Atom Test_Atom2;
 char *Test_prop = "__Test_Atom";
@@ -1133,8 +1133,8 @@ int type;
 		((xRotatePropertiesReq *)rp)->window = Get_Default_Window(client);
 		((xRotatePropertiesReq *)rp)->nAtoms = 2;
 		((xRotatePropertiesReq *)rp)->nPositions = 1;
-		Set_Value4(&valuePtr,(long) Test_Atom1);
-		Set_Value4(&valuePtr,(long) Test_Atom2);
+		Set_Value4(&valuePtr, Test_Atom1);
+		Set_Value4(&valuePtr, Test_Atom2);
 		break;
 	case X_ForceScreenSaver:
 		GetReq(ForceScreenSaver,rp);
