@@ -1,29 +1,33 @@
-/* $XConsortium: imRm.c,v 1.7 94/03/31 22:02:36 rws Exp $ */
+/* $XConsortium: imRm.c,v 1.8 94/05/14 15:39:47 rws Exp kaleb $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
+	  Copyright 1994                        by Sony Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
 provided that the above copyright notice appear in all copies and
 that both that copyright notice and this permission notice appear
 in supporting documentation, and that the name of FUJITSU LIMITED
-not be used in advertising or publicity pertaining to distribution
-of the software without specific, written prior permission.
-FUJITSU LIMITED makes no representations about the suitability of
-this software for any purpose. 
-It is provided "as is" without express or implied warranty.
+and Sony Corporation not be used in advertising or publicity
+pertaining to distribution of the software without specific,
+written prior permission. FUJITSU LIMITED and Sony Corporation make
+no representations about the suitability of this software for any
+purpose. It is provided "as is" without express or implied warranty.
 
-FUJITSU LIMITED DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
-EVENT SHALL FUJITSU LIMITED BE LIABLE FOR ANY SPECIAL, INDIRECT OR
-CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
-USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+FUJITSU LIMITED AND SONY CORPORATION DISCLAIM ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL FUJITSU LIMITED AND
+SONY CORPORATION BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
   Author: Takashi Fujiwara     FUJITSU LIMITED 
 			       fujiwara@a80.tech.yk.fujitsu.co.jp
+  Modifier: Makoto Wakamatsu   Sony Corporation
+			       makoto@sm.sony.co.jp
 
 ******************************************************************/
 
@@ -233,6 +237,7 @@ static char *supported_local_ic_values_list[] = {
     XNStatusDoneCallback,
     XNStatusDrawCallback,
     XNPreeditState,
+    XNPreeditStateNotifyCallback,
     (char *)NULL
 };
 
@@ -1417,7 +1422,8 @@ static	XIMResource	ic_resources[] = {
     {XNStatusStartCallback,	   0, 0,			0, 0, 0},
     {XNStatusDoneCallback,	   0, 0,			0, 0, 0},
     {XNStatusDrawCallback,	   0, 0,			0, 0, 0},
-    {XNPreeditState,		   0, 0,			0, 0, 0}
+    {XNPreeditState,		   0, 0,			0, 0, 0},
+    {XNPreeditStateNotifyCallback, 0, 0,			0, 0, 0},
 };
 
 static	XIMResource	ic_inner_resources[] = {
@@ -1433,6 +1439,7 @@ static	XIMResource	ic_inner_resources[] = {
     {XNStatusStartCallback,	   0, 0,			0, 0, 0},
     {XNStatusDoneCallback,	   0, 0,			0, 0, 0},
     {XNStatusDrawCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditStateNotifyCallback, 0, 0,			0, 0, 0},
 };
 
 static XimValueOffsetInfoRec im_attr_info[] = {
@@ -1590,7 +1597,11 @@ static XimValueOffsetInfoRec ic_pre_attr_info[] = {
 
     {XNPreeditState,		 0,
 	XOffsetOf(ICPreeditAttributes, preedit_state),
-	_XimDefaultPreeditState, _XimEncodePreeditState,_XimDecodePreeditState}
+	_XimDefaultPreeditState, _XimEncodePreeditState,_XimDecodePreeditState},
+
+    {XNPreeditStateNotifyCallback, 0,
+	XOffsetOf(ICPreeditAttributes, state_notify_callback),
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 };
 
 static XimValueOffsetInfoRec ic_sts_attr_info[] = {
@@ -1990,6 +2001,16 @@ static XimICMode	ic_mode[] = {
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
+		0,
+		0,
+		0,
+		0,
+		0},
+    {XNPreeditStateNotifyCallback, 0,
+		(XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
+		(XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
+		(XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
+		(XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
 		0,
 		0,
 		0,
@@ -3015,8 +3036,6 @@ _XimGetCurrentICValues(ic, ic_values)
     ic_values->res_name		 = ic->core.res_name;
     ic_values->res_class	 = ic->core.res_class;
     ic_values->destroy_callback	 = ic->core.destroy_callback;
-    ic_values->preedit_state_notify_callback
-				 = ic->core.preedit_state_notify_callback;
     ic_values->string_conversion_callback
 				 = ic->core.string_conversion_callback;
     ic_values->string_conversion = ic->core.string_conversion;

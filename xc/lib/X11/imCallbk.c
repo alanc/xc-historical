@@ -1,7 +1,8 @@
-/* $XConsortium: imCallbk.c,v 1.6 94/04/17 20:22:02 rws Exp $ */
+/* $XConsortium: imCallbk.c,v 1.7 94/07/06 14:47:01 kaleb Exp kaleb $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
+Copyright 1994 by Sony Corporation
 
                         All Rights Reserved
 
@@ -9,22 +10,26 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, 
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or FUJITSU
-LIMITED not be used in advertising or publicity pertaining to distribution
-of the software without specific, written prior permission.  
+supporting documentation, and that the names of Digital, FUJITSU
+LIMITED and Sony Corporation not be used in advertising or publicity
+pertaining to distribution of the software without specific, written
+prior permission.  
 
-DIGITAL AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
-SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
-IN NO EVENT SHALL DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
-CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
-DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-OF THIS SOFTWARE.
+DIGITAL, FUJITSU LIMITED AND SONY CORPORATION DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL DIGITAL, FUJITSU LIMITED
+AND SONY CORPORATION BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
 
   Author: Hiroyuki Miyamoto  Digital Equipment Corporation
                              miyamoto@jrd.dec.com
   Modifier: Takashi Fujiwara FUJITSU LIMITED
 			     fujiwara@a80.tech.yk.fujitsu.co.jp
+	    Makoto Wakamatsu Sony Corporation
+		 	     makoto@sm.sony.co.jp
 				
 ***********************************************************************/
 
@@ -96,6 +101,7 @@ Private XimCbStatus _XimPreeditCaretCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimStatusStartCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimStatusDoneCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimStatusDrawCallback(Xim, Xic, char*, int);
+Private XimCbStatus _XimPreeditStateNotifyCallback(Xim, Xic, char *, int);
 #else
 Public Bool _XimCbDispatch();
 Private XimCbStatus _XimGeometryCallback();
@@ -109,6 +115,7 @@ Private XimCbStatus _XimPreeditCaretCallback();
 Private XimCbStatus _XimStatusStartCallback();
 Private XimCbStatus _XimStatusDoneCallback();
 Private XimCbStatus _XimStatusDrawCallback();
+Private XimCbStatus _XimPreeditStateNotifyCallback();
 #endif /* NeedFunctionPrototypes */
 
 #if __STDC__
@@ -145,7 +152,8 @@ static RConst XimCb callback_table[] = {
     _XimPreeditDoneCallback,	/* #078 */
     _XimStatusStartCallback,	/* #079 */
     _XimStatusDrawCallback,	/* #080 */
-    _XimStatusDoneCallback	/* #081 */
+    _XimStatusDoneCallback,	/* #081 */
+    _XimPreeditStateNotifyCallback	/* #082 */
     };
 
 
@@ -248,7 +256,7 @@ _XimCbDispatch(xim, len, data, call_data)
 
     /* check if the protocol should be processed here
      */
-    if (major_opcode >= 128) {
+    if (major_opcode > 82) {
 	status = XimCbBadOpcode;
 	goto quit;
     }
@@ -498,18 +506,6 @@ _XimPreeditStartCallback(im, ic, proto, len)
 	_XimFlushData(im);
     }
 
-    /* invoke PreeditStateNotify callback ? HM
-     */
-    {
-	cb = &ic->core.preedit_state_notify_callback;
-	if (cb->callback) {
-	    XIMPreeditStateNotifyCallbackStruct cbrec;
-
-	    cbrec.state = XIMPreeditEnable;
-	    (*cb->callback)((XIC)ic, cb->client_data, &cbrec);
-	}
-    }
-
     return(XimCbSuccess);
 }
 
@@ -540,18 +536,6 @@ _XimPreeditDoneCallback(im, ic, proto, len)
 	/* no callback registered
 	 */
 	return(XimCbNoCallback);
-    }
-
-    /* invoke PreeditStateNotify callback ? HM
-     */
-    {
-	cb = &ic->core.preedit_state_notify_callback;
-	if (cb->callback) {
-	    XIMPreeditStateNotifyCallbackStruct cbrec;
-
-	    cbrec.state = XIMPreeditDisable;
-	    (*cb->callback)((XIC)ic, cb->client_data, &cbrec);
-	}
     }
 
     return(XimCbSuccess);
@@ -869,3 +853,34 @@ _XimStatusDrawCallback(im, ic, proto, len)
 
     return(XimCbSuccess);
 }
+
+Private XimCbStatus
+#if NeedFunctionPrototypes
+_XimPreeditStateNotifyCallback( Xim im, Xic ic, char* proto, int len )
+#else
+_XimPreeditStateNotifyCallback( im, ic, proto, len )
+    Xim		 im;
+    Xic		 ic;
+    char	*proto;
+    int		 len;
+#endif
+{
+    XIMCallback	*cb = &ic->core.preedit_attr.state_notify_callback;
+
+    /* invoke the callack
+     */
+    if( cb  &&  cb->callback ) {    
+	XIMPreeditStateNotifyCallbackStruct cbrec;
+
+	cbrec.state = *(BITMASK32 *)proto;
+	(*cb->callback)( (XIC)ic, cb->client_data, &cbrec );
+    }
+    else {
+	/* no callback registered
+	 */
+	return( XimCbNoCallback );
+    }
+
+    return( XimCbSuccess );
+}
+

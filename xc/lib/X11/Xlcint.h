@@ -1,4 +1,4 @@
-/* $XConsortium: Xlcint.h,v 11.20 94/05/14 15:39:25 rws Exp $ */
+/* $XConsortium: Xlcint.h,v 11.21 94/07/06 14:46:16 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -34,7 +34,7 @@ from the X Consortium.
  *                      and Nippon Telegraph and Telephone Corporation
  * Copyright 1991 by the Open Software Foundation
  * Copyright 1993 by the TOSHIBA Corp.
- * Copyright 1993, 1994 by the Sony Corporation
+ * Copyright 1993, 1994 by Sony Corporation
  * Copyright 1993, 1994 by the FUJITSU LIMITED
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -142,6 +142,7 @@ typedef struct {
     XIMCallback		draw_callback;
     XIMCallback		caret_callback;
     XIMPreeditState	preedit_state;
+    XIMCallback		state_notify_callback;
 } ICPreeditAttributes, *ICPreeditAttributesPtr;
 
 typedef struct {
@@ -797,7 +798,6 @@ typedef struct {
     char *		res_class;
 
     XIMCallback		destroy_callback;
-    XIMCallback		preedit_state_notify_callback;
     XIMCallback		string_conversion_callback;
     XIMStringConversionText	 string_conversion;
     XIMResetState	reset_state;

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.235 94/04/17 20:21:43 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.236 94/05/14 15:38:16 rws Exp kaleb $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -1128,6 +1128,7 @@ typedef struct {
 #define XNPreeditDoneCallback "preeditDoneCallback"
 #define XNPreeditDrawCallback "preeditDrawCallback"
 #define XNPreeditCaretCallback "preeditCaretCallback"
+#define XNPreeditStateNotifyCallback "preeditStateNotifyCallback"
 #define XNPreeditAttributes "preeditAttributes"
 #define XNStatusStartCallback "statusStartCallback"
 #define XNStatusDoneCallback "statusDoneCallback"

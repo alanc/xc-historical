@@ -1,4 +1,4 @@
-/* $XConsortium: XimProto.h,v 1.2 94/01/20 18:02:24 rws Exp $ */
+/* $XConsortium: XimProto.h,v 1.3 94/04/15 15:33:21 rws Exp kaleb $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -112,6 +112,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #define	XIM_STATUS_START		 79
 #define	XIM_STATUS_DRAW			 80
 #define	XIM_STATUS_DONE			 81
+#define	XIM_PREEDITSTATE		 82
 
 /*
  * values for the flag of XIM_ERROR
