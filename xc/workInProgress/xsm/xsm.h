@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.30 94/11/14 15:30:55 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.31 94/11/30 18:12:45 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -65,7 +65,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xatom.h>
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
+#if defined(ISC) && __STDC__
 extern FILE *fdopen(int, char const *);
 #endif
 
@@ -96,6 +96,7 @@ typedef struct _ClientRec {
     unsigned int	restarted : 1;
     unsigned int	userIssuedCheckpoint : 1;
     unsigned int	restartHint : 2;
+    unsigned int        receivedDiscardCommand : 1;
 
 } ClientRec;
 
@@ -121,11 +122,7 @@ extern char		*display_env, *non_local_display_env;
 extern char		*session_env, *non_local_session_env;
 extern char		*audio_env;
 
-extern Bool		naming_session;
 extern Bool		need_to_name_session;
-
-extern Bool		shutdown_after_name;
-extern Bool		checkpoint_after_name;
 
 extern Bool		remote_allowed;
 
@@ -150,6 +147,7 @@ extern int		saveWaitCount;
 
 extern Bool		client_info_visible;
 extern Bool		client_prop_visible;
+extern Bool		client_log_visible;
 extern String 		*clientListNames;
 extern ClientRec	**clientListRecs;
 extern int		numClientListNames;
