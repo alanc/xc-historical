@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.169 93/07/14 16:55:54 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.170 93/07/14 18:45:25 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -312,14 +312,42 @@ XCOMM the platform-specific parameters - edit site.def to change
  * defaults for various generic parameters; set in site.def if needed
  */
 
-#ifndef HasSharedLibraries
-#define HasSharedLibraries NO
-#endif
+/* the following are needed before we can include Imake.rules */
+
 #ifndef SystemV
 #define SystemV			NO	/* SYSV (R3) */
 #endif
 #ifndef SystemV4
 #define SystemV4		NO	/* SVR4 */
+#endif
+#ifndef HasSaberC
+#define HasSaberC		NO
+#endif
+#ifndef HasPurify
+#define HasPurify		NO
+#endif
+#ifndef RemoveTargetProgramByMoving
+#define RemoveTargetProgramByMoving NO
+#endif
+#ifndef DoRanlibCmd
+#if SystemV || SystemV4
+#define DoRanlibCmd NO
+#else
+#define DoRanlibCmd YES
+#endif
+#endif
+#ifndef ExecableScripts
+#if SystemV
+#define ExecableScripts		NO
+#else
+#define ExecableScripts		YES	/* kernel exec() can handle #! */
+#endif
+#endif
+
+#include <Imake.rules>
+
+#ifndef HasSharedLibraries
+#define HasSharedLibraries NO
 #endif
 #ifndef OSMajorVersion
 #define OSMajorVersion          0
@@ -329,13 +357,6 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef UnalignedReferencesAllowed
 #define UnalignedReferencesAllowed NO	/* if arbitrary deref is okay */
-#endif
-#ifndef ExecableScripts
-#if SystemV
-#define ExecableScripts		NO
-#else
-#define ExecableScripts		YES	/* kernel exec() can handle #! */
-#endif
 #endif
 
 #ifndef BourneShell			/* to force shell in makefile */
@@ -385,9 +406,6 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasBsearch
 #define HasBsearch		YES	/* assume yes */
-#endif
-#ifndef HasSaberC
-#define HasSaberC		NO	/* for people unclear on the concept */
 #endif
 #ifndef HasFortran
 #define HasFortran		NO
@@ -682,13 +700,6 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef MvCmd
 #define MvCmd mv
 #endif
-#ifndef DoRanlibCmd
-#if SystemV || SystemV4
-#define DoRanlibCmd NO
-#else
-#define DoRanlibCmd YES
-#endif
-#endif
 #ifndef RanlibCmd
 #define RanlibCmd ranlib
 #endif
@@ -798,9 +809,6 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef PurifyOptions
 #define PurifyOptions /**/
 #endif
-#endif
-#ifndef RemoveTargetProgramByMoving
-#define RemoveTargetProgramByMoving NO
 #endif
 #ifndef PathSeparator
 #define PathSeparator /
@@ -1031,7 +1039,6 @@ PICFLAGS = PositionIndependentCFlags
 			$(IRULESRC)/$(MACROFILE) SiteIConfigFiles \
 			$(EXTRA_ICONFIGFILES)
 
-#include <Imake.rules>
 #ifndef LocalRulesFile
 /* need this to make ANSI-style preprocessors happy */
 #define LocalRulesFile <noop.rules>
