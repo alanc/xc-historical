@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.3 89/08/29 15:25:17 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.4 89/09/04 10:02:17 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -83,12 +83,16 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		 --nbox >= 0;
 		 pbox++)
 	    {
+		x1 = pbox->x1;
+		y1 = pbox->y1;
+		x2 = pbox->x2;
+		y2 = pbox->y2;
 		for (ppt = pptInit, i = npt; --i >= 0; ppt++)
 		{
 		    x = ppt->x + pDrawable->x;
 		    y = ppt->y + pDrawable->y;
-		    if ((x >= pbox->x1) && (x < pbox->x2) &&
-			(y >= pbox->y1) && (y < pbox->y2))
+		    if ((x >= x1) && (x < x2) &&
+			(y >= y1) && (y < y2))
 		    {
 			*((char *)(addr) + (y << nlwidth) + x) = pixel;
 		    }
@@ -101,12 +105,16 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		 --nbox >= 0;
 		 pbox++)
 	    {
+		x1 = pbox->x1;
+		y1 = pbox->y1;
+		x2 = pbox->x2;
+		y2 = pbox->y2;
 		for (ppt = pptInit, i = npt; --i >= 0; ppt++)
 		{
 		    x = ppt->x + pDrawable->x;
 		    y = ppt->y + pDrawable->y;
-		    if ((x >= pbox->x1) && (x < pbox->x2) &&
-			(y >= pbox->y1) && (y < pbox->y2))
+		    if ((x >= x1) && (x < x2) &&
+			(y >= y1) && (y < y2))
 		    {
 			*((char *)(addr) + (y * nlwidth) + x) = pixel;
 		    }
@@ -122,12 +130,16 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	 --nbox >= 0;
 	 pbox++)
     {
+	x1 = pbox->x1;
+	y1 = pbox->y1;
+	x2 = pbox->x2;
+	y2 = pbox->y2;
 	for (ppt = pptInit, i = npt; --i >= 0; ppt++)
 	{
 	    x = ppt->x + pDrawable->x;
 	    y = ppt->y + pDrawable->y;
-	    if ((x >= pbox->x1) && (x < pbox->x2) &&
-		(y >= pbox->y1) && (y < pbox->y2))
+	    if ((x >= x1) && (x < x2) &&
+		(y >= y1) && (y < y2))
 	    {
 		addr = addrl + (y * nlwidth) + (x >> PWSH);
 		mask = cfbmask[x & PIM] & planemask;
