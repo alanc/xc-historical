@@ -353,10 +353,10 @@ Pixmap MakeModulaBitmap(mod_x, mod_y)
 
     for (i=0; i<16; i++) {
 	pattern_line <<=1;
-	if (i % mod_x == 0) pattern_line |= 0x0001;
+	if ((i % mod_x) == 0) pattern_line |= 0x0001;
     }
     for (i=0; i<16; i++) {
-	if (i % mod_y) {
+	if ((i % mod_y) == 0) {
 	    modula_data[i*2] = 0xff;
 	    modula_data[i*2+1] = 0xff;
 	} else {
