@@ -20,7 +20,7 @@
 .TL
 \s+2\fBInter-Client Exchange (ICE) Library\fP\s-2
 .sp
-Public Review Draft
+Version 0.12
 .sp
 X Consortium Draft Standard
 .AU
