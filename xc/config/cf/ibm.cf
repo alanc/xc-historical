@@ -15,6 +15,8 @@
 #define OSMinorVersion         3
 #endif
 
+#define UnixCpp /**/
+
 #ifdef ATHENA
 #define ibmAthenaDefs -DATHENA
 #else
@@ -49,7 +51,6 @@
 #endif /* USE_PCC */
 
 #else /* else AOS - warning: AOS is going away... */
-#define SystemV NO
 #define OSName AOS
 #define HasNdbm YES
 #define CcCmd hc
@@ -69,11 +70,11 @@
  * Also, be sure to remove .../server/ddx/ibm/common/ibmscreen.o
  */
 #define ibmInclude8514  NO /* YES */
-#define ibmIncludeAED   YES
+#define ibmIncludeAED   NO
 #define ibmIncludeAPA16 YES
 #define ibmIncludeAPA8c NO
 #define ibmIncludeEGA   NO /* YES */
-#define ibmIncludeMPEL  YES
+#define ibmIncludeMPEL  NO
 #define ibmIncludeVGA   NO /* YES */
 #define ibmIncludeGEN   NO
 #endif /* RtArchitecture */
@@ -191,14 +192,14 @@
  * define this as you like for server compilation 
  * affected: all makefiles in .../X11/server
  */
-#define ServerDefines  StandardDefines -DUNIXCPP -DNOSTDHDRS OSDefines ExtensionDefines
+#define ServerOSDefines  -DUNIXCPP -DNOSTDHDRS OSDefines
 
 
 /* define this as you like for server font support */
 #ifdef AIXArchitecture
 #define FontDefines -DFONT_SNF -DFONT_BDF StandardDefines
 #else
-#define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS StandardDefines
+#define FontOSDefines StandardDefines
 #endif
 
 /* define the following line for easily debuggable servers, the */
@@ -209,6 +210,6 @@
 /* define this as you like for normal library compilation */
 #define LibraryDefines -DUNIXCPP ibmlibdefs StandardDefines
 
-/**/# platform:  $XConsortium: ibm.cf,v 1.14 89/11/14 20:18:17 jim Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: ibm.cf,v 1.15 89/12/13 15:27:50 keith Exp $
+XCOMM operating system:  OSName
 
