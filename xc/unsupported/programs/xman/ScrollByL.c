@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.17 91/02/17 16:36:55 dave Exp $
+ * $XConsortium: ScrollByL.c,v 1.18 91/02/20 18:50:14 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -54,17 +54,17 @@ static char defaultTranslations[] =
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-       CoreOffset(width), XtRImmediate, (caddr_t) 500},
+       CoreOffset(width), XtRImmediate, (XtPointer) 500},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-       CoreOffset(height), XtRImmediate, (caddr_t) 700},
+       CoreOffset(height), XtRImmediate, (XtPointer) 700},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-       Offset(foreground), XtRString, "XtDefaultForeground"},
+       Offset(foreground), XtRString, XtDefaultForeground},
     {XtNforceVert, XtCBoolean, XtRBoolean, sizeof(Boolean),
-       Offset(force_vert), XtRImmediate, (caddr_t) FALSE},
+       Offset(force_vert), XtRImmediate, (XtPointer) FALSE},
     {XtNindent, XtCIndent, XtRDimension, sizeof(Dimension),
-       Offset(indent), XtRImmediate, (caddr_t) 15},
+       Offset(indent), XtRImmediate, (XtPointer) 15},
     {XtNuseRight, XtCBoolean, XtRBoolean, sizeof(Boolean),
-       Offset(use_right), XtRImmediate, (caddr_t) FALSE},
+       Offset(use_right), XtRImmediate, (XtPointer) FALSE},
     {XtNmanualFontNormal, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
        Offset(normal_font), XtRString, MANPAGE_NORMAL},
     {XtNmanualFontBold, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
@@ -72,7 +72,7 @@ static XtResource resources[] = {
     {XtNmanualFontItalic, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
        Offset(italic_font), XtRString, MANPAGE_ITALIC},
     {XtNfile, XtCFile, XtRFile, sizeof(FILE *),
-       Offset(file), XtRImmediate, (caddr_t) NULL},
+       Offset(file), XtRImmediate, (XtPointer) NULL},
 };
 
 #undef Offset
@@ -565,8 +565,8 @@ Widget w;
 static void
 VerticalJump(w, junk, percent_ptr)
 Widget w;
-caddr_t junk;
-caddr_t percent_ptr;
+XtPointer junk;
+XtPointer percent_ptr;
 {
   float percent = *((float *) percent_ptr);
   int new_line;			/* The new location for the line pointer. */
@@ -590,7 +590,7 @@ caddr_t percent_ptr;
 static void
 VerticalScroll(w,junk,pos)
 Widget w;
-caddr_t junk;
+XtPointer junk;
 int pos;
 {
   int new_line;			/* The new location for the line pointer. */
