@@ -181,9 +181,9 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
  */
 
 static Boolean PreferredSize(bbw, width, height, replyWidth, replyHeight)
-    WidgetData	bbw;
-    Dimension	width, height;
-    Dimension	*replyWidth, *replyHeight;
+    ButtonBoxWidget	bbw;
+    Dimension		width, height;
+    Dimension		*replyWidth, *replyHeight;
 {
     DoLayout(bbw, width, height, replyWidth, replyHeight, FALSE);
     return ((*replyWidth <= width) && (*replyHeight <= height));
@@ -191,31 +191,17 @@ static Boolean PreferredSize(bbw, width, height, replyWidth, replyHeight)
 
 /*
  *
- * Compute the layout of the button box
+ * Actually layout the button box
  *
  */
 
-static void Layout(bbw)
+static void Resize(bbw)
     ButtonBoxWidget	bbw;
 {
     Dimension junk;
 
     DoLayout(bbw, bbw->core.width, bbw->core.height, &junk, &junk, TRUE);
-}
-
-/*
- *
- * Resize
- *
- */
-
-static void Resize(w)
-    Widget 	    w;
-{
-    /* Either width or height has changed */
-    Layout((ButtonBoxWidget) w);
 } /* Resize */
-
 
 /*
  *
@@ -304,7 +290,7 @@ static XtGeometryReturnCode GeometryManager(w, request, reply)
 	|| PreferredSize(bbw, bbw->core.width, bbw->core.height, &junk, &junk)
 	|| TryNewLayout(bbw)) {
 	    /* Fits in existing or new space, relayout */
-	    Layout(bbw);
+	    Resize(bbw);
 	    return (XtgeometryYes);
 	} else {
 	    /* Cannot satisfy request, change back to original geometry */
@@ -319,21 +305,17 @@ static XtGeometryReturnCode GeometryManager(w, request, reply)
     return (XtgeometryYes);
 }
 
-static void ChangeManaged(cw)
-    CompositeWidget cw;
+static void ChangeManaged(bbw)
+    ButtonBoxWidget bbw;
 {
     /* Reconfigure the button box */
-    (void) TryNewLayout((ButtonBoxWidget) cw);
-    Layout((ButtonBoxWidget) cw);
+    (void) TryNewLayout(bbw);
+    Resize(bbw);
 }
 
-void Initialize(w)
-    Widget w;
+void Initialize(bbw)
+ButtonBoxWidget bbw;
 {
-    ButtonBoxWidget bbw;
-
-    bbw = (ButtonBoxWidget) w;
-
 /* ||| What are consequences of letting height, width be 0? If okay, then
        Initialize can be NULL */
 
@@ -369,7 +351,7 @@ void Realize(w, valueMask, attributes)
  */
 
 void SetValues (old, new)
-    Widget old, new;
+    ButtonBoxWidget old, new;
 {
     /* ||| Old code completely bogus, need background, etc., then
     XtMakeGeometryRequest, then relayout */
