@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.7 89/10/04 15:45:53 jim Exp $
+ * $XConsortium: multibuf.h,v 1.8 89/10/04 16:11:44 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,10 +24,10 @@
 #ifndef _MULTIBUF_H_
 #define _MULTIBUF_H_
 
-#define MULTIBUF_PROTOCOL_NAME "Multi-Buffering"
+#define MULTIBUFFER_PROTOCOL_NAME "Multi-Buffering"
 
-#define BUFFER_MAJOR_VERSION	1	/* current version numbers */
-#define BUFFER_MINOR_VERSION	0
+#define MULTIBUFFER_MAJOR_VERSION	1	/* current version numbers */
+#define MULTIBUFFER_MINOR_VERSION	0
 
 #define X_MbufGetBufferVersion		0
 #define X_MbufCreateImageBuffers	1
