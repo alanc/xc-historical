@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.154 87/08/09 15:48:51 swick Locked $ */
+/* $Header: window.c,v 1.155 87/08/10 08:49:02 swick Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1918,11 +1918,15 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode, above)
 	}
         else
         {
-	    *above = Below;
+	    /* For Opposite, I occlude no-one and no-one occludes me;
+	     * for BottomIf, I occlude no-one
+	     * so don't move me */
+	    *above = Above;
             return(pWin->nextSib);
 	}
         break;
     }
+    /* NOTREACHED */
     return((WindowPtr)NULL);
 }
 
