@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.138 90/03/01 15:55:12 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.139 90/03/07 15:26:10 jim Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1344,7 +1344,6 @@ int *format;
   XawTextEditType edit_mode;
   Arg args[1];
   XawTextSelectionSalt	*salt = NULL;
-  Atom	*match_type;
   XawTextSelection  *s;
 
   if (*target == XA_TARGETS(d)) {
@@ -1389,7 +1388,7 @@ int *format;
     s = &ctx->text.s;
   else
   {
-    for (salt = ctx->text.salt; salt; salt->next)
+    for (salt = ctx->text.salt; salt; salt = salt->next)
 	if (MatchSelection (*selection, &salt->s))
 	    break;
     if (!salt)
