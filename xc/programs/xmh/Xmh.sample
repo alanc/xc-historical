@@ -11,35 +11,35 @@ Xmh*CommandButtonCount:		8
 
 Xmh*commandBox.button1.label:	inc
 Xmh*commandBox.button1.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhIncorporateNewMail()
+	<Btn1Down>,<Btn1Up>: set() XmhIncorporateNewMail() unset()
 
 Xmh*commandBox.button2.label:	compose
 Xmh*commandBox.button2.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhComposeMessage()
+	<Btn1Down>,<Btn1Up>: set() XmhComposeMessage() unset()
 
 Xmh*commandBox.button3.label:	next
 Xmh*commandBox.button3.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhViewNextMessage()
+	<Btn1Down>,<Btn1Up>: set() XmhViewNextMessage() unset()
 
 Xmh*commandBox.button4.label:	prev
 Xmh*commandBox.button4.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhViewPreviousMessage()
+	<Btn1Down>,<Btn1Up>: set() XmhViewPreviousMessage() unset()
 
 Xmh*commandBox.button5.label:	commit
 Xmh*commandBox.button5.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhCommitChanges()
+	<Btn1Down>,<Btn1Up>: set() XmhCommitChanges() unset()
 
 Xmh*commandBox.button6.label:	delete
 Xmh*commandBox.button6.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhMarkDelete()
+	<Btn1Down>,<Btn1Up>: set() XmhMarkDelete() unset()
 
 Xmh*commandBox.button7.label:	move
 Xmh*commandBox.button7.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhMarkMove()
+	<Btn1Down>,<Btn1Up>: set() XmhMarkMove() unset()
 
 Xmh*commandBox.button8.label:	reply to viewed msg
 Xmh*commandBox.button8.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhViewReply()
+	<Btn1Down>,<Btn1Up>: set() XmhViewReply() unset()
 
 
 !	To use popup menus on the title bars of the main window,
