@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.62 94/01/21 19:11:59 converse Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.63 94/03/09 10:53:30 matt Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -140,7 +140,7 @@ typedef void (*XtExposeProc)(
 #define XtExposeGraphicsExpose	  	0x10
 #define XtExposeGraphicsExposeMerged	0x20
 #define XtExposeNoExpose	  	0x40
-
+#define XtExposeNoRegion		0x80
 
 typedef void (*XtRealizeProc)(
 #if NeedFunctionPrototypes
