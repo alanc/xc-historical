@@ -11,25 +11,25 @@
 		$(CLIENTSRC)
 
 all:
-	for i in $(SUBDIRS) ;\
+	@for i in $(SUBDIRS) ;\
 	do \
 		(set -x; cd $$i ; make $(MFLAGS)); \
 	done
 
 depend::
-	for i in $(SUBDIRS) ;\
+	@for i in $(SUBDIRS) ;\
 	do \
-		(cd $$i ; make $(MFLAGS) depend ); \
+		(set -x; cd $$i ; make $(MFLAGS) depend ); \
 	done
 
 clean::
-	for i in $(SUBDIRS) ;\
+	@for i in $(SUBDIRS) ;\
 	do \
-		(cd $$i ; make $(MFLAGS) clean ); \
+		(set -x; cd $$i ; make $(MFLAGS) clean ); \
 	done
 
 install::
-	for i in $(SUBDIRS) ;\
+	@for i in $(SUBDIRS) ;\
 	do \
 		(cd $$i ; make $(MFLAGS) install ); \
 	done
