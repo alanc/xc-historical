@@ -1,6 +1,6 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.9 94/04/14 15:01:05 gildea Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.10 94/04/16 18:04:55 gildea Exp $
 .\"
 .\" Copyright 1991 by the Massachusetts Institute of Technology
 .\"
@@ -208,6 +208,7 @@ A text parameter composed of printable characters.
 .SH
 VT100 Mode
 .ds RH VT100 Mode
+.St
 .LP
 Most of these control sequences are standard VT102 control sequences,
 but there are some sequences here from later DEC VT terminals, too.
@@ -219,7 +220,6 @@ Where the function is specified by DEC or ISO 6429, the code assigned
 to it is given in parentheses.  The escape codes to designate and invoke
 character sets are specified by ISO 2022; see that document for a
 discussion of character sets.
-.St
 .IP \\*(Be
 Bell (Ctrl-G)
 .IP \\*(Bs
@@ -384,7 +384,7 @@ disabled by the \fBtiteInhibit\fP resource)
   \*(Ps = \*1\*0\*0\*0 \(-> Send Mouse X & Y on button press and release.
 See the section \fBMouse Tracking\fP.
   \*(Ps = \*1\*0\*0\*1 \(-> Use Hilite Mouse Tracking.
-See \fBMouse Tracking\fP.
+See the section \fBMouse Tracking\fP.
 .IP \\*(Es\\*([[\\*?\\*(Pm\\*s\\*l
 DEC Private Mode Reset (DECRST)
   \*(Ps = \*1 \(-> Normal Cursor Keys (DECCKM)
@@ -507,9 +507,10 @@ The parameters are \fIstartx, starty, endx, endy, mousex,\fP and \fImousey.\fP
 ending character positions of the region.  \fImousex\fP and \fImousey\fP
 give the location of the mouse at button up, which may not be over a
 character.
+.br
+.ds RH Tektronix 4014 Mode
 .SH
 Tektronix 4014 Mode
-.ds RH Tektronix 4014 Mode
 .LP
 Most of these sequences are standard Tektronix 4014 control sequences.
 Graph mode supports the 12-bit addressing of the Tektronix 4014.
