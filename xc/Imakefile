@@ -101,6 +101,16 @@ World::
 	@echo ""
 
 Everything::
+	@echo ""
+	@echo "Rebuilding Release 4alpha of the X Window System"
+	@echo ""
+	@echo "##############################################################"
+	@echo "# Did you remember to check the configuration parameters in  #"
+	@echo "# the directory ./config and set BOOTSTRAPCFLAGS if needed?  #"
+	@echo "##############################################################"
+	@echo ""
+	@date
+	@echo ""
 	cd $(IMAKESRC); $(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(MV) Makefile Makefile.bak
 	$(MAKE) -f Makefile.bak Makefile
@@ -108,6 +118,11 @@ Everything::
 	$(MAKE) includes
 	$(MAKE) depend
 	$(MAKE) $(WORLDOPTS)
+	@echo ""
+	@date
+	@echo ""
+	@echo "Build of the X Window System complete."
+	@echo ""
 
 CHANGES.ALL::
 	$(RM) $@
