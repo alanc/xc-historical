@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.19 88/02/06 16:30:26 jim Locked $ */
+/* $Header: XImUtil.c,v 11.20 88/02/07 11:47:45 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -296,7 +296,7 @@ int _XDestroyImage (ximage)
     XImage *ximage;
 
 {
-	Xfree((char *)ximage->data);
+	if (ximage->data != NULL) Xfree((char *)ximage->data);
 	if (ximage->obdata != NULL) Xfree((char *)ximage->obdata);
 	Xfree((char *)ximage);
 	return 1;
