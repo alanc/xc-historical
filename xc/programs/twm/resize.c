@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.63 89/12/14 14:52:00 jim Exp $
+ * $XConsortium: resize.c,v 1.64 90/03/05 16:29:01 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.63 89/12/14 14:52:00 jim Exp $";
+"$XConsortium: resize.c,v 1.64 90/03/05 16:29:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -417,8 +417,8 @@ EndResize()
     fprintf(stderr, "EndResize\n");
 #endif
 
-    XUnmapWindow(dpy, Scr->SizeWindow);
     MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
+    XUnmapWindow(dpy, Scr->SizeWindow);
 
     XFindContext(dpy, ResizeWindow, TwmContext, (caddr_t *)&tmp_win);
 
