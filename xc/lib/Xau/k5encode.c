@@ -1,4 +1,4 @@
-/* $XConsortium: k5encode.c,v 1.2 93/09/29 19:14:48 gildea Exp $ */
+/* $XConsortium: k5encode.c,v 1.3 93/09/30 15:24:46 gildea Exp $ */
 /*
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -53,6 +53,7 @@
  * nevermind.... stuffing the encoded packet in net byte order just to
  * always do the right thing.  Don't have to frob with alignment that way.
  */
+int
 XauKrb5Encode(princ, outbuf)
     krb5_principal princ;	/* principal to encode */
     krb5_data *outbuf;		/* output buffer */
@@ -70,17 +71,17 @@ XauKrb5Encode(princ, outbuf)
     if ((outbuf->data = (char *)malloc(totlen)) == NULL)
 	return -1;
     cp = outbuf->data;
-    *cp++ = (char)((0xff00 & rlen) >> 8);
+    *cp++ = (char)((int)(0xff00 & rlen) >> 8);
     *cp++ = (char)(0x00ff & rlen);
     memcpy(cp, krb5_princ_realm(princ)->data, rlen);
     cp += rlen;
-    *cp++ = (char)((0xff00 & numparts) >> 8);
+    *cp++ = (char)((int)(0xff00 & numparts) >> 8);
     *cp++ = (char)(0x00ff & numparts);
     for (i = 0; i < numparts; i++)
     {
 	plen = krb5_princ_component(princ, i)->length;
 	pdata = krb5_princ_component(princ, i)->data;
-	*cp++ = (char)((0xff00 & plen) >> 8);
+	*cp++ = (char)((int)(0xff00 & plen) >> 8);
 	*cp++ = (char)(0x00ff & plen);
 	memcpy(cp, pdata, plen);
 	cp += plen;
@@ -94,6 +95,7 @@ XauKrb5Encode(princ, outbuf)
  *
  * this function essentially reverses what XauKrb5Encode does
  */
+int
 XauKrb5Decode(inbuf, princ)
     krb5_data inbuf;
     krb5_principal *princ;
@@ -113,7 +115,7 @@ XauKrb5Decode(inbuf, princ)
     cp = (CARD8 *)inbuf.data;
     rlen = *cp++ << 8;
     rlen |= *cp++;
-    if (inbuf.length < 4 + rlen + 2)
+    if (inbuf.length < 4 + (int)rlen + 2)
     {
 	krb5_free_principal(*princ);
 	return -1;
