@@ -1,7 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.21 91/05/28 11:41:07 dave Exp $
+ * $XConsortium: ScrollByL.c,v 1.12 89/12/18 15:29:50 rws Exp $
+ * $Header: ScrollByL.c,v 1.12 89/12/18 15:29:50 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -18,6 +19,10 @@
  * Author:    Chris D. Peterson, MIT Project Athena
  * Created:   December 5, 1987
  */
+
+#if ( !defined(lint) && !defined(SABER))
+  static char rcs_version[] = "$Athena: ScrollByL.c,v 4.5 88/12/19 13:46:04 kit Exp $";
+#endif
 
 #include <stdio.h>
 #include <ctype.h>
@@ -49,30 +54,33 @@ static char defaultTranslations[] =
  *
  ****************************************************************/
 
-#define Offset(field) XtOffsetOf(ScrollByLineRec, scroll.field)
-#define CoreOffset(field) XtOffsetOf(ScrollByLineRec, core.field)
+#define Offset(field) XtOffset(ScrollByLineWidget, scroll.field)
+#define CoreOffset(field) XtOffset(ScrollByLineWidget, core.field)
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-       CoreOffset(width), XtRImmediate, (XtPointer) 500},
+       CoreOffset(width), XtRImmediate, (caddr_t) 500},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-       CoreOffset(height), XtRImmediate, (XtPointer) 700},
+       CoreOffset(height), XtRImmediate, (caddr_t) 700},
+
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-       Offset(foreground), XtRString, XtDefaultForeground},
+       Offset(foreground), XtRString, "XtDefaultForeground"},
     {XtNforceVert, XtCBoolean, XtRBoolean, sizeof(Boolean),
-       Offset(force_vert), XtRImmediate, (XtPointer) FALSE},
+       Offset(force_vert), XtRImmediate, (caddr_t) FALSE},
     {XtNindent, XtCIndent, XtRDimension, sizeof(Dimension),
-       Offset(indent), XtRImmediate, (XtPointer) 15},
+       Offset(indent), XtRImmediate, (caddr_t) 15},
     {XtNuseRight, XtCBoolean, XtRBoolean, sizeof(Boolean),
-       Offset(use_right), XtRImmediate, (XtPointer) FALSE},
+       Offset(use_right), XtRImmediate, (caddr_t) FALSE},
     {XtNmanualFontNormal, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
        Offset(normal_font), XtRString, MANPAGE_NORMAL},
     {XtNmanualFontBold, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
        Offset(bold_font), XtRString, MANPAGE_BOLD},
     {XtNmanualFontItalic, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
        Offset(italic_font), XtRString, MANPAGE_ITALIC},
+    {XtNmanualFontSymbol, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+       Offset(symbol_font), XtRString, MANPAGE_SYMBOL},
     {XtNfile, XtCFile, XtRFile, sizeof(FILE *),
-       Offset(file), XtRImmediate, (XtPointer) NULL},
+       Offset(file), XtRImmediate, (caddr_t) NULL},
 };
 
 #undef Offset
@@ -92,8 +100,6 @@ static void VerticalScroll(), SetThumbHeight(), PaintText(), Layout();
 
 static void Realize(), Initialize(), Destroy(), Redisplay(), Page();
 static Boolean SetValuesHook();
-static int DumpText();
-static Boolean Boldify();	
 
 static XtActionsRec actions[] = {
   { "Page",   Page},
@@ -118,8 +124,8 @@ ScrollByLineClassRec scrollByLineClassRec = {
     /* resources          */    resources,
     /* num_resources      */    XtNumber(resources),
     /* xrm_class          */    NULLQUARK,
-    /* compress_motion	  */	XtExposeCompressMaximal,
-    /* compress_exposure  */	TRUE,
+    /* compress_motion	  */	TRUE,
+    /* compress_exposure  */	FALSE,
     /* compress_enterleave*/    TRUE,
     /* visible_interest   */    FALSE,
     /* destroy            */    Destroy,
@@ -198,11 +204,10 @@ Widget w;
 
 /* ARGSUSED */
 static void 
-GExpose(w, junk, event, cont)
+GExpose(w,junk,event)
 Widget w;
-XtPointer junk;			/* unused */
+caddr_t junk;
 XEvent *event;
-Boolean *cont;			/* unused */
 {
 
 /*
@@ -218,8 +223,6 @@ Boolean *cont;			/* unused */
  * Repaint the widget's child Window Widget.
  */
 
-Boolean fromRedisplay = False;
-
 /* ARGSUSED */
 static void Redisplay(w, event, region)
 Widget w;
@@ -234,7 +237,6 @@ Region region;
  * repaint in his callback function which does the actual repainting.
  */
 
-  fromRedisplay = True;
   if (event->type == Expose) {
     top = event->xexpose.y;
     height = event->xexpose.height;
@@ -245,8 +247,6 @@ Region region;
   }
   
   PaintText(w, top, height);
-  fromRedisplay = False;
-
 } /* redisplay (expose) */
 
 /*	Function Name: PaintText
@@ -262,38 +262,22 @@ Widget w;
 int y_loc, height;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-  int start_line, end_line, num_lines, location;
+  int start_line, num_lines, location;
 
-  start_line = y_loc / sblw->scroll.font_height;
-  /*
-   * check overlap of previous line descenders
-   */
-  if (start_line &&
-      start_line * sblw->scroll.font_height +
-	sblw->scroll.normal_font->max_bounds.descent -
-	sblw->scroll.normal_font->descent > y_loc)
-  {
-    start_line--;
-  }
+  start_line = y_loc / sblw->scroll.font_height + sblw->scroll.line_pointer;
 
   if (start_line >= sblw->scroll.lines)
     return;
   
-  end_line = (y_loc + height) / sblw->scroll.font_height;
-  /*
-   * check overlap of next line ascenders
-   */
-  if (end_line * sblw->scroll.font_height +
-	sblw->scroll.normal_font->ascent -
-	sblw->scroll.normal_font->max_bounds.ascent < y_loc + height)
-  {
-    end_line++;
-  }
-  num_lines = end_line - start_line + 1;
+  num_lines = height / sblw->scroll.font_height + 1;
 
-  location = start_line * sblw->scroll.font_height;
+/*
+ * Only integer arithmetic makes this possible. 
+ */
 
-  PrintText(w, start_line + sblw->scroll.line_pointer, num_lines, location);
+  location =  y_loc / sblw->scroll.font_height * sblw->scroll.font_height;
+
+  PrintText(w, start_line, num_lines, location);
 } 
 
 /*	Function Name: Page
@@ -390,7 +374,7 @@ int new_line;
 Boolean force_redisp;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-  int num_lines = (int)w->core.height / (int)sblw->scroll.font_height;
+  int num_lines = w->core.height / sblw->scroll.font_height + 1;
   int max_lines, old_line;
   Boolean move_thumb = FALSE;
 
@@ -403,8 +387,7 @@ Boolean force_redisp;
     move_thumb = TRUE;
   }
   else {
-    max_lines = sblw->scroll.lines -
-	        (int)w->core.height / (int)sblw->scroll.font_height;
+    max_lines = sblw->scroll.lines - w->core.height / sblw->scroll.font_height;
     AssignMax(max_lines, 0);
 
     if ( new_line > max_lines ) {
@@ -463,8 +446,7 @@ Widget w;
 int old_y, new_y, height;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-  int from_left = sblw->scroll.indent + sblw->scroll.offset +
-		  sblw->scroll.normal_font->min_bounds.lbearing;
+  int from_left = sblw->scroll.indent + sblw->scroll.offset;
   int y_clear;
 
   old_y *= sblw->scroll.font_height;
@@ -486,7 +468,7 @@ int old_y, new_y, height;
     return;
   }
 
-  if (height + old_y > (int)w->core.height)
+  if (height + old_y > w->core.height)
     height = w->core.height - old_y;
 
   XCopyArea(XtDisplay(w), XtWindow(w), XtWindow(w), sblw->scroll.move_gc,
@@ -494,6 +476,9 @@ int old_y, new_y, height;
 	    (unsigned int) w->core.width - from_left, (unsigned int) height,
 	    from_left, new_y);
 
+  height -= sblw->scroll.font_height/2;	/* clear 1/2 font of extra space,
+					   to make sure we don't lose or
+					   gain decenders. */
   if (old_y > new_y)
     y_clear = height;
   else
@@ -570,8 +555,8 @@ Widget w;
 static void
 VerticalJump(w, junk, percent_ptr)
 Widget w;
-XtPointer junk;
-XtPointer percent_ptr;
+caddr_t junk;
+caddr_t percent_ptr;
 {
   float percent = *((float *) percent_ptr);
   int new_line;			/* The new location for the line pointer. */
@@ -595,7 +580,7 @@ XtPointer percent_ptr;
 static void
 VerticalScroll(w,junk,pos)
 Widget w;
-XtPointer junk;
+caddr_t junk;
 int pos;
 {
   int new_line;			/* The new location for the line pointer. */
@@ -618,8 +603,8 @@ Widget req, new;
   LoadFile(new);
   sblw->scroll.bar = (Widget) NULL;
 
-  sblw->scroll.font_height = (sblw->scroll.normal_font->ascent + 
-			      sblw->scroll.normal_font->descent); 
+  sblw->scroll.font_height = (sblw->scroll.normal_font->max_bounds.ascent + 
+			      sblw->scroll.normal_font->max_bounds.descent); 
 } /* Initialize. */
 
 /*	Function Name: CreateGCs
@@ -651,6 +636,9 @@ Widget w;
 
   values.font = sblw->scroll.bold_font->fid;
   sblw->scroll.bold_gc = XtGetGC(w, mask, &values);
+
+  values.font = sblw->scroll.symbol_font->fid;
+  sblw->scroll.symbol_gc = XtGetGC(w, mask, &values);
 }
 
 /*	Function Name: DestroyGCs
@@ -770,9 +758,6 @@ Cardinal *num_args;
 #define ADD_MORE_MEM 100	/* first guesses for allocations. */
 #define CHAR_PER_LINE 40
 
-static char title[BUFSIZ];
-static Boolean saveTitle;
-
 /*	Function Name: LoadFile
  *	Description: Loads the current file into the internal memory.
  *	Arguments: w - the sblw.
@@ -794,7 +779,7 @@ Widget w;
 
   if ( sblw->scroll.top_line != NULL) {
     XtFree(*(sblw->scroll.top_line)); /* free characters. */
-    XtFree((char *)sblw->scroll.top_line); /* free lines. */
+    XtFree(sblw->scroll.top_line); /* free lines. */
   }
   sblw->scroll.top_line = NULL;
 
@@ -828,16 +813,6 @@ Widget w;
     XtAppError(XtWidgetToApplicationContext(w), 
 	       "SBLW LoadFile: Failure in fread.");
 
-/*
- * Get the man page "title" string.
- */
-  { 
-    char *sp; char *tp = title;
-    sp = page; 
-    while (*sp == '\n') sp++;
-    while (*sp != '\n') {*tp = *sp; tp++; sp++; }
-    *tp = '\0';
-  }
 
 /* put NULL at end of buffer. */
 
@@ -856,7 +831,7 @@ Widget w;
       *line_pointer++ = page + 1;
 
       if (line_pointer >= top_line + nlines) {
-	top_line = (char **) XtRealloc( (char *) top_line, (nlines +
+	top_line = (char **) XtRealloc( top_line, (nlines +
 					  ADD_MORE_MEM) * sizeof(char *) );
 	line_pointer = top_line + nlines;
 	nlines += ADD_MORE_MEM;
@@ -870,7 +845,7 @@ Widget w;
  */
 
   sblw->scroll.lines = nlines = line_pointer - top_line - 1;
-  top_line = (char **) XtRealloc((char *) top_line, nlines * sizeof(char *));
+  top_line = (char **) XtRealloc(top_line, nlines * sizeof(char *));
 
 /*
  * Store the memory pointers
@@ -885,8 +860,15 @@ Widget w;
 #define NLINES  66		/* This is the number of lines to wait until
 				   we boldify the line again, this allows 
 				   me to bold the first line of each page.*/
-
 #define BACKSPACE 010		/* I doubt you would want to change this. */
+
+#define NORMAL	0
+#define BOLD	1
+#define ITALIC	2
+#define SYMBOL	3
+#define WHICH(italic, bold)	((bold) ? BOLD : ((italic) ? ITALIC : NORMAL))
+				/* Choose BOLD over ITALICS.  If neither */
+				/* is chosen, use NORMAL. */
 
 /*	Function Name: PrintText
  *	Description: This function actually prints the text.
@@ -896,8 +878,6 @@ Widget w;
  *                 location - the location to print the text.
  *	Returns: none.
  */
-
-
 
 /* ARGSUSED */
 
@@ -913,15 +893,30 @@ int  start_line, num_lines, location;
   char buf[BUFSIZ];		/* Misc. characters */
   int width;			/* Width of a tab stop. */
   Boolean italicflag = FALSE;	/* Print text in italics?? */
-  Boolean first = FALSE;	/* First line of a manual page??? */
+  Boolean first = TRUE;	        /* First line of a manual page??? */
   int x_loc, y_loc;		/* x and y location of text. */
+  static int DumpText();
+  static Boolean Boldify();	
 
+/*
+ * For table hack
+ * To get columns to line up reasonably in most cases, make the
+ * assumption that they were lined up using lots of spaces, where
+ * lots is greater than two. Use a space width of 70% of the
+ * widest character in the font.
+ */
+  XFontStruct * h_font;
+  int h_width, h_col, h_fix;
+  char * h_c;
+
+  h_font = sblw->scroll.normal_font;
+  h_width = (6 * h_font->max_bounds.width) / 10; /* a guess */
 
 /*
  * Nothing loaded, take no action.
  */
 
-  if (sblw->scroll.top_line == NULL)
+  if (sblw->scroll.top_line == NULL || num_lines == 0)
     return;
 
   current_line = start_line;
@@ -939,7 +934,7 @@ int  start_line, num_lines, location;
  * to the ScollByLine position reference.
  */
 
-  y_loc = location + sblw->scroll.normal_font->ascent;
+  y_loc = location + sblw->scroll.normal_font->max_bounds.ascent;
 
 /*
  * Ok, here's the more than mildly heuristic man page formatter.
@@ -950,9 +945,22 @@ int  start_line, num_lines, location;
 
   bufp = buf;
   x_loc = sblw->scroll.offset + sblw->scroll.indent;
- 
+  h_col = 0;
+  
+/*
+ * A fix:
+ * Assume that we are always starting to print on or before the
+ * first line of a page, and then prove it if we aren't.
+ */
+  for (h_fix = 1; h_fix <= (start_line % NLINES); h_fix++)
+    if (**(sblw->scroll.top_line + start_line - h_fix) != '\n')
+      {
+	first = FALSE;
+	break;
+      }
+
   while(TRUE) {
-    if (current_line % NLINES == 1) 
+    if (current_line % NLINES == 0)
       first = TRUE;
 
 /* 
@@ -968,18 +976,19 @@ int  start_line, num_lines, location;
     switch(*c) {
 
     case '\0':		      /* If we reach the end of the file then return */
-      DumpText(w, x_loc, y_loc, buf, bufp - buf, italicflag, FALSE);
+      DumpText(w, x_loc, y_loc, buf, bufp - buf, WHICH(italicflag, first));
       return;
 
     case '\n':
       if (bufp != buf) {
 	Boolean bold;
 	*bufp = '\0';		/* for Boldify. */
-
 	bold = ( (first) || ((x_loc == (sblw->scroll.offset +
-			      sblw->scroll.indent)) && Boldify(buf)));
+			      sblw->scroll.indent)) && Boldify(buf)) );
 
-	(void) DumpText(w, x_loc, y_loc, buf, bufp - buf, italicflag, bold);
+	(void) DumpText(w, x_loc, y_loc, buf, bufp - buf,
+			WHICH(italicflag, bold));
+	
 	if (bold)
 	  first = FALSE;
       }
@@ -987,12 +996,13 @@ int  start_line, num_lines, location;
 /* 
  * If we have painted the required number of lines then we should now return.
  */
-      if (current_line++ == start_line + num_lines ) 
+      if (++current_line == start_line + num_lines ) 
 	return;
 
       bufp = buf;
       italicflag = FALSE;
       x_loc = sblw->scroll.offset + sblw->scroll.indent;
+      h_col = 0;
       y_loc += sblw->scroll.font_height;
       break;
 
@@ -1003,10 +1013,37 @@ int  start_line, num_lines, location;
  */
 
     case '\t':			/* TAB */
-      x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf, italicflag, FALSE);
+      x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf,
+		       WHICH(italicflag, first));
+      h_col += bufp - buf;
       bufp = buf; 
-      italicflag = 0;
-      x_loc += width - (x_loc % width);
+      italicflag = FALSE;
+      x_loc = sblw->scroll.offset + sblw->scroll.indent;
+      h_col = h_col + 8 - (h_col%8);
+      x_loc += h_width * h_col;
+      break;
+
+    case ' ':
+      h_c = c + 1;
+      while (*h_c == ' ') h_c++;
+
+      if (h_c - c < 3)
+	{
+	  *bufp++ = *c;
+	  break;
+	}
+
+      x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf,
+		       WHICH(italicflag, first));
+      h_col += bufp - buf;
+      bufp = buf; 
+      italicflag = FALSE;
+
+      x_loc = sblw->scroll.offset + sblw->scroll.indent;
+      h_col += (h_c - c);
+      x_loc += h_width * h_col;
+      c = h_c - 1;
+
       break;
 
     case '\033':		/* ignore esc sequences for now */
@@ -1022,12 +1059,14 @@ int  start_line, num_lines, location;
       if (c[-1] == c[1] && c[1] != BACKSPACE) {	/* overstriking one char */
 	bufp--;		/* Zap 1st instance of char to bolden */
 	if (bufp > buf) {
-	  x_loc = DumpText(w, x_loc, y_loc, buf,
-			   bufp - buf, italicflag, FALSE);
+	  x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf,
+			   WHICH(italicflag, FALSE));
+	  h_col += bufp - buf;
 	  bufp = buf;
 	}
 	*bufp++ = c[1];
-	x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf, FALSE, TRUE);
+	x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf, BOLD);
+	h_col += bufp - buf;
 	bufp = buf;
 	first = FALSE;
 
@@ -1044,8 +1083,17 @@ int  start_line, num_lines, location;
       else {
 	if ((c[-1] == 'o' && c[1] == '+')          /* Nroff bullet */
 	    || (c[-1] == '+' && c[1] == 'o')) {	   /* Nroff bullet */
-	  /* I would prefer to put a 'bullet' char here */
-	  *bufp++ = 'o';
+				/* If we run into a bullet, print out */
+				/* everything that's accumulated to this */
+				/* point, then the bullet, then resume. */
+	  bufp--;
+	  x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf,
+			   WHICH(italicflag, FALSE));
+	  h_col += bufp - buf;
+	  bufp = buf;
+	  *bufp = (char)183;
+	  x_loc = DumpText(w, x_loc, y_loc, buf, 1, SYMBOL);
+	  h_col++;
 	  c++;
 	}
 	else {		/* 'real' backspace - back up output ptr */
@@ -1060,7 +1108,8 @@ int  start_line, num_lines, location;
       if(*(c + 1) == BACKSPACE) {
 	if(!italicflag) {	/* font change? */
 	  if (bufp != buf) {
-	    x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf, FALSE, FALSE);
+	    x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf, NORMAL);
+	    h_col += bufp - buf;
 	    bufp = buf;
 	  }
 	  italicflag = TRUE;
@@ -1075,7 +1124,8 @@ int  start_line, num_lines, location;
       if(italicflag) { 			/* font change? */
 	if (bufp != buf) {
 	  x_loc = DumpText(w, x_loc, y_loc, buf, bufp - buf,
-			   italicflag, FALSE);
+			   WHICH(italicflag, FALSE));
+	  h_col += bufp - buf;
 	  bufp = buf;
 	}
 	italicflag = FALSE;
@@ -1098,39 +1148,43 @@ int  start_line, num_lines, location;
  */
 
 static int
-DumpText(w, x_loc, y_loc, buf, len, italic, bold)
+DumpText(w, x_loc, y_loc, buf, len, format)
 Widget w;
 int x_loc, y_loc;
 char * buf;
 int len;
-Boolean italic, bold;
+int format;
 {
-
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   GC gc;
   XFontStruct * font;
 
-  if (italic) {
+  switch(format) {
+
+  case ITALIC:
     gc = sblw->scroll.italic_gc;
     font = sblw->scroll.italic_font;
-  }
-  else {
-    if (bold) {
+    break;
+
+  case BOLD:
       gc = sblw->scroll.bold_gc;
       font = sblw->scroll.bold_font;
-    }
-    else {
+    break;
+
+  case SYMBOL:
+    gc = sblw->scroll.symbol_gc;
+    font = sblw->scroll.symbol_font;
+    break;
+
+  default:
       gc = sblw->scroll.normal_gc;
       font = sblw->scroll.normal_font;
-    } 
-  }  
+    break;
+    }
 
   XDrawString(XtDisplay(w), XtWindow(w), gc, x_loc, y_loc, buf, len);
-  XFlush(XtDisplay(w));
   return(x_loc + XTextWidth(font, buf, len));
 }
-
-#define isparen(c) (c == '(' || c == ')')
 
 /*	Function Name: Boldify
  *	Description: look for keyword.
@@ -1146,21 +1200,15 @@ register char *sp;
   int length,count;
 
 /* 
- * If there are not lower case letters in the line then assume it is a
+ * If there are not lower case letters in the line the assume it is a
  * keyword and boldify it in PrintManpage.
  */
 
-  if (!strcmp(sp, title)) 
-    return(1); 
-  else {
-    length = strlen(sp);
-    /*if (!strncmp(sp, "XMAN", 4)) return(1);*/
-    for (sp_pointer = sp, count = 0; count < length; sp_pointer++,count++) 
-      if ( !isupper(*sp_pointer) && !isspace(*sp_pointer) && 
-	  !isdigit(*sp_pointer) && !isparen(*sp_pointer))
-	return(0);
-    return(1);
-  }
+  length = strlen(sp);
+  for (sp_pointer = sp, count = 0; count < length; sp_pointer++,count++) 
+    if ( !isupper(*sp_pointer) && !isspace(*sp_pointer) )
+      return(0);
+  return(1);
 }
 
 #undef superclass
