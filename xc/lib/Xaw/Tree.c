@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.12 90/02/02 18:18:34 jim Exp $
+ * $XConsortium: Tree.c,v 1.13 90/02/02 18:45:41 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -382,10 +382,12 @@ static XtGeometryResult GeometryManager(w, request, reply)
    w->core.height = request->height;
  if (request->request_mode & CWBorderWidth)
    w->core.border_width = request->border_width;
+
  /*
-  *  Compute the new layout based on the new widget sizes;
+  * If we wanted, we could relayout here every time.  However, there should
+  * definitely be a resource to turn it off so that massive changes can be
+  * at once.
   */
- new_layout(tw);
  return (XtGeometryYes);
 }
 
