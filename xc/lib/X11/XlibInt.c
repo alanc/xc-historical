@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.116 89/12/02 12:30:47 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.117 89/12/06 17:14:22 rws Exp $
  */
 
 #include "copyright.h"
@@ -835,10 +835,10 @@ register xEvent *event;	/* wire protocol event */
 			ev->window 	= event->u.keyButtonPointer.event;
 			ev->subwindow 	= event->u.keyButtonPointer.child;
 			ev->time 	= event->u.keyButtonPointer.time;
-			ev->x 		= event->u.keyButtonPointer.eventX;
-			ev->y 		= event->u.keyButtonPointer.eventY;
-			ev->x_root 	= event->u.keyButtonPointer.rootX;
-			ev->y_root 	= event->u.keyButtonPointer.rootY;
+			ev->x 		= cvtINT16toInt(event->u.keyButtonPointer.eventX);
+			ev->y 		= cvtINT16toInt(event->u.keyButtonPointer.eventY);
+			ev->x_root 	= cvtINT16toInt(event->u.keyButtonPointer.rootX);
+			ev->y_root 	= cvtINT16toInt(event->u.keyButtonPointer.rootY);
 			ev->state	= event->u.keyButtonPointer.state;
 			ev->same_screen	= event->u.keyButtonPointer.sameScreen;
 			ev->keycode 	= event->u.u.detail;
@@ -852,10 +852,10 @@ register xEvent *event;	/* wire protocol event */
 			ev->window 	= event->u.keyButtonPointer.event;
 			ev->subwindow 	= event->u.keyButtonPointer.child;
 			ev->time 	= event->u.keyButtonPointer.time;
-			ev->x 		= event->u.keyButtonPointer.eventX;
-			ev->y 		= event->u.keyButtonPointer.eventY;
-			ev->x_root 	= event->u.keyButtonPointer.rootX;
-			ev->y_root 	= event->u.keyButtonPointer.rootY;
+			ev->x 		= cvtINT16toInt(event->u.keyButtonPointer.eventX);
+			ev->y 		= cvtINT16toInt(event->u.keyButtonPointer.eventY);
+			ev->x_root 	= cvtINT16toInt(event->u.keyButtonPointer.rootX);
+			ev->y_root 	= cvtINT16toInt(event->u.keyButtonPointer.rootY);
 			ev->state	= event->u.keyButtonPointer.state;
 			ev->same_screen	= event->u.keyButtonPointer.sameScreen;
 			ev->button 	= event->u.u.detail;
@@ -868,10 +868,10 @@ register xEvent *event;	/* wire protocol event */
 			ev->window 	= event->u.keyButtonPointer.event;
 			ev->subwindow 	= event->u.keyButtonPointer.child;
 			ev->time 	= event->u.keyButtonPointer.time;
-			ev->x 		= event->u.keyButtonPointer.eventX;
-			ev->y 		= event->u.keyButtonPointer.eventY;
-			ev->x_root 	= event->u.keyButtonPointer.rootX;
-			ev->y_root 	= event->u.keyButtonPointer.rootY;
+			ev->x 		= cvtINT16toInt(event->u.keyButtonPointer.eventX);
+			ev->y 		= cvtINT16toInt(event->u.keyButtonPointer.eventY);
+			ev->x_root 	= cvtINT16toInt(event->u.keyButtonPointer.rootX);
+			ev->y_root 	= cvtINT16toInt(event->u.keyButtonPointer.rootY);
 			ev->state	= event->u.keyButtonPointer.state;
 			ev->same_screen	= event->u.keyButtonPointer.sameScreen;
 			ev->is_hint 	= event->u.u.detail;
@@ -885,10 +885,10 @@ register xEvent *event;	/* wire protocol event */
 			ev->window	= event->u.enterLeave.event;
 			ev->subwindow	= event->u.enterLeave.child;
 			ev->time	= event->u.enterLeave.time;
-			ev->x		= event->u.enterLeave.eventX;
-			ev->y		= event->u.enterLeave.eventY;
-			ev->x_root	= event->u.enterLeave.rootX;
-			ev->y_root	= event->u.enterLeave.rootY;
+			ev->x		= cvtINT16toInt(event->u.enterLeave.eventX);
+			ev->y		= cvtINT16toInt(event->u.enterLeave.eventY);
+			ev->x_root	= cvtINT16toInt(event->u.enterLeave.rootX);
+			ev->y_root	= cvtINT16toInt(event->u.enterLeave.rootY);
 			ev->state	= event->u.enterLeave.state;
 			ev->mode	= event->u.enterLeave.mode;
 			ev->same_screen = (event->u.enterLeave.flags & 
@@ -962,8 +962,8 @@ register xEvent *event;	/* wire protocol event */
 			 (XCreateWindowEvent *) re;
 		    ev->window		= event->u.createNotify.window;
 		    ev->parent		= event->u.createNotify.parent;
-		    ev->x		= event->u.createNotify.x;
-		    ev->y		= event->u.createNotify.y;
+		    ev->x		= cvtINT16toInt(event->u.createNotify.x);
+		    ev->y		= cvtINT16toInt(event->u.createNotify.y);
 		    ev->width		= event->u.createNotify.width;
 		    ev->height		= event->u.createNotify.height;
 		    ev->border_width	= event->u.createNotify.borderWidth;
@@ -1007,8 +1007,8 @@ register xEvent *event;	/* wire protocol event */
 		    ev->event		= event->u.reparent.event;
 		    ev->window		= event->u.reparent.window;
 		    ev->parent		= event->u.reparent.parent;
-		    ev->x		= event->u.reparent.x;
-		    ev->y		= event->u.reparent.y;
+		    ev->x		= cvtINT16toInt(event->u.reparent.x);
+		    ev->y		= cvtINT16toInt(event->u.reparent.y);
 		    ev->override_redirect	= event->u.reparent.override;
 		}
 		break;
@@ -1018,8 +1018,8 @@ register xEvent *event;	/* wire protocol event */
 		    ev->event	= event->u.configureNotify.event;
 		    ev->window	= event->u.configureNotify.window;
 		    ev->above	= event->u.configureNotify.aboveSibling;
-		    ev->x	= event->u.configureNotify.x;
-		    ev->y	= event->u.configureNotify.y;
+		    ev->x	= cvtINT16toInt(event->u.configureNotify.x);
+		    ev->y	= cvtINT16toInt(event->u.configureNotify.y);
 		    ev->width	= event->u.configureNotify.width;
 		    ev->height	= event->u.configureNotify.height;
 		    ev->border_width  = event->u.configureNotify.borderWidth;
@@ -1033,8 +1033,8 @@ register xEvent *event;	/* wire protocol event */
 		    ev->window		= event->u.configureRequest.window;
 		    ev->parent		= event->u.configureRequest.parent;
 		    ev->above		= event->u.configureRequest.sibling;
-		    ev->x		= event->u.configureRequest.x;
-		    ev->y		= event->u.configureRequest.y;
+		    ev->x		= cvtINT16toInt(event->u.configureRequest.x);
+		    ev->y		= cvtINT16toInt(event->u.configureRequest.y);
 		    ev->width		= event->u.configureRequest.width;
 		    ev->height		= event->u.configureRequest.height;
 		    ev->border_width	= event->u.configureRequest.borderWidth;
@@ -1047,8 +1047,8 @@ register xEvent *event;	/* wire protocol event */
 		    register XGravityEvent *ev = (XGravityEvent *) re;
 		    ev->window		= event->u.gravity.window;
 		    ev->event		= event->u.gravity.event;
-		    ev->x		= event->u.gravity.x;
-		    ev->y		= event->u.gravity.y;
+		    ev->x		= cvtINT16toInt(event->u.gravity.x);
+		    ev->y		= cvtINT16toInt(event->u.gravity.y);
 		}
 		break;
 	      case ResizeRequest:
