@@ -221,6 +221,19 @@ than in VT102 mode.  Switching between the two windows is done using the
 .B \+t
 This option indicates that \fIxterm\fP should start in VT102 mode.
 .TP 8
+.BI \-tn " name"
+This option specifies the name of the terminal type to be set in the TERM
+environment variable.  This terminal type must exist in the \fItermcap(5)\fP
+database and should have \fI#li\fP and \fI#co\fP entries.
+.TP 8
+.B \-ut
+This option indicates that \fIxterm\fP shouldn't write a record into the 
+the system log file \fI/etc/utmp\fP.
+.TP 8
+.B \+ut
+This option indicates that \fIxterm\fP should write a record into the system
+log file \fI/etc/utmp\fP.
+.TP 8
 .B \-vb
 This option indicates that a visual bell is prefered over an audible one.
 Instead of ringing the terminal bell whenever a Control-G is received, the
@@ -329,6 +342,9 @@ Specifies the name of this instance of the program.  The default is ``xterm.''
 .B "iconGeometry (\fPclass\fB IconGeometry)"
 Specifies the prefered size and position of the application when iconified.
 It is not necessarily obeyed by all window managers.
+.TP 8
+.B "termName (\fPclass\fB TermName)"
+Specifies the terminal type name to be set in the TERM environment variable.
 .TP 8
 .B "title (\fPclass\fB Title)"
 Specifies a string that may be used by the window manager when displaying
