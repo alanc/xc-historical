@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.12 94/04/17 14:14:58 kaleb Exp $
+.\" $XConsortium: CH11,v 1.13 94/04/18 15:34:18 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -1043,7 +1043,7 @@ otherwise.
 The widget may fail to become the owner if some other widget 
 has asserted ownership at a time later than this widget.
 The widget can lose selection ownership either 
-because some other client asserted later ownership of the selection 
+because some other widget asserted later ownership of the selection 
 or because the widget voluntarily gave up ownership of the selection.
 The lose_selection procedure is not called 
 if the widget fails to obtain selection ownership in the first place.
@@ -1060,7 +1060,7 @@ and the value specified will be freed by the
 .sp
 .LP
 Usually, a selection owner maintains ownership indefinitely until some
-other client requests ownership, at which time
+other widget requests ownership, at which time
 the \*(xI selection mechanism informs the previous owner that it
 has lost ownership of the selection.
 However, in response to some user actions 
