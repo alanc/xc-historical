@@ -1,10 +1,10 @@
 /**/#!/bin/sh
 
 /**/#
-/**/# generate a Makefile from an Imakefile from outside the X sources.
+/**/# generate a Makefile from an Imakefile from inside or outside the sources!
 /**/# 
 
-usage="usage:  $0 [topdirpathname]"
+usage="usage:  $0 [top_of_sources_pathname]"
 
 case $# in 
     0) ;;
@@ -20,5 +20,14 @@ if [ -f Makefile ]; then
     echo mv Makefile Makefile.bak
     mv Makefile Makefile.bak
 fi
-echo imake -DUseInstalled CONFIGDIRSPEC $topdir
-imake -DUseInstalled CONFIGDIRSPEC $topdir
+
+if [ "$topdir" = "" ]; then
+    arginst=-DUseInstalled
+    argtopdir=
+else
+    arginst=
+    argtopdir=-DTOPDIR=$topdir
+fi
+
+echo imake $arginst CONFIGDIRSPEC $argtopdir
+imake $arginst CONFIGDIRSPEC $argtopdir
