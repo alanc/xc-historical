@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: private.c,v 1.1 91/05/29 15:27:02 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -34,7 +34,7 @@ AllocateFontPrivateIndex ()
     return _FontPrivateAllocateIndex++;
 }
 
-int
+void
 ResetFontPrivateIndex ()
 {
     _FontPrivateAllocateIndex = 0;
