@@ -1,4 +1,4 @@
-/* $XConsortium: xiemd.h,v 1.2 93/10/31 09:46:20 dpw Exp $ */
+/* $XConsortium: xiemd.h,v 1.3 93/11/06 10:28:03 rws Exp $ */
 /**** module xiemd.h ****/
 /******************************************************************************
 				NOTICE
@@ -121,8 +121,8 @@ typedef unsigned char		LogByte;
 #define LOGBYTESIZE		(sizeof(LogByte)<<3)
 #define LOGBYTEMASK		(LOGBYTESIZE-1)
 
-#define LOGBYTELEFT		BitLeft(((LogByte)~0),LOGBYTEMASK)
-#define LOGBYTERIGHT(M)		(M=BitRight(M,1))
+#define LOGBYTELEFT		(LogByte)BitLeft(((LogByte)~0),LOGBYTEMASK)
+#define LOGBYTERIGHT(M)		(LogByte)(M=BitRight(M,1))
 #define LOGBYTEONES		~((LogByte)0)
 #define LOGBYTEZERO		((LogByte)0)
 
