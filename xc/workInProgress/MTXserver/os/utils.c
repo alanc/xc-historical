@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.4 94/01/11 20:54:39 rob Exp $ */
+/* $XConsortium: utils.c,v 1.5 94/01/23 01:49:07 rob Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -221,7 +221,7 @@ GetTimeInMillis()
 {
     struct timeval  tp;
 
-    gettimeofday(&tp, 0);
+    GETTIMEOFDAY(&tp);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.50 94/03/17 20:25:49 dpw Exp $ */
+/* $XConsortium: x11perf.c,v 2.51 94/03/27 13:42:14 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -189,24 +189,15 @@ void PrintTime()
 
 void InitTimes ()
 {
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-    gettimeofday(&start);
-#else
-    struct timezone foo;
-    gettimeofday(&start, &foo);
-#endif
+    GETTIMEOFDAY(&start);
 }
 
 double ElapsedTime(correction)
     double correction;
 {
     struct timeval stop;
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-    gettimeofday(&stop);
-#else
-    struct timezone foo;
-    gettimeofday(&stop, &foo);
-#endif
+
+    GETTIMEOFDAY(&stop);
     if (stop.tv_usec < start.tv_usec) {
         stop.tv_usec += 1000000;
 	stop.tv_sec -= 1;

@@ -1,7 +1,7 @@
-/* $XConsortium: xieperf.c,v 1.34 94/03/10 16:14:51 kaleb Exp $ */
+/* $XConsortium: xieperf.c,v 1.35 94/03/26 19:43:37 rws Exp $ */
 
 /**** module xieperf.c ****/
-/******************************************************************************
+/****************************************************************************
 				NOTICE
                               
 This software is being provided by AGE Logic, Inc. and MIT under the
@@ -201,24 +201,15 @@ void PrintTime()
 
 void InitTimes ()
 {
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-    gettimeofday(&start);
-#else
-    struct timezone foo;
-    gettimeofday(&start, &foo);
-#endif
+    GETTIMEOFDAY(&start);
 }
 
 double ElapsedTime(correction)
     double correction;
 {
     struct timeval stop;
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-    gettimeofday(&stop);
-#else
-    struct timezone foo;
-    gettimeofday(&stop, &foo);
-#endif
+
+    GETTIMEOFDAY(&stop);
     if (stop.tv_usec < start.tv_usec) {
         stop.tv_usec += 1000000;
 	stop.tv_sec -= 1;

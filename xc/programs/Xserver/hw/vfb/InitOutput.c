@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -338,7 +339,7 @@ GetTimeInMillis()
 {
     struct timeval  tp;
 
-    gettimeofday(&tp, 0);
+    GETTIMEOFDAY(&tp);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 #endif

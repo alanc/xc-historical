@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  *	File: xtest1dd.c
  *
@@ -328,11 +329,6 @@ ClientPtr	client;
  */
 CARD32		mode;
 {
-	/*
-	 * this is necessary for gettimeofday, but is ignored
-	 */
-	struct timezone	tzp;
-
 	if (packet_index != 0) 
 	{
 		/*
@@ -364,7 +360,7 @@ CARD32		mode;
 	/*
 	 * find out what time it is
 	 */
-	gettimeofday(&current_time, &tzp);
+	GETTIMEOFDAY(&current_time);
 	/*
 	 * jump to the initial position of the mouse, using a device type of 0.
 	 */
@@ -515,7 +511,6 @@ current_ms(otime)
 struct timeval	*otime;
 {	
 	struct timeval	tval;
-	struct timezone tzp;
 	unsigned long	ctime;
 	unsigned long	sec;
 	unsigned long	usec;
@@ -523,7 +518,7 @@ struct timeval	*otime;
 	/*
 	 * get the current time
 	 */
-	gettimeofday(&tval, &tzp);
+	GETTIMEOFDAY(&tval);
 	if (tval.tv_usec < otime->tv_usec)
 	{
 		/*
@@ -1339,12 +1334,7 @@ ClientPtr	client;
 static void
 start_play_clock()
 {
-	/*
-	 * tzp is used with the gettimeofday function, but is ignored
-	 */
-	struct timezone tzp;
-
-	gettimeofday(&play_time, &tzp);
+	GETTIMEOFDAY(&play_time);
 	/*
 	 * flag that play_time is valid
 	 */
@@ -1382,10 +1372,6 @@ struct timeval	*rtime;
 	 * holds the current time
 	 */
 	struct timeval	btime;
-	/*
-	 * used with the gettimeofday function but ignored
-	 */
-	struct timezone tzp;
 
 	/*
 	 * Put the time from the current input action in dtime
@@ -1410,7 +1396,7 @@ struct timeval	*rtime;
 	/*
 	 * get the current time in btime
 	 */
-	gettimeofday(&btime, &tzp);
+	GETTIMEOFDAY(&btime);
 	/*
 	 * compute the number of microseconds in the sum of the dtime value
 	 * and the current usec value
@@ -1455,10 +1441,6 @@ struct timeval	*rtime;
 	 */
 	struct timeval	btime;
 	/*
-	 * used with the gettimeofday function but ignored
-	 */
-	struct timezone tzp;
-	/*
 	 * holds the current time in seconds and microseconds
 	 */
 	unsigned long	bsec;
@@ -1472,7 +1454,7 @@ struct timeval	*rtime;
 	/*
 	 * get the current time in btime
 	 */
-	gettimeofday(&btime, &tzp);
+	GETTIMEOFDAY(&btime);
 	/*
 	 * get the current time in seconds and microseconds
 	 */
@@ -1538,7 +1520,7 @@ struct timeval	*rtime;
 		 * if don't need to wait, set the playback time
 		 * to the current time
 		 */
-		gettimeofday(&play_time, &tzp);
+		GETTIMEOFDAY(&play_time);
 		/*
 		 * set the time to wait to 0
 		 */

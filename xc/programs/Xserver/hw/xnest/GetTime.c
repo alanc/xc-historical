@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: GetTime.c,v 1.1 93/07/19 17:49:05 rws Exp $ */
 #include "Xos.h"
 #include <time.h>
 
@@ -7,6 +7,6 @@ GetTimeInMillis()
 {
     struct timeval  tp;
 
-    gettimeofday(&tp, 0);
+    GETTIMEOFDAY(&tp);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
