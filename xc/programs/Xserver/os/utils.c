@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.71 89/03/18 13:56:00 rws Exp $ */
+/* $XConsortium: utils.c,v 1.72 89/03/22 14:47:05 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -129,14 +129,6 @@ Error(str)
     char *str;
 {
     perror(str);
-}
-
-/*
- * This is private to the OS layer.
- */
-void
-Notice()
-{
 }
 
 /*VARARGS1*/
