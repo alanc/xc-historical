@@ -1,3 +1,7 @@
+.de ZN
+.ie t \fB\^\\$1\^\fR\\$2
+.el \fI\^\\$1\^\fP\\$2
+..
 .TH XSHAPE 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XShapeQueryExtension, XShapeQueryVersion, XShapeCombineRegion, XShapeCombineRectangles, XShapeCombineMask, XShapeCombineShape, XShapeOffsetShape, XShapeQueryExtents, XShapeSelectInput, XShapeInputSelected, XShapeGetRectangles \- X nonrectangular shape functions
@@ -95,56 +99,51 @@ XRectangle *XShapeGetRectangles (
 .SH STRUCTURES
 .nf
 .LP
+.ta 3i
 typedef struct {
-    int	type;		    /* of event */
-    unsigned long serial;   /* # of last request processed by server */
-    Bool send_event;	    /* true if this came frome a SendEvent request */
-    Display *display;	    /* Display the event was read from */
-    Window window;	    /* window of event */
-    int kind;		    /* ShapeBounding or ShapeClip */
-    int x, y;		    /* extents of new region */
+    int type;	/* of event */
+    unsigned long serial;	/* # of last request processed by server */
+    Bool send_event;	/* true if this came frome a SendEvent request */
+    Display *display;	/* Display the event was read from */
+    Window window;	/* window of event */
+    int kind;	/* ShapeBounding or ShapeClip */
+    int x, y;	/* extents of new region */
     unsigned width, height;
-    Time time;		    /* server timestamp when region changed */
-    Bool shaped;	    /* true if the region exists */
+    Time time;	/* server timestamp when region changed */
+    Bool shaped;	/* true if the region exists */
 } XShapeEvent;
 .fi
 .SH DESCRIPTION
-The \fIX11 Nonrectangular Window Shape Extension\fP add nonrectangular
+The \fIX11 Nonrectangular Window Shape Extension\fP adds nonrectangular
 windows to the X Window System.
 .SH PREDEFINED VALUES
 Operations:
 .in +.5i
 .nf
-\fB
-ShapeSet	
-ShapeUnion	
-ShapeIntersect	
-ShapeSubtract	
-ShapeInvert	
-\fP
+.ZN ShapeSet
+.ZN ShapeUnion
+.ZN ShapeIntersect
+.ZN ShapeSubtract
+.ZN ShapeInvert
 .in -.5i
 .fi
 .sp
 Shape Kinds:
 .in +.5i
 .nf
-\fB
-ShapeBounding
-ShapeClip	
-\fP
+.ZN ShapeBounding
+.ZN ShapeClip
 .in -.5i
 .fi
 .sp
 Event defines:
 .in +.5i
 .nf
-\fB
-ShapeNotifyMask		
-ShapeNotify			
-\fP
+.ZN ShapeNotifyMask
+.ZN ShapeNotify
 .in -.5i
 .fi
+.SH BUGS
+This manual pages needs a lot more work.
 .SH SEE ALSO
 \fIX11 Nonrectangular Window Shape Extension\fP
-.SH BUGS
-Detailed man pages for these routines need to be written.
