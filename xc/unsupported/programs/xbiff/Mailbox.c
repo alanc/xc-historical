@@ -1,5 +1,5 @@
 /*
- * $XHeader: Mailbox.c,v 1.8 88/07/05 12:12:54 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.8 88/07/05 12:12:54 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
