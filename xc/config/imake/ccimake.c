@@ -1,8 +1,14 @@
+#ifdef macII
+#define ccflags "-DmacII"
+#endif /* macII */
+
 #ifdef hpux
 #define ccflags "-Wc,-Nd4000,-Ns3000 -DSYSV"
-#else
+#endif /* hpux */
+
+#ifndef ccflags
 #define ccflags "-O"
-#endif
+#endif /* ccflags */
 
 main()
 {
