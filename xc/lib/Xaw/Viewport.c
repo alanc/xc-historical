@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.56 90/02/28 18:46:48 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.57 90/03/01 15:42:01 kit Exp $";
 #endif /* lint */
 
 
@@ -870,7 +870,7 @@ static Boolean GetGeometry(w, width, height)
     Widget w;
     Dimension width, height;
 {
-    XtWidgetGeometry geometry;
+    XtWidgetGeometry geometry, &return_geom;
     XtGeometryResult result;
 
     if (width == w->core.width && height == w->core.height)
@@ -893,9 +893,10 @@ static Boolean GetGeometry(w, width, height)
 	}
 	if (w->core.height != 0) geometry.height = w->core.height;
     }
-    if ((result = XtMakeGeometryRequest(w, &geometry, &geometry))
-	== XtGeometryAlmost)
-	result = XtMakeGeometryRequest(w, &geometry, NULL);
+
+    result = XtMakeGeometryRequest(w, &geometry, &return_geom);
+    if (result == XtGeometryAlmost)
+	result = XtMakeGeometryRequest(w, &return_geom, NULL);
 
     return (result == XtGeometryYes);
 }

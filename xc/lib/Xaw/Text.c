@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.132 89/12/11 19:36:59 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.137 90/02/01 16:03:05 keith Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2127,7 +2127,7 @@ TextWidget ctx;
 {
   Widget w = (Widget) ctx;
   int line = 0, old_height;
-  XtWidgetGeometry rbox;
+  XtWidgetGeometry rbox, return_geom;
 
   if ( (ctx->text.resize == XawtextResizeWidth) ||
        (ctx->text.resize == XawtextResizeBoth) ) {
@@ -2140,8 +2140,8 @@ TextWidget ctx;
     rbox.width += ctx->text.margin.right;
     if (rbox.width > ctx->core.width) { /* Only get wider. */
       rbox.request_mode = CWWidth;
-      if (XtMakeGeometryRequest(w, &rbox, &rbox) == XtGeometryAlmost)
-	(void) XtMakeGeometryRequest(w, &rbox, &rbox);
+      if (XtMakeGeometryRequest(w, &rbox, &return_geom) == XtGeometryAlmost)
+	(void) XtMakeGeometryRequest(w, &return_geom, NULL);
     }
   }
 
@@ -2162,8 +2162,8 @@ TextWidget ctx;
   
   if (rbox.height < old_height) return; /* It will only get taller. */
 
-  if (XtMakeGeometryRequest(w, &rbox, &rbox) == XtGeometryAlmost)
-    if (XtMakeGeometryRequest(w, &rbox, &rbox) != XtGeometryYes)
+  if (XtMakeGeometryRequest(w, &rbox, &return_geom) == XtGeometryAlmost)
+    if (XtMakeGeometryRequest(w, &return_geom, NULL) != XtGeometryYes)
       return;
   
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
