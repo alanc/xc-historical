@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.144 93/08/12 20:32:33 converse Exp $ */
+/* $XConsortium: Event.c,v 1.145 93/08/15 15:52:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1080,7 +1080,6 @@ static EventMask Const masks[] = {
 EventMask _XtConvertTypeToMask (eventType)
     int		eventType;
 {
-    eventType &= 0x7f;	/* Events sent with XSendEvent have high bit set. */
     if (eventType < XtNumber(masks))
 	return masks[eventType];
     else
@@ -1184,7 +1183,7 @@ static Boolean DecideToDispatch(event)
     grabList = *_XtGetGrabList(pdi);
 
     grabType = pass;
-    switch (event->xany.type & 0x7f) {
+    switch (event->xany.type) {
 
       case KeyPress:
       case KeyRelease:		grabType = remap;
@@ -1274,7 +1273,7 @@ Boolean XtDispatchEvent (event)
     XtEventDispatchProc dispatch = DecideToDispatch;
     void _XtRefreshMapping();
 
-    switch (event->xany.type & 0x7f) {
+    switch (event->xany.type) {
       case KeyPress:
       case KeyRelease:	   time = event->xkey.time;		break;
       case ButtonPress:
@@ -1291,7 +1290,7 @@ Boolean XtDispatchEvent (event)
     pd->last_event = *event;
 
     if (pd->dispatcher_list) {
-	dispatch = pd->dispatcher_list[event->xany.type & 0x7f];
+	dispatch = pd->dispatcher_list[event->xany.type];
 	if (dispatch == NULL) dispatch = DecideToDispatch;
     }
     was_dispatched = (*dispatch)(event);
@@ -1543,8 +1542,6 @@ XtEventDispatchProc XtSetEventDispatcher(dpy, event_type, proc)
     XtEventDispatchProc *list;
     XtEventDispatchProc old_proc;
     register XtPerDisplay pd;
-
-    if (event_type > 0x7f) return DecideToDispatch;
 
     pd = _XtGetPerDisplay(dpy);
 
