@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.25 87/08/20 16:29:52 newman Locked $ */
+/* $Header: swaprep.c,v 1.26 87/08/20 23:02:08 newman Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -383,7 +383,7 @@ SQueryFontReply(pClient, size, pRep)
     int			size;
     xQueryFontReply	*pRep;
 {
-    SwapFont(pRep);
+    SwapFont(pRep, TRUE);
     WriteToClient(pClient, size, (char *) pRep);
 }
 
@@ -426,7 +426,7 @@ SListFontsWithInfoReply(pClient, size, pRep)
     int				size;
     xListFontsWithInfoReply	*pRep;
 {
-    SwapFont((xQueryFontReply *)pRep);
+    SwapFont((xQueryFontReply *)pRep, FALSE);
     WriteToClient(pClient, size, (char *) pRep);
 }
 
