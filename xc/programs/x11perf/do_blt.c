@@ -10,6 +10,49 @@ static  XSegment *segsa, *segsb;
 
 #define NegMod(x, y) ((y) - (((-x)-1) % (7)) - 1)
 
+Bool InitScrolling(d, p)
+    Display *d;
+    Parms p;
+{
+    int i;
+
+    for (i = 0; i < NUMPOINTS; i++) {    
+        points[i].x = rand() % WIDTH;
+        points[i].y = rand() % HEIGHT;
+    }
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+    XDrawLines(d, w, fggc, points, NUMPOINTS, CoordModeOrigin);
+    return True;
+}
+
+void DoScrolling(d, p)
+    Display *d;
+    Parms p;
+{
+    int i;
+
+    for (i=0; i<p->reps; i++) {
+	XCopyArea(d, w, w, fggc, 0, 1, WIDTH, HEIGHT - 1, 0, 0);
+    }
+}
+
+void MidScroll(d, p)
+    Display *d;
+    Parms p;
+{
+    XClearArea(d, w, 0, 0, WIDTH, HEIGHT, False);
+    XDrawLines(d, w, fggc, points, NUMPOINTS, CoordModeOrigin);
+}
+
+void EndScrolling(d, p)
+    Display *d;
+    Parms p;
+{
+    XDestroyWindow(d, w);
+    XFreeGC(d, bggc);
+    XFreeGC(d, fggc);
+}
+
 void InitCopyLocations(d, p)
     Display *d;
     Parms p;
@@ -75,19 +118,8 @@ Bool InitCopyArea(d, p)
     Display *d;
     Parms p;
 {
-    int i;
-
-    w = None;
-    for (i = 0; i < NUMPOINTS; i++)
-    {    
-        points[i].x = rand() % WIDTH;
-        points[i].y = rand() % HEIGHT;
-    }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
-    XDrawLines(d, w, fggc, points, NUMPOINTS, CoordModeOrigin);
+    (void) InitScrolling(d, p);
     InitCopyLocations(d, p);
-
-    XSync(d, 0);    
     return True;
 }
 
@@ -95,24 +127,12 @@ Bool InitCopyArea2(d, p)
     Display *d;
     Parms p;
 {
-    int i;
+    (void) InitCopyArea(d, p);
 
-    w = None;
-    i = 0;
-    for (i = 0; i < NUMPOINTS; i++)
-    {    
-        points[i].x = rand() % WIDTH;
-        points[i].y = rand() % HEIGHT;
-    }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
-
-    /* Create depth-8 pixmap to write stuff into, and clear it out */
+    /* Create pixmap to write stuff into, and initialize it */
     pix = XCreatePixmap(d, w, WIDTH, HEIGHT, DefaultDepth(d, DefaultScreen(d)));
-    XFillRectangle(d, pix, bggc, 0, 0, WIDTH, HEIGHT);
-    XDrawLines(d, pix, fggc, points, NUMPOINTS, CoordModeOrigin);
-    InitCopyLocations(d, p);
-
-    XSync(d, 0);    
+    XCopyArea(d, w, pix, fggc, 0, 0, WIDTH, HEIGHT, 0, 0);
+    XFillRectangle(d, w, bggc, 0, 0, WIDTH, HEIGHT);
     return True;
 }
 
@@ -148,31 +168,18 @@ void DoCopyArea2(d, p)
     }
 }
 
-void MidCopyArea(d, p)
-    Display *d;
-    Parms p;
-{
-    XClearArea(d, w, 0, 0, WIDTH, HEIGHT, False);
-    XDrawLines(d, w, fggc, points, NUMPOINTS, CoordModeOrigin);
-    XSync(d, 0);    
-}
-
 void MidCopyArea2(d, p)
     Display *d;
     Parms p;
 {
     XClearArea(d, w, 0, 0, WIDTH, HEIGHT, False);
-    XSync(d, 0);    
 }
 
 void EndCopyArea(d, p)
     Display *d;
     Parms p;
 {
-    if (w != None)
-	    XDestroyWindow(d, w);
-    XFreeGC(d, bggc);
-    XFreeGC(d, fggc);
+    EndScrolling(d, w);
     free(segsa);
     free(segsb);
 }
@@ -182,7 +189,56 @@ void EndCopyArea2(d, p)
     Parms p;
 {
     EndCopyArea(d, p);
-    if (pix != None)
-	    XFreePixmap(d, pix);
+    XFreePixmap(d, pix);
+}
+
+Bool InitCopyPlane(d, p)
+    Display *d;
+    Parms p;
+{
+    int i;
+    XGCValues gcv;
+    GC      pixgc;
+
+    for (i = 0; i < NUMPOINTS; i++) {    
+        points[i].x = rand() % WIDTH;
+        points[i].y = rand() % HEIGHT;
+    }
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+    InitCopyLocations(d, p);
+
+    /* Create bitmap to write stuff into, and initialize it */
+    pix = XCreatePixmap(d, w, WIDTH, HEIGHT, 1);
+    gcv.foreground = 0;
+    gcv.background = 1;
+    pixgc = XCreateGC(d, pix, GCForeground | GCBackground, &gcv);
+    XFillRectangle(d, pix, pixgc, 0, 0, WIDTH, HEIGHT);
+    gcv.foreground = 1;
+    gcv.background = 0;
+    XChangeGC(d, pixgc, GCForeground | GCBackground, &gcv);
+    XDrawLines(d, pix, pixgc, points, NUMPOINTS, CoordModeOrigin);
+    XFreeGC(d, pixgc);
+
+    return True;
+}
+
+void DoCopyPlane(d, p)
+    Display *d;
+    Parms p;
+{
+    int i, size;
+    XSegment *sa, *sb;
+
+    size = p->special;
+    for (sa = segsa, sb = segsb, i=0; i<p->reps; i++, sa++, sb++) {
+	XCopyPlane(
+	    d, pix, w, fggc, sa->x1, sa->y1, size, size, sa->x2, sa->y2, 1);
+	XCopyPlane(
+	    d, pix, w, fggc, sa->x2, sa->y2, size, size, sa->x1, sa->y1, 1);
+	XCopyPlane(
+	    d, pix, w, fggc, sb->x2, sb->y2, size, size, sb->x1, sb->y1, 1);
+	XCopyPlane(
+	    d, pix, w, fggc, sb->x1, sb->y1, size, size, sb->x2, sb->y2, 1);
+    }
 }
 
