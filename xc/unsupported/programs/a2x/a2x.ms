@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.17 92/09/02 09:40:48 rws Exp $
+$XConsortium: a2x.doc,v 1.18 92/09/09 17:49:19 rws Exp $
 
 				Using a2x
 
@@ -32,7 +32,7 @@ extension in the source, but it has never been tested and probably will not
 work.)  The XTEST extension was developed by the X Consortium for use in
 the X Test Suite, and an R5 patch to support the XTEST extension is
 available via anonymous ftp to export.lcs.mit.edu, as the file
-/pub/XTEST/fix-xtest.  The XTRAP extension was developed by Digital
+/pub/XTEST/R5fix-xtest-1.  The XTRAP extension was developed by Digital
 Equipment Corp., and public versions are available for both R4 and R5.  a2x
 was originally written for the XTEST extension, but XTRAP is perfectly
 adequate.  (The main difference as far as a2x is concerned is that XTEST
