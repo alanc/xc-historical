@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicP.h,v 6.21 88/02/05 20:47:13 swick Locked $
+* $Header: IntrinsicP.h,v 6.22 88/02/06 10:17:39 swick Locked $
 */
 
 /*
@@ -35,8 +35,6 @@ typedef unsigned long XtVersionType;
 #define XT_VERSION 6
 #define XT_REVISION 3
 #define XtVersion (XT_VERSION * 1000 + XT_REVISION)
-
-#define XtOffset(type,field)    ((unsigned int)&(((type)NULL)->field))
 
 extern void _XtInherit();
     /* takes no arguments */
@@ -125,19 +123,6 @@ extern void XtConfigureWidget(); /* widget, x, y, width, height, borderWidth */
 extern void XtMoveWidget(); /* widget, x, y */
     /* Widget  widget */
     /* Position x, y  */
-
-/****************************************************************
- *
- * Graphic Context Management
- *****************************************************************/
-
-extern GC XtGetGC(); /* widget, valueMask, values */
-    /* Widget    widget */
-    /* XtGCMask valueMask; */
-    /* XGCValues *values; */
-
-extern void XtDestroyGC (); /* gc */
-    /* GC gc; */
 
 extern void XtReadBinaryDatabase ();
     /* FILE    *f;			*/
