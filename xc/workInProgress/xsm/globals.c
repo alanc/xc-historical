@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.12 94/08/17 17:39:26 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.13 94/08/24 21:24:34 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -61,7 +61,7 @@ int		current_client_selected;
 int		sessionNameCount = 0;
 String		*sessionNames = NULL;
 
-int		num_clients_restarted = 0;
+int		num_clients_in_last_session = -1;
 
 char		*display_env = NULL, *non_local_display_env = NULL;
 char		*session_env = NULL, *non_local_session_env = NULL;
