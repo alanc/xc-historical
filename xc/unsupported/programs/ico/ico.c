@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.36 93/08/19 10:38:17 rws Exp $ */
+/* $XConsortium: ico.c,v 1.37 93/09/24 12:43:04 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -141,7 +141,11 @@ char *help_message[] = {
 "    -bg color                    background color",
 "    -colors color ...            codes to use on sides",
 "    -p#                          use # (1 through 8) primary colors",
+#ifdef MULTIBUFFER
 "    -dbl                         use double buffering (extension if present)",
+#else
+"    -dbl                         use double buffering (software only)",
+#endif
 "    -softdbl                     use software double buffering",
 "    -noedges                     don't draw wire frame edges",
 "    -faces                       draw faces",
@@ -167,7 +171,7 @@ char **colornames;		/* -colors (points into argv) */
 int update_action = MultibufferUpdateActionBackground;
 #endif
 int linewidth = 0;		/* -lw */
-int multibufext = 1;		/* use multibuf extension */
+int multibufext = 0;		/* -dbl: use Multi-Buffering extension */
 int dblbuf = 0;			/* -dbl or -softdbl: double buffering */
 int numcolors = 0;		/* -p: number of primary colors to use */
 char *background_colorname = NULL; /* -bg */
@@ -282,11 +286,10 @@ char **argv;
 		    char **cpp;
 
 		  usage:
-		    fprintf (stderr, "usage:  %s [-options]\n\n", ProgramName);
+		    fprintf (stderr, "usage:  %s [options]\n\n", ProgramName);
 		    for (cpp = help_message; *cpp; cpp++) {
 			fprintf (stderr, "%s\n", *cpp);
 		    }
-		    fprintf (stderr, "\n");
 		    exit (1);
 		}
 	}
