@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.41 94/05/11 17:35:38 mor Exp mor $ */
+/* $XConsortium: process.c,v 1.42 94/08/19 15:51:02 mor Exp mor $ */
 /******************************************************************************
 
 
@@ -170,6 +170,8 @@ Bool		 *replyReadyRet;
     header = (iceMsg *) iceConn->inbuf;
     iceConn->inbufptr = iceConn->inbuf + SIZEOF (iceMsg);
 
+    iceConn->receive_sequence++;
+
     if (iceConn->waiting_for_byteorder)
     {
 	if (header->majorOpcode == 0 &&
@@ -230,8 +232,6 @@ Bool		 *replyReadyRet;
 
 	header->length = lswapl (header->length);
     }
-
-    iceConn->receive_sequence++;
 
     if (replyWait)
     {
