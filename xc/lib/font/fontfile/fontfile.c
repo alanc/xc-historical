@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.7 91/07/16 20:13:50 keith Exp $
+ * $XConsortium: fontfile.c,v 1.8 91/07/17 14:29:56 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -191,6 +191,8 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 			    (*pFont)->fpePrivate = (pointer) 0;
 		}
 	    }
+	    if (ret == Successful)
+		(*pFont)->info.cachable = TRUE;
 	    return ret;
 	}
 	CopyISOLatin1Lowered (lowerName, name, namelen);
@@ -231,6 +233,8 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     {
 	ret = BadFontName;
     }
+    if (ret == Successful)
+	(*pFont)->info.cachable = TRUE;
     return ret;
 }
 
@@ -594,23 +598,11 @@ static int  font_file_type;
 
 FontFileRegisterFpeFunctions()
 {
-    static FontNamesPtr font_file_names = (FontNamesPtr) 0;
+    static Bool beenhere = FALSE;
 
-    if (!font_file_names) {
-	font_file_names = MakeFontNamesRecord(10);
-	if (!font_file_names)
-	    return;
-	if (!AddFontNamesName(font_file_names, "pcf", 3))
-	    return;
-	if (!AddFontNamesName(font_file_names, "bdf", 3))
-	    return;
-	if (!AddFontNamesName(font_file_names, "snf", 3))
-	    return;
-	if (!AddFontNamesName(font_file_names, "speedo", 6))
-	    return;
-	if (!AddFontNamesName(font_file_names, "sp", 2))
-	    return;
+    if (!beenhere) {
 	FontFileRegisterFontFileFunctions ();
+	beenhere = TRUE;
     }
     font_file_type = RegisterFPEFunctions(FontFileNameCheck,
 					  FontFileInitFPE,
@@ -622,6 +614,5 @@ FontFileRegisterFpeFunctions()
 					  FontFileStartListFontsWithInfo,
 					  FontFileListNextFontWithInfo,
 					  (IntFunc) 0,
-					  font_file_names,
 					  (IntFunc) 0);
 }
