@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.17 87/08/21 13:06:06 newman Locked $ */
+/* $Header: XConnDis.c,v 11.17 87/08/22 12:30:01 ham Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -137,7 +137,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	     */
 	    sprintf(objname, "X%d", display_num);
 	    /*
-	     * Attempt to open the DECnet connection, return -1 if fails.
+	     * Attempt to open the DECnet connection, return 0 if fails.
 	     */
 	    if ((fd = dnet_conn(displaybuf, 
 		   objname, SOCK_STREAM, 0, 0, 0, 0)) < 0)
