@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_ar.c,v 5.2 91/02/18 21:02:02 rws Exp $ */
+/* $XConsortium: cpx_ar.c,v 5.3 91/04/04 15:06:38 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -80,12 +80,21 @@ int		num;
 	
 }
 		
+#if __STDC__
+static int
+intcompare(a, b)
+const void *a, *b;
+{
+    return(*((int *)a) - *((int *)b));
+}
+#else
 static int
 intcompare(a, b)
 int *a, *b;
 {
     return(*a - *b);
 }
+#endif
 
 void
 phg_cpx_ar_open( cph, cp_args, ret )
