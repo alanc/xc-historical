@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: choose.c,v 1.1 94/07/07 16:47:32 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,6 +26,77 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include "xsm.h"
+#include <sys/types.h>
+#include <dirent.h>
+
+
+int
+GetSessionNames (count_ret, names_ret)
+
+int *count_ret;
+String **names_ret;
+
+{
+    DIR *dir;
+    struct dirent *entry;
+    char *path;
+    int count;
+
+    path = (char *) getenv ("SM_SAVE_DIR");
+    if (!path)
+    {
+	path = (char *) getenv ("HOME");
+	if (!path)
+	    path = ".";
+    }
+    
+    *count_ret = 0;
+    *names_ret = NULL;
+
+    if ((dir = opendir (path)) == NULL)
+	return 0;
+
+    count = 0;
+
+    while ((entry = readdir (dir)) != NULL)
+    {
+	if (strncmp (entry->d_name, ".SM-", 4) == 0)
+	    count++;
+    }
+
+    if (count == 0 ||
+       (*names_ret = (String *) XtMalloc (count * sizeof (String))) == NULL)
+    {
+	closedir (dir);
+	return 0;
+    }
+
+    rewinddir (dir);
+
+    while ((entry = readdir (dir)) != NULL && *count_ret < count)
+    {
+	if (strncmp (entry->d_name, ".SM-", 4) == 0)
+	    (*names_ret)[(*count_ret)++] = XtNewString (entry->d_name + 4);
+    }
+
+    closedir (dir);
+
+    return 1;
+}
+
+
+
+void
+AddSessionNames (count, names)
+
+int count;
+String *names;
+
+{
+    XawListChange (chooseSessionListWidget, names, count, 0, True);
+    XawListHighlight (chooseSessionListWidget, 0);
+}
+
 
 
 static void
@@ -36,7 +107,34 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
+    XawListReturnStruct *current;
+    char title[256];
 
+
+    /*
+     * Pop down choice of sessions, realize main window, and
+     * start the specified session.
+     */
+
+    XtPopdown (chooseSessionPopup);
+
+    current = XawListShowCurrent (chooseSessionListWidget);
+
+    if (session_name)
+	XtFree (session_name);
+
+    session_name = XtNewString (current->string);
+
+    XtFree ((char *) current);
+
+    sprintf (title, "xsm: %s", session_name);
+    XtVaSetValues (topLevel,
+	XtNtitle, title,		/* session name */
+	NULL);
+
+    XtRealizeWidget (topLevel);
+    
+    start_session (session_name);
 }
 
 
@@ -64,7 +162,7 @@ create_choose_session_popup ()
 
     chooseSessionPopup = XtVaCreatePopupShell (
 	"chooseSessionPopup", transientShellWidgetClass, topLevel,
-	XtNallowShellResize, True,
+        XtNmappedWhenManaged, False,
 	NULL);
     
 
@@ -73,10 +171,28 @@ create_choose_session_popup ()
 	NULL);
 
 
+    chooseSessionLabel = XtVaCreateManagedWidget (
+	"chooseSessionLabel", labelWidgetClass, chooseSessionForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
+        XtNborderWidth, 0,
+	NULL);
+
+    chooseSessionListWidget = XtVaCreateManagedWidget (
+	"chooseSessionListWidget", listWidgetClass, chooseSessionForm,
+	XtNresizable, True,
+        XtNdefaultColumns, 1,
+	XtNforceColumns, True,
+        XtNfromHoriz, NULL,
+        XtNfromVert, chooseSessionLabel,
+	XtNvertDistance, 25,
+	NULL);
+
     chooseSessionOkButton = XtVaCreateManagedWidget (
 	"chooseSessionOkButton", commandWidgetClass, chooseSessionForm,
         XtNfromHoriz, NULL,
-        XtNfromVert, NULL,
+        XtNfromVert, chooseSessionListWidget,
+	XtNvertDistance, 25,
         NULL);
 
     XtAddCallback (chooseSessionOkButton, XtNcallback,
@@ -86,19 +202,10 @@ create_choose_session_popup ()
     chooseSessionCancelButton = XtVaCreateManagedWidget (
 	"chooseSessionCancelButton", commandWidgetClass, chooseSessionForm,
         XtNfromHoriz, chooseSessionOkButton,
-        XtNfromVert, NULL,
+        XtNfromVert, chooseSessionListWidget,
+	XtNvertDistance, 25,
         NULL);
 
     XtAddCallback (chooseSessionCancelButton, XtNcallback,
 	ChooseSessionCancelXtProc, 0);
-
-
-    chooseSessionListWidget = XtVaCreateManagedWidget (
-	"chooseSessionListWidget", listWidgetClass, chooseSessionForm,
-	XtNresizable, True,
-        XtNdefaultColumns, 1,
-	XtNforceColumns, True,
-        XtNfromHoriz, NULL,
-        XtNfromVert, chooseSessionOkButton,
-	NULL);
 }
