@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.35 91/05/04 23:10:11 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.36 91/05/09 15:08:58 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -485,11 +485,11 @@ miSpriteInstallColormap (pMap)
 
     SCREEN_EPILOGUE(pScreen, InstallColormap, miSpriteInstallColormap);
 
+    pPriv->pInstalledMap = pMap;
     if (pPriv->pColormap != pMap)
     {
-    	pPriv->pInstalledMap = pMap;
     	pPriv->checkPixels = TRUE;
-	if (pPriv->isUp && pPriv->shouldBeUp)
+	if (pPriv->isUp)
 	    miSpriteRemoveCursor (pScreen);
     }
 }
@@ -564,7 +564,7 @@ miSpriteStoreColors (pMap, ndef, pdef)
     	if (updated)
     	{
 	    pPriv->checkPixels = TRUE;
-	    if (pPriv->isUp && pPriv->shouldBeUp)
+	    if (pPriv->isUp)
 	    	miSpriteRemoveCursor (pScreen);
     	}
     }
@@ -1885,8 +1885,6 @@ miSpriteSetCursor (pScreen, pCursor, x, y)
 	pScreenPriv->pCursor = pCursor;
 	miSpriteFindColors (pScreen);
     }
-    else
-	pScreenPriv->pCursor = pCursor;
     if (pScreenPriv->isUp) {
 	int	sx, sy;
 	/*
