@@ -34,6 +34,7 @@ extern char **argvGlobal;
 extern char *display;
 extern long EnabledDevices[];
 extern long AllClients[];
+extern char *defaultDisplayClass;
 
 static int		    xdmcpSocket, sessionSocket;
 static xdmcp_states	    state;
@@ -79,6 +80,7 @@ XdmcpUseMsg ()
     ErrorF("-indirect host-name    contact named host for indirect XDMCP\n");
     ErrorF("-port port-num         UDP port number to send messages to\n");
     ErrorF("-once                  Terminate server after one session\n");
+    ErrorF("-class display-class   specify display class to send in manage\n");
 }
 
 int 
@@ -110,6 +112,11 @@ XdmcpOptions(argc, argv, i)
     }
     if (strcmp(argv[i], "-once") == 0) {
 	OneSession = TRUE;
+	return (i + 1);
+    }
+    if (strcmp(argv[i], "-class") == 0) {
+	++i;
+	defaultDisplayClass = argv[i];
 	return (i + 1);
     }
     return (i);
@@ -348,6 +355,7 @@ XdmcpInit()
     if (state != XDM_OFF)
     {
 	XdmcpRegisterAuthorizations();
+	XdmcpRegisterDisplayClass (defaultDisplayClass, strlen (defaultDisplayClass));
 	AccessUsingXdmcp();
 	RegisterBlockAndWakeupHandlers (XdmcpBlockHandler, XdmcpWakeupHandler,
 				        (pointer) 0);
