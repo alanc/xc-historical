@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: tables.c,v 1.19 88/09/06 15:41:32 jim Exp $ */
+/* $XConsortium: tables.c,v 1.20 89/01/16 11:33:02 rws Exp $ */
 
 extern int    ProcInitialConnection(), ProcEstablishConnection();
 
@@ -51,7 +51,7 @@ extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcPolyRectangle(), ProcPolyArc(), ProcFillPoly(),
     ProcPolyFillRectangle(), ProcPolyFillArc(), ProcPutImage(),
     ProcGetImage(), ProcPolyText(),
-    ProcImageText(), ProcCreateColormap(),
+    ProcImageText8(), ProcImageText16(), ProcCreateColormap(),
     ProcFreeColormap(), ProcCopyColormapAndFree(), ProcInstallColormap(),
     ProcUninstallColormap(), ProcListInstalledColormaps(), ProcAllocColor(),
     ProcAllocNamedColor(), ProcAllocColorCells(), ProcAllocColorPlanes(),
@@ -219,8 +219,8 @@ int (* ProcVector[256]) () =
     ProcGetImage,
     ProcPolyText,
     ProcPolyText,			/* 75 */
-    ProcImageText,
-    ProcImageText,
+    ProcImageText8,
+    ProcImageText16,
     ProcCreateColormap,
     ProcFreeColormap,
     ProcCopyColormapAndFree,		/* 80 */
