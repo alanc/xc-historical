@@ -1,6 +1,7 @@
-#if !defined lint && !defined SABER
-static char rcs_id[] = "$XConsortium: pick.c,v 2.28 89/05/31 10:32:39 swick Exp $";
-#endif lint
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] =
+    "$XConsortium: pick.c,v 2.29 89/06/13 10:35:28 converse Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -137,8 +138,8 @@ static void AddLabel(row, text, usestd)
 
     arglist[0].value = (XtArgVal) text;
     arglist[XtNumber(arglist) - 1].value = (XtArgVal) stdwidth;
-    CreateWidget(row, WTlabel, arglist,
-		 usestd ? XtNumber(arglist) : XtNumber(arglist) - 1);
+    (void) CreateWidget(row, WTlabel, arglist,
+			usestd ? XtNumber(arglist) : XtNumber(arglist) - 1);
 }
 
 
@@ -518,7 +519,7 @@ static FormEntry CreateWidget(row, class, args, num_args)
 
     merged_args = XtMergeArgLists( args, num_args, arglist, XtNumber(arglist) );
 
-    entry->widget = XtCreateManagedWidget( NULL, class, row->widget,
+    entry->widget = XtCreateManagedWidget( (String) NULL, class, row->widget,
 					   merged_args,
 					   num_args + XtNumber(arglist) );
 			
@@ -760,6 +761,8 @@ AddPick(scrn, toc, fromseq, toseq)
 #ifdef notdef
     int height;
 #endif notdef
+    extern void StoreWindowName();
+
     if (scrn->pick) {
 	pick = scrn->pick;
 	CleanForm(pick->details);
@@ -769,7 +772,7 @@ AddPick(scrn, toc, fromseq, toseq)
 	pick->scrn = scrn;
 	pick->errorwidget = NULL;
 
-	pick->label = CreateTitleBar(scrn);
+	pick->label = CreateTitleBar(scrn, "pickTitlebar");
 
 	pick->details = details = MakeAForm(pick);
 	pick->general = general = MakeAForm(pick);

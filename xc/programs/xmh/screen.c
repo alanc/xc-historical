@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.37 89/06/30 15:19:25 kit Exp $";
+    "$XConsortium: screen.c,v 2.38 89/07/06 14:43:35 kit Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -117,7 +117,7 @@ Scrn scrn;
 		    MsgSetCallOnChange(scrn->msg, EnableCallback,
 				       (caddr_t) scrn);
 		else 
-		    MsgSetCallOnChange(scrn->msg, NULL, NULL);
+		    MsgSetCallOnChange(scrn->msg, NULL, (caddr_t) NULL);
 
 	    } else {
 		SetButton(scrn->viewbuttons, "send", FALSE);
@@ -129,8 +129,8 @@ Scrn scrn;
     }
 }
 
-static void
-EnableCallback(w, data, junk)
+/*ARGSUSED*/
+static void EnableCallback(w, data, junk)
 Widget w;
 caddr_t data, junk;
 {
@@ -183,15 +183,15 @@ Scrn scrn;
  *	{XtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
  */
 
-    scrn->folderlabel = CreateTitleBar(scrn);
+    scrn->folderlabel = CreateTitleBar(scrn, "folderTitlebar");
     scrn->folderbuttons = BBoxMenuCreate(scrn, "folders");
     scrn->mainbuttons = BBoxCreate(scrn, "folderButtons");
-    scrn->toclabel = CreateTitleBar(scrn);
+    scrn->toclabel = CreateTitleBar(scrn, "tocTitlebar");
     scrn->tocwidget = CreateTextSW(scrn, "toc", 0);
 /* %%%				   arglist2, XtNumber(arglist2)); */
     scrn->seqbuttons = BBoxRadioCreate(scrn, "seqButtons");
     scrn->tocbuttons = BBoxCreate(scrn, "tocButtons");
-    scrn->viewlabel = CreateTitleBar(scrn);
+    scrn->viewlabel = CreateTitleBar(scrn, "viewTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "view", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, "viewButtons");
 
@@ -266,7 +266,7 @@ Scrn scrn;
 MakeView(scrn)
 Scrn scrn;
 {
-    scrn->viewlabel = CreateTitleBar(scrn);
+    scrn->viewlabel = CreateTitleBar(scrn, "viewTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "view", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, "viewButtons");
     FillViewButtons(scrn);
@@ -276,7 +276,7 @@ Scrn scrn;
 MakeComp(scrn)
 Scrn scrn;
 {
-    scrn->viewlabel = CreateTitleBar(scrn);
+    scrn->viewlabel = CreateTitleBar(scrn, "composeTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "comp", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, "compButtons");
     FillCompButtons(scrn);
@@ -321,7 +321,7 @@ ScrnKind kind;
 				   toplevel, arglist, XtNumber(arglist));
     scrn->widget =
 	XtCreateManagedWidget(progName, vPanedWidgetClass, scrn->parent,
-			      NULL, (Cardinal)0);
+			      (ArgList)NULL, (Cardinal)0);
 
     switch (kind) {
 	case STtocAndView:	MakeTocAndView(scrn);	break;
@@ -390,7 +390,7 @@ Scrn scrn;
 Scrn ScrnFromWidget(w)
 Widget w;
 {
-    int i;
+    register int i;
     while (w && XtClass(w) != vPanedWidgetClass)
 	w = XtParent(w);
     if (w) {
@@ -400,4 +400,5 @@ Widget w;
 	}
     }
     Punt("ScrnFromWidget failed!");
+    /*NOTREACHED*/
 }

@@ -1,7 +1,7 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.24 89/06/28 15:19:10 converse Exp $";
-#endif lint
+    "$XConsortium: util.c,v 2.25 89/06/30 15:45:57 swick Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -354,8 +354,9 @@ int options;
 
 
 
-Widget CreateTitleBar(scrn)
+Widget CreateTitleBar(scrn, name)
 Scrn scrn;
+char *name;
 {
     Widget result;
     int height;
@@ -363,7 +364,7 @@ Scrn scrn;
 	{XtNlabel, NULL},
     };
     arglist[0].value = (XtArgVal) Version();
-    result = XtCreateManagedWidget( "titlebar", labelWidgetClass, scrn->widget,
+    result = XtCreateManagedWidget( name, labelWidgetClass, scrn->widget,
 				    arglist, XtNumber(arglist) );
     height = GetHeight(result);
     XawPanedSetMinMax(result, height, height);
