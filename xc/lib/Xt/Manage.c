@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Manage.c,v 1.8 88/02/15 10:33:35 swick Exp $";
+static char rcsid[] = "$Header: Manage.c,v 1.9 88/02/26 12:42:45 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -51,7 +51,7 @@ void XtUnmanageChildren(children, num_children)
     if (num_children <= MAXCHILDREN) {
 	parentP = (Widget*) (unique_parents = parent_cache);
     } else {
-	parentP = (Widget*) unique_parents = (WidgetList) XtMalloc(num_children * sizeof(Widget));
+	parentP = (Widget*) (unique_parents = (WidgetList) XtMalloc(num_children * sizeof(Widget)));
     }
     *parentP = children[0]->core.parent;
 
@@ -125,7 +125,7 @@ void XtManageChildren(children, num_children)
 	parentP = (Widget*) (unique_parents = parent_cache);
     } else {
 	unique_children = (WidgetList) XtMalloc(num_children * sizeof(Widget));
-	parentP = (Widget*) unique_parents = (WidgetList) XtMalloc(num_children * sizeof(Widget));
+	parentP = (Widget*) (unique_parents = (WidgetList) XtMalloc(num_children * sizeof(Widget)));
     }
     *parentP = children[0]->core.parent;
     if (!XtIsComposite(*parentP))
