@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.209 88/08/28 11:51:45 rws Exp $ */
+/* $Header: window.c,v 1.210 88/08/28 20:39:05 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2764,11 +2764,11 @@ CirculateWindow(pParent, direction, client)
     	    return(Success);            
     }
 
+    event.u.u.type = CirculateNotify;
+    DeliverEvents(pWin, &event, 1, NullWindow);
     ReflectStackChange(pWin, (direction == RaiseLowest) ? pFirst
 						        : (WindowPtr)NULL);
 
-    event.u.u.type = CirculateNotify;
-    DeliverEvents(pWin, &event, 1, NullWindow);
     return(Success);
 }
 
