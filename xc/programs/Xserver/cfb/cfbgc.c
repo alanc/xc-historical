@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.56 92/03/13 16:18:46 eswu Exp $ */
+/* $XConsortium: cfbgc.c,v 5.57 93/09/18 15:08:25 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -111,7 +111,9 @@ GCOps	cfbTEOps1Rect = {
     useTEGlyphBlt,
     usePolyGlyphBlt,
     usePushPixels,
-    NULL,
+#ifdef NEED_LINEHELPER
+    NULL
+#endif
 };
 
 GCOps	cfbNonTEOps1Rect = {
@@ -140,7 +142,9 @@ GCOps	cfbNonTEOps1Rect = {
     useImageGlyphBlt,
     usePolyGlyphBlt,
     usePushPixels,
-    NULL,
+#ifdef NEED_LINEHELPER
+    NULL
+#endif
 };
 
 GCOps	cfbTEOps = {
@@ -164,7 +168,9 @@ GCOps	cfbTEOps = {
     useTEGlyphBlt,
     usePolyGlyphBlt,
     usePushPixels,
-    NULL,
+#ifdef NEED_LINEHELPER
+    NULL
+#endif
 };
 
 GCOps	cfbNonTEOps = {
@@ -192,7 +198,9 @@ GCOps	cfbNonTEOps = {
     useImageGlyphBlt,
     usePolyGlyphBlt,
     usePushPixels,
-    NULL,
+#ifdef NEED_LINEHELPER
+    NULL
+#endif
 };
 
 GCOps *
