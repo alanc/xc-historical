@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.66 93/09/22 22:57:48 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.67 94/01/11 20:54:55 rob Exp $ */
 
 /*
  * Machine dependent values:
@@ -248,7 +248,8 @@ SOFTWARE.
 #define LOG2_BITMAP_PAD				6
 #define LOG2_BYTES_PER_SCANLINE_PAD		3
 
-/* Add for handling protocol XPutImage and XGetImage */
+/* Add for handling protocol XPutImage and XGetImage; see comment below */
+#define INTERNAL_VS_EXTERNAL_PADDING
 #define BITMAP_SCANLINE_UNIT_PROTO		32
 
 #define BITMAP_SCANLINE_PAD_PROTO 	 	32
@@ -370,5 +371,39 @@ extern PaddingInfo PixmapWidthPaddingInfo[];
 
 #define BitmapBytePad(w) \
     ((((w) + BITMAP_SCANLINE_PAD - 1) >> LOG2_BITMAP_PAD) << LOG2_BYTES_PER_SCANLINE_PAD)
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+
+/*  This is defined if the server's internal padding is different from the padding
+ *  advertised in the protocol.  The protocol does not allow for padding to
+ *  64 bits, for example, so if the server wants to use 64 bit padding internally,
+ *  it has to advertise 32 bit padding and do padding fixups whenever images
+ *  cross the wire.  (See ProcGetImage and ProcPutImage.)
+ *
+ *  The macros and constants that end in Proto or PROTO refer to the advertised
+ *  padding, and the ones without Proto are for internal padding.
+ */
+
+extern PaddingInfo PixmapWidthPaddingInfoProto[];
+
+#define PixmapWidthInPadUnitsProto(w, d) \
+    (((w) + PixmapWidthPaddingInfoProto[d].padRoundUp) >> \
+	PixmapWidthPaddingInfoProto[d].padPixelsLog2)
+
+#define PixmapBytePadProto(w, d) \
+    (PixmapWidthInPadUnitsProto(w, d) << \
+    PixmapWidthPaddingInfoProto[d].padBytesLog2)
+
+#define BitmapBytePadProto(w) \
+    ((((w) + BITMAP_SCANLINE_PAD_PROTO - 1) >> LOG2_BITMAP_PAD_PROTO) \
+    << LOG2_BYTES_PER_SCANLINE_PAD_PROTO)
+
+#else /* protocol and internal padding is the same */
+
+#define PixmapWidthInPadUnitsProto(w, d) PixmapWidthInPadUnits(w, d)
+#define PixmapBytePadProto(w, d) PixmapBytePad(w, d)
+#define BitmapBytePadProto(w) BitmapBytePad(w)
+
+#endif /* protocol vs. internal padding  */
 
 #endif /* SERVERMD_H */

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: colormap.h,v 1.25 93/09/20 16:16:42 dpw Exp $ */
+/* $XConsortium: colormap.h,v 1.26 93/09/24 12:17:14 rws Exp $ */
 #ifndef CMAP_H
 #define CMAP_H 1
 
@@ -48,7 +48,7 @@ SOFTWARE.
 #define BeingCreated 4
 
 
-typedef unsigned long	Pixel;
+typedef CARD32 Pixel;
 typedef struct _CMEntry *EntryPtr;
 typedef struct _ColormapRec *ColormapPtr;
 typedef struct _colorResource *colorResourcePtr;

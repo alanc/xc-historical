@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.20 93/09/29 18:57:17 dpw Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.21 93/10/12 11:24:05 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,7 +44,7 @@ typedef struct _PixmapFormat {
     } PixmapFormatRec;
     
 typedef struct _Visual {
-    unsigned long	vid;
+    VisualID		vid;
     short		class;
     short		bitsPerRGBValue;
     short		ColormapEntries;
@@ -58,7 +58,7 @@ typedef struct _Visual {
 typedef struct _Depth {
     unsigned char	depth;
     short		numVids;
-    unsigned long	*vids;    /* block of visual ids for this depth */
+    VisualID		*vids;    /* block of visual ids for this depth */
   } DepthRec;
 
 
@@ -155,7 +155,7 @@ typedef    Bool (* PositionWindowProcPtr)(
 typedef    Bool (* ChangeWindowAttributesProcPtr)(
 #if NeedNestedPrototypes
 	WindowPtr /*pWindow*/,
-	BITS32 /*mask*/
+	unsigned long /*mask*/
 #endif
 );
 
