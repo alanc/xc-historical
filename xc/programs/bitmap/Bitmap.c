@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.42 93/08/19 09:25:21 rws Exp $
+ * $XConsortium: Bitmap.c,v 1.43 93/09/20 17:44:10 hersh Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -175,7 +175,15 @@ Ctrl<Key>l: redraw()\n\
             up()\
             change-notify()\
             set-changed()\n\
-<Key>Down:  store-to-buffer()\
+<Key>KP_Up: store-to-buffer()\
+            up()\
+            change-notify()\
+            set-changed()\n\
+<Key>Down:  Store-to-buffer()\
+            down()\
+            change-notify()\
+            set-changed()\n\
+<Key>KP_Down: Store-to-buffer()\
             down()\
             change-notify()\
             set-changed()\n\
@@ -183,7 +191,15 @@ Ctrl<Key>l: redraw()\n\
             left()\
             change-notify()\
             set-changed()\n\
+<Key>KP_Left: store-to-buffer()\
+            left()\
+            change-notify()\
+            set-changed()\n\
 <Key>Right: store-to-buffer()\
+            right()\
+            change-notify()\
+            set-changed()\n\
+<Key>KP_Right: store-to-buffer()\
             right()\
             change-notify()\
             set-changed()\n\
