@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.52 92/03/13 16:01:54 eswu Exp $ */
+/* $XConsortium: mibstore.c,v 5.53 92/04/21 19:34:48 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -708,6 +708,10 @@ miBSCheapValidateGC (pGC, stateChanges, pDrawable)
     else
     {
 	(*pGC->funcs->ValidateGC) (pGC, stateChanges, pDrawable);
+
+	/* rewrap funcs as Validate may have changed them */
+	pGC->devPrivates[miBSGCIndex].ptr = (pointer) pGC->funcs;
+
 	CHEAP_FUNC_EPILOGUE (pGC);
     }
 }
