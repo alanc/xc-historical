@@ -1,4 +1,4 @@
-/* $XConsortium: floman.c,v 1.1 93/10/26 09:44:17 rws Exp $ */
+/* $XConsortium: floman.c,v 1.2 93/10/31 09:42:54 dpw Exp $ */
 /**** module floman.c ****/
 /******************************************************************************
 				NOTICE
@@ -172,8 +172,8 @@ int MakePETex(flo,ped,extend,inSync,bandSync)
   }
   if(extend) {
     /* In case private structure has 'double', round up */
-    unsigned char *ptr = (void *) &pet->receptor[ped->inCnt];
-    pet->private = (void *) ((((int) ptr) & 4) ? ptr + 4 : ptr);
+    unsigned char *ptr = (pointer) &pet->receptor[ped->inCnt];
+    pet->private = (pointer) ((((int) ptr) & 4) ? ptr + 4 : ptr);
   }
 
   return(TRUE);
