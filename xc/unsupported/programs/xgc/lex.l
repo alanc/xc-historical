@@ -6,187 +6,133 @@
 
 %{
 
-#ifdef notdef
-
-#undef output
-#undef input
-#undef unput
-
-typedef struct {
-  char *buffer;
-  char *ptr;
-  char *last;
-  int (*overflow_handler) ();
-} *STRING_STREAM;
-
-static int yyin_is_string;      /* 0 ==> reading from STREAM yyin */
-                                /* 1 ==> reading from STRING yystrin */
-static int yyout_is_string;     /* 0 ==> printing on STREAM yyout */
-                /* 1 ==> printing on WOOL_STRING_STREAM yystrout */
-static char *yystrin;           /* current pointer on input string */
-static STRING_STREAM yystrout; /* current wool output stream */
-
-#define output(c) {\
-    if(yyout_is_string){\
-        *(yystrout->ptr)++ = c;\
-        *(yystrout->ptr) = '\0';\
-        if((yystrout->ptr) >= (yystrout->last)){\
-            yyoutflush();\
-        }\
-    }else{\
-        putc(c,yyout);\
-    }\
-}
-
-#define input() (((\
-        yytchar =\
-        (yysptr>yysbuf ?\
-            U(*--yysptr)\
-        :   (yyin_is_string ?\
-                ( *yystrin ? *yystrin++ : 0)\
-            :   getc(yyin))))\
-        ==10 ?\
-            (yylineno++,yytchar)\
-        :   yytchar)\
-    ==EOF ?\
-        0\
-    :   yytchar)
-
-#define unput(c) {\
-    yytchar= (c);\
-    if(yytchar=='\n')\
-        yylineno--;\
-    *yysptr++=yytchar;\
-}
-#endif
-
 #include <X11/X.h>
 #include "gram.h"
 #include "constants.h"
 
-extern int yylval;
 %}
 
-%p				3000
+%p				4000
 %a				3000
 
 number				[0-9]+
 word				[^\n\t ]+
+string				\"([^"]|\\.)*\"
 
 %%
 
 [Rr]un				{ return (RUN); }
 
 [Ff]unction			{ return (FUNCTION); }
-[Cc]lear			{ yylval = GXclear;
+[Cc]lear			{ yylval.num = GXclear;
 				  return (FUNCTIONTYPE); }
-[Aa]nd				{ yylval = GXand;
+[Aa]nd				{ yylval.num = GXand;
 				  return (FUNCTIONTYPE); }
-[Aa]ndReverse			{ yylval = GXandReverse;
+[Aa]ndReverse			{ yylval.num = GXandReverse;
 				  return (FUNCTIONTYPE); }
-[Cc]opy				{ yylval = GXcopy;
+[Cc]opy				{ yylval.num = GXcopy;
 				  return (FUNCTIONTYPE); }
-[Aa]ndInverted			{ yylval = GXandInverted;
+[Aa]ndInverted			{ yylval.num = GXandInverted;
 				  return (FUNCTIONTYPE); }
-[Nn]oop				{ yylval = GXnoop;
+[Nn]oop				{ yylval.num = GXnoop;
 				  return (FUNCTIONTYPE); }
-[Xx]or				{ yylval = GXxor;
+[Xx]or				{ yylval.num = GXxor;
 				  return (FUNCTIONTYPE); }
-[Oo]r				{ yylval = GXor;
+[Oo]r				{ yylval.num = GXor;
 				  return (FUNCTIONTYPE); }
-[Nn]or				{ yylval = GXnor;
+[Nn]or				{ yylval.num = GXnor;
 				  return (FUNCTIONTYPE); }
-[Ee]quiv			{ yylval = GXequiv;
+[Ee]quiv			{ yylval.num = GXequiv;
 				  return (FUNCTIONTYPE); }
-[Ii]nvert			{ yylval = GXinvert;
+[Ii]nvert			{ yylval.num = GXinvert;
 				  return (FUNCTIONTYPE); }
-[Oo]rReverse			{ yylval = GXorReverse;
+[Oo]rReverse			{ yylval.num = GXorReverse;
 				  return (FUNCTIONTYPE); }
-[Cc]opyInverted			{ yylval = GXcopyInverted;
+[Cc]opyInverted			{ yylval.num = GXcopyInverted;
 				  return (FUNCTIONTYPE); }
-[Oo]rInverted			{ yylval = GXorInverted;
+[Oo]rInverted			{ yylval.num = GXorInverted;
 				  return (FUNCTIONTYPE); }
-[Nn]and				{ yylval = GXnand;
+[Nn]and				{ yylval.num = GXnand;
 				  return (FUNCTIONTYPE); }
-[Ss]et				{ yylval = GXset;
+[Ss]et				{ yylval.num = GXset;
 				  return (FUNCTIONTYPE); }
 
 [Tt]est				{ return (TEST); }
-CopyArea			{ yylval = CopyArea;
+CopyArea			{ yylval.num = CopyArea;
 				  return (TESTTYPE); }
-CopyPlane			{ yylval = CopyPlane;
+CopyPlane			{ yylval.num = CopyPlane;
 				  return (TESTTYPE); }
-PolyPoint			{ yylval = PolyPoint;
+PolyPoint			{ yylval.num = PolyPoint;
 				  return (TESTTYPE); }
-PolyLine			{ yylval = PolyLine;
+PolyLine			{ yylval.num = PolyLine;
 				  return (TESTTYPE); }
-PolySegment			{ yylval = PolySegment;
+PolySegment			{ yylval.num = PolySegment;
 				  return (TESTTYPE); }
-PolyRectangle			{ yylval = PolyRectangle;
+PolyRectangle			{ yylval.num = PolyRectangle;
 				  return (TESTTYPE); }
-PolyArc				{ yylval = PolyArc;
+PolyArc				{ yylval.num = PolyArc;
 				  return (TESTTYPE); }
-FillPolygon			{ yylval = FillPolygon;
+FillPolygon			{ yylval.num = FillPolygon;
 				  return (TESTTYPE); }
-PolyFillRect			{ yylval = PolyFillRect;
+PolyFillRect			{ yylval.num = PolyFillRect;
 				  return (TESTTYPE); }
-PolyFillArc			{ yylval = PolyFillArc;
+PolyFillArc			{ yylval.num = PolyFillArc;
 				  return (TESTTYPE); }
-PutImage			{ yylval = PutImage;
+PutImage			{ yylval.num = PutImage;
 				  return (TESTTYPE); }
-GetImage			{ yylval = GetImage;
+GetImage			{ yylval.num = GetImage;
 				  return (TESTTYPE); }
-PolyText8			{ yylval = PolyText8;
+PolyText8			{ yylval.num = PolyText8;
 				  return (TESTTYPE); }
-ImageText8			{ yylval = ImageText8;
+ImageText8			{ yylval.num = ImageText8;
 				  return (TESTTYPE); }
-PolyText16			{ yylval = PolyText16;
+PolyText16			{ yylval.num = PolyText16;
 				  return (TESTTYPE); }
-ImageText16			{ yylval = ImageText16;
+ImageText16			{ yylval.num = ImageText16;
 				  return (TESTTYPE); }
 
 [Ll]inestyle			{ return (LINESTYLE); }
-OnOffDash			{ yylval = LineOnOffDash;
+OnOffDash			{ yylval.num = LineOnOffDash;
 				  return (LINESTYLETYPE); }
-DoubleDash			{ yylval = LineDoubleDash;
+DoubleDash			{ yylval.num = LineDoubleDash;
 				  return (LINESTYLETYPE); }
 
 [Cc]apstyle			{ return (CAPSTYLE); }
-NotLast				{ yylval = CapNotLast;
+NotLast				{ yylval.num = CapNotLast;
 				  return (CAPSTYLETYPE); }
-Butt				{ yylval = CapButt;
+Butt				{ yylval.num = CapButt;
 				  return (CAPSTYLETYPE); }
-Projecting			{ yylval = CapProjecting;
+Projecting			{ yylval.num = CapProjecting;
 				  return (CAPSTYLETYPE); }
 
 [Jj]oinstyle			{ return (JOINSTYLE); }
-Miter				{ yylval = JoinMiter;
+Miter				{ yylval.num = JoinMiter;
 				  return (JOINSTYLETYPE); }
-Bevel				{ yylval = JoinBevel;
+Bevel				{ yylval.num = JoinBevel;
 				  return (JOINSTYLETYPE); }
 
 Round				{ return (ROUND); }
 
 [Ff]illstyle			{ return (FILLSTYLE); }
-Tiled				{ yylval = FillTiled;
+Tiled				{ yylval.num = FillTiled;
 				  return (FILLSTYLETYPE); }
-Stippled			{ yylval = FillStippled;
+Stippled			{ yylval.num = FillStippled;
 				  return (FILLSTYLETYPE); }
-OpaqueStippled			{ yylval = FillOpaqueStippled;
+OpaqueStippled			{ yylval.num = FillOpaqueStippled;
 				  return (FILLSTYLETYPE); }
 
 Solid				{ return (SOLID); }
 
 [Ff]illrule			{ return (FILLRULE); }
-EvenOdd				{ yylval = EvenOddRule;
+EvenOdd				{ yylval.num = EvenOddRule;
 				  return (FILLRULETYPE); }
-Winding				{ yylval = WindingRule;
+Winding				{ yylval.num = WindingRule;
 				  return (FILLRULETYPE); }
 
 [Aa]rcmode			{ return (ARCMODE); }
-Chord				{ yylval = ArcChord;
+Chord				{ yylval.num = ArcChord;
 				  return (ARCMODETYPE); }
-PieSlice			{ yylval = ArcPieSlice;
+PieSlice			{ yylval.num = ArcPieSlice;
 				  return (ARCMODETYPE); }
 
 [Ff]oreground			{ return (FOREGROUND); }
@@ -194,16 +140,18 @@ PieSlice			{ yylval = ArcPieSlice;
 [Ll]inewidth			{ return (LINEWIDTH); }
 [Pp]lanemask			{ return (PLANEMASK); }
 [Dd]ashlist			{ return (DASHLIST); }
+[Ff]ont				{ return (FONT); }
 
-{number}			{ (void) sscanf (yytext, "%d", &yylval);
+{number}			{ (void) sscanf (yytext, "%d", &yylval.num);
 				  return (NUMBER); }
+{string}			{ yylval.ptr = (char *) yytext;
+				  return (STRING); }
 \#[^\n]*\n			{ ; }
 [\t ]				{ ; }
 \n				{ return ('\n'); }
 
-{word}				{ fprintf(stderr,
-					"xgc: bad word `%s', line %d\n",
-					yytext, yylineno); }
+{word}				{ yylval.ptr = (char *) yytext;
+				  return (STRING); }
 
 .				{ fprintf(stderr,
 					"xgc: bad character `%s', line %d\n",
@@ -212,64 +160,3 @@ PieSlice			{ yylval = ArcPieSlice;
 %%
 
 yywrap() { return (1); }
-
-#ifdef notdef
-/*
- * yyinflush
- * to flush wool input buffers (i.e. the unput buffer)
- * stores old input buffer in arg (should be ~ 16) if not NULL
- */
-
-yyinflush(wool_old_unput_buffer)
-char *wool_old_unput_buffer;
-{
-    if (wool_old_unput_buffer) {
-        if (yysptr != yysbuf)
-            strncpy(wool_old_unput_buffer, yysbuf, yysptr - yysbuf);
-        wool_old_unput_buffer[yysptr - yysbuf] = '\0';
-    }
-    yysptr = yysbuf;
-}
-
-/*
- * yyoutflush
- * to flush wool output buffer.
- */
-
-yyoutflush(){
-    if(yyout_is_string){
-        (*(yystrout->overflow_handler))(yystrout->buffer);
-        yystrout->ptr = yystrout-> buffer;
-    }else{
-        fflush(yyout);
-    }
-}
-
-/*
- * wool_input_redirect
- * to set wool's parsing to the stream or string argument.
- * arg1 = type (0 = string, 1 = stream);
- * arg2 = stream or string
- * arg3 = POINTER to (FILE *) or (char *) where will go the old stream
- *        (if NULL not set)(returns the old type)
- * arg4 = where to save contents of unput buffer (if not NULL)
- */
-
-int wool_input_redirect(type, stream, oldstream_p, old_buffer_contents)
-int type;
-char *stream;
-char **oldstream_p;
-char *old_buffer_contents;
-{
-    int oldtype = yyin_is_string;
-    if(oldstream_p) *oldstream_p =
-        (oldtype ? (char *) yystrin : (char *) yyin);
-    yyinflush(old_buffer_contents);
-    if(yyin_is_string = type){
-        yystrin = stream;
-    }else{
-        yyin = (FILE *) stream;
-    }
-    return oldtype;
-}
-#endif
