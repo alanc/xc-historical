@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.13 94/07/07 11:19:52 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.14 94/07/07 15:18:09 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -44,7 +44,7 @@ SmcConn proxy_smcConn;
 XtInputId proxy_iceInputId;
 char *proxy_clientId = NULL;
 
-WinInfo win_list[256];
+WinInfo win_list[256];		/* TODO: use linked list or hash table */
 int win_count = 0;
 int proxy_count = 0;
 int die_count = 0;
@@ -53,6 +53,7 @@ Bool ok_to_die = 0;
 
 int Argc;
 char **Argv;
+
 
 
 Bool
@@ -126,10 +127,16 @@ WinInfo *winInfo;
     prop1.vals = (SmPropValue *) malloc (
 	winInfo->wm_command_count * sizeof (SmPropValue));
     
+    if (!prop1.vals)
+    {
+	SmcSaveYourselfDone (winInfo->smc_conn, False);
+	return;
+    }
+
     for (i = 0; i < winInfo->wm_command_count; i++)
     {
 	prop1.vals[i].value = (SmPointer) winInfo->wm_command[i];
-	prop1.vals[i].length = strlen (winInfo->wm_command[i]) + 1;
+	prop1.vals[i].length = strlen (winInfo->wm_command[i]);
     }
     
     prop2.name = SmCloneCommand;
@@ -141,8 +148,8 @@ WinInfo *winInfo;
     prop3.type = SmARRAY8;
     prop3.num_vals = 1;
     prop3.vals = &prop3val;
-    prop3val.value = winInfo->wm_command[0];
-    prop3val.length = strlen (winInfo->wm_command[0]) + 1;
+    prop3val.value = (SmPointer) winInfo->wm_command[0];
+    prop3val.length = strlen (winInfo->wm_command[0]);
     
     sprintf (userId, "%d", getuid());
     prop4.name = SmUserID;
@@ -159,7 +166,7 @@ WinInfo *winInfo;
     
     SmcSetProperties (winInfo->smc_conn, 4, props);
     
-    free (prop1.vals);
+    free ((char *) prop1.vals);
     
     SmcSaveYourselfDone (winInfo->smc_conn, True);
 }
@@ -195,9 +202,7 @@ Bool fast;
 	saveYourselfMessage.message_type = wmProtocolsAtom;
 	saveYourselfMessage.format = 32;
 	saveYourselfMessage.data.l[0] = wmSaveYourselfAtom;
-#if 1
 	saveYourselfMessage.data.l[1] = CurrentTime;
-#endif
 
 	if (XSendEvent (disp, winInfo->window, False, NoEventMask,
 	    (XEvent *) &saveYourselfMessage))
@@ -464,7 +469,7 @@ XCreateWindowEvent *event;
 	win_list[index].wm_name != NULL &&
 	win_list[index].wm_command != NULL &&
 	win_list[index].wm_command_count > 0 &&
-	win_list[index].class.res_name != NULL &
+	win_list[index].class.res_name != NULL &&
 	win_list[index].class.res_class != NULL)
     {
 	win_list[index].waiting_for_required_props = 0;
@@ -547,7 +552,7 @@ XPropertyEvent *event;
     {
 	/*
 	 * We are only interested in WM_NAME, WM_COMMAND,
-	 * WM_STATE, and WM_CLASS.
+	 * WM_CLASS, and WM_STATE.
 	 */
 
 	return;
@@ -617,7 +622,7 @@ XPropertyEvent *event;
 		win_list[i].wm_name != NULL &&
 		win_list[i].wm_command != NULL &&
 		win_list[i].wm_command_count > 0 &&
-		win_list[i].class.res_name != NULL &
+		win_list[i].class.res_name != NULL &&
 		win_list[i].class.res_class != NULL)
 	    {
 		win_list[i].waiting_for_required_props = 0;
@@ -670,17 +675,25 @@ Bool fast;
     {
 	if (win_list[i].client_id)
 	    if (!WriteProxyFileEntry (proxyFile, &win_list[i]))
+	    {
 		success = False;
+		break;
+	    }
     }
 
     fclose (proxyFile);
 
     prop1.name = SmRestartCommand;
     prop1.type = SmLISTofARRAY8;
-    prop1.num_vals = Argc;
 
     prop1.vals = (SmPropValue *) malloc (
 	(Argc + 4) * sizeof (SmPropValue));
+
+    if (!prop1.vals)
+    {
+	SmcSaveYourselfDone (smcConn, False);
+	return;
+    }
 
     numVals = 0;
 
@@ -714,7 +727,7 @@ Bool fast;
 
     prop2.name = SmCloneCommand;
     prop2.type = SmLISTofARRAY8;
-    prop2.num_vals = numVals - 4;		/* don't included restart */
+    prop2.num_vals = numVals - 4;		/* don't include restart */
     prop2.vals = prop1.vals;
     
     prop3.name = SmProgram;
@@ -747,7 +760,7 @@ Bool fast;
     props[4] = &prop5;
 
     SmcSetProperties (smcConn, 5, props);
-    free (prop1.vals);
+    free ((char *) prop1.vals);
 
     SmcSaveYourselfDone (smcConn, success);
 }
@@ -858,7 +871,7 @@ Display *display;
 XErrorEvent *event;
 
 {
-    printf ("protocol error!!!!!!!!!!!!\n");
+    fprintf (stderr, "protocol error!!!!!!!!!!!!\n");
     exit (1);
 }
 
