@@ -187,11 +187,11 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 {
     register int	i;
     int			count;
-    XStandardColormap	**stdcmaps = NULL;
+    XStandardColormap	*stdcmaps, *s;
 
     /* The property does not already exist */
 
-    if (! XGetRGBColormaps(dpy, RootWindow(dpy, screen), stdcmaps, &count,
+    if (! XGetRGBColormaps(dpy, RootWindow(dpy, screen), &stdcmaps, &count,
 			   property)) {
 	if (new)
 	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), new, 1, property);
@@ -213,20 +213,40 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
     
     /* The property exists and is RGB_DEFAULT_MAP */
 
-    for (i=0; (i < count) && (stdcmaps[i]->visualid != visualid); i++)
+    for (i=0, s=stdcmaps; (i < count) && (s->visualid != visualid); i++, s++)
 	;
 
     /* No RGB_DEFAULT_MAP property matches the given visualid */
 
     if (i == count) {
 	if (new) {
-#define MAX_DEF_MAPS	15
-	    XStandardColormap	*maps[MAX_DEF_MAPS];
-	    for (i=0; i < count && i < (MAX_DEF_MAPS - 1); i++)
-		maps[i] = stdcmaps[i];
-	    maps[i] = new;
-	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), maps[0], i + 1,
-			     property);
+	    XStandardColormap	*m, *maps;
+
+	    s = (XStandardColormap *) malloc((count+1) * sizeof
+					      (XStandardColormap));
+	    for (i = 0, m = s, maps = stdcmaps; i < count; i++, m++, maps++) {
+		m->colormap   = maps->colormap;
+		m->red_max    = maps->red_max;
+		m->red_mult   = maps->red_mult;
+		m->green_max  = maps->green_max;
+		m->green_mult = maps->green_mult;
+		m->blue_max   = maps->blue_max;
+		m->blue_mult  = maps->blue_mult;
+		m->visualid   = maps->visualid;
+		m->killid     = maps->killid;
+	    }
+	    m->colormap   = new->colormap;
+	    m->red_max    = new->red_max;
+	    m->red_mult   = new->red_mult;
+	    m->green_max  = new->green_max;
+	    m->green_mult = new->green_mult;
+	    m->blue_max   = new->blue_max;
+	    m->blue_mult  = new->blue_mult;
+	    m->visualid   = new->visualid;
+	    m->killid     = new->killid;
+	    count++;
+	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), s, count, property);
+	    free((char *) s);
 	}
 	XFree((char *) stdcmaps);
 	return 0;
@@ -248,16 +268,33 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 				 property);
 	}
 	else {
-	    if ((stdcmaps[i]->killid == ReleaseByFreeingColormap)
-		&& (stdcmaps[i]->colormap != None)
-		&& (stdcmaps[i]->colormap != DefaultColormap(dpy, screen)))
-		XFreeColormap(dpy, stdcmaps[i]->colormap);
-	    else if (stdcmaps[i]->killid != None)
-		XKillClient(dpy, stdcmaps[i]->killid);
+	    XStandardColormap	*n;
 
-	    stdcmaps[i] = (new) ? new : stdcmaps[--count];
+	    if ((s->killid == ReleaseByFreeingColormap)
+		&& (s->colormap != None)
+		&& (s->colormap != DefaultColormap(dpy, screen)))
+		XFreeColormap(dpy, s->colormap);
+	    else if (s->killid != None)
+		XKillClient(dpy, s->killid);
 
-	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), *stdcmaps, count,
+	    if (new)
+		n = new;
+	    else {
+		for (i=0, n=stdcmaps; i < count; i++, n++)
+		    ;
+		count--;
+	    }
+	    s->colormap   = n->colormap;
+	    s->red_max    = n->red_max;
+	    s->red_mult   = n->red_mult;
+	    s->green_max  = n->green_max;
+	    s->green_mult = n->green_mult;
+	    s->blue_max   = n->blue_max;
+	    s->blue_mult  = n->blue_mult;
+	    s->visualid   = n->visualid;
+	    s->killid     = n->killid;
+
+	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), stdcmaps, count,
 			     XA_RGB_DEFAULT_MAP);
 	}
     }
