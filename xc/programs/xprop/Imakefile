@@ -1,5 +1,5 @@
 LOCAL_LIBRARIES = $(XLIB)
-           SRCS = xprop.c jdisplay.c jowindow.c ostuff.c
-           OBJS = xprop.o jdisplay.o jowindow.o ostuff.o
+           SRCS = xprop.c dsimple.c
+           OBJS = xprop.o dsimple.o
 
 ComplexProgramTarget(xprop, $(BINDIR))
