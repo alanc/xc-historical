@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.13 92/09/17 11:57:05 gildea Exp $ */
+/* $XConsortium: spglyph.c,v 1.14 93/08/24 18:48:50 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -345,6 +345,9 @@ sp_build_all_bitmaps(pfont, format, fmask)
 	int j;
 	cfv->char_index = spmf->enc[i * 2 + 1];
 	cfv->char_id = spmf->enc[i * 2];
+#if DEBUG
+fprintf(stderr, "build_all_sp_bitmaps:i = %d, Char ID = %d\n", i, cfv->char_id);
+#endif
 	if (!cfv->char_id)
 	    continue;
 
