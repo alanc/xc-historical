@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.13 91/07/29 18:26:59 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.18 93/08/06 15:24:14 kaleb Exp $
 #include <Server.tmpl>
 
 #if defined(SparcArchitecture)
@@ -54,7 +54,7 @@ OBJS = 	sunCfb.o \
 
 NormalLibraryObjectRule()
 
-all:: $(OFILES) kbd_mode constype kbdtype
+all:: $(OFILES) kbd_mode constype
 
 lintlib:
 
