@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XimTrans.h,v 1.1 94/02/03 18:03:03 mor Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -36,7 +36,7 @@ typedef struct _TransIntrCallbackRec	*TransIntrCallbackPtr;
 
 typedef struct _TransIntrCallbackRec {
     Bool			(*func)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 					Xim, INT16, XPointer, XPointer
 #endif
 					);
