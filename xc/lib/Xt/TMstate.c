@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.115 90/08/17 15:49:53 swick Exp $ */
+/* $XConsortium: TMstate.c,v 1.116 90/09/21 12:04:56 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -2063,8 +2063,10 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
     XtTranslations translateData;
     StateTablePtr stateTable;
     register StatePtr state;
+#ifdef REFCNT_TRANSLATIONS
     register EventObjPtr eventObj;
     register int i;
+#endif
     register ActionPtr action;
 
     if (*num_args != 0)
@@ -2228,9 +2230,18 @@ void XtInstallAccelerators(destination, source)
 	_XtRegisterGrabs(destination, True);
     }
 
-    XtAddCallback(source, XtNdestroyCallback,
-		  RemoveAccelerators,
-		  (XtPointer)&destination->core.tm.translations);
+    if (source->core.destroy_callbacks != NULL)
+	_XtAddCallbackOnce( source,
+			    _XtCallbackList((CallbackStruct*)
+					    source->core.destroy_callbacks
+					    ),
+			    RemoveAccelerators,
+			    (XtPointer)&destination->core.tm.translations
+			   );
+    else
+	XtAddCallback(source, XtNdestroyCallback, RemoveAccelerators,
+		      (XtPointer)&destination->core.tm.translations);
+
     if (XtClass(source)->core_class.display_accelerator != NULL){
 	 char *buf = XtMalloc((Cardinal)100);
 	 int len = 100;
