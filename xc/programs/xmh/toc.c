@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.32 89/11/16 21:04:06 converse Exp $
+ * $XConsortium: toc.c,v 2.33 89/11/25 21:06:17 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -69,6 +69,37 @@ char *name;
 }
 
 
+static void MakeSureSubfolderExists(namelistptr, numfoldersptr, name)
+    struct direct ***	namelistptr;
+    int *		numfoldersptr;
+    char *		name;
+{
+    char folder[300];
+    char subfolder_path[300];
+    char *subfolder;
+    struct stat buf;
+
+    /* Make sure that the parent folder exists */
+
+    subfolder = index( strcpy(folder, name), '/');
+    *subfolder = '\0';
+    subfolder++;
+    MakeSureFolderExists(namelistptr, numfoldersptr, folder);
+	
+    /* The parent folder exists.  Make sure the subfolder exists. */
+
+    (void) sprintf(subfolder_path, "%s/%s", app_resources.mail_path, name);
+    if (stat(subfolder_path, &buf) /* failed */) {
+	(void) mkdir(subfolder_path, 0700);
+	if (stat(subfolder_path, &buf) /* failed */)
+	    Punt("Can't create new xmh subfolder!");
+    }
+
+    if ((buf.st_mode & S_IFMT) != S_IFDIR)
+	Punt("Can't create new xmh subfolder!");
+}
+
+
 static void LoadCheckFiles()
 {
     FILE *fid;
@@ -131,19 +162,31 @@ void TocInit()
 	if (numFolders < 0)
 	    Punt("Can't create or read mail directory!");
     }
-    MakeSureFolderExists(&namelist, &numFolders,
-			 app_resources.initial_folder_name);
-    MakeSureFolderExists(&namelist, &numFolders,
-			 app_resources.drafts_folder_name);
+    if (IsSubfolder(app_resources.initial_folder_name))
+	MakeSureSubfolderExists(&namelist, &numFolders,
+				app_resources.initial_folder_name);
+    else
+	MakeSureFolderExists(&namelist, &numFolders,
+			     app_resources.initial_folder_name);
+
+    if (IsSubfolder(app_resources.drafts_folder_name))
+	MakeSureSubfolderExists(&namelist, &numFolders,
+				app_resources.drafts_folder_name);
+    else
+	MakeSureFolderExists(&namelist, &numFolders,
+			     app_resources.drafts_folder_name);
     folderList = (Toc *) XtMalloc((Cardinal)numFolders * sizeof(Toc));
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i] = TUMalloc();
 	toc->foldername = XtNewString(namelist[i]->d_name);
-	XtFree((char *)namelist[i]);
+	free((char *)namelist[i]);
     }
-    InitialFolder = TocGetNamed(app_resources.initial_folder_name);
-    DraftsFolder = TocGetNamed(app_resources.drafts_folder_name);
-    XtFree((char *)namelist);
+    if (! (InitialFolder = TocGetNamed(app_resources.initial_folder_name)))
+	InitialFolder = TocCreate(app_resources.initial_folder_name);
+
+    if (! (DraftsFolder = TocGetNamed(app_resources.drafts_folder_name)))
+	DraftsFolder = TocCreate(app_resources.drafts_folder_name);
+    free((char *)namelist);
     if (app_resources.new_mail_check) LoadCheckFiles();
 }
 
@@ -211,7 +254,7 @@ void TocCheckForNewMail()
 					arglist, XtNumber(arglist));
 			} 
 			/* give visual indication of new mail waiting */
-			    
+			
 		    }
 		}
 	    }
@@ -737,34 +780,6 @@ char *name;
 /* Throw out all changes to this toc, and close all views of msgs in it.
    Requires confirmation by the user. */
 
-
-/* int TocConfirmCataclysm(toc)  OBSOLETE_CODE  %%% dmc
- *Toc toc;
- *{
- *    int i;
- *    int found = FALSE;
- *    char str[500];
- *
- *    if (toc == NULL) return 0;
- *    for (i=0 ; i<toc->nummsgs && !found ; i++)
- *	if (toc->msgs[i]->fate != Fignore) found = TRUE;
- *    if (found) {
- *	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
- *		      toc->foldername);
- *	if (!Confirm(toc->scrn[0], str))
- *	    return DELETEABORTED;
- *    }
- *
- *    for (i=0 ; i<toc->nummsgs ; i++)
- *	MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
- *    for (i=0 ; i<toc->nummsgs ; i++)
- *	if (MsgSetScrn(toc->msgs[i], (Scrn) NULL)) return DELETEABORTED;
- *
- *    return 0;
- *}
- */
-
-
 /*ARGSUSED*/
 static void TocCataclysmOkay(widget, client_data, call_data)
     Widget	widget;		/* unused */
@@ -776,12 +791,11 @@ static void TocCataclysmOkay(widget, client_data, call_data)
 
     for (i=0; i < toc->nummsgs; i++)
 	MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
-#ifdef OBSOLETE_CODE	/* %%% dmc */
-    /* doesn't make sense to have this here. */
+
+/* Doesn't make sense to have this MsgSetScrn for loop here. dmc. %%% */
     for (i=0; i < toc->nummsgs; i++)
 	MsgSetScrn(toc->msgs[i], (Scrn) NULL, (XtCallbackList) NULL, 
 		   (XtCallbackList) NULL);
-#endif
 }
 	
 int TocConfirmCataclysm(toc, confirms, cancels)
@@ -825,10 +839,10 @@ int TocConfirmCataclysm(toc, confirms, cancels)
 	return NEEDS_CONFIRMATION;
     }
     else {
-#ifdef OBSOLETE_CODE	/* %%% dmc */
+/* Doesn't make sense to have this MsgSetFate for loop here. dmc. %%% */
 	for (i=0 ; i<toc->nummsgs ; i++)
 	    MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
-#endif 
+
 	for (i=0 ; i<toc->nummsgs ; i++)
 	    if (MsgSetScrn(toc->msgs[i], (Scrn) NULL, confirms, cancels))
 		return NEEDS_CONFIRMATION;
