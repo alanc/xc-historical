@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.158 93/07/09 15:30:02 gildea Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.159 93/07/13 17:50:34 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -161,6 +161,12 @@ XCOMM $XConsortium: Project.tmpl,v 1.158 93/07/09 15:30:02 gildea Exp $
 #endif
 #ifndef ProfileLibPex
 #define ProfileLibPex		NO	/* profiled PEX5 library */
+#endif
+#ifndef DebugLibXie
+#define DebugLibXie		NO	/* debugged XIE library */
+#endif
+#ifndef ProfileLibXie
+#define ProfileLibXie		NO	/* profiled XIE library */
 #endif
 #ifndef ThreadedX
 #if HasPosixThreads || HasCThreads
@@ -544,6 +550,12 @@ XCOMM $XConsortium: Project.tmpl,v 1.158 93/07/09 15:30:02 gildea Exp $
 #ifndef NormalLibPex
 #define NormalLibPex (!SharedLibPex | ForceNormalLib)
 #endif
+#ifndef SharedLibXie
+#define SharedLibXie HasSharedLibraries
+#endif
+#ifndef NormalLibXie
+#define NormalLibXie (!SharedLibXie | ForceNormalLib)
+#endif
 #ifndef SharedLibPhigs
 #define SharedLibPhigs NO	/* XXX - haven't made it sharable yet */
 #endif
@@ -653,6 +665,7 @@ XCOMM X Window System make variables; this need to be coordinated with rules
          XILIBSRC = $(EXTENSIONSRC)/lib/xinput
       XTESTLIBSRC = $(EXTENSIONSRC)/lib/xtest
         PEXLIBSRC = $(EXTENSIONSRC)/lib/PEXlib
+        XIELIBSRC = $(EXTENSIONSRC)/lib/XIElib
       PHIGSLIBSRC = $(EXTENSIONSRC)/lib/PEX
 
 /*
@@ -704,6 +717,7 @@ XCOMM X Window System make variables; this need to be coordinated with rules
        SOXTESTREV = SharedXTestRev
        SOXTRAPREV = SharedXTrapRev
          SOPEXREV = SharedPexRev
+         SOXIEREV = SharedXieRev
 #endif
 
 #if !SharedLibXext
@@ -747,6 +761,10 @@ XCOMM X Window System make variables; this need to be coordinated with rules
        DEPPEXLIB = _UseCat($(USRLIBDIR),$(PEXLIBSRC),/libPEX5.a)
           PEXLIB = LoaderLibPrefix _Use(-lPEX5,$(DEPPEXLIB))
 #endif
+#if !SharedLibXie
+       DEPXIELIB = _UseCat($(USRLIBDIR),$(XIELIBSRC),/libXIE.a)
+          XIELIB = LoaderLibPrefix _Use(-lXIE,$(DEPXIELIB))
+#endif
 #if !SharedLibPhigs
         DEPPHIGSLIB = _UseCat($(USRLIBDIR),$(PHIGSLIBSRC),/libphigs.a)
            PHIGSLIB = LoaderLibPrefix _Use(-lphigs,$(DEPPHIGSLIB))
@@ -761,6 +779,7 @@ XCOMM X Window System make variables; this need to be coordinated with rules
           LINTXAW = _UseCat($(LINTLIBDIR),$(AWIDGETSRC),/llib-lXaw.ln)
            LINTXI = _UseCat($(LINTLIBDIR),$(XILIBSRC),/llib-lXi.ln)
           LINTPEX = _UseCat($(LINTLIBDIR),$(PEXLIBSRC),/llib-lPEX5.ln)
+          LINTXIE = _UseCat($(LINTLIBDIR),$(XIELIBSRC),/llib-lXIE.ln)
         LINTPHIGS = _UseCat($(LINTLIBDIR),$(PHIGSLIBSRC),/llib-lphigs.ln)
 
 #ifndef XawClientDepLibs
