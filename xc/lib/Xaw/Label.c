@@ -222,15 +222,13 @@ static void Initialize(w, args, num_args)
     GetgrayGC(lw);
 
     SetTextWidthAndHeight(lw);
-    Resize((Widget)lw);
 
     if (lw->core.width == 0)
         lw->core.width = lw->label.label_width + 2 * lw->label.internal_width;
     if (lw->core.height == 0)
-        lw->core.height = lw->label.label_height + 2 * lw->label.internal_height;
+        lw->core.height = lw->label.label_height + 2*lw->label.internal_height;
 
-/* labels want exposure compression !!! */
-/*     lw->core.compress_expose = TRUE; */
+    Resize((Widget)lw);
 
     lw->label.display_sensitive = FALSE;
 
