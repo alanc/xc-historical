@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_ini.c,v 5.2 91/03/29 14:03:07 rws Exp $ */
+/* $XConsortium: wstx_ini.c,v 5.3 91/07/12 20:25:43 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -144,7 +144,6 @@ init_output_ws_dt( out_ws_dt )
 	ib[0].refl_props.specular_exp = 0.0;
 	ib[0].refl_props.specular_colr.type = PINDIRECT;
 	    ib[0].refl_props.specular_colr.val.ind = 1;
-	ib[0].refl_props.transpar_coef = 0.0;
 	ib[0].back_style = PSTYLE_SOLID;
 	ib[0].back_style_ind = 1;
 	ib[0].back_colr.type = PINDIRECT; ib[0].back_colr.val.ind = 1;

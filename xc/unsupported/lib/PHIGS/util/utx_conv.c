@@ -1,4 +1,4 @@
-/* $XConsortium: utx_conv.c,v 5.4 91/07/12 20:27:54 hersh Exp $ */
+/* $XConsortium: utx_conv.c,v 5.5 91/07/17 18:58:10 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -913,7 +913,6 @@ phg_utx_interior_bndl_from_pex( pib, ib )
     ib->refl_props.diffuse_coef = ((pexReflectionAttr *)pbuf)->diffuse;
     ib->refl_props.specular_coef = ((pexReflectionAttr *)pbuf)->specular;
     ib->refl_props.specular_exp = ((pexReflectionAttr *)pbuf)->specularConc;
-    ib->refl_props.transpar_coef = ((pexReflectionAttr *)pbuf)->transmission;
     cspec = (Pextmpl_colour_spec *)&((pexReflectionAttr *)pbuf)->specularColour;
     PEX_CONV_TO_Pgcolr( cspec, &ib->refl_props.specular_colr );
     pbuf += sizeof(pexReflectionAttr) +
@@ -927,8 +926,6 @@ phg_utx_interior_bndl_from_pex( pib, ib )
     ib->back_refl_props.specular_coef = ((pexReflectionAttr *)pbuf)->specular;
     ib->back_refl_props.specular_exp =
 	((pexReflectionAttr *)pbuf)->specularConc;
-    ib->back_refl_props.transpar_coef =
-	((pexReflectionAttr *)pbuf)->transmission;
     cspec = (Pextmpl_colour_spec *)&((pexReflectionAttr *)pbuf)->specularColour;
     PEX_CONV_TO_Pgcolr( cspec, &ib->back_refl_props.specular_colr );
     pbuf += sizeof(pexReflectionAttr) +
@@ -969,7 +966,7 @@ phg_utx_interior_bndl_to_pex( ib, pib )
     refattrs->diffuse = ib->refl_props.diffuse_coef;
     refattrs->specular = ib->refl_props.specular_coef;
     refattrs->specularConc = ib->refl_props.specular_exp;
-    refattrs->transmission = ib->refl_props.transpar_coef;
+    refattrs->transmission = 0.0;
     cspec = (Pextmpl_colour_spec *)&refattrs->specularColour;
     PEX_CONV_FROM_Pgcolr( &ib->refl_props.specular_colr, cspec );
     pbuf += sizeof(pexReflectionAttr) +
@@ -983,7 +980,7 @@ phg_utx_interior_bndl_to_pex( ib, pib )
     refattrs->diffuse = ib->back_refl_props.diffuse_coef;
     refattrs->specular = ib->back_refl_props.specular_coef;
     refattrs->specularConc = ib->back_refl_props.specular_exp;
-    refattrs->transmission = ib->back_refl_props.transpar_coef;
+    refattrs->transmission = 0.0;
     cspec = (Pextmpl_colour_spec *)&refattrs->specularColour;
     PEX_CONV_FROM_Pgcolr( &ib->back_refl_props.specular_colr, cspec );
     pbuf += sizeof(pexReflectionAttr) +
@@ -3023,8 +3020,6 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		RHEADER(SurfaceReflAttr)->reflectionAttr.specular;
 	    ed->props.specular_exp =
 		RHEADER(SurfaceReflAttr)->reflectionAttr.specularConc;
-	    ed->props.transpar_coef =
-		RHEADER(SurfaceReflAttr)->reflectionAttr.transmission;
 	    cspec = (Pextmpl_colour_spec *)
 		&RHEADER(SurfaceReflAttr)->reflectionAttr.specularColour;
 	    PEX_CONV_TO_Pgcolr( cspec, &ed->props.specular_colr )
@@ -4137,8 +4132,7 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 		ed->refl_props.specular_coef;
 	    HEADER(SurfaceReflAttr)->reflectionAttr.specularConc =
 		ed->refl_props.specular_exp;
-	    HEADER(SurfaceReflAttr)->reflectionAttr.transmission =
-		ed->refl_props.transpar_coef;
+	    HEADER(SurfaceReflAttr)->reflectionAttr.transmission = 0.0;
 	    cspec = (Pextmpl_colour_spec *)
 		&HEADER(SurfaceReflAttr)->reflectionAttr.specularColour;
 	    PEX_CONV_FROM_Pgcolr( &ed->refl_props.specular_colr, cspec )
