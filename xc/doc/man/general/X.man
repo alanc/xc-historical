@@ -6,7 +6,7 @@ X - a portable, network transparent window system
 X is a network transparent window system developed at MIT which
 runs under a wide variety of operating systems.  The standard distribution
 from MIT works on Ultrix-32 Version 1.2 (and higher), 4.3BSD Unix,
-SunOS 3.2 (and higher), HP-UX, and DOMAIN/IX.  In addition, many vendors
+SunOS 3.2 (and higher), HP-UX 6.01, and DOMAIN/IX 9.7.  In addition, many vendors
 support the X Window System under other operating systems.
 .SH "THE OFFICIAL NAMES"
 The official names of the software described herein are:
@@ -32,14 +32,15 @@ Massachusetts Institute of Technology.
 X window system servers run on computers with bitmap displays.
 The server
 distributes user input to, and accepts output requests from various
-client programs located either on the same machine or elsewhere in a
-network.  Although the most common case is for the client programs to be
+client programs through a variety of different interprocess
+communication channels.  Although the most common case is for the client
+programs to be
 running on the same machine as the server, clients can be run transparently
-on other machines (including machines with different architectures and
-operating systems).
+from other machines (including machines with different architectures and
+operating systems) as well.
 .PP
-X supports overlapping windows, hierarchical subwindows, text and
-graphics operations within windows, on both monochrome and color
+X supports overlapping hierarchical subwindows and text and
+graphics operations, on both monochrome and color
 displays.
 For a full explanation of functions, see the
 \fIXlib - C Language X Interface\fP manual, the
@@ -47,7 +48,7 @@ For a full explanation of functions, see the
 and various toolkit documents.
 .PP
 When you first log in on a display running X, you are
-using the \fIxterm(1)\fP terminal emulator program.
+usually using the \fIxterm(1)\fP terminal emulator program.
 You need not learn anything extra to use a display running X as
 a terminal beyond moving the mouse cursor into the login window to
 log in normally.
@@ -55,7 +56,7 @@ log in normally.
 The core \fIX\fP protocol provides mechanism, not policy.  
 Windows are manipulated (including
 moving, resizing and iconifying) not by the server itself, but 
-by a separate program called a ``window manager'' that you can start up.
+by a separate program called a ``window manager'' of your choosing.
 This program is
 simply another client and requires no special privileges.  If you
 don't like the ones that are supplied (see \fIuwm(1)\fP and \fIwm(1)\fP),
@@ -81,12 +82,13 @@ When you first log in, the environment variable DISPLAY will be
 set to a string specifying the name of the machine on which the server is
 running, a number indicating which of possibly several servers
 to use, and possibly a number indicating the default screen of the
-server (although this is usually screen zero, and is omitted).
+server (usually this is omitted and defaults to 0).
 By convention, servers on a particular machine are numbered starting
 with zero.  The format 
 of the DISPLAY string depends on the type of communications channel used
 to contact the server.
 
+.ne 6
 The following connection protocols are supported:
 .TP 8
 .B TCP\/IP
