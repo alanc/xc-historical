@@ -5,7 +5,7 @@ SRCS =	 cfbgc.c cfbwindow.c \
 	 cfbcmap.c \
 	 cfbtegblt.c cfbbstore.c \
 	 cfb8bit.c cfbteblt8.c cfbglblt8.c cfbtgblt8.c \
- 	 cfbpush8.c cfbrctstip8.c \
+ 	 cfbpush8.c cfbrctstip8.c cfbpolypnt.c \
 	 cfbbres.c cfbline.c cfbhrzvert.c cfbbresd.c cfbimage.c
 
 OBJS =   cfbgc.o cfbwindow.o \
@@ -15,7 +15,7 @@ OBJS =   cfbgc.o cfbwindow.o \
 	 cfbcmap.o \
 	 cfbtegblt.o cfbbstore.o \
 	 cfb8bit.o cfbteblt8.o cfbglblt8.o cfbtgblt8.o \
- 	 cfbpush8.o cfbrctstip8.o \
+ 	 cfbpush8.o cfbrctstip8.o cfbpolypnt.o \
 	 cfbbres.o cfbline.o cfbhrzvert.o cfbbresd.o cfbimage.o
 
 STD_DEFINES = ServerDefines
