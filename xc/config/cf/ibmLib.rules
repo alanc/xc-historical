@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.6 92/06/28 17:44:12 rws Exp $
+XCOMM $XConsortium: ibmLib.rules,v 1.7 93/07/14 11:00:05 rws Exp $
 
 /*
  * AIX shared library rules
@@ -80,6 +80,7 @@ Concat(lib,libname.a):  solist $(UNSHAREDOBJS)				@@\
 	$(AR) $@~ shr.o $(UNSHAREDOBJS)					@@\
 	$(RM) $@.syms $@ shr.o						@@\
 	$(MV) $@~ $@							@@\
+	LinkBuildLibrary($@)						@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.a)
@@ -92,11 +93,3 @@ clean::									@@\
 #ifndef SharedLibraryDataTarget
 #define SharedLibraryDataTarget(libname,rev,salist)
 #endif /* SharedLibraryTarget */
-
-#ifndef XmuDependencyRule
-#define XmuDependencyRule()						@@\
-libXmu.a: $(EXTENSIONSRC)/lib/libXext.a					@@\
-									@@\
-$(EXTENSIONSRC)/lib/libXext.a:						@@\
-	cd $(EXTENSIONSRC)/lib; make libXext.a
-#endif /* XmuDependencyRule */

@@ -1,11 +1,11 @@
-XCOMM $XConsortium: sv4Lib.tmpl,v 1.13 93/08/23 19:46:54 rws Exp $
+XCOMM $XConsortium: sv4Lib.tmpl,v 1.14 93/08/25 15:28:30 rws Exp $
 
 /*
  * SVR4 shared library template
  */
 
 /* SVR4 shared libraries are deficient in link semantics */
-XMULIBONLY = _Use(-lXmu,-L$(XMUSRC) -lXmu)
+XMULIBONLY = -lXmu
 #ifndef FixupLibReferences
 #define FixupLibReferences()						@@\
 XMULIB = $(XMULIBONLY) -z nodefs

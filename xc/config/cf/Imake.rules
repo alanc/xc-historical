@@ -21,8 +21,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.157 93/08/26 14:41:05 rws Exp $
  * RunProgram			(progvar,options)
  * RemoveFile			(file)
  * RemoveFiles			(files)
- * SaberLoadTarget		(target,srclist,libs,defines)
- * SaberProgramTarget		(program,srclist,objlist,locallibs,syslibs)
+ * CenterLoadTarget		(target,srclist,libs,defines)
+ * CenterProgramTarget		(program,srclist,objlist,locallibs,syslibs)
  * PurifyLinkTarget		(step,program,linklist)
  * PurifyProgramTarget		(program,deplist,linklist)
  * ProofLinkTarget		(step,program,linklist)
@@ -79,7 +79,6 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.157 93/08/26 14:41:05 rws Exp $
  * UnsharedLibReferences	(varname,libname,libsource)
  * SharedLibDependencies	(libname,libsource,revname)
  * SharedDSLibDependencies	(libname,libsource,revname)
- * SharedLibInsideRef		(varname,libname,libsource,revname)
  * SharedLibReferences		(varname,libname,libsource,revname,rev)
  * SharedDSLibReferences	(varname,libname,libsource,revname,rev)
  * ObjectCompile		(options)
@@ -235,28 +234,28 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.157 93/08/26 14:41:05 rws Exp $
 #endif /* RemoveFiles */
 
 /*
- * SaberLoadTarget - generate rules to load Saber-C files
+ * CenterLoadTarget - generate rules to load files into CodeCenter
  */
-#ifndef SaberLoadTarget
-#if HasSaberC
-#define SaberLoadTarget(target,srclist,libs,defines)			@@\
+#ifndef CenterLoadTarget
+#if HasCodeCenter
+#define CenterLoadTarget(target,srclist,libs,defines)			@@\
 ProgramTargetName(target):: srclist					@@\
 	XCOMM load defines srclist libs
 #else
-#define SaberLoadTarget(target,srclist,libs,defines) /**/
+#define CenterLoadTarget(target,srclist,libs,defines) /**/
 #endif
-#endif /* SaberLoadTarget */
+#endif /* CenterLoadTarget */
 
 /*
- * SaberProgramTarget - generate rules to make Saber-C read in sources and
- * objects.
+ * CenterProgramTarget - generate rules to make CodeCenter read in sources
+ * and objects.
  */
-#ifndef SaberProgramTarget
-#define SaberProgramTarget(program,srclist,objlist,locallibs,syslibs)	@@\
-SaberLoadTarget(Concat(saber_,program),srclist,$(LDOPTIONS) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES))					@@\
+#ifndef CenterProgramTarget
+#define CenterProgramTarget(program,srclist,objlist,locallibs,syslibs)	@@\
+CenterLoadTarget(Concat(debug_,program),srclist,$(LDOPTIONS) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES)) @@\
 									@@\
-SaberLoadTarget(Concat(osaber_,program),objlist,$(LDOPTIONS) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES))
-#endif /* SaberProgramTarget */
+CenterLoadTarget(Concat(odebug_,program),objlist,$(LDOPTIONS) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES))
+#endif /* CenterProgramTarget */
 
 #ifndef PurifyLinkTarget
 #if HasPurify
@@ -399,7 +398,7 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 	RemoveTargetProgram($@)						@@\
 	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
 									@@\
-SaberProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
+CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
 PurifyProgramTarget(program,$(objs) $(deplib),$(LDOPTIONS) $(objs) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
 ProofProgramTarget(program,$(objs) $(deplib),$(LDOPTIONS) $(objs) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
 									@@\
@@ -515,7 +514,7 @@ clean::									@@\
 #if DoRanlibCmd
 #define RanLibrary(args) $(RANLIB) args
 #else
-#define RanLibrary(args) /**/
+#define RanLibrary(args) $(_NULLCMD_)
 #endif
 
 #ifndef LibraryTargetName
@@ -903,8 +902,8 @@ Concat(LINT,varname) = _UseCat($(LINTLIBDIR)/llib-l,libsource/llib-,libname.ln)
  */
 #ifndef UnsharedLibReferences
 #define UnsharedLibReferences(varname,libname,libsource)		@@\
-Concat3(DEP,varname,LIB) = _UseCat($(USRLIBDIR)/lib,libsource/lib,libname.a)	@@\
-Concat(varname,LIB) = LoaderLibPrefix _Use(Concat(-l,libname),$(Concat3(DEP,varname,LIB))) @@\
+Concat3(DEP,varname,LIB) = _UseCat($(USRLIBDIR)/lib,$(BUILDLIBDIR)/lib,libname.a)	@@\
+Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
 
@@ -923,20 +922,13 @@ LintLibReferences(varname,libname,libsource)
 #endif
 
 /*
- * SharedLibInsideRef - inside-the-tree shared library reference
- */
-#ifndef SharedLibInsideRef
-#define SharedLibInsideRef(varname,libname,libsource,revname) Concat(-L,libsource) Concat(-l,libname)
-#endif
-
-/*
  * SharedLibReferences - variables for shared libraries
  */
 #ifndef SharedLibReferences
 #define SharedLibReferences(varname,libname,libsource,revname,rev)	@@\
 revname = rev								@@\
 Concat3(DEP,varname,LIB) = SharedLibDependencies(libname,libsource,revname) @@\
-Concat(varname,LIB) = LoaderLibPrefix _Use(Concat(-l,libname),SharedLibInsideRef(varname,libname,libsource,revname)) @@\
+Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
 
@@ -947,7 +939,7 @@ LintLibReferences(varname,libname,libsource)
 #define SharedDSLibReferences(varname,libname,libsource,revname,rev)	@@\
 revname = rev								@@\
 Concat3(DEP,varname,LIB) = SharedDSLibDependencies(libname,libsource,revname) @@\
-Concat(varname,LIB) = LoaderLibPrefix _Use(Concat(-l,libname),SharedLibInsideRef(varname,libname,libsource,revname)) @@\
+Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
 
@@ -1033,13 +1025,13 @@ objs:	depends								@@\
 
 /*
  * SpecialCObjectRule - generate rules to compile a C file with special flags.
- *			also handles Saber rules
+ *			also handles CodeCenter rules
  */
 #ifndef SpecialCObjectRule
 #define SpecialCObjectRule(basename,depends,options)			@@\
 SpecialObjectRule(basename.Osuf,basename.c depends,options)		@@\
 									@@\
-SaberLoadTarget(saber,basename.c,NullParameter,$(ALLDEFINES) options)
+CenterLoadTarget(debug_src,basename.c,NullParameter,$(ALLDEFINES) options)
 #endif /* SpecialCObjectRule */
 
 
@@ -1083,6 +1075,16 @@ clean::									@@\
 #define MakeLibrary(libname,objlist) $(AR) libname objlist
 #endif
 
+#ifndef LinkBuildLibrary
+#ifdef UseInstalled
+#define LinkBuildLibrary(lib) $(_NULLCMD_)
+#else
+#define LinkBuildLibrary(lib) MakeDir($(BUILDLIBDIR))			@@\
+	RemoveFile($(BUILDLIBDIR)/lib)					@@\
+	$(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib $(BUILDLIBDIR)/lib
+#endif
+#endif /* LinkBuildLibrary */
+
 /*
  * NormalLibraryTarget - generate rules to create a library.
  */
@@ -1093,7 +1095,8 @@ AllTarget(LibraryTargetName(libname))					@@\
 LibraryTargetName(libname): objlist					@@\
 	RemoveFile($@)							@@\
 	MakeLibrary($@,objlist)						@@\
-	RanLibrary($@)
+	RanLibrary($@)							@@\
+	LinkBuildLibrary($@)
 #endif /* NormalLibraryTarget */
 
 
@@ -1109,7 +1112,8 @@ LibraryTargetName(libname): objlist1 objlist2				@@\
 	RemoveFile($@)							@@\
 	MakeLibrary($@,objlist1)					@@\
 	MakeLibrary($@,objlist2)					@@\
-	RanLibrary($@)
+	RanLibrary($@)							@@\
+	LinkBuildLibrary($@)
 #endif /* NormalLibraryTarget2 */
 
 
@@ -1126,7 +1130,8 @@ LibraryTargetName(libname): objlist1 objlist2 objlist3			@@\
 	MakeLibrary($@,objlist1)					@@\
 	MakeLibrary($@,objlist2)					@@\
 	MakeLibrary($@,objlist3)					@@\
-	RanLibrary($@)
+	RanLibrary($@)							@@\
+	LinkBuildLibrary($@)
 #endif /* NormalLibraryTarget3 */
 
 
@@ -1140,7 +1145,8 @@ AllTarget(LibraryTargetName(libname))					@@\
 LibraryTargetName(libname): deplist					@@\
 	RemoveFile($@)							@@\
 	MakeLibrary($@,objlist)						@@\
-	RanLibrary($@)
+	RanLibrary($@)							@@\
+	LinkBuildLibrary($@)
 #endif /* NormalDepLibraryTarget */
 
 

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: hpLib.rules,v 1.1 92/05/05 10:45:18 rws Exp $
+XCOMM $XConsortium: hpLib.rules,v 1.2 92/05/09 13:45:10 rws Exp $
 
 /*
  * HP shared library rules
@@ -66,6 +66,8 @@ Concat(lib,libname.sl.rev):  solist					@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.sl)					@@\
 	$(LN) $@ Concat(lib,libname.sl)					@@\
+	LinkBuildLibrary($@)						@@\
+	LinkBuildLibrary(Concat(lib,libname.sl))			@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.sl.rev) Concat(lib,libname.sl)

@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.18 93/08/25 14:13:57 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.19 93/08/25 14:41:34 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -33,12 +33,6 @@ XCOMM $XConsortium: Library.tmpl,v 1.18 93/08/25 14:13:57 rws Exp $
 #endif
 #ifndef SeparateSharedCompile
 #define SeparateSharedCompile YES
-#endif
-#ifndef AvoidNullMakeCommand
-#define AvoidNullMakeCommand NO
-#endif
-#if AvoidNullMakeCommand
-_NULLCMD_ = @ echo -n
 #endif
 
          CC = LibraryCcCmd
@@ -121,44 +115,46 @@ objs: depends								@@\
 #define SpecialCLibObjectRule(basename,depends,options)			@@\
 SpecialLibObjectRule(basename.Osuf,basename.c depends,options)		@@\
 									@@\
-SaberLoadTarget(saber,basename.c,NullParameter,$(ALLDEFINES) options)
+CenterLoadTarget(debug_src,basename.c,NullParameter,$(ALLDEFINES) options)
 #endif /* SpecialCLibObjectRule */
 
 #ifdef LibName
+
+LIBNAME = LibName
 
 LibraryObjectRule()
 
 #if DoSharedLib
 #if DoNormalLib
-SharedLibraryTarget(LibName,$(SoRev),$(OBJS),shared,..)
+SharedLibraryTarget($(LIBNAME),$(SoRev),$(OBJS),shared,..)
 #else
-SharedLibraryTarget(LibName,$(SoRev),$(OBJS),.,.)
+SharedLibraryTarget($(LIBNAME),$(SoRev),$(OBJS),.,.)
 #endif
 #if HasSharedData
-SharedLibraryDataTarget(LibName,$(SoRev),$(UNSHAREDOBJS))
-InstallSharedLibraryData(LibName,$(SoRev),$(SHLIBDIR))
+SharedLibraryDataTarget($(LIBNAME),$(SoRev),$(UNSHAREDOBJS))
+InstallSharedLibraryData($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #endif
-InstallSharedLibrary(LibName,$(SoRev),$(SHLIBDIR))
+InstallSharedLibrary($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 #if HugeLibrary
 NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))
 #else
-NormalLibraryTarget(LibName,$(OBJS))
+NormalLibraryTarget($(LIBNAME),$(OBJS))
 #endif
-InstallLibrary(LibName,$(USRLIBDIR))
+InstallLibrary($(LIBNAME),$(USRLIBDIR))
 #endif
 #if DoProfileLib
-ProfiledLibraryTarget(LibName,$(OBJS))
-InstallLibrary(Concat(LibName,_p),$(USRLIBDIR))
+ProfiledLibraryTarget($(LIBNAME),$(OBJS))
+InstallLibrary($(LIBNAME)_p),$(USRLIBDIR))
 #endif
 #if DoDebugLib
-DebuggedLibraryTarget(LibName,$(OBJS))
-InstallLibrary(Concat(LibName,_d),$(USRLIBDIR))
+DebuggedLibraryTarget($(LIBNAME),$(OBJS))
+InstallLibrary($(LIBNAME)_d,$(USRLIBDIR))
 #endif
 
-LintLibraryTarget(LibName,$(SRCS))
-InstallLintLibrary(LibName,$(LINTLIBDIR))
+LintLibraryTarget($(LIBNAME),$(SRCS))
+InstallLintLibrary($(LIBNAME),$(LINTLIBDIR))
 #ifdef IncSubdir
 BuildIncludes($(HEADERS),IncSubdir,..)
 InstallMultiple($(HEADERS),$(INCDIR)/IncSubdir)

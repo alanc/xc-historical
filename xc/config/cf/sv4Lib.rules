@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.rules,v 1.8 91/07/19 15:38:53 rws Exp $
+XCOMM $XConsortium: sv4Lib.rules,v 1.9 92/11/18 14:12:05 rws Exp $
 
 /*
  * SVR4 shared library rules
@@ -67,6 +67,8 @@ Concat(lib,libname.so.rev):  solist					@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\
 	$(LN) $@ Concat(lib,libname.so)					@@\
+	LinkBuildLibrary($@)						@@\
+	LinkBuildLibrary(Concat(lib,libname.so))			@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.23 93/08/23 19:46:51 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.24 93/08/25 15:29:42 rws Exp $
 
 /*
  * SunOS shared library template
@@ -18,7 +18,7 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.23 93/08/23 19:46:51 rws Exp $
 #endif
 #if SunPost411FCSLd
 #if NormalLibXmu
-#define SharedXmuReqs -L../$(TOOLKITSRC) -lXt -L../$(EXTENSIONSRC)/lib -lXext -L../$(XLIBSRC) -lX11
+#define SharedXmuReqs -L../$(BUILDLIBDIR) $(XTOOLLIB) $(XLIB)
 #else
 #define SharedXmuReqs $(XTOOLLIB) $(XLIB)
 #endif
@@ -28,16 +28,4 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.23 93/08/23 19:46:51 rws Exp $
 #endif
 #ifndef SharedXinputRev
 #define SharedXinputRev 4.10
-#endif
-
-/* Sun shared libraries are deficient in link semantics */
-       XMULIBONLY = _Use(-lXmu,-L$(XMUSRC) -lXmu)
-#ifndef UseInstalled
-#ifndef FixupLibReferences
-#define FixupLibReferences()						@@\
-XMULIB = $(XMULIBONLY) -L$(TOOLKITSRC) -L$(EXTENSIONSRC)/lib -L$(XLIBSRC)
-#endif
-#ifndef XawClientLibs
-#define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
-#endif
 #endif

@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.178 93/08/26 09:03:06 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.173 93/08/23 19:44:54 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -244,8 +244,17 @@ XCOMM $XConsortium: Project.tmpl,v 1.178 93/08/26 09:03:06 rws Exp $
 #ifndef BuildIncRoot
 #define BuildIncRoot $(TOP)
 #endif
+#ifndef BuildIncDir
+#define BuildIncDir $(BUILDINCROOT)/X11
+#endif
 #ifndef BuildIncTop
-#define BuildIncTop ..		/* relative to $(TOP)/X11 */
+#define BuildIncTop ..		/* relative to BuildIncDir */
+#endif
+#ifndef BuildLibDir
+#define BuildLibDir $(TOP)/usrlib
+#endif
+#ifndef BuildLibTop
+#define BuildLibTop ..		/* relative to BuildLibDir */
 #endif
 #ifndef LibDir
 #define LibDir $(USRLIBDIR)/X11
@@ -321,7 +330,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.178 93/08/26 09:03:06 rws Exp $
 #endif
 
 #ifndef ForceNormalLib
-#define ForceNormalLib (HasSaberC | HasGcc)
+#define ForceNormalLib HasGcc
 #endif
 
 
@@ -338,8 +347,10 @@ XCOMM X Window System make variables; these need to be coordinated with rules
  */
            BINDIR = BinDir		/* programs */
      BUILDINCROOT = BuildIncRoot	/* base of build loc */
-      BUILDINCDIR = $(BUILDINCROOT)/X11
+      BUILDINCDIR = BuildIncDir		/* built headers */
       BUILDINCTOP = BuildIncTop		/* top relative to BUILDINCDIR */
+      BUILDLIBDIR = BuildLibDir		/* built libraries */
+      BUILDLIBTOP = BuildLibTop		/* top relative to BUILDLIBDIR */
            INCDIR = $(INCROOT)/X11	/* header files, must end in X11 */
            ADMDIR = AdmDir		/* server log files */
            LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
@@ -366,19 +377,19 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
 
        DOCUTILSRC = $(TOP)/doc/util
-        CLIENTSRC = $(TOP)/clients
-          DEMOSRC = $(TOP)/demos
+       PROGRAMSRC = $(TOP)/programs
            LIBSRC = $(TOP)/lib
           FONTSRC = $(TOP)/fonts
        INCLUDESRC = $(TOP)/X11
-        SERVERSRC = $(TOP)/server
+        SERVERSRC = $(TOP)/programs/Xserver
        CONTRIBSRC = ContribDir
            DOCSRC = $(TOP)/doc
-           RGBSRC = $(TOP)/rgb
-      BDFTOPCFSRC = $(FONTSRC)/clients/bdftopcf
-     MKFONTDIRSRC = $(FONTSRC)/clients/mkfontdir
-    FONTSERVERSRC = $(FONTSRC)/server
-     EXTENSIONSRC = $(TOP)/extensions
+           RGBSRC = $(TOP)/programs/rgb
+      BDFTOPCFSRC = $(PROGRAMSRC)/bdftopcf
+     MKFONTDIRSRC = $(PROGRAMSRC)/mkfontdir
+    FONTSERVERSRC = $(PROGRAMSRC)/xfs
+       FONTINCSRC = $(TOP)/include/fonts
+        EXTINCSRC = $(TOP)/include/extensions
 
 #ifndef ShLibIncludeFile
 /* need this to make ANSI-style preprocessors happy */
@@ -399,7 +410,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #ifndef ProfileLibX
 #define ProfileLibX		NO	/* profiled X library */
 #endif
-          XLIBSRC = $(LIBSRC)/X
+          XLIBSRC = $(LIBSRC)/X11
 #if SharedLibX
 #ifndef SharedXlibRev
 #define SharedXlibRev 5.0
@@ -422,7 +433,7 @@ UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #ifndef ProfileLibXext
 #define ProfileLibXext		NO	/* profiled Xext library */
 #endif
-      XEXTLIBSRC = $(EXTENSIONSRC)/lib
+      XEXTLIBSRC = $(LIBSRC)/Xext
 #if SharedLibXext
 #ifndef SharedXextRev
 #define SharedXextRev 5.0
@@ -580,7 +591,7 @@ UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
 #ifndef ProfileLibXinput
 #define ProfileLibXinput	NO	/* profiled Xi library */
 #endif
-         XILIBSRC = $(EXTENSIONSRC)/lib/xinput
+         XILIBSRC = $(LIBSRC)/Xi
 #if SharedLibXinput
 #ifndef SharedXinputRev
 #define SharedXinputRev 5.0
@@ -602,7 +613,7 @@ UnsharedLibReferences(XI,Xi,$(XILIBSRC))
 #ifndef ProfileLibXTest
 #define ProfileLibXTest		NO	/* profiled Xtst library */
 #endif
-      XTESTLIBSRC = $(EXTENSIONSRC)/lib/xtest
+      XTESTLIBSRC = $(LIBSRC)/Xtst
 #if SharedLibXTest
 #ifndef SharedXTestRev
 #define SharedXTestRev 1.0
@@ -624,7 +635,7 @@ UnsharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC))
 #ifndef ProfileLibPex
 #define ProfileLibPex		NO	/* profiled PEX5 library */
 #endif
-        PEXLIBSRC = $(EXTENSIONSRC)/lib/PEXlib
+        PEXLIBSRC = $(LIBSRC)/PEX5
 #if SharedLibPex
 #ifndef SharedPexRev
 #define SharedPexRev 1.0
@@ -646,7 +657,7 @@ UnsharedLibReferences(PEX,PEX5,$(PEXLIBSRC))
 #ifndef ProfileLibXie
 #define ProfileLibXie		NO	/* profiled XIE library */
 #endif
-        XIELIBSRC = $(EXTENSIONSRC)/lib/XIE
+        XIELIBSRC = $(LIBSRC)/XIE
 #if SharedLibXie
 #ifndef SharedXieRev
 #define SharedXieRev 1.0
@@ -662,7 +673,7 @@ UnsharedLibReferences(XIE,XIE,$(XIELIBSRC))
 #ifndef NormalLibPhigs
 #define NormalLibPhigs (!SharedLibPhigs | ForceNormalLib)
 #endif
-      PHIGSLIBSRC = $(EXTENSIONSRC)/lib/PEX
+      PHIGSLIBSRC = $(LIBSRC)/PHIGS
 #if SharedLibPhigs
 #ifndef SharedPhigsRev
 #define SharedPhigsRev 1.0
@@ -730,7 +741,7 @@ UnsharedLibReferences(SM,SM,$(SMSRC))
 #ifndef ProfileLibFS
 #define ProfileLibFS		NO	/* profiled FS library */
 #endif
-         FSLIBSRC = $(FONTSRC)/lib/fs
+         FSLIBSRC = $(LIBSRC)/FS
 #if SharedLibFS
 #ifndef SharedFSRev
 #define SharedFSRev 1.0
@@ -740,7 +751,7 @@ SharedLibReferences(FS,FS,$(FSLIBSRC),SOFSREV,SharedFSRev)
 UnsharedLibReferences(FS,FS,$(FSLIBSRC))
 #endif
 
-         FONTLIBSRC = $(FONTSRC)/lib/font
+         FONTLIBSRC = $(LIBSRC)/font
 UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
 
 #ifndef XawClientDepLibs

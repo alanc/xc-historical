@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.184 93/09/03 10:03:16 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.182 93/08/17 20:48:50 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -334,8 +334,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef SystemV4
 #define SystemV4		NO	/* SVR4 */
 #endif
-#ifndef HasSaberC
-#define HasSaberC		NO
+#ifndef HasCodeCenter
+#define HasCodeCenter		NO
 #endif
 #ifndef HasPurify
 #define HasPurify		NO
@@ -374,6 +374,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef UnalignedReferencesAllowed
 #define UnalignedReferencesAllowed NO	/* if arbitrary deref is okay */
+#endif
+#ifndef AvoidNullMakeCommand
+#define AvoidNullMakeCommand NO
+#endif
+#if AvoidNullMakeCommand
+_NULLCMD_ = @ echo -n
 #endif
 
 #ifndef BourneShell			/* to force shell in makefile */
@@ -549,17 +555,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef ConfigSrc
 #define ConfigSrc $(TOP)/config
 #endif
-#ifndef UtilSrc
-#define UtilSrc $(TOP)/util
-#endif
-#ifndef ScriptSrc
-#define ScriptSrc $(UTILSRC)/scripts
-#endif
 #ifndef DependDir
 #if UseCCMakeDepend
-#define DependDir $(SCRIPTSRC)
+#define DependDir $(CONFIGSRC)/util
 #else
-#define DependDir $(UTILSRC)/makedepend
+#define DependDir $(CONFIGSRC)/makedepend
 #endif
 #endif
 #ifndef UNCOMPRESSPATH
@@ -687,7 +687,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifdef UseInstalled		/* assume BINDIR in path */
 #define InstallCmd bsdinst
 #else
-#define InstallCmd $(SHELL) $(SCRIPTSRC)/bsdinst.sh
+#define InstallCmd $(SHELL) $(CONFIGSRC)/util/bsdinst.sh
 #endif
 #else
 #define InstallCmd install
@@ -831,7 +831,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifdef UseInstalled		/* assume BINDIR in path */
 #define MkdirHierCmd mkdirhier
 #else
-#define MkdirHierCmd $(SHELL) $(SCRIPTSRC)/mkdirhier.sh
+#define MkdirHierCmd $(SHELL) $(CONFIGSRC)/util/mkdirhier.sh
 #endif
 #endif
 #ifndef TroffCmd
@@ -907,9 +907,7 @@ XCOMM the platform-specific parameters - edit site.def to change
            DEPEND = DependCmd
         MKDIRHIER = MkdirHierCmd
         CONFIGSRC = ConfigSrc
-         IMAKESRC = $(CONFIGSRC)
-          UTILSRC = UtilSrc
-        SCRIPTSRC = ScriptSrc
+         IMAKESRC = $(CONFIGSRC)/imake
         DEPENDSRC = DependDir
 
           INCROOT = IncRoot		/* base of where to put header files */
@@ -1065,16 +1063,18 @@ PICFLAGS = PositionIndependentCFlags
        ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(EXTRA_DEFINES) $(PROTO_DEFINES) $(DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
-#if AlternateUsrLibDir && !defined(UseInstalled) && !HasLdRunPath
-           LDLIBS = -L$(USRLIBDIR) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
-#else
-           LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
+#if !defined(UseInstalled)
+         LDPRELIB = -L$(BUILDLIBDIR)
+#if AlternateUsrLibDir && !HasLdRunPath
+        LDPOSTLIB = -L$(USRLIBDIR)
 #endif
-#if AlternateUsrLibDir && defined(UseInstalled) && !HasLdRunPath
-        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) -L$(USRLIBDIR)
 #else
-        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS)
+#if AlternateUsrLibDir && !HasLdRunPath
+         LDPRELIB = -L$(USRLIBDIR)
 #endif
+#endif
+        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB)
+           LDLIBS = $(LDPOSTLIB) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 #if AlternateUsrLibDir && HasLdRunPath
        CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR)
            CCLINK = $(CCENVSETUP) $(CC)
@@ -1092,7 +1092,7 @@ PICFLAGS = PositionIndependentCFlags
          IRULESRC = $(CONFIGDIR)	/* used in rules file */
         IMAKE_CMD = $(IMAKE) -DUseInstalled -I$(IRULESRC) $(IMAKE_DEFINES)
 #else
-         IRULESRC = $(CONFIGSRC)
+         IRULESRC = $(CONFIGSRC)/cf
         IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
 #endif
      ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Imake.rules \
@@ -1147,9 +1147,9 @@ TagsTarget()
 MakefileAdditions()
 #endif
 
-SaberLoadTarget(saber,$(SRCS),NullParameter,$(ALLDEFINES))
+CenterLoadTarget(debug_src,$(SRCS),NullParameter,$(ALLDEFINES))
 
-SaberLoadTarget(osaber,$(OBJS),NullParameter,$(ALLDEFINES))
+CenterLoadTarget(debug_obj,$(OBJS),NullParameter,$(ALLDEFINES))
 
 #ifdef IHaveSubdirs
 XCOMM -------------------------------------------------------------------------

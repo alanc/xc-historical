@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.rules,v 1.9 92/06/28 17:43:02 rws Exp $
+XCOMM $XConsortium: sunLib.rules,v 1.10 93/07/14 10:58:32 rws Exp $
 
 /*
  * SunOS shared library rules
@@ -74,6 +74,7 @@ Concat(lib,libname.so.rev):  solist					@@\
 	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)) @@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
+	LinkBuildLibrary($@)						@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.so.rev)
@@ -91,18 +92,9 @@ Concat(lib,libname.sa.rev):  salist					@@\
 	$(RM) $@							@@\
 	$(AR) $@ salist							@@\
 	RanLibrary($@)							@@\
+	LinkBuildLibrary($@)						@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.sa.rev)
 
 #endif /* SharedLibraryDataTarget */
-
-#if SunPost411FCSLd
-#ifndef XmuDependencyRule
-#define XmuDependencyRule()						@@\
-libXmu.so.$(SOXMUREV): $(EXTENSIONSRC)/lib/libXext.so.$(SOXEXTREV)	@@\
-									@@\
-$(EXTENSIONSRC)/lib/libXext.so.$(SOXEXTREV):				@@\
-	cd $(EXTENSIONSRC)/lib; make libXext.so.$(SOXEXTREV)
-#endif /* XmuDependencyRule */
-#endif
