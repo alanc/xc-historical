@@ -61,7 +61,6 @@ OBJS = \
 	DrawLogo.o \
 	DrRndRect.o \
 	FToCback.o \
-	GetCmapAll.o \
 	GrayPixmap.o \
 	Initer.o \
 	Lookup.o \
