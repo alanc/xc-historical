@@ -1,6 +1,9 @@
 *chooseSessionPopup*font:		12x24
-*chooseSessionLabel.label:		Choose a session...
-*chooseSessionOkButton.label:		OK
+*chooseSessionLabel.label:		Session Menu
+*chooseSessionMessageLabel.label:	Press button again to confirm...
+*chooseSessionLoadButton.label:		Load Session
+*chooseSessionDeleteButton.label:	Delete Session
+*chooseSessionFailSafeButton.label:	Fail Safe
 *chooseSessionCancelButton.label:	Cancel
 
 *clientInfoButton.label:	Client List
