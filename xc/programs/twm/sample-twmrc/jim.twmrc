@@ -116,7 +116,8 @@ Button1 =	: iconmgr			: f.iconify
 Button1	= m	: window|icon|frame|title	: f.lower
 Button2	= m	: window			: f.resize
 Button3	= m	: window|icon|frame|title	: f.function "move-or-raise"
-Button1	= c|m|s	: root				: f.refresh
+Button1 = c|m|s	: all				: f.menu "twmops"
+#Button1	= c|m|s	: root				: f.refresh
 #"F20"	=	: all				: f.warptoscreen "next"
 
 "F21"		=	: all			: f.warpring "next"
@@ -126,8 +127,9 @@ Button1	= c|m|s	: root				: f.refresh
 "F24"		=	: all			: f.warpto "xmh"
 "F25"		=	: all			: f.warpto "[expo]"
 "F26"		=	: all			: f.warpto "emacs"
-"KP_Subtract"	=	: all			: f.colormap "next"
-"KP_Add"	=	: all			: f.colormap "default"
+"KP_Subtract"	= mod5	: all			: f.colormap "prev"
+"KP_Add"	= mod5	: all			: f.colormap "next"
+"KP_Enter"	= mod5	: all			: f.colormap "default"
 "Left"		= m	: all			: f.backiconmgr
 "Right"		= m	: all			: f.forwiconmgr
 "Up"		= m	: all			: f.upiconmgr
@@ -203,6 +205,8 @@ menu "twmops"
 "xterm -e /bin/sh"	!"xterm -e /bin/sh &"
 "xhost +"		!"xhost + >/dev/null"
 "xhost -"		!"xhost - >/dev/null"
+""			f.nop
+"Kill"			f.menu "kill"
 ""			f.nop
 "Logout"		f.warpto "xlogout"
 }
