@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.8 90/12/19 18:14:48 converse Exp $
+ * $XConsortium: LocBitmap.c,v 1.9 90/12/28 20:02:44 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -127,7 +127,7 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 	    }
 	    if (XrmQGetResource (dpy->db, xrm_name, xrm_class, 
 				 &rep_type, &value) &&
-		rep_type == XrmPermStringToQuark(XtRString)) {
+		rep_type == XrmPermStringToQuark("String")) {
 		cache->string_to_bitmap.bitmapFilePath = 
 		  split_path_string (value.addr);
 	    }
