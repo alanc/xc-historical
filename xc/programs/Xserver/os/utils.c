@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.35 88/01/01 15:07:55 rws Locked $ */
+/* $Header: utils.c,v 1.36 88/01/04 08:22:38 rws Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -40,6 +40,10 @@ extern long ScreenSaverTime;		/* for forcing reset */
 
 Bool clientsDoomed = FALSE;
 extern void KillServerResources();
+
+#ifdef COMPRESSED_FONTS
+int CompressedFonts = 1;
+#endif
 
 /* Force connections to close on SIGHUP from init */
 
@@ -137,6 +141,12 @@ char	*argv[];
 	{
 	    defaultKeyboardControl.click = 0;
 	}
+#ifdef COMPRESSED_FONTS
+	else if (strcmp( argv[i], "nocf") == 0 ||
+		 strcmp( argv[i], "-cf") == 0) {
+	    CompressedFonts--;
+	}
+#endif
 	else if ( strcmp( argv[i], "-co") == 0)
 	{
 	    if(++i < argc)
@@ -234,6 +244,9 @@ UseMsg()
     ErrorF("-bp<:screen> color     BlackPixel for screen\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-8)\n");
+#ifdef COMPRESSED_FONTS
+    ErrorF("nocf or -cf            disable use of compressed fonts\n");
+#endif
     ErrorF("-co string             color database file\n");
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default text font name\n");
