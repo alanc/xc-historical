@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.134 91/02/01 18:53:01 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.135 91/02/04 21:51:41 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1505,7 +1505,6 @@ static doData16(dpy, data, len, packbuffer)
 
         lp = (long *)data;
         lpack = (long *)packbuffer;
-        *lpack = 0;
 
 /*  nwords is the number of 16 bit values to be packed,
  *  the low order 16 bits of each word will be packed
@@ -1515,12 +1514,12 @@ static doData16(dpy, data, len, packbuffer)
         bits = 48;
 
         for(i=0;i<nwords;i++){
+	   if (bits == 48) *lpack = 0;
            *lpack ^= (*lp & mask16) << bits;
            bits -= 16 ;
            lp++;
            if(bits < 0){
                lpack++;
-               *lpack = 0;
                bits = 48;
            }
         }
@@ -1562,8 +1561,6 @@ static doData32 (dpy, data, len, packbuffer)
         lpack = (long *) packbuffer;
         lp = data;
 
-        *lpack = 0;
-
 /*  nwords is the number of 32 bit values to be packed
  *  the low order 32 bits of each word will be packed
  *  into 64 bit words
@@ -1572,13 +1569,12 @@ static doData32 (dpy, data, len, packbuffer)
         bits = 32;
 
         for(i=0;i<nwords;i++){
+	   if (bits == 32) *lpack = 0;
            *lpack ^= (*lp & mask32) << bits;
            bits = bits ^32;
            lp++;
-           if(bits){
+           if(bits)
               lpack++;
-              *lpack = 0;
-           }
         }
         Data(dpy, packbuffer, len);
 }
