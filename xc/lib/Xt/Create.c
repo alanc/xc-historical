@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Create.c,v 6.27 88/02/01 17:40:50 swick Locked $";
+static char rcsid[] = "$Header: Create.c,v 6.28 88/02/01 18:07:37 swick Locked $";
 #endif lint
 
 /*
@@ -91,7 +91,7 @@ static void CallConstraintInitialize (class, req_widget, new_widget)
     ConstraintWidgetClass class;
     Widget	req_widget, new_widget;
 {
-    if (class->core_class.superclass != (WidgetClass) constraintWidgetClass)
+    if (class->core_class.superclass != constraintWidgetClass)
 	CallConstraintInitialize(
 	    (ConstraintWidgetClass) class->core_class.superclass,
 	    req_widget, new_widget);
@@ -196,7 +196,7 @@ Widget XtCreateWidget(name, widgetClass, parent, args, num_args)
 	XtError("XtCreateWidget requires non-NULL widget class");
     }
     widget = _XtCreate1(name, widgetClass, parent);
-    if (XtIsSubclass(parent, (WidgetClass)constraintWidgetClass)) {
+    if (XtIsSubclass(parent, constraintWidgetClass)) {
 	cwc = (ConstraintWidgetClass) parent->core.widget_class;
 	widget->core.constraints = 
 	    (caddr_t) XtMalloc((unsigned)cwc->constraint_class.constraint_size);
