@@ -55,6 +55,10 @@ extern Widget dashlistchoice;
 extern Widget planemaskchoice;
 extern Widget testchoiceform;
 
+extern int fildes[2];
+extern FILE *outend;
+extern FILE *yyin;
+
 /* interpret(string)
 ** -----------------
 ** Takes string, which is a line written in the xgc syntax, figures
@@ -164,6 +168,22 @@ interpret(string)
     else fprintf(stderr,"Ack... %s %s\n",word1,word2);
   }
 }
+
+#ifdef notdef
+void
+interpret(instring)
+     char *instring;
+{
+  FILE *inend;
+  
+  print_if_recording(instring);
+  yyin = outend;
+  inend = fdopen(fildes[1],"w");
+  fprintf(inend,"%s",instring);
+  fclose(inend);
+  yyparse();
+}
+#endif
 
 #define select_correct_button(which,number) \
   select_button(GCdescs[(which)],(number));
