@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.19 89/11/01 17:00:06 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.20 89/11/02 13:06:13 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1371,6 +1371,38 @@ Cardinal * num_params;
   EndAction(ctx);
 }
 
+/*	Function Name: NoOp
+ *	Description: This action performs no action, and allows
+ *                   the user or application programmer to unbind a 
+ *                   translation.
+ *	Arguments: w - the text widget.
+ *                 event - *** UNUSED ***.
+ *                 parms and num_params - the action parameters.
+ *	Returns: none.
+ *
+ * Note: If the parameter list contains the string "RingBell" then
+ *       this action will ring the bell.
+ */
+
+static void
+NoOp(w, event, params, num_params)
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+{
+    if (*num_params != 1)
+	return;
+
+    switch(params[0][0]) {
+    case 'R':
+    case 'r':
+	XBell(XtDisplay(w), 0);
+    default:			/* Fall Through */
+	break;
+    }
+}
+	
 /* Action Table */
 
 XtActionsRec textActionsTable[] = {
@@ -1434,6 +1466,7 @@ XtActionsRec textActionsTable[] = {
   {"multiply",		        Multiply},
   {"form-paragraph",            FormParagraph},
   {"transpose-characters",      TransposeCharacters},
+  {"no-op",                     NoOp},
 /* Action to bind special translations for text Dialogs. */
   {"InsertFileAction",          _XawTextInsertFileAction},
   {"DoSearchAction",            _XawTextDoSearchAction},
