@@ -15,8 +15,8 @@
 extern int errno;
 
 
-int c_check_bytes(fd, howmany)
-    int fd, howmany;
+int c_check_bytes(fd, how_many)
+    int fd, how_many;
 {
     int numavail;
 
@@ -25,7 +25,7 @@ int c_check_bytes(fd, howmany)
 	return (ERROR);
     }
 
-    if (numavail >= howmany)
+    if (numavail >= how_many)
 	return (1);
     else
 	return (0);
