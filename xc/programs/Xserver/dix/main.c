@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.115 87/08/06 17:16:08 toddb Locked $ */
+/* $Header: main.c,v 1.116 87/08/15 16:35:14 newman Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -396,6 +396,9 @@ AddScreen(pfnInit, argc, argv)
 	    screenInfo.screen, 
 	    screenInfo.arraySize * sizeof(ScreenRec));
     }
+
+    for (j = 0; j < MAXFORMATS+1; j++)
+ 	screenInfo.screen[i].GCperDepth[j] = (GCPtr)NULL;
 
 #ifdef DEBUG
 	    for (jNI = &screenInfo.screen[i].QueryBestSize; 
