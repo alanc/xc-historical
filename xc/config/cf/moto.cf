@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: moto.cf,v 1.2 91/05/08 17:03:08 rws Exp $
+XCOMM platform:  $XConsortium: moto.cf,v 1.3 91/05/08 17:20:05 rws Exp $
 
 #if defined(MotoR3Architecture)
 
@@ -28,9 +28,8 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.2 91/05/08 17:03:08 rws Exp $
 
 #define SystemV4		YES
 #define BootstrapCFlags		-DSVR4 -DMOTOROLA
-#define StandardDefines         -DSVR4 -DMOTOROLA -D_POSIX_SOURCE
+#define StandardDefines         -DSVR4 -DMOTOROLA /* -D_POSIX_SOURCE */
 #define HasSockets		YES
-#define ExtraLibraries		-lsocket -lnsl -lm
 #define BuildServer		NO
 #define MotifContextBug         YES
 
