@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.1 87/09/11 07:59:43 toddb Exp $";
+static char rcsid[] = "$Header: Viewport.c,v 1.4 88/01/19 09:02:34 swick Locked $";
 #endif lint
 
 /*
@@ -220,6 +220,8 @@ static void Realize(widget, value_mask, attributes)
     (*w->core.widget_class->core_class.superclass
      ->core_class.realize)(widget, value_mask, attributes);
 
+    (*w->core.widget_class->core_class.resize)(widget);	/* turn on bars */
+
     if (child) {
 	XtMoveWidget( child, (Position)0, (Position)0 );
 	XtRealizeWidget( clip );
@@ -370,10 +372,10 @@ static void Resize(widget)
     clip_width = w->core.width;
     clip_height = w->core.height;
     if (w->viewport.forcebars) {
-	if (w->viewport.allowvert)
+	if (needsvert = w->viewport.allowvert)
 	    clip_width -= w->viewport.vert_bar->core.width +
 			  w->viewport.vert_bar->core.border_width;
-	if (w->viewport.allowhoriz)
+	if (needshoriz = w->viewport.allowhoriz)
 	    clip_height -= w->viewport.horiz_bar->core.height +
 			   w->viewport.horiz_bar->core.border_width;
 	AssignMax( clip_width, 1 );
@@ -395,12 +397,12 @@ static void Resize(widget)
 		child_height = clip_height;
 		needsvert = FALSE;
 	    }
-	    if (needshoriz && !w->viewport.horiz_bar) {
+	    if (! XtIsRealized(widget))
+		needsvert = needshoriz = FALSE;
+	    if (needshoriz && !w->viewport.horiz_bar)
 		CreateScrollbar(w, True);
-	    }
-	    if (needsvert && !w->viewport.vert_bar) {
+	    if (needsvert && !w->viewport.vert_bar)
 		CreateScrollbar(w, False);
-	    }
 	    clip_width = w->core.width -
 		(needsvert ? w->viewport.vert_bar->core.width
 			     + w->viewport.vert_bar->core.border_width : 0);
@@ -535,14 +537,15 @@ static XtGeometryResult GeometryManager(child, request, reply)
     resized = False;
 
     if ((!w->viewport.allowhoriz && rWidth) ||
-	(!w->viewport.allowvert && rHeight)) {
+	(!w->viewport.allowvert && rHeight) ||
+	!XtIsRealized((Widget)w)) {
 	myrequest.request_mode = CWWidth | CWHeight;
 	myrequest.width = rWidth ?
-	      (w->viewport.allowhoriz ?
+	      ((w->viewport.allowhoriz && w->core.width > 0) ?
 		  Min(w->core.width, request->width) : request->width)
 	    : w->core.width;
 	myrequest.height = rHeight ?
-	      (w->viewport.allowvert ?
+	      ((w->viewport.allowvert && w->core.height > 0) ?
 		  Min(w->core.height, request->height) : request->height)
 	    : w->core.height;
 	if (w->core.width != myrequest.width ||
@@ -577,13 +580,13 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	myrequest.request_mode = 0;
 	if (child->core.width > w->core.width) needs_horiz = True;
 	if (child->core.height > w->core.height) needs_vert = True;
-	if (needs_horiz && !w->viewport.horiz_bar) {
+	if (needs_horiz && !w->viewport.horiz_bar && XtIsRealized((Widget)w)) {
 	    CreateScrollbar( w, True );
 	    if ((myrequest.height = w->viewport.horiz_bar->core.height << 1)
 		> w->core.height)
 		myrequest.request_mode |= CWHeight;
 	}
-	if (needs_vert && !w->viewport.vert_bar) {
+	if (needs_vert && !w->viewport.vert_bar && XtIsRealized((Widget)w)) {
 	    CreateScrollbar( w, False );
 	    if ((myrequest.width = w->viewport.vert_bar->core.width << 1)
 		> w->core.width)
