@@ -1,4 +1,4 @@
-#	$XConsortium: locale.alias,v 1.4 94/03/23 10:29:15 kaleb Exp $
+#	$XConsortium: locale.alias,v 1.5 94/03/30 21:24:00 kaleb Exp $
 #
 #	This file contains alias name of locale.
 #	Each alias name is described within one line.
@@ -39,6 +39,9 @@ en_CA		en_CA.ISO8859-1
 en_US		en_US.ISO8859-1
 en_US.88591	en_US.ISO8859-1
 en_US.88591.en	en_US.ISO8859-1
+en_US.437	en_US.ISO8859-1
+en_US.646	en_US.ISO8859-1
+en_US.850	en_US.ISO8859-1
 es		es_ES.ISO8859-1
 es_ES		es_ES.ISO8859-1
 es_ES.88591	es_ES.ISO8859-1
