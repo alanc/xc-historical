@@ -1,6 +1,6 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.8 91/07/21 15:30:31 gildea Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.9 94/04/14 15:01:05 gildea Exp $
 .\"
 .\" Copyright 1991 by the Massachusetts Institute of Technology
 .\"
@@ -274,6 +274,9 @@ Normal Keypad (DECPNM)
 Index (IND)
 .IP \\*(Es\\*E
 Next Line (NEL)
+.IP \\*(Es\\*F
+Cursor to lower left corner of screen (if
+enabled by the \fBhpLowerleftBugCompat\fP resource).
 .IP \\*(Es\\*H
 Tab Set (HTS)
 .IP \\*(Es\\*M
@@ -425,6 +428,10 @@ Application Program Command (APC)
 \*(Pt need not be printable characters.
 .IP \\*(Es\\*c
 Full Reset (RIS)
+.IP \\*(Es\\*l
+Memory Lock (per HP terminals).  Locks memory above the cursor.
+.IP \\*(Es\\*m
+Memory Unlock (per HP terminals)
 .IP \\*(Es\\*n
 Invoke the G2 Character Set (LS2)
 .IP \\*(Es\\*o
