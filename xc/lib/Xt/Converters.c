@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Conversion.c,v 1.3 87/11/23 10:38:52 swick Locked $";
+static char rcsid[] = "$Header: Conversion.c,v 1.4 87/11/23 11:08:15 swick Locked $";
 #endif lint
 
 /*
@@ -57,7 +57,7 @@ static void _XStringConversionWarning(from, toType)
     char message[1000];
     
     sprintf(message, "Cannot convert string \"%s\" to type %s", from, toType);
-    XWarningMessage(message);
+    _XWarningMessage(message);
 }
 
 static void CvtXColorToPixel();
