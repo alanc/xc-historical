@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 1.1 93/12/31 11:21:41 rob Exp $ */
+/* $XConsortium: cfbgc.c,v 1.2 94/01/04 00:02:08 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -66,13 +66,11 @@ OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
 
-#ifdef MTX
+#ifndef MTX
 void cfbValidateGC();
 #else /* MTX */
-#ifdef MTX
 void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
-#endif MTX
 #endif /* MTX */
 
 #if PSZ == 8
@@ -114,14 +112,14 @@ GCFuncs cfbGCFuncs = {
     miChangeClip,
     miDestroyClip,
     miCopyClip,
-#else MTX
+#else /* MTX */
     cfbChangeGC,
     cfbCopyGC,
     cfbDestroyGC,
     cfbChangeClip,
     cfbDestroyClip,
     cfbCopyClip,
-#endif MTX
+#endif /* MTX */
 };
 
 GCOps	cfbTEOps1Rect = {
@@ -329,7 +327,7 @@ cfbCreateGC(pGC)
      */
     pPriv->stipple = NULL;
 #endif
-#endif MTX
+#endif /* MTX */
 
     return TRUE;
 }
