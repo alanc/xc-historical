@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.83 89/03/12 17:10:01 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.84 89/03/14 08:39:25 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -79,6 +79,7 @@ extern void (* ReplySwapVector[256]) ();
 extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
 extern void WriteSConnSetupPrefix();
 extern char *ClientAuthorized();
+extern Bool InsertFakeRequest();
 static void KillAllClients();
 static void DeleteClientFromAnySelections();
 
@@ -3361,7 +3362,16 @@ NextAvailableClient(ospriv)
     client->requestVector = InitialVector;
     client->osPrivate = ospriv;
     client->swapped = FALSE;
-    if (!InitClientResources(client)) {
+    if (!InitClientResources(client))
+    {
+	xfree(client);
+	return (ClientPtr)NULL;
+    }
+    data.reqType = 1;
+    data.length = (sz_xReq + sz_xConnClientPrefix) >> 2;
+    if (!InsertFakeRequest(client, (char *)&data, sz_xReq))
+    {
+	FreeClientResources(client);
 	xfree(client);
 	return (ClientPtr)NULL;
     }
@@ -3369,9 +3379,6 @@ NextAvailableClient(ospriv)
 	currentMaxClients++;
     while ((nextFreeClientID < MAXCLIENTS) && clients[nextFreeClientID])
 	nextFreeClientID++;
-    data.reqType = 1;
-    data.length = (sz_xReq + sz_xConnClientPrefix) >> 2;
-    InsertFakeRequest(client, (char *)&data, sz_xReq);
     return(client);
 }
 
