@@ -27,6 +27,8 @@ HEADERS = \
 	GripP.h \
 	Label.h \
 	LabelP.h \
+	List.h \
+	ListP.h \
 	Load.h \
 	LoadP.h \
 	Logo.h \
@@ -56,6 +58,7 @@ SRCS = \
 	GrayPixmap.c \
 	Grip.c \
 	Label.c \
+	List.c \
 	Load.c \
 	Logo.c \
 	Mailbox.c \
@@ -79,6 +82,7 @@ OBJS = \
 	GrayPixmap.o \
 	Grip.o \
 	Label.o \
+	List.o \
 	Load.o \
 	Logo.o \
 	Mailbox.o \
