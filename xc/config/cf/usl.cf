@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: att.cf,v 1.11 91/03/23 16:53:12 rws Exp $
+XCOMM platform:  $XConsortium: att.cf,v 1.12 91/03/27 09:12:55 rws Exp $
 
 #define OSName			AT&T Unix System V Release 4.2
 XCOMM operating system:  OSName
@@ -9,5 +9,7 @@ XCOMM operating system:  OSName
 #define BootstrapCFlags		-Datt
 #define NeedWidePrototypes	NO	/* experimental */
 #define DefaultCCOptions	-Xc
-#define BuildServer		NO
+#define ServerOSDefines		-DSYSV386 -DATT
+#define X386Server		YES
+#define BuildFonts		NO	/* XXX remove in R5 */
 #include <sv4Lib.rules>
