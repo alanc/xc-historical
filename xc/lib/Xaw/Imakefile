@@ -28,8 +28,6 @@ HEADERS = \
 	LabelP.h \
 	List.h \
 	ListP.h \
-	Load.h \
-	LoadP.h \
 	Logo.h \
 	LogoP.h \
 	Mailbox.h \
@@ -44,6 +42,8 @@ HEADERS = \
 	SimpleP.h \
 	SimpleMenu.h \
 	SimpleMenP.h \
+	StripChart.h \
+	StripCharP.h \
 	Template.c \
 	Template.h \
 	TemplateP.h \
@@ -68,7 +68,6 @@ SRCS = \
 	Grip.c \
 	Label.c \
 	List.c \
-	Load.c \
 	Logo.c \
 	Mailbox.c \
 	MenuButton.c \
@@ -76,6 +75,7 @@ SRCS = \
 	Scroll.c \
 	Simple.c \
 	SimpleMenu.c \
+	StripChart.c \
 	Text.c \
         TextAction.c \
         TextPop.c \
@@ -96,7 +96,6 @@ OBJS = \
 	Grip.o \
 	Label.o \
 	List.o \
-	Load.o \
 	Logo.o \
 	Mailbox.o \
 	MenuButton.o \
@@ -104,6 +103,7 @@ OBJS = \
 	Scroll.o \
 	Simple.o \
 	SimpleMenu.o \
+	StripChart.o \
 	Text.o \
         TextAction.o \
 	TextPop.o \
