@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.3 87/08/14 12:19:30 newman Locked $ */
+/* $Header: extension.c,v 2.3 87/08/18 17:35:28 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -169,6 +169,7 @@ ProcListExtensions(client)
 {
     xListExtensionsReply reply;
     char *bufptr, *buffer;
+    int total_length = 0;
 
     REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
@@ -180,15 +181,16 @@ ProcListExtensions(client)
     if ( NumExtensions )
     {
         register int i;	
-        int len = 0;
 
         for (i=0;  i<NumExtensions; i++)
-	    len += strlen(extensions[i].name) + 1;
-        reply.length = (len + 3) >> 2;
-	buffer = bufptr = (char *)ALLOCATE_LOCAL(len);
+	    total_length += strlen(extensions[i].name) + 1;
+
+        reply.length = (total_length + 3) >> 2;
+	buffer = bufptr = (char *)ALLOCATE_LOCAL(total_length);
         for (i=0;  i<NumExtensions; i++)
         {
-	    *bufptr++ = len = strlen(extensions[i].name);
+	    int len;
+            *bufptr++ = len = strlen(extensions[i].name);
 	    bcopy(extensions[i].name, bufptr,  len);
 	    bufptr += len;
 	}
@@ -196,7 +198,7 @@ ProcListExtensions(client)
     WriteReplyToClient(client, sizeof(xListExtensionsReply), &reply);
     if (reply.length)
     {
-        WriteToClient(client, reply.length << 2, buffer);
+        WriteToClient(client, total_length, buffer);
 	DEALLOCATE_LOCAL(buffer);
     }
     return(client->noClientException);
