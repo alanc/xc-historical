@@ -10,21 +10,25 @@
 static Bool drawToGPX = False;
 static Pixmap tileToQuery = None;
 
+static char *foreground = NULL;
+static char *background = NULL;
+int fgPixel, bgPixel;
+
 #ifdef VMS
 
 typedef struct _vms_time {
-     unsigned long low;
-     unsigned long high;
+    unsigned long low;
+    unsigned long high;
 }vms_time;
 
 struct timeval {
-       long tv_sec;        /* seconds since Jan. 1, 1970 */
-       long tv_usec;  /* and microseconds */
+    long tv_sec;        /* seconds since Jan. 1, 1970 */
+    long tv_usec;  /* and microseconds */
 };
 
 struct timezone {
-       int  tz_minuteswest;     /* of Greenwich */
-       int  tz_dsttime;    /* type of dst correction to apply */
+    int  tz_minuteswest;     /* of Greenwich */
+    int  tz_dsttime;    /* type of dst correction to apply */
 };
 
 
@@ -174,6 +178,8 @@ void usage()
 "    -repeat <n>\t		do tests <n> times (default = 5)",
 "    -draw			draw after each test -- pmax only",
 "    -all			do all tests",
+"    -fg			the foreground color to use",
+"    -bg		        the background color to use",
 NULL};
 
     fflush(stdout);
@@ -222,18 +228,17 @@ Window CreatePerfWindow(d, x, y, width, height)
 
     xswa.override_redirect = True;
     w = XCreateSimpleWindow (
-	    d, RootWindow (d, 0), x, y, width, height, 1,
-	    BlackPixel (d, 0), WhitePixel (d, 0));
+	    d, RootWindow (d, 0), x, y, width, height, 1, fgPixel, bgPixel);
     XChangeWindowAttributes (d, w, CWOverrideRedirect, &xswa);
     XMapWindow (d, w);
     return w;
 }
 
-void CreatePerfStuff(d, count, width, height, w, whitegc, blackgc)
+void CreatePerfStuff(d, count, width, height, w, bggc, fggc)
     Display *d;
     int width, height, count;
     Window *w;
-    GC *whitegc, *blackgc;
+    GC *bggc, *fggc;
 {
     XGCValues gcv;
     XSetWindowAttributes xswa;
@@ -244,31 +249,48 @@ void CreatePerfStuff(d, count, width, height, w, whitegc, blackgc)
 	w[i] = CreatePerfWindow(d, 50, 50, width, height);
     }
 
-    if (whitegc != NULL) {
-#ifdef new
-	gcv.foreground = WhitePixel(d, 0) ^ BlackPixel(d, 0);
+    if (bggc != NULL) {
+#ifdef testingxor
+	gcv.foreground = bgPixel ^ fgPixel;
 	gcv.background = ~gcv.foreground;
 	gcv.function = GXinvert;
-	gcv.plane_mask = WhitePixel(d, 0) ^ BlackPixel(d, 0);
-	*whitegc = XCreateGC(d, w[0],
+	gcv.plane_mask = bgPixel ^ fgPixel;
+	*bggc = XCreateGC(d, w[0],
 	  GCForeground | GCBackground | GCFunction | GCPlaneMask, &gcv);
 #else
-	gcv.foreground = WhitePixel(d, 0);
-	gcv.background = BlackPixel(d, 0);
-	*whitegc = XCreateGC(d, w[0], GCForeground | GCBackground , &gcv);
+# ifdef testingandor
+	gcv.foreground = 1;
+	gcv.background = 0;
+	gcv.function = GXor;
+	gcv.plane_mask = 1;
+	*bggc = XCreateGC(d, w[0],
+	  GCForeground | GCBackground | GCFunction | GCPlaneMask, &gcv);
+# else
+	gcv.foreground = bgPixel;
+	gcv.background = fgPixel;
+	*bggc = XCreateGC(d, w[0], GCForeground | GCBackground , &gcv);
+# endif
 #endif
     }
-    if (blackgc != NULL) {
-#ifdef new
-	gcv.foreground = WhitePixel(d, 0) ^ BlackPixel(d, 0);
+    if (fggc != NULL) {
+#ifdef testingxor
+	gcv.foreground = bgPixel ^ fgPixel;
 	gcv.background = ~gcv.foreground;
 	gcv.function = GXxor;
-	*blackgc = XCreateGC(d, w[0],
+	*fggc = XCreateGC(d, w[0],
 	  GCForeground | GCBackground | GCFunction, &gcv);
 #else
-	gcv.foreground = BlackPixel(d, 0);
-	gcv.background = WhitePixel(d, 0);
-	*blackgc = XCreateGC(d, w[0], GCForeground | GCBackground , &gcv);
+# ifdef testingandor
+	gcv.foreground = 0;
+	gcv.background = 1;
+	gcv.function = GXand;
+	*fggc = XCreateGC(d, w[0],
+	  GCForeground | GCBackground | GCFunction, &gcv);
+# else
+	gcv.foreground = fgPixel;
+	gcv.background = bgPixel;
+	*fggc = XCreateGC(d, w[0], GCForeground | GCBackground , &gcv);
+# endif
 #endif
     }
 }
@@ -293,34 +315,38 @@ main(argc, argv)
 	if (strcmp (argv[i], "-all") == 0) {
 	    ForEachTest (j)
 		test[j].doit = True;
-	    foundOne = True;;
+	    foundOne = True;
+	} else if (strcmp (argv[i], "-sync") == 0) {
+	    synchronous = True;
+	} else if (strcmp (argv[i], "-draw") == 0) {
+	    drawToGPX = True;
+	} else if (strcmp (argv[i], "-repeat") == 0) {
+	    if (argc <= i)
+		usage ();
+	    repeat = atoi (argv[++i]);
+	    if (repeat == 0)
+	       usage ();
+	} else if (strcmp(argv[i], "-fg") == 0) {
+	    if (argc <= i)
+		usage ();
+	    i++;
+	    foreground = argv[i];
+        } else if (strcmp(argv[i], "-bg") == 0) {
+	    if (argc <= i)
+		usage ();
+	    i++;
+	    background = argv[i];
+	} else {
+	    ForEachTest (j) {
+		if (strcmp (argv[i], test[j].option) == 0) {
+		    test[j].doit = True;
+		    goto LegalOption;
+		}
+	    }
+	    usage ();
+	LegalOption: 
+		foundOne = True;
 	}
-	else
-	    if (strcmp (argv[i], "-sync") == 0) {
-		synchronous = True;
-	    }
-	    else if (strcmp (argv[i], "-draw") == 0) {
-		drawToGPX = True;
-	    }
-	    else
-		if (strcmp (argv[i], "-repeat") == 0) {
-		    if (argc <= i)
-			usage ();
-		    repeat = atoi (argv[++i]);
-		    if (repeat == 0)
-			usage ();
-		}
-		else {
-		    ForEachTest (j) {
-			if (strcmp (argv[i], test[j].option) == 0) {
-			    test[j].doit = True;
-			    goto LegalOption;
-			}
-		    }
-		    usage ();
-	    LegalOption: 
-		    foundOne = True;
-		}
     }
     if (!foundOne)
 	usage ();
@@ -339,6 +365,33 @@ main(argc, argv)
     if (drawToGPX) {
         tileToQuery = XCreatePixmap(display, root, 32, 32, 1);
     }
+
+
+    fgPixel = BlackPixel(display, 0);
+    bgPixel = WhitePixel(display, 0);
+    if (foreground != NULL) {
+	/* Try to allocate a foreground color as specified */
+	XColor def, cdef;
+	if (XAllocNamedColor(display,
+		XDefaultColormap(display, DefaultScreen(display)),
+		foreground, &def, &cdef)) {
+	    fgPixel = def.pixel;
+	} else {
+	    (void) fprintf(stderr, "Cannot allocate color %s\n", foreground);
+	}
+    }
+    if (background != NULL) {
+	/* Try to allocate a background color as specified */
+	XColor def, cdef;
+	if (XAllocNamedColor(display,
+		XDefaultColormap(display, DefaultScreen(display)),
+		background, &def, &cdef)) {
+	    bgPixel = def.pixel;
+	} else {
+	    (void) fprintf(stderr, "Cannot allocate color %s\n", background);
+	}
+    }
+
     if (synchronous)
 	XSynchronize (display, True);
     ForEachTest (i) {
