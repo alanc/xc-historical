@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.112 89/11/08 17:43:39 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.113 89/11/10 17:37:40 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -51,9 +51,9 @@ SOFTWARE.
 
 #ifndef IncludePrototypes
 # if defined(__STDC__) || defined(__cplusplus)
-# define IncludePrototypes 1
+#  define IncludePrototypes 1
 # else
-# define IncludePrototypes 0
+#  define IncludePrototypes 0
 # endif /*__STDC__*/
 #endif /*IncludePrototypes*/
 
