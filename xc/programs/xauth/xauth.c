@@ -24,11 +24,23 @@
 
 #include "xauth.h"
 
-char *ProgramName;
-char *authfile = NULL;
-FILE *authfp = NULL;
-int process_command(), process_script();
+/*
+ * global data
+ */
+char *ProgramName;			/* argv[0], set at top of main() */
+char *authfile = NULL;			/* filename of cookie file */
+FILE *authfp = NULL;			/* cookie file */
+Bool okay_to_use_stdin = True;		/* set to false after using */
 
+
+/*
+ * local data
+ */
+
+
+/*
+ * utility routines
+ */
 static void usage ()
 {
     static char *help[] = {
@@ -59,12 +71,18 @@ NULL };
     exit (1);
 }
 
+
+/*
+ * The main routine - parses command line and calls action procedures
+ */
 main (argc, argv)
     int argc;
     char *argv[];
 {
     int i;
     int errors = 0;
+    int cmdarg = 0;
+    Bool initialized = False;
 
     ProgramName = argv[0];
 
@@ -85,10 +103,18 @@ main (argc, argv)
 		continue;
 	      case 'c':			/* -c "command arg" */
 		if (++i >= argc) usage ();
-		errors += process_command (argv[i]);
+		if (!initialized) {
+		    initialize_auth ();
+		    initialized = True;
+		}
+		errors += process_command ("argv[]", ++cmdarg, argv[i]);
 		continue;
 	      case 's':			/* -s script */
 		if (++i >= argc) usage ();
+		if (!initialized) {
+		    initialize_auth ();
+		    initialized = True;
+		}
 		errors += process_script (argv[i]);
 		continue;
 	      default:
@@ -103,14 +129,3 @@ main (argc, argv)
 }
 
 
-int process_command (cmd)
-    char *cmd;
-{
-    return 0;
-}
-
-int process_script (script)
-    char *script;
-{
-    return 0;
-}
