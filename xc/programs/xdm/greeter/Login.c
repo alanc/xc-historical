@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.21 89/12/12 13:58:52 rws Exp $
+ * $XConsortium: Login.c,v 1.22 90/04/25 18:24:47 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,6 +26,9 @@
 
 # include <X11/IntrinsicP.h>
 # include <X11/StringDefs.h>
+# include <X11/Quarks.h>
+# include <X11/keysym.h>
+
 
 # include "LoginP.h"
 
@@ -616,9 +619,29 @@ InsertChar (ctx, event)
     XorCursor (ctx);
 }
 
+/*ARGSUSED*/
+static void FetchDisplayArg(widget, size, value)
+    Widget widget;
+    Cardinal *size;
+    XrmValue* value;
+{
+    value->size = sizeof(Display*);
+    value->addr = (caddr_t)&DisplayOfScreen(XtScreenOfObject(widget));
+}
+
+static XtConvertArgRec displayConvertArg[] = {
+    {XtProcedureArg, (XtPointer)FetchDisplayArg, 0},
+};
+
+static Boolean	CvtStringToFontStruct ();
+static void	FreeFontStruct();
+
 static void
 ClassInitialize ()
 {
+    XtSetTypeConverter( XtRString, XtRFontStruct, CvtStringToFontStruct,
+			displayConvertArg, XtNumber(displayConvertArg),
+			XtCacheByDisplay, FreeFontStruct);
 }
 
 /* ARGSUSED */
@@ -626,7 +649,7 @@ static void Initialize (greq, gnew)
     Widget greq, gnew;
 {
     LoginWidget w = (LoginWidget)gnew;
-    XtGCMask	valuemask;
+    XtGCMask	valuemask, xvaluemask;
     XGCValues	myXGCV;
     Arg		position[2];
     Position	x, y;
@@ -644,8 +667,8 @@ static void Initialize (greq, gnew)
 
     myXGCV.foreground = w->login.textpixel ^ w->core.background_pixel;
     myXGCV.function = GXxor;
-    valuemask |= GCFunction;
-    w->login.xorGC = XtGetGC (gnew, valuemask, &myXGCV);
+    xvaluemask = valuemask | GCFunction;
+    w->login.xorGC = XtGetGC (gnew, xvaluemask, &myXGCV);
 
     /*
      * Note that the second argument is a GCid -- QueryFont accepts a GCid and
@@ -656,27 +679,35 @@ static void Initialize (greq, gnew)
 	w->login.font = XQueryFont (XtDisplay (w),
 		XGContextFromGC (DefaultGCOfScreen (XtScreen (w))));
 
+    xvaluemask = valuemask;
     if (w->login.promptFont == NULL)
         w->login.promptFont = w->login.font;
+    else
+	xvaluemask |= GCFont;
 
-    if (w->login.greetFont == NULL)
-    	w->login.greetFont = w->login.font;
-
-    if (w->login.failFont == NULL)
-	w->login.failFont = w->login.font;
-
-    valuemask = GCForeground | GCBackground | GCFont;
     myXGCV.foreground = w->login.promptpixel;
     myXGCV.font = w->login.promptFont->fid;
-    w->login.promptGC = XtGetGC (gnew, valuemask, &myXGCV);
+    w->login.promptGC = XtGetGC (gnew, xvaluemask, &myXGCV);
+
+    xvaluemask = valuemask;
+    if (w->login.greetFont == NULL)
+    	w->login.greetFont = w->login.font;
+    else
+	xvaluemask |= GCFont;
 
     myXGCV.foreground = w->login.greetpixel;
     myXGCV.font = w->login.greetFont->fid;
-    w->login.greetGC = XtGetGC (gnew, valuemask, &myXGCV);
+    w->login.greetGC = XtGetGC (gnew, xvaluemask, &myXGCV);
+
+    xvaluemask = valuemask;
+    if (w->login.failFont == NULL)
+	w->login.failFont = w->login.font;
+    else
+	xvaluemask |= GCFont;
 
     myXGCV.foreground = w->login.failpixel;
     myXGCV.font = w->login.failFont->fid;
-    w->login.failGC = XtGetGC (gnew, valuemask, &myXGCV);
+    w->login.failGC = XtGetGC (gnew, xvaluemask, &myXGCV);
 
     w->login.data.name[0] = '\0';
     w->login.data.passwd[0] = '\0';
@@ -832,3 +863,148 @@ LoginClassRec loginClassRec = {
 
 WidgetClass loginWidgetClass = (WidgetClass) &loginClassRec;
 
+/*
+ * Gratuitously copied from lib/Xt/Converters.c which was arbitrarily
+ * changed for R4 to call XtAppErrorMsg (which calls exit) instead of
+ * simply failing the conversion.
+ */
+
+#define	done(type, value, ret) \
+	{							\
+	    if (toVal->addr != NULL) {				\
+		if (toVal->size < sizeof(type)) {		\
+		    toVal->size = sizeof(type);			\
+		    return False;				\
+		}						\
+		*(type*)(toVal->addr) = (value);		\
+	    }							\
+	    else {						\
+		static type static_val;				\
+		static_val = (value);				\
+		toVal->addr = (XtPointer)&static_val;		\
+	    }							\
+	    toVal->size = sizeof(type);				\
+	    return (ret);					\
+	}
+
+
+static int CompareISOLatin1 (first, second)
+    char *first, *second;
+{
+    register unsigned char *ap, *bp;
+
+    for (ap = (unsigned char *) first, bp = (unsigned char *) second;
+	 *ap && *bp; ap++, bp++) {
+	register unsigned char a, b;
+
+	if ((a = *ap) != (b = *bp)) {
+	    /* try lowercasing and try again */
+
+	    if ((a >= XK_A) && (a <= XK_Z))
+	      a += (XK_a - XK_A);
+	    else if ((a >= XK_Agrave) && (a <= XK_Odiaeresis))
+	      a += (XK_agrave - XK_Agrave);
+	    else if ((a >= XK_Ooblique) && (a <= XK_Thorn))
+	      a += (XK_oslash - XK_Ooblique);
+
+	    if ((b >= XK_A) && (b <= XK_Z))
+	      b += (XK_a - XK_A);
+	    else if ((b >= XK_Agrave) && (b <= XK_Odiaeresis))
+	      b += (XK_agrave - XK_Agrave);
+	    else if ((b >= XK_Ooblique) && (b <= XK_Thorn))
+	      b += (XK_oslash - XK_Ooblique);
+
+	    if (a != b) break;
+	}
+    }
+    return (((int) *bp) - ((int) *ap));
+}
+
+/*ARGSUSED*/
+static Boolean
+CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*	dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+    XtPointer	*closure_ret;
+{
+    XFontStruct	    *f;
+    Display*	display;
+
+    if (*num_args != 1)
+     XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+	     "wrong parameters","cvtStringToFontStruct","XtToolkitError",
+             "String to font conversion needs display argument",
+              (String *) NULL, (Cardinal *)NULL);
+
+    display = *(Display**)args[0].addr;
+
+    if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
+	f = XLoadQueryFont(display, (char *)fromVal->addr);
+	if (f != NULL) {
+  Done:	    done( XFontStruct*, f, True);
+	}
+
+	XtDisplayStringConversionWarning( dpy, (char*)fromVal->addr,
+					  "FontStruct" );
+    }
+
+    /* try and get the default font */
+
+    {
+	XrmName xrm_name[2];
+	XrmClass xrm_class[2];
+	XrmRepresentation rep_type;
+	XrmValue value;
+
+	xrm_name[0] = XrmStringToName ("xtDefaultFont");
+	xrm_name[1] = NULL;
+	xrm_class[0] = XrmStringToClass ("XtDefaultFont");
+	xrm_class[1] = NULL;
+	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
+			    &rep_type, &value)) {
+	    if (rep_type == XtQString) {
+		f = XLoadQueryFont(display, (char*)value.addr);
+		if (f != NULL)
+		    goto Done;
+		else {
+		    XtDisplayStringConversionWarning( dpy, (char*)value.addr,
+						      "FontStruct" );
+		}
+	    } else if (rep_type == XtQFont) {
+		f = XQueryFont(dpy, *(Font*)value.addr );
+		if (f != NULL) goto Done;
+	    } else if (rep_type == XtQFontStruct) {
+		f = (XFontStruct*)value.addr;
+		goto Done;
+	    }
+	}
+    }
+    /* Should really do XListFonts, but most servers support this */
+    f = XLoadQueryFont(dpy,"-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
+    if (f != NULL)
+	goto Done;
+
+    done ( XFontStruct*, f, False );
+}
+
+/* ARGSUSED */
+static void FreeFontStruct(app, toVal, closure, args, num_args)
+    XtAppContext app;
+    XrmValuePtr	toVal;
+    XtPointer	closure;	/* unused */
+    XrmValuePtr	args;
+    Cardinal	*num_args;
+{
+    Display *display;
+    if (*num_args != 1)
+     XtAppErrorMsg(app,
+	     "wrong parameters","freeFontStruct","XtToolkitError",
+             "Free FontStruct requires display argument",
+              (String *) NULL, (Cardinal *)NULL);
+
+    display = *(Display**)args[0].addr;
+    XFreeFont( display, *(XFontStruct**)toVal->addr );
+}
