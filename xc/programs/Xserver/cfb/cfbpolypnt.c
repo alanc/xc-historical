@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.1 89/08/22 18:50:49 rws Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.2 89/08/28 14:42:59 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -50,6 +50,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register int *addr;
     unsigned long mask;
 #endif
+    int	x1, x2, y1, y2;
 
     if ((mode == CoordModePrevious) && (npt > 1))
     {
@@ -80,12 +81,16 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	     --nbox >= 0;
 	     pbox++)
 	{
+	    x1 = pbox->x1;
+	    x2 = pbox->x2;
+	    y1 = pbox->y1;
+	    y2 = pbox->y2;
 	    for (ppt = pptInit, i = npt; --i >= 0; ppt++)
 	    {
 		x = ppt->x + pDrawable->x;
 		y = ppt->y + pDrawable->y;
-		if ((x >= pbox->x1) && (x < pbox->x2) &&
-		    (y >= pbox->y1) && (y < pbox->y2))
+		if ((x >= x1) && (x < x2) &&
+		    (y >= y1) && (y < y2))
 		{
 		    addrb = (char *)(addrl) + (y << nlwidth) + x;
 		    *addrb = pixel;
@@ -102,12 +107,16 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	 --nbox >= 0;
 	 pbox++)
     {
+	x1 = pbox->x1;
+	x2 = pbox->x2;
+	y1 = pbox->y1;
+	y2 = pbox->y2;
 	for (ppt = pptInit, i = npt; --i >= 0; ppt++)
 	{
 	    x = ppt->x + pDrawable->x;
 	    y = ppt->y + pDrawable->y;
-	    if ((x >= pbox->x1) && (x < pbox->x2) &&
-		(y >= pbox->y1) && (y < pbox->y2))
+	    if ((x >= x1) && (x < x2) &&
+		(y >= y1) && (y < y2))
 	    {
 #if PPW == 4
 		addrb = (char *)(addrl) + (y * nlwidth) + x;
