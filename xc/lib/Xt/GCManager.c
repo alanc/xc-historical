@@ -28,6 +28,7 @@ typedef struct _GCrec {
     Display	*dpy;		/* Display for GC */
     Screen	*screen;	/* Screen for GC */
     int		depth;		/* Depth for GC */
+    int         ref_count;      /* # of shareholders */
     GC 		gc;		/* The GC itself. */
     int 	valueMask;	/* What fields are being used right now. */
     XGCValues 	values;		/* What values those fields have. */
@@ -50,7 +51,7 @@ static int Matches(ptr,widget, valueMask, v)
     register XGCValues *p = &(ptr->values);
 
     if (ptr->valueMask != valueMask) return 0;
-    if (ptr->depth == widget->core.depth) return 0;
+    if (ptr->depth != widget->core.depth) return 0;
     if (ptr->screen != XtScreen(widget)) return 0;
 
     CheckGCField( GCFunction,		function);
@@ -136,6 +137,7 @@ GC XtGetGC(widget, valueMask, values)
 	if (Matches(cur, widget,valueMask, values)) {
 	    valueMask &= ~cur->valueMask;
 	    if (valueMask) SetFields(cur, valueMask, values);
+            cur->ref_count++;
 	    return cur->gc;
 	}
     }
@@ -143,6 +145,7 @@ GC XtGetGC(widget, valueMask, values)
     cur->dpy = XtDisplay(widget);
     cur->screen = XtScreen(widget);
     cur->depth = widget->core.depth;
+    cur->ref_count = 1;
     if (XtWindow(widget) == NULL)
 	drawable = XCreatePixmap(XtDisplay(widget), XtScreen(widget)->root,
 			1,1,widget->core.depth);
@@ -155,10 +158,16 @@ GC XtGetGC(widget, valueMask, values)
     return cur->gc;
 }
 
-void
-XtDestroyGC(widget, gc)
-Widget widget;
-GC gc;
+void  XtDestroyGC(widget, gc)
+    Widget widget;
+    GC gc;
 {
+    GCptr first=GClist;
+    GCptr cur;
+    
+    for (cur = first; cur != NULL; cur = cur->next) 
+      if (cur->gc = gc) 
+         if (--(cur->ref_count) == 0) XFreeGC(gc);     
+    return;
 }
 
