@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.32 90/08/08 14:54:22 swick Exp $
+ * $XConsortium: folder.c,v 2.33 91/02/07 16:30:24 rws Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -28,15 +28,12 @@
 /* folder.c -- implement buttons relating to folders and other globals. */
 
 
-#include <X11/Xos.h>
+#include "xmh.h"
+#include <X11/Xaw/Cardinals.h>
 #include <sys/stat.h>
 #include <ctype.h>
-#include "xmh.h"
 #include "bboxint.h"
 #include "tocintrnl.h"
-#include <X11/Xaw/Cardinals.h>
-extern void exit();
-extern void free();
 
 typedef struct {	/* client data structure for callbacks */
     Scrn	scrn;		/* the xmh scrn of action */
