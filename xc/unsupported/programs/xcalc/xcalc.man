@@ -380,6 +380,18 @@ for monochrome displays, and ``off'' for color displays.
 \fBcursor\fR (Class \fBCursor\fR)
 The name of the symbol used to represent the pointer.
 The default is ``hand2''.
+.fi
+.SH COLORS
+If you would like xcalc to use its ti colors, include the following 
+in the #ifdef COLOR section of the file you read with xrdb:
+.sp 1
+*customization:                 -color
+.sp 1
+.br
+This will cause xcalc to pick up the colors in the app-defaults color
+customization file:
+/usr/lib/X11/app-defaults/XCalc-color.
+.fi
 .SH "SEE ALSO"
 X(1), xrdb(1), the Athena Widget Set
 .SH BUGS
