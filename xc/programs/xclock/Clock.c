@@ -63,7 +63,7 @@ static Resource resources[] = {
 
 #undef offset
 
-extern void Initialize(), Realize(), Resize(), Redisplay(), SetValues();
+extern void Initialize(), Realize(), Destroy(), Resize(), Redisplay(), SetValues();
 
 ClockWidgetClassData clockWidgetClassData = {
     { /* core fields */
@@ -78,7 +78,7 @@ ClockWidgetClassData clockWidgetClassData = {
     /* xrm_extra */     NULL,
     /* xrm_class */     NULL,
     /* visible_interest */ FALSE,
-    /* destroy */       NULL,
+    /* destroy */       Destroy,
     /* resize */        Resize,
     /* expose */	Redisplay,
     /* set_values */    SetValues,
@@ -183,6 +183,17 @@ static void Realize (w, valueMask, attrs)
           CopyFromParent, InputOutput, CopyFromParent, valueMask, attrs);
      Resize(w);
 }
+
+static void Destroy (w)
+     ClockWidget w;
+{
+     XtRemoveTimeOut (w->clock.interval_id);
+     XtDestroyGC (w, w->clock.myGC);
+     XtDestroyGC (w, w->clock.HighGC);
+     XtDestroyGC (w, w->clock.HandGC);
+     XtDestroyGC (w, w->clock.EraseGC);
+}
+
 
 static void clock_tic(w)
         ClockWidget w;
