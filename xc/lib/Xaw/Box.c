@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Box.c,v 1.25 88/02/11 17:19:37 rws Exp $";
+static char rcsid[] = "$Header: Box.c,v 1.26 88/02/14 13:58:35 rws Exp $";
 #endif lint
 
 /*
@@ -61,17 +61,17 @@ static void Resize();
 static Boolean SetValues();
 static XtGeometryResult GeometryManager();
 static void ChangeManaged();
-static void ClassInitialize();
+static void ClassPartInitialize();
+static void RefigureLayout();
 
-#define superclass	(&compositeClassRec)
 BoxClassRec boxClassRec = {
   {
 /* core_class fields      */
-    /* superclass         */    (WidgetClass) superclass,
+    /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "Box",
     /* widget_size        */    sizeof(BoxRec),
-    /* class_initialize   */    ClassInitialize,
-    /* class_part_init    */	NULL,
+    /* class_initialize   */    NULL,
+    /* class_part_init    */	ClassPartInitialize,
     /* class_inited       */	FALSE,
     /* initialize         */    Initialize,
     /* initialize_hook    */	NULL,
@@ -100,12 +100,13 @@ BoxClassRec boxClassRec = {
 /* composite_class fields */
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
-    /* insert_child	  */	NULL,	/* Inherit from superclass */
-    /* delete_child	  */	NULL,	/* Inherit from superclass */
+    /* insert_child	  */	XtInheritInsertChild,
+    /* delete_child	  */	XtInheritDeleteChild,
     /* move_focus_to_next */    NULL,
     /* move_focus_to_prev */    NULL
   },{
-    /* mumble		  */	0	/* Make C compiler happy   */
+/* Box class fields */
+    /* do_layout	  */	RefigureLayout,
   }
 };
 
@@ -117,15 +118,6 @@ WidgetClass boxWidgetClass = (WidgetClass)&boxClassRec;
  * Private Routines
  *
  ****************************************************************/
-
-static void ClassInitialize()
-{
-#define Inherit(method) \
-    boxClassRec.method = superclass->method;
-
-    Inherit(composite_class.insert_child);
-    Inherit(composite_class.delete_child);
-}
 
 /*
  *
@@ -392,9 +384,25 @@ static XtGeometryResult GeometryManager(w, request, reply)
 static void ChangeManaged(w)
     Widget w;
 {
+    XtBoxDoLayout(w);
+}
+
+static void RefigureLayout(w)
+    Widget w;
+{
     /* Reconfigure the box */
     (void) TryNewLayout((BoxWidget)w);
     Resize(w);
+}
+
+static void ClassPartInitialize(widget_class)
+    WidgetClass widget_class;
+{
+    register BoxWidgetClass wc = (BoxWidgetClass)widget_class;
+    BoxWidgetClass super = (BoxWidgetClass)wc->core_class.superclass;
+
+    if (wc->box_class.do_layout == XtInheritBoxDoLayout)
+	wc->box_class.do_layout = super->box_class.do_layout;
 }
 
 /* ARGSUSED */
@@ -436,3 +444,11 @@ static Boolean SetValues(current, request, new)
 }
 
     
+/* Public Routines */
+
+void XtBoxDoLayout(widget)
+    Widget widget;
+{
+    (*((BoxWidgetClass)widget->core.widget_class)->
+        box_class.do_layout) (widget);
+}

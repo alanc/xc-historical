@@ -1,5 +1,5 @@
 /*
-* $Header: Box.h,v 1.6 88/01/22 11:14:38 swick Locked $
+* $Header: Box.h,v 1.7 88/01/22 20:21:31 swick Exp $
 */
 
 /*
@@ -63,5 +63,11 @@ extern WidgetClass boxWidgetClass;
 typedef struct _BoxClassRec *BoxWidgetClass;
 typedef struct _BoxRec      *BoxWidget;
 
-#endif _XtBox_h
+/* Public routines */
 
+extern void XtBoxDoLayout();	/* w */
+    /* Widget w;	*/
+
+#define XtInheritBoxDoLayout ((XtWidgetProc)_XtInherit)
+
+#endif _XtBox_h
