@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndrPick.c,v 1.2 92/04/23 16:16:54 hersh Exp $ */
+/* $XConsortium: pexRndrPick.c,v 1.3 92/08/12 15:15:05 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -107,9 +107,14 @@ pexEndPickOneReq        *strmPtr;
     err = EndPickOne(prend, pPEXBuffer, &(reply->numPickElRefs),
 		     &(reply->pickStatus), &(reply->betterPick));
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    err = EndPicking(prend);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
     {
 	reply->length = LWORDS(pPEXBuffer->dataSize);
 	WritePEXBufferReply(pexEndPickOneReply);
+
     }
     return( err );
 } /* end-PEXEndPickOne() */
@@ -207,11 +212,12 @@ pexEndPickAllReq        *strmPtr;
 
     err = EndPickAll(prend, pPEXBuffer);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    err = EndPicking(prend);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
     {
 	SETUP_VAR_REPLY(pexEndPickAllReply);
-	/* this line for debug purposes */
-	reply->numPicked = 0;
-
 	WritePEXBufferReply(pexEndPickAllReply);
     }
     return( err );
@@ -252,8 +258,6 @@ pexPickAllReq           *strmPtr;
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
     {
 	SETUP_VAR_REPLY(pexPickAllReply);
-	/* this line for debug purposes */
-	reply->numPicked = 0;
 
 	WritePEXBufferReply(pexPickAllReply);
     }
