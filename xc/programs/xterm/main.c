@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.151 90/06/08 14:04:37 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.152 90/06/08 14:06:46 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -258,7 +258,7 @@ struct _xttymodes {
 #define XTTYMODE_weras 14
 { "lnext", 5, 0, '\0' },		/* ltchars.t_lnextc */
 #define XTTYMODE_lnext 15
-#define NXTTYMODES 16
+{ NULL, 0, 0, '\0' },			/* end of data */
 };
 
 #ifdef USE_SYSV_UTMP
@@ -686,8 +686,7 @@ char **argv;
 	 * fill in terminal modes
 	 */
 	if (resource.tty_modes) {
-	    int n = parse_tty_modes (resource.tty_modes,
-				     ttymodelist, NXTTYMODES);
+	    int n = parse_tty_modes (resource.tty_modes, ttymodelist);
 	    if (n < 0) {
 		fprintf (stderr, "%s:  bad tty modes \"%s\"\n",
 			 ProgramName, resource.tty_modes);
@@ -2364,10 +2363,9 @@ remove_termcap_entry (buf, str)
  * where setting consists of the words in the modelist followed by a character
  * or ^char.
  */
-static int parse_tty_modes (s, modelist, nmodes)
+static int parse_tty_modes (s, modelist)
     char *s;
     struct _xttymodes *modelist;
-    int nmodes;
 {
     struct _xttymodes *mp;
     int c, i;
