@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.10 90/02/09 10:12:04 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.11 90/10/06 13:57:08 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -186,6 +186,77 @@ miGetArcEdge(arc, edge, k, top, left)
     }
 }
 
+void
+miEllipseAngleToSlope (angle, width, height, dxp, dyp, d_dxp, d_dyp)
+    int	    angle;
+    int	    width;
+    int	    height;
+    int	    *dxp;
+    int	    *dyp;
+    double  *d_dxp;
+    double  *d_dyp;
+{
+    int	    dx, dy;
+    double  d_dx, d_dy, scale;
+    Bool    negative_dx, negative_dy;
+
+    switch (angle) {
+    case 0:
+	*dxp = -1;
+	*dyp = 0;
+	*d_dxp = width / 2.0;
+	*d_dyp = 0;
+	break;
+    case QUADRANT:
+	*dxp = 0;
+	*dyp = 1;
+	*d_dxp = 0;
+	*d_dyp = - height / 2.0;
+	break;
+    case HALFCIRCLE:
+	*dxp = 1;
+	*dyp = 0;
+	*d_dxp = - width / 2.0;
+	*d_dyp = 0;
+	break;
+    case QUADRANT3:
+	*dxp = 0;
+	*dyp = -1;
+	*d_dxp = 0;
+	*d_dyp = height / 2.0;
+	break;
+    default:
+	negative_dx = FALSE;
+	d_dx = Dcos(angle) * width;
+	*d_dxp = d_dx / 2.0;
+	if (d_dx < 0.0)
+	{
+	    d_dx = -d_dx;
+	    negative_dx = TRUE;
+	}
+	negative_dy = FALSE;
+	d_dy = Dsin(angle) * height;
+	*d_dyp = - d_dy / 2.0;
+	if (d_dy < 0.0)
+	{
+	    d_dy = -d_dy;
+	    negative_dy = TRUE;
+	}
+	scale = d_dx;
+	if (d_dy > d_dx)
+	    scale = d_dy;
+	dx = floor ((d_dx * 32768) / scale + 0.5);
+	if (negative_dx)
+	    dx = -dx;
+	*dxp = dx;
+	dy = floor ((d_dy * 32768) / scale + 0.5);
+	if (negative_dy)
+	    dy = -dy;
+	*dyp = dy;
+	break;
+    }
+}
+
 static void
 miGetPieEdge(arc, angle, edge, top, left)
     register xArc *arc;
@@ -194,20 +265,21 @@ miGetPieEdge(arc, angle, edge, top, left)
     Bool top, left;
 {
     register int k, signdx, signdy;
-    double dx, dy, scale;
+    double d_dx, d_dy;
+    int	dx, dy;
 
-    if ((angle == 0) || (angle == HALFCIRCLE))
+    miEllipseAngleToSlope (angle, arc->width, arc->height, &dx, &dy, &d_dx, &d_dy);
+
+    if (dy == 0)
     {
-    horz:
 	edge->x = left ? -65536 : 65536;
 	edge->stepx = 0;
 	edge->e = 0;
 	edge->dx = -1;
 	return;
     }
-    if ((angle == QUADRANT) || (angle == QUADRANT3))
+    if (dx == 0)
     {
-    vert:
 	edge->x = arc->x + (arc->width >> 1);
 	if (left && (arc->width & 1))
 	    edge->x++;
@@ -218,36 +290,11 @@ miGetPieEdge(arc, angle, edge, top, left)
 	edge->dx = -1;
 	return;
     }
-    dy = Dsin(angle) * arc->height;
-    if (dy < 0.0)
-    {
-	dy = -dy;
-	signdy = -1;
-    }
-    else
-	signdy = 1;
-    dx = Dcos(angle) * arc->width;
-    if (dx < 0.0)
-    {
-	dx = -dx;
-	signdx = -1;
-    }
-    else
-	signdx = 1;
-    scale = (dx > dy) ? dx : dy;
-    edge->dx = floor((dx * 32768) / scale + .5);
-    if (!edge->dx) goto vert; /* gross */
-    edge->dy = floor((dy * 32768) / scale + .5);
-    if (!edge->dy) goto horz; /* gross */
-    if (signdx < 0)
-	edge->dx = -edge->dx;
-    if (signdy < 0)
-	edge->dx = -edge->dx;
-    k = (arc->height & 1) ? edge->dx : 0;
+    k = (arc->height & 1) ? dx : 0;
     if (arc->width & 1)
-	k += edge->dy;
-    edge->dx <<= 1;
-    edge->dy <<= 1;
+	k += dy;
+    edge->dx = dx << 1;
+    edge->dy = dy << 1;
     miGetArcEdge(arc, edge, k, top, left);
 }
 
