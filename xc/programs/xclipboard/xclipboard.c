@@ -1,4 +1,4 @@
-/* $XConsortium: xclipboard.c,v 1.1 88/10/11 12:46:47 swick Exp $ */
+/* $XConsortium: xclipboard.c,v 1.1 88/10/14 17:42:34 swick Exp $ */
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Form.h>
@@ -178,7 +178,8 @@ static void LoseSelection(w, selection)
 
 static void Quit(w, client_data, call_data)
     Widget w;
-    caddr_t client_data, call_data;
+    caddr_t client_data;
+    caddr_t call_data;
 {
     XtCloseDisplay( XtDisplay(w) );
     exit( 0 );
@@ -219,6 +220,7 @@ char **argv;
 	exit(1);
     }
     fclose(f);
+
     textArgs[0].value = (XtArgVal)file;
     if (app_resources.word_wrap) textArgs[1].value |= wordBreak;
 
@@ -226,6 +228,7 @@ char **argv;
 				  p, textArgs, XtNumber(textArgs) );
 
     XtRealizeWidget(top);
+    unlink(file);
 
     (void)XmuInternAtom( XtDisplay(text), XmuMakeAtom("NULL") ); /* %%% */
     XtOwnSelection(text, XA_CLIPBOARD(XtDisplay(text)), CurrentTime,
