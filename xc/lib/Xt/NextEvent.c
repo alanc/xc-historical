@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: NextEvent.c,v 1.7 87/09/11 21:24:17 swick Locked $";
 #endif lint
 
 /*
@@ -34,6 +34,7 @@ static char rcsid[] = "$Header$";
 #include <sys/param.h>
 #include "fd.h"
 
+extern int errno;
 extern void CallCallbacks(); /* gotten from Intrinsic.c, should be in .h ||| */
 extern void RemoveAllCallbacks(); /* from Intrinsic.c, should be in .h ||| */
 
