@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.9 94/02/08 11:48:30 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.10 94/02/08 11:50:14 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -759,8 +759,7 @@ char **argv;
     if ((smcConn = SmcOpenConnection (NULL, &callbacks,
 	appResources.smid, &clientId, 256, errorString)) == NULL)
     {
-	if (appResources.verbose)
-	    printf ("%s\n", errorString);
+	printf ("%s\n", errorString);
 	return (0);
     }
 
