@@ -1,5 +1,5 @@
 /*
- * $XConsortium: glyphs.cxx,v 1.3 94/04/01 16:47:58 matt Exp $
+ * $XConsortium: glyphs.cxx,v 1.4 94/04/07 11:29:34 matt Exp matt $
  */
 
 /*
@@ -196,7 +196,9 @@ void GlyphImpl::need_redraw() {
 	if (is_not_nil(a.damaged)) {
 	    RegionImpl r;
 	    extension(a, &r);
-	    a.damaged->extend(&r);
+	    if (r.defined_) {
+	        a.damaged->extend(&r);
+	    }
 	}
 	release_allocation_info(a);
     }
@@ -1008,6 +1010,7 @@ GlyphTraversalImpl::GlyphTraversalImpl(
     window_ = w;
     damage_ = damage;
     picked_ = nil;
+    hit_info_ = 0;
 }
 
 GlyphTraversalImpl::GlyphTraversalImpl(const GlyphTraversalImpl& t) {
