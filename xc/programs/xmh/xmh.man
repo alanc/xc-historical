@@ -3,11 +3,13 @@
 \fIxmh\fR \- X window interface to the mh Mail Handler
 .SH SYNOPSIS
 .B xmh
-[-path \fImailpath\fR] [-initial \fIfoldername\fR] [-flag] [\fItoolkitoptions\fR]
+[-path \fImailpath\fR] [-initial \fIfoldername\fR] [-flag] [-\fItoolkitoption\fR ...]
 .SH DESCRIPTION
-\fIXmh\fR is a program that provides a window-oriented front end to the mh
+The
+.I xmh
+program provides a window-oriented front end to the mh
 Mail Handler. It is designed to take advantage of a large graphical
-display and mouse; it will not function on an ordinary terminal at all.
+display and pointer; it will not function on an ordinary terminal at all.
 
 \fIXmh\fR consists of user-interface code only.  To actually do things
 with your mail, it makes calls to the \fImh\fR package.
@@ -87,23 +89,23 @@ entire length of the area is grey, then you are looking at all your data.
 If only the first half is grey, then you are looking at the top half of
 your data.
 
-You can use the mouse in the scrollbar to change what part of the data is
+You can use the pointer in the scrollbar to change what part of the data is
 visible.  If you click with the middle button, then the top of the grey
-area will move to where the mouse pointer is, and the corresponding
+area will move to where the pointer is, and the corresponding
 portion of data will be displayed.  If you hold down the middle button,
 you can drag around the grey area.  This makes it easy to get to the top
 of the data: just press with the middle, drag off the top of the
 scrollbar, and release.
 
-If you click with button 1, then the data to the right of the mouse
-pointer will scroll to the top of the window.  If you click with mouse
+If you click with button 1, then the data to the right of the
+pointer will scroll to the top of the window.  If you click with pointer
 button 3, then the data at the top of the window will scroll down to where
-the mouse pointer is.
+the pointer is.
 
 .SH BUTTONBOXES
 Any area consisting of many words or short phrases, each enclosed in a
 box, is called a \fIbuttonbox\fR.  Each box is actually a button that you
-can press by moving the mouse pointer onto it and pressing mouse button 1.
+can press by moving the pointer onto it and pressing pointer button 1.
 If a given buttonbox has more buttons in it than can fit, it will
 be displayed with a scrollbar, so you can always scroll to the button you
 want.
@@ -112,17 +114,17 @@ want.
 If you're not satisfied with the size of the various areas on the screen,
 they can easily be changed.  Near the right edge of the border between
 each region is a black box, called a \fIgrip\fR.  Simply point to that
-grip with the mouse pointer, press a mouse button, drag up or down, and
-release.  Exactly what happens depends on which mouse button you press.
+grip with the pointer, press a pointer button, drag up or down, and
+release.  Exactly what happens depends on which pointer button you press.
 
 If you drag with the middle button, then only that border will move.  This
 mode is simplest to understand, but is probably the least useful.
 
-If you drag with mouse button 1, then you are adjusting the size of
+If you drag with pointer button 1, then you are adjusting the size of
 the window above.  \fIXmh\fR will attempt to compensate by adjusting some
 window below it.
 
-If you drag with mouse button 3, then you are adjusting the size
+If you drag with pointer button 3, then you are adjusting the size
 of the window below.  \fIXmh\fR will attempt to compensate by adjusting
 some window above it.
 
@@ -162,7 +164,7 @@ screen at a time.
 .TP 8
 .B Create Folder
 Create a new folder.  You will be prompted for a name for the new folder;
-to enter the name, point the mouse at the blank box provided and type.
+to enter the name, point the pointer at the blank box provided and type.
 Hit the Confirm button when finished, or hit Abort to cancel this
 operation.
 .PP
@@ -174,9 +176,9 @@ CONFIRMATION WINDOWS).
 .SH HIGHLIGHTED MESSAGES, SELECTED MESSAGES
 .SH AND THE CURRENT MESSAGE
 It is possible to highlight a set of messages in the list of messages for the
-viewed folder.  To highlight a message, just click on it with mouse button 1.
+viewed folder.  To highlight a message, just click on it with pointer button 1.
 To highlight a range of messages, click on the first one with
-mouse button 1 and on the last one with mouse button 3.
+pointer button 1 and on the last one with pointer button 3.
 
 The selected messages are the same as the highlighted messages, if any.  If no
 messages are highlighted, then the selected messages are considered the same
@@ -338,12 +340,12 @@ mechanisms.  See the X Toolkit and Athena Widgets documentation for more details
 Whenever you are asked to enter any text, you will be using a standard
 text editing interface.  Various control and meta keystroke combinations
 are bound to a somewhat Emacs-like set of commands.  In addition, the
-mouse buttons may be used to select a portion of text or to move the
-insertion point in the text. Pressing mouse button 1 causes the
-insertion point to move to the mouse pointer.  Double-clicking
+pointer buttons may be used to select a portion of text or to move the
+insertion point in the text. Pressing pointer button 1 causes the
+insertion point to move to the pointer.  Double-clicking
 button 1 selects a word, triple-clicking selects a paragraph, and
 quadruple-clicking selects everything.  Any selection may be extended in
-either direction by using mouse button 3.
+either direction by using pointer button 3.
 
 In the following, a \fIline\fR refers to one displayed row of characters
 in the window.  A \fIparagraph\fR refers to the text between carriage
@@ -462,7 +464,7 @@ Move up to the previous screenfull of text.
 Stuff the last selected text here.  Note that this can be text selected in
 some other text subwindow.  Also, if you select some text in an xterm
 window, it may be inserted in an \fIxmh\fR window with this command.
-Pressing mouse button 2 is equivalent to this.
+Pressing pointer button 2 is equivalent to this.
 .PP
 .TP 8
 .B Meta-Z

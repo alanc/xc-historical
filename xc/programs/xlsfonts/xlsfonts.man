@@ -1,17 +1,17 @@
 .TH XLSFONTS 1 "1 March 1988" "X Version 11"
 .SH NAME
-xlsfonts - X window system font list displayer
+xlsfonts - server font list displayer for X
 .SH SYNOPSIS
 .B xlsfonts
 [-options ...] [pattern]
 .SH DESCRIPTION
 .I Xlsfonts
 lists the fonts that match the given \fIpattern\fP.
-Patterns may include "*" to match any sequence of characters (including
-no characters) and
-"?" to match any single character.  If no pattern is given, "*" is assumed.
+The wildcard character "*" may be used to match any sequence of
+characters (including none), and "?" to match any single character.
+If no pattern is given, "*" is assumed.
 .PP
-The wildcard characters "*" and "?" should be quoted to prevent them from
+The "*" and "?" characters must be quoted to prevent them from
 being expanded by the shell.
 .SH "OPTIONS"
 .PP
@@ -34,13 +34,15 @@ This option indicates that listings should use multiple columns.
 This option indicates that listings should use a single column.
 .PP
 .SH "SEE ALSO"
-X(1), Xserver(8C), xterm(1), xfd(1)
+X(1), Xserver(1), xset(1), xfd(1)
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY
 to get the default host and display to use.
 .SH BUGS
-Accidentally doing ``xlsfonts -l'' can tie up your server for a very long time.
+Doing ``xlsfonts -l'' can tie up your server for a very long time.
+This is really a bug with single-threaded non-preemptible servers, not with
+this program.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br

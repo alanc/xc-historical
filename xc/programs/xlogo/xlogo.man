@@ -3,17 +3,16 @@
 xlogo - X Window System logo
 .SH SYNOPSIS
 .B xlogo
-[-option ...]
+[-\fItoolkitoption\fP ...]
 .SH DESCRIPTION
 The
 .I xlogo
 program displays the X Window System logo.  This program is
-nothing more than a wrapper around the Athena Clock widget.
+nothing more than a wrapper around the Athena Logo widget.
 .SH OPTIONS
 .I Xlogo
-accepts all of the standard X Toolkit command line options.
-The following are commonly used with 
-.I xlogo:
+accepts all of the standard X Toolkit command line options, of which
+the following are commonly used:
 .TP 8
 .B \-bg \fIcolor\fP
 This option specifies the color to use for the background of the window.  
@@ -28,15 +27,17 @@ The default is ``black.''
 This option specifies the width in pixels of the border surrounding the window.
 .TP 8
 .B \-fg \fIcolor\fP
-This option specifies the color to use for displaying text.  The default is 
-``black''.
+This option specifies the color to use for displaying the logo.
+The default is ``black''.
+A correct color for the background is something like ``silver,''
+which you can approximate with a shade of gray, like \#aa9.
 .TP 8
 .B \-rv
 This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the clock window.
+This option specifies the prefered size and position of the logo window.
 .TP 8
 .B \-display \fIhost\fP:\fIdisplay\fP
 This option specifies the X server to contact.
@@ -52,17 +53,14 @@ classes as well as:
 .PP
 .TP 8
 .B width (class Width)
-Specifies the width of the clock.
+Specifies the width of the logo.
 .TP 8
 .B height (class Height)
-Specifies the height of the clock.
+Specifies the height of the logo.
 .TP 8
 .B foreground (class Foreground)
-Specifies the color for the tic marks.  Using the class specifies the
-color for all things that normally would appear in the foreground color.
+Specifies the color for the logo.
 The default is ``black'' since the core default for background is ``white.''
-A correct color for the background is something like ``silver,''
-which you can approximate with a shade of gray.
 .TP 8
 .B reverseVideo (class ReverseVideo)
 Specifies that the foreground and background should be reversed.
