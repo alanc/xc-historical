@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: makewin2.c,v 1.7 92/06/11 15:48:19 rws Exp $
  */
 
 #include	"stdlib.h"
@@ -63,6 +63,7 @@ struct	area	area;
 XSetWindowAttributes	atts;
 int	depth;
 Visual	*visual;
+unsigned long cmap_attr = 0;
 
 	if (ap == (struct area *) NULL) {
 		ap = &area;
@@ -77,8 +78,16 @@ Visual	*visual;
 		visual = (Visual *) CopyFromParent;
 	}
 	else {
+		/*
+               * If depth and visual are specified, there are no guarantees
+		 * that they will match that of the parent.  In this instance,
+		 * explicitly create a colormap of the visual type to ensure
+               * that no unexpected BadMatch error is generated.
+               */
 		depth = vp->depth;
 		visual= vp->visual;
+                atts.colormap = makecolmap(disp, visual, AllocNone);
+                cmap_attr = CWColormap;
 	}
 
 	atts.override_redirect = config.debug_override_redirect;
@@ -95,7 +104,7 @@ Visual	*visual;
 		, depth
 		, InputOutput
 		, visual
-		, CWOverrideRedirect | CWBorderPixel | CWBackPixel
+		, CWOverrideRedirect | CWBorderPixel | CWBackPixel | cmap_attr
 		, &atts
 		);
 	/* Any errors are handled by unexp_err */
