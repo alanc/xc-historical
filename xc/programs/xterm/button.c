@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.57 91/03/04 14:50:50 gildea Exp $ */
+/* $XConsortium: button.c,v 1.58 91/03/04 18:55:53 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -56,8 +56,6 @@ extern char *malloc();
 #define SHIFTS 8		/* three keys, so eight combinations */
 #define	Coordinate(r,c)		((r) * (term->screen.max_col+1) + (c))
 
-extern EditorButton();
-
 extern char *xterm_name;
 extern Bogus();
 
@@ -65,6 +63,7 @@ static void PointToRowCol();
 static void SelectionReceived();
 static void TrackDown();
 static void ComputeSelect();
+static void EditorButton();
 static int Length();
 static char *SaveText();
 
@@ -300,7 +299,7 @@ int *format;
     register char *lag, *cp, *end;
     char *line = (char*)value;
 				  
-    if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0) {
+    if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0 || value == NULL) {
 	/* could not get this selection, so see if there are more to try */
 	struct _SelectionList* list = (struct _SelectionList*)client_data;
 	if (list != NULL) {
@@ -310,7 +309,9 @@ int *format;
 	return;
     }
 
-    /* write data to pty a line at a time */
+    /* Write data to pty a line at a time. */
+    /* Doing this one line at a time may no longer be necessary
+       because v_write has been re-written. */
 
     end = &line[*length];
     lag = line;
@@ -1362,8 +1363,9 @@ SaveText(screen, row, scol, ecol, lp, eol)
 	return(lp);
 }
 
+static void
 EditorButton(event)
-register XButtonEvent *event;
+    register XButtonEvent *event;
 {
 	register TScreen *screen = &term->screen;
 	int pty = screen->respond;
