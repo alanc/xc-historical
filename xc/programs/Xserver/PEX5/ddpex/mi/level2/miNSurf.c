@@ -1,4 +1,4 @@
-/* $XConsortium: miNSurf.c,v 5.6 91/07/01 08:37:48 rws Exp $ */
+/* $XConsortium: miNSurf.c,v 5.7 91/07/01 08:53:21 rws Exp $ */
 
 #define TRIMING 1
 
@@ -2210,6 +2210,8 @@ static void
 nurb_surf_state_free( state )
     Nurb_surf_state	*state;
 {
+    int facet;
+
     /* Free everything but the cache data. */
     if ( state->ruknots )
 	xfree( state->ruknots );
@@ -2220,15 +2222,11 @@ nurb_surf_state_free( state )
     phg_nt_free_trim_data( &state->trim_data );
 #endif /* TRIMING */
 
-    if ( state->grids.number > 0 ) {
-	free_grids( &state->grids );
-	state->grids.number = 0;
-	state->grids.grids = (Nurb_grid *)NULL;
-    }
-
     if ( state->reps.facets ) {
       if ( state->facets ) {
 	MI_FREELISTHEADER(state->facets);
+        for (facet = 0; facet < state->grids.number; facet++)
+            MI_FREELISTHEADER(state->facets + facet);
 	Xfree(state->facets);
       }
       else if ( state->sofas ) {
