@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.35 94/04/17 21:15:19 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.36 94/06/03 14:32:28 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -36,6 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include "xsm.h"
+#include <X11/Xatom.h>
 #include <signal.h>
 
 AppResources app_resources;
@@ -67,6 +68,8 @@ int		interactCount = 0;
 Bool		shutdownInProgress = False;
 Bool		shutdownCancelled = False;
 jmp_buf		JumpHere;
+
+char		*sm_id;
 
 IceAuthDataEntry *authDataEntries = NULL;
 int		numTransports = 0;
@@ -875,7 +878,7 @@ XtPointer 	callData;
     if (app_resources.verbose)
 	printf ("\nAll clients issued SAVE YOURSELF DONE\n\n");
 
-    write_save();
+    write_save(sm_id);
 
     if (shutdown && shutdownCancelled) {
 	shutdownCancelled = False;
@@ -930,7 +933,7 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
-    write_save();
+    write_save(sm_id);
     exit_sm ();
 }
 
@@ -1015,8 +1018,8 @@ StartProxy ()
 	    perror("fork");
 	    break;
 	case 0:
-	    execlp("proxy", "proxy", (char *)NULL);
-	    perror("proxy");
+	    execlp("smproxy", "smproxy", (char *)NULL);
+	    perror("smproxy");
 	    _exit(255);
 	default:
 	    break;
@@ -1278,7 +1281,7 @@ main(argc, argv)
     progName = (p ? p + 1 : argv[0]);
     topLevel = XtVaAppInitialize (&appContext, "SAMPLE-SM", options, 
 	XtNumber(options), &argc, argv, NULL,
-        XtNjoinSession, 0,	/* We are the SM */
+        XtNmappedWhenManaged, False,
 	NULL);
 	
     if (argc > 1) Syntax(progName);
@@ -1596,10 +1599,38 @@ main(argc, argv)
     if (app_resources.verbose || app_resources.debug)
 	printf ("setenv %s %s\n", environment_name, networkIds);
 
-    if (app_resources.proxy)
-	StartProxy ();
+    /*
+     * Start proxy for old style SM clients.
+     */
 
-    read_save();
+    if (app_resources.proxy)
+    {
+	StartProxy ();
+	sleep (2);		/* What should we really do here??? */
+    }
+
+
+    /*
+     * Read the session save file.  Make sure the session manager
+     * has an SM_CLIENT_ID, so that other managers (like the WM) can
+     * identify it.
+     */
+
+    read_save(&sm_id);
+    if (!sm_id)
+	sm_id = SmsGenerateClientID (NULL);
+    XChangeProperty (XtDisplay (topLevel), XtWindow (topLevel),
+	XInternAtom (XtDisplay (topLevel), "SM_CLIENT_ID", False),
+	XA_STRING, 8, PropModeReplace,
+	(unsigned char *) sm_id, strlen (sm_id));
+
+    XtMapWidget (topLevel);
+
+
+    /*
+     * Restart clients and enter main loop.
+     */
+
     restart_everything();
 
     if (app_resources.verbose)
