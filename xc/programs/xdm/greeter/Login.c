@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.38 94/02/07 10:46:03 gildea Exp $
+ * $XConsortium: Login.c,v 1.39 94/03/31 16:05:44 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -65,7 +65,7 @@ static XtResource resources[] = {
 	offset(unsecure_greet), XtRString, "This is an unsecure session"},
     {XtNnamePrompt, XtCNamePrompt, XtRString, sizeof (char *),
 	offset(namePrompt), XtRString, "Login:  "},
-    {XtNpasswdPrompt, XtCNamePrompt, XtRString, sizeof (char *),
+    {XtNpasswdPrompt, XtCPasswdPrompt, XtRString, sizeof (char *),
 	offset(passwdPrompt), XtRString, "Password:  "},
     {XtNfail, XtCFail, XtRString, sizeof (char *),
 	offset(fail), XtRString, "Login incorrect"},
