@@ -1,6 +1,6 @@
 /*
- * $XConsortium: xf86Init.c,v 1.1 94/10/05 13:34:15 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.9 1994/09/23 10:13:05 dawes Exp $
+ * $XConsortium: xf86Init.c,v 1.3 94/10/12 20:33:21 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.10 1994/10/23 12:58:46 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,6 +61,7 @@ static void xf86PrintConfig();
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
 extern double pow();
+extern void xf86UnlockServer();
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
@@ -332,14 +333,9 @@ InitInput(argc, argv)
 void
 ddxGiveUp()
 {
-  xf86CloseConsole();
+  xf86UnlockServer();
 
-#if defined(SERVER_LOCK)
-  /*
-   * Remove lock on this server
-   */
-  Unlock_Server();
-#endif /* SERVER_LOCK */
+  xf86CloseConsole();
 
   /* If an unexpected signal was caught, dump a core for debugging */
   if (xf86Info.caughtSignal)
@@ -360,10 +356,14 @@ AbortDDX()
 {
   int i;
 
+#if 0
   if (xf86Exiting)
     return;
+#endif
 
   xf86Exiting = TRUE;
+
+  xf86UnlockServer();
 
   /*
    * try to deinitialize all input devices

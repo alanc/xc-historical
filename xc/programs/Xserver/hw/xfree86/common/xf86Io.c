@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Io.c,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XConsortium: xf86Io.c,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.2 1994/09/27 10:29:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -456,4 +456,11 @@ GetTimeInMillis()
 void
 OsVendorInit()
 {
+    extern void xf86LockServer();
+    static int been_here = FALSE;
+
+    if (!been_here) {
+	xf86LockServer();
+	been_here = TRUE;
+    }
 }
