@@ -1,4 +1,4 @@
-/* $XConsortium: xextinit.c,v 1.5 91/01/18 15:41:59 gms Exp $ */
+/* $XConsortium: xextinit.c,v 1.13 91/02/22 15:31:41 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -140,8 +140,8 @@ void	SEventIDispatch();
 void	NotImplemented();
 static	XExtensionVersion	thisversion = 
 					{XI_Present, 
-					 XI_Add_XSetDeviceValuators_Major, 
-					 XI_Add_XSetDeviceValuators_Minor};
+					 XI_Add_XChangeDeviceControl_Major, 
+					 XI_Add_XChangeDeviceControl_Minor};
 
 /**********************************************************************
  *
@@ -272,6 +272,10 @@ ProcIDispatch (client)
         return(ProcXDeviceBell(client));
     else if (stuff->data == X_SetDeviceValuators)
         return(ProcXSetDeviceValuators(client));
+    else if (stuff->data == X_GetDeviceControl)
+        return(ProcXGetDeviceControl(client));
+    else if (stuff->data == X_ChangeDeviceControl)
+        return(ProcXChangeDeviceControl(client));
     else
         {
 	SendErrorToClient(client, IReqCode, stuff->data, 0, BadRequest);
@@ -359,6 +363,10 @@ SProcIDispatch(client)
         return(SProcXDeviceBell(client));
     else if (stuff->data == X_SetDeviceValuators)
         return(SProcXSetDeviceValuators(client));
+    else if (stuff->data == X_GetDeviceControl)
+        return(SProcXGetDeviceControl(client));
+    else if (stuff->data == X_ChangeDeviceControl)
+        return(SProcXChangeDeviceControl(client));
     else
         {
 	SendErrorToClient(client, IReqCode, stuff->data, 0, BadRequest);
@@ -417,6 +425,10 @@ SReplyIDispatch (client, len, rep)
 	SRepXQueryDeviceState (client, len, rep);
     else if (rep->RepType == X_SetDeviceValuators)
 	SRepXSetDeviceValuators (client, len, rep);
+    else if (rep->RepType == X_GetDeviceControl)
+	SRepXGetDeviceControl (client, len, rep);
+    else if (rep->RepType == X_ChangeDeviceControl)
+	SRepXChangeDeviceControl (client, len, rep);
     else
 	{
 	SendErrorToClient(client, IReqCode, rep, 0, BadRequest);
