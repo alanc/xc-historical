@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.7 93/07/19 18:21:08 rws Exp $ */
+/* $XConsortium: miscrinit.c,v 5.8 93/09/29 17:20:51 dpw Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -171,8 +171,8 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 {
     pScreen->width = xsize;
     pScreen->height = ysize;
-    pScreen->mmWidth = (xsize * 254) / (dpix * 10);
-    pScreen->mmHeight = (ysize * 254) / (dpiy * 10);
+    pScreen->mmWidth = (xsize * 254 + dpix * 5) / (dpix * 10);
+    pScreen->mmHeight = (ysize * 254 + dpiy * 5) / (dpiy * 10);
     pScreen->numDepths = numDepths;
     pScreen->rootDepth = rootDepth;
     pScreen->allowedDepths = depths;

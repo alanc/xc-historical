@@ -1,4 +1,4 @@
-/* $XConsortium: cfbinit.c,v 1.4 93/07/10 11:32:30 rws Exp $ */
+/* $XConsortium: cfbinit.c,v 1.5 93/09/23 19:00:45 rws Exp $ */
 /***********************************************************
 Copyright 1991 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -312,14 +312,16 @@ fbInitProc(index, pScreen, argc, argv)
     if (screenArgs[index].flags & ARG_DPIX)
 	dpix = screenArgs[index].dpix;
     else
-	dpix =  ( wsp->screenDesc->width)  / 
-		((wsp->screenDesc->monitor_type.mm_width  * 10) / 254);
+        dpix =  (wsp->screenDesc->width * 254 +
+                    wsp->screenDesc->monitor_type.mm_width * 5)  /
+                (wsp->screenDesc->monitor_type.mm_width * 10);
 
     if (screenArgs[index].flags & ARG_DPIY)
 	dpiy = screenArgs[index].dpiy;
     else
-	dpiy =  ( wsp->screenDesc->height) / 
-		((wsp->screenDesc->monitor_type.mm_height * 10) / 254);
+        dpiy =  (wsp->screenDesc->height * 254 +
+                    wsp->screenDesc->monitor_type.mm_height * 5) /
+                (wsp->screenDesc->monitor_type.mm_height * 10);
 
     vd.screen = screenDesc[index].screen; 
     vd.which_visual = 0;	/* jmg ? */
