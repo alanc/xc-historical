@@ -1,4 +1,4 @@
-/* $Header: xgrabdevk.c,v 1.2 90/07/26 08:51:16 gms ic1C-80 $ */
+/* $Header: xgrabdevk.c,v 1.7 91/01/24 16:37:07 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -107,7 +107,7 @@ ProcXGrabDeviceKey(client)
 	return Success;
 	}
 
-    if (stuff->modifier_device)
+    if (stuff->modifier_device != UseXKeyboard)
 	{
 	mdev = LookupDeviceIntRec (stuff->modifier_device);
 	if (mdev == NULL)

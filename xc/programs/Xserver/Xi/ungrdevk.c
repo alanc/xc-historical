@@ -1,4 +1,4 @@
-/* $Header: xungrdevk.c,v 1.2 90/07/26 08:50:34 gms ic1C-80 $ */
+/* $Header: xungrdevk.c,v 1.6 91/01/24 16:41:50 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -95,7 +95,7 @@ ProcXUngrabDeviceKey(client)
 	return Success;
 	}
 
-    if (stuff->modifier_device)
+    if (stuff->modifier_device != UseXKeyboard)
 	{
 	mdev = LookupDeviceIntRec (stuff->modifier_device);
 	if (mdev == NULL)
