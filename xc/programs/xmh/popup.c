@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.36 91/07/23 17:43:02 converse Exp $
+/* $XConsortium: popup.c,v 2.37 93/09/20 17:52:11 hersh Exp swick $
  *
  *
  *			  COPYRIGHT 1989
@@ -423,7 +423,8 @@ void PopupConfirm(center_widget, question, affirm_callbacks, negate_callbacks)
 	XtAddCallbacks(button, XtNcallback, negate_callbacks);
 
     TheUsual(popup);
-    CenterPopupPosition(center_widget, popup, x, y);
+    CenterPopupPosition(center_widget ? center_widget : transientFor,
+			popup, x, y);
     InsureVisibility(popup, dialog, x, y, False, False);
     XtPopup(popup, XtGrabNone);
 }
