@@ -1,4 +1,4 @@
-/* $XConsortium: SmeLine.c,v 1.10 91/01/11 18:45:50 converse Exp $ */
+/* $XConsortium: SmeLine.c,v 1.11 91/02/17 16:12:55 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -48,7 +48,7 @@ static XtResource resources[] = {
   {XtNstipple, XtCStipple, XtRBitmap, sizeof(Pixmap),
      offset(stipple), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-     offset(foreground), XtRString, "XtDefaultForeground"},
+     offset(foreground), XtRString, XtDefaultForeground},
 };   
 #undef offset
 
