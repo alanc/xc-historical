@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetAddr.c,v 1.3 89/03/24 16:06:25 jim Exp $
+ * $XConsortium: AuGetAddr.c,v 1.4 89/03/24 18:14:08 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,10 @@
 
 # include "Xauth.h"
 # include <X11/Xos.h>
+
+#ifdef USG		/* everyone should have this, but they don't, grrr */
+#include <unistd.h>
+#endif
 
 static
 binaryEqual (a, b, len)
