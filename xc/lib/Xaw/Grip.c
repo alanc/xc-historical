@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Knob.c,v 1.4 87/11/18 14:06:23 swick Locked $";
+static char rcsid[] = "$Header: Knob.c,v 1.5 87/12/02 15:58:04 swick Locked $";
 #endif lint
 
 /*
@@ -36,18 +36,37 @@ static char rcsid[] = "$Header: Knob.c,v 1.4 87/11/18 14:06:23 swick Locked $";
 
 
 #include <X11/Xlib.h>
-#include "cursorfont.h"
-#include "Intrinsic.h"
+#include <X11/cursorfont.h>
+#include <X11/Intrinsic.h>
+#include <X11/Atoms.h>
+#include <X11/Knob.h>
 #include "KnobP.h"
-#include "Knob.h"
-#include "Atoms.h"
+
+static char *defaultTranslation[] = {
+    NULL
+};
+static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
 
 static XtResource resources[] = {
    {XtNbackground, XtCBackground, XrmRPixel, sizeof(Pixel),
       XtOffset(KnobWidget, core.background_pixel), XtRString, "Black"},
    {XtNborderWidth, XtCBorderWidth, XrmRInt, sizeof(int),
-      XtOffset(KnobWidget, core.border_width), XtRString, "0"}
+      XtOffset(KnobWidget, core.border_width), XtRString, "0"},
+   {XtNcallback, XtCCallback, XtRPointer, sizeof(caddr_t), 
+      XtOffset(KnobWidget, knob.knob_action), XtRPointer, (caddr_t)NULL},
+   {XtNtranslations, XtCTranslations, XtRTranslationTable,
+      sizeof(XtTranslations),
+      XtOffset(KnobWidget, core.translations),XtRTranslationTable,
+      (caddr_t)&defaultTranslations}
 };
+
+void KnobAction( /* Widget, XEvent*, String*, Cardinal */ );
+
+static XtActionsRec actionsList[] =
+{
+  {"KnobAction",	KnobAction},
+};
+
 
 KnobClassRec knobClassRec = {
    {
@@ -59,8 +78,8 @@ KnobClassRec knobClassRec = {
     /* class_inited       */   FALSE,
     /* initialize         */   NULL,
     /* realize            */   XtInheritRealize,
-    /* actions            */   NULL,
-    /* num_actions        */   0,
+    /* actions            */   actionsList,
+    /* num_actions        */   XtNumber(actionsList),
     /* resourses          */   resources,
     /* resource_count     */   XtNumber(resources),
     /* xrm_class          */   NULLQUARK,
@@ -80,3 +99,18 @@ KnobClassRec knobClassRec = {
 };
 
 WidgetClass knobWidgetClass = (WidgetClass) &knobClassRec;
+
+static void KnobAction( widget, event, params, num_params )
+    Widget widget;
+    XEvent *event;
+    String *params;
+    Cardinal num_params;
+{
+    KnobCallDataRec call_data;
+
+    call_data.event = event;
+    call_data.params = params;
+    call_data.num_params = num_params;
+
+    XtCallCallbacks( widget, XtNcallback, &call_data );
+}

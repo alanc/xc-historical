@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: KnobP.h,v 1.2 87/09/11 21:21:44 swick Locked $
 */
 
 /*
@@ -58,8 +58,7 @@ extern KnobClassRec knobClassRec;
 
 /* New fields for the Knob widget record */
 typedef struct {
-   int mumble;
-   /* no new fields */
+  XtCallbackList knob_action;
 } KnobPart;
 
 /*****************************************************************************
