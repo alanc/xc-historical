@@ -88,7 +88,7 @@ LabelClassRec labelClassRec = {
 /* core fields */	
     /* superclass	*/	(WidgetClass) &widgetClassRec,
     /* class_name	*/	"Label",
-    /* size		*/	sizeof(LabelClassRec),
+    /* size		*/	sizeof(LabelRec),
     /* class init proc  */      ClassInitialize,
     /* class init'ed    */	FALSE,
     /* initialize	*/	Initialize,
@@ -109,7 +109,7 @@ LabelClassRec labelClassRec = {
     /* accepts_focus	*/	FALSE,
     /* accept_focus	*/	NULL,
 };
-
+WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
 /****************************************************************
  *
  * Private Procedures
@@ -201,7 +201,7 @@ static void GetgrayGC(lw)
     values.tile       = lw->label.grayPixmap;
     values.fill_style = FillTiled;
 
-    lw->label.normalGC = XtGetGC(lw, 
+    lw->label.grayGC = XtGetGC(lw, 
 				 GCForeground | GCFont | GCTile | GCFillStyle, 
 				 &values);
 }
@@ -250,7 +250,7 @@ static void Realize(w, valueMask, attributes)
 	case XtjustifyRight:	attributes->bit_gravity = EastGravity;   break;
     }
     
-    if (w->core.sensitive) 
+    if (!(w->core.sensitive))
       {
 	  /* change border to gray */
 	lw->core.border_pixmap = lw->label.grayPixmap;
@@ -423,7 +423,8 @@ static void SetValues(old, new)
 	|| oldlw->label.font->fid != newlw->label.font->fid) {
 
 	XtDestroyGC(oldlw->label.normalGC);
-	GetGC(newlw);
+	GetnormalGC(newlw);
+	GetgrayGC(newlw);
     }
 
     if ((oldlw->label.internalWidth != newlw->label.internalWidth)
