@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.18 93/12/15 17:32:32 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.19 93/12/15 20:17:08 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -455,14 +455,10 @@ Bool		 swap;
 
 	pData = pStart;
 
-	if (swap)
-	    pMsg->sequenceRef = lswapl (pMsg->sequenceRef);
-
 	EXTRACT_LISTOF_PROPERTY (pData, swap, numProps, props);
 
 	(*smsConn->callbacks.set_properties.callback) (smsConn,
-	    smsConn->callbacks.set_properties.manager_data,
-            pMsg->sequenceRef, numProps, props);
+	    smsConn->callbacks.set_properties.manager_data, numProps, props);
 
 	IceDisposeCompleteMessage (iceConn, pStart);
 	break;
