@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.47 89/09/12 16:48:08 swick Exp $
+* $XConsortium: StringDefs.h,v 1.48 89/09/13 13:12:32 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -108,6 +108,7 @@ SOFTWARE.
 #define XtNthumbProc "thumbProc"
 #define XtNtop "top"
 #define XtNtranslations "translations"
+#define XtNunrealizeCallback "unrealizeCallback"
 #define XtNupdate "update"
 #define XtNuseBottom "useBottom"
 #define XtNuseRight "useRight"
@@ -189,6 +190,7 @@ SOFTWARE.
 /* Representation types */
 
 #define XtRAcceleratorTable "AcceleratorTable"
+#define XtRAtom "Atom"
 #define XtRBitmap "Bitmap"
 #define XtRBool "Bool"
 #define XtRBoolean "Boolean"
@@ -196,10 +198,12 @@ SOFTWARE.
 #define XtRCallProc "CallProc"
 #define XtRCardinal "Cardinal"
 #define XtRColor "Color"
+#define XtRColormap "Colormap"
 #define XtRCursor "Cursor"
 #define XtRDimension "Dimension"
 #define XtRDisplay "Display"
 #define XtREditMode "EditMode"
+#define XtREnum "Enum"
 #define XtRFile "File"
 #define XtRFloat "Float"
 #define XtRFont "Font"
@@ -217,13 +221,16 @@ SOFTWARE.
 #define XtRPixmap "Pixmap"
 #define XtRPointer "Pointer"
 #define XtRPosition "Position"
+#define XtRScreen "Screen"
 #define XtRShort "Short"
 #define XtRString "String"
+#define XtRStringArray "StringArray"
 #define XtRStringTable "StringTable"
 #define XtRUnsignedChar "UnsignedChar"
 #define XtRTranslationTable "TranslationTable"
 #define XtRVisual "Visual"
 #define XtRWidget "Widget"
+#define XtRWidgetClass "WidgetClass"
 #define XtRWidgetList "WidgetList"
 #define XtRWindow "Window"
 
