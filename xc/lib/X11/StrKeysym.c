@@ -1,4 +1,4 @@
-/* $XConsortium: XStrKeysym.c,v 11.11 90/12/12 09:19:48 rws Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.12 91/01/06 11:48:23 rws Exp $ */
 /* Copyright 1985, 1987, 1990 Massachusetts Institute of Technology */
 
 /*
@@ -79,7 +79,7 @@ KeySym XStringToKeysym(s)
     n = KMAXHASH;
     while (idx = hashString[i])
     {
-	entry = &__XkeyTable[idx];
+	entry = &_XkeyTable[idx];
 	if ((entry[0] == sig1) && (entry[1] == sig2) &&
 	    !strcmp(s, (char *)entry + 4))
 	{
