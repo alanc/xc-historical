@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.190 94/12/11 12:12:29 kaleb Exp gildea $
+XCOMM $XConsortium: Imakefile,v 1.191 95/01/06 19:12:51 gildea Exp kaleb $
 /*
  * Server Master Makefile
  */
@@ -451,14 +451,13 @@ XF86VGA16SUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS)
 XF86VGA16OBJS = $(XF86COMSRC)/XF86_VGA16.o $(XF86SRC)/vga16/vga16Conf.o \
                 $(XF86SRC)/vga16/misc/vga16misc.o $(XF86VGA16MONOOBJS)
 XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(XF86SRC)/vga16/libvga16.a \
-		$(XF86VGA16MONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
+                $(XF86VGA16MONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86VGA16SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LIBS),$(XF86VGA16SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_VGA16
 #endif
 #endif	/* XF86VGA16Server */
-
 
 #if XF86W32Server
 XCOMM
@@ -476,7 +475,6 @@ SetUIDServerTarget(XF86_W32,$(XF86W32SUBDIRS),$(XF86W32OBJS),$(XF86W32LIBS),$(XF
 #define ServerToInstall XF86_W32
 #endif
 #endif
-
 
 #if XF86MonoServer
 XCOMM
@@ -592,7 +590,7 @@ SetUIDServerTarget(XF86_Mach64,$(XF86MACH64SUBDIRS),$(XF86MACH64OBJS),$(XF86MACH
 #ifndef ServerToInstall
 #define ServerToInstall XF86_Mach64
 #endif
-#endif        /* XF86Mach64Server */
+#endif	/* XF86Mach64Server */
 
 
 #if XF86P9000Server
