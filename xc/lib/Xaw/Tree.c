@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.29 90/02/08 14:25:31 jim Exp $
+ * $XConsortium: Tree.c,v 1.30 90/03/01 09:52:16 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -34,6 +34,7 @@
 #include <X11/CompositeP.h>
 #include <X11/ConstrainP.h>
 #include <X11/Xaw/XawInit.h>
+#include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/TreeP.h>
 
 #define IsHorizontal(tw) ((tw)->tree.orientation == XtorientHorizontal)
@@ -320,7 +321,7 @@ static void Initialize (grequest, gnew)
     new->tree.tree_root = (Widget) NULL;
     XtSetArg(args[0], XtNwidth, 1);
     XtSetArg(args[1], XtNheight, 1);
-    new->tree.tree_root = XtCreateWidget ("root", widgetClass, gnew, args, 2);
+    new->tree.tree_root = XtCreateWidget ("root", widgetClass, gnew, args,TWO);
 
     /*
      * Allocate the array used to hold the widest values per depth
@@ -346,6 +347,9 @@ static void ConstraintInitialize (request, new)
     tc->tree.max_children = 0;
     tc->tree.children = (Widget *) NULL;
     tc->tree.x = tc->tree.y = 0; 
+    tc->tree.bbsubwidth = 0;
+    tc->tree.bbsubheight = 0;
+
 
     /*
      * If this widget has a super-node, add it to that 
