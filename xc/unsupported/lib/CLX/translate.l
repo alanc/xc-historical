@@ -200,7 +200,7 @@
 	  (let ((previous (assoc keysym (display-keysym-translation display))))
 	    (if previous
 		(setf (cdr previous) (merge-keysym-mappings entry (cdr previous)))
-	      (push (list keysym (list entry)) (display-keysym-translation display))))
+	      (push (list keysym entry) (display-keysym-translation display))))
 	(setf (gethash keysym *keysym->character-map*)
 	      (merge-keysym-mappings entry (gethash keysym *keysym->character-map*)))))
     object))
@@ -326,14 +326,16 @@
 	   (type keysym keysym)
 	   (type card16 state))
   (declare-values (or null character))
-  (let* ((mappings (or (cdr (assoc keysym (display-keysym-translation display)))
-		       (gethash keysym *keysym->character-map*)))
-	 (mapping (if (and (cdr mappings) (plusp state))
-		      ;; Pick the best mapping when more than one
-		      (dolist (mapping mappings (first mappings))
+  (let* ((display-mappings (cdr (assoc keysym (display-keysym-translation display))))
+	 static-mappings
+	 (mapping (or ;; Find the matching display mapping
+		      (dolist (mapping display-mappings)
 			(when (mapping-matches-p display state mapping)
 			  (return mapping)))
-		    (first mappings))))
+		      ;; Find the matching static mapping
+		      (dolist (mapping (setq static-mappings (gethash keysym *keysym->character-map*)))
+			(when (mapping-matches-p display state mapping)
+			  (return mapping))))))
     (when mapping
       (funcall (or (keysym-mapping-translate mapping) 'default-keysym-translate)
 	       display state (keysym-mapping-object mapping)))))
@@ -344,33 +346,48 @@
 	   (type mask16 state)
 	   (type list mapping))
   (declare-values boolean)
-  (labels ((modifier->mask (modifier)
-	      (declare (type (or mask16 modifier-key keysym) modifier))
-	      (declare-values mask16)
-	      (let ((bit (position modifier *state-mask-vector*)))
-		(if bit
-		    (ash 1 bit)
-		  (or (cdr (assoc modifier (get-display-modifier-mapping display)))
-		      ;; Error - bad modifier never matches
-		      (return-from mapping-matches-p nil)))))
-	   (modifiers->mask (modifiers)
-	     (declare-values mask16)
-	     (if (numberp modifiers)
-		 modifiers
-	       (do* ((mask 0)
-		     (modifier modifiers (cdr modifier)))
-		    ((endp modifier) mask)
-		 (setq mask (logior mask (modifier->mask (car modifier))))))))
-  (let* ((modifiers (modifiers->mask (or (keysym-mapping-modifiers mapping) 0)))
-	 (mapping-mask (or (keysym-mapping-mask mapping)
-			   *default-keysym-translate-mask*))
-	 (mask (if (eq mapping-mask :modifiers)
-		   modifiers
-		 (modifiers->mask mapping-mask))))
-    (zerop (logxor (logand state mask) modifiers)))))
+  (flet
+    ((modifiers->mask (display-mapping modifiers errorp &aux (mask 0))
+       ;; Convert MODIFIERS, which is a modifier mask, or a list of state-mask-keys into a mask.
+       ;; If ERRORP is non-nil, return NIL when an unknown modifier is specified,
+       ;; otherwise ignore unknown modifiers.
+       (declare (type list display-mapping)	; Alist of (keysym . mask)
+		(type (or mask16 list) modifiers)
+		(type mask16 mask))
+       (declare-values (or null mask16))
+       (if (numberp modifiers)
+	   modifiers
+	 (dolist (modifier modifiers mask)
+	   (declare (type symbol modifier))
+	   (let ((bit (position modifier (the simple-vector *state-mask-vector*) :test #'eq)))
+	     (setq mask
+		   (logior mask
+			   (if bit
+			       (ash 1 bit)
+			     (or (cdr (assoc modifier display-mapping))
+				 ;; bad modifier
+				 (if errorp
+				     (return-from modifiers->mask nil)
+				   0))))))))))
+
+    (let* ((display-mapping (get-display-modifier-mapping display))
+	   (mapping-modifiers (keysym-mapping-modifiers mapping))
+	   (modifiers (or (modifiers->mask display-mapping (or mapping-modifiers 0) t)
+			  (return-from mapping-matches-p nil)))
+	   (mapping-mask (or (keysym-mapping-mask mapping)	; If no mask, use the default.
+			     (if mapping-modifiers	        ; If no modifiers, match anything.
+				 *default-keysym-translate-mask*
+			       0)))
+	   (mask (if (eq mapping-mask :modifiers)
+		     modifiers
+		   (modifiers->mask display-mapping mapping-mask nil))))
+      (declare (type mask16 modifiers mask))
+      (= (logand state mask) modifiers))))
 
 (defun default-keysym-translate (display state object)
   ;; If object is a character, char-bits are set from state.
+  ;;
+  ;; [the following isn't implemented (should it be?)]
   ;; If object is a list, it is an alist with entries:
   ;; (string-char [modifiers] [mask-modifiers])
   ;; When MODIFIERS are specified, this character translation
