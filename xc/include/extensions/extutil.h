@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: extutil.h,v 1.5 89/10/06 11:33:38 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -48,6 +48,20 @@ typedef struct _XExtensionInfo {
     int ndisplays;			/* number of displays */
 } XExtensionInfo;
 
+typedef struct _XExtensionHooks {
+    int (*create_gc)();
+    int (*copy_gc)();
+    int (*flush_gc)();
+    int (*free_gc)();
+    int (*create_font)();
+    int (*free_font)();
+    int (*close_display)();
+    Bool (*wire_to_event)();
+    Status (*event_to_wire)();
+    int (*error)();
+    int (*error_string)();
+} XExtensionHooks;
+
 extern XExtensionInfo *XextCreateExtension();
 extern void XextDestroyExtension();
 extern XExtDisplayInfo *XextAddDisplay();
@@ -65,14 +79,14 @@ extern XExtDisplayInfo *XextFindDisplay();
  * could be a utility function, but have to stack 6 unused arguments for 
  * something that is called many, many times would be bad.
  */
-#define XEXT_GENERATE_FIND_DISPLAY(proc,extinfo,extname,cd,w2e,e2w,nev,data) \
+#define XEXT_GENERATE_FIND_DISPLAY(proc,extinfo,extname,hooks,nev,data) \
 XExtDisplayInfo *proc (dpy) \
     register Display *dpy; \
 { \
     XExtDisplayInfo *dpyinfo; \
     if (!extinfo) { if (!(extinfo = XextCreateExtension())) return NULL; } \
     if (!(dpyinfo = XextFindDisplay (extinfo, dpy))) \
-      dpyinfo = XextAddDisplay (extinfo,dpy,extname,cd,w2e,e2w,nev,data); \
+      dpyinfo = XextAddDisplay (extinfo,dpy,extname,hooks,nev,data); \
     return dpyinfo; \
 }
 
@@ -83,3 +97,5 @@ int proc (dpy, codes) \
 { \
     return XextRemoveDisplay (extinfo, dpy); \
 }
+
+#define XEXT_GENERATE_ERROR_STRING(proc)
