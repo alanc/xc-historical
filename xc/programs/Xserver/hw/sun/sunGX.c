@@ -1,6 +1,7 @@
+#ifndef lint
+static char *rid="$XConsortium: sunGX.c,v 1.14 92/05/19 12:16:59 keith Exp $";
+#endif /* lint */
 /*
- * $XConsortium: sunGX.c,v 1.13 92/02/27 14:06:37 keith Exp $
- *
  * Copyright 1991 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
