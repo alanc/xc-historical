@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Destroy.c,v 6.4 87/12/08 12:59:36 swick Locked $";
+static char rcsid[] = "$Header: Destroy.c,v 6.5 88/02/01 18:28:18 swick Locked $";
 #endif lint
 
 /*
@@ -61,7 +61,7 @@ static void Phase2Callbacks(widget)
     Widget    widget;
 {
     _XtCallCallbacks(
-	&(CallbackList)(widget->core.destroy_callbacks), (Opaque) NULL);
+	&(CallbackList)(widget->core.destroy_callbacks), (caddr_t) NULL);
 } /* Phase2Callbacks */
 
 static void Phase2Destroy(widget)
@@ -125,7 +125,7 @@ void XtDestroyWidget (widget)
 {
     if (widget->core.being_destroyed) return;
     Recursive(widget, Phase1Destroy);
-    _XtAddCallback(widget, &DestroyList, XtPhase2Destroy, (Opaque) NULL);
+    _XtAddCallback(widget, &DestroyList, XtPhase2Destroy, (caddr_t) NULL);
 } /* XtDestroyWidget */
 
 
