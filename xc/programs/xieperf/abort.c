@@ -1,4 +1,4 @@
-/* $XConsortium: do_abort.c,v 1.1 93/07/19 13:01:51 rws Exp $ */
+/* $XConsortium: abort.c,v 1.2 93/07/19 14:43:12 rws Exp $ */
 
 /**** module do_abort.c ****/
 /******************************************************************************
@@ -62,7 +62,7 @@ int InitAbort(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        XieDataClass    class;
+        XieDataClass    data_class;
         XieOrientation  band_order;
         XieLTriplet     length, levels;
         Bool    	merge;
@@ -84,7 +84,7 @@ int InitAbort(xp, p, reps)
 		return( 0 );
         }
 
-        class = xieValSingleBand;
+        data_class = xieValSingleBand;
         band_order = xieValLSFirst;
         length[ 0 ] = 1 << p->levelsIn;
         length[ 1 ] = 0;
@@ -94,7 +94,7 @@ int InitAbort(xp, p, reps)
         levels[ 2 ] = 0;
 
         XieFloImportClientLUT(&flograph[0],
-                class,
+                data_class,
                 band_order,
                 length,
                 levels

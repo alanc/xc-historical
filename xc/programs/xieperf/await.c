@@ -1,4 +1,4 @@
-/* $XConsortium: do_await.c,v 1.1 93/07/19 13:01:58 rws Exp $ */
+/* $XConsortium: await.c,v 1.2 93/07/19 14:43:25 rws Exp $ */
 
 /**** module do_await.c ****/
 /******************************************************************************
@@ -65,7 +65,7 @@ int InitAwait(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        XieDataClass    class;
+        XieDataClass    data_class;
         XieOrientation  band_order;
         XieLTriplet     length, levels;
         Bool    	merge;
@@ -113,7 +113,7 @@ int InitAwait(xp, p, reps)
 		return( 0 );
         }
 
-        class = xieValSingleBand;
+        data_class = xieValSingleBand;
         band_order = xieValLSFirst;
         length[ 0 ] = 1 << p->levelsIn;
         length[ 1 ] = 0;
@@ -123,7 +123,7 @@ int InitAwait(xp, p, reps)
         levels[ 2 ] = 0;
 
         XieFloImportClientLUT(&flograph[0],
-                class,
+                data_class,
                 band_order,
                 length,
                 levels

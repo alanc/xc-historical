@@ -1,4 +1,4 @@
-/* $XConsortium: do_importclient.c,v 1.1 93/07/19 13:02:57 rws Exp $ */
+/* $XConsortium: importcl.c,v 1.2 93/07/19 14:44:06 rws Exp $ */
 
 /**** module do_importclient.c ****/
 /******************************************************************************
@@ -157,7 +157,7 @@ void DoImportClientPhotoImmediate(xp, p, reps)
 		return;
 	}
 	XieFloImportClientPhoto(&flograph[0],
-		p->class,
+		p->data_class,
 		width, height, levels,
 		False,
 		p->decode, (char *)decode_params
@@ -225,7 +225,7 @@ void DoImportClientPhotoStored(xp, p, reps)
         );
 
       	XieFloImportClientPhoto(&flograph[0],
-		p->class,
+		p->data_class,
 		width, height, levels,
 		False,
 		p->decode, (char *)decode_params
@@ -267,7 +267,7 @@ void DoImportClientLUTImmediate(xp, p, reps)
 	int	flo_notify, flo_id;
 	XiePhotospace photospace;
 	XieOrientation band_order = xieValLSFirst;
-        XieDataClass    class;
+        XieDataClass    data_class;
         XieLTriplet     start, length, levels;
         Bool    merge;
 	XiePhotoElement *flograph;
@@ -282,7 +282,7 @@ void DoImportClientLUTImmediate(xp, p, reps)
 		return;
 	}
 
-        class = xieValSingleBand;
+        data_class = xieValSingleBand;
         band_order = xieValLSFirst;
      	length[ 0 ] = 1 << p->depth;
 	length[ 1 ] = 0;
@@ -292,7 +292,7 @@ void DoImportClientLUTImmediate(xp, p, reps)
 	levels[ 2 ] = 0;
 
 	XieFloImportClientLUT(&flograph[0],
-		class,
+		data_class,
 		band_order,
 		length,
 		levels
@@ -342,7 +342,7 @@ void DoImportClientLUTStored(xp, p, reps)
 	XiePhotoflo flo;
         int     decode_notify;
         XieOrientation band_order = xieValLSFirst;
-        XieDataClass    class;
+        XieDataClass    data_class;
         XieLTriplet     start, length, levels;
         Bool    merge;
 
@@ -353,7 +353,7 @@ void DoImportClientLUTStored(xp, p, reps)
 		return;
 	}
 
-	class = xieValSingleBand;
+	data_class = xieValSingleBand;
 	band_order = xieValLSFirst;
 	length[ 0 ] = 1 << p->depth;
 	length[ 1 ] = 0;
@@ -363,7 +363,7 @@ void DoImportClientLUTStored(xp, p, reps)
 	levels[ 2 ] = 0;
 
 	XieFloImportClientLUT(&flograph[0],
-		class,
+		data_class,
 		band_order,
 		length,
 		levels

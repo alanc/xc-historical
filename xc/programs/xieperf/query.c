@@ -1,4 +1,4 @@
-/* $XConsortium: do_query.c,v 1.1 93/07/19 13:03:36 rws Exp $ */
+/* $XConsortium: query.c,v 1.2 93/07/19 14:44:33 rws Exp $ */
 
 /**** module do_query.c ****/
 /******************************************************************************
@@ -249,7 +249,7 @@ void DoQueryPhotomap(xp, p, reps)
 	XieLTriplet	height;
 	XieLTriplet	levels;
 	XieDataType	data_type;
-	XieDataClass	class;
+	XieDataClass	data_class;
 	Bool 	pop, error;
 	XieDecodeTechnique decode;
 
@@ -257,7 +257,7 @@ void DoQueryPhotomap(xp, p, reps)
 	for ( i = 0; i < reps && error == False; i++ )
 	{
 		if ( !XieQueryPhotomap( xp->d, XIEPhotomap, &pop, &data_type,
-			&class, &decode, width, height, levels ) )
+			&data_class, &decode, width, height, levels ) )
 		{
 			fprintf( stderr, "XieQueryPhotomap failed\n" );
 			fflush( stderr );
