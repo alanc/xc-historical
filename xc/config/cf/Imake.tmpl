@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.128 91/06/13 14:15:49 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.129 91/06/29 19:00:24 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -210,9 +210,13 @@ XCOMM
 #endif /* MOTOROLA */
 
 #ifdef SYSV386
-#define MacroIncludeFile <x386.cf>
-#define MacroFile x386.cf
-#define i386Architecture
+# define MacroIncludeFile <x386.cf>
+# define MacroFile x386.cf
+# ifdef SVR4
+#  define i386SVR4Architecture
+# else
+#  define i386SVR3Architecture
+# endif
 #endif /* SYSV386 */
 
 #ifdef DGUX
