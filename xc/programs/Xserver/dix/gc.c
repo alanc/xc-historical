@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.13 90/03/20 12:13:52 keith Exp $ */
+/* $XConsortium: gc.c,v 5.14 90/03/28 18:30:37 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -118,7 +118,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		/*
 		 * this is for CreateGC
 		 */
-		if (!pGC->tileIsPixel && pGC->tile.pixmap == None)
+		if (!pGC->tileIsPixel && !pGC->tile.pixmap)
 		{
 		    pGC->tileIsPixel = TRUE;
 		    pGC->tile.pixel = pGC->fgPixel;
@@ -549,6 +549,8 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	*pStatus = Success;
     if (*pStatus != Success)
     {
+	if (!pGC->tileIsPixel && !pGC->tile.pixmap)
+	    pGC->tileIsPixel = TRUE; /* undo special case */
 	FreeGC(pGC, (GContext)0);
 	pGC = (GCPtr)NULL;
     }
