@@ -349,12 +349,25 @@ static Window CreatePerfWindow(xp, x, y, width, height)
 {
     XSetWindowAttributes xswa;
     Window w;
+    Screen *s;
+    int su;
 
+/*
+    s = DefaultScreenOfDisplay(xp->d);
+    su = XDoesBackingStore(s);
+    printf("Backing store of screen returns %d\n", su);
+    su = XDoesSaveUnders(s);
+    printf("Save unders of screen returns %d\n", su);
+    su = XPlanesOfScreen(s);
+    printf("Planes of screen returns %d\n", su);
+*/
     xswa.override_redirect = True;
-/*  xswa.backing_store = Always;  See if backing store costs anything */
+    xswa.backing_store = False;
+    xswa.save_under = False;
     w = XCreateSimpleWindow (xp->d, DefaultRootWindow (xp->d),
 	x, y, width, height, 1, xp->foreground, xp->background);
-    XChangeWindowAttributes (xp->d, w, CWOverrideRedirect, &xswa);
+    XChangeWindowAttributes (xp->d, w, 
+	    CWOverrideRedirect | CWSaveUnder | CWBackingStore, &xswa);
     XMapWindow (xp->d, w);
     return w;
 }
