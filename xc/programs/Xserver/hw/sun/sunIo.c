@@ -300,6 +300,7 @@ SetTimeSinceLastInputEvent()
 void
 AbortDDX()
 {
+    sunChangeKbdTranslation (LookupKeyboardDevice (), FALSE);
     sunNonBlockConsoleOff ((char *) 0);
 }
 
@@ -307,6 +308,7 @@ AbortDDX()
 void
 ddxGiveUp()
 {
+    AbortDDX ();
 }
 
 int
