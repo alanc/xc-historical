@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.34 89/01/03 14:47:34 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.35 89/01/10 07:52:07 swick Exp $";
 #endif lint
 
 
@@ -422,13 +422,23 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 	if (child != (Widget)NULL) {
 	    XtWidgetGeometry preferred;
 	    Dimension prev_width, prev_height;
-	    intended.request_mode = CWWidth | CWHeight | CWBorderWidth;
-	    if (!w->viewport.allowhoriz || child->core.width < clip_width)
+	    XtGeometryMask prev_mode;
+	    intended.request_mode = CWBorderWidth;
+	    /*
+	     * intended.{width,height} caches the eventual child dimensions,
+	     * but we don't set the mode bits until after we decide that the
+	     * child's preferences are not acceptable.
+	     */
+	    if (!w->viewport.allowhoriz || child->core.width < clip_width) {
 		intended.width = clip_width;
+		intended.request_mode |= CWWidth;
+	    }
 	    else
 		intended.width = child->core.width;
-	    if (!w->viewport.allowvert || child->core.height < clip_height)
+	    if (!w->viewport.allowvert || child->core.height < clip_height) {
 		intended.height = clip_height;
+		intended.request_mode |= CWHeight;
+	    }
 	    else
 		intended.height = child->core.height;
 	    intended.border_width = 0;
@@ -440,6 +450,7 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 		if (query) XtQueryGeometry( child, &intended, &preferred );
 		prev_width = intended.width;
 		prev_height = intended.height;
+		prev_mode = intended.request_mode;
 		/*
 		 * note that having once decided to turn on either bar
 		 * we'll not change our mind until we're next resized,
@@ -472,11 +483,19 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 		    }
 		    intended.height = preferred.height;
 		}
-		if (!w->viewport.allowhoriz || preferred.width < clip_width)
+		if (!w->viewport.allowhoriz || preferred.width < clip_width) {
 		    intended.width = clip_width;
-		if (!w->viewport.allowvert || preferred.height < clip_height)
+		    intended.request_mode |= CWWidth;
+		}
+		if (!w->viewport.allowvert || preferred.height < clip_height) {
 		    intended.height = clip_height;
-	    } while (intended.width != prev_width || intended.height != prev_height);
+		    intended.request_mode |= CWHeight;
+		}
+	    } while (intended.request_mode != prev_mode
+		     || (intended.request_mode & CWWidth
+			 && intended.width != prev_width)
+		     || (intended.request_mode & CWHeight
+			 && intended.height != prev_height));
 	}
     }
 
