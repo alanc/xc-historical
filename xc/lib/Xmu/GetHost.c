@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: GetHost.c,v 1.1 89/09/22 12:07:36 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,9 +31,6 @@ int XmuGetHostname (buf, maxlen)
 {
     int len;
 
-#ifdef hpux				/* stupid makedepend [need if] */
-#define NEED_UTSNAME
-#endif
 #ifdef USG
 #define NEED_UTSNAME
 #endif
