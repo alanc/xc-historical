@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: sessreg.c,v 1.5 91/01/31 22:03:38 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -38,9 +38,9 @@
  * one of -a or -d must be specified
  */
 
-# include	<stdio.h>
 # include	<X11/Xos.h>
 # include	<X11/Xfuncs.h>
+# include	<stdio.h>
 # include	<utmp.h>
 
 #ifdef SVR4
@@ -60,6 +60,14 @@
 # ifndef TTYS_FILE
 #  define TTYS_FILE	"/etc/ttys"
 # endif
+#endif
+
+#ifdef X_NOT_STDC_ENV
+extern long	time ();
+#endif
+#ifdef X_NOT_POSIX
+extern long	lseek ();
+extern char	*ttyname ();
 #endif
 
 int	wflag, uflag, lflag;
@@ -136,9 +144,8 @@ char	**argv;
 #endif
 	char		*line_tmp;
 	int		wtmp;
-	long		current_time, time (), lseek ();
+	long		current_time;
 	struct utmp	utmp_entry;
-	extern char	*ttyname (), *rindex ();
 
 	program_name = argv[0];
 	while (*++argv && **argv == '-') {
