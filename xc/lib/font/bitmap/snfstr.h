@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: snfstr.h,v 1.2 91/05/13 16:38:06 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -77,7 +77,7 @@ typedef struct _snfFontProp {
  * pad out glyphs to a CARD32 boundary
  */
 #define ADDRXFONTPROPS( pfi)  \
-	((DIXFontProp *) ((char *)ADDRCHARGLYPHS( pfi) + BYTESOFGLYPHINFO(pfi)))
+	((snfFontPropRec *) ((char *)ADDRCHARGLYPHS( pfi) + BYTESOFGLYPHINFO(pfi)))
 
 #define ADDRSTRINGTAB( pfi)  \
 	((char *)ADDRXFONTPROPS( pfi) + BYTESOFPROPINFO(pfi))
