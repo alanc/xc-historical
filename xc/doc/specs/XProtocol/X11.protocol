@@ -272,7 +272,7 @@ but no inferior contains the pointer.
 .IP
 The coordinate system has X horizontal and Y vertical, 
 with the origin [0, 0] at the upper left.
-Coordinates are discrete and are in terms of pixels.
+Coordinates are integral and coincide with pixel centers.
 Each window and pixmap has its own coordinate system.
 For a window, 
 the origin is inside the border at the inside upper left.
@@ -783,8 +783,8 @@ The protocol does not constrain the semantics.
 .IP
 The server provides the basic windowing mechanism.
 It handles IPC connections from clients, 
-demultiplexes graphics requests onto the screens, 
-and multiplexes input back to the appropriate clients.
+multiplexes graphics requests onto the screens, 
+and demultiplexes input back to the appropriate clients.
 .LP
 \fBServer grabbing\fP
 .IN "Server" "grabbing" "@DEF@"
@@ -832,6 +832,19 @@ The values are typically linear or near-linear increasing ramps.
 A stipple pattern is a bitmap that is used to tile a region that will serve
 as an additional clip mask for a fill operation with the foreground
 color.
+.LP
+\fBString Equivalence\fP
+.IN "String Equivalence" "" "@DEF@"
+Two ISO Latin-1 STRING8 values are considered equal if they are the same
+length and if corresponding bytes are either equal or are equivalent as
+follows:  decimal values 65 to 90 inclusive (characters ``A'' to ``Z'') are
+pairwise equivalent to decimal values 97 to 122 inclusive
+(characters ``a'' to ``z''), decimal values 192 to 214 inclusive
+(characters ``A grave'' to ``O diaeresis'') are pairwise equivalent to decimal
+values 224 to 246 inclusive (characters ``a grave'' to ``o diaeresis''),
+and decimal values 216 to 222 inclusive (characters ``O oblique'' to ``THORN'')
+are pairwise equivalent to decimal values 246 to 254 inclusive
+(characters ``o oblique'' to ``thorn'').
 .LP
 \fBTile\fP
 .IN "Tile" "" "@DEF@"
@@ -3224,6 +3237,8 @@ even if backing-store or save-under has been requested.
 The window is tiled with its background (except, if no background is defined, 
 the existing screen contents are not altered)
 and zero or more exposure events are generated.
+A server may preserve the contents and borders of inferiors.
+.IP
 A server may also ignore the specified bit-gravity and use 
 .PN Forget 
 instead.
@@ -4527,6 +4542,9 @@ no event processing is performed for the device.
 It is possible for a single device to be frozen because of both grabs.
 In this case, the freeze must be released on behalf of both grabs 
 before events can again be processed.
+If a device is frozen twice by a single client, then a single
+.PN AllowEvents
+releases both.
 .LP
 .IN "GrabServer" "" "@DEF@"
 .PN GrabServer
@@ -4813,6 +4831,9 @@ This request loads the specified font, if necessary,
 and associates identifier fid with it.
 The font name should use the ISO Latin-1 encoding, 
 and uppercase and lowercase do not matter.
+The interpretation of characters ``?'' (octal value 77) and ``*''
+(octal value 52) in the name is not defined by the core protocol,
+but is reserved for future definition.
 .IP
 Fonts are not associated with a particular screen 
 and can be stored as a component of any graphics context.
@@ -5244,8 +5265,9 @@ the server will interpret each CHAR2B as a 16-bit number that
 has been transmitted most-significant byte first (that is, byte1 of the
 CHAR2B is taken as the most-significant byte).
 .IP
+Characters with all zero metrics are ignored.
 If the font has no defined default-char, 
-then undefined characters in the string are taken to have all zero metrics.
+then undefined characters in the string are also ignored.
 .LP
 .IN "ListFonts" "" "@DEF@"
 .PN ListFonts
@@ -6348,8 +6370,7 @@ The dash-offset defines the phase of the pattern,
 specifying how many pixels into dashes the pattern should actually begin in 
 any single graphics request.
 Dashing is continuous through path elements combined with a join-style,
-but it is reset to the dash-offset each time a cap-style is applied 
-at a line endpoint.
+but is reset to the dash-offset between each sequence of joined lines.
 .IP
 The unit of measure for dashes is the same as in the ordinary
 coordinate system.
@@ -7556,6 +7577,8 @@ Errors:
 This request allocates a read-only colormap entry corresponding to the closest 
 RGB values provided by the hardware.
 It also returns the pixel and the RGB values actually used.
+Multiple clients requesting the same effective RGB values can be assigned
+the same read-only entry, allowing entries to be shared.
 .LP
 .IN "AllocNamedColor" "" "@DEF@"
 .PN AllocNamedColor
@@ -7716,6 +7739,10 @@ individual pixel obtained from
 .PN AllocColorPlanes 
 may not actually allow it to be reused until all of its related pixels 
 are also freed.
+Similarly, a read-only entry is not actually freed until it has been
+freed by all clients, and if a client allocates the same read-only entry
+multiple times, it must free the entry that many times before the
+entry is actually freed.
 .IP
 All specified pixels that are allocated by the client in cmap are freed, 
 even if one or more pixels produce an error.
@@ -7820,7 +7847,8 @@ Errors:
 .PN Colormap , 
 .PN Value
 .IP
-This request returns the color values stored in cmap for the specified pixels.
+This request returns the hardware-specific color values stored in cmap for
+the specified pixels.
 The values returned for an unallocated entry are undefined.
 A 
 .PN Value 
@@ -10382,7 +10410,7 @@ the transport layer has very little buffering or the client attempts to
 send large numbers of requests without ever reading replies or checking for
 errors and events.
 .LP
-If a server is implemented with internal concurrency, 
+Whether or not a server is implemented with internal concurrency, 
 the overall effect must be as if individual requests are executed to completion
 in some serial order, 
 and requests from a given connection must be executed in delivery order
