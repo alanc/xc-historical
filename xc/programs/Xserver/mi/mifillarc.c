@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.12 90/11/19 15:17:03 keith Exp $ */
+/* $XConsortium: mifillarc.c,v 5.13 91/05/26 15:23:30 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -121,9 +121,7 @@ miFillArcDSetup(arc, info)
     info->xm = ((double)arc->height) * (arc->height * 8);
     info->yk = info->y * info->ym;
     if (!info->dy)
-	info->yk = 0.0;
-    else
-	info->yk = info->ym / 2.0;
+	info->yk -= info->ym / 2.0;
     if (!info->dx)
     {
 	info->xk = 0;
