@@ -239,11 +239,12 @@
 	    ;; Get window attributes
 	    (with-buffer-request-and-reply (display *x-getwindowattributes* size :sizes (8))
 		 ((window window))
-	      (let ((buffer (or (state-attributes state-entry) (allocate-context))))
-		;; Copy into event from reply buffer
-		(buffer-replace (reply-ibuf8 buffer) buffer-bbuf 0 size)
-		(when state-entry (setf (state-attributes state-entry) buffer))
-		buffer)))))))
+	      (let ((repbuf (or (state-attributes state-entry) (allocate-context))))
+		(declare (type reply-buffer repbuf))
+		;; Copy into repbuf from reply buffer
+		(buffer-replace (reply-ibuf8 repbuf) buffer-bbuf 0 size)
+		(when state-entry (setf (state-attributes state-entry) repbuf))
+		repbuf)))))))
 
 ;;
 ;; These two are twins (get-window-attributes-buffer get-drawable-geometry-buffer)
@@ -268,11 +269,12 @@
 	    ;; Get drawable attributes
 	    (with-buffer-request-and-reply (display *x-getgeometry* size :sizes (8))
 		 ((drawable drawable))
-	      (let ((buffer (or (state-geometry state-entry) (allocate-context))))
-		;; Copy into event from reply buffer
-		(buffer-replace (reply-ibuf8 buffer) buffer-bbuf 0 size)
-		(when state-entry (setf (state-geometry state-entry) buffer))
-		buffer)))))))
+	      (let ((repbuf (or (state-geometry state-entry) (allocate-context))))
+		(declare (type reply-buffer repbuf))
+		;; Copy into repbuf from reply buffer
+		(buffer-replace (reply-ibuf8 repbuf) buffer-bbuf 0 size)
+		(when state-entry (setf (state-geometry state-entry) repbuf))
+		repbuf)))))))
 
 (defun put-window-attribute-changes (window changes)
   ;; change window attributes
@@ -327,25 +329,23 @@
 	    (card29-put (* (incf request-size) 4) (aref changes i))))))))
 
 (defmacro with-attributes ((window &rest options) &body body)
-  (let ((buffer (gensym)))
-    `(let ((,buffer (get-window-attributes-buffer ,window)))
-       (declare (type buffer ,buffer))
-       (prog1 
-	 (with-buffer-input (,buffer ,@options) ,@body)
-	 (unless *window-attributes*
-	   (deallocate-context ,buffer))))))
+  `(let ((.with-attributes-reply-buffer. (get-window-attributes-buffer ,window)))
+     (declare (type reply-buffer .with-attributes-reply-buffer.))
+     (prog1 
+       (with-buffer-input (.with-attributes-reply-buffer. ,@options) ,@body)
+       (unless *window-attributes*
+	 (deallocate-context .with-attributes-reply-buffer.)))))
 ;;
 ;; These two are twins (with-attributes with-geometry)
 ;; If you change one, you probably need to change the other...
 ;;
 (defmacro with-geometry ((window &rest options) &body body)
-  (let ((buffer (gensym)))
-    `(let ((,buffer (get-drawable-geometry-buffer ,window)))
-       (declare (type buffer ,buffer))
-       (prog1 
-	 (with-buffer-input (,buffer ,@options) ,@body)
-	 (unless *window-attributes*
-	   (deallocate-context ,buffer))))))
+  `(let ((.with-geometry-reply-buffer. (get-drawable-geometry-buffer ,window)))
+     (declare (type reply-buffer .with-geometry-reply-buffer.))
+     (prog1 
+       (with-buffer-input (.with-geometry-reply-buffer. ,@options) ,@body)
+       (unless *window-attributes*
+	 (deallocate-context .with-geometry-reply-buffer.)))))
 
 ;;;-----------------------------------------------------------------------------
 ;;; Group A: (for GetWindowAttributes)
