@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.84 89/10/02 16:04:51 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.85 89/10/04 08:46:23 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -692,7 +692,7 @@ static String ParseXtEventType(str, event, tmEventP,error)
     (void) strncpy(eventTypeStr, start, str-start);
     eventTypeStr[str-start] = '\0';
     *tmEventP = LookupTMEventType(eventTypeStr,error);
-    if (*error == TRUE) 
+    if (*error) 
         return PanicModeRecovery(str);
     event->event.eventType = events[*tmEventP].eventType;
     return str;
@@ -1008,7 +1008,7 @@ static String ParseEvent(str, event,error)
     Cardinal	tmEvent;
 
     str = ParseModifiers(str, event,error);
-    if (*error == TRUE) return str;
+    if (*error) return str;
     if (*str != '<') {
          Syntax("Missing '<' while parsing event type.",""); 
          *error = TRUE;
@@ -1016,7 +1016,7 @@ static String ParseEvent(str, event,error)
     }
     else str++;
     str = ParseXtEventType(str, event, &tmEvent,error);
-    if (*error == TRUE) return str;
+    if (*error) return str;
     if (*str != '>'){
          Syntax("Missing '>' while parsing event type","");
          *error = TRUE;
@@ -1025,7 +1025,7 @@ static String ParseEvent(str, event,error)
     else str++;
     str = (*(events[tmEvent].parseDetail))(
         str, events[tmEvent].closure, event,error);
-    if (*error == TRUE) return str;
+    if (*error) return str;
 
 /* gross hack! ||| this kludge is related to the X11 protocol deficiency w.r.t.
  * modifiers in grabs.
@@ -1079,7 +1079,7 @@ static String ParseQuotedStringEvent(str, event,error)
 	    break;
 	}
     tmEvent = (EventType) LookupTMEventType("Key",error);
-    if (*error == TRUE)
+    if (*error)
         return PanicModeRecovery(str);
 
     event->event.eventType = events[tmEvent].eventType;
@@ -1489,7 +1489,7 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
             event->actions = NULL;
 
 	    str = ParseEvent(str, event,error);
-            if (*error == TRUE) return str;
+            if (*error) return str;
 	    *nextEvent = event;
 	    *actionsP = &event->actions;
 	    str = ParseRepeat(str, &event, actionsP);
@@ -1572,7 +1572,7 @@ static String ParseString(str, strP)
 static String ParseParamSeq(str, paramSeqP, paramNumP)
     register String str;
     String **paramSeqP;
-    unsigned long *paramNumP;
+    Cardinal *paramNumP;
 {
     typedef struct _ParamRec *ParamPtr;
     typedef struct _ParamRec {
