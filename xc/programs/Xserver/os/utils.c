@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.82 89/07/09 16:08:37 rws Exp $ */
+/* $XConsortium: utils.c,v 1.83 89/08/31 13:40:53 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -432,11 +432,11 @@ char	*argv[];
 typedef struct _MallocHeader	*MallocHeaderPtr;
 
 typedef struct _MallocHeader {
-	unsigned long	magic;
 	unsigned long	amount;
 	unsigned long	time;
 	MallocHeaderPtr	prev;
 	MallocHeaderPtr	next;
+	unsigned long	magic;
 } MallocHeaderRec;
 
 typedef struct _MallocTrailer {
@@ -446,6 +446,7 @@ typedef struct _MallocTrailer {
 unsigned long	MemoryAllocTime;
 unsigned long	MemoryAllocBreakpoint = ~0;
 unsigned long	MemoryActive = 0;
+unsigned long	MemoryValidate;
 
 MallocHeaderPtr	MemoryInUse;
 
@@ -476,6 +477,22 @@ SetupBlock(ptr, amount)
     
     return (unsigned long *)(((char *) ptr) + sizeof (MallocHeaderRec));
 }
+
+ValidateAllActiveMemory ()
+{
+    MallocHeaderPtr	head;
+    MallocTrailerPtr	tail;
+
+    for (head = MemoryInUse; head; head = head->next)
+    {
+	tail = (MallocTrailerPtr) (((char *) (head + 1)) + head->amount);
+    	if (head->magic == FREEDMAGIC)
+	    FatalError("Free data on active list");
+    	if(head->magic != FIRSTMAGIC || tail->magic != SECONDMAGIC)
+	    FatalError("Garbage object on active list");
+    }
+}
+
 #endif
 
 /* XALLOC -- X's internal memory allocator.  Why does it return unsigned
@@ -502,6 +519,8 @@ Xalloc (amount)
     /* aligned extra on long word boundary */
     amount = (amount + 3) & ~3;
 #ifdef MEMBUG
+    if (MemoryValidate)
+	ValidateAllActiveMemory ();
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
 	return (unsigned long *)NULL;
@@ -517,6 +536,22 @@ Xalloc (amount)
 }
 
 /*****************
+ * Xcalloc
+ *****************/
+
+unsigned long *
+Xcalloc (amount)
+    unsigned long   amount;
+{
+    unsigned long   *ret;
+
+    ret = Xalloc (amount);
+    if (ret)
+	bzero ((char *) ret, (int) amount);
+    return ret;
+}
+
+/*****************
  * Xrealloc
  *****************/
 
@@ -529,6 +564,8 @@ Xrealloc (ptr, amount)
     char *realloc();
 
 #ifdef MEMBUG
+    if (MemoryValidate)
+	ValidateAllActiveMemory ();
     if (!amount)
     {
 	Xfree(ptr);
@@ -577,6 +614,8 @@ Xfree(ptr)
     register pointer ptr;
 {
 #ifdef MEMBUG
+    if (MemoryValidate)
+	ValidateAllActiveMemory ();
     if (ptr)
     {
 	MallocHeaderPtr	head;
