@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p231,v 5.1 91/02/16 09:41:11 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -64,8 +64,8 @@ The current update state.  Pupd_st is defined in phigs.h as follows:
 typedef enum {
 .sp .2
 .ta .5i
-	PUPD_NOT_PENDING
-	PUPD_PENDING
+	PUPD_NOT_PEND
+	PUPD_PEND
 .sp .2
 } Pupd_st;
 .fi

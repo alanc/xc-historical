@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p223,v 5.1 91/02/16 09:41:01 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -71,8 +71,8 @@ Pupd_st is an enumerated type defined in phigs.h as follows:
 .sp .4
 typedef enum {
 .sp .2
-	PUPD_NOT_PENDING,	/* Not Pending */
-	PUPD_PENDING	/* Pending */
+	PUPD_NOT_PEND,	/* Not Pending */
+	PUPD_PEND	/* Pending */
 .sp .2
 } Pupd_st;
 .fi
