@@ -1,4 +1,4 @@
-/* $XConsortium: PolyReg.c,v 11.21 92/09/15 14:22:38 rws Exp $ */
+/* $XConsortium: PolyReg.c,v 11.22 94/04/17 20:20:27 rws Exp converse $ */
 /************************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -426,7 +426,7 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
 	    if (numRects && pts->x == rects->x1 && pts->y == rects->y2 &&
 		pts[1].x == rects->x2 &&
 		(numRects == 1 || rects[-1].y1 != rects->y1) &&
-		(!i || pts[2].y > pts[1].y)) {
+		(i && pts[2].y > pts[1].y)) {
 		rects->y2 = pts[1].y + 1;
 		continue;
 	    }
