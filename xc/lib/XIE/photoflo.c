@@ -1,4 +1,4 @@
-/* $XConsortium: photoflo.c,v 1.4 94/04/17 20:18:26 rws Exp $ */
+/* $XConsortium: photoflo.c,v 1.5 94/05/06 15:09:49 mor Exp $ */
 
 /*
 
@@ -248,6 +248,7 @@ unsigned int    	*navailable_ret;
     xieQueryPhotofloReq		*req;
     xieQueryPhotofloReply	rep;
     char			*pBuf;
+    int				i;
 
     LockDisplay (display);
 
@@ -279,22 +280,40 @@ unsigned int    	*navailable_ret;
 
     if (rep.expectedCount > 0)
     {
+	short *temp = (short *) _XAllocTemp (display,
+	    sizeof (short) * rep.expectedCount);
+
 	*nexpected_ret = rep.expectedCount;
 	*data_expected_ret = (XiePhototag *) Xmalloc (
 	    sizeof (XiePhototag) * rep.expectedCount);
 			
-	_XRead16Pad (display, *data_expected_ret,
+	_XRead16Pad (display, temp,
 	    rep.expectedCount * SIZEOF (xieTypPhototag));
+
+	for (i = 0; i < rep.expectedCount; i++)
+	    (*data_expected_ret)[i] = (XiePhototag) temp[i];
+
+	_XFreeTemp (display, (char *) temp,
+	    sizeof (short) * rep.expectedCount);
     }
 
     if (rep.availableCount > 0)
     {
+	short *temp = (short *) _XAllocTemp (display,
+	    sizeof (short) * rep.availableCount);
+
 	*navailable_ret = rep.availableCount;
 	*data_available_ret = (XiePhototag *) Xmalloc (
 	    sizeof (XiePhototag) * rep.availableCount);
 			
-	_XRead16Pad (display, *data_available_ret,
+	_XRead16Pad (display, temp,
 	    rep.availableCount * SIZEOF (xieTypPhototag));
+
+	for (i = 0; i < rep.availableCount; i++)
+	    (*data_available_ret)[i] = (XiePhototag) temp[i];
+
+	_XFreeTemp (display, (char *) temp,
+	    sizeof (short) * rep.availableCount);
     }
 
     UnlockDisplay (display);
