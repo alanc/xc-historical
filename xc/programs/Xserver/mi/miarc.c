@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.50 94/04/17 20:27:12 dpw Exp $ */
+/* $XConsortium: miarc.c,v 5.51 94/07/25 13:47:32 kaleb Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -492,8 +492,8 @@ miComputeCircleSpans(lw, parc, spdata)
 	    spdata->count2--;
 	else
 	{
-	    if (lw > parc->height)
-		span[-1].rx = span[-1].rw = -((lw - parc->height) >> 1);
+	    if (lw > (int)parc->height)
+		span[-1].rx = span[-1].rw = -((lw - (int)parc->height) >> 1);
 	    else
 		span[-1].rw = 0;
 	    spdata->count1--;
@@ -513,8 +513,8 @@ miComputeEllipseSpans(lw, parc, spdata)
     double A, T, b, d, x, y, t, inx, outx, hepp, hepm;
     int flip, solution;
 
-    w = parc->width / 2.0;
-    h = parc->height / 2.0;
+    w = (double)parc->width / 2.0;
+    h = (double)parc->height / 2.0;
     r = lw / 2.0;
     rs = r * r;
     Hs = h * h;
@@ -541,8 +541,8 @@ miComputeEllipseSpans(lw, parc, spdata)
     spdata->count1 = 0;
     spdata->count2 = 0;
     spdata->hole = (spdata->top &&
-		    parc->height * lw <= parc->width * parc->width &&
-		    lw < parc->height);
+		 (int)parc->height * lw <= (int)(parc->width * parc->width) &&
+		    lw < (int)parc->height);
     for (; K > 0.0; K -= 1.0)
     {
 	N = (K * K + Nk) / 6.0;
@@ -1040,7 +1040,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     register int		i;
     xArc			*parc;
     int				xMin, xMax, yMin, yMax;
-    int				dx, dy;
+    int				pixmapWidth, pixmapHeight;
     int				xOrg, yOrg;
     int				width;
     Bool			fTricky;
@@ -1050,6 +1050,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     miPolyArcPtr		polyArcs;
     int				cap[2], join[2];
     int				iphase;
+    int				halfWidth;
 
     width = pGC->lineWidth;
     if(width == 0 && pGC->lineStyle == LineSolid)
@@ -1088,6 +1089,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	  default:
 	    fTricky = TRUE;
 
+	    /* find bounding box around arcs */
 	    xMin = yMin = MAXSHORT;
 	    xMax = yMax = MINSHORT;
 
@@ -1098,6 +1100,35 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		xMax = max (xMax, (parc->x + (int) parc->width));
 		yMax = max (yMax, (parc->y + (int) parc->height));
 	    }
+
+	    /* expand box to deal with line widths */
+	    halfWidth = (width + 1)/2;
+	    xMin -= halfWidth;
+	    yMin -= halfWidth;
+	    xMax += halfWidth;
+	    yMax += halfWidth;
+
+	    /* compute pixmap size; limit it to size of drawable */
+	    xOrg = max(xMin, 0);
+	    yOrg = max(yMin, 0);
+	    pixmapWidth = min(xMax, pDraw->width) - xOrg;
+	    pixmapHeight = min(yMax, pDraw->height) - yOrg;
+
+	    /* if nothing left, return */
+	    if ( (pixmapWidth <= 0) || (pixmapHeight <= 0) ) return;
+
+	    for(i = narcs, parc = parcs; --i >= 0; parc++)
+	    {
+		parc->x -= xOrg;
+		parc->y -= yOrg;
+	    }
+	    if (pGC->miTranslate)
+	    {
+		xOrg += pDraw->x;
+		yOrg += pDraw->y;
+	    }
+
+	    /* set up scratch GC */
 
 	    pGCTo = GetScratchGC(1, pDraw->pScreen);
 	    if (!pGCTo)
@@ -1110,25 +1141,10 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    gcvals[GCValsJoinStyle] = pGC->joinStyle;
 	    DoChangeGC(pGCTo, GCValsMask, gcvals, 0);
     
-    	    xOrg = xMin - (width + 1)/2;
-	    yOrg = yMin - (width + 1)/2;
-	    dx = (xMax - xMin) + width + 1;
-	    dy = (yMax - yMin) + width + 1;
-	    for(i = narcs, parc = parcs; --i >= 0; parc++)
-	    {
-		parc->x -= xOrg;
-		parc->y -= yOrg;
-	    }
-	    if (pGC->miTranslate)
-	    {
-		xOrg += pDraw->x;
-		yOrg += pDraw->y;
-	    }
-
 	    /* allocate a 1 bit deep pixmap of the appropriate size, and
 	     * validate it */
 	    pDrawTo = (DrawablePtr)(*pDraw->pScreen->CreatePixmap)
-					(pDraw->pScreen, dx, dy, 1);
+				(pDraw->pScreen, pixmapWidth, pixmapHeight, 1);
 	    if (!pDrawTo)
 	    {
 		FreeScratchGC(pGCTo);
@@ -1227,7 +1243,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 			if (pGC->serialNumber != pDraw->serialNumber)
 			    ValidateGC (pDraw, pGC);
 		    	(*pGC->ops->PushPixels) (pGC, (PixmapPtr)pDrawTo,
-						 pDraw, dx, dy, xOrg, yOrg);
+				 pDraw, pixmapWidth, pixmapHeight, xOrg, yOrg);
 			miClearDrawable ((DrawablePtr) pDrawTo, pGCTo);
 		    }
 		}
@@ -1333,7 +1349,7 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 	}
 	switch (pGC->joinStyle) {
 	case JoinRound:
-		width = (pGC->lineWidth ? pGC->lineWidth : 1);
+		width = (pGC->lineWidth ? (double)pGC->lineWidth : (double)1);
 
 		arc.x = center.x - width/2;
 		arc.y = center.y - width/2;
@@ -1461,7 +1477,7 @@ miRoundCap(pDraw, pGC, pCenter, pEnd, pCorner, pOtherCorner, fLineEnd,
     SppArcRec	arc;
     SppPointPtr	pArcPts;
 
-    width = (pGC->lineWidth ? pGC->lineWidth : 1);
+    width = (pGC->lineWidth ? (double)pGC->lineWidth : (double)1);
 
     arc.x = pCenter.x - width/2;
     arc.y = pCenter.y - width/2;
@@ -2368,8 +2384,8 @@ drawZeroArc (pDraw, pGC, tarc, lw, left, right)
 		a1 = FULLCIRCLE;
 	else if (a1 < -FULLCIRCLE)
 		a1 = -FULLCIRCLE;
-	w = tarc->width / 2.0;
-	h = tarc->height / 2.0;
+	w = (double)tarc->width / 2.0;
+	h = (double)tarc->height / 2.0;
 	/*
 	 * play in X coordinates right away
 	 */
