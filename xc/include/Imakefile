@@ -49,7 +49,6 @@ XAWDUMMIES = \
 	Mailbox.h \
 	MailboxP.h \
 	Scroll.h \
-	ScrollP.h \
 	Simple.h \
 	SimpleP.h \
 	Text.h \
