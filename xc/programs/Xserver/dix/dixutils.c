@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.39 91/07/16 20:24:03 keith Exp $ */
+/* $XConsortium: dixutils.c,v 1.40 91/12/11 18:53:48 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -122,7 +122,7 @@ LookupWindow(rid, client)
 	return NULL;
     if (client->lastDrawableID == rid)
     {
-        if (client->lastDrawable->type != DRAWABLE_PIXMAP)
+        if (client->lastDrawable->type == DRAWABLE_WINDOW)
             return ((WindowPtr) client->lastDrawable);
         return (WindowPtr) NULL;
     }
