@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.79 89/04/18 17:44:05 jim Exp $
+ * $XConsortium: charproc.c,v 1.80 89/05/05 16:43:27 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.79 89/04/18 17:44:05 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.80 89/05/05 16:43:27 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1703,7 +1703,7 @@ register TScreen *screen;
 		return;
 	if(!screen->altbuf)
 		screen->altbuf = Allocate(screen->max_row + 1, screen->max_col
-		 + 1);
+		 + 1, &screen->abuf_address);
 	SwitchBufs(screen);
 	screen->alternate = TRUE;
 }
@@ -1861,11 +1861,13 @@ static void VTallocbuf ()
 {
     register TScreen *screen = &term->screen;
     int nrows = screen->max_row + 1;
+    extern ScrnBuf Allocate();
 
     /* allocate screen buffer now, if necessary. */
     if (screen->scrollWidget)
       nrows += screen->savelines;
-    screen->allbuf = (ScrnBuf) Allocate (nrows, screen->max_col + 1);
+    screen->allbuf = Allocate (nrows, screen->max_col + 1,
+     &screen->sbuf_address);
     if (screen->scrollWidget)
       screen->buf = &screen->allbuf[2 * screen->savelines];
     else

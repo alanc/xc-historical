@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.10 89/01/03 16:18:06 jim Exp $
+ *	$XConsortium: screen.c,v 1.11 89/03/01 20:00:41 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.10 89/01/03 16:18:06 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.11 89/03/01 20:00:41 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -44,7 +44,7 @@ extern Char *calloc(), *malloc(), *realloc();
 extern void Bcopy();
 extern void free();
 
-ScrnBuf Allocate (nrow, ncol)
+ScrnBuf Allocate (nrow, ncol, addr)
 /*
    allocates memory for a 2-dimensional array of chars and returns a pointer
    thereto
@@ -52,17 +52,84 @@ ScrnBuf Allocate (nrow, ncol)
    the actual character array and the second (odd) one is the attributes.
  */
 register int nrow, ncol;
+Char **addr;
 {
 	register ScrnBuf base;
+	register Char *tmp;
+	register int i;
 
 	if ((base = (ScrnBuf) calloc ((unsigned)(nrow *= 2), sizeof (char *))) == 0)
 		SysError (ERROR_SCALLOC);
 
-	for (nrow--; nrow >= 0; nrow--)
-		if ((base [nrow] = calloc ((unsigned)ncol, sizeof(char))) == 0)
-			SysError (ERROR_SCALLOC2);
+	if ((tmp = calloc ((unsigned) (nrow * ncol), sizeof(char))) == 0)
+		SysError (ERROR_SCALLOC2);
+
+	*addr = tmp;
+	for (i = 0; i < nrow; i++, tmp += ncol)
+		base[i] = tmp;
 
 	return (base);
+}
+
+/*
+ *  This is called when the screen is resized. Not complex if you do
+ *  things in the right order...
+ */
+static void
+Reallocate(sbuf, sbufaddr, nrow, ncol, oldrow, oldcol)
+ScrnBuf *sbuf;
+Char **sbufaddr;
+int nrow, ncol, oldrow, oldcol;
+{
+	register ScrnBuf base;
+	register Char *tmp;
+	register int i, minrows, mincols;
+	Char *oldbuf;
+	
+	if (sbuf == NULL || *sbuf == NULL)
+		return;
+
+	oldrow *= 2;
+	oldbuf = *sbufaddr;
+
+	/*
+	 * Special case if oldcol == ncol - straight forward realloc and
+	 * update of the additional lines in sbuf
+	 */
+
+	/* 
+	 *  realloc sbuf; we don't care about losing the lower lines if the
+	 *  screen shrinks. It might be cleaner to readjust the screen so
+	 *  that the UPPER lines vanish when the screen shrinks but that's
+	 *  more work...
+	 */
+	nrow *= 2;
+	*sbuf = (ScrnBuf) realloc((char *) (*sbuf),
+	 (unsigned) (nrow * sizeof(char *)));
+	if (*sbuf == 0)
+		SysError(ERROR_RESIZE);
+	base = *sbuf;
+
+	/* 
+	 *  create the new buffer space and copy old buffer contents there
+	 *  line by line, updating the pointers in sbuf as we go; then free
+	 *  the old buffer
+	 */
+	if ((tmp = calloc((unsigned) (nrow * ncol), sizeof(char))) == 0)
+		SysError(ERROR_SREALLOC);
+	*sbufaddr = tmp;
+	minrows = (oldrow < nrow) ? oldrow : nrow;
+	mincols = (oldcol < ncol) ? oldcol : ncol;
+	for(i = 0; i < minrows; i++, tmp += ncol) {
+		Bcopy(base[i], tmp, mincols);
+		base[i] = tmp;
+	}
+	if (oldrow < nrow) {
+		for (i = minrows; i < nrow; i++, tmp += ncol)
+			base[i] = tmp;
+	}
+	/* Now free the old buffer - simple, see... */
+	free(oldbuf);
 }
 
 ScreenWrite (screen, str, flags, length)
@@ -381,13 +448,7 @@ int width, height;
 unsigned *flags;
 {
 	int rows, cols;
-	register int index;
-	int savelines;
-	register ScrnBuf sb = screen->allbuf;
-	register ScrnBuf ab = screen->altbuf;
-	register int x;
 	int border = 2 * screen->border;
-	int i, j, k;
 #ifdef sun
 #ifdef TIOCSSIZE
 	struct ttysize ts;
@@ -421,85 +482,19 @@ unsigned *flags;
 
 	/* change buffers if the screen has changed size */
 	if (screen->max_row != rows - 1 || screen->max_col != cols - 1) {
+		register int savelines = screen->scrollWidget ?
+		 screen->savelines : 0;
+		
 		if(screen->cursor_state)
 			HideCursor();
-		savelines = screen->scrollWidget ? screen->savelines : 0;
-		j = screen->max_col + 1;
-		i = cols - j;
-		k = screen->max_row;
-		if(rows < k)
-			k = rows;
-		if(ab) {
-			/* resize current lines in alternate buf */
-			for (index = x = 0; index <= k; x += 2, index++) {
-				if ((ab[x] = realloc(ab[x], (unsigned) cols)) == NULL)
-					SysError(ERROR_SREALLOC);
-				if((ab[x + 1] = realloc(ab[x + 1], (unsigned) cols)) ==
-				 NULL)
-					SysError (ERROR_SREALLOC2);
-				if (cols > j) {
-					bzero (ab [x] + j, i);
-					bzero (ab [x + 1] + j, i);
-				}
-			}
-			/* discard excess bottom rows in alt buf */
-			for (index = rows, x = 2 * k ; index <=
-			 screen->max_row; x += 2, index++) {
-			   free (ab [x]);
-			   free (ab [x + 1]);
-			}
-		}
-		/* resize current lines */
-                k += savelines;
-		for (index = x = 0; index <= k; x += 2, index++) {
-			if ((sb[x] = realloc(sb[x], (unsigned) cols)) == NULL)
-				SysError(ERROR_SREALLOC3);
-			if((sb[x + 1] = realloc(sb[x + 1], (unsigned) cols)) == NULL)
-				SysError (ERROR_SREALLOC4);
-			if (cols > j) {
-				bzero (sb [x] + j, i);
-				bzero (sb [x + 1] + j, i);
-			}
-		}
-		/* discard excess bottom rows */
-		for (index = rows, x = 2 * k; index <= screen->max_row;
-		 x += 2, index++) {
-		   free (sb [x]);
-		   free (sb [x + 1]);
-		}
-		if(ab) {
-		    if((ab = (ScrnBuf)realloc((char *)ab,
-		     (unsigned) 2 * sizeof(char *) * rows)) == NULL)
-			SysError (ERROR_RESIZE);
-		    screen->altbuf = ab;
-		}
-		k = 2 * (rows + savelines);
-		/* resize sb */
-		if((sb = (ScrnBuf)realloc((char *) sb, (unsigned) k * sizeof(char *)))
-		  == NULL)
-			SysError (ERROR_RESIZE2);
-		screen->allbuf = sb;
-		screen->buf = &sb[2 * savelines];
-	
-		if(ab) {
-			/* create additional bottom rows as required in alt */
-			for (index = screen->max_row + 1, x = 2 * index ;
-			 index < rows; x += 2, index++) {
-			   if((ab[x] = calloc ((unsigned) cols, sizeof(char))) == NULL)
-				SysError(ERROR_RESIZROW);
-			   if((ab[x + 1] = calloc ((unsigned) cols, sizeof(char))) == NULL)
-				SysError(ERROR_RESIZROW2);
-			}
-		}
-		/* create additional bottom rows as required */
-		for (index = screen->max_row + 1, x = 2 * (index + savelines) ;
-		 index < rows; x += 2, index++) {
-		   if((sb[x] = calloc ((unsigned) cols, sizeof(char))) == NULL)
-			SysError(ERROR_RESIZROW3);
-		   if((sb[x + 1] = calloc ((unsigned) cols, sizeof(char))) == NULL)
-			SysError(ERROR_RESIZROW4);
-		}
-
+		if (screen->altbuf) 
+			Reallocate(&screen->altbuf, &screen->abuf_address,
+			 rows, cols, screen->max_row + 1, screen->max_col + 1);
+		Reallocate(&screen->allbuf, &screen->sbuf_address,
+		 rows + savelines, cols,
+		 screen->max_row + 1 + savelines, screen->max_col + 1);
+		screen->buf = &screen->allbuf[2 * savelines];
+		 
 		screen->max_row = rows - 1;
 		screen->max_col = cols - 1;
 	
@@ -560,5 +555,4 @@ unsigned *flags;
 #endif	/* sun */
 	return (0);
 }
-
 

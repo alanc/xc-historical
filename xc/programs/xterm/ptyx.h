@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.26 89/03/23 11:41:35 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.27 89/05/16 14:26:59 kit Exp $
  */
 
 #include <X11/copyright.h>
@@ -265,7 +265,9 @@ typedef struct {
 	ScrnBuf		buf;		/* screen buffer (main)		*/
 	ScrnBuf		allbuf;		/* screen buffer (may include
 					   lines scrolled off top	*/
+	char		*sbuf_address;	/* main screen memory address   */
 	ScrnBuf		altbuf;		/* alternate screen buffer	*/
+	char		*abuf_address;	/* alternate screen memory address */
 	Boolean		alternate;	/* true if using alternate buf	*/
 	unsigned short	do_wrap;	/* true if cursor in last column
 					   and character just output    */
