@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.8 93/09/26 15:41:12 gildea Exp $
+ * $XConsortium: xdmauth.c,v 1.9 94/02/08 14:55:12 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -93,9 +93,10 @@ XdmAuthenticationAddAuth (name_len, name, data_len, data)
 		 'a' <= c && c <= 'f' ? c - 'a' + 10 : \
 		 'A' <= c && c <= 'F' ? c - 'A' + 10 : -1)
 
-static
+static int
 HexToBinary (in, out, len)
     char    *out, *in;
+    int len;
 {
     int	    top, bottom;
 
@@ -117,6 +118,7 @@ HexToBinary (in, out, len)
     return 1;
 }
 
+void
 XdmAuthenticationInit (cookie, cookie_len)
     char    *cookie;
     int	    cookie_len;
@@ -182,7 +184,7 @@ XdmClientAuthCompare (a, b)
     return a->time == b->time;
 }
 
-static
+static void
 XdmClientAuthDecode (plain, auth)
     unsigned char	*plain;
     XdmClientAuthPtr	auth;
@@ -208,6 +210,7 @@ XdmClientAuthDecode (plain, auth)
     }
 }
 
+void
 XdmClientAuthTimeout (now)
     long	now;
 {
@@ -370,6 +373,7 @@ XdmResetCookie ()
 	xfree (client);
     }
     xdmClients = (XdmClientAuthPtr) 0;
+    return 1;
 }
 
 XID
@@ -397,6 +401,7 @@ char	*cookie;
     return (XID) -1;
 }
 
+int
 XdmFromID (id, data_lenp, datap)
 XID id;
 unsigned short	*data_lenp;
@@ -414,6 +419,7 @@ char	**datap;
     return 0;
 }
 
+int
 XdmRemoveCookie (data_length, data)
 unsigned short	data_length;
 char	*data;
@@ -433,7 +439,7 @@ char	*data;
 	key_bits = (XdmAuthKeyPtr) data;
 	break;
     default:
-	return;
+	return 0;
     }
     for (auth = xdmAuth; auth; auth=auth->next) {
 	if (XdmcpCompareKeys (rho_bits, &auth->rho) &&
