@@ -13,9 +13,11 @@ M.I.T. makes no representation about the suitability of
 this software for any purpose. It is provided "as is"
 without any express or implied warranty.
 
+Author:  Bob Scheifler, MIT X Consortium
+
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.20 89/09/20 18:56:29 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.21 89/10/24 18:28:49 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
