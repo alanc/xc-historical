@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.9 90/11/06 16:17:58 dave Exp $
+ * $XConsortium: editres.c,v 1.10 91/01/09 17:45:17 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -82,7 +82,7 @@ char **argv;
     XtAppContext app_con;
 
     toplevel = XtAppInitialize(&app_con, "Editres", NULL, ZERO,
-			       (Cardinal *)&argc, argv, fallback_resources,
+			       &argc, argv, fallback_resources,
 			       NULL, ZERO);
 
     if (argc != 1)		
