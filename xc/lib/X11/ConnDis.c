@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.20 87/08/31 14:14:38 toddb Locked $ */
+/* $Header: XConnDis.c,v 11.21 87/09/13 23:03:07 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -214,7 +214,14 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	 * set it non-blocking.  This is so we can read data when blocked
 	 * for writing in the library.
 	 */
+#ifdef FIOSNBIO
+	{
+	    int arg = 1;
+	    ioctl(fd, FIOSNBIO, &arg);
+	}
+#else
 	(void) fcntl(fd, F_SETFL, FNDELAY);
+#endif /* FIOSNBIO */
 	/*
 	 * Return the id if the connection succeeded. Rebuild the expanded
 	 * spec and return it in the result parameter.
