@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: svgaInit.c,v 1.1 93/09/18 16:07:43 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -42,14 +42,13 @@
 extern char *display;
 extern Bool mieqInit();
 extern int AddScreen();
-extern void NoopDDA();
 extern Bool OsInitColors();
 extern Bool OsInitAllocator();
 extern void ProcessInputEvents();
 extern Bool RegisterBlockAndWakeupHandlers();
 
 char* VendorString  = "Snitily Graphics Consulting Services";
-int   VendorRelease = 5000;
+int   VendorRelease = 6000;
 
 #ifndef PATH_MAX
 #define PATH_MAX 256
@@ -76,7 +75,7 @@ static void
 svgaWakeup(
     pointer blockData,
     ulong   err,
-    long    *pReadmask
+    pointer pReadmask
 )
 {
   if (svgaInputPending) ProcessInputEvents();
@@ -260,7 +259,8 @@ InitOutput(
 
   AddScreen(svgaSVGAScreenInit, argc, argv);
 
-  RegisterBlockAndWakeupHandlers(NoopDDA, svgaWakeup, (void *)0);
+  RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
+				 svgaWakeup, (void *)0);
 }
 
 
@@ -365,9 +365,9 @@ AbortDDX()
    * try to deinitialize all input devices
    */
   if ((pKeyboard = LookupKeyboardDevice()) != NULL)
-    (void)XqueKeyboardProc(pKeyboard, DEVICE_CLOSE);
+    (void)XqueKeyboardProc((DeviceIntPtr)pKeyboard, DEVICE_CLOSE);
   if ((pPointer = LookupPointerDevice()) != NULL)
-    (void)XquePointerProc(pPointer, DEVICE_CLOSE);
+    (void)XquePointerProc((DeviceIntPtr)pPointer, DEVICE_CLOSE);
 
   if (screenInfo.screens[0]) svgaSVPMISetText(screenInfo.screens[0]);
 
