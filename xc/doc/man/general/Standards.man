@@ -1,6 +1,7 @@
+.\" $XConsortium$
 .TH XSTANDARDS 1 "Release 5"  "X Version 11"
 .SH NAME
-X Standards
+X Standards \- MIT X Consortium Standards
 .SH SYNOPSIS
 The major goal of the MIT X Consortium is to promote cooperation within the
 computer industry in the creation of standard software interfaces at all layers
