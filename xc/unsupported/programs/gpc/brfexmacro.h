@@ -1,8 +1,4 @@
-/* $XConsortium$ */
-
-/*
- */
-
+/* $XConsortium: brfexmacro.h,v 5.1 91/02/16 10:07:21 rws Exp $ */
 
 /*--------------------------------------------------------------------*\
 |
@@ -40,25 +36,25 @@
 \*--------------------------------------------------------------------*/
 
 
-#define INIT_LIST(n)\
+#define INIT_LIST(item)\
 {\
-        brf_exception[n].brf_ex_type = NULL;\
-        brf_exception[n].brf_ex_flag = BRF_OK;\
-        brf_exception[n].brf_ex_optional[VCOLORT] = NULL;\
-        brf_exception[n].brf_ex_optional[VCOLORI] = NULL;\
-        brf_exception[n].brf_ex_optional[VNORM] = NULL;\
-        brf_exception[n].brf_ex_optional[FCOLORT] = NULL;\
-        brf_exception[n].brf_ex_optional[FCOLORI] = NULL;\
-        brf_exception[n].brf_ex_optional[FNORM] = NULL;\
-        brf_exception[n].brf_ex_optional[EDATA] = NULL;\
-        brf_exception[n].brf_ex_range[RANGESTART] = NO_RANGE_DATA;\
-        brf_exception[n].brf_ex_range[RANGESTOP] = NO_RANGE_DATA;\
-        brf_exception[n].brf_ex_rrange[RANGESTART] = NO_RANGE_DATA;\
-        brf_exception[n].brf_ex_rrange[RANGESTOP] = NO_RANGE_DATA;\
-        brf_exception[n].brf_ex_custom_handler = NULL;\
-        brf_exception[n].brf_ex_message = "This Space For Rent\n";\
-        brf_exception[n].brf_ex_logic = TRUE;\
-        brf_exception[n].brf_ex_numhits = 0;\
+        brf_exception[item].brf_ex_type = NULL;\
+        brf_exception[item].brf_ex_flag = BRF_OK;\
+        brf_exception[item].brf_ex_optional[VCOLORT] = NULL;\
+        brf_exception[item].brf_ex_optional[VCOLORI] = NULL;\
+        brf_exception[item].brf_ex_optional[VNORM] = NULL;\
+        brf_exception[item].brf_ex_optional[FCOLORT] = NULL;\
+        brf_exception[item].brf_ex_optional[FCOLORI] = NULL;\
+        brf_exception[item].brf_ex_optional[FNORM] = NULL;\
+        brf_exception[item].brf_ex_optional[EDATA] = NULL;\
+        brf_exception[item].brf_ex_range[RANGESTART] = NO_RANGE_DATA;\
+        brf_exception[item].brf_ex_range[RANGESTOP] = NO_RANGE_DATA;\
+        brf_exception[item].brf_ex_rrange[RANGESTART] = NO_RANGE_DATA;\
+        brf_exception[item].brf_ex_rrange[RANGESTOP] = NO_RANGE_DATA;\
+        brf_exception[item].brf_ex_custom_handler = NULL;\
+        brf_exception[item].brf_ex_message = "This Space For Rent\n";\
+        brf_exception[item].brf_ex_logic = TRUE;\
+        brf_exception[item].brf_ex_numhits = 0;\
 }
 
 
