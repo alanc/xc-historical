@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbcmap.c,v 1.12 87/08/26 09:58:30 todd Exp $ */
+/* $Header: mfbcmap.c,v 1.13 87/09/04 14:07:10 toddb Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
@@ -62,7 +62,8 @@ mfbInstallColormap(pmap)
     {
 	/* Uninstall pInstalledMap. No hardware changes required, just
 	 * notify all interested parties. */
-	WalkTree(pmap->pScreen, TellLostMap, &pInstalledMap->mid);
+	if(pInstalledMap != (ColormapPtr)None)
+	    WalkTree(pmap->pScreen, TellLostMap, &pInstalledMap->mid);
 	/* Install pmap */
 	pInstalledMap = pmap;
 	WalkTree(pmap->pScreen, TellGainedMap, &pmap->mid);
