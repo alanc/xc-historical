@@ -97,7 +97,7 @@ f840
 7000
 2000
 ENDCHAR
-STARTCHAR based_arrow_dobased_arrow_down
+STARTCHAR based_arrow_down
 ENCODING -1 4
 SWIDTH 548 0
 DWIDTH 17 0
@@ -114,7 +114,7 @@ ff
 3c
 18
 ENDCHAR
-STARTCHAR based_arrow_dobased_arrow_down_mask
+STARTCHAR based_arrow_down_mask
 ENCODING -1 5
 SWIDTH 548 0
 DWIDTH 17 0
@@ -133,7 +133,7 @@ ffc0
 3f00
 1e00
 ENDCHAR
-STARTCHAR based_arrow_upbased_arrow_up
+STARTCHAR based_arrow_up
 ENCODING -1 6
 SWIDTH 548 0
 DWIDTH 17 0
@@ -150,7 +150,7 @@ ff
 00
 ff
 ENDCHAR
-STARTCHAR based_arrow_upbased_arrow_up_mask
+STARTCHAR based_arrow_up_mask
 ENCODING -1 7
 SWIDTH 548 0
 DWIDTH 17 0
@@ -244,7 +244,7 @@ fbbe
 fbbe
 fbbe
 ENDCHAR
-STARTCHAR bottom_left_cobottom_left_corner
+STARTCHAR bottom_left_corner
 ENCODING -1 12
 SWIDTH 548 0
 DWIDTH 17 0
@@ -265,7 +265,7 @@ c000
 fffc
 fffc
 ENDCHAR
-STARTCHAR bottom_left_cobottom_left_corner_mask
+STARTCHAR bottom_left_corner_mask
 ENCODING -1 13
 SWIDTH 548 0
 DWIDTH 17 0
@@ -288,7 +288,7 @@ ffff
 ffff
 ffff
 ENDCHAR
-STARTCHAR bottom_right_cbottom_right_corner
+STARTCHAR bottom_right_corner
 ENCODING -1 14
 SWIDTH 548 0
 DWIDTH 17 0
@@ -309,7 +309,7 @@ BITMAP
 fffc
 fffc
 ENDCHAR
-STARTCHAR bottom_right_cbottom_right_corner_mask
+STARTCHAR bottom_right_corner_mask
 ENCODING -1 15
 SWIDTH 548 0
 DWIDTH 17 0
@@ -353,7 +353,7 @@ BITMAP
 fff8
 fff8
 ENDCHAR
-STARTCHAR bottom_side_mabottom_side_mask
+STARTCHAR bottom_side_mask
 ENCODING -1 17
 SWIDTH 548 0
 DWIDTH 17 0
@@ -393,7 +393,7 @@ BITMAP
 fffc
 fffc
 ENDCHAR
-STARTCHAR bottom_tee_masbottom_tee_mask
+STARTCHAR bottom_tee_mask
 ENCODING -1 19
 SWIDTH 548 0
 DWIDTH 17 0
@@ -435,7 +435,7 @@ bffa
 8002
 fffe
 ENDCHAR
-STARTCHAR box_spiral_masbox_spiral_mask
+STARTCHAR box_spiral_mask
 ENCODING -1 21
 SWIDTH 548 0
 DWIDTH 17 0
@@ -479,7 +479,7 @@ ccc0
 0c00
 0c00
 ENDCHAR
-STARTCHAR center_ptr_mascenter_ptr_mask
+STARTCHAR center_ptr_mask
 ENCODING -1 23
 SWIDTH 548 0
 DWIDTH 17 0
@@ -615,7 +615,7 @@ da9a
 4002
 3ffc
 ENDCHAR
-STARTCHAR coffee_mug_mascoffee_mug_mask
+STARTCHAR coffee_mug_mask
 ENCODING -1 29
 SWIDTH 548 0
 DWIDTH 17 0
@@ -705,7 +705,7 @@ fd7f
 a28a
 4284
 ENDCHAR
-STARTCHAR cross_reverse_cross_reverse_mask
+STARTCHAR cross_reverse_mask
 ENCODING -1 33
 SWIDTH 548 0
 DWIDTH 17 0
@@ -749,7 +749,7 @@ feff
 0100
 0100
 ENDCHAR
-STARTCHAR crosshair_maskcrosshair_mask
+STARTCHAR crosshair_mask
 ENCODING -1 35
 SWIDTH 548 0
 DWIDTH 17 0
@@ -794,7 +794,7 @@ fefe
 06c0
 0280
 ENDCHAR
-STARTCHAR diamond_cross_diamond_cross_mask
+STARTCHAR diamond_cross_mask
 ENCODING -1 37
 SWIDTH 548 0
 DWIDTH 17 0
@@ -914,7 +914,7 @@ ccc0
 1e00
 0c00
 ENDCHAR
-STARTCHAR double_arrow_mdouble_arrow_mask
+STARTCHAR double_arrow_mask
 ENCODING -1 43
 SWIDTH 548 0
 DWIDTH 17 0
@@ -959,7 +959,7 @@ BITMAP
 4000
 8000
 ENDCHAR
-STARTCHAR draft_large_madraft_large_mask
+STARTCHAR draft_large_mask
 ENCODING -1 45
 SWIDTH 548 0
 DWIDTH 17 0
@@ -1004,7 +1004,7 @@ BITMAP
 4000
 8000
 ENDCHAR
-STARTCHAR draft_small_madraft_small_mask
+STARTCHAR draft_small_mask
 ENCODING -1 47
 SWIDTH 548 0
 DWIDTH 17 0
@@ -1045,7 +1045,7 @@ b0d0
 8910
 fff0
 ENDCHAR
-STARTCHAR draped_box_masdraped_box_mask
+STARTCHAR draped_box_mask
 ENCODING -1 49
 SWIDTH 548 0
 DWIDTH 17 0
@@ -1444,7 +1444,7 @@ cfcc
 3ff0
 7ff8
 ENDCHAR
-STARTCHAR iron_cross_masiron_cross_mask
+STARTCHAR iron_cross_mask
 ENCODING -1 67
 SWIDTH 548 0
 DWIDTH 17 0
@@ -1531,7 +1531,7 @@ c100
 c000
 c000
 ENDCHAR
-STARTCHAR left_side_maskleft_side_mask
+STARTCHAR left_side_mask
 ENCODING -1 71
 SWIDTH 548 0
 DWIDTH 17 0
@@ -1620,7 +1620,7 @@ BITMAP
 7ffd
 8003
 ENDCHAR
-STARTCHAR leftbutton_masleftbutton_mask
+STARTCHAR leftbutton_mask
 ENCODING -1 75
 SWIDTH 548 0
 DWIDTH 17 0
@@ -1784,7 +1784,7 @@ BITMAP
 7ffd
 8003
 ENDCHAR
-STARTCHAR middlebutton_mmiddlebutton_mask
+STARTCHAR middlebutton_mask
 ENCODING -1 83
 SWIDTH 548 0
 DWIDTH 17 0
@@ -1979,7 +1979,7 @@ fff0
 0f00
 0f00
 ENDCHAR
-STARTCHAR question_arrowquestion_arrow
+STARTCHAR question_arrow
 ENCODING -1 92
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2001,7 +2001,7 @@ e180
 1c00
 0800
 ENDCHAR
-STARTCHAR question_arrowquestion_arrow_mask
+STARTCHAR question_arrow_mask
 ENCODING -1 93
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2045,7 +2045,7 @@ ff
 60
 60
 ENDCHAR
-STARTCHAR right_ptr_maskright_ptr_mask
+STARTCHAR right_ptr_mask
 ENCODING -1 95
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2088,7 +2088,7 @@ ffec
 000c
 000c
 ENDCHAR
-STARTCHAR right_side_masright_side_mask
+STARTCHAR right_side_mask
 ENCODING -1 97
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2131,7 +2131,7 @@ ffc0
 00c0
 00c0
 ENDCHAR
-STARTCHAR right_tee_maskright_tee_mask
+STARTCHAR right_tee_mask
 ENCODING -1 99
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2177,7 +2177,7 @@ BITMAP
 7ffd
 8003
 ENDCHAR
-STARTCHAR rightbutton_marightbutton_mask
+STARTCHAR rightbutton_mask
 ENCODING -1 101
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2309,7 +2309,7 @@ fe
 38
 10
 ENDCHAR
-STARTCHAR sb_down_arrow_sb_down_arrow_mask
+STARTCHAR sb_down_arrow_mask
 ENCODING -1 107
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2332,7 +2332,7 @@ ff80
 1c00
 0800
 ENDCHAR
-STARTCHAR sb_h_double_arsb_h_double_arrow
+STARTCHAR sb_h_double_arrow
 ENCODING -1 108
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2346,7 +2346,7 @@ f01e
 3018
 1010
 ENDCHAR
-STARTCHAR sb_h_double_arsb_h_double_arrow_mask
+STARTCHAR sb_h_double_arrow_mask
 ENCODING -1 109
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2376,7 +2376,7 @@ f000
 3000
 1000
 ENDCHAR
-STARTCHAR sb_left_arrow_sb_left_arrow_mask
+STARTCHAR sb_left_arrow_mask
 ENCODING -1 111
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2392,7 +2392,7 @@ ffff
 1c00
 0c00
 ENDCHAR
-STARTCHAR sb_right_arrowsb_right_arrow
+STARTCHAR sb_right_arrow
 ENCODING -1 112
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2406,7 +2406,7 @@ fffc
 0018
 0010
 ENDCHAR
-STARTCHAR sb_right_arrowsb_right_arrow_mask
+STARTCHAR sb_right_arrow_mask
 ENCODING -1 113
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2444,7 +2444,7 @@ fe
 28
 28
 ENDCHAR
-STARTCHAR sb_up_arrow_masb_up_arrow_mask
+STARTCHAR sb_up_arrow_mask
 ENCODING -1 115
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2467,7 +2467,7 @@ ff80
 3e00
 3e00
 ENDCHAR
-STARTCHAR sb_v_double_arsb_v_double_arrow
+STARTCHAR sb_v_double_arrow
 ENCODING -1 116
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2489,7 +2489,7 @@ fe
 38
 10
 ENDCHAR
-STARTCHAR sb_v_double_arsb_v_double_arrow_mask
+STARTCHAR sb_v_double_arrow_mask
 ENCODING -1 117
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2822,7 +2822,7 @@ fffe
 0380
 0380
 ENDCHAR
-STARTCHAR top_left_arrowtop_left_arrow
+STARTCHAR top_left_arrow
 ENCODING -1 132
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2843,7 +2843,7 @@ f000
 0008
 0004
 ENDCHAR
-STARTCHAR top_left_arrowtop_left_arrow_mask
+STARTCHAR top_left_arrow_mask
 ENCODING -1 133
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2866,7 +2866,7 @@ fe00
 0007
 0003
 ENDCHAR
-STARTCHAR top_left_cornetop_left_corner
+STARTCHAR top_left_corner
 ENCODING -1 134
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2887,7 +2887,7 @@ c410
 c000
 c000
 ENDCHAR
-STARTCHAR top_left_cornetop_left_corner_mask
+STARTCHAR top_left_corner_mask
 ENCODING -1 135
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2910,7 +2910,7 @@ f70c
 f000
 f000
 ENDCHAR
-STARTCHAR top_right_corntop_right_corner
+STARTCHAR top_right_corner
 ENCODING -1 136
 SWIDTH 548 0
 DWIDTH 17 0
@@ -2931,7 +2931,7 @@ fffc
 000c
 000c
 ENDCHAR
-STARTCHAR top_right_corntop_right_corner_mask
+STARTCHAR top_right_corner_mask
 ENCODING -1 137
 SWIDTH 548 0
 DWIDTH 17 0
