@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.28 93/07/12 09:24:20 dpw Exp $ */
+/* $XConsortium: devices.c,v 5.29 93/07/13 08:57:00 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -73,6 +73,7 @@ AddInputDevice(deviceProc, autoStart)
     dev->sync.other = NullGrab;
     dev->sync.state = NOT_GRABBED;
     dev->sync.event = (xEvent *) NULL;
+    dev->sync.evcount = 0;
     dev->grab = NullGrab;
     dev->grabTime = currentTime;
     dev->fromPassiveGrab = FALSE;
