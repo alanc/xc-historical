@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.14 90/06/28 14:17:45 kit Exp $
+ * $XConsortium: EditresCom.c,v 1.15 90/06/28 18:41:41 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -927,7 +927,7 @@ unsigned short *count;
 
     _EresInsertString8(stream, XtName(w)); /* Insert name */
 
-    if (XtIsApplicationShell(w)) { /* Class */
+    if (XtIsSubclass(w, get_applicationShellWidgetClass()))  { /* Class */
 	ApplicationShellWidget a = (ApplicationShellWidget) w;
 	class = a->application.class;
     }
