@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.2 93/09/03 17:08:36 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.3 93/09/08 20:30:00 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -58,7 +58,7 @@ typedef struct {
  * Client callbacks
  */
 
-typedef void (*SmcSaveYourselfCB) (
+typedef void (*SmcSaveYourselfProc) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     SmPointer		/* clientData */,
@@ -69,28 +69,28 @@ typedef void (*SmcSaveYourselfCB) (
 #endif
 );
 
-typedef void (*SmcInteractCB) (
+typedef void (*SmcInteractProc) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     SmPointer		/* clientData */
 #endif
 );
 
-typedef void (*SmcDieCB) (
+typedef void (*SmcDieProc) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     SmPointer		/* clientData */
 #endif
 );
 
-typedef void (*SmcShutdownCancelledCB) (
+typedef void (*SmcShutdownCancelledProc) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     SmPointer		/* clientData */
 #endif
 );
 
-typedef void (*SmcPropReplyCB) (
+typedef void (*SmcPropReplyProc) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     SmPointer		/* clientData */,
@@ -101,14 +101,38 @@ typedef void (*SmcPropReplyCB) (
 
 
 /*
- * Callbacks set up at SmcInitialize time
+ * Callbacks set up at SmcOpenConnection time
  */
 
 typedef struct {
-    SmcSaveYourselfCB		save_yourself;
-    SmcDieCB			die;
-    SmcShutdownCancelledCB	shutdown_cancelled;
+
+    struct {
+	SmcSaveYourselfProc	 callback;
+	SmPointer		 client_data;
+    } save_yourself;
+
+    struct {
+	SmcDieProc		 callback;
+	SmPointer		 client_data;
+    } die;
+
+    struct {
+	SmcShutdownCancelledProc callback;
+	SmPointer		 client_data;
+    } shutdown_cancelled;
+
 } SmcCallbacks;
+
+
+/*
+ * Waiting for Interact
+ */
+
+typedef struct _SmcInteractWait {
+    SmcInteractProc		interact_proc;
+    SmPointer			client_data;
+    struct _SmcInteractWait 	*next;
+} _SmcInteractWait;
 
 
 /*
@@ -116,7 +140,8 @@ typedef struct {
  */
 
 typedef struct _SmcPropReplyWait {
-    SmcPropReplyCB		prop_reply_cb;
+    SmcPropReplyProc		prop_reply_proc;
+    SmPointer			client_data;
     struct _SmcPropReplyWait 	*next;
 } _SmcPropReplyWait;
 
@@ -159,18 +184,20 @@ struct _SmcConn {
 
 
     /*
-     * Client data specified in SmcOpenConnection.  This pointer is passed
-     * to each Smc callback.
+     * Callbacks to be invoked when messages arrive from the session manager.
+     * These callbacks are specified at SmcOpenConnection time.
      */
 
-    SmPointer		client_data;
+    SmcCallbacks	callbacks;
 
 
     /*
-     * Callback to be invoked when Interact message arrives.
+     * We keep track of all Interact Requests sent by the client.  When the
+     * Interact message arrives, we remove it from the list (a FIFO list
+     * is maintained).
      */
 
-    SmcInteractCB	interact_cb;
+    _SmcInteractWait	*interact_waits;
 
 
     /*
@@ -188,14 +215,7 @@ struct _SmcConn {
  * Session manager callbacks
  */
 
-typedef void (*SmsNewClientCB) (
-#if NeedFunctionPrototypes
-    SmsConn 		/* smsConn */,
-    SmPointer *		/* managerDataRet */
-#endif
-);
-
-typedef void (*SmsRegisterClientCB) (
+typedef void (*SmsRegisterClientProc) (
 #if NeedFunctionPrototypes
     SmsConn 		/* smsConn */,
     SmPointer		/* managerData */,
@@ -203,7 +223,7 @@ typedef void (*SmsRegisterClientCB) (
 #endif
 );
 
-typedef void (*SmsInteractRequestCB) (
+typedef void (*SmsInteractRequestProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     SmPointer		/* managerData */,
@@ -211,7 +231,7 @@ typedef void (*SmsInteractRequestCB) (
 #endif
 );
 
-typedef void (*SmsInteractDoneCB) (
+typedef void (*SmsInteractDoneProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     SmPointer		/* managerData */,
@@ -219,7 +239,7 @@ typedef void (*SmsInteractDoneCB) (
 #endif
 );
 
-typedef void (*SmsSaveYourselfDoneCB) (
+typedef void (*SmsSaveYourselfDoneProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     SmPointer		/* managerData */,
@@ -227,7 +247,7 @@ typedef void (*SmsSaveYourselfDoneCB) (
 #endif
 );
 
-typedef void (*SmsCloseConnectionCB) (
+typedef void (*SmsCloseConnectionProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     SmPointer		/* managerData */,
@@ -237,7 +257,7 @@ typedef void (*SmsCloseConnectionCB) (
 #endif
 );
 
-typedef void (*SmsSetPropertiesCB) (
+typedef void (*SmsSetPropertiesProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     SmPointer		/* managerData */,
@@ -247,7 +267,7 @@ typedef void (*SmsSetPropertiesCB) (
 #endif
 );
 
-typedef void (*SmsGetPropertiesCB) (
+typedef void (*SmsGetPropertiesProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     SmPointer		/* managerData */
@@ -256,19 +276,56 @@ typedef void (*SmsGetPropertiesCB) (
 
 
 /*
- * Callbacks set up at SmsInitialize time
+ * Callbacks set up by a session manager when a new client connects.
  */
 
 typedef struct {
-    SmsNewClientCB		new_client;
-    SmsRegisterClientCB		register_client;
-    SmsInteractRequestCB	interact_request;
-    SmsInteractDoneCB		interact_done;
-    SmsSaveYourselfDoneCB	save_yourself_done;
-    SmsCloseConnectionCB	close_connection;
-    SmsSetPropertiesCB		set_properties;
-    SmsGetPropertiesCB		get_properties;
+
+    struct {
+	SmsRegisterClientProc	callback;
+	SmPointer		manager_data;
+    } register_client;
+
+    struct {
+	SmsInteractRequestProc	callback;
+	SmPointer		manager_data;
+    } interact_request;
+
+    struct {
+	SmsInteractDoneProc	callback;
+	SmPointer		manager_data;
+    } interact_done;
+
+    struct {
+	SmsSaveYourselfDoneProc	callback;
+	SmPointer		manager_data;
+    } save_yourself_done;
+
+    struct {
+	SmsCloseConnectionProc	callback;
+	SmPointer		manager_data;
+    } close_connection;
+
+    struct {
+	SmsSetPropertiesProc	callback;
+	SmPointer		manager_data;
+    } set_properties;
+
+    struct {
+	SmsGetPropertiesProc	callback;
+	SmPointer		manager_data;
+    } get_properties;
+
 } SmsCallbacks;
+
+
+typedef void (*SmsNewClientProc) (
+#if NeedFunctionPrototypes
+    SmsConn 		/* smsConn */,
+    SmPointer		/* managerData */,
+    SmsCallbacks *	/* callbacksRet */
+#endif
+);
 
 
 /*
@@ -308,11 +365,10 @@ struct _SmsConn {
 
 
     /*
-     * Manager data specified when the SmsNewClientCB callback is invoked.
-     * This pointer is passed to all of the other Sms callbacks.
+     * Callbacks to be invoked when messages arrive from the client.
      */
 
-    SmPointer		manager_data;
+    SmsCallbacks	callbacks;
 
 
     /*
@@ -358,16 +414,10 @@ typedef void (*SmsErrorHandler) (
  * Function Prototypes
  */
 
-extern Status SmcInitialize (
-#if NeedFunctionPrototypes
-    SmcCallbacks *	/* callbacks */
-#endif
-);
-
 extern SmcConn SmcOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
-    SmPointer		/* clientData */,
+    SmcCallbacks *	/* callbacks */,
     char *		/* previousId */,
     char **		/* clientIdRet */,
     int			/* errorLength */,
@@ -396,7 +446,8 @@ extern void SmcSetProperties (
 extern void SmcGetProperties (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
-    SmcPropReplyCB	/* propReplyCB */
+    SmcPropReplyProc	/* propReplyProc */,
+    SmPointer		/* clientData */
 #endif
 );
 
@@ -404,7 +455,8 @@ extern void SmcInteractRequest (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     int			/* dialogType */,
-    SmcInteractCB	/* interactCB */
+    SmcInteractProc	/* interactProc */,
+    SmPointer		/* clientData */
 #endif
 );
 
@@ -462,7 +514,10 @@ extern Status SmsInitialize (
 #if NeedFunctionPrototypes
     char *		/* vendor */,
     char *		/* release */,
-    SmsCallbacks * 	/* callbacks */
+    SmsNewClientProc	/* newClientProc */,
+    SmPointer		/* managerData */,
+    int			/* errorLength */,
+    char *		/* errorStringRet */
 #endif
 );
 
