@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: dispatch.c,v 1.6 94/01/10 19:26:15 rob Exp $ */
+/* $XConsortium: dispatch.c,v 1.7 94/01/11 20:45:48 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -106,7 +106,9 @@ static long grabWaiters[mskcnt];
 long	*checkForInput[2];
 extern int connBlockScreenStart;
 
+#ifndef XTHREADS
 extern int (* InitialVector[3]) ();
+#endif
 extern int (* ProcVector[256]) ();
 #ifdef K5AUTH
 extern int (* k5_Vector[256]) ();
@@ -203,6 +205,7 @@ InitSelections()
     NumCurrentSelections = 0;
 }
 
+#ifndef XTHREADS
 void 
 FlushClientCaches(id)
     XID id;
@@ -334,6 +337,8 @@ Dispatch()
 }
 
 #undef MAJOROP
+
+#endif /* XTHREADS */
 
 /*ARGSUSED*/
 int
@@ -4059,6 +4064,7 @@ ProcInitialConnection(client)
     return (client->noClientException);
 }
 
+#ifndef XTHREADS
 int
 ProcEstablishConnection(client)
     register ClientPtr client;
@@ -4166,6 +4172,7 @@ SendConnSetup(client, reason)
     }
     return (client->noClientException);
 }
+#endif /* not XTHREADS */
 
 void
 SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
@@ -4227,7 +4234,10 @@ DeleteWindowFromAnySelections(pWin)
 	}
 }
 
-static void
+#ifndef XTHREADS
+static
+#endif
+void
 DeleteClientFromAnySelections(client)
     ClientPtr client;
 {

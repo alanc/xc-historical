@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.4 94/01/10 19:20:21 rob Exp $ */
+/* $XConsortium: resource.c,v 1.5 94/01/11 20:47:20 rob Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -1355,8 +1355,10 @@ FreeClientResources(client)
 	{
 	    RESTYPE rtype = this->type;
 	    *head = this->next;
+#ifndef XTHREADS
 	    if (rtype & RC_CACHED)
 		FlushClientCaches(this->id);
+#endif /* XTHREADS */
 #ifdef XTHREADS
 	    /* make sure res->value is not currently in use */
 	    CheckLockBits (cid, this->id, rtype, this->value);
