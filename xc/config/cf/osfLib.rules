@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.rules,v 1.9 94/01/18 14:58:49 rws Exp $
+XCOMM $XConsortium: osfLib.rules,v 1.10 94/09/19 19:57:41 matt Exp kaleb $
 
 /*
  * OSF/1 shared library rules
@@ -42,7 +42,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
-	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
+	cd $(DESTDIR); $(LN) Concat(lib,libname.so.rev) Concat(lib,libname.so)
 
 #endif /* InstallSharedLibrary */
 

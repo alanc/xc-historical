@@ -1,4 +1,4 @@
-XCOMM $XConsortium: necLib.rules,v 1.1 94/03/26 18:15:16 rws Exp $
+XCOMM $XConsortium: necLib.rules,v 1.2 94/04/11 21:17:09 rws Exp kaleb $
 
 /*
  * NECOS shared library rules
@@ -41,7 +41,7 @@ XCOMM $XConsortium: necLib.rules,v 1.1 94/03/26 18:15:16 rws Exp $
 install:: Concat(lib,libname.so.rev) 					@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
-	$(LN) $(DESTDIR)dest/Concat(lib,libname.so.rev) $(DESTDIR)dest/Concat(lib,libname.so)	@@\
+	cd $(DESTDIR)/dest; $(LN) Concat(lib,libname.so.rev) Concat(lib,libname.so)	@@\
 
 #endif /* InstallSharedLibrary */
 
