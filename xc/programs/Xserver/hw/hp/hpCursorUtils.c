@@ -1,4 +1,4 @@
-/* $XConsortium: hpCursorUtils.c,v 1.1 93/08/08 13:00:35 rws Exp $ */
+/* $XConsortium: hpCursorUtils.c,v 1.2 94/04/17 20:30:05 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -81,56 +81,12 @@ from the X Consortium.
 extern int hpActiveScreen;		/* Stacked mode, >1 head */
 extern WindowPtr *WindowTable;		/* Defined by DIX */
 
-static BoxRec LimitTheCursor;
 static CursorPtr currentCursors[MAXSCREENS];
 
 void hpBlottoCursors()
 {
   int j;
   for (j = MAXSCREENS; j--; ) currentCursors[j] = NULL;
-}
-
-/************************************************************
- * hpConstrainCursor
- *
- * This function simply sets the box to which the cursor 
- * is limited.  
- * 
- * ASSUMPTION:  a single BoxRec is used for recording
- * the cursor limits, instead of one per screen.  This is 
- * done, in part, because the bogus hpConstrainXY routine
- * (see below) is not passed a pScreen pointer.
- *
- * THEREFORE:  Zaphod mode code will have to call this routine
- * to establish new limits when the cursor leaves one screen
- * for another.
- *
- ************************************************************/
-
-void 
-hpConstrainCursor (pScreen,pBox)
-ScreenPtr pScreen;    /* Screen to which it should be constrained */
-BoxPtr   pBox;        /* Box in which... */
-{
-	LimitTheCursor = *pBox;
-}
-
-/************************************************************
- * hpConstrainXY
- *
- * This function is called directly from x_hil.c
- * It adjusts the cursor position to fit within the current 
- * constraints.
- *
- ************************************************************/
-
-Bool
-hpConstrainXY(px,py)
-    int *px, *py;
-{
-    *px = max( LimitTheCursor.x1, min( LimitTheCursor.x2,*px));
-    *py = max( LimitTheCursor.y1, min( LimitTheCursor.y2,*py));
-    return TRUE;
 }
 
 /************************************************************
@@ -156,7 +112,11 @@ BoxPtr    pResultBox;    /* RETURN: limits for hot spot */
 }
 
 /************************************************************
+ *
  * hpSetCursorPosition
+ *
+ *      This routine is called from DIX when the X11 sprite/cursor is warped.
+ *
  ************************************************************/
 
 Bool 
@@ -171,38 +131,16 @@ Bool	  generateEvent;
 
     php 	= (hpPrivPtr) pScreen->devPrivate;
 
-    /* Check to see if we've switched screens: */
+    /* Must Update the Input Driver's Variables: */
     InDev = GET_HPINPUTDEVICE((DeviceIntPtr)LookupPointerDevice());
-    if (pScreen != InDev->pScreen)
-    {
-        WindowPtr pRootWindow = WindowTable[InDev->pScreen->myNum];
-
-        /*
-        ********************************************************************
-        ** Turn old cursor off, blank/unblank screens for stacked mode,
-        ** let DIX know there is a new screen, set the input driver variable
-        ** to the new screen number.
-        ********************************************************************
-        */
-
-        (*((hpPrivPtr)(InDev->pScreen->devPrivate))->CursorOff)
-        (InDev->pScreen);                     /* Old cursor off */
-        php->ChangeScreen(pScreen);      /* Stacked mode switch */
-        NewCurrentScreen(pScreen, xhot, yhot);/* Let DIX know */
-        hpActiveScreen = pScreen->myNum;      /* Input driver global */
-    }
-
-
-    /* Must Update the Corvallis Input Driver's Variables: */
     InDev->pScreen = pScreen;
     InDev->coords[0] = xhot;
     InDev->coords[1] = yhot;
 
-    if (!generateEvent)
-    {
-	(*php->MoveMouse)(pScreen, xhot, yhot, 0); /* Do the move now */
-    }
-    else
+    /* Do the move now */
+    (*php->MoveMouse)(pScreen, xhot, yhot, 0);
+
+    if (generateEvent)
     {
         queue_motion_event(InDev);  /* Enqueue motion event, in x_hil.c */
         isItTimeToYield++;          /* Insures client get the event! */
@@ -210,4 +148,4 @@ Bool	  generateEvent;
 
     return(TRUE);
 
-}
+} /* hpSetCursorPosition() */

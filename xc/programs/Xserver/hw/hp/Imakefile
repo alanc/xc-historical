@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 3.6 93/10/12 11:25:38 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 3.7 94/05/28 15:39:04 dpw Exp dpw $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -41,4 +41,5 @@ NormalLibraryObjectRule()
 NormalRelocatableTarget(hp,$(OBJS))
 SpecialCObjectRule(hpInit,$(ICONFIGFILES),$(LIB_DEFINES))
 DependTarget()
+InstallManPage(Xhp,$(MANDIR))
 

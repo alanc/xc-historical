@@ -1,10 +1,8 @@
-/* $XConsortium$ */
-#ifndef XHPPROTO_H
-#define XHPPROTO_H
-/*
-
-Copyright (c) 1986, 1987 by Hewlett-Packard Company
-
+/* $XConsortium: XHPproto.h,v 1.1 93/08/08 12:56:03 rws Exp $ */
+/*************************************************************************
+ * 
+ * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
+ *
 Permission to use, copy, modify, and distribute this
 software and its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright
@@ -14,19 +12,18 @@ documentation, and that the name of Hewlett Packard not be used in
 advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.
 
-HEWLETT-PACKARD MAKES NO WARRANTY OF ANY KIND WITH REGARD
+ HEWLETT-PACKARD MAKES NO WARRANTY OF ANY KIND WITH REGARD
 TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 PURPOSE.  Hewlett-Packard shall not be liable for errors
 contained herein or direct, indirect, special, incidental or
 consequential damages in connection with the furnishing,
 performance, or use of this material.
+ 
+ *************************************************************************/
+#ifndef XHPPROTO_H
+#define XHPPROTO_H
 
-This software is not subject to any license of the American
-Telephone and Telegraph Company or of the Regents of the
-University of California.
-
-*/
 /* Definitions for HP extensions used by the server and C bindings*/
 
 #ifndef XMD_H
@@ -188,10 +185,16 @@ University of California.
 #define REL_807_SERVER		5	/* HP-UX 8.07 (IF2) */
 #define REL_90_SERVER		6	/* HP-UX 9.0 R5 */
 #define REL_903_SERVER		7	/* HP-UX 9.03 R5 */
+#define REL_905_SERVER		8	/* HP-UX 9.05 R5 */
+#define REL_100_SERVER		9	/* HP-UX 10.0 R5 */
 
 
 #define VR_MIT_RELEASE		5
-#define VR_HP_RELEASE		REL_903_SERVER
+#ifdef hpV4
+#define VR_HP_RELEASE		REL_100_SERVER
+#else
+#define VR_HP_RELEASE		REL_905_SERVER
+#endif /* hpV4 */
 #define VR_HP_PATCH_LEVEL	0
 
 #define HP_VRN(mit_release, hp_release, hp_patch_level)  	\

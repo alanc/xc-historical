@@ -1,4 +1,4 @@
-/* $XConsortium: hpInit.c,v 1.3 93/10/07 10:21:22 rws Exp $ */
+/* $XConsortium: hpInit.c,v 1.4 94/05/28 15:39:14 dpw Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -227,9 +227,9 @@ char          **argv;
 
     do 
     {
-	if (-1 == AddScreen(
-	   ddxScreenInitPointer[pScreenInfo->numScreens], argc,argv))
-	      FatalError("Could not add screen.\n");
+	if (-1 == AddScreen(ddxScreenInitPointer[pScreenInfo->numScreens],
+		    argc,argv))
+	    FatalError("Could not add screen.\n");
 
     } while ( pScreenInfo->numScreens != hpNumScreens );
 
