@@ -45,11 +45,13 @@ Xmh.prompt.Dialog.goAhead.label:Go Ahead
 Xmh.prompt.Dialog.cancel.label:	Cancel
 Xmh.error.Dialog.OK.label:	Acknowledged
 
+Xmh*toc.rightMargin:		0
+
 Xmh*toc.scrollVertical:		WhenNeeded
-Xmh*view.scrollVertical:	WhenNeeded
+Xmh*view.scrollVertical:	Always
 Xmh*view.scrollHorizontal:	WhenNeeded
 Xmh*view.autoFill:		True
-Xmh*comp.scrollVertical:	WhenNeeded
+Xmh*comp.scrollVertical:	Always
 Xmh*comp.scrollHorizontal:	WhenNeeded
 Xmh*comp.autoFill:		True
 
