@@ -1,3 +1,7 @@
+.\" $XConsortium$
+.\" 
+.\" Use tbl, -ms, and macros.t
+.\" 
 .\" macro: start marker
 .de sM
 .ne 4
@@ -44,17 +48,18 @@ draft standard of the X Consortium and is therefore subject to change.
 .bp 1
 .EH '\fBX Session Management Library\fP'''
 .OH '''\fBX Session Management Library\fP'
-.EF ''- % -''
-.OF ''- % -''
+.EF ''\- \\\\n(PN \-''
+.OF ''\- \\\\n(PN \-''
 .NH 1
 Acknowledgements
 .XS
 \*(SN Acknowledgements
 .XE
 .LP
-I would like to thank the following people for their participation in the
-X Session Management protocol design: Jordan Brown, Ellis Cohen,
-Donna Converse, Vania Joloboff, Stuart Marks, Bob Scheifler, and Mike Wexler.
+Thanks to the following people for their participation in the
+X Session Management design: Jordan Brown, Ellis Cohen,
+Donna Converse, Stephen Gildea, Vania Joloboff, Stuart Marks, Bob Scheifler,
+Ralph Swick, and Mike Wexler.
 .LP
 .NH 1
 Overview of Session Management
@@ -88,8 +93,9 @@ The Session Management Library
 \*(SN The Session Management Library
 .XE
 .LP
-The Session Management Library (SMlib) is a low level interface to XSMP.
-It is expected that higher level toolkits, such as Xt, will hide many of
+The Session Management Library (SMlib) is a low level "C" language
+interface to XSMP.  It is expected that higher level toolkits, such as
+Xt, will hide many of
 the details of session management from clients.  Higher level toolkits
 might also be developed for session managers to use, but no such effort
 is currently under way.
@@ -136,9 +142,9 @@ a little knowledge of how the ICE library works.
 The ICE library utilizes callbacks to process messages.  When a client
 detects that there is data to read on an ICE connection, it should call
 the
-.PN IceProcessMessage
+.PN IceProcessMessages
 function.
-.PN IceProcessMessage
+.PN IceProcessMessages
 will read the message header and look at the major opcode in order
 to determine which protocol the message was intended for.  The appropriate
 protocol library will then be triggered to unpack the message and hand it
@@ -150,7 +156,7 @@ This can be done via a select() call on the file descriptor for the
 ICE connection, but more typically,
 .PN XtAppAddInput
 will be used to register a callback which will invoke
-.PN IceProcessMessage
+.PN IceProcessMessages
 each time there is data to read on the ICE connection.
 .LP
 To further complicate things, knowing which file descriptors to select()
@@ -196,7 +202,7 @@ header file \fI<X11/SM/SMlib.h>\fP\^.  This header file defines all of the
 SMlib data structures and function prototypes.  \fISMlib.h\fP\^ includes the
 header file \fI<X11/SM/SM.h>\fP\^ which defines all of the SMlib constants.
 .LP
-Since SMlib is depended on ICE, applications should link against
+Since SMlib is dependent on ICE, applications should link against
 SMlib and ICElib by using \fI-lSM -lICE\fP\^.
 .LP
 .bp
@@ -287,8 +293,9 @@ the client with \fIprevious_id\fP\^ set to
 .LP
 If
 .PN SmcOpenConnection
-succeeds, the function returns an opaque connection object and the
-\fIclient_id_ret\fP\^ argument contains the client ID to be used for
+succeeds, the function returns an opaque connection pointer of type
+.PN SmcConn
+and the \fIclient_id_ret\fP\^ argument contains the client ID to be used for
 this session.  \fIclient_id_ret\fP\^ should be freed with a call to free()
 when no longer needed.  On failure,
 .PN SmcOpenConnection
@@ -296,7 +303,7 @@ returns
 .PN NULL
 and the reason for failure is returned in \fIerror_string_ret\fP\^.
 .LP
-Note that SMlib used the ICE protocol to establish a connection with
+Note that SMlib uses the ICE protocol to establish a connection with
 the session manager.  If an ICE connection already exists between the
 client and session manager, the same ICE connection is used for session
 management.  Otherwise, a new ICE connection is created.
@@ -307,7 +314,7 @@ are created or destroyed (using
 and
 .PN IceRemoveConnectionWatch ),
 and will have to call
-.PN IceProcessMessage
+.PN IceProcessMessages
 each time select() shows that there is data to read on an ICE connection.
 Please refer to the \fIInter-Client Exchange Library\fP\^ document for
 more details.
@@ -403,7 +410,7 @@ termination so that it can save its state.
 The client responds with zero or more calls to
 .PN SmcSetProperties
 to update the properties indicating how to restart the client.
-When all the properties have been set, the client should call
+When all the properties have been set, the client calls
 .PN SmcSaveYourselfDone .
 .LP
 If \fIinteract_style\fP\^ is
@@ -420,11 +427,11 @@ Since only one client can interact with the user at a time, the client
 must call
 .PN SmcInteractRequest
 and wait for an \fIInteract\fP\^ message from the session manager.
-When the client is done interacting with the user, it should call
+When the client is done interacting with the user, it calls
 .PN SmcInteractDone .
-The client can only call
+The client may only call
 .PN SmcInteractRequest
-after it received a \fISave Yourself\fP\^ message, and before it
+after it receives a \fISave Yourself\fP\^ message and before it
 calls
 .PN SmcSaveYourselfDone .
 .LP
@@ -444,7 +451,7 @@ permanent storage before updating its properties).
 Some examples:
 .LP
 .IP
-If a word processor was sent a \fISave Yourself\fP\^ with a type of 
+If a word processor were sent a \fISave Yourself\fP\^ with a type of 
 .PN SmSaveLocal ,
 it could create a temporary file that included the
 current contents of the file, the location of the cursor, and
@@ -454,11 +461,11 @@ its
 property with enough information to find this 
 temporary file.
 .sp
-If a word processor was sent a \fISave Yourself\fP\^ with a type of
+If a word processor were sent a \fISave Yourself\fP\^ with a type of
 .PN SmSaveGlobal ,
 it would simply save the currently edited file.
 .sp
-If a word processor was sent a \fISave Yourself\fP\^ with a type of
+If a word processor were sent a \fISave Yourself\fP\^ with a type of
 .PN SmSaveBoth ,
 it would first save the currently edited file.  It would then create a
 temporary file with information such as the current position of the cursor
@@ -762,7 +769,7 @@ The list of properties returned.
 .eM
 In order to free each property, call the
 .PN SmFreeProperty
-function (see the section titled \fIFree Functions\fP\^).
+function (see the section titled \fIFreeing Data\fP\^).
 Free the actual array of pointers with a call to free().
 .LP
 .NH 2
@@ -773,7 +780,7 @@ Interacting With the User
 .LP
 After receiving a \fISave Yourself\fP\^ message with an \fIinteract_style\fP\^
 of
-.PN SmInteractStyleError
+.PN SmInteractStyleErrors
 or
 .PN SmInteractStyleAny ,
 the client may choose to interact with the user.
@@ -1036,8 +1043,9 @@ Returns the ICE connection object associated with this session management
 connection object.  The ICE connection object can be used to get some
 additional information about the connection.  Some of the more useful
 functions which can be used on the IceConn are IceConnectionNumber,
-IceConnectionString, and IceLastSequenceNumber.  Check the ICElib
-documentation for more details on these functions.
+IceConnectionString, IceLastSentSequenceNumber, IceLastReceivedSequenceNumber,
+and IcePing.  Check the ICElib documentation for more details on these
+functions.
 .LP
 .bp
 .NH 2
@@ -1310,7 +1318,7 @@ The Register Client Callback
 .XE
 .LP
 The \fIRegister Client\fP\^ callback is the first callback that will be
-invoked after the client connects to the session manager.  It's type is
+invoked after the client connects to the session manager.  Its type is
 .PN SmsRegisterClientProc .
 .LP
 .sM
@@ -1552,7 +1560,7 @@ The Connection Closed Callback
 \*(SN The Connection Closed Callback
 .XE
 .LP
-If the client properly terminates (ie. it calls
+If the client properly terminates (i.e. it calls
 .PN SmcCloseConnection ),
 the
 .PN SmsCloseConnectionProc
@@ -1584,14 +1592,15 @@ The reasons for closing the connection.
 .eM
 \fIreason_msgs\fP\^ will most likely be
 .PN NULL
-if resignation is expected by the client.  Otherwise, it contains a list
+and count 0
+if resignation is expected by the user.  Otherwise, it contains a list
 of null terminated Compound Text strings representing the reason for
 termination.  The session manager should display these reason messages
 to the user.
 .LP
 Call
 .PN SmFreeReasons
-to free the reason messages.  See the section titled \fIFree Functions\fP\^.
+to free the reason messages.  See the section titled \fIFreeing Data\fP\^.
 .LP
 .NH 3
 The Set Properties Callback
@@ -1641,7 +1650,7 @@ non-predefined properties.
 .LP
 In order to free each property, call the
 .PN SmFreeProperty
-function.  See the section titled \fIFree Functions\fP\^.
+function.  See the section titled \fIFreeing Data\fP\^.
 Free the actual array of pointers with a call to free().
 .LP
 .NH 3
@@ -1678,7 +1687,7 @@ The number of properties.
 The list of properties to delete.
 .LP
 .eM
-The properties are specified as an array of property pointers.
+The properties are specified as an array of strings.
 For a description of session management properties and the
 .PN SmProp
 structure, refer to the section titled
@@ -1853,33 +1862,8 @@ globally accessible storage.  If \fIsave_type\fP\^ is
 the client should do both of these (it should first commit the data to
 permanent storage before updating its properties).
 .LP
-Some examples:
-.LP
-.IP
-If a word processor was sent a \fISave Yourself\fP\^ with a type of 
-.PN SmSaveLocal ,
-it could create a temporary file that included the
-current contents of the file, the location of the cursor, and
-other aspects of the current editing session.  It would then update
-its 
-.PN SmRestartCommand
-property with enough information to find this 
-temporary file.
-.sp
-If a word processor was sent a \fISave Yourself\fP\^ with a type of
-.PN SmSaveGlobal ,
-it would simply save the currently edited file.
-.sp
-If a word processor was sent a \fISave Yourself\fP\^ with a type of
-.PN SmSaveBoth ,
-it would first save the currently edited file.  It would then create a
-temporary file with information such as the current position of the cursor
-and what file is being edited.  Finally, it would update its 
-.PN SmRestartCommand
-property with enough information to find the temporary file.
-.LP
 .sp 0.5
-The \fIshutdown\fP\^ parameter specifies whether the system is being
+The \fIshutdown\fP\^ parameter specifies whether the session is being
 shut down.  The interaction is different depending on whether or not
 \fIshutdown\fP\^ is set.  If not shutting down, then the client can save and
 resume normal operation.  If shutting down, the client must save and
@@ -2333,7 +2317,7 @@ SmUserID	SmARRAY8	SmARRAY8	Yes
 _
 .TE
 .LP
-* Required if any state is stored in an external repository (e.g. state file).
+* Required if any state is stored in an external repository (e.g., state file).
 .LP
 .IP SmCloneCommand 3
 This is like the 
@@ -2350,10 +2334,10 @@ needs to be set up prior to starting the
 and should of type
 .PN SmARRAY8 .
 .IP SmDiscardCommand 3
-The discard command contains a string that when delivered to the host that 
+The discard command contains a command that when delivered to the host that 
 the client is running on (determined from the connection), will
 cause it to discard any information about the current state.  If this command
-is not specified, the SM will assume that all of the clients state is encoded
+is not specified, the SM will assume that all of the client's state is encoded
 in the 
 .PN SmRestartCommand.
 On POSIX systems the type should be
@@ -2364,15 +2348,15 @@ On POSIX based systems, this will be of type
 where the ARRAY8s alternate between environment variable name and environment
 variable value.  
 .IP SmProcessID 3
-This specifies an OS specific identifier for the process.  On POSIX
+This specifies an OS-specific identifier for the process.  On POSIX
 systems this should contain the return value of getpid() turned into
-an ISO 8859-1 (decimal) string.
+a Latin-1 (decimal) string.
 .IP SmProgram 3
 The name of the program that is running.  On POSIX systems this should be 
 first parameter passed to execve and should be of type
 .PN SmARRAY8 .
 .IP SmRestartCommand 3
-The restart command contains a string that when delivered to the
+The restart command contains a command that when delivered to the
 host that the client is running on (determined from the connection),
 will cause the client to restart in
 its current state.  On POSIX-based systems this is of type
@@ -2386,7 +2370,7 @@ A client that sets the
 .PN SmRestartStyleHint
 to
 .PN SmRestartAnway
-uses this property to specify command 
+uses this property to specify a command 
 that undoes the effect of the client and removes
 any saved state.
 As an example, consider a user that runs xmodmap.
@@ -2394,7 +2378,7 @@ xmodmap registers with the SM, sets
 .PN SmRestartStyleHint
 to 
 .PN SmRestartAnyway,
-and then terminates. In order to allow the SM (at the
+and then terminates.  In order to allow the SM (at the
 user's request) to undo this, xmodmap would register a
 .PN SmResignCommand
 that undoes the effects of the xmodmap.
@@ -2434,10 +2418,9 @@ The
 .PN SmRestartAnyway
 style is used to tell the SM that the application
 should be restarted in the next session even if it exits before the 
-current session is terminated.  
-It should be noted that this is only a hint and the SM
-will follow the policies specified by its users in determining what applications
-to restart.
+current session is terminated.  It should be noted that this is only
+a hint and the SM will follow the policies specified by its users in
+determining what applications to restart.
 .LP
 A client that uses
 .PN SmRestartAnyway
@@ -2465,7 +2448,7 @@ to
 The client must not remove any saved state as the client is still part of
 the session.  As an example, consider a client that turns on a camera
 at start up time.  This client then
-exits. At session shutdown, the user wants the camera turned off. This client
+exits.  At session shutdown, the user wants the camera turned off. This client
 would set the 
 .PN SmRestartStyleHint
 to 
@@ -2479,9 +2462,9 @@ Specifies the user's ID.  On POSIX-based systems this
 will contain the user's name (the pw_name field of struct passwd).
 .LP
 .NH 1
-Free Functions
+Freeing Data
 .XS
-\*(SN Free Functions
+\*(SN Freeing Data
 .XE
 .LP
 To free an individual property, call the
@@ -2530,106 +2513,9 @@ As you will recall, the session management protocol is layered on top
 of ICE.  Authentication occurs at two levels in the ICE protocol.  The first is
 when an ICE connection is opened.  The second is when a \fIProtocol
 Setup\fP\^ occurs on an ICE connection.  The authentication methods that
-are available are implementation dependent (ie. dependent on the ICElib
-and SMlib implementations in use).
-.LP
-In general, the session manager must supply its clients with some
-initial authentication data (for example, a key).  The means by which it
-supplies this data is implementation dependent.  The ICElib sample
-implementation provides a set of utility functions which manipulate
-an .ICEauthority file.  If the session manager is starting a client on a
-local machine, it may provide the authentication data in a
-local .ICEauthority file.  If the session manager is starting a remote client,
-it would probably use some sort of remote execution mechanism to add an
-entry to the .ICEauthority file on the remote machine.  For more information
-refer to the \fIInter-Client Exchange Library\fP\^ document,
-Appendix A - Authentication Utility Functions\fP\^.
-.LP
-In addition to the session manager providing the initial authentication
-data to its clients, it must also provide this data to the ICE library by
-calling the
-.PN IceSetPaAuthData
-function.
-.LP
-.sM
-.FD 0
-void IceSetPaAuthData\^(\^\fInum_entries\fP, \fIentries\fP\^)
-.br
-    int \fInum_entries\fP\^;
-.br
-    IceAuthDataEntry *\fIentries\fP\^;
-.FN
-.IP \fInum_entries\fP 1i
-The number of authentication data entries.
-.IP \fIentries\fP 1i
-The list of authentication data entries.
-.LP
-.eM
-Each entry has associated with it a protocol name ("ICE" for ICE
-connection setup authentication, "XSMP" for session management
-authentication), a network ID for the session manager, an authentication
-name (eg. ICE-MAGIC-COOKIE-1), and authentication data.  The ICE library
-will merge these entries with previously set entries, based on the
-(protocol_name, address, auth_name) tuple.
-.LP
-An entry is defined by the
-.PN IceAuthDataEntry
-structure:
-.bp
-.sM
-typedef struct {
-.br
-	char *protocol_name;
-.br
-	char *address;
-.br
-	char *auth_name;
-.br
-	unsigned short auth_data_length;
-.br
-	char *auth_data;
-.br
-} IceAuthDataEntry;
-.LP
-.sp 0.5
-If authentication fails for any reason at the ICE connection setup level
-or at the session management \fIProtocol Setup\fP\^ level, a host based
-authentication procedure will be invoked (if specified) as a last resort
-to let the client authenticate.
-.LP
-The host based authentication procedure for ICE connection setup is set
-by calling the
-.PN IceSetHostBasedAuthProc
-function.  Refer to the \fIInter-Client Exchange Library\fP\^ document for
-more details.
-.LP
-The host based authentication procedure for the session management
-\fIProtocol Setup\fP\^ is specified in the
-.PN SmsInitialize
-function discussed earlier.
-.LP
-In both cases, the host based authentication procedure invoked is of type
-.PN IceHostBasedAuthProc .
-.LP
-.sM
-typedef Bool (*IceHostBasedAuthProc) ();
-.FD 0
-Bool HostBasedAuthProc\^(\^\fIhost_name\fP\^)
-.br
-    char *\fIhost_name\fP\^;
-.FN
-.IP \fIhost_name\fP 1i
-The host name of the client.
-.LP
-.eM
-\fIhost_name\fP\^ is a string of the form "protocol/hostname", where
-\fIprotocol\fP\^ is one of {tcp, decnet, local}.
-.LP
-The callback should return
-.PN True
-if the client is allowed to connect.  Note that "null" authentication
-can be achieved using this callback by always returning
-.PN True .
+are available are implementation dependent (i.e., dependent on the ICElib
+and SMlib implementations in use).  Refer to the \fIInter-Client Exchange
+Library\fP\^ for a general discussion on authentication.
 .LP
 .NH 1
 Working in a Multi-Threaded Environment
