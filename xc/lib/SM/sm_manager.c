@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.5 93/09/13 16:52:47 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.6 93/09/22 11:26:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -88,7 +88,8 @@ char 	*release;
     smsConn->client_id = NULL;
 
     smsConn->save_yourself_in_progress = False;
-    smsConn->waiting_to_interact = False;
+    smsConn->can_interact = False;
+    smsConn->can_cancel_shutdown = False;
     smsConn->interact_in_progress = False;
 
     _SmsConnectionObjs[_SmsConnectionCount++] = smsConn;
@@ -156,6 +157,13 @@ Bool	fast;
     IceFlush (iceConn);
 
     smsConn->save_yourself_in_progress = True;
+
+    smsConn->can_interact =
+	interactStyle == SmInteractStyleAny ||
+	interactStyle == SmInteractStyleErrors;
+
+    smsConn->can_cancel_shutdown = 
+	shutdown && interactStyle == SmInteractStyleAny;
 }
 
 
@@ -171,7 +179,6 @@ SmsConn smsConn;
     IceSimpleMessage (iceConn, _SmsOpcode, SM_Interact);
     IceFlush (iceConn);
 
-    smsConn->waiting_to_interact = False;
     smsConn->interact_in_progress = True;
 }
 
@@ -201,6 +208,8 @@ SmsConn smsConn;
 
     IceSimpleMessage (iceConn, _SmsOpcode, SM_ShutdownCancelled);
     IceFlush (iceConn);
+
+    smsConn->can_cancel_shutdown = False;
 }
 
 
