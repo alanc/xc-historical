@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.14 91/06/12 20:35:56 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.15 91/07/01 17:02:41 keith Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -386,6 +386,7 @@ miFillArcSliceSetup(arc, slice, pGC)
     {
 	double w2, h2, x1, y1, x2, y2, dx, dy, scale;
 	int signdx, signdy, y, k;
+	Bool isInt1 = TRUE, isInt2 = TRUE;
 
 	w2 = (double)arc->width / 2.0;
 	h2 = (double)arc->height / 2.0;
@@ -401,6 +402,7 @@ miFillArcSliceSetup(arc, slice, pGC)
 	}
 	else
 	{
+	    isInt1 = FALSE;
 	    x1 = Dcos(angle1) * w2;
 	    y1 = Dsin(angle1) * h2;
 	}
@@ -416,6 +418,7 @@ miFillArcSliceSetup(arc, slice, pGC)
 	}
 	else
 	{
+	    isInt2 = FALSE;
 	    x2 = Dcos(angle2) * w2;
 	    y2 = Dsin(angle2) * h2;
 	}
@@ -445,9 +448,17 @@ miFillArcSliceSetup(arc, slice, pGC)
 	}
 	else
 	    signdx = 1;
-	scale = (dx > dy) ? dx : dy;
-	slice->edge1.dx = floor((dx * 32768) / scale + .5);
-	slice->edge1.dy = floor((dy * 32768) / scale + .5);
+	if (isInt1 && isInt2)
+	{
+	    slice->edge1.dx = dx * 2;
+	    slice->edge1.dy = dy * 2;
+	}
+	else
+	{
+	    scale = (dx > dy) ? dx : dy;
+	    slice->edge1.dx = floor((dx * 32768) / scale + .5);
+	    slice->edge1.dy = floor((dy * 32768) / scale + .5);
+	}
 	if (!slice->edge1.dy)
 	{
 	    if (signdx < 0)
