@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.113 89/11/15 10:56:53 jim Exp $
+ * $XConsortium: charproc.c,v 1.114 89/11/15 11:54:06 jim Exp $
  */
 
 
@@ -143,7 +143,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.113 89/11/15 10:56:53 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.114 89/11/15 11:54:06 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2600,7 +2600,7 @@ void FindFontSelection (atom_name, justprobe)
     int a;
     Atom target;
 
-    if (!atom_name) atom_name = "PRIMARY_FONT";
+    if (!atom_name) atom_name = "PRIMARY";
 
     for (pAtom = atoms, a = atomCount; a; a--, pAtom++) {
 	if (strcmp(atom_name, XmuNameOfAtom(*pAtom)) == 0) break;
