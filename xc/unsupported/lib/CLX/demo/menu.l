@@ -1,4 +1,4 @@
-;;; -*- Mode:Lisp; Syntax: Common-lisp; Package:XLIB; Base:10 -*-
+;;; -*- Mode:Lisp; Syntax: Common-lisp; Package:XLIB; Base:10; Lowercase: Yes -*-
 
 ;;;
 ;;;			 TEXAS INSTRUMENTS INCORPORATED
@@ -185,30 +185,32 @@
       (EVENT-CASE ((DRAWABLE-DISPLAY mw) :force-output-p t)
 	(:exposure     (count)
 		       
-		       ;; Discard all but final :exposure then display the menu
-		       (when (zerop count) (menu-refresh menu))
-		       t)
+	 ;; Discard all but final :exposure then display the menu
+	 (when (zerop count) (menu-refresh menu))
+	 t)
 	
 	(:button-release (event-window)
-		       ;;Select an item
-		       (setf selected-item (second (assoc event-window items)))
-		       t)
+	 ;;Select an item
+	 (setf selected-item (second (assoc event-window items)))
+	 t)
 	
 	(:enter-notify (window)
-		       ;;Highlight an item
-		       (multiple-value-bind (item-entered position) (find window items :key #'first)
-			 (when item-entered (menu-highlight-item menu position)))
-		       t)
+	 ;;Highlight an item
+	 (let ((position (position window items :key #'first)))
+	   (when position
+	     (menu-highlight-item menu position)))
+	 t)
 	
 	(:leave-notify (window kind)
-		       (if (eql mw window)
-			    ;; Quit if pointer moved out of main menu window
-			   (setf selected-item (when (eq kind :ancestor) :none))
+	 (if (eql mw window)
+	     ;; Quit if pointer moved out of main menu window
+	     (setf selected-item (when (eq kind :ancestor) :none))
 
-			    ;; Otherwise, unhighlight the item window left
-			   (multiple-value-bind (item-left position) (find window items :key #'first)
-			     (when item-left (menu-unhighlight-item menu position))))
-		       t)
+	   ;; Otherwise, unhighlight the item window left
+	   (let ((position (position window items :key #'first)))
+	     (when position
+	       (menu-unhighlight-item menu position))))
+	 t)
 	
 	(otherwise ()
 		   ;;Ignore and discard any other event
