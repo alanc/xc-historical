@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Simple.c,v 1.1 88/01/28 07:50:22 swick Locked $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -87,8 +87,8 @@ static void Realize(w, valueMask, attributes)
 	*valueMask &= ~CWBorderPixel;
     }
 
-    *valueMask |= CWCursor;
-    attributes->cursor = ((SimpleWidget)w)->simple.cursor;
+    if ((attributes->cursor = ((SimpleWidget)w)->simple.cursor) != None) {
+	*valueMask |= CWCursor;
 
     XtCreateWindow( w, (unsigned int)InputOutput, (Visual *)CopyFromParent,
 		    *valueMask, attributes );
