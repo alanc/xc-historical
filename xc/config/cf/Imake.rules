@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.187 94/03/03 16:46:52 matt Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.188 94/03/24 16:25:57 gildea Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -413,7 +413,7 @@ $(CCLINK) -o program options objects libraries $(EXTRA_LOAD_FLAGS)
 
 #ifndef CplusplusLinkRule
 #define CplusplusLinkRule(program,options,objects,libraries) \
-$(CCCLINK) -o program options objects libraries $(EXTRA_LOAD_FLAGS)
+$(CXXLINK) -o program options objects libraries $(EXTRA_LOAD_FLAGS)
 #endif /* CplusplusLinkRule */
 
 /*
@@ -444,7 +444,7 @@ clean::									@@\
 #define	NormalCplusplusProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
 ProgramTargetName(program): objects deplibs				@@\
 	RemoveTargetProgram($@)						@@\
-	CplusplusLinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
+	CplusplusLinkRule($@,$(CXXLDOPTIONS),objects,locallibs $(LDLIBS) syslibs) @@\
 									@@\
 SentinelProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
 PurifyProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
@@ -509,7 +509,7 @@ InstallManPage(program,$(MANDIR))
 #define	CplusplusProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib) @@\
 ProgramTargetName(program): $(objs) $(deplib)				@@\
 	RemoveTargetProgram($@)						@@\
-	CplusplusLinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib) @@\
+	CplusplusLinkRule($@,$(CXXLDOPTIONS),$(objs),locallib $(LDLIBS) syslib) @@\
 									@@\
 CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
 SentinelProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
@@ -1132,7 +1132,7 @@ LintLibReferences(varname,libname,libsource)
 
 #ifndef ObjectCplusplusCompile
 #define ObjectCplusplusCompile(options) RemoveFile($@)			@@\
-	$(CCC) -c $(CCFLAGS) options $*.CCsuf
+	$(CXX) -c $(CXXFLAGS) options $*.CCsuf
 #endif
 
 /*
@@ -1168,7 +1168,7 @@ LintLibReferences(varname,libname,libsource)
 
 #ifndef LibObjCplusplusCompile
 #define LibObjCplusplusCompile(dir,options) RemoveFiles($@ dir/$@)	@@\
-	$(CCC) -c $(CCCOPTIONS) $(CCDEFINES) options $*.CCsuf		@@\
+	$(CXX) -c $(CXXOPTIONS) $(CXXDEFINES) options $*.CCsuf		@@\
 	$(MV) $@ dir/$@
 #endif
 
@@ -1202,7 +1202,7 @@ LintLibReferences(varname,libname,libsource)
 #endif
 
 #ifndef UnsharedLibObjCplusplusCompile
-#define UnsharedLibObjCplusplusCompile(options) LibObjCplusplusCompile(unshared,$(CCDEBUGFLAGS) options)
+#define UnsharedLibObjCplusplusCompile(options) LibObjCplusplusCompile(unshared,$(CXXDEBUGFLAGS) options)
 #endif
 
 /*
@@ -1307,7 +1307,7 @@ interfaces:: name.h							@@\
 									@@\
 name.h: name.idl							@@\
 	@RemoveFile(name.h)						@@\
-	$(CPP) $(CCDEFINES) name.idl | \				@@\
+	$(CPP) $(CXXDEFINES) name.idl | \				@@\
 	$(IXX) $(IXXFLAGS) $(IXXINCLUDES) -file name.idl flags > name.h
 #endif /* MakeHFromIDL */
 
