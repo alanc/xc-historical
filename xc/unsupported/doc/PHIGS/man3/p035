@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p035,v 5.1 91/02/16 09:37:20 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -56,7 +56,7 @@ This is an enumerated type defined in phigs.h as follows:
 .sp
 .ta .5i +1.25i
 .nf
-	PFLAG_DELETE	\fIDelete all structures\fR
+	PFLAG_DEL	\fIDelete all structures\fR
 	PFLAG_KEEP	\fIKeep structures referenced outside the network\fR
 .fi
 .LP
@@ -74,7 +74,7 @@ The reference handling flag parameter controls how structures that are reference
 .in .7i
 .ta .5i
 .ti -.2i
-\(bu    If reference handling flag is \s-2PFLAG_DELETE\s+2, \s-2DELETE STRUCTURE NETWORK\s+2
+\(bu    If reference handling flag is \s-2PFLAG_DEL\s+2, \s-2DELETE STRUCTURE NETWORK\s+2
 removes all structures referenced in the structure network beginning with 
 structure identifier even if those structures are also referenced by 
 another structure outside this network.
