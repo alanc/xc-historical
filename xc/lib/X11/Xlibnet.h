@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xlibnet.h,v 1.1 91/01/08 20:37:36 gildea Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -56,6 +56,9 @@ without express or implied warranty.
 #include <netdb.h>
 #include <sys/uio.h>	/* needed for XlibInt.c */
 #include <sys/param.h> /* needed for XConnDis.c */
+#ifdef SVR4
+#include <sys/filio.h>
+#endif
 
 #define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
 #define MSKCNT ((NOFILE + 31) / 32)	/* size of bit array */
