@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.4 88/03/28 19:34:38 jim Exp $
+ *	$Header: scrollbar.c,v 1.5 88/03/29 09:36:47 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -41,7 +41,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.4 88/03/28 19:34:38 jim Exp $";
+static char rcs_id[] = "$Header: scrollbar.c,v 1.5 88/03/29 09:36:47 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -197,7 +197,7 @@ ResizeScrollBar(scrollWidget, x, y, height)
 	int x, y;
 	unsigned height;
 {
-	XtConfigureWidget(scrollWidget, x, y, scrollWidget->core.width - 1,
+	XtConfigureWidget(scrollWidget, x, y, scrollWidget->core.width,
 	    height, scrollWidget->core.border_width);
 	ScrollBarDrawThumb(scrollWidget);
 }
@@ -323,13 +323,13 @@ ScrollBarOn (xw, init, doalloc)
 		Error (ERROR_SBRALLOC2);
 	}
 
-	ResizeScrollBar (screen->scrollWidget, -1, -1,
+	ResizeScrollBar (screen->scrollWidget, -1, -1, 
 			 Height (screen) + border);
 	RealizeScrollBar (screen->scrollWidget, screen);
 	screen->scrollbar = screen->scrollWidget->core.width;
 
 	ScrollBarDrawThumb(screen->scrollWidget);
-	ResizeScreen (xw, border + screen->scrollbar, border );
+	ResizeScreen (xw, border + screen->scrollWidget->core.width, border);
 	/* map afterwards so BitGravity can be used profitably */
 	XMapWindow(screen->display, XtWindow(screen->scrollWidget));
 }
