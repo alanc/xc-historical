@@ -1,6 +1,6 @@
-/* $Header: Converters.c,v 1.13 88/02/02 18:17:02 swick Exp $ */
+/* $Header: Converters.c,v 1.8 88/02/03 23:01:31 swick Locked $ */
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.13 88/02/02 18:17:02 swick Exp $";
+static char rcsid[] = "$Header: Converters.c,v 1.8 88/02/03 23:01:31 swick Locked $";
 #endif lint
 
 /*
@@ -36,7 +36,7 @@ static char rcsid[] = "$Header: Converters.c,v 1.13 88/02/02 18:17:02 swick Exp 
 #include	<sys/file.h>
 #include	<X/cursorfont.h>
 #include	<X/Convert.h>
-#include	<X/Quarks.h>
+#include	"Quarks.h"
 
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
