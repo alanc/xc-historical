@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.22 89/05/18 08:21:15 swick Exp $
+ * $XConsortium: Xrm.c,v 1.23 89/06/05 17:31:45 rws Exp $
  */
 
 /***********************************************************
@@ -526,7 +526,7 @@ static void Merge(new, old)
     /* Merge new value into old value */
     if (new->value.addr != NULL) {
 	if (old->value.addr != NULL) {
-	    XFree(old->value.addr);
+	    Xfree(old->value.addr);
 	}
 	old->type = new->type;
 	old->value = new->value;
@@ -564,10 +564,10 @@ static void Merge(new, old)
 		    newBucket = nextNewBucket;
 		} /* while newBucket != NULL */
 	    } /* for i */
-	    XFree(newTable);
+	    Xfree(newTable);
 	} /* if */
     } /* for binding */
-    XFree(new);
+    Xfree(new);
 } /* Merge */
 
 Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
@@ -926,3 +926,31 @@ void XrmInitialize()
     XrmQString = XrmStringToQuark("String");
 }
 
+void XrmDestroyDatabase(rdb)
+    XrmDatabase   rdb;
+{
+    register XrmHashTable   table;
+    int			    binding;
+    register int	    i;
+
+    if (rdb == NULL) return;
+  
+    if (rdb->value.addr != NULL) {
+	Xfree(rdb->value.addr);
+    }
+
+    XrmDestroyDatabase(rdb->next);
+    for (binding = (int) XrmBindTightly;
+         binding <= (int) XrmBindLoosely;
+	 binding++) {
+	table = rdb->tables[binding];
+	if (table != NULL) {
+	    /* Free each bucket */
+	    for (i = 0; i < HASHSIZE; i++) {
+		XrmDestroyDatabase( table[i] );
+	    }
+	    Xfree(table);
+	}
+    }
+    Xfree(rdb);
+} /* XrmDestroyDatabase */
