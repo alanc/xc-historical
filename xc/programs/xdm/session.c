@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.47 91/02/28 11:57:00 rws Exp $
+ * $XConsortium: session.c,v 1.48 91/02/28 11:58:10 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -280,7 +280,14 @@ DeleteXloginResources (d, dpy)
 struct display	*d;
 Display		*dpy;
 {
+    int i;
+    Atom prop = XInternAtom(dpy, "SCREEN_RESOURCES", True);
+
     XDeleteProperty(dpy, RootWindow (dpy, 0), XA_RESOURCE_MANAGER);
+    if (prop) {
+	for (i = ScreenCount(dpy); --i >= 0; )
+	    XDeleteProperty(dpy, RootWindow (dpy, i), prop);
+    }
 }
 
 static jmp_buf syncJump;
