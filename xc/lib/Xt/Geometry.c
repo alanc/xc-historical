@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.28 88/09/06 09:50:40 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.29 88/09/06 16:27:56 jim Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif lint
 
@@ -70,7 +70,7 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     if (manager == (XtGeometryHandler) NULL) {
 	XtErrorMsg("invalidGeometryManager","xtMakeGeometryRequest",
                  "XtToolkitError",
-                 "XtMakeGeometryRequest - parent has no geometry manger",
+                 "XtMakeGeometryRequest - parent has no geometry manager",
                   (String *)NULL, (Cardinal *)NULL);
     }
 
