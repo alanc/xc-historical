@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.110 93/02/19 15:48:48 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.111 93/02/19 17:55:50 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -118,6 +118,7 @@ released automatically at next button or non-modifier key.
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/Xproto.h>
 #include <X11/extensions/shape.h>
 #ifdef XTEST
 #include <X11/extensions/XTest.h>
@@ -257,6 +258,7 @@ Window my_window = None;
 JumpRec jump;
 MacroRec macros[10];
 LocationRec locations[10];
+Bool need_bell = False;
 Bool noecho = True;
 Bool fakeecho = False;
 Bool doclear = False;
@@ -497,8 +499,11 @@ error(Dpy, err)
     Display *Dpy;
     XErrorEvent *err;
 {
-    if (err->error_code == BadWindow || err->error_code == BadDrawable)
+    if (err->error_code == BadWindow || err->error_code == BadDrawable) {
+	if (err->request_code == X_WarpPointer)
+	    need_bell = True;
 	return 0;
+    }
     reset();
     return (*olderror)(Dpy, err);
 }
@@ -1781,6 +1786,23 @@ process_events()
     }
 }
 
+Bool
+flush_and_read()
+{
+    int pending;
+
+    if (flush_generate)
+	(*flush_generate)();
+    if (pending = XPending(dpy))
+	process_events();
+    if (need_bell) {
+	need_bell = False;
+	XBell(dpy, 0);
+	XFlush(dpy);
+    }
+    return pending != 0;
+}
+
 void
 do_trigger(buf)
     char *buf;
@@ -1855,12 +1877,8 @@ do_trigger(buf)
     if (!wait || !trigger.type)
 	return;
     while (trigger.type) {
-	if (flush_generate)
-	    (*flush_generate)();
-	if (XPending(dpy)) {
-	    process_events();
+	if (flush_and_read())
 	    continue;
-	}
 	FD_CLR(0, &fdmask);
 	FD_SET(Xfd, &fdmask);
 	type = select(maxfd, &fdmask, NULL, NULL, &trigger.time);
@@ -2674,12 +2692,8 @@ main(argc, argv)
     }
     get_undofile();
     while (1) {
-	if (flush_generate)
-	    (*flush_generate)();
-	if (XPending(dpy)) {
-	    process_events();
+	if (flush_and_read())
 	    continue;
-	}
 #ifndef MSDOS
 	FD_SET(Xfd, &fdmask);
 	FD_SET(0, &fdmask);
