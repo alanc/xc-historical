@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.65 94/08/30 17:57:49 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.66 94/09/14 16:24:59 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -265,7 +265,19 @@ Boolean *continue_to_dispatch;
 	XtRemoveEventHandler (topLevel, PropertyChangeMask, False,
 	    PropertyChangeXtHandler, NULL);
 
+	/*
+	 * Restart the rest of the session aware clients.
+	 */
+
 	Restart (RESTART_REST_OF_CLIENTS);
+
+
+	/*
+	 * Start apps that aren't session aware that were specified
+	 * by the user.
+	 */
+
+	StartNonSessionAwareApps ();
     }
 }
 
@@ -476,7 +488,18 @@ Bool use_default;
 	    XtRemoveEventHandler (topLevel, PropertyChangeMask, False,
 	        PropertyChangeXtHandler, NULL);
 
+	    /*
+	     * Restart the rest of the session aware clients.
+	     */
+
 	    Restart (RESTART_REST_OF_CLIENTS);
+
+	    /*
+	     * Start apps that aren't session aware that were specified
+	     * by the user.
+	     */
+	    
+	    StartNonSessionAwareApps ();
 	}
     }
 }
@@ -1169,7 +1192,7 @@ Bool on;
     XtSetSensitive (clientInfoPopup, on);
     XtSetSensitive (clientPropPopup, on);
 
-    if (on)
+    if (on && current_client_selected >= 0)
 	XawListHighlight (clientListWidget, current_client_selected);
 }
 

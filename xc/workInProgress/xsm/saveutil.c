@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.20 94/08/17 18:17:03 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.21 94/08/25 17:26:05 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -69,7 +69,7 @@ char **sm_id;
     Prop		*prop;
     PropValue		*val;
     FILE		*f;
-    int			state;
+    int			state, i;
     int			version_number;
 
     f = fopen(session_save_file, "r");
@@ -116,9 +116,19 @@ char **sm_id;
 	for(p = buf; *p && isspace(*p); p++) /* LOOP */;
 	if(*p == '#') continue;
 
-	if(!*p) {
-	    state = 0;
-	    continue;
+	if(!*p)
+	{
+	    if (version_number >= 3 &&
+		ListCount (PendingList) == num_clients_in_last_session)
+	    {
+		state = 5;
+		break;
+	    }
+	    else
+	    {
+		state = 0;
+		continue;
+	    }
 	}
 
 	if(!isspace(buf[0])) {
@@ -193,6 +203,50 @@ char **sm_id;
 	    if(!ListAddLast(prop->values, (void *)val)) nomem(); 
 	}
     }
+
+    /* Read commands for non-session aware clients */
+
+    if (state == 5)
+    {
+	String strbuf;
+	int bufsize = 0;
+
+	getline(&buf, &buflen, f);
+	if(p = strchr(buf, '\n')) *p = '\0';
+	non_session_aware_count = atoi (buf);
+
+	if (non_session_aware_count > 0)
+	{
+	    non_session_aware_clients = (char **) malloc (
+	        non_session_aware_count * sizeof (char *));
+
+	    for (i = 0; i < non_session_aware_count; i++)
+	    {
+		getline(&buf, &buflen, f);
+		if(p = strchr(buf, '\n')) *p = '\0';
+		non_session_aware_clients[i] = (char *) malloc (
+		    strlen (buf) + 2);
+		strcpy (non_session_aware_clients[i], buf);
+		bufsize += (strlen (buf) + 1);
+	    }
+
+	    strbuf = (String) malloc (bufsize + 1);
+	    strbuf[0] = NULL;
+
+	    for (i = 0; i < non_session_aware_count; i++)
+	    {
+		strcat (strbuf, non_session_aware_clients[i]);
+		strcat (strbuf, "\n");
+	    }
+
+	    XtVaSetValues (manualRestartCommands,
+	        XtNstring, strbuf,
+	        NULL);
+
+	    free ((char *) strbuf);
+	}
+    }
+
     fclose(f);
 
     return 1;
@@ -257,6 +311,9 @@ char *sm_id;
     ClientRec *client;
     FILE *f;
     List *cl;
+    String commands;
+    char *p, *c;
+    int count;
 
     f = fopen (session_save_file, "w");
 
@@ -288,7 +345,52 @@ char *sm_id;
 	    SaveClient (f, client);
 	}
 
-	fclose(f);
+
+	/* Save the non-session aware clients */
+
+	XtVaGetValues (manualRestartCommands,
+	    XtNstring, &commands,
+	    NULL);
+
+	p = c = commands;
+	count = 0;
+
+	while (*p)
+	{
+	    if (*p == '\n')
+	    {
+		if (p != c)
+		    count++;
+		c = p + 1;
+	    }
+	    p++;
+	}
+	if (p != c)
+	    count++;
+
+	fprintf (f, "%d\n", count);
+
+	p = c = commands;
+
+	while (*p)
+	{
+	    if (*p == '\n')
+	    {
+		if (p != c)
+		{
+		    *p = NULL;
+		    fprintf (f, "%s\n", c);
+		    *p = '\n';
+		}
+		c = p + 1;
+	    }
+	    p++;
+	}
+
+	if (p != c)
+	    fprintf (f, "%s\n", c);
+
+	fclose (f);
     }
 }
 

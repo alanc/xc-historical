@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.16 94/08/25 17:27:57 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.17 94/09/14 16:14:15 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -675,11 +675,16 @@ ClientInfoXtProc (w, client_data, callData)
     {
 	UpdateClientList ();
 
-	current_client_selected = 0;
-	XawListHighlight (clientListWidget, 0);
-	ShowHint (clientListRecs[0]);
-	if (client_prop_visible)
-	    DisplayProps (clientListRecs[0]);
+	if (clientListRecs && clientListRecs[0])
+	{
+	    current_client_selected = 0;
+	    XawListHighlight (clientListWidget, 0);
+	    ShowHint (clientListRecs[0]);
+	    if (client_prop_visible)
+		DisplayProps (clientListRecs[0]);
+	}
+	else
+	    current_client_selected = -1;
 
 	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
 	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
@@ -839,6 +844,27 @@ create_client_info_popup ()
 
     XtAddCallback (clientListWidget, XtNcallback, ClientListXtProc, 0);
 
+    manualRestartLabel = XtVaCreateManagedWidget (
+	"manualRestartLabel", labelWidgetClass, clientInfoForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, clientListWidget,
+        XtNborderWidth, 0,
+        XtNvertDistance, 20,
+	NULL);
+
+    manualRestartCommands = XtVaCreateManagedWidget (
+	"manualRestartCommands", asciiTextWidgetClass, clientInfoForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, manualRestartLabel,
+	XtNeditType, XawtextEdit,
+	XtNresizable, True,
+	XtNresize, XawtextResizeWidth,
+	XtNscrollVertical, XawtextScrollAlways,
+	XtNwidth, 350,
+	XtNheight, 100,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainBottom,
+	NULL);
 
     /*
      * Pop up for viewing client properties

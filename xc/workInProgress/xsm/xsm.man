@@ -1,4 +1,4 @@
-.\" $XConsortium: xsm.man,v 1.6 94/08/02 17:07:36 mor Exp mor $
+.\" $XConsortium: xsm.man,v 1.7 94/08/02 17:51:51 mor Exp mor $
 .\" Copyright (c) 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -44,7 +44,7 @@ Causes \fIxsm\fP to load the specified session, bypassing the session menu.
 Turns on debugging information.
 .SH SETUP
 .SS .xsession file
-Using \fIxsm\fP requires a few changes to your \fI.xsession\fP file:
+Using \fIxsm\fP requires a change to your \fI.xsession\fP file:
 .PP
 The last program executed by your \fI.xsession\fP file should
 be \fIxsm\fP.  With this configuration, when the user chooses to shut
@@ -55,11 +55,9 @@ logging into a session, your .xsession file, in general, should not directly
 start up applications.  Rather, the applications should be started within
 a session.  When \fIxsm\fP shuts down the session, \fIxsm\fP will know to
 restart these applications.  Note however that there are some types of
-applications that are not "session aware", and these applications should be
-started within the \fI.xsession\fP file.  Applications that are not session
-aware are ones that do not support the X Session Management Protocol, or
-they do not create any top level windows for the Session Management Proxy
-to detect (see the section titled \fITHE PROXY\fP).
+applications that are not "session aware".  \fIxsm\fP allows you to
+manually add these applications to your session (see the section titled
+\fIClient List\fP).
 .PP
 .SS SM_SAVE_DIR environment variable
 If the \fISM_SAVE_DIR\fP environment variable is defined, \fIxsm\fP will
@@ -137,9 +135,10 @@ The following options are available from \fIxsm\fP's main window:
 .TP 18
 .B Client List
 Pressing this button brings up a window containing a list of all clients that
-are in the session.  For each client, the host machine that the client is
-running on is presented.  As clients are added and removed from the session,
-this list is updated to reflect the changes.
+are in the current session.  For each client, the host machine that the client
+is running on is presented.  As clients are added and removed from the session,
+this list is updated to reflect the changes.  The user is able to control how
+these clients are restarted (see below).
 .br
 .sp
 By pressing the \fBView Properties\fR
@@ -155,13 +154,52 @@ By pressing the \fBKill Client\fR button, the user can remove a client from
 the session.
 .br
 .sp
+By selecting a restart hint from the \fBRestart Hint\fR menu, the user can
+control the restarting of a client.  The following hints are available:
+.br
+.sp
+.B \-
+The \fBRestart If Running\fR hint indicates that the client should be
+restarted in the next session if it is connected to the session manager at
+the end of the current session.
+.br
+.sp
+.B \-
+The \fBRestart Anyway\fR hint indicates that the client should be restarted
+in the next session even if it exits before the current session is terminated.
+.br
+.sp
+.B \-
+The \fBRestart Immediately\fR hint is similar to the \fBRestart Anyway\fR hint,
+but in addition, the client is meant to run continuously.  If the client exits,
+the session manager will try to restart it in the current session.
+.br
+.sp
+.B \-
+The \fBRestart Never\fR hint indicates that the client should not be restarted
+in the next session.
+.br
+.sp
+Note that all X applications may not be "session aware".  Applications that
+are not session aware are ones that do not support the X Session Management
+Protocol, or they do not create any top level windows with the WM_COMMAND
+property for the Session Management Proxy to detect (see the section titled
+\fITHE PROXY\fP).  \fIxsm\fP allows the user to manually add such applications
+to the session.  The bottom of the \fIClient List\fP window contains a text
+entry field in which application commands can be typed in.  Each command
+should go on its own line.  When the session is restarted, \fIxsm\fP will
+restart these applications in addition to the regular "session aware"
+applications.
+.br
+.sp
 Pressing the \fBDone\fR button removes the \fBClient List\fR window.
 .TP 18
-.B Name Session...
-This option allows the user to assign a new name to the session.  Note
-that once a session's name is changed, any state changes will only affect
-the new session.  The user can take a "snapshot" of a useful session by
-naming the session and performing a checkpoint (see below).
+.B Rename Session...
+This option allows the user to assign a new name to the session, with the
+option of checkpointing the original session.  Note that once a session's
+name is changed, any state changes will only affect the new session.  The
+user can take a "snapshot" of a useful session by naming the session and
+performing a checkpoint (see below).
 .TP 18
 .B Checkpoint
 By performing a checkpoint, all applications that are in the session are
@@ -218,8 +256,8 @@ can cause the session to exit.  Note that if the interaction style is
 \fBErrors\fR or \fBAny\fR, the user may cancel the shutdown.
 .br
 .sp
-The user may choose to exit the session without performing a checkpoint
-(an additional save type \fBNone\fR is available).
+The user may choose to exit the session with our without performing a
+checkpoint.
 .PP
 .SH THE PROXY
 Since not all applications have been ported to support the X Session

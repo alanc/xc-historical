@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.14 94/08/25 17:23:47 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.15 94/08/30 17:21:19 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -65,6 +65,9 @@ String		*sessionNames = NULL;
 
 int		num_clients_in_last_session = -1;
 
+char		**non_session_aware_clients = NULL;
+int		non_session_aware_count = 0;
+
 char		*display_env = NULL, *non_local_display_env = NULL;
 char		*session_env = NULL, *non_local_session_env = NULL;
 char		*audio_env = NULL;
@@ -123,6 +126,8 @@ Widget			    		restartAnyway;
 Widget			    		restartImmediately;
 Widget			    		restartNever;
 Widget			    clientListWidget;
+Widget			    manualRestartLabel;
+Widget			    manualRestartCommands;
 
 Widget		    clientPropPopup;
 

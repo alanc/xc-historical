@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.16 94/08/10 15:05:00 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.17 94/08/17 18:02:00 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -548,5 +548,33 @@ StartDefaultApps ()
 	/* let the shell parse the stupid args */
 
 	system (buf);
+    }
+}
+
+
+
+void
+StartNonSessionAwareApps ()
+
+{
+    int i;
+
+    for (i = 0; i < non_session_aware_count; i++)
+    {
+	/*
+	 * Let the shell parse the stupid args.  We need to add an "&"
+	 * at the end of the command.  We previously allocated an extra
+	 * byte for this.
+	 */
+
+	strcat (non_session_aware_clients[i], "&");
+	system (non_session_aware_clients[i]);
+	free ((char *) non_session_aware_clients[i]);
+    }
+
+    if (non_session_aware_clients)
+    {
+	free ((char *) non_session_aware_clients);
+	non_session_aware_clients = NULL;
     }
 }

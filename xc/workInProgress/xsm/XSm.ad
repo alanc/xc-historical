@@ -1,4 +1,4 @@
-! $XConsortium: XSm.ad,v 1.19 94/08/17 20:05:18 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.20 94/08/25 17:36:52 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
@@ -26,6 +26,7 @@
 *restartNever.label:		Never
 
 *clientInfoDoneButton.label:	Done
+*manualRestartLabel.label:	Restart the following non-session-aware clients...
 
 *clientPropTextWidget.width:	500
 *clientPropTextWidget.height:	300

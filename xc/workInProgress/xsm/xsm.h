@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.28 94/08/25 17:24:15 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.29 94/08/30 17:21:46 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -76,7 +76,7 @@ extern FILE *fdopen(int, char const *);
  * the version.
  */
 
-#define SAVEFILE_VERSION 2
+#define SAVEFILE_VERSION 3
 
 #define DEFAULT_SESSION_NAME "Default"
 #define FAILSAFE_SESSION_NAME "Fail Safe"
@@ -165,6 +165,9 @@ extern String		*sessionNames;
 
 extern int		num_clients_in_last_session;
 
+extern char		**non_session_aware_clients;
+extern int		non_session_aware_count;
+
 extern Widget		topLevel;
 
 extern Widget		    chooseSessionPopup;
@@ -210,6 +213,8 @@ extern Widget			    		restartAnyway;
 extern Widget			    		restartImmediately;
 extern Widget			    		restartNever;
 extern Widget			    clientListWidget;
+extern Widget			    manualRestartLabel;
+extern Widget			    manualRestartCommands;
 
 extern Widget		    clientPropPopup;
 
