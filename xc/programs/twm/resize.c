@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.17 89/04/22 12:14:37 rws Exp $
+ * $XConsortium: resize.c,v 1.18 89/05/02 09:49:07 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.17 89/04/22 12:14:37 rws Exp $";
+"$XConsortium: resize.c,v 1.18 89/05/02 09:49:07 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -92,10 +92,7 @@ TwmWindow *tmp_win;
     int         junkbw, junkDepth;
 
     ResizeWindow = tmp_win->frame;
-    if (!Scr->NoGrabServer)
-    {
-	XGrabServer(dpy);
-    }
+    XGrabServer(dpy);
     XGrabPointer(dpy, Scr->Root, True,
         ButtonPressMask | ButtonReleaseMask,
         GrabModeAsync, GrabModeAsync,
@@ -138,10 +135,7 @@ int x, y, w, h;
     Window      junkRoot;
     int         junkbw, junkDepth;
 
-    if (!Scr->NoGrabServer)
-    {
-	XGrabServer(dpy);
-    }
+    XGrabServer(dpy);
     XGrabPointer(dpy, Scr->Root, True,
         ButtonReleaseMask,
         GrabModeAsync, GrabModeAsync,
@@ -841,10 +835,7 @@ int flag;
     SetupWindow(tmp_win, dragx , dragy , dragWidth, dragHeight);
     SetHints(tmp_win);
     XUngrabPointer(dpy, CurrentTime);
-    if (!Scr->NoGrabServer)
-    {
-	XUngrabServer(dpy);
-    }
+    XUngrabServer(dpy);
 }
 
 #ifdef SHAPE
