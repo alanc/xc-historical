@@ -96,11 +96,9 @@ all: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
 		(set -x; cd extensions; $(LN) ../$$i .); \
 	done
 
-extensions:
+
+extensions::
 	-mkdir $@
-	
-install::
-	-mkdir $(INCDIR)
 
 InstallMultiple($(EXPORTS),$(INCDIR))
 
@@ -109,6 +107,8 @@ clean::
 	@-(list=`echo $(IMPORTS2) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 	@-(list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
 		set -x; cd extensions; $(RM) $$list)
+
+MakeDirectories(install, $(INCDIR))
 
 install::
 	-cd $(INCDIR); mkdir $(SUBDIRS)
