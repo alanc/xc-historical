@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.5 94/03/21 13:25:15 kaleb Exp $ */
+/* $XConsortium: XawI18n.h,v 1.6 94/03/30 21:28:47 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by The Massachusetts Institute of Technology
@@ -118,7 +118,7 @@ extern int _iswspace(wchar_t);
 #define USE_XWCHAR_STRING
 #endif
 
-#ifdef bsdi
+#ifdef __bsdi__
 #define USE_XWCHAR_STRING
 #endif
 
