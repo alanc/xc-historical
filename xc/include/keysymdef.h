@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.16 93/09/26 14:48:27 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.17 93/12/01 18:58:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -274,7 +274,7 @@ SOFTWARE.
 #define	XK_ISO_Fast_Cursor_Up				0xFE2E
 #define	XK_ISO_Fast_Cursor_Down				0xFE2F
 #define	XK_ISO_Continuous_Underline			0xFE30
-#define	XK_ISO_Discontniuous_Underline			0xFE31
+#define	XK_ISO_Discontinuous_Underline			0xFE31
 #define	XK_ISO_Emphasize				0xFE32
 #define	XK_ISO_Center_Object				0xFE33
 #define	XK_ISO_Enter					0xFE34
@@ -330,6 +330,8 @@ SOFTWARE.
 
 #define	XK_Pointer_EnableKeys				0xFEF9
 #define	XK_Pointer_Accelerate				0xFEFA
+#define	XK_Pointer_DfltBtnNext				0xFEFB
+#define	XK_Pointer_DfltBtnPrev				0xFEFC
 #endif
 
 /*
