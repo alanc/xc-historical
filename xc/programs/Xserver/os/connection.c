@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.170 93/12/06 15:21:13 kaleb Exp $ */
+/* $XConsortium: connection.c,v 1.171 94/01/20 09:47:41 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1968,6 +1968,14 @@ MakeClientGrabImpervious(client)
     int connection = oc->fd;
 
     BITSET(GrabImperviousClients, connection);
+
+    if (ServerGrabCallback)
+    {
+	ServerGrabInfoRec grabinfo;
+	grabinfo.client = client;
+	grabinfo.grabstate  = CLIENT_IMPERVIOUS;
+	CallCallbacks(&ServerGrabCallback, &grabinfo);
+    }
 }
 
 /* make client pervious to grabs; assume only executing client calls this */
@@ -1989,6 +1997,14 @@ MakeClientGrabPervious(client)
 	BITCLEAR(AllSockets, connection);
 	BITCLEAR(AllClients, connection);
 	isItTimeToYield = TRUE;
+    }
+
+    if (ServerGrabCallback)
+    {
+	ServerGrabInfoRec grabinfo;
+	grabinfo.client = client;
+	grabinfo.grabstate  = CLIENT_PERVIOUS;
+	CallCallbacks(&ServerGrabCallback, &grabinfo);
     }
 }
 
