@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.95 87/09/03 15:52:13 rws Locked $ */
+/* $Header: gc.c,v 1.96 87/10/03 14:33:48 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -432,7 +432,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     */
     if (!pGC->tile)
     {
-	int w, h;
+	short w, h;
 
 	w = 16;
 	h = 16;
@@ -773,7 +773,7 @@ CreateDefaultStipple(screenNum)
     register ScreenPtr pScreen;
     int tmpval[3];
     xRectangle rect;
-    int w, h;
+    short w, h;
     GCPtr pgcScratch;
 
     pScreen = &screenInfo.screen[screenNum];
