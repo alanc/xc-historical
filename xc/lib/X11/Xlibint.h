@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.113 93/09/15 17:24:13 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.114 93/09/15 17:45:54 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -121,7 +121,7 @@ struct _XDisplay
 	struct _XIMFilter *im_filters;
 	struct _XSQEvent *qfree; /* unallocated event queue elements */
 	unsigned long next_event_serial_num; /* inserted into next queue elt */
-	struct _XPreFlush *flushes; /* Flush hooks */
+	struct _XExten *flushes; /* Flush hooks */
 	struct _XConnectionInfo *im_fd_info; /* _XRegisterInternalConnection */
 	int im_fd_length;	/* number of im_fd_info */
 	struct _XConnWatchInfo *conn_watchers; /* XAddConnectionWatch */
@@ -674,13 +674,9 @@ typedef struct _XExten {	/* private to extension mechanism */
         char *(*error_string)();  /* routine to supply error string */
 	char *name;		/* name of this extension */
 	void (*error_values)(); /* routine to supply error values */
+	void (*before_flush)();	/* routine to call when sending data */
+	struct _XExten *next_flush; /* next in list of those with flushes */
 } _XExtension;
-
-struct _XPreFlush {
-    struct _XPreFlush *next;	/* next in list */
-    XExtCodes *codes;		/* extension codes */
-    void (*proc)();		/* routine to call when sending data */
-};
 
 /* extension hooks */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.180 93/09/15 17:34:30 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.181 93/09/15 17:55:35 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -468,14 +468,14 @@ static _XFlushInt (dpy, cv)
 	register long size, todo;
 	register int write_stat;
 	register char *bufindex;
-	struct _XPreFlush *cb;
+	_XExtension *ext;
 
 	if (dpy->flags & XlibDisplayIOError) return;
 
 	size = todo = dpy->bufptr - dpy->buffer;
 	bufindex = dpy->bufptr = dpy->buffer;
-	for (cb = dpy->flushes; cb; cb = cb->next)
-	    (*cb->proc)(dpy, cb->codes, bufindex, size);
+	for (ext = dpy->flushes; ext; ext = ext->next_flush)
+	    (*ext->before_flush)(dpy, &ext->codes, bufindex, size);
 	/*
 	 * While write has not written the entire buffer, keep looping
 	 * until the entire buffer is written.  bufindex will be incremented
@@ -1119,15 +1119,15 @@ _XSend (dpy, data, size)
 	long padsize = padlength[size & 3];
 	long total = dpybufsize + size + padsize;
 	long todo = total;
-	struct _XPreFlush *cb;
+	_XExtension *ext;
 
 	if (dpy->flags & XlibDisplayIOError) return;
 
-	for (cb = dpy->flushes; cb; cb = cb->next) {
-	    (*cb->proc)(dpy, cb->codes, dpy->bufptr, dpybufsize);
-	    (*cb->proc)(dpy, cb->codes, data, size);
+	for (ext = dpy->flushes; ext; ext = ext->next_flush) {
+	    (*ext->before_flush)(dpy, &ext->codes, dpy->bufptr, dpybufsize);
+	    (*ext->before_flush)(dpy, &ext->codes, data, size);
 	    if (padsize)
-		(*cb->proc)(dpy, cb->codes, pad, padsize);
+		(*ext->before_flush)(dpy, &ext->codes, pad, padsize);
 	}
 
 	/*
