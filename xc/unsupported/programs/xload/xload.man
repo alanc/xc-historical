@@ -127,7 +127,7 @@ Unable to query window for dimensions. Various X errors.
 .SH BUGS
 This program requires the ability to open and read the special system
 file \fI/dev/kmem\fP.  Sites that do not allow general access to this file
-should make \fIxlogo\fP belong to the same group as \fI/dev/kmem\fP and
+should make \fIxload\fP belong to the same group as \fI/dev/kmem\fP and
 turn on the \fIset group id\fP permission flag.
 .PP
 Reading /dev/kmem is inherently non-portable.  Therefore, the widget upon
