@@ -1,4 +1,4 @@
-.\" $XConsortium: xmodmap.man,v 1.21 94/04/11 16:02:58 matt Exp $
+.\" $XConsortium: xmodmap.man,v 1.22 94/04/12 18:58:26 gildea Exp $
 .\" Copyright 1987 Sun Microsystems, Inc.
 .\" Copyright 1988, 1989, 1990 Massachusetts Institute of Technology
 .\"
@@ -52,7 +52,7 @@ unhandled argument is given to
 .TP 8
 .B \-grammar
 This option indicates that a help message describing the expression grammar 
-used in files and with -e expressions should be printed on the standard error.
+used in files and with \-e expressions should be printed on the standard error.
 .TP 8
 .B \-verbose
 This option indicates that 
@@ -109,7 +109,7 @@ The list of keysyms is assigned to the indicated keycode
 (which may be specified in decimal, hex or octal and can be determined by 
 running the 
 .I xev 
-program in the examples directory).
+program.
 .TP 8
 .B keycode any = \fIKEYSYMNAME ...\fP
 If no existing key has the specified list of keysyms assigned to it,
@@ -178,7 +178,7 @@ This could be done on a 3 button pointer as follows:
 %  xmodmap -e "pointer = 3 2 1"
 .EE
 .PP
-Many editor applications support the notion of Meta keys (similar to Control 
+Many applications support the notion of Meta keys (similar to Control 
 keys except that Meta is held down instead of Control).  However,
 some servers do not have a Meta keysym in the default keymap table, so one
 needs to be added by hand.
@@ -190,6 +190,12 @@ means that applications that are looking for a Multi_key (including the
 default modifier map) won't notice any change.
 .EX
 %  xmodmap -e "keysym Multi_key = Multi_key Meta_L"
+.EE
+.PP
+Similarly, some keyboards have an Alt key but no Meta key.
+In that case the following may be useful:
+.EX
+%  xmodmap -e "keysym Alt_L = Meta_L Alt_L"
 .EE
 .PP
 One of the more simple, yet convenient, uses of \fIxmodmap\fP is to set the
