@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.24 91/02/17 17:05:12 rws Exp $
+/* $XConsortium: xfontsel.c,v 1.25 91/03/29 16:35:42 converse Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -32,6 +32,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeBSB.h>
+#include <X11/Xaw/SmeLine.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xmu/Atoms.h>
@@ -64,6 +65,7 @@ void EnableOtherValues();
 void EnableMenu();
 void SetCurrentFont();
 void QuitAction();
+int *GetScaleValues();
 
 XtActionsRec xfontsel_actions[] = {
     "Quit",	    QuitAction
@@ -78,11 +80,15 @@ typedef void (*XtProc)();
 static struct _appRes {
     int app_defaults_version;
     Cursor cursor;
-    String pattern;
+    String pattern,
+           pixelSizeList,
+           pointSizeList;
     Boolean print_on_quit;
 } AppRes;
 
-char defaultPattern[] = "-*-*-*-*-*-*-*-*-*-*-*-*-*-*";
+char defaultPattern[] = "-*-*-*-*-*-*-*-*-*-*-*-*-*-*",
+     defaultPixelSizeList[] = "7, 9, 15, 20, 40, 60",
+     defaultPointSizeList[] = "100, 200, 300, 400, 500, 600";
 
 static XtResource resources[] = {
     { "cursor", "Cursor", XtRCursor, sizeof(Cursor),
@@ -91,6 +97,12 @@ static XtResource resources[] = {
     { "pattern", "Pattern", XtRString, sizeof(String),
 		XtOffsetOf( struct _appRes, pattern ),
 		XtRString, (XtPointer)defaultPattern },
+    { "pixelSizeList", "PixelSizeList", XtRString, sizeof(String),
+                XtOffsetOf( struct _appRes, pixelSizeList ),
+                XtRString, (XtPointer)defaultPixelSizeList },
+    { "pointSizeList", "PointSizeList", XtRString, sizeof(String),
+                XtOffsetOf( struct _appRes, pointSizeList ),
+                XtRString, (XtPointer)defaultPointSizeList },
     { "printOnQuit", "PrintOnQuit", XtRBoolean, sizeof(Boolean),
 	  	XtOffsetOf( struct _appRes, print_on_quit ),
       		XtRImmediate, (XtPointer)False },
@@ -118,6 +130,7 @@ typedef struct FieldValue FieldValue;
 struct FieldValue {
     int field;
     String string;
+    Boolean scaledFieldValue;
     Widget menu_item;
     int count;			/* of fonts */
     int allocated;
@@ -184,7 +197,6 @@ Boolean *fontInSet;
 static Choice *choiceList = NULL;
 int enabledMenuIndex;
 static Boolean patternFieldSpecified[FIELD_COUNT]; /* = 0 */
-
 
 void main(argc, argv)
     int argc;
@@ -461,6 +473,61 @@ void GetFontNames( closure )
 }
 
 
+void ProcessScaledFonts(i, f, font, closure)
+     int *i, f, *font;
+     XtPointer closure;
+{
+  FieldValue *v; 
+  ParseRec *parseRec = (ParseRec*)closure;
+  char **fontNames = parseRec->fontNames;
+  int num_fonts = parseRec->end;
+  FieldValueList **fieldValues = parseRec->fieldValues;
+  FontValues *fontValues = parseRec->fonts - numBadFonts;
+  int len;
+  
+  char *fp = (f == 6) ? AppRes.pixelSizeList : AppRes.pointSizeList, *bp;
+
+  while (*fp) {
+    int count;
+    bp = fp;
+    while (*bp && (*bp != ' ' && *bp != ',')) bp++;
+    len = bp - fp;    
+    count = fieldValues[f]->count++;
+    if (count == fieldValues[f]->allocated) {
+      int allocated = (fieldValues[f]->allocated += 10);
+      fieldValues[f] = (FieldValueList*)
+	XtRealloc( (char *) fieldValues[f],
+		  sizeof(FieldValueList) +
+		  (allocated-1) * sizeof(FieldValue) );
+    }
+    v = &fieldValues[f]->value[count];
+    v->field = f;
+    v->string = XtMalloc(len + 1);
+    strncpy(v->string, fp, len);
+    v->string[len] = '\0';
+    v->scaledFieldValue = True;
+    v->font = (int*)XtMalloc( 10*sizeof(int) );
+    v->allocated = 10;
+    v->count = 0;
+    v->enable = True;
+    *i = 1;
+    fontValues->value_index[f] = fieldValues[f]->count - *i;
+    if ((*i = v->count++) == v->allocated) {
+      int allocated = (v->allocated += 10);
+      v->font = (int*)XtRealloc( (char *) v->font, 
+				allocated * sizeof(int) );
+    }
+    v->font[*i] = *font - numBadFonts;
+    fp++;
+    while (*fp && (*fp != ' ' && *fp != ',')) fp++;
+    while (*fp && (*fp == ' ' || *fp == ',')) fp++;
+    bp = fp;
+  }
+}
+
+Boolean firstScaledPixels = True;
+Boolean firstScaledPoints = True;
+
 void ParseFontNames( closure )
     XtPointer closure;
 {
@@ -505,28 +572,44 @@ void ParseFontNames( closure )
 			break;
 	    }
 	    if (i == 0) {
+	      if (len == 1 && *fieldP  == '0' && f != 11 && f != 13) {
+		if (f == 6 && firstScaledPixels) {
+		  ProcessScaledFonts(&i, f, &font, closure);
+		  firstScaledPixels = False;
+		  continue;
+		}
+		if (f == 7 && firstScaledPoints) {
+		  ProcessScaledFonts(&i, f, &font, closure);
+		  firstScaledPoints = False;
+		  continue;
+		}
+		continue;
+	      }
+	      else {
 		int count = fieldValues[f]->count++;
 		if (count == fieldValues[f]->allocated) {
-		    int allocated = (fieldValues[f]->allocated += 10);
-		    fieldValues[f] = (FieldValueList*)
-			XtRealloc( (char *) fieldValues[f],
-				   sizeof(FieldValueList) +
+		  int allocated = (fieldValues[f]->allocated += 10);
+		  fieldValues[f] = (FieldValueList*)
+		    XtRealloc( (char *) fieldValues[f],
+			      sizeof(FieldValueList) +
 					(allocated-1) * sizeof(FieldValue) );
 		}
 		v = &fieldValues[f]->value[count];
+		v->scaledFieldValue = False;
 		v->field = f;
 		if (len == 0)
-		    v->string = NULL;
+		  v->string = NULL;
 		else {
-		    v->string = (String)XtMalloc( len+1 );
-		    strncpy( v->string, fieldP, len );
-		    v->string[len] = '\0';
+		  v->string = (String)XtMalloc( len+1 );
+		  strncpy( v->string, fieldP, len );
+		  v->string[len] = '\0';
 		}
 		v->font = (int*)XtMalloc( 10*sizeof(int) );
 		v->allocated = 10;
 		v->count = 0;
 		v->enable = True;
 		i = 1;
+	      }
 	    }
 	    fontValues->value_index[f] = fieldValues[f]->count - i;
 	    if ((i = v->count++) == v->allocated) {
@@ -550,6 +633,31 @@ Boolean IsXLFDFontName(fontName)
     return (f == FIELD_COUNT);
 }
 
+int AlphaCompareFields(f1, f2)
+     FieldValue *f1, *f2;
+{
+  if (f1->string && !f2->string) return -1;
+  if (!f1->string && !f2->string) return 0;
+  if (!f1->string && f2->string) return 1;
+  if (!strcmp(f1->string, "*")) return 1;
+  if (!strcmp(f2->string, "*")) return -1;
+  return strcmp(f1->string, f2->string);
+}
+
+int NumericCompareFields(f1, f2)
+     FieldValue *f1, *f2;
+{
+  int i1, i2;
+  if (!f1->scaledFieldValue && f2->scaledFieldValue) return -1;
+  if (f1->scaledFieldValue && !f2->scaledFieldValue) return 1;
+  if (f1->string && !f2->string) return -1;
+  if (!f1->string && !f2->string) return 0;
+  if (!f1->string && f2->string) return 1;
+  if (!strcmp(f1->string, "*")) return 1;
+  if (!strcmp(f2->string, "*")) return -1;
+  i1 = (int)atoi(f1->string); i2 = (int)atoi(f2->string);
+  return (i1 - i2);
+}
 
 void MakeFieldMenu(closure)
     XtPointer closure;
@@ -560,36 +668,65 @@ void MakeFieldMenu(closure)
     FieldValue *val = values->value;
     int i;
     Arg args[1];
-    register Widget item;
+    register Widget item, line;
+    Boolean firstScaledFieldValue = False;
 
     if (numFonts)
-	menu =
-	  XtCreatePopupShell("menu",simpleMenuWidgetClass,makeRec->button,NZ);
+        menu =
+          XtCreatePopupShell("menu",simpleMenuWidgetClass,makeRec->button,NZ);
     else {
-	SetNoFonts();
-	return;
+        SetNoFonts();
+        return;
     }
     XtGetSubresources(menu, (XtPointer) values, "options", "Options",
-		      menuResources, XtNumber(menuResources), NZ);
+                      menuResources, XtNumber(menuResources), NZ);
     XtAddCallback(menu, XtNpopupCallback, EnableOtherValues,
-		  (XtPointer)makeRec->field );
-
+                  (XtPointer)makeRec->field );
+ 
     if (!patternFieldSpecified[val->field]) {
-	XtSetArg( args[0], XtNlabel, "*" );
-	item = XtCreateManagedWidget("any",smeBSBObjectClass,menu,args,ONE);
-	XtAddCallback(item, XtNcallback, AnyValue, (XtPointer)val->field);
+        XtSetArg( args[0], XtNlabel, "*" );
+        item = XtCreateManagedWidget("any",smeBSBObjectClass,menu,args,ONE);
+        XtAddCallback(item, XtNcallback, AnyValue, (XtPointer)val->field);
+    }
+ 
+    switch (makeRec->field) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 8:
+    case 9:
+    case 10:
+    case 12:
+    case 13:
+      qsort((char *)val, values->count, sizeof(FieldValue),
+            AlphaCompareFields);
+      break;
+    case 6:
+    case 7:
+    case 11:
+      qsort((char *)val, values->count, sizeof(FieldValue),
+            NumericCompareFields);
+      break;
     }
 
     for (i = values->count; i; i--, val++) {
-	XtSetArg( args[0], XtNlabel, val->string ? val->string : "(nil)" );
-	item =
-	    XtCreateManagedWidget(val->string ? val->string : "nil",
-				  smeBSBObjectClass, menu, args, ONE);
-	XtAddCallback(item, XtNcallback, SelectValue, (XtPointer)val);
-	val->menu_item = item;
+      if (val->scaledFieldValue && !firstScaledFieldValue) {
+				/* add a menu seperator */
+	line = XtCreateManagedWidget("line", smeLineObjectClass,
+				     menu, NULL, 0);
+	firstScaledFieldValue = True;
+      }
+        XtSetArg( args[0], XtNlabel, val->string ? val->string : "(nil)" );
+        item =
+            XtCreateManagedWidget(val->string ? val->string : "nil",
+                                  smeBSBObjectClass, menu, args, ONE);
+        XtAddCallback(item, XtNcallback, SelectValue, (XtPointer)val);
+        val->menu_item = item;
     }
 }
-
 
 SetNoFonts()
 {
