@@ -1,15 +1,14 @@
-.TH XMAN 1 "22 October 1988" "X Version 11"
+.TH XMAN 1 "24 October 1988" "X Version 11"
 .SH NAME
-xman - X window system manual page display program.
+xman - display manual pages
 .SH SYNOPSIS
 .B xman
 [-options ...]
 .SH DESCRIPTION
 .I Xman
-opens a small window on the display that contains a menu of
-commands.  My intention is that this is small enough to allow you to call
-it in your .login and leave it running throughout your entire login
-session.  At this point in the program there several options:
+is a manual page browser.  The default size of the initial \fIxman\fP
+window is small so that you can leave it running throughout your entire login
+session.  In the initial window there are three options:
 \fIHelp\fP will pop up a window with on-line help, \fIQuit\fP will
 exit, and \fIManual Page\fP will pop up a window with a manual page
 browser in it.  You may pop up more than one manual page browser window
@@ -17,59 +16,56 @@ from a single execution of \fIxman\fP.
 .PP
 For further information on using \fIxman\fP please read the on-line
 help information.  The rest of this manual page will discuss
-customization of \fIxman\fP to suit the needs of a particular user.
-For groups that desire to create a new directory listing (manual
-section), read the next paragraph on the \fImandesc\fP file that allows
-system-wide customization of manual sections.
+customization of \fIxman\fP.
 .PP
+.I Xman
+accomodates new manual sections by the use of the environment variable
+MANPATH and by directory description files named \fImandesc\fP.
 .I Xman
 will search each directory specified in the environment variable
-MANPATH for files to add to the
-directory listing.
-.I Xman
-also looks for a file called \fImandesc\fP in
-each directory specified in MANPATH.  The \fImandesc\fP file tells \fIxman\fP
-to create a separate section for one or more of the directories
-specified in MANPATH.
-For example, if your MANPATH were '/usr/man:/usr/sipb/man'
-then \fIxman\fP would search /usr/man, and finding no mandesc file would put
-all of its files in the default section names (e.g. manl gets a section name
-of local).  But if it does find a mandesc file while searching
-/usr/sipb/man which contains the line 'SIPB Programs' (no quote
-marks), then this tells \fIxman\fP to put all files in the
-'manl' section in a new
-directory called 'SIPB Programs'.  \fIXman\fP will search this file until
-there are no more lines of information.  This flexibilty is ideal
-for courses that have their own manual pages.  Like 'man', \fIxman\fP
-searches only the following directories: man0, man1, man2, man3...
-man8, manl (small L), mann.  It usually ignores the
+MANPATH for the following subdirectories only: man0, man1, ..., man8,
+manl (local), and mann (new).
+(It usually ignores the
 information in man0 unless there is a \fImandesc\fP file that specifically
-tells it not to.
+tells it not to.)
+These subdirectories each represent
+a separate section of the manual.  These subdirectories should contain 
+man pages.  Any manual section can be renamed by an optional
+\fImandesc\fP file.
+.PP
+As an example, if MANPATH was set to \fI/usr/man:/usr/sipb/man\fP
+and there was no \fImandesc\fP file in /usr/man, \fIxman\fP
+would put all of the files in the default section names
+(e.g. manl gets a section name of local).
+But if there were a \fImandesc\fP file in
+/usr/sipb/man which contained the line \fIlSIPB Programs\fP,
+then \fIxman\fP would put all files in the
+manl subdirectory in a new section
+called ``SIPB Programs''.  \fIXman\fP will search the \fImandesc\fP file until
+there are no more lines of information.  This flexibility is ideal
+for courses that have their own manual pages. 
 .PP
 .I Xman
-creates temporary files for all unformatted man pages and all apropos
-searches.  These files are stored in /tmp. 
+creates temporary files in /tmp for all unformatted man pages and all apropos
+searches.
 .PP
 .SH "COMMAND LINE OPTIONS"
 .PP
-Please note
-that some of these are inherited from the XToolkit and as the list of
-default toolkit options changes \fIxman\fP will follow.
 .IP "\fB-helpfile\fP \fIfilename\fP"
 Specifies a helpfile to use other than the default.
 .IP \fB-bothshown\fP
 Allows both the manual page and manual directory to be on the screen at
 the same time.
 .IP \fB-notopbox\fP
-Starts xman without the Top Menu with the three buttons in it.
+Starts without the Top Menu with the three buttons in it.
 .IP "\fB-geometry\fP \fIWxH+X+Y\fP"
 Sets the size and location of the Top Menu with the three buttons in it.
 .IP "\fB-pagesize\fP \fIWxH+X+Y\fP"
 Sets the size and location of all the Manual Pages.
 .IP "\fB-bw\fP \fIpixels\fP or \fB-borderwidth\fP \fIpixels\fP"
-Specifies the width of the border for all windows in xman.
+Specifies the width of the border for all windows in \fIxman\fP.
 .IP "\fB-bd\fP \fIcolor\fP or \fB-bordercolor\fP \fIcolor\fP"
-Specifies the color of the borders of all windows in xman.
+Specifies the color of the borders of all windows in \fIxman\fP.
 .IP "\fB-fg\fP \fIcolor\fP or \fB-foreground\fP \fIcolor\fP"
 Specifies the foreground color to be used.
 .IP "\fB-bg\fP \fIcolor\fP or \fB-background\fP \fIcolor\fP"
@@ -88,48 +84,86 @@ Allows a resource to be specified on the command line.
 .PP
 .SH "X DEFAULTS"
 
-The \fIxman\fP program uses the following X resources:
-.TP 35
-\fBforeground\fP			
-- foreground color
-.TP 35
-\fBbackground\fP			
-- background color
-.TP 35
-\fBwidth & height\fP			
-- size
-.TP 35
-\fBborderWidth\fP			
-- border width
-.TP 35
-\fBborderColor\fP			
-- border color
+The \fIxman\fP program uses the following X resources: 
+\fBforeground\fP,
+\fBbackground\fP,
+\fBwidth\fP, \fBheight\fP,
+\fBborderWidth\fP, and
+\fBborderColor\fP.
 .PP
-In order to change the default values for the widget resources you need
-to have the names, thus, below I have specified the names of some of the
+In order to change the default values for widget resources you need
+to know widget names.  Below are the names of some of the
 most common widgets.
-.TP 35
-Top Menu
-- topBox.
-.TP 35
-Help Window
-- help
-.TP 35
-Manual Page Display Window
-- manualBrowser.
-.TP 35
-Manual Page Command Popup Menu 	
-- xmanCommands.
-.TP 35
-Manual Page Section Popup Menu 	
-- xmanSections.
-.TP 35
-Manual Page Search Popup       	
-- xmanSearch.
-.PP
 You can also reference Widgets by class.  The most common classes
-are Label, Command, and Text.
+are \fBLabel\fP, \fBCommand\fP, and \fBText\fP.
+.TP 16
+\fBtopBox\fP
+the top menu
+.TP 16
+\fBhelp\fP
+the help window
+.TP 16
+\fBmanualBrowser\fP
+the manual page display window
+.TP 16
+\fBxmanCommands\fP
+manual page command popup menu 	
+.TP 16
+\fBxmanSections\fP
+manual page section popup menu 	
+.TP 16
+\fBxmanSearch\fP
+manual page search popup menu
 .PP
+In addition, \fIxman\fP has application-specific resources which allow
+unique \fIxman\fP customizations.
+.PP
+.TP 18
+\fBmanualFontNormal\fP
+The font to use for normal text in the manual pages.
+.TP 18
+\fBmanualFontBold\fP
+The font to use for bold text in the manual pages.
+.TP 18
+\fBmanualFontItalic\fP
+The font to use for italic text in the manual pages.
+.TP 18
+\fBdirectoryFontNormal\fP
+The font to use for the directory text.
+.TP 18
+\fBbothShown\fP
+Either 'true' or 'false', specifies whether or not you want both the
+directory and the manual page shown at start up.
+.TP 18
+\fBdirectoryHeight\fP
+The height in pixels of the directory, when the directory and the manual page
+are shown simultaneously.
+.TP 18
+\fBtopCursor\fP
+The cursor to use in the top box.
+.TP 18
+\fBhelpCursor\fP
+The cursor to use in the help window.
+.TP 18
+\fBmanpageCursor\fP
+The cursor to use in the manual page window.
+.TP 18
+\fBsearchEntryCursor\fP
+The cursor to use in the search entry text widget.
+.TP 18 
+\fBhelpFile\fP
+Use this rather than the system default helpfile.
+.TP 18
+\fBtopBox\fP
+Either 'true' or 'false', determines whether the top box (containing
+the help, quit and manual page buttons) or a manual page is put on the screen
+at start-up.  The default is true.
+.TP 18
+\fBverticalList\fP
+Either 'true' or 'false', determines whether the directory listing is 
+vertically or horizontally organized.  The default is horizontal (false).
+.PP
+.br
 Here are a few examples of how to string all this information together into
 a resource specification that can be used on the command line with the -xrm
 flag, or added to your .Xresource or .Xdefaults file.
@@ -146,57 +180,6 @@ All text widgets have a red border.
 .B xman*Label.font: 9x15  
 All label buttons have a 9x15 font.
 .PP
-In addition, \fIxman\fP has a few application-specific resources, which allow
-customizations that are specific to \fIxman\fP. 
-.PP
-.B manualFontNormal
-.PP
-.B manualFontBold
-.TP 16
-.B manualFontItalic
-The fonts to use for the three types of text in the manual pages.
-.PP
-.TP 8
-.B directoryFontNormal
-The font to use for the directory text.
-.PP
-.TP 8
-.B bothShown
-Either 'true' or 'false', specifies whether or not you want both the
-directory and the manual page shown at start up.
-.PP
-.TP 8
-.B directoryHeight
-The number of pixels high the directory is when both it and the manual page
-are shown simultaneously.
-.PP
-.B topCursor
-.PP
-.B helpCursor
-.PP
-.B manpageCursor
-.TP 16
-.B searchEntryCursor
-The cursors to use in the top box, help window, manual page window,
-and search entry text widget respectively.
-.PP
-.TP 8 
-.B helpFile
-Use this rather than the system default helpfile.
-.PP
-.TP 8
-.B topBox
-.br
-Either 'true' or 'false', determines whether the top box (containing
-the help, quit and manual page buttons) or a manual page is put on the screen
-at start-up.
-.PP
-.TP 8
-.B verticalList
-.br
-Either 'true' or 'false', determines whether the directory listing is 
-vertically or horizontally organized, the default is horizontal (false).
-.PP
 .SH FILES
 /usr/man/* or those specified in the MANPATH.
 .br 
@@ -206,21 +189,18 @@ mandesc
 X(1), X(8C), man(1), apropos(1)
 .PP
 .SH ENVIRONMENT
-.TP 8
-.B DISPLAY
-to get the default host and display to use.
-.TP 8
-.B MANPATH
-to get the search path for manual pages.  Directories are separated by
+DISPLAY - the default host and display to use.
+.PP
+MANPATH - the search path for manual pages.  Directories are separated by
 colons (e.g. /usr/man:/mit/kit/man:/foo/bar/man).
 .PP
 .SH BUGS
 The -fn and -font option only specify the fonts for the command button
 and not the text of the manpages or directories. 
-
-Drops core if /usr/man is nonexistent.
-
-This man page should be completely rewritten.
+.br
+Protocol error upon selecting "Remove This Manpage".
+.br
+Specification of the \fImandesc\fP file format is not given in the man page.
 .PP
 .SH AUTHORS
 Copyright 1988 by Massachusetts Institute of Technology.
