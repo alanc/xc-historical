@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.20 90/07/03 17:25:57 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.21 90/07/06 12:28:38 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -184,8 +184,12 @@ extern void _XtTranslateInitialize();
 extern XtTranslations _XtParseTranslationTable(); /* source */
     /* String source; */
 
-extern void _XtRegisterGrabs(); /* widget */
-    /* Widget widget; */
+extern void _XtRegisterGrabs(
+#if NeedFunctionPrototypes
+    Widget widget,
+    Boolean acceleratorsOnly
+#endif
+);
 
 extern void _XtPopup(); /* widget, grab_kind, spring_loaded */
     /* Widget      widget; */
