@@ -33,6 +33,7 @@
 	  mapping-notify
 	  keysym-in-map-p
 	  character-in-map-p
+	  keysym->keycodes
 	  ))
 
 (defvar *keysym-sets* nil) ;; Alist of (name first-keysym last-keysym)
@@ -586,3 +587,22 @@
 		   (return t))))
       (return t))))
 
+(defun keysym->keycodes (display keysym)
+  ;; Return keycodes for keysym, as multiple values
+  (declare (type display display)
+	   (type keysym keysym))
+  (declare-values (or null keycode) (or null keycode) (or null keycode))
+  ;; The keysym may appear in the keymap more than once,
+  ;; So we have to search the entire keysym map.
+  (do* ((min (display-min-keycode display))
+	(max (display-max-keycode display))
+	(map (display-keyboard-mapping display))
+	(jmax (min 2 (array-dimension map 1)))
+	(i min (1+ i))
+	(result nil))
+      ((> i max) (values-list result))
+    (declare (type card8 min max jmax)
+	     (type (simple-array keysym (* *)) map))
+    (dotimes (j jmax)
+      (when (= keysym (aref map i j))
+	(push i result)))))
