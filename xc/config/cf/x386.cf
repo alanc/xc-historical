@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.1 91/07/05 09:14:13 rws Exp $
+XCOMM platform:  $XConsortium: x386.cf,v 1.2 91/07/05 13:02:25 rws Exp $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -74,7 +74,7 @@ XCOMM platform:  $XConsortium: x386.cf,v 1.1 91/07/05 09:14:13 rws Exp $
 #define OSName			Unix System V/386 Release 3.2
 #define OSMajorVersion		3
 #define OSMinorVersion		2
-#define OSRelease		-DSYSV -DSYSV386 -DNOSTDHDRS
+#define OSRelease		-DSYSV -DSYSV386
 
 #if HasGcc
 # define CcCmd gcc -DNO_ASM -fstrength-reduce -fpcc-struct-return -fwritable-strings
