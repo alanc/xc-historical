@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.77 88/08/15 17:09:27 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.78 88/08/15 18:59:16 jim Exp $";
 #endif
 
 /*
@@ -1396,4 +1396,25 @@ Data32 (dpy, data, len)
 }
 
 #endif /* WORD64 */
+
+
+
+/*
+ * _XFreeQ - free the queue of events, called by XCloseDisplay when there are
+ * no more displays left on the display list
+ */
+
+void _XFreeQ ()
+{
+    register _XQEvent *qelt = _qfree;
+  
+    while (qelt) {
+	register _XQEvent *qnext = qelt->next;
+	Xfree (qelt);
+	qelt = qnext;
+    }
+    _qfree = NULL;
+    return;
+}
+
 

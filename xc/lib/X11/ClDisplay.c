@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XClDisplay.c,v 11.16 87/08/31 14:08:53 toddb Locked $ */
+/* $Header: XClDisplay.c,v 11.17 87/09/01 14:39:45 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #include "Xlibint.h"
@@ -18,6 +18,8 @@ XCloseDisplay (dpy)
 	register int i;
 	register Display **dp = &_XHeadOfDisplayList;
 	register Display *cp = _XHeadOfDisplayList;
+	extern void _XFreeQ();
+
 	for (i = 0; i < dpy->nscreens; i++) {
 		register Screen *sp = &dpy->screens[i];
 		XFreeGC (dpy, sp->default_gc);
@@ -35,9 +37,13 @@ XCloseDisplay (dpy)
 		if (cp == dpy) {
 			*dp = cp->next;
 			_XFreeDisplayStructure (dpy);
-			return;
+			break;
 			}
 		dp = &(cp->next);
 		cp = *dp;
 		}
+	if (_XHeadOfDisplayList == NULL) {
+	    _XFreeQ ();
+	}
+	return;
 }
