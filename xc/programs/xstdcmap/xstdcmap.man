@@ -1,4 +1,4 @@
-.\" $XConsortium: xstdcmap.man,v 1.10 94/04/12 18:44:36 gildea Exp $
+.\" $XConsortium: xstdcmap.man,v 1.11 94/04/17 20:38:44 gildea Exp $
 .\" Copyright (c) 1989, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -75,7 +75,7 @@ This option indicates that the RGB_DEFAULT_MAP should be defined.
 .B \-delete \fImap\fP
 This option specifies that a specific standard colormap property, or
 all such properties, should be removed.
-\fImap\P may be one of: default, best, red, green, blue, gray, or all.
+\fImap\fP may be one of: default, best, red, green, blue, gray, or all.
 .TP 8
 .B \-display \fIdisplay\fP
 This option specifies the host and display to use; see \fIX(1)\fP.
