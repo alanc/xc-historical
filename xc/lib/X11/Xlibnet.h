@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.7 91/04/04 18:57:31 gildea Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.8 91/04/17 09:56:37 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -158,9 +158,9 @@ without express or implied warranty.
 #endif
 
 #if (MSKCNT>4)
-#define COPYBITS(src, dst) bcopy((caddr_t) src, (caddr_t) dst,\
+#define COPYBITS(src, dst) bcopy((char *) src, (char *) dst,\
 				 MSKCNT*sizeof(long))
-#define CLEARBITS(buf) bzero((caddr_t) buf, MSKCNT*sizeof(long))
+#define CLEARBITS(buf) bzero((char *) buf, MSKCNT*sizeof(long))
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
 			for (cri=MSKCNT; --cri>=0; )	\
