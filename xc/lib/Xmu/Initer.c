@@ -1,5 +1,4 @@
-/* static char rcsid[] =
-	"$XConsortium: Initer.c,v 1.4 90/07/21 15:03:50 rws Exp $"; */
+/* $XConsortium: Initer.c,v 1.5 90/12/19 18:20:26 converse Exp $ */
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -33,6 +32,8 @@ struct InitializerList {
 static struct InitializerList * init_list = NULL;
 static Cardinal init_list_length = 0;
 
+static Boolean AddToAppconList();
+
 void
 XmuAddInitializer(func, data) 
 void (*func)();
@@ -53,7 +54,6 @@ XmuCallInitializers(app_con)
 XtAppContext app_con;
 {
   int i;
-  static Boolean AddToAppconList();
 
   for (i = 0 ; i < init_list_length ; i++) {
     if (AddToAppconList(&(init_list[i].app_con_list), app_con))
