@@ -1,4 +1,4 @@
-/* $XConsortium: prop.c,v 1.1 94/08/17 19:25:52 mor Exp mor $ */
+/* $XConsortium: prop.c,v 1.2 94/08/25 17:27:25 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,6 +26,8 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include "xsm.h"
+
+extern Widget clientListWidget;
 
 
 void
