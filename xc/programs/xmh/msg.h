@@ -1,4 +1,4 @@
-/* $XConsortium: msg.h,v 2.4 88/09/06 17:23:26 jim Exp $ */
+/* $XConsortium: msg.h,v 2.5 89/05/04 15:12:28 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

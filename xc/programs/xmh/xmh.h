@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.19 89/07/06 16:28:02 kit Exp $
+ * $XConsortium: xmh.h,v 2.20 89/07/12 13:58:03 kit Exp $
  *
  *
  *			  COPYRIGHT 1987

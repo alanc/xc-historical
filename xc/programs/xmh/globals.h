@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.18 89/06/29 16:31:34 swick Exp $
+ *  $XConsortium: globals.h,v 2.19 89/07/07 18:04:24 converse Exp $
  */
 
 /*

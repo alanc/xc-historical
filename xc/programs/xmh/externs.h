@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.13 89/07/07 18:04:26 converse Exp $
+ * $XConsortium: externs.h,v 2.14 89/07/09 16:21:11 converse Exp $
  */
 
 /*
