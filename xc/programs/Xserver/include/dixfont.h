@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.15 94/02/23 15:47:16 dpw Exp $ */
+/* $XConsortium: dixfont.h,v 1.16 94/03/14 17:48:27 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -33,19 +33,6 @@ SOFTWARE.
 #define NullDIXFontProp ((DIXFontPropPtr)0)
 
 typedef struct _DIXFontProp *DIXFontPropPtr;
-
-extern void UseFPE(
-#if NeedFunctionPrototypes
-    FontPathElementPtr /*fpe*/
-#endif
-);
-
-extern void FreeFPE(
-#if NeedFunctionPrototypes
-    FontPathElementPtr /*fpe*/,
-    Bool /*force*/
-#endif
-);
 
 extern int FontToXError(
 #if NeedFunctionPrototypes
