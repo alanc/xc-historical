@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.43 88/02/21 18:54:06 rws Exp $ */
+/* $Header: dispatch.c,v 1.44 88/03/09 10:41:11 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2533,6 +2533,7 @@ ProcStoreNamedColor           (client)
 	                 stuff->nbytes, &def.red, &def.green, &def.blue))
 	{
 	    def.flags = stuff->flags;
+	    def.pixel = stuff->pixel;
 	    retval = StoreColors(pcmp, 1, &def);
             if (client->noClientException != Success)
                 return(client->noClientException);
