@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.24 89/03/30 16:05:25 jim Exp $
+* $XConsortium: CommandP.h,v 1.25 89/05/11 01:05:06 kit Exp $
 */
 
 
@@ -94,6 +94,10 @@ typedef struct {
     GC          	inverse_GC;
     Boolean     	set;
     XtCommandHighlight	highlighted;
+#ifdef SHAPE
+    /* more resources */
+    int			shape_style;    
+#endif
 } CommandPart;
 
 

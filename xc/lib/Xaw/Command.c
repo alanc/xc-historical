@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.52 89/06/07 17:20:22 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.53 89/07/22 19:42:22 keith Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -39,6 +39,10 @@ SOFTWARE.
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/CommandP.h>
 
+#ifdef SHAPE
+#include <X11/extensions/shape.h>
+#endif
+
 /****************************************************************
  *
  * Full class record constant
@@ -56,10 +60,14 @@ static char defaultTranslations[] =
 #define offset(field) XtOffset(CommandWidget, field)
 static XtResource resources[] = { 
 
-   {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
-      offset(command.callbacks), XtRCallback, (caddr_t)NULL},
+   {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 
+      offset(command.callbacks), XtRCallback, (XtPointer)NULL},
    {XtNhighlightThickness, XtCThickness, XtRDimension, sizeof(Dimension),
-      offset(command.highlight_thickness), XtRImmediate, (caddr_t)2},
+      offset(command.highlight_thickness), XtRImmediate, (XtPointer)2},
+#ifdef SHAPE
+   {XtNshapeStyle, XtCShapeStyle, XtRInt, sizeof(int),
+      offset(command.shape_style), XtRImmediate, (XtPointer)0},
+#endif
 };
 #undef offset
 
@@ -75,6 +83,11 @@ static void Unhighlight();
 static void Unset();
 static void Destroy();
 static void PaintCommandWidget();
+
+#ifdef SHAPE
+static void Realize();
+static void Resize();
+#endif SHAPE
 
 static XtActionsRec actionsList[] =
 {
@@ -111,7 +124,11 @@ CommandClassRec commandClassRec = {
     FALSE,				/* class_inited		  */
     Initialize,				/* initialize		  */
     NULL,				/* initialize_hook	  */
+#ifdef SHAPE
+    Realize,				/* realize		  */
+#else
     XtInheritRealize,			/* realize		  */
+#endif /*SHAPE*/
     actionsList,			/* actions		  */
     XtNumber(actionsList),		/* num_actions		  */
     resources,				/* resources		  */
@@ -122,7 +139,11 @@ CommandClassRec commandClassRec = {
     TRUE,				/* compress_enterleave    */
     FALSE,				/* visible_interest	  */
     Destroy,				/* destroy		  */
+#ifdef SHAPE
+    Resize,				/* resize		  */
+#else
     XtInheritResize,			/* resize		  */
+#endif SHAPE
     Redisplay,				/* expose		  */
     SetValues,				/* set_values		  */
     NULL,				/* set_values_hook	  */
@@ -177,8 +198,10 @@ Pixel fg, bg;
 
 /* ARGSUSED */
 static void 
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;			/* unused */
+Cardinal *num_args;		/* unused */
 {
   CommandWidget cbw = (CommandWidget) new;
   
@@ -191,6 +214,14 @@ Widget request, new;
 
   cbw->command.set = FALSE;
   cbw->command.highlighted = HighlightNone;
+#ifdef SHAPE
+  if (!XShapeQueryExtension(XtDisplay(new)))
+	cbw->command.shape_style = XawCommandShapeRectangular;
+  else {
+	if (cbw->command.shape_style == 0)
+	    cbw->command.shape_style = XawCommandShapeOval;
+  }
+#endif /*SHAPE*/
 }
 
 static Region 
@@ -495,3 +526,51 @@ Widget current, request, new;
 
   return (redisplay);
 }
+
+
+#ifdef SHAPE
+static void Realize(w)
+    Widget w;
+{
+    (*commandWidgetClass->core_class.superclass->core_class.realize)(w);
+    if (((CommandWidget)w)->command.shape_style == XawCommandShapeOval)
+	ShapeOval(w);
+}
+
+static void Resize(w)
+    Widget w;
+{
+    if (((CommandWidget)w)->command.shape_style == XawCommandShapeOval)
+	ShapeOval(w);
+    (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
+}
+
+
+static ShapeOval(W)
+    Widget W;
+{
+    CommandWidget w = (CommandWidget)W;
+    Display *dpy = XtDisplay(W);
+    unsigned width = w->core.width + (w->core.border_width<<1);
+    unsigned height = w->core.height + (w->core.border_width<<1);
+    Pixmap p = XCreatePixmap( dpy, XtWindow(W), width, height, 1 );
+    XGCValues values;
+    GC set_gc, clear_gc;
+
+    values.foreground = 1;
+    values.background = 0;
+    set_gc = XtGetGC( W, GCForeground | GCBackground, &values );
+    clear_gc = XtGetGC( W, 0, &values );
+    XFillRectangle( dpy, p, clear_gc, 0, 0, width, height );
+    XFillArc( dpy, p, set_gc, 0, 0, width, height, 0, 360*64 );
+    XShapeCombineMask( dpy, XtWindow(W), ShapeBounding, 
+		       -(w->core.border_width), -(w->core.border_width),
+		       p, ShapeSet );
+    XFillRectangle( dpy, p, clear_gc, 0, 0, width, height );
+    XFillArc( dpy, p, set_gc, 0, 0, w->core.width, w->core.height, 0, 360*64 );
+    XShapeCombineMask( dpy, XtWindow(W), ShapeClip, 0, 0, p, ShapeSet );
+    XFreePixmap( dpy, p );
+    XtReleaseGC( W, set_gc );
+    XtReleaseGC( W, clear_gc );
+}
+#endif /*SHAPE*/
