@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.26 91/07/31 01:10:43 keith Exp $
+XCOMM $XConsortium: Imakefile,v 2.27 92/07/31 17:19:05 rws Exp $
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
 #endif
@@ -35,6 +35,7 @@ InstallNamedProg(x11perfcomp,x11perfcomp,$(BINDIR))
 InstallNamedProg(fillblnk.sh,fillblnk,$(PERFLIB))
 InstallNamedProg(perfboth.sh,perfboth,$(PERFLIB))
 InstallNamedProg(perfratio.sh,perfratio,$(PERFLIB))
+InstallNamedProg(Xmark.sh,Xmark,$(BINDIR))
 InstallManPageLong(x11pcomp,$(MANDIR),x11perfcomp)
 
 clean::
