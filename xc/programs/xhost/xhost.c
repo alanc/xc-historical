@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.43 91/02/28 09:29:40 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.44 91/04/17 11:07:25 rws Exp $ */
  
 /*
 
@@ -71,7 +71,7 @@ extern unsigned long inet_makeaddr();
 #include <netdnet/dnetdb.h>
 #endif
 #ifdef STREAMSCONN
-#include <X11/Xstreams.h>
+#include <Xstreams.h>
 extern char _XsTypeOfStream[];
 #endif /* STREAMSCONN */
 
