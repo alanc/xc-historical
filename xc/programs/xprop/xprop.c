@@ -5,7 +5,7 @@
 #include <ctype.h>
 
 #include <X11/Xatom.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/WinUtil.h>
 
 #include "dsimple.h"
 
