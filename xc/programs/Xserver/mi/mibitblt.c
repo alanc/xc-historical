@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.15 91/12/18 18:52:23 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 5.16 93/07/12 09:28:50 dpw Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -208,11 +208,11 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	    *pwidth++ = width;
 	}
 	pbits = (unsigned int *)xalloc(height * PixmapBytePad(width,
-						     pSrcDrawable->depth));
+					     pSrcDrawable->depth));
 	if (pbits)
 	{
 	    (*pSrcDrawable->pScreen->GetSpans)(pSrcDrawable, width, pptFirst,
-					   (int *)pwidthFirst, height, pbits);
+			(int *)pwidthFirst, height, (char *)pbits);
 	    ppt = pptFirst;
 	    pwidth = pwidthFirst;
 	    xMin -= (srcx - dstx);
@@ -224,7 +224,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 		*pwidth++ = width;
 	    }
 
-	    (*pGC->ops->SetSpans)(pDstDrawable, pGC, pbits, pptFirst,
+	    (*pGC->ops->SetSpans)(pDstDrawable, pGC, (char *)pbits, pptFirst,
 				  (int *)pwidthFirst, height, TRUE);
 	    xfree(pbits);
 	}
@@ -303,7 +303,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	if(bitsPerPixel == 1)
 	{
 	    (*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1,
-					(unsigned int *)pCharsOut);
+					(char *)pCharsOut);
 	    pCharsOut += widthInBytes;
 	}
 	else
@@ -313,7 +313,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	    {
 		/* Fetch the next pixel */
 		(*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1,
-					    (unsigned int *)&pixel);
+					    (char *)&pixel);
 		/*
 		 * Now get the bit and insert into a bitmap in XY format.
 		 */
@@ -414,7 +414,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
 	*pwidth++ = w + srcx;
     }
 
-    (*pGCT->ops->SetSpans)((DrawablePtr)pPixmap, pGCT, (unsigned int *)pbits,
+    (*pGCT->ops->SetSpans)((DrawablePtr)pPixmap, pGCT, (char *)pbits,
 			   pptFirst, pwidthFirst, h, TRUE);
     DEALLOCATE_LOCAL(pwidthFirst);
     DEALLOCATE_LOCAL(pptFirst);
@@ -639,17 +639,17 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	    pt.y = srcy + i;
 	    width = w;
 	    (*pDraw->pScreen->GetSpans)(pDraw, w, &pt, &width, 1,
-					(unsigned int *)pDst);
+					(char *)pDst);
 	    if (pPixmap)
 	    {
 	       pt.x = 0;
 	       pt.y = 0;
 	       width = w;
 	       (*pGC->ops->SetSpans)((DrawablePtr)pPixmap, pGC,
-				     (unsigned int *)pDst,
+				     (char *)pDst,
 				     &pt, &width, 1, TRUE);
 	       (*pDraw->pScreen->GetSpans)((DrawablePtr)pPixmap, w, &pt,
-					   &width, 1, (unsigned int *)pDst);
+					   &width, 1, (char *)pDst);
 	    }
 	    pDst += linelength;
 	}
@@ -773,7 +773,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	    *pwidth++ = w;
 	}
 
-	(*pGC->ops->SetSpans)(pDraw, pGC, (unsigned int *)pImage, pptFirst,
+	(*pGC->ops->SetSpans)(pDraw, pGC, (char *)pImage, pptFirst,
 			      pwidthFirst, h, TRUE);
 	DEALLOCATE_LOCAL(pwidthFirst);
 	DEALLOCATE_LOCAL(pptFirst);
