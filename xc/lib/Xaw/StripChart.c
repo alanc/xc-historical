@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.9 89/11/13 15:14:08 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.10 89/11/14 14:00:07 kit Exp $";
 #endif
 
 /***********************************************************
@@ -162,9 +162,10 @@ static void Initialize (greq, gnew)
     StripChartWidget w = (StripChartWidget)gnew;
 
     if (w->strip_chart.update > 0)
-        w->strip_chart.interval_id = XtAddTimeOut( (w->strip_chart.update * 
-						    MS_PER_SEC), 
-						  draw_it, (caddr_t)gnew);
+        w->strip_chart.interval_id = XtAppAddTimeOut( 
+					XtWidgetToApplicationContext(gnew),
+					w->strip_chart.update * MS_PER_SEC, 
+					draw_it, (caddr_t) gnew);
     else
         w->strip_chart.interval_id = NULL;
 
@@ -218,7 +219,8 @@ XtIntervalId id;		/* unused */
    
    if (w->strip_chart.update > 0)
        w->strip_chart.interval_id =
-       XtAddTimeOut(w->strip_chart.update * MS_PER_SEC, draw_it, (caddr_t) w);
+       XtAppAddTimeOut(XtWidgetToApplicationContext( (Widget) w),
+		       w->strip_chart.update * MS_PER_SEC,draw_it,client_data);
 
    if (w->strip_chart.interval >= w->core.width)
        MoveChart( (StripChartWidget) w, TRUE);
@@ -417,8 +419,9 @@ static Boolean SetValues (current, request, new)
     if (w->strip_chart.update != old->strip_chart.update) {
 	XtRemoveTimeOut (old->strip_chart.interval_id);
 	w->strip_chart.interval_id =
-	    XtAddTimeOut(w->strip_chart.update * MS_PER_SEC,
-			 draw_it, (caddr_t)w);
+	    XtAppAddTimeOut(XtWidgetToApplicationContext(new),
+			    w->strip_chart.update * MS_PER_SEC,
+			    draw_it, (caddr_t)w);
     }
 
     if ( w->strip_chart.min_scale > (int) ((w->strip_chart.max_value) + 1) )

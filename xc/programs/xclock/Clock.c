@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.47 89/10/08 15:09:07 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.48 89/10/09 16:20:00 jim Exp $";
 #endif /* lint */
 
 
@@ -302,7 +302,8 @@ static void clock_tic(client_data, id)
 
 	if (id || !w->clock.interval_id)
 	    w->clock.interval_id =
-		XtAddTimeOut( w->clock.update*1000, clock_tic, (caddr_t)w );
+		XtAppAddTimeOut( XtWidgetToApplicationContext( (Widget) w),
+				w->clock.update*1000, clock_tic, (caddr_t)w );
 	(void) time(&time_value);
 	tm = *localtime(&time_value);
 	/*
@@ -731,9 +732,12 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 	  if (current->clock.interval_id)
 	      XtRemoveTimeOut (current->clock.interval_id);
 	  if (XtIsRealized(new))
-	      new->clock.interval_id = XtAddTimeOut(new->clock.update*1000,
-						    clock_tic, (caddr_t)gnew);
-	  new->clock.show_second_hand = (new->clock.update <= SECOND_HAND_TIME);
+	      new->clock.interval_id = XtAppAddTimeOut( 
+                                         XtWidgetToApplicationContext(gnew),
+					 new->clock.update*1000,
+				         clock_tic, (caddr_t)gnew);
+
+	  new->clock.show_second_hand =(new->clock.update <= SECOND_HAND_TIME);
       }
 
       if (new->clock.padding != current->clock.padding)
