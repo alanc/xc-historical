@@ -306,7 +306,7 @@ void GetResources(widgetClass, w, names, classes, length, args, argCount)
 	    w, names, classes, length, args, argCount);
     }
     /* Then for this class */
-    XrmGetResources(w->core.display, (caddr_t) w, names, classes, length,
+    XrmGetResources(XtDisplay(w), (caddr_t) w, names, classes, length,
         widgetClass->coreClass.resources, widgetClass->coreClass.num_resource,
 	args, argCount);
 } /* GetResources */
