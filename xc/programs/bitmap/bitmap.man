@@ -508,6 +508,17 @@ Athena widget set.
 					Command clearHotSpot
 					Command undo
 .fi
+.SH COLORS
+If you would like bitmap to be viewable in color, include the following 
+in the #ifdef COLOR section you read with xrdb:
+.sp 1
+*customization:                 -color
+.sp 1
+.br
+This will cause bitmap to pick up the colors in the app-defaults color
+customization file:
+/usr/lib/X11/app-defaults/Bitmap-color.
+.fi
 .SH BITMAP WIDGET
 Bitmap widget is a stand-alone widget for editing raster images.  It
 is not designed to edit large images, although it may be used in that
