@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.20 89/03/24 15:01:31 jim Exp $
+ * $XConsortium: Xrm.c,v 1.21 89/04/18 10:26:42 swick Exp $
  */
 
 /***********************************************************
@@ -62,6 +62,19 @@ typedef XrmHashBucket	*XrmHashTable;
 typedef XrmHashTable XrmSearchList[];
 */
 
+
+static void OutOfMemory()
+{
+    extern char *sys_errlist[];
+    extern int sys_nerr;
+    char* msg = (ENOMEM >= 0 && ENOMEM < sys_nerr) ? sys_errlist[ENOMEM]
+		: "out of memory";
+    errno = ENOMEM;
+#ifdef notdef
+    (*_XIOErrorFunction)((Display*)NULL); /* %%% what do do??? */
+#endif /*notdef*/
+    fprintf(stderr, "Xlib: malloc failed; %s\n", msg);
+}
 
 void XrmStringToQuarkList(name, quarks)
     register char 	 *name;
@@ -152,8 +165,12 @@ static void PutEntry(bucket, bindings, quarks, type, value)
 
 	/* Allocate new hash table if needed */
 	if (bucket->tables[binding] == NULL) {
-	    bucket->tables[binding] =
-		(XrmHashTable) Xmalloc(sizeof(XrmHashBucket) * HASHSIZE);
+	    if ((bucket->tables[binding] =
+		 (XrmHashTable) Xmalloc(sizeof(XrmHashBucket) * HASHSIZE))
+		 == NULL) {
+		OutOfMemory();
+		return;
+	    }
 	    bzero((char *) bucket->tables[binding],
 		sizeof(XrmHashBucket) * HASHSIZE);
 	}
@@ -167,7 +184,11 @@ static void PutEntry(bucket, bindings, quarks, type, value)
 
 	/* Create new bucket if needed */
 	if (bucket == NULL) {
-	    bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec));
+	    if ((bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec)))
+		 == NULL) {
+		OutOfMemory();
+		return;
+	    }
 	    bucket->next = *pBucket;
 	    *pBucket = bucket;
 	    bucket->quark = quark;
@@ -185,7 +206,10 @@ static void PutEntry(bucket, bindings, quarks, type, value)
     }
     bucket->type = type;
     bucket->value.size = value->size;
-    bucket->value.addr = (caddr_t) Xmalloc(value->size);
+    if ((bucket->value.addr = (caddr_t) Xmalloc(value->size)) == NULL) {
+	OutOfMemory();
+	return;
+    }
     bcopy((char *) value->addr, (char *) bucket->value.addr, (int) value->size);
 } /* PutEntry */
 
@@ -322,7 +346,10 @@ static XrmDatabase NewDatabase()
 {
     register XrmHashBucket   bucket;
 
-    bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec));
+    if ((bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec))) == NULL) {
+	OutOfMemory();
+	return NULL;
+    }
     bucket->next = NULL;
     bucket->quark = NULLQUARK;
     bucket->type = NULLQUARK;
@@ -336,9 +363,9 @@ static XrmDatabase NewDatabase()
 static char *getstring(buf, nchars, dp)
 	char *buf;
 	register int nchars;
-	char **dp;
+	caddr_t dp;		/* is char** source */
 {
-	register char *src = *dp;
+	register char *src = *(char**)dp;
 	register char *dst = buf;
 	register char c;
 
@@ -347,16 +374,16 @@ static char *getstring(buf, nchars, dp)
 	while (--nchars > 0) {
 		*dst++ = c = *src++;
 		if (c == '\n') {
-			*dp = src;
+			*(char**)dp = src;
 			return (buf);
 		}
 		if (c == '\0') {
-			*dp = src-1;
+			*(char**)dp = src-1;
 			return (buf);
 		}
 	}
 	*dst = '\0';
-	*dp = src;
+	*(char**)dp = src;
 	return buf;
 }
 
@@ -681,12 +708,18 @@ static void PutLineResources(pdb, get_line, closure)
 	if (pbuf == buf) {						   \
 	    int osize = pbuf_size;					   \
 	    pbuf_size *= 2;						   \
-	    pbuf = Xmalloc(pbuf_size);					   \
+	    if ((pbuf = Xmalloc(pbuf_size)) == NULL) {			   \
+		OutOfMemory();						   \
+		return;							   \
+	    }								   \
 	    bcopy(buf, pbuf, osize);					   \
 	}								   \
 	else {								   \
 	    pbuf_size *= 2;						   \
-	    pbuf = Xrealloc(pbuf, pbuf_size);				   \
+	    if ((pbuf = Xrealloc(pbuf, pbuf_size)) == NULL) {		   \
+		OutOfMemory();						   \
+		return;							   \
+	    }								   \
 	}								   \
 	s = pbuf + (s - obuf);						   \
 	ts = pbuf + (ts - obuf);					   \
