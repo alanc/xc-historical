@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.7 91/07/25 12:15:52 keith Exp $ */
+/* $XConsortium: utils.c,v 1.8 91/12/09 16:49:10 converse Exp $ */
 /*
  * misc os utilities
  */
@@ -32,6 +32,7 @@
 #include	<X11/Xos.h>
 #include	"misc.h"
 #include	"globals.h"
+#include	<signal.h>
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -75,6 +76,10 @@ AutoResetServer()
 
     dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
+
+#ifdef SYSV
+    signal(SIGHUP, AutoResetServer);
+#endif
 }
 
 SIGVAL
@@ -99,6 +104,10 @@ ServerReconfig()
 
     dispatchException |= DE_RECONFIG;
     isItTimeToYield = TRUE;
+
+#ifdef SYSV
+    signal(SIGUSR1, ServerReconfig);
+#endif
 }
 
 SIGVAL
@@ -111,6 +120,10 @@ ServerCacheFlush()
 
     dispatchException |= DE_FLUSH;
     isItTimeToYield = TRUE;
+
+#ifdef SYSV
+    signal(SIGUSR2, ServerCacheFlush);
+#endif
 }
 
 long
@@ -142,7 +155,11 @@ ProcessCmdLine(argc, argv)
 	extern pointer MemoryAllocationBase;
 
 	if (!MemoryAllocationBase)
+#ifndef AIXV3
 	    MemoryAllocationBase = (pointer) sbrk(0);
+#else
+	    MemoryAllocationBase = (pointer) 0x20000000;
+#endif
     }
 #endif
 
