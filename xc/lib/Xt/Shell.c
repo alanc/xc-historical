@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.6 88/02/03 14:58:14 swick Locked $";
+static char rcsid[] = "$Header: Shell.c,v 1.7 88/02/03 23:36:26 swick Locked $";
 #endif lint
 
 /*
@@ -595,36 +595,43 @@ static void Realize(wid, vmask, attr)
 	ShellWidget w = (ShellWidget) wid;
         Mask mask = *vmask;
 
-	/* I attempt to inherit my child's background to avoid screen flash
-	 * if there is latency between when I get resized and when my child
-	 * is resized.  Background=None is not satisfactory, as I want the
-	 * user to get immediate feedback on the new dimensions.  It is
-	 * especially important to have the server clear any old cruft
-	 * from the display when I am resized larger */
+	if (w->core.background_pixmap == unspecified) {
+	    /* I attempt to inherit my child's background to avoid screen flash
+	     * if there is latency between when I get resized and when my child
+	     * is resized.  Background=None is not satisfactory, as I want the
+	     * user to get immediate feedback on the new dimensions.  It is
+	     * especially important to have the server clear any old cruft
+	     * from the display when I am resized larger */
 
-	if (w->composite.num_children > 0) {
-	    Widget child;
-	    if (w->composite.num_mapped_children == 0)
-		child = w->composite.children[0];
-	    else {
-		int i;
-		for (i = 0; i < w->composite.num_children; i++) {
-		    if (XtIsManaged(child = w->composite.children[i]))
-			break;
+	    if (w->composite.num_children > 0) {
+		Widget child;
+		if (w->composite.num_mapped_children == 0)
+		    child = w->composite.children[0];
+		else {
+		    int i;
+		    for (i = 0; i < w->composite.num_children; i++) {
+			if (XtIsManaged(child = w->composite.children[i]))
+			    break;
+		    }
+		}
+		if (child->core.background_pixmap) {
+		    mask &= ~(CWBackPixel);
+		    mask |= CWBackPixmap;
+		    attr->background_pixmap = child->core.background_pixmap;
+		} else {
+		    attr->background_pixel = child->core.background_pixel;
 		}
 	    }
-	    if (child->core.background_pixmap) {
-		mask &= ~(CWBackPixel);
-		mask |= CWBackPixmap;
-		attr->background_pixmap = child->core.background_pixmap;
-	    } else {
-		attr->background_pixel = child->core.background_pixel;
+	    else {
+		mask |= CWBackPixel;
+		mask &= ~(CWBackPixmap);
+		attr->background_pixel = w->core.background_pixel;
 	    }
 	}
 	else {
-	    mask |= CWBackPixel;
-	    mask &= ~(CWBackPixmap);
-	    attr->background_pixel = w->core.background_pixel;
+	    mask &= ~(CWBackPixel);
+	    mask |= CWBackPixmap;
+	    attr->background_pixmap = w->core.background_pixmap;
 	}
 	if(w->shell.save_under) {
 		mask |= CWSaveUnder;
