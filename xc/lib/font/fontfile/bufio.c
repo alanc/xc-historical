@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: bufio.c,v 1.1 91/09/07 11:58:29 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -75,6 +75,7 @@ BufFileRawSkip (f, count)
 {
     int	    curoff;
     int	    fileoff;
+    int	    todo;
 
     curoff = f->bufp - f->buffer;
     fileoff = curoff + f->left;
@@ -82,21 +83,23 @@ BufFileRawSkip (f, count)
 	f->bufp += count;
 	f->left -= count;
     } else {
-	count -= (fileoff - curoff);
-	if (lseek (FileDes(f), count, 1) == -1) {
+	todo = count - (fileoff - curoff);
+	if (lseek (FileDes(f), todo, 1) == -1) {
 	    if (errno != ESPIPE)
 		return BUFFILEEOF;
-	    while (count) {
+	    while (todo) {
 		curoff = BUFFILESIZE;
-		if (curoff > count)
-		    curoff = count;
+		if (curoff > todo)
+		    curoff = todo;
 		fileoff = read (FileDes(f), f->buffer, curoff);
 		if (fileoff <= 0)
 		    return BUFFILEEOF;
-		count -= fileoff;
+		todo -= fileoff;
 	    }
 	}
+	f->left = 0;
     }
+    return count;
 }
 
 static int
