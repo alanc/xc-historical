@@ -1,8 +1,8 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr.MC68020/expo.lcs.mit.edu/jim/X11/xmodmap/RCS/exec.c,v $
- * $Header: exec.c,v 1.2 88/02/08 17:13:45 jim Exp $
+ * $Source: /usr/expo/X/src/clients/xmodmap/RCS/exec.c,v $
+ * $Header: exec.c,v 1.1 88/02/08 18:34:08 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -153,7 +153,7 @@ PrintModifierMapping (map, fp)
     for (i = 0; i < 8; i++) {
 	int j;
 
-	fprintf(fp, "%-10s:", modifier_table[i]);
+	fprintf(fp, "%-10s", modifier_table[i]);
 	for (j = 0; j < map->max_keypermod; j++) {
 	    if (map->modifiermap[k]) {
 		KeySym ks = XKeycodeToKeysym(dpy, map->modifiermap[k], 0);
