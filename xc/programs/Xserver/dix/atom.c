@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: atom.c,v 1.22 87/11/04 20:08:37 rws Locked $ */
+/* $Header: atom.c,v 1.23 87/11/04 20:10:50 rws Locked $ */
 
 #include "X.h"
 #include "Xatom.h"
@@ -39,17 +39,18 @@ typedef struct _Node {
 
 static Atom lastAtom = None;
 static NodePtr atomRoot = (NodePtr)NULL;
-static int tableLength;
+static unsigned long tableLength;
 static NodePtr *nodeTable;
 
 Atom 
 MakeAtom(string, len, makeit)
     char *string;
-    int len;
+    unsigned len;
     Bool makeit;
 {
     register    NodePtr * np;
-    int     comp, i;
+    unsigned i;
+    int     comp;
     register unsigned int   fp = 0;
 
     np = &atomRoot;
@@ -77,19 +78,19 @@ MakeAtom(string, len, makeit)
     }
     if (makeit)
     {
-	*np = (NodePtr) Xalloc(sizeof(NodeRec));
+	*np = (NodePtr) xalloc(sizeof(NodeRec));
 	(*np)->left = (*np)->right = (NodePtr) NULL;
 	(*np)->fingerPrint = fp;
 	(*np)->a = (++lastAtom);
-	strncpy((*np)->string = (char *) Xalloc(len + 1), string, len);
+	strncpy((*np)->string = (char *) xalloc(len + 1), string, len);
 	(*np)->string[len] = 0;
 	if (lastAtom >= tableLength)
 	{
 	    tableLength *= 2;
-	    nodeTable = (NodePtr *) Xrealloc(
-		    nodeTable, tableLength * sizeof(NodePtr));
+	    nodeTable = (NodePtr *) xrealloc(nodeTable,
+					     tableLength * sizeof(NodePtr));
 	}
-	nodeTable[lastAtom] = *np;
+	*(nodeTable+lastAtom) = *np;
 	return(*np)->a;
     }
     else
@@ -121,7 +122,7 @@ InitAtoms()
 {
     FreeAllAtoms();
     tableLength = InitialTableSize;
-    nodeTable = (NodePtr *)Xalloc(InitialTableSize*sizeof(NodePtr));
+    nodeTable = (NodePtr *)xalloc(InitialTableSize*sizeof(NodePtr));
     nodeTable[None] = (NodePtr)NULL;
     MakePredeclaredAtoms();
     if (lastAtom != XA_LAST_PREDEFINED)
@@ -134,7 +135,7 @@ FreeAllAtoms()
 	return;
     FreeAtom(atomRoot);
     atomRoot = (NodePtr)NULL;
-    Xfree(nodeTable);
+    xfree(nodeTable);
     nodeTable = (NodePtr *)NULL;
     lastAtom = None;
 }
@@ -146,7 +147,7 @@ FreeAtom(patom)
 	FreeAtom(patom->left);
     if(patom->right)
 	FreeAtom(patom->right);
-    Xfree(patom->string);
-    Xfree(patom);
+    xfree(patom->string);
+    xfree(patom);
 }
     
