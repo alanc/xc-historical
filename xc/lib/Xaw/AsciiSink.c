@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.17 88/09/06 16:40:44 jim Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.18 88/09/16 12:39:27 swick Exp $";
 #endif lint
 
 
@@ -208,8 +208,6 @@ static AsciiClearToBackground (w, x, y, width, height)
   Position x, y;
   Dimension width, height;
 {
-    XtTextSink sink = ((TextWidget)w)->text.sink;
-    AsciiSinkData *data = (AsciiSinkData *) sink->data;
     XClearArea(XtDisplay(w), XtWindow(w), x, y, width, height, False);
 }
 
@@ -224,7 +222,7 @@ static AsciiFindDistance (w, fromPos, fromx, toPos,
   int fromx;			/* Horizontal location of first position. */
   XtTextPosition toPos;		/* Second position. */
   int *resWidth;		/* Distance between fromPos and resPos. */
-  int *resPos;			/* Actual second position used. */
+  XtTextPosition *resPos;	/* Actual second position used. */
   int *resHeight;		/* Height required. */
 {
     XtTextSink sink = ((TextWidget)w)->text.sink;
@@ -368,7 +366,7 @@ XtTextSink XtAsciiSinkCreate (parent, args, num_args)
     unsigned long valuemask = (GCFont | GCGraphicsExposures |
 			       GCForeground | GCBackground | GCFunction);
     XGCValues values;
-    unsigned long wid;
+    long wid;
     XFontStruct *font;
 
     if (!buf) buf = XtMalloc(bufferSize);
