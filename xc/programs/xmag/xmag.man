@@ -3,7 +3,7 @@
 xmag \- magnify parts of the screen.
 
 .SH SYNOPSIS
-xmag [-freq dynamicfreq] [-mag magfactor] [-source geom] [-z] [-toolkitoption ...]
+xmag [-mag magfactor] [-source geom] [-toolkitoption ...]
 .SH DESCRIPTION
 The xmag program allows you to magnify portions of the screen.  If no 
 explicit region is specified, a square with the pointer in the upper left 
