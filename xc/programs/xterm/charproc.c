@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.33 88/06/14 17:54:46 jim Exp $
+ * $XHeader: charproc.c,v 1.34 88/07/11 16:52:22 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.33 88/06/14 17:54:46 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.34 88/07/11 16:52:22 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2096,14 +2096,19 @@ XSetWindowAttributes *values;
 
 		if (screen->always_highlight) {
 		    screen->reversecursorGC = (GC) 0;
+		    screen->cursoroutlineGC = (GC) 0;
 		} else {
 		    xgcv.foreground = bg;
 		    xgcv.background = cc;
 		    screen->reversecursorGC = XtGetGC ((Widget) term, mask, &xgcv);
+		    xgcv.foreground = cc;
+		    xgcv.background = bg;
+		    screen->cursoroutlineGC = XtGetGC ((Widget) term, mask, &xgcv);
 		}
 	    } else {
 		screen->cursorGC = (GC) 0;
 		screen->reversecursorGC = (GC) 0;
+		screen->cursoroutlineGC = (GC) 0;
 	    }
 	}
 
@@ -2206,7 +2211,6 @@ ShowCursor()
 	    
 	}
 
-
 	x = CursorX (screen, screen->cur_col);
 	y = CursorY(screen, screen->cur_row) + 
 	  screen->fnt_norm->max_bounds.ascent;
@@ -2222,8 +2226,10 @@ ShowCursor()
 	if (!screen->select && !screen->always_highlight) {
 		screen->box->x = x + screen->fnt_norm->max_bounds.lbearing;
 		screen->box->y = y - screen->fnt_norm->max_bounds.ascent;
-		XDrawLines(screen->display, TextWindow(screen), currentGC,
-			screen->box, NBOX, CoordModePrevious);
+		XDrawLines (screen->display, TextWindow(screen), 
+			    screen->cursoroutlineGC ? screen->cursoroutlineGC 
+			    			    : currentGC,
+			    screen->box, NBOX, CoordModePrevious);
 	}
 	screen->cursor_state = ON;
 }

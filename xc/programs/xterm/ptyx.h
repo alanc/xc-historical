@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.9 88/05/11 16:11:06 jim Exp $
+ *	$Header: ptyx.h,v 1.10 88/07/11 16:52:42 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -207,6 +207,7 @@ typedef struct {
 	GC		reverseboldGC;	/* reverse painting, bold font	*/
 	GC		cursorGC;	/* normal cursor painting	*/
 	GC		reversecursorGC;/* reverse cursor painting	*/
+	GC		cursoroutlineGC;/* for painting lines around    */
 	Pixel		foreground;	/* foreground color		*/
 	Pixel		cursorcolor;	/* Cursor color			*/
 	Pixel		mousecolor;	/* Mouse color			*/
