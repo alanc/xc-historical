@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ar.c,v 5.1 91/02/16 09:47:35 rws Exp $ */
+/* $XConsortium: cb_ar.c,v 5.2 91/07/12 18:08:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -416,15 +416,17 @@ Par_file_list	**ar_files;     /* OUT list of archive file */
 	    }
 	    size += (*ar_files)->num_ar_files * sizeof(Par_file);
 	    if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+		register int j = 0;
 		(*ar_files)->ar_files = (Par_file *)((_Pstore *)store)->buf;
 		name_buf = (char *)
 		    ((*ar_files)->ar_files + (*ar_files)->num_ar_files);
 		for ( i = 0; i < MAX_NO_OPEN_ARFILES; i++ ) {
 		    if ( psl->ar_files[i].used ) {
-			(*ar_files)->ar_files[i].id = psl->ar_files[i].arid;
-			(*ar_files)->ar_files[i].name = name_buf;
+			(*ar_files)->ar_files[j].id = psl->ar_files[i].arid;
+			(*ar_files)->ar_files[j].name = name_buf;
 			strcpy( name_buf, psl->ar_files[i].fname );
 			name_buf += strlen( psl->ar_files[i].fname ) + 1;
+			j++;
 		    }
 		}
 	    }
