@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.57 89/07/05 15:19:42 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.58 89/09/12 16:49:33 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -727,7 +727,8 @@ static void Realize(wid, vmask, attr)
 		Widget child;
 		int i;
 		for (i = 0; i < w->composite.num_children; i++) {
-		    if (XtIsManaged(child = w->composite.children[i]))
+		    child = w->composite.children[i];
+		    if (XtIsManaged(child)) /* macro uses args twice! */
 			break;
 		}
 		if (child->core.background_pixmap != XtUnspecifiedPixmap) {
