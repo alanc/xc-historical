@@ -1,4 +1,4 @@
-/* $XConsortium: wire.c,v 1.3 95/03/16 18:25:17 mor Exp $ */
+/* $XConsortium: wire.c,v 1.10 95/03/21 20:01:34 mor Exp $ */
 /*
  * $NCDOr: wire.c,v 1.1 1994/10/18 17:43:32 keithp Exp keithp $
  * $NCDId: @(#)wire.c,v 1.44 1994/11/18 20:39:50 lemke Exp $
@@ -781,12 +781,15 @@ ServerProcStandardEvent(sc)
 	     * Xlib never sends more than one request after a synchronous one
 	     * (XGetWindowAttributes)
 	     */
+#ifdef bogus
+/* this produces a lot of bad messages, and probably no good ones */
 	    if (rep->generic.sequenceNumber != client->sequence &&
 		    rep->generic.sequenceNumber != client->sequence - 1) {
 		DBG(DBG_CLIENT, (stderr, "sequence number mismatch %d != %d\n",
 				 rep->generic.sequenceNumber,
 				 client->sequence));
 	    }
+#endif
 	}
 	len = RequestLength(rep, sc, 8, &part);
 	DBG(DBG_IO, (stderr, "upstream %d len %d\n", client->index, len));

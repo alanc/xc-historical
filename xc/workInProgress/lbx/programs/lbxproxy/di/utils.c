@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.8 94/04/17 21:17:22 gildea Exp mor $ */
+/* $XConsortium: utils.c,v 1.9 94/12/01 20:42:36 mor Exp $ */
 /* $NCDId: @(#)utils.c,v 1.8 1994/11/16 02:27:25 lemke Exp $ */
 
 #include "Xos.h"
@@ -246,8 +246,8 @@ char	*argv[];
 
     for ( i = 1; i < argc; i++ )
     {
-	/* call ddx first, so it can peek/override if it wants */
-        if(skip = ddxProcessArgument(argc, argv, i))
+	/* do proxy-specific stuff first */
+        if(skip = proxyProcessArgument(argc, argv, i))
 	{
 	    i += (skip - 1);
 	}
