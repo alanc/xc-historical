@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XLockDis.c,v 1.3 93/07/09 15:27:08 gildea Exp $
+ * $XConsortium: XLockDis.c,v 1.4 93/07/10 19:10:59 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -27,15 +27,6 @@
 
 #include "Xlibint.h"
 
-#ifdef XTHREADS
-
-#include "locking.h"
-
-static void _XFancyLockDisplay();
-static void _XDisplayLockWait();
-
-#endif /* XTHREADS */
-
 #if NeedFunctionPrototypes
 void XLockDisplay(
     register Display* dpy)
@@ -44,19 +35,9 @@ void XLockDisplay(dpy)
     register Display* dpy;
 #endif
 {
-#ifdef XTHREADS
     LockDisplay(dpy);
-    if (dpy->lock) {
-	/* substitute fancier, slower lock function */
-	dpy->lock_fns->lock_display = _XFancyLockDisplay;
-	/* really only needs to be done once */
-	dpy->lock_fns->lock_wait = _XDisplayLockWait;
-	if (have_thread_id(dpy->lock->locking_thread)) {
-	    /* XXX - we are in XLockDisplay, error.  Print message? */
-	}
-	dpy->lock->locking_thread = xthread_self();
-    }
-#endif
+    if (dpy->lock)
+	(*dpy->lock_fns->user_lock_display)(dpy);
 }
 
 #if NeedFunctionPrototypes
@@ -67,58 +48,7 @@ void XUnlockDisplay(dpy)
     register Display* dpy;
 #endif
 {
-#ifdef XTHREADS
-    if (dpy->lock) {
-	if (!have_thread_id(dpy->lock->locking_thread)) {
-	    /* XXX - we are not in XLockDisplay, error.  Print message? */
-	}
-	/* signal other threads that might be waiting in XLockDisplay */
-	condition_broadcast(dpy->lock->cv);
-	/* substitute function back */
-	dpy->lock_fns->lock_display = _XLockDisplay;
-	clear_thread_id(dpy->lock->locking_thread);
-    }
+    if (dpy->lock)
+	(*dpy->lock_fns->user_unlock_display)(dpy);
     UnlockDisplay(dpy);
-#endif
 }
-
-#ifdef XTHREADS
-
-/*
- * wait for thread with user-level display lock to release it.
- */
-
-static void _XDisplayLockWait(dpy)
-    Display *dpy;
-{
-    if (have_thread_id(dpy->lock->locking_thread))
-    {
-	xthread_t self;
-
-	self = xthread_self();
-	if (same_thread_id(dpy->lock->locking_thread, self))
-	{
-	    if (!dpy->lock->cv) {
-		dpy->lock->cv = (condition_t)Xmalloc(sizeof(condition_rep_t));
-		condition_init(dpy->lock->cv);
-	    }
-
-	    ConditionWait(dpy, dpy->lock);
-	}
-    }
-}
-
-/*
- * version of display locking function to use when
- * a user-level lock might be active.
- */
-static void _XFancyLockDisplay(dpy, file, line)
-    Display *dpy;
-    char *file;			/* source file, from macro */
-    int line;
-{
-    _XLockDisplay(dpy, file, line);
-    _XDisplayLockWait(dpy);
-}
-
-#endif /* XTHREADS */
