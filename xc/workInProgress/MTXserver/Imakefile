@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.131 91/07/23 16:18:16 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.132 91/07/24 16:46:49 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -95,14 +95,6 @@ ALL1 = XsunMono
 
 #if XsunServer
 ALL1 = Xsun
-#endif
-
-#if XhpServer
-ALL1 = Xhp
-#endif
-
-#if XapolloServer
-ALL1 = Xapollo
 #endif
 
 #if XibmServer
@@ -255,28 +247,6 @@ ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SUNSYSLIBS))
 #endif /* XsunMonoServer */
 
 
-#if XhpServer
-XCOMM
-XCOMM HP server
-XCOMM
-SUBDIRS0 = StdSubdirs ddx/hp
-HPDIRS = $(SUBDIRS0) $(DEPDIRS)
-/* set up .o load */
-#ifdef hp9000s300
-HPOBJS = ddx/hp/hp.300.o
-#else /* 800 */
-HPOBJS = ddx/hp/hp.800.o
-#endif /* hp9000s300 */
-HPLIBS = StdLibs $(BSDEMUL)
-#if ServerMallocLib
-HPMALLOCLIB = -lmalloc
-#endif
-HPSYSLIBS = $(CBRT) $(SYSLIBS) $(HPMALLOCLIB)
-
-ServerTarget(Xhp,$(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
-#endif /* XhpServer */
-
-
 #if XibmServer
 XCOMM
 XCOMM IBM server
@@ -293,19 +263,6 @@ IBMLIBS = ddx/ibm/AIX/hft.o ddx/ibm/libibm.a $(IBMALLOCLIB) CFBLibs
 
 ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
 #endif /* XibmServer */
-
-
-#if XapolloServer
-XCOMM
-XCOMM Apollo server
-XCOMM
-SUBDIRS0 = MFBSubdirs ddx/apollo ddx/apollo/apc
-APOLLODIRS = $(SUBDIRS0) $(DEPDIRS)
-APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits.2
-APOLLOLIBS = ddx/apollo/libapollo.a ddx/apollo/apc/libapc.a MFBLibs
-
-ServerTarget(Xapollo,$(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
-#endif /* XapolloServer */
 
 
 #if XtekServer
