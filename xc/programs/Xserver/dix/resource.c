@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.84 90/09/24 18:32:14 rws Exp $ */
+/* $XConsortium: resource.c,v 1.85 91/05/09 16:10:12 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -151,6 +151,7 @@ InitClientResources(client)
 					   sizeof(DeleteType));
 	if (!DeleteFuncs)
 	    return FALSE;
+	DeleteFuncs[RT_NONE & TypeMask] = (int (*)()) NoopDDA;
 	DeleteFuncs[RT_WINDOW & TypeMask] = DeleteWindow;
 	DeleteFuncs[RT_PIXMAP & TypeMask] = dixDestroyPixmap;
 	DeleteFuncs[RT_GC & TypeMask] = FreeGC;
