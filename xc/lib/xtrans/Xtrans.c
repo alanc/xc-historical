@@ -913,7 +913,7 @@ XtransConnInfo 	**ciptrs_ret;
  * Cray UniCOS does not have readv and writev so we emulate
  */
 
-int TRANS(ReadV) (ciptr, iov, iovcnt)
+static int TRANS(ReadV) (ciptr, iov, iovcnt)
 
 XtransConnInfo	ciptr;
 struct iovec 	*iov;
@@ -932,7 +932,7 @@ int 		iovcnt;
     return (recvmsg (ciptr->fd, &hdr, 0));
 }
 
-int TRANS(WriteV) (ciptr, iov, iovcnt)
+static int TRANS(WriteV) (ciptr, iov, iovcnt)
 
 XtransConnInfo	ciptr;
 struct iovec 	*iov;
@@ -959,7 +959,7 @@ int 		iovcnt;
  * SYSV/386 and WIN32 do not have readv so we emulate
  */
 
-int TRANS(ReadV) (ciptr, iov, iovcnt)
+static int TRANS(ReadV) (ciptr, iov, iovcnt)
 
 XtransConnInfo	ciptr;
 struct iovec 	*iov;
@@ -995,7 +995,7 @@ int 		iovcnt;
  * WIN32 does not have readv so we emulate
  */
 
-int TRANS(WriteV) (ciptr, iov, iovcnt)
+static int TRANS(WriteV) (ciptr, iov, iovcnt)
 
 XtransConnInfo	ciptr;
 struct iovec 	*iov;
