@@ -12,6 +12,11 @@
 #define BuildXsi YES
 #endif
 #endif
+#if BuildXsi
+#ifndef BuildLocalIM
+#define BuildLocalIM YES
+#endif
+#endif
 
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -348,6 +353,11 @@ OBJS3 = \
 
 #if BuildXsi
 
+#if BuildLocalIM
+LIMSRCS = XLocalIM.c
+LIMOBJS = XlocalIM.o
+#endif
+
 LCSRCS = \
 	XIMlibint.h \
 	XIMproto.h \
@@ -374,6 +384,7 @@ LCSRCS = \
 	XIMProto.c \
 	XIMQueue.c \
 	XInitCT.c \
+	$(LIMSRCS) \
 	XOpenIM.c \
 	XParseCT.c \
 	XSetLocale.c \
@@ -406,6 +417,7 @@ LCOBJS = \
 	XIMProto.o \
 	XIMQueue.o \
 	XInitCT.o \
+	$(LIMOBJS) \
 	XOpenIM.o \
 	XParseCT.o \
 	XSetLocale.o \
@@ -447,6 +459,7 @@ LinkSourceFile(XIMKeyBind.c,Xsi)					@@\
 LinkSourceFile(XIMProto.c,Xsi)						@@\
 LinkSourceFile(XIMQueue.c,Xsi)						@@\
 LinkSourceFile(XInitCT.c,Xsi)						@@\
+LinkSourceFile(XLocalIM.c,Xsi)						@@\
 LinkSourceFile(XOpenIM.c,Xsi)						@@\
 LinkSourceFile(XParseCT.c,Xsi)						@@\
 LinkSourceFile(XSetLocale.c,Xsi)					@@\
@@ -462,7 +475,8 @@ LinkSourceFile(XwcText.c,Xsi)						@@\
 LinkSourceFile(XwcTextExt.c,Xsi)					@@\
 LinkSourceFile(XwcTextPer.c,Xsi)					@@\
 SpecialLibObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))		@@\
-SpecialLibObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
+SpecialLibObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))		@@\
+SpecialLibObjectRule(XLocalIM.o,$(ICONFIGFILES),$(NLS_DEFINES))
 
 #endif /* BuildXsi */
 
