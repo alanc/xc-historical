@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: List.h,v 1.15 89/12/11 15:08:59 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -177,7 +177,15 @@ typedef struct _XawListReturnStruct {
  *                 If nitems is <= 0 then the list needs to be NULL terminated.
  */
 
-extern void XawListChange(); /* w, list, nitems, longest, resize */
+extern void XawListChange(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    String*		/* list */,
+    int			/* nitems */,
+    int			/* longest */,
+    Boolean		/* resize */
+#endif
+);
 
 /*	Function Name: XawListUnhighlight
  *	Description: unlights the current highlighted element.
@@ -185,16 +193,25 @@ extern void XawListChange(); /* w, list, nitems, longest, resize */
  *	Returns: none.
  */
 
-extern void XawListUnhighlight(); /* w */
+extern void XawListUnhighlight(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
 /*	Function Name: XawListHighlight
  *	Description: Highlights the given item.
  *	Arguments: w - the list widget.
- *                 item - the item to hightlight.
+ *                 item - the item to highlight.
  *	Returns: none.
  */
 
-extern void XawListHighlight(); /* w, item */
+extern void XawListHighlight(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    int			/* item */
+#endif
+);
 
 
 /*	Function Name: XawListShowCurrent
@@ -203,7 +220,11 @@ extern void XawListHighlight(); /* w, item */
  *	Returns: the info about the currently highlighted object.
  */
 
-extern XawListReturnStruct * XawListShowCurrent(); /* w */
+extern XawListReturnStruct * XawListShowCurrent(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
 #endif /* _XawList_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

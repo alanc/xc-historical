@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.26 89/12/11 15:08:31 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.27 90/04/26 15:39:42 kit Exp $";
 #endif
 
 /*
@@ -887,11 +887,16 @@ Widget current, request, new;
  */
 
 void
+#if NeedFunctionPrototypes
+XawListChange(Widget w, char ** list, int nitems, int longest,
+	      Boolean resize_it)
+#else
 XawListChange(w, list, nitems, longest, resize_it)
 Widget w;
 char ** list;
 int nitems, longest;
 Boolean resize_it;
+#endif
 {
     ListWidget lw = (ListWidget) w;
 
@@ -915,8 +920,12 @@ Boolean resize_it;
  */
 
 void
+#if NeedFunctionPrototypes
+XawListUnhighlight(Widget w)
+#else
 XawListUnhighlight(w)
 Widget w;
+#endif
 {
     ListWidget lw = ( ListWidget ) w;
 
@@ -933,9 +942,13 @@ Widget w;
  */
 
 void
+#if NeedFunctionPrototypes
+XawListHighlight(Widget w, int item)
+#else
 XawListHighlight(w, item)
 Widget w;
 int item;
+#endif
 {
     ListWidget lw = ( ListWidget ) w;
     
@@ -954,8 +967,12 @@ int item;
  */
 
 XawListReturnStruct *
+#if NeedFunctionPrototypes
+XawListShowCurrent(Widget w)
+#else
 XawListShowCurrent(w)
 Widget w;
+#endif
 {
     ListWidget lw = ( ListWidget ) w;
     XawListReturnStruct * ret_val;
