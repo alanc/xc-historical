@@ -56,6 +56,8 @@ typedef struct _EventKey {
     Opaque	closure;
 }EventKey, *EventKeys;
 
+static char *currentProduction;
+
 static NameValueRec modifiers[] = {
     {"None",    0,      None},
     {"Shift",	0,	ShiftMask},
@@ -314,8 +316,14 @@ static void Compile_XtEventTable(table)
 static Syntax(str)
     String str;
 {
+    char production[500], *eol;
+
     (void) fprintf(stderr,
      "Translation table syntax error: %s\n", str);
+
+    strncpy( production, currentProduction, 500 );
+    if ((eol = index(production, '\n')) != 0) *eol = '\0';
+    (void) fprintf(stderr, "Found while parsing '%s'.\n", production);
 }
 
 
@@ -1288,6 +1296,8 @@ static String ParseTranslationTableProduction(stateTable, str)
 {
     EventSeqPtr	eventSeq = NULL;
     ActionPtr	*actionsP;
+
+    currentProduction = str;	/* %%% a little nasty for multi-threading */
 
     str = ParseEventSeq(str, &eventSeq, &actionsP);
     str = ScanWhitespace(str);
