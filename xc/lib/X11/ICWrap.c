@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XICWrap.c,v 11.4 91/04/07 18:58:53 rws Exp $
+ * $XConsortium: XICWrap.c,v 11.5 91/04/08 11:50:24 rws Exp $
  */
 
 /*
@@ -40,7 +40,13 @@
 #define NEED_EVENTS
 #include "Xlibint.h"
 #include "Xlcint.h"
-#include "Xvarargs.h"
+#if NeedVarargsPrototypes
+# include <stdarg.h>
+# define Va_start(a,b) va_start(a,b)
+#else
+# include <varargs.h>
+# define Va_start(a,b) va_start(a)
+#endif
 
 static int
 _XIMNestedListToNestedList(nlist, list)
