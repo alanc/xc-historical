@@ -1,4 +1,4 @@
-/* $XConsortium: pexSwap.h,v 5.3 91/07/01 16:19:41 hersh Exp $ */
+/* $XConsortium: pexSwap.h,v 5.4 91/12/31 11:11:59 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -50,5 +50,7 @@ extern void SwapCARD32();
 extern void  SwapFLOAT();
 extern void  ConvertFLOAT();
 
+/* not sure if this is the right place for this */
+extern void SwapPEXMaxHitsReachedEvent();
 
 #endif

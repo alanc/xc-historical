@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 5.2 91/02/17 12:25:52 rws Exp $ */
+/* $XConsortium: PEXproto.h,v 5.3 91/07/01 16:19:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -76,7 +76,7 @@ SOFTWARE.
  */
 #include <X11/extensions/PEXprotost.h>
 
-/* Matches revision 5.0P */
+/* Matches revision 5.1C */
 
 /****************************************************************
  *  		REPLIES 					*
@@ -116,6 +116,27 @@ typedef struct {
     BYTE	pad[24];
     /* LISTof VALUE() */
     } pexGetImpDepConstantsReply;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		
+    CARD32	escapeID B32;
+    CARD8	escape_specific[20];
+    /* more escape specific data, treat as */
+    /* LISTof CARD8( length ) */
+    } pexEscapeWithReplyReply;
+
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		
+    BYTE	pad[24];
+    /* LISTof RENDERER_TARGET( ) */
+    } pexMatchRendererTargetsReply;
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -411,6 +432,48 @@ typedef struct {
     CARD8	what;			/* unused */
     CARD16	sequenceNumber	B16;
     CARD32	length B32;		/* not 0 */
+    CARD32	numPickElRefs B32;	
+    BYTE	pad[20];
+    /* LISTof pexPickElementRef ( numPickElRefs ) */
+    } pexEndPickOneReply;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		/* not 0 */
+    CARD32	numPickElRefs B32;	
+    BYTE	pad[20];
+    /* LISTof pexPickElementRef ( numPickElRefs ) */
+    } pexPickOneReply;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		/* not 0 */
+    CARD32	numPicked     B32;	
+    CARD8	morePicks;		
+    BYTE	pad[19];
+    /* LISTof CLISTof pexPickElementRef ( numPicked ) */
+    } pexEndPickAllReply;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		/* not 0 */
+    CARD32	numPicked     B32;	
+    CARD8	morePicks;		
+    BYTE	pad[19];
+    /* LISTof CLISTof pexPickElementRef ( numPicked ) */
+    } pexPickAllReply;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		/* not 0 */
     CARD32	lengthFontInfo B32;
     CARD8	pad[20];
     /* SINGLE pexFontInfo() */
@@ -509,6 +572,28 @@ typedef struct {
     /* LISTof pexImpDepConstantNames ( numNames )  */
     /* pad */
 } pexGetImpDepConstantsReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 5 */
+    Drawable		drawable B32;
+    CARD8 		depth;
+    CARD8 		unused;
+    CARD16		type B16;
+    CARD32		visualID B32;
+    CARD32		maxTriplets B32;
+} pexMatchRendererTargetsReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 2 + n */
+    CARD32		escapeID B32;
+    /* 4n bytes of additional escape data to skip */
+} pexEscapeReq;
+
+typedef  pexEscapeReq   pexEscapeWithReplyReq;
 
 typedef struct {
     CARD8		reqType;
@@ -722,6 +807,24 @@ typedef struct {
 } pexRenderOutputCommandsReq;
 /* individual output commands may be found in the section "Output Commands" */
 
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 7 */
+    pexRenderer		rdr B32;
+    pexStructure	sid B32;
+    pexElementRange	range;
+} pexRenderElementsReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 3 + 2n */
+    pexRenderer		rdr B32;
+    CARD32              numElRefs B32;
+    /* LISTof pexElementRef( numElRefs ) */
+} pexAccumulateStateReq;
 
 typedef struct {
     CARD8 		reqType;
@@ -1195,9 +1298,75 @@ typedef struct {
     CARD16 		length B16;
     pexPickMeasure	pm B32;
     CARD32		numBytes B32;
-    /* LISTof CARD8( numBytes ) -- don't swap */
+    /* LISTof CARD8( numBytes ) */
     /* pad( numBytes ) */
 } pexUpdatePickMeasureReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;   /* 6 + n */
+    pexEnumTypeIndex	fpFormat B16;
+    BYTE	        unused;
+    CARD8 		pickOp;
+    pexRenderer		rdr B32;
+    Drawable		drawable B32;
+    CARD32 		sid B32;
+    /* SINGLE PickRecord () */
+} pexBeginPickOneReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;   /* 2 */
+    pexRenderer		rdr B32;
+} pexEndPickOneReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;   /* 6 + n */
+    pexEnumTypeIndex	fpFormat B16;
+    BYTE	        unused;
+    CARD8 		pickOp;
+    pexRenderer		rdr B32;
+    Drawable		drawable B32;
+    pexStructure	sid B32;
+    /* SINGLE PickRecord () */
+} pexPickOneReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;   /* 7 + n */
+    pexEnumTypeIndex	fpFormat B16;
+    BYTE	        unused;
+    CARD8 		sendEvent;
+    pexRenderer		rdr B32;
+    Drawable		drawable B32;
+    CARD32		sid B32;
+    CARD32              pickMaxHits B32;
+    /* SINGLE PickRecord () */
+} pexBeginPickAllReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;   /* 2 */
+    pexRenderer		rdr B32;
+} pexEndPickAllReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;   /* 6 + n */
+    pexEnumTypeIndex	fpFormat B16;
+    CARD16 		unused B16;
+    pexRenderer		rdr B32;
+    Drawable		drawable B32;
+    CARD32              pickMaxHits B32;
+    /* SINGLE RendererPickRecord () */
+} pexPickAllReq;
 
 typedef struct {
     CARD8 	reqType;
@@ -1826,6 +1995,23 @@ typedef struct {
     /* LISTof CARD8( numBytes ) -- don't swap */
     /* pad( numBytes ) */
 } pexGdp2D;
+
+typedef struct {
+    pexElementInfo	head;
+} pexNoop;
+
+/****************************************************************
+ *  		EVENTS 						*
+ ****************************************************************/
+/* Event structure */
+
+typedef struct {
+    BYTE	type;			/* X_Event */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	rdr B32;		
+    BYTE	pad[24];
+} pexMaxHitsReachedEvent;
 
 #endif /* PEXPROTO_H */
 

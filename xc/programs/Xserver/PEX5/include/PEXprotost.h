@@ -1,4 +1,4 @@
-/* $XConsortium: PEXprotost.h,v 5.2 91/02/17 12:26:31 rws Exp $ */
+/* $XConsortium: PEXprotost.h,v 5.3 91/07/01 16:19:04 hersh Exp $ */
 
 
 /***********************************************************
@@ -28,7 +28,7 @@ SOFTWARE.
 #ifndef PEXPROTOSTR_H
 #define PEXPROTOSTR_H
 
-/* Matches revision 5.0P */
+/* Matches revision 5.1C */
 
 #include <X11/Xmd.h>			/* defines things like CARD32 */
 
@@ -279,7 +279,15 @@ typedef struct {
     pexStructure	sid B32;
     CARD32		offset B32;
     CARD32		pickid B32;
-} pexPickPath;
+} pexPickElementRef;
+
+/* pexPickPath is the old name of the above strucutre.
+   This is wrong, since the above is a Pick Element Ref
+   a Pick Path is a list of Pick Element Refs so naming
+   this structure pexPickPath was wrong, but it can't just
+   be changed without effecting lots of other code....... */
+
+typedef pexPickElementRef pexPickPath;
 
 typedef struct {
     pexTextVAlignment		vertical B16;
@@ -300,6 +308,19 @@ typedef struct {
     /* LISTof FLOAT(numKnots) -- length = order + number of coords */
     /* LISTof {pexCoord3D|pexCoord4D}(numCoord) */
 } pexTrimCurve;
+
+typedef struct {
+    CARD8		depth;
+    CARD8		unused;
+    CARD16		type B16;
+    CARD32		visualID B32;
+} pexRendererTarget;
+
+typedef struct {
+    pexEnumTypeIndex	pickType B16;
+    CARD16		unused;
+    /* SINGLE HITBOX() */
+} pexPickRecord;
 
 typedef struct {
     PEXFLOAT		ambient;
@@ -557,5 +578,13 @@ typedef struct {
 } pexOutputCommandError;
 
 
+/* Registered PEX Escapes */
+
+typedef struct {
+    INT16	fpFormat B16;
+    CARD8	unused[2];
+    CARD32	rdr B32;	    /* renderer ID */
+    /* SINGLE ColourSpecifier()  */
+} pexEscapeSetEchoColourData;
 
 #endif /* PEXPROTOSTR_H */

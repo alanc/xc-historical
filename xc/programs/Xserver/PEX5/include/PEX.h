@@ -1,4 +1,4 @@
-/* $XConsortium: PEX.h,v 5.4 91/10/21 10:29:04 hersh Exp $ */
+/* $XConsortium: PEX.h,v 5.5 91/11/15 19:46:06 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,10 +34,14 @@ SOFTWARE.
 #define PEX_NAME_STRING		"X3D-PEX"
 #endif
 
-/* Matches revision 5.0P */
+/* Matches revision 5.1C */
 
 #define PEX_PROTO_MAJOR		5	/* current protocol version */
-#define PEX_PROTO_MINOR		0	/* current minor version */
+#define PEX_PROTO_MINOR		1	/* current minor version */
+
+/* Events */
+#define PEXMaxHitsReached     0
+#define PEXNumberEvents       1
 
 /* Subsets */
 #define PEXCompleteImplementation	0
@@ -109,6 +113,21 @@ SOFTWARE.
 #define PEXCurrent	1
 #define PEXEnd		2
 
+/* Match Draw Type */
+#define PEXDontCare     0
+#define PEXWindow       1
+#define PEXPixmap       2
+#define PEXBuffer       3
+
+/* Pick All State */
+#define PEXMoreHits      0
+#define PEXNoMoreHits    1
+#define PEXMayBeMoreHits 2
+
+/* Pick One Type */
+#define PEXClosest  0
+#define PEXLast     1
+
 /* Element Search */
 #define PEXNotFound	1
 #define PEXFound	2
@@ -146,10 +165,12 @@ SOFTWARE.
 #define PEXETTrimCurveApproxMethod		25
 #define PEXETRenderingColourModel		26
 #define PEXETParaSurfCharacteristics		27
+#define PEXETEscape				28
 
-/* Renderer state */
+/* Renderer State */
 #define PEXIdle 	0
 #define PEXRendering	1
+#define PEXPicking	2
 
 /* Flags (e.g., Switches, Visibility, and Edges) */
 #define PEXOff	0
@@ -251,6 +272,7 @@ SOFTWARE.
 /* Pick Echo Switch */
 #define PEXNoEcho	0
 #define PEXEcho		1
+#define PEXUnEcho       2
 
 /* Pick Path Order */
 #define PEXTopFirst     0
@@ -371,6 +393,7 @@ SOFTWARE.
 #define PEXHlhsrPainters	3
 #define PEXHlhsrScanline	4
 #define PEXHlhsrHiddenLineOnly	5
+#define PEXHlhsrZBufferId	6
 /* PromptEchoType */
 #define PEXEchoPrimitive	1
 #define PEXEchoStructure	2
@@ -390,6 +413,8 @@ SOFTWARE.
 #define PEXColourApproxHSV      3
 #define PEXColourApproxHLS      4
 #define PEXColourApproxYIQ      5
+/* Escape */
+#define PEXEscapeSetEchoColour   1
 /* RenderingColourModel	*/
 #define PEXRdrColourModelImpDep	0
 #define PEXRdrColourModelRGB	1
@@ -448,6 +473,8 @@ SOFTWARE.
 #define PEXIDChromaticityWhiteU		31
 #define PEXIDChromaticityWhiteV		32
 #define PEXIDLuminanceWhite		33
+/* have to stick this here since others are not in order */
+#define PEXIDMaxHitsEventsSupported     34
 
 /* Constants for IDRgbBestApproximation */
 #define PEXColourApproxAnyValues	0
@@ -567,7 +594,14 @@ SOFTWARE.
 #define PEXRDNpcSubvolume		(1L<<20)
 #define PEXRDViewport			(1L<<21)
 #define PEXRDClipList			(1L<<22)
-#define PEXMaxRDShift	22
+#define PEXRDPickInclusion		(1L<<23)
+#define PEXRDPickExclusion		(1L<<24)
+#define PEXRDPickStartPath		(1L<<25)
+#define PEXRDBackgroundColour		(1L<<26)
+#define PEXRDClearI    			(1L<<27)
+#define PEXRDClearZ    			(1L<<28)
+#define PEXRDEchoMode			(1L<<29)
+#define PEXMaxRDShift	29
 
 /* Renderer Dynamics Bitmasks */
 /*	tables		      */
@@ -598,13 +632,16 @@ SOFTWARE.
 /*	namesets	      */
 #define PEXDynHighlightNameset			 (1L<<0)
 #define PEXDynInvisibilityNameset		 (1L<<1)
+#define PEXDynPickNameset        		 (1L<<2)
 #define PEXDynHighlightNamesetContents		(1L<<16)
 #define PEXDynInvisibilityNamesetContents	(1L<<17)
+#define PEXDynPickNamesetContents		(1L<<18)
 /*	attributes	      */
 #define PEXDynHlhsrMode				 (1L<<0)
 #define PEXDynNpcSubvolume			 (1L<<1)
 #define PEXDynViewport				 (1L<<2)
 #define PEXDynClipList				 (1L<<3)
+#define PEXDynEchoMode				 (1L<<4)
 
 #define PEXElementType		 (1L<<0)
 #define PEXElementSize		 (1L<<1)
@@ -806,7 +843,18 @@ SOFTWARE.
 #define PEX_ListFonts			91
 #define PEX_ListFontsWithInfo		92
 #define PEX_QueryTextExtents 		93
-#define PEXMaxRequest			93
+#define PEX_MatchRendererTargets        94
+#define PEX_Escape                      95
+#define PEX_EscapeWithReply             96
+#define PEX_RenderElements              97
+#define PEX_AccumulateState             98
+#define PEX_BeginPickOne                99
+#define PEX_EndPickOne                 100
+#define PEX_PickOne                    101
+#define PEX_BeginPickAll               102
+#define PEX_EndPickAll                 103
+#define PEX_PickAll                    104
+#define PEXMaxRequest		       104
 
 /* Output Commands */
 #define PEXOCAll			  0
@@ -913,7 +961,8 @@ SOFTWARE.
 #define PEXOCExtCellArray		101
 #define PEXOCGdp			102
 #define PEXOCGdp2D			103
-#define PEXMaxOC			103
+#define PEXOCNoop			104
+#define PEXMaxOC			104
 
 #define PEXOCNil			0xffff
 
