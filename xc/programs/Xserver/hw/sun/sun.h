@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.17 93/07/12 09:30:39 dpw Exp $ */
+/* $XConsortium: sun.h,v 5.18 93/08/06 10:54:57 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -217,6 +217,7 @@ typedef struct ptrPrivate {
 typedef struct {
     int		    width, height;
     Bool	    has_cursor;
+    CursorPtr	    pCursor		/* current cursor */
 } sunCursorRec, *sunCursorPtr;
 
 typedef struct {
