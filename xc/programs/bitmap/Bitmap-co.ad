@@ -1,6 +1,6 @@
 ! The App-defaults file for Bitmap.
 
-#include "Bitmap.ad"
+#include "Bitmap"
 
 *background: medium blue
 *foreground: cyan
