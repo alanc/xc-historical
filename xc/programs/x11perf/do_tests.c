@@ -66,6 +66,18 @@ extern void DoCopyArea();
 extern void MidCopyArea();
 extern void EndCopyArea();
 
+extern void InitTriangles();
+extern void DoTriangles();
+extern void EndTriangles();
+
+extern void InitTraps();
+extern void DoTraps();
+extern void EndTraps();
+
+extern void InitComplexPoly();
+extern void DoComplexPoly();
+extern void EndComplexPoly();
+
 
 /*
  * some test must be done a certain multiple of times. That multiple is
@@ -170,6 +182,17 @@ Test test[] = {
 		InitCopyArea, DoCopyArea, MidCopyArea,
 		EndCopyArea, False, False,
 		{50, 1, False}},
+  {"-triangle", "Fill Polygon, triangles",
+		InitTriangles, DoTriangles, NullProc, EndTriangles, 
+                False, False,
+		{10, 100, 0}},
+  {"-trap", "Fill Polygon, trapezoids",
+		InitTraps, DoTraps, NullProc, EndTraps, False, False,
+		{10, 100, 0}},
+  {"-complex", "Fill Random Complex Polygons",
+		InitComplexPoly, DoComplexPoly, NullProc, EndComplexPoly, 
+                False, False,
+		{5, 50, 0}},
   { NULL, NULL,
 		NULL, NULL, NULL, NULL, False, False,
 		{0, 0, False, NULL, NULL}}
