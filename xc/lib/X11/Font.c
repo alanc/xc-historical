@@ -1,4 +1,4 @@
-/* $XConsortium: XFont.c,v 11.37 91/01/06 11:45:39 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.38 91/12/19 18:14:14 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -16,7 +16,7 @@ without express or implied warranty.
 #define NEED_REPLIES
 #include "Xlibint.h"
 
-static int _XQueryFont();
+static XFontStruct *_XQueryFont();
 
 #if NeedFunctionPrototypes
 XFontStruct *XLoadQueryFont(
@@ -33,7 +33,6 @@ XFontStruct *XLoadQueryFont(dpy, name)
     Font fid;
     xOpenFontReq *req;
     int seqadj = 1;
-    int	error_status;
 
     LockDisplay(dpy);
     GetReq(OpenFont, req);
@@ -48,21 +47,7 @@ XFontStruct *XLoadQueryFont(dpy, name)
      */
     if ((long)dpy->bufptr >> 61) seqadj = 2;
 #endif
-    dpy->request -= seqadj;
-    error_status = _XQueryFont(dpy, fid, &font_result);
-    dpy->request += seqadj;
-    if (error_status) {
-	font_result = (XFontStruct *) NULL;
-	if (error_status == 1) {
-	    /* if _XQueryFont returned 1, then the OpenFont request got
-	       a BadName error.  This means that the following QueryFont
-	       request is guaranteed to get a BadFont error, since the id
-	       passed to QueryFont wasn't really a valid font id.  To read
-	       and discard this second error, we call _XReply again. */
-	    xReply reply;
-	    (void) _XReply (dpy, &reply, 0, xFalse);
-        }
-    }
+    font_result = _XQueryFont(dpy, fid, seqadj);
     UnlockDisplay(dpy);
     SyncHandle();
     return font_result;
@@ -77,7 +62,7 @@ XFreeFont(dpy, fs)
 
     LockDisplay(dpy);
     while (ext) {		/* call out to any extensions interested */
-	if (ext->free_Font != NULL) (*ext->free_Font)(dpy, fs, &ext->codes);
+	if (ext->free_Font) (*ext->free_Font)(dpy, fs, &ext->codes);
 	ext = ext->next;
 	}    
     GetResReq (CloseFont, fs->fid, req);
@@ -91,15 +76,11 @@ XFreeFont(dpy, fs)
     Xfree ((char *) fs);
 }
 
-/*
- * Returns:	0	success
- *		1	protocol error
- *		2	Xlib memory allocation failed
- */
-static int _XQueryFont (dpy, fid, xfs)	/* Internal-only entry point */
+static XFontStruct *
+_XQueryFont (dpy, fid, seqadj)
     register Display *dpy;
     Font fid;
-    XFontStruct **xfs;	/* RETURN */
+    int seqadj; /* 0, 1, 2 */
 {
     register XFontStruct *fs;
     register long nbytes;
@@ -107,12 +88,25 @@ static int _XQueryFont (dpy, fid, xfs)	/* Internal-only entry point */
     register xResourceReq *req;
     register _XExtension *ext;
 
+    if (seqadj) {
+	dpy->flags |= XlibDisplayIgnoreFont;
+#ifdef WORD64
+	if (seq > 1)
+	    dpy->flags |= XlibDisplayAddNoOp;
+#endif
+    }
     GetResReq(QueryFont, fid, req);
     if (!_XReply (dpy, (xReply *) &reply,
-       ((SIZEOF(xQueryFontReply) - SIZEOF(xReply)) >> 2), xFalse))
-	return 1;
-    if (! (fs = (XFontStruct *) Xmalloc (sizeof (XFontStruct))))
-	return 2;
+       ((SIZEOF(xQueryFontReply) - SIZEOF(xReply)) >> 2), xFalse)) {
+	dpy->flags &= ~(XlibDisplayIgnoreFont|XlibDisplayAddNoOp);
+	return (XFontStruct *)NULL;
+    }
+    dpy->flags &= ~(XlibDisplayIgnoreFont|XlibDisplayAddNoOp);
+    if (! (fs = (XFontStruct *) Xmalloc (sizeof (XFontStruct)))) {
+	_XEatData(dpy, (unsigned long)(reply.nFontProps * SIZEOF(xFontProp) +
+				       reply.nCharInfos * SIZEOF(xCharInfo)));
+	return (XFontStruct *)NULL;
+    }
     fs->ext_data 		= NULL;
     fs->fid 			= fid;
     fs->direction 		= reply.drawDirection;
@@ -165,7 +159,7 @@ static int _XQueryFont (dpy, fid, xfs)	/* Internal-only entry point */
 		Xfree((char *) fs);
 		_XEatData(dpy, (unsigned long)
 			  (nbytes + reply.nCharInfos * SIZEOF(xCharInfo)));
-		return 2;
+		return (XFontStruct *)NULL;
 	    }
 	    _XRead32 (dpy, (char *)fs->properties, nbytes);
     }
@@ -182,7 +176,7 @@ static int _XQueryFont (dpy, fid, xfs)	/* Internal-only entry point */
 	    Xfree((char *) fs);
 	    _XEatData(dpy, (unsigned long)
 			    (reply.nCharInfos * SIZEOF(xCharInfo)));
-	    return 2;
+	    return (XFontStruct *)NULL;
 	}
 	    
 #ifdef MUSTCOPY
@@ -210,12 +204,11 @@ static int _XQueryFont (dpy, fid, xfs)	/* Internal-only entry point */
 
     ext = dpy->ext_procs;
     while (ext) {		/* call out to any extensions interested */
-	if (ext->create_Font != NULL) 
+	if (ext->create_Font)
 		(*ext->create_Font)(dpy, fs, &ext->codes);
 	ext = ext->next;
 	}    
-    *xfs = fs;
-    return 0;
+    return fs;
 }
 
 
@@ -226,8 +219,7 @@ XFontStruct *XQueryFont (dpy, fid)
     XFontStruct *font_result;
 
     LockDisplay(dpy);
-    if (_XQueryFont(dpy, fid, &font_result) > 0)
-	font_result = (XFontStruct *) NULL;
+    font_result = _XQueryFont(dpy, fid, 0);
     UnlockDisplay(dpy);
     SyncHandle();
     return font_result;
