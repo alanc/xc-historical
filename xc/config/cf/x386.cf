@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.6 91/07/25 12:05:43 rws Exp $
+XCOMM platform:  $XConsortium: x386.cf,v 1.7 91/08/16 19:30:10 gildea Exp $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -99,9 +99,9 @@ XCOMM platform:  $XConsortium: x386.cf,v 1.6 91/07/25 12:05:43 rws Exp $
  */
 #define InstallManPageLong(file,destdir,dest)                           @@\
 install.man:: file.man                                                  @@\
-	$(RM) destdir/dest.ManSuffix					@@\
+	$(RM) destdir/dest.$(MANSUFFIX)					@@\
 	cat file.man | neqn | nroff -man >/tmp/file.man  		@@\
-	$(INSTALL) -c $(INSTMANFLAGS) /tmp/file.man destdir/dest.ManSuffix @@\
+	$(INSTALL) -c $(INSTMANFLAGS) /tmp/file.man destdir/dest.$(MANSUFFIX) @@\
 	$(RM) /tmp/file.man
 
 #define InstallMultipleMan(list,dest)                                   @@\
