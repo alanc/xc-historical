@@ -1,4 +1,4 @@
-/* $XConsortium: ar.h,v 5.3 91/02/18 11:15:31 rws Exp $ */
+/* $XConsortium: ar.h,v 5.4 91/04/04 12:14:51 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1988-1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -103,7 +103,7 @@ SOFTWARE.
     if ( (els_used) && !( (els_used)%PHG_AR_TMPMEM_BLOCKSIZE) ) {    \
         /* get more space */					    \
         (blockptr) = (blocktype *) realloc((char *)(blockptr),	    \
-          (size_t)((els_used + PHG_AR_TMPMEM_BLOCKSIZE) * sizeof(blocktype)));\
+         (int)((els_used + PHG_AR_TMPMEM_BLOCKSIZE) * sizeof(blocktype))); \
         if (!(blockptr))					    \
             return(FALSE);                      /* out of memory */ \
     }
