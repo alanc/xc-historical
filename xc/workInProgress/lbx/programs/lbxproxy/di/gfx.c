@@ -1,3 +1,4 @@
+/* $XConsortium: lbx.h,v 1.3 94/02/20 11:13:39 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
