@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.37 89/12/07 16:32:26 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.38 89/12/13 13:48:01 keith Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -369,24 +369,6 @@ processTimeout(pid, timeout, string)
 	return( pid != pidfound );
 }
 
-Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-	char	*fmt;
-{
-	extern char	*sys_errlist[];
-
-	fprintf(stderr, "%s:  ", program);
-	if (errno > 0 && errno < sys_nerr)
-	  fprintf (stderr, "%s (errno %d):  ", sys_errlist[errno], errno);
-	fprintf(stderr, fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
-}
-
-Fatal(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-	char	*fmt;
-{
-	Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
-	exit(ERR_EXIT);
-}
-
 startServer(server)
 	char *server[];
 {
@@ -600,4 +582,22 @@ set_environment ()
     }
     *newPtr = NULL;
     return;
+}
+
+Fatal(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+	char	*fmt;
+{
+	Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+	exit(ERR_EXIT);
+}
+
+Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+	char	*fmt;
+{
+	extern char	*sys_errlist[];
+
+	fprintf(stderr, "%s:  ", program);
+	if (errno > 0 && errno < sys_nerr)
+	  fprintf (stderr, "%s (errno %d):  ", sys_errlist[errno], errno);
+	fprintf(stderr, fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 }
