@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.136 90/03/16 13:09:40 jim Exp $
+ * $XConsortium: add_window.c,v 1.137 90/03/20 11:17:00 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.136 90/03/16 13:09:40 jim Exp $";
+"$XConsortium: add_window.c,v 1.137 90/03/20 11:17:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -640,7 +640,7 @@ IconMgr *iconp;
     attributes.event_mask = (SubstructureRedirectMask | 
 			     ButtonPressMask | ButtonReleaseMask |
 			     EnterWindowMask | LeaveWindowMask);
-    if (tmp_win->transient && tmp_win->attr.save_under && Scr->SaveUnder) {
+    if (tmp_win->transient && tmp_win->attr.save_under) {
 	attributes.save_under = True;
 	valuemask |= CWSaveUnder;
     }
