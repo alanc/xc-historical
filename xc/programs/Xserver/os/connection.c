@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.171 94/01/20 09:47:41 rws Exp $ */
+/* $XConsortium: connection.c,v 1.172 94/02/01 18:48:53 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -22,29 +22,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/*
- *
- * The connection code/ideas for SVR4/Intel environments was contributed by
- * the following companies/groups:
- *
- *	MetroLink Inc
- *	NCR
- *	Pittsburgh Powercomputing Corporation (PPc)/Quarterdeck Office Systems
- *	SGCS
- *	Unix System Laboratories (USL) / Novell
- *	XFree86
- *
- * The goal is to have common connection code among all SVR4/Intel vendors.
- *
- * ALL THE ABOVE COMPANIES DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS 
- * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, 
- * IN NO EVENT SHALL THESE COMPANIES BE LIABLE FOR ANY SPECIAL, INDIRECT 
- * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS 
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE 
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE 
- * OR PERFORMANCE OF THIS SOFTWARE.
- */
-
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -64,7 +41,7 @@ SOFTWARE.
 
 #include "X.h"
 #include "Xproto.h"
-#include "Xos.h"			/* for strings, file, time */
+#include <X11/Xtrans.h>
 #include <sys/param.h>
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
@@ -97,19 +74,6 @@ extern int errno;
 # endif
 #endif
 
-#if defined(SO_DONTLINGER) && defined(SO_LINGER)
-#undef SO_DONTLINGER
-#endif
-
-#ifdef UNIXCONN
-/*
- * sites should be careful to have separate /tmp directories for diskless nodes
- */
-#include <sys/un.h>
-#include <sys/stat.h>
-static int unixDomainConnection = -1;
-#endif
-
 #include <stdio.h>
 #include <sys/uio.h>
 #include "misc.h"		/* for typedef of pointer */
@@ -120,19 +84,6 @@ static int unixDomainConnection = -1;
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #endif /* DNETCONN */
-
-typedef long CCID;      /* mask of indices into client socket table */
-
-#ifndef X_UNIX_PATH
-#ifdef hpux
-#define X_UNIX_DIR	"/usr/spool/sockets/X11"
-#define X_UNIX_PATH	"/usr/spool/sockets/X11/"
-#define OLD_UNIX_DIR	"/tmp/.X11-unix"
-#else
-#define X_UNIX_DIR	"/tmp/.X11-unix"
-#define X_UNIX_PATH	"/tmp/.X11-unix/X"
-#endif
-#endif
 
 extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */
@@ -164,13 +115,18 @@ static FdSet SavedClientsWithInput;
 int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
+
+XtransConnInfo 	*ListenTransConns = NULL;
+int	       	*ListenTransFds = NULL;
+int		ListenTransCount;
+
 extern int auditTrailLevel;
 extern ClientPtr NextAvailableClient();
 extern XID CheckAuthorization();
 
 static void ErrorConnMax(
 #if NeedFunctionPrototypes
-    register int /*fd*/
+XtransConnInfo /* trans_conn */
 #endif
 );
 
@@ -180,1081 +136,27 @@ static void CloseDownFileDescriptor(
 #endif
 );
 
+static XtransConnInfo
+lookup_trans_conn (fd)
+
+int fd;
+
+{
+    if (ListenTransFds)
+    {
+	int i;
+	for (i = 0; i < ListenTransCount; i++)
+	    if (ListenTransFds[i] == fd)
+		return ListenTransConns[i];
+    }
+
+    return (NULL);
+}
+
 #ifdef XDMCP
 void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
 #endif
 
-#ifdef TCPCONN
-static int
-open_tcp_socket ()
-{
-    struct sockaddr_in insock;
-    int request;
-    int retry;
-#ifndef SO_DONTLINGER
-#ifdef SO_LINGER
-    static int linger[2] = { 0, 0 };
-#endif /* SO_LINGER */
-#endif /* SO_DONTLINGER */
-
-#ifdef AIXV3
-#ifndef FORCE_DISPLAY_NUM
-    extern int AIXTCPSocket;
-    if (AIXTCPSocket>=0) {
-        request= AIXTCPSocket;
-    } else
-#endif /* FORCE_DISPLAY_NUM */
-#endif /* AIX && etc. */
-    if ((request = socket (AF_INET, SOCK_STREAM, 0)) < 0) 
-    {
-	Error ("Creating TCP socket");
-	return -1;
-    } 
-#ifdef SO_REUSEADDR
-    /* Necesary to restart the server without a reboot */
-    {
-	int one = 1;
-	setsockopt(request, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
-    }
-#endif /* SO_REUSEADDR */
-#ifdef AIXV3
-#ifndef FORCE_DISPLAY_NUMBER
-    if (AIXTCPSocket<0)
-#endif
-#endif
-    {
-    bzero ((char *)&insock, sizeof (insock));
-#ifdef BSD44SOCKETS
-    insock.sin_len = sizeof(insock);
-#endif
-    insock.sin_family = AF_INET;
-    insock.sin_port = htons ((unsigned short)(X_TCP_PORT + atoi (display)));
-    insock.sin_addr.s_addr = htonl(INADDR_ANY);
-    retry = 20;
-    while (bind(request, (struct sockaddr *) &insock, sizeof (insock)))
-    {
-	if (--retry == 0) {
-	    Error ("Binding TCP socket");
-	    close (request);
-	    return -1;
-	}
-#ifdef SO_REUSEADDR
-	sleep (1);
-#else
-	sleep (10);
-#endif /* SO_REUSEDADDR */
-    }
-    }
-#ifdef SO_DONTLINGER
-    if(setsockopt (request, SOL_SOCKET, SO_DONTLINGER, (char *)NULL, 0))
-	Error ("Setting TCP SO_DONTLINGER");
-#else
-#ifdef SO_LINGER
-    if(setsockopt (request, SOL_SOCKET, SO_LINGER,
-		   (char *)linger, sizeof(linger)))
-	Error ("Setting TCP SO_LINGER");
-#endif /* SO_LINGER */
-#endif /* SO_DONTLINGER */
-    if (listen (request, 5)) {
-	Error ("TCP Listening");
-	close (request);
-	return -1;
-    }
-    return request;
-}
-#endif /* TCPCONN */
-
-#if defined(UNIXCONN) && !defined(LOCALCONN)
-
-static struct sockaddr_un unsock;
-
-static int
-open_unix_socket ()
-{
-    int oldUmask;
-    int request;
-
-    bzero ((char *) &unsock, sizeof (unsock));
-    unsock.sun_family = AF_UNIX;
-    oldUmask = umask (0);
-#ifdef X_UNIX_DIR
-    if (!mkdir (X_UNIX_DIR, 0777))
-	chmod (X_UNIX_DIR, 0777);
-#endif
-    strcpy (unsock.sun_path, X_UNIX_PATH);
-    strcat (unsock.sun_path, display);
-#ifdef BSD44SOCKETS
-    unsock.sun_len = strlen(unsock.sun_path);
-#endif
-#ifdef hpux
-    {  
-        /*    The following is for backwards compatibility
-         *    with old HP clients. This old scheme predates the use
- 	 *    of the /usr/spool/sockets directory, and uses hostname:display
- 	 *    in the /tmp/.X11-unix directory
-         */
-        struct utsname systemName;
-	static char oldLinkName[256];
-
-        uname(&systemName);
-        strcpy(oldLinkName, OLD_UNIX_DIR);
-        if (!mkdir(oldLinkName, 0777))
-	    chown(oldLinkName, 2, 3);
-        strcat(oldLinkName, "/");
-        strcat(oldLinkName, systemName.nodename);
-        strcat(oldLinkName, display);
-        unlink(oldLinkName);
-        symlink(unsock.sun_path, oldLinkName);
-    }
-#endif	/* hpux */
-    unlink (unsock.sun_path);
-    if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
-    {
-	Error ("Creating Unix socket");
-	return -1;
-    } 
-#ifdef BSD44SOCKETS
-    if (bind(request, (struct sockaddr *)&unsock, SUN_LEN(&unsock)))
-#else
-    if (bind(request, (struct sockaddr *)&unsock, strlen(unsock.sun_path)+2))
-#endif
-    {
-	Error ("Binding Unix socket");
-	close (request);
-	return -1;
-    }
-    if (listen (request, 5))
-    {
-	Error ("Unix Listening");
-	close (request);
-	return -1;
-    }
-    (void)umask(oldUmask);
-    return request;
-}
-#endif /*UNIXCONN */
-
-#ifdef LOCALCONN
-/*
- * This code amply demonstrates why vendors need to talk to each other
- * earlier rather than later.
- *
- * The following is an implementation of the X-server-half of a variety
- * of SYSV386 local connection methods.  This includes compatability
- * with ISC STREAMS, SCO STREAMS, ATT pts connections, ATT/USL named-pipes,
- * and SVR4.2 UNIX DOMAIN connections.  To enable the output of various
- * connection-related information messages to stderr, compile with
- * -DXLOCAL_VERBOSE and set the environment variable XLOCAL_VERBOSE.
- *	XLOCAL_VERBOSE	= 0	print connection availability
- *			= 1	also, print message for each connection
- *			= 2	also, print cleanup information
- *			= 3	even more...
- *
- * See note below about the conflict between ISC and UNIX nodes.
- */
-
-#include <sys/stream.h>
-#include <sys/stropts.h>
-#include <sys/utsname.h>
-#ifndef UNIXCONN
-#include <sys/stat.h>
-#endif
-
-#define X_STREAMS_DIR	"/dev/X"
-
-#ifdef UNIXCONN
-#define XLOCAL_UNIX
-#define X_UNIX_DEVDIR	"/dev/X/UNIXCON"
-#define X_UNIX_DEVPATH	"/dev/X/UNIXCON/X"
-#endif
-
-#if !defined(SVR4) || defined(SVR4_ACP)
-#define XLOCAL_ISC
-#define XLOCAL_SCO
-#define X_ISC_DIR	"/dev/X/ISCCONN"
-#define X_ISC_PATH	"/dev/X/ISCCONN/X"
-#define X_SCO_PATH	"/dev/X"
-#define DEV_SPX		"/dev/spx"
-static int iscFd = -1;
-static int scoFd = -1;
-#endif
-
-#ifdef unix
-#define XLOCAL_PTS
-#define X_PTS_PATH	"/dev/X/server."
-#define DEV_PTMX	"/dev/ptmx"
-extern char *ptsname();
-static int ptsFd = -1;
-#endif
-
-#ifdef SVR4
-#define XLOCAL_NAMED
-static int namedFd = -1;
-#define X_NAMED_PATH	"/dev/X/Nserver."
-#endif
-
-static FdSet AllStreams; /* bitmap of STREAMS file descriptors */
-
-#ifndef XLOCAL_VERBOSE
-#define XLOCAL_MSG(x)	/* as nothing */
-#else
-static void xlocalMsg();
-#define XLOCAL_MSG(x)	xlocalMsg x;
-#endif
-
-static int useSlashTmpForUNIX=0;
-
-#ifdef XLOCAL_VERBOSE
-/*PRINTFLIKE1*/
-static void
-xlocalMsg(lvl,str,a,b,c,d,e,f,g,h)
-  int lvl;
-  char *str;
-  int a,b,c,d,e,f,g,h;
-{
-    static int xlocalMsgLvl = -2;
-
-    if (xlocalMsgLvl == -2) {
-	char *tmp;
-	if ((tmp = (char *)getenv("XLOCAL_VERBOSE")) != NULL) {
-	    xlocalMsgLvl = atoi(tmp);
-	} else {
-	    xlocalMsgLvl = -1; 
-	}
-    }
-    if (xlocalMsgLvl >= lvl) {
-	fprintf(stderr,"X: XLOCAL - ");
-	fprintf(stderr,str,a,b,c,d,e,f,g,h);
-    }
-}
-#endif /* XLOCAL_VERBOSE */
-
-/*
- * We have a conflict between ISC and UNIX connections over the use
- * of the /tmp/.X11-unix/Xn path.  Therefore, whichever connection type
- * is specified first in the XLOCAL environment variable gets to use this
- * path for its own device nodes.  The default is ISC.
- *
- * Note that both connection types are always available using their
- * alternate paths at /dev/X/ISCCONN/Xn and /dev/X/UNIXCON/Xn respectively.
- *
- * To make an older client or library use these alternate paths, you
- * need to edit the binary and replace /tmp/.X11-unix with either
- * /dev/X/ISCCONN or /dev/X/UNIXCON depending on its preference.
- */
-#define WHITE	" :\t\n\r"
-
-static void
-ChooseLocalConnectionType()
-{
-    char *name,*nameList;
-
-    XLOCAL_MSG((3,"Choosing ISC vs. UNIXDOMAIN connections...\n"));
-
-    useSlashTmpForUNIX=0;
-
-    if ((nameList = (char *)getenv("XLOCAL")) != NULL) {
-	nameList = (char *)strdup(nameList);
-	name = strtok(nameList,WHITE);
-	while (name) {
-	    if (!strncmp(name,"SP",2) ||
-		!strncmp(name,"ISC",3) ||
-		!strncmp(name,"STREAMS",7)) {
-		break;
-	    } else if (!strncmp(name,"UNIX",4)) {
-		useSlashTmpForUNIX=1;
-		break;
-	    }
-	    name = strtok(NULL,WHITE);
-	}
-	xfree(nameList); 
-    } else {
-	XLOCAL_MSG((3,"XLOCAL not set in environment.\n"));
-    }
-
-    XLOCAL_MSG((3,"Using %s for local connections in /tmp/.X11-unix.\n",
-      useSlashTmpForUNIX ? "UNIXCONN" : "ISC"));
-}
-#undef WHITE
-
-static int
-xlocal_unlink(path)
-  char *path;
-{
-    int ret;
-
-    ret = unlink(path);
-    if (ret == -1 && errno == EINTR)
-      ret = unlink(path);
-    if (ret == -1 && errno == ENOENT)
-      ret = 0;
-    return(ret);
-}
-
-#ifdef XLOCAL_UNIX
-static struct sockaddr_un unsock;
-
-/* UNIX: UNIX domain sockets as used in SVR4.2 */
-static int
-open_unix_local()
-{
-    int oldUmask;
-    int request;
-
-    bzero((char *) &unsock, sizeof (unsock));
-    unsock.sun_family = AF_UNIX;
-    oldUmask = umask (0);
-
-    mkdir(X_STREAMS_DIR, 0777); /* "/dev/X" */
-    chmod(X_STREAMS_DIR, 0777);
-    if (!mkdir(X_UNIX_DEVDIR, 0777))
-      chmod(X_UNIX_DEVDIR, 0777);
-    strcpy(unsock.sun_path, X_UNIX_DEVPATH);
-    strcat(unsock.sun_path, display);
-    xlocal_unlink(unsock.sun_path);
-    if ((request = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-	Error("Creating Unix socket");
-	return -1;
-    } 
-    if (bind(request, (struct sockaddr *)&unsock, strlen(unsock.sun_path)+2)) {
-	Error("Binding Unix socket");
-	close(request);
-	return -1;
-    }
-    if (listen(request, 5)) {
-	Error("Unix Listening");
-	close(request);
-	return -1;
-    }
-    XLOCAL_MSG((0,"UNIX connections available at [%s]\n", unsock.sun_path));
-
-    if (useSlashTmpForUNIX) {
-	char tmpPath[64];
-	if (!mkdir(X_UNIX_DIR, 0777))
-	  chmod(X_UNIX_DIR, 0777);
-	strcpy(tmpPath, X_UNIX_PATH);
-	strcat(tmpPath, display);
-	xlocal_unlink(tmpPath);
-	if (link(unsock.sun_path,tmpPath) == 0) {
-	    XLOCAL_MSG((0,"UNIX connections available at [%s]\n", tmpPath));
-	}
-    }
-    (void)umask(oldUmask);
-    return request;
-}
-
-static void
-close_unix_local()
-{
-    char path[64];
-
-    if (unixDomainConnection != -1) {
-	close(unixDomainConnection);
-	WellKnownConnections &= ~(1L << unixDomainConnection);
-	unixDomainConnection = -1;
-    }
-    strcpy(path, X_UNIX_DEVPATH);
-    strcat(path, display);
-    XLOCAL_MSG((2,"removing [%s] and [%s]\n",path,X_UNIX_DEVDIR)); 
-    xlocal_unlink(path);
-    xlocal_unlink(X_UNIX_DEVDIR);
-    if (useSlashTmpForUNIX) {
-	strcpy(path, X_UNIX_PATH);
-	strcat(path, display);
-	XLOCAL_MSG((2,"removing [%s] and [%s]\n",path,X_UNIX_DIR)); 
-	xlocal_unlink(path);
-	xlocal_unlink(X_UNIX_DIR);
-    }
-}
-
-static void
-reset_unix_local()
-{
-    char path[64];
-    struct stat statb;
-    int need_reset = 0;
-
-    if (unixDomainConnection != -1) {
-	strcpy(path, X_UNIX_DEVPATH);
-	strcat(path, display);
-	if ((stat(path, &statb) == -1) ||
-	    (statb.st_mode & S_IFMT) != S_IFSOCK)
-	  need_reset = 1;
-
-	if (useSlashTmpForUNIX) {
-	    strcpy(path, X_UNIX_PATH);
-	    strcat(path, display);
-	    if ((stat(path, &statb) == -1) ||
-		(statb.st_mode & S_IFMT) != S_IFSOCK)
-	      need_reset = 1;
-	}
-
-	if (need_reset) {
-	    close_unix_local();
-	    unixDomainConnection = open_unix_local();
-	    if (unixDomainConnection != -1)
-	      WellKnownConnections |= (1L << unixDomainConnection);
-	}
-    }
-}
-
-#endif /* XLOCAL_UNIX */
-
-#if defined(XLOCAL_ISC) || defined(XLOCAL_SCO)
-static int
-connect_spipe(fd1, fd2)
-  int fd1, fd2;
-{
-    long temp;
-    struct strfdinsert sbuf;
-
-    sbuf.databuf.maxlen = -1;
-    sbuf.databuf.len = -1;
-    sbuf.databuf.buf = NULL;
-    sbuf.ctlbuf.maxlen = sizeof(long);
-    sbuf.ctlbuf.len = sizeof(long);
-    sbuf.ctlbuf.buf = (caddr_t)&temp;
-    sbuf.offset = 0;
-    sbuf.fildes = fd2;
-    sbuf.flags = 0;
-    if (ioctl(fd1, I_FDINSERT, &sbuf) == -1) return (-1);
-  
-    return(0);
-}
-
-static int
-named_spipe(fd, path)
-  int fd;
-  char *path;
-{
-    int oldUmask, ret;
-    struct stat sbuf;
-
-    oldUmask = umask(0);
-
-    (void) fstat(fd, &sbuf);
-    ret = mknod(path, 0020666, sbuf.st_rdev);
-
-    umask(oldUmask);
-
-    if (ret < 0) {
-	ret = -1;
-    } else {
-	ret = fd;
-    }
-    return(ret);
-}
-#endif /* defined(XLOCAL_ISC) || defined(XLOCAL_SCO) */
-
-#ifdef XLOCAL_ISC
-/*
- * ISC: ISC UNIX V.3.2 compatible streams at /dev/X/ISCCONN/Xn.
- * It will link this to /tmp/.X11-unix/Xn if there are no UNIXDOMAIN
- * connection nodes required.
- */
-static int
-open_isc_local()
-{
-    int fd = -1,fds = -1;
-    char pathISC[64],pathX11[64];
-
-    mkdir(X_STREAMS_DIR, 0777); /* "/dev/X" */
-    chmod(X_STREAMS_DIR, 0777);
-    mkdir(X_ISC_DIR, 0777); /* "/dev/X/ISCCONN" */
-    chmod(X_ISC_DIR, 0777);
-
-    strcpy(pathISC, X_ISC_PATH);
-    strcat(pathISC, display);
-  
-    if (xlocal_unlink(pathISC) < 0) {
-	ErrorF("open_isc_local(): Can't unlink node (%s),\n", pathISC);
-	return(-1);
-    }
-
-    if ((fds = open(DEV_SPX, O_RDWR)) >= 0 &&
-	(fd  = open(DEV_SPX, O_RDWR)) >= 0 ) {
-
-	if (connect_spipe(fds, fd) != -1 &&
-	    named_spipe(fds, pathISC) != -1) {
-
-	    XLOCAL_MSG((0,"ISC connections available at [%s]\n", pathISC));
-
-	    if (!useSlashTmpForUNIX) {
-		mkdir(X_UNIX_DIR, 0777);
-		chmod(X_UNIX_DIR, 0777);
-		strcpy(pathX11, X_UNIX_PATH);
-		strcat(pathX11, display);
-		if (xlocal_unlink(pathX11) < 0) {
-		    /*EMPTY*/
-		    /* can't get the /tmp node, just return the good one...*/
-		} else {
-#ifdef SVR4 
-		    /* we prefer symbolic links as hard links can't
-		       cross filesystems */
-		    if (symlink(pathISC,pathX11) == 0) {
-			XLOCAL_MSG((0,"ISC connections available at [%s]\n",
-				    pathX11));
-		    }
-#else
-		    if (link(pathISC,pathX11) == 0) {
-			XLOCAL_MSG((0,"ISC connections available at [%s]\n",
-				    pathX11));
-		    }
-		      
-#endif
-		}
-	    }
-	    return(fd);
-	} else {
-	    Error("open_isc_local(): Can't set up listener pipes");
-	}
-    } else {
-	XLOCAL_MSG((0,"open_isc_local(): can't open %s\n",DEV_SPX));
-#ifndef SVR4
-	/*
-	 * At this point, most SVR4 versions will fail on this, so leave out the
-	 * warning
-	 */
-	Error("open_isc_local(): can't open \"%s\"",DEV_SPX);
-	return(-1);
-#endif
-    }
-
-    (void) close(fds);
-    (void) close(fd);
-    return(-1);
-}
-
-static int
-accept_isc_local()
-{
-    struct strrecvfd buf;
-
-    while (ioctl(iscFd, I_RECVFD, &buf) < 0)
-      if (errno != EAGAIN) {
-	  Error("accept_isc_local(): Can't read fildes");
-	  return(-1);
-      }
-
-    XLOCAL_MSG((1,"new ISC connection accepted (%d)\n",buf.fd));
-    BITSET(AllStreams, buf.fd);
-    return(buf.fd);
-}
-
-static void
-close_isc_local()
-{
-    char path[64];
-
-    if (iscFd != -1) {
-	close(iscFd);
-	WellKnownConnections &= ~(1L << iscFd);
-	iscFd = -1;
-    }
-    strcpy(path, X_ISC_PATH);
-    strcat(path, display);
-    XLOCAL_MSG((2,"removing [%s] and [%s]\n",path,X_ISC_DIR)); 
-    xlocal_unlink(path);
-    xlocal_unlink(X_ISC_DIR);
-    if (!useSlashTmpForUNIX) {
-	strcpy(path, X_UNIX_PATH);
-	strcat(path, display);
-	XLOCAL_MSG((2,"removing [%s] and [%s]\n",path,X_UNIX_DIR)); 
-	xlocal_unlink(path);
-	xlocal_unlink(X_UNIX_DIR);
-    }
-}
-#endif /* XLOCAL_ISC */
-
-#ifdef XLOCAL_SCO
-/* SCO: SCO/XSIGHT style using /dev/spx */
-static int
-open_sco_local()
-{
-    int fds = -1,fdr = -1;
-    char pathS[64], pathR[64];
-
-    sprintf(pathS, "%s%sS",X_SCO_PATH, display);
-    sprintf(pathR, "%s%sR",X_SCO_PATH, display);
-  
-    if ((xlocal_unlink(pathS) < 0) || (xlocal_unlink(pathR) < 0)) {
-
-	ErrorF("open_sco_local(): can't unlink node (%s)\n",pathR);
-	return(-1);
-    }
-  
-    if ((fds = open(DEV_SPX, O_RDWR)) >= 0 &&
-	(fdr = open(DEV_SPX, O_RDWR)) >= 0 ) {
-
-	if (connect_spipe(fds, fdr) != -1 &&
-	    named_spipe(fds, pathS) != -1 &&
-	    named_spipe(fdr, pathR) != -1) {
-      
-	    XLOCAL_MSG((0,"SCO connections available at [%s]\n",pathR));
-
-	    return(fds);
-	} else {
-	    Error("open_sco_local(): can't set up listener pipes");
-	}  
-    } else {
-	XLOCAL_MSG((0,"open_sco_local(): can't open %s",DEV_SPX));
-#ifndef SVR4
-	/*
-	 * At this point, most SVR4 versions will fail on this, so
-	 * leave out the warning
-	 */
-	Error("open_sco_local(): can't open \"%s\"",DEV_SPX);
-	return(-1);
-#endif
-    }
-
-    (void) close(fds);
-    (void) close(fdr);
-    return(-1);
-}
-
-
-static int
-accept_sco_local()
-{
-    char c;
-    int fd;
-
-    if (read(scoFd, &c, 1) < 0) {
-	Error("accept_sco_local(): can't read from client");
-	return(-1);
-    }
-
-    if ((fd = open(DEV_SPX, O_RDWR)) < 0) {
-	ErrorF("accept_sco_local(): can't open \"%s\"",DEV_SPX);
-	return(-1);
-    }
-
-    if (connect_spipe(scoFd, fd) < 0) {
-	Error("accept_sco_local(): can't connect pipes");
-	(void) close(fd);
-	return(-1);
-    }
-
-    XLOCAL_MSG((1,"new SCO connection accepted (%d)\n",fd));
-    BITSET(AllStreams, fd);
-    return(fd);
-}
-
-static void
-close_sco_local()
-{
-    char pathS[64], pathR[64];
-
-    if (scoFd != -1) {
-	close(scoFd);
-	WellKnownConnections &= ~(1L << scoFd);
-	scoFd = -1;
-    }
-
-    sprintf(pathS, "%s%sS",X_SCO_PATH, display);
-    sprintf(pathR, "%s%sR",X_SCO_PATH, display);
-  
-    XLOCAL_MSG((2,"removing [%s] and [%s]\n",pathS,pathR)); 
-    xlocal_unlink(pathS);
-    xlocal_unlink(pathR);
-}
-
-#endif /* XLOCAL_SCO */
-
-#ifdef XLOCAL_PTS
-/* PTS: AT&T style using /dev/ptmx */
-static int
-open_pts_local()
-{
-    char *slave;
-    int fd;
-    char path[64];
-
-    mkdir(X_STREAMS_DIR, 0777);
-    chmod(X_STREAMS_DIR, 0777);
-  
-    strcpy(path, X_PTS_PATH);
-    strcat(path, display);
-  
-    if (open(path, O_RDWR) >= 0 || (xlocal_unlink(path) < 0)) {
-	ErrorF("open_pts_local(): server is already running (%s)\n", path);
-	return(-1);
-    }
-  
-    if ((fd = open(DEV_PTMX, O_RDWR)) < 0) {
-	Error("open_pts_local(): open failed");
-	ErrorF("open_pts_local(): can't open \"%s\"",DEV_PTMX);
-	return(-1);
-    }
-  
-    grantpt(fd);
-    unlockpt(fd);
-    slave = ptsname(fd);
-    if (link(slave, path) < 0 || chmod(path, 0666) < 0) {
-	Error("open_pts_local(): can't set up local listener");
-	return(-1);
-    }
-
-    if (open(path, O_RDWR) < 0) {
-	Error("open_pts_local(): open failed");
-	ErrorF("open_pts_local(): can't open %s\n", path);
-	close(fd);
-	return(-1);
-    }
-    XLOCAL_MSG((0,"PTS connections available at [%s]\n",path));
-
-    return(fd);
-}
-
-static int
-accept_pts_local()
-{
-    int newconn;
-    char length;
-    char path[64];
-
-    /*
-     * first get device-name
-     */
-    if(read(ptsFd, &length, 1) <= 0 ) {
-	Error("accept_pts_local(): can't read slave name length");
-	return(-1);
-    }
-
-    if(read(ptsFd, path, length) <= 0 ) {
-	Error("accept_pts_local(): can't read slave name");
-	return(-1);
-    }
-
-    path[ length ] = '\0';
-      
-    if((newconn = open(path,O_RDWR)) < 0) {
-	Error("accept_pts_local(): can't open slave");
-	return(-1);
-    }
-
-    (void) write(newconn, "1", 1); /* send an acknowledge to the client */
-
-    XLOCAL_MSG((1,"new PTS connection accepted (%d)\n",newconn));
-    BITSET(AllStreams, newconn);
-    return(newconn);
-}
-
-static void
-close_pts_local()
-{
-    char path[64];
-
-    if (ptsFd != -1) {
-	close(ptsFd);
-	WellKnownConnections &= ~(1L << ptsFd);
-	ptsFd = -1;
-    }
-    strcpy(path, X_PTS_PATH);
-    strcat(path, display);
-    XLOCAL_MSG((2,"removing [%s]\n",path)); 
-    xlocal_unlink(path);
-}
-#endif /* XLOCAL_PTS */
-
-#ifdef XLOCAL_NAMED
-/* NAMED: USL style using bi-directional named pipes */
-static int
-open_named_local()
-{
-    int fd,fld[2];
-    char path[64];
-    struct stat sbuf;
-
-    mkdir(X_STREAMS_DIR, 0777);
-    chmod(X_STREAMS_DIR, 0777);
-  
-    strcpy(path, X_NAMED_PATH);
-    strcat(path, display);
-  
-    if (stat(path, &sbuf) != 0) {
-	if (errno == ENOENT) {
-	    if ((fd = creat(path, (mode_t)0666)) == -1) {
-		ErrorF("open_named_local(): can't create %s\n",path);
-		return(-1);
-	    }
-	    close(fd);
-	    if (chmod(path, (mode_t)0666) < 0) {
-		ErrorF("open_named_local(): can't chmod %s\n",path);
-		return(-1);
-	    }
-	} else {
-	    ErrorF("open_named_local(): unknown stat error, %d\n",errno);	
-	    return(-1);
-	}
-    }
-
-    if (pipe(fld) != 0) {
-	ErrorF("open_named_local(): pipe failed, errno=%d\n",errno);
-	return(-1);
-    }
-
-    if (ioctl(fld[0], I_PUSH, "connld") != 0) {
-	ErrorF("open_named_local(): ioctl error %d\n",errno);
-	return(-1);
-    }
-
-    if (fattach(fld[0], path) != 0) {
-	ErrorF("open_named_local(): fattach failed, errno=%d\n",errno);
-	return(-1);
-    } 
-
-    XLOCAL_MSG((0,"NAMED connections available at [%s]\n", path));
-
-    return(fld[1]);
-}
-
-static int
-accept_named_local()
-{
-    struct strrecvfd str;
-
-    if (ioctl(namedFd, I_RECVFD, &str) < 0) {
-	ErrorF("accept_named_local(): I_RECVFD failed\n");
-	return(-1);
-    }
-
-    XLOCAL_MSG((1,"new NAMED connection accepted (%d)\n",str.fd));
-    BITSET(AllStreams, str.fd);
-    return(str.fd);
-}
-
-static void
-close_named_local()
-{
-    char path[64];
-
-    if (namedFd != -1) {
-	close(namedFd);
-	WellKnownConnections &= ~(1L << namedFd);
-	namedFd = -1;
-    }
-    strcpy(path, X_NAMED_PATH);
-    strcat(path, display);
-    XLOCAL_MSG((2,"removing [%s]\n",path)); 
-    xlocal_unlink(path);
-}
-#endif /* XLOCAL_NAMED */
-
-static void
-xlocal_create_sockets()
-{
-    int request;
-
-    ChooseLocalConnectionType();
-
-    CLEARBITS(AllStreams);
-#ifdef XLOCAL_PTS
-    if ((ptsFd = open_pts_local()) == -1) {
-	XLOCAL_MSG((0,"open_pts_local(): failed.\n"));
-    } else {
-	WellKnownConnections |= (1L << ptsFd);
-    }
-#endif
-#ifdef XLOCAL_NAMED
-    if ((namedFd = open_named_local()) == -1) {
-	XLOCAL_MSG((0,"open_named_local(): failed.\n"));
-    } else {
-	WellKnownConnections |= (1L << namedFd);
-    }
-#endif
-#ifdef XLOCAL_ISC
-    if ((iscFd = open_isc_local()) == -1) {
-	XLOCAL_MSG((0,"open_isc_local(): failed.\n"));
-    } else {
-	WellKnownConnections |= (1L << iscFd);
-    }
-#endif
-#ifdef XLOCAL_SCO
-    if ((scoFd = open_sco_local()) == -1) {
-	XLOCAL_MSG((0,"open_sco_local(): failed.\n"));
-    } else {
-	WellKnownConnections |= (1L << scoFd);
-    } 
-#endif
-#ifdef XLOCAL_UNIX
-    if ((request = open_unix_local()) == -1) {
-	XLOCAL_MSG((0,"open_unix_local(): failed.\n"));
-    } else {
-	WellKnownConnections |= (1L << request);
-	unixDomainConnection = request;
-    }
-#endif
-#ifdef TCPCONN
-    if ((request = open_tcp_socket()) == -1) {
-	XLOCAL_MSG((0,"open_tcp_socket(): failed.\n"));
-	if (PartialNetwork == FALSE) {
-	    FatalError("Cannot establish tcp listening socket");
-	}
-    } else {
-	XLOCAL_MSG((0,"TCP connections available at port %d\n",
-		    X_TCP_PORT + atoi(display)));
-	WellKnownConnections |= (1L << request);
-	DefineSelf(request);
-    }
-#endif /* TCPCONN */
-}
-
-static void
-xlocal_reset_sockets()
-{
-#ifdef XLOCAL_UNIX
-    reset_unix_local();
-#endif
-    CLEARBITS(AllStreams);
-}
-
-static int
-xlocal_close_sockets()
-{
-#ifdef XLOCAL_UNIX
-    close_unix_local();
-#endif /* XLOCAL_UNIX */
-#ifdef XLOCAL_ISC
-    close_isc_local();
-#endif /* XLOCAL_ISC */
-#ifdef XLOCAL_SCO
-    close_sco_local();
-#endif /* XLOCAL_SCO */
-#ifdef XLOCAL_PTS
-    close_pts_local();
-#endif /* XLOCAL_PTS */
-#ifdef XLOCAL_NAMED
-    close_named_local();
-#endif /* XLOCAL_NAMED */
-    return(0);
-}
-
-int
-xlocal_getpeername(fd, from, fromlen)
-  int fd;
-  struct sockaddr *from;
-  int *fromlen;
-{
-    /* special case for local connections ( ISC, SCO, PTS, NAMED... ) */
-    if (GETBIT(AllStreams, fd)) {
-	from->sa_family = AF_UNSPEC;
-	*fromlen = 0;
-	return 0;
-    }
-#if defined(TCPCONN) || defined(DNETCONN) || defined(UNIXCONN)
-    return getpeername(fd, from, fromlen);
-#else
-    return(-1);
-#endif
-}
-#define	getpeername	xlocal_getpeername
-
-static int
-xlocal_accept(fd, from, fromlen)
-  int fd;
-  struct sockaddr *from;
-  int *fromlen;
-{
-    int ret;
-
-#ifdef XLOCAL_PTS
-    if (fd == ptsFd) return accept_pts_local();
-#endif
-#ifdef XLOCAL_NAMED
-    if (fd == namedFd) return accept_named_local();
-#endif
-#ifdef XLOCAL_ISC
-    if (fd == iscFd) return accept_isc_local();
-#endif
-#ifdef XLOCAL_SCO
-    if (fd == scoFd)  return accept_sco_local(); 
-#endif
-    /*
-     * else we are handling the normal accept case
-     */
-#if defined(TCPCONN) || defined(DNETCONN) || defined(XLOCAL_UNIX)
-    ret = accept (fd, from, fromlen);
-
-#ifdef XLOCAL_UNIX
-    if (fd == unixDomainConnection) {
-	XLOCAL_MSG((1,"new UNIX connection accepted (%d)\n",ret));
-    } else
-#endif
-      {
-	  XLOCAL_MSG((1,"new TCP connection accepted (%d)\n",ret));
-      }
-#endif
-    return(ret);
-}
-#define	accept		xlocal_accept
-
-#endif /* LOCALCONN */
-
-
-#ifdef hpux
-/*
- * hpux returns EOPNOTSUPP when using getpeername on a unix-domain
- * socket.  In this case, smash the socket address with the address
- * used to bind the connection socket and return success.
- */
-hpux_getpeername(fd, from, fromlen)
-    int	fd;
-    struct sockaddr *from;
-    int		    *fromlen;
-{
-    int	    ret;
-    int	    len;
-
-    ret = getpeername(fd, from, fromlen);
-    if (ret == -1 && errno == EOPNOTSUPP)
-    {
-	ret = 0;
-	len = strlen(unsock.sun_path)+2;
-	if (len > *fromlen)
-	    len = *fromlen;
-	memmove((char *) from, (char *) &unsock, len);
-	*fromlen = len;
-    }
-    return ret;
-}
-
-#define getpeername(fd, from, fromlen)	hpux_getpeername(fd, from, fromlen)
-
-#endif
-
-#ifdef DNETCONN
-static int
-open_dnet_socket ()
-{
-    int request;
-    struct sockaddr_dn dnsock;
-
-    if ((request = socket (AF_DECnet, SOCK_STREAM, 0)) < 0) 
-    {
-	Error ("Creating DECnet socket");
-	return -1;
-    } 
-    bzero ((char *)&dnsock, sizeof (dnsock));
-    dnsock.sdn_family = AF_DECnet;
-    sprintf(dnsock.sdn_objname, "X$X%d", atoi (display));
-    dnsock.sdn_objnamel = strlen(dnsock.sdn_objname);
-    if (bind (request, (struct sockaddr *) &dnsock, sizeof (dnsock)))
-    {
-	Error ("Binding DECnet socket");
-	close (request);
-	return -1;
-    }
-    if (listen (request, 5))
-    {
-	Error ("DECnet Listening");
-	close (request);
-	return -1;
-    }
-    return request;
-}
-#endif /* DNETCONN */
 
 /*****************
  * CreateWellKnownSockets
@@ -1265,6 +167,8 @@ void
 CreateWellKnownSockets()
 {
     int		request, i;
+    int		maxTrans;
+    char 	port[20];
 
     CLEARBITS(AllSockets);
     CLEARBITS(AllClients);
@@ -1291,44 +195,38 @@ CreateWellKnownSockets()
 
     WellKnownConnections = 0;
 
-#ifdef LOCALCONN
-	xlocal_create_sockets();
-#else  /* LOCALCONN */
-#ifdef TCPCONN
-    if ((request = open_tcp_socket ()) != -1) {
-	WellKnownConnections |= (((FdMask)1) << request);
-	DefineSelf (request);
-    }
-    else if (!PartialNetwork) 
-    {
-	FatalError ("Cannot establish tcp listening socket");
-    }
-#endif /* TCPCONN */
-#ifdef DNETCONN
-    if ((request = open_dnet_socket ()) != -1) {
-	WellKnownConnections |= (((FdMask)1) << request);
-	DefineSelf (request);
-    }
-    else if (!PartialNetwork) 
-    {
-	FatalError ("Cannot establish dnet listening socket");
-    }
-#endif /* DNETCONN */
-#ifdef UNIXCONN
-    if ((request = open_unix_socket ()) != -1) {
-	WellKnownConnections |= (((FdMask)1) << request);
-	unixDomainConnection = request;
-    }
-    else if (!PartialNetwork) 
-    {
-	FatalError ("Cannot establish unix listening socket");
-    }
-#endif /* UNIXCONN */
+    sprintf (port, "%d", atoi (display));
 
-#endif /* LOCALCONN */
+    if ((_X11TransMakeAllCOTSServerListeners (port, &maxTrans,
+	&ListenTransCount, &ListenTransConns) >= 0) &&
+	(ListenTransCount >= 1))
+    {
+	if (!PartialNetwork && (maxTrans != ListenTransCount))
+	{
+	    FatalError ("Failed to establish all listening sockets");
+	}
+	else
+	{
+	    ListenTransFds = (int *) malloc (ListenTransCount * sizeof (int));
+
+	    for (i = 0; i < ListenTransCount; i++)
+	    {
+		int fd = _X11TransGetConnectionNumber (ListenTransConns[i]);
+		
+		ListenTransFds[i] = fd;
+		WellKnownConnections |= (1L << fd);
+
+		if (!_X11TransIsLocal (ListenTransConns[i]))
+		{
+		    DefineSelf (fd);
+		}
+	    }
+	}
+    }
 
     if (WellKnownConnections == 0)
         FatalError ("Cannot establish any listening sockets");
+
     OsSignal (SIGPIPE, SIG_IGN);
     OsSignal (SIGHUP, AutoResetServer);
     OsSignal (SIGINT, GiveUp);
@@ -1366,36 +264,43 @@ CreateWellKnownSockets()
 void
 ResetWellKnownSockets ()
 {
+    int i;
+
     ResetOsBuffers();
 
-#ifdef LOCALCONN
-	xlocal_reset_sockets();
-#else /* LOCALCONN */
-#if defined(UNIXCONN) && !defined(SVR4)
-    if (unixDomainConnection != -1)
+    for (i = 0; i < ListenTransCount; i++)
     {
-	/*
-	 * see if the unix domain socket has disappeared
-	 */
-	struct stat	statb;
+	int status = _X11TransResetListener (ListenTransConns[i]);
 
-	if (stat (unsock.sun_path, &statb) == -1 ||
-	    (statb.st_mode & S_IFMT) != S_IFSOCK)
+	if (status != TRANS_RESET_NOOP)
 	{
-	    ErrorF ("Unix domain socket %s trashed, recreating\n",
-	    	unsock.sun_path);
-	    (void) unlink (unsock.sun_path);
-	    (void) close (unixDomainConnection);
-	    WellKnownConnections &= ~(((FdMask)1) << unixDomainConnection);
-	    unixDomainConnection = open_unix_socket ();
-	    if (unixDomainConnection != -1)
-		WellKnownConnections |= (((FdMask)1) << unixDomainConnection);
+	    if (status == TRANS_RESET_FAILURE)
+	    {
+		/*
+		 * ListenTransConns[i] freed by xtrans.
+		 * Remove it from out list.
+		 */
+
+		WellKnownConnections &= ~(1L << ListenTransFds[i]);
+		ListenTransFds[i] = ListenTransFds[ListenTransCount - 1];
+		ListenTransConns[i] = ListenTransConns[ListenTransCount - 1];
+		ListenTransCount -= 1;
+		i -= 1;
+	    }
+	    else if (status == TRANS_RESET_NEW_FD)
+	    {
+		/*
+		 * A new file descriptor was allocated (the old one was closed)
+		 */
+
+		int newfd = _X11TransGetConnectionNumber (ListenTransConns[i]);
+
+		WellKnownConnections &= ~(1L << ListenTransFds[i]);
+		ListenTransFds[i] = newfd;
+		WellKnownConnections |= (1L << newfd);
+	    }
 	}
     }
-#endif /* UNIXCONN */
-
-#endif /* LOCALCONN */
-
 
     ResetAuthorization ();
     ResetHosts(display);
@@ -1486,21 +391,11 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     char *auth_proto, *auth_string;
     unsigned int proto_n, string_n;
 {
-    register OsCommPtr priv;
-    union {
-	struct sockaddr sa;
-#ifdef UNIXCONN
-	struct sockaddr_un un;
-#endif /* UNIXCONN */
-#ifdef TCPCONN
-	struct sockaddr_in in;
-#endif /* TCPCONN */
-#ifdef DNETCONN
-	struct sockaddr_dn dn;
-#endif /* DNETCONN */
-    } from;
-    int	fromlen = sizeof (from);
-    XID	 auth_id;
+    register OsCommPtr 	priv;
+    Xtransaddr		*from = NULL;
+    int 		family;
+    int			fromlen;
+    XID	 		auth_id;
 
     auth_id = CheckAuthorization (proto_n, auth_proto,
 				  string_n, auth_string, client);
@@ -1508,27 +403,37 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     priv = (OsCommPtr)client->osPrivate;
     if (auth_id == (XID) ~0L)
     {
-	if (getpeername (priv->fd, &from.sa, &fromlen) != -1)
+	if (_X11TransGetPeerAddr (priv->trans_conn,
+	    &family, &fromlen, &from) != -1)
 	{
-	    if (InvalidHost (&from.sa, fromlen))
-		AuthAudit(client->index, FALSE, &from.sa, fromlen,
-			  proto_n, auth_proto);
+	    if (InvalidHost ((struct sockaddr *) from, fromlen))
+		AuthAudit(client->index, FALSE,
+		    (struct sockaddr *) from, fromlen, proto_n, auth_proto);
 	    else
 	    {
 		auth_id = (XID) 0;
 		if (auditTrailLevel > 1)
-		    AuthAudit(client->index, TRUE, &from.sa, fromlen,
-			      proto_n, auth_proto);
+		    AuthAudit(client->index, TRUE,
+			(struct sockaddr *) from, fromlen,
+			proto_n, auth_proto);
 	    }
+
+	    free ((char *) from);
 	}
+
 	if (auth_id == (XID) ~0L)
 	    return "Client is not authorized to connect to Server";
     }
     else if (auditTrailLevel > 1)
     {
-	if (getpeername (priv->fd, &from.sa, &fromlen) != -1)
-	    AuthAudit(client->index, TRUE, &from.sa, fromlen,
+	if (_X11TransGetPeerAddr (priv->trans_conn,
+	    &family, &fromlen, &from) != -1)
+	{
+	    AuthAudit(client->index, TRUE, (struct sockaddr *) from, fromlen,
 		      proto_n, auth_proto);
+
+	    free ((char *) from);
+	}
     }
 
     priv->auth_id = auth_id;
@@ -1568,22 +473,6 @@ EstablishNewConnections(clientUnused, closure)
     register ClientPtr client;
     register OsCommPtr oc;
 
-#ifdef TCP_NODELAY
-    union {
-	struct sockaddr sa;
-#ifdef UNIXCONN
-	struct sockaddr_un un;
-#endif /* UNIXCONN */
-#ifdef TCPCONN
-	struct sockaddr_in in;
-#endif /* TCPCONN */
-#ifdef DNETCONN
-	struct sockaddr_dn dn;
-#endif /* DNETCONN */
-    } from;
-    int	fromlen;
-#endif /* TCP_NODELAY */
-
     readyconnections = (((FdMask)closure) & WellKnownConnections);
     if (!readyconnections)
 	return TRUE;
@@ -1601,51 +490,26 @@ EstablishNewConnections(clientUnused, closure)
     }
     while (readyconnections) 
     {
+	XtransConnInfo trans_conn, new_trans_conn;
+
 	curconn = ffs (readyconnections) - 1;
 	readyconnections &= ~(1 << curconn);
-	if ((newconn = accept (curconn,
-			      (struct sockaddr *) NULL, 
-			      (int *)NULL)) < 0) 
+
+	if ((trans_conn = lookup_trans_conn (curconn)) == NULL)
 	    continue;
-#ifdef TCP_NODELAY
-	fromlen = sizeof (from);
-	if (!getpeername (newconn, &from.sa, &fromlen))
-	{
-	    if (fromlen && (from.sa.sa_family == AF_INET)) 
-	    {
-		int mi = 1;
-		setsockopt (newconn, IPPROTO_TCP, TCP_NODELAY,
-			   (char *)&mi, sizeof (int));
-	    }
-	}
-#endif /* TCP_NODELAY */
-    /* ultrix reads hang on Unix sockets, hpux reads fail, AIX fails too */
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
-	(void) fcntl (newconn, F_SETFL, O_NONBLOCK);
-#else
-#ifdef FIOSNBIO
-	{
-	    int	arg;
-	    arg = 1;
-	    ioctl(newconn, FIOSNBIO, &arg);
-	}
-#else
-#if (defined(AIXV3) || defined(uniosu)) && defined(FIONBIO)
-	{
-	    int arg;
-	    arg = 1;
-	    ioctl(newconn, FIONBIO, &arg);
-	}
-#else
-	fcntl (newconn, F_SETFL, FNDELAY);
-#endif
-#endif
-#endif
+
+	if ((new_trans_conn = _X11TransAccept (trans_conn)) == NULL)
+	    continue;
+
+	newconn = _X11TransGetConnectionNumber (new_trans_conn);
+
+	_X11TransSetOption(new_trans_conn, TRANS_NONBLOCKING, 1);
+
 	oc = (OsCommPtr)xalloc(sizeof(OsCommRec));
 	if (!oc)
 	{
-	    ErrorConnMax(newconn);
-	    close(newconn);
+	    ErrorConnMax(new_trans_conn);
+	    _X11TransClose(new_trans_conn);
 	    continue;
 	}
 	if (GrabInProgress)
@@ -1659,6 +523,7 @@ EstablishNewConnections(clientUnused, closure)
 	    BITSET(AllSockets, newconn);
 	}
 	oc->fd = newconn;
+	oc->trans_conn = new_trans_conn;
 	oc->input = (ConnectionInputPtr)NULL;
 	oc->output = (ConnectionOutputPtr)NULL;
 	oc->conn_time = connect_time;
@@ -1669,7 +534,7 @@ EstablishNewConnections(clientUnused, closure)
 	}
 	else
 	{
-	    ErrorConnMax(newconn);
+	    ErrorConnMax(new_trans_conn);
 	    CloseDownFileDescriptor(oc);
 	}
     }
@@ -1684,9 +549,10 @@ EstablishNewConnections(clientUnused, closure)
  ************/
 
 static void
-ErrorConnMax(fd)
-    register int fd;
+ErrorConnMax(trans_conn)
+XtransConnInfo trans_conn;
 {
+    register int fd = _X11TransGetConnectionNumber (trans_conn);
     xConnSetupPrefix csp;
     char pad[3];
     struct iovec iov[3];
@@ -1703,7 +569,7 @@ ErrorConnMax(fd)
     BITSET(mask, fd);
     (void)select(fd + 1, (int *) mask, (int *) NULL, (int *) NULL, &waittime);
     /* try to read the byte-order of the connection */
-    (void)read(fd, &byteOrder, 1);
+    (void)_X11TransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B'))
     {
 	csp.success = xFalse;
@@ -1724,7 +590,7 @@ ErrorConnMax(fd)
 	iov[1].iov_base = NOROOM;
 	iov[2].iov_len = (4 - (csp.lengthReason & 3)) & 3;
 	iov[2].iov_base = pad;
-	(void)writev(fd, iov, 3);
+	(void)_X11TransWritev(trans_conn, iov, 3);
     }
 }
 
@@ -1739,13 +605,10 @@ CloseDownFileDescriptor(oc)
 {
     int connection = oc->fd;
 
-    close(connection);
+    _X11TransClose(oc->trans_conn);
     FreeOsBuffers(oc);
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
-#ifdef LOCALCONN
-    BITCLEAR(AllStreams, connection);
-#endif
     BITCLEAR(ClientsWithInput, connection);
     BITCLEAR(GrabImperviousClients, connection);
     if (GrabInProgress)
