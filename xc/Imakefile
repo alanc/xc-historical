@@ -3,6 +3,7 @@
 
       WORLDOPTS = -k
 BOOTSTRAPCFLAGS = 
+        CHECKFN = $(UTILSRC)/checkfn
 
 #if MakeContributed
     CONTRIBDIRS = $(CONTRIBSRC)
@@ -73,7 +74,7 @@ install::
 
 InstallManPage(X,$(MANDIR))
 
-# don't name your log file make.log when you run this ...
+/**/# don't name your log file make.log when you run this ...
 World::
 	cd $(IMAKESRC); $(MAKE) clean; $(MAKE) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(MV) Makefile Makefile.bak
@@ -90,3 +91,7 @@ Everything::
 	$(MAKE) Makefiles
 	$(MAKE) depend
 	$(MAKE) $(WORLDOPTS)
+
+/**/# this is used to make sure the distribution is okay.
+checkfilenames::  $(CHECKFN)/checkfn
+	find . -type d -exec $(CHECKFN)/find.sh $(CHECKFN)/checkfn {} \;
