@@ -1,4 +1,4 @@
-/* $XConsortium: XDrLines.c,v 11.14 90/12/26 10:06:54 rws Exp $ */
+/* $XConsortium: XDrLines.c,v 11.15 91/01/06 11:45:14 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -31,10 +31,8 @@ XDrawLines (dpy, d, gc, points, npoints, mode)
     req->drawable = d;
     req->gc = gc->gid;
     req->coordMode = mode;
-    if ((req->length + npoints) > (unsigned)65535)
-	npoints = 65535 - req->length; /* force BadLength, if possible */
-    req->length += npoints;
-       /* each point is 2 16-bit integers */
+    SetReqLen(req, npoints, 65535 - req->length);
+    /* each point is 2 16-bit integers */
     length = npoints << 2;		/* watch out for macros... */
     Data16 (dpy, (short *) points, length);
     UnlockDisplay(dpy);
