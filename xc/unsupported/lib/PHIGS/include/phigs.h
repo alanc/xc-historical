@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phigs.h,v 5.1 91/02/16 09:49:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -219,7 +219,7 @@ typedef enum {
     PSTYLE_SOLID,
     PSTYLE_PAT,
     PSTYLE_HATCH,
-    PSTYLE_EMPTY,
+    PSTYLE_EMPTY
 } Pint_style;
 
 typedef enum {
@@ -2005,7 +2005,7 @@ typedef enum {
 #define PHIGS_TOOL_BORDER_WIDTH (char *)PHG_TOOL_BORDER_WIDTH
 
     /* Phigs attributes start at 150 */
-    PHG_WS_CATEGORY	     = PHIGS_ATTR( PHG_ATTR_ENUM, PHIGS_FIRST_ATTR + 150),
+    PHG_WS_CATEGORY	     = PHIGS_ATTR( PHG_ATTR_ENUM, PHIGS_FIRST_ATTR + 150)
 #define PHIGS_WS_CATEGORY (char *)PHG_WS_CATEGORY
 
 } Phigs_ws_type_attr;

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phgargs.h,v 5.1 91/02/16 09:49:08 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -89,7 +89,7 @@ typedef enum {
     PHG_ARGS_VIEWREP,
     PHG_ARGS_DCUEREP,
     PHG_ARGS_LIGHTSRCREP,
-    PHG_ARGS_COLRMAPREP,
+    PHG_ARGS_COLRMAPREP
 } Phg_args_rep_type;
 
 typedef struct {
@@ -370,7 +370,7 @@ typedef struct {
 
 typedef enum {
     PHG_ARGS_CONF_ALL,
-    PHG_ARGS_CONF_NET,
+    PHG_ARGS_CONF_NET
 } Phg_args_conf_op;
 
 typedef struct {
