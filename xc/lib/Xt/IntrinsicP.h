@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.35 89/06/16 18:09:10 jim Exp $
+* $XConsortium: IntrinsicP.h,v 1.36 89/09/07 17:44:37 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -128,6 +128,34 @@ typedef struct _XtTMRec {
 				 (widget)->core.ancestor_sensitive)
 #define XtParent(widget)	((widget)->core.parent)
 #define XtName(widget)		(XrmQuarkToString((widget)->core.xrm_name))
+
+#undef XtIsRectObj
+#define XtIsRectObj(obj) \
+    (((Object)obj)->object.widget_class->core_class.class_inited & 0x02)
+
+#undef XtIsWidget
+#define XtIsWidget(obj) \
+    (((Object)obj)->object.widget_class->core_class.class_inited & 0x04)
+
+#undef XtIsComposite
+#define XtIsComposite(obj) \
+    (((Object)obj)->object.widget_class->core_class.class_inited & 0x08)
+
+#undef XtIsConstraint
+#define XtIsConstraint(obj) \
+    (((Object)obj)->object.widget_class->core_class.class_inited & 0x10)
+
+#undef XtIsShell
+#define XtIsShell(obj) \
+    (((Object)obj)->object.widget_class->core_class.class_inited & 0x20)
+
+#undef XtIsWMShell
+#define XtIsWMShell(obj) \
+    (((Object)obj)->object.widget_class->core_class.class_inited & 0x40)
+
+#undef XtIsTopLevelShell
+#define XtIsTopLevelShell(obj) \
+    (((Object)obj)->object.widget_class->core_class.class_inited & 0x80)
 
 #ifdef DEBUG
 #define XtCheckSubclass(w, widget_class_ptr, message)	\
