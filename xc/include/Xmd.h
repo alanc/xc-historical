@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.21 87/08/31 12:17:17 toddb Exp $ */
+/* $Header: Xmd.h,v 1.22 87/09/07 18:07:40 swick Locked $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -31,7 +31,7 @@ SOFTWARE.
 /*
  * ibm pcc doesn't understand pragmas.
  */
-#if defined(ibm032) && !defined(_pcc_)
+#if defined(RtArchitecture) && defined(__HIGHC__)
 pragma on(pointers_compatible);
 pragma off(char_default_unsigned);
 #endif
