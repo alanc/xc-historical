@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.98 89/09/28 17:11:47 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.99 89/10/03 08:30:22 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -853,23 +853,20 @@ static Widget FindFocusWidget(widget)
 #undef CACHESIZE
 }
 
-void DispatchToSpringLoaded(event, widget, mask)
-    XEvent  *event;
-    Widget widget;
-    EventMask   mask;
+static Widget LookupSpringLoaded()
 {
     register    GrabList gl;
 
     for (gl = grabList; gl != NULL; gl = gl->next) {
-	if (gl->spring_loaded) {
-	    if (gl->widget != widget) {
-		/* ||| Should this test for sensitive? */
-		DispatchEvent(event, gl->widget, mask);
-	    }
-	    break;
+	if (gl->spring_loaded)
+	    if (XtIsSensitive(gl->widget))
+		return gl->widget;
+	    else
+		return NULL;
 	}
 	if (gl->exclusive) break;
     }
+    return NULL;
 }
 
 static void DecideToDispatch(event)
@@ -909,7 +906,8 @@ static void DecideToDispatch(event)
 	if (grabType != remap) return;
 	/* event occurred in a non-widget window, but we've promised also
 	   to dispatch it to the nearest accessible spring_loaded widget */
-	DispatchToSpringLoaded(event, widget, mask);
+	else if ((widget = LookupSpringLoaded()) != NULL)
+	    DispatchEvent(event, widget, mask);
 	return;
     }
 
@@ -932,14 +930,18 @@ static void DecideToDispatch(event)
 	    if (IsKeyEvent) dspWidget = FindFocusWidget(widget);
 	    else dspWidget = widget;
 
+	    /* fetch this first in case the modal list changes */
+	    widget = LookupSpringLoaded();
+
 	    if ((grabList == NULL || OnGrabList(dspWidget)) &&
 		    XtIsSensitive(dspWidget)) {
 		DispatchEvent(event, dspWidget, mask);
 	    }
 
-	    /* Also dispatch to nearest accessible spring_loaded.  Note we
-	       use widget here, not dspWidget */
-	    DispatchToSpringLoaded(event, widget, mask);
+	    /* Also dispatch to nearest accessible spring_loaded. */
+	    if (widget != dspWidget)
+		DispatchEvent(event, widget, mask);
+
 	    return;
 
 #undef IsKeyEvent
