@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuWrite.c,v 1.2 88/12/08 16:40:29 keith Exp $
+ * $XConsortium: AuWrite.c,v 1.3 90/12/26 09:52:22 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,7 +18,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xauth.h"
+#include <X11/Xauth.h>
 
 write_short (s, file)
 unsigned short	s;

@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuRead.c,v 1.3 89/11/19 13:10:23 rws Exp $
+ * $XConsortium: AuRead.c,v 1.4 91/01/05 17:23:35 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,7 +18,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xauth.h"
+#include <X11/Xauth.h>
 
 static
 read_short (shortp, file)

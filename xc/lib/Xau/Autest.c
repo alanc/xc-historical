@@ -1,4 +1,4 @@
-# include   "Xauth.h"
+#include <X11/Xauth.h>
 
 main (argc, argv)
 char	**argv;

@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetBest.c,v 1.2 90/12/12 09:30:39 rws Exp $
+ * $XConsortium: AuGetBest.c,v 1.3 90/12/21 13:15:27 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,8 +18,8 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-# include "Xauth.h"
-# include <X11/Xos.h>
+#include <X11/Xauth.h>
+#include <X11/Xos.h>
 
 static
 binaryEqual (a, b, len)

@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: $
+ * $XConsortium: AuFileName.c,v 1.1 88/11/22 15:27:20 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,7 +18,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xauth.h"
+#include <X11/Xauth.h>
 
 char *
 XauFileName ()

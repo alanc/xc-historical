@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Dispose.c,v 1.1 88/11/22 15:27:19 jim Exp $
+ * $XConsortium: AuDispose.c,v 1.2 88/11/22 15:38:41 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,7 +18,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-# include   "Xauth.h"
+#include <X11/Xauth.h>
 
 void
 XauDisposeAuth (auth)

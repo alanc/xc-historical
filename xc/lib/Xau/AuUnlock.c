@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuUnlock.c,v 1.2 89/12/12 17:15:17 rws Exp $
+ * $XConsortium: AuUnlock.c,v 1.3 90/12/12 09:30:46 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,10 +18,14 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-# include   "Xauth.h"
-# include   <sys/types.h>
-# include   <sys/stat.h>
-# include   <sys/errno.h>
+#include <X11/Xauth.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifdef _POSIX_SOURCE
+#include <errno.h>
+#else
+#include <sys/errno.h>
+#endif
 
 #if NeedFunctionPrototypes
 XauUnlockAuth (
