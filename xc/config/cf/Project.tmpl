@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.245 94/10/04 18:43:14 gildea Exp gildea $
+XCOMM $XConsortium: Project.tmpl,v 1.246 94/12/27 03:57:50 gildea Exp gildea $
 
 /***************************************************************************
  *                                                                         *
@@ -1084,11 +1084,11 @@ clean::									@@\
 
 #ifndef MakeLatexDoc
 #if HasLatex
-#define MakeLatexDoc(file,srcs) 					@@\
+#define MakeLatexDoc(file,src)	 					@@\
 all:: file.PS								@@\
 									@@\
-file.dvi: srcs  							@@\
-	$(LATEX) srcs							@@\
+file.dvi: src	  							@@\
+	$(LATEX) src							@@\
 									@@\
 file.PS: file.dvi							@@\
 	$(DVIPS) -o file.nPS file && $(MV) file.nPS $@			@@\
@@ -1097,9 +1097,9 @@ clean:: 								@@\
 	RemoveFiles(file.nPS file.PS file.dvi file.log)			@@\
 	RemoveFiles(file.aux file.toc file.lof file.lot)
 #else /* HasLatex */
-#define MakeLatexDoc(file,srcs) 					@@\
+#define MakeLatexDoc(file,src)	 					@@\
 all::									@@\
-file.PS: srcs								@@\
+file.PS: src								@@\
 	@echo "cannot make file.PS: no latex on this system"; exit 1
 #endif /* HasLatex (else) */
 #endif /* MakeLatexDoc */
