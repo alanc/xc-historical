@@ -564,9 +564,13 @@ supports several mechanisms for storing default values for program resources
 Resources are specified as strings of the form 
 .sp
 .ce 1
-\fIname*subname*subsubname...: value\fP
+\fIappname*subname*subsubname...: value\fP
 .sp
-that are read in from various places when an application is run.
+that are read in from various places when an application is run.  By
+convention, the application name is the same as the program name, but with 
+the first letter capitalized (e.g. \fIBitmap\fP or \fIEmacs\fP) although
+some programs that begin with the letter ``x'' also capitalize the second
+letter for historical reasons.
 The \fIXlib\fP routine
 .I XGetDefault(3X)
 and the resource utilities within the X Toolkit
