@@ -1,3 +1,5 @@
+#include <Library.tmpl>
+
 INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
 SRCS = XAllowDv.c \
 		  XChgFCtl.c \

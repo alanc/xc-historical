@@ -1,3 +1,5 @@
+#include <Library.tmpl>
+
 #if HasInputExtension
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
