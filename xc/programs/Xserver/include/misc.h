@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.55 90/05/15 12:28:59 keith Exp $ */
+/* $XConsortium: misc.h,v 1.56 91/01/10 18:28:00 rws Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -33,8 +33,10 @@ SOFTWARE.
 extern unsigned long globalSerialNumber;
 extern unsigned long serverGeneration;
 
+#include <X11/Xosdefs.h>
+
 #ifndef NULL
-#if __STDC__ && !NOSTDHDRS
+#ifndef X_NOT_STDC_ENV
 #include <stddef.h>
 #else
 #define NULL            0
