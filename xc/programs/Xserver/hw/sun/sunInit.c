@@ -243,16 +243,18 @@ short *pheight;
       case TileShape:
       case StippleShape:
 	  width = *pwidth;
-	  /* Return the closes power of two not less than what they gave me */
-	  test = 0x80000000;
-	  /* Find the highest 1 bit in the width given */
-	  while(!(test & width))
-	     test >>= 1;
-	  /* If their number is greater than that, bump up to the next
-	   *  power of two */
-	  if((test - 1) & width)
-	     test <<= 1;
-	  *pwidth = test;
+	  if (width > 0) {
+	      /* Return the closes power of two not less than what they gave me */
+	      test = 0x80000000;
+	      /* Find the highest 1 bit in the width given */
+	      while(!(test & width))
+		 test >>= 1;
+	      /* If their number is greater than that, bump up to the next
+	       *  power of two */
+	      if((test - 1) & width)
+		 test <<= 1;
+	      *pwidth = test;
+	  }
 	  /* We don't care what height they use */
 	  break;
     }
