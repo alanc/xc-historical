@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.11 89/02/21 18:48:22 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.12 89/02/26 12:14:03 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -249,19 +249,22 @@ tags::									@@\
 	$(TAGS) -w *.[ch]						@@\
 	$(TAGS) -xw *.[ch] > TAGS
 
-#define	MakefileTarget()						@@\
+#define	BuildMakefileTarget(imakefile,imakeflags)			@@\
 Makefile:: $(IMAKE)							@@\
 									@@\
-Makefile:: Imakefile $(ICONFIGFILES)					@@\
+Makefile:: imakefile $(ICONFIGFILES)					@@\
 	-@if [ -f Makefile ]; then \					@@\
 		echo "$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
 		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
 	else exit 0; fi							@@\
-	$(IMAKE_CMD) -DTOPDIR=$(TOP)					@@\
+	$(IMAKE_CMD) -DTOPDIR=$(TOP) imakeflags				@@\
 									@@\
 $(IMAKE):								@@\
 	@echo "making $@"; \						@@\
 	cd $(IMAKESRC); $(MAKE) BOOTSTRAPCFLAGS=$(BOOTSTRAPCFLAGS)
+
+#define MakefileTarget()						@@\
+BuildMakefileTarget(Imakefile,/**/)
 
 /*
  * for objects in libraries

@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.23 89/02/24 13:37:06 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.24 89/02/26 12:14:05 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -457,7 +457,11 @@
 emptyrule::
 
 CleanTarget()
+
+#ifndef IHaveSpecialMakefileTarget
 MakefileTarget()
+#endif
+
 TagsTarget()
 
 #ifdef IHaveSubdirs

@@ -1,0 +1,17 @@
+/*
+ * $XConsortium$
+ *
+ * This Imakefile has a special name because cpp would otherwise always
+ * include it instead of the Imakefile in the individual directories.
+ */
+
+CONFIG_FILES = Imake.rules Imake.tmpl Project.tmpl site.def \
+        rtcchack.bac /**/*.cf
+
+all::
+
+MakeDirectories(install,$(CONFIGDIR))
+InstallMultipleDestFlags(install,$(CONFIG_FILES),$(CONFIGDIR),$(INSTDATFLAGS))
+
+#define IHaveSpecialMakefileTarget
+BuildMakefileTarget(Imake.file, -fImake.file)
