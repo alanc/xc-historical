@@ -1,6 +1,4 @@
-/*
- * $XConsortium: Grip.h,v 1.16 91/07/21 18:53:27 gildea Exp $
- */
+/* $XConsortium: Grip.h,v 1.17 91/07/21 19:39:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -51,9 +49,12 @@ SOFTWARE.
  borderWidth	     BorderWidth	Dimension	0
  callback	     Callback		Pointer		GripAction
  cursor		     Cursor		Cursor		None
+ cursorName	     Cursor		String		NULL
  destroyCallback     Callback		Pointer		NULL
  height		     Height		Dimension	8
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ pointerColor	     Foreground		Pixel		XtDefaultForeground
+ pointerColorBackground Background	Pixel		XtDefaultBackground
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	8
  x		     Position		Position	0
