@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.22 90/10/07 20:49:30 rws Exp $
+ * $XConsortium: Quarks.c,v 1.24 90/10/20 15:08:27 rws Exp $
  */
 
 /***********************************************************
@@ -199,8 +199,6 @@ XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
     register char *s1, *s2;
     char *new;
 
-    if (!len)
-	return (NULLQUARK);
     rehash = 0;
     idx = HASH(sig);
     while (entry = quarkTable[idx]) {
