@@ -1,7 +1,7 @@
 /* 
- * $Locker:  $ 
+ * $Locker: rws $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.12 87/09/09 20:25:09 rws Exp $";
+static char	*rcsid = "$Header: xwud.c,v 1.13 87/09/11 16:55:38 rws Locked $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.12 87/09/09 20:25:09 rws Exp $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.12 87/09/09 20:25:09 rws Exp $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.13 87/09/11 16:55:38 rws Locked $";
 #endif
 
 #include <X11/Xlib.h>
@@ -78,6 +78,7 @@ main(argc, argv)
 
     XColor *colors;
     Window image_win;
+    int win_depth;
     Colormap colormap;
     XEvent event;
     register XExposeEvent *expose = (XExposeEvent *)&event;
@@ -233,12 +234,18 @@ main(argc, argv)
 			    VisualColormapSizeMask|VisualBitsPerRGBMask,
 			    &vinfo,
 			    &j);
-    if (j == 0) {
+    if (j > 0) {
+        visual = vinfos[0].visual;
+	win_depth = vinfo.depth;
+    } else if (header.pixmap_depth == 1) {
+        visual = DefaultVisual(dpy, screen);
+	win_depth = DefaultDepth(dpy, screen);
+	image.format = XYBitmap;
+    } else {
 	fprintf(stderr, "xwud: could not find matching visual.\n");
 	Error("exiting.");
     }
     
-    visual = vinfos[0].visual;
     /* XXX */
     if (visual == DefaultVisual(dpy, screen))
         colormap = DefaultColormap(dpy, screen);
@@ -270,7 +277,7 @@ main(argc, argv)
 	RootWindow(dpy, screen),
 	header.window_x, header.window_y,
 	header.pixmap_width, header.pixmap_height,
-	0, header.pixmap_depth, InputOutput, visual,
+	0, win_depth, InputOutput, visual,
 	CWOverrideRedirect|CWBackPixel|CWColormap, &attributes);
 
     if (!image_win) Error("Can't create image window.");
