@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 91/09/18 14:29:40 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 92/06/28 17:48:35 rws Exp $
 #define DoNormalLib NormalOldLibX
 #define DoSharedLib SharedOldLibX
 #define DoDebugLib DebugOldLibX
@@ -18,7 +18,7 @@ REQUIREDLIBS = SharedOldXReqs
         HEADERS = X10.h
        LINTLIBS =
 
-OBJS =\
+OBJS = \
 	XDraw.o \
 	XCrAssoc.o \
 	XDelAssoc.o \
