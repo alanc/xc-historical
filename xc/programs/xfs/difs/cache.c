@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cache.c,v 1.4 91/05/13 16:53:18 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -77,6 +77,7 @@ CacheInit(maxsize)
     cache->buckets = INITBUCKETS;
     cache->hashsize = INITHASHSIZE;
     cache->maxsize = maxsize;
+    cache->cursize = 0;
     cache->nextid = id << ENTRYOFFSET;
     cache->id = id;
     num_caches++;
@@ -90,6 +91,16 @@ hash(cid)
     CachePtr    cache = caches[CACHE_ID(cid)];
 
     switch (cache->hashsize) {
+#ifdef DEBUG	/* only need this if INITHASHSIZE < 6 */
+    case 2:
+	return ((int) (0x03 & (cid ^ (cid >> 2) ^ (cid >> 8))));
+    case 3:
+	return ((int) (0x07 & (cid ^ (cid >> 3) ^ (cid >> 9))));
+    case 4:
+	return ((int) (0x0F & (cid ^ (cid >> 4) ^ (cid >> 10))));
+    case 5:
+	return ((int) (0x01F & (cid ^ (cid >> 5) ^ (cid >> 11))));
+#endif
     case 6:
 	return ((int) (0x03F & (cid ^ (cid >> 6) ^ (cid >> 12))));
     case 7:
@@ -170,6 +181,7 @@ CacheReset()
 		(*cp->free_func) (cp->id, cp->data, CacheWasReset);
 		fsfree(cp);
 	    }
+	    cache->entries[i] = (CacheEntryPtr) 0;
 	}
 	assert(cache->cursize == 0);
     }
@@ -180,21 +192,42 @@ flush_cache(cache, needed)
     CachePtr    cache;
     unsigned long needed;
 {
+/* XXX -- try to set oldprev properly inside search loop */
     CacheEntryPtr cp,
                 oldest,
-               *oldprev,
-               *prev;
+               *oldprev;
+    int         oldbucket,
+                i;
 
     while ((cache->cursize + needed) > cache->maxsize) {
-	oldprev = cache->entries;
-	oldest = *oldprev;
-	for (prev = &oldest->next; cp = *prev; prev = &cp->next) {
+	oldest = (CacheEntryPtr) 0;
+	/* find oldest */
+	for (i = 0; i < cache->buckets; i++) {
+	    cp = cache->entries[i];
+	    if (!cp)
+		continue;
+	    if (!oldest) {
+		oldbucket = i;
+		oldest = cp;
+	    }
+	    while (cp) {
 	    if (cp->timestamp < oldest->timestamp) {
 		oldest = cp;
-		oldprev = prev;
+		    oldbucket = i;
+	    }
+		cp = cp->next;
+	}
+	}
+	/* fixup list */
+	oldprev = &cache->entries[oldbucket];
+	cp = *oldprev;
+	for (; cp = *oldprev; oldprev = &cp->next) {
+	    if (cp == oldest) {
+	*oldprev = oldest->next;
+		break;
 	    }
 	}
-	*oldprev = oldest->next;
+	/* clobber it */
 	cache->elements--;
 	cache->cursize -= oldest->size;
 	(*oldest->free_func) (oldest->id, oldest->data, CacheEntryOld);
@@ -202,8 +235,24 @@ flush_cache(cache, needed)
     }
 }
 
+void
+CacheResize(cid, newsize)
+    Cache       cid;
+{
+    CachePtr    cache = caches[cid];
+
+    if (!cache)
+    	return;
+
+    if (newsize < cache->maxsize) {
+	/* have to toss some stuff */
+	flush_cache(cache, cache->maxsize - newsize);
+    }
+    cache->maxsize = newsize;
+}
+
 CacheID
-cache_store_memory(cid, data, size, free_func)
+CacheStoreMemory(cid, data, size, free_func)
     Cache       cid;
     pointer     data;
     unsigned long size;
