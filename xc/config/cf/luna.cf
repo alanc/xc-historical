@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.14 91/07/02 00:09:27 xguest Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.15 91/07/03 15:40:50 rws Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -6,15 +6,15 @@ XCOMM platform:  $XConsortium: luna.cf,v 1.14 91/07/02 00:09:27 xguest Exp $
 
 #ifdef Mc68000Architecture
 # ifdef luna2
-#define OSName            Mach 2.5 Vers 1.20
+#define OSName            Mach 2.5 Vers 1.40
 #define OSMajorVersion    1
-#define OSMinorVersion    20
+#define OSMinorVersion    40
 # else 
-#define OSName            UNIOS-B 4.3BSD UNIX: 1.70
-#define OSMajorVersion    1
-#define OSMinorVersion    70
+#define OSName            UNIOS-B 4.3BSD UNIX: 2.00
+#define OSMajorVersion    2
+#define OSMinorVersion    0
 #define DirFailPrefix -
-# endif /* uniosb */
+# endif
 #else  /* Mc88000Architecture */
 #define OSName            Mach 2.5 Vers 1.13
 #define OSMajorVersion    1
@@ -33,16 +33,16 @@ XCOMM operating system:  OSName
 #ifdef Mc68000Architecture
 #ifdef	luna2
 #define StandardDefines         -DXML
-#if ((OSMajorVersion <= 1) && (OSMinorVersion <= 20))
+#if ((OSMajorVersion <= 1) && (OSMinorVersion < 40))
 #define ServerOSDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
 #endif
 #else	/* luna1 */
-#if ((OSMajorVersion <= 1) && (OSMinorVersion <= 60)
+#if ((OSMajorVersion <= 1) && (OSMinorVersion <= 60))
 #define StandardDefines         -Dluna -Duniosb -DXML
 #else
 #define StandardDefines         -DXML
 #endif
-#if ((OSMajorVersion <= 1) && (OSMinorVersion <= 70))
+#if ((OSMajorVersion < 2) || ((OSMajorVersion == 2) && (OSMinorVersion < 1)))
 #define ServerOSDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
 #endif
 #endif	/* luna2 */
