@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.88 94/02/04 22:12:44 rws Exp $
+ *	$XConsortium: Xproto.h,v 1.89 94/04/17 20:10:52 rws Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -1295,7 +1295,7 @@ typedef union {
 
 /* Request structure */
 
-typedef struct {
+typedef struct _xReq {
 	CARD8 reqType;
 	CARD8 data;            /* meaning depends on request type */
 	CARD16 length B16;         /* length in 4 bytes quantities 

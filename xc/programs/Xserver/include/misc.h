@@ -66,7 +66,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.67 94/03/21 15:38:48 dpw Exp $ */
+/* $XConsortium: misc.h,v 1.68 94/04/17 20:25:48 dpw Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -123,6 +123,13 @@ typedef struct _Font *FontPtr; /* also in fonts/include/font.h */
 typedef struct _Client *ClientPtr; /* also in dix.h */
 #define _XTYPEDEF_CLIENTPTR
 #endif
+
+#ifndef _XTYPEDEF_CALLBACKLISTPTR
+typedef struct _CallbackList *CallbackListPtr; /* also in dix.h */
+#define _XTYPEDEF_CALLBACKLISTPTR
+#endif
+
+typedef struct _xReq *xReqPtr;
 
 #include "os.h" 	/* for ALLOCATE_LOCAL and DEALLOCATE_LOCAL */
 #include <X11/Xfuncs.h> /* for bcopy, bzero, and bcmp */

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.63 94/09/16 19:01:02 kaleb Exp kaleb $ */
+/* $XConsortium: os.h,v 1.64 95/01/05 19:50:01 kaleb Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -653,5 +653,52 @@ extern int ddxProcessArgument(
     int /*i*/
 #endif
 );
+
+/*
+ *  idiom processing stuff
+ */
+
+xReqPtr PeekNextRequest(
+#if NeedFunctionPrototypes
+    xReqPtr req, ClientPtr client, Bool readmore
+#endif
+);
+
+void SkipRequests(
+#if NeedFunctionPrototypes
+    xReqPtr req, ClientPtr client, int numskipped
+#endif
+);
+
+/* int ReqLen(xReq *req, ClientPtr client)
+ * Given a pointer to a *complete* request, return its length in bytes.
+ * Note that if the request is a big request (as defined in the Big
+ * Requests extension), the macro lies by returning 4 less than the
+ * length that it actually occupies in the request buffer.  This is so you
+ * can blindly compare the length with the various sz_<request> constants
+ * in Xproto.h without having to know/care about big requests.
+ */
+#define ReqLen(_pxReq, _client) \
+ ((_pxReq->length ? \
+     (_client->swapped ? lswaps(_pxReq->length) : _pxReq->length) \
+  : ((_client->swapped ? \
+	lswapl(((CARD32*)_pxReq)[1]) : ((CARD32*)_pxReq)[1])-1) \
+  ) << 2)
+
+/* otherReqTypePtr CastxReq(xReq *req, otherReqTypePtr)
+ * Cast the given request to one of type otherReqTypePtr to access
+ * fields beyond the length field.
+ */
+#define CastxReq(_pxReq, otherReqTypePtr) \
+    (_pxReq->length ? (otherReqTypePtr)_pxReq \
+		    : (otherReqTypePtr)(((CARD32*)_pxReq)+1))
+
+/* stuff for SkippedRequestsCallback */
+extern CallbackListPtr SkippedRequestsCallback;
+typedef struct {
+    xReqPtr req;
+    ClientPtr client;
+    int numskipped;
+} SkippedRequestInfoRec;
 
 #endif /* OS_H */

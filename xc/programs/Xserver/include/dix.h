@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.83 94/12/02 16:31:32 mor Exp $ */
+/* $XConsortium: dix.h,v 1.83 94/12/02 19:16:33 mor Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -557,7 +557,10 @@ extern Bool AllocateClientPrivate(
  *  callback manager stuff
  */
 
-typedef struct _CallbackList *CallbackListPtr;
+#ifndef _XTYPEDEF_CALLBACKLISTPTR
+typedef struct _CallbackList *CallbackListPtr; /* also in misc.h */
+#define _XTYPEDEF_CALLBACKLISTPTR
+#endif
 
 typedef void (*CallbackProcPtr) (
 #if NeedNestedPrototypes
