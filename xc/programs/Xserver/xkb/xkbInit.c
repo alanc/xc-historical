@@ -1,4 +1,4 @@
-/* $XConsortium: xkbInit.c,v 1.7 93/09/29 20:53:34 rws Exp $ */
+/* $XConsortium: xkbUtils.c,v 1.7 93/09/29 20:53:34 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -53,153 +53,29 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /***====================================================================***/
 
-#define	KT_1LEVEL_KEY		0
-#define	KT_2LEVEL_KEY		1
-#define	KT_KEYPAD_KEY		2
-#define	KT_3LEVEL_KEY		3
-#define	KT_PC_BREAK_KEY		4
-#define	KT_PC_SYSRQ_KEY		5
-#define	KT_COUNT		6
-
-#define	NUM_LOCK_VMOD_INDEX	0
-#define	MODE_SWITCH_VMOD_INDEX	1
-#define	LEVEL_THREE_VMOD_INDEX	2
-#define	SCROLL_LOCK_VMOD_INDEX	3
-
-#define	NUM_LOCK_VMOD_MASK	(1<<NUM_LOCK_VMOD_INDEX)
-#define	MODE_SWITCH_VMOD_MASK	(1<<MODE_SWITCH_VMOD_INDEX)
-#define	LEVEL_THREE_VMOD_MASK	(1<<LEVEL_THREE_VMOD_INDEX)
-#define	SCROLL_LOCK_VMOD_MASK	(1<<SCROLL_LOCK_VMOD_INDEX)
-
-#define	NUM_LOCK_MOD_INDEX	Mod4MapIndex
-#define	MODE_SWITCH_MOD_INDEX	Mod3MapIndex
-#define	LEVEL_THREE_MOD_INDEX	Mod3MapIndex
-#define	SCROLL_LOCK_MOD_INDEX	XkbNoModifier
-
-#define	NUM_LOCK_MOD_MASK	Mod4Mask
-#define	MODE_SWITCH_MOD_MASK	Mod3Mask
-#define	LEVEL_THREE_MOD_MASK	Mod3Mask
-#define	SCROLL_LOCK_MOD_MASK	XkbNoModifierMask
-
 char	*XkbBaseDirectory=	NULL;
 char	*XkbInitialMap=		NULL;
+int	 XkbWantAccessX=	0;	
+
+
+#if defined(luna)
+#define	XKB_DDX_PERMANENT_LOCK	1
+#endif
+#define XKB_IN_SERVER
+#include "xkbDflts.h"
 
 static void
 XkbInitKeyTypes(xkb)
     XkbSrvInfoRec *xkb;
 {
-XkbKeyTypeRec	*kt;
-XkbDescRec	*desc = &xkb->desc;
+register int	 i;
+XkbClientMapPtr	map;
 
-    if (desc->map->num_types>0)
-	return;
-
-    desc->map->types=(XkbKeyTypeRec*)Xcalloc(KT_COUNT*sizeof(XkbKeyTypeRec));
-    if (!desc->map->types) {
-	desc->map->num_types = 0;
-	return;
-    }
-
-    desc->map->num_types = KT_COUNT;
-    kt = &desc->map->types[KT_1LEVEL_KEY];
-    kt->mask = 0;
-    kt->group_width = 1;
-    kt->real_mods = 0;
-    kt->vmods = 0;
-    kt->map_count = 0;
-    kt->map = NULL;
-    kt->preserve= NULL;
-    kt->free = 0;
-
-    kt = &desc->map->types[KT_2LEVEL_KEY];
-    kt->mask = ShiftMask;
-    kt->real_mods = ShiftMask;
-    kt->group_width = 2;
-    kt->vmods= 0;
-    kt->map_count= 1;
-    kt->map=(XkbKTMapEntryPtr)Xcalloc(kt->map_count*sizeof(XkbKTMapEntryRec));
-    kt->map[0].active= 	    1;
-    kt->map[0].mask= 	    ShiftMask;
-    kt->map[0].level=       1;
-    kt->map[0].vmods= 0;
-    kt->map[0].real_mods=    ShiftMask;
-    kt->preserve= NULL;
-    kt->free = XkbNoFreeKTStruct;
-
-    kt = &desc->map->types[KT_KEYPAD_KEY];
-    kt->mask = ShiftMask;
-    kt->real_mods = ShiftMask;
-    kt->group_width = 2;
-    kt->vmods = NUM_LOCK_VMOD_MASK;
-    kt->map_count = 2;
-    kt->map=(XkbKTMapEntryPtr)Xcalloc(kt->map_count*sizeof(XkbKTMapEntryRec));
-    kt->map[0].active= 	    1;
-    kt->map[0].mask= 	    ShiftMask;
-    kt->map[0].level=       1;
-    kt->map[0].vmods= 0;
-    kt->map[0].real_mods=    ShiftMask;
-    kt->map[1].active= 	    1;
-    kt->map[1].mask=        NUM_LOCK_MOD_MASK;
-    kt->map[1].level=       1;
-    kt->map[1].vmods= NUM_LOCK_VMOD_MASK;
-    kt->map[1].real_mods=    0;
-    kt->preserve= NULL;
-    kt->free = XkbNoFreeKTStruct;
-
-    kt = &desc->map->types[KT_3LEVEL_KEY];
-    kt->mask = ShiftMask;
-    kt->real_mods = ShiftMask;
-    kt->group_width = 3;
-    kt->vmods = LEVEL_THREE_VMOD_MASK;
-    kt->map_count = 3;
-    kt->map=(XkbKTMapEntryPtr)Xcalloc(kt->map_count*sizeof(XkbKTMapEntryRec));
-    kt->map[0].active= 	    1;
-    kt->map[0].mask=        ShiftMask;
-    kt->map[0].level=       1;
-    kt->map[0].vmods= 0;
-    kt->map[0].real_mods=    ShiftMask;
-    kt->map[1].active= 	    1;
-    kt->map[1].mask=        LEVEL_THREE_MOD_MASK;
-    kt->map[1].level=       2;
-    kt->map[1].vmods= LEVEL_THREE_VMOD_MASK;
-    kt->map[1].real_mods=    0;
-    kt->map[2].active= 	    1;
-    kt->map[2].mask=        ShiftMask|LEVEL_THREE_VMOD_MASK;
-    kt->map[2].vmods= LEVEL_THREE_VMOD_MASK;
-    kt->map[2].level=       2;
-    kt->map[2].real_mods=    ShiftMask;
-    kt->preserve= NULL;
-    kt->free = XkbNoFreeKTStruct;
-
-    kt = &desc->map->types[KT_PC_BREAK_KEY];
-    kt->mask = ControlMask;
-    kt->real_mods = ControlMask;
-    kt->group_width = 2;
-    kt->vmods = 0;
-    kt->map_count= 1;
-    kt->map=(XkbKTMapEntryPtr)Xcalloc(kt->map_count*sizeof(XkbKTMapEntryRec));
-    kt->map[0].active= 	    1;
-    kt->map[0].mask=        ControlMask;
-    kt->map[0].vmods= 0;
-    kt->map[0].real_mods=    ControlMask;
-    kt->map[0].level=       1;
-    kt->preserve= NULL;
-    kt->free = XkbNoFreeKTStruct;
-
-    kt = &desc->map->types[KT_PC_SYSRQ_KEY];
-    kt->mask = Mod1Mask;
-    kt->real_mods = Mod1Mask;
-    kt->group_width = 2;
-    kt->vmods= 0;
-    kt->map_count= 1;
-    kt->map=(XkbKTMapEntryPtr)Xcalloc(kt->map_count*sizeof(XkbKTMapEntryRec));
-    kt->map[0].active= 	    1;
-    kt->map[0].mask=        Mod1Mask;
-    kt->map[0].vmods= 0;
-    kt->map[0].real_mods=    Mod1Mask;
-    kt->map[0].level=       1;
-    kt->preserve= NULL;
-    kt->free = XkbNoFreeKTStruct;
+    map= xkb->desc.map;
+    map->size_types= num_dflt_types;
+    map->num_types= num_dflt_types;
+    map->types= dflt_types;
+    initTypeNames(NULL);
     return;
 }
 
@@ -218,7 +94,7 @@ int	nKeys= xkb->desc.max_key_code-xkb->desc.min_key_code+1;
 	XkbSymMapRec *symMap= &map->key_sym_map[xkb->desc.min_key_code];
 	map->syms[0]= NoSymbol;
 	for (i=0;i<nKeys;symMap++,i++) {
-	    symMap->kt_index = KT_1LEVEL_KEY;
+	    symMap->kt_index = XkbOneLevelIndex;
 	    symMap->group_info = XkbSetGroupInfo(0,FALSE);
 	    symMap->offset = 0;
 	}
@@ -284,10 +160,6 @@ XkbRadioGroupRec	*grp;
 #endif
 }
 
-#if defined(luna)
-#define	XKB_DDX_PERMANENT_LOCK	1
-#endif
-#include "xkbDflts.h"
 
 static void
 XkbInitCompatStructs(xkb)
@@ -306,7 +178,7 @@ XkbCompatRec	*compat;
 	compat->vmod_compat[i].mods = 0;
 	compat->vmod_compat[i].groups = 0;
     }
-    compat->vmod_compat[MODE_SWITCH_VMOD_INDEX].groups= 0xfe;
+    compat->vmod_compat[vmod_AltGr].groups= 0xfe;
 
     compat->num_si= 0;
     compat->sym_interpret = (XkbSymInterpretRec *)Xcalloc(sizeof(dfltSI));
@@ -342,64 +214,12 @@ register int	i;
     names->mods[5] = CREATE_ATOM("Mod3");
     names->mods[6] = CREATE_ATOM("Mod4");
     names->mods[7] = CREATE_ATOM("Mod5");
-    names->vmods[NUM_LOCK_VMOD_INDEX]= CREATE_ATOM("Num Lock");
-    names->vmods[MODE_SWITCH_VMOD_INDEX]= CREATE_ATOM("Mode Switch");
-    names->vmods[LEVEL_THREE_VMOD_INDEX]= CREATE_ATOM("Level Three");
-    names->vmods[SCROLL_LOCK_VMOD_INDEX]= CREATE_ATOM("Scroll Lock");
+    names->vmods[vmod_NumLock]= CREATE_ATOM("Num Lock");
+    names->vmods[vmod_AltGr]= CREATE_ATOM("Mode Switch");
+    names->vmods[vmod_LevelThree]= CREATE_ATOM("Level Three");
     names->indicators[4] = CREATE_ATOM("Caps Lock");
     names->indicators[5] = CREATE_ATOM("Num Lock");
     names->indicators[6] = CREATE_ATOM("Scroll Lock");
-    if (map->types) {
-	Atom *levelNames;
-	map->types[KT_1LEVEL_KEY].name= CREATE_ATOM("ONE_LEVEL");
-	map->types[KT_2LEVEL_KEY].name= CREATE_ATOM("TWO_LEVEL");
-	map->types[KT_KEYPAD_KEY].name= CREATE_ATOM("KEYPAD");
-	map->types[KT_3LEVEL_KEY].name= CREATE_ATOM("THREE_LEVEL");
-	map->types[KT_PC_BREAK_KEY].name= CREATE_ATOM("PC_BREAK");
-	map->types[KT_PC_SYSRQ_KEY].name= CREATE_ATOM("PC_SYS_RQ");
-
-	levelNames= (Atom *)Xcalloc(sizeof(Atom));
-	if (levelNames!=NULL) {
-	    levelNames[0]= CREATE_ATOM("Any");
-	}
-	map->types[KT_1LEVEL_KEY].lvl_names= levelNames;
-
-	levelNames= (Atom *)Xcalloc(2*sizeof(Atom));
-	if (levelNames!=NULL) {
-	    levelNames[0]= CREATE_ATOM("Base");
-	    levelNames[1]= CREATE_ATOM("Shift");
-	}
-	map->types[KT_2LEVEL_KEY].lvl_names= levelNames;
-
-	levelNames= (Atom *)Xcalloc(2*sizeof(Atom));
-	if (levelNames) {
-	    levelNames[0]= CREATE_ATOM("Base");
-	    levelNames[1]= CREATE_ATOM("Num Lock");
-	}
-	map->types[KT_KEYPAD_KEY].lvl_names= levelNames;
-
-	levelNames= (Atom *)Xcalloc(3*sizeof(Atom));
-	if (levelNames) {
-	    levelNames[0]= CREATE_ATOM("Base");
-	    levelNames[1]= CREATE_ATOM("Shift");
-	    levelNames[2]= CREATE_ATOM("Level 3");
-	}
-	map->types[KT_3LEVEL_KEY].lvl_names= levelNames;
-
-	levelNames= (Atom *)Xcalloc(2*sizeof(Atom));
-	if (levelNames) {
-	    levelNames[0]= CREATE_ATOM("Base");
-	    levelNames[1]= CREATE_ATOM("Control");
-	}
-	map->types[KT_PC_BREAK_KEY].lvl_names= levelNames;
-
-	levelNames= (Atom *)Xcalloc(2*sizeof(Atom));
-	if (levelNames) {
-	    levelNames[0]= CREATE_ATOM("Base");
-	    levelNames[1]= CREATE_ATOM("Alt");
-	}
-	map->types[KT_PC_SYSRQ_KEY].lvl_names= levelNames;
-    }
 #ifdef DEBUG_RADIO_GROUPS
     names->radio_groups= (Atom *)Xcalloc(RG_COUNT*sizeof(Atom));
     if (names->radio_groups) {
@@ -445,10 +265,10 @@ XkbAlternateSymsRec *alt;
 	alt->syms[2]= XK_z;
 	alt->syms[3]= XK_Z;
 	alt->maps= (XkbSymMapRec *)Xcalloc(alt->num_keys*sizeof(XkbSymMapRec));
-	alt->maps[0].kt_index= KT_2LEVEL_KEY;
+	alt->maps[0].kt_index= XkbTwoLevelIndex;
 	alt->maps[0].group_info= XkbSetGroupInfo(1,0);
 	alt->maps[0].offset= 0;
-	alt->maps[12].kt_index= KT_2LEVEL_KEY;
+	alt->maps[12].kt_index= XkbTwoLevelIndex;
 	alt->maps[12].group_info= XkbSetGroupInfo(1,0);
 	alt->maps[12].offset= 2;
 	alt->next = NULL;
@@ -480,14 +300,8 @@ register int i;
     map->maps[LED_NUM-1].which_mods= XkbIM_UseLocked;
     map->maps[LED_NUM-1].mask= 0;
     map->maps[LED_NUM-1].real_mods= 0;
-    map->maps[LED_NUM-1].vmods= NUM_LOCK_VMOD_MASK;
+    map->maps[LED_NUM-1].vmods= vmod_NumLock;
     xkb->iAccel.haveMap|= (1<<(LED_NUM-1));
-
-    map->maps[LED_SCROLL-1].which_mods= XkbIM_UseLocked;
-    map->maps[LED_SCROLL-1].mask= 0;
-    map->maps[LED_SCROLL-1].real_mods= 0;
-    map->maps[LED_SCROLL-1].vmods= SCROLL_LOCK_VMOD_MASK;
-    xkb->iAccel.haveMap|= (1<<(LED_SCROLL-1));
 
     xkb->iAccel.usedComponents|= XkbModifierLockMask;
     return;
@@ -523,7 +337,7 @@ XkbChangesRec	changes;
 	nKeys = xkb->desc.max_key_code+1;	/* size of fixed arrays */
 	xkb->Map.key_sym_map= (XkbSymMapRec *)&xkb[1];
 	xkb->Server.behaviors = (XkbBehavior *)&xkb->Map.key_sym_map[nKeys];
-       xkb->Server.key_acts=(unsigned short*)&xkb->Server.behaviors[nKeys];
+	xkb->Server.key_acts=(unsigned short*)&xkb->Server.behaviors[nKeys];
 	xkb->Server.explicit=(unsigned char *)&xkb->Server.key_acts[nKeys];
 
 	xkb->dfltPtrDelta=1;
@@ -555,27 +369,15 @@ XkbChangesRec	changes;
 	xkb->desc.ctrls->internal_vmods = 0;
 	xkb->desc.ctrls->ignore_lock_mask = 0;
 	xkb->desc.ctrls->ignore_lock_real_mods = 0;
-	xkb->desc.ctrls->ignore_lock_vmods = NUM_LOCK_VMOD_MASK;
-	/*
-	 * 11/18/93 (ef) -- XXX Don't enable AccessXKeys until we
-	 *    have a watchdog program and an easy way to turn it
-	 *    off.
-	 */
-#ifdef NOTYET
-	xkb->desc.ctrls->enabled_ctrls = XkbAccessXKeysMask|
-					 	XkbAccessXTimeoutMask|
+	xkb->desc.ctrls->ignore_lock_vmods = vmod_NumLockMask;
+	xkb->desc.ctrls->enabled_ctrls = XkbAccessXTimeoutMask|
 						XkbRepeatKeysMask|
 						XkbGroupsWrapMask|
 						XkbMouseKeysAccelMask|
 						XkbAudibleBellMask|
 						XkbAutoAutorepeatMask;
-#else
-	xkb->desc.ctrls->enabled_ctrls = XkbAccessXTimeoutMask|
-						XkbGroupsWrapMask|
-						XkbMouseKeysAccelMask|
-						XkbAudibleBellMask|
-						XkbAutoAutorepeatMask;
-#endif
+	if (XkbWantAccessX)
+	    xkb->desc.ctrls->enabled_ctrls|= XkbAccessXKeysMask;
 	AccessXInit(pXDev);
 	DDXInitXkbDevice(pXDev);
 
@@ -609,6 +411,8 @@ int	       softRepeat;
 
     if (pXDev && pXDev->key && pXDev->key->xkbInfo) {
 	xkb= pXDev->key->xkbInfo;
+	if (pXDev->kbdfeed->ctrl.autoRepeat)
+	    xkb->desc.ctrls->enabled_ctrls|= XkbRepeatKeysMask;
 	softRepeat= (xkb->desc.ctrls->enabled_ctrls&XkbRepeatKeysMask)!=0;
 	if (XkbComputeAutoRepeat && pXDev->kbdfeed) {
 	    memcpy((char *)pXDev->kbdfeed->ctrl.autoRepeats,
