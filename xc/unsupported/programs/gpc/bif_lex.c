@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bif_lex.c,v 5.1 91/02/16 10:06:50 rws Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -208,7 +208,6 @@ int lineno,last_lineno;
 /* ---------------------------------------------------------------------*/
 int yyparse(void);
 void main(int,char**);
-void exit(int);
 int yylex(void);
 void start_yacc_pack    (Yylex_info*);
 void continue_yacc_pack (Yylex_info*);
@@ -226,7 +225,6 @@ int  find_keyword       (char*);
 /* ---------------------------------------------------------------------*/
 int yyparse();
 void main();
-void exit();
 int yylex();
 void start_yacc_pack();
 void continue_yacc_pack();
