@@ -1,5 +1,5 @@
 /*
- * $XConsortium: atom.c,v 1.1 91/05/10 16:51:47 keith Exp $
+ * $XConsortium: atom.c,v 1.2 91/05/11 09:16:15 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -104,6 +104,7 @@ ResizeHashTable ()
     return TRUE;
 }
 
+static
 ResizeReverseMap ()
 {
     if (reverseMapSize == 0)
