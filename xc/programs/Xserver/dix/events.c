@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.96 87/08/20 16:25:35 swick Locked $ */
+/* $Header: events.c,v 1.100 87/08/25 08:33:55 susan Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1471,19 +1471,12 @@ RecalculateDeliverableEvents(pWin)
 {
     OtherClients * others;
     WindowPtr child;
-    Mask hintMask;
 
     pWin->allEventMasks = pWin->eventMask;
-    hintMask = pWin->eventMask & PointerMotionHintMask;
     for (others = OTHERCLIENTS(pWin); others; others = others->next)
     {
 	pWin->allEventMasks |= others->mask;
-/*	hintMask &= (others->mask & PointerMotionHintMask); */
     }
-/*
-    if (!hintMask)
-        pWin->allEventMasks &= ~PointerMotionHintMask;
-*/
     if (pWin->parent)
 	pWin->deliverableEvents = pWin->allEventMasks |
 	    (pWin->parent->deliverableEvents & ~pWin->dontPropagateMask &
