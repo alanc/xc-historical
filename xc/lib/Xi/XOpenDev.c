@@ -1,4 +1,4 @@
-/* $XConsortium: XOpenDev.c,v 1.7 92/01/26 15:33:02 rws Exp $ */
+/* $XConsortium: XOpenDev.c,v 1.8 93/01/28 19:35:50 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -41,7 +41,7 @@ XDevice
     register Display 	*dpy;
     register XID	id;
     {	
-    register long	rlen;
+    register long	rlen; /* raw length */
     xOpenDeviceReq 	*req;
     xOpenDeviceReply 	rep;
     XDevice 		*dev;
@@ -68,10 +68,16 @@ XDevice
 	sizeof (XInputClassInfo));
     if (dev)
 	{
+	int dlen; /* data length */
+
 	dev->device_id = req->deviceid;
 	dev->num_classes = rep.num_classes;
 	dev->classes = (XInputClassInfo *) ((char *) dev + sizeof (XDevice));
-	_XRead (dpy, dev->classes, (rep.num_classes * sizeof(xInputClassInfo)));
+	dlen = rep.num_classes * sizeof(xInputClassInfo);
+	_XRead (dpy, dev->classes, dlen);
+	/* could be padding that we still need to eat (yummy!) */
+	if(rlen - dlen > 0)
+	    _XEatData (dpy, (unsigned long) rlen - dlen);
 	}
     else
 	_XEatData (dpy, (unsigned long) rlen);
