@@ -1445,12 +1445,14 @@
   ;; Timeout and interval are in seconds, will be rounded to minutes.
   (declare (type display display)
 	   (type (or (member :default) int16) timeout interval)
-	   (type (member :yes :no :default) blanking exposures))
+	   (type (or (member :on :off :default :yes :no) blanking exposures)))
+  (case blanking (:yes (setq blanking :on)) (:no (setq blanking :off)))
+  (case exposures (:yes (setq exposures :on)) (:no (setq exposures :off)))
   (when (eq timeout :default) (setq timeout -1))
   (when (eq interval :default) (setq interval -1))
   (with-buffer-request (display *x-setscreensaver*)
     (int16 timeout interval)
-    ((member8 :no :yes :default) blanking exposures)))
+    ((member8 :on :off :default) blanking exposures)))
 
 (defun screen-saver (display)
   ;; Returns timeout and interval in seconds.
@@ -1461,8 +1463,8 @@
     (values
       (card16-get 8)
       (card16-get 10)
-      (member8-get 12 :no :yes :default)
-      (member8-get 13 :no :yes :default))))
+      (member8-get 12 :on :off :default)
+      (member8-get 13 :on :off :default))))
 
 (defun activate-screen-saver (display)
   (declare (type display display))
