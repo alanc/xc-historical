@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.11 90/12/11 13:18:51 rws Exp $
+/* $XConsortium: Atoms.c,v 1.12 90/12/19 18:19:19 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -34,7 +34,8 @@
  *	XmuNameOfAtom		returns name from an AtomPtr
  */
 
-#include "Xmu.h"
+#include <X11/Intrinsic.h>
+#include <X11/Xmu/Atoms.h>
 
 typedef struct _DisplayRec {
     struct _DisplayRec* next;
@@ -135,16 +136,11 @@ char *XmuGetAtomName(d, atom)
 }
 
 /* convert (names, count) to a list of atoms. Caller allocates list */
-#if NeedFunctionPrototypes
-void XmuInternStrings(Display *d, register _Xconst char * _Xconst *names, 
-		      register Cardinal  count, register Atom * atoms)
-#else
 void XmuInternStrings(d, names, count, atoms)
     Display *d;
     register String *names;
     register Cardinal count;
     register Atom *atoms;		/* return */
-#endif
 {
     register int i;
 
