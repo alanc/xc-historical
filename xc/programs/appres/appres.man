@@ -1,4 +1,15 @@
-.\" $XConsortium: appres.man,v 1.9 94/04/11 14:28:43 gildea Exp $
+.\" $XConsortium: appres.man,v 1.10 94/04/11 18:47:08 gildea Exp $
+.\" Copyright 1993 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH APPRES 1 "Release 6" "X Version 11"
 .SH NAME
 appres \- list X application resource database
@@ -62,9 +73,5 @@ will list the resources matching the \fIxterm\fP vt100 widget.
 .SH "SEE ALSO"
 .PP
 X(1), xrdb(1), listres(1)
-.SH COPYRIGHT
-Copyright 1989, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium
