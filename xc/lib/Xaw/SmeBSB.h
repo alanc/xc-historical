@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: BSBMenuEnt.h,v 1.1 89/09/28 16:44:48 kit Exp $";
+ "$XConsortium: BSBMenuEnt.h,v 1.2 89/09/29 19:03:59 kit Exp $";
 
                         All Rights Reserved
 
@@ -26,6 +26,8 @@ SOFTWARE.
 
 #ifndef _BSBMenuEntry_h
 #define _BSBMenuEntry_h
+
+#include <X11/Xmu/Converters.h>
 
 #include <X11/Xaw/MenuEntry.h>
 

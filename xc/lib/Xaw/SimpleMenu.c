@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.23 89/09/29 19:03:39 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.24 89/10/02 19:14:02 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -60,7 +60,7 @@ static XtResource resources[] = {
   {XtNlabel,  XtCLabel, XtRString, sizeof(String),
      offset(label_string), XtRString, NULL},
   {XtNlabelClass,  XtCLabelClass, XtRPointer, sizeof(WidgetClass),
-     offset(label_class), XtRImmediate, NULL},
+     offset(label_class), XtRImmediate, (caddr_t) NULL},
 
 /*
  * Layout Resources.
@@ -836,7 +836,7 @@ Widget w;
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
     register Widget * child, * next_child;
     register int i;
-    Arg args[1];
+    Arg args[2];
 
     if ( (smw->simple_menu.label_string == NULL) ||
 	 (smw->simple_menu.label != NULL) ) {
@@ -850,10 +850,11 @@ Widget w;
     }
 
     XtSetArg(args[0], XtNlabel, smw->simple_menu.label_string);
+    XtSetArg(args[1], XtNjustify, XtJustifyCenter);
     smw->simple_menu.label = (MenuEntryObject) 
 	                      XtCreateManagedWidget("menuLabel", 
 					    smw->simple_menu.label_class, w,
-					    args, ONE);
+					    args, TWO);
 
     next_child = NULL;
     for (child = smw->composite.children + smw->composite.num_children,

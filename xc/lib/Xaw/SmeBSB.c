@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.2 89/09/29 19:03:56 kit Exp $";
+static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.3 89/10/03 16:42:01 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -57,6 +57,8 @@ static XtResource resources[] = {
      offset(vert_space), XtRImmediate, (caddr_t) 25},
   {XtNleftBitmap, XtCLeftBitmap, XtRPixmap, sizeof(Pixmap),
      offset(left_bitmap), XtRImmediate, (caddr_t)None},
+  {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
+     offset(justify), XtRImmediate, (caddr_t) XtJustifyLeft},
   {XtNrightBitmap, XtCRightBitmap, XtRPixmap, sizeof(Pixmap),
      offset(right_bitmap), XtRImmediate, (caddr_t)None},
   {XtNleftMargin,  XtCHorizontalMargins, XtRDimension, sizeof(Dimension),
@@ -75,6 +77,7 @@ static XtResource resources[] = {
  */
 
 static void Redisplay(), Destroy(), Initialize(), FlipColors();
+static void ClassInitialize();
 static Boolean SetValues();
 static XtGeometryResult QueryGeometry();
 
@@ -91,7 +94,7 @@ BSBMenuEntryClassRec bSBMenuEntryClassRec = {
     /* superclass         */    (WidgetClass) superclass,
     /* class_name         */    "BSBMenuEntry",
     /* size               */    sizeof(BSBMenuEntryRec),
-    /* Class Initializer  */	NULL,
+    /* Class Initializer  */	ClassInitialize,
     /* class_part_initialize*/	NULL,
     /* Class init'ed      */	FALSE,
     /* initialize         */    Initialize,
@@ -141,6 +144,18 @@ WidgetClass bSBMenuEntryObjectClass = (WidgetClass) &bSBMenuEntryClassRec;
  * Semi-Public Functions.
  *
  ************************************************************/
+
+/*	Function Name: ClassInitialize
+ *	Description: Initializes the BSBMenuEntryObject. 
+ *	Arguments: none.
+ *	Returns: none.
+ */
+
+static void 
+ClassInitialize()
+{
+    XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0 );
+}
 
 /*      Function Name: Initialize
  *      Description: Initializes the simple menu widget
@@ -218,12 +233,34 @@ Region region;
 	gc = entry->bsb_entry.norm_gray_gc;
     
     if (entry->bsb_entry.label != NULL) {
+	int x_loc = entry->bsb_entry.left_margin;
+	int len = strlen(entry->bsb_entry.label);
+	char * label = entry->bsb_entry.label;
+
+	switch(entry->bsb_entry.justify) {
+	    int width, t_width;
+
+	case XtJustifyCenter:
+	    t_width = XTextWidth(entry->bsb_entry.font, label, len);
+	    width = entry->rectangle.width - (entry->bsb_entry.left_margin +
+					      entry->bsb_entry.right_margin);
+	    x_loc += (width - t_width)/2;
+	    break;
+	case XtJustifyRight:
+	    t_width = XTextWidth(entry->bsb_entry.font, label, len);
+	    x_loc = entry->rectangle.width - (entry->bsb_entry.right_margin +
+					      t_width);
+	    break;
+	case XtJustifyLeft:
+	default:
+	    break;
+	}
+
 	y_loc += (entry->rectangle.height - 
 		  (font_ascent + font_descent)) / 2 + font_ascent;
 	
 	XDrawString(XtDisplayOfObject(w), XtWindowOfObject(w), gc,
-		    entry->bsb_entry.left_margin, y_loc,
-		    entry->bsb_entry.label, strlen(entry->bsb_entry.label));
+		    x_loc, y_loc, label, len);
     }
 
     DrawBitmaps(w, gc);

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: BSBMenuEnP.h,v 1.1 89/09/28 16:44:46 kit Exp $
+* $XConsortium: BSBMenuEnP.h,v 1.2 89/09/29 19:03:55 kit Exp $
 */
 
 
@@ -73,6 +73,7 @@ typedef struct {
     Dimension left_margin, right_margin; /* left and right margins. */
     Pixel foreground;		/* foreground color. */
     XFontStruct * font;		/* The font to show label in. */
+    XtJustify justify;		/* Justification for the label. */
 
 /* private resources. */
 
