@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.52 89/09/19 09:17:52 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.53 89/09/19 12:09:29 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -348,16 +348,16 @@
 #endif
 #ifndef ArCmd
 #if HasLargeTmp
-#define ArCmd                  ar cq	/* use /tmp for temp files */
+#define ArCmd ar cq	/* use /tmp for temp files */
 #else
-#define ArCmd                  ar clq	/* use local dir for temp files */
+#define ArCmd ar clq	/* use local dir for temp files */
 #endif
 #endif
 #ifndef BootstrapCFlags
-#define BootstrapCFlags        /**/
+#define BootstrapCFlags /**/
 #endif
 #ifndef CcCmd
-#define CcCmd                  cc
+#define CcCmd cc
 #endif
 #if HasFortran
 #ifndef FortranCmd			/* for xgks */
@@ -371,78 +371,78 @@
 #endif
 #endif
 #ifndef AsCmd
-#define AsCmd                  as
+#define AsCmd as
 #endif
 #ifndef CompressCmd
-#define CompressCmd            compress
+#define CompressCmd compress
 #endif
 #ifndef CppCmd
-#define CppCmd                 /lib/cpp
+#define CppCmd /lib/cpp
 #endif
 #ifndef PreProcessCmd
-#define PreProcessCmd          CcCmd -E		/* run cpp with defines */
+#define PreProcessCmd CcCmd -E
 #endif
 #ifndef InstallCmd
 #if SystemV
-#define InstallCmd             bsdinstall
+#define InstallCmd bsdinstall
 #else
-#define InstallCmd             install
+#define InstallCmd install
 #endif
 #endif
 #ifndef LdCmd
-#define LdCmd                  ld
+#define LdCmd ld
 #endif
 #ifndef LintCmd
-#define LintCmd                lint
+#define LintCmd lint
 #endif
 #ifndef LintLibFlag
 #if SystemV
-#define LintLibFlag            -o
+#define LintLibFlag -o
 #else
-#define LintLibFlag            -C
+#define LintLibFlag -C
 #endif
 #endif
 #ifndef LintOpts
 #if SystemV
-#define LintOpts               -ax
+#define LintOpts -ax
 #else
-#define LintOpts               -axz
+#define LintOpts -axz
 #endif
 #endif
 #ifndef CpCmd
-#define CpCmd                  cp
+#define CpCmd cp
 #endif
 #ifndef LnCmd
 #if SystemV
-#define LnCmd                  ln			/* or even cp */
+#define LnCmd ln /* or even cp */
 #else
-#define LnCmd                  ln -s
+#define LnCmd ln -s
 #endif
 #endif
 #ifndef MakeCmd
-#define MakeCmd                make
+#define MakeCmd make
 #endif
 #ifndef MvCmd
-#define MvCmd                  mv
+#define MvCmd mv
 #endif
 #ifndef RanlibCmd
 #if SystemV
-#define RanlibCmd              /bin/true
+#define RanlibCmd /bin/true
 #else
-#define RanlibCmd              ranlib
+#define RanlibCmd ranlib
 #endif
 #endif
 #ifndef RanlibInstFlags
-#define RanlibInstFlags        /**/
+#define RanlibInstFlags /**/
 #endif
 #ifndef RmCmd
-#define RmCmd              rm -f
+#define RmCmd rm -f
 #endif
 #ifndef StandardCppDefines
 #if SystemV
-#define StandardCppDefines     -DSYSV
+#define StandardCppDefines -DSYSV
 #else
-#define StandardCppDefines     /**/
+#define StandardCppDefines /**/
 #endif
 #endif
 #ifndef StandardIncludes
@@ -450,22 +450,22 @@
 #endif
 #ifndef StandardDefines
 #if SystemV
-#define StandardDefines         -DSYSV
+#define StandardDefines -DSYSV
 #else
-#define StandardDefines         /**/
+#define StandardDefines /**/
 #endif
 #endif
 #ifndef ExtraLibraries
-#define ExtraLibraries        /**/
+#define ExtraLibraries /**/
 #endif
 #ifndef ExtraLoadFlags
-#define ExtraLoadFlags       /**/
+#define ExtraLoadFlags /**/
 #endif
 #ifndef CompatibilityFlags
 #define CompatibilityFlags /**/
 #endif
 #ifndef TagsCmd
-#define TagsCmd                ctags
+#define TagsCmd ctags
 #endif
 #ifndef TOPDIR
 #define TOPDIR .
