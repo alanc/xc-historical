@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.11 91/07/23 18:59:49 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.12 93/08/20 16:15:23 rws Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -363,6 +363,7 @@ extern FSstream _FSsStream[];
 #endif				/* STREAMSCONN */
 
 
+#ifndef WIN32
 #ifndef USL_COMPAT
 #if !defined(USG) || defined(MOTOROLA)
 #if !(defined(SYSV) && defined(SYSV386))
@@ -371,6 +372,7 @@ extern FSstream _FSsStream[];
 #define _FSWriteV writev
 #endif
 #endif /* !USL_COMPAT */
+#endif
 
 #define ReadvFromServer(svr, iov, iovcnt) _FSReadV((svr), (iov), (iovcnt))
 #define WritevToServer(svr, iov, iovcnt) _FSWriteV((svr), (iov), (iovcnt))
