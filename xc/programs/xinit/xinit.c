@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.49 91/07/18 12:07:58 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.50 91/07/18 12:23:36 rws Exp $";
 #endif /* lint */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
@@ -365,7 +365,7 @@ processTimeout(timeout, string)
 	for (;;) {
 #ifdef SYSV
 		alarm(1);
-		if ((pidfound = wait(NULL)) == pid)
+		if ((pidfound = wait(NULL)) == serverpid)
 			break;
 		alarm(0);
 #else /* SYSV */
