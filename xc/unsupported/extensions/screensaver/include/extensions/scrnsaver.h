@@ -1,5 +1,5 @@
 /*
- * $XConsortium: scrnsaver.h,v 1.2 92/02/28 17:50:40 keith Exp $
+ * $XConsortium: scrnsaver.h,v 1.3 92/02/28 18:09:10 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -69,9 +69,9 @@ extern Status XScreenSaverQueryVersion (
 #endif
 );
 
-extern XScreenSaverInfo *XScreenSaverAllocateInfo (
+extern XScreenSaverInfo *XScreenSaverAllocInfo (
 #if NeedFunctionPrototypes
-    Display*		/* display */
+    void
 #endif
 );
 

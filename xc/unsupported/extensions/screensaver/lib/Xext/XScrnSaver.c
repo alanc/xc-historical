@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XScrnSaver.c,v 1.1 92/02/13 16:08:14 keith Exp $
+ * $XConsortium: XScrnSaver.c,v 1.2 92/02/28 18:10:49 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -179,8 +179,7 @@ Status XScreenSaverQueryVersion(dpy, major_versionp, minor_versionp)
     return 1;
 }
 
-XScreenSaverInfo *XScreenSaverAllocateInfo (dpy)
-    Display	*dpy;
+XScreenSaverInfo *XScreenSaverAllocInfo ()
 {
     return (XScreenSaverInfo *) Xmalloc (sizeof (XScreenSaverInfo));
 }
