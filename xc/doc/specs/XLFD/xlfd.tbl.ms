@@ -1,5 +1,5 @@
-.\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.17 93/12/28 17:31:04 gildea Exp $
+.\" Use eqn, tbl and -ms and macros.t
+.\" $XConsortium: xlfd.tbl.ms,v 1.18 93/12/28 18:46:33 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0		\" make tall enough to span paragraph skip
 ..
@@ -286,8 +286,8 @@ syntax and semantics.
 .LP
 All font names that conform to this specification are to use a 
 .PN FontNameRegistry
-prefix, which is defined to be the string ``\-'' 
-(that is, ISO 8859-1 HYPHEN -- Column/Row 02/13). 
+prefix, which is defined to be the string \*Q\-\*U
+(that is, ISO 8859-1 HYPHEN\*-Column/Row 02/13).
 All 
 .PN FontNameRegistry 
 prefixes of the form: +\fIversion\fP\-,
@@ -353,7 +353,7 @@ T{
 Version ::=
 T}	T{
 STRING8 \- the XLFD version that defines an extension 
-to the font name syntax (for example, ``1.4'')
+to the font name syntax (for example, \*Q1.4\*U)
 T}
 T{
 XFNExtPrefix ::=
@@ -462,7 +462,7 @@ FAMILY_NAME Field
 \*(SN FAMILY_NAME Field
 .XE
 .LP
-FAMILY_NAME is a string that identifies the range or ``family'' of 
+FAMILY_NAME is a string that identifies the range or \*Qfamily\*U of 
 typeface designs that are all variations of one basic typographic style. 
 This must be spelled out in full,
 with words separated by spaces, as required. 
@@ -540,20 +540,20 @@ _
 .sp 6p
 .TH
 .R
-``R''	Roman	Upright design
-``I''	Italic	T{
+\*QR\*U	Roman	Upright design
+\*QI\*U	Italic	T{
 Italic design, slanted clockwise from the vertical
 T}
-``O''	Oblique	T{
+\*QO\*U	Oblique	T{
 Obliqued upright design, slanted clockwise from the vertical
 T}
-``RI''	Reverse Italic	T{
+\*QRI\*U	Reverse Italic	T{
 Italic design, slanted counterclockwise from the vertical
 T}
-``RO''	Reverse Oblique	T{
+\*QRO\*U	Reverse Oblique	T{
 Obliqued upright design, slanted counterclockwise from the vertical
 T}
-``OT''	Other	Other
+\*QOT\*U	Other	Other
 .sC
 numeric	Polymorphic	See section \n(sP on polymorphic font support.
 .eC
@@ -633,7 +633,7 @@ PIXEL_SIZE Field
 PIXEL_SIZE
 gives the body size of the font at a particular 
 POINT_SIZE and RESOLUTION_Y.
-PIXEL_SIZE is either an unsigned integer-string or a string beginning
+PIXEL_SIZE is either an integer-string or a string beginning
 with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix;
 see section \n(sM.
 PIXEL_SIZE usually incorporates additional vertical spacing 
@@ -641,9 +641,6 @@ PIXEL_SIZE usually incorporates additional vertical spacing
 that is considered part of the font design.
 (Note, however, that this value is not necessarily equivalent to the height 
 of the font bounding box.)
-.sC
-A numeric PIXEL_SIZE is in the range zero to a very large number.
-.eC
 Zero is used to indicate a scalable font; see section \n(sS.
 .LP
 PIXEL_SIZE usually is used by X client applications that need to 
@@ -659,7 +656,7 @@ POINT_SIZE Field
 .sC
 POINT_SIZE gives the body size 
 for which the font was designed.
-POINT_SIZE is either an unsigned integer-string or a string beginning
+POINT_SIZE is either an integer-string or a string beginning
 with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix;
 see section \n(sM.
 This field usually incorporates additional vertical spacing 
@@ -668,9 +665,10 @@ that is considered part of the font design.
 (Note, however, that POINT_SIZE is not necessarily equivalent to the height 
 of the font bounding box.) 
 POINT_SIZE is expressed in decipoints (where points are as defined 
-in the X protocol or 72.27 points equal 1 inch) in the range zero to a 
-very large number.
+.sC
+in the X protocol or 72.27 points equal 1 inch).
 Zero is used to indicate a scalable font; see section \n(sS.
+.eC
 .LP
 POINT_SIZE and RESOLUTION_Y are used by X clients to query fonts 
 according to device-independent size to maintain constant text 
@@ -725,24 +723,24 @@ _
 .sp 6p
 .TH
 .R
-``P''	Proportional	T{
+\*QP\*U	Proportional	T{
 A font whose logical character widths vary for each glyph.
 Note that no other restrictions are placed on the metrics 
 of a proportional font.
 T}
-``M''	Monospaced	T{
+\*QM\*U	Monospaced	T{
 A font whose logical character widths are constant 
 (that is, every glyph in the font has the same logical width).
 No other restrictions are placed on the metrics of a monospaced font.
 T}
-``C''	CharCell	T{
+\*QC\*U	CharCell	T{
 A monospaced font that follows the standard typewriter character cell model
-(that is, the glyphs of the font can be modeled by X clients as ``boxes'' 
+(that is, the glyphs of the font can be modeled by X clients as \*Qboxes\*U 
 of the same width and height that are imaged side-by-side 
 to form text strings or top-to-bottom to form text lines.
 By definition, 
 all glyphs have the same logical character width, 
-and no glyphs have ``ink'' outside of the character cell.
+and no glyphs have \*Qink\*U outside of the character cell.
 There is no kerning (that is, on a per character basis with positive metrics: 
 0 <= left-bearing <= right-bearing <= width; 
 with negative metrics: width <= left-bearing <= right-bearing <= zero).
@@ -764,13 +762,16 @@ AVERAGE_WIDTH Field
 \*(SN AVERAGE_WIDTH Field
 .XE
 .LP 
-AVERAGE_WIDTH is an unsigned integer-string typographic metric value 
-that gives the unweighted arithmetic mean width of all glyphs in the font 
-(measured in tenths of pixels).
+.sC
+AVERAGE_WIDTH is an integer-string typographic metric value 
+that gives the unweighted arithmetic mean of the absolute value of the
+width of each glyph in the font 
+(measured in tenths of pixels), multiplied by \-1 if the dominant
+writing direction for the font is right-to-left.
 For monospaced and character cell fonts, 
 this is the width of all glyphs in the font.
-AVERAGE_WIDTH is in the range zero to a very large number.
 Zero is used to indicate a scalable font; see section \n(sS.
+.eC
 .NH 4
 CHARSET_REGISTRY and CHARSET_ENCODING Fields
 .XS
@@ -825,7 +826,7 @@ StdNumber ::=	STRING8\-referenced standard number
 OrganizationId ::=	T{
 STRING8\-the registered name or acronym of the organization
 T}
-Dot ::=	``\.''\-ISO 8859-1 FULL STOP (Column/Row 2/14)
+Dot ::=	\*Q\.\*U\-ISO 8859-1 FULL STOP (Column/Row 2/14)
 Year ::=	STRING8\-numeric year (for example, 1989)
 .TE
 .NL
@@ -835,7 +836,7 @@ of such character set names for use in X protocol font names and properties
 as specified in XLFD.
 .LP
 The ISO Latin-1 character set shall be registered by the X Consortium as the 
-CHARSET_REGISTRY-CHARSET_ENCODING value pair: ``ISO8859-1''.
+CHARSET_REGISTRY-CHARSET_ENCODING value pair: \*QISO8859-1\*U.
 .NH 3
 Examples
 .XS
@@ -1050,7 +1051,7 @@ WEIGHT_NAME can be defaulted if not supplied as a font property, as follows:
 .LP
 .DS
 if (WEIGHT_NAME undefined) then 
-   WEIGHT_NAME = ATOM(``Medium'')
+   WEIGHT_NAME = ATOM(\*QMedium\*U)
 .DE
 .NH 3
 SLANT
@@ -1066,7 +1067,7 @@ SLANT can be defaulted if not supplied as a font property, as follows:
 .LP
 .DS
 if (SLANT undefined) then 
-   SLANT = ATOM(``R'')
+   SLANT = ATOM(\*QR\*U)
 .DE
 .NH 3
 SETWIDTH_NAME
@@ -1082,7 +1083,7 @@ SETWIDTH_NAME can be defaulted if not supplied as a font property, as follows:
 .LP
 .DS
 if (SETWIDTH_NAME undefined) then
-   SETWIDTH_NAME = ATOM(``Normal'')
+   SETWIDTH_NAME = ATOM(\*QNormal\*U)
 .DE
 .NH 3
 ADD_STYLE_NAME
@@ -1098,7 +1099,7 @@ ADD_STYLE_NAME can be defaulted if not supplied as a font property, as follows:
 .LP
 .DS
 if (ADD_STYLE_NAME undefined) then
-   ADD_STYLE_NAME = ATOM(``'')
+   ADD_STYLE_NAME = ATOM(\*Q\*U)
 .DE
 .NH 3
 PIXEL_SIZE
@@ -1106,9 +1107,12 @@ PIXEL_SIZE
 \*(SN PIXEL_SIZE
 .XE
 .LP
+.sC
 PIXEL_SIZE is as defined in the 
 .PN FontName
-except that the property type is CARD32.
+except that the property type is INT32.
+.br
+.eC
 .LP
 X clients requiring pixel values for the various typographic fixed 
 spaces (em space, en space and thin space), can use the following 
@@ -1122,9 +1126,9 @@ ENspace = ROUND (EMspace / 2)
 THINspace = ROUND (EMspace / 3)\fP
 .DE
 .LP
-where a slash ``/'' denotes real division, 
-the asterisk ``*'' denotes real multiplication,
-and ``ROUND'' denotes a function that rounds its real argument 'a' up or down
+where a slash \*Q/\*U denotes real division, 
+the asterisk \*Q*\*U denotes real multiplication,
+and \*QROUND\*U denotes a function that rounds its real argument 'a' up or down
 to the next integer. 
 This rounding is done according to X = FLOOR (a + O.5),
 where FLOOR is a function that rounds its real argument down to the
@@ -1144,9 +1148,12 @@ POINT_SIZE
 \*(SN POINT_SIZE
 .XE
 .LP
+.sC
 POINT_SIZE is as defined in the 
 .PN FontName
-except that the property type is CARD32.
+except that the property type is INT32.
+.br
+.eC
 .LP
 X clients requiring device-independent values for em space, 
 en space, and thin space can use the following algorithm:
@@ -1199,16 +1206,22 @@ AVERAGE_WIDTH
 \*(SN AVERAGE_WIDTH
 .XE
 .LP
+.sC
 AVERAGE_WIDTH is as defined in the 
 .PN FontName
-except that the property type is CARD32.
+except that the property type is INT32.
+.br
+.eC
 .LP
 AVERAGE_WIDTH can be calculated if not provided as a font property, 
 according to the following algorithm:
 .LP
 .DS
 if (AVERAGE_WIDTH undefined) then
-   AVERAGE_WIDTH = ROUND (MEAN (all glyph widths in font) * 10)
+.sC
+   AVERAGE_WIDTH = ROUND (MEAN (ABS (width of each glyph in font)) * 10)
+	* if (dominant writing direction left-to-right) then 1 else \-1
+.eC
 .DE
 .LP
 where MEAN is a function that returns the arithmetic mean of its arguments.
@@ -1249,8 +1262,10 @@ MIN_SPACE
 \*(SN MIN_SPACE
 .XE
 .LP
-MIN_SPACE is an unsigned integer value (of type CARD32)
+.sC
+MIN_SPACE is an integer value (of type INT32)
 that gives the recommended minimum word-space value to be used with this font.
+.eC
 .LP
 MIN_SPACE can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1265,8 +1280,10 @@ NORM_SPACE
 \*(SN NORM_SPACE
 .XE
 .LP
-NORM_SPACE is an unsigned integer value (of type CARD32)
+.sC
+NORM_SPACE is an integer value (of type INT32)
 that gives the recommended normal word-space value to be used with this font.
+.eC
 .LP
 NORM_SPACE can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1284,8 +1301,10 @@ MAX_SPACE
 \*(SN MAX_SPACE
 .XE
 .LP
-MAX_SPACE is an unsigned integer value (of type CARD32)
+.sC
+MAX_SPACE is an integer value (of type INT32)
 that gives the recommended maximum word-space value to be used with this font.
+.eC
 .LP
 MAX_SPACE can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1300,8 +1319,10 @@ END_SPACE
 \*(SN END_SPACE
 .XE
 .LP
-END_SPACE is an unsigned integer value (of type CARD32)
+.sC
+END_SPACE is an integer value (of type INT32)
 that gives the recommended spacing at the end of sentences.
+.eC
 .LP
 END_SPACE can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1317,8 +1338,13 @@ AVG_CAPITAL_WIDTH
 .XE
 .LP
 AVG_CAPITAL_WIDTH is an integer value (of type INT32)
-that gives the unweighted arithmetic mean width of all the capital glyphs 
-in the font, in tenths of pixels (applies to Latin and non-Latin fonts).
+.sC
+that gives the unweighted arithmetic mean of the absolute value of the
+width of each capital glyph in the font, in tenths of pixels,
+multiplied by \-1 if the dominant
+writing direction for the font is right-to-left.
+This property applies to both Latin and non-Latin fonts.
+.eC
 For Latin fonts, 
 capitals are the glyphs A through Z.
 This property is usually used for font matching or substitution.
@@ -1328,7 +1354,10 @@ according to the following algorithm:
 .LP
 .DS I
 if (AVG_CAPITAL_WIDTH undefined) then
-   AVG_CAPITAL_WIDTH = ROUND (MEAN (capital glyph widths) * 10)
+.sC
+   AVG_CAPITAL_WIDTH = ROUND (MEAN (ABS (width of each capital glyph) * 10))
+	* if (dominant writing direction left-to-right) then 1 else \-1
+.eC
 .DE
 .NH 3
 AVG_LOWERCASE_WIDTH
@@ -1337,9 +1366,13 @@ AVG_LOWERCASE_WIDTH
 .XE
 .LP
 AVG_LOWERCASE_WIDTH is an integer value (of type INT32)
-that gives the unweighted arithmetic mean width of all the lowercase glyphs 
-in the font in tenths of pixels.
+.sC
+that gives the unweighted arithmetic mean width of the absolute value
+of the width of each lowercase glyph in the font in tenths of pixels,
+multiplied by \-1 if the dominant
+writing direction for the font is right-to-left.
 For Latin fonts, 
+.eC
 lowercase are the glyphs a through z. 
 This property is usually used for font matching or substitution. 
 .LP
@@ -1350,7 +1383,11 @@ according to the following algorithm:
 .DS
 if (AVG_LOWERCASE_WIDTH undefined) then
    if (lowercase exists) then
-      AVG_LOWERCASE_WIDTH = ROUND (MEAN (lowercase glyph widths) * 10)
+.sC
+      AVG_LOWERCASE_WIDTH = ROUND (MEAN
+                              (ABS (width of each lowercase glyph) * 10))
+	* if (dominant writing direction left-to-right) then 1 else \-1
+.eC
    else AVG_LOWERCASE_WIDTH undefined
 .DE
 .NH 3
@@ -1480,9 +1517,11 @@ SUPERSCRIPT_SIZE
 \*(SN SUPERSCRIPT_SIZE
 .XE
 .LP
-SUPERSCRIPT_SIZE is an unsigned integer value (of type CARD32)
+.sC
+SUPERSCRIPT_SIZE is an integer value (of type INT32)
 that gives the recommended body size of synthetic superscripts 
 to be used with this font, in pixels.
+.eC
 This will generally be smaller than the size of the current font;
 that is, superscripts are imaged from a smaller font
 offset according to SUPERSCRIPT_X and SUPERSCRIPT_Y.
@@ -1500,9 +1539,11 @@ SUBSCRIPT_SIZE
 \*(SN SUBSCRIPT_SIZE
 .XE
 .LP
-SUBSCRIPT_SIZE is an unsigned integer value (of type CARD32)
+.sC
+SUBSCRIPT_SIZE is an integer value (of type INT32)
 that gives the recommended body size of synthetic subscripts 
 to be used with this font, in pixels.
+.eC
 As with SUPERSCRIPT_SIZE, 
 this will generally be smaller than the size of the current font; 
 that is, subscripts are imaged from a smaller 
@@ -1521,9 +1562,11 @@ SMALL_CAP_SIZE
 \*(SN SMALL_CAP_SIZE
 .XE
 .LP
-SMALL_CAP_SIZE is an unsigned integer value (of type CARD32)
+.sC
+SMALL_CAP_SIZE is an integer value (of type INT32)
 that gives the recommended body size of synthetic small capitals 
 to be used with this font, in pixels.
+.eC
 Small capitals are generally imaged from a smaller font 
 of slightly more weight.
 No offset [X,Y] is necessary.
@@ -1542,9 +1585,11 @@ UNDERLINE_POSITION
 \*(SN UNDERLINE_POSITION
 .XE
 .LP
-UNDERLINE_POSITION is an unsigned integer value (of type CARD32)
+.sC
+UNDERLINE_POSITION is an integer value (of type INT32)
 that gives the recommended vertical offset in pixels
 from the baseline to the top of the underline. 
+.eC
 If the current position point is at [X,Y], 
 the top of the baseline is given by [X, Y + UNDERLINE_POSITION].
 .LP
@@ -1563,8 +1608,10 @@ UNDERLINE_THICKNESS
 \*(SN UNDERLINE_THICKNESS
 .XE
 .LP
-UNDERLINE_THICKNESS is an unsigned integer value (of type CARD32)
+.sC
+UNDERLINE_THICKNESS is an integer value (of type INT32)
 that gives the recommended underline thickness, in pixels.
+.eC
 .LP
 UNDERLINE_THICKNESS can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1639,8 +1686,10 @@ CAP_HEIGHT
 \*(SN CAP_HEIGHT
 .XE
 .LP
-CAP_HEIGHT is an unsigned integer value (of type CARD32)
+.sC
+CAP_HEIGHT is an integer value (of type INT32)
 that gives the nominal height of the capital letters contained in the font, 
+.eC
 as specified by the FOUNDRY or typeface designer.
 Where applicable, 
 it is defined to be the height of the Latin uppercase letter \fIX\fP.
@@ -1668,12 +1717,13 @@ X_HEIGHT
 \*(SN X_HEIGHT
 .XE
 .LP
-X_HEIGHT is a unsigned integer value (of type CARD32)
+.sC
+X_HEIGHT is a integer value (of type INT32)
 that gives the nominal height above the baseline of the lowercase glyphs 
 contained in the font, 
 as specified by the FOUNDRY or typeface designer.
-Where applicable, 
-it is defined to be the height of the Latin lowercase letter \fIx\fP.
+.br
+.eC
 .LP
 As with CAP_HEIGHT, 
 X_HEIGHT is required by certain clients to compute scale factors 
@@ -1689,7 +1739,9 @@ if (X_HEIGHT undefined) then
    if (latin font) then
       X_HEIGHT = XCharStruct.ascent[glyph x]
    else if (lowercase exists) then
-        X_HEIGHT = XCharStruct.ascent[some lowercase glyph]
+.sC
+        X_HEIGHT = XCharStruct.ascent[some lowercase glyph without an ascender]
+.eC
    else X_HEIGHT is undefined
 .DE
 .NH 3
@@ -1837,7 +1889,25 @@ have been defined (see sections 3.1.2.9 and 3.1.2.10).
 X clients are encouraged to discontinue use of the RESOLUTION property
 and are encouraged to use the appropriate X,Y resolution properties,
 as required.
-.NE
+.NE			\" Note End
+.br
+.sC
+.NH 3
+FONT
+.br
+.eC
+.XS
+\*(SN FONT
+.XE
+.sC
+.LP
+FONT is a string (of type ATOM) that gives the full XLFD name of the
+font\*-that is, the name returned can be used to open another
+instance of the same font.
+.LP
+If not provided, the FONT property cannot be calculated.
+.br
+.eC
 .NH 3
 FACE_NAME 
 .XS
@@ -1852,6 +1922,21 @@ This property may be used as feedback during font selection.
 .LP
 FACE_NAME cannot be calculated or approximated if not provided as a font 
 property.
+.br
+.sC
+.NH 3
+FULL_NAME
+.br
+.eC
+.XS
+\*(SN FULL_NAME
+.XE
+.sC
+.LP
+FULL_NAME is the same as FACE_NAME.  Its use is depreciated, but
+it is found on some old fonts.
+.br
+.eC
 .NH 3
 COPYRIGHT 
 .XS
@@ -1865,7 +1950,7 @@ of the digital font data.
 This information is a required component of a font
 but is independent of the particular format used to represent it 
 (that is, it cannot be captured as a comment that could later 
-be ``thrown away'' for efficiency reasons).
+be \*Qthrown away\*U for efficiency reasons).
 .LP
 COPYRIGHT cannot be calculated or approximated if not provided as a font 
 property.
@@ -1949,16 +2034,16 @@ _
 .sp 6p
 .TH
 .R
-MIN_SPACE	CARD32
-NORM_SPACE	CARD32
-MAX_SPACE	CARD32
-END_SPACE	CARD32
+MIN_SPACE	INT32
+NORM_SPACE	INT32
+MAX_SPACE	INT32
+END_SPACE	INT32
 SUPERSCRIPT_X	INT32
 SUPERSCRIPT_Y	INT32
 SUBSCRIPT_X	INT32
 SUBSCRIPT_Y	INT32
 UNDERLINE_POSITION	INT32
-UNDERLINE_THICKNESS	CARD32
+UNDERLINE_THICKNESS	INT32
 STRIKEOUT_ASCENT	INT32
 STRIKEOUT_DESCENT	INT32
 FONT_ASCENT	INT32
@@ -1967,7 +2052,7 @@ ITALIC_ANGLE	INT32
 X_HEIGHT	INT32
 QUAD_WIDTH	INT32 \- deprecated
 WEIGHT	CARD32
-POINT_SIZE	CARD32
+POINT_SIZE	INT32
 RESOLUTION	CARD32 \- deprecated
 COPYRIGHT	ATOM
 FULL_NAME	ATOM
@@ -2016,14 +2101,17 @@ as the matrix \*Q[N*RESOLUTION_X/RESOLUTION_Y 0 0 N]\*U in that field.
 If matrices are specified for both the POINT_SIZE and PIXEL_SIZE, they
 must bear the following relationship to each other within an
 implementation-specific tolerance:
+.EQ
+delim !!
+.EN
 .br
-	PIXEL_SIZE_MATRIX = [Sx 0 0 Sy] * POINT_SIZE_MATRIX
+	PIXEL_SIZE_MATRIX = [!S sub x! 0 0 !S sub y!] * POINT_SIZE_MATRIX
 .br
 where
 .br
-	Sx = RESOLUTION_X / 72.27
+	!S sub x! = RESOLUTION_X / 72.27
 .br
-	Sy = RESOLUTION_Y / 72.27
+	!S sub y! = RESOLUTION_Y / 72.27
 .LP
 If either the POINT_SIZE or PIXEL_SIZE field is unspecified (either \*Q0\*U or
 wildcarded) the preceding formulas can be used to compute one from the
@@ -2123,7 +2211,7 @@ in the fields of a well-formed XLFD pattern.
 .br
 .IP
 A well-formed XLFD pattern containing no wildcards and containing the
-digit ``0'' in the PIXEL_SIZE, POINT_SIZE, and AVERAGE_WIDTH fields.
+digit \*Q0\*U in the PIXEL_SIZE, POINT_SIZE, and AVERAGE_WIDTH fields.
 .LP
 \fBScalable fields\fP
 .br
@@ -2145,7 +2233,7 @@ fields in font names to support anamorphic scaling.
 .IP
 The list of names that would be returned by an X server for a
 .PN ListFonts
-protocol request on the pattern ``*'' if there were no protocol
+protocol request on the pattern \*Q*\*U if there were no protocol
 restrictions on the total number of names returned.
 .sp
 .LP
@@ -2160,7 +2248,7 @@ is included in the list.  In addition to the scalable font name,
 specific derived instance names may also be included in the list.
 The relative order of derived instances with respect to the scalable
 font name is not constrained.  Finally, font name aliases may also be included
-in the list.  The relative order of aliases with respect to the ``real''
+in the list.  The relative order of aliases with respect to the \*Qreal\*U
 font name is not constrained.
 .LP
 The values of the RESOLUTION_X and RESOLUTION_Y fields of a scalable font name
@@ -2232,7 +2320,7 @@ Polymorphic Fonts
 .sC
 .LP
 Fonts that can be varied in ways other than size or resolution are called
-\*Qpolymorphic fonts.\*U  Multiple Master Type 1 font programs are one type of
+\fIpolymorphic fonts.\fP  Multiple Master Type 1 font programs are one type of
 a polymorphic font.  Current examples of axes along which the fonts can be
 varied are width, weight, and optical size; others might include formality
 or x-height.
@@ -2247,11 +2335,12 @@ defined for the following XLFD fields:
 	SPACING
 .fi
 .LP
-The string \*Q0\*U is the special polymorphic value.  In the WEIGHT_NAME, SLANT,
-SETWIDTH_NAME, or SPACING field, 0 must be the entire field.  In the
-ADD_STYLE_NAME field 0 is the polymorphic value whenever it is surrounded
-by percent signs, as \*Q%0%\*U.  %0% may coexist with other data in the field
-(including other polymorphic fields).
+The string \fC0\fP is the special polymorphic value.  In the
+WEIGHT_NAME, SLANT, SETWIDTH_NAME, or SPACING field, \fC0\fP must be the
+entire field.
+In the ADD_STYLE_NAME field 0 is the polymorphic value whenever it is
+surrounded by percent signs, as \fC%0%\fP.  \fC%0%\fP may coexist with
+other data in the field (including other polymorphic fields).
 .LP
 The font matching algorithms for a font with polymorphic fields are
 identical to the matching algorithms for a font with scalable fields.
@@ -2271,7 +2360,9 @@ The Adobe Myriad MM font program has width and weight axes.  Weight can
 vary from 215 to 830, and width from 300 to 700.
 .nf
 Name:
+.ft C
 	-Adobe-Myriad MM-0-R-0--0-0-0-0-P-0-ISO8859-1
+.ft P
 AXIS_NAMES:
 	Weight\0Width\0
 AXIS_LIMITS:
@@ -2279,14 +2370,18 @@ AXIS_LIMITS:
 AXIS_TYPES:
 	Adobe-Weight\0Adobe-Width\0
 Sample derived instance:
+.ft C
 	-Adobe-Myriad MM-412-R-575--*-120-100-100-P-*-ISO8859-1
+.ft P
 .fi
 .LP
 The Adobe Minion MM Italic font program had width, weight, and optical
 size axes.
 .nf
 Name:
+.ft C
 	-Adobe-Minion MM-0-I-0-%0%-0-0-0-0-P-0-ISO8859-1
+.ft P
 AXIS_NAMES:
 	Weight\0Width\0Optical size\0
 AXIS_LIMITS:
@@ -2294,16 +2389,19 @@ AXIS_LIMITS:
 AXIS_TYPES:
 	Adobe-Weight\0Adobe-Width\0Adobe-OpticalSize\0
 Sample derived instance:
+.ft C
 	-Adobe-Minion MM-550-I-480-%18%-*-180-100-100-P-*-ISO8859-1
+.ft P
 .fi
 .LP
 The Adobe Minion MM Swash Italic font program has the same axes and
-values.  This shows how %0% in the ADD_STYLE_NAME field can coexist with
-other words.
+values.  This shows how \fC%0%\fP in the ADD_STYLE_NAME field can
+coexist with other words.
 .nf
 Name:
-	-Adobe-Minion MM-0-I-0-Swash %0%-0-0-0-0-P-0-
-		ISO8859-1
+.ft C
+	-Adobe-Minion MM-0-I-0-Swash %0%-0-0-0-0-P-0-ISO8859-1
+.ft P
 AXIS_NAMES:
 	Weight\0Width\0Optical size\0
 AXIS_LIMITS:
@@ -2311,14 +2409,21 @@ AXIS_LIMITS:
 AXIS_TYPES:
 	Adobe-Weight\0Adobe-Width\0Adobe-OpticalSize\0
 Sample derived instance:
+.ft C
+.SM
 	-Adobe-Minion MM-550-I-480-Swash %18%-*-180-100-100-P-*-ISO8859-1
+.NL
+.ft P
 .fi
 .LP
 The XYZ Abc font, a hypothetical font, has optical size and x-height axes.
-This shows how there can be more than one %0% in the ADD_STYLE_NAME field.
+This shows how there can be more than one \fC%0%\fP in the
+ADD_STYLE_NAME field.
 .nf
 Name:
+.ft C
 	-XYZ-Abc-Medium-R-Normal-%0% %0%-0-0-0-0-P-0-ISO8859-1
+.ft P
 AXIS_NAMES:
 	Optical size\0X-height\0
 AXIS_LIMITS:
@@ -2326,7 +2431,11 @@ AXIS_LIMITS:
 AXIS_TYPES:
 	XYZ-OpticalSize\0XYZ-Xheight\0
 Sample derived instance:
+.ft C
+.SM
 	-XYZ-Abc-Medium-R-Normal-%14% %510%-*-140-100-100-P-*-ISO8859-1
+.NL
+.ft P
 .fi
 .LP
 If an axis allows negative values, a client requests a negative value by
@@ -2418,7 +2527,7 @@ The
 .PN FontName 
 begins with the X 
 .PN FontNameRegistry 
-prefix: ``-''.
+prefix: \*Q\-\*U.
 .IP \(bu 5
 All XLFD 
 .PN FontName 
@@ -2430,7 +2539,7 @@ definitions.
 .LP             
 A simple method of testing for conformance would entail verifying that the 
 .PN FontNameRegistry 
-prefix is the string ``-'', 
+prefix is the string \*Q\-\*U, 
 that the number of field delimiters in the string and coded field values 
 are valid, 
 and that each font property name either matches a standard XLFD property name 
@@ -2448,9 +2557,6 @@ by the BDF font compiler in generating the X server-specific
 binary font encoding. 
 If present, 
 these properties shall comply with the following semantic definitions.
-.EQ
-delim !!
-.EN
 .NH 3
 FONT_ASCENT
 .XS
