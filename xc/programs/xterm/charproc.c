@@ -1,6 +1,6 @@
 
 /*
- *	$Header: charproc.c,v 1.3 88/02/11 21:18:56 jim Exp $
+ *	$Header: charproc.c,v 1.4 88/02/12 08:51:08 jim Exp $
  */
 
 
@@ -57,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.3 88/02/11 21:18:56 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.4 88/02/12 08:51:08 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1591,9 +1591,12 @@ XSetWindowAttributes *values;
 	{
 	    unsigned long fg, bg;
 
-	    fg = screen->mousecolor;
-	    bg = (screen->mousecolor == term->core.background_pixel) ?
-		screen->foreground : term->core.background_pixel;
+	    bg = term->core.background_pixel;
+	    if (screen->mousecolor == term->core.background_pixel) {
+		fg = screen->foreground;
+	    } else {
+		fg = screen->mousecolor;
+	    }
 
 	    if (XStrCmp(term->misc.curs_shape, "arrow") == 0) {
 		screen->curs = make_arrow (fg, bg);
