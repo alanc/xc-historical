@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.21 94/02/08 18:32:08 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.22 94/02/10 19:18:02 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -468,16 +468,7 @@ FontFileCloseFont (fpe, pFont)
     (*pFont->unload_font) (pFont);
 }
 
-FontFileOpenBitmap (fpe, pFont, flags, entry, format, fmask)
-    FontPathElementPtr	fpe;
-    int			flags;
-    FontEntryPtr	entry;
-    FontPtr		*pFont;
-{
-    FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format, fmask,
-			   (FontPtr)0);
-}
-
+int
 FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format, fmask,
 		       non_cachable_font)
     FontPathElementPtr	fpe;
@@ -504,6 +495,17 @@ FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format, fmask,
 	(*pFont)->fpePrivate = (pointer) entry;
     }
     return ret;
+}
+
+int
+FontFileOpenBitmap (fpe, pFont, flags, entry, format, fmask)
+    FontPathElementPtr	fpe;
+    int			flags;
+    FontEntryPtr	entry;
+    FontPtr		*pFont;
+{
+    return FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format, fmask,
+				  (FontPtr)0);
 }
 
 FontFileGetInfoBitmap (fpe, pFontInfo, entry)
