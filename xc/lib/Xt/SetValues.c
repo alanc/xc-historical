@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.11 91/01/06 13:32:45 rws Exp $ */
+/* $XConsortium: SetValues.c,v 1.12 91/02/05 11:57:48 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -225,7 +225,7 @@ void XtSetValues(w, args, num_args)
 	    do {
 		result = _XtMakeGeometryRequest(w, &geoReq, &geoReply, 
 						&cleared_rect_obj);
-		if (result == XtGeometryYes)
+		if (result == XtGeometryYes || result == XtGeometryDone)
 		    break;
 
 		/* An Almost or No reply.  Call widget and let it munge
@@ -242,9 +242,11 @@ void XtSetValues(w, args, num_args)
 		(*(wc->core_class.set_values_almost))
 		    (oldw, w, &geoReq, &geoReply);
 	    } while (geoReq.request_mode != 0);
-	    /* call resize proc if we changed size */
+	    /* call resize proc if we changed size and parent
+	     * didn't already invoke resize */
 	    if ((w->core.width != oldw->core.width ||
 		 w->core.height != oldw->core.height)
+		&& result != XtGeometryDone
 		&& wc->core_class.resize != (XtWidgetProc) NULL) {
 		(*(wc->core_class.resize))(w);
 	    }
