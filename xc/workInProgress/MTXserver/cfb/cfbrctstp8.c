@@ -39,7 +39,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.2 94/01/04 00:02:10 rob Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.3 94/01/11 20:43:08 rob Exp $ */
 
 #if PSZ == 8
 
@@ -59,17 +59,6 @@ OF THIS SOFTWARE.
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
 
-#ifndef XTHREADS
-
-#define MTX_STIPPLE(_a) _a
-#define MTX_STIPPLE_CHANGE(_a) /* nothing */
-
-#else /* XTHREADS */
-
-#define MTX_STIPPLE(_a) pstipple->_a
-#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
-
-#endif /* XTHREADS */
 void
 cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     DrawablePtr	    pDrawable;
@@ -111,8 +100,13 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     if(pstipple->change == TRUE)
     {
 #endif /* XTHREADS */
+#ifndef XTHREADS
 	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
 			       pGC->planemask);
+#else 
+	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
+			       pGC->planemask, stipple);
+#endif /* !XTHREADS */
 #ifdef XTHREADS
 	pstipple->change = FALSE;
     }
@@ -307,7 +301,13 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     if(pstipple->change == TRUE)
     {
 #endif /* XTHREADS */
+
+#ifdef XTHREADS
+	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask, stipple);
+#else
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#endif /* XTHREADS */
+
 #ifdef XTHREADS
 	pstipple->change = FALSE;
     }

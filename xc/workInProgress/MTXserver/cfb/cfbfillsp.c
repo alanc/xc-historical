@@ -71,7 +71,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 1.5 94/01/10 13:59:21 rob Exp $ */
+/* $XConsortium: cfbfillsp.c,v 1.6 94/01/11 20:42:54 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -93,18 +93,6 @@ OF THIS SOFTWARE.
 
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
-
-#ifndef XTHREADS
-
-#define MTX_STIPPLE(_a) _a
-#define MTX_STIPPLE_CHANGE(_a) /* nothing */
-
-#else /* XTHREADS */
-
-#define MTX_STIPPLE(_a) pstipple->_a
-#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
-
-#endif /* XTHREADS */
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks
@@ -634,7 +622,11 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if(pstipple->change == TRUE)
     {
 #endif /* XTHREADS */
+#ifdef XTHREADS
+	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask, pstipple);
+#else
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#endif /* XTHREADS */
 #ifdef XTHREADS
 	pstipple->change = FALSE;
     }
@@ -863,8 +855,13 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if(pstipple->change == TRUE)
     {
 #endif /* XTHREADS */
+#ifdef XTHREADS
+	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
+	    pGC->planemask, pstipple);
+#else
 	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
 	    pGC->planemask);
+#endif /* XTHREADS */
 #ifdef XTHREADS
 	pstipple->change = FALSE;
     }
