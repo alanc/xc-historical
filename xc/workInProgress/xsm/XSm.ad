@@ -1,0 +1,34 @@
+*clientInfoButton.label:	Client Info...
+*checkPointButton.label:	Checkpoint...
+*shutdownButton.label:		Shutdown...
+
+*clientInfoPopup.title:		Client Info
+*viewPropButton.label:		View Properties
+*clientInfoDoneButton.label:	Done
+
+*clientPropTextWidget.width:	500
+*clientPropTextWidget.height:	250
+*clientPropDoneButton.label:	Done
+
+*saveTypeLabel.label:		Save Type     
+*saveTypeGlobal.label:		Global
+*saveTypeLocal.label:		Local
+*saveTypeBoth.label:		Both
+
+*interactStyleLabel.label:	Interact Style
+*interactStyleNone.label:	None
+*interactStyleErrors.label:	Errors
+*interactStyleAny.label:	Any
+
+*saveOkButton.label:		OK
+*saveCancelButton.label:	Cancel
+
+*shutdownDialog.label:		There are no active clients.  OK to shutdown?
+*shutdownPopup.title:		Shutdown Prompt
+*shutdownOkButton.label:	OK
+*shutdownCancelButton.label:	Cancel
+
+*checkPointButton.Translations: #override\n\
+	<Btn1Up>:	notify() reset()\n
+*shutdownButton.Translations: #override\n\
+	<Btn1Up>:	notify() reset()\n
