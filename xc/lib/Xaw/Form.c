@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.36 90/01/24 18:13:27 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.37 90/01/29 16:41:11 kit Exp $";
 #endif /* lint */
 
 
@@ -707,7 +707,7 @@ static XtGeometryResult PreferredGeometry( widget, request, reply  )
     reply->height = w->form.preferred_height;
     reply->request_mode = CWWidth | CWHeight;
     if (  request->request_mode & (CWWidth | CWHeight) ==
-	    reply->request_mode & CWWidth | CWHeight
+	    (CWWidth | CWHeight)
 	  && request->width == reply->width
 	  && request->height == reply->height)
 	return XtGeometryYes;
