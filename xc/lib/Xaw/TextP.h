@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.5 87/12/23 16:30:43 swick Locked $
+* $Header: TextP.h,v 1.7 88/01/06 08:57:13 swick Locked $
 */
 
 /*
@@ -69,11 +69,11 @@ typedef struct _XtTextSource {
     XtTextPosition	(*GetLastPos)();
     int			(*SetLastPos)();
     XtTextPosition	(*Scan)();
-    XtTextEditType	(*EditType)();
     void		(*AddWidget)( /* source, widget */ );
     void		(*RemoveWidget)( /* source, widget */ );
     void		(*SetSelection)( /* source, left, right */);
     Boolean		(*GetSelection)( /* source, left, right */);
+    XtTextEditType	edit_mode;
     caddr_t		data;	    
     };
 
@@ -106,9 +106,6 @@ typedef struct {
     } XtTextLineTable, *XtTextLineTablePtr;
 
 typedef enum {XtisOn, XtisOff} XtTextInsertState;
-
-typedef enum {XtselectNull, XtselectPosition, XtselectChar, XtselectWord,
-    XtselectLine, XtselectParagraph, XtselectAll} XtTextSelectType;
 
 typedef enum {XtsmTextSelect, XtsmTextExtend} XtTextSelectionMode;
 
