@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.69 93/08/17 21:54:22 rws Exp $
+ * $XConsortium: main.c,v 1.70 93/08/17 22:10:09 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -51,7 +51,7 @@ char	*includedirs[ MAXDIRS + 1 ];
 char	*notdotdot[ MAXDIRS ];
 char	*objprefix = "";
 char	*objsuffix = OBJSUFFIX;
-char	*startat = "# DO NOT DELETE THIS LINE -- make depend depends on it.";
+char	*startat = "# DO NOT DELETE";
 int	width = 78;
 boolean	append = FALSE;
 boolean	printed = FALSE;
