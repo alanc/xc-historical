@@ -25,7 +25,7 @@ SRCS = \
 	CrPixFBit.c \
 	CvtStdSel.c \
 	DefErrMsg.c \
-	DrawLogc.c \
+	DrawLogo.c \
 	DrRndRect.c \
 	FToCback.c \
 	GrayPixmap.c \
@@ -50,8 +50,10 @@ OBJS = \
 	CrPixFBit.o \
 	CvtStdSel.o \
 	DefErrMsg.o \
+	DrawLogo.o \
 	DrRndRect.o \
 	FToCback.o \
+	GrayPixmap.o \
 	Initializer.o \
 	Lookup.o \
 	Lower.o \
