@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillsp.c,v 1.26 87/08/26 21:46:00 toddb Locked $ */
+/* $Header: mfbfillsp.c,v 1.28 87/08/26 15:28:48 todd Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -77,16 +77,16 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted);
@@ -161,16 +161,16 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted);
@@ -180,7 +180,7 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	addrlBase = (int *)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
 	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
+		 (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
@@ -245,16 +245,16 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted);
@@ -333,16 +333,16 @@ int fSorted;
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
@@ -423,16 +423,16 @@ int fSorted;
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
@@ -513,16 +513,16 @@ int fSorted;
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
@@ -642,16 +642,16 @@ int fSorted;
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
@@ -771,16 +771,16 @@ int fSorted;
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
@@ -838,35 +838,30 @@ int fSorted;
 	        w = min(tileWidth, width);
 		if((rem = (x - xSrc)  % tileWidth) != 0)
 		{
+		    /* if we're in the middle of the tile, get
+		       as many bits as will finish the span, or
+		       as many as will get to the left edge of the tile,
+		       or a longword worth, starting at the appropriate
+		       offset in the tile.
+		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
-		    /* we want to grab from the end of the tile.  Figure
-		     * out where that is.  In general, the start of the last
-		     * word of data on this scanline is tlwidth -1 words 
-		     * away. But if we want to grab more bits than we'll
-		     * find on that line, we have to back up 1 word further.
-		     * On the other hand, if the whole tile fits in 1 word,
-		     * let's skip the work */ 
-		    endinc = tlwidth - 1 - w / BITMAP_SCANLINE_UNIT;
-
-		    if(endinc)
-		    {
-			if((rem & 0x1f) + w > tileWidth % BITMAP_SCANLINE_UNIT)
-			    endinc--;
-		    }
-
+		    endinc = rem / BITMAP_SCANLINE_UNIT;
 		    getbits(psrc + endinc, rem & 0x1f, w, tmpSrc);
 		    putbitsrop(tmpSrc, (x & 0x1f), w, pdst, rop);
 		    if((x & 0x1f) + w >= 0x20)
 			pdst++;
 		}
-
 		else if(((x & 0x1f) + w) < 32)
 		{
+		    /* doing < 32 bits is easy, and worth special-casing */
 		    getbits(psrc, 0, w, tmpSrc);
 		    putbitsrop(tmpSrc, x & 0x1f, w, pdst, rop);
 		}
 		else
 		{
+		    /* start at the left edge of the tile,
+		       and put down as much as we can
+		    */
 		    maskbits(x, w, startmask, endmask, nlMiddle);
 
 	            if (startmask)
@@ -945,16 +940,16 @@ int fSorted;
 	return;
 
     n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!ppt || !pwidth)
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(ppt);
-	DEALLOCATE_LOCAL(pwidth);
+	DEALLOCATE_LOCAL(pptFree);
+	DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
-    pwidthFree = pwidth;
-    pptFree = ppt;
+    pwidth = pwidthFree;
+    ppt = pptFree;
     n = miClipSpans(((mfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
@@ -1001,22 +996,14 @@ int fSorted;
 	        w = min(tileWidth, width);
 		if((rem = (x - xSrc) % tileWidth) != 0)
 		{
+		    /* if we're in the middle of the tile, get
+		       as many bits as will finish the span, or
+		       as many as will get to the left edge of the tile,
+		       or a longword worth, starting at the appropriate
+		       offset in the tile.
+		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
-		    /* we want to grab from the end of the tile.  Figure
-		     * out where that is.  In general, the start of the last
-		     * word of data on this scanline is tlwidth -1 words 
-		     * away. But if we want to grab more bits than we'll
-		     * find on that line, we have to back up 1 word further.
-		     * On the other hand, if the whole tile fits in 1 word,
-		     * let's skip the work */ 
-		    endinc = tlwidth - 1 - w / BITMAP_SCANLINE_UNIT;
-
-		    if(endinc)
-		    {
-			if((rem & 0x1f) + w > tileWidth % BITMAP_SCANLINE_UNIT)
-			    endinc--;
-		    }
-
+		    endinc = rem / BITMAP_SCANLINE_UNIT;
 		    getbits(psrc + endinc, rem & 0x1f, w, tmpSrc);
 		    putbitsrrop(tmpSrc, (x & 0x1f), w, pdst, rop);
 		    if((x & 0x1f) + w >= 0x20)
@@ -1025,11 +1012,15 @@ int fSorted;
 
 		else if(((x & 0x1f) + w) < 32)
 		{
+		    /* doing < 32 bits is easy, and worth special-casing */
 		    getbits(psrc, 0, w, tmpSrc);
 		    putbitsrrop(tmpSrc, x & 0x1f, w, pdst, rop);
 		}
 		else
 		{
+		    /* start at the left edge of the tile,
+		       and put down as much as we can
+		    */
 		    maskbits(x, w, startmask, endmask, nlMiddle);
 
 	            if (startmask)
