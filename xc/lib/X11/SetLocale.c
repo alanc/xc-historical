@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.16 91/04/02 15:23:18 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.17 91/04/02 15:49:34 rws Exp $
  */
 
 /*
@@ -38,14 +38,10 @@
 
 #define MAXLOCALE	64	/* buffer size of locale name */
 
-XLocale		_Xlocale_ = NULL;	/* global locale */
-XLocaleTable   *_xlctbl_ = NULL;	/* locale data base table */
+XLocale		_Xlocale_ = (XLocale)0;		/* global locale */
+XLocaleTable   *_xlctbl_ = (XLocaleTable *)0;	/* locale data base table */
 
-XLocale
-_XlcGetCurrentLocale()
-{
-    return (_Xlocale_);
-}
+#define XREALLOC(p, size)	((p) ? Xrealloc(p, size) : Xmalloc(size))
 
 static XLocaleDB *
 _XSetLocaleDB(lc_name)
@@ -55,17 +51,17 @@ _XSetLocaleDB(lc_name)
     extern XLocaleDB *_XlcGetLocaleTemplate();
     extern XLocaleDB *_XlcLoadTemplate();
 
-    if (_xlctbl_ == NULL) {
+    if (_xlctbl_ == (XLocaleTable *)0) {
 	_xlctbl_ = (XLocaleTable *) Xmalloc(sizeof(XLocaleTable));
 	if (!_xlctbl_)
-	    return (XLocaleDB *)NULL;
+	    return (XLocaleDB *)0;
 	_xlctbl_->num_loc = 0;
-	_xlctbl_->template = NULL;
+	_xlctbl_->template = (XLocaleList *)0;
     }
     /* set current locale from template. */
-    if ((template = _XlcGetLocaleTemplate(lc_name)) == NULL) {
-	if ((template = _XlcLoadTemplate(lc_name)) == NULL)
-	    return(NULL);
+    if ((template = _XlcGetLocaleTemplate(lc_name)) == (XLocaleDB *)0) {
+	if ((template = _XlcLoadTemplate(lc_name)) == (XLocaleDB *)0)
+	    return((XLocaleDB *)0);
     }
     return (template);
 }
@@ -93,10 +89,9 @@ _XlcSetLocaleModifiers(xlocale, modifiers)
     len = strlen(modifiers);
     for (i = 0, p = modifiers;  i < len; i++)
 	if (*p++ == '@') break;
-    xlocale->lc_modifier = Xmalloc((unsigned)strlen(p) + 1);
-    if (!xlocale->lc_modifier) {
+    if (! (xlocale->lc_modifier = XREALLOC(xlocale->lc_modifier, 
+					(unsigned)strlen(p) + 1)))
 	return (NULL);
-    }
     strcpy(xlocale->lc_modifier, p);
 
 /* for im : @im=xxxx,... */
@@ -111,11 +106,8 @@ _XlcSetLocaleModifiers(xlocale, modifiers)
     for (i = 0, q = p;  i < len; i++)
         if (*q++ == '@' || *q++ == ',') break;
 
-    xlocale->lc_im = Xmalloc((unsigned)i + 1);
-    if (!xlocale->lc_im) {
-	Xfree(xlocale->lc_modifier);
+    if (! (xlocale->lc_im = XREALLOC(xlocale->lc_im, (unsigned)i + 1)))
 	return (NULL);
-    }
     strncpy(xlocale->lc_im, p, i);
     *(xlocale->lc_im + i) = '\0';
 
@@ -123,24 +115,24 @@ _XlcSetLocaleModifiers(xlocale, modifiers)
 }
 
 /*ARGSUSED*/
-XLocale
-_XSetLocale(lc_category, lc_name)
-    int		lc_category;	/* locale category */
+static Bool
+_XChangeLocale(xlocale, lc_category, lc_name)
+    XLocale	xlocale;
+    int		lc_category;	/* locale category */ /* not used */
     char       *lc_name;	/* locale name */
 {
     int		i, len;
     char       *p;
     char       *lc_alias;
     char	lang[256];
-    XLocale     xlocale;
     char	*_XlcResolveName();
 
-    if (lc_name == NULL) {
-	if (_Xlocale_)
-	    return (_Xlocale_);
-	else
-	    lc_name = "C";
-    }
+    if (lc_name == NULL && xlocale)
+	return (True);
+
+    if (!xlocale)
+	return (False);
+
     /*
      * if lc_name that points null-string ("") are given, we must take locale
      * name from environment.
@@ -153,26 +145,17 @@ _XSetLocale(lc_category, lc_name)
 #endif
     }
 
-    xlocale = (XLocale) Xmalloc(sizeof(XLocaleRec));
-    if (!xlocale)
-	return ((XLocale)NULL);
-
-    xlocale->lc_lang = Xmalloc((unsigned)strlen(lc_name) + 1);
-    if (!xlocale->lc_lang) {
-	Xfree((char *)xlocale);
-	return ((XLocale)NULL);
-    }
+    if (! (xlocale->lc_lang = XREALLOC(xlocale->lc_lang,
+				      (unsigned)strlen(lc_name) + 1)))
+	return (False);
     strcpy(xlocale->lc_lang, lc_name);
 
     /* extract locale name */
     lc_alias = _XlcResolveName(lc_name);
 
     /* set Modifiers */
-    if (!_XlcSetLocaleModifiers(xlocale, lc_alias)) {
-	Xfree(xlocale->lc_lang);
-	Xfree((char *)xlocale);
-	return ((XLocale)NULL);
-    }
+    if (!_XlcSetLocaleModifiers(xlocale, lc_alias))
+	return (False);
 
     len = strlen(lc_alias);
     for (i = 0, p = lc_alias;  i < len; i++)
@@ -180,13 +163,36 @@ _XSetLocale(lc_category, lc_name)
     strncpy(lang, lc_alias, i);
     lang[i] = '\0';
 
-    xlocale->xlc_db = _XSetLocaleDB(lang) ;
-    if(!xlocale->xlc_db) {
-	Xfree(xlocale->lc_im);
-	Xfree(xlocale->lc_modifier);
-	Xfree(xlocale->lc_lang);
-	Xfree((char *)xlocale);
-	return ((XLocale)NULL);
+    if (! (xlocale->xlc_db = _XSetLocaleDB(lang)))
+	return (False);
+
+    return (True);
+}
+
+/*ARGSUSED*/
+XLocale
+_XSetLocale(lc_category, lc_name)
+    int		lc_category;	/* locale category */ /* not used */
+    char       *lc_name;	/* locale name */
+{
+    XLocale     xlocale;
+
+    if (lc_name == NULL) {
+	if (_Xlocale_)
+	    return (_Xlocale_);
+	else
+	    lc_name = "C"; /* Setting gloval locale with "C" */
+    }
+
+    xlocale = (XLocale) Xmalloc(sizeof(XLocaleRec));
+    xlocale->lc_lang = NULL;
+    xlocale->lc_im = NULL;
+    xlocale->lc_modifier = NULL;
+    if (!xlocale)
+	return ((XLocale)0);
+    if (! _XChangeLocale(xlocale, lc_category, lc_name)) {
+	_XFreeLocale(xlocale);
+	return ((XLocale)0);
     }
     return (xlocale);
 }
@@ -204,15 +210,19 @@ _Xsetlocale(lc_category, lc_name)
     char           *lc_name;        /* locale name */
 #endif
 {
-    XLocale tmp = _Xlocale_;
-    
-    _Xlocale_ = _XSetLocale(lc_category, lc_name);
+    if (_Xlocale_) {
+	char save[256];
+	strcpy(save, setlocale(lc_category, NULL)); /* save */
+	if (!_XChangeLocale(_Xlocale_, lc_category, lc_name))
+	    if (!_XChangeLocale(_Xlocale_, lc_category, save))
+		_XChangeLocale(_Xlocale_, lc_category, "C");
+    } else {
+	if (!(_Xlocale_ = _XSetLocale(lc_category, lc_name)))
+	    _Xlocale_ = _XSetLocale(lc_category, "C");
+    }
 
-    if (_Xlocale_ == NULL)
+    if (!_Xlocale_)
 	return NULL; 
-
-    if(tmp != NULL && tmp != _Xlocale_)
-	_XFreeLocale(tmp);
 
     return _Xlocale_->xlc_db->lc_name;
 }
