@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.19 91/03/26 13:04:19 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.20 91/03/26 14:29:00 rws Exp $
 XCOMM operating system:  OSName
 
 /*
@@ -9,7 +9,6 @@ XCOMM operating system:  OSName
 #define OSName                  NEWS-OS 3.3
 #define OSMajorVersion          3
 #define OSMinorVersion          3
-#define BuildServer             NO
 #define SetTtyGroup             YES
 #define HasBsearch              YES
 #define HasVoidSignalReturn     NO
@@ -23,11 +22,11 @@ XCOMM operating system:  OSName
 #define BootstrapCFlags		-Dsony
 #define CcCmd                   /usr/bin/cc
 #define HasSockets		YES
-#define BuildServer             YES /* XXX change to NO in R5 */
-#define XnonServer Xnon /* XXX remove in R5 */
 #if BuildPex
 #define DefaultCCOptions        -Wf,-XNp15000,-XNd15000
 #else
 #define DefaultCCOptions        -Wf,-XNp6000,-XNd6000
 #endif
 #endif
+#define BuildServer             YES /* XXX change to NO in R5 */
+#define XnonServer Xnon /* XXX remove in R5 */
