@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.80 89/03/08 08:51:46 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.81 89/03/11 16:53:48 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2423,14 +2423,14 @@ ProcAllocColorCells           (client)
 	nmasks = stuff->planes;
 	length = ((long)npixels + (long)nmasks) * sizeof(Pixel);
 	ppixels = (Pixel *)ALLOCATE_LOCAL(length);
-	if(!ppixels)
+	if(!ppixels && length)
             return(BadAlloc);
 	pmasks = ppixels + npixels;
 
 	if(retval = AllocColorCells(client->index, pcmp, npixels, nmasks, 
 				    (Bool)stuff->contiguous, ppixels, pmasks))
 	{
-	    DEALLOCATE_LOCAL(ppixels);
+	    if (ppixels) DEALLOCATE_LOCAL(ppixels);
             if (client->noClientException != Success)
                 return(client->noClientException);
 	    else
@@ -2442,9 +2442,12 @@ ProcAllocColorCells           (client)
 	accr.nPixels = npixels;
 	accr.nMasks = nmasks;
         WriteReplyToClient(client, sizeof (xAllocColorCellsReply), &accr);
-	client->pSwapReplyFunc = Swap32Write;
-        WriteSwappedDataToClient(client, length, ppixels);
-	DEALLOCATE_LOCAL(ppixels);
+	if (length)
+	{
+	    client->pSwapReplyFunc = Swap32Write;
+	    WriteSwappedDataToClient(client, length, ppixels);
+	}
+	if (ppixels) DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
     }
     else
@@ -2476,14 +2479,14 @@ ProcAllocColorPlanes(client)
 	acpr.nPixels = npixels;
 	length = (long)npixels * sizeof(Pixel);
 	ppixels = (Pixel *)ALLOCATE_LOCAL(length);
-	if(!ppixels)
+	if(!ppixels && length)
             return(BadAlloc);
 	if(retval = AllocColorPlanes(client->index, pcmp, npixels,
 	    (int)stuff->red, (int)stuff->green, (int)stuff->blue,
 	    (int)stuff->contiguous, ppixels,
 	    &acpr.redMask, &acpr.greenMask, &acpr.blueMask))
 	{
-            DEALLOCATE_LOCAL(ppixels);
+            if (ppixels) DEALLOCATE_LOCAL(ppixels);
             if (client->noClientException != Success)
                 return(client->noClientException);
 	    else
@@ -2491,9 +2494,12 @@ ProcAllocColorPlanes(client)
 	}
 	acpr.length = length >> 2;
 	WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), &acpr);
-	client->pSwapReplyFunc = Swap32Write;
-	WriteSwappedDataToClient(client, length, ppixels);
-	DEALLOCATE_LOCAL(ppixels);
+	if (length)
+	{
+	    client->pSwapReplyFunc = Swap32Write;
+	    WriteSwappedDataToClient(client, length, ppixels);
+	}
+	if (ppixels) DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
     }
     else
@@ -2622,11 +2628,12 @@ ProcQueryColors(client)
 	xQueryColorsReply	qcr;
 
 	count = ((stuff->length << 2) - sizeof(xQueryColorsReq)) >> 2;
-	if(!(prgbs = (xrgb *)ALLOCATE_LOCAL(count * sizeof(xrgb))))
+	prgbs = (xrgb *)ALLOCATE_LOCAL(count * sizeof(xrgb));
+	if(!prgbs && count)
             return(BadAlloc);
 	if(retval = QueryColors(pcmp, count, (unsigned long *)&stuff[1], prgbs))
 	{
-   	    DEALLOCATE_LOCAL(prgbs);
+   	    if (prgbs) DEALLOCATE_LOCAL(prgbs);
 	    if (client->noClientException != Success)
                 return(client->noClientException);
 	    else
@@ -2640,9 +2647,12 @@ ProcQueryColors(client)
 	qcr.sequenceNumber = client->sequence;
 	qcr.nColors = count;
 	WriteReplyToClient(client, sizeof(xQueryColorsReply), &qcr);
-	client->pSwapReplyFunc = SQColorsExtend;
-	WriteSwappedDataToClient(client, count * sizeof(xrgb), prgbs);
-	DEALLOCATE_LOCAL(prgbs);
+	if (count)
+	{
+	    client->pSwapReplyFunc = SQColorsExtend;
+	    WriteSwappedDataToClient(client, count * sizeof(xrgb), prgbs);
+	}
+	if (prgbs) DEALLOCATE_LOCAL(prgbs);
 	return(client->noClientException);
 	
     }
@@ -3017,8 +3027,11 @@ extern int GetHosts();
     reply.nHosts = nHosts;
     reply.length = len >> 2;
     WriteReplyToClient(client, sizeof(xListHostsReply), &reply);
-    client->pSwapReplyFunc = SLHostsExtend;
-    WriteSwappedDataToClient(client, len, pdata);
+    if (nHosts)
+    {
+	client->pSwapReplyFunc = SLHostsExtend;
+	WriteSwappedDataToClient(client, len, pdata);
+    }
     if (len != 0)
 	xfree(pdata);
     return (client->noClientException);
@@ -3136,7 +3149,7 @@ ProcGetFontPath(client)
     reply.nPaths = pFP->npaths;
 
     bufptr = bufferStart = (char *)ALLOCATE_LOCAL(reply.length << 2);
-    if(!bufptr)
+    if(!bufptr && reply.length)
         return(BadAlloc);
             /* since WriteToClient long word aligns things, 
 	       copy to temp buffer and write all at once */
@@ -3147,8 +3160,9 @@ ProcGetFontPath(client)
         bufptr += pFP->length[i];
     }
     WriteReplyToClient(client, sizeof(xGetFontPathReply), &reply);
-    (void)WriteToClient(client, stringLens + pFP->npaths, bufferStart);
-    DEALLOCATE_LOCAL(bufferStart);
+    if (stringLens || pFP->npaths)
+	(void)WriteToClient(client, stringLens + pFP->npaths, bufferStart);
+    if (bufferStart) DEALLOCATE_LOCAL(bufferStart);
     return(client->noClientException);
 }
 
