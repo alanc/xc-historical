@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.175 91/04/03 17:47:46 gildea Exp $ */
+/* $XConsortium: main.c,v 1.176 91/04/14 12:23:57 rws Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1232,7 +1232,7 @@ int error;
 static int pc_pipe[2];	/* this pipe is used for parent to child transfer */
 static int cp_pipe[2];	/* this pipe is used for child to parent transfer */
 
-first_map_occurred ()
+void first_map_occurred ()
 {
     handshake_t handshake;
     register TScreen *screen = &term->screen;
@@ -1251,7 +1251,7 @@ first_map_occurred ()
 /*
  * temporary hack to get xterm working on att ptys
  */
-first_map_occurred ()
+void first_map_occurred ()
 {
     return;
 }
