@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.88 89/11/20 16:50:47 jim Exp $
+ * $XConsortium: twm.c,v 1.89 89/11/21 16:41:43 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.88 89/11/20 16:50:47 jim Exp $";
+"$XConsortium: twm.c,v 1.89 89/11/21 16:41:43 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -435,8 +435,7 @@ main(argc, argv, environ)
 	    if (children[i] && MappedNotOverride(children[i]))
 	    {
 		XUnmapWindow(dpy, children[i]);
-		Event.xmaprequest.window = children[i];
-		HandleMapRequest();
+		SimulateMapRequest(children[i]);
 	    }
 	}
 
