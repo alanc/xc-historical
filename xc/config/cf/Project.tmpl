@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.47 89/10/19 11:44:30 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.48 89/10/20 08:26:37 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -188,6 +188,9 @@
 #ifndef TwmDir
 #define TwmDir $(LIBDIR)/twm
 #endif
+#ifndef GwmDir
+#define GwmDir $(LIBDIR)/gwm
+#endif
 #ifndef ManPath
 #define ManPath $(DESTDIR)/**/ManDirectoryRoot
 #endif
@@ -319,7 +322,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.47 89/10/19 11:44:30 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.48 89/10/20 08:26:37 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -343,6 +346,7 @@ Berklib.c: sysV/Berklib.c					@@\
            XDMDIR = XdmDir		/* xdm config files */
            AWMDIR = AwmDir		/* awm config files */
            TWMDIR = TwmDir		/* twm config files */
+           GWMDIR = GwmDir		/* gwm config and data files */
           MANPATH = ManPath		/* top of manual page tree */
     MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
            MANDIR = ManDir		/* man pages for commands */

@@ -193,6 +193,7 @@ Project.tmpl provides defaults for the following variables:
     XdmConfigurationSubdirectory	default xdm config sources
     AwmDir			path for installed awm default stuff
     TwmDir			path for installed twm default stuff
+    GwmDir			path for installed gwm default stuff
     ManPath			macro for directory where to put man pages
     ManSourcePath		macro for subdirectory where to put man pages
     ManDir			macro for program man page subdir
