@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.41 93/09/03 08:01:07 dpw Exp $ */
+/* $XConsortium: dixfonts.c,v 1.42 93/09/18 13:41:11 dpw Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -196,15 +196,14 @@ RemoveFontWakeup(fpe)
 
 /* ARGSUSED */
 void
-FontWakeup(data, val, LastSelectMask)
-    pointer       data;
-    unsigned long val;
-    pointer       LastSelectMask;
+FontWakeup(data, count, LastSelectMask)
+    pointer     data;
+    int		count;
+    pointer     LastSelectMask;
 {
-    int         i, count;
+    int         i;
     FontPathElementPtr fpe;
 
-    count = (int)val;
     if (count < 0)
 	return;
     /* wake up any fpe's that may be waiting for information */
