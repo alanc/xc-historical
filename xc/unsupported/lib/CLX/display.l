@@ -95,50 +95,46 @@
 
 ;; Define functions to find the CLX data types given a display and resource-id
 ;; If the data type is being cached, look there first.
-(eval-when (eval compile)  ;; I'd rather use macrolet, but Symbolics doesn't like it...
-
-(defmacro generate-lookup-functions (useless-name &body types)
-  `(within-definition (,useless-name generate-lookup-functions)
-     ,@(mapcar
-	 #'(lambda (type)
-	     `(defun ,(xintern 'lookup- type)
-		     (display id)
-		(declare (type display display)
-			 (type resource-id id))
-		(declare (values ,type))
-		,(if (member type *clx-cached-types*)
-		     `(let ((,type (lookup-resource-id display id)))
-			(cond ((null ,type) ;; Not found, create and save it.
-			       (setq ,type (,(xintern 'make- type)
-					    :display display :id id))
-			       (save-id display id ,type))
-			      ;; Found.  Check the type
-			      ,(cond ((null *type-check?*)
-				      `(t ,type))
-				     ((member type '(window pixmap))
-				      `((type? ,type 'drawable) ,type))
-				     (t `((type? ,type ',type) ,type)))
-			      ,@(when *type-check?*
-				  `((t (x-error 'lookup-error
-						:id id
-						:display display
-						:type ',type
-						:object ,type))))))
-		   ;; Not being cached.  Create a new one each time.
-		   `(,(xintern 'make- type)
-		     :display display :id id))))
-	 types)))
-) ;; End eval-when
-
-(generate-lookup-functions ignore
-  drawable
-  window
-  pixmap
-  gcontext
-  cursor
-  colormap
-  font
-  xatom)
+(macrolet ((generate-lookup-functions (useless-name &body types)
+	    `(within-definition (,useless-name generate-lookup-functions)
+	       ,@(mapcar
+		   #'(lambda (type)
+		       `(defun ,(xintern 'lookup- type)
+			       (display id)
+			  (declare (type display display)
+				   (type resource-id id))
+			  (declare (values ,type))
+			  ,(if (member type *clx-cached-types*)
+			       `(let ((,type (lookup-resource-id display id)))
+				  (cond ((null ,type) ;; Not found, create and save it.
+					 (setq ,type (,(xintern 'make- type)
+						      :display display :id id))
+					 (save-id display id ,type))
+					;; Found.  Check the type
+					,(cond ((null *type-check?*)
+						`(t ,type))
+					       ((member type '(window pixmap))
+						`((type? ,type 'drawable) ,type))
+					       (t `((type? ,type ',type) ,type)))
+					,@(when *type-check?*
+					    `((t (x-error 'lookup-error
+							  :id id
+							  :display display
+							  :type ',type
+							  :object ,type))))))
+			       ;; Not being cached.  Create a new one each time.
+			       `(,(xintern 'make- type)
+				 :display display :id id))))
+		   types))))
+  (generate-lookup-functions ignore
+    drawable
+    window
+    pixmap
+    gcontext
+    cursor
+    colormap
+    font
+    xatom))
 
 (defun atom-id (atom display)
   ;; Return the ID for an atom in DISPLAY
