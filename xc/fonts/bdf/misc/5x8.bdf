@@ -1,6 +1,6 @@
 STARTFONT 2.1
 COMMENT Copyright 1989 Cognition Corp.
-COMMENT
+COMMENT 
 COMMENT Permission to use, copy, modify, and distribute this software and its
 COMMENT documentation for any purpose and without fee is hereby granted,
 COMMENT provided that the above copyright notice appear in all copies and that
@@ -10,7 +10,7 @@ COMMENT used in advertising or publicity pertaining to distribution of the
 COMMENT software without specific, written prior permission.  Cognition Corp.
 COMMENT makes no representations about the suitability of this software for any
 COMMENT purpose.  It is provided "as is" without express or implied warranty.
-COMMENT
+COMMENT 
 COMMENT COGNITION CORP. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
 COMMENT INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
 COMMENT EVENT SHALL COGNITION CORP.  BE LIABLE FOR ANY SPECIAL, INDIRECT OR
@@ -155,10 +155,10 @@ DWIDTH 5 0
 BBX 5 8 0 -1
 BITMAP
 00
-70
+20
 50
-50
-70
+20
+00
 00
 00
 00
@@ -290,7 +290,7 @@ DWIDTH 5 0
 BBX 5 8 0 -1
 BITMAP
 00
-78
+f8
 00
 00
 00
@@ -306,7 +306,7 @@ BBX 5 8 0 -1
 BITMAP
 00
 00
-78
+f8
 00
 00
 00
@@ -322,7 +322,7 @@ BITMAP
 00
 00
 00
-78
+f8
 00
 00
 00
@@ -338,7 +338,7 @@ BITMAP
 00
 00
 00
-78
+f8
 00
 00
 00
@@ -354,7 +354,7 @@ BITMAP
 00
 00
 00
-78
+f8
 00
 00
 ENDCHAR
@@ -397,8 +397,8 @@ BITMAP
 20
 20
 20
-20
 f8
+00
 00
 00
 00
@@ -412,8 +412,8 @@ BITMAP
 00
 00
 00
-00
 f8
+20
 20
 20
 20
@@ -499,13 +499,13 @@ SWIDTH 1 0
 DWIDTH 5 0
 BBX 5 8 0 -1
 BITMAP
+00
 30
 48
 e0
 40
-70
-d8
-40
+48
+b0
 00
 ENDCHAR
 STARTCHAR C037
@@ -1481,7 +1481,7 @@ BITMAP
 00
 00
 00
-f8
+78
 ENDCHAR
 STARTCHAR `
 ENCODING 96
