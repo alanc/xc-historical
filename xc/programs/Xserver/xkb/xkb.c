@@ -889,10 +889,10 @@ XkbSizeExplicit(xkb,firstKey,nKeys,nKeysRtrn)
 
     for (nRtrn=i=0;i<nKeys;i++) {
 	if (xkb->server->explicit[i+firstKey]!=0)
-	    nRtrn+= 2;	/* two bytes per non-zero explicit component */
+	    nRtrn++;
     }
-    len= XkbPaddedSize(nRtrn);
     *nKeysRtrn= nRtrn;
+    len= XkbPaddedSize(nRtrn*2); /* two bytes per non-zero explicit component */
     return len;
 }
 
@@ -910,7 +910,7 @@ unsigned char *	pExp;
 
     start= buf;
     pExp= &xkb->server->explicit[req->firstKeyExplicit];
-    for (i=0;i<req->nKeyExplicit;i++) {
+    for (i=0;i<req->nKeyExplicit;i++,pExp++) {
 	if (*pExp!=0) {
 	    *buf++= i+req->firstKeyExplicit;
 	    *buf++= *pExp;
