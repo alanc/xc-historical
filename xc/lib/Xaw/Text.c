@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.19 88/01/25 13:46:31 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.20 88/01/25 18:29:17 swick Locked $";
 #endif lint
 
 /*
@@ -554,12 +554,12 @@ _XtTextScroll(ctx, n)
 	    DisplayTextWindow(ctx);
 	else {
 	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc,
-		      0, ctx->text.lt.info[n].y,
-		      9999, (Dimension)ctx->core.height - ctx->text.lt.info[n].y,
+		      0, ctx->text.lt.info[n].y, ctx->core.width,
+		      ctx->core.height - ctx->text.lt.info[n].y,
 		      0, ctx->text.lt.info[0].y);
 	    (*ctx->text.sink->ClearToBackground)(ctx, 0,
 		ctx->text.lt.info[0].y + ctx->core.height - ctx->text.lt.info[n].y,
-		9999, 9999);
+		ctx->core.width, ctx->core.height);
 	    if (n < ctx->text.lt.lines) n++;
 	    _XtTextNeedsUpdating(ctx,
 		    ctx->text.lt.info[ctx->text.lt.lines - n].position, ctx->text.lastPos);
@@ -575,7 +575,7 @@ _XtTextScroll(ctx, n)
 	BuildLineTable(ctx, top);
 	if (ctx->text.lt.info[n].position == target) {
 	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc,
-		      0, ctx->text.lt.info[0].y, 9999, tempHeight,
+		      0, ctx->text.lt.info[0].y, ctx->core.width, tempHeight,
 		      0, ctx->text.lt.info[n].y);
 	    _XtTextNeedsUpdating(ctx, 
 		    ctx->text.lt.info[0].position, ctx->text.lt.info[n].position);
