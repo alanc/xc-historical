@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.11 90/02/09 14:21:34 kit Exp $";
+    "$XConsortium: Varargs.c,v 1.12 90/02/09 16:38:02 kit Exp $";
 #endif
 /*
 
@@ -197,7 +197,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
     if (widget == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
             "nullWidget", "xtConvertVarTArgList", "XtToolkitError",
-	    "XtVaTypedArg conversion needs non-NULL widget handle");
+	    "XtVaTypedArg conversion needs non-NULL widget handle",
             (String *)NULL, (Cardinal *)NULL);
         return(0);
     }
