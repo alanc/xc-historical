@@ -47,14 +47,14 @@ typedef struct {
 
 typedef struct _EventKey {
     char    	*event;
-    XContext  	context;
+    XrmQuark	signature;
     unsigned long mask;
     unsigned long eventType;
 }EventKey, *EventKeys;
 
 typedef struct _ModifierKey {
     char     *name;
-    XContext context;
+    XrmQuark	signature;
     short    mask;
 }ModifierKey, *ModifierKeys;
 
@@ -256,11 +256,11 @@ static void LookupEventType(eventStr, eventType, eventMask)
   unsigned long *eventMask;
 {
     int i;
-    XContext eventContext;
+    XrmQuark	eventSignature;
 
-    eventContext = XAtomToContext(eventStr);
+    eventSignature = XrmAtomToQuark(eventStr);
     for (i = 0; events[i].event != NULL; i++) {
-        if (events[i].context == eventContext) {
+        if (events[i].signature == eventSignature) {
 	    *eventType = events[i].eventType;
 	    *eventMask |= events[i].mask;
 	    break;
@@ -273,12 +273,12 @@ static Boolean ProcessModifier(modifierStr, curEvent)
   char *modifierStr;
   EventSeqPtr curEvent;
 {
-    XContext modifierContext;
+    XrmQuark	modifierSignature;
     int i;
     short modifierMask = 0;
-    modifierContext = XAtomToContext(modifierStr);
+    modifierSignature = XrmAtomToQuark(modifierStr);
     for (i = 0; modifiers[i].name != NULL; i++) {
-        if (modifiers[i].context == modifierContext) {
+        if (modifiers[i].signature == modifierSignature) {
 	    modifierMask = modifiers[i].mask;
 	    break;
 	}
@@ -641,7 +641,7 @@ void TranslateInitialize()
         return;
     initialized = TRUE;
     for (i = 0; events[i].event != NULL; i++)
-         events[i].context = XAtomToContext(events[i].event);
+         events[i].signature = XrmAtomToQuark(events[i].event);
     for (i = 0; modifiers[i].name != NULL; i++)
-         modifiers[i].context = XAtomToContext(modifiers[i].name);
+         modifiers[i].signature = XAtomToQuark(modifiers[i].name);
 } 
