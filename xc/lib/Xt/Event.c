@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.162 94/02/10 17:53:33 converse Exp $ */
+/* $XConsortium: Event.c,v 1.163 94/03/31 18:46:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -975,6 +975,10 @@ typedef struct _CheckExposeInfo {
 #define GetCount(ev) ( ((ev)->type == GraphicsExpose) ? \
 		       (ev)->xgraphicsexpose.count : (ev)->xexpose.count)
 
+static void SendExposureEvent();
+static Bool CheckExposureEvent();
+static void AddExposureToRectangularRegion();
+
 /*	Function Name: CompressExposures
  *	Description: Handles all exposure compression
  *	Arguments: event - the xevent that is to be dispatched
@@ -983,9 +987,6 @@ typedef struct _CheckExposeInfo {
  *
  *      NOTE: Event must be of type Expose or GraphicsExpose.
  */
-
-static void SendExposureEvent();
-static Bool CheckExposureEvent();
 
 static void
 CompressExposures(event, widget)
@@ -996,17 +997,22 @@ XEvent * event;
     int count;
     Display* dpy = XtDisplay (widget);
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtEnum comp_expose;
     XtEnum comp_expose_type;
 
-    XtAddExposureToRegion(event, pd->region);
-
-    if ( GetCount(event) != 0 )
-	return;
-
     LOCK_PROCESS;
+    comp_expose = COMP_EXPOSE;
     comp_expose_type = COMP_EXPOSE_TYPE;
     UNLOCK_PROCESS;
 
+    if (comp_expose & XtExposeNoRegion)
+	AddExposureToRectangularRegion(event, pd->region);
+    else
+	XtAddExposureToRegion(event, pd->region);
+
+    if ( GetCount(event) != 0 )
+ 	return;
+ 
     if ( (comp_expose_type == XtExposeCompressSeries) ||
 	(XEventsQueued(dpy, QueuedAfterReading) == 0) ) {
 	SendExposureEvent(event, widget, pd);
@@ -1052,13 +1058,19 @@ XEvent * event;
 			  CheckExposureEvent, (char *) &info)) {
 
 	    count = GetCount(&event_return);
-	    XtAddExposureToRegion(&event_return, pd->region);
+ 	    if (comp_expose & XtExposeNoRegion)
+		AddExposureToRectangularRegion(&event_return, pd->region);
+ 	    else
+		XtAddExposureToRegion(&event_return, pd->region);
 	}
 	else if (count != 0) {
 	    XIfEvent(dpy, &event_return,
 		     CheckExposureEvent, (char *) &info);
 	    count = GetCount(&event_return);
-	    XtAddExposureToRegion(&event_return, pd->region);
+ 	    if (comp_expose & XtExposeNoRegion)
+		AddExposureToRectangularRegion(&event_return, pd->region);
+ 	    else
+		XtAddExposureToRegion(&event_return, pd->region);
 	}
 	else /* count == 0 && XCheckIfEvent Failed. */
 	    break;
@@ -1093,6 +1105,52 @@ void XtAddExposureToRegion(event, region)
     XUnionRectWithRegion(&rect, region, region);
 }
 
+#ifndef MAX
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef MIN
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+static void AddExposureToRectangularRegion(event, region)
+     XEvent *event;
+     Region  region;
+{
+    XRectangle rect;
+
+    switch (event->type) {
+      case Expose:
+	rect.x = event->xexpose.x;
+	rect.y = event->xexpose.y;
+	rect.width = event->xexpose.width;
+	rect.height = event->xexpose.height;
+	break;
+      case GraphicsExpose:
+	rect.x = event->xgraphicsexpose.x;
+	rect.y = event->xgraphicsexpose.y;
+	rect.width = event->xgraphicsexpose.width;
+	rect.height = event->xgraphicsexpose.height;
+	break;
+      default:
+	return;
+    }
+
+    if (XEmptyRegion(region)) {
+	XUnionRectWithRegion(&rect, region, region);
+    } else {
+	XRectangle merged, bbox;
+
+	XClipBox(region, &bbox);
+	merged.x = MIN(rect.x, bbox.x);
+	merged.y = MIN(rect.y, bbox.y);
+	merged.width = MAX(rect.x + rect.width,
+			   bbox.x + bbox.width) - merged.x;
+	merged.height = MAX(rect.y + rect.height,
+			    bbox.y + bbox.height) - merged.y;
+	XUnionRectWithRegion(&merged, region, region);
+    }
+}
 
 static Region nullRegion;
 /* READ-ONLY VARIABLES: nullRegion */
@@ -1121,6 +1179,7 @@ XtPerDisplay pd;
 {
     XtExposeProc expose;
     XRectangle rect;
+    XtEnum comp_expose;
 
     XClipBox(pd->region, &rect);
     if (event->type == Expose) {
@@ -1137,9 +1196,13 @@ XtPerDisplay pd;
     }
 
     LOCK_PROCESS;
+    comp_expose = COMP_EXPOSE;
     expose = widget->core.widget_class->core_class.expose;
     UNLOCK_PROCESS;
-    (*expose)(widget, event, pd->region);
+    if (comp_expose & XtExposeNoRegion)
+	(*expose)(widget, event, NULL);
+    else
+	(*expose)(widget, event, pd->region);
     (void) XIntersectRegion(nullRegion, pd->region, pd->region);
 }
 
