@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -112,27 +113,27 @@ static int masktab[32] =
 #endif
 
 PixmapPtr
-cfbCreatePixmap (pScreen, width, height, depth)
+cfbCreatePixmap (pScreen, width, height, bitsPerPixel)
     ScreenPtr	pScreen;
     int		width;
     int		height;
-    int		depth;
+    int		bitsPerPixel;
 {
     register PixmapPtr pPixmap;
     int size;
 
-    if (depth != 1 && depth != PSZ)
+    if (bitsPerPixel != 1 && bitsPerPixel != PSZ)
 	return NullPixmap;
 
-    size = PixmapBytePad(width, depth);
+    size = PixmapBytePad(width, bitsPerPixel);
     pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + (height * size));
     if (!pPixmap)
 	return NullPixmap;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.class = 0;
     pPixmap->drawable.pScreen = pScreen;
-    pPixmap->drawable.depth = depth;
-    pPixmap->drawable.bitsPerPixel = depth;
+    pPixmap->drawable.depth = bitsPerPixel;
+    pPixmap->drawable.bitsPerPixel = bitsPerPixel;
     pPixmap->drawable.id = 0;
     pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pPixmap->drawable.x = 0;
@@ -193,7 +194,7 @@ void
 cfbPadPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
-    register int width = (pPixmap->drawable.width) * (pPixmap->drawable.depth);
+    register int width = (pPixmap->drawable.width) * (pPixmap->drawable.bitsPerPixel);
     register int h;
     register int mask;
     register unsigned int *p;
@@ -226,7 +227,7 @@ cfbPadPixmap(pPixmap)
         }
         p++;
     }    
-    pPixmap->drawable.width = 32/(pPixmap->drawable.depth);
+    pPixmap->drawable.width = 32/(pPixmap->drawable.bitsPerPixel);
 }
 
 
@@ -286,14 +287,14 @@ cfbXRotatePixmap(pPix, rw)
     if (pPix == NullPixmap)
         return;
 
-    switch (((DrawablePtr) pPix)->depth) {
+    switch (((DrawablePtr) pPix)->bitsPerPixel) {
 	case PSZ:
 	    break;
 	case 1:
 	    mfbXRotatePixmap(pPix, rw);
 	    return;
 	default:
-	    ErrorF("cfbXRotatePixmap: unsupported depth %d\n", ((DrawablePtr) pPix)->depth);
+	    ErrorF("cfbXRotatePixmap: unsupported bitsPerPixel %d\n", ((DrawablePtr) pPix)->bitsPerPixel);
 	    return;
     }
     pw = (unsigned int *)pPix->devPrivate.ptr;
@@ -358,14 +359,14 @@ cfbYRotatePixmap(pPix, rh)
 
     if (pPix == NullPixmap)
 	return;
-    switch (((DrawablePtr) pPix)->depth) {
+    switch (((DrawablePtr) pPix)->bitsPerPixel) {
 	case PSZ:
 	    break;
 	case 1:
 	    mfbYRotatePixmap(pPix, rh);
 	    return;
 	default:
-	    ErrorF("cfbYRotatePixmap: unsupported depth %d\n", ((DrawablePtr) pPix)->depth);
+	    ErrorF("cfbYRotatePixmap: unsupported bitsPerPixel %d\n", ((DrawablePtr) pPix)->bitsPerPixel);
 	    return;
     }
 

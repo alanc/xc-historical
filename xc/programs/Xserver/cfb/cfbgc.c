@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.49 91/06/28 12:39:17 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.50 91/07/14 13:49:56 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -237,15 +237,8 @@ cfbCreateGC(pGC)
 {
     cfbPrivGC  *pPriv;
 
-    switch (pGC->depth) {
-    case 1:
+    if (pGC->depth == 1)
 	return (mfbCreateGC(pGC));
-    case PSZ:
-	break;
-    default:
-	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
-	return FALSE;
-    }
     pGC->clientClip = NULL;
     pGC->clientClipType = CT_NONE;
 
@@ -580,7 +573,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     }
 
     /*
-     * If the drawable has changed,  check its depth & ensure suitable
+     * If the drawable has changed,  ensure suitable
      * entries are in the proc vector. 
      */
     if (pDrawable->serialNumber != (pGC->serialNumber & (DRAWABLE_SERIAL_BITS))) {

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.5 89/11/25 12:26:41 rws Exp $ */
+/* $XConsortium: cfbimage.c,v 1.6 90/12/09 16:01:46 keith Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -122,7 +122,7 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 
     if ((w == 0) || (h == 0))
 	return;
-    if (pDrawable->depth == 1)
+    if (pDrawable->bitsPerPixel == 1)
     {
 	mfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
 	return;
