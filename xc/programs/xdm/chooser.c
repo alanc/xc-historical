@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.3 91/01/31 22:02:58 gildea Exp $
+ * $XConsortium: chooser.c,v 1.4 91/02/04 19:17:53 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -65,6 +65,9 @@
 #include    <stdio.h>
 #include    <ctype.h>
 
+#ifdef SVR4
+#include    <sys/sockio.h>
+#endif
 #include    <sys/socket.h>
 #include    <netinet/in.h>
 #include    <sys/ioctl.h>

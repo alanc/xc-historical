@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.33 91/02/12 17:42:17 keith Exp $
+ * $XConsortium: auth.c,v 1.34 91/02/13 19:14:52 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,6 +36,7 @@
 #ifdef SVR4
 # include   <sys/utsname.h>
 # include   <netdb.h>
+# include   <sys/sockio.h>
 #endif
 # include    <net/if.h>
 #ifdef TCPCONN
