@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.7 94/02/05 15:09:02 rws Exp $ */
+/* $XConsortium: xsmclient.c,v 1.8 94/02/06 21:13:19 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -458,24 +458,21 @@ SmProp    **props;
 {
     int i, j;
 
-    if (appResources.verbose) {
-	printf ("Client Id = %s, there are %d properties set:\n",
-		clientId, numProps);
-	printf ("\n");
-    }
+    printf ("Client Id = %s, there are %d properties set:\n",
+	    clientId, numProps);
+    printf ("\n");
 
     for (i = 0; i < numProps; i++) {
-	if (appResources.verbose) {
-	    printf ("Name:		%s\n", props[i]->name);
-	    printf ("Type:		%s\n", props[i]->type);
-	    printf ("Num values:	%d\n", props[i]->num_vals);
-	    for (j = 0; j < props[i]->num_vals; j++)
-		    {
-			printf ("Value %d:	%s\n", j + 1,
-				(char *) props[i]->vals[j].value);
-		    }
-	    printf ("\n");
+	printf ("Name:		%s\n", props[i]->name);
+	printf ("Type:		%s\n", props[i]->type);
+	printf ("Num values:	%d\n", props[i]->num_vals);
+	for (j = 0; j < props[i]->num_vals; j++)
+	{
+	    printf ("Value %d:	%s\n", j + 1,
+		    (char *) props[i]->vals[j].value);
 	}
+	printf ("\n");
+
 	SmFreeProperty (props[i]);
     }
 
@@ -648,9 +645,11 @@ char **argv;
     memcpy((char *)saveargv, (char *)argv, (argc+1) * (sizeof *saveargv));
     saveargc = argc;
 
-    topLevel = XtAppInitialize (&appContext, "SAMPLE-SM-CLIENT",
-	options, XtNumber(options), &argc, argv, NULL, NULL, 0);
-
+    topLevel = XtVaAppInitialize (&appContext, "SAMPLE-SM-CLIENT",
+	options, XtNumber(options), &argc, argv, NULL,
+        XtNjoinSession, 0,	/* Don't let Xt control our SM connection */
+	NULL);
+	
     XtGetApplicationResources(topLevel, (XtPointer)&appResources, Resources,
 			      XtNumber(Resources), (ArgList) NULL, ZERO);
 
