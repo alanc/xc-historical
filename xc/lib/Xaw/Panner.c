@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.9 90/02/13 10:56:17 jim Exp $
+ * $XConsortium: Panner.c,v 1.10 90/02/13 12:44:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -104,7 +104,7 @@ static XtGeometryResult QueryGeometry();  /* say how big we would like to be */
 
 PannerClassRec pannerClassRec = {
   { /* core fields */
-    /* superclass		*/	(WidgetClass) &widgetClassRec,
+    /* superclass		*/	(WidgetClass) &simpleClassRec,
     /* class_name		*/	"Panner",
     /* widget_size		*/	sizeof(PannerRec),
     /* class_initialize		*/	XawInitializeWidgetSet,
