@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.11 90/12/27 14:08:16 rws Exp $ */
+/* $XConsortium: VarargsI.h,v 1.12 91/03/23 11:25:21 rws Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -43,33 +43,20 @@ typedef char *va_list;
   *((TYPE *) (AP - __va_rounded_size (TYPE))))
 
 #endif /* _STDARG_H */
-#endif /* __HIGHC__ */
 
-#if __STDC__
-# ifndef NOSTDHDRS
-#  define _XSTDVAR
-# else
-# ifdef __GNUC__
-#  define _XSTDVAR
-# endif
-# endif
-#else
-#ifdef sgi
-#define _XSTDVAR
-#endif
-#endif
+#define Va_start(a,b) va_start(a,b)
 
-#ifdef _XSTDVAR
+#else /* !__HIGHC__ */
+
+#if NeedVarargsPrototypes
 # include <stdarg.h>
 # define Va_start(a,b) va_start(a,b)
 #else
-# if NeedVarargsPrototypes
-#  undef NeedVarargsPrototypes
-#  define NeedVarargsPrototypes 0
-# endif
 # include <varargs.h>
 # define Va_start(a,b) va_start(a)
 #endif
+
+#endif /* __HIGHC__ */
 
 typedef struct _XtTypedArg {
     String      name;
