@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.60 92/01/29 17:56:56 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.61 92/02/06 18:11:35 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -202,6 +202,9 @@ WYXK_Setup		0x1006FF00		[68]
 
 ncdXK_Setup		0x1006FF00		[66]
 
+xrxXK_Button1		0x10070001		[91]
+xrxXK_Button2		0x10070002		[91]
+xrxXK_Button3		0x10070003		[91]
 
 3. AUTHORIZATION PROTOCOL NAMES
 
@@ -465,6 +468,7 @@ Name						Reference
 "omron"						[45]
 "Panasonic"					[52]
 "Sony"						[37]
+"Sun"						[92]
 
 14. FONT CHARSET (REGISTRY AND ENCODING) NAMES
 
@@ -1192,3 +1196,12 @@ REFERENCES
 	2-6-9, Higashi Kanda, Chiyoda-ku,
 	Tokyo 101 Japan
 
+[91]	Christian Jacobi
+	Xerox Corporation
+	3333 Coyote Hill Rd.
+	Palo Alto, CA 94304
+
+[92]	Rick Heli
+	Sun Microsystems, Inc.
+	2550 Garcia Avenue
+	Mountain View, CA  94043-1100
