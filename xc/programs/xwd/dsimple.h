@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.h,v 1.1 87/09/11 08:17:50 toddb Exp $ */
+/* $XConsortium: dsimple.h,v 1.2 88/09/06 17:12:31 jim Exp $ */
 /*
  * Just_display.h: This file contains the definitions needed to use the
  *                 functions in just_display.c.  It also declares the global
@@ -35,7 +35,7 @@ Window Select_Window_Args();
 
 #define X_USAGE "[host:display]"              /* X arguments handled by
 						 Get_Display_Name */
-#define SELECT_USAGE "[{-root|-id <id>|-font <font>|-name <name>}]"
+#define SELECT_USAGE "[-root|-id <id>|-name <name>]"
 
 /*
  * Other_stuff.h: Definitions of routines in other_stuff.
