@@ -1,5 +1,6 @@
 /*
-* $Header: IntrinsicP.h,v 1.27 88/02/23 10:06:22 swick Exp $
+* $xHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
+* $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
 /***********************************************************
@@ -29,14 +30,14 @@ SOFTWARE.
 #ifndef _XtintrinsicP_h
 #define _XtintrinsicP_h
 
-#include <X11/Intrinsic.h>
-#include <X11/Xutil.h>
+#include "Intrinsic.h"
 
 typedef unsigned long XtVersionType;
 
-#define XT_VERSION 2
-#define XT_REVISION 2
+#define XT_VERSION 7
+#define XT_REVISION 1
 #define XtVersion (XT_VERSION * 1000 + XT_REVISION)
+#define XtVersionDontCheck 0
 
 extern void _XtInherit();
     /* takes no arguments */
@@ -44,11 +45,15 @@ extern void _XtInherit();
 typedef void (*XtProc)();
     /* takes no arguments */
 
+typedef void (*XtWidgetClassProc)();
+    /* WidgetClass class */
+
 typedef void (*XtWidgetProc)();
     /* Widget widget */
 
-typedef void (*XtWidgetClassProc)();
-    /* WidgetClass class */
+typedef Boolean (*XtAcceptFocusProc)();
+    /* Widget widget; */
+    /* Time *time; */ /* X time */
 
 typedef void (*XtArgsProc)();
     /* Widget   widget */
@@ -78,6 +83,7 @@ typedef void (*XtAlmostProc)();
 typedef void (*XtExposeProc)();
     /* Widget    widget; */
     /* XEvent    *event; */
+    /* Region	 region; */
 
 typedef void (*XtRealizeProc) ();
     /* Widget	widget;			    */
@@ -91,20 +97,45 @@ typedef XtGeometryResult (*XtGeometryHandler)();
     /* XtWidgetGeometry *request    */
     /* XtWidgetGeometry *reply      */
 
+typedef void (*XtStringProc)();
+    /* Widget		widget	    */
+    /* String		str	    */
+
+#include "ObjectP.h"
+#include "RectObjP.h"
+#include "WindowObjP.h"
 #include "CoreP.h"
 #include "CompositeP.h"
+#include "CompObjP.h"
 #include "ConstrainP.h"
 
 #define XtDisplay(widget)	((widget)->core.screen->display)
 #define XtScreen(widget)	((widget)->core.screen)
 #define XtWindow(widget)	((widget)->core.window)
 #define XtClass(widget)		((widget)->core.widget_class)
-#define XtParent(widget)	((widget)->core.parent)
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
 #define XtIsManaged(widget)     ((widget)->core.managed)
 #define XtIsRealized(widget)	((widget)->core.window != NULL)
 #define XtIsSensitive(widget)	((widget)->core.sensitive && \
 				 (widget)->core.ancestor_sensitive)
+#define XtParent(widget)	((widget)->core.parent)
+
+#ifdef DEBUG
+#define XtCheckSubclass(w, widget_class_ptr, message)	\
+	if (!XtIsSubclass((w), (widget_class_ptr))) {	\
+	    String params[3];				\
+	    Cardinal num_params = 3;			\
+	    params[0] = (w)->core.widget_class->core_class.class_name;	     \
+	    params[1] = (widget_class_ptr)->core_class.class_name;	     \
+	    params[2] = (message);					     \
+	    XtErrorMsg("subclassMismatch", "xtCheckSubclass",		     \
+		    "XtToolkitError",					     \
+		    "Widget class %s found when subclass of %s expected: %s",\
+		    params, &num_params);		\
+	}
+#else
+#define XtCheckSubclass(w, widget_class, message)	/* nothing */
+#endif
 
 extern void XtCreateWindow ();
     /* Widget widget; */
@@ -117,22 +148,14 @@ extern void XtResizeWidget(); /* widget, width, height, borderWidth */
     /* Widget  widget */
     /* Dimension width, height, borderWidth; */
 
-extern void XtConfigureWidget(); /* widget, x, y, width, height, borderWidth */
-    /* Widget widget; */
-    /* Position x, y; */
-    /* Dimension height, width, borderWidth; */
-
 extern void XtMoveWidget(); /* widget, x, y */
     /* Widget  widget */
     /* Position x, y  */
 
-extern void XtReadBinaryDatabase ();
-    /* FILE    *f;			*/
-    /* ResourceDatabase *db;		*/
-
-extern void XtWriteBinaryDatabase ();
-    /* FILE    *f;			*/
-    /* ResourceDatabase db;		*/
+extern void XtConfigureWidget(); /* widget, x, y, width, height, borderWidth */
+    /* Widget widget; */
+    /* Position x, y; */
+    /* Dimension height, width, borderWidth; */
 
 #endif _XtIntrinsicP_h
 /* DON'T ADD STUFF AFTER THIS #endif */
