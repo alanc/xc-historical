@@ -63,13 +63,17 @@ int InitGetProperty(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    int foo = 41;
+    long foo[4];
 
+    foo[0] = 41;
+    foo[1] = 14;
+    foo[2] = 37;
+    foo[3] = 73;
     root = RootWindow (xp->d, 0);
     XA_PK_TEMP = XInternAtom (xp->d, "_PK_TEMP", False);
     XChangeProperty (
 	    xp->d, root, XA_PK_TEMP, XA_INTEGER, 32,
-	    PropModeReplace, (unsigned char *)&foo, sizeof (int));
+	    PropModeReplace, (unsigned char *)&foo, 4);
     return reps;
 }
 
