@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.4 93/09/27 11:45:29 mor Exp $ */
+/* $XConsortium: globals.h,v 1.5 93/11/08 16:34:12 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -17,10 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 extern void _IceDefaultErrorHandler ();
 extern void _IceDefaultIOErrorHandler ();
 
-extern IcePoAuthStatus _IcePoAuth1proc ();
-extern IcePaAuthStatus _IcePaAuth1proc ();
-extern IcePoAuthStatus _IcePoAuth2proc ();
-extern IcePaAuthStatus _IcePaAuth2proc ();
+extern IcePoAuthStatus _IcePoMagicCookie1Proc ();
+extern IcePaAuthStatus _IcePaMagicCookie1Proc ();
 
 extern Bool _IceProcessCoreMessage ();
 
@@ -31,13 +29,15 @@ int     	_IceConnectionCount = 0;
 _IceProtocol 	_IceProtocols[255];
 int         	_IceLastMajorOpcode = 0;
 
-int		_IceAuthCount = 2;
+int		_IceAuthCount = 1;
 IcePoAuthRec	_IcePoAuthRecs[] = {
-		  		{"ICE-AUTH-TEST-1", _IcePoAuth1proc},
-		  		{"ICE-AUTH-TEST-2", _IcePoAuth2proc}};
+		    {"ICE-MAGIC-COOKIE-1", _IcePoMagicCookie1Proc}};
+
 IcePaAuthRec	_IcePaAuthRecs[] = {
-		  		{"ICE-AUTH-TEST-1", _IcePaAuth1proc},
-		  		{"ICE-AUTH-TEST-2", _IcePaAuth2proc}};
+		    {"ICE-MAGIC-COOKIE-1", _IcePaMagicCookie1Proc}};
+
+int		 _IceAuthDataEntryCount = 0;
+IceAuthDataEntry *_IceAuthDataEntries = NULL;
 
 int		_IceVersionCount = 1;
 _IceVersion	_IceVersions[] = {
