@@ -1,4 +1,4 @@
-/* $XConsortium: lbxfax.h,v 1.1 94/09/13 17:33:26 mor Exp $ */
+/* $XConsortium: lbxfax.h,v 1.1 94/11/08 19:57:48 mor Exp mor $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -43,6 +43,7 @@ typedef struct tableentry {
 #define	G3CODE_EOL	-3
 #define	G3CODE_EOF	-4
 
+#define ROUNDUP(x) (((x) > (int)(x)) ? ((int) (x) + 1) : ((int) (x)))
+
 extern tableentry TIFFFaxWhiteCodes[];
 extern tableentry TIFFFaxBlackCodes[];
-extern unsigned char NoBitRevTable[];
