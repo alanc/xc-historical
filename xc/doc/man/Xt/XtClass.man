@@ -124,7 +124,7 @@
 .ny0
 .TH XtClass 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtClass, XtSuperclass, XtIsSubclass, XtCheckSubclass, XtIsObject, XtIsRectObj, XtIsWidget, XtIsComposite, XtIsConstraint, XtIsShell, XtIsOverrideShell, XtIsWMShell, XtIsVendorShell, XtIsTransientShell, XtIsTopLevelShell, XtIsApplicationShell \- obtain and verify a widget's class
+XtClass, XtSuperclass, XtIsSubclass, XtCheckSubclass, XtIsObject, XtIsRectObj, XtIsWidget, XtIsComposite, XtIsConstraint, XtIsShell, XtIsOverrideShell, XtIsWMShell, XtIsVendorShell, XtIsTransientShell, XtIsTopLevelShell, XtIsApplicationShell, XtIsSessionShell \- obtain and verify a widget's class
 .SH SYNTAX
 WidgetClass XtClass(\fIw\fP)
 .br
@@ -196,6 +196,10 @@ Boolean XtIsApplicationShell(\fIw\fP)
 .br
       Widget \fIw\fP;
 .LP
+Boolean XtIsSessionShell(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
 .SH ARGUMENTS
 .IP \fIw\fP 1i
 Specifies the widget.
@@ -260,8 +264,9 @@ for each of the built-in classes. These procedures are
 .ZN XtIsVendorShell ,
 .ZN XtIsTransientShell ,
 .ZN XtIsTopLevelShell ,
+.ZN XtIsApplicationShell ,
 and
-.ZN XtIsApplicationShell .
+ZN XtIsSessionShell .
 .LP
 The
 .SH "SEE ALSO"
