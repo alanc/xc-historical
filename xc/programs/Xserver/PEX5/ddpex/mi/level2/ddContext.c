@@ -1,4 +1,4 @@
-/* $XConsortium: ddContext.c,v 5.4 91/10/24 17:57:21 hersh Exp $ */
+/* $XConsortium: ddContext.c,v 5.5 92/11/09 18:53:50 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -954,9 +954,13 @@ ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs)
 	miBldCC_xform(pRend, pddc);
     }
 
+    /* the echo colour change always take places */
+    pddc->Static.attrs->echoColour = pRend->echoColour;
+
     /* If the echo mode changes, we have to change all these GCs */
     if( attrs & PEXDynEchoMode )
       {
+	pddc->Static.attrs->echoMode = pRend->echoMode;
         pddc->Static.misc.flags |= POLYLINEGCFLAG;
         pddc->Static.misc.flags |= MARKERGCFLAG;
         pddc->Static.misc.flags |= FILLAREAGCFLAG;
