@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.8 88/10/20 17:34:55 keith Exp $
+ * $XConsortium: Login.c,v 1.9 88/10/22 10:41:01 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -197,10 +197,13 @@ static void
 EraseFail (w)
     LoginWidget	w;
 {
+    int x = FAIL_X(w);
+    int y = FAIL_Y(w);
+
     XSetForeground (XtDisplay (w), w->login.failGC,
 			w->core.background_pixel);
     XDrawString (XtDisplay (w), XtWindow (w), w->login.failGC,
-		FAIL_X(w), FAIL_Y(w),
+		x, y,
 		w->login.fail, strlen (w->login.fail));
     w->login.failUp = 0;
     XSetForeground (XtDisplay (w), w->login.failGC,
@@ -235,8 +238,11 @@ failTimeout (client_data, id)
 DrawFail (w)
     LoginWidget	w;
 {
+    int x = FAIL_X(w);
+    int y = FAIL_Y(w);
+
     XDrawString (XtDisplay (w), XtWindow (w), w->login.failGC,
-		FAIL_X(w), FAIL_Y(w),
+		x, y,
 		w->login.fail, strlen (w->login.fail));
     XorCursor (w);
     ResetLogin (w);
