@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.116 87/11/19 16:34:40 rws Locked $ */
+/* $Header: events.c,v 1.117 87/11/24 10:32:12 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -862,11 +862,11 @@ FixUpEventFromWindow(xE, pWin, child, calcChild)
         } 	    
     }
     xE->u.keyButtonPointer.root = ROOT->wid;
-    xE->u.keyButtonPointer.child = child;
     xE->u.keyButtonPointer.event = pWin->wid;
     if (currentScreen == pWin->drawable.pScreen)
     {
 	xE->u.keyButtonPointer.sameScreen = xTrue;
+	xE->u.keyButtonPointer.child = child;
 	xE->u.keyButtonPointer.eventX =
 	    xE->u.keyButtonPointer.rootX - pWin->absCorner.x;
 	xE->u.keyButtonPointer.eventY =
@@ -875,6 +875,7 @@ FixUpEventFromWindow(xE, pWin, child, calcChild)
     else
     {
 	xE->u.keyButtonPointer.sameScreen = xFalse;
+	xE->u.keyButtonPointer.child = None;
 	xE->u.keyButtonPointer.eventX = 0;
 	xE->u.keyButtonPointer.eventY = 0;
     }
@@ -3244,14 +3245,14 @@ ProcGetMotionEvents(client)
     REQUEST(xGetMotionEventsReq);
 
     REQUEST_SIZE_MATCH(xGetMotionEventsReq);
-    if (motionHintWindow)
-	MaybeStopHint(client);
     pWin = LookupWindow(stuff->window, client);
     if (!pWin)
     {
 	client->errorValue = stuff->window;
 	return BadWindow;
     }
+    if (motionHintWindow)
+	MaybeStopHint(client);
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.nEvents = 0;
@@ -3306,14 +3307,14 @@ ProcQueryPointer(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    if (motionHintWindow)
-	MaybeStopHint(client);
     pWin = LookupWindow(stuff->id, client);
     if (!pWin)
     {
 	client->errorValue = stuff->id;
 	return BadWindow;
     }
+    if (motionHintWindow)
+	MaybeStopHint(client);
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.mask = keyButtonState;
@@ -3321,12 +3322,12 @@ ProcQueryPointer(client)
     rep.root = (ROOT)->wid;
     rep.rootX = sprite.hot.x;
     rep.rootY = sprite.hot.y;
+    rep.child = None;
     if (currentScreen == pWin->drawable.pScreen)
     {
 	rep.sameScreen = xTrue;
 	rep.winX = sprite.hot.x - pWin->absCorner.x;
 	rep.winY = sprite.hot.y - pWin->absCorner.y;
-	rep.child = None;
 	for (t = sprite.win; t; t = t->parent)
 	    if (t->parent == pWin)
 	    {
