@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.4 89/09/14 16:27:02 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.5 89/09/15 13:14:06 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -107,10 +107,10 @@ mfbZeroArcSS(pDraw, pGC, arc)
     dy1 = info.dy1;
     dyoffset = 0;
     mask = info.initialMask;
-    if (!(arc->width & 1))
+    if (x && !(arc->width & 1))
     {
-	DoPix(1, yorgl, info.xorg);
-	DoPix(4, yorgol, info.xorg);
+	DoPix(2, yorgl, info.xorgo);
+	DoPix(8, yorgol, info.xorgo);
     }
     if (!info.endx)
 	mask = info.endMask;
@@ -241,12 +241,12 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	    }
 	    if ((x == info.startx) || (y == info.starty))
 		mask = info.startMask;
+	    if ((x == info.endx) || (y == info.endy))
+		mask = info.endMask;
 	    DoPix(1, yorgl + yoffset, info.xorg + x);
 	    DoPix(2, yorgl + yoffset, info.xorgo - x);
 	    DoPix(4, yorgol - yoffset, info.xorgo - x);
 	    DoPix(8, yorgol - yoffset, info.xorg + x);
-	    if ((x == info.endx) || (y == info.endy))
-		mask = info.endMask;
 	    b -= k1;
 	    if (d < 0)
 	    {
@@ -269,10 +269,10 @@ mfbZeroArcSS(pDraw, pGC, arc)
     for (; x <= info.w; x++)
     {
 	DoPix(1, yorgl + yoffset, info.xorg + x);
-	DoPix(2, yorgl + yoffset, info.xorgo - x);
+	DoPix(4, yorgol - yoffset, info.xorgo - x);
 	if (!arc->height || (arc->height & 1))
 	{
-	    DoPix(4, yorgol - yoffset, info.xorgo - x);
+	    DoPix(2, yorgl + yoffset, info.xorgo - x);
 	    DoPix(8, yorgol - yoffset, info.xorg + x);
 	}
     }
