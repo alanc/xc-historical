@@ -155,15 +155,16 @@ HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx \
          ddx/hp/mob ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/hpux
 HPOBJS = ddx/hp/hp/init.o
 HPLIBS = $(DIX) $(EXTENSIONS) $(HP) \
+          ddx/hp/topcat/libtopcat.a \
+          ddx/hp/hp/libcrtstub.a \
           ddx/hp/gbx/libgbx.a \
           ddx/hp/mob/libmob.a \
-          ddx/hp/topcat/libtopcat.a \
           ddx/hp/catseye/libcatseye.a \
           ddx/hp/ren/libren.a \
 	  $(HP) \
-          ddx/hp/mfb/libmfb.a \
-          ddx/hp/cfb/libcfb.a \
           ddx/hp/ren/libren.a \
+          ddx/hp/cfb/libcfb.a \
+          ddx/hp/mfb/libmfb.a \
           $(SNF) $(HPUX) $(MI)
 #if ServerMallocLib
 HPMALLOCLIB = -lmalloc
