@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.86 91/03/08 18:39:25 rws Exp $ */
+/* $XConsortium: Create.c,v 1.88 92/05/11 12:17:03 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -167,7 +167,7 @@ static Widget _XtCreate(
     char        *name, *class;
     WidgetClass widget_class;
     Widget      parent;
-    Screen*     default_screen;
+    Screen*     default_screen; /* undefined when creating a nonwidget */
     ArgList     args;		/* must be NULL if typed_args is non-NULL */
     Cardinal    num_args;
     XtTypedArgList typed_args;	/* must be NULL if args is non-NULL */
@@ -355,6 +355,8 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
 			      params, &num_params);
 	    }
 	}
+    } else {
+	default_screen = parent->core.screen;
     }
 
     if (XtIsConstraint(parent)) {
@@ -362,7 +364,6 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
     } else {
 	cwc = NULL;
     }
-    default_screen = parent->core.screen;
     widget = _XtCreate(name, (char *)NULL, widget_class, parent,
 		       default_screen, args, num_args,
 		       typed_args, num_typed_args, cwc);
