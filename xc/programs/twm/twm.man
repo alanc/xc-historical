@@ -88,8 +88,8 @@ all screens on the display.
 .TP 8
 .B \-f \fIfilename\fP
 This option specifies the name of the startup file to use.  By default,
-\fItwm\fP will look in the user's home directory for files named 
-\fI.twmrc.num\fP (where \fInum\fP is a screen number) or \fI.twmrc\fP.
+\fItwm\fP will look in the user's home directory for files 
+named \fI.twmrc.num\fP (where \fInum\fP is a screen number) or \fI.twmrc\fP.
 .TP 8
 .B \-v
 This option indicates that \fItwm\fP should print error messages whenever
