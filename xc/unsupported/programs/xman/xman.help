@@ -4,13 +4,11 @@ XMAN is an X Window System manual browsing tool, built upon the XToolkit.
 
 CREDITS:
 
-	Version 3.1
-	Based Upon: Xman for X10 by Barry Shein - Boston Univ.
-	Written By: Chris Peterson - MIT Project Athena.
+    Version 3.1
+    Based Upon: Xman for X10 by Barry Shein - Boston Univ.
+    Written By: Chris Peterson - MIT Project Athena.
+    Copyright 1988 Massachusetts Institute of Technology 
 
-	Copyright 1988 Massachusetts Institute of Technology -
-	  see the file /usr/include/mit-cpr.h
-	  for specific copyright information.
 
 GETTING STARTED:
 
