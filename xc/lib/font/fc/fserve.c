@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.6 91/06/16 12:40:35 keith Exp $ */
+/* $XConsortium: fserve.c,v 1.8 91/06/20 15:52:22 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -212,7 +212,19 @@ fs_free_fpe(fpe)
     FontPathElementPtr fpe;
 {
     FSFpePtr    conn = (FSFpePtr) fpe->private;
+    FSFpePtr	recon, *prev;
 
+    prev = &awaiting_reconnect;
+    while (recon = *prev)
+    {
+	if (conn == recon)
+	{
+	    *prev = recon->next_reconnect;
+	    break;
+	}
+	prev = &recon->next_reconnect;
+    }
+    
     /* close font server */
     (void) close(conn->fs_fd);
 
@@ -337,6 +349,7 @@ fs_free_font(bfont)
     xfree(pfont->info.props);
     xfree(pfont);
     xfree(fsd);
+    bfont->pfont = (FontPtr) 0;
 }
 
 static void
@@ -351,7 +364,6 @@ fs_cleanup_font(bfont)
     fs_send_close_font(fsd->fpe, bfont->fontid);
 
     fs_free_font (bfont);
-    bfont->pfont = (FontPtr) 0;
     bfont->errcode = AllocError;
 }
 
@@ -386,7 +398,7 @@ fs_read_open_font(fpe, blockrec)
 
     /* make sure the sequence number is correct */
     if (rep.originalid) {
-	newfont = find_old_font(blockrec->client, rep.originalid);
+	newfont = find_old_font(rep.originalid);
 	if (!newfont) {
 	    /* XXX - something nasty happened */
 	    return BadFontName;
@@ -934,6 +946,7 @@ lowmem:
 
     fsd->fontid = newid;
     fsd->fpe = fpe;
+    fsd->generation = conn->generation;
 
 /* XXX - hack */
     /* for now, always load everything at startup time */
@@ -978,7 +991,7 @@ lowmem:
 	if (blockedfont->errcode == Successful) {
 	    *ppfont = blockedfont->pfont;
 	} else {
-	    xfree(blockedfont->pfont);
+	    fs_cleanup_font (blockedfont);
 	}
 	fs_remove_blockrec(conn, blockrec);
     }
@@ -1129,9 +1142,13 @@ fs_close_font(fpe, pfont)
     FSFontDataPtr fsd = (FSFontDataPtr) pfont->fpePrivate;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
 
+    /* XXX we may get called after the resource DB has been cleaned out */
+    if (find_old_font(fsd->fontid))
+	DeleteFontClientID (fsd->fontid);
     if (conn->generation == fsd->generation)
 	fs_send_close_font(fpe, fsd->fontid);
     (*pfont->unload_font) (pfont);
+
     xfree(fsd);
 
     xfree(pfont->info.isStringProp);

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fserve.h,v 1.5 91/06/20 15:52:27 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *

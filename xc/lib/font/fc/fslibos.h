@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSlibos.h,v 1.4 91/06/20 15:52:07 keith Exp $ */
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the

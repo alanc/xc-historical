@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fsio.c,v 1.15 91/06/20 15:52:32 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
