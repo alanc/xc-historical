@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicP.h,v 6.16 88/01/29 13:00:12 asente Exp $
+* $Header: IntrinsicP.h,v 6.16 88/01/29 13:00:12 swick Locked $
 */
 
 /*
@@ -135,11 +135,8 @@ extern GC XtGetGC(); /* widget, valueMask, values */
     /* XtGCMask valueMask; */
     /* XGCValues *values; */
 
-extern void XtDestroyGC (); /* widget, gc */
-    /* Widget widget; */
+extern void XtDestroyGC (); /* gc */
     /* GC gc; */
-/* we pass in the widget because XFreeGC needs a display, and there isn't */
-/* one stored in the GC record. */
 
 typedef struct _XtResource {
     String     resource_name;	/* Resource name			    */
