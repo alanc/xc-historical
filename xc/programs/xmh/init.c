@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.79 95/01/18 19:29:20 swick Exp swick $
+ * $XConsortium: init.c,v 2.80 95/01/25 14:33:57 swick Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -365,7 +365,7 @@ char **argv;
     static Arg shell_args[] = {
 	{XtNinput, (XtArgVal)True},
 	{XtNjoinSession, (XtArgVal)False}, /* join is delayed to end of init */
-	{XtNenvironment, NULL},	/* set dynamically below */
+	{XtNenvironment, (XtArgVal)NULL},  /* set dynamically below */
 	{XtNmappedWhenManaged, (XtArgVal)False}
     };
 
