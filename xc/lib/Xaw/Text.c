@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.85 89/05/11 15:11:51 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.86 89/05/11 18:00:03 kit Exp $";
 #endif
 
 
@@ -1305,73 +1305,67 @@ DisplayTextWindow (w)
 
 /*
  * This routine checks to see if the window should be resized (grown or
- * shrunk) or scrolled when text to be painted overflows to the right or
+ * shrunk) when text to be painted overflows to the right or
  * the bottom of the window. It is used by the keyboard input routine.
-*/
-static CheckResizeOrOverflow(ctx)
-  TextWidget ctx;
+ */
+
+static void
+CheckResize(ctx)
+TextWidget ctx;
 {
-    XawTextPosition posToCheck;
-    int     visible, line, width;
+    int line = 0, old_height;
     XtWidgetGeometry rbox;
     XtGeometryResult reply;
     register int options = ctx->text.options;
 
     if (options & resizeWidth) {
 	XawTextLineTableEntry *lt;
-	width = 0;
-	for (line=0, lt=ctx->text.lt.info; line<ctx->text.lt.lines; line++) {
-	    if (width < lt->endX)
-		width = lt->endX;
-	    lt++;
-	}
-	if (width > ctx->core.width) {
+	rbox.width = 0;
+	for (lt = ctx->text.lt.info; line < ctx->text.lt.lines; line++, lt++) 
+	    AssignMax(rbox.width, lt->endX);
+
+	if (rbox.width > ctx->core.width) { /* Only get wider. */
 	    rbox.request_mode = CWWidth;
-	    rbox.width = width;
 	    reply = XtMakeGeometryRequest((Widget)ctx, &rbox, &rbox);
 	    if (reply == XtGeometryAlmost)
-	        reply = XtMakeGeometryRequest((Widget)ctx, &rbox, NULL);
+	        (void) XtMakeGeometryRequest((Widget)ctx, &rbox, &rbox);
 	}
     }
-    if ((options & resizeHeight) || (options & scrollOnOverflow)) {
-	if (options & scrollOnOverflow)
-	    posToCheck = ctx->text.insertPos;
-	else
-	    posToCheck = ctx->text.lastPos;
-	visible = IsPositionVisible(ctx, posToCheck);
-	if (visible)
-	    line = LineForPosition(ctx, posToCheck);
-	else
-	    line = ctx->text.lt.lines;
-	if ((options & scrollOnOverflow) && (line + 1 > ctx->text.lt.lines)) {
-	    BuildLineTable(ctx, ctx->text.lt.info[1].position);
-	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx),
-		      ctx->text.gc, (int)ctx->text.leftmargin, 
-		      (int)ctx->text.lt.info[1].y,
-		      (int)ctx->core.width, (int)ctx->core.height,
-		      (int)ctx->text.leftmargin, ctx->text.lt.info[0].y);
-	}
-	else
-	    if ((options & resizeHeight) && (line + 1 != ctx->text.lt.lines)) {
-		int oldHeight = ctx->core.height;
-		rbox.request_mode = CWHeight;
-		rbox.height = (*ctx->text.sink->MaxHeight)
-				(ctx, line + 1) + (2*yMargin)+2;
-		reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
-		if (reply == XtGeometryAlmost)
-		    reply = XtMakeGeometryRequest((Widget)ctx, &rbox, NULL);
-		if (reply == XtGeometryYes) {
-		    BuildLineTable(ctx, ctx->text.lt.top);
-		    if (!(options & wordBreak) /* if NorthEastGravity */
-			&& rbox.height < oldHeight) {
-			/* clear cruft from bottom margin */
-			(*ctx->text.sink->ClearToBackground)
-			    (ctx, ctx->text.leftmargin,
+
+    if (!options & resizeHeight)
+      return;
+
+    if (IsPositionVisible(ctx, ctx->text.lastPos))
+        line = LineForPosition(ctx, ctx->text.lastPos);
+    else
+        line = ctx->text.lt.lines;
+
+    if ( (line + 1) == ctx->text.lt.lines )
+      return;
+
+    old_height = ctx->core.height;
+    rbox.request_mode = CWHeight;
+    rbox.height = (*ctx->text.sink->MaxHeight) (ctx, line + 1)+(2 * yMargin)+2;
+    
+    if (rbox.height < old_height) /* It will only get taller. */
+      return;
+
+    reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
+    if (reply == XtGeometryAlmost)
+        reply = XtMakeGeometryRequest((Widget)ctx, &rbox, &rbox);
+    if (reply != XtGeometryYes) 
+      return;
+
+    BuildLineTable(ctx, ctx->text.lt.top);
+    
+/*
+ * Clear cruft from bottom margin 
+ */
+
+    if ( !(options & wordBreak) && (rbox.height < old_height) ) {
+        (*ctx->text.sink->ClearToBackground) (ctx, ctx->text.leftmargin,
 			     ctx->text.lt.info[ctx->text.lt.lines].y,
-			     (int)ctx->core.width, oldHeight - rbox.height);
-		    }
-		}
-	    }
+		             (int) ctx->core.width, old_height - rbox.height);
     }
 }
 
@@ -1548,52 +1542,51 @@ static void FlushUpdate(ctx)
 
 
 /*
- * This is a private utility routine used by _XawTextExecuteUpdate. This routine
- * worries about edits causing new data or the insertion point becoming
+ * This is a private utility routine used by _XawTextExecuteUpdate. This
+ * routine worries about edits causing new data or the insertion point becoming
  * invisible (off the screen). Currently it always makes it visible by
  * scrolling. It probably needs generalization to allow more options.
-*/
+ */
+
 _XawTextShowPosition(ctx)
   TextWidget ctx;
 {
+    int lines = ctx->text.lt.lines;
     XawTextPosition top, first, second;
-    if (!XtIsRealized((Widget)ctx)) return;
-    if (ctx->text.insertPos < ctx->text.lt.top ||
-	ctx->text.insertPos >= ctx->text.lt.info[ctx->text.lt.lines].position) {
-	if (ctx->text.lt.lines > 0 && (ctx->text.insertPos < ctx->text.lt.top 
-	    || ctx->text.lt.info[ctx->text.lt.lines].position <= ctx->text.lastPos)) {
-	    first = ctx->text.lt.top;
-	    second = ctx->text.lt.info[1].position;
-	    if (ctx->text.insertPos < first)
-		top = (*ctx->text.source->Scan)(
-			ctx->text.source, ctx->text.insertPos, XawstEOL,
-			XawsdLeft, 1, FALSE);
-	    else
-		top = (*ctx->text.source->Scan)(
-			ctx->text.source, ctx->text.insertPos, XawstEOL,
-			XawsdLeft, ctx->text.lt.lines, FALSE);
-	    BuildLineTable(ctx, top);
-	    while (ctx->text.insertPos >= ctx->text.lt.info[ctx->text.lt.lines].position) {
-		if (ctx->text.lt.info[ctx->text.lt.lines].position > ctx->text.lastPos)
-		    break;
-		BuildLineTable(ctx, ctx->text.lt.info[1].position);
-	    }
-	    if (ctx->text.lt.top == second) {
-	        BuildLineTable(ctx, first);
-		_XawTextScroll(ctx, 1);
-	    } else if (ctx->text.lt.info[1].position == first) {
-		BuildLineTable(ctx, first);
-		_XawTextScroll(ctx, -1);
-	    } else {
-		ctx->text.numranges = 0;
-		if (ctx->text.lt.top != first)
-		    DisplayTextWindow((Widget)ctx);
-	    }
-	}
+
+    if ( (!XtIsRealized((Widget)ctx)) || (ctx->text.lt.lines <= 0) ||
+	 ( (ctx->text.insertPos >= ctx->text.lt.top) &&
+	   ((ctx->text.insertPos < ctx->text.lt.info[lines].position) ||
+	    (ctx->text.lt.info[lines].position > ctx->text.lastPos))) )
+      return;
+
+    first = ctx->text.lt.top;
+    second = ctx->text.lt.info[1].position;
+    if (ctx->text.insertPos < first)
+      top = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
+				      XawstEOL, XawsdLeft, 1, FALSE);
+    else
+      top = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
+				      XawstEOL, XawsdLeft, lines, FALSE);
+    BuildLineTable(ctx, top);
+    while (ctx->text.insertPos >= ctx->text.lt.info[lines].position) {
+      if (ctx->text.lt.info[lines].position >
+	  ctx->text.lastPos)
+	break;
+      BuildLineTable(ctx, ctx->text.lt.info[1].position);
+    }
+    if (ctx->text.lt.top == second) {
+      BuildLineTable(ctx, first);
+      _XawTextScroll(ctx, 1);
+    } else if (ctx->text.lt.info[1].position == first) {
+      BuildLineTable(ctx, first);
+      _XawTextScroll(ctx, -1);
+    } else {
+      ctx->text.numranges = 0;
+      if (ctx->text.lt.top != first)
+	DisplayTextWindow((Widget)ctx);
     }
 }
-
-
 
 /*
  * This routine causes all batched screen updates to be performed
@@ -1840,7 +1833,7 @@ int XawTextReplace(w, startPos, endPos, text)
 					  XawstPositions, XawsdRight,
 					  text->length, TRUE);
     }
-    CheckResizeOrOverflow(ctx);
+    CheckResize(ctx);
     _XawTextExecuteUpdate(ctx);
 
     return result;
@@ -2060,7 +2053,7 @@ static StartAction(ctx, event)
 static EndAction(ctx)
    TextWidget ctx;
 {
-    CheckResizeOrOverflow(ctx);
+    CheckResize(ctx);
     _XawTextExecuteUpdate(ctx);
 }
 
