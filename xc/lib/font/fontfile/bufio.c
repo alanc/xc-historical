@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bufio.c,v 1.4 92/05/29 18:00:40 gildea Exp $
+ * $XConsortium: bufio.c,v 1.5 93/09/12 18:01:35 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -59,7 +59,7 @@ BufFileRawFill (f)
 {
     int	left;
 
-    left = read (FileDes(f), f->buffer, BUFFILESIZE);
+    left = read (FileDes(f), (char *)f->buffer, BUFFILESIZE);
     if (left <= 0) {
 	f->left = 0;
 	return BUFFILEEOF;
@@ -92,7 +92,7 @@ BufFileRawSkip (f, count)
 		curoff = BUFFILESIZE;
 		if (curoff > todo)
 		    curoff = todo;
-		fileoff = read (FileDes(f), f->buffer, curoff);
+		fileoff = read (FileDes(f), (char *)f->buffer, curoff);
 		if (fileoff <= 0)
 		    return BUFFILEEOF;
 		todo -= fileoff;
@@ -131,7 +131,7 @@ BufFileRawFlush (c, f)
     cnt = f->bufp - f->buffer;
     f->bufp = f->buffer;
     f->left = BUFFILESIZE;
-    if (write (FileDes(f), f->buffer, cnt) != cnt)
+    if (write (FileDes(f), (char *)f->buffer, cnt) != cnt)
 	return BUFFILEEOF;
     return c;
 }
