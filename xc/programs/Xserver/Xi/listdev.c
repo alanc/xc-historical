@@ -1,4 +1,4 @@
-/* $Header: xlistdev.c,v 1.12 91/07/17 16:37:42 rws Exp $ */
+/* $Header: xlistdev.c,v 1.13 91/12/26 13:34:09 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -50,6 +50,8 @@ void		CopySwapValuatorClass ();
 void		SizeDeviceInfo ();
 void		ListDeviceInfo ();
 void		AddOtherInputDevices ();
+void		CopyDeviceName ();
+void		CopySwapDevice ();
 
 /***********************************************************************
  *
@@ -88,8 +90,6 @@ ProcXListInputDevices (client)
     char		*savbuf;
     xDeviceInfo 	*dev;
     DeviceIntPtr 	d;
-    void CopyDeviceName ();
-    void CopySwapDevice ();
 
     REQUEST(xListInputDevicesReq);
     REQUEST_SIZE_MATCH(xListInputDevicesReq);
