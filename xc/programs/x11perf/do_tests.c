@@ -20,6 +20,14 @@ extern void InitValGC();
 extern void DoValGC();
 extern void EndValGC();
 
+extern void InitSmallSegs();
+extern void InitMedSegs();
+extern void InitSegs();
+extern void DoSegs();
+extern void EndSegs();
+
+extern void InitSmallLines();
+extern void InitMedLines();
 extern void InitLines();
 extern void InitDashedLines();
 extern void DoLines();
@@ -132,9 +140,33 @@ Test test[] = {
   {"-bigosrects", "50x50 Opaque Stippled Rectangle",
 		InitRects, DoRects, NullProc, EndRects, False, False,
 		{10, POLY, 50, NULL, NULL, FillOpaqueStippled}},
+  {"-smalltilerects", "1x1 4x4 Tiled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, False,
+		{10, POLY, 1, NULL, NULL, FillTiled}},
+  {"-tilerects", "10x10 4x4 Tiled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, False,
+		{10, POLY, 10, NULL, NULL, FillTiled}},
+  {"-bigtilerects", "50x50 4x4 Tiled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, False,
+		{10, POLY, 50, NULL, NULL, FillTiled}},
   {"-gc", "Validation",
 		InitValGC, DoValGC, NullProc, EndValGC, False, False,
 		{50, 2}},
+  {"-smallsegs", "1-pixel line segment",
+		InitSmallSegs, DoSegs, NullProc, EndSegs, False, False,
+		{10, POLY, 0}},
+  {"-medsegs", "10-pixel line segemnt",
+		InitMedSegs, DoSegs, NullProc, EndSegs, False, False,
+		{10, POLY, 0}},
+  {"-segs", "Line segment",
+		InitSegs, DoSegs, NullProc, EndSegs, False, False,
+		{10, POLY, 0}},
+  {"-smalllines", "1-pixel line",
+		InitSmallLines, DoLines, NullProc, EndLines, False, False,
+		{10, POLY, 0}},
+  {"-medlines", "10-pixel line",
+		InitMedLines, DoLines, NullProc, EndLines, False, False,
+		{10, POLY, 0}},
   {"-lines", "Line",
 		InitLines, DoLines, NullProc, EndLines, False, False,
 		{10, POLY, 0}},
