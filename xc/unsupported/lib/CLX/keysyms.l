@@ -156,7 +156,7 @@
   (define-keysym #\backspace (keysym 255 008))	; :tty
   )
 
-#+(or lispm excl lcl3.0)
+#+(or lispm excl)
 (progn   ;; Nonstandard characters 
   (define-keysym #\escape (keysym 255 027))	; :tty
   )

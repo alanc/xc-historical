@@ -666,16 +666,14 @@
 		     (when (and increment (zerop increment)) (setq increment 1))
 		     (pushnew (* increment 8) sizes)))))))))
 
-(defmacro with-buffer-request-internal ((buffer opcode &rest options) &body type-args)
+(defmacro with-buffer-request-internal
+	  ((buffer opcode &key length sizes &allow-other-keys)
+	   &body type-args)
   (declare (values request-number))
-  (multiple-value-bind (code index sizes)
+  (multiple-value-bind (code index item-sizes)
       (get-put-items 4 type-args t)
-    (let* ((supplied-length (second (member :length options)))
-	   (length (if supplied-length
-		       `(index+ ,supplied-length *requestsize*)
-		     '*requestsize*))
-	   (supplied-sizes (second (member :sizes options)))
-	   (sizes (remove-duplicates (append '(8 16) sizes supplied-sizes))))
+    (let ((length (if length `(index+ ,length *requestsize*) '*requestsize*))
+	  (sizes (remove-duplicates (append '(8 16) item-sizes sizes))))
       `(with-buffer-output (,buffer :length ,length :sizes ,sizes)
 	 (setf (buffer-last-request ,buffer) buffer-boffset)
 	 (write-card8 0 ,opcode)	   ;; Stick in the opcode
@@ -686,28 +684,30 @@
 	       (setf (buffer-boffset ,buffer) (index+ buffer-boffset ,index))))
 	 (buffer-new-request-number ,buffer)))))
 
-(defmacro with-buffer-request ((buffer opcode &rest options) &body type-args)
+(defmacro with-buffer-request
+	  ((buffer opcode &rest options &key inline gc-force &allow-other-keys)
+	   &body type-args &environment env)
   (declare (values request-number))
-  (let ((gc-force (second (member :gc-force options))))
-    (if *use-closures-for-requests*
-	`(with-buffer-request-function
-	   ,buffer ,gc-force
-	   #'(lambda (.display.)
-	       (declare (type display .display.))
-	       (with-buffer-request-internal (.display. ,opcode ,@options)
-		 ,@type-args)))
-      `(let ((.display. ,buffer))
-	 (declare (type display .display.))
-	 (with-buffer (.display.)
-	   ,@(when gc-force `((force-gcontext-changes-internal ,gc-force)))
-	   (multiple-value-prog1
-	     (without-aborts 
-	       (with-buffer-request-internal (.display. ,opcode ,@options)
-		 ,@type-args))
-	     (display-invoke-after-function .display.)))))))
+  (if (and (null inline) (macroexpand '(use-closures) env))
+      `(with-buffer-request-function
+	 ,buffer ,gc-force
+	 #'(lambda (.display.)
+	     (declare (type display .display.))
+	     (with-buffer-request-internal (.display. ,opcode ,@options)
+	       ,@type-args)))
+    `(let ((.display. ,buffer))
+       (declare (type display .display.))
+       (with-buffer (.display.)
+	 ,@(when gc-force `((force-gcontext-changes-internal ,gc-force)))
+	 (multiple-value-prog1
+	   (without-aborts 
+	     (with-buffer-request-internal (.display. ,opcode ,@options)
+	       ,@type-args))
+	   (display-invoke-after-function .display.))))))
 
 (defmacro with-buffer-request-and-reply
-	  ((buffer opcode reply-size &key sizes multiple-reply) type-args &body reply-forms)
+	  ((buffer opcode reply-size &key sizes multiple-reply inline)
+	   type-args &body reply-forms &environment env)
   (declare (indentation 0 4 1 4 2 1))
   (let* ((inner-reply-body
 	   `(with-buffer-input (.reply-buffer. :display .display.
@@ -719,7 +719,7 @@
 	     `(let ((,reply-size (reply-data-size (the reply-buffer .reply-buffer.))))
 		(declare (type array-index ,reply-size))
 		,inner-reply-body))))
-    (if *use-closures-for-requests*
+    (if (and (null inline) (macroexpand '(use-closures) env))
 	`(with-buffer-request-and-reply-function
 	   ,buffer ,multiple-reply
 	   #'(lambda (.display.)
@@ -729,6 +729,7 @@
 	   #'(lambda (.display. .reply-buffer.)
 	       (declare (type display .display.)
 			(type reply-buffer .reply-buffer.))
+	       .display. .reply-buffer.
 	       ,reply-body))
       `(let ((.display. ,buffer)
 	     (.pending-command. nil)

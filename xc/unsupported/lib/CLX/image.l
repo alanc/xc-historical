@@ -139,7 +139,7 @@
     (type (or null card16) bytes-per-line)
     (type boolean byte-lsb-first-p bit-lsb-first-p)
     (type (or null (member 8 16 32)) unit pad)
-    (type card8 left-pad))
+    (type (or null card8) left-pad))
   (declare (values image))
   (let ((image
 	  (etypecase data
@@ -2066,7 +2066,8 @@
 	    (let* ((request-bytes (index* request-bytes-per-line request-height))
 		   (request-pad (index-mod request-bytes 4))
 		   (request-length (index+ (index-ceiling request-bytes 4) 6)))
-	      (declare (type card16 request-bytes request-length)
+	      (declare (type array-index request-bytes)
+		       (type card16 request-length)
 		       (type card8 request-pad))
 	      (with-buffer-request (display *x-putimage* :gc-force gcontext)
 		((data (member :bitmap :xy-pixmap :z-pixmap))
@@ -2081,7 +2082,7 @@
 		(pad16 nil)
 		(progn 
 		  (length-put 2 request-length)
-		  (index-incf (buffer-boffset display) 24)
+		  (setf (buffer-boffset display) (advance-buffer-offset 24))
 		  (etypecase image
 		    (image-x
 		      (ecase (image-x-format (the image-x image))

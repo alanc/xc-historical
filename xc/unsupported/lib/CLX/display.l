@@ -185,7 +185,8 @@
 ;;
 ;; Display functions
 ;;
-(defmacro with-display ((display &key timeout) &body body)
+(defmacro with-display ((display &key timeout inline)
+			&body body)
   ;; This macro is for use in a multi-process environment.  It provides exclusive
   ;; access to the local display object for multiple request generation.  It need not
   ;; provide immediate exclusive access for replies; that is, if another process is
@@ -195,31 +196,41 @@
   ;; is always provided at the interface level on a per-call basis.  Nested uses of
   ;; this macro will work correctly.  This macro does not prevent concurrent event
   ;; processing; see with-event-queue.
-  `(with-buffer (,display ,@(and timeout `(:timeout ,timeout))) ,@body))
+  `(with-buffer (,display
+		 ,@(and timeout `(:timeout ,timeout))
+		 ,@(and inline `(:inline ,inline)))
+     ,@body))
 
-(defmacro with-event-queue ((display &key timeout) &body body)
+(defmacro with-event-queue ((display &key timeout inline)
+			    &body body &environment env)
   ;; exclusive access to event queue
-  (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
-    `(macrolet ((with-event-queue ((display &key timeout) &body body)
-		  ;; Speedup hack for lexically nested with-event-queues
-		  `(progn (progn ,display ,@(and timeout `(,timeout)) nil)
-			  ,@body)))
-       (let (,@(unless (eq disp display) `((,disp ,display))))
-	 (holding-lock ((display-event-lock ,disp) ,disp "CLX Event Lock"
-			,@(and timeout `(:timeout ,timeout)))
-	   ,@body)))))
+  (if (and (null inline) (macroexpand '(use-closures) env))
+      `(with-event-queue-function ,display ,timeout #'(lambda () ,@body))
+    (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
+      `(macrolet ((with-event-queue ((display &key timeout) &body body)
+		    ;; Speedup hack for lexically nested with-event-queues
+		    `(progn (progn ,display ,@(and timeout `(,timeout)) nil)
+			    ,@body)))
+	 (let (,@(unless (eq disp display) `((,disp ,display))))
+	   (holding-lock ((display-event-lock ,disp) ,disp "CLX Event Lock"
+			  ,@(and timeout `(:timeout ,timeout)))
+	     ,@body))))))
+
+(defun with-event-queue-function (display timeout function)
+  (declare (type display display)
+	   (type (or null number) timeout)
+	   (type function function)
+	   (downward-funarg function))
+  (with-event-queue (display :timeout timeout :inline t)
+    (funcall function)))
 
 (defmacro with-event-queue-internal ((display &key timeout) &body body)
   ;; exclusive access to the internal event queues
   (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
-    `(macrolet ((with-event-queue-internal ((display &key timeout) &body body)
-		  ;; Speedup hack for lexically nested with-event-queue-internals
-		  `(progn (progn ,display ,@(and timeout `(,timeout)) nil)
-			  ,@body)))
-       (let (,@(unless (eq disp display) `((,disp ,display))))
-	 (holding-lock ((display-event-queue-lock ,disp) ,disp "CLX Event Queue Lock"
-			,@(and timeout `(:timeout ,timeout)))
-	   ,@body)))))
+    `(let (,@(unless (eq disp display) `((,disp ,display))))
+       (holding-lock ((display-event-queue-lock ,disp) ,disp "CLX Event Queue Lock"
+		      ,@(and timeout `(:timeout ,timeout)))
+	 ,@body))))
 
 (defun open-display (host  &rest options &key (display 0) protocol
 		     authorization-name authorization-data &allow-other-keys)

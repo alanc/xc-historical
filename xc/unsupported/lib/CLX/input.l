@@ -634,7 +634,7 @@
 	    (threaded-length (or current-event (display-event-queue-head display))
 			     reply-next reply-buffer))
 	  nil)
-      (with-event-queue (display :timeout timeout)
+      (with-event-queue (display :timeout timeout :inline t)
 	(let ((eof-or-timeout (wait-for-event display timeout nil)))
 	  (if eof-or-timeout
 	      (values nil eof-or-timeout)
@@ -676,10 +676,11 @@
     (with-event-queue (display)
       (if append-p
 	  (enqueue-event event display)
-	(threaded-requeue event
-			  (display-event-queue-head display)
-			  (display-event-queue-tail display)
-			  reply-next reply-buffer)))))
+	(with-event-queue-internal (display)
+	  (threaded-requeue event
+			    (display-event-queue-head display)
+			    (display-event-queue-tail display)
+			    reply-next reply-buffer))))))
 
 (defun enqueue-event (new-event display)
   (declare (type reply-buffer new-event)
@@ -1522,8 +1523,8 @@
 
 (defun make-error (display event asynchronous)
   (declare (type display display)
-	   (type buffer event)
-	   (type (member t nil) asynchronous))
+	   (type reply-buffer event)
+	   (type boolean asynchronous))
   (reading-event (event)
     (let* ((error-code (read-card8 1))
 	   (error-key (get-error-key display error-code))
