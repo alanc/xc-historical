@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.25 90/02/07 11:09:44 jim Exp $
+ * $XConsortium: viewres.c,v 1.26 90/02/07 12:00:54 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,6 +38,7 @@
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Text.h>
+#include <X11/Xaw/List.h>
 #include "Tree.h"
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
@@ -95,7 +96,7 @@ static char *fallback_resources[] = {
 };
 
 static void HandleQuit(), HandleSetLableType(), HandleSetOrientation();
-static void HandleSelect();
+static void HandleSelect(), HandleShowResources();
 static void set_labeltype_menu(), set_orientation_menu();
 static void build_tree(), set_node_labels();
 
@@ -104,15 +105,19 @@ static XtActionsRec viewres_actions[] = {
     { "SetLabelType", HandleSetLableType },
     { "SetOrientation", HandleSetOrientation },
     { "Select", HandleSelect },
+    { "ShowResources", HandleShowResources },
 };
 
-#define FORMAT_VARIABLES 0
-#define FORMAT_CLASSES 1
-#define FORMAT_HORIZONTAL 2
-#define FORMAT_VERTICAL 3
-#define FORMAT_number 4
-#define SELECT_INVERT 0
-#define SELECT_NOTHING 1
+#define VIEW_VARIABLES 0
+#define VIEW_CLASSES 1
+#define VIEW_HORIZONTAL 2
+#define VIEW_VERTICAL 3
+#define VIEW_RESOURCES 4
+#define VIEW_NORESOURCES 5
+#define VIEW_number 6
+
+#define SELECT_NOTHING 0
+#define SELECT_INVERT 1
 #define SELECT_PARENTS 2
 #define SELECT_CHILDREN 3
 #define SELECT_ALL 4
@@ -124,18 +129,25 @@ static struct _nametable {
     char *name;
     int value;
 } select_nametable[] = {
-    { "invert", SELECT_INVERT },
     { "nothing", SELECT_NOTHING },
+    { "invert", SELECT_INVERT },
     { "parents", SELECT_PARENTS },
     { "children", SELECT_CHILDREN },
     { "all", SELECT_ALL },
     { "resources", SELECT_WITH_RESOURCES },
     { "noresources", SELECT_WITHOUT_RESOURCES },
+}, boolean_nametable[] = {
+    { "off", 0 },
+    { "false", 0 },
+    { "no", 0 },
+    { "on", 1 },
+    { "true", 1 },
+    { "yes", 1 },
 };
 
 static Widget treeWidget;
-static Widget quitButton, formatButton, formatMenu, selectButton, selectMenu;
-static Widget format_widgets[FORMAT_number];
+static Widget quitButton, viewButton, viewMenu, selectButton, selectMenu;
+static Widget view_widgets[VIEW_number];
 static Widget select_widgets[SELECT_number];
 static WidgetNode *topnode;
 
@@ -183,6 +195,56 @@ static void horizontal_orientation_callback (gw, closure, data)
     set_orientation_menu ((Boolean) closure, True);
 }
 
+
+static Boolean create_resource_lw (node)
+    WidgetNode *node;
+{
+    Arg args[2];
+    Cardinal n;
+
+    if (node->nnewresources == 0) return FALSE;
+
+    if (!node->resource_labels &&
+	!set_resource_labels (node, RESLAB_NAME | RESLAB_CLASS)) return FALSE;
+
+    n = 0;
+    XtSetArg (args[n], XtNnumberStrings, 2 * node->nnewresources); n++;
+    XtSetArg (args[n], XtNlist, node->resource_labels); n++;
+    node->resource_lw = XtCreateManagedWidget (node->label, listWidgetClass,
+					       XtParent(node->instance),
+					       args, n);
+    XtRealizeWidget (node->resource_lw);
+    return TRUE;
+}
+
+/* ARGSUSED */
+static void view_resources_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* TRUE or FALSE */
+    caddr_t data;
+{
+    int i;
+    Boolean show = (Boolean) closure;
+    Arg args[1];
+
+    if (selected_list.n_elements <= 0) return;
+
+    XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+    for (i = 0; i < selected_list.n_elements; i++) {
+	WidgetNode *node = selected_list.elements[i];
+
+	if (show) {
+	    if (node->resource_lw)
+	      XtManageChild (node->resource_lw);
+	    else if (!create_resource_lw (node))
+	      continue;
+	} else {
+	    if (node->resource_lw) XtUnmanageChild (node->resource_lw);
+	}
+    }
+    XawTreeForceLayout (treeWidget);
+    XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+}
 
 static void initialize_widgetnode_list (listp, sizep, n)
     WidgetNode ***listp;
@@ -428,27 +490,33 @@ main (argc, argv)
     /*
      * Format menu
      */
-    XtSetArg (args[0], XtNmenuName, "formatMenu");
-    formatButton = XtCreateManagedWidget ("format", menuButtonWidgetClass, box,
-					  args, ONE);
-    formatMenu = XtCreatePopupShell ("formatMenu", simpleMenuWidgetClass, 
-				     formatButton, NULL, ZERO);
+    XtSetArg (args[0], XtNmenuName, "viewMenu");
+    viewButton = XtCreateManagedWidget ("view", menuButtonWidgetClass, box,
+					args, ONE);
+    viewMenu = XtCreatePopupShell ("viewMenu", simpleMenuWidgetClass, 
+				   viewButton, NULL, ZERO);
     XtSetArg (args[0], XtNcallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) variable_labeltype_callback;
-#define MAKE_FORMAT(n,v,name) \
+#define MAKE_VIEW(n,v,name) \
     callback_rec[0].closure = (caddr_t) v; \
-    format_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
-					       formatMenu, args, ONE)
+    view_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
+					     viewMenu, args, ONE)
 
-    MAKE_FORMAT (FORMAT_VARIABLES, TRUE, "namesVariable");
-    MAKE_FORMAT (FORMAT_CLASSES, FALSE, "namesClass");
+    MAKE_VIEW (VIEW_VARIABLES, TRUE, "namesVariable");
+    MAKE_VIEW (VIEW_CLASSES, FALSE, "namesClass");
 
-    (void) XtCreateManagedWidget ("line", smeLineObjectClass, formatMenu,
+    (void) XtCreateManagedWidget ("line1", smeLineObjectClass, viewMenu,
 				  NULL, ZERO);
     callback_rec[0].callback = (XtCallbackProc)horizontal_orientation_callback;
-    MAKE_FORMAT (FORMAT_HORIZONTAL, TRUE, "layoutHorizontal");
-    MAKE_FORMAT (FORMAT_VERTICAL, FALSE, "layoutVertical");
-#undef MAKE_FORMAT
+    MAKE_VIEW (VIEW_HORIZONTAL, TRUE, "layoutHorizontal");
+    MAKE_VIEW (VIEW_VERTICAL, FALSE, "layoutVertical");
+
+    (void) XtCreateManagedWidget ("line2", smeLineObjectClass, viewMenu,
+				  NULL, ZERO);
+    callback_rec[0].callback = (XtCallbackProc) view_resources_callback;
+    MAKE_VIEW (VIEW_RESOURCES, TRUE, "viewResources");
+    MAKE_VIEW (VIEW_NORESOURCES, FALSE, "viewNoResources");
+#undef MAKE_VIEW
 
     /*
      * Select menu
@@ -583,31 +651,30 @@ static void HandleSetOrientation (w, event, params, num_params)
     return;
 }
 
-/* ARGSUSED */
-static void HandleSelect (w, event, params, num_params)
+
+static void do_single_arg (w, params, nparams, table, nentries, proc)
     Widget w;
-    XEvent *event;
     String *params;
-    Cardinal *num_params;
+    Cardinal nparams;
+    struct _nametable table[];
+    int nentries;
+    void (*proc)();
 {
     int obj;
-    char *cmd;
     int i;
 
-    if (*num_params != 1) {
+    if (nparams != 1) {
 	XBell (XtDisplay(w), 0);
 	return;
     }
 
-    cmd = (char *) params[0];
-
-    for (i = 0; i < SELECT_number; i++) {
-	if (XmuCompareISOLatin1 (cmd, select_nametable[i].name) == 0) {
-	    obj = select_nametable[i].value;
+    for (i = 0; i < nentries; i++) {
+	if (XmuCompareISOLatin1 (params[0], table[i].name) == 0) {
+	    obj = table[i].value;
 	    break;
 	}
     }
-    if (i == SELECT_number) {
+    if (i == nentries) {
 	XBell (XtDisplay(w), 0);
 	return;
     }
@@ -615,9 +682,36 @@ static void HandleSelect (w, event, params, num_params)
     /*
      * use any old widget
      */
-    select_callback (w, (caddr_t) obj, (caddr_t) NULL);
+    (*proc) (w, (caddr_t) obj, (caddr_t) NULL);
 }
 
+
+/* ARGSUSED */
+static void HandleSelect (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    do_single_arg (w, params, *num_params, select_nametable, 
+		   XtNumber(select_nametable), select_callback);
+}
+
+
+/* ARGSUSED */
+static void HandleShowResources (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    if (*num_params == 0) {
+	view_resources_callback (w, (caddr_t) TRUE, NULL);
+    } else {
+	do_single_arg (w, params, *num_params, boolean_nametable,
+		       XtNumber(boolean_nametable), view_resources_callback);
+    }
+}
 
 
 static void build_tree (node, tree, super)
@@ -625,28 +719,32 @@ static void build_tree (node, tree, super)
     Widget tree;
     Widget super;
 {
-    Widget w;				/* widget for this Class */
+    Widget box, w;			/* widget for this Class */
     WidgetNode *child;			/* iterator over children */
     Arg args[3];			/* need to set super node */
     Cardinal n;				/* count of args */
     static XtCallbackRec callback_rec[2] = {{ toggle_callback, NULL },
 					     { NULL, NULL }};
 
+
     n = 0;
     XtSetArg (args[n], XtNtreeParent, super); n++;
+    box = XtCreateManagedWidget (node->label, boxWidgetClass, tree, args, n);
+
+    n = 0;
     XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
 				  node->label : WnClassname(node))); n++;
     XtSetArg (args[n], XtNcallback, callback_rec); n++;
 
     callback_rec[0].closure = (caddr_t) node;
-    w = XtCreateManagedWidget (node->label, toggleWidgetClass, tree, args, n);
+    w = XtCreateManagedWidget (node->label, toggleWidgetClass, box, args, n);
     node->instance = w;
 
     /*
      * recursively build the rest of the tree
      */
     for (child = node->children; child; child = child->siblings) {
-	build_tree (child, tree, w);
+	build_tree (child, tree, box);
     }
 }
 
@@ -686,8 +784,8 @@ static void set_labeltype_menu (isvar, doall)
     Boolean doall;
 {
     Appresources.show_variable = isvar;
-    set_oneof_sensitive (isvar, format_widgets[FORMAT_CLASSES],
-			 format_widgets[FORMAT_VARIABLES]);
+    set_oneof_sensitive (isvar, view_widgets[VIEW_CLASSES],
+			 view_widgets[VIEW_VARIABLES]);
 
     if (doall) {
 	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
@@ -700,8 +798,8 @@ static void set_labeltype_menu (isvar, doall)
 static void set_orientation_menu (horiz, dosetvalues)
     Boolean horiz, dosetvalues;
 {
-    set_oneof_sensitive (horiz, format_widgets[FORMAT_VERTICAL],
-			 format_widgets[FORMAT_HORIZONTAL]);
+    set_oneof_sensitive (horiz, view_widgets[VIEW_VERTICAL],
+			 view_widgets[VIEW_HORIZONTAL]);
 
     if (dosetvalues) {
 	Arg args[1];
