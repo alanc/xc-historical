@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtdflt.m,v 1.15 92/06/11 17:34:49 rws Exp $
  */
 >>#
 >># I have assumed POSIX here in all assertions which make reference to
@@ -36,7 +36,7 @@ all: Test
 .Xdefaults : Xdefaults HostXdefaults
 	$(RM) .Xdefaults ./.Xdefaults-$(XTESTHOST)
 	$(CP) Xdefaults .Xdefaults
-	$(CP) HostXdefaults ./.Xdefaults-$(XTESTHOST)
+	$(CP) HstXdefaults ./.Xdefaults-$(XTESTHOST)
 
 Test3 : Test3.o $(LIBS) $(TCMCHILD)
 	$(CC) $(LDFLAGS) -o $@ Test3.o $(TCMCHILD) $(LIBLOCAL) $(LIBS) $(SYSLIBS)
