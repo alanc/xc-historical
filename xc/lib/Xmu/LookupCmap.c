@@ -1,4 +1,4 @@
-/* $XConsortium: LookupCmap.c,v 1.6 89/07/16 18:10:47 jim Exp $ 
+/* $XConsortium: LookupCmap.c,v 1.7 89/10/08 15:00:44 rws Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -114,7 +114,8 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
 	return 0;
     }
 
-    cmap = (property == XA_RGB_DEFAULT_MAP)
+    cmap = (property == XA_RGB_DEFAULT_MAP &&
+	    visualid == XVisualIDFromVisual(DefaultVisual(dpy, screen)))
 	? DefaultColormap(dpy, screen) : None;
 
     /* If retaining resources, open a new connection to the same server */
