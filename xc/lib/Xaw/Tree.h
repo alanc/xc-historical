@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.h,v 1.4 90/02/02 17:58:57 jim Exp $
+ * $XConsortium: Tree.h,v 1.5 90/02/05 11:51:15 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -53,7 +53,8 @@
  * 
  * Constraint Resources attached to children:
  * 
- *  parent              Parent             Widget          NULL
+ *  treeGC              TreeGC             GC              NULL
+ *  treeParent          TreeParent         Widget          NULL
  * 
  * 
  *****************************************************************************/
@@ -62,17 +63,19 @@
 #define XtNautoReconfigure "autoReconfigure"
 #define XtNhSpace "hSpace"
 #define XtNlineWidth "lineWidth"
-#define XtNparent "parent"
+#define XtNtreeGC "treeGC"
+#define XtNtreeParent "treeParent"
 #define XtNvSpace "vSpace"
 
                                         /* new class field names */
 #define XtCAutoReconfigure "AutoReconfigure"
 #define XtCHSpace "HSpace"
 #define XtCLineWidth "LineWidth"
-#define XtCParent "Parent"
+#define XtCTreeGC "TreeGC"
+#define XtCTreeParent "TreeParent"
 #define XtCVSpace "VSpace"
 
-
+#define XtRGC "GC"
                                         /* external declarations */
 extern WidgetClass treeWidgetClass;
 

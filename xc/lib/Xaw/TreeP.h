@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TreeP.h,v 1.8 90/02/02 18:45:54 jim Exp $
+ * $XConsortium: TreeP.h,v 1.9 90/02/05 11:51:16 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -76,12 +76,15 @@ typedef struct _TreeRec {
  * structure attached to all children
  */
 typedef struct _TreeConstraintsPart {
-  Widget parent;
-  Widget *children;
-  int n_children;
-  int max_children;
-  Dimension bbwidth, bbheight;
-  Position x, y;
+    /* resources */
+    Widget parent;			/* treeParent/TreeParent */
+    GC gc;				/* treeGC/TreeGC */
+    /* private data */
+    Widget *children;
+    int n_children;
+    int max_children;
+    Dimension bbwidth, bbheight;
+    Position x, y;
 } TreeConstraintsPart;
 
 typedef struct _TreeConstraintsRec {

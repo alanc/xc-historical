@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.17 90/02/05 14:54:18 jim Exp $
+ * $XConsortium: Tree.c,v 1.18 90/02/06 14:59:54 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -84,8 +84,10 @@ static XtResource resources[] = {
  * resources that are attached to all children of the tree
  */
 static XtResource treeConstraintResources[] = {
-    { XtNparent, XtCParent, XtRPointer, sizeof (Widget),
-	XtOffset(TreeConstraints, tree.parent), XtRPointer, NULL},
+    { XtNtreeParent, XtCTreeParent, XtRWidget, sizeof (Widget),
+	XtOffset(TreeConstraints, tree.parent), XtRImmediate, NULL },
+    { XtNtreeGC, XtCTreeGC, XtRGC, sizeof(GC),
+	XtOffset(TreeConstraints, tree.gc), XtRImmediate, NULL },
 };
 
 
@@ -195,8 +197,7 @@ static void Initialize(request, new)
   new->tree.tree_root = (Widget) NULL;
   XtSetArg(wargs[0], XtNwidth, 1);
   XtSetArg(wargs[1], XtNheight, 1);
-  new->tree.tree_root = 
-          XtCreateWidget("root", widgetClass, new, wargs, 2);
+  new->tree.tree_root = XtCreateWidget("root", widgetClass, new, wargs, 2);
   /*
    * Allocate the tables used by the layout
    * algorithm.
@@ -428,7 +429,6 @@ static void Redisplay (tw, event, region)
 	Bool horiz = IsHorizontal (tw);
 	Display *dpy = XtDisplay (tw);
 	Window w = XtWindow (tw);
-	GC gc = tw->tree.gc;
 
 	for (i = 0; i < tw->composite.num_children; i++) {
 	    register Widget child = tw->composite.children[i];
@@ -450,6 +450,8 @@ static void Redisplay (tw, event, region)
 
 		for (j = 0; j < tc->tree.n_children; j++) {
 		    register Widget k = tc->tree.children[j];
+		    GC gc = (tc->tree.gc ? tc->tree.gc : tw->tree.gc);
+
 		    if (horiz) {
 			/*
 			 * right center to left center

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.23 90/02/06 15:34:40 jim Exp $
+ * $XConsortium: viewres.c,v 1.24 90/02/06 15:40:05 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -614,7 +614,7 @@ static void build_tree (node, tree, super)
 					     { NULL, NULL }};
 
     n = 0;
-    XtSetArg (args[n], XtNparent, super); n++;
+    XtSetArg (args[n], XtNtreeParent, super); n++;
     XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
 				  node->label : WnClassname(node))); n++;
     XtSetArg (args[n], XtNcallback, callback_rec); n++;
