@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.15 88/06/28 18:21:08 rws Exp $ */
+/* $XConsortium: XInitExt.c,v 11.16 88/09/06 16:08:44 jim Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -70,6 +70,18 @@ XExtData **XEHeadOfExtensionList(object)
     XEDataObject object;
 {
     return *(XExtData ***)&object;
+}
+
+XExtData *XFindOnExtensionList(structure, number)
+    XExtData **structure;
+    int number;
+{
+    XExtData *ext;
+
+    ext = *structure;
+    while (ext && (ext->number != number))
+	ext = ext->next;
+    return ext;
 }
 
 /*
