@@ -1,5 +1,26 @@
 /*
- * skyway copy area: same as cfb except uses skyway accelerator.
+ * $XConsortium:
+ *
+ * Copyright IBM Corporation 1987,1988,1989,1990,1991 
+ *
+ * All Rights Reserved 
+ *
+ * License to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of IBM not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission. 
+ *
+ * IBM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS, AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS, IN NO EVENT SHALL IBM BE LIABLE FOR ANY SPECIAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE. 
+ *
  */
 
 /*
@@ -15,8 +36,12 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 
+Based on code by Keith Packard.
 */
-/* $XConsortium$ */
+
+/*
+ * skyway copy area: same as cfb except uses skyway accelerator.
+ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -31,6 +56,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
+
+/*-------*/
+#include	"skyReg.h"
+/*-------*/
 
 
 extern int  cfbDoBitbltCopy();
@@ -57,12 +86,16 @@ skyCopyArea(pSrcDrawable, pDstDrawable,
     
     doBitBlt = cfbDoBitbltCopy;
 
+    /*-------*/
     if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
 	(pDstDrawable->type == DRAWABLE_WINDOW))
     {
 	doBitBlt = skyDoBitblt_WinToWin;
     }
-    else if (pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK)
+    else
+    /*-------*/
+
+    if (pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK)
     {
 	doBitBlt = cfbDoBitbltGeneral;
 	if ((pGC->planemask & PMSK) == PMSK)
@@ -100,10 +133,10 @@ skyDoBitblt_WinToWin(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				/* shuffling boxes entails shuffling the
 				   source points too */
     int w, h;
-    int xdir;			/* 1 = left right, -1 = right left/ */
-    int ydir;			/* 1 = top down, -1 = bottom up */
-
     int careful;
+
+    int  scrnNum = pDst->pScreen->myNum;
+    long octant  = 0;
 
 
     /* XXX we have to err on the side of safety when both are windows,
@@ -123,7 +156,8 @@ skyDoBitblt_WinToWin(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     if (careful && (pptSrc->y < pbox->y1))
     {
         /* walk source botttom to top */
-	ydir = -1;
+	/* ydir = -1; */
+	octant |= DY;
 
 	if (nbox > 1)
 	{
@@ -161,13 +195,14 @@ skyDoBitblt_WinToWin(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     else
     {
 	/* walk source top to bottom */
-	ydir = 1;
+	/* ydir = 1; */
     }
 
     if (careful && (pptSrc->x < pbox->x1))
     {
 	/* walk source right to left */
-        xdir = -1;
+        /* xdir = -1; */
+	octant |= DX;
 
 	if (nbox > 1)
 	{
@@ -209,24 +244,40 @@ skyDoBitblt_WinToWin(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     else
     {
 	/* walk source left to right */
-        xdir = 1;
+        /* xdir = 1; */
     }
+
+    /*-------*/
+    SKYSetALU(scrnNum, alu);
+    SKYSetPlaneMask(scrnNum, planemask);
+    /*-------*/
 
     while(nbox--)
     {
+	/*-------*/
+	register int src_x = pptSrc->x;
+	register int src_y = pptSrc->y;
+	register int dst_x = pbox->x1;
+	register int dst_y = pbox->y1;
+	/*-------*/
+
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;
 
-
 	/*-------*/
+	if (octant & DX) { src_x += w - 1; dst_x += w - 1; }
+	if (octant & DY) { src_y += h - 1; dst_y += h - 1; }
 
+	SKYBusyWait(scrnNum);
+	SKYSetOpDim21(scrnNum,w,h);
 
-	SkywayBitBlt(alu, pDst->pScreen, planemask,
-		pptSrc->x, pptSrc->y,	/* source x,y    */
-		pbox->x1, pbox->y1,	/* dest x,y      */
-		w, h);			/* width, height */
-
-
+	SKYSetSrcXY_PatXY_DstXY_PixelOp(scrnNum,
+	    src_x, src_y,				/* Src X,Y    */
+	    0,0,					/* Don't Care */
+	    dst_x, dst_y,				/* Dst X,Y    */
+	    POForeSrc | POBackSrc | POStepBlt | 	/* Pixel Op   */
+	    POSrcC | PODestC | POPatFore |
+	    POMaskDis | POModeAll | octant);
 	/*-------*/
 
 	pbox++;
@@ -243,4 +294,8 @@ skyDoBitblt_WinToWin(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	DEALLOCATE_LOCAL(pptNew1);
 	DEALLOCATE_LOCAL(pboxNew1);
     }
+
+    /*-------*/
+    SKYBusyWait(scrnNum);	/* Must wait or cfb may draw before done */
+    /*-------*/
 }

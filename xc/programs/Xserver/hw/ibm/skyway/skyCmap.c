@@ -1,33 +1,30 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skyCmap.c,v 1.2 91/07/16 13:13:47 jap Exp $ 
  *
- * Copyright IBM Corporation 1987,1988,1989,1990,1991
+ * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *
- * All Rights Reserved
+ * All Rights Reserved 
  *
  * License to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of IBM not be
- * used in advertising or publicity pertaining to distribution of the
- * software without specific, written prior permission.
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of IBM not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission. 
  *
- * IBM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
- * ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS, AND 
- * NONINFRINGEMENT OF THIRD PARTY RIGHTS, IN NO EVENT SHALL
- * IBM BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
- * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
- * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE.
+ * IBM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS, AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS, IN NO EVENT SHALL IBM BE LIABLE FOR ANY SPECIAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE. 
  *
-*/
+ */
 
 /*
- * skyCmap.c - colormap routines
- *             copied from ibm/pgc/pgcCmap.c
- *             revised to be just for skyway
+ * skyCmap.c - colormap routines 
  */
 
 #define NEED_EVENTS
@@ -45,135 +42,148 @@
 #include "OScompiler.h"
 #include "ibmTrace.h"
 
-/* remember the ONE installed colormap here */
-static ColormapPtr  InstalledColormap = NULL;
+#include "skyHdwr.h"
+#include "skyProcs.h"
+
+
+static ColormapPtr InstalledMaps[MAXSCREENS];
+
 
 void
-skyStoreColors( pmap, ndef, pdefs )
-register ColormapPtr pmap ;
-register int ndef ;
-register xColorItem *pdefs ;
+skyStoreColors(pColormap, ndef, pdefs)
+    ColormapPtr     pColormap;
+    int             ndef;
+    xColorItem     *pdefs;
 {
-   register int i ;
-   int index ;
+    int             scrnNum = pColormap->pScreen->myNum;
 
-   TRACE(("skyStoreColors(pmap=x%x)\n", pmap)) ;
-   if ( pmap != InstalledColormap )
+    TRACE(("skyStoreColors(pColormap=x%x)\n", pColormap));
+
+    if (pColormap != InstalledMaps[scrnNum])
 	return;
 
-   index = pmap->pScreen->myNum ;
-
-   while ( ndef-- ) {
-	i = pdefs->pixel;
-	skySetColor(i, pdefs->red, pdefs->green, pdefs->blue, index);
+    while (ndef--)
+    {
+	SKYSetColor(scrnNum, pdefs->pixel,
+		pdefs->red, pdefs->green, pdefs->blue);
 	pdefs++;
     }
 }
 
-int
-skyListInstalledColormaps( pScreen, pCmapList )
-register ScreenPtr pScreen ;
-register Colormap *pCmapList ;
-{
-   int index ;
-
-   TRACE(("skyListInstalledColormaps(InstalledColormap=x%x)\n", InstalledColormap)) ;
-   index = pScreen->myNum ;
-
-   if ( InstalledColormap ) {
-	        *pCmapList = InstalledColormap->mid ;
-	        return 1 ;
-	}
-	else {
-	        *pCmapList = 0 ;
-	        return 0 ;
-	}
-}
 
 void
-skyInstallColormap( pColormap )
-register ColormapPtr pColormap ;
+skyInstallColormap(pColormap)
+    ColormapPtr     pColormap;
 {
-    register int i ;
-    register Entry *pent;
-    register VisualPtr pVisual = pColormap->pVisual;
-    int index ;
-    ScreenPtr pScreen = pColormap->pScreen ;
-    unsigned int red, green, blue;
+    ScreenPtr       pScreen = pColormap->pScreen;
+    VisualPtr       pVisual = pColormap->pVisual;
+    int             scrnNum = pScreen->myNum;
 
-   TRACE(("skyInstallColormap(pColormap=x%x)\n", pColormap)) ;
+    int             i;
+    Entry          *pent;
+    unsigned int    red, green, blue;
+    ColormapPtr     pOldMap;
 
-   index = pScreen->myNum ;
 
-   if ( !pColormap ) /* Re-Install of NULL map ?? */
-	return ;
+    TRACE(("skyInstallColormap(pColormap=x%x)\n", pColormap));
 
-    if ((pVisual->class | DynamicClass) == DirectColor) {
-	for (i = 0; i < 256; i++) {
+    if ((pVisual->class | DynamicClass) == DirectColor)
+    {
+	for (i = 0; i < 256; i++)
+	{
 	    pent = &pColormap->red[(i & pVisual->redMask) >>
-	                      pVisual->offsetRed];
+				   pVisual->offsetRed];
 	    red = pent->co.local.red;
 	    pent = &pColormap->green[(i & pVisual->greenMask) >>
-	                        pVisual->offsetGreen];
+				     pVisual->offsetGreen];
 	    green = pent->co.local.green;
 	    pent = &pColormap->blue[(i & pVisual->blueMask) >>
-	                       pVisual->offsetBlue];
+				    pVisual->offsetBlue];
 	    blue = pent->co.local.blue;
-	    skySetColor( i, red, green, blue, index );
+
+	    SKYSetColor(scrnNum, i, red, green, blue);
 	}
-    } else {
+    }
+    else
+    {
 	for (i = 0, pent = pColormap->red;
 	     i < pVisual->ColormapEntries;
-	     i++, pent++) {
-	    if (pent->fShared) {
-	        red = pent->co.shco.red->color;
-	        green = pent->co.shco.green->color;
-	        blue = pent->co.shco.blue->color;
+	     i++, pent++)
+	{
+	    if (pent->fShared)
+	    {
+		red = pent->co.shco.red->color;
+		green = pent->co.shco.green->color;
+		blue = pent->co.shco.blue->color;
 	    }
-	    else {
-	        red = pent->co.local.red;
-	        green = pent->co.local.green;
-	        blue = pent->co.local.blue;
+	    else
+	    {
+		red = pent->co.local.red;
+		green = pent->co.local.green;
+		blue = pent->co.local.blue;
 	    }
-	    skySetColor( i, red, green, blue, index );
+
+	    SKYSetColor(scrnNum, i, red, green, blue);
 	}
     }
 
-   if ( InstalledColormap != pColormap ) {
-	if (InstalledColormap ) /* Remember it may not exist */
-	    WalkTree( pScreen, TellLostMap,
-	              &(InstalledColormap->mid) ) ;
-	InstalledColormap = pColormap ;
-	WalkTree( pScreen, TellGainedMap, &(pColormap->mid) ) ;
-	/* should really recolor cursor here for new color map ??? */
-    }
 
-   return ;
+    pOldMap = InstalledMaps[scrnNum];
+    if (pColormap != pOldMap)
+    {
+	if (pOldMap != (ColormapPtr)None)
+	    WalkTree(pScreen, TellLostMap, (char *)&pOldMap->mid);
+
+	InstalledMaps[scrnNum] = pColormap;
+	WalkTree(pScreen, TellGainedMap, (char *)&pColormap->mid);
+
+    }
+    return;
 }
 
-void
-skyUninstallColormap( pColormap )
-register ColormapPtr pColormap ;
-{
-   register ColormapPtr pCmap ;
 
-   TRACE(("skyUninstallColormap(pColormap=x%x)\n", pColormap)) ;
-   if (pColormap != InstalledColormap)
+void
+skyUninstallColormap(pColormap)
+    ColormapPtr     pColormap;
+{
+    ColormapPtr     pDefCmap;
+    ScreenPtr       pScreen = pColormap->pScreen;
+    int             scrnNum = pScreen->myNum;
+
+    TRACE(("skyUninstallColormap(pColormap=x%x)\n", pColormap));
+
+    if (pColormap != InstalledMaps[scrnNum])
 	return;
 
-   pCmap = (ColormapPtr) LookupIDByType( pColormap->pScreen->defColormap,
-	                           RT_COLORMAP ) ;
-   if ( pCmap != pColormap ) /* never uninstall the default map */
-	(* pColormap->pScreen->InstallColormap)( pCmap ) ;
+    pDefCmap = (ColormapPtr) LookupIDByType(pScreen->defColormap, RT_COLORMAP);
 
-   return ;
+    if (pDefCmap != pColormap)	/* never uninstall the default map */
+	(* pScreen->InstallColormap) (pDefCmap);
+
+    return;
+}
+
+
+int
+skyListInstalledColormaps(pScreen, pCmapList)
+    ScreenPtr       pScreen;
+    Colormap       *pCmapList;
+{
+    int             scrnNum = pScreen->myNum;
+
+    TRACE(("skyListInstalledMapss()\n"));
+
+    *pCmapList = InstalledMaps[scrnNum]->mid;
+    return 1;
 }
 
 
 void
 skyRefreshColormaps(pScreen)
-ScreenPtr pScreen ;
+    ScreenPtr       pScreen;
 {
-   TRACE(("skyRefreshColormaps(pColormap=x%x)\n", InstalledColormap)) ;
-   skyInstallColormap(InstalledColormap);
+    int             scrnNum = pScreen->myNum;
+
+    TRACE(("skyRefreshColormaps(pColormap=x%x)\n", InstalledMaps[scrnNum]));
+    skyInstallColormap(InstalledMaps[scrnNum]);
 }
