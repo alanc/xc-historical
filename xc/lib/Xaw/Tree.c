@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.3 90/02/01 18:04:55 jim Exp $
+ * $XConsortium: Tree.c,v 1.4 90/02/01 18:29:07 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -523,6 +523,19 @@ static void compute_bounding_box_subtree (tree, w, depth)
 
 
     /*
+     * Add a little bit of padding to make parallel subtrees stand out a
+     * little bit.  Make sure to do similar adjustments in second pass.
+     */
+    if (tc->tree.n_sub_nodes > 1) {
+	if (horiz) {
+	    newheight += tree->tree.v_min_space;
+	} else {
+	    newwidth += tree->tree.h_min_space;
+	}
+    }
+
+
+    /*
      * Now fit parent onto side (or top) of bounding box and correct for
      * extra padding.  Be careful of unsigned arithmetic.
      */
@@ -549,6 +562,14 @@ static void arrange_subtree (tree, w, depth, x, y)
     register int i;
     int newx, newy;
     Bool horiz = (Bool) (tree->tree.horiz);
+
+    if (tc->tree.n_sub_nodes > 1) {
+	if (horiz) {
+	    y += tree->tree.v_min_space / 2;
+	} else {
+	    x += tree->tree.h_min_space / 2;
+	}
+    }
 
     tc->tree.x = x;
     tc->tree.y = y;
