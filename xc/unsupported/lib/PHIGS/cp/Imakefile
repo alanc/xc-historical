@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.8 91/05/06 19:42:29 rws Exp $
+# $XConsortium: Imakefile,v 5.9 91/05/12 15:31:15 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -51,7 +51,11 @@ ASRCS = $(CSRCS) $(HSRCS)
 
 MONDEPLIBS = ../libphigs.a XawClientDepLibs
 MONLIBS = ../libphigs.a XawClientLibs
+#if HasSockets || !SystemV4
 SYSLIBS = -lm
+#else
+SYSLIBS = -lm -lsocket
+#endif
 
 .SUFFIXES: .o .lint
 
