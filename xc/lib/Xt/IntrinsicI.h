@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.37 89/09/19 20:12:43 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.38 89/11/14 17:27:32 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -149,9 +149,20 @@ extern int bcmp();
  *
  **************************************************************/
 
+/* used by XtResolvePathname */
 #ifndef XFILESEARCHPATHDEFAULT
 #define XFILESEARCHPATHDEFAULT "/usr/lib/X11/%L/%T/%N%S:/usr/lib/X11/%l/%T/%N%S:/usr/lib/X11/%T/%N%S"
 #endif
+
+/* the following two were both "X Toolkit " prior to R4 */
+#ifndef XTERROR_PREFIX
+#define XTERROR_PREFIX ""
+#endif
+
+#ifndef XTWARNING_PREFIX
+#define XTWARNING_PREFIX ""
+#endif
+
 #ifndef ERRORDB
 #define ERRORDB "/usr/lib/X11/XtErrorDB"
 #endif
