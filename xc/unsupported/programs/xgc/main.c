@@ -208,7 +208,7 @@ main(argc,argv)
   percentchoice = XtCreateManagedWidget("testpercent",formWidgetClass,GCform,
 				 gcchoiceargs,XtNumber(gcchoiceargs));
   X.percent = 1.0;
-  create_testfrac_choice(percentchoice,&X.percent);
+  create_testfrac_choice(percentchoice);
 
   /* make all the labels inside the choices line up nicely */
   line_up_labels(GCdescs,(int) XtNumber(GCdescs));
