@@ -16,22 +16,25 @@ Superclass 	Command
 .sp
 .De
 .LP
-The Toggle widget is an area, often rectangular, that contains a text
-label or bitmap image.  This widget maintains a Boolean state (e.g.
+The Toggle widget is an area, often rectangular, containing a text label
+or bitmap image.  This widget maintains a Boolean state (e.g.
 True/False or On/Off) and changes state whenever it is selected.  When
-the pointer is on the button, the button becomes highlighted by
+the pointer is on the button, the button may become highlighted by
 drawing a rectangle around its perimeter.  This highlighting indicates
-that the button is ready for selection.  When the left mouse button is
-pressed the Toggle widget changes state, and its callback routine is
-invoked.
+that the button is ready for selection.  When pointer button 1 is
+pressed and released, the Toggle widget indicates that it has changed
+state by reversing its foreground and background colors, and its
+\fBnotify\fP action is invoked, calling all functions on its callback
+list.  If the pointer is moved out of the widget before the button is
+released, the widget reverts to its normal foreground and background
+colors, and releasing the button has no effect.  This behavior allows
+the user to cancel an action.
 .LP
 Toggle buttons may also be part of a radio group.  A radio group is a
 list of Toggle buttons in which no more than one Toggle may be set at
-any time.  A radio group is identified by the widget id of any one of
-its members.  There is a convenience routine, \fBXawToggleGetCurrent\fP
-that will return information about the Toggle button in the radio group
-that is currently set.  More information on radio groups is presented
-below.
+any time.  A radio group is identified by the widget ID of any one of
+its members.  The convenience routine \fBXawToggleGetCurrent\fP will
+return information about the Toggle button in the radio group.
 .LP
 When creating a Toggle widget instance, the following resources are
 retrieved from the argument list or from the resource database: 
@@ -67,15 +70,15 @@ destroyCallback	Callback	XtCallbackList		NULL
 font	Font	XFontStruct		XtDefaultFont
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	Font height + 2 * \fBinternalHeight\fP
-highlightThickness	Thickness	Dimension 2	A	(0 if Shaped)
+highlightThickness	Thickness	Dimension	A	2 (0 if Shaped)
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
 justify	Justify	Justify		XtJustifyCenter (center)
-label	Label	String		NULL (name of widget)
+label	Label	String		name of widget
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 radioData	RadioData	Pointer		Name of widget
-radioGroup	Widget	Widget		NULL (No radio Group)
+radioGroup	Widget	Widget		No radio group
 resize	Resize	Boolean		True
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
@@ -116,13 +119,12 @@ _
 .La
 .Mm
 .IP \fBradioData\fP 1.5i
-Specifies the data that will be returned from a call to
-\fBXawToggleGetCurrent\fP if this is the currently \fIset\fP widget in
-the radio group.  This data is also used to identify the Toggle that
-will be set by a call to \fBXawToggleSetCurrent\fP.  The value NULL is
-returned by \fBXawToggleGetCurrent\fP if no widget is set in a radio
-group.  Programmers must not specify NULL (or Zero) as \fBradioData\fP,
-if they intend to use \fBXawToggleGetCurrent\fP
+Specifies the data that will be returned by \fBXawToggleGetCurrent\fP
+when this is the currently \fIset\fP widget in the radio group.  This
+value is also used to identify the Toggle that will be set by a call to
+\fBXawToggleSetCurrent\fP.  The value NULL will be returned by
+\fBXawToggleGetCurrent\fP if no widget in a radio group is currently
+set.  Programmers must not specify NULL (or Zero) as \fBradioData\fP.
 .IP \fBradioGroup\fP 1.5i
 Specifies another Toggle widget that is in the radio group to which this
 Toggle widget should be added.  A radio group is a group of Toggle
@@ -174,9 +176,9 @@ The full list of actions supported by Toggle is:
 .IP \fBhighlight\fP(\fIcondition\fP) 1.5i
 Displays the internal highlight border in the color (\fBforeground\fP
 or \fBbackground\fP ) that contrasts with the interior color of the
-Toggle widget.  The conditions \fBWhenUnset\fP or \fBAlways\fP are
+Toggle widget.  The conditions \fBWhenUnset\fP and \fBAlways\fP are
 understood by this action procedure.  If no argument is passed then
-\fBWhenUnset\fP is assumed, maintaining backwards compatibility.
+\fBWhenUnset\fP is assumed.
 .IP \fBunhighlight\fP(\|) 1.5i
 Displays the internal highlight border in the color (\fBforeground\fP
 or \fBbackground\fP ) that matches the interior color of the
@@ -208,7 +210,7 @@ the call_data argument in these callback functions is undefined.
 .LP
 .NT
 When a bitmap of depth greater that one (1) is specified the
-\fIset\fP(), \fIunset\fP(), \fIreset\fP() actions have no effect,
+\fIset\fP(), \fIunset\fP(), and \fIreset\fP() actions have no effect,
 since there are no foreground and background colors used in a 
 multi-plane pixmap.
 .NE
@@ -221,10 +223,9 @@ of many" radio group.  This means that there may be no more than one
 button active, but there need not be any buttons active.
 .LP
 The other type of radio group is "one of many" and has the more strict
-policy that there will always be exactly one radio button active.  The
+policy that there will always be exactly one radio button active.
 Toggle widgets can be used to provide this interface with a slight
-modification to the translation table in each of the Toggle widgets in
-the group.
+modification to the translation table of each Toggle in the group.
 .Ds 0
 .TA .5i 2.25i
 .ta .5i 2.25i
@@ -237,8 +238,8 @@ the group.
 This translation table will not allow any Toggle to be \fIunset\fP
 except as a result of another Toggle becoming \fIset\fP.  It is
 the application programmer's responsibility to choose an initial
-state for the radio group by setting one of its member widget's
-\fBstate\fP resource to \fBTrue\fP.
+state for the radio group by setting the \fBstate\fP resource of one of
+its member widgets to \fBTrue\fP.
 .NH 3
 Convenience Routines
 .LP
@@ -262,9 +263,9 @@ Specifies the Toggle widget.
 Specifies any Toggle in the new radio group.  If NULL then the Toggle
 will be removed from any radio group of which it is a member.
 .LP
-If a Toggle is already in \fIset\fP in the new radio group,
+If a Toggle is already \fIset\fP in the new radio group,
 and the Toggle to be added is also \fIset\fP then the previously
-\fIset\fP Toggle in the new radio group is \fIunset\fP and its callback
+\fIset\fP Toggle in the radio group is \fIunset\fP and its callback
 procedures are invoked.
 .SH
 Finding the Currently selected Toggle in a radio group of Toggles
@@ -282,12 +283,12 @@ caddr_t XawToggleGetCurrent(\fIradio_group\fP);
 Specifies the Toggle widget.
 .LP
 The value returned by this function is the
-.PN radioData, 
+.PN radioData
 of the Toggle in this radio group that is currently set.  The default
-value for 
+value for
 .PN radioData 
-is the name of that Toggle widget.  If no Toggle 
-is set in the radio group specified then NULL is returned.
+is the name of that Toggle widget.  If no Toggle is set in the radio
+group specified then NULL is returned.
 .SH
 Changing the Toggle that is set in a radio group.
 .LP
