@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 2.13 88/02/22 10:39:17 swick Exp $";
+static char rcs_id[] = "$Header: tocutil.c,v 2.14 88/02/26 10:51:07 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -124,13 +124,6 @@ void TUScanFileForToc(toc)
 			        arglist, XtNumber(arglist) );
 	XtRealizeWidget(label);
 	XtMapWidget(label);
-	XWindowEvent( XtDisplay(label),
-		      XtWindow(label),
-		      ExposureMask, &event );
-	do {
-	    XtDispatchEvent( &event );
-	}
-	while ( XCheckTypedEvent( XtDisplay(label), Expose, &event ) );
 
 	argv = MakeArgv(4);
 	argv[0] = "scan";
