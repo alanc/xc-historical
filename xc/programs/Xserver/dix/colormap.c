@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.78 89/03/12 17:27:16 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.79 89/03/12 17:39:33 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -648,7 +648,7 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
 	pcr = (colorResource *) xalloc(sizeof(colorResource));
 	if (!pcr)
 	{
-	    (void)FreeColors(pmap, client, 1, pPix, 0);
+	    (void)FreeColors(pmap, client, 1, pPix, (Pixel)0);
 	    return (BadAlloc);
 	}
 	pcr->mid = pmap->mid;
@@ -727,7 +727,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
     EntryPtr	pent;
     Bool	foundFree;
     Pixel	pixel, Free;
-    int		npix, count, *nump, *pfree;
+    int		npix, count, *nump;
     Pixel	**pixp, *ppix;
     xColorItem	def;
 

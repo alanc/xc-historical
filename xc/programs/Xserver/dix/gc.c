@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.113 89/03/12 14:08:00 rws Exp $ */
+/* $XConsortium: gc.c,v 1.114 89/03/13 08:27:02 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -535,7 +535,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
         *pStatus = ChangeGC(pGC, mask, pval);
 	if (*pStatus != Success)
 	{
-	    FreeGC(pGC, 0);
+	    FreeGC(pGC, (GContext)0);
 	    pGC = (GCPtr)NULL;
 	}
     }
@@ -1022,6 +1022,7 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 	  break;
     }
 
+    size = nrects * sizeof(xRectangle);
     prectsNew = (xRectangle *) xalloc(size);
     if (!prects && size)
 	return BadAlloc;
@@ -1033,7 +1034,6 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
     pGC->clipOrg.y = yOrigin;
     pGC->stateChanges |= GCClipYOrigin;
 
-    size = nrects * sizeof(xRectangle);
     if (size)
 	bcopy((char *)prects, (char *)prectsNew, size);
     (*pGC->ChangeClip)(pGC, newct, prectsNew, nrects);
