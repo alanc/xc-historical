@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.119 91/07/23 22:27:42 keith Exp $
+ * $XConsortium: XOpenDis.c,v 11.120 91/09/09 14:47:58 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -16,35 +16,9 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* Converted to V11 by jg */
-
 #include <X11/Xlibint.h>
 #include <X11/Xos.h>
-#ifdef HASXDMAUTH
-#include "Xlibnet.h"
-#if TCPCONN
-#include <sys/socket.h>
-#endif
-#endif
-#include <X11/Xauth.h>
 #include <X11/Xatom.h>
-
-#ifdef STREAMSCONN
-#ifdef SVR4
-#include <tiuser.h>
-#else
-#undef HASXDMAUTH
-#endif
-#endif
-
-#ifdef SECURE_RPC
-#include <rpc/rpc.h>
-#ifdef ultrix
-#include <time.h>
-#include <rpc/auth_des.h>
-#endif
-#endif
-
 #include <stdio.h>
 
 #ifdef X_NOT_STDC_ENV
@@ -61,132 +35,7 @@ static xReq _dummy_request = {
 	0, 0, 0
 };
 
-/*
- * First, a routine for setting authorization data
- */
-static int xauth_namelen = 0;
-static char *xauth_name = NULL;	 /* NULL means use default mechanism */
-static int xauth_datalen = 0;
-static char *xauth_data = NULL;	 /* NULL means get default data */
-
-/*
- * This is a list of the authorization names which Xlib currently supports.
- * Xau will choose the file entry which matches the earliest entry in this
- * array, allowing us to prioritize these in terms of the most secure first
- */
-
-static char *default_xauth_names[] = {
-#ifdef SECURE_RPC
-    "SUN-DES-1",
-#endif
-#ifdef HASXDMAUTH
-    "XDM-AUTHORIZATION-1",
-#endif
-    "MIT-MAGIC-COOKIE-1"
-};
-
-static int default_xauth_lengths[] = {
-#ifdef SECURE_RPC
-    9,	    /* strlen ("SUN-DES-1") */
-#endif
-#ifdef HASXDMAUTH
-    19,	    /* strlen ("XDM-AUTHORIZATION-1") */
-#endif
-    18	    /* strlen ("MIT-MAGIC-COOKIE-1") */
-};
-
-#define NUM_DEFAULT_AUTH    (sizeof (default_xauth_names) / sizeof (default_xauth_names[0]))
-    
-static char **xauth_names = default_xauth_names;
-static int  *xauth_lengths = default_xauth_lengths;
-
-static int  xauth_names_length = NUM_DEFAULT_AUTH;
-
 static OutOfMemory();
-
-void XSetAuthorization (name, namelen, data, datalen)
-    int namelen, datalen;		/* lengths of name and data */
-    char *name, *data;			/* NULL or arbitrary array of bytes */
-{
-    char *tmpname, *tmpdata;
-
-    if (xauth_name) Xfree (xauth_name);	 /* free any existing data */
-    if (xauth_data) Xfree (xauth_data);
-
-    xauth_name = xauth_data = NULL;	/* mark it no longer valid */
-    xauth_namelen = xauth_datalen = 0;
-
-    if (namelen < 0) namelen = 0;	/* check for bogus inputs */
-    if (datalen < 0) datalen = 0;	/* maybe should return? */
-
-    if (namelen > 0)  {			/* try to allocate space */
-	tmpname = Xmalloc ((unsigned) namelen);
-	if (!tmpname) return;
-	bcopy (name, tmpname, namelen);
-    } else {
-	tmpname = NULL;
-    }
-
-    if (datalen > 0)  {
-	tmpdata = Xmalloc ((unsigned) datalen);
-	if (!tmpdata) {
-	    if (tmpname) (void) Xfree (tmpname);
-	    return;
-	}
-	bcopy (data, tmpdata, datalen);
-    } else {
-	tmpdata = NULL;
-    }
-
-    xauth_name = tmpname;		/* and store the suckers */
-    xauth_namelen = namelen;
-    if (tmpname)
-    {
-	xauth_names = &xauth_name;
-	xauth_lengths = &xauth_namelen;
-	xauth_names_length = 1;
-    }
-    else
-    {
-	xauth_names = default_xauth_names;
-	xauth_lengths = default_xauth_lengths;
-	xauth_names_length = NUM_DEFAULT_AUTH;
-    }
-    xauth_data = tmpdata;
-    xauth_datalen = datalen;
-    return;
-}
-
-#ifdef SECURE_RPC
-/*
- * Create a credential that we can send to the X server.
- */
-static int
-auth_ezencode(servername, window, cred_out, len)
-        char           *servername;
-        int             window;
-	char	       *cred_out;
-        int            *len;
-{
-        AUTH           *a;
-        XDR             xdr;
-
-        a = authdes_create(servername, window, NULL, NULL);
-        if (a == (AUTH *)NULL) {
-                perror("auth_create");
-                return 0;
-        }
-        xdrmem_create(&xdr, cred_out, *len, XDR_ENCODE);
-        if (AUTH_MARSHALL(a, &xdr) == FALSE) {
-                perror("auth_marshall");
-                AUTH_DESTROY(a);
-                return 0;
-        }
-        *len = xdr_getpos(&xdr);
-        AUTH_DESTROY(a);
-	return 1;
-}
-#endif
 
 extern Bool _XWireToEvent();
 extern Status _XUnknownNativeEvent();
@@ -225,23 +74,12 @@ Display *XOpenDisplay (display)
 		xVisualType *vp;
 	} u;				/* proto data returned from server */
 	long setuplength;	/* number of bytes in setup message */
-	Xauth *authptr = NULL;
-	char *server_addr = NULL;
-	int server_addrlen = 0;
 	char *conn_auth_name, *conn_auth_data;
 	int conn_auth_namelen, conn_auth_datalen;
-	int conn_family;
 	unsigned long mask;
 	extern Bool _XSendClientPrefix();
 	extern int _XConnectDisplay();
 	extern XID _XAllocID();
-#ifdef SECURE_RPC
-	char	rpc_cred[MAX_AUTH_BYTES];
-#endif
- 
-#ifdef HASXDMAUTH
-	char    xdmcp_data[192/8];
-#endif
 
 	/*
 	 * If the display specifier string supplied as an argument to this 
@@ -286,150 +124,14 @@ Display *XOpenDisplay (display)
  */
 
 	if ((dpy->fd = _XConnectDisplay (display_name, &fullname, &idisplay,
-					 &iscreen, &conn_family,
-					 &server_addrlen, &server_addr)) < 0) {
+					 &iscreen, &conn_auth_name,
+					 &conn_auth_namelen, &conn_auth_data,
+					 &conn_auth_datalen)) < 0) {
 		Xfree ((char *) dpy);
 		UnlockMutex(&lock);
 		return(NULL);
 	}
 
-/*
- * Look up the authorization protocol name and data if necessary.
- */
-	if (xauth_name && xauth_data) {
-	    conn_auth_namelen = xauth_namelen;
-	    conn_auth_name = xauth_name;
-	    conn_auth_datalen = xauth_datalen;
-	    conn_auth_data = xauth_data;
-	} else {
-	    char dpynumbuf[40];		/* big enough to hold 2^64 and more */
-	    (void) sprintf (dpynumbuf, "%d", idisplay);
-
-	    authptr = XauGetBestAuthByAddr ((unsigned short) conn_family,
-					(unsigned short) server_addrlen,
-					server_addr,
-					(unsigned short) strlen (dpynumbuf),
-					dpynumbuf,
-					xauth_names_length,
-					xauth_names,
-					xauth_lengths);
-	    if (authptr) {
-		conn_auth_namelen = authptr->name_length;
-		conn_auth_name = (char *)authptr->name;
-		conn_auth_datalen = authptr->data_length;
-		conn_auth_data = (char *)authptr->data;
-	    } else {
-		conn_auth_namelen = 0;
-		conn_auth_name = NULL;
-		conn_auth_datalen = 0;
-		conn_auth_data = NULL;
-	    }
-	}
-#ifdef HASXDMAUTH
-	/*
-	 * build XDM-AUTHORIZATION-1 data
-	 */
-	if (conn_auth_namelen == 19 &&
-	    !strncmp (conn_auth_name, "XDM-AUTHORIZATION-1", 19))
-	{
-	    int	    i, j;
-	    long    now;
-	    for (j = 0; j < 8; j++)
-		xdmcp_data[j] = conn_auth_data[j];
-#ifdef STREAMSCONN /* && SVR4 */
-	    {
-	    	struct netbuf	netb;
-	    	char		addrret[1024];
-    
-	    	netb.maxlen = sizeof addrret;
-	    	netb.buf = addrret;
-	    	if (t_getname (dpy->fd, &netb, LOCALNAME) == -1)
-		    t_error ("t_getname");
-		/*
-		 * XXX - assumes that the return data
-		 * are in a struct sockaddr_in, and that
-		 * the data structure is layed out in
-		 * the normal fashion.  This WILL NOT WORK
-		 * on a non 32-bit machine (same in Xstreams.c)
-		 */
-		for (i = 4; i < 8; i++)
-		    xdmcp_data[j++] = netb.buf[i];
-		for (i = 2; i < 4; i++)
-		    xdmcp_data[j++] = netb.buf[i];
-	    }
-#else
-	    {
-	    	unsigned long	addr;
-	    	unsigned short	port;
-#ifdef TCPCONN
-	    	int	    addrlen;
-	    	struct sockaddr_in	in_addr;
-    
-	    	addrlen = sizeof (in_addr);
-	    	if (getsockname (dpy->fd,
-				 (struct sockaddr *) &in_addr,
- 				 &addrlen) != -1 &&
-		    addrlen >= sizeof in_addr &&
-		    in_addr.sin_family == AF_INET)
-	    	{
-		    addr = ntohl (in_addr.sin_addr.s_addr);
-		    port = ntohs (in_addr.sin_port);
-	    	}
-	    	else
-#endif
-	    	{
-		    static unsigned long	unix_addr = 0xFFFFFFFF;
-		    addr = unix_addr--;
-		    port = getpid ();
-	    	}
-	    	xdmcp_data[j++] = (addr >> 24) & 0xFF;
-	    	xdmcp_data[j++] = (addr >> 16) & 0xFF;
-	    	xdmcp_data[j++] = (addr >>  8) & 0xFF;
-	    	xdmcp_data[j++] = (addr >>  0) & 0xFF;
-	    	xdmcp_data[j++] = (port >>  8) & 0xFF;
-	    	xdmcp_data[j++] = (port >>  0) & 0xFF;
-	    }
-#endif
-	    time (&now);
-	    xdmcp_data[j++] = (now >> 24) & 0xFF;
-	    xdmcp_data[j++] = (now >> 16) & 0xFF;
-	    xdmcp_data[j++] = (now >>  8) & 0xFF;
-	    xdmcp_data[j++] = (now >>  0) & 0xFF;
-	    while (j < 192 / 8)
-		xdmcp_data[j++] = 0;
-	    XdmcpWrap (xdmcp_data, conn_auth_data + 8,
-			  xdmcp_data, j);
-	    conn_auth_data = xdmcp_data;
-	    conn_auth_datalen = j;
-	}
-#endif /* HASXDMAUTH */
-#ifdef SECURE_RPC
-        /*
-         * The SUN-DES-1 authorization protocol uses the
-         * "secure RPC" mechanism in SunOS 4.0+.
-         */
-        if (conn_auth_namelen == 9 && !strncmp(conn_auth_name,
-            "SUN-DES-1", 9)) {
-            static char servernetname[MAXNETNAMELEN + 1];
-
-            /*
-             * Copy over the server's netname from the authorization
-             * data field filled in by XauGetAuthByAddr().
-             */
-            if (conn_auth_datalen > MAXNETNAMELEN) {
-                return 0;
-            }
-            bcopy(conn_auth_data, servernetname, conn_auth_datalen);
-            servernetname[conn_auth_datalen] = '\0';
-
-	    conn_auth_datalen = sizeof (rpc_cred);
-            if (auth_ezencode(servernetname, 100, rpc_cred, &conn_auth_datalen))
-		conn_auth_data = rpc_cred;
-	    else
-		conn_auth_data = NULL;
-        }
-#endif
-	if (server_addr) (void) Xfree (server_addr);
 /*
  * The xConnClientPrefix describes the initial connection setup information
  * and is followed by the authorization information.  Sites that are interested
@@ -452,7 +154,8 @@ Display *XOpenDisplay (display)
 	    UnlockMutex(&lock);
 	    return(NULL);
 	}	    
-	if (authptr) XauDisposeAuth (authptr);
+	if (conn_auth_name) Xfree(conn_auth_name);
+	if (conn_auth_data) Xfree(conn_auth_data);
 /*
  * Now see if connection was accepted...
  */
