@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.108 91/04/19 19:58:22 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.109 91/04/20 15:26:50 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -81,7 +81,6 @@ static void ParseModImmed();
 static void ParseModSym();
 static String PanicModeRecovery();
 static String CheckForPoundSign();
-static String ScanFor();
 static KeySym StringToKeySym();
 static ModifierRec modifiers[] = {
     {"None",    0,      ParseModImmed,None},
@@ -329,6 +328,21 @@ static EventKey events[] = {
 
 };
 
+
+#define ScanFor(str, ch) \
+    while ((*(str) != (ch)) && (*(str) != '\0') && (*(str) != '\n')) (str)++
+
+#define ScanNumeric(str)  while ('0' <= *(str) && *(str) <= '9') (str)++
+
+#define ScanAlphanumeric(str) \
+    while (('A' <= *(str) && *(str) <= 'Z') || \
+           ('a' <= *(str) && *(str) <= 'z') || \
+           ('0' <= *(str) && *(str) <= '9')) (str)++
+
+#define ScanWhitespace(str) \
+    while (*(str) == ' ' || *(str) == '\t') (str)++
+
+
 static Boolean initialized = FALSE;
 
 static void FreeEventSeq(eventSeq)
@@ -401,7 +415,7 @@ static void Compile_XtModifierTable(table, count)
 static String PanicModeRecovery(str)
     String str;
 {
-     str = ScanFor(str,'\n');
+     ScanFor(str,'\n');
      if (*str == '\n') str++;
      return str;
 
@@ -579,34 +593,10 @@ static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,check)
 }
 
 
-static String ScanFor(str, ch)
-    register String str;
-    register char ch;
-{
-    while ((*str != ch) &&( *str != '\0') &&(*str != '\n') ) str++;
-    return str;
-}
-
-static String ScanNumeric(str)
-    register String str;
-{
-    while ('0' <= *str && *str <= '9') str++;
-    return str;
-}
-
-static String ScanAlphanumeric(str)
-    register String str;
-{
-    while (
-        ('A' <= *str && *str <= 'Z') || ('a' <= *str && *str <= 'z')
-	|| ('0' <= *str && *str <= '9')) str++;
-    return str;
-}
-
 static String ScanIdent(str)
     register String str;
 {
-    str = ScanAlphanumeric(str);
+    ScanAlphanumeric(str);
     while (
 	   ('A' <= *str && *str <= 'Z')
 	|| ('a' <= *str && *str <= 'z')
@@ -615,13 +605,6 @@ static String ScanIdent(str)
 	|| (*str == '_')
 	|| (*str == '$')
 	) str++;
-    return str;
-}
-
-static String ScanWhitespace(str)
-    register String str;
-{
-    while (*str == ' ' || *str == '\t') str++;
     return str;
 }
 
@@ -660,7 +643,7 @@ static String ParseModifiers(str, event,error)
     Boolean notFlag, exclusive, keysymAsMod;
     Value maskBit;
  
-    str = ScanWhitespace(str);
+    ScanWhitespace(str);
     start = str;
     str = FetchModifierToken(str,modStr);
     exclusive = FALSE;
@@ -670,13 +653,13 @@ static String ParseModifiers(str, event,error)
 	    if (maskBit== None) {
                 event->event.modifierMask = ~0;
 		event->event.modifiers = 0;
-                str = ScanWhitespace(str);
+                ScanWhitespace(str);
 	        return str;
             }
             if (maskBit == AnyModifier) {/*backward compatability*/
                 event->event.modifierMask = 0;
                 event->event.modifiers = 0;
-                str = ScanWhitespace(str);
+                ScanWhitespace(str);
                 return str;
             }
          str = start; /*if plain modifier, reset to beginning */
@@ -685,12 +668,12 @@ static String ParseModifiers(str, event,error)
         if (*str == '!') {
              exclusive = TRUE;
              str++;
-             str = ScanWhitespace(str);
+             ScanWhitespace(str);
         }
         if (*str == ':') {
              event->event.standard = TRUE;
              str++;
-             str = ScanWhitespace(str);
+             ScanWhitespace(str);
         }
     }
    
@@ -728,7 +711,7 @@ static String ParseModifiers(str, event,error)
         event->event.modifierMask |= maskBit;
 	if (notFlag) event->event.modifiers &= ~maskBit;
 	else event->event.modifiers |= maskBit;
-        str = ScanWhitespace(str);
+        ScanWhitespace(str);
     }
     if (exclusive) event->event.modifierMask = ~0;
     return str;
@@ -743,7 +726,7 @@ static String ParseXtEventType(str, event, tmEventP,error)
     String start = str;
     char eventTypeStr[100];
 
-    str = ScanAlphanumeric(str);
+    ScanAlphanumeric(str);
     bcopy(start, eventTypeStr, str-start);
     eventTypeStr[str-start] = '\0';
     *tmEventP = LookupTMEventType(eventTypeStr,error);
@@ -926,7 +909,7 @@ static String ParseKeySym(str, closure, event,error)
 {
     char keySymName[100], *start;
 
-    str = ScanWhitespace(str);
+    ScanWhitespace(str);
 
     if (*str == '\\') {
 	str++;
@@ -986,7 +969,7 @@ static String ParseTable(str, closure, event,error)
     char tableSymName[100];
 
     event->event.eventCode = 0L;
-    str = ScanAlphanumeric(str);
+    ScanAlphanumeric(str);
     if (str == start) {event->event.eventCodeMask = 0L; return str; }
     if (str-start >= 99) {
 	Syntax("Invalid Detail Type (string is too long).", "");
@@ -1028,7 +1011,7 @@ static String ParseAtom(str, closure, event,error)
 {
     char atomName[1000], *start;
 
-    str = ScanWhitespace(str);
+    ScanWhitespace(str);
 
     if (*str == ',' || *str == ':') {
 	/* no detail */
@@ -1449,13 +1432,14 @@ static String ParseRepeat(str, eventP, actionsP)
     /*** Parse the repetitions, for double click etc... ***/
     if (*str != '(') return str;
     str++;
-    right_paren = ScanFor (str, ')');
+    right_paren = str;
+    ScanFor(right_paren, ')');
     if (isascii(*str) && isdigit(*str)) {
 	String start = str;
 	char repStr[100];
 	int len;
 
-	str = ScanNumeric(str);
+	ScanNumeric(str);
 	len = (str - start);
 	if (len < sizeof repStr) {
 	    bcopy(start, repStr, len);
@@ -1509,7 +1493,7 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
              {0, 0,0L, 0, 0L, 0L,_XtRegularMatch,FALSE};
 	EventPtr	event;
 
-	str = ScanWhitespace(str);
+	ScanWhitespace(str);
 
 	if (*str == '"') {
 	    str++;
@@ -1551,7 +1535,7 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
 	    str = ParseRepeat(str, &event, actionsP);
 	    nextEvent = &event->next;
 	}
-	str = ScanWhitespace(str);
+	ScanWhitespace(str);
         if (*str == ':') break;
         else {
             if (*str != ',') {
@@ -1642,7 +1626,7 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
     register Cardinal num_params = 0;
     register Cardinal i;
 
-    str = ScanWhitespace(str);
+    ScanWhitespace(str);
     while (*str != ')' && *str != '\0' && *str != '\n') {
 	String newStr;
 	str = ParseString(str, &newStr);
@@ -1654,8 +1638,11 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
 	    temp->next = params;
 	    params = temp;
 	    temp->param = newStr;
-	    str = ScanWhitespace(str);
-	    if (*str == ',') str = ScanWhitespace(++str);
+	    ScanWhitespace(str);
+	    if (*str == ',') {
+		str++;
+		ScanWhitespace(str);
+	    }
 	}
     }
 
@@ -1729,12 +1716,12 @@ static String ParseActionSeq(parseTree, str, actionsP, error)
 	if (*error) return PanicModeRecovery(str);
 
 	action->idx = _XtGetQuarkIndex(parseTree, quark);
-	str = ScanWhitespace(str);
+	ScanWhitespace(str);
 	*nextActionP = action;
 	nextActionP = &action->next;
     }
     if (*str == '\n') str++;
-    str = ScanWhitespace(str);
+    ScanWhitespace(str);
     return str;
 }
 
@@ -1775,7 +1762,7 @@ static String ParseTranslationTableProduction(parseTree, str)
         FreeEventSeq(eventSeq);
         return (str);
     }
-    str = ScanWhitespace(str);
+    ScanWhitespace(str);
     str = ParseActionSeq(parseTree, str, actionsP, &error);
     if (error) {
 	ShowProduction(production);
@@ -1878,7 +1865,7 @@ static String CheckForPoundSign(str, defaultOp, actualOpRtn)
     _XtTranslateOp opType;
     
     opType = defaultOp;
-    str = ScanWhitespace(str);
+    ScanWhitespace(str);
     if (*str == '#') {
 	int len;
 	str++;
@@ -1893,10 +1880,10 @@ static String CheckForPoundSign(str, defaultOp, actualOpRtn)
 	  opType = XtTableAugment;
 	else if (!strcmp(operation,"override"))
 	  opType = XtTableOverride;
-	str = ScanWhitespace(str);
+	ScanWhitespace(str);
 	if (*str == '\n') {
 	    str++;
-	    str = ScanWhitespace(str);
+	    ScanWhitespace(str);
 	}
     }
     *actualOpRtn = opType;
