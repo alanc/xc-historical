@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.24 89/06/08 09:20:52 jim Exp $
+ * $XConsortium: xlsfonts.c,v 1.25 89/06/08 09:40:02 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -463,6 +463,11 @@ ComputeFontType (fs)
     Atom awatom = XInternAtom (dpy, "AVERAGE_WIDTH", False);
 
     printf ("  font type:\t\t");
+    if (fs->min_bounds.width != fs->max_bounds.width) {
+	printf ("Proportional (min and max widths not equal)\n");
+	return;
+    }
+
     if (awatom) {
 	for (i = 0; i < fs->n_properties; i++) {
 	    if (fs->properties[i].name == awatom &&
@@ -479,6 +484,7 @@ ComputeFontType (fs)
 	     i <= fs->max_char_or_byte2; i++, cs++) {
 	    if (cs->width == 0) continue;
 	    if (cs->width != fs->max_bounds.width) {
+		/* this shouldn't happen since we checked above */
 		printf ("Proportional (characters not all the same width)\n");
 		return;
 	    }
