@@ -1,4 +1,4 @@
-/* $XConsortium: Xcms.h,v 1.11 91/01/27 00:31:39 alt Exp $ */
+/* $XConsortium: Xcms.h,v 1.13 92/06/04 16:33:22 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -39,14 +39,13 @@
 
     /*
      * Color Space Format ID's
-     *    Color Space ID's are of XcmsColorFormat type, which is an
-     *    unsigned short (16 bits).  
+     *    Color Space ID's are of XcmsColorFormat type.
      *
-     *    bit 15 (most significant bit):
+     *    bit 31
      *	    0 == Device-Independent
      *	    1 == Device-Dependent
      *
-     *    bit 14:
+     *    bit 30:
      *	    0 == Registered with X Consortium
      *	    1 == Unregistered
      */
@@ -74,7 +73,7 @@
 #define ScreenWhitePointOfCCC(ccc)	(&(ccc)->pPerScrnInfo->screenWhitePt)
 #define FunctionSetOfCCC(ccc)		((ccc)->pPerScrnInfo->functionSet)
 
-typedef unsigned int XcmsColorFormat;	/* Color Space Format ID */
+typedef unsigned long XcmsColorFormat;	/* Color Space Format ID */
 
 typedef double XcmsFloat;
 
