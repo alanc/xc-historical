@@ -6,6 +6,7 @@
                   choice.o main.o interpret.o record.o testfrac.o \
                   gram.o lex.o
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
   SYS_LIBRARIES = -lm
          YFLAGS = -d
 
