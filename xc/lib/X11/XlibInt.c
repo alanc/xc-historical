@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.76 88/08/15 12:08:52 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.77 88/08/15 17:09:27 jim Exp $";
 #endif
 
 /*
@@ -259,7 +259,7 @@ static _doXRead32 (dpy, data, size, packbuffer)
         register Display *dpy;
         register long *data;
         register long size;
-	char *packbuffer;
+	register char *packbuffer;
 {
  long *lpack,*lp;
  long mask32 = 0x00000000ffffffff;
@@ -303,15 +303,15 @@ _XRead32 (dpy, data, len)
  *            into a long (64 bits on a CRAY computer).
  *
  */
-static _doXRead16 (dpy, data, size)
+static _doXRead16 (dpy, data, size, packbuffer)
         register Display *dpy;
         register short *data;
         register long size;
+	char *packbuffer;
 {
 	long *lpack,*lp;
 	long mask16 = 0x000000000000ffff;
 	long maskw, nwords, i, bits;
-	extern char packbuffer[];
 
         _XRead(dpy,packbuffer,size);	/* don't do a padded read... */
 
