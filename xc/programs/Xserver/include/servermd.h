@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.28 88/02/06 16:49:46 rws Exp $ */
+/* $Header: servermd.h,v 1.29 88/02/09 20:51:29 rws Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -83,8 +83,14 @@ SOFTWARE.
 #else
 # ifdef sun
 
+# if (sun386 || sun5)
+#define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the SUN only */
+#define BITMAP_BIT_ORDER	LSBFirst
+# else
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the SUN only */
 #define BITMAP_BIT_ORDER	MSBFirst
+# endif
+
 #define	GLYPHPADBYTES		4
 #define GETLEFTBITS_ALIGNMENT	4
 
