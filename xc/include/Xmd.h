@@ -1,15 +1,56 @@
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.15 87/06/13 23:38:52 todd Exp $ */
+/* $Header: Xmd.h,v 1.15 87/06/15 13:58:49 toddb Locked $ */
 /*
  *  MACHINE DEPENDENT DECLARATIONS.
  *
- *  These are for the VAX
+ *  These work on the SUN, the Apollo, the RT and the VAX.
  *
  */
 
+/*
+ * Machine dependent values:
+ */
+
+#ifdef vax
+
+#define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the VAX only */
+#define BITMAP_BIT_ORDER	LSBFirst
 #define B16
 #define B32
+
+#else
+# ifdef sun
+
+#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the SUN only */
+#define BITMAP_BIT_ORDER	MSBFirst
+#define B16
+#define B32
+
+# else
+#  ifdef apollo
+
+#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the Apollo only*/
+#define BITMAP_BIT_ORDER	MSBFirst
+#define B16
+#define B32
+
+#  else
+#   ifdef ibm032
+
+#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the RT only*/
+#define BITMAP_BIT_ORDER	MSBFirst
+#define B16
+#define B32
+
+#   endif
+#  endif
+# endif
+#endif
+
+/*
+ * Values the same for SUN, APOLLO and the VAX:
+ */
 
 typedef long           INT32;
 typedef short          INT16;
@@ -37,10 +78,9 @@ typedef unsigned char            BOOL;
  */
 #define IMAGE_BUFSIZE		8192
 
-#define IMAGE_BYTE_ORDER	LSBFirst
+/* for a VAX/SUN/APOLLO, pad scanline to a longword */
 #define BITMAP_SCANLINE_UNIT	32
-#define BITMAP_SCANLINE_PAD	32 /* for a VAX, pad scanline to a longword */
-#define BITMAP_BIT_ORDER	LSBFirst
+#define BITMAP_SCANLINE_PAD  32
 
 #define LOG2_BITMAP_PAD		5
 #define LOG2_BYTES_PER_SCANLINE_PAD	2
