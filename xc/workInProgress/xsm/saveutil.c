@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.18 94/07/28 14:53:15 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.19 94/08/10 14:59:28 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -65,16 +65,12 @@ char **sm_id;
     char		*buf;
     int			buflen;
     char		*p;
-    char		*q;
     PendingClient	*c;
-    PendingProp		*prop;
-    PendingValue	*val;
+    Prop		*prop;
+    PropValue		*val;
     FILE		*f;
     int			state;
     int			version_number;
-
-    PendingList = ListInit();
-    if(!PendingList) nomem();
 
     f = fopen(session_save_file, "r");
     if(!f) {
@@ -120,7 +116,7 @@ char **sm_id;
 	if(!isspace(buf[0])) {
 	    switch(state) {
 		case 0:
-		    c = (PendingClient *)malloc(sizeof *c);
+		    c = (PendingClient *)XtMalloc(sizeof *c);
 		    if(!c) nomem();
 
 		    c->clientId = XtNewString(p);
@@ -141,7 +137,7 @@ char **sm_id;
 
 		case 2:
 		case 4:
-		    prop = (PendingProp *)malloc(sizeof *prop);
+		    prop = (Prop *)XtMalloc(sizeof *prop);
 		    if(!prop) nomem();
 
 		    prop->name = XtNewString(p);
@@ -171,13 +167,13 @@ char **sm_id;
 		fprintf(stderr, "Corrupt save file line ignored:\n%s\n", buf);
 		continue;
 	    }
-	    val = (PendingValue *)malloc(sizeof *val);
+	    val = (PropValue *)XtMalloc(sizeof *val);
 	    if(!val) nomem();
 
 	    if (strcmp (prop->type, SmCARD8) == 0)
 	    {
 		val->length = 1;
-		val->value = (XtPointer) malloc (1);
+		val->value = (XtPointer) XtMalloc (1);
 		*((char *)(val->value)) = atoi (p);
 	    }
 	    else
@@ -196,49 +192,92 @@ char **sm_id;
 
 
 
+static void
+SaveClient (f, client)
+
+FILE	  *f;
+ClientRec *client;
+
+{
+    List *pl;
+
+    fprintf (f, "%s\n", client->clientId);
+    fprintf (f, "%s\n", client->clientHostname);
+
+    for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
+    {
+	Prop *pprop = (Prop *) pl->thing;
+	List *pj, *vl;
+	PropValue *pval;
+
+	fprintf (f, "%s\n", pprop->name);
+	fprintf (f, "%s\n", pprop->type);
+
+	if (strcmp (pprop->type, SmCARD8) == 0)
+	{
+	    char *card8;
+	    int value;
+
+	    vl = ListFirst (pprop->values);
+	    pval = (PropValue *) vl->thing;
+
+	    card8 = pval->value;
+	    value = *card8;
+	    fprintf(f, "\t%d\n", value);
+	}
+	else
+	{
+	    for (pj = ListFirst (pprop->values); pj; pj = ListNext (pj))
+	    {
+		pval = (PropValue *) pj->thing;
+		fprintf (f, "\t%s\n", pval->value);
+	    }
+	}
+    }
+
+    fprintf (f, "\n");
+}
+
+
+
 void
 WriteSave (sm_id)
 
 char *sm_id;
 
 {
-    FILE *f;
     ClientRec *client;
-    SmProp *prop;
-    int i, j;
+    FILE *f;
+    List *cl;
 
-    f = fopen(session_save_file, "w");
-    if(!f)
+    f = fopen (session_save_file, "w");
+
+    if (!f)
     {
-	perror("open session save file for write");
-    } else {
-	fprintf(f, "%d\n", SAVEFILE_VERSION);
-	fprintf(f, "%s\n", sm_id);
-	for(client = ClientList; client; client = client->next)
+	perror ("open session save file for write");
+    }
+    else
+    {
+	fprintf (f, "%d\n", SAVEFILE_VERSION);
+	fprintf (f, "%s\n", sm_id);
+
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
 	{
+	    client = (ClientRec *) cl->thing;
+
 	    if (client->restartHint == SmRestartNever)
 		continue;
 
-	    fprintf(f, "%s\n", client->clientId);
-	    fprintf(f, "%s\n", client->clientHostname);
-	    for(i = 0; i < client->numProps; i++) {
-		prop = client->props[i];
-		fprintf(f, "%s\n", prop->name);
-		fprintf(f, "%s\n", prop->type);
-		if (strcmp (prop->type, SmCARD8) == 0)
-		{
-		    char *card8 = prop->vals->value;
-		    int value = *card8;
-		    fprintf(f, "\t%d\n", value);
-		}
-		else
-		{
-		    for(j = 0; j < prop->num_vals; j++)
-			fprintf(f, "\t%s\n", prop->vals[j].value);
-		}
-	    }
-	    fprintf(f, "\n");
+	    SaveClient (f, client);
 	}
+
+	for (cl = ListFirst (RestartAnywayList); cl; cl = ListNext (cl))
+	{
+	    client = (ClientRec *) cl->thing;
+
+	    SaveClient (f, client);
+	}
+
 	fclose(f);
     }
 }
@@ -362,7 +401,7 @@ FILE	*f;
 		if(*plen) *plen *= 2;
 		else *plen = BUFSIZ;
 		if(*pbuf) *pbuf = (char *) realloc(*pbuf, *plen + 1);
-		else *pbuf = (char *) malloc(*plen + 1);
+		else *pbuf = (char *) XtMalloc(*plen + 1);
 	    }
 	    c = getc(f);
 	    if(c == EOF) break;
