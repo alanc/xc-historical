@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.14 87/06/17 13:48:33 toddb Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.15 87/07/16 22:45:35 swick Locked $";
 #endif
 
 #include <sys/types.h>
@@ -510,7 +510,7 @@ enum device device;
     }
 }
 
-
+/*
 ln03_grind_fonts(sixmap, iw, ih, scale, pixmap)
 unsigned char (*sixmap)[];
 int iw;
@@ -519,7 +519,7 @@ int scale;
 struct pixmap (**pixmap)[];
 {
 }
-
+*/
 
 ln03_setup(iw, ih, orientation, scale, left, top, left_margin, top_margin, 
 	   flags, header, trailer)
