@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.15 93/12/06 20:06:32 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.16 93/12/07 11:05:30 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -237,7 +237,6 @@ char    **reasonMsgs;
 {
     IceConn	iceConn = smcConn->iceConn;
     int		i;
-    char	*locale;
 
     if (IceCheckShutdownNegotiation (iceConn) == True)
     {
@@ -245,9 +244,7 @@ char    **reasonMsgs;
 	char 			*pData;
 	int			extra;
 
-	locale = setlocale (LC_CTYPE, NULL);
-
-	extra = 8 + ARRAY8_BYTES (strlen (locale));
+	extra = 8;
 
 	for (i = 0; i < count; i++)
 	    extra += ARRAY8_BYTES (strlen (reasonMsgs[i]));
@@ -255,8 +252,6 @@ char    **reasonMsgs;
 	IceGetHeaderExtra (iceConn, _SmcOpcode, SM_CloseConnection,
 	    SIZEOF (smCloseConnectionMsg), WORD64COUNT (extra),
 	    smCloseConnectionMsg, pMsg, pData);
-
-	STORE_ARRAY8 (pData, strlen (locale), locale);
 
 	STORE_CARD32 (pData, count);
 	pData += 4;
@@ -374,6 +369,39 @@ SmProp       	**props;
     STORE_LISTOF_PROPERTY (pBuf, numProps, props);
 
     IceWriteData (iceConn, bytes, pStart);
+    IceFlush (iceConn);
+}
+
+
+
+void
+SmcDeleteProperties (smcConn, numProps, propNames)
+
+SmcConn smcConn;
+int     numProps;
+char	**propNames;
+
+{
+    IceConn			iceConn = smcConn->iceConn;
+    smDeletePropertiesMsg 	*pMsg;
+    char 			*pData;
+    int				extra, i;
+
+    extra = 8;
+
+    for (i = 0; i < numProps; i++)
+	extra += ARRAY8_BYTES (strlen (propNames[i]));
+
+    IceGetHeaderExtra (iceConn, _SmcOpcode, SM_DeleteProperties,
+	SIZEOF (smDeletePropertiesMsg), WORD64COUNT (extra),
+	smDeletePropertiesMsg, pMsg, pData);
+
+    STORE_CARD32 (pData, numProps);
+    pData += 4;
+
+    for (i = 0; i < numProps; i++)
+	STORE_ARRAY8 (pData, strlen (propNames[i]), propNames[i]); 
+
     IceFlush (iceConn);
 }
 
