@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.217 94/02/04 19:31:19 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.218 94/02/04 20:31:42 kaleb Exp $";
 #endif /* lint */
 
 /*
@@ -196,6 +196,11 @@ static Bool IsPts = False;
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
 #endif
 
 #ifdef hpux
@@ -2316,10 +2321,10 @@ spawn ()
 		utmp.ut_pid = getpid();
 #ifdef SVR4
 		utmp.ut_session = getsid(0);
-		utmp.ut_xtime = time ((long *) 0);
+		utmp.ut_xtime = time ((Time_t *) 0);
 		utmp.ut_tv.tv_usec = 0;
 #else
-		utmp.ut_time = time ((long *) 0);
+		utmp.ut_time = time ((Time_t *) 0);
 #endif
 
 		/* write out the entry */
@@ -2734,10 +2739,10 @@ Exit(n)
 		    utptr->ut_type = DEAD_PROCESS;
 #ifdef SVR4
 		    utmp.ut_session = getsid(0);
-		    utmp.ut_xtime = time ((long *) 0);
+		    utmp.ut_xtime = time ((Time_t *) 0);
 		    utmp.ut_tv.tv_usec = 0;
 #else
-		    utptr->ut_time = time((long *) 0);
+		    utptr->ut_time = time((Time_t *) 0);
 #endif
 		    (void) pututline(utptr);
 #ifdef WTMP
