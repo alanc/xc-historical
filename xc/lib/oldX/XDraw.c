@@ -1,4 +1,4 @@
-/* $Header: XDraw.c,v 1.2 87/08/28 13:34:18 rws Locked $ */
+/* $Header: XDraw.c,v 1.3 87/12/09 19:08:55 rws Exp $ */
 #include "copyright.h"
 
 /* Copyright    Massachusetts Institute of Technology    1987	*/
@@ -182,6 +182,7 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
   int	flag;	    	    /* flag word of current end-point in p.list  */
   int successor_x = 0;	    /* X coordinate of curve's successor point   */
   int successor_y = 0;	    /* Y coordinate of curve's successor point   */
+  int little_endian;	    /* stupid bntable is little-endian */
   WORD increment;	    /* bntable-ptr-increment value       */
   WORD diffx, diffy;	    /* absolute values of x, y end-point diffs   */
   WORD lmajoraxis;	    /* "length" of seg projected onto major axis */
@@ -202,6 +203,12 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
   int       count;
   int	    curve_flag;	    /* 0 = no curves in path; 1 = curves in path */
   
+  i = 1;
+  if (*(char *) &i)
+    little_endian = 1;
+  else
+    little_endian = 0;
+
   {
     register Vertex *poldpath;/* pointer for traversing original path list */
     register Vertex *p_coord_path; /* ptr to path list with coordinates    */
@@ -445,20 +452,37 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
 	    	for ( ; m > 1; m--)
 		  {
 		    pbntable += increment;
-		    xxe.lword = *pbntable * p0x;
-		    yye.lword = *pbntable++ * p0y;
-		    xxe.lword += *pbntable * p1x;
-		    yye.lword += *pbntable++ * p1y;
-		    xxe.lword += *pbntable * p2x;
-		    yye.lword += *pbntable++ * p2y;
-		    xxe.lword += *pbntable * p3x;
-		    yye.lword += *pbntable++ * p3y;
-		    xxe.lword = xxe.lword << 1;	/* double values...  */
-		    yye.lword = yye.lword << 1;	/* ...bn accts for it*/
-		    xxe.lword += 0x8000; /* round off the accum value */
-		    yye.lword += 0x8000;
-		    pnewpath->x = xxe.sword.high;/* the X coordinate  */
-		    pnewpath->y = yye.sword.high;/* the Y coordinate  */
+		    if (little_endian) {
+			xxe.lword = *pbntable * p0x;
+			yye.lword = *pbntable++ * p0y;
+			xxe.lword += *pbntable * p1x;
+			yye.lword += *pbntable++ * p1y;
+			xxe.lword += *pbntable * p2x;
+			yye.lword += *pbntable++ * p2y;
+			xxe.lword += *pbntable * p3x;
+			yye.lword += *pbntable++ * p3y;
+			xxe.lword = xxe.lword << 1;	/* double values...  */
+			yye.lword = yye.lword << 1;	/* ...bn accts for it*/
+			xxe.lword += 0x8000; /* round off the accum value */
+			yye.lword += 0x8000;
+			pnewpath->x = xxe.sword.high;/* the X coordinate  */
+			pnewpath->y = yye.sword.high;/* the Y coordinate  */
+		    } else {
+			xxe.lword = *pbntable * p0x;
+			yye.lword = *pbntable++ * p0y;
+			xxe.lword += *pbntable * p1x;
+			yye.lword += *pbntable++ * p1y;
+			xxe.lword += *pbntable * p2x;
+			yye.lword += *pbntable++ * p2y;
+			xxe.lword += *pbntable * p3x;
+			yye.lword += *pbntable++ * p3y;
+			xxe.lword = xxe.lword << 1;	/* double values...  */
+			yye.lword = yye.lword << 1;	/* ...bn accts for it*/
+			xxe.lword += 0x8000; /* round off the accum value */
+			yye.lword += 0x8000;
+			pnewpath->x = xxe.sword.low;/* the X coordinate  */
+			pnewpath->y = yye.sword.low;/* the Y coordinate  */
+		    }
 		    (pnewpath++)->flags = 0;	/* the flag word     */
     	    	    newpathcount++;/* increment segment end-point countr*/
 		  }	    	   /* end sub-segment end-point compute loop*/
