@@ -1,4 +1,4 @@
-/* $XConsortium: init.c,v 1.1 93/07/19 11:39:25 mor Exp $ */
+/* $XConsortium: init.c,v 1.2 93/07/26 19:00:01 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -231,7 +231,8 @@ XieTechnique		**techniques_ret;
 	techRet[i].number = techRec->number;
 	techRet[i].speed = techRec->speed;
 
-	techRet[i].name = Xmalloc ((unsigned) techRec->nameLength + 1);
+	techRet[i].name = (char *) Xmalloc (
+	    (unsigned) techRec->nameLength + 1);
 	bcopy (pBuf, techRet[i].name, (unsigned) techRec->nameLength);
 	techRet[i].name[techRec->nameLength] = '\0';
 	pBuf += PADDED_BYTES (techRec->nameLength);

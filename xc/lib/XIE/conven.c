@@ -1,4 +1,4 @@
-/* $XConsortium: conven.c,v 1.1 93/07/19 11:39:15 mor Exp $ */
+/* $XConsortium: conven.c,v 1.2 93/07/26 19:02:49 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -1349,9 +1349,9 @@ unsigned int	dc_size;
     param->ac_size    = ac_size;
     param->dc_size    = dc_size;
 
-    param->q_table    = Xmalloc (q_size);
-    param->ac_table   = Xmalloc (ac_size);
-    param->dc_table   = Xmalloc (dc_size);
+    param->q_table    = (char *) Xmalloc (q_size);
+    param->ac_table   = (char *) Xmalloc (ac_size);
+    param->dc_table   = (char *) Xmalloc (dc_size);
 
     bcopy (q_table, param->q_table, q_size);
     bcopy (ac_table, param->ac_table, ac_size);
@@ -1381,7 +1381,7 @@ unsigned int	table_size;
     param->predictor[2] = predictor[2];
     param->table_size   = table_size;
 
-    param->table = Xmalloc (table_size);
+    param->table = (char *) Xmalloc (table_size);
     bcopy (table, param->table, table_size);
 
     return (param);
