@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.212 93/12/06 15:17:54 kaleb Exp $ */
+/* $XConsortium: Initialize.c,v 1.214 94/01/18 19:45:43 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -181,6 +181,43 @@ void XtToolkitInitialize()
     _XtConvertInitialize();
     _XtEventInitialize();
     _XtTranslateInitialize();
+}
+
+
+String _XtGetUserName()
+{
+#ifdef WIN32
+    return getenv("USERNAME");
+#else
+#ifndef X_NOT_POSIX
+    uid_t uid;
+#else
+    int uid;
+    extern int getuid();
+#ifndef SYSV386
+    extern struct passwd *getpwuid(), *getpwnam();
+#endif
+#endif
+#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+    struct passwd pws;
+    char pwbuf[512];	/* ought to use MAX_INPUT */
+#endif
+    struct passwd *pw;
+    char *ptr = NULL;
+
+    LOCK_PROCESS;
+    if (! (ptr = getenv("USER"))) {
+	uid = getuid();
+#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+	pw = getpwuid_r(uid, &pws, pwbuf, sizeof pwbuf);
+#else
+	pw = getpwuid(uid);
+#endif
+	if (pw) ptr = pw->pw_name;
+    }
+    UNLOCK_PROCESS;
+    return ptr;
+#endif
 }
 
 
