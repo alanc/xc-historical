@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.99 89/09/19 20:13:46 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.100 89/09/21 09:15:46 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -797,6 +797,9 @@ typedef enum {XtGrabNone, XtGrabNonexclusive, XtGrabExclusive} XtGrabKind;
 extern void XtPopup();
     /* Widget	    widget;	    */
     /* XtGrabKind   grab_kind;	    */
+
+extern void XtPopupSpringLoaded();
+    /* Widget	    widget;	    */
 
 extern void XtCallbackNone();
     /* Widget	    widget;	    */
