@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.8 89/07/16 14:54:10 jim Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.9 89/07/16 16:08:10 converse Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -647,8 +647,6 @@ Cardinal num_args;
 		     resources, XtNumber(resources),
 		     args, num_args);
 
-  data->is_tempfile = FALSE;
-
 /*
  * Set correct flags (override resources) depending upon widget class.
  */
@@ -790,14 +788,8 @@ AsciiSourcePtr data;
 {
   FreeAllPieces(data);
 
-  if (data->type == XawAsciiFile) {
-    if (data->is_tempfile) 
-      unlink(data->string);
-  }
-
   if (data->allocated_string) 
     XtFree(data->string);
-
 }
 
 /*	Function Name: WriteToFile
@@ -818,7 +810,7 @@ String string, name;
   char buf[BUFSIZ];
   int fd;
   
-  if ( ((fd = creat(name, 0)) == -1 ) ||
+  if ( ((fd = creat(name, 0666)) == -1 ) ||
        (write(fd, string, sizeof(char) * strlen(string)) == -1) ) {
     sprintf(buf, "Error, while attempting to write to the file %s.", name);
     XtAppWarning(XtWidgetToApplicationContext(w), buf); 
@@ -900,6 +892,8 @@ XawTextSource src;
  * type is XawAsciiFile.
  */
 
+  data->is_tempfile = FALSE;
+
   switch (src->edit_mode) {
   case XawtextRead:
     if (data->string == NULL)
@@ -913,7 +907,6 @@ XawTextSource src;
     if (data->string == NULL) {
       data->string = tmpnam (XtMalloc((unsigned)TMPSIZ));
       data->is_tempfile = TRUE;
-      open_mode = "w";
     } 
     else {
       if (!data->allocated_string) {
@@ -930,24 +923,30 @@ XawTextSource src;
 	       NULL, NULL);
   }
 
-  if ((file = fopen(data->string, open_mode)) == 0) {
-    String params[2];
-    Cardinal num_params = 2;
-    
-    params[0] = data->string;
-    if (errno <= sys_nerr)
-      params[1] = sys_errlist[errno];
-    else {
-      char msg[11];
-      sprintf(msg, "errno=%.4d", errno);
-      params[1] = msg;
+  if (!data->is_tempfile) {
+    if ((file = fopen(data->string, open_mode)) == 0) {
+      String params[2];
+      Cardinal num_params = 2;
+      
+      params[0] = data->string;
+      if (errno <= sys_nerr)
+	params[1] = sys_errlist[errno];
+      else {
+	char msg[11];
+	sprintf(msg, "errno=%.4d", errno);
+	params[1] = msg;
+      }
+      XtErrorMsg("openError", "asciiSourceCreate", "XawError",
+		 "Cannot open source file %s; %s", params, &num_params);
     }
-    XtErrorMsg("openError", "asciiSourceCreate", "XawError",
-	       "Cannot open source file %s; %s", params, &num_params);
+    (void) fseek(file, 0L, 2);
+    data->length = ftell (file); 
+  } 
+  else {
+    data->length = 0;
+    return(NULL);
   }
 
-  (void) fseek(file, 0L, 2);
-  data->length = ftell (file);  
   return(file);
 }
 
@@ -963,12 +962,13 @@ char * string;
 
   if (string == NULL) {
     if (data->type == XawAsciiFile) {
-      fseek(file, 0L, 0);
       local_str = XtMalloc((data->length + 1) * sizeof(char));
-      if (fread(local_str, sizeof(char), 
-		data->length, file) != data->length) {
-	XtErrorMsg("readError", "asciiSourceCreate", "XawError",
-		   "fread returned error.", NULL, NULL);
+      if (data->length != 0) {
+	fseek(file, 0L, 0);
+	if (fread(local_str, sizeof(char), data->length, file)!=data->length) {
+	  XtErrorMsg("readError", "asciiSourceCreate", "XawError",
+		     "fread returned error.", NULL, NULL);
+	}
       }
       local_str[data->length] = '\0';
     }
