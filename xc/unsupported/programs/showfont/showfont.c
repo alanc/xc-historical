@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: showfont.c,v 1.2 91/05/13 16:36:36 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -233,38 +233,41 @@ show_glyphs(fid, hdr, show_all, first, last)
 	printf("char #%d ('%c')\n", ch + start,
 	       (isprint(ch + start) ? (char) (ch + start) : '?'));
 	show_char_info(&extents[ch]);
-	if (!extents_only) {
-	    if (offset != offsets[ch].position)
-		fprintf(stderr, "offset mismatch 0x%x != 0x%x\n",
-			offset, offsets[ch].position);
+	if (extents_only)
+	    continue;
+	if (offset != offsets[ch].position)
+	    fprintf(stderr, "offset mismatch 0x%x != 0x%x\n",
+		    offset, offsets[ch].position);
+	if (offsets[ch].length == 0) {
+	    printf ("Non existant character\n");
+	    continue;
+	}
+	switch (bitmap_pad) {
+	case BitmapFormatImageRectMin:
+	    bottom = extents[ch].descent + extents[ch].ascent;
+	    charwidth = extents[ch].right - extents[ch].left;
+	    break;
+	case BitmapFormatImageRectMaxWidth:
+	    bottom = extents[ch].descent + extents[ch].ascent;
+	    charwidth = hdr->max_bounds.right - hdr->min_bounds.left;
+	    break;
+	case BitmapFormatImageRectMax:
+	    bottom = hdr->max_bounds.ascent +
+		hdr->max_bounds.descent;
+	    charwidth = hdr->max_bounds.right - hdr->min_bounds.left;
+	    break;
+	}
 
-	    switch (bitmap_pad) {
-	    case BitmapFormatImageRectMin:
-		bottom = extents[ch].descent + extents[ch].ascent;
-		charwidth = extents[ch].right - extents[ch].left;
-		break;
-	    case BitmapFormatImageRectMaxWidth:
-		bottom = extents[ch].descent + extents[ch].ascent;
-		charwidth = hdr->max_bounds.right - hdr->min_bounds.left;
-		break;
-	    case BitmapFormatImageRectMax:
-		bottom = hdr->max_bounds.ascent +
-		    hdr->max_bounds.descent;
-		charwidth = hdr->max_bounds.right - hdr->min_bounds.left;
-		break;
+	bpr = GLWIDTHBYTESPADDED(charwidth, scanpad);
+	for (r = 0; r < bottom; r++) {
+	    unsigned char *row = glyphs + offset;
+
+	    for (b = 0; b < charwidth; b++) {
+		putchar((row[b >> 3] &
+			 (1 << (7 - (b & 7)))) ? '#' : '-');
 	    }
-
-	    bpr = GLWIDTHBYTESPADDED(charwidth, scanpad);
-	    for (r = 0; r < bottom; r++) {
-		unsigned char *row = glyphs + offset;
-
-		for (b = 0; b < charwidth; b++) {
-		    putchar((row[b >> 3] &
-			     (1 << (7 - (b & 7)))) ? '#' : '-');
-		}
-		putchar('\n');
-		offset += bpr;
-	    }
+	    putchar('\n');
+	    offset += bpr;
 	}
     }
     FSFree((char *) extents);
