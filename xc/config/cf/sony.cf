@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.21 91/03/26 18:50:16 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.22 91/03/27 09:13:26 rws Exp $
 
 #ifdef bsd43
 #define OSName                  NEWS-OS 3.3
@@ -7,6 +7,7 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.21 91/03/26 18:50:16 rws Exp $
 #define SetTtyGroup             YES
 #define HasBsearch              YES
 #define HasVoidSignalReturn     NO
+#define HasNdbm                 YES
 #define DirFailPrefix -
 #else
 #define OSName                  NEWS-OS 5.0U
