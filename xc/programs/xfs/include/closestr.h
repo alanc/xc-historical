@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: closestr.h,v 1.2 91/05/13 16:48:20 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,7 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)closestr.h	4.1	91/05/02
+ * $NCDId: @(#)closestr.h,v 4.1 1991/05/02 04:15:46 lemke Exp $
  *
  */
 
@@ -46,6 +46,8 @@ typedef struct _OFclosure {
     FSID        fontid;
     char       *fontname;
     int         fnamelen;
+    char       *orig_name;
+    int         orig_len;
 }           OFclosureRec;
 
 typedef struct _QEclosure {
@@ -79,20 +81,28 @@ typedef struct _LFclosure {
     Bool        slept;
 }           LFclosureRec;
 
+typedef struct _LFWIstate {
+    char       *pattern;
+    int         patlen;
+    int         current_fpe;
+    int         max_names;
+    Bool        list_started;
+    pointer     private;
+}           LFWIstateRec, *LFWIstatePtr;
+
+
 typedef struct _LFWXIclosure {
     ClientPtr   client;
-    FontNamesPtr names;
-    int         current_name;
-    short       current_fpe;
-    short       num_fpes;
+    int         num_fpes;
     FontPathElementPtr *fpe_list;
     fsListFontsWithXInfoReply *reply;
     int         length;
-    char       *name;
-    int         namelen;
-    Bool        list_started;
+    LFWIstateRec current;
+    LFWIstateRec saved;
+    int         savedNumFonts;
+    Bool        haveSaved;
     Bool        slept;
-    pointer     private;
+    char       *savedName;
 }           LFWXIclosureRec;
 
 #endif				/* CLOSESTR_H */

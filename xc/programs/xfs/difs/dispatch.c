@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.3 91/05/13 16:53:37 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.4 91/06/21 18:23:00 keith Exp $ */
 /*
  * protocol dispatcher
  */
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * %W%	%G%
+ * $NCDId: @(#)dispatch.c,v 4.11 1991/07/09 14:09:07 lemke Exp $
  *
  */
 
@@ -57,6 +57,8 @@ extern char *ConnectionInfo;
 extern int  ConnInfoLen;
 
 extern char *configfilename;
+
+extern Bool drone_server;
 
 extern void NotImplemented();
 
@@ -125,45 +127,33 @@ Dispatch()
 		}
 	    }
 	}
+	/* reset if server is a drone and has run out of clients */
+	if (drone_server && nClients == 0) {
+	    dispatchException |= DE_RESET;
+	}
 	if (dispatchException) {
 	    /* re-read the config file */
 	    if (dispatchException & DE_RECONFIG) {
-
-#ifdef DEBUG
-		fprintf(stderr, "Re-reading config file\n");
-#endif
-
+		NoticeF("Re-reading config file\n");
 		if (ReadConfigFile(configfilename) != FSSuccess)
 		    ErrorF("couldn't parse config file");
 		dispatchException &= ~DE_RECONFIG;
 	    }
 	    /* flush all the caches */
 	    if (dispatchException & DE_FLUSH) {
-
-#ifdef DEBUG
-		fprintf(stderr, "flushing all caches\n");
-#endif
-
+		NoticeF("flushing all caches\n");
 		CacheReset();
 		dispatchException &= ~DE_FLUSH;
 	    }
 	    /* reset when no clients left */
 	    if ((dispatchException & DE_RESET) && (nClients == 0)) {
-
-#ifdef DEBUG
-		fprintf(stderr, "reseting\n");
-#endif
-
+		NoticeF("reseting\n");
 		break;
 
 	    }
 	    /* die *now* */
 	    if (dispatchException & DE_TERMINATE) {
-
-#ifdef DEBUG
-		fprintf(stderr, "terminating\n");
-#endif
-
+		NoticeF("terminating\n");
 		kill_all_clients();
 		exit(0);
 		break;
@@ -389,14 +379,17 @@ ProcListCatalogues(client)
     REQUEST(fsListCataloguesReq);
     REQUEST_AT_LEAST_SIZE(fsListCataloguesReq);
 
-    num = ListCatalogues(&catalogues, &len);
+    num = ListCatalogues((char *) &stuff[1], stuff->nbytes, stuff->maxNames,
+			 &catalogues, &len);
     rep.type = FS_Reply;
+    rep.num_replies = 0;
     rep.num_catalogues = num;
     rep.sequenceNumber = client->sequence;
-    rep.length = (sizeof(fsListCataloguesReply) + len) >> 2;
+    rep.length = (sizeof(fsListCataloguesReply) + len + 3) >> 2;
 
     WriteReplyToClient(client, sizeof(fsListCataloguesReply), &rep);
     (void) WriteToClient(client, len, (char *) catalogues);
+    fsfree((char *) catalogues);
     return client->noClientException;
 }
 
@@ -407,44 +400,63 @@ ProcSetCatalogues(client)
     char       *new_cat;
     int         err,
                 len;
+    int         num;
 
     REQUEST(fsSetCataloguesReq);
     REQUEST_AT_LEAST_SIZE(fsSetCataloguesReq);
 
-    err = ValidateCatalogues((char *) &stuff[1]);
-    if (err == FSSuccess) {
-	len = (stuff->length << 2) - sizeof(fsSetCataloguesReq);
-	new_cat = (char *) fsalloc(len);
-	bcopy((char *) &stuff[1], new_cat, len);
-	if (client->catalogues)
-	    fsfree((char *) client->catalogues);
-	client->catalogues = new_cat;
-	client->num_catalogues = stuff->num_catalogues;
-	return client->noClientException;
+    if (stuff->num_catalogues == 0) {
+	/* use the default */
+	num = ListCatalogues("*", 1, 10000, &new_cat, &len);
     } else {
-	SendErrToClient(client, err, (pointer) 0);
-	return err;
+	num = stuff->num_catalogues;
+	err = ValidateCatalogues(&num, (char *) &stuff[1]);
+	if (err == FSSuccess) {
+	    len = (stuff->length << 2) - sizeof(fsSetCataloguesReq);
+	    new_cat = (char *) fsalloc(len);
+	    if (!new_cat)
+		return FSBadAlloc;
+	    bcopy((char *) &stuff[1], new_cat, len);
+	} else {
+	    SendErrToClient(client, err, (pointer) num);
+	    return err;
+	}
     }
+    if (client->catalogues)
+	fsfree((char *) client->catalogues);
+    client->catalogues = new_cat;
+    client->num_catalogues = num;
+    return client->noClientException;
 }
 
 int
 ProcGetCatalogues(client)
     ClientPtr   client;
 {
-    int         len;
+    int         len,
+                i,
+                size;
+    char       *cp;
     fsGetCataloguesReply rep;
 
     REQUEST(fsGetCataloguesReq);
     REQUEST_AT_LEAST_SIZE(fsGetCataloguesReq);
 
-    len = strlen(client->catalogues);
+    for (i = 0, len = 0, cp = client->catalogues;
+	    i < client->num_catalogues; i++) {
+	size = *cp++;
+	len += size + 1;	/* str length + size byte */
+	cp += size;
+    }
+
     rep.type = FS_Reply;
     rep.num_catalogues = client->num_catalogues;
     rep.sequenceNumber = client->sequence;
-    rep.length = (sizeof(fsGetCataloguesReply) + len) >> 2;
+    rep.length = (sizeof(fsGetCataloguesReply) + len + 3) >> 2;
 
     WriteReplyToClient(client, sizeof(fsGetCataloguesReply), &rep);
-    (void) WriteToClient(client, len, (char *) client->catalogues);
+    (void) WriteToClient(client, len, client->catalogues);
+
     return client->noClientException;
 }
 
@@ -815,6 +827,8 @@ CloseDownClient(client)
 	client->clientGone = CLIENT_GONE;
 	CloseDownConnection(client);
 	FreeClientResources(client);
+	if (ClientIsAsleep(client))
+	    ClientSignal(client);
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
@@ -828,6 +842,8 @@ CloseDownClient(client)
 #endif
     } else {
 	FreeClientResources(client);
+	if (ClientIsAsleep(client))
+	    ClientSignal(client);
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
@@ -869,10 +885,10 @@ InitProcVectors()
     }
 }
 
-InitClient (client, i, ospriv)
-    ClientPtr	client;
-    int		i;
-    pointer	ospriv;
+InitClient(client, i, ospriv)
+    ClientPtr   client;
+    int         i;
+    pointer     ospriv;
 {
     client->index = i;
     client->sequence = 0;
@@ -890,6 +906,7 @@ InitClient (client, i, ospriv)
     client->resolutions = (fsResolution *) 0;
     client->eventmask = (Mask) 0;
 }
+
 ClientPtr
 NextAvailableClient(ospriv)
     pointer     ospriv;
@@ -907,7 +924,7 @@ NextAvailableClient(ospriv)
     if (!client)
 	return NullClient;
 
-    InitClient (client, i, ospriv);
+    InitClient(client, i, ospriv);
 
     if (!InitClientResources(client)) {
 	fsfree(client);
@@ -924,6 +941,11 @@ NextAvailableClient(ospriv)
 	currentMaxClients++;
     while ((nextFreeClientID < MAXCLIENTS) && clients[nextFreeClientID])
 	nextFreeClientID++;
+
+    /* if we've maxed out, try to clone */
+    if (nextFreeClientID == MaxClients) {
+	CloneMyself();
+    }
     return client;
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: waitfor.c,v 1.5 91/05/13 16:51:40 gildea Exp $ */
+/* $XConsortium: waitfor.c,v 1.6 91/06/21 18:19:41 keith Exp $ */
 /*
  * waits for input
  */
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)waitfor.c,v 4.4 1991/05/29 17:34:30 lemke Exp $
+ * $NCDId: @(#)waitfor.c,v 4.5 1991/06/24 11:59:20 lemke Exp $
  *
  */
 
@@ -79,7 +79,7 @@ WaitForSomething(pClientsReady)
     long        clientsWriteable[mskcnt];
     long        curclient;
     int         selecterr;
-    long        current_time;
+    long        current_time = 0;
     long        timeout;
     int         nready,
                 i;
@@ -168,6 +168,8 @@ WaitForSomething(pClientsReady)
 	ClientPtr   client;
 	int         conn;
 
+	if (current_time)	/* may not have been set */
+	    current_time = GetTimeInMillis();
 	for (i = 0; i < mskcnt; i++) {
 	    while (clientsReadable[i]) {
 		curclient = ffs(clientsReadable[i]) - 1;

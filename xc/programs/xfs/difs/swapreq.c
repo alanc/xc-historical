@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: swapreq.c,v 1.2 91/05/13 16:56:19 gildea Exp $ */
 /*
  * swapped requests
  */
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)swapreq.c	4.1	5/2/91
+ * $NCDId: @(#)swapreq.c,v 4.2 1991/06/27 16:34:49 lemke Exp $
  *
  */
 
@@ -194,6 +194,19 @@ SProcQueryExtension(client)
     swaps(&stuff->length, n);
     swaps(&stuff->nbytes, n);
     return ((*ProcVector[FS_QueryExtension]) (client));
+}
+
+int
+SProcListCatalogues(client)
+    ClientPtr   client;
+{
+    char        n;
+
+    REQUEST(fsListCataloguesReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->maxNames, n);
+    swaps(&stuff->nbytes, n);
+    return ((*ProcVector[FS_ListCatalogues]) (client));
 }
 
 int

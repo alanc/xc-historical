@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.5 91/05/13 16:55:59 gildea Exp $ */
+/* $XConsortium: main.c,v 1.6 91/06/21 18:23:34 keith Exp $ */
 /*
  * Font server main routine
  */
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * %W%	%G%
+ * $NCDId: @(#)main.c,v 4.9 1991/07/09 14:08:55 lemke Exp $
  *
  */
 
@@ -57,8 +57,10 @@ extern void ProcessCmdLine();
 static Bool create_connection_block();
 
 extern int  serverNum;
+extern int  ListenSock;
 extern ClientPtr currentClient;
 char       *configfilename;
+extern Bool drone_server;
 
 main(argc, argv)
     int         argc;
@@ -74,7 +76,13 @@ main(argc, argv)
 
     /* init stuff */
     ProcessCmdLine(argc, argv);
-
+    InitErrors();
+    /*
+     * do this first thing, to get any options that only take effect at
+     * startup time.  it is erad again each time the server resets
+     */
+    if (ReadConfigFile(configfilename) != FSSuccess)
+	FatalError("couldn't parse config file");
 
     while (1) {
 	serverGeneration++;
@@ -82,7 +90,7 @@ main(argc, argv)
 	if (serverGeneration == 1) {
 	    /* do first time init */
 	    serverCache = CacheInit(SERVER_CACHE_SIZE);
-	    CreateSockets();
+	    CreateSockets(ListenSock);
 	    InitProcVectors();
 	    clients = (ClientPtr *) fsalloc(MAXCLIENTS * sizeof(ClientPtr));
 	    if (!clients)
@@ -95,9 +103,9 @@ main(argc, argv)
 		FatalError("couldn't create server client");
 	}
 	ResetSockets();
-	/* init per-cycle stuff */
 
-	InitClient (serverClient, SERVER_CLIENT, (pointer) 0);
+	/* init per-cycle stuff */
+	InitClient(serverClient, SERVER_CLIENT, (pointer) 0);
 
 	clients[SERVER_CLIENT] = serverClient;
 	currentMaxClients = MINCLIENT;
@@ -109,8 +117,7 @@ main(argc, argv)
 	InitExtensions();
 	InitAtoms();
 	InitFonts();
-	if (ReadConfigFile(configfilename) != FSSuccess)
-	    FatalError("couldn't parse config file");
+	SetConfigValues();
 	if (!create_connection_block())
 	    FatalError("couldn't create connection block");
 
@@ -120,14 +127,22 @@ main(argc, argv)
 
 	Dispatch();
 
+#ifdef DEBUG
+	fprintf(stderr, "Leaving Dispatch loop\n");
+#endif
+
 	/* clean up per-cycle stuff */
 	CacheReset();
 	CloseDownExtensions();
-	if (dispatchException & DE_TERMINATE)
+	if ((dispatchException & DE_TERMINATE) || drone_server)
 	    break;
 	fsfree(ConnectionInfo);
+	/* note that we're parsing it again, for each time the server resets */
+	if (ReadConfigFile(configfilename) != FSSuccess)
+	    FatalError("couldn't parse config file");
     }
 
+    CloseErrors();
     exit(0);
 }
 

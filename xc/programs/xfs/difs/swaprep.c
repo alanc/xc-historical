@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: swaprep.c,v 1.2 91/05/13 16:56:14 gildea Exp $ */
 /*
  * font server reply swapping
  */
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)swaprep.c	4.1	5/2/91
+ * $NCDId: @(#)swaprep.c,v 4.2 1991/06/27 16:34:43 lemke Exp $
  *
  */
 #include	"FSproto.h"
@@ -206,6 +206,21 @@ SQueryExtensionReply(client, size, pRep)
 }
 
 void
+SListCataloguesReply(client, size, pRep)
+    ClientPtr   client;
+    int         size;
+    fsListCataloguesReply *pRep;
+{
+    int         n;
+
+    swaps(&pRep->sequenceNumber, n);
+    swapl(&pRep->length, n);
+    swapl(&pRep->num_replies, n);
+    swapl(&pRep->num_catalogues, n);
+    (void) WriteToClient(client, size, (char *) pRep);
+}
+
+void
 SCreateACReply(client, size, pRep)
     ClientPtr   client;
     int         size;
@@ -285,7 +300,7 @@ SOpenBitmapFontReply(client, size, pRep)
     int         n;
 
     swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->originalid, n);
+    swapl(&pRep->otherid, n);
 
     (void) WriteToClient(client, size, (char *) pRep);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: tables.c,v 1.2 91/05/13 16:56:24 gildea Exp $ */
 /*
  * all the dispatch, error, event and reply vectors
  */
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)tables.c	4.1	5/2/91
+ * $NCDId: @(#)tables.c,v 4.2 1991/06/27 16:34:38 lemke Exp $
  *
  */
 #include	"globals.h"
@@ -42,6 +42,7 @@ extern int  ProcSetAuthorization(), ProcGetAuthorization(),
             ProcCreateAC(), ProcFreeAC();
 
 extern int  SProcSimpleRequest(), SProcResourceRequest(),
+	    SProcListCatalogues(),
             SProcSetResolution(), SProcGetResolution(),
             SProcListExtensions(), SProcQueryExtension(),
             SProcListFonts(), SProcListFontsWithXInfo(),
@@ -53,6 +54,7 @@ extern void SErrorEvent();
 
 extern void NotImplemented(), SGenericReply(),
             SListExtensionsReply(),
+	    SListCataloguesReply(),
             SQueryExtensionReply(),
             SListFontsReply(), SListFontsWithXInfoReply(),
             SOpenBitmapFontReply(),
@@ -103,7 +105,7 @@ int         (*SwappedProcVector[NUM_PROC_VECTORS]) () =
     SProcSimpleRequest,		/* 0 */
     SProcSimpleRequest,
     ProcQueryExtension,
-    SProcSimpleRequest,
+    SProcListCatalogues,
     SProcSimpleRequest,		/* SetCatalogues */
     SProcSimpleRequest,		/* 5 */
     SProcResourceRequest,	/* SetEventMask */
@@ -144,9 +146,9 @@ void        (*ReplySwapVector[NUM_PROC_VECTORS]) () =
     NotImplemented,		/* NoOp */
     SListExtensionsReply,
     SQueryExtensionReply,	/* SQueryExtensionReply */
-    SGenericReply,		/* ListCatalogues */
+    SListCataloguesReply,
     NotImplemented,		/* SetCatalogues */
-    SGenericReply,		/* GetCatalogues -5 */
+    SGenericReply,		/* GetCatalogues */
     NotImplemented,		/* SetEventMask */
     SGetEventMaskReply,
     SCreateACReply,

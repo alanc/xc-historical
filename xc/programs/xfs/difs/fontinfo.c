@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fontinfo.c,v 1.4 91/05/13 16:55:32 gildea Exp $ */
 /*
  * font data query
  */
@@ -302,6 +302,7 @@ QueryExtents(client, cfp, item_size, nranges, range_flag, range_data)
     c->slept = FALSE;
     c->pfont = cfp->font;
     c->flags = (all_glyphs) ? LoadAll : 0;
+    c->flags |= (item_size == 1) ? EightBitFont : SixteenBitFont;
     c->nranges = nranges;
     c->range = fixed_range;
 

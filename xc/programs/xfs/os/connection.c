@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)connection.c	4.5	5/7/91
+ * $NCDId: @(#)connection.c,v 4.10 1991/07/03 17:19:22 lemke Exp $
  *
  */
 
@@ -51,7 +51,10 @@
 extern int  errno;
 
 int         serverNum;		/* the server number */
+int         ListenPort = FS_TCP_PORT;	/* port to listen on */
 int         lastfdesc;
+
+extern int  ListenSock;
 
 long        WellKnownConnections;
 long        AllSockets[mskcnt];
@@ -76,10 +79,10 @@ extern ClientPtr NextAvailableClient();
 #define SIGVAL void
 #endif
 
-extern SIGVAL  AutoResetServer();
-extern SIGVAL  GiveUp();
-extern SIGVAL  ServerReconfig();
-extern SIGVAL  ServerCacheFlush();
+extern SIGVAL AutoResetServer();
+extern SIGVAL GiveUp();
+extern SIGVAL ServerReconfig();
+extern SIGVAL ServerCacheFlush();
 
 extern void FreeOsBuffers();
 
@@ -119,7 +122,7 @@ open_tcp_socket()
 
     bzero((char *) &insock, sizeof(insock));
     insock.sin_family = AF_INET;
-    insock.sin_port = htons((unsigned short) (FS_TCP_PORT + serverNum));
+    insock.sin_port = htons((unsigned short) (ListenPort + serverNum));
     insock.sin_addr.s_addr = htonl(INADDR_ANY);
     retry = 20;
     while (bind(request, (struct sockaddr *) & insock, sizeof(insock))) {
@@ -154,11 +157,17 @@ open_tcp_socket()
 	close(request);
 	return -1;
     }
+    ListenSock = request;
     return request;
 }
 
 #endif				/* TCPCONN */
 
+StopListening()
+{
+    BITCLEAR(AllSockets, ListenSock);
+    close(ListenSock);
+}
 
 /*
  * creates the sockets for listening to clients
@@ -166,7 +175,8 @@ open_tcp_socket()
  * only called when server first started
  */
 void
-CreateSockets()
+CreateSockets(oldsock)
+    int         oldsock;
 {
     int         request,
                 i;
@@ -183,7 +193,7 @@ CreateSockets()
     lastfdesc = _NFILE - 1;
 #else
     lastfdesc = getdtablesize() - 1;
-#endif	/* hpux */
+#endif				/* hpux */
 
     if (lastfdesc > MAXSOCKS) {
 	lastfdesc = MAXSOCKS;
@@ -191,8 +201,19 @@ CreateSockets()
     WellKnownConnections = 0;
 
 #ifdef TCPCONN
-    if ((request = open_tcp_socket()) != -1) {
-	WellKnownConnections |= (1L << request);
+    if (oldsock >= 0) {		/* must be forked, and have a different socket
+				 * to listen to */
+	if (listen(oldsock, 5)) {
+	    Error("TCP listening");
+	    close(oldsock);
+	    FatalError("Cannot re-establish the listening socket");
+	    return;
+	}
+	WellKnownConnections |= (1L << oldsock);
+    } else {
+	if ((request = open_tcp_socket()) != -1) {
+	    WellKnownConnections |= (1L << request);
+	}
     }
 #endif				/* TCPCONN */
 
@@ -280,18 +301,22 @@ MakeNewConnections()
 	}
 #endif				/* TCP_NODELAY */
 
-    /* ultrix reads hang on Unix sockets, hpux reads fail */
+	/* ultrix reads hang on Unix sockets, hpux reads fail */
+
 #if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
-    (void) fcntl (newconn, F_SETFL, O_NONBLOCK);
+	(void) fcntl(newconn, F_SETFL, O_NONBLOCK);
 #else
+
 #ifdef FIOSNBIO
-    {
-	int arg = 1;
-	ioctl (newconn, FIOSNBIO, &arg);
-    }
+	{
+	    int         arg = 1;
+
+	    ioctl(newconn, FIOSNBIO, &arg);
+	}
 #else
-    (void) fcntl (newconn, F_SETFL, FNDELAY);
+	(void) fcntl(newconn, F_SETFL, FNDELAY);
 #endif
+
 #endif
 
 	oc = (OsCommPtr) fsalloc(sizeof(OsCommRec));
@@ -373,12 +398,11 @@ error_conn_max(fd)
 	/* dump alternates */
 	for (i = 0, as = altservers; i < num_alts; i++, as++) {
 	    (void) write(fd, (char *) as, 2);	/* XXX */
-	    (void) write(fd, (char *) as->name,
-			 as->namelen);
-	}
-	/* pad it */
-	if (altlen & 3) {
-	    (void) write(fd, (char *) pad, ((4 - (altlen & 3)) & 3));
+	    (void) write(fd, (char *) as->name, as->namelen);
+	    altlen = 2 + as->namelen;
+	    /* pad it */
+	    if (altlen & 3)
+		(void) write(fd, (char *) pad, ((4 - (altlen & 3)) & 3));
 	}
 	if (num_alts)
 	    fsfree((char *) altservers);

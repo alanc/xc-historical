@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: os.h,v 1.3 91/05/13 16:49:03 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,7 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * %W%	%E%
+ * $NCDId: @(#)os.h,v 4.2 1991/05/10 07:59:16 lemke Exp $
  *
  */
 
@@ -71,9 +71,12 @@ void        CreateSockets();
 void        FlushAllOuput();
 long        GetTimeInMIllis();
 void        Error();
+void        InitErrors();
+void        CloseErrors();
+void        NoticeF();
 void        ErrorF();
 void        FatalError();
-int         ConfigFontPath();
+void        SetConfigValues();
 
 typedef pointer FID;
 typedef struct _FontPathRec *FontPathPtr;

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: config.c,v 1.4 91/05/13 16:50:28 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,7 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)config.c	4.3	91/05/03
+ * $NCDId: @(#)config.c,v 4.6 1991/07/09 14:08:09 lemke Exp $
  *
  */
 
@@ -38,6 +38,7 @@ static char *font_catalogue = NULL;
 
 static char *config_set_int(),
            *config_set_bool(),
+           *config_set_catalogue(),
            *config_set_list(),
            *config_set_file(),
            *config_set_resolutions();
@@ -47,13 +48,13 @@ static char *config_set_int(),
  */
 static ConfigOptionRec config_options[] = {
     {"alternate-servers", config_set_list},
-    {"cache-size", config_set_int},
-    {"catalogue", config_set_list},
+    {"catalogue", config_set_catalogue},
     {"client-limit", config_set_int},
     {"clone-self", config_set_bool},
     {"default-point-size", config_set_int},
     {"default-resolutions", config_set_resolutions},
     {"error-file", config_set_file},
+    {"port", config_set_int},
     {"server-number", config_set_int},
     {"trusted-clients", config_set_list},
     {"use-syslog", config_set_bool},
@@ -141,6 +142,7 @@ match_param_name(name)
 	}
 	pos = ((high + low) >> 1);
     }
+    return 0;
 }
 
 static int
@@ -174,14 +176,14 @@ parse_config(data)
 
 	/* check for junk */
 	if (!isspace(*c) && *c != '=') {
-	    fprintf(stderr, ConfigErrors[CONFIG_ERR_SYNTAX], param_name);
+	    ErrorF(ConfigErrors[CONFIG_ERR_SYNTAX], param_name);
 	    /* eat garbage */
 	    while (!isspace(*c) && *c != '=' && *c != '\0')
 		c++;
 	}
 	skip_whitespace(c);
 	if (*c != '=') {
-	    fprintf(stderr, ConfigErrors[CONFIG_ERR_NOEQUALS], param_name);
+	    ErrorF(ConfigErrors[CONFIG_ERR_NOEQUALS], param_name);
 	    equals_missing = TRUE;
 	} else {
 	    c++;
@@ -201,27 +203,27 @@ parse_config(data)
 
 	    if (val <= c) {
 		/* no value, ignore */
-		fprintf(stderr, ConfigErrors[CONFIG_ERR_NOVALUE], param_name);
+		ErrorF(ConfigErrors[CONFIG_ERR_NOVALUE], param_name);
 		continue;
 	    }
 	    *val = '\0';
 	} else if (*c == '\0') {
 	    /* no value, ignore */
-	    fprintf(stderr, ConfigErrors[CONFIG_ERR_NOVALUE], param_name);
+	    ErrorF(ConfigErrors[CONFIG_ERR_NOVALUE], param_name);
 	    continue;
 	}
 	/* match parm name */
 	if (equals_missing) {
 	    equals_missing = FALSE;
 	} else if ((param = match_param_name(param_name)) == NULL) {
-	    fprintf(stderr, ConfigErrors[CONFIG_ERR_UNKNOWN], param_name);
+	    ErrorF(ConfigErrors[CONFIG_ERR_UNKNOWN], param_name);
 	} else {
 	    consumed = (param->set_func) (param, c);
 
 	    skip_whitespace(consumed);
 	    if (*consumed != '\0') {
-		fprintf(stderr, ConfigErrors[CONFIG_ERR_EXTRAVALUE],
-			param_name);
+		ErrorF(ConfigErrors[CONFIG_ERR_EXTRAVALUE],
+		       param_name);
 	    }
 	}
 
@@ -236,18 +238,19 @@ parse_config(data)
 /*
  * handles anything that should be set once the file is parsed
  */
-static void
-set_config_values()
+void
+SetConfigValues()
 {
     int         err,
                 num;
 
     err = SetFontCatalogue(font_catalogue, &num);
     if (err != FSSuccess) {
-	FatalError("Element #%d of font path \"%s\" is bad\n", 
-		num, font_catalogue);
+	FatalError("Element #%d of font path \"%s\" is bad\n",
+		   num, font_catalogue);
     }
-    fsfree((char *)font_catalogue);
+    InitErrors();
+    fsfree((char *) font_catalogue);
     font_catalogue = NULL;
 }
 
@@ -262,16 +265,16 @@ ReadConfigFile(filename)
 
     data = (char *) fsalloc(CONFIG_MAX_FILESIZE);
     if (!data) {
-	fprintf(stderr, ConfigErrors[CONFIG_ERR_MEMORY], filename);
+	ErrorF(ConfigErrors[CONFIG_ERR_MEMORY], filename);
 	return -1;
     }
     if ((fp = fopen(filename, "r")) == NULL) {
-	fprintf(stderr, ConfigErrors[CONFIG_ERR_OPEN], filename);
+	ErrorF(ConfigErrors[CONFIG_ERR_OPEN], filename);
 	return -1;
     }
     ret = fread(data, sizeof(char), CONFIG_MAX_FILESIZE, fp);
     if (ret <= 0) {
-	fprintf(stderr, ConfigErrors[CONFIG_ERR_READ], filename);
+	ErrorF(ConfigErrors[CONFIG_ERR_READ], filename);
 	return -1;
     }
     len = ftell(fp);
@@ -284,9 +287,6 @@ ReadConfigFile(filename)
     ret = parse_config(data);
 
     fsfree(data);
-
-    /* set the values that wait till the end */
-    set_config_values();
 
     return ret;
 }
@@ -332,7 +332,7 @@ config_parse_bool(c, ret, pval)
 	    return c;
 	}
     }
-    fprintf(stderr, ConfigErrors[CONFIG_ERR_VALUE], start);
+    ErrorF(ConfigErrors[CONFIG_ERR_VALUE], start);
     *c = t;
     *ret = -1;
     return c;
@@ -353,7 +353,7 @@ config_parse_int(c, ret, pval)
 	    skip_val(c);
 	    t = *c;
 	    *c = '\0';
-	    fprintf(stderr, ConfigErrors[CONFIG_ERR_VALUE], start);
+	    ErrorF(ConfigErrors[CONFIG_ERR_VALUE], start);
 	    *ret = -1;
 	    *c = t;
 	    return c;
@@ -379,16 +379,18 @@ config_set_int(parm, val)
     int         ival,
                 ret;
     extern int  serverNum;
-    extern void	SetDefaultPointSize();
+    extern int  ListenPort;
+    extern void SetDefaultPointSize();
 
     val = config_parse_int(val, &ret, &ival);
     if (ret == -1)
 	return val;
 
     /* now do individual attribute checks */
-    if (!strcmp(parm->parm_name, "cache-size")) {
-    } else if (!strcmp(parm->parm_name, "server-number")) {
+    if (!strcmp(parm->parm_name, "server-number")) {
 	serverNum = ival;
+    } else if (!strcmp(parm->parm_name, "port")) {
+	ListenPort = ival;
     } else if (!strcmp(parm->parm_name, "client-limit")) {
 	AccessSetConnectionLimit(ival);
     } else if (!strcmp(parm->parm_name, "default-point-size")) {
@@ -442,6 +444,30 @@ config_set_file(parm, val)
 }
 
 static char *
+config_set_catalogue(parm, val)
+    ConfigOptionPtr parm;
+    char       *val;
+{
+    char       *b;
+
+    if (!strcmp(parm->parm_name, "catalogue")) {
+	/* stash it for later */
+	fsfree((char *) font_catalogue);	/* dump any previous one */
+	b = font_catalogue = (char *) fsalloc(strlen(val) + 1);
+	if (!font_catalogue)
+	    FatalError("Insufficent memory for font catalogue\n");
+	while (*val) {		/* remove all the gunk */
+	    if (!isspace(*val)) {
+		*b++ = *val;
+	    }
+	    val++;
+	}
+	*b = '\0';
+    }
+    return val;
+}
+
+static char *
 config_set_list(parm, val)
     ConfigOptionPtr parm;
     char       *val;
@@ -452,15 +478,7 @@ config_set_list(parm, val)
     skip_list_val(val);
     t = *val;
     *val = '\0';
-    if (!strcmp(parm->parm_name, "catalogue")) {
-	/* stash it for later */
-	fsfree((char *)font_catalogue);	/* dump any previous one */
-	font_catalogue = (char *) fsalloc((val - start) + 1);
-	if (!font_catalogue)
-	    FatalError("Insufficent memory for font catalogue\n");
-	bcopy(start, font_catalogue, val - start);
-	font_catalogue[val - start] = '\0';
-    } else if (!strcmp(parm->parm_name, "alternate-servers")) {
+    if (!strcmp(parm->parm_name, "alternate-servers")) {
 	SetAlternateServers(start);
     }
     *val = t;

@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.4 91/06/21 18:18:51 keith Exp $ */
+/* $XConsortium: utils.c,v 1.5 91/07/02 09:50:07 rws Exp $ */
 /*
  * misc os utilities
  */
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)utils.c	4.4	5/6/91
+ * $NCDId: @(#)utils.c,v 4.9 1991/07/09 14:08:13 lemke Exp $
  *
  */
 
@@ -51,13 +51,20 @@
 #endif
 #endif /* PATH_MAX */
 
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+
 extern int  serverNum;
 extern char *configfilename;
 char       *progname;
-Bool        UseSyslog;
 Bool        CloneSelf;
-char        ErrorFile[PATH_MAX];
+int         ListenSock = -1;
+extern int  ListenPort;
 
+SIGVAL
 AutoResetServer()
 {
 
@@ -69,6 +76,7 @@ AutoResetServer()
     isItTimeToYield = TRUE;
 }
 
+SIGVAL
 GiveUp()
 {
 
@@ -80,6 +88,7 @@ GiveUp()
     isItTimeToYield = TRUE;
 }
 
+SIGVAL
 ServerReconfig()
 {
 
@@ -91,6 +100,7 @@ ServerReconfig()
     isItTimeToYield = TRUE;
 }
 
+SIGVAL
 ServerCacheFlush()
 {
 
@@ -100,65 +110,6 @@ ServerCacheFlush()
 
     dispatchException |= DE_FLUSH;
     isItTimeToYield = TRUE;
-}
-
-static void
-abort_server()
-{
-    fflush(stderr);
-
-#ifdef SABER
-    saber_stop();
-#else
-    abort();
-#endif
-}
-
-void
-Error(str)
-    char       *str;
-{
-    perror(str);
-}
-
-/* VARARGS1 */
-void
-ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
-    char       *f;
-    char       *s0,
-               *s1,
-               *s2,
-               *s3,
-               *s4,
-               *s5,
-               *s6,
-               *s7,
-               *s8,
-               *s9;
-{
-    fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-}
-
-/* VARARGS1 */
-void
-FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
-    char       *f;
-    char       *s0,
-               *s1,
-               *s2,
-               *s3,
-               *s4,
-               *s5,
-               *s6,
-               *s7,
-               *s8,
-               *s9;
-{
-    ErrorF("\nFatal server bug!\n");
-    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-    ErrorF("\n");
-    abort_server();
-    /* NOTREACHED */
 }
 
 long
@@ -173,7 +124,7 @@ GetTimeInMillis()
 static void
 usage()
 {
-    fprintf(stderr, "%s: [-cf config-file] [-s server_number]\n", progname);
+    fprintf(stderr, "%s: [-cf config-file] [-p tcp_port] [-s server_number]\n", progname);
     exit(-1);
 }
 
@@ -187,16 +138,28 @@ ProcessCmdLine(argc, argv)
 
 #ifdef MEMBUG
     {
-	extern pointer	MemoryAllocationBase;
+	extern pointer MemoryAllocationBase;
+
 	if (!MemoryAllocationBase)
 	    MemoryAllocationBase = (pointer) sbrk(0);
     }
 #endif
+
     progname = argv[0];
     for (i = 1; i < argc; i++) {
 	if (!strncmp(argv[i], "-s", 2)) {
 	    if (argv[i + 1])
 		serverNum = atoi(argv[++i]);
+	    else
+		usage();
+	} else if (!strncmp(argv[i], "-p", 2)) {
+	    if (argv[i + 1])
+		ListenPort = atoi(argv[++i]);
+	    else
+		usage();
+	} else if (!strncmp(argv[i], "-ls", 3)) {
+	    if (argv[i + 1])
+		ListenSock = atoi(argv[++i]);
 	    else
 		usage();
 	} else if (!strncmp(argv[i], "-cf", 3)) {

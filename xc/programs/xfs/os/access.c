@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: access.c,v 1.3 91/05/13 16:50:23 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,7 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)access.c	4.3	91/05/03
+ * $NCDId: @(#)access.c,v 4.5 1991/07/02 18:32:37 lemke Exp $
  *
  */
 
@@ -42,6 +42,7 @@ void
 AccessSetConnectionLimit(num)
     int         num;
 {
+    num++;	/* take serverClient into account */
     if (num > MAXSOCKS) {
 	ErrorF("Client limit of %d too high; using default of %d\n",
 	       num, DEFAULT_CLIENT_LIMIT);

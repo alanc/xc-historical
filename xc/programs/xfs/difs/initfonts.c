@@ -25,16 +25,7 @@
  *
  */
 
-#include        "FS.h"
-#include        "FSproto.h"
-#include	<stdio.h>
-#include	<X11/Xos.h>
-#include	"clientstr.h"
-#include	"resource.h"
-#include	"difsfontst.h"
-#include	"fontstruct.h"
-#include	"closestr.h"
-#include	"globals.h"
+#include        "font.h"
 
 FontPatternCachePtr fontPatternCache;
 
@@ -42,8 +33,10 @@ void
 InitFonts()
 {
     if (fontPatternCache)
-	FreeFontPatternCache (fontPatternCache);
-    fontPatternCache = MakeFontPatternCache ();
+	FreeFontPatternCache(fontPatternCache);
+    fontPatternCache = MakeFontPatternCache();
+
+    ResetFontPrivateIndex();
 
 #ifdef FONT_PCF
     FontFileRegisterFpeFunctions();

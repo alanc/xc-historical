@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sptobdf.c,v 1.2 91/05/11 10:00:01 rws Exp $ */
 /*
  *
  * Speedo outline to BFD format converter
@@ -31,7 +31,7 @@
 #include	<stdio.h>
 #include	"speedo.h"
 
-#ifdef NCD
+#ifdef EXTRAFONTS
 #include	"ncdkeys.h"
 #else
 #include	"keys.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: difsutils.c,v 1.3 91/05/11 13:39:39 rws Exp $ */
+/* $XConsortium: difsutils.c,v 1.4 91/05/11 14:06:05 rws Exp $ */
 /*
  * misc utility routines
  */
@@ -23,6 +23,8 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * $NCDId: @(#)difsutils.c,v 4.6 1991/07/02 16:58:06 lemke Exp $
  *
  */
 
@@ -115,6 +117,7 @@ SetDefaultResolutions(str)
     /* do the last one */
     assert(state == 1);
     nr->y_resolution = num;
+    nr->point_size = default_point_size;
 
     if (default_resolutions) {
 	fsfree((char *) default_resolutions);
@@ -462,10 +465,10 @@ ProcessWorkQueue()
 }
 
 Bool
-QueueWorkProc(function, client, data)
+QueueWorkProc(function, client, closure)
     Bool        (*function) ();
     ClientPtr   client;
-    pointer     data;
+    pointer     closure;
 {
     WorkQueuePtr q;
 
@@ -474,7 +477,7 @@ QueueWorkProc(function, client, data)
 	return FALSE;
     q->function = function;
     q->client = client;
-    q->closure = data;
+    q->closure = closure;
     q->next = NULL;
     *workQueueLast = q;
     workQueueLast = &q->next;
@@ -499,10 +502,10 @@ typedef struct _SleepQueue {
 static SleepQueuePtr sleepQueue = NULL;
 
 Bool
-ClientSleep(client, function, data)
+ClientSleep(client, function, closure)
     ClientPtr   client;
     Bool        (*function) ();
-    pointer     data;
+    pointer     closure;
 {
     SleepQueuePtr q;
 
@@ -514,7 +517,7 @@ ClientSleep(client, function, data)
     q->next = sleepQueue;
     q->client = client;
     q->function = function;
-    q->closure = data;
+    q->closure = closure;
     sleepQueue = q;
     return TRUE;
 }
@@ -543,12 +546,26 @@ ClientWakeup(client)
 	if (q->client == client) {
 	    *prev = q->next;
 	    fsfree(q);
-	    AttendClient(client);
+	    if (client->clientGone != CLIENT_GONE)
+		AttendClient(client);
 	    break;
 	}
 	prev = &q->next;
     }
 }
+
+Bool
+ClientIsAsleep(client)
+    ClientPtr   client;
+{
+    SleepQueuePtr q;
+
+    for (q = sleepQueue; q; q = q->next)
+	if (q->client == client)
+	    return TRUE;
+    return FALSE;
+}
+
 
 unsigned char _reverse_byte[0x100] = {
     0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
