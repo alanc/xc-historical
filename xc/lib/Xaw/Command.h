@@ -1,7 +1,4 @@
-/*
-* $XConsortium: Command.h,v 1.25 89/10/03 11:32:06 swick Exp $
-*/
-
+/* $XConsortium: Command.h,v 1.26 89/10/03 14:51:22 kit Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,37 +27,46 @@ SOFTWARE.
 #ifndef _XawCommand_h
 #define _XawCommand_h
 
-/***********************************************************************
- *
- * Command Widget
- *
- ***********************************************************************/
-
 #include <X11/Xaw/Label.h>
 
-/* Resources:
+/* Command widget resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
+ accelerators	     Accelerators	AcceleratorTable NULL
+ ancestorSensitive   AncestorSensitive	Boolean		True
  background	     Background		Pixel		XtDefaultBackground
+ backgroundPixmap    Pixmap		Pixmap		XtUnspecifiedPixmap
  bitmap		     Pixmap		Pixmap		None
- border		     BorderColor	Pixel		XtDefaultForeground
+ borderColor	     BorderColor	Pixel		XtDefaultForeground
+ borderPixmap	     Pixmap		Pixmap		XtUnspecifiedPixmap
  borderWidth	     BorderWidth	Dimension	1
- callback	     Callback		Pointer		NULL
+ callback	     Callback		XtCallbackList	NULL
+ colormap	     Colormap		Colormap	parent's colormap
+ cornerRoundPercent  CornerRoundPercent	Dimension	25
  cursor		     Cursor		Cursor		None
- destroyCallback     Callback		Pointer		NULL
+ cursorName	     Cursor		String		NULL
+ depth		     Depth		int		parent's depth
+ destroyCallback     Callback		XtCallbackList	NULL
+ encoding	     Encoding		UnsignedChar	XawTextEncoding8bit
  font		     Font		XFontStruct*	XtDefaultFont
  foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	text height
- highlightThickness  Thickness		Dimension	2
+ highlightThickness  Thickness		Dimension	0 if shaped, else 2
  insensitiveBorder   Insensitive	Pixmap		Gray
  internalHeight	     Height		Dimension	2
  internalWidth	     Width		Dimension	4
  justify	     Justify		XtJustify	XtJustifyCenter
  label		     Label		String		NULL
+ leftBitmap	     LeftBitmap		Pixmap		None
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ pointerColor	     Foreground		Pixel		XtDefaultForeground
+ pointerColorBackground Background	Pixel		XtDefaultBackground
  resize		     Resize		Boolean		True
+ screen		     Screen		Screen		parent's Screen
  sensitive	     Sensitive		Boolean		True
+ shapeStyle	     ShapeStyle		ShapeStyle	Rectangle
+ translations	     Translations	TranslationTable see doc or source
  width		     Width		Dimension	text width
  x		     Position		Position	0
  y		     Position		Position	0
@@ -84,7 +90,6 @@ extern WidgetClass     commandWidgetClass;
 
 typedef struct _CommandClassRec   *CommandWidgetClass;
 typedef struct _CommandRec        *CommandWidget;
-
 
 #endif /* _XawCommand_h */
 /* DON'T ADD STUFF AFTER THIS */
