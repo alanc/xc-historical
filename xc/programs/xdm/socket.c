@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.8 89/09/08 14:34:20 keith Exp $
+ * $XConsortium: socket.c,v 1.9 89/09/09 13:01:03 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,7 +30,6 @@
 # include	<sys/un.h>
 # include	<X11/X.h>
 # include	<netdb.h>
-# include	"buf.h"
 
 /*
  * interface to policy routines
@@ -90,16 +89,20 @@ WaitForSomething ()
 {
     FD_TYPE	reads;
     int	nready;
-    extern int ChildReady;
+    extern int Rescan, ChildReady;
 
     Debug ("WaitForSomething\n");
     if (socketFd) {
 	reads = WellKnownSocketsMask;
 	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
+	Debug ("select returns %d.  Rescan: %d  ChildReady: %d\n",
+		nready, Rescan, ChildReady);
 	if (nready > 0 && FD_ISSET (socketFd, &reads))
 	    ProcessRequestSocket ();
 	if (ChildReady)
+	{
 	    WaitForChild ();
+	}
     } else
 	WaitForChild ();
 }
