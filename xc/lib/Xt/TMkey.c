@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.21 93/09/13 16:15:30 rws Exp $ */
+/* $XConsortium: TMkey.c,v 1.22 93/09/18 18:18:42 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -41,7 +41,7 @@ SOFTWARE.
 #endif
 
 #define FLUSHKEYCACHE(ctx) \
-	(void) memset((char *)&ctx->keycache, 0, sizeof(TMKeyCache))
+	bzero((char *)&ctx->keycache, sizeof(TMKeyCache))
 
 /*
  * The following array reorders the modifier bits so that the most common ones

@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.127 93/09/18 18:18:32 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.128 93/09/20 17:05:26 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -854,8 +854,8 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	    Cardinal n = source + 1;
 	    app->input_list = (InputEvent**)XtRealloc((char*) app->input_list,
 						      n * sizeof(InputEvent*));
-	    (void) memset((char *) &app->input_list[app->input_max], 0,
-			  (unsigned)(n - app->input_max) * sizeof(InputEvent*));
+	    bzero((char *) &app->input_list[app->input_max],
+		  (unsigned)(n - app->input_max) * sizeof(InputEvent*));
 	    app->input_max = n;
 	}
 	sptr = XtNew(InputEvent);

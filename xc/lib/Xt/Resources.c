@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.112 93/09/18 18:18:33 kaleb Exp $ */
+/* $XConsortium: Resources.c,v 1.113 93/09/24 16:57:53 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -409,8 +409,7 @@ void _XtDependencies(class_resp, class_num_resp, super_res, super_num_res,
     /* Allocate and initialize new_res with superclass resource pointers */
     new_num_res = super_num_res + class_num_res;
     new_res = (XrmResourceList *) XtMalloc(new_num_res*sizeof(XrmResourceList));
-    (void) XtMemmove(new_res, super_res, 
-		     super_num_res * sizeof(XrmResourceList));
+    XtMemmove(new_res, super_res, super_num_res * sizeof(XrmResourceList));
     
     /* Put pointers to class resource entries into new_res */
     new_next = super_num_res;
@@ -558,8 +557,8 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     }
 
     /* Mark each resource as not found on arg list */
-    (void) memset((char *) found, 0, (int) (num_resources * sizeof(Boolean)));
-    (void) memset((char *) typed, 0, (int) (num_resources * sizeof(int)));
+    bzero((char *) found, (int) (num_resources * sizeof(Boolean)));
+    bzero((char *) typed, (int) (num_resources * sizeof(int)));
 
     /* Copy the args into the resources, mark each as found */
     {
@@ -869,12 +868,11 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			*((String*)(base - rx->xrm_offset - 1)) = value.addr;
 		    } else {
 			if (value.addr != NULL) {
-			    (void) XtMemmove(base - rx->xrm_offset - 1,
-					     value.addr, rx->xrm_size);
+			    XtMemmove(base - rx->xrm_offset - 1,
+				      value.addr, rx->xrm_size);
 			} else {
 			    /* didn't get value, initialize to NULL... */
-			    (void) XtMemset(base - rx->xrm_offset - 1, 0, 
-					    rx->xrm_size);
+			    XtBZero(base - rx->xrm_offset - 1, rx->xrm_size);
 			}
 		    }
 		}

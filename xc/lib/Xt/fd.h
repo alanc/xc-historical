@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.19 93/09/20 10:13:14 kaleb Exp $
+* $XConsortium: fd.h,v 1.20 93/09/22 19:09:54 rws Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
@@ -90,7 +90,7 @@ typedef	struct Fd_set {
 #define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
 #endif
 #ifndef FD_ZERO
-#define FD_ZERO(p)	memset((char *)(p), 0, sizeof(*(p)))
+#define FD_ZERO(p)	bzero((char *)(p), sizeof(*(p)))
 #endif
 
 #endif /* WIN32 */

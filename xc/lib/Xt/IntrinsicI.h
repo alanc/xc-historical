@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.51 93/09/18 18:19:04 kaleb Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.52 93/09/25 10:13:16 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -106,11 +106,11 @@ SOFTWARE.
     else						    \
 	(void) memcpy((char *) (dst), (char *) (src), (int) (size))
 
-#define XtMemset(dst, val, size)			    \
+#define XtBZero(dst, size)			    \
     if (size == sizeof(int))				    \
-	*((int *) (dst)) = val;				    \
+	*((int *) (dst)) = 0;				    \
     else						    \
-	(void) memset((char *) (dst), (int) val, (int) (size))
+	bzero((char *) (dst), (int) (size))
 
 #define XtMemcmp(b1, b2, size)				    \
     (size == sizeof(int) ?				    \
@@ -123,8 +123,8 @@ SOFTWARE.
 #define XtMemmove(src, dst, size)	\
 	(void) memcpy((char *) (src), (char *) (dst), (int) (size))
 
-#define XtMemset(dst, val, size) 	\
-	(void) memset((char *) (dst), (int) val, (int) (size))
+#define XtBZero(dst, size) 	\
+	bzero((char *) (dst), (int) (size))
 
 #define XtMemcmp(b1, b2, size) 		\
 	memcmp((char *) (b1), (char *) (b2), (int) (size))

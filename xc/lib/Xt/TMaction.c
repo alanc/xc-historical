@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.21 93/08/27 16:29:45 kaleb Exp $ */
+/* $XConsortium: TMaction.c,v 1.22 93/09/18 18:18:41 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -419,8 +419,8 @@ static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
 	    }
 	  _XtGlobalTM.bindCacheTbl[_XtGlobalTM.numBindCache++] = bindCache;
 #endif /* TRACE_TM */
-	  (void) XtMemmove((XtPointer)&bindCache->procs[0], 
-			   (XtPointer)procs, procsSize);
+	  XtMemmove((XtPointer)&bindCache->procs[0],
+		    (XtPointer)procs, procsSize);
       }
     UNLOCK_PROCESS;
     return &bindCache->procs[0];
@@ -580,8 +580,8 @@ void _XtBindActions(widget, tm)
 		procs = (XtActionProc *)
 		  XtStackAlloc(stateTree->numQuarks * sizeof(XtActionProc),
 			       stackProcs);
-		(void) XtMemset((XtPointer)procs, 0,
-				stateTree->numQuarks * sizeof(XtActionProc));
+		XtBZero((XtPointer)procs,
+			stateTree->numQuarks * sizeof(XtActionProc));
 
 		localUnbound = BindProcs(bindWidget, 
 					 stateTree, 

@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.208 93/09/18 14:56:32 kaleb Exp $ */
+/* $XConsortium: Initialize.c,v 1.209 93/09/18 18:18:28 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -575,7 +575,7 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
 	    return True;
 	} else {
 	    WidgetRec widget; /* hack, hack */
-	    (void) memset( &widget, 0, sizeof(widget) );
+	    bzero( &widget, sizeof(widget) );
 	    widget.core.self = &widget;
 	    widget.core.widget_class = coreWidgetClass;
 	    widget.core.screen = (Screen*)DefaultScreenOfDisplay(dpy);

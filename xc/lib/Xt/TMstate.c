@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.166 93/08/27 16:29:52 kaleb Exp $ */
+/* $XConsortium: TMstate.c,v 1.167 93/09/18 18:18:47 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -88,8 +88,7 @@ static TMShortCard GetBranchHead(parseTree, typeIndex, modIndex, isDummy)
 	  if (parseTree->isStackBranchHeads) {
 	      TMBranchHead	oldBranchHeadTbl = parseTree->branchHeadTbl;
 	      parseTree->branchHeadTbl = (TMBranchHead) XtMalloc(newSize);
-	      (void) XtMemmove(parseTree->branchHeadTbl, oldBranchHeadTbl, 
-			       newSize);
+	      XtMemmove(parseTree->branchHeadTbl, oldBranchHeadTbl, newSize);
 	      parseTree->isStackBranchHeads = False;
 	  }
 	  else {
@@ -142,7 +141,7 @@ TMShortCard _XtGetQuarkIndex(parseTree, quark)
 		if (parseTree->isStackQuarks) {
 		    XrmQuark	*oldquarkTbl = parseTree->quarkTbl;
 		    parseTree->quarkTbl = (XrmQuark *) XtMalloc(newSize);
-		    (void) XtMemmove(parseTree->quarkTbl, oldquarkTbl, newSize);
+		    XtMemmove(parseTree->quarkTbl, oldquarkTbl, newSize);
 		    parseTree->isStackQuarks = False;
 		}
 		else {
@@ -184,8 +183,8 @@ static TMShortCard GetComplexBranchIndex(parseTree, typeIndex, modIndex)
 	    StatePtr *oldcomplexBranchHeadTbl 
 	      = parseTree->complexBranchHeadTbl;
 	    parseTree->complexBranchHeadTbl = (StatePtr *) XtMalloc(newSize);
-	    (void) XtMemmove(parseTree->complexBranchHeadTbl, 
-			     oldcomplexBranchHeadTbl, newSize);
+	    XtMemmove(parseTree->complexBranchHeadTbl, 
+		      oldcomplexBranchHeadTbl, newSize);
 	    parseTree->isStackComplexBranchHeads = False;
 	}
 	else {
@@ -1093,8 +1092,8 @@ void _XtTraverseStateTree(tree, func, data)
 	    {
 		if (firstSimple)
 		  {
-		      (void) XtMemset((char *) dummyState, 0, sizeof(StateRec));
-		      (void) XtMemset((char *) dummyAction, 0, sizeof(ActionRec));
+		      XtBZero((char *) dummyState, sizeof(StateRec));
+		      XtBZero((char *) dummyAction, sizeof(ActionRec));
 		      dummyState->actions = dummyAction;
 		      firstSimple = False;
 		  }
@@ -1393,8 +1392,8 @@ TMStateTree _XtParseTreeToStateTree(parseTree)
 	tableSize = parseTree->numComplexBranchHeads * sizeof(StatePtr); 
 	complexTree->complexBranchHeadTbl = (StatePtr *)
 	  XtMalloc(tableSize);
-	(void) XtMemmove(complexTree->complexBranchHeadTbl,
-			 parseTree->complexBranchHeadTbl, tableSize);
+	XtMemmove(complexTree->complexBranchHeadTbl,
+		  parseTree->complexBranchHeadTbl, tableSize);
 	complexTree->numComplexBranchHeads = 
 	  parseTree->numComplexBranchHeads;
 	simpleTree = (TMSimpleStateTree)complexTree;
@@ -1410,13 +1409,12 @@ TMStateTree _XtParseTreeToStateTree(parseTree)
     tableSize = parseTree->numBranchHeads * sizeof(TMBranchHeadRec);
     simpleTree->branchHeadTbl = (TMBranchHead)
       XtMalloc(tableSize);
-    (void) XtMemmove(simpleTree->branchHeadTbl, parseTree->branchHeadTbl, 
-		     tableSize);
+    XtMemmove(simpleTree->branchHeadTbl, parseTree->branchHeadTbl, tableSize);
     simpleTree->numBranchHeads = parseTree->numBranchHeads;
 
     tableSize = parseTree->numQuarks * sizeof(XrmQuark);
     simpleTree->quarkTbl = (XrmQuark *) XtMalloc(tableSize);
-    (void) XtMemmove(simpleTree->quarkTbl, parseTree->quarkTbl, tableSize);
+    XtMemmove(simpleTree->quarkTbl, parseTree->quarkTbl, tableSize);
     simpleTree->numQuarks = parseTree->numQuarks;
 
     return (TMStateTree)simpleTree;
@@ -1845,8 +1843,8 @@ static TMBindData MakeBindData(bindings, numBindings, oldBindData)
 	if (oldBindData && oldBindData->simple.isComplex)
 	    cBindData->accel_context = 
 		((TMComplexBindData) oldBindData)->accel_context;
-	(void) XtMemmove((char *)&cBindData->bindTbl[0], (char *)bindings, 
-			 numBindings * sizeof(TMComplexBindProcsRec));
+	XtMemmove((char *)&cBindData->bindTbl[0], (char *)bindings, 
+		  numBindings * sizeof(TMComplexBindProcsRec));
     }
     return bindData;
 }
@@ -1941,7 +1939,7 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     numBytes =(((oldXlations ? oldXlations->numStateTrees : 0)
 		+ newXlations->numStateTrees) * sizeof(TMComplexBindProcsRec));
     newBindings = (TMComplexBindProcs) XtStackAlloc(numBytes,  stackBindings);
-    (void) XtMemset((char *)newBindings, 0, numBytes);
+    XtBZero((char *)newBindings, numBytes);
 
     if (operation == XtTableUnmerge) {
 	newTable = UnmergeTranslations(dest, 
@@ -2037,9 +2035,9 @@ XtTranslations _XtGetTranslationValue(w)
 	aXlations->hasBindings = True;
 	aXlations->xlations = xlations;
 	aXlations->next = NULL;
-	(void) XtMemmove((char *) &aXlations->bindTbl[0],
-			 (char *) &cBindData->bindTbl[0],
-			 numBindings * sizeof(TMComplexBindProcsRec));
+	XtMemmove((char *) &aXlations->bindTbl[0],
+		  (char *) &cBindData->bindTbl[0],
+		  numBindings * sizeof(TMComplexBindProcsRec));
 	return (XtTranslations) aXlations;
     }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.10 93/08/27 16:29:51 kaleb Exp $ */
+/* $XConsortium: TMprint.c,v 1.11 93/09/18 18:18:46 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -293,7 +293,7 @@ static void PrintActions(sb, actions, quarkTbl, accelWidget)
 	    String name = XtName(accelWidget);
 	    int nameLen = strlen(name);
 	    ExpandForChars(sb,  nameLen );
-	    (void) XtMemmove(sb->current, name, nameLen );
+	    XtMemmove(sb->current, name, nameLen );
 	    sb->current += nameLen;
 	    *sb->current++ = '`';
 	}

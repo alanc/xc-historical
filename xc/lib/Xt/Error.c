@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.34 93/08/27 16:27:20 kaleb Exp $ */
+/* $XConsortium: Error.c,v 1.35 93/09/18 18:18:25 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -200,7 +200,7 @@ void _XtDefaultErrorMsg (name,type,class,defaultp,params,num_params)
 	String par[10];
 	if (i > 10) i = 10;
 	(void) memmove((char*)par, (char*)params, i * sizeof(String) );
-	(void) memset( &par[i], 0, (10-i) * sizeof(String) );
+	bzero( &par[i], (10-i) * sizeof(String) );
         (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
 		       par[4], par[5], par[6], par[7], par[8], par[9]);
 	XtError(message);
@@ -225,7 +225,7 @@ void _XtDefaultWarningMsg (name,type,class,defaultp,params,num_params)
 	String par[10];
 	if (i > 10) i = 10;
 	(void) memmove((char*)par, (char*)params, i * sizeof(String) );
-	(void) memset ( &par[i], 0, (10-i) * sizeof(String) );
+	bzero ( &par[i], (10-i) * sizeof(String) );
         (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
 		       par[4], par[5], par[6], par[7], par[8], par[9]);
 	XtWarning(message); 

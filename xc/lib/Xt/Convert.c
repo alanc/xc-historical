@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.69 93/08/27 16:27:11 kaleb Exp $ */
+/* $XConsortium: Convert.c,v 1.70 93/09/18 18:18:21 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -402,7 +402,7 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     p->from.size    = from->size;
     if (from->size <= sizeof(p->from.addr)) {
 	p->from_is_value = True;
-	(void) XtMemmove(&p->from.addr, from->addr, from->size);
+	XtMemmove(&p->from.addr, from->addr, from->size);
     } else {
 	p->from_is_value = False;
 	p->from.addr = (XPointer)_XtHeapAlloc(heap, from->size);
@@ -414,7 +414,7 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	for (i = 0; i < num_args; i++) {
 	    pargs[i].size = args[i].size;
 	    pargs[i].addr = (XPointer)_XtHeapAlloc(heap, args[i].size);
-	    (void) XtMemmove(pargs[i].addr, args[i].addr, args[i].size);
+	    XtMemmove(pargs[i].addr, args[i].addr, args[i].size);
 	}
     }
     p->to.size = to->size;
@@ -423,7 +423,7 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	p->to.addr = NULL;
     } else if (to->size <= sizeof(p->to.addr)) {
 	p->to_is_value = True;
-	(void) XtMemmove(&p->to.addr, to->addr, to->size);
+	XtMemmove(&p->to.addr, to->addr, to->size);
     } else {
 	p->to_is_value = False;
 	p->to.addr = (XPointer)_XtHeapAlloc(heap, to->size);
@@ -746,8 +746,8 @@ _XtCallConverter(dpy, converter,
 			    }
 			    to->size = p->to.size;
 			    if (p->to_is_value) {
-				(void) XtMemmove(to->addr, &p->to.addr, 
-						 to->size);
+				XtMemmove(to->addr, &p->to.addr, 
+					  to->size);
 			    } else {
 				(void) memmove((char *)to->addr, 
 					       (char *)p->to.addr, to->size);
@@ -884,8 +884,8 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 			    if (to_type == _XtQString)
 				*(String*)(to->addr) = tempTo.addr;
 			    else {
-				(void) XtMemmove(to->addr, tempTo.addr, 
-						 tempTo.size);
+				XtMemmove(to->addr, tempTo.addr, 
+					  tempTo.size);
 			    }
 			    retval = True;
 			}
