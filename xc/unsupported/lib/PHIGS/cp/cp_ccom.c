@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.14 91/06/28 17:48:25 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.15 91/07/12 20:34:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -53,6 +53,12 @@ SOFTWARE.
 typedef int		waitType;
 #else
 #ifdef SYSV
+#ifdef SYSV386
+#ifdef ISC
+typedef short pid_t;
+#endif
+# include <sys/wait.h>
+#endif
 # define waitSig(w)	((w) & 0xff)
 typedef int		waitType;
 #else
@@ -1084,7 +1090,7 @@ phg_cpc_inp_request( cph, args, ret)
     }
 }
 
-#ifndef X_NOT_POSIX
+#if !defined(X_NOT_POSIX) || (defined(SYSV) && defined(SYSV386))
 #define WAIT_FOR_IT(p,s,o) waitpid(p,s,o)
 #else
 #define WAIT_FOR_IT(p,s,o) wait3(s, o, (struct rusage *) 0)
@@ -1326,7 +1332,52 @@ static int socketpair(domain, s_type, protocol, sv)
     close(fd);
     return 0;
 }
-#endif
+#endif /* hpux */
+
+#if defined(SYSV) && defined(SYSV386)
+
+/* Another losing OS */
+#include <netinet/in.h>
+#include <net/errno.h>
+
+static int socketpair(domain, s_type, protocol, sv)
+  int domain, s_type, protocol;
+  int sv[2];
+{
+    struct sockaddr_in insock;
+    int socket_size, fd, port_num, s;
+
+    if ((sv[0] = socket(PF_INET, s_type, protocol)) < 0)
+	return -1;
+    if ((fd = socket(PF_INET, s_type, protocol)) < 0) {
+	close(sv[0]);
+	return -1;
+    }
+
+    /* Port number of 6100 is arbitrary, (100 above the X server port). */
+    bzero ((char *)&insock, sizeof (insock));
+    insock.sin_family = AF_INET;
+    port_num = 6100;
+    insock.sin_port = htons((unsigned short)(port_num));
+    insock.sin_addr.s_addr = htonl(INADDR_ANY);
+    socket_size = sizeof(struct sockaddr_in);
+
+    /* Bind until we find a free address or encounter an error. */
+    while ((s = bind(fd, &insock, sizeof(insock))) < 0 && errno == EADDRINUSE)
+	insock.sin_port = htons((unsigned short)(++port_num));
+
+    if (s < 0 ||
+	listen(fd, 1) < 0 ||
+	connect(sv[0], &insock, socket_size) < 0 ||
+	(sv[1] = accept(fd, &insock, &socket_size)) < 0) {
+	close(sv[0]);
+	close(fd);
+	return -1;
+    }
+    close(fd);
+    return 0;
+}
+#endif /* SYSV && SYSV386 */
 
 static int
 fork_monitor( cph, argv )
