@@ -1,4 +1,4 @@
-/* $XConsortium: makeform.c,v 1.2 94/04/11 14:47:25 gildea Exp $ */
+/* $XConsortium: makeform.c,v 1.3 94/04/17 20:45:56 gildea Exp $ */
 /*
 
 Copyright (c) 1988, 1991  X Consortium
@@ -32,9 +32,12 @@ from the X Consortium.
 #include <X11/StringDefs.h>
 #include <stdio.h>
 
+#include <X11/Shell.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Label.h>
-#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Scrollbar.h>
 
 extern char *malloc();
 extern char *ProgramName;
@@ -73,7 +76,7 @@ static void unquote_pairs (br, n)
 }
 
 /*
- * parses string of form "yes:1,no:2, ..."
+ * parses string of form "yes:11,no:12, ..."
  * sets brptr to point to parsed table
  * returns 0 if successful, -1 if not
  */
@@ -206,33 +209,96 @@ static void handle_button (w, closure, client_data)
     exit (br->exitstatus);
 }
 
-Widget make_queryform(parent, msgstr, button_list, print_value, default_button)
-    Widget parent;			/* into whom widget should be placed */
-    char *msgstr;			/* message string */
-    char *button_list;			/* list of button title:status */
-    Boolean print_value;		/* print button string on stdout? */
-    char *default_button;		/* button activated by Return */
+Widget make_queryform(parent, msgstr, msglen,
+		      button_list, print_value, default_button,
+		      max_width, max_height)
+    Widget parent;		/* into whom widget should be placed */
+    char *msgstr;		/* message string */
+    int msglen;			/* characters in msgstr */
+    char *button_list;		/* list of button title:status */
+    Boolean print_value;	/* print button string on stdout? */
+    char *default_button;	/* button activated by Return */
+    Dimension max_width;
+    Dimension max_height;
 {
     ButtonRecord *br;
     int npairs, i;
     Widget form, text, prev;
     Arg args[10];
     Cardinal n, thisn;
+    char *shell_geom;
+    int x, y, geom_flags;
+    unsigned int shell_w, shell_h;
 
     npairs = parse_name_and_exit_code_list (button_list, &br);
 
     form = XtCreateManagedWidget ("form", formWidgetClass, parent, NULL, 0);
-    
-    n = 0;
-    XtSetArg (args[n], XtNleft, XtChainLeft); n++;
-    XtSetArg (args[n], XtNright, XtChainLeft); n++;
-    XtSetArg (args[n], XtNtop, XtChainTop); n++;
-    XtSetArg (args[n], XtNbottom, XtChainBottom); n++;
 
-    XtSetArg (args[n], XtNlabel, msgstr); n++;
-
-    text = XtCreateManagedWidget ("message", labelWidgetClass, form, args, n);
-
+    text = XtVaCreateManagedWidget
+	("message", asciiTextWidgetClass, form,
+	 XtNleft, XtChainLeft,
+	 XtNright, XtChainRight,
+	 XtNtop, XtChainTop,
+	 XtNbottom, XtChainBottom,
+	 XtNdisplayCaret, False,
+	 XtNuseStringInPlace, True,
+	 XtNlength, msglen,
+	 XtNstring, msgstr,
+	 NULL);
+    /*
+     * Did the user specify our geometry?
+     * If so, don't bother computing it ourselves, since we will be overridden.
+     */
+    XtVaGetValues(parent, XtNgeometry, &shell_geom, NULL);
+    geom_flags = XParseGeometry(shell_geom, &x, &y, &shell_w, &shell_h);
+    if (!(geom_flags & WidthValue && geom_flags & HeightValue)) {
+	Dimension width, height, height_addons = 0;
+	Dimension scroll_size, border_width;
+	Widget label, scroll;
+	Dimension left, right, top, bottom;
+	/*
+	 * A Text widget is used for the automatic scroll bars.
+	 * But Text widget doesn't automatically compute its size.
+	 * The Label widget does that nicely, so we create one and examine it.
+	 * This widget is never visible.
+	 */
+	XtVaGetValues(text, XtNtopMargin, &top, XtNbottomMargin, &bottom,
+		      XtNleftMargin, &left, XtNrightMargin, &right, NULL);
+	label = XtVaCreateWidget("temp-label", labelWidgetClass, form,
+				 XtNlabel, msgstr,
+				 XtNinternalWidth, (left+right+1)/2,
+				 XtNinternalHeight, (top+bottom+1)/2,
+				 NULL);
+	XtVaGetValues(label, XtNwidth, &width, XtNheight, &height, NULL);
+	XtDestroyWidget(label);
+	if (max_width == 0)
+	    max_width = .7 * WidthOfScreen(XtScreen(text));
+	if (max_height == 0)
+	    max_height = .7 * HeightOfScreen(XtScreen(text));
+	if (width > max_width) {
+	    width = max_width;
+	    /* add in the height of any horizontal scroll bar */
+	    scroll = XtVaCreateWidget("tmp-scroll", scrollbarWidgetClass, text,
+				      XtNorientation, XtorientHorizontal,
+				      NULL);
+	    XtVaGetValues(scroll, XtNheight, &scroll_size,
+			  XtNborderWidth, &border_width, NULL);
+	    XtDestroyWidget(scroll);
+	    height_addons = scroll_size + border_width;
+	}
+	if (height > max_height) {
+	    height = max_height;
+	    /* add in the width of any vertical scroll bar */
+	    scroll = XtVaCreateWidget("tmp-scroll", scrollbarWidgetClass, text,
+				      XtNorientation, XtorientVertical, NULL);
+	    XtVaGetValues(scroll, XtNwidth, &scroll_size,
+			  XtNborderWidth, &border_width, NULL);
+	    XtDestroyWidget(scroll);
+	    width += scroll_size + border_width;
+	}
+	height += height_addons;
+	XtVaSetValues(text, XtNwidth, width, XtNheight, height, NULL);
+    }
     /*
      * Create the buttons
      */
