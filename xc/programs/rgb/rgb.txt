@@ -174,7 +174,7 @@
 255  69   0		orange red
 255  69   0		OrangeRed
 255   0   0		red
-225   0 100		maroon
+176  48  96		maroon
 255 174 185		pink
 245  90 160		light pink
 245  90 160		LightPink
