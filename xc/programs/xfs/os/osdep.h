@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: osdep.h,v 1.3 91/05/13 16:51:04 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -131,11 +131,11 @@
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
 			for (cri=0; cri<mskcnt; cri++)	\
-		          dst[cri] = (b1[cri] & b2[cri]) }
+		          dst[cri] = (b1[cri] & b2[cri]); }
 #define ORBITS(dst, b1, b2)  \
 		      { int cri;			\
 		      for (cri=0; cri<mskcnt; cri++)	\
-		          dst[cri] = (b1[cri] | b2[cri]) }
+		          dst[cri] = (b1[cri] | b2[cri]); }
 #define UNSETBITS(dst, b1) \
 		      { int cri;			\
 		      for (cri=0; cri<mskcnt; cri++)	\
