@@ -1,4 +1,4 @@
-/* $XConsortium: showfont.c,v 1.6 92/05/12 09:04:22 gildea Exp $ */
+/* $XConsortium: showfont.c,v 1.7 92/05/19 17:10:30 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -36,23 +36,23 @@
 	:(nbytes) == 8 ? ((((bits)+63)>>3)&~7)  /* pad to 8 bytes */ \
 	: 0)
 
-FSServer   *svr;
-int         pad = 8,
-            bitmap_pad = 0,
-            scan_unit = 8;
-
-/* set from bitmap_pad to ImageRect, ImageMaxWidth, or ImageMax */
-int	    bitmap_format;	
-
-int         bitorder = MSBFirst;
-int         byteorder = MSBFirst;
-int         first_ch = 0;
-int         end_ch = ~0;
+int         byteorder = MSBFirst; /* -L or -M */
+int         bitorder = MSBFirst; /* -l or -m */
+int         bitmap_pad = 0;	/* -bitmap_pad: ImageRect bitmap format */
+int         scan_pad = 8;	/* -pad: ScanlinePad */
+int         scan_unit = 8;	/* -unit: ScanlineUnit */
+int         first_ch = 0;	/* -start: first character*/
+int         end_ch = ~0;	/* -end: end character */
 char       *cmd;
 Bool	    no_props = False;	/* -noprops: don't show font properties */
+Bool        extents_only = False; /* -extents_only */
+
+FSServer   *svr;
+
+/* set from bitmap_pad to ImageRectMin, ImageMaxWidth, or ImageMax */
+int	    bitmap_format;	
 
 static fsBitmapFormat make_format();
-static Bool extents_only = False;
 
 static void
 usage()
@@ -65,10 +65,8 @@ main(argc, argv)
     int         argc;
     char      **argv;
 {
-    char       *servername = NULL;
-    char      **flist;
-    int         fcount;
-    char       *fontname = "xconq";
+    char       *servername = NULL; /* -server: font server name */
+    char       *fontname = "xconq"; /* -fn: font name */
     int         i;
     Font        fid,
                 dummy;
@@ -76,7 +74,6 @@ main(argc, argv)
     fsBitmapFormatMask fmask;
     fsChar2b    first,
                 last;
-    fsRange     range;
     fsFontHeader hdr;
     Bool        show_all = True;
 
@@ -102,7 +99,7 @@ main(argc, argv)
 	    byteorder = MSBFirst;
 	} else if (!strncmp(argv[i], "-p", 2)) {
 	    if (argv[++i])
-		pad = atoi(argv[i]);
+		scan_pad = atoi(argv[i]);
 	    else
 		usage();
 	} else if (!strncmp(argv[i], "-u", 2)) {
@@ -153,13 +150,13 @@ main(argc, argv)
 	printf("opened font %s\n", fontname);
 	show_info(fid, &hdr, &first, &last);
 	if (first_ch != 0 &&
-		(first_ch >= (first.low + (first.high << 8)))) {
+		((unsigned)first_ch >= (first.low + (first.high << 8)))) {
 	    first.low = first_ch & 0xff;
 	    first.high = first_ch >> 8;
 	    show_all = False;
 	}
 	if (end_ch != ~0 &&
-		(end_ch <= (last.low + (last.high << 8)))) {
+		((unsigned)end_ch <= (last.low + (last.high << 8)))) {
 	    last.low = end_ch & 0xff;
 	    last.high = end_ch >> 8;
 	    show_all = False;
@@ -188,8 +185,6 @@ show_glyphs(fid, hdr, show_all, first, last)
                 last;
 {
     fsCharInfo *extents;
-    int         char_num;
-    int         num_extents;
     int         err,
                 ch,
                 start,
@@ -226,7 +221,7 @@ show_glyphs(fid, hdr, show_all, first, last)
     start = first.low + (first.high << 8);
     end = last.low + (last.high << 8);
 
-    scanpad = pad >> 3;
+    scanpad = scan_pad >> 3;
 
     for (ch = 0; ch <= (end - start); ch++) {
 	int         bottom,
@@ -375,7 +370,7 @@ make_format()
 
     format = 0;
     /* set up format */
-    switch (pad) {
+    switch (scan_pad) {
     case 8:
 	format |= BitmapFormatScanlinePad8;
 	break;
@@ -385,8 +380,11 @@ make_format()
     case 32:
 	format |= BitmapFormatScanlinePad32;
 	break;
+    case 64:
+	format |= BitmapFormatScanlinePad64;
+	break;
     default:
-	fprintf(stderr, "bogus scanline pad value: %d\n", pad);
+	fprintf(stderr, "bogus scanline pad value: %d\n", scan_pad);
 	break;
     }
     switch (scan_unit) {
@@ -398,6 +396,9 @@ make_format()
 	break;
     case 32:
 	format |= BitmapFormatScanlineUnit32;
+	break;
+    case 64:
+	format |= BitmapFormatScanlineUnit64;
 	break;
     default:
 	fprintf(stderr, "bogus scanline unit value: %d\n", scan_unit);
