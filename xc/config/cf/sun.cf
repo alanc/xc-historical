@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.85 93/07/12 19:57:07 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.86 93/08/18 20:58:03 kaleb Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.2
@@ -33,6 +33,9 @@ XCOMM operating system:  OSName
 #if OSMajorVersion > 4
 #define BootstrapCFlags	  -DSVR4
 #define StandardDefines	  -Dsun -DSVR4
+#if OSMinorVersion > 1
+#define ThreadedX	  YES
+#endif
 #define ArCmdBase	  /usr/ccs/bin/ar
 #define AsCmd		  /usr/ccs/bin/as
 #define CppCmd		  /usr/ccs/lib/cpp
