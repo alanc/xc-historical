@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.3 89/01/06 18:41:51 kit Exp $
- * $Header: buttons.c,v 1.3 89/01/06 18:41:51 kit Exp $
+ * $XConsortium: buttons.c,v 1.4 89/02/14 16:07:53 kit Exp $
+ * $Header: buttons.c,v 1.4 89/02/14 16:07:53 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -138,7 +138,6 @@ ManpageGlobals *
 InitPsuedoGlobals()
 {
   ManpageGlobals * man_globals;
-  int i;
 
   /*
    * Allocate necessary memory. 
