@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.8 89/08/17 18:42:17 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.9 89/08/17 19:22:37 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1321,7 +1321,72 @@ Cardinal * num_params;
   EndAction(ctx);
   _XawTextSetScrollBars(ctx);
 }
+
+/*	Function Name: TransposeCharacters
+ *	Description: Swaps the character to the left of the mark with
+ *                   the character to the right of the mark.
+ *	Arguments: w - the text widget.
+ *                 event - the event that cause this action.
+ *                 params, num_params *** NOT USED ***.
+ *	Returns: none.
+ */
 	     
+/* ARGSUSED */
+static void 
+TransposeCharacters(w, event, params, num_params)
+Widget w;
+XEvent *event;
+String * params;
+Cardinal * num_params;
+{
+  TextWidget ctx = (TextWidget) w;
+  XawTextSource src = ctx->text.source;
+  XawTextPosition start, end;
+  XawTextBlock text;
+  unsigned char * buf, c;
+  int i;
+
+  StartAction(ctx, event);
+
+/*
+ * Get bounds. 
+ */
+
+  start = (*src->Scan) (src, ctx->text.insertPos, XawstPositions, XawsdLeft,
+			1, TRUE);
+  end = (*src->Scan) (src, ctx->text.insertPos, XawstPositions, XawsdRight,
+		      ctx->text.mult, TRUE);
+
+  if ( (start == ctx->text.insertPos) || (end == ctx->text.insertPos) ) 
+    XBell(XtDisplay(w), 0);	/* complain. */
+  else {
+    ctx->text.insertPos = end;
+
+    /*
+     * Retrieve text and swap the characters. 
+     */
+    
+    buf = (unsigned char *) _XawTextGetText(ctx, start, end);
+    text.length = strlen(buf);
+    text.firstPos = 0;
+    text.format = FMT8BIT;
+    
+    c = buf[0];
+    for (i = 1 ; i < text.length ; i++)
+      buf[i - 1] = buf[i];
+    buf[i - 1] = c;
+    
+    /* 
+     * Store new text is source.
+     */
+    
+    text.ptr = (char *) buf;
+    _XawTextReplace (ctx, start, end, &text);
+    
+    XtFree(buf);
+  }
+  EndAction(ctx);
+}
 
 /* Action Table */
 
@@ -1383,6 +1448,7 @@ XtActionsRec textActionsTable[] = {
   {"display-caret",		DisplayCaret},
   {"multiply",		        Multiply},
   {"form-paragraph",            FormParagraph},
+  {"transpose-characters",      TransposeCharacters},
 /* Action to bind special translations for text Dialogs. */
   {"InsertFileAction",          _XawTextInsertFileAction},
   {"DoSearchAction",            _XawTextDoSearchAction},
