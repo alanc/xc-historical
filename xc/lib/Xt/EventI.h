@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.10 89/09/12 16:46:52 swick Exp $ */
+/* $XConsortium: EventI.h,v 1.11 89/12/15 11:31:27 swick Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -41,13 +41,19 @@ typedef struct _XtGrabRec  *XtGrabList;
 
 extern void _XtEventInitialize();
 
-extern void _XtRegisterWindow(); /* window, widget */
-    /* Window window; */
-    /* Widget widget; */
+extern void _XtRegisterWindow(
+#if NeedFunctionPrototypes
+    Window 	/* window */,
+    Widget 	/* widget */
+#endif
+);
 
-extern void _XtUnregisterWindow(); /* window, widget */
-    /* Window window; */
-    /* Widget widget; */
+extern void _XtUnregisterWindow(
+#if NeedFunctionPrototypes
+    Window 	/* window */,
+    Widget 	/* widget */
+#endif
+);
 
 typedef struct _XtEventRec {
      XtEventTable	next;
@@ -68,13 +74,10 @@ typedef struct _XtGrabRec {
 }XtGrabRec;
 
 
-extern void _XtFreeEventTable(); /* event_table */
-    /* XtEventTable *event_table; */
-
-extern void _XtAsyncMainLoop(); /* closure */
-    /* Opaque closure; */
-
-extern void _XtRegisterAsyncHandlers(); /* widget */
-    /* Widget widget; */
+extern void _XtFreeEventTable(
+#if NeedFunctionPrototypes
+    XtEventTable*	/* event_table */
+#endif
+);
 
 #endif /* _Event_h_ */
