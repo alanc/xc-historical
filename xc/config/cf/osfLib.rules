@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.rules,v 1.1 92/06/28 17:44:49 rws Exp $
+XCOMM $XConsortium: osfLib.rules,v 1.2 92/06/28 19:22:36 rws Exp $
 
 /*
  * OSF/1 shared library rules
@@ -61,7 +61,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) -package $@ solist $(REQUIREDLIBS) -lc) @@\
+	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) -package $@ -soname $@ solist $(REQUIREDLIBS) -lc) @@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\
