@@ -1,4 +1,4 @@
-/* $XConsortium: XlcPublic.h,v 1.1 93/09/17 13:31:10 rws Exp $ */
+/* $XConsortium: XlcPublic.h,v 1.2 94/01/20 18:03:16 rws Exp kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -122,6 +122,7 @@ typedef struct _XlcConvMethodsRec{
 #define XlcNCompoundText "compoundText"
 #define XlcNString "string"
 #define XlcNCharSet "charSet"
+#define XlcNCTCharSet "CTcharSet"
 #define XlcNChar "char"
 
 typedef struct _XlcConvRec {
