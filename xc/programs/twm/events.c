@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.140 90/03/16 13:50:31 jim Exp $
+ * $XConsortium: events.c,v 1.141 90/03/19 15:13:10 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.140 90/03/16 13:50:31 jim Exp $";
+"$XConsortium: events.c,v 1.141 90/03/19 15:13:10 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -423,11 +423,6 @@ HandleColormapNotify()
 		    n = i*(i-1)/2 + j;
 		else
 		    n = j*(j-1)/2 + i;
-		if (n >= Scr->cmapInfo.cmaps->number_cwins) {
-		    fprintf (stderr,
-			     "Illegal scoreboard %d (max %d; i %d, j %d)\n",
-			     n, Scr->cmapInfo.cmaps->number_cwins - 1, i, j);
-		}
 		Scr->cmapInfo.cmaps->scoreboard[n] = 1;
 	    } else {
 		if (j != -1 || cevent->state != ColormapUninstalled) {

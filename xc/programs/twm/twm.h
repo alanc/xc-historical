@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.59 90/03/13 11:46:48 jim Exp $
+ * $XConsortium: twm.h,v 1.60 90/03/15 14:22:44 jim Exp $
  *
  * twm include file
  *
@@ -194,6 +194,9 @@ typedef struct Colormaps
     int number_cwins;		/* number of elements in current list */
     char *scoreboard;		/* conflicts between installable colortables */
 } Colormaps;
+
+#define ColormapsScoreboardLength(cm) ((cm)->number_cwins * \
+				       ((cm)->number_cwins - 1) / 2)
 
 /* for each window that is on the display, one of these structures
  * is allocated and linked into a list 

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.150 90/03/16 10:44:34 jim Exp $
+ * $XConsortium: menus.c,v 1.151 90/03/16 11:16:29 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.150 90/03/16 10:44:34 jim Exp $";
+"$XConsortium: menus.c,v 1.151 90/03/16 11:16:29 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2458,7 +2458,8 @@ BumpWindowColormap (tmp, inc)
 	    tmp->cmaps.cwins = cwins;
 
 	    if (tmp->cmaps.number_cwins > 1)
-		bzero (tmp->cmaps.scoreboard, tmp->cmaps.number_cwins);
+		bzero (tmp->cmaps.scoreboard, 
+		       ColormapsScoreboardLength(&tmp->cmaps));
 
 	    if (previously_installed)
 		InstallWindowColormaps(PropertyNotify, (TwmWindow *) NULL);

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.135 90/03/16 12:04:27 jim Exp $
+ * $XConsortium: add_window.c,v 1.136 90/03/16 13:09:40 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.135 90/03/16 12:04:27 jim Exp $";
+"$XConsortium: add_window.c,v 1.136 90/03/16 13:09:40 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1427,7 +1427,8 @@ FetchWmColormapWindows (tmp)
     tmp->cmaps.cwins = cwins;
     tmp->cmaps.number_cwins = number_cmap_windows;
     if (number_cmap_windows > 1)
-	tmp->cmaps.scoreboard = (char *) calloc(1, number_cmap_windows);
+	tmp->cmaps.scoreboard = 
+	  (char *) calloc(1, ColormapsScoreboardLength(&tmp->cmaps));
 		
     if (previously_installed)
 	InstallWindowColormaps(PropertyNotify, (TwmWindow *) NULL);
