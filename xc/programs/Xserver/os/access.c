@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.58 93/09/22 22:17:31 rws Exp $ */
+/* $XConsortium: access.c,v 1.59 93/09/26 15:41:13 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -36,9 +36,6 @@ SOFTWARE.
 #include <sys/ioctl.h>
 #include <X11/Xauth.h>
 #include <ctype.h>
-#ifdef K5AUTH
-#include <X11/k5encode.h>
-#endif
 
 #ifdef TCPCONN
 #include <netinet/in.h>

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: tables.c,v 1.22 93/07/12 09:23:52 dpw Exp $ */
+/* $XConsortium: tables.c,v 1.23 93/09/26 15:41:01 gildea Exp $ */
 
 extern int    ProcInitialConnection(), ProcEstablishConnection();
 
@@ -132,7 +132,7 @@ extern void
     SListHostsReply(), SGetPointerMappingReply(),
     SGetModifierMappingReply(), SGenericReply();
 
-#ifdef K5UUAUTH
+#ifdef K5AUTH
 extern int
     k5_stage1(), k5_stage2(), k5_stage3(), k5_bad();
 #endif
@@ -581,7 +581,7 @@ void (* ReplySwapVector[256]) () =
     NotImplemented
 };
 
-#ifdef K5UUAUTH
+#ifdef K5AUTH
 int (*k5_Vector[256])() =
 {
     k5_bad,

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: k5auth.c,v 1.1 93/09/26 15:41:19 gildea Exp $ */
 /*
  * Kerberos V5 authentication scheme
  *
@@ -24,7 +24,6 @@
 #include "Xproto.h"
 #include "Xfuncs.h"
 #include "dixstruct.h"
-#include "k5encode.h"
 #include <com_err.h>
 #include "Xauth.h"
 

@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.13 93/09/03 08:19:49 dpw Exp $
+ * $XConsortium: auth.c,v 1.14 93/09/26 15:41:07 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,6 +18,9 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+#ifdef K5AUTH
+# include   <krb5/krb5.h>
+#endif
 # include   "X.h"
 # include   "Xauth.h"
 # include   "misc.h"

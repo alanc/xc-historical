@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.51 93/09/26 15:40:49 gildea Exp $ */
+/* $XConsortium: xhost.c,v 11.52 93/09/26 17:15:46 gildea Exp $ */
  
 /*
 
@@ -47,9 +47,6 @@ without express or implied warranty.
 #include <ctype.h>
 #include <X11/Xauth.h>
 #include <X11/Xmu/Error.h>
-#ifdef K5AUTH
-#include <X11/k5encode.h>
-#endif
 
 #ifdef NEEDSOCKETS
 #ifdef att
