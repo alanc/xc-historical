@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.40 91/05/11 21:06:40 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.41 91/05/11 21:10:55 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -72,7 +72,8 @@ typedef struct _ActionsRec {
     ActionPtr next;		/* next action to perform */
 } ActionRec;
 
-typedef struct _StateRec {
+typedef struct _XtStateRec *StatePtr;
+typedef struct _XtStateRec {
     unsigned int	isCycleStart:1;
     unsigned int	isCycleEnd:1;
     TMShortCard		typeIndex;
