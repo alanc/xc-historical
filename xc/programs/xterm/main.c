@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.218 94/02/04 20:31:42 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.219 94/02/04 20:51:08 kaleb Exp $";
 #endif /* lint */
 
 /*
@@ -220,6 +220,9 @@ extern Time_t time ();
 #define pututline pututxline
 #else
 #include <utmp.h>
+#if defined(_CRAY) && OSMAJORVERSION < 8
+extern struct utmp *getutid __((struct utmp *_Id));
+#endif
 #endif
 
 #ifdef LASTLOG
