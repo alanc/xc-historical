@@ -144,7 +144,7 @@ Then the program
 starts up the C preprocessor with the command line
 .RS 5
 .sp 1
-/lib/cpp -I. -I/usr/lib/local/imake.includes -Uunix
+/lib/cpp -I. -Uunix
 .sp 1
 .RE
 perhaps prepending the argument list with the IMAKEINCLUDE
@@ -230,8 +230,6 @@ where ``makeargs'' is replaced with any arguments found on the command line.
 /usr/tmp/tmp-make.\fInnnnnn\fP	temporary input file for make
 .br
 /lib/cpp	default C preprocessor
-.br
-/usr/lib/local/imake.includes	default directory for include files.
 .DT
 .SH "SEE ALSO"
 make(1)
