@@ -315,11 +315,55 @@ polyfillrectangle_test()
 /*****************************/
 
 void
+fillpolygon_test()
+{
+  int i;
+  int points_per_side = 40;
+  int spacing;
+  XPoint *points;
+  XPoint polypoints[3];
+
+  points = (XPoint *) malloc (sizeof(XPoint) * points_per_side * 4);
+  spacing = 400 / points_per_side;
+
+  for (i = 0; i < points_per_side; ++i) {
+    points[i].x = i * spacing;
+    points[i].y = 0;
+
+    points[i + points_per_side].x = 400;
+    points[i + points_per_side].y = i * spacing;
+
+    points[i + 2 * points_per_side].x = 400 - i * spacing;
+    points[i + 2 * points_per_side].y = 400;
+
+    points[i + 3 * points_per_side].x = 0;
+    points[i + 3 * points_per_side].y = 400 - i * spacing;
+  }
+
+  for (i = 0; i < 2 * points_per_side; i += 2) {
+    polypoints[0].x = points[i].x;
+    polypoints[0].y = points[i].y;
+
+    polypoints[1].x = points[i + 2 * points_per_side].x;
+    polypoints[1].y = points[i + 2 * points_per_side].y;
+
+    polypoints[2].x = points[i + 2 * points_per_side + 1].x;
+    polypoints[2].y = points[i + 2 * points_per_side + 1].y;
+
+    XFillPolygon (X.dpy, X.win, X.gc, polypoints, 3, Convex, CoordModeOrigin);
+
+    free(points);
+  }
+}
+
+/*****************************/
+
+void
 genericarc_test(fill)
      Boolean fill;
 {
   XArc *arcs;
-  int num_arcs = 100;
+  int num_arcs = 50;
   int i;
   long totaltime;
   char buf[80];
@@ -458,6 +502,7 @@ run_test()
     case PolySegment:   polysegment_test();        break;
     case PolyRectangle: polyrectangle_test();      break;
     case PolyArc:       polyarc_test();            break;
+    case FillPolygon:   fillpolygon_test();        break;
     case PolyFillRect:  polyfillrectangle_test();  break;
     case PolyFillArc:   polyfillarc_test();        break;
     case PolyText8:     polytext8_test();          break;
