@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.187 91/05/17 18:33:43 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.188 91/05/20 12:05:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -578,18 +578,19 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
     return False;
 }
 
-XrmDatabase _XtParseNameAndDisplay(urlist, num_urs, argc, argv, applName,
-				   displayName)
+XrmDatabase _XtPreparseCommandLine(urlist, num_urs, argc, argv, applName,
+				   displayName, language)
     XrmOptionDescRec *urlist;
     Cardinal num_urs;
     int argc;
     String *argv;
-    String *applName, *displayName;	/* return */
+    String *applName, *displayName, *language;	/* return */
 {
     XrmDatabase db = 0;
     XrmOptionDescRec *options;
     Cardinal num_options;
     XrmName name_list[3];
+    XrmName class_list[3];
     XrmRepresentation type;
     XrmValue val;
     String *targv;
@@ -599,32 +600,37 @@ XrmDatabase _XtParseNameAndDisplay(urlist, num_urs, argc, argv, applName,
     bcopy(argv, targv, sizeof(char *) * argc);
     _MergeOptionTables(opTable, XtNumber(opTable), urlist, num_urs,
 		       &options, &num_options);
-    name_list[0] = XrmPermStringToQuark(".");
-    name_list[2] = NULLQUARK;
+    name_list[0] = class_list[0] = XrmPermStringToQuark(".");
+    name_list[2] = class_list[2] = NULLQUARK;
     XrmParseCommand(&db, options, num_options, ".", &targc, targv);
-    if (! *applName) {
+    if (applName && ! *applName) {
 	name_list[1] = XrmPermStringToQuark("name");
 	if (XrmQGetResource(db, name_list, name_list, &type, &val) &&
 	    type == _XtQString)
 	    *applName = val.addr;
     }
-    if (! *displayName) {
+    if (displayName && ! *displayName) {
 	name_list[1] = XrmPermStringToQuark("display");
 	if (XrmQGetResource(db, name_list, name_list, &type, &val) &&
 	    type == _XtQString)
 	    *displayName = val.addr;
     }
+    name_list[1] = XrmPermStringToQuark("xnlanguage");
+    class_list[1] = XrmPermStringToQuark("XnlLanguage");
+    if (XrmQGetResource(db, name_list, class_list, &type, &val) &&
+	type == _XtQString)
+	*language = val.addr;
+
     XtFree((char *)targv);
     XtFree((char *)options);
     return db;
 }
 
 
-/*ARGSUSED*/
-void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
+void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
 	Display *dpy;
         XtPerDisplay pd;
-	String name, class;
+	String name;
 	XrmOptionDescRec *urlist;
 	Cardinal num_urs;
 	int *argc;
