@@ -279,7 +279,9 @@
 
 (pushnew :xlib *features*)
 
-(defparameter *version* "MIT R4 Beta 10/89")
+(provide 'clx)
+
+(defparameter *version* "MIT R4 Beta 2 11/89")
 
 (defparameter *protocol-major-version* 11.)
 (defparameter *protocol-minor-version* 0)
