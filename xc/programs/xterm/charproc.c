@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.171 91/07/09 19:56:38 gildea Exp $
+ * $XConsortium: charproc.c,v 1.172 91/07/20 19:12:27 gildea Exp $
  */
 
 /*
@@ -2456,6 +2456,12 @@ static Boolean VTSetValues (cur, request, new, args, num_args)
     if(!fonts_redone
        && curvt->screen.cursorcolor != newvt->screen.cursorcolor) {
 	set_cursor_gcs(&newvt->screen);
+	refresh_needed = TRUE;
+    }
+    if(curvt->misc.re_verse != newvt->misc.re_verse) {
+	newvt->flags ^= REVERSE_VIDEO;
+	ReverseVideo(newvt);
+	newvt->misc.re_verse = !newvt->misc.re_verse; /* ReverseVideo toggles */
 	refresh_needed = TRUE;
     }
     if(curvt->screen.mousecolor != newvt->screen.mousecolor
