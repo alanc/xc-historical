@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.12 91/05/12 10:46:19 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.13 91/05/12 16:57:58 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -60,6 +60,12 @@ without express or implied warranty.
 #define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
 
 #endif /* STREAMSCONN else */
+
+/*
+ * If your BytesReadable correctly detects broken connections, then
+ * you should NOT define XCONN_CHECK_FREQ.
+ */
+#define XCONN_CHECK_FREQ 256
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
