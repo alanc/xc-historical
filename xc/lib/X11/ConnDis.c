@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.97 93/08/14 09:33:14 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.98 93/08/14 14:04:31 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,6 +39,7 @@
 #ifdef WIN32
 #undef close
 #define close closesocket
+#define ioctl ioctlsocket
 #define ECONNREFUSED WSAECONNREFUSED
 #endif
 
@@ -752,9 +753,6 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
     /*
      * Set the connection non-blocking since we use select() to block.
      */
-#ifdef WIN32
-    WinSockSetNonblocking(dpy->fd);
-#else
     /* ultrix reads hang on Unix sockets, hpux reads fail */
 #if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
     (void) fcntl (dpy->fd, F_SETFL, O_NONBLOCK);
@@ -765,7 +763,7 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
 	ioctl (dpy->fd, FIOSNBIO, &arg);
     }
 #else
-#if (defined(AIXV3) || defined(uniosu)) && defined(FIONBIO)
+#if (defined(AIXV3) || defined(uniosu) || defined(WIN32)) && defined(FIONBIO)
     {
 	int arg;
 	arg = 1;
@@ -773,7 +771,6 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
     }
 #else
     (void) fcntl (dpy->fd, F_SETFL, FNDELAY);
-#endif
 #endif
 #endif
 #endif
