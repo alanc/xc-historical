@@ -36,7 +36,7 @@
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
 
-ComplexProgramTarget_1(xterm,$(XAWLIB) $(XTOOLLIB) $(XLIB),-ltermcap)
+ComplexProgramTarget_1(xterm,$(XAWLIB) $(XAWLIB) $(XTOOLLIB) $(XLIB),-ltermcap)
 
 SingleProgramTarget(resize,$(OBJS2),,-lc -ltermcap)
 
