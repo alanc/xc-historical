@@ -877,7 +877,7 @@ testcases/pdtwdt/wdt3.c -----
     10:to test pinq_def_disp_upd_st
     11:to test pinq_gdp, pinq_list_avail_gdp
     12:to test pinq_gdp3, pinq_list_avail_gdp3
-    13:to test pinq_gse
+    13:to test pinq_list_avail_gse
 
 testcases/pdtwdt/wdt4.c -----
     wdt4.c : 
