@@ -1,9 +1,10 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.18 89/02/01 18:11:05 rws Exp $ */
+/* $XConsortium: XInitExt.c,v 11.19 89/03/22 11:05:14 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
+#include "Xos.h"
 #include <stdio.h>
 
 extern Bool _XUnknownWireEvent();
@@ -25,13 +26,17 @@ XExtCodes *XInitExtension (dpy, name)
 		&codes.first_error)) return (NULL);
 
 	LockDisplay (dpy);
-	ext = (_XExtension *) Xcalloc (1, sizeof (_XExtension));
+	if (! (ext = (_XExtension *) Xcalloc (1, sizeof (_XExtension))) ||
+	    ! (ext->name = Xmalloc((unsigned) strlen(name) + 1))) {
+	    if (ext) Xfree((char *) ext);
+	    UnlockDisplay(dpy);
+	    return (XExtCodes *) NULL;
+	}
 	codes.extension = dpy->ext_number++;
 	ext->codes = codes;
-	ext->name = Xmalloc((unsigned)strlen(name) + 1);
-	strcpy(ext->name, name);
+	(void) strcpy(ext->name, name);
 
-	/* chain it onto the display list */
+	/* chain it onto the display list */	
 	ext->next = dpy->ext_procs;
 	dpy->ext_procs = ext;
 	UnlockDisplay (dpy);
@@ -45,7 +50,10 @@ XExtCodes *XAddExtension (dpy)
     register _XExtension *ext;
 
     LockDisplay (dpy);
-    ext = (_XExtension *) Xcalloc (1, sizeof (_XExtension));
+    if (! (ext = (_XExtension *) Xcalloc (1, sizeof (_XExtension)))) {
+	UnlockDisplay(dpy);
+	return (XExtCodes *) NULL;
+    }
     ext->codes.extension = dpy->ext_number++;
 
     /* chain it onto the display list */
@@ -210,7 +218,6 @@ Bool (*XESetWireToEvent(dpy, event_number, proc))()
 	oldproc = dpy->event_vec[event_number];
 	dpy->event_vec[event_number] = proc;
 	UnlockDisplay (dpy);
-
 	return (oldproc);
 }
 Status (*XESetEventToWire(dpy, event_number, proc))()
@@ -223,6 +230,7 @@ Status (*XESetEventToWire(dpy, event_number, proc))()
 	LockDisplay (dpy);
 	oldproc = dpy->wire_vec[event_number];
 	dpy->wire_vec[event_number] = proc;
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 int (*XESetError(dpy, extension, proc))()
