@@ -12,7 +12,7 @@ PROGRAMS = viewres listres
 AllTarget($(PROGRAMS))
 
 ComplexProgramTarget_1(listres, $(LOCAL_LIBRARIES), /**/)
-SingleProgramTarget(viewres, $(OBJS2), $(LOCAL_LIBRARIES), /**/)
+NormalProgramTarget(viewres, $(OBJS2), $(DEPLIBS), $(LOCAL_LIBRARIES), /**/)
 SaberProgramTarget(viewres, $(SRCS2), $(OBJS2), $(LOCAL_LIBRARIES), /**/)
 
 /*
