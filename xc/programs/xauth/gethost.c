@@ -127,53 +127,59 @@ static Bool get_dnet_address (name, resultp)
 }
 #endif
 
-char *get_address_info (family, host, lenp)
+char *get_address_info (family, fulldpyname, prefix, host, lenp)
     int family;
+    char *fulldpyname;
+    int prefix;
     char *host;
     int *lenp;
 {
     char *retval = NULL;
     int len;
-    char *cp;
+    char *src;
     unsigned long hostinetaddr;
     struct sockaddr_in inaddr;		/* dummy variable for size calcs */
 #ifdef DNETCONN
     struct dn_naddr dnaddr;
 #endif
 
+    /*
+     * based on the family, set the pointer src to the start of the address
+     * information to be copied and set len to the number of bytes.
+     */
     switch (family) {
-      case FamilyLocal:
-	cp = ((host[0] == '/') ? host + 1 : host);
-	len = strlen (cp);
-	if (len == 0) return NULL;	/* error */
-	if (cp[len-1] == '/') cp[--len] = '\0';
-	if (len == 0) return NULL;	/* error, again */
-	retval = copystring (cp, len);
+      case FamilyLocal:			/* hostname/unix:0 */
+	src = fulldpyname;
+	len = prefix;
 	break;
-      case FamilyInternet:
+      case FamilyInternet:		/* host:0 */
 	if (!get_inet_address (host, &hostinetaddr)) return NULL;
-	retval = malloc (sizeof inaddr.sin_addr);
-	if (retval) {
-	    len = (sizeof inaddr.sin_addr);
-	    bcopy ((char *) &hostinetaddr, (char *) &retval, len);
-	}
+	src = (char *) &hostinetaddr;
+	len = (sizeof inaddr.sin_addr);
 	break;
-      case FamilyDECnet:
+      case FamilyDECnet:		/* host::0 */
 #ifdef DNETCONN
 	if (!get_dnet_address (host, &dnaddr)) return NULL;
-	retval = malloc (sizeof dnaddr);
-	if (retval) {
-	    len = (sizeof dnaddr);
-	    bcopy ((char *) &dnaddr, retval, len);
-	}
+	src = (char *) &dnaddr;
+	len = (sizeof dnaddr);
 	break;
 #else
-	/* fall through */
+	/* fall through since we don't have code for it */
 #endif
       default:
-	return NULL;
+	src = NULL;
+	len = 0;
     }
 
-    *lenp = len;
+    /*
+     * if source was provided, allocate space and copy it
+     */
+    if (len == 0 || !src) return NULL;
+
+    retval = malloc (len);
+    if (retval) {
+	bcopy (src, retval, len);
+	*lenp = len;
+    }
     return retval;
 }
