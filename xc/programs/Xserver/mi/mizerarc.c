@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.5 89/09/04 19:10:18 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.6 89/09/05 00:45:04 keith Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -308,16 +308,6 @@ miZeroCircleDashPts(pGC, arc, points, evenPts, oddPts)
     miStepDash(pGC->dashOffset, &dashIndex, pDash,
 	       numInDashList, &dashOffset);
     dashRemaining = pDash[dashIndex] - dashOffset;
-    if (dashIndex & 1)
-    {
-	pts = oddPts;
-	ptsdelta = -1;
-    }
-    else
-    {
-	pts = evenPts;
-	ptsdelta = 1;
-    }
     for (i = 0; i < 8; i++)
     {
 	seg = ((info.startAngle / EIGHTH) + i) & 7;
@@ -333,25 +323,29 @@ miZeroCircleDashPts(pGC, arc, points, evenPts, oddPts)
 	    lastPt = circPts[seg];
 	    delta = 1;
 	}
-	for (; pt != lastPt; pt += delta)
+	while (pt != lastPt)
 	{
-	    **pts = *pt;
-	    *pts += ptsdelta;
-	    if (!--dashRemaining)
+	    if (dashIndex & 1)
+	    {
+		pts = oddPts;
+		ptsdelta = -1;
+	    }
+	    else
+	    {
+		pts = evenPts;
+		ptsdelta = 1;
+	    }
+	    while ((pt != lastPt) && --dashRemaining >= 0)
+	    {
+		**pts = *pt;
+		*pts += ptsdelta;
+		pt += delta;
+	    }
+	    if (dashRemaining <= 0)
 	    {
 		if (++dashIndex == numInDashList)
 		    dashIndex = 0;
 		dashRemaining = pDash[dashIndex];
-		if (dashIndex & 1)
-		{
-		    pts = oddPts;
-		    ptsdelta = -1;
-		}
-		else
-		{
-		    pts = evenPts;
-		    ptsdelta = 1;
-		}
 	    }
 	}
     }
@@ -373,6 +367,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     int numPts;
     Bool dospans;
     int *widths;
+    unsigned long fgPixel = pGC->fgPixel;
 
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
@@ -412,8 +407,8 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 	    else
 	    {
 		pts = points;
-		oddPts = &points[numPts >> 1];
-		miZeroCircleDashPts(pGC, arc, oddPts, &pts, &oddPts);
+		oddPts = &points[(numPts >> 1) - 1];
+		miZeroCircleDashPts(pGC, arc, oddPts + 1, &pts, &oddPts);
 	    }
 	    n = pts - points;
 	    if (!dospans)
@@ -434,6 +429,42 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 		    }
 		}
 		(*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, FALSE);
+	    }
+	    if (pGC->lineStyle != LineDoubleDash)
+		continue;
+	    if ((pGC->fillStyle == FillSolid) ||
+		(pGC->fillStyle == FillStippled))
+	    {
+		DoChangeGC(pGC, GCForeground, (XID *)&pGC->bgPixel, 0);
+		ValidateGC(pDraw, pGC);
+	    }
+	    pts = &points[numPts >> 1];
+	    oddPts++;
+	    n = pts - oddPts;
+	    if (!dospans)
+		(*pGC->ops->PolyPoint)(pDraw, pGC, CoordModeOrigin, n, oddPts);
+	    else
+	    {
+		if (n > maxWidth)
+		{
+		    while (maxWidth < n)
+			widths[maxWidth++] = 1;
+		}
+		if (pGC->miTranslate)
+		{
+		    for (pt = oddPts; pt != pts; pt++)
+		    {
+			pt->x += pDraw->x;
+			pt->y += pDraw->y;
+		    }
+		}
+		(*pGC->ops->FillSpans)(pDraw, pGC, n, oddPts, widths, FALSE);
+	    }
+	    if ((pGC->fillStyle == FillSolid) ||
+		(pGC->fillStyle == FillStippled))
+	    {
+		DoChangeGC(pGC, GCForeground, (XID *)&fgPixel, 0);
+		ValidateGC(pDraw, pGC);
 	    }
 	}
     }
