@@ -1,7 +1,5 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.53 89/12/20 16:32:37 swick Exp $";
+/* "$XConsortium: Converters.c,v 1.54 90/04/03 10:30:18 swick Exp $"; */
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
-#endif /*lint*/
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -37,8 +35,14 @@ SOFTWARE.
 #include	"IntrinsicI.h"
 #include	"Quarks.h"
 
-static String XtNwrongParameters = "wrongParameters";
-static String XtNconversionError = "conversionError";
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
+static Const String XtNwrongParameters = "wrongParameters";
+static Const String XtNconversionError = "conversionError";
 
 #define	done(type, value) \
 	{							\
@@ -307,7 +311,7 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     return False;
 }
 
-XtConvertArgRec colorConvertArgs[] = {
+XtConvertArgRec Const colorConvertArgs[] = {
     {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen),  sizeof(Screen *)},
     {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.colormap),sizeof(Colormap)}
 };
@@ -431,7 +435,7 @@ static void FreePixel(app, toVal, closure, args, num_args)
 
 
 /* no longer used by Xt, but it's in the spec */
-XtConvertArgRec screenConvertArg[] = {
+XtConvertArgRec Const screenConvertArg[] = {
     {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen), sizeof(Screen *)}
 };
 
@@ -450,7 +454,7 @@ static void FetchDisplayArg(widget, size, value)
     value->addr = (caddr_t)&DisplayOfScreen(XtScreenOfObject(widget));
 }
 
-static XtConvertArgRec displayConvertArg[] = {
+static XtConvertArgRec Const displayConvertArg[] = {
     {XtProcedureArg, (XtPointer)FetchDisplayArg, 0},
 };
 
@@ -464,8 +468,8 @@ static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_re
 
     XtPointer	*closure_ret;
 {
-    static struct _CursorName {
-	char		*name;
+    static Const struct _CursorName {
+	Const char	*name;
 	unsigned int	shape;
     } cursor_names[] = {
 			{"X_cursor",		XC_X_cursor},
@@ -546,7 +550,7 @@ static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_re
 			{"watch",		XC_watch},
 			{"xterm",		XC_xterm},
     };
-    struct _CursorName *nP;
+    Const struct _CursorName *nP;
     char *name = (char *)fromVal->addr;
     register int i;
 
@@ -1096,7 +1100,7 @@ CvtStringToInitialState(dpy, args, num_args, fromVal, toVal, closure_ret)
     return False;
 }
 
-XtConvertArgRec visualConvertArgs[] = {
+XtConvertArgRec Const visualConvertArgs[] = {
     {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen), sizeof(Screen *)},
     {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.depth), sizeof(Cardinal)}
 };
