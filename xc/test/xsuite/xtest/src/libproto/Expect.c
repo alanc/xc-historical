@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: Expect.c,v 1.15 92/06/11 15:50:31 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -40,11 +40,11 @@
  */
 
 /*
- *	$Header: Expect.c 1.18 89/04/17 $
+ *	$Header: Expect.c,v 1.15 92/06/11 15:50:31 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[] = "$Header: Expect.c 1.18 89/04/17 $";
+static char rcsid[] = "$Header: Expect.c,v 1.15 92/06/11 15:50:31 rws Exp $";
 #endif
 
 #include "XstlibInt.h"
@@ -68,11 +68,12 @@ static  xGenericReply dummy_reply = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char *expect_names[4] = {
+static char *expect_names[5] = {
     "REPLY",
     "ERROR",
     "EVENT",
-    "NOTHING"
+    "NOTHING",
+    "EVENTorNOTHING"
 };
 
 static char emsg[132];
@@ -185,7 +186,7 @@ int	client;
  *
  *	Input: client - integer between 0 and MAX_CLIENTS
  *             class -  one of {EXPECT_ERROR, EXPECT_EVENT, EXPECT_REPLY,
- *      			EXPECT_NOTHING}
+ *      			EXPECT_NOTHING, EXPECT_01EVENT}
  *	       type -   protocol type preceded by X_, e.g. X_GrabPointer
  *
  *	Output: response if found, else null
@@ -406,7 +407,7 @@ int     type;     /* request type */
 		}
 		Log_Debug("Received event:");
 		Show_Evt(rep);
-		if ((class == EXPECT_EVENT) &&
+		if ((class == EXPECT_EVENT || class == EXPECT_01EVENT) &&
 			(real_type(rep -> event.u.u.type) == type)) {
 		    done = 1;
 		    done_reason = EXPECT_EVENT;
@@ -441,6 +442,8 @@ int     type;     /* request type */
 	    if (class == EXPECT_NOTHING) {
 		return ((xReply *) & dummy_reply);
 	    }
+	    if (class == EXPECT_01EVENT)
+		return ((xReply *) NULL);
 	    got = enames (EXPECT_NOTHING, 0);
 	    (*Log_Rtn) ("Expect: wanted %s, got %s\n", wanted, got);
 	    return (NULL);
@@ -545,6 +548,7 @@ int     type;
 	namefunc = errorname;
 	break;
     case EXPECT_EVENT:
+    case EXPECT_01EVENT:
 	namefunc = eventname;
 	break;
     case EXPECT_NOTHING:
