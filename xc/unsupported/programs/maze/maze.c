@@ -82,6 +82,13 @@
 #define	DEF_H	        456
 char *defgeo = "636x456+10+10";
   
+#ifdef SYSV
+#define random rand
+#define srandom srand
+#endif
+
+extern long random();
+
 #define	get_random(x)	(random() % (x))
   
 static int logo_x, logo_y;

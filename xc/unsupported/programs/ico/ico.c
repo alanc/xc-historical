@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.25 89/10/08 19:31:17 jim Exp $ */
+/* $XConsortium: ico.c,v 1.26 89/10/17 10:42:27 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -91,6 +91,12 @@ XColor bgcolor,fgcolor;
 
 extern GC XCreateGC();
 extern long time();
+
+#ifdef SYSV
+#define random rand
+#define srandom srand
+#endif
+
 extern long random();
 
 char *ProgramName;
