@@ -1,9 +1,9 @@
 SRCS = dixutils.c globals.c window.c dispatch.c resource.c main.c \
 	 property.c gc.c grabs.c events.c atom.c fonts.c cursor.c glyphcurs.c \
-	 extension.c colormap.c tables.c swapreq.c swaprep.c
+	 colormap.c tables.c swapreq.c swaprep.c
 OBJS = dixutils.o main.o globals.o window.o dispatch.o resource.o \
 	 property.o gc.o grabs.o events.o atom.o fonts.o cursor.o glyphcurs.o \
-	 extension.o colormap.o  initatoms.o tables.o swapreq.o swaprep.o
+	 colormap.o  initatoms.o tables.o swapreq.o swaprep.o
 CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../include -I../../include
 
