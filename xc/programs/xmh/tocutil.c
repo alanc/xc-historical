@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: tocutil.c,v 2.18 88/09/02 17:03:23 swick Exp $";
+static char rcs_id[] = "$XConsortium: tocutil.c,v 2.19 88/09/06 17:23:47 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -111,7 +111,6 @@ void TUScanFileForToc(toc)
     Widget parent, label;
     Scrn scrn;
     char  **argv, str[100];
-    XEvent event;
     if (toc) {
 	TUGetFullFolderInfo(toc);
 	if (toc->num_scrns) scrn = toc->scrn[0];
@@ -197,8 +196,6 @@ void TURedisplayToc(scrn)
   Scrn scrn;
 {
     Toc toc;
-    int lines, height;
-    XtTextPosition position;
     XtTextSource source;
     if (scrn != NULL && scrn->tocwidget != NULL) {
 	toc = scrn->toc;
