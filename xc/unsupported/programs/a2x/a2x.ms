@@ -20,21 +20,21 @@ X Window System is a trademark of the Massachusetts Institute of Technology
 
 A2x is designed to interface DragonDictate to the X Window System.  A2x
 converts the ASCII output of DragonDictate into X device events.  A2x is
-capable of manipulating both the keyboard and the pointer; depending on
-the applications, it is possible to use X hands free through a2x.
+capable of manipulating both the keyboard and the pointer; depending on the
+applications, it is possible to use X hands free through a2x.
 
 A2x requires an X protocol extension to function.  Either the XTEST or
 XTRAP extension can be used.  (There is code for the old XTESTEXT1
-extension in the source, but it has never been tested and probably will
-not work.)  The XTEST extension was developed by the X Consortium for use
-in the X Test Suite.  It is not currently part of R5 or the Test Suite,
+extension in the source, but it has never been tested and probably will not
+work.)  The XTEST extension was developed by the X Consortium for use in
+the X Test Suite.  It is not currently part of R5 or the Test Suite,
 although it is expected that the X Consortium will release it prior to R6.
 The XTRAP extension was developed by Digital Equipment Corp., and public
-versions are available for both R4 and R5.  The XTEST extension is best to
-use, but XTRAP is perfectly adequate.  (The main difference as far as a2x
-is concerned is that XTEST permits time delays inside the X server, while
-with XTRAP the delays are handled on the client side and hence can be
-somewhat less accurate, but time delays are rarely needed.)
+versions are available for both R4 and R5.  A2x was originally written for
+the XTEST extension, but XTRAP is perfectly adequate.  (The main difference
+as far as a2x is concerned is that XTEST permits time delays inside the X
+server, while with XTRAP the delays are handled on the client side and
+hence can be somewhat less accurate, but time delays are rarely needed.)
 
 The Imakefile for a2x comes configured for building with XTEST; to build
 with XTRAP change the line
@@ -54,14 +54,14 @@ may need to create dcom files for switching between PC and X use.
 
 The normal mode of operation is to use a telnet program on the PC, and
 telnet across to your X workstation and log in.  (If you do not have a
-network connection, it should be possible to use a terminal program and
-log in to the workstation using a serial line.  However, performance over
-a serial line will not be as good as over a network.)  In that telnet
-session, run the script "DragonDictate" provided with the a2x
-distribution.  This script simply clears the screen and starts up a2x.
-Clearing the screen is a convenience so that the focus of attention on the
-PC screen will be the DragonDictate menus.  (You can, of course, write
-your own script or simply run a2x directly.)
+network connection, it should be possible to use a terminal program and log
+in to the workstation using a serial line.  However, performance over a
+serial line will not be as good as over a network.)  In that telnet
+session, run the script "DragonDictate" provided with the a2x distribution.
+This script simply clears the screen and starts up a2x.  Clearing the
+screen is a convenience so that the focus of attention on the PC screen
+will be the DragonDictate menus.  (You can, of course, write your own
+script or simply run a2x directly.)
 
 You will probably find it convenient to force the DragonDictate menus to
 appear in a fixed position on the PC screen.  For example, in the
@@ -82,16 +82,16 @@ key on the X keyboard that can be pressed and released to generate that
 character.  If Shift and Control modifiers are necessary to generate the
 character, a2x will automatically press and release keys for those
 modifiers.  For example, for the character 'A', a2x will typically have to
-press a Shift modifier key, press an 'a' key, release the 'a' key, and
-then release the Shift modifier key.
+press a Shift modifier key, press an 'a' key, release the 'a' key, and then
+release the Shift modifier key.
 
 It is not necessary to perform all of your "typing" through a2x; you can
-mix a2x output with direct keyboard typing and direct pointer
-manipulation.  But, you should normally only switch between direct input
-and a2x input when all keys and buttons are in the released state, to
-avoid confusing a2x.  (One simple exception to this rule is that you can
-use a2x to press/release buttons and keys while directly moving the
-pointer with your hand.)
+mix a2x output with direct keyboard typing and direct pointer manipulation.
+But, you should normally only switch between direct input and a2x input
+when all keys and buttons are in the released state, to avoid confusing
+a2x.  (One simple exception to this rule is that you can use a2x to
+press/release buttons and keys while directly moving the pointer with your
+hand.)
 
 A2x interprets the character {c-t} specially; it introduces a control
 sequence for special a2x operations.  The character {c-t} was chosen
@@ -99,8 +99,8 @@ because it occurs infrequently in normal text; escape was not chosen
 because you might use it frequently in voice macros to send escape
 sequences to applications.  There are two types of a2x control sequences:
 {c-t} by a single control character, and {c-t} followed by a string of
-characters terminated by another {c-t}.  Control sequences are described
-in detail below.
+characters terminated by another {c-t}.  Control sequences are described in
+detail below.
 
 A2x also interprets the backspace character ({c-h} or {Backspace})
 specially.  When you make corrections through DragonDictate, e.g., you use
@@ -111,22 +111,22 @@ instead of backspaces.  The default action of a2x is to convert backspace
 to delete; if you do not want this behavior, specify "-b" on the a2x
 command line.
 
-A2x also interprets backspace characters specially in that it assumes
-they are produced by DragonDictate to make corrections and are not
-produced as normal text (i.e., that voice macros do not contain backspace
-characters).  A2x looks at backspace characters in order to undo edits
-(described in more detail below).  As such, it is recommended that you
-change some predefined DragonDictate voice macros to replace backspace
-characters with delete characters or with control sequences to generate
-backspace.  For example, you should modify the keystrokes of the built-in
-commands "[backspace]", "[back 1]", "[back 2]", "[back 3]", "[back 4]",
-and "[back 5]", replacing each "{Backspace}" with "{Del}" to generate
-delete instead of backspace.  If you really want to generate backspace,
-then replace each "{Backspace}" with the sequence "{c-t}{c-c}h" instead.
+A2x also interprets backspace characters specially in that it assumes they
+are produced by DragonDictate to make corrections and are not produced as
+normal text (i.e., that voice macros do not contain backspace characters).
+A2x looks at backspace characters in order to undo edits (described in more
+detail below).  As such, it is recommended that you change some predefined
+DragonDictate voice macros to replace backspace characters with delete
+characters or with control sequences to generate backspace.  For example,
+you should modify the keystrokes of the built-in commands "[backspace]",
+"[back 1]", "[back 2]", "[back 3]", "[back 4]", and "[back 5]", replacing
+each "{Backspace}" with "{Del}" to generate delete instead of backspace.
+If you really want to generate backspace, then replace each "{Backspace}"
+with the sequence "{c-t}{c-c}h" instead.
 
 If you are using a terminal program over a serial line, make sure your
-program is not automatically converting backspace to delete, as this
-will cause a2x's undo mechanism to not work.
+program is not automatically converting backspace to delete, as this will
+cause a2x's undo mechanism to not work.
 
 
 			     Keyboard Control
@@ -142,25 +142,25 @@ example:
 
 	add-word /t "[doit]" "{c-t}Execute{c-t}" invisible
 
-defines a voice macro to press and release a key labeled with the
-"Execute" keysym.  If for some reason your Xlib does not know the string
-name of the keysym you want, you can specify the hexadecimal value of the
-keysym instead.  For example:
+defines a voice macro to press and release a key labeled with the "Execute"
+keysym.  If for some reason your Xlib does not know the string name of the
+keysym you want, you can specify the hexadecimal value of the keysym
+instead.  For example:
 
 	add-word /t "[doit]" "{c-t}FF62{c-t}" invisible
 
 would also specify the Execute keysym.
 
 When the specified key is a modifier key, the key is pressed but is not
-released until after the next nonmodifier key (or button) is pressed.
-This is called "sticky" modifiers.  For example:
+released until after the next nonmodifier key (or button) is pressed.  This
+is called "sticky" modifiers.  For example:
 
 	add-word /t "[meta key]" "{c-t}Meta_L{c-t}" left right
 
 would set the Meta modifier if a key labeled with Meta_L is attached to a
-modifier.  So, you could say "[meta key]" "x" to generate meta-x.
-However, since there are both Meta_L and Meta_R keysyms, and since Meta is
-commonly used, there is a special control sequence for this:
+modifier.  So, you could say "[meta key]" "x" to generate meta-x.  However,
+since there are both Meta_L and Meta_R keysyms, and since Meta is commonly
+used, there is a special control sequence for this:
 
 	{c-t}{c-m}
 
@@ -182,7 +182,8 @@ character keys, but is useful with function keys.  For example:
 
 	add-word /t "[dismiss window]" "{c-t}{c-c}{c-t}{c-s}{c-t}{c-m}{c-t}F3{c-t}" invisible
 
-generates control-shift-meta-F3, which might, e.g., be bound in a .twmrc as:
+generates control-shift-meta-F3, which might, e.g., be bound in a .twmrc
+as:
 
 	"F3" = c|s|m : window	: f.delete
 
@@ -204,17 +205,17 @@ would not output any backspaces.  Instead, you should define:
 	add-word /t "[move right]" "{c-t}{c-c}f" invisible
 
 This way, DragonDictate will output a backspace for correction, and a2x
-will recognize that a control sequence is attached to the 'f' character
-and treat the sequence as a single entity for undo purposes.  Of course,
-if no undo action is desired for control characters, you can represent
-them directly.  For example:
+will recognize that a control sequence is attached to the 'f' character and
+treat the sequence as a single entity for undo purposes.  Of course, if no
+undo action is desired for control characters, you can represent them
+directly.  For example:
 
 	add-word /t "[move end]" "{c-e}" invisible
 
-is reasonable for emacs-style positioning control because there is
-normally no way to return to the original position.  You also don't need
-to expand control characters if there are noncontrol characters in the
-sequence.  For example:
+is reasonable for emacs-style positioning control because there is normally
+no way to return to the original position.  You also don't need to expand
+control characters if there are noncontrol characters in the sequence.  For
+example:
 
 	add-word /t "[split window]" "{c-x}2" invisible
 
@@ -250,8 +251,8 @@ For example:
 
 	add-word /t "[stop moving]" "{c-t}{c-q}" invisible
 
-The autorepeat control sequence also controls pointer motion; the two
-zeros given in the keyboard autorepeat sequence can be replaced with other
+The autorepeat control sequence also controls pointer motion; the two zeros
+given in the keyboard autorepeat sequence can be replaced with other
 values, as described further below.
 
 
@@ -313,9 +314,9 @@ location with the control sequence:
 
 	{c-t}{c-l}w<digit>{c-t}
 
-If the selected window has moved on the screen, the pointer will still
-warp to the correct position relative to its new origin.  Example voice
-macros using these control sequences:
+If the selected window has moved on the screen, the pointer will still warp
+to the correct position relative to its new origin.  Example voice macros
+using these control sequences:
 
 	add-word /t "[set location]" "{c-t}{c-l}s0{c-t}" invisible
 	add-word /t "[go back]" "{c-t}{c-l}w0{c-t}" invisible
@@ -343,17 +344,17 @@ described earlier can also be used for pointer motion:
 	{c-t}{c-a}<kdelay> <delta> <pdelay>{c-t}
 
 where <kdelay> is the keyboard autorepeat rate in seconds (as before),
-<delta> is a nonnegative integer specifying a new distance, and <pdelay>
-is the pointer autorepeat rate in seconds.  Both <kdelay> and <pdelay> are
-floating point numbers.  The <kdelay> value is only used if the event
-being autorepeated is a keystroke; the <delta> and <pdelay> values are
-only used if the event being autorepeated is pointer motion.  When any
-value is 0, it means "don't change the value from what it already is".  If
-a nonzero <delta> value is specified, it becomes the new magnitude of
-motion in both x and y dimensions.  For example, if the current motion is
-5 pixels in the x dimension, and -4 pixels in the y dimension, and a
-<delta> of 7 is given, the new motion will be 7 pixels in the x dimension
-and -7 pixels in the y dimension.
+<delta> is a nonnegative integer specifying a new distance, and <pdelay> is
+the pointer autorepeat rate in seconds.  Both <kdelay> and <pdelay> are
+floating point numbers.  The <kdelay> value is only used if the event being
+autorepeated is a keystroke; the <delta> and <pdelay> values are only used
+if the event being autorepeated is pointer motion.  When any value is 0, it
+means "don't change the value from what it already is".  If a nonzero
+<delta> value is specified, it becomes the new magnitude of motion in both
+x and y dimensions.  For example, if the current motion is 5 pixels in the
+x dimension, and -4 pixels in the y dimension, and a <delta> of 7 is given,
+the new motion will be 7 pixels in the x dimension and -7 pixels in the y
+dimension.
 
 Examples of using autorepeat:
 
@@ -378,8 +379,8 @@ The normal mode for using DragonDictate with X is to have DragonDictate's
 without confirmation.  But, when DragonDictate matches on the wrong
 utterance, the wrong action is executed.  Although DragonDictate will
 generate backspaces when you use "choose <n>" to make corrections, these
-backspaces seldom correctly undo the action that was executed.  There is
-no perfect solution to this problem, but a2x has an undo facility that can
+backspaces seldom correctly undo the action that was executed.  There is no
+perfect solution to this problem, but a2x has an undo facility that can
 help in many cases.
 
 When a2x starts up, it reads an undo file.  By default, it reads the file
@@ -489,7 +490,7 @@ same as for the top-level jump options.  For example:
 
 The distance between a window and the pointer position is computed by using
 the closest visible point of the window.  When computing the distance
-metricdistance, a2x employs a scale factor in the "off axis" to skew the
+metric, a2x employs a scale factor in the "off axis" to skew the
 computation, which favors windows farther away but in the desired direction
 over windows closer but in the wrong direction.  For example, if you are
 moving in the "up" direction, the distance between two points is computed
@@ -594,9 +595,9 @@ P<name>			require name prefix
 P.<class>		require class prefix
 P<name>.<class>		require name prefix and class prefix
 
-These options have the same interpretation as in the jump control
-sequence.  If no option is supplied, any window that is mapped/unmapped
-will satisfy the trigger.
+These options have the same interpretation as in the jump control sequence.
+If no option is supplied, any window that is mapped/unmapped will satisfy
+the trigger.
 
 To establish a trigger for a selection ownership, use the control sequence:
 
@@ -823,4 +824,3 @@ With this patch, you can use translations such as:
 	!:Ctrl<Key>w: extend-end(PRIMARY, CUT_BUFFER0)kill-selection() \n\
 	!:Meta Ctrl<Key>w: extend-end(PRIMARY, CUT_BUFFER0)\n\
 	!:Meta Ctrl<Key>y: insert-selection(PRIMARY, CUT_BUFFER0)
-
