@@ -19,8 +19,6 @@ IMPORTS1 = \
 	$(XLIBSRC)/Xutil.h \
 	$(XMUSRC)/Xmu.h \
 	$(FONTSRC)/cursorfont.h \
-	$(TOOLKITSRC)/CompObjP.h \
-	$(TOOLKITSRC)/CompObj.h \
 	$(TOOLKITSRC)/Composite.h \
 	$(TOOLKITSRC)/CompositeP.h \
 	$(TOOLKITSRC)/Constraint.h \
@@ -29,19 +27,13 @@ IMPORTS1 = \
 	$(TOOLKITSRC)/CoreP.h \
 	$(TOOLKITSRC)/Intrinsic.h \
 	$(TOOLKITSRC)/IntrinsicP.h \
-	$(TOOLKITSRC)/Object.h \
-	$(TOOLKITSRC)/ObjectP.h \
 	$(TOOLKITSRC)/Quarks.h \
-	$(TOOLKITSRC)/RectObj.h \
-	$(TOOLKITSRC)/RectObjP.h \
 	$(TOOLKITSRC)/Selection.h \
 	$(TOOLKITSRC)/Shell.h \
 	$(TOOLKITSRC)/ShellP.h \
 	$(TOOLKITSRC)/StringDefs.h \
 	$(TOOLKITSRC)/Vendor.h \
-	$(TOOLKITSRC)/VendorP.h \
-	$(TOOLKITSRC)/WindowObj.h \
-	$(TOOLKITSRC)/WindowObjP.h
+	$(TOOLKITSRC)/VendorP.h
 
 IMPORTS2 = \
 	$(AWIDGETSRC)/AsciiText.h \
