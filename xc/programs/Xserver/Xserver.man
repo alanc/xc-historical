@@ -1,4 +1,4 @@
-.TH XSERVER 1 "1 March 1988"  "X Version 11"
+.TH XSERVER 1 "26 October 1988"  "X Version 11"
 .SH NAME
 X - X Window System server
 .SH SYNOPSIS
