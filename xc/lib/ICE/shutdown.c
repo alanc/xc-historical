@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.4 93/09/13 16:51:52 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.5 93/09/13 17:55:19 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -164,14 +164,11 @@ Bool	ignoreWatchProcs;
 {
     if (!ignoreWatchProcs)
     {
-	_IceWatchProc *watchProc = _IceWatchProcs;
+	/*
+	 * Notify the watch procedures that an iceConn was closed.
+	 */
 
-	while (watchProc)
-	{
-	    (*watchProc->watch_proc) (iceConn,
-		watchProc->client_data, False, &iceConn->watch_data);
-	    watchProc = watchProc->next;
-	}
+	_IceConnectionClosed (iceConn);
     }
 
     if (iceConn->iceConn_type == 1)
