@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.100 89/10/03 15:28:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.101 89/10/03 16:16:27 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -433,7 +433,7 @@ static void InitializeHash()
 
 static Region nullRegion;
 
-static void DispatchEvent(event, widget, mask)
+static Boolean DispatchEvent(event, widget, mask)
     register XEvent    *event;
     Widget    widget;
     unsigned long mask;
@@ -443,6 +443,7 @@ static void DispatchEvent(event, widget, mask)
     XtPointer closure[100];
     int numprocs, i;
     XEvent nextEvent;
+    Boolean was_dispatched = False;
 
     if ( (mask == ExposureMask) ||
 	 ((event->type == NoExpose) && NO_EXPOSE) ||
@@ -462,6 +463,7 @@ static void DispatchEvent(event, widget, mask)
 		static void CompressExposures();
 		CompressExposures(event, widget);
 	    }
+	    was_dispatched = True;
 	}
     }
 
@@ -474,7 +476,7 @@ static void DispatchEvent(event, widget, mask)
 		  event->xcrossing.subwindow == nextEvent.xcrossing.subwindow){
 		/* skip the enter/leave pair */
 		XNextEvent(event->xcrossing.display, &nextEvent);
-		return;
+		return False;
 	    }
 	}
     }
@@ -494,6 +496,7 @@ static void DispatchEvent(event, widget, mask)
 
     if ((mask == VisibilityChangeMask) &&
         XtClass(widget)->core_class.visible_interest) {
+	    was_dispatched = True;
 	    /* our visibility just changed... */
 	    switch (((XVisibilityEvent *)event)->state) {
 		case VisibilityUnobscured:
@@ -530,6 +533,7 @@ static void DispatchEvent(event, widget, mask)
 	for (i=0 ; i < numprocs && continue_to_dispatch; i++)
 	    (*(proc[i]))(widget, closure[i], event, &continue_to_dispatch);
     }
+    return (numprocs > 0 || was_dispatched);
 }
 
 /*
@@ -868,7 +872,7 @@ static Widget LookupSpringLoaded()
     return NULL;
 }
 
-static void DecideToDispatch(event)
+static Boolean DecideToDispatch(event)
     XEvent  *event;
 {
     register    Widget widget;
@@ -902,58 +906,63 @@ static void DecideToDispatch(event)
     if (time) _XtGetPerDisplay(event->xany.display)->last_timestamp = time;
 
     if (widget == NULL) {
-	if (grabType != remap) return;
+	if (grabType != remap) return False;
 	/* event occurred in a non-widget window, but we've promised also
 	   to dispatch it to the nearest accessible spring_loaded widget */
 	else if ((widget = LookupSpringLoaded()) != NULL)
-	    DispatchEvent(event, widget, mask);
-	return;
+	    return DispatchEvent(event, widget, mask);
+	return False;
     }
 
     switch(grabType) {
 	case pass:
-	    DispatchEvent(event, widget, mask);
-	    return;
+	    return DispatchEvent(event, widget, mask);
 
 	case ignore:
-	    if ((grabList == NULL || OnGrabList(widget)) && 
-		    XtIsSensitive(widget)) DispatchEvent(event, widget, mask);
-	    return;
+	    if ((grabList == NULL || OnGrabList(widget))
+		&& XtIsSensitive(widget)) {
+		return DispatchEvent(event, widget, mask);
+	    }
+	    return False;
 
 	case remap:
 
+	    {
+		Boolean was_dispatched = False;
+
 #define IsKeyEvent (mask & (KeyPressMask | KeyReleaseMask))
 
-	    /* If a focus event, see if it has been focussed.  */
+		/* If a focus event, see if it has been focussed.  */
 
-	    if (IsKeyEvent) dspWidget = FindFocusWidget(widget);
-	    else dspWidget = widget;
+		if (IsKeyEvent) dspWidget = FindFocusWidget(widget);
+		else dspWidget = widget;
 
-	    /* fetch this first in case the modal list changes */
-	    widget = LookupSpringLoaded();
+		/* fetch this first in case the modal list changes */
+		widget = LookupSpringLoaded();
 
-	    if ((grabList == NULL || OnGrabList(dspWidget)) &&
-		    XtIsSensitive(dspWidget)) {
-		DispatchEvent(event, dspWidget, mask);
-	    }
+		if ((grabList == NULL || OnGrabList(dspWidget)) &&
+			XtIsSensitive(dspWidget)) {
+		    was_dispatched = DispatchEvent(event, dspWidget, mask);
+		}
 
-	    /* Also dispatch to nearest accessible spring_loaded. */
-	    if (widget != NULL && widget != dspWidget)
-		DispatchEvent(event, widget, mask);
+		/* Also dispatch to nearest accessible spring_loaded. */
+		if (widget != NULL && widget != dspWidget) {
+		    was_dispatched |= DispatchEvent(event, widget, mask);
+		}
 
-	    return;
-
+		return was_dispatched;
 #undef IsKeyEvent
+	    }
     }
+    /* should never reach here */
+    return False;
 }
 
-void XtDispatchEvent (event)
+Boolean XtDispatchEvent (event)
     XEvent  *event;
 {
     CallbackList *oldDestroyList, destroyList;
-
-    /* Skip null events from XtNextEvent */
-    if (event->type == 0) return;
+    Boolean was_dispatched;
 
     /*
      * To make recursive XtDispatchEvent work, we need to do phase 2 destroys
@@ -972,7 +981,7 @@ void XtDispatchEvent (event)
     _XtDestroyList = &destroyList;
     destroyList = NULL;
 
-    DecideToDispatch(event);
+    was_dispatched = DecideToDispatch(event);
 
     /* To accomodate widgets destroying other widgets in their destroy
      * callbacks, we have to make this a loop */
@@ -991,6 +1000,7 @@ void XtDispatchEvent (event)
 	if (_XtAppDestroyCount != 0) _XtDestroyAppContexts();
 	if (_XtDpyDestroyCount != 0) _XtCloseDisplays();
     }
+    return was_dispatched;
 }
 
 static Boolean RemoveGrab();
