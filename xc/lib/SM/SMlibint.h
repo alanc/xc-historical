@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.14 94/03/16 15:49:58 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.15 94/03/18 10:26:51 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -20,8 +20,22 @@ Author: Ralph Mor, X Consortium
 #ifndef _SMLIBINT_H_
 #define _SMLIBINT_H_
 
-#include <X11/ICE/ICElibint.h>
+#include <X11/Xos.h>
+#include <X11/Xfuncs.h>
+#include <X11/Xmd.h>
+#include <X11/ICE/ICEmsg.h>
+#include <X11/ICE/ICEproto.h>
 #include <X11/SM/SMproto.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+#endif
+
+#ifndef NULL
+#define NULL 0
+#endif
 
 
 /*
@@ -33,10 +47,128 @@ Author: Ralph Mor, X Consortium
 
 
 /*
+ * Pad to a 64 bit boundary
+ */
+
+#define PAD64(_bytes) ((8 - ((unsigned int) (_bytes) % 8)) % 8)
+
+#define PADDED_BYTES64(_bytes) (_bytes + PAD64 (_bytes))
+
+
+/*
+ * Pad to 32 bit boundary
+ */
+
+#define PAD32(_bytes) ((4 - ((unsigned int) (_bytes) % 4)) % 4)
+
+#define PADDED_BYTES32(_bytes) (_bytes + PAD32 (_bytes))
+
+
+/*
+ * Number of 8 byte units in _bytes.
+ */
+
+#define WORD64COUNT(_bytes) (((unsigned int) ((_bytes) + 7)) >> 3)
+
+
+/*
  * Compute the number of bytes for an ARRAY8 representation
  */
 
 #define ARRAY8_BYTES(_len) (4 + _len + PAD64 (4 + _len))
+
+
+
+/*
+ * Byte swapping
+ */
+
+/* byte swap a long literal */
+#define lswapl(_val) ((((_val) & 0xff) << 24) |\
+		   (((_val) & 0xff00) << 8) |\
+		   (((_val) & 0xff0000) >> 8) |\
+		   (((_val) >> 24) & 0xff))
+
+/* byte swap a short literal */
+#define lswaps(_val) ((((_val) & 0xff) << 8) | (((_val) >> 8) & 0xff))
+
+
+/*
+ * STORE macros
+ */
+
+#ifndef WORD64
+
+#define STORE_CARD32(_pBuf, _val) \
+{ \
+    *((CARD32 *) _pBuf) = _val; \
+    _pBuf += 4; \
+}
+
+#else /* WORD64 */
+
+#define STORE_CARD32(_pBuf, _val) \
+{ \
+    struct { \
+        int value   :32; \
+    } _d; \
+    _d.value = _val; \
+    memcpy (_pBuf, &_d, 4); \
+    _pBuf += 4; \
+}
+
+#endif /* WORD64 */
+
+
+/*
+ * EXTRACT macros
+ */
+
+#ifndef WORD64
+
+#define EXTRACT_CARD16(_pBuf, _swap, _val) \
+{ \
+    _val = *((CARD16 *) _pBuf); \
+    _pBuf += 2; \
+    if (_swap) \
+        _val = lswaps (_val); \
+}
+
+#define EXTRACT_CARD32(_pBuf, _swap, _val) \
+{ \
+    _val = *((CARD32 *) _pBuf); \
+    _pBuf += 4; \
+    if (_swap) \
+        _val = lswapl (_val); \
+}
+
+#else /* WORD64 */
+
+#define EXTRACT_CARD16(_pBuf, _swap, _val) \
+{ \
+    _val = *(_pBuf + 0) & 0xff; 	/* 0xff incase _pBuf is signed */ \
+    _val <<= 8; \
+    _val |= *(_pBuf + 1) & 0xff;\
+    _pBuf += 2; \
+    if (_swap) \
+        _val = lswaps (_val); \
+}
+
+#define EXTRACT_CARD32(_pBuf, _swap, _val) \
+{ \
+    _val = *(_pBuf + 0) & 0xff; 	/* 0xff incase _pBuf is signed */ \
+    _val <<= 8; \
+    _val |= *(_pBuf + 1) & 0xff;\
+    _val <<= 8; \
+    _val |= *(_pBuf + 2) & 0xff;\
+    _val <<= 8; \
+    _val |= *(_pBuf + 3) & 0xff;\
+    _pBuf += 4; \
+    if (_swap) \
+        _val = lswapl (_val); \
+}
+
+#endif /* WORD64 */
 
 
 /*
