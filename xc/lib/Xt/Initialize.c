@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.179 91/03/27 17:58:16 gildea Exp $ */
+/* $XConsortium: Initialize.c,v 1.180 91/04/01 16:31:58 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,6 +33,7 @@ SOFTWARE.
 #include "Quarks.h"
 #include <pwd.h>
 #include <stdio.h>
+#include <X11/Xlocale.h>
 
 #if __STDC__
 #define Const const
@@ -282,6 +283,57 @@ static XrmDatabase CopyDB(db)
     return copy;
 }
 
+/*ARGSUSED*/
+String XtDefaultLanguageProc(dpy, xnl, closure)
+    Display   *dpy;
+    String    xnl;
+    XtPointer closure;
+{
+    return (xnl ?  xnl : setlocale(LC_ALL, NULL));
+}
+
+#if NeedFunctionPrototypes
+XtLangProc XtSetLanguageProc(
+    XtAppContext      app,
+    XtLangProc        proc,
+    XtPointer         closure
+    )
+#else
+XtLangProc XtSetLanguageProc(app, proc, closure)
+    XtAppContext      app;
+    XtLangProc        proc;
+    XtPointer         closure;
+#endif
+{
+    XtLangProc	old;
+
+    if (!proc) {
+	proc = XtDefaultLanguageProc;
+	closure = NULL;
+    }
+
+    if (app) {
+	/* set langProcRec only for this application context */
+        old = app->langProcRec.proc;
+        app->langProcRec.proc = proc;
+        app->langProcRec.closure = closure;
+    } else {    
+	/* set langProc for all application contexts */
+        ProcessContext process = _XtGetProcessContext();
+
+        old = process->globalLangProcRec.proc;
+	process->globalLangProcRec.proc = proc;
+	process->globalLangProcRec.closure = closure;
+        app = process->appContextList;
+        while (app) {
+            app->langProcRec.proc = proc;
+            app->langProcRec.closure = closure;
+	    app = app->next;
+        }
+    }
+    return (old);
+}
+
 XrmDatabase XtScreenDatabase(screen)
     Screen *screen;
 {
@@ -324,12 +376,15 @@ XrmDatabase XtScreenDatabase(screen)
 	    &&
 	    (!user_db ||
 	     !XrmQGetResource(user_db, names, classes, &type, &value))){
-	    if (!(pd->language = getenv("LANG")))
-		pd->language = "";
+	    pd->language = NULL;
 	} else {
 	    pd->language = (char *)value.addr;
 	}
     }
+    pd->language = (*pd->appContext->langProcRec.proc)
+	           (dpy, pd->language, pd->appContext->langProcRec.closure);
+    pd->language = XtNewString(pd->language);
+
     if (ScreenCount(dpy) == 1) {
 	db = pd->cmd_db;
 	pd->cmd_db = NULL;
