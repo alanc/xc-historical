@@ -221,6 +221,15 @@ than in VT102 mode.  Switching between the two windows is done using the
 .B \+t
 This option indicates that \fIxterm\fP should start in VT102 mode.
 .TP 8
+.BI \-tm " string"
+This option specifies a serious of terminal setting keywords followed by the
+characters that should be bound to those functions, similar to the \fIstty\fP
+program.  This is ignored when \fB\-L\fP is given since \fIgetty\fP resets
+the terminal.  Allowable keywords include: intr, quit, erase, kill, eof,
+eol, swtch, start, stop, brk, susp, dsusp, rprnt, flush, weras, and lnext.
+Control characters may be specified as ^char (e.g. ^c or ^u) and ^? may be 
+used to indicate delete.
+.TP 8
 .BI \-tn " name"
 This option specifies the name of the terminal type to be set in the TERM
 environment variable.  This terminal type must exist in the \fItermcap(5)\fP
@@ -350,6 +359,17 @@ Specifies the terminal type name to be set in the TERM environment variable.
 .B "title (\fPclass\fB Title)"
 Specifies a string that may be used by the window manager when displaying
 this application.
+.TP 8
+.B "ttyModes (\fPclass\fB TtyModes)"
+Specifies a string containing terminal setting keywords and the characters
+to which they may be bound.  This option is ignored when \fB\-L\fP is given 
+since 
+\fIgetty\fP resets the terminal.  Allowable keywords include: intr, quit, 
+erase, kill, eof, eol, swtch, start, stop, brk, susp, dsusp, rprnt, flush, 
+weras, and lnext.  Control characters may be specified as ^char (e.g. ^c or ^u)
+and ^? may be used to indicate delete.  This is very useful for overriding
+the default terminal settings without having to do an \fIstty\fP every time
+an \fIxterm\fP is started.
 .TP 8
 .B "utmpInhibit (\fPclass\fB UtmpInhibit)"
 Specifies whether or not \fIxterm\fP should try to record the user's terminal
