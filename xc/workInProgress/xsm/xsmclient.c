@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.3 93/11/16 16:28:44 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.4 93/12/30 11:09:26 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -75,18 +75,22 @@ Widget		    dialogOkButton;
 Widget		    dialogCancelButton;
 
 static XrmOptionDescRec options[] = {
-{ "-smid", "*smid", XrmoptionSepArg, (caddr_t) NULL },
+    { "-smid", "*smid", XrmoptionSepArg, (caddr_t) NULL },
+    { "-verbose", "*verbose", XrmoptionSepArg, True},
 };
 
 /*	resources specific to the application */
 static struct resources {
     String	smid;
+    Boolean	verbose;
 } appResources;
 
 #define offset(field) XtOffsetOf(struct resources, field)
 static XtResource Resources[] = {
 {"smid",		"Smid",		XtRString,	sizeof(String),
      offset(smid),	XtRString,	(XtPointer) NULL},
+{"verbose",		"Verbose",	XtRBoolean,	sizeof(Boolean),
+     offset(verbose),	XtRImmediate,	False},
 };
 #undef offset
 
@@ -184,12 +188,15 @@ SaveState()
 	Environment.vals[i].value = environ[i];
 	Environment.vals[i].length = strlen(environ[i]);
     }
-    printf("%s:  %d Environment entries\n", clientId, Environment.num_vals);
+    if (appResources.verbose)
+	printf("%s:  %d Environment entries\n",
+	       clientId, Environment.num_vals);
 
     props[nprops++] = &Environment;
 
     SmcSetProperties (smcConn, nprops, props);
-    printf("%s:  Set %d properties\n", clientId, nprops);
+    if (appResources.verbose)
+	printf("%s:  Set %d properties\n", clientId, nprops);
 
     free((char *)RestartCommand.vals);
     free((char *)Environment.vals);
@@ -248,20 +255,22 @@ Bool	  fast;
     else
 	_fast = "False";
 
-    printf ("Client Id = %s, received SAVE YOURSELF [", clientId);
-
-    printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
-    printf ("Interact Style = %s, Fast = %s]\n", _interactStyle, _fast);
+    if (appResources.verbose) {
+	printf ("Client Id = %s, received SAVE YOURSELF [", clientId);
+	printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
+	printf ("Interact Style = %s, Fast = %s]\n", _interactStyle, _fast);
+    }
 
     shutdownInProgress = shutdown;
     if (interactStyle == SmInteractStyleAny)
     {
 	SmcInteractRequest (smcConn, SmDialogNormal, InteractProc, NULL);
 
-	printf (
-	    "Client Id = %s, sent INTERACT REQUEST [Dialog Type = Normal]\n",
-	    clientId);
-
+	if (appResources.verbose) {
+	    printf(
+            "Client Id = %s, sent INTERACT REQUEST [Dialog Type = Normal]\n",
+		   clientId);
+	}
 	interactRequestType = SmDialogNormal;
 	saveYourselfDone = False;
     }
@@ -269,10 +278,11 @@ Bool	  fast;
     {
 	SmcInteractRequest (smcConn, SmDialogError, InteractProc, NULL);
 
-	printf (
+	if (appResources.verbose) {
+	    printf(
 	    "Client Id = %s, sent INTERACT REQUEST [Dialog Type = Errors]\n",
-	    clientId);
-
+		   clientId);
+	}
 	interactRequestType = SmDialogError;
 	saveYourselfDone = False;
     }
@@ -282,13 +292,17 @@ Bool	  fast;
 	SmcSaveYourselfDone (smcConn, True);
 	saveYourselfDone = True;
 
-	printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
-	    clientId);
+	if (appResources.verbose) {
+	    printf(
+            "Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
+		   clientId);
+	}
     }
 
     if(shutdownInProgress) XtSetSensitive (mainWindow, 0);
 
-    printf ("\n");
+    if (appResources.verbose)
+	printf ("\n");
 }
 
 
@@ -303,7 +317,8 @@ SmPointer client_data;
     Position	x, y, rootx, rooty;
     char        *label;
    
-    printf ("Client Id = %s, received INTERACT\n", clientId);
+    if (appResources.verbose)
+	printf ("Client Id = %s, received INTERACT\n", clientId);
 
     if (shutdownInProgress && interactRequestType == SmDialogNormal)
 	XtSetSensitive (dialogCancelButton, 1);
@@ -348,8 +363,10 @@ SmPointer client_data;
 SmcConn smcConn;
 
 {
-    printf ("Client Id = %s, received DIE\n", clientId);
-    printf ("\n");
+    if (appResources.verbose) {
+	printf ("Client Id = %s, received DIE\n", clientId);
+	printf ("\n");
+    }
 
     SmcCloseConnection (smcConn, 0, NULL);
 
@@ -367,8 +384,10 @@ SmcConn   smcConn;
 SmPointer client_data;
 
 {
-    printf ("Client Id = %s, received SHUTDOWN CANCELLED\n", clientId);
-    printf ("\n");
+    if (appResources.verbose) {
+	printf ("Client Id = %s, received SHUTDOWN CANCELLED\n", clientId);
+	printf ("\n");
+    }
 
     shutdownInProgress = False;
     XtSetSensitive (mainWindow, 1);
@@ -378,9 +397,11 @@ SmPointer client_data;
 	SaveState();
 	SmcSaveYourselfDone (smcConn, True);
 
-	printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
-	    clientId);
-
+	if (appResources.verbose) {
+	    printf(
+            "Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
+		   clientId);
+	}
 	saveYourselfDone = True;
     }
 }
@@ -425,27 +446,30 @@ SmProp    **props;
 {
     int i, j;
 
-    printf ("Client Id = %s, there are %d properties set:\n",
-	clientId, numProps);
-    printf ("\n");
-
-    for (i = 0; i < numProps; i++)
-    {
-	printf ("Name:		%s\n", props[i]->name);
-	printf ("Type:		%s\n", props[i]->type);
-	printf ("Num values:	%d\n", props[i]->num_vals);
-	for (j = 0; j < props[i]->num_vals; j++)
-	{
-	    printf ("Value %d:	%s\n", j + 1,
-		(char *) props[i]->vals[j].value);
-	}
+    if (appResources.verbose) {
+	printf ("Client Id = %s, there are %d properties set:\n",
+		clientId, numProps);
 	printf ("\n");
+    }
 
+    for (i = 0; i < numProps; i++) {
+	if (appResources.verbose) {
+	    printf ("Name:		%s\n", props[i]->name);
+	    printf ("Type:		%s\n", props[i]->type);
+	    printf ("Num values:	%d\n", props[i]->num_vals);
+	    for (j = 0; j < props[i]->num_vals; j++)
+		    {
+			printf ("Value %d:	%s\n", j + 1,
+				(char *) props[i]->vals[j].value);
+		    }
+	    printf ("\n");
+	}
 	SmFreeProperty (props[i]);
     }
 
     free ((char *) props);
-    printf ("\n");
+    if (appResources.verbose)
+	printf ("\n");
 }
 
 
@@ -482,8 +506,9 @@ XtPointer 	callData;
 
     SmcCloseConnection (smcConn, 2, reasonMsg);
 
-    printf ("Quit\n");
-
+    if (appResources.verbose)
+	printf ("Quit\n");
+			       
     exit (0);
 }
 
@@ -500,15 +525,20 @@ XtPointer 	callData;
     XtPopdown (dialogPopup);
 
     SmcInteractDone (smcConn, False);
-    printf ("Client Id = %s, sent INTERACT DONE [Cancel Shutdown = False]\n",
-	clientId);
+    if (appResources.verbose) {
+	printf(
+        "Client Id = %s, sent INTERACT DONE [Cancel Shutdown = False]\n",
+	       clientId);
+    }
 
     SaveState();
 
     SmcSaveYourselfDone (smcConn, True);
-    printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
-	clientId);
-    printf ("\n");
+    if (appResources.verbose) {
+	printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
+		clientId);
+	printf ("\n");
+    }
 
     saveYourselfDone = True;
 
@@ -531,16 +561,20 @@ XtPointer 	callData;
     XtPopdown (dialogPopup);
 
     SmcInteractDone (smcConn, True);
-    printf ("Client Id = %s, sent INTERACT DONE [Cancel Shutdown = True]\n",
-	clientId);
+    if (appResources.verbose) {
+	printf (
+        "Client Id = %s, sent INTERACT DONE [Cancel Shutdown = True]\n",
+		clientId);
+    }
 
     SmcSaveYourselfDone (smcConn, True);
-    printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
-	clientId);
-    printf ("\n");
+    if (appResources.verbose) {
+	printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
+		clientId);
+	printf ("\n");
+    }
 
     saveYourselfDone = True;
-
     XtSetSensitive (mainWindow, 1);
 }
 
@@ -709,17 +743,19 @@ char **argv;
     if ((smcConn = SmcOpenConnection (NULL, &callbacks,
 	appResources.smid, &clientId, 256, errorString)) == NULL)
     {
-	printf ("%s\n", errorString);
+	if (appResources.verbose)
+	    printf ("%s\n", errorString);
 	return (0);
     }
 
-    connectString = IceConnectionString (SmcGetIceConnection (smcConn));
-    printf ("Connected to: %s\n", connectString);
-    free (connectString);
-    printf ("Client ID : %s\n", clientId);
-    printf ("\n");
+    if (appResources.verbose) {
+	connectString = IceConnectionString (SmcGetIceConnection (smcConn));
+	printf ("Connected to: %s\n", connectString);
+	free (connectString);
+	printf ("Client ID : %s\n", clientId);
+	printf ("\n");
+    }
 
     SmcGetProperties (smcConn, InitialPropReplyProc, NULL);
-
     XtAppMainLoop (appContext);
 }

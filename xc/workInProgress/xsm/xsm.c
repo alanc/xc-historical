@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.7 94/01/18 18:28:23 converse Exp $ */
+/* $XConsortium: xsm.c,v 1.8 94/01/18 18:32:49 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -70,6 +70,22 @@ typedef struct _PendingValue {
 
 void		FreeClientInfo ();
 
+struct _resources {
+    Boolean	verbose;	/* whether to write to stdout */
+} app_resources;
+
+#define Offset(field) XtOffsetOf(struct _resources, field)
+static XtResource resources [] = {
+    {"verbose",  "Verbose",  XtRBoolean, sizeof(Boolean), 
+	 Offset(verbose), XtRImmediate, (XtPointer) False}
+};
+#undef Offset
+
+static XrmOptionDescRec options[] = {
+    {"-verbose",	"*verbose",	XrmoptionNoArg,		"TRUE"},
+    {"-quiet",		"*verbose",	XrmoptionNoArg,		"FALSE"},
+};
+
 char		session_save_file[MAXPATHLEN];
 List		*PendingList;
 ClientRec	*ClientList = NULL;
@@ -79,7 +95,6 @@ int		saveDoneCount = 0;
 int		interactCount = 0;
 Bool		shutdownInProgress = False;
 Bool		shutdownCancelled = False;
-Bool		verbose = False;
 jmp_buf		JumpHere;
 
 int		saveTypeData[] = {SmSaveGlobal,
@@ -161,9 +176,9 @@ nomem()
 }
 
 exit_sm ()
-
 {
-    printf ("\nSESSION MANAGER GOING AWAY!\n");
+    if (app_resources.verbose)
+	printf ("\nSESSION MANAGER GOING AWAY!\n");
     system ("iceauth source .xsm-rem-auth");
     exit (0);
 }
@@ -181,7 +196,8 @@ PendingClient	*pendclient;
     PendingProp		*pprop;
     PendingValue	*pval;
 
-    printf("Setting initial properties for %s\n", client->clientId);
+    if (app_resources.verbose)
+	printf("Setting initial properties for %s\n", client->clientId);
 
     index = 0;
     for(pl = ListFirst(pendclient->props); pl; pl = ListNext(pl)) {
@@ -227,11 +243,13 @@ char 		*previousId;
     char 	*id;
     List	*cl;
 
-    printf (
+    if (app_resources.verbose) {
+	printf (
 	"On IceConn fd = %d, received REGISTER CLIENT [Previous Id = %s]\n",
 	IceConnectionNumber (client->ice_conn),
 	previousId ? previousId : "NULL");
-    printf ("\n");
+	printf ("\n");
+    }
 
     if (previousId)
     {
@@ -245,10 +263,12 @@ char 		*previousId;
     client->clientId = id;
     client->clientHostname = SmsClientHostName (smsConn);
 
-    printf (
+    if (app_resources.verbose) {
+	printf (
 	"On IceConn fd = %d, sent REGISTER CLIENT REPLY [Client Id = %s]\n",
 	IceConnectionNumber (client->ice_conn), id);
-    printf ("\n");
+	printf ("\n");
+    }
 
     if(previousId) {
 	for(cl = ListFirst(PendingList); cl; cl = ListNext(cl)) {
@@ -277,15 +297,16 @@ int		dialogType;
 {
     ClientRec	*client = (ClientRec *) managerData;
 
-    printf ("Client Id = %s, received INTERACT REQUEST [Dialog Type = ",
-	client->clientId);
-
-    if (dialogType == SmDialogError)
-	printf ("Error]\n");
-    else if (dialogType == SmDialogNormal)
-	printf ("Normal]\n");
-    else
-	printf ("??? - ERROR IN SMlib, should have checked for bad value]\n");
+    if (app_resources.verbose) {
+	printf ("Client Id = %s, received INTERACT REQUEST [Dialog Type = ",
+		client->clientId);
+	if (dialogType == SmDialogError)
+	    printf ("Error]\n");
+	else if (dialogType == SmDialogNormal)
+	    printf ("Normal]\n");
+	else
+	    printf ("Error in SMlib: should have checked for bad value]\n");
+    }
 
     client->interactPending = True;
     interactCount++;
@@ -295,29 +316,28 @@ int		dialogType;
 
 void
 InteractDoneProc (smsConn, managerData, cancelShutdown)
-
-SmsConn		smsConn;
-SmPointer 	managerData;
-Bool		cancelShutdown;
+    SmsConn	smsConn;
+    SmPointer 	managerData;
+    Bool	cancelShutdown;
 
 {
     ClientRec	*client = (ClientRec *) managerData;
 
-    printf (
+    if (app_resources.verbose) {
+	printf (
 	"Client Id = %s, received INTERACT DONE [Cancel Shutdown = %s]\n",
 	client->clientId, cancelShutdown ? "True" : "False");
+    }
 
     client->interactPending = False;
 
-    if (cancelShutdown && !shutdownCancelled)
-    {
-	printf ("\n");
+    if (cancelShutdown && !shutdownCancelled) {
 	shutdownCancelled = True;
-	for (client = ClientList; client; client = client->next)
-	{
+	for (client = ClientList; client; client = client->next) {
 	    SmsShutdownCancelled (client->smsConn);
-	    printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
-		client->clientId);
+	    if (app_resources.verbose) 
+		printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
+			client->clientId);
 	}
     }
 }
@@ -326,17 +346,16 @@ Bool		cancelShutdown;
 
 void
 SaveYourselfDoneProc (smsConn, managerData, success)
-
-SmsConn       	smsConn;
-SmPointer 	managerData;
-Bool		success;
+    SmsConn     smsConn;
+    SmPointer 	managerData;
+    Bool	success;
 
 {
     ClientRec	*client = (ClientRec *) managerData;
 
-    printf (
-	"Client Id = %s, received SAVE YOURSELF DONE [Success = %s]\n",
-        client->clientId, success ? "True" : "False");
+    if (app_resources.verbose) 
+	printf("Client Id = %s, received SAVE YOURSELF DONE [Success = %s]\n",
+	       client->clientId, success ? "True" : "False");
 
     if (shutdownCancelled && client->interactPending)
 	client->interactPending = False;
@@ -348,11 +367,10 @@ Bool		success;
 
 void
 CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
-
-SmsConn 	smsConn;
-SmPointer  	managerData;
-int		count;
-char 		**reasonMsgs;
+    SmsConn 	smsConn;
+    SmPointer  	managerData;
+    int		count;
+    char 	**reasonMsgs;
 
 {
     ClientRec	*client = (ClientRec *) managerData;
@@ -360,21 +378,23 @@ char 		**reasonMsgs;
     ClientRec	*ptr;
     int i;
 
+    if (app_resources.verbose) {
+	printf("Client Id = %s, received CONNECTION CLOSED\n",
+	       client->clientId);
 
-    printf (
-	"Client Id = %s, received CONNECTION CLOSED\n", client->clientId);
-
-    for (i = 0; i < count; i++)
-	printf ("   Reason string %d: %s\n", i + 1, reasonMsgs[i]);
-    printf ("\n");
+	for (i = 0; i < count; i++)
+	    printf ("   Reason string %d: %s\n", i + 1, reasonMsgs[i]);
+	printf ("\n");
+    }
 
     SmFreeReasons (count, reasonMsgs);
-
     SmsCleanUp (smsConn);
 
-    printf ("ICE Connection closed, IceConn fd = %d\n",
-	IceConnectionNumber (client->ice_conn));
-    printf ("\n");
+    if (app_resources.verbose) {
+	printf ("ICE Connection closed, IceConn fd = %d\n",
+		IceConnectionNumber (client->ice_conn));
+	printf ("\n");
+    }
 
     IceSetShutdownNegotiation (client->ice_conn, False);
     IceCloseConnection (client->ice_conn);
@@ -444,16 +464,16 @@ SmProp 		**props;
     ClientRec	*client = (ClientRec *) managerData;
     int		i, j;
 
-    printf ("Client Id = %s, received SET PROPERTIES ", client->clientId);
-    printf ("[Num props = %d]\n", numProps);
-
-    for (i = 0; i < numProps; i++)
-    {
-	if(verbose) print_prop(props[i]);
-
-	SetProperty(client, props[i]);
+    if (app_resources.verbose) {
+	printf ("Client Id = %s, received SET PROPERTIES ", client->clientId);
+	printf ("[Num props = %d]\n", numProps);
     }
 
+    for (i = 0; i < numProps; i++) {
+	if(app_resources.verbose)
+	    print_prop(props[i]);
+	SetProperty(client, props[i]);
+    }
     free ((char *) props);
 }
 
@@ -469,12 +489,11 @@ SmPointer 	managerData;
     ClientRec	*client = (ClientRec *) managerData;
     int		i, j;
 
-    printf ("Client Id = %s, received GET PROPERTIES\n", client->clientId);
-    printf ("\n");
+    if (app_resources.verbose) {
+	printf ("Client Id = %s, received GET PROPERTIES\n", client->clientId);
+	printf ("\n");
 
-    if(verbose) {
-	for (i = 0; i < client->numProps; i++)
-	{
+	for (i = 0; i < client->numProps; i++) {
 	    print_prop(client->props[i]);
 	}
 	printf ("\n");
@@ -482,9 +501,10 @@ SmPointer 	managerData;
 
     SmsReturnProperties (smsConn, client->numProps, client->props);
 
-    printf ("Client Id = %s, sent PROPERTIES REPLY [Num props = %d]\n",
-	client->clientId, client->numProps);
-
+    if (app_resources.verbose) {
+	printf ("Client Id = %s, sent PROPERTIES REPLY [Num props = %d]\n",
+		client->clientId, client->numProps);
+    }
 }
 
 
@@ -498,7 +518,9 @@ IcePointer	client_data;
 {
     ClientRec *client = (ClientRec *) client_data;
 
-    printf ("Client Id = %s, received PING REPLY\n", client->clientId);
+    if (app_resources.verbose) {
+	printf ("Client Id = %s, received PING REPLY\n", client->clientId);
+    }
     pingCount--;
 }
 
@@ -527,10 +549,10 @@ SmsCallbacks	*callbacksRet;
     ClientList = newClient;
     numClients++;
 
-    printf ("On IceConn fd = %d, client set up session management protocol\n",
-	IceConnectionNumber (newClient->ice_conn));
-    printf ("\n");
-
+    if (app_resources.verbose) {
+	printf("On IceConn fd = %d, client set up session mngmt protocol\n\n",
+	       IceConnectionNumber (newClient->ice_conn));
+    }
 
     /*
      * Set up session manager callbacks.
@@ -566,32 +588,27 @@ SmsCallbacks	*callbacksRet;
 
 void
 ListClientsXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
+    Widget	w;
+    XtPointer 	client_data;
+    XtPointer 	callData;
 
 {
     ClientRec *client = ClientList;
 
-    printf ("\n");
-    if (client == NULL)
-    {
-	printf ("There are no clients registered with the SM\n");
+    if (app_resources.verbose) {
+	printf ("\n");
+	if (client == NULL) {
+	    printf ("There are no clients registered with the SM\n");
+	} else {
+	    printf ("The following client IDs are registered with the SM:\n");
+	    printf ("\n");
+	}
+	while (client) {
+	    printf ("  %s\n", client->clientId);
+	    client = client->next;
+	}
+	printf ("\n");
     }
-    else
-    {
-	printf ("The following client IDs are registered with the SM:\n");
-        printf ("\n");
-    }
-
-    while (client)
-    {
-	printf ("  %s\n", client->clientId);
-	client = client->next;
-    }
-    
-    printf ("\n");
 }
 
 
@@ -696,102 +713,95 @@ XtPointer 	callData;
 	SmsSaveYourself (client->smsConn,
 	    saveType, shutdown, interactStyle, fast);
 
-	printf ("Client Id = %s, sent SAVE YOURSELF [", client->clientId);
-	printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
-	printf ("Interact Style = %s, Fast = %s]\n", _interactStyle, _fast);
+	if (app_resources.verbose) {
+	    printf ("Client Id = %s, sent SAVE YOURSELF [", client->clientId);
+	    printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
+	    printf ("Interact Style = %s, Fast = %s]\n",
+		    _interactStyle, _fast);
+	}
     }
-
-    printf ("\n");
-    printf ("Sent SAVE YOURSELF to all clients.  Waiting for\n");
-    printf ("SAVE YOURSELF DONE or INTERACT REQUEST from each client.\n");
-    printf ("\n");
+    if (app_resources.verbose) {
+	printf ("\n");
+	printf ("Sent SAVE YOURSELF to all clients.  Waiting for\n");
+	printf ("SAVE YOURSELF DONE or INTERACT REQUEST from each client.\n");
+	printf ("\n");
+    }
 
     saveDoneCount = 0;
     interactCount = 0;
 
-    while (saveDoneCount + interactCount < numClients)
-    {
+    while (saveDoneCount + interactCount < numClients) {
 	XtAppProcessEvent (appContext, XtIMAll);
     }
 
-    printf ("\n");
-    printf ("Received %d SAVE YOURSELF DONEs, %d INTERACT REQUESTS\n",
-	saveDoneCount, interactCount);
-
-    if (interactCount == 0 && saveDoneCount != numClients)
-    {
+    if (app_resources.verbose) {
 	printf ("\n");
-	printf ("INTERNAL ERROR IN PSEUDO-SM!  EXITING!\n");
+	printf ("Received %d SAVE YOURSELF DONEs, %d INTERACT REQUESTS\n",
+		saveDoneCount, interactCount);
+    }
+
+    if (interactCount == 0 && saveDoneCount != numClients) {
+	if (app_resources.verbose) {
+	    printf ("\n");
+	    printf ("INTERNAL ERROR IN PSEUDO-SM!  EXITING!\n");
+	}
 	exit (1);
     }
 
-    if (interactCount > 0)
-    {
-	printf ("\n");
+    if (interactCount > 0) {
+	
+	if (app_resources.verbose)
+	    printf ("\n");
 
 	client = ClientList;
-
-	while (client)
-	{
-	    if (shutdownCancelled)
-	    {
+	while (client) {
+	    if (shutdownCancelled) {
 		break;
 	    }
-	    else if (client->interactPending)
-	    {
+	    else if (client->interactPending) {
 		SmsInteract (client->smsConn);
-		
-		printf ("Client Id = %s, sent INTERACT\n", client->clientId);
-
-		while (client->interactPending)
-		{
+		if (app_resources.verbose) {
+		    printf ("Client Id = %s, sent INTERACT\n",
+			    client->clientId);
+		}
+		while (client->interactPending) {
 		    XtAppProcessEvent (appContext, XtIMAll);
 		}
 	    }
-
 	    client = client->next;
 	}
 
-	printf ("\n");
-	if (shutdownCancelled)
-	    printf ("The shutdown was cancelled by a user\n");
-	else
-	    printf ("Done interacting with all clients\n");
-	printf ("\n");
+	if (app_resources.verbose) {
+	    if (shutdownCancelled)
+		printf ("\nThe shutdown was cancelled by a user\n\n");
+	    else
+		printf ("\nDone interacting with all clients\n\n");
+	}
     }
 
-    while (saveDoneCount < numClients)
-    {
+    while (saveDoneCount < numClients) {
 	XtAppProcessEvent (appContext, XtIMAll);
     }
 
-    printf ("\n");
-    printf ("All clients issued SAVE YOURSELF DONE\n");
-    printf ("\n");
+    if (app_resources.verbose)
+	printf ("\nAll clients issued SAVE YOURSELF DONE\n\n");
 
     write_save();
 
-    if (shutdown && shutdownCancelled)
-    {
+    if (shutdown && shutdownCancelled) {
 	shutdownCancelled = False;
-    }
-    else if (shutdown)
-    {
+    } else if (shutdown) {
 	shutdownInProgress = True;
-
 	client = ClientList;
-	while (client)
-	{
+	while (client) {
 	    SmsDie (client->smsConn);
-
-	    printf ("Client Id = %s, sent DIE\n", client->clientId);
-
+	    if (app_resources.verbose)
+		printf ("Client Id = %s, sent DIE\n", client->clientId);
 	    client = client->next;
 	}
     }
 
-    if (!shutdownInProgress)
-    {
+    if (!shutdownInProgress) {
 	XtPopdown (savePopup);
 	XtSetSensitive (savePopup, 1);
 	XtSetSensitive (mainWindow, 1);
@@ -852,41 +862,27 @@ XtPointer 	callData;
 {
     ClientRec *client = ClientList;
 
-    printf ("\n");
+    if (!app_resources.verbose) return;
 
-    if (client == NULL)
-    {
+    if (client == NULL) {
 	printf ("There are no clients registered with the SM\n");
-	printf ("\n");
 	return;
     }
 
-    while (client)
-    {
-	if (client->numProps == 0)
-	{
-	    printf ("Client Id = %s, no properties are set\n",
-		client->clientId);
-	}
-	else
-	{
+    while (client) {
+	if (client->numProps == 0) {
+	    printf("Client Id = %s, no properties are set\n",
+		   client->clientId);
+	} else {
 	    int i, j;
 
 	    printf ("Client Id = %s, the following properties are set:\n",
-	        client->clientId);
-	    printf ("\n");
-
-	    if(verbose) {
-		for (i = 0; i < client->numProps; i++)
-		{
-		    print_prop(client->props[i]);
-		}
-	    }
+		    client->clientId);
+	    for (i = 0; i < client->numProps; i++)
+		print_prop(client->props[i]);
 	}
 	client = client->next;
     }
-    
-    printf ("\n");
 }
 
 
@@ -904,7 +900,10 @@ XtPointer 	callData;
 	    perror("fork");
 	    break;
 	case 0:
-	    execlp("xsmclient", "xsmclient", (char *)NULL);
+	    if (app_resources.verbose)
+		execlp("xsmclient", "xsmclient", "-verbose", (char *)NULL);
+	    else
+		execlp("xsmclient", "xsmclient", (char *)NULL);
 	    perror("xsmclient");
 	    _exit(255);
 	default:
@@ -926,32 +925,31 @@ XtPointer 	callData;
 
     pingCount = 0;
 
-    printf ("\n");
-    if (client == NULL)
-    {
-	printf ("There are no clients registered with the SM\n");
-	printf ("\n");
+    if (app_resources.verbose) printf ("\n");
+
+    if (client == NULL ) {
+	if (app_resources.verbose) {
+	    printf ("There are no clients registered with the SM\n");
+	    printf ("\n");
+	}
 	return;
     }
 
-    while (client)
-    {
+    while (client) {
 	IcePing (client->ice_conn, PingReplyProc, (IcePointer) client);
 	pingCount++;
-
-	printf ("Client Id = %s, sent PING\n", client->clientId);
-
+	if (app_resources.verbose)
+	    printf ("Client Id = %s, sent PING\n", client->clientId);
 	client = client->next;
     }
-
-    printf ("\n");
+    if (app_resources.verbose)
+	printf ("\n");
 
     while (pingCount > 0)
-    {
-	XtAppProcessEvent (appContext, XtIMAll);
-    }
+	XtAppProcessEvent(appContext, XtIMAll);
 
-    printf ("\n");
+    if (app_resources.verbose) 
+	printf ("\n");
 }
 
 
@@ -971,29 +969,26 @@ XtInputId	*id;
     IceConn 	ice_conn;
     char	*connstr;
 
-    if ((ice_conn = IceAcceptConnection ((IceListenObj) client_data)) == NULL)
-    {
-	printf ("IceAcceptConnection failed\n");
-    }
-    else
-    {
-	while (IceConnectionStatus (ice_conn) == IceConnectPending)
-	{
+    ice_conn = IceAcceptConnection((IceListenObj) client_data);
+    if (ice_conn) {
+	if (app_resources.verbose)
+	    printf ("IceAcceptConnection failed\n");
+    } else {
+	while (IceConnectionStatus (ice_conn) == IceConnectPending) {
 	    XtAppProcessEvent (appContext, XtIMAll);
 	}
 
-	if (IceConnectionStatus (ice_conn) == IceConnectAccepted)
-	{
-	    printf ("ICE Connection opened by client, IceConn fd = %d, ",
-		IceConnectionNumber (ice_conn));
-	    connstr = IceConnectionString (ice_conn);
-	    printf ("Accept at networkId %s\n", connstr);
-	    free (connstr);
-	    printf ("\n");
-	}
-	else
-	{
-	    printf ("ICE Connection rejected!\n");
+	if (IceConnectionStatus (ice_conn) == IceConnectAccepted) {
+	    if (app_resources.verbose) {
+		printf ("ICE Connection opened by client, IceConn fd = %d, ",
+			IceConnectionNumber (ice_conn));
+		connstr = IceConnectionString (ice_conn);
+		printf ("Accept at networkId %s\n", connstr);
+		free (connstr);
+		printf ("\n");
+	    }
+	} else {
+	    if (app_resources.verbose) printf ("ICE Connection rejected!\n");
 	    IceCloseConnection (ice_conn);
 	}
     }
@@ -1206,11 +1201,12 @@ read_save()
 
     f = fopen(session_save_file, "r");
     if(!f) {
-	printf("No session save file.\n");
+	if (app_resources.verbose)
+	    printf("No session save file.\n");
 	return;
     }
-
-    printf("Reading session save file...\n");
+    if (app_resources.verbose)
+	printf("Reading session save file...\n");
 
     buf = NULL;
     buflen = 0;
@@ -1271,11 +1267,11 @@ read_save()
 		default:
 		    fprintf(stderr, "state %d\n", state);
 		    fprintf(stderr,
-			"Corrupt save file line ignored:\n%s\n", buf);
+			    "Corrupt save file line ignored:\n%s\n", buf);
 		    continue;
 	    }
 	} else {
-	    if(state != 4) {
+	    if (state != 4) {
 		fprintf(stderr, "Corrupt save file line ignored:\n%s\n", buf);
 		continue;
 	    }
@@ -1376,8 +1372,10 @@ restart_everything()
     for(cl = ListFirst(PendingList); cl; cl = ListNext(cl)) {
 	c = (PendingClient *)cl->thing;
 
-	printf("Restarting id '%s'...\n", c->clientId);
-        printf("Host = %s\n", c->clientHostname);
+	if (app_resources.verbose) {
+	    printf("Restarting id '%s'...\n", c->clientId);
+	    printf("Host = %s\n", c->clientHostname);
+	}
 	cwd = ".";
 	env = NULL;
 	program=NULL;
@@ -1419,10 +1417,12 @@ restart_everything()
 	}
 
 	if(program && args) {
-	    printf("\t%s\n", program);
-	    printf("\t");
-	    for(pp = args; *pp; pp++) printf("%s ", *pp);
-	    printf("\n");
+	    if (app_resources.verbose) {
+		printf("\t%s\n", program);
+		printf("\t");
+		for(pp = args; *pp; pp++) printf("%s ", *pp);
+		printf("\n");
+	    }
 
 	    if (!strncmp(c->clientHostname, "local/", 6))
 	    {
@@ -1597,38 +1597,44 @@ IceListenObj	*listenObjs;
     return (1);
 }
 
+static void Syntax(call)
+    char *call;
+{
+    (void) fprintf(stderr, "usage: %s [-verbose] [-quiet]\n", call);
+    exit(2);
+}
 
-
-/*
- * Main program
- */
-
-main (argc, argv)
-
-int  argc;
-char **argv;
-
+main(argc, argv)
+    int  argc;
+    char **argv;
 {
     IceListenObj *listenObjs;
     char 	*networkIds;
     int  	count, i;
-    char 	errormsg[256];
     char	*p;
+    char *	progName;
+    char 	errormsg[256];
     static	char environment_name[] = "SESSION_MANAGER";
 
-
-
+    p = strrchr(argv[0], '/');
+    progName = (p ? p + 1 : argv[0]);
+    topLevel = XtAppInitialize (&appContext, "SAMPLE-SM", options, 
+				XtNumber(options), &argc, argv, NULL, NULL, 0);
+    if (argc > 1) Syntax(progName);
+    XtGetApplicationResources(topLevel, (XtPointer) &app_resources,
+			      resources, XtNumber(resources), NULL, 0);
+    
     /*
      * Set my own IO error handler.
      */
 
     IceSetIOErrorHandler (myIOErrorHandler);
 
-
     /*
      * Init SM lib
      */
 
+    /* if these are errors they should write to stderr or an error file. */
     if (!SmsInitialize ("SAMPLE-SM", "1.0",
 	NewClientProc, NULL,
 	HostBasedProc, 256, errormsg))
@@ -1649,9 +1655,6 @@ char **argv;
 	printf ("Could not set authorization\n");
 	exit (1);
     }
-
-    topLevel = XtAppInitialize (&appContext, "SAMPLE-SM",
-	NULL, 0, &argc, argv, NULL, NULL, 0);
 
     XtInitializeICE (appContext);
 
@@ -1918,16 +1921,16 @@ char **argv;
     sprintf(p, "%s=%s", environment_name, networkIds);
     putenv(p);
 
-    printf ("setenv %s %s\n", environment_name, networkIds);
-    printf ("\n");
+    if (app_resources.verbose)
+	printf ("setenv %s %s\n", environment_name, networkIds);
+
     read_save();
     restart_everything();
-    printf ("Waiting for connections...\n");
-    printf ("\n");
-    
+
+    if (app_resources.verbose)
+	printf ("Waiting for connections...\n");
+
     free (networkIds);
-
     setjmp (JumpHere);
-
     XtAppMainLoop (appContext);
 }
