@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium$
+# $XConsortium: Makefile,v 1.10 92/06/11 15:51:00 rws Exp $
 #
 #
 #	Makefile for server tester library
@@ -41,12 +41,12 @@ CFILES=\
 	ShowEvt.c\
 	ShowErr.c\
 	DfltVals.c\
-	ResourceMng.c\
+	ResMng.c\
 	Log.c\
 	ClientMng.c\
 	Expect.c\
 	ConnOption.c\
-	ValueListMng.c\
+	ValListMng.c\
 	Timer.c\
 	XstIO.c\
 	DataMove.c\
@@ -74,12 +74,12 @@ OFILES =\
 	ShowEvt.o\
 	ShowErr.o\
 	DfltVals.o\
-	ResourceMng.o\
+	ResMng.o\
 	Log.o\
 	ClientMng.o\
 	Expect.o\
 	ConnOption.o\
-	ValueListMng.o\
+	ValListMng.o\
 	Timer.o\
 	XstIO.o\
 	DataMove.o\
