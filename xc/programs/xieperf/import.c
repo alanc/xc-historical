@@ -1,4 +1,4 @@
-/* $XConsortium: import.c,v 1.2 93/10/26 10:06:24 rws Exp $ */
+/* $XConsortium: import.c,v 1.3 93/10/27 21:52:22 rws Exp $ */
 
 /**** module import.c ****/
 /******************************************************************************
@@ -73,9 +73,6 @@ int InitImportDrawablePixmap(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-
 	flo = ( XiePhotoflo ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 
@@ -129,9 +126,6 @@ int InitImportDrawableWindow(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-
 	flo = ( XiePhotoflo ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 
@@ -201,8 +195,6 @@ int InitImportDrawablePlanePixmap(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
 	int	planes;
 
 	flo = ( XiePhotoflo ) NULL;
@@ -263,8 +255,6 @@ int InitImportDrawablePlaneWindow(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
 	int	planes;
 
 	flo = ( XiePhotoflo ) NULL;
@@ -547,7 +537,6 @@ int InitImportROI(xp, p, reps)
     int     reps;
 {
 	int     rectsSize, i;
-        int     decode_notify;
 
 	flograph = ( XiePhotoElement * ) NULL;
 	rects = ( XieRectangle * ) NULL;
