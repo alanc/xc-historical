@@ -281,13 +281,15 @@ typedef enum {XtGrabNone, XtGrabNonexclusive, XtGrabExclusive} XtGrabKind;
 .De
 .sp
 .LP
-The shell's create_popup_child procedure pointer is of type
+The shell's create_popup_child_proc procedure pointer is of type
 .PN XtCreatePopupChildProc .
-.IN "create_popup_child"
-.IN "Shell" "create_popup_child"
+.IN "create_popup_child_proc"
+.IN "Shell" "create_popup_child_proc"
 .IN "XtCreatePopupChildProc" "" "@DEF@"
 .FD 0
-typedef void (*XtCreatePopupChildProc)(Widget \fIw\fP)
+typedef void (*XtCreatePopupChildProc)(Widget)
+.br
+      Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the shell widget being popped-up.
@@ -329,7 +331,7 @@ the shell spring_loaded field to
 .PN False ,
 and the shell grab_kind field from grab_kind.
 .IP \(bu 5
-If the shell's create_popup_child field is non-NULL,
+If the shell's create_popup_child_proc field is non-NULL,
 .PN XtPopup
 calls it with popup_shell as the parameter.
 .IP \(bu 5
