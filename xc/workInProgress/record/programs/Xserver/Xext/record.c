@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.8 94/02/01 19:24:35 rws Exp $ */
+/* $XConsortium: record.c,v 1.9 94/02/04 11:18:14 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -76,7 +76,6 @@ static RESTYPE RecordDelete;   /* Resource type for intercepted clients */
     config = (RecordConfig *)LookupIDByType(id, RTConfig); \
     if (!config) \
     { \
-     		ErrorF("%s:  BadConfiguration Error\n", XRecordExtName); \
 		client->errorValue = id; \
 		return RecordErrorBase + XRecordBadConfiguration; \
     } \
@@ -173,7 +172,8 @@ SendRecordDone(pConfig)
     xRecordEnableConfigReply 	rep;
     int 			n;
 
-    if (!pConfig->data_client)
+    if (!pConfig->data_client ||
+	pConfig->data_client->clientState != ClientStateRunning)
 	return;
     rep.type		= X_Reply;
     rep.sequenceNumber 	= pConfig->data_client->sequence;
@@ -187,6 +187,7 @@ SendRecordDone(pConfig)
     }
 
     WriteToClient(pConfig->data_client, sizeof(xRecordEnableConfigReply), (char *)&rep);
+    AttendClient(pConfig->data_client);
     pConfig->data_client 	= NULL;
 }
 
@@ -205,7 +206,7 @@ FreeInterceptedClient(value, id)
 	    *pPrev = pCur->next;
 	    RecordClientProto(pCur, xTrue);
 	    xfree(pCur);
-	    if (pConfig->data_client && !pConfig->pInterceptClients)
+	    if (!pConfig->pInterceptClients)
 		SendRecordDone(pConfig);
 	    break;
 	}
@@ -312,17 +313,12 @@ XRecordCreateConfig(client, id)
 
     if((pConfig = (RecordConfig*)Xcalloc(sizeof(RecordConfig))) == NULL)
 	return (RecordConfig *)NULL;
-
-    if (!AddResource(id, RTConfig, (pointer) pConfig))
-    {
-	xfree((pointer)pConfig);
-        ErrorF("%s:  Cannot add resource '0x%lx'\n",
-	XRecordExtName, id);
-	return (RecordConfig *)NULL;
-    }
     pConfig->id = id;
     pConfig->pInterceptClients = NULL;
     pConfig->data_client = (ClientPtr)NULL;
+
+    if (!AddResource(id, RTConfig, (pointer) pConfig))
+	return (RecordConfig *)NULL;
 
     RecordConfigList = (RecordConfig **)xrealloc(
 	RecordConfigList, (RecordNumConfigs+1) * sizeof(RecordConfig *) );
@@ -789,6 +785,7 @@ ProcRecordEnableConfig(client)
 	XRecordExtName, stuff->cid, stuff->enable);
 #endif
           	
+    IgnoreClient(client);
     return(client->noClientException);
 }
 
