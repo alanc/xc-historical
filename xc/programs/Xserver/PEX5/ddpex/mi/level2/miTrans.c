@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miTrans.c,v 5.1 91/02/16 09:55:19 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -61,8 +61,8 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 	miDDContext	*pddc; 
 	miListHeader	*vinput;
 	miListHeader	**voutput;
-	ddFLOAT		*vert_mat;
-	ddFLOAT		*norm_mat;
+	ddFLOAT		vert_mat[4][4];
+	ddFLOAT		norm_mat[4][4];
 	ddPointType	outtype;
 {
 		ddCoord4D	new_pt;
@@ -70,7 +70,6 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 
 
     register	int		i, j;
-    register	ddFLOAT		*f;
     register	listofddPoint	*pddilist;
     register	listofddPoint	*pddolist;
 
@@ -155,27 +154,22 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 	    
 		  /* Note - just assume z = 0.0, w = 1.0 */
 		  while (i--) {
-		    f = vert_mat;
 
-		    out_pt.p4Dpt->x = (*f++)*in_pt.p2Dpt->x;
-		    out_pt.p4Dpt->x += (*f++)*in_pt.p2Dpt->y;
-		    f++;
-		    out_pt.p4Dpt->x += (*f++);
+		    out_pt.p4Dpt->x = vert_mat[0][0]*in_pt.p2Dpt->x;
+		    out_pt.p4Dpt->x += vert_mat[0][1]*in_pt.p2Dpt->y;
+		    out_pt.p4Dpt->x += vert_mat[0][3];
 
-		    out_pt.p4Dpt->y =  (*f++)*in_pt.p2Dpt->x;
-		    out_pt.p4Dpt->y +=  (*f++)*in_pt.p2Dpt->y;
-		    f++;
-		    out_pt.p4Dpt->y +=  (*f++);
+		    out_pt.p4Dpt->y =  vert_mat[1][0]*in_pt.p2Dpt->x;
+		    out_pt.p4Dpt->y +=  vert_mat[1][1]*in_pt.p2Dpt->y;
+		    out_pt.p4Dpt->y +=  vert_mat[1][3];
 
-		    out_pt.p4Dpt->z =  (*f++)*in_pt.p2Dpt->x;
-		    out_pt.p4Dpt->z +=  (*f++)*in_pt.p2Dpt->y;
-		    f++;
-		    out_pt.p4Dpt->z +=  (*f++);
+		    out_pt.p4Dpt->z =  vert_mat[2][0]*in_pt.p2Dpt->x;
+		    out_pt.p4Dpt->z +=  vert_mat[2][1]*in_pt.p2Dpt->y;
+		    out_pt.p4Dpt->z +=  vert_mat[2][3];
 
-		    out_pt.p4Dpt->w =  (*f++)*in_pt.p2Dpt->x;
-		    out_pt.p4Dpt->w +=  (*f++)*in_pt.p2Dpt->y;
-		    f++;
-		    out_pt.p4Dpt->w +=  (*f);
+		    out_pt.p4Dpt->w =  vert_mat[3][0]*in_pt.p2Dpt->x;
+		    out_pt.p4Dpt->w +=  vert_mat[3][1]*in_pt.p2Dpt->y;
+		    out_pt.p4Dpt->w +=  vert_mat[3][3];
 
 		    in_pt.p2Dpt++;
 		    out_pt.p4Dpt++;
@@ -248,27 +242,26 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 		    /* cast operands & transform the coordinates
 		       portions    */
 
-		    f = vert_mat;
 
-		    out_pt.p4Dpt->x = (*f++)*in_pt.p3Dpt->x;
-		    out_pt.p4Dpt->x += (*f++)*in_pt.p3Dpt->y;
-		    out_pt.p4Dpt->x += (*f++)*in_pt.p3Dpt->z;
-		    out_pt.p4Dpt->x += (*f++);
+		    out_pt.p4Dpt->x =  vert_mat[0][0]*in_pt.p3Dpt->x;
+		    out_pt.p4Dpt->x += vert_mat[0][1]*in_pt.p3Dpt->y;
+		    out_pt.p4Dpt->x += vert_mat[0][2]*in_pt.p3Dpt->z;
+		    out_pt.p4Dpt->x += vert_mat[0][3];
 
-		    out_pt.p4Dpt->y =  (*f++)*in_pt.p3Dpt->x;
-		    out_pt.p4Dpt->y +=  (*f++)*in_pt.p3Dpt->y;
-		    out_pt.p4Dpt->y += (*f++)*in_pt.p3Dpt->z;
-		    out_pt.p4Dpt->y +=  (*f++);
+		    out_pt.p4Dpt->y =   vert_mat[1][0]*in_pt.p3Dpt->x;
+		    out_pt.p4Dpt->y +=  vert_mat[1][1]*in_pt.p3Dpt->y;
+		    out_pt.p4Dpt->y +=  vert_mat[1][2]*in_pt.p3Dpt->z;
+		    out_pt.p4Dpt->y +=  vert_mat[1][3];
 
-		    out_pt.p4Dpt->z =  (*f++)*in_pt.p3Dpt->x;
-		    out_pt.p4Dpt->z +=  (*f++)*in_pt.p3Dpt->y;
-		    out_pt.p4Dpt->z += (*f++)*in_pt.p3Dpt->z;
-		    out_pt.p4Dpt->z +=  (*f++);
+		    out_pt.p4Dpt->z =   vert_mat[2][0]*in_pt.p3Dpt->x;
+		    out_pt.p4Dpt->z +=  vert_mat[2][1]*in_pt.p3Dpt->y;
+		    out_pt.p4Dpt->z +=  vert_mat[2][2]*in_pt.p3Dpt->z;
+		    out_pt.p4Dpt->z +=  vert_mat[2][3];
 
-		    out_pt.p4Dpt->w =  (*f++)*in_pt.p3Dpt->x;
-		    out_pt.p4Dpt->w +=  (*f++)*in_pt.p3Dpt->y;
-		    out_pt.p4Dpt->w += (*f++)*in_pt.p3Dpt->z;
-		    out_pt.p4Dpt->w +=  (*f);
+		    out_pt.p4Dpt->w =   vert_mat[3][0]*in_pt.p3Dpt->x;
+		    out_pt.p4Dpt->w +=  vert_mat[3][1]*in_pt.p3Dpt->y;
+		    out_pt.p4Dpt->w +=  vert_mat[3][2]*in_pt.p3Dpt->z;
+		    out_pt.p4Dpt->w +=  vert_mat[3][3];
 
 		    in_pt.p3Dpt++;
 		    out_pt.p4Dpt++;
@@ -285,22 +278,21 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 
 		      if DD_IsVertNormal(outtype) {
 
-                        f = norm_mat;
 
-                        out_pt.pNormal->x = (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->x += (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->x += (*f++)*in_pt.pNormal->z;
-                        (*f++);	/* no translation */
+                        out_pt.pNormal->x =  norm_mat[0][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->x += norm_mat[0][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->x += norm_mat[0][2]*in_pt.pNormal->z;
+                        	/* no translation */
 
-                        out_pt.pNormal->y =  (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->y +=  (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->y += (*f++)*in_pt.pNormal->z;
-                        (*f++);	/* no translation */
+                        out_pt.pNormal->y =   norm_mat[1][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->y +=  norm_mat[1][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->y +=  norm_mat[1][2]*in_pt.pNormal->z;
+                        	/* no translation */
 
-                        out_pt.pNormal->z =  (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->z +=  (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->z += (*f++)*in_pt.pNormal->z;
-                        (*f++);	/* no translation */
+                        out_pt.pNormal->z =   norm_mat[2][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->z +=  norm_mat[2][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->z +=  norm_mat[2][2]*in_pt.pNormal->z;
+                        	/* no translation */
 
 			NORMALIZE_VECTOR (out_pt.pNormal, length);
 
@@ -380,27 +372,26 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 		  while (i--) {
 
 		    /* cast operands & transform the coordinates */
-		    f = vert_mat;
 
-		    out_pt.p4Dpt->x = (*f++)*in_pt.p4Dpt->x;
-		    out_pt.p4Dpt->x += (*f++)*in_pt.p4Dpt->y;
-		    out_pt.p4Dpt->x += (*f++)*in_pt.p4Dpt->z;
-		    out_pt.p4Dpt->x += (*f++)*in_pt.p4Dpt->w;
+		    out_pt.p4Dpt->x =   vert_mat[0][0]*in_pt.p4Dpt->x;
+		    out_pt.p4Dpt->x +=  vert_mat[0][1]*in_pt.p4Dpt->y;
+		    out_pt.p4Dpt->x +=  vert_mat[0][2]*in_pt.p4Dpt->z;
+		    out_pt.p4Dpt->x +=  vert_mat[0][3]*in_pt.p4Dpt->w;
 
-		    out_pt.p4Dpt->y =  (*f++)*in_pt.p4Dpt->x;
-		    out_pt.p4Dpt->y +=  (*f++)*in_pt.p4Dpt->y;
-		    out_pt.p4Dpt->y += (*f++)*in_pt.p4Dpt->z;
-		    out_pt.p4Dpt->y +=  (*f++)*in_pt.p4Dpt->w;
+		    out_pt.p4Dpt->y =   vert_mat[1][0]*in_pt.p4Dpt->x;
+		    out_pt.p4Dpt->y +=  vert_mat[1][1]*in_pt.p4Dpt->y;
+		    out_pt.p4Dpt->y +=  vert_mat[1][2]*in_pt.p4Dpt->z;
+		    out_pt.p4Dpt->y +=  vert_mat[1][3]*in_pt.p4Dpt->w;
 
-		    out_pt.p4Dpt->z =  (*f++)*in_pt.p4Dpt->x;
-		    out_pt.p4Dpt->z +=  (*f++)*in_pt.p4Dpt->y;
-		    out_pt.p4Dpt->z += (*f++)*in_pt.p4Dpt->z;
-		    out_pt.p4Dpt->z +=  (*f++)*in_pt.p4Dpt->w;
+		    out_pt.p4Dpt->z =   vert_mat[2][0]*in_pt.p4Dpt->x;
+		    out_pt.p4Dpt->z +=  vert_mat[2][1]*in_pt.p4Dpt->y;
+		    out_pt.p4Dpt->z +=  vert_mat[2][2]*in_pt.p4Dpt->z;
+		    out_pt.p4Dpt->z +=  vert_mat[2][3]*in_pt.p4Dpt->w;
 
-		    out_pt.p4Dpt->w =  (*f++)*in_pt.p4Dpt->x;
-		    out_pt.p4Dpt->w +=  (*f++)*in_pt.p4Dpt->y;
-		    out_pt.p4Dpt->w += (*f++)*in_pt.p4Dpt->z;
-		    out_pt.p4Dpt->w +=  (*f)*in_pt.p4Dpt->w;
+		    out_pt.p4Dpt->w =   vert_mat[3][0]*in_pt.p4Dpt->x;
+		    out_pt.p4Dpt->w +=  vert_mat[3][1]*in_pt.p4Dpt->y;
+		    out_pt.p4Dpt->w +=  vert_mat[3][2]*in_pt.p4Dpt->z;
+		    out_pt.p4Dpt->w +=  vert_mat[3][3]*in_pt.p4Dpt->w;
 
 		    in_pt.p4Dpt++;
 		    out_pt.p4Dpt++;
@@ -416,21 +407,19 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
  
                       if DD_IsVertNormal(outtype) {
  
-                        f = norm_mat;
+                        out_pt.pNormal->x =   norm_mat[0][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->x +=  norm_mat[0][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->x +=  norm_mat[0][2]*in_pt.pNormal->z;
+                        /* no translation */
  
-                        out_pt.pNormal->x = (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->x += (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->x += (*f++)*in_pt.pNormal->z;
-                        (*f++); /* no translation */
+                        out_pt.pNormal->y =   norm_mat[1][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->y +=  norm_mat[1][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->y +=  norm_mat[1][2]*in_pt.pNormal->z;
+                        /* no translation */
  
-                        out_pt.pNormal->y =  (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->y +=  (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->y += (*f++)*in_pt.pNormal->z;
-                        (*f++); /* no translation */
- 
-                        out_pt.pNormal->z =  (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->z +=  (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->z += (*f++)*in_pt.pNormal->z;
+                        out_pt.pNormal->z =   norm_mat[2][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->z +=  norm_mat[2][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->z +=  norm_mat[2][2]*in_pt.pNormal->z;
 
 			NORMALIZE_VECTOR (out_pt.pNormal, length);
 
@@ -525,26 +514,21 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 		  while (i--) {
 
 		    /* cast operands & transform the coordinates */
-		    f = vert_mat;
 
-		    tmp_pt.x = (*f++)*in_pt.p2Dpt->x;
-		    tmp_pt.x += (*f++)*in_pt.p2Dpt->y;
-		    f++;
-		    tmp_pt.x += (*f++);
+		    tmp_pt.x =  vert_mat[0][0]*in_pt.p2Dpt->x;
+		    tmp_pt.x += vert_mat[0][1]*in_pt.p2Dpt->y;
+		    tmp_pt.x += vert_mat[0][3];
 
-		    tmp_pt.y =  (*f++)*in_pt.p2Dpt->x;
-		    tmp_pt.y +=  (*f++)*in_pt.p2Dpt->y;
-		    f++;
-		    tmp_pt.y +=  (*f++);
+		    tmp_pt.y =   vert_mat[1][0]*in_pt.p2Dpt->x;
+		    tmp_pt.y +=  vert_mat[1][1]*in_pt.p2Dpt->y;
+		    tmp_pt.y +=  vert_mat[1][3];
 
 		    /* Skip Z transformation */
-		    f += 4;
 
 		    /* The w must be computed to normalize the result */
-		    w =  (*f++)*in_pt.p2Dpt->x;
-		    w +=  (*f++)*in_pt.p2Dpt->y;
-		    f++;
-		    w +=  (*f++);
+		    w =   vert_mat[3][0]*in_pt.p2Dpt->x;
+		    w +=  vert_mat[3][1]*in_pt.p2Dpt->y;
+		    w +=  vert_mat[3][3];
 
 		    /* Now round and normalize the result */
 		    if (w != 1.0) {
@@ -625,26 +609,24 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 		  while (i--) {
 
 		    /* cast operands & transform the coordinates */
-		    f = vert_mat;
 
-		    tmp_pt.x = (*f++)*in_pt.p3Dpt->x;
-		    tmp_pt.x += (*f++)*in_pt.p3Dpt->y;
-		    tmp_pt.x += (*f++)*in_pt.p3Dpt->z;
-		    tmp_pt.x += (*f++);
+		    tmp_pt.x =   vert_mat[0][0]*in_pt.p3Dpt->x;
+		    tmp_pt.x +=  vert_mat[0][1]*in_pt.p3Dpt->y;
+		    tmp_pt.x +=  vert_mat[0][2]*in_pt.p3Dpt->z;
+		    tmp_pt.x +=  vert_mat[0][3];
 
-		    tmp_pt.y =  (*f++)*in_pt.p3Dpt->x;
-		    tmp_pt.y +=  (*f++)*in_pt.p3Dpt->y;
-		    tmp_pt.y += (*f++)*in_pt.p3Dpt->z;
-		    tmp_pt.y +=  (*f++);
+		    tmp_pt.y =   vert_mat[1][0]*in_pt.p3Dpt->x;
+		    tmp_pt.y +=  vert_mat[1][1]*in_pt.p3Dpt->y;
+		    tmp_pt.y +=  vert_mat[1][2]*in_pt.p3Dpt->z;
+		    tmp_pt.y +=  vert_mat[1][3];
 
 		    /* Skip Z transformation */
-		    f += 4;
 
 		    /* The w must be computed to normalize the result */
-		    w =  (*f++)*in_pt.p3Dpt->x;
-		    w +=  (*f++)*in_pt.p3Dpt->y;
-		    w +=  (*f++)*in_pt.p3Dpt->z;
-		    w +=  (*f++);
+		    w =   vert_mat[3][0]*in_pt.p3Dpt->x;
+		    w +=  vert_mat[3][1]*in_pt.p3Dpt->y;
+		    w +=  vert_mat[3][2]*in_pt.p3Dpt->z;
+		    w +=  vert_mat[3][3];
 
 		    /* Now round and normalize the result */
 		    if (w != 1.0) {
@@ -669,21 +651,19 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 
                       if DD_IsVertNormal(outtype) {
 
-                        f = norm_mat;
+                        out_pt.pNormal->x =   norm_mat[0][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->x +=  norm_mat[0][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->x +=  norm_mat[0][2]*in_pt.pNormal->z;
+                        /* no translation */
 
-                        out_pt.pNormal->x = (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->x += (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->x += (*f++)*in_pt.pNormal->z;
-                        (*f++); /* no translation */
+                        out_pt.pNormal->y =   norm_mat[1][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->y +=  norm_mat[1][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->y +=  norm_mat[1][2]*in_pt.pNormal->z;
+                        /* no translation */
 
-                        out_pt.pNormal->y =  (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->y +=  (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->y += (*f++)*in_pt.pNormal->z;
-                        (*f++); /* no translation */
-
-                        out_pt.pNormal->z =  (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->z +=  (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->z += (*f++)*in_pt.pNormal->z;
+                        out_pt.pNormal->z =   norm_mat[2][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->z +=  norm_mat[2][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->z +=  norm_mat[2][2]*in_pt.pNormal->z;
 
 			NORMALIZE_VECTOR (out_pt.pNormal, length);
 
@@ -761,25 +741,23 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 		  while (i--) {
 
 		    /* cast operands & transform the coordinates */
-		    f = vert_mat;
 
-		    tmp_pt.x = (*f++)*in_pt.p4Dpt->x;
-		    tmp_pt.x += (*f++)*in_pt.p4Dpt->y;
-		    tmp_pt.x += (*f++)*in_pt.p4Dpt->z;
-		    tmp_pt.x += (*f++)*in_pt.p4Dpt->w;
+		    tmp_pt.x =   vert_mat[0][0]*in_pt.p4Dpt->x;
+		    tmp_pt.x +=  vert_mat[0][1]*in_pt.p4Dpt->y;
+		    tmp_pt.x +=  vert_mat[0][2]*in_pt.p4Dpt->z;
+		    tmp_pt.x +=  vert_mat[0][3]*in_pt.p4Dpt->w;
 
-		    tmp_pt.y =  (*f++)*in_pt.p4Dpt->x;
-		    tmp_pt.y +=  (*f++)*in_pt.p4Dpt->y;
-		    tmp_pt.y += (*f++)*in_pt.p4Dpt->z;
-		    tmp_pt.y +=  (*f++)*in_pt.p4Dpt->w;
+		    tmp_pt.y =   vert_mat[1][0]*in_pt.p4Dpt->x;
+		    tmp_pt.y +=  vert_mat[1][1]*in_pt.p4Dpt->y;
+		    tmp_pt.y +=  vert_mat[1][2]*in_pt.p4Dpt->z;
+		    tmp_pt.y +=  vert_mat[1][3]*in_pt.p4Dpt->w;
 
 		    /* Skip Z transformation */
-		    f += 4;
 
-		    w =  (*f++)*in_pt.p4Dpt->x;
-		    w +=  (*f++)*in_pt.p4Dpt->y;
-		    w += (*f++)*in_pt.p4Dpt->z;
-		    w +=  (*f)*in_pt.p4Dpt->w;
+		    w =   vert_mat[3][0]*in_pt.p4Dpt->x;
+		    w +=  vert_mat[3][1]*in_pt.p4Dpt->y;
+		    w +=  vert_mat[3][2]*in_pt.p4Dpt->z;
+		    w +=  vert_mat[3][3]*in_pt.p4Dpt->w;
 
 		    /* Now round and normal->ze the result */
 		    if (w != 1.0) {
@@ -805,21 +783,19 @@ miTransform(pddc, vinput, voutput, vert_mat, norm_mat, outtype)
 
                       if DD_IsVertNormal(outtype) {
 
-                        f = norm_mat;
+                        out_pt.pNormal->x =   norm_mat[0][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->x +=  norm_mat[0][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->x +=  norm_mat[0][2]*in_pt.pNormal->z;
+                        /* no translation */
 
-                        out_pt.pNormal->x = (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->x += (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->x += (*f++)*in_pt.pNormal->z;
-                        (*f++); /* no translation */
+                        out_pt.pNormal->y =   norm_mat[1][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->y +=  norm_mat[1][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->y +=  norm_mat[1][2]*in_pt.pNormal->z;
+                        /* no translation */
 
-                        out_pt.pNormal->y =  (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->y +=  (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->y += (*f++)*in_pt.pNormal->z;
-                        (*f++); /* no translation */
-
-                        out_pt.pNormal->z =  (*f++)*in_pt.pNormal->x;
-                        out_pt.pNormal->z +=  (*f++)*in_pt.pNormal->y;
-                        out_pt.pNormal->z += (*f++)*in_pt.pNormal->z;
+                        out_pt.pNormal->z =   norm_mat[2][0]*in_pt.pNormal->x;
+                        out_pt.pNormal->z +=  norm_mat[2][1]*in_pt.pNormal->y;
+                        out_pt.pNormal->z +=  norm_mat[2][2]*in_pt.pNormal->z;
 
 			NORMALIZE_VECTOR (out_pt.pNormal, length);
 
@@ -890,13 +866,12 @@ miFacetTransform(pddc, finput, foutput, norm_mat)
 	miDDContext	*pddc; 
 	listofddFacet	*finput;
 	listofddFacet	**foutput;
-	ddFLOAT		*norm_mat;
+	ddFLOAT		norm_mat[4][4];
 {
 
     listofddFacet	*fct_list;
     ddFacetUnion	in_fct;
     ddFacetUnion	out_fct;
-    ddFLOAT		*f;
     ddFLOAT		length;
     char		color_flag;
     int			j;
@@ -936,21 +911,19 @@ miFacetTransform(pddc, finput, foutput, norm_mat)
 	if (color_flag)
 	  *(out_fct.pFacetRgbFloat++) = *(in_fct.pFacetRgbFloat++);
 
-	f = norm_mat;
+	out_fct.pFacetN->x =   norm_mat[0][0]*in_fct.pFacetN->x;
+	out_fct.pFacetN->x +=  norm_mat[0][1]*in_fct.pFacetN->y;
+	out_fct.pFacetN->x +=  norm_mat[0][2]*in_fct.pFacetN->z;
+	/* no translation */
 
-	out_fct.pFacetN->x = (*f++)*in_fct.pFacetN->x;
-	out_fct.pFacetN->x += (*f++)*in_fct.pFacetN->y;
-	out_fct.pFacetN->x += (*f++)*in_fct.pFacetN->z;
-	(*f++); /* no translation */
+	out_fct.pFacetN->y =   norm_mat[1][0]*in_fct.pFacetN->x;
+	out_fct.pFacetN->y +=  norm_mat[1][1]*in_fct.pFacetN->y;
+	out_fct.pFacetN->y +=  norm_mat[1][2]*in_fct.pFacetN->z;
+	/* no translation */
 
-	out_fct.pFacetN->y =  (*f++)*in_fct.pFacetN->x;
-	out_fct.pFacetN->y +=  (*f++)*in_fct.pFacetN->y;
-	out_fct.pFacetN->y += (*f++)*in_fct.pFacetN->z;
-	(*f++); /* no translation */
-
-	out_fct.pFacetN->z =  (*f++)*in_fct.pFacetN->x;
-	out_fct.pFacetN->z +=  (*f++)*in_fct.pFacetN->y;
-	out_fct.pFacetN->z += (*f++)*in_fct.pFacetN->z;
+	out_fct.pFacetN->z =   norm_mat[2][0]*in_fct.pFacetN->x;
+	out_fct.pFacetN->z +=  norm_mat[2][1]*in_fct.pFacetN->y;
+	out_fct.pFacetN->z +=  norm_mat[2][2]*in_fct.pFacetN->z;
 
 	NORMALIZE_VECTOR (out_fct.pFacetN, length);
 
