@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.6 87/08/20 16:22:09 toddb Locked $ */
+/* $Header: dispatch.c,v 1.26 87/08/29 17:19:19 susan Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,6 +37,7 @@ SOFTWARE.
 #include "cursorstr.h"
 #include "scrnintstr.h"
 #include "opaque.h"
+#include "input.h"
 
 extern WindowRec WindowTable[];
 extern xConnSetupPrefix connSetupPrefix;
@@ -208,7 +209,6 @@ Dispatch()
     ClientPtr	        *clientReady;     /* mask of request ready clients */
     ClientPtr	        *newClients;      /* mask of new clients */ 
     int			result;
-    int			i;
     xReq		*request;
     int			ErrorStatus;
     ClientPtr		client;
@@ -237,6 +237,7 @@ StartOver:
 	while (nnew--)
         {
 	    client = newClients[nnew];
+	    client->requestLogIndex = 0;
 	    InitClientResources(client);
 	    SendConnectionSetupInfo(client);
 	    nClients++;
@@ -287,7 +288,10 @@ StartOver:
 
 		client->sequence++;
 		client->requestBuffer = (pointer)request;
-
+		if (client->requestLogIndex == MAX_REQUEST_LOG)
+		    client->requestLogIndex = 0;
+		client->requestLog[client->requestLogIndex] = request->reqType;
+		client->requestLogIndex++;
 		ErrorStatus = (* (client->swapped ?
 		    SwappedProcVector : ProcVector)[request->reqType])(client);
 	    
@@ -812,6 +816,7 @@ ProcSetSelectionOwner(client)
 	    CurrentSelections[i].lastTimeChanged = time;
 	    CurrentSelections[i].window = stuff->window;
 	    CurrentSelections[i].pWin = pWin;
+	    CurrentSelections[i].client = client;
 	    return (client->noClientException);
 	}
 	/*
@@ -826,6 +831,7 @@ ProcSetSelectionOwner(client)
         CurrentSelections[i].lastTimeChanged = time;
 	CurrentSelections[i].window = stuff->window;
 	CurrentSelections[i].pWin = pWin;
+	CurrentSelections[i].client = client;
 	return (client->noClientException);
     }
     else 
@@ -868,11 +874,9 @@ ProcConvertSelection(client)
     Bool paramsOkay = TRUE;
     xEvent event;
     WindowPtr pWin;
-    TimeStamp time;
     REQUEST(xConvertSelectionReq);
 
     REQUEST_SIZE_MATCH(xConvertSelectionReq);
-    time = ClientTimeToServerTime(stuff->time);
     pWin = (WindowPtr)LookupWindow(stuff->requestor, client);
     if (!pWin)
         return(BadWindow);
@@ -898,18 +902,18 @@ ProcConvertSelection(client)
 	    event.u.selectionRequest.selection = stuff->selection;
 	    event.u.selectionRequest.target = stuff->target;
 	    event.u.selectionRequest.property = stuff->property;
-	    DeliverEvents(CurrentSelections[i].pWin, &event, 1);
+	    if (TryClientEvents(
+		CurrentSelections[i].client, &event, 1, NoEventMask,
+		NoEventMask, NullGrab))
+		return (client->noClientException);
 	}
-	else    /* didn't find so send SelectionNotify */
-	{
-	    event.u.u.type = SelectionNotify;
-	    event.u.selectionNotify.time = stuff->time;
-	    event.u.selectionNotify.requestor = stuff->requestor;
-	    event.u.selectionNotify.selection = stuff->selection;
-	    event.u.selectionNotify.target = stuff->target;
-	    event.u.selectionNotify.property = None;
-	    DeliverEvents(pWin, &event, 1);
-	}
+	event.u.u.type = SelectionNotify;
+	event.u.selectionNotify.time = stuff->time;
+	event.u.selectionNotify.requestor = stuff->requestor;
+	event.u.selectionNotify.selection = stuff->selection;
+	event.u.selectionNotify.target = stuff->target;
+	event.u.selectionNotify.property = None;
+	DeliverEvents(pWin, &event, 1);
 	return (client->noClientException);
     }
     else 
@@ -1929,11 +1933,6 @@ ProcCreateColormap(client)
     if (!pWin)
         return(BadWindow);
 
-    if(stuff->visual == CopyFromParent)
-        if(pWin->parent)
-	    stuff->visual = pWin->parent->visual;
-	else
-	    stuff->visual = pWin->visual;
     pVisual = (VisualPtr)LookupID(stuff->visual, RT_VISUALID, RC_CORE);
     if ((!pVisual) || pVisual->screen != pWin->drawable.pScreen->myNum)
     {
@@ -1959,7 +1958,7 @@ ProcFreeColormap(client)
     pmap = (ColormapPtr )LookupID(stuff->id, RT_COLORMAP, RC_CORE);
     if (pmap) 
     {
-	FreeColormap(pmap, client->index);
+	FreeColormap(pmap, (client->index << CLIENTOFFSET));
 	FreeResource(stuff->id, RC_NONE);
 	return (client->noClientException);
     }
@@ -2525,10 +2524,22 @@ ProcCreateGlyphCursor( client)
     maskfont = (FontPtr) LookupID(stuff->mask, RT_FONT, RC_CORE);
 
     if (sourcefont == (FontPtr) NULL)
+    {
+	client->errorValue = stuff->source;
 	return(BadFont);
+    }
+
+    if (maskfont == (FontPtr) NULL)
+    {
+	client->errorValue = stuff->mask;
+	return(BadFont);
+    }
 
     if (!CursorMetricsFromGlyph(maskfont, stuff->maskChar, &cm))
+    {
+	client->errorValue = stuff->mask;
 	return BadValue;
+    }
 
     if (res = ServerBitsFromGlyph(stuff->source, 
 				  sourcefont, stuff->sourceChar,
@@ -2681,7 +2692,7 @@ ProcListHosts(client)
 extern int GetHosts();
     xListHostsReply reply;
     int	len, nHosts;
-    char	*pdata;
+    pointer	pdata;
     REQUEST(xListHostsReq);
 
     REQUEST_SIZE_MATCH(xListHostsReq);
@@ -2718,6 +2729,7 @@ ProcKillClient(client)
     REQUEST(xResourceReq);
 
     pointer *pResource;
+    int clientIndex;
 
     REQUEST_SIZE_MATCH(xResourceReq);
     if (stuff->id == AllTemporary)
@@ -2726,10 +2738,16 @@ ProcKillClient(client)
         return (client->noClientException);
     }
     pResource = (pointer *)LookupID(stuff->id, RT_ANY, RC_CORE);
-    if ((CLIENT_ID(stuff->id)) && pResource)
+  
+    clientIndex = CLIENT_ID(stuff->id);
+
+    if (clientIndex && pResource)
     {
-	CloseDownClient(client);
-        return (client->noClientException);
+    	if (clients[clientIndex] && !clients[clientIndex]->clientGone)
+ 	{
+	    CloseDownClient(clients[clientIndex]);
+            return (client->noClientException);
+	}
     }
     else   /* can't kill client 0, which is server */
     {
@@ -2867,6 +2885,7 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
+    extern void DeleteClientFromAnySelections();
     register int i;
       /* ungrab server if grabbing client dies */
     if (grabbingClient &&  (onlyClient == client))
@@ -2874,6 +2893,7 @@ CloseDownClient(client)
 	grabbingClient = FALSE;
 	ListenToAllClients();
     }
+    DeleteClientFromAnySelections(client);
     ReleaseActiveGrabs(client);
     
     if (client->closeDownMode == DestroyAll)
@@ -3070,6 +3090,20 @@ DeleteWindowFromAnySelections(pWin)
 
     for (i = 0; i< NumCurrentSelections; i++)
         if (CurrentSelections[i].pWin == pWin)
+        {
+            CurrentSelections[i].pWin = (WindowPtr)NULL;
+            CurrentSelections[i].window = None;
+	}
+}
+
+static void
+DeleteClientFromAnySelections(client)
+    ClientPtr client;
+{
+    int i = 0;
+
+    for (i = 0; i< NumCurrentSelections; i++)
+        if (CurrentSelections[i].client == client)
         {
             CurrentSelections[i].pWin = (WindowPtr)NULL;
             CurrentSelections[i].window = None;
