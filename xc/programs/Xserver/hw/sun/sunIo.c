@@ -317,6 +317,7 @@ ddxProcessArgument (argc, argv, i)
 {
     extern void UseMsg();
     extern Bool ActiveZaphod;
+    extern Bool FlipPixels;
 
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();
@@ -340,6 +341,10 @@ ddxProcessArgument (argc, argv, i)
     }
     if (strcmp (argv[i], "-zaphod") == 0) {	/* -zaphod */
 	ActiveZaphod = FALSE;
+	return 1;
+    }
+    if (strcmp (argv[i], "-flipPixels") == 0) {	/* -flipPixels */
+	FlipPixels = TRUE;
 	return 1;
     }
     return 0;
