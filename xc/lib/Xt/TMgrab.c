@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.7 92/12/23 12:21:33 converse Exp $ */
+/* $XConsortium: TMgrab.c,v 1.8 92/12/23 18:28:08 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -134,6 +134,9 @@ static Boolean DoGrab(state, data)
     ActionRec		*action;
     TMTypeMatch		typeMatch = TMGetTypeMatch(typeIndex);
     TMModifierMatch	modMatch = TMGetModifierMatch(modIndex);
+    Modifiers		careOn = 0;
+    Modifiers		careMask = 0;
+    Boolean		resolved;
 
     for (action = state->actions; action; action = action->next)
       if (count == action->idx) break;
@@ -142,10 +145,17 @@ static Boolean DoGrab(state, data)
     switch (typeMatch->eventType) {
       case ButtonPress:
       case ButtonRelease:
+	if (modMatch->lateModifiers) {
+	    resolved = _XtComputeLateBindings(XtDisplay(widget),
+					      modMatch->lateModifiers,
+					      &careOn, &careMask);
+	    if (!resolved) break;
+	}
+	careOn |= modMatch->modifiers;
 	XtGrabButton(
 		     widget,
 		     (unsigned) typeMatch->eventCode,
-		     (unsigned) modMatch->modifiers,
+		     careOn,
 		     grabP->owner_events,
 		     grabP->event_mask,
 		     grabP->pointer_mode,
