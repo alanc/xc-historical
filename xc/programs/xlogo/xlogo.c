@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlogo.c,v 1.17 93/09/18 20:06:09 rws Exp $
+ * $XConsortium: xlogo.c,v 1.18 94/04/01 17:28:11 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -65,17 +65,30 @@ static void save(w, client_data, call_data)
  * Report the syntax for calling xlogo.
  */
 
-static void
-Syntax(call)
+static void Syntax(toplevel, call)
+    Widget toplevel;
     char *call;
 {
-    (void) printf ("Usage: %s [-fg <color>] [-bg <color>] [-rv] %s\n", call, 
-		   "[-bw <pixels>] [-bd <color>]");
-    (void) printf ("             [-d [<host>]:[<vs>]]\n");
-    (void) printf ("             [-g [<width>][x<height>]%s", 
-		   "[<+-><xoff>[<+-><yoff>]]]\n");
-    (void) printf ("             [-shape]\n");
-    (void) printf ("\n");
+    Arg arg;
+    SmcConn connection;
+    String reasons[6];
+    int i, num_reasons = 6;
+
+    reasons[0] = "Usage: ";
+    reasons[1] = call;
+    reasons[2] = " [-fg <color>] [-bg <color>] [-rv] [-bw <pixels>] [-bd <color>]\n";
+    reasons[3] = "             [-d [<host>]:[<vs>]]\n";
+    reasons[4] = "             [-g [<width>][x<height>][<+-><xoff>[<+-><yoff>]]]\n";
+    reasons[5] = "             [-shape]\n\n";
+
+    XtSetArg(arg, XtNconnection, &connection);
+    XtGetValues(toplevel, &arg, (Cardinal)1);
+    if (connection) 
+	SmcCloseConnection(connection, num_reasons, reasons);
+    else {
+	for (i=0; i < num_reasons; i++)
+	    printf(reasons[i]);
+    }
     exit(1);
 }
 
@@ -91,8 +104,8 @@ char **argv;
 				 options, XtNumber(options), 
 				 &argc, argv, fallback_resources,
 				 sessionShellWidgetClass, NULL, ZERO);
-    if (argc != 1) 
-	Syntax(argv[0]);
+    if (argc != 1)
+	Syntax(toplevel, argv[0]);
 
     XtAddCallback(toplevel, XtNsaveCallback, save, NULL);
     XtAddCallback(toplevel, XtNdieCallback, die, NULL);
