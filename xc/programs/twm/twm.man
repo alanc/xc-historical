@@ -575,6 +575,11 @@ This causes \fItwm\fP to attempt to use the WM_STATE property on client windows
 to tell which windows should be iconified and which should be left visible.
 If this variable is not set, the window manager will use the WM_NORMAL_HINTS
 to determine the desired initial state of each window.
+.IP "\fBSqueezeTitle\fP" 8
+Useful only if the server supports the SHAPE extension.  When set,
+the title bar is made only wide enough to hold the title buttons and
+the window name (i.e. the highlight window is elided).  Then the
+frame is reshaped to fit neatly around the smaller title window.  This
 .IP "\fBStartIconified\fP [ { \fIlist\fP } ] " 8
 This variable is a list of window names that will be started up iconified.
 It is useful for programs that do not support the Xt "-iconic" flag yet.
