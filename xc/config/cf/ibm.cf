@@ -25,17 +25,26 @@
 #define SystemV YES
 #define OSName AIX
 #define BootstrapCFlags -Daix
-#define OSDefines /**/
+#ifdef RtArchitecture
+#define OSDefines -DAIX -DAIXrt -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
+#else
+#define OSDefines -DAIX -DAIX386 -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
+#define LdCombineFlags -r /* PS/2 doesn't do ld -X */
+#endif
 #define OPERATING_SYSTEM AIX /* directory name under server/ddx/ibm/ */
 
 #ifdef USE_PCC
 #define CcCmd i386cc
 #define ibmosdefs -DHCVERSION=HCRevision
-#define LibraryDefines /**/
 #else
+#ifdef RtArchitecture
 #define CcCmd cc -Nd4000 -Nn3000 -DBSD_INCLUDES
-#define LibraryDefines -Hcpp -DUNIXCPP
 #define ibmosdefs -DSYSV -Nd4000 -Nn3000
+#else
+#define CcCmd cc -DBSD_INCLUDES -D_BSD
+#define ibmosdefs -DSYSV
+#endif
+#define ibmlibdefs -Hcpp
 #endif /* USE_PCC */
 
 #else /* else AOS - warning: AOS is going away... */
@@ -68,10 +77,12 @@
 #endif /* RtArchitecture */
 
 #ifdef PS2Architecture
+/*
 #define AsCmd /bin.386/i386as
 #define LdCmd /bin.386/i386ld
 #define ExtraLibraries /lib.386/libtcp.a
-#define LnCmd ln			/* no symbolic links */
+*/
+#define LnCmd ln -s			/* no symbolic links */
 #define ibmarchdefs -Di386 -DiAPX386
 /*
  * These define the screens the server will allow
@@ -105,6 +116,10 @@
 #ifndef ibmarchdefs
 #define ibmarchdefs /**/
 #endif
+#ifndef ibmlibdefs
+#define ibmlibdefs /**/
+#endif
+
 
 #define StandardDefines -Dibm ibmosdefs ibmarchdefs
 #define LintOpts -ax -Dibm ibmosdefs ibmarchdefs
@@ -132,7 +147,6 @@
 #define	SpecialMalloc		YES
 #define	ibmSpecialMalloc		YES
 
- LDCOMBINEFLAGS = -X -r
             PCC = pcc
 
 #ifndef AIXArchitecture				/* AOS-specific */
@@ -175,11 +189,15 @@
  * define this as you like for server compilation 
  * affected: all makefiles in .../X11/server
  */
-#define ServerDefines  StandardDefines -DUNIXCPP -DNOSTDHDRS StandardDefines OSDefines ExtensionDefines
+#define ServerDefines  StandardDefines -DUNIXCPP -DNOSTDHDRS OSDefines ExtensionDefines
 
 
 /* define this as you like for server font support */
+#ifdef AIXArchitecture
+#define FontDefines -DFONT_SNF -DFONT_BDF StandardDefines
+#else
 #define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS StandardDefines
+#endif
 
 /* define the following line for easily debuggable servers, the */
 /* second line for especially speedy servers.			*/
@@ -187,8 +205,8 @@
 #define	ServerCDebugFlags -O ibmAthenaDefs
 
 /* define this as you like for normal library compilation */
-#define LibraryDefines -DUNIXCPP StandardDefines
+#define LibraryDefines -DUNIXCPP ibmlibdefs StandardDefines
 
-/**/# platform:  $XConsortium: ibm.cf,v 1.12 89/10/11 18:55:09 jim Exp $
+/**/# platform:  $XConsortium: ibm.cf,v 1.13 89/11/13 11:48:32 jim Exp $
 /**/# operating system:  OSName
 
