@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.12 88/10/18 11:59:35 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.13 89/04/05 16:21:53 converse Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif lint
 
@@ -154,7 +154,7 @@ void XtAddCallbacks(widget, name, xtcallbacks)
     }
     add_callbacks = _XtCompileCallbackList(widget, xtcallbacks);
     AddCallbacks(widget, callbacks, add_callbacks->internal_form);
-    XtFree(add_callbacks);
+    XtFree((char*)add_callbacks);
 } /* XtAddCallbacks */
 
 void RemoveCallback (widget, callbacks, callback, closure)
@@ -240,9 +240,9 @@ void _XtFreeCallbackList(callbacks)
     CallbackStruct *callbacks;	/* may not be NULL */
 {
     if (callbacks->internal_form != NULL)
-	_XtRemoveAllCallbacks(callbacks->internal_form);
-    XtFree(callbacks->external_form);
-    XtFree(callbacks);
+	_XtRemoveAllCallbacks(&callbacks->internal_form);
+    XtFree((char*)callbacks->external_form);
+    XtFree((char*)callbacks);
 } /* XtFreeCallbackList */
 
 void XtRemoveAllCallbacks(widget, name)
@@ -362,9 +362,9 @@ XtCallbackList _XtGetCallbackList(list)
 
     callback_count++;		/* for list terminator */
     if (callback_count > callbackstruct->array_size) {
-	XtFree(callbackstruct->external_form);
+	XtFree((char*)callbackstruct->external_form);
 	callbackstruct->external_form =
-	    (XtCallbackList)XtMalloc(callback_count * sizeof(XtCallbackRec));
+	    (XtCallbackList)XtMalloc((Cardinal)callback_count * sizeof(XtCallbackRec));
 	callbackstruct->array_size = callback_count;
     }
     for (callback = callbackstruct->internal_form,
