@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.31 89/11/30 19:25:20 swick Exp $";
+    "$XConsortium: Selection.c,v 1.32 89/11/30 20:17:35 swick Exp $";
 #endif
 
 /***********************************************************
@@ -32,8 +32,6 @@ SOFTWARE.
 #include "SelectionI.h"
 
 extern void bcopy();
-
-#define LOCAL ((XtRequestId)0L)
 
 void _XtSetDefaultSelectionTimeout(timeout)
 	unsigned long *timeout;
@@ -469,13 +467,6 @@ Boolean *incremental;
     Atom targetType;
     Request req = XtNew(RequestRec);
 
-/*
-    if (req == LOCAL) {
-	Request old = req;
-	req = XtNew(RequestRec);
-	XtFree((XtPointer)old);
-    }
-*/
     req->event = *event;
     if (ctx->incremental == TRUE) {
 	 unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
@@ -1097,9 +1088,9 @@ XEvent *ev;
     }
 }
 
-static DoLocalTransfer(ctx, selection, target, widget,
+static DoLocalTransfer(req, selection, target, widget,
 		       callback, closure, incremental)
-Select ctx;
+Request req;
 Atom selection;
 Atom target;
 Widget widget;		/* The widget requesting the value. */
@@ -1107,6 +1098,7 @@ XtSelectionCallbackProc callback;
 XtPointer closure;	/* the closure for the callback, not the conversion */
 Boolean incremental;
 {
+    Select ctx = req->ctx;
     XtPointer value = NULL, temp, total = NULL;
     unsigned int length;
     int format;
@@ -1114,14 +1106,13 @@ Boolean incremental;
     int totallength = 0;
     Boolean first = TRUE;
 
-	ctx->event.target = target;
+	req->event.target = target;
 
 	if (ctx->incremental) {
 	   unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
-	   XtRequestId req = LOCAL;
 	   if (!(*ctx->convert)(ctx->widget, &selection, &target,
 			    &resulttype, &value, &length, &format,
-			    &size, ctx->owner_closure, &req)) {
+			    &size, ctx->owner_closure, (XtRequestId*)&req)) {
 	       HandleNone(widget, callback, closure, selection);
 	   }
 	   else {
@@ -1135,19 +1126,20 @@ Boolean incremental;
 	                bcopy(value, temp, bytelength);
 	                value = temp;
 	              }
-		      /* use care; older clients were not warned that
-		       * they _must_ return a value even if length==0
+		      /* use care; older clients were never warned that
+		       * they must return a value even if length==0
 		       */
 		     if (value == NULL) value = XtMalloc((unsigned)1);
 		     (*callback)(widget, closure, &selection, 
 			&resulttype, value, &length, &format);
 		     if (ctx->notify) 
 			 (*ctx->notify)(ctx->widget, &selection, &target, 
-					&req, ctx->owner_closure);
+				       (XtRequestId*)&req, ctx->owner_closure);
 		     if (length)
 			 (*ctx->convert)(ctx->widget, &selection, &target,
 					 &resulttype, &value, &length, &format,
-					 &size, ctx->owner_closure, &req);
+					 &size, ctx->owner_closure,
+					 (XtRequestId*)&req);
 		  }
 	        } else {
 	          while (length) {
@@ -1157,17 +1149,13 @@ Boolean incremental;
 		    bcopy(value, &total[totallength-bytelength], bytelength);
 		    if (ctx->notify) 
 			(*ctx->notify)(ctx->widget, &selection, &target, 
-				       &req, ctx->owner_closure);
+				       (XtRequestId*)&req, ctx->owner_closure);
 		    else XtFree(value);
-
 		    (*ctx->convert)(ctx->widget, &selection, &target, 
 			    &resulttype, &value, &length, &format,
-			    &size, ctx->owner_closure, &req);
+			    &size, ctx->owner_closure, (XtRequestId*)&req);
 		  }
-		  if (total == NULL)
-		      if (value != NULL) total = value;
-		      else total = XtMalloc(1);
-		  else if (value != NULL) XtFree(value);
+		  if (total == NULL) total = XtMalloc(1);
 		  totallength = NUMELEM(totallength, format); 
 		  (*callback)(widget, closure, &selection, &resulttype, 
 		    total,  &totallength, &format);
@@ -1210,9 +1198,12 @@ Boolean incremental;
 
     ctx = FindCtx(XtDisplay(widget), selection);
     if (ctx->widget) {
-	ctx->event.requestor = XtWindow(widget);
-	ctx->event.time = time;
-	DoLocalTransfer(ctx, selection, target, widget,
+	RequestRec req;
+	req.ctx = ctx;
+	req.event.type = 0;
+	req.event.requestor = XtWindow(widget);
+	req.event.time = time;
+	DoLocalTransfer(&req, selection, target, widget,
 			callback, closure, incremental);
     }
     else {
@@ -1275,11 +1266,14 @@ Boolean incremental;
     if (count == 0) return;
     ctx = FindCtx(XtDisplay(widget), selection);
     if (ctx->widget) {
-       ctx->event.requestor = XtWindow(widget);
-       ctx->event.time = time;
-       for (; count; count--, targets++, closures++ )
-	 DoLocalTransfer(ctx, selection, *targets, widget,
-			 callback, *closures, incremental);
+	RequestRec req;
+	req.ctx = ctx;
+	req.event.type = 0;
+	req.event.requestor = XtWindow(widget);
+	req.event.time = time;
+	for (; count; count--, targets++, closures++ )
+	    DoLocalTransfer(&req, selection, *targets, widget,
+			    callback, *closures, incremental);
     } else {
 	info = MakeInfo(callback, closures, count, widget, time, incremental);
 	info->req_cancel = cancel;
@@ -1342,16 +1336,11 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
     XtRequestId id;
 { 
     Request req = (Request)id;
-    Select ctx;
 
-    if (   (req == NULL
-	    && ((ctx = FindCtx( XtDisplay(widget), selection )) == NULL
-		|| ctx->selection != selection
-		|| ctx->widget == NULL))
-	|| (req != NULL
-	    && (req->ctx == NULL
-		|| req->ctx->selection != selection
-		|| req->ctx->widget != widget)))
+    if (   req == NULL
+	|| (req->ctx == NULL
+	    || req->ctx->selection != selection
+	    || req->ctx->widget != widget))
     {
 	String params = XtName(widget);
 	Cardinal num_params = 1;
@@ -1364,20 +1353,18 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
 	return NULL;
     }
 
-    if (req != NULL)
-	return &req->event;
-    else {
-	/* owner is local; construct an event */
-	ctx->event.type = SelectionRequest;
-	ctx->event.serial = LastKnownRequestProcessed(XtDisplay(widget));
-	ctx->event.send_event = True;
-	ctx->event.display = XtDisplay(widget);
-	ctx->event.owner = XtWindow(ctx->widget);
-    /*  ctx->event.requestor = XtWindow(requesting_widget); */
-	ctx->event.selection = selection;
-    /*  ctx->event.target = requestors_target; */
-	ctx->event.property = None; /* %%% what to do about side-effects? */
-    /*  ctx->event.time = requestors_time; */
-	return &ctx->event;
+    if (req->event.type == 0) {
+	/* owner is local; construct the remainder of the event */
+	req->event.type = SelectionRequest;
+	req->event.serial = LastKnownRequestProcessed(XtDisplay(widget));
+	req->event.send_event = True;
+	req->event.display = XtDisplay(widget);
+	req->event.owner = XtWindow(req->widget);
+    /*  req->event.requestor = XtWindow(requesting_widget); */
+	req->event.selection = selection;
+    /*  req->event.target = requestors_target; */
+	req->event.property = None; /* %%% what to do about side-effects? */
+    /*  req->event.time = requestors_time; */
     }
+    return &req->event;
 }
