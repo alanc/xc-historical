@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.8 89/05/22 17:59:34 converse Exp $ 
+/* $XConsortium: StdCmap.c,v 1.9 89/05/24 11:08:32 converse Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/StdCmap.h>
 
 static Status valid_args();		/* argument restrictions */
 
