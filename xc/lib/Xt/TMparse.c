@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: TMparse.c,v 1.2 88/08/18 15:51:46 asente Exp $";
+static char rcsid[] = "$xHeader: TMparse.c,v 1.62 88/08/31 10:26:13 swick Exp $";
 /* $oHeader: TMparse.c,v 1.2 88/08/18 15:51:46 asente Exp $ */
 #endif lint
 
@@ -27,7 +27,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <strings.h>
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include "StringDefs.h"
 #include <stdio.h>
