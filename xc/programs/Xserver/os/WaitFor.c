@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.63 93/09/23 10:51:51 dpw Exp $ */
+/* $XConsortium: WaitFor.c,v 1.64 93/09/23 17:29:34 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -43,7 +43,6 @@ extern int errno;
 #include "misc.h"
 
 #include <sys/param.h>
-#include <signal.h>
 #include "osdep.h"
 #include "dixstruct.h"
 #include "opaque.h"
