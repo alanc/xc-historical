@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.19 91/06/05 09:50:04 dave Exp $
+ * $XConsortium: main.c,v 1.20 91/09/03 17:42:49 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -128,7 +128,7 @@ int argc;
   XtAppContext app_con;
 
   saved_argc = argc;
-  saved_argv = XtMalloc(argc * sizeof(char *));
+  saved_argv = (char **)XtMalloc(argc * sizeof(char *));
   bcopy(argv, saved_argv, argc * sizeof(char *));
 
   initial_widget = XtAppInitialize(&app_con, "Xman", xman_options,
