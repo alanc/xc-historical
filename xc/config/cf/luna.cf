@@ -1,8 +1,9 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.5 91/02/19 13:54:52 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.6 91/03/27 09:13:12 rws Exp $
 #ifdef Mc68000Architecture
 #define OSName            UNIOS-B 4.3BSD UNIX: 1.50
 #define OSMajorVersion    1
 #define OSMinorVersion    50
+#define DirFailPrefix -
 #else
 #define OSName            Mach 2.5 Vers 1.10
 #define OSMajorVersion    1
