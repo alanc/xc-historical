@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.2 92/01/25 17:12:09 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.3 92/01/25 17:16:48 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -132,6 +132,74 @@ XTestCompareCurrentCursorWithWindow(dpy, window)
     Window window;
 {
     return XTestCompareCursorWithWindow(dpy, window, XTestCurrentCursor);
+}
+
+XTestFakeKeyEvent(dpy, keycode, is_press, delay)
+    Display *dpy;
+    unsigned int keycode;
+    Bool is_press;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+
+    XTestCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = is_press ? KeyPress : KeyRelease;
+    req->detail = keycode;
+    req->time = delay;
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+
+XTestFakeButtonEvent(dpy, button, is_press, delay)
+    Display *dpy;
+    unsigned int button;
+    Bool is_press;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+
+    XTestCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = is_press ? ButtonPress : ButtonRelease;
+    req->detail = button;
+    req->time = delay;
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+
+XTestFakeMotionEvent(dpy, screen, x, y, delay)
+    Display *dpy;
+    int screen;
+    int x, y;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+
+    XTestCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = MotionNotify;
+    req->root = RootWindow(dpy, screen);
+    req->rootX = x;
+    req->rootY = y;
+    req->time = delay;
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
 void
