@@ -183,6 +183,8 @@ change_text(w,newtext)
 
   /* Initialize the XawTextBlock. */
 
+  if (!newtext)
+      newtext = "";
   text.firstPos = 0;
   text.length = strlen(newtext);
   text.ptr = newtext;
@@ -194,6 +196,8 @@ change_text(w,newtext)
   textargs[0].value = (XtArgVal) &oldtext;
   XtGetValues(w,textargs,XtNumber(textargs));
   first = XawTextTopPosition(w);
+  if (!oldtext)
+      oldtext = "";
   last = (XawTextPosition) strlen(oldtext)+1;
 
   /* Replace it with the new text. */
