@@ -11,7 +11,7 @@
 #include <X11/Label.h>
 #include <X11/Command.h>
 #include <X11/StringDefs.h>
-#include "xbench.h"
+#include "xgc.h"
 
 #define DASHLENGTH 8		/* How many bits in the dash description */
 
@@ -83,13 +83,13 @@ void create_dashlist_choice(w)
     }
 
     if (dashlist&1<<i) {	/* if it's set, make it look that way */
-        dashargs[6].value = (XtArgVal) White;
-	dashargs[7].value = (XtArgVal) Black;
-      }
+      dashargs[6].value = (XtArgVal) X.background;
+      dashargs[7].value = (XtArgVal) X.foreground;
+    }
     else {			/* OK, don't */
-        dashargs[6].value = (XtArgVal) Black;
-	dashargs[7].value = (XtArgVal) White;
-      }
+      dashargs[6].value = (XtArgVal) X.foreground;
+      dashargs[7].value = (XtArgVal) X.background;
+    }
 
     dashinfo[i] = i;		/* which bit we're on; this is needed
 				   in change_dashlist (the callback) */
@@ -130,13 +130,13 @@ void change_dashlist(w,closure,call_data)
 
   if (on) {			/* we're turning it on */
     dashlist |= 1<<num;		/* add it to the dashlist */
-    args[0].value = (XtArgVal) White; /* make it look on */
-    args[1].value = (XtArgVal) Black;
+    args[0].value = (XtArgVal) X.background; /* make it look on */
+    args[1].value = (XtArgVal) X.foreground;
   }
   else {			/* we're turning it off */
     dashlist &= ~(1<<num);	/* take it off the dashlist */
-    args[0].value = (XtArgVal) Black; /* make it look off */
-    args[1].value = (XtArgVal) White;
+    args[0].value = (XtArgVal) X.foreground; /* make it look off */
+    args[1].value = (XtArgVal) X.background;
   }
 
   XtSetValues(w,args,XtNumber(args));
