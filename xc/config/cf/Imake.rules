@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.111 91/07/09 15:27:22 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.112 91/07/20 15:07:00 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -61,6 +61,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.111 91/07/09 15:27:22 rws Exp $
  *     	NormalLibraryTarget			(libname,objlist)
  *     	NormalLibraryTarget2			(libname,objlist1,objlist2)
  *     	NormalLibraryTarget3              (libname,objlist1,objlist2,objlist3)
+ *     	NormalDepLibraryTarget			(libname,deplist,objlist)
  *     	ProfiledLibraryTarget			(libname,objlist)
  *     	DebuggedLibraryTarget			(libname,objlist)
  *     	AliasedLibraryTarget			(libname,alias)
@@ -840,6 +841,20 @@ Concat(lib,libname.a): objlist1 objlist2 objlist3			@@\
 	$(AR) $@ objlist3						@@\
 	RanLibrary($@)
 #endif /* NormalLibraryTarget3 */
+
+
+/*
+ * NormalDepLibraryTarget - generate rules to create a library.
+ */
+#ifndef NormalDepLibraryTarget
+#define	NormalDepLibraryTarget(libname,deplist,objlist)			@@\
+AllTarget(Concat(lib,libname.a))					@@\
+									@@\
+Concat(lib,libname.a): deplist						@@\
+	$(RM) $@							@@\
+	$(AR) $@ objlist						@@\
+	RanLibrary($@)
+#endif /* NormalDepLibraryTarget */
 
 
 /*
