@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.4 91/02/17 12:58:02 rws Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.5 91/02/17 14:37:40 dave Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
