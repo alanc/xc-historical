@@ -1,4 +1,4 @@
-.TH X 1 "1 March 1988"  "X Version 11"
+.TH X 1 "16 October 1988"  "X Version 11"
 .SH NAME
 X - a portable, network transparent window system
 .SH SYNOPSIS
@@ -6,7 +6,8 @@ X - a portable, network transparent window system
 X is a network transparent window system developed at MIT which
 runs under a wide variety of operating systems.  The standard distribution
 from MIT works on Ultrix-32 Version 1.2 (and higher), 4.3BSD Unix,
-SunOS 3.2 (and higher), HP-UX 6.01, and DOMAIN/IX 9.7.  In addition, many vendors
+SunOS 3.2 (and higher), HP-UX 6.01, DOMAIN/IX 9.7, and A/UX 1.0
+(and higher).  In addition, many vendors
 support the X Window System under other operating systems.
 .SH "THE OFFICIAL NAMES"
 The official names of the software described herein are:
@@ -42,16 +43,10 @@ operating systems) as well.
 X supports overlapping hierarchical subwindows and text and
 graphics operations, on both monochrome and color
 displays.
-For a full explanation of functions, see the
+For a full explanation of the functions that are available, see the
 \fIXlib - C Language X Interface\fP manual, the
 \fIX Window System Protocol\fP specification,
 and various toolkit documents.
-.PP
-When you first log in on a display running X, you are
-usually using the \fIxterm(1)\fP terminal emulator program.
-You need not learn anything extra to use a display running X as
-a terminal beyond moving the mouse cursor into the login window to
-log in normally.
 .PP
 The core \fIX\fP protocol provides mechanism, not policy.  
 Windows are manipulated (including
@@ -64,19 +59,74 @@ you can write your own.
 .PP
 The number of programs that use \fIX\fP is growing rapidly.  Of particular
 interest are:
-a terminal emulator (\fIxterm(1)\fP),
-window managers (\fIwm(1)\fP and \fIuwm(1)\fP), 
-a mailer reader (\fIxmh(1)\fP),
-a bitmap editor (\fIbitmap(1)\fP),
-an access control program (\fIxhost(1)\fP),
-user preference setting programs (\fIxset(1)\fP, \fIxsetroot(1)\fP,
-and \fIxmodmap(1)\fP),
-a load monitor (\fIxload(1)\fP), clock (\fIxclock(1)\fP),
-a font displayer (\fIxfd(1)\fP),
-a protocol translator for running X10 programs (\fIx10tox11(1)\fP),
-and various demos (\fIico(1)\fP, \fImuncher(1)\fP, \fIpuzzle(1)\fP, etc.).
-
-.SH DISPLAY SPECIFICATION
+a terminal emulator (\fIxterm\fP),
+window managers (\fIwm\fP and \fIuwm\fP), 
+a display manager (\fIxdm\fP),
+mail managing utilities (\fIxmh\fP and \fIxbiff\fP),
+a manual page browser (\fIxman\fP),
+a bitmap editor (\fIbitmap\fP),
+an access control program (\fIxhost\fP),
+user preference setting programs (\fIxrdb\fP, \fIxset\fP, \fIxsetroot\fP,
+and \fIxmodmap\fP),
+a load monitor (\fIxload\fP), clock (\fIxclock\fP),
+a font displayer (\fIxfd\fP),
+utilities for listing information about fonts, windows, and displays
+(\fIxlsfonts\fP, \fIxlswins\fP, \fIxwininfo\fP, and \fIxdpyinfo\fP,
+\fIxprop\fP),
+a protocol translator for running X10 programs (\fIx10tox11\fP),
+a diagnostic for seeing what when events are generated (\fIxev\fP),
+screen image manipulation utilities (\fIxwd\fP, \fIxwud\fP, \fIxpr\fP, and
+\fIxmag\fP),
+and various demos (\fIxeyes\fP, \fIico\fP, \fImuncher\fP, \fIpuzzle\fP, etc.).
+.PP
+Many additional utilities, window managers, games, toolkits, etc. are also
+distributed with the core software.  See you site administrator for details
+about what additional programs are available.
+.SH GETTING STARTED
+.PP 
+There are currently 3 ways of getting the X server and an initial set of
+client applications started.  The particular method used depends on what
+operating system you are running and on whether or not you use other window
+systems in addition to X.
+.TP 8
+.B "\fIxdm\fP (the X Display Manager)"
+If you want to always have X running on your display, your site administrator
+can set your machine up to use the X Display Manager \fIxdm\fP.  This program
+is typically started by the system at boot time and takes care of keeping the
+server running and getting users logged in.  If you are running
+\fIxdm\fP, you will see a window on the screen welcoming you to the system and
+asking for your username and password.  Simply type them in as you would at
+a normal terminal, pressing the Return key after each.  If you make a mistake,
+\fIxdm\fP will display an error message and ask you to try again.  After you
+have successfully logged in, \fIxdm\fP will start up your X environment.  By
+default, if you have an file named \fI.xsession\fP in your home directory,
+\fIxdm\fP will treat it as a program (or shell script) to run to start up 
+your initial clients (such as terminal emulators, clocks, a window manager,
+user settings for things like the background, the speed of the pointer, etc.).
+Your site administrator can provide details.
+.TP 8
+.B "\fIxterm \-L\fP (started from \fI/etc/init\fP)"
+Some versions of UNIX that are derived from 4.3bsd support starting the window
+system and an initial \fIxterm\fP window from the system terminal line
+configuration file \fI/etc/ttys\fP.  As with \fIxdm\fP, there will be a 
+window requesting your username and password.  However, this window will become
+your primary window and is not configurable on a per-user basis.  Sites using
+this method should switch to \fIxdm\fP.
+.TP 8
+.B "\fIxinit\fP (run manually from the shell)"
+Sites that support more than one window system might choose to use the
+\fIxinit\fP program for starting X manually.  If this is true for your 
+machine, your site administrator will probably have provided a program 
+named "x11", "startx", or "xstart" that will do site-specific initialization
+(such as loading convenient default resources, running a window manager, 
+displaying a clock, and starting several terminal emulators) in a nice
+way.  If not, you can build such a script using the \fIxinit\fP program.
+This utility simply runs one user-specified program to start the server,
+runs another to start up any desired clients, and then waits for either to
+finish.  Since either or both of the user-specified programs may be a shell 
+script, this gives substantial flexibility at the expense of a human 
+nice interface.  For this reason, \fIxinit\fP is not intended for end users.
+.SH "DISPLAY SPECIFICATION"
 .PP
 When you first log in, the environment variable DISPLAY will be
 set to a string specifying the name of the machine on which the server is
@@ -321,12 +371,13 @@ configuration parameter (/usr/lib/X11 in the standard distribution).  If
 this file is not installed, error messages will tend to be somewhat cryptic.
 .SH "SEE ALSO"
 .PP
-xterm(1), bitmap(1), ico(1), muncher(1), plaid(1), puzzle(1),
-resize(1), uwm(1), wm(1), x10tox11(1), xbiff(1), xcalc(1),
-xclock(1), xedit(1), xfd(1), xhost(1), xinit(1), xload(1),
-xlogo(1), xlsfonts(1), xmh(1), xmodmap(1), xpr(1), xprkbd(1),
-xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1), xwd(1),
-xwininfo(1), xwud(1), Xserver(1), Xapollo(1), Xqdss(1), Xqvss(1), Xsun(1),
+Xserver(1),
+bitmap(1), pseudoroot(1), uwm(1), x10tox11(1), xbiff(1), xcalc(1), xclock(1),
+xdpyinfo(1), xedit(1), xev(1), xfd(1), xhost(1), xinit(1), xkill(1), xload(1),
+xlogo(1), xlsfonts(1), xlswins(1), xmag(1), xman(1), xmh(1), xmodmap(1),
+xdpr(1), xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1),
+resize(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
+Xapollo(1), Xqdss(1), Xqvss(1), Xsun(1), XmacII(1), Xplx(1),
 kbd_mode(1), todm(1), tox(1), biff(1), init(8), ttys(5),
 .I "Xlib \- C Language X Interface,"
 .I "X Toolkit Intrinsics - C Language X Interface"
@@ -355,6 +406,8 @@ This software is not subject to any license of the American
 Telephone and Telegraph Company or of the Regents of the
 University of California.
 .SH AUTHORS
+.PP
+A cast of thousands.
 .PP
 It is no longer feasible to list all people who have contributed
 something to X, but see doc/contributors in the standard sources.
