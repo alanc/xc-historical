@@ -1,7 +1,7 @@
 /*
- * SECURE-RPC authentication mechanism
+ * SUN-DES-1 authentication mechanism
  *
- * $XConsortium: rpcauth.c,v 1.1 91/02/11 20:55:57 keith Exp $
+ * $XConsortium: rpcauth.c,v 1.2 91/02/12 17:43:04 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -107,7 +107,7 @@ char	*data;
     if (rpc_id != (XID) ~0L &&
 	(fullname = authdes_ezdecode(data, data_length)) != (char *)0)
     {
-	if (ForEachHostInFamily (FamilySecureRPC, CheckNetName, (pointer) fullname))
+	if (ForEachHostInFamily (FamilyNetname, CheckNetName, (pointer) fullname))
 	    return rpc_id;
     }
     return (XID) ~0L;
@@ -117,7 +117,7 @@ char	*data;
 SecureRPCInit ()
 {
     if (rpc_id == ~0L)
-	AddAuthorization (10, "SECURE-RPC", 0, (char *) 0);
+	AddAuthorization (9, "SUN-DES-1", 0, (char *) 0);
 }
 
 int
@@ -127,7 +127,7 @@ char	*data;
 XID	id;
 {
     if (data_length)
-	AddHost ((pointer) 0, FamilySecureRPC, data_length, data);
+	AddHost ((pointer) 0, FamilyNetname, data_length, data);
     rpc_id = id;
 }
 
