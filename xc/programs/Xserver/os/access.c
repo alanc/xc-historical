@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.63 94/01/14 19:07:36 gildea Exp $ */
+/* $XConsortium: access.c,v 1.65 94/02/04 19:34:27 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -38,9 +38,9 @@ SOFTWARE.
 #include <sys/ioctl.h>
 #include <ctype.h>
 
-#if defined(TCPCONN) || defined(ISC)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(ISC)
 #include <netinet/in.h>
-#endif /* TCPCONN || ISC */
+#endif /* TCPCONN || STREAMSCONN || ISC */
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
@@ -151,7 +151,7 @@ DisableLocalHost ()
 
     LocalHostEnabled = FALSE;
     for (self = selfhosts; self; self = self->next)
-	(void) RemoveHost (NULL, self->family, self->len, self->addr);
+	(void) RemoveHost ((ClientPtr)NULL, self->family, self->len, (pointer)self->addr);
 }
 
 /*
@@ -453,9 +453,9 @@ ResetHosts (display)
     int                 i, hostlen;
     union {
         struct sockaddr	sa;
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
         struct sockaddr_in in;
-#endif /* TCPCONN */
+#endif /* TCPCONN || STREAMSCONN */
 #ifdef DNETCONN
         struct sockaddr_dn dn;
 #endif
@@ -500,7 +500,7 @@ ResetHosts (display)
 	    family = FamilyLocalHost;
 	    NewHost(family, "", 0);
 	}
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 	else if (!strncmp("inet:", lhostname, 5))
 	{
 	    family = FamilyInternet;
@@ -572,7 +572,7 @@ ResetHosts (display)
 	}
 	else
 #endif /* SECURE_RPC */
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 	{
     	    /* host name */
     	    if (family == FamilyInternet && (hp = gethostbyname (hostname)) ||
@@ -594,7 +594,7 @@ ResetHosts (display)
 		}
     	    }
         }
-#endif /* TCPCONN */
+#endif /* TCPCONN || STREAMSCONN */
 	family = FamilyWild;
         }
         fclose (fd);
@@ -832,7 +832,7 @@ CheckAddr (family, pAddr, length)
 
     switch (family)
     {
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
       case FamilyInternet:
 	if (length == sizeof (struct in_addr))
 	    len = length;
@@ -921,7 +921,7 @@ ConvertAddr (saddr, len, addr)
     case AF_UNIX:
 #endif
         return FamilyLocal;
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
     case AF_INET:
         *len = sizeof (struct in_addr);
         *addr = (pointer) &(((struct sockaddr_in *) saddr)->sin_addr);

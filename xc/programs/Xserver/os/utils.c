@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.138 94/02/02 01:29:45 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.139 94/02/04 17:00:39 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -700,7 +700,7 @@ int *authlen;
 pointer client;
 {
 #define AUTHORIZATION_NAME "hp-hostname-1"
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 #include <netdb.h>
     static char result[1024];
     static char *p = NULL;

@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.174 94/02/03 15:38:51 mor Exp $ */
+/* $XConsortium: connection.c,v 1.176 94/02/04 19:35:12 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -61,7 +61,7 @@ extern int errno;
 #include <sys/ioctl.h>
 #endif
 
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 # include <netinet/in.h>
 # ifndef hpux
 #  ifdef apollo
@@ -370,7 +370,7 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
 #endif
 	    strcpy(addr, "local host");
 	    break;
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 	case AF_INET:
 	    sprintf(addr, "IP %s port %d",
 		    inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr),
