@@ -1,4 +1,4 @@
-/* $XConsortium: XGetColor.c,v 11.18 91/02/05 13:40:33 dave Exp $ */
+/* $XConsortium: XGetColor.c,v 11.19 91/02/07 17:35:39 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -16,7 +16,7 @@ without express or implied warranty.
 #define NEED_REPLIES
 #include <stdio.h>
 #include "Xlibint.h"
-#include "TekCMS.h"
+#include "Xcmsint.h"
 
 #if NeedFunctionPrototypes
 Status XAllocNamedColor(

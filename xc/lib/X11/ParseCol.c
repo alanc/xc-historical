@@ -1,4 +1,4 @@
-/* $XConsortium: XParseCol.c,v 11.21 91/02/05 13:40:28 dave Exp $ */
+/* $XConsortium: XParseCol.c,v 11.22 91/02/07 17:35:14 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -16,7 +16,7 @@ without express or implied warranty.
 #define NEED_REPLIES
 #include <stdio.h>
 #include "Xlibint.h"
-#include "TekCMS.h"
+#include "Xcmsint.h"
 
 #if NeedFunctionPrototypes
 Status XParseColor (

@@ -1,4 +1,4 @@
-/* $XConsortium: UNDEFINED.c,v 1.1 91/01/30 18:13:07 dave Exp $" */
+/* $XConsortium: UNDEFINED.c,v 1.2 91/02/11 18:17:15 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -31,6 +31,7 @@
  *
  */
 
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 /*

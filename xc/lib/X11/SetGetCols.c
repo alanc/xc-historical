@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsSetGet.c,v 1.1 91/01/30 19:00:54 dave Exp $" */
+/* $XConsortium: XcmsSetGet.c,v 1.2 91/02/11 18:18:02 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -35,8 +35,8 @@
  *              Include files that must be exported to any package or
  *              program using this package.
  */
-#include "Xlib.h"
-#include "TekCMS.h"
+#include "Xlibint.h"
+#include "Xcmsint.h"
 
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: XCrCmap.c,v 11.9 91/01/06 11:44:52 rws Exp $ */
+/* $XConsortium: XCrCmap.c,v 11.10 91/02/05 13:40:25 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*

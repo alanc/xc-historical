@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsProp.c,v 1.4 91/02/07 17:36:12 dave Exp $" */
+/* $XConsortium: XcmsProp.c,v 1.5 91/02/11 18:17:56 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -9,7 +9,7 @@
  * is granted for use only in the form supplied.  Revisions, modifications,
  * or * adaptations are not permitted without the prior written approval of
  * Tektronix, Inc., Beaverton, OR 97077.  Code and supporting documentation
- * copyright Tektronix, Inc. 1990 1991 All rights reserved.  TekColor and TekHVC
+ * copyright Tektronix, Inc. 1990 1991 All rights reserved. TekColor and TekHVC
  * are trademarks of Tektronix, Inc.  U.S. and foreign patents pending.
  *
  * Tektronix disclaims all warranties with regard to this software, including
@@ -30,6 +30,7 @@
  */
 
 #include <X11/Xatom.h>
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.2 91/02/05 13:41:00 dave Exp $" */
+/* $XConsortium: TekHVC.c,v 1.3 91/02/11 18:16:54 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -32,6 +32,7 @@
  *		"TekColor Color Management System, System Implementor's Manual"
  */
 
+#include "Xlibint.h"
 #include "Xcmsint.h"
 #include <X11/Xos.h>
 

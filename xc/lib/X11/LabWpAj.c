@@ -1,4 +1,4 @@
-/* $XConsortium: CIELabWpAj.c,v 1.1 91/01/30 16:55:28 dave Exp $" */
+/* $XConsortium: CIELabWpAj.c,v 1.2 91/01/30 17:12:25 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -30,13 +30,8 @@
  *		space.
  */
 
-/*
- *	EXTERNAL INCLUDES
- *		Include files that must be exported to any package or
- *		program using this package.
- */
-#include "TekCMS.h"
-
+#include "Xlibint.h"
+#include "Xcmsint.h"
 
 /*
  *	EXTERNS

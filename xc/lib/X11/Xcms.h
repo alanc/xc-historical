@@ -31,10 +31,6 @@
 #ifndef Xcms_H
 #define Xcms_H
 
-#include <sys/types.h>
-#include "Xlib.h"
-
-
 /*
  *	DEFINES
  */

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.2 91/02/11 18:17:45 dave Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.3 91/02/11 18:59:04 rws Exp $" */
 
 /*
  * (c) Copyright 1990 1991, Tektronix Inc.

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsXRGB.c,v 1.1 91/01/30 19:33:57 dave Exp $" */
+/* $XConsortium: XcmsXRGB.c,v 1.2 91/02/11 18:18:08 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -31,6 +31,7 @@
  *
  */
 
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 /*

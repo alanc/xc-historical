@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.5 91/02/11 18:17:26 dave Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.6 91/02/11 18:59:41 rws Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsIdOfPr.c,v 1.1 91/01/30 18:41:22 dave Exp $" */
+/* $XConsortium: XcmsIdOfPr.c,v 1.2 91/02/11 18:17:43 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -30,6 +30,7 @@
  *
  */
 
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 /*

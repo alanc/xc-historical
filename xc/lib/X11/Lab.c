@@ -1,4 +1,4 @@
-/* $XConsortium: CIELab.c,v 1.3 91/02/07 15:42:52 dave Exp $ */
+/* $XConsortium: CIELab.c,v 1.4 91/02/07 17:35:46 dave Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -34,22 +34,11 @@
  *		Note that the range for L* is 0 to 1.
  */
 
-/*
- *	EXTERNAL INCLUDES
- *		Include files that must be exported to any package or
- *		program using this package.
- */
-#include "TekCMS.h"
 
-/*
- *	INTERNAL INCLUDES
- *		Include files that need NOT be exported to any package or
- *		program using this package.
- */
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
-#include "TekCMSext.h"
-#include "XcmsMath.h"
+#include "Xlibint.h"
+#include "Xcmsint.h"
 
 /*
  *	DEFINES

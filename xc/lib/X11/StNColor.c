@@ -1,4 +1,4 @@
-/* $XConsortium: XStNColor.c,v 11.15 91/02/07 15:42:25 dave Exp $ */
+/* $XConsortium: XStNColor.c,v 11.16 91/02/07 17:35:37 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -15,7 +15,7 @@ without express or implied warranty.
 
 #include <stdio.h>
 #include "Xlibint.h"
-#include "TekCMS.h"
+#include "Xcmsint.h"
 
 #if NeedFunctionPrototypes
 XStoreNamedColor(

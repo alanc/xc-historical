@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCWpAj.c,v 1.1 91/01/30 18:08:24 dave Exp $" */
+/* $XConsortium: TekHVCWpAj.c,v 1.2 91/02/11 18:17:13 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -29,6 +29,7 @@
  *		space.
  */
 
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 /*

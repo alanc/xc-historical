@@ -31,21 +31,9 @@
  *
  */
 
-/*
- *      EXTERNAL INCLUDES
- *              Include files that must be exported to any package or
- *              program using this package.
- */
-
-
-/*
- *      INTERNAL INCLUDES
- *              Include files for local use only, therefore, NOT exported
- *		to any package or program using this package.
- */
 #include <X11/Xos.h>
-#include "TekCMS.h"
-#include "TekCMSext.h"
+#include "Xlibint.h"
+#include "Xcmsint.h"
 
 
 /*

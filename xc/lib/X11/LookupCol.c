@@ -1,4 +1,4 @@
-/* $XConsortium: XLookupCol.c,v 11.12 91/02/05 13:40:36 dave Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.13 91/02/07 17:35:41 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -16,7 +16,7 @@ without express or implied warranty.
 #define NEED_REPLIES
 #include <stdio.h>
 #include "Xlibint.h"
-#include "TekCMS.h"
+#include "Xcmsint.h"
 
 #if NeedFunctionPrototypes
 Status XLookupColor (

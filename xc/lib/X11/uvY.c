@@ -1,4 +1,4 @@
-/* $XConsortium: CIEuvY.c,v 1.3 91/02/07 15:42:54 dave Exp $" */
+/* $XConsortium: CIEuvY.c,v 1.4 91/02/07 17:35:47 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -33,21 +33,10 @@
  *		"TekColor Color Management System, System Implementor's Manual"
  */
 
-/*
- *	EXTERNAL INCLUDES
- *		Include files that must be exported to any package or
- *		program using this package.
- */
-#include "TekCMS.h"
-
-/*
- *	INTERNAL INCLUDES
- *		Include files that need NOT be exported to any package or
- *		program using this package.
- */
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
-#include "TekCMSext.h"
+#include "Xlibint.h"
+#include "Xcmsint.h"
 
 
 /*

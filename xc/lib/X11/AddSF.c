@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAddSF.c,v 1.1 91/01/30 18:21:23 dave Exp $" */
+/* $XConsortium: XcmsAddSF.c,v 1.2 91/02/11 18:17:19 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -30,6 +30,7 @@
  *
  */
 
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAllCol.c,v 1.2 91/02/07 17:35:55 dave Exp $" */
+/* $XConsortium: XcmsAllCol.c,v 1.3 91/02/11 18:17:23 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -30,6 +30,7 @@
  *
  */
 
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 

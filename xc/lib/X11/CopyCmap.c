@@ -1,4 +1,4 @@
-/* $XConsortium: XCopyCmap.c,v 11.7 91/01/06 11:44:47 rws Exp $ */
+/* $XConsortium: XCopyCmap.c,v 11.8 91/02/05 13:40:22 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*

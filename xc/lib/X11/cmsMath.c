@@ -1,7 +1,7 @@
 /*
  * square and cube roots by Newton's method
  *
- * $XConsortium: XcmsMath.c,v 1.3 91/02/07 10:58:08 gildea Exp $
+ * $XConsortium: XcmsMath.c,v 1.4 91/02/11 18:17:52 dave Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -25,6 +25,7 @@
  * Stephen Gildea, MIT X Consortium, January 1991
  */
 
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 #ifdef __STDC__
