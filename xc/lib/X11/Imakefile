@@ -264,7 +264,8 @@ OBJS2 =\
 	WMGeom.o \
 	Withdraw.o \
 	$(AIDOBJS) \
-	$(AUTHOBJS)
+	$(AUTHOBJS) \
+	globals.o
 
 OBJS =\
 	$(OBJS1) $(OBJS2)
@@ -299,20 +300,28 @@ InstallNonExec(XErrorDB,$(LIBDIR))
 DebuggedAndProfiledLibraryObjectRule()
 SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XlibInt.o,,$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(globals.o,,$(CONN_DEFINES))
 #else
 # if DebugLibX
 DebuggedLibraryObjectRule()
 SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedObjectRule(XlibInt.o,,$(CONN_DEFINES))
+SpecialDebuggedObjectRule(globals.o,,$(CONN_DEFINES))
 # else
 #  if ProfileLibX
 ProfiledLibraryObjectRule()
 SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialProfiledObjectRule(XlibInt.o,,$(CONN_DEFINES))
+SpecialProfiledObjectRule(globals.o,,$(CONN_DEFINES))
 #  else
 NormalLibraryObjectRule()
 SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(XlibInt.o,,$(CONN_DEFINES))
+SpecialObjectRule(globals.o,,$(CONN_DEFINES))
 #  endif
 # endif
 #endif
