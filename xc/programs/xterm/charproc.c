@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.16 88/02/17 12:18:31 jim Exp $
+ * $Header: charproc.c,v 1.17 88/02/18 16:49:21 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.16 88/02/17 12:18:31 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.17 88/02/18 16:49:21 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1462,6 +1462,7 @@ VTRun()
 	HideCursor();
 	screen->cursor_set = OFF;
 	VTUnselect();
+	reselectwindow (screen);
 }
 
 /*ARGSUSED*/

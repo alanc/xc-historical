@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.17 88/02/18 12:09:58 jim Exp $
+ * $Header: Tekproc.c,v 1.18 88/02/18 16:48:50 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.17 88/02/18 12:09:58 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.18 88/02/18 16:48:50 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1034,6 +1034,7 @@ TekRun()
 	}
 	screen->TekEmu = FALSE;
 	TekUnselect();
+	reselectwindow (screen);
 }
 
 #define DOTTED_LENGTH 2
