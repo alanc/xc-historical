@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.159 89/07/18 11:06:06 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.160 89/09/18 15:55:33 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -520,6 +520,7 @@ typedef struct _XDisplay {
 	 * additional connection info
 	 */
 	unsigned long flags;	   /* internal connection flags */
+	unsigned int mode_switch;  /* keyboard group modifiers */
 } Display;
 
 #ifndef _XEVENT_
