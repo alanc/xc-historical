@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p226,v 5.1 91/02/16 09:41:05 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,7 +23,7 @@
 .\"## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\"## PERFORMANCE OF THIS SOFTWARE.
 .ds f \s-2INQUIRE WORKSTATION CONNECTION AND TYPE\s+2
-.TH "INQUIRE WORKSTATION CONNECTION AND TYPE" 3P "29 February 1991"
+.TH "INQUIRE WORKSTATION CONNECTION AND TYPE" 3P "15 August 1991"
 .SH NAME
 INQUIRE WORKSTATION CONNECTION AND TYPE\- inquire a workstation's
 connection identifier and type
@@ -34,11 +34,11 @@ connection identifier and type
 .ta 1.25i 3i
 .nf
 void
-pinq_ws_conn_type ( ws, string_length, error_ind, conn_id, ws_type )
+pinq_ws_conn_type ( ws, store, error_ind, conn_id, ws_type )
 Pint	ws;	\fIworkstation identifier\fP
-Pint	string_length;	\fIsize of buffer for connection identifier\fP
+Pstore  store;          \fI handle to Store object \fP 
 Pint	*error_ind;	\fIOUT error indicator\fP
-char	**conn_id;	\fIOUT connection identifier\fP
+Pconnid *conn_id;	\fIOUT connection identifier\fP
 Pint	*ws_type;	\fIOUT workstation type\fP
 .fi
 .ft R
@@ -68,7 +68,7 @@ the connection identifier to be returned in.
 .IP \fIerror_ind\fP
 A pointer to the location to store the error number of any error detected by this function.
 .IP \fIconn_id\fP
-A pointer to a pointer to the connection identifier.
+A pointer to a Pconnid (a pointer to the connection identifier).
 .IP \fIws_type\fP
 A pointer to a Pint variable in which to store the workstation type.
 .

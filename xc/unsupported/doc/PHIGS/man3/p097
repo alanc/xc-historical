@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p097,v 5.1 91/02/16 09:38:30 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,7 +32,7 @@ for a specified workstation
 .ta 1.25i 3i
 .nf
 void
-pinq_colr_map_method_st ( ws, map_method, error_ind, map_st )
+pinq_colr_map_st ( ws, map_method, error_ind, map_st )
 Pint	ws;	\fIworkstation identifier\fP
 Pint	map_method;	\fI mapping method \fP
 Pint	*error_ind;	\fIOUT error indicator\fP

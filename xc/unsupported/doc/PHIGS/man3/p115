@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p115,v 5.1 91/02/16 09:38:51 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,7 +23,7 @@
 .\" OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\" PERFORMANCE OF THIS SOFTWARE.
 .ds f \s-2INQUIRE DEFAULT STROKE DEVICE DATA\s+2
-.TH "INQUIRE DEFAULT STROKE DEVICE DATA" 3P "29 February 1991"
+.TH "INQUIRE DEFAULT STROKE DEVICE DATA" 3P "16 August 1991"
 .SH NAME
 INQUIRE DEFAULT STROKE DEVICE DATA \- inquire the predefined stroke data
 .IX "Stroke Input Devices" "INQUIRE DEFAULT STROKE DEVICE DATA"
@@ -33,17 +33,14 @@ INQUIRE DEFAULT STROKE DEVICE DATA \- inquire the predefined stroke data
 .ta 1.25i 3i
 .nf
 void
-pinq_def_stroke_data ( type, device, len, st, store, error_ind, max_buf_size,
-	pets, tlen, echo_area, stroke_data )
+pinq_def_stroke_data ( type, device, store, error_ind, max_buf_size, pets, 
+                       echo_area, stroke_data )
 Pint	type;	\fIworkstation type\fP
 Pint	device;	\fIlogical input device number\fP
-Pint	len;	\fIlength of application's pet list\fP
-Pint	st;	\fIstarting position\fP
 Pstore	store;	\fIhandle to Store object\fP
 Pint	*error_ind;	\fIOUT error indicator\fP
 Pint	*max_buf_size;	\fIOUT max. input buffer size\fP
-Pint_list	*pets;	\fIOUT list of prompt and echo types\fP
-Pint	*tlen;	\fIOUT total length of pet list\fP
+Pint_list	**pets;	\fIOUT list of prompt and echo types\fP
 Plimit	*echo_area;	\fIOUT default echo volume\fP
 Pstroke_data	**stroke_data;	\fIOUT pointer to default data record\fP
 .fi
@@ -86,17 +83,6 @@ The workstation type with which the device is associated.
 The device number of the stroke device.
 See the \fIAvailable Devices\fP section of \s-2INITIALIZE STROKE\s+2
 for a description of the available devices.
-.IP \fIlen\fR
-The number of \fIints\fR in the \fIpets\fR output parameter for which the 
-application has allocated memory. \fIlen\fR is the number of list elements
-that the system can return in \fIpets\(->ints\fR.
-If a value of 0 is used here, no data will be returned in the \fIpets\(->ints\fR
-list, but the total number of elements will be returned in \fItlen\fR.
-.IP \fIst\fR
-Starting position of inquiry.  The elements in the list, beginning
-with the item number specified by \fIst\fR, are copied sequentially into 
-\fIpets\(->ints\fR until \fIpets\(->ints\fR is full
-or all the elements have been copied.
 .IP \fIstore\fP
 The memory buffer \s-2PHIGS\s+2 is to use for storing the information
 returned for the Pstroke_data structure.  This memory is not used for the data
@@ -111,7 +97,7 @@ possible values it may return.
 .IP \fImax_buf_size\fP
 Maximum buffer size.
 .IP \fIpets\fP
-A list of the available prompt/echo type.
+A pointer to a list of the available prompt/echo type.
 Pint_list is defined in phigs.h as follows:
 .nf
 .ta .5i +1i +1.25i
@@ -129,10 +115,6 @@ The \fIints\fR component is a pointer to a list \fInum_ints\fR long.
 .IP
 The application must allocate memory for \fIlen\fR elements in the
 list of \fIints\fR.
-.IP \fItlen\fR
-A pointer to an integer in which the system returns the total number of elements
-in the list.  This is the value required for \fIlen\fR if all elements in the
-list are to be returned.
 .IP \fIecho_area\fP
 A pointer to an object of type Plimit that contains the echo area of
 the device. Plimit is defined in phigs.h as follows:

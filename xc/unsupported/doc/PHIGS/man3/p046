@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p046,v 5.1 91/02/16 09:37:31 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,7 +39,7 @@ pescape ( func_id, in, store, out )
 Pint	func_id;	\fIescape function identifier\fP
 Pescape_in_data	*in;	\fIinput data for the function\fP
 Pstore	store;	\fInot used\fP
-Pescape_out_data	*out;	\fIOUT not used\fP
+Pescape_out_data	**out;	\fIOUT not used\fP
 .fi
 .ft R
 .SS Required PHIGS Operating States

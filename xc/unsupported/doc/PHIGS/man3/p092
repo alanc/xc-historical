@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p092,v 5.1 91/02/16 09:38:24 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -134,7 +134,8 @@ in phigs.h as follows:
 .sp .4
 .ta .5i +1i +1i +1.25i
 .nf
-typedef union {
+typedef struct {
+      union {
 	struct {
 		Pint	unused;
 	} pet_r1;
@@ -155,6 +156,7 @@ typedef union {
 		Pint	num_pick_ids;	/* number of alternatives */
 		Pint	*pick_ids;	/* array of pick identifiers */
 	} pet_r5;
+      } pets;
 } Pchoice_data3;
 .fi
 .IP

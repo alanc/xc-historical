@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p232,v 5.1 91/02/16 09:41:13 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,7 +23,7 @@
 .\"## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\"## PERFORMANCE OF THIS SOFTWARE.
 .T#
-.TH "INTRO_PHIGS" 3P "29 February 1991"
+.TH "INTRO_PHIGS" 3P "15 August 1991"
 .IX "X Window System" "INTRO_PHIGS" "X Window System" "INTRO_PHIGS"
 .IX "Introduction" "INTRO_PHIGS"
 .IX "Introduction to the \s-2PEX-SI\s0" "" "" "" 
@@ -327,7 +327,7 @@ The second parameter to the function pset_pat_ref_point_vec is
 "Pvec3  pat_ref_vec[2]", not "Pvec3  *pat_ref_vec[2]".
 .IP 17. 
 The connection identifier argument to the function pinq_ws_conn_type is
-"char  **conn_id", not "char  *conn_id".
+"Pconnid  *conn_id".
 .IP 18.
 The function identification numbers in the file \fIphigscfunc.h\fR do not all
 agree with the numbers specified in the \s-2DIS C\s+2 binding.

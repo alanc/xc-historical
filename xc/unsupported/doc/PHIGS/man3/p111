@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p111,v 5.1 91/02/16 09:38:47 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,7 +23,7 @@
 .\" OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\" PERFORMANCE OF THIS SOFTWARE.
 .ds f \s-2INQUIRE DEFAULT PICK DEVICE DATA\s+2
-.TH "INQUIRE DEFAULT PICK DEVICE DATA" 3P "29 February 1991"
+.TH "INQUIRE DEFAULT PICK DEVICE DATA" 3P "15 August 1991"
 .SH NAME
 INQUIRE DEFAULT PICK DEVICE DATA \- inquire the predefined pick data
 .IX "Pick Input Devices" "INQUIRE DEFAULT PICK DEVICE DATA"
@@ -33,18 +33,14 @@ INQUIRE DEFAULT PICK DEVICE DATA \- inquire the predefined pick data
 .ta 1.25i 3i
 .nf
 void
-pinq_def_pick_data ( type, device, len, st, store, error_ind, pets, tlen, echo_area, pick_data, pick_order )
+pinq_def_pick_data ( type, device, store, error_ind, pets, echo_area, pick_data)
 Pint	type;	\fIworkstation type\fP
 Pint	device;	\fIlogical input device number\fP
-Pint	len;	\fIlength of application's pet list\fP
-Pint	st;	\fIstarting position\fP
 Pstore	store;	\fIhandle to Store object\fP
 Pint	*error_ind;	\fIOUT error indicator\fP
-Pint_list	*pets;	\fIOUT list of prompt and echo types\fP
-Pint	*tlen;	\fIOUT total length of pet list\fP
+Pint_list	**pets;	\fIOUT list of prompt and echo types\fP
 Plimit	*echo_area;	\fIOUT default echo volume\fP
 Ppick_data	**pick_data;	\fIOUT pointer to default data record\fP
-Ppick_order	*pick_order;	\fIOUT pick path order\fP
 .fi
 .ft R
 .SS Required PHIGS Operating States
@@ -60,8 +56,6 @@ device associated with a given workstation type:
 \(bu   Default echo area
 .sp .2
 \(bu   Default input data record
-.sp .2
-\(bu   Default path order
 .RE
 .LP
 Since the default prompt/echo type for all input devices is 1, the default
@@ -84,17 +78,6 @@ The workstation type with which the device is associated.
 The device number of the pick device.
 See the \fIAvailable Devices\fP section of \s-2INITIALIZE PICK\s+2
 for a description of the available devices.
-.IP \fIlen\fR
-The number of \fIints\fR in the \fIpets\fR output parameter for which the 
-application has allocated memory. \fIlen\fR is the number of list elements
-that the system can return in \fIpets\(->ints\fR.
-If a value of 0 is used here, no data will be returned in the \fIpets\(->ints\fR
-list, but the total number of elements will be returned in \fItlen\fR.
-.IP \fIst\fR
-Starting position of inquiry.  The elements in the list, beginning
-with the item number specified by \fIst\fR, are copied sequentially into 
-\fIpets\(->ints\fR until \fIpets\(->ints\fR is full
-or all the elements have been copied.
 .IP \fIstore\fP
 The memory buffer \s-2PHIGS\s+2 is to use for storing the information
 returned for the Ppick_data structure.  This memory is not used for the data
@@ -107,7 +90,7 @@ The error indicator.  See the \fIExecution\fP section below for a
 description of its use.  See the \fIErrors\fP section below for the
 possible values it may return.
 .IP \fIpets\fP
-Available prompt/echo types.
+Pointer to available prompt/echo types.
 Pint_list is defined in phigs.h as follows:
 .nf
 .ta .5i +1i +1.25i
@@ -125,10 +108,6 @@ The \fIints\fR component is a pointer to a list \fInum_ints\fR long.
 .IP
 The application must allocate memory for \fIlen\fR elements in the
 list of \fIints\fR.
-.IP \fItlen\fR
-A pointer to an integer in which the system returns the total number of elements
-in the list.  This is the value required for \fIlen\fR if all elements in the
-list are to be returned.
 .IP \fIecho_area\fP
 A pointer to an object of type Plimit that will represent the echo area of
 the device. Plimit is defined in phigs.h as follows:
@@ -154,25 +133,15 @@ Ppick_data is defined in phigs.h as follows:
 .sp .4
 .ta .5i +1.0i +1.0i
 .nf
-typedef union {
+typedef struct {
 .sp .2
+      union {
 	struct {
 		Pint	unused;
 	} pet_r1;
+      } pets;
 .sp .2
 } Ppick_data;
-.fi
-.IP \fIpath_order\fP
-Pointer to the path order.
-Ppath_order is an enumerated type with the following values:
-.nf
-.ta .5i
-typedef enum {
-.sp .2
-	PORDER_TOP_FIRST,
-	PORDER_BOTTOM_FIRST
-.sp .2
-} Ppath_order;
 .fi
 .SS Execution
 \*f returns the default data of the specified pick device.  This data is

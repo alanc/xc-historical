@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p211,v 5.1 91/02/16 09:40:46 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,7 +23,7 @@
 .\"## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\"## PERFORMANCE OF THIS SOFTWARE.
 .ds f \s-2INQUIRE STROKE DEVICE STATE 3\s+2
-.TH "INQUIRE STROKE DEVICE STATE 3" 3P "29 February 1991"
+.TH "INQUIRE STROKE DEVICE STATE 3" 3P "16 August 1991"
 .SH NAME
 INQUIRE STROKE DEVICE STATE 3\- inquire state of a stroke device
 .IX "Stroke Input Devices" "INQUIRE STROKE DEVICE STATE 3"
@@ -43,7 +43,7 @@ Pint	*err;	\fIOUT error indicator\fP
 Pop_mode	*op_mode	\fIOUT operating mode\fP
 Pecho_switch	*echo_switch;	\fIOUT echo switch\fP
 Pint	*init_view_ind;	\fIOUT initial view indicator\fP
-Ppoint_list	*init_stroke;	\fIOUT initial stroke\fP
+Ppoint_list	**init_stroke;	\fIOUT initial stroke\fP
 Pint	*prompt_echo;	\fIOUT prompt/echo type\fP
 Plimit3	*echo_vol;	\fIOUT echo area\fP
 Pstroke_data3	**stroke_data;	\fIOUT data record\fP
@@ -128,7 +128,7 @@ typedef enum {
 .IP \fIinit_view_ind\fP
 Initial view indicator
 .IP \fIinit_stroke\fP
-Initial stroke.
+A pointer to the initial stroke.
 Ppoint_list3 is defined in phigs.h as follows:
 .nf
 .ta .5i +1i +1i +1i

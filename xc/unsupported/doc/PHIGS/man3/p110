@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p110,v 5.1 91/02/16 09:38:45 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,7 +23,7 @@
 .\" OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\" PERFORMANCE OF THIS SOFTWARE.
 .ds f \s-2INQUIRE DEFAULT LOCATOR DEVICE DATA 3\s+2
-.TH "INQUIRE DEFAULT LOCATOR DEVICE DATA 3" 3P "29 February 1991"
+.TH "INQUIRE DEFAULT LOCATOR DEVICE DATA 3" 3P "15 August 1991"
 .SH NAME
 INQUIRE DEFAULT LOCATOR DEVICE DATA 3 \- inquire the predefined locator data
 .IX "Locator Input Devices" "INQUIRE DEFAULT LOCATOR DEVICE DATA 3"
@@ -33,17 +33,13 @@ INQUIRE DEFAULT LOCATOR DEVICE DATA 3 \- inquire the predefined locator data
 .ta 1.25i 3i
 .nf
 void
-pinq_def_loc_data3 ( type, device, len, st, store, error_ind, loc_pos, pets, tlen,
-	echo_vol, loc_data )
+pinq_def_loc_data3 ( type, device, store, error_ind, loc_pos, pets, echo_vol, loc_data )
 Pint	type;	\fIworkstation type\fP
 Pint	device;	\fIlogical input device number\fP
-Pint	len;	\fIlength of application's pet list\fP
-Pint	st;	\fIstarting position\fP
 Pstore	store;	\fIhandle to Store object\fP
 Pint	*error_ind;	\fIOUT error indicator\fP
 Ppoint3	*loc_pos;	\fIOUT default initial position\fP
-Pint_list	*pets;	\fIOUT list of prompt and echo types\fP
-Pint	*tlen;	\fIOUT total length of pet list\fP
+Pint_list	**pets;	\fIOUT list of prompt and echo types\fP
 Plimit3	*echo_vol;	\fIOUT default echo volume\fP
 Ploc_data3	**loc_data;	\fIOUT pointer to default data record\fP
 .fi
@@ -85,17 +81,6 @@ The workstation type with which the device is associated.
 The device number of the locator device.
 See the \fIAvailable Devices\fP section of \s-2INITIALIZE LOCATOR 3\s+2
 for a description of the available devices.
-.IP \fIlen\fR
-The number of \fIints\fR in the \fIpets\fR output parameter for which the 
-application has allocated memory. \fIlen\fR is the number of list elements
-that the system can return in \fIpets\(->ints\fR.
-If a value of 0 is used here, no data will be returned in the \fIpets\(->ints\fR
-list, but the total number of elements will be returned in \fItlen\fR.
-.IP \fIst\fR
-Starting position of inquiry.  The elements in the list, beginning
-with the item number specified by \fIst\fR, are copied sequentially into 
-\fIpets\(->ints\fR until \fIpets\(->ints\fR is full
-or all the elements have been copied.
 .IP \fIstore\fP
 The memory buffer \s-2PHIGS\s+2 is to use for storing the information
 returned for the Ploc_data3 structure.  This memory is not used for the data
@@ -128,10 +113,6 @@ The \fIints\fR component is a pointer to a list \fInum_ints\fR long.
 .IP
 The application must allocate memory for \fIlen\fR elements in the
 list of \fIints\fR.
-.IP \fItlen\fR
-A pointer to an integer in which the system returns the total number of elements
-in the list.  This is the value required for \fIlen\fR if all elements in the
-list are to be returned.
 .IP \fIecho_vol\fP
 A pointer to a Plimit3 structure defining the
 \fIx\fP, \fIy\fP, and \fIz\fP
@@ -160,8 +141,9 @@ Ploc_data3 is defined in phigs.h as follows:
 .bp
 .ta .5i +.5i +.5i +.5i +.25i +.75i +1.25i
 .nf
-typedef union {
+typedef struct {
 .sp .2
+      union {
 	struct {
 		Pint	unused;
 	} pet_r1;
@@ -185,6 +167,7 @@ typedef union {
 			} fill_set;
 		} attr;
 	} pet_r5;
+      } pets;
 .sp .2
 } Ploc_data3;
 .fi

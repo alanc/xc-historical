@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p004,v 5.1 91/02/16 09:36:48 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -22,7 +22,7 @@
 .\"## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 .\"## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\"## PERFORMANCE OF THIS SOFTWARE.
-.TH "APPLICATION DATA" 3P "29 February 1991"
+.TH "APPLICATION DATA" 3P "16 August 1991"
 .SH NAME
 APPLICATION DATA \- create a structure element containing application data
 .IX "Elements" "APPLICATION DATA"
@@ -60,12 +60,12 @@ element.
 A pointer to a Pdata structure containing the application data.
 Pdata is defined in phigs.h as follows:
 .sp .4
-.ta .5i +\w'char     'u +\w'*data;     'u
+.ta .5i +\w'void     'u +\w'*data;     'u
 .nf
 typedef struct {
 .sp .2
 	size_t	size;	/* size of data */
-	char	*data;	/* pointer to data */
+	void	*data;	/* pointer to data */
 .sp .2
 } Pdata;
 .fi

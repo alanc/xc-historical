@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p241,v 5.1 91/02/16 09:41:24 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,7 +37,7 @@ OPEN WORKSTATION \- open a workstation
 void
 popen_ws ( ws_id, conn_id, ws_type )
 Pint	ws_id;	\fIworkstation identifier\fP
-char	*conn_id;	\fIconnection identifier\fP
+Pconnid *conn_id;	\fIconnection identifier\fP
 Pint	ws_type;	\fIworkstation type\fP
 .fi
 .ft R

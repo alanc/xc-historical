@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium: p075,v 5.1 91/02/16 09:38:03 rws Exp $
+.\" $XConsortium: p075,v 5.2 91/08/16 14:48:13 hersh Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -114,8 +114,9 @@ Pchoice_data is defined in phigs.h as:
 .sp .4
 .ta .5i +\w'Ppr_switch     'u +\w'num_strings;     'u
 .nf
-typedef union {
+typedef struct {
 .sp .2
+      union {
 	struct {
 	   Pint	unused;
 	} pet_r1;
@@ -136,6 +137,7 @@ typedef union {
 	   Pint	num_pick_ids;	/* number of alternatives	*/
 	   Pint	*pick_ids;	/* array of pick identifiers	*/
 	} pet_r5;
+      } pets;
 .sp .2
 } Pchoice_data;
 .fi

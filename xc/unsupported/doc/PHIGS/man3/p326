@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p326,v 5.1 91/02/16 09:43:19 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -74,8 +74,8 @@ typedef enum {
 	PASPECT_LINETYPE,
 	PASPECT_LINEWIDTH,
 	PASPECT_LINE_COLR_IND,
-	PASPECT_MARKERTYPE,
-	PASPECT_MARKERSIZE,
+	PASPECT_MARKER_TYPE,
+	PASPECT_MARKER_SIZE,
 	PASPECT_MARKER_COLR_IND,
 	PASPECT_TEXT_FONT,
 	PASPECT_TEXT_PREC,

@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p206,v 5.1 91/02/16 09:40:40 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,7 +32,7 @@ INQUIRE SET OF OPEN WORKSTATIONS \- inquire the current set of open workstations
 .ta 1.25i 3i
 .nf
 void
-pinq_set_open_ws ( length, start, error_ind, idlist, total_length )
+pinq_open_wss ( length, start, error_ind, idlist, total_length )
 Pint	length;	\fIlength of application list\fP
 Pint	start;	\fIstarting position\fP
 Pint	*error_ind;	\fIOUT error indicator\fP
