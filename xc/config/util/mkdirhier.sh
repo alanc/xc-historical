@@ -1,4 +1,5 @@
 #!/bin/sh
+# $XConsortium$
 # Courtesy of Paul Eggert
 
 newline='
