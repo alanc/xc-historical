@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.48 88/08/09 18:39:57 jim Exp $ */
+/* $Header: Xlibint.h,v 11.49 88/08/10 16:07:44 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -21,11 +21,6 @@
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
-#endif /* CRAY */
-
-#ifdef CRAY
-#define MUSTCOPY
-#define WORD64
 #endif /* CRAY */
 
 #include <X11/Xlib.h>
@@ -271,6 +266,11 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * Stuff to handle large architecture machines; the constants were generated
  * on a 32-bit machine and must coorespond to the protocol.
  */
+#ifdef WORD64
+#define MUSTCOPY
+#endif /* WORD64 */
+
+
 #ifdef MUSTCOPY
 
 #if (defined __STDC__) && (!defined UNIXCPP)
