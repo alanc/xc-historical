@@ -4,9 +4,7 @@
 SUBDIRS = X \
 	oldX \
 	Xt \
-	Xaw \
-	oldXrm \
-	oldXtk
+	Xaw
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
