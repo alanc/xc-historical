@@ -811,7 +811,7 @@ specifies the address to which the caller wants the value copied.
 The argument list entry for
 .PN XtSetValues ,
 however, contains the new value itself if the size of value is less
-than sizeof(XtArgVal) (architecture dependent, but at least 4 bytes);
+than sizeof(XtArgVal) (architecture dependent, but at least sizeof(long));
 otherwise, it is a pointer to the value.
 String resources are always passed as pointers, regardless of the
 length of the string.
@@ -1296,7 +1296,7 @@ pixmap label.
 When the pointer cursor is on the button,
 the button border is highlighted to indicate that the button is available 
 for selection.
-Then, when a pointer button is pressed and released,
+Then, when a pointer button is pressed and released
 the button is selected, 
 and the application's callback routine is invoked.
 .LP
@@ -1543,7 +1543,7 @@ Displays the internal highlight border in the
 .PN XtNbackground
 color.
 .IP \fBset\fP(\|) 1i
-Enters the "set" state, in which \fBNotify\fP is possible and displays the
+Enters the "set" state, in which \fBnotify\fP is possible and displays the
 interior of the button, including the highlight border, in the
 foreground color.  The label is displayed in the background color.
 .IP \fBunset\fP(\|) 1i
@@ -1554,7 +1554,7 @@ background color.  The label is displayed in the foreground color.
 Cancels any \fBset\fP or \fBhighlight\fP and displays the interior of the
 button in the background color, with the label displayed in the foreground
 color.
-.IP \fBNotify\fP(\|) 1i
+.IP \fBnotify\fP(\|) 1i
 Executes the
 .PN XtNcallback
 callback list if executed in the \fBset\fP state.  The value of the call_data
@@ -1868,7 +1868,7 @@ T{
 T}	T{
 Specifies a bitmap to display in place of the text label.
 The bitmap can be specified as a string in the resource data base.
-The StringToPixmap converter will interpret the string as the name of the
+The StringToPixmap converter will interpret the string as the name of a
 file in the bitmap utility format that is to be loaded into a pixmap.
 The string can be an absolute or a relative file name.
 If a relative file name is used,
@@ -1879,7 +1879,9 @@ the resource class
 .PN BitmapFilePath
 is add to the beginning of the
 specified file name.
-If bitmapFilePath resource is not defined,
+If the
+.PN bitmapFilePath
+resource is not defined,
 the default directory on a UNIX-based system is
 .PN /usr/include/X11/bitmaps .
 T}
@@ -1900,13 +1902,13 @@ T{
 .PN XtNinternalHeight 
 T}	T{
 Represents the distance in pixels between the top and bottom 
-of the label text and the horizontal edges of the Label widget.
+of the label text or bitmap and the horizontal edges of the Label widget.
 T}
 .sp 6p
 T{
 .PN XtNinternalWidth 
 T}	T{
-Represents the distance in pixels between the ends of the label text
+Represents the distance in pixels between the ends of the label text or bitmap
 and the vertical edges of the Label widget.
 T}
 .sp 6p
@@ -1942,8 +1944,6 @@ Specifies whether the Label widget should attempt to resize to its
 preferred dimensions whenever
 .PN XtSetValues
 is called for it.
-The default is
-.PN True .
 T}
 .sp 6p
 T{
@@ -2311,7 +2311,7 @@ T}
 XtNforeground	Pixel	Black	Foreground color
 XtNfont	XFontStruct*	Fixed	Fontname
 XtNheight	Dimension	Font height	Height of widget
-XtNinsertPosition	int	0	Character position of cursor
+XtNinsertPosition	int	0	Character position of caret
 XtNleftMargin	Dimension	2	Left margin in pixels
 T{
 XtNlength
@@ -2714,7 +2714,7 @@ the
 structure.
 The characters from start_pos up to but not including end_pos are deleted,
 and the characters that are specified by the text block are inserted in
-their place.  If start_pos and end_pos are equal, not text is
+their place.  If start_pos and end_pos are equal, no text is
 deleted and the new text is inserted after start_pos.
 .NT
 Only ASCII text is currently supported, and
@@ -2892,8 +2892,6 @@ XtTextSource XtTextGetSource(\fIw\fP)
 .br    
       Widget \fIw\fP;
 .FN
-.LP
-.sp
 .NH 3
 Creating Sources and Sinks
 .LP
@@ -2902,7 +2900,7 @@ are called automatically by
 .PN AsciiStringWidget
 and
 .PN AsciiDiskWidget
-and it is only necessary therefore for the client to use them when creating
+and it is therefore only necessary for the client to use them when creating
 an instance of
 .PN textWidgetClass .
 .LP
@@ -3490,7 +3488,7 @@ When the size of the child is larger than the size of the Viewport,
 the user can interactively move the child within the Viewport
 by repositioning the Scrollbars.
 .LP
-The default initial size of the Viewport before it is realized is the
+The default size of the Viewport before it is realized is the
 width and/or height of the child.
 After it is realized, the viewport will allow its
 child to grow vertically or horizontally if
@@ -4302,7 +4300,8 @@ and is one of
 .PN XtChainTop ,
 .PN XtChainBottom ,
 .PN XtChainLeft ,
-.PN XtChainRight or
+.PN XtChainRight
+or
 .PN XtRubber .
 .LP
 The values
@@ -4312,7 +4311,7 @@ The values
 and 
 .PN XtChainRight 
 specify that a constant distance from an edge of the child to
-the top, bottom, left, and right edges respectively of a Form is to be
+the top, bottom, left, and right edges respectively of the Form is to be
 maintained.
 The value
 .PN XtRubber 
@@ -5065,6 +5064,7 @@ and specify the class variable
 To destroy a Command button widget instance, use
 .PN XtDestroyWidget
 and specify the ID of the Grip widget.
+
 .\"------------------------------------------------------------------------
 .NH 2
 Template Widget - Creating A Custom Widget
@@ -5080,42 +5080,42 @@ Athena widget library contains three files that are intended to assist
 in writing a custom widget.
 .LP
 Reasons for wishing to write a custom widget include:
-.IP \(bu 5
+.IP \(bu 3
 Convenient access to resource management procedures to obtain fonts,
 colors, etc., even if user customization is not desired.
-.IP \(bu 5
+.IP \(bu 3
 Convenient access to user input dispatch and translation management procedures.
-.IP \(bu 5
+.IP \(bu 3
 Access to callback mechanism for building higher-level application libraries.
-.IP \(bu 5
+.IP \(bu 3
 Customizing the interface or behavior of an existing widget to suit a
 special application need.
-.IP \(bu 5
+.IP \(bu 3
 Desire to allow user customization of resources such as fonts, colors,
-etc. or to allow convenient re-binding of keys and buttons to internal
+etc., or to allow convenient re-binding of keys and buttons to internal
 functions.
-.IP \(bu 5
+.IP \(bu 3
 Converting a non-Toolkit application to use the Toolkit.
 .LP
 In each of these cases, the operation needed to create a new widget is
 to "subclass" an existing one.  If the desired semantics of the new
 widget are similar to an existing one, then the implementation of the
 existing widget should be examined to see how much work would be
-required to create a subclass of the existing widget that will then be
+required to create a subclass that will then be
 able to share the existing class methods.  Much time will be saved in
 writing the new widget if an existing widget class Expose, Resize and/or
-GeometryManager methods can be shared by the subclass.
+GeometryManager method can be shared by the subclass.
 .LP
 It is very often the case than an application will have a special need
 for a certain set of functions and that many copies of these functions
 will be needed.  For example, when converting an older application to use
-the Toolkit, it is often desireable to have a "Window Widget" class that
+the Toolkit, it may be desireable to have a "Window Widget" class that
 might have the following semantics:
-.IP \(bu 5
+.IP \(bu 3
 Allocate 2 drawing colors in addition to a background color.
-.IP \(bu 5
+.IP \(bu 3
 Execute an application-supplied function to handle exposure events.
-.IP \(bu 5
+.IP \(bu 3
 Execute an application-supplied function to handle user input events.
 .LP
 It is obvious that a completely general-purpose WindowWidgetClass could
@@ -5130,17 +5130,17 @@ In this section, an outline will be given of the procedure to follow to
 construct a special-purpose widget to address the items listed above.
 The reader should refer to the appropriate sections of the \fI\*(xT\fP
 for complete details of the material outlined here.  Section 1.4 of
-the \fI\*(xI\fP should be read in conjunction with the following.
+the \fI\*(xI\fP should be read in conjunction with this section.
 .LP
 All Athena widgets have three separate files associated with them:
 .LP
-.IP \(bu 5
+.IP \(bu 3
 A "public" header file containing declarations needed by
 applications programmers
-.IP \(bu 5
+.IP \(bu 3
 A "private" header file containing additional declarations needed by the
 widget and any subclasses
-.IP \(bu 5
+.IP \(bu 3
 A source code file containing the implementation of the widget
 .LP
 This separation of functions into three files is suggested for all
@@ -5159,8 +5159,11 @@ and the source code file
 .Pn < X11/Template.c >
 will be modified to produce the "WindowWidget" described above.
 In each case, the files have been designed so that a global string
-replacement of ``Template'' with the name of your new widget, using
+replacement of ``Template'' and ``template''
+with the name of your new widget, using
 the appropriate case, can be done.
+.NH 3
+Public Header File
 .LP
 The public header file contains declarations that will be required by any
 application module that needs to refer to the widget; whether to create
@@ -5170,19 +5173,64 @@ operation, or to call a public routine implemented by the widget class.
 .LP
 The contents of the Template public header file are:
 .de CB
+.sp
 .ps 9
 .nr PS 9
+.vs 10
 .Ds 0
-.TA .5i 2i
-.ta .5i 2i
+.TA .25i 1.25i 2.75i 3.5i
+.ta .25i 1.25i 2.75i 3.5i
 ..
 .de CE
 .De
 .ps 11
 .nr PS 11
+.vs 13
 ..
 .CB
-.so ../../lib/Xaw/Template.h
+.\".so ../../lib/Xaw/Template.h
+#include <X11/copyright.h>
+
+/* $XConsortium: Template.h,v 1.1 88/10/23 14:32:46 swick Exp $ */
+/* Copyright Massachusetts Institute of Technology 1987, 1988 */
+
+#ifndef _Template_h
+#define _Template_h
+
+/****************************************************************
+ *
+ * Template widget
+ *
+ ****************************************************************/
+
+/* Resources:
+
+ Name	Class	RepType	Default Value
+ ----		-----	-------	-------------
+ background	Background	Pixel	XtDefaultBackground
+ border	BorderColor	Pixel	XtDefaultForeground
+ borderWidth	BorderWidth	Dimension	1
+ destroyCallback	Callback	Pointer	NULL
+ height	Height	Dimension	0
+ mappedWhenManaged	MappedWhenManaged	Boolean	True
+ sensitive	Sensitive	Boolean	True
+ width	Width		Dimension	0
+ x		Position		Position	0
+ y		Position		Position	0
+
+*/
+
+#define XtNtemplate		"template"
+
+#define XtCTemplate		"Template"
+
+typedef struct _TemplateClassRec	*TemplateWidgetClass;
+typedef struct _TemplateRec	*TemplateWidget;
+
+extern WidgetClass templateWidgetClass;
+
+#endif  _Template_h
+
 .CE
 .LP
 .sp
@@ -5200,18 +5248,58 @@ For the "WindowWidget", we want 2 drawing colors and an
 #define XtNdrawingColor2	"drawingColor2"
 #define XtNexposeCallback	"exposeCallback"
 .CE
+
+.NH 3
+Private Header File
 .LP
 The private header file contains the complete declaration of the class
 and instance structure for the widget and any additional private data
 that will be required by anticipated subclasses of the widget.
 Information in the private header file is normally hidden from the
-application and is designed to be accesses only by other public
+application and is designed to be accessed only by other public
 procedures; e.g.
 .PN XtSetValues .
 .LP
 The contents of the Template private header file are:
 .CB
-.so ../../lib/Xaw/TemplateP.h
+.\".so ../../lib/Xaw/TemplateP.h
+#include <X11/copyright.h>
+
+/* $XConsortium: TemplateP.h,v 1.1 88/10/23 14:32:59 swick Exp $ */
+/* Copyright Massachusetts Institute of Technology 1987, 1988 */
+
+#ifndef _TemplateP_h
+#define _TemplateP_h
+
+#include "Template.h"
+#include <X11/CoreP.h>
+
+#define XtRTemplate	"Template"
+
+typedef struct {
+	int empty;
+} TemplateClassPart;
+
+typedef struct _TemplateClassRec {
+	CoreClassPart	core_class;
+	TemplateClassPart	template_class;
+} TemplateClassRec;
+
+extern TemplateClassRec templateClassRec;
+
+typedef struct {
+	/* resources */
+	char* template;
+	/* private state */
+} TemplatePart;
+
+typedef struct _TemplateRec {
+	CorePart	core;
+	TemplatePart	template;
+} TemplateRec;
+
+#endif  _TemplateP_h
+
 .CE
 .LP
 .sp
@@ -5226,17 +5314,18 @@ hold the drawing colors and a field for the expose and user input
 callback lists:
 .CB
 typedef struct {
-    /* resources */
-    Pixel color_1;
-    Pixel color_2;
-    XtCallbackList expose_callback;
-    XtCallbackList input_callback;
-    /* private state */
-    /* (none) */
+	/* resources */
+	Pixel color_1;
+	Pixel color_2;
+	XtCallbackList expose_callback;
+	XtCallbackList input_callback;
+	/* private state */
+	/* (none) */
 } WindowPart;
 .CE
+.NH 3
+Widget Source File
 .LP
-.sp
 The source code file implements the widget class itself.  The most
 important part of this file is the declaration and initialization of the
 widget class record structure and the declaration of all resources and
@@ -5244,7 +5333,76 @@ action routines added by the widget class.
 .LP
 The contents of the Template implementation file are:
 .CB
-.so ../../lib/Xaw/Template.c
+.\".so ../../lib/Xaw/Template.c
+/* Copyright Massachusetts Institute of Technology 1987, 1988 */
+#include <X11/copyright.h>
+
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include "TemplateP.h"
+
+static XtResource resources[] = {
+#define offset(field) XtOffset(TemplateWidget, template.field)
+	/* {name, class, type, size, offset, default_type, default_addr}, */
+	{ XtNtemplate, XtCTemplate, XtRTemplate, sizeof(char*),
+		offset(template), XtRString, "default" },
+#undef offset
+};
+
+static void Template(/* Widget, String*, Cardinal* */);
+
+static XtActionsRec actions[] =
+{
+	/* {name, procedure}, */
+	{"template",	Template},
+};
+
+static char translations[] =
+"<Key>:	template() \\n\\
+";
+
+TemplateClassRec templateClassRec = {
+  { /* core fields */
+	/* superclass	*/	(WidgetClass) &widgetClassRec,
+	/* class_name	*/	"Template",
+	/* widget_size	*/	sizeof(TemplateRec),
+	/* class_initialize	*/	NULL,
+	/* class_part_initialize	*/	NULL,
+	/* class_inited	*/	FALSE,
+	/* initialize	*/	NULL,
+	/* initialize_hook	*/	NULL,
+	/* realize	*/	XtInheritRealize,
+	/* actions		*/	actions,
+	/* num_actions		*/	XtNumber(actions),
+	/* resources		*/	resources,
+	/* num_resources	*/	XtNumber(resources),
+	/* xrm_class		*/	NULLQUARK,
+	/* compress_motion	*/	TRUE,
+	/* compress_exposure	*/	TRUE,
+	/* compress_enterleave	*/	TRUE,
+	/* visible_interest	*/	FALSE,
+	/* destroy		*/	NULL,
+	/* resize		*/	NULL,
+	/* expose		*/	NULL,
+	/* set_values		*/	NULL,
+	/* set_values_hook	*/	NULL,
+	/* set_values_almost	*/	XtInheritSetValuesAlmost,
+	/* get_values_hook	*/	NULL,
+	/* accept_focus		*/	NULL,
+	/* version		*/	XtVersion,
+	/* callback_private	*/	NULL,
+	/* tm_table		*/	translations,
+	/* query_geometry	*/	XtInheritQueryGeometry,
+	/* display_accelerator	*/	XtInheritDisplayAccelerator,
+	/* extension		*/	NULL
+  },
+  { /* template fields */
+	/* empty		*/	0
+  }
+};
+
+WidgetClass templateWidgetClass = (WidgetClass)&templateClassRec;
+
 .CE
 .LP
 .sp
@@ -5252,15 +5410,15 @@ The resource list for the "WindowWidget" might look like the following:
 .CB
 static XtResource resources[] = {
 #define offset(field) XtOffset(WindowWidget, window.field)
-    /* {name, class, type, size, offset, default_type, default_addr}, */
-    { XtNdrawingColor1, XtCPixel, XtRPixel, sizeof(Pixel),
-          offset(color_1), XtRString, XtDefaultForeground },
-    { XtNdrawingColor2, XtCPixel, XtRPixel, sizeof(Pixel),
-          offset(color_2), XtRString, XtDefaultForeground },
-    { XtNexposeCallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
-          offset(expose_callback), XtRCallback, NULL },
-    { XtNcallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
-          offset(input_callback), XtRCallback, NULL },
+	/* {name, class, type, size, offset, default_type, default_addr}, */
+	{ XtNdrawingColor1, XtCPixel, XtRPixel, sizeof(Pixel),
+		  offset(color_1), XtRString, XtDefaultForeground },
+	{ XtNdrawingColor2, XtCPixel, XtRPixel, sizeof(Pixel),
+		  offset(color_2), XtRString, XtDefaultForeground },
+	{ XtNexposeCallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
+		  offset(expose_callback), XtRCallback, NULL },
+	{ XtNcallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
+		  offset(input_callback), XtRCallback, NULL },
 #undef offset
 };
 .CE
@@ -5270,17 +5428,17 @@ is declared as:
 .LP
 .CB
 static void InputAction(w, params, num_params)
-    Widget w;
-    String *params;
-    Cardinal *num_params;
+	Widget w;
+	String *params;
+	Cardinal *num_params;
 {
-    XtCallCallbacks(w, XtNcallback, NULL);
+	XtCallCallbacks(w, XtNcallback, NULL);
 }
 
 static XtActionsRec actions[] =
 {
-  /* {name, procedure}, */
-    {"input",        InputAction},
+	/* {name, procedure}, */
+	{"input",	InputAction},
 };
 .CE
 .LP
@@ -5291,8 +5449,8 @@ and
 .LP
 .CB
 static char translations[] =
-"<Key>:         input()      \n\
- <BtnDown>:     input()      \
+"<Key>:		input() \\n\\
+ <BtnDown>:	input() \\
 ";
 .CE
 .LP
@@ -5300,16 +5458,16 @@ In the class record declaration and initialization, the only field that
 is different from the Template is the expose method:
 .CB
 static void Redisplay(w, event, region)
-    Widget w;
-    XEvent *event;
-    Region region;
+	Widget w;
+	XEvent *event;
+	Region region;
 {
-    XtCallCallbacks(w, XtNexposeCallback, (caddr_t)region);
+	XtCallCallbacks(w, XtNexposeCallback, (caddr_t)region);
 }
 
-...
+	...
 
-    /* expose                   */      Redisplay,
+	/* expose	*/	Redisplay,
 .CE
 .LP
 .sp
@@ -5320,15 +5478,15 @@ argument list for a call to
 .LP
 .CB
 Pixel WindowColor1(w)
-    Widget w;
+	Widget w;
 {
-    return ((WindowWidget)w)->window.color_1;
+	return ((WindowWidget)w)->window.color_1;
 }
 
 Pixel WindowColor2(w)
-    Widget w;
+	Widget w;
 {
-    return ((WindowWidget)w)->window.color_2;
+	return ((WindowWidget)w)->window.color_2;
 }
 .CE
 .LP
