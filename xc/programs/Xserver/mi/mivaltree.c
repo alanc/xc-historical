@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.24 90/03/16 17:13:50 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.25 90/09/24 09:17:24 rws Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -144,7 +144,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 			dy;
     RegionRec		childUniverse;
     register WindowPtr	pChild;
-    int     	  	oldVis;
+    int     	  	oldVis, newVis;
     BoxRec		borderSize;
     RegionRec		childUnion;
     Bool		overlap;
@@ -175,10 +175,10 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     switch ((* pScreen->RectIn) (universe, &borderSize)) 
     {
 	case rgnIN:
-	    pParent->visibility = VisibilityUnobscured;
+	    newVis = VisibilityUnobscured;
 	    break;
 	case rgnPART:
-	    pParent->visibility = VisibilityPartiallyObscured;
+	    newVis = VisibilityPartiallyObscured;
 #ifdef SHAPE
 	    {
 		RegionPtr   pBounding;
@@ -191,10 +191,10 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
  					      pParent->drawable.y))
 		    {
 		    case rgnIN:
-			pParent->visibility = VisibilityUnobscured;
+			newVis = VisibilityUnobscured;
 			break;
 		    case rgnOUT:
-			pParent->visibility = VisibilityFullyObscured;
+			newVis = VisibilityFullyObscured;
 			break;
 		    }
 		}
@@ -202,10 +202,11 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 #endif
 	    break;
 	default:
-	    pParent->visibility = VisibilityFullyObscured;
+	    newVis = VisibilityFullyObscured;
 	    break;
     }
-    if (oldVis != pParent->visibility &&
+    pParent->visibility = newVis;
+    if (oldVis != newVis &&
 	((pParent->eventMask | wOtherEventMasks(pParent)) & VisibilityChangeMask))
 	SendVisibilityNotify(pParent);
 
@@ -222,7 +223,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     case VTUnmap:
 	break;
     case VTMove:
-	if ((oldVis == pParent->visibility) &&
+	if ((oldVis == newVis) &&
 	    ((oldVis == VisibilityFullyObscured) ||
 	     (oldVis == VisibilityUnobscured)))
 	{
@@ -296,34 +297,39 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * This leaves a region of pieces that weren't exposed before.
      */
 
-    if (borderVisible)
+    if (HasBorder (pParent))
     {
-	/*
-	 * when the border changes shape, the old visible portions
-	 * of the border will be saved by DIX in borderVisible --
-	 * use that region and destroy it
-	 */
-	(* pScreen->Subtract) (exposed, universe, borderVisible);
-	(* pScreen->RegionDestroy) (borderVisible);
+    	if (borderVisible)
+    	{
+	    /*
+	     * when the border changes shape, the old visible portions
+	     * of the border will be saved by DIX in borderVisible --
+	     * use that region and destroy it
+	     */
+	    (* pScreen->Subtract) (exposed, universe, borderVisible);
+	    (* pScreen->RegionDestroy) (borderVisible);
+    	}
+    	else
+    	{
+	    (* pScreen->Subtract) (exposed, universe, &pParent->borderClip);
+    	}
+    	(* pScreen->Subtract) (&pParent->valdata->after.borderExposed,
+			       exposed, &pParent->winSize);
+
+    	(* pScreen->RegionCopy) (&pParent->borderClip, universe);
+    
+    	/*
+     	 * To get the right clipList for the parent, and to make doubly sure
+     	 * that no child overlaps the parent's border, we remove the parent's
+     	 * border from the universe before proceeding.
+     	 */
+    
+    	(* pScreen->Intersect) (universe, universe, &pParent->winSize);
     }
     else
-    {
-	(* pScreen->Subtract) (exposed, universe, &pParent->borderClip);
-    }
-    (* pScreen->Subtract) (&pParent->valdata->after.borderExposed,
-			   exposed, &pParent->winSize);
-
-    (* pScreen->RegionCopy) (&pParent->borderClip, universe);
-
-    /*
-     * To get the right clipList for the parent, and to make doubly sure
-     * that no child overlaps the parent's border, we remove the parent's
-     * border from the universe before proceeding.
-     */
-
-    (* pScreen->Intersect) (universe, universe, &pParent->winSize);
+    	(* pScreen->RegionCopy) (&pParent->borderClip, universe);
     
-    if (pChild = pParent->firstChild)
+    if ((pChild = pParent->firstChild) && pParent->mapped)
     {
 	(*pScreen->RegionInit) (&childUniverse, NullBox, 0);
 	(*pScreen->RegionInit) (&childUnion, NullBox, 0);
@@ -391,8 +397,18 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * new, just as for the border.
      */
 
-    (* pScreen->Subtract) (&pParent->valdata->after.exposed,
-			   universe, &pParent->clipList);
+    if (oldVis == VisibilityFullyObscured ||
+	oldVis == VisibilityNotViewable)
+    {
+	(* pScreen->RegionCopy) (&pParent->valdata->after.exposed,
+				 universe);
+    }
+    else if (newVis != VisibilityFullyObscured &&
+	     newVis != VisibilityNotViewable)
+    {
+    	(* pScreen->Subtract) (&pParent->valdata->after.exposed,
+			       universe, &pParent->clipList);
+    }
 
     /*
      * One last thing: backing storage. We have to try to save what parts of
@@ -406,7 +422,18 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	(* pScreen->SaveDoomedAreas)(pParent, exposed, dx, dy);
     }
     
+    /* HACK ALERT - copying contents of regions, instead of regions */
+    {
+	RegionRec   tmp;
+
+	tmp = pParent->clipList;
+	pParent->clipList = *universe;
+	*universe = tmp;
+    }
+
+#ifdef NOTDEF
     (* pScreen->RegionCopy) (&pParent->clipList, universe);
+#endif
 
     pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 
