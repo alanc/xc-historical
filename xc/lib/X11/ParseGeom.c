@@ -1,5 +1,5 @@
 /* Copyright 	Massachusetts Institute of Technology  1985, 1986, 1987 */
-/* $XConsortium: XParseGeom.c,v 11.16 91/01/06 11:47:12 rws Exp $ */
+/* $XConsortium: XParseGeom.c,v 11.17 91/01/30 12:10:20 gildea Exp $ */
 
 /*
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -105,7 +105,7 @@ unsigned int *width, *height;    /* RETURN */
 		mask |= WidthValue;
 	}
 
-	if (*strind == 'x') {	
+	if (*strind == 'x' || *strind == 'X') {	
 		strind++;
 		tempHeight = ReadInteger(strind, &nextCharacter);
 		if (strind == nextCharacter)
