@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSink.h,v 1.1 89/09/06 17:30:24 kit Exp $
+ * $XConsortium: TextSink.h,v 1.2 89/09/11 13:59:02 kit Exp $
  */
 
 /***********************************************************
@@ -43,6 +43,7 @@ SOFTWARE.
  ----		     -----		-------		-------------
  font                Font            XFontStruct *      XtDefaultFont
  foreground          Foreground      Pixel              XtDefaultForeground
+ background          Background      Pixel              XtDefaultBackground
 
 */
  

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.41 89/09/11 16:17:45 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.42 89/09/13 14:41:48 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -260,7 +260,8 @@ XawTextPosition pos1, pos2;
 
 	        x += temp;
 		width = CharWidth(w, x, (unsigned char) '\t');
-		XFillRectangle(XtDisplay(w), XtWindow(w), invgc, (int) x,
+		XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
+			       invgc, (int) x,
 			       (int) y - sink->text_sink.font->ascent,
 			       (unsigned int) width,
 			       (unsigned int) (sink->text_sink.font->ascent +
@@ -473,8 +474,6 @@ Initialize(request, new)
 Widget request, new;
 {
     AsciiSinkWidget sink = (AsciiSinkWidget) new;
-    Widget parent = XtParent(new);
-
     XtGCMask valuemask = (GCFont | 
 			  GCGraphicsExposures | GCForeground | GCBackground );
     XGCValues values;
@@ -483,21 +482,21 @@ Widget request, new;
     values.graphics_exposures = (Bool) FALSE;
     
     values.foreground = sink->text_sink.foreground;
-    values.background = parent->core.background_pixel;
-    sink->ascii_sink.normgc = XtGetGC(parent, valuemask, &values);
+    values.background = sink->text_sink.background;
+    sink->ascii_sink.normgc = XtGetGC(new, valuemask, &values);
     
-    values.foreground = parent->core.background_pixel;
+    values.foreground = sink->text_sink.background;
     values.background = sink->text_sink.foreground;
-    sink->ascii_sink.invgc = XtGetGC(parent, valuemask, &values);
+    sink->ascii_sink.invgc = XtGetGC(new, valuemask, &values);
     
     values.function = GXxor;
-    values.foreground ^= values.background;
-    values.background = parent->core.background_pixel;
+    values.background = sink->text_sink.background;
+    values.foreground ^= sink->text_sink.foreground;
     valuemask |= GCFunction;
     
-    sink->ascii_sink.xorgc = XtGetGC(parent, valuemask, &values);
+    sink->ascii_sink.xorgc = XtGetGC(new, valuemask, &values);
     
-    sink->ascii_sink.insertCursorOn = CreateInsertCursor(XtScreen(parent));
+    sink->ascii_sink.insertCursorOn= CreateInsertCursor(XtScreenOfObject(new));
     sink->ascii_sink.laststate = XawisOff;
 }
 
@@ -517,7 +516,7 @@ Widget w;
    XtReleaseGC(w, sink->ascii_sink.normgc);
    XtReleaseGC(w, sink->ascii_sink.invgc);
    XtReleaseGC(w, sink->ascii_sink.xorgc);
-   XFreePixmap(XtDisplay(w), sink->ascii_sink.insertCursorOn);
+   XFreePixmap(XtDisplayOfObject(w), sink->ascii_sink.insertCursorOn);
 }
 
 /*	Function Name: SetValues

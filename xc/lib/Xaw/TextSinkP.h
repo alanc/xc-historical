@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSinkP.h,v 1.15 89/09/01 17:46:30 kit Exp $
+* $XConsortium: TextSinkP.h,v 1.1 89/09/06 17:30:25 kit Exp $
 */
 
 
@@ -77,7 +77,8 @@ extern TextSinkClassRec textSinkClassRec;
 typedef struct {
     /* resources */
     XFontStruct	*font;		/* Font to draw in. */
-    int         foreground;	/* Foreground color. */
+    Pixel foreground;		/* Foreground color. */
+    Pixel background;		/* Background color. */
 
     /* private state. */
     Position *tabs;		/* The tab stops as pixel values. */
