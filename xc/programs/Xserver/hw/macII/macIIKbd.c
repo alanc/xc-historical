@@ -138,7 +138,7 @@ macIIKbdProc (pKeyboard, what)
 		}
             }
 	    if (devosmFd == 0) {
-		if ((devosmFd = open("/dev/osm", O_RDWR)) < 0) {
+		if ((devosmFd = open("/dev/osm", O_RDONLY)) < 0) {
 			MessageF("Could not open /dev/osm. \r\n");
 		}
             }
