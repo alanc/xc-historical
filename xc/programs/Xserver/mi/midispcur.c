@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.6 89/07/18 18:02:49 rws Exp $ */
+/* $XConsortium: midispcur.c,v 5.7 89/08/04 16:43:30 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -149,7 +149,8 @@ miDCRealizeCursor (pScreen, pCursor)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
 {
-    pCursor->devPriv[pScreen->myNum] = (pointer)NULL;
+    if (pCursor->bits->refcnt <= 1)
+	pCursor->bits->devPriv[pScreen->myNum] = (pointer)NULL;
     return TRUE;
 }
 
@@ -178,7 +179,7 @@ miDCRealize (pScreen, pCursor)
 	xfree ((pointer) pPriv);
 	return (miDCCursorPtr)NULL;
     }
-    pCursor->devPriv[pScreen->myNum] = (pointer) pPriv;
+    pCursor->bits->devPriv[pScreen->myNum] = (pointer) pPriv;
 
     /* create the two sets of bits, clipping as appropriate */
 
@@ -224,13 +225,13 @@ miDCUnrealizeCursor (pScreen, pCursor)
 {
     miDCCursorPtr   pPriv;
 
-    pPriv = (miDCCursorPtr) pCursor->devPriv[pScreen->myNum];
-    if (pPriv)
+    pPriv = (miDCCursorPtr) pCursor->bits->devPriv[pScreen->myNum];
+    if (pPriv && (pCursor->bits->refcnt <= 1))
     {
 	(*pScreen->DestroyPixmap) (pPriv->sourceBits);
 	(*pScreen->DestroyPixmap) (pPriv->maskBits);
 	xfree ((pointer) pPriv);
-	pCursor->devPriv[pScreen->myNum] = (pointer)NULL;
+	pCursor->bits->devPriv[pScreen->myNum] = (pointer)NULL;
     }
     return TRUE;
 }
@@ -276,7 +277,7 @@ miDCPutUpCursor (pScreen, pCursor, x, y, source, mask)
     int		    status;
     XID		    gcvals[2];
 
-    pPriv = (miDCCursorPtr) pCursor->devPriv[pScreen->myNum];
+    pPriv = (miDCCursorPtr) pCursor->bits->devPriv[pScreen->myNum];
     if (!pPriv)
     {
 	pPriv = miDCRealize(pScreen, pCursor);
@@ -398,7 +399,7 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
     XID		    gcvals[2];
     PixmapPtr	    pTemp;
 
-    pPriv = (miDCCursorPtr) pCursor->devPriv[pScreen->myNum];
+    pPriv = (miDCCursorPtr) pCursor->bits->devPriv[pScreen->myNum];
     if (!pPriv)
     {
 	pPriv = miDCRealize(pScreen, pCursor);
