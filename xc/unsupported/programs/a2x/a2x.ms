@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.46 94/02/13 13:40:10 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.47 94/04/17 20:45:39 rws Exp rws $
 .de Ds
 .RS
 .nf
@@ -149,7 +149,7 @@ character, the character you get by holding down the Ctrl (Control) key and
 typing the character \fI<char>\fP.  For example, {c\-t} represents what you get
 by holding Ctrl and typing 't'.  This syntax is the same as what you will see
 in DragonDictate 1.01 menus if you enter control characters into macros.
-In DragonDictate 2.0, the syntax has changed to {Ctrl\+\fI<char>\fP}, so
+In DragonDictate 2.0, the syntax has changed to {Ctrl+\fI<char>\fP}, so
 keep this difference in mind so that you don't get confused.
 .LP
 \fBa2x\fP interprets the character {c\-t} specially; it introduces a control
