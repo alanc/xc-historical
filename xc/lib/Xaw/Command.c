@@ -66,8 +66,8 @@ static char *sccsid = "@(#)Command.c	1.15	2/25/87";
 /* Private Data */
 
 static char *defaultTranslation[] = {
-    "<ButtonPress>:       set\n",
-    "<ButtonRelease>:     notify unset\n",
+    "<Btn1Down>:       set\n",
+    "<Btn1Up>:       notify unset\n",
     "<EnterWindow>:       highlight\n",
     "<LeaveWindow>:       unhighlight unset\n",
     NULL
@@ -81,7 +81,7 @@ static Resource resources[] = {
       Offset(CommandWidget,command.closure), XtRPointer, (caddr_t)NULL},
 
    {XtNhighlightThickness, XtCThickness, XrmRInt, sizeof(Dimension),
-      Offset(CommandWidget,command.highlightThickness), XrmRString,"1"},
+      Offset(CommandWidget,command.highlightThickness), XrmRString,"2"},
    {XtNtranslations, XtCTranslations, XtRTranslationTable,
       sizeof(Translations),
       Offset(CommandWidget, core.translations),XtRString,
@@ -334,13 +334,13 @@ static void Redisplay(w)
 	instead, fill it with black to avoid flicker. */
    else if (ComWset == ComWdisplaySet ||  (ComWset && !ComWdisplaySet))
      XFillRectangle(XtDisplay(w),XtWindow(w), ComWinverseGC,
-		    0,0,ComWlabelWidth,ComWlabelHeight);
+		    0,0,ComWwidth,ComWheight);
 
      /* check whether border is taken out of size of rectangle or
 	is outside of rectangle */
    if (ComWhighlighted)
      XDrawRectangle(XtDisplay(w),XtWindow(w), ComWhighlightGC,
-		    0,0,ComWlabelWidth,ComWlabelHeight);
+		    0,0,ComWwidth,ComWheight);
 
      /* draw the string:  there are three different "styles" for it,
 	all in separate GCs */
