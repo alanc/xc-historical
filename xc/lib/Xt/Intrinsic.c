@@ -628,7 +628,7 @@ void CallCallbacks (callbackList,callData)
     XtCallbackRec *cl;
     if ((*callbackList) == NULL )return;
     for (cl = (*callbackList); cl != NULL; cl = cl->next) 
-             cl->callback(cl->widget,cl->closure,callData);
+             (*(cl->callback))(cl->widget,cl->closure,callData);
 }
 
 void XtCallCallbacks (widget, callbackKind, callData)
@@ -683,18 +683,21 @@ void Phase2Callbacks(widget)
      return;
 }
 
-void Phase2Destroy(widget)
+/* ARGSUSED */
+void Phase2Destroy(widget, closure, callData)
     Widget    widget;
+    Opaque	closure;
+    Opaque	callData;
 {
   WidgetClass widgetClass;
   for(widgetClass = widget->core.widget_class;
       widgetClass != NULL; 
       widgetClass = widgetClass ->core_class.superclass) 
   if ((widgetClass->core_class.destroy) != NULL)
-       widgetClass->core_class.destroy(widget);
+       (*(widgetClass->core_class.destroy))(widget);
 }
 
-void XtPhase2Destroy (widget)
+void XtPhase2Destroy (widget, closure, callData)
     Widget    widget;
 {
     Display *display;

@@ -48,11 +48,11 @@ static char *sccsid = "@(#)ButtonBox.c	1.14	2/26/87";
  *
  ****************************************************************/
 
-static Resource resources[] = {
+static XtResource resources[] = {
     {XtNhSpace, XtCHSpace, XrmRInt, sizeof(int),
-	 Offset(ButtonBoxWidget, button_box.h_space), XtRString, "4"},
+	 XtOffset(ButtonBoxWidget, button_box.h_space), XtRString, "4"},
     {XtNvSpace, XtCVSpace, XrmRInt, sizeof(int),
-	 Offset(ButtonBoxWidget, button_box.v_space), XtRString, "4"},
+	 XtOffset(ButtonBoxWidget, button_box.v_space), XtRString, "4"},
 };
 
 /****************************************************************
@@ -65,7 +65,7 @@ static void Initialize();
 static void Realize();
 static void Resize();
 static void SetValues();
-static XtGeometryReturnCode GeometryManager();
+static XtGeometryResult GeometryManager();
 static void ChangeManaged();
 static void ClassInitialize();
 
@@ -136,6 +136,7 @@ static void ClassInitialize()
  *
  */
 
+/* ARGSUSED */
 static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
     ButtonBoxWidget	bbw;
     Dimension		width, height;
@@ -172,7 +173,7 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
 		lw = h_space;
 	    }
 	    if (position && (lw != widget->core.x || h != widget->core.y)) {
-		XtMoveWidget(bbw->composite.children[i], lw, h);
+		XtMoveWidget(bbw->composite.children[i], (int)lw, (int)h);
 	    }
 	    lw += bw;
 	    bh = widget->core.height + 2*widget->core.border_width;
@@ -243,13 +244,13 @@ static Boolean TryNewLayout(bbw)
     /* let's see if our parent will go for a new size. */
     switch (XtMakeResizeRequest(bbw, width, height, &width, &height)) {
 
-	case XtgeometryYes:
+	case XtGeometryYes:
 	    return (TRUE);
 
-	case XtgeometryNo:
+	case XtGeometryNo:
 	    return (FALSE);
 
-	case XtgeometryAlmost:
+	case XtGeometryAlmost:
 	    if (! PreferredSize(bbw, width, height, &width, &height))
 	        return (FALSE);
 	    (void) XtMakeResizeRequest(bbw, width, height, &width, &height);
@@ -264,10 +265,10 @@ static Boolean TryNewLayout(bbw)
  */
 
 /*ARGSUSED*/
-static XtGeometryReturnCode GeometryManager(w, request, reply)
+static XtGeometryResult GeometryManager(w, request, reply)
     Widget		w;
-    WidgetGeometry	*request;
-    WidgetGeometry	*reply;	/* RETURN */
+    XtWidgetGeometry	*request;
+    XtWidgetGeometry	*reply;	/* RETURN */
 
 {
     Dimension	width, height, borderWidth, junk;
@@ -275,7 +276,7 @@ static XtGeometryReturnCode GeometryManager(w, request, reply)
 
     /* Position request always denied */
     if (request->request_mode & (CWX | CWY))
-        return (XtgeometryNo);
+        return (XtGeometryNo);
 
     /* Size changes must see if the new size can be accomodated */
     if (request->request_mode & (CWWidth | CWHeight | CWBorderWidth)) {
@@ -307,18 +308,18 @@ static XtGeometryReturnCode GeometryManager(w, request, reply)
 	|| TryNewLayout(bbw)) {
 	    /* Fits in existing or new space, relayout */
 	    Resize(bbw);
-	    return (XtgeometryYes);
+	    return (XtGeometryYes);
 	} else {
 	    /* Cannot satisfy request, change back to original geometry */
 	    w->core.width = width;
 	    w->core.height = height;
 	    w->core.border_width = borderWidth;
-	    return (XtgeometryNo);
+	    return (XtGeometryNo);
 	}
     }; /* if any size changes requested */
 
     /* Any stacking changes don't make a difference, so allow if that's all */
-    return (XtgeometryYes);
+    return (XtGeometryYes);
 }
 
 static void ChangeManaged(bbw)
@@ -329,7 +330,10 @@ static void ChangeManaged(bbw)
     Resize(bbw);
 }
 
-static void Initialize(bbw) ButtonBoxWidget bbw;
+static void Initialize(bbw, args, num_args)
+    ButtonBoxWidget bbw;
+    ArgList args;
+    Cardinal num_args;
 {
 /* ||| What are consequences of letting height, width be 0? If okay, then
        Initialize can be NULL */

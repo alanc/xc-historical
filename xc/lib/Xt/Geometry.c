@@ -129,9 +129,15 @@ XtGeometryResult XtMakeResizeRequest
     request.height = height;
     r = XtMakeGeometryRequest(widget, &request, &reply);
     if (replyWidth != NULL)
-	*replyWidth  = (reply.request_mode & CWWidth  ? reply.width  : width );
+	if (r == XtGeometryAlmost && reply.request_mode & CWWidth)
+	    *replyWidth = reply.width;
+	else
+	    *replyWidth = width;
     if (replyHeight != NULL)
-	*replyHeight = (reply.request_mode & CWHeight ? reply.height : height);
+	if (r == XtGeometryAlmost && reply.request_mode & CWHeight)
+	    *replyHeight = reply.height;
+	else
+	    *replyWidth = width;
     return r;
 } /* XtMakeResizeRequest */
 

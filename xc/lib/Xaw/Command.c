@@ -225,6 +225,7 @@ static void Initialize(w, args, num_args)
     Get_highlightGC(cbw);
       /* Start the callback list if the client specified one in
 	 the arglist */
+    ComWcallbackList = NULL;
     if (ComWcallback != NULL)
       XtAddCallback((Widget)cbw,activateCommand,ComWcallback,ComWclosure);
 
@@ -384,7 +385,8 @@ static void Resize(w)
   XtCallParentProcedure(resize,w);
 }
 
-static void Destroy()
+static void Destroy(w)
+    Widget w;
 {
   /* must free GCs and pixmaps */
 }
