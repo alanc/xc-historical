@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.89 91/07/16 22:49:58 gildea Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -170,7 +170,7 @@ LibraryObjectRule()
 
 SpecialLibObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialLibObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialLibObjectRule(Alloc.o,,$(ALLOC_DEFINES))
+SpecialLibObjectRule(Alloc.o,NullParameter,$(ALLOC_DEFINES))
 #if MotifBC
 SpecialLibObjectRule(Converters.o,$(ICONFIGFILES),$(BC_DEFINES))
 #endif
