@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.25 89/12/20 15:23:15 rws Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.26 89/12/21 14:41:27 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -2168,8 +2168,19 @@ and at other times.
 If generateEvent is True, the device should decide whether or
 not to call ProcessInputEvents() nd then it must call
 DevicePtr->processInputProc.
-Its effects are, of course, limited in value for absolute pointing devices such 
-as a tablet.
+Its effects are, of course, limited in value for absolute pointing devices
+such as a tablet.
+.nf
+
+	void NewCurrentScreen(newScreen, x, y)
+	    ScreenPtr newScreen;
+	    int x,y;
+.fi
+.LP
+If your ddx provides some mechanism for the user to magically move the
+pointer between multiple screens, you need to inform DIX when this
+occurs.  You should call NewCurrentScreen to accomplish this, specifying
+the new screen and the new x and y coordinates of the pointer on that screen.
 
 .NH 3
 Visuals, Depths and Pixmap Formats for Screens
