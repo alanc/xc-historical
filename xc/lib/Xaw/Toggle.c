@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.16 90/04/26 17:36:04 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.17 90/04/30 17:04:18 converse Exp $";
 #endif /* lint */
 
 /*
@@ -481,6 +481,7 @@ Widget w, radio_group;
 #endif
 {
   ToggleWidget tw = (ToggleWidget) w;
+  RadioGroup * group;
 
   RemoveFromRadioGroup(w);
 
@@ -491,7 +492,11 @@ Widget w, radio_group;
 
   if ( tw->command.set && radio_group != NULL )
     XawToggleUnsetCurrent(radio_group);
-  AddToRadioGroup( GetRadioGroup(radio_group), w );
+
+  if (radio_group != NULL)
+      if ((group = GetRadioGroup(radio_group)) == NULL)
+	  CreateRadioGroup(w, radio_group);
+      else AddToRadioGroup(group, w);
 }
 
 /*	Function Name: XawToggleGetCurrent
