@@ -4,8 +4,8 @@
  */
 
 #ifdef HPArchitecture
-#define OtherSources hpsocket.c hpalloca.c 
-#define OtherObjects hpsocket.o hpalloca.o dbm.o 
+#define OtherSources hpsocket.c 
+#define OtherObjects hpsocket.o dbm.o 
 #endif
 
 /*
