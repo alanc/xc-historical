@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.15 91/06/20 15:52:32 keith Exp $ */
+/* $XConsortium: fsio.c,v 1.16 91/06/21 18:15:43 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -587,7 +587,7 @@ _fs_drain_bytes(conn, len)
 #endif
 
     while (len > 0) {
-	if (_fs_read(conn, buf, MIN(len, 128)) < 0)
+	if (_fs_read(conn, buf, (len < 128) ? len : 128) < 0)
 	    return -1;
 	len -= 128;
     }
