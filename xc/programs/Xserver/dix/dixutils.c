@@ -23,12 +23,12 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.38 91/06/13 08:54:21 rws Exp $ */
+/* $XConsortium: dixutils.c,v 1.39 91/07/16 20:24:03 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
 #include "misc.h"
-#include "window.h"
+#include "windowstr.h"
 #include "dixstruct.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
@@ -115,6 +115,8 @@ LookupWindow(rid, client)
     XID rid;
     ClientPtr client;
 {
+    WindowPtr	pWin;
+
     client->errorValue = rid;
     if(rid == INVALID)
 	return NULL;
@@ -124,7 +126,12 @@ LookupWindow(rid, client)
             return ((WindowPtr) client->lastDrawable);
         return (WindowPtr) NULL;
     }
-    return (WindowPtr)LookupIDByType(rid, RT_WINDOW);
+    pWin = (WindowPtr)LookupIDByType(rid, RT_WINDOW);
+    if (pWin && pWin->drawable.type == DRAWABLE_WINDOW) {
+	client->lastDrawable = (DrawablePtr) pWin;
+	client->lastDrawableID = rid;
+    }
+    return pWin;
 }
 
 
