@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Xext.h,v 1.1 89/10/12 17:19:17 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,8 +24,24 @@
 #ifndef _XEXT_H_
 #define _XEXT_H_
 
-extern int (*XSetExtensionErrorHandler())();  /* called on missing exts */
-extern int XMissingExtension();		/* no extension for routine */
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
+
+extern int (*XSetExtensionErrorHandler())(
+#if NeedFunctionPrototypes
+    int (*handler)()
+#endif
+);
+
+extern int XMissingExtension(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    _Xconst char*	/* ext_name */
+#endif
+);
+
+_XFUNCPROTOEND
 
 #define X_EXTENSION_UNKNOWN "unknown"
 #define X_EXTENSION_MISSING "missing"
