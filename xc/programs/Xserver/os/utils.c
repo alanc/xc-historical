@@ -21,9 +21,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.17 88/08/16 13:33:58 jim Exp $ */
+/* $Header: utils.c,v 1.53 88/08/16 20:17:54 jim Exp $ */
 #include <stdio.h>
-#include <X11/Xos.h>
+#include "Xos.h"
 #include "misc.h"
 #include "X.h"
 #include "input.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.45 88/08/10 20:11:29 rws Exp $ */
+/* $Header: io.c,v 1.46 88/08/16 20:17:39 jim Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -30,7 +30,7 @@ SOFTWARE.
  *****************************************************************/
 
 #include <stdio.h>
-#include <X11/Xos.h>
+#include "Xos.h"
 #include "Xmd.h"
 #include <errno.h>
 #include <sys/param.h>

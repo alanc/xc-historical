@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.10 88/08/16 08:41:10 jim Exp $ */
+/* $Header: connection.c,v 1.78 88/08/16 20:17:30 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -45,7 +45,7 @@ SOFTWARE.
 #include "Xproto.h"
 #include <sys/param.h>
 #include <errno.h>
-#include <X11/Xos.h>			/* for strings, file, time */
+#include "Xos.h"			/* for strings, file, time */
 #include <sys/socket.h>
 
 #ifdef hpux
