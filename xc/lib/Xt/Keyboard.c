@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.21 91/05/06 20:28:58 converse Exp $ */
+/* $XConsortium: Keyboard.c,v 1.22 91/07/21 14:01:51 converse Exp $ */
 
 /********************************************************
 
@@ -34,6 +34,13 @@ SOFTWARE.
 #define _GetWindowedAncestor(w) (XtIsWidget(w) ? w : _XtWindowedAncestor(w))
 extern void _XtFillAncestorList();
 extern void _XtSendFocusEvent();
+
+/* FindKeyDestination, ancestor list for Xt focus management */
+static Display	*pseudoTraceDisplay = NULL;
+static Widget	*pseudoTrace = NULL;
+static int	pseudoTraceDepth = 0;
+static int	pseudoTraceMax = 0;
+
 
 static XtServerGrabPtr CheckServerGrabs(event, trace, traceDepth)
     XEvent	*event;
@@ -286,10 +293,6 @@ static Widget 	FindKeyDestination(widget, event,
 			dspWidget = focusWidget;
 		      else
 			{
-			    static Display	*pseudoTraceDisplay = NULL;
-			    static Widget	*pseudoTrace = NULL;
-			    static int		pseudoTraceDepth = 0;
-			    static int		pseudoTraceMax = 0;
 			    XtServerGrabPtr	grab;
 
 			    if (!pseudoTraceDepth || 
@@ -702,6 +705,10 @@ static void FocusDestroyCallback(widget, closure, call_data)
     XtPointer call_data;
 {
     XtSetKeyboardFocus((Widget)closure, None);
+    /* invalidate FindKeyDestination's ancestor list if it is still for us */
+    if (pseudoTraceDepth && pseudoTraceDisplay == XtDisplay(widget) &&
+	widget == pseudoTrace[0])
+	pseudoTraceDepth = 0;
 }
 
 void XtSetKeyboardFocus(widget, descendant)
