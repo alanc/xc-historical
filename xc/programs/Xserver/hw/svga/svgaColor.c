@@ -1,4 +1,4 @@
-/* $XConsortium: svgaColor.c,v 1.2 93/09/18 18:01:08 rws Exp $ */
+/* $XConsortium: svgaColor.c,v 1.3 93/09/20 12:06:02 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -119,6 +119,8 @@ OsInitColors()
       while(fgets(line, sizeof(line), rgb))
 	{
 	  lineno++;
+	  if (line[0] == '!')
+	      continue;
 	  if (sscanf(line,"%d %d %d %[^\n]\n", &red, &green, &blue, name) == 4)
 	    {
 	      if (red >= 0   && red <= 0xff &&
