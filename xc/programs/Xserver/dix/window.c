@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.83 92/02/13 15:53:44 keith Exp $ */
+/* $XConsortium: window.c,v 5.84 92/02/13 21:24:16 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -581,7 +581,7 @@ MakeRootTile(pWin)
 
 }
 
-static WindowPtr
+WindowPtr
 AllocateWindow(pScreen)
     ScreenPtr pScreen;
 {
@@ -3570,6 +3570,10 @@ MapWindow(pWin, client)
         pWin->viewable = pWin->drawable.class == InputOutput;
     	/* We SHOULD check for an error value here XXX */
         (* pScreen->RealizeWindow)(pWin);
+	if (pScreen->ClipNotify)
+	    (* pScreen->ClipNotify) (pWin, 0, 0);
+	if (pScreen->PostValidateTree)
+	    (* pScreen->PostValidateTree)(NullWindow, pWin, VTMap);
 	(* pScreen->RegionInit) (&temp, NullBox, 0);
 	(* pScreen->RegionCopy) (&temp, &pWin->clipList);
 	(*pScreen->WindowExposures) (pWin, &temp, NullRegion);
