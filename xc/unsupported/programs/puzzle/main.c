@@ -54,6 +54,7 @@ int	BoxHeight =	BOX_HEIGHT;
 
 int	PuzzleSize = 4;
 int	PuzzleWidth=4, PuzzleHeight=4;
+char    defaultPuzzleSize[] = "4x4";
 
 int	TileHeight, TileWidth;
 int	TextXStart;
@@ -535,9 +536,11 @@ char *argv[];
 	BGcolor.red = 0xffff;	BGcolor.green = 0xffff;	BGcolor.blue = 0xffff;
 
 	ACPixmap = XCreateBitmapFromData(dpy,RootWindow(dpy,screen),
-				 ac_bits, ac_width, ac_height);
+					 (char *) ac_bits,
+					 ac_width, ac_height);
 	ACMask = XCreateBitmapFromData(dpy,RootWindow(dpy,screen),
-				 ac_mask_bits, ac_mask_width, ac_mask_height);
+				       (char *) ac_mask_bits,
+				       ac_mask_width, ac_mask_height);
 	ACCursor = XCreatePixmapCursor(dpy,ACPixmap,ACMask,
 				       &FGcolor,&BGcolor,
 				       ac_x_hot, ac_y_hot);
@@ -985,7 +988,7 @@ char *argv[];
 
    if (!puzzle_size) {
 	option = XGetDefault (dpy, ProgName, "Size");
-	puzzle_size = option ? option : "4x4";
+	puzzle_size = option ? option : defaultPuzzleSize;
    }
 
    if (TilesPerSecond <= 0) {
