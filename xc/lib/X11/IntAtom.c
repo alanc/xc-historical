@@ -1,4 +1,4 @@
-/* $XConsortium: XIntAtom.c,v 11.16 90/12/12 09:18:24 rws Exp $ */
+/* $XConsortium: XIntAtom.c,v 11.17 90/12/13 23:34:40 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -114,7 +114,7 @@ nomatch:    if (idx == firstidx)
            will always flush the buffer anyway */
     if(_XReply (dpy, (xReply *)&rep, 0, xTrue) == 0) {
 	rep.atom = None;
-    } else if (atoms) {
+    } else if (rep.atom && atoms) {
 	/* store it in the cache */
 	e = (Entry)Xmalloc(sizeof(EntryRec) + n + 1);
 	if (e) {
