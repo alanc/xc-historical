@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XHeader: xev.c,v 1.1 88/07/13 15:38:15 jim Exp $
+ * $XHeader: xev.c,v 1.2 88/07/16 11:10:23 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -99,7 +99,7 @@ main (argc, argv)
 			   Button4MotionMask | Button5MotionMask |
 			   ButtonMotionMask | KeymapStateMask |
 			   ExposureMask | VisibilityChangeMask | 
-			   StructureNotifyMask | ResizeRedirectMask | 
+			   StructureNotifyMask | /* ResizeRedirectMask | */
 			   SubstructureNotifyMask | SubstructureRedirectMask |
 			   FocusChangeMask | PropertyChangeMask |
 			   ColormapChangeMask | OwnerGrabButtonMask;
