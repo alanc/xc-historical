@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkWinEv.c,v 11.10 88/02/03 20:43:10 rws Exp $ */
+/* $Header: XChkWinEv.c,v 11.11 88/02/04 19:33:59 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -20,7 +20,7 @@ extern long _event_to_mask[];
 Bool XCheckWindowEvent (dpy, w, mask, event)
         register Display *dpy;
 	Window w;		/* Selected window. */
-	int mask;		/* Selected event mask. */
+	long mask;		/* Selected event mask. */
 	register XEvent *event;	/* XEvent to be filled in. */
 {
  	register _XQEvent *prev, *qelt;

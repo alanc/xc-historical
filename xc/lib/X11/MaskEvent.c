@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMaskEvent.c,v 11.15 88/02/03 20:41:25 rws Exp $ */
+/* $Header: XMaskEvent.c,v 11.16 88/02/04 19:34:31 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
@@ -20,7 +20,7 @@ extern long _event_to_mask[];
 
 XMaskEvent (dpy, mask, event)
 	register Display *dpy;
-	unsigned long mask;		/* Selected event mask. */
+	long mask;		/* Selected event mask. */
 	register XEvent *event;	/* XEvent to be filled in. */
 {
 	register _XQEvent *prev, *qelt;
