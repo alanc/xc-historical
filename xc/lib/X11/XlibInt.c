@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.145 91/05/08 10:26:55 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.146 91/05/11 15:01:28 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1435,8 +1435,12 @@ Visual *_XVIDtoVisual (dpy, id)
 	return (NULL);
 }
 
+#if NeedFunctionPrototypes
+XFree (void *data)
+#else
 XFree (data)
 	char *data;
+#endif
 {
 	Xfree (data);
 }
