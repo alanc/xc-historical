@@ -29,6 +29,7 @@ When creating a Grip widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .NH 3
 Resources
+.LP
 .IN "Grip widget" "resources"
 .ps 9
 .nr PS 9
@@ -88,7 +89,7 @@ information passed to the action routine.  A more thorough description
 is given below in the \fBGrip Actions\fP section.
 .Cm
 .Cu
-.De
+.Dp
 .Dc
 .IP \fBforeground\fP 1.5i
 A pixel value which indexes the widget's colormap to derive the color

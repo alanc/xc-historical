@@ -31,6 +31,7 @@ When creating a Label widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .NH 3
 Resources
+.LP
 .IN "Label widget" "resources"
 .ps 9
 .nr PS 9
@@ -92,7 +93,7 @@ _
 .Bw
 .Cm
 .Cu
-.De
+.Dp
 .Dc
 .Lf Bold
 .Lg Bold

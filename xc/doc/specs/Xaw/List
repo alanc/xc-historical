@@ -32,6 +32,7 @@ When creating a List widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .NH 3
 Resources
+.LP
 .IN "List widget" "resources"
 .ps 9
 .nr PS 9
@@ -112,7 +113,7 @@ in the list.
 The default number of columns.  This value is used when neither the
 width nor the height of the List widget is specified or when
 \fBforceColumns\fP is \fBTrue\fP.
-.De
+.Dp
 .Dc
 .IP \fBforceColumns\fP
 Forces the default number of columns to be used regardless of the
