@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.24 92/05/22 11:50:50 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.25 92/05/28 12:17:23 rws Exp $
         RGB_DB = DefaultRGBDatabase
    SITE_RGB_DB = -DRGB_DB=\"$(RGB_DB)\"
       DEPLIBS = 
@@ -14,7 +14,7 @@ XCOMM $XConsortium: Imakefile,v 1.24 92/05/22 11:50:50 rws Exp $
      PROGRAMS = rgb showrgb
     DATAFILES = rgb.pag rgb.dir
       DATADEP = rgb.dir		/* just want one run of rgb */
-#if !(defined(SGIArchitecture) || SystemV4)
+#if !(defined(SGIArchitecture) || SystemV4 || defined(BSD386Architecture))
        DBMLIB = -ldbm
 #endif
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
