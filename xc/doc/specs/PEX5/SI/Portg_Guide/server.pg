@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: server.pg,v 5.2 91/02/16 09:45:24 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -42,14 +42,14 @@ and that interface should not change.  These procedures also have a defined func
 specification that they must always adhere to.  
 .LP
 Data structures that are shared by di\s-1PEX\s+1 and dd\s-1PEX\s+1 are defined in the
-directory \fL\s-1.../server/include\fR\s+1 in the files \fL\s-1ddpex.h\fR\s+1,
+directory \fL\s-1mit/extensions/server/PEX/include\fR\s+1 in the files \fL\s-1ddpex.h\fR\s+1,
 \fL\s-1ddpex3.h\fR\s+1, and \fL\s-1ddpex4.h\fR\s+1.  These files should not
 change.  Structures that are defined and used only by dd\s-1PEX\s+1 are defined
-in the \fL\s-1.../ddpex/mi/include\fR\s+1 directory, and can be changed.
+in the \fL\s-1mit/extensions/server/PEX/ddpex/mi/include\fR\s+1 directory, and can be changed.
 .LP
 \s-1PEX-ME\s+1 supports two single precision floating point-formats, \s-1IEEE\s+1
 and \s-1DEC\s+1.
-The conversion to the server-native format is done in \fL\s-1.../dipex/swap\fR\s+1
+The conversion to the server-native format is done in \fL\s-1mit/extensions/server/PEX/dipex/swap\fR\s+1
 If you want to add a new floating point type to the server, you must provide the
 conversion code.
 The issues of double precision floating-point formats are not addressed in \s-1PEX-ME\s+1,
@@ -59,7 +59,7 @@ and have greater \s-1PEX\s+1 protocol implications.
 Some dd\s-1PEX\s+1 Inquiry routines take a parameter of type
 \fIddBufferPtr\fR.  This is used for communicating variable length 
 replies from dd\s-1PEX\s+1 to di\s-1PEX\s+1. The structure is defined in
-the file \fL\s-1.../extension/include/PEX/ddpex.h\fR\s+1.
+the file \fL\s-1mit/extensions/server/PEX/include/ddpex.h\fR\s+1.
 You will not need to change this structure, but you will see it used often
 in the existing code.  \fIddBufferPtr\fR is defined as:
 .RS
@@ -84,7 +84,7 @@ There are also two sizes:
 \fIdataSize\fR \- the number of bytes of actual data returned by dd\s-1PEX\s+1.
 .LP
 A utility routine (for reallocating this buffer) is defined in the
-file \fL\s-1.../extensions/server/PEX/dipex/dispatch/pexUtils.c\fR\s+1.
+file \fL\s-1mit/extensions/server/PEX/dipex/dispatch/pexUtils.c\fR\s+1.
 di\s-1PEX\s+1.
 .RS
 .nf
@@ -104,17 +104,17 @@ directory \fL\s-1config\s+1\fR.
 .LP
 In addition, \s-1SYSV\s+1 machines and other non-\s-1BSD\s+1 targets
 for server porting will want require replacement of the functions
-in the file \fL\s-1.../server/PEX/ospex/4.2bsd/osPexFont.c\fR\s+1
+in the file \fL\s-1mit/extensions/server/PEX/ospex/osPexFont.c\fR\s+1
 .LP
-All of the functions in the file \fL\s-1...ospex/4.2bsd/osPexFont.c\fR\s+1 
+All of the functions in the file \fL\s-1osPexFont.c\fR\s+1 
 were written to isolate the \s-1PEX\s+1 font manipulation routines
 from operating system dependent functions, for example input/output routines. 
 .KS
 .LP
 The following procedure is used to determine the font path to use to find \s-1PEX\s+1 fonts.
 If the environment variable \s-1PEX_FONTPATH\s+1 is defined, the server will look there.
-Otherwise it will use the constant \s-1PEX_DEFAULT_FONTPATH\s+1 as specified
-in \fL\s-1miFont.h\fR\s+1, which can be customized.
+Otherwise it will use the constant \s-1PEX_DEFAULT_FONTPATH\s+1 
+which can be customized.
 .LP
 .IX "osPEX Functions" "pex_get_font_directory_path"
 .IX "Functions" "pex_get_font_directory_path"
@@ -261,7 +261,7 @@ the \s-1PEX-SI\s+1 font procedures.
 Two font source files are provided with the \s-1PEX-SI\s+1,
 \fL\s-1Roman_M.src\fR\s+1 and \fL\s-1Roman.src\fR\s+1.
 The font \fIRoman_M\fR is used as the default font for all primitives.
-These files are found in the directory \fL\s-1.../extensions/fonts/PEX\fR\s+1.
+These files are found in the directory \fL\s-1mit/fonts/PEX\fR\s+1.
 .LP
 The font source files may optionally include font properties.
 The \fL\s-1Roman_M.src\fR\s+1 and \fL\s-1Roman.src\fR\s+1 files 
@@ -460,7 +460,7 @@ The program \fIto_wfont\fR converts the font source files
 The formatted file is a binary file containing the vector 
 data that defines a \s-1PEX-SI\s+1 stroke font.
 All files used to create the \fIto_wfont\fR program are found
-in \fL\s-1.../extensions/fonts/PEX\fR\s+1.
+in \fL\s-1mit/fonts/PEX\fR\s+1.
 .LP
 The \fIto_wfont\fR program is built from \fIyacc\fR, \fIlex\fR, and a C
 compiler.  The C source must be built with yacc and lex in
@@ -480,8 +480,8 @@ Five temporary files are created as by-products of these steps.
 .TN "Actions Necessary to Compile the to_wfont Program" make_to_wfont
 .TS  
 center box tab(@);
-cfBI | cfBI | cfBI | cfBI
-n | lfL | lfL | lfL.
+c | c | c | c
+n | l | l | l.
 No.@Command@Include File@Output File(s)
 _
 1.@\s-1yacc -d to_wfont.y@wfont.h@y.tab.h, y.tab.c\s+1

@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: resources.pg,v 5.2 91/02/16 09:45:25 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -45,8 +45,8 @@ The traverser is described in Section
 .H 3 "Important Data Structures"
 .LP
 The dd\s-1PEX\s+1 data structure for the workstation resource is defined  
-in \fL\s-1.../ddpex/mi/include/miWks.h\s+1\fR.  The corresponding procedures are in
-the file \fL\s-1.../ddpex/mi/level4/miWks.c\fR\s+1.
+in \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miWks.h\s+1\fR.  The corresponding procedures are in
+the file \fL\s-1mit/extensions/server/PEX/ddpex/mi/level4/miWks.c\fR\s+1.
 .LP
 The workstation resource data structure maintains the workstation state information.
 Because the actual rendering is performed in the Transformation and 3D Rendering
@@ -68,7 +68,7 @@ called the traverser can change the workstation state information in the
 workstation resource and the renderer resource.
 .H 3 "Procedures Used by diPEX"
 .LP
-The following procedures are defined in \fL\s-1.../ddpex/mi/level4/miWks.c\fR\s+1.
+The following procedures are defined in \fL\s-1mit/extensions/server/PEX/ddpex/mi/level4/miWks.c\fR\s+1.
 .KS
 .IX "PHIGS Workstation Module" "PHIGS Workstations"
 .LP
@@ -527,22 +527,22 @@ for more information on ddContext.
 .H 3 "Important Data Structures"
 .LP
 The data structures for structure resource are defined
-in \fL\s-1.../ddpex/mi/include/miStruct.h\fR\s+1.
+in \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miStruct.h\fR\s+1.
 The corresponding procedures are defined 
-in \fL\s-1.../ddpex/mi/level4/miStruct.c\fR\s+1.
+in \fL\s-1mit/extensions/server/PEX/ddpex/mi/level4/miStruct.c\fR\s+1.
 Macros for accessing the data structures are defined 
-in \fL\s-1..../ddpex/mi/include/miStrMacro.h\fR\s+1.
+in \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miStrMacro.h\fR\s+1.
 .LP
 Each data structure has a header and a pointer to a linked list of elements.
 The structure header contains all of the state information for a
 particular Structure Resource, including the current element pointer,
 the first element, the last element, etc.  The header is defined in
-the file \fL\s-1.../ddpex/mi/include/miStruct.h\fR\s+1.
+the file \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miStruct.h\fR\s+1.
 .LP
 The elements are re-formatted versions of the \s-1PEX\s+1 protocol elements.
 The format must be acceptable by the lower level rendering code;
 in \s-1PEX-SI\s+1 the lower level rendering code is the Transformation
-Module, and the format is defined in \fL\s-1../ddpex/mi/include/ddpex2.h\fR\s+1.
+Module, and the format is defined in \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/ddpex2.h\fR\s+1.
 The format can be changed to match your graphics platform, see the Transformation Module.
 di\s-1PEX\s+1 does not interact with the formatted data.
 .LP
@@ -556,7 +556,7 @@ of the posted structures traversed.
 .LP
 Finally, there is one data structure in the traverser code,
 the miTraverserState structure.  It contains
-the traverser state, and is defined in \fL\s-1.../ddpex/mi/include/miStruct.h\fR\s+1.
+the traverser state, and is defined in \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miStruct.h\fR\s+1.
 This data structure indicates whether the traverser is currently doing
 picking, search context, or rendering.  If it is picking, it also indicates
 whether the initial picking information contained a start path.  (A start path
@@ -567,7 +567,7 @@ returns when the traversals are completed.
 .LP
 The traverser steps through the linked list associated with a Structure
 Resource to perform picking, searching, or rendering tasks.
-The traverser is defined in the file \fL\s-1.../ddpex/mi/level4/miTraverse.c\fR\s+1.
+The traverser is defined in the file \fL\s-1mit/extensions/server/PEX/ddpex/mi/level4/miTraverse.c\fR\s+1.
 .LP
 The traverser performs these tasks via a Renderer Resource called the ExecuteOC table.
 The ExecuteOC procedure table is defined in the Transformation Module code.
@@ -785,7 +785,7 @@ all the rest.
 This is because \s-1PEX-ME\s+1 does not perform any information-caching
 in the structure header.
 See the procedures in the files \fL\s-1css_ex_str.c\fR\s+1 (for the
-ExecuteStructure element type) and \fL\s-1css_ex_plain.c\fR\s+1 (for all others).
+ExecuteStructure element type) and \fL\s-1css_plain.c\fR\s+1 (for all others).
 .LP
 The implementation-specific portion of each element is parsed by
 routines in the the Transformation Module code.  In \s-1PEX-ME\s+1,
@@ -797,7 +797,7 @@ CopyOCTable, ReplaceOCTable, and InquireOCTable, respectively.
 The CreateCSSElement function corresponds to the ParseOCTable.
 .FE
 See the Transformation Module for more information, and also the code
-in \fL\s-1...mi/level2\fR\s+1 directory in the
+in \fL\s-1mit/extensions/server/PEX/ddpex/mi/level2\fR\s+1 directory in the
 files \fL\s-1pexOCParse.c, miDestroy.c miCopy.c, miReplace.c\s+1\fR
 and \fL\s-1miInquire.c\fR\s+1.
 .H 3 "Procedures Used by diPEX"
@@ -1270,7 +1270,7 @@ to correspond to any changes you make to the structure header.
 .H 3 "Important Data Structures"
 .LP
 The search context data structure is defined in 
-the file \fL\s-1.../server/PEX/include/ddpex4.h\fR\s+1.
+the file \fL\s-1mit/extensions/server/PEX/include/ddpex4.h\fR\s+1.
 The data structure is created and managed by di\s-1PEX\s+1.
 dd\s-1PEX\s+1 provides only the code that does the actual search.
 .H 3 "Procedures Used by diPEX"
@@ -1309,9 +1309,9 @@ BeginSearching is called.  For more information see the Rendering Control Module
 .H 3 "Important Data Structures"
 .LP
 The pick resource data structures are defined
-in \fL\s-1.../ddpex/mi/include/miPick.h\s+1\fR.
+in \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miPick.h\s+1\fR.
 The procedures that manipulate these structures are
-in \fL\s-1.../ddpex/mi/level4/miPick.c\fR\s+1.
+in \fL\s-1mit/extensions/server/PEX/ddpex/mi/level4/miPick.c\fR\s+1.
 .LP
 The pick resource has two parts, a pick device, and a pick measure.
 A pick device data structure contains the initial state information for the pick measure.
@@ -1471,7 +1471,7 @@ Another Rendering Control Module procedure, InquirePickStatus, is called by the
 traverser after any graphics primitive elements are traversed.
 This procedure checks for a ``hit'' of the
 picking.  You can replace it to work with your software or hardware.
-The traverser is defined in \fL\s-1../ddPEX/mi/level4/miTraverse.c\fR\s+1.
+The traverser is defined in \fL\s-1mit/extensions/server/PEX/ddpex/mi/level4/miTraverse.c\fR\s+1.
 .H 3 "Areas Most Likely to Be Changed"
 .LP
 If you have pick devices that are different from the ones defined
@@ -1498,20 +1498,20 @@ given with the bindings.
 .LP
 There are 12 lookup table types.  Each lookup table type can be modified to support
 a different number of table entries.  The lookup table data structures are defined 
-in \fL\s-1.../ddpex/mi/include/miLUT.h\fR\s+1.
+in \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miLUT.h\fR\s+1.
 For each lookup table there is a data structure that defines its table entries.
 Each data structure has a header with the same format.
 .LP
 Each lookup table type also has a corresponding file 
-in the directory \fL\s-1.../ddpex/mi/shared\fR\s+1.  
+in the directory \fL\s-1mit/extensions/server/PEX/ddpex/mi/shared\fR\s+1.  
 Each file name begins with an abbreviation of the lookup table type,
 and ends with the letters \fL\s-1LUT.c\fR\s+1.
 .LP
 Each lookup table type has certain predefined entries.  These entries are
-defined in the \fL\s-1.../shared/*LUT.c\fR\s+1 files in arrays with
+defined in the \fL\s-1mit/extensions/server/PEX/shared/*LUT.c\fR\s+1 files in arrays with
 variable names that begin with the letters \fL\s-1pde\fR\s+1.
 .LP
-In the \fL\s-1.../shared\fR\s+1 directory there is also a file 
+In the \fL\s-1mit/extensions/server/PEX/shared\fR\s+1 directory there is also a file 
 called \fL\s-1miLUT.c\fR\s+1.
 This file contains procedures that are called directly by the di\s-1PEX\s+1.
 The di\s-1PEX\s+1 only calls the procedures in this file.  The procedures in turn call 
@@ -1522,7 +1522,7 @@ Each \fL\s-1LUT.c\fR\s+1 file has its own set of operation procedures defined in
 data structure header.  Because the \s-1PEX-SI\s+1 is a generic implementation,
 all of the lookup table types handle their requests almost identically.  To
 keep duplication of code to a minimum, the \s-1PEX-SI\s+1 has isolated much of the 
-shared code in a separate file, \fL\s-1.../shared/miLUTProcs.ci\fR\s+1.  This file
+shared code in a separate file, \fL\s-1mit/extensions/server/PEX/shared/miLUTProcs.ci\fR\s+1.  This file
 is a template for the procedures used in each lookup table file, and 
 is included in all of the \fL\s-1LUT.c\fR\s+1 files.
 .LP
@@ -1809,8 +1809,6 @@ change these macro definitions to correspond with any table entry changes.
 If you want to change the predefined entries for a particular lookup table, you have
 to change the \fL\s-1pde\fR\s+1 array(s) in the \fL\s-1LUT.c\fR\s+1 file for the 
 specific lookup table type.
-To check that the predefined entries are defined properly use the 
-IntializePredefinedEntries procedure in ***.
 .LP
 The \s-1PEX-SI\s+1 has isolated the operation vector interface between di\s-1PEX\s+1
 and dd\s-1PEX\s+1 in the \fL\s-1miLUT.h\fR\s+1 file.
@@ -1822,9 +1820,9 @@ the \fL\s-1miLUT.h\fR\s+1 file and all of the lookup table data structure header
 .H 3 "Important Data Structures"
 .LP
 Data structures for name sets are defined in the
-file \fL\s-1.../ddpex/mi/include/miNS.h\fR\s+1.
+file \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miNS.h\fR\s+1.
 All procedures that are associated with name sets are defined in the
-file \fL\s-1.../ddpex/shared/miNS.c\fR\s+1.
+file \fL\s-1mit/extensions/server/PEX/ddpex/shared/miNS.c\fR\s+1.
 .LP
 Names are stored as bits that are set to ``1'' when the name is defined,
 and ``0'' when the name is removed.  Macros for doing bit manipulation are
@@ -1956,7 +1954,7 @@ the \s-1PHIGS\s+1 workstation and pick measure code.
 .H 3 "Procedures Most Likely to Be Changed"
 .LP
 You can change the number of names allowed in a name set by changing
-the MINS_MAX_NAME variable in the \fL\s-1.../ddpex/mi/include/miNS.h\fR\s+1 file.
+the MINS_MAX_NAME variable in the \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miNS.h\fR\s+1 file.
 .LP
 You can change the type of the ddNamePiece structure if you need to use a different 
 length word for the names.  
@@ -1968,19 +1966,19 @@ in the \fL\s-1miNS.c\fR\s+1 file for possible changes.
 .H 3 "Important Data Structures"
 .LP
 Data structures for the font resources are defined in the 
-file \fL\s-1.../ddpex/mi/include/miFont.h\fR\s+1.
+file \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miFont.h\fR\s+1.
 .LP
 The procedures that are associated with these data structures
 have been divided into operating system dependent, and operating
 system independent pieces.  The code that is operating system independent
-is in \fL\s-1...server/PEX/ddpex/mi/shared/miFont.c\fR\s+1.
+is in \fL\s-1mit/extensions/server/PEX/ddpex/mi/shared/miFont.c\fR\s+1.
 The code that is dependent on the operating system 
-is in \fL\s-1.../server/PEX/ospex/4.2bsd/osPexFont.c\fR\s+1.
+is in \fL\s-1mit/extensions/server/PEX/ospex/osPexFont.c\fR\s+1.
 .LP
 The dd\s-1PEX\s+1 procedures operate on a font source file that has
 been translated into your server native machine format.
 In the \s-1PEX-SI\s+1 the font source is in
-the \fL\s-1.../fonts/PEX/Roman.src\fR\s+1 file.
+the \fL\s-1mit/fonts/PEX/Roman.src\fR\s+1 file.
 You use a program called \fL\s-1to_wfont\fR\s+1 to translate \fL\s-1Roman.src\fR\s+1 
 to \fL\s-1Roman.phont\fR\s+1.  See Section
 .XR @NumberOf(font_create)
@@ -2147,7 +2145,7 @@ The following procedure is used to maintain resource cross-reference lists.
 The only portions of the font resources likely to change are the
 operating system dependent procedures.
 These procedures have been isolated in the
-file \fL\s-1.../ospex/4.2bsd/osPexFont.c\fR\s+1.
+file \fL\s-1mit/extensions/server/PEX/ospex/osPexFont.c\fR\s+1.
 The majority of the operating system dependencies in the code
 concern file input/output and directory information.
 \s-1PEX-SI\s+1 only provides \s-14.2BSD\s+1 versions of these routines.
@@ -2162,13 +2160,13 @@ the font compiler program.  See Section
 .IX "Functions" "ddpexInit"
 .LP
 The procedures described in this section are found in 
-the file \fL\s-1.../ddpex/mi/shared/miMisc.c\fR\s+1.
+the file \fL\s-1mit/extensions/server/PEX/ddpex/mi/shared/miMisc.c\fR\s+1.
 They are all called by di\s-1PEX\s+1.
 .LP
 The procedure ddpexInit is called when the server starts up.
 It initializes any dd\s-1PEX\s+1 data or devices.
 The \s-1PEX-ME\s+1 version of this routine does not allocate any memory.
-ddpexInit is found in the file \s-1\fL.../ddpex/mi/shared/miMisc.c\fR\s+1.
+ddpexInit is found in the file \s-1\fLmit/extensions/server/PEX/ddpex/mi/shared/miMisc.c\fR\s+1.
 .LP
 .IX "Miscellaneous Functions" "ddpexInit"
 .IX "Functions" "ddpexInit"
@@ -2272,7 +2270,7 @@ A renderer resource is defined with two functional parts:  a
 device-independent part and a device-dependent part (the ddContext).  
 .LP
 The device-independent part is managed by di\s-1PEX\s+1 and is defined
-in the file \fL\s-1.../server/PEX/include/ddpex.h\fR\s+1.
+in the file \fL\s-1mit/extensions/server/PEX/server/PEX/include/ddpex.h\fR\s+1.
 This file contains the attributes defined in the protocol specification for the renderer. 
 Resource handles for lookup tables and name sets are stored in this 
 part of the renderer.  In addition, the renderer has a procedure vector
@@ -2281,7 +2279,7 @@ dd\s-2PEX\s+2 Transformation Module functions that support the output commands.
 di\s-2PEX\s+2 creates this vector and dd\s-2PEX\s+2 fills it in.  
 .LP
 The device-dependent renderer data structure ddContext is defined
-in the file \fL\s-1.../ddpex/mi/include/miRender.h\fR\s+1.
+in the file \fL\s-1mit/extensions/server/PEX/ddpex/mi/include/miRender.h\fR\s+1.
 The ddContext is basically the definition of the renderer state of your
 implementation.  In the \s-1PEX-SI\s+1 the ddContext
 links closely with the Graphics Contexts (GC), which ultimately
@@ -2303,12 +2301,6 @@ is called to validate that those changes have been realized by the renderer.
 See Section 
 .XR @NumberOf(val_rend)
 for more information.
-.LP
-One consequence of the dynamic renderer is that the lookup tables have to
-have a list of the renderers that use them.  To accomplish this, you need to set the
-miRENDhints compile option in the \fL\s-1.../???/X.cf\fR\s+1 file.
-When the option is set the name set structures available to the lookup tables will 
-include the list of renderers for each \s-1LUT\s+1.
 .LP
 The renderer also has a pointer to the device-dependent part of the renderer.
 This part is created and maintained by code in the Transformation Module.
@@ -2396,7 +2388,6 @@ It is also called by the routine EndPick.
 .LP
 .KS
 The following procedure handles the PEXBeginStructure request.
-It is also called by the routines UpdatePickMeasure and SeachNetwork.
 .LP
 .IX "Renderer Functions" "BeginStructure"
 .IX "Functions" "BeginStructure"
@@ -2496,7 +2487,7 @@ and RenderOCs.
 .LP
 A pipeline context is used to specify the initial attribute state when
 rendering begins.  The data structure for the pipeline context is defined 
-in \fL\s-1.../server/PEX/include/ddpex.h\fR\s+1.
+in \fL\s-1mit/extensions/server/PEX/include/ddpex.h\fR\s+1.
 .LP
 The BeginRendering procedure copies the attributes in the pipeline context 
 to ddContext in the appropriate format when rendering begins.

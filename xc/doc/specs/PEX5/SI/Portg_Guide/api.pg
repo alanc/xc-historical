@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: api.pg,v 5.5 91/02/16 09:45:31 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,7 +25,7 @@
 .H C "Porting the PEX-API"
 .H 2 "General Porting Concerns"
 .BP
-The routine \fIsocketpair()\fR , used in \fL\s-1extensions/lib/PEX/cp/cp_ccom.c\fR\s+1
+The routine \fIsocketpair()\fR , used in \fL\s-1mit/extensions/lib/PEX/cp/cp_ccom.c\fR\s+1
 is not available on all System V systems.
 .BP
 A combination of \fIsocket()\fR, \fIbind()\fR, \fIlisten()\fR, \fIconnext()\fR,
@@ -249,7 +249,7 @@ the \s-1API\s+1 does not maintain a connection to it after \s-1PHIGS\s+1 is open
 Structure storage is in the client in this case so there is no need for a
 server connection for \s-1CSS\s+1 storage.
 .LP
-.H 3 "The \fLlib/PEX\fP Subdirectories\fR"
+.H 3 "The \fLmit/extensions/lib/PEX\fP Subdirectories\fR"
 There are eleven subdirectories that contain code and one that contains
 run-time files.
 .IP \fL\s-1archive\s+1\fR 14
@@ -634,7 +634,7 @@ While support for other frame buffer depths is not built into Ins\s-1PEX\s+1,
 some provisions were made for porting to other depths.
 In the definition of the file format for saved images,
 found in the comment for \fIi_save_image()\fR
-in \fL\s-1.../tools/pexint/pixutils.c\fR\s+1,
+in \fL\s-1mit/extensions/test/InsPEX/tools/pexint/pixutils.c\fR\s+1,
 the first byte is intended to identify the type of file.
 The only supported type is \s-1PSEUDOCOLOR\s+1, but other types could
 be defined and added.
@@ -667,7 +667,7 @@ While this interface looks like a toolkit itself, it has no pretense of being
 a general-purpose toolkit \(em it was designed strictly to
 make this particular application easily portable.
 The interface types and functions should be implementable using any toolkit.
-An incomplete and non-working port to Athena Widgets is included.
+A port to Athena Widgets is also included.
 .LP
 Notification, or call-back, procedures are attached to the buttons
 of the control panel; since we cannot be sure of of what arguments

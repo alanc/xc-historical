@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium: intro.pg,v 5.2 91/02/16 09:45:29 rws Exp $
+.\" $XConsortium: intro.pg,v 5.3 91/07/23 18:15:57 hersh Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -63,11 +63,6 @@ and this document.
 System V systems may have a problem compiling \s-1PEX-SI\s+1 because of possible
 circular include references.
 .H 2 "Compile Options" 
-.LP
-All compile options are defined in the
-file \fL\s-1.../extensions/release/PEX/PEX.cf\s+1\fR.
-This file should be merged with the \fL\s-1.cf\fR\s+1 file in
-your \s-1X\s+1 \fL\s-1.../config\s+1\fR directory.
 .LP
 The compile options available for the \s-1PEX-ME\s+1 are the following:
 .LP

@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium: cover,v 5.1 91/02/16 09:45:22 rws Exp $
+.\" $XConsortium: cover,v 5.2 91/07/23 18:15:00 hersh Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,9 +25,9 @@
 .EF ''X11R5''
 .OF ''X11R5''
 .TL
-PEX-SI Porting Guide
+PEX-SI Porting Guide and
 .sp
-Preliminary Release
+Implementation Details
 .DA
 .AU
 Marty Hess
