@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.6 91/06/19 14:35:52 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.7 91/06/19 19:16:24 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -1465,7 +1465,7 @@ SMALL_CAP_SIZE
 \*(SN SMALL_CAP_SIZE
 .XE
 .LP
-SMALL_CAP_SIZE is an integer value (of type CARD32)
+SMALL_CAP_SIZE is an unsigned integer value (of type CARD32)
 that gives the recommended body size of synthetic small capitals 
 to be used with this font, in pixels.
 Small capitals are generally imaged from a smaller font 
@@ -1486,7 +1486,7 @@ UNDERLINE_POSITION
 \*(SN UNDERLINE_POSITION
 .XE
 .LP
-UNDERLINE_POSITION is an integer value (of type CARD32)
+UNDERLINE_POSITION is an unsigned integer value (of type CARD32)
 that gives the recommended vertical offset in pixels
 from the baseline to the top of the underline. 
 If the current position point is at [X,Y], 
@@ -1577,7 +1577,7 @@ CAP_HEIGHT
 \*(SN CAP_HEIGHT
 .XE
 .LP
-CAP_HEIGHT is an unsigned integer (of type CARD32)
+CAP_HEIGHT is an unsigned integer value (of type CARD32)
 that gives the nominal height of the capital letters contained in the font, 
 as specified by the FOUNDRY or typeface designer.
 Where applicable, 
@@ -1606,7 +1606,7 @@ X_HEIGHT
 \*(SN X_HEIGHT
 .XE
 .LP
-X_HEIGHT is a unsigned integer (of type CARD32)
+X_HEIGHT is a unsigned integer value (of type CARD32)
 that gives the nominal height above the baseline of the lowercase glyphs 
 contained in the font, 
 as specified by the FOUNDRY or typeface designer.
@@ -1636,7 +1636,7 @@ RELATIVE_SETWIDTH
 \*(SN RELATIVE_SETWIDTH
 .XE
 .LP
-RELATIVE_SETWIDTH is an integer (of type CARD32)
+RELATIVE_SETWIDTH is an unsigned integer value (of type CARD32)
 that gives the coded proportionate width of the font,
 relative to all known fonts of the same typeface family, 
 according to the type designer's or FOUNDRY's judgment.
@@ -1691,7 +1691,7 @@ RELATIVE_WEIGHT
 \*(SN RELATIVE_WEIGHT
 .XE
 .LP
-RELATIVE_WEIGHT is an integer (of type CARD32)
+RELATIVE_WEIGHT is an unsigned integer value (of type CARD32)
 that gives the coded weight of the font, 
 relative to all known fonts of the same typeface family, 
 according to the type designer's or FOUNDRY's judgment.
@@ -1737,7 +1737,7 @@ WEIGHT
 \*(SN WEIGHT
 .XE
 .LP
-Calculated WEIGHT is an unsigned integer (of type CARD32)
+Calculated WEIGHT is an unsigned integer value (of type CARD32)
 that gives the calculated weight of the font, 
 computed as the ratio of capital stem width to CAP_HEIGHT, 
 in the range 0 to 1000, where 0 is the lightest weight.
@@ -1763,7 +1763,7 @@ RESOLUTION
 \*(SN RESOLUTION 
 .XE
 .LP
-RESOLUTION is an integer, (of type INT32)
+RESOLUTION is an integer value (of type INT32)
 that gives the resolution for which this font was created,
 measured in 1/100 pixels per point.
 .NT Note
@@ -2112,7 +2112,7 @@ FONT_ASCENT
 \*(SN FONT_ASCENT
 .XE
 .LP
-FONT_ASCENT is an unsigned integer (of type INT32)
+FONT_ASCENT is an integer value (of type INT32)
 that gives the recommended typographic ascent above the baseline 
 for determining interline spacing. 
 Specific glyphs of the font may extend beyond this.
@@ -2134,7 +2134,7 @@ FONT_DESCENT
 \*(SN FONT_DESCENT
 .XE
 .LP
-FONT_DESCENT is an unsigned integer (of type INT32)
+FONT_DESCENT is an integer value (of type INT32)
 that gives the recommended typographic descent below the baseline
 for determining interline spacing. 
 Specific glyphs of the font may extend beyond this.
@@ -2159,12 +2159,8 @@ DEFAULT_CHAR
 \*(SN DEFAULT_CHAR
 .XE
 .LP
-DEFAULT_CHAR is an unsigned integer value (of type CARD32)
-that gives the default character to be used by the X server 
-when an attempt is made to display an undefined or nonexistent character 
-in the font.
-.LP
-The DEFAULT_CHAR is a unsigned integer value that specifies the index
+The DEFAULT_CHAR is a unsigned integer value (of type CARD32)
+that specifies the index
 of the default character to be used by the X server when an attempt
 is made to display an undefined or nonexistent character in the font.
 (For a font using two byte matrix format,
