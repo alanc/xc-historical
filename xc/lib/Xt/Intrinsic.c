@@ -469,15 +469,9 @@ InitializeCallbackTable ()
 
 static void ExpandTable()
 {
-   CallbackTable oldTable = callbackTable;
-   int i;
-   callbackTable = (CallbackTable)XtMalloc((currentIndex+TABLESIZE)
+
+   callbackTable = (CallbackTable)XtRealloc((currentIndex+TABLESIZE)
                                                 *sizeof(CallbackTableRec));
-   for (i=0;i<currentIndex;i++) {
-            callbackTable[i].offset = oldTable[i].offset;
-            callbackTable[i].widgetClass = oldTable[i].widgetClass;
-   }
-   XtFree((char*)oldTable);
    maxIndex = currentIndex + TABLESIZE;
 } 
                                              
