@@ -1,5 +1,5 @@
-/* $Header$ */
-/* $Header$ */
+/* $Header: Xresource.h,v 1.1 87/09/12 12:27:11 swick Locked $ */
+/* $Header: Xresource.h,v 1.1 87/09/12 12:27:11 swick Locked $ */
 /*
  *	sccsid:	%W%	%G%
  */
@@ -165,7 +165,8 @@ typedef XrmHashTable XrmSearchList[];
 
 extern void XrmInitialize();
 
-extern void XrmPutResource(); /*quarks, type, val*/
+extern void XrmPutResource(); /*rdb, quarks, type, val*/
+    /* XrmResourceDataBase *rdb;     */
     /* XrmQuarkList      quarks;     */
     /* XrmRepresentation type;       */
     /* XrmValue		val;	    */
