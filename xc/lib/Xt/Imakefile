@@ -72,6 +72,9 @@ SRCS = \
 	Shell.c \
 	TMparse.c \
 	TMstate.c \
+	VarCreate.c \
+	VarGet.c \
+	Varargs.c \
 	Vendor.c \
 	sharedlib.c
 
@@ -113,6 +116,9 @@ OBJS = \
 	Shell.o \
 	TMparse.o \
 	TMstate.o \
+	VarCreate.o \
+	VarGet.o \
+	Varargs.o \
 	Vendor.o
 
 UNSHAREDOBJS = sharedlib.o
