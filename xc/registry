@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.7 90/07/27 12:07:11 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.8 90/08/14 10:13:08 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -25,6 +25,7 @@ Name						Reference
 "SGI"						[6]
 "SONY"						[37]
 "stellar"					[28]
+"Sun"						[58]
 "TEK"						[43]
 "visual"					[5]
 "VIT"						[46]
@@ -146,6 +147,13 @@ osfXK_Restore		0x1004FF78		[7]
 osfXK_AddMode		0x1004FF7C		[7]
 osfXK_Delete		0x1004FFFF		[7]
 
+SunXK_FA_Grave		0x1005FF00		[58]
+SunXK_FA_Circum		0x1005FF01		[58]
+SunXK_FA_Tilde		0x1005FF02		[58]
+SunXK_F36		0x1005FF10		[58]
+SunXK_F37		0x1005FF11		[58]
+
+
 3. AUTHORIZATION PROTOCOL NAMES
 
 Name						Reference
@@ -175,6 +183,7 @@ String						Reference
 "Sony Corporation"				[37]
 "Stellar Computer Inc."				[28]
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
+"X11/NeWS - Sun Microsystems, Inc."		[58]
 
 5. PROTOCOL EXTENSION NAMES
 
@@ -832,5 +841,13 @@ REFERENCES
 	Cambridge, MA 02139-0901
 
 [57]	David Rosenthal
-	Sun Microsystems
+	Sun Microsystems, Inc.
+	2550 Garcia Avenue
+	Mountain View, CA  94043
+
+[58]	Ridge McGhee
+	Mailstop 14-01
+	Sun Microsystems, Inc.
+	2550 Garcia Avenue
+	Mountain View, CA  94043-1100
 Sumitomo Electric Workstation Corp.	[77]
