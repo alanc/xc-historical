@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.10 88/10/10 14:33:47 jim Exp $
+ * $XConsortium: Xmu.h,v 1.11 88/10/21 17:44:07 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -70,6 +70,7 @@ typedef enum {XtorientHorizontal, XtorientVertical} XtOrientation;
 /*
  * public entry points
  */
+Window XmuClientWindow();
 Boolean XmuConvertStandardSelection( /* Widget, Time, Atom*, ... */ );
 void XmuCopyISOLatin1Lowered();
 void XmuDrawRoundedRectangle();
