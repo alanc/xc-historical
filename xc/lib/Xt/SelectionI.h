@@ -106,10 +106,13 @@ typedef struct {
 } SelectionPropRec, *SelectionProp;
 
 typedef struct {
-  Atom incremental_atom, indirect_atom;
   int propCount;
   SelectionProp list;
 } PropListRec, *PropList;
+
+typedef struct {
+  Atom incremental_atom, indirect_atom;
+} SelectionAtomRec;
 
 #define MAX_SELECTION_INCR(dpy) (((65536 < XMaxRequestSize(dpy)) ? \
 	(65536 << 2)  : (XMaxRequestSize(dpy) << 2))-100)
