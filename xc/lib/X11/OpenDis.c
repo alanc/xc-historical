@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.147 94/01/11 12:34:37 mor Exp $
+ * $XConsortium: OpenDis.c,v 11.148 94/01/19 11:13:14 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -562,6 +562,9 @@ Display *XOpenDisplay (display)
 	    extern Display *_XHeadOfDisplayList;
 	    _XHeadOfDisplayList = dpy;
 	}
+#endif
+#ifdef XKB
+	XkbUseExtension(dpy);
 #endif
 /*
  * and return successfully
