@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.2 88/09/05 19:02:02 rws Exp $
+ * $XConsortium: Xmu.h,v 1.3 88/09/09 13:35:41 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -24,8 +24,8 @@
 /*
  * public entry points
  */
-
 void XmuCopyISOLatin1Lowered();
+Pixmap XmuCreatePixmapFromBitmap();
 void XmuCvtFunctionToCallback();
 void XmuCvtStringToBackingStore();
 void XmuCvtStringToCursor();
@@ -34,6 +34,9 @@ void XmuCvtStringToOrientation();
 void XmuCvtStringToPixmap();
 int XmuReadBitmapDataFromFile();
 
+/*
+ * types and constants
+ */
 typedef enum {
     XtJustifyLeft,       /* justify text to left side of button   */
     XtJustifyCenter,     /* justify text in center of button      */
