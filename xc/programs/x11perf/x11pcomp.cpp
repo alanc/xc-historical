@@ -15,6 +15,8 @@ XCOMM x11perf with the -labels option to generate such a file.)
 XCOMM
 XCOMM Mark Moraes, University of Toronto <moraes@csri.toronto.edu>
 XCOMM Joel McCormack, DEC Western Research Lab <joel@decwrl.dec.com>
+XCOMM
+XCOMM $XConsortium$
 
 PATH=LIBPATH:.:$PATH
 export PATH

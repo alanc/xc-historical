@@ -1,4 +1,5 @@
 XCOMM font server configuration file
+XCOMM $XConsortium$
 
 clone-self = on
 use-syslog = off

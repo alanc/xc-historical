@@ -1,5 +1,6 @@
 XCOMM!/bin/sh
 
+XCOMM $XConsortium$
 XCOMM 
 XCOMM This is just a sample implementation of a slightly less primitive 
 XCOMM interface than xinit.  It looks for user .xinitrc and .xserverrc

@@ -1,6 +1,6 @@
 XCOMM!/bin/sh
 XCOMM
-XCOMM	@(#)mdepend.sh	1.3	5/11/88 19:44:36
+XCOMM $XConsortium$
 XCOMM
 XCOMM	Do the equivalent of the 'makedepend' program, but do it right.
 XCOMM

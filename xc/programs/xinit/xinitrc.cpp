@@ -1,4 +1,5 @@
 XCOMM!/bin/sh
+XCOMM $XConsortium$
 
 userresources=$HOME/.Xresources
 usermodmap=$HOME/.Xmodmap
