@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.33 91/06/08 09:55:26 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.34 92/04/20 15:50:21 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -54,6 +54,7 @@ SOFTWARE.
 #include "poly.h"
 
 #ifdef DEBUG
+#include <stdio.h>
 #define assert(expr) {if (!(expr)) fprintf(stderr,\
 "Assertion failed file %s, line %d: expr\n", __FILE__, __LINE__); }
 #else
