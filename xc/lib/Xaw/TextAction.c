@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.25 90/03/16 16:23:25 converse Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.26 90/04/17 15:38:04 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -983,7 +983,9 @@ TextWidget ctx;
   text.firstPos = 0;
   text.format = FMT8BIT;
 
-  _XawTextReplace(ctx, ret_pos - 1, ret_pos, &text);
+  if (_XawTextReplace(ctx, ret_pos - 1, ret_pos, &text))
+    XBell(XtDisplay(w), 0);	/* Unable to edit, complain. */
+
 }
 
 static void
@@ -1412,8 +1414,8 @@ Cardinal * num_params;
      */
     
     text.ptr = (char *) buf;
-    _XawTextReplace (ctx, start, end, &text);
-    
+    if (_XawTextReplace (ctx, start, end, &text))
+	XBell(XtDisplay(w), 0);	/* Unable to edit, complain. */
     XtFree(buf);
   }
   EndAction(ctx);
