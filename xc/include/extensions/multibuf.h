@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.3 89/09/25 15:45:34 jim Exp $
+ * $XConsortium: multibuf.h,v 1.4 89/10/03 13:45:34 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,16 +23,6 @@
 
 #ifndef _MULTIBUF_H_
 #define _MULTIBUF_H_
-
-#define X_MbufGetBufferVersion		0
-#define X_MbufCreateImageBuffers	1
-#define X_MbufDestroyImageBuffers	2
-#define X_MbufDisplayImageBuffers	3
-#define X_MbufSetMultiBufferAttributes	4
-#define X_MbufSetBufferAttributes	6
-#define X_MbufGetBufferAttributes	7
-#define X_MbufGetBufferInfo		8
-#define X_MbufCreateStereoWindow	9
 
 /*
  * update_action field
@@ -164,7 +154,7 @@ extern void XmbufChangeWindowAttributes ();  /* set extension window attrs */
 extern Status XmbufGetBufferAttributes ();   /* get buffer attrs */
 extern void XmbufChangeBufferAttributes ();  /* set buffer attrs */
 extern Status XmbufGetScreenInfo ();	/* get mono and stereo parameters */
-extern void XmbufCreateStereoWindow ();	/* stereo version of XCreateWindow */
+extern Window XmbufCreateStereoWindow ();/* stereo version of XCreateWindow */
 
 #endif /* _MULTIBUF_SERVER_ */
 #endif /* _MULTIBUF_H_ */
