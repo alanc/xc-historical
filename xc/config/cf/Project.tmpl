@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.246 94/12/27 03:57:50 gildea Exp gildea $
+XCOMM $XConsortium: Project.tmpl,v 1.247 94/12/27 19:54:32 gildea Exp gildea $
 
 /***************************************************************************
  *                                                                         *
@@ -203,14 +203,25 @@ XCOMM $XConsortium: Project.tmpl,v 1.246 94/12/27 03:57:50 gildea Exp gildea $
 #define XkbDefines /**/
 #endif
 #endif
+#ifndef LbxDefines
+#if BuildLBX
+#define LbxDefines -DLBX
+#else
+#define LbxDefines /**/
+#endif
+#endif
 #ifndef BigReqDefines
+#if !BuildLBX
 #define BigReqDefines -DBIGREQS
+#else
+#define BigReqDefines /**/	/* LBX doesn't work with BIG-REQUESTS yet */
+#endif
 #endif
 #ifndef SitePervasiveExtensionDefines
 #define SitePervasiveExtensionDefines /**/
 #endif
 #ifndef PervasiveExtensionDefines
-#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines SitePervasiveExtensionDefines
+#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines LbxDefines SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/

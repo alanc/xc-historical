@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.189 94/12/01 16:46:45 kaleb Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.190 94/12/11 12:12:29 kaleb Exp gildea $
 /*
  * Server Master Makefile
  */
@@ -50,6 +50,12 @@ XCOMM $XConsortium: Imakefile,v 1.189 94/12/01 16:46:45 kaleb Exp kaleb $
       XKBEXT = xkb/libxkb.a
       XKBDIR = xkb
 #endif
+#if BuildLBX
+         LBXEXT = $(TOP)/workInProgress/lbx/programs/Xserver/lbx/liblbx.a \
+                  $(TOP)/workInProgress/lbx/lib/lbxutil/liblbxutil.a
+        LBXDIRS = $(TOP)/workInProgress/lbx/programs/Xserver/lbx \
+                  $(TOP)/workInProgress/lbx/lib/lbxutil
+#endif
 #ifdef SiteExtensionLibs
      SITEEXTS = SiteExtensionLibs
 #endif
@@ -57,8 +63,10 @@ XCOMM $XConsortium: Imakefile,v 1.189 94/12/01 16:46:45 kaleb Exp kaleb $
      SITEEXTDIRS = SiteExtensionDirs
 #endif
 
-      OTHEREXTS = Xext/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) $(SITEEXTS)
-        EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(SITEEXTDIRS)
+      OTHEREXTS = Xext/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) \
+                  $(LBXEXT) $(SITEEXTS)
+        EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
+                  $(LBXDIRS) $(SITEEXTDIRS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
