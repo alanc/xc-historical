@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.10 91/08/26 18:00:44 gildea Exp $
+.\" $XConsortium: x11perf.man,v 1.11 92/07/31 16:58:21 rws Exp $
 .TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
@@ -168,6 +168,9 @@ Specifies the foreground color to use.
 .TP 14
 .B \-bg \fIcolor\fP
 Specifies the background color to use.
+.TP 14
+.B \-clips \fIdefault\fP
+Default number of clip windows.
 .TP 14
 .B \-rop <rop0 rop1 ...>
 Use specified raster ops (default is GXcopy).

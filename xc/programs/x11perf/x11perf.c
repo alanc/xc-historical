@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.33 92/07/31 16:44:17 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.34 92/07/31 17:22:40 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -79,6 +79,7 @@ static unsigned long planemasks[256] = { (unsigned long)~0 };
 
 static char *foreground = NULL;
 static char *background = NULL;
+static int clips = 0;
 
 static int numSubWindows = 7;
 static int subWindows[] = {4, 16, 25, 50, 75, 100, 200, 0};
@@ -90,7 +91,10 @@ static Bool *doit;
 static XRectangle ws[] = {  /* Clip rectangles */
     {195, 195, 120, 120},
     { 45, 145, 120, 120},
-    {345, 245, 120, 120}
+    {345, 245, 120, 120},
+    { 45, 275, 120, 120},
+    {345, 115, 120, 120},
+    {195, 325, 120, 120}
 
 };
 #define MAXCLIP     (sizeof(ws) / sizeof(ws[0]))
@@ -353,6 +357,7 @@ void usage()
 "    -labels                   generate test labels for use by fillblnk",
 "    -fg                       the foreground color to use",
 "    -bg                       the background color to use",
+"    -clips <default>          default number of clip windows per test",
 "    -rop <rop0 rop1 ...>      use the given rops to draw (default = GXcopy)",
 "    -pm <pm0 pm1 ...>         use the given planemasks to draw (default = ~0)",
 "    -depth <depth>            use a visual with <depth> planes per pixel",
@@ -550,6 +555,8 @@ int CalibrateTest(xp, test, seconds, usecperobj)
 	if (didreps == 0) {
 	    return 0;
 	}
+	if ( test->clips < clips )
+	  test->clips = clips ;
 	/* Create clip windows if requested */
 	CreateClipWindows(xp, test->clips);
 	HardwareSync(xp);
@@ -824,6 +831,11 @@ main(argc, argv)
 	    if (argc <= i)
 		usage ();
 	    background = argv[i];
+	} else if (strcmp(argv[i], "-clips") == 0 ) {
+	    i++;
+	    if (argc <= i)
+		usage ();
+	    clips = atoi( argv[i] );
 	} else if (strcmp(argv[i], "-rop") == 0) {
 	    skip = GetRops (i+1, argc, argv, rops, &numRops);
 	    i += skip;
