@@ -94,6 +94,7 @@ static const char* line_array_term           = "##ends line array##";
 
 static Boolean sort_defs = true;
 static Boolean sort_ops = true;
+static Boolean print_impls = true;
 
 class Program {
 public:
@@ -170,6 +171,7 @@ public:
     Boolean ends_definition();    // true for end_interface_tok or end_idl_file
     Boolean ends_heading();       // true for beg_heading
     Boolean ends_entry();         // true for beg_heading or end_idl_file
+    Boolean begins_noprint_sect();
     Boolean begins_code_comment();
     Boolean ends_code_comment();
     Boolean ends_line_array();    // true for line_array_term
@@ -412,6 +414,8 @@ Program::Program(int argc, char** argv) {
 	    sort_defs = false;
 	} else if (strcmp(argv[i], "-unsorted_ops") == 0) {
 	    sort_ops = false;
+	} else if (strcmp(argv[i], "-std") == 0) {
+	    print_impls = false;
 	} else {
 	    error_ << "\nusage example: cat *.idl | " << prog_name_ <<
 		" [-unsorted_defs] [-unsorted_ops] > fname.mif.\n";
@@ -537,6 +541,12 @@ Boolean Line::ends_entry() {
     const char *first_tok = next_token(white_space);
     return (first_tok == nil)? false :
                  (strcmp(first_tok, beg_heading_tok) == 0);
+}
+
+Boolean Line::begins_noprint_sect() {
+    const char *last_tok = last_token(white_space);
+    return (last_tok == nil)? false :
+         (!print_impls  &&  last_tok[strlen(last_tok)-1] == '*');
 }
 
 Boolean Line::ends_heading() {
@@ -762,7 +772,7 @@ Definition::Definition(const LineReadBuffer& line_buffer) {
     SectionBuffer sections;
     long line_count = line_buffer.count();
     long cur_entry = 0;
-    enum { in_description, in_section } state = in_description;
+    enum { in_description, in_section, in_noprint } state = in_description;
     
     for (long i=0; i<line_count; i++) {
 	Line& line = line_buffer.item_ref(i);
@@ -773,7 +783,7 @@ Definition::Definition(const LineReadBuffer& line_buffer) {
 	    } else if (line.ends_entry()  &&  i != 0)  {
 		description_ = new DefDescription(line_buffer, cur_entry, i-1);
 		cur_entry = i;
-		state = in_section;
+		state = line.begins_noprint_sect()? in_noprint : in_section;
 	    }
 	    break;
 	case in_section:
@@ -783,7 +793,15 @@ Definition::Definition(const LineReadBuffer& line_buffer) {
 		       !line_buffer.item_ref(i-1).ends_entry()) {
 		sections.append(DefSection(line_buffer, cur_entry, i-1));
 		cur_entry = i;
+		state = line.begins_noprint_sect()? in_noprint : in_section;
 	    }
+	    break;
+	case in_noprint:
+	    if (line.ends_entry()  &&
+		   !line_buffer.item_ref(i-1).ends_entry()) {
+		cur_entry = i;
+		state = line.begins_noprint_sect()? in_noprint : in_section;
+	    }		
 	    break;
 	}
     }
