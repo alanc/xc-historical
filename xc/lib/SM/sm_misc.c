@@ -1,4 +1,4 @@
-/* $XConsortium: sm_misc.c,v 1.4 93/12/07 11:05:32 mor Exp $ */
+/* $XConsortium: sm_misc.c,v 1.5 94/03/18 16:03:15 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -174,34 +174,6 @@ SmsConn smsConn;
 
 {
     return (smsConn->proto_minor_version);
-}
-
-
-char *
-SmsVendor (smsConn)
-
-SmsConn smsConn;
-
-{
-    char *string = (char *) malloc (strlen (smsConn->vendor) + 1);
-
-    strcpy (string, smsConn->vendor);
-
-    return (string);
-}
-
-
-char *
-SmsRelease (smsConn)
-
-SmsConn smsConn;
-
-{
-    char *string = (char *) malloc (strlen (smsConn->release) + 1);
-
-    strcpy (string, smsConn->release);
-
-    return (string);
 }
 
 
