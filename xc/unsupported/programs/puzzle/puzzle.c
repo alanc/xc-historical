@@ -1,11 +1,10 @@
 /*
- *	$Source$
- *	$Header$
+ *	$Header: puzzle.c,v 1.1 88/01/22 15:44:52 bennett Exp $
  */
 
 #ifndef lint
-static char *rcsid_puzzle_c = "$Header$";
-#endif	lint
+static char *rcsid_puzzle_c = "$Header: puzzle.c,v 1.1 88/01/22 15:44:52 bennett Exp $";
+#endif	/* lint */
 
 /**
  **  Puzzle
@@ -302,7 +301,7 @@ int (*path)[];
       printf("\n");
       print_matrix(locked);
       printf("\n");
-#endif UNDEFINED
+#endif /* UNDEFINED */
       return(0);
    }
 
@@ -727,9 +726,12 @@ Solve()
          move_space(DOWN,1);
          move_space(RIGHT,1);
       }
+      flushLogging();
    }
-   else
+   else {
+      flushLogging();
       RepaintTiles();
+   }
 
    for (i=0; i<PuzzleWidth*PuzzleHeight; i++)
       locked[i] = 0;
@@ -744,13 +746,13 @@ main()
 #ifdef DEBUG
    int plan[1000];
    int i;
-#endif DEBUG
+#endif /* DEBUG */
 
    initialize();
 
 #ifdef DEBUG
    print_matrix(position);
-#endif DEBUG
+#endif /* DEBUG */
 
    scramble();
 
@@ -778,9 +780,9 @@ main()
                   break;
       }
    }
-#endif UDEFINED
-#endif DEBUG
+#endif /* UDEFINED */
+#endif /* DEBUG */
 
    solve();
 }
-#endif UNDEFINED
+#endif /* UNDEFINED */
