@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.6 91/05/04 11:43:16 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.7 91/05/06 12:06:32 rws Exp $
 
 /*
  * SunOS shared library template
@@ -42,7 +42,7 @@ PICFLAGS = PositionIndependentCFlags
              XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
 #endif
 #if SharedLibXmu
-        DEPXMULIB = /* _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV)) */
+        DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV))
            XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
 #endif
 #if SharedOldLibX
