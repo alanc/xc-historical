@@ -137,7 +137,7 @@
   ;;      when mask and modifiers aren't lists of keysyms]
   ;; The default is #'default-keysym-translate
   ;;
-  (declare (type (or string-char t) object)
+  (declare (type (or base-char t) object)
 	   (type keysym keysym)
 	   (type (or null mask16 list) ;; (list (or keysym state-mask-key))
 	         modifiers)
@@ -187,7 +187,7 @@
 (defun undefine-keysym (object keysym &key display modifiers &allow-other-keys)	              
   ;; Undefine the keysym-translation translating KEYSYM to OBJECT with MODIFIERS.
   ;; If DISPLAY is non-nil, undefine the translation for DISPLAY if it exists.
-  (declare (type (or string-char t) object)
+  (declare (type (or base-char t) object)
 	   (type keysym keysym)
 	   (type (or null mask16 list) ;; (list (or keysym state-mask-key))
 	         modifiers)
@@ -448,7 +448,7 @@
 	   (type card8 keycode)
 	   (type card16 state)
 	   (type (or null card8) keysym-index)
-	   (type (or null (function (string-char card16 boolean card8) card8))
+	   (type (or null (function (base-char card16 boolean card8) card8))
 		 keysym-index-function))
   (declare (values (or null character)))
   (let* ((index (or keysym-index
