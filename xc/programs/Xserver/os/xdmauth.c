@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.10 94/02/16 11:41:45 dpw Exp $
+ * $XConsortium: xdmauth.c,v 1.11 94/03/23 19:24:12 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -271,7 +271,7 @@ XdmAuthorizationValidate (plain, length, rho, reason)
     {
 	xfree (client);
 	if (reason)
-	    *reason = "Bad XDM authorization time offset!";
+	    *reason = "Excessive XDM-AUTHORIZATION-1 time offset";
 	return NULL;
     }
     for (existing = xdmClients; existing; existing=existing->next)
