@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.24 89/04/13 14:36:07 jim Exp $
+ * $XConsortium: main.c,v 1.25 89/05/14 11:21:24 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -10,6 +10,8 @@
 #ifdef DEBUG
 int	debug;
 #endif
+
+char *ProgramName;
 
 char	*directives[] = {
 	"if",
@@ -122,6 +124,8 @@ main(argc, argv)
 	struct filepointer	*filecontent;
 	struct symtab *psymp = predefs;
 	char *endmarker = NULL;
+
+	ProgramName = argv[0];
 
 	while (psymp->s_name)
 	    *symp++ = *psymp++;
@@ -309,6 +313,7 @@ log_fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 /*VARARGS0*/
 log(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 {
+	fprintf(stderr, "%s:  ", ProgramName);
 	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 }
 
@@ -367,8 +372,13 @@ char *getline(filep)
 		else if (*p == '\n') {
 			lineno++;
 			if (*bol == '#') {
+				register char *cp;
+
 				*p++ = '\0';
-				goto done;
+				/* punt lines with just # (yacc generated) */
+				for (cp = bol+1; 
+				     *cp && (*cp == ' ' || *cp == '\t'); cp++);
+				if (*cp) goto done;
 			}
 			bol = p+1;
 		}
