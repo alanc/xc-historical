@@ -351,7 +351,8 @@
 			 (make-screen
 			   :root root
 			   :default-colormap (make-colormap :id (card32-get 4)
-							    :display display)
+							    :display display
+							    :visual-info root-visual)
 			   :white-pixel (card32-get 8)
 			   :black-pixel (card32-get 12)
 			   :event-mask-at-open (card32-get 16)
