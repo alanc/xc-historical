@@ -385,6 +385,7 @@ static pel SearchXofY(edge, y)
                return(XofY(edge, y));
  
        abort("bad subpath chain");
+       /*NOTREACHED*/
 }
 /*
 :h3.ISBREAK() Macro - Tests if an Edge List is at a "Break"
@@ -415,7 +416,6 @@ static int ImpliedHorizontalLine(e1, e2, y)
        register struct edgelist *e1,*e2;  /* two edges to check              */
        register int y;       /* y where they might be connected              */
 {
-       register struct edgelist *e;
        register struct edgelist *e3,*e4;
  
        if (ISDOWN(e1->flag) == ISDOWN(e2->flag))
@@ -466,6 +466,7 @@ Now we have everything to return the answer:
                return(!ISDOWN(e2->flag));
        else
                abort("ImpliedHorizontalLine:  why ask?");
+       /*NOTREACHED*/
 }
  
 /*
@@ -786,8 +787,6 @@ to that point.
                                 writeXofY(left, ywhite, x);
                        }
                        else {
-                                register struct edgelist *e;
- 
                                 x = XofY(edge, yblack);
                                 while (edge->link != NULL && SAMESWATH(edge, edge->link)
                                        && x >= XofY(edge->link, yblack) ) {
@@ -817,14 +816,12 @@ struct region *R;
  int horizontal = 0;
  struct edgelist *left;
  struct edgelist *right;
- struct edgelist *edge,*e1,*e2,*swathstart,*swathend;
- struct edgelist *firstright;
+ struct edgelist *edge,*e2;
  pel RegionXmin,RegionXmax,RegionYmin,RegionYmax;
  pel rightXabove,rightXbelow,leftXabove,leftXbelow;
  pel leftX,rightX;
- pel ymin,ymax;
  int i;
- long newLeft,newRight,newcenter,abovecenter,belowcenter;
+ long newcenter,abovecenter,belowcenter;
  
  RegionXmin = R->xmin;
  RegionXmax = R->xmax;

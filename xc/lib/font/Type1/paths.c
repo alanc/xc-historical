@@ -49,7 +49,8 @@ The included files are:
 #include  "pictures.h"     /* understands about handles                    */
 #include  "strokes.h"      /* understands how to coerce stroke paths       */
 #include  "trig.h"
- 
+static UnClose();
+
 /*
 :h3.Routines Available to the TYPE1IMAGER User
  
@@ -124,7 +125,7 @@ struct segment *CopyPath(p0)
                if (p->type == TEXTTYPE)
                        n = (struct segment *) CopyText(p);
                else
-                       n = Allocate(p->size, p, 0);
+                       n = (struct segment *)Allocate(p->size, p, 0);
                n->last = NULL;
                if (anchor == NULL)
                        anchor = n;
@@ -208,7 +209,7 @@ struct segment *t1_Loc(S, x, y)
  
        IfTrace3((MustTraceCalls),"..Loc(S=%z, x=%f, y=%f)\n", S, &x, &y);
  
-       r = Allocate(sizeof(struct segment), &movetemplate, 0);
+       r = (struct segment *)Allocate(sizeof(struct segment), &movetemplate, 0);
        TYPECHECK("Loc", S, SPACETYPE, r, (0));
  
        r->last = r;
@@ -229,7 +230,7 @@ struct segment *ILoc(S, x, y)
  
        IfTrace3((MustTraceCalls),"..ILoc(S=%z, x=%d, y=%d)\n",
                                     S, (long) x, (long) y);
-       r = Allocate(sizeof(struct segment), &movetemplate, 0);
+       r = (struct segment *)Allocate(sizeof(struct segment), &movetemplate, 0);
        TYPECHECK("Loc", S, SPACETYPE, r, (0));
  
        r->last = r;
@@ -282,7 +283,7 @@ struct segment *t1_PathSegment(type, x, y)
 {
        register struct segment *r;  /* newly created segment                 */
  
-       r = Allocate(sizeof(struct segment), &movetemplate, 0);
+       r = (struct segment *)Allocate(sizeof(struct segment), &movetemplate, 0);
        r->type = type;
        r->last = r;          /* last points to itself for singleton          */
        r->dest.x = x;
@@ -297,7 +298,6 @@ This involves just creating and filling out a segment structure:
 struct segment *Line(P)
        register struct segment *P;  /* relevant coordinate space             */
 {
-       register struct segment *r;
  
        IfTrace1((MustTraceCalls),"..Line(%z)\n", P);
        ARGCHECK(!ISLOCATION(P), "Line: arg not a location", P, NULL, (0));
@@ -347,7 +347,7 @@ struct beziersegment *Bezier(B, C, D)
        ARGCHECK(!ISLOCATION(C), "Bezier: bad C", C, NULL, (2,B,D));
        ARGCHECK(!ISLOCATION(D), "Bezier: bad D", D, NULL, (2,B,C));
  
-       r = Allocate(sizeof(struct beziersegment), &template, 0);
+       r = (struct beziersegment *)Allocate(sizeof(struct beziersegment), &template, 0);
        r->last = (struct segment *) r;
        r->dest.x = D->dest.x;
        r->dest.y = D->dest.y;
@@ -388,7 +388,7 @@ struct hintsegment *Hint(S, ref, width, orientation, hinttype, adjusttype, direc
  
        register struct hintsegment *r;
  
-       r = Allocate(sizeof(struct hintsegment), &template, 0);
+       r = (struct hintsegment *)Allocate(sizeof(struct hintsegment), &template, 0);
  
        r->orientation = orientation;
        if (width == 0.0)  width = 1.0;

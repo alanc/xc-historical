@@ -157,7 +157,6 @@ ComputeBounds(pInfo, pChars, Vals)
     int i;
     xCharInfo minchar, maxchar;
     long width = 0;
-    double total_width;
     int numchars = 0;
     int totchars;
     int overlap;
@@ -219,7 +218,6 @@ ComputeProps(pInfo, Vals, Filename)
     char                *Filename;
 {
     long infoint;
-    float inforeal;
     long infoBBox[4];
     long rc;
  

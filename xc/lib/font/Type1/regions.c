@@ -49,6 +49,17 @@ The included files are:
 #include  "fonts.h"
 #include  "hints.h"
 #include  "strokes.h"      /* to pick up 'DoStroke'                        */
+static Unwind();
+static int newfilledge();
+static struct edgelist *splitedge();
+static int vertjoin();
+static int touches();
+static int crosses();
+static int edgemin();
+static int edgemax();
+static discard();
+static edgecheck();
+static struct edgelist *NewEdge();
  
 /*
 :h3.Functions Provided to the TYPE1IMAGER User
@@ -234,8 +245,6 @@ void KillRegion(area)
 /*
 :h3.CopyRegion() - Makes a Copy of a Region
 */
-struct edgelist *NewEdge();
- 
 struct region *CopyRegion(area)
         register struct region *area;  /* region to duplicate                */
 {
@@ -243,7 +252,7 @@ struct region *CopyRegion(area)
         register struct edgelist *last;  /* loop variable                    */
         register struct edgelist *p,*newp;  /* loop variables                */
  
-        r = Allocate(sizeof(struct region), area, 0);
+        r = (struct region *)Allocate(sizeof(struct region), area, 0);
         r->anchor = NULL;
  
         for (p=area->anchor; VALIDEDGE(p); p=p->link) {
@@ -296,7 +305,7 @@ set 'iy' to the ymin value that would give us good alignment:
 */
        iy = ymin - (((int) xvalues) & (sizeof(long) - 1)) / sizeof(pel);
  
-       r = Allocate(sizeof(struct edgelist), &template,
+       r = (struct edgelist *)Allocate(sizeof(struct edgelist), &template,
                              (ymax - iy) * sizeof(pel));
  
        if (isdown) r->flag = ISDOWN(ON);
@@ -354,9 +363,6 @@ struct region *Interior(p, fillrule)
        register struct segment *p;    /* take interior of this path          */
        register int fillrule;         /* rule to follow if path crosses itself */
 {
-       int newfilledge();
- 
- 
        register fractpel x,y;  /* keeps ending point of path segment         */
        fractpel lastx,lasty; /* previous x,y from path segment before        */
        register struct region *R;  /* region I will build                    */
@@ -390,11 +396,11 @@ user asked, >1: do it regardless).
                        return((struct region *)UniquePath(p));
        if (p->type == STROKEPATHTYPE)
                if (fillrule == WINDINGRULE)
-                       return(DoStroke(p));
+                       return((struct region *)DoStroke(p));
                else
                        p = CoercePath(p);
  
-       R = Allocate(sizeof(struct region), &EmptyRegion, 0);
+       R = (struct region *)Allocate(sizeof(struct region), &EmptyRegion, 0);
  
        ARGCHECK(!ISPATHANCHOR(p), "Interior:  bad path", p, R, (0));
        ARGCHECK((p->type != MOVETYPE), "Interior:  path not closed", p, R, (0));
@@ -788,10 +794,7 @@ struct edgelist *SortSwath(anchor, edge, swathfcn)
        register struct edgelist *edge;  /* incoming edge or pair of edges    */
        struct edgelist *(*swathfcn)();  /* horizontal sorter                 */
 {
-       struct edgelist *splitedge();
- 
        register struct edgelist *before,*after;
-       register short *x1,*x2;
        struct edgelist base;
  
        if (RegionDebug > 0) {
@@ -922,7 +925,7 @@ static struct edgelist *splitedge(list, y)
                if (y == list->ymin)
                        abort("splitedge: would be null");
  
-               r = Allocate(sizeof(struct edgelist), list, 0);
+               r = (struct edgelist *)Allocate(sizeof(struct edgelist), list, 0);
 /*
 At this point 'r' points to a copy of the single structure at 'list'.
 We will make 'r' be the new split 'edgelist'--the lower half.
@@ -1521,7 +1524,7 @@ void MoreWorkArea(R, x1, y1, x2, y2)
                IfTrace1((RegionDebug > 0),"Allocating edge of %d pels\n", idy);
                if (currentworkarea != workedge)
                        NonObjectFree(currentworkarea);
-               currentworkarea = Allocate(0, NULL, idy * sizeof(pel));
+               currentworkarea = (pel *)Allocate(0, NULL, idy * sizeof(pel));
                currentsize = idy;
        }
        ChangeDirection(CD_CONTINUE, R, x1, y1, y2 - y1);
@@ -1541,7 +1544,7 @@ struct region *BoxClip(R, xmin, ymin, xmax, ymax)
        register pel xmax,ymax;  /* lower right hand corner                   */
 {
        struct edgelist anchor;  /* pretend edgelist to facilitate discards   */
-       register struct edgelist *e,*laste,*nexte;
+       register struct edgelist *e,*laste;
  
        IfTrace1((OffPageDebug),"BoxClip of %z:\n", R);
  
@@ -1603,6 +1606,7 @@ struct region *BoxClip(R, xmin, ymin, xmax, ymax)
        return(R);
 }
  
+#ifdef notdef
 /*
 :h3.CoerceRegion() - Force a TextPath Structure to Become a Region
  
@@ -1624,6 +1628,7 @@ struct region *CoerceRegion(tp)
        R = Interior(path, EVENODDRULE);
        return(R);
 }
+#endif
  
 /*
 :h3.RegionBounds() - Returns Bounding Box of a Region

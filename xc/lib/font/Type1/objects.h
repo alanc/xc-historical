@@ -64,7 +64,7 @@ char *t1_ErrorMsg();          /* return last TYPE1IMAGER error message          
 #define   Consume           t1_Consume
 #define   ArgErr(s,o,r)     t1_ArgErr(s,o,r)
 #define   TypeErr(n,o,e,r)  t1_TypeErr(n,o,e,r)
-#define   Copy(obj)         (pointer) t1_Copy(obj)
+#define   Copy(obj)         t1_Copy(obj)
 #define   Unique(obj)       (pointer) t1_Unique(obj)
  
 void t1_abort();              /* crash; software logic error                  */
@@ -80,11 +80,15 @@ struct xobject *t1_Copy();    /* make a new copy, not reference bump PNM      */
 /*SHARED*/
  
 #define   ON          (-1)   /* all bits on                                  */
+#ifndef FALSE
 #define   FALSE       0      /* handy zero value                             */
+#endif
+#ifndef TRUE
 #define   TRUE        1      /* handy non-zero value                         */
+#endif
  
 #ifndef   NULL
-#define   NULL        ((pointer)0)
+#define   NULL        0
 /*
 The NULL pointer is system specific.  (Most systems, however, use 0.)
 TYPE1IMAGER could have its own NULL, independent of the rest of the system,
@@ -285,10 +289,3 @@ void t1_DumpEdges();          /* dump a region's edge list                    */
 void t1_FormatFP();           /* dump a format a "fractpel" coordinate        */
  
 /*END SHARED*/
-void Pragmatics(
-       char *username,       /* name of the flag                             */
-       int value)            /* value to set it to                           */
-;
-void abort(
-       char *string)
-;

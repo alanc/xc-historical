@@ -300,6 +300,7 @@ psobj *arrayP;
       else return(SCAN_ERROR);
     N++;
   }  while ( 1>0 );
+  /* NOTREACHED*/
 }
 /***================================================================***/
 int getName(nameP)
@@ -448,7 +449,6 @@ int BuildCharStrings(FontP)
 psfont   *FontP;
 {
    int N;   /* number of values in CharStrings */
-   int I;   /* index into Subrs */
    int i;   /* loop thru  Subrs */
    int J;   /* length of Subrs entry */
    psdict  *dictP;
@@ -618,7 +618,6 @@ int GetType1Blues(fontP)
 psfont *fontP;
 {
   psdict *PrivateDictP;   /* the Private dict relating to hints */
-  int numvalues;        /* number of values in a PS array */
   struct blues_struct *blues;  /* ptr for the blues struct we will allocate */
   int i;
   psobj *HintEntryP;
@@ -1134,8 +1133,6 @@ int scan_font(FontP)
         break;
       case TOKEN_NAME:
             if (0 == strncmp(tokenStartP,"eexec",5) ) {
-            FILE  *filterFileP;
-                          /* this structure is defined in fleexec.c */
             extern struct filter EexecFilter;
  
                /* if file started with x'80', check next 5 bytes */

@@ -35,6 +35,10 @@ routines (malloc/free).
 &author. Jeffrey B. Lotspiech (lotspiech@almaden.ibm.com)
  
 */
+static combine();
+static freeuncombinable();
+static unhook();
+static dumpchain();
 /*
 :h3.Define NULL
  
@@ -45,7 +49,7 @@ popular (in terms of reducing compiler complaints), however, if your
 compiler is unhappy about it, you can redefine it on the command line:
 */
 #ifndef   NULL
-#define   NULL   ((void *)0)
+#define   NULL   0
 #endif
 /*
 Of course, NULL is important because xiMalloc() is defined to return

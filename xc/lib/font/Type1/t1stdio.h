@@ -51,7 +51,7 @@ typedef struct F_FILE {
 #define FIOERROR  (0x40)
  
 #ifndef NULL
-#define NULL ((pointer)0)       /* null pointer */
+#define NULL 0       /* null pointer */
 #endif
 #define EOF (-1)     /* end of file */
 #define F_BUFSIZ (512)

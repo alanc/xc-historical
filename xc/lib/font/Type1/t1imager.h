@@ -63,7 +63,7 @@ extern xobject t1_Temporary();
 #endif
  
 #ifndef   NULL
-#define   NULL         ((pointer)0)
+#define   NULL         0
 #endif
  
 #ifndef   TRUE

@@ -75,9 +75,7 @@ int SearchDictName(dictP,keyP)
 boolean initFont(cnt)
 int cnt;
 {
-  int rc;
- 
- 
+
   if (!(vm_init(cnt))) return(FALSE);
   if (!(Init_StdEnc())) return(FALSE);
   vm_base = vm_next_byte();
@@ -140,7 +138,6 @@ int  *mode;
 {
   path updateWidth();
  
-  psdict *dictP;    /* this is the font dictionary              */
   psobj *charnameP; /* points to psobj that is name of character*/
   int   N;
   unsigned char *s;          /* used to search the name for '|' */
@@ -214,11 +211,7 @@ unsigned char *code;
 int  *len;
 int  *mode;
 {
-  int N;
   int rc;
-  int result;
-  psdict *fDictP;        /* points to SystemDict */
-  psobj  *FontDirObjP;   /* points to FontDictionary Object */
  
   /* Has the FontP initialized?  If not, then   */
   /* Initialize  */
@@ -255,14 +248,16 @@ int  *mode;
 /*     2) load the font                                               */
 /*     3) use the font to call getInfo for that value.                */
 /***================================================================***/
-void QueryFontLib(env,infoName,infoValue,rcodeP)
-char *env;
-char *infoName;
-union {
+typedef union {
         int *intP;
       float *floatP;
       char **valueP;
-  } infoValue;    /* parameter returned here    */
+  } infoValueType;    /* this needs to be in a header file */
+
+void QueryFontLib(env,infoName,infoValue,rcodeP)
+char *env;
+char *infoName;
+infoValueType infoValue;    /* parameter returned here    */
 int  *rcodeP;
 {
   int rc,N,i;

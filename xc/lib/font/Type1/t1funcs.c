@@ -63,14 +63,15 @@
 #include "regions.h"
  
 int         Type1OpenScalable ();
-int         Type1GetGlyphs();
+static int  Type1GetGlyphs();
 extern int  GenericGetExtents();
 void        Type1CloseFont();
 extern int  Type1GetInfoScalable ();
 extern int  GenericGetBitmaps();
  
-int  Type1GetMetrics ();
+static int  Type1GetMetrics ();
  
+static void fillrun();
  
 char *ISO8859[] = {
  /* 32*/ "|space|",
@@ -580,7 +581,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        if (pFont == NULL)
            return AllocError;
  
-       type1 = xalloc(sizeof(struct type1font));
+       type1 = (struct type1font *)xalloc(sizeof(struct type1font));
        if (type1 == NULL) {
                xfree(pFont);
                return AllocError;
@@ -635,7 +636,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
  
                if (h > 0 && w > 0) {
                        size = h * paddedW / 8;
-                       glyphs[i].bits = xalloc(size);
+                       glyphs[i].bits = (char *)xalloc(size);
                        if (glyphs[i].bits == NULL) {
                                rc = AllocError;
                                break;
@@ -661,7 +662,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
                Destroy(area);
        }
  
-       delmemory(pool);
+       delmemory();
        xfree(pool);
  
        if (i != 256 - FIRSTCOL) {
@@ -784,11 +785,8 @@ Type1GetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     static CharInfoRec nonExistantChar;
  
     int         ret;
-    xCharInfo  *ink_metrics;
-    CharInfoPtr metrics;
     struct type1font *type1Font;
     CharInfoPtr oldDefault;
-    int         i;
  
     type1Font = (struct type1font *) pFont->fontPrivate;
     oldDefault = type1Font->pDefault;
@@ -831,8 +829,6 @@ static void fill(dest, h, w, area, byte, bit, wordsize)
        int byte,bit;         /* flags; LSBFirst or MSBFirst                  */
        int wordsize;         /* number of bits per word for LSB/MSB purposes */
 {
-       void fillrun();       /* fills a single black run                     */
- 
        register struct edgelist *edge;  /* for looping through edges         */
        register char *p;     /* current scan line in 'dest'                  */
        register int y;       /* for looping through scans                    */

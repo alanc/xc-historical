@@ -166,6 +166,7 @@ static struct segment *StepBezierRecurse(I,xA,yA,xB,yB,xC,yC,xD,yD)
    StepBezierRecurse(I, xABCD, yABCD, xBCD, yBCD, xCD, yCD, xD, yD);
   }
  }
+ /*NOTREACHED*/
 }
  
 /*

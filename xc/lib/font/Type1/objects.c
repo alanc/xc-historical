@@ -72,7 +72,8 @@ a macro for "strcpy" that diverts it to "my_strcpy".
 #include  "strokes.h"
 #include  "cluts.h"
 static char *TypeFmt();
- 
+static ObjectPostMortem();
+
 /*
 :h3.The "pointer" Macro - Define a Generic Pointer
  
@@ -1007,6 +1008,7 @@ static char *TypeFmt(type)
 This is a subroutine of TypeErr() and ArgErr().
 */
  
+/*ARGSUSED*/
 static ObjectPostMortem(obj) /* non-ANSI avoids overly strict type checking  */
        register struct xobject *obj;
 {
@@ -1054,6 +1056,7 @@ environment).
 */
 static int test = 0;
  
+/*ARGSUSED*/
 void abort(string)
        char *string;
 {

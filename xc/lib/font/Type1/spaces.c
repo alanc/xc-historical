@@ -43,6 +43,8 @@ This module is responsible for handling the TYPE1IMAGER "XYspace" object.
 #include "fonts.h"
 #include "arith.h"
 #include "trig.h"
+static FindFfcn();
+static FindIfcn();
 /*
 :h3.Entry Points Provided to the TYPE1IMAGER User
 */
@@ -120,7 +122,7 @@ static unsigned int SpaceID = 1;
 struct XYspace *CopySpace(S)
        register struct XYspace *S;
 {
-       S = Allocate(sizeof(struct XYspace), S, 0);
+       S = (struct XYspace *)Allocate(sizeof(struct XYspace), S, 0);
        S->ID = NEXTID;
        return(S);
 }
@@ -275,7 +277,7 @@ struct XYspace *Context(device, units)
        M[1][0] *= units;
        M[1][1] *= units;
  
-       S = Xform(IDENTITY, M);
+       S = (struct XYspace *)Xform(IDENTITY, M);
  
        S->context = n;
        return(S);
@@ -313,8 +315,7 @@ static void ConsiderContext(obj, M)
                context = S->context;
        }
        else if (obj->type == PICTURETYPE) {
-               struct picture *P = (struct picture *) obj;
- 
+
        }
        else
                context = NULLCONTEXT;
@@ -674,7 +675,7 @@ transformation matrix and keep the handles up to date.
                handles = PathSegment(LINETYPE, P->origin.x, P->origin.y);
                handles = Join(handles,
                               PathSegment(LINETYPE, P->ending.x, P->ending.y) );
-               handles = Xform((struct xobject *) handles, M);
+               handles = (struct segment *)Xform((struct xobject *) handles, M);
                P->origin = handles->dest;
                P->ending = handles->link->dest;
                KillPath(handles);

@@ -165,8 +165,8 @@ int T1Close(f)       /* Close the file */
 F_FILE *T1eexec(f)   /* Initialization */
   F_FILE *f;         /* Stream descriptor */
 {
-  int i, c, rc;
-  int H, L;
+  int i, c;
+  int H;
   unsigned char *p;
   unsigned char randomP[8];
  

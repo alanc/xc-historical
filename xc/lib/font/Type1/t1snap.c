@@ -74,5 +74,5 @@ struct xobject *t1_Snap(p)
        }
        else
                p = JoinSegment(p, MOVETYPE, -pt.x, -pt.y, NULL);
-       return(p);
+       return((struct xobject *)p);
 }

@@ -157,7 +157,23 @@ static int *ModeP;
 /************************/
 static double Div();
 static double PSFakePop();
- 
+static DoCommand();
+static Escape();
+static HStem();
+static VStem();
+static RLineTo();
+static RRCurveTo();
+static DoClosePath();
+static CallSubr();
+static Return();
+static EndChar();
+static RMoveTo();
+static DotSection();
+static Seac();
+static Sbw();
+static CallOtherSubr();
+static SetCurrentPoint();
+
 /*****************************************/
 /* statics for Flex procedures (FlxProc) */
 /*****************************************/
@@ -734,12 +750,15 @@ static double PSFakePop ()
 {
   if (PSFakeTop >= 0) return(PSFakeStack[PSFakeTop--]);
   else Error0("PSFakePop : Stack empty\n");
+  /*NOTREACHED*/
 }
  
 /***********************************************************************/
 /* Center a stem on the pixel grid -- used by HStem3 and VStem3        */
 /***********************************************************************/
-static struct segment *CenterStem(double edge1, double edge2)
+static struct segment *CenterStem(edge1, edge2)
+    double edge1;
+    double edge2;
 {
   int idealwidth, verticalondevice;
   double leftx, lefty, rightx, righty, center, width;
