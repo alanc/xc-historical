@@ -128,7 +128,7 @@ static XtGeometryReturnCode GeometryManager();
 static void EventHandler();
 
 typedef struct _TopLevelWidgetClassData {
-  	CoreClass coreclass;
+  	CoreClass      coreclass;
 	CompositeClass compositeclass;
 } *TopLevelWidgetClass;
 
