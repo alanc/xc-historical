@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.126 90/12/29 12:17:51 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.127 90/12/30 12:45:25 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -1222,10 +1222,7 @@ void _XtRemoveTranslations(widget)
     register XtTranslations translateData;
 
     translateData = widget->core.tm.translations;
-    if (!translateData) return;
-    translateData->eventMask = 0;
-
-    if ( translateData->stateTable->mappingNotifyInterest) {
+    if ( translateData && translateData->stateTable->mappingNotifyInterest) {
 	RemoveFromMappingCallbacks(widget, (XtPointer)&widget->core.tm, NULL);
     }
 }
