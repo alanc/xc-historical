@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.25 94/03/18 10:55:28 mor Exp $ */
+/* $XConsortium: connect.c,v 1.26 94/03/18 15:59:13 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -43,20 +43,21 @@ static char *Strstr(s1, s2)
 #endif
 
 IceConn
-IceOpenConnection (networkIdsList, mustAuthenticate, majorOpcodeCheck,
+IceOpenConnection (networkIdsList, context, mustAuthenticate, majorOpcodeCheck,
     errorLength, errorStringRet)
 
-char *networkIdsList;
-Bool mustAuthenticate;
-int  majorOpcodeCheck;
-int  errorLength;
-char *errorStringRet;
+char 	   *networkIdsList;
+IcePointer context;
+Bool 	   mustAuthenticate;
+int  	   majorOpcodeCheck;
+int  	   errorLength;
+char 	   *errorStringRet;
 
 {
     IceConn			iceConn;
     int				extra, i, j;
     int		       		endian;
-    Bool			gotReply;
+    Bool			gotReply, ioErrorOccured;
     unsigned long		setup_sequence;
     iceByteOrderMsg		*pByteOrderMsg;
     iceConnectionSetupMsg	*pSetupMsg;
@@ -79,6 +80,14 @@ char *errorStringRet;
 
     /*
      * Check to see if we can use a previously created ICE connection.
+     *
+     * If iceConn->want_to_close is True, or iceConn->free_asap is True,
+     * we can not use the iceConn.
+     *
+     * If 'context' is non-NULL, we will only use a previously opened ICE
+     * connection if the specified 'context' is equal to the context
+     * associated with the ICE connection.
+     * 
      * If 'majorOpcodeCheck' is non-zero, it will contain a protocol major
      * opcode that we should make sure is not already active on the ICE
      * connection.  Some clients will want two seperate connections for the
@@ -95,11 +104,17 @@ char *errorStringRet;
 	    if (ch == ',' || ch == '\0')
 	    {
 		/*
-		 * OK, we found a connection.  Now make sure the
-		 * specified protocol is not already active on it.
+		 * OK, we found a connection.  Make sure we can reuse it.
 		 */
 
 		IceConn iceConn = _IceConnectionObjs[i];
+
+		if (iceConn->want_to_close || iceConn->free_asap ||
+		    (context && iceConn->context != context))
+		{
+		    /* force a new connection to be created */
+		    break;
+		}
 
 		if (majorOpcodeCheck)
 		{
@@ -150,6 +165,9 @@ char *errorStringRet;
     }
 
     iceConn->connection_status = IceConnectPending;
+    iceConn->io_ok = True;
+    iceConn->dispatch_level = 0;
+    iceConn->context = context;
     iceConn->my_ice_version_index = 0;
     iceConn->send_sequence = 0;
     iceConn->receive_sequence = 0;
@@ -157,7 +175,7 @@ char *errorStringRet;
     if ((iceConn->inbuf = iceConn->inbufptr =
 	(char *) malloc (ICE_INBUFSIZE)) == NULL)
     {
-	_IceFreeConnection (iceConn, True);
+	_IceFreeConnection (iceConn);
 	strncpy (errorStringRet, "Can't malloc", errorLength);
 	return (NULL);
     }
@@ -167,7 +185,7 @@ char *errorStringRet;
     if ((iceConn->outbuf = iceConn->outbufptr =
 	(char *) malloc (ICE_OUTBUFSIZE)) == NULL)
     {
-	_IceFreeConnection (iceConn, True);
+	_IceFreeConnection (iceConn);
 	strncpy (errorStringRet, "Can't malloc", errorLength);
 	return (NULL);
     }
@@ -186,6 +204,7 @@ char *errorStringRet;
 
     iceConn->skip_want_to_close = False;
     iceConn->want_to_close = False;
+    iceConn->free_asap = False;
 
     iceConn->saved_reply_waits = NULL;
     iceConn->ping_waits = NULL;
@@ -223,8 +242,20 @@ char *errorStringRet;
 
     iceConn->waiting_for_byteorder = True;
 
-    while (iceConn->waiting_for_byteorder == True)
-	IceProcessMessages (iceConn, NULL);
+    ioErrorOccured = False;
+    while (iceConn->waiting_for_byteorder == True && !ioErrorOccured)
+    {
+	ioErrorOccured = (IceProcessMessages (
+	    iceConn, NULL, NULL) == IceProcessMessagesIOError);
+    }
+
+    if (ioErrorOccured)
+    {
+	_IceFreeConnection (iceConn);
+	strncpy (errorStringRet, "IO error occured opening connection",
+	     errorLength);
+	return (NULL);
+    }
 
     if (iceConn->connection_status == IceConnectRejected)
     {
@@ -232,7 +263,7 @@ char *errorStringRet;
 	 * We failed to get the required ByteOrder message.
 	 */
 
-	_IceFreeConnection (iceConn, True);
+	_IceFreeConnection (iceConn);
 	strncpy (errorStringRet,
 	    "Internal error - did not receive the expected ByteOrder message",
 	     errorLength);
@@ -310,9 +341,21 @@ char *errorStringRet;
     replyWait.reply = (IcePointer) &reply;
 
     gotReply = False;
+    ioErrorOccured = False;
 
-    while (gotReply == False)
-	if ((gotReply = IceProcessMessages (iceConn, &replyWait)) == True)
+    while (!gotReply && !ioErrorOccured)
+    {
+	ioErrorOccured = (IceProcessMessages (
+	    iceConn, &replyWait, &gotReply) == IceProcessMessagesIOError);
+
+	if (ioErrorOccured)
+	{
+	    strncpy (errorStringRet, "IO error occured opening connection",
+		errorLength);
+	    _IceFreeConnection (iceConn);
+	    iceConn = NULL;
+	}
+	else if (gotReply)
 	{
 	    if (reply.type == ICE_CONNECTION_REPLY)
 	    {
@@ -324,7 +367,7 @@ char *errorStringRet;
 
 		    free (reply.connection_reply.vendor);
 		    free (reply.connection_reply.release);
-		    _IceFreeConnection (iceConn, True);
+		    _IceFreeConnection (iceConn);
 		    iceConn = NULL;
 		}
 		else
@@ -354,10 +397,11 @@ char *errorStringRet;
 
 		free (reply.connection_error.error_message);
 
-		_IceFreeConnection (iceConn, True);
+		_IceFreeConnection (iceConn);
 		iceConn = NULL;
 	    }
 	}
+    }
 
     if (iceConn && _IceWatchProcs)
     {
