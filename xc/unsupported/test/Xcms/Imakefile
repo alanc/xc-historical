@@ -1,0 +1,131 @@
+# $Header: Imakefile,v 1.5 90/11/13 12:09:36 alt Exp $
+#include <Library.tmpl>
+
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+
+        LOCAL_LIBS = \
+                     $(XLIB) 
+      SYS_LIBRARIES = -lm
+           INCLUDES = -I. -I../lib -I$(INCLUDESRC)
+
+#if defined(M4300Architecture)
+            AUTOHDR = autohdr
+       LIBTEST_INCL = LibTest.ah
+           CMD_INCL = TekCMS_LT.ah
+LIBTEST_CMDTBL_INCL = CmdTbl.ah
+      TESTINIT_INCL = TestInit.ah
+           TCI_INCL = TekCMS_TCI.ah
+          UTIL_INCL = TekCMSutil.ah
+       GLOBALS_INCL = TekCMSglob.ah
+            DEFINES = -DAUTOHEADER
+#else
+       LIBTEST_INCL = LibTest.h
+           CMD_INCL = TekCMS_LT.h
+LIBTEST_CMDTBL_INCL = CmdTbl.h
+      TESTINIT_INCL = TestInit.h
+           TCI_INCL = TekCMS_TCI.h
+          UTIL_INCL = TekCMSutil.h
+       GLOBALS_INCL = TekCMSglob.h
+            DEFINES =
+#endif
+
+           PROGNAME = LibTest
+            CMD_SRC = TekCMS_LT.c
+            CMD_OBJ = TekCMS_LT.o
+       LIBTEST_INCL = LibTest.h
+        LIBTEST_SRC = LibTest.c
+        LIBTEST_OBJ = LibTest.o
+       TESTINIT_SRC = TestInit.c
+       TESTINIT_OBJ = TestInit.o
+            TCI_SRC = TekCMS_TCI.c
+            TCI_OBJ = TekCMS_TCI.o
+           UTIL_SRC = TekCMSutil.c
+           UTIL_OBJ = TekCMSutil.o
+        GLOBALS_SRC = TekCMSglob.c
+        GLOBALS_OBJ = TekCMSglob.o
+
+               HDRS = \
+                      $(LIBTEST_INCL) \
+                      $(CMD_INCL) \
+                      $(LIBTEST_CMDTBL_INCL) \
+                      $(CMDTBL_INCL) \
+                      $(TCI_INCL) \
+                      $(UTIL_INCL) \
+                      $(GLOBALS_INCL) \
+                      $(TESTINIT_INCL)
+               
+               SRCS = \
+                      $(LIBTEST_SRC)	\
+                      $(TESTINIT_SRC)	\
+                      $(UTIL_SRC)	\
+                      $(GLOBALS_SRC)	\
+                      $(CMD_SRC)	\
+                      TekCMS_TCI.c
+               
+               OBJS = \
+                      $(LIBTEST_OBJ)	\
+                      $(TESTINIT_OBJ)	\
+                      $(UTIL_OBJ)	\
+                      $(GLOBALS_OBJ)	\
+                      $(CMD_OBJ)	\
+                      TekCMS_TCI.o
+
+all:: $(HDRS)
+
+SingleProgramTarget($(PROGNAME), $(OBJS), $(LOCAL_LIBS), $(SYS_LIBS))
+
+headers:: $(HDRS)
+
+#if defined(M4300Architecture)
+
+$(CMD_INCL): $(CMD_SRC)
+	-@ $(AUTOHDR) -e GLOBAL $(CMD_SRC) > $@.new; \
+	if cmp -s $@ $@.new; \
+	then rm -f $@.new; echo $@ unchanged; \
+	else mv -f $@.new $@; echo $@ modified; \
+	fi
+
+$(LIBTEST_CMDTBL_INCL): $(CMD_INCL)
+	- rm $(LIBTEST_CMDTBL_INCL)
+	ln -s $(CMD_INCL) $(LIBTEST_CMDTBL_INCL)
+
+$(TESTINIT_INCL): $(TESTINIT_SRC)
+	-@ $(AUTOHDR) -e GLOBAL $(TESTINIT_SRC) > $@.new; \
+	if cmp -s $@ $@.new; \
+	then rm -f $@.new; echo $@ unchanged; \
+	else mv -f $@.new $@; echo $@ modified; \
+	fi
+
+$(TCI_INCL): $(TCI_SRC)
+	-@ $(AUTOHDR) -e GLOBAL $(TCI_SRC) > $@.new; \
+	if cmp -s $@ $@.new; \
+	then rm -f $@.new; echo $@ unchanged; \
+	else mv -f $@.new $@; echo $@ modified; \
+	fi
+
+$(UTIL_INCL): $(UTIL_SRC)
+	-@ $(AUTOHDR) -e GLOBAL $(UTIL_SRC) > $@.new; \
+	if cmp -s $@ $@.new; \
+	then rm -f $@.new; echo $@ unchanged; \
+	else mv -f $@.new $@; echo $@ modified; \
+	fi
+
+$(GLOBALS_INCL): $(GLOBALS_SRC)
+	-@ $(AUTOHDR) -e GLOBAL $(GLOBALS_SRC) > $@.new; \
+	if cmp -s $@ $@.new; \
+	then rm -f $@.new; echo $@ unchanged; \
+	else mv -f $@.new $@; echo $@ modified; \
+	fi
+
+depend::
+	make headers
+
+#endif
+
+NormalLibraryObjectRule()
+
+DependTarget()
+
+NormalLintTarget($(SRCS))
+
+all:: $(PROGNAME)
