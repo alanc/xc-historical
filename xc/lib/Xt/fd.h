@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.21 93/09/25 10:39:11 rws Exp $
+* $XConsortium: fd.h,v 1.22 94/04/17 20:15:06 rws Exp kaleb $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
