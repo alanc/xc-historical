@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.21 89/04/29 10:43:19 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.22 89/08/08 16:50:51 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -32,19 +32,43 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "screenint.h"
 
+#define BitIsOn(ptr, bit) (((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
+
+#define SameClient(obj,client) \
+	(CLIENT_BITS((obj)->resource) == (client)->clientAsMask)
+
+#define MAX_DEVICES	7
+
+#define EMASKSIZE	MAX_DEVICES
+
+/* Kludge: OtherClients and InputClients must be compatible, see code */
+
 typedef struct _OtherClients {
     OtherClientsPtr	next;
     XID			resource; /* id for putting into resource manager */
     Mask		mask;
 } OtherClients;
 
+typedef struct _InputClients {
+    InputClientsPtr	next;
+    XID			resource; /* id for putting into resource manager */
+    Mask		mask[EMASKSIZE];
+} InputClients;
+
+typedef struct _OtherInputMasks {
+    Mask		deliverableEvents[EMASKSIZE];
+    Mask		inputEvents[EMASKSIZE];
+    Mask		dontPropagateMask[EMASKSIZE];
+    InputClientsPtr	inputClients;
+} OtherInputMasks;
+
 typedef struct _DeviceIntRec *DeviceIntPtr;
 
 /*
  * The following structure gets used for both active and passive grabs. For
  * active grabs some of the fields (e.g. modifiers) are not used. However,
- * that is not much waste since there are at most 2 active grabs (keyboard
- * and pointer) going at once in the server.
+ * that is not much waste since there aren't many active grabs (one per
+ * keyboard/pointer device) going at once in the server.
  */
 
 #define MasksPerDetailMask 8		/* 256 keycodes and 256 possible
@@ -64,18 +88,96 @@ typedef struct _DeviceIntRec *DeviceIntPtr;
     unsigned		ownerEvents:1;
     unsigned		keyboardMode:1;
     unsigned		pointerMode:1;
+    unsigned		coreGrab:1;	/* grab is on core device */
+    unsigned		coreMods:1;	/* modifiers are on core keyboard */
+    CARD8		type;		/* event type */
     DetailRec		modifiersDetail;
-    unsigned short	eventMask;
+    DeviceIntPtr	modifierDevice;
     DetailRec		detail;		/* key or button */
     WindowPtr		confineTo;	/* always NULL for keyboards */
     CursorPtr		cursor;		/* always NULL for keyboards */
+    Mask		eventMask;
 } GrabRec;
 
-typedef struct {
+typedef struct _KeyClassRec {
+    CARD8		down[DOWN_LENGTH];
+    KeyCode 		*modifierKeyMap;
+    KeySymsRec		curKeySyms;
+    int			modifierKeyCount[8];
+    CARD8		modifierMap[MAP_LENGTH];
+    CARD8		maxKeysPerModifier;
+    unsigned short	state;
+} KeyClassRec, *KeyClassPtr;
+
+typedef struct _XAxisInfo {
+    int		resolution;
+    int		min_value;
+    int		max_value;
+} XAxisInfo, *XAxisInfoPtr;
+
+typedef struct _ValuatorClassRec {
+    int		 	(*GetMotionProc) ();
+    int		 	numMotionEvents;
+    WindowPtr    	motionHintWindow;
+    XAxisInfoPtr 	axes;
+    unsigned short	numAxes;
+    unsigned short	*axisVal;
+    CARD8	 	mode;
+} ValuatorClassRec, *ValuatorClassPtr;
+
+typedef struct _ButtonClassRec {
+    CARD8		numButtons;
+    CARD8		buttonsDown;	/* number of buttons currently down */
+    unsigned short	state;
+    Mask		motionMask;
+    CARD8		down[DOWN_LENGTH];
+    CARD8		map[MAP_LENGTH];
+} ButtonClassRec, *ButtonClassPtr;
+
+typedef struct _FocusClassRec {
     WindowPtr	win;
     int		revert;
     TimeStamp	time;
-} FocusRec, *FocusPtr;
+    WindowPtr	*trace;
+    int		traceSize;
+    int		traceGood;
+} FocusClassRec, *FocusClassPtr;
+
+typedef struct _ProximityClassRec {
+    char	pad;
+} ProximityClassRec, *ProximityClassPtr;
+
+typedef struct _KbdFeedbackClassRec {
+    void		(*BellProc) ();
+    void		(*CtrlProc) ();
+    KeybdCtrl	 	ctrl;
+} KbdFeedbackClassRec, *KbdFeedbackPtr;
+
+typedef struct _PtrFeedbackClassRec {
+    void	(*CtrlProc) ();
+    PtrCtrl	 ctrl;
+} PtrFeedbackClassRec, *PtrFeedbackPtr;
+
+typedef struct _IntegerFeedbackClassRec {
+    void	(*CtrlProc) ();
+    IntegerCtrl	 ctrl;
+} IntegerFeedbackClassRec, *IntegerFeedbackPtr;
+
+typedef struct _StringFeedbackClassRec {
+    void	(*CtrlProc) ();
+    StringCtrl	 ctrl;
+} StringFeedbackClassRec, *StringFeedbackPtr;
+
+typedef struct _BellFeedbackClassRec {
+    void	(*BellProc) ();
+    void	(*CtrlProc) ();
+    BellCtrl	 ctrl;
+} BellFeedbackClassRec, *BellFeedbackPtr;
+
+typedef struct _LedFeedbackClassRec {
+    void	(*CtrlProc) ();
+    LedCtrl	 ctrl;
+} LedFeedbackClassRec, *LedFeedbackPtr;
 
 /* states for devices */
 
@@ -87,9 +189,11 @@ typedef struct {
 #define FROZEN			5	/* any state >= has device frozen */
 #define FROZEN_NO_EVENT		5
 #define FROZEN_WITH_EVENT	6
+#define THAW_OTHERS		7
 
 typedef struct _DeviceIntRec {
     DeviceRec	public;
+    DeviceIntPtr next;
     TimeStamp	grabTime;
     Bool	startup;		/* true if needs to be turned on at
 				          server intialization time */
@@ -102,40 +206,34 @@ typedef struct _DeviceIntRec {
 	Bool		frozen;
 	int		state;
 	GrabPtr		other;		/* if other grab has this frozen */
-	xEvent		event;		/* saved to be replayed */
+	xEvent		*event;		/* saved to be replayed */
+	int		evcount;
     } sync;
-    BYTE	down[DOWN_LENGTH];
-    union {
-	struct {
-	    /* here we store a bitmask for each key of the modifiers it sets */
-	    CARD8	modifierMap[MAP_LENGTH];
-	    KeybdCtrl	ctrl;
-	    void	(*BellProc) ();
-	    void	(*CtrlProc) ();
-	    FocusRec	focus;
-	    Bool	passiveGrab;
-	} keybd;
-	struct {
-	    PtrCtrl	ctrl;
-	    void	(*CtrlProc) ();
-	    int		(*GetMotionProc) ();
-	    Bool	autoReleaseGrab;	/* any button delivery */
-	    BYTE	map[MAP_LENGTH];
-	    int		mapLength;		/* valid entries in the map */
-	} ptr;
-	struct {
-	    FocusRec	focus;
-	    BYTE	map[MAP_LENGTH];
-	    int		mapLength;		/* valid entries in the map */
-	} other;
-    } u;
+    Atom		type;
+    char		*name;
+    CARD8		id;
+    CARD8		activatingKey;
+    Bool		fromPassiveGrab;
+    GrabRec		activeGrab;
+    void		(*ActivateGrab)();
+    void		(*DeactivateGrab)();
+    KeyClassPtr		key;
+    ValuatorClassPtr	valuator;
+    ButtonClassPtr	button;
+    FocusClassPtr	focus;
+    ProximityClassPtr	proximity;
+    KbdFeedbackPtr	kbdfeed;
+    PtrFeedbackPtr	ptrfeed;
+    IntegerFeedbackPtr	intfeed;
+    StringFeedbackPtr	stringfeed;
+    BellFeedbackPtr	bell;
+    LedFeedbackPtr	leds;
 } DeviceIntRec;
 
 typedef struct {
-    int			numMotionEvents;
-    int			numDevices;
-    int			arraySize;
-    DeviceIntPtr	*devices;	/* all the devices (including below) */
+    int			numDevices;	/* total number of devices */
+    DeviceIntPtr	devices;	/* all devices turned on */
+    DeviceIntPtr	off_devices;	/* all devices turned off */
     DeviceIntPtr	keyboard;	/* the main one for the server */
     DeviceIntPtr	pointer;
 } InputInfo;
@@ -147,7 +245,8 @@ typedef struct _QdEvent {
     DeviceIntPtr	device;
     ScreenPtr		pScreen;	/* what screen the pointer was on */
     unsigned long	months;		/* milliseconds is in the event */
-    xEvent		event;
+    xEvent		*event;
+    int			evcount;
 } QdEventRec;    
 
 #endif /* INPUTSTRUCT_H */

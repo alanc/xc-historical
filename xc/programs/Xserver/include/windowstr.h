@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.10 89/07/16 11:43:31 rws Exp $ */
+/* $XConsortium: windowstr.h,v 5.11 89/07/16 11:48:11 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -62,6 +62,9 @@ typedef struct _WindowOpt {
     RegionPtr		boundingShape;	   /* default: NULL */
     RegionPtr		clipShape;	   /* default: NULL */
 #endif
+#ifdef XINPUT
+    struct _OtherInputMasks *inputMasks;   /* default: NULL */
+#endif
 } WindowOptRec, *WindowOptPtr;
 
 #define BackgroundPixel	    2L
@@ -123,6 +126,11 @@ extern WindowPtr    FindWindowWithOptional();
 #define wDontPropagateMask(w)	wUseDefault(w, dontPropagateMask, 0)
 #define wOtherEventMasks(w)	wUseDefault(w, otherEventMasks, 0)
 #define wOtherClients(w)	wUseDefault(w, otherClients, NULL)
+#ifdef XINPUT
+#define wOtherInputMasks(w)	wUseDefault(w, inputMasks, NULL)
+#else
+#define wOtherInputMasks(w)	NULL
+#endif
 #define wPassiveGrabs(w)	wUseDefault(w, passiveGrabs, NULL)
 #define wUserProps(w)		wUseDefault(w, userProps, NULL)
 #define wBackingBitPlanes(w)	wUseDefault(w, backingBitPlanes, ~0L)

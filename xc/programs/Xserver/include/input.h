@@ -40,8 +40,16 @@ SOFTWARE.
 #define NoneWin ((WindowPtr)None)
 #define NullDevice ((DevicePtr)NULL)
 
+#ifndef FollowKeyboard
+#define FollowKeyboard 		3
+#endif
+#ifndef FollowKeyboardWin
+#define FollowKeyboardWin  ((WindowPtr) FollowKeyboard)
+#endif
+
 typedef unsigned long Leds;
 typedef struct _OtherClients *OtherClientsPtr;
+typedef struct _InputClients *InputClientsPtr;
 typedef struct _GrabRec *GrabPtr;
 
 typedef int (*DeviceProc)();
@@ -50,13 +58,9 @@ typedef void (*ProcessInputProc)();
 typedef struct _DeviceRec {
     pointer	devicePrivate;
     ProcessInputProc processInputProc;
+    ProcessInputProc realInputProc;
     Bool	on;			/* used by DDX to keep state */
 } DeviceRec, *DevicePtr;
-
-typedef struct {
-	int		count;
-	DevicePtr	*devices;
-} DevicesDescriptor;
 
 typedef struct {
     int			click, bell, bell_pitch, bell_duration;
@@ -76,37 +80,50 @@ typedef struct {
     int		num, den, threshold;
 } PtrCtrl;
 
+typedef struct {
+    int         resolution, min_value, max_value;
+    int         integer_displayed;
+} IntegerCtrl;
+
+typedef struct {
+    int         max_symbols, num_symbols_supported;
+    int         num_symbols_displayed;
+    KeySym      *symbols;
+} StringCtrl;
+
+typedef struct {
+    int         percent, pitch, duration;
+} BellCtrl;
+
+typedef struct {
+    Leds        led_values;
+} LedCtrl;
+
 extern KeybdCtrl	defaultKeyboardControl;
 extern PtrCtrl		defaultPointerControl;
 
-extern int DeliverEvents(/* WindowPtr, xEvent*, int, WindowPtr */);
-extern int MaybeDeliverEventsToClient(/*
-	WindowPtr, xEvent *, int, Mask, ClientPtr */);
-
-extern DevicePtr AddInputDevice(/* DeviceProc, Bool */);
+extern DevicePtr AddInputDevice();
+extern Bool EnableDevice();
+extern Bool DisableDevice();
 extern void RegisterPointerDevice();
 extern void RegisterKeyboardDevice();
-
-extern void ProcessPointerEvent();
-extern void ProcessKeyboardEvent();
-extern void ProcessOtherEvent();
-
-extern void InitPointerDeviceStruct();
-extern void InitKeyboardDeviceStruct();
-extern void InitOtherDeviceStruct();
-extern GrabPtr SetDeviceGrab();
-
-extern DevicesDescriptor GetInputDevices();
-extern DevicePtr LookupInputDevice();
 extern DevicePtr LookupKeyboardDevice();
 extern DevicePtr LookupPointerDevice();
 
+extern void ProcessPointerEvent();
+extern void ProcessKeyboardEvent();
+
+extern Bool InitKeyClassDeviceStruct();
+extern Bool InitButtonClassDeviceStruct();
+extern Bool InitFocusClassDeviceStruct();
+extern Bool InitKbdFeedbackClassDeviceStruct();
+extern Bool InitPtrFeedbackClassDeviceStruct();
+extern Bool InitValuatorClassDeviceStruct();
+extern Bool InitPointerDeviceStruct();
+extern Bool InitKeyboardDeviceStruct();
+
 extern void CloseDownDevices();
-extern int InitAndStartDevices();
-extern int NumMotionEvents();
 
 extern void WriteEventsToClient();
-extern int EventSelectForWindow();
-extern int EventSuppressForWindow();
 
 #endif /* INPUT_H */
