@@ -1,5 +1,5 @@
         DEPLIBS = $(DEPXLIB)
-LOCAL_LIBRARIES = $(XLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
            SRCS = xsetroot.c
            OBJS = xsetroot.o
 
