@@ -1,0 +1,27 @@
+XCOMM $XConsortium: Imakefile,v 1.22 93/08/23 20:00:13 rws Exp $
+
+DEPLIBS = 
+
+INCLUDES = -I$(BUILDINCDIR)
+#ifdef CppCmd
+CPP_PROGRAM = CppCmd
+CPP_DEFINES = -DCPP_PROGRAM=\"$(CPP_PROGRAM)\"
+#endif
+#ifndef Win32Architecture
+DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES)
+#endif
+
+#ifdef MacIIArchitecture
+XBSDLIB = /**/
+#endif
+
+#undef ImakeDependency
+#define ImakeDependency(dummy) @@\
+Makefile::  ProgramTargetName(imake)
+
+SimpleProgramTarget(imake)
+
+depend::
+
+clean::
+	RemoveFile(ProgramTargetName(ccimake))
