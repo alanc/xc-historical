@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.1 90/12/06 19:34:38 keith Exp $
+ * $XConsortium: xconsole.c,v 1.2 91/02/08 18:23:14 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -110,11 +110,11 @@ static char ttydev[64], ptydev[64];
 #endif
 #endif
 
+static void inputReady ();
+
 static
 OpenConsole ()
 {
-    static void	inputReady ();
-
     input = 0;
     if (app_resources.file)
     {
@@ -180,8 +180,13 @@ CloseConsole ()
 #endif
 }
 
+/*ARGSUSED*/
 static void
-Quit ()
+Quit (widget, event, params, num_params)
+    Widget widget;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     exit (0);
 }
@@ -209,8 +214,13 @@ Notify ()
     notified = True;
 }
 
+/*ARGSUSED*/
 static void
-Deiconified ()
+Deiconified (widget, event, params, num_params)
+    Widget widget;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     Arg	    arglist[1];
     char    *oldName;
@@ -236,14 +246,24 @@ Deiconified ()
     notified = False;
 }
 
+/*ARGSUSED*/
 static void
-Iconified ()
+Iconified (widget, event, params, num_params)
+    Widget widget;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     iconified = True;
 }
 
+/*ARGSUSED*/
 static void
-Clear ()
+Clear (widget, event, params, num_params)
+    Widget widget;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     long	    last;
     XawTextBlock    block;
@@ -312,7 +332,7 @@ static Boolean
 ConvertSelection (w, selection, target, type, value, length, format)
     Widget w;
     Atom *selection, *target, *type;
-    caddr_t *value;
+    XtPointer *value;
     unsigned long *length;
     int *format;
 {
@@ -326,7 +346,7 @@ ConvertSelection (w, selection, target, type, value, length, format)
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, req->time, selection, target, type,
 				  (caddr_t*)&std_targets, &std_length, format);
-	*value = XtMalloc(sizeof(Atom)*(std_length + 5));
+	*value = (XtPointer)XtMalloc(sizeof(Atom)*(std_length + 5));
 	targetP = *(Atom**)value;
 	*targetP++ = XA_STRING;
 	*targetP++ = XA_TEXT(d);
@@ -352,7 +372,7 @@ ConvertSelection (w, selection, target, type, value, length, format)
     	else			/* *target == XA_LENGTH(d) */
       	  *temp = (long) TextLength (text);
     	
-    	*value = (caddr_t) temp;
+    	*value = (XtPointer) temp;
     	*type = XA_INTEGER;
     	*length = 1L;
     	*format = 32;
@@ -366,7 +386,7 @@ ConvertSelection (w, selection, target, type, value, length, format)
     	temp = (long *) XtMalloc(2 * sizeof(long));
     	temp[0] = (long) 0;
     	temp[1] = TextLength (text);
-    	*value = (caddr_t) temp;
+    	*value = (XtPointer) temp;
     	*type = XA_SPAN(d);
     	*length = 2L;
     	*format = 32;
@@ -383,7 +403,7 @@ ConvertSelection (w, selection, target, type, value, length, format)
     	else
 	    *type = XA_STRING;
 	*length = TextLength (text);
-    	*value = _XawTextGetSTRING((TextWidget) text, 0, *length);
+    	*value = (XtPointer)_XawTextGetSTRING((TextWidget) text, 0, *length);
     	*format = 8;
 	/*
 	 * Drop our connection to the file; the new console program
@@ -398,7 +418,7 @@ ConvertSelection (w, selection, target, type, value, length, format)
     }
     
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    value, length, format))
+				    (caddr_t *)value, length, format))
 	return True;
 
     return False;
@@ -412,12 +432,13 @@ LoseSelection (w, selection)
     Quit ();
 }
 
+/*ARGSUSED*/
 static void
 InsertSelection (w, client_data, selection, type, value, length, format)
     Widget	    w;
-    caddr_t	    client_data;
+    XtPointer	    client_data;
     Atom	    *selection, *type;
-    caddr_t	    value;
+    XtPointer	    value;
     unsigned long   *length;
     int		    *format;
 {
