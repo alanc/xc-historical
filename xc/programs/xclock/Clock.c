@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Clock.c,v 1.9 87/09/11 21:18:43 swick Locked $";
 #endif lint
 
 /*
@@ -56,10 +56,10 @@ static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 
 /* Initialization of defaults */
 
-#define offset(field) Offset(ClockWidget,clock.field)
-#define goffset(field) Offset(Widget,core.field)
+#define offset(field) XtOffset(ClockWidget,clock.field)
+#define goffset(field) XtOffset(Widget,core.field)
 
-static Resource resources[] = {
+static XtResource resources[] = {
     {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
 	goffset(width), XrmRString, "164"},
     {XtNheight, XtCHeight, XrmRInt, sizeof(int),
@@ -133,7 +133,7 @@ static void Initialize (gw)
     Widget gw;
 {
     ClockWidget w = (ClockWidget)gw;
-    GCMask		valuemask;
+    XtGCMask		valuemask;
     XGCValues	myXGCV;
 
     if(!w->clock.analog) {
@@ -177,7 +177,7 @@ static void Initialize (gw)
 
 static void Realize (gw, valueMask, attrs)
      Widget gw;
-     ValueMask valueMask;
+     XtValueMask valueMask;
      XSetWindowAttributes *attrs;
 {
      gw->core.window = XCreateWindow (XtDisplay(gw), gw->core.parent->core.window,
@@ -622,7 +622,7 @@ static void SetValues (gw, gnewvals)
       ClockWidget w = (ClockWidget) gw;
       ClockWidget newvals = (ClockWidget) gnewvals;
       int redisplay = FALSE;
-      GCMask valuemask;
+      XtGCMask valuemask;
       XGCValues	myXGCV;
 
       /* first check for changes to clock-specific resources.  We'll accept all
