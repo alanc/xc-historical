@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.10 89/07/28 18:46:21 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.11 89/08/17 16:41:09 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -99,69 +99,6 @@ XID clientErrorValue;   /* XXX this is a kludge */
 
 #define SAME_SCREENS(a, b) (\
     (a.pScreen == b.pScreen))
-
-#define LEGAL_NEW_RESOURCE(id,client)\
-    if (!LegalNewID(id,client)) \
-    {\
-	client->errorValue = id;\
-        return(BadIDChoice);\
-    }
-
-#define LOOKUP_DRAWABLE(did, client)\
-    ((client->lastDrawableID == did) ? \
-     client->lastDrawable : (DrawablePtr)LookupDrawable(did, client))
-
-#define VERIFY_GC(pGC, rid, client)\
-    if (client->lastGCID == rid)\
-        pGC = client->lastGC;\
-    else\
-	pGC = (GC *)LookupIDByType(rid, RT_GC);\
-    if (!pGC)\
-    {\
-	client->errorValue = rid;\
-	return (BadGC);\
-    }
-
-#define VALIDATE_DRAWABLE_AND_GC(drawID, pDraw, pGC, client)\
-    if ((client->lastDrawableID != drawID) || (client->lastGCID != stuff->gc))\
-    {\
-        if (client->lastDrawableID != drawID)\
-    	    pDraw = (DrawablePtr)LookupIDByClass(drawID, RC_DRAWABLE);\
-        else\
-	    pDraw = client->lastDrawable;\
-        if (client->lastGCID != stuff->gc)\
-	    pGC = (GC *)LookupIDByType(stuff->gc, RT_GC);\
-        else\
-            pGC = client->lastGC;\
-	if (pDraw && pGC)\
-	{\
-	    if ((pDraw->type == UNDRAWABLE_WINDOW) ||\
-		(pGC->depth != pDraw->depth) ||\
-		(pGC->pScreen != pDraw->pScreen))\
-		return (BadMatch);\
-	    client->lastDrawable = pDraw;\
-	    client->lastDrawableID = drawID;\
-            client->lastGC = pGC;\
-            client->lastGCID = stuff->gc;\
-	}\
-    }\
-    else\
-    {\
-        pGC = client->lastGC;\
-        pDraw = client->lastDrawable;\
-    }\
-    if (!pDraw)\
-    {\
-        client->errorValue = drawID; \
-	return (BadDrawable);\
-    }\
-    if (!pGC)\
-    {\
-        client->errorValue = stuff->gc;\
-        return (BadGC);\
-    }\
-    if (pGC->serialNumber != pDraw->serialNumber)\
-	ValidateGC(pDraw, pGC);
 
 void
 SetInputCheck(c0, c1)
