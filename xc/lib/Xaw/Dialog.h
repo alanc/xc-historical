@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.17 89/07/21 01:51:25 kit Exp $ */
+/* $XConsortium: Dialog.h,v 1.18 89/08/25 18:35:35 kit Exp $ */
 
 
 /***********************************************************
@@ -56,10 +56,8 @@ SOFTWARE.
 
 */
 
-#define XtCGrabFocus "GrabFocus"
 #define XtCIcon "Icon"
 
-#define XtNgrabFocus "grabFocus"
 #define XtNicon "icon"
 
 typedef struct _DialogClassRec	*DialogWidgetClass;
