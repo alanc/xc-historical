@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.h,v 1.5 92/12/17 11:43:39 rws Exp $ */
+/* $XConsortium: XTest.h,v 1.6 93/02/09 16:18:15 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -108,6 +108,7 @@ extern XTestFakeDeviceKeyEvent(
     XDevice*		/* dev */,
     unsigned int	/* keycode */,
     Bool		/* is_press */,
+    int			/* first_axis */,
     int*		/* axes */,
     int			/* n_axes */,
     unsigned long	/* delay */
@@ -120,6 +121,7 @@ extern XTestFakeDeviceButtonEvent(
     XDevice*		/* dev */,
     unsigned int	/* button */,
     Bool		/* is_press */,
+    int			/* first_axis */,
     int*		/* axes */,
     int			/* n_axes */,
     unsigned long	/* delay */
@@ -131,6 +133,7 @@ extern XTestFakeProximityEvent(
     Display*		/* dpy */,
     XDevice*		/* dev */,
     Bool		/* in_prox */,
+    int			/* first_axis */,
     int*		/* axes */,
     int			/* n_axes */,
     unsigned long	/* delay */
@@ -142,6 +145,7 @@ extern XTestFakeDeviceMotionEvent(
     Display*		/* dpy */,
     XDevice*		/* dev */,
     Bool		/* is_relative */,
+    int			/* first_axis */,
     int*		/* axes */,
     int			/* n_axes */,
     unsigned long	/* delay */
