@@ -1,4 +1,4 @@
-/* $XConsortium: sin_cho.c,v 5.1 91/02/16 09:49:49 rws Exp $ */
+/* $XConsortium: sin_cho.c,v 5.2 91/04/04 15:29:17 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -98,7 +98,7 @@ enable_choice( device )
     XtPopup( device->item_handle.choice.shell, XtGrabNone );
     if ( device->mode == SIN_REQUEST_PENDING )
 	XSaveContext( XtDisplay(w), XtWindow(w), phg_sin_device_context_id,
-	    device );
+	    (caddr_t)device );
 }
 
 static void

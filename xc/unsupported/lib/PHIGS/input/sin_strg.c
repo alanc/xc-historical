@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sin_strg.c,v 5.1 91/02/16 09:49:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -157,7 +157,7 @@ enable_string( device )
     if ( !device->flags.been_up_yet ) {
 	XSaveContext( XtDisplay(device->item_handle.string.textw),
 	    XtWindow(device->item_handle.string.textw),
-	    phg_sin_device_context_id, device );
+	    phg_sin_device_context_id, (caddr_t)device );
 	device->flags.been_up_yet = 1;
 
     }

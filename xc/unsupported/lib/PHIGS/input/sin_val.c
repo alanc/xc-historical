@@ -1,4 +1,4 @@
-/* $XConsortium: sin_val.c,v 5.1 91/02/16 09:49:48 rws Exp $ */
+/* $XConsortium: sin_val.c,v 5.2 91/04/04 15:25:34 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -168,7 +168,7 @@ enable_valuator( device )
     XtPopup( device->item_handle.valuator.shell, XtGrabNone );
     if ( device->mode == SIN_REQUEST_PENDING )
 	XSaveContext( XtDisplay(w), XtWindow(w), phg_sin_device_context_id,
-	    device );
+	    (caddr_t)device );
 }
 
 static void
