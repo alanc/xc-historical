@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.25 89/09/19 15:36:16 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.26 89/10/20 10:25:35 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -48,6 +48,7 @@ static cfbDestroyOps();
 
 extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
 extern RegionPtr cfbCopyPlane ();
+extern void cfbPolyFillArcSolidCopy();
 
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
@@ -78,7 +79,7 @@ static GCOps	cfbTEOps = {
 #endif
     miFillPolygon,
     cfbPolyFillRect,
-    miPolyFillArc,
+    cfbPolyFillArcSolidCopy,
     miPolyText8,
     miPolyText16,
     miImageText8,
@@ -112,7 +113,7 @@ static GCOps	cfbNonTEOps = {
 #endif
     miFillPolygon,
     cfbPolyFillRect,
-    miPolyFillArc,
+    cfbPolyFillArcSolidCopy,
     miPolyText8,
     miPolyText16,
     miImageText8,
@@ -687,6 +688,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     if (new_fillrct) {
 	pGC->ops->PolyFillRect = miPolyFillRect;
+	pGC->ops->PolyFillArc = miPolyFillArc;
 	pGC->ops->PushPixels = mfbPushPixels;
 	switch (pGC->fillStyle)
 	{
@@ -701,6 +703,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		((pGC->planemask & PMSK) == PMSK))
 	    {
 		pGC->ops->PushPixels = cfbPushPixels8;
+		pGC->ops->PolyFillArc = cfbPolyFillArcSolidCopy;
 	    }
 	    break;
 	case FillTiled:
