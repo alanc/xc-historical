@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.20 87/11/05 15:27:25 rws Locked $ */
+/* $Header: dispatch.c,v 1.21 87/11/17 11:20:06 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -984,10 +984,10 @@ ProcTranslateCoords(client)
 	{
 	    if ((pWin->mapped) &&
 		(x >= pWin->absCorner.x - pWin->borderWidth) &&
-		(x < pWin->absCorner.x + pWin->clientWinSize.width +
+		(x < pWin->absCorner.x + (int)pWin->clientWinSize.width +
 		 pWin->borderWidth) &&
 		(y >= pWin->absCorner.y - pWin->borderWidth) &&
-		(y < pWin->absCorner.y + pWin->clientWinSize.height
+		(y < pWin->absCorner.y + (int)pWin->clientWinSize.height
 		 + pWin->borderWidth))
             {
 		rep.child = pWin->wid;
@@ -1734,20 +1734,20 @@ ProcGetImage(client)
     {
       if( /* check for being on screen */
          ((WindowPtr) pDraw)->absCorner.x + stuff->x < 0 ||
-         ((WindowPtr) pDraw)->absCorner.x + stuff->x + stuff->width >
+         ((WindowPtr) pDraw)->absCorner.x + stuff->x + (int)stuff->width >
              pDraw->pScreen->width ||
          ((WindowPtr) pDraw)->absCorner.y + stuff->y < 0 ||
          ((WindowPtr) pDraw)->absCorner.y + stuff->y + height >
              pDraw->pScreen->height ||
           /* check for being inside of border */
          stuff->x < -((WindowPtr)pDraw)->borderWidth ||
-         stuff->x + stuff->width >
+         stuff->x + (int)stuff->width >
               ((WindowPtr)pDraw)->borderWidth +
-              ((WindowPtr)pDraw)->clientWinSize.width ||
+              (int)((WindowPtr)pDraw)->clientWinSize.width ||
          stuff->y < -((WindowPtr)pDraw)->borderWidth ||
          stuff->y + height >
               ((WindowPtr)pDraw)->borderWidth +
-              ((WindowPtr)pDraw)->clientWinSize.height
+              (int)((WindowPtr)pDraw)->clientWinSize.height
         )
 	    return(BadMatch);
 	xgi.visual = ((WindowPtr) pDraw)->visual;
@@ -1755,7 +1755,7 @@ ProcGetImage(client)
     else
     {
       if((stuff->x < 0) ||
-         (stuff->x+stuff->width > ((PixmapPtr) pDraw)->width) ||
+         (stuff->x+(int)stuff->width > ((PixmapPtr) pDraw)->width) ||
          (stuff->y < 0) ||
          (stuff->y+height > ((PixmapPtr) pDraw)->height)
         )
