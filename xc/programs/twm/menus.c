@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.180 91/05/13 16:31:51 dave Exp $
+ * $XConsortium: menus.c,v 1.181 91/05/31 17:39:18 dave Exp $
  *
  * twm menu code
  *
@@ -2092,7 +2092,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    len = strlen(action);
 
 	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
-		if (!strncmp(action, t->name, len)) break;
+		if (!strncmp(action, t->class.res_name, len)) break;
 	    }
 	    if (!t) {
 		for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
