@@ -1,4 +1,4 @@
-/* $XConsortium: regionstr.h,v 1.5 89/07/09 15:34:24 rws Exp $ */
+/* $XConsortium: regionstr.h,v 1.6 94/01/07 09:40:39 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -50,8 +50,8 @@ typedef struct _Region {
     RegDataPtr	data;
 } RegionRec, *RegionPtr;
 
-extern BoxRec EmptyBox;
-extern RegDataRec EmptyData;
+extern BoxRec miEmptyBox;
+extern RegDataRec miEmptyData;
 
 #define REGION_NIL(reg) ((reg)->data && !(reg)->data->numRects)
 #define REGION_NUM_RECTS(reg) ((reg)->data ? (reg)->data->numRects : 1)
@@ -201,7 +201,7 @@ extern RegDataRec EmptyData;
     } \
     else \
     { \
-	(_pReg)->extents = EmptyBox; \
+	(_pReg)->extents = miEmptyBox; \
 	if (((_size) > 1) && ((_pReg)->data = \
 			     (RegDataPtr)xalloc(REGION_SZOF(_size)))) \
 	{ \
@@ -209,7 +209,7 @@ extern RegDataRec EmptyData;
 	    (_pReg)->data->numRects = 0; \
 	} \
 	else \
-	    (_pReg)->data = &EmptyData; \
+	    (_pReg)->data = &miEmptyData; \
     } \
 }
 
@@ -233,7 +233,7 @@ extern RegDataRec EmptyData;
     REGION_UNINIT(_pScreen, _pReg); \
     (_pReg)->extents.x2 = (_pReg)->extents.x1; \
     (_pReg)->extents.y2 = (_pReg)->extents.y1; \
-    (_pReg)->data = &EmptyData; \
+    (_pReg)->data = &miEmptyData; \
 }
 
 #define REGION_EXTENTS(_pScreen, _pReg) \
