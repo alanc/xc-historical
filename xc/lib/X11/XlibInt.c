@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.110 89/07/13 15:20:53 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.111 89/07/18 11:05:57 jim Exp $
  */
 
 #include "copyright.h"
@@ -18,7 +18,7 @@
 static void _EatData32();
 
 #if defined(CRAY) || defined(att)
-static int readv(), write();
+int readv(), writev();
 #endif 
 
 #if defined(STREAMSCONN) && (!defined(EWOULDBLOCK)) && defined(EAGAIN)
@@ -1614,7 +1614,7 @@ ANYSET(src)
  */
 #include <sys/socket.h>
 
-static int readv (fd, iov, iovcnt)
+int readv (fd, iov, iovcnt)
 int fd;
 struct iovec *iov;
 int iovcnt;
@@ -1631,7 +1631,7 @@ int iovcnt;
 	return (recvmsg (fd, &hdr, 0));
 }
 
-static int writev (fd, iov, iovcnt)
+int writev (fd, iov, iovcnt)
 int fd;
 struct iovec *iov;
 int iovcnt;
