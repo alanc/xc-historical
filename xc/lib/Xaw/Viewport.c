@@ -536,16 +536,21 @@ static XtGeometryResult GeometryManager(child, request, reply)
     result = XtGeometryYes;
     resized = False;
 
+    if (!XtIsRealized((Widget)w) &&
+	XtMakeGeometryRequest((Widget)w, request, &allowed)
+	 == XtGeometryAlmost) {
+	XtMakeGeometryRequest((Widget)w, &allowed, NULL);
+    }
+
     if ((!w->viewport.allowhoriz && rWidth) ||
-	(!w->viewport.allowvert && rHeight) ||
-	!XtIsRealized((Widget)w)) {
+	(!w->viewport.allowvert && rHeight)) {
 	myrequest.request_mode = CWWidth | CWHeight;
 	myrequest.width = rWidth ?
-	      ((w->viewport.allowhoriz && w->core.width > 0) ?
+	      (w->viewport.allowhoriz ?
 		  Min(w->core.width, request->width) : request->width)
 	    : w->core.width;
 	myrequest.height = rHeight ?
-	      ((w->viewport.allowvert && w->core.height > 0) ?
+	      (w->viewport.allowvert ?
 		  Min(w->core.height, request->height) : request->height)
 	    : w->core.height;
 	if (w->core.width != myrequest.width ||
