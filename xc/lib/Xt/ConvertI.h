@@ -1,4 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.4 88/09/06 09:41:03 swick Exp $ */
+/* $XConsortium: ConvertI.h,v 1.5 88/09/06 16:27:25 jim Exp $ */
 /* $oHeader: ConvertI.h,v 1.3 88/08/31 16:11:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,6 +41,7 @@ extern void _XtTableAddConverter();
 
 extern void _XtConvert();
     /* Widget               widget;         */
+    /* XtAppContext         app;            */
     /* XrmRepresentation    from_type       */
     /* XrmValue             *from;          */
     /* XrmRepresentation    to_type;        */
