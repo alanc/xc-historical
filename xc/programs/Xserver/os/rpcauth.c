@@ -1,7 +1,7 @@
 /*
  * SUN-DES-1 authentication mechanism
  *
- * $XConsortium: rpcauth.c,v 1.3 91/02/28 09:36:18 rws Exp $
+ * $XConsortium: rpcauth.c,v 1.4 92/01/31 16:51:14 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -77,7 +77,11 @@ int  len;
         why = AUTH_TOOWEAK;
         goto bad2;
     }
+#ifdef SVR4
+    if ((why = __authenticate(&r, &msg)) != AUTH_OK) {
+#else
     if ((why = _authenticate(&r, &msg)) != AUTH_OK) {
+#endif
             goto bad2;
     }
     return (((struct authdes_cred *) r.rq_clntcred)->adc_fullname.name); 
