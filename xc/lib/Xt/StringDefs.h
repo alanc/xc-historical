@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.18 87/11/11 12:07:37 swick Locked $
+* $Header: Atoms.h,v 1.19 87/12/01 16:15:22 swick Locked $
 */
 
 /*
@@ -118,7 +118,6 @@
 #define XtCDialogButtons	"DialogButtons"
 #define XtCDialogValue		"DialogValue"
 #define XtCEditType		"EditType"
-#define XtCEventBindings	"EventBindings"
 #define XtCFile			"File"
 #define XtCFont			"Font"
 #define XtCForeground		"Foreground"
@@ -185,7 +184,6 @@
 #define XtRDims			XrmRDims
 #define XtRDisplay		XrmRDisplay
 #define XtREditMode		"EditMode"
-#define XtREventBindings	"EventBindings"
 #define XtRFile			XrmRFile
 #define XtRFloat		XrmRFloat
 #define XtRFont			XrmRFont
