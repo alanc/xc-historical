@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.9 91/04/29 16:13:09 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.10 91/05/04 13:26:10 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -537,8 +537,12 @@ static void _XtConvertCase(dpy, sym, lower, upper)
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym == XK_Aogonek)
 	    *lower = XK_aogonek;
-	else if (sym >= XK_Lstroke && sym <= XK_Zabovedot)
+	else if (sym >= XK_Lstroke && sym <= XK_Sacute)
 	    *lower += (XK_lstroke - XK_Lstroke);
+	else if (sym >= XK_Scaron && sym <= XK_Zacute)
+	    *lower += (XK_scaron - XK_Scaron);
+	else if (sym >= XK_Zcaron && sym <= XK_Zabovedot)
+	    *lower += (XK_zcaron - XK_Zcaron);
 	else if (sym == XK_aogonek)
 	    *upper = XK_Aogonek;
 	else if (sym >= XK_lstroke && sym <= XK_sacute)
