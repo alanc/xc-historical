@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrPoints.c,v 1.11 88/09/06 16:06:53 jim Exp $ */
+/* $XConsortium: XDrPoints.c,v 1.12 89/05/26 16:09:28 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -27,7 +27,7 @@ XDrawPoints(dpy, d, gc, points, n_points, mode)
 	if (n > (dpy->max_request_size - req->length))
 	    n = dpy->max_request_size - req->length;
 	req->length += n;
-	nbytes = n << 2; /* watch out for macros... */
+	nbytes = ((long)n) << 2; /* watch out for macros... */
 	Data16 (dpy, (short *) points, nbytes);
 	n_points -= n;
 	if (n_points && (mode == CoordModePrevious)) {
