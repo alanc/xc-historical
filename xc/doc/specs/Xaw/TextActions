@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: TextActions,v 1.19 94/05/01 19:24:32 gildea Exp $
 .NH 2
 Text Widget Actions
 .LP
@@ -163,8 +163,8 @@ action to be modified, as described above.
 .IP select-end(\fIname\fP[,\fIname\fP,...]) 2.0i
 This action ends a text selection that began with the \fIselect-start\fP
 action, and asserts ownership of the selection or selections specified.
-A \fIname\fP can be a selection (e.g. \fBPRIMARY\fP) or a cut buffer
-(e.g \fBCUT_BUFFER0\fP).  Note that case is important.  If no
+A \fIname\fP can be a selection (e.g., \fBPRIMARY\fP) or a cut buffer
+(e.g., \fBCUT_BUFFER0\fP).  Note that case is important.  If no
 \fInames\fP are specified, \fBPRIMARY\fP is asserted. 
 .IP extend-start(\|) 2.0i
 This action finds the nearest end of the current selection, and moves it
