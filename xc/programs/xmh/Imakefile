@@ -1,4 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 2.21 91/07/22 13:56:17 converse Exp $
+XCOMM $XConsortium: Imakefile,v 2.22 94/02/04 14:40:55 kaleb Exp $
+#if HasVFork
+  VFORK_DEFINES = -DHAS_VFORK
+#endif
+        DEFINES = $(VFORK_DEFINES)
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
 
