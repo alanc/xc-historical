@@ -240,14 +240,14 @@ XtInputId XtAddInput(\fIsource\fP, \fIcondition\fP, \fIproc\fP, \
 .br
       int \fIsource\fP;
 .br
-      caddr_t \fIcondition\fP;
+      XtPointer \fIcondition\fP;
 .br
       XtInputCallbackProc \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .FN
 .IP \fIsource\fP 1i
-Specifies the source file descriptor on a UNIX-based system 
+Specifies the source file descriptor on a POSIX-based system 
 or other operating system dependent device specification.
 .IP \fIcondition\fP 1i
 Specifies the mask that indicates either a read, write, or exception condition
@@ -281,7 +281,7 @@ XtIntervalId XtAddTimeOut(\fIinterval\fP, \fIproc\fP, \fIclient_data\fP)
 .br
       XtTimerCallbackProc \fIproc\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .FN
 .IP \fIinterval\fP 1i
 Specifies the time interval in milliseconds.
@@ -308,11 +308,11 @@ XtWorkProcId XtAddWorkProc(\fIproc\fP, \fIclosure\fP)
 .br
       XtWorkProc \fIproc\fP;
 .br
-      Opaque \fIclosure\fP;
+      XtPointer \fIclient_data\fP;
 .FN
 .IP \fIproc\fP 1i
 Procedure to call to do the work.
-.IP \fIclosure\fP 1i
+.IP \fIclient_data\fP 1i
 Client data to pass to proc when it is called.
 .LP
 This routine registers a work proc in the default application context. It has
@@ -355,11 +355,93 @@ and the default application context created by
 .PN XtInitialize .
 This routine has been replaced by
 .PN XtAppCreateShell .
+
 .sp
 .LP
-To register a new converter, use the procedure
-.PN XtAddConverter .
+An old-format resource converter procedure pointer is of type
+.PN XtConverter :
+.IN "XtConverter" "" "@DEF@"
+.FD 0
+typedef void (*XtConverter)(XrmValue *, Cardinal *, XrmValue *, XrmValue *);
+.br
+      XrmValue *\fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
+.br
+      XrmValue *\fIfrom\fP;
+.br
+      XrmValue *\fIto\fP;
+.FN
+.IP \fIargs\fP 1i
+Specifies a list of additional
+.PN XrmValue
+arguments to the converter if additional context is needed
+to perform the conversion or NULL.
+For example, the string-to-font converter needs the widget's screen,
+or the string to pixel converter needs the widget's screen and color map.
+.IP \fInum_args\fP 1i
+Specifies the number of additional 
+.PN XrmValue 
+arguments or zero.
+.IP \fIfrom\fP 1i
+Specifies the value to convert.
+.IP \fIto\fP 1i
+Specifies the descriptor to use to return the converted value.
+.LP
+Type converters should perform the following actions:
+.IP \(bu 5
+Check to see that the number of arguments passed is correct.
+.IP \(bu 5
+Attempt the type conversion.
+.IP \(bu 5
+If successful, return the size and pointer to the data in the to parameter;
+otherwise, call
+.PN XtWarningMsg
+and return without modifying the to argument.
+.LP
+Most type converters just take the data described by the specified from
+argument and return data by writing into the specified to argument.
+A few need other information, which is available in the specified 
+argument list.
+A type converter can invoke another type converter,
+which allows differing sources that may convert into a common intermediate
+result to make maximum use of the type converter cache.
+.LP
+Note that the address written to->addr cannot be that of a local variable of 
+the converter because this is not valid after the converter returns.
+It should be a pointer to a static variable.
+
+.sp
+.LP
+The
+.PN XtStringConversionWarning
+.IN "XtStringConversionWarning" "" "@DEF@"
+function is a convenience routine for old-format resource converters
+that convert from strings.
+.FD 0
+void XtStringConversionWarning(\fIsrc\fP, \fIdst_type\fP)
+.br
+	String \fIsrc\fP, \fIdst_type\fP;
+.FN
+.IP \fIsrc\fP 1i
+Specifies the string that could not be converted.
+.IP \fIdst_type\fP 1i
+Specifies the name of the type to which the string could not be converted.
+.LP
+The
+.PN XtStringConversionWarning
+function issues a warning message with name ``conversionError'',
+type ``string'', class ``XtToolkitError, and the default message string
+``Cannot convert "\fIsrc\fP" to type \fIdst_type\fP''.
+
+.sp
+.LP
+To register an old-format converter, use
+.PN XtAddConverter
 .IN "XtAddConverter" "" "@DEF@"
+or
+.PN XtAppAddConverter .
+.IN "XtAppAddConverter" "" "@DEF@"
 .FD 0
 void XtAddConverter(\fIfrom_type\fP, \fIto_type\fP, \fIconverter\fP, \
 \fIconvert_args\fP, \fInum_args\fP)
@@ -384,81 +466,130 @@ Specifies the type converter procedure.
 Specifies how to compute the additional arguments to the converter or NULL.
 .IP \fInum_args\fP 1i
 Specifies the number of additional arguments to the converter or zero.
+.sp
 .LP
-For the few type converters that need additional arguments,
-the \*(xI conversion mechanism provides a method of specifying
-how these arguments should be computed.
-The enumerated type
-.PN XtAddressMode
-and the structure
-.PN XtConvertArgRec
-specify how each argument is derived.
-These are defined in
-.Pn < X11/Convert.h >.
-.LP
-.Ds
-.TA .5i 2.5i
-.ta .5i 2.5i
-typedef enum {
-	/* address mode parameter representation */
-	   XtAddress,	/* address */
-	   XtBaseOffset,	/* offset */
-	   XtImmediate,	/* constant */
-	   XtResourceString,	/* resource name string */
-	   XtResourceQuark	/* resource name quark */
-} XtAddressMode;
+.PN XtAddConverter
+is equivalent in function to XtSetTypeConverter with cache_type equal to
+.PN XtCacheAll .
 
-typedef struct {
-	XtAddressMode address_mode;
-	caddr_t address_id;
-	Cardinal size;
-} XtConvertArgRec, *XtConvertArgList;
-.De
+.sp
+.FD 0
+void XtAppAddConverter(\fIapp_context\fP, \fIfrom_type\fP, \fIto_type\fP, \
+\fIconverter\fP, \fIconvert_args\fP, \fInum_args\fP)
+.br
+    XtAppContext \fIapp_context\fP;
+.br
+    String \fIfrom_type\fP;
+.br
+    String \fIto_type\fP;
+.br
+    XtConverter \fIconverter\fP;
+.br
+    XtConvertArgList \fIconvert_args\fP;
+.br
+    Cardinal \fInum_args\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application context.
+.IP \fIfrom_type\fP 1i
+Specifies the source type.
+.IP \fIto_type\fP 1i
+Specifies the destination type.
+.IP \fIconverter\fP 1i
+Specifies the type converter procedure.
+.IP \fIconvert_args\fP 1i
+Specifies how to compute the additional arguments to the converter or NULL.
+.IP \fInum_args\fP 1i
+Specifies the number of additional arguments to the converter or zero.
 .LP
-The address_mode field specifies how the address_id field should be
-interpreted.
-.PN XtAddress
-causes address_id to be interpreted as the address of the data.
-.PN XtBaseOffset
-causes address_id to be interpreted as the offset from the widget base.
-.PN XtImmediate
-causes address_id to be interpreted as a constant.
-.PN XtResourceString
-causes address_id to be interpreted as the name of a resource
-that is to be converted into an offset from widget base.
-.PN XtResourceQuark
-is an internal compiled form of an
-.PN XtResourceString .
-The size field specifies the length of the data in bytes.
-.LP
-The following provides the code that was used to register the CvtStringToPixel 
-routine shown earlier:
-.LP
-.Ds 0
-.TA .5i 3i
-.ta .5i 3i
-static XtConvertArgRec colorConvertArgs[] = {
-	{XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen),  sizeof(Screen *)},
-	{XtBaseOffset, (caddr_t) XtOffset(Widget, core.colormap),sizeof(Colormap)}
-};
+.PN XtAppAddConverter
+is equivalent in function to XtAppSetTypeConverter with cache_type equal to
+.PN XtCacheAll .
 
-XtAddConverter(XtRString, XtRPixel, CvtStringToPixel,
-    colorConvertArgs, XtNumber(colorConvertArgs));
-.De
+.sp
 .LP
-The conversion argument descriptors colorConvertArgs and screenConvertArg are
-predefined.
-The screenConvertArg descriptor puts the widget's screen field into args[0].
-The colorConvertArgs descriptor puts the widget's screen field into args[0],
-and the widget's colormap field into args[1].
+To invoke resource conversions, a client may use
+.PN XtConvert
+or, for old-format converters only,
+.PN XtDirectConvert .
 .LP
-Conversion routines should not just put a descriptor for the address of the
-base of the widget into args[0], and use that in the routine.
-They should pass in the actual values that the conversion depends on.
-By keeping the dependencies of the conversion procedure specific,
-it is more likely that subsequent conversions will find what they need
-in the conversion cache.
-This way the cache is smaller and has fewer and more widely applicable entries.
+.sp
+.IN "XtConvert" "" "@DEF@"
+.FD 0
+void XtConvert(\fIw\fP, \fIfrom_type\fP, \fIfrom\fP, \fIto_type\fP, \
+\fIto_return\fP)
+.br
+    Widget \fIw\fP;
+.br
+    String \fIfrom_type\fP;
+.br
+    XrmValuePtr \fIfrom\fP;
+.br
+    String \fIto_type\fP;
+.br
+    XrmValuePtr \fIto_return\fP;
+.FN
+.ds Wi to use for additional arguments (if any are needed)
+.IP \fIw\fP 1i
+Specifies the widget \*(Wi.
+.IP \fIfrom_type\fP 1i
+Specifies the source type.
+.IP \fIfrom\fP 1i
+Specifies the value to be converted.
+.IP \fIto_type\fP 1i
+Specifies the destination type.
+.IP \fIto_return\fP 1i
+Returns the converted value.
+.LP
+.IN "XtDirectConvert" "" "@DEF@"
+.FD 0
+void XtDirectConvert(\fIconverter\fP, \fIargs\fP, \fInum_args\fP, \fIfrom\fP, \
+\fIto_return\fP)
+.br
+    XtConverter \fIconverter\fP;
+.br
+    XrmValuePtr \fIargs\fP;
+.br
+    Cardinal \fInum_args\fP;
+.br
+    XrmValuePtr \fIfrom\fP;
+.br
+    XrmValuePtr \fIto_return\fP;
+.FN
+.IP \fIconverter\fP 1i
+Specifies the conversion procedure that is to be called.
+.ds Al that contains the additional arguments needed to perform \
+the conversion (often NULL)
+.IP \fIargs\fP 1i
+Specifies the argument list \*(Al.
+.IP \fInum_args\fP 1i
+Specifies the number of additional arguments (often zero).
+.IP \fIfrom\fP 1i
+Specifies the value to be converted.
+.IP \fIto_return\fP 1i
+Returns the converted value.
+.LP
+The
+.PN XtConvert
+function looks up the type converter registered to convert from_type 
+to to_type, computes any additional arguments needed, and then calls
+.PN XtDirectConvert or
+.PN XtCallConverter .
+The
+.PN XtDirectConvert
+function looks in the converter cache to see if this conversion procedure
+has been called with the specified arguments.
+If so, it returns a descriptor for information stored in the cache;
+otherwise, it calls the converter and enters the result in the cache.
+.LP
+Before calling the specified converter,
+.PN XtDirectConvert
+sets the return value size to zero and the return value address to NULL.
+To determine if the conversion was successful,
+the client should check to_return.address for non-NULL.
+The data returned by XtConvert must be copied immediately by the caller,
+as it may point to static data in the type converter.
+
 .sp
 .LP
 To deallocate a shared GC when it is no longer needed, use
@@ -566,11 +697,11 @@ error or a warning by calling
 void XtGetErrorDatabaseText(\fIname\fP, \fItype\fP, \fIclass\fP, \
 \fIdefault\fP, \fIbuffer_return\fP, \fInbytes\fP)
 .br
-       char *\fIname\fP, *\fItype\fP, *\fIclass\fP;
+       String \fIname\fP, \fItype\fP, \fIclass\fP;
 .br
-       char *\fIdefault\fP;
+       String \fIdefault\fP;
 .br
-       char *\fIbuffer_return\fP;
+       String \fIbuffer_return\fP;
 .br
        int \fInbytes\fP;
 .FN
@@ -723,7 +854,7 @@ Specifies the new \*(Ha.
 .LP
 The default error handler provided by the \*(xI is
 .PN _XtError .
-On UNIX-based systems,
+On POSIX-based systems,
 it prints the message to standard error and terminates the application.
 Fatal error message handlers should not return.
 If one does,
@@ -763,7 +894,7 @@ Specifies the new \*(Ha.
 .LP
 The default warning handler provided by the \*(xI is
 .PN _XtWarning .
-On UNIX-based systems,
+On POSIX-based systems,
 it prints the message to standard error and returns to the caller.
 .sp
 .LP

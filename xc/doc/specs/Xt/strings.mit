@@ -4,6 +4,7 @@
 .ds xW X Toolkit Athena Widgets \- C Language Interface
 .ds xL Xlib \- C Language X Interface
 .ds xC Inter-Client Communication Conventions Manual
-.ds Rn 3
+.ds Rn 4
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtMake-Geometry-Request XtQuery-Geometry wid-get Composite-Part \
+Rect-Obj-Rec XtIsOverrideShell

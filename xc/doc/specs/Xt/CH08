@@ -26,6 +26,15 @@ Every widget has a destroy_callbacks list.
 Widgets can define additional callback lists as they see fit.
 For example, the Command widget has a callback
 list to notify clients when the button has been activated.
+.LP
+Except where otherwise noted, it is the intent that all Intrinsics
+functions may be called at any time, including from within callback
+procedures, action routines and event handlers.
+.NT
+The words ``it is the intent that'' in the preceeding
+sentence indicate that there are known bugs that remain to
+be addressed in some implementations.
+.NE
 .NH 2
 Using Callback Procedure and Callback List Definitions
 .XS
@@ -38,13 +47,13 @@ Callback procedure fields for use in callback lists are of type
 .PN XtCallbackProc :
 .IN "XtCallbackProc" "" "@DEF@"
 .FD 0
-typedef void (*XtCallbackProc)(Widget, caddr_t, caddr_t);
+typedef void (*XtCallbackProc)(Widget, XtPointer, XtPointer);
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
-      caddr_t \fIcall_data\fP;
+      XtPointer \fIcall_data\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget for which the callback is registered.
@@ -86,7 +95,7 @@ of a null-terminated array of type
 .ta .5i 3i
 typedef struct {
 	XtCallbackProc callback;
-	caddr_t closure;
+	XtPointer closure;
 } XtCallbackRec, *XtCallbackList;
 .De
 .LP
@@ -98,9 +107,9 @@ clientDataA and clientDataB, respectively, is:
 .TA .5i 3i
 .ta .5i 3i
 static XtCallbackRec callbacks[] = {
-	{A, (caddr_t) clientDataA},
-	{B, (caddr_t) clientDataB},
-	{(XtCallbackProc) NULL, (caddr_t) NULL}
+	{A, (XtPointer) clientDataA},
+	{B, (XtPointer) clientDataB},
+	{(XtCallbackProc) NULL, (XtPointer) NULL}
 };
 .De
 .KE
@@ -126,8 +135,17 @@ All the callback manipulation functions described in this chapter check
 to see that the requested callback list is indeed implemented by the widget.
 .LP
 For the \*(xI to find and correctly handle callback lists,
-they should be declared with a resource type of
+they must be declared with a resource type of
 .PN XtRCallback .
+The internal representation of a callback list is
+implementation-dependent; widgets may make no assumptions about the
+value stored in this resource if it is non-NULL.  Except to compare
+the value to NULL (which is equivalent to
+.PN XtCallbackStatus
+.PN XtCallbackHasNone ),
+access to callback list resources must be made
+through other \*(xI procedures.
+
 .NH 2
 Adding Callback Procedures
 .XS
@@ -147,7 +165,7 @@ void XtAddCallback(\fIw\fP, \fIcallback_name, \fP\fIcallback\fP, \
 .br
       XtCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.
@@ -205,7 +223,7 @@ void XtRemoveCallback(\fIw\fP, \fIcallback_name\fP, \fIcallback\fP, \
 .br
       XtCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.
@@ -267,7 +285,8 @@ Executing Callback Procedures
 \*(SN Executing Callback Procedures
 .XE
 .LP
-To execute the procedures in a given widget's callback list, use
+To execute the procedures in a given widget's callback list,
+specifying the callback list by resource name, use
 .PN XtCallCallbacks .
 .IN "XtCallCallbacks" "" "@DEF@"
 .FD 0
@@ -277,7 +296,7 @@ void XtCallCallbacks(\fIw\fP, \fIcallback_name\fP, \fIcall_data\fP)
 .br
       String \fIcallback_name\fP;
 .br
-      caddr_t \fIcall_data\fP;
+      XtPointer \fIcall_data\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.
@@ -293,6 +312,36 @@ Command needs only to notify its clients that the button has been activated),
 the call_data argument can be NULL.
 The call_data argument is the actual data if only one (32-bit) longword 
 is needed or is the address of the data if more than one word is needed.
+.sp
+.LP
+To execute the procedures in a callback list, specifying the callback
+list by address, use
+.PN XtCallCallbackList .
+.IN "XtCallCallbackList" "" "@DEF@"
+.FD 0
+void XtCallCallbackList(\fIwidget\fP, \fIcallbacks\fP, \fIcall_data\fP)
+.br
+      Widget \fIwidget\fP;
+.br
+      XtCallbackList \fIcallbacks\fP;
+.br
+      XtPointer \fIcall_data\fP;
+.FN
+.IP \fIwidget\fP 1i
+Specifies the widget instance which contains the callback list.
+.IP \fIcallbacks\fP 1i
+Specifies the callback list to be executed.
+.IP \fIcall_data\fP 1i
+Specifies a callback-list specific data value to pass
+to each of the callback procedures in the list.
+.LP
+The callbacks parameter must specify the contents of a widget or
+object resource declared with representation type
+.PN XtRCallback .
+If callbacks is NULL,
+.PN XtCallCallbackList
+returns immediately.
+
 .NH 2
 Checking the Status of a Callback List
 .XS
@@ -302,6 +351,7 @@ Checking the Status of a Callback List
 To find out the status of a given widget's callback list, use
 .PN XtHasCallbacks .
 .IN "XtHasCallbacks" "" "@DEF@"
+.sp
 .FD 0
 typedef enum {XtCallbackNoList, XtCallbackHasNone, XtCallbackHasSome} \
 XtCallbackStatus;

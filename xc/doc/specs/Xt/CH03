@@ -116,32 +116,6 @@ and the box must also accept
 .PN ConfigureNotify
 events when the window size is changed by the window manager.
 .NH 2
-Verifying the Class of a Composite Widget
-.XS
-\fB\*(SN Verifying the Class of a Composite Widget\fP
-.XE
-.LP
-To test if a given widget is a subclass of 
-.PN Composite , 
-use
-.PN XtIsComposite .
-.IN "XtIsComposite" "" "@DEF@"
-.FD 0
-Boolean XtIsComposite(\fIw\fP)
-.br
-      Widget \fIw\fP;
-.FN
-.IP \fIw\fP 1i
-Specifies the widget.
-.LP
-The
-.PN XtIsComposite
-function is a convenience function that is equivalent to
-.PN XtIsSubclass 
-with
-.PN compositeWidgetClass 
-specified.
-.NH 2
 Addition of Children to a Composite Widget: the insert_child Procedure
 .XS
 \*(SN Addition of Children to a Composite Widget: the insert_child Procedure
@@ -166,7 +140,20 @@ and inserts the child at the specified position.
 Some composite widgets define their own insert_child routine
 so that they can order their children in some convenient way,
 create companion controller widgets for a new widget,
-or limit the number or type of their children widgets.
+or limit the number or class of their children widgets.
+A composite widget class which wishes
+to allow non-widget children (see Chapter 12) must specify a
+.PN CompositeClassExtension
+extension record as described
+in section 1.4.2.1 and set the accepts_objects field in this record to
+.PN True .
+If the
+.PN CompositeClassExtension
+record is not specified or the
+accepts_objects field is
+.PN False ,
+the composite widget can assume that all its children are widgets
+without an explicit subclass test in the insert_child procedure.
 .LP
 If there is not enough room to insert a new child in the children array
 (that is, num_children = num_slots),
@@ -372,15 +359,13 @@ Widget XtCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
       Cardinal \fInum_args\fP;
 .FN
 .IP \fIname\fP 1i
-Specifies the text name for the created\*(Sh widget.
-.ds Wc \ pointer for the created widget
+Specifies the text name for the created widget.
 .IP \fIwidget_class\fP 1i
-Specifies the widget class\*(Wc.
+Specifies the widget class pointer for the created widget.
 .IP \fIparent\fP 1i
 Specifies the parent widget.
-.ds Al to override the resource defaults
 .IP \fIargs\fP 1i
-Specifies the argument list \*(Al.
+Specifies the argument list to override any other resource specifications.
 .IP \fInum_args\fP 1i
 Specifies the number of arguments in the argument list.
 .LP
@@ -390,6 +375,37 @@ function is a convenience routine that calls
 .PN XtCreateWidget
 and
 .PN XtManageChild .
+.sp
+.LP
+To create and manage a child widget in a single procedure using
+varargs lists, use
+.PN XtVaCreateManagedWidget .
+.IN "XtVaCreateManagedWidget" "" "@DEF@"
+.FD 0
+Widget XtVaCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...)
+.br
+      String \fIname\fP;
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      Widget \fIparent\fP;
+.FN
+.IP \fIname\fP 1i
+Specifies the text name for the created widget.
+.IP \fIwidget_class\fP 1i
+Specifies the widget class pointer for the created widget.
+.IP \fIparent\fP 1i
+Specifies the parent widget.
+.IP ... 1i
+Specifies the variable-length argument list to override any other
+resource specifications.
+.LP
+.PN XtVaCreateManagedWidget
+is identical in function to
+.PN XtCreateManagedWidget
+with the args and num_args parameters replaced
+by a varargs list as described in Section 2.4.1.
+
 .NH 3
 Unmanaging Children
 .XS
@@ -677,6 +693,20 @@ set the values of constraints associated with a child.
 then calls the constraint set_values procedures so that a parent can
 recompute derived constraint fields and move or resize the child
 as appropriate.
+If the
+.PN Constraint
+widget or any of its superclasses have declared a
+.PN ConstraintClassExtension
+record in the constraint class part extension
+fields with a record type of
+.PN \s-1NULLQUARK\s+1
+and the get_values_hook field in
+.IN "get_values_hook procedure"
+.IN "Constraint" "get_values_hook"
+the extension record is non-NULL,
+.PN XtGetValues
+calls the get_values_hook
+procedure(s) to allow the parent to return derived constraint fields.
 .LP
 The
 .PN XtDestroyWidget

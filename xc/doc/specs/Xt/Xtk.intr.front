@@ -1,6 +1,5 @@
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
-.\" Search to "Beta release" to find commented out text
 .\"
 .EH ''''
 .OH ''''
@@ -131,6 +130,8 @@ the justification to redesign it entirely for X11.
 Joel McCormack
 Western Software Laboratory
 Digital Equipment Corporation
+
+March, 1988
 .De
 .bp
 .LP
@@ -156,7 +157,7 @@ Scott McGregor (Digital)
 Phil Karlton (Digital)
 Julian Payne (ESS)
 Jacques Davy (Bull)
-Gabriel Beged-Dov (SPC)
+Gabriel Beged-Dov (HP)
 Glenn Widener (Tektronix)
 .De
 .LP
@@ -169,6 +170,8 @@ Ralph R. Swick
 External Research Group
 Digital Equipment Corporation
 MIT Project Athena
+
+June, 1988
 .De
 .bp iv
 .XS iv
@@ -229,7 +232,7 @@ the explanations for all arguments that you pass start with the word
 The explanations for all arguments that are returned to you start with the
 word \fIreturns\fP or, in the case of multiple arguments, the word \fIreturn\^\fP.
 .bp 1
-.EH '\fBX Intrinsics\fP''\fBX11, Release 3, Oct. 1988\fP'
-.OH '\fBX Intrinsics\fP''\fBX11, Release 3, Oct. 1988\fP'
+.EH '\fBX Toolkit Intrinsics\fP''\fBX11 Release 4, Dec. 1989\fP'
+.OH '\fBX Toolkit Intrinsics\fP''\fBX11 Release 4, Dec. 1989\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''

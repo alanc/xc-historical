@@ -73,37 +73,45 @@ Widget XtNameToWidget(\fIreference\fP, \fInames\fP);
 .IP \fIreference\fP 1i
 Specifies the widget from which the search is to start.
 .IP \fInames\fP 1i
-Specifies the fully qualified name of the desired widget.
+Specifies the partially qualified name of the desired widget.
 .LP
 The
 .PN XtNameToWidget
-function looks for a widget whose name is the first component in the specified
-names and that is a pop-up child of reference (or a normal child if reference
-is a subclass of
-.PN compositeWidgetClass ).
-It then uses that widget as the new reference and repeats the search
-after deleting the first component from the specified names.
-If it cannot find the specified widget,
+function searches for a descendant of the reference
+widget whose name matches the specified names.  The names parameter
+specifies a simple object name or a series of simple object name
+components separated by periods or asterisks.
 .PN XtNameToWidget
-returns NULL.
+returns the descendant with the shortest name matching the specification
+according to the following rules, where child is either a pop-up child
+or a normal child if the widget is a subclass of
+.PN Composite :
+.IP \(bu 5
+Enumerate the object subtree rooted at the reference widget in
+breadth-first order, qualifying the name of each object with the
+names of all its ancestors up to but not including the reference
+widget.  The ordering between children of a common parent is
+not defined.
+.IP \(bu 5
+Return the first object in the enumeration that matches the
+specified names, where each component of names matches exactly the
+corresponding component of the qualified object name and asterisk
+matches any series of components, including none.
+.IP \(bu 5
+If no match is found, return NULL.
 .LP
-Note that the names argument contains the name of a widget with respect to the 
-specified reference widget and can contain more than one widget name
-(separated by periods) for widgets that are not direct children 
-of the specified reference widget.
-.LP
-If more than one child of the reference widget matches the name,
+Since breadth-first traversal is specified, the descendant with the
+shortest matching name (i.e. the fewest number of components), if any,
+will always be returned.  However, since the order of enumeration of
+children is undefined and since the \*(xI do not require that all
+children of a widget have unique names,
 .PN XtNameToWidget
-can return any of the children.
-The \*(xI do not require that all children of a widget have unique names.
-If the specified names contain more than one component
-and if more than one child matches the first component,
-.PN XtNameToWidget
-can return NULL if the single branch that it follows does not
-contain the named widget.
-That is,
-.PN XtNameToWidget
-does not back up and follow other matching branches of the widget tree.
+may return any
+child that matches if there are multiple objects in the subtree with
+the same name(s).  Consecutive separators (periods or asterisks)
+including at least one asterisk are treated as a single asterisk.
+Consecutive periods are treated as a single period.
+
 .NH 2
 Managing Memory Usage
 .XS
@@ -265,7 +273,7 @@ with the following arguments specified:
 .Ds
 .TA .5i
 .ta .5i
-((type *) XtMalloc((unsigned) sizeof(type))
+((type *) XtMalloc((unsigned) sizeof(type)))
 .De
 .sp
 .LP
@@ -355,14 +363,14 @@ To deallocate a shared GC when it is no longer needed, use
 .PN XtReleaseGC .
 .IN "XtReleaseGC" "" "@DEF@"
 .FD 0
-void XtReleaseGC(\fIw\fP, \fIgc\fP)
+void XtReleaseGC(\fIobject\fP, \fIgc\fP)
 .br
-      Widget \fIw\fP;
+      Widget \fIobject\fP;
 .br
       GC \fIgc\fP;
 .FN
-.IP \fIw\fP 1i
-Specifies the widget.
+.IP \fIobject\fP 1i
+Specifies any object on the Display for which the GC was created.
 .IP \fIgc\fP 1i
 Specifies the GC to be deallocated.
 .LP
@@ -378,22 +386,41 @@ Arbitrary widgets (possibly not all in the same application) can communicate
 with each other by means of the \*(tk global selection mechanism,
 which is defined in the \fI\*(xC\fP.
 The \*(xI provide functions for providing and receiving selection data in
-one logical piece (atomic transfers).
-The actual transfer between the selection owner and the \*(xI is not required to be atomic;
+one logical piece (atomic transfers)
+or in smaller logical segments (incremental transfers).
+.LP
+The incremental interface is provided for a selection owner or
+selection requestor that cannot or prefers not to pass the selection
+value to and from the \*(xI in a single call.  For instance,
+either an application that is running on a machine with limited memory
+may not be able to store the entire selection value in memory, or a
+selection owner may already have the selection value available in
+discrete chunks, and it would be more efficient not to have to
+allocate additional storage to copy the pieces contiguously.  Any
+owner or requestor that prefers to deal with the selection value in
+segments can use the incremental interfaces to do so.
+The transfer between the selection owner or requestor and the \*(xI is not
+required to match the underlying
+transport protocol between the client and the X server;
 the \*(xI will break a too-large selection 
-into smaller pieces for transport if necessary.
+into smaller pieces for transport if necessary
+and will coalesce a selection transmitted incrementally if the value
+was requested atomically.
 .LP
 The next sections discuss how to:
 .IP \(bu 5
 Set and get the selection timeout value
 .IP \(bu 5
 Use atomic transfers
-.\".IP \(bu 5
-.\"Use incremental transfers
+.IP \(bu 5
+Use incremental transfers
+.IP \(bu 5
+Conveniently retrieve the most recent timestamp received
+
 .NH 3
 Setting and Getting the Selection Timeout Value
 .XS
-\*(SN Setting and Getting the Selection Timeout Value
+\fB\*(SN Setting and Getting the Selection Timeout Value\fP
 .XE
 .LP
 To set the \*(xI selection timeout, use
@@ -452,16 +479,17 @@ Atomic Transfer Procedures
 .XS
 \*(SN Atomic Transfer Procedures
 .XE
+.IN "Selections" "atomic"
 .LP
 The following procedures are to be used with atomic transfers.
-The first three are used by the selection owner,
+The first four are used by the selection owner,
 and the last one is used by the requestor.
 .LP
 .IN "XtConvertSelectionProc" "" "@DEF@"
 .FD 0
 typedef Boolean (*XtConvertSelectionProc)(Widget, Atom *, Atom *, Atom *,
 .br
-                      caddr_t *, unsigned long *, int *);
+                      XtPointer *, unsigned long *, int *);
 .br
     Widget \fIw\fP;
 .br
@@ -471,7 +499,7 @@ typedef Boolean (*XtConvertSelectionProc)(Widget, Atom *, Atom *, Atom *,
 .br
     Atom *\fItype_return\fP;
 .br
-    caddr_t *\fIvalue_return\fP;
+    XtPointer *\fIvalue_return\fP;
 .br
     unsigned long *\fIlength_return\fP;
 .br
@@ -584,18 +612,18 @@ selection value.
 .LP
 .IN "XtSelectionCallbackProc" "" "@DEF@"
 .FD 0
-typedef void (*XtSelectionCallbackProc)(Widget, caddr_t, Atom *, Atom *, \
-caddr_t, unsigned long *, int *);
+typedef void (*XtSelectionCallbackProc)(Widget, XtPointer, Atom*, Atom*, \
+XtPointer, unsigned long*, int*);
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
       Atom *\fIselection\fP;
 .br
       Atom *\fItype\fP;
 .br
-      caddr_t \fIvalue\fP;
+      XtPointer \fIvalue\fP;
 .br
       unsigned long *\fIlength\fP;
 .br
@@ -631,6 +659,68 @@ Specifies the size in bits of the data elements of value.
 .LP
 This procedure is called by the \*(xI selection mechanism to deliver the
 requested selection to the requestor.
+.LP
+If the
+.PN SelectionNotify
+event returns a property of
+.PN None ,
+meaning the conversion has been refused because there is no owner for the
+specified selection or the owner cannot convert the selection to the
+requested target for any reason, the procedure is called with a value
+of NULL and a length of 0.
+.LP
+.IN "Selections" "MULTIPLE"
+.IN "Selections" "TIMESTAMP"
+This procedure does not need to worry about responding to the
+MULTIPLE or the TIMESTAMP target values (see the \fI\*(xC\fP).
+A selection request with
+the MULTIPLE target type will be transparently transformed into a
+series of calls to this procedure, one for each target type, and a
+selection request with the TIMESTAMP target value will be answered
+automatically by the \*(xI using the time specified in the
+call to
+.PN XtOwnSelection
+or
+.PN XtOwnSelectionIncremental .
+.sp
+.LP
+To retrieve the
+.PN SelectionRequest
+event which triggered the convert_selection procedure, use
+.PN XtGetSelectionRequest .
+.IN "XtGetSelectionRequest" "" "@DEF@"
+.FD 0
+XSelectionRequestEvent *XtGetSelectionRequest(\fIw\fP, \fIselection\fP, \
+\fIrequest_id\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Atom \fIselection\fP;
+.br
+      XtRequestId \fIrequest_id\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget which currently owns this selection.
+.IP \fIselection\fP 1i
+Specifies the selection being processed.
+.IP \fIrequest_id\fP 1i
+Specifies the requestor id in the case of incremental
+selections, or NULL in the case of atomic transfers.
+.LP
+.PN XtGetSelectionRequest
+may only be called from within a
+convert_selection procedure and returns a pointer to the
+.PN SelectionRequest
+event which caused the procedure to be invoked.
+Request_id specifies a unique id for the individual request in the
+case that multiple incremental transfers are outstanding.  For atomic
+transfers, request_id must be specified as NULL.  If no
+.PN SelectionRequest
+event is being processed for the specified
+widget, selection and request_id,
+.PN XtGetSelectionRequest
+returns NULL.
+
 .NH 4
 Getting the Selection Value
 .XS
@@ -654,7 +744,7 @@ void XtGetSelectionValue(\fIw\fP, \fIselection\fP, \fItarget\fP, \
 .br
       XtSelectionCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
       Time \fItime\fP;
 .FN
@@ -679,7 +769,7 @@ Specifies the timestamp that indicates when the selection \*(Ti.
 This should be the timestamp of the event which triggered this request;
 the value 
 .PN CurrentTime 
-is not acceptable.
+is not acceptable; see the \fI\*(xC\fP.
 .LP
 The
 .PN XtGetSelectionValue
@@ -708,7 +798,7 @@ void XtGetSelectionValues(\fIw\fP, \fIselection\fP, \fItargets\fP, \
 .br
       XtSelectionCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
       Time \fItime\fP;
 .FN
@@ -735,7 +825,7 @@ Specifies the timestamp that indicates when the selection \*(Ti.
 This should be the timestamp of the event which triggered this request;
 the value 
 .PN CurrentTime
-is not acceptable.
+is not acceptable; see the \fI\*(xC\fP.
 .LP
 The
 .PN XtGetSelectionValues
@@ -748,7 +838,7 @@ The effect is as if each target were specified in a separate call to
 The callback is called once with the corresponding client data for each target.
 .PN XtGetSelectionValues
 does guarantee that all the conversions will use the same selection value
-becaues the ownership of the selection cannot change in the middle of the list,
+because the ownership of the selection cannot change in the middle of the list,
 as would be when calling
 .PN XtGetSelectionValue
 repeatedly.
@@ -793,7 +883,7 @@ Specifies the timestamp that indicates when the selection \*(Ti.
 This should be the timestamp of the event that triggered ownership;
 the value
 .PN CurrentTime 
-is not acceptable.
+is not acceptable; see the \fI\*(xC\fP.
 .IP \fIconvert_proc\fP 1i
 Specifies the procedure that is to be called whenever someone requests the 
 current value of the selection.
@@ -869,6 +959,491 @@ before the call to
 .PN XtDisownSelection
 finishes after the call to
 .PN XtDisownSelection .
+
+.NH 3
+Using Incremental Transfers
+.XS
+\*(SN Using Incremental Transfers
+.XE
+.LP
+When using the incremental interface, an owner may have to process
+more than one selection request for the same selection, converted to
+the same target, at the same time.  The incremental functions take a
+request_id argument, which is an identifier that is guaranteed to be
+unique among all incremental requests that are active concurrently.
+.LP
+For example, consider the following:
+.IP \(bu 5
+Upon receiving a request for the selection value, the owner sends
+the first segment.
+.IP \(bu 5
+While waiting to be called to provide the next segment value but
+before sending it, the owner receives another request from a
+different requestor for the same selection value. 
+.IP \(bu 5
+To distinguish between the requests, the owner uses the request_id
+argument.  This allows the owner to distinguish between the first
+requestor, who is asking for the second segment, and the second
+requestor, who is asking for the first segment. 
+.LP
+The next three sections discuss:
+.IP \(bu 5
+Incremental transfer procedures
+.IP \(bu 5
+Getting the selection value
+.IP \(bu 5
+Setting the selection owner
+
+.NH 4
+Incremental Transfer Procedures
+.XS
+\*(SN Incremental Transfer Procedures
+.XE
+.IN "Selections" "incremental"
+.LP
+The following procedures are to be used with incremental transfers.
+The first five are used by the selection owner and the last two are
+used by the requestor.
+.LP
+.sp
+.Ds 0
+typedef XtPointer XtRequestId;
+.De
+.IN "XtRequestId" "" "@DEF@"
+.IN "XtConvertSelectionIncrProc" "" "@DEF@"
+.FD 0
+typedef Boolean (*XtConvertSelectionIncrProc)(Widget, Atom*, Atom*, \
+Atom*, XtPointer*,
+                               unsigned long*, int*, unsigned long*, \
+XtPointer, XtRequestId*)
+.br
+      Widget \fIw\fP;
+.br
+      Atom *\fIselection\fP;
+.br
+      Atom *\fItarget\fP;
+.br
+      Atom *\fItype_return\fP;
+.br
+      XtPointer *\fIvalue_return\fP;
+.br
+      unsigned long *\fIlength_return\fP;
+.br
+      int *\fIformat_return\fP;
+.br
+      unsigned long *\fImax_length\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.br
+      XtRequestId *\fIrequest_id\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget which currently owns this selection.
+.IP \fIselection\fP 1i
+Specifies the atom that names the selection requested
+(for example, XA_PRIMARY or XA_SECONDARY).
+.IP \fItarget\fP 1i
+Specifies the type of information required about selection;
+for example, FILENAME, TEXT, XA_WINDOW.
+.IP \fItype_return\fP 1i
+Specifies a pointer to an atom into which the property
+type of the converted value of the selection is to be
+stored.  For instance, both file name and text might
+have property type XA_STRING.
+.IP \fIvalue_return\fP 1i
+Specifies a pointer into which a pointer to the
+converted value of the selection is to be stored.
+The selection owner is responsible for allocating this storage.
+.IP \fIlength_return\fP 1i
+Specifies a pointer into which the number of elements
+in value (each of size indicated by format) is to be stored.
+.IP \fIformat_return\fP 1i
+Specifies a pointer into which the size in bits of the
+data elements of the selection value is to be stored.
+.IP \fImax_length\fP 1i
+Specifies the maximum number of bytes which may be
+transferred at any one time.
+.IP \fIclient_data\fP 1i
+Specifies the value passed in by the widget when it
+took ownership of the selection.
+.IP \fIrequest_id\fP 1i
+Specifies an opaque identification for a specific request.
+.LP
+This procedure is called repeatedly by the \*(xI selection mechanism to get
+the next incremental chunk of data from a selection owner who has
+called
+.PN XtOwnSelectionIncremental .
+It must return
+.PN True
+if the procedure has succeeded in converting the selection data or
+.PN False
+otherwise.
+On the first call with a particular request_id, the owner must begin
+a new incremental transfer for the requested selection and target.  On
+subsequent calls with the same request_id, the owner may assume that
+the previously supplied value is no longer needed by the \*(xI;
+that is, a fixed transfer area may be allocated and returned in value
+for each segment to be transferred.  This procedure should store a
+non-NULL value in value and zero in length_return to indicate that the
+entire selection has been delivered.  After returning this final
+segment, the request_id may be re-used by the \*(xI to begin a
+new transfer.
+
+.sp
+.LP
+To retrieve the
+.PN SelectionRequest
+event which triggered the convert_selection procedure, use
+.PN XtGetSelectionRequest ,
+described in section 11.5.2.1.
+.sp
+.IN "XtLoseSelectionIncrProc" "" "@DEF@"
+.FN 0
+typedef void (*XtLoseSelectionIncrProc)(Widget, Atom*, XtPointer)
+.br
+      Widget \fIw\fP;
+.br
+      Atom *\fIselection\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget that has lost the selection ownership.
+.IP \fIselection\fP 1i
+Specifies the atom that names the selection.
+.IP \fIclient_data\fP 1i
+Specifies the value passed in by the widget when it
+took ownership of the selection.
+.LP
+This procedure, which is optional, is called by the \*(xI to
+inform the selection owner that it no longer owns the selection.
+.sp
+.IN "XtSelectionDoneIncrProc" "" "@DEF@"
+.FD 0
+typedef void (*XtSelectionDoneIncrProc)(Widget, Atom*, Atom*, \
+XtRequestId*, XtPointer)
+.br
+      Widget \fIw\fP;
+.br
+      Atom *\fIselection\fP;
+.br
+      Atom *\fItarget\fP;
+.br
+      XtRequestId *\fIrequest_id\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget that owns the selection.
+.IP \fIselection\fP 1i
+Specifies the atom that names the selection being transferred.
+.IP \fItarget\fP 1i
+Specifies the target type to which the conversion was done.
+.IP \fIrequest_id\fP 1i
+Specifies an opaque identification for a specific request.
+.IP \fIclient_data\fP 1i
+Specified the value passed in by the widget when it
+took ownership of the selection.
+.LP
+This procedure, which is optional, is called by the \*(xI after
+the requestor has retrieved the final (0-length) segment of the
+incremental transfer to indicate that the entire transfer is complete.
+If this procedure is not specified, the \*(xI will free only the
+final value returned by the selection owner using
+.PN XtFree .
+.sp
+.IN "XtCancelConvertSelectionProc" "" "@DEF@"
+.FD 0
+typedef void (*XtCancelConvertSelectionProc)(Widget, Atom*, Atom*, \
+XtRequestId*, XtPointer)
+.br
+      Widget \fIw\fP;
+.br
+      Atom *\fIselection\fP;
+.br
+      Atom *\fItarget\fP;
+.br
+      XtRequestId *\fIrequest_id\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget that owns the selection.
+.IP \fIselection\fP 1i
+Specifies the atom that names the selection being transferred.
+.IP \fItarget\fP 1i
+Specifies the target type to which the conversion was done.
+.IP \fIrequest_id\fP 1i
+Specifies an opaque identification for a specific request.
+.IP \fIclient_data\fP 1i
+Specifies the value passed in by the widget when it took ownership of
+the selection.
+.LP
+This procedure is called by the \*(xI when it has been determined
+by means of a timeout or other mechanism that any remaining segments
+of the selection no longer need to be transferred.  Upon receiving
+this callback, the selection request is considered complete and the
+owner can free the memory and any other resources that have been
+allocated for the transfer.
+
+.NH 4
+Getting the Selection Value Incrementally
+.XS
+\*(SN Getting the Selection Value Incrementally
+.XE
+.LP
+To obtain the selection value using incremental transfers, use
+.PN XtGetSelectionValueIncremental
+or
+.PN XtGetSelectionValuesIncremental .
+.IN "XtGetSelectionValueIncremental" "" "@DEF@"
+.FD 0
+void XtGetSelectionValueIncremental(\fIw\fP, \fIselection\fP, \fItarget\fP, \
+\fIselection_callback\fP, \fIclient_data\fP, \fItime\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Atom \fIselection\fP;
+.br
+      Atom \fItarget\fP;
+.br
+      XtSelectionCallbackProc \fIselection_callback\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.br
+      Time \fItime\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget that is making the request.
+.IP \fIselection\fP 1i
+Specifies the particular selection desired (e.g. XA_PRIMARY or XA_SECONDARY).
+.IP \fItarget\fP 1i
+Specifies the type of the information that is needed
+about the selection (e.g. TARGETS).
+.IP \fIselection_callback\fP 1i
+Specifies the callback procedure that is to be
+called to receive each data segment.
+.IP \fIclient_data\fP 1i
+Specifies client-specific data that is to be passed to
+the specified callback procedure when it is invoked.
+.IP \fItime\fP 1i
+Specifies the timestamp that indicates when the
+selection request was initiated.  This should be the
+timestamp of the event which triggered this request;
+the value
+.PN CurrentTime
+is not acceptable; see the \fI\*(xC\fP.
+.LP
+The
+.PN XtGetSelectionValueIncremental
+function is similar to
+.PN XtGetSelectionValue
+except that the selection_callback procedure will
+be called repeatedly upon delivery of multiple segments of the
+selection value.  The end of the selection value is indicated when
+selection_callback is called with a non-NULL value of length zero,
+which must still be freed by the client.  If the
+transfer of the selection is aborted in the middle of a transfer
+(for example, due to timeout), the selection_callback procedure is
+called with a type of
+.PN XT_CONVERT_FAIL
+so that the requestor can dispose
+of the partial selection value it has collected up until that point.
+Upon receiving
+.PN XT_CONVERT_FAIL ,
+the requesting client must determine
+for itself whether or not a partially completed data transfer is meaningful.
+.sp
+.IN "XtGetSelectionValuesIncremental" "" "@DEF@"
+.FD 0
+void XtGetSelectionValuesIncremental(\fIw\fP, \fIselection\fP, \fItargets\fP, \
+\fIcount\fP, \fIselection_callback\fP, \fIclient_data\fP, \fItime\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Atom \fIselection\fP;
+.br
+      Atom *\fItargets\fP;
+.br
+      int \fIcount\fP;
+.br
+      XtSelectionIncrCallbackProc \fIselection_callback\fP;
+.br
+      XtPointer *\fIclient_data\fP;
+.br
+      Time \fItime\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget that is making the request.
+.IP \fIselection\fP 1i
+Specifies the particular selection desired (e.g. XA_PRIMARY or XA_SECONDARY).
+.IP \fItargets\fP 1i
+Specifies the types of information that is needed about
+the selection (e.g. HOST, USER).
+.IP \fIcount\fP 1i
+Specifies the length of the targets and client_data lists.
+.IP \fIselection_callback\fP 1i
+Specifies the callback procedure that is to be called
+to receive each selection value.
+.IP \fIclient_data\fP 1i
+Specifies a list of client data (one for each target
+type) that is passed to the callback procedures when
+they are invoked for the corresponding target.
+.IP \fItime\fP 1i
+Specifies the timestamp that indicates when the
+selection request was initiated.  This should be the
+timestamp of the event which triggered this request;
+the value
+.PN CurrentTime
+is not acceptable; see the \fI\*(xC\fP.
+.LP
+The
+.PN XtGetSelectionValuesIncremental
+function is similar to
+.PN XtGetSelectionValueIncremental
+except that it takes a list of targets and client_data.
+.PN XtGetSelectionValuesIncremental
+is equivalent to calling
+.PN XtGetSelectionValueIncremental
+successively for each target/client_data pair except that
+.PN XtGetSelectionValuesIncremental
+does guarantee that all the conversions will use the same selection
+value because the ownership of the selection cannot change in the
+middle of the list, as would be possible when calling
+.PN XtGetSelectionValueIncremental
+repeatedly.
+
+.NH 4
+Setting the Selection Owner for Incremental Transfers
+.XS
+\*(SN Setting the Selection Owner for Incremental Transfers
+.XE
+.LP
+To set the selection owner when using incremental transfers, use
+.PN XtOwnSelectionIncremental .
+.IN "XtOwnSelectionIncremental" "" "@DEF@"
+.FD 0
+Boolean XtOwnSelectionIncremental(\fIw\fP, \fIselection\fP, \fItime\fP, \
+\fIconvert_callback\fP, \fIlose_callback\fP,
+                                  \fIdone_callback\fP, \
+\fIcancel_callback\fP, \fIclient_data\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Atom \fIselection\fP;
+.br
+      Time \fItime\fP;
+.br
+      XtConvertSelectionIncrProc \fIconvert_callback\fP;
+.br
+      XtLoseSelectionIncrProc \fIlose_callback\fP;
+.br
+      XtSelectionDoneIncrProc \fIdone_callback\fP;
+.br
+      XtCancelConvertSelectionProc \fIcancel_callback\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.FN
+.IP \fIw\fP 1.25i
+Specifies the widget that wishes to become the owner.
+.IP \fIselection\fP 1.25i
+Specifies an atom that names the
+selection (for example, XA_PRIMARY, XA_SECONDARY, or CLIPBOARD).
+.IP \fItime\fP 1.25i
+Specifies the timestamp that indicates when the
+selection ownership should commence.  This should be
+the timestamp of the event that triggered ownership; the value
+.PN CurrentTime
+is not acceptable; see the \fI\*(xC\fP.
+.IP \fIconvert_callback\fP 1.25i
+Specifies the procedure that is to be called whenever
+the current value of the selection is requested.
+.IP \fIlose_callback\fP 1.25i
+Specifies the procedure that is to be called whenever
+the widget has lost selection ownership or NULL if the
+owner is not interested in being notified.
+.IP \fIdone_callback\fP 1.25i
+Specifies the procedure that is called after the
+requestor has received the entire selection or NULL if
+the owner is not interested in being notified.
+.IP \fIcancel_callback\fP 1.25i
+Specifies the callback procedure that is to be called
+when a selection request aborts because a timeout expires,
+or NULL if the owner is not interested in being notified.
+.IP \fIclient_data\fP 1.25i
+Specifies the argument that is to be passed to each of
+the callback procedures when they are called.
+.LP
+The
+.PN XtOwnSelectionIncremental
+procedure informs the \*(xI
+incremental selection mechanism that the specified widget wishes to
+own the selection.  It returns
+.PN True
+if the specified widget successfully becomes the selection owner or
+.PN False
+otherwise.
+.LP
+If a done_callback is specified, the client owns the storage allocated
+for passing the value to the \*(xI.  If done_callback is NULL,
+the convert_callback must allocate storage using
+.PN XtMalloc ,
+.PN XtRealloc
+or
+.PN XtCalloc
+and the final value specified will be freed by the
+\*(xI when the transfer is complete.  After a selection transfer
+has started, only one of the done_callback or cancel_callback
+procedures will be invoked to indicate completion of the transfer.
+.LP
+The lose_callback does not indicate completion of any in-progress
+transfers; it will be invoked at the time a
+.PN SelectionClear
+event is dispatched regardless of any active transfers, which are still
+expected to continue.
+.LP
+A widget that becomes the selection owner using
+.PN XtOwnSelectionIncremental
+may use
+.PN XtDisownSelection
+to relinquish selection ownership.
+
+.NH 3
+Retrieving the Most Recent Timestamp
+.XS
+\*(SN Retrieving the Most Recent Timestamp
+.XE
+.LP
+To retrieve the timestamp from the most recent call to
+.PN XtDispatchEvent
+which contained a timestamp, use
+.PN XtLastTimestampProcessed .
+.IN "XtLastTimestampProcessed" "" "@DEF@"
+.FD 0
+Time XtLastTimestampProcessed(\fIdisplay\fP)
+.br
+      Display *\fIdisplay\fP;
+.FN
+.IP \fIdisplay\fP 1i
+Specifies an open display connection.
+.LP
+If no
+.PN KeyPress ,
+.PN KeyRelease ,
+.PN ButtonPress ,
+.PN ButtonRelease ,
+.PN MotionNotify ,
+.PN EnterNotify ,
+.PN LeaveNotify ,
+.PN PropertyNotify
+or
+.PN SelectionClear
+event has yet been passed to
+.PN XtDispatchEvent
+for the specified display,
+.PN XtLastTimestampProcessed
+returns zero.
+
 .NH 2
 Merging Exposure Events into a Region
 .XS
@@ -1007,11 +1582,12 @@ A low-level interface that takes a simple string
 .LP
 The high-level functions construct a string to pass to the lower-level
 interface.
-On UNIX-based systems, the error database usually is 
+On POSIX-based systems, the error database usually is 
 .PN /usr/lib/X11/XtErrorDB .
 .NT
-The application context specific error handling in not
-implemented on many systems.
+The application context specific error handling is not
+implemented on many systems, although the interfaces are
+always present.
 Most implementations will have just one set of error handlers.
 If they are set for different application contexts,
 the one performed last will prevail.
@@ -1035,7 +1611,7 @@ The
 function returns the address of the error database.
 The \*(xI do a lazy binding of the error database and do not merge in the
 database file until the first call to
-.PN XtAppGetErrorDatbaseText .
+.PN XtAppGetErrorDatabaseText .
 .LP
 For a complete listing of all errors and warnings 
 that can be generated by the \*(xI, see Appendix D.
@@ -1089,17 +1665,17 @@ error or a warning by calling
 .FD 0
 void XtAppGetErrorDatabaseText(\fIapp_context\fP, \fIname\fP, \fItype\fP, \fIclass\fP, \fIdefault\fP, \fIbuffer_return\fP, \fInbytes\fP, \fIdatabase\fP)
 .br
-       XtAppContext \fIapp_context\fP;
+      XtAppContext \fIapp_context\fP;
 .br
-       char *\fIname\fP, *\fItype\fP, *\fIclass\fP;
+      String \fIname\fP, \fItype\fP, \fIclass\fP;
 .br
-       char *\fIdefault\fP;
+      String \fIdefault\fP;
 .br
-       char *\fIbuffer_return\fP;
+      String \fIbuffer_return\fP;
 .br
-       int \fInbytes\fP;
+      int \fInbytes\fP;
 .br
-       XrmDatabase \fIdatabase\fP;
+      XrmDatabase \fIdatabase\fP;
 .FN
 .IP \fIapp_context\fP 1i
 Specifies the application context.
@@ -1130,11 +1706,37 @@ or returns the specified default message if one is not found in the
 error database.
 .sp
 .LP
+To return the application name and class as passed to
+.PN XtDisplayInitialize
+for a particular Display, use
+.PN XtGetApplicationNameAndClass .
+.IN "XtGetApplicationNameAndClass" "" "@DEF@"
+.FD 0
+void XtGetApplicationNameAndClass(Display* \fIdisplay\fP, String* \
+\fIname_return\fP, String* \fIclass_return\fP)
+.FN
+.IP \fIdisplay\fP 1i
+Specifies an open display connection that has been initialized with
+.PN XtDisplayInitialize .
+.IP \fIname_return\fP 1i
+Returns the application name.
+.IP \fIclass_return\fP 1i
+Returns the application class.
+.LP
+.PN XtGetApplicationNameAndClass
+returns the application name and class passed to
+.PN XtDisplayInitialize
+for the specified display.  If the display was
+never initialized or has been closed the result is undefined.  The
+returned strings are owned by the \*(xI and must not be modified
+or freed by the caller.
+.sp
+.LP
 To register a procedure to be called on fatal error conditions, use
 .PN XtAppSetErrorMsgHandler .
 .IN "XtAppSetErrorMsgHandler" "" "@DEF@"
 .FD 0
-void XtAppSetErrorMsgHandler(\fIapp_context\fP, \fImsg_handler\fP)
+XtErrorMsgHandler XtAppSetErrorMsgHandler(\fIapp_context\fP, \fImsg_handler\fP)
 .br
       XtAppContext \fIapp_context\fP;
 .br
@@ -1146,8 +1748,12 @@ Specifies the application context.
 .IP \fImsg_handler\fP 1i
 Specifies the new \*(Mh.
 .LP
-The default error handler provided by the \*(xI constructs a
-string from the error resource database and calls
+XtAppSetErrorMsgHandler returns a pointer to the previously
+installed high-level fatal error handler.
+The default high-level fatal error handler provided by the \*(xI is named
+.PN _XtDefaultErrorMsg
+.IN "_XtDefaultErrorMsg" "" "@DEF"
+and constructs a string from the error resource database and calls
 .PN XtError .
 Fatal error message handlers should not return.
 If one does,
@@ -1161,19 +1767,19 @@ To call the high-level error handler, use
 void XtAppErrorMsg(\fIapp_context\fP, \fIname\fP, \fItype\fP, \fIclass\fP, \
 \fIdefault\fP, \ \fIparams\fP, \fInum_params\fP)
 .br
-    XtAppContext \fIapp_context\fP;
+      XtAppContext \fIapp_context\fP;
 .br
-    String \fIname\fP;
+      String \fIname\fP;
 .br
-    String \fItype\fP;
+      String \fItype\fP;
 .br
-    String \fIclass\fP;
+      String \fIclass\fP;
 .br
-    String \fIdefault\fP;
+      String \fIdefault\fP;
 .br
-    String *\fIparams\fP;
+      String *\fIparams\fP;
 .br
-    Cardinal *\fInum_params\fP;
+      Cardinal *\fInum_params\fP;
 .FN
 .IP \fIapp_context\fP 1i
 Specifies the application context.
@@ -1199,7 +1805,7 @@ To register a procedure to be called on nonfatal error conditions, use
 .PN XtAppSetWarningMsgHandler .
 .IN "XtAppSetWarningMsgHandler" "" "@DEF@"
 .FD 0
-void XtAppSetWarningMsgHandler(\fIapp_context\fP, \fImsg_handler\fP)
+XtErrorMsgHandler XtAppSetWarningMsgHandler(\fIapp_context\fP, \fImsg_handler\fP)
 .br
       XtAppContext \fIapp_context\fP;
 .br
@@ -1211,7 +1817,12 @@ Specifies the application context.
 .IP \fImsg_handler\fP 1i
 Specifies the new \*(Mh.
 .LP
-The default warning handler provided by the \*(xI constructs a string
+XtAppSetWarningMsgHandler returns a pointer to the previously
+installed high-level warning handler.
+The default high-level warning handler provided by the \*(xI is named
+.PN _XtDefaultWarningMsg
+.IN "_XtDefaultWarningMsg" "" "@DEF@"
+and constructs a string
 from the error resource database and calls
 .PN XtWarning .
 .sp
@@ -1222,19 +1833,19 @@ To call the installed high-level warning handler, use
 .FD 0
 void XtAppWarningMsg(\fIapp_context\fP, \fIname\fP, \fItype\fP, \fIclass\fP, \fIdefault\fP, \fIparams\fP, \fInum_params\fP)
 .br
-    XtAppContext \fIapp_context\fP;
+      XtAppContext \fIapp_context\fP;
 .br
-    String \fIname\fP;
+      String \fIname\fP;
 .br
-    String \fItype\fP;
+      String \fItype\fP;
 .br
-    String \fIclass\fP;
+      String \fIclass\fP;
 .br
-    String \fIdefault\fP;
+      String \fIdefault\fP;
 .br
-    String *\fIparams\fP;
+      String *\fIparams\fP;
 .br
-    Cardinal *\fInum_params\fP;
+      Cardinal *\fInum_params\fP;
 .FN
 .IP \fIapp_context\fP 1i
 Specifies the application context.
@@ -1262,7 +1873,7 @@ The low-level error and warning handler procedure pointers are of type
 .FD 0
 typedef void (*XtErrorHandler)(String);
 .br
-    String \fImessage\fP;
+      String \fImessage\fP;
 .FN
 .IP \fImessage\fP 1i
 Specifies the error message.
@@ -1274,7 +1885,7 @@ To register a procedure to be called on fatal error conditions, use
 .PN XtAppSetErrorHandler .
 .IN "XtAppSetErrorHandler" "" "@DEF@"
 .FD 0
-void XtAppSetErrorHandler(\fIapp_context\fP, \fIhandler\fP)
+XtErrorHandler XtAppSetErrorHandler(\fIapp_context\fP, \fIhandler\fP)
 .br
       XtAppContext \fIapp_context\fP;
 .br
@@ -1286,9 +1897,12 @@ Specifies the application context.
 .IP \fIhandler\fP 1i
 Specifies the new \*(Ha.
 .LP
-The default error handler provided by the \*(xI is
-.PN _XtError .
-On UNIX-based systems,
+XtAppSetErrorHandler returns a pointer to the previously installed
+low-level fatal error handler.
+The default low-level error handler provided by the \*(xI is
+.PN _XtDefaultError .
+.IN "_XtDefaultError" "" "@DEF@"
+On POSIX-based systems,
 it prints the message to standard error and terminates the application.
 Fatal error message handlers should not return.
 If one does,
@@ -1322,7 +1936,7 @@ To register a procedure to be called on nonfatal error conditions, use
 .PN XtAppSetWarningHandler .
 .IN "XtAppSetWarningHandler" "" "@DEF@"
 .FD 0
-void XtAppSetWarningHandler(\fIapp_context\fP, \fIhandler\fP)
+XtErrorHandler XtAppSetWarningHandler(\fIapp_context\fP, \fIhandler\fP)
 .br
       XtAppContext \fIapp_context\fP;
 .br
@@ -1334,9 +1948,12 @@ Specifies the application context.
 .IP \fIhandler\fP 1i
 Specifies the new \*(Ha.
 .LP
-The default warning handler provided by the \*(xI is
-.PN _XtWarning .
-On UNIX-based systems,
+XtAppSetWarningHandler returns a pointer to the previously installed
+low-level warning handler.
+The default low-level warning handler provided by the \*(xI is
+.PN _XtDefaultWarning .
+.IN "_XtDefaultWarning" "" "@DEF@"
+On POSIX-based systems,
 it prints the message to standard error and returns to the caller.
 .sp
 .LP
@@ -1360,19 +1977,282 @@ Most programs should use
 not
 .PN XtAppWarning ,
 to provide for customization and internationalization of warning messages.
-.\".NH 2
-.\"Obtaining a Gray Pixmap
-.\".XS
-.\"\fB\*(SN Obtaining a Gray Pixmap\fP
-.\".XE
-.\".LP
-.\"To obtain a gray pixmap, use
-.\".PN XtGrayPixmap .
-.\".IN "XtGrayPixmap" "" "@DEF@"
-.\".FD 0
-.\".so ./Xtsrc/XtGPixmap.f
+
+.NH 2
+Setting WM_COLORMAP_WINDOWS
+.XS
+\fB\*(SN Setting WM_COLORMAP_WINDOWS\fP
+.XE
+.LP
+A client may set the value of the \s-1WM_COLORMAP_WINDOWS\s+1
+.IN "WM_COLORMAP_WINDOWS" "" "@DEF@"
+property on a widget's window by calling
+.PN XtSetWMColormapWindows .
+.IN "XtSetWMColormapWindows" "" "@DEF@"
+.FD 0
+void XtSetWMColormapWindows(\fIwidget\fP, \fIlist\fP, \fIcount\fP)
+.br
+      Widget \fIwidget\fP;
+.br
+      Widget* \fIlist\fP;
+.br
+      Cardinal \fIcount\fP;
 .FN
-.\".so ./Xtsrc/screen.a
-.\".LP
-.\".so ./Xtdescrip/XtGPixmap.d
+.IP \fIwidget\fP 1i
+Specifies the widget on whose window the \s-1WM_COLORMAP_WINDOWS\s+1
+property will be stored.
+.IP \fIlist\fP 1i
+Specifies a list of widgets whose windows are to be
+listed in the \s-1WM_COLORMAP_WINDOWS\s+1 property.
+.IP \fIcount\fP 1i
+Specifies the number of widgets in list.
+.LP
+.PN XtSetWMColormapWindows
+returns immediately if widget is not realized or if count is 0.
+Otherwise,
+.PN XtSetWMColormapWindows
+constructs an ordered list of windows
+by examining each widget in the list in turn and
+.IP \(bu 5
+ignoring the widget if it is not realized or 
+.IP \(bu 5
+adding the widget's window to the window list if the widget is realized
+and if its colormap resource is different from the colormap
+resources of all widgets whose windows are already on the window list.
+.LP
+Finally,
+.PN XtSetWMColormapWindows
+stores the resulting window list in the \s-1WM_COLORMAP_WINDOWS\s+1
+property on the specified widget's window.
+Refer to the \fI\*(xC\fP for details of
+the semantics of the \s-1WM_COLORMAP_WINDOWS\s+1 property.
+
+.NH 2
+Finding File Names
+.XS
+\fB\*(SN Finding File Names\fP
+.XE
+.LP
+The \*(xI provide procedures to look for a file by name using
+string substitutions in a list of file specifications.  There are two
+routines provided;
+.PN XtFindFile
+and
+.PN XtResolvePathname .
+.PN XtFindFile
+uses an arbitrary set of client-specified substitutions and
+.PN XtResolvePathname
+uses a set of standard substitutions corresponding
+to the X/Open Portability Guide language localization conventions.
+Most applications should use
+.PN XtResolvePathname .
+.LP
+A string substitution is defined by a list of
+.PN Substitution
+.IN "Substitution" "" "@DEF@"
+entries.
+.sp
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	char match;
+	String substitution;
+} SubstitutionRec, *Substitution;
+.De
+.LP
+File name evaluation is handled in an operating system-dependent
+fashion by an
+.PN XtFilePredicate
+.IN "XtFilePredicate" "" "@DEF@"
+procedure.
+.FD 0
+typedef Boolean (*XtFilePredicate)(String \fIfilename\fP);
+.FN
+.IP \fIfilename\fP 1i
+Specifies a potential filename.
+.LP
+A file predicate procedure will be called with a string that is
+potentially a file name.  It should return
+.PN True 
+if this string specifies a file that is appropriate for the intended use and 
+.PN False
+otherwise.
+.sp
+.LP
+To search for a file using substitutions in a path list, use
+.PN XtFindFile .
+.IN "XtFindFile" "" "@DEF@"
+.FD 0
+String XtFindFile(\fIpath\fP, \fIsubstitutions\fP, \fInum_substitutions\fP, \
+\fIpredicate\fP)
+.br
+      String \fIpath\fP;
+.br
+      Substitution \fIsubstitutions\fP;
+.br
+      Cardinal \fInum_substitutions\fP;
+.br
+      XtFilePredicate \fIpredicate\fP;
+.FN
+.IP \fIpath\fP 1i
+Specifies a path of file names including substitution characters.
+.IP \fIsubstitutions\fP 1i
+Specifies a list of substitutions to make into the path.
+.IP \fInum_substitutions\fP 1i
+Specifies the number of substitutions passed in.
+.IP \fIpredicate\fP 1i
+Specifies a procedure called to judge each potential file name, or NULL.
+.LP
+The path parameter specifies a string that consists of a series of
+potential file names delimited by colons.  Within each name, the
+percent character specifies a string substitution controlled by the
+following character.  The character sequence ``%:'' specifies an
+embedded colon that is not a delimiter; the sequence is replaced by a
+single colon.  The character sequence ``%%'' specifies a percent
+character that does not introduce a substitution; the sequence is
+replaced by a single percent character.  If a percent character is
+followed by any other character,
+.PN XtFindFile
+looks through the
+specified substitutions for that character in the match field and if
+found replaces the percent and match characters with the string in the
+corresponding substitution field.  A substitution string entry of NULL
+is equivalent to a pointer to an empty string.  If the operating
+system does not interpret multiple embedded name separators in the
+path (i.e. ``/'' in POSIX) the same way as a single separator,
+.PN XtFindFile
+will collapse multiple separators into a single one after performing
+all string substitutions.  Except for collapsing embedded separators,
+the contents of the string substitutions are not interpreted by
+.PN XtFindFile
+and may therefore contain any operating system-dependent
+characters, including additional name separators.  Each resulting
+string is passed to the predicate procedure until a string is found for
+which the procedure returns
+.PN True ;
+this string is the return value for
+.PN XtFindFile .
+If no string yields a
+.PN True
+return from the predicate,
+.PN XtFindFile
+returns NULL.
+.LP
+If the predicate parameter is NULL, an internal procedure that checks
+if the file exists, is readable, and is not a directory will be used.
+.LP
+It is the responsibility of the caller to free the returned string using
+.PN XtFree
+when it is no longer needed.
+.sp
+.LP
+To search for a file using standard substitutions in a path list, use
+.PN XtResolvePathname .
+.IN "XtResolvePathname" "" "@DEF@"
+.FD 0
+String XtResolvePathname(\fIdpy\fP, \fItype\fP, \fIfilename\fP, \fIsuffix\fP, \
+\fIpath\fP, \fIsubstitutions\fP, \fInum_substitutions\fP, \fIpredicate\fP)
+.br
+      Display *\fIdpy\fP;
+.br
+      String \fItype\fP, \fIfilename\fP, \fIsuffix\fP, \fIpath\fP;
+.br
+      Substitution \fIsubstitutions\fP;
+.br
+      Cardinal \fInum_substitutions\fP;
+.br
+      XtFilePredicate \fIpredicate\fP;
+.FN
+.IP \fIdpy\fP 1i
+Specifies the display to use to find the language for language substitutions.
+.IP \fItype\fP
+.br
+.ns
+.IP \fIfilename\fP
+.br
+.ns
+.IP \fIsuffix\fP 1i
+Specify values to substitute into the path.
+.IP \fIpath\fP 1i
+Specifies the list of file specifications, or NULL.
+.IP \fIsubstitutions\fP 1i
+Specifies a list of additional substitutions to make into the path, or NULL.
+.IP \fInum_substitutions\fP 1i
+Specifies the number of entries in substitutions.
+.IP \fIpredicate\fP 1i
+Specifies a procedure called to judge each potential file name, or NULL.
+.LP
+The substitutions specified by
+.PN XtResolvePathname
+are determined from the value of the language string retrieved by
+.PN XtDisplayInitialize
+for the specified display.  A language is specified from three parts, two
+of which are optional: the language, the territory, and the codeset.
+These parts are combined into a single string as
+language[_territory][.codeset]; the parts consist of arbitrary strings
+of letters and numbers.  No interpretation of the parts of the
+language is done other than to use them in substitutions.  To set the
+language for all applications specify ``*xnlLanguage: \fIlang\fP'' in the
+resource database. 
+.IN "xnlLanguage"
+.LP
+.PN XtResolvePathname
+calls
+.PN XtFindFile
+with the following substitutions
+in addition to any passed by the caller and returns the value returned by
+.PN XtFindFile :
+.IP %N 5
+The value of the filename parameter, or the application's
+class name if filename is NULL.
+.IP %T 5
+The value of the type parameter.
+.IP %S 5
+The value of the suffix parameter.
+.IP %L 5
+The language specification associated with the specified display.
+.IP %l 5
+The language part of the display's language spec.
+.IP %t 5
+The territory part of the display's language spec.
+.IP %c 5
+The codeset part of the display's language spec.
+.LP
+If a path is passed to
+.PN XtResolvePathname
+it will be passed along to
+.PN XtFindFile .
+If path is NULL, the value of the \s-1XFILESEARCHPATH\s+1
+.IN "XFILESEARCHPATH" "" "@DEF@"
+environment variable will be passed to
+.PN XtFindFile .
+If \s-1XFILESEARCHPATH\s+1
+is not defined, an implementation-specific default path will be passed
+in which contains at least /usr/lib/X11/%T/%N%S.  If the path begins
+with a colon, it will be preceded by %N%S.  If the path includes two
+adjacent colons, %N%S will be inserted between them.
+.LP
+The type parameter is intended to be a category of files, usually
+being translated into a directory in the pathname.  Possible values
+might include ``app-defaults'', ``help'', and ``bitmap''.
+.LP
+The suffix parameter is intended to be appended to the file name.
+Possible values might include ``.txt'', ``.dat'', and ``.bm''.
+.LP
+A suggested value for the default path on POSIX-based systems is
+.IP
+/usr/lib/X11/%L/%T/%N%S:/usr/lib/X11/%l/%T/%N%S:/usr/lib/X11/%T/%N%S
+.LP
+Using this example, if the user has specified a language, it will be
+used as a subdirectory of /usr/lib/X11 that will be searched for other
+files.  If the desired file is not found there, the lookup will be
+tried again using just the language part of the specification.  If the
+file is not there it will be looked for in /usr/lib/X11.  The type
+parameter is used as a subdirectory of the language directory or of
+/usr/lib/X11, and the suffix is appended to the file name.
+.LP
+It is the responsibility of the caller to free the returned string using
+.PN XtFree
+when it is no longer needed.
 .bp

@@ -82,14 +82,21 @@ Specifies the number of arguments specified in the translation table.
 .TA .5i 3i
 .ta .5i 3i
 typedef struct _XtActionsRec {
-	String action_name;
-	XtActionProc action_proc;
+	String string;
+	XtActionProc proc;
 } XtActionsRec, *XtActionList;
 .De
-The action_name field is the name that you use in translation tables to access
+The string field is the name that is used in translation tables to access
 the procedure.
-The action_proc field is a pointer to a procedure that implements
+The proc field is a pointer to a procedure that implements
 the functionality.
+.LP
+Action procedures should not assume that the widget in which they
+are invoked is realized; an accelerator specification can cause
+an action procedure to be called for a widget which does not yet
+have a window.  Widget writers should also note which of a widget's
+callback lists are invoked from action procedures and warn clients
+not to assume the widget is realized in those callbacks.
 .LP
 For example, the Command widget has procedures to take the following actions:
 .IP \(bu 5
@@ -110,7 +117,7 @@ The procedure entry (often spelled identically to the string)
 is the name of the C procedure that implements that function:
 .LP
 .IN "Action Table"
-.Ds 0
+.Ds
 .TA .5i 1.5i
 .ta .5i 1.5i
 XtActionsRec actionTable[] = {
@@ -121,6 +128,13 @@ XtActionsRec actionTable[] = {
 	{"Notify",	Notify},
 };
 .De
+.LP
+The \*(xI reserve all action names and parameters starting with
+the characters ``Xt'' for future standard enhancements.  Users,
+applications and widgets should not declare action names or pass
+parameters starting with these characters except to invoke specified
+built-in \*(xI functions.
+
 .NH 3
 Action Table Registration
 .XS
@@ -151,10 +165,12 @@ the most recently registered action is used.
 If duplicate actions exist in an action table,
 the first is used.
 The \*(xI register an action table for
-.PN MenuPopup
+.PN XtMenuPopup
 and
-.PN MenuPopdown
-as part of \*(tk initialization.
+.PN XtMenuPopdown
+as part of
+.PN XtCreateApplicationContext .
+
 .NH 3
 Action Names to Procedure Translations
 .XS
@@ -167,20 +183,121 @@ actual procedure specified
 in an action table.
 When the widget
 is realized, the translation manager
-performs a search for the name in the following tables:
+performs a search for the name in the following tables, in order:
 .IP \(bu 5
-The widget's class action table for the name
+The widget's class and all superclass action tables, in subclass to
+superclass order
 .IP \(bu 5
-The widget's superclass action table and on up the superclass chain
+The parent's class and all superclass action tables, in subclass to
+superclass order, then on up the instance hierarchy chain
 .IP \(bu 5
 The action tables registered with
-.PN XtAddActions 
+.PN XtAppAddActions
+and
+.PN XtAddActions
 (from the most recently added table to the oldest table)
 .LP
 As soon as it finds a name,
 the translation manager stops the search.
 If it cannot find a name,
-the translation manager generates an error.
+the translation manager generates a warning message.
+
+.NH 3
+Action Hook Registration
+.XS
+\fB\*(SN Action Hook Registration\fP
+.XE
+.LP
+An application can specify a procedure that will be called just before
+every action routine is dispatched by the translation manager.  To do
+so, the application supplies a procedure pointer of type
+.PN XtActionHookProc .
+.IN "XtActionHookProc" "" "@DEF@"
+.FD 0
+typedef void (*XtActionHookProc)(Widget, XtPointer, String, XEvent*, \
+String*, Cardinal*)
+.br
+      Widget \fIw\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.br
+      String \fIaction_name\fP;
+.br
+      XEvent* \fIevent\fP;
+.br
+      String* \fIparams\fP;
+.br
+      Cardinal* \fInum_params\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget whose action is about to be dispatched.
+.IP \fIclient_data\fP 1i
+Specifies the application-specific closure that was passed to
+.PN XtAppAddActionHook
+(see below).
+.IP \fIaction_name\fP 1i
+Specifies the name of the action to be dispatched.
+.IP \fIevent\fP 1i
+Specifies the event argument that will be passed to the action routine.
+.IP \fIparams\fP 1i
+Specifies the action parameters that will be passed to the action routine.
+.IP \fInum_params\fP 1i
+Specifies the count of entries in params.
+.LP
+Action hooks should not modify any of the data pointed to by the
+arguments other than the client_data argument.
+.sp
+.LP
+To add an action hook, use
+.PN XtAppAddActionHook .
+.IN "XtAppAddActionHook" "" "@DEF@"
+.FD 0
+XtActionHookId XtAppAddActionHook(\fIapp\fP, \fIproc\fP, \fIclient_data\fP)
+.br
+      XtAppContext \fIapp\fP;
+.br
+      XtActionHookProc \fIproc\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.FN
+.IP \fIapp\fP 1i
+Specifies the application context.
+.IP \fIproc\fP 1i
+Specifies the action hook procedure.
+.IP \fIclient_data\fP 1i
+Specifies application-specific data to be passed to the action hook.
+.LP
+.PN XtAppAddActionHook
+adds the specified procedure to the front of a list
+maintained in the application context.  In the future, when an action
+routine is about to be invoked for any widget in this application
+context, either through the translation manager or via
+.PN XtCallActionProc ,
+the action hook procedures will be called in reverse
+order of registration just prior to invoking the action routine.
+.LP
+Action hook procedures are removed automatically and the
+.PN XtActionHookId s
+destroyed when the application context in which
+they were added is destroyed.
+.LP
+To remove an action hook procedure without destroying the application
+context, use
+.PN XtRemoveActionHook .
+.IN "XtRemoveActionHook" "" "@DEF@"
+.FD 0
+void XtRemoveActionHook(\fIid\fP)
+.br
+      XtActionHookId \fIid\fP;
+.FN
+.IP \fIid\fP 1i
+Specifies the action hook id returned by
+.PN XtAppAddActionHook .
+.LP
+.PN XtRemoveActionHook
+removes the specified action hook procedure from
+the list in which it was registered.
+
 .NH 2
 Translation Tables
 .XS
@@ -210,8 +327,8 @@ Call callbacks and reinvert on left button up
 .LP
 The following illustrates the Command's default translation table:
 .LP
-.IN "Translation Table"
-.Ds 0
+.IN "Translation tables"
+.Ds
 .TA .5i 1.5i
 .ta .5i 1.5i
 static String defaultTranslations =
@@ -275,6 +392,69 @@ Action sequences specify what program or widget actions to take in response to
 incoming X events. An action sequence of action procedure call specifications.
 Each action procedure call consists of the name of an action procedure and a
 parenthesized list of string parameters to pass to that procedure.
+
+.NH 3
+Multi-click Time
+.XS
+\fB\*(SN Multi-click Time\fP
+.XE
+.LP
+Translation table entries may specify actions that are taken when two
+or more identical events occur consecutively separated by a short time
+interval, called the multi-click time.  The multi-click time value may
+be specified as an application resource with name ``multiClickTime'' and
+.IN "multiClickTime" "" "@DEF@"
+.IN "Resources" "multiClickTime"
+class ``MultiClickTime'' and may also be modified dynamically by the
+application.  The multi-click time is unique for each Display and
+is retrieved from the resource database by
+.PN XtDisplayInitialize .
+If no value is specified, the initial value is 200 milliseconds.
+.sp
+.LP
+To set the multi-click time dynamically, use
+.PN XtSetMultiClickTime .
+.IN "XtSetMultiClickTime" "" "@DEF@"
+.FD 0
+void XtSetMultiClickTime(\fIdpy\fP, \fItime\fP)
+.br
+      Display *\fIdisplay\fP;
+.br
+      int \fItime\fP;
+.FN
+.IP \fIdisplay\fP 1i
+Specifies the display connection.
+.IP \fItime\fP 1i
+Specifies the multi-click time in milliseconds.
+.LP
+.PN XtSetMultiClickTime
+sets the time interval used by the translation
+manager to determine when multiple events are interpreted as a
+repeated event.  When a repeat count is specified in a translation
+entry the time interval between arrival of each pair of repeated
+events (e.g. between two
+.PN ButtonPress
+events) must be less than the
+multi-click time in order for the translation actions to be taken. 
+.sp
+.LP
+To read the multi-click time, use
+.PN XtGetMultiClickTime .
+.IN "XtGetMultiClickTime" "" "@DEF@"
+.FD 0
+int XtGetMultiClickTime(\fIdisplay\fP)
+.br
+      Display *\fIdisplay\fP;
+.FN
+.IP \fIdisplay\fP 1i
+Specifies the display connection.
+.LP
+.PN XtGetMultiClickTime
+returns the time in milliseconds that the
+translation manager uses to determine if multiple events are to be
+interpreted as a repeated event for purposes of matching a translation
+entry containing a repeat count.
+
 .NH 2
 Translation Table Management
 .XS
@@ -312,15 +492,17 @@ T}
 T{
 .PN XtAugmentTranslations
 T}	T{
-Nondestructively merges a compiled translation table into a widget's
-compiled translation table.
+Merges a compiled translation table into a widget's
+compiled translation table, ignoring any new translations that
+conflict with existing translations.
 T}
 .sp
 T{
 .PN XtOverrideTranslations
 T}	T{
-Destructively merges a compiled translation table into a widget's
-compiled translation table.
+Merges a compiled translation table into a widget's
+compiled translation table, replacing any existing translations which
+conflict with new translations.
 T}
 .TE
 .sp
@@ -338,7 +520,8 @@ Specifies the translation table to compile.
 .LP
 The
 .PN XtParseTranslationTable
-function compiles the translation table into the opaque internal representation
+function compiles the translation table, provided in the format given
+in Appendix B, into an opaque internal representation
 of type
 .PN XtTranslations .
 Note that if an empty translation table is required for any purpose,
@@ -365,8 +548,11 @@ Specifies the compiled translation table to merge in (must not be NULL).
 .LP
 The
 .PN XtAugmentTranslations
-function nondestructively merges the new translations into the existing widget
-translations.
+function merges the new translations into the existing widget
+translations, ignoring any
+#replace, #augment or #override directive that may have been specified
+in the translation string.  The translation table specified by
+translations is not altered by this process.
 If the new translations contain an event or event sequence that
 already exists in the widget's translations,
 the new translation is ignored.
@@ -390,11 +576,14 @@ Specifies the compiled translation table to merge in (must not be NULL).
 .LP
 The
 .PN XtOverrideTranslations
-function destructively merges the new translations into the existing widget
-translations.
+function merges the new translations into the existing widget
+translations, ignoring any
+#replace, #augment or #override directive that may have been
+specified in the translation string.  The translation table
+specified by translations is not altered by this process.
 If the new translations contain an event or event sequence that
 already exists in the widget's translations,
-the new translation is merged in and override the widget's translation.
+the new translation is merged in and overrides the widget's translation.
 .LP
 To replace a widget's translations completely, use
 .PN XtSetValues
@@ -408,9 +597,22 @@ the string-to-translation-table resource type converter
 allows specifying whether the table should replace, augment, or override any
 existing translation table in the widget. 
 As an option,
-you can specify a number sign (#) as the first character of the table 
-followed by ``replace'' (default), ``augment'', or ``override'' to indicate
-whether to replace, augment, or override any existing table.
+a number sign (#) may be specified as the first character of the table 
+followed by one of the keywords ``replace'', ``augment'', or
+``override'' to indicate
+whether to replace, augment, or override the existing table.
+The replace or merge
+operation is performed during the
+.PN Core
+instance initialization and
+during the
+.PN Core
+set_values invocation.  At instance initialization
+the widget class translation table (if any) is copied into the widget
+prior to a merge operation.  The merge operation produces a new
+translation resource value; if the original table was shared by
+other widgets, they are unaffected.  If no directive is
+specified, replace is assumed.
 .sp
 .LP
 To completely remove existing translations, use
@@ -441,13 +643,18 @@ it is often useful to be able to invoke menu actions from the keyboard.
 The \*(xI provide a facility, called accelerators, that let you 
 accomplish this.
 .IN "Accelerator" "" "@DEF@"
-An accelerator is a translation table that is bound with its
-actions in the context of a particular widget.
-The accelerator table can then be installed on some destination widget.
-When an action in the destination widget would cause an accelerator action 
-to be taken, rather than causing an action in the context of the destination, 
-the actions are executed as though triggered by an action in the accelerator 
-widget.
+An accelerator table is a translation table that is bound with its
+actions in the context of a particular widget, the ``source widget''.
+The accelerator table can then be installed on one or more destination widgets.
+When an event sequence in the destination widget would cause an
+accelerator action to be taken, and if the source widget is sensitive,
+the actions are executed as though triggered by the same event sequence
+in the accelerator source
+widget.  The event is
+passed to the action procedure without modification.  The action
+procedures used within accelerators must not assume that the source
+widget is realized, nor that any fields of the event are in reference
+to the source widget's window if the widget is realized.
 .LP
 Each widget instance contains that widget's exported accelerator table.
 Each class of widget exports a method that takes a
@@ -467,7 +674,7 @@ typedef void (*XtStringProc)(Widget, String);
       String \fIstring\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget that the accelerators are installed on.
+Specifies the source widget that supplied the accelerators.
 .IP \fIstring\fP 1i
 Specifies the string representation of the accelerators for this widget.
 .LP
@@ -498,7 +705,11 @@ Specifies the accelerator table \*(So.
 .LP
 The
 .PN XtParseAcceleratorTable
-function compiles the accelerator table into the opaque internal representation.
+function compiles the accelerator table into an opaque internal representation.
+The client
+should set the XtNaccelerators resource of
+each widget that is to be activated by these translations
+to the returned value.
 .sp
 .LP
 To install accelerators from a widget on another widget, use
@@ -513,13 +724,12 @@ void XtInstallAccelerators(\fIdestination\fP, \fIsource\fP)
 .FN
 .IP \fIdestination\fP 1i
 Specifies the widget on which the accelerators are to be installed.
-.ds Sr widget
 .IP \fIsource\fP 1i
-Specifies the \*(Sr from which the accelerators are to come.
+Specifies the widget from which the accelerators are to come.
 .LP
 The
 .PN XtInstallAccelerators
-function installs the accelerators from source onto destination
+function installs the accelerators resource value from source onto destination
 by augmenting the destination translations with the source accelerators.
 If the source display_accelerator method is non-NULL, 
 .PN XtInstallAccelerators
@@ -544,14 +754,15 @@ void XtInstallAllAccelerators(\fIdestination\fP, \fIsource\fP)
 .FN
 .IP \fIdestination\fP 1i
 Specifies the widget on which the accelerators are to be installed.
-.ds Sr root widget of the widget tree
 .IP \fIsource\fP 1i
-Specifies the \*(Sr from which the accelerators are to come.
+Specifies the root widget of the widget tree
+from which the accelerators are to come.
 .LP
 The
 .PN XtInstallAllAccelerators
 function recursively descends the widget tree rooted at source 
-and installs the accelerators of each widget encountered onto destination.
+and installs the accelerators resource value
+of each widget encountered onto destination.
 A common use is to call
 .PN XtInstallAllAccelerators
 and pass the application main window as the source.
@@ -570,15 +781,15 @@ KeyCode-to-KeySym-translator procedure pointers are of type
 typedef void (*XtKeyProc)(Display *, KeyCode, Modifiers, Modifiers *, \
 KeySym *);
 .br
-    Display *\fIdisplay\fP;
+      Display *\fIdisplay\fP;
 .br
-    KeyCode \fIkeycode\fP;
+      KeyCode \fIkeycode\fP;
 .br
-    Modifiers \fImodifiers\fP;
+      Modifiers \fImodifiers\fP;
 .br
-    Modifiers *\fImodifiers_return\fP;
+      Modifiers *\fImodifiers_return\fP;
 .br
-    KeySym *\fIkeysym_return\fP;
+      KeySym *\fIkeysym_return\fP;
 .FN
 .IP \fIdisplay\fP 1i
 Specifies the display that the KeyCode is from.
@@ -598,15 +809,60 @@ modifiers_return will be a constant that indicates the subset of all
 modifiers that are examined by the key translator.
 .sp
 .LP
+The \*(xI maintain tables internally to map KeyCodes to KeySyms
+for each open display.  Translator procedures and other clients may
+share a single copy of this table to perform the same mapping.
+.LP
+To return a pointer to the KeySym to KeyCode mapping table for a
+particular display, use
+.PN XtGetKeysymTable .
+.IN "XtGetKeysymTable" "" "@DEF@"
+.FD 0
+KeySym *XtGetKeysymTable(\fIdisplay\fP, \fImin_keycode_return\fP, \
+\fIkeysyms_per_keycode_return\fP)
+.br
+      Display *\fIdisplay\fP;
+.br
+      KeyCode *\fImin_keycode_return\fP;
+.br
+      int *\fIkeysyms_per_keycode_return\fP;
+.FN
+.IP \fIdisplay\fP 1i
+Specifies the display whose table is required.
+.IP \fImin_keycode_return\fP 1i
+Returns the minimum KeyCode valid for the display.
+.IP \fIkeysyms_per_keycode_return\fP 1i
+Returns the number of KeySyms stored for each KeyCode.
+.LP
+.PN XtGetKeysymTable
+returns a pointer to the \*(xI' copy of the
+server's KeyCode-to-KeySym table.  This table must not be modified.
+There are keysyms_per_keycode_return KeySyms associated with each
+KeyCode, located in the table with indices starting at index
+.IP
+    (test_keycode - min_keycode) * keysyms_per_keycode_return
+.LP
+for KeyCode test_keycode.  Any entries that have no KeySyms associated
+with them contain the value
+.PN NoSymbol .
+Clients should not cache the KeySym table but should call
+.PN XtGetKeysymTable
+each time the value is
+needed, as the table may change prior to dispatching each event.
+.LP
+For more information on this table, see \fI\*(xL\fP,
+section 7.9, Keyboard Encoding.
+.sp
+.LP
 To register a key translator, use
 .PN XtSetKeyTranslator .
 .IN "XtSetKeyTranslator" "" "@DEF@"
 .FD 0
 void XtSetKeyTranslator(\fIdisplay\fP, \fIproc\fP)
 .br
-    Display *\fIdisplay\fP;
+      Display *\fIdisplay\fP;
 .br
-    XtKeyProc \fIproc\fP;
+      XtKeyProc \fIproc\fP;
 .FN
 .ds Di \ from which to translate the events
 .IP \fIdisplay\fP 1i
@@ -622,8 +878,8 @@ The default translator is
 .PN XtTranslateKey ,
 an
 .PN XtKeyProc
-that uses Shift and Lock modifiers with the interpretations defined
-by the core protocol.
+that uses the Shift, Lock, and group modifiers with the interpretations
+defined in the X Protocol specification.
 It is provided so that new translators can call it to get default 
 KeyCode-to-KeySym translations and so that the default translator 
 can be reinstalled.
@@ -637,15 +893,15 @@ use
 void XtTranslateKeycode(\fIdisplay\fP, \fIkeycode\fP, \fImodifiers\fP, \
 \fImodifiers_return\fP, \fIkeysym_return\fP)
 .br
-    Display *\fIdisplay\fP;
+      Display *\fIdisplay\fP;
 .br
-    KeyCode \fIkeycode\fP;
+      KeyCode \fIkeycode\fP;
 .br
-    Modifiers \fImodifiers\fP;
+      Modifiers \fImodifiers\fP;
 .br
-    Modifiers *\fImodifiers_return\fP;
+      Modifiers *\fImodifiers_return\fP;
 .br
-    KeySym *\fIkeysym_return\fP;
+      KeySym *\fIkeysym_return\fP;
 .FN
 .ds Di \ that the KeyCode is from
 .IP \fIdisplay\fP 1i
@@ -672,14 +928,18 @@ Case converter procedure pointers are of type
 .PN XtCaseProc :
 .IN "XtCaseProc" "" "@DEF@"
 .FD 0
-typedef void (*XtCaseProc)(KeySym *, KeySym *, KeySym *);
+typedef void (*XtCaseProc)(Display*, KeySym, KeySym*, KeySym*);
 .br
-    KeySym *\fIkeysym\fP;
+      Display *\fIdisplay\fP;
 .br
-    KeySym *\fIlower_return\fP;
+      KeySym \fIkeysym\fP;
 .br
-    KeySym *\fIupper_return\fP;
+      KeySym *\fIlower_return\fP;
+.br
+      KeySym *\fIupper_return\fP;
 .FN
+.IP \fIdisplay\fP 1i
+Provides the display connection for which the conversion is required.
 .IP \fIkeysym\fP 1i
 Specifies the KeySym to convert.
 .IP \fIlower_return\fP 1i
@@ -762,4 +1022,264 @@ function calls the appropriate converter and returns the results.
 A user-supplied
 .PN XtKeyProc 
 may need to use this function.
+
+.NH 2
+Obtaining a KeySym in an Action Procedure
+.XS
+\*(SN Obtaining a KeySym in an Action Procedure
+.XE
+.LP
+When an action procedure is invoked on a
+.PN KeyPress
+or
+.PN KeyRelease
+event it often has a need to retrieve the KeySym and modifiers
+corresponding to the event which caused it to be invoked.  In order to
+avoid repeating the processing that was just performed by the
+\*(xI to match the translation entry, the KeySym and modifiers
+are stored for the duration of the action procedure and are made
+available to the client.
+.LP
+To retrieve the KeySym and modifiers that matched the final event
+specification in the translation table entry, use
+.PN XtGetActionKeysym .
+.IN "XtGetActionKeysym" "" "@DEF@"
+.FD 0
+KeySym XtGetActionKeysym(\fIevent\fP, \fImodifiers_return\fP)
+.br
+      XEvent* \fIevent\fP;
+.br
+      Modifiers* \fImodifiers_return\fP;
+.FN
+.IP \fIevent\fP 1.25i
+Specifies the event pointer passed to the action procedure by the \*(xI.
+.IP \fImodifiers_return\fP 1.25i
+Returns the modifiers that caused the match, if non-NULL.
+.LP
+If
+.PN XtGetActionKeysym
+is called after an action procedure has been
+invoked by the \*(xI and before that action procedure returns and
+if the event pointer has the same value as the event pointer passed to
+that action routine, and if the event is a
+.PN KeyPress
+or
+.PN KeyRelease
+event then
+.PN XtGetActionKeysym
+returns the KeySym that matched the final
+event specification in the translation table and, if modifiers_return
+is non-NULL, the modifiers actually used to generate this KeySym;
+otherwise, if the event is a
+.PN KeyPress
+or
+.PN KeyRelease
+event then
+.PN XtGetActionKeysym
+calls
+.PN XtTranslateKeycode
+and returns the results;
+else it returns
+.PN NoSymbol
+and does not examine modifiers_return.
+.LP
+Note that if an action procedure which was invoked by the \*(xI
+invokes a subsequent action procedure (and so on) via
+.PN XtCallActionProc ,
+the nested action procedure may also call
+.PN XtGetActionKeysym
+to retrieve the \*(xI' KeySym and modifiers.
+
+.NH 2
+KeySym-to-KeyCode Conversions
+.XS
+\*(SN KeySym-to-KeyCode Conversions
+.XE
+.LP
+To return the list of KeyCodes that map to a particular KeySym in
+the keyboard mapping table maintained by the \*(xI, use
+.PN XtKeysymToKeycodeList .
+.IN "XtKeysymToKeycodeList" "" "@DEF@"
+.FD 0
+void XtKeysymToKeycodeList(\fIdisplay\fP, \fIkeysym\fP, \fIkeycodes_return\fP, \
+\fIkeycount_return\fP)
+.br
+      Display *\fIdisplay\fP;
+.br
+      KeySym \fIkeysym\fP;
+.br
+      KeyCode **\fIkeycodes_return\fP;
+.br
+      Cardinal *\fIkeycount_return\fP;
+.FN
+.IP \fIdisplay\fP 1.25i
+Specifies the display whose table is required.
+.IP \fIkeysym\fP 1.25i
+Specifies the KeySym for which to search.
+.IP \fIkeycodes_return\fP 1.25i
+Returns a list of KeyCodes that have keysym
+associated with them or NULL if keycount_return is 0.
+.IP \fIkeycount_return\fP 1.25i
+Returns the number of KeyCodes in the keycodes list.
+.LP
+The
+.PN XtKeysymToKeycodeList
+procedure returns all the KeyCodes that have the requested KeySym
+in their entry for the keyboard mapping table associated with display.
+For each entry in the
+table, the first four keysyms (groups 1 and 2) are interpreted as
+specified by the X Protocol specification.  If no KeyCodes map to the
+specified KeySym, keycount_return is 0 and *keycodes_return is NULL.
+.LP
+The caller should free the storage pointed to by keycodes_return using
+.PN XtFree
+when it is no longer useful.  If the caller needs to examine
+the KeyCode-to-KeySym table for a particular KeyCode, it should call
+.PN XtGetKeysymTable .
+
+.NH 2
+Registering Button and Key Grabs For Actions
+.XS
+\*(SN Registering Button and Key Grabs For Actions
+.XE
+.LP
+To register button and key grabs for a widget's window according to the
+event bindings in the widget's translation table, use
+.PN XtRegisterGrabAction .
+.IN "XtRegisterGrabAction" "" "@DEF@"
+.FD 0
+void XtRegisterGrabAction(\fIaction_proc\fP, \fIowner_events\fP, \
+\fIevent_mask\fP, \fIpointer_mode\fP, \fIkeyboard_mode\fP)
+.br
+      XtActionProc \fIaction_proc\fP;
+.br
+      Boolean \fIowner_events\fP;
+.br
+      unsigned int \fIevent_mask\fP;
+.br
+      int \fIpointer_mode\fP, \fIkeyboard_mode\fP;
+.FN
+.IP \fIaction_proc\fP 1i
+Specifies the action procedure to search for in the translation table(s).
+.IP \fIowner_events\fP
+.br
+.ns
+.IP \fIevent_mask\fP
+.br
+.ns
+.IP \fIpointer_mode\fP
+.br
+.ns
+.IP \fIkeyboard_mode\fP 1i
+Specify arguments to
+.PN XtGrabButton
+or 
+.PN XtGrabKey .
+.LP
+.PN XtRegisterGrabAction
+adds the specified action_proc to a list known to
+the translation manager.  When a widget is realized, or when the
+translations of a realized widget or the accelerators installed on a
+realized widget are modified, its translation table and any installed
+accelerators are scanned for action procs on this list.
+If any are invoked on
+.PN ButtonPress
+or
+.PN KeyPress
+events as the only or final event
+in a sequence, the \*(xI will call
+.PN XtGrabButton
+or
+.PN XtGrabKey
+for the widget with every Button or KeyCode which maps to the
+event detail field, passing the specified owner_events, event_mask,
+pointer_mode and keyboard_mode.  For
+.PN ButtonPress
+events, the modifiers
+specified in the grab are determined directly from the translation
+specification and confine_to and cursor are specified as
+.PN None .
+For
+.PN KeyPress
+events, if the translation table entry specifies colon (:) in
+the modifier list, the modifiers are determined by calling the key
+translator procedure registered for the display and calling
+.PN XtGrabKey
+for every combination of standard modifiers which map the keycode to
+the specified event detail keysym, and ORing any modifiers specified in
+the translation table entry, and event_mask is ignored.  If the
+translation table entry does not specify colon in the modifier list,
+the modifiers specified in the grab are those specified in the
+translation table entry only.  For both
+.PN ButtonPress
+and
+.PN KeyPress
+events, don't care modifiers are ignored unless the translation entry
+explicitly specifies ``Any'' in the modifiers field.
+.LP
+If the specified action_proc is already registered for the calling
+process, the new values will replace the previously specified values
+for any widgets which are realized following the call, but existing
+grabs are not altered.
+.LP
+When translations or installed accelerators are modified for a
+realized widget any previous key or button grabs which were registered
+as a result of the old bindings are released if they do not appear in
+the new bindings and are not explicitly grabbed by the client with
+.PN XtGrabKey
+or
+.PN XtGrabButton .
+
+.NH 2
+Invoking Actions Directly
+.XS
+\fB\*(SN Invoking Actions Directly\fP
+.XE
+.LP
+Normally action procedures are invoked by the \*(xI when an
+event or event sequence arrives for a widget. To
+invoke an action procedure directly, without generating
+(or synthesizing) events, use
+.PN XtCallActionProc .
+.IN "XtCallActionProc" "" "@DEF@"
+.FD 0
+void XtCallActionProc(\fIwidget\fP, \fIaction\fP, \fIevent\fP, \fIparams\fP, \
+\fInum_params\fP)
+.br
+      Widget \fIwidget\fP;
+.br
+      String \fIaction\fP;
+.br
+      XEvent *\fIevent\fP;
+.br
+      String *\fIparams\fP;
+.br
+      Cardinal \fInum_params\fP;
+.FN
+.IP \fIwidget\fP 1i
+Specifies the widget in which the action is to be invoked.
+.IP \fIaction\fP 1i
+Specifies the name of the action routine.
+.IP \fIevent\fP 1i
+Specifies the contents of the event argument passed to the action routine.
+.IP \fIparams\fP 1i
+Specifies the contents of the params argument passed to the action routine.
+.IP \fInum_params\fP 1i
+Specifies the count of entries in the params list.
+.LP
+.PN XtCallActionProc
+searches for the named action routine in the same
+manner and order as translation tables are bound as described in
+Section 10.1.2, except that application action tables are searched, if
+necessary, as of the time of the call to
+.PN XtCallActionProc .
+If found,
+the action routine is invoked with the specified widget, event pointer
+and parameters.  It is the responsibility of the caller to ensure that
+the contents of the event, params and num_params arguments are
+appropriate for the specified action routine and, if necessary, that
+the specified widget is realized and/or sensitive.  If the named action
+routine cannot be found,
+.PN XtCallActionProc
+generates a warning message and returns.
 .bp

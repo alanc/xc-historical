@@ -36,7 +36,7 @@ lhs	= ( event | keyseq ) { "," (event | keyseq) }
 keyseq	= """ keychar {keychar} """
 keychar	= [ "^" | "$" | "\\\\" ] <ISO Latin 1 character>
 event	= [modifier_list] "<"event_type">" [ "(" count["+"] ")" ] {detail}
-modifier_list	= ( ["!" | ":"] {modifier} ) | "None"
+modifier_list	= ( ["!"] [":"] {modifier} ) | "None"
 modifier	= ["~"] modifier_name
 count	= ("1" | "2" | "3" | "4" | ...)
 modifier_name	= "@" <keysym> | <see ModifierNames table below>
@@ -44,7 +44,7 @@ event_type	= <see Event Types table below>
 detail	= <event specific details>
 rhs	= { name "(" [params] ")" }
 name	= namechar { namechar }
-namechar	= { "a"-"z" | "A"-"Z" | "0"-"9" | "$" | "_" }
+namechar	= { "a"-"z" | "A"-"Z" | "0"-"9" | "_" | "-" }
 params	= string {"," string}.
 string	= quoted_string | unquoted_string
 quoted_string	= """ {<Latin 1 character>} """
@@ -108,6 +108,12 @@ modifier_list.
 For example, ``:<Key>a'' is distinct from ``:<Key>A'', 
 and ``:Shift<Key>A'' is distinct from ``:<Key>A''.
 .IP \(bu 5
+If both an exclamation point (!) and a colon (:) are specified at
+the beginning of the modifier list, it means that the listed
+modifiers must be in the correct state and that no other modifiers
+except the standard modifiers can be asserted.  Any standard
+modifiers in the event are applied as for colon (:) above.
+.IP \(bu 5
 If a colon (:) is not specified,
 no standard modifiers are applied.
 Then, for example, ``<Key>A'' and ``<Key>a'' are equivalent.
@@ -159,7 +165,8 @@ Button2		Button2 modifier bit
 Button3		Button3 modifier bit
 Button4		Button4 modifier bit
 Button5		Button5 modifier bit
-ANY		Any combination
+None		no modifiers
+Any		Any modifier combination
 .sp 6p
 _
 .TE
@@ -202,7 +209,9 @@ Keysym_return must match the keysym in the translation.
 Event Types
 .LP
 The EventType field describes XEvent types.
-The following are the currently defined EventType values:
+In addition to the standard
+Xlib symbolic event type names, the following event type synonyms
+are defined:
 .TS H
 lw(1.5i) lw(3i).
 _
@@ -424,10 +433,70 @@ T}
 .sp 6p
 _
 .TE
+.sp
 .LP
 The Detail field is event specific and normally corresponds to the
-detail field of an X Event, for example, <Key>A.
-If no detail field is specified, then ANY is assumed.
+detail field of the corresponding event as described
+by the X Protocol specification.  The detail field is supported
+for the following event types:
+.LP
+.TS
+l l .
+_
+.sp 6p
+.TB
+Event	Event Field
+.sp 6p
+_
+.sp 6p
+KeyPress	KeySym from event detail (keycode)
+KeyRelease	KeySym from event detail (keycode)
+ButtonPress	button from event detail
+ButtonRelease	button from event detail
+MotionNotify	event detail
+EnterNotify	event mode (not detail)
+LeaveNotify	event mode (not detail)
+FocusIn	event mode (not detail)
+FocusOut	event mode (not detail)
+PropertyNotify	atom
+SelectionClear	selection
+SelectionRequest	selection
+SelectionNotify	selection
+ClientMessage	type
+MappingNotify	request
+.sp 6p
+_
+.TE
+.LP
+If the event type is
+.PN KeyPress
+or
+.PN KeyRelease ,
+the detail field
+specifies a KeySym name in standard format which is matched against
+the event as described above, for example, <Key>A.
+.LP
+For the
+.PN PropertyNotify ,
+.PN SelectionClear ,
+.PN SelectionRequest ,
+.PN SelectionNotify
+and
+.PN ClientMessage
+events the detail field is specified
+as an atom name; for example, <Message>WM_PROTOCOLS.  For the
+.PN MotionNotify ,
+.PN EnterNotify ,
+.PN LeaveNotify ,
+.PN FocusIn ,
+.PN FocusOut
+and
+.PN MappingNotify
+events either the symbolic constants as defined by the
+X Protocol specification or the numeric values may be specified.
+.LP
+If no detail field is specified, then any value in the event detail is
+accepted as a match.
 .LP
 A keysym can be specified as any of the standard keysym names, 
 a hexadecimal number prefixed with ``0x'' or ``0X'', 
@@ -455,7 +524,7 @@ translationTable	= { production }
 production	= lhs ":" rhs "\\\\n"
 lhs	= event { "," event  }
 event	= [modifier_list] "<"event_type">" [ "(" count["+"] ")" ] {detail}
-modifier_list	= ["!" | ":"] {modifier}
+modifier_list	= ["!"] [":"] {modifier}
 modifier	= ["~"] modifier_name
 count	= ("1" | "2" | "3" | "4" | ...)
 modifier_name	= "@" <keysym> | <see canonical modifier names below>
@@ -463,7 +532,7 @@ event_type	= <see canonical event types below>
 detail	= <event specific details>
 rhs	= { name "(" [params] ")" }
 name	= namechar { namechar }
-namechar	= { "a"-"z" | "A"-"Z" | "0"-"9" | "$" | "_" }
+namechar	= { "a"-"z" | "A"-"Z" | "0"-"9" | "_" | "-" }
 params	= string {"," string}.
 string	= quoted_string
 quoted_string	= """ {<Latin 1 character>} """
@@ -650,8 +719,11 @@ For single click on Button 1 Up with Shift and Meta, use this specification:
 Shift Meta <Btn1Down>, Shift Meta<Btn1Up>: gyre()
 .De
 .IP \(bu 5
-You can use a plus sign (+) to indicate ``for any number of clicks greater
-than or equal to count''; for example:
+For multiple clicks greater or equal to a minimum number,
+a plus sign (+) may be appended to the final (right-most)
+count in an event sequence.  The actions will be invoked
+on the count-th click and each subsequent one arriving
+within the multi-click time interval.  For example:
 .IP
 .Ds
 Shift <Btn1Up>(2+) : and()

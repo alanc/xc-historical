@@ -15,7 +15,7 @@
 Chapter 6 \- Geometry Management 
 .XE
 .LP
-.IN "geometry_manager field"
+.IN "geometry_manager procedure"
 .IN "Geometry Management"
 .IN "Configure Window"
 A widget does not directly control its size and location;
@@ -538,6 +538,20 @@ it should return
 to inform
 .PN XtMakeGeometryRequest
 that it does not need to do the configuration itself.
+.NT
+To remain
+compatible with layout techniques used in older widgets (before
+.PN XtGeometryDone
+was added to the \*(xI), a geometry manager should avoid using
+.PN XtResizeWidget
+or
+.PN XtConfigureWidget
+on the child making
+the request as the layout process of the child may be in an
+intermediate state.  A self-contained widget set may choose this
+alternate geometry management scheme, however, provided that it
+clearly warns widget developers of the compatibility consequences.
+.NE
 .LP
 Although
 .PN XtMakeGeometryRequest
@@ -803,20 +817,23 @@ XtGeometryResult XtQueryGeometry(\fIw\fP, \fIintended\fP, \
 .br
      XtWidgetGeometry *\fIintended\fP, *\fIpreferred_return\fP\^;
 .FN
-.IP \fIw\fP 1i
+.IP \fIw\fP 1.1i
 Specifies the widget.
-.IP \fIintended\fP 1i
+.IP \fIintended\fP 1.1i
 Specifies any changes the parent plans to make to the child's geometry or
 NULL.
-.IP \fIpreferred_return\fP 1i
+.IP \fIpreferred_return\fP 1.1i
 Returns the child widget's preferred geometry.
 .LP
 To discover a child's preferred geometry,
-the child's parent sets any changes
-that it intends to make to the child's geometry in the corresponding fields of
+the child's parent stores the new
+geometry in the corresponding fields of
 the intended structure, sets the corresponding bits in intended.request_mode,
 and calls
 .PN XtQueryGeometry .
+The parent should set only those fields that are important to it so
+the child can determine whether it may be able to attempt changes to
+other fields.
 .LP
 .PN XtQueryGeometry
 clears all bits in the preferred_return->request_mode and checks the
@@ -830,6 +847,19 @@ If the intended argument is NULL,
 replaces it with a pointer to an
 .PN XtWidgetGeometry
 structure with request_mode=0 before calling query_geometry.
+.NT
+If
+.PN XtQueryGeometry
+is called from within a geometry_manager
+procedure for the widget that issued
+.PN XtMakeGeometryRequest
+or
+.PN XtMakeResizeRequest ,
+the results
+are not guaranteed to be consistent with the requested changes.  The
+change request passed to the geometry manager takes precedence over
+the preferred geometry.
+.NE
 .sp
 .LP
 The query_geometry procedure pointer is of type
@@ -854,14 +884,28 @@ to those geometry fields that it cares about).
 If the proposed geometry change is acceptable without modification,
 the query_geometry procedure should return
 .PN XtGeometryYes .
-If at least one field in geometry_return is different
+If at least one field in geometry_return
+with a bit set in geometry_return->request_mode
+is different
 from the corresponding field in request
-or if a bit was set in geometry_return that was not set in request,
+or if a bit was set in geometry_return->request_mode
+that was not set in the request,
 the query_geometry procedure should return
 .PN XtGeometryAlmost .
 If the preferred geometry is identical to the current geometry,
 the query_geometry procedure should return
 .PN XtGeometryNo .
+.NT
+The query_geometry procedure may assume
+that no
+.PN XtMakeResizeRequest
+or
+.PN XtMakeGeometryRequest
+is in-progress
+for the specified widget; that is, it is not required to construct
+a reply consistent with the requested geometry if such a request
+were actually outstanding.
+.NE
 .LP
 After calling the query_geometry procedure
 or if the query_geometry field is NULL,

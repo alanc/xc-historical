@@ -42,12 +42,10 @@ T}
 T{
 .PN TransientShell
 T}	T{
-Used for shell windows that can be manipulated
-by the window manager but are not allowed to be iconified separately
-(for example, Dialog boxes that make no sense without their 
-associated application).
-They are iconified by the window manager only if the
-main application shell is iconified.
+Used for shell windows that have the
+.PN \s-1WM_TRANSIENT_FOR\s+1
+property set. The effect of this property is dependent upon the
+window manager being used.
 T}
 .sp
 T{
@@ -63,6 +61,7 @@ T}	T{
 Used by the window manager to define a separate application instance,
 which is the main top-level window of the application.
 T}
+.IN "ApplicationShell" "" "@DEF@"
 .TE
 .NH 2
 Shell Widget Definitions
@@ -124,10 +123,10 @@ T}
 T{
 .PN TransientShell
 T}	T{
-Used for shell windows that can be
-manipulated by the window manager but that are not allowed
-to be iconified and is a subclass of
-.PN VendorShell .
+Used for shell windows that
+desire the
+.PN \s-1WM_TRANSIENT_FOR\s+1
+property.
 T}
 .sp 6p
 T{
@@ -164,13 +163,17 @@ ShellClassPart Definitions
 \*(SN ShellClassPart Definitions
 .XE
 .LP
-None of the shell widget classes has any additional fields:
+Only the
+.PN Shell
+class has additional class fields, described in a
+.PN ShellClassExtensionRec .
+None of the other shell widget classes have any additional fields:
 .LP
 .KS
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
-typedef struct { caddr_t extension; } ShellClassPart, OverrideShellClassPart,
+typedef struct { XtPointer extension; } ShellClassPart, OverrideShellClassPart,
 	WMShellClassPart, VendorShellClassPart, TransientShellClassPart,
 	TopLevelShellClassPart, ApplicationShellClassPart;
 .De
@@ -178,16 +181,26 @@ typedef struct { caddr_t extension; } ShellClassPart, OverrideShellClassPart,
 .LP
 Shell widget classes have the (empty) shell fields immediately following the
 composite fields:
+.IN "ShellClassExtension" "" "@DEF@"
+.IN "ShellClassExtensionRec" "" "@DEF@"
 .LP
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 4i
+.ta .5i 4i
 typedef struct _ShellClassRec {
 	CoreClassPart core_class;
 	CompositeClassPart composite_class;
 	ShellClassPart shell_class;
 } ShellClassRec;
+
+typedef struct {
+	XtPointer next_extension;	See Section 1.6.12
+	XrmQuark record_type;	See Section 1.6.12
+	long version;	See Section 1.6.12
+	Cardinal record_size;	See Section 1.6.12
+	XtGeometryHandler root_geometry_manager;	See below
+} ShellClassExtensionRec, *ShellClassExtension;
 
 typedef struct _OverrideShellClassRec {
 	CoreClassPart core_class;
@@ -346,6 +359,57 @@ T}
 .sp 6p
 _
 .TE
+.LP
+The symbolic constant for the
+.PN ShellClassExtension
+version id is
+.PN XtShellExtensionVersion
+(see section 1.6.12).
+.IN "XtShellExtensionVersion" "" "@DEF@"
+.LP
+.IN "Shell" "root_geometry_manager"
+.IN "root_geometry_manager procedure"
+The root_geometry_manager field specifies a procedure which acts as
+the parent geometry manager for geometry requests made by shell
+widgets.  When a shell widget calls
+.PN XtMakeGeometryRequest
+or
+.PN XtMakeResizeRequest ,
+the root_geometry_manager procedure is invoked to
+negotiate the new geometry with the window manager.  If the window
+manager permits the new geometry, the root_geometry_manager should
+return
+.PN XtGeometryYes ;
+if the window manager denies the geometry
+request or does not change the window geometry within some timeout
+interval (equal to wm_timeout in the case of WMShells), the
+.IN "Shell" "wm_timeout" "@DEF@"
+.IN "wm_timeout" "" "@DEF@"
+root_geometry_manager should return
+.PN XtGeometryNo .
+If the window manager makes some alternate geometry change, the
+root_geometry_manager may either return
+.PN XtGeometryNo
+and handle the new geometry as a resize, or may return
+.PN XtGeometryAlmost
+in anticipation that the shell will accept the compromise.  If the
+compromise is not accepted, the new size must then be handled as a
+resize.  Subclasses of
+.PN Shell
+which wish to provide their own
+root_geometry_manager are strongly encouraged to use enveloping to
+invoke their superclass' root_geometry_manager under most
+situations, as the window manager interaction may be very complex.
+.LP
+If no
+.PN ShellClassPart
+extension record is declared with record_type
+equal to
+.PN \s-1NULLQUARK\s+1 ,
+then
+.PN XtInheritRootGeometryManager
+is assumed.
+
 .NH 3
 ShellPart Definition
 .XS
@@ -372,6 +436,7 @@ typedef struct {
 	Boolean override_redirect;
 	XtCallbackList popup_callback;
 	XtCallbackList popdown_callback;
+	Visual* visual;
 } ShellPart;
 .De
 .KE
@@ -382,15 +447,28 @@ typedef struct { int empty; } OverrideShellPart;
 .De
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 1i 1.5i 2i
+.ta .5i 1i 1.5i 2i
 typedef struct {
 	String title;
 	int wm_timeout;
 	Boolean wait_for_wm;
 	Boolean transient;
-	XSizeHints size_hints;
+	struct _OldXSizeHints {
+		long flags;
+		int x, y;
+		int width, height;
+		int min_width, min_height;
+		int max_width, max_height;
+		int width_inc, height_inc;
+		struct {
+			int x;
+			int y;
+		} min_aspect, max_aspect;
+	} size_hints;
 	XWMHints wm_hints;
+	int base_width, base_height, win_gravity;
+	Atom title_encoding;
 } WMShellPart;
 
 typedef struct {
@@ -402,11 +480,14 @@ typedef struct {
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
-typedef struct { int empty; } TransientShellPart;
+typedef struct {
+	Widget transient_for;
+} TransientShellPart;
 
 typedef struct {
 	String icon_name;
 	Boolean iconic;
+	Atom icon_name_encoding;
 } TopLevelShellPart;
 .De
 .KE
@@ -496,6 +577,7 @@ typedef struct {
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
+.IN "ApplicationShellWidget" "" "@DEF@"
 typedef  struct {
 	CorePart  core;
 	CompositePart  composite;
@@ -507,6 +589,151 @@ typedef  struct {
 } ApplicationShellRec, *ApplicationShellWidget;
 .De
 .KE
+
+.NH 3
+Shell Resources
+.XS
+\fB\*(SN Shell Resources\fP
+.XE
+.LP
+.IN "ShellWidget" "Resources"
+The resource names, classes and representation types specified in
+the
+.PN Shell
+resource list are:
+.LP
+.TS
+lw(1.5i) lw(1.5i) lw(2.5i) .
+_
+.sp 6p
+Name	Class	Representation
+.sp 6p
+_
+.sp 6p
+XtNallowShellResize	XtCAllowShellResize	XtRBoolean
+XtNcreatePopupChildProc	XtCCreatePopupChildProc	XtRFunction
+XtNgeometry	XtCGeometry	XtRString
+XtNoverrideRedirect	XtCOverrideRedirect	XtRBoolean
+XtNpopdownCallback	XtCCallback	XtRCallback
+XtNpopupCallback	XtCCallback	XtRCallback
+XtNsaveUnder	XtCSaveUnder	XtRBoolean
+XtNvisual	XtCVisual	XtRVisual
+.sp 6p
+_
+.TE
+.LP
+The class resource list for
+.PN OverrideShell
+is empty; no additional
+resources beyond those declared by
+.PN Shell
+are defined for
+.PN OverrideShell .
+.LP
+The resource names, classes and representation types specified in
+the
+.PN WMShell
+.IN "WMShell" "resources"
+resource list are:
+.LP
+.TS
+lw(1.5i) lw(1.5i) lw(2.5i) .
+_
+.sp 6p
+Name	Class	Representation
+.sp 6p
+_
+.sp 6p
+XtNbaseHeight	XtCBaseHeight	XtRInt
+XtNbaseWidth	XtCBaseWidth	XtRInt
+XtNheightInc	XtCHeightInc	XtRInt
+XtNiconMask	XtCIconMask	XtRBitmap
+XtNiconPixmap	XtCIconPixmap	XtRBitmap
+XtNiconWindow	XtCIconWindow	XtRWindow
+XtNiconX	XtCIconX	XtRInt
+XtNiconY	XtCIconY	XtRInt
+XtNinitialState	XtCInitialState	XtRInitialState
+XtNinput	XtCInput	XtRBool
+XtNmaxAspectX	XtCMaxAspectX	XtRInt
+XtNmaxAspectY	XtCMaxAspectY	XtRInt
+XtNmaxHeight	XtCMaxHeight	XtRInt
+XtNmaxWidth	XtCMaxWidth	XtRInt
+XtNminAspectX	XtCMinAspectX	XtRInt
+XtNminAspectY	XtCMinAspectY	XtRInt
+XtNminHeight	XtCMinHeight	XtRInt
+XtNminWidth	XtCMinWidth	XtRInt
+XtNtitle	XtCTitle	XtRString
+XtNtitleEncoding	XtCTitleEncoding	XtRAtom
+XtNtransient	XtCTransient	XtRBoolean
+XtNwaitForWm	XtCWaitForWm	XtRBoolean
+XtNwidthInc	XtCWidthInc	XtRInt
+XtNwinGravity	XtCWinGravity	XtRInt
+XtNwindowGroup	XtCWindowGroup	XtRWindow
+XtNwmTimeout	XtCWmTimeout	XtRInt
+.sp 6p
+_
+.TE
+.LP
+The class resource list for
+.PN VendorShell
+is implementation-defined.
+.LP
+The resource names, classes and representation types specified in the
+.PN TransientShell
+.IN "TransientShell" "resources"
+resource list are:
+.LP
+.TS
+lw(1.5i) lw(1.5i) lw(2.5i) .
+_
+.sp 6p
+Name	Class	Representation
+.sp 6p
+_
+.sp 6p
+XtNtransientFor	XtCTransientFor	XtRWidget
+.sp 6p
+_
+.TE
+.LP
+The resource names, classes and representation types specified in the
+.PN TopLevelShell
+.IN "TopLevelShell" "resources"
+resource list are:
+.LP
+.TS
+lw(1.5i) lw(1.5i) lw(2.5i) .
+_
+.sp 6p
+Name	Class	Representation
+.sp 6p
+_
+.sp 6p
+XtNiconName	XtCIconName	XtRString
+XtNiconNameEncoding	XtCIconNameEncoding	XtRAtom
+XtNiconic	XtCIconic	XtRBoolean
+.sp 6p
+_
+.TE
+.LP
+The resource names, classes and representation types specified in the
+.PN ApplicationShell
+resource list are:
+.LP
+.TS
+lw(1.5i) lw(1.5i) lw(2.5i) .
+_
+.sp 6p
+Name	Class	Representation
+.sp 6p
+_
+.sp 6p
+XtNargc	XtCArgc	XtRInt
+XtNargv	XtCArgv	XtRStringArray
+.sp 6p
+_
+.TE
+
 .NH 3
 ShellPart Default Values
 .XS
@@ -529,9 +756,11 @@ _
 .sp 6p
 geometry	NULL
 create_popup_child_proc	NULL
-grab_kind	(internal)
-spring_loaded	(internal)
-popped_up	(internal)
+grab_kind	(none)
+spring_loaded	(none)
+popped_up	T{
+.PN False
+T}
 allow_shell_resize	T{
 .PN False
 T}
@@ -554,43 +783,73 @@ otherwise
 T}
 popup_callback	NULL
 popdown_callback	NULL
+visual	T{
+.PN CopyFromParent
+T}
 .sp 6p
 _
 .TE
 .LP
 The geometry resource specifies the size and position
 and is usually done only from a command line or a defaults file.
+If the geometry resource is non-NULL when
+.PN WMShell
+is realized, the geometry specification is parsed using
+.PN XWMGeometry
+with a default geometry
+string constructed from the values of x, y, width, height, width_inc
+and height_inc and the size and position flags in the window manager
+size hints are set.  If the geometry specifies an x and/or y position,
+then
+.PN USPosition
+is set.  If the geometry specifies a width and/or height then
+.PN USSize
+is set.  Any fields in the geometry specification
+override the corresponding values in the
+Core x, y, width, and height
+fields.  The geometry string is not copied by any of the \*(xI
+shell classes; a client specifying the string in an ArgList
+or varargs list must ensure
+that the value remains valid until the shell widget is realized.
 For further information,
 see \fI\*(xL\fP.
+.LP
 The create_popup_child_proc is called by the
 .PN XtPopup
 procedure and is usually NULL.
+The grab_kind, spring_loaded,
+and popped_up fields maintain state information as described under
+.PN XtPopup ,
+.PN XtMenuPopup ,
+.PN XtPopdown
+and
+.PN XtMenuPopdown .
 The allow_shell_resize field controls whether or not the widget contained
 by the shell is allowed to try to resize itself.
 If allow_shell_resize is 
 .PN False , 
-any geometry requests always return
-.PN XtGeometryNo .
+any geometry requests made by the shell will always return
+.PN XtGeometryNo
+without interacting with the window manager.
 Setting save_under instructs the server to attempt
 to save the contents of windows obscured by the shell when it is mapped
 and to restore its contents automatically later.
 It is useful for pop-up menus.
 Setting override_redirect determines
 whether or not the shell window is visible to the window manager.
-If it is
-.PN True ,
-the window is immediately mapped without the manager's intervention.
 The popup and popdown callbacks are called during
 .PN XtPopup
 and
 .PN XtPopdown .
-For further information,
+For further information on override_redirect,
 see \fI\*(xL\fP.
 .LP
 The default values for shell fields in
 .PN WMShell
 and its subclasses are:
 .LP
+.IN "XtUnspecifiedShellInt" "" "@DEF@"
+.IN "XtUnspecifiedWindow"
 .TS
 lw(1i) lw(3i).
 _
@@ -613,31 +872,38 @@ for
 .PN False 
 otherwise
 T}
-min_width	None
-min_height	None
-max_width	None
-max_height	None
-width_inc	None
-height_inc	None
-min_aspect_x	None
-min_aspect_y	None
-max_aspect_x	None
-max_aspect_y	None
+min_width	\fBXtUnspecifiedShellInt\fP
+min_height	\fBXtUnspecifiedShellInt\fP
+max_width	\fBXtUnspecifiedShellInt\fP
+max_height	\fBXtUnspecifiedShellInt\fP
+width_inc	\fBXtUnspecifiedShellInt\fP
+height_inc	\fBXtUnspecifiedShellInt\fP
+min_aspect_x	\fBXtUnspecifiedShellInt\fP
+min_aspect_y	\fBXtUnspecifiedShellInt\fP
+max_aspect_x	\fBXtUnspecifiedShellInt\fP
+max_aspect_y	\fBXtUnspecifiedShellInt\fP
 input	T{
 .PN False
 T}
 initial_state	Normal
 icon_pixmap	None
 icon_window	None
-icon_x	None
-icon_y	None
+icon_x	\fBXtUnspecifiedShellInt\fP
+icon_y	\fBXtUnspecifiedShellInt\fP
 icon_mask	None
-window_group	None
+window_group	\fBXtUnspecifiedWindow\fP
+base_width	\fBXtUnspecifiedShellInt\fP
+base_height	\fBXtUnspecifiedShellInt\fP
+win_gravity	\fBXtUnspecifiedShellInt\fP
+title_encoding	\fB\s-1XA_STRING\s+1\fP
 .sp 6p
 _
 .TE
 .LP
-The title is a string to be displayed by the window manager.
+The title and
+title_encoding fields are stored in the
+.PN \s-1WM_NAME\s+1
+property on the shell's window by the shell realize procedures.
 The wm_timeout resource limits the amount of time a shell is to wait for
 confirmation of a geometry request to the window manager.
 If none comes back within that time,
@@ -650,10 +916,84 @@ When the flag is
 .PN False ,
 the shell does not wait for a response but relies on asynchronous 
 notification.
-All other resources are for fields in the window manager hints
+If transient is
+.PN True ,
+the
+.PN \s-1WM_TRANSIENT_FOR\s+1
+property
+will be stored on the shell window with a value as specified below.
+The interpretation of this property is specific to the window manager
+under which the application is run; see the \fI\*(xC\fP for more details.
+All other resources specify fields in the window manager hints
 and the window manager size hints.
-For further information,
-see \fI\*(xL\fP and the \fI\*(xC\fP.
+The realize and set_values procedures of
+.PN WMShell
+set the corresponding flag bits in the
+hints if any of the fields contain non-default values.  In addition, if
+a flag bit is set which refers to a field that has the value
+.PN XtUnspecifiedShellInt ,
+the value of the field is modified as follows:
+.sp
+.Ds 0
+.TA .5i 2.5i
+.ta .5i 2.5i
+	base_width, base_height	0
+	width_inc, height_inc	1
+	max_width, max_height	32767
+	min_width, min_height	1
+	min_aspect_x, min_aspect_y	-1
+	max_aspect_x, max_aspect_y	-1
+	icon_x, icon_y	-1
+	win_gravity	value returned by \fBXWMGeometry\fP if called,
+		else \fBNorthWestGravity\fP
+.De
+.IN "XWMGeometry"
+.LP
+If the shell widget is not the root of a widget hierarchy, then the
+realize and set_values procedures replace the value
+.PN XtUnspecifiedWindow
+.IN "XtUnspecifiedWindow" "" "@DEF@"
+in the window_group field with the window id of the root widget if the
+root widget is realized. The symbolic constant
+.PN XtUnspecifiedWindowGroup
+.IN "XtUnspecifiedWindowGroup" "" "@DEF@"
+may be used to indicate that the window_group hint flag bit is not
+to be set.  If transient is
+.PN True
+and the shell is not a subclass of
+.PN TransientShell
+and window_group is not
+.PN XtUnspecifiedWindowGroup
+the WMShell realize and set_values procedures then store the
+.PN \s-1WM_TRANSIENT_FOR\s+1
+property with the value of window_group.
+For further information, see \fI\*(xL\fP and the \fI\*(xC\fP.
+.LP
+.PN Transient
+shells have the following additional resources:
+.TS
+l l.
+_
+.sp 6p
+Field	Default Value
+.sp 6p
+_
+.sp 6p
+transient_for	NULL
+.sp 6p
+_
+.TE
+.LP
+The realize and set_values procedures of
+.PN TransientShell
+store the
+.PN \s-1WM_TRANSIENT_FOR\s+1
+property on the shell window if transient is
+.PN True .
+If transient_for is non-NULL and the widget specified by
+transient_for is realized, then its window is used as the value of
+.PN \s-1WM_TRANSIENT_FOR\s+1 ;
+otherwise, the value of window_group is used.
 .LP
 .PN TopLevel
 shells have the the following additional resources:
@@ -669,13 +1009,42 @@ icon_name	Shell widget's name
 iconic	T{
 .PN False
 T}
+icon_name_encoding	T{
+.PN \s-1XA_STRING\s+1
+T}
 .sp 6p
 _
 .TE
 .LP
-The icon_name field is the string to display in the shell's icon,
-and the iconic field is an alternative way to set the initialState resource
-to indicate that a shell should be initially displayed as an icon.
+The icon_name
+and icon_name_encoding fields are stored in the
+.PN \s-1WM_ICON_NAME\s+1
+property on the shell's window by the shell realize
+procedures.  The iconic field may be used by a client to request
+that the window manager iconify or deiconify the shell; the
+.PN TopLevelShell
+set_values procedure will send the appropriate
+.PN \s-1WM_CHANGE_STATE\s+1
+message (as specified by the \fI\*(xC\fP)
+if this resource is changed from
+.PN False
+to
+.PN True
+and will call
+.PN XtPopup
+specifying grab_kind as
+.PN XtGrabNone
+if iconic is changed from
+.PN True
+to
+.PN False .
+The iconic resource is also an alternative way to set the initialState resource
+to indicate that a shell should be initially displayed as an icon; the
+.PN TopLevelShell
+initialize procedure will set initialState to
+.PN IconicState
+if iconic is
+.PN True .
 .LP
 .PN Application
 shells have the following additional resources:
@@ -694,6 +1063,6 @@ _
 .TE
 .LP
 The argc and argv fields are used to initialize the standard property
-\s-1WM_COMMAND\s+1.
+.PN \s-1WM_COMMAND\s+1 .
 See the \fI\*(xC\fP for more information.
 .bp

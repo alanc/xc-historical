@@ -27,12 +27,12 @@
 ..
 .\" set up various parameters for the right evironment.
 .\" Your taste may be different.
-.eh '\fBX Intrinsics\fP''\fBX11, Release 3, Oct. 1988\fP'
-.oh '\fBX Intrinsics\fP''\fBX11, Release 3, Oct. 1988\fP'
+.eh '\fBX Toolkit Intrinsics\fP''\fBX11 Release 4, Dec. 1989\fP'
+.oh '\fBX Toolkit Intrinsics\fP''\fBX11 Release 4, Dec. 1989\fP'
 .ef ''\fB % \fP''
 .of ''\fB % \fP''
 .\" Set the page number for the index properly.
-.pn 141
+.pn 199
 .++ A
 .po 1.0i	\" physical offset
 .ta 5iR		\" right alignment tab
