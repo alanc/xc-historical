@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.26 88/01/08 11:18:44 swick Locked $
+* $Header: Atoms.h,v 6.9 88/01/26 16:28:37 asente Exp $
 */
 
 /*
@@ -27,19 +27,15 @@
 #ifndef _XtAtom_h_
 #define _XtAtom_h_
 
-#ifndef VMS
-#include <X11/Xresource.h>
-#else
-#include Xresource
-#endif
-
 /* Resource names */
 
 #define XtNallowHoriz		"allowHoriz"
 #define XtNallowVert		"allowVert"
 #define XtNancestorSensitive	"ancestorSensitive"
 #define XtNbackground		"background"
+#define XtNbackgroundPixmap     "backgroundPixmap"
 #define XtNborder		"border"
+#define XtNborderPixmap		"borderPixmap"
 #define XtNborderWidth		"borderWidth"
 #define XtNcallback		"callback"
 #define XtNdepth		"depth"
@@ -48,6 +44,8 @@
 #define XtNfont			"font"
 #define XtNforceBars		"forceBars"
 #define XtNforeground		"foreground"
+#define XtNfunction		"function"
+#define XtNgripIndent		"gripIndent"
 #define XtNheight		"height"
 #define XtNhSpace		"hSpace"
 #define XtNindex		"index"
@@ -58,7 +56,6 @@
 #define XtNinternalHeight	"internalHeight"
 #define XtNinternalWidth	"internalWidth"
 #define XtNjustify		"justify"
-#define XtNgripIndent		"gripIndent"
 #define XtNlabel		"label"
 #define XtNlength		"length"
 #define XtNlowerRight		"lowerRight"
@@ -68,6 +65,9 @@
 #define XtNname			"name"
 #define XtNnotify		"notify"
 #define XtNorientation		"orientation"
+#define XtNparameter		"parameter"
+#define XtNpopupCallback	"popupCallback"
+#define XtNpopdownCallback	"popdownCallback"
 #define XtNreverseVideo		"reverseVideo"
 #define XtNscrollProc		"scrollProc"
 #define XtNscrollDCursor	"scrollDownCursor"
@@ -93,7 +93,6 @@
 #define XtNtranslations		"translations"
 #define XtNuseBottom		"useBottom"
 #define XtNuseRight		"useRight"
-
 #define XtNvalue		"value"
 #define XtNvSpace		"vSpace"
 #define XtNwidth		"width"
@@ -101,11 +100,9 @@
 #define XtNx			"x"
 #define XtNy			"y"
 
-
 /* Class types */ 
 
 #define XtCBackground		"Background"
-#define XtCBitmap		"Bitmap"
 #define XtCBoolean		"Boolean"
 #define XtCBorderColor		"BorderColor"
 #define XtCBorderWidth		"BorderWidth"
@@ -113,15 +110,13 @@
 #define XtCColor		"Color"
 #define XtCCursor		"Cursor"
 #define XtCDepth		"Depth"
-#define XtCDialogButtons	"DialogButtons"
-#define XtCDialogValue		"DialogValue"
 #define XtCEditType		"EditType"
 #define XtCFile			"File"
 #define XtCFont			"Font"
 #define XtCForeground		"Foreground"
 #define XtCFraction		"Fraction"
+#define XtCFunction		"Function"
 #define XtCHeight		"Height"
-#define XtCHighlight		"Highlight"
 #define XtCHSpace		"HSpace"
 #define XtCIndex		"Index"
 #define XtCInterval		"Interval"
@@ -135,9 +130,8 @@
 #define XtCMenuEntry		"MenuEntry"
 #define XtCMin			"Min"
 #define XtCNotify		"Notify"
-#define XtCOff			"Off"
-#define XtCOn			"On"
 #define XtCOrientation		"Orientation"
+#define XtCParameter		"Parameter"
 #define XtCPixmap		"Pixmap"
 #define XtCPosition		"Position"
 #define XtCScrollProc		"ScrollProc"
@@ -154,14 +148,11 @@
 #define XtCString		"String"
 #define XtCTextOptions		"TextOptions"
 #define XtCTextPosition		"TextPosition"
-#define XtCTextSelection	"TextSelection"
 #define XtCTextSink		"TextSink"
 #define XtCTextSource		"TextSource"
 #define XtCThickness		"Thickness"
 #define XtCThumb		"Thumb"
-#define XtCToggle		"Toggle"
 #define XtCTranslations		"Translations"
-#define XtCUnhighlight		"Unhighlight"
 #define XtCValue		"Value"
 #define XtCVSpace		"VSpace"
 #define XtCWidget		"Widget"
@@ -170,33 +161,43 @@
 #define XtCX			"X"
 #define XtCY			"Y"
 
-
 /* Representation types */
-#define XtRBoolean		XrmRBoolean
+
+#define XtRBoolean		"Boolean"
+#define XtRLongBoolean		"LongBoolean"
 #define XtRCallback		"Callback"
-#define XtRColor		XrmRColor
-#define XtRCursor		XrmRCursor
-#define XtRDims			XrmRDims
-#define XtRDisplay		XrmRDisplay
+#define XtRColor		"Color"
+#define XtRCursor		"Cursor"
+#define XtRDefaultColor         "DefaultColor"
+#define XtRDisplay		"Display"
 #define XtREditMode		"EditMode"
-#define XtRFile			XrmRFile
-#define XtRFloat		XrmRFloat
-#define XtRFont			XrmRFont
-#define XtRFontStruct		XrmRFontStruct
+#define XtRFile			"File"
+#define XtRFloat		"Float"
+#define XtRFont			"Font"
+#define XtRFontStruct		"FontStruct"
 #define XtRFunction		"Function"
+#define XtRGeometry		"Geometry"
+#define XtRInt			"Int"
 #define XtRJustify		"Justify"
-#define XtRGeometry		XrmRGeometry
-#define XtRInt			XrmRInt
 #define XtROrientation		"Orientation"
-#define XtRPixel		XrmRPixel
-#define XtRPixmap		XrmRPixmap
-#define XtRPointer		XrmRPointer
-#define XtRString               XrmRString
+#define XtRPixel		"Pixel"
+#define XtRPixmap		"Pixmap"
+#define XtRPointer		"Pointer"
+#define XtRString		"String"
 #define XtRStringTable		"StringTable"
-#define XtRTextPosition 	"XtTextPosition"
 #define XtRTranslationTable     "TranslationTable"
 #define XtRWidget		"Widget"
-#define XtRWindow		XrmRWindow
+#define XtRWindow		"Window"
+
+
+/* Boolean enumeration constants */
+
+#define XtEoff			"off"
+#define XtEfalse		"false"
+#define XtEno			"no"
+#define XtEon			"on"
+#define XtEtrue			"true"
+#define XtEyes			"yes"
 
 /* Orientation enumeration constants */
 
