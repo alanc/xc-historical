@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: LocBitmap.c,v 1.1 89/08/18 13:02:47 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
     Screen *screen;
     char *name;
     char *srcname;			/* RETURN */
-    int srcnamelen;			/* RETURN */
+    int srcnamelen;
     int *widthp, *heightp, *xhotp, *yhotp;  /* RETURN */
 {
     Display *dpy = DisplayOfScreen (screen);
@@ -75,6 +75,10 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 	    /*
 	     * XXX - warning, derefing Display * until XDisplayDatabase
 	     */
+	    if (!dpy->db) {
+		/* what a hack; need to initialize dpy->db */
+		(void) XGetDefault (dpy, "", "");
+	    }
 	    if (XrmQGetResource (dpy->db, xrm_name, xrm_class, 
 				 &rep_type, &value) &&
 		rep_type == XrmStringToQuark(XtRString)) {
