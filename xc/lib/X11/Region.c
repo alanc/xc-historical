@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.30 91/01/12 11:21:24 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.31 91/01/26 14:02:09 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -462,12 +462,14 @@ miRegionCopy(dstrgn, rgn)
     }
 }
 
+#ifdef notdef
+
 /*
  *  combinRegs(newReg, reg1, reg2)
  *    if one region is above or below the other.
 */ 
 
-/* static void*/
+static void
 combineRegs(newReg, reg1, reg2)
     register Region newReg;
     Region reg1;
@@ -510,7 +512,6 @@ combineRegs(newReg, reg1, reg2)
     Xfree((char *)tempReg);
 }
 
-#ifdef notdef
 /*
  *  QuickCheck checks to see if it does not have to go through all the
  *  the ugly code for the region call.  It returns 1 if it did all
@@ -546,9 +547,7 @@ QuickCheck(newReg, reg1, reg2)
     }
     return(FALSE);
 }
-#endif
 
-#ifdef notdef
 /*   TopRects(rects, reg1, reg2)
  * N.B. We now assume that reg1 and reg2 intersect.  Therefore we are
  * NOT checking in the two while loops for stepping off the end of the
