@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.8 89/11/25 14:55:28 rws Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.9 90/01/31 12:31:49 keith Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -26,6 +26,38 @@ without any express or implied warranty.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
+
+#if BITMAP_BIT_ORDER == MSBFirst
+#define intToCoord(i,x,y)   (((x) = ((i) >> 16)), ((y) = ((i) & 0xFFFF)))
+#define coordToInt(x,y)	(((x) << 16) | (y))
+#define intToX(i)	((i) >> 16)
+#define intToY(i)	((i) & 0xFFFF)
+#else
+#define intToCoord(i,x,y)   (((x) = ((i) & 0xFFFF)), ((y) = ((i) >> 16)))
+#define coordToInt(x,y)	(((y) << 16) | (x))
+#define intToX(i)	((i) & 0xFFFF)
+#define intToY(i)	((i) >> 16)
+#endif
+
+#define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
+
+#define PointLoop(fill) { \
+    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip); \
+	 --nbox >= 0; \
+	 pbox++) \
+    { \
+	c1 = *((int *) &pbox->x1) - off; \
+	c2 = *((int *) &pbox->x2) - off; \
+	for (ppt = (int *) pptInit, i = npt; --i >= 0;) \
+	{ \
+	    pt = *ppt++; \
+	    if (!isClipped(pt,c1,c2)) { \
+		fill \
+	    } \
+	} \
+    } \
+}
+
 void
 cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
@@ -34,21 +66,29 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int npt;
     xPoint *pptInit;
 {
-    register int *addr;
-    register xPoint *ppt;
-    RegionPtr cclip;
-    int nbox;
-    register int x, y;
-    register int i;
-    int *addrl;
-    register int nlwidth;
+    register int    pt;
+    register int    c1, c2;
+    register int    ClipMask = 0x80008000;
+    register long   xor;
+#if PPW == 4
+    register char   *addrb;
+    register int    nbwidth;
+    char	    *addrbt;
+#else
+    register long    *addrl;
+    register int    nlwidth;
+    int		    *addrlt;
+#endif
+    register long   *ppt;
+    RegionPtr	    cclip;
+    int		    nbox;
+    register int    i;
     register BoxPtr pbox;
-    unsigned long   xor, and;
-    int rop = pGC->alu;
-    unsigned long mask;
-    register int x1, x2, y1, y2;
-    register int xoff, yoff;
+    long	    and;
+    int		    rop = pGC->alu;
+    int		    off;
     cfbPrivGCPtr    devPriv;
+    xPoint	    *pptPrev;
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     rop = devPriv->rop;
@@ -58,126 +98,38 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     xor = devPriv->xor;
     if ((mode == CoordModePrevious) && (npt > 1))
     {
-	for (ppt = pptInit + 1, i = npt - 1; --i >= 0; ppt++)
+	for (pptPrev = pptInit + 1, i = npt - 1; --i >= 0; pptPrev++)
 	{
-	    ppt->x += (ppt-1)->x;
-	    ppt->y += (ppt-1)->y;
+	    pptPrev->x += (pptPrev-1)->x;
+	    pptPrev->y += (pptPrev-1)->y;
 	}
     }
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
-    }
-    else
-    {
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind);
-    }
-    xoff = pDrawable->x;
-    yoff = pDrawable->y;
+    off = coordToInt(pDrawable->x, pDrawable->y);
 #if PPW == 4
+    cfbGetByteWidthAndPointer(pDrawable, nbwidth, addrb);
+    addrb = addrb + pDrawable->y * nbwidth + pDrawable->x;
     if (rop == GXcopy)
     {
-	addr = addrl;
-	if (!(nlwidth & (nlwidth - 1)))
+	if (!(nbwidth & (nbwidth - 1)))
 	{
-	    nlwidth = ffs(nlwidth) - 1;
-	    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
-		 --nbox >= 0;
-		 pbox++)
-	    {
-		x1 = pbox->x1;
-		y1 = pbox->y1;
-		x2 = pbox->x2;
-		y2 = pbox->y2;
-		for (ppt = pptInit, i = npt; --i >= 0; ppt++)
-		{
-		    x = ppt->x + xoff;
-		    y = ppt->y + yoff;
-		    if ((x >= x1) && (x < x2) &&
-			(y >= y1) && (y < y2))
-		    {
-			*((char *)(addr) + (y << nlwidth) + x) = xor;
-		    }
-		}
-	    }
+	    nbwidth = ffs(nbwidth) - 1;
+	    PointLoop(*(addrb + (intToY(pt) << nbwidth) + intToX(pt)) = xor;)
 	}
 	else
 	{
-	    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
-		 --nbox >= 0;
-		 pbox++)
-	    {
-		x1 = pbox->x1;
-		y1 = pbox->y1;
-		x2 = pbox->x2;
-		y2 = pbox->y2;
-		for (ppt = pptInit, i = npt; --i >= 0; ppt++)
-		{
-		    x = ppt->x + xoff;
-		    y = ppt->y + yoff;
-		    if ((x >= x1) && (x < x2) &&
-			(y >= y1) && (y < y2))
-		    {
-			*((char *)(addr) + (y * nlwidth) + x) = xor;
-		    }
-		}
-	    }
+	    PointLoop(*(addrb + intToY(pt) * nbwidth + intToX(pt)) = xor;)
 	}
     }
     else
     {
-	register char	*addrb;
-
 	and = devPriv->and;
-	addr = addrl;
-	for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
-	     --nbox >= 0;
-	     pbox++)
-	{
-	    x1 = pbox->x1;
-	    y1 = pbox->y1;
-	    x2 = pbox->x2;
-	    y2 = pbox->y2;
-	    for (ppt = pptInit, i = npt; --i >= 0; ppt++)
-	    {
-		x = ppt->x + xoff;
-		y = ppt->y + yoff;
-		if ((x >= x1) && (x < x2) &&
-		    (y >= y1) && (y < y2))
-		{
-		    addrb = (char *)(addr) + (y * nlwidth) + x;
-		    *addrb = DoRRop (*addrb, and, xor);
-		}
-	    }
-	}
+	PointLoop(  addrbt = addrb + intToY(pt) * nbwidth + intToX(pt);
+		    *addrbt = DoRRop (*addrbt, and, xor);)
     }
 #else
-    nlwidth >>= 2;
+    cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl);
     and = devPriv->and;
-    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
-	 --nbox >= 0;
-	 pbox++)
-    {
-	x1 = pbox->x1;
-	y1 = pbox->y1;
-	x2 = pbox->x2;
-	y2 = pbox->y2;
-	for (ppt = pptInit, i = npt; --i >= 0; ppt++)
-	{
-	    x = ppt->x + xoff;
-	    y = ppt->y + yoff;
-	    if ((x >= x1) && (x < x2) &&
-		(y >= y1) && (y < y2))
-	    {
-		addr = addrl + (y * nlwidth) + (x >> PWSH);
-		mask = cfbmask[x & PIM];
-		*addr = DoMaskRRop (*addr, and, xor, mask);
-	    }
-	}
-    }
+    PointLoop(	addrlt = addrl + intToY(pt) * nlwidth + intToX(pt);
+		*addrlt = DoRRop (*addrlt, and, xor); )
 #endif
 }
