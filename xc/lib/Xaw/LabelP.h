@@ -1,4 +1,4 @@
-/* $Header: LabelPrivate.h,v 1.1 87/08/27 16:55:13 haynes Exp $ */
+/* $Header: LabelPrivate.h,v 1.2 87/08/28 15:19:38 haynes Exp $ */
 
 /*
  *	sccsid:	%W%	%G%
@@ -72,7 +72,22 @@ typedef struct {
     unsigned int labelLen;
 } Label;
 
+
+/****************************************************************
+ *
+ * Full instance record declaration
+ *
+ ****************************************************************/
+
+typedef struct {
+    Core	core;
+    Label	label;
+} LabelData, *LabelWidget;
+
 /* $Log:	LabelPrivate.h,v $
+ * Revision 1.2  87/08/28  15:19:38  haynes
+ * changed how resizing works
+ * 
  * Revision 1.1  87/08/27  16:55:13  haynes
  * Initial revision
  *  */
