@@ -24,7 +24,6 @@ HEADERS = \
 	Label.h \
 	Load.h \
 	Misc.h \
-	Popup.h \
 	Scroll.h \
 	Shell.h \
 	Text.h \
