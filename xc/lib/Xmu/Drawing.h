@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Drawing.h,v 1.7 90/04/03 09:42:31 swick Exp $
+ * $XConsortium: Drawing.h,v 1.8 90/12/14 19:36:39 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -106,7 +106,7 @@ extern void XmuReleaseStippledPixmap(
 extern Pixmap XmuLocateBitmapFile(
 #if NeedFunctionPrototypes
     Screen*		/* screen */,
-    char*		/* name */,
+    _Xconst char*	/* name */,
     char*		/* srcname_return */,
     int 		/* srcnamelen */,
     int*		/* width_return */,
@@ -119,7 +119,7 @@ extern Pixmap XmuLocateBitmapFile(
 extern Pixmap XmuLocatePixmapFile(
 #if NeedFunctionPrototypes
     Screen*		/* screen */,
-    char*		/* name */,
+    _Xconst char*	/* name */,
     unsigned long	/* fore */,
     unsigned long	/* back */,
     unsigned int	/* depth */,
@@ -145,7 +145,7 @@ extern int XmuReadBitmapData(
 
 extern int XmuReadBitmapDataFromFile(
 #if NeedFunctionPrototypes
-    char*		/* filename */,
+    _Xconst char*	/* filename */,
     unsigned int*	/* width_return */,
     unsigned int*	/* height_return */,
     unsigned char**	/* datap_return */,
