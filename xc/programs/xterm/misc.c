@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.8 88/02/17 15:48:08 jim Exp $
+ *	$Header: misc.c,v 1.9 88/02/17 17:48:48 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.8 88/02/17 15:48:08 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.9 88/02/17 17:48:48 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -100,7 +100,9 @@ caddr_t eventdata;
 {
     register TScreen *screen = &term->screen;
 
+#ifdef ACTIVEWINDOWINPUTONLY
     if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
+#endif
 	Input (&term->keyboard, screen, event);
 }
 
@@ -112,11 +114,11 @@ caddr_t eventdata;
 {
     register TScreen *screen = &term->screen;
 
-    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) {
-	if (((event->detail) != NotifyInferior) && event->focus) {
-		selectwindow(screen, INWINDOW);
-	}
-    }
+#ifdef ACTIVEWINDOWINPUTONLY
+    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) 
+#endif
+      if (((event->detail) != NotifyInferior) && event->focus) 
+	selectwindow(screen, INWINDOW);
 }
 
 /*ARGSUSED*/
@@ -127,11 +129,12 @@ caddr_t eventdata;
 {
     register TScreen *screen = &term->screen;
 
-    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) {
-	if (((event->detail) != NotifyInferior) && event->focus) {
-	    unselectwindow(screen, INWINDOW);
-	}
-    }
+#ifdef ACTIVEWINDOWINPUTONLY
+    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) 
+#endif
+      if (((event->detail) != NotifyInferior) && event->focus) 
+	unselectwindow(screen, INWINDOW);
+
 }
 
 
