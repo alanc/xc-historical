@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.26 89/12/06 17:20:38 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.27 89/12/08 16:49:43 converse Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,6 +52,7 @@ SOFTWARE.
 #include "Xutil.h"
 #include "region.h"
 #include "poly.h"
+#include <X11/Xfuncs.h>
 
 #ifdef DEBUG
 #define assert(expr) {if (!(expr)) FatalError(\
@@ -431,7 +432,6 @@ XIntersectRegion(reg1, reg2, newReg)
     return(1);
 }
 
-void bcopy();
 static void
 miRegionCopy(dstrgn, rgn)
     register Region dstrgn;
