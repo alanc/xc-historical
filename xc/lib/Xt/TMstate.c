@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.36 87/12/08 11:02:44 rws Locked $";
+static char rcsid[] = "$Header: TMstate.c,v 1.37 87/12/20 14:51:21 swick Locked $";
 #endif lint
 
 /*
@@ -473,7 +473,7 @@ static int GetEventIndex(stateTable, event)
         if (EqualEvents(&eventTbl[index].event, &event->event)) return(index);
 
     if (stateTable->numEvents == stateTable->eventTblSize) {
-        stateTable->eventTblSize += 100;
+        stateTable->eventTblSize += 10;
 	stateTable->eventObjTbl = (EventObjPtr) XtRealloc(
 	    (char *)stateTable->eventObjTbl, 
 	    stateTable->eventTblSize*sizeof(EventObjRec));
