@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.178 94/02/08 14:55:06 gildea Exp $ */
+/* $XConsortium: connection.c,v 1.179 94/02/11 10:58:45 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -559,7 +559,6 @@ AllocNewConnection (trans_conn, fd, Read, Writev, Close)
 	    BITSET(AllSockets, fd);
 	}
     }
-    oc->vfd = client->index;	/* XXX better be no larger than MAX_FDS */
     client->public.readRequest = StandardReadRequestFromClient;
     client->public.writeToClient = StandardWriteToClient;
     client->public.requestLength = StandardRequestLength;

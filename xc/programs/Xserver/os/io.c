@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.80 94/02/04 19:35:09 dpw Exp $ */
+/* $XConsortium: io.c,v 1.82 94/02/10 15:24:16 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -688,9 +688,6 @@ InsertFakeRequest(client, data, count)
 	    return FALSE;
 	oc->input = oci;
     }
-#ifdef LBX
-    oc->vfd = client->index;
-#endif
     oci->bufptr += oci->lenLastReq;
     oci->lenLastReq = 0;
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
