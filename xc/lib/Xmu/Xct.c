@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.14 90/12/26 16:28:55 rws Exp $
+ * $XConsortium: Xct.c,v 1.15 91/05/11 16:54:17 gildea Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -442,7 +442,7 @@ XctNextItem(data)
 		}
 		break;
 	    case 0x25:
-		if ((data->item_length == 4) && (data->item[2] = 0x2f) &&
+		if ((data->item_length == 4) && (data->item[2] == 0x2f) &&
 		    (c <= 0x3f)) {
 		    if ((AmountLeft(priv) < 2) ||
 			(priv->ptr[0] < 0x80) || (priv->ptr[1] < 0x80))
