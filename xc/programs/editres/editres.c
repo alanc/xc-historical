@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.15 92/08/12 17:49:10 converse Exp $
+ * $XConsortium: editres.c,v 1.16 93/04/28 14:31:29 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -102,7 +102,7 @@ char **argv;
 	Syntax(app_con, argv[0]);
 
     SetApplicationActions(app_con);
-    XtGetApplicationResources(global_toplevel, (caddr_t) &global_resources, 
+    XtGetApplicationResources(global_toplevel, (XtPointer) &global_resources, 
 			      editres_resources, XtNumber(editres_resources),
 			      NULL, (Cardinal) 0);
     global_resources.allocated_save_resources_file = FALSE;
