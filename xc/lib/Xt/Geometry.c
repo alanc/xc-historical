@@ -46,7 +46,7 @@ void XtResizeWindow(w)
 } /* XtResizeWindow */
 
 
-void XtResizeWidget(w, height, width, borderWidth)
+void XtResizeWidget(w, width, height, borderWidth)
     Widget w;
     Dimension height, width, borderWidth;
 {
