@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.72 88/11/29 14:24:20 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.73 89/02/01 18:10:38 rws Exp $
  */
 
 #include "copyright.h"
@@ -322,6 +322,7 @@ Display *XOpenDisplay (display)
 	vendorlen = u.setup->nbytesVendor;
 	u.setup += 1;	/* can't touch information in XConnSetup anymore..*/
 	(void) strncpy(dpy->vendor, u.vendor, vendorlen);
+	dpy->vendor[vendorlen] = '\0';
 	u.vendor += (vendorlen + 3) & ~3;
 /*
  * Now iterate down setup information.....
