@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.14 91/04/14 13:07:32 rws Exp $ */
+/* $Header: XIproto.h,v 1.15 91/05/05 16:23:22 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -48,7 +48,7 @@ SOFTWARE.
 #define numInputClasses 7
 
 #define IEVENTS		15
-#define IERRORS		4
+#define IERRORS		5
 
 #define CLIENT_REQ		1
 
