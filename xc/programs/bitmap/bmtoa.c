@@ -1,7 +1,7 @@
 /*
  * bmtoa - bitmap to ascii filter
  *
- * $XConsortium: bmtoa.c,v 1.3 91/10/21 14:31:42 eswu Exp $
+ * $XConsortium: bmtoa.c,v 1.4 93/09/11 15:35:23 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -45,7 +45,11 @@ static void usage ()
 
 static char *copy_stdin ()
 {
+#ifdef WIN32
+    static char tmpfilename[] = "/temp/bmtoa.XXXXXX";
+#else
     static char tmpfilename[] = "/tmp/bmtoa.XXXXXX";
+#endif
     char buf[BUFSIZ];
     FILE *fp;
     int nread, nwritten;
