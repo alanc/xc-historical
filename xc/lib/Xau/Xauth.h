@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.2 88/12/08 16:40:36 keith Exp $
+ * $XConsortium: Xauth.h,v 1.3 89/06/16 18:06:38 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,52 +18,126 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+#ifndef NeedFunctionPrototypes
+#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
+#define NeedFunctionPrototypes 1
+#else
+#define NeedFunctionPrototypes 0
+#endif /* __STDC__ */
+#endif /* NeedFunctionPrototypes */
+
+#ifndef NeedWidePrototypes
+#if defined(NARROWPROTO)
+#define NeedWidePrototypes 0
+#else
+#define NeedWidePrototypes 1		/* default to make interropt. easier */
+#endif
+#endif
+
 # include   <stdio.h>
 
-# define FamilyLocal (256)	/* not part of X standard (i.e. X.h) yet */
+# define FamilyLocal (256)	/* not part of X standard (i.e. X.h) */
 # define FamilyWild  (65535)
 
+#if NeedFunctionPrototypes
 typedef struct xauth {
     unsigned short   family;
     unsigned short   address_length;
-    char    *address;
+    const char 	    *address;
     unsigned short   number_length;
-    char    *number;
+    const char 	    *number;
     unsigned short   name_length;
-    char    *name;
+    const char 	    *name;
     unsigned short   data_length;
-    char    *data;
+    const char	    *data;
 } Xauth;
-
-#ifdef __STDC__
-extern char *XauFileName	();
-Xauth	    *XauReadAuth	(FILE   *auth_file);
-int	    XauLockAuth		(char   *file_name,	int	retries, 
-				 int    timeout,	long	dead);
-int	    XauUnlockAuth	(char   *file_name);
-int	    XauWriteAuth	(FILE   *auth_file,	Xauth	*auth);
-Xauth	    *XauGetAuthByName	(char	*display_name);
-/*
- * the function is not declared ANSI style, so the old-style
- * default promotion rules must be used in these prototypes
- */
-Xauth	    *XauGetAuthByAddr	(/*unsigned short*/ int	    family, 
-			         /*unsigned short*/ int	    address_length,
-				 char	*address, 
-			         /*unsigned short*/ int	    number_length,
-				 char	*number,
-				 /*unsigned short*/ int name_length,
-				 char	*name);
-void	    XauDisposeAuth	(Xauth	*auth);
 #else
-extern char *XauFileName	();
-Xauth	    *XauReadAuth	();
-int	    XauLockAuth		();
-int	    XauUnlockAuth	();
-int	    XauWriteAuth	();
-Xauth	    *XauGetAuthByName	();
-Xauth	    *XauGetAuthByAddr	();
-void	    XauDisposeAuth	();
+typedef struct xauth {
+    unsigned short   family;
+    unsigned short   address_length;
+    char    	    *address;
+    unsigned short   number_length;
+    char    	    *number;
+    unsigned short   name_length;
+    char    	    *name;
+    unsigned short   data_length;
+    char   	    *data;
+} Xauth;
+#endif
+
+#ifdef __cplusplus			/* do not leave open across includes */
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+char *XauFileName();
+
+Xauth *XauReadAuth(
+#if NeedFunctionPrototypes
+FILE*	/* auth_file */
+#endif
+);
+
+int XauLockAuth(
+#if NeedFunctionPrototypes
+const char*	/* file_name */,
+int		/* retries */,
+int		/* timeout */,
+long		/* dead */
+#endif
+);
+
+int XauUnlockAuth(
+#if NeedFunctionPrototypes
+const char*	/* file_name */
+#endif
+);
+
+int XauWriteAuth(
+#if NeedFunctionPrototypes
+FILE*		/* auth_file */,
+Xauth*		/* auth */
+#endif
+);
+
+Xauth *XauGetAuthByName(
+#if NeedFunctionPrototypes
+const char*	/* display_name */
+#endif
+);
+
+Xauth *XauGetAuthByAddr(
+#if NeedFunctionPrototypes
+#if NeedWidePrototypes
+unsigned int	/* family */,
+unsigned int	/* address_length */,
+#else
+unsigned short	/* family */,
+unsigned short	/* address_length */,
+#endif
+const char*	/* address */,
+#if NeedWidePrototypes
+unsigned int	/* number_length */,
+#else
+unsigned short	/* number_length */,
+#endif
+const char*	/* number */,
+#if NeedWidePrototypes
+unsigned int	/* name_length */,
+#else
+unsigned short	/* name_length */,
+#endif
+const char*	/* name */
+#endif
+);
+
+void XauDisposeAuth(
+#if NeedFunctionPrototypes
+Xauth*		/* auth */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
 #endif
 
 /* Return values from XauLockAuth */

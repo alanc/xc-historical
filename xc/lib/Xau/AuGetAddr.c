@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetAddr.c,v 1.7 89/11/19 13:50:58 rws Exp $
+ * $XConsortium: AuGetAddr.c,v 1.8 89/12/06 19:56:23 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -32,6 +32,30 @@ register int	len;
     return 1;
 }
 
+#if NeedFunctionPrototypes
+Xauth *
+XauGetAuthByAddr (
+#if NeedWidePrototypes
+unsigned int	family,
+unsigned int	address_length,
+#else
+unsigned short	family,
+unsigned short	address_length,
+#endif
+const char*	address,
+#if NeedWidePrototypes
+unsigned int	number_length,
+#else
+unsigned short	number_length,
+#endif
+const char*	number,
+#if NeedWidePrototypes
+unsigned int	name_length,
+#else
+unsigned short	name_length,
+#endif
+const char*	name)
+#else
 Xauth *
 XauGetAuthByAddr (family, address_length, address,
 			  number_length, number,
@@ -43,6 +67,7 @@ unsigned short	number_length;
 char	*number;
 unsigned short	name_length;
 char	*name;
+#endif
 {
     FILE    *auth_file;
     char    *auth_name;

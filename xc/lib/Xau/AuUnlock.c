@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: $
+ * $XConsortium: AuUnlock.c,v 1.1 88/11/22 15:27:22 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,8 +23,13 @@
 # include   <sys/stat.h>
 # include   <sys/errno.h>
 
+#if NeedFunctionPrototypes
+XauUnlockAuth (
+const char *file_name)
+#else
 XauUnlockAuth (file_name)
 char	*file_name;
+#endif
 {
     char	creat_name[1025], link_name[1025];
     char	*strcpy (), *strcat ();
