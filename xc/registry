@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.32 91/05/28 08:08:40 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.33 91/05/28 08:25:37 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -413,6 +413,8 @@ Name						Reference
 
 13. FONT FOUNDRY NAMES
 
+Name						Reference
+----						---------
 "Acorn"						[49]
 "Adobe"						[24]
 "AIX"						[33]
@@ -567,6 +569,8 @@ Name						Reference
 
 16. RESOURCE TYPES
 
+Name						Reference
+----						---------
 "AcceleratorTable"				[26]
 "Bool"						[26]
 "Boolean"					[26]
@@ -606,6 +610,8 @@ Name						Reference
 
 17. APPLICATION CLASSES
 
+Name						Reference
+----						---------
 "Clock"						[47]
 "Exterm"					[45]
 "Listres"					[47]
@@ -633,11 +639,15 @@ Name						Reference
 
 18. CLASS EXTENSION RECORD TYPES
 
+Name						Reference
+----						---------
 "Xai" (prefix)					[59]
 "XaiCoreClassExtension"				[59]
 
 19. DISPLAY MANUFACTURER ID
 
+Name						Reference
+----						---------
 "Acorn"						[49]
 "HDS"						[70]
 "TD"						[63]
@@ -648,6 +658,8 @@ Name						Reference
 
 20. NON-STANDARD CHARACTER SET ENCODINGS
 
+Name						Reference
+----						---------
 "DEC.CNS11643.1986-2"				[53]
 	CNS11643 2-plane using the recommended
 	internal representation scheme
@@ -666,6 +678,10 @@ Name						Reference
 
 
 21. PEX VENDOR ID
+
+Value	Name					Reference
+-----	----					---------
+1	MIT					[8]
 
 
 
