@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetProp.c,v 11.11 88/01/30 15:11:20 rws Exp $ */
+/* $Header: XGetProp.c,v 11.12 88/02/04 19:17:58 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -42,7 +42,7 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
     *bytesafter = reply.bytesAfter;
 
     *prop = NULL;
-    if (*nitems) switch (reply.format) {
+    if (*actual_type != None) switch (reply.format) {
       long nbytes;
       /* 
        * One extra byte is malloced than is needed to contain the property
