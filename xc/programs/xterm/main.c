@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.149 90/04/30 16:53:00 converse Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.150 90/06/05 14:56:25 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -2119,10 +2119,12 @@ spawn ()
 	    (void) signal(SIGQUIT, SIG_IGN);
 	    (void) signal(SIGTERM, SIG_IGN);
 	}
+	(void) signal(SIGPIPE, Exit);
 #else	/* SYSV */
 	signal (SIGINT, Exit);
 	signal (SIGQUIT, Exit);
 	signal (SIGTERM, Exit);
+        signal (SIGPIPE, Exit);
 #endif	/* SYSV */
 #endif /* USE_SYSV_SIGNALS and not SIGTSTP */
 
