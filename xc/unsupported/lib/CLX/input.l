@@ -458,7 +458,7 @@
 	(tagbody
 	  loop
 	     (when (display-dead display)
-	       (return-from read-input t))
+	       (x-error 'closed-display :display display))
 	     (when (apply predicate predicate-args)
 	       (return-from read-input nil))
 	     ;; Check and see if we have to force output
