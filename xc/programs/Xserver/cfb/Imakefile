@@ -11,9 +11,9 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbfillarcC.c cfbfillarcG.c \
 	 cfbtegblt.c cfbbstore.c cfb8cppl.c \
 	 cfbbltC.c cfbbltX.c cfbbltO.c cfbbltG.c \
-	 cfb8bit.c cfbglblt8.c cfbglrop8.c \
-	 cfbteblt8x2.c cfbteblt8x3.c cfbteblt8.c cfbteblt8x5.c \
- 	 cfbpush8.c cfbrctstp8.c cfbpolypnt.c cfb8line.c \
+	 cfb8bit.c cfbteblt8.c cfbglblt8.c cfbglrop8.c \
+ 	 cfbpush8.c cfbrctstp8.c cfbpolypnt.c \
+	 cfb8lineC.c cfb8lineX.c cfb8lineG.c cfb8segC.c cfb8segX.c cfb8segG.c \
 	 cfbbres.c cfbline.c cfbhrzvert.c cfbbresd.c cfbimage.c cfbseg.c
 
 OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
@@ -27,10 +27,10 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbfillarcC.o cfbfillarcG.o \
 	 cfbtegblt.o cfbbstore.o cfb8cppl.o \
 	 cfbbltC.o cfbbltX.o cfbbltO.o cfbbltG.o \
-	 cfb8bit.o cfbglblt8.o cfbglrop8.o \
-	 cfbteblt8x2.o cfbteblt8x3.o cfbteblt8.o cfbteblt8x5.o \
- 	 cfbpush8.o cfbrctstp8.o cfbpolypnt.o cfb8line.o \
-	 cfbbres.o cfbhrzvert.o cfbbresd.o cfbimage.o cfbseg.o
+	 cfb8bit.o cfbteblt8.o cfbglblt8.o cfbglrop8.o \
+ 	 cfbpush8.o cfbrctstp8.o cfbpolypnt.o \
+	 cfb8lineC.o cfb8lineX.o cfb8lineG.o cfb8segC.o cfb8segX.o cfb8segG.o \
+	 cfbbres.o cfbline.o cfbhrzvert.o cfbbresd.o cfbimage.o cfbseg.o
 
    INCLUDES = -I. -I../mfb -I../mi -I../../include -I$(INCLUDESRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
@@ -83,10 +83,11 @@ ObjectFromSpecialSource(cfbtileoddC,cfbtileodd,-DMROP=Mcopy)
 
 ObjectFromSpecialSource(cfbtileoddG,cfbtileodd,-DMROP=0)
 
-ObjectFromSpecialSource(cfbteblt8x2,cfbteblt8,-DNGLYPHS=2)
-
-ObjectFromSpecialSource(cfbteblt8x3,cfbteblt8,-DNGLYPHS=3)
-
-ObjectFromSpecialSource(cfbteblt8x5,cfbteblt8,-DNGLYPHS=5)
+ObjectFromSpecialSource(cfb8lineC,cfb8line,-DRROP=GXcopy)
+ObjectFromSpecialSource(cfb8lineX,cfb8line,-DRROP=GXxor)
+ObjectFromSpecialSource(cfb8lineG,cfb8line,-DRROP=GXset)
+ObjectFromSpecialSource(cfb8segC,cfb8line,-DRROP=GXcopy -DPOLYSEGMENT)
+ObjectFromSpecialSource(cfb8segX,cfb8line,-DRROP=GXxor -DPOLYSEGMENT)
+ObjectFromSpecialSource(cfb8segG,cfb8line,-DRROP=GXset -DPOLYSEGMENT)
 
 DependTarget()
