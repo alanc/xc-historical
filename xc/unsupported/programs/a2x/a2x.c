@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.43 92/04/06 09:59:18 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.44 92/04/06 10:40:46 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -29,6 +29,8 @@ Syntax of magic values in the input stream:
 ^T^C			set Control key for next character
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
+^T^H<delay>^T		add <delay>-second delay to next event
+			<delay> is floating-point
 ^T^J<options>[ <mult>]^T jump to next closest top-level window
 	C		closest top-level window
 	D		top-level window going down
@@ -97,6 +99,7 @@ int moving_x = 0;
 int moving_y = 0;
 int last_keycode = 0;
 unsigned short last_mods = 0;
+unsigned long time_delay;
 int (*olderror)();
 int (*oldioerror)();
 char history[4096];
@@ -141,7 +144,8 @@ generate_key(key, press)
     int key;
     Bool press;
 {
-    XTestFakeKeyEvent(dpy, key, press, 0);
+    XTestFakeKeyEvent(dpy, key, press, time_delay);
+    time_delay = 0;
 }
 
 void
@@ -149,21 +153,24 @@ generate_button(button, press)
     int button;
     Bool press;
 {
-    XTestFakeButtonEvent(dpy, button, press, 0);
+    XTestFakeButtonEvent(dpy, button, press, time_delay);
+    time_delay = 0;
 }
 
 void
 generate_motion(dx, dy)
     int dx, dy;
 {
-    XTestFakeRelativeMotionEvent(dpy, dx, dy, 0);
+    XTestFakeRelativeMotionEvent(dpy, dx, dy, time_delay);
+    time_delay = 0;
 }
 
 void
 generate_warp(screen, x, y)
     int screen, x, y;
 {
-    XTestFakeMotionEvent(dpy, screen, x, y, 0);
+    XTestFakeMotionEvent(dpy, screen, x, y, time_delay);
+    time_delay = 0;
 }
 
 void
@@ -1270,6 +1277,9 @@ process(buf, n, len)
 		break;
 	    case '\004': /* control d */
 		do_motion(buf + i + 1);
+		break;
+	    case '\010': /* control h */
+		time_delay = atof(buf + i + 1) * 1000;
 		break;
 	    case '\012': /* control j */
 	    	do_jump(buf + i + 1);
