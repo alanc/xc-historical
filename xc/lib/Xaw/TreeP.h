@@ -65,13 +65,9 @@ typedef struct {
     Dimension      v_min_space;
     Pixel          foreground;
     GC             gc;
-    TreeOffsetPtr  horizontal;		/* doug */
-    TreeOffsetPtr  vertical;		/* doug */
     Widget         tree_root;
-#ifndef DOUG
     TreeOffsetPtr  largest;
     Boolean        horiz;
-#endif
 } TreePart;
 
 

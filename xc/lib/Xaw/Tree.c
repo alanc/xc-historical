@@ -1,44 +1,31 @@
-/**********************************************************************************
-  * Tree.c: The Tree Widget Source File
-  *         From:
-  *                   The X Window System, 
-  *            Programming and Applications with Xt
-  *                   OSF/Motif Edition
-  *         by
-  *                Douglas Young
-  *              Prentice Hall, 1990
-  *
-  *                 Example described on pages: 397-419
-  *
-  *
-  *  Copyright 1989 by Prentice Hall
-  *  All Rights Reserved
-  *
-  * This code is based on the OSF/Motif widget set and the X Window System
-  *
-  * Permission to use, copy, modify, and distribute this software for 
-  * any purpose and without fee is hereby granted, provided that the above
-  * copyright notice appear in all copies and that both the copyright notice
-  * and this permission notice appear in supporting documentation.
-  *
-  * Prentice Hall and the author disclaim all warranties with regard to 
-  * this software, including all implied warranties of merchantability and fitness.
-  * In no event shall Prentice Hall or the author be liable for any special,
-  * indirect or cosequential damages or any damages whatsoever resulting from 
-  * loss of use, data or profits, whether in an action of contract, negligence 
-  * or other tortious action, arising out of or in connection with the use 
-  * or performance of this software.
-  *
-  * Open Software Foundation is a trademark of The Open Software Foundation, Inc.
-  * OSF is a trademark of Open Software Foundation, Inc.
-  * OSF/Motif is a trademark of Open Software Foundation, Inc.
-  * Motif is a trademark of Open Software Foundation, Inc.
-  * DEC is a registered trademark of Digital Equipment Corporation
-  * HP is a registered trademark of the Hewlett Packard Company
-  * DIGITAL is a registered trademark of Digital Equipment Corporation
-  * X Window System is a trademark of the Massachusetts Institute of Technology
-  **********************************************************************************/
-
+/*
+ * $XConsortium$
+ *
+ * Copyright 1990 Massachusetts Institute of Technology
+ * Copyright 1989 Prentice Hall
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose and without fee is hereby granted, provided that the above
+ * copyright notice appear in all copies and that both the copyright notice
+ * and this permission notice appear in supporting documentation.
+ * 
+ * M.I.T., Prentice Hall and the authors disclaim all warranties with regard
+ * to this software, including all implied warranties of merchantability and
+ * fitness.  In no event shall M.I.T., Prentice Hall or the authors be liable
+ * for any special, indirect or cosequential damages or any damages whatsoever
+ * resulting from loss of use, data or profits, whether in an action of
+ * contract, negligence or other tortious action, arising out of or in
+ * connection with the use or performance of this software.
+ * 
+ * Authors:  Jim Fulton, MIT X Consortium,
+ *           based on a version by Douglas Young, Prentice Hall
+ * 
+ * This widget is based on the Tree widget described on pages 397-419 of
+ * Douglas Young's book "The X Window System, Programming and Applications 
+ * with Xt OSF/Motif Edition."  The layout code has been rewritten to use
+ * additional blank space to make the structure of the graph easier to see
+ * as well as to support vertical trees.
+ */
 
 #include	  <X11/Intrinsic.h>
 #include	  <X11/IntrinsicP.h>
@@ -63,13 +50,8 @@ static void             delete_node();
 static void             new_layout();
 static void             Redisplay();
 static TreeOffsetPtr    create_offset();
-static int              compute_positions();
-static void             shift_subtree();
 static void             set_positions();
 static void             reset();
-static Position         current_position();
-static void             set_current_position();
-static Position         sum_of_positions();
 
 static XtResource resources[] = {
  {XtNhorizontalSpace,XtCSpace,XtRDimension,sizeof(Dimension),
@@ -181,12 +163,8 @@ static void Initialize(request, new)
    * Allocate the tables used by the layout
    * algorithm.
    */
-  new->tree.horizontal = create_offset(10);
-  new->tree.vertical   = create_offset(10);
-#ifndef DOUG
   new->tree.largest    = create_offset(10);
   new->tree.horiz = TRUE;
-#endif
 } 
 
 static void ConstraintInitialize(request, new)
@@ -422,130 +400,6 @@ static void Redisplay (w, event, region)
     }
 }
 
-#ifdef DOUG
-static void new_layout(tw)
-     TreeWidget   tw;
-{
-  /*
-   *  Reset the auxiliary tables.
-   */
-  reset(tw->tree.vertical);
-  reset(tw->tree.horizontal);
-  /*
-   * Compute each widget's x,y position
-   */
-  compute_positions(tw, tw->tree.tree_root, 0);
-  /*
-   * Move each widget into place.
-   */
-  set_positions(tw, tw->tree.tree_root, 0, 0);
-  /*
-   * Trigger a redisplay of the lines connecting nodes.
-   */
-  if(XtIsRealized(tw))
-    XClearArea(XtDisplay(tw), XtWindow(tw), 0, 0, 0, 0, TRUE);
-}
-
-static int compute_positions(tw, w, level)
-    TreeWidget tw;
-    Widget w;
-    int level;
-{
- Position       current_hpos, current_vpos;
- int             i, depth = 0;
- TreeConstraints tree_const = TREE_CONSTRAINT(w);
- /*
-  * Get the current positions for this level.
-  */
- current_hpos = current_position(tw->tree.horizontal, level);
- current_vpos = current_position(tw->tree.vertical, level);
- /*
-  * Set the current horizontal width to the max widths of all
-  * widgets at this level.
-  */
- set_current_position(tw->tree.horizontal, level, 
-                      MAX(current_hpos, w->core.width));
- /*
-  * If the node has no sub_nodes, just set the vertical 
-  * position to the next available space.
-  */
- if(tree_const->tree.n_sub_nodes == 0){
-   tree_const->tree.y = current_vpos;
- }
- else {
-   Widget          first_kid, last_kid;
-   TreeConstraints const1, const2;
-   Position        top, bottom;
-  /*
-   * If the node has sub_nodes, recursively figure the 
-   * positions of each sub_node.
-   */
-   for(i = 0; i < tree_const->tree.n_sub_nodes; i++)
-    depth = compute_positions(tw, 
-                              tree_const->tree.sub_nodes[i],
-                              level + 1);
-  /*
-   * Now that the vertical positions of all children are 
-   * known, find the vertical extent of all sub_nodes.
-   */
-  first_kid= tree_const->tree.sub_nodes[0];
-  last_kid = 
-   tree_const->tree.sub_nodes[tree_const->tree.n_sub_nodes-1];
-  const1   = TREE_CONSTRAINT(first_kid);
-  const2   = TREE_CONSTRAINT(last_kid);
-  top      = const1->tree.y + first_kid->core.height / 2; 
-  bottom   = const2->tree.y + last_kid->core.height / 2;
-  /*
-   * Set the node's position to the center of its sub_nodes.
-   */
-  tree_const->tree.y = (top + bottom)/2 - (w->core.height/ 2);
-  /*
-   * If this position is less than the next available 
-   * position, correct it to be the next available
-   * position, calculate the amount by which all sub_nodes
-   * must be shifted, and shift the entire sub-tree.
-   */
-   if(tree_const->tree.y < current_vpos){
-     Dimension offset = current_vpos - tree_const->tree.y;
-     for(i = 0; i < tree_const->tree.n_sub_nodes; i++)
-       shift_subtree(tree_const->tree.sub_nodes[i], offset);
-    /*
-     * Adjust the next available space at all levels below
-     * the current level.
-     */
-     for(i = level + 1; i <= depth; i++){
-       Position pos = current_position(tw->tree.vertical, i);
-       set_current_position(tw->tree.vertical, i, pos+offset);
-     }
-     tree_const->tree.y = current_vpos;
-     }
-   }
- /*
-  * Record the current vertical position at this level.
-  */
-  set_current_position(tw->tree.vertical, level,
-                       tw->tree.v_min_space + 
-                       tree_const->tree.y + w->core.height);
-  return (MAX(depth, level));
-}
-
-static void shift_subtree(w, offset)
-     Widget     w;
-     Dimension  offset;
-{
-  int             i;
-  TreeConstraints tree_const = TREE_CONSTRAINT(w);
-  /*
-   * Shift the node by the offset.
-   */
-  tree_const->tree.y += offset; 
-  /*
-   * Shift each sub-node into place.
-   */
-  for(i=0; i< tree_const->tree.n_sub_nodes; i++)
-    shift_subtree(tree_const->tree.sub_nodes[i], offset);
-}
-#endif /* DOUG */
 
 static void set_positions(tw, w, level)
      TreeWidget tw;
@@ -558,14 +412,6 @@ static void set_positions(tw, w, level)
   
  if(w){
   TreeConstraints tree_const = TREE_CONSTRAINT(w);
- /*
-  * Add up the sum of the width's of all nodes to this 
-  * depth, and use it as the x position.
-  */
-#ifdef DOUG
-  tree_const->tree.x = (level * tw->tree.h_min_space) + 
-                sum_of_positions(tw->tree.horizontal, level);
-#endif
  /*
   * Move the widget into position.
   */
@@ -618,44 +464,6 @@ static void reset(offset)
     offset->array[i] = 0;
 }
 
-static Position current_position(offset, position)
-   TreeOffsetPtr  offset;
-   int          position;
-{
-  if(position >= offset->size)
-    return (0);
-  return (offset->array[position]);
- }
-
-static void set_current_position(offset, nindex, value)
-   TreeOffsetPtr offset;
-   int           nindex;
-   Dimension     value;
-{
- if(nindex >= offset->size){
-   offset->size = nindex + nindex / 2;
-   offset->array =
-    (Dimension *) XtRealloc(offset->array, 
-                            offset->size * sizeof(Dimension));
- }
- offset->array[nindex] = value;
-}
-
-static Position sum_of_positions(offset, nindex)
-   TreeOffsetPtr  offset;
-   int           nindex;
-{
-  int    i;
-  Position  sum  = 0;
-  int      stop = nindex;
-  if(nindex > offset->size) 
-    stop = offset->size;
-  for (i=0;i < stop; i++)
-    sum += offset->array[i];
-  return (sum);
-}
-
-
 static void set_offset_to_max_value (offset, nindex, value)
     TreeOffsetPtr offset;
     int nindex;
@@ -674,7 +482,6 @@ static void set_offset_to_max_value (offset, nindex, value)
 }
 
 
-#ifndef DOUG
 static void compute_bounding_box_subtree (tree, w, depth)
     TreeWidget tree;
     Widget w;
@@ -829,4 +636,3 @@ static void new_layout (tw)
 
 }
 
-#endif /* not DOUG */
