@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Label.c,v 1.46 88/08/30 10:09:08 swick Exp $";
+static char rcsid[] = "$XConsortium: Label.c,v 1.47 88/09/04 12:32:22 swick Exp $";
 #endif lint
 
 
@@ -121,54 +121,10 @@ WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
  *
  ****************************************************************/
 
-static void CvtStringToJustify();
-
-static XrmQuark	XrmQEleft;
-static XrmQuark	XrmQEcenter;
-static XrmQuark	XrmQEright;
-
 static void ClassInitialize()
 {
-
-    XrmQEleft   = XrmStringToQuark("left");
-    XrmQEcenter = XrmStringToQuark("center");
-    XrmQEright  = XrmStringToQuark("right");
-
-    XtAddConverter( XtRString, XtRJustify, CvtStringToJustify, NULL, 0 );
+    XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0 );
 } /* ClassInitialize */
-
-/* ARGSUSED */
-static void CvtStringToJustify(args, num_args, fromVal, toVal)
-    XrmValuePtr *args;		/* unused */
-    Cardinal	*num_args;	/* unused */
-    XrmValuePtr fromVal;
-    XrmValuePtr toVal;
-{
-    static XtJustify	e;
-    XrmQuark    q;
-    char	*s = (char *) fromVal->addr;
-    char        lowerName[1000];
-    int		i;
-
-    if (s == NULL) return;
-
-    for (i=0; i<=strlen(s); i++) {
-        char c = s[i];
-	lowerName[i] = isupper(c) ? (char) tolower(c) : c;
-    }
-
-    q = XrmStringToQuark(lowerName);
-
-    toVal->size = sizeof(XtJustify);
-    toVal->addr = (caddr_t) &e;
-
-    if (q == XrmQEleft)   { e = XtJustifyLeft;   return; }
-    if (q == XrmQEcenter) { e = XtJustifyCenter; return; }
-    if (q == XrmQEright)  { e = XtJustifyRight;  return; }
-
-    toVal->size = 0;
-    toVal->addr = NULL;
-};
 
 /*
  * Calculate width and height of displayed text in pixels
