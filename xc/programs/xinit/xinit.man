@@ -33,13 +33,13 @@ A different client and/or server can be specified in the command line, and
 command line options can be passed to both the server and the client.  The
 client and its options come first in the command line.  The server and its
 options must be preceded by ``--''.
-If the first argument to xinit begins with `/' or a letter, it is taken to
+If the first argument to xinit begins with `/' or '.' or a letter, it is taken to
 be the client program to use instead of xterm, and none of the default xterm
 options are used.  Otherwise, the first and subsequent arguments are
 simply appended as further options to the default \fIxterm\fP command line.
 .PP
 Following the ``--'' argument,
-if the next argument begins with `/' or a letter,
+if the next argument begins with `/' or '.' or a letter,
 it is taken to be the server program to use instead of ``X''.  If the next
 argument begins with a digit, it is taken to be the display number; otherwise
 display 0 is assumed.  The remaining arguments are added as options to the
