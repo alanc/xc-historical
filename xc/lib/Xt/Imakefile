@@ -8,37 +8,43 @@
        LINTLIBS = $(LINTXLIB)
 
 HEADERS = \
-	Cardinals.h \
+	CompObjP.h \
+	CompObj.h \
 	Composite.h \
 	CompositeP.h \
 	Constraint.h \
 	ConstrainP.h \
-	Convert.h \
 	Core.h \
 	CoreP.h \
 	Intrinsic.h \
 	IntrinsicP.h \
-	Misc.h \
+	Object.h \
+	ObjectP.h \
 	Quarks.h \
+	RectObj.h \
+	RectObjP.h \
+	Selection.h \
 	Shell.h \
 	ShellP.h \
 	StringDefs.h \
-	TM.h \
 	Vendor.h \
-	VendorP.h
+	VendorP.h \
+	WindowObj.h \
+	WindowObjP.h
 
 SRCS = \
 	Alloc.c \
 	ArgList.c \
 	Callback.c \
+	CompObj.c \
 	Composite.c \
 	Constraint.c \
 	Convert.c \
 	Converters.c \
 	Core.c \
 	Create.c \
-	Cursors.c \
 	Destroy.c \
+	Display.c \
 	Error.c \
 	Event.c \
 	GCManager.c \
@@ -47,25 +53,30 @@ SRCS = \
 	Intrinsic.c \
 	Manage.c \
 	NextEvent.c \
+	Object.c \
 	Popup.c \
+	RectObj.c \
 	Resources.c \
+	Selection.c \
 	Shell.c \
 	TMparse.c \
 	TMstate.c \
-	Vendor.c
+	Vendor.c \
+	WindowObj.c
 
 OBJS = \
 	Alloc.o \
 	ArgList.o \
 	Callback.o \
+	CompObj.o \
 	Composite.o \
 	Constraint.o \
 	Convert.o \
 	Converters.o \
 	Core.o \
 	Create.o \
-	Cursors.o \
 	Destroy.o \
+	Display.o \
 	Error.o \
 	Event.o \
 	GCManager.o \
@@ -74,18 +85,18 @@ OBJS = \
 	Intrinsic.o \
 	Manage.o \
 	NextEvent.o \
+	Object.o \
 	Popup.o \
+	RectObj.o \
 	Resources.o \
+	Selection.o \
 	Shell.o \
 	TMparse.o \
 	TMstate.o \
-	Vendor.o
+	Vendor.o \
+	WindowObj.o
 
-all:: Atoms.h
-
-Atoms.h: StringDefs.h
-	$(RM) Atoms.h
-	$(LN) StringDefs.h Atoms.h
+all::
 
 #if DebugLibXt && ProfileLibXt
 DebuggedAndProfiledLibraryObjectRule()
@@ -121,11 +132,6 @@ DebuggedLibraryTarget(Xt,$(OBJS))
 
 InstallMultiple($(HEADERS),$(INCDIR))
 
-depend:: Atoms.h
-
 DependTarget()
 
 NormalLintTarget($(SRCS))
-
-clean::
-	$(RM) Atoms.h
