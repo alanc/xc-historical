@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.7 87/10/09 14:01:49 weissman Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.8 88/01/07 09:37:09 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,7 +29,7 @@ static char rcs_id[] = "$Header: screen.c,v 1.7 87/10/09 14:01:49 weissman Exp $
 /* scrn.c -- management of scrns. */
 
 #include "xmh.h"
-#include <Xatom.h>
+#include <X/Xatom.h>
 
 
 /* Fill in the buttons for the view commands. */
@@ -171,25 +171,29 @@ Scrn scrn;
 	"<Btn1Down>(2): open-sequence()",
 	NULL
     };
-    static DwtTextScanType sarray[] = {DwtstEOL,
-				       DwtstPositions,
-				       DwtstWordBreak,
-				       DwtstAll};
+    static XtTextSelectType sarray[] = {XtselectLine,
+					XtselectPosition,
+					XtselectWord,
+					XtselectAll,
+					XtselectNull};
+#ifdef notdef
     static Arg arglist2[] = {
-	{DwtNselectionArray, (XtArgVal) sarray},
-	{DwtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
-    };
+	{XtNselectionArray, (XtArgVal) sarray},
+	{XtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
+#endif
 
+    XtPanedRefigureMode(scrn->widget, FALSE);
     scrn->folderbuttons = BBoxRadioCreate(scrn, 0, "folders",
 					  &(scrn->curfolder));
     scrn->mainbuttons = BBoxCreate(scrn, 1, "folderButtons");
     scrn->toclabel = CreateTitleBar(scrn, 2);
-    scrn->tocwidget = CreateTextSW(scrn, 3, "toc", 0,
-				   arglist2, XtNumber(arglist2));
+    scrn->tocwidget = CreateTextSW(scrn, 3, "toc", 0);
+/* %%%				   arglist2, XtNumber(arglist2)); */
+    XtTextSetSelectionArray(scrn->tocwidget, sarray);
     scrn->seqbuttons = BBoxRadioCreate(scrn, 4, "seqButtons", &scrn->curseq);
     scrn->tocbuttons = BBoxCreate(scrn, 5, "tocButtons");
     scrn->viewlabel = CreateTitleBar(scrn, 6);
-    scrn->viewwidget = CreateTextSW(scrn, 7, "view", 0, NULL, (Cardinal) 0);
+    scrn->viewwidget = CreateTextSW(scrn, 7, "view", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 8, "viewButtons");
 
     buttonbox = scrn->folderbuttons;
@@ -250,14 +254,16 @@ Scrn scrn;
 
     FillViewButtons(scrn);
 
-/*  DwtPaneAllowResizing(scrn->widget, FALSE);
+    XtPanedRefigureMode(scrn->widget, TRUE);
+
+/* %%%  XtPanedAllowResizing(scrn->widget, FALSE); */
     theight = GetHeight((Widget)scrn->tocwidget) +
 	GetHeight((Widget)scrn->viewwidget);
     theight = defTocPercentage * theight / 100;
-    DwtPaneGetMinMax((Widget) scrn->tocwidget, &min, &max);
-    DwtPaneSetMinMax((Widget) scrn->tocwidget, theight, theight);
-    DwtPaneSetMinMax((Widget) scrn->tocwidget, min, max);
-*/
+    XtPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
+    XtPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
+    XtPanedSetMinMax((Widget) scrn->tocwidget, min, max);
+
     arglist[0].value = (XtArgVal) NoMailPixmap;
 		/* %%% Wrong; should check InitialFolder->mailpending.  */
     XtSetValues(scrn->parent, arglist, XtNumber(arglist));
@@ -268,7 +274,7 @@ MakeView(scrn)
 Scrn scrn;
 {
     scrn->viewlabel = CreateTitleBar(scrn, 0);
-    scrn->viewwidget = CreateTextSW(scrn, 1, "view", 0, NULL, (Cardinal) 0);
+    scrn->viewwidget = CreateTextSW(scrn, 1, "view", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "viewButtons");
     FillViewButtons(scrn);
 }
@@ -278,7 +284,7 @@ MakeComp(scrn)
 Scrn scrn;
 {
     scrn->viewlabel = CreateTitleBar(scrn, 0);
-    scrn->viewwidget = CreateTextSW(scrn, 1, "comp", 0, NULL, (Cardinal) 0);
+    scrn->viewwidget = CreateTextSW(scrn, 1, "comp", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "compButtons");
     FillCompButtons(scrn);
 }
@@ -332,18 +338,20 @@ ScrnKind kind;
     if (numScrns == 1) scrn->parent = toplevel;
     else scrn->parent = XtCreatePopupShell(progName, shellWidgetClass,
 					   toplevel, NULL, (Cardinal) 0);
-    scrn->widget = (PaneWidget)
-	XtCreateWidget(progName, paneWidgetClass, scrn->parent,
-		       arglist, XtNumber(arglist));
+    scrn->widget = XtCreateWidget(progName, vPanedWidgetClass, scrn->parent,
+				  arglist, XtNumber(arglist));
 
     switch (kind) {
 	case STtocAndView:	MakeTocAndView(scrn);	break;
 	case STview:		MakeView(scrn);	break;
 	case STcomp:		MakeComp(scrn);	break;
     }
-if (debug) {fprintf(stderr, "Realizing..."); fflush(stderr);}
+    XtManageChild( (Widget)scrn->widget );
+    DEBUG("Realizing...")
     XtRealizeWidget((Widget) scrn->parent);
-if (debug) fprintf(stderr, "done\n");
+    DEBUG(" done.\n")
+    XDefineCursor( theDisplay, XtWindow(scrn->parent),
+		   XtGetCursor( theDisplay, XC_left_ptr ) );
     scrn->mapped = (numScrns == 1);
     return scrn;
 }
@@ -366,7 +374,7 @@ void DestroyScrn(scrn)
   Scrn scrn;
 {
     XtPopdown(scrn->parent);
-    DestroyConfirmWindow();
+    DestroyConfirmWidget();
     TocSetScrn((Toc) NULL, scrn);
     MsgSetScrnForce((Msg) NULL, scrn);
     scrn->mapped = FALSE;
@@ -388,7 +396,7 @@ Scrn ScrnFromWidget(w)
 Widget w;
 {
     int i;
-    while (w && w->core.widget_class != paneWidgetClass)
+    while (w && w->core.widget_class != vPanedWidgetClass)
 	w = w->core.parent;
     if (w) {
 	for (i=0 ; i<numScrns ; i++) {
