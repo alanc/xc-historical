@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.30 91/06/15 10:35:20 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.31 91/06/15 13:04:04 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -3622,7 +3622,10 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	if (a1 < a0)
 		a1 += 360 * 64;
 	startq = a0 / (90 * 64);
-	endq = (a1-1) / (90 * 64);
+	if (a0 == a1)
+	    endq = startq;
+	else
+	    endq = (a1-1) / (90 * 64);
 	bandno = 0;
 	curq = startq;
 	for (;;) {
