@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.5 89/10/09 16:21:11 jim Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.6 89/10/10 16:45:20 keith Exp $";
 #endif 
 
 /*
@@ -258,7 +258,7 @@ static void
 DisplayText(w, x, y, pos1, pos2, highlight)
 Widget w;
 Position x, y;
-int highlight;
+Boolean highlight;
 XawTextPosition pos1, pos2;
 {
   return;
@@ -516,7 +516,7 @@ void
 XawTextSinkDisplayText(w, x, y, pos1, pos2, highlight)
 Widget w;
 Position x, y;
-int highlight;
+Boolean highlight;
 XawTextPosition pos1, pos2;
 {
   TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
