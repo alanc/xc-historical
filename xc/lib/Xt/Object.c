@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.23 94/03/31 15:37:24 converse Exp $ */
+/* $XConsortium: Object.c,v 1.23 94/03/31 16:39:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -174,6 +174,7 @@ static void InheritObjectExtensionMethods(widget_class)
 				XtOffsetOf(ObjectClassPart, extension),
 				NULLQUARK, XtObjectExtensionVersion, 
 				sizeof(ObjectClassExtensionRec));
+    LOCK_PROCESS;
     if (ext) {
 	if (ext->allocate == XtInheritAllocate)
 	    ext->allocate = (super_ext ? super_ext->allocate : NULL);
@@ -191,6 +192,7 @@ static void InheritObjectExtensionMethods(widget_class)
 	ext->deallocate = super_ext->deallocate;
 	oc->object_class.extension = (XtPointer) ext;
     }
+    UNLOCK_PROCESS;
 }
 
 static void ObjectClassPartInitialize(wc)
