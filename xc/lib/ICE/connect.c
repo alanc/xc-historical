@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.19 93/12/06 18:39:30 mor Exp $ */
+/* $XConsortium: connect.c,v 1.20 93/12/07 11:04:05 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -34,11 +34,12 @@ static int  ConnectToPeer();
 
 
 IceConn
-IceOpenConnection (networkIdsList, mustAuthenticate,
+IceOpenConnection (networkIdsList, mustAuthenticate, majorOpcodeCheck,
     errorLength, errorStringRet)
 
 char *networkIdsList;
 Bool mustAuthenticate;
+int  majorOpcodeCheck;
 int  errorLength;
 char *errorStringRet;
 
@@ -67,6 +68,14 @@ char *errorStringRet;
 	return (NULL);
     }
 
+    /*
+     * Check to see if we can use a previously created ICE connection.
+     * If 'majorOpcodeCheck' is non-zero, it will contain a protocol major
+     * opcode that we should make sure is not already active on the ICE
+     * connection.  Some clients will want two seperate connections for the
+     * same protocol to the same destination client.
+     */
+
     for (i = 0; i < _IceConnectionCount; i++)
     {
 	char *strptr;
@@ -76,8 +85,38 @@ char *errorStringRet;
 	    char ch = *(strptr + strlen (_IceConnectionStrings[i]));
 	    if (ch == ',' || ch == '\0')
 	    {
-		_IceConnectionObjs[i]->open_ref_count++;
-		return (_IceConnectionObjs[i]);
+		/*
+		 * OK, we found a connection.  Now make sure the
+		 * specified protocol is not already active on it.
+		 */
+
+		IceConn iceConn = _IceConnectionObjs[i];
+
+		if (majorOpcodeCheck)
+		{
+		    for (j = iceConn->his_min_opcode;
+		        j <= iceConn->his_max_opcode; j++)
+		    {
+			if (iceConn->process_msg_info[
+			    j - iceConn->his_min_opcode].in_use &&
+			    iceConn->process_msg_info[
+			    j - iceConn->his_min_opcode].my_opcode ==
+			    majorOpcodeCheck)
+			    break;
+		    }
+
+		    if (j <= iceConn->his_max_opcode ||
+			(iceConn->protosetup_to_you &&
+			iceConn->protosetup_to_you->my_opcode ==
+			majorOpcodeCheck))
+		    {
+			/* force a new connection to be created */
+			break;
+		    }
+		}
+
+		iceConn->open_ref_count++;
+		return (iceConn);
 	    }
 	}
     }
@@ -159,9 +198,9 @@ char *errorStringRet;
 
     endian = 1;
     if (*(char *) &endian)
-	pByteOrderMsg->byteOrder = IceLittleEndian;
+	pByteOrderMsg->byteOrder = IceLSBfirst;
     else
-	pByteOrderMsg->byteOrder = IceBigEndian;
+	pByteOrderMsg->byteOrder = IceMSBfirst;
 
     IceFlush (iceConn);
 
@@ -211,12 +250,12 @@ char *errorStringRet;
      * Now send a Connection Setup message.
      */
 
-    extra = XPCS_BYTES (IceVendorString) + XPCS_BYTES (IceReleaseString);
+    extra = STRING_BYTES (IceVendorString) + STRING_BYTES (IceReleaseString);
 
     for (i = 0; i < _IceAuthCount; i++)
 	if (authUsableFlags[i])
 	{
-	    extra += XPCS_BYTES (_IceAuthNames[i]);
+	    extra += STRING_BYTES (_IceAuthNames[i]);
 	}
 
     extra += (_IceVersionCount * 4);
@@ -231,13 +270,13 @@ char *errorStringRet;
     pSetupMsg->authCount = authUsableCount;
     pSetupMsg->mustAuthenticate = mustAuthenticate;
 
-    STORE_XPCS (pData, IceVendorString);
-    STORE_XPCS (pData, IceReleaseString);
+    STORE_STRING (pData, IceVendorString);
+    STORE_STRING (pData, IceReleaseString);
 
     for (i = 0; i < _IceAuthCount; i++)
 	if (authUsableFlags[i])
 	{
-	    STORE_XPCS (pData, _IceAuthNames[i]);
+	    STORE_STRING (pData, _IceAuthNames[i]);
 	}
 
     for (i = 0; i < _IceVersionCount; i++)
