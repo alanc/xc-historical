@@ -1,6 +1,6 @@
 
 /*
- *	$Header: charproc.c,v 1.1 88/02/10 13:08:03 jim Exp $
+ *	$Header: charproc.c,v 1.2 88/02/11 20:29:09 jim Exp $
  */
 
 
@@ -57,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.1 88/02/10 13:08:03 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.2 88/02/11 20:29:09 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1717,32 +1717,33 @@ XSetWindowAttributes *values;
 	 *
 	 *     selected window, normal video - background on cursor
 	 *     selected window, reverse video - foreground on cursor
-	 *     unselected window, normal video - cursor on background
-	 *     unselected window, reverse video - cursor on foreground
+	 *     unselected window, normal video - foreground on background
+	 *     unselected window, reverse video - background on foreground
 	 *
-	 * Note that these are only used in ShowCursor, not in HideCursor,
-	 * since latter's job is to paint a normal character.  
+	 * Since the last two are really just normalGC and reverseGC, we only
+	 * need two new GC's.  Under monochrome, we get the same effect as
+	 * above by setting cursor color to foreground.
 	 */
 
-	if (screen->cursorcolor != screen->foreground) {
-		xgcv.foreground = screen->cursorcolor;
-		xgcv.background = screen->foreground;
-	} else {
-		xgcv.foreground = screen->foreground;
-		xgcv.background = term->core.background_pixel;
+	{
+	    unsigned long cc = screen->cursorcolor;
+	    unsigned long fg = screen->foreground;
+	    unsigned long bg = term->core.background_pixel;
+
+	    if (cc != fg && cc != bg) {
+		/* we have a colored cursor */
+		xgcv.foreground = fg;
+		xgcv.background = cc;
+		screen->cursorGC = XtGetGC ((Widget) term, mask, &xgcv);
+
+		xgcv.foreground = bg;
+		xgcv.background = cc;
+		screen->reversecursorGC = XtGetGC ((Widget) term, mask, &xgcv);
+	    } else {
+		screen->cursorGC = (GC) 0;
+		screen->reversecursorGC = (GC) 0;
+	    }
 	}
-
-	screen->cursorGC = XtGetGC((Widget)term, mask, &xgcv);
-
-	if (screen->cursorcolor != term->core.background_pixel) {
-		xgcv.foreground = screen->cursorcolor;
-		xgcv.background = term->core.background_pixel;
-	} else {
-		xgcv.foreground = term->core.background_pixel;
-		xgcv.background = screen->foreground;
-	}
-
-	screen->reversecursorGC = XtGetGC((Widget)term, mask, &xgcv);
 
 	/* setup toolkit stuff */
 
@@ -1862,20 +1863,26 @@ ShowCursor()
 		c = ' ';
 
 	if(screen->select) {
-
 		if(flags & INVERSE) { /* is reverse video */
+		    if (screen->cursorGC) {
+			currentGC = screen->cursorGC;
+		    } else {
 			if (flags & BOLD) {
 				currentGC = screen->normalboldGC;
 			} else {
 				currentGC = screen->normalGC;
 			}
-
+		    }
 		} else { /* normal video */
+		    if (screen->reversecursorGC) {
+			currentGC = screen->reversecursorGC;
+		    } else {
 			if (flags & BOLD) {
 				currentGC = screen->reverseboldGC;
 			} else {
 				currentGC = screen->reverseGC;
 			}
+		    }
 		}
 	} else { /* not selected */
 		if(flags & INVERSE) { /* is reverse video */
