@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.36 94/02/07 14:50:05 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.37 94/02/07 16:56:57 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -91,9 +91,9 @@ static int  fs_send_close_font();
 static void fs_client_died();
 static void _fs_client_access();
 
-char glyph_undefined;
-char glyph_requested;
-char glyph_zero_length;
+char _fs_glyph_undefined;
+char _fs_glyph_requested;
+char _fs_glyph_zero_length;
 
 /*
  * Font server access
@@ -546,7 +546,7 @@ clean_aborted_blockrec(blockrec)
 	    FontPtr pfont = bglyph->pfont;
 	    int num_expected_ranges = bglyph->num_expected_ranges;
 	    fsRange *expected_ranges = bglyph->expected_ranges;
-	    clean_aborted_loadglyphs(pfont,
+	    _fs_clean_aborted_loadglyphs(pfont,
 				     num_expected_ranges,
 				     expected_ranges);
 	    signal_clients_depending(&bglyph->clients_depending);
@@ -931,10 +931,10 @@ fs_read_extent_info(fpe, blockrec)
 	    if (!haveInk &&
 		(ci->metrics.leftSideBearing == ci->metrics.rightSideBearing ||
 		 ci->metrics.ascent == -ci->metrics.descent))
-		pCI[i].bits = &glyph_zero_length;
+		pCI[i].bits = &_fs_glyph_zero_length;
 	    else
 	    {
-		pCI[i].bits = &glyph_undefined;
+		pCI[i].bits = &_fs_glyph_undefined;
 		fsd->glyphs_to_get++;
 	    }
 	}
@@ -1774,7 +1774,7 @@ fs_read_glyphs(fpe, blockrec)
     {
 	memcpy(&local_off, off_adr, SIZEOF(fsOffset32));	/* align it */
 	if (blockrec->type == FS_OPEN_FONT ||
-	    fsdata->encoding[minchar].bits == &glyph_requested)
+	    fsdata->encoding[minchar].bits == &_fs_glyph_requested)
 	{
 	    if (local_off.length)
 	    {
@@ -1790,10 +1790,10 @@ fs_read_glyphs(fpe, blockrec)
 		       local_off.length);
 	    }
 	    else if (NONZEROMETRICS(&fsdata->encoding[minchar].metrics))
-		bits = &glyph_zero_length;
+		bits = &_fs_glyph_zero_length;
 	    else
 		bits = 0;
-	    if (fsdata->encoding[minchar].bits == &glyph_requested)
+	    if (fsdata->encoding[minchar].bits == &_fs_glyph_requested)
 		fsd->glyphs_to_get--;
 	    fsdata->encoding[minchar].bits = bits;
 	}
@@ -2082,7 +2082,7 @@ _fs_load_glyphs(client, pfont, range_flag, nchars, item_size, data)
 	   call. */
 	if (nranges)
 	{
-	    clean_aborted_loadglyphs(pfont, nranges, ranges);
+	    _fs_clean_aborted_loadglyphs(pfont, nranges, ranges);
 	    xfree(ranges);
 	}
 	return add_clients_depending(clients_depending, client);
@@ -2110,7 +2110,7 @@ _fs_load_glyphs(client, pfont, range_flag, nchars, item_size, data)
     {
 	/* Since we're not ready to send the load_glyphs request yet,
 	   clean up the damage caused by the fs_build_range() call. */
-	clean_aborted_loadglyphs(pfont, nranges, ranges);
+	_fs_clean_aborted_loadglyphs(pfont, nranges, ranges);
 	xfree(ranges);
 
 	/* Now try to reopen the font. */

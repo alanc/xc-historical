@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.15 93/09/04 09:43:02 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.16 93/09/20 15:56:45 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -33,9 +33,9 @@
 #include	"fontstruct.h"
 #include	"fservestr.h"
 
-extern char glyph_undefined;
-extern char glyph_requested;
-extern char glyph_zero_length;
+extern char _fs_glyph_undefined;
+extern char _fs_glyph_requested;
+extern char _fs_glyph_zero_length;
 
 extern int _fs_load_glyphs();
 
@@ -162,9 +162,9 @@ _fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
 
 
 #define ENCODING_UNDEFINED(enc) \
-	((enc)->bits == &glyph_undefined ? \
+	((enc)->bits == &_fs_glyph_undefined ? \
 	 TRUE : \
-	 (access_done = access_done && (enc)->bits != &glyph_requested, \
+	 (access_done = access_done && (enc)->bits != &_fs_glyph_requested, \
 	  FALSE))
 
 #define GLYPH_UNDEFINED(loc) ENCODING_UNDEFINED(encoding + (loc))
@@ -222,7 +222,7 @@ fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
 
 	if ((err = add_range(&range, nranges, ranges, FALSE)) !=
 	    Successful) return err;
-	encoding[loc].bits = &glyph_requested;
+	encoding[loc].bits = &_fs_glyph_requested;
 	access_done = FALSE;
     }
 
@@ -250,7 +250,7 @@ fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
 		    range.min_char_high = range.max_char_high = 0;
 		    if ((err = add_range(&range, nranges, ranges, FALSE)) !=
 		        Successful) return err;
-		    encoding[col - firstcol].bits = &glyph_requested;
+		    encoding[col - firstcol].bits = &_fs_glyph_requested;
 		    access_done = FALSE;
 		}
 	    }
@@ -326,7 +326,7 @@ fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
 			range.min_char_high = range.max_char_high = row;
 			if ((err = add_range(&range, nranges, ranges, FALSE)) !=
 			    Successful) return err;
-			encoding[loc].bits = &glyph_requested;
+			encoding[loc].bits = &_fs_glyph_requested;
 			access_done = FALSE;
 		    }
 		}
@@ -343,11 +343,11 @@ fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
 #undef ENCODING_UNDEFINED
 
 
-/* clean_aborted_loadglyphs(): Undoes the changes to the encoding array
+/* _fs_clean_aborted_loadglyphs(): Undoes the changes to the encoding array
    performed by fs_build_range(); for use if the associated LoadGlyphs
    requests needs to be cancelled. */
 
-clean_aborted_loadglyphs(pfont, num_expected_ranges, expected_ranges)
+_fs_clean_aborted_loadglyphs(pfont, num_expected_ranges, expected_ranges)
     FontPtr pfont;
     int num_expected_ranges;
     fsRange *expected_ranges;
@@ -388,8 +388,8 @@ clean_aborted_loadglyphs(pfont, num_expected_ranges, expected_ranges)
 		     col <= expected_ranges[i].max_char_low;
 		     encoding++, col++)
 		{
-		    if (encoding->bits == &glyph_requested)
-			encoding->bits = &glyph_undefined;
+		    if (encoding->bits == &_fs_glyph_requested)
+			encoding->bits = &_fs_glyph_undefined;
 		}
 	    }
 	}
@@ -490,7 +490,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 #define CHECK_ENCODING(cnum) \
     ( pci = encoding + (cnum), \
       fsd->glyphs_to_get ? \
-      ( pci->bits == &glyph_undefined || pci->bits == &glyph_requested ? \
+      ( pci->bits == &_fs_glyph_undefined || pci->bits == &_fs_glyph_requested ? \
 	((err = fs_load_all_glyphs(pFont)), pci) : \
 	pci ) : \
       pci )
@@ -679,9 +679,9 @@ _fs_unload_font(pfont)
 	     encoding++, i--)
 	{
 	    if (encoding->bits &&
-		encoding->bits != &glyph_undefined &&
-		encoding->bits != &glyph_requested &&
-		encoding->bits != &glyph_zero_length)
+		encoding->bits != &_fs_glyph_undefined &&
+		encoding->bits != &_fs_glyph_requested &&
+		encoding->bits != &_fs_glyph_zero_length)
 		xfree(encoding->bits);
 	}
     }
