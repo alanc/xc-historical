@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.67 93/08/17 21:35:06 rws Exp $
+ * $XConsortium: main.c,v 1.68 93/08/17 21:50:56 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -343,8 +343,8 @@ struct filepointer *getfile(file)
 	content->f_base = malloc(content->f_len);
 	if (content->f_base == NULL)
 		fatalerr("cannot allocate mem\n");
-	if (read(fd, content->f_base, st.st_size) != st.st_size)
-		fatalerr("cannot read all of %s\n", file);
+	if (read(fd, content->f_base, st.st_size) < 0)
+		fatalerr("failed to read %s\n", file);
 	close(fd);
 	content->f_p = content->f_base;
 	content->f_end = content->f_base + st.st_size;
@@ -507,8 +507,15 @@ redirect(line, makefile)
 		fatalerr("cannot open \"%s\"\n", makefile);
 	sprintf(backup, "%s.bak", makefile);
 	unlink(backup);
+#ifdef WIN32
+	fclose(fdin);
+#endif
 	if (rename(makefile, backup) < 0)
 		fatalerr("cannot rename %s to %s\n", makefile, backup);
+#ifdef WIN32
+	if ((fdin = fopen(backup, "r")) == NULL)
+		fatalerr("cannot open \"%s\"\n", backup);
+#endif
 	if ((fdout = freopen(makefile, "w", stdout)) == NULL)
 		fatalerr("cannot open \"%s\"\n", backup);
 	len = strlen(line);
