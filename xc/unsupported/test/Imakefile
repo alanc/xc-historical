@@ -1,9 +1,9 @@
-# $Header$
+# $Header: Imakefile,v 1.1 87/09/02 02:21:26 toddb Locked $
        SRCS = zoidclient.c
        OBJS = zoidclient.o
    INCLUDES = -I$(TOP)  -I../include
 CDEBUGFLAGS = -g
 
-SingleProgramTarget(zoidclient,$(OBJS),$(BEZIERLIB) $(XLIB),)
+SingleProgramTarget(zoidclient,$(OBJS),$(ZOIDLIB) $(XLIB),)
 
 DependTarget()
