@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.65 95/03/03 01:54:22 dpw Exp kaleb $ */
+/* $XConsortium: os.h,v 1.66 95/04/07 20:33:29 kaleb Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -657,6 +657,18 @@ extern int ddxProcessArgument(
     int /*i*/
 #endif
 );
+
+#ifdef LBX
+extern ClientPtr AllocPiggybackConnection(
+#if NeedFunctionPrototypes
+    ClientPtr /* client */,
+    int (* /* read */ )(),
+    int (* /* write*/)(),
+    void (* /* close */)()
+#endif
+);
+
+#endif /* LBX */
 
 /*
  *  idiom processing stuff
