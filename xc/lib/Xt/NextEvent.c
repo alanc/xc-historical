@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.34 88/02/02 15:05:46 swick Locked $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.35 88/02/03 14:06:04 swick Locked $";
 #endif lint
 
 /*
@@ -46,12 +46,12 @@ typedef struct _TimerEventRec {
 	struct _TimerEventRec *te_next;
 	Display *te_dpy;
 	XtTimerCallbackProc	te_proc;
-	Opaque	te_closure;
+	caddr_t	te_closure;
 }TimerEventRec;
 
 static struct InputEvent {
 	XtInputCallbackProc  ie_proc;
-	Opaque ie_closure;
+	caddr_t ie_closure;
 	struct	InputEvent	*ie_next;
 	struct  InputEvent	*ie_oq;
 	int	ie_source;
@@ -292,7 +292,7 @@ XtIntervalId
 XtAddTimeOut( interval, proc, closure)
 unsigned long interval;
 XtTimerCallbackProc proc;
-Opaque closure;
+caddr_t closure;
 {
 	TimerEventRec *tptr;
         struct timeval current_time;
@@ -332,9 +332,9 @@ void  XtRemoveTimeOut(id)
 XtInputId
 XtAddInput( source, Condition, proc, closure)
 int source;
-Opaque Condition;
+caddr_t Condition;
 XtInputCallbackProc proc;
-Opaque closure;
+caddr_t closure;
 {
 	struct InputEvent *sptr;
 	XtInputMask condition = (XtInputMask) Condition;
@@ -439,7 +439,7 @@ XEvent *event;
     register Boolean     Claims_X_is_pending = FALSE;
 
     if (DestroyList != NULL) {
-	_XtCallCallbacks (&DestroyList, (Opaque) NULL);
+	_XtCallCallbacks (&DestroyList, (caddr_t) NULL);
 	_XtRemoveAllCallbacks (&DestroyList);
     }
 
