@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Text.c,v 1.43 88/09/04 12:33:39 swick Exp $";
+static char rcsid[] = "$XConsortium: Text.c,v 1.44 88/09/05 12:37:41 swick Exp $";
 #endif
 
 
@@ -871,7 +871,6 @@ static void DoSelection (ctx, position, time, motion)
     else {
 	if ((delta < 500) && ((position >= ctx->text.s.left)
 		    && (position <= ctx->text.s.right))) { /* multi-click event */
-	    sarray = ctx->text.sarray;
 	    for (sarray = ctx->text.sarray;
 		*sarray != XtselectNull && *sarray != ctx->text.s.type;
 		sarray++) ;
@@ -1458,10 +1457,11 @@ int XtTextReplace(w, startPos, endPos, text)
 {
     TextWidget ctx = (TextWidget) w;
     int result;
-    result = EditError;
-	_XtTextPrepareToUpdate(ctx);
-	result = ReplaceText(ctx, startPos, endPos, text);
-	_XtTextExecuteUpdate(ctx);
+
+    _XtTextPrepareToUpdate(ctx);
+    result = ReplaceText(ctx, startPos, endPos, text);
+    _XtTextExecuteUpdate(ctx);
+
     return result;
 }
 
@@ -2386,10 +2386,10 @@ static void InsertFile(w, event)
     Widget w;
     XEvent *event;
 {
-#define DIALOG_LABEL "Insert File:"
     TextWidget ctx = (TextWidget)w;
     register struct _dialog *dialog, *prev;
     char *ptr;
+    static char *dialog_label = "Insert File:";
 #ifdef notdef
     XtTextBlock text;
 #endif
@@ -2397,7 +2397,7 @@ static void InsertFile(w, event)
     static Arg popup_args[] = {
 	{XtNx, NULL},
 	{XtNy, NULL},
-	{XtNiconName, (XtArgVal)DIALOG_LABEL},
+	{XtNiconName, NULL},
 	{XtNgeometry, NULL},
 	{XtNallowShellResize, True},
 	{XtNsaveUnder, True},
@@ -2464,10 +2464,11 @@ static void InsertFile(w, event)
 	dialog->next = NULL;
 	popup_args[0].value = (XtArgVal)x;
 	popup_args[1].value = (XtArgVal)y;
+	popup_args[2].value = (XtArgVal)dialog_label;
 	popup = XtCreatePopupShell( "insertFile", transientShellWidgetClass, w,
 				    popup_args, XtNumber(popup_args) );
 
-	XtSetArg( args[0], XtNlabel, DIALOG_LABEL );
+	XtSetArg( args[0], XtNlabel, dialog_label );
 	XtSetArg( args[1], XtNvalue, ptr ); 
 	dialog->widget =
 	    XtCreateManagedWidget("fileInsert", dialogWidgetClass, popup,
