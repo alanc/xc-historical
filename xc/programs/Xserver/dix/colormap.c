@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.80 89/03/16 08:25:46 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.81 89/03/16 20:26:41 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -226,7 +226,11 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
      * this is it.  In specific, if this is a Static colormap, this is the
      * time to fill in the colormap's values */
     pmap->flags |= BeingCreated;
-    (*pScreen->CreateColormap)(pmap);
+    if (!(*pScreen->CreateColormap)(pmap))
+    {
+	FreeColormap(pmap, mid);
+	return BadAlloc;
+    }
     pmap->flags &= ~BeingCreated;
     *ppcmap = pmap;
     return (Success);
