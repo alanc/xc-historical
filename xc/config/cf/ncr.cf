@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ncr.cf,v 1.5 94/02/06 20:01:39 rws Exp $
+XCOMM platform:  $XConsortium: ncr.cf,v 1.6 94/02/19 18:08:15 rws Exp $
 #define OSName			NCR Unix System V Release 4/MP-RAS
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
@@ -11,20 +11,8 @@ XCOMM operating system:  OSName
 
 /* Build Flags */
 
-XCOMM #define StandardDefines		-DSVR4 -DNCR -Di386 -DUSL_COMPAT -DXML -DXI18N
 #define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N
-#ifndef StrictAnsiMode
-#define StrictAnsiMode		NO
-#endif
-#if StrictAnsiMode
-#define DefaultCCOptions -Xc -Hnocopyr
-#else
-#define DefaultCCOptions -Xa -DANSICPP -Hnocopyr
-#define NeedConstPrototypes	YES
-#define NeedVarargsPrototypes	YES
-#define NeedNestedPrototypes	YES
-#define	NeedFunctionPrototypes  YES
-#endif
+#define DefaultCCOptions	-Xc -Hnocopyr -W0,-asm
 #define DefaultCDebugFlags	-O3
 #define ServerExtraDefines      -DSYSV386 -DXSVGA -DNO_SECONDARY
 #define ServerOSDefines         -DDDXTIME -DDDXOSINIT
