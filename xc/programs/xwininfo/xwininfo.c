@@ -408,11 +408,11 @@ Display_Stats_Info(window)
   printf("         ==> Window Backing Store State: %s\n",
   	 Lookup(win_attributes.backing_store, _backing_store_states));
   printf("         ==> Window Save Under State: %s\n",
-  	 win_attributes.save_under ? "t" : "nil");
+  	 win_attributes.save_under ? "yes" : "no");
   printf("         ==> Window Map State: %s\n",
 	 Lookup(win_attributes.map_state, _map_states));
   printf("         ==> Window Override Redirect State: %s\n",
-  	 win_attributes.override_redirect ? "t" : "nil");
+  	 win_attributes.override_redirect ? "yes" : "no");
   printf("         ==> Corners:  +%d+%d  -%d+%d  -%d-%d  +%d-%d\n",
 	 win_attributes.x, win_attributes.y, xright, win_attributes.y, 
 	 xright, ybelow, win_attributes.x, ybelow);
