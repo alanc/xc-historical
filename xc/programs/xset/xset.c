@@ -1,13 +1,12 @@
 /* 
- * $header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
- * $Locker: jim $ 
+ * $XHeader: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.30 88/05/11 13:20:30 jim Exp $";
+static char *rcsid_xset_c = "$XHeader: xset.c,v 1.31 88/07/05 14:05:37 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -395,9 +394,10 @@ if (acc_num == DONT_CHANGE)		/* what an incredible crock... */
   do_accel = False;
 if (threshold == DONT_CHANGE)
   do_threshold = False;
-if (acc_denom <= 0)			/* shouldn't happen */
+if (acc_num < 0) 			/* shouldn't happen */
+  acc_num = SERVER_DEFAULT;
+if (acc_denom <= 0)			/* prevent divide by zero */
   acc_denom = SERVER_DEFAULT;
-if (threshold == 0) threshold = 1;	/* in case person makes silly error */
 if (threshold < 0) threshold = SERVER_DEFAULT;
 XChangePointerControl(dpy, do_accel, do_threshold, acc_num,
 		      acc_denom, threshold);
