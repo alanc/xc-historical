@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 94/02/10 16:49:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/03/29 15:53:59 gildea Exp $
 
 DEPLIBS = 
 
@@ -15,7 +15,7 @@ XBSDLIB = /**/
 #define ImakeDependency(dummy) @@\
 Makefile::  ProgramTargetName(imake)
 
-#ifdef CrossCompiling
+#if CrossCompiling
 SimpleHostProgramTarget(imake)
 #else
 SimpleProgramTarget(imake)
