@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.19 94/03/31 10:52:32 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.20 94/03/31 15:52:58 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -51,6 +51,7 @@
 #define TRANS_LOCAL_NAMED_INDEX		11
 #define TRANS_LOCAL_ISC_INDEX		12
 #define TRANS_LOCAL_SCO_INDEX		13
+#define TRANS_AMOEBA_INDEX		14
 
 
 static
@@ -81,7 +82,7 @@ Xtransport_table Xtransports[] = {
     &TRANS(SCOFuncs),		TRANS_LOCAL_SCO_INDEX,
 #endif /* LOCALCONN */
 #if defined(AMRPCCONN) || defined(AMTCPCONN)
-    &TRANS(AmConnFuncs),
+    &TRANS(AmConnFuncs),	TRANS_AMOEBA_INDEX,
 #endif /* AMRPCCONN || AMTCPCONN */
 };
 
