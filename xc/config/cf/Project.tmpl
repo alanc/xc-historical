@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.32 89/08/22 18:02:13 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.33 89/08/23 14:14:27 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -265,7 +265,7 @@
 #define SharedLibXmu NO
 #endif
 #endif
-#ifndef SharedLibExtensions
+#ifndef SharedLibXext
 #if HasSunOSSharedLibraries
 #define SharedLibXext YES
 #else
@@ -310,7 +310,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.32 89/08/22 18:02:13 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.33 89/08/23 14:14:27 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -397,29 +397,50 @@ Berklib.c: sysV/Berklib.c					@@\
 #else
 #define dirtouse(a,b) b
 #endif
-#if HasSunOSSharedLibraries && SharedXlib
+#if SharedLibX
           DEPXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV)
-#else
-          DEPXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.a
-#endif
-  DEPEXTENSIONLIB = dirtouse($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.a
-      DEPXAUTHLIB = dirtouse($(USRLIBDIR),$(XAUTHSRC))/libXau.a
-        DEPXMULIB = dirtouse($(USRLIBDIR),$(XMUSRC))/libXmu.a
-       DEPOLDXLIB = dirtouse($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.a
-      DEPXTOOLLIB = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/libXt.a
-        DEPXAWLIB = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
-
-#if HasSunOSSharedLibraries && SharedXlib
              XLIB = dirtouse(-lX11,-L$(XLIBSRC) -lX11)
 #else
+          DEPXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.a
              XLIB = $(DEPXLIB)
 #endif
+#if SharedLibXext
+  DEPEXTENSIONLIB = dirtouse($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.so.$(SOXEXTREV)
+     EXTENSIONLIB = dirtouse(-lXext,-L$(EXTENSIONSRC) -lXext)
+#else
+  DEPEXTENSIONLIB = dirtouse($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.a
      EXTENSIONLIB = $(DEPEXTENSIONLIB)
+#endif
+      DEPXAUTHLIB = dirtouse($(USRLIBDIR),$(XAUTHSRC))/libXau.a
          XAUTHLIB = $(DEPXAUTHLIB)
+#if SharedLibXmu
+        DEPXMULIB = dirtouse($(USRLIBDIR),$(XMUSRC))/libXmu.so.$(SOXMUREV)
+           XMULIB = dirtouse(-lXmu,-L$(XMUSRC) -lXmu)
+#else
+        DEPXMULIB = dirtouse($(USRLIBDIR),$(XMUSRC))/libXmu.a
            XMULIB = $(DEPXMULIB)
+#endif
+#if SharedOldLibX
+       DEPOLDXLIB = dirtouse($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.so.$(SOOLDXREV)
+          OLDXLIB = dirtouse(-loldX,-L$(OLDXLIBSRC) -loldX)
+#else
+       DEPOLDXLIB = dirtouse($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.a
           OLDXLIB = $(DEPOLDXLIB)
+#endif
+#if SharedLibXt
+      DEPXTOOLLIB = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/libXt.so.$(SOXTREV)
+         XTOOLLIB = dirtouse(-lXt,-L$(TOOLKITSRC) -lXt)
+#else
+      DEPXTOOLLIB = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/libXt.a
          XTOOLLIB = $(DEPXTOOLLIB)
+#endif
+#if SharedLibXaw
+        DEPXAWLIB = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/libXaw.so.$(SOXAWREV)
+           XAWLIB = dirtouse(-lXaw,-L$(AWIDGETSRC) -lXaw)
+#else
+        DEPXAWLIB = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
            XAWLIB = $(DEPXAWLIB)
+#endif
 
          LINTXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/llib-lX11.ln
           LINTXMU = dirtouse($(USRLIBDIR),$(XMUSRC))/llib-lXmu.ln

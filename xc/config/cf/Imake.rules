@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.46 89/08/22 18:02:08 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.47 89/08/23 14:39:03 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -331,10 +331,8 @@ install:: lib/**/libname.a						@@\
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
 install:: lib/**/libname.so.rev lib/**/libname.sa.rev			@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest	@@\
-	@if [ -s lib/**/libname.sa.rev ]; then \			@@\
-	    echo "	" $(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest; fi @@\
-	    $(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest; \	@@\
-	fi
+	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest
+
 #endif /* InstallSharedLibrary */
 
 
@@ -883,12 +881,8 @@ lib/**/libname.so.rev:  solist						@@\
 									@@\
 lib/**/libname.sa.rev:  salist						@@\
 	$(RM) $@							@@\
-	@if [ `echo salist | wc -w` -ne 0 ]; then \			@@\
-		echo "	$(AR) $@ salist; $(RANLIB) $@"; \		@@\
-		$(AR) $@ salist; $(RANLIB) $@; \			@@\
-	else \								@@\
-		echo "	touch $@"; touch $@; \				@@\
-	fi								@@\
+	$(AR) $@ salist							@@\
+	$(RANLIB) $@							@@\
 									@@\
 clean::									@@\
 	$(RM) lib/**/libname.so.rev lib/**/libname.sa.rev
