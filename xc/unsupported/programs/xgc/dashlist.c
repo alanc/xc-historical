@@ -3,65 +3,67 @@
 **
 ** How to make a widget to choose a dashlist.
 **
-** This and planemask.c can/should probably be combined.
+** NOTE: This file uses static variables.  Therefore, trying to use these
+**       functions to create more than one of these dashlist choice things
+**       will fail in a big way.
 */
 
-#include <X11/IntrinsicP.h>
+#include <X11/Intrinsic.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
-#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Toggle.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
 void change_dashlist();
 extern void interpret();
 
-#define DASHLENGTH 8		/* How many bits in the dash description */
-
 extern XStuff X;
 
 static short dashlist = 240;	/* in binary, becomes the dashlist
 				   (240 = XXXX____) */
+static Widget *dashes;	        /* the toggle widgets */
 
 /* create_dashlist_choice(w)
 ** -------------------------
-** Inside w (a form widget), creates a bunch of little command buttons
+** Inside w (a form widget), creates a bunch of little toggle buttons
 ** in a row, representing the dash list.  There's also a label so
 ** the user knows what it is.
 */
 
-void create_dashlist_choice(w)
+void
+create_dashlist_choice(w)
      Widget w;
 {
+  /* callback list for the toggle widgets */
   static XtCallbackRec callbacklist[] = {
     {(XtCallbackProc) change_dashlist, NULL},
     {NULL,                             NULL}
   };
 
+  /* ArgList for the label */
   static Arg labelargs[] = {
     {XtNborderWidth,  (XtArgVal) 0},
     {XtNjustify,      (XtArgVal) XtJustifyRight},
     {XtNvertDistance, (XtArgVal) 4}
   };
 
+  /* ArgList for the toggles */
   static Arg dashargs[] = {
-    {XtNcallback,         (XtArgVal) NULL},
-    {XtNhorizDistance,    (XtArgVal) NULL},
-    {XtNfromHoriz,        (XtArgVal) NULL},
-    {XtNwidth,             (XtArgVal) 10},
-    {XtNheight,            (XtArgVal) 10},
-    {XtNhighlightThickness,(XtArgVal) 1},
-    {XtNforeground,        (XtArgVal) NULL},
-    {XtNbackground,        (XtArgVal) NULL}
+    {XtNcallback,           (XtArgVal) NULL},
+    {XtNhorizDistance,      (XtArgVal) NULL},
+    {XtNfromHoriz,          (XtArgVal) NULL},
+    {XtNwidth,              (XtArgVal) 10},
+    {XtNheight,             (XtArgVal) 10},
+    {XtNhighlightThickness, (XtArgVal) 1},
+    {XtNstate,              (XtArgVal) False}
   };
 
   static Widget label;		/* the label, of course */
-  static Widget *dashes;	/* the command buttons */
   static int *dashinfo;		/* contains integers saying which bit
 				   a particular button is; sent to
 				   change_dashlist to tell it which
 				   bit got changed */
-
   int i;			/* counter */
 
   /* allocate space for stuff that we don't know the size of yet */
@@ -85,99 +87,91 @@ void create_dashlist_choice(w)
       dashargs[2].value = (XtArgVal) dashes[i-1];
     }
 
-    if (dashlist&1<<i) {	/* if it's set, make it look that way */
-      dashargs[6].value = (XtArgVal) X.background;
-      dashargs[7].value = (XtArgVal) X.foreground;
-    }
-    else {			/* OK, don't */
-      dashargs[6].value = (XtArgVal) X.foreground;
-      dashargs[7].value = (XtArgVal) X.background;
-    }
+    /* set its original state depending on the state of that
+    ** bit of the dashlist */
+
+    if (dashlist&1<<i)
+      dashargs[6].value = (XtArgVal) True;
+    else
+      dashargs[6].value = (XtArgVal) False;
 
     dashinfo[i] = i;		/* which bit we're on; this is needed
 				   in change_dashlist (the callback) */
     callbacklist[0].closure = (caddr_t) &dashinfo[i];
 
     /* make the button.  Note it has no name */
-    dashes[i] = XtCreateManagedWidget(NULL,commandWidgetClass,w,
+    dashes[i] = XtCreateManagedWidget(NULL,toggleWidgetClass,w,
 				  dashargs,XtNumber(dashargs));
   }
 }
 
 /* change_dashlist(w,closure,call_data)
 ** ------------------------------------
-** Makes it obvious to the user that he has toggled this button.  Also
+** This function is called when the user toggles a toggle widget.  It
 ** makes the appropriate change to the dashlist and sends it off
 ** to interpret().
 ** Funny args are because it's a callback.
 */
 
 /*ARGSUSED*/
-static void change_dashlist(w,closure,call_data)
+static void
+change_dashlist(w,closure,call_data)
      Widget w;
      caddr_t closure;
      caddr_t call_data;
 {
-  Boolean on;			/* whether we're turning it on or off */
   int num;			/* what number button it is */
+  Boolean on;			/* is it currently on or off? */
+
   char buf[80];			/* string to send to interpret() */
 
   static Arg args[] = {
-    {XtNforeground,  (XtArgVal) NULL},
-    {XtNbackground,  (XtArgVal) NULL},
+    {XtNstate,    (XtArgVal) NULL}
   };
 
+  /* set up ArgList so that 'on' will contain the state */
+  args[0].value = (XtArgVal) &on;
+
   num = * (int *) closure;	/* we put it here back in the last function */
-  if (dashlist & 1<<num) on = FALSE;
-  else on = TRUE;
+  XtGetValues(w,args,XtNumber(args));
 
-  if (on) {			/* we're turning it on */
-    dashlist |= 1<<num;		/* add it to the dashlist */
-    args[0].value = (XtArgVal) X.background; /* make it look on */
-    args[1].value = (XtArgVal) X.foreground;
+  /* modify the dashlist as appropriate. */
+  if (on) {			
+    dashlist |= 1<<num;		
   }
-  else {			/* we're turning it off */
-    dashlist &= ~(1<<num);	/* take it off the dashlist */
-    args[0].value = (XtArgVal) X.foreground; /* make it look off */
-    args[1].value = (XtArgVal) X.background;
+  else {			
+    dashlist &= ~(1<<num);	
   }
-
-  XtSetValues(w,args,XtNumber(args));
 
   /* now tell interpret() about it */
   sprintf(buf,"dashlist %d\n",dashlist); 
   interpret(buf,FALSE);
 }
 
+/* update_dashlist(newdash)
+** ------------------------
+** Updates the display of the dashlist so that it corresponds to
+** newdash.
+*/
 
-void update_dashlist(w, dashes)
-     Widget w;
-     int dashes;
+void
+update_dashlist(newdash)
+     int newdash;
 {
-  int i;
-  Widget dashwidget;
-  CompositeWidget cw;
-  static Arg dashargs[] = {
-    {XtNforeground, (XtArgVal) NULL},
-    {XtNbackground, (XtArgVal) NULL}
+  int i;			/* counter */
+  static Arg dashargs[] = {	/* Arglist for setting toggle state */
+    {XtNstate,   (XtArgVal) NULL}
   };
 
-  dashlist = dashes;
+  /* first set the internal representation */
+  dashlist = newdash;
 
   for (i = 0; i < DASHLENGTH; ++i) {
-    cw = (CompositeWidget) w;
-    dashwidget = cw->composite.children[i+1]; /* the zeroth child
-					         is the label */
+    if (newdash & 1<<i) 	/* if it's set, make it look that way */
+      dashargs[0].value = (XtArgVal) True;
+    else
+      dashargs[0].value = (XtArgVal) False;
 
-    if (dashes & 1<<i) {	/* if it's set, make it look that way */
-      dashargs[0].value = (XtArgVal) X.background;
-      dashargs[1].value = (XtArgVal) X.foreground;
-    }
-    else {
-      dashargs[0].value = (XtArgVal) X.foreground;
-      dashargs[1].value = (XtArgVal) X.background;
-    }
-    
-    XtSetValues(dashwidget,dashargs,XtNumber(dashargs));
+    XtSetValues(dashes[i],dashargs,XtNumber(dashargs));
   }
 }
