@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.28 94/02/20 15:13:46 rws Exp $
+ * $XConsortium: locking.c,v 1.29 94/02/24 14:36:02 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -133,12 +133,12 @@ int lock_hist_loc = 0;		/* next slot to fill */
 #endif /* XTHREADS_WARN */
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-void _XLockDisplay(dpy,file,line)
+static void _XLockDisplay(dpy,file,line)
     Display *dpy;
     char *file;			/* source file, from macro */
     int line;
 #else
-void _XLockDisplay(dpy)
+static void _XLockDisplay(dpy)
     Display *dpy;
 #endif
 {
@@ -490,7 +490,7 @@ static void _XInternalLockDisplay(dpy, wskip)
 #else
     _XLockDisplay(dpy);
 #endif
-    if (!wskip)
+    if (!wskip && dpy->lock->locking_level > 0)
 	_XDisplayLockWait(dpy);
 }
 
@@ -505,7 +505,6 @@ static void _XUserLockDisplay(dpy)
     if (++dpy->lock->locking_level == 1) {
 	/* substitute fancier, slower lock function */
 	dpy->lock_fns->lock_display = _XFancyLockDisplay;
-	dpy->lock->internal_lock_display = _XInternalLockDisplay;
 	/* really only needs to be done once */
 	dpy->lock->lock_wait = _XDisplayLockWait;
 	if (xthread_have_id(dpy->lock->locking_thread)) {
@@ -531,7 +530,6 @@ void _XUserUnlockDisplay(dpy)
 	ConditionBroadcast(dpy, dpy->lock->cv);
 	/* substitute function back */
 	dpy->lock_fns->lock_display = _XLockDisplay;
-	dpy->lock->internal_lock_display = _XLockDisplay;
 	dpy->lock->lock_wait = NULL;
 	xthread_clear_id(dpy->lock->locking_thread);
 	dpy->lock->locking_level = 0; /* paranoia */
@@ -574,7 +572,7 @@ static int _XInitDisplayLock(dpy)
     xcondition_init(dpy->lock->cv);
     xcondition_init(dpy->lock->writers);
     dpy->lock_fns->lock_display = _XLockDisplay;
-    dpy->lock->internal_lock_display = _XLockDisplay;
+    dpy->lock->internal_lock_display = _XInternalLockDisplay;
     dpy->lock_fns->unlock_display = _XUnlockDisplay;
     dpy->lock->user_lock_display = _XUserLockDisplay;
     dpy->lock->user_unlock_display = _XUserUnlockDisplay;
