@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.34 88/07/15 12:06:19 jim Exp $ 
+ * $XConsortium: xset.c,v 1.43 88/09/06 14:36:40 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.34 88/07/15 12:06:19 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.43 88/09/06 14:36:40 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -143,31 +143,40 @@ for (i = 1; i < argc; ) {
     } else {
 	arg = nextarg(i, argv);
     }
-    set_font_path(dpy, arg, 0, 0);
+    set_font_path(dpy, arg, 1, 0, 0);	/* special argument */
+    i++;
+  }
+  else if (strcmp(arg, "fp=") == 0) {	/* unconditionally set */
+    if (i >= argc) {
+	usage ("missing fp= argument", NULL);
+    } else {
+	arg = nextarg(i, argv);
+    }
+    set_font_path(dpy, arg, 0, 0, 0);	/* not special, set */
     i++;
   }
   else if (strcmp(arg, "+fp") == 0) {	       /* set font path */
     if (i >= argc) usage ("missing +fp argument", NULL);
     arg = nextarg(i, argv);
-    set_font_path(dpy, arg, 1, 0);
+    set_font_path(dpy, arg, 0, 1, 0);	/* not special, prepend */
     i++;
   }
   else if (strcmp(arg, "fp+") == 0) {	       /* set font path */
     if (i >= argc) usage ("missing fp+ argument", NULL);
     arg = nextarg(i, argv);
-    set_font_path(dpy, arg, 0, 1);
+    set_font_path(dpy, arg, 0, 0, 1);	/* not special, append */
     i++;
   }
   else if (strcmp(arg, "-fp") == 0) {	       /* set font path */
     if (i >= argc) usage ("missing -fp argument", NULL);
     arg = nextarg(i, argv);
-    set_font_path(dpy, arg, -1, 0);
+    set_font_path(dpy, arg, 0, -1, 0);	/* not special, preremove */
     i++;
   }
   else if (strcmp(arg, "fp-") == 0) {	       /* set font path */
     if (i >= argc) usage ("missing fp- argument", NULL);
     arg = nextarg(i, argv);
-    set_font_path(dpy, arg, 0, -1);
+    set_font_path(dpy, arg, 0, 0, -1);	/* not special, postremove */
     i++;
   }
   else if (strcmp(arg, "-led") == 0) {         /* Turn off one or all LEDs */
@@ -338,7 +347,7 @@ for (i = 1; i < argc; ) {
   else if (*arg == 'k') {         /*  Set modifier keys.               */
     set_lock(dpy, ON);
   }
-  else if (*arg == 'q') {         /*  Give status to user.             */
+  else if (*arg == 'q' || strncmp(arg, "-q", 2) == 0) {	 /* query status */
     query(dpy);
   }
   else
@@ -461,23 +470,35 @@ return;
  *	   0      1	FontPath := current + path
  */
 
-set_font_path(dpy, path, before, after)
+set_font_path(dpy, path, special, before, after)
     Display *dpy;
     char *path;
+    int special, before, after;
 {
     char **directoryList = NULL; int ndirs = 0;
     char **currentList = NULL; int ncurrent = 0;
     char **newList = NULL; int nnew = 0;
 
-    if (strcmp (path, "default") == 0) {
-	if (before != 0 || after != 0) {
-	    fprintf (stderr,
-		     "%s:  may only use \"default\" for option \"fp\".\n",
-		     progName);
+    if (special) {
+	if (strcmp (path, "default") == 0) {
+	    XSetFontPath (dpy, NULL, 0);
 	    return;
 	}
-	XSetFontPath (dpy, NULL, 0);
-	return;
+	if (strcmp (path, "rehash") == 0) {
+	    currentList = XGetFontPath (dpy, &ncurrent);
+	    if (!currentList) {
+		fprintf (stderr, "%s:  unable to get current font path.\n",
+			 progName);
+		return;
+	    }
+	    XSetFontPath (dpy, currentList, ncurrent);
+	    free ((char *) currentList);
+	    return;
+	} 
+	/*
+	 * for now, fall though and process keyword and directory list for
+	 * compatibility with previous versions.
+	 */
     }
 
     /*
@@ -765,37 +786,40 @@ font_path = XGetFontPath(dpy, &npaths);
 pmap_count = XGetPointerMapping (dpy, pmap, 256);
 
 printf ("Keyboard Control Values:\n");
-/*printf ("Auto Repeat: %d \t\t", values.auto_repeat_mode);    %%*/
-/*printf ("Key: %d \n\n", values.key);     %%*/
-printf ("Key Click Volume (%%): %d \n", values.key_click_percent);
-printf ("Bell Volume (%%): %d \t", values.bell_percent);
-printf ("Bell Pitch (Hz): %d \t", values.bell_pitch);
-printf ("Bell Duration (msec): %d \n", values.bell_duration);
-/*printf ("LED: %d \t\t\t", values.led);
-printf ("LED Mode: %o \t\t", values.led_mode);         %%*/
+/*printf ("Auto Repeat:  %d \t\t", values.auto_repeat_mode);    %%*/
+/*printf ("Key:  %d \n\n", values.key);     %%*/
+printf ("Key Click Volume (%%):  %d \n", values.key_click_percent);
+printf ("Bell Volume (%%):  %d \t", values.bell_percent);
+printf ("Bell Pitch (Hz):  %d \t", values.bell_pitch);
+printf ("Bell Duration (msec):  %d \n", values.bell_duration);
+/*printf ("LED:  %d \t\t\t", values.led);
+printf ("LED Mode:  %o \t\t", values.led_mode);         %%*/
 
-printf ("Pointer (Mouse) Control Values:\n");
-printf ("Acceleration: %d (%d/%d)\t", acc_num / acc_denom, acc_num, acc_denom);
-printf ("Threshold: %d \n", threshold);
+printf ("Pointer Control Values:\n");
+printf ("Acceleration:  %d (%d/%d)\t",
+	acc_num / acc_denom, acc_num, acc_denom);
+printf ("Threshold:  %d \n", threshold);
 printf ("Screen Saver:\n");
-printf ("Prefer Blanking: %s\t",
+printf ("Prefer Blanking:  %s\t",
 	(prefer_blank == PreferBlanking) ? "Yes" :
 	(prefer_blank == DontPreferBlanking) ? "No" :
 	"<server violates spec>");
-printf ("Allow Exposures: %s\t",
+printf ("Allow Exposures:  %s\n",
 	(allow_exp == AllowExposures) ? "Yes" :
 	(allow_exp == DontAllowExposures) ? "No" :
 	"<server violates spec>");
-printf ("Time-out: %d \t Cycle: %d\n", timeout, interval);
-printf ("Default colormap:  0x%lx \t BlackPixel: %d \t WhitePixel: %d\n",
+printf ("Time-out:  %d \t Cycle:  %d\n", timeout, interval);
+printf ("Default colormap:   0x%lx \t BlackPixel:  %d \t WhitePixel:  %d\n",
 	DefaultColormap (dpy, scr), 
 	BlackPixel (dpy, scr), WhitePixel (dpy, scr));
 
 if (npaths) {
-    printf( "Font Path: %s", *font_path++ );
+    printf( "Font Path:  %s", *font_path++ );
     for( --npaths; npaths; npaths-- )
         printf( ",%s", *font_path++ );
     printf( "\n" );
+} else {
+    printf ("Font Path:  (empty)\n");
 }
 printf ("Pointer map:");
 for (ucp = pmap; pmap_count > 0; ucp++, pmap_count--) {
@@ -828,9 +852,11 @@ usage (fmt, arg)
     fprintf (stderr, "    To set keyclick volume:\n");
     fprintf (stderr, "\t c [0-100]        c on\n");
     fprintf (stderr, "    To set the font path:\n" );
-    fprintf (stderr, "\t fp path[,path...]\n" );
-    fprintf (stderr, "    To restore the default font path:\n" );
-    fprintf (stderr, "\t fp default\n" );
+    fprintf (stderr, "\t fp= path[,path...]\n" );
+    fprintf (stderr, "    To restore the default font path:\n");
+    fprintf (stderr, "\t fp default\n");
+    fprintf (stderr, "    To have the server reread font databases:\n");
+    fprintf (stderr, "\t fp rehash\n");
     fprintf (stderr, "    To remove elements from font path:\n");
     fprintf (stderr, "\t-fp path[,path...]  fp- path[,path...]\n");
     fprintf (stderr, "    To prepend or append elements to font path:\n");

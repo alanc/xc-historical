@@ -6,7 +6,7 @@ xset - user preference utility for X
 [-display \fIdisplay\fP]
 [-b] [b on/off] [b [\fIvolume\fP [\fIpitch\fP [\fIduration\fP]]]
 [-c] [c on/off] [c [\fIvolume\fP]]
-[[-+]fp[-+] \fIpath\fP[,\fIpath\fP[,...]]] [fp default]
+[[-+]fp[-+=] \fIpath\fP[,\fIpath\fP[,...]]] [fp default] [fp rehash]
 [[-]led [\fIinteger\fP]] [led on/off]
 [m[ouse] [\fIacceleration\fP [\fIthreshold\fP]]] [m[ouse] default]
 [p \fIpixel\fP \fIcolor\fP]
@@ -55,13 +55,20 @@ The X server will set
 the volume to the nearest value that the hardware can support.
 .PP
 .TP 8
-.B fp
-The \fBfp\fP option sets the font path.
-It must be followed by a comma-separated list of
-directories or the flag 'default'.
-The indicated path will be used to find fonts for clients.
-To restore the default
-font path, use \fBfp default\fP.
+.B fp= \fIpath,...\fP
+The \fBfp=\fP sets the font path to the directories given in the path argument.
+The directories are interpreted by the server, not by the client, and are
+server-dependent.  Directories that do not contain font databases created by
+\fImkfontdir\fP will be ignored by the server.
+.TP 8
+.B fp \fIdefault\fP
+The \fIdefault\fP argument causes the font path to be reset to the server's
+default.
+.TP 8
+.B fp \fIrehash\fP
+The \fIrehash\fP argument causes the server to reread the font databases in
+the current font path.  This is generally only used when adding new fonts to
+a font directory (after running \fImkfontdir\fP to recreate the font database).
 .PP
 .TP 8
 .B "\-fp \fRor\fP fp\-"
