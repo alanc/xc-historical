@@ -1,0 +1,36 @@
+.\" $XConsortium: Exp $
+
+This library replaces the C library allocator;
+providing malloc, free, realloc and calloc (sorry, no valloc)
+
+In doing so, it provides extensive memory bug checking, locating:
+
+	Lost memory; memory which has not been freed and which has no
+	references
+
+	In use free memory; memorhy which has been freed and still has
+	references to it.
+
+	Stores to freed memory
+
+	free/realloc with invalid pointers -- if you pass in a pointer to
+	the middle of an allocated block, it will even tell you which one
+
+For each of these errors, a report entry is generated which includes
+the stack backtrace of either the allocation or free (which ever occured
+last) along with the current stack, when relevant.
+
+Unreferenced allocated memory, stores to freed memory and referenced freed
+memory are only caught when CheckMemory is called.  It is automatically
+called each time 1m of data has been freed, and is called when the program
+exits (by registering with atexit(3)/on_exit(3)).  You can call it whenever
+you want; the X server calls it after each reset when os/utils.c is compiled
+-DMEMBUG.
+
+To port this system to a new machine, you must provide two values, one
+indicating the lowest data address in a program and one indicating the
+highest stack address.  In addition, to get return stack traces (which are
+almost essential for debugging), you must provide the function
+getReturnStack.  Samples for MIPS and SPARC are included already.
+
+-keit
