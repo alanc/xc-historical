@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.164 88/11/22 18:20:33 rws Exp $ */
+/* $XConsortium: events.c,v 1.165 88/12/31 09:57:36 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3439,7 +3439,10 @@ MaybeStopHint(client)
     Mask mask;
 
     if ((grab && (client == grab->client) &&
-	 (grab->eventMask & PointerMotionHintMask)) ||
+	 ((grab->eventMask & PointerMotionHintMask) ||
+	  (grab->ownerEvents &&
+	   (EventMaskForClient(motionHintWindow, client, &mask) &
+	    PointerMotionHintMask)))) ||
 	(!grab && (EventMaskForClient(motionHintWindow, client, &mask) &
 		   PointerMotionHintMask)))
 	motionHintWindow = NullWindow;
