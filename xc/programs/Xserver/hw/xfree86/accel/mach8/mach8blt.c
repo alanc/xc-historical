@@ -1,4 +1,4 @@
-/* $XConsortium: mach8blt.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XConsortium: mach8blt.c,v 1.3 94/10/12 20:01:59 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8blt.c,v 3.1 1994/06/06 06:46:42 dawes Exp $ */
 /*
 
@@ -43,7 +43,7 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 */
 
 
-/* $XConsortium: mach8blt.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XConsortium: mach8blt.c,v 1.3 94/10/12 20:01:59 kaleb Exp kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -833,7 +833,7 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
          int   pixWidth;
-         unsigned char *psrc;
+         char *psrc;
 
          pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
          psrc = pix->devPrivate.ptr;

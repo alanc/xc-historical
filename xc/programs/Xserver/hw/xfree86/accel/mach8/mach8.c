@@ -1,4 +1,4 @@
-/* $XConsortium: mach8.c,v 1.2 94/10/12 20:01:59 kaleb Exp kaleb $ */
+/* $XConsortium: mach8.c,v 1.3 94/10/14 13:25:08 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.10 1994/09/23 10:09:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -158,7 +158,7 @@ void (*mach8ImageReadFunc)(
     int,
     int,
     int,
-    short 
+    unsigned long 
 #endif
 );
 void (*mach8RealImageFillFunc)(
@@ -183,14 +183,14 @@ void (*mach8ImageStippleFunc)(
     int,
     int,
     int,
-    unsigned char *,
+    char *,
     int,
     int,
     int,
     int,
     int,
-    unsigned long,
-    unsigned long,
+    Pixel,
+    Pixel,
     short,
     unsigned long,
     int

@@ -1,4 +1,4 @@
-/* $XConsortium: mach8.h,v 1.2 94/10/12 20:01:59 kaleb Exp kaleb $ */
+/* $XConsortium: mach8.h,v 1.3 94/10/14 13:25:08 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.h,v 3.1 1994/07/24 11:46:16 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -58,64 +58,23 @@ extern int mach8ValidTokens[];
 
 extern void (*mach8ImageWriteFunc)(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    short,
-    unsigned long
+    int, int, int, int, char *, int, int, int, short, unsigned long
 #endif
 );
 extern void (*mach8ImageReadFunc)(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    short 
+    int, int, int, int, char *, int, int, int, unsigned long 
 #endif
 );
 extern void (*mach8RealImageFillFunc)(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    short,
-    unsigned long
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
 #endif
 );
 extern void (*mach8ImageStippleFunc)(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    unsigned char *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    unsigned long,
-    unsigned long,
-    short,
-    unsigned long,
-    int
+    int, int, int, int, char *, int, int, int, int, int, Pixel, Pixel,
+    short, unsigned long, int
 #endif
 );
 
@@ -336,7 +295,7 @@ void mach8ImageFill(
     int,
     int,
     int,
-    int,
+    short,
     unsigned long 
 #endif
 );
@@ -576,7 +535,7 @@ void mach8ImageRead(
     int,
     int,
     int,
-    short 
+    unsigned long 
 #endif
 );
 void mach8ImageWrite(
@@ -603,7 +562,7 @@ void mach8ImageReadDram(
     int,
     int,
     int,
-    short 
+    unsigned long 
 #endif
 );
 void mach8ImageWriteDram(
@@ -642,14 +601,14 @@ void mach8ImageStippleDram(
     int,
     int,
     int,
-    unsigned char *,
+    char *,
     int,
     int,
     int,
     int,
     int,
-    unsigned long,
-    unsigned long,
+    Pixel,
+    Pixel,
     short,
     unsigned long,
     int
@@ -661,14 +620,14 @@ void mach8ImageStipple(
     int,
     int,
     int,
-    unsigned char *,
+    char *,
     int,
     int,
     int,
     int,
     int,
-    unsigned long,
-    unsigned long,
+    Pixel,
+    Pixel,
     short,
     unsigned long,
     int
