@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.98 91/03/24 17:31:02 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.99 91/03/24 17:55:25 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -27,6 +27,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.98 91/03/24 17:31:02 rws Exp $
  *     	InstallLintLibrary			(libname,dest)
  *     	InstallManPageLong			(file,destdir,dest)
  *     	InstallManPage				(file,dest)
+ *	InstallNamedNonExec			(srcname,dstname,dest)
+ *	InstallNonExecFile			(file,dest)
  *     	InstallNonExec				(file,dest)
  *     	InstallProgram				(program,dest)
  *	InstallProgramWithFlags			(program,dest,flags)
@@ -372,7 +374,7 @@ install.ln:: Concat(llib-l,libname.ln)					@@\
 #ifndef InstallManPageLong
 #define	InstallManPageLong(file,destdir,dest)				@@\
 install.man:: file.man							@@\
-	MakeDir($(DESTDIR)dest)						@@\
+	MakeDir($(DESTDIR)destdir)					@@\
 	$(INSTALL) -c $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.ManSuffix
 #endif /* InstallManPageLong */
 
@@ -387,13 +389,32 @@ InstallManPageLong(file,dest,file)
 
 
 /*
+ * InstallNamedNonExec - generate rules to install a data file
+ */
+#ifndef InstallNamedNonExec
+#define	InstallNamedNonExec(srcname,dstname,dest)			@@\
+install:: srcname							@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) -c $(INSTDATFLAGS) srcname $(DESTDIR)dest/dstname
+#endif /* InstallNamedNonExec */
+
+
+/*
+ * InstallNonExecFile - generate rules to install a data file
+ */
+#ifndef InstallNonExecFile
+#define	InstallNonExecFile(file,dest)					@@\
+InstallNamedNonExec(file,file,dest)
+#endif /* InstallNonExecFile */
+
+
+/*
  * InstallNonExec - generate rules to install a data file using any special
  * install flags
  */
 #ifndef InstallNonExec
 #define	InstallNonExec(file,dest)					@@\
 install:: file								@@\
-	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTDATFLAGS) file $(DESTDIR)dest
 #endif /* InstallNonExec */
 
