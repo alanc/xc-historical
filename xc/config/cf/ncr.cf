@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ncr.cf,v 1.15 95/01/05 19:34:01 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: ncr.cf,v 1.16 95/01/11 21:46:50 kaleb Exp kaleb $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName
@@ -103,7 +103,7 @@ install.man:: 								@@\
 	for i in aliases; do \                                          @@\
 		(set -x; \						@@\
 		$(RM) $(DESTDIR)destdir/$$i.z;\  			@@\
-		$(LN) destdir/file.z $(DESTDIR)destdir/$$i.z;\  @@\
+		(cd $(DESTDIR)destdir; $(LN) file.z $$i.z);\		@@\
 		); \							@@\
 	done
 
