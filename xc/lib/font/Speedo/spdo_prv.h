@@ -1,4 +1,4 @@
-/* $XConsortium: spdo_prv.h,v 1.2 91/05/11 09:55:38 rws Exp $ */
+/* $XConsortium: spdo_prv.h,v 1.3 93/10/28 15:27:13 gildea Exp $ */
 
 /*
 
@@ -65,12 +65,14 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 /***** MACRO DEFINITIONS *****/
 
-#define SQUEEZE_MULT(A,B) (((fix31)A * (fix31)B) >> 16)
+#define SQUEEZE_MULT(A,B) (((fix31)A * (fix31)B) / (1 << 16))
 
 #define NEXT_BYTE(A) (*(A)++)
 
 #define NEXT_WORD(A) \
-    ((fix15)(sp_globals.key32 ^ ((A) += 2, ((fix15)((A)[-1]) << 8) | (fix15)((A)[-2]))))
+    ((fix15)(sp_globals.key32 ^ ((A) += 2, \
+				 ((fix15)((A)[-1]) << 8) | (fix15)((A)[-2]) | \
+				 ((A)[-1] & 0x80? ~0xFFFF : 0))))
 
 #if INCL_EXT                       /* Extended fonts supported? */
 
@@ -101,7 +103,7 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 /* Multiply (fix15)X by (fix15)MULT, add (fix31)OFFSET, 
  * shift right SHIFT bits to produce (fix15)result */
 #define TRANS(X, MULT, OFFSET, SHIFT) \
-    ((fix15)((((fix31)X * (fix31)MULT) + OFFSET) >> SHIFT))
+    ((fix15)((((fix31)X * (fix31)MULT) + OFFSET) / (1 << SHIFT)))
 
 /******************************************************************************
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: set_trns.c,v 1.4 94/02/07 10:01:14 gildea Exp $ */
+/* $XConsortium: set_trns.c,v 1.5 94/02/10 10:18:24 gildea Exp $ */
 
 /*
 
@@ -370,7 +370,7 @@ for (j = 0; ; j++)
                     off = sp_globals.multrnd;
                     }
 
-                pix = (fix15)(((fix31)orus * ppo + off) >> sp_globals.mpshift) & sp_globals.pixfix;
+                pix = (fix15)(((fix31)orus * ppo + off) / (1 << sp_globals.mpshift)) & sp_globals.pixfix;
                 }
             }
         else                     /* Constraint inactive? */
@@ -549,8 +549,8 @@ end_oru   = (fix15)(SQUEEZE_X_ORU(sp_plaid.orus[end_edge], x_scale, x_offset));
 if (!sp_globals.c_act[constr_nr]) /* constraint inactive */
     {
     /* calculate zone width */
-    zone_pix = (fix15)(((((fix31)end_oru - (fix31)start_oru) * ppo) >>
-    		sp_globals.mpshift) + sp_globals.pixrnd) & sp_globals.pixfix;
+    zone_pix = (fix15)(((((fix31)end_oru - (fix31)start_oru) * ppo) /
+	(1<<sp_globals.mpshift)) + sp_globals.pixrnd) & sp_globals.pixfix;
     /* check for overflow */
     if (((end_oru-start_oru) > 0) && (zone_pix < 0))
 	zone_pix = 0x7ffff;
@@ -829,7 +829,7 @@ else
     }
 
 x_offset_pix = (fix15)(((*x_offset >> 16) * sp_globals.tcb0.xppo)
-		>> sp_globals.mpshift); 
+		/ (1<<sp_globals.mpshift)); 
 
 if ((x_offset_pix >0) && (x_offset_pix < sp_globals.onepix))
     x_offset_pix = sp_globals.onepix; 
@@ -1075,8 +1075,10 @@ for (i = 0; ; i++)               /* For X and Y control zones... */
 #endif
         if (!sp_globals.c_act[constr_nr])   /* Constraint inactive? */
             {
-            zone_pix = ((fix15)((((fix31)sp_plaid.orus[end_edge] - (fix31)sp_plaid.orus[start_edge]) 
-                                * ppo) >> sp_globals.mpshift) + sp_globals.pixrnd) & sp_globals.pixfix;
+            zone_pix = ((fix15)((((fix31)sp_plaid.orus[end_edge] -
+			(fix31)sp_plaid.orus[start_edge]) * ppo) /
+			(1<<sp_globals.mpshift)) + sp_globals.pixrnd) &
+			sp_globals.pixfix;
             if ((ABS(zone_pix)) >= sp_globals.c_pix[constr_nr])
                 goto L1;
             }
@@ -1089,8 +1091,9 @@ for (i = 0; ; i++)               /* For X and Y control zones... */
                         /* inter-character spacing fix */
         if ((j == 0) && (i == 0))      /* if this is the 1st X zone, save rounding error */
             {                          /*  get the non-xformed - xformed zone, in right direction */
-            whole_zone = (((fix31)sp_plaid.orus[end_edge] - (fix31)sp_plaid.orus[start_edge]) 
-                                * ppo) >> sp_globals.mpshift;
+            whole_zone = (((fix31)sp_plaid.orus[end_edge] -
+			(fix31)sp_plaid.orus[start_edge]) *
+			ppo) / (1<<sp_globals.mpshift);
             sp_globals.rnd_xmin = whole_zone - zone_pix;
             }
         sp_plaid.pix[end_edge] = sp_plaid.pix[start_edge] + zone_pix; /* Insert end pixels */
@@ -1255,7 +1258,7 @@ for (j = 0; ; j++)
                 L4: end_orus = sp_plaid.orus[edge] + adj_orus;
                     end_pix = sp_plaid.pix[edge] + 
                         (((fix31)adj_orus * (fix31)(j? sp_globals.tcb.yppo: sp_globals.tcb.xppo) + 
-                          sp_globals.mprnd) >> sp_globals.mpshift);
+                          sp_globals.mprnd) / (1<<sp_globals.mpshift));
                     break;
 
                     }
