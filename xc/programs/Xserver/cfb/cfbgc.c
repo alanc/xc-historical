@@ -41,6 +41,8 @@ SOFTWARE.
 static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static cfbDestroyOps();
+extern void cfbPolyGlyphBlt8();
+extern void cfbPolyFillRect();
 
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
@@ -66,14 +68,19 @@ static GCOps	cfbTEOps = {
     miPolyRectangle,
     miPolyArc,
     miFillPolygon,
-    miPolyFillRect,
+    cfbPolyFillRect,
     miPolyFillArc,
     miPolyText8,
     miPolyText16,
     miImageText8,
     miImageText16,
-    cfbTEGlyphBlt,
-    miPolyGlyphBlt,
+#if PPW == 4
+    cfbTEGlyphBlt8,
+    cfbPolyGlyphBlt8,
+#else
+    cfbTEGlyphBlt
+    miPolyGlyphBlt
+#endif
     mfbPushPixels,
     miMiter,
 };
@@ -90,14 +97,18 @@ static GCOps	cfbNonTEOps = {
     miPolyRectangle,
     miPolyArc,
     miFillPolygon,
-    miPolyFillRect,
+    cfbPolyFillRect,
     miPolyFillArc,
     miPolyText8,
     miPolyText16,
     miImageText8,
     miImageText16,
     miImageGlyphBlt,
+#if PPW == 4
+    cfbPolyGlyphBlt8,
+#else
     miPolyGlyphBlt,
+#endif
     mfbPushPixels,
     miMiter,
 };
@@ -115,15 +126,15 @@ matchCommon (pGC)
     if (pGC->font &&
 	(pGC->font->pFI->maxbounds.metrics.rightSideBearing -
          pGC->font->pFI->minbounds.metrics.leftSideBearing) <= 32 &&
-	 pGC->font->pFI->terminalFont &&
-	 pGC->fgPixel != pGC->bgPixel)
+	 pGC->alu == GXcopy &&
+	 ((pGC->planemask & PMSK) == PMSK))
     {
-	return &cfbTEOps;
+	if (pGC->font->pFI->terminalFont)
+	    return &cfbTEOps;
+	else
+	    return &cfbNonTEOps;
     }
-    else
-    {
-	return &cfbNonTEOps;
-    }
+    return 0;
 }
 
 Bool
@@ -233,7 +244,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     WindowPtr   pWin;
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
-    int         new_line, new_text, new_fillspans;
+    int         new_line, new_text, new_fillspans, new_fillrct;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
 
@@ -357,6 +368,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     new_line = FALSE;
     new_text = FALSE;
     new_fillspans = FALSE;
+    new_fillrct = FALSE;
 
     mask = changes;
     while (mask) {
@@ -373,10 +385,13 @@ cfbValidateGC(pGC, changes, pDrawable)
 	 */
 	switch (index) {
 	case GCFunction:
+	    new_fillrct = TRUE;
 	case GCForeground:
 	    new_text = TRUE;
 	    break;
 	case GCPlaneMask:
+	    new_text = TRUE;
+	    new_fillrct = TRUE;
 	    break;
 	case GCBackground:
 	    new_fillspans = TRUE;
@@ -392,6 +407,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    new_text = TRUE;
 	    new_fillspans = TRUE;
 	    new_line = TRUE;
+	    new_fillrct = TRUE;
 	    break;
 	case GCFillRule:
 	    break;
@@ -461,7 +477,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	new_fillspans = TRUE;	/* deal with FillSpans later */
     }
 
-    if (new_line || new_fillspans || new_text)
+    if (new_line || new_fillspans || new_text || new_fillrct)
     {
 	GCOps	*newops;
 
@@ -470,7 +486,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    if (pGC->ops->devPrivate.val)
 		cfbDestroyOps (pGC->ops);
 	    pGC->ops = newops;
-	    new_line = new_fillspans = new_text = 0;
+	    new_line = new_fillspans = new_text = new_fillrct = 0;
 	}
  	else
  	{
@@ -518,11 +534,24 @@ cfbValidateGC(pGC, changes, pDrawable)
         }
         else
         {
-            /* special case ImageGlyphBlt for terminal emulator fonts */
-            if ((pGC->font->pFI->terminalFont) &&
-                (pGC->fgPixel != pGC->bgPixel))
+#if PPW == 4
+	    if (pGC->alu == GXcopy &&
+		(pGC->planemask & PMSK) == PMSK &&
+		pGC->fillStyle == FillSolid)
 	    {
+		pGC->ops->PolyGlyphBlt = cfbPolyGlyphBlt8;
+	    }
+	    else
+#endif
+		pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
+            /* special case ImageGlyphBlt for terminal emulator fonts */
+            if (pGC->font->pFI->terminalFont)
+	    {
+#if PPW == 4
+                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8;
+#else
                 pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt;
+#endif
 	    }
             else
                 pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
@@ -551,6 +580,17 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    FatalError("cfbValidateGC: illegal fillStyle\n");
 	}
     } /* end of new_fillspans */
+
+    if (new_fillrct) {
+	pGC->ops->PolyFillRect = miPolyFillRect;
+	if (pGC->fillStyle == FillSolid &&
+	    (((pGC->alu == GXcopy || pGC->alu == GXxor) &&
+	      ((pGC->planemask & PMSK) == PMSK)) ||
+	     pGC->alu == GXinvert))
+	{
+	    pGC->ops->PolyFillRect = cfbPolyFillRect;
+	}
+    }
 }
 
 static void
