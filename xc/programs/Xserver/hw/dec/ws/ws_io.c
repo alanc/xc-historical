@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.9 93/09/03 19:45:32 dpw Exp $ */
+/* $XConsortium: ws_io.c,v 1.10 93/09/23 18:59:48 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -292,7 +292,11 @@ wsMouseProc(pDev, onoff, argc, argv)
 	    InitPointerDeviceStruct(
 		wsPointer, map, numButtons, wsGetMotionEvents,
 		wsChangePointerControl, MOTION_BUFFER_SIZE);
+#ifdef __alpha
 	    SetInputCheck(&queue->head, &queue->tail);
+#else
+	    SetInputCheck((long *)&queue->head, (long *)&queue->tail);
+#endif
 	    break;
 	case DEVICE_ON: 
 	    pDev->on = TRUE;
@@ -717,6 +721,7 @@ ProcessInputEvents()
 		    switch (e->type) {
 			case BUTTON_DOWN_TYPE: 
 			    x.u.u.type = KeyPress;
+#ifndef XKB
 			    /* if key is a lock modifier then ... */
 			    if (dev->key->modifierMap[e->e.key.key] & LockMask){
 				if (shiftLock) {
@@ -729,12 +734,15 @@ ProcessInputEvents()
 				    shiftLock = TRUE;
 				}
 			    }
+#endif
 			    (*wsKeyboard->processInputProc) (&x, dev, 1);
 			    break;
 			case BUTTON_UP_TYPE: 
+#ifndef XKB
 			    /* if key is a lock modifier then ignore */
 			    if (dev->key->modifierMap[e->e.key.key] & LockMask)
 				break;
+#endif
 			    x.u.u.type = KeyRelease;
 			    (*wsKeyboard->processInputProc) (&x, dev, 1);
 			    break;
