@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.27 93/02/26 11:33:32 rws Exp $ */
+/* $XConsortium: devices.c,v 5.28 93/07/12 09:24:20 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -218,6 +218,7 @@ CloseDevice(dev)
 	lnext = l->next;
 	xfree(l);
     }
+    xfree(dev->sync.event);
     xfree(dev);
 }
 
