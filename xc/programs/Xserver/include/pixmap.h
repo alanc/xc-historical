@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: pixmap.h,v 1.1 87/09/11 07:49:56 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -36,7 +36,7 @@ SOFTWARE.
 
 #define NullPixmap ((PixmapPtr)0)
 #define IS_VALID_PIXMAP(pPixmap) (\
-    ((pPixmap != (PixmapPtr)None) && (pPixmap != (PixmapPtr)CopyFromParent) \
+    ((pPixmap != (PixmapPtr)None) \
 	&& (pPixmap != (PixmapPtr)USE_BORDER_PIXEL) \
 	&& (pPixmap != (PixmapPtr)ParentRelative))? TRUE : FALSE)
 
