@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.26 87/09/03 11:15:40 toddb Locked $ */
+/* $Header: miregion.c,v 1.26 87/09/03 11:43:03 toddb Locked $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -1439,4 +1439,169 @@ miRegionExtents(pReg)
     RegionPtr pReg;
 {
     return((BoxPtr) &pReg->extents);
+}
+
+/*
+    Clip a list of scanlines to a region.  The caller has allocated the
+    spce.  FSorted is non-zero if the scanline origins are in ascending
+    order.
+    returns the number of new, clipped scanlines.
+*/
+
+int
+miClipSpans(prgnDst, ppt, pwidth, nspans, pptNew, pwidthNew, fSorted)
+    RegionPtr		prgnDst;
+    register DDXPointPtr ppt;
+    int		       *pwidth;
+    int			nspans;
+    register DDXPointPtr pptNew;
+    int		       *pwidthNew;
+    int			fSorted;
+{
+    register BoxPtr 	pbox, pboxLast, pboxTest;
+    register DDXPointPtr pptLast;
+    int			xStart, xEnd;
+    int			yMax;
+    int			*pwidthNewThatWeWerePassed;	/* the vengeance
+							   of Xerox! */
+
+    pptLast = ppt + nspans;
+
+    pbox =  prgnDst->rects;
+    pboxLast = pbox + prgnDst->numRects;
+    yMax = prgnDst->extents.y2;
+    pwidthNewThatWeWerePassed = pwidthNew;
+
+    if(fSorted)
+    {
+    /* scan lines sorted in ascending order. Because they are sorted, we
+     * don't have to check each scanline against each clip box.  We can be
+     * sure that this scanline only has to be clipped to boxes at or after the
+     * beginning of this y-band 
+     */
+	pboxTest = pbox;
+	while(ppt < pptLast)
+	{
+	    pbox = pboxTest;
+	    if(ppt->y >= yMax)
+		break;
+	    while(pbox < pboxLast)
+	    {
+		if(*pwidth == 0)
+		{
+		    /* Null span */
+		    break;
+		}
+		else if(pbox->y1 > ppt->y)
+		{
+		    /* scanline is before clip box */
+		    break;
+		}
+		else if(pbox->y2 <= ppt->y)
+		{
+		    /* clip box is before scanline */
+		    pboxTest = ++pbox;
+		    continue;
+		}
+		else if(pbox->x1 > ppt->x + *pwidth) 
+		{
+		    /* clip box is to right of scanline */
+		    break;
+		}
+		else if(pbox->x2 <= ppt->x)
+		{
+		    /* scanline is to right of clip box */
+		    pbox++;
+		    continue;
+		}
+
+		/* at least some of the scanline is in the current clip box */
+		xStart = max(pbox->x1, ppt->x);
+		xEnd = min(ppt->x + *pwidth, pbox->x2);
+		pptNew->x = xStart;
+		pptNew++->y = ppt->y;
+		*pwidthNew++ = xEnd - xStart;
+
+		if(ppt->x + *pwidth <= pbox->x2)
+		{
+		    /* End of the line, as it were */
+		    break;
+		}
+		else
+		    pbox++;
+	    }
+	    /* We've tried this span against every box; it must be outside them
+	     * all.  move on to the next span */
+	    ppt++;
+	    pwidth++;
+	}
+    }
+    else
+    {
+    /* scan lines not sorted. We must clip each line against all the boxes */
+	while(ppt < pptLast)
+	{
+	    if(ppt->y >= 0 && ppt->y < yMax)
+	    {
+		
+		for(pbox = prgnDst->rects; pbox< pboxLast; pbox++)
+		{
+		    if(pbox->y1 > ppt->y)
+		    {
+			/* rest of clip region is above this scanline,
+			 * skip it */
+			break;
+		    }
+		    if(pbox->y2 <= ppt->y)
+		    {
+			/* clip box is below scanline */
+			pbox++;
+			break;
+		    }
+		    if(pbox->x1 <= ppt->x + *pwidth &&
+		       pbox->x2 > ppt->x)
+		    {
+			xStart = max(pbox->x1, ppt->x);
+			xEnd = min(pbox->x2, ppt->x + *pwidth);
+			pptNew->x = xStart;
+			pptNew++->y = ppt->y;
+			*pwidthNew++ = xEnd - xStart;
+		    }
+
+		}
+	    }
+	ppt++;
+	pwidth++;
+	}
+    }
+    return (pwidthNew - pwidthNewThatWeWerePassed);
+}
+
+/* find the band in a region with the most rectangles */
+int
+miFindMaxBand(prgn)
+RegionPtr prgn;
+{
+    register int nbox;
+    register BoxPtr pbox;
+    register int nThisBand;
+    register int nMaxBand = 0;
+    short yThisBand;
+
+    nbox = prgn->numRects;
+    pbox = prgn->rects;
+
+    while(nbox > 0)
+    {
+	yThisBand = pbox->y1;
+	nThisBand = 0;
+	while((nbox--) && (pbox->y1 == yThisBand))
+	{
+	    pbox++;
+	    nThisBand++;
+	}
+	if (nThisBand > nMaxBand)
+	    nMaxBand = nThisBand;
+    }
+    return (nMaxBand);
 }
