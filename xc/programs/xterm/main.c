@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.18 88/02/20 17:27:53 rws Exp $
+ *	$Header: main.c,v 1.19 88/02/21 09:32:26 swick Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.18 88/02/20 17:27:53 rws Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.19 88/02/21 09:32:26 swick Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -168,7 +168,6 @@ static XtResource application_resources[] = {
 #define	XtNc132			"c132"
 #define	XtNcurses		"curses"
 #define	XtNcursorColor		"cursorColor"
-#define	XtNcursorShape		"cursorShape"
 #define XtNtekGeometry		"tekGeometry"
 #define	XtNinternalBorder	"internalBorder"
 #define	XtNjumpScroll		"jumpScroll"
@@ -178,6 +177,7 @@ static XtResource application_resources[] = {
 #define	XtNloginShell		"loginShell"
 #define	XtNmarginBell		"marginBell"
 #define	XtNpointerColor		"pointerColor"
+#define	XtNpointerShape		"pointerShape"
 #define	XtNmultiScroll		"multiScroll"
 #define	XtNnMarginBell		"nMarginBell"
 #define	XtNreverseWrap		"reverseWrap"
@@ -249,9 +249,6 @@ static XtResource resources[] = {
 {XtNcursorColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.cursorcolor),
 	XtRString, "Black"},
-{XtNcursorShape,XtCCursor, XtRString, sizeof(Cursor),
-	XtOffset(XtermWidget, misc.curs_shape),
-	XtRString, (caddr_t) "xterm"},
 {XtNgeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffset(XtermWidget, misc.geo_metry),
 	XtRString, (caddr_t) NULL},
@@ -282,6 +279,9 @@ static XtResource resources[] = {
 {XtNpointerColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.mousecolor),
 	XtRString, "Black"},
+{XtNpointerShape,XtCCursor, XtRString, sizeof(Cursor),
+	XtOffset(XtermWidget, misc.curs_shape),
+	XtRString, (caddr_t) "xterm"},
 {XtNmultiScroll,XtCMultiScroll, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.multiscroll),
 	XtRBoolean, (caddr_t) &defaultFALSE},
