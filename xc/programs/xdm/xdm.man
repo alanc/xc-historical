@@ -53,20 +53,21 @@ is a typical entry for local display number 0.  The types are:
 
 secure	a local display which cannot be disabled
 insecure	a local display which can be disabled
-foreign		a remote display which is constantly restarted
-transient	a remote display which receives only one session
+foreign		a remote display which only receives the session
 .fi
 .IP
-The only valid entries for local displays are obviously "secure" and "insecure".
-Other types will generate an error.  The type-specific collection of words
+The type-specific collection of words for local servers
 following the type are a program name and a list of arguments.  The program
-name should probably be a fully qualified unix path name as 
+name should be a fully qualified unix path name as 
 .I xdm
 does not search through PATH.
-.IP "DisplayManager.requestPort"
-Setting this numeric resource to a value other than zero enables the
-network monitoring portion of the display manager.  See the NETWORK
-section below
+.IP
+For foreign servers, the type-specific
+collection of words is ignored, but must contain at least one word.  These
+servers are typically X terminals which want sessions run from a file
+server or other compute engine.  In the future, it is expected that
+the X terminal will negotiate the session startup, but for now it is
+fixed in this file.
 .IP "DisplayManager.errorLogFile"
 Error output is normally directed at the system console, to redirect it simply
 set this resource to any file name.  A method to send these messages to
@@ -116,48 +117,11 @@ will not perform properly.
 .PP
 To control remote servers,
 .I xdm
-sends UDP packets to the address which originally requested the connection.  To
-secure this connection from possible compromise,
-.I xdm
-includes key which was passed in the original request.  The
-format of these packets is:
-.nf
-display-name authentication-word message
-.fi
-.PP
-Message consists of one of the following (all ISO Latin-1 characters):
-.nf
-START		is sent before any connection is attempted
-TERMINATE	is sent when the server should be disabled
-RESTART		is sent when the server should be reset
-.fi
-.SH NETWORK
-A UDP socket bound
-to the DispayManager.requestPort IP port number is created to which requests
-can be sent from remote X displays.  There are two types of messages which
-can be sent, a poll message consisting of the ISO Latin-1 characters "POLL"
-which simply requests an anouncement of the availiblity of the socket.
-.I xdm
-responds to this message with a packet containing the ISO Latin-1 characters
-"ADVERTISE".
-.IP
-The other type of message is in the same format as DisplayManager.servers,
-the acceptable types in this case are "foreign", "transient" and "remove".
-Remove is a special command which causes
-.I xdm
-to disable the specified server.  If the server is of type "secure", a remove
-command will fail.  If the server is "transient" or "foreign" then the first
-optional word following "remove" must match the key given when that display
-was managed.  For the other two types,
-the type-specific words following the type must contain a single word which is
-used as a key as described in the section on Controlling the Server.
-In either case,
-.I xdm
-proceeds with the authentication process after confirming that a display with
-the given name can be opened.  The only difference occurs when the session terminates.
-In the "foreign" case, another authentication process is started, with its attendent session
-following.  "transient" clients are not restarted, they are notified of the session
-termination and are expected to re-request if another session is desired.
+searches the window heirarchy on the display and uses the protocol request
+KillClient in an attempt to clean up the terminal for the next session.  This
+may not actually kill all of the clients, as only those which have created
+windows will be noticed.  This is also expected to change when better
+X terminal support is agreed upon.
 .SH "AUTHENTICATION WIDGET"
 The authentication widget is a very simplistic tool which reads a name/password
 pair from the keyboard.  As this is a toolkit client, nearly every imaginable
@@ -227,7 +191,7 @@ Resets the X server and starts a new session.
 .IP "insert-char"
 Inserts the character.
 .SH "SEE ALSO"
-X(1), xinit(1)
+X(1), xinit(1) and the proposed protocol for X terminal management
 .SH BUGS
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
