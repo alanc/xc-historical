@@ -87,10 +87,10 @@ World::
 	@echo ""
 	@echo "Building Release 3 of the X Window System"
 	@echo ""
-	@echo "**************************************************************"
-	@echo "* Did you remember to check the configuration parameters in  *
-	@echo "* the directory util/imake.includes and set BOOTSTRAPCFLAGS? *"
-	@echo "**************************************************************"
+	@echo "##############################################################"
+	@echo "# Did you remember to check the configuration parameters in  #
+	@echo "# the directory util/imake.includes and set BOOTSTRAPCFLAGS? #"
+	@echo "##############################################################"
 	@echo ""
 	@echo "Making imake; BOOTSTRAPCFLAGS better be right..."
 	@date
