@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.27 94/10/17 14:16:02 kaleb Exp kaleb $ */
+/* $XConsortium: sunIo.c,v 5.28 95/01/05 20:04:29 kaleb Exp kaleb $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -163,7 +163,7 @@ void AbortDDX()
     ScreenPtr	pScreen;
     DevicePtr	devPtr;
 
-#if defined(SVR4) || defined(__NetBSD__)
+#ifdef SVR4
     (void) OsSignal (SIGPOLL, SIG_IGN);
 #else
     (void) OsSignal (SIGIO, SIG_IGN);
