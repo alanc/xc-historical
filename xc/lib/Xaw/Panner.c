@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.30 90/03/07 18:38:33 jim Exp $
+ * $XConsortium: Panner.c,v 1.31 90/03/07 18:44:56 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -539,7 +539,7 @@ static void Redisplay (gw, event, region)
     Window w = XtWindow(gw);
     int pad = pw->panner.internal_border;
     Dimension lw = (pw->panner.line_width < 1 ? 1 : pw->panner.line_width);
-    Dimension extra = pw->shadow_thickness + lw * 2;
+    Dimension extra = pw->panner.shadow_thickness + lw * 2;
     int kx = pw->panner.knob_x + pad, ky = pw->panner.knob_y + pad;
 
     pw->panner.tmp.showing = FALSE;
