@@ -1,4 +1,4 @@
-/* $XConsortium: ieee.c,v 1.1 93/07/19 11:39:24 mor Exp $ */
+/* $XConsortium: ieee.c,v 1.2 93/07/26 19:09:28 mor Exp $ */
 
 /***	ieee.c - internal type conversion routines	
 
@@ -75,17 +75,12 @@ Logic, Inc.
 */
 
 /**********************************************************************/
-XieFloat _XieConvertFromIEEE(ieee)
-xieTypFloat	ieee;
-{
-	printf(" kava kava!!! %s(%d)\n",__FILE__,__LINE__);
-	exit(1);
-}
-
-/**********************************************************************/
 xieTypFloat _XieConvertToIEEE(native)
 XieFloat native;
 {
+#ifndef NATIVE_FP_FORMAT
+    return *((xieTypFloat *)&native);
+#else
 xieTypFloat	value;
 int sign;
 int exponent;
@@ -170,6 +165,7 @@ double frac_part;
 	value |= ieee_mantissa;
 
 	return(value);
+#endif
 }
 /**********************************************************************/
 
