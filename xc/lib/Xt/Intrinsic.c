@@ -77,7 +77,7 @@ static void CompileCallbackList();
 static void RecurseInitialize();
 static void RecurseConstraintInitialize();
 static void SetAncestorSensitive();
-static void CoreSetValues ();
+static Boolean CoreSetValues ();
 static void CoreRealize ();
 static void CoreClassInitialize();
 static void CoreInitialize();
@@ -160,6 +160,8 @@ ConstraintClassRec constraintClassRec = {
     }
 };
 
+static void CompositeInitialize();
+
 CompositeClassRec compositeClassRec = {
     {
          (WidgetClass)&widgetClassRec,	/*superclass pointer*/
@@ -167,7 +169,7 @@ CompositeClassRec compositeClassRec = {
           sizeof(CompositeRec),   /*size of core data record*/
 	  (XtWidgetProc)NULL,     /* class initializer routine */
 	  FALSE,		/* not init'ed */
-          (XtWidgetProc)NULL,	/* Instance Initializer routine*/
+          (XtInitProc)CompositeInitialize,  /* Instance Initializer routine */
           (XtWidgetProc)NULL,	/*Realize*/
           NULL,			/*actions*/
           0,                    /*number of actions*/
@@ -213,13 +215,15 @@ static void ConstructCallbackOffsets(widgetClass)
     Cardinal i;
     XrmResourceList resourceList;
     _XtOffsetList newItem;
+    XrmQuark xtQCallback = XrmAtomToQuark(XtCCallback);
+
     if (widgetClass->core_class.superclass !=NULL)
          widgetClass->core_class.callback_private = 
          widgetClass->core_class.superclass->core_class.callback_private;
     for (i=widgetClass->core_class.num_resources,
 	resourceList=(XrmResourceList)widgetClass->core_class.resources;
          i!=0; i--)
-     if (resourceList[i-1].xrm_class == XrmAtomToQuark(XtCCallback)) {
+     if (resourceList[i-1].xrm_class == xtQCallback) {
          newItem = XtNew(XtOffsetRec);
          newItem->next = widgetClass->core_class.callback_private;
          newItem->offset = resourceList[i-1].xrm_offset;
@@ -227,6 +231,7 @@ static void ConstructCallbackOffsets(widgetClass)
          widgetClass->core_class.callback_private=newItem;
      }
 }
+
 static void ClassInit(widgetClass)
     WidgetClass widgetClass;
 {
@@ -235,13 +240,19 @@ static void ClassInit(widgetClass)
          && (!(widgetClass->core_class.superclass-> core_class.class_inited)))
  	ClassInit(widgetClass->core_class.superclass);
     if (widgetClass->core_class.resources != NULL)
-             XrmCompileResourceList(widgetClass->core_class.resources,
+             XtCompileResourceList(widgetClass->core_class.resources,
                widgetClass->core_class.num_resources);
     ConstructCallbackOffsets(widgetClass);
     if (widgetClass->core_class.class_initialize != NULL)
        (*(widgetClass->core_class.class_initialize))();
     widgetClass->core_class.class_inited = TRUE;
     return;
+}
+
+static Cardinal InsertAtEnd( w )
+    CompositeWidget w;
+{
+    return w->composite.num_children;
 }
 
 static void CompositeDestroy(w)
@@ -263,8 +274,7 @@ static void CompositeInsertChild(w, args, num_argsP)
 
     cw = (CompositeWidget) w->core.parent;
 
-    /* ||| Get position from "insert_position" procedure */
-    position = cw->composite.num_children;
+    position = (*cw->composite.insert_position)(cw);
 
     /* ||| Some better allocation, don't realloc every time ! */
     cw->composite.children = 
@@ -313,27 +323,24 @@ static void RecurseInitialize (reqWidget, newWidget, args, num_args, class)
         (*class->core_class.initialize)(reqWidget, newWidget, args, &num_args);
 }
 
-static void RecurseConstraintInitialize (widget, args, num_args, class)
-    Widget widget;
+static void RecurseConstraintInitialize (reqWidget, newWidget, args, num_args, class)
+    Widget reqWidget;
+    Widget newWidget;
     ArgList args;
     Cardinal num_args;
     WidgetClass class;
 {
     if ((ConstraintWidgetClass)class->core_class.superclass
                                                 != constraintWidgetClass)
-        RecurseInitialize (widget, args, num_args,
+        RecurseInitialize (reqWidget, newWidget, args, num_args,
            class->core_class.superclass);
     if (class->core_class.initialize!=NULL)
-        (*class->core_class.initialize) (widget, args, &num_args);
+        (*class->core_class.initialize) (reqWidget, newWidget, args, &num_args);
 }
 
-/*static void CoreInitialize(reqWidget,newWidget,args,num_args)
+static void CoreInitialize(reqWidget,newWidget,args,num_args)
     Widget   reqWidget,newWidget;
     ArgList  args;
-    Cardinal num_args;*/
-static void CoreInitialize(newWidget,args,num_args)
-    Widget  newWidget;
-    ArgList args;
     Cardinal *num_args;
 {
     newWidget->core.window = (Window) NULL;
@@ -353,24 +360,21 @@ static void CoreInitialize(newWidget,args,num_args)
 
 }
 
-/*static void CompositeInitialize(reqWidget,newWidget,args,num_args)
-    Widget   newWidget,reqWidget;
+/* ARGSUSED */
+static void CompositeInitialize(reqWidget, newWidget, args, num_args)
+    Widget   reqWidget, newWidget;
     ArgList  args;
-    Cardinal num_args; */
-static void CompositeInitialize(newWidget,args,num_args)
-    Widget  newWidget;
-    ArgList args;
     Cardinal *num_args;
-
 {
+    CompositeWidget w = (CompositeWidget) newWidget;
 
-    if (XtIsComposite (newWidget)) {
-	((CompositeWidget)newWidget)->composite.num_children = 0;
-	((CompositeWidget)newWidget)->composite.num_mapped_children = 0;
-	((CompositeWidget)newWidget)->composite.children = NULL;
-	((CompositeWidget)newWidget)->composite.num_slots = 0;
-    }
+    w->composite.num_children = 0;
+    w->composite.num_mapped_children = 0;
+    w->composite.children = NULL;
+    w->composite.num_slots = 0;
+    w->composite.insert_position = (XtOrderProc)InsertAtEnd;
 }
+
 /* we should be able to merge _XtCreate1 and _XtCreate2 with
    changes to default resource management */
 Widget _XtCreate1(name,widgetClass,parent)
@@ -406,6 +410,7 @@ static void _XtCreate2(widget,args,num_args)
     Cardinal    num_args;
 {
     Widget reqWidget;
+    WidgetClass wClass = widget->core.widget_class;
     _XtOffsetList offsetList;
 
     for (offsetList = widget->core.widget_class->core_class.callback_private;
@@ -416,18 +421,17 @@ static void _XtCreate2(widget,args,num_args)
 	}
     }
 
-/* garbage until we put initializing chaining back in */
-    CoreInitialize(widget,args,&num_args);
-    CompositeInitialize(widget,args,&num_args);
-    if (widget->core.widget_class->core_class.initialize != NULL)
-  (*(widget->core.widget_class->core_class.initialize))(widget,args,&num_args);
-/* take out class chaining on initialization for this base-level*/
-/*    reqWidget = (Widget) XtMalloc(widgetClass->core_class.widget_size);
+    reqWidget = (Widget) XtMalloc(wClass->core_class.widget_size);
     bcopy ((char *) widget, (char *) reqWidget,
-                   (unsigned)widgetClass->core_class.widget_size);
-    RecurseInitialize (reqWidget, widget, args, num_args, widgetClass);
+                   (unsigned)wClass->core_class.widget_size);
+    RecurseInitialize (reqWidget, widget, args, num_args, wClass);
+
+    if ((widget->core.parent != (Widget)NULL) &&
+	XtIsSubclass(widget->core.parent,constraintWidgetClass)) 
+       RecurseConstraintInitialize(reqWidget, widget, args, num_args,
+                       widget->core.parent->core.widget_class);
+
     XtFree ((char *) reqWidget);
-*/
 
     _XtDefineTranslation(widget);
 }
@@ -451,15 +455,13 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
 	XtGetResources(widget,args,num_args);
     if (widget->core.depth == 0)
         widget->core.depth = widget->core.parent->core.depth;
-    if (widget->core.screen == 0)
+    if (widget->core.screen == NULL)
         widget->core.screen = widget->core.parent->core.screen;
     widget->core.ancestor_sensitive = 
          (widget->core.parent->core.ancestor_sensitive && 
           widget->core.parent->core.sensitive);
      _XtCreate2(widget,args,num_args);
-   if (XtIsSubclass(widget->core.parent,constraintWidgetClass)) 
-      RecurseConstraintInitialize(widget,args,num_args,
-                       widget->core.parent->core.widget_class);
+
    (*(((CompositeWidgetClass)(widget->core.parent->core.widget_class))
         ->composite_class.insert_child))(widget, args, &num_args);
 
@@ -621,7 +623,6 @@ void XtCreateWindow(widget, windowClass, visual, valueMask, attributes)
 		windowClass, visual, valueMask, attributes);
     }
 }
-			
 
 	
 static void CoreClassInitialize()
@@ -1109,7 +1110,7 @@ extern Boolean XtHasCallbacks(widget, callback_name)
     callbackList = FetchCallbackList(widget,callback_name);
    if (callbackList == NULL) {
       XtError("invalid parameters to XtHasCallbacks");
-     return;
+     return (FALSE);
    }
     return (*callbackList != NULL);
 }
@@ -1591,9 +1592,10 @@ static void CoreDestroy (widget)
     XtFree((char*) widget);
 }
 
-static void CoreSetValues()
+static Boolean CoreSetValues()
 {
 /* ||| */
+return (FALSE);
 
 }
 
