@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.90 93/06/18 17:02:37 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.91 93/07/12 15:38:05 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -327,6 +327,7 @@ XtAppContext XtCreateApplicationContext()
 #ifndef NO_IDENTIFY_WINDOWS
 	app->identify_windows = False;
 #endif
+	app->free_bindings = NULL;
 	return app;
 }
 
@@ -358,6 +359,7 @@ static void DestroyAppContext(app)
 	*prev_app = app->next;
 	if (app->process->defaultAppContext == app)
 	    app->process->defaultAppContext = NULL;
+	if (app->free_bindings) _XtDoFreeBindings (app);
 	XtFree((char *)app);
 }
 
