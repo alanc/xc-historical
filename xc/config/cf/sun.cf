@@ -14,9 +14,9 @@
  * full build (make World) at the top of the sources....
  */
 #define SunOSPlatform     YES		/* set to NO if not running SunOS */
-#define OSName            SunOS 3.4
-#define OSMajorVersion    3
-#define OSMinorVersion    4
+#define OSName            SunOS 4.0.1
+#define OSMajorVersion    4
+#define OSMinorVersion    0
 #define HasSaberC	  YES		/* for machines that have it */
 
 
@@ -37,7 +37,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.14 89/04/18 14:46:02 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.15 89/05/10 14:57:50 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
