@@ -1,4 +1,4 @@
-.\" $Header$
+.\" $Header: ddx.doc.tbl.ms,v 1.1 87/09/07 12:10:03 toddb Locked $
 .EF 'Porting Layer Definition'- % -'June 15, 1987'
 .OF 'Porting Layer Definition'- % -'June 15, 1987'
 .EH '''
@@ -1237,7 +1237,7 @@ ControlProc and GetMotionEvents are DDX routines, see above.
 	void InitKeyboardDeviceStruct(device, pKeySyms, pModifiers, Bell, ControlProc)
 		DevicePtr device;
 		KeySymsPtr pKeySyms;
-		ModifierMapPtr pModifiers;
+		CARD8 *pModifiers;   
 		void (*Bell)();
 		void (*ControlProc)();
 
@@ -1403,7 +1403,7 @@ The pixel image data in all drawables is in a format that is private
 to DDX.
 In fact, each instance of a drawable is associated with a given screen.
 Presumably, the pixel image data for
-pixmaps is choose to be conveniently understood by the
+pixmaps is chosen to be conveniently understood by the
 hardware.   All screens in a single server must be able to handle 
 all pixmaps depths declared in the connection setup information.
 .LP
@@ -2991,8 +2991,10 @@ a dynamically allocated GC that is passed in.
 It does NOT allocate the GC record itself or fill
 in the defaults; DIX does that.
 
-The fields to fill in include all of the Drawing Primitive and 
-Pixblit routines and the miTranslate field.
+This must fill in all the functions in the GC; none of the drawing
+functions will be called before the GC has been validated,
+but the others (dealing with allocating of clip regions,
+changing and destroying the GC, etc.) might be.
 It must also dynamically allocate and fill in the first GCInterestRec.
 (The default font is set elsewhere; see the section on Fonts.)
 
@@ -3089,8 +3091,6 @@ then CopyGCDest is called for the destination GC.
 This is for situations where dynamically allocated chunks of memory are hanging
 off the GCInterestRec's extPriv component, and they need to be duplicated when
 the GC and GCInterestRec's are duplicated.
-If you, as an interested entity, do not use the extPriv field, you probably
-can leave this NULL, which indicates that such a routine need not be called.
 .nf
 
 	pGCInterest->DestroyGC(pGC, pGCI)
@@ -3706,7 +3706,8 @@ This defaults to (0, 0) but can be set by the client to anything.)
 However, the mi routines can
 translate (relocate) the points  from window-relative to screen-relative
 if desired.
-If you set the miTranslate field in the GC (set it in the CreateGC routine),
+If you set the miTranslate field in the GC (set it in the CreateGC or
+ValidateGC routine),
 then the mi output routines will translate all coordinates.
 If it is false, then the coordinates will be passed window-relative.
 Screens with no hardware translation will probably set miTranslate
@@ -3740,6 +3741,19 @@ It turns out that the Glyph and PushPixels routines actually have a
 machine-independent implementation that depends upon the Span routines.
 If you are really pressed for time, you can use these 
 versions, although they are quite slow.
+
+If you use the miGetImage() code, you need to supply a
+macro (or function) called GetBitFromPixel.
+.nf
+
+	GetBitFromPixel(pixel, plane, depth)
+	    CARD32 pixel;
+	    int plane, depth;
+.fi
+Pixel is a pixel value of the specified depth; this returns
+the bit corresponding to plane from the pixel.  The returned value is
+cast to be (unsigned char).  0 is the least significant plane, depth-1
+the most significant.
 
 .NH 3
 Span Routines
