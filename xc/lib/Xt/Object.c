@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.13 90/12/12 14:52:43 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Object.c,v 1.14 90/12/30 16:29:14 rws Exp $";
 /* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
 #endif /* lint */
 
@@ -164,8 +164,10 @@ static void ObjectClassPartInitialize(wc)
 
 
 /*ARGSUSED*/
-static Boolean ObjectSetValues(old, request, widget)
+static Boolean ObjectSetValues(old, request, widget, args, num_args)
     Widget	old, request, widget;
+    ArgList args;
+    Cardinal *num_args;
 {
     register CallbackTable offsets;
     register int i;
