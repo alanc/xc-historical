@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.5 94/03/27 13:23:53 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.6 94/04/17 21:17:12 dpw Exp kaleb $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -1296,7 +1296,10 @@ CreateWellKnownSockets()
 
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
     for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
-#ifndef X_NOT_POSIX
+#ifdef XNO_SYSCONF
+#undef _SC_OPEN_MAX
+#endif
+#ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
 #ifdef hpux
