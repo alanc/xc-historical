@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.31 91/07/05 18:15:50 converse Exp $
+/* $XConsortium: popup.c,v 2.32 91/07/07 16:30:29 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -335,7 +335,7 @@ void PopupNotice(message, callback, closure)
     Widget value;
     Position x, y;
     Arg args[3];
-    char command[65], label[200];
+    char command[65], label[128];
 
     if (popup_status == (PopupStatus)NULL) {
 	popup_status = XtNew(PopupStatusRec);
@@ -354,8 +354,10 @@ void PopupNotice(message, callback, closure)
 	(void) sprintf( label, "%.64s command returned:", command );
     } else {
 	/* arbitrary shell command */
-	(void) sprintf(label, "%.170s\nshell command returned:",
-		      popup_status->shell_command);
+	int len = strlen(popup_status->shell_command);
+	(void) sprintf(label, "%.88s %s\nshell command returned:",
+		       popup_status->shell_command,
+		       ((len > 88) ? "[truncated]" : ""));
     }
 
     DeterminePopupPosition(&x, &y, &transientFor);
