@@ -1,6 +1,6 @@
 /*
- * $Source: /usr/expo/X/src/clients/xmodmap/RCS/xmodmap.c,v $
- * $Header: xmodmap.c,v 1.9 88/02/19 13:14:43 jim Exp $
+ * $Source: /usr/expo/X/src/lib/Xaw/RCS/MailboxP.h,v $
+ * $Header: MailboxP.h,v 1.1 88/02/23 15:15:42 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,14 +23,14 @@
 #include <X11/Mailbox.h>
 #include <X11/CoreP.h>
 
-#define MAILBOX_DIRECTORY "/usr/spool/mail/\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define MAILBOX_DIRECTORY "/usr/spool/mail"
 #define MAILBOX_VOLUME 33		/* percentage */
 
 typedef struct {			/* new fields for mailbox widget */
     Pixel foreground_pixel;		/* color index of normal state fg */
     GC gc;				/* normal GC to use */
     int update;				/* seconds between updates */
-    char filename[sizeof MAILBOX_DIRECTORY];	/* filename to watch */
+    String filename;			/* filename to watch */
     long last_size;			/* size in bytes of mailboxname */
     Boolean reverseVideo;		/* do reverse video? */
     XtIntervalId interval_id;		/* time between checks */

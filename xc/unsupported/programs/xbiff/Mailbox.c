@@ -1,6 +1,6 @@
 /*
- * $Source: /usr/expo/X/src/clients/xmodmap/RCS/xmodmap.c,v $
- * $Header: xmodmap.c,v 1.9 88/02/19 13:14:43 jim Exp $
+ * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.c,v $
+ * $Header: Mailbox.c,v 1.1 88/02/23 15:15:40 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -54,12 +54,14 @@ static XtResource resources[] = {
 	goffset (background_pixel), XtRString, "white" },
     { XtNreverseVideo, XtCBoolean, XtRBoolean, sizeof (Boolean),
 	offset (reverseVideo), XtRString, "FALSE" },
+    { XtNfile, XtCFile, XtRString, sizeof (String),
+	offset (filename), XtRString, NULL },
 };
 
 #undef offset
 #undef goffset
 
-static void GetUserInfo(), CloseDown();
+static void GetMailFile(), CloseDown();
 static void check_mailbox(), redraw_mailbox(), beep();
 static void Initialize(), Realize(), Destroy(), Redisplay();
 static Boolean SetValues();
@@ -112,7 +114,7 @@ static void Initialize (request, new)
     XtGCMask valuemask;
     XGCValues xgcv;
 
-    GetUserInfo (w);
+    if (!w->mailbox.filename) GetMailFile (w);
 
     if (w->core.width <= 0) w->core.width = PictureWidth;
     if (w->core.height <= 0) w->core.height = PictureHeight;
@@ -212,6 +214,7 @@ static void Destroy (gw)
 {
     MailboxWidget w = (MailboxWidget) gw;
 
+    XtFree (w->mailbox.filename);
     XtRemoveTimeOut (w->mailbox.interval_id);
     XtDestroyGC (w->mailbox.gc);
     return;
@@ -283,7 +286,7 @@ static void check_mailbox (w, force_redraw, reset)
  * get user name for building mailbox
  */
 
-static void GetUserInfo (w)
+static void GetMailFile (w)
     MailboxWidget w;
 {
     char *getlogin();
@@ -301,7 +304,10 @@ static void GetUserInfo (w)
 	}
 	username = pw->pw_name;
     }
+    w->mailbox.filename = (String) XtMalloc (strlen (MAILBOX_DIRECTORY) + 1 +
+				   	     strlen (username) + 1);
     strcpy (w->mailbox.filename, MAILBOX_DIRECTORY);
+    strcat (w->mailbox.filename, "/");
     strcat (w->mailbox.filename, username);
     return;
 }
