@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.11 89/07/12 09:32:57 jim Exp $
+ * $XConsortium: listres.c,v 1.12 89/07/12 11:06:43 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -93,7 +93,9 @@ static void list_known_widgets ()
     WidgetNode *wn;
 
     for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
-	printf ("%-24s  %s\n", wn->label, WnClass(wn)->core_class.class_name);
+	printf ("%-24s ", wn->label);
+	print_classname (wn, NULL, 0, False);
+	putchar ('\n');
     }
     exit (0);
 }
@@ -113,9 +115,9 @@ main (argc, argv)
 			     &argc, argv);
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
+    initialize_nodes (widget_list, nwidgets);
     if (Appresources.known) list_known_widgets ();
 
-    initialize_nodes (widget_list, nwidgets);
     topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
     argc--, argv++;
 
