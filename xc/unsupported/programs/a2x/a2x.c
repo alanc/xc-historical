@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.13 92/03/18 18:11:57 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.14 92/03/19 14:10:27 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -17,17 +17,17 @@ without express or implied warranty.
 
 /*
 
-Command line:  a2x [-d display] [-e]
+Command line:  a2x [-d display] [-e] [-b]
 
 Syntax of magic values in the input stream:
 
 ^T^B<number>^T		toggle button <number> state (press or release)
-^T^C			Control key for next character
+^T^C			toggle Control key for next character
 ^T^D			slow down moving mouse
 ^T^G			start continuous motion
-^T^M			Meta key for next character
+^T^M			toggle Meta key for next character
 ^T^Q			quit moving mouse
-^T^S			Shift key for next character
+^T^S			toggle Shift key for next character
 ^T^T			^T
 ^T^W<screen-num> <x-pos-num> <y-pos-num>^T
 			warp to position (<x-pos-num>,<y-pos-num>) on
@@ -284,7 +284,7 @@ do_key(key, mods)
     if (!key)
 	return;
     if (modmask[key]) {
-	tempmods |= modmask[key];
+	tempmods ^= modmask[key];
 	return;
     }
     setup_tempmods();
