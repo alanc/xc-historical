@@ -1,8 +1,9 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.40 91/09/10 09:02:30 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.41 92/12/22 17:45:13 gildea Exp $
 
-#define OSName            A/UX 2.0.1
-#define OSMajorVersion    2
+#define OSName            A/UX 3.0.1
+#define OSMajorVersion    3
 #define OSMinorVersion    0
+#define OSTeenyVersion    1
 XCOMM operating system:  OSName
 
 #if HasGcc
