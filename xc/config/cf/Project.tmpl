@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.215 94/02/04 15:29:57 dpw Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.216 94/02/04 18:58:09 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -41,7 +41,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.215 94/02/04 15:29:57 dpw Exp $
 #define BuildServer		HasXServer
 #endif
 #ifndef BuildMTXServer
-#define BuildMTXServer		(HasXServer &&(HasPosixThreads || HasCThreads))
+#define BuildMTXServer		NO
 #endif
 #ifndef XServerThreaded
 #define XServerThreaded		NO	/* turn on threads in merged server */
