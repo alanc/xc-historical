@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.5 87/09/12 16:39:59 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.6 87/09/13 13:21:07 swick Locked $";
 #endif lint
 
 /*
@@ -87,7 +87,7 @@ static void Initialize();
 static void Realize();
 static void Resize();
 static void Redisplay();
-static void SetValues();
+static Boolean SetValues();
 
 static void StartPageBack();
 static void StartSmoothScroll();
@@ -284,10 +284,11 @@ static void PaintThumb( w )
 }
 
 
-static void Initialize( gw )
-   Widget gw;
+static void Initialize( request, new )
+   Widget request;		/* what the client asked for */
+   Widget new;			/* what we're going to give him */
 {
-    ScrollbarWidget w = (ScrollbarWidget) gw;
+    ScrollbarWidget w = (ScrollbarWidget) new;
     XGCValues gcValues;
 
     if (w->scrollbar.thumb == NULL) {
@@ -332,49 +333,36 @@ static void Realize( gw, valueMask, attributes )
 }
 
 
-static void SetValues( gw, desired )
-   Widget gw,			/* what I am */
-          desired;		/* what he wants me to be */
+static Boolean SetValues( current, request, desired )
+   Widget current,		/* what I am */
+          request,		/* what he wants me to be */
+          desired;		/* what I will become */
 {
-    ScrollbarWidget w = (ScrollbarWidget) gw;
+    ScrollbarWidget w = (ScrollbarWidget) current;
+    ScrollbarWidget rw = (ScrollbarWidget) request;
     ScrollbarWidget dw = (ScrollbarWidget) desired;
     short thumbmoved, redraw;
 
     thumbmoved = redraw = FALSE;
 
+    /* Core make take care of the following... we'll have to see */
     if (w->core.border_pixel != dw->core.border_pixel) {
-	w->core.border_pixel = dw->core.border_pixel;
 	if (w->core.border_width != 0)
 	    XSetWindowBorder( XtDisplay(w), XtWindow(w), w->core.border_pixel );
     }
 
-    w->scrollbar.scrollProc = dw->scrollbar.scrollProc;
-    w->scrollbar.thumbProc = dw->scrollbar.thumbProc;
+    if (w->scrollbar.foreground != rw->scrollbar.foreground ||
+	w->core.background_pixel != rw->core.background_pixel)
+        redraw = TRUE;
 
-    if (w->scrollbar.foreground != dw->scrollbar.foreground ||
-	w->core.background_pixel != dw->core.background_pixel)
-      redraw = TRUE;
-
-    w->scrollbar.foreground = dw->scrollbar.foreground;
-    w->core.background_pixel = dw->core.background_pixel;
-
-    w->scrollbar.thumb = dw->scrollbar.thumb;
-
-    if (w->scrollbar.top != dw->scrollbar.top) {
-	w->scrollbar.top = dw->scrollbar.top;
+    if (w->scrollbar.top != dw->scrollbar.top ||
+        w->scrollbar.shown != dw->scrollbar.shown)
 	thumbmoved = TRUE;
-    }
-    if (w->scrollbar.shown != dw->scrollbar.shown) {
-	w->scrollbar.shown = dw->scrollbar.shown;
-	thumbmoved = TRUE;
-    }
 
-    if (redraw) {
-	XClearWindow(XtDisplay(w), XtWindow(w));
+    if (redraw)
 	w->scrollbar.topLoc = -1000;
-	PaintThumb(w);
-    } else if (thumbmoved)
-	PaintThumb(w);
+
+    return( redraw || thumbmoved );
 }
 
 /* ARGSUSED */
