@@ -1,0 +1,7 @@
+#define IHaveSubdirs
+#define PassCDebugFlags /* as nothing */
+
+        SUBDIRS = speedo
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
