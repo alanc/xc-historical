@@ -33,11 +33,12 @@
 #define ON_CONSOLE_ONLY
 #endif
 
-#ifdef ON_CONSOLE_ONLY
 #ifdef SYSV
 #include <fcntl.h>
 #endif
 #include <sys/file.h>
+
+#ifdef ON_CONSOLE_ONLY
 #include <sys/ioctl.h>
 #endif
 
