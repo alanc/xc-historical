@@ -345,3 +345,4 @@ XlibMessage.X3D-PEX.14: Resource id in failed request 0x%lx
 ! XTEST extension
 XRequest.XTEST.0: X_XTestGetVersion
 XRequest.XTEST.1: X_XTestCompareCursor
+XRequest.XTEST.2: X_XTestFakeInput
