@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.31 89/12/16 20:38:10 rws Exp $
+ * $XConsortium: process.c,v 1.31 89/12/16 20:42:08 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -504,11 +504,10 @@ static int cvthexkey (hexstr, ptrp)	/* turn hex key string into octets */
     int len = 0;
     char *retval, *s;
     unsigned char *us;
+    char c;
     char savec = '\0';
-    int whichchar;
-    static char *hexdigits = "0123456789abcdef";
 
-    /* convert to lower case and count */
+    /* count */
     for (s = hexstr; *s; s++) {
 	if (!isascii(*s)) return -1;
 	if (isspace(*s)) continue;
@@ -529,19 +528,20 @@ static int cvthexkey (hexstr, ptrp)	/* turn hex key string into octets */
 	return -1;
     }
 
-    whichchar = 0;
     for (us = (unsigned char *) retval, i = len; i > 0; hexstr++) {
-	if (isspace(*hexstr)) continue;	 /* already know it is ascii */
-	if (whichchar) {
-#define atoh(c) ((c) - (((c) >= '0' && (c) <= '9') ? '0' : 'a'))
-	    *us = (unsigned char)((atoh(savec) << 4) + atoh(*hexstr));
+	c = *hexstr;
+	if (isspace(c)) continue;	 /* already know it is ascii */
+	if (isupper(c))
+	    c = tolower(c);
+	if (savec) {
+#define atoh(c) ((c) - (((c) >= '0' && (c) <= '9') ? '0' : ('a'-10)))
+	    *us = (unsigned char)((atoh(savec) << 4) + atoh(c));
 #undef atoh
-	    whichchar = 0;		/* ready for next character */
+	    savec = 0;		/* ready for next character */
 	    us++;
 	    i--;
 	} else {
-	    savec = *hexstr;
-	    whichchar = 1;
+	    savec = c;
 	}
     }
     *ptrp = retval;
