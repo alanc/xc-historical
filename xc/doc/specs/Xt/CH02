@@ -1,4 +1,4 @@
-.\" $XConsortium: CH02,v 1.11 91/08/27 09:59:40 swick Exp $
+.\" $XConsortium: CH02,v 1.12 92/11/16 17:43:21 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -1421,13 +1421,6 @@ Object
 initialize procedure on down to the widget's initialize procedure.
 .IP \(bu 5
 If the parent is a member of the class
-.PN compositeWidgetClass ,
-puts the widget into its parent's children list by calling its parent's
-insert_child procedure.
-For further information,
-see Section 3.1.
-.IP \(bu 5
-If the parent is a member of the class
 .PN constraintWidgetClass ,
 calls the
 .PN ConstraintClassPart
@@ -1437,6 +1430,13 @@ starting at
 on down to the parent's
 .PN ConstraintClassPart
 initialize procedure.
+.IP \(bu 5
+If the parent is a member of the class
+.PN compositeWidgetClass ,
+puts the widget into its parent's children list by calling its parent's
+insert_child procedure.
+For further information,
+see Section 3.1.
 .sp
 .LP
 To create an instance of a widget using varargs lists, use
