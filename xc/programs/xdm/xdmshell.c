@@ -25,11 +25,14 @@
  * This program should probably be setuid to root.  On the macII, it must be
  * run from the console so that getty doesn't get confused about zero-length
  * reads.
+ *
+ * WARNING:  Make sure that you tailor your Xresources file to have a
+ * way of invoking the abort-display() action.  Otherwise, you won't be able
+ * bring down X when you are finished.
  */
 
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include "dm.h"
 #include <errno.h>
 extern int errno;
 extern int sys_nerr;
@@ -38,11 +41,6 @@ extern char *sys_errlist[];
 #ifdef macII
 #define ON_CONSOLE_ONLY
 #endif
-
-#ifdef SYSV
-#include <fcntl.h>
-#endif
-#include <sys/file.h>
 
 #ifdef ON_CONSOLE_ONLY
 #include <sys/ioctl.h>
@@ -74,13 +72,13 @@ static int exec_one_arg (filename, arg)
     char *arg;
 {
     int pid, deadpid;
-    union wait status;
+    waitType status;
 
     if (!filename) return -1;
 
     if (access (filename, X_OK) != 0) return -1;
 
-    status.w_retcode = 0;
+    waitCode(status) = 0;
     switch (pid = vfork ()) {
       case -1:						/* error */
 	return -1;
@@ -89,13 +87,9 @@ static int exec_one_arg (filename, arg)
 	_exit (1);
 	/* NOTREACHED */
       default:						/* parent */
-	deadpid = wait (&status);
-	if (deadpid != pid) {
-	    fprintf (stderr, "%s:  got back bad pid %d != %d\n",
-		     ProgramName, deadpid, pid);
-	}
+	while (wait (&status) != pid) ;
     }
-    return (int) status.w_retcode;
+    return waitCode (status);
 }
 
 
