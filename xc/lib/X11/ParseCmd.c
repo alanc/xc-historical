@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ParseCmd.c,v 1.16 89/01/09 18:00:23 rws Exp $
+ * $XConsortium: ParseCmd.c,v 1.17 89/07/20 10:05:44 jim Exp $
  */
 
 /***********************************************************
@@ -181,8 +181,12 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 			register int j = 1 + (int) options[i].value;
 
 			if (j > myargc) j = myargc;
-			for (; j > 0; j--)
+			for (; j > 0; j--) {
 			    (*argsave++) = (*argv++);
+			    myargc--;
+			}
+			argv--;		/* went one too far before */
+			myargc++;
 		    }
 		    break;
 
