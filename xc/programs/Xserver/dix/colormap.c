@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.13 90/07/03 08:58:47 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.14 90/07/05 20:16:40 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1952,22 +1952,23 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 {
     Pixel	*pptr, *cptr;
     Pixel	basemask;	/* bits not used in any mask */
-    int		npix, z, npixClientNew;
+    int		npix, z, npixClientNew, npixShared;
     Pixel	base, bits;
     SHAREDCOLOR *pshared, **ppshared, **psharedList;
 
     basemask = ~(rmask | gmask | bmask);
     npixClientNew = c << (r + g + b);
-    psharedList = (SHAREDCOLOR **)ALLOCATE_LOCAL(npixClientNew *
+    npixShared = (c << r) + (c << g) + (c << b);
+    psharedList = (SHAREDCOLOR **)ALLOCATE_LOCAL(npixShared *
 						 sizeof(SHAREDCOLOR *));
     if (!psharedList)
 	return FALSE;
     ppshared = psharedList;
-    for (z = npixClientNew; --z >= 0; )
+    for (z = npixShared; --z >= 0; )
     {
 	if (!(ppshared[z] = (SHAREDCOLOR *)xalloc(sizeof(SHAREDCOLOR))))
 	{
-	    for (z++ ; z < npixClientNew; z++)
+	    for (z++ ; z < npixShared; z++)
 		xfree(ppshared[z]);
 	    return FALSE;
 	}
