@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.20 92/01/03 18:20:50 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.21 92/01/08 19:53:35 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -60,6 +60,7 @@ Donna Converse, converse@expo.lcs.mit.edu
 Stephen Gildea, gildea@expo.lcs.mit.edu
 Susan Hardy, sh@expo.lcs.mit.edu
 Jay Hersh, hersh@expo.lcs.mit.edu
+Ralph Mor,  mor@expo.lcs.mit.edu
 Keith Packard, keith@expo.lcs.mit.edu
 Dave Sternlicht, dave@expo.lcs.mit.edu
 .fi
