@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.1 89/05/04 11:44:07 jim Exp $
+ * $XConsortium: actions.h,v 1.2 89/05/08 16:23:10 converse Exp $
  * 
  * actions.h - action table declaring externally available procedures for xcalc
  *
@@ -28,7 +28,7 @@
 extern void
     add(), back(), bell(), clear(), cosine(), decimal(),
     degree(), digit(), divide(), e(), enter(), epower(), equal(),
-    exchange(), factorial(), HPrecall(), HPstore(), HPsum(),
+    exchange(), factorial(), 
     inverse(), leftParen(), logarithm(), multiply(), naturalLog(),
     negate(), nop(), off(), pi(), power(), quit(), recall(),
     reciprocal(), rightParen(), roll(), scientific(), selection(), sine(),
@@ -55,9 +55,6 @@ XtActionsRec	Actions[] = {
 {"equal",	equal},		/* TI-specific = */
 {"exchange",	exchange},	/* TI-specific exchange memory and display */
 {"factorial",	factorial},	/* factorial function */
-{"HPrecall",	HPrecall},	/* HP-specific memory recall */
-{"HPstore",	HPstore},	/* HP-specific memory store */
-{"HPsum",	HPsum},		/* HP-specific memory summation */
 {"inverse", 	inverse},	/* inverse */
 {"leftParen",	leftParen},	/* TI-specific left parenthesis */
 {"logarithm",	logarithm},	/* logarithm base 10 */
@@ -69,7 +66,7 @@ XtActionsRec	Actions[] = {
 {"pi",		pi},		/* the number pi */
 {"power",	power},		/* raise to an arbitrary power */
 {"quit",	quit},		/* quit */
-{"recall",	recall},	/* TI-specific memory recall */
+{"recall",	recall},	/* memory recall */
 {"reciprocal",  reciprocal},	/* reciprocal function */
 {"rightParen",	rightParen},	/* TI-specific left parenthesis */
 {"roll",	roll},		/* HP-specific roll stack */
@@ -78,9 +75,9 @@ XtActionsRec	Actions[] = {
 {"sine",	sine},		/* trigonometric function sine */
 {"square",	square},	/* square */
 {"squareRoot",	squareRoot},	/* square root */
-{"store",	store},		/* TI-specific memory store */
+{"store",	store},		/* memory store */
 {"subtract", 	subtract},	/* subtraction */
-{"sum",		sum},		/* TI-specific memory summation */
+{"sum",		sum},		/* memory summation */
 {"tangent",	tangent},	/* trigonometric function tangent */
 {"tenpower",	tenpower},	/* 10 raised to to an arbitrary power */
 {"XexchangeY",	XexchangeY}	/* HP-specific exchange X and Y registers */

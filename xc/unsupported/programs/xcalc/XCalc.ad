@@ -318,19 +318,19 @@ XCalc.hp.bevel.screen.LCD.translations:	#replace\n\
 				<Key>KP_8:digit(8)\n\
 				<Key>KP_9:digit(9)\n\
 				<Key>KP_Enter:enter()\n\
-				<Key>KP_Multiply:multiply(HP)\n\
-				<Key>KP_Add:add(HP)\n\
-				<Key>KP_Subtract:subtract(HP)\n\
+				<Key>KP_Multiply:multiply()\n\
+				<Key>KP_Add:add()\n\
+				<Key>KP_Subtract:subtract()\n\
 				<Key>KP_Decimal:decimal()\n\
-				<Key>KP_Divide:divide(HP)\n\
+				<Key>KP_Divide:divide()\n\
 				<Key>.:decimal()\n\
-				<Key>+:add(HP)\n\
-				<Key>-:subtract(HP)\n\
-				<Key>*:multiply(HP)\n\
-				<Key>/:divide(HP)\n\
+				<Key>+:add()\n\
+				<Key>-:subtract()\n\
+				<Key>*:multiply()\n\
+				<Key>/:divide()\n\
 			        <Key>!:factorial()\n\
 				<Key>e:e()\n\
-				<Key>^:power(HP)\n\
+				<Key>^:power()\n\
 				<Key>p:pi()\n\
 				<Key>i:inverse()\n\
 				<Key>s:sine()\n\
@@ -358,7 +358,7 @@ XCalc.hp.button2.translations:		#override<Btn1Up>:epower()unset()
 XCalc.hp.button3.label:		10^x
 XCalc.hp.button3.translations:		#override<Btn1Up>:tenpower()unset()
 XCalc.hp.button4.label:		y^x
-XCalc.hp.button4.translations:		#override<Btn1Up>:power(HP)unset()
+XCalc.hp.button4.translations:		#override<Btn1Up>:power()unset()
 XCalc.hp.button5.label:		1/x
 XCalc.hp.button5.translations:		#override<Btn1Up>:reciprocal()unset()
 XCalc.hp.button6.label:		CHS
@@ -370,7 +370,7 @@ XCalc.hp.button8.translations:		#override<Btn1Up>:digit(8)unset()
 XCalc.hp.button9.label:		9
 XCalc.hp.button9.translations:		#override<Btn1Up>:digit(9)unset()
 XCalc.hp.button10.label:		/
-XCalc.hp.button10.translations:	#override<Btn1Up>:divide(HP)unset()
+XCalc.hp.button10.translations:	#override<Btn1Up>:divide()unset()
 
 XCalc.hp.button11.label:		x!
 XCalc.hp.button11.translations:	#override<Btn1Up>:factorial()unset()
@@ -391,7 +391,7 @@ XCalc.hp.button18.translations:	#override<Btn1Up>:digit(5)unset()
 XCalc.hp.button19.label:		6
 XCalc.hp.button19.translations:	#override<Btn1Up>:digit(6)unset()
 XCalc.hp.button20.label:		*
-XCalc.hp.button20.translations:	#override<Btn1Up>:multiply(HP)unset()
+XCalc.hp.button20.translations:	#override<Btn1Up>:multiply()unset()
 
 XCalc.hp.button21.label:	
 XCalc.hp.button22.label:	
@@ -410,7 +410,7 @@ XCalc.hp.button28.translations:	#override<Btn1Up>:digit(2)unset()
 XCalc.hp.button29.label:		3
 XCalc.hp.button29.translations:	#override<Btn1Up>:digit(3)unset()
 XCalc.hp.button30.label:		-
-XCalc.hp.button30.translations:	#override<Btn1Up>:subtract(HP)unset()
+XCalc.hp.button30.translations:	#override<Btn1Up>:subtract()unset()
 
 XCalc.hp.button31.label:		ON
 XCalc.hp.button31.translations:	#override<Btn1Up>:off()unset()\n\
@@ -420,17 +420,17 @@ XCalc.hp.button32.translations:	#override<Btn1Up>:degree()unset()
 XCalc.hp.button33.label:		INV
 XCalc.hp.button33.translations:	#override<Btn1Up>:inverse()unset()
 XCalc.hp.button34.label:		STO
-XCalc.hp.button34.translations:	#override<Btn1Up>:HPstore()unset()
+XCalc.hp.button34.translations:	#override<Btn1Up>:store()unset()
 XCalc.hp.button35.label:		RCL
-XCalc.hp.button35.translations:	#override<Btn1Up>:HPrecall()unset()
+XCalc.hp.button35.translations:	#override<Btn1Up>:recall()unset()
 XCalc.hp.button36.label:		0
 XCalc.hp.button36.translations:	#override<Btn1Up>:digit(0)unset()
 XCalc.hp.button37.label:		.
 XCalc.hp.button37.translations:	#override<Btn1Up>:decimal()unset()
 XCalc.hp.button38.label:		SUM
-XCalc.hp.button38.translations:	#override<Btn1Up>:HPsum()unset()
+XCalc.hp.button38.translations:	#override<Btn1Up>:sum()unset()
 XCalc.hp.button39.label:		+
-XCalc.hp.button39.translations:	#override<Btn1Up>:add(HP)unset()
+XCalc.hp.button39.translations:	#override<Btn1Up>:add()unset()
 
 
 XCalc.hp.button1.horizDistance:	4

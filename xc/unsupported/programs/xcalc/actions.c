@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.1 89/05/04 11:44:04 jim Exp $
+ * $XConsortium: actions.c,v 1.2 89/05/08 16:22:27 converse Exp $
  *
  * actions.c - externally available procedures for xcalc
  * 
@@ -27,7 +27,7 @@
 
 #include <X11/Intrinsic.h>
 #include "xcalc.h"
-
+extern int rpn;
 extern void pre_op(), post_op(), Quit(), ringbell(), do_select();
 
 /*ARGSUSED*/
@@ -38,7 +38,7 @@ void add(w, e, vector, count)
     Cardinal	*count;
 {
     pre_op(kADD);
-    (*count) ? twof(kADD) : twoop(kADD);
+    rpn ? twof(kADD) : twoop(kADD);
     post_op();
 }
 
@@ -143,7 +143,7 @@ void divide(w, e, vector, count)
     Cardinal	*count;
 {
     pre_op(kDIV);
-    (*count) ? twof(kDIV) : twoop(kDIV);
+    rpn  ? twof(kDIV) : twoop(kDIV);
     post_op();
 }
 
@@ -220,42 +220,6 @@ void factorial(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void HPrecall(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
-{
-    pre_op(kRCL);
-    memf(kRCL);
-    post_op();
-}
-
-/*ARGSUSED*/
-void HPstore(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
-{
-    pre_op(kSTO);
-    memf(kSTO);
-    post_op();
-}
-
-/*ARGSUSED*/
-void HPsum(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
-{
-    pre_op(kSUM);
-    memf(kSUM);
-    post_op();
-}
-
-/*ARGSUSED*/
 void inverse(w, e, vector, count)
     Widget	w;
     XEvent	*e;
@@ -299,7 +263,7 @@ void multiply(w, e, vector, count)
     Cardinal	*count;
 {
     pre_op(kMUL);
-    (*count) ? twof(kMUL) : twoop(kMUL);
+    rpn ? twof(kMUL) : twoop(kMUL);
     post_op();
 }
    
@@ -369,7 +333,7 @@ void power(w, e, vector, count)
     Cardinal	*count;
 {
     pre_op(kPOW);
-    (*count) ? twof(kPOW) : twoop(kPOW);
+    rpn ? twof(kPOW) : twoop(kPOW);
     post_op();
 }
 
@@ -391,7 +355,7 @@ void recall(w, e, vector, count)
     Cardinal	*count;
 {
     pre_op(kRCL);
-    oneop(kRCL);
+    rpn ? memf(kRCL) : oneop(kRCL);
     post_op();
 }
 	
@@ -496,8 +460,8 @@ void store(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    oneop(kSTO);
     pre_op(kSTO);
+    rpn ? memf(kSTO) : oneop(kSTO);
     post_op();
 }
 
@@ -509,7 +473,7 @@ void subtract(w, e, vector, count)
     Cardinal	*count;
 {
     pre_op(kSUB);
-    (*count) ? twof(kSUB) : twoop(kSUB);
+    rpn ? twof(kSUB) : twoop(kSUB);
     post_op();
 }
    
@@ -521,7 +485,7 @@ void sum(w, e, vector, count)
     Cardinal	*count;
 {
     pre_op(kSUM);
-    oneop(kSUM);
+    rpn ? memf(kSUM) : oneop(kSUM);
     post_op();
 }
    
