@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.0 94/05/09 13:16:03 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.13 94/05/11 16:20:22 kaleb Exp $
 
 MANDIR = $(LIBMANDIR)
 MANSUFFIX = $(LIBMANSUFFIX)
@@ -117,7 +117,7 @@ InstallManPageLong(XtGetActL,$(MANDIR),XtGetActionList)
 InstallManPageLong(XtCallActP,$(MANDIR),XtCallActionProc)
 InstallManPageLong(XtRegGA,$(MANDIR),XtRegisterGrabAction)
 InstallManPageLong(XtClickT,$(MANDIR),XtSetMultiClickTime)
-InstallManPageAliases(XtSetMultiClickTime,$(MANDIR),$XtGetMultiClickTime)
+InstallManPageAliases(XtSetMultiClickTime,$(MANDIR),XtGetMultiClickTime)
 InstallManPageLong(XtGetActK,$(MANDIR),XtGetActionKeysym)
 InstallManPageLong(XtExtEvDis,$(MANDIR),XtInsertEventTypeHandler)
 InstallManPageAliases(XtInsertEventTypeHandler,$(MANDIR),XtRemoveEventTypeHandler XtRegisterExtensionSelector XtSetEventDispatcher XtDispatchEventToWidget)
