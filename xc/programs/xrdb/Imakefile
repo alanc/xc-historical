@@ -1,5 +1,8 @@
-XCOMM $XConsortium$
-        DEFINES = -DCPP="\"$(CPP)\""
+XCOMM $XConsortium: Imakefile,v 1.7 91/07/17 00:46:42 gildea Exp $
+#if PatheticCpp
+        CPPDEFS = -DPATHETICCPP
+#endif
+        DEFINES = -DCPP="\"$(CPP)\"" $(CPPDEFS)
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
 
