@@ -72,6 +72,23 @@ Bool InitCircles(xp, p)
     return True;
 }
 
+Bool InitWideCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int size;
+
+    (void)InitCircles(xp, p);
+
+    size = p->special;
+    XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+    XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+
+    return True;
+}
+ 
 Bool InitDashedCircles(xp, p)
     XParms  xp;
     Parms   p;
@@ -89,6 +106,28 @@ Bool InitDashedCircles(xp, p)
     return True;
 }
 
+Bool InitWideDashedCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int		size;
+    XGCValues   gcv;
+    char	dashes[2];
+
+    (void)InitWideCircles(xp, p);
+    size = p->special;
+    size = (size + 9) / 10;
+
+    /* Modify GCs to draw dashed */
+    dashes[0] = 2*size;   dashes[1] = 2*size;
+    gcv.line_style = LineOnOffDash;
+    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
 Bool InitDoubleDashedCircles(xp, p)
     XParms  xp;
     Parms   p;
@@ -101,6 +140,28 @@ Bool InitDoubleDashedCircles(xp, p)
     XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
     XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
+Bool InitWideDoubleDashedCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int		size;
+    XGCValues   gcv;
+    char	dashes[2];
+
+    (void)InitWideCircles(xp, p);
+    size = p->special;
+    size = (size + 9) / 10;
+
+    /* Modify GCs to draw dashed */
+    dashes[0] = 2*size;   dashes[1] = 2*size;
+    gcv.line_style = LineDoubleDash;
+    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
     return True;
@@ -163,6 +224,23 @@ Bool InitEllipses(xp, p)
     return True;
 }
 
+Bool InitWideEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int size;
+
+    (void)InitEllipses(xp, p);
+
+    size = p->special;
+    XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+    XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+
+    return True;
+}
+ 
 Bool InitDashedEllipses(xp, p)
     XParms  xp;
     Parms   p;
@@ -180,6 +258,28 @@ Bool InitDashedEllipses(xp, p)
     return True;
 }
 
+Bool InitWideDashedEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int		size;
+    XGCValues   gcv;
+    char	dashes[2];
+
+    (void)InitWideEllipses(xp, p);
+    size = p->special;
+    size = (size + 9) / 10;
+
+    /* Modify GCs to draw dashed */
+    dashes[0] = 2*size;   dashes[1] = 2*size;
+    gcv.line_style = LineOnOffDash;
+    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
 Bool InitDoubleDashedEllipses(xp, p)
     XParms  xp;
     Parms   p;
@@ -192,6 +292,28 @@ Bool InitDoubleDashedEllipses(xp, p)
     XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
     XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
+Bool InitWideDoubleDashedEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int		size;
+    XGCValues   gcv;
+    char	dashes[2];
+
+    (void)InitWideEllipses(xp, p);
+    size = p->special;
+    size = (size + 9) / 10;
+
+    /* Modify GCs to draw dashed */
+    dashes[0] = 2*size;   dashes[1] = 2*size;
+    gcv.line_style = LineDoubleDash;
+    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
     return True;

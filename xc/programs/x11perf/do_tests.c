@@ -52,23 +52,27 @@ extern void DoSegs();
 extern void EndSegs();
 
 extern Bool InitLines();
+extern Bool InitWideLines();
 extern Bool InitDashedLines();
+extern Bool InitWideDashedLines();
 extern Bool InitDoubleDashedLines();
+extern Bool InitWideDoubleDashedLines();
 extern void DoLines();
 extern void EndLines();
 
-extern Bool InitWideLines();
-extern Bool InitWideDashedLines();
-extern Bool InitWideDoubleDashedLines();
-extern void DoWideLines();
-extern void EndWideLines();
 
 extern Bool InitCircles();
+extern Bool InitWideCircles();
 extern Bool InitDashedCircles();
+extern Bool InitWideDashedCircles();
 extern Bool InitDoubleDashedCircles();
+extern Bool InitWideDoubleDashedCircles();
 extern Bool InitEllipses();
+extern Bool InitWideEllipses();
 extern Bool InitDashedEllipses();
+extern Bool InitWideDashedEllipses();
 extern Bool InitDoubleDashedEllipses();
+extern Bool InitWideDoubleDashedEllipses();
 extern void DoArcs();
 extern void DoFilledArcs();
 extern void EndArcs();
@@ -265,74 +269,106 @@ Test test[] = {
 		InitDoubleDashedLines, DoLines, NullProc, EndLines, False, 0,
 		{10, POLY, 100}},
   {"-wline10",   "10x1 wide line",
-		InitWideLines, DoWideLines, NullProc, EndWideLines, False, 0,
+		InitWideLines, DoLines, NullProc, EndLines, False, 0,
 		{200, 100, 10}},
   {"-wline100",  "100x10 wide line",
-		InitWideLines, DoWideLines, NullProc, EndWideLines, False, 0,
+		InitWideLines, DoLines, NullProc, EndLines, False, 0,
 		{100, 100, 100}},
   {"-wline500", "500x50 wide line",
-		InitWideLines, DoWideLines, NullProc, EndWideLines, False, 0,
+		InitWideLines, DoLines, NullProc, EndLines, False, 0,
 		{20, 50, 500}},
   {"-wdline100",  "100x10 wide dashed line",
-		InitWideDashedLines, DoWideLines, NullProc, EndWideLines,
+		InitWideDashedLines, DoLines, NullProc, EndLines,
 		False, 0,
 		{100, 100, 100}},
   {"-wddline100",  "100x10 wide double-dashed line",
-		InitWideDoubleDashedLines, DoWideLines, NullProc, EndWideLines,
+		InitWideDoubleDashedLines, DoLines, NullProc, EndLines,
 		False, 0,
 		{100, 100, 100}},
-  {"-circle1",  "1-pixel diameter circle",
+  {"-circle1",  "1-pixel circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{20, POLY, 1}},
-  {"-circle10", "10-pixel diameter circle",
+  {"-circle10", "10-pixel circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{10, POLY, 10}},
-  {"-circle100", "100-pixel diameter circle",
+  {"-circle100", "100-pixel circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{40, 100, 100}},
-  {"-circle500", "500-pixel diameter circle",
+  {"-circle500", "500-pixel circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{20, 25, 500}},
-  {"-dcircle100", "100-pixel diameter dashed circle",
+  {"-dcircle100", "100-pixel dashed circle",
 		InitDashedCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{40, 100, 100}},
-  {"-ddcircle100", "100-pixel diameter double-dashed circle",
+  {"-ddcircle100", "100-pixel double-dashed circle",
 		InitDoubleDashedCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{40, 100, 100}},
-  {"-fcircle1",  "1-pixel diameter solid circle",
+  {"-wcircle10", "10-pixel wide circle",
+		InitWideCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{10, POLY, 10}},
+  {"-wcircle100", "100-pixel wide circle",
+		InitWideCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{40, 100, 100}},
+  {"-wcircle500", "500-pixel wide circle",
+		InitWideCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 25, 500}},
+  {"-wdcircle100", "100-pixel wide dashed circle",
+		InitWideDashedCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{40, 100, 100}},
+  {"-wddcircle100", "100-pixel wide double-dashed circle",
+		InitWideDoubleDashedCircles, DoArcs, NullProc, EndArcs,
+		False, 0,
+		{40, 100, 100}},
+  {"-fcircle1",  "1-pixel solid circle",
 		InitCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{20, POLY, 1}},
-  {"-fcircle10", "10-pixel diameter solid circle",
+  {"-fcircle10", "10-pixel solid circle",
 		InitCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{10, POLY, 10}},
-  {"-fcircle100", "100-pixel diameter solid circle",
+  {"-fcircle100", "100-pixel solid circle",
 		InitCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{40, 25, 100}},
-  {"-fcircle500", "500-pixel diameter solid circle",
+  {"-fcircle500", "500-pixel solid circle",
 		InitCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{20, 1, 500}},
-  {"-ellipse10", "10-pixel diameter ellipse",
+  {"-ellipse10", "10-pixel ellipse",
 		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
 		{20, 200, 10}},
-  {"-ellipse100", "100-pixel diameter ellipse",
+  {"-ellipse100", "100-pixel ellipse",
 		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
 		{20, 25, 100}},
-  {"-ellipse500", "500-pixel diameter ellipse",
+  {"-ellipse500", "500-pixel ellipse",
 		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
 		{10, 20, 500}},
-  {"-dellipse100", "100-pixel diameter dashed ellipse",
+  {"-dellipse100", "100-pixel dashed ellipse",
 		InitDashedEllipses, DoArcs, NullProc, EndArcs, False, 0,
 		{20, 25, 100}},
-  {"-ddellipse100", "100-pixel diameter double-dashed ellipse",
+  {"-ddellipse100", "100-pixel double-dashed ellipse",
 		InitDoubleDashedEllipses, DoArcs, NullProc, EndArcs, False, 0,
 		{20, 25, 100}},
-  {"-fellipse10", "10-pixel diameter filled ellipse",
+  {"-wellipse10", "10-pixel wide ellipse",
+		InitWideEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 200, 10}},
+  {"-wellipse100", "100-pixel wide ellipse",
+		InitWideEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 25, 100}},
+  {"-wellipse500", "500-pixel wide ellipse",
+		InitWideEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{10, 20, 500}},
+  {"-wdellipse100", "100-pixel wide dashed ellipse",
+		InitWideDashedEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 25, 100}},
+  {"-wddellipse100", "100-pixel wide double-dashed ellipse",
+		InitWideDoubleDashedEllipses, DoArcs, NullProc, EndArcs,
+		False, 0,
+		{20, 25, 100}},
+  {"-fellipse10", "10-pixel filled ellipse",
 		InitEllipses, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{20, 200, 10}},
-  {"-fellipse100", "100-pixel diameter filled ellipse",
+  {"-fellipse100", "100-pixel filled ellipse",
 		InitEllipses, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{20, 25, 100}},
-  {"-fellipse500", "500-pixel diameter filled ellipse",
+  {"-fellipse500", "500-pixel filled ellipse",
 		InitEllipses, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{10, 10, 500}},
   {"-triangle1", "Fill 1-pixel/side triangle",
