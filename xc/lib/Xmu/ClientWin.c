@@ -1,4 +1,4 @@
-/* $XConsortium: ClientWin.c,v 1.1 89/01/06 16:34:31 rws Exp $ */
+/* $XConsortium: ClientWin.c,v 1.1 89/02/02 19:41:39 rws Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -73,6 +73,6 @@ Window TryChildren (dpy, win, WM_STATE)
     }
     for (i = 0; !inf && (i < nchildren); i++)
 	inf = TryChildren(dpy, children[i], WM_STATE);
-    XFree((char *)children);
+    if (children) XFree((char *)children);
     return inf;
 }
