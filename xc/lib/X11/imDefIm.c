@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIm.c,v 1.12 94/07/06 14:46:51 kaleb Exp $ */
+/* $XConsortium: imDefIm.c,v 1.13 94/07/08 14:45:26 kaleb Exp kaleb $ */
 /******************************************************************
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
          Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -139,6 +139,7 @@ _XimCheckLocaleName(im, address, address_len, locale_name, len)
     char	  *pp;
     register char *p;
     register int   n;
+    Bool           finish = False;
 
     category_len = strlen(XIM_LOCAL_CATEGORY);
     if(address_len < category_len)
@@ -150,15 +151,14 @@ _XimCheckLocaleName(im, address, address_len, locale_name, len)
     pp = &address[category_len];
 
     for(;;) {
-	Bool finish = False;
-
-	for (p = pp; (*p != ',') && (*p); p++);
+	for( p = pp; *p && *p != ','; p++);
 	if (!*p)
 	    finish = True;
 	address_len = (int)(p - pp);
+	*p = '\0';
 
 	for( n = 0; n < len; n++ )
-	    if( locale_name[n]  &&  !strncmp( pp, locale_name[n], address_len ) )
+	    if( locale_name[n] && !strcmp( pp, locale_name[n] ) )
 		return locale_name[n];
 	if (finish)
 	    break;
