@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.30 92/12/17 11:05:13 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.31 93/07/12 09:34:02 dpw Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -142,7 +142,7 @@ SOFTWARE.
 #endif
 
 #if (mskcnt>4)
-#define COPYBITS(src, dst) bcopy((caddr_t) src, (caddr_t) dst,\
+#define COPYBITS(src, dst) memmove((caddr_t) dst, (caddr_t) src, \
 				 mskcnt*sizeof(long))
 #define CLEARBITS(buf) bzero((caddr_t) buf, mskcnt*sizeof(long))
 #define MASKANDSETBITS(dst, b1, b2)  \

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.154 92/12/17 12:41:36 rws Exp $ */
+/* $XConsortium: connection.c,v 1.155 93/07/12 09:34:04 dpw Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -329,7 +329,7 @@ hpux_getpeername(fd, from, fromlen)
 	len = strlen(unsock.sun_path)+2;
 	if (len > *fromlen)
 	    len = *fromlen;
-	bcopy ((char *) &unsock, (char *) from, len);
+	memmove((char *) from, (char *) &unsock, len);
 	*fromlen = len;
     }
     return ret;

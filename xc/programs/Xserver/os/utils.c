@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.122 93/08/24 18:50:00 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.123 93/09/02 19:56:14 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -577,9 +577,9 @@ pointer client;
         *p++ = (len = strlen(hnameptr) + 1) >> 8;
         *p++ = (len & 0xff);
 
-	bcopy(AUTHORIZATION_NAME, p, sizeof(AUTHORIZATION_NAME));
+	memmove(p, AUTHORIZATION_NAME, sizeof(AUTHORIZATION_NAME));
 	p += sizeof(AUTHORIZATION_NAME);
-	bcopy(hnameptr, p, len);
+	memmove(p, hnameptr, len);
 	p += len;
     }
     *authlen = p - result;
@@ -727,7 +727,7 @@ AuditF(
     {
 	time(&tm);
 	autime = ctime(&tm);
-	if (s = index(autime, '\n'))
+	if (s = strchr(autime, '\n'))
 	    *s = '\0';
 	if (s = strrchr(argvGlobal[0], '/'))
 	    s++;

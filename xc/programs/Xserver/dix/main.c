@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.22 93/07/12 09:25:16 dpw Exp $ */
+/* $XConsortium: main.c,v 5.23 93/08/24 18:49:46 gildea Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -330,11 +330,11 @@ CreateConnectionBlock()
     if (!ConnectionInfo)
 	return FALSE;
 
-    bcopy((char *)&setup, ConnectionInfo, sizeof(xConnSetup));
+    memmove(ConnectionInfo, (char *)&setup, sizeof(xConnSetup));
     sizesofar = sizeof(xConnSetup);
     pBuf = ConnectionInfo + sizeof(xConnSetup);
 
-    bcopy(VENDOR_STRING, pBuf, (int)setup.nbytesVendor);
+    memmove(pBuf, VENDOR_STRING, (int)setup.nbytesVendor);
     sizesofar += setup.nbytesVendor;
     pBuf += setup.nbytesVendor;
     i = padlength[setup.nbytesVendor & 3];
@@ -347,7 +347,7 @@ CreateConnectionBlock()
 	format.depth = screenInfo.formats[i].depth;
 	format.bitsPerPixel = screenInfo.formats[i].bitsPerPixel;
 	format.scanLinePad = screenInfo.formats[i].scanlinePad;
-	bcopy((char *)&format, pBuf, sizeof(xPixmapFormat));
+	memmove(pBuf, (char *)&format, sizeof(xPixmapFormat));
 	pBuf += sizeof(xPixmapFormat);
 	sizesofar += sizeof(xPixmapFormat);
     }
@@ -376,7 +376,7 @@ CreateConnectionBlock()
 	root.saveUnders = pScreen->saveUnderSupport != NotUseful;
 	root.rootDepth = pScreen->rootDepth;
 	root.nDepths = pScreen->numDepths;
-	bcopy((char *)&root, pBuf, sizeof(xWindowRoot));
+	memmove(pBuf, (char *)&root, sizeof(xWindowRoot));
 	sizesofar += sizeof(xWindowRoot);
 	pBuf += sizeof(xWindowRoot);
 
@@ -395,7 +395,7 @@ CreateConnectionBlock()
 	    pBuf += sizesofar;            
 	    depth.depth = pDepth->depth;
 	    depth.nVisuals = pDepth->numVids;
-	    bcopy((char *)&depth, pBuf, sizeof(xDepth));
+	    memmove(pBuf, (char *)&depth, sizeof(xDepth));
 	    pBuf += sizeof(xDepth);
 	    sizesofar += sizeof(xDepth);
 	    for(k = 0; k < pDepth->numVids; k++)
@@ -412,7 +412,7 @@ CreateConnectionBlock()
 		visual.redMask = pVisual->redMask;
 		visual.greenMask = pVisual->greenMask;
 		visual.blueMask = pVisual->blueMask;
-		bcopy((char *)&visual, pBuf, sizeof(xVisualType));
+		memmove(pBuf, (char *)&visual, sizeof(xVisualType));
 		pBuf += sizeof(xVisualType);
 		sizesofar += sizeof(xVisualType);
 	    }

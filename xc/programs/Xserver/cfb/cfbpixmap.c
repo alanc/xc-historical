@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpixmap.c,v 5.9 93/06/24 10:26:04 dpw Exp $ */
+/* $XConsortium: cfbpixmap.c,v 5.10 93/07/12 16:28:09 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -100,7 +100,7 @@ cfbCopyPixmap(pSrc)
 				pSrc->drawable.height, pSrc->drawable.depth);
     if (!pDst)
 	return NullPixmap;
-    bcopy((char *)pSrc->devPrivate.ptr, (char *)pDst->devPrivate.ptr, size);
+    memmove((char *)pDst->devPrivate.ptr, (char *)pSrc->devPrivate.ptr, size);
     return pDst;
 }
 
@@ -305,9 +305,9 @@ cfbYRotatePixmap(pPix, rh)
     if(!(ptmp = (char *)ALLOCATE_LOCAL(nbyUp)))
 	return;
 
-    bcopy(pbase, ptmp, nbyUp);		/* save the low rows */
-    bcopy(pbase+nbyUp, pbase, nbyDown);	/* slide the top rows down */
-    bcopy(ptmp, pbase+nbyDown, nbyUp);	/* move lower rows up to row rot */
+    memmove(ptmp, pbase, nbyUp);		/* save the low rows */
+    memmove(pbase, pbase+nbyUp, nbyDown);	/* slide the top rows down */
+    memmove(pbase+nbyDown, ptmp, nbyUp);	/* move lower rows up to row rot */
     DEALLOCATE_LOCAL(ptmp);
 }
 
@@ -322,8 +322,8 @@ cfbCopyRotatePixmap(psrcPix, ppdstPix, xrot, yrot)
 	(pdstPix->devKind == psrcPix->devKind) &&
 	(pdstPix->drawable.height == psrcPix->drawable.height))
     {
-	bcopy((char *)psrcPix->devPrivate.ptr,
-	      (char *)pdstPix->devPrivate.ptr,
+	memmove((char *)pdstPix->devPrivate.ptr,
+		(char *)psrcPix->devPrivate.ptr,
 	      psrcPix->drawable.height * psrcPix->devKind);
 	pdstPix->drawable.width = psrcPix->drawable.width;
 	pdstPix->drawable.depth = psrcPix->drawable.depth;

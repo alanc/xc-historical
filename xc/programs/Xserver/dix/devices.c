@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.29 93/07/13 08:57:00 rws Exp $ */
+/* $XConsortium: devices.c,v 5.30 93/07/13 09:41:31 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -323,16 +323,16 @@ SetKeySymsMap(dst, src)
         if (dst->map)
 	{
             for (i = 0; i <= dst->maxKeyCode-dst->minKeyCode; i++)
-		bcopy((char *)&dst->map[i*dst->mapWidth],
-		      (char *)&map[i*src->mapWidth],
+		memmove((char *)&map[i*src->mapWidth],
+			(char *)&dst->map[i*dst->mapWidth],
 		      dst->mapWidth * sizeof(KeySym));
 	    xfree(dst->map);
 	}
 	dst->mapWidth = src->mapWidth;
 	dst->map = map;
     }
-    bcopy((char *)src->map,
-	  (char *)&dst->map[rowDif * dst->mapWidth],
+    memmove((char *)&dst->map[rowDif * dst->mapWidth],
+	    (char *)src->map,
 	  (int)(src->maxKeyCode - src->minKeyCode + 1) *
 	  dst->mapWidth * sizeof(KeySym));
     return TRUE;
@@ -401,7 +401,7 @@ InitKeyClassDeviceStruct(dev, pKeySyms, pModifiers)
     keyc->state = 0;
     keyc->prev_state = 0;
     if (pModifiers)
-	bcopy((char *)pModifiers, (char *)keyc->modifierMap, MAP_LENGTH);
+	memmove((char *)keyc->modifierMap, (char *)pModifiers, MAP_LENGTH);
     else
 	bzero((char *)keyc->modifierMap, MAP_LENGTH);
     bzero((char *)keyc->down, DOWN_LENGTH);
@@ -848,7 +848,7 @@ ProcSetModifierMapping(client)
 	if (keyc->modifierKeyMap)
 	    xfree(keyc->modifierKeyMap);
 	keyc->modifierKeyMap = map;
-	bcopy((char *)inputMap, (char *)map, inputMapLen);
+	memmove((char *)map, (char *)inputMap, inputMapLen);
 
 	keyc->maxKeysPerModifier = stuff->numKeyPerModifier;
 	for (i = 0; i < MAP_LENGTH; i++)

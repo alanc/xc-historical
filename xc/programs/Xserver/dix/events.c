@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.63 93/07/12 09:24:13 dpw Exp $ */
+/* $XConsortium: events.c,v 5.64 93/07/13 09:40:35 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2294,7 +2294,7 @@ EnterLeaveEvent(type, mode, detail, pWin, child)
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
-	bcopy((char *)&keybd->key->down[1], (char *)&ke.map[0], 31);
+	memmove((char *)&ke.map[0], (char *)&keybd->key->down[1], 31);
 	if (grab)
 	    (void)TryClientEvents(rClient(grab), (xEvent *)&ke, 1, mask,
 				  KeymapStateMask, grab);
@@ -2389,7 +2389,7 @@ FocusEvent(dev, type, mode, detail, pWin)
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
-	bcopy((char *)&dev->key->down[1], (char *)&ke.map[0], 31);
+	memmove((char *)&ke.map[0], (char *)&dev->key->down[1], 31);
 	(void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
 				    KeymapStateMask, NullGrab, 0);
     }

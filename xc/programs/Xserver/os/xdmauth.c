@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.5 91/07/24 18:36:20 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.6 92/05/19 17:24:20 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -130,7 +130,7 @@ XdmAuthenticationInit (cookie, cookie_len)
     {
     	if (cookie_len > 7)
 	    cookie_len = 7;
-    	bcopy (cookie, privateKey.data + 1, cookie_len);
+    	memmove (privateKey.data + 1, cookie, cookie_len);
     }
     XdmcpGenerateKey (&rho);
     XdmcpRegisterAuthentication (XdmAuthenticationName, XdmAuthenticationNameLen,
@@ -313,8 +313,8 @@ XID	id;
 	return 0;
     new->next = xdmAuth;
     xdmAuth = new;
-    bcopy (key_bits, new->key.data, (int) 8);
-    bcopy (rho_bits, new->rho.data, (int) 8);
+    memmove (new->key.data, key_bits, (int) 8);
+    memmove (new->rho.data, rho_bits, (int) 8);
     new->id = id;
     return 1;
 }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.7 92/10/19 16:10:58 rws Exp $ */
+/* $XConsortium: property.c,v 5.8 93/07/12 09:24:01 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -244,7 +244,7 @@ ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
         pProp->format = format;
         pProp->data = data;
 	if (len)
-	    bcopy((char *)value, (char *)data, totalSize);
+	    memmove((char *)data, (char *)value, totalSize);
 	pProp->size = len;
         pProp->next = pWin->optional->userProps;
         pWin->optional->userProps = pProp;
@@ -270,7 +270,7 @@ ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
             	pProp->data = data;
 	    }
 	    if (len)
-		bcopy((char *)value, (char *)pProp->data, totalSize);
+		memmove((char *)pProp->data, (char *)value, totalSize);
 	    pProp->size = len;
     	    pProp->type = type;
 	    pProp->format = format;
@@ -286,8 +286,8 @@ ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
 	    if (!data)
 		return(BadAlloc);
             pProp->data = data;
-	    bcopy((char *)value,
-		  &((char *)data)[pProp->size * sizeInBytes], 
+	    memmove(&((char *)data)[pProp->size * sizeInBytes], 
+		    (char *)value,
 		  totalSize);
             pProp->size += len;
 	}
@@ -296,9 +296,9 @@ ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
             data = (pointer)xalloc(sizeInBytes * (len + pProp->size));
 	    if (!data)
 		return(BadAlloc);
-	    bcopy((char *)pProp->data, &((char *)data)[totalSize], 
+	    memmove(&((char *)data)[totalSize], (char *)pProp->data, 
 		  (int)(pProp->size * sizeInBytes));
-            bcopy((char *)value, (char *)data, totalSize);
+            memmove((char *)data, (char *)value, totalSize);
 	    xfree(pProp->data);
             pProp->data = data;
             pProp->size += len;

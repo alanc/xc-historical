@@ -1,7 +1,7 @@
 /*
  * SUN-DES-1 authentication mechanism
  *
- * $XConsortium: rpcauth.c,v 1.4 92/01/31 16:51:14 gildea Exp $
+ * $XConsortium: rpcauth.c,v 1.5 92/11/20 14:39:08 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -48,7 +48,7 @@ int  len;
     SVCXPRT         xprt;
 
     temp_inmsg = (char *) xalloc(len);
-    bcopy(inmsg, temp_inmsg, len);
+    memmove(temp_inmsg, inmsg, len);
 
     memset((char *)&msg, 0, sizeof(msg));
     memset((char *)&r, 0, sizeof(r));

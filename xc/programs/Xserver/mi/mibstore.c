@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.56 93/02/09 16:49:59 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.57 93/07/12 09:28:42 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -146,7 +146,7 @@ if (mode == CoordModeOrigin) \
 } \
 else \
 { \
-    bcopy((char *)(src), (char *)(dst), (n) << 2); \
+    memmove((char *)(dst), (char *)(src), (n) << 2); \
     *((short *)(dst)) -= pBackingStore->x; \
     *((short *)(dst) + 1) -= pBackingStore->y; \
 }
@@ -868,7 +868,7 @@ miBSFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (pptCopy && pwidthCopy)
     {
 	copyData(pptInit, pptCopy, nInit, MoreCopy0);
-	bcopy((char *)pwidthInit,(char *)pwidthCopy,nInit*sizeof(int));
+	memmove((char *)pwidthCopy,(char *)pwidthInit,nInit*sizeof(int));
 
 	(* pGC->ops->FillSpans)(pDrawable, pGC, nInit, pptInit,
 			     pwidthInit, fSorted);
@@ -931,7 +931,7 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     if (pptCopy && pwidthCopy)
     {
 	copyData(ppt, pptCopy, nspans, MoreCopy0);
-	bcopy((char *)pwidth,(char *)pwidthCopy,nspans*sizeof(int));
+	memmove((char *)pwidthCopy,(char *)pwidth,nspans*sizeof(int));
 
 	(* pGC->ops->SetSpans)(pDrawable, pGC, (unsigned int *)psrc,
 			       ppt, pwidth, nspans, fSorted);

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.43 92/07/26 14:19:43 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.44 93/07/12 09:28:57 dpw Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -3106,8 +3106,8 @@ realFindSpan (y)
 		else
 			newMaxy = finalMaxy + change;
 		if (finalSpans) {
-			bcopy ((char *) finalSpans,
-	 		       ((char *) newSpans) + (finalMiny-newMiny) * sizeof (struct finalSpan *),
+			memmove(((char *) newSpans) + (finalMiny-newMiny) * sizeof (struct finalSpan *),
+				(char *) finalSpans,
 			       finalSize * sizeof (struct finalSpan *));
 			xfree (finalSpans);
 		}

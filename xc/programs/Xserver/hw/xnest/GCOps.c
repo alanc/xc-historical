@@ -1,4 +1,4 @@
-/* $XConsortium: GCOps.c,v 1.2 93/07/20 10:24:05 rws Exp $ */
+/* $XConsortium: GCOps.c,v 1.3 93/07/20 13:30:22 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -126,7 +126,7 @@ void xnestGetImage(pDrawable, x, y, w, h, format, planeMask, pImage)
   if (ximage) {
       length = ximage->bytes_per_line * ximage->height;
   
-      bcopy(ximage->data, pImage, length);
+      memmove(pImage, ximage->data, length);
   
       XDestroyImage(ximage);
   }

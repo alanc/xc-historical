@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mispans.c,v 5.1 91/07/03 17:22:37 keith Exp $ */
+/* $XConsortium: mispans.c,v 5.2 91/12/17 19:39:12 keith Exp $ */
 
 #include "misc.h"
 #include "pixmapstr.h"
@@ -101,8 +101,8 @@ void miSubtractSpans (spanGroup, sub)
 		    {
 			if (xmax >= spansPt->x + *spansWid) 
 			{
-			    bcopy (spansPt + 1, spansPt, sizeof *spansPt * (spansCount - 1));
-			    bcopy (spansWid + 1, spansWid, sizeof *spansWid * (spansCount - 1));
+			    memmove (spansPt, spansPt + 1, sizeof *spansPt * (spansCount - 1));
+			    memmove (spansWid, spansWid + 1, sizeof *spansWid * (spansCount - 1));
 			    spansPt--;
 			    spansWid--;
 			    spans->count--;
@@ -139,8 +139,8 @@ void miSubtractSpans (spanGroup, sub)
 				spans->widths = newwid;
 				extra = EXTRA;
 			    }
-			    bcopy (spansPt, spansPt + 1, sizeof *spansPt * (spansCount));
-			    bcopy (spansWid, spansWid + 1, sizeof *spansWid * (spansCount));
+			    memmove (spansPt + 1, spansPt, sizeof *spansPt * (spansCount));
+			    memmove (spansWid + 1, spansWid, sizeof *spansWid * (spansCount));
 			    spans->count++;
 			    extra--;
 			    *spansWid = xmin - spansPt->x;

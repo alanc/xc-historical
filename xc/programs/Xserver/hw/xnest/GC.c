@@ -1,4 +1,4 @@
-/* $XConsortium: xnestGC.c,v 1.1 93/06/23 16:23:31 dmatic Exp $ */
+/* $XConsortium: GC.c,v 1.1 93/07/12 15:28:22 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -334,7 +334,7 @@ void xnestCopyClip(pGCDst, pGCSrc)
       nRects = xnestGCPriv(pGCSrc)->nClipRects;
       size = sizeof(xRectangle) * nRects;
       pRects = (xRectangle *)xalloc(size);
-      bcopy(pGCSrc->clientClip, pRects, size);
+      memmove(pRects, pGCSrc->clientClip, size);
       xnestChangeClip(pGCDst, pGCSrc->clientClipType, pRects, nRects);
       break;
     }

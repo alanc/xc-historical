@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.36 89/07/03 19:50:49 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.37 91/05/09 16:50:15 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1193,8 +1193,8 @@ SClientMessageEvent(from, to)
 	    to->u.clientMessage.u.l.type);
     switch (from->u.u.detail) {
        case 8:
-          bcopy(from->u.clientMessage.u.b.bytes,
-		to->u.clientMessage.u.b.bytes, 20);
+          memmove(to->u.clientMessage.u.b.bytes, 
+		  from->u.clientMessage.u.b.bytes,20);
 	  break;
        case 16:
 	  cpswaps(from->u.clientMessage.u.s.shorts0,
@@ -1266,13 +1266,13 @@ WriteSConnectionInfo(pClient, size, pInfo)
 
     /* Copy the vendor string */
     i = (pConnSetup->nbytesVendor + 3) & ~3;
-    bcopy(pInfo, pInfoT, i);
+    memmove(pInfoT, pInfo, i);
     pInfo += i;
     pInfoT += i;
 
     /* The Pixmap formats don't need to be swapped, just copied. */
     i = sizeof(xPixmapFormat) * screenInfo.numPixmapFormats;
-    bcopy(pInfo, pInfoT, i);
+    memmove(pInfoT, pInfo, i);
     pInfo += i;
     pInfoT += i;
 

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.39 93/07/12 09:23:55 dpw Exp $ */
+/* $XConsortium: dixfonts.c,v 1.40 93/08/24 18:49:48 gildea Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -259,7 +259,7 @@ doOpenFont(client, c)
 		err = AllocError;
 		break;
 	    }
-	    bcopy(alias, newname, newlen);
+	    memmove(newname, alias, newlen);
 	    c->fontname = newname;
 	    c->fnamelen = newlen;
 	    c->current_fpe = 0;
@@ -371,7 +371,7 @@ OpenFont(client, fid, flags, lenfname, pfontname)
 	xfree(c);
 	return BadAlloc;
     }
-    bcopy(pfontname, c->fontname, lenfname);
+    memmove(c->fontname, pfontname, lenfname);
     for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
@@ -582,7 +582,7 @@ finish:
 	else
 	{
 	    *bufptr++ = names->length[i];
-	    bcopy(names->names[i], bufptr, names->length[i]);
+	    memmove(bufptr, names->names[i], names->length[i]);
 	    bufptr += names->length[i];
 	}
     }
@@ -638,7 +638,7 @@ MakeListFontsClosure(client, pattern, length, max_names)
 	xfree(c);
 	return 0;
     }
-    bcopy(pattern, c->pattern, length);
+    memmove(c->pattern, pattern, length);
     for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
@@ -904,7 +904,7 @@ StartListFontsWithInfo(client, length, pattern, max_names)
 	xfree(c);
 	goto badAlloc;
     }
-    bcopy(pattern, c->current.pattern, length);
+    memmove(c->current.pattern, pattern, length);
     for (i = 0; i < num_fpes; i++)
     {
 	c->fpe_list[i] = font_path_elements[i];
@@ -1130,7 +1130,7 @@ doPolyText(client, c)
 			err = BadAlloc;
 			goto bail;
 		    }
-		    bcopy(c->pElt, c->data, len);
+		    memmove(c->data, c->pElt, len);
 		    c->pElt = c->data;
 		    c->endReq = c->pElt + len;
 
@@ -1312,7 +1312,7 @@ doImageText(client, c)
 		err = BadAlloc;
 		goto bail;
 	    }
-	    bcopy(c->data, data, c->nChars * c->itemSize);
+	    memmove(data, c->data, c->nChars * c->itemSize);
 	    c->data = data;
 
 	    pGC = GetScratchGC(c->pGC->depth, c->pGC->pScreen);
@@ -1415,7 +1415,7 @@ find_existing_fpe(list, num, name, len)
 
     for (i = 0; i < num; i++) {
 	fpe = list[i];
-	if (fpe->name_length == len && bcmp(name, fpe->name, len) == 0)
+	if (fpe->name_length == len && memcmp(name, fpe->name, len) == 0)
 	    return fpe;
     }
     return (FontPathElementPtr) 0;
@@ -1604,7 +1604,7 @@ GetFontPath(count, length)
 	fpe = font_path_elements[i];
 	*c = fpe->name_length;
 	*length += *c++;
-	bcopy(fpe->name, c, fpe->name_length);
+	memmove(c, fpe->name, fpe->name_length);
 	c += fpe->name_length;
     }
     *count = num_fpes;

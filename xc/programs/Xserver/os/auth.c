@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.11 91/04/14 15:57:19 rws Exp $
+ * $XConsortium: auth.c,v 1.12 91/07/24 18:36:16 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -111,7 +111,7 @@ LoadAuthorization ()
     while (auth = XauReadAuth (f)) {
 	for (i = 0; i < NUM_AUTHORIZATION; i++) {
 	    if (protocols[i].name_length == auth->name_length &&
-		bcmp (protocols[i].name, auth->name, (int) auth->name_length) == 0)
+		memcmp (protocols[i].name, auth->name, (int) auth->name_length) == 0)
 	    {
 		++count;
 		(*protocols[i].Add) (auth->data_length, auth->data,
@@ -156,7 +156,7 @@ char	*data;
     if (name_length)
 	for (i = 0; i < NUM_AUTHORIZATION; i++) {
 	    if (protocols[i].name_length == name_length &&
-		bcmp (protocols[i].name, name, (int) name_length) == 0)
+		memcmp (protocols[i].name, name, (int) name_length) == 0)
 	    {
 		return (*protocols[i].Check) (data_length, data);
 	    }
@@ -184,7 +184,7 @@ char	*data;
 
     for (i = 0; i < NUM_AUTHORIZATION; i++) {
     	if (protocols[i].name_length == name_length &&
-	    bcmp (protocols[i].name, name, (int) name_length) == 0)
+	    memcmp (protocols[i].name, name, (int) name_length) == 0)
     	{
 	    return (*protocols[i].ToID) (data_length, data);
     	}
@@ -221,7 +221,7 @@ char	*data;
 
     for (i = 0; i < NUM_AUTHORIZATION; i++) {
     	if (protocols[i].name_length == name_length &&
-	    bcmp (protocols[i].name, name, (int) name_length) == 0)
+	    memcmp (protocols[i].name, name, (int) name_length) == 0)
     	{
 	    return (*protocols[i].Remove) (data_length, data);
     	}
@@ -239,7 +239,7 @@ char	*data;
 
     for (i = 0; i < NUM_AUTHORIZATION; i++) {
     	if (protocols[i].name_length == name_length &&
-	    bcmp (protocols[i].name, name, (int) name_length) == 0)
+	    memcmp (protocols[i].name, name, (int) name_length) == 0)
     	{
 	    return (*protocols[i].Add) (data_length, data,
 					++AuthorizationIndex);

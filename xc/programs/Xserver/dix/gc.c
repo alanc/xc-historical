@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.21 93/07/12 09:24:06 dpw Exp $ */
+/* $XConsortium: gc.c,v 5.22 93/07/17 09:52:26 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -1100,7 +1100,7 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
     pGC->stateChanges |= GCClipYOrigin;
 
     if (size)
-	bcopy((char *)prects, (char *)prectsNew, size);
+	memmove((char *)prectsNew, (char *)prects, size);
     (*pGC->funcs->ChangeClip)(pGC, newct, (pointer)prectsNew, nrects);
     if (pGC->funcs->ChangeGC)
 	(*pGC->funcs->ChangeGC) (pGC, GCClipXOrigin|GCClipYOrigin|GCClipMask);

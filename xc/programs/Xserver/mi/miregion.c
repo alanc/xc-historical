@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.55 91/07/06 14:02:29 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.56 91/12/26 11:31:15 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -402,7 +402,7 @@ miRegionCopy(dst, src)
 	dst->data->size = src->data->numRects;
     }
     dst->data->numRects = src->data->numRects;
-    bcopy((char *)REGION_BOXPTR(src), (char *)REGION_BOXPTR(dst),
+    memmove((char *)REGION_BOXPTR(dst),(char *)REGION_BOXPTR(src), 
 	  dst->data->numRects * sizeof(BoxRec));
     return TRUE;
 }
@@ -557,7 +557,7 @@ miAppendNonO (pReg, r, rEnd, y1, y2)
     int newRects;							\
     if (newRects = rEnd - r) {						\
 	RECTALLOC(newReg, newRects);					\
-	bcopy((char *)r, (char *)REGION_TOP(newReg),			\
+	memmove((char *)REGION_TOP(newReg),(char *)r, 			\
               newRects * sizeof(BoxRec));				\
 	newReg->data->numRects += newRects;				\
     }									\
@@ -1239,7 +1239,7 @@ miRegionAppend(dstrgn, rgn)
 	if (dnumRects == 1)
 	    *new = *REGION_BOXPTR(dstrgn);
 	else
-	    bcopy((char *)REGION_BOXPTR(dstrgn), (char *)new,
+	    memmove((char *)new,(char *)REGION_BOXPTR(dstrgn), 
 		  dnumRects * sizeof(BoxRec));
 	new = REGION_BOXPTR(dstrgn);
     }
@@ -1248,7 +1248,7 @@ miRegionAppend(dstrgn, rgn)
     if (numRects == 1)
 	*new = *old;
     else
-	bcopy((char *)old, (char *)new, numRects * sizeof(BoxRec));
+	memmove((char *)new, (char *)old, numRects * sizeof(BoxRec));
     dstrgn->data->numRects += numRects;
     return TRUE;
 }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.72 93/07/10 16:46:26 dpw Exp $ */
+/* $XConsortium: io.c,v 1.73 93/07/10 16:47:58 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -224,7 +224,7 @@ ReadRequestFromClient(client)
 	    ((oci->bufptr - oci->buffer + needed) > oci->size))
 	{
 	    if ((gotnow > 0) && (oci->bufptr != oci->buffer))
-		bcopy(oci->bufptr, oci->buffer, gotnow);
+		memmove(oci->buffer, oci->bufptr, gotnow);
 	    if (needed > oci->size)
 	    {
 		char *ibuf;
@@ -411,11 +411,11 @@ InsertFakeRequest(client, data, count)
     if (moveup > 0)
     {
 	if (gotnow > 0)
-	    bcopy(oci->bufptr, oci->bufptr + moveup, gotnow);
+	    memmove(oci->bufptr + moveup, oci->bufptr, gotnow);
 	oci->bufptr += moveup;
 	oci->bufcnt += moveup;
     }
-    bcopy(data, oci->bufptr - count, count);
+    memmove(oci->bufptr - count, data, count);
     oci->bufptr -= count;
     request = (xReq *)oci->bufptr;
     gotnow += count;
@@ -577,8 +577,8 @@ FlushClient(who, oc, extraBuf, extraCount)
 		if (written > 0)
 		{
 		    oco->count -= written;
-		    bcopy((char *)oco->buf + written,
-			  (char *)oco->buf,
+		    memmove((char *)oco->buf,
+			    (char *)oco->buf + written,
 			  oco->count);
 		    written = 0;
 		}
@@ -609,8 +609,8 @@ FlushClient(who, oc, extraBuf, extraCount)
 	    /* If the amount written extended into the padBuffer, then the
 	       difference "extraCount - written" may be less than 0 */
 	    if ((len = extraCount - written) > 0)
-		bcopy (extraBuf + written,
-		       (char *)oco->buf + oco->count,
+		memmove ((char *)oco->buf + oco->count,
+			 extraBuf + written,
 		       len);
 
 	    oco->count = notWritten; /* this will include the pad */
@@ -773,7 +773,7 @@ WriteToClient (who, count, buf)
 
     NewOutputPending = TRUE;
     BITSET(OutputPending, oc->fd);
-    bcopy(buf, (char *)oco->buf + oco->count, count);
+    memmove((char *)oco->buf + oco->count, buf, count);
     oco->count += count + padBytes;
     
     return(count);

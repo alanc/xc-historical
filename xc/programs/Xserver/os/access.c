@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.55 93/02/06 13:56:27 rws Exp $ */
+/* $XConsortium: access.c,v 1.56 93/07/12 09:33:53 dpw Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -65,8 +65,8 @@ SOFTWARE.
 
 Bool defeatAccessControl = FALSE;
 
-#define acmp(a1, a2, len) bcmp((char *)(a1), (char *)(a2), len)
-#define acopy(a1, a2, len) bcopy((char *)(a1), (char *)(a2), len)
+#define acmp(a1, a2, len) memcmp((char *)(a1), (char *)(a2), len)
+#define acopy(a1, a2, len) memmove((char *)(a2), (char *)(a1), len)
 #define addrEqual(fam, address, length, host) \
 			 ((fam) == (host)->family &&\
 			  (length) == (host)->len &&\
@@ -407,10 +407,10 @@ ResetHosts (display)
     {
         while (fgets (hostname, sizeof (hostname), fd))
 	{
-    	if (ptr = index (hostname, '\n'))
+    	if (ptr = strchr(hostname, '\n'))
     	    *ptr = 0;
 #ifdef DNETCONN
-    	if ((ptr = index (hostname, ':')) && (*(ptr + 1) == ':'))
+    	if ((ptr = strchr(hostname, ':')) && (*(ptr + 1) == ':'))
 	{
     	    /* node name (DECnet names end in "::") */
     	    *ptr = 0;
@@ -435,7 +435,7 @@ ResetHosts (display)
 	else
 #endif /* DNETCONN */
 #ifdef SECURE_RPC
-	if (index (hostname, '@'))
+	if (strchr(hostname, '@'))
 	{
 	    SecureRPCInit ();
 	    (void) NewHost (FamilyNetname, hostname, strlen (hostname));

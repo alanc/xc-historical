@@ -1,4 +1,4 @@
-/* $XConsortium: xnestColor.c,v 1.1 93/06/23 16:23:26 dmatic Exp $ */
+/* $XConsortium: Color.c,v 1.1 93/07/12 15:27:58 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -180,7 +180,7 @@ static Bool xnestSameInstalledColormapWindows(windows, numWindows)
   if (xnestOldInstalledColormapWindows == NULL || windows == NULL) 
     return False;
 
-  if (bcmp(xnestOldInstalledColormapWindows, windows, 
+  if (memcmp(xnestOldInstalledColormapWindows, windows, 
 	   numWindows * sizeof(Window))) 
     return False;
 

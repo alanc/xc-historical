@@ -1,4 +1,4 @@
-/* $XConsortium: xnestWindow.c,v 1.1 93/06/23 16:23:41 dmatic Exp $ */
+/* $XConsortium: Window.c,v 1.1 93/07/12 15:28:56 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -477,7 +477,7 @@ static Bool xnestRegionEqual(pReg1, pReg2)
 
   if (pBox1 == pBox2) return True;
 
-  if (bcmp(pBox1, pBox2, n1 * sizeof(BoxRec))) return False;
+  if (memcmp(pBox1, pBox2, n1 * sizeof(BoxRec))) return False;
 
   return True;
 }

@@ -1,7 +1,7 @@
 /*
  * MIT-MAGIC-COOKIE-1 authorization scheme
  *
- * $XConsortium: mitauth.c,v 1.2 89/03/14 09:11:48 rws Exp $
+ * $XConsortium: mitauth.c,v 1.3 89/03/14 15:53:36 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -46,7 +46,7 @@ XID	id;
     }
     new->next = mit_auth;
     mit_auth = new;
-    bcopy (data, new->data, (int) data_length);
+    memmove(new->data, data, (int) data_length);
     new->len = data_length;
     new->id = id;
     return 1;
@@ -61,7 +61,7 @@ char	*data;
 
     for (auth = mit_auth; auth; auth=auth->next) {
         if (data_length == auth->len &&
-	   bcmp (data, auth->data, (int) data_length) == 0)
+	   memcmp (data, auth->data, (int) data_length) == 0)
 	    return auth->id;
     }
     return (XID) -1;
@@ -89,7 +89,7 @@ char	*data;
 
     for (auth = mit_auth; auth; auth=auth->next) {
 	if (data_length == auth->len &&
-	    bcmp (data, auth->data, data_length) == 0)
+	    memcmp (data, auth->data, data_length) == 0)
 	    return auth->id;
     }
     return (XID) -1;
@@ -121,7 +121,7 @@ char	*data;
     prev = 0;
     for (auth = mit_auth; auth; auth=auth->next) {
 	if (data_length == auth->len &&
-	    bcmp (data, auth->data, data_length) == 0)
+	    memcmp (data, auth->data, data_length) == 0)
  	{
 	    if (prev)
 		prev->next = auth->next;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.8 93/06/24 10:23:30 dpw Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.9 93/07/12 16:27:17 dpw Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -104,7 +104,7 @@ mfbCopyPixmap(pSrc)
 				pSrc->drawable.height, pSrc->drawable.depth);
     if (!pDst)
 	return NullPixmap;
-    bcopy((char *)pSrc->devPrivate.ptr, (char *)pDst->devPrivate.ptr, size);
+    memmove((char *)pDst->devPrivate.ptr, (char *)pSrc->devPrivate.ptr, size);
     return pDst;
 }
 
@@ -227,9 +227,9 @@ mfbYRotatePixmap(pPix, rh)
     if(!(ptmp = (char *)ALLOCATE_LOCAL(nbyUp)))
 	return;
 
-    bcopy(pbase, ptmp, nbyUp);		/* save the low rows */
-    bcopy(pbase+nbyUp, pbase, nbyDown);	/* slide the top rows down */
-    bcopy(ptmp, pbase+nbyDown, nbyUp);	/* move lower rows up to row rh */
+    memmove(ptmp, pbase, nbyUp);		/* save the low rows */
+    memmove(pbase, pbase+nbyUp, nbyDown);	/* slide the top rows down */
+    memmove(pbase+nbyDown, ptmp, nbyUp);	/* move lower rows up to row rh */
     DEALLOCATE_LOCAL(ptmp);
 }
 
@@ -244,8 +244,8 @@ mfbCopyRotatePixmap(psrcPix, ppdstPix, xrot, yrot)
 	(pdstPix->devKind == psrcPix->devKind) &&
 	(pdstPix->drawable.height == psrcPix->drawable.height))
     {
-	bcopy((char *)psrcPix->devPrivate.ptr,
-	      (char *)pdstPix->devPrivate.ptr,
+	memmove((char *)pdstPix->devPrivate.ptr,
+		(char *)psrcPix->devPrivate.ptr,
 	      psrcPix->drawable.height * psrcPix->devKind);
 	pdstPix->drawable.width = psrcPix->drawable.width;
 	pdstPix->drawable.serialNumber = NEXT_SERIAL_NUMBER;

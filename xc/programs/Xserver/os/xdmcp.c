@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.23 92/08/10 17:46:51 eswu Exp $ */
+/* $XConsortium: xdmcp.c,v 1.24 93/07/12 09:33:42 dpw Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -680,7 +680,7 @@ XdmcpSelectHost(host_sockaddr, host_len, AuthenticationName)
     ARRAY8Ptr		AuthenticationName;
 {
     state = XDM_START_CONNECTION;
-    bcopy(host_sockaddr, &req_sockaddr, host_len);
+    memmove(&req_sockaddr, host_sockaddr, host_len);
     req_socklen = host_len;
     XdmcpSetAuthentication (AuthenticationName);
     send_packet();
@@ -1255,7 +1255,7 @@ get_manager_by_name(argc, argv, i)
     }
     if (hep->h_length == sizeof (struct in_addr))
     {
-	bcopy(hep->h_addr, &ManagerAddress.sin_addr, hep->h_length);
+	memmove(&ManagerAddress.sin_addr, hep->h_addr, hep->h_length);
 #ifdef BSD44SOCKETS
 	ManagerAddress.sin_len = sizeof(ManagerAddress);
 #endif

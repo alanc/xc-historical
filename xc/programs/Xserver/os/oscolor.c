@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: oscolor.c,v 1.19 91/05/09 18:39:28 rws Exp $ */
+/* $XConsortium: oscolor.c,v 1.20 91/06/30 15:58:30 rws Exp $ */
 #ifdef NDBM
 #include <ndbm.h>
 #else
@@ -103,7 +103,7 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
 
     if(dbent.dptr)
     {
-	bcopy(dbent.dptr, (char *) &rgb, sizeof (RGB));
+	memmove((char *) &rgb, dbent.dptr, sizeof (RGB));
 	*pred = rgb.red;
 	*pgreen = rgb.green;
 	*pblue = rgb.blue;

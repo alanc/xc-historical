@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.27 93/07/12 16:31:31 dpw Exp $ */
+/* $XConsortium: colormap.c,v 5.28 93/07/17 09:52:00 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -323,11 +323,11 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	bzero ((char *) pmap->green, (int)sizebytes);
 	bzero ((char *) pmap->blue, (int)sizebytes);
 
-	bcopy((char *) pmap->clientPixelsRed,
-	      (char *) pmap->clientPixelsGreen,
+	memmove((char *) pmap->clientPixelsGreen,
+		(char *) pmap->clientPixelsRed,
 	      MAXCLIENTS * sizeof(Pixel *));
-	bcopy((char *) pmap->clientPixelsRed,
-	      (char *) pmap->clientPixelsBlue,
+	memmove((char *) pmap->clientPixelsBlue,
+		(char *) pmap->clientPixelsRed,
 	      MAXCLIENTS * sizeof(Pixel *));
 	bzero((char *) pmap->numPixelsGreen, MAXCLIENTS * sizeof(int));
 	bzero((char *) pmap->numPixelsBlue, MAXCLIENTS * sizeof(int));
@@ -534,11 +534,11 @@ CopyColormapAndFree (mid, pSrc, client)
         return(result);
     if(alloc == AllocAll)
     {
-	bcopy((char *)pSrc->red, (char *)pmap->red, size * sizeof(Entry));
+	memmove((char *)pmap->red, (char *)pSrc->red, size * sizeof(Entry));
 	if((pmap->class | DynamicClass) == DirectColor)
 	{
-	    bcopy((char *)pSrc->green, (char *)pmap->green, size * sizeof(Entry));
-	    bcopy((char *)pSrc->blue, (char *)pmap->blue, size * sizeof(Entry));
+	    memmove((char *)pmap->green, (char *)pSrc->green, size * sizeof(Entry));
+	    memmove((char *)pmap->blue, (char *)pSrc->blue, size * sizeof(Entry));
 	}
 	pSrc->flags &= ~AllAllocated;
 	FreePixels(pSrc, client);
