@@ -511,7 +511,7 @@ CARD32		 oldState;
 	    }
 
 	    if (on)	xkb->iStateEffective|= bit;
-	    else	xkb->iStateEffective&= bit;
+	    else	xkb->iStateEffective&= ~bit;
 	    update&= ~bit;
 	}
     }
@@ -843,15 +843,37 @@ XkbUpdateCoreDescription(keybd)
     /* 8/3/93 (ef) -- XXX! Not implemented yet */
 }
 
+void
+XkbSetRepeatKeys(pXDev,onoff)
+    DeviceIntPtr pXDev;
+    int		 onoff;
+{
+    if (pXDev && pXDev->key && pXDev->key->xkbInfo) {
+	unsigned old,new;
+	new= old= pXDev->key->xkbInfo->desc.ctrls->enabled_ctrls;
+	if (onoff)	new|= XkbRepeatKeysMask;
+	else		new&= ~XkbRepeatKeysMask;
+	if (new!=old) {
+	    xkbControlsNotify	cn;
+	    cn.changedControls=	0;
+	    cn.enabledControlChanges= XkbRepeatKeysMask;
+	    XkbSendControlsNotify(pXDev,&cn);
+	}
+    }
+    return;
+}
+
 int
 XkbUsesSoftRepeat(pXDev)
     DeviceIntPtr pXDev;
 {
-    if (pXDev && pXDev->kbdfeed && pXDev->kbdfeed->ctrl.autoRepeat) {
-	if (pXDev->key && pXDev->key->xkbInfo) {
-	    XkbDescPtr	xkb;
-	    xkb= &pXDev->key->xkbInfo->desc;
-	    return ((xkb->ctrls->enabled_ctrls&XkbRepeatKeysMask)!=0);
+    if (pXDev && pXDev->kbdfeed ) {
+	if (pXDev->kbdfeed->ctrl.autoRepeat) {
+	    if (pXDev->key && pXDev->key->xkbInfo) {
+		XkbDescPtr	xkb;
+		xkb= &pXDev->key->xkbInfo->desc;
+		return ((xkb->ctrls->enabled_ctrls&XkbRepeatKeysMask)!=0);
+	    }
 	}
     }
     return 0;
