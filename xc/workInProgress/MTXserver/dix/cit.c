@@ -37,7 +37,6 @@
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "gcstruct.h"
-#include "osstruct.h"
 #include "selection.h"
 #include "colormapst.h"
 #include "cursorstr.h"
@@ -361,6 +360,7 @@ KillAllClients()
 
 /***********************************************************************/
 
+void
 CloseDownRetainedResources()
 
 /*
