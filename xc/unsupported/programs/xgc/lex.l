@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lex.l,v 1.5 92/12/14 13:54:01 rws Exp $ */
 /*
 ** lex file for xgc syntax
 */
@@ -10,7 +10,9 @@
 #include <X11/X.h>
 #include "gram.h"
 #include "constants.h"
-
+#ifdef bsdi
+int yylineno = 0;
+#endif
 %}
 
 %p				4000
@@ -161,4 +163,6 @@ PieSlice			{ yylval.num = ArcPieSlice;
 
 %%
 
+#ifndef bsdi
 yywrap() { return (1); }
+#endif
