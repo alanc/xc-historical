@@ -3,7 +3,10 @@
 SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbpntwin.c cfbmskbits.c cfbpixmap.c cfbbitblt.c \
 	 cfbfillsp.c cfbsetsp.c cfbscrinit.c \
-	 cfbgetsp.c cfbfillrct.c cfbtileoddC.c cfbtileoddG.c \
+	 cfbgetsp.c cfbfillrct.c \
+	 cfbsolidC.c cfbsolidX.c cfbsolidG.c \
+	 cfbtile32C.c cfbtile32G.c \
+	 cfbtileoddC.c cfbtileoddG.c \
 	 cfbcmap.c cfbzerarcC.c cfbzerarcX.c cfbzerarcG.c \
 	 cfbfillarcC.c cfbfillarcG.c \
 	 cfbtegblt.c cfbbstore.c cfb8cppl.c \
@@ -13,7 +16,10 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbbres.c cfbline.c cfbhrzvert.c cfbbresd.c cfbimage.c cfbseg.c
 
 OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
-	 cfbgetsp.o cfbfillrct.o cfbtileoddC.o cfbtileoddG.o \
+	 cfbgetsp.o cfbfillrct.o \
+	 cfbsolidC.o cfbsolidX.o cfbsolidG.o \
+	 cfbtile32C.o cfbtile32G.o \
+	 cfbtileoddC.o cfbtileoddG.o \
 	 cfbfillsp.o cfbsetsp.o cfbscrinit.o \
 	 cfbpntwin.o cfbmskbits.o cfbpixmap.o cfbbitblt.o \
 	 cfbcmap.o cfbzerarcC.o cfbzerarcX.o cfbzerarcG.o \
@@ -39,39 +45,40 @@ saber_src:
 	/**/#load $(CFLAGS) $(SRCS)
 #endif
 
-#define MultiObj(dst,src,flag)						@@\
-dst.c:									@@\
-	$(LN) src.c dst.c						@@\
-dst.o: src.c dst.c							@@\
-	$(CC) flag $(CFLAGS) -c dst.c					@@\
-depend:: dst.c								@@\
-clean::									@@\
-	$(RM) dst.c
+ObjectFromSpecialSource(cfbseg,cfbline,-DPOLYSEGMENT)
 
-MultiObj(cfbseg,cfbline,-DPOLYSEGMENT)
+ObjectFromSpecialSource(cfbglrop8,cfbglblt8,-DGLYPHROP)
 
-MultiObj(cfbglrop8,cfbglblt8,-DGLYPHROP)
+ObjectFromSpecialSource(cfbfillarcC,cfbfillarc,-DRROP=GXcopy)
 
-MultiObj(cfbfillarcC,cfbfillarc,-DRROP=GXcopy)
+ObjectFromSpecialSource(cfbfillarcG,cfbfillarc,-DRROP=GXset)
 
-MultiObj(cfbfillarcG,cfbfillarc,-DRROP=GXset)
+ObjectFromSpecialSource(cfbzerarcC,cfbzerarc,-DRROP=GXcopy)
 
-MultiObj(cfbzerarcC,cfbzerarc,-DRROP=GXcopy)
+ObjectFromSpecialSource(cfbzerarcX,cfbzerarc,-DRROP=GXxor)
 
-MultiObj(cfbzerarcX,cfbzerarc,-DRROP=GXxor)
+ObjectFromSpecialSource(cfbzerarcG,cfbzerarc,-DRROP=GXset)
 
-MultiObj(cfbzerarcG,cfbzerarc,-DRROP=GXset)
+ObjectFromSpecialSource(cfbbltC,cfbblt,-DMROP=Mcopy)
 
-MultiObj(cfbbltC,cfbblt,-DMROP=Mcopy)
+ObjectFromSpecialSource(cfbbltX,cfbblt,-DMROP=Mxor)
 
-MultiObj(cfbbltX,cfbblt,-DMROP=Mxor)
+ObjectFromSpecialSource(cfbbltO,cfbblt,'-DMROP=Mor')
 
-MultiObj(cfbbltO,cfbblt,'-DMROP=Mor')
+ObjectFromSpecialSource(cfbbltG,cfbblt,-DMROP=0)
 
-MultiObj(cfbbltG,cfbblt,-DMROP=0)
+ObjectFromSpecialSource(cfbsolidC,cfbsolid,-DRROP=GXcopy)
 
-MultiObj(cfbtileoddC,cfbtileodd,-DMROP=Mcopy)
+ObjectFromSpecialSource(cfbsolidX,cfbsolid,-DRROP=GXxor)
 
-MultiObj(cfbtileoddG,cfbtileodd,-DMrop=0)
+ObjectFromSpecialSource(cfbsolidG,cfbsolid,-DRROP=GXset)
+
+ObjectFromSpecialSource(cfbtile32C,cfbtile32,-DMROP=Mcopy)
+
+ObjectFromSpecialSource(cfbtile32G,cfbtile32,-DMROP=0)
+
+ObjectFromSpecialSource(cfbtileoddC,cfbtileodd,-DMROP=Mcopy)
+
+ObjectFromSpecialSource(cfbtileoddG,cfbtileodd,-DMROP=0)
 
 DependTarget()

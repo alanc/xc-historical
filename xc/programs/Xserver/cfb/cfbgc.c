@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.36 90/03/01 16:34:59 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.37 90/03/20 14:48:12 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -51,6 +51,8 @@ extern void cfbTile32FS();
 extern void cfb8Stipple32FS(), cfb8OpaqueStipple32FS();
 #endif
 
+extern void cfbSolidSpansCopy(), cfbSolidSpansXor (), cfbSolidSpansGeneral();
+
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
     cfbChangeGC,
@@ -62,7 +64,7 @@ static GCFuncs cfbFuncs = {
 };
 
 static GCOps	cfbTEOps = {
-    cfbSolidFS,
+    cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
     cfbCopyArea,
@@ -96,7 +98,7 @@ static GCOps	cfbTEOps = {
 };
 
 static GCOps	cfbNonTEOps = {
-    cfbSolidFS,
+    cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
     cfbCopyArea,
@@ -676,7 +678,8 @@ cfbValidateGC(pGC, changes, pDrawable)
 #endif
 		pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
             /* special case ImageGlyphBlt for terminal emulator fonts */
-            if (pGC->font->pFI->terminalFont
+            if (pGC->font->pFI->terminalFont &&
+		(pGC->planemask & PMSK) == PMSK
 #if PPW == 4
 		&& pGC->font->pFI->maxbounds.metrics.characterWidth >= 4
 #endif
@@ -697,7 +700,17 @@ cfbValidateGC(pGC, changes, pDrawable)
     if (new_fillspans) {
 	switch (pGC->fillStyle) {
 	case FillSolid:
-	    pGC->ops->FillSpans = cfbSolidFS;
+	    switch (devPriv->rop) {
+	    case GXcopy:
+		pGC->ops->FillSpans = cfbSolidSpansCopy;
+		break;
+	    case GXxor:
+		pGC->ops->FillSpans = cfbSolidSpansXor;
+		break;
+	    default:
+		pGC->ops->FillSpans = cfbSolidSpansGeneral;
+		break;
+	    }
 	    break;
 	case FillTiled:
 	    if (devPriv->pRotatedPixmap)
@@ -715,7 +728,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillOpaqueStippled:
 	    if (pGC->fgPixel == pGC->bgPixel)
-		pGC->ops->FillSpans = cfbSolidFS;
+		pGC->ops->FillSpans = cfbSolidSpansCopy;
 	    else
 #if PPW == 4
 		if (devPriv->pRotatedPixmap)

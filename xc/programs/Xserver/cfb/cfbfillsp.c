@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.11 90/03/01 16:35:21 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.12 90/03/10 15:50:02 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -111,195 +111,6 @@ dumpspans(n, ppt, pwidth)
 }
 #endif
 
-void
-cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
-    int 	fSorted;
-{
-				/* next three parameters are post-clip */
-    int n;			/* number of spans to fill */
-    DDXPointPtr ppt;		/* pointer to list of start points */
-    int *pwidth;		/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
-    int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
-    register int width;		/* current span width */
-    register int nlmiddle;
-    register int xor;
-    register int x;
-    register int startmask;
-    register int endmask;
-    register int and;
-    int *pwidthFree;		/* copies of the pointers to free */
-    DDXPointPtr pptFree;
-    cfbPrivGCPtr    devPriv;
-
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-    if (devPriv->rop == GXnoop)
-	return;
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!pptFree || !pwidthFree)
-    {
-	if (pptFree) DEALLOCATE_LOCAL(pptFree);
-	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
-	return;
-    }
-#ifdef	notdef
-    dumpspans(n, pptInit, pwidthInit);
-#endif
-    pwidth = pwidthFree;
-    ppt = pptFree;
-    n = miClipSpans(devPriv->pCompositeClip,
-		     pptInit, pwidthInit, nInit,
-		     ppt, pwidth, fSorted);
-
-#ifdef	notdef
-    dumpspans(n, ppt, pwidth);
-#endif
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
-
-    xor = devPriv->xor;
-    if (devPriv->rop == GXcopy)
-    {
-	while (n--)
-	{
-	    x = ppt->x;
-	    addrl = addrlBase + (ppt->y * nlwidth);
-	    ++ppt;
-	    width = *pwidth++;
-	    if (!width)
-		continue;
-#if PPW == 4
-	    if (width <= 4)
-	    {
-		register char	*addrb;
-
-		addrb = ((char *) addrl) + x;
-		while (width--)
-		    *addrb++ = xor;
-	    }
-#else
-	    if ( ((x & PIM) + width) <= PPW)
-	    {
-		addrl += x >> PWSH;
-		maskpartialbits(x, width, startmask);
-		*addrl = *addrl & ~startmask | xor & startmask;
-	    }
-#endif
-	    else
-	    {
-		addrl += x >> PWSH;
-		maskbits(x, width, startmask, endmask, nlmiddle);
-		if ( startmask ) {
-		    *addrl = *addrl & ~startmask | xor & startmask;
-		    ++addrl;
-		}
-		while ( nlmiddle-- )
-		    *addrl++ = xor;
-		if ( endmask )
-		    *addrl = *addrl & ~endmask | xor & endmask;
-	    }
-	}
-    }
-    else if (devPriv->rop == GXxor)
-    {
-	while (n--)
-	{
-	    x = ppt->x;
-	    addrl = addrlBase + (ppt->y * nlwidth);
-	    ++ppt;
-	    width = *pwidth++;
-	    if (!width)
-		continue;
-#if PPW == 4
-	    if (width <= 4)
-	    {
-		register char	*addrb;
-
-		addrb = ((char *) addrl) + x;
-		while (width--)
-		    *addrb++ ^= xor;
-	    }
-#else
-	    if ( ((x & PIM) + width) <= PPW)
-	    {
-		addrl += x >> PWSH;
-		maskpartialbits(x, width, startmask);
-		*addrl ^= (xor & startmask);
-	    }
-#endif
-	    else
-	    {
-		addrl += x >> PWSH;
-		maskbits(x, width, startmask, endmask, nlmiddle);
-		if ( startmask )
-		    *addrl++ ^= (xor & startmask);
-		while ( nlmiddle-- )
-		    *addrl++ ^= xor;
-		if ( endmask )
-		    *addrl ^= (xor & endmask);
-	    }
-	}
-    }
-    else
-    {
-	and = devPriv->and;
-    	while (n--)
-    	{
-	    x = ppt->x;
-	    addrl = addrlBase + (ppt->y * nlwidth) + (x >> PWSH);
-	    ++ppt;
-	    width = *pwidth++;
-	    if (width)
-	    {
-	    	if ( ((x & PIM) + width) <= PPW)
-	    	{
-		    maskpartialbits(x, width, startmask);
-		    *addrl = DoMaskRRop (*addrl, and, xor, startmask);
-	    	}
-	    	else
-	    	{
-		    maskbits(x, width, startmask, endmask, nlmiddle);
-		    if ( startmask ) {
-			*addrl = DoMaskRRop (*addrl, and, xor, startmask);
-		    	++addrl;
-		    }
-		    while ( nlmiddle-- ) {
-			*addrl = DoRRop (*addrl, and, xor);
-		    	++addrl;
-		    }
-		    if ( endmask ) {
-			*addrl = DoMaskRRop (*addrl, and, xor, endmask);
-		    }
-	    	}
-	    }
-    	}
-    }
-    DEALLOCATE_LOCAL(pptFree);
-    DEALLOCATE_LOCAL(pwidthFree);
-}
-
-
-extern void cfbFillUnnaturalTileFSCopy ();
-extern void cfbFillUnnaturalTileFSGeneral ();
-
 /* Fill spans with tiles that aren't 32 bits wide */
 void
 cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
@@ -314,16 +125,32 @@ int fSorted;
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
     void    (*fill)();
+    extern void	cfbFillSpanTileOddCopy ();
+    extern void	cfbFillSpanTileOddGeneral ();
+    extern void	cfbFillSpanTile32sCopy ();
+    extern void cfbFillSpanTile32sGeneral ();
     int	xrot, yrot;
 
     if (!(pGC->planemask))
 	return;
 
-    fill = cfbFillUnnaturalTileFSGeneral;
-    if ((pGC->planemask & PMSK) == PMSK)
+    if (pGC->tile.pixmap->drawable.width & PIM)
     {
-	if (pGC->alu == GXcopy)
-	    fill = cfbFillUnnaturalTileFSCopy;
+    	fill = cfbFillSpanTileOddGeneral;
+    	if ((pGC->planemask & PMSK) == PMSK)
+    	{
+	    if (pGC->alu == GXcopy)
+	    	fill = cfbFillSpanTileOddCopy;
+    	}
+    }
+    else
+    {
+	fill = cfbFillSpanTile32sGeneral;
+    	if ((pGC->planemask & PMSK) == PMSK)
+    	{
+	    if (pGC->alu == GXcopy)
+		fill = cfbFillSpanTile32sCopy;
+	}
     }
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
     pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
@@ -433,9 +260,6 @@ int fSorted;
      *		Pointer to pixels = addrlBase
      */
 
-    xSrc = pDrawable->x;
-    ySrc = pDrawable->y;
-
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	pdstBase = (unsigned long *)
@@ -455,8 +279,10 @@ int fSorted;
      * so that iline and xrem always stay within the stipple bounds.
      */
 
-    xSrc += modulus (pGC->patOrg.x, stippleWidth) - stippleWidth;
-    ySrc += modulus (pGC->patOrg.y, stippleHeight) - stippleHeight;
+    modulus (pGC->patOrg.x, stippleWidth, xSrc);
+    xSrc += pDrawable->x - stippleWidth;
+    modulus (pGC->patOrg.y, stippleHeight, ySrc);
+    ySrc += pDrawable->y - stippleHeight;
 
     bitsWhole = stippleWidth;
 
@@ -640,8 +466,6 @@ int fSorted;
      *		Words per scanline = nlwidth
      *		Pointer to pixels = addrlBase
      */
-    xSrc = pDrawable->x;
-    ySrc = pDrawable->y;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -661,8 +485,10 @@ int fSorted;
      * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
      * so that iline and xrem always stay within the stipple bounds.
      */
-    xSrc += modulus (pGC->patOrg.x, stippleWidth) - stippleWidth;
-    ySrc += modulus (pGC->patOrg.y, stippleHeight) - stippleHeight;
+    modulus (pGC->patOrg.x, stippleWidth, xSrc);
+    xSrc += pDrawable->x - stippleWidth;
+    modulus (pGC->patOrg.y, stippleHeight, ySrc);
+    ySrc += pDrawable->y - stippleHeight;
 
     while (n--)
     {
