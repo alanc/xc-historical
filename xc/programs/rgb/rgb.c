@@ -5,7 +5,7 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$Header: rgb.c,v 11.3 87/12/16 18:56:13 rws Exp $";
+static char *rcsid_rgb_c = "$Header: rgb.c,v 11.4 88/02/13 20:54:13 rws Exp $";
 #endif
 
 #include <dbm.h>
@@ -18,6 +18,18 @@ static char *rcsid_rgb_c = "$Header: rgb.c,v 11.3 87/12/16 18:56:13 rws Exp $";
 #include "rgb.h"
 #include "site.h"
 #include <ctype.h>
+
+#include <errno.h>
+extern int errno;			/* some systems are still stupid */
+extern int sys_nerr;
+extern char *sys_errlist[];
+
+char *ProgramName;
+
+char *SysError ()
+{
+    return ((errno >= 0 && errno < sys_nerr) ? sys_errlist[errno] : "?");
+}
 
 main(argc, argv)
     int argc;
@@ -32,19 +44,44 @@ main(argc, argv)
     int items;
     int lineno;
     int i, n;
+    int fd;
+
+    ProgramName = argv[0];
 
     if (argc == 2)
 	dbname = argv[1];
     else
 	dbname = RGB_DB;
+
     strcpy (name, dbname);
     strcat (name, ".dir");
-    close (open (name, O_WRONLY|O_CREAT, 0666));
+    fd = open (name, O_WRONLY|O_CREAT, 0666);
+    if (fd < 0) {
+	fprintf (stderr, 
+		 "%s:  unable to create dbm file \"%s\" (error %d, %s)\n",
+		 ProgramName, name, errno, SysError());
+	exit (1);
+    }
+    (void) close (fd);
+
     strcpy (name, dbname);
     strcat (name, ".pag");
-    close (open (name, O_WRONLY|O_CREAT, 0666));
-    if (dbminit (dbname))
+    fd = open (name, O_WRONLY|O_CREAT, 0666);
+    if (fd < 0) {
+	fprintf (stderr, 
+		 "%s:  unable to create dbm file \"%s\" (error %d, %s)\n",
+		 ProgramName, name, errno, SysError());
 	exit (1);
+    }
+    (void) close (fd);
+
+    if (dbminit (dbname)) {
+	fprintf (stderr,
+		 "%s:  unable to initial dbm database for \"%s\"\n",
+		 ProgramName, dbname);
+	exit (1);
+    }
+
     key.dptr = name;
     content.dptr = (char *) &rgb;
     content.dsize = sizeof (rgb);
