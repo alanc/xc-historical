@@ -9,7 +9,7 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    50
 
-/**/# platform:  $XConsortium: Mips.cf,v 1.5 91/07/05 15:45:50 rws Exp $
+/**/# platform:  $XConsortium: Mips.cf,v 1.6 91/07/19 23:23:09 keith Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
@@ -23,13 +23,10 @@
 
 #define MipsArchitecture
 #define MakeEnv -e
-#define SystemV NO
 
 #define DefaultCCOptions -signed -systype bsd43 -Olimit 2000 -Wf,-XNd8400,-XNp12000
 #define StandardDefines -DMips -DBSD43
 #define ExtraLibraries -lmld
-#define LintLibFlag -C
-#define LintOpts -axz
 #define ArCmd ar clr
 #define BootstrapCFlags $(SYSDEFS)
 #define InstallCmd $(ETCDIR)/mipsinstall
@@ -54,13 +51,10 @@
 
 #define SpecialMalloc		NO
 #define ExpandManNames		YES	/* expand Xlib man page filenames */
-#define InstallXinitConfig	NO	/* install sample xinit config */
-#define InstallXdmConfig	NO	/* install sample xdm config */
 #define HasSockets		YES
 
 #define PrimaryScreenResolution	110
 
-/* Don't add anything after '1' and '3X' */
 #define ConstructMFLAGS	NO		/* build MFLAGS from MAKEFLAGS */
 
 #define DefaultUserPath /usr/net:/bin:/usr/bin:$(BINPATH):/usr/ucb
