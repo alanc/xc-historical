@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.keysyms,v 1.16 94/04/11 20:20:08 rws Exp $
+.\" $XConsortium: X11.keysyms,v 1.17 94/04/12 22:13:25 rws Exp $
 \&
 .sp 1
 .ps 11
@@ -1259,7 +1259,7 @@ _
 255	103	06/07	MENU	Keyboard
 255	104	06/08	FIND, SEARCH	Keyboard
 255	105	06/09	CANCEL, STOP, ABORT, EXIT	Keyboard
-255	106	06/10	HELP, QUESTION MARK	Keyboard
+255	106	06/10	HELP	Keyboard
 255	107	06/11	BREAK	Keyboard
 255	126	07/14	MODE SWITCH, SCRIPT SWITCH, CHARACTER SET SWITCH	Keyboard
 255	127	07/15	NUM LOCK	Keyboard
