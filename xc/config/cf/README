@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.24 92/06/01 19:40:32 rws Exp $
+$XConsortium: README,v 1.25 92/06/27 21:51:35 rws Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -82,6 +82,7 @@ Imake.tmpl provides defaults for the following variables:
 	RanlibCmd		command to clean up libraries
 	RanlibInstFlags		flags to ranlib after copying
 	RmCmd			command to delete files
+	ShLibDir		directory in which to install shared libraries
 	StandardCppDefines	-D's for running cpp
 	StandardDefines		-D's for running C compiler
 	StandardIncludes	-I's for running C compiler
