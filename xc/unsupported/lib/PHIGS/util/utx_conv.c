@@ -1,4 +1,4 @@
-/* $XConsortium: utx_conv.c,v 5.2 91/06/18 18:09:36 hersh Exp $ */
+/* $XConsortium: utx_conv.c,v 5.3 91/07/01 16:23:12 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2334,7 +2334,7 @@ void
 phg_utx_el_data_from_pex( oc, buf, ed )
     pexElementInfo	*oc;	/* IN: PEX output command */
     caddr_t		buf;	/* IN/OUT: buffer for variable length data */
-    Pelem_data		*ed;	/* IN/OUT: place to put converted data */
+    /* WARNING: some fields have changed */Pelem_data		*ed;	/* IN/OUT: place to put converted data */
 {
     unsigned		size;
     Pextmpl_colour_spec	*cspec;
@@ -2536,17 +2536,17 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	case PEXOCFillAreaSet: {
 	    Ppoint3	*pts3;
 
-	    ed->fill_area_set3.num_point_lists = 
+	    ed->point_list_list3.num_point_lists = 
 		RHEADER(FillAreaSet)->numLists;
 	    if ( RHEADER(FillAreaSet)->numLists > 0 ) {
-		ed->fill_area_set3.point_lists = (Ppoint_list3 *)buf;
-		pts3 = (Ppoint3 *)(ed->fill_area_set3.point_lists
+		ed->point_list_list3.point_lists = (Ppoint_list3 *)buf;
+		pts3 = (Ppoint3 *)(ed->point_list_list3.point_lists
 		    + RHEADER(FillAreaSet)->numLists);
 		pexptr = (char *)(RHEADER(FillAreaSet) + 1);
 		for ( i = 0; i < RHEADER(FillAreaSet)->numLists; i++ ) {
-		    count = ed->fill_area_set3.point_lists[i].num_points = 
+		    count = ed->point_list_list3.point_lists[i].num_points = 
 			(*(CARD32 *)pexptr);
-		    ed->fill_area_set3.point_lists[i].points =  pts3;
+		    ed->point_list_list3.point_lists[i].points =  pts3;
 		    pexptr += sizeof(CARD32);
 		    for ( j = 0; j < count; j++, pts3++ ) {
 			PEX_CONV_TO_Ppoint3((pexCoord3D *)pexptr, pts3);
@@ -2559,17 +2559,17 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	case PEXOCFillAreaSet2D: {
 	    Ppoint	*pts;
 
-	    ed->fill_area_set.num_point_lists = 
+	    ed->point_list_list.num_point_lists = 
 		RHEADER(FillAreaSet2D)->numLists;
 	    if ( RHEADER(FillAreaSet2D)->numLists > 0 ) {
-		ed->fill_area_set.point_lists = (Ppoint_list *)buf;
-		pts = (Ppoint *)(ed->fill_area_set.point_lists
+		ed->point_list_list.point_lists = (Ppoint_list *)buf;
+		pts = (Ppoint *)(ed->point_list_list.point_lists
 		    + RHEADER(FillAreaSet2D)->numLists);
 		pexptr = (char *)(RHEADER(FillAreaSet2D) + 1);
 		for ( i = 0; i < RHEADER(FillAreaSet2D)->numLists; i++ ) {
-		    count = ed->fill_area_set.point_lists[i].num_points = 
+		    count = ed->point_list_list.point_lists[i].num_points = 
 			(Pint)(*(CARD32 *)pexptr);
-		    ed->fill_area_set.point_lists[i].points =  pts;
+		    ed->point_list_list.point_lists[i].points =  pts;
 		    pexptr += sizeof(CARD32);
 		    for ( j = 0; j < count; j++, pts++ ) {
 			PEX_CONV_TO_Ppoint((pexCoord2D *)pexptr, pts);
@@ -2580,39 +2580,39 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	} break;		
 			
 	case PEXOCCellArray:
-	    ed->cell_array3.dim.size_x = RHEADER(CellArray)->dx;
-	    ed->cell_array3.dim.size_y = RHEADER(CellArray)->dy;
+	    ed->cell_array3.colr_array.dims.size_x = RHEADER(CellArray)->dx;
+	    ed->cell_array3.colr_array.dims.size_y = RHEADER(CellArray)->dy;
 	    PEX_CONV_TO_Ppoint3(&RHEADER(CellArray)->point1,
 		&ed->cell_array3.paral.p)
 	    PEX_CONV_TO_Ppoint3(&RHEADER(CellArray)->point2,
 		&ed->cell_array3.paral.q)
 	    PEX_CONV_TO_Ppoint3(&RHEADER(CellArray)->point3,
 		&ed->cell_array3.paral.r)
-	    count = ed->cell_array3.dim.size_x * ed->cell_array3.dim.size_y;
-	    ed->cell_array3.colr = (Pint *)buf;
+	    count = ed->cell_array3.colr_array.dims.size_x * ed->cell_array3.colr_array.dims.size_y;
+	    ed->cell_array3.colr_array.colr_array = (Pint *)buf;
 	    pexptr = (char *)(RHEADER(CellArray) + 1);
 	    for ( i = 0; i < count; i++ )
-		ed->cell_array3.colr[i] = ((CARD16*)pexptr)[i];
+		ed->cell_array3.colr_array.colr_array[i] = ((CARD16*)pexptr)[i];
 	    break;
 	    
 	case PEXOCCellArray2D:
-	    ed->cell_array.dim.size_x = RHEADER(CellArray2D)->dx;
-	    ed->cell_array.dim.size_y = RHEADER(CellArray2D)->dy;
+	    ed->cell_array.colr_array.dims.size_x = RHEADER(CellArray2D)->dx;
+	    ed->cell_array.colr_array.dims.size_y = RHEADER(CellArray2D)->dy;
 	    PEX_CONV_TO_Ppoint(&RHEADER(CellArray2D)->point1,
 		&ed->cell_array.rect.p)
 	    PEX_CONV_TO_Ppoint(&RHEADER(CellArray2D)->point2,
 		&ed->cell_array.rect.q)
-	    count = ed->cell_array.dim.size_x * ed->cell_array.dim.size_y;
-	    ed->cell_array.colr = (Pint *)buf;
+	    count = ed->cell_array.colr_array.dims.size_x * ed->cell_array.colr_array.dims.size_y;
+	    ed->cell_array.colr_array.colr_array = (Pint *)buf;
 	    pexptr = (char *)(RHEADER(CellArray2D) + 1);
 	    for ( i = 0; i < count; i++ )
-		ed->cell_array.colr[i] = ((CARD16*)pexptr)[i];
+		ed->cell_array.colr_array.colr_array[i] = ((CARD16*)pexptr)[i];
 	    break;
 	    
 	case PEXOCExtCellArray:
-	    ed->cell_array_plus.dim.size_x = RHEADER(ExtCellArray)->dx;
-	    ed->cell_array_plus.dim.size_y = RHEADER(ExtCellArray)->dy;
-	    ed->cell_array_plus.colr_model = 
+	    ed->cell_array_plus.colr_array.dims.size_x = RHEADER(ExtCellArray)->dx;
+	    ed->cell_array_plus.colr_array.dims.size_y = RHEADER(ExtCellArray)->dy;
+	    ed->cell_array_plus.colr_array.type = 
 		PEX_CONV_PEX_COLOUR_TYPE(RHEADER(ExtCellArray)->colourType);
 	    PEX_CONV_TO_Ppoint3(&RHEADER(ExtCellArray)->point1,
 		&ed->cell_array_plus.paral.p)
@@ -2621,13 +2621,13 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	    PEX_CONV_TO_Ppoint3(&RHEADER(ExtCellArray)->point3,
 		&ed->cell_array_plus.paral.r)
 
-	    count = ed->cell_array_plus.dim.size_x * ed->cell_array_plus.dim.size_y;
-	    ed->cell_array_plus.colr = (Pcoval *)buf;
+	    count = ed->cell_array_plus.colr_array.dims.size_x * ed->cell_array_plus.colr_array.dims.size_y;
+	    ed->cell_array_plus.colr_array.colr_array = (Pcoval *)buf;
 	    pexptr = (char *)(RHEADER(ExtCellArray) + 1);
-	    size = PEX_COLOUR_SIZE(ed->cell_array_plus.colr_model);
+	    size = PEX_COLOUR_SIZE(ed->cell_array_plus.colr_array.type);
 	    for ( i = 0; i < count; i++ ) {
-		PEX_CONV_TO_Pcoval(ed->cell_array_plus.colr_model,
-		    pexptr, &ed->cell_array_plus.colr[i]);
+		PEX_CONV_TO_Pcoval(ed->cell_array_plus.colr_array.type,
+		    pexptr, &ed->cell_array_plus.colr_array.colr_array[i]);
 		pexptr += size;
 	    }
 	    break;
@@ -2917,7 +2917,8 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	    break;
 
 	case PEXOCPatternSize:
-	    PEX_CONV_TO_Pvec(&RHEADER(PatternSize)->size, &ed->pat_size)
+	    PEX_CONV_TO_Pfloat_size(&RHEADER(PatternSize)->size,
+		&ed->pat_size)
 	    break;
 
 	case PEXOCPatternAttr:
@@ -2930,7 +2931,8 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	    break;
 
 	case PEXOCPatternRefPt:
-	    PEX_CONV_TO_Ppoint(&RHEADER(PatternRefPt)->point, &ed->point)
+	    PEX_CONV_TO_Ppoint(&RHEADER(PatternRefPt)->point,
+		&ed->pat_ref_point)
 	    break;
 
 	case PEXOCAddToNameSet:
@@ -2952,18 +2954,18 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	    break;
 
 	case PEXOCLocalTransform:
-	    ed->local_tran3.comp =
+	    ed->local_tran3.compose_type =
 		PEX_CONV_TO_Pcomptype(RHEADER(LocalTransform)->compType);
 	    for ( i = 0; i < 4; i++ ) for ( j = 0; j < 4; j++ )
-		ed->local_tran3.tran[i][j] =
+		ed->local_tran3.matrix[i][j] =
 		    RHEADER(LocalTransform)->matrix[i][j];
 	    break;
 
 	case PEXOCLocalTransform2D:
-	    ed->local_tran.comp =
+	    ed->local_tran.compose_type =
 		PEX_CONV_TO_Pcomptype(RHEADER(LocalTransform2D)->compType);
 	    for ( i = 0; i < 3; i++ ) for ( j = 0; j < 3; j++ )
-		ed->local_tran.tran[i][j] =
+		ed->local_tran.matrix[i][j] =
 		    RHEADER(LocalTransform2D)->matrix3X3[i][j];
 	    break;
 
