@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronKbd.c,v 1.2 93/09/03 19:50:21 dpw Exp $
+ * $XConsortium: omronKbd.c,v 1.3 94/02/23 15:56:15 dpw Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -101,6 +101,10 @@ int           what;
 				omronBell, omronKbdCtrl);
 #ifndef UNUSE_DRV_TIME 
 			omronSetDriverTimeMode(NULL, pKeyboard);
+#endif
+#ifdef XKB
+			XkbSetPhysicalLockingKey(pKeyboard,CAPSLOCK_KEY+
+								prv->offset);
 #endif
 			break;
 		case DEVICE_ON:
@@ -652,14 +656,17 @@ unsigned char   *data;
 		}
 		xE.u.u.type = KeyRelease;
 	}
+#ifndef XKB
 	if (key == CAPSLOCK_KEY) {
 		lock_key = 1;
 	}
+#endif
 	key += prv->offset;
 	keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key];
 	if ((omron_key_state & KS_KANA) && (!modstate) && (keyModifiers == 0)) {
 		key += prv->kana_offset;
 	}
+#ifndef XKB
 	if (keyModifiers != 0) {
 		pKeys = &((DeviceIntPtr)pKeyboard)->key->curKeySyms;
 		if (!(lock_key ) && ((keyModifiers & LockMask) ||
@@ -675,6 +682,7 @@ unsigned char   *data;
 			omronKbdModCheck(keysym, xE.u.u.type, &modstate);
 		}
 	}
+#endif /* ndef XKB */
 #else
 	if (!(key & 0x80)) {
 		xE.u.u.type = KeyPress;
@@ -682,10 +690,13 @@ unsigned char   *data;
 		xE.u.u.type = KeyRelease;
 	}
 	key &= 0x7f;
+#ifndef XKB
 	if ((key == CAPSLOCK_KEY) || (key == KANA_KEY)) {
 		lock_key = 1;
 	}
+#endif
 	key += prv->offset;
+#ifndef XKB
 	if (!lock_key) {
 		keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key];
 		pKeys = &((DeviceIntPtr)pKeyboard)->key->curKeySyms;
@@ -698,6 +709,7 @@ unsigned char   *data;
 				xE.u.u.type = KeyRelease;
 		}
 	}
+#endif /* ndef XKB */
 #endif
 	xE.u.u.detail = key;
 #ifndef USE_KANA_SWITCH
@@ -760,14 +772,17 @@ key_event     *data;
 		}
 		xE.u.u.type = KeyRelease;
 	}
+#ifndef XKB
 	if (key == CAPSLOCK_KEY) {
 		lock_key = 1;
 	}
+#endif
 	key += prv->offset;
 	keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key];
 	if ((omron_key_state & KS_KANA) && (!modstate) && (keyModifiers == 0)) {
 		key += prv->kana_offset;
 	}
+#ifndef XKB
 	if (keyModifiers != 0) {
 		pKeys = &((DeviceIntPtr)pKeyboard)->key->curKeySyms;
 		if (!(lock_key ) && ((keyModifiers & LockMask) ||
@@ -783,6 +798,7 @@ key_event     *data;
 			omronKbdModCheck(keysym, xE.u.u.type, &modstate);
 		}
 	}
+#endif /* ndef XKB */
 #else
 	if (!(key & 0x80)) {
 		xE.u.u.type = KeyPress;
@@ -790,10 +806,13 @@ key_event     *data;
 		xE.u.u.type = KeyRelease;
 	}
 	key &= 0x7f;
+#ifndef XKB
 	if ((key == CAPSLOCK_KEY) || (key == KANA_KEY)) {
 		lock_key = 1;
 	}
+#endif
 	key += prv->offset;
+#ifndef XKB
 	if (!lock_key) {
 		keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key];
 		pKeys = &((DeviceIntPtr)pKeyboard)->key->curKeySyms;
@@ -806,6 +825,7 @@ key_event     *data;
 				xE.u.u.type = KeyRelease;
 		}
 	}
+#endif /* ndef XKB */
 #endif
 	xE.u.u.detail = key;
 #ifndef USE_KANA_SWITCH
@@ -815,7 +835,7 @@ key_event     *data;
 }
 #endif
 
-#ifndef USE_KANA_SWITCH
+#if !defined(USE_KANA_SWITCH) && !defined(XKB)
 static void
 omronKbdModCheck(keysym, type, modstate)
 unsigned long keysym;
