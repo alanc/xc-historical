@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.58 89/10/02 16:03:32 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.59 89/10/03 11:34:41 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -33,17 +33,23 @@ SOFTWARE.
  */
 
 #include <stdio.h>
-/* #include <ctype.h> */
+
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+
 #include <X11/Xmu/Misc.h>
-#include "CommandP.h"
+
+#include <X11/Xaw/CommandP.h>
 
 #ifdef SHAPE
 #include <X11/Xmu/Converters.h>
 #endif
 
 #define DEFAULT_HIGHLIGHT_THICKNESS 2
+
+#ifdef SHAPE
+#    define DEFAULT_SHAPE_HIGHLIGHT 32767
+#endif
 
 /****************************************************************
  *
@@ -69,34 +75,25 @@ static XtResource resources[] = {
       offset(command.highlight_thickness), XtRImmediate,
       (XtPointer)DEFAULT_HIGHLIGHT_THICKNESS },
 #else
-      offset(command.highlight_thickness), XtRImmediate, (XtPointer)32767},
+      offset(command.highlight_thickness), XtRImmediate,
+      (XtPointer) DEFAULT_SHAPE_HIGHLIGHT},
+
    {XtNshapeStyle, XtCShapeStyle, XtRShapeStyle, sizeof(int),
       offset(command.shape_style), XtRImmediate, (XtPointer)XawShapeRectangle},
-   {XtNcornerWidth, XtCCornerWidth, XtRDimension, sizeof(Dimension),
-      offset(command.corner_width), XtRImmediate, (XtPointer)0},
-   {XtNcornerHeight, XtCCornerHeight, XtRDimension, sizeof(Dimension),
-      offset(command.corner_height), XtRImmediate, (XtPointer)0},
+   {XtNcornerRoundPercent, XtCCornerRoundPercent, 
+	XtRDimension, sizeof(Dimension),
+	offset(command.corner_round), XtRImmediate, (XtPointer) 25},
 #endif /*SHAPE*/
 };
 #undef offset
 
-static void Initialize();
-static void Redisplay();
 static Boolean SetValues();
-static void Set();
-static void Reset();
-static void Notify();
-static void Unset();
-static void Highlight();
-static void Unhighlight();
-static void Unset();
-static void Destroy();
-static void PaintCommandWidget();
+static void Initialize(), Redisplay(), Set(), Reset(), Notify(), Unset();
+static void Highlight(), Unhighlight(), Destroy(), PaintCommandWidget();
 
 #ifdef SHAPE
-static void ClassInitialize();
-static void Realize();
-static void Resize();
+static Boolean ShapeButton();
+static void ClassInitialize(), Realize(), Resize();
 #endif SHAPE
 
 static XtActionsRec actionsList[] =
@@ -219,6 +216,18 @@ Cardinal *num_args;		/* unused */
 {
   CommandWidget cbw = (CommandWidget) new;
   
+#ifdef SHAPE
+  if (cbw->command.shape_style != XawShapeRectangle
+      && !XShapeQueryExtension(XtDisplay(new)))
+      cbw->command.shape_style = XawShapeRectangle;
+  if (cbw->command.highlight_thickness == DEFAULT_SHAPE_HIGHLIGHT) {
+      if (cbw->command.shape_style != XawShapeRectangle)
+	  cbw->command.highlight_thickness = 0;
+      else
+	  cbw->command.highlight_thickness = DEFAULT_HIGHLIGHT_THICKNESS;
+  }
+#endif /*SHAPE*/
+
   cbw->command.normal_GC = Get_GC(cbw, cbw->label.foreground, 
 				  cbw->core.background_pixel);
   cbw->command.inverse_GC = Get_GC(cbw, cbw->core.background_pixel, 
@@ -228,28 +237,6 @@ Cardinal *num_args;		/* unused */
 
   cbw->command.set = FALSE;
   cbw->command.highlighted = HighlightNone;
-#ifdef SHAPE
-  if (cbw->command.shape_style != XawShapeRectangle
-      && !XShapeQueryExtension(XtDisplay(new)))
-	cbw->command.shape_style = XawShapeRectangle;
-  if (cbw->command.highlight_thickness == 32767) {
-      if (cbw->command.shape_style != XawShapeRectangle)
-	  cbw->command.highlight_thickness = 0;
-      else
-	  cbw->command.highlight_thickness = DEFAULT_HIGHLIGHT_THICKNESS;
-  }
-  if (cbw->command.shape_style == XawShapeRoundedRectangle
-      && ((cbw->command.corner_width == 0)
-	  || (cbw->command.corner_height == 0)) ) {
-      Dimension corner_size
-	  = ((cbw->core.width < cbw->core.height)
-	     ? cbw->core.width : cbw->core.height)/4;
-      if (cbw->command.corner_width == 0)
-	  cbw->command.corner_width = corner_size;
-      if (cbw->command.corner_height == 0)
-	  cbw->command.corner_height = corner_size;
-  }
-#endif /*SHAPE*/
 }
 
 static Region 
@@ -511,7 +498,6 @@ Widget w;
     XtReleaseGC( w, cbw->command.normal_GC );
 }
 
-
 /*
  * Set specified arguments into widget
  */
@@ -557,65 +543,67 @@ Widget current, request, new;
   }
 
 #ifdef SHAPE
-  if (XtIsRealized(new)
-      && oldcbw->command.shape_style != cbw->command.shape_style) {
-      if (!XmuReshapeWidget(new,
-			    cbw->command.shape_style,
-			    (int)cbw->command.corner_width,
-			    (int)cbw->command.corner_height
-			    )) {
+  if ( XtIsRealized(new) &&
+      ((oldcbw->command.shape_style != cbw->command.shape_style) ||
+       (oldcbw->core.width != cbw->core.width) ||
+       (oldcbw->core.height != cbw->core.height)) ) 
+  {
+      if (!ShapeButton(cbw))
 	  cbw->command.shape_style = oldcbw->command.shape_style;
-      }
   }
 #endif /*SHAPE*/
 
   return (redisplay);
 }
 
-
 #ifdef SHAPE
+
+static Boolean
+ShapeButton(cbw)
+CommandWidget cbw;
+{
+    Dimension corner_size;
+
+    if ( (cbw->command.shape_style == XawShapeRoundedRectangle) ) {
+	corner_size = (cbw->core.width < cbw->core.height) ? cbw->core.width 
+	                                                   : cbw->core.height;
+	corner_size = (corner_size * cbw->command.corner_round) / 100;
+    }
+
+    printf("corner_size: %d\n", (int) corner_size);
+    if (cbw->command.shape_style != XawShapeRectangle) {
+	if (!XmuReshapeWidget((Widget) cbw, cbw->command.shape_style,
+			      corner_size, corner_size)) {
+	    cbw->command.shape_style = XawShapeRectangle;
+	    return(False);
+	}
+    }
+    return(TRUE);
+}
+
 static void ClassInitialize()
 {
     XtSetTypeConverter( XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
 		        NULL, 0, XtCacheNone, NULL );
 }
 
-static void Realize(W, valueMask, attributes)
-    Widget W;
+static void Realize(w, valueMask, attributes)
+    Widget w;
     Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
-    CommandWidget w = (CommandWidget)W;
     (*commandWidgetClass->core_class.superclass->core_class.realize)
-	(W, valueMask, attributes);
+	(w, valueMask, attributes);
 
-    if (w->command.shape_style != XawShapeRectangle) {
-	if (!XmuReshapeWidget(W,
-			      w->command.shape_style,
-			      (int)w->command.corner_width,
-			      (int)w->command.corner_height
-			      )) {
-	    w->command.shape_style = XawShapeRectangle;
-	}
-    }
+    ShapeButton( (CommandWidget) w);
 }
 
-static void Resize(W)
-    Widget W;
+static void Resize(w)
+    Widget w;
 {
-    if (XtIsRealized(W)) {
-	CommandWidget w = (CommandWidget)W;
-	if (w->command.shape_style != XawShapeRectangle) {
-	    if (!XmuReshapeWidget(W,
-				  w->command.shape_style,
-				  (int)w->command.corner_width,
-				  (int)w->command.corner_height
-				  )) {
-		w->command.shape_style = XawShapeRectangle;
-	    }
-	}
-    }
+    if (XtIsRealized(w)) 
+	ShapeButton( (CommandWidget) w);
 
-    (*commandWidgetClass->core_class.superclass->core_class.resize)(W);
+    (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
 }
 #endif /*SHAPE*/

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.23 89/09/25 12:22:28 swick Exp $
+* $XConsortium: Command.h,v 1.25 89/10/03 11:32:06 swick Exp $
 */
 
 
@@ -72,11 +72,8 @@ SOFTWARE.
 #define XtNshapeStyle "shapeStyle"
 #define XtCShapeStyle "ShapeStyle"
 #define XtRShapeStyle "ShapeStyle"
-#define XtNcornerWidth "cornerWidth"
-#define XtCCornerWidth "CornerWidth"
-#define XtNcornerHeight "cornerHeight"
-#define XtCCornerHeight "CornerHeight"
-
+#define XtNcornerRoundPercent "cornerRoundPercent"
+#define XtCCornerRoundPercent "CornerRoundPercent"
 
 #define XawShapeRectangle XmuShapeRectangle
 #define XawShapeOval XmuShapeOval
