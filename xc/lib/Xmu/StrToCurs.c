@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.3 88/09/22 17:41:06 swick Exp $";
+static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.4 89/03/30 17:07:17 jim Exp $";
 #endif /* lint */
 
 
@@ -33,7 +33,11 @@ SOFTWARE.
 #include	<X11/IntrinsicP.h>	/* 'cause CoreP.h needs it */
 #include	<X11/CoreP.h>		/* just to do XtConvert() */
 #include	<sys/param.h>		/* just to get MAXPATHLEN */
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 256
+#endif
 #include	"Xmu.h"
+
 
 extern void CvtStringToCursor();
 

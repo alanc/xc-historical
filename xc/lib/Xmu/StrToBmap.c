@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.3 89/03/30 17:07:14 jim Exp $";
+static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.4 89/03/31 10:35:32 jim Exp $";
 #endif /* lint */
 
 
@@ -30,6 +30,9 @@ SOFTWARE.
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
 #include	<sys/param.h>		/* just to get MAXPATHLEN */
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 256
+#endif
 #include	"Xmu.h"
 
 /*
