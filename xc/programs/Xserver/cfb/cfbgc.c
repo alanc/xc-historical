@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.28 89/10/29 16:45:33 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.29 89/10/31 11:59:45 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -46,10 +46,6 @@ static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static cfbDestroyOps();
 
-extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
-extern RegionPtr cfbCopyPlane ();
-extern void cfbPolyFillArcSolidCopy();
-
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
     cfbChangeGC,
@@ -59,8 +55,6 @@ static GCFuncs cfbFuncs = {
     cfbDestroyClip,
     cfbCopyClip,
 };
-
-extern void	    mfbPushPixels(), cfbPushPixels8();
 
 static GCOps	cfbTEOps = {
     cfbSolidFS,
