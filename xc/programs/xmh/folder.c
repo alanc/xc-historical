@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.31 89/12/16 03:33:16 converse Exp $
+ * $XConsortium: folder.c,v 2.32 90/08/08 14:54:22 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -30,7 +30,6 @@
 
 #include <X11/Xos.h>
 #include <sys/stat.h>
-#include <sys/dir.h>
 #include <ctype.h>
 #include "xmh.h"
 #include "bboxint.h"
@@ -538,11 +537,10 @@ static int  flen = 0;		/* length of a substring of filename */
 /* Function name:	IsFolder
  * Description:		determines if a file is an mh subfolder.
  */
-static int IsFolder(ent)
-    struct direct *ent;
+static int IsFolder(name)
+    char *name;
 {
     register int i, len;
-    char *name = ent->d_name;
     struct stat buf;
 
     /* mh does not like subfolder names to be strings of digits */
@@ -655,9 +653,8 @@ static void AddFolderMenuEntry(button, entryname)
 static void CreateFolderMenu(button)
     Button	button;
 {
-    struct direct **namelist;
+    char **namelist;
     register int i, n, length;
-    extern	alphasort();
     char	directory[500];
 
     n = strlen(app_resources.mail_path);
@@ -666,7 +663,7 @@ static void CreateFolderMenu(button)
     (void) strcpy(directory + n, button->name);
     flen = strlen(directory);		/* for IsFolder */
     (void) strcpy(filename, directory);	/* for IsFolder */
-    n = scandir(directory, &namelist, IsFolder, alphasort);
+    n = ScanDir(directory, &namelist, IsFolder);
     if (n <= 0) {
 	/* no subfolders, therefore no menu */
 	button->menu = NoMenuForButton;
@@ -686,7 +683,7 @@ static void CreateFolderMenu(button)
     (void) strncpy(directory, button->name, length);
     directory[length++] = '/';
     for (i=0; i < n; i++) {
-	(void) strcpy(directory + length, namelist[i]->d_name);
+	(void) strcpy(directory + length, namelist[i]);
 	free((char *) namelist[i]);
 	AddFolderMenuEntry(button, directory);
     }

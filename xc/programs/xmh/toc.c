@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.38 91/01/09 09:15:44 swick Exp $
+ * $XConsortium: toc.c,v 2.39 91/01/09 19:08:22 rws Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -32,17 +32,15 @@
 #include "toc.h"
 #include "tocutil.h"
 #include <sys/stat.h>
-#include <sys/dir.h>
 
-
-static int IsDir(ent)
-struct direct *ent;
+static int IsDir(name)
+char *name;
 {
     char str[500];
     struct stat buf;
-    if (ent->d_name[0] == '.')
+    if (*name == '.')
 	return FALSE;
-    (void) sprintf(str, "%s/%s", app_resources.mail_path, ent->d_name);
+    (void) sprintf(str, "%s/%s", app_resources.mail_path, name);
     if (stat(str, &buf) /* failed */) return False;
     return (buf.st_mode & S_IFMT) == S_IFDIR;
 }
@@ -50,27 +48,25 @@ struct direct *ent;
 
 
 static void MakeSureFolderExists(namelistptr, numfoldersptr, name)
-struct direct ***namelistptr;
+char ***namelistptr;
 int *numfoldersptr;
 char *name;
 {
     int i;
-    extern alphasort();
     char str[200];
     for (i=0 ; i<*numfoldersptr ; i++)
-	if (strcmp((*namelistptr)[i]->d_name, name) == 0) return;
+	if (strcmp((*namelistptr)[i], name) == 0) return;
     (void) sprintf(str, "%s/%s", app_resources.mail_path, name);
     (void) mkdir(str, 0700);
-    *numfoldersptr = scandir(app_resources.mail_path, namelistptr,
-			     IsDir, alphasort);
+    *numfoldersptr = ScanDir(app_resources.mail_path, namelistptr, IsDir);
     for (i=0 ; i<*numfoldersptr ; i++)
-	if (strcmp((*namelistptr)[i]->d_name, name) == 0) return;
+	if (strcmp((*namelistptr)[i], name) == 0) return;
     Punt("Can't create new mail folder!");
 }
 
 
 static void MakeSureSubfolderExists(namelistptr, numfoldersptr, name)
-    struct direct ***	namelistptr;
+    char ***		namelistptr;
     int *		numfoldersptr;
     char *		name;
 {
@@ -151,14 +147,13 @@ static void LoadCheckFiles()
 void TocInit()
 {
     Toc toc;
-    struct direct **namelist;
+    char **namelist;
     int i;
     extern alphasort();
-    numFolders = scandir(app_resources.mail_path, &namelist, IsDir, alphasort);
+    numFolders = ScanDir(app_resources.mail_path, &namelist, IsDir);
     if (numFolders < 0) {
 	(void) mkdir(app_resources.mail_path, 0700);
-	numFolders = scandir(app_resources.mail_path, &namelist, IsDir,
-			     alphasort);
+	numFolders = ScanDir(app_resources.mail_path, &namelist, IsDir);
 	if (numFolders < 0)
 	    Punt("Can't create or read mail directory!");
     }
@@ -178,7 +173,7 @@ void TocInit()
     folderList = (Toc *) XtMalloc((Cardinal)numFolders * sizeof(Toc));
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i] = TUMalloc();
-	toc->foldername = XtNewString(namelist[i]->d_name);
+	toc->foldername = XtNewString(namelist[i]);
 	free((char *)namelist[i]);
     }
     if (! (InitialFolder = TocGetNamed(app_resources.initial_folder_name)))
