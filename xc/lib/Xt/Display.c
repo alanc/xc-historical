@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.13 88/09/06 16:27:46 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.14 88/09/26 08:33:02 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif lint
 
@@ -31,14 +31,25 @@ SOFTWARE.
 #include <sys/param.h>
 #include "IntrinsicI.h"
 
-static XtAppContext defaultAppContext = NULL;
+ProcessContext _XtGetProcessContext()
+{
+    static ProcessContextRec processContextRec = {
+	(XtAppContext)NULL,
+	(XtAppContext)NULL,
+	(ConverterTable)NULL
+    };
+
+    return &processContextRec;
+}
+
 
 XtAppContext _XtDefaultAppContext()
 {
-	if (defaultAppContext == NULL) {
-	    defaultAppContext = XtCreateApplicationContext();
-	}
-	return defaultAppContext;
+    register ProcessContext process = _XtGetProcessContext();
+    if (process->defaultAppContext == NULL) {
+	process->defaultAppContext = XtCreateApplicationContext();
+    }
+    return process->defaultAppContext;
 }
 
 static void XtAddToAppContext(d, app)
@@ -210,6 +221,9 @@ XtAppContext XtCreateApplicationContext()
 {
 	XtAppContext app = XtNew(XtAppStruct);
 
+	app->process = _XtGetProcessContext();
+	app->next = app->process->appContextList;
+	app->process->appContextList = app;
 	app->list = NULL;
 	app->count = app->max = app->last = 0;
 	app->timerQueue = NULL;
