@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.65 91/05/02 20:23:02 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.66 91/05/06 17:22:07 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1000,16 +1000,17 @@ Boolean *cont;
       } else {
           if ((BYTELENGTH(length,info->format)+info->offset) 
 			> info->bytelength) {
-  	    info->value = XtRealloc(info->value, (unsigned)
+	      unsigned int bytes;
 #ifdef DRAFT_ICCCM_COMPATIBILITY 
-	    /* Handle Incremental can be called with a size of 0 */
-	        ((info->bytelength) 
-		 ? (info->bytelength *= 2)
-		 : (info->bytelength = 
-		    BYTELENGTH(length, info->format) + info->offset)));
+	      /* Handle Incremental can be called with a size of 0 */
+	      bytes = ((info->bytelength) 
+		       ? (info->bytelength *= 2)
+		       : (info->bytelength = 
+			  BYTELENGTH(length, info->format) + info->offset));
 #else
-				    (info->bytelength *= 2));
+	      bytes = (info->bytelength *= 2);
 #endif
+	      info->value = XtRealloc(info->value, bytes);
           }
           bcopy(value, &info->value[info->offset], 
 		(int) BYTELENGTH(length, info->format));
