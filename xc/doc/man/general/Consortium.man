@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.46 94/12/07 14:40:49 rws Exp rws $
+.\" $XConsortium: Consortium.man,v 1.47 95/01/02 19:56:58 rws Exp rws $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
@@ -79,7 +79,7 @@ Ralph Swick, swick@x.org
 Technical Director, Application Toolkits:
 Matt Landau, matt@x.org
 
-Technical Staff:
+Technical Staff (for core X):
 
 Donna Converse, converse@x.org
 Stephen Gildea, gildea@x.org
@@ -88,6 +88,17 @@ Kaleb Keithley, kaleb@x.org
 Ralph Mor, mor@x.org
 Ray Tice, ray@x.org
 Dave Wiggins, dpw@x.org
+
+Manager of Quality & Test Engineering (for CDE):
+M. Ramesh, msr@x.org
+
+Technical Staff (for CDE):
+
+Daniel Dardailler, daniel@x.org
+Pascale Dardailler, pascale@x.org
+David Kaelbling, drk@x.org
+Doug Rand, drand@x.org
+Marianne Smith, msmith@x.org
 
 SysAdmin:
 Gary Cutbill, rgary@x.org
@@ -148,7 +159,6 @@ Kubota Corp.
 Megatek Corp.
 Motorola, Inc.
 NEC Corporation
-Nippon Telegraph and Telephone Corporation
 Novell, Inc.
 Oki Electric Industry Co., Ltd.
 OMRON Corporation
@@ -191,7 +201,6 @@ Japan Computer Corporation
 Jupiter Systems
 KAIST - Korean Advanced Institute of Science and Technology
 KL Group Inc.
-Labtam Australia
 Locus Computing Corporation
 Mercury Interactive Corp.
 Metheus Corporation
