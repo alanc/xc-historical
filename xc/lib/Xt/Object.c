@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.23 94/03/31 16:39:40 converse Exp $ */
+/* $XConsortium: Object.c,v 1.24 94/04/01 16:20:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -164,14 +164,14 @@ static void InheritObjectExtensionMethods(widget_class)
 
     ext = (ObjectClassExtension)
 	XtGetClassExtension(widget_class,
-			    XtOffsetOf(ObjectClassPart, extension),
+		    XtOffsetOf(ObjectClassRec, object_class.extension),
 			    NULLQUARK, XtObjectExtensionVersion, 
 			    sizeof(ObjectClassExtensionRec));
 
     if (oc->object_class.superclass)
 	super_ext = (ObjectClassExtension)
 	    XtGetClassExtension(oc->object_class.superclass,
-				XtOffsetOf(ObjectClassPart, extension),
+			XtOffsetOf(ObjectClassRec, object_class.extension),
 				NULLQUARK, XtObjectExtensionVersion, 
 				sizeof(ObjectClassExtensionRec));
     LOCK_PROCESS;
