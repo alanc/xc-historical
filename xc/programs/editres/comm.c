@@ -399,7 +399,7 @@ int * format;
 	error_str = ProtocolFailure(stream);
 	break;
     default:
-	sprintf(msg, "Unknown Error code %d", (int) error_str);
+	sprintf(msg, "Unknown Error code %d", (int) error_code);
 	SetMessage(global_screen_data.info_label, msg);
 	break;
     }
