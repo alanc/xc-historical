@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.3 89/11/17 13:36:54 keith Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.4 89/11/18 17:12:18 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -64,24 +64,29 @@ two times:
 #define FASTCHARS
 #endif
 
-#ifdef FASTCHARS
-#define glyphbits(bits,width,mask,dst) FASTGETBITS(bits,0,width,dst)
-#define screenbits(bits,off,width,mask,dst) FASTPUTBITS(OP(bits), off, width,dst)
-#else
-#define glyphbits(bits,width,mask,dst) getleftbits(bits,width,dst); dst &= mask;
-#define screenbits(bits,off,width,mask,dst) *(dst) = *(dst) & ~(mask) | \
-					OP(SCRRIGHT(c,off)) & (mask)
-#endif
-
 /*
  * this macro "knows" that only characters <= 8 bits wide will
  * fit this case (which is why it is independent of GLYPHPADBYTES)
  */
 
+#if (BITMAP_BIT_ORDER == MSBFirst) && (GLYPHPADBYTES != 4)
+#if GLYPHPADBYTES == 1
+#define ShiftAmnt   24
+#else
+#define ShiftAmnt   16
+#endif
+
+#define GetBits4    c = (*char1++ << ShiftAmnt) | \
+			SCRRIGHT (*char2++ << ShiftAmnt, xoff2) | \
+			SCRRIGHT (*char3++ << ShiftAmnt, xoff3) | \
+			SCRRIGHT (*char4++ << ShiftAmnt, xoff4);
+#else
 #define GetBits4    c = *char1++ | \
 			SCRRIGHT (*char2++, xoff2) | \
 			SCRRIGHT (*char3++, xoff3) | \
 			SCRRIGHT (*char4++, xoff4);
+#endif
+
 
 #if GLYPHPADBYTES == 1
 typedef	unsigned char	*glyphPointer;
@@ -98,7 +103,8 @@ typedef unsigned int	*glyphPointer;
 #endif
 
 #ifdef USE_LEFTBITS
-#define GetBits1    glyphbits (char1, widthGlyph, glyphMask, c); \
+#define GetBits1    getleftbits (char1, widthGlyph, c); \
+		    c &= glyphMask; \
 		    char1 = (glyphPointer) (((char *) char1) + glyphBytes);
 #else
 #define GetBits1    c = *char1++;
@@ -200,7 +206,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     widthGlyphs = widthGlyph << 2;
 
 #ifdef USE_LEFTBITS
-    glyphMask = (1 << widthGlyph) - 1;
+    glyphMask = endtab[widthGlyph];
     glyphBytes = GLYPHWIDTHBYTESPADDED(pci);
 #endif
 
@@ -208,27 +214,35 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     {
 	while (nglyph >= 4)
 	{
-	    xoff1 = xpos & 0x1f;
-	    char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
-	    hTmp = h;
-	    dst = pdstBase + (xpos >> 5);
 	    nglyph -= 4;
+	    xoff1 = xpos & 0x1f;
 	    xoff2 = widthGlyph;
 	    xoff3 = xoff2 + widthGlyph;
 	    xoff4 = xoff3 + widthGlyph;
+	    char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
 	    char2 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
 	    char3 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
 	    char4 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
 
+	    hTmp = h;
+	    dst = pdstBase + (xpos >> 5);
+
 #ifndef FASTCHARS
 	    if (xoff1 + widthGlyphs <= 32)
 	    {
-		maskpartialbits (xpos, widthGlyphs, startmask);
+		maskpartialbits (xoff1, widthGlyphs, startmask);
 #endif
 		while (hTmp--)
 		{
 		    GetBits4
-		    screenbits(c,xoff1,widthGlyphs,startmask,dst);
+#ifdef FASTCHARS
+# if BITMAP_BIT_ORDER == MSBFirst
+		    c >>= 32 - widthGlyphs;
+# endif
+		    FASTPUTBITS(OP(c), xoff1, widthGlyphs, dst);
+#else
+		    *(dst) = (*dst) & ~startmask | OP(SCRRIGHT(c, xoff1)) & startmask;
+#endif
 		    dst += widthDst;
 		}
 #ifndef FASTCHARS
@@ -266,8 +280,21 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #endif
 	    while (hTmp--)
 	    {
+#ifdef FASTCHARS
+#ifdef USE_LEFTBITS
+		FASTGETBITS (char1,0,widthGlyph,c);
+		char1 = (glyphPointer) (((char *) char1) + glyphBytes);
+#else
+		c = *char1++;
+#if BITMAP_BIT_ORDER == MSBFirst
+		c >>= 32 - widthGlyph;
+#endif
+#endif
+		FASTPUTBITS (OP(c),xoff1,widthGlyph,dst);
+#else
 		GetBits1
-		screenbits(c,xoff1,widthGlyph,startmask,dst);
+		(*dst) = (*dst) & ~startmask | OP(SCRRIGHT(c, xoff1)) & startmask;
+#endif
 		dst += widthDst;
 	    }
 #ifndef FASTCHARS
