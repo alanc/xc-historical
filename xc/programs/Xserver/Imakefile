@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.129 91/07/20 18:00:57 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.130 91/07/22 22:22:24 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -9,8 +9,10 @@ XCOMM $XConsortium: Imakefile,v 1.129 91/07/20 18:00:57 rws Exp $
 #define MFBSubdirs StdSubdirs ddx/mfb
 #define CFBSubdirs MFBSubdirs ddx/cfb
 #define StdLibs $(DIX) $(OS) $(MI) $(EXTENSIONS)
-#define MFBLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
-#define CFBLibs $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
+#define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI)
+#define MFBLibs MFBBareLibs $(EXTENSIONS)
+#define CFBBareLibs $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI)
+#define CFBLibs CFBBareLibs $(EXTENSIONS)
 
 #if BuildPexExt
    PEXTENSIONSRC = $(EXTENSIONSRC)/server/PEX
@@ -30,7 +32,8 @@ XCOMM $XConsortium: Imakefile,v 1.129 91/07/20 18:00:57 rws Exp $
 #endif
 
         DEPDIRS = $(FONTSRC)/lib/font $(EXTENSIONSRC)/server
-     EXTENSIONS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a $(PEXLIBS)
+     NONPEXEXTS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a
+     EXTENSIONS = $(NONPEXEXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
              OS = os/libos.a $(XAULIB) $(XDMCPLIB)
@@ -80,6 +83,14 @@ ALL1 = Xmfbpmax
 
 #if XcfbpmaxServer
 ALL2 = Xcfbpmax
+#endif
+
+#if XsunMonoServer
+#if XsunServer
+ALL2 = XsunMono
+#else
+ALL1 = XsunMono
+#endif
 #endif
 
 #if XsunServer
@@ -214,14 +225,34 @@ XCOMM
 #if UseSunWindowsInServer
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
-SUBDIRS0 = CFBSubdirs ddx/sun
-SUNDIRS = $(SUBDIRS0) $(DEPDIRS)
+SUBDIRS0 = MFBSubdirs
+SUBDIRS1 = ddx/cfb
+SUBDIRS2 = ddx/sun
+SUNDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
 SUNOBJS = ddx/sun/sunInit.o
 SUNLIBS = ddx/sun/libsun.a CFBLibs
 SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #endif /* XsunServer */
+
+
+#if XsunMonoServer
+XCOMM
+XCOMM Sun monochrome server
+XCOMM
+#if UseSunWindowsInServer
+SUNWINDOWSLIBS = -lsunwindow -lpixrect
+#endif
+SUBDIRS0 = MFBSubdirs
+SUBDIRS2 = ddx/sun
+SUNMDIRS = $(SUBDIRS0) $(SUBDIRS2) $(DEPDIRS)
+SUNMOBJS = ddx/sun/sunInitMono.o ddx/sun/sunInitExtMono.o
+SUNMLIBS = ddx/sun/libsun.a MFBBareLibs $(NONPEXEXTS)
+SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
+
+ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SUNSYSLIBS))
+#endif /* XsunMonoServer */
 
 
 #if XhpServer
