@@ -152,7 +152,10 @@ ProcessOtherEvent (xE, other, count)
 		}
 	    }
 	if (!grab && CheckDeviceGrabs(other, xE, 0, count))
+	    {
+	    other->activatingKey = key;
 	    return;
+	    }
 	}
     else if (xE->type == DeviceKeyRelease)
 	{
@@ -177,14 +180,7 @@ ProcessOtherEvent (xE, other, count)
 		}
 	    }
 
-	/* the dix code uses a variable keyThatActivatedPassiveGrab
-	   for comparison.  But if it activated the passive grab, that
-	   key should be the one in the grabrec.		
-	   However, AnyKey is a special case			*/
-
-	if ((other->fromPassiveGrab) &&
-	     (key == other->grab->detail.exact ||
-	     other->grab->detail.exact == AnyKey))
+	if (other->fromPassiveGrab && (key == other->activatingKey))
 	    deactivateDeviceGrab = TRUE;
 	}
     else if (xE->type == DeviceButtonPress)
