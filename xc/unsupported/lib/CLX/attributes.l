@@ -44,6 +44,7 @@
 
 (export '(
 	  with-state
+	  window-visual-info
 	  window-visual
 	  window-class
 	  window-background ;; setf only
@@ -74,9 +75,10 @@
 	  window-priority
 	  ))
 
+(eval-when (compile load eval)			;needed by Franz Lisp
 (defconstant *attribute-size* 44)
 (defconstant *geometry-size* 24)
-(defconstant *context-size* (max *attribute-size* *geometry-size* (* 16 4)))
+(defconstant *context-size* (max *attribute-size* *geometry-size* (* 16 4))))
 
 (defvar *window-attributes* nil) ;; Bound to an alist of (drawable . state) within WITH-STATE
 
@@ -84,11 +86,12 @@
 (defvar *context-free-list* nil) ;; resource of free reply buffers
 
 (defun allocate-context ()
-  (or (atomic-pop *context-free-list*)
+  (or (threaded-atomic-pop *context-free-list* reply-next reply-buffer)
       (make-reply-buffer *context-size*)))
 
 (defun deallocate-context (context)
-  (atomic-push context *context-free-list*))
+  (declare (type reply-buffer context))
+  (threaded-atomic-push context *context-free-list* reply-next reply-buffer))
 
 (defmacro state-attributes (state) `(second ,state))
 (defmacro state-attribute-changes (state) `(third ,state))
@@ -121,7 +124,7 @@
   ;; (again) retained, and returned in any subsequent accessor calls.
 
   ;; Accessor Group A (for GetWindowAttributes):
-  ;; window-visual, window-class, window-gravity, window-bit-gravity,
+  ;; window-visual, window-visual-info, window-class, window-gravity, window-bit-gravity,
   ;; window-backing-store, window-backing-planes, window-backing-pixel,
   ;; window-save-under, window-colormap, window-colormap-installed-p,
   ;; window-map-state, window-all-event-masks, window-event-mask,
@@ -234,20 +237,14 @@
 	      (deallocate-gcontext-state (state-attribute-changes state-entry))
 	      (setf (state-attribute-changes state-entry) nil))
 	    ;; Get window attributes
-	    (with-buffer-request (display *x-getwindowattributes* :no-after)
-	      (window window))
-	    (let ((buffer (or (state-attributes state-entry)
-			      (allocate-context))))
-	      (wait-for-reply display *attribute-size*)
-	      ;; Copy into event from reply buffer
-	      (buffer-replace (reply-ibuf8 buffer)
-			      (reply-ibuf8 (buffer-reply-buffer display))
-			      0
-			      *attribute-size*)
-	      (when state-entry
-		(setf (state-attributes state-entry) buffer))
-	      (display-invoke-after-function display)
-	      buffer))))))
+	    (with-buffer-request-and-reply (display *x-getwindowattributes* size :sizes (8))
+		 ((window window))
+	      (let ((buffer (or (state-attributes state-entry) (allocate-context))))
+		;; Copy into event from reply buffer
+		(buffer-replace (reply-ibuf8 buffer) buffer-bbuf 0 size)
+		(when state-entry (setf (state-attributes state-entry) buffer))
+		buffer)))))))
+
 ;;
 ;; These two are twins (get-window-attributes-buffer get-drawable-geometry-buffer)
 ;; If you change one, you probably need to change the other...
@@ -269,20 +266,13 @@
 	      (deallocate-gcontext-state (state-geometry-changes state-entry))
 	      (setf (state-geometry-changes state-entry) nil))
 	    ;; Get drawable attributes
-	    (with-buffer-request (display *x-getgeometry* :no-after)
-	      (drawable drawable))
-	    (let ((buffer (or (state-geometry state-entry)
-			      (allocate-context))))
-	      (wait-for-reply display *geometry-size*)
-	      ;; Copy into event from reply buffer
-	      (buffer-replace (reply-ibuf8 buffer)
-			      (reply-ibuf8 (buffer-reply-buffer display))
-			      0
-			      *geometry-size*)
-	      (when state-entry
-		(setf (state-geometry state-entry) buffer))
-	      (display-invoke-after-function display)
-	      buffer))))))
+	    (with-buffer-request-and-reply (display *x-getgeometry* size :sizes (8))
+		 ((drawable drawable))
+	      (let ((buffer (or (state-geometry state-entry) (allocate-context))))
+		;; Copy into event from reply buffer
+		(buffer-replace (reply-ibuf8 buffer) buffer-bbuf 0 size)
+		(when state-entry (setf (state-geometry state-entry) buffer))
+		buffer)))))))
 
 (defun put-window-attribute-changes (window changes)
   ;; change window attributes
@@ -339,6 +329,7 @@
 (defmacro with-attributes ((window &rest options) &body body)
   (let ((buffer (gensym)))
     `(let ((,buffer (get-window-attributes-buffer ,window)))
+       (declare (type buffer ,buffer))
        (prog1 
 	 (with-buffer-input (,buffer ,@options) ,@body)
 	 (unless *window-attributes*
@@ -350,6 +341,7 @@
 (defmacro with-geometry ((window &rest options) &body body)
   (let ((buffer (gensym)))
     `(let ((,buffer (get-drawable-geometry-buffer ,window)))
+       (declare (type buffer ,buffer))
        (prog1 
 	 (with-buffer-input (,buffer ,@options) ,@body)
 	 (unless *window-attributes*
@@ -361,15 +353,28 @@
 
 (defun window-visual (window)
   (declare (type window window))
-  (declare-values card29)
+  (declare (values resource-id))
   (with-attributes (window :sizes 32)
     (resource-id-get 8)))
 
+(defun window-visual-info (window)
+  (declare (type window window))
+  (declare (values visual-info))
+  (with-attributes (window :sizes 32)
+    (visual-info (window-display window) (resource-id-get 8))))
+
 (defun window-class (window)
   (declare (type window window))
-  (declare-values (member :input-output :input-only))
+  (declare (values (member :input-output :input-only)))
   (with-attributes (window :sizes 16)
     (member16-get 12 :copy :input-output :input-only)))
+
+(defmacro window-background (window)
+  (declare (type window window)
+	   (ignore window))
+  (declare (values (or (member :none :parent-relative) pixel pixmap)))
+  (warn"~S can only be set" 'window-background)
+  :none)
 
 (defun set-window-background (window background)
   (declare (type window window)
@@ -385,6 +390,13 @@
   background)
 
 (defsetf window-background set-window-background)
+
+(defmacro window-border (window)
+  (declare (type window window)
+	   (ignore window))
+  (declare (values (or (member :copy) pixel pixmap)))
+  (warn "~S can only be set" 'window-border)
+  :copy)
 
 (defun set-window-border (window border)
   (declare (type window window)
@@ -402,7 +414,7 @@
 (defun window-bit-gravity (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values bit-gravity)
+  (declare (values bit-gravity))
   (with-attributes (window :sizes 8)
     (member8-vector-get 14 *bit-gravity-vector*)))
 
@@ -416,7 +428,7 @@
 (defun window-gravity (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values win-gravity)
+  (declare (values win-gravity))
   (with-attributes (window :sizes 8)
     (member8-vector-get 15 *win-gravity-vector*)))
 
@@ -430,7 +442,7 @@
 (defun window-backing-store (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values (member :not-useful :when-mapped :always))
+  (declare (values (member :not-useful :when-mapped :always)))
   (with-attributes (window :sizes 8)
     (member8-get 1 :not-useful :when-mapped :always)))
 
@@ -444,7 +456,7 @@
 (defun window-backing-planes (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values pixel)
+  (declare (values pixel))
   (with-attributes (window :sizes 32)
     (card32-get 16)))
 
@@ -457,7 +469,7 @@
 (defun window-backing-pixel (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values pixel)
+  (declare (values pixel))
   (with-attributes (window :sizes 32)
     (card32-get 20)))
 
@@ -470,7 +482,7 @@
 (defun window-save-under (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values (member :off :on))
+  (declare (values (member :off :on)))
   (with-attributes (window :sizes 8)
     (member8-get 24 :off :on)))
 
@@ -483,7 +495,7 @@
 (defun window-override-redirect (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values (member :off :on))
+  (declare (values (member :off :on)))
   (with-attributes (window :sizes 8)
     (member8-get 27 :off :on)))
 
@@ -496,32 +508,34 @@
 (defun window-event-mask (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values mask32)
+  (declare (values mask32))
   (with-attributes (window :sizes 32)
     (card32-get 36)))
 
 (defsetf window-event-mask (window) (event-mask)
   (let ((em (gensym)))
     `(let ((,em ,event-mask))
+       (declare (type event-mask ,em))
        (change-window-attribute ,window 11 (encode-event-mask ,em))
        ,em)))
 
 (defun window-do-not-propagate-mask (window)
   ;; setf'able
   (declare (type window window))
-  (declare-values mask32)
+  (declare (values mask32))
   (with-attributes (window :sizes 32)
     (card32-get 40)))
 
 (defsetf window-do-not-propagate-mask (window) (device-event-mask)
   (let ((em (gensym)))
     `(let ((,em ,device-event-mask))
+       (declare (type device-event-mask ,em))
        (change-window-attribute ,window 12 (encode-device-event-mask ,em))
        ,em)))
 
 (defun window-colormap (window)
   (declare (type window window))
-  (declare-values (or null colormap))
+  (declare (values (or null colormap)))
   (with-attributes (window :sizes 32)
     (let ((id (resource-id-get 28)))
       (if (zerop id) nil
@@ -534,6 +548,12 @@
 
 (defsetf window-colormap set-window-colormap)
 
+(defun window-cursor (window)
+  (declare (type window window))
+  (declare (values cursor))
+  window
+  (error "~S can only be set" 'window-cursor))
+
 (defun set-window-cursor (window cursor)
   (change-window-attribute
     window 14 (encode-type (or (member :none) cursor) cursor))
@@ -543,19 +563,19 @@
 
 (defun window-colormap-installed-p (window)
   (declare (type window window))
-  (declare-values boolean)
+  (declare (values boolean))
   (with-attributes (window :sizes 8)
     (boolean-get 25)))
 
 (defun window-all-event-masks (window)
   (declare (type window window))
-  (declare-values mask32)
+  (declare (values mask32))
   (with-attributes (window :sizes 32)
     (card32-get 32)))
 
 (defun window-map-state (window)
   (declare (type window window))
-  (declare-values (member :unmapped :unviewable :viewable))
+  (declare (values (member :unmapped :unviewable :viewable)))
   (with-attributes (window :sizes 8)
     (member8-get 26 :unmapped :unviewable :viewable)))
 
@@ -566,14 +586,14 @@
 
 (defun drawable-root (drawable)
   (declare (type drawable drawable))
-  (declare-values window)
+  (declare (values window))
   (with-geometry (drawable :sizes 32)
     (window-get 8 (drawable-display drawable))))
 
 (defun drawable-x (drawable)
   ;; setf'able
   (declare (type drawable drawable))
-  (declare-values int16)
+  (declare (values int16))
   (with-geometry (drawable :sizes 16)
     (int16-get 12)))
 
@@ -586,7 +606,7 @@
 (defun drawable-y (drawable)
   ;; setf'able
   (declare (type drawable drawable))
-  (declare-values int16)
+  (declare (values int16))
   (with-geometry (drawable :sizes 16)
     (int16-get 14)))
 
@@ -600,7 +620,7 @@
   ;; setf'able
   ;; Inside width, excluding border.
   (declare (type drawable drawable))
-  (declare-values card16)
+  (declare (values card16))
   (with-geometry (drawable :sizes 16)
     (card16-get 16)))
 
@@ -614,7 +634,7 @@
   ;; setf'able
   ;; Inside height, excluding border.
   (declare (type drawable drawable))
-  (declare-values card16)
+  (declare (values card16))
   (with-geometry (drawable :sizes 16)
     (card16-get 18)))
 
@@ -626,14 +646,14 @@
 
 (defun drawable-depth (drawable)
   (declare (type drawable drawable))
-  (declare-values card8)
+  (declare (values card8))
   (with-geometry (drawable :sizes 8)
     (card8-get 1)))
 
 (defun drawable-border-width (drawable)
   ;; setf'able
   (declare (type drawable drawable))
-  (declare-values integer)
+  (declare (values integer))
   (with-geometry (drawable :sizes 16)
     (card16-get 20)))
 
@@ -642,6 +662,14 @@
   width)
 
 (defsetf drawable-border-width set-drawable-border-width)
+
+(defmacro window-priority (window &optional sibling)
+  (declare (type window window)
+	   (type (or null window) sibling)
+	   (ignore window sibling))
+  (declare (values (member :above :below :top-if :bottom-if :opposite)))
+  (warn "~S can only be set" 'window-priority)
+  :above)
 
 (defun set-window-priority (mode window sibling)
   (declare (type (member :above :below :top-if :bottom-if :opposite) mode)
