@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.56 91/02/08 17:17:33 rws Exp $ */
+/* $XConsortium: Convert.c,v 1.57 91/04/30 12:26:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -345,12 +345,12 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 
     pHashEntry = &cacheHashTable[hash & CACHEHASHMASK];
 
-    if (destructor || do_ref) {
+    if ((succeeded && destructor) || do_ref) {
 	p = (CachePtr) _XtHeapAlloc(heap, (sizeof(CacheRec) +
 					   sizeof(CacheRecExt) +
 					   num_args * sizeof(XrmValue)));
 	CEXT(p)->prev = pHashEntry;
-	CEXT(p)->destructor = destructor;
+	CEXT(p)->destructor = succeeded ? destructor : NULL;
 	CEXT(p)->closure = closure;
 	CEXT(p)->ref_count = 1;
 	p->has_ext = True;
