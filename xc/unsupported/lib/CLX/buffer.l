@@ -903,7 +903,9 @@
 			 ((type list lst))
     (dotimes (j chunk)
       (declare (type array-index j))
-      (write-card8 j (pop lst))))
+      #-ti (write-card8 j (pop lst))		;TI Compiler bug
+      #+ti (setf (aref buffer-bbuf (index+ buffer-boffset j)) (pop lst))
+      ))
   nil)
 
 (defun write-list-card8-with-transform (buffer boffset data start end transform)
