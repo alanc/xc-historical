@@ -1,13 +1,13 @@
+#define DoNormalLib NormalLibX
+#define DoSharedLib SharedLibX
+#define DoDebugLib DebugLibX
+#define DoProfileLib ProfileLibX
 #include <Library.tmpl>
 
 #if HasDESLibrary
         DESDEFS = -DHASDES
         DESOBJS = Encrypt.o Crypt.o
         DESSRCS = Encrypt.c Crypt.c
-#else
-        DESDEFS =
-        DESOBJS =
-        DESSRCS =
 #endif
 #if HasSecureRPC
         RPCDEFS = -DSECURE_RPC
@@ -366,115 +366,44 @@ OBJS3 = \
 	XwcTextExt.o \
 	XwcTextPer.o
 
-OBJS =\
-	$(OBJS1) $(OBJS2) $(OBJS3)
+OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
-all::
+LibraryObjectRule()
 
-#if SharedLibX
-# if DebugLibX
-SharedAndDebuggedLibraryObjectRule()
-SpecialSharedAndDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
-SpecialSharedAndDebuggedObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialSharedAndDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialSharedAndDebuggedObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialSharedAndDebuggedObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialSharedAndDebuggedObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
-SpecialSharedAndDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialSharedAndDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialSharedAndDebuggedObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
-SpecialSharedAndDebuggedObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
-SpecialSharedAndDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-# else
-SharedLibraryObjectRule()
-SpecialSharedObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
-SpecialSharedObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialSharedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialSharedObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialSharedObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialSharedObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
-SpecialSharedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialSharedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialSharedObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
-SpecialSharedObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
-SpecialSharedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-# endif
+SpecialLibObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
+SpecialLibObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
+SpecialLibObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialLibObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
+SpecialLibObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialLibObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
+SpecialLibObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialLibObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialLibObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialLibObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
+SpecialLibObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS),shared,..)
 #else
-# if DebugLibX && ProfileLibX
-DebuggedAndProfiledLibraryObjectRule()
-SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
-SpecialDebuggedAndProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-# else
-#  if DebugLibX
-DebuggedLibraryObjectRule()
-SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
-SpecialDebuggedObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialDebuggedObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
-SpecialDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
-SpecialDebuggedObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
-SpecialDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-#  else
-#   if ProfileLibX
-ProfiledLibraryObjectRule()
-SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
-SpecialProfiledObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialProfiledObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialProfiledObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialProfiledObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
-SpecialProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialProfiledObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
-SpecialProfiledObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
-SpecialProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-#   else
-NormalLibraryObjectRule()
-SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
-SpecialObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
-SpecialObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
-SpecialObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
-SpecialObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-#if defined(ApolloArchitecture) && CCompilerMajorVersion <= 6 && CCompilerMinorVersion < 8
-SpecialObjectRule(XInitExt.o,/**/,-U__STDC__)
+SharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS),.,.)
 #endif
-#   endif
-#  endif
-# endif
-#endif
-
-/*
- * always generate unshared library too
- */
-#if SharedLibX
-NormalSharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS))
 InstallSharedLibrary(X11,$(SOXLIBREV),$(USRLIBDIR))
 #endif
+#if DoNormalLib
 NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))
 InstallLibrary(X11,$(USRLIBDIR))
-
+#endif
+#if DoProfileLib && ProfileLibXArchive
+ProfiledLibraryTarget(X11,$(OBJS))
+InstallLibrary(X11_p,$(USRLIBDIR))
+#endif
+#if DoDebugLib && DebugLibXArchive
+DebuggedLibraryTarget(X11,$(OBJS))
+InstallLibrary(X11_d,$(USRLIBDIR))
+#endif
 
 LintLibraryTarget(X11,*.c)
-
 
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
@@ -483,43 +412,13 @@ InstallNonExec(XErrorDB,$(LIBDIR))
 InstallLintLibrary(X11,$(LINTLIBDIR))
 
 
-#if ProfileLibX && ProfileLibXArchive
-ProfiledLibraryTarget(X11,$(OBJS))
-InstallLibrary(X11_p,$(USRLIBDIR))
-#endif
-
-#if DebugLibX && DebugLibXArchive
-DebuggedLibraryTarget(X11,$(OBJS))
-InstallLibrary(X11_d,$(USRLIBDIR))
-#endif
-
-AuDispose.c:  $(XAUTHSRC)/AuDispose.c
-	$(RM) $@
-	$(LN) $? $@
-
-AuGetBest.c:  $(XAUTHSRC)/AuGetBest.c
-	$(RM) $@
-	$(LN) $? $@
-
-AuFileName.c:  $(XAUTHSRC)/AuFileName.c
-	$(RM) $@
-	$(LN) $? $@
-
-AuRead.c:  $(XAUTHSRC)/AuRead.c
-	$(RM) $@
-	$(LN) $? $@
-
-des.h: $(XDMCPLIBSRC)/des.h
-	$(RM) $@
-	$(LN) $? $@
-
-Encrypt.c:  $(XDMCPLIBSRC)/Encrypt.c
-	$(RM) $@
-	$(LN) $? $@
-
-Crypt.c:  $(XDMCPLIBSRC)/Crypt.c
-	$(RM) $@
-	$(LN) $? $@
+LinkSourceFile(AuDispose.c,$(XAUTHSRC))
+LinkSourceFile(AuGetBest.c,$(XAUTHSRC))
+LinkSourceFile(AuFileName.c,$(XAUTHSRC))
+LinkSourceFile(AuRead.c,$(XAUTHSRC))
+LinkSourceFile(des.h,$(XDMCPLIBSRC))
+LinkSourceFile(Encrypt.c,$(XDMCPLIBSRC))
+LinkSourceFile(Crypt.c,$(XDMCPLIBSRC))
 
 ks_tables.h: $(INCLUDESRC)/keysymdef.h makekeys.C
 	$(RM) $@ makekeys.c makekeys
