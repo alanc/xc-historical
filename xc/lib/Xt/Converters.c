@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.18 88/02/06 12:57:15 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.19 88/02/07 13:20:24 swick Locked $";
 #endif lint
 
 /*
@@ -568,7 +568,7 @@ static void CvtStringToPixel(args, num_args, fromVal, toVal)
     XtDirectConvert((XtConverter) CvtStringToXColor, args, *num_args,
 	    fromVal, toVal);
     if ((*toVal).addr == NULL) return;
-    done(&((XColor *)((*toVal).addr))->pixel, int)
+    done(&((XColor *)toVal->addr)->pixel, int);
 };
 
 
