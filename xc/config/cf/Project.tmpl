@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.4 89/01/17 15:46:16 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.5 89/01/17 16:00:43 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -128,7 +128,7 @@
 #define LibraryDefines StandardDefines
 #endif
 #ifndef ServerDefines
-#define StandardDefines
+#define ServerDefines StandardDefines
 #endif
 #ifndef CppSourcesPresent
 #define CppSourcesPresent	NO	/* only works with BSD sources */
@@ -220,7 +220,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.4 89/01/17 15:46:16 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.5 89/01/17 16:00:43 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
