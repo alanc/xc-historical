@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XChkIfEv.c,v 11.8 88/08/30 19:52:00 jim Exp $ */
+/* $XConsortium: XChkIfEv.c,v 11.9 88/09/06 16:04:38 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -15,7 +15,13 @@ extern _XQEvent *_qfree;
 
 Bool XCheckIfEvent (dpy, event, predicate, arg)
         register Display *dpy;
-	Bool (*predicate)();		/* function to call */
+	Bool (*predicate)(
+#if NeedNestedPrototypes
+			  Display*			/* display */,
+			  XEvent*			/* event */,
+			  char*				/* arg */
+#endif
+			  );		/* function to call */
 	register XEvent *event;		/* XEvent to be filled in. */
 	char *arg;
 {

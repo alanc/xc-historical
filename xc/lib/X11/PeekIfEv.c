@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XPeekIfEv.c,v 11.10 88/02/03 20:43:23 rws Exp $ */
+/* $XConsortium: XPeekIfEv.c,v 11.11 88/09/06 16:09:33 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
@@ -17,7 +17,13 @@ extern _XQEvent *_qfree;
 XPeekIfEvent (dpy, event, predicate, arg)
 	register Display *dpy;
 	register XEvent *event;
-	Bool (*predicate)();
+	Bool (*predicate)(
+#if NeedNestedPrototypes
+			  Display*			/* display */,
+			  XEvent*			/* event */,
+			  char*				/* arg */
+#endif
+			  );
 	char *arg;
 {
 	register _XQEvent *prev, *qelt;

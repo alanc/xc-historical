@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XIfEvent.c,v 11.9 88/02/03 20:44:51 rws Exp $ */
+/* $XConsortium: XIfEvent.c,v 11.10 88/09/06 16:08:37 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
@@ -15,7 +15,13 @@ extern _XQEvent *_qfree;
 
 XIfEvent (dpy, event, predicate, arg)
 	register Display *dpy;
-	Bool (*predicate)();		/* function to call */
+	Bool (*predicate)(
+#if NeedNestedPrototypes
+			  Display*			/* display */,
+			  XEvent*			/* event */,
+			  char*				/* arg */
+#endif
+			  );		/* function to call */
 	register XEvent *event;
 	char *arg;
 {
