@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.13 89/12/10 17:46:28 jim Exp $
+ * $XConsortium: icons.c,v 1.14 89/12/10 19:20:04 jim Exp $
  *
  * Icon releated routines
  *
@@ -321,6 +321,7 @@ int def_x, def_y;
     FB(tmp_win->iconc.fore, tmp_win->iconc.back);
 
     tmp_win->forced = FALSE;
+    tmp_win->icon_not_ours = FALSE;
 
     /* now go through the steps to get an icon window,  if ForceIcon is 
      * set, then no matter what else is defined, the bitmap from the
@@ -476,6 +477,10 @@ int def_x, def_y;
 	{
 	    tmp_win->icon_w = NULL;
 	    tmp_win->wmhints->flags &= ~IconWindowHint;
+	}
+	else
+	{
+	    tmp_win->icon_not_ours = TRUE;
 	}
     }
     else

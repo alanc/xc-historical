@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.128 90/03/05 17:31:53 jim Exp $
+ * $XConsortium: events.c,v 1.129 90/03/06 17:01:07 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.128 90/03/05 17:31:53 jim Exp $";
+"$XConsortium: events.c,v 1.129 90/03/06 17:01:07 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -737,8 +737,59 @@ HandlePropertyNotify()
 	  Tmp_win->group = Tmp_win->wmhints->window_group;
 
 	if (!Tmp_win->forced && Tmp_win->wmhints &&
-	    Tmp_win->wmhints->flags & IconWindowHint)
-	  Tmp_win->icon_w = Tmp_win->wmhints->icon_window;
+	    Tmp_win->wmhints->flags & IconWindowHint) {
+	    if (Tmp_win->icon_w) {
+	    	int icon_x, icon_y;
+
+		/*
+		 * There's already an icon window.
+		 * Try to find out where it is; if we succeed, move the new
+		 * window to where the old one is.
+		 */
+		if (XGetGeometry (dpy, Tmp_win->icon_w, &JunkRoot, &icon_x,
+		  &icon_y, &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth)) {
+		    /*
+		     * Move the new icon window to where the old one was.
+		     */
+		    XMoveWindow(dpy, Tmp_win->wmhints->icon_window, icon_x,
+		      icon_y);
+		}
+
+		/*
+		 * If the window is iconic, map the new icon window.
+		 */
+		if (Tmp_win->icon)
+		    XMapWindow(dpy, Tmp_win->wmhints->icon_window);
+
+		/*
+		 * Now, if the old window isn't ours, unmap it, otherwise
+		 * just get rid of it completely.
+		 */
+		if (Tmp_win->icon_not_ours)
+		    XUnmapWindow(dpy, Tmp_win->icon_w);
+		else
+		    XDestroyWindow(dpy, Tmp_win->icon_w);
+
+		/*
+		 * The new icon window isn't our window, so note that fact
+		 * so that we don't treat it as ours.
+		 */
+		Tmp_win->icon_not_ours = TRUE;
+
+		/*
+		 * Now make the new window the icon window for this window,
+		 * and set it up to work as such (select for key presses
+		 * and button presses/releases, set up the contexts for it,
+		 * and define the cursor for it).
+		 */
+		Tmp_win->icon_w = Tmp_win->wmhints->icon_window;
+		XSelectInput (dpy, Tmp_win->icon_w,
+		  KeyPressMask | ButtonPressMask | ButtonReleaseMask);
+		XSaveContext(dpy, Tmp_win->icon_w, TwmContext, (caddr_t)Tmp_win);
+		XSaveContext(dpy, Tmp_win->icon_w, ScreenContext, (caddr_t)Scr);
+		XDefineCursor(dpy, Tmp_win->icon_w, Scr->IconCursor);
+	    }
+	}
 
 	if (Tmp_win->icon_w && !Tmp_win->forced && Tmp_win->wmhints &&
 	    (Tmp_win->wmhints->flags & IconPixmapHint)) {
@@ -812,6 +863,9 @@ RedoIconName()
     }
 
     if (Tmp_win->icon_w == NULL)
+	return;
+
+    if (Tmp_win->icon_not_ours)
 	return;
 
     Tmp_win->icon_w_width = XTextWidth(Scr->IconFont.font,
