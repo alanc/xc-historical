@@ -7,12 +7,15 @@ X is a network transparent window system developed at MIT which runs on a wide
 range of computing and graphics machines.  The core distribution from MIT
 has both client and server support for the following operating systems:
 .sp
-.ce 7
-Ultrix 3.1
+.ce 8
+Ultrix 3.0
 SunOS 4.0.3
 HP-UX 6.5
-Apollo Domain/IX 10.2
+Domain/IX 10.2
 A/UX 1.1
+AOS-4.3
+NEWS-OS 3.2
+UTEK 4.0
 .sp
 Commercial implementations are also available for a much wider range
 of platforms.
