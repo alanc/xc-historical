@@ -47,6 +47,7 @@ HEADERS = \
 SRCS = \
 	ActionHook.c \
 	Alloc.c \
+	AllocD.c \
 	ArgList.c \
 	Callback.c \
 	ClickTime.c \
@@ -95,6 +96,7 @@ SRCS = \
 OBJS = \
 	ActionHook.o \
 	Alloc.o \
+	AllocD.o \
 	ArgList.o \
 	Callback.o \
 	ClickTime.o \
