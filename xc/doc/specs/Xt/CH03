@@ -1,4 +1,4 @@
-.\" $XConsortium: CH03,v 1.9 94/01/07 19:36:21 converse Exp $
+.\" $XConsortium: CH03,v 1.10 94/04/14 15:52:53 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -522,7 +522,7 @@ Bundling Changes to the Managed Set
 \fB\*(SN Bundling Changes to the Managed Set\fP
 .XE
 .LP
-A client may simultaneously manage and unmanage children
+A client may simultaneously unmanage and manage children
 with a single call to the \*(xI.  In this same call the
 client may provide a callback procedure that can modify the
 geometries of one or more children.  The composite widget class
@@ -557,7 +557,7 @@ manage, or in just a single invocation.
 .\" value of the \fIallows_change_managed_set\fP
 .\" field will be inherited from the superclass.
 .LP
-To simultaneously add to and remove from the geometry-managed
+To simultaneously remove from and add to the geometry-managed
 set of children of a composite parent, use
 .PN XtChangeManagedSet .
 .IN "XtChangeManagedSet" "" "@DEF@"
@@ -583,7 +583,7 @@ Specifies the list of widget children to initially remove from the managed set.
 .IP \fInum_unmanage_children\fP 1.5i
 Specifies the number of entries in the \fIunmanage_children\fP list.
 .IP \fIdo_change_proc\fP 1.5i
-Specifies a procedure to invoke in the interim between unmanaging
+Specifies a procedure to invoke between unmanaging
 and managing the children, or NULL.
 .IP \fIclient_data\fP 1.5i
 Specifies client data to be passed to the do_change_proc.
@@ -603,15 +603,16 @@ Issues a warning and returns if the widgets specified in the
 \fImanage_children\fP and
 the \fIunmanage_children\fP lists do not all have the same parent, or if
 that parent is not a subclass of
+.br
 .PN compositeWidgetClass .
 .IP \(bu 5
 Returns immediately if the common parent is being destroyed.
 .IP \(bu 5
-If the parent's
+If \fIdo_change_proc\fP is not NULL and the parent's
 .PN CompositeClassExtension
 \fIallows_change_managed_set\fP field is
 .PN False
-and \fIdo_change_proc\fP is not NULL then
+then
 .PN XtChangeManagedSet
 performs the following:
 .RS
@@ -627,17 +628,14 @@ Calls
 (\fImanage_children\fP, \fInum_manage_children\fP).
 .RE
 .IP \(bu 5
-Otherwise, if the parent's
-.PN CompositeClassExtension
-\fIallows_change_managed_set\fP field is
-.PN True ,
-or if \fIdo_change_proc\fP is NULL
-then the following is performed:
+Otherwise, the following is performed:
 .RS
 .IP \- 5
 For each child on the \fIunmanage_children\fP list; if the child is
-already unmanaged or is being destroyed it is ignored, otherwise
-it is marked as unmanaged and if it is realized it is unmapped.
+already unmanaged it is ignored, otherwise it is marked as unmanaged
+and if it is realized and its \fImap_when_managed\fP field is
+.PN True ,
+it is unmapped.
 .IP \- 5
 If \fIdo_change_proc\fP is non-NULL the procedure is invoked.
 .IP \- 5
@@ -679,8 +677,7 @@ The \fIdo_change_proc\fP is of type
 .PN XtDoChangeProc .
 .IN "XtDoChangeProc" "" "@DEF"
 .FD 0
-typedef void (XtDoChangeProc*)(Widget, WidgetList, Cardinal*, WidgetList,
-                                                        Cardinal*, XtPointer);
+typedef void (XtDoChangeProc*)(Widget, WidgetList, Cardinal*, WidgetList, Cardinal*, XtPointer);
 .br
       Widget \fIcomposite_parent\fP;
 .br
