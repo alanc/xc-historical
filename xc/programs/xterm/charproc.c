@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.150 91/04/26 15:03:54 gildea Exp $
+ * $XConsortium: charproc.c,v 1.151 91/04/26 15:49:48 gildea Exp $
  */
 
 /*
@@ -566,6 +566,7 @@ static void VTparse()
 		 case CASE_CR:
 			/* carriage return */
 			CarriageReturn(screen);
+			parsestate = groundtable;
 			break;
 
 		 case CASE_ESC:
@@ -583,6 +584,7 @@ static void VTparse()
 			if (QLength(screen->display) > 0 ||
 			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
+			parsestate = groundtable;
 			break;
 
 		 case CASE_TAB:
