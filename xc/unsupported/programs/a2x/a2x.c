@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.112 93/02/25 18:35:43 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.113 93/04/01 19:07:08 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -234,6 +234,7 @@ unsigned short curmods = 0;
 unsigned short tempmods = 0;
 KeyCode shift, control, mod1, mod2, mod3, mod4, mod5, meta;
 Bool bs_is_del = True;
+char pc_bs = '\b';
 KeySym last_sym = 0;
 KeyCode last_keycode_for_sym = 0;
 #ifndef MSDOS
@@ -2011,7 +2012,7 @@ undo_stroke()
     if (!history_end) {
 	in_control_seq = False;
 	for (; curbscount; curbscount--)
-	    do_char('\b');
+	    do_char(pc_bs);
 	return;
     }
     c = history[history_end-1];
@@ -2050,7 +2051,7 @@ undo_stroke()
 		(history[history_end-2] != '\015' &&
 		 history[history_end-2] != '\003') ||
 		(history[history_end-3] != control_char))
-		do_char('\b');
+		do_char(pc_bs);
 	}
     }
     history_end--;
@@ -2505,7 +2506,7 @@ process(buf, n, len)
 
     for (i = 0; i < n; i++) {
 	if (len) {
-	    if (buf[i] == '\b') {
+	    if (buf[i] == pc_bs) {
 		do_backspace();
 		continue;
 	    } else if (curbscount) {
@@ -2545,7 +2546,7 @@ process(buf, n, len)
 	    if (buf[j] != control_char) {
 		if (j != i) {
 		    if (iscntrl(buf[j]) && buf[i] != '\026') {
-			if (buf[j] != '\010') { /* abort */
+			if (buf[j] != pc_bs) { /* abort */
 			    i = j;
 			    break;
 			}
@@ -2565,6 +2566,8 @@ process(buf, n, len)
 		    quit(0);
 		    break;
 		case '\010': /* control h */
+		    if (buf[i] != pc_bs)
+			continue;
 		    j = i - 1;
 		    break;
 		case '\015': /* control m */
@@ -2581,6 +2584,11 @@ process(buf, n, len)
 		    break;
 		case '\025': /* control u */
 		    get_undofile();
+		    break;
+		case '\177': /* delete */
+		    if (buf[i] != pc_bs)
+			continue;
+		    j = i - 1;
 		    break;
 		default:
 		    continue;
@@ -2668,6 +2676,9 @@ main(argc, argv)
 	switch (argv[0][1]) {
 	case 'b':
 	    bs_is_del = False;
+	    break;
+	case 'B':
+	    pc_bs = '\177';
 	    break;
 	case 'c':
 	    doclear = True;
