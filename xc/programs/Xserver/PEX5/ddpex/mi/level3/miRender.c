@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miRender.c,v 5.1 91/02/16 09:55:57 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -61,11 +61,11 @@ ddPCAttr     defaultPCAttr;
 		DefaultPC(pPC);	\
 		pcflag = MI_TRUE;  }
 
-ddFLOAT		ident4x4[] = {
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0.0, 0.0, 0.0, 1.0
+ddFLOAT		ident4x4[4][4] = {
+    {1.0, 0.0, 0.0, 0.0},
+    {0.0, 1.0, 0.0, 0.0},
+    {0.0, 0.0, 1.0, 0.0},
+    {0.0, 0.0, 0.0, 1.0}
 };
 
 /* Level III Rendering Procedures */
@@ -521,7 +521,7 @@ BeginRendering(pRend, pDrawable)
     /*
      * Determine the npc -> dc viewport transform
      */
-     miBldViewport_xform(pRend, pDrawable, &pddc->Static.misc.viewport_xform[0][0], pddc );
+     miBldViewport_xform(pRend, pDrawable, pddc->Static.misc.viewport_xform, pddc );
 
     /*
      * compute cc xform, concatenate to appropriate dd context matrices.
@@ -886,7 +886,7 @@ BeginPicking(pRend, pPM)
     /*
      * Determine the npc -> dc viewport transform
      */
-    miBldViewport_xform( pRend, pDrawable, &pddc->Static.misc.viewport_xform[0][0], pddc );
+    miBldViewport_xform( pRend, pDrawable, pddc->Static.misc.viewport_xform, pddc );
 
     /* Compute the inverse of the viewport transform to be used to */
     /* convert DC_HitBoxes to NPC_HitVolumes.                      */
