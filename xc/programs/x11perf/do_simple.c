@@ -69,7 +69,7 @@ int InitGetProperty(xp, p, reps)
     XA_PK_TEMP = XInternAtom (xp->d, "_PK_TEMP", False);
     XChangeProperty (
 	    xp->d, root, XA_PK_TEMP, XA_INTEGER, 32,
-	    PropModeReplace, &foo, sizeof (int));
+	    PropModeReplace, (unsigned char *)&foo, sizeof (int));
     return reps;
 }
 
@@ -80,7 +80,10 @@ void DoGetProperty(xp, p, reps)
 {
     char   *atom;
     int     i, status;
-    int     prop, actual_format, actual_length, bytes_remaining;
+    int     actual_format;
+    unsigned long actual_length, bytes_remaining;
+    unsigned char *prop;
+    
     Atom actual_type;
 
     for (i = 0; i != reps; i++) {
