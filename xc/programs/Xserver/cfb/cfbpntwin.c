@@ -35,6 +35,7 @@ SOFTWARE.
 static void cfbPaintArea32(), cfbPaintAreaSolid(), cfbPaintAreaOther();
 
 static void cfbTileOddWin();
+extern void miPaintWindow();
 
 void
 cfbPaintWindow(pWin, pRegion, what)
@@ -47,14 +48,14 @@ cfbPaintWindow(pWin, pRegion, what)
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
     
-    painter = cfbPaintAreaOther;
+    painter = miPaintWindow;
     switch (what) {
     case PW_BACKGROUND:
 	switch (pWin->backgroundState) {
 	case None:
 	    return;
 	case ParentRelative:
-	    {
+	    do {
 		pWin = pWin->parent;
 	    } while (pWin->backgroundState == ParentRelative);
 	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,

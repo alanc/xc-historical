@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 5.2 89/07/12 17:17:59 keith Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.3 89/07/17 10:25:03 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -60,7 +60,7 @@ mfbPaintWindow(pWin, pRegion, what)
 	case None:
 	    return;
 	case ParentRelative:
-	    {
+	    do {
 		pWin = pWin->parent;
 	    } while (pWin->backgroundState == ParentRelative);
 	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,
