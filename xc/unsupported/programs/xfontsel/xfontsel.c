@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.10 89/11/14 09:35:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.11 89/11/14 20:28:36 swick Exp $";
 #endif
 
 /*
@@ -156,6 +156,8 @@ static XtResource menuResources[] = {
 		XtRImmediate, (XtPointer)True },
 };
 
+
+typedef enum {ValidateCurrentField, SkipCurrentField} ValidateAction;
 
 XtAppContext appCtx;
 int numFonts;
@@ -667,7 +669,7 @@ void SelectValue(w, closure, callData)
     choiceList = choice;
 	
     SetCurrentFont(NULL);
-    EnableRemainingItems();
+    EnableRemainingItems(SkipCurrentField);
 }
 
 
@@ -680,7 +682,7 @@ void AnyValue(w, closure, callData)
     currentFont.value_index[field] = -1;
     SetCurrentFont(NULL);
     EnableAllItems(field);
-    EnableRemainingItems();
+    EnableRemainingItems(ValidateCurrentField);
 }
 
 
@@ -800,7 +802,8 @@ MarkInvalidFonts( set, val )
 }
 
 
-EnableRemainingItems()
+EnableRemainingItems(current_field_action)
+    ValidateAction current_field_action;
 {
     if (matchingFontCount == 0 || matchingFontCount == numFonts) {
 	if (anyDisabled) {
@@ -816,7 +819,9 @@ EnableRemainingItems()
 	for (field = 0; field < FIELD_COUNT; field++) {
 	    FieldValue *value = fieldValues[field]->value;
 	    int count;
-	    if (field == choiceList->value->field) continue;
+	    if (current_field_action == SkipCurrentField &&
+		field == choiceList->value->field)
+		continue;
 	    for (count = fieldValues[field]->count; count; count--, value++) {
 		int *fp = value->font;
 		int fontCount;
