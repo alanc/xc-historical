@@ -1,4 +1,4 @@
-/* $Header: XDraw.c,v 1.1 87/08/28 13:33:10 toddb Locked $ */
+/* $Header: XDraw.c,v 1.2 87/08/28 13:34:18 rws Locked $ */
 #include "copyright.h"
 
 /* Copyright    Massachusetts Institute of Technology    1987	*/
@@ -267,7 +267,8 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
 	    p_coord_path->y = poldpath->y + p_coord_path[-1].y;
 	    p_coord_path->flags = poldpath->flags & ~VertexRelative;
 	  }
-    	else *p_coord_path++ = *poldpath;
+    	else *p_coord_path = *poldpath;
+	p_coord_path++;
     	if ((poldpath++)->flags & VertexCurved)
 	  curve_flag = 1;
       }	    
