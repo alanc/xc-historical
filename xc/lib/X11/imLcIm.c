@@ -1,4 +1,4 @@
-/* $XConsortium: imLcIm.c,v 1.1 93/09/17 13:27:06 rws Exp $ */
+/* $XConsortium: imLcIm.c,v 1.2 93/09/24 10:40:03 rws Exp $ */
 /******************************************************************
 
           Copyright 1992 by FUJITSU LIMITED
@@ -101,7 +101,7 @@ _XimCheckIfLocalProcessing(im)
 	_XlcGetLCValues(im->core.lcd, XlcNCodeset, &codeset, NULL);
         len = strlen(codeset);
         for (i = 0; i < len; i++)
-	    buf[i] = (char)tolower((int)codeset[i]);
+	    buf[i] = isupper(codeset[i]) ? tolower(codeset[i]) : codeset[i];
         buf[i] = '\0';
 	fp = _XlcOpenLocaleFile(NULL, buf, COMPOSE_FILE);
 	if( fp != NULL ) {
@@ -136,7 +136,7 @@ _XimCreateDefaultTree(im)
 	_XlcGetLCValues(im->core.lcd, XlcNCodeset, &codeset, NULL);
         len = strlen(codeset);
         for (i = 0; i < len; i++)
-	    buf[i] = (char)tolower((int)codeset[i]);
+	    buf[i] = isupper(codeset[i]) ? tolower(codeset[i]) : codeset[i];
         buf[i] = '\0';
 	fp = _XlcOpenLocaleFile(NULL, buf, COMPOSE_FILE);
         if (fp == (FILE *)NULL) return;
