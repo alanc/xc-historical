@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.28 87/09/01 20:57:16 toddb Locked $ */
+/* $Header: extension.c,v 1.29 87/09/01 21:13:39 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -226,8 +226,7 @@ RegisterProc(name, pGC, proc)
 void
 RegisterScreenProc(name, pScreen, proc)
     char *name;
-    Screen *pScreen;
-    GC *pGC;
+    ScreenPtr pScreen;
     ExtensionLookupProc proc;
 {
     ScreenProcEntry *spentry;
