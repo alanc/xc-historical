@@ -5,7 +5,8 @@ xwininfo - X Window System window information summarizer.
 .B "xwininfo"
 [ -help ] [ -id \fIid\fP ] [ -root ] [ -name \fIname\fP ] [ -int ]
 [ -tree ] [ -stats ]
-[ -bits ] [ -events ] [ -size ] [ -wm  ] [ \fIhost\fP:\fIdisplay\fP ]
+[ -bits ] [ -events ] [ -size ] [ -wm  ] [ -all ]
+[ -display \fIhost\fP:\fIdisplay\fP ]
 .SH DESCRIPTION
 .PP
 .I Xwininfo
@@ -115,9 +116,13 @@ accepts input, what the window's icon window # and name is, where the window's
 icon should go, and what the window's initial state should be.
 .PP
 .TP 8
-.B "\fIhost\fP:\fIdisplay\fP"
+.B -all
+This argument is a quick way to ask for all information possible.
+.PP
+.TP 8
+.B -display "\fIhost\fP:\fIdisplay\fP"
 This  argument  allow  you  to  specify the host and display number on
-which to find the target window.  For example `xwininfo orpheus:1'
+which to find the target window.  For example `xwininfo -display orpheus:1'
 would specify that the target window is on display `1' on the machine
 `orpheus'.  By default,
 .I xwininfo
@@ -133,5 +138,5 @@ X(1)
 .SH AUTHOR
 Mark Lillibridge, MIT Project Athena
 .br
-Copyright 1987, Massachusetts Institute of Technology.
+Copyright 1987, 1988, Massachusetts Institute of Technology.
 
