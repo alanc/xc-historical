@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.165 93/09/10 12:35:04 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.166 93/09/10 16:49:12 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -46,6 +46,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.165 93/09/10 12:35:04 rws Exp $
  * RanLibrary			(args)
  * LibraryTargetName		(libname)
  * LibraryTargetNameSuffix	(libname,suffix)
+ * InstallTarget		(step,file,flags,dest)
+ * InstallNamedTarget		(step,srcname,flags,dest,dstname)
  * InstallLibrary		(libname,dest)
  * MergeIntoInstalledLibrary	(tolib,fromlib)
  * InstallLibraryAlias		(libname,alias,dest)
@@ -538,6 +540,20 @@ clean::									@@\
 #define LibraryTargetNameSuffix(libname,suffix)Concat3(lib,libname,suffix.a)
 #endif
 
+#ifndef InstallTarget
+#define	InstallTarget(step,file,flags,dest)				@@\
+step:: file								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) $(INSTALLFLAGS) flags file $(DESTDIR)dest
+#endif /* InstallTarget */
+
+#ifndef InstallNamedTarget
+#define	InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
+step:: srcname								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) $(INSTALLFLAGS) flags srcname $(DESTDIR)dest/dstname
+#endif /* InstallNamedTarget */
+
 /*
  * InstallLibrary - generate rules to install the indicated library.
  */
@@ -576,9 +592,7 @@ install::								@@\
  */
 #ifndef InstallLintLibrary
 #define	InstallLintLibrary(libname,dest)				@@\
-install.ln:: Concat(llib-l,libname.ln)					@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(llib-l,libname.ln) $(DESTDIR)dest
+InstallTarget(install.ln,Concat(llib-l,libname.ln),$(INSTLIBFLAGS),dest)
 #endif /* InstallLintLibrary */
 
 
@@ -591,9 +605,7 @@ install.ln:: Concat(llib-l,libname.ln)					@@\
  */
 #ifndef InstallManPageLong
 #define	InstallManPageLong(file,destdir,dest)				@@\
-install.man:: file.man							@@\
-	MakeDir($(DESTDIR)destdir)					@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.$(MANSUFFIX)
+InstallNamedTarget(install.man,file.man,$(INSTMANFLAGS),destdir,dest.$(MANSUFFIX))
 #endif /* InstallManPageLong */
 
 
@@ -627,9 +639,7 @@ install.man::								@@\
  */
 #ifndef InstallNamedNonExec
 #define	InstallNamedNonExec(srcname,dstname,dest)			@@\
-install:: srcname							@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) srcname $(DESTDIR)dest/dstname
+InstallNamedTarget(install,srcname,$(INSTDATFLAGS),dest,dstname)
 #endif /* InstallNamedNonExec */
 
 
@@ -638,9 +648,7 @@ install:: srcname							@@\
  */
 #ifndef InstallNonExecFile
 #define	InstallNonExecFile(file,dest)					@@\
-install:: file								@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) file $(DESTDIR)dest
+InstallTarget(install,file,$(INSTDATFLAGS),dest)
 #endif /* InstallNonExecFile */
 
 
@@ -661,9 +669,7 @@ install:: file								@@\
  */
 #ifndef InstallProgramWithFlags
 #define InstallProgramWithFlags(program,dest,flags)			@@\
-install:: ProgramTargetName(program)					@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTPGMFLAGS) flags ProgramTargetName(program) $(DESTDIR)dest
+InstallTarget(install,ProgramTargetName(program),$(INSTPGMFLAGS),dest)
 #endif /* InstallProgramWithFlags */
 
 
@@ -683,9 +689,7 @@ InstallProgramWithFlags(program,dest,NullParameter)
  */
 #ifndef InstallScript
 #define	InstallScript(program,dest)					@@\
-install:: program.script						@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) program.script $(DESTDIR)dest/program
+InstallNamedTarget(install,program.script,$(INSTBINFLAGS),dest,program)
 #endif /* InstallScript */
 
 
@@ -694,9 +698,7 @@ install:: program.script						@@\
  */
 #ifndef InstallNamedProg
 #define	InstallNamedProg(srcname,dstname,dest)				@@\
-install:: srcname							@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) srcname $(DESTDIR)dest/dstname
+InstallNamedtarget(install,srcname,$(INSTBINFLAGS),dest,dstname)
 #endif /* InstallNamedProg */
 
 
