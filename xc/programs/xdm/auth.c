@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.12 89/10/03 16:27:29 keith Exp $
+ * $XConsortium: auth.c,v 1.14 89/11/03 14:44:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -45,10 +45,6 @@
 # include    <netdnet/dnetdb.h>
 #endif
 # include    <X11/X.h>
-
-static int  auth_pid = -1;
-static int  to_auth, from_auth;
-static FILE *from_auth_file;
 
 extern void	exit (), bcopy (), free ();
 extern char	*mktemp ();
@@ -170,7 +166,6 @@ SetLocalAuthorization (d)
     struct display	*d;
 {
     Xauth	*auth;
-    int	mask;
 
     if (d->authorization)
     {

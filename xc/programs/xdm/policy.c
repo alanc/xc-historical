@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.6 88/10/20 17:37:36 keith Exp $
+ * $XConsortium: policy.c,v 1.1 89/10/12 17:07:43 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -76,7 +76,9 @@ Accept (from, fromlen, displayNumber)
 }
 
 int
-SelectConnectionTypeIndex ()
+SelectConnectionTypeIndex (connectionTypes, connectionAddresses)
+    ARRAY16Ptr	     connectionTypes;
+    ARRAYofARRAY8Ptr connectionAddresses;
 {
     return 0;
 }
