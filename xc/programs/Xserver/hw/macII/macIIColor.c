@@ -372,12 +372,12 @@ macIIColorStoreColors(pmap, ndef, pdefs)
 /*ARGSUSED*/
 static void
 macIIColorResolvePseudoColor(pRed, pGreen, pBlue, pVisual)
-    CARD16	*pRed, *pGreen, *pBlue;
+    unsigned short	*pRed, *pGreen, *pBlue;
     VisualPtr	pVisual;
 {
-    *pRed &= 0xff00;
-    *pGreen &= 0xff00;
-    *pBlue &= 0xff00;
+    *pRed = (*pRed & 0xff00) | (*pRed >> 8);
+    *pGreen = (*pGreen & 0xff00) | (*pGreen >> 8);
+    *pBlue = (*pBlue & 0xff00) | (*pBlue >> 8);
 }
 
 /*-
