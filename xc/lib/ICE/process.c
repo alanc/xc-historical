@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.18 93/11/18 11:56:13 mor Exp $ */
+/* $XConsortium: process.c,v 1.19 93/11/18 16:50:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -428,6 +428,7 @@ IceReplyWaitInfo *replyWait;
 	    _IceConnectionError *errorReply =
 	        &(((_IceReply *) (replyWait->reply))->connection_error);
 	    char *errorStr = NULL;
+	    char *tempstr;
 	    char *prefix, *temp;
 
 	    invokeHandler = 0;
@@ -437,14 +438,18 @@ IceReplyWaitInfo *replyWait;
 	    {
 	    case IceNoVersion:
 
-		errorStr =
-		"None of the ICE versions specified are supported";
+		tempstr =
+		    "None of the ICE versions specified are supported";
+		errorStr = (char *) malloc (strlen (tempstr) + 1);
+		strcpy (errorStr, tempstr);
 		break;
 
 	    case IceNoAuth:
 
-		errorStr =
-		"None of the authentication protocols specified are supported";
+		tempstr =
+		    "None of the authentication protocols specified are supported";
+		errorStr = (char *) malloc (strlen (tempstr) + 1);
+		strcpy (errorStr, tempstr);
 		break;
 
 	    case IceAuthRejected:
@@ -492,14 +497,18 @@ IceReplyWaitInfo *replyWait;
 	    {
 	    case IceNoVersion:
 
-		errorStr =
-		"None of the protocol versions specified are supported";
+	        temp =
+		    "None of the protocol versions specified are supported";
+		errorStr = (char *) malloc (strlen (temp) + 1);
+		strcpy (errorStr, temp);
 		break;
 
 	    case IceNoAuth:
 
-		errorStr =
-		"None of the authentication protocols specified are supported";
+		temp =
+		    "None of the authentication protocols specified are supported";
+		errorStr = (char *) malloc (strlen (temp) + 1);
+		strcpy (errorStr, temp);
 		break;
 
 	    case IceAuthRejected:
@@ -625,7 +634,14 @@ Bool			swap;
     char *pData, *pStart;
     char *vendor = NULL;
     char *release = NULL;
-    int  accept_setup_now = 0;
+    unsigned nameCount;
+    unsigned *namesLengths;
+    char **usableNames;
+    char authUsableFlags[MAX_ICE_AUTH_NAMES];
+    int myAuthIndex = 0;
+    int hisAuthIndex = 0;
+    int accept_setup_now = 0;
+    Bool mustAuthenticate;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
 	iceConnectionSetupMsg, message, pStart);
@@ -683,105 +699,127 @@ Bool			swap;
 	return;
     }
 
-    if ((myAuthCount = _IceAuthCount) < 1)
+    _IceGetAuthNames (
+	strlen (iceConn->connection_string), iceConn->connection_string,
+	&nameCount, &namesLengths, &usableNames);
+
+    for (i = 0; i < _IceAuthCount; i++)
+    {
+	authUsableFlags[i] = 0;
+	for (j = 0; j < nameCount && !authUsableFlags[i]; j++)
+	    authUsableFlags[i] = (strlen (_IcePaAuthRecs[i].auth_name) ==
+		namesLengths[j] && strncmp (_IcePaAuthRecs[i].auth_name,
+	        usableNames[j], namesLengths[j]) == 0);
+    }
+
+    if (usableNames)
+	IceFreeAuthNames (nameCount, usableNames);
+
+    if (namesLengths)
+	free ((char *) namesLengths);
+
+    myAuthCount = _IceAuthCount;
+    mustAuthenticate = message->mustAuthenticate;
+
+    for (i = found = 0; i < myAuthCount && !found; i++)
+    {
+	if (authUsableFlags[i])
+	{
+	    myAuthName = _IcePaAuthRecs[i].auth_name;
+
+	    for (j = 0; j < hisAuthCount && !found; j++)
+		if (strcmp (myAuthName, hisAuthNames[j]) == 0)
+		{
+		    myAuthIndex = i;
+		    hisAuthIndex = j;
+		    found = 1;
+		}
+	}
+    }
+
+    if (!found)
     {
 	/*
-	 * The ICE library does not support any authentication for the
-	 * Connection Setup.  Simple accept.
+	 * None of the authentication methods specified by the
+	 * other client is supported.  If the other client requires
+	 * authentication, we must reject the connection now.
+	 * Otherwise, we can invoke the host-based authentication callback
+	 * to see if we can accept this connection.
 	 */
 
-	accept_setup_now = 1;
-    }
-    else
-    {
-	unsigned	nameCount;
-	unsigned	*namesLengths;
-	char		**usableNames;
-	char		authUsableFlags[MAX_ICE_AUTH_NAMES];
-	int 		myAuthIndex = 0;
-	int 		hisAuthIndex = 0;
-
-	_IceGetAuthNames (
-	    strlen (iceConn->connection_string), iceConn->connection_string,
-	    &nameCount, &namesLengths, &usableNames);
-
-	for (i = 0; i < _IceAuthCount; i++)
-	    for (j = 0; j < nameCount; j++)
-		authUsableFlags[i] = (strncmp (_IcePaAuthRecs[i].auth_name,
-		    usableNames[j], namesLengths[j]) == 0);
-
-	if (usableNames)
-	    IceFreeAuthNames (nameCount, usableNames);
-
-	if (namesLengths)
-	    free ((char *) namesLengths);
-
-	for (i = found = 0; i < myAuthCount && !found; i++)
-	{
-	    if (authUsableFlags[i])
-	    {
-		myAuthName = _IcePaAuthRecs[i].auth_name;
-
-		for (j = 0; j < hisAuthCount && !found; j++)
-		    if (strcmp (myAuthName, hisAuthNames[j]) == 0)
-		    {
-			myAuthIndex = i;
-			hisAuthIndex = j;
-			found = 1;
-		    }
-	    }
-	}
-
-	if (!found)
+	if (mustAuthenticate || !_IceHostBasedAuthProc)
 	{
 	    _IceErrorNoAuthentication (iceConn, ICE_ConnectionSetup);
 	    iceConn->connection_status = IceConnectRejected;
-
-	    free (vendor);
-	    free (release);
 	}
 	else
 	{
-	    IcePaAuthStatus	status;
-	    int			authDataLen;
-	    IcePointer		authData = NULL;
-	    IcePointer		authState;
-	    char		*errorString = NULL;
-	    IcePaAuthProc	authProc =
-		_IcePaAuthRecs[myAuthIndex].auth_proc;
+	    char *hostname = _IceGetPeerName (iceConn);
 
-	    authState = NULL;
-
-	    status = (*authProc) (&authState, iceConn->connection_string,
-	        swap, 0, NULL, &authDataLen, &authData, &errorString);
-
-	    if (status == IcePaAuthContinue)
-	    {
-		_IceConnectToMeInfo *setupInfo;
-
-		AuthRequired (iceConn, hisAuthIndex, authDataLen, authData);
-
-		iceConn->connect_to_me = setupInfo = (_IceConnectToMeInfo *)
-		    malloc (sizeof (_IceConnectToMeInfo));
-
-		setupInfo->my_version_index = myVersionIndex;
-		setupInfo->his_version_index = hisVersionIndex;
-		setupInfo->his_vendor = vendor;
-		setupInfo->his_release = release;
-		setupInfo->my_auth_index = myAuthIndex;
-		setupInfo->my_auth_state = authState;
-	    }
-	    else if (status == IcePaAuthAccepted)
+	    if ((*_IceHostBasedAuthProc) (hostname),
+		_IceHostBasedAuthProcClientData)
 	    {
 		accept_setup_now = 1;
 	    }
+	    else 
+	    {
+		_IceErrorAuthenticationRejected (iceConn,
+	            ICE_ConnectionSetup, "None of the authentication protocols specified are supported and host-based authentication failed");
 
-	    if (authData && authDataLen > 0)
-		free ((char *) authData);
+		iceConn->connection_status = IceConnectRejected;
+	    }
 
-	    if (errorString)
-		free (errorString);
+	    if (hostname)
+		free (hostname);
 	}
+
+	if (iceConn->connection_status == IceConnectRejected)
+	{
+	    free (vendor);
+	    free (release);
+	}
+    }
+    else
+    {
+	IcePaAuthStatus	status;
+	int		authDataLen;
+	IcePointer	authData = NULL;
+	IcePointer	authState;
+	char		*errorString = NULL;
+	IcePaAuthProc	authProc = _IcePaAuthRecs[myAuthIndex].auth_proc;
+
+	authState = NULL;
+
+	status = (*authProc) (&authState, iceConn->connection_string,
+	    swap, 0, NULL, &authDataLen, &authData, &errorString);
+
+	if (status == IcePaAuthContinue)
+	{
+	    _IceConnectToMeInfo *setupInfo;
+
+	    AuthRequired (iceConn, hisAuthIndex, authDataLen, authData);
+
+	    iceConn->connect_to_me = setupInfo = (_IceConnectToMeInfo *)
+		malloc (sizeof (_IceConnectToMeInfo));
+
+	    setupInfo->my_version_index = myVersionIndex;
+	    setupInfo->his_version_index = hisVersionIndex;
+	    setupInfo->his_vendor = vendor;
+	    setupInfo->his_release = release;
+	    setupInfo->my_auth_index = myAuthIndex;
+	    setupInfo->my_auth_state = authState;
+	    setupInfo->must_authenticate = mustAuthenticate;
+	}
+	else if (status == IcePaAuthAccepted)
+	{
+	    accept_setup_now = 1;
+	}
+
+	if (authData && authDataLen > 0)
+	    free ((char *) authData);
+
+	if (errorString)
+	    free (errorString);
     }
     
     if (accept_setup_now)
@@ -835,7 +873,9 @@ IceReplyWaitInfo	*replyWait;
 	    _IceConnectionError *errorReply =
 	        &(((_IceReply *) (replyWait->reply))->connection_error);
 
-	    errorString = "Received bad authIndex in the AuthRequired message";
+	    char *tempstr = "Received bad authIndex in the AuthRequired message";
+	    errorString = (char *) malloc (strlen (tempstr) + 1);
+	    strcpy (errorString, tempstr);
 
 	    errorReply->type = ICE_CONNECTION_ERROR;
 	    errorReply->error_message = errorString;
@@ -861,7 +901,9 @@ IceReplyWaitInfo	*replyWait;
 	    _IceProtocolError *errorReply =
 	        &(((_IceReply *) (replyWait->reply))->protocol_error);
 
-	    errorString = "Received bad authIndex in the AuthRequired message";
+	    char *tempstr = "Received bad authIndex in the AuthRequired message";
+	    errorString = (char *) malloc (strlen (tempstr) + 1);
+	    strcpy (errorString, tempstr);
 
 	    errorReply->type = ICE_PROTOCOL_ERROR;
 	    errorReply->error_message = errorString;
@@ -1006,7 +1048,52 @@ Bool		swap;
 	{
 	    AuthNextPhase (iceConn, authDataLen, authData);
 	}
-	else if (status == IcePaAuthAccepted)
+	else if (status == IcePaAuthRejected || status == IcePaAuthFailed)
+	{
+	    /*
+	     * Before we reject, invoke host-based authentication callback
+	     * and give it a chance to accept the connection (only if the
+	     * other client doesn't require authentication).
+	     */
+
+	    if (!iceConn->connect_to_me->must_authenticate &&
+		_IceHostBasedAuthProc)
+	    {
+		char *hostname = _IceGetPeerName (iceConn);
+
+		if ((*_IceHostBasedAuthProc) (hostname),
+		    _IceHostBasedAuthProcClientData)
+		{
+		    status = IcePaAuthAccepted;
+		}
+
+		if (hostname)
+		    free (hostname);
+	    }
+
+	    if (status != IcePaAuthAccepted)
+	    {
+		free (iceConn->connect_to_me->his_vendor);
+		free (iceConn->connect_to_me->his_release);
+		free ((char *) iceConn->connect_to_me);
+		iceConn->connect_to_me = NULL;
+
+		iceConn->connection_status = IceConnectRejected;
+
+		if (status == IcePaAuthRejected)
+		{
+		    _IceErrorAuthenticationRejected (iceConn,
+	                ICE_AuthReply, errorString);
+		}
+		else
+		{
+		    _IceErrorAuthenticationFailed (iceConn,
+	                ICE_AuthReply, errorString);
+		}
+	    }
+	}
+
+	if (status == IcePaAuthAccepted)
 	{
 	    AcceptConnection (iceConn,
 		iceConn->connect_to_me->his_version_index);
@@ -1018,26 +1105,6 @@ Bool		swap;
 
 	    free ((char *) iceConn->connect_to_me);
 	    iceConn->connect_to_me = NULL;
-	}
-	else if (status == IcePaAuthRejected || status == IcePaAuthFailed)
-	{
-	    free (iceConn->connect_to_me->his_vendor);
-	    free (iceConn->connect_to_me->his_release);
-	    free ((char *) iceConn->connect_to_me);
-	    iceConn->connect_to_me = NULL;
-
-	    iceConn->connection_status = IceConnectRejected;
-
-	    if (status == IcePaAuthRejected)
-	    {
-		_IceErrorAuthenticationRejected (iceConn,
-	            ICE_AuthReply, errorString);
-	    }
-	    else
-	    {
-		_IceErrorAuthenticationFailed (iceConn,
-	            ICE_AuthReply, errorString);
-	    }
 	}
     }
     else if (iceConn->protosetup_to_me)
