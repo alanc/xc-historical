@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsdi.cf,v 1.19 93/07/28 18:14:13 rws Exp $
+XCOMM platform:  $XConsortium: bsdi.cf,v 1.1 93/07/29 09:35:51 rws Exp $
 
 #define OSName            BSD/386
 XCOMM operating system:  OSName
@@ -9,4 +9,6 @@ XCOMM operating system:  OSName
 #define CppCmd		/usr/bin/cpp
 #define TroffCmd	groff -Tps
 #define SetTtyGroup	YES
+#define DirFailPrefix -
+#define AvoidNullMakeCommand YES
 #define BuildServer	NO
