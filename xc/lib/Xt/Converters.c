@@ -1,6 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Converters.c,v 1.29 88/08/31 10:17:02 swick Exp $";
-/* $oHeader: Converters.c,v 1.4 88/08/19 16:43:21 asente Exp $ */
+static char rcsid[] =
+    "$XConsortium: Converters.c,v 1.31 88/09/04 12:17:41 swick Exp $";
+/* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
 
@@ -803,34 +804,38 @@ void _XtConvertInitialize()
     XtQEwhenMapped = XrmStringToQuark(XtEwhenMapped);
     XtQEalways     = XrmStringToQuark(XtEalways);
     XtQEdefault	  = XrmStringToQuark(XtEdefault);
+}
 
+_XtAddDefaultConverters(table)
+    ConverterTable table;
+{
 #define Add(from, to, proc, convert_args, num_args) \
-    _XtAddConverter(from, to, (XtConverter) proc, \
+    _XtTableAddConverter(table, from, to, (XtConverter) proc, \
 	    (XtConvertArgList) convert_args, num_args)
 
     Add(XtQColor,   XtQPixel,       CvtXColorToPixel,	    NULL, 0);
     Add(XtQInt,     XtQBoolean,     CvtIntToBoolean,	    NULL, 0);
-    Add(XtQInt,     XtQBool,	     CvtIntToBool,	    NULL, 0);
+    Add(XtQInt,     XtQBool,        CvtIntToBool,	    NULL, 0);
     Add(XtQInt,	    XtQDimension,   CvtIntToShort,	    NULL, 0);
     Add(XtQInt,     XtQPixel,       CvtIntToPixel,          NULL, 0);
     Add(XtQInt,     XtQPosition,    CvtIntToShort,          NULL, 0);
     Add(XtQInt,     XtQPixmap,      CvtIntToPixmap,	    NULL, 0);
-    Add(XtQInt,     XtQFont,	    CvtIntToFont,	    NULL, 0);
+    Add(XtQInt,     XtQFont,        CvtIntToFont,	    NULL, 0);
     Add(XtQInt,     XtQColor,       CvtIntOrPixelToXColor,  
 	colorConvertArgs, XtNumber(colorConvertArgs));
 
     Add(XtQString,  XtQBoolean,     CvtStringToBoolean,     NULL, 0);
-    Add(XtQString,  XtQBool,	    CvtStringToBool,	    NULL, 0);
+    Add(XtQString,  XtQBool,        CvtStringToBool,	    NULL, 0);
     Add(XtQString,  XtQCursor,      CvtStringToCursor,      
 	screenConvertArg, XtNumber(screenConvertArg));
     Add(XtQString,  XtQDimension,   CvtStringToShort,       NULL, 0);
     Add(XtQString,  XtQDisplay,     CvtStringToDisplay,     NULL, 0);
-    Add(XtQString,  XtQFile,	    CvtStringToFile,	    NULL, 0);
-    Add(XtQString,  XtQFont,	    CvtStringToFont,	    
+    Add(XtQString,  XtQFile,        CvtStringToFile,	    NULL, 0);
+    Add(XtQString,  XtQFont,        CvtStringToFont,	    
 	screenConvertArg, XtNumber(screenConvertArg));
     Add(XtQString,  XtQFontStruct,  CvtStringToFontStruct,  
 	screenConvertArg, XtNumber(screenConvertArg));
-    Add(XtQString,  XtQInt,	    CvtStringToInt,	    NULL, 0);
+    Add(XtQString,  XtQInt,         CvtStringToInt,	    NULL, 0);
     Add(XtQString,  XtQPosition,    CvtStringToShort,       NULL, 0);
     Add(XtQString,  XtQPixel,       CvtStringToPixel,       
 	colorConvertArgs, XtNumber(colorConvertArgs));
@@ -840,5 +845,6 @@ void _XtConvertInitialize()
     Add(XtQPixel,   XtQColor,       CvtIntOrPixelToXColor,  
 	colorConvertArgs, XtNumber(colorConvertArgs));
 
-    Add(XtQString,  XtQBackingStore,CvtStringToBackingStore,	NULL, 0);
+    Add(XtQString,  XtQBackingStore,CvtStringToBackingStore,NULL, 0);
+   _XtAddTMConverters(table);
 }
