@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.6 88/09/06 09:41:20 swick Exp $ */
+/* $XConsortium: EventI.h,v 1.7 88/09/06 16:27:53 jim Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -57,7 +57,7 @@ typedef struct _XtEventRec {
      Boolean		raw;
      Boolean		async;
      XtEventHandler	proc;
-     Opaque		closure;
+     caddr_t		closure;
 } XtEventRec;
 
 typedef struct _GrabRec {
