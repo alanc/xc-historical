@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.32 89/12/15 20:11:50 keith Exp $
+ * $XConsortium: dm.c,v 1.33 89/12/19 15:30:24 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -238,8 +238,14 @@ RescanIfMod ()
 static SIGVAL
 StopAll ()
 {
+    Debug ("Shutting down entire manager\n");
     DestroyWellKnownSockets ();
     ForEachDisplay (StopDisplay);
+#ifdef SYSV
+    /* to avoid another one from killing us unceremoniously */
+    (void) signal (SIGTERM, StopAll);
+    (void) signal (SIGINT, StopAll);
+#endif
 }
 
 /*
@@ -317,14 +323,16 @@ WaitForChild ()
 		break;
 	    case RESERVER_DISPLAY:
 		Debug ("Display exited with RESERVER_DISPLAY\n");
-		if (d->displayType.origin == FromXDMCP)
+		if (d->displayType.origin == FromXDMCP ||
+		    d->status == zombie)
 		    StopDisplay(d);
 		else
 		    RestartDisplay (d, TRUE);
 		break;
 	    case SIGTERM * 256 + 1:
 		Debug ("Display exited on SIGTERM\n");
-		if (d->displayType.origin == FromXDMCP)
+		if (d->displayType.origin == FromXDMCP ||
+		    d->status == zombie)
 		    StopDisplay(d);
 		else
 		    RestartDisplay (d, TRUE);
@@ -335,7 +343,8 @@ WaitForChild ()
  		 * XDMCP will restart the session if the display
 		 * requests it
 		 */
-		if (d->displayType.origin == FromXDMCP)
+		if (d->displayType.origin == FromXDMCP ||
+		    d->status == zombie)
 		    StopDisplay(d);
 		else
 		    RestartDisplay (d, FALSE);
@@ -482,15 +491,12 @@ void
 StopDisplay (d)
     struct display	*d;
 {
-    if (d->pid != -1)
-    {
-	TerminateProcess (d->pid);
-    }
     if (d->serverPid != -1)
-    {
+	d->status = zombie; /* be careful about race conditions */
+    if (d->pid != -1)
+	TerminateProcess (d->pid);
+    if (d->serverPid != -1)
 	TerminateProcess (d->serverPid);
-	d->status = zombie;
-    }
     else
 	RemoveDisplay (d);
 }
