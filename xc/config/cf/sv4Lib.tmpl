@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.tmpl,v 1.10 93/07/14 10:58:59 rws Exp $
+XCOMM $XConsortium: sv4Lib.tmpl,v 1.11 93/08/20 10:41:35 mor Exp $
 
 /*
  * SVR4 shared library template
@@ -44,7 +44,6 @@ XCOMM $XConsortium: sv4Lib.tmpl,v 1.10 93/07/14 10:58:59 rws Exp $
 #define SharedSMRev 1.0
 #endif
 
-#if SharedLibXmu
 /* SVR4 shared libraries are deficient in link semantics */
 XMULIBONLY = _Use(-lXmu,-L$(XMUSRC) -lXmu)
 #ifndef FixupLibReferences
@@ -53,5 +52,4 @@ XMULIB = $(XMULIBONLY) -z nodefs
 #endif
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
-#endif
 #endif

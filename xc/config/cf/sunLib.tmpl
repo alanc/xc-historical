@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.20 93/07/14 10:57:37 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.21 93/08/20 10:41:33 mor Exp $
 
 /*
  * SunOS shared library template
@@ -51,7 +51,6 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.20 93/07/14 10:57:37 rws Exp $
 #define SharedSMRev 1.0
 #endif
 
-#if SharedLibXmu
 /* Sun shared libraries are deficient in link semantics */
        XMULIBONLY = _Use(-lXmu,-L$(XMUSRC) -lXmu)
 #ifndef UseInstalled
@@ -61,6 +60,5 @@ XMULIB = $(XMULIBONLY) -L$(TOOLKITSRC) -L$(EXTENSIONSRC)/lib -L$(XLIBSRC)
 #endif
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
-#endif
 #endif
 #endif
