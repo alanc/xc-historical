@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.11 93/12/07 11:05:27 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.12 94/01/31 11:05:35 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -306,12 +306,7 @@ struct _SmsConn {
  * Extern declarations
  */
 
-extern SmcConn _SmcConnectionObjs[256];
-extern int     _SmcConnectionCount;
 extern int     _SmcOpcode;
-
-extern SmsConn _SmsConnectionObjs[256];
-extern int     _SmsConnectionCount;
 extern int     _SmsOpcode;
 
 extern int		_SmVersionCount;

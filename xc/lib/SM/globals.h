@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.8 93/12/16 14:51:07 mor Exp $ */
+/* $XConsortium: globals.h,v 1.9 94/02/07 19:21:10 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -26,15 +26,10 @@ extern IcePaAuthStatus _IcePaMagicCookie1Proc ();
 extern Bool _SmcProcessMessage ();
 extern void _SmsProcessMessage ();
 
-SmcConn _SmcConnectionObjs[256];
-int     _SmcConnectionCount = 0;
 int 	_SmcOpcode = 0;
-
-SmsConn _SmsConnectionObjs[256];
-int     _SmsConnectionCount = 0;
 int 	_SmsOpcode = 0;
 
-int		_SmVersionCount = 1;
+int	_SmVersionCount = 1;
 
 IcePoVersionRec	_SmcVersions[] = {
 	  	    {SmProtoMajor, SmProtoMinor, _SmcProcessMessage}};
