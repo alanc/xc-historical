@@ -27,11 +27,14 @@
 #ifndef _MISC_H_
 #define _MISC_H_
 
+#include	<X11/Xosdefs.h>
+#include	<X11/Xfuncs.h>
+
 #include	"assert.h"	/* so its everywhere */
 
 #ifndef NULL
 
-#if __STDC__ && !NOSTDHDRS
+#ifndef X_NOT_STDC_ENV
 #include	<stddef.h>
 #else
 #define	NULL	0
