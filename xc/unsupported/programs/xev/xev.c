@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XConsortium: xev.c,v 1.9 89/11/28 14:31:42 jim Exp $
+ * $XConsortium: xev.c,v 1.10 89/12/12 14:50:23 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -58,6 +58,8 @@ usage ()
 "    -bw pixels                          border width in pixels",
 "    -bs {NotUseful,WhenMapped,Always}   backingstore attribute",
 "    -s                                  set save-unders attribute",
+"    -name string                        window name",
+"    -rv                                 reverse video",
 "",
 NULL};
     char **cpp;
@@ -102,6 +104,9 @@ main (argc, argv)
     XSetWindowAttributes attr;
     unsigned long mask = 0L;
     int done;
+    char *name = "Event Tester";
+    Bool reverse = False;
+    unsigned long back, fore;
 
     ProgramName = argv[0];
     for (i = 1; i < argc; i++) {
@@ -131,6 +136,13 @@ main (argc, argv)
 		  default:
 		    usage ();
 		}
+	      case 'n':			/* -name */
+		if (++i >= argc) usage ();
+		name = argv[i];
+		continue;
+	      case 'r':			/* -rv */
+		reverse = True;
+		continue;
 	      case 's':			/* -s */
 		attr.save_under = True;
 		mask |= CWSaveUnder;
@@ -155,8 +167,16 @@ main (argc, argv)
 
     screen = DefaultScreen (dpy);
 
-    attr.background_pixel = BlackPixel (dpy, screen);
-    attr.border_pixel = WhitePixel (dpy, screen);
+    if (reverse) {
+	back = BlackPixel(dpy,screen);
+	fore = WhitePixel(dpy,screen);
+    } else {
+	back = WhitePixel(dpy,screen);
+	fore = BlackPixel(dpy,screen);
+    }
+
+    attr.background_pixel = back;
+    attr.border_pixel = fore;
     /* select for all events */
     attr.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
 			   ButtonReleaseMask | EnterWindowMask |
@@ -177,7 +197,7 @@ main (argc, argv)
 		       (Visual *)CopyFromParent,
 		       mask, &attr);
 
-    XSetStandardProperties (dpy, w, "Event Tester", NULL, (Pixmap) 0,
+    XSetStandardProperties (dpy, w, name, NULL, (Pixmap) 0,
 			    argv, argc, &hints);
 
     subw = XCreateSimpleWindow (dpy, w, INNER_WINDOW_X, INNER_WINDOW_Y,
