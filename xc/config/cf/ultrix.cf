@@ -17,6 +17,7 @@
 #ifdef VaxArchitecture
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
+#define DefaultCCOptions -DXTFUNCPROTO
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DNOSTDHDRS -DX11R4
 /* gcc is *VERY USEFUL*, especially for the server; GET it */
@@ -24,11 +25,12 @@
 #endif
 
 #ifdef MipsArchitecture
-#define XmfbpmaxServer Xmfbpmax
+/* #define XmfbpmaxServer Xmfbpmax - why bother, no one needs it... */
 #define XcfbpmaxServer Xcfbpmax
 #define StandardDefines
-#define DefaultCCOptions -Wf,-XNh2000 -Olimit 2000
+#define DefaultCCOptions
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP
+#define ServerCDebugFlags -O -g3
 
 /*
  * XXX - temporary hack for Keith since he has a wimpy disk.
@@ -37,10 +39,9 @@
 #endif
 
 #if HasGcc
-#define ServerCcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
-#define CcCmd cc
+#define CcCmd gcc -ansi -Dvax -Dultrix -DNOSTDHDRS -fpcc-struct-return
 #define ServerCCOptions /* */
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.21 89/12/26 10:16:17 rws Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.22 90/03/01 17:43:44 jim Exp $
 /**/# operating system:  OSName
