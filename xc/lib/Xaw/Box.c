@@ -29,9 +29,9 @@ static char rcsid[] = "$Header: Box.c,v 1.21 88/01/22 20:20:47 swick Locked $";
  * 
  */
 
-#include	<X11/Intrinsic.h>
-#include	<X11/Atoms.h>
-#include	<X11/Misc.h>
+#include	<X/Intrinsic.h>
+#include	<X/Atoms.h>
+#include	<X/Misc.h>
 #include	"BoxP.h"
 
 /****************************************************************
@@ -137,8 +137,10 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
     Dimension lw, lh;	/* Width and height needed for current line 	*/
     Dimension bw, bh;	/* Width and height needed for current widget 	*/
     Dimension h_space;  /* Local copy of bbw->box.h_space 		*/
-    Widget    widget;	/* Current widget 				*/
-
+    register Widget widget;	/* Current widget 			*/
+    Mask valuemask;
+    XSetWindowAttributes attributes;
+ 
     /* Box width and height */
     h_space = bbw->box.h_space;
     w = h_space;
@@ -148,6 +150,8 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
     lh = 0;
     lw = h_space;
   
+    valuemask = CWWinGravity;
+    attributes.win_gravity = NorthWestGravity;
     for (i = 0; i < bbw->composite.num_children; i++) {
 	widget = bbw->composite.children[i];
 	if (widget->core.managed) {
@@ -156,19 +160,31 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
 	    if ((lw + bw > width) && (lw > h_space)) {
 		/* At least one widget on this line, and can't fit any more.
 		   Start new line */
+		attributes.win_gravity = UnmapGravity;
 		AssignMax(w, lw);
 		h += lh + bbw->box.v_space;
 		lh = 0;
 		lw = h_space;
 	    }
 	    if (position && (lw != widget->core.x || h != widget->core.y)) {
+		if (widget->core.y == bbw->box.v_space && XtIsRealized(widget))
+		    /* %%% dunno why, but on our server we get cruft */
+		    XUnmapWindow( XtDisplay(widget), XtWindow(widget) );
 		XtMoveWidget(bbw->composite.children[i], (int)lw, (int)h);
+		if (XtIsRealized(widget)) {
+		    XChangeWindowAttributes( XtDisplay(widget),
+					     XtWindow(widget),
+					     valuemask, &attributes );
+		}
 	    }
 	    lw += bw;
 	    bh = widget->core.height + 2*widget->core.border_width;
 	    AssignMax(lh, bh);
 	} /* if managed */
     } /* for */
+
+    if (position && XtIsRealized((Widget)bbw))
+	XMapSubwindows( XtDisplay((Widget)bbw), XtWindow((Widget)bbw) );
 
     /* Finish off last line */
     if (lw > h_space) {
@@ -207,6 +223,9 @@ static void Resize(w)
     Widget	w;
 {
     Dimension junk;
+
+    if (XtIsRealized(w))
+	XClearWindow( XtDisplay(w), XtWindow(w) );
 
     DoLayout((BoxWidget)w, w->core.width, w->core.height,
 	     &junk, &junk, TRUE);
