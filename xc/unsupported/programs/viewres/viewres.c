@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.35 90/02/08 13:34:34 jim Exp $
+ * $XConsortium: viewres.c,v 1.36 90/02/12 18:36:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -573,8 +573,8 @@ static void viewport_callback (gw, closure, data)
     Arg args[6];
 
     if (pannerWidget) {
-	XtSetArg (args[0], XtNsliderX, rep->child_x);
-	XtSetArg (args[1], XtNsliderY, rep->child_y);
+	XtSetArg (args[0], XtNsliderX, -rep->child_x);
+	XtSetArg (args[1], XtNsliderY, -rep->child_y);
 	XtSetArg (args[2], XtNsliderWidth, rep->clip_width);
 	XtSetArg (args[3], XtNsliderHeight, rep->clip_height);
 	XtSetArg (args[4], XtNcanvasWidth, rep->child_width);
@@ -591,7 +591,7 @@ main (argc, argv)
     Widget toplevel, pane, box, dummy;
     XtAppContext app_con;
     Arg args[5];
-    Dimension topwidth, topheight, width, height, bw;
+    Dimension width, height;
     static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
     XtOrientation orient;
     int i;
@@ -599,10 +599,10 @@ main (argc, argv)
 
     ProgramName = argv[0];
 
+    XtSetArg (args[0], XtNmappedWhenManaged, FALSE);
     toplevel = XtAppInitialize (&app_con, "Viewres", 
 				Options, XtNumber (Options),
-				&argc, argv, fallback_resources,
-				NULL, ZERO);
+				&argc, argv, fallback_resources, args, ONE);
     if (argc != 1) usage ();
     XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
 
@@ -698,12 +698,17 @@ main (argc, argv)
 #undef MAKE_SELECT
 
 
-    XtSetArg (args[0], XtNbackgroundPixmap, None);
-    XtSetArg (args[1], XtNnotifyCallback, callback_rec);
+    XtSetArg (args[0], XtNcallback, callback_rec);
+    callback_rec[0].callback = (XtCallbackProc) panner_callback;
+    callback_rec[0].closure = (caddr_t) NULL;
+    pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, pane,
+					  args, ONE);
+
+    XtSetArg (args[0], XtNnotifyCallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) viewport_callback;
     callback_rec[0].closure = (caddr_t) NULL;
     viewportWidget = XtCreateManagedWidget ("viewport", viewportWidgetClass,
-					    pane, args, TWO);
+					    pane, args, ONE);
 
     treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass,
 					viewportWidget, NULL, ZERO);
@@ -712,39 +717,18 @@ main (argc, argv)
     set_orientation_menu ((Boolean)(orient == XtorientHorizontal), FALSE);
     update_selection_items ();
     build_tree (topnode, treeWidget, NULL);
+
     XtRealizeWidget (toplevel);
-
-    width = height = 0;
     XtSetArg (args[0], XtNwidth, &width);
     XtSetArg (args[1], XtNheight, &height);
-    XtGetValues (toplevel, args, TWO);
-    topwidth = width;
-    topheight = height;
     XtGetValues (treeWidget, args, TWO);
+    XtSetArg (args[0], XtNcanvasWidth, width);
+    XtSetArg (args[1], XtNcanvasHeight, height);
+    XtSetArg (args[2], XtNsliderWidth, width);
+    XtSetArg (args[3], XtNsliderHeight, height);
+    XtSetValues (pannerWidget, args, FOUR);
 
-    XtSetArg (args[0], XtNcallback, callback_rec);
-    callback_rec[0].callback = (XtCallbackProc) panner_callback;
-    callback_rec[0].closure = (caddr_t) NULL;
-    XtSetArg (args[1], XtNcanvasWidth, width);
-    XtSetArg (args[2], XtNcanvasHeight, height);
-    XtSetArg (args[3], XtNsliderWidth, width);
-    XtSetArg (args[4], XtNsliderHeight, height);
-    pannerWidget = XtCreateWidget ("panner", pannerWidgetClass, pane,
-				   args, FIVE);
-
-    XtRealizeWidget (pannerWidget);
-    width = height = 0;
-    XtSetArg (args[0], XtNwidth, &width);
-    XtSetArg (args[1], XtNheight, &height);
-    XtSetArg (args[2], XtNborderWidth, &bw);
-    XtGetValues (pannerWidget, args, THREE);
-    XMoveWindow (XtDisplay(pannerWidget), XtWindow(pannerWidget),
-		 (int) 0, (int) (topheight - height - bw * 2));
-    attr.win_gravity = SouthWestGravity;
-    XChangeWindowAttributes (XtDisplay(pannerWidget), XtWindow(pannerWidget),
-			     CWWinGravity, &attr);
-
-    XtMapWidget (pannerWidget);
+    XtMapWidget (toplevel);
     XtAppMainLoop (app_con);
 }
 
