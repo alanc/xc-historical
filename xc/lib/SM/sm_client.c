@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.19 93/12/28 11:47:10 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.20 94/03/07 17:08:37 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -163,7 +163,7 @@ char 		*errorStringRet;
 
     IceFlush (iceConn);
 
-    replyWait.sequence_of_request = IceLastSequenceNumber (iceConn);
+    replyWait.sequence_of_request = IceLastSentSequenceNumber (iceConn);
     replyWait.major_opcode_of_request = _SmcOpcode;
     replyWait.minor_opcode_of_request = SM_RegisterClient;
     replyWait.reply = (IcePointer) &reply;
@@ -171,7 +171,7 @@ char 		*errorStringRet;
     gotReply = False;
 
     while (gotReply == False)
-	if ((gotReply = IceProcessMessage (iceConn, &replyWait)) == True)
+	if ((gotReply = IceProcessMessages (iceConn, &replyWait)) == True)
 	{
 	    if (reply.status == 1)
 	    {
@@ -205,7 +205,7 @@ char 		*errorStringRet;
 		IceFlush (iceConn);
 
 		replyWait.sequence_of_request =
-		    IceLastSequenceNumber (iceConn);
+		    IceLastSentSequenceNumber (iceConn);
 
 		gotReply = False;
 	    }
