@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.24 91/04/07 19:38:00 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.25 91/04/07 22:53:24 rws Exp $
  */
 
 /*
@@ -52,13 +52,13 @@ extern char *getenv();
 
 #if NeedFunctionPrototypes
 char *
-_X_setlocale(
+_Xsetlocale(
     int		  category,
     _Xconst char *name
 )
 #else
 char *
-_X_setlocale(category, name)
+_Xsetlocale(category, name)
     int		category;
     char       *name;
 #endif

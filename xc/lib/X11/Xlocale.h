@@ -1,4 +1,4 @@
-/* $XConsortium: Xlocale.h,v 1.4 91/04/02 15:24:36 rws Exp $ */
+/* $XConsortium: Xlocale.h,v 1.5 91/04/02 20:11:42 rws Exp $ */
 
 #ifndef _XLOCALE_H_
 #define _XLOCALE_H_
@@ -18,7 +18,7 @@
 #define LC_TIME     5
 
 _XFUNCPROTOBEGIN
-extern char *_X_setlocale(
+extern char *_Xsetlocale(
 #if NeedFunctionPrototypes
     int /* category */,
     _Xconst char* /* name */
@@ -26,7 +26,7 @@ extern char *_X_setlocale(
 );
 _XFUNCPROTOEND
 
-#define setlocale _X_setlocale
+#define setlocale _Xsetlocale
 
 #ifndef NULL
 #define NULL 0
