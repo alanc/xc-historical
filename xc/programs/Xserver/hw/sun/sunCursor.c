@@ -216,29 +216,27 @@ sunStencil (source, mask, w, h, invert)
  *	XXX - this is garbage - re-implement
  *
  * Results:
- *	The pixel value.
+ *	TRUE if successful, else FALSE
  *
  * Side Effects:
  *	A colormap entry might be allocated...
+ *	*ppix set to pixel value.
  *
  *-----------------------------------------------------------------------
  */
-static Pixel
-sunGetPixel (pScreen, r, g, b)
+static Bool
+sunGetPixel (pScreen, r, g, b, ppix)
     ScreenPtr	  pScreen;  /* Screen to allocate from */
     unsigned short  r;	    /* Red value to use */
     unsigned short  g;	    /* Green value to use */
     unsigned short  b;	    /* Blue value to use */
+    Pixel *ppix;
 {
     ColormapPtr cmap = (ColormapPtr) LookupID(pScreen->defColormap, RT_COLORMAP, RC_CORE);
-    Pixel       pix = 0;
 
-    if (!cmap || AllocColor(cmap, &r, &g, &b, &pix, 0)) {
-	ErrorF("sunGetPixel: Can't alloc pixel (%d,%d,%d) in map 0x%x\n",
-	       r, g, b, pScreen->defColormap);
-	return (pScreen->blackPixel);
-    }
-    return (pix);
+    if (!cmap || AllocColor(cmap, &r, &g, &b, ppix, 0))
+	return FALSE;
+    return TRUE;
 }
 /*-
  *-----------------------------------------------------------------------
@@ -275,13 +273,11 @@ sunRealizeCursor (pScreen, pCursor)
     if (!(pPriv = (CrPrivPtr) xalloc(sizeof(CrPrivRec))))
 	goto cleanup2;
 
-    pPriv->fg = sunGetPixel(pScreen, pCursor->foreRed,
-			    pCursor->foreGreen,
-			    pCursor->foreBlue);
-    pPriv->bg = sunGetPixel(pScreen, pCursor->backRed,
-			    pCursor->backGreen,
-			    pCursor->backBlue);
-
+    if (!sunGetPixel(pScreen, pCursor->foreRed, pCursor->foreGreen,
+		     pCursor->foreBlue, &pPriv->fg) ||
+	!sunGetPixel(pScreen, pCursor->backRed, pCursor->backGreen,
+		     pCursor->backBlue, &pPriv->bg))
+	goto cleanup3;
     tGC1 = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
 			   GCForeground, (long *)&pPriv->fg, &status);
     if (!tGC1)
@@ -590,19 +586,19 @@ sunRecolorCursor (pScreen, pCursor, displayed)
     }
 
     pPriv = (CrPrivPtr)pCursor->devPriv[pScreen->myNum];
-    pPriv->fg = sunGetPixel(pScreen,
-			    pCursor->foreRed,
-			    pCursor->foreGreen,
-			    pCursor->foreBlue);
-    ChangeGC (pPriv->srcGC, GCForeground, &pPriv->fg);
-    ValidateGC (pScreen->devPrivate, pPriv->srcGC);
+    if (sunGetPixel(pScreen, pCursor->foreRed, pCursor->foreGreen,
+		    pCursor->foreBlue, &pPriv->fg))
+    {
+	ChangeGC (pPriv->srcGC, GCForeground, &pPriv->fg);
+	ValidateGC (pScreen->devPrivate, pPriv->srcGC);
+    }
     
-    pPriv->bg = sunGetPixel (pScreen,
-			     pCursor->backRed,
-			     pCursor->backGreen,
-			     pCursor->backBlue);
-    ChangeGC (pPriv->invSrcGC, GCForeground, &pPriv->bg);
-    ValidateGC (pScreen->devPrivate, pPriv->invSrcGC);
+    if (sunGetPixel (pScreen, pCursor->backRed, pCursor->backGreen,
+		     pCursor->backBlue, &pPriv->bg))
+    {
+	ChangeGC (pPriv->invSrcGC, GCForeground, &pPriv->bg);
+	ValidateGC (pScreen->devPrivate, pPriv->invSrcGC);
+    }
 }
 
 /*-
@@ -1278,12 +1274,6 @@ sunChangeWindowAttributes (pWin, mask)
 	(pWin, mask);
     
     pPriv = (WinPrivPtr) LookupID (pWin->wid, RT_WINDOW, wPrivClass);
-
-    if (pPriv == (WinPrivPtr)0) {
-	ErrorF ("sunChangeWindowAttributes: Can't find priv data for 0x%x\n",
-		pWin->wid);
-	return (FALSE);
-    }
 
     if ((void (*)())pWin->PaintWindowBackground != (void (*)())sunPaintWindowBackground){
 	    pPriv->PaintWindowBackground = pWin->PaintWindowBackground;
