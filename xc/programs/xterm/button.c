@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.28 89/01/04 10:36:55 jim Exp $
+ *	$XConsortium: button.c,v 1.29 89/01/04 11:14:32 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.28 89/01/04 10:36:55 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.29 89/01/04 11:14:32 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -601,15 +601,36 @@ register int amount;
     screen->startHRow += amount;
     screen->endHRow += amount;
 
-    if (startRRow < minrow) startRRow = minrow;
-    if (endRRow < minrow) endRRow = minrow;
-    if (startSRow < minrow) startSRow = minrow;
-    if (endSRow < minrow) endSRow = minrow;
-    if (rawRow < minrow) rawRow = minrow;
-    if (screen->startHRow < minrow) screen->startHRow = minrow;
-    if (screen->endHRow < minrow) screen->endHRow = minrow;
-    screen->startHCoord = Coordinate (screen->startHRow, 0);
-    screen->endHCoord = Coordinate (screen->endHRow, 0);
+    if (startRRow < minrow) {
+	startRRow = minrow;
+	startRCol = 0;
+    }
+    if (endRRow < minrow) {
+	endRRow = minrow;
+        endRCol = 0;
+    }
+    if (startSRow < minrow) {
+	startSRow = minrow;
+	startSCol = 0;
+    }
+    if (endSRow < minrow) {
+	endSRow = minrow;
+	endSCol = 0;
+    }
+    if (rawRow < minrow) {
+	rawRow = minrow;
+	rawCol = 0;
+    }
+    if (screen->startHRow < minrow) {
+	screen->startHRow = minrow;
+	screen->startHCol = 0;
+    }
+    if (screen->endHRow < minrow) {
+	screen->endHRow = minrow;
+	screen->endHCol = 0;
+    }
+    screen->startHCoord = Coordinate (screen->startHRow, screen->startHCol);
+    screen->endHCoord = Coordinate (screen->endHRow, screen->endHCol);
 }
 
 
