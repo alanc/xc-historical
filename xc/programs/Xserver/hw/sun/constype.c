@@ -1,5 +1,5 @@
 /*
- * $xHeader$
+ * $XConsortium$
  * 
  * consoletype - utility to print out string identifying Sun console type
  *
