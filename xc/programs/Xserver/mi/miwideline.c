@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.40 91/07/03 15:44:04 keith Exp $
+ * $XConsortium: miwideline.c,v 1.41 91/07/18 22:53:33 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,7 +29,7 @@
 #include "miscstruct.h"
 #include "miwideline.h"
 
-#if defined(SVR4) && __STDC__
+#if (defined(SVR4) || defined(SYSV) && defined(SYSV386)) && __STDC__
 extern double hypot(double, double);
 #endif
 
