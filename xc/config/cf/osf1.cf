@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.8 92/06/28 17:41:50 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.9 92/07/10 09:31:43 rws Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
@@ -17,6 +17,7 @@ XCOMM operating system:  OSName
 #include <osfLib.rules>
 #define StandardDefines -D__OSF1__
 #define NoRConst YES
+#define SharedLibPex		NO  /* losing, no shared -lm */
 
 #ifdef MipsArchitecture
 #define DefaultCCOptions	-Xc
