@@ -165,14 +165,15 @@ By default,
 will use /lib/cpp.
 .TP 5
 .B IMAKEMAKE
-If defined, this should be a valid path to a make program.
-E.g. ``/usr/local/make''.
+If defined, this should be a valid path to a make program,
+such as ``/usr/local/make''.
 By default,
 .I imake
 will use whatever
 .I make
 program is found using
 .I execvp(3).
+This variable is only used if the ``-e'' option is specified.
 .SH "AUTHOR"
 Todd Brunhoff, Tektronix and MIT Project Athena; Jim Fulton, MIT X Consortium
 
