@@ -1,4 +1,4 @@
-/* $XConsortium: ImUtil.c,v 11.56 93/08/14 17:50:43 rws Exp $ */
+/* $XConsortium: ImUtil.c,v 11.57 93/09/13 10:07:50 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -485,7 +485,7 @@ static unsigned long _XGetPixel32 (ximage, x, y)
 			[y * ximage->bytes_per_line + (x << 2)];
 #ifndef WORD64
 	    if (*((char *)&byteorderpixel) == ximage->byte_order)
-		pixel = *((unsigned long *)addr);
+		pixel = *((CARD32 *)addr);
 	    else
 #endif
 	    if (ximage->byte_order == MSBFirst)
@@ -676,7 +676,7 @@ static int _XPutPixel32 (ximage, x, y, pixel)
 			[y * ximage->bytes_per_line + (x << 2)];
 #ifndef WORD64
 	    if (*((char *)&byteorderpixel) == ximage->byte_order)
-		*((unsigned long *)addr) = pixel;
+		*((CARD32 *)addr) = pixel;
 	    else
 #endif
 	    if (ximage->byte_order == MSBFirst) {
@@ -948,7 +948,7 @@ static _XAddPixel (ximage, value)
 	} else if ((ximage->format == ZPixmap) &&
 		   (ximage->bits_per_pixel == 32) &&
 		   (*((char *)&byteorderpixel) == ximage->byte_order)) {
-	    register unsigned long *dp = (unsigned long *) ximage->data;
+	    register CARD32 *dp = (CARD32 *) ximage->data;
 	    x = (ximage->bytes_per_line >> 2) * ximage->height;
 	    while (--x >= 0)
 		*dp++ += value;
