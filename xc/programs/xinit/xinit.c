@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.19 88/08/29 19:21:09 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.20 88/08/29 19:24:32 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -97,7 +97,7 @@ sigCatch(sig)
 {
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGINT, SIG_IGN);
-	Error("signal %d\n", sig);
+	Error("unexpected signal %d\r\n", sig);
 	shutdown(serverpid, clientpid);
 	exit(1);
 }
@@ -271,11 +271,14 @@ waitforserver(serverpid)
 			return(TRUE);
 		}
 		else {
-			if (!processTimeout(serverpid, 1, "server to start"))
-				return(FALSE);
+#define MSG "X server to begin accepting connections"
+		    if (!processTimeout (serverpid, 1, MSG)) 
+		      break;
+#undef MSG
 		}
 	}
 
+	fprintf (stderr, "giving up.\r\n");
 	return(FALSE);
 }
 
@@ -301,7 +304,7 @@ processTimeout(pid, timeout, string)
 #endif /* SYSV */
 		if (timeout) {
 			if (i == 0 && string != laststring)
-				fprintf(stderr, "\nwaiting for %s ", string);
+				fprintf(stderr, "\r\nwaiting for %s ", string);
 			else
 				fprintf(stderr, ".");
 			fflush(stderr);
@@ -403,7 +406,7 @@ startServer(server)
 		sleep(5);
 
 		if (waitforserver(serverpid) == 0) {
-			Error("unable to connect to server\n");
+			Error("unable to connect to X server\r\n");
 			shutdown(serverpid, -1);
 			serverpid = -1;
 		}
@@ -423,11 +426,11 @@ startClient(client)
 		setpgrp(0, getpid());
 		environ = newenviron;
 		execvp (client[0], client);
-		Error ("no program named \"%s\" in PATH\n", client[0]);
+		Error ("no program named \"%s\" in PATH\r\n", client[0]);
 		fprintf (stderr,
-"\nSpecify a program on the command line or make sure that %s\n", bindir);
+"\nSpecify a program on the command line or make sure that %s\r\n", bindir);
 		fprintf (stderr,
-"is in your path.\n");
+"is in your path.\r\n");
 		fprintf (stderr, "\n");
 		exit (ERR_EXIT);
 	}
@@ -443,7 +446,7 @@ static jmp_buf close_env;
 static int ignorexio (dpy)
     Display *dpy;
 {
-    fprintf (stderr, "%s:  connection to server lost.\n", program);
+    fprintf (stderr, "%s:  connection to X server lost.\r\n", program);
     longjmp (close_env, 1);
     return;
 }
@@ -463,7 +466,7 @@ shutdown(serverpid, clientpid)
 		errno = 0;
 		if ((killpg(clientpid, SIGHUP) != 0) &&
 		    (errno != ESRCH))
-			Error("can't killpg(%d, SIGHUP) for client\n",
+			Error("can't send HUP to process group %d\r\n",
 				clientpid);
 	}
 
@@ -472,24 +475,36 @@ shutdown(serverpid, clientpid)
 	errno = 0;
 	if (kill(serverpid, SIGTERM) < 0) {
 		if (errno == EPERM)
-			Fatal("Can't kill server\n");
+			Fatal("Can't kill X server\r\n");
 		if (errno == ESRCH)
 			return;
 	}
-	if (! processTimeout(serverpid, 10, "server to terminate"))
-		return;
+	if (! processTimeout(serverpid, 10, "X server to shut down")) {
+	    fprintf (stderr, "\r\n");
+	    return;
+	}
 
-	fprintf(stderr, "timeout... send SIGKILL");
+	fprintf(stderr, 
+	"\r\n%s:  X server slow to shut down, sending KILL signal.\r\n",
+		program);
 	fflush(stderr);
 	errno = 0;
 	if (kill(serverpid, SIGKILL) < 0) {
 		if (errno == ESRCH)
 			return;
 	}
-	if (processTimeout(serverpid, 3, "server to die"))
-		Fatal("Can't kill server\n");
+	if (processTimeout(serverpid, 3, "server to die")) {
+		fprintf (stderr, "\r\n");
+		Fatal("Can't kill server\r\n");
+	}
+	fprintf (stderr, "\r\n");
+	return;
 }
 
+
+/*
+ * make a new copy of environment that has room for DISPLAY
+ */
 
 set_environment ()
 {
