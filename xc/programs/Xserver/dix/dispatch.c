@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.77 89/01/17 08:05:51 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.78 89/02/16 11:58:53 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -684,7 +684,7 @@ ProcInternAtom(client)
     char *tchar;
     REQUEST(xInternAtomReq);
 
-    REQUEST_AT_LEAST_SIZE(xInternAtomReq);
+    REQUEST_FIXED_SIZE(xInternAtomReq, stuff->nbytes);
     if ((stuff->onlyIfExists != xTrue) && (stuff->onlyIfExists != xFalse))
     {
 	client->errorValue = stuff->onlyIfExists;
@@ -1019,7 +1019,7 @@ ProcOpenFont(client)
     FontPtr pFont;
     REQUEST(xOpenFontReq);
 
-    REQUEST_AT_LEAST_SIZE(xOpenFontReq);
+    REQUEST_FIXED_SIZE(xOpenFontReq, stuff->nbytes);
     client->errorValue = stuff->fid;
     LEGAL_NEW_RESOURCE(stuff->fid, client);
     if ( pFont = OpenFont( stuff->nbytes, (char *)&stuff[1]))
@@ -1137,7 +1137,11 @@ ProcQueryTextExtents(client)
     length = stuff->length - (sizeof(xQueryTextExtentsReq) >> 2);
     length = length << 1;
     if (stuff->oddLength)
+    {
+	if (length == 0)
+	    return(BadLength);
         length--;
+    }
     QueryTextExtents(pFont, length, (unsigned char *)&stuff[1], &info);   
     reply.type = X_Reply;
     reply.length = 0;
@@ -1164,7 +1168,7 @@ ProcListFonts(client)
     char *bufptr, *bufferStart;
     REQUEST(xListFontsReq);
 
-    REQUEST_AT_LEAST_SIZE(xListFontsReq);
+    REQUEST_FIXED_SIZE(xListFontsReq, stuff->nbytes);
 
     fpr = ExpandFontNamePattern( stuff->nbytes, 
 				 (char *) &stuff[1], stuff->maxNames);
@@ -1211,7 +1215,7 @@ ProcListFontsWithInfo(client)
     int rlength;
     REQUEST(xListFontsWithInfoReq);
 
-    REQUEST_AT_LEAST_SIZE(xListFontsWithInfoReq);
+    REQUEST_FIXED_SIZE(xListFontsWithInfoReq, stuff->nbytes);
 
     fpaths = ExpandFontNamePattern( stuff->nbytes,
 				    (char *) &stuff[1], stuff->maxNames);
@@ -1421,8 +1425,8 @@ ProcSetDashes(client)
     int result;
     REQUEST(xSetDashesReq);
 
-    REQUEST_AT_LEAST_SIZE(xSetDashesReq);
-    if ((sizeof(xSetDashesReq) >> 2) == stuff->length)
+    REQUEST_FIXED_SIZE(xSetDashesReq, stuff->nDashes);
+    if (stuff->nDashes == 0)
     {
 	 client->errorValue = 0;
          return BadValue;
@@ -1459,7 +1463,10 @@ ProcSetClipRectangles(client)
     }
     VERIFY_GC(pGC,stuff->gc, client);
 		 
-    nr = ((stuff->length  << 2) - sizeof(xSetClipRectanglesReq)) >> 3;
+    nr = (stuff->length << 2) - sizeof(xSetClipRectanglesReq);
+    if (nr & 4)
+	return(BadLength);
+    nr >>= 3;
     result = SetClipRects(pGC, stuff->xOrigin, stuff->yOrigin,
 			  nr, (xRectangle *)&stuff[1], (int)stuff->ordering);
     if (client->noClientException != Success)
@@ -1640,15 +1647,10 @@ ProcPolyLine(client)
         return BadValue;
     }
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    npoint = ((stuff->length << 2) - sizeof(xPolyLineReq));
-    if(npoint % sizeof(xPoint) != 0)
-	return(BadLength);
-    npoint >>= 2;
-    if (npoint < 1)
-	return(BadLength);
-
-    (*pGC->Polylines)(pDraw, pGC, stuff->coordMode, npoint, 
-			  (xPoint *) &stuff[1]);
+    npoint = ((stuff->length << 2) - sizeof(xPolyLineReq)) >> 2;
+    if (npoint)
+	(*pGC->Polylines)(pDraw, pGC, stuff->coordMode, npoint, 
+			      (xPoint *) &stuff[1]);
     return(client->noClientException);
 }
 
@@ -1664,7 +1666,7 @@ ProcPolySegment(client)
     REQUEST_AT_LEAST_SIZE(xPolySegmentReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
     nsegs = (stuff->length << 2) - sizeof(xPolySegmentReq);
-    if(nsegs % sizeof(xSegment) != 0)
+    if (nsegs & 4)
 	return(BadLength);
     nsegs >>= 3;
     if (nsegs)
@@ -1683,7 +1685,10 @@ ProcPolyRectangle (client)
 
     REQUEST_AT_LEAST_SIZE(xPolyRectangleReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    nrects = ((stuff->length << 2) - sizeof(xPolyRectangleReq)) >> 3;
+    nrects = (stuff->length << 2) - sizeof(xPolyRectangleReq);
+    if (nrects & 4)
+	return(BadLength);
+    nrects >>= 3;
     if (nrects)
         (*pGC->PolyRectangle)(pDraw, pGC, 
 		    nrects, (xRectangle *) &stuff[1]);
@@ -1701,8 +1706,10 @@ ProcPolyArc(client)
 
     REQUEST_AT_LEAST_SIZE(xPolyArcReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    narcs = ((stuff->length << 2) - sizeof(xPolyArcReq)) / 
-	    sizeof(xArc);
+    narcs = (stuff->length << 2) - sizeof(xPolyArcReq);
+    if (narcs % sizeof(xArc))
+	return(BadLength);
+    narcs /= sizeof(xArc);
     if (narcs)
         (*pGC->PolyArc)(pDraw, pGC, narcs, (xArc *) &stuff[1]);
     return (client->noClientException);
@@ -1751,8 +1758,10 @@ ProcPolyFillRectangle(client)
 
     REQUEST_AT_LEAST_SIZE(xPolyFillRectangleReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    things = ((stuff->length << 2) - 
-	      sizeof(xPolyFillRectangleReq)) >> 3;
+    things = (stuff->length << 2) - sizeof(xPolyFillRectangleReq);
+    if (things & 4)
+	return(BadLength);
+    things >>= 3;
     if (things)
         (*pGC->PolyFillRect) (pDraw, pGC, things,
 		      (xRectangle *) &stuff[1]);
@@ -1770,8 +1779,10 @@ ProcPolyFillArc               (client)
 
     REQUEST_AT_LEAST_SIZE(xPolyFillArcReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    narcs = ((stuff->length << 2) - 
-	     sizeof(xPolyFillArcReq)) / sizeof(xArc);
+    narcs = (stuff->length << 2) - sizeof(xPolyFillArcReq);
+    if (narcs % sizeof(xArc))
+	return(BadLength);
+    narcs /= sizeof(xArc);
     if (narcs)
         (*pGC->PolyFillArc) (pDraw, pGC, narcs, (xArc *) &stuff[1]);
     return (client->noClientException);
@@ -2064,7 +2075,7 @@ ProcPolyText(client)
 }
 
 int
-ProcImageText(client)
+ProcImageText8(client)
     register ClientPtr client;
 {
     register DrawablePtr pDraw;
@@ -2072,11 +2083,28 @@ ProcImageText(client)
 
     REQUEST(xImageTextReq);
 
-    REQUEST_AT_LEAST_SIZE(xImageTextReq);
+    REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
-    (*((stuff->reqType == X_ImageText8) ? pGC->ImageText8 : pGC->ImageText16))
-	(pDraw, pGC, stuff->x, stuff->y, stuff->nChars, &stuff[1]);
+    (*pGC->ImageText8)(pDraw, pGC, stuff->x, stuff->y,
+		       stuff->nChars, &stuff[1]);
+    return (client->noClientException);
+}
+
+int
+ProcImageText16(client)
+    register ClientPtr client;
+{
+    register DrawablePtr pDraw;
+    register GC *pGC;
+
+    REQUEST(xImageTextReq);
+
+    REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars << 1);
+    VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
+
+    (*pGC->ImageText16)(pDraw, pGC, stuff->x, stuff->y,
+			stuff->nChars, &stuff[1]);
     return (client->noClientException);
 }
 
@@ -2294,7 +2322,7 @@ ProcAllocNamedColor           (client)
     ColormapPtr pcmp;
     REQUEST(xAllocNamedColorReq);
 
-    REQUEST_AT_LEAST_SIZE(xAllocNamedColorReq);
+    REQUEST_FIXED_SIZE(xAllocNamedColorReq, stuff->nbytes);
     pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
     if (pcmp)
     {
@@ -2485,8 +2513,10 @@ ProcStoreColors               (client)
 	int	count;
         int     retval;
 
-        count =
-	  ((stuff->length << 2) - sizeof(xStoreColorsReq)) / sizeof(xColorItem);
+        count = (stuff->length << 2) - sizeof(xStoreColorsReq);
+	if (count % sizeof(xColorItem))
+	    return(BadLength);
+	count /= sizeof(xColorItem);
 	retval = StoreColors(pcmp, count, (xColorItem *)&stuff[1]);
         if (client->noClientException != Success)
             return(client->noClientException);
@@ -2510,7 +2540,7 @@ ProcStoreNamedColor           (client)
     ColormapPtr pcmp;
     REQUEST(xStoreNamedColorReq);
 
-    REQUEST_AT_LEAST_SIZE(xStoreNamedColorReq);
+    REQUEST_FIXED_SIZE(xStoreNamedColorReq, stuff->nbytes);
     pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
     if (pcmp)
     {
@@ -2591,7 +2621,7 @@ ProcLookupColor(client)
     ColormapPtr pcmp;
     REQUEST(xLookupColorReq);
 
-    REQUEST_AT_LEAST_SIZE(xLookupColorReq);
+    REQUEST_FIXED_SIZE(xLookupColorReq, stuff->nbytes);
     pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
     if (pcmp)
     {
@@ -2897,7 +2927,7 @@ ProcChangeHosts(client)
     REQUEST(xChangeHostsReq);
     int result;
 
-    REQUEST_AT_LEAST_SIZE(xChangeHostsReq);
+    REQUEST_FIXED_SIZE(xChangeHostsReq, stuff->hostLength);
 
     if(stuff->mode == HostInsert)
 	result = AddHost(client, (int)stuff->hostFamily,
@@ -3004,11 +3034,28 @@ int
 ProcSetFontPath(client)
     register ClientPtr client;
 {
+    unsigned char *ptr;
+    unsigned long nbytes, total;
+    long nfonts;
+    int n;
     REQUEST(xSetFontPathReq);
     
     REQUEST_AT_LEAST_SIZE(xSetFontPathReq);
     
-    SetFontPath(stuff->nFonts, stuff->length, (char *)&stuff[1]);
+    nbytes = (stuff->length << 2) - sizeof(xSetFontPathReq);
+    total = nbytes;
+    ptr = (unsigned char *)&stuff[1];
+    nfonts = stuff->nFonts;
+    while (--nfonts >= 0)
+    {
+	if ((total == 0) || (total < (n = (*ptr + 1))))
+	    return(BadLength);
+	total -= n;
+	ptr += n;
+    }
+    if (total >= 4)
+	return(BadLength);
+    SetFontPath(stuff->nFonts, nbytes, (char *)&stuff[1]);
     return (client->noClientException);
 }
 
