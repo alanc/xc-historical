@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.2 91/02/16 09:58:01 rws Exp $
+# $XConsortium: Imakefile,v 5.3 91/02/18 09:39:09 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,10 +29,6 @@
 
 #ifndef PassCDebugFlags
 #define PassCDebugFlags
-#endif
-
-#ifndef PexDipexDefines
-#define PexDipexDefines
 #endif
 
 #ifndef PexDipexCDebugFlags
@@ -101,35 +97,6 @@
 #
 all:: subdirs
 
-
-XDEVROOT=../../..
-PexServer:  ${SUBOBJS}
-	-@if [ -f Xsun ]; then echo "$(MV) Xsun Xsun.bak"; \
-	$(MV) Xsun Xsun.bak; else exit 0; fi
-	$(CC) $(CDEBUGFLAGS) -o Xsun \
-			$(XDEVROOT)/server/ddx/sun/sunInit.o \
-			$(XDEVROOT)/fonts/mkfontdir/fontdir.o \
-			$(XDEVROOT)/server/ddx/sun/libsun.a \
-			$(XDEVROOT)/server/ddx/cfb/libcfb.a \
-			$(XDEVROOT)/server/dix/libdix.a \
-			$(XDEVROOT)/server/os/4.2bsd/libos.a \
-			$(XDEVROOT)/lib/Xau/libXau.a \
-			$(XDEVROOT)/lib/Xdmcp/libXdmcp.a \
-			$(XDEVROOT)/server/ddx/snf/libsnf.a \
-			$(XDEVROOT)/server/ddx/mfb/libmfb.a \
-			$(XDEVROOT)/server/ddx/mi/libmi.a \
-			$(XDEVROOT)/extensions/server/libext.a \
-			$(DISPATCH) \
-			$(SWAP) \
-			$(OBJECTS) \
-			$(DISPATCH) \
-			$(DDPEX4) \
-			$(DDPEX3) \
-			$(DDPEXS) \
-			$(DDPEX2) \
-			$(DDPEX1) \
-			$(OSPEX) \
-			-lm -ldbm -lsunwindow -lpixrect 
 #
 # Depend on Subdirectories.
 #
