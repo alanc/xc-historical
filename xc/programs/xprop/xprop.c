@@ -937,6 +937,7 @@ usage()
 "    -id id                         resource id of window to examine",
 "    -name name                     name of window to examine",
 "    -font name                     name of font to examine",
+"    -remove propname               name of property to remove",
 "    -root                          examine the root window",
 "    -len n                         display at most n bytes of any property",
 "    -notype                        do not display the type field",
@@ -963,7 +964,7 @@ grammar ()
 	printf("\n\n\tdisp ::= -display host:dpy\
 \n\tselect option ::= -root | -id <id> | -font <font> | -name <name>\
 \n\toption ::= -len <n> | -notype | -spy | {-formats|-fs} <format file>\
-\n\tmapping ::= {-f|-format} <atom> <format> [<dformat>]\
+\n\tmapping ::= {-f|-format} <atom> <format> [<dformat>] | -remove <propname>\
 \n\tspec ::= [<format> [<dformat>]] <atom>\
 \n\tformat ::= {0|8|16|32}{a|b|c|i|m|s|x}*\
 \n\tdformat ::= <unit><unit>*             (can't start with a letter or '-')\
@@ -1019,6 +1020,7 @@ char **argv;
   FILE *stream;
   char *name, *getenv();
   thunk *props, *Handle_Prop_Requests();
+  char *remove_propname = NULL;
 
   INIT_NAME;
 
@@ -1072,6 +1074,11 @@ char **argv;
 	    target_win = -1;
 	    continue;
     }
+    if (!strcmp(argv[0], "-remove")) {
+	    if (++argv, --argc==0) usage();
+	    remove_propname = argv[0];
+	    continue;
+    }
     if (!strcmp(argv[0], "-f") || !strcmp(argv[0], "-format")) {
       Parse_Format_Mapping(&argc, &argv);
       continue;
@@ -1081,6 +1088,12 @@ char **argv;
 
   if (target_win==0)
     target_win = Select_Window(dpy);
+
+  if (remove_propname) {
+    remove_property (dpy, target_win, remove_propname);
+    XCloseDisplay (dpy);
+    exit (0);
+  }
 
   props=Handle_Prop_Requests(argc, argv);
 
@@ -1112,6 +1125,22 @@ char **argv;
  * Other Stuff (temp.):
  *
  */
+
+remove_property (dpy, w, propname)
+    Display *dpy;
+    Window w;
+    char *propname;
+{
+    Atom id = XInternAtom (dpy, propname, True);
+
+    if (id == None) {
+	fprintf (stderr, "%s:  no such property \"%s\"\n",
+		 program_name, propname);
+	return;
+    }
+    XDeleteProperty (dpy, w, id);
+    return;
+}
 
 thunk *Handle_Prop_Requests(argc, argv)
      int argc;

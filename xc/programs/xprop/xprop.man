@@ -73,6 +73,10 @@ Specifies that file \fIfile\fP should be used as a source of more formats
 for properties.
 .PP
 .TP 8
+.B "-remove \fIproperty-name\fP"
+Specifies the name of a property to be removed from the indicated window.
+.PP
+.TP 8
 .B "-f \fIname\fP \fIformat\fP [\fIdformat\fP]"
 Specifies that the \fIformat\fP for \fIname\fP should be \fIformat\fP and that
 the \fIdformat\fP for \fIname\fP should be \fIdformat\fP.  If \fIdformat\fP
