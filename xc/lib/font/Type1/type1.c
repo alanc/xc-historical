@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: type1.c,v 1.5 91/10/10 11:20:06 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -185,7 +185,7 @@ static struct segment *FlxOldPath; /* save path before Flex feature */
 /******************************************************/
 static struct blues_struct *blues; /* the blues structure */
 static struct alignmentzone alignmentzones[MAXALIGNMENTZONES];
-int numalignmentzones;          /* total number of alignment zones */
+static int numalignmentzones;	   /* total number of alignment zones */
  
 /****************************************************************/
 /* Subroutines for the Font level hints (Alignment zones, etc.) */
@@ -263,14 +263,14 @@ static ComputeAlignmentZones()
 /**********************************************************************/
 /* Subroutines and statics for handling of the VSTEM and HSTEM hints. */
 /**********************************************************************/
-int InDotSection;             /* DotSection flag */
-struct stem stems[MAXSTEMS];  /* All STEM hints */
-int numstems;                 /* Number of STEM hints */
-int currstartstem;            /* The current starting stem. */
-int oldvert, oldhor;          /* Remember hint in effect */
-int oldhorhalf, oldverthalf;  /* Remember which half of the stem */
-double wsoffsetX, wsoffsetY;  /* White space offset - for VSTEM3,HSTEM3 */
-int wsset;                    /* Flag for whether we've set wsoffsetX,Y */
+static int InDotSection;             /* DotSection flag */
+static struct stem stems[MAXSTEMS];  /* All STEM hints */
+static int numstems;                 /* Number of STEM hints */
+static int currstartstem;            /* The current starting stem. */
+static int oldvert, oldhor;          /* Remember hint in effect */
+static int oldhorhalf, oldverthalf;  /* Remember which half of the stem */
+static double wsoffsetX, wsoffsetY;  /* White space offset - for VSTEM3,HSTEM3 */
+static int wsset;                    /* Flag for whether we've set wsoffsetX,Y */
  
 static InitStems()  /* Initialize the STEM hint data structures */
 {

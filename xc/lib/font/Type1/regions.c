@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: regions.c,v 1.4 91/10/10 11:18:57 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -61,6 +61,7 @@ static int edgemax();
 static discard();
 static edgecheck();
 static struct edgelist *NewEdge();
+static struct edgelist *swathxsort();  /* 'SortSwath' function               */
  
 /*
 :h3.Functions Provided to the TYPE1IMAGER User
@@ -737,7 +738,6 @@ static int newfilledge(R, xmin, xmax, ymin, ymax, isdown)
        fractpel ymin,ymax;   /* Y range of this edge                         */
        int isdown;           /* flag:  TRUE means edge goes down, else up    */
 {
-       struct edgelist *swathxsort();  /* 'SortSwath' function               */
  
        register pel pelxmin,pelymin,pelxmax,pelymax;  /* pel versions of bounds */
        register struct edgelist *edge;  /* newly created edge                */
@@ -998,7 +998,7 @@ all swath functions, this function returns a pointer to the edge
 BEFORE the given edge in the sort.
 */
  
-struct edgelist *swathxsort(before0, edge)
+static struct edgelist *swathxsort(before0, edge)
        register struct edgelist *before0;  /* edge before this swath         */
        register struct edgelist *edge;  /* input edge                        */
 {
@@ -1231,7 +1231,7 @@ Like all swath functions, this function returns a pointer to the edge
 BEFORE the given edge in the sort.
 */
  
-struct edgelist *swathrightmost(before, edge)
+static struct edgelist *swathrightmost(before, edge)
        register struct edgelist *before;  /* edge before this swath         */
        register struct edgelist *edge;  /* input edge                        */
 {

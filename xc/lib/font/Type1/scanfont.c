@@ -1,4 +1,4 @@
-/* $XConsortium: scanfont.c,v 1.7 92/05/15 13:56:11 eswu Exp $ */
+/* $XConsortium: scanfont.c,v 1.8 92/07/04 17:13:32 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -406,10 +406,10 @@ static EncodingTable ISO8859Enc[] = {
     0,      0
 };
 
-psobj *StdEncArrayP = NULL;
+static psobj *StdEncArrayP = NULL;
 psobj *ISOLatin1EncArrayP = NULL; 
  
-psobj *MakeEncodingArrayP(encodingTable)
+static psobj *MakeEncodingArrayP(encodingTable)
     EncodingTable *encodingTable;
 {
   int i;
@@ -442,8 +442,8 @@ boolean Init_BuiltInEncoding()
  
 /********************************************************************/
 /***================================================================***/
-int getNextValue(valueType)
-int valueType;
+static int getNextValue(valueType)
+    int valueType;
 {
   scan_token(inputP);
   if (tokenType != valueType) {
@@ -455,7 +455,7 @@ int valueType;
 /***================================================================***/
 /*  This routine will set the global rc if there is an error          */
 /***================================================================***/
-int getInt()
+static int getInt()
 {
   scan_token(inputP);
   if (tokenType != TOKEN_INTEGER) {
@@ -472,8 +472,8 @@ int getInt()
  * See Sec 10.3 of ``Adobe Type 1 Font Format'' v1.1,
  * for parsing Encoding.
  */
-int getEncoding(arrayP)
-psobj *arrayP;
+static int getEncoding(arrayP)
+    psobj *arrayP;
 {
 
   scan_token(inputP);
@@ -586,8 +586,8 @@ psobj *arrayP;
   return (SCAN_ERROR);
 }
 /***================================================================***/
-int getArray(arrayP)
-psobj *arrayP;
+static int getArray(arrayP)
+    psobj *arrayP;
 {
   int N;   /* count the items in the array */
   psobj *objP;
@@ -628,8 +628,8 @@ psobj *arrayP;
   /* NOTREACHED*/
 }
 /***================================================================***/
-int getName(nameP)
-char *nameP;
+static int getName(nameP)
+    char *nameP;
 {
   do {
     scan_token(inputP);
@@ -643,8 +643,8 @@ char *nameP;
   return(SCAN_OK);
 }
 /***================================================================***/
-int getNbytes(N)
-int N;
+static int getNbytes(N)
+    int N;
 {
   int I;
  
@@ -666,8 +666,8 @@ int N;
 /*    It means that the CharStrings does not have as many characters  */
 /*    as the dictionary said it would and that is ok.                 */
 /***================================================================***/
-int getLiteralName(nameObjP)
-psobj *nameObjP;
+static int getLiteralName(nameObjP)
+    psobj *nameObjP;
 {
   do {
     scan_token(inputP);
@@ -695,8 +695,8 @@ psobj *nameObjP;
  */
 /***================================================================***/
  
-int BuildSubrs(FontP)
-psfont *FontP;
+static int BuildSubrs(FontP)
+    psfont *FontP;
 {
    int N;   /* number of values in Subrs */
    int I;   /* index into Subrs */
@@ -770,8 +770,8 @@ psfont *FontP;
  */
 /***================================================================***/
  
-int BuildCharStrings(FontP)
-psfont   *FontP;
+static int BuildCharStrings(FontP)
+    psfont   *FontP;
 {
    int N;   /* number of values in CharStrings */
    int i;   /* loop thru  Subrs */
@@ -830,8 +830,8 @@ psfont   *FontP;
  *   BuildFontInfo Dictionary
  */
 /***================================================================***/
-int BuildFontInfo(fontP)
-psfont *fontP;
+static int BuildFontInfo(fontP)
+    psfont *fontP;
 {
   psdict *dictP;
  
@@ -882,8 +882,8 @@ psfont *fontP;
  *   BuildPrivate Dictionary
  */
 /***================================================================***/
-int BuildPrivate(fontP)
-psfont *fontP;
+static int BuildPrivate(fontP)
+    psfont *fontP;
 {
   psdict *Private;
  
@@ -941,8 +941,8 @@ psfont *fontP;
 /*                                                                    */
 /*                                                                    */
 /**********************************************************************/
-int GetType1Blues(fontP)
-psfont *fontP;
+static int GetType1Blues(fontP)
+    psfont *fontP;
 {
   psdict *PrivateDictP;   /* the Private dict relating to hints */
   struct blues_struct *blues;  /* ptr for the blues struct we will allocate */
@@ -1255,8 +1255,8 @@ unsigned char code;
  */
 /***================================================================***/
  
-int FindDictValue(dictP)
-psdict    *dictP;
+static int FindDictValue(dictP)
+    psdict    *dictP;
 {
    psobj LitName;
    int   N;

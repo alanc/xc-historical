@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spaces.c,v 1.4 91/10/10 11:19:16 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -360,7 +360,7 @@ These secondary routines come in many flavors to handle different
 special cases as quickly as possible.
 */
  
-int FXYConvert(pt, S, x, y)
+static int FXYConvert(pt, S, x, y)
        register struct fractpoint *pt;  /* point to set                      */
        register struct XYspace *S;  /* relevant coordinate space             */
        register double x,y;  /* user's coordinates of point                  */
@@ -369,7 +369,7 @@ int FXYConvert(pt, S, x, y)
        pt->y = (*S->yconvert)(S->tofract.normal[0][1], S->tofract.normal[1][1], x, y);
 }
  
-int IXYConvert(pt, S, x, y)
+static int IXYConvert(pt, S, x, y)
        register struct fractpoint *pt;  /* point to set                      */
        register struct XYspace *S;  /* relevant coordinate space             */
        register long x,y;    /* user's coordinates of point                  */
@@ -385,7 +385,7 @@ precision in the answer with fixed point arithmetic.  So, we force the
 integers to floats, and do the arithmetic all with floats:
 */
  
-int ForceFloat(pt, S, x, y)
+static int ForceFloat(pt, S, x, y)
        register struct fractpoint *pt;  /* point to set                      */
        register struct XYspace *S;  /* relevant coordinate space             */
        register long x,y;    /* user's coordinates of point                  */
@@ -402,7 +402,7 @@ FXonly() and FYonly() are special cases when one of the coefficients
 is 0.0.
 */
  
-fractpel FXYboth(cx, cy, x, y)
+static fractpel FXYboth(cx, cy, x, y)
        register double cx,cy;  /* x and y coefficients                       */
        register double x,y;  /* user x,y                                     */
 {
@@ -413,7 +413,7 @@ fractpel FXYboth(cx, cy, x, y)
 }
  
 /*ARGSUSED*/
-fractpel FXonly(cx, cy, x, y)
+static fractpel FXonly(cx, cy, x, y)
        register double cx,cy;  /* x and y coefficients                       */
        register double x,y;  /* user x,y                                     */
 {
@@ -424,7 +424,7 @@ fractpel FXonly(cx, cy, x, y)
 }
  
 /*ARGSUSED*/
-fractpel FYonly(cx, cy, x, y)
+static fractpel FYonly(cx, cy, x, y)
        register double cx,cy;  /* x and y coefficients                       */
        register double x,y;  /* user x,y                                     */
 {
@@ -444,7 +444,7 @@ IXYboth() is the general purpose routine; IXonly() and IYonly() are
 special cases when one of the coefficients is 0.
 */
  
-fractpel IXYboth(cx, cy, x, y)
+static fractpel IXYboth(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
 {
@@ -452,7 +452,7 @@ fractpel IXYboth(cx, cy, x, y)
 }
  
 /*ARGSUSED*/
-fractpel IXonly(cx, cy, x, y)
+static fractpel IXonly(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
 {
@@ -460,7 +460,7 @@ fractpel IXonly(cx, cy, x, y)
 }
  
 /*ARGSUSED*/
-fractpel IYonly(cx, cy, x, y)
+static fractpel IYonly(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
 {
@@ -485,7 +485,7 @@ Note that it is perfectly possible for us to calculate X with the
 on how the functions in the XYspace structure are filled out.
 */
  
-fractpel FPXYboth(cx, cy, x, y)
+static fractpel FPXYboth(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
 {
@@ -493,7 +493,7 @@ fractpel FPXYboth(cx, cy, x, y)
 }
  
 /*ARGSUSED*/
-fractpel FPXonly(cx, cy, x, y)
+static fractpel FPXonly(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
 {
@@ -501,7 +501,7 @@ fractpel FPXonly(cx, cy, x, y)
 }
  
 /*ARGSUSED*/
-fractpel FPYonly(cx, cy, x, y)
+static fractpel FPYonly(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
 {

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: curves.c,v 1.3 91/10/10 11:17:56 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991              */
 /* All Rights Reserved                                               */
  
@@ -88,7 +88,7 @@ struct bezierinfo {
    to subdivide.
 */
  
-int BezierTerminationTest(xa,ya,xb,yb,xc,yc,xd,yd)
+static int BezierTerminationTest(xa,ya,xb,yb,xc,yc,xd,yd)
 fractpel xa,ya,xb,yb,xc,yc,xd,yd;
 {
   fractpel dmax;
