@@ -351,6 +351,7 @@ static Window CreatePerfWindow(xp, x, y, width, height)
     Window w;
 
     xswa.override_redirect = True;
+/*  xswa.backing_store = Always;  See if backing store costs anything */
     w = XCreateSimpleWindow (xp->d, DefaultRootWindow (xp->d),
 	x, y, width, height, 1, xp->foreground, xp->background);
     XChangeWindowAttributes (xp->d, w, CWOverrideRedirect, &xswa);
