@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.16 93/11/08 11:26:18 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.17 93/12/07 11:05:33 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -422,7 +422,6 @@ Bool		 swap;
     {
 	smCloseConnectionMsg 	*pMsg;
 	char 			*pData, *pStart;
-	char 			*locale = NULL;
 	int 			count, i;
 	char 			**reasonMsgs = NULL;
 
@@ -430,8 +429,6 @@ Bool		 swap;
 	    smCloseConnectionMsg, pMsg, pStart);
 
 	pData = pStart;
-
-	EXTRACT_ARRAY8_AS_STRING (pData, swap, locale);
 
 	EXTRACT_CARD32 (pData, swap, count);
 	pData += 4;
@@ -444,7 +441,7 @@ Bool		 swap;
 
 	(*smsConn->callbacks.close_connection.callback) (smsConn,
 	    smsConn->callbacks.close_connection.manager_data,
-	     locale, count, reasonMsgs);
+	    count, reasonMsgs);
 	break;
     }
 
@@ -470,6 +467,34 @@ Bool		 swap;
             pMsg->sequenceRef, numProps, props);
 
 	IceDisposeCompleteMessage (iceConn, pStart);
+	break;
+    }
+
+    case SM_DeleteProperties:
+    {
+	smDeletePropertiesMsg 	*pMsg;
+	char 			*pData, *pStart;
+	int 			count, i;
+	char 			**propNames = NULL;
+
+	IceReadCompleteMessage (iceConn, SIZEOF (smDeletePropertiesMsg),
+	    smDeletePropertiesMsg, pMsg, pStart);
+
+	pData = pStart;
+
+	EXTRACT_CARD32 (pData, swap, count);
+	pData += 4;
+
+	propNames = (char **) malloc (count * sizeof (char *));
+	for (i = 0; i < count; i++)
+	    EXTRACT_ARRAY8_AS_STRING (pData, swap, propNames[i]);
+
+	IceDisposeCompleteMessage (iceConn, pStart);
+
+	(*smsConn->callbacks.delete_properties.callback) (smsConn,
+	    smsConn->callbacks.delete_properties.manager_data,
+	    count, propNames);
+
 	break;
     }
 
