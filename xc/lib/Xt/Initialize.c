@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.205 93/08/27 16:27:35 kaleb Exp $ */
+/* $XConsortium: Initialize.c,v 1.206 93/09/11 11:44:13 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -173,8 +173,9 @@ void XtToolkitInitialize()
 }
 
 
-static String XtGetRootDirName(buf)
+static String XtGetRootDirName(buf, slash)
      String buf;
+     Bool slash;
 {
 #ifdef WIN32
     register char *ptr;
@@ -220,10 +221,12 @@ static String XtGetRootDirName(buf)
      UNLOCK_PROCESS;
 #endif
 
-     buf += strlen(buf);
-     *buf = '/';
-     buf++;
-     *buf = '\0';
+     if (slash) {
+	 buf += strlen(buf);
+	 *buf = '/';
+	 buf++;
+	 *buf = '\0';
+     }
      return buf;
 }
 
@@ -238,7 +241,7 @@ static void CombineAppUserDefaults(dpy, pdb)
     if (!(path = getenv("XUSERFILESEARCHPATH"))) {
 	char *old_path;
 	char homedir[PATH_MAX];
-	XtGetRootDirName(homedir);
+	XtGetRootDirName(homedir, False);
 	if (!(old_path = getenv("XAPPLRESDIR"))) {
 	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N";
 	    if (!(path =
@@ -277,7 +280,7 @@ static void CombineUserDefaults(dpy, pdb)
 	XrmCombineDatabase(XrmGetStringDatabase(dpy_defaults), pdb, False);
     } else {
 	char filename[PATH_MAX];
-	(void) XtGetRootDirName(filename);
+	(void) XtGetRootDirName(filename, True);
 	(void) strcat(filename, ".Xdefaults");
 	(void)XrmCombineFileDatabase(filename, pdb, False);
     }
@@ -416,7 +419,7 @@ XrmDatabase XtScreenDatabase(screen)
 
 	if (!(filename = getenv("XENVIRONMENT"))) {
 	    int len;
-	    (void) XtGetRootDirName(filename = filenamebuf);
+	    (void) XtGetRootDirName(filename = filenamebuf, True);
 	    (void) strcat(filename, ".Xdefaults-");
 	    len = strlen(filename);
 	    (void) _XtGetHostname (filename+len, PATH_MAX-len);
