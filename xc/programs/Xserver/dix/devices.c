@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.2 89/10/09 15:47:20 rws Exp $ */
+/* $XConsortium: devices.c,v 5.3 89/10/09 17:50:29 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1174,7 +1174,7 @@ ProcGetMotionEvents(client)
     ClientPtr client;
 {
     WindowPtr pWin;
-    xTimecoord * coords;
+    xTimecoord * coords = (xTimecoord *) NULL;
     xGetMotionEventsReply rep;
     int     i, count, xmin, xmax, ymin, ymax;
     unsigned long nEvents;
@@ -1230,8 +1230,9 @@ ProcGetMotionEvents(client)
 	client->pSwapReplyFunc = SwapTimeCoordWrite;
 	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord),
 				 (char *)coords);
-	DEALLOCATE_LOCAL(coords);
     }
+    if (coords)
+	DEALLOCATE_LOCAL(coords);
     return Success;
 }
 
