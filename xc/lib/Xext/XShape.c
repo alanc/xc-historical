@@ -26,13 +26,19 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: XShape.c,v 1.1 89/02/06 17:46:12 keith Exp $ */
+/* $XConsortium: XShape.c,v 1.2 89/02/14 14:34:20 keith Exp $ */
 
 #define NEED_REPLIES
-#include "Xlibint.h"
-#include "shape.h"
+#include "region.h"
+#include "Xutil.h"
+#include "shapestr.h"
 
+static int TriedShape = 0;
 static int ShapeReqCode = 0;
+static int ShapeEventBase = 0;
+static int ShapeErrorBase = 0;
+
+#define CheckExtension(dpy) if (!ShapeReqCode && !XQueryShapeExtension (dpy)) return;
 
 Bool
 XQueryShapeExtension (dpy)
@@ -40,35 +46,56 @@ register Display *dpy;
 {
     int first_event, first_error;
 
-    if (!ShapeReqCode) {
-	if (!XQueryExtension (dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error)) {
+    if (!TriedShape) {
+	TriedShape = 1;
+	if (!XQueryExtension (dpy, SHAPENAME, &ShapeReqCode,
+		&ShapeEventBase, &ShapeErrorBase))
 	    ShapeReqCode = 0;
-	    return False;
-	}
     }
-    return True;
+    return ShapeReqCode != 0;
 }
 
-XSetWindowShapeRectangles(dpy, w, rectangles, n_rects)
+XShapeRegion(dpy, dest, destKind, r, op, xOff, yOff)
+register Display    *dpy;
+Window		    dest;
+int		    destKind, op, xOff, yOff;
+register Region	    r;
+{
+    register int i;
+    register XRectangle *xr, *pr;
+    register BOX *pb;
+    LockDisplay (dpy);
+    xr = (XRectangle *) 
+    	_XAllocScratch(dpy, (unsigned long)(r->numRects * sizeof (XRectangle)));
+    for (pr = xr, pb = r->rects, i = r->numRects; --i >= 0; pr++, pb++) {
+        pr->x = pb->x1;
+	pr->y = pb->y1;
+	pr->width = pb->x2 - pb->x1;
+	pr->height = pb->y2 - pb->y1;
+     }
+     XShapeRectangles (dpy, dest, destKind, xr, r->numRects, op, xOff, yOff);
+}
+
+XShapeRectangles(dpy, dest, destKind, rectangles, n_rects, op, xOff, yOff)
 register Display *dpy;
-Window w;
+XID dest;
+int op, xOff, yOff;
 XRectangle  *rectangles;
 int n_rects;
 {
-    register xSetWindowShapeRectanglesReq *req;
+    register xShapeRectanglesReq *req;
     register long nbytes;
-    int first_event, first_error;
 
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
+    CheckExtension (dpy);
     LockDisplay(dpy);
-    GetReq(SetWindowShapeRectangles, req);
+    GetReq(ShapeRectangles, req);
     req->reqType = ShapeReqCode;
-    req->shapeReqType = X_SetWindowShapeRectangles;
-    req->window = w;
+    req->shapeReqType = X_ShapeRectangles;
+    req->op = op;
+    req->destKind = destKind;
+    req->dest = dest;
+    req->xOff = xOff;
+    req->yOff = yOff;
 
     /* SIZEOF(xRectangle) will be a multiple of 4 */
     req->length += n_rects * (SIZEOF(xRectangle) / 4);
@@ -80,346 +107,113 @@ int n_rects;
     SyncHandle();
 }
 
-XIntersectWindowShapeRectangles(dpy, w, rectangles, n_rects)
+XShapeMask (dpy, dest, destKind, src, op, xOff, yOff)
 register Display *dpy;
-Window w;
-XRectangle  *rectangles;
-int n_rects;
+int destKind;
+XID dest;
+Pixmap	src;
+int op, xOff, yOff;
 {
-    register xIntersectWindowShapeRectanglesReq *req;
+    register xShapeMaskReq *req;
     register long nbytes;
-    int first_event, first_error;
 
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
+    CheckExtension (dpy);
     LockDisplay(dpy);
-    GetReq(IntersectWindowShapeRectangles, req);
+    GetReq(ShapeMask, req);
     req->reqType = ShapeReqCode;
-    req->shapeReqType = X_IntersectWindowShapeRectangles;
-    req->window = w;
-
-    /* SIZEOF(xRectangle) will be a multiple of 4 */
-    req->length += n_rects * (SIZEOF(xRectangle) / 4);
-
-    nbytes = n_rects * sizeof(xRectangle);
-
-    Data16 (dpy, (short *) rectangles, nbytes);
-    UnlockDisplay(dpy);
-    SyncHandle();
-}
-
-XUnionWindowShapeRectangles(dpy, w, rectangles, n_rects)
-register Display *dpy;
-Window w;
-XRectangle  *rectangles;
-int n_rects;
-{
-    register xUnionWindowShapeRectanglesReq *req;
-    register long nbytes;
-    int first_event, first_error;
-
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
-    LockDisplay(dpy);
-    GetReq(UnionWindowShapeRectangles, req);
-    req->reqType = ShapeReqCode;
-    req->shapeReqType = X_UnionWindowShapeRectangles;
-    req->window = w;
-
-    /* SIZEOF(xRectangle) will be a multiple of 4 */
-    req->length += n_rects * (SIZEOF(xRectangle) / 4);
-
-    nbytes = n_rects * sizeof(xRectangle);
-
-    Data16 (dpy, (short *) rectangles, nbytes);
-    UnlockDisplay(dpy);
-    SyncHandle();
-}
-
-XSetWindowShapeMask(dpy, w, xOff, yOff, mask)
-register Display *dpy;
-Window w;
-int	xOff, yOff;
-Pixmap	mask;
-{
-    register xSetWindowShapeMaskReq *req;
-    register long nbytes;
-    int first_event, first_error;
-
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
-    LockDisplay(dpy);
-    GetReq(SetWindowShapeMask, req);
-    req->reqType = ShapeReqCode;
-    req->shapeReqType = X_SetWindowShapeMask;
-    req->window = w;
+    req->shapeReqType = X_ShapeMask;
+    req->op = op;
+    req->destKind = destKind;
+    req->dest = dest;
     req->xOff = xOff;
     req->yOff = yOff;
-    req->mask = mask;
-
+    req->src = src;
     UnlockDisplay(dpy);
     SyncHandle();
 }
 
-XIntersectWindowShapeMask(dpy, w, xOff, yOff, mask)
+XShapeCombine (dpy, dest, destKind, src, srcKind, op, xOff, yOff)
 register Display *dpy;
-Window w;
-int	xOff, yOff;
-Pixmap	mask;
+int destKind;
+XID dest;
+int srcKind;
+XID src;
+int op, xOff, yOff;
 {
-    register xIntersectWindowShapeMaskReq *req;
+    register xShapeCombineReq *req;
     register long nbytes;
-    int first_event, first_error;
 
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
+    CheckExtension (dpy);
     LockDisplay(dpy);
-    GetReq(IntersectWindowShapeMask, req);
+    GetReq(ShapeCombine, req);
     req->reqType = ShapeReqCode;
-    req->shapeReqType = X_IntersectWindowShapeMask;
-    req->window = w;
+    req->shapeReqType = X_ShapeCombine;
+    req->op = op;
+    req->destKind = destKind;
+    req->srcKind = srcKind;
+    req->dest = dest;
     req->xOff = xOff;
     req->yOff = yOff;
-    req->mask = mask;
-
+    req->src = src;
     UnlockDisplay(dpy);
     SyncHandle();
 }
 
-XUnionWindowShapeMask(dpy, w, xOff, yOff, mask)
+XShapeOffset (dpy, dest, destKind, xOff, yOff)
 register Display *dpy;
-Window w;
-int	xOff, yOff;
-Pixmap	mask;
+int destKind;
+XID dest;
+int xOff, yOff;
 {
-    register xUnionWindowShapeMaskReq *req;
+    register xShapeOffsetReq *req;
     register long nbytes;
-    int first_event, first_error;
 
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
+    CheckExtension (dpy);
     LockDisplay(dpy);
-    GetReq(UnionWindowShapeMask, req);
+    GetReq(ShapeOffset, req);
     req->reqType = ShapeReqCode;
-    req->shapeReqType = X_UnionWindowShapeMask;
-    req->window = w;
-    req->xOff = xOff;
-    req->yOff = yOff;
-    req->mask = mask;
-
-    UnlockDisplay(dpy);
-    SyncHandle();
-}
-
-XRectangle *
-XGetWindowShapeRectangles(dpy, w, nrects)
-register Display *dpy;
-Window		w;
-int		*nrects;
-{
-    register xGetWindowShapeRectanglesReq *req;
-    int first_event, first_error;
-    xGenericReply   rep;
-    xRectangle	*xrects;
-    XRectangle	*ret;
-    int		n;
-
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
-    LockDisplay(dpy);
-    GetReq (GetWindowShapeRectangles,req);
-    req->reqType = ShapeReqCode;
-    req->shapeReqType = X_GetWindowShapeRectangles;
-    req->window = w;
-    (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
-    if (*nrects = rep.length / (sizeof (xRectangle) / 4)) {
-	xrects = (xRectangle *) Xmalloc ((unsigned) *nrects * sizeof (xRectangle));
-	if (!xrects)
-	    return 0;
-	ret = (XRectangle *) Xmalloc ((unsigned) *nrects * sizeof (XRectangle));
-	if (!ret) {
-	    XFree (xrects);
-	    return 0;
-	}
-	_XReadPad (dpy, (char *) xrects, *nrects * sizeof (xRectangle));
-	for (n = 0; n < *nrects; n++) {
-	    ret[n].x = xrects[n].x;
-	    ret[n].y = xrects[n].y;
-	    ret[n].width = xrects[n].width;
-	    ret[n].height = xrects[n].height;
-	}
-    }
-    SyncHandle();
-    return ret;
-}
-
-XGetWindowShapeMask(dpy, w, xOff, yOff, mask)
-register Display *dpy;
-Window		w;
-Pixmap		mask;
-{
-    register xGetWindowShapeMaskReq *req;
-    int first_event, first_error;
-
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
-    LockDisplay(dpy);
-    GetReq (GetWindowShapeMask,req);
-    req->reqType = ShapeReqCode;
-    req->shapeReqType = X_GetWindowShapeMask;
-    req->window = w;
-    req->xOff = xOff;
-    req->yOff = yOff;
-    req->mask = mask;
-    UnlockDisplay(dpy);
-    SyncHandle();
-}
-
-XSetBorderShapeRectangles(dpy, w, rectangles, n_rects)
-register Display *dpy;
-Window w;
-XRectangle  *rectangles;
-int n_rects;
-{
-    register xSetBorderShapeRectanglesReq *req;
-    register long nbytes;
-    int first_event, first_error;
-
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
-    LockDisplay(dpy);
-    GetReq(SetBorderShapeRectangles, req);
-    req->reqType = ShapeReqCode;
-    req->shapeReqType = X_SetBorderShapeRectangles;
-    req->window = w;
-
-    /* SIZEOF(xRectangle) will be a multiple of 4 */
-    req->length += n_rects * (SIZEOF(xRectangle) / 4);
-
-    nbytes = n_rects * sizeof(xRectangle);
-
-    Data16 (dpy, (short *) rectangles, nbytes);
-    UnlockDisplay(dpy);
-    SyncHandle();
-}
-
-XSetBorderShapeMask(dpy, w, xOff, yOff, mask)
-register Display *dpy;
-Window w;
-Pixmap	mask;
-{
-    register xSetBorderShapeMaskReq *req;
-    register long nbytes;
-    int first_event, first_error;
-
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
-    LockDisplay(dpy);
-    GetReq(SetBorderShapeMask, req);
-    req->reqType = ShapeReqCode;
-    req->shapeReqType = X_SetBorderShapeMask;
-    req->window = w;
-    req->xOff = xOff;
-    req->yOff = yOff;
-    req->mask = mask;
-
-    UnlockDisplay(dpy);
-    SyncHandle();
-}
-
-XRectangle *
-XGetBorderShapeRectangles(dpy, w, nrects)
-register Display *dpy;
-Window		w;
-int		*nrects;
-{
-    register xGetBorderShapeRectanglesReq *req;
-    int first_event, first_error;
-    xGenericReply   rep;
-    xRectangle	*xrects;
-    XRectangle	*ret;
-    int		n;
-
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
-    LockDisplay(dpy);
-    GetReq (GetBorderShapeRectangles,req);
-    req->reqType = ShapeReqCode;
-    req->shapeReqType = X_GetBorderShapeRectangles;
-    req->window = w;
-    (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
-    if (*nrects = rep.length / (sizeof (xRectangle) / 4)) {
-	xrects = (xRectangle *) Xmalloc ((unsigned) *nrects * sizeof (xRectangle));
-	if (!xrects)
-	    return 0;
-	ret = (XRectangle *) Xmalloc ((unsigned) *nrects * sizeof (XRectangle));
-	if (!ret) {
-	    XFree (xrects);
-	    return 0;
-	}
-	_XReadPad (dpy, (char *) xrects, *nrects * sizeof (xRectangle));
-	for (n = 0; n < *nrects; n++) {
-	    ret[n].x = xrects[n].x;
-	    ret[n].y = xrects[n].y;
-	    ret[n].width = xrects[n].width;
-	    ret[n].height = xrects[n].height;
-	}
-    }
-    SyncHandle();
-    return ret;
-}
-
-XGetBorderShapeMask(dpy, w, xOff, yOff, mask)
-register Display *dpy;
-Window		w;
-Pixmap		mask;
-{
-    register xGetBorderShapeMaskReq *req;
-    int first_event, first_error;
-
-    if (!ShapeReqCode) {
-	if (!XQueryExtension(
-	    dpy, SHAPENAME, &ShapeReqCode, &first_event, &first_error))
-	    return;
-    }
-    LockDisplay(dpy);
-    GetReq (GetBorderShapeMask,req);
-    req->reqType = ShapeReqCode;
-    req->shapeReqType = X_GetBorderShapeMask;
-    req->window = w;
-    req->mask = mask;
+    req->shapeReqType = X_ShapeOffset;
+    req->destKind = destKind;
+    req->dest = dest;
     req->xOff = xOff;
     req->yOff = yOff;
     UnlockDisplay(dpy);
     SyncHandle();
+}
+
+XShapeQuery (dpy, window, wShaped, bShaped,
+		xws, yws, wws, hws, xbs, ybs, wbs, hbs)    
+    register Display    *dpy;
+    Window		    window;
+    int			    *wShaped, *bShaped;	    /* RETURN */
+    int			    *xws, *yws, *xbs, *ybs; /* RETURN */
+    unsigned int	    *wws, *hws, *wbs, *hbs; /* RETURN */
+{
+    xShapeQueryReply	    rep;
+    register xShapeQueryReq *req;
+    
+    CheckExtension (dpy);
+    LockDisplay (dpy);
+    GetReq (ShapeQuery, req);
+    req->reqType = ShapeReqCode;
+    req->shapeReqType = X_ShapeQuery;
+    req->window = window;
+    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
+	UnlockDisplay (dpy);
+	SyncHandle ();
+	return 0;
+    }
+    *wShaped = rep.windowShaped;
+    *bShaped = rep.borderShaped;
+    *xws = cvtINT16toInt (rep.xWindowShape);
+    *yws = cvtINT16toInt (rep.yWindowShape);
+    *wws = rep.widthWindowShape;
+    *hws = rep.heightWindowShape;
+    *xbs = cvtINT16toInt (rep.xBorderShape);
+    *ybs = cvtINT16toInt (rep.yBorderShape);
+    *wbs = rep.widthBorderShape;
+    *hbs = rep.heightBorderShape;
+    UnlockDisplay (dpy);
+    SyncHandle ();
+    return 1;
 }

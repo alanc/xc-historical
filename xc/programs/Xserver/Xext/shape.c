@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.1 89/02/06 17:45:20 keith Exp $ */
+/* $XConsortium: shape.c,v 1.2 89/02/14 14:34:42 keith Exp $ */
 #define NEED_REPLIES
 #include <stdio.h>
 #include "X.h"
@@ -40,15 +40,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "dixstruct.h"
 #include "resource.h"
 #include "opaque.h"
-#include "shape.h"
+#include "shapestr.h"
 #include "regionstr.h"
 #include "gcstruct.h"
 
-static int ShapeReqCode = 0;
-static short ShapeClass = 0;
-
-extern void (*ReplySwapVector[256]) ();
-extern void CopySwap16Write ();
+static unsigned char ShapeReqCode = 0;
 
 /****************
  * ShapeExtensionInit
@@ -56,7 +52,6 @@ extern void CopySwap16Write ();
  * Called from InitExtensions in main() or from QueryExtension() if the
  * extension is dynamically loaded.
  *
- * SHAPE has no events or errors (other than the core errors)
  ****************/
 
 void
@@ -65,648 +60,73 @@ ShapeExtensionInit()
     ExtensionEntry *extEntry, *AddExtension();
     int ProcShapeDispatch(), SProcShapeDispatch();
     void  ShapeResetProc();
+    Atom MakeAtom();
 
+    if (!MakeAtom(SHAPENAME, 13, TRUE))
+	return;
     extEntry = AddExtension(SHAPENAME, 0, 0, ProcShapeDispatch,
-		   SProcShapeDispatch, ShapeResetProc);
+			    SProcShapeDispatch, ShapeResetProc);
     if (extEntry)
-    {
-	ShapeReqCode = extEntry->base;
-	(void)MakeAtom(SHAPENAME, 13, TRUE);
-	ShapeClass = CreateNewResourceClass();
-
-    } else {
-	FatalError("ShapeExtensionInit: AddExtensions failed\n");
-    }
+	ShapeReqCode = (unsigned char)extEntry->base;
 }
 
-/*****************
- * ProcSetWindowShapeRectangles
- *
- *****************/
-
-static int
-ProcSetWindowShapeRectangles (client)
-    register ClientPtr client;
+/*ARGSUSED*/
+void
+ShapeResetProc (extEntry)
+ExtensionEntry	*extEntry;
 {
-    register WindowPtr	pWin;
-    REQUEST(xSetWindowShapeRectanglesReq);
-    xRectangle		*prects;
-    int		        nrects;
-
-    REQUEST_AT_LEAST_SIZE (xSetWindowShapeRectanglesReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    nrects = ((stuff->length  << 2) - sizeof(xSetWindowShapeRectanglesReq)) >> 3;
-    prects = (xRectangle *) &stuff[1];
-    return SetRects (pWin, &pWin->windowShape, nrects, prects);
 }
 
-static int
-ProcUnionWindowShapeRectangles (client)
-    register ClientPtr	client;
+static
+RegionOperate (pWin, destRgnp, srcRgn, op, xoff, yoff, create)
+    WindowPtr	pWin;
+    RegionPtr	*destRgnp, srcRgn;
+    int		op;
+    int		xoff, yoff;
+    RegionPtr	(*create)();	/* creates a reasonable *destRgnp */
 {
-    register WindowPtr	pWin;
-    REQUEST(xUnionWindowShapeRectanglesReq);
-    xRectangle		*prects;
-    int		        nrects;
+    int	ret = Success;
+    ScreenPtr	pScreen = pWin->drawable.pScreen;
 
-    REQUEST_AT_LEAST_SIZE (xUnionWindowShapeRectanglesReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    nrects = ((stuff->length  << 2) - sizeof(xUnionWindowShapeRectanglesReq)) >> 3;
-    prects = (xRectangle *) &stuff[1];
-    return UnionRects (pWin, &pWin->windowShape, nrects, prects);
-}
-
-static int
-ProcIntersectWindowShapeRectangles (client)
-    register ClientPtr	client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xIntersectWindowShapeRectanglesReq);
-    xRectangle		*prects;
-    int		        nrects;
-
-    REQUEST_AT_LEAST_SIZE (xIntersectWindowShapeRectanglesReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    nrects = ((stuff->length  << 2) - sizeof(xIntersectWindowShapeRectanglesReq)) >> 3;
-    prects = (xRectangle *) &stuff[1];
-    IntersectRects (pWin, &pWin->windowShape, nrects, prects);
-}
-
-/*****************
- * ProcGetWindowShapeRectangles
- *
- *****************/
-
-static int
-ProcGetWindowShapeRectangles(client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xGetWindowShapeRectanglesReq);          /* xGetWindowShapeRectanglesReq *stuff; */
-
-    REQUEST_SIZE_MATCH(xGetWindowShapeRectanglesReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return GetRects (client, pWin, pWin->windowShape);
-}
-
-/*****************
- * ProcSetWindowShapeMask
- *
- *****************/
-
-static int
-ProcSetWindowShapeMask (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xSetWindowShapeMaskReq);
-
-    REQUEST_SIZE_MATCH (xSetWindowShapeMaskReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return SetMask (pWin, &pWin->windowShape, stuff->mask, stuff->xOff, stuff->yOff);
-}
-
-static int
-ProcIntersectWindowShapeMask (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xIntersectWindowShapeMaskReq);
-
-    REQUEST_SIZE_MATCH (xIntersectWindowShapeMaskReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return IntersectMask (pWin, &pWin->windowShape, stuff->mask, stuff->xOff, stuff->yOff);
-}
-
-static int
-ProcUnionWindowShapeMask (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xUnionWindowShapeMaskReq);
-
-    REQUEST_SIZE_MATCH (xUnionWindowShapeMaskReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return UnionMask (pWin, &pWin->windowShape, stuff->mask, stuff->xOff, stuff->yOff);
-}
-
-/*****************
- * ProcGetWindowShapeMask
- *****************/
-
-static int
-ProcGetWindowShapeMask (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xGetWindowShapeMaskReq);
-
-    REQUEST_SIZE_MATCH (xGetWindowShapeMaskReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return GetMask (stuff->mask, pWin->windowShape, stuff->xOff, stuff->yOff);
-}
-
-/*****************
- * ProcSetBorderShapeRectangles
- *
- *****************/
-
-static int
-ProcSetBorderShapeRectangles (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xSetBorderShapeRectanglesReq);
-    xRectangle		*prects;
-    int		        nrects;
-
-    REQUEST_AT_LEAST_SIZE (xSetBorderShapeRectanglesReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    nrects = ((stuff->length  << 2) - sizeof(xSetBorderShapeRectanglesReq)) >> 3;
-    prects = (xRectangle *) &stuff[1];
-    return SetRects (pWin, &pWin->borderShape, nrects, prects);
-}
-
-static int
-ProcUnionBorderShapeRectangles (client)
-    register ClientPtr	client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xUnionBorderShapeRectanglesReq);
-    xRectangle		*prects;
-    int		        nrects;
-
-    REQUEST_AT_LEAST_SIZE (xUnionBorderShapeRectanglesReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    nrects = ((stuff->length  << 2) - sizeof(xUnionBorderShapeRectanglesReq)) >> 3;
-    prects = (xRectangle *) &stuff[1];
-    return UnionRects (pWin, &pWin->borderShape, nrects, prects);
-}
-
-static int
-ProcIntersectBorderShapeRectangles (client)
-    register ClientPtr	client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xIntersectBorderShapeRectanglesReq);
-    xRectangle		*prects;
-    int		        nrects;
-
-    REQUEST_AT_LEAST_SIZE (xIntersectBorderShapeRectanglesReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    nrects = ((stuff->length  << 2) - sizeof(xIntersectBorderShapeRectanglesReq)) >> 3;
-    prects = (xRectangle *) &stuff[1];
-    IntersectRects (pWin, &pWin->borderShape, nrects, prects);
-}
-
-/*****************
- * ProcGetBorderShapeRectangles
- *
- *****************/
-
-static int
-ProcGetBorderShapeRectangles(client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xGetBorderShapeRectanglesReq);          /* xGetBorderShapeRectanglesReq *stuff; */
-    xGenericReply	reply;
-    xRectangle		*prect;
-    int			nrect;
-
-    REQUEST_SIZE_MATCH(xGetBorderShapeRectanglesReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return GetRects (client, pWin, pWin->borderShape);
-}
-
-/*****************
- * ProcSetBorderShapeMask
- *
- *****************/
-
-static int
-ProcSetBorderShapeMask (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xSetBorderShapeMaskReq);
-
-    REQUEST_SIZE_MATCH (xSetBorderShapeMaskReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return SetMask (pWin, &pWin->borderShape, stuff->mask, stuff->xOff, stuff->yOff);
-}
-
-static int
-ProcIntersectBorderShapeMask (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xIntersectBorderShapeMaskReq);
-
-    REQUEST_SIZE_MATCH (xIntersectBorderShapeMaskReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return IntersectMask (pWin, &pWin->borderShape, stuff->mask, stuff->xOff, stuff->yOff);
-}
-
-static int
-ProcUnionBorderShapeMask (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xUnionBorderShapeMaskReq);
-
-    REQUEST_SIZE_MATCH (xUnionBorderShapeMaskReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return UnionMask (pWin, &pWin->borderShape, stuff->mask, stuff->xOff, stuff->yOff);
-}
-
-/*****************
- * ProcGetBorderShapeMask
- *****************/
-
-static int
-ProcGetBorderShapeMask (client)
-    register ClientPtr client;
-{
-    register WindowPtr	pWin;
-    REQUEST(xGetBorderShapeMaskReq);
-
-    REQUEST_SIZE_MATCH (xGetBorderShapeMaskReq);
-    pWin = (WindowPtr)LookupWindow (stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    return GetMask (stuff->mask, pWin->borderShape, stuff->xOff, stuff->yOff);
-}
-
-/*****************
- * ProcShapeDispatch
- *****************/
-
-int
-ProcShapeDispatch(client)
-    register ClientPtr client;
-{
-    REQUEST(xReq);
-    switch (stuff->data) {
-    case X_SetWindowShapeRectangles:
-	return(ProcSetWindowShapeRectangles(client));
-    case X_IntersectWindowShapeRectangles:
-	return(ProcIntersectWindowShapeRectangles(client));
-    case X_UnionWindowShapeRectangles:
-	return(ProcUnionWindowShapeRectangles(client));
-    case X_SetWindowShapeMask:
-	return(ProcSetWindowShapeMask(client));
-    case X_IntersectWindowShapeMask:
-	return(ProcIntersectWindowShapeMask(client));
-    case X_UnionWindowShapeMask:
-	return(ProcUnionWindowShapeMask(client));
-    case X_GetWindowShapeRectangles:
-	return(ProcGetWindowShapeRectangles(client));
-    case X_GetWindowShapeMask:
-	return(ProcGetWindowShapeMask(client));
-    case X_SetBorderShapeRectangles:
-	return(ProcSetBorderShapeRectangles(client));
-    case X_IntersectBorderShapeRectangles:
-	return(ProcIntersectBorderShapeRectangles(client));
-    case X_UnionBorderShapeRectangles:
-	return(ProcUnionBorderShapeRectangles(client));
-    case X_SetBorderShapeMask:
-	return(ProcSetBorderShapeMask(client));
-    case X_IntersectBorderShapeMask:
-	return(ProcIntersectBorderShapeMask(client));
-    case X_UnionBorderShapeMask:
-	return(ProcUnionBorderShapeMask(client));
-    case X_GetBorderShapeRectangles:
-	return(ProcGetBorderShapeRectangles(client));
-    case X_GetBorderShapeMask:
-	return(ProcGetBorderShapeMask(client));
+    if (xoff || yoff)
+	(*pScreen->TranslateRegion) (srcRgn, xoff, yoff);
+    switch (op) {
+    case ShapeSet:
+	if (*destRgnp)
+	    (*pScreen->RegionDestroy) (*destRgnp);
+	*destRgnp = srcRgn;
+	srcRgn = 0;
+	break;
+    case ShapeUnion:
+	if (*destRgnp)
+	    (*pScreen->Union) (*destRgnp, *destRgnp, srcRgn);
+	break;
+    case ShapeIntersect:
+	if (*destRgnp)
+	    (*pScreen->Intersect) (*destRgnp, *destRgnp, srcRgn);
+	else {
+	    *destRgnp = srcRgn;
+	    srcRgn = 0;
+	}
+	break;
+    case ShapeSubtract:
+	if (!*destRgnp)
+	    *destRgnp = (*create)(pWin);
+	(*pScreen->Subtract) (*destRgnp, *destRgnp, srcRgn);
+	break;
+    case ShapeInvert:
+	if (!*destRgnp)
+	    *destRgnp = (*pScreen->RegionCreate) ((BoxPtr) 0, 0);
+	else
+	    (*pScreen->Subtract) (*destRgnp, srcRgn, *destRgnp);
+	break;
     default:
-	SendErrorToClient(client, ShapeReqCode, stuff->data, 0, BadRequest);
-	return(BadRequest);
+	ret = BadValue;
     }
+    if (srcRgn)
+	(*pScreen->RegionDestroy) (srcRgn);
+    return ret;
 }
-
-int
-SProcShapeDispatch(client)
-    register ClientPtr client;
-{
-    REQUEST(xReq);
-    switch (stuff->data) {
-    case X_SetWindowShapeRectangles:
-	return(SProcSetWindowShapeRectangles(client));
-    case X_IntersectWindowShapeRectangles:
-	return(SProcIntersectWindowShapeRectangles(client));
-    case X_UnionWindowShapeRectangles:
-	return(SProcUnionWindowShapeRectangles(client));
-    case X_SetWindowShapeMask:
-	return(SProcSetWindowShapeMask(client));
-    case X_IntersectWindowShapeMask:
-	return(SProcIntersectWindowShapeMask(client));
-    case X_UnionWindowShapeMask:
-	return(SProcUnionWindowShapeMask(client));
-    case X_GetWindowShapeRectangles:
-	return(SProcGetWindowShapeRectangles(client));
-    case X_GetWindowShapeMask:
-	return(SProcGetWindowShapeMask(client));
-    case X_SetBorderShapeRectangles:
-	return(SProcSetBorderShapeRectangles(client));
-    case X_IntersectBorderShapeRectangles:
-	return(SProcIntersectBorderShapeRectangles(client));
-    case X_UnionBorderShapeRectangles:
-	return(SProcUnionBorderShapeRectangles(client));
-    case X_SetBorderShapeMask:
-	return(SProcSetBorderShapeMask(client));
-    case X_IntersectBorderShapeMask:
-	return(SProcIntersectBorderShapeMask(client));
-    case X_UnionBorderShapeMask:
-	return(SProcUnionBorderShapeMask(client));
-    case X_GetBorderShapeRectangles:
-	return(SProcGetBorderShapeRectangles(client));
-    case X_GetBorderShapeMask:
-	return(SProcGetBorderShapeMask(client));
-    default:
-	SendErrorToClient(client, ShapeReqCode, stuff->data, 0, BadRequest);
-	return(BadRequest);
-    }
-}
-
-/* Macros needed for byte-swapping, copied from swapreq.c.  Really
-   should be in a header file somewhere. */
-
-#define LengthRestS(stuff) \
-    ((stuff->length << 1)  - (sizeof(*stuff) >> 1))
-
-#define SwapRestS(stuff) \
-    SwapShorts(stuff + 1, LengthRestS(stuff))
-
-static int
-SProcSetWindowShapeRectangles(client)
-     register ClientPtr client;
-{
-     register char n;
-
-     REQUEST(xSetWindowShapeRectanglesReq);
-     swaps(&stuff->length, n);
-     swapl(&stuff->window, n);
-     SwapRestS(stuff);
-     return (ProcSetWindowShapeRectangles(client));
-}
-
-static int
-SProcIntersectWindowShapeRectangles(client)
-     register ClientPtr client;
-{
-     register char n;
-
-     REQUEST(xIntersectWindowShapeRectanglesReq);
-     swaps(&stuff->length, n);
-     swapl(&stuff->window, n);
-     SwapRestS(stuff);
-     return (ProcIntersectWindowShapeRectangles(client));
-}
-
-static int
-SProcUnionWindowShapeRectangles(client)
-     register ClientPtr client;
-{
-     register char n;
-
-     REQUEST(xUnionWindowShapeRectanglesReq);
-     swaps(&stuff->length, n);
-     swapl(&stuff->window, n);
-     SwapRestS(stuff);
-     return (ProcUnionWindowShapeRectangles(client));
-}
-
-static int
-SProcGetWindowShapeRectangles(client)
-     register ClientPtr client;
-{
-     register char n;
-
-     REQUEST(xGetWindowShapeRectanglesReq);
-     swaps(&stuff->length, n);
-     swapl(&stuff->window, n);
-     return (ProcGetWindowShapeRectangles(client));
-}
-
-static int
-SProcSetWindowShapeMask(client)
-    register ClientPtr	client;
-{
-    register char   n;
-
-    REQUEST(xSetWindowShapeMaskReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->xOff, n);
-    swaps(&stuff->yOff, n);
-    swapl(&stuff->window, n);
-    swapl(&stuff->mask, n);
-    return (ProcSetWindowShapeMask(client));
-}
-
-static int
-SProcIntersectWindowShapeMask(client)
-    register ClientPtr	client;
-{
-    register char   n;
-
-    REQUEST(xIntersectWindowShapeMaskReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->xOff, n);
-    swaps(&stuff->yOff, n);
-    swapl(&stuff->window, n);
-    swapl(&stuff->mask, n);
-    return (ProcIntersectWindowShapeMask(client));
-}
-
-static int
-SProcUnionWindowShapeMask(client)
-    register ClientPtr	client;
-{
-    register char   n;
-
-    REQUEST(xUnionWindowShapeMaskReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->xOff, n);
-    swaps(&stuff->yOff, n);
-    swapl(&stuff->window, n);
-    swapl(&stuff->mask, n);
-    return (ProcUnionWindowShapeMask(client));
-}
-
-static int
-SProcGetWindowShapeMask(client)
-    register ClientPtr	client;
-{
-    register char   n;
-
-    REQUEST(xGetWindowShapeMaskReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->xOff, n);
-    swaps(&stuff->yOff, n);
-    swapl(&stuff->window, n);
-    swapl(&stuff->mask, n);
-    return (ProcGetWindowShapeMask(client));
-}
-
-static int
-SProcSetBorderShapeRectangles(client)
-     register ClientPtr client;
-{
-     register char n;
-
-     REQUEST(xSetBorderShapeRectanglesReq);
-     swaps(&stuff->length, n);
-     swapl(&stuff->window, n);
-     SwapRestS(stuff);
-     return (ProcSetBorderShapeRectangles(client));
-}
-
-static int
-SProcIntersectBorderShapeRectangles(client)
-     register ClientPtr client;
-{
-     register char n;
-
-     REQUEST(xIntersectBorderShapeRectanglesReq);
-     swaps(&stuff->length, n);
-     swapl(&stuff->window, n);
-     SwapRestS(stuff);
-     return (ProcIntersectBorderShapeRectangles(client));
-}
-
-static int
-SProcUnionBorderShapeRectangles(client)
-     register ClientPtr client;
-{
-     register char n;
-
-     REQUEST(xUnionBorderShapeRectanglesReq);
-     swaps(&stuff->length, n);
-     swapl(&stuff->window, n);
-     SwapRestS(stuff);
-     return (ProcUnionBorderShapeRectangles(client));
-}
-
-static int
-SProcGetBorderShapeRectangles(client)
-     register ClientPtr client;
-{
-     register char n;
-
-     REQUEST(xGetBorderShapeRectanglesReq);
-     swaps(&stuff->length, n);
-     swapl(&stuff->window, n);
-     return (ProcGetBorderShapeRectangles(client));
-}
-
-static int
-SProcSetBorderShapeMask(client)
-    register ClientPtr	client;
-{
-    register char   n;
-
-    REQUEST(xSetBorderShapeMaskReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->xOff, n);
-    swaps(&stuff->yOff, n);
-    swapl(&stuff->window, n);
-    swapl(&stuff->mask, n);
-    return (ProcSetBorderShapeMask(client));
-}
-
-static int
-SProcIntersectBorderShapeMask(client)
-    register ClientPtr	client;
-{
-    register char   n;
-
-    REQUEST(xIntersectBorderShapeMaskReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->xOff, n);
-    swaps(&stuff->yOff, n);
-    swapl(&stuff->window, n);
-    swapl(&stuff->mask, n);
-    return (ProcIntersectBorderShapeMask(client));
-}
-
-static int
-SProcUnionBorderShapeMask(client)
-    register ClientPtr	client;
-{
-    register char   n;
-
-    REQUEST(xUnionBorderShapeMaskReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->xOff, n);
-    swaps(&stuff->yOff, n);
-    swapl(&stuff->window, n);
-    swapl(&stuff->mask, n);
-    return (ProcUnionBorderShapeMask(client));
-}
-
-static int
-SProcGetBorderShapeMask(client)
-    register ClientPtr	client;
-{
-    register char   n;
-
-    REQUEST(xGetBorderShapeMaskReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->xOff, n);
-    swaps(&stuff->yOff, n);
-    swapl(&stuff->window, n);
-    swapl(&stuff->mask, n);
-    return (ProcGetBorderShapeMask(client));
-}
-
-void
-ShapeResetProc()
-{
-}
-
-void
-ShapeFreeState()
-{
-}
-
-void
-ShapeDeleteState()
-{
-}
-
-/* Various utility routines for mangling regions around */
 
 static RegionPtr
 RectsToRegion (pScreen, nrects, prect)
@@ -736,38 +156,9 @@ RectsToRegion (pScreen, nrects, prect)
     return result;
 }
 
-static int
-RegionToRectangles (pScreen, pRegion, pprect)
-    ScreenPtr	pScreen;
-    RegionPtr	pRegion;
-    xRectangle	**pprect;
-{
-    int		nrects, n;
-    BoxPtr	box;
-    xRectangle	*prect;
-
-    /* XXX this knows the structure of mi regions. */
-    nrects = pRegion->numRects;
-    if (!nrects)
-	return 0;
-    prect = (xRectangle *) xalloc (nrects * sizeof (xRectangle));
-    if (!prect)
-	return 0;
-    *pprect = prect;
-    box = (BoxPtr) pRegion->rects;
-    for (n = 0; n < nrects; n++) {
-	prect->x = box->x1;
-	prect->y = box->y1;
-	prect->width = box->x2 - box->x1;
-	prect->height = box->y2 - box->y1;
-	++box;
-	++prect;
-    }
-    return nrects;
-}
-
 static RegionPtr
-BitmapToRegion (pPixmap)
+BitmapToRegion (pScreen, pPixmap)
+    ScreenPtr	pScreen;
     PixmapPtr	pPixmap;
 {
     extern RegionPtr	mfbPixmapToRegion ();
@@ -776,212 +167,424 @@ BitmapToRegion (pPixmap)
     return mfbPixmapToRegion (pPixmap);
 }
 
-static void
-RegionToBitmap (pRegion, pPixmap, xOff, yOff)
-    RegionPtr	pRegion;
-    PixmapPtr	pPixmap;
+static RegionPtr
+CreateWindowShape (pWin)
+    WindowPtr	pWin;
 {
-    GCPtr	pGC;
-    ScreenPtr	pScreen = pPixmap->drawable.pScreen;
     BoxRec	extents;
-    xRectangle	rect;
-    RegionPtr	pCopy;
 
-    pGC = GetScratchGC (pPixmap->drawable.depth, pScreen);
-    pCopy = (*pScreen->RegionCreate) ((BoxPtr) 0, 1);
-    (*pScreen->RegionCopy) (pCopy, pRegion);
-    if (xOff || yOff)
-	(*pScreen->TranslateRegion) (pCopy, xOff, yOff);
-    extents = *(*pScreen->RegionExtents) (pCopy);
-    /*
-     * erase the pixmap
-     */
-    miClearDrawable (pPixmap, pGC);
-    /*
-     * fill a rectangle clipped to the region
-     */
-    (*pGC->ChangeClip) (pGC, CT_REGION, (pointer) pCopy, 0);
-    ValidateGC (pGC, pPixmap);
-    rect.x = extents.x1;
-    rect.y = extents.y1;
-    rect.width = extents.x2 - extents.x1;
-    rect.height = extents.y2 - extents.y1;
-    (*pGC->PolyFillRect) (pPixmap, pGC, 1, &rect);
-    (*pGC->ChangeClip) (pGC, CT_NONE, (pointer) 0, 0);
+    extents.x1 = 0;
+    extents.y1 = 0;
+    extents.x2 = pWin->clientWinSize.width;
+    extents.y2 = pWin->clientWinSize.height;
+    return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
 }
 
-static int
-SetRgn (pWin, ppRgn, pRgn)
+static RegionPtr
+CreateBorderShape (pWin)
     WindowPtr	pWin;
-    RegionPtr	*ppRgn, pRgn;
 {
-    if (*ppRgn)
-	(*pWin->drawable.pScreen->RegionDestroy) (*ppRgn);
-    *ppRgn = pRgn;
-    SetShape (pWin);
-    return Success;
+    BoxRec	extents;
+
+    extents.x1 = -pWin->borderWidth;
+    extents.y1 = -pWin->borderWidth;
+    extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
+    extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
+    return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
 }
 
-static int
-SetRects (pWin, ppRgn, nrects, prects)
-    WindowPtr	pWin;
-    RegionPtr	*ppRgn;
-    int		nrects;
-    xRectangle	*prects;
-{
-    RegionPtr	pRgn;
-
-    if (nrects == 0)
-	pRgn = 0;
-    else
-	pRgn = RectsToRegion (pWin->drawable.pScreen, nrects, prects);
-    return SetRgn (pWin, ppRgn, pRgn);
-}
+/*****************
+ * ProcShapeRectangles
+ *
+ *****************/
 
 static int
-SetMask (pWin, ppRgn, mask, xOff, yOff)
-    WindowPtr	pWin;
-    RegionPtr	*ppRgn;
-    XID		mask;
+ProcShapeRectangles (client)
+    register ClientPtr client;
 {
-    RegionPtr	pRgn;
-    PixmapPtr	pPixmap;
+    WindowPtr		pWin;
+    ScreenPtr		pScreen;
+    REQUEST(xShapeRectanglesReq);
+    xRectangle		*prects;
+    int		        nrects;
+    RegionPtr		srcRgn;
+    RegionPtr		*destRgn;
+    RegionPtr		(*createDefault)();
+    int			ret;
 
-    if (mask == None)
-	pRgn = 0;
-    else {
-	pPixmap = (PixmapPtr)LookupID (mask, RT_PIXMAP, RC_CORE);
-	if (!pPixmap)
-	    return BadPixmap;
-	if (pPixmap->drawable.depth != 1)
+    REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
+    pWin = LookupWindow (stuff->dest, client);
+    if (!pWin)
+	return BadWindow;
+    switch (stuff->destKind) {
+    case ShapeWindow:
+	destRgn = &pWin->windowShape;
+	createDefault = CreateWindowShape;
+	break;
+    case ShapeBorder:
+	if (pWin->class == InputOnly)
 	    return BadMatch;
-        pRgn = BitmapToRegion (pPixmap);
-        if (xOff || yOff)
-	    (*pWin->drawable.pScreen->TranslateRegion) (pRgn, -xOff, -yOff);
+	destRgn = &pWin->borderShape;
+	createDefault = CreateBorderShape;
+	break;
+    default:
+	return BadValue;
     }
-    return SetRgn (pWin, ppRgn, pRgn);
+    pScreen = pWin->drawable.pScreen;
+    nrects = ((stuff->length  << 2) - sizeof(xShapeRectanglesReq));
+    if (nrects & 4)
+	return(BadLength);
+    nrects >>= 3;
+    prects = (xRectangle *) &stuff[1];
+    srcRgn = RectsToRegion (pScreen, nrects, prects);
+    ret = RegionOperate (pWin, destRgn, srcRgn, (int)stuff->op,
+			 stuff->xOff, stuff->yOff, createDefault);
+    if (ret == Success)
+	SetShape (pWin);
+    return ret;
 }
 
-static int
-IntersectRgn (pWin, ppRgn, pRgn)
-    WindowPtr	pWin;
-    RegionPtr	*ppRgn;
-    RegionPtr	pRgn;
-{
-    ScreenPtr	pScreen = pWin->drawable.pScreen;
+/**************
+ * ProcShapeMask
+ **************/
 
-    if (*ppRgn) {
-	(*pScreen->Intersect) (*ppRgn, *ppRgn, pRgn);
-	(*pScreen->RegionDestroy) (pRgn);
+ProcShapeMask (client)
+    register ClientPtr client;
+{
+    WindowPtr		pWin;
+    ScreenPtr		pScreen;
+    REQUEST(xShapeMaskReq);
+    RegionPtr		srcRgn;
+    RegionPtr		*destRgn;
+    PixmapPtr		pPixmap;
+    RegionPtr		(*createDefault)();
+    int			ret;
+
+    REQUEST_SIZE_MATCH (xShapeMaskReq);
+    pWin = LookupWindow (stuff->dest, client);
+    if (!pWin)
+	return BadWindow;
+    switch (stuff->destKind) {
+    case ShapeWindow:
+	destRgn = &pWin->windowShape;
+	createDefault = CreateWindowShape;
+	break;
+    case ShapeBorder:
+	if (pWin->class == InputOnly)
+	    return BadMatch;
+	destRgn = &pWin->borderShape;
+	createDefault = CreateBorderShape;
+	break;
+    default:
+	return BadValue;
+    }
+    pScreen = pWin->drawable.pScreen;
+    if (stuff->src == None)
+	srcRgn = 0;
+    else {
+        pPixmap = (PixmapPtr) LookupID(stuff->src, RT_PIXMAP, RC_CORE);
+        if (!pPixmap)
+	    return BadPixmap;
+	if (pPixmap->drawable.pScreen != pScreen)
+	    return BadMatch;
+	srcRgn = BitmapToRegion (pScreen, pPixmap);
+    }
+    ret = RegionOperate (pWin, destRgn, srcRgn, (int)stuff->op,
+			 stuff->xOff, stuff->yOff, createDefault);
+    if (ret == Success)
+	SetShape (pWin);
+    return ret;
+}
+
+/************
+ * ProcShapeCombine
+ ************/
+
+static
+ProcShapeCombine (client)
+    register ClientPtr client;
+{
+    WindowPtr		pSrcWin, pDestWin;
+    ScreenPtr		pScreen;
+    REQUEST(xShapeCombineReq);
+    RegionPtr		srcRgn;
+    RegionPtr		*destRgn;
+    RegionPtr		(*createDefault)();
+    RegionPtr		(*createSrc)();
+    RegionPtr		tmp;
+    int			ret;
+
+    REQUEST_SIZE_MATCH (xShapeCombineReq);
+    pDestWin = LookupWindow (stuff->dest, client);
+    if (!pDestWin)
+	return BadWindow;
+    switch (stuff->destKind) {
+    case ShapeWindow:
+	destRgn = &pDestWin->windowShape;
+	createDefault = CreateWindowShape;
+	break;
+    case ShapeBorder:
+	if (pDestWin->class == InputOnly)
+	    return BadMatch;
+	destRgn = &pDestWin->borderShape;
+	createDefault = CreateBorderShape;
+	break;
+    default:
+	return BadValue;
+    }
+    pScreen = pDestWin->drawable.pScreen;
+
+    pSrcWin = LookupWindow (stuff->src, client);
+    if (!pSrcWin)
+	return BadWindow;
+    switch (stuff->srcKind) {
+    case ShapeWindow:
+	srcRgn = pSrcWin->windowShape;
+	createSrc = CreateWindowShape;
+	break;
+    case ShapeBorder:
+	if (pSrcWin->class == InputOnly)
+	    return BadMatch;
+	srcRgn = pSrcWin->borderShape;
+	createSrc = CreateBorderShape;
+	break;
+    default:
+	return BadValue;
+    }
+    if (pSrcWin->drawable.pScreen != pScreen)
+	return BadMatch;
+
+    if (srcRgn) {
+        tmp = (*pScreen->RegionCreate) ((BoxPtr) 0, 0);
+        (*pScreen->RegionCopy) (tmp, srcRgn);
+        srcRgn = tmp;
     } else
-	*ppRgn = pRgn;
+	srcRgn = (*createSrc) (pSrcWin);
+
+    ret = RegionOperate (pDestWin, destRgn, srcRgn, (int)stuff->op,
+			 stuff->xOff, stuff->yOff, createDefault);
+    if (ret == Success)
+	SetShape (pDestWin);
+    return ret;
+}
+
+/*************
+ * ProcShapeOffset
+ *************/
+
+static
+ProcShapeOffset (client)
+    register ClientPtr client;
+{
+    WindowPtr		pWin;
+    ScreenPtr		pScreen;
+    REQUEST(xShapeOffsetReq);
+    RegionPtr		srcRgn;
+
+    REQUEST_SIZE_MATCH (xShapeOffsetReq);
+    pWin = LookupWindow (stuff->dest, client);
+    if (!pWin)
+	return BadWindow;
+    switch (stuff->destKind) {
+    case ShapeWindow:
+	srcRgn = pWin->windowShape;
+	break;
+    case ShapeBorder:
+	if (pWin->class == InputOnly)
+	    return BadMatch;
+	srcRgn = pWin->borderShape;
+	break;
+    default:
+	return BadValue;
+    }
+    pScreen = pWin->drawable.pScreen;
+    (*pScreen->TranslateRegion) (srcRgn);
     SetShape (pWin);
     return Success;
 }
 
 static int
-IntersectRects (pWin, ppRgn, nrects, prects)
-    WindowPtr	pWin;
-    RegionPtr	*ppRgn;
-    int		nrects;
-    xRectangle	*prects;
+ProcShapeQuery (client)
+    register ClientPtr	client;
 {
-    return IntersectRgn (pWin, ppRgn,
-		RectsToRegion (pWin->drawable.pScreen, nrects, prects));
-}
+    REQUEST(xShapeQueryReq);
+    WindowPtr		pWin;
+    xShapeQueryReply	rep;
+    BoxRec		extents;
+    register int	n;
 
-static int
-IntersectMask (pWin, ppRgn, pPixmap)
-    WindowPtr	pWin;
-    RegionPtr	*ppRgn;
-    PixmapPtr	pPixmap;
-{
-    return IntersectRgn (pWin, ppRgn, BitmapToRegion (pPixmap));
-}
-
-static int
-UnionRgn (pWin, ppRgn, pRgn)
-    WindowPtr	pWin;
-    RegionPtr	*ppRgn;
-    RegionPtr	pRgn;
-{
-    ScreenPtr	pScreen = pWin->drawable.pScreen;
-
-    /*
-     * if a region is attached, union the new region in.  Else,
-     * the desired union is the whole area, so do nothing.
-     */
-    if (*ppRgn) {
-	(*pScreen->Union) (*ppRgn, *ppRgn, pRgn);
-	SetShape (pWin);
+    REQUEST_SIZE_MATCH (xShapeQueryReq);
+    pWin = LookupWindow (stuff->window, client);
+    if (!pWin)
+	return BadWindow;
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.windowShaped = (pWin->windowShape != 0);
+    rep.borderShaped = (pWin->borderShape != 0);
+    if (pWin->windowShape) {
+	extents = *(pWin->drawable.pScreen->RegionExtents) (pWin->windowShape);
+    } else {
+	extents.x1 = 0;
+	extents.y1 = 0;
+	extents.x2 = pWin->clientWinSize.width;
+	extents.y2 = pWin->clientWinSize.height;
     }
-    (*pScreen->RegionDestroy) (pRgn);
-    return Success;
+    rep.xWindowShape = extents.x1;
+    rep.yWindowShape = extents.y1;
+    rep.widthWindowShape = extents.x2 - extents.x1;
+    rep.heightWindowShape = extents.y2 - extents.y1;
+    if (pWin->borderShape) {
+	extents = *(pWin->drawable.pScreen->RegionExtents) (pWin->borderShape);
+    } else {
+	extents.x1 = -pWin->borderWidth;
+	extents.y1 = -pWin->borderWidth;
+	extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
+	extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
+    }
+    rep.xBorderShape = extents.x1;
+    rep.yBorderShape = extents.y1;
+    rep.widthBorderShape = extents.x2 - extents.x1;
+    rep.heightBorderShape = extents.y2 - extents.y1;
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+	swaps(&rep.xWindowShape, n);
+	swaps(&rep.yWindowShape, n);
+	swaps(&rep.widthWindowShape, n);
+	swaps(&rep.heightWindowShape, n);
+	swaps(&rep.xBorderShape, n);
+	swaps(&rep.yBorderShape, n);
+	swaps(&rep.widthBorderShape, n);
+	swaps(&rep.heightBorderShape, n);
+    }
+    WriteToClient(client, sizeof (xShapeQueryReply), (char *)&rep);
+    return (client->noClientException);
+}
+
+int
+ProcShapeDispatch (client)
+    register ClientPtr	client;
+{
+    REQUEST(xReq);
+    switch (stuff->data) {
+    case X_ShapeRectangles:
+	return ProcShapeRectangles (client);
+    case X_ShapeMask:
+	return ProcShapeMask (client);
+    case X_ShapeCombine:
+	return ProcShapeCombine (client);
+    case X_ShapeOffset:
+	return ProcShapeOffset (client);
+    case X_ShapeQuery:
+	return ProcShapeQuery (client);
+    default:
+	SendErrorToClient (client, ShapeReqCode, stuff->data, (XID)0,
+			   BadRequest);
+	return BadRequest;
+    }
+}
+
+/* Macros needed for byte-swapping, copied from swapreq.c.  Really
+   should be in a header file somewhere. */
+
+#define LengthRestS(stuff) \
+    ((stuff->length << 1)  - (sizeof(*stuff) >> 1))
+
+extern void SwapShorts();
+
+#define SwapRestS(stuff) \
+    SwapShorts((short *)(stuff + 1), (unsigned long)LengthRestS(stuff))
+
+static int
+SProcShapeRectangles (client)
+    register ClientPtr	client;
+{
+    register char   n;
+    REQUEST (xShapeRectanglesReq);
+
+    swaps (&stuff->length, n);
+    swapl (&stuff->dest, n);
+    swaps (&stuff->xOff, n);
+    swaps (&stuff->yOff, n);
+    SwapRestS(stuff);
+    return ProcShapeRectangles (client);
 }
 
 static int
-UnionRects (pWin, ppRgn, nrects, prects)
-    WindowPtr	pWin;
-    RegionPtr	*ppRgn;
-    int		nrects;
-    xRectangle	*prects;
+SProcShapeMask (client)
+    register ClientPtr	client;
 {
-    return UnionRgn (pWin, ppRgn,
-		RectsToRegion (pWin->drawable.pScreen, nrects, prects));
+    register char   n;
+    REQUEST (xShapeMaskReq);
+
+    swaps (&stuff->length, n);
+    swapl (&stuff->dest, n);
+    swaps (&stuff->xOff, n);
+    swaps (&stuff->yOff, n);
+    swapl (&stuff->src, n);
+    return ProcShapeMask (client);
 }
 
 static int
-UnionMask (pWin, ppRgn, pPixmap)
-    WindowPtr	pWin;
-    RegionPtr	*ppRgn;
-    PixmapPtr	pPixmap;
+SProcShapeCombine (client)
+    register ClientPtr	client;
 {
-    return UnionRgn (pWin, ppRgn, BitmapToRegion (pPixmap));
+    register char   n;
+    REQUEST (xShapeCombineReq);
+
+    swaps (&stuff->length, n);
+    swapl (&stuff->dest, n);
+    swaps (&stuff->xOff, n);
+    swaps (&stuff->yOff, n);
+    swapl (&stuff->src, n);
+    return ProcShapeCombine (client);
 }
 
-GetRects (client, pWin, pRgn)
-    ClientPtr	client;
-    WindowPtr	pWin;
-    RegionPtr	pRgn;
+static int
+SProcShapeOffset (client)
+    register ClientPtr	client;
 {
-    int		nrect = 0;
-    xRectangle	*prect;
-    xGenericReply   reply;
+    register char   n;
+    REQUEST (xShapeOffsetReq);
 
-    if (pRgn) {
-        nrect = RegionToRectangles
-	    (pWin->drawable.pScreen, pRgn, &prect);
-	if (!prect)
-	    return BadAlloc;
+    swaps (&stuff->length, n);
+    swapl (&stuff->dest, n);
+    swaps (&stuff->xOff, n);
+    swaps (&stuff->yOff, n);
+    return ProcShapeOffset (client);
+}
+
+static int
+SProcShapeQuery (client)
+    register ClientPtr	client;
+{
+    register char   n;
+    REQUEST (xShapeQueryReq);
+
+    swapl (&stuff->window, n);
+    return ProcShapeQuery (client);
+}
+
+int
+SProcShapeDispatch (client)
+    register ClientPtr	client;
+{
+    REQUEST(xReq);
+    switch (stuff->data) {
+    case X_ShapeRectangles:
+	return SProcShapeRectangles (client);
+    case X_ShapeMask:
+	return SProcShapeMask (client);
+    case X_ShapeCombine:
+	return SProcShapeCombine (client);
+    case X_ShapeOffset:
+	return SProcShapeOffset (client);
+    case X_ShapeQuery:
+	return SProcShapeQuery (client);
+    default:
+	SendErrorToClient (client, ShapeReqCode, stuff->data, (XID)0,
+			   BadRequest);
+	return BadRequest;
     }
-    reply.type = X_Reply;
-    reply.length = (nrect * sizeof (xRectangle)) / 4;
-    reply.sequenceNumber = client->sequence;
-    WriteReplyToClient(client, sizeof(xGenericReply), &reply);
-    if (nrect) {
-	client->pSwapReplyFunc = CopySwap16Write;
-	WriteSwappedDataToClient (client, nrect * sizeof (xRectangle), prect);
-	xfree (prect);
-    }
-    return Success;
 }
-
-GetMask (mask, pRgn, xOff, yOff)
-    XID	    mask;
-    RegionPtr	pRgn;
-    int		xOff, yOff;
-{
-    PixmapPtr	pPixmap;
-
-    if (mask == None)
-	return BadMatch;
-    pPixmap = (PixmapPtr)LookupID (mask, RT_PIXMAP, RC_CORE);
-    if (!pPixmap)
-	return BadPixmap;
-    if (pPixmap->drawable.depth != 1)
-	return BadMatch;
-    RegionToBitmap (pRgn, pPixmap, xOff, yOff);
-    return Success;
-}
-
-    
