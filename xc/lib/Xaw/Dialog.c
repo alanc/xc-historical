@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.17 88/09/06 09:55:31 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.18 88/09/06 16:41:13 jim Exp $";
 #endif lint
 
 
@@ -192,9 +192,10 @@ Widget request, new;
 	return;					/* then just use defaults */
 
     constraint->form.left = constraint->form.right = XtChainLeft;
-    constraint->form.vert_base = dw->dialog.valueW
-				 ? dw->dialog.valueW
-				 : dw->dialog.labelW;
+    if (dw->dialog.valueW == NULL) 
+      constraint->form.vert_base = dw->dialog.labelW;
+    else
+      constraint->form.vert_base = dw->dialog.valueW;
 
     if (dw->composite.num_children > 1) {
         for (childP = children + dw->composite.num_children - 1;
@@ -225,7 +226,7 @@ Widget current, request, new;
 	)
     {
 	Arg args[1];
-	XtSetArg( args[1], XtNlabel, w->dialog.label );
+	XtSetArg( args[0], XtNlabel, w->dialog.label );
 	XtSetValues( w->dialog.labelW, args, XtNumber(args) );
     }
 
@@ -239,25 +240,14 @@ char *name;
 void (*function)();
 caddr_t param;
 {
-    DialogWidget parent = (DialogWidget)dialog;
-    static XtCallbackRec callback[] = { {NULL, NULL}, {NULL, NULL} };
-    static Arg arglist[] = {
-	{XtNcallback, (XtArgVal) callback},
-	{XtNfromVert, (XtArgVal) NULL},
-	{XtNleft, (XtArgVal) XtChainLeft},
-	{XtNright, (XtArgVal) XtChainLeft}
-    };
+/*
+ * Correct Constraints are all set in ConstraintInitialize().
+ */
+    Widget button;
 
-    callback[0].callback = function;
-    callback[0].closure =  param;
-
-    if (parent->dialog.value)
-       arglist[1].value = (XtArgVal) parent->dialog.value;
-    else
-       arglist[1].value = (XtArgVal) parent->dialog.label;
-
-    XtCreateManagedWidget( name, commandWidgetClass, dialog, 
-			   arglist, XtNumber(arglist) );
+    button = XtCreateManagedWidget( name, commandWidgetClass, dialog, 
+				    NULL, (Cardinal) 0 );
+    XtAddCallback(button, XtNcallback, function, param);
 }
 
 
