@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.99 92/06/28 17:48:11 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.100 93/08/23 11:11:48 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -30,11 +30,19 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if HasPoll
    POLL_DEFINES = -DUSE_POLL
 #endif
-        DEFINES = $(POLL_DEFINES) AllocateLocalDefines $(ALIGN_DEFINES) XtExtraDefines
+
+        DEFINES = AllocateLocalDefines \
+		  $(ALIGN_DEFINES) \
+		  $(POLL_DEFINES) XtExtraDefines XMTDefines
+
+    MTT_DEFINES = ThreadTypeDefines
+
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\" \
 		  -DXTERROR_PREFIX=\"$(XTERRORPREFIX)\" \
 		  -DXTWARNING_PREFIX=\"$(XTWARNINGPREFIX)\"
+
    SRCH_DEFINES = -DXFILESEARCHPATHDEFAULT=\"$(XFILESEARCHPATHDEFAULT)\"
+
 #if Malloc0ReturnsNull
   ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
@@ -108,6 +116,7 @@ SRCS = \
 	SetWMCW.c \
 	Shell.c \
 	StringDefs.c \
+	Threads.c \
 	TMaction.c \
 	TMgrab.c \
 	TMkey.c \
@@ -161,6 +170,7 @@ OBJS = \
 	SetWMCW.o \
 	Shell.o \
 	StringDefs.o \
+	Threads.o \
 	TMaction.o \
 	TMgrab.o \
 	TMkey.o \
@@ -188,6 +198,7 @@ SpecialCLibObjectRule(TMaction,$(_NOOP_),$(RCONST_DEFINES))
 #if DoSharedLib
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
+SpecialCLibObjectRule(Threads,$(ICONFIGFILES),$(MTT_DEFINES))
 
 #if DoSharedLib
 #if DoNormalLib

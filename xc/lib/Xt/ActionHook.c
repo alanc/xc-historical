@@ -1,4 +1,4 @@
-/* $XConsortium: ActionHook.c,v 1.3 90/08/29 13:01:51 swick Exp $ */
+/* $XConsortium: ActionHook.c,v 1.4 90/12/03 16:30:40 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -54,6 +54,7 @@ XtActionHookId XtAppAddActionHook( app, proc, closure )
     XtPointer closure;
 {
     ActionHook hook = XtNew(ActionHookRec);
+    LOCK_APP(app);
     hook->next = app->action_hook_list;
     hook->app = app;
     hook->proc = proc;
@@ -65,6 +66,7 @@ XtActionHookId XtAppAddActionHook( app, proc, closure )
 		      );
     }
     app->action_hook_list = hook;
+    UNLOCK_APP(app);
     return (XtActionHookId)hook;
 }
 
@@ -74,6 +76,7 @@ void XtRemoveActionHook( id )
 {
     ActionHook *p, hook = (ActionHook)id;
     XtAppContext app = hook->app;
+    LOCK_APP(app);
     for (p = &app->action_hook_list; p != NULL && *p != hook; p = &(*p)->next);
     if (p == NULL) {
 #ifdef DEBUG
@@ -81,8 +84,10 @@ void XtRemoveActionHook( id )
 			"XtRemoveActionHook called with bad or old hook id",
 			(String*)NULL, (Cardinal*)NULL);
 #endif /*DEBUG*/	
+	UNLOCK_APP(app);
 	return;
     }
     *p = hook->next;
     XtFree( (XtPointer)hook );
+    UNLOCK_APP(app);
 }
