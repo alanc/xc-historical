@@ -1,8 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/04/13 18:05:48 rws Exp mor $
+XCOMM $XConsortium: Imakefile,v 1.2 94/12/06 21:01:39 mor Exp mor $
 #include <Threads.tmpl>
 
 #define DoNormalLib YES
 #define LibName lbxXext
+#define LibHeaders NO
 
 #ifdef SharedXextReqs
 REQUIREDLIBS = SharedXextReqs
