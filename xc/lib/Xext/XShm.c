@@ -25,7 +25,7 @@ implied warranty.
 #include "XShm.h"
 #include "shmstr.h"
 
-/* $XConsortium: XShm.c,v 1.0 89/08/18 17:50:27 rws Exp $ */
+/* $XConsortium: XShm.c,v 1.1 89/08/20 18:53:40 rws Exp $ */
 
 struct DpyHasShm {
     struct DpyHasShm	*next;
@@ -222,34 +222,33 @@ XShmQueryVersion(dpy, majorVersion, minorVersion, sharedPixmaps)
     return 1;
 }
 
-ShmSeg
-XShmAttach(dpy, shmid, readOnly)
+Status
+XShmAttach(dpy, info)
     Display *dpy;
-    int shmid;
-    Bool readOnly;
+    XShmSegmentInfo *info;
 {
     register xShmAttachReq *req;
     XExtCodes *codes;
-    ShmSeg shmseg;
 
     if (!(codes = CheckExtension(dpy)))
 	return 0;
-    shmseg = XAllocID(dpy);
+    info->shmseg = XAllocID(dpy);
     LockDisplay(dpy);
     GetReq(ShmAttach, req);
     req->reqType = codes->major_opcode;
     req->shmReqType = X_ShmAttach;
-    req->shmseg = shmseg;
-    req->shmid = shmid;
-    req->readOnly = readOnly;
+    req->shmseg = info->shmseg;
+    req->shmid = info->shmid;
+    req->readOnly = info->readOnly ? xTrue : xFalse;
     UnlockDisplay(dpy);
     SyncHandle();
-    return shmseg;
+    return 1;
 }
 
-XShmDetach(dpy, shmseg)
+Status
+XShmDetach(dpy, info)
     Display *dpy;
-    ShmSeg shmseg;
+    XShmSegmentInfo *info;
 {
     register xShmDetachReq *req;
     XExtCodes *codes;
@@ -260,9 +259,10 @@ XShmDetach(dpy, shmseg)
     GetReq(ShmDetach, req);
     req->reqType = codes->major_opcode;
     req->shmReqType = X_ShmDetach;
-    req->shmseg = shmseg;
+    req->shmseg = info->shmseg;
     UnlockDisplay(dpy);
     SyncHandle();
+    return 1;
 }
 
 static int
@@ -321,6 +321,7 @@ XShmCreateImage(dpy, visual, depth, format, data, info, width, height)
     return image;
 }
 
+Status
 XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
 	      src_width, src_height, send_event)
     register Display *dpy;
@@ -355,9 +356,10 @@ XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
     req->format = image->format;
     req->sendEvent = send_event;
     req->shmseg = info->shmseg;
-    req->offset = info->addr - image->data;
+    req->offset = info->shmaddr - image->data;
     UnlockDisplay(dpy);
     SyncHandle();
+    return 1;
 }
 
 Status
@@ -388,7 +390,7 @@ XShmGetImage(dpy, d, image, x, y, plane_mask)
     req->planeMask = plane_mask;
     req->format = image->format;
     req->shmseg = info->shmseg;
-    req->offset = info->addr - image->data;
+    req->offset = info->shmaddr - image->data;
     if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
 	UnlockDisplay(dpy);
 	SyncHandle();
@@ -426,7 +428,7 @@ XShmCreatePixmap (dpy, d, data, info, width, height, depth)
     req->height = height;
     req->depth = depth;
     req->shmseg = info->shmseg;
-    req->offset = data - info->addr;
+    req->offset = data - info->shmaddr;
     pid = req->pid = XAllocID(dpy);
     UnlockDisplay(dpy);
     SyncHandle();

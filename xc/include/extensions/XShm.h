@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: XShm.h,v 1.0 89/08/18 17:50:08 rws Exp $ */
+/* $XConsortium: XShm.h,v 1.1 89/08/20 18:07:46 rws Exp $ */
 
 #ifndef _XSHM_H_
 #define _XSHM_H_
@@ -51,13 +51,14 @@ typedef struct {
 } XShmCompletionEvent;
 
 typedef struct {
-    ShmSeg shmseg;
-    char *addr;
-    Bool readOnly;
+    ShmSeg shmseg;	/* resource id */
+    int shmid;		/* kernel id */
+    char *shmaddr;	/* address in client */
+    Bool readOnly;	/* how the server should attach it */
 } XShmSegmentInfo;
 
 Bool XShmQueryVersion();
-ShmSeg XShmAttach();
+Status XShmAttach(), XShmDetach(), XShmPutImage(), XShmGetImage();
 XImage *XShmCreateImage();
 Pixmap XShmCreatePixmap();
 
