@@ -1,4 +1,4 @@
-.\" $XConsortium: xdpr.man,v 1.10 91/06/30 18:46:15 rws Exp $
+.\" $XConsortium: xdpr.man,v 1.11 91/06/30 18:50:22 rws Exp $
 .TH XDPR 1 "10 May 1988" "X Version 11"
 .SH NAME
 xdpr \- dump an X window directly to a printer
@@ -29,13 +29,16 @@ uses the commands
 .IR xpr (1), 
 and
 .IR lpr (1)
+or
+.IR lp (1)
 to dump an X window, process it for a particular printer type, and
 print it out on the printer of your choice.  This is the easiest way
 to get a printout of a window.  \fIXdpr\fP by default will print the
 largest possible representation of the window on the output page.
 .PP
 The options for \fIxdpr\fP are the same as those for \fIxpr\fP,
-\fIxwd\fP, and \fIlpr\fP.  The most commonly-used options are described
+\fIxwd\fP, and \fIlpr\fP or \fIlp\fP.
+The most commonly-used options are described
 below; see the manual pages for these commands for
 more detailed descriptions of the many options available.
 .PP
@@ -46,7 +49,8 @@ printed instead of selecting an X window.
 .TP
 .B -P\fIprinter\fP
 Specifies a printer to send the output to.  If a printer name is not
-specified here, \fIxdpr\fP (really, \fIlpr\fP) will send your output to the
+specified here, \fIxdpr\fP (really, \fIlpr\fP or \fIlp\fP)
+will send your output to the
 printer specified by the \fIPRINTER\fP environment variable. 
 Be sure that type of the printer matches the type specified
 with the \fI\-device\fP option.
@@ -102,9 +106,11 @@ will be passed to the
 .IR xpr (1),
 and
 .IR lpr (1)
+or
+.IR lp (1)
 commands as appropriate for each.
 .SH SEE ALSO
-xwd(1), xpr(1), lpr(1), xwud(1), X(1)
+xwd(1), xpr(1), lpr(1), lp(1), xwud(1), X(1)
 .SH ENVIRONMENT
 DISPLAY - for which display to use by default.
 .br
