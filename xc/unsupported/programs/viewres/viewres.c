@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.12 90/02/05 11:50:12 jim Exp $
+ * $XConsortium: viewres.c,v 1.13 90/02/05 14:54:00 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,10 +31,14 @@
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Box.h>
+#include <X11/Xaw/MenuButton.h>
+#include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/Sme.h>
+#include <X11/Xaw/SmeBSB.h>
+#include <X11/Xaw/SmeLine.h>
+#include "Tree.h"
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
-#include "Tree.h"
-#include <X11/Core.h>
 #include "defs.h"
 
 char *ProgramName;
@@ -62,10 +66,6 @@ static XrmOptionDescRec Options[] = {
 static struct _appresources {
     char *top_object;
     Boolean show_variable;
-    char *label_variable;
-    char *label_class;
-    char *label_horizontal;
-    char *label_vertical;
 } Appresources;
 
 static XtResource Resources[] = {
@@ -74,16 +74,6 @@ static XtResource Resources[] = {
 	offset(top_object), XtRString, (caddr_t) "object" },
     { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
 	offset(show_variable), XtRImmediate, (caddr_t) FALSE },
-    { "labelVariable", "LabelVariable", XtRString, sizeof(String),
-	offset(label_variable), XtRString, 
-	(caddr_t) "Show Variable Names" },
-    { "labelClass", "LabelClass", XtRString, sizeof(String),
-	offset(label_class), XtRString, 
-	(caddr_t) "Show Class Names" },
-    { "labelHorizontal", "LabelHorizontal", XtRString, sizeof(String),
-	offset(label_horizontal), XtRString, (caddr_t) "Layout Horizontal" },
-    { "labelVertical", "LabelVertical", XtRString, sizeof(String),
-	offset(label_vertical), XtRString, (caddr_t) "Layout Vertical" },
 #undef offset
 };
 
@@ -95,18 +85,19 @@ static char *fallback_resources[] = {
     NULL
 };
 
-static void do_quit(), do_set_labeltype(), do_set_orientation();
-static void set_labeltype_button(), set_orientation_button();
+static void HandleQuit(), HandleSetLableType(), HandleSetOrientation();
+static void set_labeltype_menu(), set_orientation_menu();
 static void build_tree(), set_node_labels();
 
 static XtActionsRec viewres_actions[] = {
-    { "Quit", do_quit },
-    { "SetLabelType", do_set_labeltype },
-    { "SetOrientation", do_set_orientation },
+    { "Quit", HandleQuit },
+    { "SetLabelType", HandleSetLableType },
+    { "SetOrientation", HandleSetOrientation },
 };
 
 static Widget treeWidget;
-static Widget quitButton, labeltypeButton, orientationButton;
+static Widget quitButton, formatButton, formatMenu;
+static Widget variableEntry, classEntry, horizontalEntry, verticalEntry;
 static WidgetNode *topnode;
 
 
@@ -126,14 +117,32 @@ static void usage ()
 }
 
 
+static void variable_labeltype_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* TRUE or FALSE */
+    caddr_t data;
+{
+    set_labeltype_menu ((Boolean) closure, True);
+}
+
+static void horizontal_orientation_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* TRUE or FALSE */
+    caddr_t data;
+{
+    set_orientation_menu ((Boolean) closure, True);
+}
+
+
 main (argc, argv)
     int argc;
     char **argv;
 {
-    int i;
     Widget toplevel, pane, box, viewport;
     XtAppContext app_con;
     Arg args[1];
+    static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
+    XtOrientation orient;
 
     ProgramName = argv[0];
 
@@ -157,21 +166,41 @@ main (argc, argv)
 				 NULL, ZERO);
     quitButton = XtCreateManagedWidget ("quit", commandWidgetClass, box,
 					NULL, ZERO);
-    labeltypeButton = XtCreateManagedWidget ("labeltype", commandWidgetClass,
-					     box, NULL, ZERO);
+    XtSetArg (args[0], XtNmenuName, "formatMenu");
+    formatButton = XtCreateManagedWidget ("format", menuButtonWidgetClass, box,
+					  args, ONE);
+    formatMenu = XtCreatePopupShell ("formatMenu", simpleMenuWidgetClass, 
+				     formatButton, NULL, ZERO);
+    XtSetArg (args[0], XtNcallback, callback_rec);
+    callback_rec[0].callback = (XtCallbackProc) variable_labeltype_callback;
+    callback_rec[0].closure = (caddr_t) TRUE;
+    variableEntry = XtCreateManagedWidget ("showVariables", smeBSBObjectClass,
+					   formatMenu, args, ONE);
+    callback_rec[0].closure = (caddr_t) FALSE;
+    classEntry = XtCreateManagedWidget ("showClasses", smeBSBObjectClass,
+					   formatMenu, args, ONE);
 
-    orientationButton = XtCreateManagedWidget ("orientation",
-					       commandWidgetClass, box,
-					       NULL, ZERO);
+    (void) XtCreateManagedWidget ("line", smeLineObjectClass, formatMenu,
+				  NULL, ZERO);
+
+    callback_rec[0].callback = (XtCallbackProc)horizontal_orientation_callback;
+    callback_rec[0].closure = (caddr_t) TRUE;
+    horizontalEntry = XtCreateManagedWidget ("layoutHorizontal",
+					     smeBSBObjectClass,
+					     formatMenu, args, ONE);
+    callback_rec[0].closure = (caddr_t) FALSE;
+    verticalEntry = XtCreateManagedWidget ("layoutVertical", smeBSBObjectClass,
+					   formatMenu, args, ONE);
 
     XtSetArg (args[0], XtNbackgroundPixmap, None);
     viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass,
 				      pane, args, ONE);
     treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass, viewport,
 					NULL, 0);
+    XtSetArg (args[0], XtNorientation, &orient);
 
-    set_labeltype_button ();
-    set_orientation_button ();
+    set_labeltype_menu (Appresources.show_variable, FALSE);
+    set_orientation_menu ((Boolean)(orient == XtorientHorizontal), FALSE);
     build_tree (topnode, treeWidget, NULL);
     XtRealizeWidget (toplevel);
     XtAppMainLoop (app_con);
@@ -179,7 +208,7 @@ main (argc, argv)
 
 
 
-static void do_quit (w, event, params, num_params)
+static void HandleQuit (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
@@ -189,7 +218,7 @@ static void do_quit (w, event, params, num_params)
 }
 
 
-static void do_set_labeltype (w, event, params, num_params)
+static void HandleSetLableType (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
@@ -197,7 +226,7 @@ static void do_set_labeltype (w, event, params, num_params)
 {
     char *cmd;
     Arg args[1];
-    Boolean oldvar = Appresources.show_variable;
+    Boolean oldvar = Appresources.show_variable, newvar;
 
     switch (*num_params) {
       case 0:
@@ -212,28 +241,22 @@ static void do_set_labeltype (w, event, params, num_params)
     }
 
     if (XmuCompareISOLatin1 (cmd, "toggle") == 0) {
-	Appresources.show_variable = !Appresources.show_variable;
+	newvar = !oldvar;
     } else if (XmuCompareISOLatin1 (cmd, "variable") == 0) {
-	Appresources.show_variable = TRUE;
+	newvar = TRUE;
     } else if (XmuCompareISOLatin1 (cmd, "class") == 0) {
-	Appresources.show_variable = FALSE;
+	newvar = FALSE;
     } else {
 	XBell (XtDisplay(w), 0);
 	return;
     }
 
-    if (Appresources.show_variable != oldvar) {
-	set_labeltype_button ();
-	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
-	set_node_labels (topnode, 0);
-	XawTreeForceLayout (treeWidget);
-	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
-    }
+    if (newvar != oldvar) set_labeltype_menu (newvar, TRUE);
     return;
 }
 
 
-static void do_set_orientation (w, event, params, num_params)
+static void HandleSetOrientation (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
@@ -241,7 +264,7 @@ static void do_set_orientation (w, event, params, num_params)
 {
     char *cmd;
     Arg args[1];
-    Bool oldhoriz, horiz;
+    Boolean oldhoriz, horiz;
     XtOrientation orient;
 
     switch (*num_params) {
@@ -258,7 +281,7 @@ static void do_set_orientation (w, event, params, num_params)
 
     XtSetArg (args[0], XtNorientation, &orient);
     XtGetValues (treeWidget, args, ONE);
-    oldhoriz = (Bool) (orient == XtorientHorizontal);
+    oldhoriz = (Boolean) (orient == XtorientHorizontal);
 
     if (XmuCompareISOLatin1 (cmd, "toggle") == 0) {
 	horiz = !oldhoriz;
@@ -271,40 +294,10 @@ static void do_set_orientation (w, event, params, num_params)
 	return;
     }
 
-    if (horiz != oldhoriz) {
-	XtSetArg (args[0], XtNorientation,
-		  horiz ? XtorientHorizontal : XtorientVertical);
-	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
- 	XtSetValues (treeWidget, args, ONE);
-	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
-	set_orientation_button ();
-    }
+    if (horiz != oldhoriz) set_orientation_menu (horiz, TRUE);
     return;
 }
 
-static void set_labeltype_button ()
-{
-    Arg args[1];
-
-    XtSetArg (args[0], XtNlabel, 
-	      (Appresources.show_variable ? Appresources.label_class
-	       : Appresources.label_variable));
-    XtSetValues (labeltypeButton, args, ONE);
-}
-
-static void set_orientation_button ()
-{
-    XtOrientation orient;
-    Arg args[1];
-
-    XtSetArg (args[0], XtNorientation, &orient);
-    XtGetValues (treeWidget, args, ONE);
-
-    XtSetArg (args[0], XtNlabel, 
-	      (orient == XtorientHorizontal ? Appresources.label_vertical
-	       : Appresources.label_horizontal));
-    XtSetValues (orientationButton, args, ONE);
-}
 
 
 static void build_tree (node, tree, super)
@@ -349,5 +342,49 @@ static void set_node_labels (node, depth)
 
     for (child = node->children; child; child = child->siblings) {
 	set_node_labels (child, depth + 1);
+    }
+}
+
+
+static void set_oneof_sensitive (choosea, a, b)
+    Boolean choosea;
+    Widget a, b;
+{
+    static Arg args[1] = { XtNsensitive, (XtArgVal) NULL };
+
+    args[0].value = (XtArgVal) TRUE;
+    XtSetValues (choosea ? a : b, args, ONE);
+    args[0].value = (XtArgVal) FALSE;
+    XtSetValues (choosea ? b : a, args, ONE);
+}
+
+static void set_labeltype_menu (isvar, doall)
+    Boolean isvar;
+    Boolean doall;
+{
+    Appresources.show_variable = isvar;
+    set_oneof_sensitive (isvar, classEntry, variableEntry);
+
+    if (doall) {
+	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+	set_node_labels (topnode, 0);
+	XawTreeForceLayout (treeWidget);
+	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+    }
+}
+
+static void set_orientation_menu (horiz, dosetvalues)
+    Boolean horiz, dosetvalues;
+{
+    set_oneof_sensitive (horiz, verticalEntry, horizontalEntry);
+
+    if (dosetvalues) {
+	Arg args[1];
+
+	XtSetArg (args[0], XtNorientation,
+		  horiz ? XtorientHorizontal : XtorientVertical);
+	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+ 	XtSetValues (treeWidget, args, ONE);
+	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
     }
 }
