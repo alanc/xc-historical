@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmUtils.c,v 1.2 91/07/16 13:10:58 jap Exp $
+ * $XConsortium: ibmUtils.c,v 1.3 91/12/20 18:15:18 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -59,7 +59,7 @@ ddxGiveUp()
 
     TRACE(("ddxGiveUp()"));
 
-#ifdef AIXps2
+#ifdef OS_CapsLockFeedback
     OS_CapsLockFeedback(0);	
 #endif
 
@@ -91,7 +91,7 @@ AbortDDX()
 {
     TRACE(("AbortDDX()"));
 
-#ifdef AIXps2
+#ifdef OS_CapsLockFeedback
     OS_CapsLockFeedback(0) ;
 #endif
 
