@@ -12,33 +12,35 @@
 Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 		   { XtNsensitive, (XtArgVal) 0 }};
 
-static void do_securekbd(), do_visualbell(), do_logging(), do_redraw(),
-  do_suspend(), do_continue(), do_interrupt(), do_hangup(), do_terminate(),
-  do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(), do_reversevideo(),
-  do_autowrap(), do_reversewrap(), do_autolinefeed(), do_appcursor(), 
-  do_appkeypad(), do_scrollkey(), do_scrollinput(), do_allow132(),
-  do_cursesemul(), do_marginbell(), do_tekshow(), do_altscreen(),
-  do_softreset(), do_hardreset(), do_tekmode(), do_vthide(),
-  do_tektextlarge(), do_tektext2(), do_tektext3(), do_tektextsmall(),
-  do_tekpage(), do_tekreset(), do_tekcopy(), do_vtshow(), do_vtmode(),
+static void do_securekbd(), do_allowsends(), do_visualbell(), do_logging(),
+  do_redraw(), do_suspend(), do_continue(), do_interrupt(), do_hangup(),
+  do_terminate(), do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(),
+  do_reversevideo(), do_autowrap(), do_reversewrap(), do_autolinefeed(),
+  do_appcursor(), do_appkeypad(), do_scrollkey(), do_scrollinput(),
+  do_allow132(), do_cursesemul(), do_marginbell(), do_tekshow(), 
+  do_altscreen(), do_softreset(), do_hardreset(), do_tekmode(), do_vthide(), 
+  do_tektextlarge(), do_tektext2(), do_tektext3(), do_tektextsmall(), 
+  do_tekpage(), do_tekreset(), do_tekcopy(), do_vtshow(), do_vtmode(), 
   do_tekhide();
+
 
 /*
  * The order entries MUST match the values given in menu.h
  */
 MenuEntry mainMenuEntries[] = {
     { "securekbd",	do_securekbd },		/*  0 */
-    { "logging",	do_logging },		/*  1 */
-    { "redraw",		do_redraw },		/*  2 */
-    { "line1",		NULL },			/*  3 */
-    { "suspend",	do_suspend },		/*  4 */
-    { "continue",	do_continue },		/*  5 */
-    { "interrupt",	do_interrupt },		/*  6 */
-    { "hangup",		do_hangup },		/*  7 */
-    { "terminate",	do_terminate },		/*  8 */
-    { "kill",		do_kill },		/*  9 */
-    { "line2",		NULL },			/* 10 */
-    { "quit",		do_quit }};		/* 11 */
+    { "allowsends",	do_allowsends },	/*  1 */
+    { "logging",	do_logging },		/*  2 */
+    { "redraw",		do_redraw },		/*  3 */
+    { "line1",		NULL },			/*  4 */
+    { "suspend",	do_suspend },		/*  5 */
+    { "continue",	do_continue },		/*  6 */
+    { "interrupt",	do_interrupt },		/*  7 */
+    { "hangup",		do_hangup },		/*  8 */
+    { "terminate",	do_terminate },		/*  9 */
+    { "kill",		do_kill },		/* 10 */
+    { "line2",		NULL },			/* 11 */
+    { "quit",		do_quit }};		/* 12 */
 
 MenuEntry vtMenuEntries[] = {
     { "scrollbar",	do_scrollbar },		/*  0 */
@@ -192,6 +194,17 @@ static void do_securekbd (gw, closure, data)
 	}
     }
     update_securekbd();
+}
+
+
+static void do_allowsends (gw, closure, data)
+    Widget gw;
+    caddr_t closure, data;
+{
+    register TScreen *screen = &term->screen;
+
+    screen->allowSendEvents = !screen->allowSendEvents;
+    update_allowsends ();
 }
 
 

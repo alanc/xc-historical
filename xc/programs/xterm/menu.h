@@ -18,17 +18,18 @@ extern Arg menuArgs[];
  * items in primary menu
  */
 #define mainMenu_securekbd 0
-#define mainMenu_logging 1
-#define mainMenu_redraw 2
-#define mainMenu_line1 3
-#define mainMenu_suspend 4
-#define mainMenu_continue 5
-#define mainMenu_interrupt 6
-#define mainMenu_hangup 7
-#define mainMenu_terminate 8
-#define mainMenu_kill 9
-#define mainMenu_line2 10
-#define mainMenu_quit 11
+#define mainMenu_allowsends 1
+#define mainMenu_logging 2
+#define mainMenu_redraw 3
+#define mainMenu_line1 4
+#define mainMenu_suspend 5
+#define mainMenu_continue 6
+#define mainMenu_interrupt 7
+#define mainMenu_hangup 8
+#define mainMenu_terminate 9
+#define mainMenu_kill 10
+#define mainMenu_line2 11
+#define mainMenu_quit 12
 
 /*
  * items in vt100 mode menu
@@ -98,6 +99,11 @@ extern Arg menuArgs[];
   update_menu_item (term->screen.mainMenu, \
 		    mainMenuEntries[mainMenu_securekbd].name, \
 		    term->screen.grabbedKbd)
+
+#define update_allowsends() \
+  update_menu_item (term->screen.mainMenu, \
+		    mainMenuEntries[mainMenu_allowsends].name, \
+		    term->screen.allowSendEvents)
 
 #define update_logging() \
   update_menu_item (term->screen.mainMenu, \

@@ -5,6 +5,7 @@ XTerm*SimpleMenu*Cursor: left_ptr
 
 XTerm*mainMenu.Label:  Main Options
 XTerm*mainMenu*securekbd*Label:  Secure Keyboard
+XTerm*mainMenu*allowsends*Label:  Allow SendEvents
 XTerm*mainMenu*logging*Label:  Log to File
 XTerm*mainMenu*redraw*Label:  Redraw Window
 XTerm*mainMenu*line1*Type:  separator

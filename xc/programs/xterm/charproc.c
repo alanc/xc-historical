@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.87 89/07/13 14:47:54 jim Exp $
+ * $XConsortium: charproc.c,v 1.88 89/07/21 16:11:25 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.87 89/07/13 14:47:54 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.88 89/07/21 16:11:25 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1989,6 +1989,7 @@ static void VTInitialize (request, new)
 
 #define term new			/* for macros */
     update_securekbd();
+    update_allowsends();
     update_visualbell();
     update_logging();
     update_scrollbar();
