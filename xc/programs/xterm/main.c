@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.87 88/09/14 13:22:45 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.88 88/09/15 09:27:15 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -40,6 +40,7 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <pwd.h>
+#include <ctype.h>
 
 /*
  * The macII claims not to be SYSV, but it uses System V terminal control,
@@ -152,6 +153,50 @@ static int d_disipline = NTTYDISC;
 static long int d_lmode = LCRTBS|LCRTERA|LCRTKIL|LCTLECH;
 #endif /* USE_SYSV_TERMIO */
 
+static unsigned long parse_tty_modes ();
+/*
+ * SYSV has the termio.c_cc[V] and ltchars; BSD has tchars and ltchars
+ */
+struct _xttymodes {
+    char *name;
+    int len;
+    char value;
+} ttymodelist[] = {
+{ "intr", 4, 0 },			/* tchars.t_intrc ; VINTR */
+#define XTTYMODE_intr 0
+{ "quit", 4, 0 },			/* tchars.t_quitc ; VQUIT */
+#define XTTYMODE_quit 1
+{ "erase", 5, 0 },			/* sgttyb.sg_erase ; VERASE */
+#define XTTYMODE_erase 2
+{ "kill", 4, 0 },			/* sgttyb.sg_kill ; VKILL */
+#define XTTYMODE_kill 3
+{ "eof", 3, 0 },			/* tchars.t_eofc ; VEOF */
+#define XTTYMODE_eof 4
+{ "eol", 3, 0 },			/* VEOL */
+#define XTTYMODE_eol 5
+{ "swtch", 5, 0 },			/* VSWTCH */
+#define XTTYMODE_swtch 6
+{ "start", 5, 0 },			/* tchars.t_startc */
+#define XTTYMODE_start 7
+{ "stop", 4, 0 },			/* tchars.t_stopc */
+#define XTTYMODE_stop 8
+{ "brk", 3, 0 },			/* tchars.t_brkc */
+#define XTTYMODE_brk 9
+{ "susp", 4, 0 },			/* ltchars.t_suspc */
+#define XTTYMODE_susp 10
+{ "dsusp", 5, 0 },			/* ltchars.t_dsuspc */
+#define XTTYMODE_dsusp 11
+{ "rprnt", 5, 0 },			/* ltchars.t_rprntc */
+#define XTTYMODE_rprnt 12
+{ "flush", 5, 0 },			/* ltchars.t_flushc */
+#define XTTYMODE_flush 13
+{ "weras", 5, 0 },			/* ltchars.t_werasc */
+#define XTTYMODE_weras 14
+{ "lnext", 5, 0 },			/* ltchars.t_lnextc */
+#define XTTYMODE_lnext 15
+#define NXTTYMODES 16
+};
+
 #ifdef USE_SYSV_UTMP
 extern struct utmp *getutent();
 extern struct utmp *getutid();
@@ -193,6 +238,7 @@ static struct _resource {
     char *title;
     char *icon_name;
     char *term_name;
+    char *tty_modes;
     Boolean utmpInhibit;
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
 } resource;
@@ -218,6 +264,8 @@ static XtResource application_resources[] = {
 	offset(icon_name), XtRString, (caddr_t) NULL},
     {"termName", "TermName", XtRString, sizeof(char *),
 	offset(term_name), XtRString, (caddr_t) NULL},
+    {"ttyModes", "TtyModes", XtRString, sizeof(char *),
+	offset(tty_modes), XtRString, (caddr_t) NULL},
     {"utmpInhibit", "UtmpInhibit", XtRBoolean, sizeof (Boolean),
 	offset(utmpInhibit), XtRString, "false"},
     {"sunFunctionKeys", "SunFunctionKeys", XtRBoolean, sizeof (Boolean),
@@ -272,6 +320,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-sl",		"*saveLines",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-tm",		"*ttyModes",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-tn",		"*termName",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "off"},
@@ -332,6 +381,7 @@ static struct _options {
 { "-/+sk",                 "turn on/off scroll-on-keypress" },
 { "-sl number",            "number of scrolled lines to save" },
 { "-/+t",                  "turn on/off Tek emulation window" },
+{ "-tm string",            "terminal mode keywords and characters" },
 { "-tn name",              "TERM environment variable name" },
 { "-/+ut",                 "turn on/off utmp inhibit" },
 { "-/+vb",                 "turn on/off visual bell" },
@@ -687,6 +737,56 @@ char **argv;
 
 	if(screen->TekEmu && !TekInit())
 		exit(ERROR_INIT);
+
+	/*
+	 * fill in terminal modes
+	 */
+	if (resource.tty_modes) {
+	    unsigned long mask = parse_tty_modes (resource.tty_modes, 
+						  ttymodelist, NXTTYMODES);
+	    if (mask) {
+#define assign(ind,var) if (mask & (1L << ind)) var = ttymodelist[ind].value;
+#ifdef USE_SYSV_TERMIO
+		/* sysv-specific */
+		assign (XTTYMODE_intr, d_tio.c_cc[VINTR]);
+		assign (XTTYMODE_quit, d_tio.c_cc[VQUIT]);
+		assign (XTTYMODE_erase, d_tio.c_cc[VERASE]);
+		assign (XTTYMODE_kill, d_tio.c_cc[VKILL]);
+		assign (XTTYMODE_eof, d_tio.c_cc[VEOF]);
+		assign (XTTYMODE_eol, d_tio.c_cc[VEOL]);
+#ifdef VSWTCH
+		assign (XTTYMODE_swtch, d_tio.c_cc[VSWTCH]);
+#endif
+#ifdef TIOCSLTC
+#define NEED_LTCHARS
+#endif
+#else
+		/* bsd-specific */
+		assign (XTTYMODE_intr, d_tc.t_intrc);
+		assign (XTTYMODE_quit, d_tc.t_quitc);
+		assign (XTTYMODE_erase, d_sg.sg_erase);
+		assign (XTTYMODE_kill, d_sg.sg_kill);
+		assign (XTTYMODE_eof, d_tc.t_eofc);
+		assign (XTTYMODE_start, d_tc.t_startc);
+		assign (XTTYMODE_stop, d_tc.t_stopc);
+		assign (XTTYMODE_brk, d_tc.t_brkc);
+#define NEED_LTCHARS
+#endif
+
+#ifdef NEED_LTCHARS
+		/* both SYSV and BSD have ltchars */
+		assign (XTTYMODE_susp, d_ltc.t_suspc);
+		assign (XTTYMODE_dsusp, d_ltc.t_dsuspc);
+		assign (XTTYMODE_rprnt, d_ltc.t_rprntc);
+		assign (XTTYMODE_flush, d_ltc.t_flushc);
+		assign (XTTYMODE_weras, d_ltc.t_werasc);
+		assign (XTTYMODE_lnext, d_ltc.t_lnextc);
+#undef NEED_LTCHARS
+#endif
+#undef assign
+	    }
+	}
+
 
 	/* set up stderr properly */
 	i = -1;
@@ -2085,4 +2185,46 @@ remove_termcap_entry (buf, str)
         }
     }
     return;
+}
+
+/*
+ * parse_tty_modes accepts lines of the following form:
+ *
+ *         [SETTING] ...
+ *
+ * where setting consists of the words in the modelist followed by a character
+ * or ^char.
+ */
+static unsigned long parse_tty_modes (s, modelist, nmodes)
+    char *s;
+    struct _xttymodes *modelist;
+    int nmodes;
+{
+    struct _xttymodes *mp;
+    int c, i;
+    unsigned long mask = 0;
+
+    while (1) {
+	while (*s && isascii(*s) && isspace(*s)) s++;
+	if (!*s) return mask;
+
+	for (mp = modelist, i = 0; mp->name; mp++, i++) {
+	    if (strncmp (s, mp->name, mp->len) == 0) break;
+	}
+	if (!mp->name) return 0L;
+
+	s += mp->len;
+	while (*s && isascii(*s) && isspace(*s)) s++;
+	if (!*s) return 0L;
+
+	if (*s == '^') {
+	    s++;
+	    c = ((*s == '?') ? 0177 : *s & 31);	 /* keep control bits */
+	} else {
+	    c = *s;
+	}
+	mp->value = c;
+	mask |= (1L << i);
+	s++;
+    }
 }
