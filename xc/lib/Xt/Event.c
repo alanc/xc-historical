@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Event.c,v 1.77 88/09/04 14:50:02 swick Exp $";
+    "$XConsortium: Event.c,v 1.78 88/09/04 21:23:01 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -35,7 +35,8 @@ SOFTWARE.
 static XtAsyncHandler asyncHandler = NULL;
 static Opaque asyncClosure = NULL;
 
-static GrabList focusList;
+static GrabList grabList;	/* %%% should this be in the AppContext? */
+static GrabList focusList;	/* %%% should this be in the AppContext? */
 extern void bzero();
 
 CallbackList *_XtDestroyList;
