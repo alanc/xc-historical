@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.43 89/07/09 18:17:18 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.44 89/07/11 08:36:21 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -1164,6 +1164,7 @@ miRegionAppend(dstrgn, rgn)
     {
 	dstrgn->extents = rgn->extents;
 	dstrgn->data = (RegDataPtr)NULL;
+	return;
     }
 
     numRects = REGION_NUM_RECTS(rgn);
