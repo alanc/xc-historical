@@ -21,7 +21,9 @@ SRCS = \
 	letters \
 	light_gray \
 	mailempty \
+	mailemptymsk \
 	mailfull \
+	mailfullmsk \
 	mensetmanus \
 	noletters \
 	opendot \
