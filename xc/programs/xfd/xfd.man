@@ -7,11 +7,11 @@ xfd - font displayer for X
 .SH "OPTIONS"
 .TP 8
 .B \-display \fIdisplay\fP
-Specifies the display to use; see \fIX(1)\fP.
+Specifies the display to use.
 .PP
 .TP 8
 .B \-geometry \fIgeometry\fP
-Specifies an initial window geometry; see \fIX(1)\fP.
+Specifies an initial window geometry.
 .PP
 .TP 8
 .B \-bw \fInumber\fP
@@ -57,7 +57,7 @@ Specifies that the bitmap in file \fIfilename\fP should be used for the icon.
 .PP
 .TP 8
 .B \-verbose
-Specifies that verbose mode should be used.
+Specifies that extra information about the font should be displayed.
 .PP
 .TP 8
 .B \-gray
@@ -76,8 +76,9 @@ bottom.  The first character displayed at the top left will be character
 number 0 unless the -start option has been supplied in which case the
 character with the number given in the -start option will be used.
 .PP
-The characters are displayed in a grid of boxes, each large enough to hold any
-character of the font.
+The characters are displayed in a grid of boxes, each large enough to hold 
+any single
+character in the font.
 If the -gray option has been supplied, the characters will be displayed using
 XDrawImageString using the foreground and background colors on a
 gray background.  This permits determining exactly how XDrawImageString will
@@ -92,14 +93,13 @@ window full of characters to be displayed.
 .I Xfd
 will beep if an attempt is made to go back past the 0th character.
 .PP
-Note that if the font is a 8 bit font, the characters 256-511 (0x100-0x1ff),
-512-767 (0x200-0x2ff), ... 
-will display exactly the same as the characters 0-255 (0x00-0xff).
+Note that if the font is a 8 bit font, the characters 256-511 (100-1ff in
+hexidecimal),
+512-767 (200-2ff in hexidecimal), ... 
+will display exactly the same as the characters 0-255 (00-ff in hexidecimal).
 .I Xfd
-by default creates a window of size sufficient to display the first 256
-characters using a 16 by 16 grid.  In this case, there is no need to scroll
-forward or backward window fulls in order to see the entire contents of a 8 bit
-font.  Of course, this window may very well not fit on the screen...
+by default creates a window big enough to display 16 rows of 16 columns 
+(totally 256 characters).
 .PP
 Clicking the middle button on a character will cause that character's
 number to be displayed in both decimal and hexidecimal at the bottom of the
@@ -113,21 +113,13 @@ taken on by each of these fields over the entire font.
 The font name is interpreted by the X server.
 To obtain a list of all the fonts available, use \fIxlsfonts(1)\fP.
 .PP
-If no font name is given on the command line, 
-.I Xfd
-displays the font ``fixed''.
-.PP
 The window stays around until the xfd process is killed
 or one of 'q', 'Q', ' ', or ctrl-c is typed into the
 .I Xfd
 window.
 .SH "X DEFAULTS"
 .PP
-The
-.I xfd
-program uses the routine 
-.I XGetDefault(3X)
-to read defaults, so its resource names are all capitalized.
+\fIXfd\fP uses the following X resources:
 .PP
 .TP 8
 .B BorderWidth
@@ -168,21 +160,12 @@ Set the file we should look in to get the bitmap for the icon.
 Set the title to be used.
 .SH "SEE ALSO"
 X(1), xlsfonts(1), xrdb(1)
-.SH ENVIRONMENT
-.PP
-.TP 8
-.B DISPLAY
-to get the default host and display to use.
-.TP 8
-.B XENVIRONMENT
-to get the name of a resource file that overrides the global resources stored
-in the RESOURCE_MANGER property.
 .SH BUGS
 It should display the name of the font somewhere.
 .PP
 It should be rewritten to use the X toolkit.
 .PP
-It should skip over pages full of non-existant characters.
+It should skip over pages full of non-existent characters.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
