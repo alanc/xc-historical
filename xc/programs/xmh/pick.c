@@ -1,5 +1,5 @@
-#ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 1.15 88/01/21 16:44:55 swick Exp $";
+<#ifndef lint
+static char rcs_id[] = "$Header: pick.c,v 1.16 88/01/22 08:25:23 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -220,9 +220,13 @@ char *str;
 }
 
 
-static void ExecYesNo(entry)
-  FormEntry entry;
+/* ARGSUSED */
+static void ExecYesNo(w, closure, call_data)
+    Widget w;			/* unused */
+    caddr_t closure;		/* FormEntry */
+    caddr_t call_data;		/* unused */
 {
+    FormEntry entry = (FormEntry)closure;
     RowList row = entry->row;
     int i;
     if (!entry->hilite) {
@@ -243,11 +247,13 @@ static void ExecYesNo(entry)
 
 
 
-
-static void ExecRowOr(entry)
-  FormEntry entry;
+/* ARGSUSED */
+static void ExecRowOr(w, closure, call_data)
+    Widget w;			/* unused */
+    caddr_t closure;		/* FormEntry */
+    caddr_t call_data;		/* unused */
 {
-    RowList row = entry->row;
+    RowList row = ((FormEntry)closure)->row;
     FormBox form = row->group->form;
     PrepareToUpdate(form);
     DeleteWidget(entry);
@@ -258,15 +264,18 @@ static void ExecRowOr(entry)
 }
     
 
-static void ExecGroupOr(entry)
-  FormEntry entry;
+/* ARGSUSED */
+static void ExecGroupOr(w, closure, call_data)
+    Widget w;			/* unused */
+    caddr_t closure;		/* FormEntry */
+    caddr_t call_data;		/* unused */
 {
-    FormBox form = entry->row->group->form;
-    XUnmapWindow(theDisplay, XtWindow(form->inner));
+    FormBox form = ((FormEntry)closure)->row->group->form;
+/* %%%    XUnmapWindow(theDisplay, XtWindow(form->inner)); */
     PrepareToUpdate(form);
     AddDetailGroup(form);
     ExecuteUpdate(form);
-    XtMapWidget(form->inner);
+/* %%%    XtMapWidget(form->inner); */
 }
 
 static char **argv;
@@ -391,11 +400,13 @@ char *str;
 }
 
 
-
-static void ExecOK(entry)
-  FormEntry entry;
+/* ARGSUSED */
+static void ExecOK(w, closure, call_data)
+    Widget w;			/* unused */
+    caddr_t closure;		/* FormEntry */
+    caddr_t call_data;		/* unused */
 {
-    Pick pick = entry->row->group->form->pick;
+    Pick pick = ((FormEntry)closure)->row->group->form->pick;
     Toc toc = pick->toc;
     FormBox details = pick->details;
     FormBox general = pick->general;
@@ -472,11 +483,13 @@ static void ExecOK(entry)
 }
 
 
-
-static void ExecCancel(entry)
-  FormEntry entry;
+/* ARGSUSED */
+static void ExecCancel(w, closure, call_data)
+    Widget w;			/* unused */
+    caddr_t closure;		/* FormEntry */
+    caddr_t call_data;		/* unused */
 {
-    Pick pick = entry->row->group->form->pick;
+    Pick pick = ((FormEntry)closure)->row->group->form->pick;
     Scrn scrn = pick->scrn;
     (void) DestroyScrn(scrn);
 }
@@ -652,28 +665,33 @@ static AddGeneralGroup(form)
   FormBox form;
 {
     Group group;
-    RowList row, rowList[4];
+    RowList row;
+    Widget widgetList[4];
     group = AddGroup(form);
-    rowList[0] = row =  AddRow(group, RTignore);
+    row =  AddRow(group, RTignore);
+    widgetList[0] = row->widget;
     AddLabel(row, "Creating sequence:", FALSE);
     AddTextEntry(row, "");
     AddLabel(row, "with msgs from sequence:", FALSE);
     AddTextEntry(row, "");
-    rowList[1] = row =  AddRow(group, RTignore);
+    row =  AddRow(group, RTignore);
+    widgetList[1] = row->widget;
     AddLabel(row, "Date range:", FALSE);
     AddTextEntry(row, "");
     AddLabel(row, " - ", FALSE);
     AddTextEntry(row, "");
     AddLabel(row, "Date field:", FALSE);
     AddTextEntry(row, "");
-    rowList[2] = row =  AddRow(group, RTignore);
+    row =  AddRow(group, RTignore);
+    widgetList[2] = row->widget;
     AddLabel(row, "Clear old entries from sequence?", FALSE);
     AddButton(row, "Yes", ExecYesNo, TRUE);
     AddButton(row, "No", ExecYesNo, FALSE);
-    rowList[3] = row =  AddRow(group, RTignore);
+    row =  AddRow(group, RTignore);
+    widgetList[3] = row->widget;
     AddButton(row, "OK", ExecOK, FALSE);
     AddButton(row, "Cancel", ExecCancel, FALSE);
-    XtManageChildren(rowList, XtNumber(rowList));
+    XtManageChildren(widgetList, XtNumber(widgetList));
     XtManageChild(group->widget);
 }
 
@@ -784,5 +802,5 @@ AddPick(scrn, toc, fromseq, toseq)
     InitGeneral(pick, fromseq, toseq);
     (void) sprintf(str, "Pick: %s", TocName(toc));
     ChangeLabel(pick->label, str);
-    XStoreName(theDisplay, scrn->widget, str);
+    XStoreName(theDisplay, XtWindow(scrn->widget), str);
 }
