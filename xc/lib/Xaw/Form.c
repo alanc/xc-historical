@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.4 87/12/23 15:10:23 swick Locked $";
+static char rcsid[] = "$Header: Form.c,v 1.6 88/01/20 19:53:58 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -356,19 +356,21 @@ static void ChangeManaged(w)
 
 
 /* 
- * Set or reset figuring
+ * Set or reset figuring (ignored if realized)
  */
 
 void XtFormDoLayout(w, doit)
-FormWidget w;
+Widget w;
 Boolean doit;
 {
+    register FormWidget fw = (FormWidget)w;
 
-    if (doit && w->form.no_refigure > 0)
-	w->form.no_refigure--;
+    if (doit && fw->form.no_refigure > 0)
+	fw->form.no_refigure--;
     else
-	w->form.no_refigure++;
+	if (!XtIsRealized(w))
+	    fw->form.no_refigure++;
 
-    if (w->form.needs_relayout)
-	RefigureLocations( (Widget)w );
+    if (fw->form.needs_relayout)
+	RefigureLocations( w );
 }
