@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.14 91/02/04 19:18:47 gildea Exp $
+ * $XConsortium: verify.c,v 1.15 91/02/12 15:34:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,7 +27,7 @@
 # include	"dm.h"
 
 # include	<pwd.h>
-# ifdef NGROUPS
+# ifdef NGROUPS_MAX
 # include	<grp.h>
 # endif
 #ifdef SVR4
@@ -83,7 +83,7 @@ struct verify_info	*verify;
 	Debug ("verify succeeded\n");
 /*	bzero(greet->password, strlen(greet->password)); */
 	verify->uid = p->pw_uid;
-#ifdef NGROUPS
+#ifdef NGROUPS_MAX
 	getGroups (greet->name, verify, p->pw_gid);
 #else
 	verify->gid = p->pw_gid;
@@ -160,7 +160,7 @@ char	*user, *home;
 	return env;
 }
 
-#ifdef NGROUPS
+#ifdef NGROUPS_MAX
 groupMember (name, members)
 char	*name;
 char	**members;
@@ -196,9 +196,9 @@ int			gid;
 		if (i != ngroups)
 			continue;
 		if (groupMember (name, g->gr_mem)) {
-			if (ngroups >= NGROUPS)
+			if (ngroups >= NGROUPS_MAX)
 				LogError ("%s belongs to more than %d groups, %s ignored\n",
-					name, NGROUPS, g->gr_name);
+					name, NGROUPS_MAX, g->gr_name);
 			else
 				verify->groups[ngroups++] = g->gr_gid;
 		}

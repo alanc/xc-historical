@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.35 91/02/14 13:39:45 rws Exp $
+ * $XConsortium: auth.c,v 1.36 91/02/28 09:36:41 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -992,7 +992,7 @@ struct verify_info	*verify;
 	}
 	XauUnlockAuth (name);
 	if (envname) {
-#ifdef NGROUPS
+#ifdef NGROUPS_MAX
 	    chown (envname, verify->uid, verify->groups[0]);
 #else
 	    chown (envname, verify->uid, verify->gid);

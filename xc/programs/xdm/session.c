@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.48 91/02/28 11:58:10 rws Exp $
+ * $XConsortium: session.c,v 1.49 91/03/08 10:24:04 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -357,7 +357,7 @@ SessionExit (d, status, removeAuth)
 	ResetServer (d);
     if (removeAuth)
     {
-#ifdef NGROUPS
+#ifdef NGROUPS_MAX
 	setgid (verify.groups[0]);
 #else
 	setgid (verify.gid);
@@ -393,7 +393,7 @@ char			*passwd;
     switch (pid = fork ()) {
     case 0:
 	CleanUpChild ();
-#ifdef NGROUPS
+#ifdef NGROUPS_MAX
 
 	setgid (verify->groups[0]);
 	setgroups (verify->ngroups, verify->groups);
