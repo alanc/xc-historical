@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.67 91/03/28 16:58:39 rws Exp $ */
+/* $XConsortium: io.c,v 1.68 91/03/29 09:34:07 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -43,6 +43,8 @@ SOFTWARE.
 #include "opaque.h"
 #include "dixstruct.h"
 #include "misc.h"
+
+#define XBIGREQ
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -75,8 +77,22 @@ static ConnectionOutputPtr AllocateOutputBuffer();
 
 extern int errno;
 
-#define request_length(req, cli) ((cli->swapped ? \
-	lswaps((req)->length) : (req)->length) << 2)
+#define get_req_len(req,cli) ((cli)->swapped ? \
+			      lswaps((req)->length) : (req)->length)
+
+#ifdef XBIGREQ
+typedef struct {
+	CARD8 reqType;
+	CARD8 data;
+	CARD16 zero B16;
+        CARD32 length B32;
+} xBigReq;
+
+#define get_big_req_len(req,cli) ((cli)->swapped ? \
+				  lswapl(((xBigReq *)(req))->length) : \
+				  ((xBigReq *)(req))->length)
+#endif
+
 #define MAX_TIMES_PER         10
 
 /*****************************************************************
@@ -121,6 +137,10 @@ ReadRequestFromClient(client)
     register int gotnow, needed;
     int result;
     register xReq *request;
+    Bool need_header;
+#ifdef XBIGREQ
+    Bool move_header;
+#endif
 
     if (AvailableInput)
     {
@@ -156,15 +176,40 @@ ReadRequestFromClient(client)
     }
     oci->bufptr += oci->lenLastReq;
 
-    request = (xReq *)oci->bufptr;
+    need_header = FALSE;
+#ifdef XBIGREQ
+    move_header = FALSE;
+#endif
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
-    if ((gotnow < sizeof(xReq)) ||
-	(gotnow < (needed = request_length(request, client))))
+    if (gotnow < sizeof(xReq))
+    {
+	needed = sizeof(xReq);
+	need_header = TRUE;
+    }
+    else
+    {
+	request = (xReq *)oci->bufptr;
+	needed = get_req_len(request, client);
+#ifdef XBIGREQ
+	if (!needed && client->big_requests)
+	{
+	    move_header = TRUE;
+	    if (gotnow < sizeof(xBigReq))
+	    {
+		needed = sizeof(xBigReq) >> 2;
+		need_header = TRUE;
+	    }
+	    else
+		needed = get_big_req_len(request, client);
+	}
+#endif
+	client->req_len = needed;
+	needed <<= 2;
+    }
+    if (gotnow < needed)
     {
 	oci->lenLastReq = 0;
-	if ((gotnow < sizeof(xReq)) || (needed == 0))
-	   needed = sizeof(xReq);
-	else if (needed > MAXBUFSIZE)
+	if (needed > MAXBUFSIZE)
 	{
 	    YieldControlDeath();
 	    return -1;
@@ -218,16 +263,38 @@ ReadRequestFromClient(client)
 		oci->bufptr = ibuf + oci->bufcnt - gotnow;
 	    }
 	}
-	request = (xReq *)oci->bufptr;
-	if ((gotnow < sizeof(xReq)) ||
-	    (gotnow < (needed = request_length(request, client))))
+	if (need_header && gotnow >= needed)
+	{
+	    request = (xReq *)oci->bufptr;
+	    needed = get_req_len(request, client);
+#ifdef XBIGREQ
+	    if (!needed && client->big_requests)
+	    {
+		move_header = TRUE;
+		if (gotnow < sizeof(xBigReq))
+		    needed = sizeof(xBigReq) >> 2;
+		else
+		    needed = get_big_req_len(request, client);
+	    }
+#endif
+	    client->req_len = needed;
+	    needed <<= 2;
+	}
+	if (gotnow < needed)
 	{
 	    YieldControlNoInput();
 	    return 0;
 	}
     }
     if (needed == 0)
-	needed = sizeof(xReq);
+    {
+#ifdef XBIGREQ
+	if (client->big_requests)
+	    needed = sizeof(xBigReq);
+	else
+#endif
+	    needed = sizeof(xReq);
+    }
     oci->lenLastReq = needed;
 
     /*
@@ -237,23 +304,39 @@ ReadRequestFromClient(client)
      *  can get into the queue.   
      */
 
-    if (gotnow >= needed + sizeof(xReq)) 
+    gotnow -= needed;
+    if (gotnow >= sizeof(xReq)) 
     {
 	request = (xReq *)(oci->bufptr + needed);
-        if (gotnow >= needed + request_length(request, client))
+	if (gotnow >= (result = (get_req_len(request, client) << 2))
+#ifdef XBIGREQ
+	    && (result ||
+		(client->big_requests &&
+		 (gotnow >= sizeof(xBigReq) &&
+		  gotnow >= (get_big_req_len(request, client) << 2))))
+#endif
+	    )
 	    BITSET(ClientsWithInput, fd);
-        else
+	else
 	    YieldControlNoInput();
     }
     else
     {
-	if (gotnow == needed)
+	if (!gotnow)
 	    AvailableInput = oc;
 	YieldControlNoInput();
     }
     if (++timesThisConnection >= MAX_TIMES_PER)
 	YieldControl();
-
+#ifdef XBIGREQ
+    if (move_header)
+    {
+	request = (xReq *)oci->bufptr;
+	oci->bufptr += (sizeof(xBigReq) - sizeof(xReq));
+	*(xReq *)oci->bufptr = *request;
+	oci->lenLastReq -= (sizeof(xBigReq) - sizeof(xReq));
+    }
+#endif
     client->requestBuffer = (pointer)oci->bufptr;
     return needed;
 }
@@ -330,7 +413,7 @@ InsertFakeRequest(client, data, count)
     request = (xReq *)oci->bufptr;
     gotnow += count;
     if ((gotnow >= sizeof(xReq)) &&
-	(gotnow >= request_length(request, client)))
+	(gotnow >= (get_req_len(request, client) << 2)))
 	BITSET(ClientsWithInput, fd);
     else
 	YieldControlNoInput();
@@ -350,21 +433,41 @@ ResetCurrentRequest(client)
     register ConnectionInputPtr oci = oc->input;
     int fd = oc->fd;
     register xReq *request;
-    int gotnow;
+    int gotnow, needed;
 
     if (AvailableInput == oc)
 	AvailableInput = (OsCommPtr)NULL;
     oci->lenLastReq = 0;
-    request = (xReq *)oci->bufptr;
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
-    if ((gotnow >= sizeof(xReq)) &&
-	(gotnow >= request_length(request, client)))
+    if (gotnow < sizeof(xReq))
     {
-	BITSET(ClientsWithInput, fd);
-	YieldControl();
+	YieldControlNoInput();
     }
     else
-	YieldControlNoInput();
+    {
+	request = (xReq *)oci->bufptr;
+	needed = get_req_len(request, client);
+#ifdef XBIGREQ
+	if (!needed && client->big_requests)
+	{
+	    oci->bufptr -= sizeof(xBigReq) - sizeof(xReq);
+	    *(xReq *)oci->bufptr = *request;
+	    ((xBigReq *)oci->bufptr)->length = client->req_len;
+	    if (client->swapped)
+	    {
+		char n;
+		swapl(&((xBigReq *)oci->bufptr)->length, n);
+	    }
+	}
+#endif
+	if (gotnow >= (needed << 2))
+	{
+	    BITSET(ClientsWithInput, fd);
+	    YieldControl();
+	}
+	else
+	    YieldControlNoInput();
+    }
 }
 
     /* lookup table for adding padding bytes to data that is read from
