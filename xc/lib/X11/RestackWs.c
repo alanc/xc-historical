@@ -1,4 +1,4 @@
-/* $XConsortium: XRestackWs.c,v 1.10 89/10/08 14:42:33 rws Exp $ */
+/* $XConsortium: RestackWs.c,v 1.11 91/01/06 11:47:48 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -38,7 +38,7 @@ XRestackWindows (dpy, windows, n)
 	Data32 (dpy, (long *)&val, 4);
 #else
 	{
-	    register unsigned long *values = (unsigned long *)
+	    register CARD32 *values = (CARD32 *)
 	      NEXTPTR(req,xConfigureWindowReq);
 	    *values++ = *(windows-1);
 	    *values   = Below;

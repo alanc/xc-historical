@@ -1,4 +1,4 @@
-/* $XConsortium: XMoveWin.c,v 11.9 88/09/06 16:10:38 jim Exp $ */
+/* $XConsortium: MoveWin.c,v 11.10 91/01/06 11:47:04 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -37,8 +37,7 @@ XMoveWindow (dpy, w, x, y)
     }
 #else
     {
-	unsigned long *valuePtr =
-	  (unsigned long *) NEXTPTR(req,xConfigureWindowReq);
+	CARD32 *valuePtr = (CARD32 *) NEXTPTR(req,xConfigureWindowReq);
 	*valuePtr++ = x;
 	*valuePtr = y;
     }

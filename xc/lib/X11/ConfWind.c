@@ -1,4 +1,4 @@
-/* $XConsortium: XConfWind.c,v 11.9 88/09/06 16:04:57 jim Exp $ */
+/* $XConsortium: ConfWind.c,v 11.10 91/01/06 11:44:40 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -40,8 +40,8 @@ unsigned int width, height;
     }
 #else
     {
-	register unsigned long *valuePtr =
-	  (unsigned long *) NEXTPTR(req,xConfigureWindowReq);
+	register CARD32 *valuePtr =
+	  (CARD32 *) NEXTPTR(req,xConfigureWindowReq);
 	*valuePtr++ = x;
 	*valuePtr++ = y;
 	*valuePtr++ = width;

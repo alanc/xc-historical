@@ -1,4 +1,4 @@
-/* $XConsortium: XChWindow.c,v 11.9 88/09/06 16:04:37 jim Exp $ */
+/* $XConsortium: ChWindow.c,v 11.10 91/01/06 11:44:26 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -38,10 +38,9 @@ unsigned int width, height;
     }
 #else
     {
-	unsigned long * valuePtr =
-	  (unsigned long *) NEXTPTR(req,xConfigureWindowReq);
+	CARD32 *valuePtr = (CARD32 *) NEXTPTR(req,xConfigureWindowReq);
 	*valuePtr++ = width;
-	*valuePtr++ = height;
+	*valuePtr = height;
     }
 #endif /* MUSTCOPY */
     UnlockDisplay(dpy);

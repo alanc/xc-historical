@@ -1,4 +1,4 @@
-/* $XConsortium: XCrWindow.c,v 11.12 88/09/06 16:06:05 jim Exp $ */
+/* $XConsortium: CrWindow.c,v 11.13 91/01/06 11:45:00 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -50,8 +50,7 @@ Window XCreateSimpleWindow(dpy, parent, x, y, width, height,
     }
 #else
     {
-	register unsigned long *valuePtr =
-	  (unsigned long *) NEXTPTR(req,xCreateWindowReq);
+	register CARD32 *valuePtr = (CARD32 *) NEXTPTR(req,xCreateWindowReq);
 	*valuePtr++ = background;
 	*valuePtr = border;
     }
