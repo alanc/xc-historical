@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.184 92/11/16 15:00:13 converse Exp $ */
+/* $XConsortium: Text.c,v 1.188 94/01/31 10:55:01 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -859,13 +859,16 @@ Position *x, *y;
  */
 
 void 
-_XawTextBuildLineTable (ctx, position, force_rebuild)
-TextWidget ctx;
-XawTextPosition position;	/* top. */
-#if NeedWidePrototypes
-int force_rebuild;
+#if NeedFunctionPrototypes
+_XawTextBuildLineTable (
+    TextWidget ctx,
+    XawTextPosition position,
+    _XtBoolean force_rebuild)
 #else
-Boolean force_rebuild;
+_XawTextBuildLineTable (ctx, position, force_rebuild)
+    TextWidget ctx;
+    XawTextPosition position;
+    Boolean force_rebuild;
 #endif
 {
   Dimension height = 0;

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.49 91/05/14 15:20:55 gildea Exp $
+* $XConsortium: TextP.h,v 1.50 94/01/31 10:55:09 kaleb Exp $
 */
 
 
@@ -228,19 +228,15 @@ typedef struct _TextRec {
  *
  *******************************************/
 
-void _XawTextBuildLineTable (
+extern void _XawTextBuildLineTable (
 #if NeedFunctionPrototypes
     TextWidget /*ctx*/, 
     XawTextPosition /*top pos*/, 
-#if NeedWidePrototypes
-    int
-#else
-    Boolean /* force_rebuild */
-#endif
+    _XtBoolean /* force_rebuild */
 #endif
 );
 
-extern char * _XawTextGetSTRING(
+extern char* _XawTextGetSTRING(
 #if NeedFunctionPrototypes
     TextWidget /*ctx*/, 
     XawTextPosition /*left*/, 

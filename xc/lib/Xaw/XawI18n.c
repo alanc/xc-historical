@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.c,v 1.0 94/01/01 00:00:00 kaleb Exp $ */
+/* $XConsortium: XawI18n.c,v 1.1 94/01/31 09:56:07 kaleb Exp $ */
 
 /* Copyright 1991 NCR Corporation - Dayton, Ohio, USA */
 /*
@@ -41,7 +41,7 @@ wchar_t atowc(c)
 #endif
 {
     wchar_t  wc;
-    unsigned char str[2];
+    char str[2];
 
     str[0] = c;
     str[1] = '\0';
