@@ -72,11 +72,23 @@ DependSubdirs($(SUBDIRS))
 
  DIRS_CONTRIB = /* $(AWMDIR) $(TWMDIR) */
 
-DIRS_TO_BUILD = $(DIRS_SERVER) \
-	$(USRLIBDIR) $(BINDIR) $(INCDIR) $(LIBDIR) /* $(LINTLIBDIR) */ \
+DIRS_TO_BUILD = $(DIRS_SERVER) /* $(LINTLIBDIR) */ \
+	$(USRLIBDIR) $(BINDIR) $(INCDIR) $(LIBDIR) $(CONFIGDIR) \
 	$(DIRS_XINIT) $(DIRS_XDM) $(DIRS_APPDEF) $(DIRS_CONTRIB)
 
 MakeDirectories(install, $(DIRS_TO_BUILD))
+
+/**/# special rule for installing the config files since we're not allowed
+/**/# to have Imakefiles in the config directory
+
+CONFIG_FILES = $(CONFIGSRC)/Imake.rules $(CONFIGSRC)/Imake.tmpl \
+	$(CONFIGSRC)/Project.tmpl $(CONFIGSRC)/site.def \
+	$(CONFIGSRC)/rt.bac $(CONFIGSRC)//**/*.cf 
+
+InstallMultipleDestFlags(install.conf,$(CONFIG_FILES),$(CONFIGDIR),$(INSTDATFLAGS))
+
+install:: install.conf
+	@echo "Done installing configuration files"
 
 MakeDirectories(install.man, $(MANPATH) $(MANDIR) $(LIBMANDIR))
 InstallManPage(X,$(MANDIR))
