@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.45 91/01/10 14:10:36 converse Exp $ */
+/* $XConsortium: Core.c,v 1.46 91/01/10 21:17:36 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -206,19 +206,24 @@ static void CoreInitialize(requested_widget, new_widget, args, num_args)
     ArgList args;
     Cardinal *num_args;
 {
-    XtTranslations save;
+    XtTranslations save1, save2;
     new_widget->core.window = (Window) NULL;
     new_widget->core.visible = TRUE;
     new_widget->core.event_table = NULL;
     new_widget->core.popup_list = NULL;
     new_widget->core.num_popups = 0;
     new_widget->core.tm.proc_table = NULL;
-    new_widget->core.tm.current_state = NULL;
     new_widget->core.tm.lastEventTime = 0;
-    save = new_widget->core.tm.translations;
+    /* magic semi-resource fetched by GetResources */
+    save1 = (XtTranslations)new_widget->core.tm.current_state;
+    new_widget->core.tm.current_state = NULL;
+    save2 = new_widget->core.tm.translations;
     new_widget->core.tm.translations =
 	(XtTranslations)new_widget->core.widget_class->core_class.tm_table;
-    _XtMergeTranslations(new_widget, save);
+    if (save1)
+	_XtMergeTranslations(new_widget, save1);
+    if (!save1 || save2)
+	_XtMergeTranslations(new_widget, save2);
 }
 
 static void CoreRealize(widget, value_mask, attributes)
