@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.10 89/12/05 15:51:16 swick Exp $
+ * $XConsortium: xcutsel.c,v 1.11 89/12/08 13:25:23 swick Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.10 89/12/05 15:51:16 swick Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.11 89/12/08 13:25:23 swick Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -38,6 +38,7 @@ static char rcsid[] = "$XConsortium: xcutsel.c,v 1.10 89/12/05 15:51:16 swick Ex
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xfuncs.h>
 
 static XrmOptionDescRec options[] = {
     {"-selection", "selection",	XrmoptionSepArg, NULL},

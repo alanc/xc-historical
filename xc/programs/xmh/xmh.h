@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.28 89/11/25 21:07:38 converse Exp $
+ * $XConsortium: xmh.h,v 2.29 89/12/15 11:44:52 kit Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/Intrinsic.h>

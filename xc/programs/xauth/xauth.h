@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xauth.h,v 1.10 89/01/02 18:06:26 jim Exp $
+ * $XConsortium: xauth.h,v 1.11 89/01/03 11:40:06 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 #include <X11/Xauth.h>
+#include <X11/Xfuncs.h>
 
 #ifndef True
 typedef int Bool;

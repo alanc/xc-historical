@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.17 90/04/24 17:35:59 converse Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.18 90/11/07 11:00:58 dave Exp $";
 #endif
 
 /*
@@ -39,6 +39,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xmu/Atoms.h>
+#include <X11/Xfuncs.h>
 
 #define MIN_APP_DEFAULTS_VERSION 1
 #define FIELD_COUNT 14

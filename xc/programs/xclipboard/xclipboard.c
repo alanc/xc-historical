@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.18 90/10/10 14:59:41 dave Exp $
+ * $XConsortium: xclipboard.c,v 1.19 90/11/07 09:53:38 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.18 90/10/10 14:59:41 dave Exp $ */
+/* $XConsortium: xclipboard.c,v 1.19 90/11/07 09:53:38 dave Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -42,6 +42,7 @@
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xfuncs.h>
 
 #define Command commandWidgetClass
 #define Label	labelWidgetClass

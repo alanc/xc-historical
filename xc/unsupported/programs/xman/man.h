@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.18 89/12/07 10:46:22 rws Exp $
+ * $XConsortium: man.h,v 1.19 89/12/15 21:06:54 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -23,6 +23,8 @@
 /* Std system and C header files */
 
 #include <stdio.h>
+
+#include <X11/Xfuncs.h>
 
 /* X include files */
 

@@ -1,3 +1,5 @@
+/* $XConsortium: xhost.c,v 11.36 89/12/16 20:42:36 rws Exp $ */
+ 
 /*
 
 Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
@@ -16,10 +18,6 @@ without express or implied warranty.
 
 */
 
-#ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.35 89/12/10 17:12:07 rws Exp $";
-#endif
- 
 #ifdef TCPCONN
 #define NEEDSOCKETS
 #endif
@@ -38,6 +36,7 @@ static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.35 89/12/10 17:12:07 rw
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xmu/Error.h>
+#include <X11/Xfuncs.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <ctype.h>

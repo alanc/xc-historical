@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.67 90/12/01 13:05:40 rws Exp $
+ * $XConsortium: twm.h,v 1.68 90/12/13 11:43:52 dave Exp $
  *
  * twm include file
  *
@@ -42,6 +42,7 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/extensions/shape.h>
+#include <X11/Xfuncs.h>
 
 #ifndef WithdrawnState
 #define WithdrawnState 0
