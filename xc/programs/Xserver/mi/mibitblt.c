@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.0 89/06/09 15:07:50 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 5.1 89/06/09 16:27:24 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -66,6 +66,8 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     int			srcx, srcy, dstx, dsty, i, j, y, width, height,
     			xMin, xMax, yMin, yMax;
     unsigned int	*ordering;
+    int			numRects;
+    BoxPtr		boxes;
 
     srcx = xIn + pSrcDrawable->x;
     srcy = yIn + pSrcDrawable->y;
@@ -94,7 +96,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	    prgnSrcClip = NotClippedByChildren ((WindowPtr) pSrcDrawable);
 	    realSrcClip = 1;
 	} else
-	    prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
+	    prgnSrcClip = &((WindowPtr)pSrcDrawable)->clipList;
     }
 
     /* If the src drawable is a window, we need to translate the srcBox so
@@ -116,8 +118,10 @@ miCopyArea(pSrcDrawable, pDstDrawable,
         ALLOCATE_LOCAL(heightSrc * sizeof(DDXPointRec));
     pwidthFirst = pwidth = (unsigned int *)
         ALLOCATE_LOCAL(heightSrc * sizeof(unsigned int));
+    numRects = REGION_NUM_RECTS(prgnSrcClip);
+    boxes = REGION_RECTS(prgnSrcClip);
     ordering = (unsigned int *)
-        ALLOCATE_LOCAL(prgnSrcClip->numRects * sizeof(unsigned int));
+        ALLOCATE_LOCAL(numRects * sizeof(unsigned int));
     if(!pptFirst || !pwidthFirst || !ordering)
     {
        if (ordering)
@@ -130,30 +134,27 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     }
 
     /* If not the same drawable then order of move doesn't matter.
-       Following assumes that prgnSrcClip->rects are sorted from top
+       Following assumes that boxes are sorted from top
        to bottom and left to right.
     */
     if ((pSrcDrawable != pDstDrawable) &&
 	((pGC->subWindowMode != IncludeInferiors) ||
 	 (pSrcDrawable->type == DRAWABLE_PIXMAP) ||
 	 (pDstDrawable->type == DRAWABLE_PIXMAP)))
-      for (i=0; i < prgnSrcClip->numRects; i++)
+      for (i=0; i < numRects; i++)
         ordering[i] = i;
     else { /* within same drawable, must sequence moves carefully! */
       if (dsty <= srcBox.y1) { /* Scroll up or stationary vertical.
                                   Vertical order OK */
         if (dstx <= srcBox.x1) /* Scroll left or stationary horizontal.
                                   Horizontal order OK as well */
-          for (i=0; i < prgnSrcClip->numRects; i++)
+          for (i=0; i < numRects; i++)
             ordering[i] = i;
         else { /* scroll right. must reverse horizontal banding of rects. */
-          for (i=0, j=1, xMax=0;
-               i < prgnSrcClip->numRects;
-               j=i+1, xMax=i) {
+          for (i=0, j=1, xMax=0; i < numRects; j=i+1, xMax=i) {
             /* find extent of current horizontal band */
-            y=prgnSrcClip->rects[i].y1; /* band has this y coordinate */
-            while ((j < prgnSrcClip->numRects) &&
-                   (prgnSrcClip->rects[j].y1 == y))
+            y=boxes[i].y1; /* band has this y coordinate */
+            while ((j < numRects) && (boxes[j].y1 == y))
               j++;
             /* reverse the horizontal band in the output ordering */
             for (j-- ; j >= xMax; j--, i++)
@@ -163,13 +164,12 @@ miCopyArea(pSrcDrawable, pDstDrawable,
       }
       else { /* Scroll down. Must reverse vertical banding. */
         if (dstx < srcBox.x1) { /* Scroll left. Horizontal order OK. */
-          for (i=prgnSrcClip->numRects-1, j=i-1, yMin=i, yMax=0;
+          for (i=numRects-1, j=i-1, yMin=i, yMax=0;
               i >= 0;
               j=i-1, yMin=i) {
             /* find extent of current horizontal band */
-            y=prgnSrcClip->rects[i].y1; /* band has this y coordinate */
-            while ((j >= 0) &&
-                   (prgnSrcClip->rects[j].y1 == y))
+            y=boxes[i].y1; /* band has this y coordinate */
+            while ((j >= 0) && (boxes[j].y1 == y))
               j--;
             /* reverse the horizontal band in the output ordering */
             for (j++ ; j <= yMin; j++, i--, yMax++)
@@ -180,18 +180,14 @@ miCopyArea(pSrcDrawable, pDstDrawable,
                 Reverse horizontal order as well (if stationary, horizontal
                 order can be swapped without penalty and this is faster
                 to compute). */
-          for (i=0, j=prgnSrcClip->numRects-1;
-               i < prgnSrcClip->numRects;
-               i++, j--)
+          for (i=0, j=numRects-1; i < numRects; i++, j--)
               ordering[i] = j;
       }
     }
  
-     for(i = 0;
-         i < prgnSrcClip->numRects;
-         i++)
+     for(i = 0; i < numRects; i++)
      {
-        prect = &prgnSrcClip->rects[ordering[i]];
+        prect = &boxes[ordering[i]];
   	xMin = max(prect->x1, srcBox.x1);
   	xMax = min(prect->x2, srcBox.x2);
   	yMin = max(prect->y1, srcBox.y1);
@@ -598,7 +594,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 	    (*pGC->pScreen->RegionDestroy) (clipList);
 	} else
 	    (*pGC->pScreen->Intersect)
-		    (prgnSrc, prgnSrc, ((WindowPtr)pSrcDrawable)->clipList);
+		    (prgnSrc, prgnSrc, &((WindowPtr)pSrcDrawable)->clipList);
     }
 
     box = *(*pGC->pScreen->RegionExtents)(prgnSrc);
@@ -834,26 +830,4 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	DEALLOCATE_LOCAL(pptFirst);
 	break;
     }
-}
-
-/* MICLEARDRAWABLE -- sets the entire drawable to the background color of
- * the GC.  Useful when we have a scratch drawable and need to initialize 
- * it. */
-miClearDrawable(pDraw, pGC)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
-{
-    unsigned long    fg = pGC->fgPixel;
-    unsigned long    bg = pGC->bgPixel;
-    xRectangle rect;
-
-    rect.x = 0;
-    rect.y = 0;
-    rect.width = pDraw->width;
-    rect.height = pDraw->height;
-    DoChangeGC(pGC, GCForeground, &bg, 0);
-    ValidateGC(pDraw, pGC);
-    (*pGC->ops->PolyFillRect)(pDraw, pGC, 1, &rect);
-    DoChangeGC(pGC, GCForeground, &fg, 0);
-    ValidateGC(pDraw, pGC);
 }
