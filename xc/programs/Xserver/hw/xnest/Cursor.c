@@ -1,4 +1,4 @@
-/* $XConsortium: xnestCursor.c,v 1.1 93/06/23 16:23:27 dmatic Exp $ */
+/* $XConsortium: Cursor.c,v 1.1 93/07/12 15:28:02 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -90,7 +90,7 @@ Bool xnestRealizeCursor(pScreen, pCursor)
   XImage *ximage;
   Pixmap source, mask;
   XColor fg_color, bg_color;
-  Mask valuemask;
+  unsigned long valuemask;
   XGCValues values;
 
   valuemask = GCFunction | 
