@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.216 92/01/09 18:42:15 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.217 92/01/19 15:00:17 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -72,40 +72,40 @@ typedef char *XPointer;
 #define QueuedAfterReading 1
 #define QueuedAfterFlush 2
 
-#define ConnectionNumber(dpy) 	((dpy)->fd)
-#define RootWindow(dpy, scr) 	(((dpy)->screens[(scr)]).root)
-#define DefaultScreen(dpy) 	((dpy)->default_screen)
-#define DefaultRootWindow(dpy) 	(((dpy)->screens[(dpy)->default_screen]).root)
-#define DefaultVisual(dpy, scr) (((dpy)->screens[(scr)]).root_visual)
-#define DefaultGC(dpy, scr) 	(((dpy)->screens[(scr)]).default_gc)
-#define BlackPixel(dpy, scr) 	(((dpy)->screens[(scr)]).black_pixel)
-#define WhitePixel(dpy, scr) 	(((dpy)->screens[(scr)]).white_pixel)
+#define ConnectionNumber(dpy) 	(((_XPrivDisplay)dpy)->fd)
+#define RootWindow(dpy, scr) 	(ScreenOfDisplay(dpy,scr)->root)
+#define DefaultScreen(dpy) 	(((_XPrivDisplay)dpy)->default_screen)
+#define DefaultRootWindow(dpy) 	(ScreenOfDisplay(dpy,DefaultScreen(dpy))->root)
+#define DefaultVisual(dpy, scr) (ScreenOfDisplay(dpy,scr)->root_visual)
+#define DefaultGC(dpy, scr) 	(ScreenOfDisplay(dpy,scr)->default_gc)
+#define BlackPixel(dpy, scr) 	(ScreenOfDisplay(dpy,scr)->black_pixel)
+#define WhitePixel(dpy, scr) 	(ScreenOfDisplay(dpy,scr)->white_pixel)
 #define AllPlanes 		((unsigned long)~0L)
-#define QLength(dpy) 		((dpy)->qlen)
-#define DisplayWidth(dpy, scr) 	(((dpy)->screens[(scr)]).width)
-#define DisplayHeight(dpy, scr) (((dpy)->screens[(scr)]).height)
-#define DisplayWidthMM(dpy, scr)(((dpy)->screens[(scr)]).mwidth)
-#define DisplayHeightMM(dpy, scr)(((dpy)->screens[(scr)]).mheight)
-#define DisplayPlanes(dpy, scr) (((dpy)->screens[(scr)]).root_depth)
-#define DisplayCells(dpy, scr) 	(DefaultVisual((dpy), (scr))->map_entries)
-#define ScreenCount(dpy) 	((dpy)->nscreens)
-#define ServerVendor(dpy) 	((dpy)->vendor)
-#define ProtocolVersion(dpy) 	((dpy)->proto_major_version)
-#define ProtocolRevision(dpy) 	((dpy)->proto_minor_version)
-#define VendorRelease(dpy) 	((dpy)->release)
-#define DisplayString(dpy) 	((dpy)->display_name)
-#define DefaultDepth(dpy, scr) 	(((dpy)->screens[(scr)]).root_depth)
-#define DefaultColormap(dpy, scr)(((dpy)->screens[(scr)]).cmap)
-#define BitmapUnit(dpy) 	((dpy)->bitmap_unit)
-#define BitmapBitOrder(dpy) 	((dpy)->bitmap_bit_order)
-#define BitmapPad(dpy) 		((dpy)->bitmap_pad)
-#define ImageByteOrder(dpy) 	((dpy)->byte_order)
-#define NextRequest(dpy)	((dpy)->request + 1)
-#define LastKnownRequestProcessed(dpy)	((dpy)->last_request_read)
+#define QLength(dpy) 		(((_XPrivDisplay)dpy)->qlen)
+#define DisplayWidth(dpy, scr) 	(ScreenOfDisplay(dpy,scr)->width)
+#define DisplayHeight(dpy, scr) (ScreenOfDisplay(dpy,scr)->height)
+#define DisplayWidthMM(dpy, scr)(ScreenOfDisplay(dpy,scr)->mwidth)
+#define DisplayHeightMM(dpy, scr)(ScreenOfDisplay(dpy,scr)->mheight)
+#define DisplayPlanes(dpy, scr) (ScreenOfDisplay(dpy,scr)->root_depth)
+#define DisplayCells(dpy, scr) 	(DefaultVisual(dpy,scr)->map_entries)
+#define ScreenCount(dpy) 	(((_XPrivDisplay)dpy)->nscreens)
+#define ServerVendor(dpy) 	(((_XPrivDisplay)dpy)->vendor)
+#define ProtocolVersion(dpy) 	(((_XPrivDisplay)dpy)->proto_major_version)
+#define ProtocolRevision(dpy) 	(((_XPrivDisplay)dpy)->proto_minor_version)
+#define VendorRelease(dpy) 	(((_XPrivDisplay)dpy)->release)
+#define DisplayString(dpy) 	(((_XPrivDisplay)dpy)->display_name)
+#define DefaultDepth(dpy, scr) 	(ScreenOfDisplay(dpy,scr)->root_depth)
+#define DefaultColormap(dpy, scr)(ScreenOfDisplay(dpy,scr)->cmap)
+#define BitmapUnit(dpy) 	(((_XPrivDisplay)dpy)->bitmap_unit)
+#define BitmapBitOrder(dpy) 	(((_XPrivDisplay)dpy)->bitmap_bit_order)
+#define BitmapPad(dpy) 		(((_XPrivDisplay)dpy)->bitmap_pad)
+#define ImageByteOrder(dpy) 	(((_XPrivDisplay)dpy)->byte_order)
+#define NextRequest(dpy)	(((_XPrivDisplay)dpy)->request + 1)
+#define LastKnownRequestProcessed(dpy)	(((_XPrivDisplay)dpy)->last_request_read)
 
 /* macros for screen oriented applications (toolkit) */
-#define ScreenOfDisplay(dpy, scr)(&((dpy)->screens[(scr)]))
-#define DefaultScreenOfDisplay(dpy) (&((dpy)->screens[(dpy)->default_screen]))
+#define ScreenOfDisplay(dpy, scr)(&((_XPrivDisplay)dpy)->screens[scr])
+#define DefaultScreenOfDisplay(dpy) ScreenOfDisplay(dpy,DefaultScreen(dpy))
 #define DisplayOfScreen(s)	((s)->display)
 #define RootWindowOfScreen(s)	((s)->root)
 #define BlackPixelOfScreen(s)	((s)->black_pixel)
@@ -193,15 +193,15 @@ typedef struct {
  * dependent.  A GC should be treated as opaque by application code.
  */
 
-typedef struct _XGC {
+typedef struct _XGC
+#ifdef XLIB_ILLEGAL_ACCESS
+{
     XExtData *ext_data;	/* hook for extension to hang data */
     GContext gid;	/* protocol ID for graphics context */
-    Bool rects;		/* boolean: TRUE if clipmask is list of rectangles */
-    Bool dashes;	/* boolean: TRUE if dash-list is really a list */
-    unsigned long dirty;/* cache dirty bits */
-    XGCValues values;	/* shadow structure of values */
-} *GC;
-
+    /* there is more to this structure, but it is private to Xlib */
+}
+#endif
+*GC;
 
 /*
  * Visual structure; contains information about colormapping possible.
@@ -444,90 +444,66 @@ typedef struct {
  	KeyCode *modifiermap;	/* An 8 by max_keypermod array of modifiers */
 } XModifierKeymap;
 
+
 /*
  * Display datatype maintaining display specific data.
  * The contents of this structure are implementation dependent.
  * A Display should be treated as opaque by application code.
  */
-typedef struct _XDisplay {
+#ifndef XLIB_ILLEGAL_ACCESS
+typedef struct _XDisplay Display;
+#endif
+
+typedef struct 
+#ifdef XLIB_ILLEGAL_ACCESS
+_XDisplay
+#endif
+{
 	XExtData *ext_data;	/* hook for extension to hang data */
-	struct _XFreeFuncs *free_funcs; /* internal free functions */
+	struct _XPrivate *private1;
 	int fd;			/* Network socket. */
-	int lock;		/* is someone in critical section? */
-	int proto_major_version;/* maj. version of server's X protocol */
+	int private2;
+	int proto_major_version;/* major version of server's X protocol */
 	int proto_minor_version;/* minor version of servers X protocol */
 	char *vendor;		/* vendor of the server hardware */
-        XID resource_base;	/* resource ID base */
-	XID resource_mask;	/* resource ID mask bits */
-	XID resource_id;	/* allocator current ID */
-	int resource_shift;	/* allocator shift to correct bits */
-	XID (*resource_alloc)(); /* allocator function */
+        XID private3;
+	XID private4;
+	XID private5;
+	int private6;
+	XID (*resource_alloc)();/* allocator function */
 	int byte_order;		/* screen byte order, LSBFirst, MSBFirst */
 	int bitmap_unit;	/* padding and data requirements */
 	int bitmap_pad;		/* padding requirements on bitmaps */
 	int bitmap_bit_order;	/* LeastSignificant or MostSignificant */
 	int nformats;		/* number of pixmap formats in list */
 	ScreenFormat *pixmap_format;	/* pixmap format list */
-	int vnumber;		/* Xlib's X protocol version number. */
+	int private8;
 	int release;		/* release of the server */
-	struct _XSQEvent *head, *tail;	/* Input event queue. */
+	struct _XPrivate *private9, *private10;
 	int qlen;		/* Length of input event queue */
 	unsigned long last_request_read; /* seq number of last event read */
 	unsigned long request;	/* sequence number of last request. */
-	char *last_req;		/* beginning of last request, or dummy */
-	char *buffer;		/* Output buffer starting address. */
-	char *bufptr;		/* Output buffer index pointer. */
-	char *bufmax;		/* Output buffer maximum+1 address. */
+	XPointer private11;
+	XPointer private12;
+	XPointer private13;
+	XPointer private14;
 	unsigned max_request_size; /* maximum number 32 bit words in request*/
 	struct _XrmHashBucketRec *db;
-	int (*synchandler)();	/* Synchronization handler */
+	int (*private15)();
 	char *display_name;	/* "host:display" string used on this connect*/
 	int default_screen;	/* default screen for operations */
 	int nscreens;		/* number of screens on this server*/
 	Screen *screens;	/* pointer to list of screens */
 	unsigned long motion_buffer;	/* size of motion buffer */
-	Window current;		/* for use internally for Keymap notify */
+	unsigned long private16;
 	int min_keycode;	/* minimum defined keycode */
 	int max_keycode;	/* maximum defined keycode */
-	KeySym *keysyms;	/* This server's keysyms */
-	XModifierKeymap *modifiermap;	/* This server's modifier keymap */
-	int keysyms_per_keycode;/* number of rows */
-	char *xdefaults;	/* contents of defaults from server */
-	char *scratch_buffer;	/* place to hang scratch buffer */
-	unsigned long scratch_length;	/* length of scratch buffer */
-	int ext_number;		/* extension number on this display */
-	struct _XExten *ext_procs; /* extensions initialized on this display */
-	/*
-	 * the following can be fixed size, as the protocol defines how
-	 * much address space is available. 
-	 * While this could be done using the extension vector, there
-	 * may be MANY events processed, so a search through the extension
-	 * list to find the right procedure for each event might be
-	 * expensive if many extensions are being used.
-	 */
-	Bool (*event_vec[128])();  /* vector for wire to event */
-	Status (*wire_vec[128])(); /* vector for event to wire */
-	KeySym lock_meaning;	   /* for XLookupString */
-	struct _XKeytrans *key_bindings; /* for XLookupString */
-	Font cursor_font;	   /* for XCreateFontCursor */
-	struct _XDisplayAtoms *atoms; /* for XInternAtom */
-	struct _XInternalAsync *async_handlers; /* for internal async */
-	unsigned long flags;	   /* internal connection flags */
-	unsigned int mode_switch;  /* keyboard group modifiers */
-	struct _XContextDB *context_db; /* context database */
-	Bool (**error_vec)();      /* vector for wire to error */
-	/*
-	 * Xcms information
-	 */
-	struct {
-	   XPointer defaultCCCs;  /* pointer to an array of default XcmsCCC */
-	   XPointer clientCmaps;  /* pointer to linked list of XcmsCmapRec */
-	   XPointer perVisualIntensityMaps;
-				  /* linked list of XcmsIntensityMap */
-	} cms;
-	int conn_checker;         /* ugly thing used by _XEventsQueued */
-	struct _XIMFilter *im_filters;
-} Display;
+	/* there is more to this structure, but it is private to Xlib */
+}
+#ifdef XLIB_ILLEGAL_ACCESS
+Display, 
+#endif
+*_XPrivDisplay;
 
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
 #undef _XEVENT_
@@ -961,7 +937,7 @@ typedef union _XEvent {
 } XEvent;
 #endif
 
-#define XAllocID(dpy) ((*(dpy)->resource_alloc)((dpy)))
+#define XAllocID(dpy) ((*((_XPrivDisplay)dpy)->resource_alloc)((dpy)))
 
 /*
  * per character font metric information.
