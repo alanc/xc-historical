@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.25 89/07/21 19:55:38 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.26 89/08/14 14:43:24 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -51,6 +51,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/AsciiTextP.h>
+#include <X11/Xaw/Cardinals.h>
 
 extern void _XawTextBuildLineTable(); /* in Text.c */
 
@@ -124,10 +125,23 @@ ArgList args;
 Cardinal *num_args;
 {
   AsciiWidget w = (AsciiWidget) widget;
+  Arg arglist[1];
+  XawTextEditType type;
   void (*NullProc)() = NULL;	/* some compilers require this */
   
   w->text.source = XawAsciiSourceCreate( widget, args, *num_args );
   w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
+  
+/*
+ * Do not display caret in read only widget. 
+ */
+
+  XtSetArg(arglist[0], XtNeditType, &type);
+  XtGetValues(w, arglist, ONE);
+  if (type == XawtextRead) {
+    XtSetArg(arglist[0], XtNdisplayCaret, FALSE);
+    XtSetValues(w, arglist, ONE);
+  }
   
   w->text.lastPos = /* GETLASTPOS */
     (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
