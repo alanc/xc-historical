@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.5 91/02/05 16:59:05 gildea Exp $ */
+/* $XConsortium: TMkey.c,v 1.6 91/03/28 15:42:16 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -231,13 +231,18 @@ Boolean _XtMatchUsingDontCareMods(typeMatch, modMatch, eventSeq)
 void XtConvertCase(dpy,keysym,lower_return,upper_return)
     Display *dpy;
     KeySym keysym;
-    KeySym* lower_return,*upper_return;
+    KeySym *lower_return, *upper_return;
 {
-    (*_XtGetPerDisplay(dpy)->defaultCaseConverter)
-	(dpy, keysym, lower_return, upper_return);
+    register CaseConverterPtr ptr = _XtGetPerDisplay(dpy)->case_cvt;
+
+    *lower_return = *upper_return = keysym;
+    for (;  ptr; ptr = ptr->next)
+	if (ptr->start <= keysym && keysym <= ptr->stop) {
+	    (*ptr->proc)(dpy, keysym, lower_return, upper_return);
+	    return;
+	}
 }
-
-
+    
 Boolean _XtMatchUsingStandardMods (typeMatch, modMatch, eventSeq)
     TMTypeMatch typeMatch;
     TMModifierMatch modMatch;
@@ -430,21 +435,21 @@ void XtTranslateKey(dpy, keycode, modifiers,
     if (!(modifiers & ShiftMask) &&
 	(!(modifiers & LockMask) || (pd->lock_meaning == NoSymbol))) {
 	if ((per == 1) || (syms[1] == NoSymbol))
-	    (*pd->defaultCaseConverter)(dpy, syms[0], keysym_return, &usym);
+	    XtConvertCase(dpy, syms[0], keysym_return, &usym);
 	else
 	    *keysym_return = syms[0];
     } else if (!(modifiers & LockMask) ||
 	       (dpy->lock_meaning != XK_Caps_Lock)) {
 	if ((per == 1) || ((usym = syms[1]) == NoSymbol))
-	    (*pd->defaultCaseConverter)(dpy, syms[0], &lsym, &usym);
+	    XtConvertCase(dpy, syms[0], &lsym, &usym);
 	*keysym_return = usym;
     } else {
 	if ((per == 1) || ((sym = syms[1]) == NoSymbol))
 	    sym = syms[0];
-	(*pd->defaultCaseConverter)(dpy, sym, &lsym, &usym);
+	XtConvertCase(dpy, sym, &lsym, &usym);
 	if (!(modifiers & ShiftMask) && (sym != syms[0]) &&
 	    ((sym != usym) || (lsym == usym)))
-	    (*pd->defaultCaseConverter)(dpy, syms[0], &lsym, &usym);
+	    XtConvertCase(dpy, syms[0], &lsym, &usym);
 	*keysym_return = usym;
     }
 
@@ -465,18 +470,31 @@ void XtSetKeyTranslator(dpy, translator)
     /* XXX should now redo grabs */
 }
 
-/* ARGSUSED */
 void XtRegisterCaseConverter(dpy, proc, start, stop)
-
     Display *dpy;
     XtCaseProc proc;
     KeySym start;
     KeySym stop;
-
 {
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    CaseConverterPtr ptr, prev;
 
-    pd->defaultCaseConverter = proc;
+    ptr = (CaseConverterPtr) XtMalloc(sizeof(CaseConverterRec));
+    ptr->start = start;
+    ptr->stop = stop;
+    ptr->proc = proc;
+    ptr->next = pd->case_cvt;
+    pd->case_cvt = ptr;
+
+    /* Remove obsolete case converters from the list */
+    prev = ptr;
+    for (ptr=ptr->next; ptr; ptr=prev->next) {
+	if (start <= ptr->start && stop >= ptr->stop) {
+	    prev->next = ptr->next;
+	    XtFree((char *)ptr);
+	} 
+	else prev = ptr;
+    }
     FLUSHKEYCACHE(pd->tm_context);
     /* XXX should now redo grabs */
 }
@@ -557,7 +575,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
 	if (!match)
 	    for (i = 1; i < 5; i += 2) {
 		if ((per == i) || ((per > i) && (syms[i] == NoSymbol))) {
-		    (*pd->defaultCaseConverter)(dpy, syms[i-1], &lsym, &usym);
+		    XtConvertCase(dpy, syms[i-1], &lsym, &usym);
 		    if ((lsym == keysym) || (usym == keysym)) {
 			match = 1;
 			break;
