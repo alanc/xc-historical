@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.3 88/02/12 10:14:49 jim Exp $
+ *	$Header: misc.c,v 1.4 88/02/16 14:59:57 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.3 88/02/12 10:14:49 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.4 88/02/16 14:59:57 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -479,6 +479,7 @@ Redraw()
 	}
 }
 
+#ifdef obsolete
 SyncUnmap(win, mask)
 register Window win;
 register long int mask;
@@ -490,7 +491,9 @@ register long int mask;
 	do { /* ignore events through unmap */
 		XWindowEvent(screen->display, win, mask, rep);
 	} while(rep->type != UnmapNotify);
+	return;
 }
+#endif /* obsolete */
 
 StartLog(screen)
 register TScreen *screen;
