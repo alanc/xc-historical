@@ -50,6 +50,7 @@ EXPORTS
  IceWriteAuthFileEntry
  _IceTransGetPeerAddr
  _IceTransGetPeerNetworkId
+ _IceErrorBadMinor
  _IceErrorBadLength
  _IceErrorBadState
  _IceErrorBadValue
