@@ -1,5 +1,4 @@
-/*
- * $XConsortium: XawInit.h,v 1.1 89/10/09 14:59:48 jim Exp $
+/* $XConsortium: XawInit.h,v 1.2 90/03/28 17:22:56 swick Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -21,12 +20,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern void XawInitializeWidgetSet();	/* called from ClassInit procs */
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND

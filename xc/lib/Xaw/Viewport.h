@@ -1,7 +1,4 @@
-/*
- * $XConsortium: Viewport.h,v 1.18 90/05/08 15:18:25 converse Exp $
- * Public definitions for Viewport widget
- */
+/* $XConsortium: Viewport.h,v 1.19 91/05/04 18:58:56 rws Exp $ */
 
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,8 +24,8 @@ SOFTWARE.
 
 ********************************************************/
 
-#ifndef _Viewport_h
-#define _Viewport_h
+#ifndef _XawViewport_h
+#define _XawViewport_h
 
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Reports.h>
@@ -70,9 +67,7 @@ extern WidgetClass viewportWidgetClass;
 typedef struct _ViewportClassRec *ViewportWidgetClass;
 typedef struct _ViewportRec  *ViewportWidget;
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern void XawViewportSetLocation (
 #if NeedFunctionPrototypes
@@ -100,8 +95,6 @@ extern void XawViewportSetCoordinates (
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
-#endif /* _Viewport_h */
+#endif /* _XawViewport_h */
