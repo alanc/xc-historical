@@ -1,7 +1,5 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.113 90/04/04 11:27:50 swick Exp $";
+/* "$XConsortium: Event.c,v 1.114 90/04/13 19:50:31 swick Exp $"; */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
-#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +28,12 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include "Shell.h"
 #include "StringDefs.h"
+
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
 
 /*
  * These are definitions to make the code that handles exposure compresssion
@@ -703,7 +707,7 @@ static void ConvertTypeToMask (eventType, mask, grabType)
     GrabType    *grabType;
 {
 
-static struct {
+static Const struct {
     EventMask   mask;
     GrabType    grabType;
 } masks[] = {
