@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.211 94/01/19 12:19:10 gildea Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.212 94/01/19 12:51:41 converse Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -593,10 +593,13 @@ UnsharedLibReferences(OLDX,oldX,$(OLDXLIBSRC))
 #ifndef SharedXtRev
 #define SharedXtRev 5.0
 #endif
-SharedDSLibReferences(XTOOL,Xt,$(TOOLKITSRC),SOXTREV,SharedXtRev)
+SharedDSLibReferences(XTOOLONLY,Xt,$(TOOLKITSRC),SOXTREV,SharedXtRev)
 #else
-UnsharedLibReferences(XTOOL,Xt,$(TOOLKITSRC))
+UnsharedLibReferences(XTOOLONLY,Xt,$(TOOLKITSRC))
 #endif
+      DEPXTOOLLIB = $(DEPXTOOLONLYLIB) $(DEPSMLIB) $(DEPICELIB)
+         XTOOLLIB = $(XTOOLONLYLIB) $(SMLIB) $(ICELIB)
+     LINTXTOOLLIB = $(LINTXTOOLONLYLIB)
 
 #ifndef SharedLibXaw
 #define SharedLibXaw HasSharedLibraries
@@ -844,13 +847,6 @@ UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
 #endif
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
-#endif
-
-#ifndef XawSessionClientDepLibs
-#define XawSessionClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPSMLIB) $(DEPICELIB)
-#endif
-#ifndef XawSessionClientLibs
-#define XawSessionClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(SMLIB) $(ICELIB)
 #endif
 
 #ifndef NeedDefaultDepLibs
