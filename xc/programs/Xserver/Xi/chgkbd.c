@@ -1,5 +1,5 @@
 #ifdef XINPUT
-/* $XConsortium: xchgkbd.c,v 1.3 89/10/10 16:07:34 gms Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.4 89/11/06 19:32:31 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -42,6 +42,7 @@ SOFTWARE.
 extern	int 		IReqCode;
 extern	int 		BadDevice;
 extern	int 		ChangeDeviceNotify;
+extern	Mask		ChangeDeviceNotifyMask;
 extern	InputInfo	inputInfo;
 extern	void		(* ReplySwapVector[256]) ();
 DeviceIntPtr		LookupDeviceIntRec();
@@ -75,7 +76,7 @@ ProcXChangeKeyboardDevice (client)
     {
     extern			ChangeKeyboardDevice();
     int				i;
-    DeviceIntPtr 		dev, tdev;
+    DeviceIntPtr 		dev;
     GrabPtr 			grab;
     KeyClassPtr 		k;
     xChangeKeyboardDeviceReply	rep;
@@ -127,13 +128,7 @@ ProcXChangeKeyboardDevice (client)
     ev.time = currentTime.milliseconds;
     ev.request = NewKeyboard;
 
-    /* 0 is the server client */
-    for (i=1; i<currentMaxClients; i++)
-        if (clients[i] && ! clients[i]->clientGone)
-	    {
-	    ev.sequenceNumber = clients[i]->sequence;
-            WriteEventsToClient(clients[i], 1, &ev);
-	    }
+    SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
     SendMappingNotify (MappingKeyboard, k->curKeySyms.minKeyCode, 
 	k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode + 1);
 

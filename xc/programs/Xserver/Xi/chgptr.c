@@ -35,14 +35,19 @@ SOFTWARE.
 #define	 NEED_REPLIES
 #include "X.h"				/* for inputstr.h    */
 #include "Xproto.h"			/* Request macro     */
-#include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "inputstr.h"			/* DeviceIntPtr	     */
+#include "windowstr.h"			/* window structure  */
+#include "scrnintstr.h"			/* screen structure  */
 
 extern	int 		IReqCode;
 extern	int 		BadDevice;
 extern	int 		ChangeDeviceNotify;
+extern	Mask		ChangeDeviceNotifyMask;
 extern	InputInfo	inputInfo;
+extern	ScreenInfo	screenInfo;
+extern	WindowPtr	*WindowTable;
 extern	void		(* ReplySwapVector[256]) ();
 DeviceIntPtr		LookupDeviceIntRec();
 
@@ -127,14 +132,7 @@ ProcXChangePointerDevice (client)
     ev.time = currentTime.milliseconds;
     ev.request = NewPointer;
 
-    /* 0 is the server client */
-    for (i=1; i<currentMaxClients; i++)
-        if (clients[i] && ! clients[i]->clientGone)
-	    {
-	    ev.sequenceNumber = clients[i]->sequence;
-            WriteEventsToClient(clients[i], 1, &ev);
-	    }
-
+    SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
     SendMappingNotify (MappingPointer, 0, 0);
 
     rep.status = 0;
@@ -142,6 +140,56 @@ ProcXChangePointerDevice (client)
 	&rep);
 
     return Success;
+    }
+
+/***********************************************************************
+ *
+ * Send an event to interested clients in all windows on all screens.
+ *
+ */
+
+SendEventToAllWindows (dev, mask, ev, count)
+    DeviceIntPtr dev;
+    Mask mask;
+    xEvent *ev;
+    int count;
+    {
+    int i;
+    WindowPtr pWin, p1;
+
+    for (i=0; i<screenInfo.numScreens; i++)
+	{
+	pWin = WindowTable[i];
+	(void)DeliverEventsToWindow(pWin, ev, count, mask, NullGrab, dev->id);
+	p1 = pWin->firstChild;
+	FindInterestedChildren (dev, p1, mask, ev, count);
+	}
+    }
+
+/***********************************************************************
+ *
+ * Walk through the window tree, finding all clients that want to know
+ * about the ChangeDeviceNotify Event.
+ *
+ */
+
+FindInterestedChildren (dev, p1, mask, ev, count)
+    DeviceIntPtr	dev;
+    WindowPtr 		p1;
+    Mask		mask;
+    xEvent		*ev;
+    int			count;
+    {
+    WindowPtr p2;
+    int i;
+
+    while (p1)
+        {
+        p2 = p1->firstChild;
+	(void)DeliverEventsToWindow(p1, ev, count, mask, NullGrab, dev->id);
+	FindInterestedChildren (dev, p2, mask, ev, count);
+	p1 = p1->nextSib;
+        }
     }
 
 /***********************************************************************

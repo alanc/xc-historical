@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xexevents.c,v 1.1 89/10/13 17:08:28 jim Exp $ */
 #ifdef XINPUT
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -55,6 +55,7 @@ void 			RecalculateDeviceDeliverableEvents();
 extern int		DeviceKeyPress;
 extern int		DeviceButtonPress;
 extern int  		DevicePointerMotionMask;
+extern int  		DeviceMappingNotifyMask;
 extern WindowPtr 	GetSpriteWindow();
 extern InputInfo	inputInfo;
 #define DMotion_Filter(state,id) (DevicePointerMotionMask)
@@ -852,11 +853,11 @@ SetModifierMapping(client, dev, len, rlen, numKeyPerModifier, inputMap, k)
     }
 
 int
-SendDeviceMappingNotify(request, firstKeyCode, count, id)
+SendDeviceMappingNotify(request, firstKeyCode, count, dev)
     CARD8 request, count;
     KeyCode firstKeyCode;
-    CARD8 id;
-{
+    DeviceIntPtr dev;
+    {
     int i;
     xEvent event;
     deviceMappingNotify         *ev = (deviceMappingNotify *) &event;
@@ -864,21 +865,16 @@ SendDeviceMappingNotify(request, firstKeyCode, count, id)
 
     ev->type = DeviceMappingNotify;
     ev->request = request;
-    ev->deviceid = id;
+    ev->deviceid = dev->id;
     ev->time = currentTime.milliseconds;
     if (request == MappingKeyboard)
 	{
 	ev->firstKeyCode = firstKeyCode;
 	ev->count = count;
 	}
-    /* 0 is the server client */
-    for (i=1; i<currentMaxClients; i++)
-        if (clients[i] && ! clients[i]->clientGone)
-	{
-	    event.u.u.sequenceNumber = clients[i]->sequence;
-            WriteEventsToClient(clients[i], 1, &event);
-	}
-}
+
+    SendEventToAllWindows (dev, DeviceMappingNotifyMask, ev, 1);
+    }
 
 int
 ChangeKeyMapping(client, dev, len, type, firstKeyCode, keyCodes, 
@@ -919,7 +915,7 @@ ChangeKeyMapping(client, dev, len, type, firstKeyCode, keyCodes,
     if (!SetKeySymsMap(&k->curKeySyms, &keysyms))
 	return BadAlloc;
     SendDeviceMappingNotify(MappingKeyboard, firstKeyCode, keyCodes,
-	dev->id);
+	dev);
     return client->noClientException;
     }
 

@@ -90,6 +90,8 @@ Mask	DevicePointerMotionMask;
 Mask	DevicePointerMotionHintMask;
 Mask	DeviceFocusChangeMask;
 Mask	DeviceStateNotifyMask;
+Mask	ChangeDeviceNotifyMask;
+Mask	DeviceMappingNotifyMask;
 
 int	DeviceValuator;
 int	DeviceKeyPress;
@@ -624,9 +626,11 @@ FixExtensionEvents (extEntry)
 
     mask = GetNextExtEventMask ();
     SetMaskForExtEvent (mask, DeviceMappingNotify);
+    DeviceMappingNotifyMask = mask;
 
     mask = GetNextExtEventMask ();
     SetMaskForExtEvent (mask, ChangeDeviceNotify);
+    ChangeDeviceNotifyMask = mask;
     }
 
 /************************************************************************

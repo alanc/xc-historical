@@ -110,7 +110,7 @@ ProcXSetDeviceModifierMapping(client)
 
     if (ret == MappingSuccess)
         {
-        SendDeviceMappingNotify(MappingModifier, 0, 0, dev->id);
+        SendDeviceMappingNotify(MappingModifier, 0, 0, dev);
         }
 
     return Success;
