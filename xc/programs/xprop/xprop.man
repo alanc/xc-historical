@@ -1,14 +1,15 @@
-.TH XPROP 1 "6 July 1987" "X Version 11"
+.TH XPROP 1 "1 March 1988" "X Version 11"
 .SH NAME
 xprop - X Window System property displayer.
 .SH SYNOPSIS
 .B "xprop"
-[ -help ] [ -id \fIid\fP ] [ -root ] [ -name \fIname\fP ] [ -font \fIfont\fP ]
-[ \fIhost\fP:\fIdisplay\fP ]
-[ -len \fIn\fP ] [ -notype ] [ -fs \fIfile\fP ] 
-[ -f \fIatom\fP \fIformat\fP [\fIdformat\fP] ]*
-[ \fIformat\fP [\fIdformat\fP] \fIatom\fP ]*
-.SH DESCRIPTION
+[-help] [-grammar] [-id \fIid\fP] [-root] [-name \fIname\fP] 
+[-font \fIfont\fP]
+[-display \fIhost\fP:\fIdisplay\fP]
+[-len \fIn\fP] [-notype] [-fs \fIfile\fP] 
+[-f \fIatom\fP \fIformat\fP [\fIdformat\fP]]*
+[\fIformat\fP [\fIdformat\fP] \fIatom\fP]*
+.SH SUMMARY
 .PP
 .I Xprop
 is a utility for displaying X properties.  Both the properties of windows
@@ -16,6 +17,71 @@ and fonts can be displayed.  One window or font is selected using the command
 line arguemnts or possibly in the case of a window, by clicking on the desired
 window.  A list of properties is then given, possibly with formatting
 information.
+.SH OPTIONS
+.PP
+.TP 8
+.B "-help"
+Print out a summary of command line options.
+.PP
+.TP 8
+.B "-grammar"
+Print out a detailed grammar for all command line options.
+.PP
+.TP 8
+.B "-id \fIid\fP"
+This argument allows the user to select window \fIid\fP  on  the
+command  line rather than using the mouse to select the target window.
+This is very useful in  debugging  X  applications  where  the  target
+window is not mapped to the screen or where the use of the mouse might
+be impossible or interfere with the application.
+.PP
+.TP 8
+.B "-name \fIname\fP"
+This argument allows the user to specify that the window named \fIname\fP
+is the target window on the command line rather than using the mouse to
+select the target window.
+.PP
+.TP 8
+.B "-font \fIfont\fP"
+This argument allows the user to specify that the properties of font
+\fIfont\fP should be displayed.
+.PP
+.TP 8
+.B "-root"
+This  argument  specifies  that  X's root window is the target window.
+This is useful in situations  where  the  root  window  is  completely
+obscured.
+.PP
+.TP 8
+.B "-display \fIhost\fP:\fIdisplay\fP"
+This  argument  allow  you  to  specify the host and display number on
+which to find the target window.  For example `xprop -display orpheus:1'
+would specify that the target window is on display `1' on the machine
+`orpheus'.  By default,
+.I xprop
+uses  the  host  and display number stored in the environment variable
+DISPLAY, and therefore this argument is not normally specified.
+.PP
+.TP 8
+.B "-len \fIn\fP"
+Specifies that at most \fIn\fP bytes of any property should be read or
+displayed.
+.PP
+.TP 8
+.B "-notype"
+Specifies that the type of each property should not be displayed.
+.PP
+.TP 8
+.B "-fs \fIfile\fP"
+Specifies that file \fIfile\fP should be used as a source of more formats
+for properties.
+.PP
+.TP 8
+.B "-f \fIname\fP \fIformat\fP [\fIdformat\fP]"
+Specifies that the \fIformat\fP for \fIname\fP should be \fIformat\fP and that
+the \fIdformat\fP for \fIname\fP should be \fIdformat\fP.  If \fIdformat\fP
+is missing, " = $0+\\n" is assumed.
+.SH DESCRIPTION
 .PP
 For each of these properties, its value on the selected window
 or font is printed using the supplied formatting information if any.  If no
@@ -39,6 +105,7 @@ any mouse button in the desired window.  If it is desired to display properties
 of a font as opposed to a window, the -font argument may be used.
 .PP
 Other than the above four arguments and the -help argument for obtaining help,
+and the -grammar argument for listing the full grammar for the command line,
 all the other command line arguments are used in specifing both the format
 of the properties to be displayed and how to display them.  The -len \fIn\fP 
 argument specifies that at most \fIn\fP bytes of any given property will be
@@ -207,66 +274,6 @@ To display the start of the cut buffer: \fIxprop\fP -root -len 100 CUT_BUFFER0
 To display the point size of the fixed font: \fIxprop\fP -font fixed POINT_SIZE
 .PP
 To display all the properties of window # 0x200007: \fIxprop\fP -id 0x200007
-.SH ARGUMENT SUMMARY
-.PP
-.TP 8
-.B "-help"
-Print out the 'Usage:' command syntax summary.
-.PP
-.TP 8
-.B "-id \fIid\fP"
-This argument allows the user to select window \fIid\fP  on  the
-command  line rather than using the mouse to select the target window.
-This is very useful in  debugging  X  applications  where  the  target
-window is not mapped to the screen or where the use of the mouse might
-be impossible or interfere with the application.
-.PP
-.TP 8
-.B "-name \fIname\fP"
-This argument allows the user to specify that the window named \fIname\fP
-is the target window on the command line rather than using the mouse to
-select the target window.
-.PP
-.TP 8
-.B "-font \fIfont\fP"
-This argument allows the user to specify that the properties of font
-\fIfont\fP should be displayed.
-.PP
-.TP 8
-.B "-root"
-This  argument  specifies  that  X's root window is the target window.
-This is useful in situations  where  the  root  window  is  completely
-obscured.
-.PP
-.TP 8
-.B "\fIhost\fP:\fIdisplay\fP"
-This  argument  allow  you  to  specify the host and display number on
-which to find the target window.  For example `xprop orpheus:1'
-would specify that the target window is on display `1' on the machine
-`orpheus'.  By default,
-.I xprop
-uses  the  host  and display number stored in the environment variable
-DISPLAY, and therefore this argument is not normally specified.
-.PP
-.TP 8
-.B "-len \fIn\fP"
-Specifies that at most \fIn\fP bytes of any property should be read or
-displayed.
-.PP
-.TP 8
-.B "-notype"
-Specifies that the type of each property should not be displayed.
-.PP
-.TP 8
-.B "-fs \fIfile\fP"
-Specifies that file \fIfile\fP should be used as a source of more formats
-for properties.
-.PP
-.TP 8
-.B "-f \fIname\fP \fIformat\fP [\fIdformat\fP]"
-Specifies that the \fIformat\fP for \fIname\fP should be \fIformat\fP and that
-the \fIdformat\fP for \fIname\fP should be \fIdformat\fP.  If \fIdformat\fP
-is missing, " = $0+\\n" is assumed.
 .SH ENVIRONMENT
 .PP
 .TP 8
@@ -277,9 +284,10 @@ Specifies the name of a file from which additional formats are to be obtained.
 .B DISPLAY
 To get default host and display number.
 .SH SEE ALSO
-X(1), XWININFO(1)
+X(1), xwininfo(1)
 .SH AUTHOR
-Mark Lillibridge, MIT Project Athena
-.br
 Copyright 1987, Massachusetts Institute of Technology.
+.br
+Mark Lillibridge, MIT Project Athena
+
 
