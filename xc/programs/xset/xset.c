@@ -138,8 +138,11 @@ for (i = 1; i < argc; ) {
       set_bell_vol (dpy, percent);		/* set bell to default */
   }
   else if (strcmp(arg, "fp") == 0) {	       /* set font path */
-    if (i >= argc) usage ("missing fp argument", NULL);
-    arg = nextarg(i, argv);
+    if (i >= argc) {
+	arg = "default";
+    } else {
+	arg = nextarg(i, argv);
+    }
     set_font_path(dpy, arg, 0, 0);
     i++;
   }
