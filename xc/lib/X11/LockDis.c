@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XLockDis.c,v 1.5 93/07/11 13:39:05 rws Exp $
+ * $XConsortium: LockDis.c,v 1.6 93/07/22 13:30:47 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -26,6 +26,9 @@
  */
 
 #include "Xlibint.h"
+#ifdef XTHREADS
+#include "locking.h"
+#endif
 
 #if NeedFunctionPrototypes
 void XLockDisplay(
@@ -39,6 +42,26 @@ void XLockDisplay(dpy)
     LockDisplay(dpy);
     if (dpy->lock)
 	(*dpy->lock_fns->user_lock_display)(dpy);
+    /*
+     * We want the threads in the reply queue to all get out before
+     * XLockDisplay returns, in case they have any side effects the
+     * caller of XLockDisplay was trying to protect against.
+     * XLockDisplay puts itself at the head of the event waiters queue
+     * to wait for all the replies to come in.
+     */
+    if (dpy->lock && dpy->lock->reply_awaiters) {
+	struct _XCVList *cvl;
+
+	cvl = (*_XCreateCVL_fn)();
+
+	/* stuff ourselves on the head of the queue */
+	cvl->next = dpy->lock->event_awaiters;
+	dpy->lock->event_awaiters = cvl;
+
+	ConditionWait(dpy, cvl);
+	UnlockNextEventReader(dpy, cvl); /* pass the signal on */
+    }
+    UnlockDisplay(dpy);
 #endif
 }
 
@@ -51,6 +74,7 @@ void XUnlockDisplay(dpy)
 #endif
 {
 #ifdef XTHREADS
+    LockDisplay(dpy);
     if (dpy->lock)
 	(*dpy->lock_fns->user_unlock_display)(dpy);
     UnlockDisplay(dpy);
