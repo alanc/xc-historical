@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Fill.c,v 1.3 91/01/23 22:13:36 gildea Exp $
+ * $XConsortium: Fill.c,v 1.4 91/07/16 20:33:50 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,16 +23,23 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+#ifdef STREAMSCONN
+#include <tiuser.h>
+#else
+#ifdef WIN32
+#define _X86_ _M_IX86
+#define BOOL wBOOL
+#include <winsock.h>
+#undef BOOL
+#else
+#include <sys/socket.h>
+#endif
+#endif
+
 #include <X11/Xos.h>
 #include <X11/X.h>
 #include <X11/Xmd.h>
 #include <X11/Xdmcp.h>
-
-#ifdef STREAMSCONN
-#include <tiuser.h>
-#else
-#include <sys/socket.h>
-#endif
 
 int
 XdmcpFill (fd, buffer, from, fromlen)
