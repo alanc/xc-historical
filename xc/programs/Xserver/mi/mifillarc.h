@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.h,v 5.2 89/11/05 15:16:21 rws Exp $ */
+/* $XConsortium: mifillarc.h,v 5.3 90/08/14 09:40:32 rws Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 
@@ -23,7 +23,7 @@ typedef struct _miFillArc {
     int xorg, yorg;
     int y;
     int dx, dy;
-    int e, ex;
+    int e;
     int ym, yk, xm, xk;
 } miFillArcRec;
 
@@ -40,7 +40,6 @@ extern void miFillArcSetup(), miFillArcSliceSetup();
     x = 0; \
     y = info.y; \
     e = info.e; \
-    ex = info.ex; \
     xk = info.xk; \
     xm = info.xm; \
     yk = info.yk; \
@@ -50,31 +49,24 @@ extern void miFillArcSetup(), miFillArcSliceSetup();
     xorg = info.xorg; \
     yorg = info.yorg
 
-#define MIFILLCIRCSTEP(slw) \
-    e += (y << 3) - xk; \
+#define MIFILLARCSTEP(slw) \
+    e += yk; \
     while (e >= 0) \
     { \
 	x++; \
-	e += (ex = -((x << 3) + xk)); \
+	xk -= xm; \
+	e += xk; \
     } \
     y--; \
+    yk -= ym; \
     slw = (x << 1) + dx; \
-    if ((e == ex) && (slw > 1)) \
+    if ((e == xk) && (slw > 1)) \
 	slw--
 
-#define MIFILLELLSTEP(slw) \
-    e += (y * ym) - yk; \
-    while (e >= 0) \
-    { \
-	x++; \
-	e += (ex = -((x * xm) + xk)); \
-    } \
-    y--; \
-    slw = (x << 1) + dx; \
-    if ((e == ex) && (slw > 1)) \
-	slw--
+#define MIFILLCIRCSTEP(slw) MIFILLARCSTEP(slw)
+#define MIFILLELLSTEP(slw) MIFILLARCSTEP(slw)
 
-#define miFillArcLower(slw) (((y + dy) != 0) && ((slw > 1) || (e != ex)))
+#define miFillArcLower(slw) (((y + dy) != 0) && ((slw > 1) || (e != xk)))
 
 typedef struct _miSliceEdge {
     int	    x;
@@ -124,39 +116,44 @@ typedef struct _miArcSlice {
     if (!slice.edge2_top && (slice.edge2.x < xr)) \
 	xr = slice.edge2.x;
 
-#define MIWIDEARCSETUP(x,y,dy,slw,e,xk,ex) \
+#define MIWIDEARCSETUP(x,y,dy,slw,e,xk,xm,yk,ym) \
     x = 0; \
     y = slw >> 1; \
+    yk = y << 3; \
+    xm = 8; \
+    ym = 8; \
     if (dy) \
     { \
+	xk = 0; \
 	if (slw & 1) \
 	    e = -1; \
 	else \
 	    e = -(y << 2) - 2; \
-	xk = 0; \
     } \
     else \
     { \
 	y++; \
+	yk += 4; \
+	xk = -4; \
 	if (slw & 1) \
 	    e = -(y << 2) - 3; \
 	else \
 	    e = - (y << 3); \
-	xk = 4; \
-    } \
-    ex = -xk
+    }
 
-#define MIFILLINCIRCSTEP(slw) \
-    ine += (iny << 3) - inxk; \
+#define MIFILLINARCSTEP(slw) \
+    ine += inyk; \
     while (ine >= 0) \
     { \
 	inx++; \
-	ine += (inex = -((inx << 3) + inxk)); \
+	inxk -= inxm; \
+	ine += inxk; \
     } \
     iny--; \
+    inyk -= inym; \
     slw = (inx << 1) + dx; \
-    if ((ine == inex) && (slw > 1)) \
+    if ((ine == inxk) && (slw > 1)) \
 	slw--
 
 #define miFillInArcLower(slw) (((iny + dy) != 0) && \
-			       ((slw > 1) || (ine != inex)))
+			       ((slw > 1) || (ine != inxk)))
