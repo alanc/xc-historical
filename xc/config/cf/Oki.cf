@@ -1,9 +1,10 @@
-XCOMM platform:  $XConsortium: Oki.cf,v 1.4 92/10/17 15:07:45 rws Exp $
+XCOMM platform:  $XConsortium: Oki.cf,v 1.5 92/11/19 16:13:00 rws Exp $
 
 #define OSName			Unix System V/860 Release 4.0 Version 3
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
-#define OSMinorVersion		3
+#define OSMinorVersion		0
+#define OSTeenyVersion		3
 
 #define BootstrapCFlags		-DOki
 #define SystemV4		YES
