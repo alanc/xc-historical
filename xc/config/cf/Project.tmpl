@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.60 89/12/13 17:57:29 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.61 89/12/14 17:27:08 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -336,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.60 89/12/13 17:57:29 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.61 89/12/14 17:27:08 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -437,11 +437,11 @@ Berklib.c: sysV/Berklib.c					@@\
      EXTENSIONLIB = LoaderLibPrefix _Use(-lXext, $(DEPEXTENSIONLIB))
 #endif
 #if SharedLibX
-          DEPXLIB = /* _Use($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV) */
-             XLIB = _Use(-lX11,-L$(XLIBSRC) -lX11)
+          DEPXLIB = $(DEPEXTENSIONLIB) /* _Use($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV) */
+             XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
 #else
-          DEPXLIB = _Use($(USRLIBDIR),$(XLIBSRC))/libX11.a 
-             XLIB = LoaderLibPrefix _Use(-lXext -lX11, $(DEPXLIB))
+          DEPXLIB = $(DEPEXTENSIONLIB) _Use($(USRLIBDIR),$(XLIBSRC))/libX11.a 
+             XLIB = LoaderLibPrefix _Use($(EXTENSIONLIB) -lX11, $(DEPXLIB))
 #endif
       DEPXAUTHLIB = _Use($(USRLIBDIR),$(XAUTHSRC))/libXau.a
          XAUTHLIB = LoaderLibPrefix _Use(-lXau,$(DEPXAUTHLIB))
@@ -472,8 +472,8 @@ Berklib.c: sysV/Berklib.c					@@\
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
 #else
      DEPATHENALIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
-        DEPXAWLIB = $(DEPATHENALIB) $(DEPEXTENSIONLIB) 
-           XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPATHENALIB)) $(EXTENSIONLIB) 
+        DEPXAWLIB = $(DEPATHENALIB)
+           XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPATHENALIB)) 
 #endif
 
  LINTEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC)/lib)/llib-lXext.ln
@@ -511,7 +511,7 @@ Berklib.c: sysV/Berklib.c					@@\
  * Individual libraries should override this
  */
 #if HasSunOSSharedLibraries
-          DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
+          DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 #else
           DEPLIBS = $(LOCAL_LIBRARIES)
 #endif
