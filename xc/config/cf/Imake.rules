@@ -1,10 +1,14 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.42 89/07/17 10:59:10 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.43 89/07/18 18:04:33 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
  *
+ * Warning, when defining rules: make sure you don't include both a trailing
+ * backslash and double ampersand backslash or else you will get an extra
+ * backslash in the Makefile.
+ * 
  * These macros are defined for the various templates and Imakefiles (for a 
  * list of the applicable make variables, see the template files):
  * 
@@ -974,7 +978,7 @@ name::									@@\
  *         #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
  */
 #ifndef NamedMakeSubdirs
-#define NamedMakeSubdirs(name,dirs)					@@\
+#define NamedMakeSubdirs(name,dirs) \
 NamedTargetSubdirs(name,dirs,"making" name,PassCDebugFlags,/**/)
 #endif /* NamedMakeSubdirs */
 
@@ -989,7 +993,7 @@ NamedMakeSubdirs(all,dirs)
  * part of the make depend step.
  */
 #ifndef DependSubdirs
-#define DependSubdirs(dirs)						@@\
+#define DependSubdirs(dirs) \
 NamedTargetSubdirs(depend,dirs,"depending",/**/,depend)
 #endif /* DependSubdirs */
 
@@ -998,7 +1002,7 @@ NamedTargetSubdirs(depend,dirs,"depending",/**/,depend)
  * InstallSubdirs - generate rules to recursively install programs and files.
  */
 #ifndef InstallSubdirs
-#define InstallSubdirs(dirs)						@@\
+#define InstallSubdirs(dirs) \
 NamedTargetSubdirs(install,dirs,"installing",DESTDIR='$(DESTDIR)',install)
 #endif /* InstallSubdirs */
 
@@ -1007,7 +1011,7 @@ NamedTargetSubdirs(install,dirs,"installing",DESTDIR='$(DESTDIR)',install)
  * InstallManSubdirs - generate rules to recursively install manual pages.
  */
 #ifndef InstallManSubdirs
-#define InstallManSubdirs(dirs)						@@\
+#define InstallManSubdirs(dirs) \
 NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR='$(DESTDIR)',install.man)
 #endif /* InstallManSubdirs */
 
@@ -1016,7 +1020,7 @@ NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR='$(DESTDIR)',
  * IncludesSubdirs - generate rules to recursively put include files in build
  */
 #ifndef IncludesSubdirs
-#define IncludesSubdirs(dirs) \						@@\
+#define IncludesSubdirs(dirs) \
 NamedTargetSubdirs(includes,dirs,including,/**/,includes)
 #endif
 
@@ -1025,12 +1029,12 @@ NamedTargetSubdirs(includes,dirs,including,/**/,includes)
  * CleanSubdirs - generate rules to recursively clean out garbage files.
  */
 #ifndef NamedCleanSubdirs
-#define NamedCleanSubdirs(name,dirs)					@@\
+#define NamedCleanSubdirs(name,dirs) \
 NamedTargetSubdirs(name,dirs,"cleaning",RM_CMD='$(RM_CMD)',clean)
 #endif /* NamedCleanSubdirs */
 
 #ifndef CleanSubdirs
-#define CleanSubdirs(dirs) \						@@\
+#define CleanSubdirs(dirs) \
 NamedCleanSubdirs(clean,dirs)
 #endif
 
@@ -1039,12 +1043,12 @@ NamedCleanSubdirs(clean,dirs)
  * TagSubdirs - generate rules to recursively create tags files.
  */
 #ifndef NamedTagSubdirs
-#define NamedTagSubdirs(name,dirs)					@@\
+#define NamedTagSubdirs(name,dirs) \
 NamedTargetSubdirs(name,dirs,"tagging",TAGS='$(TAGS)',tags)
 #endif /* TagSubdirs */
 
 #ifndef TagSubdirs
-#define TagSubdirs(dirs) \						@@\
+#define TagSubdirs(dirs) \
 NamedTagSubdirs(tags,dirs)
 #endif
 
@@ -1053,7 +1057,7 @@ NamedTagSubdirs(tags,dirs)
  * of the named step.
  */
 #ifndef MakeLintSubdirs
-#define MakeLintSubdirs(dirs,target,subtarget)				@@\
+#define MakeLintSubdirs(dirs,target,subtarget) \
 NamedTargetSubdirs(target,dirs,"linting" for target and subtarget,DESTDIR='$(DESTDIR)' LINTOPTS='$(LINTOPTS)',subtarget)
 #endif /* MakeLintSubdirs */
 
