@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -10,7 +11,7 @@
 .ce 50
 \s+3\fBThe X Font Service Protocol\fP\s-3
 .sp
-\fBVersion 1.0\fP
+\fBVersion 2.0\fP
 \fBMIT X Consortium Standard\fR
 .sp
 \fBX Version 11, Release 5\fR
@@ -307,7 +308,7 @@ must be created (with
 .PN CreateAC ) 
 and switched among (with
 .PN SetAuthorization )
-to represent all of these "font users" properly.
+to represent all of these ``font users'' properly.
 .LP
 ALTERNATESERVER:  [ name:  STRING8, 
 .br
@@ -685,7 +686,7 @@ character is represented by MIN-CHAR equals MAX-CHAR.  If the
 linear interpretation of MAX-CHAR is less than that of MIN-CHAR,
 or if MIN-CHAR is less than the font's
 XFONTINFO.CHAR-RANGE.MIN-CHAR, or if MAX-CHAR is greater than the
-font's XFONTINFO.CHAR-RANGE.MAX-CHAR, a Range error is returned.
+font's XFONTINFO.CHAR-RANGE.MAX-CHAR, the range is invalid.
 .LP
 RESOLUTION:	[ x-resolution:		CARD16,
 .br
@@ -978,10 +979,10 @@ The CLIENT-MAJOR-PROTOCOL-VERSION and
 CLIENT-MINOR-PROTOCOL-VERSION specify which version of the
 font service protocol the client would like to use.  If the
 client can support multiple versions, the highest version
-should be given.  The first version of the protocol has a
-major version of 1 and a minor version of 0.
+should be given.  This version of the protocol has a
+major version of 2 and a minor version of 0.
 .IP
-The AUTH-PROTOCOLS contains a list of protocol names and
+The AUTHORIZATION-PROTOCOLS contains a list of protocol names and
 optional initial data for which the client can provide
 information.  The server may use this to determine which
 protocol to use or as part of the initial exchange of
@@ -1212,7 +1213,7 @@ replies that are likely, but not required, to follow.  In the
 last reply, which may contain zero or more names, this field
 is set to zero.
 .LP
-.IN "SetCatlogues" "" "@DEF@"
+.IN "SetCatalogues" "" "@DEF@"
 .PN SetCatalogues
 .IP
 \fInames\fP\^:  LISTofSTRING8
@@ -1243,7 +1244,7 @@ error is returned and the request is ignored.
 .LP
    =>
 .IP
-\fInames\fP\^:  PIPLISTofSTRING8
+\fInames\fP\^:  LISTofSTRING8
 .IP
 Errors:  
 .PN Alloc
@@ -1268,7 +1269,8 @@ returned in mixed case.
 \fIevent-mask\fP\^:  EVENTMASK
 .IP
 Errors:
-.PN EventMask
+.PN EventMask ,
+.PN Request
 .IP
 This request specifies the set of maskable events that the
 extension indicated by EXTENSION-OPCODE (or zero for the core)
@@ -1299,11 +1301,14 @@ ignored.
 .IN "GetEventMask" "" "@DEF@"
 .PN GetEventMask
 .IP
-\fIextension-opcdoe\fP\^:  CARD8
+\fIextension-opcode\fP\^:  CARD8
 .LP
   =>
 .IP
 \fIevent-mask\fP\^:  EVENTMASK
+.IP
+Errors:
+.PN Request
 .IP
 This request returns the set of maskable core events the
 extension indicated by EXTENSION-OPCODE (or the core if zero)
@@ -1322,13 +1327,16 @@ error is returned.
 .IP
 \fIac\fP\^:  ACCESSCONTEXT
 .br
-\fIauthorization-protocols\fP\^:  STofAUTH
+\fIauthorization-protocols\fP\^:  LISTofAUTH
 .LP
   =>
 .IP
 \fIstatus\fP\^:  	{ Success, Continue, Denied }
 	authorization-index:		CARD8
 	authorization-data:		LISTofBYTE
+.IP
+Errors:
+.PN IDChoice
 .IP
 This request creates a new 
 .PN AccessContext 
@@ -1544,9 +1552,9 @@ is set to zero.
 .IP
 \fIreplies-following-hint\fP\^:  CARD32
 .br
-\fIname\fP\^:  STRING8
-.br
 \fIinfo\fP\^:  XFONTINFO
+.br
+\fIname\fP\^:  STRING8
 .IP
 Errors:  
 .PN Alloc
@@ -1792,9 +1800,10 @@ zero length, then a zero-length list of extents is returned.
 .sp
 The extents for each character code in the resulting set (which
 may contain duplicates) are returned in the order in
-which the characters codes appear in the set.  If a character 
-is not encoded within the font, zero-filled metrics are 
-substituted.
+which the character codes appear in the set.
+At least one metric for each character shall be non-zero
+unless the character is not encoded in the font, in which case
+all-zero metrics are returned.
 .sp
 If FONTID is not associated with any open fonts, a 
 .PN Font 
@@ -1876,7 +1885,7 @@ character codes for which bitmaps are returned.
 .sp
 If RANGE is False, then CHARS specifies the set of character
 codes for which bitmaps are returned.  If CHARS is of zero
-length, then a single reply containing a zero-length ist of
+length, then a single reply containing a zero-length list of
 offsets and bitmaps is returned.
 .sp
 If any of the resulting character ranges are invalid, a Range
@@ -2325,8 +2334,20 @@ Data Types
 .XS
 \*(SN Data Types
 .XE
-.LP
 .sp 6p
+.LP
+ACCESSCONTEXT
+.sp 6p
+.TA .75i .75i .75i .75i
+4	CARD32	access context with at least one of the following bits set:
+.sp 6p
+#x1fffffff
+.sp 6p
+but none of the following bits set:
+.sp 6p
+#xe0000000		zero
+.sp 18p
+.LP
 .TS
 tab (@) ;
 l s s
@@ -2637,9 +2658,10 @@ but none of the following bits set:
 1		CARD8		drawing direction
 .sp 6p
 		0		LeftToRight
+.br
 		1		RightToLeft
 .sp 6p
-1			unused
+1					unused
 .br
 2		CHAR2B		default character
 .br
@@ -2651,7 +2673,7 @@ but none of the following bits set:
 .br
 2		INT16		font descent
 .br
-n		PROPINFO	property data
+n		PROPINFO		property data
 .NH 2
 Requests
 .XS
@@ -2668,7 +2690,7 @@ open connection
 @#x42@Most Significant Byte first
 @#x6c@Least Significant Byte first
 1@CARD8@number of auth in auth-data
-2@1@client-major-protocol-version
+2@2@client-major-protocol-version
 2@0@client-minor-protocol-version
 2@a/4@length of auth-data
 a@LISTofAUTH@auth-data
@@ -2678,7 +2700,7 @@ a@LISTofAUTH@auth-data
 @1@Continue
 @2@Busy
 @3@Denied
-2@1@major version
+2@2@major version
 2@0@minor version
 1@CARD8@number of alternate-servers-hint
 1@CARD8@authorization-index
@@ -3056,8 +3078,10 @@ p@@unused, p=pad(n)
 1@0@type reply
 1@BOOL@otherid-valid
 2@CARD16@sequence-number
-4@3@length
+4@4@length
 4@FONTID@otherid
+1@BOOL@cachable
+3@@unused
 .TE
 .sp 12p
 .TS
@@ -3287,7 +3311,7 @@ AccessContext
 1@5@AccessContext
 2@CARD16@sequence-number
 4@5@length
-4@TIMESTAMP2timestamp
+4@TIMESTAMP@timestamp
 1@CARD8@major-opcode
 1@CARD8@minor-opcode
 2@@unused
@@ -3453,7 +3477,9 @@ Although this was a group effort, the author remains responsible for any errors
 or omissions.  The protocol presented here was primarily designed by Jim
 Fulton, Keith Packard, and Bob Scheifler.  Special thanks goes to Ned
 Batchelder, Jim Flowers, and Axel Deininger for their invigorating comments
-which never failed to make this a better document.  Finally, David Lemke 
+which never failed to make this a better document.
+Stephen Gildea edited version 2 of this document.
+Finally, David Lemke 
 deserves great credit for designing and coding the sample implementation.
 .NH 1
 References
@@ -3554,5 +3580,11 @@ If a font client is unable to connect to a server (as opposed
 to having the connection terminated), it should retry for an
 implementation-dependent length of time (see Xlib's 
 handling of ECONNREFUSED in XConnDis.c).
+.\"
+.\" print Table of Contents page
+.EH ''''
+.OH ''''
 .bp
+.EF ''''
+.OF ''''
 .PX
