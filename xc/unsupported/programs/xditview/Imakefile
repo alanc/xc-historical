@@ -10,7 +10,7 @@ LOCAL_LIBRARIES = $(XDVILIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
           SRCS2 = xtotroff.c
           OBJS2 = xtotroff.o
        PROGRAMS = xditview xtotroff
-        SUBDIRS = libXdvi devX75
+        SUBDIRS = libXdvi
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
