@@ -154,6 +154,9 @@ typedef struct {
 
 typedef cfbPrivGC	*cfbPrivGCPtr;
 
+#define cfbGetGCPrivate(pGC)	((cfbPrivGCPtr)\
+	(pGC)->devPrivates[cfbGCPrivateIndex].ptr)
+
 /* way to carry RROP info around */
 typedef struct {
     unsigned char	rop;
