@@ -1,4 +1,4 @@
-/* $XConsortium: XDraw.c,v 1.8 90/12/27 20:09:42 gildea Exp $ */
+/* $XConsortium: XDraw.c,v 1.9 91/01/06 12:09:14 rws Exp $ */
 
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
@@ -20,7 +20,9 @@ without express or implied warranty.
 
 #define OK_RETURN 1
 #define ERR_RETURN 0
+#ifndef NULL
 #define NULL 0
+#endif
 
 /*
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
