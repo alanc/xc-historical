@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.11 88/02/06 09:52:47 swick Exp $";
+static char rcs_id[] = "$Header: init.c,v 2.12 88/02/06 10:10:39 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -159,7 +159,7 @@ char **argv;
 	    while (ptr = ReadLine(fid)) {
 		strncpy(str2, ptr, 5);
 		str2[5] = '\0';
-		_XLowerCase(str2, str2);
+		LowerCase(str2, str2);
 		if (strcmp(str2, "path:") == 0) {
 		    ptr += 5;
 		    while (*ptr == ' ' || *ptr == '\t')
