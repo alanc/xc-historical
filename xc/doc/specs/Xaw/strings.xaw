@@ -491,34 +491,39 @@ the edge of the window, and a small rectangle will be painted in the
 right margin to alert the user that this line is too long.
 .Rs "never, word, \fPand\fB line"
 ..
+.de Tu \" Text unrealizeCallback
+.ie 'Bold'\\$1' .IP \fBunrealizeCallback\fP 1.5i
+.el .IP unrealizeCallback 1.5i
+A list of callback functions which will be executed when the Text widget
+is unrealized.
+..
 
-\" Sink Resources
+\" Text Sink Resources
 
-.de Sf \" Sink Font
+.de Sb \" TextSink background
+.ie 'Bold'\\$1 .IP \fBbackground\fP 1.5i
+.el .IP background 1.5i
+A pixel value which indexes the Text widget's colormap to derive the 
+background color used by the text sink.
+..
+.de Sf \" TextSink font
 .ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
 .el .IP font 1.5i
 This is font for rendering all text and must be a character cell
 font (see the X Logical Font Description).  
 .Sk \\$1
 ..
-
-.de Sg \" Sink Foreground
+.de Sg \" TextSink foreground
 .ie 'Bold'\\$1' .IP \fBforeground\fP 1.5i
 .el .IP foreground 1.5i
 A pixel value which indexes the Text widget's colormap to derive the
-foreground color by the text sink.
+foreground color used by the text sink.
 .Sk \\$1
 ..
 
-.de Sh \" Sink Echo
-.ie 'Bold'\\$1' .IP \fBecho\fP 1.5i
-.el .IP echo 1.5i
-Whether or not to echo characters to the screen.  The buffer can still
-be edited, but nothing is displayed.  This mode can be useful for
-entering passwords and other sensitive information.  
-.Sk \\$1
-..
-.de Sd \" Sink Display Non-Printing
+\" Ascii Sink Resources
+
+.de Sd \" AsciiSink displayNonprinting
 .ie 'Bold'\\$1' .IP \fBdisplayNonprinting\fP 1.5i
 .el .IP displayNonprinting 1.5i
 If this resources is \fBTrue\fP, the Text widget will display all
@@ -528,31 +533,71 @@ will just leave a blank space where a non-printable character exists
 in the text buffer.  
 .Sk \\$1
 ..
+.de Sh \" AsciiSink echo
+.ie 'Bold'\\$1' .IP \fBecho\fP 1.5i
+.el .IP echo 1.5i
+Whether or not to echo characters to the screen.  The buffer can still
+be edited, but nothing is displayed.  This mode can be useful for
+entering passwords and other sensitive information.  
+.Sk \\$1
+..
 
-\" Source Resources
+\" TextSrc Resources
 
-.de Ou \" Source UseStringInPlace
-.ie 'Bold'\\$1' .IP \fBuseStringInPlace\fP 1.5i
-.el .IP useStringInPlace 1.5i
-Setting this resource to \fBTrue\fP will disable the memory management 
-provided by the Text widget, updating the \fBstring\fP resource in
-place.  Using the string in place can
-be much more efficient for text widgets that display static data, or
-where the programmer wishes to impose strict constraints on the
-contents of the \fBstring\fP.  When using the string in place be sure that:
-the length of the string is specified by setting the \fBlength\fP resource,
-the \fBtype\fP of the Text widget is \fBXawAsciiString\fP, and that
-the \fBstring\fP exists for the lifetime of the text widget, or until it has been reset.
+.de Oe \"Source EditType
+.ie 'Bold'\\$1' .IP \fBeditType\fP 1.5i
+.el .IP editType 1.5i
+This is the type of editing that will be allowed in this text widget.
+Legal values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
+.IN "XawtextRead" ""
+.IN "XawtextEdit" ""
+\fBXawtextAppend\fP.
+.IN "XawtextAppend" ""
+.Rs "read, edit, \fPand\fB append"
 .So \\$1
 ..
-.de Ot \" Source Type
-.ie 'Bold'\\$1' .IP \fBtype\fP 1.5i
-.el .IP type 1.5i
-This resource may be either \fBXawAsciiString\fP or
-\fBXawAsciiFile\fP.  The value of this resource determines whether the
-\fBstring\fP resource contains the name of a file to be opened or a buffer to
-be displayed by the text widget.  A converter has been registered for
-this resource and accepts the values \fBstring\fP and \fBfile\fP.
+
+\" AsciiSrc Resources
+
+
+.de Oc \" Source Callback
+.ie 'Bold'\\$1' .IP \fBcallback\fP 1.5i
+.el .IP callback 1.5i
+The callbacks registered on this resource will be called every time the
+text buffer changes.
+.So \\$1
+..
+.de Od \"Source DataCompression
+.ie 'Bold'\\$1' .IP \fBdataCompression\fP 1.5i
+.el .IP dataCompression 1.5i
+The AsciiSrc uses an algorithm that may cause the text buffer to grow
+to about twice the size of the actual text over time, as the text is
+edited.  On systems where CPU cycles are cheaper than memory, it is helpful to
+spend some extra time to compress this buffer back to its minimum size.
+If this resource is \fBTrue\fP, the AsciiSrc will compress its data
+to the minimum size required every time the text string is saved, or the
+value of the string is queried.  This is an AsciiSrc resource.
+.So \\$1
+..
+.de Ol \"Source Length
+.ie 'Bold'\\$1' .IP \fBlength\fP 1.5i
+.el .IP length 1.5i
+If the \fBuseStringInPlace\fP resource is \fBFalse\fP this attribute has no
+effect.  If that resource is \fBTrue\fP, however, then the \fBlength\fP
+resource specifies the length of the buffer passed to the text widget
+in the \fBstring\fP resource.
+.So \\$1
+..
+.de Op \" Source Piece Size
+.ie 'Bold'\\$1' .IP \fBpieceSize\fP 1.5i
+.el .IP pieceSize 1.5i
+This is the size of the internal chunks into which the text buffer is
+broken down for memory management.  The larger this value the less segmented
+your memory will be, but the slower your editing will be.  The text
+widgets will always allocate a chunk of memory this size to stuff the
+\fBstring\fP into, so when using small strings, having this buffer
+large can waste memory.  This resource has no effect if
+\fBuseStringInPlace\fP is \fBTrue\fP.
 .So \\$1
 ..
 .de Os \"Source String
@@ -572,56 +617,27 @@ When the \fBstring\fP resource is queried - using \fBXtGetValues\fP - and
 the next time the \fBstring\fP is queried (see Section 5.6.1.1).
 .NE
 ..
-.de Op \" Source Piece Size
-.ie 'Bold'\\$1' .IP \fBpieceSize\fP 1.5i
-.el .IP pieceSize 1.5i
-This is the size of the internal chunks into which the text buffer is
-broken down for memory management.  The larger this value the less segmented
-your memory will be, but the slower your editing will be.  The text
-widgets will always allocate a chunk of memory this size to stuff the
-\fBstring\fP into, so when using small strings, having this buffer
-large can waste memory.  This resource has no effect if
-\fBuseStringInPlace\fP is \fBTrue\fP.
+.de Ot \" Source Type
+.ie 'Bold'\\$1' .IP \fBtype\fP 1.5i
+.el .IP type 1.5i
+This resource may be either \fBXawAsciiString\fP or
+\fBXawAsciiFile\fP.  The value of this resource determines whether the
+\fBstring\fP resource contains the name of a file to be opened or a buffer to
+be displayed by the text widget.  A converter has been registered for
+this resource and accepts the values \fBstring\fP and \fBfile\fP.
 .So \\$1
 ..
-.de Ol \"Source Length
-.ie 'Bold'\\$1' .IP \fBlength\fP 1.5i
-.el .IP length 1.5i
-If the \fBuseStringInPlace\fP resource is \fBFalse\fP this attribute has no
-effect.  If that resource is \fBTrue\fP, however, then the \fBlength\fP
-resource specifies the length of the buffer passed to the text widget
-in the \fBstring\fP resource.
+.de Ou \" Source UseStringInPlace
+.ie 'Bold'\\$1' .IP \fBuseStringInPlace\fP 1.5i
+.el .IP useStringInPlace 1.5i
+Setting this resource to \fBTrue\fP will disable the memory management 
+provided by the Text widget, updating the \fBstring\fP resource in
+place.  Using the string in place can
+be much more efficient for text widgets that display static data, or
+where the programmer wishes to impose strict constraints on the
+contents of the \fBstring\fP.  When using the string in place be sure that:
+the length of the string is specified by setting the \fBlength\fP resource,
+the \fBtype\fP of the Text widget is \fBXawAsciiString\fP, and that
+the \fBstring\fP exists for the lifetime of the text widget, or until it has been reset.
 .So \\$1
 ..
-.de Oe \"Source EditType
-.ie 'Bold'\\$1' .IP \fBeditType\fP 1.5i
-.el .IP editType 1.5i
-This is the type of editing that will be allowed in this text widget.
-Legal values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
-.IN "XawtextRead" ""
-.IN "XawtextEdit" ""
-\fBXawtextAppend\fP.
-.IN "XawtextAppend" ""
-.Rs "read, edit, \fPand\fB append"
-.So \\$1
-..
-.de Od \"Source DataCompression
-.ie 'Bold'\\$1' .IP \fBdataCompression\fP 1.5i
-.el .IP dataCompression 1.5i
-The AsciiSrc uses an algorithm that may cause the text buffer to grow
-to about twice the size of the actual text over time, as the text is
-edited.  On systems where CPU cycles are cheaper than memory, it is helpful to
-spend some extra time to compress this buffer back to its minimum size.
-If this resource is \fBTrue\fP, the AsciiSrc will compress its data
-to the minimum size required every time the text string is saved, or the
-value of the string is queried.  This is an AsciiSrc resource.
-.So \\$1
-..
-.de Oc \" Source Callback
-.ie 'Bold'\\$1' .IP \fBcallback\fP 1.5i
-.el .IP callback 1.5i
-The callbacks registered on this resource will be called every time the
-text buffer changes.
-.So \\$1
-..
-
