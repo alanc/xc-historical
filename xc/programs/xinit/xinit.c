@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.30 88/09/27 11:05:50 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.31 88/10/04 14:59:30 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -121,13 +121,11 @@ sigAlarm(sig)
 static Execute (vec)
     char **vec;				/* has room from up above */
 {
-    char *filename = vec[0];
-
-    execvp (filename, vec);
-    if (access (filename, R_OK) == 0) {
+    execvp (vec[0], vec);
+    if (access (vec[0], R_OK) == 0) {
 	vec--;				/* back it up to stuff shell in */
 	vec[0] = SHELL;
-	execvp (filename, vec);
+	execvp (vec[0], vec);
     }
     return;
 }
