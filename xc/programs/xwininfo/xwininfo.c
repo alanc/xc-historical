@@ -344,6 +344,40 @@ static binding _map_states[] = {
 	{ IsViewable, "IsViewable" },
 	{ 0, 0 } };
 
+static binding _backing_store_states[] = {
+	{ NotUseful, "NotUseful" },
+	{ WhenMapped, "WhenMapped" },
+	{ Always, "Always" },
+	{ 0, 0 } };
+
+static binding _bit_gravity_states[] = {
+	{ ForgetGravity, "ForgetGravity" },
+	{ NorthWestGravity, "NorthWestGravity" },
+	{ NorthGravity, "NorthGravity" },
+	{ NorthEastGravity, "NorthEastGravity" },
+	{ WestGravity, "WestGravity" },
+	{ CenterGravity, "CenterGravity" },
+	{ EastGravity, "EastGravity" },
+	{ SouthWestGravity, "SouthWestGravity" },
+	{ SouthGravity, "SouthGravity" },
+	{ SouthEastGravity, "SouthEastGravity" },
+	{ StaticGravity, "StaticGravity" },
+	{ 0, 0 }};
+
+static binding _window_gravity_states[] = {
+	{ UnmapGravity, "UnmapGravity" },
+	{ NorthWestGravity, "NorthWestGravity" },
+	{ NorthGravity, "NorthGravity" },
+	{ NorthEastGravity, "NorthEastGravity" },
+	{ WestGravity, "WestGravity" },
+	{ CenterGravity, "CenterGravity" },
+	{ EastGravity, "EastGravity" },
+	{ SouthWestGravity, "SouthWestGravity" },
+	{ SouthGravity, "SouthGravity" },
+	{ SouthEastGravity, "SouthEastGravity" },
+	{ StaticGravity, "StaticGravity" },
+	{ 0, 0 }};
+
 Display_Stats_Info(window)
      Window window;
 {
@@ -365,10 +399,20 @@ Display_Stats_Info(window)
   printf("         ==> Height: %s\n", yscale(win_attributes.height));
   printf("         ==> Depth: %d\n", win_attributes.depth);
   printf("         ==> Border width: %s\n", bscale(win_attributes.border_width));
-  printf("         ==> Window class: %s\n", Lookup(win_attributes.class,
-						   _window_classes));
+  printf("         ==> Window class: %s\n",
+  	 Lookup(win_attributes.class, _window_classes));
+  printf("         ==> Window Bit Gravity State: %s\n",
+  	 Lookup(win_attributes.bit_gravity, _bit_gravity_states));
+  printf("         ==> Window Window Gravity State: %s\n",
+  	 Lookup(win_attributes.win_gravity, _window_gravity_states));
+  printf("         ==> Window Backing Store State: %s\n",
+  	 Lookup(win_attributes.backing_store, _backing_store_states));
+  printf("         ==> Window Save Under State: %s\n",
+  	 win_attributes.save_under ? "t" : "nil");
   printf("         ==> Window Map State: %s\n",
 	 Lookup(win_attributes.map_state, _map_states));
+  printf("         ==> Window Override Redirect State: %s\n",
+  	 win_attributes.override_redirect ? "t" : "nil");
   printf("         ==> Corners:  +%d+%d  -%d+%d  -%d-%d  +%d-%d\n",
 	 win_attributes.x, win_attributes.y, xright, win_attributes.y, 
 	 xright, ybelow, win_attributes.x, ybelow);
