@@ -1,4 +1,4 @@
-/* $XConsortium: Xdmcp.h,v 1.7 91/07/16 20:32:51 gildea Exp $ */
+/* $XConsortium: Xdmcp.h,v 1.8 91/07/23 22:28:07 keith Exp gildea $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -132,10 +132,9 @@ extern void XdmcpUnwrap();
 #define FALSE	0
 #endif
 
-#ifndef Xalloc
-#ifndef xalloc
+#if !defined(Xalloc) && !defined(xalloc) && !defined(Xrealloc)
 extern long *Xalloc (), *Xrealloc ();
 extern void Xfree();
 #endif
-#endif
+
 #endif /* _XDMCP_H_ */
