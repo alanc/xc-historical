@@ -82,7 +82,8 @@ classes as well as:
 Specifies a shell command to be executed to check for new mail rather than
 examining the size of \fBfile\fP.  The specified string value is used as the
 argument to a \fIsystem\fP(3) call and may therefore contain i/o redirection.
-A successful (zero) exit status should indicate that new mail is waiting.
+An exit status of 0 indicates that new mail is waiting, 1 indicates that there
+has been no change in size, and 2 indicates that the mail has been cleared.
 .TP 8
 .B file (\fPclass\fB File)
 Specifies the name of the file to monitor.  The default is to watch
