@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.5 91/09/16 11:42:30 keith Exp $ */
+/* $XConsortium: spfuncs.c,v 1.6 92/04/09 18:13:45 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -22,9 +22,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: Dave Lemke, Network Computing Devices, Inc
- *
- * $NCDId: @(#)spfuncs.c,v 4.8 1991/07/02 17:01:44 lemke Exp $
- *
  */
 
 #include	<X11/Xos.h>
@@ -72,8 +69,7 @@ get_font_info(pinfo, fontname, filename, entry, spfont)
 
     err = open_sp_font(fontname, filename, entry,
 	       (fsBitmapFormat) 0, (fsBitmapFormatMask) 0, (unsigned long) 0,
-		       spfont);
-    spf = *spfont;
+		       &spf);
 
     if (err != Successful)
 	return err;
@@ -89,6 +85,8 @@ get_font_info(pinfo, fontname, filename, entry, spfont)
 
     /* compute remaining accelerators */
     FontComputeInfoAccelerators (pinfo);
+
+    *spfont = spf;
 
     return Successful;
 }
