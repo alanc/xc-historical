@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.12 89/07/17 10:54:03 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.13 89/07/18 18:02:55 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -46,7 +46,7 @@ static unsigned long miSpriteGeneration = 0;
 
 static Bool	    miSpriteCloseScreen();
 static void	    miSpriteGetImage();
-static unsigned int *miSpriteGetSpans();
+static void	    miSpriteGetSpans();
 static Bool	    miSpriteCreateGC();
 static void	    miSpriteBlockHandler();
 static void	    miSpriteInstallColormap();
@@ -336,17 +336,17 @@ miSpriteGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
     SCREEN_EPILOGUE (pScreen, GetImage, miSpriteGetImage);
 }
 
-static unsigned int *
-miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans)
+static void
+miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     DrawablePtr	pDrawable;
     int		wMax;
     DDXPointPtr	ppt;
     int		*pwidth;
     int		nspans;
+    unsigned int *pdstStart;
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     miSpriteScreenPtr	    pScreenPriv;
-    unsigned int	    *ret;
     
     SCREEN_PROLOGUE (pScreen, GetSpans);
 
@@ -376,11 +376,9 @@ miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans)
 	}
     }
 
-    ret = (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans);
+    (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 
     SCREEN_EPILOGUE (pScreen, GetSpans, miSpriteGetSpans);
-
-    return ret;
 }
 
 static Bool

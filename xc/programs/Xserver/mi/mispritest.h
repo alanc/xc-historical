@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.3 89/07/10 14:56:48 rws Exp $ */
+/* $XConsortium: mispritest.h,v 5.4 89/07/12 17:15:40 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -29,7 +29,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 typedef struct {
     Bool	    (*CloseScreen)();
     void	    (*GetImage)();
-    unsigned int    *(*GetSpans)();
+    void	    (*GetSpans)();
     Bool	    (*CreateGC)();
     void	    (*BlockHandler)();
     void	    (*InstallColormap)();

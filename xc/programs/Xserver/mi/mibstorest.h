@@ -4,7 +4,7 @@
  * internal structure definitions for mi backing store
  */
 
-/* $XConsortium: mibstorest.h,v 5.3 89/07/10 21:28:58 rws Exp $ */
+/* $XConsortium: mibstorest.h,v 5.4 89/07/21 08:48:07 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -67,7 +67,7 @@ typedef struct {
      */
     Bool	    (*CloseScreen)();
     void	    (*GetImage)();
-    unsigned int    *(*GetSpans)();
+    void	    (*GetSpans)();
     Bool	    (*ChangeWindowAttributes)();
     Bool	    (*CreateGC)();
     Bool	    (*DestroyWindow)();

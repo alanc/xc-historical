@@ -61,7 +61,7 @@ extern void miPolyFillArc();
 extern RegionPtr cfbCopyArea();
 
 extern void cfbSetSpans();
-extern unsigned int *cfbGetSpans();
+extern void cfbGetSpans();
 extern void cfbSolidFS();
 extern void cfbUnnaturalTileFS();
 extern void cfbUnnaturalStippleFS();
@@ -76,7 +76,7 @@ extern void cfbRestoreAreas();
 /* included from mfb.h; we can't include mfb.h directly because of other 
  * conflicts */
 extern void mfbSetSpans();
-extern unsigned int *mfbGetSpans();
+extern void mfbGetSpans();
 extern void mfbUnnaturalTileFS();
 extern void mfbUnnaturalStippleFS();
 extern Bool mfbRealizeFont();

@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.19 89/07/20 18:04:52 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.20 89/07/22 15:07:51 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -120,7 +120,7 @@ static unsigned long miBSGeneration = 0;
 
 static Bool	    miBSCloseScreen();
 static void	    miBSGetImage();
-static unsigned int *miBSGetSpans();
+static void	    miBSGetSpans();
 static Bool	    miBSChangeWindowAttributes();
 static Bool	    miBSCreateGC();
 static Bool	    miBSDestroyWindow();
@@ -467,13 +467,14 @@ punt:	;
     SCREEN_EPILOGUE (pScreen, GetImage, miBSGetImage);
 }
 
-static unsigned int *
-miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans)
+static void
+miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     DrawablePtr	pDrawable;
     int		wMax;
     DDXPointPtr	ppt;
     int		*pwidth;
     int		nspans;
+    unsigned int *pdstStart;
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     unsigned int	    *ret;
@@ -549,22 +550,21 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans)
 		ppt[i].x += dx;
 		ppt[i].y += dy;
 	    }
-	    ret = (*pScreen->GetSpans) ((DrawablePtr) pPixmap,
-					wMax, ppt, pwidth, nspans);
+	    (*pScreen->GetSpans) ((DrawablePtr) pPixmap,
+				  wMax, ppt, pwidth, nspans, pdstStart);
 	    break;
 	case rgnOUT:
-	    ret = (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans);
+	    (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans,
+				  pdstStart);
 	    break;
 	}
     }
     else
     {
-	ret = (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans);
+	(*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
     }
 
     SCREEN_EPILOGUE (pScreen, GetSpans, miBSGetSpans);
-
-    return ret;
 }
 
 static Bool
