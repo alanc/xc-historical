@@ -1,4 +1,4 @@
-! $XConsortium: XFontSel.ad,v 1.3 89/11/07 08:21:31 swick Exp $
+! $XConsortium: XFontSel.ad,v 1.4 89/11/14 09:34:14 swick Exp $
 !
 ! app-defaults for XFontSel
 !
@@ -23,7 +23,7 @@
 
 *appDefaultsVersion:	1
 
-XFontSel.cursor:	left_arrow
+XFontSel.cursor:	left_ptr
 *allowShellResize:	true
 
 *commandBox.ShowGrip:	false
@@ -91,7 +91,8 @@ XFontSel.cursor:	left_arrow
 *fieldBox*field13.Label: encdng
 #endif
 
-*fieldBox*field11.sensitive: False
+!*fieldBox*field11.Sensitive: False
+*fieldBox*field11.menu.Options.ShowUnselectable: False
 
 !*field1*menu*courier.Font:
 
