@@ -323,7 +323,7 @@ Widget wid;
 			 w->core.screen->height - w->core.height - w->core.y;
 	}
 
-	XtSetEventHandler(
+	XtAddEventHandler(
 	    wid, (EventMask) StructureNotifyMask,
 	    FALSE, EventHandler, (Opaque) NULL);
 }
