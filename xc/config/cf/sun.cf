@@ -13,7 +13,7 @@
 #define XsunServer Xsun
 /* #define Xplx Xplx */
 
-/**/# platform:  $XConsortium: sun.cf,v 1.4 89/02/22 13:06:09 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.5 89/02/24 13:33:45 jim Exp $
 /**/# operating system:  OSName
 
 
@@ -22,11 +22,10 @@
 #endif
 
 #define FloatingPointOptions -f68881 -pipe
-#define NoOpCDebugFlags                         FloatingPointOptions
-#define DefaultCDebugFlags OptimizedCDebugFlags FloatingPointOptions
-#define ServerCDebugFlags  OptimizedCDebugFlags FloatingPointOptions
-#define CDebugFlags        OptimizedCDebugFlags FloatingPointOptions
-#define LibraryCDebugFlags OptimizedCDebugFlags
+#define StandardDefines FloatingPointOptions
+#define LibraryDefines  /**/
+/* see below for ServerDefines */
+#define ExtraLoadFlags  FloatingPointOptions
 
 /*
  * Sun-specific parameters
@@ -43,6 +42,6 @@
 #if SunOSPlatform && (OSMajorVersion >= 4 || defined(sparc))
 #define ServerDefines SunWindowsDefines ExtensionDefines -DINCLUDE_ALLOCA_H
 #else
-#define ServerDefines SunWindowsDefines ExtensionDefines
+#define ServerDefines SunWindowsDefines ExtensionDefines FloatPointOptions
 #endif
 
