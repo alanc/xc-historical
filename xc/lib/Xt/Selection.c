@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.33 89/12/01 09:56:58 swick Exp $";
+    "$XConsortium: Selection.c,v 1.34 89/12/01 11:40:15 swick Exp $";
 #endif
 
 /***********************************************************
@@ -99,7 +99,7 @@ Display *dpy;
       }
     }
  propCount = sarray->propCount++;
- sarray->list = (SelectionProp) XtRealloc((char *) sarray->list, 
+ sarray->list = (SelectionProp) XtRealloc((XtPointer)sarray->list, 
   		(unsigned) ((propCount+1)*sizeof(SelectionPropRec)));
  (void) sprintf(propname, "%s%d", "_XT_SELECTION_", propCount);
  sarray->list[propCount].prop = XInternAtom(dpy, propname, FALSE);
@@ -297,24 +297,33 @@ XtIntervalId   *id;
     Select ctx = req->ctx;
     static void HandlePropertyGone();
 
-    if ((req->incr_callback) && (ctx->owner_cancel != NULL)) {
+    if (ctx->incremental && (ctx->owner_cancel != NULL)) {
 	(*ctx->owner_cancel)(ctx->widget, &ctx->selection, 
 			     &req->target, (XtRequestId*)&req,
 			     ctx->owner_closure);
     }
-    if (ctx->notify == NULL) XtFree((XtPointer)req->value);
+    if (ctx->notify == NULL)
+	XtFree((XtPointer)req->value);
+    else {
+	/* the requestor hasn't deleted the property, but
+	 * the owner needs to free the value.
+	 */
 
-    /* the requestor hasn't received it, but owner needs to free it anyway */
-    if (ctx->notify) 
 	if (ctx->incremental) {
-	    (*ctx->notify)(ctx->widget, &ctx->selection, &req->target, 
-			   (XtRequestId*)&req, ctx->owner_closure);
+	    /* ...and the pre-fetched value, if any */
+	    int count = ((req->anySent && req->bytelength) ? 2 : 1);
+	    while (count--) {
+		(*ctx->notify)(ctx->widget, &ctx->selection, &req->target, 
+			       (XtRequestId*)&req, ctx->owner_closure);
+	    }
 	}
 	else
 	    (*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
-     RemoveHandler(ctx->dpy, req->requestor, req->widget,
+    }
+
+    RemoveHandler(ctx->dpy, req->requestor, req->widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
-     XtFree((char *)req);
+    XtFree((XtPointer)req);
 }
 
 static void SendIncrement(incr)
@@ -372,9 +381,9 @@ XEvent *ev;
 	    else (*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
 	RemoveHandler(event->display, event->window, widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
-	XtFree((char *)req);
+	XtFree((XtPointer)req);
     } else  { /* is this part of an incremental transfer? */ 
-	if (req->incr_callback) {
+	if (ctx->incremental) {
 	     if (req->bytelength == 0)
 		AllSent(req);
 	     else {
@@ -407,9 +416,8 @@ XEvent *ev;
     }
 }
 
-static PrepareIncremental(ctx, req, widget, window, property, target, 
+static PrepareIncremental(req, widget, window, property, target, 
 	 targetType, value, length, format)
-Select ctx;
 Request req;
 Widget widget;
 Window window;
@@ -426,7 +434,6 @@ int format;
 	req->type = targetType;
 	req->property = property;
 	req->value = value;
-	req->incr_callback = ctx->incremental;
 	req->bytelength = BYTELENGTH(length,format);
 	req->format = format;
 	req->offset = 0;
@@ -441,14 +448,14 @@ int format;
 			 app->selectionTimeout, OwnerTimedOut, (XtPointer)req);
 	}
 #endif 
-	AddHandler(ctx->dpy, window, widget, 
+	AddHandler(req->ctx->dpy, window, widget, 
 			(EventMask) PropertyChangeMask, 
 	       		HandlePropertyGone, (XtPointer)req);
 /* now send client INCREMENT property */
 	size = BYTELENGTH(length,format);
 	value = ((char*)&size) + sizeof(long) - 4;
-	XChangeProperty(ctx->dpy, window, req->property,
-			ctx->incremental_atom,
+	XChangeProperty(req->ctx->dpy, window, req->property,
+			req->ctx->incremental_atom,
 			32, PropModeReplace, value, 1);
 }
 
@@ -477,7 +484,7 @@ Boolean *incremental;
 	     XtFree((XtPointer)req);
 	     return(FALSE);
 	 }
-	 PrepareIncremental(ctx, req, widget, event->requestor, property,
+	 PrepareIncremental(req, widget, event->requestor, property,
 			    target, targetType, value, length, format);
 	 *incremental = True;
 	 return(TRUE);
@@ -509,10 +516,10 @@ Boolean *incremental;
 			targetType, format, PropModeReplace,
 			(unsigned char *)value, (int)length);
 	/* free storage for client if no notify proc */
-	if (ctx->notify == NULL) XtFree((char *)value);
+	if (ctx->notify == NULL) XtFree((XtPointer)value);
 	*incremental = FALSE;
     } else {
-	 PrepareIncremental(ctx, req, widget, event->requestor, property,
+	 PrepareIncremental(req, widget, event->requestor, property,
 			    target, targetType, value, length, format);
 	 *incremental = True;
     }
