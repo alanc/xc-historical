@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XConsortium: xev.c,v 1.8 88/10/09 15:44:28 rws Exp $
+ * $XConsortium: xev.c,v 1.9 89/11/28 14:31:42 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -357,10 +357,9 @@ do_KeyPress (eventp)
     KeySym ks;
     char *ksname;
     int nbytes;
-    int keycode;
     char str[256+1];
 
-    nbytes = XLookupString (eventp, str, 256, &ks, NULL);
+    nbytes = XLookupString (e, str, 256, &ks, NULL);
     if (ks == NoSymbol)
 	ksname = "NoSymbol";
     else if (!(ksname = XKeysymToString (ks)))
@@ -502,7 +501,7 @@ do_KeymapNotify (eventp)
     XEvent *eventp;
 {
     XKeymapEvent *e = (XKeymapEvent *) eventp;
-    int i, j;
+    int i;
 
     printf ("    keys:  ");
     for (i = 0; i < 32; i++) {
@@ -874,7 +873,8 @@ set_sizehints (hintp, min_width, min_height,
     geom_result = NoValue;
     if (geom != NULL) {
         geom_result = XParseGeometry (geom, &hintp->x, &hintp->y,
-				      &hintp->width, &hintp->height);
+				      (unsigned int *)&hintp->width,
+				      (unsigned int *)&hintp->height);
 	if ((geom_result & WidthValue) && (geom_result & HeightValue)) {
 #define max(a,b) ((a) > (b) ? (a) : (b))
 	    hintp->width = max (hintp->width, hintp->min_width);

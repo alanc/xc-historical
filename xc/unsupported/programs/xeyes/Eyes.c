@@ -321,7 +321,8 @@ static int draw_it(client_data, id)
 {
         EyesWidget	w = (EyesWidget)client_data;
 	Window		rep_root, rep_child;
-	int		rep_rootx, rep_rooty, rep_mask;
+	int		rep_rootx, rep_rooty;
+	unsigned int	rep_mask;
 	int		dx, dy;
 	TPoint		mouse;
 	Display		*dpy = XtDisplay (w);

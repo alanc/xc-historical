@@ -36,7 +36,8 @@ get_filename(success,failure)
   static Widget cancel;		/* command, select to cancel */
 
   Window dummy1, dummy2;
-  int x1,y1,x2,y2,mask;
+  int x1,y1,x2,y2;
+  unsigned int mask;
 
   /* The translation table for the text widget.  Things such as <RETURN>
   ** confirm the user's choice.  Other keys which would move out of
