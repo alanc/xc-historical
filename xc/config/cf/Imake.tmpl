@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.123 91/05/10 17:09:01 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.124 91/05/10 17:19:24 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -336,10 +336,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define HasVoidSignalReturn	YES	/* assume yes */
 #endif
 #ifndef HasBsearch
-#if SystemV || SystemV4
-#define HasBsearch		YES
-#else
-#define HasBsearch		NO	/* stupid systems */
+#define HasBsearch		YES	/* assume yes */
 #endif
 #endif
 #ifndef HasSaberC
