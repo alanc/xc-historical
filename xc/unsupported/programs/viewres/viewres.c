@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.2 90/02/08 13:33:53 jim Exp $
+ * $XConsortium: viewres.c,v 1.35 90/02/08 13:34:34 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,6 +40,7 @@
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/List.h>
 #include <X11/Xaw/Scrollbar.h>
+#include <X11/Xaw/Panner.h>
 #include <X11/Xaw/Tree.h>
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
@@ -158,7 +159,7 @@ static struct _nametable {
     { "forward", 1 },
 };
 
-static Widget treeWidget, viewportWidget;
+static Widget treeWidget, viewportWidget, pannerWidget;
 static Widget quitButton, viewButton, viewMenu, selectButton, selectMenu;
 static Widget view_widgets[VIEW_number];
 static Widget select_widgets[SELECT_number];
@@ -546,6 +547,42 @@ static void toggle_callback (gw, closure, data)
     update_selection_items ();
 }
 
+/* ARGSUSED */
+static void panner_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* undefined */
+    caddr_t data;			/* report */
+{
+    XawPannerReport *rep = (XawPannerReport *) data;
+
+    if (viewportWidget)
+      XawViewportSetLocation (viewportWidget,
+			      (((float) rep->slider_x) /
+			       ((float) rep->canvas_width)),
+			      (((float) rep->slider_y) /
+			       ((float) rep->canvas_height)));
+}
+
+/* ARGSUSED */
+static void viewport_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* undefined */
+    caddr_t data;			/* report */
+{
+    XawViewportReport *rep = (XawViewportReport *) data;
+    Arg args[6];
+
+    if (pannerWidget) {
+	XtSetArg (args[0], XtNsliderX, rep->child_x);
+	XtSetArg (args[1], XtNsliderY, rep->child_y);
+	XtSetArg (args[2], XtNsliderWidth, rep->clip_width);
+	XtSetArg (args[3], XtNsliderHeight, rep->clip_height);
+	XtSetArg (args[4], XtNcanvasWidth, rep->child_width);
+	XtSetArg (args[5], XtNcanvasHeight, rep->child_height);
+	XtSetValues (pannerWidget, args, SIX);
+    }
+}
+
 
 main (argc, argv)
     int argc;
@@ -553,10 +590,12 @@ main (argc, argv)
 {
     Widget toplevel, pane, box, dummy;
     XtAppContext app_con;
-    Arg args[2];
+    Arg args[5];
+    Dimension topwidth, topheight, width, height, bw;
     static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
     XtOrientation orient;
     int i;
+    XSetWindowAttributes attr;
 
     ProgramName = argv[0];
 
@@ -660,18 +699,52 @@ main (argc, argv)
 
 
     XtSetArg (args[0], XtNbackgroundPixmap, None);
+    XtSetArg (args[1], XtNnotifyCallback, callback_rec);
+    callback_rec[0].callback = (XtCallbackProc) viewport_callback;
+    callback_rec[0].closure = (caddr_t) NULL;
     viewportWidget = XtCreateManagedWidget ("viewport", viewportWidgetClass,
-					    pane, args, ONE);
+					    pane, args, TWO);
+
     treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass,
-					viewportWidget,
-					NULL, 0);
-    XtSetArg (args[0], XtNorientation, &orient);
+					viewportWidget, NULL, ZERO);
 
     set_labeltype_menu (Appresources.show_variable, FALSE);
     set_orientation_menu ((Boolean)(orient == XtorientHorizontal), FALSE);
     update_selection_items ();
     build_tree (topnode, treeWidget, NULL);
     XtRealizeWidget (toplevel);
+
+    width = height = 0;
+    XtSetArg (args[0], XtNwidth, &width);
+    XtSetArg (args[1], XtNheight, &height);
+    XtGetValues (toplevel, args, TWO);
+    topwidth = width;
+    topheight = height;
+    XtGetValues (treeWidget, args, TWO);
+
+    XtSetArg (args[0], XtNcallback, callback_rec);
+    callback_rec[0].callback = (XtCallbackProc) panner_callback;
+    callback_rec[0].closure = (caddr_t) NULL;
+    XtSetArg (args[1], XtNcanvasWidth, width);
+    XtSetArg (args[2], XtNcanvasHeight, height);
+    XtSetArg (args[3], XtNsliderWidth, width);
+    XtSetArg (args[4], XtNsliderHeight, height);
+    pannerWidget = XtCreateWidget ("panner", pannerWidgetClass, pane,
+				   args, FIVE);
+
+    XtRealizeWidget (pannerWidget);
+    width = height = 0;
+    XtSetArg (args[0], XtNwidth, &width);
+    XtSetArg (args[1], XtNheight, &height);
+    XtSetArg (args[2], XtNborderWidth, &bw);
+    XtGetValues (pannerWidget, args, THREE);
+    XMoveWindow (XtDisplay(pannerWidget), XtWindow(pannerWidget),
+		 (int) 0, (int) (topheight - height - bw * 2));
+    attr.win_gravity = SouthWestGravity;
+    XChangeWindowAttributes (XtDisplay(pannerWidget), XtWindow(pannerWidget),
+			     CWWinGravity, &attr);
+
+    XtMapWidget (pannerWidget);
     XtAppMainLoop (app_con);
 }
 
