@@ -1,4 +1,4 @@
-.\" $XConsortium: mkfontdir.man,v 1.7 94/04/12 15:16:20 gildea Exp $
+.\" $XConsortium: mkfontdir.man,v 1.8 94/04/12 18:21:57 gildea Exp $
 .\" Copyright 1993 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -19,8 +19,9 @@ mkfontdir, fonts.dir, fonts.scale, fonts.alias \- create an index of X font file
 .SH DESCRIPTION
 For each directory argument, \fImkfontdir\fP reads all of the font files in the
 directory searching for properties named "FONT", or (failing that) the name
-of the file stripped of its suffix.  These are used as font names, and,
-with the name of the font file, are
+of the file stripped of its suffix.  These are converted to lower case and
+used as font names, and,
+along with the name of the font file, are
 written out to the file "fonts.dir" in the directory.
 The X server and font server use "fonts.dir" to find font files.
 .PP
