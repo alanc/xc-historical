@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.9 89/07/16 14:38:27 rws Exp $ */
+/* $XConsortium: resource.h,v 1.10 89/07/19 09:34:49 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -55,12 +55,11 @@ typedef unsigned long RESTYPE;
 #define RT_NONE		((RESTYPE)0)
 
 /* bits and fields within a resource id */
-#define CLIENTOFFSET 20					/* client field */
-#define RESOURCE_ID_MASK	0x7FFFF			/* low 19 bits */
-#define CLIENT_BITS(id) ((id) & 0xfff00000)		/* hi 12 bits */
-#define CLIENT_ID(id) ((int)(CLIENT_BITS(id) >> CLIENTOFFSET))	/* hi 12 bits */
-#define SERVER_BIT		0x80000			/* 20th bit reserved */
-#define SERVER_BIT_SHIFT	19			/* 20th bit reserved */
+#define CLIENTOFFSET 22					/* client field */
+#define RESOURCE_ID_MASK	0x3FFFFF		/* low 22 bits */
+#define CLIENT_BITS(id) ((id) & 0x1fc00000)		/* hi 7 bits */
+#define CLIENT_ID(id) ((int)(CLIENT_BITS(id) >> CLIENTOFFSET))
+#define SERVER_BIT		0x20000000		/* use illegal bit */
 
 /* Invalid resource id */
 #define INVALID	(0)
