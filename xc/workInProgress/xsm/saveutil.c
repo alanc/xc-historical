@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.8 94/06/27 14:17:22 mor Exp $ */
+/* $XConsortium: save.c,v 1.9 94/07/07 11:22:40 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -30,13 +30,37 @@ in this Software without prior written authorization from the X Consortium.
 extern List	 *PendingList;
 extern ClientRec *ClientList;
 char 		 session_save_file[PATH_MAX];
-Bool	 	getline();
+Bool	 	 getline();
+
+
+
+void
+set_session_save_file_name (session_name)
+
+char *session_name;
+
+{
+    char *p;
+
+    p = (char *) getenv ("SM_SAVE_DIR");
+    if (!p)
+    {
+	p = (char *) getenv ("HOME");
+	if (!p)
+	    p = ".";
+    }
+
+    strcpy (session_save_file, p);
+    strcat (session_save_file, "/.SM-");
+    strcat (session_save_file, session_name);
+}
 
 
 
 int
-read_save(sm_id)
+read_save(session_name, sm_id)
 
+char *session_name;
 char **sm_id;
 
 {
@@ -53,16 +77,7 @@ char **sm_id;
     PendingList = ListInit();
     if(!PendingList) nomem();
 
-    p = (char *) getenv ("SM_SAVE_DIR");
-    if (!p)
-    {
-	p = (char *) getenv ("HOME");
-	if (!p)
-	    p = ".";
-    }
-
-    strcpy(session_save_file, p);
-    strcat(session_save_file, "/.SM-save");
+    set_session_save_file_name (session_name);
 
     f = fopen(session_save_file, "r");
     if(!f) {
