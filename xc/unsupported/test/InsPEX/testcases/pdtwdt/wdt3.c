@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: wdt3.c,v 5.1 91/02/16 10:01:18 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -46,7 +46,7 @@ SOFTWARE.
  ## 10:to test pinq_def_disp_upd_st
  ## 11:to test pinq_gdp, pinq_list_avail_gdp
  ## 12:to test pinq_gdp3, pinq_list_avail_gdp3
- ## 13:to test pinq_gse
+ ## 13:to test pinq_list_avail_gse
  */
 
 #include "phigs/phigs.h"
@@ -170,7 +170,7 @@ main(argc,argv)
 			verify_gdp3();
 			break;
                 case 13:
-			tvprintf(2,"testing pinq_gse\n");
+			tvprintf(2,"testing pinq_list_avail_gse\n");
 			verify_avail_gse();
 			break;
                 default:
@@ -262,8 +262,8 @@ verify_avail_gse()
 	Pint_list gse,expgse;
 
 	err = BOGUSERR;
-	pinq_gse(wstype,BUFSIZE,0,&err,&gse,&total);
-	ERROR("pinq_gse");
+	pinq_list_avail_gse(wstype,BUFSIZE,0,&err,&gse,&total);
+	ERROR("pinq_list_avail_gse");
 	expgse.num_ints = num_gse;
 	expgse.ints = list_gse;
 	if (! i_compare_Pint_list(gse,expgse))
