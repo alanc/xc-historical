@@ -2,13 +2,22 @@ LIBRARY XIE
 VERSION LIBRARY_VERSION
 EXPORTS
  XieAbort
+ XieAllocatePhotofloGraph
  XieAwait
- XieGetClientData
- XiePutClientData
  XieCreateColorList
+ XieCreateLUT
+ XieCreatePhotoflo
+ XieCreatePhotomap
+ XieCreatePhotospace
+ XieCreateROI
  XieDestroyColorList
- XiePurgeColorList
- XieQueryColorList
+ XieDestroyLUT
+ XieDestroyPhotoflo
+ XieDestroyPhotomap
+ XieDestroyPhotospace
+ XieDestroyROI
+ XieExecuteImmediate
+ XieExecutePhotoflo
  XieFloArithmetic
  XieFloBandCombine
  XieFloBandExtract
@@ -46,6 +55,21 @@ EXPORTS
  XieFloPasteUp
  XieFloPoint
  XieFloUnconstrain
+ XieFreeEncodeJPEGBaseline
+ XieFreeEncodeJPEGLossless
+ XieFreePasteUpTiles
+ XieFreePhotofloGraph
+ XieFreeTechniques
+ XieGetClientData
+ XieInitialize
+ XieModifyPhotoflo
+ XiePurgeColorList
+ XiePutClientData
+ XieQueryColorList
+ XieQueryPhotoflo
+ XieQueryPhotomap
+ XieQueryTechniques
+ XieRedefinePhotoflo
  XieTecCIELabToRGB
  XieTecCIEXYZToRGB
  XieTecClipScale
@@ -86,27 +110,3 @@ EXPORTS
  XieTecWhiteAdjustCIELabShift
  XieTecYCCToRGB
  XieTecYCbCrToRGB
- XieFreeEncodeJPEGBaseline
- XieFreeEncodeJPEGLossless
- XieFreePasteUpTiles
- XieFreePhotofloGraph
- XieFreeTechniques
- XieInitialize
- XieQueryTechniques
- XieCreateLUT
- XieDestroyLUT
- XieAllocatePhotofloGraph
- XieCreatePhotoflo
- XieDestroyPhotoflo
- XieExecutePhotoflo
- XieModifyPhotoflo
- XieQueryPhotoflo
- XieRedefinePhotoflo
- XieCreatePhotomap
- XieDestroyPhotomap
- XieQueryPhotomap
- XieCreatePhotospace
- XieDestroyPhotospace
- XieExecuteImmediate
- XieCreateROI
- XieDestroyROI
