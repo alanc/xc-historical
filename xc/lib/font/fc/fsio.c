@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.16 91/06/21 18:15:43 keith Exp $ */
+/* $XConsortium: fsio.c,v 1.17 91/06/25 15:59:06 rws Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -71,7 +71,6 @@ _fs_name_to_address(servername, inaddr)
     char        hostname[256];
     char       *sp;
     unsigned long hostinetaddr;
-    extern struct hostent *gethostbyname();
     struct hostent *hp;
 
     /* XXX - do any service name lookup to get a hostname */
