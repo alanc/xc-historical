@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.4 93/10/26 19:18:51 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.5 93/10/26 19:50:05 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -1432,7 +1432,7 @@ XParms	xp;
 	/* get what we can, and remember it. we should get all since
 	   we created the colormap */
 
-	i = ( 1 << xp->vinfo.depth );
+	i = xp->vinfo.colormap_size;
 	pixels = ( unsigned long * ) malloc( sizeof( unsigned long ) * i );
 	if ( pixels == ( unsigned long * ) NULL )
 	{
