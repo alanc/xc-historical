@@ -15,11 +15,11 @@ Xfd*range.Justify: left
 Xfd*start.Justify: left
 
 Xfd*quit.Translations:  #override \
-		<Btn1Up>: Quit() unset()
+		<Btn1Down>,<Btn1Up>: Quit() unset()
 Xfd*next.Translations:  #override \
-		<Btn1Up>: Next() unset()
+		<Btn1Down>,<Btn1Up>: Next() unset()
 Xfd*prev.Translations:  #override \
-		<Btn1Up>: Prev() unset()
+		<Btn1Down>,<Btn1Up>: Prev() unset()
 
 Xfd*Translations: #override \n\
 <Key>q: Quit()\n\
