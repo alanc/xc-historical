@@ -1,5 +1,5 @@
 .\" Use eqn, tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.18 93/12/28 18:46:33 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.19 93/12/29 15:17:57 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0		\" make tall enough to span paragraph skip
 ..
@@ -15,6 +15,7 @@
 .OF ''''
 .ps 11
 .nr PS 11
+.if n .nr LL 72m
 \&
 .sp 8
 .ce 4
@@ -358,12 +359,12 @@ T}
 T{
 XFNExtPrefix ::=
 T}	T{
-OCTET \- the value of ISO8859-1 PLUS (Column/Row 02/11)
+OCTET \- the value of ISO 8859-1 PLUS (Column/Row 02/11)
 T}
 T{
 XFNDelim ::=
 T}	T{
-OCTET \- the value of ISO8859-1 HYPHEN (Column/Row 02/13)
+OCTET \- the value of ISO 8859-1 HYPHEN (Column/Row 02/13)
 T}
 T{
 PrivFontNameRegistry ::=
@@ -375,7 +376,7 @@ PrivFontNameSuffix ::=	STRING8
 .ps 11
 .nr PS 11
 .LP
-Field values are constructed as strings of ISO8859-1 graphic characters, 
+Field values are constructed as strings of ISO 8859-1 graphic characters, 
 excluding the following:
 .IP \(bu 5
 HYPHEN (02/13), the XLFD font name delimiter character
@@ -784,7 +785,11 @@ set registry.
 CHARSET_REGISTRY is an x-registered-name that identifies 
 the registration authority that owns the specified encoding.
 CHARSET_ENCODING is a registered name that identifies the coded character set 
-as defined by that registration authority.
+as defined by that registration authority
+.sC
+and, optionally, a subsetting hint.
+.br
+.eC
 .LP
 Although the X protocol does not explicitly have any knowledge about 
 character set encodings, 
@@ -837,6 +842,42 @@ as specified in XLFD.
 .LP
 The ISO Latin-1 character set shall be registered by the X Consortium as the 
 CHARSET_REGISTRY-CHARSET_ENCODING value pair: \*QISO8859-1\*U.
+.br
+.sC
+.LP
+If the CHARSET_ENCODING contains an \*Q=\*U (ISO 8859-1 EQUALS SIGN,
+Column/Row 03/13), the \*Q=\*U and the characters after it are a
+subsetting hint telling the rasterizer that the client is interested
+only in a subset of the characters of the font.
+.LP
+The BNF for the subsetting hint is
+.TS
+r l.
+Subset ::=	\*Q=\*U Rangelist
+Rangelist ::=	Range | Range \*Q+\*U Rangelist
+Range ::=	Number | Number \*Q:\*U Number
+Number ::=	\*Q0x\*U HexNumber | DecNumber
+HexNumber ::=	HexDigit | HexDigit HexNumber
+DecNumber ::=	DecDigit | DecDigit DecNumber
+HexDigit ::=	[0-9a-f]
+DecDigit ::=	[0-9]
+.TE
+.LP
+For example,
+.br
+.ft C
+.SM
+	-misc-fixed-medium-r-normal--0-0-0-0-c-0-iso8859-1=65+70+80:90
+.NL
+.ft P
+.br
+tells the rasterizer that the client is interested only in characters
+65, 70, and 80\-90.  The rasterizer can, optionally, return a font that
+contains only those characters or any superset of those characters.  The
+client can expect to obtain valid glyphs and metrics only for those
+characters, and not for any other characters in the font.
+.br
+.eC
 .NH 3
 Examples
 .XS
@@ -844,7 +885,7 @@ Examples
 .XE
 .LP
 The following examples of font names are derived from the screen fonts 
-shipped with the MIT X distribution.
+shipped with the X Consortium distribution.
 .SM
 .TS H
 lw(1.45i) lw(4.45i).
@@ -978,7 +1019,7 @@ future and private properties may exist in X fonts at any time.
 Private font properties should be defined to conform to the general mechanism 
 defined in the X protocol to prevent overlap of name space and ambiguous 
 property names, that is, private font property names are of the form: 
-ISO8859-1 UNDERSCORE (Column/Row 05/15), 
+ISO 8859-1 UNDERSCORE (Column/Row 05/15), 
 followed by the organizational identifier, followed by UNDERSCORE, 
 and terminated with the property name.
 .LP
@@ -1007,7 +1048,7 @@ SUPERSCRIPT_ SIZE | FIGURE_WIDTH | SUBSCRIPT_SIZE | SMALL_CAP_SIZE |
 NOTICE | DESTINATION
 T}
 Underscore ::=	T{
-OCTET\-the value of ISO8859-1 UNDERSCORE character (Column/Row 05/15)
+OCTET\-the value of ISO 8859-1 UNDERSCORE character (Column/Row 05/15)
 T}
 OrganizationId ::=	T{
 STRING8\-the registered name of the organization
@@ -1220,7 +1261,7 @@ according to the following algorithm:
 if (AVERAGE_WIDTH undefined) then
 .sC
    AVERAGE_WIDTH = ROUND (MEAN (ABS (width of each glyph in font)) * 10)
-	* if (dominant writing direction left-to-right) then 1 else \-1
+	* if (dominant writing direction L-to-R) then 1 else \-1
 .eC
 .DE
 .LP
@@ -1355,8 +1396,9 @@ according to the following algorithm:
 .DS I
 if (AVG_CAPITAL_WIDTH undefined) then
 .sC
-   AVG_CAPITAL_WIDTH = ROUND (MEAN (ABS (width of each capital glyph) * 10))
-	* if (dominant writing direction left-to-right) then 1 else \-1
+   AVG_CAPITAL_WIDTH = ROUND (MEAN
+                  (ABS (width of each capital glyph) * 10))
+	* if (dominant writing direction L-to-R) then 1 else \-1
 .eC
 .DE
 .NH 3
@@ -1385,8 +1427,8 @@ if (AVG_LOWERCASE_WIDTH undefined) then
    if (lowercase exists) then
 .sC
       AVG_LOWERCASE_WIDTH = ROUND (MEAN
-                              (ABS (width of each lowercase glyph) * 10))
-	* if (dominant writing direction left-to-right) then 1 else \-1
+                       (ABS (width of each lowercase glyph) * 10))
+	* if (dominant writing direction L-to-R) then 1 else \-1
 .eC
    else AVG_LOWERCASE_WIDTH undefined
 .DE
@@ -1890,7 +1932,6 @@ X clients are encouraged to discontinue use of the RESOLUTION property
 and are encouraged to use the appropriate X,Y resolution properties,
 as required.
 .NE			\" Note End
-.br
 .sC
 .NH 3
 FONT
@@ -2055,7 +2096,7 @@ WEIGHT	CARD32
 POINT_SIZE	INT32
 RESOLUTION	CARD32 \- deprecated
 COPYRIGHT	ATOM
-FULL_NAME	ATOM
+FULL_NAME	ATOM \- deprecated
 FAMILY_NAME	ATOM
 DEFAULT_CHAR	CARD32
 .sp 6p
