@@ -1,4 +1,4 @@
-/* $XConsortium: util.c,v 1.5 92/03/20 14:35:58 keith Exp $ */
+/* $XConsortium: util.c,v 1.6 92/03/26 16:42:26 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -62,7 +62,7 @@ char *vm_alloc(bytes)
   char *answer;
  
   /* Round to next word multiple */
-  bytes = (bytes + 3) & ~3;
+  bytes = (bytes + 7) & ~7;
  
   /* Allocate the space, if it is available */
   if (bytes <= vm_free) {
