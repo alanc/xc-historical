@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.7 93/08/22 18:20:00 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.1 93/08/25 19:19:54 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -61,7 +61,7 @@ typedef thread_t xthread_t;
 typedef cond_t *xcondition_t;
 typedef mutex_t *xmutex_t;
 #define xthread_self() thr_self()
-#define xthread_fork(func,closure) thr_create(NULL,0,func,closure,THR_DETACHED,NULL);
+#define xthread_fork(func,closure) thr_create(NULL,0,func,closure,THR_DETACHED,NULL)
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(mutex_t))
 #define xmutex_init(m) mutex_init(m,USYNC_THREAD,0)
 #define xmutex_clear(m) mutex_destroy(m)
