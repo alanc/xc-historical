@@ -1,4 +1,4 @@
-/* $XConsortium: keysym.h,v 1.11 87/08/31 20:31:43 toddb Exp $ */
+/* $XConsortium: keysym.h,v 1.12 88/09/06 15:56:09 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,4 +32,4 @@ SOFTWARE.
 #define XK_LATIN4
 #define XK_GREEK
 
-#include "keysymdef.h"
+#include <X11/keysymdef.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: Xprotostr.h,v 1.2 88/01/30 17:49:46 rws Exp $ */
+/* $XConsortium: Xprotostr.h,v 1.3 88/09/06 15:56:06 jim Exp $ */
 #ifndef XPROTOSTRUCTS_H
 #define XPROTOSTRUCTS_H
 
@@ -25,7 +25,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-#include "Xmd.h"
+#include <X11/Xmd.h>
 
 /* Used by PolySegment */
 
