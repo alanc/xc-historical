@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.15 88/10/06 09:10:00 swick Exp $
+ *	$XConsortium: scrollbar.c,v 1.16 88/10/07 08:19:51 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -42,7 +42,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.15 88/10/06 09:10:00 swick Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.16 88/10/07 08:19:51 swick Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -179,17 +179,7 @@ static void RealizeScrollBar (sbw, screen)
     Widget sbw;
     TScreen *screen;
 {
-    XSetWindowAttributes attr;
-
     XtRealizeWidget (sbw);
-
-    attr.do_not_propagate_mask = 
-      LeaveWindowMask | EnterWindowMask | StructureNotifyMask;
-
-    XChangeWindowAttributes(screen->display, XtWindow(sbw), 
-			    CWDontPropagate, &attr);
-
-    return;
 }
 
 
