@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.2 93/11/25 14:25:05 mor Exp $ */
+/* $XConsortium: listen.c,v 1.3 93/11/30 15:29:45 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -177,8 +177,6 @@ char		*errorStringRet;
 
 	    for (i = 0; i < *countRet; i++)
 	    {
-		(*listenObjsRet)[i]->auth_data_entry_count = 0;
-		(*listenObjsRet)[i]->auth_data_entries = NULL;
 		(*listenObjsRet)[i]->host_based_auth_proc = NULL;
 	    }
 
@@ -266,23 +264,26 @@ IceListenObj listenObj;
     if (listenObj)
     {
 	free (listenObj->network_id);
-
-	if (listenObj->auth_data_entries)
-	{
-	    int i;
-
-	    for (i = 0; i < listenObj->auth_data_entry_count; i++)
-	    {
-		free (listenObj->auth_data_entries[i].protocol_name);
-		free (listenObj->auth_data_entries[i].auth_name);
-		free (listenObj->auth_data_entries[i].auth_data);
-	    }
-
-	    free ((char *) listenObj->auth_data_entries);
-	}
-
 	free ((char *) listenObj);
     }
+}
+
+
+
+/*
+ * Allow host based authentication for the ICE Connection Setup.
+ * Do not confuse with the host based authentication callbacks that
+ * can be set up in IceRegisterForProtocolReply.
+ */
+
+void
+IceSetHostBasedAuthProc (listenObj, hostBasedAuthProc)
+
+IceListenObj		listenObj;
+IceHostBasedAuthProc	hostBasedAuthProc;
+
+{
+    listenObj->host_based_auth_proc = hostBasedAuthProc;
 }
 
 
