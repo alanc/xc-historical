@@ -25,7 +25,6 @@
 #define HasGcc NO
 #endif
 
-#define SystemV           NO
 #define HasPutenv YES
 #define HasBsearch YES
 
@@ -38,8 +37,6 @@
 
 #if OSMajorVersion <= 3
 #define HasVoidSignalReturn NO
-#else
-#define HasVoidSignalReturn YES
 #endif
 
 #ifdef sparc
@@ -71,7 +68,7 @@
 /* see below for ServerDefines */
 
 
-XCOMM platform:  $XConsortium: sun.cf,v 1.39 89/12/26 10:15:54 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.40 90/11/30 11:14:35 rws Exp $
 XCOMM operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2

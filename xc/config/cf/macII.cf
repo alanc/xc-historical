@@ -27,16 +27,10 @@
 #define XmacIIServer      XmacII
 #define BuildServer YES
 
-#ifdef POSIX
-#define HasVoidSignalReturn YES
-#else
-#define HasVoidSignalReturn NO
-#endif
-
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-XCOMM platform:  $XConsortium: macII.cf,v 1.18 90/01/08 11:51:46 jim Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.19 90/11/30 11:14:14 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************

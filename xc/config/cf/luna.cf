@@ -5,11 +5,9 @@
 #define OSName            UNIOS-B 4.3BSD UNIX: 1.50
 #define OSMajorVersion    1
 #define OSMinorVersion    50
-#define SystemV NO
 #define BootstrapCFlags		-Dluna
 #define StandardDefines		-Dluna
 #define StandardCppDefines	-Dluna
-#define HasVoidSignalReturn	YES
 #define HasPutenv		NO
 #define HasBsearch		NO
 #define HasSaberC		NO
@@ -35,5 +33,5 @@
 #endif
 
 
-XCOMM platform:  $XConsortium: Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.1 90/11/30 11:14:12 rws Exp $
 XCOMM operating system:  OSName

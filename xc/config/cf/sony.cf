@@ -2,16 +2,13 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define SystemV           NO
 #define OSName            NEWS-OS 3.3
 #define OSMajorVersion    3
 #define OSMinorVersion    3
 #define BuildServer       NO
 #define HasInputExtension YES
 
-#define HasVoidSignalReturn YES
-
-XCOMM platform:  $XConsortium: sony.cf,v 1.5 90/08/21 13:59:12 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.6 90/11/30 11:14:32 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************
