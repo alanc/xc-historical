@@ -1,8 +1,8 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.38 90/08/30 16:46:53 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.39 90/10/28 15:46:30 converse Exp $";
 #endif /* lint && SABER */
 
-/***********************************************************
+/*
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
@@ -24,7 +24,7 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
-******************************************************************/
+*/
 
 /***********************************************************************
  *
@@ -46,7 +46,6 @@ SOFTWARE.
  */
 
 #include <stdio.h>
-#include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
