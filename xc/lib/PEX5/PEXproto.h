@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 1.5 92/11/02 16:36:26 mor Exp $ */
+/* $XConsortium: PEXproto.h,v 1.6 93/02/23 14:54:49 mor Exp $ */
 
 /******************************************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc.
@@ -75,6 +75,10 @@ SOFTWARE.
  * the parentheses.  (number of bytes of padding = n?(3-((n-1)%4):0 , where
  * n is the parenthetical value.)
  */
+
+#define XID CARD32
+#define Drawable CARD32
+
 #include <X11/PEX5/PEXprotost.h>
 
 /* Matches revision 5.1C */
@@ -2207,6 +2211,9 @@ typedef struct {
     CARD32	rdr B32;		
     BYTE	pad[24];
 } pexMaxHitsReachedEvent;
+
+#undef XID
+#undef Drawable
 
 #endif /* PEXPROTO_H */
 
