@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.6 91/04/03 20:15:48 gildea Exp $
+ * $XConsortium: xconsole.c,v 1.7 91/07/11 21:31:53 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -23,8 +23,6 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include <stdio.h>
-#include <ctype.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
@@ -45,6 +43,8 @@
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <sys/stat.h>
+#include <stdio.h>
+#include <ctype.h>
 
 static long	TextLength ();
 
@@ -184,8 +184,10 @@ OpenConsole ()
 static
 CloseConsole ()
 {
-    XtRemoveInput (input_id);
-    fclose (input);
+    if (input) {
+	XtRemoveInput (input_id);
+	fclose (input);
+    }
 #ifdef USE_PTY
     close (tty_fd);
 #endif
