@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: mlist.c,v 1.10 87/06/01 17:20:15 weissman Exp $";
+static char rcs_id[] = "$Header: mlist.c,v 1.7 87/10/09 14:01:39 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -36,9 +36,9 @@ static char rcs_id[] = "$Header: mlist.c,v 1.10 87/06/01 17:20:15 weissman Exp $
 MsgList MakeNullMsgList()
 {
     MsgList mlist;
-    mlist = (MsgList) XtMalloc(sizeof(MsgListRec));
+    mlist = XtNew(MsgListRec);
     mlist->nummsgs = 0;
-    mlist->msglist = (Msg *) XtMalloc(sizeof(Msg));
+    mlist->msglist = XtNew(Msg);
     mlist->msglist[0] = NULL;
     return mlist;
 }
