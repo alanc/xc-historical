@@ -1,4 +1,4 @@
-/* $XConsortium: imTransR.c,v 1.6 94/03/26 20:07:12 rws Exp $ */
+/* $XConsortium: imTransR.c,v 1.7 94/06/03 17:34:28 rws Exp mor $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -44,7 +44,7 @@ Public TransportSW _XimTransportRec[] = {
     "local",      _XimTransConf, /* use X transport lib */
 #endif /* UNIXCONN */
 #ifdef DNETCONN
-    "decnet",     _XimTransConf, /* use X transport lib */
+    "dnet",     _XimTransConf, /* use X transport lib */
 #endif /* DNETCONN */
 #ifdef STREAMSCONN
     "streams",    _XimTransConf, /* use X transport lib */

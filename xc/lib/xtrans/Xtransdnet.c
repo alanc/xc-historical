@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.14 94/04/17 20:23:02 mor Exp mor $ */
+/* $XConsortium: Xtransdnet.c,v 1.15 94/10/18 15:53:05 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -668,7 +668,7 @@ XtransConnInfo	ciptr;
 
 Xtransport	TRANS(DNETFuncs) = {
     /* DNET Interface */
-    "decnet",
+    "dnet",
     0,
 #ifdef TRANS_CLIENT
     TRANS(DNETOpenCOTSClient),

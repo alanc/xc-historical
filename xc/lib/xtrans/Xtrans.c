@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.27 94/10/18 17:23:34 mor Exp kaleb $ */
+/* $XConsortium: Xtrans.c,v 1.28 94/12/01 16:30:09 kaleb Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -294,7 +294,7 @@ char	**port;
 
     if (*mybuf == ':')
     {
-	_protocol = "decnet";
+	_protocol = "dnet";
 	mybuf++;
     }
 
