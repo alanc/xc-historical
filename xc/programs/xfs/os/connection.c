@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: connection.c,v 1.10 91/05/13 16:50:52 gildea Exp $ */
 /*
  * handles connections
  */
@@ -500,7 +500,7 @@ ReapAnyOldClients()
     fprintf(stderr, "Looking for clients to reap\n");
 #endif
 
-    for (i = 0; i < currentMaxClients; i++) {
+    for (i = MINCLIENT; i < currentMaxClients; i++) {
 	client = clients[i];
 	if (client) {
 	    if ((cur_time - client->last_request_time) >= ReapClientTime) {
