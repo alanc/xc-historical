@@ -30,10 +30,16 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
+ * Modified by Bob Scheifler for 2x2 grayscale, then ...
+ * Modified by Angela Bock and E. Mike Durbin, Rich Inc., to produce output
+ * using 2x2, 3x3, or 4x4 grayscales. This version modifies the grayscale
+ * conversion option of -gray to accept an input of  2, 3, or 4 to signify
+ * the gray level desired.  The output is produced, using 5, 10, or 17-level
+ * gray scales, respectively.
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.38 89/07/21 14:19:12 jim Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.39 89/10/07 15:49:29 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -78,6 +84,32 @@ char *infilename = NULL, *whoami;
 char *malloc();
 char *convert_data();
 
+typedef struct _grayRec {
+    int level;
+    int sizeX, sizeY;		/* 2x2, 3x3, 4x4 */
+    unsigned long *grayscales;	/* pointer to the encoded pixels */
+} GrayRec, *GrayPtr;
+
+unsigned long grayscale2x2[] =
+	{0, 1, 9, 11, 15};
+unsigned long grayscale3x3[] =
+	{0, 16, 68, 81, 325, 341, 349, 381, 383, 511};
+unsigned long grayscale4x4[] =
+	{0, 64, 4160, 4161, 20545, 21057, 23105,
+	 23113, 23145, 24169, 24171, 56939, 55275, 55279,
+	 57327, 65519, 65535};
+
+GrayRec gray2x2 = {sizeof(grayscale2x2)/sizeof(long), 2, 2, grayscale2x2};
+GrayRec gray3x3 = {sizeof(grayscale3x3)/sizeof(long), 3, 3, grayscale3x3};
+GrayRec gray4x4 = {sizeof(grayscale4x4)/sizeof(long), 4, 4, grayscale4x4};
+
+/*****************************************************************************
+ * This macro returns a pixel value stored in gray.
+ * Intensity specifies which gray scale rectangle to use, x and y specify
+ * which pixel in the rectangle to return.
+ ****************************************************************************/
+#define GRAY(bits,x,dy) (bits >> (dy + x))
+
 main(argc, argv)
 char **argv;
 {
@@ -95,6 +127,7 @@ char **argv;
     int hpad;
     char *header, *trailer;
     int plane;
+    GrayPtr gray;
     char *data;
     long size;
     enum orientation orientation;
@@ -102,7 +135,7 @@ char **argv;
     XColor *colors = (XColor *)NULL;
     
     parse_args (argc, argv, &scale, &width, &height, &left, &top, &device, 
-		&flags, &split, &header, &trailer, &plane);
+		&flags, &split, &header, &trailer, &plane, &gray);
     
     if (device == PP) {
 	x2pmp(stdin, stdout, scale,
@@ -157,7 +190,7 @@ char **argv;
     data = malloc((unsigned)size);
     fullread(0, data, (int)size);
     if ((win.pixmap_depth > 1) || (win.byte_order != win.bitmap_bit_order)) {
-	data = convert_data(&win, data, plane, colors, flags);
+	data = convert_data(&win, data, plane, gray, colors, flags);
 	size = win.bytes_per_line * win.pixmap_height;
     }
     if (win.bitmap_bit_order == MSBFirst) {
@@ -226,7 +259,7 @@ usage()
     fprintf(stderr, "    -compact\n");
     fprintf(stderr, "    -device {ln03 | la100 | ps | lw | pp}\n");
     fprintf(stderr, "    -dump\n");
-    fprintf(stderr, "    -gray\n");
+    fprintf(stderr, "    -gray {2 | 3 | 4}\n");
     fprintf(stderr, "    -height <inches>  -width <inches>\n");
     fprintf(stderr, "    -header <string>\n  -trailer <string>");
     fprintf(stderr, "    -landscape  -portrait\n");
@@ -242,7 +275,7 @@ usage()
 }
 
 parse_args(argc, argv, scale, width, height, left, top, device, flags, 
-	   split, header, trailer, plane)
+	   split, header, trailer, plane, gray)
 register int argc;
 register char **argv;
 int *scale;
@@ -256,6 +289,7 @@ int *split;
 char **header;
 char **trailer;
 int *plane;
+GrayPtr *gray;
 {
     register char *output_filename;
     register int f;
@@ -332,6 +366,21 @@ int *plane;
 	case 'g':		/* -gray */
 	    if (!bcmp(*argv, "-gray", len) ||
 		!bcmp(*argv, "-grey", len)) {
+		argc--; argv++;
+		if (argc == 0) usage();
+		switch (atoi(*argv)) {
+		case 2:
+		    *gray = &gray2x2;
+		    break;
+		case 3:
+		    *gray = &gray3x3;
+		    break;
+		case 4:
+		    *gray = &gray4x4;
+		    break;
+		default:
+		    usage();
+		}
 		*flags |= F_GRAY;
 	    } else
 		usage();
@@ -542,10 +591,11 @@ enum orientation *orientation;
 }
 
 char *
-convert_data(win, data, plane, colors, flags)
+convert_data(win, data, plane, gray, colors, flags)
     register XWDFileHeader *win;
     char *data;
     int plane;
+    register GrayPtr gray;
     XColor *colors;
     int flags;
 {
@@ -581,10 +631,10 @@ convert_data(win, data, plane, colors, flags)
     out_image.width = (int) win->pixmap_width;
     out_image.height = (int) win->pixmap_height;
     if ((flags & F_GRAY) && (in_image.depth > 1) && (plane < 0)) {
-	out_image.width *= 2;
-	out_image.height *= 2;
-	win->pixmap_width *= 2;
-	win->pixmap_height *= 2;
+	out_image.width *= gray->sizeX;
+	out_image.height *= gray->sizeY;
+	win->pixmap_width *= gray->sizeX;
+	win->pixmap_height *= gray->sizeY;
     }
     out_image.xoffset = win->xoffset = 0;
     out_image.format = win->pixmap_format = XYBitmap;
@@ -639,8 +689,11 @@ convert_data(win, data, plane, colors, flags)
 	    direct = 1;
 	if (flags & F_GRAY) {
 	    register int ox, oy;
-	    for (y = 0, oy = 0; y < in_image.height; y++, oy += 2)
-		for (x = 0, ox = 0; x < in_image.width; x++, ox += 2) {
+	    int ix, iy, dy;
+	    unsigned long bits;
+	    for (y = 0, oy = 0; y < in_image.height; y++, oy += gray->sizeY)
+		for (x = 0, ox = 0; x < in_image.width; x++, ox += gray->sizeX)
+		{
 		    color.pixel = XGetPixel(&in_image, x, y);
 		    color.red = (color.pixel >> rshift) & rmask;
 		    color.green = (color.pixel >> gshift) & gmask;
@@ -650,39 +703,15 @@ convert_data(win, data, plane, colors, flags)
 			color.green = colors[color.green].green;
 			color.blue = colors[color.blue].blue;
 		    }
-		    switch ((int)(5 * INTENSITY(&color)) /
-				  (INTENSITYPER(100) + 1)) {
-		    case 0:
-			XPutPixel(&out_image, ox, oy, 0);
-			XPutPixel(&out_image, ox + 1, oy, 0);
-			XPutPixel(&out_image, ox, oy + 1, 0);
-			XPutPixel(&out_image, ox + 1, oy + 1, 0);
-			break;
-		    case 1:
-			XPutPixel(&out_image, ox, oy, 1);
-			XPutPixel(&out_image, ox + 1, oy, 0);
-			XPutPixel(&out_image, ox, oy + 1, 0);
-			XPutPixel(&out_image, ox + 1, oy + 1, 0);
-			break;
-		    case 2:
-			XPutPixel(&out_image, ox, oy, 0);
-			XPutPixel(&out_image, ox + 1, oy, 1);
-			XPutPixel(&out_image, ox, oy + 1, 1);
-			XPutPixel(&out_image, ox + 1, oy + 1, 0);
-			break;
-		    case 3:
-			XPutPixel(&out_image, ox, oy, 0);
-			XPutPixel(&out_image, ox + 1, oy, 1);
-			XPutPixel(&out_image, ox, oy + 1, 1);
-			XPutPixel(&out_image, ox + 1, oy + 1, 1);
-			break;
-		    default:
-			XPutPixel(&out_image, ox, oy, 1);
-			XPutPixel(&out_image, ox + 1, oy, 1);
-			XPutPixel(&out_image, ox, oy + 1, 1);
-			XPutPixel(&out_image, ox + 1, oy + 1, 1);
-			break;
-		    }
+		    bits = gray->grayscales[(int)(gray->level *
+						  INTENSITY(&color)) /
+					    (INTENSITYPER(100) + 1)];
+		    for (iy = 0, dy = 0;
+			 iy < gray->sizeY;
+			 iy++, dy += gray->sizeY)
+			for (ix = 0; ix < gray->sizeX; ix++)
+			    XPutPixel(&out_image, ox + ix, oy + iy,
+				      GRAY(bits, ix, dy));
 		}
 	} else {
 	    for (y = 0; y < in_image.height; y++)
@@ -702,6 +731,8 @@ convert_data(win, data, plane, colors, flags)
 	}
     } else if (flags & F_GRAY) {
 	register int ox, oy;
+	int ix, iy, dy;
+	unsigned long bits;
 
 	if (win->ncolors == 0) {
 	    fprintf(stderr, "no colors in data, can't remap\n");
@@ -710,41 +741,17 @@ convert_data(win, data, plane, colors, flags)
 	for (x = 0; x < win->ncolors; x++) {
 	    register XColor *color = &colors[x];
 
-	    color->pixel = (5 * INTENSITY(color)) / (INTENSITYPER(100) + 1);
+	    color->pixel = ((gray->level * INTENSITY(color)) /
+			    (INTENSITYPER(100) + 1));
 	}
-	for (y = 0, oy = 0; y < in_image.height; y++, oy += 2)
-	    for (x = 0, ox = 0; x < in_image.width; x++, ox += 2)
-		switch ((int)colors[XGetPixel(&in_image, x, y)].pixel) {
-		case 0:
-		    XPutPixel(&out_image, ox, oy, 0);
-		    XPutPixel(&out_image, ox + 1, oy, 0);
-		    XPutPixel(&out_image, ox, oy + 1, 0);
-		    XPutPixel(&out_image, ox + 1, oy + 1, 0);
-		    break;
-		case 1:
-		    XPutPixel(&out_image, ox, oy, 1);
-		    XPutPixel(&out_image, ox + 1, oy, 0);
-		    XPutPixel(&out_image, ox, oy + 1, 0);
-		    XPutPixel(&out_image, ox + 1, oy + 1, 0);
-		    break;
-		case 2:
-		    XPutPixel(&out_image, ox, oy, 0);
-		    XPutPixel(&out_image, ox + 1, oy, 1);
-		    XPutPixel(&out_image, ox, oy + 1, 1);
-		    XPutPixel(&out_image, ox + 1, oy + 1, 0);
-		    break;
-		case 3:
-		    XPutPixel(&out_image, ox, oy, 0);
-		    XPutPixel(&out_image, ox + 1, oy, 1);
-		    XPutPixel(&out_image, ox, oy + 1, 1);
-		    XPutPixel(&out_image, ox + 1, oy + 1, 1);
-		    break;
-		default:
-		    XPutPixel(&out_image, ox, oy, 1);
-		    XPutPixel(&out_image, ox + 1, oy, 1);
-		    XPutPixel(&out_image, ox, oy + 1, 1);
-		    XPutPixel(&out_image, ox + 1, oy + 1, 1);
-		    break;
+	for (y = 0, oy = 0; y < in_image.height; y++, oy += gray->sizeY)
+	    for (x = 0, ox = 0; x < in_image.width; x++, ox += gray->sizeX) {
+		bits = gray->grayscales[
+				     colors[XGetPixel(&in_image, x, y)].pixel];
+	        for (iy = 0, dy = 0; iy < gray->sizeY; iy++, dy += gray->sizeY)
+		    for (ix = 0; ix < gray->sizeX; ix++)
+			XPutPixel(&out_image, ox + ix, oy + iy,
+				  GRAY(bits, ix, dy));
 	    }
     } else {
 	if (win->ncolors == 0) {
