@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.1 89/07/20 16:30:56 jim Exp $
+ * $XConsortium: appres.c,v 1.2 89/07/20 16:38:21 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,11 +26,13 @@
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 
+#define NOCLASS "-NoSuchClass-"
+
 char *ProgramName;
 
 static void usage ()
 {
-    fprintf (stderr, "usage:  %s  [classname]\n", ProgramName);
+    fprintf (stderr, "usage:  %s  [instance] [class]\n", ProgramName);
     exit (1);
 }
 
@@ -39,22 +41,44 @@ main (argc, argv)
     char **argv;
 {
     Widget toplevel;
-    char *classname = "Appres";
-    char tmpbuf[256];
+    char *iname = NULL, *cname = NULL;
+    char tmpbuf[1025];
     char buf[BUFSIZ];
     FILE *fp;
     int n;
+    Bool incont, printit;
+    int clen, ilen;
 
     ProgramName = argv[0];
-    if (argc > 1 && argv[1][0] != '-') {
-	classname = argv[1];
-	argv[1] = ProgramName;
-	argc--, argv++;
+    if (argc > 1) {
+	int newargc = 1;
+	char **newargv = (char **) XtCalloc (argc + 1, sizeof(char *));
+
+	if (newargv) {
+	    int i;
+	    newargv[0] = argv[0];
+	    for (i = 1; i < argc; i++) {
+		if (argv[i][0] != '-') {
+		    if (!cname) {
+			cname = argv[i];
+			continue;
+		    } else if (!iname) {
+			iname = argv[i];
+			continue;
+		    } 
+		}
+		newargv[newargc++] = argv[i];
+	    }
+	    if (iname) newargv[0] = iname;
+	    argc = newargc;
+	    argv = newargv;
+	}
     }
-    toplevel = XtInitialize (NULL, classname, NULL, 0, &argc, argv);
+    toplevel = XtInitialize (NULL, cname ? cname : NOCLASS, NULL, 0,
+			     &argc, argv);
     if (argc != 1) usage ();
 
-    strcpy (tmpbuf, "/tmp/da.XXXXXX");
+    strcpy (tmpbuf, "/tmp/ar.XXXXXX~");
     mktemp (tmpbuf);
 
     unlink (tmpbuf);
@@ -62,9 +86,43 @@ main (argc, argv)
     
     fp = fopen (tmpbuf, "r");
     unlink (tmpbuf);
-    while ((n = fread (buf, 1, sizeof buf, fp)) > 0) {
-	fwrite (buf, 1, n, stdout);
+    printit = False;
+    incont = False;
+    if (!cname) cname = "";
+    if (!iname) iname = "";
+    clen = strlen (cname);
+    ilen = strlen (iname);
+    while (fgets (buf, sizeof buf, fp)) {
+	int len = strlen (buf);
+
+	if (len < 1) continue;
+	if (buf[len - 1] == '\n') {
+	    buf[--len] = '\0';
+	    if (len == 0) continue;
+	}
+	if (!incont) {
+	    /*
+	     * check for 
+	     *
+	     *     [*.]
+	     *     class[*.]
+	     *     inst[*.]
+	     *
+	     * and set printit
+	     */
+#define match(l,n) (l > 0 && len > l && strncmp (buf, n, l) == 0 && \
+		    (buf[l] == '*' || buf[l] == '.'))
+	    printit = (buf[0] == '*' || buf[0] == '.' ||
+		       match (clen, cname) || match (ilen, iname));
+	}
+	if (printit) puts (buf);
+	incont = (buf[len - 1] == '\\');
+	if (!incont) printit = False;
     }
+
     fclose (fp);
     exit (0);
 }
+
+
+

@@ -3,12 +3,12 @@
 appres - list application resource database
 .SH SYNOPSIS
 .B "appres"
-[applicationclass] [-xrm resource ...] 
+[[instancename] classname] [-xrm resource ...] 
 .SH DESCRIPTION
 .PP
-The \fIappres\fP program prints the contents of the resource database for the
-specified application \fIclass\fP.  It is used to determine which resources a
-particular program would load.  For example,
+The \fIappres\fP program prints the resources seen by an application of the
+specified \fIclass\fP and \fIinstance\fP name.  It is used to determine which
+resources a particular program would load.  For example,
 .sp 1
 .in +.5i
 .nf
@@ -16,9 +16,18 @@ particular program would load.  For example,
 .fi
 .in -.5i
 .sp 1
-would list the resources that \fIxterm\fP would load.  If no application
-class is specified, the class \fIAppres\fP (which normally has no defaults
-resource files or user defaults) is used.
+would list the resources that any \fIxterm\fP program would load.  To also
+match particular instance names, 
+.sp 1
+.in +.5i
+.nf
+%  appres myxterm XTerm
+.fi
+.in -.5i
+.sp 1
+If no application
+class is specified, the class \fI-NoSuchClass-\fP (which should have no
+defaults) is used.
 .SH "SEE ALSO"
 .PP
 X(1), xrdb(1), listres(1)
