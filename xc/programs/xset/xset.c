@@ -63,63 +63,56 @@ char **argv;
 	set->values = (XKeyboardControl *) malloc(sizeof(XKeyboardControl));
 
 	dpy = process_input(argc, argv, set);
-
 	if (!set->value_mask && !set->do_what) {
-		printf("No changes made.\n");
 		usage(argv[0]);
 	}
-
-/*	XSynchronize(dpy, 1); %%*/
-
+	XSynchronize(dpy, ON);
 
 	if (set->value_mask) {
 	        XChangeKeyboardControl(dpy, set->value_mask, set->values);
 	}
-
 	if (set->do_what & DO_QUERY) {
 	        query(dpy);
 	}
-
 	if (set->do_what & DO_ACCEL){
 	  XChangePointerControl(dpy, True, 
 				set->do_what & DO_THRESH / DO_THRESH,
 				set->acc_num, set->acc_denom, set->thresh);
 	}
-
 	if (set->do_what & REPEAT_ON) {
 	        XAutoRepeatOn(dpy);
 		XFlush(dpy);
 	}
-	else if (set->do_what & REPEAT_OFF)
+	else if (set->do_what & REPEAT_OFF) {
 		XAutoRepeatOff(dpy);
-
-	if (set->do_what & DO_SAVER)
+	}
+	if (set->do_what & DO_SAVER) {
 	  XSetScreenSaver(dpy, set->timeout, set->interval, 
 				     set->prefer_blank, set->allow_exp);
-
+	}
 	if (set->do_what & NEW_PIXELS &&
 	    DisplayCells(dpy, DefaultScreen(dpy)) >= 2) {
-		while (--set->numpixels >= 0) {
-			def.pixel = set->pixels[set->numpixels];
-			if (XParseColor(set->colors[set->numpixels], &def))
-				XStoreColor(&def);
-			else
-				fprintf(stderr, "%s: No such color\n", set->colors[set->numpixels]);
+	  while (--set->numpixels >= 0) {
+	    def.pixel = set->pixels[set->numpixels];
+	    if (XParseColor(set->colors[set->numpixels], &def))
+	      XStoreColor(&def);
+	    else
+	      fprintf(stderr, "%s: No such color\n", set->colors[set->numpixels]);
 		}
 	}
-	XSync(dpy, 0);
+	XFlush(dpy);
 	exit(0);
 }
 
 isnumber(arg, maximum)
-	char	*arg;
+	char *arg;
 	int maximum;
 {
-	register char	*p;
+	register char *p;
 
 	if (arg[0] == '-' && arg[1] == '1' && arg[2] == '\0')
 		return(1);
-	for (p=arg; isdigit(*p); p++) ;
+	for (p=arg; isdigit(*p); p++);
 	if (*p || atoi(arg) > maximum)
 		return(0); 
 	return(1);
@@ -138,14 +131,15 @@ register char *arg;
 register int i;
 char *disp = '\0';
 Display *dpy;
+cmd->do_what = 0;
 if (argc == 1)  usage(argv[0]);
 for (i = 1; i < argc; ) {
   arg = argv[i++];
-  if (strcmp(arg, "-c") == 0 || strcmp(arg, "-click") == 0) {
+  if (*arg == '-' && *(arg + 1) == 'c') {
     cmd->values->key_click_percent = 0;
     cmd->value_mask |= KBKeyClickPercent;
   } 
-  else if (strcmp(arg, "c") == 0 || strcmp(arg, "click") == 0) {
+  else if (*arg == 'c') {
     cmd->values->key_click_percent = -1;
     cmd->value_mask |= KBKeyClickPercent;
     arg = nextarg(i, argv);
@@ -161,11 +155,11 @@ for (i = 1; i < argc; ) {
       i++;
     }
   } 
-  else if (strcmp(arg, "-b") == 0 || strcmp(arg, "-bell") == 0) {
+  else if (*arg == '-' && *(arg + 1) == 'b') {
     cmd->values->bell_percent = 0;
     cmd->value_mask |= KBBellPercent;
   } 
-  else if (strcmp(arg, "b") == 0 || strcmp(arg, "bell") == 0) {
+  else if (*arg == 'b') {
     cmd->values->bell_percent = -1;
     cmd->value_mask |= KBBellPercent;
     arg = nextarg(i, argv);
@@ -228,35 +222,35 @@ for (i = 1; i < argc; ) {
     cmd->acc_denom = -1;
     cmd->thresh = -1;
     if (i >= argc){
-      cmd->do_what & DO_ACCEL;
-      cmd->do_what & DO_THRESH;
+      cmd->do_what |= DO_ACCEL;
+      cmd->do_what |= DO_THRESH;
       break;
     }
     arg = argv[i];
     if (strcmp(arg, "default") == 0) {
-      cmd->do_what & DO_ACCEL;
-      cmd->do_what & DO_THRESH;
+      cmd->do_what |= DO_ACCEL;
+      cmd->do_what |= DO_THRESH;
       i++;
     } 
     else if (*arg >= '0' && *arg <= '9') {
       cmd->acc_num = atoi(arg);
-      cmd->do_what & DO_ACCEL;
+      cmd->do_what |= DO_ACCEL;
       i++;
       if (i >= argc)
 	break;
       arg = argv[i];
       if (*arg >= '0' && *arg <= '9') {
 	cmd->thresh = atoi(arg);
-	cmd->do_what & DO_THRESH;
+	cmd->do_what |= DO_THRESH;
 	i++;
       }
     }
   } 
-  else if (strcmp(arg, "s") == 0 || strcmp(arg, "saver") == 0) {
+  else if (*arg == 's') {
     cmd->timeout = -1;
     cmd->interval = -1;
     cmd->prefer_blank = DefaultBlanking;
-    cmd->do_what & DO_SAVER;
+    cmd->do_what |= DO_SAVER;
     if (i >= argc)
       break;
     arg = argv[i];
@@ -294,11 +288,11 @@ for (i = 1; i < argc; ) {
       }
     }
   } 
-  else if(strcmp(arg, "-r") == 0 || strcmp(arg, "-repeat") == 0){
-    cmd->do_what & REPEAT_OFF;
+  else if(*arg == '-' && *(arg + 1) == 'r'){
+    cmd->do_what |= REPEAT_OFF;
   } 
-  else if (strcmp(arg, "r") == 0 || strcmp(arg, "repeat") == 0) {
-    cmd->do_what & REPEAT_ON;
+  else if (*arg == 'r') {
+    cmd->do_what |= REPEAT_ON;
     if (i > argc)
       break;
     arg = argv[i];
@@ -306,12 +300,12 @@ for (i = 1; i < argc; ) {
       i++;
     } 
     else if (strcmp(arg, "off") == 0) {
-    cmd->do_what & REPEAT_OFF;
+    cmd->do_what |= REPEAT_OFF;
       i++;
     }
   } 
-  else if (strcmp(arg, "p") == 0 || strcmp(arg, "pixel") == 0) {
-    cmd->do_what & NEW_PIXELS;
+  else if (*arg == 'p') {
+    cmd->do_what |= NEW_PIXELS;
     if (i + 1 >= argc)
       usage(argv[0]);
     arg = argv[i];
@@ -328,7 +322,7 @@ for (i = 1; i < argc; ) {
     disp = arg;
   } 
   else if (*arg == 'q') {
-    cmd->do_what & DO_QUERY;
+    cmd->do_what |= DO_QUERY;
   }
   else
     usage(argv[0]);
@@ -374,6 +368,7 @@ printf ("Screen Saver: (yes = %d, no = %d, default = %d)\n",
 printf ("Prefer Blanking: %d \t", prefer_blank);
 printf ("Time-out: %d \t Cycle: %d\n", timeout, interval);
 }
+
 
 /*  This is the usage function */
 
