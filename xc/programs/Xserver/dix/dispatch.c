@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.23 87/12/07 18:09:43 rws Locked $ */
+/* $Header: dispatch.c,v 1.24 87/12/30 08:27:31 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -223,6 +223,7 @@ Dispatch()
 
     clientReady = (ClientPtr *) ALLOCATE_LOCAL(sizeof(ClientPtr) * MaxClients);
     newClients = (ClientPtr *)ALLOCATE_LOCAL(sizeof(ClientPtr) * MaxClients);
+    request = (xReq *)NULL;
 
     while (1) 
     {
@@ -323,6 +324,7 @@ StartOver:
     DEALLOCATE_LOCAL(clientReady);
 }
 
+/*ARGSUSED*/
 int
 ProcBadRequest(client)
     ClientPtr client;
@@ -450,7 +452,7 @@ ProcChangeSaveSet(client)
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
-    if (client->clientAsMask == (CLIENT_ID(pWin->wid)))
+    if (client->clientAsMask == (CLIENT_BITS(pWin->wid)))
         return BadMatch;
     if ((stuff->mode == SetModeInsert) || (stuff->mode == SetModeDelete))
     {
@@ -1308,7 +1310,7 @@ ProcCreateGC(client)
     int error;
     GC *pGC;
     register DrawablePtr pDraw;
-    int len;
+    unsigned len;
     REQUEST(xCreateGCReq);
 
     REQUEST_AT_LEAST_SIZE(xCreateGCReq);
@@ -1338,7 +1340,8 @@ ProcChangeGC(client)
 {
     GC *pGC;
     REQUEST(xChangeGCReq);
-    int result, len;
+    int result;
+    unsigned len;
 		
     REQUEST_AT_LEAST_SIZE(xChangeGCReq);
     VERIFY_GC(pGC, stuff->gc, client);
@@ -1947,7 +1950,7 @@ ProcCreateColormap(client)
 {
     VisualPtr	pVisual;
     ColormapPtr	pmap;
-    int		mid;
+    Colormap	mid;
     register WindowPtr   pWin;
     REQUEST(xCreateColormapReq);
     int result;
@@ -2004,7 +2007,7 @@ int
 ProcCopyColormapAndFree(client)
     register ClientPtr client;
 {
-    int		mid;
+    Colormap	mid;
     ColormapPtr	pSrcMap;
     REQUEST(xCopyColormapAndFreeReq);
     int result;
@@ -2776,8 +2779,8 @@ ProcKillClient(client)
     	if (clients[clientIndex] && !clients[clientIndex]->clientGone)
  	{
 	    CloseDownClient(clients[clientIndex]);
-            return (client->noClientException);
 	}
+	return (client->noClientException);
     }
     else   /* can't kill client 0, which is server */
     {
