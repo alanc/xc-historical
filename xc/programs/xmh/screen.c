@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.20 88/02/23 20:07:36 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.21 88/02/26 18:58:38 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -188,8 +188,6 @@ Scrn scrn;
     scrn->viewwidget = CreateTextSW(scrn, 7, "view", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 8, "viewButtons");
 
-    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
-
     buttonbox = scrn->folderbuttons;
     BBoxStopUpdate(buttonbox);
     for (i=0 ; i<numFolders ; i++)
@@ -272,7 +270,6 @@ Scrn scrn;
     scrn->viewlabel = CreateTitleBar(scrn, 0);
     scrn->viewwidget = CreateTextSW(scrn, 1, "view", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "viewButtons");
-    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
     FillViewButtons(scrn);
 }
 
@@ -283,7 +280,6 @@ Scrn scrn;
     scrn->viewlabel = CreateTitleBar(scrn, 0);
     scrn->viewwidget = CreateTextSW(scrn, 1, "comp", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "compButtons");
-    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
     FillCompButtons(scrn);
 }
 
@@ -335,6 +331,7 @@ ScrnKind kind;
 	DEBUG("Realizing...")
 	XtRealizeWidget(scrn->parent);
 	DEBUG(" done.\n")
+	XtSetKeyboardFocus( scrn->parent, scrn->viewwidget );
 	XDefineCursor( theDisplay, XtWindow(scrn->parent),
 		       XtGetCursor( theDisplay, XC_left_ptr ) );
     }
