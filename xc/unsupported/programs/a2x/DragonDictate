@@ -10,4 +10,8 @@ if ( "$TERM" == "dialup" || "$TERM" == "network" ) then
   unsetenv TERMCAP
 endif
 clear
-exec a2x
+if ( $?A2XOPTS ) then
+  exec a2x $A2XOPTS
+else
+  exec a2x
+endif
