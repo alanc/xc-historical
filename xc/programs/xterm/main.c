@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.53 88/07/19 09:34:39 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.54 88/07/20 11:52:52 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -424,7 +424,7 @@ char **argv;
 		    d_tio.c_cc[VEOF] = deftio.c_cc[VEOF];
 		    d_tio.c_cc[VEOL] = deftio.c_cc[VEOL];
 #ifdef VSWITCH
-		    d_tio.c_cc[VSWITCH] = deftio.c_cc[TSWITCH];
+		    d_tio.c_cc[VSWITCH] = deftio.c_cc[VSWITCH];
 #endif
 		    break;
 		}
@@ -869,7 +869,6 @@ spawn ()
 #ifdef TIOCSLTC
 	struct ltchars ltc;
 #endif	/* TIOCSLTC */
-	struct request_info reqinfo;
 	int one = 1;
 	int zero = 0;
 	int status;
