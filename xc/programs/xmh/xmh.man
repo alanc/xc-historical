@@ -1,4 +1,5 @@
-.TH XMH 1 "6 May 1988" "X Version 11"
+.\" $Header$
+.TH XMH 1 "13 May 1988" "X Version 11"
 .SH NAME
 \fIxmh\fR \- X window interface to the mh Mail Handler
 .SH SYNOPSIS
