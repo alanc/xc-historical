@@ -180,6 +180,7 @@ cfbCreateGC(pGC)
     return TRUE;
 }
 
+/*ARGSUSED*/
 static void
 cfbChangeGC(pGC, mask)
     GC		    *pGC;
@@ -321,7 +322,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		freeTmpClip = FREE_CC;
 	    }
 	    else {
-		pregWin = pWin->clipList;
+		pregWin = &pWin->clipList;
 		freeTmpClip = REPLACE_CC;
 	    }
 	    freeCompClip = devPriv->freeCompClip;
@@ -716,7 +717,7 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     cfbDestroyClip(pGC);
     if(type == CT_PIXMAP)
     {
-	pGC->clientClip = (pointer) mfbPixmapToRegion((PixmapPtr)pvalue);
+	pGC->clientClip = (pointer) (*pGC->pScreen->BitmapToRegion)((PixmapPtr)pvalue);
 	(*pGC->pScreen->DestroyPixmap)(pvalue);
     }
     else if (type == CT_REGION) {
@@ -725,7 +726,7 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     }
     else if (type != CT_NONE)
     {
-	pGC->clientClip = (pointer) miRectsToRegion(pGC, nrects,
+	pGC->clientClip = (pointer) (*pGC->pScreen->RectsToRegion)(nrects,
 						    (xRectangle *)pvalue,
 						    type);
 	xfree(pvalue);
