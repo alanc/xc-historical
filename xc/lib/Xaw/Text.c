@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.153 90/06/14 16:50:58 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.154 90/06/15 10:47:44 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2716,8 +2716,10 @@ Cardinal *num_args;
     redisplay = TRUE;
   }
 
-  if (oldtw->text.insertPos != newtw->text.insertPos)
+  if (oldtw->text.insertPos != newtw->text.insertPos) {
     newtw->text.showposition = TRUE;
+    redisplay = TRUE;
+  }
   
   _XawTextExecuteUpdate(newtw);
   if (redisplay)
