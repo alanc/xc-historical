@@ -13,10 +13,20 @@ HEADERS = \
 	Xmu.h
 
 SRCS = \
-	RdBitF.c
+	FToCback.c \
+	Lower.c \
+	RdBitF.c \
+	StrToBS.c \
+	StrToJust.c \
+	StrToOrnt.c
 
 OBJS = \
-	RdBitF.o
+	FToCback.o \
+	Lower.o \
+	RdBitF.o \
+	StrToBS.o \
+	StrToJust.o \
+	StrToOrnt.o
 
 #if DebugLibXmu && ProfileLibXmu
 DebuggedAndProfiledLibraryObjectRule()
