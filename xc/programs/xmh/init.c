@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.36 89/10/06 15:02:38 converse Exp $
+ * $XConsortium: init.c,v 2.37 89/10/06 20:09:26 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -32,12 +32,12 @@
 #include "actions.h"
 #include <sys/errno.h>
 
+#define MIN_APP_DEFAULTS_VERSION 1
+
 extern char* _XLowerCase();	/* %%% what is this doing here. */
 
 /* Xmh-specific resources. */
 
-static Boolean defFalse = False;
-static Boolean defTrue = True;
 static Boolean static_variable;
 
 #define check_width 9
@@ -51,7 +51,7 @@ static char check_bits[] = {
 
 static XtResource resources[] = {
     {"debug", "Debug", XtRBoolean, sizeof(Boolean),
-	 offset(debug), XtRBoolean, (XtPointer)&defFalse},
+	 offset(debug), XtRImmediate, (XtPointer)False},
     {"tempDir", "TempDir", XtRString, sizeof(char *),
 	 offset(temp_dir), XtRString, "/tmp"},
     {"mhPath", "MhPath", XtRString, sizeof(char *),
@@ -65,22 +65,22 @@ static XtResource resources[] = {
     {"draftsFolder", "DraftsFolder", XtRString, sizeof(char *),
 	 offset(drafts_folder_name), XtRString, "drafts"},
     {"sendWidth", "SendWidth", XtRInt, sizeof(int),
-	 offset(send_line_width), XtRString, "72"},
+	 offset(send_line_width), XtRImmediate, (XtPointer)72},
     {"sendBreakWidth", "SendBreakWidth", XtRInt, sizeof(int),
-	 offset(break_send_line_width), XtRString, "85"},
+	 offset(break_send_line_width), XtRImmediate, (XtPointer)85},
     {"printCommand", "PrintCommand", XtRString, sizeof(char *),
 	 offset(print_command), XtRString,
 	 "enscript > /dev/null 2>/dev/null"},
     {"tocWidth", "TocWidth", XtRInt, sizeof(int),
-	 offset(toc_width), XtRString, "100"},
+	 offset(toc_width), XtRImmediate, (XtPointer)100},
     {"skipDeleted", "SkipDeleted", XtRBoolean, sizeof(Boolean),
-	 offset(skip_deleted), XtRBoolean, (XtPointer)&defTrue},
+	 offset(skip_deleted), XtRImmediate, (XtPointer)True},
     {"skipMoved", "SkipMoved", XtRBoolean, sizeof(Boolean),
-	 offset(skip_moved), XtRBoolean, (XtPointer)&defTrue},
+	 offset(skip_moved), XtRImmediate, (XtPointer)True},
     {"skipCopied", "SkipCopied", XtRBoolean, sizeof(Boolean),
-	 offset(skip_copied), XtRBoolean, (XtPointer)&defFalse},
+	 offset(skip_copied), XtRImmediate, (XtPointer)False},
     {"hideBoringHeaders", "HideBoringHeaders", XtRBoolean, sizeof(Boolean),
-	 offset(hide_boring_headers), XtRBoolean, (XtPointer)&defTrue},
+	 offset(hide_boring_headers), XtRImmediate, (XtPointer)True},
     {"geometry", "Geometry", XtRString, sizeof(char *),
 	 offset(geometry), XtRString, NULL},
     {"tocGeometry", "TocGeometry", XtRString, sizeof(char *),
@@ -92,35 +92,37 @@ static XtResource resources[] = {
     {"pickGeometry", "PickGeometry", XtRString, sizeof(char *),
 	 offset(pick_geometry), XtRString, NULL},
     {"tocPercentage", "TocPercentage", XtRInt, sizeof(int),
-	 offset(toc_percentage), XtRString, "33"},
+	 offset(toc_percentage), XtRImmediate, (XtPointer)33},
     {"checkNewMail", "CheckNewMail", XtRBoolean, sizeof(Boolean),
-	 offset(new_mail_check), XtRBoolean, (XtPointer)&defTrue},
+	 offset(new_mail_check), XtRImmediate, (XtPointer)True},
     {"makeCheckpoints", "MakeCheckpoints", XtRBoolean, sizeof(Boolean),
-	 offset(make_checkpoints), XtRBoolean, (XtPointer)&defFalse},
+	 offset(make_checkpoints), XtRImmediate, (XtPointer)False},
     {"checkFrequency", "CheckFrequency", XtRInt, sizeof(int),
-	 offset(check_frequency), XtRString, "1"},
+	 offset(check_frequency), XtRImmediate, (XtPointer)1},
     {"mailPath", "MailPath", XtRString, sizeof(char *),
 	 offset(mail_path), XtRString, NULL},
     {"mailWaitingFlag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
-	 offset(mail_waiting_flag), XtRBoolean, &defFalse},
+	 offset(mail_waiting_flag), XtRImmediate, (XtPointer)False},
     {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
 	 offset(cursor), XtRString, "left_ptr"},
     {"pointerColor", "PointerColor", XtRPixel, sizeof(Pixel),
 	 offset(pointer_color), XtRString, XtDefaultForeground},
     {"stickyMenu", "StickyMenu", XtRBoolean, sizeof(Boolean), 	
-	 offset(sticky_menu), XtRBoolean, (XtPointer) &defFalse},
+	 offset(sticky_menu), XtRImmediate, (XtPointer)False},
     {"prefixWmAndIconName", "PrefixWmAndIconName", XtRBoolean, sizeof(Boolean),
-	 offset(prefix_wm_and_icon_name), XtRBoolean, (XtPointer)&defTrue},
+	 offset(prefix_wm_and_icon_name), XtRImmediate, (XtPointer)True},
     {"reverseReadOrder", "ReverseReadOrder", XtRBoolean, sizeof(Boolean),
-	 offset(reverse_read_order), XtRBoolean, (XtPointer)&defFalse},
+	 offset(reverse_read_order), XtRImmediate, (XtPointer)False},
     {"blockEventsOnBusy", "BlockEventsOnBusy", XtRBoolean, sizeof(Boolean),
-	 offset(block_events_on_busy), XtRBoolean, (XtPointer)&defTrue},
+	 offset(block_events_on_busy), XtRImmediate, (XtPointer)True},
     {"busyCursor", "BusyCursor", XtRCursor, sizeof(Cursor),
 	 offset(busy_cursor), XtRString, "watch"},
     {"busyPointerColor", "BusyPointerColor", XtRPixel, sizeof(Pixel),
 	 offset(busy_pointer_color), XtRString, XtDefaultForeground},
     {"commandButtonCount", "CommandButtonCount", XtRInt, sizeof(int),
-	 offset(command_button_count), XtRString, "0"},
+	 offset(command_button_count), XtRImmediate, (XtPointer)0},
+    {"appDefaultsVersion", "AppDefaultsVersion", XtRInt, sizeof(int),
+	 offset(app_defaults_version), XtRImmediate, (XtPointer)0},
 };
 
 #undef offset
@@ -182,6 +184,25 @@ static _IOErrorHandler(dpy)
 
     Punt("Cannot continue from server error.");
 }
+
+static void PopupAppDefaultsWarning(w, closure, event, cont)
+    Widget w;
+    XtPointer closure;
+    XEvent *event;
+    Boolean *cont;
+{
+    if (event->type == MapNotify) {
+	PopupError(
+"The minimum application default resources\n\
+were not properly installed; many features\n\
+will not work properly, if at all.  See the\n\
+xmh man page for further information."
+		   );
+	XtRemoveEventHandler(w, XtAllEvents, True,
+			     PopupAppDefaultsWarning, closure);
+    }
+}
+
 
 /* All the start-up initialization goes here. */
 
@@ -293,6 +314,10 @@ char **argv;
     XtGetApplicationResources( toplevel, (XtPointer)&app_resources,
 			       resources, XtNumber(resources),
 			       NULL, (Cardinal)0 );
+
+    if (app_resources.app_defaults_version < MIN_APP_DEFAULTS_VERSION)
+	XtAddEventHandler(toplevel, StructureNotifyMask, False,
+			  PopupAppDefaultsWarning, NULL);
 
     if (app_resources.mail_waiting_flag) app_resources.new_mail_check = True;
 
