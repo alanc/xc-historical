@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.20 87/08/26 23:44:30 toddb Locked $ */
+/* $Header: WaitFor.c,v 1.21 87/08/26 23:46:40 toddb Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -51,6 +51,8 @@ extern long ClientsWithInput[];
 extern long ScreenSaverTime;               /* milliseconds */
 extern long ScreenSaverInterval;               /* milliseconds */
 extern ClientPtr ConnectionTranslation[];
+
+extern Bool clientsDoomed;
 
 extern void CheckConnections();
 extern int FirstClient;
@@ -101,8 +103,13 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
             if (ScreenSaverTime)
 	    {
                 timeout = ScreenSaverTime - TimeSinceLastInputEvent();
-	        if (timeout < 0)
+	        if (timeout < 0) /* may be forced by AutoResetServer() */
 	        {
+		    if (clientsDoomed)
+		    {
+		        *nnew = *nready = 0;
+			break;
+		    }
 	            if (timeout < intervalCount)
                     {
 		        SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
