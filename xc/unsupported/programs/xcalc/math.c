@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.8 90/12/21 13:25:59 converse Exp $ 
+/* $XConsortium: math.c,v 1.9 91/01/09 20:29:30 gildea Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -94,12 +94,10 @@ void parse_double (src, fmt, dp)
 }
 
 /*********************************/
-void pre_op(keynum)
+int pre_op(keynum)
      int keynum;
 {
-    int code;
-
-    if (keynum==-1) return;
+    if (keynum==-1) return(0);
  
     errno = 0;			/* for non-IEEE machines */
 
@@ -108,13 +106,13 @@ void pre_op(keynum)
 	clrdisp++;
       } else {
         ringbell();
-        return;	/* the intent was probably not to do the operation */
+        return(1);	/* the intent was probably not to do the operation */
       }
     }
 
-    code = keynum;
-    if (code != kCLR) CLR=0;
-    if (code != kOFF) OFF=0;
+    if (keynum != kCLR) CLR=0;
+    if (keynum != kOFF) OFF=0;
+    return(0);
 }
 
 #ifndef IEEE
