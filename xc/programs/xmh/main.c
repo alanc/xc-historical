@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 2.10 88/08/22 13:06:37 swick Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 2.11 88/09/06 17:23:21 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -87,5 +87,19 @@ char **argv;
     if (app_resources.defNewMailCheck)
 	TocCheckForNewMail();
     timerid = XtAddTimeOut((int)60000, CheckMail, NULL);
-    XtMainLoop();
+    lastInput.win = -1;		/* nothing mapped yet */
+    for (;;) {
+	XEvent ev;
+	XtNextEvent( &ev );
+	if (ev.type == KeyPress) {
+	    lastInput.win = ev.xany.window;
+	    lastInput.x = ev.xkey.x_root;
+	    lastInput.y = ev.xkey.y_root;
+	} else if (ev.type == ButtonPress) {
+	    lastInput.win = ev.xany.window;
+	    lastInput.x = ev.xbutton.x_root;
+	    lastInput.y = ev.xbutton.y_root;
+	}
+	XtDispatchEvent( &ev );
+    }
 }
