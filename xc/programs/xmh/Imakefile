@@ -1,5 +1,5 @@
-INCLUDES = -I$(TOP) -I$(INCLUDESRC)
-LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
+       INCLUDES = -I$(OLDXRMSRC) -I$(OLDTOOLKITSRC) -I$(TOP) -I$(INCLUDESRC)
+LOCAL_LIBRARIES = $(OLDXTOOLLIB) $(OLDXRMLIB) $(XLIB)
         DEFINES = -DX11 -DLIBDIR=\"${LIBDIR}\" -DNOGRABFOCUS
            SRCS = EDiskSrc.c alloc.c bbox.c button.c command.c compfuncs.c \
                   folder.c icon.c init.c main.c mlist.c msg.c pick.c popup.c \

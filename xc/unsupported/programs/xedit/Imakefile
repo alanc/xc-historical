@@ -1,5 +1,5 @@
-       INCLUDES = -I$(OLDTOOLKITSRC) -I$(TOP)
-LOCAL_LIBRARIES = $(OLDXTOOLLIB) $(XLIB)
+       INCLUDES = -I$(OLDXRMSRC) -I$(OLDTOOLKITSRC) -I$(TOP)
+LOCAL_LIBRARIES = $(OLDXTOOLLIB) $(OLDXRMLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = xedit.c EDiskSrc.c ap.c commands.c ps.c util.c
            OBJS = xedit.o EDiskSrc.o ap.o commands.o ps.o util.o
