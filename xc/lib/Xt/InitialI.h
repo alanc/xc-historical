@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.77 93/09/15 15:08:21 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.78 93/09/27 13:55:04 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -170,7 +170,6 @@ typedef struct _XtAppStruct {
     Boolean exit_flag;
 #ifdef XTHREADS
     LockPtr lock_info;
-    ThreadStackPtr stack;
     ThreadAppProc lock;
     ThreadAppProc unlock;
     ThreadAppYieldLockProc yield_lock;

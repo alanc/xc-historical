@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.12 93/09/15 15:09:33 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.13 93/11/16 17:00:28 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -39,15 +39,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NDEBUG
 #include <assert.h>
 
-typedef struct _LockRec {
-    xmutex_t mutex;
-    int level;
-#ifndef _XMUTEX_NESTS
-    xthread_t holder;
-    xcondition_t cond;
-#endif
-} LockRec;
-
 typedef struct _ThreadStack {
     unsigned int size;
     int sp;
@@ -56,6 +47,17 @@ typedef struct _ThreadStack {
 	xcondition_t c;
     } *st;
 } ThreadStack;
+
+typedef struct _LockRec {
+    xmutex_t mutex;
+    int level;
+    ThreadStack stack;
+#ifndef _XMUTEX_NESTS
+    xthread_t holder;
+    xcondition_t cond;
+#endif
+} LockRec;
+
 
 #define STACK_INCR 16
 
@@ -117,7 +119,7 @@ ProcessUnlock()
     xmutex_unlock(process_lock->mutex);
 #else
     xmutex_lock(process_lock->mutex);
-    assert(xthread_equal(process_lock->holder, ThrSelf()));
+    assert(xthread_equal(process_lock->holder, xthread_self()));
     if (process_lock->level != 0) {
 	process_lock->level--;
 	xmutex_unlock(process_lock->mutex);
@@ -290,18 +292,15 @@ FreeAppLock(app)
 	xcondition_clear(app_lock->cond);
 	xcondition_free(app_lock->cond);
 #endif
+	if(app_lock->stack.st != (struct _Tstack *)NULL) {
+	    for (ii = 0; ii < app_lock->stack.size; ii++) {
+		xcondition_clear(app_lock->stack.st[ii].c);
+		xcondition_free(app_lock->stack.st[ii].c);
+	    }
+	    XtFree((char *)app_lock->stack.st);
+	}
 	XtFree((char *)app_lock);
 	app->lock_info = NULL;
-	if(app->stack->st != (struct _Tstack *)NULL) {
-	    for (ii = 0; ii < app->stack->size; ii++) {
-		xcondition_clear(app->stack->st[ii].c);
-		xcondition_free(app->stack->st[ii].c);
-	    }
-	    XtFree((char *)app->stack->st);
-	}
-	if(app->stack != (ThreadStackPtr)NULL)
-	    XtFree((char *)app->stack);
-	app->stack = NULL;
     }
 }
 
@@ -319,21 +318,23 @@ PushThread(app)
 #endif
 {
     unsigned int ii;
-    ThreadStackPtr s = app->stack;
+    LockPtr app_lock = app->lock_info;
 
-    assert(xthread_equal((app->lock_info->holder), (xthread_self()) ) );
-    if(s->sp == s->size - 1) {
-	s->st = (struct _Tstack *) 
-	    XtRealloc ((char *)s->st, 
-		(s->size + STACK_INCR) * sizeof (struct _Tstack));
-	ii = s->size;
-	s->size += STACK_INCR;
-	for ( ; ii < s->size; ii++) {
-	    s->st[ii].c = xcondition_malloc();
-	    xcondition_init(s->st[ii].c);
+    xmutex_lock(app_lock->mutex);
+    assert(xthread_equal((app_lock->holder), (xthread_self()) ) );
+    if(app_lock->stack.sp == app_lock->stack.size - 1) {
+	app_lock->stack.st = (struct _Tstack *) 
+	    XtRealloc ((char *)app_lock->stack.st, 
+		(app_lock->stack.size + STACK_INCR) * sizeof (struct _Tstack));
+	ii = app_lock->stack.size;
+	app_lock->stack.size += STACK_INCR;
+	for ( ; ii < app_lock->stack.size; ii++) {
+	    app_lock->stack.st[ii].c = xcondition_malloc();
+	    xcondition_init(app_lock->stack.st[ii].c);
 	}
     }
-    s->st[++(s->sp)].t = xthread_self();
+    app_lock->stack.st[++(app_lock->stack.sp)].t = xthread_self();
+    xmutex_unlock(app_lock->mutex);
 }
 
 /*
@@ -349,17 +350,17 @@ PopThread(app)
     XtAppContext app;
 #endif
 {
-    assert(xthread_equal((app->lock_info->holder), (xthread_self()) ) );
-    assert(app->stack->sp >= 0);
+    LockPtr app_lock = app->lock_info;
 
-    (app->stack->sp)--;
-    if (app->stack->sp >= 0)
-	xcondition_signal (app->stack->st[app->stack->sp].c);
+    xmutex_lock(app_lock->mutex);
+    assert(xthread_equal((app_lock->holder), (xthread_self()) ) );
+    assert(app_lock->stack.sp >= 0);
+
+    (app_lock->stack.sp)--;
+    if (app_lock->stack.sp >= 0)
+	xcondition_signal (app_lock->stack.st[app_lock->stack.sp].c);
+    xmutex_unlock(app_lock->mutex);
 }
-
-/*
- * When this function is called, the app lock must be held 
- */
 
 static Boolean
 #if NeedFunctionPrototypes
@@ -370,38 +371,25 @@ IsTopThread(app)
     XtAppContext app;
 #endif
 {
-    LockPtr app_lock = app->lock_info;
     Boolean retval;
-
-    xmutex_lock(app_lock->mutex);
-    assert(xthread_equal((app->lock_info->holder), (xthread_self()) ) );
-    assert(app->stack->sp >= 0);
-    retval = (xthread_equal( (app->stack->st[app->stack->sp].t), 
-			(xthread_self()) )) ? TRUE : FALSE;
-    xmutex_unlock(app_lock->mutex);
-    return retval;
-}
-
-static void
-#if NeedFunctionPrototypes
-WaitThread(
-    XtAppContext app)
-#else
-WaitThread(app)
-    XtAppContext app;
-#endif
-{
-    int ii;
     LockPtr app_lock = app->lock_info;
     xthread_t self = xthread_self();
 
     xmutex_lock(app_lock->mutex);
-    for (ii = 0; ii < app->stack->sp; ii++)
-	if (xthread_equal (app->stack->st[ii].t, self)) {
-	    xcondition_wait (app->stack->st[ii].c, app_lock->mutex);
-	    break;
-	}
+    assert(app_lock->stack.sp >= 0);
+    if (xthread_equal(app_lock->stack.st[app_lock->stack.sp].t, self))
+	retval = TRUE;
+    else {
+	int ii;
+	retval = FALSE;
+	for (ii = app_lock->stack.sp - 1; ii >= 0; ii--)
+	    if (xthread_equal(app_lock->stack.st[ii].t, self)) {
+		xcondition_wait(app_lock->stack.st[ii].c, app_lock->mutex);
+		break;
+	    }
+    }
     xmutex_unlock(app_lock->mutex);
+    return retval;
 }
 
 static void
@@ -414,6 +402,7 @@ InitAppLock(app)
 #endif
 {
     int ii;
+    LockPtr app_lock;
 
     app->lock = AppLock;
     app->unlock = AppUnlock;
@@ -424,25 +413,23 @@ InitAppLock(app)
     app->push_thread = PushThread;
     app->pop_thread = PopThread;
     app->is_top_thread = IsTopThread;
-    app->wait_thread = WaitThread;
 
-    app->lock_info = XtNew(LockRec);
-    app->lock_info->mutex = xmutex_malloc();
-    xmutex_init(app->lock_info->mutex);
-    app->lock_info->level = 0;
+    app_lock = app->lock_info = XtNew(LockRec);
+    app_lock->mutex = xmutex_malloc();
+    xmutex_init(app_lock->mutex);
+    app_lock->level = 0;
 #ifndef _XMUTEX_NESTS
-    app->lock_info->cond = xcondition_malloc();
-    xcondition_init(app->lock_info->cond);
-    xthread_clear_id(app->lock_info->holder);
+    app_lock->cond = xcondition_malloc();
+    xcondition_init(app_lock->cond);
+    xthread_clear_id(app_lock->holder);
 #endif   
-    app->stack = XtNew(ThreadStack);
-    app->stack->size = STACK_INCR;
-    app->stack->sp = -1;
-    app->stack->st = 
+    app_lock->stack.size = STACK_INCR;
+    app_lock->stack.sp = -1;
+    app_lock->stack.st = 
 	(struct _Tstack *)XtMalloc(sizeof(struct _Tstack)*STACK_INCR);
     for (ii = 0; ii < STACK_INCR; ii++) {
-	app->stack->st[ii].c = xcondition_malloc();
-	xcondition_init(app->stack->st[ii].c);
+	app_lock->stack.st[ii].c = xcondition_malloc();
+	xcondition_init(app_lock->stack.st[ii].c);
     }
 }
 

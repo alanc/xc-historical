@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.132 93/10/13 14:26:34 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.133 93/10/15 14:59:46 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -502,12 +502,10 @@ WaitLoop:
 	    yield = YIELD_APP_LOCK(app);
 	    nfds = IoWait (app, &wt, &wf); 
 
-	    if (!IS_TOP_THREAD(app)) {
-		WAIT_THREAD(app);
+	    if (!IS_TOP_THREAD(app))
 		goto WaitLoop;
-	    } else
-		RESTORE_APP_LOCK(app, yield);
 
+	    RESTORE_APP_LOCK(app, yield);
 	    POP_THREAD(app);
 	    push_thread = TRUE;
 	} else

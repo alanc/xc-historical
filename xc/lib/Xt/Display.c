@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.107 93/10/06 17:20:13 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.108 93/10/13 19:16:06 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -337,7 +337,6 @@ XtAppContext XtCreateApplicationContext()
 	XtAppContext app = XtNew(XtAppStruct);
 #ifdef XTHREADS
 	app->lock_info = NULL;
-	app->stack  = NULL;
 	app->lock = NULL;
 	app->unlock = NULL;
 	app->restore_lock = NULL;
