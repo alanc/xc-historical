@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fontfile.c,v 1.1 91/05/10 14:46:32 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -41,15 +41,9 @@ FontFileInitFPE (fpe)
     FontPathElementPtr	fpe;
 {
     int			status;
-    char		*dir_name;
     FontDirectoryPtr	dir;
 
-    dir_name = index(fpe->name, ':');
-    if (!dir_name)
-	dir_name = fpe->name;
-    else
-	dir_name++;		/* skip ':' */
-    status = FontFileReadDirectory (dir_name, &dir);
+    status = FontFileReadDirectory (fpe->name, &dir);
     if (status == Successful)
     {
 	if (dir->nonScalable.used > 0)
@@ -355,6 +349,7 @@ FontFileStartListFontsWithInfo(client, fpe, pat, len, max, privatep)
     int         max;
     pointer    *privatep;
 {
+    return AllocError;
     /* XXX TBD */
 }
 
@@ -368,6 +363,7 @@ FontFileListNextFontWithInfo(client, fpe, namep, namelenp, pFontInfo,
     int        *numFonts;
     pointer     private;
 {
+    return AllocError;
     /* XXX TBD */
 }
 
