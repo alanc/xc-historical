@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XEvToWire.c,v 11.10 87/07/23 15:20:12 ham Exp $";
+static char rcsid[] = "$Header: XEvToWire.c,v 11.10 87/09/11 08:08:50 rws Locked $";
 #endif
 
 /*
@@ -367,7 +367,8 @@ register xEvent *event;	/* wire protocol event */
 				break;
 			}
 		    }
-		case MappingNotify:
+		break;
+	      case MappingNotify:
 		  {
 		    register XMappingEvent *ev = (XMappingEvent *) re;
 		    event->u.mappingNotify.firstKeyCode = ev->first_keycode;
