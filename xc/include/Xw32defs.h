@@ -1,4 +1,4 @@
-/* $XConsortium: Xw32defs.h,v 1.1 93/08/09 14:57:49 rws Exp $ */
+/* $XConsortium: Xw32defs.h,v 1.2 93/08/15 13:21:58 rws Exp $ */
 
 #ifndef _XW32DEFS_H
 #define  _XW32DEFS_H
@@ -43,7 +43,6 @@ typedef char *caddr_t;
 #define sys_nerr    _sys_nerr
 #define umask	   _umask
 #define unlink	   _unlink
-#define unlink	  _unlink
 #define write	   _write
 
 #define O_RDONLY    _O_RDONLY
