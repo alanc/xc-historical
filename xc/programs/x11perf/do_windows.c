@@ -221,7 +221,9 @@ Bool InitPopups(xp, p)
 {
     XWindowAttributes    xwa;
     XSetWindowAttributes xswa;
+    Window isolate;
 
+#ifdef CHILDROOT
     ComputeSizes(xp, p);
     CreateChildGroup(xp, p, xp->w);
 
@@ -229,10 +231,26 @@ Bool InitPopups(xp, p)
     (void) XGetWindowAttributes(xp->d, xp->w, &xwa);
     xswa.override_redirect = True;
     popup =  XCreateSimpleWindow (
-	    xp->d, RootWindow(xp->d, 0), 
+	    xp->d, DefaultRootWindow(xp->d), 
 	    xwa.x + xwa.border_width, xwa.y + xwa.border_width,
 	    parentwidth, parentheight,
-	    0, xp->foreground, xp->background);
+	    0, xp->foreground, xp->foreground);
+#else   
+    isolate = XCreateSimpleWindow(
+	    xp->d, xp->w, 0, 0, WIDTH, HEIGHT,
+	    0, xp->background, xp->background);
+
+    ComputeSizes(xp, p);
+    CreateChildGroup(xp, p, isolate);
+    XMapWindow(xp->d, isolate);
+
+    /* Now create simple window to pop up over children */
+    xswa.override_redirect = True;
+    popup =  XCreateSimpleWindow (
+	    xp->d, xp->w, 0, 0,
+	    parentwidth, parentheight,
+	    0, xp->foreground, xp->foreground);
+#endif
     XChangeWindowAttributes (xp->d, popup, CWOverrideRedirect, &xswa);
     return True;
 }
@@ -253,6 +271,8 @@ void EndPopups(xp, p)
     Parms p;
 {
     XDestroySubwindows(xp->d, xp->w);
+#ifdef CHILDROOT
     XDestroyWindow(xp->d, popup);
+#endif
 }
 
