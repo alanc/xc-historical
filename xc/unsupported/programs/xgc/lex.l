@@ -1,4 +1,4 @@
-/* $XConsortium: lex.l,v 1.6 93/07/29 13:28:01 rws Exp $ */
+/* $XConsortium: lex.l,v 1.7 93/07/29 14:12:08 rws Exp $ */
 /*
 ** lex file for xgc syntax
 */
@@ -163,6 +163,6 @@ PieSlice			{ yylval.num = ArcPieSlice;
 
 %%
 
-#ifndef __bsdi__
+#ifndef yywrap
 yywrap() { return (1); }
 #endif
