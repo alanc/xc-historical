@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.191 94/03/30 12:19:43 gildea Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.192 94/04/08 16:58:56 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -682,7 +682,7 @@ clean::									@@\
  */
 #ifndef ServerTarget
 #define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
-ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(_NULLCMD_))
+ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(_NOOP_))
 #endif /* ServerTarget */
 
 #if DoRanlibCmd
