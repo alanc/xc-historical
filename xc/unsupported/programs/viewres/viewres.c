@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.57 90/03/14 14:35:37 jim Exp $
+ * $XConsortium: viewres.c,v 1.58 90/03/15 11:11:49 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -288,13 +288,13 @@ static Boolean set_resource_labels (node)
     res = node->resources;
     wn = node->resourcewn;
     for (i = 0; i < node->nresources; i++, res++, wn++) {
-	if (*wn == node) {		/* should match number above */
+	if (*wn == node) {		/* should match nnew */
 	    *cur++ = res->resource_name;
 	    *cur++ = res->resource_class;
 	    *cur++ = res->resource_type;
 	}
     }
-    if (node->nconstraints > 0) {
+    if (d->nnewconstraints > 0) {
 	char *s;
 
 	*cur++ = s = "";
@@ -304,7 +304,7 @@ static Boolean set_resource_labels (node)
     res = node->constraints;
     wn = node->constraintwn;
     for (i = 0; i < node->nconstraints; i++, res++, wn++) {
-	if (*wn == node) {		/* should match number above */
+	if (*wn == node) {		/* should match nnew */
 	    *cur++ = res->resource_name;
 	    *cur++ = res->resource_class;
 	    *cur++ = res->resource_type;
