@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 94/04/05 22:01:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/04/08 15:21:32 erik Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -13,8 +13,8 @@ XCOMM $XConsortium: Imakefile,v 1.4 94/04/05 22:01:05 rws Exp $
 		 keymap.o keycodes.o keytypes.o compat.o action.o \
 		 symbols.o \
 		 xkbparse.o
-        DEPLIBS = $(DEPXLIBONLY) utils/libutils.a xkbfile/libxkbfile.a
-LOCAL_LIBRARIES = $(XLIB) utils/libutils.a xkbfile/libxkbfile.a
+        DEPLIBS = utils/libutils.a xkbfile/libxkbfile.a $(DEPXLIBONLY)
+LOCAL_LIBRARIES = utils/libutils.a xkbfile/libxkbfile.a $(XLIB)
 
 ROOT_DEFINES = -DDFLT_XKB_CONFIG_ROOT=\"$(LIBDIR)/xkb\"
 
