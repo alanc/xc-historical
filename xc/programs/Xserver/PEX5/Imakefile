@@ -1,11 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 5.9 91/11/17 17:38:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.10 93/09/04 16:58:00 rws Exp $
 
 #include <Server.tmpl>
 
 #define IHaveSubdirs
-
-#undef PassCDebugFlags
-#define PassCDebugFlags
 
 #ifndef PexDipexCDebugFlags
 #define PexDipexCDebugFlags ServerCDebugFlags 
