@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.15 89/12/10 16:30:14 rws Exp $
+ * $XConsortium: xkill.c,v 1.16 90/01/23 13:53:12 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -336,10 +336,17 @@ int kill_all_windows (dpy, screenno, top)
 
     nchildren = 0;
     XQueryTree (dpy, root, &dummywindow, &dummywindow, &children, &nchildren);
+    if (!top) {
+	for (i = 0; i < nchildren; i++) {
+	    if (XGetWindowAttributes(dpy, children[i], &attr) &&
+		(attr.map_state == IsViewable))
+		children[i] = XmuClientWindow(dpy, children[i]);
+	    else
+		children[i] = 0;
+	}
+    }
     for (i = 0; i < nchildren; i++) {
-	if (!XGetWindowAttributes(dpy, children[i], &attr) &&
-	    (attr.map_state == IsViewable))
-	    if (!top) children[i] = XmuClientWindow(dpy, children[i]);
+	if (children[i])
 	    XKillClient (dpy, children[i]);
     }
     XFree ((char *)children);
