@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.145 90/03/22 11:32:38 jim Exp $
+ * $XConsortium: events.c,v 1.146 90/03/22 14:35:41 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.145 90/03/22 11:32:38 jim Exp $";
+"$XConsortium: events.c,v 1.146 90/03/22 14:35:41 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -459,6 +459,10 @@ HandleVisibilityNotify()
     if (XFindContext(dpy, vevent->window, ColormapContext, (caddr_t *)&cwin) == XCNOENT)
 	return;
     
+    /*
+     * when Saber complains about retreiving an <int> from an <unsigned int>
+     * just type "touch vevent->state" and "cont"
+     */
     cmap = cwin->colormap;
     if ((cmap->state & CM_INSTALLABLE) &&
 	vevent->state != cwin->visibility &&
@@ -959,6 +963,8 @@ HandleExpose()
 {
     MenuRoot *tmp;
     static void flush_expose();
+
+    if (Scr && Event.xexpose.window == Scr->Root) return;
 
     if (XFindContext(dpy, Event.xany.window, MenuContext, (caddr_t *)&tmp) == 0)
     {
