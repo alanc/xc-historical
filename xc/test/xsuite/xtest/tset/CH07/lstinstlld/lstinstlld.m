@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: lstinstlld.m,v 1.4 92/06/11 17:15:10 rws Exp $
  */
 >>TITLE XListInstalledColormaps CH07
 Colormap *
@@ -53,9 +53,9 @@ Screen	*screen;
 		CHECK;
 
 	screen = ScreenOfDisplay(display, DefaultScreen(display));
-	if (*num_return < MinCmapsOfScreen(screen) ||
+	if (*num_return < 1 ||
 		*num_return > MaxCmapsOfScreen(screen)) {
-		report("Number of installed colourmaps was outside range given by MinCmapsOfScreen and MaxCmapsOfScreen");
+		report("Number of installed colourmaps was outside range [1, MaxCmapsOfScreen]");
 		FAIL;
 	} else
 		CHECK;
