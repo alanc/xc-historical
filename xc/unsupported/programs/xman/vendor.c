@@ -71,6 +71,10 @@ char * path;
   for (i=0; i < numSections; i++) {
     sprintf(file, "%s%s", SEARCHDIR, SectionNames[i].suffix);
     AddNewSection(list, path, file, SectionNames[i].name, TRUE);
+#ifdef SEARCHOTHER
+    sprintf(file, "%s%s", SEARCHOTHER, SectionNames[i].suffix);
+    AddNewSection(list, path, file, SectionNames[i].name, TRUE);
+#endif
   }
 #endif
 }
