@@ -1,4 +1,4 @@
-/* $XConsortium: lcDB.c,v 1.1 93/09/17 13:29:58 rws Exp $ */
+/* $XConsortium: lcDB.c,v 1.2 93/09/17 14:24:05 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -29,7 +29,6 @@
 #include	"XlcPubI.h"
 #include	<stdio.h>
 
-static FILE	*open_file();
 static Bool	is_endof_category();
 static int	get_token();
 static char	*get_normal_word();
