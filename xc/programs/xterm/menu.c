@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$Header: menu.c,v 1.5 88/07/29 14:50:44 jim Exp $
+ *	$Header: menu.c,v 1.6 88/07/29 15:38:25 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$Header: menu.c,v 1.5 88/07/29 14:50:44 jim Exp $";
+static char rcs_id[] = "$Header: menu.c,v 1.6 88/07/29 15:38:25 jim Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -536,12 +536,15 @@ register XButtonPressedEvent *event;
 		XtResizeWidget (menu->menuWidget, menu->menuWidth, menu->menuHeight, menu->menuBorderWidth);
 		XtRealizeWidget (menu->menuWidget);
 		menu->menuWindow = XtWindow (menu->menuWidget);
-	        attr.override_redirect = TRUE;
+	        attr.override_redirect = True;
 		attr.border_pixmap = XtGrayPixmap(XtScreen(xw));
 		attr.background_pixel = menu->menuBgColor;
 		attr.cursor = menu->menuCursor;
+		attr.save_under = True;
 		XChangeWindowAttributes (XtDisplay(xw), menu->menuWindow, 
-                   CWBorderPixmap+CWBackPixel+CWOverrideRedirect+CWCursor, &attr);
+					 (CWBorderPixmap | CWBackPixel | 
+					  CWOverrideRedirect | CWCursor |
+					  CWSaveUnder), &attr);
 
 		XtAddEventHandler(menu->menuWidget, ExposureMask, FALSE,
                    MenuExposeWindow, NULL);
