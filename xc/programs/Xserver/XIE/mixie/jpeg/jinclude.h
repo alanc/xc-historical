@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jinclude.h,v 1.1 93/10/26 09:54:20 rws Exp $ */
 /* Module jinclude.h */
 
 /****************************************************************************
@@ -61,7 +61,7 @@ terms and conditions:
  * system include files.
  */
 
-#if defined(XIE)
+#ifndef NO_XIE
 
 #define _XIEC_MEMORY	/* for XieMalloc and XieFree, used in jmemsys.c */
 #define XIE_SUPPORTED
