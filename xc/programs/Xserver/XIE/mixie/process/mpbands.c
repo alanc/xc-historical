@@ -1,4 +1,4 @@
-/* $XConsortium: mpbands.c,v 1.1 93/10/26 09:48:32 rws Exp $ */
+/* $XConsortium: mpbands.c,v 1.2 93/10/31 09:48:05 dpw Exp $ */
 /**** module mpbands.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,7 +71,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -163,13 +162,13 @@ static int ActivateBandSel(flo,ped,pet)
   
   /* pass the chosen receptor band to our output band
    */
-  if(GetCurrentSrc(pointer,flo,pet,sbnd)) {
+  if(GetCurrentSrc(flo,pet,sbnd)) {
     do {
       /* pass a clone of the current src strip downstream
        */
       if(!PassStrip(flo,pet,dbnd,sbnd->strip))
 	return(FALSE);
-    } while(GetSrc(pointer,flo,pet,sbnd,sbnd->maxLocal,FLUSH));
+    } while(GetSrc(flo,pet,sbnd,sbnd->maxLocal,FLUSH));
 
     FreeData(flo,pet,sbnd,sbnd->maxLocal);
   }

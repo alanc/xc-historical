@@ -1,4 +1,4 @@
-/* $XConsortium: mpconv.c,v 1.2 93/10/31 09:48:12 dpw Exp $ */
+/* $XConsortium: mpconv.c,v 1.3 93/11/06 15:39:36 rws Exp $ */
 /**** module mpconv.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,7 +44,7 @@ terms and conditions:
   
 	mpconv.c -- DDXIE convolve element
   
-	Dean Verheiden -- AGE Logic, Inc. June, 1993
+	Dean Verheiden && Robert NC Shelley -- AGE Logic, Inc. June, 1993
   
 *****************************************************************************/
 
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -93,14 +92,9 @@ int	miAnalyzeConvolve();
  *  routines used internal to this module
  */
 static int CreateConvolveConstant();
-static int CreateConvolveReplicate();
 static int InitializeConvolveConstant();
-static int InitializeConvolveReplicate();
 static int ActivateConvolveConstant();
-static int ActivateConvolveReplicate();
-static int FlushConvolve();
 static int ResetConvolveConstant();
-static int ResetConvolveReplicate();
 static int DestroyConvolve();
 
 /*
@@ -110,17 +104,8 @@ static ddElemVecRec ConvolveConstantVec = {
   CreateConvolveConstant,
   InitializeConvolveConstant,
   ActivateConvolveConstant,
-  FlushConvolve,
+  (xieIntProc)NULL,
   ResetConvolveConstant,
-  DestroyConvolve
-  };
-
-static ddElemVecRec ConvolveReplicateVec = {
-  CreateConvolveReplicate,
-  InitializeConvolveReplicate,
-  ActivateConvolveReplicate,
-  FlushConvolve,
-  ResetConvolveReplicate,
   DestroyConvolve
   };
 
@@ -143,14 +128,16 @@ int miAnalyzeConvolve(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  /* based on the technique, fill in the appropriate entry point vector */
+  /* based on the technique, fill in the appropriate entry point vector
+   */
   switch(ped->techVec->number) {
-	case	xieValConvolveConstant:
-		ped->ddVec = ConvolveConstantVec;
-		break;
-	case	xieValConvolveReplicate:
-		ped->ddVec = ConvolveReplicateVec;
-		break;
+  case	xieValConvolveConstant:
+    ped->ddVec = ConvolveConstantVec;
+    break;
+
+  case	xieValConvolveReplicate:
+  default:
+    return (FALSE);	/* Not implemented in the SI */
   }
   return(TRUE);
 }                               /* end miAnalyzeConvolve */
@@ -231,12 +218,10 @@ static int InitializeConvolveConstant(flo,ped)
 		sums[i] += kernel[j * ksize + i] * *tconst;
     	}
 	/* Accumulate totals for multiple columns */
-	if (ksize > 3) {
-		for (i = ks2 - 1; i > -1; i--) 
-			sums[i] += sums[i+1];
-		for (i = ks2 + 1; i < ksize; i++)
-			sums[i] += sums[i-1];
-	}
+	for (i = ks2 - 2; i > -1; i--) 
+		sums[i] += sums[i+1];
+	for (i = ks2 + 2; i < ksize; i++)
+		sums[i] += sums[i-1];
 
         bnd = &pet->receptor[SRCtag].band[b];
 	 switch (bnd->format->class) {
@@ -280,7 +265,7 @@ static int InitializeConvolveConstant(flo,ped)
  return(TRUE);
 }                               /* end InitializeConvolveConstant */
 
-#define inane_compilers_should_die(dtype)				 \
+#define ConvConstAction_Body(dtype)					      \
     /* Handle the left edge */						      \
     endx = (k2 <= currX + run) ? k2 : currX + run;		      	      \
     for(i = currX; i < endx; i++, currX++, run--){		      	      \
@@ -307,13 +292,13 @@ static int InitializeConvolveConstant(flo,ped)
     if (run <= 0) return;						      \
     /* Handle the right edge */						      \
     endx = (width <= currX + run) ? width : currX + run;		      \
-    for(i = ((w < currX) ? w : currX); i < endx; i++,currX++,run--) {	      \
+    for(i = currX; i < endx; i++,currX++,run--) {			      \
         ConvFloat count = 0.0;						      \
 	for(j = 0 ; j < ks; j++)					      \
 	    for(k = -k2; k < width - i; k++)				      \
 		count += br[j][i+k] * kernel[j * ks + k + k2];		      \
 	if (*tconst)							      \
-            count += cpvt->sums[k2 + 1 + i - w];			      \
+            count += cpvt->sums[ks - (width - i)];			      \
 	ClipIt;								      \
         *dst++ = (dtype) count;						      \
     }									      \
@@ -339,7 +324,7 @@ CARD32 width;								      \
         memcpy(dst, &br[k2][currX], -run * sizeof(dtype));		      \
 	return;								      \
     }									      \
-    inane_compilers_should_die(dtype);					      \
+    ConvConstAction_Body(dtype);					      \
 }
 
 
@@ -408,7 +393,7 @@ static int ActivateConvolveConstant(flo,ped,pet)
  	    }
 
 	    ok  = MapData(flo,pet,iband,map,sline++,len,TRUE);
-	    dst = GetDst(pointer,flo,pet,oband,dline++,TRUE);
+	    dst = GetDst(flo,pet,oband,dline++,TRUE);
 
 	    if(!ok || !dst || !SyncDomain(flo,ped,oband,FLUSH)) break;
 
@@ -421,18 +406,6 @@ static int ActivateConvolveConstant(flo,ped,pet)
    }
   return(TRUE);
 }                               /* end ActivateConvolveConstant */
-
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushConvolve(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* Activate was suppose to do the whole image -- there's nothing to do */
-  return(TRUE);
-}                               /* end FlushConvolve */
 
 
 /*------------------------------------------------------------------------
@@ -474,7 +447,6 @@ static int DestroyConvolve(flo,ped)
   ped->ddVec.create     = (xieIntProc)NULL;
   ped->ddVec.initialize = (xieIntProc)NULL;
   ped->ddVec.activate   = (xieIntProc)NULL;
-  ped->ddVec.flush      = (xieIntProc)NULL;
   ped->ddVec.reset      = (xieIntProc)NULL;
   ped->ddVec.destroy    = (xieIntProc)NULL;
 
@@ -482,44 +454,3 @@ static int DestroyConvolve(flo,ped)
 }                               /* end DestroyConvolve */
 
 /* end module mpconv.c */
-
-/*------------------------------------------------------------------------
----------------------------- Create peTex . . . --------------------------
-------------------------------------------------------------------------*/
-static int CreateConvolveReplicate(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-return (FALSE);	/* Not implemented in the SI */
-}                               /* end CreateConvolveReplicate */
-
-/*------------------------------------------------------------------------
----------------------------- initialize peTex . . . ----------------------
-------------------------------------------------------------------------*/
-static int InitializeConvolveReplicate(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-return (FALSE);	/* Not implemented in the SI */
-}                               /* end InitializeConvolveReplicate */
-
-/*------------------------------------------------------------------------
----------------------------- activate routine ----------------------------
-------------------------------------------------------------------------*/
-static int ActivateConvolveReplicate(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-return (FALSE);	/* Not implemented in the SI */
-}				/* end ActivateConvolveReplicate   */
-
-
-/*------------------------------------------------------------------------
------------------------- get rid of run-time stuff -----------------------
-------------------------------------------------------------------------*/
-static int ResetConvolveReplicate(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return(FALSE); /* Not implemented in the SI */
-}                               /* end ResetConvolveReplicate */

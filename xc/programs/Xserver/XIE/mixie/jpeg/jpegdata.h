@@ -1,4 +1,4 @@
-/* $XConsortium: jpegdata.h,v 1.1 93/10/26 09:54:33 rws Exp $ */
+/* $XConsortium: jpegdata.h,v 1.2 93/10/31 09:47:25 dpw Exp $ */
 /* Module jpegdata.h */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -403,6 +404,8 @@ struct Compress_info_struct {
 
 #ifdef XIE_SUPPORTED
 	long jpeg_buf_size;		/* put is structure from global define */    		
+      short xie_h_samp_factor[MAX_COMPS_IN_SCAN];     /* for XIE interface */ 
+      short xie_v_samp_factor[MAX_COMPS_IN_SCAN];     /* for XIE interface */ 
 	/* The variables come from jcpipe.c - single_ccontroller */
   	int rows_in_mem;        /* # of sample rows in full-size buffers */
   	long fullsize_width;    /* # of samples per row in full-size buffers */
@@ -602,6 +605,7 @@ struct Decompress_info_struct {
 	short next_restart_num;	/* # of next RSTn marker (0..7) */
 
 #ifdef XIE_SUPPORTED
+	boolean XIE_upsample;	/* TRUE if upsampling is desired */
 	long jpeg_buf_size;		/* put is structure from global define */    		
 	int rows_in_mem;	/* # of sample rows in full-size buffers */
 	/* Work buffer for data being passed to output module. */
@@ -845,6 +849,7 @@ struct External_methods_struct {
 /* The first parameter is generally cinfo->emethods */
 
 /* Fatal errors (print message and exit) */
+#ifndef XIE_SUPPORTED
 #define ERREXIT(emeth,msg)		((*(emeth)->error_exit) (msg))
 #define ERREXIT1(emeth,msg,p1)		((emeth)->message_parm[0] = (p1), \
 					 (*(emeth)->error_exit) (msg))
@@ -860,6 +865,7 @@ struct External_methods_struct {
 					 (emeth)->message_parm[2] = (p3), \
 					 (emeth)->message_parm[3] = (p4), \
 					 (*(emeth)->error_exit) (msg))
+#endif	/* XIE_SUPPORTED */        
 
 #define MAKESTMT(stuff)		do { stuff } while (0)
 

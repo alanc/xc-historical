@@ -1,4 +1,4 @@
-/* $XConsortium: mppoint.c,v 1.2 93/10/31 09:48:23 dpw Exp $ */
+/* $XConsortium: mppoint.c,v 1.3 93/11/06 15:41:48 rws Exp $ */
 /**** module mppoint.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -172,7 +171,7 @@ static pointer CPCNV_bB(), CPCNV_BB();
 static pointer CPCNV_bP(), CPCNV_BP(), CPCNV_PP();
 static pointer CPCNV_bQ(), CPCNV_BQ(), CPCNV_PQ();
 
-static pointer  (*action_convert[3][3])() = { /* [intclass-2][ii-1] */
+static pointer (*action_convert[3][3])() = { /* [intclass-2][ii-1] */
 	CPCNV_bB, CPCNV_BB, 0,		/* [out=Byte] [inp=bits,byte,pair] */
 	CPCNV_bP, CPCNV_BP, CPCNV_PP,	/* [out=Pair] [inp=bits,byte,pair] */
 	CPCNV_bQ, CPCNV_BQ, CPCNV_PQ	/* [out=Quad] [inp=bits,byte,pair] */
@@ -308,7 +307,7 @@ static int InitializePoint(flo,ped)
     }
     
     /* protocol requires msk == ALL_BANDS */
-    msk = ALL_BANDS; passmsk = 0, lutmask = 1; bandsync = TRUE;
+    msk = ALL_BANDS; passmsk = NO_BANDS, lutmask = 1; bandsync = TRUE;
     ped->ddVec.activate = ActivatePointCombine;
     
   } else if (nbands == 1 && lbands == 3) {
@@ -327,7 +326,7 @@ static int InitializePoint(flo,ped)
 #if defined(LUT_EXPLODE)
     if ((msk & 7) == 7) {
       /* Only works when all 3 bands selected */
-      msk = 1; passmsk = 0; lutmask = ALL_BANDS; bandsync = TRUE;
+      msk = 1; passmsk = NO_BANDS; lutmask = ALL_BANDS; bandsync = TRUE;
       ped->ddVec.activate = ActivatePointExplode;
     } else
 #endif
@@ -414,27 +413,27 @@ static int ActivatePointExplode(flo,ped,pet)
     int     bw = iband->format->width;
 
     /* asking for 1 should fetch entire lut strip */
-    lvoid0 = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE); lband++;
-    lvoid1 = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE); lband++;
-    lvoid2 = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE);
+    lvoid0 = GetSrcBytes(flo,pet,lband,0,1,FALSE); lband++;
+    lvoid1 = GetSrcBytes(flo,pet,lband,0,1,FALSE); lband++;
+    lvoid2 = GetSrcBytes(flo,pet,lband,0,1,FALSE);
 
     if (!lvoid0 || !lvoid1 || !lvoid2)
 	ImplementationError(flo,ped, return(FALSE));
 
-    ivoid  = GetCurrentSrc(pointer,flo,pet,iband);
-    ovoid0 = GetCurrentDst(pointer,flo,pet,oband); oband++;
-    ovoid1 = GetCurrentDst(pointer,flo,pet,oband); oband++;
-    ovoid2 = GetCurrentDst(pointer,flo,pet,oband); oband -= 2;
+    ivoid  = GetCurrentSrc(flo,pet,iband);
+    ovoid0 = GetCurrentDst(flo,pet,oband); oband++;
+    ovoid1 = GetCurrentDst(flo,pet,oband); oband++;
+    ovoid2 = GetCurrentDst(flo,pet,oband); oband -= 2;
     while (!ferrCode(flo) && ivoid && ovoid0 && ovoid1 && ovoid2) {
 
         (*((pvt+0)->action)) (ivoid, ovoid0, lvoid0, bw);
         (*((pvt+1)->action)) (ivoid, ovoid1, lvoid1, bw);
         (*((pvt+2)->action)) (ivoid, ovoid2, lvoid2, bw);
 
-	ivoid  = GetNextSrc(pointer,flo,pet,iband,TRUE);
-	ovoid0 = GetNextDst(pointer,flo,pet,oband,TRUE); oband++;
-	ovoid1 = GetNextDst(pointer,flo,pet,oband,TRUE); oband++;
-	ovoid2 = GetNextDst(pointer,flo,pet,oband,TRUE); oband -= 2;
+	ivoid  = GetNextSrc(flo,pet,iband,TRUE);
+	ovoid0 = GetNextDst(flo,pet,oband,TRUE); oband++;
+	ovoid1 = GetNextDst(flo,pet,oband,TRUE); oband++;
+	ovoid2 = GetNextDst(flo,pet,oband,TRUE); oband -= 2;
     }
     FreeData(flo, pet, iband, iband->current);
     if (iband->final) {
@@ -458,7 +457,7 @@ static int ActivatePointExplodeMsk(flo,ped,pet)
     bandPtr lband = &(pet->receptor[LUTtag].band[0]);
     bandPtr oband = &(pet->emitter[0]);
     CARD8     msk = raw->bandMask;
-    pointer  lvoid;
+    pointer lvoid;
 
     for(band = 0; band < nbands; band++, pvt++, iband++, oband++, lband++) {
 	register int bw = iband->format->width;
@@ -466,25 +465,25 @@ static int ActivatePointExplodeMsk(flo,ped,pet)
 
 	if ((msk & (1<<band)) == 0) { 
 	    /* Pass source band similar to BandSelect code */
-	    if(GetCurrentSrc(pointer,flo,pet,iband)) {
+	    if(GetCurrentSrc(flo,pet,iband)) {
 		do {
 		    if(!PassStrip(flo,pet,oband,iband->strip))
 			return(FALSE);
-		} while(GetSrc(pointer,flo,pet,iband,iband->maxLocal,FLUSH));
+		} while(GetSrc(flo,pet,iband,iband->maxLocal,FLUSH));
 		FreeData(flo,pet,iband,iband->maxLocal);
 	    }
 	    continue;
 	}
 
 	/* Or process similar to ordinary Point code. */
-    	if (!(lvoid = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE)) ||
-	    !(ivoid = GetCurrentSrc(pointer,flo,pet,iband)) ||
-	    !(ovoid = GetCurrentDst(pointer,flo,pet,oband))) continue;
+    	if (!(lvoid = GetSrcBytes(flo,pet,lband,0,1,FALSE)) ||
+	    !(ivoid = GetCurrentSrc(flo,pet,iband)) ||
+	    !(ovoid = GetCurrentDst(flo,pet,oband))) continue;
 
 	do {
 	    (*(pvt->action)) (ivoid, ovoid, lvoid, bw);
-	    ivoid = GetNextSrc(pointer,flo,pet,iband,TRUE);
-	    ovoid = GetNextDst(pointer,flo,pet,oband,TRUE);
+	    ivoid = GetNextSrc(flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(flo,pet,oband,TRUE);
 	} while (!ferrCode(flo) && ivoid && ovoid) ;
 
 	FreeData(flo, pet, iband, iband->current);
@@ -508,22 +507,22 @@ static int ActivatePointCombine(flo,ped,pet)
     pointer ivoid0, ivoid1, ivoid2, lvoid, ovoid;
 
     /* asking for 1 should fetch entire lut strip */
-    if (!(lvoid = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE)))
+    if (!(lvoid = GetSrcBytes(flo,pet,lband,0,1,FALSE)))
 	return FALSE;
 
-    ovoid  = GetCurrentDst(pointer,flo,pet,oband);
-    ivoid0 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
-    ivoid1 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
-    ivoid2 = GetCurrentSrc(pointer,flo,pet,iband); iband -= 2;
+    ovoid  = GetCurrentDst(flo,pet,oband);
+    ivoid0 = GetCurrentSrc(flo,pet,iband); iband++;
+    ivoid1 = GetCurrentSrc(flo,pet,iband); iband++;
+    ivoid2 = GetCurrentSrc(flo,pet,iband); iband -= 2;
 
     while (!ferrCode(flo) && ovoid && ivoid0 && ivoid1 && ivoid2) {
 
         (*(pvt->action)) (ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt);
 
-	ovoid  = GetNextDst(pointer,flo,pet,oband,TRUE);
-	ivoid0 = GetNextSrc(pointer,flo,pet,iband,TRUE); iband++;
-	ivoid1 = GetNextSrc(pointer,flo,pet,iband,TRUE); iband++;
-	ivoid2 = GetNextSrc(pointer,flo,pet,iband,TRUE); iband -= 2;
+	ovoid  = GetNextDst(flo,pet,oband,TRUE);
+	ivoid0 = GetNextSrc(flo,pet,iband,TRUE); iband++;
+	ivoid1 = GetNextSrc(flo,pet,iband,TRUE); iband++;
+	ivoid2 = GetNextSrc(flo,pet,iband,TRUE); iband -= 2;
     }
 
     FreeData(flo, pet, iband, iband->current); iband++;
@@ -551,15 +550,15 @@ static int ActivatePointROI(flo,ped,pet)
     bandPtr lband     = &(pet->receptor[LUTtag].band[0]);
     bandPtr rband     = &(pet->receptor[ped->inCnt-1].band[0]);
     bandPtr oband     = &(pet->emitter[0]);
-    pointer  lvoid;
+    pointer lvoid;
 
     for(band=0; band < nbands; band++,pvt++,iband++,oband++,lband++,rband++) {
 	pointer ivoid, ovoid;
 
 	/* 1 should fetch entire lut strip */
-    	if (!(lvoid = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE)) ||
-	    !(ivoid = GetCurrentSrc(pointer,flo,pet,iband)) ||
-	    !(ovoid = GetCurrentDst(pointer,flo,pet,oband))) continue;
+    	if (!(lvoid = GetSrcBytes(flo,pet,lband,0,1,FALSE)) ||
+	    !(ivoid = GetCurrentSrc(flo,pet,iband)) ||
+	    !(ovoid = GetCurrentDst(flo,pet,oband))) continue;
 
 	while (!ferrCode(flo) && ivoid && ovoid && 
 				SyncDomain(flo,ped,oband,FLUSH)) {
@@ -575,8 +574,8 @@ static int ActivatePointROI(flo,ped,pet)
 		    currentx -= run;
 	    }
 
-	    ivoid = GetNextSrc(pointer,flo,pet,iband,TRUE);
-	    ovoid = GetNextDst(pointer,flo,pet,oband,TRUE);
+	    ivoid = GetNextSrc(flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(flo,pet,oband,TRUE);
 	}
 
 	FreeData(flo, pet, iband, iband->current);
@@ -607,14 +606,14 @@ static int ActivatePoint(flo,ped,pet)
 	pointer ivoid, ovoid;
 
 	/* 1 should fetch entire lut strip */
-    	if (!(lvoid = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE)) ||
-	    !(ivoid = GetCurrentSrc(pointer,flo,pet,iband)) ||
-	    !(ovoid = GetCurrentDst(pointer,flo,pet,oband))) continue;
+    	if (!(lvoid = GetSrcBytes(flo,pet,lband,0,1,FALSE)) ||
+	    !(ivoid = GetCurrentSrc(flo,pet,iband)) ||
+	    !(ovoid = GetCurrentDst(flo,pet,oband))) continue;
 
 	do {
 	    (*(pvt->action)) (ivoid, ovoid, lvoid, bw);
-	    ivoid = GetNextSrc(pointer,flo,pet,iband,TRUE);
-	    ovoid = GetNextDst(pointer,flo,pet,oband,TRUE);
+	    ivoid = GetNextSrc(flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(flo,pet,oband,TRUE);
 	} while (!ferrCode(flo) && ivoid && ovoid) ;
 
 	FreeData(flo, pet, iband, iband->current);
@@ -732,7 +731,7 @@ P11_bb0(INP,OUTP,LUTP,bw)
 #define DO_P11c(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
-	pointer INP; pointer OUTP; pointer LUTP; int bw;			\
+	pointer INP; pointer OUTP; pointer LUTP; int bw;		\
 {									\
 	LogInt *inp = (LogInt *) INP;					\
 	otype *outp = (otype *) OUTP;					\
@@ -749,7 +748,7 @@ fn_do(INP,OUTP,LUTP,bw)							\
 #define DO_P11p(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
-	pointer INP; pointer OUTP; pointer LUTP; int bw;			\
+	pointer INP; pointer OUTP; pointer LUTP; int bw;		\
 {									\
 	itype *inp = (itype *) INP;					\
 	LogInt *outp = (LogInt *) OUTP, M, outval;			\
@@ -769,7 +768,7 @@ fn_do(INP,OUTP,LUTP,bw)							\
 #define DO_P11x(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
-	pointer INP; pointer OUTP; pointer LUTP; int bw;			\
+	pointer INP; pointer OUTP; pointer LUTP; int bw;		\
 { 									\
 	otype *lutp = (otype *) LUTP;					\
 	bitexpand(INP,OUTP,bw, lutp[0], lutp[1]);			\
@@ -778,7 +777,7 @@ fn_do(INP,OUTP,LUTP,bw)							\
 #define DO_P11(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
-	pointer INP; pointer OUTP; pointer LUTP; int bw;			\
+	pointer INP; pointer OUTP; pointer LUTP; int bw;		\
 {									\
 	itype *inp = (itype *) INP;					\
 	otype *outp = (otype *) OUTP;					\

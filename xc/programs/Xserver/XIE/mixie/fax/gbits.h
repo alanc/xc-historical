@@ -1,4 +1,4 @@
-/* $XConsortium: gbits.h,v 1.1 93/10/26 09:52:58 rws Exp $ */
+/* $XConsortium: gbits.h,v 1.2 93/11/06 15:31:43 rws Exp $ */
 /**** module fax/gbits.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO

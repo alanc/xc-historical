@@ -1,4 +1,4 @@
-/* $XConsortium: jutils.c,v 1.1 93/10/26 09:57:04 rws Exp $ */
+/* $XConsortium: jutils.c,v 1.2 93/10/31 09:47:29 dpw Exp $ */
 /* Module jutils.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -91,7 +92,7 @@ jround_up (long a, long b)
  * is not all that great, because these routines aren't very heavily used.)
  */
 
-#ifndef NEED_FAR_POINTERS		/* normal case, same as regular macros */
+#ifndef NEED_FAR_POINTERS			/* normal case, same as regular macros */
 #define FMEMCOPY(dest,src,size)	MEMCOPY(dest,src,size)
 #define FMEMZERO(target,size)	MEMZERO(target,size)
 #else				/* 80x86 case, define if we can */
@@ -154,6 +155,7 @@ jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 }
 
 
+#ifndef XIE_SUPPORTED
 GLOBAL void
 #ifdef XIE_SUPPORTED
 #if NeedFunctionPrototypes
@@ -182,7 +184,7 @@ jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row, long num_blocks)
   }
 #endif
 }
-
+#endif   /* XIE_SUPPORTED */
 
 GLOBAL void
 #ifdef XIE_SUPPORTED

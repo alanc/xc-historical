@@ -1,4 +1,4 @@
-/* $XConsortium: jdmcu.c,v 1.1 93/10/26 09:55:36 rws Exp $ */
+/* $XConsortium: jdmcu.c,v 1.2 93/10/31 09:47:13 dpw Exp $ */
 /* Module jdmcu.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
 
-	memory.c: Xie Memory Management Wrapper Routines 
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -363,6 +363,7 @@ disassemble_init (decompress_info_ptr cinfo)
  * Clean up after a scan.
  */
 
+#ifndef XIE_SUPPORTED
 METHODDEF void
 #ifdef XIE_SUPPORTED
 #if NeedFunctionPrototypes
@@ -377,7 +378,7 @@ disassemble_term (decompress_info_ptr cinfo)
 {
   /* no work for now */
 }
-
+#endif   /* XIE_SUPPORTED */
 
 
 /*
@@ -402,5 +403,7 @@ jseldmcu (decompress_info_ptr cinfo)
     cinfo->methods->disassemble_MCU = disassemble_interleaved_MCU;
   cinfo->methods->reverse_DCT = reverse_DCT;
   cinfo->methods->disassemble_init = disassemble_init;
+#ifndef XIE_SUPPORTED	  
   cinfo->methods->disassemble_term = disassemble_term;
+#endif   /* XIE_SUPPORTED */  
 }

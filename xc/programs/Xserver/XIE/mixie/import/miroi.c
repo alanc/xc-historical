@@ -1,4 +1,4 @@
-/* $XConsortium: miroi.c,v 1.2 93/10/31 09:45:14 dpw Exp $ */
+/* $XConsortium: miroi.c,v 1.3 93/11/06 15:34:21 rws Exp $ */
 /**** module miroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -91,7 +90,6 @@ int	miAnalyzeIROI();
 static int CreateIROI();
 static int InitializeIROI();
 static int ActivateIROI();
-static int FlushIROI();
 static int ResetIROI();
 static int DestroyIROI();
 
@@ -102,7 +100,7 @@ static ddElemVecRec miROIVec = {
   CreateIROI,
   InitializeIROI,
   ActivateIROI,
-  FlushIROI,
+  (xieIntProc)NULL,
   ResetIROI,
   DestroyIROI
   };
@@ -177,17 +175,6 @@ static int ActivateIROI(flo,ped,pet)
 
 
 /*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushIROI(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return TRUE;
-}                               /* end FlushIROI */
-
-
-/*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
 static int ResetIROI(flo,ped)
@@ -213,7 +200,6 @@ static int DestroyIROI(flo,ped)
   ped->ddVec.create = (xieIntProc) NULL;
   ped->ddVec.initialize = (xieIntProc) NULL;
   ped->ddVec.activate = (xieIntProc) NULL;
-  ped->ddVec.flush = (xieIntProc) NULL;
   ped->ddVec.reset = (xieIntProc) NULL;
   ped->ddVec.destroy = (xieIntProc) NULL;
   return TRUE;

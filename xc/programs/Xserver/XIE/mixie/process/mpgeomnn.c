@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeomnn.c,v 1.2 93/10/31 09:48:18 dpw Exp $ */
+/* $XConsortium: mpgeomnn.c,v 1.4 93/11/06 15:40:59 rws Exp $ */
 /**** module mpgeomnn.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -73,7 +73,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -451,114 +450,114 @@ static int ActivateGeomNN(flo,ped)
   for(band = 0; band < nbands; band++, iband++, oband++) {
 
     mpGeometryBandPtr pvtband = pvt->bandInfo[band];
-    int width = pvtband->out_width;	/* action routine could get */
+    int width;
 
-    if (!pvtband)
+    if (!pvtband || ((pet->scheduled & (1 << band)) == 0) )
 	continue;
 
+    width = pvtband->out_width;	
     if (pvt->upside_down) {
 
-	  /* we're going backwards, which is actually *simpler*, 
-	   * because we don't get ANY data until we have ALL data.
-	   * Thus, first time through, just map everything we have.
-	   */
-	   if (!pvtband->yOut)  {
-	     if (!MapData(flo,pet,iband,0,0,iband->maxGlobal,KEEP)) { 
-      		   ImplementationError(flo,ped, return(FALSE));
-	     }
-	     pvtband->lo_src_available = 0;
-	     pvtband->hi_src_available = iband->maxGlobal-1;
-	  }
-	   
-	  outp = GetCurrentDst(pointer,flo,pet,oband);
-	  while (outp) {
-		int lo_in,hi_in;
+	/* we're going backwards, which is actually *simpler*, 
+	* because we don't get ANY data until we have ALL data.
+	* Thus, first time through, just map everything we have.
+	*/
+	if (!pvtband->yOut)  {
+	    if (!MapData(flo,pet,iband,0,0,iband->maxGlobal,KEEP)) { 
+		ImplementationError(flo,ped, return(FALSE));
+	    }
+	    pvtband->lo_src_available = 0;
+	    pvtband->hi_src_available = iband->maxGlobal-1;
+	}
 
-		/* get range of src lines for this output line */
-		lo_in = pvtband->first_ilow;
-		hi_in = pvtband->first_ihigh;
+	outp = GetCurrentDst(flo,pet,oband);
+	while (outp) {
+	    int lo_in,hi_in;
+
+	    /* get range of src lines for this output line */
+	    lo_in = pvtband->first_ilow;
+	    hi_in = pvtband->first_ihigh;
 			
-		/* rest of output image is off input image */
-		if ( (hi_in < 0) || (lo_in > pvtband->in_height))
-	     	    (*pvtband->fillfunc)(outp,width,pvtband);
-		else
-		   /* Compute output pixels for this line */
+	    /* rest of output image is off input image */
+	    if ( (hi_in < 0) || (lo_in > pvtband->in_height))
+		(*pvtband->fillfunc)(outp,width,pvtband);
+	    else
+		/* Compute output pixels for this line */
 #if XIE_FULL
-		    (*pvtband->linefunc)(outp,iband->dataMap,width,
+		(*pvtband->linefunc)(outp,iband->dataMap,width,
 			bilinear ? lo_in : hi_in, pedpvt, pvtband);
 #else
-		    (*pvtband->linefunc)(outp,iband->dataMap,width,
+		(*pvtband->linefunc)(outp,iband->dataMap,width,
 					   hi_in, pedpvt, pvtband);
 #endif
-		pvtband->first_mlow  += pedpvt->coeffs[3];
-		pvtband->first_mhigh += pedpvt->coeffs[3];
-		pvtband->first_ilow  = (int) pvtband->first_mlow ;
-		pvtband->first_ihigh = (int) pvtband->first_mhigh;
-		pvtband->yOut++;
-		outp = GetNextDst(pointer,flo,pet,oband,TRUE);
-	  }
-	  if (oband->final)
-		DisableSrc(flo,pet,iband,FLUSH);
+	    pvtband->first_mlow  += pedpvt->coeffs[3];
+	    pvtband->first_mhigh += pedpvt->coeffs[3];
+	    pvtband->first_ilow  = (int) pvtband->first_mlow ;
+	    pvtband->first_ihigh = (int) pvtband->first_mhigh;
+	    pvtband->yOut++;
+	    outp = GetNextDst(flo,pet,oband,TRUE);
+	}
+	if (oband->final)
+	    DisableSrc(flo,pet,iband,FLUSH);
 
     } else {
-      /* 
-       * nice normal image progression.  This means that I know when
-       * I am done with an input line for the current output line,  I 
-       * can purge it,  because it won't be needed for subsequent 
-       * output lines.
-       */
+	/* 
+	** nice normal image progression.  This means that I know when
+	** I am done with an input line for the current output line,  I 
+	** can purge it,  because it won't be needed for subsequent 
+	** output lines.
+	*/
 
 	while (!ferrCode(flo)) {		
-	  int map_lo;		/* lowest  line mapped by output line */
-	  int map_hi;		/* highest line mapped by output line */
-          int last_src_line = pvtband->in_height - 1;
-	  int threshold;
+	    int map_lo;		/* lowest  line mapped by output line */
+	    int map_hi;		/* highest line mapped by output line */
+            int last_src_line = pvtband->in_height - 1;
+	    int threshold;
 
-	  /* access current output line */
-	  if (!(outp = GetDst(pointer,flo,pet,oband,pvtband->yOut,FLUSH))) {
+	    /* access current output line */
+	    if (!(outp = GetDst(flo,pet,oband,pvtband->yOut,FLUSH))) {
 		if (oband->final)
        		    DisableSrc(flo, pet, iband, FLUSH);
 		else if (iband->current != 0)
        		    FreeData(flo, pet, iband, iband->current);
 		goto breakout;
-	  }
+	    }
 
-	  map_lo = pvtband->first_ilow;
-	  if (map_lo < 0)
+	    map_lo = pvtband->first_ilow;
+	    if (map_lo < 0)
 		map_lo = 0;
 
-	  map_hi = pvtband->first_ihigh;
+	    map_hi = pvtband->first_ihigh;
 #if XIE_FULL
-	  if (bilinear) map_hi++;
+	    if (bilinear) map_hi++;
 #endif
-	  if (map_hi > last_src_line)
+	    if (map_hi > last_src_line)
 		map_hi = last_src_line;
 
-	  if (map_hi < 0 || map_lo > last_src_line)
-	     (*pvtband->fillfunc)(outp,width,pvtband);
-	  else {
+	    if (map_hi < 0 || map_lo > last_src_line)
+		(*pvtband->fillfunc)(outp,width,pvtband);
+	    else {
 
-	     threshold = map_hi - map_lo + 1;
-	     if(!MapData(flo,pet,iband,map_lo,map_lo,threshold,KEEP))
-		break;
+		threshold = map_hi - map_lo + 1;
+		if(!MapData(flo,pet,iband,map_lo,map_lo,threshold,KEEP))
+		    break;
 
-	     if (map_lo != iband->current) {
-      		   ImplementationError(flo,ped, return(FALSE));
-	     }
+		if (map_lo != iband->current) 
+		    ImplementationError(flo,ped, return(FALSE));
 
-	     pvtband->lo_src_available = 0;
-	     pvtband->hi_src_available = iband->maxGlobal-1;
+		pvtband->lo_src_available = 0;
+		pvtband->hi_src_available = iband->maxGlobal-1;
 
-	     (*pvtband->linefunc)(outp,iband->dataMap,
-					   width,map_lo,pedpvt,pvtband);
+		(*pvtband->linefunc)(outp,iband->dataMap,
+					width,map_lo,pedpvt,pvtband);
 
 	    }
 
-    	     pvtband->first_mlow  += pedpvt->coeffs[3]; 
-    	     pvtband->first_mhigh += pedpvt->coeffs[3];
-					
-   	     /* have to be careful about -0.5 rounding to 0, not -1 */
-	     if (pvtband->first_ilow < 0) {
+	    pvtband->first_mlow  += pedpvt->coeffs[3]; 
+	    pvtband->first_mhigh += pedpvt->coeffs[3];
+				
+	    /* have to be careful about -0.5 rounding to 0, not -1 */
+	    if (pvtband->first_ilow < 0) {
 
     	        pvtband->first_ilow = (pvtband->first_mlow < 0)
 						? -1
@@ -567,57 +566,56 @@ static int ActivateGeomNN(flo,ped)
     	        pvtband->first_ihigh = (pvtband->first_mhigh < 0)
 						? -1
 						: (int)pvtband->first_mhigh;
-	     } 
-	     else {
+	    } else {
 		/* if ilow was positive before, needn't check for negative */
-    	        pvtband->first_ilow  = (int)pvtband->first_mlow;	
-    	        pvtband->first_ihigh = (int)pvtband->first_mhigh;
-	     }
+		pvtband->first_ilow  = (int)pvtband->first_mlow;	
+		pvtband->first_ihigh = (int)pvtband->first_mhigh;
+	    }
 
-	     ++pvtband->yOut;						
+	    ++pvtband->yOut;						
 
-	     if (pvtband->first_ilow > last_src_line) {
-	          /* rest of output image is off the input image */
-		  /* we will exit after filling output strip */
-	         while(outp=GetDst(pointer,flo,pet,oband,pvtband->yOut,FLUSH)) {
-		     (*pvtband->fillfunc)(outp,width,pvtband);
-		     pvtband->yOut++;
-		 }
-		 if (oband->final)
-		      DisableSrc(flo, pet, iband, FLUSH);
-		 else  
-		      goto breakout;
-	     }
+   	    if (pvtband->first_ilow > last_src_line) {
+		/* rest of output image is off the input image */
+		/* we will exit after filling output strip */
+		while(outp=GetDst(flo,pet,oband,pvtband->yOut,FLUSH)) {
+		    (*pvtband->fillfunc)(outp,width,pvtband);
+		    pvtband->yOut++;
+		}
+		if (oband->final)
+		    DisableSrc(flo, pet, iband, FLUSH);
+		else  
+		    goto breakout;
+	    }
 
-	     map_hi = pvtband->first_ihigh;
+	    map_hi = pvtband->first_ihigh;
 #if XIE_FULL
-	     if (bilinear) map_hi++;
+	    if (bilinear) map_hi++;
 #endif
-	     if (map_hi > last_src_line)
+	    if (map_hi > last_src_line)
 		map_hi = last_src_line;
 
-	     threshold = map_hi - iband->current + 1;
+	    threshold = map_hi - iband->current + 1;
 
-	     /* make sure we get something */
-	     if (threshold <= 1)
-	         threshold = 1;
+	    /* make sure we get something */
+	    if (threshold <= 1)
+		threshold = 1;
 
-	     /* but don't ask for stuff we can't ever get! */
-	     if (threshold > pvtband->in_height)
-	         threshold = pvtband->in_height;
+	    /* but don't ask for stuff we can't ever get! */
+	    if (threshold > pvtband->in_height)
+		threshold = pvtband->in_height;
 
-       	     SetBandThreshold(iband, threshold);
-	     if (map_hi >= (int) iband->maxGlobal) {
+       	    SetBandThreshold(iband, threshold);
+	    if (map_hi >= (int) iband->maxGlobal) {
 		/* we need to let someone else generate more data */
 		break;
-	     }
+	    }
 	}  /* end of while no flo err */
 	/* want to make sure we GetSrc at least once before Freeing */
 	if (iband->current)
 	    FreeData(flo, pet, iband, iband->current);
-    }  /* end of else on normal order */
 breakout:
 	;
+    }   /* end of else on normal order */
   }	/* end of band loop */
   return(TRUE);
 }                               /* end ActivateGeometry */

@@ -1,4 +1,4 @@
-/* $XConsortium: bitfun.c,v 1.2 93/10/31 09:47:56 dpw Exp $ */
+/* $XConsortium: bitfun.c,v 1.3 93/11/06 15:37:45 rws Exp $ */
 /**** module bitfun.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -98,7 +97,7 @@ terms and conditions:
 */
 
 
-unsigned long xie8StippleMasks[16] = {
+CARD32 xie8StippleMasks[16] = {
 0x00000000, 0x000000ff, 0x0000ff00, 0x0000ffff,
 0x00ff0000, 0x00ff00ff, 0x00ffff00, 0x00ffffff,
 0xff000000, 0xff0000ff, 0xff00ff00, 0xff00ffff,
@@ -144,11 +143,11 @@ unsigned char _ByteReverseTable[]= {
 
 #if (IMAGE_BYTE_ORDER == MSBFirst)
 #define g4	(c = (inval>>26) & 0x3c, inval <<= 4,			\
-		*((unsigned long *) ((int) &xie8StippleMasks[0] + c)) & val)
+		*((CARD32 *) ((int) &xie8StippleMasks[0] + c)) & val)
 #define g4r	(c = (inval>>26) & 0x3c, inval <<= 4,			\
-		~(*((unsigned long *) ((int) &xie8StippleMasks[0] + c))) & val)
+		~(*((CARD32 *) ((int) &xie8StippleMasks[0] + c))) & val)
 #define g4b	(c = (inval>>26) & 0x3c, inval <<= 4,			\
-		 c = *((unsigned long *) ((int) &xie8StippleMasks[0] + c)), \
+		 c = *((CARD32 *) ((int) &xie8StippleMasks[0] + c)), \
 						(loval & ~c) | (hival & c))
 #else
 #define g4	(c = inval & 0xf, inval >>= 4, xie8StippleMasks[c] & val)
@@ -160,17 +159,17 @@ unsigned char _ByteReverseTable[]= {
 #define p4 *outp++		
 
 pointer bitexpand(inp,outp,bw,olow,ohigh)
-	LogInt *inp;			/* these are actualy bits... */
-	unsigned long *outp;		/* its actually bytes but ... */
+	CARD32 *inp;			/* these are actualy bits... */
+	CARD32 *outp;			/* its actually bytes but ... */
 	int bw;				/* number of bits to extract */
 	unsigned char olow;		/* zero bit maps to this */
 	unsigned char ohigh;		/* one bit maps to this */
 {
 	pointer dst = (pointer)outp;
 	int nw;
-	unsigned long inval, c;
+	CARD32 inval, c;
 	if (olow == 0) {
-	    unsigned long val = ohigh;
+	    CARD32 val = ohigh;
 	    val = (val << 8) | val; val = (val << 16) | val;
 	    for ( nw = bw >> 5; nw > 0; nw--) {
 		inval = *inp++;
@@ -181,7 +180,7 @@ pointer bitexpand(inp,outp,bw,olow,ohigh)
 		for (inval = *inp; bw > 0; bw -= 4)
 		    p4 = g4;
 	} else if (ohigh == 0) {
-	    unsigned long val = olow;
+	    CARD32 val = olow;
 	    val = (val << 8) | val; val = (val << 16) | val;
 	    for ( nw = bw >> 5; nw > 0; nw--) {
 		inval = *inp++;
@@ -192,7 +191,7 @@ pointer bitexpand(inp,outp,bw,olow,ohigh)
 		for (inval = *inp; bw > 0; bw -= 4)
 		    p4 = g4r;
 	} else {
-	    unsigned long loval = olow, hival = ohigh;
+	    CARD32 loval = olow, hival = ohigh;
 	    loval = (loval << 8) | loval; loval = (loval << 16) | loval;
 	    hival = (hival << 8) | hival; hival = (hival << 16) | hival;
 	    for ( nw = bw >> 5; nw > 0; nw--) {

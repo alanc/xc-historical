@@ -1,4 +1,4 @@
-/* $XConsortium: mparith.c,v 1.2 93/10/31 09:48:00 dpw Exp $ */
+/* $XConsortium: mparith.c,v 1.3 93/11/06 15:38:02 rws Exp $ */
 /**** module mparith.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -73,7 +73,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -82,6 +81,40 @@ terms and conditions:
 #include <element.h>
 #include <texstr.h>
 #include <xiemd.h>
+
+    /*
+    **  Most machines will work fine using the double precision versions
+    **  of the math functions.  If they give you problems, or if you 
+    **  want a bit more speed, then pick one of the following sets of
+    **  defines.  Enjoy.   While you are thinking about this you might
+    **  want to consider changing the cube root function in mprgb.c
+    **  with fpow(x,1./3.) or powf(x,1./3.).  Another similar area is
+    **  in mpgeomaa.c for the gaussian technique.
+    */
+
+#if defined(USE_EXPF)
+    /*
+    ** The very newest ANSI-C libraries promote this style of floating
+    ** functions.  Even if you have these available, you may need to 
+    ** use special compiler options, and prototypes from math.h
+    */
+#   define exp expf
+#   define log logf
+#   define pow powf
+#   define sqrt sqrtf
+#endif
+
+#if defined(USE_FEXP)
+    /*
+    ** This is the more antique way to get floating math functions. But
+    ** you may have to use compiler options or otherwise stand on your
+    ** head to do this safely.  Otherwise the argument may get promoted.
+    */
+#   define exp fexp
+#   define log flog
+#   define pow fpow
+#   define sqrt fsqrt
+#endif
 
 /*
  *  routines referenced by other DDXIE modules
@@ -291,8 +324,8 @@ static int ActivateArithMROI(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, sband++, dband++) {
 	pointer svoid, dvoid;
 
-    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(flo,pet,dband))) continue;
 
 	while (!ferrCode(flo) && svoid && dvoid && 
 				SyncDomain(flo,ped,dband,FLUSH)) {
@@ -308,8 +341,8 @@ static int ActivateArithMROI(flo,ped,pet)
 		    ix -= run;
 		}
 	    }
-	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(flo,pet,dband,FLUSH);
 	}
 
 	FreeData(flo, pet, sband, sband->current);
@@ -335,9 +368,9 @@ static int ActivateArithDROI(flo,ped,pet)
 	w = sband->format->width;
 	if (w > tband->format->width) w = tband->format->width;
 
-    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
-    	    !(tvoid = GetCurrentSrc(pointer,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
+    	    !(tvoid = GetCurrentSrc(flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(flo,pet,dband))) continue;
 
 	while (!ferrCode(flo) && svoid && tvoid && dvoid && 
 				SyncDomain(flo,ped,dband,FLUSH)) {
@@ -364,9 +397,9 @@ static int ActivateArithDROI(flo,ped,pet)
 		    ix -= run; 
 		}
 	    }
-	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(pointer,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(flo,pet,dband,FLUSH);
 	}
 
 	if(!svoid && sband->final) {
@@ -871,12 +904,12 @@ extern void (*passive_copy[5])();
 **	sqrt(<0) might be error, 0., or -sqrt(-x) ???
 **
 **      for log2(), it may be quicker to count bits for integer arguments :-)
-**	also, not all machines have a log2 in their math library any more,
-**	so we use the constant 1.4426950408889634074 which many machines call
-**	M_LOG2E in math.h. 
+**
+**	also, not all machines have a log2 and log10 in their math library
+**	so we multiply log() by the magic values M_LOG2E and M_LOG10E.
 **
 **	one can argue that taking logs and exponents and such of small
-**	integers is a somewhat frantic exercise.  while it might make
+**	integers is a somewhat frenetic exercise.  while it might make
 **	sense to use square or squareroot as an image contrast enhancer,
 **	it doesn't make sense when applied to small integers either.
 **
@@ -888,13 +921,34 @@ extern void (*passive_copy[5])();
 **	3      1.585      1.099     0.4771      20.09      1.732	9
 **	4          2      1.386     0.6021       54.6          2       16
 **	5      2.322      1.609      0.699      148.4      2.236       25
+**
+**	also note that LN_MAXFLOAT (or LN_MAXDOUBLE) and MAXFLOAT are
+**	typically defined in values.h, but including it conflicts with
+**	misc.h on many machines.  values.h isn't a very modern .h file
+**	as standards go these days.  help.....
 */
 
+#ifndef M_LOG2E
+#define M_LOG2E 1.4426950408889634074
+#endif
+
+#ifndef M_LOG10E
+#define M_LOG10E 0.43429448190325182765
+#endif
+
+#ifndef LN_MAXFLOAT
+#define LN_MAXFLOAT 88.7228394
+#endif
+
+#ifndef MAXFLOAT
+#define MAXFLOAT ((float)3.40282346638528860e+38)
+#endif
+
 #define BANY	D = S1;
-#define FEXP	D = exp(S1);
+#define FEXP    D = (S1 <= (LN_MAXFLOAT-2.) ? exp(S1) :  MAXFLOAT);
 #define FLGN	D = (S1 > 0. ? log(S1) : 0. );
-#define FLG2	D = (S1 > 0. ? log(S1) * 1.4426950408889634074 : 0. );  
-#define FLG10	D = (S1 > 0. ? log10(S1) : 0. );
+#define FLG2	D = (S1 > 0. ? log(S1) * M_LOG2E : 0. );  
+#define FLG10	D = (S1 > 0. ? log(S1) * M_LOG10E : 0. );
 #define FSQR	D = S1 * S1;
 #define FSQRT	D = (S1 >= 0. ? sqrt(S1) : 0. );
 

@@ -1,4 +1,4 @@
-/* $XConsortium: miuncomp.h,v 1.1 93/10/26 09:51:35 rws Exp $ */
+/* $XConsortium: miuncomp.h,v 1.2 93/10/31 09:46:14 dpw Exp $ */
 /**** module miuncomp.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -59,8 +59,8 @@ typedef struct _miuncompdef {
   CARD8	 bandMap;
   CARD8  leftPad;	    /* Scanline pad (in bits)			*/
   CARD8	 bitOff;	    /* more that we can chew? 			*/
-  BOOL	 unaligned;	    /* Flag used by band by pixel decoding 	*/
-  CARD8	 pad;
+  BOOL	 unaligned;	    /* Flag used by band-by-pixel decoding 	*/
+  BOOL	 reformat;          /* Flag used to request data re-formatting  */
   pointer buf;
 } miUncompRec, *miUncompPtr;
 

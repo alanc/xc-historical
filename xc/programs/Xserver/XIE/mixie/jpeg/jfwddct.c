@@ -1,4 +1,4 @@
-/* $XConsortium: jfwddct.c,v 1.1 93/10/26 09:56:17 rws Exp $ */
+/* $XConsortium: jfwddct.c,v 1.2 93/10/31 09:47:19 dpw Exp $ */
 /* Module jfwddct.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -194,7 +195,7 @@ terms and conditions:
 #endif
 #endif
 
-#ifndef MULTIPLY			/* default definition */
+#ifndef MULTIPLY				/* default definition */
 #define MULTIPLY(var,const)  ((var) * (const))
 #endif
 

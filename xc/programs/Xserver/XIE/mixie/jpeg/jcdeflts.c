@@ -1,4 +1,4 @@
-/* $XConsortium: jcdeflts.c,v 1.1 93/10/26 09:54:40 rws Exp $ */
+/* $XConsortium: jcdeflts.c,v 1.2 93/10/31 09:46:55 dpw Exp $ */
 /* Module jcdeflts.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 /*
@@ -491,8 +492,13 @@ j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
   compptr = &cinfo->comp_info[0];
   compptr->component_index = 0;
   compptr->component_id = 1;	/* JFIF specifies IDs 1,2,3 */
+#ifdef XIE_SUPPORTED
+  compptr->h_samp_factor = cinfo->xie_h_samp_factor[0];
+  compptr->v_samp_factor = cinfo->xie_v_samp_factor[0];
+#else
   compptr->h_samp_factor = 2;	/* default to 2x2 subsamples of chrominance */
   compptr->v_samp_factor = 2;
+#endif	/* XIE_SUPPORTED */
   compptr->quant_tbl_no = 0;	/* use tables 0 for luminance */
   compptr->dc_tbl_no = 0;
   compptr->ac_tbl_no = 0;
@@ -500,8 +506,13 @@ j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
   compptr = &cinfo->comp_info[1];
   compptr->component_index = 1;
   compptr->component_id = 2;
+#ifdef XIE_SUPPORTED
+  compptr->h_samp_factor = cinfo->xie_h_samp_factor[1];
+  compptr->v_samp_factor = cinfo->xie_v_samp_factor[1];
+#else
   compptr->h_samp_factor = 1;
   compptr->v_samp_factor = 1;
+#endif	/* XIE_SUPPORTED */
   compptr->quant_tbl_no = 1;	/* use tables 1 for chrominance */
   compptr->dc_tbl_no = 1;
   compptr->ac_tbl_no = 1;
@@ -509,8 +520,13 @@ j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
   compptr = &cinfo->comp_info[2];
   compptr->component_index = 2;
   compptr->component_id = 3;
+#ifdef XIE_SUPPORTED
+  compptr->h_samp_factor = cinfo->xie_h_samp_factor[2];
+  compptr->v_samp_factor = cinfo->xie_v_samp_factor[2];
+#else
   compptr->h_samp_factor = 1;
   compptr->v_samp_factor = 1;
+#endif	/* XIE_SUPPORTED */
   compptr->quant_tbl_no = 1;	/* use tables 1 for chrominance */
   compptr->dc_tbl_no = 1;
   compptr->ac_tbl_no = 1;

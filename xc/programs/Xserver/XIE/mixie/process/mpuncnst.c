@@ -1,4 +1,4 @@
-/* $XConsortium: mpuncnst.c,v 1.2 93/10/31 09:48:27 dpw Exp $ */
+/* $XConsortium: mpuncnst.c,v 1.3 93/11/06 15:42:06 rws Exp $ */
 /**** module mpuncnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -94,7 +93,6 @@ int	miAnalyzeUnconstrain();
 static int CreateUnconstrain();
 static int InitializeUnconstrain();
 static int ActivateUnconstrain();
-static int FlushUnconstrain();
 static int ResetUnconstrain();
 static int DestroyUnconstrain();
 
@@ -105,7 +103,7 @@ static ddElemVecRec UnconstrainVec = {
 	CreateUnconstrain,
 	InitializeUnconstrain,
 	ActivateUnconstrain,
-	FlushUnconstrain,
+	(xieIntProc)NULL,
 	ResetUnconstrain,
 	DestroyUnconstrain
 };
@@ -198,30 +196,20 @@ static int ActivateUnconstrain(flo,ped,pet)
 	register RealPixel *outp;
 	register pointer voidp;
 
-	if (!(voidp = GetCurrentSrc(pointer,flo,pet,iband)) || 
-	    !(outp  = GetCurrentDst(RealPixel *,flo,pet,oband))) continue;
+	if (!(voidp = GetCurrentSrc(flo,pet,iband)) || 
+	    !(outp  = (RealPixel*)GetCurrentDst(flo,pet,oband))) continue;
 
 	do {
 
 	    (*(pvt->action)) (voidp, outp, bw);
 
-	    voidp = GetNextSrc(pointer,flo,pet,iband,TRUE);
-	    outp  = GetNextDst(RealPixel *,flo,pet,oband,TRUE);
+	    voidp = GetNextSrc(flo,pet,iband,TRUE);
+	    outp  = (RealPixel*)GetNextDst(flo,pet,oband,TRUE);
 
 	} while (!ferrCode(flo) && voidp && outp) ;
 
 	FreeData(flo, pet, iband, iband->current);
     }
-    return TRUE;
-}
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushUnconstrain(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
-{
     return TRUE;
 }
 
@@ -251,7 +239,6 @@ static int DestroyUnconstrain(flo,ped)
     ped->ddVec.create = (xieIntProc)NULL;
     ped->ddVec.initialize = (xieIntProc)NULL;
     ped->ddVec.activate = (xieIntProc)NULL;
-    ped->ddVec.flush = (xieIntProc)NULL;
     ped->ddVec.reset = (xieIntProc)NULL;
     ped->ddVec.destroy = (xieIntProc)NULL;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: miphoto.c,v 1.3 93/10/31 09:45:11 dpw Exp $ */
+/* $XConsortium: miphoto.c,v 1.4 93/11/06 15:34:05 rws Exp $ */
 /**** module miphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -97,6 +96,11 @@ static int ActivateIPhotoUncomByPlane();
 static int ResetIPhoto();
 static int DestroyIPhoto();
 
+static int CreateIPhotoStream();
+static int InitializeIPhotoStream();
+static int ActivateIPhotoStream();
+static int ResetIPhotoStream();
+
 #if XIE_FULL
 static int InitializeIPhotoUncomByPixel();
 static int ActivateIPhotoUncomByPixel();
@@ -104,6 +108,15 @@ static int ActivateIPhotoUncomByPixel();
 /*
  * routines we need from somewhere else
  */
+extern bandMsk miImportCanonic();
+extern bandMsk miImportStream();
+
+extern int CreateICPhotoFax();
+extern int InitializeIPhotoFax();
+extern int ActivateICPhotoFax();
+extern int ResetICPhotoFax();
+extern int DestroyICPhotoFax();
+
 #if XIE_FULL
 extern int CreateIPhotoJpegBase();
 extern int InitializeIPhotoJpegBase();
@@ -111,12 +124,6 @@ extern int ActivateIPhotoJpegBase();
 extern int ResetIPhotoJpegBase();
 extern int DestroyIPhotoJpegBase();
 #endif
-
-extern int CreateICPhotoFax();
-extern int InitializeIPhotoFax();
-extern int ActivateICPhotoFax();
-extern int ResetICPhotoFax();
-extern int DestroyICPhotoFax();
 
 /*
  * DDXIE ImportPhotomap entry points
@@ -128,6 +135,24 @@ static ddElemVecRec IPhotoUncomByPlaneVec = {
   (xieIntProc)NULL,
   ResetIPhoto,
   DestroyIPhoto
+  };
+
+static ddElemVecRec IPhotoStreamVec = {
+  CreateIPhotoStream,
+  InitializeIPhotoStream,
+  ActivateIPhotoStream,
+  (xieIntProc)NULL,
+  ResetIPhotoStream,
+  DestroyIPhoto
+  };
+
+static ddElemVecRec IPhotoFaxVec = {
+  CreateICPhotoFax,	/* share this with ICphoto stuff 	*/
+  InitializeIPhotoFax,	/* note that only this is unshared 	*/
+  ActivateICPhotoFax,
+  (xieIntProc)NULL,
+  ResetICPhotoFax,
+  DestroyICPhotoFax
   };
 
 #if XIE_FULL
@@ -150,15 +175,6 @@ static ddElemVecRec IPhotoJPEGBaselineVec = {
   };
 #endif /* XIE_FULL */
 
-static ddElemVecRec IPhotoFaxVec = {
-  CreateICPhotoFax,	/* share this with ICphoto stuff 	*/
-  InitializeIPhotoFax,	/* note that only this is unshared 	*/
-  ActivateICPhotoFax,
-  (xieIntProc)NULL,
-  ResetICPhotoFax,
-  DestroyICPhotoFax
-  };
-
 
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
@@ -169,7 +185,10 @@ int miAnalyzeIPhoto(flo,ped)
 {
   photomapPtr map = ((iPhotoDefPtr)ped->elemPvt)->map;
   
-  
+  if(!miImportCanonic(flo,ped)) {
+    ped->ddVec = IPhotoStreamVec;
+    return(TRUE);
+  }
   switch(map->technique) {
   case xieValDecodeUncompressedSingle:
     ped->ddVec = IPhotoUncomByPlaneVec;
@@ -213,6 +232,16 @@ static int CreateIPhotoUncom(flo,ped)
 			      NO_SYNC, NO_SYNC) );
 }                               /* end CreateIPhotoUncom */
 
+
+static int CreateIPhotoStream(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /* attach an execution context to the photo element definition */
+  return( MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC) );
+}                               /* end CreateIPhotoStream */
+
+
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
@@ -225,7 +254,8 @@ static int InitializeIPhotoUncomByPlane(flo,ped)
   miUncompPtr              pvt = (miUncompPtr)pet->private;
   CARD32	        nbands = ped->outFlo.bands,b,s;
   formatPtr                inf = ped->inFloLst[IMPORT].format;
-  bandMsk 		 pmask = 0;
+  bandMsk 	        import = NO_BANDS;
+  bandMsk             reformat = miImportCanonic(flo,ped);
   xieTypOrientation pixelOrder, fillOrder;
   CARD8 *ppad;
   
@@ -259,7 +289,12 @@ static int InitializeIPhotoUncomByPlane(flo,ped)
     if (IsCanonic(inf->class))/* If data was passed through then no decoding*/
       continue;
     
-    pmask |= 1<<b;
+    import |= 1<<b;
+    if(reformat & 1<<b)
+      pvt->reformat = TRUE;
+    else
+      continue;
+
     pvt->bitOff = pvt->leftPad  = *ppad;
     if(inf->depth == 1) {  
 #if (IMAGE_BYTE_ORDER == MSBFirst)
@@ -345,18 +380,48 @@ static int InitializeIPhotoUncomByPlane(flo,ped)
       ImplementationError(flo,ped, return(FALSE));
     }
   }
-  if(pmask)
-    return(InitReceptor(flo,ped,pet->receptor,NO_DATAMAP,1,pmask,NO_BANDS) && 
-	   (!(pmask & 1) ||
-	    ImportStrips(flo,pet,&pet->receptor[0].band[0],&map->strips[0])) &&
-	   (!(pmask & 2) ||
-	    ImportStrips(flo,pet,&pet->receptor[0].band[1],&map->strips[1])) &&
-	   (!(pmask & 4) ||
-	    ImportStrips(flo,pet,&pet->receptor[0].band[2],&map->strips[2])) &&
+  if(import) {
+    bandMsk smuggle = import & ~reformat; /* bands that will bypass emitter */
+    receptorPtr rcp = pet->receptor;
+
+    rcp->forward = miImportStream(flo,ped);
+
+    return( InitReceptor(flo, ped, rcp, NO_DATAMAP, 1, import, smuggle) &&
+	   (!(import & 1) ||
+	    ImportStrips(flo, pet,&rcp->band[0], &map->strips[0])) &&
+	   (!(import & 2) ||
+	    ImportStrips(flo, pet,&rcp->band[1], &map->strips[1])) &&
+	   (!(import & 4) ||
+	    ImportStrips(flo, pet,&rcp->band[2], &map->strips[2])) &&
 	   InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
-  else
-    return(InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE));
+  } else {
+    return(InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
+  }
 }                               /* end InitializeIPhotoUncomByPlane */
+
+
+static int InitializeIPhotoStream(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  photomapPtr map = ((iPhotoDefPtr)ped->elemPvt)->map;
+  peTexPtr    pet = ped->peTex;
+  receptorPtr rcp = pet->receptor;
+  int   b, nbands = ped->inFloLst[IMPORT].bands;
+
+  /* tell data manager to forward our input data to downstream elements
+   */
+  rcp->forward = miImportStream(flo,ped);
+
+  if(!InitReceptor(flo, ped, rcp, NO_DATAMAP, 1, rcp->forward, ~rcp->forward))
+    return(FALSE);
+
+  for(b = 0; b < nbands; ++b)
+    if(!ImportStrips(flo, pet, &rcp->band[b], &map->strips[b]))
+      return(FALSE);
+
+  return(InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
+}                               /* end InitializeIPhotoStream */
 
 
 /*------------------------------------------------------------------------
@@ -382,10 +447,14 @@ static int ActivateIPhotoUncomByPlane(flo,ped,pet)
 	void (*action)() = pvt->action;
 	pointer src, dst;
 	
+        if(!pvt->reformat) {
+          FreeData(flo, pet, sbnd, sbnd->maxGlobal);
+          continue;
+        }
 	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
 	dbnd = &pet->emitter[pvt->bandMap];
-	if((src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current,nextslen,KEEP))
-	   && (dst = GetCurrentDst(pointer,flo,pet,dbnd)))
+	if((src = GetSrcBytes(flo,pet,sbnd,sbnd->current,nextslen,KEEP))
+	   && (dst = GetCurrentDst(flo,pet,dbnd)))
 	  
 	  do {
 	    (*action)(src, dst, sbnd->format->width, 
@@ -396,9 +465,9 @@ static int ActivateIPhotoUncomByPlane(flo,ped,pet)
 	    pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;
 	    oldslen  = (pvt->bitOff) ? nextslen - 1 : nextslen;
 	    nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-	    src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current+oldslen, 
+	    src = GetSrcBytes(flo,pet,sbnd,sbnd->current+oldslen, 
 			      nextslen,KEEP);
-	    dst = GetNextDst(pointer,flo,pet,dbnd,FLUSH);
+	    dst = GetNextDst(flo,pet,dbnd,FLUSH);
 	  } while(src && dst);
 
 	final = sbnd->strip && sbnd->strip->final;
@@ -436,6 +505,80 @@ static int ActivateIPhotoUncomByPlane(flo,ped,pet)
   return(TRUE);
 }                               /* end ActivateIPhotoUncomByPlane */
 
+
+static int ActivateIPhotoStream(flo,ped,pet)
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+  CARD32 nbands = ped->inFloLst[IMPORT].bands;
+  bandPtr   bnd = pet->receptor[IMPORT].band;
+  CARD32    b;
+  
+  for(b = 0; b < nbands; ++bnd, ++b) {
+    if(GetSrcBytes(flo,pet,bnd,bnd->current,1,KEEP)) {
+      FreeData(flo,pet,bnd,bnd->maxLocal);
+      if(ListEmpty(&bnd->stripLst))
+	DisableDst(flo,pet,&pet->emitter[b]);
+    }
+  }
+  return(TRUE);
+}                               /* end ActivateIPhotoStream */
+
+
+
+/*------------------------------------------------------------------------
+------------------------ get rid of run-time stuff -----------------------
+------------------------------------------------------------------------*/
+static int ResetIPhoto(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  miUncompPtr pvt = (miUncompPtr)ped->peTex->private;
+  int i;
+
+  for(i = 0; i < xieValMaxBands; ++i)
+    if(pvt[i].buf) pvt[i].buf = (pointer) XieFree(pvt[i].buf);
+
+  ResetReceptors(ped);
+  ResetEmitter(ped);
+  
+  return(TRUE);
+}                               /* end ResetIPhoto */
+
+
+static int ResetIPhotoStream(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  ResetReceptors(ped);
+  ResetEmitter(ped);
+  
+  return(TRUE);
+}                               /* end ResetIPhotoStream */
+
+
+/*------------------------------------------------------------------------
+-------------------------- get rid of this element -----------------------
+------------------------------------------------------------------------*/
+static int DestroyIPhoto(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /* get rid of the peTex structure  */
+  ped->peTex = (peTexPtr) XieFree(ped->peTex);
+
+  /* zap this element's entry point vector */
+  ped->ddVec.create     = (xieIntProc) NULL;
+  ped->ddVec.initialize = (xieIntProc) NULL;
+  ped->ddVec.activate   = (xieIntProc) NULL;
+  ped->ddVec.reset      = (xieIntProc) NULL;
+  ped->ddVec.destroy    = (xieIntProc) NULL;
+
+  return(TRUE);
+}                               /* end DestroyIPhoto */
+
+
 #if XIE_FULL
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
@@ -444,17 +587,17 @@ static int InitializeIPhotoUncomByPixel(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  photomapPtr              map = ((iPhotoDefPtr)ped->elemPvt)->map;
-  peTexPtr                 pet = ped->peTex;
-  miUncompPtr              pvt = (miUncompPtr)pet->private;
-  bandPtr                 sbnd = &ped->peTex->receptor[IMPORT].band[0];
-  CARD32               sstride = sbnd->format->stride>>3;
+  photomapPtr  map = ((iPhotoDefPtr)ped->elemPvt)->map;
   xieTecDecodeUncompressedTriple *tec = ((xieTecDecodeUncompressedTriple *)
 					 map->tecParms);
-  CARD8                leftPad = tec->leftPad[0]>>3;
-  xieTypOrientation pixelOrder, fillOrder;
-  CARD32 depth1, depth2, depth3;
-  int s, d;
+  peTexPtr     pet = ped->peTex;
+  miUncompPtr  pvt = (miUncompPtr)pet->private;
+  bandPtr     sbnd = &ped->peTex->receptor[IMPORT].band[0];
+  CARD32   sstride = sbnd->format->stride>>3;
+  CARD8    leftPad = tec->leftPad[0]>>3;
+  xieTypOrientation  pixelOrder, fillOrder;
+  CARD32     depth0, depth1, depth2;
+  int        s, d;
   
   pvt->unaligned = FALSE;	/* Hope for the best */
   
@@ -465,9 +608,9 @@ static int InitializeIPhotoUncomByPixel(flo,ped)
     for(s = 0, d = xieValMaxBands; d--; ++s)
       pvt[s].bandMap = d;
   
-  depth1 = pet->emitter[pvt[0].bandMap].format->depth;
-  depth2 = pet->emitter[pvt[1].bandMap].format->depth;
-  depth3 = pet->emitter[pvt[2].bandMap].format->depth;
+  depth0 = pet->emitter[pvt[0].bandMap].format->depth;
+  depth1 = pet->emitter[pvt[1].bandMap].format->depth;
+  depth2 = pet->emitter[pvt[2].bandMap].format->depth;
   
   pixelOrder        = tec->pixelOrder;
   fillOrder         = tec->fillOrder;
@@ -477,7 +620,7 @@ static int InitializeIPhotoUncomByPixel(flo,ped)
   
   /* See if data is nicely aligned */
   if (!(tec->leftPad[0] & 7) && !(sbnd->format->stride & 7)) {
-    if (depth1 == 16 && depth2 == 16 && depth3 == 16) {
+    if (depth0 == 16 && depth1 == 16 && depth2 == 16) {
 #if (IMAGE_BYTE_ORDER == MSBFirst)
       void (*pa)() = (tec->pixelOrder == xieValMSFirst) ? StoP  : StosP;
 #else
@@ -490,7 +633,7 @@ static int InitializeIPhotoUncomByPixel(flo,ped)
 	pvt->mask      = 0; /* Unused */
 	pvt->shift     = 0; /* Unused */
       }
-    } else if (depth1 == 8 && depth2 == 8 && depth3 == 8) {
+    } else if (depth0 == 8 && depth1 == 8 && depth2 == 8) {
       for(s = 0; s < xieValMaxBands; s++, pvt++) {
 	pvt->action    = StoB;
 	pvt->Bstride   = sstride;
@@ -498,7 +641,7 @@ static int InitializeIPhotoUncomByPixel(flo,ped)
 	pvt->mask      = 0; /* Unused */
 	pvt->shift     = 0; /* Unused */
       }
-    } else if (depth1 == 4 && depth2 == 4 && depth3 == 4) {
+    } else if (depth0 == 4 && depth1 == 4 && depth2 == 4) {
       if (tec->fillOrder == xieValMSFirst) {
 	pvt->action    = SbtoB;
 	pvt->Bstride   = sstride;
@@ -532,62 +675,67 @@ static int InitializeIPhotoUncomByPixel(flo,ped)
 	pvt->mask      = 0x0f; 
 	pvt->shift     = 0; 
       }
-    } else if (depth1 + depth2 + depth3 <= 8) {
-      CARD8 ones = 0xff,smask1,smask2,smask3,shift1,shift2,shift3;
+    } else if (depth0 + depth1 + depth2 <= 8) {
+      CARD8 ones = 0xff,smask0,smask1,smask2,shift0,shift1,shift2;
       if (tec->fillOrder == xieValMSFirst) {
-	smask1 = ~(ones>>depth1);
-	smask2 = ~(ones>>(depth1 + depth2) | smask1);
-	smask3 = ~(ones>>(depth1 + depth2 + depth3) | smask1 | smask2);
-	shift1 = 8 - depth1;
-	shift2 = 8 - (depth1 + depth2);
-	shift3 = 8 - (depth1 + depth2 + depth3);
+	smask0 = ~(ones>>depth0);
+	smask1 = ~(ones>>(depth0 + depth1) | smask0);
+	smask2 = ~(ones>>(depth0 + depth1 + depth2) | smask0 | smask1);
+	shift0 = 8 - depth0;
+	shift1 = 8 - (depth0 + depth1);
+	shift2 = 8 - (depth0 + depth1 + depth2);
       } else { /* fillOrder == xieValLSFirst */
-	smask3 = ~(ones<<depth3);
-	smask2 = ~(ones<<(depth2 + depth3) | smask3);
-	smask1 = ~(ones<<(depth1 + depth2 + depth3) | smask2 | smask3);
-	shift3 = 0;
-	shift2 = depth3;
-	shift1 = depth2 + depth3;
+	smask2 = ~(ones<<depth2);
+	smask1 = ~(ones<<(depth1 + depth2) | smask2);
+	smask0 = ~(ones<<(depth0 + depth1 + depth2) | smask1 | smask2);
+	shift2 = 0;
+	shift1 = depth2;
+	shift0 = depth1 + depth2;
       }
+      pvt->action    = (depth0 > 1) ? SbtoB : Sbtob;
+      pvt->Bstride   = sstride;
+      pvt->srcoffset = leftPad;
+      pvt->mask      = smask0;
+      (pvt++)->shift = shift0;
       pvt->action    = (depth1 > 1) ? SbtoB : Sbtob;
       pvt->Bstride   = sstride;
       pvt->srcoffset = leftPad;
       pvt->mask      = smask1;
-      (pvt++)->shift = shift1;
+      (pvt++)->shift = shift1; 
       pvt->action    = (depth2 > 1) ? SbtoB : Sbtob;
       pvt->Bstride   = sstride;
       pvt->srcoffset = leftPad;
       pvt->mask      = smask2;
-      (pvt++)->shift = shift2; 
-      pvt->action    = (depth3 > 1) ? SbtoB : Sbtob;
-      pvt->Bstride   = sstride;
-      pvt->srcoffset = leftPad;
-      pvt->mask      = smask3;
-      pvt->shift     = shift3; 
+      pvt->shift     = shift2; 
     } else {
       pvt->unaligned = TRUE;
     }
   } else {
     pvt->unaligned = TRUE;
   }
-  
-  /* Wasn't nicely aligned, do it the hard way */
   pvt = (miUncompPtr)pet->private;
+  pvt->reformat = TRUE;
+
   if(pvt->unaligned) {
+    /* since it's unaligned and somebody wants our data, do it the hard way */
     CARD32 width = sbnd->format->width;
     pvt->action = ExtractTripleFuncs[tec->pixelOrder == xieValLSFirst ? 0 : 1]
       				    [tec->fillOrder  == xieValLSFirst ? 0 : 1]
+				    [depth0 <= 8 ? 0 : 1] 
 				    [depth1 <= 8 ? 0 : 1] 
-				    [depth2 <= 8 ? 0 : 1] 
-				    [depth3 <= 8 ? 0 : 1];
-    if(depth1 == 1 && !(pvt[0].buf = (pointer)XieMalloc(width+7)) ||
-       depth2 == 1 && !(pvt[1].buf = (pointer)XieMalloc(width+7)) ||
-       depth3 == 1 && !(pvt[2].buf = (pointer)XieMalloc(width+7)))
+				    [depth2 <= 8 ? 0 : 1];
+    if(depth0 == 1 && !(pvt[0].buf = (pointer)XieMalloc(width+7)) ||
+       depth1 == 1 && !(pvt[1].buf = (pointer)XieMalloc(width+7)) ||
+       depth2 == 1 && !(pvt[2].buf = (pointer)XieMalloc(width+7)))
       AllocError(flo,ped, return(FALSE));
   }
-  return(InitReceptors(flo, ped, NO_DATAMAP, 1) && 
-	 ImportStrips(flo, pet, &pet->receptor[0].band[0], &map->strips[0]) &&
-	 InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
+  /* see if data manager should forward our input data to downstream elements
+   */
+  pet->receptor->forward = miImportStream(flo,ped);
+
+  return(InitReceptor(flo,ped, pet->receptor,NO_DATAMAP,1,1,NO_BANDS)    &&
+	 ImportStrips(flo,pet,&pet->receptor[0].band[0],&map->strips[0]) &&
+	 InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE));
 }                               /* end InitializeIPhotoUnTriple */
 
 
@@ -608,7 +756,7 @@ static int ActivateIPhotoUncomByPixel(flo,ped,pet)
   CARD32 final, width = db0->format->width;
   pointer src, dp0, dp1, dp2;
   
-  if (pvt->unaligned) {
+  if(pvt->unaligned) {
     CARD32 oldslen, nextslen;
     void (*action)() = pvt->action;
     CARD32 depth0 = db0->format->depth;
@@ -617,10 +765,10 @@ static int ActivateIPhotoUncomByPixel(flo,ped,pet)
     CARD32 stride = sbnd->format->stride;
     
     nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-    if((src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
-       (dp0 = GetCurrentDst(pointer,flo,pet,db0)) &&
-       (dp1 = GetCurrentDst(pointer,flo,pet,db1)) &&
-       (dp2 = GetCurrentDst(pointer,flo,pet,db2)))
+    if((src = GetSrcBytes(flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
+       (dp0 = GetCurrentDst(flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(flo,pet,db1)) &&
+       (dp2 = GetCurrentDst(flo,pet,db2)))
       do {
 	
 	(*action)(src,
@@ -634,30 +782,29 @@ static int ActivateIPhotoUncomByPixel(flo,ped,pet)
 	if(pvt[2].buf) bitshrink(pvt[2].buf,dp2,width,(BytePixel)1);
 
 	pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;
-	oldslen  = pvt->bitOff ? nextslen - 1 : nextslen;
-	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-	src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current+oldslen,
-			  nextslen,KEEP);
-	dp0 = GetNextDst(pointer,flo,pet,db0,FLUSH);
-	dp1 = GetNextDst(pointer,flo,pet,db1,FLUSH);
-	dp2 = GetNextDst(pointer,flo,pet,db2,FLUSH);
+	oldslen     = pvt->bitOff ? nextslen - 1 : nextslen;
+	nextslen    = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
+	src = GetSrcBytes(flo,pet,sbnd,sbnd->current+oldslen,nextslen,KEEP);
+	dp0 = GetNextDst(flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(flo,pet,db2,FLUSH);
       } while(src && dp0 && dp1 && dp2);
   } else {
     CARD32   slen = sbnd->format->pitch+7>>3;
-    if((src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
-       (dp0 = GetCurrentDst(pointer,flo,pet,db0)) &&
-       (dp1 = GetCurrentDst(pointer,flo,pet,db1)) && 
-       (dp2 = GetCurrentDst(pointer,flo,pet,db2)))
+    if((src = GetSrcBytes(flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
+       (dp0 = GetCurrentDst(flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(flo,pet,db1)) && 
+       (dp2 = GetCurrentDst(flo,pet,db2)))
       do {
 	
 	(*pvt[0].action)(src,dp0,width,&pvt[0]);
 	(*pvt[1].action)(src,dp1,width,&pvt[1]);
 	(*pvt[2].action)(src,dp2,width,&pvt[2]);
 	
-	src =GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
-	dp0 = GetNextDst(pointer,flo,pet,db0,FLUSH);
-	dp1 = GetNextDst(pointer,flo,pet,db1,FLUSH);
-	dp2 = GetNextDst(pointer,flo,pet,db2,FLUSH);
+	src =GetSrcBytes(flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
+	dp0 = GetNextDst(flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(flo,pet,db2,FLUSH);
       } while(src && dp0 && dp1 && dp2);
   }
   final = sbnd->strip && sbnd->strip->final;
@@ -683,46 +830,5 @@ static int ActivateIPhotoUncomByPixel(flo,ped,pet)
   return(TRUE);
 }                               /* end ActivateIPhotoUncomByPixel */
 #endif /* XIE_FULL */
-
-
-/*------------------------------------------------------------------------
------------------------- get rid of run-time stuff -----------------------
-------------------------------------------------------------------------*/
-static int ResetIPhoto(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  miUncompPtr pvt = (miUncompPtr)ped->peTex->private;
-  int i;
-
-  for(i = 0; i < xieValMaxBands; ++i)
-    if(pvt[i].buf) pvt[i].buf = (pointer) XieFree(pvt[i].buf);
-
-  ResetReceptors(ped);
-  ResetEmitter(ped);
-  
-  return(TRUE);
-}                               /* end ResetIPhoto */
-
-
-/*------------------------------------------------------------------------
--------------------------- get rid of this element -----------------------
-------------------------------------------------------------------------*/
-static int DestroyIPhoto(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* get rid of the peTex structure  */
-  ped->peTex = (peTexPtr) XieFree(ped->peTex);
-
-  /* zap this element's entry point vector */
-  ped->ddVec.create     = (xieIntProc) NULL;
-  ped->ddVec.initialize = (xieIntProc) NULL;
-  ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.reset      = (xieIntProc) NULL;
-  ped->ddVec.destroy    = (xieIntProc) NULL;
-
-  return(TRUE);
-}                               /* end DestroyIPhoto */
 
 /* end module miphoto.c */

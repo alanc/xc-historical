@@ -1,4 +1,4 @@
-/* $XConsortium: mefax.c,v 1.3 93/11/01 09:00:19 dpw Exp $ */
+/* $XConsortium: mefax.c,v 1.4 93/11/01 11:01:30 dpw Exp $ */
 /**** module mefax.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -155,10 +154,9 @@ int InitializeEPhotoFAX(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-xieFloExportPhotomap     *raw = (xieFloExportPhotomap *) ped->elemRaw;
-char *tec = (char *)&raw[1];
+  ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
-	return( common_init(flo,ped,tec,raw->encodeTechnique,raw->lenParams) );
+  return( common_init(flo,ped,pvt->encodeParms,pvt->encodeNumber) );
 }
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
@@ -167,25 +165,25 @@ int InitializeECPhotoFAX(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-xieFloExportClientPhoto *raw = (xieFloExportClientPhoto *) ped->elemRaw;
-peTexPtr pet = ped->peTex;
-faxPvtPtr texpvt=(faxPvtPtr) pet->private;
-char *tec = (char *)&raw[1];
+  xieFloExportClientPhoto *raw = (xieFloExportClientPhoto *) ped->elemRaw;
+  peTexPtr pet = ped->peTex;
+  faxPvtPtr texpvt = (faxPvtPtr)pet->private;
+  ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
-	if( !common_init(flo,ped,tec,raw->encodeTechnique,raw->lenParams) )
-		return FALSE;
+  if( !common_init(flo,ped,pvt->encodeParms,pvt->encodeNumber) )
+    return FALSE;
 
-	texpvt->notify = raw->notify;
-	return TRUE;
+  texpvt->notify = raw->notify;
+  return TRUE;
 }
 /*------------------------------------------------------------------------
 ------- lots of stuff shared between ECPhoto and EPhoto. . . -------------
 ------------------------------------------------------------------------*/
-static int common_init(flo,ped,tec,encodeTechnique,lenParams)
+static int common_init(flo,ped,tec,encodeTechnique)
 floDefPtr flo;
 peDefPtr  ped;
 char *tec;
-int encodeTechnique,lenParams;
+int encodeTechnique;
 {
 peTexPtr pet = ped->peTex;
 faxPvtPtr texpvt=(faxPvtPtr) pet->private;
@@ -425,7 +423,7 @@ int ActivateEPhotoFAX(flo,ped,pet)
     
   if(texpvt->notify && ~was_ready & ped->outFlo.ready & 1  &&
      (texpvt->notify==xieValNewData   ||
-      texpvt->notify==xieValFirstData && !ped->outFlo.export[0].flink->start))
+      texpvt->notify==xieValFirstData && !ped->outFlo.output[0].flink->start))
     SendExportAvailableEvent(flo,ped,0,0,0,0);
   
   return( status );
@@ -466,14 +464,14 @@ int nl_mappable;
 	coming back properly.
 ***/
 
-    src = GetCurrentSrc(pointer,flo,pet,sbnd);
+    src = GetCurrentSrc(flo,pet,sbnd);
 
     if (dbnd->final) {
 	/* be forgiving if extra data gets passed to us */
   	FreeData(flo,pet,sbnd,sbnd->maxGlobal);
 	return(TRUE);
     }
-    while (dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current,
+    while (dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current,
   		texpvt->strip_req_newbytes,KEEP)) {
 
 	if (!state->strip) {
@@ -518,8 +516,8 @@ int nl_mappable;
 	            PutData(flo,pet,dbnd,dbnd->maxGlobal);
 			/* flush current strip */
 		    /* ask for one more strip of length 1 */
-    		    dst=GetDstBytes(BytePixel *,flo,pet,
-					dbnd,dbnd->current,1,KEEP);
+    		    dst = (BytePixel*)GetDstBytes(flo,pet,
+						  dbnd,dbnd->current,1,KEEP);
 		    *dst = state->stager >> 24;
 		}
 		state->bits.byteptr++;

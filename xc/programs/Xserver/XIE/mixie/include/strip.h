@@ -1,4 +1,4 @@
-/* $XConsortium: strip.h,v 1.2 93/10/31 09:46:17 dpw Exp $ */
+/* $XConsortium: strip.h,v 1.3 93/11/06 15:36:09 rws Exp $ */
 /**** module strip.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -104,26 +104,25 @@ typedef struct _band {
 /**************************************************************************
  * Photoflo data manager convenience macros
  *
- * (type)  GetCurrentSrc(type,flo,pet,bnd)		single Src line/byte
- * (type)  GetCurrentDst(type,flo,pet,bnd)		single Dst line/byte
- * (type)  GetNextSrc(type,flo,pet,bnd,purge)		single Src line/byte
- * (type)  GetNextDst(type,flo,pet,bnd,purge)		single Dst line/byte
- * (type)  GetSrc(type,flo,pet,bnd,unit,purge)		single Src line/byte
- * (type)  GetDst(type,flo,pet,bnd,unit,purge)		single Dst line/byte
- * (type)  GetSrcBytes(type,flo,pet,bnd,unit,len,purge) contiguous Src bytes
- * (type)  GetDstBytes(type,flo,pet,bnd,unit,len,purge) contiguous Dst bytes
- *  Bool   MapData(flo,pet,bnd,map,unit,len,purge)	map  multi-lines/bytes
- *  Bool   PutData(flo,pet,bnd,unit)			put  multi-lines/bytes
- *  void   FreeData(flo,pet,bnd,unit)			free multi-lines/bytes
- *  Bool   PassStrip(flo,pet,bnd,strip)			forward clone of strip
- *  Bool   ImportStrips(flo,pet,bnd,strips)		import Photomap strips
- *  Bool   AlterSrc(flo,pet,strip)			see if Src is mutable
- *  void   BypassSrc(flo,pet,bnd)			bypass element for bnd
- *  void   DisableSrc(flo,pet,bnd,purge)		disable input for bnd
- *  void   DisableDst(flo,pet,bnd)			signal no bnd output
+ * pointer GetCurrentSrc(flo,pet,bnd)			single Src line/byte
+ * pointer GetCurrentDst(flo,pet,bnd)			single Dst line/byte
+ * pointer GetNextSrc(flo,pet,bnd,purge)		single Src line/byte
+ * pointer GetNextDst(flo,pet,bnd,purge)		single Dst line/byte
+ * pointer GetSrc(flo,pet,bnd,unit,purge)		single Src line/byte
+ * pointer GetDst(flo,pet,bnd,unit,purge)		single Dst line/byte
+ * pointer GetSrcBytes(flo,pet,bnd,unit,len,purge)	contiguous Src bytes
+ * pointer GetDstBytes(flo,pet,bnd,unit,len,purge)	contiguous Dst bytes
+ * Bool    MapData(flo,pet,bnd,map,unit,len,purge)	map  multi-lines/bytes
+ * Bool    PutData(flo,pet,bnd,unit)			put  multi-lines/bytes
+ * void    FreeData(flo,pet,bnd,unit)			free multi-lines/bytes
+ * Bool    PassStrip(flo,pet,bnd,strip)			forward clone of strip
+ * Bool    ImportStrips(flo,pet,bnd,strips)		import Photomap strips
+ * Bool    AlterSrc(flo,pet,strip)			see if Src is mutable
+ * void    BypassSrc(flo,pet,bnd)			bypass element for bnd
+ * void    DisableSrc(flo,pet,bnd,purge)		disable input for bnd
+ * void    DisableDst(flo,pet,bnd)			signal no bnd output
  *
  * key to common arguments:
- *	type	data type returned (e.g. BitPixel, PairPixel, CARD16, ...)
  *	flo	floDefPtr
  *	pet	peTexPtr
  *	bnd	bandPtr
@@ -160,7 +159,7 @@ typedef struct _band {
 	 (&(bnd)->strip->data[(bnd)->current - (bnd)->strip->start])
 #define _line_ptr(bnd) \
 	 (&(bnd)->strip->data \
-	  [(bnd)->pitch * ((bnd)->current-(bnd)->strip->start)])
+	  [(bnd)->pitch * ((bnd)->current - (bnd)->strip->start)])
 #define _release_ok(bnd) \
 	 (!ListEmpty(&(bnd)->stripLst) && \
 	  ((bnd)->current > (bnd)->stripLst.flink->end || !(bnd)->maxGlobal))
@@ -189,62 +188,58 @@ typedef struct _band {
 		   (bnd)->maxGlobal  = (bnd)->maxLocal = value; }}
 
 /* return the current line/byte pointer (NULL if not currently available)
- *	{BitPixel, BytePixel, ...} type;
  *	 floDefPtr flo; peTexPtr pet; bandPtr bnd;
  */
-#define GetCurrentSrc(type,flo,pet,bnd) \
-	(type)((bnd)->data ? (bnd)->data \
+#define GetCurrentSrc(flo,pet,bnd) \
+	(pointer)((bnd)->data ? (bnd)->data \
 		: _is_global(bnd) \
 		? (*flo->stripVec->get_data)(flo,pet,bnd,1,FALSE) \
 		: ((bnd)->data = NULL))
-#define GetCurrentDst(type,flo,pet,bnd) \
-	(type)((bnd)->data ? (bnd)->data \
+#define GetCurrentDst(flo,pet,bnd) \
+	(pointer)((bnd)->data ? (bnd)->data \
 		: (*flo->stripVec->make_lines)(flo,pet,bnd,FALSE))
 
 /* return the next sequential line/byte pointer (NULL if not available)
- *	{BitPixel, BytePixel, ...} type;
  *	 floDefPtr flo; peTexPtr pet; bandPtr bnd; Bool purge;
  */
-#define GetNextSrc(type,flo,pet,bnd,purge) \
-	(type)(++(bnd)->current < (bnd)->maxLocal \
+#define GetNextSrc(flo,pet,bnd,purge) \
+	(pointer)(++(bnd)->current < (bnd)->maxLocal \
 		? ((bnd)->data += (bnd)->pitch) \
 		: _is_global(bnd) \
 		? (*flo->stripVec->get_data)(flo,pet,bnd,1,purge) \
 		: ((bnd)->data = NULL))
-#define GetNextDst(type,flo,pet,bnd,purge) \
-	(type)(++(bnd)->current < (bnd)->maxLocal \
+#define GetNextDst(flo,pet,bnd,purge) \
+	(pointer)(++(bnd)->current < (bnd)->maxLocal \
 		? ((bnd)->data += (bnd)->pitch) \
 		: (*flo->stripVec->make_lines)(flo,pet,bnd,purge))
 
 /* return the specified line/byte pointer (random access)
  * (returns NULL if not available)
- *	{BitPixel, BytePixel, ...} type;
  *	floDefPtr flo; peTexPtr pet; bandPtr bnd; CARD32 unit; Bool purge;
  */
-#define GetSrc(type,flo,pet,bnd,unit,purge) \
-	(type)((bnd)->current = unit, _is_local(bnd) \
+#define GetSrc(flo,pet,bnd,unit,purge) \
+	(pointer)((bnd)->current = unit, _is_local(bnd) \
 		? ((bnd)->data = _line_ptr(bnd)) \
 		: _is_global(bnd) \
 		? (*flo->stripVec->get_data)(flo,pet,bnd,1,purge) \
 		: ((bnd)->data = NULL))
-#define GetDst(type,flo,pet,bnd,unit,purge) \
-	(type)((bnd)->current = unit, _is_local(bnd) \
+#define GetDst(flo,pet,bnd,unit,purge) \
+	(pointer)((bnd)->current = unit, _is_local(bnd) \
 		? ((bnd)->data = _line_ptr(bnd)) \
 		: (*flo->stripVec->make_lines)(flo,pet,bnd,purge))
 
 /* return the specified byte pointer with len contiguous bytes available
  * (returns NULL if not available)
- *	{BitPixel, BytePixel, ...} type;
  *	floDefPtr flo; peTexPtr pet; bandPtr bnd; CARD32 unit, len; Bool purge;
  *	len -- number of contiguous bytes required
  */
-#define GetSrcBytes(type,flo,pet,bnd,unit,len,purge) \
-	(type)((bnd)->current = unit, _is_local_contig(bnd,len) \
+#define GetSrcBytes(flo,pet,bnd,unit,len,purge) \
+	(pointer)((bnd)->current = unit, _is_local_contig(bnd,len) \
 		? ((bnd)->data = _byte_ptr(bnd)) : _is_global(bnd) \
 		? (*flo->stripVec->get_data)(flo,pet,bnd,len,purge) \
 		: ((bnd)->data = NULL))
-#define GetDstBytes(type,flo,pet,bnd,unit,len,purge) \
-	(type)((bnd)->current = unit, _is_local_contig(bnd,len) \
+#define GetDstBytes(flo,pet,bnd,unit,len,purge) \
+	(pointer)((bnd)->current = unit, _is_local_contig(bnd,len) \
 		? ((bnd)->data = _byte_ptr(bnd)) \
 		: (*flo->stripVec->make_bytes)(flo,pet,bnd,len,purge))
 
@@ -260,8 +255,8 @@ typedef struct _band {
 #define MapData(flo,pet,bnd,map,unit,len,purge) \
 	(*flo->stripVec->map_data)(flo,pet,bnd,map,unit,len,purge)
 
-/* release lines/bytes to downstream recipients (up to but not including unit)
- * upon return, bnd info points to unit, if previously available
+/* release lines/bytes to downstream recipients (up to but not including unit),
+ * bnd->data is updated if unit is in current strip (else it is NULLed)
  * returns TRUE if the element should suspend itself
  *	floDefPtr flo; peTexPtr pet; bandPtr bnd; CARD32 unit;
  */

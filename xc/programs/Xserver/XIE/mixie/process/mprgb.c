@@ -1,4 +1,4 @@
-/* $XConsortium: mprgb.c,v 1.2 93/10/31 09:48:25 dpw Exp $ */
+/* $XConsortium: mprgb.c,v 1.3 93/11/01 09:46:42 rws Exp $ */
 /**** module mprgb.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -74,7 +74,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -279,9 +278,9 @@ ActivateRGB(flo,ped,pet)
     BOOL	 stop;
 
     for (b = 0; b < 3; b++, sband++, dband++) {
-	if (!(svoid[b] = GetCurrentSrc(pointer,flo,pet,sband)))
+	if (!(svoid[b] = GetCurrentSrc(flo,pet,sband)))
             return TRUE;
-	if (!(dvoid[b] = GetCurrentDst(pointer,flo,pet,dband)))
+	if (!(dvoid[b] = GetCurrentDst(flo,pet,dband)))
 	    return TRUE;
 	stvoid[b] = pvt->cvt_in[b]
 		? (*pvt->cvt_in[b]) (pvt->aux_buf[b], svoid[b], pvt, npix)
@@ -298,8 +297,8 @@ ActivateRGB(flo,ped,pet)
 	for (b = 0, stop = FALSE; b < 3; b++, sband++, dband++) {
 	    if (pvt->cvt_out[b])
 		(*pvt->cvt_out[b]) (dvoid[b], dtvoid[b], pvt, npix);
-	    stop |= !(svoid[b] = GetNextSrc(pointer,flo,pet,sband,FLUSH));
-	    stop |= !(dvoid[b] = GetNextDst(pointer,flo,pet,dband,FLUSH));
+	    stop |= !(svoid[b] = GetNextSrc(flo,pet,sband,FLUSH));
+	    stop |= !(dvoid[b] = GetNextDst(flo,pet,dband,FLUSH));
 	    if (!stop) {
 		dtvoid[b] = pvt->cvt_out[b] ? dtvoid[b] : dvoid[b];
 		stvoid[b] = pvt->cvt_in[b]
@@ -371,7 +370,6 @@ DestroyRGB(flo,ped)
  * 
  * NOTE: Investigate use of stock cbrt() function in libc.
  * NOTE: Borrowed from lib/X/XcmsMath.h
- * NOTE: $XConsortium: mprgb.c,v 1.2 93/10/31 09:48:25 dpw Exp $
  * NOTE: Copyright 1990 Massachusetts Institute of Technology
  *
  * NOTE: Investigate use of stock cbrt() function in libc.
@@ -1089,27 +1087,27 @@ SetupToRGB(flo,ped,modify)
     pvt->post = 0;
 
     switch(ped->techVec->number) {
-	case xieValCIELab:
+	case xieValCIELabToRGB:
 		/* if whiteAdjusted, or calculate from inverted matrix */
 		copymatrix(pvt, pCIE->matrix);
 		copywhiteLABToRGB (pvt, pCIE->whiteAdjusted, pCIE->whitePoint);
-		copygamut (pvt, pCIE->gamutTechnique);
+		copygamut (pvt, pCIE->gamutCompress);
     		pvt->action = act_preCIELab; /* calls act_mmRR */
 		break;
-	case xieValCIEXYZ:
+	case xieValCIEXYZToRGB:
 		copymatrix(pvt, pCIE->matrix);
 		copywhiteXYZToRGB (pvt, pCIE->whiteAdjusted, pCIE->whitePoint);
-		copygamut (pvt, pCIE->gamutTechnique);
+		copygamut (pvt, pCIE->gamutCompress);
 		break;
-	case xieValYCbCr:
+	case xieValYCbCrToRGB:
 		copylumaYCbCrtoRGB(pvt, pYCb->red, pYCb->green, pYCb->blue);
 		copybiasYCbCr(pvt, pYCb->bias0, pYCb->bias1, pYCb->bias2);
-		copygamut(pvt, pYCb->gamutTechnique);
+		copygamut(pvt, pYCb->gamutCompress);
 		break;
-	case xieValYCC:
+	case xieValYCCToRGB:
 		copylumaYCCtoRGB(pvt, pYCC->red, pYCC->green, pYCC->blue, 
 			pYCC->scale, &(pet->receptor[SRCtag].band[0]));
-		copygamut (pvt, pYCC->gamutTechnique);
+		copygamut (pvt, pYCC->gamutCompress);
 		break;
     }
 
@@ -1134,22 +1132,22 @@ SetupFromRGB(flo,ped,modify)
     pvt->post = (void (*)()) 0;	
 
     switch(ped->techVec->number) {
-	case xieValCIELab:
+	case xieValRGBToCIELab:
 		copymatrix(pvt, pCIE->matrix);
 		copywhiteLABFromRGB(pvt,  pCIE->whiteAdjusted,
 					  pCIE->whitePoint);
 		pvt->post = act_postCIELab;
 		break;
-	case xieValCIEXYZ:
+	case xieValRGBToCIEXYZ:
 		copymatrix(pvt, pCIE->matrix);
 		copywhiteXYZFromRGB(pvt,  pCIE->whiteAdjusted,
 					  pCIE->whitePoint);
 		break;
-	case xieValYCbCr:
+	case xieValRGBToYCbCr:
 		copylumaYCbCrfromRGB(pvt, pYCb->red, pYCb->green, pYCb->blue);
 		copybiasYCbCr(pvt, pYCb->bias0, pYCb->bias1, pYCb->bias2);
 		break;
-	case xieValYCC:
+	case xieValRGBToYCC:
 		copylumaYCCfromRGB(pvt, pYCC->red, pYCC->green, pYCC->blue, 
     					pYCC->scale, &(pet->emitter[0]));
 		break;
@@ -1259,8 +1257,8 @@ CheckRGB(flo,ped,fromrgb)
 
     /* Adjust bias for integer YCbCr and YCC */
     if (!fromrgb) switch (ped->techVec->number) {
-	case xieValYCC:		/* fall thru */
-	case xieValYCbCr:	flip_bias(pvt->matrix);
+	case xieValRGBToYCC:	/* fall thru */
+	case xieValRGBToYCbCr:	flip_bias(pvt->matrix);
 				break;
 	default:		break;
     }

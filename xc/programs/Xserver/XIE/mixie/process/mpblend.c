@@ -1,4 +1,4 @@
-/* $XConsortium: mpblend.c,v 1.2 93/10/31 09:48:06 dpw Exp $ */
+/* $XConsortium: mpblend.c,v 1.3 93/11/06 15:38:47 rws Exp $ */
 /**** module mpblend.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,7 +71,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -91,7 +90,6 @@ int	miAnalyzeBlend();
  *  routines used internal to this module
  */
 static int CreateBlend();
-static int FlushBlend();
 static int ResetBlend();
 static int DestroyBlend();
 
@@ -113,7 +111,7 @@ static ddElemVecRec BlendVec = {
   CreateBlend,
   (xieIntProc)NULL,
   (xieIntProc)NULL,
-  FlushBlend,
+  (xieIntProc)NULL,
   ResetBlend,
   DestroyBlend
   };
@@ -477,8 +475,8 @@ static int MonoBlend(flo,ped,pet)
     BlendFloat offset = *sconst * aconst1;
 
     /* get pointers to the initial src and dst scanlines */
-    sr1 = GetCurrentSrc(pointer,flo,pet,sb1);
-    dst = GetCurrentDst(pointer,flo,pet,bnd);
+    sr1 = GetCurrentSrc(flo,pet,sb1);
+    dst = GetCurrentDst(flo,pet,bnd);
 
     /* continue while all is well and we have pointers */
     while(!ferrCode(flo) && sr1 && dst && 
@@ -496,8 +494,8 @@ static int MonoBlend(flo,ped,pet)
       }
 
       /* get pointers to the next src and dst scanlines */
-      sr1 = GetNextSrc(pointer,flo,pet,sb1,TRUE);
-      dst = GetNextDst(pointer,flo,pet,bnd,TRUE);
+      sr1 = GetNextSrc(flo,pet,sb1,TRUE);
+      dst = GetNextDst(flo,pet,bnd,TRUE);
     }
     /* make sure the scheduler knows how much src we used */
     FreeData(flo,pet,sb1,sb1->current);
@@ -533,9 +531,9 @@ static int DualBlend(flo,ped,pet)
         w = sb1->format->width;
 
     /* get pointers to the initial src-1, src-2, and dst scanlines */
-    sr1 = GetCurrentSrc(pointer,flo,pet,sb1);
-    sr2 = GetCurrentSrc(pointer,flo,pet,sb2);
-    dst = GetCurrentDst(pointer,flo,pet,bnd);
+    sr1 = GetCurrentSrc(flo,pet,sb1);
+    sr2 = GetCurrentSrc(flo,pet,sb2);
+    dst = GetCurrentDst(flo,pet,bnd);
 	
     /* continue while all is well and we have pointers */
     while(!ferrCode(flo) && sr1 && sr2 && dst &&
@@ -555,9 +553,9 @@ static int DualBlend(flo,ped,pet)
       }
 
       /* get pointers to the next src-1, src-2, and dst scanlines */
-      sr1 = GetNextSrc(pointer,flo,pet,sb1,TRUE);
-      sr2 = GetNextSrc(pointer,flo,pet,sb2,TRUE);
-      dst = GetNextDst(pointer,flo,pet,bnd,TRUE);
+      sr1 = GetNextSrc(flo,pet,sb1,TRUE);
+      sr2 = GetNextSrc(flo,pet,sb2,TRUE);
+      dst = GetNextDst(flo,pet,bnd,TRUE);
     }
 
     /* If src2 < sr1, pass remaining lines through untouched */
@@ -604,9 +602,9 @@ static int MonoAlphaBlend(flo,ped,pet)
         w = sb1->format->width;
 
     /* get pointers to the initial src-1, alpha, and dst scanlines */
-    sr1   = GetCurrentSrc(pointer,flo,pet,sb1);
-    alpha = GetCurrentSrc(pointer,flo,pet,aband);
-    dst   = GetCurrentDst(pointer,flo,pet,bnd);
+    sr1   = GetCurrentSrc(flo,pet,sb1);
+    alpha = GetCurrentSrc(flo,pet,aband);
+    dst   = GetCurrentDst(flo,pet,bnd);
 	
     /* continue while all is well and we have pointers */
     while(!ferrCode(flo) && sr1 && alpha && dst &&
@@ -626,9 +624,9 @@ static int MonoAlphaBlend(flo,ped,pet)
       }
 
       /* get pointers to the next src-1 and dst scanlines */
-      sr1   = GetNextSrc(pointer,flo,pet,sb1,FLUSH);
-      alpha = GetNextSrc(pointer,flo,pet,aband,FLUSH);
-      dst   = GetNextDst(pointer,flo,pet,bnd,FLUSH);
+      sr1   = GetNextSrc(flo,pet,sb1,FLUSH);
+      alpha = GetNextSrc(flo,pet,aband,FLUSH);
+      dst   = GetNextDst(flo,pet,bnd,FLUSH);
     }
 
     /* If alpha < sr1, pass remaining lines through untouched */
@@ -678,10 +676,10 @@ static int DualAlphaBlend(flo,ped,pet)
         w = sb1->format->width;
 
     /* get pointers to the initial src-1, src-2, and dst scanlines */
-    sr1   = GetCurrentSrc(pointer,flo,pet,sb1);
-    sr2   = GetCurrentSrc(pointer,flo,pet,sb2);
-    alpha = GetCurrentSrc(pointer,flo,pet,aband);
-    dst   = GetCurrentDst(pointer,flo,pet,bnd);
+    sr1   = GetCurrentSrc(flo,pet,sb1);
+    sr2   = GetCurrentSrc(flo,pet,sb2);
+    alpha = GetCurrentSrc(flo,pet,aband);
+    dst   = GetCurrentDst(flo,pet,bnd);
 	
     /* continue while all is well and we have pointers */
     while(!ferrCode(flo) && sr1 && sr2 && alpha && dst &&
@@ -701,10 +699,10 @@ static int DualAlphaBlend(flo,ped,pet)
       }
 
       /* get pointers to the next src-1, src-2, and dst scanlines */
-      sr1   = GetNextSrc(pointer,flo,pet,sb1,FLUSH);
-      sr2   = GetNextSrc(pointer,flo,pet,sb2,FLUSH);
-      alpha = GetNextSrc(pointer,flo,pet,aband,FLUSH);
-      dst   = GetNextDst(pointer,flo,pet,bnd,FLUSH);
+      sr1   = GetNextSrc(flo,pet,sb1,FLUSH);
+      sr2   = GetNextSrc(flo,pet,sb2,FLUSH);
+      alpha = GetNextSrc(flo,pet,aband,FLUSH);
+      dst   = GetNextDst(flo,pet,bnd,FLUSH);
     }
 
     /* If alpha < sr1, pass remaining lines through untouched */
@@ -726,18 +724,6 @@ static int DualAlphaBlend(flo,ped,pet)
 
   return(TRUE);
 }				/* end DualAlphaBlend */
-
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushBlend(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* Activate was suppose to do the whole image -- there's nothing to do */
-  return(TRUE);
-}                               /* end FlushBlend */
 
 
 /*------------------------------------------------------------------------
@@ -770,7 +756,6 @@ static int DestroyBlend(flo,ped)
   ped->ddVec.create     = (xieIntProc)NULL;
   ped->ddVec.initialize = (xieIntProc)NULL;
   ped->ddVec.activate   = (xieIntProc)NULL;
-  ped->ddVec.flush      = (xieIntProc)NULL;
   ped->ddVec.reset      = (xieIntProc)NULL;
   ped->ddVec.destroy    = (xieIntProc)NULL;
   

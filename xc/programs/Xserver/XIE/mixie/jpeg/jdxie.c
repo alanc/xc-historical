@@ -1,4 +1,4 @@
-/* $XConsortium: jdxie.c,v 1.1 93/10/26 09:56:38 rws Exp $ */
+/* $XConsortium: jdxie.c,v 1.2 93/10/31 09:47:15 dpw Exp $ */
 /* Module jdxie.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -80,13 +81,13 @@ d_ui_method_selection (cinfo)
  * is not all that great, because these routines aren't very heavily used.)
  */
 
-#ifndef NEED_FAR_POINTERS		/* normal case, same as regular macros */
+#ifndef NEED_FAR_POINTERS			/* normal case, same as regular macros */
 #define FMEMCOPY(dest,src,size)	MEMCOPY(dest,src,size)
 #define FMEMZERO(target,size)	MEMZERO(target,size)
 #else				/* 80x86 case, define if we can */
 #ifdef USE_FMEM
-#define FMEMCOPY(dest,src,size)	_fmemcpy((pointer)(dest), (const pointer)(src), (size_t)(size))
-#define FMEMZERO(target,size)	_fmemset((pointer)(target), 0, (size_t)(size))
+#define FMEMCOPY(dest,src,size)	_fmemcpy((pointer*)(dest), (const pointer*)(src), (size_t)(size))
+#define FMEMZERO(target,size)	_fmemset((pointer*)(target), 0, (size_t)(size))
 #endif
 #endif
 
@@ -101,8 +102,9 @@ d_per_scan_method_selection (cinfo)
 {
   /* MCU disassembly */
   jseldmcu(cinfo);
-  /* Upsampling of pixels */
-  jselupsample(cinfo);
+  if (cinfo->XIE_upsample)
+    /* Upsampling of pixels */
+    jselupsample(cinfo);
 }
 
 
@@ -531,18 +533,12 @@ expand (cinfo,
 LOCAL void
 #if NeedFunctionPrototypes
 jdcopy_pixel_rows (decompress_info_ptr cinfo, 
-         JSAMPIMAGE input_array, JSAMPIMAGE output_array,
-         int num_components, int num_rows, long num_cols)
+         JSAMPIMAGE input_array, JSAMPIMAGE output_array)
 #else
-jdcopy_pixel_rows (cinfo, 
-         input_array, output_array,
-         num_components, num_rows, num_cols)
+jdcopy_pixel_rows (cinfo,input_array, output_array)
 		 decompress_info_ptr cinfo; 
          JSAMPIMAGE input_array; 
          JSAMPIMAGE output_array;
-         int num_components; 
-         int num_rows; 
-         long num_cols;
 #endif	/* NeedFunctionPrototypes */
 /* Copy some rows of samples from one place to another.
  * num_rows rows are copied from input_array[source_row++]
@@ -552,13 +548,32 @@ jdcopy_pixel_rows (cinfo,
 {
   register JSAMPROW inptr, outptr;
 #ifdef FMEMCOPY
-  register size_t count = (size_t) (num_cols * SIZEOF(JSAMPLE));
+  register size_t count;
 #else
   register long count;
 #endif
   register int ci, row;
+  int num_components; 
+  int num_rows; 
+  long num_cols;
 
+  num_components = cinfo->num_components;
+  if (cinfo->XIE_upsample) {
+    num_rows = cinfo->rows_in_mem; 
+    num_cols = cinfo->image_width;
+#ifdef FMEMCOPY
+    count = (size_t) (num_cols * SIZEOF(JSAMPLE));
+#endif
+  }
+ 
   for (ci = 0; ci < num_components; ci++) {
+    if (!cinfo->XIE_upsample) {
+      num_rows = cinfo->comp_info[ci].h_samp_factor*DCTSIZE; 
+      num_cols = cinfo->comp_info[ci].true_comp_width;
+#ifdef FMEMCOPY
+      count = (size_t) (num_cols * SIZEOF(JSAMPLE));
+#endif
+    }
     for (row = 0; row < num_rows; row++) {
       inptr = input_array[ci][row];
       outptr = output_array[ci][row];
@@ -672,23 +687,30 @@ jdXIE_init (cinfo)
   /* sampled_data is sample data before upsampling */
   if (alloc_sampling_buffer(cinfo, cinfo->sampled_data) == XIE_ERR)
     return(XIE_ERR);
-  /* fullsize_data is sample data after upsampling */
-  cinfo->fullsize_data = alloc_sampimage(cinfo, (int) cinfo->num_components,
-				  (long) cinfo->rows_in_mem, cinfo->fullsize_width);
-  if (cinfo->fullsize_data == (JSAMPIMAGE) NULL)
-  	return(XIE_ERR);
+  if (cinfo->XIE_upsample) {
+    /* fullsize_data is sample data after upsampling */
+    cinfo->fullsize_data = alloc_sampimage(cinfo, (int) cinfo->num_components,
+      				  (long) cinfo->rows_in_mem, cinfo->fullsize_width);
+    if (cinfo->fullsize_data == (JSAMPIMAGE) NULL)
+  	  return(XIE_ERR);
+  }        
   if (prepare_range_limit_table(cinfo) == XIE_ERR)
-  	return(XIE_ERR);
+    return(XIE_ERR);
 
   /* Initialize to read scan data */
 
   if (((*cinfo->methods->entropy_decode_init) (cinfo)) == XIE_ERR)
     return(XIE_ERR);
-  (*cinfo->methods->upsample_init) (cinfo);
+  if (cinfo->XIE_upsample)
+    (*cinfo->methods->upsample_init) (cinfo);
   (*cinfo->methods->disassemble_init) (cinfo);
 
   cinfo->pixel_rows_output = 0;
-  cinfo->whichss = 1;			/* arrange to start with sampled_data[0] */
+  if (cinfo->XIE_upsample) {
+    cinfo->whichss = 1;			/* arrange to start with sampled_data[0] */
+  } else {
+    cinfo->whichss = 0;			/* arrange to start with sampled_data[0] */
+  }
   cinfo->cur_mcu_row = 0;
   cinfo->first_mcu_row = TRUE;
   return(XIE_NRML);
@@ -709,96 +731,113 @@ jdXIE_get (cinfo)
   short i;
 
   if (cinfo->cur_mcu_row < cinfo->MCU_rows_in_scan) {
-  if (cinfo->XIErestart == XIE_RNUL) {
-    start = 0;
-    cinfo->whichss ^= 1;   /* switch to other downsampled-data buffer */
-  } else {
-    start = cinfo->ri;
-  }
+    if (cinfo->XIErestart == XIE_RNUL) {
+      start = 0;
+      if (cinfo->XIE_upsample) {
+        cinfo->whichss ^= 1;   /* switch to other downsampled-data buffer */
+      }
+    } else {
+      start = cinfo->ri;
+    }
     
-  whichss = cinfo->whichss; /* localize variable */
+    whichss = cinfo->whichss; /* localize variable */
 
-  /* Obtain v_samp_factor block rows of each component in the scan. */
-  /* This is a single MCU row if interleaved, multiple MCU rows if not. */
-  /* In the noninterleaved case there might be fewer than v_samp_factor */
-  /* block rows remaining; if so, pad with copies of the last pixel row */
-  /* so that upsampling doesn't have to treat it as a special case. */
+    /* Obtain v_samp_factor block rows of each component in the scan. */
+    /* This is a single MCU row if interleaved, multiple MCU rows if not. */
+    /* In the noninterleaved case there might be fewer than v_samp_factor */
+    /* block rows remaining; if so, pad with copies of the last pixel row */
+    /* so that upsampling doesn't have to treat it as a special case. */
 
-  for (ri = start; ri < cinfo->mcu_rows_per_loop; ri++) {
-    if ((cinfo->cur_mcu_row + ri) < cinfo->MCU_rows_in_scan) {
-	/* OK to actually read an MCU row. */
+    for (ri = start; ri < cinfo->mcu_rows_per_loop; ri++) {
+      if ((cinfo->cur_mcu_row + ri) < cinfo->MCU_rows_in_scan) {
+	  /* OK to actually read an MCU row. */
 	  if (((*cinfo->methods->disassemble_MCU) (cinfo, 
 	         cinfo->coeff_data)) < 0) {
           cinfo->ri = ri;  /* save loop position */
           return(XIE_INP); /* need more data */
         }
-	(*cinfo->methods->reverse_DCT) (cinfo, cinfo->coeff_data,
+	  (*cinfo->methods->reverse_DCT) (cinfo, cinfo->coeff_data,
 					cinfo->sampled_data[whichss],
 					ri * DCTSIZE);
-    } else {
-	/* Need to pad out with copies of the last downsampled row. */
-	/* This can only happen if there is just one component. */
-	duplicate_row(cinfo->sampled_data[whichss][0],
+      } else {
+	  /* Need to pad out with copies of the last downsampled row. */
+	  /* This can only happen if there is just one component. */
+	  duplicate_row(cinfo->sampled_data[whichss][0],
 		      cinfo->cur_comp_info[0]->downsampled_width,
 		      ri * DCTSIZE - 1, DCTSIZE);
+      }
     }
-  }
 
-  /* Upsample the data */
-  /* First time through is a special case */
+    if (cinfo->XIE_upsample) {
+      /* Upsample the data */
+      /* First time through is a special case */
 
-  if (cinfo->first_mcu_row) {
-    /* Expand first row group with dummy above-context */
-    expand(cinfo, cinfo->sampled_data[whichss], 
+      if (cinfo->first_mcu_row) {
+        /* Expand first row group with dummy above-context */
+        expand(cinfo, cinfo->sampled_data[whichss], 
+           cinfo->fullsize_data, cinfo->fullsize_width,
+  	     (short) (-1), (short) 0, (short) 1,
+  	     (short) 0);
+      } else {
+        /* Expand last row group of previous set */
+        expand(cinfo, cinfo->sampled_data[whichss], 
+           cinfo->fullsize_data, cinfo->fullsize_width,
+  	     (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
+  	     (short) (DCTSIZE-1));
+        /* and dump the previous set's expanded data */
+        jdcopy_pixel_rows (cinfo, cinfo->fullsize_data, cinfo->output_workspace);
+        /* Expand first row group of this set */
+        expand(cinfo, cinfo->sampled_data[whichss], 
+           cinfo->fullsize_data, cinfo->fullsize_width,
+  	     (short) (DCTSIZE+1), (short) 0, (short) 1,
+  	     (short) 0);
+      }
+   
+      /* Expand second through next-to-last row groups of this set */
+      for (i = 1; i <= DCTSIZE-2; i++) {
+        expand(cinfo, cinfo->sampled_data[whichss], 
          cinfo->fullsize_data, cinfo->fullsize_width,
-	     (short) (-1), (short) 0, (short) 1,
-	     (short) 0);
-  } else {
-    /* Expand last row group of previous set */
-    expand(cinfo, cinfo->sampled_data[whichss], 
-         cinfo->fullsize_data, cinfo->fullsize_width,
-	     (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
-	     (short) (DCTSIZE-1));
-    /* and dump the previous set's expanded data */
-    jdcopy_pixel_rows (cinfo, cinfo->fullsize_data, cinfo->output_workspace,
-  		cinfo->num_components, cinfo->rows_in_mem, cinfo->image_width);
-    /* Expand first row group of this set */
-    expand(cinfo, cinfo->sampled_data[whichss], 
-         cinfo->fullsize_data, cinfo->fullsize_width,
-	     (short) (DCTSIZE+1), (short) 0, (short) 1,
-	     (short) 0);
-  }
-  /* Expand second through next-to-last row groups of this set */
-  for (i = 1; i <= DCTSIZE-2; i++) {
-    expand(cinfo, cinfo->sampled_data[whichss], 
-         cinfo->fullsize_data, cinfo->fullsize_width,
-	     (short) (i-1), (short) i, (short) (i+1),
-	     (short) i);
-  }
-  
-  /* Return for all but last row group */
-    cinfo->cur_mcu_row += cinfo->mcu_rows_per_loop;
-    if (cinfo->first_mcu_row) {
-      cinfo->first_mcu_row = FALSE;      
-      return(XIE_NRML); /* No errors, no output */
+  	     (short) (i-1), (short) i, (short) (i+1),
+  	     (short) i);
+      }
+   
+      /* Return for all but last row group */
+      cinfo->cur_mcu_row += cinfo->mcu_rows_per_loop;
+      if (cinfo->first_mcu_row) {
+        cinfo->first_mcu_row = FALSE;      
+        return(XIE_NRML); /* No errors, no output */
+      } else {
+        return(XIE_OUT);  /* No errors, output */
+      }
+   
     } else {
-      return(XIE_OUT);  /* No errors, output */
+      
+      /* Do not upsample the data: copy it directly into the output workspace */  
+      jdcopy_pixel_rows (cinfo, 
+         cinfo->sampled_data[whichss], cinfo->output_workspace);
+      cinfo->cur_mcu_row += cinfo->mcu_rows_per_loop;
+      if (cinfo->cur_mcu_row < cinfo->MCU_rows_in_scan) {
+        return(XIE_OUT);  /* No errors, output */
+      } else {
+        return(XIE_EOI);  /* No errors, output, end of input */
+      }
     }
   }
-    
-  /* Expand the last row group with dummy below-context */
-  /* Note whichss points to last buffer side used */
-  expand(cinfo, cinfo->sampled_data[cinfo->whichss], 
-       cinfo->fullsize_data, cinfo->fullsize_width,
-	 (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
-	 (short) (DCTSIZE-1));
-  /* and dump the remaining data (may be less than full height) */
-  jdcopy_pixel_rows (cinfo, cinfo->fullsize_data, cinfo->output_workspace,
-  	 cinfo->num_components, (cinfo->image_height - cinfo->pixel_rows_output),
-       cinfo->image_width);
+      
+  if (cinfo->XIE_upsample) {
+    /* Expand the last row group with dummy below-context */
+    /* Note whichss points to last buffer side used */
+    expand(cinfo, cinfo->sampled_data[cinfo->whichss], 
+         cinfo->fullsize_data, cinfo->fullsize_width,
+            (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
+            (short) (DCTSIZE-1));
+    /* and dump the remaining data (may be less than full height) */
+    jdcopy_pixel_rows (cinfo, cinfo->fullsize_data, cinfo->output_workspace);
+  }
   return(XIE_EOI);   /* No errors, output, end of input */
 }  /* jdXIE_get */
 
+#ifndef XIE_SUPPORTED
 GLOBAL int
 #if NeedFunctionPrototypes
 jdXIE_term (decompress_info_ptr cinfo)
@@ -809,7 +848,8 @@ jdXIE_term (cinfo)
 {
   /* Clean up after the scan */
   (*cinfo->methods->disassemble_term) (cinfo);
-  (*cinfo->methods->upsample_term) (cinfo);
+  if (cinfo->XIE_upsample)
+    (*cinfo->methods->upsample_term) (cinfo);
   (*cinfo->methods->entropy_decode_term) (cinfo);
   (*cinfo->methods->read_scan_trailer) (cinfo);
   cinfo->completed_passes++;
@@ -834,3 +874,4 @@ jseldXIE (cinfo)
 {
   /* NULL function */
 }	/* jseldXIE */
+#endif   /* XIE_SUPPORTED */

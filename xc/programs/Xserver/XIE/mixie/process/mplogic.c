@@ -1,4 +1,4 @@
-/* $XConsortium: mplogic.c,v 1.2 93/10/31 09:48:21 dpw Exp $ */
+/* $XConsortium: mplogic.c,v 1.6 93/11/06 15:41:17 rws Exp $ */
 /**** module mplogic.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -92,7 +91,6 @@ int	miAnalyzeLogic();
  */
 static int CreateLogic();
 static int InitializeLogic();
-static int FlushLogic();
 static int ResetLogic();
 static int DestroyLogic();
 
@@ -108,14 +106,14 @@ static ddElemVecRec LogicVec = {
   CreateLogic,
   InitializeLogic,
   ActivateLogicM,
-  FlushLogic,
+  (xieIntProc)NULL,
   ResetLogic,
   DestroyLogic
   };
 
 /*
-* Local Declarations.
-*/
+ * Local Declarations.
+ */
 
 typedef struct _mplogicdef {
 	void	(*action) ();
@@ -183,13 +181,13 @@ static int ActivateLogicM(flo,ped,pet)
 	int pitch = sband->format->pitch; /* bits */
 	LogInt *svoid, *dvoid;
 
-    	if (!(svoid = GetCurrentSrc(LogInt *,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(LogInt *,flo,pet,dband))) continue;
+    	if (!(svoid = (LogInt*)GetCurrentSrc(flo,pet,sband)) ||
+	    !(dvoid = (LogInt*)GetCurrentDst(flo,pet,dband))) continue;
 
 	do {
 	    (*(pvt->action)) (dvoid, svoid, pvt->cnst, pitch);
-	    svoid = GetNextSrc(LogInt *,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(LogInt *,flo,pet,dband,FLUSH);
+	    svoid = (LogInt*)GetNextSrc(flo,pet,sband,FLUSH);
+	    dvoid = (LogInt*)GetNextDst(flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && dvoid) ;
 
 	FreeData(flo, pet, sband, sband->current);
@@ -211,18 +209,18 @@ static int ActivateLogicD(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
 	LogInt *svoid, *tvoid, *dvoid;
 
-    	if (!(svoid = GetCurrentSrc(LogInt *,flo,pet,sband)) ||
-	    !(tvoid = GetCurrentSrc(LogInt *,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(LogInt *,flo,pet,dband))   ) continue;
+    	if (!(svoid = (LogInt*)GetCurrentSrc(flo,pet,sband)) ||
+	    !(tvoid = (LogInt*)GetCurrentSrc(flo,pet,tband)) ||
+	    !(dvoid = (LogInt*)GetCurrentDst(flo,pet,dband)) ) continue;
 
 	do {
 	    /* This is the code that might rather utilize INPLACE */
 	    (*(pvt->action)) (dvoid, svoid, tvoid, pvt->endix);
 	    if (pvt->action2)
 		(*(pvt->action2)) (dvoid, svoid, pvt->endrun, pvt->endix);
-	    svoid = GetNextSrc(LogInt *,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(LogInt *,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(LogInt *,flo,pet,dband,FLUSH);
+	    svoid = (LogInt*)GetNextSrc(flo,pet,sband,FLUSH);
+	    tvoid = (LogInt*)GetNextSrc(flo,pet,tband,FLUSH);
+	    dvoid = (LogInt*)GetNextDst(flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && tvoid && dvoid) ;
 
 	if(!svoid && sband->final)	/* when sr1 runs out, kill sr2 too  */
@@ -251,8 +249,8 @@ static int ActivateLogicMROI(flo,ped,pet)
 	pointer svoid, dvoid;
 	CARD32 shift;
 
-    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(flo,pet,dband))) continue;
 
 	SHIFT_FROM_LEVELS(shift, dband->format->levels)
 
@@ -270,8 +268,8 @@ static int ActivateLogicMROI(flo,ped,pet)
 		} else
 		    ix -= run;
 	    }
-	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(flo,pet,dband,FLUSH);
 	}
 
 	FreeData(flo, pet, sband, sband->current);
@@ -297,9 +295,9 @@ static int ActivateLogicDROI(flo,ped,pet)
 	w = sband->format->width;
 	if (w > tband->format->width) w = tband->format->width;
 
-    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
-    	    !(tvoid = GetCurrentSrc(pointer,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
+    	    !(tvoid = GetCurrentSrc(flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(flo,pet,dband))) continue;
 
 	SHIFT_FROM_LEVELS(shift, dband->format->levels)
 
@@ -322,9 +320,9 @@ static int ActivateLogicDROI(flo,ped,pet)
 		} else
 		    ix -= run;
 	    }
-	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(pointer,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(flo,pet,dband,FLUSH);
 	}
 
 	if(!svoid && sband->final)	/* when sr1 runs out, kill sr2 too  */
@@ -338,15 +336,6 @@ static int ActivateLogicDROI(flo,ped,pet)
     }
     return TRUE;
 }
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushLogic(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
-{
-    return TRUE;
-}               
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
@@ -375,7 +364,6 @@ static int DestroyLogic(flo,ped)
     ped->ddVec.create = (xieIntProc)NULL;
     ped->ddVec.initialize = (xieIntProc)NULL;
     ped->ddVec.activate = (xieIntProc)NULL;
-    ped->ddVec.flush = (xieIntProc)NULL;
     ped->ddVec.reset = (xieIntProc)NULL;
     ped->ddVec.destroy = (xieIntProc)NULL;
 
@@ -524,7 +512,7 @@ static void name(d,con,run,ix)						\
     LogInt D, M;							\
     CARD32 sbit = ix & LOGMASK;						\
     d += (ix >>= LOGSHIFT); 						\
-    if (sbit + run > LOGSIZE) {						\
+    if (sbit + run >= LOGSIZE) {					\
 	if (sbit) {							\
 	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);	\
 	    D = *d; *d = (D & ~M) | (op & M); d++;			\
@@ -550,7 +538,7 @@ static void name(d,con,run,ix)						\
     LogInt D, M;							\
     CARD32 sbit = ix & LOGMASK;						\
     d += (ix >>= LOGSHIFT); 						\
-    if (sbit + run > LOGSIZE) {						\
+    if (sbit + run >= LOGSIZE) {					\
 	if (sbit) {							\
 	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);	\
 	    D = *d; *d = (D & ~M) | (((rev D) op) & M); d++;		\
@@ -584,7 +572,7 @@ static void name(d,src2,run,ix)						\
     LogInt D, M;							\
     CARD32 sbit = ix & LOGMASK;						\
     ix >>= LOGSHIFT; d += ix; src2 += ix;				\
-    if (sbit + run > LOGSIZE) {						\
+    if (sbit + run >= LOGSIZE) {					\
 	if (sbit) {							\
 	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);	\
 	    D = *d; *d = (D & ~M) | ((op *src2++) & M); d++;		\
@@ -610,7 +598,7 @@ static void name(d,src2,run,ix)						\
     LogInt D, M;							\
     CARD32 sbit = ix & LOGMASK;						\
     ix >>= LOGSHIFT; d += ix; src2 += ix;				\
-    if (sbit + run > LOGSIZE) {						\
+    if (sbit + run >= LOGSIZE) {					\
 	if (sbit) {							\
 	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);	\
 	    D = *d; *d = (D & ~M) | (((rev D) op *src2++) & M); d++;	\
@@ -686,7 +674,7 @@ static void action_tail(d, src, run, ix)
     LogInt D, M;
     CARD32 sbit = ix & LOGMASK;
     ix >>= LOGSHIFT; d += ix; src += ix;
-    if (sbit + run > LOGSIZE) {
+    if (sbit + run >= LOGSIZE) {
 	if (sbit) {
 	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);
 	    D = *d; *d = (D & ~M) | (*src++ & M); d++;

@@ -1,4 +1,4 @@
-/* $XConsortium: micphoto.c,v 1.3 93/10/31 09:45:05 dpw Exp $ */
+/* $XConsortium: micphoto.c,v 1.5 93/11/06 15:32:57 rws Exp $ */
 /**** module micphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -91,6 +90,8 @@ terms and conditions:
  *  routines referenced by other DDXIE modules
  */
 int	miAnalyzeICPhoto();
+bandMsk	miImportCanonic();
+bandMsk miImportStream();
 
 /*
  *  routines used internal to this module
@@ -101,22 +102,19 @@ static int ActivateICPhotoUncomByPlane();
 static int ResetICPhoto();
 static int DestroyICPhotoUn();
 
+static int CreateICPhotoStream();
+static int InitializeICPhotoStream();
+static int ActivateICPhotoStream();
+
 #if XIE_FULL
 static int InitializeICPhotoUncomByPixel();
 static int ActivateICPhotoUncomByPixel();
 #endif
 
-#ifdef optional
-static int CreateICPhotoJPEGLoss();
-static int InitializeICPhotoJPEGLoss();
-static int ActivateICPhotoJPEGLoss();
-static int DestroyICPhotoJPEGLoss();
-#endif
 
 /*
  * routines we need from somewhere else
  */
-
 extern int CreateICPhotoFax();
 extern int InitializeICPhotoFax();
 extern int ActivateICPhotoFax();
@@ -129,6 +127,13 @@ extern int InitializeICPhotoJpegBase();
 extern int ActivateIPhotoJpegBase();
 extern int ResetIPhotoJpegBase();
 extern int DestroyIPhotoJpegBase();
+
+#ifdef optional_non_SI
+static int CreateICPhotoJPEGLossless();
+static int InitializeICPhotoJPEGLossless();
+static int ActivateICPhotoJPEGLossless();
+static int DestroyICPhotoJPEGLossless();
+#endif
 #endif /* XIE_FULL */
 
 /*
@@ -143,16 +148,14 @@ static ddElemVecRec ICPhotoUncomByPlaneVec = {
   DestroyICPhotoUn
   };
 
-#if XIE_FULL
-static ddElemVecRec ICPhotoUncomByPixelVec = {
-  CreateICPhotoUn,
-  InitializeICPhotoUncomByPixel,
-  ActivateICPhotoUncomByPixel,
+static ddElemVecRec ICPhotoStreamVec = {
+  CreateICPhotoStream,
+  InitializeICPhotoStream,
+  ActivateICPhotoStream,
   (xieIntProc)NULL,
   ResetICPhoto,
   DestroyICPhotoUn
   };
-#endif /* XIE_FULL */
 
 static ddElemVecRec ICPhotoFaxVec = {
   CreateICPhotoFax,
@@ -164,9 +167,18 @@ static ddElemVecRec ICPhotoFaxVec = {
   };
 
 #if XIE_FULL
+static ddElemVecRec ICPhotoUncomByPixelVec = {
+  CreateICPhotoUn,
+  InitializeICPhotoUncomByPixel,
+  ActivateICPhotoUncomByPixel,
+  (xieIntProc)NULL,
+  ResetICPhoto,
+  DestroyICPhotoUn
+  };
+
 static ddElemVecRec ICPhotoJpegBaseVec = {
   CreateIPhotoJpegBase,
-  InitializeICPhotoJpegBase,	/* only thing not shared with ImportPmap */
+  InitializeICPhotoJpegBase,	/* only thing not shared with ImportPhotomap */
   ActivateIPhotoJpegBase,
   (xieIntProc)NULL,
   ResetIPhotoJpegBase,
@@ -183,25 +195,15 @@ int miAnalyzeICPhoto(flo,ped)
 {
   xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
   
+  if(!miImportCanonic(flo,ped)) {
+    ped->ddVec = ICPhotoStreamVec;
+    return(TRUE);
+  }
   switch(raw->decodeTechnique) {
   case xieValDecodeUncompressedSingle:
     ped->ddVec = ICPhotoUncomByPlaneVec;
     break;
     
-#if XIE_FULL
-  case xieValDecodeUncompressedTriple:
-
-    if ((((xieTecDecodeUncompressedTriple *)&raw[1])->interleave) == 
-							xieValBandByPlane) {
-	ped->ddVec = ICPhotoUncomByPlaneVec;
-    } else {  /* xieValBandByPixel */
-      ped->ddVec = ICPhotoUncomByPixelVec;
-      break;
-    }
-    break;
-
-#endif /* XIE_FULL */
-
   case xieValDecodeG31D:
   case xieValDecodeG32D:
   case xieValDecodeG42D:
@@ -211,6 +213,17 @@ int miAnalyzeICPhoto(flo,ped)
     break;
 
 #if XIE_FULL
+  case xieValDecodeUncompressedTriple:
+
+    if(((xieTecDecodeUncompressedTriple*)&raw[1])
+		->interleave == xieValBandByPlane)
+      ped->ddVec = ICPhotoUncomByPlaneVec;
+    else {  /* xieValBandByPixel */
+      ped->ddVec = ICPhotoUncomByPixelVec;
+      break;
+    }
+    break;
+
   case xieValDecodeJPEGBaseline:
     ped->ddVec = ICPhotoJpegBaseVec;
     break;
@@ -224,6 +237,47 @@ int miAnalyzeICPhoto(flo,ped)
 
 
 /*------------------------------------------------------------------------
+-------- utility routines: see what kind data should be forwarded --------
+------------------------------------------------------------------------*/
+bandMsk miImportCanonic(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  bandMsk  mask = NO_BANDS, all = (1<<ped->outFlo.bands)-1;
+  inFloPtr inf;
+  int      b;
+
+  /* find recipients that want canonic data
+   */
+  for(inf = ped->outFlo.outChain; inf && mask != all; inf = inf->outChain)
+    for(b = 0; b < inf->bands; ++b)
+      if(IsCanonic(inf->format[b].class))
+        mask |= 1<<b;
+
+  return(mask);
+}
+
+bandMsk miImportStream(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  bandMsk  mask = NO_BANDS, all = (1<<ped->outFlo.bands)-1;
+  inFloPtr inf;
+  int      b;
+
+  /* find recipients that want stream data
+   */
+  for(inf = ped->outFlo.outChain; inf && mask != all; inf = inf->outChain)
+    for(b = 0; b < inf->bands; ++b)
+      if(inf->format[b].class == STREAM)
+        mask |= 1<<b;
+
+  return(mask);
+}
+
+
+
+/*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
 static int CreateICPhotoUn(flo,ped)
@@ -234,6 +288,16 @@ static int CreateICPhotoUn(flo,ped)
   return( MakePETex(flo, ped, xieValMaxBands * sizeof(miUncompRec), 
 			      NO_SYNC, NO_SYNC) );
 }                               /* end CreateICPhotoUn */
+
+
+static int CreateICPhotoStream(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /* attach an execution context to the photo element definition */
+  return( MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC) );
+}                               /* end CreateICPhotoStream */
+
 
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
@@ -357,9 +421,22 @@ static int InitializeICPhotoUncomByPlane(flo,ped)
       ImplementationError(flo,ped, return(FALSE));
     }
   }
+  pet->receptor->forward = miImportStream(flo,ped);
   return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
 	 InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
 }                               /* end InitializeICPhotoUnSingle */
+
+
+static int InitializeICPhotoStream(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /* tell the data manager to forward our input data to downstream elements
+   */
+  ped->peTex->receptor->forward = miImportStream(flo,ped);
+
+  return(InitReceptors(flo, ped, NO_DATAMAP, 1));
+}                               /* end InitializeICPhotoStream */
 
 
 /*------------------------------------------------------------------------
@@ -383,8 +460,8 @@ static int ActivateICPhotoUncomByPlane(flo,ped,pet)
     nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
     dbnd = &pet->emitter[pvt->bandMap];
     if(pet->scheduled & 1<<b &&
-       (src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
-       (dst = GetCurrentDst(pointer,flo,pet,dbnd))) {
+       (src = GetSrcBytes(flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
+       (dst = GetCurrentDst(flo,pet,dbnd))) {
       do {
 
 	(*action)(src, dst, sbnd->format->width, pvt->bitOff,
@@ -394,9 +471,8 @@ static int ActivateICPhotoUncomByPlane(flo,ped,pet)
         pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;	/* Set next */
 	oldslen = (pvt->bitOff) ? nextslen - 1 : nextslen;
 	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-	src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current+oldslen, nextslen,
-									KEEP);
-	dst = GetNextDst(pointer,flo,pet,dbnd,FLUSH);
+	src = GetSrcBytes(flo,pet,sbnd,sbnd->current+oldslen,nextslen,KEEP);
+	dst = GetNextDst(flo,pet,dbnd,FLUSH);
       } while(src && dst);
     }
     
@@ -425,6 +501,60 @@ static int ActivateICPhotoUncomByPlane(flo,ped,pet)
   }
   return(TRUE);
 }                               /* end ActivateICPhotoUncomByPlane */
+
+
+static int ActivateICPhotoStream(flo,ped,pet)
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+  CARD32 nbands = ped->inFloLst[IMPORT].bands;
+  bandPtr   bnd = pet->receptor[IMPORT].band;
+  CARD32    b;
+  
+  for(b = 0; b < nbands; ++bnd, ++b) {
+    if(GetSrcBytes(flo,pet,bnd,bnd->current,1,KEEP))
+      FreeData(flo,pet,bnd,bnd->maxGlobal);
+  }
+  return(TRUE);
+}                               /* end ActivateICPhotoStream */
+
+
+
+/*------------------------------------------------------------------------
+------------------------ get rid of run-time stuff -----------------------
+------------------------------------------------------------------------*/
+static int ResetICPhoto(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  ResetReceptors(ped);
+  ResetEmitter(ped);
+  
+  return(TRUE);
+}                               /* end ResetICPhoto */
+
+
+
+/*------------------------------------------------------------------------
+-------------------------- get rid of this element -----------------------
+------------------------------------------------------------------------*/
+static int DestroyICPhotoUn(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /* get rid of the peTex structure  */
+  ped->peTex = (peTexPtr) XieFree(ped->peTex);
+
+  /* zap this element's entry point vector */
+  ped->ddVec.create     = (xieIntProc) NULL;
+  ped->ddVec.initialize = (xieIntProc) NULL;
+  ped->ddVec.activate   = (xieIntProc) NULL;
+  ped->ddVec.reset      = (xieIntProc) NULL;
+  ped->ddVec.destroy    = (xieIntProc) NULL;
+
+  return(TRUE);
+}                               /* end DestroyICPhotoUn */
 
 
 #if XIE_FULL
@@ -559,13 +689,14 @@ static int InitializeICPhotoUncomByPixel(flo,ped)
   
   /* Wasn't nicely aligned, do it the hard way */
   if (((miUncompPtr)pet->private)->unaligned) {
-    pvt->action = ExtractTripleFuncs
-      [(tec->pixelOrder == xieValLSFirst) ? 0 : 1]
-	[(tec->fillOrder  == xieValLSFirst) ? 0 : 1]
-	  [(depth1 <= 8) ? 0 : 1] 
-	    [(depth2 <= 8) ? 0 : 1] 
-	      [(depth3 <= 8) ? 0 : 1];
+    pvt->action =
+        ExtractTripleFuncs[(tec->pixelOrder == xieValLSFirst) ? 0 : 1]
+	                  [(tec->fillOrder  == xieValLSFirst) ? 0 : 1]
+	                  [(depth1 <= 8) ? 0 : 1] 
+			  [(depth2 <= 8) ? 0 : 1] 
+			  [(depth3 <= 8) ? 0 : 1];
   }
+  pet->receptor->forward = miImportStream(flo,ped);
   return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
 	 InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
 }                               /* end InitializeICPhotoUnTriple */
@@ -585,8 +716,7 @@ static int ActivateICPhotoUncomByPixel(flo,ped,pet)
   bandPtr     db1 = &pet->emitter[pvt[1].bandMap];
   bandPtr     db2 = &pet->emitter[pvt[2].bandMap];
   CARD32    width = db0->format->width;
-  pointer   dp0 = NULL, dp1 = NULL, dp2 = NULL;
-  BytePixel  *src;
+  pointer     src = NULL, dp0 = NULL, dp1 = NULL, dp2 = NULL;
   
   if (pvt->unaligned) {
     CARD32 oldslen, nextslen;
@@ -597,10 +727,10 @@ static int ActivateICPhotoUncomByPixel(flo,ped,pet)
     CARD32 stride = sbnd->format->stride;
     
     nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-    if((src = GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current,nextslen,KEEP))
-       && (dp0 = GetCurrentDst(pointer,flo,pet,db0)) &&
-       (dp1 = GetCurrentDst(pointer,flo,pet,db1)) && 
-       (dp2 = GetCurrentDst(pointer,flo,pet,db2)))
+    if((src = GetSrcBytes(flo,pet,sbnd,sbnd->current,nextslen,KEEP))
+       && (dp0 = GetCurrentDst(flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(flo,pet,db1)) && 
+       (dp2 = GetCurrentDst(flo,pet,db2)))
       do {
 	
 	(*action)(src,dp0,dp1,dp2,width,pvt->bitOff,depth0,depth1,depth2, 
@@ -609,28 +739,27 @@ static int ActivateICPhotoUncomByPixel(flo,ped,pet)
 	pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;	/* Set next */
 	oldslen = (pvt->bitOff) ? nextslen - 1 : nextslen;
 	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-	src = GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current+oldslen,
-			  nextslen,KEEP);
-	dp0 = GetNextDst(pointer,flo,pet,db0,FLUSH);
-	dp1 = GetNextDst(pointer,flo,pet,db1,FLUSH);
-	dp2 = GetNextDst(pointer,flo,pet,db2,FLUSH);
+	src = GetSrcBytes(flo,pet,sbnd,sbnd->current+oldslen,nextslen,KEEP);
+	dp0 = GetNextDst(flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(flo,pet,db2,FLUSH);
       } while(src && dp0 && dp1 && dp2);
   } else {
     CARD32   slen = sbnd->format->pitch+7>>3;
-    if((src = GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
-       (dp0 = GetCurrentDst(pointer,flo,pet,db0)) &&
-       (dp1 = GetCurrentDst(pointer,flo,pet,db1)) && 
-       (dp2 = GetCurrentDst(pointer,flo,pet,db2)))
+    if((src = GetSrcBytes(flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
+       (dp0 = GetCurrentDst(flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(flo,pet,db1)) && 
+       (dp2 = GetCurrentDst(flo,pet,db2)))
       do {
 	
 	(*pvt[0].action)(src,dp0,width,&pvt[0]);
 	(*pvt[1].action)(src,dp1,width,&pvt[1]);
 	(*pvt[2].action)(src,dp2,width,&pvt[2]);
 	
-	src =GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
-	dp0 = GetNextDst(pointer,flo,pet,db0,FLUSH);
-	dp1 = GetNextDst(pointer,flo,pet,db1,FLUSH);
-	dp2 = GetNextDst(pointer,flo,pet,db2,FLUSH);
+	src = GetSrcBytes(flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
+	dp0 = GetNextDst(flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(flo,pet,db2,FLUSH);
       } while(src && dp0 && dp1 && dp2);
   }
   if(!src && sbnd->final && db0->current < db0->format->height) {
@@ -657,40 +786,5 @@ static int ActivateICPhotoUncomByPixel(flo,ped,pet)
   return(TRUE);
 }                               /* end ActivateICPhotoUncomByPixel */
 #endif /* XIE_FULL */
-
-
-/*------------------------------------------------------------------------
------------------------- get rid of run-time stuff -----------------------
-------------------------------------------------------------------------*/
-static int ResetICPhoto(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  ResetReceptors(ped);
-  ResetEmitter(ped);
-  
-  return(TRUE);
-}                               /* end ResetICPhoto */
-
-/*------------------------------------------------------------------------
--------------------------- get rid of this element -----------------------
-------------------------------------------------------------------------*/
-static int DestroyICPhotoUn(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* get rid of the peTex structure  */
-  ped->peTex = (peTexPtr) XieFree(ped->peTex);
-
-  /* zap this element's entry point vector */
-  ped->ddVec.create     = (xieIntProc) NULL;
-  ped->ddVec.initialize = (xieIntProc) NULL;
-  ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.flush      = (xieIntProc) NULL;
-  ped->ddVec.reset      = (xieIntProc) NULL;
-  ped->ddVec.destroy    = (xieIntProc) NULL;
-
-  return(TRUE);
-}                               /* end DestroyICPhotoUn */
 
 /* end module micphoto.c */

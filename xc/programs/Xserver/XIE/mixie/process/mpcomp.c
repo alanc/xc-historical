@@ -1,4 +1,4 @@
-/* $XConsortium: mpcomp.c,v 1.1 93/10/26 09:48:26 rws Exp $ */
+/* $XConsortium: mpcomp.c,v 1.2 93/10/31 09:48:10 dpw Exp $ */
 /**** module mpcomp.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -97,7 +96,6 @@ int	miAnalyzeCompare();
  */
 static int CreateCompare();
 static int InitializeCompare();
-static int FlushCompare();
 static int ResetCompare();
 static int DestroyCompare();
 
@@ -117,7 +115,7 @@ static ddElemVecRec CompareVec = {
   CreateCompare,
   InitializeCompare,
   ActivateCompareMROI,
-  FlushCompare,
+  (xieBoolProc)NULL,
   ResetCompare,
   DestroyCompare
   };
@@ -185,7 +183,7 @@ static int CreateCompare(flo,ped)
     return MakePETex(flo,ped,
 		     xieValMaxBands * sizeof(mpComparePvtRec),
 		     SYNC,	/* InSync: Make sure ROI exists first */
-		     NO_SYNC	/* bandSync: see CreateCompare */
+		     NO_SYNC	/* bandSync: see InitializeCompare */
 		     );
 } 
 
@@ -208,14 +206,14 @@ static int ActivateCompareM(flo,ped,pet)
 	CARD32 npix = pvt->width;
 	LogInt *svoid, *dvoid;
 
-    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(flo,pet,dband))) continue;
 
 	do {
 	    /* NOTE: could pass in replicated constant strip here */
 	    (*(pvt->action)) (dvoid, svoid, pvt, npix);
-	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && dvoid) ;
 
 	FreeData(flo, pet, sband, sband->current);
@@ -239,13 +237,13 @@ static int ActivateCompareD(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
 	LogInt *svoid, *tvoid, *dvoid;
 
-    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
-	    !(tvoid = GetCurrentSrc(pointer,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))   ) {
+    	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
+	    !(tvoid = GetCurrentSrc(flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(flo,pet,dband))   ) {
 	    if (sband->final && tband->final) {
 		/* Generate constant fill of 0 for remainder of image */
 		while ((dband->current < dband->format->height) &&
-	    	       (dvoid = GetCurrentDst(pointer,flo,pet,dband))) {
+	    	       (dvoid = GetCurrentDst(flo,pet,dband))) {
 			action_clear(dvoid,dband->format->pitch,0);
 			if (PutData(flo,pet,dband,dband->current+1))
 			    break;
@@ -258,9 +256,9 @@ static int ActivateCompareD(flo,ped,pet)
 	    (*(pvt->action)) (dvoid, svoid, tvoid, pvt->endix);
 	    if (pvt->action2)
 		(*(pvt->action2)) (dvoid, pvt->endrun, pvt->endix);
-	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(pointer,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && tvoid && dvoid) ;
 
 	if(!svoid && sband->final) {	/* when sr1 runs out, kill sr2 too  */
@@ -291,8 +289,8 @@ static int ActivateCompareMROI(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, sband++, dband++) {
 	pointer svoid, dvoid;
 
-    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(flo,pet,dband))) continue;
 
 	while (!ferrCode(flo) && svoid && dvoid && 
 				SyncDomain(flo,ped,dband,FLUSH)) {
@@ -311,8 +309,8 @@ static int ActivateCompareMROI(flo,ped,pet)
 		    ix -= run;
 		}
 	    }
-	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(flo,pet,dband,FLUSH);
 	}
 
 	FreeData(flo, pet, sband, sband->current);
@@ -335,13 +333,13 @@ static int ActivateCompareDROI(flo,ped,pet)
 	pointer svoid, tvoid, dvoid;
 	CARD32 w = pvt->width;
 
-    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
-    	    !(tvoid = GetCurrentSrc(pointer,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) {
+    	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
+    	    !(tvoid = GetCurrentSrc(flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(flo,pet,dband))) {
 	    if (sband->final && tband->final) {
 		/* Generate constant fill of 0 for remainder of image */
 		while ((dband->current < dband->format->height) &&
-	    	       (dvoid = GetCurrentDst(pointer,flo,pet,dband))) {
+	    	       (dvoid = GetCurrentDst(flo,pet,dband))) {
 			action_clear(dvoid,dband->format->pitch,0);
 			if (PutData(flo,pet,dband,dband->current+1))
 			    break;
@@ -375,9 +373,9 @@ static int ActivateCompareDROI(flo,ped,pet)
 		    ix -= run; 
 		}
 	    }
-	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(pointer,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(flo,pet,dband,FLUSH);
 	}
 
 	if(!svoid && sband->final) {
@@ -412,13 +410,13 @@ static int ActivateCompareTripleM(flo,ped,pet)
     register pointer s2 = (pointer ) 1;
     register pointer dvoid;
 
-    if ((msk & 1) && !(s0 = GetCurrentSrc(pointer,flo,pet,sband)))
+    if ((msk & 1) && !(s0 = GetCurrentSrc(flo,pet,sband)))
 	goto done; sband++;
-    if ((msk & 2) && !(s1 = GetCurrentSrc(pointer,flo,pet,sband)))
+    if ((msk & 2) && !(s1 = GetCurrentSrc(flo,pet,sband)))
 	goto done; sband++;
-    if ((msk & 4) && !(s2 = GetCurrentSrc(pointer,flo,pet,sband)))
+    if ((msk & 4) && !(s2 = GetCurrentSrc(flo,pet,sband)))
 	goto done; sband -= 2;
-    if(!(dvoid = GetCurrentDst(pointer,flo,pet,dband)))
+    if(!(dvoid = GetCurrentDst(flo,pet,dband)))
 	goto done;
 
     /*
@@ -451,10 +449,10 @@ static int ActivateCompareTripleM(flo,ped,pet)
 	    }
 	}
 
-	if (msk & 1) s0 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband++;
-	if (msk & 2) s1 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband++;
-	if (msk & 4) s2 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband -= 2;
-	dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	if (msk & 1) s0 = GetNextSrc(flo,pet,sband,FLUSH); sband++;
+	if (msk & 2) s1 = GetNextSrc(flo,pet,sband,FLUSH); sband++;
+	if (msk & 4) s2 = GetNextSrc(flo,pet,sband,FLUSH); sband -= 2;
+	dvoid = GetNextDst(flo,pet,dband,FLUSH);
     }
 
     if (msk & 1) FreeData(flo,pet,sband,sband->current); sband++;
@@ -487,7 +485,7 @@ static int ActivateCompareTripleD(flo,ped,pet)
     if (pvt->final) {  /* generate constant fill */
 	/* Generate constant fill of 0 for remainder of image */
 	while ((dband->current < dband->format->height) &&
-	       (dvoid = GetCurrentDst(pointer,flo,pet,dband))) {
+	       (dvoid = GetCurrentDst(flo,pet,dband))) {
 		action_clear(dvoid,dband->format->pitch,0);
 		if (PutData(flo,pet,dband,dband->current+1))
 		    break;
@@ -495,14 +493,14 @@ static int ActivateCompareTripleD(flo,ped,pet)
 	return TRUE;
     }
 
-    if (msk & 1) s0 = GetCurrentSrc(pointer,flo,pet,sband); sband++;
-    if (msk & 2) s1 = GetCurrentSrc(pointer,flo,pet,sband); sband++;
-    if (msk & 4) s2 = GetCurrentSrc(pointer,flo,pet,sband); sband -= 2;
-    if (msk & 1) t0 = GetCurrentSrc(pointer,flo,pet,tband); tband++;
-    if (msk & 2) t1 = GetCurrentSrc(pointer,flo,pet,tband); tband++;
-    if (msk & 4) t2 = GetCurrentSrc(pointer,flo,pet,tband); tband -= 2;
+    if (msk & 1) s0 = GetCurrentSrc(flo,pet,sband); sband++;
+    if (msk & 2) s1 = GetCurrentSrc(flo,pet,sband); sband++;
+    if (msk & 4) s2 = GetCurrentSrc(flo,pet,sband); sband -= 2;
+    if (msk & 1) t0 = GetCurrentSrc(flo,pet,tband); tband++;
+    if (msk & 2) t1 = GetCurrentSrc(flo,pet,tband); tband++;
+    if (msk & 4) t2 = GetCurrentSrc(flo,pet,tband); tband -= 2;
 
-    dvoid = GetCurrentDst(pointer,flo,pet,dband);
+    dvoid = GetCurrentDst(flo,pet,dband);
 
     while (!ferrCode(flo) && s0 && s1 && s2 && t0 && t1 && t2 && dvoid && 
 			SyncDomain(flo,ped,dband,FLUSH)) {
@@ -532,13 +530,13 @@ static int ActivateCompareTripleD(flo,ped,pet)
 	    }
 	}
 
-	if (msk & 1) s0 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband++;
-	if (msk & 2) s1 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband++;
-	if (msk & 4) s2 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband -= 2;
-	if (msk & 1) t0 = GetNextSrc(pointer,flo,pet,tband,FLUSH); tband++;
-	if (msk & 2) t1 = GetNextSrc(pointer,flo,pet,tband,FLUSH); tband++;
-	if (msk & 4) t2 = GetNextSrc(pointer,flo,pet,tband,FLUSH); tband -= 2;
-	dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
+	if (msk & 1) s0 = GetNextSrc(flo,pet,sband,FLUSH); sband++;
+	if (msk & 2) s1 = GetNextSrc(flo,pet,sband,FLUSH); sband++;
+	if (msk & 4) s2 = GetNextSrc(flo,pet,sband,FLUSH); sband -= 2;
+	if (msk & 1) t0 = GetNextSrc(flo,pet,tband,FLUSH); tband++;
+	if (msk & 2) t1 = GetNextSrc(flo,pet,tband,FLUSH); tband++;
+	if (msk & 4) t2 = GetNextSrc(flo,pet,tband,FLUSH); tband -= 2;
+	dvoid = GetNextDst(flo,pet,dband,FLUSH);
     }
 
     if (msk & 1) FreeData(flo,pet,sband,sband->current); sband++;
@@ -568,16 +566,6 @@ static int ActivateCompareTripleD(flo,ped,pet)
 }
 
 /*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushCompare(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
-{
-    return TRUE;
-}               
-
-/*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
 static int ResetCompare(flo,ped)
@@ -604,7 +592,6 @@ static int DestroyCompare(flo,ped)
     ped->ddVec.create = (xieIntProc)NULL;
     ped->ddVec.initialize = (xieIntProc)NULL;
     ped->ddVec.activate = (xieIntProc)NULL;
-    ped->ddVec.flush = (xieIntProc)NULL;
     ped->ddVec.reset = (xieIntProc)NULL;
     ped->ddVec.destroy = (xieIntProc)NULL;
 
@@ -837,10 +824,12 @@ static void name1(dst,src1,pvt,dx,x)					\
     LogInt M, value;							\
     dst += LOGINDX(x); 							\
     if (x & LOGMASK) {							\
-	for (value = 0, M=LOGBIT(x); dx && M; dx--, LOGRIGHT(M))	\
+	for (value = *dst, M=LOGBIT(x); dx && M; dx--, LOGRIGHT(M))	\
 	    if (*src++ op con)						\
 		value |= M;						\
-	*dst++ |= value;						\
+	    else							\
+		value &= ~M;						\
+	*dst++ = value;							\
     }									\
     for ( ; dx >= LOGSIZE; dx -= LOGSIZE, *dst++ = value) 		\
 	for (value = 0, M=LOGLEFT; M ; LOGRIGHT(M))			\
@@ -850,7 +839,7 @@ static void name1(dst,src1,pvt,dx,x)					\
 	for (value = 0, M=LOGLEFT; dx; dx--, LOGRIGHT(M))		\
 	    if (*src++ op con)						\
 		value |= M;						\
-	*dst |= value;							\
+	*dst = value;							\
     }									\
 }									\
 static void name2(dst,src1,src2,dx,x)					\
@@ -863,10 +852,12 @@ static void name2(dst,src1,src2,dx,x)					\
     LogInt M, value;							\
     dst += LOGINDX(x); 							\
     if (x & LOGMASK) {							\
-	for (value = 0, M=LOGBIT(x); dx && M; dx--, LOGRIGHT(M))	\
+	for (value = *dst, M=LOGBIT(x); dx && M; dx--, LOGRIGHT(M))	\
 	    if (*src++ op *trc++)					\
 		value |= M;						\
-	*dst++ |= value;						\
+	    else							\
+		value &= ~M;						\
+	*dst++ = value;							\
     }									\
     for ( ; dx >= LOGSIZE; dx -= LOGSIZE, *dst++ = value) 		\
 	for (value = 0, M=LOGLEFT; M ; LOGRIGHT(M))			\
@@ -876,7 +867,7 @@ static void name2(dst,src1,src2,dx,x)					\
 	for (value = 0, M=LOGLEFT; dx; dx--, LOGRIGHT(M))		\
 	    if (*src++ op *trc++)					\
 		value |= M;						\
-	*dst |= value;							\
+	*dst = value;							\
     }									\
 }
 

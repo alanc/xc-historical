@@ -1,4 +1,3 @@
-/* $XConsortium: faxtabs.c,v 1.1 93/10/26 09:52:19 rws Exp $ */
 /**** module fax/faxtabs.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +15,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO

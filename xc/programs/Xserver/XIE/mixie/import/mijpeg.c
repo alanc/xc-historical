@@ -1,4 +1,4 @@
-/* $XConsortium: mijpeg.c,v 1.1 93/10/26 09:45:55 rws Exp $ */
+/* $XConsortium: mijpeg.c,v 1.2 93/10/31 09:45:10 dpw Exp $ */
 /**** module mijpeg.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
 
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
 
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,7 +71,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -96,6 +95,9 @@ int InitializeICPhotoJpegBase();
 int ActivateIPhotoJpegBase();
 int ResetIPhotoJpegBase();
 int DestroyIPhotoJpegBase();
+
+
+extern bandMsk miImportStream();
 
 /*
  * Local Declarations
@@ -154,17 +156,18 @@ int InitializeIPhotoJpegBase(flo,ped)
   int 	   in_bands = ped->inFloLst[SRCtag].bands; /* # of  input bands */
   peTexPtr      pet = ped->peTex;
   jpegPvtPtr texpvt = (jpegPvtPtr) pet->private;
-  
+  bandPtr       bnd = pet->receptor[IMPORT].band;
+
   if(!common_init(flo,ped,map->dataClass,tec,raw->notify))
     return(FALSE);
   
   texpvt->map = map;
   /* has to come after common_init, which bzeros texpvt */
   
-  return(ImportStrips(flo, pet, &pet->receptor[0].band[0], &map->strips[0]) &&
-	 (in_bands == 1 ? TRUE :
-	  ImportStrips(flo, pet, &pet->receptor[0].band[1], &map->strips[1]) &&
-	  ImportStrips(flo, pet, &pet->receptor[0].band[2], &map->strips[2])));
+  return(ImportStrips(flo, pet, &bnd[0], &map->strips[0]) &&
+	(in_bands == 1 ? TRUE :
+	 ImportStrips(flo, pet, &bnd[1], &map->strips[1]) &&
+	 ImportStrips(flo, pet, &bnd[2], &map->strips[2])));
 }					/* end InitializeIPhotoJpegBase */
 
 /*------------------------------------------------------------------------
@@ -220,10 +223,11 @@ static int common_init(flo,ped,class,tec,notify)
   texpvt->swizzle = tec->bandOrder == xieValMSFirst;
   
   /* Now for every input (photomap) band, we need to set up state stuff */
-  for (b=0; b<in_bands; ++b) {
+  for (b=0; b < in_bands; ++b) {
     JpegDecodeState *state = &(texpvt->state[b]);
     
     state->goal       = JPEG_DECODE_GOAL_Startup;
+    state->up_sample  = tec->upSample;
     state->dc_methods = &texpvt->dc_methods;
     state->e_methods  = &texpvt->e_methods;
     state->cinfo      = &texpvt->cinfo[b];
@@ -238,15 +242,20 @@ static int common_init(flo,ped,class,tec,notify)
     fixed size, and will disappear automatically at Destroy
     ***/
   
-  /*** Calculate how many lines fit in an output strip ***/
+  /* Calculate how many lines fit in an output strip
+   */
   pbytes = (ped->outFlo.format[0].pitch + 7) >> 3;
   lines_in_output_strip = flo->floTex->stripSize / pbytes;
   
   if (!lines_in_output_strip)
     lines_in_output_strip++;
   
-  
-  /* set output emitter to allocate a map big enough to hold whole strip */
+  /* see if data manager should forward our input data to downstream elements
+   */
+  pet->receptor[IMPORT].forward = miImportStream(flo,ped);
+
+  /* set output emitter to allocate a map big enough to hold whole strip
+   */
   return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
 	 InitEmitter(flo, ped, lines_in_output_strip, NO_INPLACE));
   
@@ -260,13 +269,12 @@ int ActivateIPhotoJpegBase(flo,ped,pet)
      peDefPtr  ped;
      peTexPtr  pet;
 {
-  jpegPvtPtr  		 texpvt = (jpegPvtPtr) ped->peTex->private;
-  xieTecDecodeJPEGBaseline *tec = texpvt->decodeParams;
-  receptorPtr rcp = pet->receptor;
-  bandPtr    sbnd = &pet->receptor[IMPORT].band[0];
-  bandPtr   dbnd  = &pet->emitter[0];
-  bandPtr   dbnd1 = &pet->emitter[1];
-  bandPtr   dbnd2 = &pet->emitter[2];
+  jpegPvtPtr texpvt = (jpegPvtPtr) ped->peTex->private;
+  receptorPtr   rcp =  pet->receptor;
+  bandPtr      sbnd = &pet->receptor[IMPORT].band[0];
+  bandPtr     dbnd  = &pet->emitter[0];
+  bandPtr     dbnd1 = &pet->emitter[1];
+  bandPtr     dbnd2 = &pet->emitter[2];
   int b;
   
   /* dbnd and dst are used to deal with non-interleaved color data	*/
@@ -312,7 +320,7 @@ static int sub_fun(flo,ped,pet,texpvt,state,sbnd,dbnd,dbnd1,dbnd2)
  JpegDecodeState *state;
  bandPtr     sbnd,dbnd,dbnd1,dbnd2;
 {
-BytePixel 		*src, *dst,*dst1,*dst2;
+BytePixel *src, *dst,*dst1,*dst2;
 int 	(*decodptr)() = texpvt->decodptr;
 
 /*
@@ -324,7 +332,7 @@ int 	(*decodptr)() = texpvt->decodptr;
 	return(TRUE);
   }
 
-  src= GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current,sbnd->available,KEEP);
+  src=(BytePixel*)GetSrcBytes(flo,pet,sbnd,sbnd->current,sbnd->available,KEEP);
 
 	if ( state->needs_input_strip )  {
 	   /* NOTE:  state->needs_input_strip is ONLY set after checking */
@@ -348,12 +356,12 @@ int 	(*decodptr)() = texpvt->decodptr;
       * We have some data to decode, anything to write to?
       */
 
-      while (dst = GetDst(BytePixel *,flo,pet,dbnd,state->o_line,FLUSH)) {
+      while (dst = (BytePixel*)GetDst(flo,pet,dbnd,state->o_line,FLUSH)) {
 
 	/* if tripleband interleaved data, make sure other bands cool	*/
   	if (dbnd1)
-	  if (!(dst1=GetDst(BytePixel *,flo,pet,dbnd1,state->o_line,FLUSH)) ||
-      	      !(dst2=GetDst(BytePixel *,flo,pet,dbnd2,state->o_line,FLUSH)) )
+	  if (!(dst1=(BytePixel*)GetDst(flo,pet,dbnd1,state->o_line,FLUSH)) ||
+      	      !(dst2=(BytePixel*)GetDst(flo,pet,dbnd2,state->o_line,FLUSH)) )
 		ImplementationError(flo,ped, return(FALSE));
 
 	/*

@@ -1,4 +1,4 @@
-/* $XConsortium: fencode.h,v 1.1 93/10/26 09:53:11 rws Exp $ */
+/* $XConsortium: fencode.h,v 1.2 93/10/31 09:44:22 dpw Exp $ */
 /**** module fencode.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -49,6 +49,7 @@ terms and conditions:
 ******************************************************************************/
 
 #include "misc.h" /* for pointer */
+#include <Xmd.h>  /* for CARD32 */
 
 /***	entry points */
 int encode_g4();
@@ -132,8 +133,7 @@ typedef struct _fax_encode_state {
 	int width;	 /* width of image.  So we know end of line	*/
 	int g32d_horiz;	 /* only relevant for g32d encoding		*/
 	int rl;		 /* needed if I get EOL in get_a0a1 or get_a1a2 */
-	unsigned long stager;	 
-			/* place for bits to be merged into bytes	*/
+	CARD32 stager;	 /* place for bits to be merged into bytes	*/
 	int radiometric; /* if 1, then white is bright (1)		*/
 } FaxEncodeState;
 

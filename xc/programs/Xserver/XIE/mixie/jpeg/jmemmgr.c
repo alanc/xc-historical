@@ -1,4 +1,4 @@
-/* $XConsortium: jmemmgr.c,v 1.1 93/10/26 09:56:51 rws Exp $ */
+/* $XConsortium: jmemmgr.c,v 1.2 93/10/31 09:47:21 dpw Exp $ */
 /* Module jmemmgr.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -787,59 +788,6 @@ free_small_sarray (JSAMPARRAY ptr)
 #ifdef XIE_SUPPORTED
 METHODDEF JBLOCKARRAY
 #if NeedFunctionPrototypes
-c_alloc_small_barray (compress_info_ptr cinfo, 
-	long blocksperrow, long numrows)
-#else
-c_alloc_small_barray (cinfo, blocksperrow, numrows)
-	compress_info_ptr cinfo;
-	long blocksperrow;
-	long numrows;
-#endif	/* NeedFunctionPrototypes */
-/* Allocate a "small" (all-in-memory) 2-D coefficient-block array */
-{
-  small_barray_ptr hdr;
-  JBLOCKARRAY result;
-  JBLOCKROW workspace;
-  long rowsperchunk, currow, i;
-
-  /* Calculate max # of rows allowed in one allocation chunk */
-  rowsperchunk = MAX_ALLOC_CHUNK / (blocksperrow * SIZEOF(JBLOCK));
-  if (rowsperchunk <= 0)
-    return (JBLOCKARRAY) NULL;
-
-  /* Get space for header and row pointers; this is always "near" on 80x86 */
-  hdr = (small_barray_ptr) c_alloc_small(cinfo,
-  			(size_t) (numrows * SIZEOF(JBLOCKROW) + SIZEOF(small_barray_hdr)));
-
-  result = (JBLOCKARRAY) (hdr+1); /* advance past header */
-
-  /* Insert into list now so free_all does right thing if I fail */
-  /* after allocating only some of the rows... */
-  hdr->next = cinfo->small_barray_list;
-  hdr->numrows = 0;
-  hdr->rowsperchunk = rowsperchunk;
-  cinfo->small_barray_list = hdr;
-
-  /* Get the rows themselves; on 80x86 these are "far" */
-  currow = 0;
-  while (currow < numrows) {
-    rowsperchunk = MIN(rowsperchunk, numrows - currow);
-    workspace = (JBLOCKROW) jget_large((size_t) (rowsperchunk * blocksperrow
-						 * SIZEOF(JBLOCK)));
-    if (workspace == NULL)
-      return (JBLOCKARRAY) workspace;
-    for (i = rowsperchunk; i > 0; i--) {
-      result[currow++] = workspace;
-      workspace += blocksperrow;
-    }
-    hdr->numrows = currow;
-  }
-
-  return result;
-}
-
-METHODDEF JBLOCKARRAY
-#if NeedFunctionPrototypes
 d_alloc_small_barray (decompress_info_ptr cinfo, 
 	long blocksperrow, long numrows)
 #else
@@ -961,42 +909,6 @@ alloc_small_barray (long blocksperrow, long numrows)
 #endif	/* XIE_SUPPORTED */
 
 #ifdef XIE_SUPPORTED
-METHODDEF int
-#if NeedFunctionPrototypes
-c_free_small_barray (compress_info_ptr cinfo, JBLOCKARRAY ptr)
-#else
-c_free_small_barray (cinfo, ptr)
-	compress_info_ptr cinfo;
-	JBLOCKARRAY ptr;
-#endif	/* NeedFunctionPrototypes */
-/* Free a "small" (all-in-memory) 2-D coefficient-block array */
-{
-  small_barray_ptr hdr;
-  small_barray_ptr * llink;
-  long i;
-
-  hdr = (small_barray_ptr) ptr;
-  hdr--;			/* point back to header */
-
-  /* Remove item from list -- linear search is fast enough */
-  llink = &cinfo->small_barray_list;
-  while (*llink != hdr) {
-    if (*llink == NULL)
-	  return(XIE_ERR);
-    llink = &( (*llink)->next );
-  }
-  *llink = hdr->next;
-
-  /* Free the rows themselves; on 80x86 these are "far" */
-  /* Note we only free the row-group headers! */
-  for (i = 0; i < hdr->numrows; i += hdr->rowsperchunk) {
-    jfree_large((pointer) ptr[i]);
-  }
-
-  /* Free header and row pointers */
-  return(c_free_small(cinfo, (pointer ) hdr));
-}
-
 METHODDEF int
 #if NeedFunctionPrototypes
 d_free_small_barray (decompress_info_ptr cinfo, JBLOCKARRAY ptr)
@@ -1552,11 +1464,6 @@ c_free_all (cinfo)
     	(JSAMPARRAY) (cinfo->small_sarray_list + 1))) < 0)
       return(XIE_ERR);
   }
-  while (cinfo->small_barray_list != NULL) {
-    if ((c_free_small_barray(cinfo,
-    	(JBLOCKARRAY) (cinfo->small_barray_list + 1))) < 0)
-      return(XIE_ERR);
-  }
   /* Free any remaining small objects */
   while (cinfo->small_list != NULL) {
     if ((c_free_small(cinfo,
@@ -1655,8 +1562,6 @@ jcselmemmgr (cinfo, emethods)
   emethods->c_free_small = c_free_small;
   emethods->c_alloc_small_sarray = c_alloc_small_sarray;
   emethods->c_free_small_sarray = c_free_small_sarray;
-  emethods->c_alloc_small_barray = c_alloc_small_barray;
-  emethods->c_free_small_barray = c_free_small_barray;
   emethods->c_free_all = c_free_all;
 
   /* Initialize list headers to empty */

@@ -1,4 +1,4 @@
-/* $XConsortium: dtiff2.c,v 1.1 93/07/19 10:14:45 rws Exp $ */
+/* $XConsortium: dtiff2.c,v 1.1 93/10/26 09:53:29 rws Exp $ */
 /**** module fax/dtiff2.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -79,9 +79,6 @@ int	*old_trans;
 int	*new_trans;
 int 	a0a1,a1a2;
 int 	length_acc=0;
-int 	code,nbits;
-int	magic_blab = 0;
-
 
 	if (state == (FaxState *)NULL)
 		return(-1);

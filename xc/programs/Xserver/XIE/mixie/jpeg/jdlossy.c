@@ -1,4 +1,4 @@
-/* $XConsortium: jdlossy.c,v 1.1 93/10/26 09:56:45 rws Exp $ */
+/* $XConsortium: jdlossy.c,v 1.2 93/10/31 09:47:12 dpw Exp $ */
 /* Module jdlossy.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -51,11 +51,11 @@ terms and conditions:
 	2) JPEG Lossless, color
 
 	Ben Fahy, AGE Logic, Oct 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
 #include "jpeg.h"
-#define verbose 0
 
 /**********************************************************************/
 decode_jpeg_lossy_gray(state)
@@ -105,7 +105,10 @@ int status;
 	   /* if here, we should have a nice full input buffer */
 
 	case JPEG_DECODE_GOAL_TryToInit:
-	   status = JD_INIT(state->cinfo,state->dc_methods,state->e_methods);
+	   status = JD_INIT(state->cinfo,
+			    state->dc_methods,
+			    state->e_methods,
+			    state->up_sample);
 	   if (status == XIE_ERR) {
   	        state->error_code = JPEG_DECODE_ERROR_CouldNotInit;
 		return(-1);
@@ -193,7 +196,7 @@ int status;
 	case JPEG_DECODE_GOAL_EndOfInput:
 	   state->goal = JPEG_DECODE_GOAL_Done;
 	   state->nl_found = (state->cinfo->image_height - 
-		        state->cinfo->pixel_rows_output);
+			      state->cinfo->pixel_rows_output);
 	      /* see jdXIE_get() if this seems *too* self-serving */
 
 		/* leave for good */
@@ -202,8 +205,7 @@ int status;
 
 	case JPEG_DECODE_GOAL_WriteDataForProcess:
 	   state->goal = JPEG_DECODE_GOAL_ProcessData;
-	   state->cinfo->pixel_rows_output += 
-		state->cinfo->rows_in_mem;
+	   state->cinfo->pixel_rows_output += state->cinfo->rows_in_mem;
 	   state->nl_found = state->cinfo->rows_in_mem;
 		/* leave to flush data */
 	   return(state->nl_found);

@@ -1,4 +1,4 @@
-/* $XConsortium: jelossy.c,v 1.1 93/10/26 09:57:16 rws Exp $ */
+/* $XConsortium: jelossy.c,v 1.2 93/10/31 09:47:18 dpw Exp $ */
 /* Module jelossy.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -52,6 +52,7 @@ terms and conditions:
 	2) JPEG Lossless, color
 
 	Ben Fahy, AGE Logic, Oct 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 
 ****************************************************************************/
@@ -91,13 +92,17 @@ int status;	/* some compilers may complain, but close examination
 		/* initialize buffer to empty */
 
 	   status  = JC_BEGINFRAME(state->cinfo,
-		state->n_bands,state->width,state->height,
-			state->Qtable,
-    			state->lenQtable,
-    			state->ACtable,
-    			state->lenACtable,
-    			state->DCtable,
-    			state->lenDCtable);
+				   state->n_bands,
+				   state->width,
+				   state->height,
+				   state->Qtable,
+				   state->lenQtable,
+				   state->ACtable,
+				   state->lenACtable,
+				   state->DCtable,
+				   state->lenDCtable,
+				   state->h_sample,
+				   state->v_sample);
 
 	   if (status == XIE_ERR) {
   	        state->error_code = JPEG_ENCODE_ERROR_CouldNotBeginFrame;

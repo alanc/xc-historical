@@ -1,4 +1,4 @@
-/* $XConsortium: mpbandc.c,v 1.2 93/10/31 09:48:02 dpw Exp $ */
+/* $XConsortium: mpbandc.c,v 1.3 93/11/06 15:38:16 rws Exp $ */
 /**** module mpbandc.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,7 +71,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -159,14 +158,14 @@ static int ActivateBandCom(flo,ped,pet)
    */
   for(b = 0; b < xieValMaxBands; ++rcp, ++dbnd, ++b) {
     sbnd = rcp->band;
-    if(!GetCurrentSrc(pointer,flo,pet,sbnd)) continue;
+    if(!GetCurrentSrc(flo,pet,sbnd)) continue;
 
     do {
       /* pass a clone of the current src strip downstream
        */
       if(!PassStrip(flo,pet,dbnd,sbnd->strip))
 	return(FALSE);
-    } while(GetSrc(pointer,flo,pet,sbnd,sbnd->maxLocal,FLUSH));
+    } while(GetSrc(flo,pet,sbnd,sbnd->maxLocal,FLUSH));
 
     FreeData(flo,pet,sbnd,sbnd->maxLocal);
   }

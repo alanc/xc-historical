@@ -1,4 +1,4 @@
-/* $XConsortium: jchuff.c,v 1.1 93/10/26 09:55:23 rws Exp $ */
+/* $XConsortium: jchuff.c,v 1.2 93/10/31 09:47:01 dpw Exp $ */
 /* Module jchuff.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -987,7 +988,7 @@ jselchuffman (compress_info_ptr cinfo)
     cinfo->methods->entropy_encode_init = huff_init;
     cinfo->methods->entropy_encode = huff_encode;
     cinfo->methods->entropy_encode_term = huff_term;
-#ifndef XIE_SUPPORTED	    
+#ifndef XIE_SUPPORTED		    
 #ifdef ENTROPY_OPT_SUPPORTED
     cinfo->methods->entropy_optimize = huff_optimize;
     /* The standard Huffman tables are only valid for 8-bit data precision.

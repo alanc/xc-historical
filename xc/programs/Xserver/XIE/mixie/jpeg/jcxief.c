@@ -1,4 +1,4 @@
-/* $XConsortium: jcxief.c,v 1.1 93/10/26 09:55:30 rws Exp $ */
+/* $XConsortium: jcxief.c,v 1.2 93/10/31 09:47:06 dpw Exp $ */
 /* Module jcxief.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -46,6 +46,7 @@ terms and conditions:
 	jcxief.c: Xie JPEG Compression Wrapper Routines 
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -266,10 +267,12 @@ JC_BEGINFRAME (compress_info_ptr cinfo,
 	long components, long width, long height,
 	UINT8 * q_table, int nq_table, 
 	UINT8 * ac_table, int nac_table,
-	UINT8 * dc_table, int ndc_table)
+	UINT8 * dc_table, int ndc_table,
+	short * h_sample, short * v_sample)
 #else
 JC_BEGINFRAME (cinfo, components, width, height,
-		q_table, nq_table, ac_table, nac_table, dc_table, ndc_table)
+		q_table, nq_table, ac_table, nac_table, dc_table, ndc_table,
+		h_sample, v_sample)
 	compress_info_ptr cinfo; 
 	long components; 
 	long width; 
@@ -280,8 +283,11 @@ JC_BEGINFRAME (cinfo, components, width, height,
 	int nac_table;
 	UINT8 * dc_table;
 	int ndc_table;
+      short * h_sample, * v_sample;
 #endif	/* NeedFunctionPrototypes */
 {
+  short ci;
+  short hsample, vsample, total;
   int status;
   int scale_factor = 100;
   	
@@ -293,6 +299,23 @@ JC_BEGINFRAME (cinfo, components, width, height,
       cinfo->in_color_space = CS_GRAYSCALE;
     else
       cinfo->in_color_space = CS_RGB;
+
+    if (1 < components) {
+      total = 0;
+      for(ci = 0; ci < components; ci++) {
+        hsample = h_sample[ci];
+        if (hsample <= 0 || MAX_SAMP_FACTOR < hsample)
+          return(XIE_ERR);  /* bad sub-sampling factor */
+        vsample = v_sample[ci];
+        if (vsample <= 0 || MAX_SAMP_FACTOR < vsample)
+          return(XIE_ERR);  /* bad sub-sampling factor */
+        total += (hsample*vsample);
+        if (MAX_BLOCKS_IN_MCU < total)
+          return(XIE_ERR);  /* bad sub-sampling factor(s) */
+        cinfo->xie_h_samp_factor[ci] = hsample;            
+        cinfo->xie_v_samp_factor[ci] = vsample;            
+      }
+    }
 
     if (((*cinfo->methods->input_init) (cinfo)) == XIE_ERR)	/* jcXIE_init (cinfo); */
       return(XIE_ERR);

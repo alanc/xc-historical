@@ -1,4 +1,4 @@
-/* $XConsortium: microi.c,v 1.2 93/10/31 09:45:06 dpw Exp $ */
+/* $XConsortium: microi.c,v 1.4 93/11/06 15:33:12 rws Exp $ */
 /**** module microi.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -92,7 +91,6 @@ int	miAnalyzeICROI();
 static int CreateICROI();
 static int InitializeICROI();
 static int ActivateICROI();
-static int FlushICROI();
 static int ResetICROI();
 static int DestroyICROI();
 
@@ -106,7 +104,7 @@ static ddElemVecRec ICROIVec =
 	CreateICROI,
 	InitializeICROI,
 	ActivateICROI,
-	FlushICROI,
+	(xieIntProc)NULL,
 	ResetICROI,
 	DestroyICROI
 };
@@ -179,13 +177,20 @@ peTexPtr pet;
     bandPtr     sbnd = &pet->receptor[IMPORT].band[0];
     bandPtr     dbnd = &pet->emitter[0];
     CARD32   maxRect = ((xieFloImportClientROI *)ped->elemRaw)->rectangles;
-    xieTypRectangle *irect = GetSrcBytes(xieTypRectangle *,flo,pet,sbnd,
-			sbnd->current, sizeof(xieTypRectangle),FLUSH);
+    xieTypRectangle *irect = (xieTypRectangle*)GetSrcBytes(flo,pet,sbnd,
+			      sbnd->current, sizeof(xieTypRectangle),KEEP);
     XieBoxRec *rects, *br;
     CARD32    yxbands, size;
     ROIPtr roi;
+    
+    if(dbnd->final) {
+      /* the client is being over generous, quietly discard the extra data */
+      FreeData(flo,pet,sbnd,sbnd->maxGlobal);
+      return(TRUE);
+    }
 
-    /* Stuff rectangles into XieBoxRec struct */
+    /* Stuff rectangles into XieBoxRec struct
+     */
     if (irect && maxRect == 1) {
 	rectCvt(irect,&rp->roireg->extents);
 	rp->currentRect++;
@@ -195,14 +200,14 @@ peTexPtr pet;
 	while (irect && rp->currentRect < maxRect) {
 	    rectCvt(irect,br++);
 	    rp->currentRect++;
-            irect = GetSrcBytes(xieTypRectangle *,flo,pet,sbnd,
+            irect = (xieTypRectangle*)GetSrcBytes(flo,pet,sbnd,
 			sbnd->current + sizeof(xieTypRectangle),
-			sizeof(xieTypRectangle),FLUSH);
-    	
+			sizeof(xieTypRectangle),KEEP);
 	}
     }
 
-    /* Ran out of rectangles, see if all have arrived */
+    /* Ran out of rectangles, see if all have arrived
+     */
     if(!irect && sbnd->final || rp->currentRect >= maxRect) {
         if(rp->currentRect < maxRect) {
             /* the client lied about the number of rectangles! */
@@ -212,18 +217,19 @@ peTexPtr pet;
 	    if (!miXieRegionValidate(rp->roireg,&Overlap)) 
 		AllocError(flo,ped,return(FALSE)); /* Best guess */
         }
+        SetBandThreshold(sbnd,1);
         FreeData(flo,pet,sbnd,sbnd->maxGlobal);
     } else if (!irect) {
         /* free whatever we've used so far and
          * set the threshold to one byte more than whatever is left over
          */
         FreeData(flo,pet,sbnd,sbnd->current);
-        SetBandThreshold(sbnd, sbnd->available + 1);
+        SetBandThreshold(sbnd,sbnd->available + 1);
 	return(TRUE);
     }
 
-    /* At this point, all rectangles are here and everything appears to be OK */
-
+    /* At this point, all rectangles are here and everything appears to be OK
+     */
     if (rp->roireg->data && rp->roireg->data->numRects) {
     	rects = (XieBoxRec *)&rp->roireg->data[1]; 
 	maxRect = rp->roireg->data->numRects;
@@ -232,7 +238,8 @@ peTexPtr pet;
 	maxRect = 1;
     }
 
-    /* Step through rectangles and count up the total number of (y-x) bands */
+    /* Step through rectangles and count up the total number of (y-x) bands
+     */
     if (maxRect) {
         CARD32  r = 1;
         INT32 y = rects[0].y1;
@@ -248,13 +255,12 @@ peTexPtr pet;
 	yxbands = 0;
     }
 
-    /* Allocate storage for run length table */
-
-    size = sizeof(ROIRec) + sizeof(lineRec) * yxbands + 
-						sizeof(runRec) * maxRect;
+    /* Allocate storage for run length table
+     */
+    size = sizeof(ROIRec)+sizeof(lineRec)*yxbands+sizeof(runRec)*maxRect;
    
-    if (!(roi = GetDstBytes(ROIRec *,flo,pet,dbnd,0,size,FALSE)))
-	AllocError(flo,ped,return(FALSE));
+    if(!(roi = (ROIRec*)GetDstBytes(flo,pet,dbnd,0,size,FALSE)))
+        AllocError(flo,ped,return(FALSE));
 
     roi->x      = rp->roireg->extents.x1;
     roi->y      = rp->roireg->extents.y1;
@@ -263,7 +269,8 @@ peTexPtr pet;
     roi->nrects = maxRect;
     roi->lend   = LEND(dbnd);
 
-    /* Fill in the run lengths */
+    /* Fill in the run lengths
+     */
     if (maxRect) {
         CARD32   r = 1;
         INT32    y = rects[0].y1;
@@ -295,7 +302,7 @@ peTexPtr pet;
 	    y = rects[r++].y1;
 	}
     } 
-   
+
    SetBandFinal(dbnd);
    PutData(flo,pet,dbnd,size);
 
@@ -314,19 +321,6 @@ XieBoxRec	        *br;
     br->x2 = br->x1 + irect->width;
     br->y2 = br->y1 + irect->height;
 }
-
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushICROI(flo,ped)
-floDefPtr flo;
-peDefPtr  ped;
-{
-  /* since Activate was suppose to do the whole image, there's nothing to do */
-
-	return TRUE;
-}                               /* end FlushICROI */
 
 
 /*------------------------------------------------------------------------
@@ -362,7 +356,6 @@ peDefPtr  ped;
 	ped->ddVec.create = (xieIntProc) NULL;
 	ped->ddVec.initialize = (xieIntProc) NULL;
 	ped->ddVec.activate = (xieIntProc) NULL;
-	ped->ddVec.flush = (xieIntProc) NULL;
 	ped->ddVec.reset = (xieIntProc) NULL;
 	ped->ddVec.destroy = (xieIntProc) NULL;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: mpbande.c,v 1.2 93/10/31 09:48:04 dpw Exp $ */
+/* $XConsortium: mpbande.c,v 1.3 93/11/06 15:38:30 rws Exp $ */
 /**** module mpbande.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,7 +71,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -301,10 +300,10 @@ static int ActivateBandExt(flo,ped,pet)
   pointer o, i0 = NULL, i1 = NULL, i2 = NULL;
   
   ok = NO_BANDS;
-  if(ready & 1 && (i0 = GetCurrentSrc(pointer,flo,pet,&ib[0]))) ok |= 1;
-  if(ready & 2 && (i1 = GetCurrentSrc(pointer,flo,pet,&ib[1]))) ok |= 2;
-  if(ready & 4 && (i2 = GetCurrentSrc(pointer,flo,pet,&ib[2]))) ok |= 4;
-  if((o = GetCurrentDst(pointer,flo,pet,ob)) && ok == ready)
+  if(ready & 1 && (i0 = GetCurrentSrc(flo,pet,&ib[0]))) ok |= 1;
+  if(ready & 2 && (i1 = GetCurrentSrc(flo,pet,&ib[1]))) ok |= 2;
+  if(ready & 4 && (i2 = GetCurrentSrc(flo,pet,&ib[2]))) ok |= 4;
+  if((o = GetCurrentDst(flo,pet,ob)) && ok == ready)
     do {
       /* if we have a "full service" extractor, go for the whole enchalada
        */
@@ -329,10 +328,10 @@ static int ActivateBandExt(flo,ped,pet)
 	(*ddx->output)(o, acc, width, maxLev, ddx->clip);
       }
       ok = NO_BANDS;
-      if(ready & 1 && (i0 = GetNextSrc(pointer,flo,pet,&ib[0],FLUSH))) ok |= 1;
-      if(ready & 2 && (i1 = GetNextSrc(pointer,flo,pet,&ib[1],FLUSH))) ok |= 2;
-      if(ready & 4 && (i2 = GetNextSrc(pointer,flo,pet,&ib[2],FLUSH))) ok |= 4;
-    } while((o = GetNextDst(pointer,flo,pet,ob,FLUSH)) && ok == ready);
+      if(ready & 1 && (i0 = GetNextSrc(flo,pet,&ib[0],FLUSH))) ok |= 1;
+      if(ready & 2 && (i1 = GetNextSrc(flo,pet,&ib[1],FLUSH))) ok |= 2;
+      if(ready & 4 && (i2 = GetNextSrc(flo,pet,&ib[2],FLUSH))) ok |= 4;
+    } while((o = GetNextDst(flo,pet,ob,FLUSH)) && ok == ready);
 
   /* free the input data we used
    */

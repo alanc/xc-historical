@@ -1,4 +1,4 @@
-/* $XConsortium: mphist.c,v 1.1 93/10/26 09:47:01 rws Exp $ */
+/* $XConsortium: mphist.c,v 1.2 93/10/31 09:48:20 dpw Exp $ */
 /**** module mphist.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -74,7 +74,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -188,7 +187,7 @@ static int InitializeMatchHist(flo,ped)
     if (!(pvt->histdata = (CARD32 *) XieCalloc(nclip * sizeof(CARD32))))
 	AllocError(flo,ped,return(FALSE));
 
-    return InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,1,0) && 
+    return InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,1,NO_BANDS) && 
 	   InitProcDomain(flo, ped, raw->domainPhototag,
 			raw->domainOffsetX, raw->domainOffsetY) &&
            InitEmitter(flo,ped,NO_DATAMAP,SRCt1);
@@ -212,7 +211,7 @@ static int ActivateMatchHist(flo,ped,pet)
     if (pvt->histphase == 1) {
 	pointer src;
 
-	src = GetCurrentSrc(pointer,flo,pet,sbnd);
+	src = GetCurrentSrc(flo,pet,sbnd);
 	while(!ferrCode(flo) && src && SyncDomain(flo,ped,sbnd,KEEP)) {
 	    INT32 x = 0, dx;
 	    while (dx = GetRun(flo,pet,sbnd)) {
@@ -222,7 +221,7 @@ static int ActivateMatchHist(flo,ped,pet)
 		} else 
 		    x -= dx;
 	    }
-	    src = GetNextSrc(pointer,flo,pet,sbnd,KEEP);
+	    src = GetNextSrc(flo,pet,sbnd,KEEP);
 	}
 
 	/* Is it time to switch to phase2 */
@@ -288,15 +287,15 @@ static int ActivateMatchHist(flo,ped,pet)
 	/* Reset src to start from scratch.
 	** The domain automatically resyncs in the SyncDomain call.
 	*/
-	(void) GetSrc(pointer,flo,pet,sbnd,0,KEEP);
+	(void) GetSrc(flo,pet,sbnd,0,KEEP);
 	pvt->histphase = 3;
     }
     /* now processing to create actual outputs */
     if (pvt->histphase == 3) {
 	pointer src, dst;
 
-	src = GetCurrentSrc(pointer,flo,pet,sbnd);
-	dst = GetCurrentDst(pointer,flo,pet,dbnd);
+	src = GetCurrentSrc(flo,pet,sbnd);
+	dst = GetCurrentDst(flo,pet,dbnd);
 	while(!ferrCode(flo) && src && dst && SyncDomain(flo,ped,dbnd,FLUSH)) {
 	    INT32 x = 0, dx;
 	    if (src != dst) memcpy (dst, src, dbnd->pitch);
@@ -307,8 +306,8 @@ static int ActivateMatchHist(flo,ped,pet)
 		} else 
 		    x -= dx;
 	    }
-	    src = GetNextSrc(pointer,flo,pet,sbnd,FLUSH);
-	    dst = GetNextDst(pointer,flo,pet,dbnd,FLUSH);
+	    src = GetNextSrc(flo,pet,sbnd,FLUSH);
+	    dst = GetNextDst(flo,pet,dbnd,FLUSH);
 	}
 	FreeData(flo,pet,sbnd,sbnd->current);
 
@@ -458,7 +457,7 @@ match_hist(hptr, pdf, nlev)
 	sum += pdf[ilev];
 
     /* normalize and accumulate the pdf */
-    sf = 1.0 / sum;
+    sf = 1.0 / (sum ? sum : 1.0);
     for (sum=0., ilev = 0; ilev < nlev; ilev++) {
 	sum += pdf[ilev];
 	pdf[ilev] = sum * sf;
@@ -470,7 +469,7 @@ match_hist(hptr, pdf, nlev)
     }
 
     /* match the histogram and the new shape */
-    sf = 1.0 / (double) hsum;
+    sf = 1.0 / (double) (hsum ? hsum : 1.0);
     for (ilev=0, plev=0, hsum=0; ilev < nlev ; ilev++) {
 	hsum += hptr[ilev];
 	match = (MatchFloat) hsum * sf;  /* normalize, accumulate */

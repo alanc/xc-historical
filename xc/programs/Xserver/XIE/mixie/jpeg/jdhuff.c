@@ -1,4 +1,4 @@
-/* $XConsortium: jdhuff.c,v 1.1 93/10/26 09:55:43 rws Exp $ */
+/* $XConsortium: jdhuff.c,v 1.2 93/10/31 09:47:10 dpw Exp $ */
 /* Module jdhuff.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -611,6 +612,7 @@ huff_decode_mcu (decompress_info_ptr cinfo, JBLOCKROW *MCU_data)
  * Finish up at the end of a Huffman-compressed scan.
  */
 
+#ifndef XIE_SUPPORTED
 METHODDEF void
 #ifdef XIE_SUPPORTED
 #if NeedFunctionPrototypes
@@ -625,7 +627,7 @@ huff_decoder_term (decompress_info_ptr cinfo)
 {
   /* No work needed */
 }
-
+#endif   /* XIE_SUPPORTED */
 
 /*
  * The method selection routine for Huffman entropy decoding.
@@ -646,6 +648,8 @@ jseldhuffman (decompress_info_ptr cinfo)
   if (! cinfo->arith_code) {
     cinfo->methods->entropy_decode_init = huff_decoder_init;
     cinfo->methods->entropy_decode = huff_decode_mcu;
+#ifndef XIE_SUPPORTED	    
     cinfo->methods->entropy_decode_term = huff_decoder_term;
+#endif   /* XIE_SUPPORTED */    
   }
 }

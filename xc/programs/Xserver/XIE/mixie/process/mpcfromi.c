@@ -1,4 +1,4 @@
-/* $XConsortium: mpcfromi.c,v 1.2 93/10/31 09:48:07 dpw Exp $ */
+/* $XConsortium: mpcfromi.c,v 1.3 93/11/06 15:39:02 rws Exp $ */
 /**** module mpcfromi.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  *  more X server includes.
  */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
 #include <scrnintstr.h>
 #include <colormapst.h>
@@ -258,8 +257,8 @@ static int DoSingleCfromI(flo,ped,pet)	/* one band out */
   CARD32     width = iband->format->width;
   pointer src, dst;
   
-  if((src = GetCurrentSrc(pointer,flo,pet,iband)) &&
-     (dst = GetCurrentDst(pointer,flo,pet,oband)))
+  if((src = GetCurrentSrc(flo,pet,iband)) &&
+     (dst = GetCurrentDst(flo,pet,oband)))
     do {
       if(ddx->ibuf) src = bitexpand(src,ddx->ibuf,width,(char)1,(char)0);
 
@@ -267,8 +266,8 @@ static int DoSingleCfromI(flo,ped,pet)	/* one band out */
 
       if(ddx->obuf[0]) bitshrink(ddx->obuf[0],dst,width,(char)1);
 
-      src = GetNextSrc(pointer,flo,pet,iband,FLUSH);
-      dst = GetNextDst(pointer,flo,pet,oband,FLUSH);
+      src = GetNextSrc(flo,pet,iband,FLUSH);
+      dst = GetNextDst(flo,pet,oband,FLUSH);
     } while(src && dst);
     
   FreeData(flo,pet,iband,iband->current);
@@ -287,10 +286,10 @@ static int DoTripleCfromI(flo,ped,pet)	/* three bands out */
   CARD32     width = iband->format->width;
   pointer src, dstR, dstG, dstB;
   
-  src  = GetCurrentSrc(pointer,flo,pet,iband);
-  dstR = GetCurrentDst(pointer,flo,pet,oband); oband++;
-  dstG = GetCurrentDst(pointer,flo,pet,oband); oband++;
-  dstB = GetCurrentDst(pointer,flo,pet,oband); oband -=2;
+  src  = GetCurrentSrc(flo,pet,iband);
+  dstR = GetCurrentDst(flo,pet,oband); oband++;
+  dstG = GetCurrentDst(flo,pet,oband); oband++;
+  dstB = GetCurrentDst(flo,pet,oband); oband -=2;
 
   while(src && dstR && dstG && dstB) {
         
@@ -305,10 +304,10 @@ static int DoTripleCfromI(flo,ped,pet)	/* three bands out */
     if(ddx->obuf[1]) bitshrink(ddx->obuf[1],dstG,width,(char)1);
     if(ddx->obuf[2]) bitshrink(ddx->obuf[2],dstB,width,(char)1);
 
-    src  = GetNextSrc(pointer,flo,pet,iband,FLUSH);
-    dstR = GetNextDst(pointer,flo,pet,oband,FLUSH); oband++;
-    dstG = GetNextDst(pointer,flo,pet,oband,FLUSH); oband++;
-    dstB = GetNextDst(pointer,flo,pet,oband,FLUSH); oband -=2;
+    src  = GetNextSrc(flo,pet,iband,FLUSH);
+    dstR = GetNextDst(flo,pet,oband,FLUSH); oband++;
+    dstG = GetNextDst(flo,pet,oband,FLUSH); oband++;
+    dstB = GetNextDst(flo,pet,oband,FLUSH); oband -=2;
   }
   FreeData(flo,pet,iband,iband->current);
 

@@ -1,4 +1,4 @@
-/* $XConsortium: mifax.c,v 1.4 93/11/01 11:00:50 dpw Exp $ */
+/* $XConsortium: mifax.c,v 1.5 93/11/07 12:03:08 rws Exp $ */
 /**** module mifax.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -74,7 +74,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -97,6 +96,9 @@ int ActivateICPhotoFax();
 int ResetICPhotoFax();
 int DestroyICPhotoFax();
 
+
+extern bandMsk miImportStream();
+
 /*
  * Local Declarations
  */
@@ -117,6 +119,9 @@ typedef struct _faxpvt {
   int notify;		/* (ICP) we might have to send an event	*/
   int normal;		/* if not, swap the output bit order	*/
    photomapPtr map;	/* (IP)  just in case we need it	*/
+  unsigned char *buf;	/* in case we have to bit reverse src	*/
+  int bufsize;		/* buffer size has to vary with input   */
+			/* strip size, alas and alak.  :-(	*/
 } faxPvtRec, *faxPvtPtr;
 
 /*------------------------------------------------------------------------
@@ -140,6 +145,7 @@ int InitializeIPhotoFax(flo,ped)
 photomapPtr map = ((iPhotoDefPtr)ped->elemPvt)->map;
 peTexPtr pet = ped->peTex;
 faxPvtPtr texpvt=(faxPvtPtr) pet->private;
+bandPtr     sbnd = &pet->receptor[IMPORT].band[0];
 
  	if (!common_init(flo,ped,(pointer)map->tecParms,map->technique))
 		return(0);
@@ -149,7 +155,6 @@ faxPvtPtr texpvt=(faxPvtPtr) pet->private;
  	return( 
 	  ImportStrips(flo,pet,&pet->receptor[0].band[0],&map->strips[0])
 	); 
-
 }					/* end InitializeIPhotoFax */
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
@@ -180,7 +185,7 @@ xieTypDecodeTechnique technique;
 {
 peTexPtr     pet = ped->peTex;
 faxPvtPtr texpvt = (faxPvtPtr) pet->private;
-formatPtr    inf = pet->receptor[0].band[0].format;
+formatPtr    inf = pet->receptor[IMPORT].band[0].format;
 int	  pbytes;
 
 /* Start over with clean structure */
@@ -246,8 +251,6 @@ int	  pbytes;
 	}
 	break;
   }
-
-
   texpvt->state.a0_color = WHITE;
   texpvt->state.a0_pos   = (-1);
 
@@ -288,6 +291,8 @@ int	  pbytes;
   if (!texpvt->max_lines)
 	texpvt->max_lines++;
 
+/* see if data manager should forward our input data to downstream elements */
+  pet->receptor[IMPORT].forward = miImportStream(flo,ped);
 
 /* set output emitter to map texpvt->max_lines lines of data */
   return( InitReceptors(flo, ped, NO_DATAMAP, 1) && 
@@ -302,10 +307,10 @@ int ActivateICPhotoFax(flo,ped,pet)
      peDefPtr  ped;
      peTexPtr  pet;
 {
-  bandPtr    sbnd = &pet->receptor[IMPORT].band[0];
-  bandPtr    dbnd = &pet->emitter[0];
-  faxPvtPtr  texpvt = (faxPvtPtr) ped->peTex->private;
-  FaxState   *state = &(texpvt->state);
+  bandPtr     sbnd = &pet->receptor[IMPORT].band[0];
+  bandPtr     dbnd = &pet->emitter[0];
+  faxPvtPtr texpvt = (faxPvtPtr) ped->peTex->private;
+  FaxState  *state = &(texpvt->state);
   BytePixel *src, *dst;
   int	    lines_found;
   Bool ok;
@@ -323,37 +328,67 @@ int ActivateICPhotoFax(flo,ped,pet)
 
  /* 
   * Important!  As long as there is source data available, we'd better
-  * deal with it, because it's probably owned by Core X and will die
-  * if we let the scheduler go away.  It's ok to exit with TRUE to let
-  * an output strip be written (we'll be called back). It is death to
+  * deal with it, because it may be owned by Core X and will die if we 
+  * let the scheduler go away.  It's ok to exit with TRUE to let an 
+  * output strip be written (we'll be called back). It is death to
   * exit with FALSE unless we are absolutely sure we are done with all
   * current input strips.
   */
-  src = GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current,
-		    MIN_BYTES_NEEDED,KEEP);
+
   /*  
-   * Ok, so if we are here, there is src available. We will ignore it
-   * though if we already have a strip scrolled away in state->strip.
+   * Note that state->strip holds the current src strip.  We only get
+   * more bytes when we are done with a strip and need another one
+   * (or if we are just starting)
    */
   if (!state->strip) {
-    state->strip       = (unsigned char *) src;
+    src = (BytePixel*)GetSrcBytes(flo,pet,sbnd,sbnd->current,
+				MIN_BYTES_NEEDED,KEEP);
+
     state->strip_state = StripStateNew;
     state->strip_size  = sbnd->maxLocal - sbnd->minLocal;
     state->final       = sbnd->strip ? sbnd->strip->final : sbnd->final;
-    if (texpvt->encodedOrder == xieValLSFirst) {
+
+    if (texpvt->encodedOrder == xieValMSFirst) 
+      state->strip = src;
+    else {
+      /* to avoid rewriting a zillion macros,  we arbitrarily pick MSFirst 
+	 as the encode/decode format.  Byte Reversal of the small amount 
+	 of compressed data is almost always going to take trivial time.
+	 The only nasty part is, the input strip cannot be corrupted so
+	 we have to copy to a buffer,  whose size may be variable since
+	 this is stream data (not canonical).
+      */
       register int i,size=state->strip_size;
-      register unsigned char *ucp = state->strip;
-      for (i=0; i<size; ++i)
-      {
-	*ucp = _ByteReverseTable[*ucp];
-	ucp++;
+      register unsigned char *flipped;
+      
+      if ( AlterSrc(flo,ped,sbnd->strip) ) 
+	 flipped = src;
+      else {
+	/* make sure buffer is big enough to hold data */
+	if (!texpvt->buf) {
+	    texpvt->buf = (unsigned char *) XieMalloc(size);
+	    if (!texpvt->buf)
+  		AllocError(flo,ped, return(FALSE));
+	}
+	else if (texpvt->bufsize < size) {
+	    texpvt->buf = (unsigned char *) XieRealloc(texpvt->buf,size);
+	    if (!texpvt->buf)
+  		AllocError(flo,ped, return(FALSE));
+	}
+	texpvt->bufsize = size;
+	flipped = texpvt->buf;
       }
+      
+      for (i=0; i<size; ++i) 
+	   flipped[i] = _ByteReverseTable[*src++];
+         
+      state->strip = flipped;
     }
   }
   /*
    * We have some data to decode, anything to write to?
    */
-  while (dst = GetDst(BytePixel *,flo,pet,dbnd,state->o_line,KEEP)) {
+  while (dst = (BytePixel*)GetDst(flo,pet,dbnd,state->o_line,KEEP)) {
     
     
     /*
@@ -473,6 +508,8 @@ int ResetICPhotoFax(flo,ped)
 	texpvt->state.old_trans = (int *)XieFree(texpvt->state.old_trans);
     if (texpvt->state.new_trans)
 	texpvt->state.new_trans = (int *)XieFree(texpvt->state.new_trans);
+    if (texpvt->buf)
+	texpvt->buf = (unsigned char *)XieFree(texpvt->buf);
   }
   return(TRUE);
 }                               /* end ResetICPhotoFax */

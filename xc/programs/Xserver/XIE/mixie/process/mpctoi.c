@@ -1,4 +1,4 @@
-/* $XConsortium: mpctoi.c,v 1.3 93/10/31 09:48:13 dpw Exp $ */
+/* $XConsortium: mpctoi.c,v 1.4 93/11/06 15:40:00 rws Exp $ */
 /**** module mpctoi.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  *  more X server includes.
  */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
 #include <scrnintstr.h>
 #include <colormapst.h>
@@ -400,15 +399,15 @@ static int DoGrayCtoIAll(flo,ped,pet)
       ddx->cmap != (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP)))
     ColormapError(flo,ped,raw->colormap, return(FALSE));
 
-  if((ivoid = GetCurrentSrc(pointer,flo,pet,iband)) &&
-     (ovoid = GetCurrentDst(pointer,flo,pet,oband)))
+  if((ivoid = GetCurrentSrc(flo,pet,iband)) &&
+     (ovoid = GetCurrentDst(flo,pet,oband)))
   do {
     if(ddx->auxbuf[0]) ivoid = cvt(ivoid, ddx, (CARD8)0);
 
     (*ddx->action)(ddx, ovoid, ivoid);
 
-    ivoid = GetNextSrc(pointer,flo,pet,iband,FLUSH);
-    ovoid = GetNextDst(pointer,flo,pet,oband,FLUSH);
+    ivoid = GetNextSrc(flo,pet,iband,FLUSH);
+    ovoid = GetNextDst(flo,pet,oband,FLUSH);
   } while(ivoid && ovoid);
 
   FreeData(flo,pet,iband,iband->current);
@@ -436,10 +435,10 @@ static int DoRGB1CtoIAll(flo,ped,pet)
       ddx->cmap != (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP)))
     ColormapError(flo,ped,raw->colormap, return(FALSE));
 
-  ovoid  = GetCurrentDst(pointer,flo,pet,oband);
-  ivoid0 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
-  ivoid1 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
-  ivoid2 = GetCurrentSrc(pointer,flo,pet,iband); iband -= 2;
+  ovoid  = GetCurrentDst(flo,pet,oband);
+  ivoid0 = GetCurrentSrc(flo,pet,iband); iband++;
+  ivoid1 = GetCurrentSrc(flo,pet,iband); iband++;
+  ivoid2 = GetCurrentSrc(flo,pet,iband); iband -= 2;
   
   while(ovoid && ivoid0 && ivoid1 && ivoid2) {
 
@@ -449,10 +448,10 @@ static int DoRGB1CtoIAll(flo,ped,pet)
 
     (*ddx->action)(ddx, ovoid, ivoid0, ivoid1, ivoid2);
 
-    ovoid  = GetNextDst(pointer,flo,pet,oband,FLUSH);
-    ivoid0 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband++;
-    ivoid1 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband++;
-    ivoid2 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband -= 2;
+    ovoid  = GetNextDst(flo,pet,oband,FLUSH);
+    ivoid0 = GetNextSrc(flo,pet,iband,FLUSH); iband++;
+    ivoid1 = GetNextSrc(flo,pet,iband,FLUSH); iband++;
+    ivoid2 = GetNextSrc(flo,pet,iband,FLUSH); iband -= 2;
   }
   FreeData(flo,pet,iband,iband->current); iband++;
   FreeData(flo,pet,iband,iband->current); iband++;
@@ -481,8 +480,8 @@ static int DoRGB3CtoIAll(flo,ped,pet)
     /* PASS 1: generate per-band usage maps of the colors needed
      */
     for(b = 0; b < xieValMaxBands; b++, iband++) {
-      for(ivoid = GetCurrentSrc(pointer,flo,pet,iband); ivoid;
-	  ivoid = GetNextSrc(pointer,flo,pet,iband,KEEP)) {
+      for(ivoid = GetCurrentSrc(flo,pet,iband); ivoid;
+	  ivoid = GetNextSrc(flo,pet,iband,KEEP)) {
 
 	if(ddx->auxbuf[b]) ivoid = cvt(ivoid, ddx, (CARD8)b);
 
@@ -511,10 +510,10 @@ static int DoRGB3CtoIAll(flo,ped,pet)
     
     /* PASS 2: map src pixesl to allocated colors
      */
-    ivoid0 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
-    ivoid1 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
-    ivoid2 = GetCurrentSrc(pointer,flo,pet,iband); iband -= 2;
-    ovoid  = GetCurrentDst(pointer,flo,pet,oband);
+    ivoid0 = GetCurrentSrc(flo,pet,iband); iband++;
+    ivoid1 = GetCurrentSrc(flo,pet,iband); iband++;
+    ivoid2 = GetCurrentSrc(flo,pet,iband); iband -= 2;
+    ovoid  = GetCurrentDst(flo,pet,oband);
     
     while(ovoid && ivoid0 && ivoid1 && ivoid2) {
 
@@ -524,10 +523,10 @@ static int DoRGB3CtoIAll(flo,ped,pet)
 
       (*ddx->action2)(ddx, ovoid, ivoid0, ivoid1, ivoid2);
       
-      ivoid0 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband++;
-      ivoid1 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband++;
-      ivoid2 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband -= 2;
-      ovoid  = GetNextDst(pointer,flo,pet,oband,FLUSH);
+      ivoid0 = GetNextSrc(flo,pet,iband,FLUSH); iband++;
+      ivoid1 = GetNextSrc(flo,pet,iband,FLUSH); iband++;
+      ivoid2 = GetNextSrc(flo,pet,iband,FLUSH); iband -= 2;
+      ovoid  = GetNextDst(flo,pet,oband,FLUSH);
     }
     FreeData(flo,pet,iband,iband->current); iband++;
     FreeData(flo,pet,iband,iband->current); iband++;

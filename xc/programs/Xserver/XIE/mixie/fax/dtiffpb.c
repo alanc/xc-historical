@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -78,7 +78,7 @@ register int a0_color,a0_pos;
 register unsigned char *byteptr;
 register unsigned char *endptr;
 register int goal;
-register int width;
+register int width,rnd_width;
 register int rl;
 
 register int 	lines_found=0;
@@ -125,6 +125,7 @@ register int i,a0_in_bytes;
 	}
 
 	localize_state(state);
+	rnd_width = 8 * ((width+7)/8);
 
 	olp = (unsigned char *) state->o_lines[lines_found];
 
@@ -184,7 +185,7 @@ The positive case is even easier.
 	    ++byteptr;
 
 	    /* make sure all the pixels fit on this output line */
-	    if (8*length_acc + a0_pos > width ) {
+	    if (8*length_acc + a0_pos > rnd_width ) {
 		state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 	       	save_state_and_return(state);
 	    }

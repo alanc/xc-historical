@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 #include <scrnintstr.h>
 #include <pixmapstr.h>
 #include <regionstr.h>
@@ -211,7 +210,7 @@ static int InitializeIDraw(flo,ped)
 
   if(notify && dix->pDraw->type != DRAWABLE_PIXMAP) {
     ddx->pExposed = &ddx->Exposed;
-    REGION_INIT(dix->pDraw->pScreen, ddx->pExposed, NullBox, 0);
+    (*dix->pDraw->pScreen->RegionInit) (ddx->pExposed, NullBox, 0);
   }
   /* note: ImportResource elements don't use their receptors */
   return InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -230,7 +229,7 @@ static int ActivateIDrawAlign(flo,ped,pet)
   miDrawPtr		  ddx = (miDrawPtr) pet->private;
   bandPtr		  bnd = &pet->emitter[0];
   DrawablePtr	        pDraw = ValDrawable(flo,ped,raw->drawable);
-  char			 *dst = GetCurrentDst(char *,flo,pet,bnd);
+  char			 *dst = (char*)GetCurrentDst(flo,pet,bnd);
   CARD16		width = bnd->format->width;
 
   if(!pDraw || !dst) return FALSE;
@@ -251,7 +250,7 @@ static int ActivateIDrawAlign(flo,ped,pet)
     if(ddx->adjust)
       (*ddx->adjust)(dst, width);
 
-  } while(dst = GetNextDst(char *,flo,pet,bnd,FLUSH));
+  } while(dst = (char*)GetNextDst(flo,pet,bnd,FLUSH));
 
   return TRUE;
 }                               /* end ActivateIDrawAlign */
@@ -273,7 +272,7 @@ static int ActivateIDrawStrip(flo,ped,pet)
   if (!(pDraw = ValDrawable(flo,ped,raw->drawable)))
     return FALSE;
 
-  if (!(dst = GetCurrentDst(char *,flo,pet,bnd)))
+  if (!(dst = (char*)GetCurrentDst(flo,pet,bnd)))
     return FALSE;
 
   if(!XIEGetImage( pDraw,				/* drawable	*/
@@ -308,7 +307,7 @@ static int ActivateIDrawP(flo,ped,pet)
   if (!(pDraw = ValDrawable(flo,ped,raw->drawable)))
     return FALSE;
 
-  if(!(dst = GetCurrentDst(char *,flo,pet,bnd)))
+  if(!(dst = (char*)GetCurrentDst(flo,pet,bnd)))
     return FALSE;
 
   if(!XIEGetImage( pDraw,				/* drawable	*/
@@ -365,7 +364,7 @@ static void FlushExposeEvents(flo,ped)
 					rects->y2 - rects->y1);
 	    }
 	}
-    	REGION_UNINIT(pDraw->pScreen, rp);
+    	(*pDraw->pScreen->RegionUninit) (rp);
     } /* else Memory Leak */
     pvt->pExposed = NullRegion;
   }
@@ -467,7 +466,6 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	GCPtr		pGC;
 	WindowPtr	pWin, pSrcWin;
 	RegionRec	Remaining;
-	RegionRec	Inside;
 	BoxPtr		pBox;
 	int		i;
 	int		x, y;
@@ -481,7 +479,7 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	bounds.y1 = sy + pDrawable->y;
 	bounds.x2 = bounds.x1 + w;
 	bounds.y2 = bounds.y1 + h;
-	REGION_INIT(pScreen, &Remaining, &bounds, 0);
+	(*pScreen->RegionInit) (&Remaining, &bounds, 0);
 	if (!(pPixmap = (*pScreen->CreatePixmap) (pScreen, w, h, depth)))
 	    goto punt;
 	if(!(pGC = GetScratchGC (depth, pScreen))) {
@@ -489,12 +487,11 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	    goto punt;
 	}
 	if (pWin->viewable && 
-	    RECT_IN_REGION(pScreen, &Remaining, REGION_EXTENTS(pScreen, 
-					&pWin->borderSize)) != rgnOUT) {
+	    (*pScreen->RectIn) (&Remaining, (*pScreen->RegionExtents)
+					(&pWin->borderSize)) != rgnOUT) {
 	    XID	subWindowMode = IncludeInferiors;
 	    ChangeGC (pGC, GCSubwindowMode, &subWindowMode);
 	    ValidateGC ((DrawablePtr)pPixmap, pGC);
-	    REGION_INIT(pScreen, &Inside, NullBox, 0);
 	    pSrcWin = (WindowPtr) pDrawable;
 	    x = sx;
 	    y = sy;
@@ -507,12 +504,12 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 				   (DrawablePtr)pPixmap, pGC,
 				   x, y, w, h,
 				   0, 0);
-	    REGION_SUBTRACT(pScreen, &Remaining, &Remaining,
+	    (*pScreen->Subtract) (&Remaining, &Remaining,
 				  &((WindowPtr) pDrawable)->borderClip);
-	    REGION_TRANSLATE(pScreen, &Remaining, -pWin->drawable.x,
-						     -pWin->drawable.y);
 	    if (REGION_NUM_RECTS(&Remaining) == 0) goto done;
 	}
+        (*pScreen->TranslateRegion) (&Remaining, -pWin->drawable.x,
+						     -pWin->drawable.y);
 
 	/* Copy in Backstore now */
 	if (pWin->backStorage) {
@@ -547,13 +544,12 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	/* Accumulate Exposures if requested */
 	if (REGION_NUM_RECTS(&Remaining) > 0) {
 	    if (Exposed) {
-		REGION_UNION(pScreen, Exposed, Exposed, &Remaining);
+		(*pScreen->Union) (Exposed, Exposed, &Remaining);
 	    }
 	}
 
 done:
-	REGION_UNINIT(pScreen, &Remaining);
-	REGION_UNINIT(pScreen, &Inside);
+	(*pScreen->RegionUninit) (&Remaining);
 	(*pScreen->GetImage) ((DrawablePtr) pPixmap, 0, 0, w, h,
 			      format, pmask, pdst);
 	(*pScreen->DestroyPixmap) (pPixmap);

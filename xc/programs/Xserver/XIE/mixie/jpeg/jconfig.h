@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jconfig.h,v 1.1 93/10/26 09:54:14 rws Exp $ */
 /* Module jconfig.h */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., Ocober 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -125,7 +126,7 @@ terms and conditions:
 /* Define const as empty if your compiler doesn't know the "const" keyword. */
 /* (Even if it does, defining const as empty won't break anything.) */
 
-#ifndef HAVE_STDC			/* ANSI C and C++ compilers should know it. */
+#ifndef HAVE_STDC				/* ANSI C and C++ compilers should know it. */
 #ifndef __cplusplus
 #define const
 #endif
@@ -171,7 +172,7 @@ terms and conditions:
  */
 
 #ifdef MSDOS			/* two-file style is needed for PCs */
-#ifndef USE_SETMODE			/* unless you have setmode() */
+#ifndef USE_SETMODE				/* unless you have setmode() */
 #define TWO_FILE_COMMANDLINE
 #endif
 #endif
@@ -209,7 +210,7 @@ terms and conditions:
 #ifdef __GNUC__			/* for instance, GNU C knows about inline */
 #define INLINE __inline__
 #endif
-#ifndef INLINE				/* default is to define it as empty */
+#ifndef INLINE					/* default is to define it as empty */
 #define INLINE
 #endif
 
@@ -438,13 +439,14 @@ typedef unsigned int UINT16;
 
 /* INT16 must hold at least the values -32768..32767. */
 
-#ifndef XMD_H				/* X11/xmd.h correctly defines INT16 */
+#ifndef XMD_H					/* X11/xmd.h correctly defines INT16 */
 typedef short INT16;
 #endif
 
 /* INT32 must hold signed 32-bit values; if your machine happens */
 /* to have 64-bit longs, you might want to change this. */
 
-#ifndef XMD_H				/* X11/xmd.h correctly defines INT32 */
+#ifndef XMD_H					/* X11/xmd.h correctly defines INT32 */
 typedef long INT32;
 #endif
+

@@ -1,4 +1,4 @@
-/* $XConsortium: mpcnst.c,v 1.2 93/10/31 09:48:08 dpw Exp $ */
+/* $XConsortium: mpcnst.c,v 1.3 93/11/06 15:39:18 rws Exp $ */
 /**** module mpcnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -93,7 +92,6 @@ int	miAnalyzeConstrain();
 static int CreateConstrain();
 static int InitializeConstrain();
 static int ActivateConstrain();
-static int FlushConstrain();
 static int ResetConstrain();
 static int DestroyConstrain();
 
@@ -104,7 +102,7 @@ static ddElemVecRec ConstrainVec = {
   CreateConstrain,
   InitializeConstrain,
   ActivateConstrain,
-  FlushConstrain,
+  (xieBoolProc)NULL,
   ResetConstrain,
   DestroyConstrain
   };
@@ -253,26 +251,26 @@ static int ActivateConstrain(flo,ped,pet)
 	register int bw = iband->format->width;
 	pointer ivoid, ovoid;
 
-	if (!(ivoid = GetCurrentSrc(pointer,flo,pet,iband)))
+	if (!(ivoid = GetCurrentSrc(flo,pet,iband)))
 		continue;
 
 	if (!pvt->action) {
 	    do { /* pass a clone of the current src strip downstream */
 		if(!PassStrip(flo,pet,oband,iband->strip))
 		    return(FALSE);
-	    	ivoid = GetSrc(pointer,flo,pet,iband,iband->maxLocal,TRUE);
+	    	ivoid = GetSrc(flo,pet,iband,iband->maxLocal,TRUE);
 	    } while (!ferrCode(flo) && ivoid) ;
 	    FreeData(flo, pet, iband, iband->current);
 	    continue;
 	}
 
-	if (!(ovoid = GetCurrentDst(pointer,flo,pet,oband)))
+	if (!(ovoid = GetCurrentDst(flo,pet,oband)))
 		continue;
 
 	do {
 	    (*(pvt->action)) (ivoid, ovoid, pvt, bw);
-	    ivoid = GetNextSrc(pointer,flo,pet,iband,TRUE);
-	    ovoid = GetNextDst(pointer,flo,pet,oband,TRUE);
+	    ivoid = GetNextSrc(flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(flo,pet,oband,TRUE);
 	} while (!ferrCode(flo) && ivoid && ovoid) ;
 
 	FreeData(flo, pet, iband, iband->current);
@@ -280,15 +278,6 @@ static int ActivateConstrain(flo,ped,pet)
     return TRUE;
 }
 
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushConstrain(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
-{
-    return TRUE;
-}               
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
@@ -325,7 +314,6 @@ static int DestroyConstrain(flo,ped)
     ped->ddVec.create = (xieIntProc)NULL;
     ped->ddVec.initialize = (xieIntProc)NULL;
     ped->ddVec.activate = (xieIntProc)NULL;
-    ped->ddVec.flush = (xieIntProc)NULL;
     ped->ddVec.reset = (xieIntProc)NULL;
     ped->ddVec.destroy = (xieIntProc)NULL;
 
@@ -991,7 +979,7 @@ DO_CSb	(CSp_bb, CSa_bb, CSb_bb, BitPixel,  BitPixel)
 DO_CSp	(CSp_Bb, CSa_Bb, CSb_Bb, BytePixel, BitPixel)
 DO_CSp	(CSp_Pb, CSa_Pb, CSb_Pb, PairPixel, BitPixel)
 DO_CSp	(CSp_Qb, CSa_Qb, CSb_Qb, QuadPixel, BitPixel)
-DO_CSf	(CSp_Rb, CSa_Rb, CSb_Rb, RealPixel, BitPixel)
+DO_CSp	(CSp_Rb, CSa_Rb, CSb_Rb, RealPixel, BitPixel)
 
 DO_CScx	(CSp_bB, CSa_bB, CSb_bB, BitPixel,  BytePixel)
 DO_CSi	(CSp_BB, CSa_BB, CSb_BB, BytePixel, BytePixel, 22)

@@ -1,4 +1,4 @@
-/* $XConsortium: mppaste.c,v 1.2 93/10/31 09:48:22 dpw Exp $ */
+/* $XConsortium: mppaste.c,v 1.3 93/11/06 15:41:32 rws Exp $ */
 /**** module mppaste.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -343,7 +342,7 @@ static int ActivatePasteUp(flo,ped,pet)
 	INT32 dst_width = dbnd->format->width;
 
 	/* Get pointer for dst scanline, Fill with constant */
-	if (!(dst = GetCurrentDst(pointer,flo,pet,dbnd)))
+	if (!(dst = GetCurrentDst(flo,pet,dbnd)))
 	    break;
 
 	(*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
@@ -351,7 +350,7 @@ static int ActivatePasteUp(flo,ped,pet)
 	/* Skip any constant lines */
 	if (dbnd->current < mpvt->nextline) {
 	    while (dbnd->current < mpvt->nextline)  {
-		if (dst = GetNextDst(pointer,flo,pet,dbnd,KEEP)) {
+		if (dst = GetNextDst(flo,pet,dbnd,KEEP)) {
 		    (*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
 		} else {
 		    PutData(flo,pet,dbnd,dbnd->current);
@@ -373,10 +372,10 @@ static int ActivatePasteUp(flo,ped,pet)
 	    if ((INT32)dbnd->current >= tdy && (INT32)dbnd->current < tdend) {
 
 	        if (sbnd->threshold > 1) {
-		    src = GetSrc(pointer,flo,pet,sbnd,sbnd->threshold - 1,KEEP);
+		    src = GetSrc(flo,pet,sbnd,sbnd->threshold - 1,KEEP);
 		    SetBandThreshold(sbnd,1);
 		} else 
-		    src = GetCurrentSrc(pointer,flo,pet,sbnd);
+		    src = GetCurrentSrc(flo,pet,sbnd);
 		if (!src) 	/* all tiles for this line should be ready */
 		    ImplementationError(flo, ped, return(FALSE));
 
@@ -398,7 +397,7 @@ static int ActivatePasteUp(flo,ped,pet)
 		
 	if (mpvt->nextline < dbnd->format->height) {
 	    /* ... still more tiles to copy */
-	    (void) GetNextDst(pointer,flo,pet,dbnd,FLUSH);
+	    (void) GetNextDst(flo,pet,dbnd,FLUSH);
 	    if (mpvt->nextline != dbnd->current) {
 	        /* ... find the Next bunch of tiles */
   		tp = mpvt->rects;
@@ -409,7 +408,7 @@ static int ActivatePasteUp(flo,ped,pet)
 	    }
 	} else {
 	    /* ... fill in remaining destination with constant */
-	    while((dst = GetNextDst(pointer,flo,pet,dbnd,KEEP)))
+	    while((dst = GetNextDst(flo,pet,dbnd,KEEP)))
 	        (*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
 	    PutData(flo,pet,dbnd,dbnd->current);
 	} 

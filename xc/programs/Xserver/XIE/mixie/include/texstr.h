@@ -1,4 +1,4 @@
-/* $XConsortium: texstr.h,v 1.2 93/10/31 09:46:19 dpw Exp $ */
+/* $XConsortium: texstr.h,v 1.3 93/11/06 15:36:30 rws Exp $ */
 /**** module texstr.h ****/
 /****************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -84,13 +84,14 @@ typedef struct _flotex {
  * receptor data structure
  */
 typedef struct _receptor {
-				  /* set of per-band Boolean state flags: */
-  bandMsk   admit;		  /*    bands that will admit more data   */
-  bandMsk   ready;		  /*    bands with available >= threshold */
-  bandMsk   active;		  /*    bands that will produce more data */
-  bandMsk   attend;		  /*    bands to consider when scheduling */
-  bandMsk   bypass;		  /*    bands that bypass this element    */
-  CARD8	    pad[3];
+				  /* set of per-band Boolean flags:       */
+  bandMsk   admit;		  /*   bands that will admit more data    */
+  bandMsk   ready;		  /*   bands with available >= threshold  */
+  bandMsk   active;		  /*   bands that will produce more data  */
+  bandMsk   attend;		  /*   bands to consider when scheduling  */
+  bandMsk   bypass;		  /*   bands that bypass this element     */
+  bandMsk   forward;		  /*   bands that forward input when freed*/
+  CARD8	    pad[2];
   inFloPtr  inFlo;		  /* pointer to receptor's inFlo	  */
   bandRec   band[xieValMaxBands]; /* per-band input context		  */
 } receptorRec, *receptorPtr;

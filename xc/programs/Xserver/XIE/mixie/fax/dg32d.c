@@ -1,4 +1,4 @@
-/* $XConsortium: dg32d.c,v 1.1 93/10/26 09:53:42 rws Exp $ */
+/* $XConsortium: dg32d.c,v 1.3 93/11/07 11:52:20 rws Exp $ */
 /**** module fax/dg32d.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -48,7 +48,7 @@ terms and conditions:
   
 *****************************************************************************/
 
-#define lenient_decoder_not
+#define lenient_decoder
 
 /* the folling define causes extra stuff to be saved in state recorder */
 #define _G32D
@@ -118,12 +118,18 @@ int 	code,nbits;
 	  switch(goal) {
 
 	  case FAX_GOAL_SkipPastAnyToEOL:
+		code = 0;	/* get Gnu cc to shut up. */
 		while (byteptr < endptr) {
 	    	  /* look for EOL code */
 	    	  code = get_wcode(byteptr,bitpos,endptr);
 	    	  rl     = _WhiteFaxTable[code].run_length;
 	      	  if (rl == EOL_RUN_LENGTH) 
 			break;
+#if defined(lenient_decoder)
+		  else
+			/* move bitstream one bit further and try again */
+ 		 	adjust_1bit(byteptr,bitpos,endptr);
+#else
 		  else if (!state->o_line && !lines_found) {
 			/* we'll be lenient starting out */
  		 	adjust_1bit(byteptr,bitpos,endptr);
@@ -132,8 +138,9 @@ int 	code,nbits;
 			state->decoder_done = FAX_DECODE_DONE_ErrorSkipPast;
 	    		save_state_and_return(state);
 		  }
+#endif
 		}
-		if (byteptr == endptr) {
+		if (byteptr >= endptr) {
 			state->decoder_done = FAX_DECODE_DONE_ErrorSkipPast;
 	    		save_state_and_return(state);
 		}
@@ -288,8 +295,13 @@ int 	code,nbits;
 	    }
 	    if (a1_pos >= width) {
 		if (a1_pos > width) {
+#if defined(lenient_decoder)
+		   /* we went too far, but we'll be forgiving */
+		  a1_pos = width;
+#else  /* not so lenient */
 		  state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 		  return(lines_found);
+#endif
 		}
 		FlushLineData();
 		goal = FAX_GOAL_SeekEOLandTag;
@@ -363,8 +375,13 @@ int 	code,nbits;
 	    }
 	    if (a0_pos >= width) {
 		if (a0_pos > width) {
+#if defined(lenient_decoder)
+		   /* we went too far, but we'll be forgiving */
+		   a0_pos = width;
+#else
 		   state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 		   return(lines_found);
+#endif
 		}
 		FlushLineData();
 		goal = FAX_GOAL_SeekEOLandTag;

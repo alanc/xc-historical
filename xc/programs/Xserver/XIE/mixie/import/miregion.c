@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -141,7 +141,7 @@ extern Bool Must_have_memory;
  * rectangles in the same places (of the same width, of course).
  *
  * Adam de Boor wrote most of the original region code.  Joel McCormack
-
+ * substantially modified or rewrote most of the core arithmetic routines,
  * and added miXieRegionValidate in order to support several speed improvements
  * to miXieValidateTree.  Bob Scheifler changed the representation to be more
  * compact when empty or a single rectangle, and did a bunch of gratuitous
@@ -189,9 +189,8 @@ if (((numRects) < ((reg)->data->size >> 1)) && ((reg)->data->size > 50)) \
     }									 \
 }
 
-
-static XieBoxRec XieEmptyBox = {0, 0, 0, 0};
-static XieRegDataRec XieEmptyData = {0, 0};
+static XieBoxRec EmptyBox = {0, 0, 0, 0};
+static XieRegDataRec EmptyData = {0, 0};
 
 /*****************************************************************
  *   XieRegionCreate(rect, size)
@@ -216,14 +215,14 @@ miXieRegionCreate(rect, size)
     }
     else
     {
-	pReg->extents = XieEmptyBox;
+	pReg->extents = EmptyBox;
 	if ((size > 1) && (pReg->data = xallocData(size)))
 	{
 	    pReg->data->size = size;
 	    pReg->data->numRects = 0;
 	}
 	else
-	    pReg->data = &XieEmptyData;
+	    pReg->data = &EmptyData;
     }
     return(pReg);
 }
@@ -510,14 +509,14 @@ miXieRegionOp(newReg, reg1, reg2, overlapFunc, appendNon1, appendNon2, pOverlap)
 	((newReg == reg2) && (numRects > 1)))
     {
 	oldData = newReg->data;
-	newReg->data = &XieEmptyData;
+	newReg->data = &EmptyData;
     }
     /* guess at new size */
     if (numRects > newSize)
 	newSize = numRects;
     newSize <<= 1;
     if (!newReg->data)
-	newReg->data = &XieEmptyData;
+	newReg->data = &EmptyData;
     else if (newReg->data->size)
 	newReg->data->numRects = 0;
     if (newSize > newReg->data->size)
@@ -652,7 +651,7 @@ miXieRegionOp(newReg, reg1, reg2, overlapFunc, appendNon1, appendNon2, pOverlap)
     if (!(numRects = newReg->data->numRects))
     {
 	xfreeData(newReg);
-	newReg->data = &XieEmptyData;
+	newReg->data = &EmptyData;
     }
     else if (numRects == 1)
     {

@@ -1,4 +1,4 @@
-/* $XConsortium: etiff2.c,v 1.1 93/07/19 10:17:03 rws Exp $ */
+/* $XConsortium: etiff2.c,v 1.1 93/10/26 09:54:07 rws Exp $ */
 /**** module etiff2.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -81,7 +81,6 @@ register int codelength;
 
 register int 	lines_coded=0;
 register int	lines_to_code=0;
-int i;
 int old_rl;
 
 	if (state == (FaxEncodeState *) NULL)
@@ -257,7 +256,7 @@ register int nbits;
 register int white_is_one;
 register int width;
 {
-register unsigned int white_count=0,black_count=0,index=0;
+register unsigned int white_count=0,black_count=0;
 register int i,current_is_white=1;
 register int n_runs=0;
 register int total=0;

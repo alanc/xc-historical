@@ -1,4 +1,4 @@
-/* $XConsortium: jdsample.c,v 1.1 93/10/26 09:56:11 rws Exp $ */
+/* $XConsortium: jdsample.c,v 1.2 93/10/31 09:47:14 dpw Exp $ */
 /* Module jdsample.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -413,6 +414,7 @@ fullsize_upsample (decompress_info_ptr cinfo, int which_component,
  * Clean up after a scan.
  */
 
+#ifndef XIE_SUPPORTED
 METHODDEF void
 #ifdef XIE_SUPPORTED
 #if NeedFunctionPrototypes
@@ -427,7 +429,7 @@ upsample_term (decompress_info_ptr cinfo)
 {
   /* no work for now */
 }
-
+#endif   /* XIE_SUPPORTED */
 
 
 /*
@@ -478,5 +480,7 @@ jselupsample (decompress_info_ptr cinfo)
   }
 
   cinfo->methods->upsample_init = upsample_init;
+#ifndef XIE_SUPPORTED	  
   cinfo->methods->upsample_term = upsample_term;
+#endif   /* XIE_SUPPORTED */  
 }

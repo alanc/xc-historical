@@ -1,4 +1,4 @@
-/* $XConsortium: dg31d.c,v 1.1 93/10/26 09:52:52 rws Exp $ */
+/* $XConsortium: dg31d.c,v 1.3 93/11/07 11:50:35 rws Exp $ */
 /**** module fax/dg31d.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -49,7 +49,7 @@ terms and conditions:
 *****************************************************************************/
 
 
-#define lenient_decoder_not
+#define lenient_decoder
 
 
 /* the folling define causes extra stuff to be saved in state recorder */
@@ -72,10 +72,7 @@ register int a0_color;
 register int a0_pos;
 register int a1_pos;
 register int goal;
-register int mode;	/* could overload goal, but will resist */
-register int length;
 register int width;
-register int g31d_horiz;
 register int rl;
 
 int 	lines_found=0;
@@ -86,7 +83,6 @@ int	*new_trans;
 int 	a0a1,a1a2;
 int 	length_acc=0;
 int 	last_b1_idx=0;
-int 	b1_pos,b2_pos;
 int 	code,nbits;
 
 	if (state == (FaxState *)NULL)
@@ -118,6 +114,7 @@ int 	code,nbits;
 
 	  switch(goal) {
 	  case FAX_GOAL_SkipPastAnyToEOL:
+		code = 0;	/* get gnu compiler to shut up */
 		while (byteptr < endptr) {
 	    	  /* look for EOL code */
 	    	  code = get_wcode(byteptr,bitpos,endptr);
@@ -128,7 +125,7 @@ int 	code,nbits;
 			/* move bitstream one bit further and try again */
  		 	adjust_1bit(byteptr,bitpos,endptr);
 		}
-		if (byteptr == endptr) {
+		if (byteptr >= endptr) {
 			state->decoder_done = FAX_DECODE_DONE_ErrorSkipPast;
 			return(lines_found);
 		}
@@ -139,6 +136,7 @@ int 	code,nbits;
 
 	  case FAX_GOAL_SeekFillAndEOL:
 	    /* look for EOL code */
+		code = 0;  /* get gnu compiler to shut up */
 		while (byteptr < endptr) {
 	    	  /* look for EOL code */
 	    	  code = get_wcode(byteptr,bitpos,endptr);
@@ -153,7 +151,7 @@ int 	code,nbits;
 			/* move bitstream one bit further and try again */
  		 	adjust_1bit(byteptr,bitpos,endptr);
 		}
-		if (byteptr == endptr) {
+		if (byteptr >= endptr) {
 		    state->decoder_done =  FAX_DECODE_DONE_ErrorBadPtr;
 		    return(-1);
 		}
@@ -197,8 +195,15 @@ int 	code,nbits;
 
 	  case FAX_GOAL_FallOnSword:
 	    if (goal == FAX_GOAL_FallOnSword) {
+#if defined(lenient_decoder)
+	        goal = FAX_GOAL_SkipPastAnyToEOL;
+		FlushLineData();
+	        break;
+
+#else
 		state->decoder_done = FAX_DECODE_DONE_ErrorBadCode;
 		return(lines_found);
+#endif
 	    }
 
 	  case  FAX_GOAL_RecordA0A1:
@@ -223,8 +228,13 @@ int 	code,nbits;
 	    }
 	    if (a1_pos >= width) {
 		if (a1_pos > width) {
+#if defined(lenient_decoder)
+		   /* we went too far, but we'll be forgiving */
+		   a1_pos = width;
+#else
 		   state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 		   return(-1);
+#endif
 		}
 		FlushLineData();
 	        goal = FAX_GOAL_SkipPastAnyToEOL;
@@ -301,8 +311,15 @@ int 	code,nbits;
 	    /* the coding spec.  So we will update the line count and	*/
 	    /* then attempt to recover.					*/
 	    if (goal == FAX_GOAL_FallOnSword) {
+#if defined(lenient_decoder)
+	        goal = FAX_GOAL_SkipPastAnyToEOL;
+		FlushLineData();
+	        break;
+
+#else
 		state->decoder_done = FAX_DECODE_DONE_ErrorBadCode;
 		return(lines_found);
+#endif
 	    }
 	    if (goal == FAX_GOAL_RecoverZero ) {
 	        /* assume we have hit the begining of an EOL */
@@ -320,8 +337,13 @@ int 	code,nbits;
 	    }
 	    if (a0_pos >= width) {
 		if (a0_pos > width) {
+#if defined(lenient_decoder)
+		   /* we went too far, but we'll be forgiving */
+		   a0_pos = width;
+#else
 		   state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 		   return(lines_found);
+#endif
 		}
 		FlushLineData();
 		if (state->decoder_done)

@@ -1,4 +1,4 @@
-/* $XConsortium: jdxief.c,v 1.1 93/10/26 09:55:01 rws Exp $ */
+/* $XConsortium: jdxief.c,v 1.2 93/10/31 09:47:17 dpw Exp $ */
 /* Module jdxief.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -52,8 +53,10 @@ terms and conditions:
 #if NeedFunctionPrototypes
 GLOBAL int jdXIE_init(decompress_info_ptr);
 GLOBAL int jdXIE_get(decompress_info_ptr);
+#ifndef XIE_SUPPORTED
 GLOBAL int jdXIE_term(decompress_info_ptr);
 GLOBAL void jseldXIE(decompress_info_ptr);
+#endif   /* XIE_SUPPORTED */
 #endif	/* NeedFunctionPrototypes */
 
 /**********************************************************************/
@@ -61,17 +64,22 @@ GLOBAL void jseldXIE(decompress_info_ptr);
 GLOBAL int
 #if NeedFunctionPrototypes
 JD_INIT(decompress_info_ptr cinfo,
-	decompress_methods_ptr dcmethods, external_methods_ptr emethods)
+	decompress_methods_ptr dcmethods, external_methods_ptr emethods,
+	boolean upsample)
 #else
-JD_INIT(cinfo, dcmethods, emethods)
+JD_INIT(cinfo, dcmethods, emethods, upsample)
 	decompress_info_ptr cinfo;
 	decompress_methods_ptr dcmethods;
 	external_methods_ptr emethods;
+      boolean upsample;
 #endif	/* NeedFunctionPrototypes */
 {
   /* Set up links to method structures. */
   cinfo->methods = dcmethods;
   cinfo->emethods = emethods;
+
+  /* Set upsample flag */
+  cinfo->XIE_upsample = upsample;
 
   /* Set restart to NULL */
   cinfo->XIErestart = XIE_RNUL;
@@ -81,6 +89,7 @@ JD_INIT(cinfo, dcmethods, emethods)
 
 /**********************************************************************/
 
+#ifndef XIE_SUPPORTED
 GLOBAL int
 #if NeedFunctionPrototypes
 JD_BEGINFRAME(decompress_info_ptr cinfo)
@@ -93,6 +102,7 @@ JD_BEGINFRAME(cinfo)
 
   return(XIE_NRML);    
 }
+#endif   /* XIE_SUPPORTED */
 
 /**********************************************************************/
 
@@ -109,6 +119,7 @@ JD_PROCESS(cinfo)
 
 /**********************************************************************/
 
+#ifndef XIE_SUPPORTED
 GLOBAL int
 #if NeedFunctionPrototypes
 JD_ENDFRAME(decompress_info_ptr cinfo)
@@ -122,5 +133,6 @@ JD_ENDFRAME(cinfo)
 
   return(XIE_NRML);    
 }
+#endif   /* XIE_SUPPORTED */
 
 /**********************************************************************/

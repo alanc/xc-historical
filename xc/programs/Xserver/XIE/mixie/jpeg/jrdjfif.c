@@ -1,4 +1,4 @@
-/* $XConsortium: jrdjfif.c,v 1.1 93/10/26 09:55:50 rws Exp $ */
+/* $XConsortium: jrdjfif.c,v 1.2 93/10/31 09:47:27 dpw Exp $ */
 /* Module jrdjfif.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -78,11 +79,60 @@ terms and conditions:
 
 #ifdef JFIF_SUPPORTED
 
-
-typedef enum {			/* JPEG marker codes */
 #ifdef XIE_SUPPORTED
-  M_EOB   = -1,
-#endif	/* XIE_SUPPORTED */
+#define M_EOB    -1
+#define M_SOF0   0xc0
+#define M_SOF1   0xc1
+#define M_SOF2   0xc2
+#define M_SOF3   0xc3
+  
+#define M_SOF5   0xc5
+#define M_SOF6   0xc6
+#define M_SOF7   0xc7
+  
+#define M_JPG    0xc8
+#define M_SOF9   0xc9
+#define M_SOF10  0xca
+#define M_SOF11  0xcb
+  
+#define M_SOF13  0xcd
+#define M_SOF14  0xce
+#define M_SOF15  0xcf
+  
+#define M_DHT    0xc4
+  
+#define M_DAC    0xcc
+  
+#define M_RST0   0xd0
+#define M_RST1   0xd1
+#define M_RST2   0xd2
+#define M_RST3   0xd3
+#define M_RST4   0xd4
+#define M_RST5   0xd5
+#define M_RST6   0xd6
+#define M_RST7   0xd7
+  
+#define M_SOI    0xd8
+#define M_EOI    0xd9
+#define M_SOS    0xda
+#define M_DQT    0xdb
+#define M_DNL    0xdc
+#define M_DRI    0xdd
+#define M_DHP    0xde
+#define M_EXP    0xdf
+  
+#define M_APP0   0xe0
+#define M_APP15  0xef
+  
+#define M_JPG0   0xf0
+#define M_JPG13  0xfd
+#define M_COM    0xfe
+  
+#define M_TEM    0x01
+  
+#define M_ERROR  0x100
+#else  
+typedef enum {			/* JPEG marker codes */
   M_SOF0  = 0xc0,
   M_SOF1  = 0xc1,
   M_SOF2  = 0xc2,
@@ -134,6 +184,7 @@ typedef enum {			/* JPEG marker codes */
   
   M_ERROR = 0x100
 } JPEG_MARKER;
+#endif	/* XIE_SUPPORTED */
 
 
 /*
@@ -151,6 +202,28 @@ typedef enum {			/* JPEG marker codes */
  */
 
 #ifndef XIE_SUPPORTED
+#if NOTDEF				/* not needed in this module */
+
+METHODDEF int
+read_jpeg_data (decompress_info_ptr cinfo)
+{
+  cinfo->next_input_byte = cinfo->input_buffer + MIN_UNGET;
+
+  cinfo->bytes_in_buffer = (int) JFREAD(cinfo->input_file,
+					cinfo->next_input_byte,
+					JPEG_BUF_SIZE);
+  
+  if (cinfo->bytes_in_buffer <= 0) {
+    WARNMS(cinfo->emethods, "Premature EOF in JPEG file");
+    cinfo->next_input_byte[0] = (char) 0xFF;
+    cinfo->next_input_byte[1] = (char) M_EOI;
+    cinfo->bytes_in_buffer = 2;
+  }
+
+  return JGETC(cinfo);
+}
+
+#endif
 #endif	/* XIE_SUPPORTED */
 
 
@@ -976,8 +1049,8 @@ next_marker (decompress_info_ptr cinfo)
 }
 
 
-LOCAL JPEG_MARKER
 #ifdef XIE_SUPPORTED
+LOCAL int
 #if NeedFunctionPrototypes
 process_tables (decompress_info_ptr cinfo)
 #else
@@ -989,6 +1062,7 @@ process_tables (cinfo)
 {
   int status;
 #else
+LOCAL JPEG_MARKER
 process_tables (decompress_info_ptr cinfo)
 /* Scan and process JPEG markers that can appear in any order */
 /* Return when an SOI, EOI, SOFn, or SOS is found */
@@ -1000,7 +1074,7 @@ process_tables (decompress_info_ptr cinfo)
     c = next_marker(cinfo);
 #ifdef XIE_SUPPORTED
     if (c < 0)
-      return((JPEG_MARKER) -1);
+      return(-1);
 #endif	/* XIE_SUPPORTED */
       
     switch (c) {
@@ -1021,12 +1095,16 @@ process_tables (decompress_info_ptr cinfo)
     case M_SOI:
     case M_EOI:
     case M_SOS:
+#ifdef XIE_SUPPORTED
+      return (c);
+#else
       return ((JPEG_MARKER) c);
+#endif	/* XIE_SUPPORTED */
       
     case M_DHT:
 #ifdef XIE_SUPPORTED
       if ((status = get_dht(cinfo)) < 0)
-        return((JPEG_MARKER) status);
+        return(status);
 #else
       get_dht(cinfo);
 #endif	/* XIE_SUPPORTED */
@@ -1035,7 +1113,7 @@ process_tables (decompress_info_ptr cinfo)
     case M_DAC:
 #ifdef XIE_SUPPORTED
       if ((status = get_dac(cinfo)) < 0)
-        return((JPEG_MARKER) status);
+        return(status);
 #else
       get_dac(cinfo);
 #endif	/* XIE_SUPPORTED */
@@ -1044,7 +1122,7 @@ process_tables (decompress_info_ptr cinfo)
     case M_DQT:
 #ifdef XIE_SUPPORTED
       if ((status = get_dqt(cinfo)) < 0)
-        return((JPEG_MARKER) status);
+        return(status);
 #else
       get_dqt(cinfo);
 #endif	/* XIE_SUPPORTED */
@@ -1053,7 +1131,7 @@ process_tables (decompress_info_ptr cinfo)
     case M_DRI:
 #ifdef XIE_SUPPORTED
       if ((status = get_dri(cinfo)) < 0)
-        return((JPEG_MARKER) status);
+        return(status);
 #else
       get_dri(cinfo);
 #endif	/* XIE_SUPPORTED */
@@ -1062,7 +1140,7 @@ process_tables (decompress_info_ptr cinfo)
     case M_APP0:
 #ifdef XIE_SUPPORTED
       if ((status = get_app0(cinfo)) < 0)
-        return((JPEG_MARKER) status);
+        return(status);
 #else
       get_app0(cinfo);
 #endif	/* XIE_SUPPORTED */
@@ -1085,7 +1163,7 @@ process_tables (decompress_info_ptr cinfo)
     default:	/* must be DNL, DHP, EXP, APPn, JPGn, COM, or RESn */
 #ifdef XIE_SUPPORTED
       if (skip_variable(cinfo, c) < 0)
-        return((JPEG_MARKER) -1);
+        return(-1);
 #else
       skip_variable(cinfo, c);
 #endif	/* XIE_SUPPORTED */
@@ -1402,6 +1480,7 @@ resync_to_restart (decompress_info_ptr cinfo, int marker)
  * prepare for another read_scan_header call.
  */
 
+#ifndef XIE_SUPPORTED
 METHODDEF void
 #ifdef XIE_SUPPORTED
 #if NeedFunctionPrototypes
@@ -1416,12 +1495,13 @@ read_scan_trailer (decompress_info_ptr cinfo)
 {
   /* no work needed */
 }
-
+#endif   /* XIE_SUPPORTED */
 
 /*
  * Finish up at the end of the file.
  */
 
+#ifndef XIE_SUPPORTED
 METHODDEF void
 #ifdef XIE_SUPPORTED
 #if NeedFunctionPrototypes
@@ -1436,7 +1516,7 @@ read_file_trailer (decompress_info_ptr cinfo)
 {
   /* no work needed */
 }
-
+#endif   /* XIE_SUPPORTED */
 
 /*
  * The method selection routine for standard JPEG header reading.
@@ -1461,9 +1541,16 @@ jselrjfif (decompress_info_ptr cinfo)
   cinfo->methods->read_file_header = read_file_header;
   cinfo->methods->read_scan_header = read_scan_header;
   /* For JFIF/raw-JPEG format, the user interface supplies read_jpeg_data. */
+#ifndef XIE_SUPPORTED
+#if NOTDEF
+  cinfo->methods->read_jpeg_data = read_jpeg_data;
+#endif
+#endif	/* XIE_SUPPORTED */
   cinfo->methods->resync_to_restart = resync_to_restart;
+#ifndef XIE_SUPPORTED	  
   cinfo->methods->read_scan_trailer = read_scan_trailer;
   cinfo->methods->read_file_trailer = read_file_trailer;
+#endif   /* XIE_SUPPORTED */  
 }
 
 #endif /* JFIF_SUPPORTED */

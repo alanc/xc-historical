@@ -1,4 +1,4 @@
-/* $XConsortium: xiemd.h,v 1.3 93/11/06 10:28:03 rws Exp $ */
+/* $XConsortium: xiemd.h,v 1.4 93/11/06 15:36:49 rws Exp $ */
 /**** module xiemd.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -54,6 +54,7 @@ terms and conditions:
 #include <X.h>
 #include <servermd.h>
 #include "misc.h" /* for pointer */
+#include <Xmd.h>
 
 #ifndef _XIEC_MPBITFUN
 extern unsigned char _ByteReverseTable[];
@@ -67,7 +68,7 @@ extern unsigned char _ByteReverseTable[];
 **		supports C based logical operations, as well as loads and
 **		stores.  This will usually be 32 bit unsigned long, but 
 **		might conceivably be an 64 bit type on some newer machines.
-**		If you change this, update LOGSHIFT, LOGSIZE, LOGMASK.
+**		If you change this, update LOGSHIFT.
 **  LOGSHIFT -	Log2 of LOGSIZE
 **  LOGSIZE -	Size of LogInt in bits.  You should make sure your compiler
 **		knows that this is really 32 and not (4<<3).
@@ -87,7 +88,7 @@ extern unsigned char _ByteReverseTable[];
 **  to access individual bits.  
 */
 
-typedef unsigned long	LogInt;
+typedef CARD32		LogInt;
 #define LOGSHIFT	(5)
 #define LOGSIZE		(sizeof(LogInt)<<3)
 #define LOGMASK		(LOGSIZE-1)

@@ -1,4 +1,4 @@
-/* $XConsortium: jwrjfif.c,v 1.1 93/10/26 09:55:15 rws Exp $ */
+/* $XConsortium: jwrjfif.c,v 1.2 93/10/31 09:47:31 dpw Exp $ */
 /* Module jwrjfif.c */
 
 /****************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -44,6 +44,7 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
+	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -850,6 +851,7 @@ write_scan_header (compress_info_ptr cinfo)
  * Write some bytes of compressed data within a scan.
  */
 
+#ifndef XIE_SUPPORTED
 METHODDEF void
 #ifdef XIE_SUPPORTED
 #if NeedFunctionPrototypes
@@ -864,7 +866,7 @@ write_jpeg_data (cinfo, dataptr, datacount)
 write_jpeg_data (compress_info_ptr cinfo, char *dataptr, int datacount)
 #endif	/* XIE_SUPPORTED */
 {
-#ifndef XIE_SUPPORTED		
+#ifndef XIE_SUPPORTED			
   size_t i;    
   /* Write some bytes from a (char *) buffer */
   if ((i = JFWRITE(cinfo->output_file, dataptr, datacount))
@@ -872,7 +874,7 @@ write_jpeg_data (compress_info_ptr cinfo, char *dataptr, int datacount)
     ERREXIT(cinfo->emethods, "Output file write error");
 #endif	/* XIE_SUPPORTED */    
 }
-
+#endif   /* XIE_SUPPORTED */
 
 /*
  * Finish up after a compressed scan (series of write_jpeg_data calls).
@@ -950,7 +952,9 @@ jselwjfif (compress_info_ptr cinfo)
 {
   cinfo->methods->write_file_header = write_file_header;
   cinfo->methods->write_scan_header = write_scan_header;
+#ifndef XIE_SUPPORTED	  
   cinfo->methods->write_jpeg_data = write_jpeg_data;
+#endif  
   cinfo->methods->write_scan_trailer = write_scan_trailer;
   cinfo->methods->write_file_trailer = write_file_trailer;
 }

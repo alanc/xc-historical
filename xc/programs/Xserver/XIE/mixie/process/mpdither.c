@@ -1,4 +1,4 @@
-/* $XConsortium: mpdither.c,v 1.2 93/10/31 09:48:14 dpw Exp $ */
+/* $XConsortium: mpdither.c,v 1.3 93/11/06 15:40:16 rws Exp $ */
 /**** module mpdither.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -498,8 +497,8 @@ static int ActivateDitherErrorDiffusion(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
 	register pointer inp, outp;
 
-	if (!(inp  = GetCurrentSrc(pointer,flo,pet,iband)) ||
-	    !(outp = GetCurrentDst(pointer,flo,pet,oband))) continue;
+	if (!(inp  = GetCurrentSrc(flo,pet,iband)) ||
+	    !(outp = GetCurrentDst(flo,pet,oband))) continue;
 
 	do {
 		(*(pvt->action)) (inp, outp, pvt);
@@ -510,8 +509,8 @@ static int ActivateDitherErrorDiffusion(flo,ped,pet)
 		    pvt->current  = pvt->previous;
 		    pvt->previous = curr;
 		}
-		inp  = GetNextSrc(pointer,flo,pet,iband,FLUSH);
-		outp = GetNextDst(pointer,flo,pet,oband,FLUSH);
+		inp  = GetNextSrc(flo,pet,iband,FLUSH);
+		outp = GetNextDst(flo,pet,oband,FLUSH);
 
 	} while (inp && outp) ;
 
@@ -537,14 +536,14 @@ static int ActivateDitherOrdered(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
 	register pointer inp, outp;
 
-	if (!(inp  = GetCurrentSrc(pointer,flo,pet,iband)) ||
-	    !(outp = GetCurrentDst(pointer,flo,pet,oband))) continue;
+	if (!(inp  = GetCurrentSrc(flo,pet,iband)) ||
+	    !(outp = GetCurrentDst(flo,pet,oband))) continue;
 
 	do {
 		(*(pvt->action)) (inp, outp, pvt, oband->current);
 
-		inp  = GetNextSrc(pointer,flo,pet,iband,FLUSH);
-		outp = GetNextDst(pointer,flo,pet,oband,FLUSH);
+		inp  = GetNextSrc(flo,pet,iband,FLUSH);
+		outp = GetNextDst(flo,pet,oband,FLUSH);
 
 	} while (inp && outp) ;
 
@@ -636,7 +635,7 @@ static void EdDitherbb(inp,outp,pvt)
 
 #define MakeEdBit(fn_name,itype,otype)					\
 static void fn_name(INP,OUTP,pvt) 					\
-	pointer INP; pointer OUTP; mpDitherEDDefPtr pvt;			\
+	pointer INP; pointer OUTP; mpDitherEDDefPtr pvt;		\
 {									\
 	register itype *inp = (itype *) INP;				\
 	register LogInt *outp = (LogInt *) OUTP;			\
@@ -671,7 +670,7 @@ static void fn_name(INP,OUTP,pvt) 					\
 
 #define MakeEdPix(fn_name,itype,otype)					\
 static void fn_name(INP,OUTP,pvt) 					\
-	pointer INP; pointer OUTP; mpDitherEDDefPtr pvt;			\
+	pointer INP; pointer OUTP; mpDitherEDDefPtr pvt;		\
 {									\
 	register itype *inp = (itype *) INP;				\
 	register otype *outp = (otype *) OUTP, actual;			\
@@ -715,7 +714,7 @@ MakeEdPix	(EdDitherQQ,QuadPixel,QuadPixel)
 
 #define MakeOrdBit(fn_name,itype,otype)					\
 static void fn_name(INP,OUTP,pvt,ycur)					\
-	pointer INP; pointer OUTP; mpDitherOrdDefPtr pvt; int ycur;		\
+	pointer INP; pointer OUTP; mpDitherOrdDefPtr pvt; int ycur;	\
 {									\
 	register itype *inp = (itype *) INP;				\
 	register LogInt *outp = (LogInt *) OUTP;			\
@@ -756,7 +755,7 @@ static void fn_name(INP,OUTP,pvt,ycur)					\
 
 #define MakeOrdPix(fn_name,itype,otype)					\
 static void fn_name(INP,OUTP,pvt,ycur)					\
-	pointer INP; pointer OUTP; mpDitherOrdDefPtr pvt; int ycur;		\
+	pointer INP; pointer OUTP; mpDitherOrdDefPtr pvt; int ycur;	\
 {									\
 	register itype *inp = (itype *) INP;				\
 	register otype *outp = (otype *) OUTP;				\

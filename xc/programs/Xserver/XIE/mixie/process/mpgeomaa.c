@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeomaa.c,v 1.3 93/10/31 09:48:16 dpw Exp $ */
+/* $XConsortium: mpgeomaa.c,v 1.6 93/11/06 15:40:41 rws Exp $ */
 /**** module mpgeomaa.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -73,7 +73,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -556,6 +555,9 @@ static int ActivateGeomAA(flo,ped)
     if (pvtband->flags & FLG_SKIP_BAND)
 	continue;       
 
+    if ((pet->scheduled & (1 << band)) == 0)
+	continue;       
+
     if (pvtband->flags & FLG_BACKWARDS) {
 
 	/* we're going backwards, which is actually *simpler*, 
@@ -569,7 +571,7 @@ static int ActivateGeomAA(flo,ped)
 	    pvtband->hi_src_avail = iband->maxGlobal-1;
 	}
 
-	outp = GetCurrentDst(pointer,flo,pet,oband);
+	outp = GetCurrentDst(flo,pet,oband);
 	while (outp) {
 
 	    if ((pvtband->first_ihigh < 0) ||
@@ -585,7 +587,7 @@ static int ActivateGeomAA(flo,ped)
 	    pvtband->first_ilow  = (int) pvtband->first_mlow ;
 	    pvtband->first_ihigh = (int) pvtband->first_mhigh;
 	    pvtband->yOut++;
-	    outp = GetNextDst(pointer,flo,pet,oband,TRUE);
+	    outp = GetNextDst(flo,pet,oband,TRUE);
 	}
 	if (oband->final)
 	    DisableSrc(flo,pet,iband,FLUSH);
@@ -599,7 +601,7 @@ static int ActivateGeomAA(flo,ped)
 	    int threshold;
 
 	    /* access current output line */
-	    outp = GetDst(pointer,flo,pet,oband,pvtband->yOut,FLUSH);
+	    outp = GetDst(flo,pet,oband,pvtband->yOut,FLUSH);
 	    if (!outp) {
 		if (oband->final)
 		    DisableSrc(flo, pet, iband, FLUSH);
@@ -654,7 +656,7 @@ static int ActivateGeomAA(flo,ped)
 	    if (pvtband->first_ilow > last_src_line) {
 		/* rest of output image is off the input image */
 		/* we will exit after filling output strip */
-		while(outp=GetDst(pointer,flo,pet,oband,pvtband->yOut,FLUSH)) {
+		while(outp=GetDst(flo,pet,oband,pvtband->yOut,FLUSH)) {
 		    (*pvtband->fillfunc)(outp,width,pvtband);
 		    pvtband->yOut++;
 		}

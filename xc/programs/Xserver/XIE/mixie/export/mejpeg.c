@@ -1,4 +1,4 @@
-/* $XConsortium: mejpeg.c,v 1.1 93/10/26 09:49:56 rws Exp $ */
+/* $XConsortium: mejpeg.c,v 1.2 93/10/31 09:43:38 dpw Exp $ */
 /**** module mejpeg.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -81,7 +80,6 @@ terms and conditions:
 #include <photomap.h>
 #include <element.h>
 #include <texstr.h>
-#include <mejpeg.h>
 #include <../include/jpeg.h>	/* XXX - ugh! */
 
 
@@ -148,9 +146,10 @@ int InitializeEPhotoJPEGBaseline(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloExportPhotomap *raw = (xieFloExportPhotomap *) ped->elemRaw;
+  ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
-  return( common_init(flo,ped,&raw[1],raw->encodeTechnique,raw->lenParams) );
+  return( common_init(flo,ped,pvt->encodeParms,pvt->encodeNumber,
+							pvt->encodeLen) );
 }
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
@@ -159,23 +158,29 @@ int InitializeECPhotoJPEGBaseline(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloExportClientPhoto *raw = (xieFloExportClientPhoto *) ped->elemRaw;
+  ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
   peTexPtr pet = ped->peTex;
   jpegPvtPtr texpvt=(jpegPvtPtr) pet->private;
 
-  if( !common_init(flo,ped,&raw[1],raw->encodeTechnique,raw->lenParams) )
-    return(FALSE);
-
-  texpvt->notify = raw->notify;
+  if(!common_init(flo,ped,pvt->encodeParms,pvt->encodeNumber)) {
+    if(ferrCode(flo))
+      return(FALSE);
+    else
+      TechniqueError(flo,ped,xieValEncode,
+		     ((xieFloExportClientPhoto*)ped->elemRaw)->encodeTechnique,
+		     ((xieFloExportClientPhoto*)ped->elemRaw)->lenParams,
+		     return(FALSE));
+  }
+  texpvt->notify = ((xieFloExportClientPhoto *)ped->elemRaw)->notify;
+  return(TRUE);
 }
 /*------------------------------------------------------------------------
 ------- lots of stuff shared between ECPhoto and EPhoto. . . -------------
 ------------------------------------------------------------------------*/
-static int common_init(flo,ped,tec,encodeTechnique,lenParams)
+static int common_init(flo,ped,tec,encodeTechnique)
      floDefPtr flo;
      peDefPtr  ped;
      xieTecEncodeJPEGBaseline *tec;
-     int encodeTechnique,lenParams;
 {
   peTexPtr pet = ped->peTex;
   eTecEncodeJPEGBaselineDefPtr pedpvt=(eTecEncodeJPEGBaselineDefPtr) 
@@ -215,11 +220,11 @@ static int common_init(flo,ped,tec,encodeTechnique,lenParams)
 				/* JPEG will code all bands simultaneously */
     }
   }
-  ped->peTex->bandSync = in_bands == out_bands;
+  ped->peTex->bandSync  = in_bands != out_bands;
   texpvt->swizzle = tec->bandOrder == xieValMSFirst;
   
   /* now deal with stuff on per-band basis */
-  for (b=0; b<out_bands; ++b) {
+  for (b=0; b < out_bands; ++b) {
     JpegEncodeState *state = &(texpvt->state[b]);
     
     state->width  = inf->width;
@@ -242,18 +247,24 @@ static int common_init(flo,ped,tec,encodeTechnique,lenParams)
     state->needs_input_strip = 1;
     
     cinfo = state->cinfo = &texpvt->cinfo[b];
-    if (JC_INIT(cinfo,state->c_methods,state->e_methods) != 0) {
-      TechniqueError(flo,ped,xieValEncode,
-		     encodeTechnique,lenParams,return(FALSE));
-    }
+    if(JC_INIT(cinfo,state->c_methods,state->e_methods) != 0)
+      return(FALSE);
+
     cinfo->jpeg_buf_size = JPEG_BUF_SIZE;
     cinfo->output_buffer = (char *) texpvt->output_buffer[b];
     state->jpeg_output_buffer =     texpvt->output_buffer[b];
     
     /* size of first output strip */
     state->strip_req_newbytes = flo->floTex->stripSize;
+
+    if(texpvt->colors_smushed) {
+      int j;
+      for(j = 0; j < xieValMaxBands; ++j) {
+	state->h_sample[j] = tec->horizontalSamples[j];
+	state->v_sample[j] = tec->verticalSamples[j];
+      }
+    }
   }
-  
   /* calculate size of the input strip data map we will need */
   pbytes = (inf->pitch + 7) >> 3;
   max_lines_in = flo->floTex->stripSize / pbytes;
@@ -276,13 +287,12 @@ int ActivateEPhotoJPEGBaseline(flo,ped,pet)
      peTexPtr  pet;
 {
   receptorPtr  rcp = pet->receptor;
-  CARD32     bands = rcp->inFlo->bands;
   bandPtr    sbnd  = &rcp->band[0];	/* "red" (or gray) input */
   bandPtr    sbnd1 = &rcp->band[1];	/* optional "green" 	 */
   bandPtr    sbnd2 = &rcp->band[2];	/* optional "blue"	 */
   bandPtr    dbnd  = &pet->emitter[0];
   jpegPvtPtr texpvt=(jpegPvtPtr) pet->private;
-  int b, d, was_ready, status;
+  int b, d, was_ready = 0, status;
   
   /* if the class of the src is SingleBand, we call sub_fun for band 0 	*/
   /* if the class of the src is TripleBand and the interleave is 	*/
@@ -302,7 +312,7 @@ int ActivateEPhotoJPEGBaseline(flo,ped,pet)
     if(texpvt->notify && ~was_ready & ped->outFlo.ready & 1  &&
        (texpvt->notify == xieValNewData   ||
 	texpvt->notify == xieValFirstData &&
-	!ped->outFlo.export[0].flink->start))
+	!ped->outFlo.output[0].flink->start))
       SendExportAvailableEvent(flo,ped,0,0,0,0);
     
     return( status );
@@ -323,7 +333,7 @@ int ActivateEPhotoJPEGBaseline(flo,ped,pet)
     if(texpvt->notify && ~was_ready & ped->outFlo.ready & 1 &&
        (texpvt->notify == xieValNewData   ||
 	texpvt->notify == xieValFirstData &&
-	!ped->outFlo.export[0].flink->start))
+	!ped->outFlo.output[0].flink->start))
       SendExportAvailableEvent(flo,ped,0,0,0,0);
     
     return( status );
@@ -345,7 +355,7 @@ int ActivateEPhotoJPEGBaseline(flo,ped,pet)
     if(texpvt->notify && ~was_ready & ped->outFlo.ready & 1<<d &&
        (texpvt->notify == xieValNewData   ||
 	texpvt->notify == xieValFirstData &&
-	!ped->outFlo.export[d].flink->start))
+	!ped->outFlo.output[d].flink->start))
       SendExportAvailableEvent(flo,ped,d,0,0,0);
     
     if (status == FALSE)
@@ -393,14 +403,14 @@ int status;
 	coming back properly.
 ***/
 
-    (void)GetCurrentSrc(pointer,flo,pet,sbnd);
+    (void) GetCurrentSrc(flo,pet,sbnd);
     if (dbnd->final) {
 	/* be forgiving if extra data gets passed to us */
   	FreeData(flo,pet,sbnd,sbnd->maxGlobal);
 	return(TRUE);
     }
-    while (dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current,
-  		state->strip_req_newbytes,FLUSH)) {
+    while (dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current,
+					 state->strip_req_newbytes,FLUSH)) {
       if (state->flush_output) {
 
 	status = FlushJpegEncodeData(dbnd,dst,state);
@@ -436,7 +446,6 @@ int status;
 
       } /* end of if flush */
       else {
-  	int nl_mappable = 0; 
 	state->nl_tocode  = 0;
 	if (state->i_line < state->height) {
 
@@ -569,19 +578,20 @@ int ResetEPhotoJPEGBaseline(flo,ped)
 {
   ResetReceptors(ped);
   ResetEmitter(ped);
-
-  /* get rid of the any data malloc'd by JPEG encoder  */
-  if(ped->peTex) {
-     jpegPvtPtr texpvt = (jpegPvtPtr) ped->peTex->private;
-     int b;
-
-     /*** JPEG code has its own global free routine ***/
-     for (b=0; b<texpvt->in_bands; ++b)  {
-       if (texpvt->cinfo[b].emethods)
-          (*texpvt->cinfo[b].emethods->c_free_all)(& texpvt->cinfo[b]);
-     }
-  }
   
+  /* get rid of the any data malloc'd by JPEG encoder
+   */
+  if(ped->peTex) {
+    jpegPvtPtr texpvt = (jpegPvtPtr) ped->peTex->private;
+    int b;
+    
+    /* JPEG code has its own global free routine
+     */
+    for (b=0; b<texpvt->in_bands; ++b)  {
+      if(texpvt->cinfo[b].emethods && texpvt->cinfo[b].emethods->c_free_all)
+	(*texpvt->cinfo[b].emethods->c_free_all)(& texpvt->cinfo[b]);
+    }
+  }
   return(TRUE);
 }                               /* end ResetEPhotoJPEGBaseline */
 

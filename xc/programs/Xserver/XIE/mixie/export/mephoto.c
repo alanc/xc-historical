@@ -1,4 +1,4 @@
-/* $XConsortium: mephoto.c,v 1.3 93/10/31 09:43:41 dpw Exp $ */
+/* $XConsortium: mephoto.c,v 1.4 93/11/06 15:27:19 rws Exp $ */
 /**** module mephoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -72,7 +72,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -94,7 +93,7 @@ int	miAnalyzeEPhoto();
  *  routines used internal to this module
  */
 static int CreateEPhotoUncom();
-static int InitializeEPhotoServerChoice();
+static int InitializeEPhotoBypass();
 static int InitializeEPhotoUncomByPlane();
 static int ActivateEPhotoUncomByPlane();
 static int ResetEPhoto();
@@ -125,10 +124,9 @@ extern int DestroyEPhotoFAX();
 /*
  * DDXIE ExportPhotomap entry points
  */
-
-static ddElemVecRec EPhotoServerChoiceVec = {
+static ddElemVecRec EPhotoBypassVec = {
   CreateEPhotoUncom,
-  InitializeEPhotoServerChoice,
+  InitializeEPhotoBypass,
   (xieIntProc)NULL,
   (xieIntProc)NULL,
   ResetEPhoto,
@@ -181,52 +179,56 @@ int miAnalyzeEPhoto(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloExportPhotomap *raw = (xieFloExportPhotomap *) ped->elemRaw;
-  
-  if (raw->encodeTechnique == xieValEncodeServerChoice) {
-    ped->ddVec = EPhotoServerChoiceVec;
-  } else {
-    switch(raw->encodeTechnique) {
+  ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
+
+  if(pvt->congress) {
+    ped->ddVec = EPhotoBypassVec;
+    return(TRUE);
+  }
+  switch(pvt->encodeNumber) {
+
+  case xieValEncodeUncompressedSingle:
+    ped->ddVec = EPhotoUncomByPlaneVec;
+    break;
       
-    case xieValEncodeUncompressedSingle:
-      ped->ddVec = EPhotoUncomByPlaneVec;
-      break;
-      
-    case xieValEncodeG31D:
-    case xieValEncodeG32D:
-    case xieValEncodeG42D:
-    case xieValEncodeTIFF2:
-    case xieValEncodeTIFFPackBits:
-      ped->ddVec = EPhotoFAXVec;
-      break;
+  case xieValEncodeG31D:
+  case xieValEncodeG32D:
+  case xieValEncodeG42D:
+  case xieValEncodeTIFF2:
+  case xieValEncodeTIFFPackBits:
+    ped->ddVec = EPhotoFAXVec;
+    break;
       
 #if XIE_FULL
-    case xieValEncodeUncompressedTriple:
-      if(((xieTecEncodeUncompressedTriple *)&raw[1])->
-	 				     interleave == xieValBandByPlane)
-	ped->ddVec = EPhotoUncomByPlaneVec;
-      else
-	ped->ddVec = EPhotoUncomByPixelVec;
-      break;
-    case xieValEncodeJPEGBaseline:
-      {
-	/*** JPEG for SI can only handle 8 bit image depths ***/
-	inFloPtr inf  = &ped->inFloLst[IMPORT];
-	outFloPtr src = &inf->srcDef->outFlo;
-	int b;
-	for (b=0; b< src->bands; ++b) 
-	  if (src->format[b].depth != 8)
-	    TechniqueError(flo,ped,xieValEncode,
-			   raw->encodeTechnique,raw->lenParams,return(FALSE));
-      }
-      ped->ddVec = EPhotoJPEGBaselineVec;
-      break;
-    case xieValEncodeJPEGLossless:
-#endif /* XIE_FULL */
-    default:  ImplementationError(flo,ped, return(FALSE));
+  case xieValEncodeUncompressedTriple:
+    {
+        xieTecEncodeUncompressedTriple *tecParms = 
+	         (xieTecEncodeUncompressedTriple *)pvt->encodeParms;
+        if(tecParms->interleave == xieValBandByPlane)
+          ped->ddVec = EPhotoUncomByPlaneVec;
+        else
+          ped->ddVec = EPhotoUncomByPixelVec;
     }
+    break;
+  case xieValEncodeJPEGBaseline:
+    { /*** JPEG for SI can only handle 8 bit image depths ***/
+      inFloPtr inf  = &ped->inFloLst[IMPORT];
+      outFloPtr src = &inf->srcDef->outFlo;
+      int b;
+      for (b=0; b< src->bands; ++b) 
+        if(src->format[b].depth != 8) {
+  	  xieFloExportPhotomap *raw = (xieFloExportPhotomap *)ped->elemRaw;
+
+	  TechniqueError(flo, ped, xieValEncode,
+	                 raw->encodeTechnique, raw->lenParams, return(FALSE));
+	}
+    }
+    ped->ddVec = EPhotoJPEGBaselineVec;
+    break;
+  case xieValEncodeJPEGLossless:
+#endif /* XIE_FULL */
+  default:  ImplementationError(flo,ped, return(FALSE));
   }
-  
   return(TRUE);
 }                               /* end miAnalyzeEPhoto */
 
@@ -245,14 +247,14 @@ static int CreateEPhotoUncom(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeEPhotoServerChoice(flo,ped)
+static int InitializeEPhotoBypass(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
   /* Allows data manager to bypass element entirely */
   return(InitReceptor(flo, ped, ped->peTex->receptor,
 		      NO_DATAMAP, 1, NO_BANDS, ALL_BANDS));
-}                               /* end InitializeEPhotoServerChoice */
+}                               /* end InitializeEPhotoBypass */
 
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
@@ -261,7 +263,6 @@ static int InitializeEPhotoUncomByPlane(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloExportPhotomap *raw = (xieFloExportPhotomap *) ped->elemRaw;
   peTexPtr              pet = ped->peTex;
   meUncompPtr           pvt = (meUncompPtr)pet->private;
   formatPtr             inf = ped->inFloLst[SRCtag].format;
@@ -271,13 +272,19 @@ static int InitializeEPhotoUncomByPlane(flo,ped)
   Bool inited = FALSE;
   
   if (nbands == 1) {
-    pixelOrder = ((xieTecEncodeUncompressedSingle *)&raw[1])->pixelOrder;
-    fillOrder  = ((xieTecEncodeUncompressedSingle *)&raw[1])->fillOrder;
+    xieTecEncodeUncompressedSingle *tecParms = 
+				(xieTecEncodeUncompressedSingle *)
+				((ePhotoDefPtr)ped->elemPvt)->encodeParms;
+    pixelOrder = tecParms->pixelOrder;
+    fillOrder  = tecParms->fillOrder;
     pvt[0].bandMap = 0;
   } else {
-    pixelOrder = ((xieTecEncodeUncompressedTriple *)&raw[1])->pixelOrder;
-    fillOrder  = ((xieTecEncodeUncompressedTriple *)&raw[1])->fillOrder;
-    if(((xieTecEncodeUncompressedTriple *)&raw[1])->bandOrder==xieValLSFirst) 
+    xieTecEncodeUncompressedTriple *tecParms = 
+				(xieTecEncodeUncompressedTriple *)
+				((ePhotoDefPtr)ped->elemPvt)->encodeParms;
+    pixelOrder = tecParms->pixelOrder;
+    fillOrder  = tecParms->fillOrder;
+    if(tecParms->bandOrder == xieValLSFirst) 
       for(b = 0; b < xieValMaxBands; ++b)
 	pvt[b].bandMap = b;
     else 
@@ -288,44 +295,130 @@ static int InitializeEPhotoUncomByPlane(flo,ped)
     bandPtr   dbnd = &pet->emitter[pvt->bandMap];
     formatPtr outf = &ped->outFlo.format[pvt->bandMap];
     CARD8 class    = inf->class;
-    if (class == BYTE_PIXEL && outf->stride != 8) {
-      if (pixelOrder == xieValLSFirst) {
-	if(fillOrder == xieValLSFirst) 
-	  pvt->action = BtoLLUB;
-	else
-	  pvt->action = BtoLMUB;
-      } else {
-	if(fillOrder == xieValLSFirst) 
-	  pvt->action = BtoMLUB;
-	else
-	  pvt->action = BtoMMUB;
-      }
-    } else if (class == PAIR_PIXEL && outf->stride != 16) {
-      if (pixelOrder == xieValLSFirst) {
-	if(fillOrder == xieValLSFirst) 
-	  pvt->action = PtoLLUP;
-	else
-	  pvt->action = PtoLMUP;
-      } else {
-	if(fillOrder == xieValLSFirst) 
-	  pvt->action = PtoMLUP;
-	else
-	  pvt->action = PtoMMUP;
-      }
-    } else if (class == QUAD_PIXEL && outf->stride != 32) {
-      if (pixelOrder == xieValLSFirst) {
-	if(fillOrder == xieValLSFirst) 
-	  pvt->action = QtoLLUQ;
-	else
-	  pvt->action = QtoLMUQ;
-      } else {
-	if(fillOrder == xieValLSFirst) 
-	  pvt->action = QtoMLUQ;
-	else
-	  pvt->action = QtoMMUQ;
-      }
-    } else
-      pvt->action = (void (*)())NULL;
+    if (class == BIT_PIXEL) {
+          pvt->width  = inf->width;
+#if (IMAGE_BYTE_ORDER == MSBFirst)
+          if (outf->stride != 1) {
+	      pvt->action = (fillOrder == xieValMSFirst) ? btoIS: sbtoIS;
+          } else {
+      	      pvt->action = (fillOrder == xieValMSFirst) ? 
+						(void (*)())NULL : sbtoS;
+          }
+#else
+          if (outf->stride != 1) {
+	      pvt->action = (fillOrder == xieValLSFirst) ? btoIS: sbtoIS;
+          } else {
+      	      pvt->action = (fillOrder == xieValLSFirst) ? 
+						(void (*)())NULL : sbtoS;
+          }
+#endif
+          pvt->stride = outf->stride;
+          pvt->pitch  = outf->pitch;
+    } else if (class == BYTE_PIXEL)  {
+          pvt->width = inf->width;
+	  if (!(outf->stride & 7)) {
+	      if (outf->stride == 8)
+	      	  pvt->action = BtoS;
+	      else
+	      	  pvt->action = BtoIS;
+              pvt->Bstride   = outf->stride >> 3;
+	      pvt->dstoffset = 0;
+	      pvt->mask      = 0; /* Unused */
+	      pvt->shift     = 0; /* Unused */
+	      pvt->clear_dst = FALSE;
+	  } else {
+	      if (pixelOrder == xieValLSFirst) {
+		  if (fillOrder == xieValLSFirst) 
+	              pvt->action = BtoLLUB;
+	          else 
+	              pvt->action = BtoLMUB;
+	      } else {
+		  if (fillOrder == xieValLSFirst) 
+	              pvt->action = BtoMLUB;
+	          else 
+	              pvt->action = BtoMMUB;
+	      }	
+              pvt->bitOff   = 0;	/* Bit offset to first pixel on line */
+              pvt->leftOver = 0;	/* Left over bits from last line     */
+              pvt->depth    = inf->depth;
+              pvt->stride   = outf->stride;
+              pvt->pitch    = outf->pitch;
+	  } 
+    } else if (class == PAIR_PIXEL) {
+          pvt->width = inf->width;
+	  if (!(outf->stride & 15)) {
+#if (IMAGE_BYTE_ORDER == LSBFirst)
+	      if (outf->stride == 16)
+	      	  pvt->action = (fillOrder == xieValLSFirst) ? 
+						(void (*)())NULL : sPtoS;
+	      else
+	      	  pvt->action = (fillOrder == xieValLSFirst) ? PtoIS: sPtoIS;
+#else
+	      if (outf->stride == 16)
+	      	  pvt->action = (fillOrder == xieValMSFirst) ? 
+						(void (*)())NULL : sPtoS;
+	      else
+	      	  pvt->action = (fillOrder == xieValMSFirst) ? PtoIS: sPtoIS;
+#endif
+              pvt->Bstride   = outf->stride >> 3;
+	      pvt->dstoffset = 0;
+	      pvt->mask      = 0; /* Unused */
+	      pvt->shift     = 0; /* Unused */
+	      pvt->clear_dst = FALSE;
+	  } else {
+	      if (pixelOrder == xieValLSFirst) {
+		  if (fillOrder == xieValLSFirst) 
+	              pvt->action = PtoLLUP;
+	          else 
+	              pvt->action = PtoLMUP;
+	      } else {
+		  if (fillOrder == xieValLSFirst) 
+	              pvt->action = PtoMLUP;
+	          else 
+	              pvt->action = PtoMMUP;
+	      }	
+              pvt->bitOff   = 0;	/* Bit offset to first pixel on line */
+              pvt->leftOver = 0;	/* Left over bits from last line     */
+              pvt->depth    = inf->depth;
+              pvt->stride   = outf->stride;
+              pvt->pitch    = outf->pitch;
+	  } 
+    } else if (class == QUAD_PIXEL) {
+          pvt->width = inf->width;
+	  if (!(outf->stride & 31)) {
+#if (IMAGE_BYTE_ORDER == LSBFirst)
+	      if (outf->stride == 32)
+	      	  pvt->action = (fillOrder == xieValLSFirst) ? 
+						(void (*)())NULL : sQtoS;
+	      else
+	      	  pvt->action = (fillOrder == xieValLSFirst) ? QtoIS: sQtoIS;
+#else
+	      if (outf->stride == 32)
+	      	  pvt->action = (fillOrder == xieValMSFirst) ? 
+						(void (*)())NULL : sQtoS;
+	      else
+	      	  pvt->action = (fillOrder == xieValMSFirst) ? QtoIS: sQtoIS;
+#endif
+              pvt->Bstride   = outf->stride >> 3;
+	      pvt->dstoffset = 0;
+	      pvt->mask      = 0; /* Unused */
+	      pvt->shift     = 0; /* Unused */
+	      pvt->clear_dst = FALSE;
+	  } else {
+	      if (pixelOrder == xieValLSFirst) {
+		  if (fillOrder == xieValLSFirst) 
+	              pvt->action = QtoLLUQ;
+	          else 
+	              pvt->action = QtoLMUQ;
+	      } else {
+		  if (fillOrder == xieValLSFirst) 
+	              pvt->action = QtoMLUQ;
+	          else 
+	              pvt->action = QtoMMUQ;
+	      }	
+	  } 
+      } else
+        ImplementationError(flo,ped, return(FALSE)); 
     
     if (pvt->action) {
       pvt->bitOff   = 0;		/* Bit offset to first pixel on line */
@@ -375,25 +468,25 @@ static int ActivateEPhotoUncomByPlane(flo,ped,pet)
     
     if (!(pet->scheduled & 1<<b)) continue;	/* This band is bypassed */
     
-    src      = GetCurrentSrc(pointer,flo,pet,sbnd);
-    dst      = GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current,nextdlen,KEEP);
+    src      = GetCurrentSrc(flo,pet,sbnd);
+    dst      = (CARD8*)GetDstBytes(flo,pet,dbnd,dbnd->current,nextdlen,KEEP);
     
     while(!ferrCode(flo) && src && dst) {
       
       (*pvt->action)(src,dst,pvt);
       
-      src         = GetNextSrc(pointer,flo,pet,sbnd,FLUSH);
+      src         = GetNextSrc(flo,pet,sbnd,FLUSH);
       pvt->bitOff = pvt->bitOff + pitch & 7;  /* Set next */
       olddlen     = (pvt->bitOff) ? nextdlen - 1: nextdlen;
       nextdlen    = pvt->bitOff + pitch + 7 >> 3;
-      dst         = GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current+olddlen,
-				nextdlen, KEEP);
+      dst         = (CARD8*)GetDstBytes(flo,pet,dbnd,dbnd->current+olddlen,
+					nextdlen,KEEP);
     }
     FreeData(flo,pet,sbnd,sbnd->current);
 
     if(!src && sbnd->final) {
       if (pvt->bitOff) /* If we have any bits left, send them out now */
-	*GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current,1,KEEP) = pvt->leftOver;
+	*(CARD8*)GetDstBytes(flo,pet,dbnd,dbnd->current,1,KEEP)=pvt->leftOver;
 
       SetBandFinal(dbnd);
       PutData(flo,pet,dbnd,dbnd->maxGlobal);   /* write the remaining data */
@@ -412,9 +505,10 @@ static int InitializeEPhotoUncomByPixel(flo,ped)
      peDefPtr  ped;
 {
   peTexPtr                 pet = ped->peTex;
-  xieFloExportPhotomap    *raw = (xieFloExportPhotomap *)ped->elemRaw;
   meUncompPtr              pvt = (meUncompPtr)pet->private;
-  xieTecEncodeUncompressedTriple*tec=(xieTecEncodeUncompressedTriple *)&raw[1];
+  xieTecEncodeUncompressedTriple *tec =
+			(xieTecEncodeUncompressedTriple *)
+			((ePhotoDefPtr)ped->elemPvt)->encodeParms;
   formatPtr	          outf = pet->emitter[0].format;
   bandPtr sbnd1,sbnd2,sbnd3;
   CARD32 depth1,depth2,depth3,dstride;
@@ -582,11 +676,11 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
     CARD32 stride   = dbnd->format->stride;
     CARD32 width    = dbnd->format->width;
     CARD32 nextdlen = pvt->bitOff + pitch + 7 >> 3, olddlen;
-    if((sp0 = GetCurrentSrc(pointer,flo,pet,sb0)) &&
-       (sp1 = GetCurrentSrc(pointer,flo,pet,sb1)) && 
-       (sp2 = GetCurrentSrc(pointer,flo,pet,sb2)) &&
-       (dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current,nextdlen,KEEP)))
-
+    if((sp0 = GetCurrentSrc(flo,pet,sb0)) &&
+       (sp1 = GetCurrentSrc(flo,pet,sb1)) && 
+       (sp2 = GetCurrentSrc(flo,pet,sb2)) &&
+       (dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current,
+				      nextdlen,KEEP)))
       do {
 	if(pvt[0].buf) sp0 = bitexpand(sp0,pvt[0].buf,width,(char)0,(char)1);
 	if(pvt[1].buf) sp1 = bitexpand(sp1,pvt[1].buf,width,(char)0,(char)1);
@@ -594,22 +688,22 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
 
 	(*pvt->action)(sp0,sp1,sp2,dst,stride,pvt);
 	
-	sp0         = GetNextSrc(pointer,flo,pet,sb0,FLUSH);
-	sp1         = GetNextSrc(pointer,flo,pet,sb1,FLUSH);
-	sp2         = GetNextSrc(pointer,flo,pet,sb2,FLUSH);
+	sp0         = GetNextSrc(flo,pet,sb0,FLUSH);
+	sp1         = GetNextSrc(flo,pet,sb1,FLUSH);
+	sp2         = GetNextSrc(flo,pet,sb2,FLUSH);
 	pvt->bitOff = pvt->bitOff + pitch & 7;  /* Set next */
 	olddlen     = (pvt->bitOff) ? nextdlen - 1 : nextdlen;
 	nextdlen    = pvt->bitOff + pitch + 7 >> 3;
-	dst         = GetDstBytes(BytePixel *,flo,pet,dbnd,
-				  dbnd->current+olddlen, nextdlen,KEEP);
+	dst         = (BytePixel*)GetDstBytes(flo,pet,dbnd,
+					dbnd->current+olddlen,nextdlen,KEEP);
       } while(dst && sp0 && sp1 && sp2);
 
   } else {
     CARD32  dlen  = pitch >> 3;	/* For nicely aligned data */
-    if((sp0 = GetCurrentSrc(pointer,flo,pet,sb0)) &&
-       (sp1 = GetCurrentSrc(pointer,flo,pet,sb1)) && 
-       (sp2 = GetCurrentSrc(pointer,flo,pet,sb2)) &&
-       (dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current,dlen,KEEP)))
+    if((sp0 = GetCurrentSrc(flo,pet,sb0)) &&
+       (sp1 = GetCurrentSrc(flo,pet,sb1)) && 
+       (sp2 = GetCurrentSrc(flo,pet,sb2)) &&
+       (dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current,dlen,KEEP)))
 
       do {
 	
@@ -619,11 +713,11 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
 	(*pvt[1].action)(sp1,dst,&pvt[1]);
 	(*pvt[2].action)(sp2,dst,&pvt[2]);
 	
-	sp0 = GetNextSrc(pointer,flo,pet,sb0,FLUSH);
-	sp1 = GetNextSrc(pointer,flo,pet,sb1,FLUSH);
-	sp2 = GetNextSrc(pointer,flo,pet,sb2,FLUSH);
-	dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current+dlen,
-			  dlen,KEEP);
+	sp0 = GetNextSrc(flo,pet,sb0,FLUSH);
+	sp1 = GetNextSrc(flo,pet,sb1,FLUSH);
+	sp2 = GetNextSrc(flo,pet,sb2,FLUSH);
+	dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current+dlen,
+				      dlen,KEEP);
       } while(dst && sp0 && sp1 && sp2);
   }
   
@@ -633,7 +727,7 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
 
   if(!sp0 && sb0->final && !sp1 && sb1->final && !sp2 && sb2->final) {
     if (pvt->bitOff) /* If we have any bits left, send them out now */
-      *GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current,1,KEEP) = pvt->leftOver;
+      *(CARD8*)GetDstBytes(flo,pet,dbnd,dbnd->current,1,KEEP) = pvt->leftOver;
 
     SetBandFinal(dbnd);
     PutData(flo,pet,dbnd,dbnd->maxGlobal);   /* write the remaining data */

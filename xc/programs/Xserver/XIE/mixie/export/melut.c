@@ -1,4 +1,4 @@
-/* $XConsortium: melut.c,v 1.2 93/10/31 09:43:40 dpw Exp $ */
+/* $XConsortium: melut.c,v 1.3 93/11/06 15:26:50 rws Exp $ */
 /**** module melut.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,7 +71,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 #include <pixmapstr.h>
 #include <gcstruct.h>
 /*
@@ -157,20 +156,23 @@ static int ActivateELUT(flo,ped,pet)
   CARD32     bands =  rcp->inFlo->bands;
   bandPtr     sbnd = &rcp->band[0];
   bandPtr     dbnd = &pet->emitter[0];
-  CARD8       *src;
   CARD32 b;
   
   for(b = 0; b < bands; ++sbnd, ++dbnd, ++b) {
 
-    /* get pointer to the initial src data (i.e. beginning of strip) */
-    src = GetCurrentSrc(CARD8 *,flo,pet,sbnd);
+    /* get pointer to the initial src data (i.e. beginning of strip)
+     */
+    if(GetCurrentSrc(flo,pet,sbnd)) {
 
-    /* LUT only has 1 strip per band */
-    if(!PassStrip(flo,pet,dbnd,sbnd->strip))
-      return(FALSE);
+      /* LUT only has 1 strip per band
+       */
+      if(!PassStrip(flo,pet,dbnd,sbnd->strip))
+	return(FALSE);
 
-    /* free the amount of src strip(s) we've used */
-    FreeData(flo,pet,sbnd,sbnd->maxLocal);
+      /* free the amount of src strip(s) we've used
+       */
+      FreeData(flo,pet,sbnd,sbnd->maxLocal);
+    }
   }
   return(TRUE);
 }                               /* end ActivateELUT */
