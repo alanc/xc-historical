@@ -32,7 +32,7 @@
 .++ A
 .po 1.0i	\" physical offset
 .ta 5iR		\" right alignment tab
-.lp		\" initialize -me
+.lp             \" initialize -me
 .ce
 .sz 18
 Index
