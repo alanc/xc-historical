@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.6 89/07/21 15:59:08 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.7 89/07/22 15:07:26 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -207,10 +207,12 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	    ppt++->y = y++;
 	    *pwidth++ = width;
 	}
-	pbits = (*pSrcDrawable->pScreen->GetSpans)(pSrcDrawable, width, 
-					       pptFirst, pwidthFirst, height);
+	pbits = (unsigned int *)xalloc(PixmapBytePad(width,
+						     pSrcDrawable->depth));
 	if (pbits)
 	{
+	    (*pSrcDrawable->pScreen->GetSpans)(pSrcDrawable, width, pptFirst,
+					       pwidthFirst, height, pbits);
 	    ppt = pptFirst;
 	    pwidth = pwidthFirst;
 	    xMin -= (srcx - dstx);
@@ -222,8 +224,8 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 		*pwidth++ = width;
 	    }
 
-	    (*pGC->ops->SetSpans)(pDstDrawable, pGC, pbits, pptFirst, pwidthFirst,
-			     height, TRUE);
+	    (*pGC->ops->SetSpans)(pDstDrawable, pGC, pbits, pptFirst,
+				  pwidthFirst, height, TRUE);
 	    xfree(pbits);
 	}
     }
@@ -253,11 +255,15 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 {
     int			i, j, k, width, bitsPerPixel, widthInBytes;
     DDXPointRec 	pt;
-    unsigned int 	*pline;
-    unsigned int	bit;
+    unsigned long	pixel;
+    unsigned long	bit;
     unsigned char	*pCharsOut;
+#if BITMAP_SCANLINE_UNIT == 16
     CARD16		*pShortsOut;
+#endif
+#if BITMAP_SCANLINE_UNIT == 32
     CARD32		*pLongsOut;
+#endif
     int			delta;
 
     sx += pDraw->x;
@@ -269,97 +275,94 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	return (unsigned long *)NULL;
     bitsPerPixel = pDraw->bitsPerPixel;
     bzero((char *)result, h * widthInBytes);
-    if(BITMAP_SCANLINE_UNIT == 8)
+#if BITMAP_SCANLINE_UNIT == 8
 	pCharsOut = (unsigned char *) result;
-    else if(BITMAP_SCANLINE_UNIT == 16)
+#endif
+#if BITMAP_SCANLINE_UNIT == 16
 	pShortsOut = (CARD16 *) result;
-    else if(BITMAP_SCANLINE_UNIT == 32)
+#endif
+#if BITMAP_SCANLINE_UNIT == 32
 	pLongsOut = (CARD32 *) result;
+#endif
     if(bitsPerPixel == 1)
-	pCharsOut = (unsigned char *) result;
-    else if (IMAGE_BYTE_ORDER == MSBFirst)
-	planeNum += (32 - bitsPerPixel);
-    for(i = sy; i < sy + h; i++)
     {
+	pCharsOut = (unsigned char *) result;
+	width = w;
+    }
+    else
+    {
+	delta = (widthInBytes / (BITMAP_SCANLINE_UNIT / 8)) -
+	    (w / BITMAP_SCANLINE_UNIT);
+	width = 1;
+#if IMAGE_BYTE_ORDER == MSBFirst
+	planeNum += (32 - bitsPerPixel);
+#endif
+    }
+    pt.y = sy;
+    for (i = h; --i >= 0; pt.y++)
+    {
+	pt.x = sx;
 	if(bitsPerPixel == 1)
 	{
-	    pt.x = sx;
-	    pt.y = i;
-	    width = w;
-            pline = (*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1);	
-	    if (pline)
-	    {
-		bcopy((char *)pline, (char *)pCharsOut, widthInBytes);
-		xfree(pline);
-	    }
+	    (*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1,
+					(unsigned long *)pCharsOut);
 	    pCharsOut += widthInBytes;
 	}
 	else
 	{
-	    delta = (widthInBytes / (BITMAP_SCANLINE_UNIT / 8)) -
-			(w / BITMAP_SCANLINE_UNIT);
 	    k = 0;
-	    for(j = 0; j < w; j++)
+	    for(j = w; --j >= 0; pt.x++)
 	    {
-		pt.x = sx + j;
-		pt.y = i;
-		width = 1;
 		/* Fetch the next pixel */
-		pline = (*pDraw->pScreen->GetSpans)(pDraw, width, &pt,
-		                                   &width, 1);
-		if (pline)
-		{
-		    /*
-		     * Now get the bit and insert into a bitmap in XY format.
-		     */
-		    bit = (unsigned int) ((*pline >> planeNum) & 1);
-		    xfree(pline);
-		} else
-		    bit = 0;
+		(*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1,
+					    &pixel);
+		/*
+		 * Now get the bit and insert into a bitmap in XY format.
+		 */
+		bit = (pixel >> planeNum) & 1;
 		/* XXX assuming bit order == byte order */
-	        if(BITMAP_BIT_ORDER == LSBFirst) {
-		    bit <<= k;
-		}
-		else {
-		    bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
-		}
-		if(BITMAP_SCANLINE_UNIT == 8)
+#if BITMAP_BIT_ORDER == LSBFirst
+		bit <<= k;
+#else
+		bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
+#endif
+#if BITMAP_SCANLINE_UNIT == 8
+		*pCharsOut |= (unsigned char) bit;
+		k++;
+		if (k == 8)
 		{
-		    *pCharsOut |= (unsigned char) bit;
-		    k++;
-		    if (k == 8)
-		    {
-		        pCharsOut++;
-		        k = 0;
-		    }
+		    pCharsOut++;
+		    k = 0;
 		}
-		else if(BITMAP_SCANLINE_UNIT == 16)
+#endif
+#if BITMAP_SCANLINE_UNIT == 16
+		*pShortsOut |= (CARD16) bit;
+		k++;
+		if (k == 16)
 		{
-		    *pShortsOut |= (CARD16) bit;
-		    k++;
-		    if (k == 16)
-		    {
-		        pShortsOut++;
-		        k = 0;
-		    }
+		    pShortsOut++;
+		    k = 0;
 		}
-		if(BITMAP_SCANLINE_UNIT == 32)
+#endif
+#if BITMAP_SCANLINE_UNIT == 32
+		*pLongsOut |= (CARD32) bit;
+		k++;
+		if (k == 32)
 		{
-		    *pLongsOut |= (CARD32) bit;
-		    k++;
-		    if (k == 32)
-		    {
-		        pLongsOut++;
-		        k = 0;
-		    }
+		    pLongsOut++;
+		    k = 0;
 		}
+#endif
 	    }
-	    if (BITMAP_SCANLINE_UNIT == 8)
-		pCharsOut += delta;
-	    else if (BITMAP_SCANLINE_UNIT == 16)
-		pShortsOut += delta;
-	    else
-		pLongsOut += delta;
+#if BITMAP_SCANLINE_UNIT == 8
+	    pCharsOut += delta;
+#endif
+#if BITMAP_SCANLINE_UNIT == 16
+	    pShortsOut += delta;
+#endif
+#if BITMAP_SCANLINE_UNIT == 32
+	    pLongsOut += delta;
+#endif
 	}
     }
     return(result);    
@@ -606,13 +609,11 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
  * two different strategies are used, depending on whether we're getting the
  * image in Z format or XY format
  * Z format:
- * Line at a time, GetSpans a line and bcopy it to the destination
- * buffer, except that if the planemask is not all ones, we create a
- * temporary pixmap and do a SetSpans into it (to get bits turned off)
- * and then another GetSpans to get stuff back (because pixmaps are
- * opaque, and we are passed in the memory to write into).  This is
- * completely ugly and slow but works, but the interfaces just aren't
- * designed for this case.  Life is hard.
+ * Line at a time, GetSpans a line into the destination buffer, then if the
+ * planemask is not all ones, we do a SetSpans into a temporary buffer (to get
+ * bits turned off) and then another GetSpans to get stuff back (because
+ * pixmaps are opaque, and we are passed in the memory to write into).  This is
+ * pretty ugly and slow but works.  Life is hard.
  * XY format:
  * get the single plane specified in planemask
  */
@@ -627,7 +628,6 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     unsigned char	depth;
     int			i, linelength, width, srcx, srcy;
     DDXPointRec		pt;
-    unsigned long	*pbits;
     XID			gcv[2];
     PixmapPtr		pPixmap = (PixmapPtr)NULL;
     GCPtr		pGC;
@@ -662,22 +662,17 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	    pt.x = srcx;
 	    pt.y = srcy + i;
 	    width = w;
-            pbits = (unsigned long *)
-	        (*pDraw->pScreen->GetSpans)(pDraw, w, &pt, &width, 1);
-	    if (pPixmap && pbits)
+	    (*pDraw->pScreen->GetSpans)(pDraw, w, &pt, &width, 1,
+					(unsigned long *)pDst);
+	    if (pPixmap)
 	    {
 	       pt.x = 0;
 	       pt.y = 0;
 	       width = w;
-	       (*pGC->ops->SetSpans)(pPixmap, pGC, pbits, &pt, &width, 1, TRUE);
-	       xfree(pbits);
-	       pbits = (unsigned long *)
-		  (*pDraw->pScreen->GetSpans)(pPixmap, w, &pt, &width, 1);
-	    }
-	    if (pbits)
-	    {
-		bcopy((char *)pbits, (char *)pDst, linelength);
-		xfree(pbits);
+	       (*pGC->ops->SetSpans)(pPixmap, pGC, (unsigned long *)pDst,
+				     &pt, &width, 1, TRUE);
+	       (*pDraw->pScreen->GetSpans)(pPixmap, w, &pt, &width, 1,
+					   (unsigned long *)pDst);
 	    }
 	    pDst += linelength;
 	}
