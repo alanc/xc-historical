@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.1 93/09/03 13:25:10 mor Exp $ */
+/* $XConsortium: sm_error.c,v 1.2 93/09/08 20:22:25 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -25,19 +25,20 @@ purpose.  It is provided "as is" without express or implied warranty.
  */
 
 void
-_SmcDefaultErrorHandler (smcConn,
+_SmcDefaultErrorHandler (smcConn, swap,
     offendingMinorOpcode, offendingSequence,
-    errorClass, severity, data)
+    errorClass, severity, values)
 
 SmcConn		smcConn;
+Bool		swap;
 int 		offendingMinorOpcode;
 unsigned long 	offendingSequence;
 int 		errorClass;
 int 		severity;
-SmPointer 	data;
+SmPointer 	values;
 
 {
-    char *pData = (char *) data;
+    char *pData = (char *) values;
     char *str;
 
     switch (offendingMinorOpcode)
@@ -126,19 +127,20 @@ SmPointer 	data;
  */
 
 void
-_SmsDefaultErrorHandler (smsConn,
+_SmsDefaultErrorHandler (smsConn, swap,
     offendingMinorOpcode, offendingSequence,
-    errorClass, severity, data)
+    errorClass, severity, values)
 
 SmsConn		smsConn;
+Bool		swap;
 int 		offendingMinorOpcode;
 unsigned long 	offendingSequence;
 int 		errorClass;
 int 		severity;
-SmPointer 	data;
+SmPointer 	values;
 
 {
-    char *pData = (char *) data;
+    char *pData = (char *) values;
     char *str;
 
     switch (offendingMinorOpcode)
