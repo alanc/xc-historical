@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.122 87/09/07 12:49:15 rws Locked $ */
+/* $Header: main.c,v 1.123 87/09/07 13:39:36 toddb Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -37,7 +37,7 @@ SOFTWARE.
 #include "colormap.h"
 #include "cursorstr.h"
 #include "opaque.h"
-#include "vendor.h"
+#include "servermd.h"
 
 extern long defaultScreenSaverTime;
 extern long defaultScreenSaverInterval;
@@ -259,7 +259,7 @@ CreateConnectionBlock()
     /* Leave off the ridBase and ridMask, these must be sent with 
        connection */
 
-    setup.release = 11;
+    setup.release = VENDOR_RELEASE;
     /*
      * per-server image and bitmap parameters are defined in Xmd.h
      */
