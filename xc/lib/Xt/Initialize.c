@@ -269,23 +269,21 @@ Widget wid;
 	}
 	w->core.background_pixel = None;
 	w->core.background_pixmap = NULL;
+/*
 	w->core.border_width = 0;
 	w->core.border_pixmap = NULL;
-
+*/
 	if(w->top.geostr != NULL) {
 		flag = XParseGeometry(w->top.geostr, &w->core.x, &w->core.y,
 			       &w->core.width, &w->core.height);
-
 		
-		w->top.hints.flags |= PPosition | PSize;
+		w->top.hints.flags |= USPosition | USSize;
 		if(flag & XNegative) 
 			w->core.x =
 			  w->core.screen->width - w->core.width - w->core.x;
 		if(flag & YNegative) 
 			w->core.y = 
 			 w->core.screen->height - w->core.height - w->core.y;
-		w->top.hints.flags |= (flag & (XValue|YValue))? USPosition : 0
-		  |(flag & (WidthValue & HeightValue))? USSize : 0;
 	}
 
 	XtSetEventHandler(wid, StructureNotifyMask,FALSE, EventHandler, 
@@ -409,7 +407,12 @@ static void InsertChild(w)
     XtCompositeAddChild(w);	/* Add to managed set now */
 }
 
-
+/*
+ * There is some real ugliness here.  If I have a width and a height which are
+ * zero, and as such suspect, and I have not yet been realized then I will 
+ * grow to match my child.
+ *
+ */
 static void 
 ChangeManaged(wid)
 CompositeWidget wid;
@@ -421,10 +424,29 @@ CompositeWidget wid;
 	for(i = 0; i < w->composite.num_children; i++) {
 		if(w->composite.children[i]->core.managed) {
 			childwid = w->composite.children[i];
-			childwid->core.width = w->core.width;
-			childwid->core.height = w->core.height;
-			childwid->core.border_width = w->core.border_width;
-			XtResizeWidget(childwid);
+			if(!XtIsRealized(wid)) {
+				if(w->core.width == 0 && 
+				   wid->core.height == 0) {
+					w->core.width = childwid->core.width;
+					w->core.height = childwid->core.height;
+					w->top.hints.flags |= PSize;
+				} else {
+					childwid->core.width = w->core.width;
+					childwid->core.height = w->core.height;
+					XtResizeWidget(childwid);
+				}
+				if(w->core.border_width == 0) {
+					w->core.border_width =
+					  childwid->core.border_width;
+				} else {
+					childwid->core.border_width = 
+					  w->core.border_width; 
+					XtResizeWidget(childwid);
+				}
+			}
+			if(childwid->core.x != 0 || childwid->core.y != 0) {
+				XtMoveWidget(childwid, 0, 0);
+			}
 		}
 	}
 
