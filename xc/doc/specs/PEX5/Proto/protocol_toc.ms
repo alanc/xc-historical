@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .nr LL 6.5i
 .nr PD 0.1i
 .nr HM 1.2i
