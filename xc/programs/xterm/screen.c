@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.18 90/06/05 17:48:49 jim Exp $
+ *	$XConsortium: screen.c,v 1.18 90/06/06 09:18:36 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.18 90/06/05 17:48:49 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.18 90/06/06 09:18:36 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -38,6 +38,12 @@ static char rcs_id[] = "$XConsortium: screen.c,v 1.18 90/06/05 17:48:49 jim Exp 
 #include <sys/ioctl.h>
 #include "ptyx.h"
 #include "error.h"
+
+#ifdef	att
+#include <sys/termio.h>
+#include <sys/stream.h>			/* get typedef used in ptem.h */
+#include <sys/ptem.h>
+#endif
 
 extern Char *calloc(), *malloc(), *realloc();
 extern void bcopy();
