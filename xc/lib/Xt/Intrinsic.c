@@ -72,7 +72,7 @@ Widget XtCreate(widgetClass,parent,args,argCount)
     widget->core.managed = FALSE;
     widget->core.visible = TRUE;
     widget->core.being_destroyed = parent -> core.being_destroyed;
-    if (IsSubClass (widget,compositeWidgetClass)) {
+    if (XtIsSubClass (widget,compositeWidgetClass)) {
 		((CompositeWidget)widget)->composite.num_children = 0;
 		((CompositeWidget)widget)->composite.num_managed_children = 0;
 		((CompositeWidget)widget)->composite.children = NULL;
@@ -99,6 +99,21 @@ void RegisterWindow(widget,window)
     Window    window;
 {
 }
+Boolean XtWidgetIsRealized (widget)
+    Widget   widget;
+{
+   return (widget->core.window != NULL);
+}
+
+Boolean XtIsSubClass(widget, widgetClass)
+    Widget    widget;
+    WidgetClass widgetClass;
+{
+  WidgetClass w;
+  for(w=widget->core.widget_class; w != NULL; w = w->coreClass.superclass)
+        if (w == widgetClass) return (TRUE);
+  return (FALSE);
+}
 
 void XtRealize (widget)
     
@@ -112,7 +127,7 @@ void XtRealize (widget)
    FillInParameters (widget,&valuemask,&values);
    widget->core.widget_class->coreClass.realize(widget,valuemask,&values);
    RegisterWindow(widget,widget->core.window);
-   if (IsSubClass (widget, compositeWidgetClass)) {
+   if (XtIsSubClass (widget, compositeWidgetClass)) {
         cwidget = (CompositeWidget)widget;
 	for (i= cwidget->composite.num_children;i!=0;--i) 
 		XtRealize(cwidget->composite.children[i-1]);
@@ -136,7 +151,7 @@ void XtSetSensitive(widget,sensitive)
     int i;
     widget->core.sensitive = sensitive;
     if ((widget->core.sensitive == widget->core.ancestor_sensitive) 
-                                 && IsSubClass (widget,compositeWidgetClass))
+                                 && XtIsSubClass (widget,compositeWidgetClass))
       for (i= ((CompositeWidget)widget)->composite.num_children;i != 0; --i)
         XtSetSensitive (((CompositeWidget)widget)->composite.children[i-1],sensitive);
       
@@ -155,7 +170,7 @@ void DestroyChildren (widget)
     int i;
     if (widget->core.being_destroyed) return;
     widget-> core.being_destroyed = TRUE;
-    if (IsSubClass (widget,compositeWidgetClass))
+    if (XtIsSubClass (widget,compositeWidgetClass))
         for (i= ((CompositeWidget)widget)->composite.num_children; i != 0; --i)
                    DestroyChildren (((CompositeWidget)widget)->composite.children[i-1]);
     return;
@@ -167,7 +182,7 @@ void Phase2ChildrenCallbacks(widget)
 {
      CompositeWidget cwidget;
      int i;
-    if (IsSubClass(widget,compositeWidgetClass))
+    if (XtIsSubClass(widget,compositeWidgetClass))
      cwidget = (CompositeWidget)widget;
        for (i=cwidget->composite.num_children; i!=0; --i) {
   XtCallCallbacks(cwidget->composite.children[i-1]->core.destroy_callbacks);
@@ -181,7 +196,7 @@ void Phase2ChildrenDestroy(widget)
 {
       CompositeWidget cwidget;
       int i;
-   if (IsSubClass(widget,compositeWidgetClass))
+   if (XtIsSubClass(widget,compositeWidgetClass))
        cwidget = (CompositeWidget)widget;
        for (i=cwidget->composite.num_children; i!=0; --i) {
            Phase2ChildrenDestroy(cwidget->composite.children[i-1]);
