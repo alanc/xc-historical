@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.116 91/07/24 16:41:47 swick Exp $ */
+/* $XConsortium: Shell.c,v 1.117 91/07/24 17:31:23 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1525,6 +1525,7 @@ static void ChangeManaged(wid)
  * asynchronusly denied and the window reverted to it's old size/shape.
  */
  
+/*ARGSUSED*/
 static XtGeometryResult GeometryManager( wid, request, reply )
 	Widget wid;
 	XtWidgetGeometry *request;
