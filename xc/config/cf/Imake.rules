@@ -1,26 +1,13 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.16 89/04/07 14:20:01 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.17 89/04/07 14:29:48 jim Exp $
 
 /*
- * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
+ *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
  *
- * These are the macros that Imakefiles can use; also see README for a list of
- * the applicable make variables.
- */
-
-/*
- * general linking order:
- *   program-objects programlibs syslibs EXTRA_LIBRARIES systemlibs \
- *              EXTRA_LOAD_FLAGS
- *
- * where programlibs is LOCAL_LIBRARIES for ComplexProgramTarget
- * and EXTRA comes with syslibs from the LDFLAGS
- */
-
-/*
- * The following rules macros are defined:
- *
+ * These macros are defined for the various templates and Imakefiles (for a 
+ * list of the applicable make variables, see the template files):
+ * 
  *     	SingleProgramTarget              (program,objects,locallibs,syslibs)
  *     	SimpleProgramTarget                      (program)
  *     	ComplexProgramTarget                     (program)
@@ -91,14 +78,23 @@
  *      FontTarget                               (basename)
  *      CompressedFontTarget                     (basename)
  *      AllTarget                                (depends)
+ * 
+ * 
+ * The general linking for building programs is:
+ * 
+ *      program-objects programlibs syslibs EXTRA_LIBRARIES systemlibs \
+ *              EXTRA_LOAD_FLAGS
+ *
+ * where programlibs is LOCAL_LIBRARIES for ComplexProgramTarget
+ * and EXTRA comes with syslibs from the LDFLAGS
  */
 
 
 
-
 /*
- * This will build an uninstalled program.  This can be used
- * for multiple programs in the same Makefile.
+ * SingleProgramTarget - generate rules to compile and link the indicated 
+ * program; since it does not use any default object files, it may be used for
+ * multiple programs in the same Imakefile.
  */
 #ifndef SingleProgramTarget
 #define	SingleProgramTarget(program,objects,locallibs,syslibs)		@@\
@@ -116,8 +112,9 @@ clean::									@@\
 
 
 /*
- * This target can be called by all programs that are contained in
- * a single c source file.
+ * SimpleProgramTarget - generate rules for compiling and linking programs
+ * that only have one C source file.  It should only be used in Imakefiles 
+ * that describe a single program.
  */
 #ifndef SimpleProgramTarget
 #define	SimpleProgramTarget(program)					@@\
@@ -129,7 +126,10 @@ ComplexProgramTarget(program)
 
 
 /*
- * This target is the general interface for building a single program
+ * ComplexProgramTarget - generate rules for compiling and linking the 
+ * program specified by $(OBJS) and $(SRCS), installing the program and its
+ * man page, and generating dependencies.  It should only be used in 
+ * Imakefiles that describe a single program.
  */
 #ifndef ComplexProgramTarget
 #define	ComplexProgramTarget(program)					@@\
@@ -154,8 +154,11 @@ clean::									@@\
 
 
 /*
- * These targets are the general interface for building multiple programs
- * in a single Makefile.
+ * ComplexProgramTarget_1 - generate rules for compiling and linking the
+ * program specified by $(OBJS1) and $(SRCS1), installing the program and its
+ * man page, and generating dependencies for it and any programs described
+ * by $(SRCS2) and $(SRCS3).  It should be used to build the primary 
+ * program in Imakefiles that describe multiple programs.
  */
 #ifndef ComplexProgramTarget_1
 #define	ComplexProgramTarget_1(program,locallib,syslib)			@@\
@@ -182,6 +185,12 @@ clean::									@@\
 #endif /* ComplexProgramTarget_1 */
 
 
+/*
+ * ComplexProgramTarget_2 - generate rules for compiling and linking the
+ * program specified by $(OBJS2) and $(SRCS2) and installing the program and
+ * man page.  It should be used to build the second program in Imakefiles 
+ * describing more than one program.
+ */
 #ifndef ComplexProgramTarget_2
 #define	ComplexProgramTarget_2(program,locallib,syslib)			@@\
 program: $(OBJS2) locallib						@@\
@@ -193,6 +202,12 @@ InstallManPage(program,$(MANDIR))
 #endif /* ComplexProgramTarget_2 */
 
 
+/*
+ * ComplexProgramTarget_3 - generate rules for compiling and linking the
+ * program specified by $(OBJS3) and $(SRCS3) and installing the program and
+ * man page.  It should be used to build the third program in Imakefiles 
+ * describing more than one program.
+ */
 #ifndef ComplexProgramTarget_3
 #define	ComplexProgramTarget_3(program,locallib,syslib)			@@\
 program: $(OBJS3) locallib						@@\
@@ -204,6 +219,10 @@ InstallManPage(program,$(MANDIR))
 #endif /* ComplexProgramTarget_3 */
 
 
+
+/*
+ * ServerTarget - generate rules to compile, link, and relink an X server.
+ */
 #ifndef ServerTarget
 #define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
 server: subdirs objects libs						@@\
@@ -218,8 +237,10 @@ load/**/server:								@@\
 #endif /* ServerTarget */
 
 
+
+
 /*
- * Install a Library.
+ * InstallLibrary - generate rules to install the indicated library.
  */
 #ifndef InstallLibrary
 #define	InstallLibrary(libname,dest)					@@\
@@ -230,7 +251,8 @@ install:: lib/**/libname.a						@@\
 
 
 /*
- * Install a Library Alias.
+ * InstallLibraryAlias - generate rules to create a link from one library name
+ * to another for the purposes of aliasing.
  */
 #ifndef InstallLibraryAlias
 #define	InstallLibraryAlias(libname,alias,dest)				@@\
@@ -240,7 +262,7 @@ install::								@@\
 
 
 /*
- * Install a Lint Library.
+ * InstallLintLibrary - generate rules to install the indicated lint library.
  */
 #ifndef InstallLintLibrary
 #define	InstallLintLibrary(libname,dest)				@@\
@@ -250,7 +272,11 @@ install.ln:: llib-l/**/libname.ln					@@\
 
 
 /*
- * Install a man page (long form for renaming).
+ * InstallManPageLong - generate rules to install the indicated manual page,
+ * giving it an alternate name.  This is used for installing man pages whose
+ * base name without the .man suffix would normally be longer than 8 characters
+ * (the limit for using source code control systems on files systems with 
+ * short file names).
  */
 #ifndef InstallManPageLong
 #define	InstallManPageLong(file,destdir,dest)				@@\
@@ -260,7 +286,7 @@ install.man:: file.man							@@\
 
 
 /*
- * Install a man page.
+ * InstallManPage - generate rules to install the indicated manual page.
  */
 #ifndef InstallManPage
 #define	InstallManPage(file,dest)					@@\
@@ -269,7 +295,8 @@ InstallManPageLong(file,dest,file)
 
 
 /*
- * Install a non-executable file.
+ * InstallNonExec - generate rules to install a data file using any special
+ * install flags set in $(INSTALLFLAGS).
  */
 #ifndef InstallNonExec
 #define	InstallNonExec(file,dest)					@@\
@@ -279,7 +306,8 @@ install:: file								@@\
 
 
 /*
- * Install a program
+ * InstallProgram - generate rules to install an executable program using any
+ * special install flags set in $(INSTALLFLAGS).
  */
 #ifndef InstallProgram
 #define	InstallProgram(program,dest)					@@\
@@ -289,7 +317,8 @@ install:: program							@@\
 
 
 /*
- * Install a program specifying the flags to use
+ * InstallProgramWithFlags - generate rules to install an executable program
+ * using given install flags.
  */
 #ifndef InstallProgramWithFlags
 #define InstallProgramWithFlags(program,dest,flags)			@@\
@@ -299,7 +328,8 @@ install:: program							@@\
 
 
 /*
- * Install a shell script
+ * InstallScript - install a shell script using special install flags set in 
+ * $(INSTALLFLAGS).  This macro has been superceeded by CppScriptTarget.
  */
 #ifndef InstallScript
 #define	InstallScript(program,dest)					@@\
@@ -309,7 +339,9 @@ install:: program.script						@@\
 
 
 /*
- * Install multiple programs under a specific step in the build
+ * InstallMultipleDestFlags - generate rules to install multiple files at
+ * once during a particular step in the build using a specific set of install 
+ * flags.
  */
 #ifndef InstallMultipleDestFlags
 #define InstallMultipleDestFlags(step,list,dest,flags)			@@\
@@ -321,13 +353,20 @@ step:: list								@@\
 #endif /* InstallMultipleDestFlags */
 
 
+/*
+ * InstallMultipleDest - generate rules to install multiple files at once
+ * during a particular step in the build using any install flags set in 
+ * $(INSTALLFLAGS).
+ */
 #ifndef InstallMultipleDest
 #define InstallMultipleDest(step,list,dest)				@@\
 InstallMultipleDestFlags(step,list,dest,$(INSTALLFLAGS))
 #endif /* InstallMultipleDest */
 
 /*
- * Install multiple programs
+ * InstallMultiple - generate rules to install multiple files at once 
+ * during the install step of the build using any install flags set in 
+ * $(INSTALLFLAGS).
  */
 #ifndef InstallMultiple
 #define	InstallMultiple(list,dest)					@@\
@@ -335,6 +374,10 @@ InstallMultipleDest(install,list,dest)
 #endif /* InstallMultiple */
 
 
+/*
+ * InstallMultipleFlags - generate rules to install multiple files at once
+ * during the install step of the build using the given install flags.
+ */
 #ifndef InstallMultipleFlags
 #define InstallMultipleFlags(list,dest,flags)				@@\
 InstallMultipleDestFlags(install,list,dest,flags)
@@ -342,7 +385,8 @@ InstallMultipleDestFlags(install,list,dest,flags)
 
 
 /*
- * Install multiple manual pages
+ * InstallMultipleMan - generate rules to install a variety of manual pages
+ * during the install.man step of the build.
  */
 #ifndef InstallMultipleMan
 #define InstallMultipleMan(list,dest)					@@\
@@ -351,7 +395,8 @@ InstallMultipleDest(install.man,list,dest)
 
 
 /*
- * Install an application defaults file
+ * InstallAppDefaults - generate rules to install appliation default files 
+ * if the InstallAppDefFiles configuration parameter is set.
  */
 #ifndef InstallAppDefaults
 #if InstallAppDefFiles
@@ -363,8 +408,12 @@ install:: class.ad							@@\
 #endif /* InstallAppDefFiles */
 #endif /* InstallAppDefaults */
 
+
+
+
 /*
- * This makes the depend target given OBJS.
+ * DependDependency - generate rules to build the makedepend program if 
+ * this Imakefile is within the source tree.
  */
 #ifndef DependDependency
 #ifdef UseInstalled
@@ -379,6 +428,11 @@ $(DEPEND):								@@\
 #endif /* UseInstalled */
 #endif /* DependDependency */
 
+
+/*
+ * DependTarget - generate rules to compute dependencies for all files listed
+ * in $(SRCS).
+ */
 #ifndef DependTarget
 #define	DependTarget()							@@\
 DependDependency()							@@\
@@ -388,6 +442,9 @@ depend::								@@\
 #endif /* DependTarget */
 
 
+/*
+ * CleanTarget - generate rules to remove any garbage files.
+ */
 #ifndef CleanTarget
 #define	CleanTarget()							@@\
 clean::									@@\
@@ -395,6 +452,9 @@ clean::									@@\
 #endif /* CleanTarget */
 
 
+/*
+ * TagsTarget - generate rules to compute tags files for C source code.
+ */
 #ifndef TagsTarget
 #define	TagsTarget()							@@\
 tags::									@@\
@@ -403,6 +463,10 @@ tags::									@@\
 #endif /* TagsTarget */
 
 
+/*
+ * ImakeDependency - generate rules to compile imake if this Imakefile is
+ * within the source tree.
+ */
 #ifndef ImakeDependency
 #ifdef UseInstalled
 #define ImakeDependency() /**/
@@ -419,6 +483,11 @@ $(IMAKE):								@@\
 #endif /* ImakeDependency */
 
 
+/*
+ * BuildMakefileTarget - generate rules to build a Makefile from an Imakefile
+ * and any special imake flags.  This is generally done automatically by the
+ * template or by any special Imakefiles.
+ */
 #ifndef BuildMakefileTarget
 #define	BuildMakefileTarget(imakefile,imakeflags)			@@\
 ImakeDependency()							@@\
@@ -432,6 +501,9 @@ Makefile:: imakefile $(ICONFIGFILES)					@@\
 #endif /* BuildMakefileTarget */
 
 
+/*
+ * MakefileTarget - generate rules to build a normal Makefile.
+ */
 #ifndef MakefileTarget
 #define MakefileTarget()						@@\
 BuildMakefileTarget(Imakefile,/**/)
@@ -439,7 +511,7 @@ BuildMakefileTarget(Imakefile,/**/)
 
 
 /*
- * for objects in libraries
+ * NormalLibraryObjectRule - generate make rules to build "normal" objects.
  */
 #ifndef NormalLibraryObjectRule
 #define	NormalLibraryObjectRule()					@@\
@@ -449,6 +521,10 @@ BuildMakefileTarget(Imakefile,/**/)
 #endif /* NormalLibraryObjectRule */
 
 
+/*
+ * ProfiledLibraryObjectRule - generate make rules to build both profiled
+ * and "normal" objects.
+ */
 #ifndef ProfiledLibraryObjectRule
 #define	ProfiledLibraryObjectRule()					@@\
 all::									@@\
@@ -462,6 +538,10 @@ all::									@@\
 #endif /* ProfiledLibraryObjectRule */
 
 
+/*
+ * DebuggedLibraryObjectRule - generate make rules to build both debuggable
+ * and "normal" objects.
+ */
 #ifndef DebuggedLibraryObjectRule
 #define	DebuggedLibraryObjectRule()					@@\
 all::									@@\
@@ -475,6 +555,10 @@ all::									@@\
 #endif /* DebuggedLibraryObjectRule */
 
 
+/*
+ * DebuggedAndProfiledLibraryOjbectRule - generate make rules to build
+ * debuggable, profiled, and "normal" objects.
+ */
 #ifndef DebuggedAndProfiledLibraryObjectRule
 #define	DebuggedAndProfiledLibraryObjectRule()				@@\
 all::									@@\
@@ -491,6 +575,10 @@ all::									@@\
 #endif /* DebuggedAndProfiledLibraryObjectRule */
 
 
+
+/*
+ * SpecialObjectRule - generate rules to compile a file with special flags.
+ */
 #ifndef SpecialObjectRule
 #define SpecialObjectRule(objs,depends,options)				@@\
 objs:	depends								@@\
@@ -499,6 +587,10 @@ objs:	depends								@@\
 #endif /* SpecialObjectRule */
 
 
+/*
+ * SpecialProfiledObjectRule - generate rules to compile a file with special
+ * flags and to make a profiled version.
+ */
 #ifndef SpecialProfiledObjectRule
 #define	SpecialProfiledObjectRule(objs,depends,options)			@@\
 all::									@@\
@@ -512,6 +604,10 @@ objs:	depends								@@\
 #endif /* SpecialProfiledObjectRule */
 
 
+/*
+ * SpecialDebuggedObjectRule - generate rules to compile a file with special
+ * flags and to make a debuggable version.
+ */
 #ifndef SpecialDebuggedObjectRule
 #define	SpecialDebuggedObjectRule(objs,depends,options)			@@\
 all::									@@\
@@ -525,6 +621,10 @@ objs:	depends								@@\
 #endif /* SpecialDebuggedObjectRule */
 
 
+/*
+ * SpecialDebuggedAndProfiledObjectRule - generate rules to compile a file 
+ * with special flags and to make debuggable and profiled versions.
+ */
 #ifndef SpecialDebuggedAndProfiledObjectRule
 #define	SpecialDebuggedAndProfiledObjectRule(objs,depends,options)	@@\
 all::									@@\
@@ -541,6 +641,9 @@ objs:	depends								@@\
 #endif /* SpecialDebuggedAndProfiledObjectRule */
 
 
+/*
+ * NormalLibraryTarget - generate rules to create a library.
+ */
 #ifndef NormalLibraryTarget
 #define	NormalLibraryTarget(libname,objlist)				@@\
 AllTarget(lib/**/libname.a)						@@\
@@ -552,6 +655,10 @@ lib/**/libname.a: objlist						@@\
 #endif /* NormalLibraryTarget */
 
 
+/*
+ * NormalLibraryTarget2 - generate rules to create a library in two steps.
+ * This is used to create libraries with large numbers of files.
+ */
 #ifndef NormalLibraryTarget2
 #define	NormalLibraryTarget2(libname,objlist1,objlist2)			@@\
 AllTarget(lib/**/libname.a)						@@\
@@ -564,6 +671,9 @@ lib/**/libname.a: objlist1 objlist2					@@\
 #endif /* NormalLibraryTarget2 */
 
 
+/*
+ * ProfiledLibraryTarget - generate rules to create a profiled library.
+ */
 #ifndef ProfiledLibraryTarget
 #define	ProfiledLibraryTarget(libname,objlist)				@@\
 AllTarget(lib/**/libname/**/_p.a)					@@\
@@ -579,6 +689,9 @@ clean::									@@\
 #endif /* ProfiledLibraryTarget */
 
 
+/*
+ * DebuggedLibraryTarget - generate rules to create a debuggable library.
+ */
 #ifndef DebuggedLibraryTarget
 #define	DebuggedLibraryTarget(libname,objlist)				@@\
 AllTarget(lib/**/libname/**/_d.a)					@@\
@@ -594,6 +707,9 @@ clean::									@@\
 #endif /* DebuggedLibraryTarget */
 
 
+/*
+ * AliasedLibraryTarget - generate rules to link one library to another.
+ */
 #ifndef AliasedLibraryTarget
 #define	AliasedLibraryTarget(libname,alias)				@@\
 AllTarget(lib/**/alias.a)						@@\
@@ -605,9 +721,8 @@ lib/**/alias.a: lib/**/libname.a					@@\
 
 
 /*
- * produce a relocatable object file instead of a library.
- * The reasons for this are complex, and I don't really like
- * it, but I don't see any other way to get the job done.  Sigh.
+ * NormalRelocatableTarget - generate rules to produce a relocatable object
+ * file instead of a library.  
  */
 #ifndef NormalRelocatableTarget
 #define	NormalRelocatableTarget(objname,objlist)			@@\
@@ -619,6 +734,10 @@ objname.o: objlist							@@\
 #endif /* NormalRelocatableTarget */
 
 
+/*
+ * ProfiledRelocatableTarget - generate rules to produce a profiled relocatable
+ * object file instead of a library.
+ */
 #ifndef ProfiledRelocatableTarget
 #define	ProfiledRelocatableTarget(objname,objlist)			@@\
 AllTarget(objname/**/_p.o)						@@\
@@ -633,6 +752,10 @@ clean::									@@\
 #endif /* ProfiledRelocatableTarget */
 
 
+/*
+ * DebuggedRelocatableTarget - generate rules to produce a debuggable 
+ * relocatable object file instead of a library.
+ */
 #ifndef DebuggedRelocatableTarget
 #define	DebuggedRelocatableTarget(objname,objlist)			@@\
 AllTarget(objname/**/_d.o)						@@\
@@ -648,8 +771,8 @@ clean::									@@\
 
 
 /*
- * Note that we force the lint library to always be newer than the
- * library itself.
+ * LintLibraryTarget - generate rules to create a lint library.  Note that the
+ * lint library is always forced to be newer than the library itself.
  */
 #ifndef LintLibraryTarget
 #define	LintLibraryTarget(libname,srclist)				@@\
@@ -661,6 +784,9 @@ llib-l/**/libname.ln: srclist						@@\
 #endif /* LintLibraryTarget */
 
 
+/*
+ * NormalLintTarget - generate rules to lint a set of sources.
+ */
 #ifndef NormalLintTarget
 #define NormalLintTarget(srclist)					@@\
 lint:									@@\
@@ -671,9 +797,8 @@ lint1:									@@\
 
 
 /*
- * if you want CDEBUGFLAGS passed along to subdirectories, then
- * provide a line like this in the appropriate Imakefile
- * #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+ * MakeSubdirs - generate rules to have make all do recursive makes in 
+ * indicated subdirectories.
  */
 #ifndef MakeSubdirs
 #define MakeSubdirs(dirs)						@@\
@@ -681,6 +806,13 @@ NamedMakeSubdirs(all,dirs)
 #endif /* MakeSubdirs */
 
 
+/*
+ * NamedMakeSubdirs - generate rules to do makes in the given subdirectories.
+ * If you want CDEBUGFLAGS passed along to subdirectories, provide a line like
+ * the following in the appropriate Imakefile
+ * 
+ *         #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+ */
 #ifndef NamedMakeSubdirs
 #define NamedMakeSubdirs(name,dirs)					@@\
 name::									@@\
@@ -693,12 +825,20 @@ name::									@@\
 #endif /* NamedMakeSubdirs */
 
 
+/*
+ * DependSubdirs - generate rules to recursively compute dependencies as
+ * part of the make depend step.
+ */
 #ifndef DependSubdirs
 #define DependSubdirs(dirs)						@@\
 NamedDependSubdirs(depend,dirs)
 #endif /* DependSubdirs */
 
 
+/*
+ * NamedDependSubdirs - generate rules to recursively compute dependencies
+ * as part of the named step.  Should use DependSubdirs whenever possible.
+ */
 #ifndef NamedDependSubdirs
 #define NamedDependSubdirs(name,dirs)					@@\
 name::									@@\
@@ -711,6 +851,9 @@ name::									@@\
 #endif /* NamedDependSubdirs */
 
 
+/*
+ * InstallSubdirs - generate rules to recursively install programs and files.
+ */
 #ifndef InstallSubdirs
 #define InstallSubdirs(dirs)						@@\
 install::								@@\
@@ -724,6 +867,9 @@ install::								@@\
 #endif /* InstallSubdirs */
 
 
+/*
+ * InstallManSubdirs - generate rules to recursively install manual pages.
+ */
 #ifndef InstallManSubdirs
 #define InstallManSubdirs(dirs)						@@\
 install.man::								@@\
@@ -737,6 +883,9 @@ install.man::								@@\
 #endif /* InstallManSubdirs */
 
 
+/*
+ * CleanSubdirs - generate rules to recursively clean out garbage files.
+ */
 #ifndef CleanSubdirs
 #define CleanSubdirs(dirs)						@@\
 clean::									@@\
@@ -749,6 +898,9 @@ clean::									@@\
 #endif /* CleanSubdirs */
 
 
+/*
+ * TagSubdirs - generate rules to recursively create tags files.
+ */
 #ifndef TagSubdirs
 #define TagSubdirs(dirs)						@@\
 tags::									@@\
@@ -761,6 +913,10 @@ tags::									@@\
 #endif /* TagSubdirs */
 
 
+/*
+ * MakeLintSubdirs - generate rules to recursively lint directories as part 
+ * of the named step.
+ */
 #ifndef MakeLintSubdirs
 #define MakeLintSubdirs(dirs,target,subtarget)				@@\
 target::								@@\
@@ -774,18 +930,29 @@ target::								@@\
 #endif /* MakeLintSubdirs */
 
 
+/*
+ * LintSubdirs - generate rules to recursively lint directories as part of 
+ * the make lint step.
+ */
 #ifndef LintSubdirs
 #define LintSubdirs(dirs)						@@\
 MakeLintSubdirs(dirs,lint,lint)
 #endif /* LintSubdirs */
 
 
+/*
+ * MakeLintLibSubdirs - generate rules to recursively create lint libraries.
+ */
 #ifndef MakeLintLibSubdirs
 #define MakeLintLibSubdirs(dirs)					@@\
 MakeLintSubdirs(dirs,lintlib,lintlib)
 #endif /* MakeLintLibSubdirs */
 
 
+/*
+ * MakeMakeSubdirs - generate rules to recursively recreate Makefiles as part
+ * of the specified step in the build.
+ */
 #ifndef MakeMakeSubdirs
 #define MakeMakeSubdirs(dirs,target)					@@\
 target:: $(IMAKE)							@@\
@@ -811,6 +978,9 @@ target::								@@\
 #endif /* MakeMakeSubdirs */
 
 
+/*
+ * MakeNsubdirMakefiles - generate rules to create sub Makefiles.
+ */
 #ifndef MakeNsubdirMakefiles
 #define MakeNsubdirMakefiles()						@@\
 subdirMakefiles:							@@\
@@ -851,6 +1021,9 @@ subsubsubsubdirMakefiles:						@@\
 #endif /* MakeNsubdirMakefiles */
 
 
+/*
+ * MakefileSubdirs - generate rules to create Makefiles.
+ */
 #ifndef MakefileSubdirs
 #define MakefileSubdirs(dirs)						@@\
 MakeMakeSubdirs(dirs,Makefiles)						@@\
@@ -859,6 +1032,11 @@ MakeNsubdirMakefiles()
 #endif /* MakefileSubdirs */
 
 
+/*
+ * CppScriptTarget - generate rules to create a shell script by running the
+ * input through cpp.  If the ExecableScripts configuration parameter is not
+ * set, then make sure that the first line begins with a colon.
+ */
 #ifndef CppScriptTarget
 #if ExecableScripts		/* can use #! instead of colon */
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
@@ -879,12 +1057,19 @@ dst::  src deplist							@@\
 #endif /* CppScriptTarget */
 
 
+/*
+ * MakeScriptFromCpp - generate rules to create a script from a file with a
+ * .cpp suffix.
+ */
 #ifndef MakeScriptFromCpp
 #define MakeScriptFromCpp(name,defs)					@@\
 CppScriptTarget(name,name.cpp,defs,)
 #endif /* MakeScriptFromCpp */
 
 
+/*
+ * MakeDirectories - generate rules to create a hierarchy of directories.
+ */
 #ifndef MakeDirectories
 #define MakeDirectories(step,dirs)					@@\
 step::									@@\
@@ -892,6 +1077,9 @@ step::									@@\
 #endif /* MakeDirectories */
 
 
+/*
+ * MakeFonts - generate rules to build font databases.
+ */
 #ifndef MakeFonts
 #define MakeFonts()							@@\
 all::  $(OBJS) fonts.dir						@@\
@@ -904,6 +1092,9 @@ clean::									@@\
 #endif /* MakeFonts */
 
 
+/*
+ * InstallFonts - generate rules to install font files
+ */
 #ifndef InstallFonts
 #define InstallFonts(dest)						@@\
 InstallMultiple($(OBJS),dest)						@@\
@@ -913,6 +1104,9 @@ install::  fonts.dir							@@\
 #endif /* InstallFonts */
 
 
+/*
+ * InstallFontAliases - generate rules to install font aliases databases. 
+ */
 #ifndef InstallFontAliases
 #define InstallFontAliases(dest)					@@\
 install::  fonts.alias							@@\
@@ -920,6 +1114,9 @@ install::  fonts.alias							@@\
 #endif /* InstallFontAliases */
 
 
+/*
+ * FontTarget - generate rules to convert a .bdf file into a .snf file.
+ */
 #ifndef FontTarget
 #define FontTarget(basename)						@@\
 basename.snf:  basename.bdf						@@\
@@ -927,6 +1124,10 @@ basename.snf:  basename.bdf						@@\
 #endif /* FontTarget */
 
 
+/*
+ * CompressedFontTarget - generate rules to convert a .bdf file into a 
+ * compressed .snf file.
+ */
 #ifndef CompressedFontTarget
 #define CompressedFontTarget(basename)					@@\
 basename.snf.Z:  basename.bdf						@@\
@@ -936,6 +1137,9 @@ basename.snf.Z:  basename.bdf						@@\
 #endif /* CompressedFontTarget */
 
 
+/*
+ * AllTarget - generate rules to build necessary things during make all.
+ */
 #ifndef AllTarget
 #define AllTarget(depends)						@@\
 all:: depends
