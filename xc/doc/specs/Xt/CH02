@@ -1,4 +1,4 @@
-.\" $XConsortium: CH02,v 1.17 94/04/18 18:47:59 rws Exp $
+.\" $XConsortium: CH02,v 1.18 94/04/18 20:20:26 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -163,8 +163,9 @@ An application wishing to use the ANSI C locale mechanism should call
 prior to calling
 .PN XtDisplayInitialize ,
 .PN XtOpenDisplay ,
-or
-.PN XtOpenApplication .
+.PN XtOpenApplication ,
+or 
+.PN XtAppInitialize .
 .LP
 Multiple instances of \*(tk applications may be implemented 
 in a single address space.
@@ -429,7 +430,7 @@ is the empty string, the application name is ``main''.
 .PN XtOpenDisplay
 returns the newly opened display or NULL if it failed.
 .LP
-Please refer to Section 15.2.1 for information regarding the use of
+See Section 7.12 for information regarding the use of
 .PN XtOpenDisplay
 in multiple threads.
 .sp
@@ -457,10 +458,9 @@ Note that applications need only call
 .PN XtCloseDisplay
 if they are to continue executing after closing the display; 
 otherwise, they should call
-.PN XtDestroyApplicationContext
-or just exit.
+.PN XtDestroyApplicationContext .
 .LP
-Please refer to Section 15.2.1 for information regarding the use of 
+See Section 7.12 for information regarding the use of 
 .PN XtCloseDisplay
 in multiple threads.
 
@@ -1436,7 +1436,7 @@ record is
 issues a fatal error; see Section 3.1 and Chapter 12.
 .IP \(bu 5
 If the specified class contains an extension record in the object class
-part extension field with \fIrecord_type\fP
+part \fIextension\fP field with \fIrecord_type\fP
 .PN \s-1NULLQUARK\s+1
 and the \fIallocate\fP field is not NULL,
 the procedure is invoked to allocate memory
@@ -1859,11 +1859,10 @@ in the
 record.
 .LP
 When the call to create a widget includes a varargs list containing
-.PN 
-XtVaTypedArg ,
+.PN XtVaTypedArg ,
 these arguments will be passed to the allocation procedure in an
 .PN XtTypedArgList .
-.IN "XtTypedArgList "" "@DEF@"
+.IN "XtTypedArgList" "" "@DEF@"
 .LP
 .Ds 0
 .TA .5i 3i
@@ -1876,15 +1875,17 @@ typedef struct {
 } XtTypedArg, *XtTypedArgList;
 .De
 .LP
+.IN "allocate procedure" "" "@DEF@"
 The allocate procedure pointer in the
 .PN ObjectClassExtension
 record is of type
 .PN XtAllocateProc .
 .IN "XtAllocateProc" "" "@DEF@"
 .FD 0
-typedef void (*XtAllocateProc)(WidgetClass, Cardinal*, Cardinal*, ArgList,
+typedef void (*XtAllocateProc)(WidgetClass, Cardinal*, Cardinal*, ArgList, \
 Cardinal*,
-                                  XtTypedArgList, Cardinal*, Widget*, XtPointer*);
+                                            XtTypedArgList, Cardinal*, \
+Widget*, XtPointer*);
 .br
       WidgetClass \fIwidget_class\fP;
 .br
@@ -1904,23 +1905,23 @@ Cardinal*,
 .br
       XtPointer* \fImore_bytes_return\fP;
 .FN
-.IP \fIwidget_class\fP 1i
+.IP \fIwidget_class\fP 1.5i
 Specifies the widget class of the instance to allocate.
-.IP \fIconstraint_size\fP 1i
+.IP \fIconstraint_size\fP 1.5i
 Specifies the size of the constraint record to allocate, or 0.
-.IP \fImore_bytes\fP 1i
+.IP \fImore_bytes\fP 1.5i
 Specifies the number of auxiliary bytes of memory to allocate.
-.IP \fIargs\fP 1i
+.IP \fIargs\fP 1.5i
 Specifies the argument list as given in the call to create the widget.
-.IP \fInum_args\fP 1i
+.IP \fInum_args\fP 1.5i
 Specifies the list of arguments.
-.IP \fItyped_args\fP 1i
+.IP \fItyped_args\fP 1.5i
 Specifies the list of typed arguments given in the call to create the widget.
-.IP \fInum_typed_args\fP 1i
+.IP \fInum_typed_args\fP 1.5i
 Specifies the number of typed arguments.
-.IP \fInew_return\fP 1i
+.IP \fInew_return\fP 1.5i
 Returns a pointer to the newly allocated instance, or NULL in case of error.
-.IP \fImore_bytes_return\fP 1i
+.IP \fImore_bytes_return\fP 1.5i
 Returns the auxiliary memory if it was requested, or NULL
 if requested and an error occurred; otherwise, unchanged.
 .sp
@@ -1928,7 +1929,7 @@ if requested and an error occurred; otherwise, unchanged.
 At widget allocation time, if an extension record with \fIrecord_type\fP
 equal to 
 .PN \s-1NULLQUARK\s+1
-is located through the object class part extension field
+is located through the object class part \fIextension\fP field
 and the \fIallocate\fP field is not NULL, the 
 .PN XtAllocateProc
 will be invoked to allocate memory for the widget.  If no ObjectClassPart
@@ -1945,15 +1946,15 @@ is found, the \*(xI will allocate memory for the widget.
 .LP
 An 
 .PN XtAllocateProc
-performs the following:
+must perform the following:
 .IP \(bu 5
-Allocates memory for the widget instance and returns it in \fInew_return\fP.
+Allocate memory for the widget instance and return it in \fInew_return\fP.
 The memory must be at least \fIwc->core_class.widget_size\fP bytes in length,
 double word aligned.
 .IP \(bu 5
-Initializes the \fIcore.constraints\fP field in the instance record to NULL
+Initialize the \fIcore.constraints\fP field in the instance record to NULL
 or to point to a constraint record.  If \fIconstraint_size\fP
-is not 0, the procedure allocates memory for the constraint record.
+is not 0, the procedure must allocate memory for the constraint record.
 The memory must be double word aligned.
 .IP \(bu 5
 If \fImore_bytes\fP is not 0, then the address of a block of memory
@@ -2813,7 +2814,7 @@ then the destroy procedure declared in its superclass,
 until finally it calls the destroy procedure declared in the Object
 class record.  Callback lists are deallocated.
 .IP \(bu 5
-If the widget class Object class part contains an 
+If the widget class object class part contains an 
 .PN ObjectClassExtension
 record with the record_type
 .PN \s-1NULLQUARK\s+1
@@ -2970,6 +2971,7 @@ Widget Instance Deallocation: the deallocate Procedure
 \*(SN Widget Instance Deallocation: the deallocate Procedure
 .XE
 .LP
+.IN "deallocate procedure" "" "@DEF@"
 The deallocate procedure pointer in the
 .PN ObjectClassExtension
 record is of type
@@ -2990,7 +2992,8 @@ along with the widget, or NULL.
 .LP
 When a widget is destroyed, if an
 .PN ObjectClassExtension
-record exists in the Object part of the widget class record with type
+record exists in the object class part \fIextension\fP field
+with \fIrecord_type\fP
 .PN \s-1NULLQUARK\s+1
 and the \fIdeallocate\fP field is not NULL, the
 .PN XtDeallocateProc
@@ -2999,15 +3002,15 @@ If no ObjectClassPart extension record is declared with \fIrecord_type\fP
 equal to 
 .PN \s-1NULLQUARK\s+1 ,
 then 
-.PN XtInheritAllocateProc 
+.PN XtInheritAllocate
 and 
-.PN XtInheritDeallocateProc
+.PN XtInheritDeallocate
 are assumed.
-The responsibilities of the deallocate method are to deallocate the
+The responsibilities of the deallocate procedure are to deallocate the
 memory specified by \fImore_bytes\fP if it is not NULL,
 to deallocate the constraints record as specified by the
 widget's \fIcore.constraints\fP field if it is
-not NULL, and the widget instance itself.  
+not NULL, and to deallocate the widget instance itself.
 .LP
 If no
 .PN XtDeallocateProc
@@ -3044,6 +3047,7 @@ in order to ensure that any
 required widget cleanup is properly executed.  The application developer
 must refer to the widget documentation to learn if a widget needs to
 perform additional cleanup beyond that performed automatically by the
-operating system.  None of the widget classes defined by the \*(xI
-require additional cleanup.
+operating system.  If the client is a session participant
+(see section 4.2) then the client may wish to resign from the session
+before exiting.  See section 4.2.4 for details.
 .bp
