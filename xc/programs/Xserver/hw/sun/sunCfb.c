@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.4 93/09/26 10:05:14 rws Exp $ */
+/* $XConsortium: sunCfb.c,v 1.5 93/10/29 17:40:21 kaleb Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -348,8 +348,6 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
 			cfbCreateDefColormap, CG2SaveScreen,
 			(int) &((struct cg2memfb *) 0)->pixplane);
 	((CG2Ptr) sunFbs[screen].fb)->regs.ppmask.reg = 0xFF;
-	pPrivate = GetScreenPrivate (pScreen);
-	pPrivate->UpdateColormap = CG2UpdateColormap;
     }
     return ret;
 }
