@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.2 93/07/19 14:44:56 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.4 93/07/26 14:40:07 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -1438,7 +1438,7 @@ int	which;
 	    decode_params = (char *) g31d_decode_params;
 	}
 	else {
-	   fprintf(" %s(%d), unexpected decode, %d\n",
+	   fprintf(stderr, " %s(%d), unexpected decode, %d\n",
 		__FILE__,__LINE__,image->decode);
 	   exit(1);
 	}
