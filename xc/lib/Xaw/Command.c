@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.68 89/12/07 20:15:16 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.69 89/12/08 12:36:29 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -396,7 +396,7 @@ Cardinal *num_params;	/* unused */
      bindings.
   */
   if (cbw->command.set)
-    XtCallCallbackList(cbw->command.callbacks, NULL);
+    XtCallCallbackList(w, cbw->command.callbacks, NULL);
 }
 
 /*
