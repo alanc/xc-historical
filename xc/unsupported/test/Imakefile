@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.25 92/03/13 14:19:24 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.26 93/02/05 17:09:16 rws Exp $
 
 #if BuildXInputLib
 #define IHaveSubdirs
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
       SUBDIRS = xinput
 #endif
 
@@ -11,7 +11,7 @@ XCOMM $XConsortium: Imakefile,v 1.25 92/03/13 14:19:24 keith Exp $
 #if HasShm
     SHMSRCS = shmtest.c
     SHMOBJS = shmtest.o
-    SHMPROG = shmtest
+    SHMPROG = ProgramTargetName(shmtest)
 #endif
    MBUFSRCS = xmbufinfo.c
    MBUFOBJS = xmbufinfo.o
@@ -20,13 +20,13 @@ XCOMM $XConsortium: Imakefile,v 1.25 92/03/13 14:19:24 keith Exp $
 #if BuildScreenSaverLib
   SAVERSRCS = savertest.c
   SAVEROBJS = savertest.o
-  SAVERPROG = savertest
+  SAVERPROG = ProgramTargetName(savertest)
 #endif
    INCLUDES = -I../include
        SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS) $(XTESTSRCS) $(SAVERSRCS)
        OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS) $(XTESTOBJS) $(SAVEROBJS)
 
-all:: shapetest $(SHMPROG) xmbufinfo xtesttest $(SAVERPROG)
+all:: ProgramTargetName(shapetest) $(SHMPROG) ProgramTargetName(xmbufinfo) ProgramTargetName(xtesttest) $(SAVERPROG)
 
 NormalProgramTarget(xmbufinfo,$(MBUFOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB),NullParameter)

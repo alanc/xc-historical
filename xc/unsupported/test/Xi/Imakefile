@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.13 91/04/09 19:40:35 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 91/07/12 17:06:55 rws Exp $
 
    LOCLIBS = $(XILIB) $(XLIB)
    DEPLIBS = $(DEPXILIB) $(DEPXLIB)
    SRCS = XTouch.c XPErrors.c XList.c XSelInput.c XSendEv.c
 
-all: xtouch xprotoerrors xlist xselinput xsendev
+all: ProgramTargetName(xtouch) ProgramTargetName(xprotoerrors) ProgramTargetName(xlist) ProgramTargetName(xselinput) ProgramTargetName(xsendev)
 
 NormalProgramTarget(xtouch,XTouch.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
 NormalProgramTarget(xprotoerrors,XPErrors.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
