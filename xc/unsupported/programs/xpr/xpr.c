@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.23 87/10/11 16:21:10 rws Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.24 87/10/12 11:05:39 swick Locked $";
 #endif
 
 #include <sys/types.h>
@@ -42,20 +42,13 @@ static char *rcsid_xpr_c = "$Header: xpr.c,v 1.23 87/10/11 16:21:10 rws Locked $
 #include <stdio.h>
 #include <pwd.h>
 #include "lncmd.h"
+#include "xpr.h"
 #include <X11/Xlib.h>
 #include <X11/XWDFile.h>
 
 int debug = 0;
 
 enum device {LN01, LN03, LA100, PS, PP};
-/* be sure to change pmp.h if you change the following */
-enum orientation {
-    UNSPECIFIED = -1,
-    PORTRAIT = 0,
-    LANDSCAPE = 1,
-    UPSIDE_DOWN = 2,
-    LANDSCAPE_LEFT = 3,
-  };
 
 #define W_MAX 2400
 #define H_MAX 3150
@@ -77,16 +70,6 @@ enum orientation {
 #define F_REPORT 64
 #define F_COMPACT 128
 #define F_INVERT 256
-
-/* 3812 PagePrinter macros, copied from pmp.h; change there, too */
-#define PPI	240
-#define inch2pel(inches)	((int) ((inches) * PPI))
-#define DEFAULT_WIDTH	8.5
-#define X_MAX_PELS	inch2pel(DEFAULT_WIDTH)
-#define DEFAULT_LENGTH	11
-#define Y_MAX_PELS	inch2pel(DEFAULT_LENGTH)
-
-#define INTENSITY(color) (39L*color.red + 50L*color.green + 11L*color.blue)
 
 char *infilename = "stdin", *whoami;
 
@@ -120,7 +103,8 @@ char **argv;
 	      top >= 0? inch2pel((float)top/300.0): inch2pel(0.70),
 	      header, trailer,
 	      (flags & F_PORTRAIT)? PORTRAIT:
-	      ((flags & F_LANDSCAPE)? LANDSCAPE: UNSPECIFIED));
+	      ((flags & F_LANDSCAPE)? LANDSCAPE: UNSPECIFIED),
+	      (flags & F_INVERT));
 	exit(0);
     }
 
