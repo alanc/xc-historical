@@ -73,12 +73,11 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
+.NH 3
+Resources
 .LP
 When creating a Paned widget instance, the following resources are
 retrieved from the argument list or the resource database:
-.LP
-.NH 3
-Resources
 .LP
 .IN "Paned widget" "resources"
 .ps 9

@@ -26,12 +26,12 @@ the button becomes highlighted by drawing a rectangle around its
 perimeter.  This highlighting indicates that the button is ready for
 selection.  When a pointer button is pressed, the MenuButton widget will
 pop up the menu that has been named in the \fBmenuName\fP resource.
+.NH 3
+Resources
 .LP
 When creating a MenuButton widget instance, 
 the following resources are retrieved from the argument list
 or from the resource database:
-.NH 3
-Resources
 .LP
 .IN "MenuButton widget" "resources"
 .ps 9

@@ -39,6 +39,9 @@ widget creation time, or via \fBXtSetValues\fP.
 .NH 3
 Resources
 .LP
+When creating an AsciiText widget instance, the following resources are
+retrieved from the argument list or from the resource database:
+.LP
 .IN "AsciiText widget" "resources"
 .ps 9
 .nr PS 9

@@ -31,6 +31,9 @@ defines a few new resources.
 .NH 3
 Resources
 .LP
+When creating an TextSink object instance, the following resources are
+retrieved from the argument list or from the resource database:
+.LP
 .IN "AsciiSink object" "resources"
 .ps 9
 .nr PS 9

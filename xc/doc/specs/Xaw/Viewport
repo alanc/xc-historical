@@ -33,11 +33,11 @@ When the geometry of the frame window is equal in size to the inner
 window, or when the data does not require scrolling, the Viewport widget
 automatically removes any scrollbars.  The \fBforceBars\fP option causes
 the Viewport widget to display all scrollbars permanently.
+.NH 3
+Resources
 .LP
 When creating a Viewport widget instance, the following resources are
 retrieved from the argument list or the resource database:
-.NH 3
-Resources
 .LP
 .IN "Viewport widget" "resources"
 .ps 9

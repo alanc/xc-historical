@@ -55,6 +55,9 @@ way to get the latest version of the text string is with
 .NH 3
 Resources
 .LP
+When creating an AsciiSrc object instance, the following resources are
+retrieved from the argument list or from the resource database:
+.LP
 .IN "AsciiSrc object" "resources"
 .ps 9
 .nr PS 9

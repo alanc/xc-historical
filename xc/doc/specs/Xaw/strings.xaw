@@ -522,13 +522,13 @@ buffer to be displayed in the widget.  If \fBtype\fP is
 displayed.  This string is normally copied by the text widget into
 internal memory, but may be used in place by setting the
 \fBuseStringInPlace\fP resource.  As of X11R4 this is a settable resource.
+.So \\$1
 .LP
 .NT
-When this resource is queried - using \fBXtGetValues\fP - and
+When the \fBstring\fP resource is queried - using \fBXtGetValues\fP - and
 \fBuseStringInPlace\fP is \fBFalse\fP, the string is only valid until
 the next time the \fBstring\fP is queried (see Section 5.6.1.1).
 .NE
-.So \\$1
 ..
 .de Op \" Source Piece Size
 .ie 'Bold'\\$1' .IP \fBpieceSize\fP 1.5i
