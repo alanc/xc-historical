@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.18 87/08/29 16:27:26 ham Exp $ */
+/* $Header: XConnDis.c,v 11.20 87/08/31 14:14:38 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -255,7 +255,6 @@ int _XDisconnectDisplay (server)
  * 1) returns as soon as the connection can be written on....
  * 2) if the connection can be read, must enqueue events and handle errors,
  * until the connection is writable.
- * XXX this routine needs to use proper macros for mask bits.
  */
 _XWaitForWritable(dpy)
     Display *dpy;
@@ -313,15 +312,15 @@ _XWaitForWritable(dpy)
 }
 
 
-/* XXX this routine ought to use the 4.3 macros for mask bits */
 _XWaitForReadable(dpy)
   Display *dpy;
 {
     unsigned long r_mask[MSKCNT];
     int result;
 	
-    BITSET(r_mask, dpy->fd);
+    CLEARBITS(r_mask);
     do {
+	BITSET(r_mask, dpy->fd);
 	result = select(dpy->fd + 1, r_mask, NULL, NULL, NULL);
 	if (result == -1 && errno != EINTR) (*_XIOErrorFunction)(dpy);
     } while (result <= 0);
