@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_ini.c,v 5.6 91/09/30 16:47:24 hersh Exp $ */
+/* $XConsortium: wstx_ini.c,v 5.7 92/05/29 14:15:52 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -583,24 +583,22 @@ init_phigs_ws_dt( ws_dt, category )
     }
 }
 
+/* This is stupid, atoms don't go away when the client exits, and here we
+ * are always creating an atom which is usually never used.  Moreover,
+ * process id is not unique when clients come from multiple machines.
+ * Why does this silliness exist? -rws
+ */
 static char*
 get_cmap_prop_atom( wst, display ) 
    Wst			*wst;
    Display		*display;
 {
     static char cmap_prop_name[PHIGS_MAX_NAME_LEN + 1];
-    Atom	api_map;
-    XStandardColormap	std;
     int		pid;
 
     pid = getpid();
     sprintf (cmap_prop_name, "PEX_SI_RGB_API_MAP_%d", pid); 
-    api_map = XInternAtom( display, cmap_prop_name, False );
-    std.colormap = 0;
-    XChangeProperty( display, DefaultRootWindow(display), api_map,
-	XA_RGB_COLOR_MAP, 32, PropModeReplace, (unsigned char *)&std,
-	sizeof(XStandardColormap)/4 );
-    return( (char *)api_map );
+    return (char *)XInternAtom( display, cmap_prop_name, False );
 }
 
 static void
