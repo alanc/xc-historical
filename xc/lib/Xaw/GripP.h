@@ -1,5 +1,5 @@
 /*
-* $XConsortium: GripP.h,v 1.10 88/09/06 09:44:56 swick Exp $
+* $XConsortium: GripP.h,v 1.11 88/09/06 16:41:33 jim Exp $
 */
 
 
@@ -44,6 +44,8 @@ SOFTWARE.
  *
  *****************************************************************************/
 
+#define DEFAULT_GRIP_SIZE 8
+
 /* New fields for the Grip widget class record */
 typedef struct {int empty;} GripClassPart;
 
@@ -58,7 +60,6 @@ extern GripClassRec gripClassRec;
 
 /* New fields for the Grip widget record */
 typedef struct {
-  Cursor	 cursor;
   XtCallbackList grip_action;
 } GripPart;
 

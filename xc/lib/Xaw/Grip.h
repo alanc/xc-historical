@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Grip.h,v 1.10 88/09/06 16:41:31 jim Exp $
+* $XConsortium: Grip.h,v 1.11 88/10/23 13:42:18 swick Exp $
 */
 
 
@@ -35,6 +35,8 @@ SOFTWARE.
 #ifndef _XtGrip_h
 #define _XtGrip_h
 
+#include <X11/Simple.h>
+
 /***************************************************************************
  *
  * Grip Widget 
@@ -60,8 +62,6 @@ SOFTWARE.
 
 */
 
-
-#define XtNcursor		"cursor"
 #define XtNgripTranslations	"gripTranslations"
 
 typedef struct {
