@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.7 94/06/27 14:21:45 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.8 94/07/05 11:24:52 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -466,7 +466,7 @@ int *argc_ret;
     if (!XGetCommand (disp, window, argv_ret, argc_ret))
 	return (0);
 
-    return (*argc_ret > 0);
+    return (*argc_ret > 0 && argv_ret);
 }
 
 
@@ -525,8 +525,9 @@ WinInfo *winInfo;
     }
     else
     {
-	SmProp prop1, prop2, prop3, *props[3];
-	SmPropValue prop3val;
+	SmProp prop1, prop2, prop3, prop4, *props[4];
+	SmPropValue prop3val, prop4val;
+	char userId[20];
 	int i;
 
 	prop1.name = SmRestartCommand;
@@ -554,11 +555,20 @@ WinInfo *winInfo;
 	prop3val.value = winInfo->wm_command[0];
 	prop3val.length = strlen (winInfo->wm_command[0]) + 1;
 
+	sprintf (userId, "%d", getuid());
+	prop4.name = SmUserID;
+	prop4.type = SmARRAY8;
+	prop4.num_vals = 1;
+	prop4.vals = &prop4val;
+	prop4val.value = (SmPointer) userId;
+	prop4val.length = strlen (userId);
+
 	props[0] = &prop1;
 	props[1] = &prop2;
 	props[2] = &prop3;
+	props[3] = &prop4;
 
-	SmcSetProperties (winInfo->smc_conn, 3, props);
+	SmcSetProperties (winInfo->smc_conn, 4, props);
 
 	free (prop1.vals);
 
@@ -982,8 +992,9 @@ Bool fast;
 
     if (!gotFirstSave)
     {
-	SmProp prop1, prop2, prop3, *props[3];
-	SmPropValue prop3val;
+	SmProp prop1, prop2, prop3, prop4, *props[4];
+	SmPropValue prop3val, prop4val;
+	char userId[20];
 	int i;
 
 	prop1.name = SmRestartCommand;
@@ -1011,11 +1022,20 @@ Bool fast;
 	prop3val.value = Argv[0];
 	prop3val.length = strlen (Argv[0]) + 1;
 
+	sprintf (userId, "%d", getuid());
+	prop4.name = SmUserID;
+	prop4.type = SmARRAY8;
+	prop4.num_vals = 1;
+	prop4.vals = &prop4val;
+	prop4val.value = (SmPointer) userId;
+	prop4val.length = strlen (userId);
+
 	props[0] = &prop1;
 	props[1] = &prop2;
 	props[2] = &prop3;
+	props[3] = &prop4;
 
-	SmcSetProperties (smcConn, 3, props);
+	SmcSetProperties (smcConn, 4, props);
 
 	free (prop1.vals);
 	
