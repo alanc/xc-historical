@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.13 88/02/17 12:18:23 jim Exp $
+ * $Header: Tekproc.c,v 1.14 88/02/17 13:26:33 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.13 88/02/17 12:18:23 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.14 88/02/17 13:26:33 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1268,9 +1268,6 @@ static void TekRealize (gw, valuemaskp, values)
 						    LARGEFONTNAME)))
       screen->Tfont[LARGEFONT] = screen->Tfont[TWOFONT];
     screen->tobaseline[LARGEFONT] = screen->Tfont[LARGEFONT]->ascent;
-
-    screen->fnt_norm = screen->Tfont[TWOFONT];
-    /* need to put some font in here so that menus work */
 
     screen->cur.fontsize = LARGEFONT;	/* set large font	*/
 
