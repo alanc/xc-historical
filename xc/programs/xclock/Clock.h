@@ -1,5 +1,5 @@
 /*
-* $Header: Clock.h,v 1.13 88/08/30 09:54:02 swick Exp $
+* $Header: Clock.h,v 1.14 88/08/30 16:59:39 swick Exp $
 */
 
 
@@ -79,9 +79,11 @@ SOFTWARE.
 		/* Boolean:  */
 #define XtNpadding		"padding"
 		/* Int: amount of space around outside of clock */
-#define XtCBackingStore		"BackingStore"
 
+#define XtCBackingStore		"BackingStore"
 #define XtCReverseVideo		"ReverseVideo"
+
+#define XtRBackingStore		"BackingStore"
 
 typedef struct _ClockRec *ClockWidget;  /* completely defined in ClockPrivate.h */
 typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in ClockPrivate.h */
