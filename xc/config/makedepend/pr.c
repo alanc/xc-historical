@@ -1,7 +1,12 @@
 /*
- * $Header: pr.c,v 1.1 87/08/14 18:01:02 toddb Locked $
+ * $Header: pr.c,v 1.2 87/08/14 18:08:47 toddb Exp $
  *
  * $Log:	pr.c,v $
+ * Revision 1.2  87/08/14  18:08:47  toddb
+ * Don't unmark each included file in recursive_pr_includes(): leaving it
+ * marked prevents multiple inclusions from being printed if an include
+ * file happens to be a terminal node on the graph.
+ * 
  * Revision 1.1  87/08/14  18:01:02  toddb
  * Initial revision
  * 
@@ -110,8 +115,17 @@ pr(ip, file, base)
 		printf("\n#\t%s", ip->i_list[ i ]->i_incstring);
 }
 
+#if defined (mips) && defined (SYSTYPE_SYSV)
+void catch()
+{
+	fflush(stdout);
+	log_fatal("got signal\n");
+}
+#else /* not (mips && SYSTYPE_SYSV) */
 catch(n)
 {
 	fflush(stdout);
 	log_fatal("got signal %d\n", n);
 }
+#endif /* mips && SYSTYPE_SYSV */
+

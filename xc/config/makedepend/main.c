@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.12 88/05/04 14:39:50 xswick Locked $
+ * $Header: main.c,v 1.13 88/08/03 08:56:32 xswick Exp $
  *
  * $Log:	main.c,v $
+ * Revision 1.13  88/08/03  08:56:32  xswick
+ * ignore X3J11 #pragma directive    
+ * 
  * Revision 1.12  88/05/04  14:39:50  jim
  * fixed problem with makedepend misinterpretting cc flags
  * 
@@ -108,7 +111,10 @@ int	width = 78;
 boolean	printed = FALSE;
 boolean	verbose = FALSE;
 boolean	show_where_not = FALSE;
-int	catch();
+#if defined (mips) && defined (SYSTYPE_SYSV)
+void  catch();
+#else /* !(mips && SYSTYPE_SYSV) */
+int   catch();
 
 struct sigvec sig_vec = {
 	catch,
@@ -122,6 +128,7 @@ struct sigvec sig_vec = {
 	|(1<<(SIGSYS-1)),
 	0
 };
+#endif /* mips && SYSTYPE_SYSV */
 
 main(argc, argv)
 	int	argc;
@@ -241,6 +248,16 @@ main(argc, argv)
 	/*
 	 * catch signals.
 	 */
+#if defined (mips) && defined (SYSTYPE_SYSV)
+/*  should really reset SIGINT to SIG_IGN if it was.  */
+	signal (SIGHUP, catch);
+	signal (SIGINT, catch);
+	signal (SIGQUIT, catch);
+	signal (SIGILL, catch);
+	signal (SIGBUS, catch);
+	signal (SIGSEGV, catch);
+	signal (SIGSYS, catch);
+#else /* not (mips && SYSTYPE_SYSV) */
 	sigvec(SIGHUP, &sig_vec, (struct sigvec *)0);
 	sigvec(SIGINT, &sig_vec, (struct sigvec *)0);
 	sigvec(SIGQUIT, &sig_vec, (struct sigvec *)0);
@@ -248,6 +265,7 @@ main(argc, argv)
 	sigvec(SIGBUS, &sig_vec, (struct sigvec *)0);
 	sigvec(SIGSEGV, &sig_vec, (struct sigvec *)0);
 	sigvec(SIGSYS, &sig_vec, (struct sigvec *)0);
+#endif /* mips && SYSTYPE_SYSV */
 
 	/*
 	 * now peruse through the list of files.
@@ -452,5 +470,9 @@ redirect(line, makefile)
 		puts(line); /* same as fputs(fdout); but with newline */
 	}
 	fflush(fdout);
-	fchmod(fileno(fdout), st.st_mode);
+#if defined (mips) && defined (SYSTYPE_SYSV)
+	chmod(makefile, st.st_mode);
+#else /* not (mips && SYSTYPE_SYSV) */
+        fchmod(fileno(fdout), st.st_mode);
+#endif /* mips && SYSTYPE_SYSV */
 }
