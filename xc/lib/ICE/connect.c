@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.14 93/11/18 11:41:59 mor Exp $ */
+/* $XConsortium: connect.c,v 1.15 93/11/18 16:49:27 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -31,9 +31,11 @@ static int  ConnectToPeer();
 
 
 IceConn
-IceOpenConnection (networkIdsList, errorLength, errorStringRet)
+IceOpenConnection (networkIdsList, mustAuthenticate,
+    errorLength, errorStringRet)
 
 char *networkIdsList;
+Bool mustAuthenticate;
 int  errorLength;
 char *errorStringRet;
 
@@ -127,7 +129,7 @@ char *errorStringRet;
 
     iceConn->process_msg_info = NULL;
 
-    iceConn->iceConn_type = 1;
+    iceConn->iceConn_type = ICE_CONN_FROM_CONNECT;
 
     iceConn->open_ref_count = 1;
     iceConn->proto_ref_count = 0;
@@ -200,9 +202,12 @@ char *errorStringRet;
 	&afNameCount, &afNamesLengths, &afNames);
 
     for (i = 0; i < _IceAuthCount; i++)
-	for (j = 0; j < afNameCount; j++)
+    {
+	authUsableFlags[i] = 0;
+	for (j = 0; j < afNameCount && !authUsableFlags[i]; j++)
 	    authUsableFlags[i] = (strncmp (_IcePoAuthRecs[i].auth_name,
 		afNames[j], afNamesLengths[j]) == 0);
+    }
 
     if (afNames)
 	IceFreeAuthNames (afNameCount, afNames);
@@ -234,7 +239,8 @@ char *errorStringRet;
     setup_sequence = iceConn->sequence;
 
     pSetupMsg->versionCount = _IceVersionCount;
-    pSetupMsg->authCount    = authUsableCount;
+    pSetupMsg->authCount = authUsableCount;
+    pSetupMsg->mustAuthenticate = mustAuthenticate;
 
     STORE_XPCS (pData, IceVendorString);
     STORE_XPCS (pData, IceReleaseString);
