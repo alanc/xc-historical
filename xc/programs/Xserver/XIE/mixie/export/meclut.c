@@ -1,4 +1,4 @@
-/* $XConsortium: meclut.c,v 1.1 93/10/26 09:49:37 rws Exp $ */
+/* $XConsortium: meclut.c,v 1.2 93/10/31 09:43:30 dpw Exp $ */
 /**** module meclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -161,7 +161,7 @@ static int ActivateECLUT(flo,ped,pet)
   
   for(b = 0; b < bands; ++sbnd, ++b) {
     
-    if (!(src = GetCurrentSrc(CARD8,flo,pet,sbnd))) continue; 
+    if (!(src = GetCurrentSrc(CARD8 *,flo,pet,sbnd))) continue; 
 
     dbnd = &pet->emitter[swizzle ? xieValMaxBands - b - 1 : b];
     
@@ -169,7 +169,7 @@ static int ActivateECLUT(flo,ped,pet)
     pitch = LutPitch(sbnd->format->levels);
     dlen = nentry * pitch;
     
-    if (!(dst = GetDstBytes(CARD8,flo,pet,dbnd,dbnd->current,dlen,KEEP)))
+    if (!(dst = GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current,dlen,KEEP)))
       return FALSE;
 
     if (start[b])
