@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.15 92/06/02 14:15:53 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.16 92/11/18 21:30:06 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -909,6 +909,7 @@ CloseDownClient(client)
     } 
     if (currentClient == client)
 	currentClient = serverClient;
+    fsfree(client->resolutions);
     fsfree(client);
 
 #ifdef DEBUG
