@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.9 91/03/15 17:35:42 rws Exp $
+# $XConsortium: Imakefile,v 5.10 91/03/24 18:10:44 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -80,11 +80,10 @@ includes:: errnum.h
 extract: $(HDRS) PHIGSerr.txt PHIGSfnc.txt lintfiltstrs
 
 errnum.h: errgen.awk phigserr.h
-	awk -f errgen.awk DATE=`date +%y/%m/%d,%T` phigserr.h > errnum.h
+	awk -f errgen.awk phigserr.h > errnum.h
 
-# use "sccs fix -r1.XX  PHIGSerr.txt; make" to avoid many, many SCCS deltas.
-PHIGSerr.txt: errmsgen.awk phigserr.h errnum.h
-	awk -f errmsgen.awk DATE=`date +%y/%m/%d,%T` phigserr.h > PHIGSerr.txt
+PHIGSerr.txt: errmsgen.awk phigserr.h
+	awk -f errmsgen.awk phigserr.h > PHIGSerr.txt
 
 lint lint-x : lintfiltstrs
 	@echo "no include lint needed"
