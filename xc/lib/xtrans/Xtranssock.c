@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.29 94/06/02 10:51:53 mor Exp mor $ */
+/* $XConsortium: Xtranssock.c,v 1.30 94/10/18 15:57:42 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -105,6 +105,7 @@ from the X Consortium.
 #define BOOL wBOOL
 #undef Status
 #define Status wStatus
+#define WIN32_LEAN_AND_MEAN
 #include <winsock.h>
 #undef Status
 #define Status int
@@ -950,7 +951,12 @@ XtransConnInfo ciptr;
     PRMSG (3, "TRANS(SocketUNIXResetListener) (%x,%d)\n", ciptr, ciptr->fd, 0);
 
     if (stat (unsock->sun_path, &statb) == -1 ||
-        (statb.st_mode & S_IFMT) != S_IFSOCK)
+        ((statb.st_mode & S_IFMT) !=
+#if (defined (sun) && defined(SVR4)) || defined(NCR)
+	  		S_IFIFO))
+#else
+			S_IFSOCK))
+#endif
     {
 	int oldUmask = umask (0);
 
