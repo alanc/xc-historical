@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.33 92/03/25 19:06:44 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.34 92/03/31 17:48:46 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -432,9 +432,6 @@ CloseFont(pfont, fid)
   * nProtoCCIStructs char infos. \
   */
 
-/* 5/23/89 (ef) -- XXX! Does this already exist somewhere? */
-static xCharInfo xciNoSuchChar = {0, 0, 0, 0, 0, 0};
-
 void
 QueryFont(pFont, pReply, nProtoCCIStructs)
     FontPtr     pFont;
@@ -493,11 +490,7 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 			       &count, charInfos);
 	i = 0;
 	for (i = 0; i < count && ninfos < nProtoCCIStructs; i++) {
-	    if (charInfos[i])
-		*prCI = *charInfos[i];
-	    else
-		*prCI = xciNoSuchChar;
-	    prCI++;
+	    *prCI = *charInfos[i];
 	    ninfos++;
 	}
     }
