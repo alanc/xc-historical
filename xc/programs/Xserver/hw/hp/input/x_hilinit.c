@@ -1,6 +1,4 @@
-/* $Header: x_hilinit.c,v 1.3 94/12/15 08:54:47 gms Exp $ */
-
-
+/* $XConsortium: x_hilinit.c,v 8.203 95/01/24 02:57:56 dpw Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
