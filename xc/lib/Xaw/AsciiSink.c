@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSink.c,v 1.55 91/02/17 14:43:53 converse Exp $ */
+/* $XConsortium: AsciiSink.c,v 1.57 91/07/21 19:04:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -546,6 +546,7 @@ Widget current, request, new;
     AsciiSinkObject old_w = (AsciiSinkObject) current;
 
     if (w->text_sink.font != old_w->text_sink.font
+	|| w->text_sink.background != old_w->text_sink.background
 	|| w->text_sink.foreground != old_w->text_sink.foreground) {
 	XtReleaseGC((Widget)w, w->ascii_sink.normgc);
 	XtReleaseGC((Widget)w, w->ascii_sink.invgc);
