@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.103 89/10/27 12:18:30 jim Exp $
+ * $XConsortium: charproc.c,v 1.104 89/10/27 18:35:26 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.103 89/10/27 12:18:30 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.104 89/10/27 18:35:26 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -214,7 +214,6 @@ static char defaultTranslations[] =
 ~Ctrl ~Meta <Btn2Down>:		ignore()	\n\
 ~Ctrl ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \n\
  Ctrl ~Meta <Btn3Down>:         create-menu(fontMenu) XawPositionSimpleMenu(fontMenu) MenuPopup(fontMenu) \n\
-~Ctrl ~Meta <Btn3Down>:		ignore()	\n\
 ~Ctrl ~Meta <Btn3Down>:		start-extend()	\n\
       ~Meta <Btn3Motion>:	select-extend()	\n\
 ~Ctrl ~Meta <BtnUp>:		select-end(PRIMARY, CUT_BUFFER0) \n\
