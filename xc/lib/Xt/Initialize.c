@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.195 91/06/17 20:00:33 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.196 91/07/09 14:55:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -804,40 +804,17 @@ ArgList args_in;
 {
     XtAppContext app_con;
     Display * dpy;
-    String *saved_argv;
     register int i, saved_argc = *argc_in_out;
     Widget root;
     Arg args[3], *merged_args;
     Cardinal num = 0;
     
-    XtToolkitInitialize();
-    
-/*
- * Save away argv and argc so we can set the properties later 
- */
-    
-    saved_argv = (String *)
-	ALLOCATE_LOCAL( (Cardinal)((*argc_in_out + 1) * sizeof(String)) );
-
-    for (i = 0 ; i < saved_argc ; i++) saved_argv[i] = argv_in_out[i];
-    saved_argv[i] = NULL;	/* NULL terminate that sucker. */
-
-
-    app_con = XtCreateApplicationContext();
-
-    if (fallback_resources) /* save a procedure call */
-	XtAppSetFallbackResources(app_con, fallback_resources);
-
-    dpy = XtOpenDisplay(app_con, (String) NULL, NULL, application_class,
-			options, num_options, argc_in_out, argv_in_out);
-
-    if (!dpy)
-	XtErrorMsg("invalidDisplay","xtInitialize",XtCXtToolkitError,
-                   "Can't Open display", (String *) NULL, (Cardinal *)NULL);
+    dpy = _XtAppInit(&app_con, (String)application_class, options, num_options,
+		     argc_in_out, &argv_in_out, fallback_resources);
 
     XtSetArg(args[num], XtNscreen, DefaultScreenOfDisplay(dpy)); num++;
     XtSetArg(args[num], XtNargc, saved_argc);	                 num++;
-    XtSetArg(args[num], XtNargv, saved_argv);	                 num++;
+    XtSetArg(args[num], XtNargv, argv_in_out);	                 num++;
 
     merged_args = XtMergeArgLists(args_in, num_args_in, args, num);
     num += num_args_in;
@@ -849,7 +826,7 @@ ArgList args_in;
 	*app_context_return = app_con;
 
     XtFree((XtPointer)merged_args);
-    DEALLOCATE_LOCAL((XtPointer)saved_argv);
+    XtFree((XtPointer)argv_in_out);
     return(root);
 }
 
