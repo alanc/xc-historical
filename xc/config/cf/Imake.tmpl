@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.6 89/01/17 17:38:16 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.7 89/01/18 09:35:28 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -370,7 +370,19 @@ SYSLAST_LIBRARIES = SysLastLibraries
            RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a \
 			.emacs_* tags TAGS make.log MakeOut
 
-
+    IMAKE_DEFINES = /* leave blank, for command line use only */
+#ifdef UseInstalled
+         IRULESRC = $(CONFIGDIR)	/* used in rules file */
+        IMAKE_CMD = $(IMAKE) -I$(IRULESRC) -TImake.tmpl \
+			-sMakefile $(IMAKE_DEFINES)
+#else
+         IRULESRC = $(CONFIGSRC)
+        IMAKE_CMD = $(NEWTOP)$(IMAKE) -I$(NEWTOP)$(IRULESRC) -TImake.tmpl \
+			-sMakefile $(IMAKE_DEFINES)
+#endif
+     ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Imake.rules \
+			$(IRULESRC)/Project.tmpl $(IRULESRC)/site.def \
+			$(IRULESRC)/$(MACROFILE)
 
 /**/###########################################################################
 /**/# project configuration parameters - do not change
