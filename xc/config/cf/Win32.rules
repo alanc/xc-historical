@@ -1,18 +1,10 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.33 94/01/21 18:24:25 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.34 94/02/06 12:21:29 rws Exp $
 
 #define HasSharedLibraries YES
 #define NeedLibInsideFlag YES
-#define SharedLibICE NO
-#define SharedLibPex NO
-#define SharedLibSM NO
 #define SharedLibXaw NO
-#define SharedLibXext NO
-#define SharedLibXi NO
-#define SharedLibXie NO
 #define SharedLibXmu NO
 #define SharedLibXt NO
-#define SharedLibXtst NO
-#define SharedOldX NO
 #define SharedDataSeparation NO
 #define SharedCodeDef /**/
 #define SharedLibraryDef /**/
