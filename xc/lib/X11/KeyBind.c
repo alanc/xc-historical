@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.43 88/09/06 16:08:21 jim Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.44 88/10/09 12:18:19 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -183,7 +183,6 @@ Display *dpy;
 	    Xfree((char *)keysyms);
 	    keysyms = temp;
 	    per = 2;
-	    n <<= 1;
 	}
 	/* convert singleton Latin 1 alphabetics */
 	for (sym = keysyms, endp = keysyms + n*per; sym < endp; sym += per) {
