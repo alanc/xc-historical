@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.17 90/05/01 18:40:18 converse Exp $
+ * $XConsortium: xclipboard.c,v 1.18 90/10/10 14:59:41 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.17 90/05/01 18:40:18 converse Exp $ */
+/* $XConsortium: xclipboard.c,v 1.18 90/10/10 14:59:41 dave Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -409,6 +409,8 @@ XtActionsRec xclipboard_actions[] = {
     "Quit", Quit,
 };
 
+static Atom wm_delete_window;
+
 static XrmOptionDescRec table[] = {
     {"-w",	    "wrap",		XrmoptionNoArg,  "on"},
 /*    {"-nw",	    "wrap",		XrmoptionNoArg,  "False"} */
@@ -594,6 +596,8 @@ char **argv;
     ClipboardAtom = XA_CLIPBOARD(XtDisplay(top));
     if (XGetSelectionOwner(XtDisplay(top), ManagerAtom))
 	XtError("another clipboard is already running\n");
+    XtOverrideTranslations
+	(top, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
     parent = XtCreateManagedWidget("form", formWidgetClass, top, NULL, ZERO);
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
@@ -648,5 +652,9 @@ char **argv;
     	XtOwnSelection(top, ClipboardAtom, CurrentTime,
 		       ConvertSelection, LoseSelection, NULL);
     }
+    wm_delete_window = 
+      XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW", False);
+    (void) XSetWMProtocols (XtDisplay(top), XtWindow(top),
+                            &wm_delete_window, 1);
     XtMainLoop();
 }
