@@ -1,17 +1,3 @@
-att.cf		mit/config/att.cf
-servermd.h	mit/server/include
-cfb*		mit/server/ddx/cfb
-Imakefile	mit/server/Imakefile
-
-The idea behind the cfb patches is avoid any routine that only works
-with a signle clipping rectangle at gc-validate time. svgaBank.c 
-happyly modifies pCompositeClip without validation ... In the case
-of lines and points, the fast one-rect rouitne is called, but there is
-a check at the top of the routine, whether there was really only
-one clipping rectangle. I know this is a hack, but it works and
-is reasonable fast for such a dead architecture.
-
-
 The server is simply started with:
 
 	Xsvga -config <pmifile>:<mode>
