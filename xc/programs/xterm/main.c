@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.117 89/05/26 14:51:58 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.118 89/05/30 19:01:10 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1987,11 +1987,13 @@ int n;
 		CloseLog(screen);
 
 	if (!am_slave) {
-		/* restore ownership of tty */
+		/* restore ownership of tty and pty */
 		chown (ttydev, 0, 0);
+		chown (ptydev, 0, 0);
 
-		/* restore modes of tty */
+		/* restore modes of tty and pty */
 		chmod (ttydev, 0666);
+		chmod (ptydev, 0666);
 	}
 	exit(n);
 }
