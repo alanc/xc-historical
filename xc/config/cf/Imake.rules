@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.144 93/08/14 16:20:43 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.145 93/08/15 18:47:45 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1136,7 +1136,10 @@ AllTarget(LibraryTargetName(alias))					@@\
 									@@\
 LibraryTargetName(alias): LibraryTargetName(libname)			@@\
 	RemoveFile($@)							@@\
-	$(LN) LibraryTargetName(libname) $@
+	$(LN) LibraryTargetName(libname) $@				@@\
+									@@\
+clean::									@@\
+	RemoveFile(LibraryTargetName(alias))
 #endif /* AliasedLibraryTarget */
 
 
@@ -1227,7 +1230,9 @@ NormalLintTarget($(SRCS))
 src:  dir/src								@@\
 	RemoveFile($@)							@@\
 	$(LN) $? $@							@@\
-
+									@@\
+clean::									@@\
+	RemoveFile(src)
 #endif
 
 
@@ -1238,7 +1243,10 @@ src:  dir/src								@@\
 #define LinkFile(tofile,fromfile)					@@\
 tofile:: fromfile							@@\
 	RemoveFile($@)							@@\
-	$(LN) $? $@
+	$(LN) $? $@							@@\
+									@@\
+clean::									@@\
+	RemoveFile(tofile)
 #endif
 
 
