@@ -24,8 +24,12 @@
 #else
 #define GettyProgram /* as nothing */
 #endif
+#ifdef SetTtyGroup
+#define TtyDef -DUSE_TTY_GROUP
+#else
+#define TtyDef /**/
 /* add -DWTMP and -DLASTLOG if you want them */
-        DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy GettyProgram
+        DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy GettyProgram TtyDef
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
 		  TekPrsTbl.c Tekproc.c util.c VTPrsTbl.c

@@ -6,16 +6,22 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    3
 
+#ifdef VaxArchitecture
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
+#endif
 
-/**/# platform:  $XConsortium$
+/**/# platform:  $XConsortium: bsd.cf,v 1.1 89/01/11 14:58:35 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specfic parameters                        *
  *****************************************************************************/
 
+#ifdef VaxArchitecture
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
+#endif
 
-
+#if OSMajorVersion >= 4 && OSMinorVersion >= 3
+#define SetTtyGroup YES
+#endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.101 89/01/18 16:29:10 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.102 89/02/06 14:42:20 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1445,11 +1445,29 @@ spawn ()
 			(void) strcpy(ttydev, ptr);
 		}
 
+#ifdef USE_TTY_GROUP
+	{ 
+#include <grp.h>
+		struct group *ttygrp;
+		if (ttygrp = getgrnam("tty")) {
+			/* change ownership of tty to real uid, "tty" gid */
+			chown (ttydev, screen->uid, ttygrp->gr_gid);
+			chmod (ttydev, 0620);
+		}
+		else {
+			/* change ownership of tty to real group and user id */
+			chown (ttydev, screen->uid, screen->gid);
+			chmod (ttydev, 0622);
+		}
+		endgrent();
+	}
+#else
 		/* change ownership of tty to real group and user id */
 		chown (ttydev, screen->uid, screen->gid);
 
 		/* change protection of tty */
 		chmod (ttydev, 0622);
+#endif
 
 		if (!get_ty) {
 #ifdef USE_SYSV_TERMIO

@@ -13,7 +13,7 @@
 #define XsunServer Xsun
 /* #define Xplx Xplx */
 
-/**/# platform:  $XConsortium: sun.cf,v 1.5 89/02/24 13:33:45 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.6 89/03/02 13:27:50 jim Exp $
 /**/# operating system:  OSName
 
 
@@ -43,5 +43,9 @@
 #define ServerDefines SunWindowsDefines ExtensionDefines -DINCLUDE_ALLOCA_H
 #else
 #define ServerDefines SunWindowsDefines ExtensionDefines FloatPointOptions
+#endif
+
+#if OSMajorVersion >= 4 && OSMinorVersion >= 0
+#define SetTtyGroup YES
 #endif
 
