@@ -12,11 +12,17 @@ OBJS =  main.o dispatch.o extensions.o globals.o events.o tables.o \
 
 INCLUDES = -I../include -I$(FONTSRC)/include
 FONTDEFINES = -DFONT_PCF -DFONT_FS -DFONT_SPEEDO
+#ifdef DefaultFSConfigFile
+DEFAULTCONFIGFILE = DefaultFSConfigFIle
+CONFIGDEFINES = -DDEFAULT_CONFIG_FILE=\"$(DEFAULTCONFIGFILE)\"
+#endif
+
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(difs,$(OBJS))
 
 DependTarget()
 
+SpecialObjectRule(main.o,$(ICONFIGFILES),$(CONFIGDEFINES))
 SpecialObjectRule(initfonts.o,$(ICONFIGFILES),$(FONTDEFINES))
 
