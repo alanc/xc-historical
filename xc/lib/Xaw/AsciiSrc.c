@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.55 91/07/25 18:09:27 rws Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.56 91/10/22 18:24:44 eswu Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
