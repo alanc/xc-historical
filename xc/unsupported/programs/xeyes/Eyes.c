@@ -254,10 +254,7 @@ static void Redisplay(gw, event, region)
      XEvent *event;
      Region region;
 {
-    int		thick;
     EyesWidget	w;
-    XGCValues	myXGCV;
-    Display	*dpy;
 
     w = (EyesWidget) gw;
     w->eyes.pupil[0].x = -1000;
@@ -267,8 +264,7 @@ static void Redisplay(gw, event, region)
     (void) repaint_window ((EyesWidget)gw);
 }
 
-static TPoint computePupil (w, num, mouse)
-    EyesWidget	w;
+static TPoint computePupil (num, mouse)
     int		num;
     TPoint	mouse;
 {
@@ -307,13 +303,12 @@ static TPoint computePupil (w, num, mouse)
 	return ret;
 }
 
-static void computePupils (w, mouse, pupils)
-    EyesWidget	w;
+static void computePupils (mouse, pupils)
     TPoint	mouse;
     TPoint	pupils[2];
 {
-    pupils[0] = computePupil (w, 0, mouse);
-    pupils[1] = computePupil (w, 1, mouse);
+    pupils[0] = computePupil (0, mouse);
+    pupils[1] = computePupil (1, mouse);
 }
 
 /* ARGSUSED */
@@ -337,7 +332,7 @@ static int draw_it(client_data, id)
 		mouse.x = Tx(dx, dy, &w->eyes.t);
 		mouse.y = Ty(dx, dy, &w->eyes.t);
 		if (!TPointEqual (mouse, w->eyes.mouse)) {
-			computePupils (w, mouse.x, mouse.y, newpupil);
+			computePupils (mouse, newpupil);
 			xpupil.x = Xx(w->eyes.pupil[0].x, w->eyes.pupil[0].y, &w->eyes.t);
 			xpupil.y = Xy(w->eyes.pupil[0].x, w->eyes.pupil[0].y, &w->eyes.t);
 			xnewpupil.x =  Xx(newpupil[0].x, newpupil[0].y, &w->eyes.t);
@@ -376,7 +371,7 @@ repaint_window (w)
 	if (XtIsRealized ((Widget) w)) {
 		eyeLiner (w, XtWindow (w), w->eyes.outGC, w->eyes.centerGC, 0);
 		eyeLiner (w, XtWindow (w), w->eyes.outGC, w->eyes.centerGC, 1);
-		computePupils (w, w->eyes.mouse, w->eyes.pupil);
+		computePupils (w->eyes.mouse, w->eyes.pupil);
 		eyeBall (w, w->eyes.pupGC, 0);
 		eyeBall (w, w->eyes.pupGC, 1);
 	}
@@ -386,8 +381,6 @@ repaint_window (w)
 static Boolean SetValues (current, request, new)
     Widget current, request, new;
 {
-    EyesWidget old = (EyesWidget)current;
-    EyesWidget w = (EyesWidget)new;
     return( FALSE );
 }
 
