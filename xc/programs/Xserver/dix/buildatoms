@@ -39,3 +39,4 @@ END {
 	printf("}\n") > cfile ;
 	}
 ' BuiltInAtoms
+exit 0
