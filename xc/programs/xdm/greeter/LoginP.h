@@ -45,6 +45,7 @@ typedef struct {
 	GC		greetGC;
 	GC		failGC;
 	char		*greeting;	/* greeting */
+	char		*unsecure_greet;/* message displayed when insecure */
 	char		*namePrompt;	/* name prompt */
 	char		*passwdPrompt;	/* password prompt */
 	char		*fail;		/* failure message */
@@ -60,6 +61,8 @@ typedef struct {
 	void		(*notify_done)();/* proc to call when done */
 	int		failTimeout;	/* seconds til drop fail msg */
 	XtIntervalId	interval_id;	/* drop fail message note */
+	Boolean		secure_session;	/* session is secured */
+	Boolean		allow_access;	/* disable access control on login */
    } LoginPart;
 
 /* Full instance record declaration */

@@ -48,6 +48,7 @@
 */
 
 # define XtNgreeting		"greeting"
+# define XtNunsecureGreeting	"unsecureGreeting"
 # define XtNnamePrompt		"namePrompt"
 # define XtNpasswdPrompt	"passwdPrompt"
 # define XtNfail		"fail"
@@ -60,6 +61,8 @@
 # define XtNfailFont		"failFont"
 # define XtNfailTimeout		"failTimeout"
 # define XtNsessionArgument	"sessionArgument"
+# define XtNsecureSession	"secureSession"
+# define XtNallowAccess		"allowAccess"
 
 # define XtCGreeting		"Greeting"
 # define XtCNamePrompt		"NamePrompt"
@@ -67,6 +70,8 @@
 # define XtCFail		"Fail"
 # define XtCFailTimeout		"FailTimeout"
 # define XtCSessionArgument	"SessionArgument"
+# define XtCSecureSession	"SecureSession"
+# define XtCAllowAccess		"AllowAccess"
 
 /* notifyDone interface definition */
 

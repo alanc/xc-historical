@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.10 88/11/01 17:17:54 jim Exp $
+ * $XConsortium: Login.c,v 1.11 88/11/17 17:04:15 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -59,6 +59,8 @@ static XtResource resources[] = {
 	offset (failFont), XtRString,	"*-new century schoolbook-bold-r-normal-*-180-*"},
     {XtNgreeting, XtCGreeting, XtRString, sizeof (char *),
     	offset(greeting), XtRString, "Welcome to the X Window System"},
+    {XtNunsecureGreeting, XtCGreeting, XtRString, sizeof (char *),
+	offset(unsecure_greet), XtRString, "This is an unsecure session"},
     {XtNnamePrompt, XtCNamePrompt, XtRString, sizeof (char *),
 	offset(namePrompt), XtRString, "Login:  "},
     {XtNpasswdPrompt, XtCNamePrompt, XtRString, sizeof (char *),
@@ -66,11 +68,15 @@ static XtResource resources[] = {
     {XtNfail, XtCFail, XtRString, sizeof (char *),
 	offset(fail), XtRString, "Login failed, please try again."},
     {XtNfailTimeout, XtCFailTimeout, XtRInt, sizeof (int),
-	offset(failTimeout), XtRString, "30"},
+	offset(failTimeout), XtRString, "10"},
     {XtNnotifyDone, XtCCallback, XtRFunction, sizeof (caddr_t),
 	offset(notify_done), XtRFunction, (caddr_t) 0},
     {XtNsessionArgument, XtCSessionArgument, XtRString,	sizeof (char *),
 	offset(sessionArg), XtRString, (char *) 0 },
+    {XtNsecureSession, XtCSecureSession, XtRBoolean, sizeof (Boolean),
+	offset(secure_session), XtRString, "false" },
+    {XtNallowAccess, XtCAllowAccess, XtRBoolean, sizeof (Boolean),
+	offset(allow_access), XtRString, "false" }
 };
 
 #undef offset
@@ -98,11 +104,15 @@ static XtResource resources[] = {
 				 w->login.passwdPrompt,\
 				 strlen (w->login.passwdPrompt)))
 # define PROMPT_W(w)	(max(LOGIN_PROMPT_W(w), PASS_PROMPT_W(w)))
+# define GREETING(w)	((w)->login.secure_session  && !(w)->login.allow_access ?\
+				(w)->login.greeting : (w)->login.unsecure_greet)
 # define GREET_X(w)	((w->core.width - XTextWidth (w->login.greetFont,\
-			w->login.greeting, strlen (w->login.greeting))) / 2)
-# define GREET_Y(w)	(w->login.greeting[0] ? 2 * GREET_Y_INC (w) : 0)
-# define GREET_W(w)	(XTextWidth (w->login.greetFont,\
-			 w->login.greeting, strlen (w->login.greeting)))
+			GREETING(w), strlen (GREETING(w)))) / 2)
+# define GREET_Y(w)	(GREETING(w)[0] ? 2 * GREET_Y_INC (w) : 0)
+# define GREET_W(w)	(max (XTextWidth (w->login.greetFont,\
+			      w->login.greeting, strlen (w->login.greeting)), \
+			      XTextWidth (w->login.greetFont,\
+			      w->login.unsecure_greet, strlen (w->login.unsecure_greet))))
 # define LOGIN_X(w)	(2 * PROMPT_X_INC(w))
 # define LOGIN_Y(w)	(GREET_Y(w) + GREET_Y_INC(w) +\
 			 w->login.greetFont->max_bounds.ascent + Y_INC(w))
@@ -215,6 +225,12 @@ XorCursor (w)
     LoginWidget	w;
 {
     realizeCursor (w, w->login.xorGC);
+}
+
+static void
+RemoveFail (w)
+    LoginWidget	w;
+{
     if (w->login.failUp)
 	EraseFail (w);
 }
@@ -232,24 +248,36 @@ failTimeout (client_data, id)
 {
     LoginWidget	w = (LoginWidget)client_data;
 
+    Debug ("failTimeout\n");
     EraseFail (w);
 }
 
 DrawFail (w)
     LoginWidget	w;
 {
-    int x = FAIL_X(w);
-    int y = FAIL_Y(w);
-
-    XDrawString (XtDisplay (w), XtWindow (w), w->login.failGC,
-		x, y,
-		w->login.fail, strlen (w->login.fail));
     XorCursor (w);
     ResetLogin (w);
     XorCursor (w);
     w->login.failUp = 1;
-    if (w->login.failTimeout > 0)
-	XtAddTimeOut(w->login.failTimeout * 1000, failTimeout, (caddr_t) w);
+    RedrawFail (w);
+    if (w->login.failTimeout > 0) {
+	Debug ("failTimeout: %d\n", w->login.failTimeout);
+	XtAppAddTimeOut(XtWidgetToApplicationContext (w),
+			w->login.failTimeout * 1000,
+		        failTimeout, (caddr_t) w);
+    }
+}
+
+RedrawFail (w)
+    LoginWidget w;
+{
+    int x = FAIL_X(w);
+    int y = FAIL_Y(w);
+
+    if (w->login.failUp)
+        XDrawString (XtDisplay (w), XtWindow (w), w->login.failGC,
+		    x, y,
+		    w->login.fail, strlen (w->login.fail));
 }
 
 static void
@@ -257,18 +285,17 @@ draw_it (w)
     LoginWidget	w;
 {
     EraseCursor (w);
-    if (w->login.greeting[0])
+    if (GREETING(w)[0])
 	    XDrawString (XtDisplay (w), XtWindow (w), w->login.greetGC,
 			GREET_X(w), GREET_Y(w),
-			w->login.greeting, strlen (w->login.greeting));
+			GREETING(w), strlen (GREETING(w)));
     XDrawString (XtDisplay (w), XtWindow (w), w->login.promptGC,
 		LOGIN_X(w), LOGIN_Y(w),
 		w->login.namePrompt, strlen (w->login.namePrompt));
     XDrawString (XtDisplay (w), XtWindow (w), w->login.promptGC,
 		PASS_X(w), PASS_Y(w),
 		w->login.passwdPrompt, strlen (w->login.passwdPrompt));
-    if (w->login.failUp)
-	DrawFail (w);
+    RedrawFail (w);
     DrawName (w, 0);
     XorCursor (w);
     /*
@@ -293,6 +320,7 @@ DeleteBackwardChar (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     if (ctx->login.cursor > 0) {
 	ctx->login.cursor--;
 	switch (ctx->login.state) {
@@ -317,6 +345,7 @@ DeleteForwardChar (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     switch (ctx->login.state) {
     case GET_NAME:
 	if (ctx->login.cursor < strlen (ctx->login.data.name)) {
@@ -342,6 +371,7 @@ MoveBackwardChar (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     if (ctx->login.cursor > 0)
     	ctx->login.cursor--;
     XorCursor (ctx);
@@ -353,6 +383,7 @@ MoveForwardChar (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     switch (ctx->login.state) {
     case GET_NAME:
     	if (ctx->login.cursor < strlen (ctx->login.data.name))
@@ -372,6 +403,7 @@ MoveToBegining (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     ctx->login.cursor = 0;
     XorCursor (ctx);
 }
@@ -382,6 +414,7 @@ MoveToEnd (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     switch (ctx->login.state) {
     case GET_NAME:
     	ctx->login.cursor = strlen (ctx->login.data.name);
@@ -399,6 +432,7 @@ EraseToEndOfLine (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     switch (ctx->login.state) {
     case GET_NAME:
 	EraseName (ctx, ctx->login.cursor);
@@ -426,6 +460,7 @@ FinishField (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     switch (ctx->login.state) {
     case GET_NAME:
 	ctx->login.state = GET_PASSWD;
@@ -441,12 +476,30 @@ FinishField (ctx, event)
 }
 
 static void
+AllowAccess (ctx, event, params, num_params)
+    LoginWidget	ctx;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Arg	arglist[1];
+    Boolean allow;
+
+    RemoveFail (ctx);
+    XtSetArg (arglist[0], XtNallowAccess, (char *) &allow);
+    XtGetValues (ctx, arglist, 1);
+    XtSetArg (arglist[0], XtNallowAccess, !allow);
+    XtSetValues (ctx, arglist, 1);
+}
+
+static void
 SetSessionArgument (ctx, event, params, num_params)
     LoginWidget	ctx;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
+    RemoveFail (ctx);
     if (ctx->login.sessionArg)
 	XtFree (ctx->login.sessionArg);
     if (*num_params > 0) {
@@ -462,6 +515,7 @@ RestartSession (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     ctx->login.state = DONE;
     ctx->login.cursor = 0;
     (*ctx->login.notify_done) (ctx, &ctx->login.data, NOTIFY_RESTART);
@@ -474,6 +528,7 @@ AbortSession (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     ctx->login.state = DONE;
     ctx->login.cursor = 0;
     (*ctx->login.notify_done) (ctx, &ctx->login.data, NOTIFY_ABORT);
@@ -486,6 +541,7 @@ AbortDisplay (ctx, event)
     XEvent	*event;
 {
     XorCursor (ctx);
+    RemoveFail (ctx);
     ctx->login.state = DONE;
     ctx->login.cursor = 0;
     (*ctx->login.notify_done) (ctx, &ctx->login.data, NOTIFY_ABORT_DISPLAY);
@@ -516,6 +572,7 @@ InsertChar (ctx, event)
     if (len == 0)
 	return;
     XorCursor (ctx);
+    RemoveFail (ctx);
     switch (ctx->login.state) {
     case GET_NAME:
 	EraseName (ctx, ctx->login.cursor);
@@ -649,8 +706,28 @@ static void Redisplay(gw, event, region)
     draw_it ((LoginWidget) gw);
 }
 
-static Boolean SetValues ()
+static Boolean SetValues (current, request, new)
+    Widget  current, request, new;
 {
+    LoginWidget currentL, newL, w;
+    
+    currentL = (LoginWidget) current;
+    newL = (LoginWidget) new;
+    if (GREETING (currentL) != GREETING (newL)) {
+	w = currentL;
+	XSetForeground (XtDisplay (w), w->login.greetGC,
+			w->core.background_pixel);
+	XDrawString (XtDisplay (w), XtWindow (w), w->login.greetGC,
+			GREET_X(w), GREET_Y(w),
+			GREETING(w), strlen (GREETING(w)));
+	w = newL;
+	XSetForeground (XtDisplay (w), w->login.greetGC,
+			w->login.greetpixel);
+	XDrawString (XtDisplay (w), XtWindow (w), w->login.greetGC,
+			GREET_X(w), GREET_Y(w),
+			GREETING(w), strlen (GREETING(w)));
+    }
+    return 0;
 }
 
 char defaultLoginTranslations [] =
@@ -666,6 +743,7 @@ Ctrl<Key>U:	erase-line() \n\
 Ctrl<Key>X:	erase-line() \n\
 Ctrl<Key>C:	restart-session() \n\
 Ctrl<Key>\\\\:	abort-session() \n\
+:Ctrl<Key>plus:	allow-all-access() \n\
 <Key>BackSpace:	delete-previous-character() \n\
 <Key>Delete:	delete-previous-character() \n\
 <Key>Return:	finish-field() \n\
@@ -687,6 +765,7 @@ XtActionsRec loginActionsTable [] = {
   {"restart-session",		RestartSession},
   {"insert-char", 		InsertChar},
   {"set-session-argument",	SetSessionArgument},
+  {"allow-all-access",		AllowAccess},
 };
 
 LoginClassRec loginClassRec = {
