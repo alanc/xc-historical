@@ -1,4 +1,4 @@
-/* $XConsortium: CompositeP.h,v 1.10 89/09/12 16:49:30 swick Exp $ */
+/* $XConsortium: CompositeP.h,v 1.11 89/09/13 13:13:14 swick Exp $ */
 /* $oHeader: CompositeP.h,v 1.2 88/08/18 15:54:11 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,8 @@ SOFTWARE.
 
 #ifndef _XtCompositeP_h
 #define _XtCompositeP_h
+
+#include "Composite.h"
 
 /************************************************************************
  *

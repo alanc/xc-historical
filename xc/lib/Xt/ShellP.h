@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.22 89/06/16 18:09:22 jim Exp $
+* $XConsortium: ShellP.h,v 1.23 89/09/12 16:49:05 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -38,6 +38,8 @@ SOFTWARE.
 
 #ifndef _XtShellPrivate_h
 #define _XtShellPrivate_h
+
+#include "Shell.h"
 
 /* *****
  * ***** VendorP.h is included later on; it needs fields defined in the first

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CoreP.h,v 1.13 89/09/08 17:46:04 swick Exp $
+* $XConsortium: CoreP.h,v 1.14 89/09/12 16:49:27 swick Exp $
 * $oHeader: CoreP.h,v 1.2 88/08/18 15:54:37 asente Exp $
 */
 
@@ -29,6 +29,8 @@ SOFTWARE.
 
 #ifndef XtCoreP_h
 #define XtCoreP_h
+
+#include "Core.h"
 
 externalref int _XtInheritTranslations;
 
