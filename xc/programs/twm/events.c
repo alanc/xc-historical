@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.126 90/03/05 16:29:07 jim Exp $
+ * $XConsortium: events.c,v 1.127 90/03/05 16:43:39 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.126 90/03/05 16:29:07 jim Exp $";
+"$XConsortium: events.c,v 1.127 90/03/05 16:43:39 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2046,17 +2046,18 @@ HandleConfigureRequest()
 	return;
     }
 
-    if (cre->value_mask & CWStackMode)
-    {
-	/*
-	 * Warning, the raise or lower will be done in a different protocol
-	 * request from the rest of the event; this may be bad...
-	 */
-	if (cre->detail == Above)
-	    XRaiseWindow(dpy, Tmp_win->frame);
-	else if (cre->detail == Below)
-	    XLowerWindow(dpy, Tmp_win->frame);
+    if (cre->value_mask & CWStackMode) {
+	TwmWindow *otherwin;
+
+	xwc.sibling = (((cre->value_mask & CWSibling) &&
+			(XFindContext (dpy, cre->above, TwmContext,
+				       (caddr_t *) &otherwin) == XCSUCCESS))
+		       ? otherwin->frame : cre->above);
+	xwc.stack_mode = cre->detail;
+	XConfigureWindow (dpy, Tmp_win->frame, 
+			  cre->value_mask & (CWSibling | CWStackMode), &xwc);
     }
+
 
     /* Don't modify frame_XXX fields before calling SetupWindow! */
     x = Tmp_win->frame_x;
