@@ -129,6 +129,8 @@ struct displayResources {
 				"5",
 "openTimeout",	"OpenTimeout",	DM_INT,		boffset(openTimeout),
 				"30",
+"startAttempts","StartAttempts",DM_INT,		boffset(startAttempts),
+				"4",
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
 				"false",
 "userPath",	"Path",		DM_STRING,	boffset(userPath),

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: pseudoreset.c,v 1.1 88/10/15 19:06:00 keith Exp $
+ * $XConsortium: pseudoreset.c,v 1.2 88/11/17 17:04:58 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,8 @@
  */
 
 # include	<X11/Xlib.h>
+# include	<setjmp.h>
+# include	<sys/signal.h>
 
 static int
 ignoreErrors (dpy, event)
@@ -59,6 +61,14 @@ Window	window;
 	}
 }
 
+static jmp_buf	resetJmp;
+
+static int
+abortReset ()
+{
+	longjmp (resetJmp, 1);
+}
+
 /*
  * this display connection better not have any windows...
  */
@@ -69,14 +79,22 @@ Display	*dpy;
 	Window	root;
 	int	screen;
 
-	XSetErrorHandler (ignoreErrors);
-	for (screen = 0; screen < ScreenCount (dpy); screen++) {
-		Debug ("pseudoReset screen %d\n", screen);
-		root = RootWindow (dpy, screen);
-		killWindows (dpy, root);
+	if (setjmp (resetJmp)) {
+		LogError ("pseudoReset timeout\n");
+	} else {
+		signal (SIGALRM, abortReset);
+		alarm (30);
+		XSetErrorHandler (ignoreErrors);
+		for (screen = 0; screen < ScreenCount (dpy); screen++) {
+			Debug ("pseudoReset screen %d\n", screen);
+			root = RootWindow (dpy, screen);
+			killWindows (dpy, root);
+		}
+		Debug ("before XSync\n");
+		XSync (dpy, False);
+		alarm (0);
 	}
-	Debug ("before XSync\n");
-	XSync (dpy, False);
+	signal (SIGALRM, SIG_DFL);
 	XSetErrorHandler ((int (*)) 0);
 	Debug ("pseudoReset done\n");
 }

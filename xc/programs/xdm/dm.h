@@ -113,6 +113,7 @@ struct display {
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
 	int		openTimeout;	/* abort open attempt timeout */
+	int		startAttempts;	/* number of attempts at starting */
 	int		terminateServer;/* restart for each session */
 	int		grabTimeout;	/* time to wait for grab */
 	DisplayType	displayType;	/* method to handle with */
