@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 19:55:23 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/03/23 14:29:45 matt Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -6,8 +6,17 @@ XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 19:55:23 matt Exp $
 PHIGSDIRS = auto_box beach_ball gpc
 #endif
 
+/*
+ * The ixx translator does not build on some System-V machines 
+ * because of limitations the System V yacc.  
+ */
+
 #if BuildFresco
+#ifdef SonyArchitecture
+FRESCODIRS = dish i2mif fdraw
+#else
 FRESCODIRS = dish i2mif ixx fdraw
+#endif
 #endif
 
 SUBDIRS = beforelight ico listres maze puzzle showfont viewres xbiff xcalc \
