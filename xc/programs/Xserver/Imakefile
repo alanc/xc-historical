@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.152 93/07/19 14:38:25 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.153 93/07/29 12:18:13 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -9,6 +9,8 @@ XCOMM $XConsortium: Imakefile,v 1.152 93/07/19 14:38:25 rws Exp $
 #define MFBSubdirs StdSubdirs ddx/mfb
 #define CFBSubdirs MFBSubdirs ddx/cfb ddx/cfb16 ddx/cfb32
 #define CFB8Subdirs MFBSubdirs ddx/cfb
+#define CFB16Subdirs MFBSubdirs ddx/cfb ddx/cfb16
+#define CFB32Subdirs MFBSubdirs ddx/cfb ddx/cfb32
 #define StdLibs $(DIX) $(OS) $(FONT) $(MI) $(EXTENSIONS)
 #define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI)
 #define MFBLibs MFBBareLibs $(EXTENSIONS)
@@ -16,6 +18,10 @@ XCOMM $XConsortium: Imakefile,v 1.152 93/07/19 14:38:25 rws Exp $
 #define CFBLibs CFBBareLibs $(EXTENSIONS)
 #define CFB8BareLibs $(DIX) $(OS) $(FONT) $(CFB8) $(MFB) $(MI)
 #define CFB8Libs CFB8BareLibs $(EXTENSIONS)
+#define CFB16BareLibs $(DIX) $(OS) $(FONT) $(CFB16) $(MFB) $(MI)
+#define CFB16Libs CFB16BareLibs $(EXTENSIONS)
+#define CFB32BareLibs $(DIX) $(OS) $(FONT) $(CFB32) $(MFB) $(MI)
+#define CFB32Libs CFB32BareLibs $(EXTENSIONS)
 
 #if BuildPexExt
    PEXTENSIONSRC = $(EXTENSIONSRC)/server/PEX
@@ -57,6 +63,8 @@ XCOMM $XConsortium: Imakefile,v 1.152 93/07/19 14:38:25 rws Exp $
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a ddx/cfb16/libcfb.a ddx/cfb32/libcfb.a
             CFB8 = ddx/cfb/libcfb.a
+            CFB16 = ddx/cfb/libcfb.a ddx/cfb/libcfb16.a
+            CFB32 = ddx/cfb/libcfb.a ddx/cfb/libcfb32.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(FONTSRC)/lib/font/libfont.a
@@ -445,11 +453,11 @@ ServerTarget(Xiris,$(IRISDIRS),$(IRISOBJS),$(IRISLIBS),$(IRISSYSLIBS))
 XCOMM
 XCOMM Hewlett Packard CFB Server
 XCOMM
-SUBDIRS0 = CFB8Subdirs
+SUBDIRS0 = CFB32Subdirs
 SUBDIRS1 = ddx/hp
 HPSUBDIRS = $(SUBDIRS0) $(SUBDIRS1)
 HPOBJS = ddx/hp/hp.o
-HPLIBS = CFB8Libs
+HPLIBS = CFB32Libs
 HPSYSLIBS = $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #endif	/* XhpServer */
