@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.165 91/06/10 18:19:04 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.166 91/06/11 18:36:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -145,7 +145,7 @@ typedef unsigned int	Cardinal;
 typedef unsigned short	Dimension;  /* Size in pixels			*/
 typedef short		Position;   /* Offset from 0 coordinate		*/
 
-#if __STDC__
+#if NeedFunctionPrototypes
 typedef void*		XtPointer;
 #else
 typedef char*		XtPointer;
