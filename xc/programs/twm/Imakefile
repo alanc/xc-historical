@@ -11,26 +11,25 @@
 #endif
 
        PROGRAMS = twm
-        DEPLIBS = $(DEPEXTENSIONLIB) $(DEPXMULIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XMULIB) $(XLIB)
+        DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
       OTHERSRCS = gram.y lex.l
          YFLAGS = -d
-     OPTIONSDEF = -DSHAPE 
-        DEFINES = $(OPTIONSDEF) $(SIGNAL_DEFINES) $(PUTENVDEF)
+        DEFINES = ExtensionDefines $(SIGNAL_DEFINES) $(PUTENVDEF)
 
-SRCS1=	gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c parse.c \
-        menus.c events.c resize.c util.c version.c iconmgr.c \
-	cursor.c icons.c
+           SRCS = gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c \
+		parse.c menus.c events.c resize.c util.c version.c iconmgr.c \
+		cursor.c icons.c
 
-OBJS1=	gram.o lex.o deftwmrc.o add_window.o gc.o list.o twm.o parse.o \
-        menus.o events.o resize.o util.o version.o iconmgr.o \
-	cursor.o icons.o
+           OBJS = gram.o lex.o deftwmrc.o add_window.o gc.o list.o twm.o \
+		parse.o menus.o events.o resize.o util.o version.o iconmgr.o \
+		cursor.o icons.o
 
-all:: $(PROGRAMS)
+AllTarget(twm)
 
 depend:: lex.c gram.c deftwmrc.c 
 
-ComplexProgramTarget_1(twm,$(LOCAL_LIBRARIES),)
+ComplexProgramTarget(twm)
 
 gram.h gram.c: gram.y
 	yacc -d gram.y
