@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.40 91/02/12 13:37:40 converse Exp $ */
+/* $XConsortium: Destroy.c,v 1.41 91/02/12 13:54:19 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -172,12 +172,14 @@ static void XtPhase2Destroy (widget)
     if (app->destroy_count > starting_count) {
 	int i = starting_count;
 	while (i < app->destroy_count) {
-	    if (IsDescendant(app->destroy_list[i].widget, widget)) {
-		Widget descendant = app->destroy_list[i].widget;
-		int j;
+
+	    DestroyRec * dr = app->destroy_list + i;
+	    if (IsDescendant(dr->widget, widget)) {
+		Widget descendant = dr->widget;
+		register int j;
 		app->destroy_count--;
-		for (j = i; j < app->destroy_count; j++)
-		    app->destroy_list[j] = app->destroy_list[j+1];
+		for (j = app->destroy_count - i; --j >= 0; dr++)
+		    *dr = *(dr + 1);
 		XtPhase2Destroy(descendant);
 	    }
 	    else i++;
@@ -219,25 +221,22 @@ void _XtDoPhase2Destroy(app, dispatch_level)
      */
 
     int i = 0;
-    DestroyRec* dr;
     while (i < app->destroy_count) {
 
 	/* XtPhase2Destroy can result in calls to XtDestroyWidget,
 	 * and these could cause app->destroy_list to be reallocated.
 	 */
 
-	dr = app->destroy_list + i;
+	DestroyRec* dr = app->destroy_list + i;
 	if (dr->dispatch_level >= dispatch_level)  {
 	    Widget w = dr->widget;
-	    if (--app->destroy_count)
-		bcopy( (char*)(dr+1), (char*)dr,
-		       (app->destroy_count - i) * sizeof(DestroyRec)
-		      );
+	    register int j;
+	    app->destroy_count--;
+	    for (j = app->destroy_count - i; --j >=0; dr++)
+		*dr = *(dr + 1);
 	    XtPhase2Destroy(w);
 	}
-	else {
-	    i++;
-	}
+	else i++;
     }
 }
 
