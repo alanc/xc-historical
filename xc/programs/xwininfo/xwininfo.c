@@ -394,7 +394,7 @@ Display_Tree_Info(window)
     Display_Window_Id(child_list[i]);
   }
 
-  free(child_list);
+  if (child_list) free(child_list);
 }
 
 
