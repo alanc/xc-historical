@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p059,v 5.1 91/02/16 09:37:45 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -22,7 +22,7 @@
 .\" USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 .\" OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\" PERFORMANCE OF THIS SOFTWARE.
-.TH "FILL AREA SET 3" 3P "29 February 1991"
+.TH "FILL AREA SET 3" 3P "26 July 1991"
 .SH NAME
 FILL AREA SET 3 \- create a structure element specifying a \s-2\&3D\s+2 fill area set primitive
 .IX "Primitives, Filled Area Primitives" "FILL AREA SET 3"
@@ -34,9 +34,8 @@ FILL AREA SET 3 \- create a structure element specifying a \s-2\&3D\s+2 fill are
 .ta 1.25i 3i
 .nf
 void
-pfill_area_set3 ( num_sets, sets )
-Pint	num_sets;	\fInumber of sets of points\fP
-Ppoint_list3	*sets;	\fIarray of sets\fP
+pfill_area_set3 (point_list_list)
+Ppoint_list_list3	*point_list_list;	\fI list of point lists\fP
 .fi
 .ft R
 .SS Required PHIGS Operating States
@@ -62,20 +61,31 @@ the \s-2FILL AREA SET 3\s+2 element replaces the element pointed to by the
 element pointer. In either case, the element pointer is updated to point
 to the new \s-2FILL AREA SET 3\s+2 element.
 .SS C Input Parameters
-.IP \fInum_sets\fP
-The number of sets of points to be specified. Each set of points defines a
-separate closed fill area.
-.IP \fIsets\fP
-A pointer to a list \fInum_sets\fP long of Ppoint_list3 structures.
-Each Ppoint_list3 structure defines a fill area. Ppoint_list3 is defined in
-phigs.h as follows:
+.IP \fIpoint_list_list\fP
+A pointer to a list of Ppoint_list_list3 structures. Each Ppoint_list_list3
+structure has 2 fields, the \fInum_points_list\fP field, which is the number
+of 3d point lists, and the \fIpoint_lists\fP, a pointer to a list of 
+PPoint_list3.  Each Ppoint_list3 structure defines a fill area. 
+Ppoint_list_list3 is defined in phigs.h as follows:
 .sp .4
 .ta .5i +\w'Ppoint3     'u +\w'*num_points;     'u
 .nf
 typedef struct {
 .sp .2
-	Pint	num_points;	/* number of Ppoint3 structures in the list */ 
-	Ppoint3	*points;	/* list of points */
+	Pint         num_point_lists;       /* number of point lists  */
+	Ppoint_list3 *point_lists;          /* list of point lists    */
+.sp .2
+} Ppoint_list_list3;
+.fi
+.IP
+Ppoint_list3 is defined in phigs.h as follows:
+.sp .4
+.ta .5i +\w'Ppoint3     'u +\w'*num_points;     'u
+.nf
+typedef struct {
+.sp .2
+	Pint         num_points;       /* number of Ppoint3s in the list */
+	Ppoint3      *points;          /* list of points    */
 .sp .2
 } Ppoint_list3;
 .fi
