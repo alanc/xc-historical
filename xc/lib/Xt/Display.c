@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.92 93/07/21 11:47:35 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.93 93/08/11 14:05:44 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -73,9 +73,16 @@ static void XtAddToAppContext(d, app)
 	}
 
 	app->list[app->count++] = d;
+#if !defined(USE_POLL)
 	if (ConnectionNumber(d) + 1 > app->fds.nfds) {
 	    app->fds.nfds = ConnectionNumber(d) + 1;
 	}
+#else
+	app->fds.nfds++;
+	app->fds.fdlist = (struct pollfd *)
+	    XtRealloc ((char *) app->fds.fdlist,
+		       app->fds.nfds * sizeof (struct pollfd));
+#endif
 #undef DISPLAYS_TO_ADD
 }
 
@@ -317,9 +324,13 @@ XtAppContext XtCreateApplicationContext()
 	app->sync = app->being_destroyed = app->error_inited = FALSE;
 	app->in_phase2_destroy = NULL;
 	app->fds.nfds = app->fds.count = 0;
+#if !defined(USE_POLL)
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
 	FD_ZERO(&app->fds.emask);
+#else
+	app->fds.fdlist = NULL;
+#endif
 	app->input_max = 0;
 	_XtHeapInit(&app->heap);
 	app->fallback_resources = NULL;
@@ -362,6 +373,9 @@ static void DestroyAppContext(app)
 	*prev_app = app->next;
 	if (app->process->defaultAppContext == app)
 	    app->process->defaultAppContext = NULL;
+#if defined(USE_POLL)
+	XtFree((char *)app->fds.fdlist);
+#endif
 	if (app->free_bindings) _XtDoFreeBindings (app);
 	XtFree((char *)app);
 }

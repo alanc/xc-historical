@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.112 93/07/10 12:38:21 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.113 93/07/19 11:12:53 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -192,12 +192,17 @@ int _XtWaitForSomething(app,
 	struct timeval  new_time;
 	struct timeval  time_spent;
 	struct timeval	max_wait_time;
+	int nfound, ii, dd;
+#if !defined(USE_POLL) /* { variable declaration block */
 	static struct timeval  zero_time = { 0 , 0};
 	register struct timeval *wait_time_ptr;
 	Fd_set rmaskfd, wmaskfd, emaskfd;
 	static Fd_set zero_fd = { 0 };
-	int nfound, i, d;
-	
+#else /* }{ */
+	int poll_wait, fdlistlen, fdli;
+#endif /* } */
+
+#if !defined(USE_POLL) /* { init timer block */
  	if (block) {
 		GETTIMEOFDAY (&cur_time);
 		FIXUP_TIMEVAL(cur_time);
@@ -213,9 +218,82 @@ int _XtWaitForSomething(app,
 		max_wait_time = zero_time;
 		wait_time_ptr = &max_wait_time;
 	}
+#else /* }{ */
+#define X_BLOCK -1
+#define X_DONT_BLOCK 0
+
+	if (block) {
+		GETTIMEOFDAY (&cur_time);
+		FIXUP_TIMEVAL(cur_time);
+		start_time = cur_time;
+		if(howlong == NULL)
+			poll_wait = X_BLOCK;
+		else {
+			max_wait_time.tv_sec = *howlong / 1000;
+			max_wait_time.tv_usec = (*howlong % 1000) * 1000;
+
+			poll_wait = 
+				max_wait_time.tv_sec * 1000 + max_wait_time.tv_usec / 1000;
+		}
+	} else {
+		poll_wait = X_DONT_BLOCK;
+	}
+#endif /* } */
+
+#if !defined(USE_POLL) /* { select/poll init block */
+		if( !ignoreInputs ) {
+			rmaskfd = app->fds.rmask;
+			wmaskfd = app->fds.wmask;
+			emaskfd = app->fds.emask;
+		} else
+			rmaskfd = wmaskfd = emaskfd = zero_fd;
+
+		if (!ignoreEvents) {
+		    for (dd = 0; dd < app->count; dd++) {
+			FD_SET (ConnectionNumber(app->list[dd]), &rmaskfd);
+		    }
+		}
+#else /* }{ */
+	fdlistlen = 0;
+	if (!ignoreEvents)
+	    fdlistlen += app->count;
+	if (!ignoreInputs && app->input_list != NULL) {
+	    for (ii = 0; ii < (int) app->input_max; ii++)
+		if (app->input_list[ii] != NULL)
+		    fdlistlen++;
+	}
+	if (fdlistlen) {
+	    struct pollfd* fdlp = app->fds.fdlist;
+	    InputEvent* iep;
+
+	    if (!ignoreEvents)
+		for (fdli = 0 ; fdli < app->count; fdli++, fdlp++) {
+		    fdlp->fd = ConnectionNumber (app->list[fdli]);
+		    fdlp->events = POLLIN;
+		}
+	    if (!ignoreInputs && app->input_list != NULL)
+		for (ii = 0; ii < app->input_max; ii++)
+		    if (app->input_list[ii] != NULL) {
+			iep = app->input_list[ii];
+			fdlp->fd = ii;
+			fdlp->events = 0;
+			for ( ; iep; iep = iep->ie_next) {
+			    if (iep->ie_condition & XtInputReadMask)
+				fdlp->events |= POLLIN;
+			    if (iep->ie_condition & XtInputWriteMask)
+				fdlp->events |= POLLOUT;
+			    if (iep->ie_condition & XtInputExceptMask)
+				fdlp->events |= POLLERR;
+			}
+			fdlp++;
+		    }
+	}
+#endif /* } */
 
       WaitLoop:
 	while (1) {
+
+#if !defined(USE_POLL) /* { adjust timers block */
 		if (app->timerQueue != NULL && !ignoreTimers && block) {
 		    if(IS_AFTER(cur_time, app->timerQueue->te_timer_value)) {
 			TIMEDELTA (wait_time, app->timerQueue->te_timer_value, 
@@ -227,22 +305,27 @@ int _XtWaitForSomething(app,
 			}
 		    } else wait_time_ptr = &zero_time;
 		} 
-		if( !ignoreInputs ) {
-			rmaskfd = app->fds.rmask;
-			wmaskfd = app->fds.wmask;
-			emaskfd = app->fds.emask;
-		} else {
-			rmaskfd = zero_fd;
-			wmaskfd = zero_fd;
-			emaskfd = zero_fd;
-		}
-		if (!ignoreEvents) {
-		    for (d = 0; d < app->count; d++) {
-			FD_SET (ConnectionNumber(app->list[d]), &rmaskfd);
+#else /* }{ */
+		if (app->timerQueue != NULL && !ignoreTimers && block) {
+		    if (IS_AFTER (cur_time, app->timerQueue->te_timer_value)) {
+			TIMEDELTA (wait_time, app->timerQueue->te_timer_value,
+				   cur_time);
+			if (howlong == NULL || IS_AFTER (wait_time, max_wait_time)) {
+			    poll_wait = 
+				wait_time.tv_sec * 1000 + wait_time.tv_usec / 1000;
+			}
+		    } else {
+			poll_wait = X_DONT_BLOCK;
 		    }
-		}
+		} 
+#endif /* } */
+
+#if !defined(USE_POLL) /* { select/poll block */
 		nfound = select (app->fds.nfds, (int *) &rmaskfd,
 			(int *) &wmaskfd, (int *) &emaskfd, wait_time_ptr);
+#else /* }{ */
+		nfound = poll (app->fds.fdlist, fdlistlen, poll_wait);
+#endif /* } */
 		if (nfound == -1) {
 			/*
 			 *  interrupt occured recalculate time value and select
@@ -265,6 +348,7 @@ int _XtWaitForSomething(app,
 			    }
 
 			    if (block) {
+#if !defined(USE_POLL) /* { adjust timeout after signal interrupt block */
 				if (wait_time_ptr == NULL) /*howlong == NULL*/
 				    continue;
 				GETTIMEOFDAY (&new_time);
@@ -280,6 +364,21 @@ int _XtWaitForSomething(app,
 					/* time is up anyway */
 					nfound = 0;
 				}
+#else /* }{ */
+				if (poll_wait == X_BLOCK)
+				    continue;
+				GETTIMEOFDAY (&new_time);
+				FIXUP_TIMEVAL(new_time);
+				TIMEDELTA(time_spent, new_time, cur_time);
+				cur_time = new_time;
+				if ((time_spent.tv_sec * 1000 + time_spent.tv_usec / 1000) < poll_wait) {
+					poll_wait -= (time_spent.tv_sec * 1000 + time_spent.tv_usec / 1000);
+					continue;
+				} else {
+					/* time is up anyway */
+					nfound = 0;
+				}
+#endif /* } */
 			    }
 			} else {
 			    char Errno[12];
@@ -288,10 +387,11 @@ int _XtWaitForSomething(app,
 
 			    if (!ignoreEvents) {
 				/* get Xlib to detect a bad connection */
-				for (d = 0; d < app->count; d++) {
-				    if (XEventsQueued(app->list[d],
-						      QueuedAfterReading))
-					return d;
+				for (dd = 0; dd < app->count; dd++) {
+				    if (XEventsQueued(app->list[dd],
+						      QueuedAfterReading)) {
+					return dd;
+				    }
 				}
 			    }
 			    sprintf( Errno, "%d", errno);
@@ -312,12 +412,13 @@ int _XtWaitForSomething(app,
 	    AdjustHowLong (howlong, &start_time);
 	}
 
+#if !defined(USE_POLL) /* { check ready file descriptors block */
 	if(ignoreInputs) {
 	    if (ignoreEvents) return -1; /* then only doing timers */
-	    for (d = 0; d < app->count; d++) {
-		if (FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)) {
-		    if (XEventsQueued( app->list[d], QueuedAfterReading ))
-			return d;
+	    for (dd = 0; dd < app->count; dd++) {
+		if (FD_ISSET(ConnectionNumber(app->list[dd]), &rmaskfd)) {
+		    if (XEventsQueued( app->list[dd], QueuedAfterReading ))
+			return dd;
 		    /*
 		     * An error event could have arrived
 		     * without any real events, or events
@@ -335,17 +436,17 @@ int _XtWaitForSomething(app,
 	int ret = -1;
 	Boolean found_input = False;
 
-	for (i = 0; i < app->fds.nfds && nfound > 0; i++) {
+	for (ii = 0; ii < app->fds.nfds && nfound > 0; ii++) {
 	    XtInputMask condition = 0;
-	    if (FD_ISSET (i, &rmaskfd)) {
+	    if (FD_ISSET (ii, &rmaskfd)) {
 		nfound--;
 		if (!ignoreEvents) {
-		    for (d = 0; d < app->count; d++) {
-			if (i == ConnectionNumber(app->list[d])) {
+		    for (dd = 0; dd < app->count; dd++) {
+			if (ii == ConnectionNumber(app->list[dd])) {
 			    if (ret == -1) {
-				if (XEventsQueued( app->list[d],
+				if (XEventsQueued( app->list[dd],
 						   QueuedAfterReading ))
-				    ret = d;
+				    ret = dd;
 				/*
 				 * An error event could have arrived
 				 * without any real events, or events
@@ -362,17 +463,17 @@ int _XtWaitForSomething(app,
 		}
 		condition = XtInputReadMask;
 	    }
-	    if (FD_ISSET (i, &wmaskfd)) {
+	    if (FD_ISSET (ii, &wmaskfd)) {
 		condition |= XtInputWriteMask;
 		nfound--;
 	    }
-	    if (FD_ISSET (i, &emaskfd)) {
+	    if (FD_ISSET (ii, &emaskfd)) {
 		condition |= XtInputExceptMask;
 		nfound--;
 	    }
 	    if (condition) {
 		InputEvent *ep;
-		for (ep = app->input_list[i]; ep; ep = ep->ie_next) {
+		for (ep = app->input_list[ii]; ep; ep = ep->ie_next) {
 		    if (condition & ep->ie_condition) {
 			ep->ie_oq = app->outstandingQueue;
 			app->outstandingQueue = ep;
@@ -386,6 +487,49 @@ ENDILOOP:   ;
 	    return ret;
 	goto WaitLoop;		/* must have been only error events */
 	}
+#else /* }{ */
+	{
+	struct pollfd* fdlp = app->fds.fdlist;
+	int ret = -1;
+	Boolean found_input = False;
+
+	fdli = 0;
+	if (!ignoreEvents)
+	    for ( ; fdli < app->count; fdli++, fdlp++)
+		if (fdlp->revents & POLLIN &&
+			XEventsQueued (app->list[fdli], QueuedAfterReading))
+		    ret = fdli;
+
+	if (!ignoreInputs) {
+	    InputEvent *ep;
+	    XtInputMask condition;
+	    for ( ; fdli < fdlistlen; fdli++, fdlp++) {
+		condition = 0;
+		if (fdlp->revents) {
+		    if (fdlp->revents & POLLIN)
+			condition = XtInputReadMask;
+		    if (fdlp->revents & POLLOUT)
+			condition |= XtInputWriteMask;
+		    if (fdlp->revents & POLLERR)
+			condition |= XtInputExceptMask;
+		}
+		if (condition) {
+		    found_input = True;
+		    for (ep = app->input_list[fdlp->fd]; ep; ep = ep->ie_next)
+			if (condition & ep->ie_condition) {
+			    ep->ie_oq = app->outstandingQueue;
+			    app->outstandingQueue = ep;
+			}
+		}
+	    }
+	}
+	if (ret >= 0 || found_input)
+	    return ret;
+	goto WaitLoop;	/* must have been only error events */
+	}
+#undef X_BLOCK
+#undef X_DONT_BLOCK
+#endif /* } */
 }
 
 #define IeCallProc(ptr) \
@@ -457,7 +601,6 @@ void  XtRemoveTimeOut(id)
 
    t->te_next = freeTimerRecs;
    freeTimerRecs = t;
-   return;
 }
 
 XtWorkProcId XtAddWorkProc(proc, closure)
@@ -601,11 +744,20 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	sptr->ie_next = app->input_list[source];
 	app->input_list[source] = sptr;
 
+#if !defined(USE_POLL)
 	if (condition & XtInputReadMask)   FD_SET(source, &app->fds.rmask);
 	if (condition & XtInputWriteMask)  FD_SET(source, &app->fds.wmask);
 	if (condition & XtInputExceptMask) FD_SET(source, &app->fds.emask);
 
 	if (app->fds.nfds < (source+1)) app->fds.nfds = source+1;
+#else
+	if (sptr->ie_next == NULL) {
+	    app->fds.nfds++;
+	    app->fds.fdlist = (struct pollfd *)
+		XtRealloc ((char *)app->fds.fdlist,
+			   app->fds.nfds * sizeof (struct pollfd));
+	}
+#endif
 	app->fds.count++;
 	return((XtInputId)sptr);
 
@@ -638,6 +790,7 @@ void XtRemoveInput( id )
 				} else {
 				    lptr->ie_next = sptr->ie_next;
 				}
+#if !defined(USE_POLL)
 				for (lptr = app->input_list[source];
 				     lptr; lptr = lptr->ie_next)
 				    condition |= lptr->ie_condition;
@@ -650,6 +803,7 @@ void XtRemoveInput( id )
 				if ((sptr->ie_condition & XtInputExceptMask) &&
 				    !(condition & XtInputExceptMask))
 				   FD_CLR(source, &app->fds.emask);
+#endif
 				XtFree((char *) sptr);
 				found = True;
 				break;

@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.67 93/07/21 11:45:58 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.68 93/08/11 14:06:47 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -50,7 +50,17 @@ SOFTWARE.
 #endif
 #endif
 
+#if defined(USE_POLL)
+#if defined(__OSF1__) && !defined(_OSF_SOURCE)
+#define _OSF_SOURCE 1
+#endif
+#if defined(hpux) && !defined(_INCLUDE_AES_SOURCE)
+#define _INCLUDE_AES_SOURCE 1
+#endif
+#include <sys/poll.h>
+#else
 #include "fd.h"
+#endif
 
 typedef struct _TimerEventRec {
         struct timeval        te_timer_value;
@@ -88,9 +98,13 @@ typedef struct _WorkProcRec {
 
 typedef struct 
 {
+#if !defined (USE_POLL)
   	Fd_set rmask;
 	Fd_set wmask;
 	Fd_set emask;
+#else
+	struct pollfd *fdlist;
+#endif
 	int	nfds;
 	int	count;
 } FdStruct;
