@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CloseHook.c,v 1.4 89/07/16 14:25:48 jim Exp $
+ * $XConsortium: CloseHook.c,v 1.5 90/03/13 16:53:53 jim Exp $
  *
  * CloseDisplayHook package - provide callback on XCloseDisplay
  *
@@ -29,19 +29,19 @@
  * 
  * CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
  *     Display *dpy;
- *     int (*func)();
+ *     XmuCloseHookProc func;
  *     caddr_t arg;
  * 
  * Bool XmuRemoveCloseDisplayHook (dpy, hook, func, arg)
  *     Display *dpy;
  *     CloseHook hook;
- *     int (*func)();
+ *     XmuCloseHookProc func;
  *     caddr_t arg;
  * 
  * Bool XmuLookupCloseDisplayHook (dpy, hook, func, arg)
  *     Display *dpy;
  *     CloseHook hook;
- *     int (*func)();
+ *     XmuCloseHookProc func;
  *     caddr_t arg;
  * 
  */
@@ -62,7 +62,7 @@ extern char *malloc();					/* should be void * */
 
 typedef struct _CallbackRec {
     struct _CallbackRec *next;		/* next link in chain */
-    int (*func)();			/* function to call */
+    XmuCloseHookProc func;		/* function to call */
     caddr_t arg;			/* argument to pass with function */
 } CallbackRec;
 
@@ -93,16 +93,13 @@ static DisplayEntry *_FindDisplayEntry();
  *
  *         (*func) (dpy, arg)
  *
- * The function is declared to return an int even though the value is ignored
- * because some compilers have problems with functions returning void.
- * 
  * This routine returns NULL if it was unable to add the callback, otherwise
  * it returns an untyped pointer that can be used with Remove or Lookup, but
  * not dereferenced.
  */
 CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
     Display *dpy;
-    int (*func)();			/* function to call on close display */
+    XmuCloseHookProc func;		/* function to call on close display */
     caddr_t arg;			/* arg to pass */
 {
     DisplayEntry *de;
@@ -149,7 +146,7 @@ CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
 Bool XmuRemoveCloseDisplayHook (dpy, handle, func, arg)
     Display *dpy;
     CloseHook handle;			/* value from XmuAddCloseDisplayHook */
-    int (*func)();			/* function to call on close display */
+    XmuCloseHookProc func;		/* function to call on close display */
     caddr_t arg;			/* arg to pass */
 {
     DisplayEntry *de = _FindDisplayEntry (dpy, NULL);
@@ -189,7 +186,7 @@ Bool XmuRemoveCloseDisplayHook (dpy, handle, func, arg)
 Bool XmuLookupCloseDisplayHook (dpy, handle, func, arg)
     Display *dpy;
     CloseHook handle;			/* value from XmuAddCloseDisplayHook */
-    int (*func)();			/* function to call on close display */
+    XmuCloseHookProc func;		/* function to call on close display */
     caddr_t arg;			/* arg to pass */
 {
     DisplayEntry *de = _FindDisplayEntry (dpy, NULL);
