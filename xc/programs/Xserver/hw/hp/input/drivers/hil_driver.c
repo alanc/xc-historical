@@ -1,4 +1,4 @@
-/* $XConsortium: ps2io.h,v 1.1 94/05/28 14:32:49 dpw Exp $ */
+/* $XConsortium: hil_driver.c,v 1.1 95/01/25 13:45:20 dpw Exp gildea $ */
 /************************************************************
 
 Copyright (c) 1993 by Hewlett-Packard Company, Palo Alto, California
