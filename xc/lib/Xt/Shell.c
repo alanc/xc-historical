@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.92 90/12/27 09:47:26 rws Exp $ */
+/* $XConsortium: Shell.c,v 1.93 90/12/28 16:29:24 gildea Exp $ */
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 
 /***********************************************************
@@ -1454,10 +1454,10 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 	if(shell->shell.allow_shell_resize == FALSE && XtIsRealized(wid))
 		return(XtGeometryNo);
 
+	if (request->request_mode & (CWX | CWY))
+	    return(XtGeometryNo);
+
 	if(!XtIsRealized((Widget)shell)){
-		if (request->request_mode & (CWX | CWY)) {
-			return(XtGeometryNo);
-		}
 		*reply = *request;
 		if(request->request_mode & CWWidth)
 		   wid->core.width = shell->core.width = request->width;
@@ -1485,12 +1485,17 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 	}
 	if (XtMakeGeometryRequest((Widget)shell, &my_request, NULL)
 		== XtGeometryYes) {
-	    if (request->request_mode & CWWidth) {
-		wid->core.width = request->width;
-	    }
-	    if (request->request_mode & CWHeight) {
-		wid->core.height = request->height;
-	    }
+	    /* assert: if (request->request_mode & CWWidth) then
+	     * 		  shell->core.width == request->width
+	     * assert: if (request->request_mode & CWHeight) then
+	     * 		  shell->core.height == request->height
+	     *
+	     * so, whatever the WM sized us to (if the Shell requested
+	     * only one of the two) is now the correct child size
+	     */
+	    
+	    wid->core.width = shell->core.width;
+	    wid->core.height = shell->core.height;
 	    if (request->request_mode & CWBorderWidth) {
 		wid->core.x = wid->core.y = -request->border_width;
 	    }
