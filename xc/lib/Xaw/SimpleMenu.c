@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.3 89/04/20 14:59:59 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.4 89/05/02 21:09:03 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -370,7 +370,7 @@ Region region;
 		      smw->simple_menu.left_margin, y_temp,
 		      entry->label, strlen(entry->label));
 
-	  DrawBitmaps(w, gc, entry, y + height/2);
+	  DrawBitmaps(w, gc, entry, y);
 	default:			/* falling through... */
 	  break;
 	} /* switch (entry->type) */
@@ -837,7 +837,7 @@ Widget w;
   Dimension width, widest = (Dimension) 0;
   MenuEntry * entry;
 
-  if ( (smw->simple_menu.auto_resize) || 
+  if ( (smw->simple_menu.auto_resize) ||
        (smw->simple_menu.column_width == 0) ) {
     if (smw->simple_menu.label != NULL)
       widest = (Dimension) XTextWidth(smw->simple_menu.font, 
@@ -928,7 +928,7 @@ MenuEntry * entry;
  *      Arguments: w - the simple menu widget.
  *                 gc - graphics context to use for drawing.
  *                 entry - entry location for drawing.
- *                 y     - y location of center for drawing pixmaps.
+ *                 y     - y location of top of the drawing area.
  *      Returns: none
  */
 
@@ -943,13 +943,17 @@ Position y;
   int x_loc, y_loc;
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
 
+  if ( (entry->left_bitmap == None) && (entry->right_bitmap == None))
+    return;
+
+  x_loc = (smw->simple_menu.left_margin - entry->left_bitmap_width)/2;
+  y_loc = y + (smw->simple_menu.row_height - entry->left_bitmap_height)/2;
+
 /*
  * Draw Left Bitmap.
  */
 
   if (entry->left_bitmap != None) {
-    x_loc = (smw->simple_menu.left_margin - entry->left_bitmap_width)/2;
-    y_loc = y - entry->left_bitmap_height/2;
     XCopyPlane(XtDisplay(w), entry->left_bitmap, XtWindow(w), gc,
 	       0, 0, entry->left_bitmap_width, entry->left_bitmap_height,
 	       x_loc, y_loc, 1);
@@ -960,9 +964,7 @@ Position y;
  */
 
   if (entry->right_bitmap != None) {
-    x_loc = ( (smw->simple_menu.column_width + smw->simple_menu.left_margin) +
-	     (smw->simple_menu.right_margin - entry->right_bitmap_width)/2 );
-    y_loc = y - entry->right_bitmap_height/2;
+    x_loc += smw->simple_menu.column_width + smw->simple_menu.left_margin;
     XCopyPlane(XtDisplay(w), entry->right_bitmap, XtWindow(w), gc,
 	       0, 0, entry->right_bitmap_width, entry->right_bitmap_height,
 	       x_loc, y_loc, 1);
