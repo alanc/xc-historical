@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: brf_prt.h,v 5.2 91/02/16 10:07:16 rws Exp $ */
 
 /*
  */
@@ -68,7 +68,6 @@ SOFTWARE.
 \*--------------------------------------------------------------------*/
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/time.h>
 
 #define N_TOCOLON	25
 #define N_TITLELINES	5
