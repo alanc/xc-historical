@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.111 89/12/15 11:29:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.112 89/12/15 23:51:06 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -326,7 +326,7 @@ void _XtRegisterWindow(window, widget)
 	    if (hp->widget != widget)
 		XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 			"registerWindowError","xtRegisterWindow",
-                         "XtToolkitError",
+                         XtCXtToolkitError,
                         "Attempt to change already registered window.",
                           (String *)NULL, (Cardinal *)NULL);
 	    return;
@@ -358,7 +358,7 @@ void _XtUnregisterWindow(window, widget)
 	    if (hp->widget != widget) {
                 XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 			"registerWindowError","xtUnregisterWindow",
-                         "XtToolkitError",
+                         XtCXtToolkitError,
                         "Attempt to unregister invalid window.",
                           (String *)NULL, (Cardinal *)NULL);
 
@@ -980,7 +980,7 @@ void XtAddGrab(widget, exclusive, spring_loaded)
 
     if (spring_loaded && !exclusive) {
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		"grabError", "grabDestroyCallback", "XtToolkitError",
+		"grabError", "grabDestroyCallback", XtCXtToolkitError,
 		"XtAddGrab requires exclusive grab if spring_loaded is TRUE",
 		(String *) NULL, (Cardinal *) NULL);
 	exclusive = TRUE;
@@ -1011,7 +1011,7 @@ static Boolean RemoveGrab(widget)
 
     if (gl == NULL) {
 	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		       "grabError","xtRemoveGrab","XtToolkitError",
+		       "grabError","xtRemoveGrab",XtCXtToolkitError,
 		       "XtRemoveGrab asked to remove a widget not on the list",
 		       (String *)NULL, (Cardinal *)NULL);
 	    return False;

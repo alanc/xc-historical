@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.40 89/12/15 21:58:31 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.41 90/03/23 10:38:58 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -39,6 +39,8 @@ SOFTWARE.
 #ifndef HEAP_SEGMENT_SIZE
 #define HEAP_SEGMENT_SIZE 1492
 #endif
+
+static String XtNnoPerDisplay = "noPerDisplay";
 
 static void _XtHeapInit();
 static void _XtHeapFree();
@@ -362,7 +364,7 @@ XtPerDisplay _XtSortPerDisplayList(dpy)
 	}
 
 	if (pd == NULL) {
-	    XtErrorMsg("noPerDisplay", "getPerDisplay", "XtToolkitError",
+	    XtErrorMsg(XtNnoPerDisplay, "getPerDisplay", XtCXtToolkitError,
 		    "Couldn't find per display information",
 		    (String *) NULL, (Cardinal *)NULL);
 	}
@@ -485,7 +487,7 @@ static void CloseDisplay(dpy)
 	}
 
 	if (pd == NULL) {
-	    XtErrorMsg("noPerDisplay", "closeDisplay", "XtToolkitError",
+	    XtErrorMsg(XtNnoPerDisplay, "closeDisplay", XtCXtToolkitError,
 		    "Couldn't find per display information",
 		    (String *) NULL, (Cardinal *)NULL);
 	}

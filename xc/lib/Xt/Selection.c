@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.45 90/02/16 11:45:54 kit Exp $";
+    "$XConsortium: Selection.c,v 1.46 90/03/19 13:03:42 swick Exp $";
 #endif
 
 /***********************************************************
@@ -145,7 +145,7 @@ Atom prop;
  if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
     (caddr_t *)&sarray)) 
     XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
-	    "noSelectionProperties", "freeSelectionProperty", "XtToolkitError",
+	    "noSelectionProperties", "freeSelectionProperty", XtCXtToolkitError,
 		"internal error: no selection property context for display",
 		 (String *)NULL,  (Cardinal *)NULL );
  for (p = sarray->list; p; p++) 
@@ -986,7 +986,7 @@ static long IncrPropSize(widget, value, format, length)
     }
     else {
 	XtAppWarningMsg( XtWidgetToApplicationContext(widget),
-			"badFormat","xtGetSelectionValue","XtToolkitError",
+			"badFormat","xtGetSelectionValue",XtCXtToolkitError,
 	"Selection owner returned type INCR property with format != 32",
 			(String*)NULL, (Cardinal*)NULL );
 	return 0;
@@ -1438,7 +1438,7 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
 	Cardinal num_params = 1;
 	XtAppWarningMsg( XtWidgetToApplicationContext(widget),
 			 "notInConvertSelection", "xtGetSelectionRequest",
-			 "XtToolkitError",
+			 XtCXtToolkitError,
 			 "XtGetSelectionRequest called for widget \"%s\" outside of ConvertSelection proc",
 			 &params, &num_params
 		       );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.23 90/03/23 08:57:21 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.24 90/03/27 11:07:16 swick Exp $";
 /* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif /* lint */
 
@@ -127,7 +127,7 @@ static void XtPhase2Destroy (widget, closure, call_data)
 	    String param = parent->core.widget_class->core_class.class_name;
 	    Cardinal num_params = 1;
 	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		"invalidProcedure","deleteChild","XtToolkitError",
+		"invalidProcedure","deleteChild",XtCXtToolkitError,
 		"null delete_child procedure for class %s in XtDestroy",
 		&param, &num_params);
 	} else {

@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.82 89/12/15 09:59:55 swick Exp $";
+    "$XConsortium: Resources.c,v 1.83 90/03/19 13:03:13 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -52,7 +52,7 @@ void XtCopyFromParent(widget, offset, value)
 {
     if (widget->core.parent == NULL) {
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		"invalidParent","xtCopyFromParent","XtToolkitError",
+		"invalidParent","xtCopyFromParent",XtCXtToolkitError,
                   "CopyFromParent must have non-NULL parent",
 		  (String *)NULL, (Cardinal *)NULL);
         value->addr = NULL;
@@ -292,7 +292,7 @@ static void BadSize(size, name)
 
     params[0] = (String) size;
     params[1] = XrmQuarkToString(name);
-    XtWarningMsg("invalidSizeOverride", "xtDependencies", "XtToolkitError",
+    XtWarningMsg("invalidSizeOverride", "xtDependencies", XtCXtToolkitError,
 	"Representation size %d must match superclass's to override %s",
 	params, &num_params);
 } /* BadType */
@@ -461,7 +461,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 
     if ((args == NULL) && (num_args != 0)) {
     	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		"invalidArgCount","getResources","XtToolkitError",
+		"invalidArgCount","getResources",XtCXtToolkitError,
                  "argument count > 0 on NULL argument list",
                    (String *)NULL, (Cardinal *)NULL);
 	num_args = 0;
@@ -470,7 +470,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	return NULL;
     } else if (table == NULL) {
     	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		"invalidResourceCount","getResources","XtToolkitError",
+		"invalidResourceCount","getResources",XtCXtToolkitError,
               "resource count > 0 on NULL resource list",
 	      (String *)NULL, (Cardinal *)NULL);
 	return NULL;
@@ -967,7 +967,7 @@ static Boolean initialized = FALSE;
 void _XtResourceListInitialize()
 {
     if (initialized) {
-	XtWarningMsg("initializationError","xtInitialize","XtToolkitError",
+	XtWarningMsg("initializationError","xtInitialize",XtCXtToolkitError,
                   "Initializing Resource Lists twice",
 		  (String *)NULL, (Cardinal *)NULL);
     	return;

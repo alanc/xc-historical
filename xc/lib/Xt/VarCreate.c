@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.10 90/03/05 17:34:28 kit Exp $";
+    "$XConsortium: VarCreate.c,v 1.11 90/03/06 13:20:41 kit Exp $";
 #endif
 
 /*
@@ -307,7 +307,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
 			options, num_options, argc_in_out, argv_in_out);
 
     if (dpy == NULL)
-	XtErrorMsg("invalidDisplay","xtInitialize","XtToolkitError",
+	XtErrorMsg("invalidDisplay","xtInitialize",XtCXtToolkitError,
                    "Can't Open display", (String *) NULL, (Cardinal *)NULL);
 
     var = var_args;

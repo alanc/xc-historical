@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.154 89/12/11 18:42:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.155 89/12/12 18:56:39 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -137,7 +137,7 @@ static int _XtGetHostname (buf, maxlen)
 
 void _XtInherit()
 {
-    XtErrorMsg("invalidProcedure","inheritanceProc","XtToolkitError",
+    XtErrorMsg("invalidProcedure","inheritanceProc",XtCXtToolkitError,
             "Unresolved inheritance operation",
               (String *)NULL, (Cardinal *)NULL);
 }
@@ -670,7 +670,7 @@ ArgList args_in;
 			options, num_options, argc_in_out, argv_in_out);
 
     if (dpy == NULL)
-	XtErrorMsg("invalidDisplay","xtInitialize","XtToolkitError",
+	XtErrorMsg("invalidDisplay","xtInitialize",XtCXtToolkitError,
                    "Can't Open display", (String *) NULL, (Cardinal *)NULL);
 
     XtSetArg(args[num], XtNscreen, DefaultScreenOfDisplay(dpy)); num++;

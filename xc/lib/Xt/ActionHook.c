@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.79 89/09/22 17:57:49 swick Exp $";
+static char Xrcsid[] = "$XConsortium: ActionHook.c,v 1.1 89/09/26 17:57:37 swick Exp $";
 #endif /* lint */
 /*LINTLIBRARY*/
 
@@ -79,7 +79,7 @@ void XtRemoveActionHook( id )
     for (p = &app->action_hook_list; p != NULL && *p != hook; p = &(*p)->next);
     if (p == NULL) {
 #ifdef DEBUG
-	XtAppWarningMsg(app, "badId", "xtRemoveActionHook", "XtToolkitError",
+	XtAppWarningMsg(app, "badId", "xtRemoveActionHook", XtCXtToolkitError,
 			"XtRemoveActionHook called with bad or old hook id",
 			(String*)NULL, (Cardinal*)NULL);
 #endif /*DEBUG*/	

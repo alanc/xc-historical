@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.34 89/12/12 19:30:44 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.35 90/03/19 12:57:31 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -43,6 +43,7 @@ SOFTWARE.
  ******************************************************************/
 
 externaldef(xtinherittranslations) int _XtInheritTranslations = NULL;
+extern String XtCXtToolkitError; /* from IntrinsicI.h */
 
 static XtResource resources[] = {
     {XtNscreen, XtCScreen, XtRScreen, sizeof(int),
@@ -321,7 +322,7 @@ static Boolean CoreSetValues(old, reference, new)
        }
 	if (old->core.depth != new->core.depth) {
 	   XtAppWarningMsg(XtWidgetToApplicationContext(old),
-		    "invalidDepth","setValues","XtToolkitError",
+		    "invalidDepth","setValues",XtCXtToolkitError,
                "Can't change widget depth", (String *)NULL, (Cardinal *)NULL);
 	   new->core.depth = old->core.depth;
 	}

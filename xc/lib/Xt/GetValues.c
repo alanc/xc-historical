@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.71 89/09/28 11:42:32 swick Exp $";
+    "$XConsortium: GetValues.c,v 1.1 89/09/29 14:02:04 swick Exp $";
 #endif /*lint*/
 /*LINTLIBRARY*/
 
@@ -124,7 +124,7 @@ static void CallConstraintGetValuesHook(widget_class, w, args, num_args)
 	    Cardinal num_params = 1;
 	    params[0] = widget_class->core_class.class_name;
 	    XtAppWarningMsg(XtWidgetToApplicationContext(w),
-		 "invalidExtension", "xtCreateWidget", "XtToolkitError",
+		 "invalidExtension", "xtCreateWidget", XtCXtToolkitError,
 		 "widget class %s has invalid ConstraintClassExtension record",
 		 params, &num_params);
 	}
@@ -142,7 +142,7 @@ void XtGetValues(w, args, num_args)
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(w),
-		"invalidArgCount","xtGetValues","XtToolkitError",
+		"invalidArgCount","xtGetValues",XtCXtToolkitError,
             "Argument count > 0 on NULL argument list in XtGetValues",
               (String *)NULL, (Cardinal *)NULL);
     }

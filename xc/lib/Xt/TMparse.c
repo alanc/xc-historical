@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.88 89/12/19 16:06:15 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.89 90/01/22 17:08:54 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -48,6 +48,8 @@ SOFTWARE.
 #else
 # define CACHED XtCacheNone
 #endif
+
+static String XtNtranslationParseError = "translationParseError";
 
 /* Private definitions. */
 #define LF 0x0a
@@ -404,7 +406,7 @@ static Syntax(str,str1)
     numChars += strlen(str1);
     message[numChars] = '\0';
     params[0] = message;
-  XtWarningMsg("translationParseError","parseError","XtToolkitError",
+  XtWarningMsg(XtNtranslationParseError,"parseError",XtCXtToolkitError,
             "translation table syntax error: %s",params,&num_params);
 }
 
@@ -906,8 +908,8 @@ static String ParseKeySym(str, closure, event,error)
     if (*error) {
 	if (keySymName[0] == '<') {
 	    /* special case for common error */
-	    XtWarningMsg("translationParseError", "missingComma",
-			 "XtToolkitError",
+	    XtWarningMsg(XtNtranslationParseError, "missingComma",
+			 XtCXtToolkitError,
 		     "... possibly due to missing ',' in event sequence.",
 		     (String*)NULL, (Cardinal*)NULL);
 	}
@@ -1469,8 +1471,8 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
                 event->actions = NULL;
 		str = ParseQuotedStringEvent(str, event,error);
 		if (*error) {
-		    XtWarningMsg("translationParseError", "nonLatin1",
-			"XtToolkitError",
+		    XtWarningMsg(XtNtranslationParseError, "nonLatin1",
+			XtCXtToolkitError,
 			"... probably due to non-Latin1 character in quoted string",
 			(String*)NULL, (Cardinal*)NULL);
 		    return PanicModeRecovery(str);
@@ -1554,8 +1556,8 @@ static String ParseString(str, strP)
 	*strP = strncpy(XtMalloc((unsigned)(str-start+1)), start, str-start);
 	(*strP)[str-start] = '\0';
 	if (*str == '"') str++; else
-            XtWarningMsg("translationParseError","parseString",
-                      "XtToolkitError","Missing '\"'.",
+            XtWarningMsg(XtNtranslationParseError,"parseString",
+                      XtCXtToolkitError,"Missing '\"'.",
 		      (String *)NULL, (Cardinal *)NULL);
     } else {
 	/* scan non-quoted string, stop on whitespace, ',' or ')' */
@@ -1731,7 +1733,7 @@ static void ShowProduction(currentProduction)
     else production[499] = '\0'; /* just in case */
 
     params[0] = production;
-    XtWarningMsg("translationParseError", "showLine", "XtToolkitError",
+    XtWarningMsg(XtNtranslationParseError, "showLine", XtCXtToolkitError,
 		 "... found while parsing '%s'", params, &num_params);
 }
 
@@ -1782,7 +1784,7 @@ static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
 
     if (*num_args != 0)
         XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-	  "invalidParameters","compileAccelerators","XtToolkitError",
+	  "invalidParameters","compileAccelerators",XtCXtToolkitError,
           "String to TranslationTable needs no extra arguments",
 	  (String *)NULL, (Cardinal *)NULL);
      str = (String)(from->addr);
@@ -1848,7 +1850,7 @@ CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
 
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-	  "invalidParameters","compileTranslations","XtToolkitError",
+	  "invalidParameters","compileTranslations",XtCXtToolkitError,
           "String to TranslationTable conversion needs no extra arguments",
 	  (String *)NULL, (Cardinal *)NULL);
      str = (String)(from->addr);
@@ -1915,7 +1917,7 @@ void _XtTranslateInitialize()
 {
     if (initialized) {
 	XtWarningMsg("translationError","xtTranslateInitialize",
-                  "XtToolkitError","Intializing Translation manager twice.",
+                  XtCXtToolkitError,"Intializing Translation manager twice.",
                     (String *)NULL, (Cardinal *)NULL);
 	return;
     }

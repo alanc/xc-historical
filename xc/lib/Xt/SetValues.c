@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.5 90/03/27 12:58:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.6 90/04/03 17:11:55 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -96,7 +96,7 @@ CallConstraintSetValues (class, current, request, new, args, num_args)
     if ((WidgetClass)class != constraintWidgetClass) {
 	if (class == NULL)
 	    XtAppErrorMsg(XtWidgetToApplicationContext(current),
-		    "invalidClass","constraintSetValue","XtToolkitError",
+		    "invalidClass","constraintSetValue",XtCXtToolkitError,
                  "Subclass of Constraint required in CallConstraintSetValues",
                   (String *)NULL, (Cardinal *)NULL);
 	redisplay = CallConstraintSetValues(
@@ -141,7 +141,7 @@ void XtSetValues(w, args, num_args)
 
     if ((args == NULL) && (num_args != 0)) {
         XtAppErrorMsg(XtWidgetToApplicationContext(w),
-		"invalidArgCount","xtSetValues","XtToolkitError",
+		"invalidArgCount","xtSetValues",XtCXtToolkitError,
                 "Argument count > 0 on NULL argument list in XtSetValues",
                  (String *)NULL, (Cardinal *)NULL);
     }
@@ -226,7 +226,7 @@ void XtSetValues(w, args, num_args)
 		if (wc->core_class.set_values_almost == NULL) {
 		    XtAppWarningMsg(XtWidgetToApplicationContext(w),
 			    "invalidProcedure","set_values_almost",
-			  "XtToolkitError",
+			  XtCXtToolkitError,
 			  "set_values_almost procedure shouldn't be NULL",
 			  (String *)NULL, (Cardinal *)NULL);
 		    break;

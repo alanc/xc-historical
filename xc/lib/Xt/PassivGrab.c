@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.10 90/03/14 17:10:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.11 90/04/03 20:14:33 swick Exp $";
 #endif
 
 /********************************************************
@@ -33,6 +33,7 @@ SOFTWARE.
 #include "StringDefs.h"
 #include "PassivGraI.h"
 
+static String XtNinvalidWidget = "invalidWidget";
 
 /* typedef unsigned long Mask; */
 #define BITMASK(i) (((Mask)1) << ((i) & 31))
@@ -710,7 +711,7 @@ void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
     
     if (!XtIsWidget(widget)){
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		     "invalidWidget", "grabKeyOrButton", "XtToolkitError",
+		     XtNinvalidWidget, "grabKeyOrButton", XtCXtToolkitError,
 		     "Widget specified in grab is not a widget",
 		     (String *)NULL, (Cardinal *)NULL);
 	return;
@@ -763,7 +764,7 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     
     if (!XtIsWidget(widget)){
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		     "invalidWidget", "ungrabKeyOrButton", "XtToolkitError",
+		     XtNinvalidWidget, "ungrabKeyOrButton", XtCXtToolkitError,
 		     "Widget specified in ungrab is not a widget",
 		     (String *)NULL, (Cardinal *)NULL);
 	return;
@@ -785,7 +786,7 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     if (!pwi)
       {
 	  XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		       "invalidGrab", "ungrabKeyOrButton", "XtToolkitError",
+		       "invalidGrab", "ungrabKeyOrButton", XtCXtToolkitError,
 		       "Attempt to remove non-existant passive grab",
 		       (String *)NULL, (Cardinal *)NULL);
 	  return;
@@ -887,7 +888,7 @@ static int GrabDevice (widget, owner_events,
     
     if (!XtIsWidget(widget) || !XtIsRealized(widget))
       XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		    "invalidWidget", "grabDevice", "XtToolkitError",
+		    XtNinvalidWidget, "grabDevice", XtCXtToolkitError,
 		    "Grab widget must be a realized widget",
 		    (String*)NULL, (Cardinal*)NULL);
     
@@ -937,7 +938,7 @@ static void   UngrabDevice(widget, time, isKeyboard)
 
     if (!XtIsWidget(widget) || !XtIsRealized(widget))
       XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		    "invalidWidget", "ungrabDevice", "XtToolkitError",
+		    XtNinvalidWidget, "ungrabDevice", XtCXtToolkitError,
 		    "Grab widget must be a realized widget",
 		    (String*)NULL, (Cardinal*)NULL);
      

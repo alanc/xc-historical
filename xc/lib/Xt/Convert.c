@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.37 89/12/19 16:21:42 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.38 89/12/20 16:30:54 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -483,7 +483,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 		params[0]=
                   XrmQuarkToString((XrmQuark) convert_args[i].address_id);
                XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		    "invalidResourceName","computeArgs","XtToolkitError",
+		    "invalidResourceName","computeArgs",XtCXtToolkitError,
 		    "Cannot find resource name %s as argument to conversion",
                      params,&num_params);
 		offset = 0;
@@ -497,7 +497,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	default:
 	    params[0] = XtName(widget);
 	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		"invalidAddressMode", "computeArgs", "XtToolkitError",
+		"invalidAddressMode", "computeArgs", XtCXtToolkitError,
 		"Conversion arguments for widget '%s' contain an unsupported address mode",
 			params,&num_params);
 	    args[i].addr = NULL;
@@ -735,7 +735,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 	Cardinal num_params = 2;
 	params[0] = XrmRepresentationToString(from_type);
 	params[1] = XrmRepresentationToString(to_type);
-	XtAppWarningMsg(app, "typeConversionError", "noConverter", "XtToolkitError",
+	XtAppWarningMsg(app, "typeConversionError", "noConverter", XtCXtToolkitError,
 	     "No type converter registered for '%s' to '%s' conversion.",
              params, &num_params);
     }

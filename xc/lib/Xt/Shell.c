@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.84 90/03/19 13:02:01 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.85 90/03/27 11:15:51 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -698,7 +698,7 @@ static ShellClassExtension _FindClassExtension(widget_class)
 	    Cardinal num_params = 1;
 	    params[0] = widget_class->core_class.class_name;
 	    XtErrorMsg( "invalidExtension", "shellClassPartInitialize",
-		        "XtToolkitError",
+		        XtCXtToolkitError,
 		 "widget class %s has invalid ShellClassExtension record",
 		 params, &num_params);
 	}
@@ -944,7 +944,7 @@ static void Realize(wid, vmask, attr)
 	}
 	if (wid->core.width == 0 || wid->core.height == 0) {
 	    Cardinal count = 1;
-	    XtErrorMsg("invalidDimension", "shellRealize", "XtToolkitError",
+	    XtErrorMsg("invalidDimension", "shellRealize", XtCXtToolkitError,
 		       "Shell widget %s has zero width and/or height",
 		       &wid->core.name, &count);
 	}
@@ -1185,7 +1185,7 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 
 	if(w->core.window != event->xany.window) {
 		XtAppErrorMsg(XtWidgetToApplicationContext(wid),
-			"invalidWindow","eventHandler","XtToolkitError",
+			"invalidWindow","eventHandler",XtCXtToolkitError,
                         "Event with wrong window",
 			(String *)NULL, (Cardinal *)NULL);
 		return;
@@ -1237,7 +1237,7 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 		    if(wmshell->wm.wait_for_wm) {
 			XtAppWarningMsg(XtWidgetToApplicationContext(wid),
 				"communicationError","windowManager",
-                                  "XtToolkitError",
+                                  XtCXtToolkitError,
                                   "Window Manager is confused",
 				  (String *)NULL, (Cardinal *)NULL);
 		    }
@@ -1394,7 +1394,7 @@ static void GetGeometry(W, child)
 	    params[0] = XtName(W);
 	    params[1] = w->shell.geometry;
 	    XtAppWarningMsg(XtWidgetToApplicationContext(W),
-       "badGeometry", "shellRealize", "XtToolkitError",
+       "badGeometry", "shellRealize", XtCXtToolkitError,
        "Shell widget \"%s\" has an invalid geometry specification: \"%s\"",
 			    params, &num_params);
 	}
@@ -1754,7 +1754,7 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 	    wmshell->shell.client_specified |= _XtShellPositionValid;
 	    return XtGeometryDone;
 	} else XtAppWarningMsg(XtWidgetToApplicationContext((Widget)w),
-			       "internalError", "shell", "XtToolkitError",
+			       "internalError", "shell", XtCXtToolkitError,
 			       "Shell's window manager interaction is broken",
 			       (String *)NULL, (Cardinal *)NULL);
     } else /* no event */ {
@@ -1952,7 +1952,7 @@ static void ApplicationShellInsertChild(widget)
 {
     if (! XtIsWidget(widget) && XtIsRectObj(widget)) {
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-	       "invalidClass", "applicationShellInsertChild", "XtToolkitError",
+	       "invalidClass", "applicationShellInsertChild", XtCXtToolkitError,
 	       "ApplicationShell does not accept RectObj children; ignored",
 	       (String*)NULL, (Cardinal*)NULL);
     }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.42 90/02/26 16:25:01 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.43 90/03/19 13:01:19 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -91,14 +91,14 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 		params[0] = XtClass(widget)->core_class.class_name;
 		XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 		     "invalidExtension", "xtMakeGeometryRequest",
-		     "XtToolkitError",
+		     XtCXtToolkitError,
 		     "widget class %s has invalid ShellClassExtension record",
 		     params, &num_params);
 	    }
 	} else {
 	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 			  "internalError", "xtMakeGeometryRequest",
-			  "XtToolkitError",
+			  XtCXtToolkitError,
 			  "internal error; ShellClassExtension is NULL",
 			  NULL, NULL);
 	}
@@ -106,7 +106,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 	parentRealized = TRUE;
     } else if (parent == NULL) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		      "invalidParent","xtMakeGeometryRequest","XtToolkitError",
+		      "invalidParent","xtMakeGeometryRequest",XtCXtToolkitError,
 		      "non-shell has no parent in XtMakeGeometryRequest",
 		      (String *)NULL, (Cardinal *)NULL);
     } else /* not shell */ {
@@ -120,7 +120,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 	    /* Should never happen - XtManageChildren should have checked */
 	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 			  "invalidParent", "xtMakeGeometryRequest",
-			  "XtToolkitError",
+			  XtCXtToolkitError,
 			  "XtMakeGeometryRequest - parent not composite",
 			  (String *)NULL, (Cardinal *)NULL);
 	} else {
@@ -135,7 +135,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 
     if (managed && manager == (XtGeometryHandler) NULL) {
 	XtErrorMsg("invalidGeometryManager","xtMakeGeometryRequest",
-                 "XtToolkitError",
+                 XtCXtToolkitError,
                  "XtMakeGeometryRequest - parent has no geometry manager",
                   (String *)NULL, (Cardinal *)NULL);
     }
@@ -450,7 +450,7 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
     }
 
     if (w == NULL)
-        XtWarningMsg("invalidShell","xtTranslateCoords","XtToolkitError",
+        XtWarningMsg("invalidShell","xtTranslateCoords",XtCXtToolkitError,
                 "Widget has no shell ancestor",
 		(String *)NULL, (Cardinal *)NULL);
     else {

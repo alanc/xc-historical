@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Popup.c,v 1.24 89/09/21 17:58:29 swick Exp $";
+    "$XConsortium: Popup.c,v 1.25 89/09/29 14:00:22 swick Exp $";
 /* $oHeader: Popup.c,v 1.3 88/09/01 11:45:34 asente Exp $ */
 #endif /* lint */
 
@@ -42,7 +42,7 @@ void _XtPopup(widget, grab_kind, spring_loaded)
 
     if (! XtIsShell(widget)) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		"invalidClass","xtPopup","XtToolkitError",
+		"invalidClass","xtPopup",XtCXtToolkitError,
                 "XtPopup requires a subclass of shellWidgetClass",
                   (String *)NULL, (Cardinal *)NULL);
     }
@@ -79,7 +79,7 @@ void XtPopup (widget, grab_kind)
       default:
 	XtAppWarningMsg(
 		XtWidgetToApplicationContext(widget),
-		"invalidGrabKind","xtPopup","XtToolkitError",
+		"invalidGrabKind","xtPopup",XtCXtToolkitError,
 		"grab kind argument has invalid value; XtGrabNone assumed",
 		(String *)NULL, (Cardinal *)NULL);
 	grab_kind = XtGrabNone;
@@ -103,7 +103,7 @@ void XtPopdown(widget)
 
     if (! XtIsShell(widget)) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		"invalidClass","xtPopdown","XtToolkitError",
+		"invalidClass","xtPopdown",XtCXtToolkitError,
             "XtPopdown requires a subclass of shellWidgetClass",
               (String *)NULL, (Cardinal *)NULL);
     }
