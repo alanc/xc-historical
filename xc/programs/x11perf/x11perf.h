@@ -67,9 +67,9 @@ typedef struct _XParms {
 } XParmRec, *XParms;
 
 typedef enum {
-    WINDOW,     /* Windowing test, GXxor has no affect		    */
-    XOR,	/* Graphics test, GXxor has some affect		    */
-    NONXOR      /* Graphics or overhead test, GXxor has no affect   */
+    WINDOW,     /* Windowing test, rop has no affect		    */
+    ROP,	/* Graphics test, rasterop/planemask has some affect*/
+    NONROP      /* Graphics or overhead test, rop has no affect     */
 } TestType;
 
 typedef struct _Test {

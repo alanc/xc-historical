@@ -35,10 +35,28 @@ SOFTWARE.
 static Bool     drawToFakeServer = False;
 static Pixmap   tileToQuery     = None;
 
+typedef struct _RopNames { char	*name; int  rop; } RopNameRec, *RopNamePtr;
+
+RopNameRec ropNames[] = {
+	"clear",    	GXclear,	/* 0 */
+	"and",		GXand,		/* src AND dst */
+	"andReverse",	GXandReverse,	/* src AND NOT dst */
+	"copy",		GXcopy,		/* src */
+	"andInverted",	GXandInverted,	/* NOT src AND dst */
+	"noop",		GXnoop,		/* dst */
+	"xor",		GXxor,		/* src XOR dst */
+	"or",		GXor,		/* src OR dst */
+	"nor",		GXnor,		/* NOT src AND NOT dst */
+	"equiv",	GXequiv,	/* NOT src XOR dst */
+	"invert",	GXinvert,	/* NOT dst */
+	"orReverse",	GXorReverse,	/* src OR NOT dst */
+	"copyInverted",	GXcopyInverted,	/* NOT src */
+	"orInverted",	GXorInverted,	/* NOT src OR dst */
+	"nand",		GXnand,		/* NOT src OR NOT dst */
+	"set",		GXset,		/* 1 */
+};
 
 static Bool     labels		= False;
-static Bool     xorMode		= False;
-static Bool     bothModes       = False;
 static int      repeat		= 5;
 static int	seconds		= 5;
 
@@ -50,8 +68,16 @@ static double syncTime = 0.0;
 static int saveargc;
 static char **saveargv;
 
-static char *foreground = NULL;
-static char *background = NULL;
+static int  numRops = 1;
+static int  rops[16] = { GXcopy };
+static int  numPlanemasks = 1;
+static unsigned long planemasks[256] = { ~0 };
+
+static char *foreground;
+static char *background;
+
+static int numSubWindows = 7;
+static int subWindows[] = {4, 16, 25, 50, 75, 100, 200};
 
 static int  fixedReps = 0;
 
@@ -280,8 +306,8 @@ void usage()
 "    -labels			generate test labels for use by fillblanks.sh",
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
-"    -xor			use GXxor mode to draw",
-"    -both			use both GXcopy and GXxor mode to draw",
+"    -rop <rop0 rop1 ...>	use the specified rops to draw",
+"    -pm <pm0 pm1 ...>		use the specified planemasks to draw",
 "    -reps <n>			fix the rep count (default = auto scale)",
 "    -subs <s0 s1 ...>		a list of the number of sub-windows to use",
 NULL};
@@ -350,7 +376,7 @@ void DoHardwareSync(xp, p, reps)
 
 static Test syncTest = {
     "syncTime", "Internal test for finding how long HardwareSync takes",
-    NullInitProc, DoHardwareSync, NullProc, NullProc, NONXOR, 0,
+    NullInitProc, DoHardwareSync, NullProc, NullProc, NONROP, 0,
     {1}
 };
 
@@ -512,34 +538,38 @@ int CalibrateTest(xp, test, seconds, usecperobj)
 } /* CalibrateTest */
 
 
-void CreatePerfGCs(xp, func)
+void CreatePerfGCs(xp, func, pm)
     XParms  xp;
     int     func;
+    unsigned long   pm;
 {
-    XGCValues gcv;
+    XGCValues gcvfg, gcvbg;
+    unsigned long	fg, bg;
 
-    gcv.graphics_exposures = False;
-
+    fg = xp->foreground;
+    bg = xp->background;
+    gcvfg.graphics_exposures = False;
+    gcvbg.graphics_exposures = False;
+    gcvfg.plane_mask = pm;
+    gcvbg.plane_mask = pm;
+    gcvfg.function = func;
+    gcvbg.function = func;
+    
     if (func == GXxor) {
-	gcv.function = GXxor;
-	gcv.foreground = xp->background ^ xp->foreground;
-	gcv.background = xp->background;
-        xp->fggc = XCreateGC(xp->d, xp->w, 
-	    GCForeground | GCBackground | GCGraphicsExposures | GCFunction,
-	    &gcv);
-        xp->bggc = XCreateGC(xp->d, xp->w, 
-	    GCForeground | GCBackground | GCGraphicsExposures | GCFunction,
-	    &gcv);
+	gcvbg.foreground = gcvfg.foreground = bg ^ fg;
+	gcvbg.background = gcvfg.background = bg;
     } else {
-	gcv.foreground = xp->foreground;
-	gcv.background = xp->background;
-	xp->fggc = XCreateGC(xp->d, xp->w, 
-		GCForeground | GCBackground | GCGraphicsExposures, &gcv);
-	gcv.foreground = xp->background;
-	gcv.background = xp->foreground;
-	xp->bggc = XCreateGC(xp->d, xp->w, 
-		GCForeground | GCBackground | GCGraphicsExposures, &gcv);
+	gcvfg.foreground = fg;
+	gcvfg.background = bg;
+	gcvbg.foreground = bg;
+	gcvbg.background = fg;
     }
+    xp->fggc = XCreateGC(xp->d, xp->w, 
+	GCForeground | GCBackground | GCGraphicsExposures | GCFunction | GCPlaneMask,
+	    &gcvfg);
+    xp->bggc = XCreateGC(xp->d, xp->w, 
+	GCForeground | GCBackground | GCGraphicsExposures | GCFunction | GCPlaneMask,
+	    &gcvbg);
 }
 
 void DestroyPerfGCs(xp)
@@ -591,17 +621,18 @@ void DisplayStatus(d, message, test)
 }
 
 
-void ProcessTest(xp, test, func, label)
+void ProcessTest(xp, test, func, pm, label)
     XParms  xp;
     Test    *test;
     int     func;
+    unsigned long   pm;
     char    *label;
 {
     double  time, totalTime;
     int     reps;
     int     j;
 
-    CreatePerfGCs(xp, func);
+    CreatePerfGCs(xp, func, pm);
     DisplayStatus(xp->d, "Calibrating", label);
     reps = CalibrateTest(xp, test, seconds, &time);
     if (reps != 0) {
@@ -640,7 +671,7 @@ main(argc, argv)
     char **argv;
 
 {
-    int		i, j;
+    int		i, j, skip;
     int		numTests;       /* Even though the linker knows, we don't. */
     char	hostname[100];
     char	*displayName;
@@ -649,6 +680,7 @@ main(argc, argv)
     Bool	synchronous = False;
     XGCValues	tgcv;
     int		screen;
+    int		rop, pm;
 
     /* ScreenSaver state */
     int ssTimeout, ssInterval, ssPreferBlanking, ssAllowExposures;
@@ -735,10 +767,19 @@ main(argc, argv)
 		usage ();
 	    i++;
 	    background = argv[i];
+	} else if (strcmp(argv[i], "-rop") == 0) {
+	    skip = getRops (i + 1, argv, rops, &numRops);
+	    i += skip;
+	} else if (strcmp(argv[i], "-pm") == 0) {
+	    skip = getNumbers (i + 1, argv, planemasks, &numPlanemasks);
+	    i += skip;
 	} else if (strcmp(argv[i], "-xor") == 0) {
-	    xorMode = True;
-	} else if (strcmp(argv[i], "-both") == 0) {
-	    bothModes = True;
+	    numRops = 1;
+	    rops[0] = GXxor;
+	} else if (strcmp (argv[i], "-both") == 0) {
+	    numRops = 2;
+	    rops[0] = GXcopy;
+	    rops[1] = GXxor;
 	} else if (strcmp(argv[i], "-reps") == 0) {
 	    if (argc <= i)
 		usage ();
@@ -746,19 +787,8 @@ main(argc, argv)
 	    if (fixedReps <= 0)
 		usage ();
 	} else if (strcmp(argv[i], "-subs") == 0) {
-	    int	j = 0;
-	    if (argc <= i)
-		usage ();
-	    i++;
-	    while (i < argc && isdigit (argv[i][0]))
-	    {
-		if (subs[j] != 0) {
-		    subs[j] = atoi (argv[i++]);
-		    j++;
-		}
-		i++;
-	    }
-	    --i;
+	    skip = getNumbers (i + 1, argv, subWindows, &numSubWindows);
+	    i += skip;
 	} else {
 	    ForEachTest (j) {
 		if (strcmp (argv[i], test[j].option) == 0) {
@@ -778,22 +808,30 @@ main(argc, argv)
 	ForEachTest (i) {
 	    int child;
 	    switch (test[i].testType) {
-	        case NONXOR:
+	        case NONROP:
 		    printf ("%s\n", test[i].label);
 		    break;
 
-		case XOR:
-		    if (!xorMode || bothModes) {
-			printf ("%s\n", test[i].label);
-		    }
-		    if (xorMode || bothModes) {
-			printf("(XOR) %s\n", test[i].label);
-		    }
+		case ROP:
+		    for (rop = 0; rop < numRops; rop++)
+			for (pm = 0; pm < numPlanemasks; pm++)
+			    if (planemasks[pm] == ~0)
+				if (rops[rop] == GXcopy)
+				    printf ("%s\n", test[i].label);
+				else
+				    printf ("(%s) %s\n",
+					ropNames[rops[rop]].name,
+					test[i].label);
+			    else
+				printf ("(%s 0x%x) %s\n",
+					ropNames[rops[rop]].name,
+					planemasks[pm],
+					test[i].label);
 		    break;
 		
 		case WINDOW:
-		    for (child = 0; subs[child] != 0; child++) {
-			printf ("%s (%d kids)\n", test[i].label, subs[child]);
+		    for (child = 0; child < numSubWindows; child++) {
+			printf ("%s (%d kids)\n", test[i].label, subWindows[child]);
 		    }
 		    break;
 	    } /* switch */
@@ -863,33 +901,40 @@ main(argc, argv)
 
 	if (doit[i]) {
 	    switch (test[i].testType) {
-	        case NONXOR:
+	        case NONROP:
 		    /* Simplest...just run it once */
 		    strcpy (label, test[i].label);
-		    ProcessTest(&xparms, &test[i], GXcopy, label);
+		    ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
 		    break;
 
-		case XOR:
+		case ROP:
 		    /* Run it once or twice */
-		    if (!xorMode || bothModes) {
-			/* Copy mode */
-			strcpy (label, test[i].label);
-			ProcessTest(&xparms, &test[i], GXcopy, label);
-		    }
-		    if (xorMode || bothModes) {
-			/* Xor mode */
-			sprintf(label, "(XOR) %s", test[i].label);
-			ProcessTest(&xparms, &test[i], GXxor, label);
-		    }
+		    for (rop = 0; rop < numRops; rop++)
+			for (pm = 0; pm < numPlanemasks; pm++) {
+			    if (planemasks[pm] == ~0)
+				if (rops[rop] == GXcopy)
+				    sprintf (label, "%s", test[i].label);
+				else
+				    sprintf (label, "(%s) %s",
+					ropNames[rops[rop]].name,
+					test[i].label);
+			    else
+				sprintf (label, "(%s 0x%x) %s",
+					ropNames[rops[rop]].name,
+					planemasks[pm],
+					test[i].label);
+			    ProcessTest(&xparms, &test[i], rops[rop],
+				        planemasks[pm], label);
+			}
 		    break;
 		
 		case WINDOW:
 		    /* Loop through number of children array */
-		    for (child = 0; subs[child] != 0; child++) {
-			test[i].parms.objects = subs[child];
+		    for (child = 0; child < numSubWindows; child++) {
+			test[i].parms.objects = subWindows[child];
 			sprintf(label, "%s (%d kids)",
 			    test[i].label, test[i].parms.objects);
-			ProcessTest(&xparms, &test[i], GXcopy, label);
+			ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
 		    }
 		    break;
 	    } /* switch */
@@ -903,3 +948,102 @@ main(argc, argv)
 	ssAllowExposures);
 }
 
+int
+getWords (argi, argv, wordsp, nump)
+int	argi;
+char	**argv;
+char	**wordsp;
+int	*nump;
+{
+    int	    count;
+
+    count = 0;
+    while (argv[argi] && *(argv[argi]) != '-') {
+	*wordsp++ = argv[argi];
+	++argi;
+	count++;
+    }
+    *nump = count;
+    return count;
+}
+
+atox (s)
+char	*s;
+{
+    int	v, c;
+
+    v = 0;
+    while (*s) {
+	if ('0' <= *s && *s <= '9')
+	    c = *s - '0';
+	else if ('a' <= *s && *s <= 'f')
+	    c = *s - 'a' + 10;
+	else if ('A' <= *s && *s <= 'F')
+	    c = *s - 'A' + 10;
+	v = v * 16 + c;
+	s++;
+    }
+    return v;
+}
+
+getNumbers (argi, argv, intsp, nump)
+int	argi;
+char	**argv;
+int	*intsp;
+int	*nump;
+{
+    char    *words[256];
+    int	    count;
+    int	    i;
+    int	    flip;
+
+    count = getWords (argi, argv, words, nump);
+    for (i = 0; i < count; i++) {
+	flip = 0;
+	if (!strncmp (words[i], "~", 1))
+	{
+	    words[i]++;
+	    flip = ~0;
+	}
+	if (!strncmp (words[i], "0x", 2))
+	    intsp[i] = atox(words[i] + 2) ^ flip;
+	else
+	    intsp[i] = atoi (words[i]) ^ flip;
+    }
+    return count;
+}
+
+getRops (argi, argv, ropsp, nump)
+int	argi;
+char	**argv;
+int	*ropsp;
+int	*nump;
+{
+    char    *words[256];
+    int	    count;
+    int	    i;
+    int	    rop;
+
+    count = getWords (argi, argv, words, nump);
+    for (i = 0; i < count; i++) {
+	if (!strncmp (words[i], "GX", 2))
+	    words[i] += 2;
+	if (!strcmp (words[i], "all")) {
+	    for (i = 0; i < 16; i++)
+		ropsp[i] = ropNames[i].rop;
+	    *nump = 16;
+	    break;
+	}
+	for (rop = 0; rop < 16; rop++) {
+	    if (!strcmp (words[i], ropNames[rop].name)) {
+		ropsp[i] = ropNames[rop].rop;
+		break;
+	    }
+	}
+	if (rop == 16) {
+	    fprintf (stderr, "unknown rop name %s\n", words[i]);
+	    usage ();
+	}
+    }
+    return count;
+}
