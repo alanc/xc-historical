@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHints.c,v 11.19 88/02/07 11:28:29 jim Exp $ */
+/* $Header: XGetHints.c,v 11.20 88/06/19 16:49:17 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -95,9 +95,10 @@ XWMHints *XGetWMHints (dpy, w)
             != Success) return (NULL);
 
 	/* If the property is undefined on the window, return null pointer. */
+	/* pre-R3 bogusly truncated window_group, don't fail on them */
 
         if ((actual_type != XA_WM_HINTS) ||
-	    (nitems < NumPropWMHintsElements) || (actual_format != 32)) {
+	    (nitems < (NumPropWMHintsElements - 1)) || (actual_format != 32)) {
 		if (prop != NULL) Xfree ((char *)prop);
                 return(NULL);
 		}
@@ -111,7 +112,10 @@ XWMHints *XGetWMHints (dpy, w)
 	hints->icon_x = prop->iconX;
 	hints->icon_y = prop->iconY;
 	hints->icon_mask = prop->iconMask;
-	hints->window_group = prop->windowGroup;
+	if (nitems >= NumPropWMHintsElements)
+	    hints->window_group = prop->windowGroup;
+	else
+	    hints->window_group = 0;
 	Xfree ((char *)prop);
 	return(hints);
 }
@@ -213,7 +217,8 @@ XGetTransientForHint(dpy, w, propWindow)
 	*propWindow = None;
 	return (0);
 	}
-    if ( (actual_type == XA_WINDOW) && (actual_format == 32) ) {
+    if ( (actual_type == XA_WINDOW) && (actual_format == 32) &&
+	 (nitems != 0) ) {
 	*propWindow = *data;
 	Xfree( (char *) data);
 	return (1);
@@ -243,9 +248,10 @@ XGetClassHint(dpy, w, classhint)
 	
    if ( (actual_type == XA_STRING) && (actual_format == 8) ) {
 	len_name = strlen(data);
-	len_class = strlen(data+len_name+1);
 	classhint->res_name = Xmalloc(len_name+1);
 	strcpy(classhint->res_name, data);
+	if (len_name == nitems) len_name--;
+	len_class = strlen(data+len_name+1);
 	classhint->res_class = Xmalloc(len_class+1);
 	strcpy(classhint->res_class, data+len_name+1);
 	Xfree( (char *) data);
