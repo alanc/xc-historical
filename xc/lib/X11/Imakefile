@@ -238,11 +238,12 @@ V11LIST=\
 
 DebuggedLibraryObjectRule()
 NormalLibraryTarget(X,$(V11LIST))
-DebuggedLibraryTarget(X,$(V11LIST))
 AliasedLibraryTarget(X,X11)
-AliasedLibraryTarget(X_d,X11_d)
 NormalLibraryTarget(X10,$(V10LIST))
+
 DebuggedLibraryTarget(X10,$(V10LIST))
+DebuggedLibraryTarget(X,$(V11LIST))
+AliasedLibraryTarget(X_d,X11_d)
 
 InstallLibrary(X,$(USRLIBDIR))
 InstallLibrary(X10,$(USRLIBDIR))
