@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.32 89/08/23 14:35:14 rws Exp $ */
+/* $XConsortium: window.c,v 5.33 89/08/25 12:02:41 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1899,8 +1899,8 @@ MoveWindow(pWin, x, y, pNextSib)
 	WindowsRestructured ();
 }
 
-static void
-gravityTranslate (x, y, oldx, oldy, dw, dh, gravity, destx, desty)
+void
+GravityTranslate (x, y, oldx, oldy, dw, dh, gravity, destx, desty)
 int	x, y;		/* new window position */
 int	oldx, oldy;	/* old window position */
 unsigned gravity;
@@ -1970,7 +1970,7 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 
 	    cwsx = pSib->origin.x;
 	    cwsy = pSib->origin.y;
-	    gravityTranslate (cwsx, cwsy, cwsx - dx, cwsx - dy, dw, dh,
+	    GravityTranslate (cwsx, cwsy, cwsx - dx, cwsx - dy, dw, dh,
 			pSib->winGravity, &cwsx, &cwsy);
 	    if (cwsx != pSib->origin.x || cwsy != pSib->origin.y)
 	    {
@@ -2216,7 +2216,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    /*
 	     * clip to new clipList
 	     */
-	    gravityTranslate (x, y, oldx, oldy, dw, dh, pWin->bitGravity, &nx, &ny);
+	    GravityTranslate (x, y, oldx, oldy, dw, dh, pWin->bitGravity, &nx, &ny);
 	    (*pScreen->RegionCopy) (pRegion, oldWinClip);
 	    (*pScreen->TranslateRegion) (pRegion, nx - oldx, ny - oldy);
 	    (*pScreen->Intersect) (oldWinClip, pRegion, &pWin->clipList);
@@ -2252,7 +2252,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    if (!gravitate[g])
 	    	continue;
 
-	    gravityTranslate (x, y, oldx, oldy, dw, dh, g, &nx, &ny);
+	    GravityTranslate (x, y, oldx, oldy, dw, dh, g, &nx, &ny);
 
             oldpt.x = oldx + (x - nx);
 	    oldpt.y = oldy + (y - ny);
