@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.150 93/07/12 17:50:58 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.151 93/07/19 10:21:39 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -35,7 +35,7 @@ XCOMM $XConsortium: Imakefile,v 1.150 93/07/12 17:50:58 rws Exp $
 #endif
 #if BuildXIE
       XIEEXT =  $(EXTENSIONSRC)/server/xie/dixie/libdixie.a \
-		$(EXTENSIONSRC)/server/xie/ddxie/mi/libddxiemi.a 
+		$(EXTENSIONSRC)/server/xie/ddxie/mi/libddxie.a 
 #endif
 #if BuildXTrapExt
        XTRAPEXT = $(EXTENSIONSRC)/server/xtrap/libxtrapext.a
