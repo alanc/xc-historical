@@ -8,8 +8,14 @@
 #define OSName                 HP-UX 6.01
 #define OSMajorVersion         6
 #define OSMinorVersion         0
+#ifdef hp9000s800
+#define StandardDefines        -DSYSV
+#define LintOpts               -ax -DSYSV
+#define OptimizedCDebugFlags   +O1
+#else
 #define StandardDefines        -Wc,-Nd4000,-Ns3000,-Ne700 -DSYSV
 #define LintOpts               -ax -Nd4000 -Ns3000 -Ne700 -Na25000 -DSYSV
+#endif
 #define LnCmd                  ln -s
 #define MvCmd                  mv -f
 #define ExecableScripts        YES
@@ -28,7 +34,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.14 89/07/18 15:39:44 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.15 89/08/02 21:58:40 keith Exp $
 /**/# operating system:  OSName
 
 /*
