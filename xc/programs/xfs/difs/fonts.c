@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.22 94/03/14 17:48:28 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.23 94/03/18 19:02:34 gildea Exp $ */
 /*
  * font control
  */
@@ -233,6 +233,26 @@ make_clients_id_list()
     return ids;
 }
 
+static void
+free_svrPrivate(svrPrivate)
+    pointer svrPrivate;
+{
+    int i;
+    FontIDListPtr *idlist, ids;
+
+    idlist = (FontIDListPtr *) svrPrivate;
+    if (idlist) {
+	for (i = 0; i < MAXCLIENTS; i++) {
+	    ids = idlist[i];
+	    if (ids) {
+		fsfree((char *) ids->client_list);
+		fsfree((char *) ids);
+	    }
+	}
+	fsfree((char *) idlist);
+    }
+}
+
 static Bool
 do_open_font(client, c)
     ClientPtr   client;
@@ -350,7 +370,7 @@ do_open_font(client, c)
     }
     if (!AddResource(c->client->index, c->fontid, RT_FONT, (pointer) cfp)) {
 	fsfree(cfp);
-	fsfree(pfont->svrPrivate);
+	free_svrPrivate(pfont->svrPrivate);
 	pfont->svrPrivate = (pointer) 0;
 	err = AllocError;
 	goto dropout;
@@ -524,15 +544,7 @@ close_font(pfont)
 	if (fontPatternCache)
 	    RemoveCachedFontPattern(fontPatternCache, pfont);
 	fpe = pfont->fpe;
-	idlist = (FontIDListPtr*) pfont->svrPrivate;
-	for (i = 0; i < MAXCLIENTS; i++) {
-	    ids = idlist[i];
-	    if (ids) {
-		fsfree((char *) ids->client_list);
-		fsfree((char *) ids);
-	    }
-	}
-	fsfree((char *) idlist);
+	free_svrPrivate(pfont->svrPrivate);
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
 	FreeFPE(fpe);
     }
