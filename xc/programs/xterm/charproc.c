@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.63 88/12/09 15:42:52 swick Exp $
+ * $XConsortium: charproc.c,v 1.64 89/01/04 13:37:50 jim Exp $
  */
 
 
@@ -94,6 +94,7 @@ static void VTallocbuf();
 #define	XtNscrollBar		"scrollBar"
 #define	XtNscrollInput		"scrollInput"
 #define	XtNscrollKey		"scrollKey"
+#define XtNscrollLines		"scrollLines"
 #define XtNscrollPos    	"scrollPos"
 #define	XtNsignalInhibit	"signalInhibit"
 #define	XtNtekInhibit		"tekInhibit"
@@ -122,6 +123,7 @@ static void VTallocbuf();
 #define	XtCReverseWrap		"ReverseWrap"
 #define XtCSaveLines		"SaveLines"
 #define	XtCScrollBar		"ScrollBar"
+#define XtCScrollLines		"ScrollLines"
 #define XtCScrollPos     	"ScrollPos"
 #define	XtCScrollCond		"ScrollCond"
 #define	XtCSignalInhibit	"SignalInhibit"
@@ -134,7 +136,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.63 88/12/09 15:42:52 swick Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.64 89/01/04 13:37:50 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -173,6 +175,8 @@ extern void HandleStartExtend();
        void HandleBell();
        void HandleIgnore();
 extern void HandleSecure();
+extern void HandleScrollForward();
+extern void HandleScrollBack();
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 
@@ -186,6 +190,7 @@ static  Boolean	defaultTRUE	   = TRUE;
 static  int	defaultBorderWidth = DEFBORDERWIDTH;
 static  int	defaultIntBorder   = DEFBORDER;
 static  int	defaultSaveLines   = SAVELINES;
+static	int	defaultScrollLines = SCROLLLINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
 
@@ -217,6 +222,8 @@ static XtActionsRec actionsList[] = {
     { "select-end",	  HandleSelectEnd },
     { "start-extend",	  HandleStartExtend },
     { "string",		  HandleStringEvent },
+    { "scroll-forw",	  HandleScrollForward },
+    { "scroll-back",	  HandleScrollBack },
 };
 
 static XtResource resources[] = {
@@ -313,6 +320,9 @@ static XtResource resources[] = {
 {XtNscrollKey, XtCScrollCond, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.scrollkey),
 	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNscrollLines, XtCScrollLines, XtRInt, sizeof(int),
+	XtOffset(XtermWidget, screen.scrolllines),
+	XtRInt, (caddr_t) &defaultScrollLines},
 {XtNsignalInhibit,XtCSignalInhibit,XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.signalInhibit),
 	XtRBoolean, (caddr_t) &defaultFALSE},
@@ -1897,6 +1907,7 @@ static void VTInitialize (request, new)
    new->screen.multiscroll = request->screen.multiscroll;
    new->screen.nmarginbell = request->screen.nmarginbell;
    new->screen.savelines = request->screen.savelines;
+   new->screen.scrolllines = request->screen.scrolllines;
    new->screen.scrollinput = request->screen.scrollinput;
    new->screen.scrollkey = request->screen.scrollkey;
    new->screen.visualbell = request->screen.visualbell;

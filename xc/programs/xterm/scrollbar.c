@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.16 88/10/07 08:19:51 swick Exp $
+ *	$XConsortium: scrollbar.c,v 1.17 88/11/23 13:56:05 rws Exp $
  */
 
 #include <X11/copyright.h>
@@ -28,6 +28,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include <setjmp.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -42,7 +43,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.16 88/10/07 08:19:51 swick Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.17 88/11/23 13:56:05 rws Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -404,3 +405,104 @@ static void ScrollTextUpDownBy(scrollbarWidget, closure, pixels)
 	newTopLine = screen->topline + rowOnScreen;
 	WindowScroll(screen, newTopLine);
 }
+
+
+/*
+ * assume that b is lower case and allow plural
+ */
+static int specialcmplowerwiths (a, b)
+    char *a, *b;
+{
+    register char ca, cb;
+
+    if (!a || !b) return 0;
+
+    while (1) {
+	ca = *a;
+	cb = *b;
+	if (isascii(ca) && isupper(ca)) {		/* lowercasify */
+#ifdef _tolower
+	    ca = _tolower (ca);
+#else
+	    ca = tolower (ca);
+#endif
+	}
+	if (ca != cb || ca == '\0') break;  /* if not eq else both nul */
+	a++, b++;
+    }
+    if (cb == '\0' && (ca == '\0' || (ca == 's' && a[1] == '\0')))
+      return 1;
+
+    return 0;
+}
+
+static int params_to_pixels (screen, params, n)
+    TScreen *screen;
+    String *params;
+    int n;
+{
+    register mult;
+    register char *s;
+    int divby2 = 0;
+
+    switch (n > 2 ? 2 : n) {
+      case 2:
+	s = params[1];
+	if (specialcmplowerwiths (s, "page")) {
+	    mult = (screen->max_row + 1) * FontHeight(screen);
+	} else if (specialcmplowerwiths (s, "halfpage")) {
+	    mult = (screen->max_row + 1) * FontHeight(screen);
+	    divby2 = 1;
+	} else if (specialcmplowerwiths (s, "halfline")) {
+	    mult = FontHeight(screen);
+	    divby2 = 1;
+	} else if (specialcmplowerwiths (s, "pixel")) {
+	    mult = 1;
+	} /* else assume that it is Line */
+	mult *= atoi (params[0]);
+	if (divby2) mult >>= 1;
+	break;
+      case 1:
+	mult = atoi (params[0]) * FontHeight(screen);	/* lines */
+	break;
+      default:
+	mult = screen->scrolllines * FontHeight(screen);
+	break;
+    }
+
+    return mult;
+}
+
+
+/*ARGSUSED*/
+void HandleScrollForward (gw, event, params, nparams)
+    Widget gw;
+    XEvent *event;
+    String *params;
+    Cardinal *nparams;
+{
+    XtermWidget w = (XtermWidget) gw;
+    register TScreen *screen = &w->screen;
+
+    ScrollTextUpDownBy (gw, (Opaque) NULL,
+			params_to_pixels (screen, params, (int) *nparams));
+    return;
+}
+
+
+/*ARGSUSED*/
+void HandleScrollBack (gw, event, params, nparams)
+    Widget gw;
+    XEvent *event;
+    String *params;
+    Cardinal *nparams;
+{
+    XtermWidget w = (XtermWidget) gw;
+    register TScreen *screen = &w->screen;
+
+    ScrollTextUpDownBy (gw, (Opaque) NULL,
+			-params_to_pixels (screen, params, (int) *nparams));
+    return;
+}
+
+

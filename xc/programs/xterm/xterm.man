@@ -527,6 +527,10 @@ Specifies whether or not pressing a key should automatically cause the
 scrollbar to go to the bottom of the scrolling region.  The default is
 ``false.''
 .TP 8
+.B "scrollLines (\fPclass\fB ScrollLines)"
+Specifies the number of lines that the \fIscroll-back\fP and
+\fIscroll-forw\fP actions should use as a default.  The default value is 1.
+.TP 8
 .B "signalInhibit (\fPclass\fB SignalInhibit)"
 Specifies whether or not the entries in the ``xterm X11'' menu for sending
 signals to \fIxterm\fP should be disallowed.  The default is ``false.''
@@ -971,6 +975,17 @@ Quietly discards the key or button event.
 .TP 15
 .B bell(\fP[\fIvolume\fP]\fB)
 Rings the bell at the specified volume increment above/below the base volume.
+.TP 15
+.B scroll-back(\fP[\fInumber\fP,[\fIunits\fP]])
+Scrolls the window backwards the indicated number of units (\fIpages\fP,
+\fIhalfpages\fP, \fIlines\fP, \fIhalflines\fP, or \fIpixels\fP).  If 
+\fIunits\fP are not specified, \fIlines\fP are assumed.  If no \fInumber\fP
+is specified, the value of the \fIscrollLines\fP resource (which defaults to 1)
+is used.
+.TP 15
+.B scroll-forw(\fP[\fInumber\fP,[\fIunits\fP]])
+Scrolls the window forward.  The arguments are the same as for
+\fIscroll-back\fP. 
 .PP
 The default bindings are:
 .sp

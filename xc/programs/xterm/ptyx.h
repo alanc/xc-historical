@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.19 88/11/16 13:41:34 rws Exp $
+ *	$XConsortium: ptyx.h,v 1.20 88/11/16 18:13:26 rws Exp $
  */
 
 #include <X11/copyright.h>
@@ -192,6 +192,7 @@ typedef struct {
 } BitmapBits;
 
 #define	SAVELINES		64      /* default # lines to save      */
+#define SCROLLLINES 1			/* default # lines to scroll    */
 
 typedef struct {
 /* These parameters apply to both windows */
@@ -261,6 +262,7 @@ typedef struct {
 	int		topline;	/* line number of top, <= 0	*/
 	int		savedlines;     /* number of lines that've been saved */
 	int		savelines;	/* number of lines off top to save */
+	int		scrolllines;	/* number of lines to button scroll */
 	Boolean		scrollinput;	/* scroll to bottom on input	*/
 	Boolean		scrollkey;	/* scroll to bottom on key	*/
 	
