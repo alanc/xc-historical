@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.24 94/04/17 20:15:35 mor Exp $ */
+/* $XConsortium: misc.c,v 1.25 94/05/02 11:17:27 mor Exp $ */
 /******************************************************************************
 
 
@@ -289,6 +289,16 @@ register char	 *ptr;
 
 		iceConn->io_ok = False;
 
+		if (iceConn->connect_to_you)
+		{
+		    /*
+		     * Don't invoke IO error handler if we are in the
+		     * middle of a connection setup.
+		     */
+
+		    return (1);
+		}
+
 		if (iceConn->process_msg_info)
 		{
 		    int i;
@@ -388,6 +398,16 @@ register char	 *ptr;
 	     */
 
 	    iceConn->io_ok = False;
+
+	    if (iceConn->connect_to_you)
+	    {
+		/*
+		 * Don't invoke IO error handler if we are in the
+		 * middle of a connection setup.
+		 */
+
+		return;
+	    }
 
 	    if (iceConn->process_msg_info)
 	    {
