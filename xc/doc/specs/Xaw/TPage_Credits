@@ -110,8 +110,7 @@ details.
 Chris D. Peterson
 MIT X Consortium
 .De
-.af % i
-.pn v
+.bp
 .EH '\fBAthena Widget Set\fP''\fBX11, Release 4\fP'
 .OH '\fBAthena Widget Set\fP''\fBX11, Release 4\fP'
 .EF ''\fB % \fP''
