@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Popup.c,v 1.10 87/11/01 13:23:07 haynes BL5 $";
+static char rcsid[] = "$Header: Popup.c,v 1.10 87/11/01 13:23:07 swick Locked $";
 #endif lint
 
 /*
@@ -70,7 +70,7 @@ PopupClassRec TransientClassRec = {
     /* destroy            */    NULL,
     /* resize             */    XtInheritResize,
     /* expose             */    XtInheritExpose,
-    /* set_values         */    XtInheritSetValues,
+    /* set_values         */    NULL,
     /* accept_focus       */    XtInheritAcceptFocus,
     /* callback offset    */    NULL,
     /* reserved           */    NULL,
@@ -101,7 +101,7 @@ PopupClassRec OverrideClassRec = {
     /* destroy            */    NULL,
     /* resize             */    XtInheritResize,
     /* expose             */    XtInheritExpose,
-    /* set_values         */    XtInheritSetValues,
+    /* set_values         */    NULL,
     /* accept_focus       */    XtInheritAcceptFocus,
     /* callback offset    */    NULL,
     /* reserved           */    NULL,
