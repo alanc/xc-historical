@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.86 91/05/13 19:33:50 gildea Exp $
+ *	$XConsortium: misc.c,v 1.87 91/06/25 19:50:39 gildea Exp $
  */
 
 /*
@@ -74,13 +74,7 @@ xevents()
 	do {
 		if (waitingForTrackInfo)
 			return;
-		/*
-		 * For efficiency, we would like to call XNextEvent here,
-		 * since we've already done the select, and XtAppNextEvent
-		 * will do another (unnecessary) one.  However, MappingNotify
-		 * is dispatched by XtAppNextEvent, and we need that.
-		 */
-		XtAppNextEvent (app_con, &event);
+		XNextEvent (screen->display, &event);
 		/*
 		 * Hack to get around problems with the toolkit throwing away
 		 * eventing during the exclusive grab of the menu popup.  By
