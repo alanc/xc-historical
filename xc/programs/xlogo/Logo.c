@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.12 90/04/11 17:11:27 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.13 90/04/11 17:16:54 jim Exp $";
 #endif
 
 /*
@@ -23,17 +23,10 @@ without express or implied warranty.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LogoP.h>
 
-static Dimension defDim = 100;
-
 static XtResource resources[] = {
-    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	XtOffset(Widget,core.width), XtRDimension, (caddr_t)&defDim},
-    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	XtOffset(Widget,core.height), XtRDimension, (caddr_t)&defDim},
-    {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-	XtOffset(Widget,core.background_pixel), XtRString, "White"},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-        XtOffset(LogoWidget,logo.fgpixel), XtRString, "Black"},
+        XtOffset(LogoWidget,logo.fgpixel), XtRString,
+       (XtPointer) "XtDefaultForeground"},
     {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
 	XtOffset(LogoWidget,logo.reverse_video), XtRString, "FALSE"},
 };
@@ -102,6 +95,9 @@ static void Initialize (request, new)
 	w->logo.fgpixel = bg;
 	w->core.background_pixel = fg;
     }
+
+    if (w->core.width < 1) w->core.width = 100;
+    if (w->core.height < 1) w->core.height = 100;
 
     gcv.foreground = w->logo.fgpixel;
     w->logo.foreGC = XtGetGC((Widget)w, GCForeground, &gcv);
