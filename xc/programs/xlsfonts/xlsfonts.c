@@ -225,19 +225,21 @@ show_fonts()
 		if (max_width == 0)
 			Fatal_Error("Max width of font names is 0!");
 		max_width += 3;
-		columns = 79 / max_width;
-		if (columns == 0)
-			columns = 1;
+		columns = (79 + max_width - 1) / max_width;
 		if (font_cnt < columns)
 			columns = font_cnt;
-		lines_per_column = font_cnt / columns;
+		lines_per_column = (font_cnt + columns - 1) / columns;
 
 		for (i=0; i<lines_per_column; i++) {
 			for (j=0; j<columns; j++) {
 				index = j * lines_per_column + i;
 				if (index >= font_cnt)
 					break;
-				printf("%-*s", max_width, font_list[ index ]);
+				if (j+1 == columns)
+					printf("%s", font_list[ index ]);
+				else
+					printf("%-*s",
+						max_width, font_list[ index ]);
 			}
 			printf("\n");
 		}
