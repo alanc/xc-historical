@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.86 89/10/10 14:21:15 jim Exp $ */
+/* $XConsortium: utils.c,v 1.87 89/11/08 17:16:21 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -151,6 +151,7 @@ GetTimeInMillis()
 
 void UseMsg()
 {
+#if !defined(AIXrt) && !defined(AIX386)
     ErrorF("use: X [:<display>] [option]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
 #ifdef MEMBUG
@@ -193,6 +194,7 @@ void UseMsg()
 #ifdef XDMCP
     XdmcpUseMsg();
 #endif
+#endif /* !AIXrt && ! AIX386 */
     ddxUseMsg();
 }
 
