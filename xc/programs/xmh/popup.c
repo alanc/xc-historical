@@ -1,5 +1,5 @@
 /*
- * $XConsortium: popup.c,v 2.23 89/11/14 20:13:10 converse Exp $
+ * $XConsortium: popup.c,v 2.24 89/11/20 21:04:06 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -135,7 +135,7 @@ static void InsureVisibility(popup, popup_child, x, y, centerX, centerY)
     Position	x, y;		/* assert: current position = (x,y) */
     Boolean	centerX, centerY;
 {
-    Position	root_x, root_y, new_x, new_y;
+    Position	root_x, root_y;
     Dimension	width, height, border;
     Arg		args[3];
 
@@ -202,10 +202,6 @@ void PopupPrompt(question, okayCallback)
     Widget		dialog;
     Position		x, y;
     Boolean		positioned;
-    static XtCallbackRec ok_callbacks[] = {
-	{(XtCallbackProc) NULL,		(XtPointer) NULL},
-	{(XtCallbackProc) NULL,		(XtPointer) NULL}
-    };
 
     static String text_translations = "<Key>Return: XmhPromptOkayAction()\n";
 
