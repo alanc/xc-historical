@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.43 89/11/06 12:03:23 jim Exp $
+ *	$XConsortium: button.c,v 1.44 89/11/13 11:59:31 keith Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.43 89/11/06 12:03:23 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.44 89/11/13 11:59:31 keith Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -101,7 +101,11 @@ static int saveStartRRow, saveStartRCol, saveEndRRow, saveEndRCol;
 /* Multi-click handling */
 static int numberOfClicks = 0;
 static long int lastButtonUpTime = 0;
-typedef enum {SELECTCHAR, SELECTWORD, SELECTLINE} SelectUnit;
+typedef int SelectUnit;
+#define SELECTCHAR 0
+#define SELECTWORD 1
+#define SELECTLINE 2
+#define NSELECTUNITS 3
 static SelectUnit selectUnit;
 
 /* Send emacs escape code when done selecting or extending? */
@@ -355,8 +359,7 @@ SelectUnit defaultUnit;
 		selectUnit = defaultUnit;
 	} else {
 		++numberOfClicks;
-		/* Don't bitch.  This is only temporary. */
-		selectUnit = (SelectUnit) (((int) selectUnit + 1) % 3);
+		selectUnit = ((selectUnit + 1) % NSELECTUNITS);
 	}
 }
 
@@ -471,7 +474,7 @@ int startrow, startcol;
 		endERow = startrow;
 		endECol = startcol;
 	}
-	ComputeSelect(startERow, startECol, endERow, endECol);
+	ComputeSelect(startERow, startECol, endERow, endECol, False);
 
 }
 
@@ -496,12 +499,6 @@ Bool use_cursor_loc;
 	lastButtonUpTime = event->xbutton.time;
 	/* Only do select stuff if non-null select */
 	if (startSRow != endSRow || startSCol != endSCol) {
-	        int tmp;
-		if (startSCol > endSCol) {  /* handle eoline extending */
-		    tmp = startSCol;
-		    startSCol = endSCol;
-		    endSCol = tmp;
-		}
 		if (replyToEmacs) {
 			if (rawRow == startSRow && rawCol == startSCol 
 			 && row == endSRow && col == endSCol) {
@@ -586,7 +583,7 @@ Bool use_cursor_loc;
 		endERow = row;
 		endECol = col;
 	}
-	ComputeSelect(startERow, startECol, endERow, endECol);
+	ComputeSelect(startERow, startECol, endERow, endECol, True);
 }
 
 ExtendExtend (row, col)
@@ -614,7 +611,7 @@ int row, col;
 		endERow = row;
 		endECol = col;
 	}
-	ComputeSelect(startERow, startECol, endERow, endECol);
+	ComputeSelect(startERow, startECol, endERow, endECol, False);
 }
 
 
@@ -799,13 +796,15 @@ int SetCharacterClassRange (low, high, value)
 }
 
 
-ComputeSelect(startRow, startCol, endRow, endCol)
+ComputeSelect(startRow, startCol, endRow, endCol, extend)
 int startRow, startCol, endRow, endCol;
+Bool extend;
 {
 	register TScreen *screen = &term->screen;
 	register Char *ptr;
 	register int length;
 	register int class;
+	int osc = startSCol;
 
 	if (Coordinate(startRow, startCol) <= Coordinate(endRow, endCol)) {
 		startSRow = startRRow = startRow;
@@ -869,7 +868,11 @@ int startRow, startCol, endRow, endCol;
 			}
 			break;
 		case SELECTLINE :
-			if (term->screen.cutToBeginningOfLine) startSCol = 0;
+			if (term->screen.cutToBeginningOfLine) {
+			    startSCol = 0;
+			} else if (!extend) {
+			    startSCol = osc;
+			}
 			if (term->screen.cutNewline) {
 			    endSCol = 0;
 			    ++endSRow;
@@ -878,6 +881,7 @@ int startRow, startCol, endRow, endCol;
 			}
 			break;
 	}
+
 	TrackText(startSRow, startSCol, endSRow, endSCol);
 	return;
 }
@@ -984,6 +988,12 @@ Cardinal num_params;
 	char *line, *lp;
 	static _OwnSelection();
 
+	if (crow == row && ccol > col) {
+	    int tmp = ccol;
+	    ccol = col;
+	    col = tmp;
+	}
+
 	--col;
 	/* first we need to know how long the string is before we can save it*/
 
@@ -1005,9 +1015,8 @@ Cardinal num_params;
 	    screen->selection = line;
 	    screen->selection_size = j + 1;
 	} else line = screen->selection;
-	if (!line) {
-	    return;
-	}
+	if (!line || j < 0) return;
+
 	line[j] = '\0';		/* make sure it is null terminated */
 	lp = line;		/* lp points to where to save the text */
 	if ( row == crow ) lp = SaveText(screen, row, ccol, col, lp);
@@ -1164,6 +1173,8 @@ Cardinal count;
     Atom* atoms = term->screen.selection_atoms;
     int i;
     Boolean have_selection = False;
+
+    if (term->screen.selection_length < 0) return;
 
     if (count > term->screen.sel_atoms_size) {
 	XtFree((char*)atoms);
