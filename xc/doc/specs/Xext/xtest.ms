@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.3 92/04/21 09:41:03 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.4 92/06/28 13:54:17 rws Exp $
 .de lP
 .ne 8
 .LP
@@ -16,7 +16,7 @@
 \s+2\fBX11 XTEST EXTENSION\fP\s-2
 .sp 3
 .ce 3
-Version 2.1
+Version 2.2
 MIT X Consortium Draft
 .sp 6
 .ce 4
@@ -166,8 +166,12 @@ specified by \fIvisualid\fP.
 .IP
 Discard any requests that are present in the request buffer associated with
 the \*QCONNECTION\*U \fIdpy\fP.
-The \fIstatus\fP returned is TRUE if there were one or more requests
-in the buffer and FALSE otherwise.
+The \fIstatus\fP returned is
+.PN True
+if there were one or more requests
+in the buffer and
+.PN False
+otherwise.
 .lP
 .NH 1
 Server Requests
@@ -259,9 +263,12 @@ If the button number is less than one or greater than the number of physical
 buttons, then a
 .PN Value
 error occurs.
-For motion events, if this field is True, then \fIrootX\fP and \fIrootY\fP
+For motion events, if this field is
+.PN True ,
+then \fIrootX\fP and \fIrootY\fP
 are relative distances from the current pointer location; if this field is
-False, then they are absolute positions.
+.PN False,
+then they are absolute positions.
 .IP \fItime\fP
 This is either
 .PN CurrentTime
@@ -295,6 +302,20 @@ For the currently supported event types, the event list must have length one,
 otherwise a
 .PN BadLength
 error occurs.
+.lP
+.PN "XTestGrabControl"
+.IP
+\fIimpervious\fP\^: BOOL
+.IP
+If \fIimpervious\fP is
+.PN True ,
+then the executing client becomes impervious to server grabs;
+that is, it can continue executing requests even if another client
+grabs the server.
+If \fIimpervious\fP is
+.PN False ,
+the the executing client returns to the normal state of being
+pervious to server grabs.
 .lP
 .NH 1
 Encoding
@@ -394,6 +415,18 @@ the corresponding core protocol event types.
 	2	INT16		x position for \fIMotionNotify\fP
 	2	INT16		y position for \fIMotionNotify\fP
 	8			unused
+.De
+.lP
+.Ds 0
+.TA .2i .5i 1.5i 2.5i
+.ta .2i .5i 1.5i 2.5i
+.R
+.PN XTestGrabControl
+	1	CARD8		opcode
+	1	3		xtest opcode
+	2	2		request length
+	1	BOOL		impervious
+	3			unused
 .De
 .lP
 .NH 1
@@ -502,7 +535,8 @@ a
 or a
 .PN KeyRelease
 (if \fIis_press\fP is
-.PN False ) of the key with keycode \fIkeycode\fP,
+.PN False )
+of the key with keycode \fIkeycode\fP,
 otherwise the request is ignored.
 .IP
 If the extension is supported,
@@ -532,7 +566,8 @@ a
 or a
 .PN ButtonRelease
 (if \fIis_press\fP is
-.PN False ) of the logical button numbered \fIbutton\fP,
+.PN False )
+of the logical button numbered \fIbutton\fP,
 otherwise the request is ignored.
 .IP
 If the extension is supported,
@@ -592,6 +627,23 @@ after the request is received (if \fIdelay\fP is
 then this is interpreted as no delay at all).  No other requests from
 this client will be processed until this delay, if any, has expired
 and subsequent processing of the simulated event has been completed.
+.lP
+XTestGrabControl (display, impervious)
+.RS
+Display *display;
+.br
+Bool impervious;
+.RE
+.IP
+If \fIimpervious\fP is
+.PN True ,
+then the executing client becomes impervious to server grabs.
+If \fIimpervious\fP is
+.PN False ,
+the the executing client returns to the normal state of being
+pervious to server grabs.
+.lP
+Bool
 .lP
 XTestSetGContextOfGC (gc, gid)
 .RS
