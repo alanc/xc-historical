@@ -18,6 +18,10 @@
 
 (in-package 'xlib :use '(lisp))
 
+(export '(
+	  compile-clx
+	  load-clx))
+
 ;;; #+ features used in this file
 ;;;   lispm
 ;;;   genera
