@@ -1,4 +1,4 @@
-/* $XConsortium: StrToCurs.c,v 1.14 91/04/17 11:04:35 rws Exp $ */
+/* $XConsortium: StrToCurs.c,v 1.15 91/07/02 09:12:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -63,16 +63,17 @@ SOFTWARE.
  * To use, include the following in your ClassInitialize procedure:
 
 static XtConvertArgRec screenConvertArg[] = {
-    {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)}
+    {XtBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.screen),
+     sizeof(Screen *)}
 };
 
-    XtAddConverter("String", "Cursor", XmuCvtStringToCursor,      
+    XtAddConverter(XtRString, XtRCursor, XmuCvtStringToCursor,      
 		   screenConvertArg, XtNumber(screenConvertArg));
  *
  */
 
 #define	done(address, type) \
-	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
+	{ (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
 
 #define FONTSPECIFIER		"FONT "
 
@@ -114,7 +115,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 			source_name, &source_char,
 			mask_name, &mask_char);
 	if (fields < 2) {
-	    XtStringConversionWarning( name, "Cursor" );
+	    XtStringConversionWarning(name, XtRCursor);
 	    return;
 	}
 
@@ -125,7 +126,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	fromString.size = strlen(source_name);
 	XtConvert(&widgetRec, XtRString, &fromString, XtRFont, &toFont);
 	if (toFont.addr == NULL) {
-	    XtStringConversionWarning( name, "Cursor" );
+	    XtStringConversionWarning(name, XtRCursor);
 	    return;
 	}
 	source_font = *(Font*)toFont.addr;
@@ -146,7 +147,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	    fromString.size = strlen(mask_name);
 	    XtConvert(&widgetRec, XtRString, &fromString, XtRFont, &toFont);
 	    if (toFont.addr == NULL) {
-		XtStringConversionWarning( name, "Cursor" );
+		XtStringConversionWarning(name, XtRCursor);
 		return;
 	    }
 	    mask_font = *(Font*)toFont.addr;
@@ -169,7 +170,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     if ((source = XmuLocateBitmapFile (screen, name, 
 				       maskname, (sizeof maskname) - 4,
 				       NULL, NULL, &xhot, &yhot)) == None) {
-	XtStringConversionWarning (name, "Cursor");
+	XtStringConversionWarning (name, XtRCursor);
     }
     len = strlen (maskname);
     for (i = 0; i < 2; i++) {
@@ -199,7 +200,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	    else {						\
 		static type static_val;				\
 		static_val = (value);				\
-		toVal->addr = (XtPointer)&static_val;		\
+		toVal->addr = (XPointer)&static_val;		\
 	    }							\
 	    toVal->size = sizeof(type);				\
 	    return True;					\
@@ -207,11 +208,13 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 
 /*	Function Name: XmuCvtStringToColorCursor
  *	Description: Converts a string into a colored cursor.
- *	Arguments: args - an argument list (see below).
+ *	Arguments: dpy
+ *		   args - an argument list (see below).
  *                 num_args - number of elements in the argument list.
  *                 fromVal - value to convert from.
  *                 toVal - value to convert to.
- *	Returns: none.
+ *		   data
+ *	Returns:   True or False
  */
 
 /*ARGSUSED*/
@@ -222,7 +225,7 @@ XmuCvtStringToColorCursor(dpy, args, num_args, fromVal, toVal, converter_data)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    XtPointer   *converter_data;	/* unused. */
+    XtPointer   *converter_data;	/* unused */
 {
     Cursor cursor;
     Pixel fg, bg;
@@ -231,10 +234,13 @@ XmuCvtStringToColorCursor(dpy, args, num_args, fromVal, toVal, converter_data)
     Cardinal number;
     XrmValue ret_val;
 
-    if (*num_args != 4)
-     XtErrorMsg("wrongParameters","cvtStringToColorCursor","XmuError",
-             "String to color cursor conversion needs three arguments",
-              (String *)NULL, (Cardinal *)NULL);
+    if (*num_args != 4) {
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	    "wrongParameters","cvtStringToColorCursor","XmuError",
+            "String to color cursor conversion needs four arguments",
+	    (String *)NULL, (Cardinal *)NULL);
+	return False;
+    }
 
     fg = *((Pixel *) args[1].addr);
     bg = *((Pixel *) args[2].addr);
