@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.20 91/02/17 15:59:30 dave Exp $
+ * $XConsortium: fontgrid.c,v 1.21 91/02/20 18:48:12 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@
 static void ClassInitialize(), Initialize(), Realize(), Redisplay(), Notify();
 static void Destroy(), Resize(), paint_grid();
 static Boolean SetValues();
-static char stupidString[] = {'-','1'}; /* workaround scanf bug */
+static char stupidString[] = {'-','1',0}; /* workaround scanf bug */
 
 #define Offset(field) XtOffsetOf(FontGridRec, fontgrid.field)
 
