@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.14 88/08/29 11:55:40 swick Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.15 88/08/29 12:02:37 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -407,7 +407,7 @@ static void EnumerateDatabase(db, proc, closure)
     XrmBinding  bindings[100];
     XrmQuark	quarks[100];
    
-    Enum(db, bindings, quarks, 0, proc, closure);
+    Enum(db, bindings, quarks, (unsigned)0, proc, closure);
 }
 
 static void PrintBindingQuarkList(bindings, quarks, stream)
@@ -428,19 +428,38 @@ static void PrintBindingQuarkList(bindings, quarks, stream)
     }
 }
 
-static void DumpEntry(bindings, quarks, type, value, stream)
+static void DumpEntry(bindings, quarks, type, value, stream_p)
     XrmBindingList      bindings;
     XrmQuarkList	quarks;
     XrmRepresentation   type;
     XrmValuePtr		value;
-    FILE		*stream;
+    caddr_t		stream_p;
 {
 
     register unsigned int	i;
+    FILE *stream = (FILE*)stream_p;
 
     PrintBindingQuarkList(bindings, quarks, stream);
     if (type == XrmQString) {
-	(void) fprintf(stream, ":\t%s\n", value->addr);
+	register char *p, *src = value->addr;
+	fputs(":\t", stream);
+	if ((p = index(src, '\n')) == NULL) {
+	    fputs(src, stream);
+	}
+	else {
+	    do {
+		fputs("\\\n", stream);
+		fwrite(src, 1, p - src, stream);
+		fputs("\\n", stream);
+		src = p + 1;
+		p = index(src, '\n');
+	    } while (p != NULL);
+	    if (*src != '\0') {
+		fputs("\\\n", stream);
+		fputs(src, stream);
+	    }
+	}
+	(void) putc('\n', stream);
     } else {
 	(void) fprintf(stream, "!%s:\t", XrmRepresentationToString(type));
 	for (i = 0; i < value->size; i++)
