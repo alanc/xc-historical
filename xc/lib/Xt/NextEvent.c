@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.39 88/02/14 14:53:52 rws Exp $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.40 88/02/26 12:43:29 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -50,7 +50,7 @@ typedef struct _TimerEventRec {
 	caddr_t	te_closure;
 }TimerEventRec;
 
-static struct InputEvent {
+struct InputEvent {
 	XtInputCallbackProc  ie_proc;
 	caddr_t ie_closure;
 	struct	InputEvent	*ie_next;
