@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXV3.c,v 1.2 91/05/10 07:43:11 jap Exp $
+ * $XConsortium: aixCursor.c,v 1.1 91/05/10 08:27:51 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -36,7 +36,7 @@
 
 #include "ibmScreen.h"
 #include "ibmIO.h"
-#include "trace.h"
+#include "ibmTrace.h"
 
 #include "OSio.h"
 
