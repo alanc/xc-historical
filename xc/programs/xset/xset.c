@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.7 87/05/12 16:05:33 dkk Locked $ 
+ * $Header: xset.c,v 1.8 87/05/14 03:20:41 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.7 87/05/12 16:05:33 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.8 87/05/14 03:20:41 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -161,8 +161,8 @@ char **argv;
 		}
 		else if (strcmp(arg, "m") == 0 || strcmp(arg, "mouse") == 0) {
 
-			acc_num = 4;
-			acc_denom = 1;
+			acc_num = -1;
+			acc_denom = -1;
 			thresh = -1;
 			if (i >= argc){
 			        do_acc = do_thresh = TRUE;
@@ -188,18 +188,29 @@ char **argv;
 			}
 		} 
 
-		else if (strcmp(arg, "s") == 0 || strcmp(arg, "saver") == 0 ||
-		    strcmp(arg, "v") == 0 || strcmp(arg, "video") == 0) {
-			timeout = 10;
-			interval = 60;
-			prefer_blank = (*arg == ('s' ? DontPreferBlanking :
-				 PreferBlanking));
+		else if (strcmp(arg, "s") == 0 || strcmp(arg, "saver") == 0) {
+			timeout = -1;
+			interval = -1;
+			prefer_blank = DefaultBlanking
 			dosaver = TRUE;
 			if (i >= argc)
 				break;
 			arg = argv[i];
+			if (strcmp(arg, "blank") == 0) {
+			        prefer_blank = PreferBlanking;
+			        i++;
+			}
+			if (strcmp(arg, "noblank") == 0) {
+			        prefer_blank = DontPreferBlanking;
+			        i++;
+			}
+			if (strcmp(arg, "off") == 0) {
+			        timout = 0;
+			        i++;
+				if (i >= argc)
+				  /* %%*/
+			}
 			if (strcmp(arg, "default") == 0) {
-			        prefer_blank = DefaultBlanking;
 				i++;
 			} 
 			else if (*arg >= '0' && *arg <= '9') {
