@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.161 94/08/25 20:54:48 mor Exp mor $
+ * $XConsortium: add_window.c,v 1.162 94/09/14 18:20:50 mor Exp mor $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -362,7 +362,20 @@ IconMgr *iconp;
     }
 
     GetWindowSizeHints (tmp_win);
-    GetGravityOffsets (tmp_win, &gravx, &gravy);
+
+    if (restoredFromPrevSession)
+    {
+	/*
+	 * When restoring window positions from the previous session,
+	 * we always use NorthWest gravity.
+	 */
+
+	gravx = gravy = -1;
+    }
+    else
+    {
+	GetGravityOffsets (tmp_win, &gravx, &gravy);
+    }
 
     /*
      * Don't bother user if:
