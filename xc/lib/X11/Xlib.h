@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.152 89/03/28 18:13:56 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.153 89/04/19 15:09:18 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -98,7 +98,6 @@
 #define DoesSaveUnders(s)	((s)->save_unders)
 #define DoesBackingStore(s)	((s)->backing_store)
 #define EventMaskOfScreen(s)	((s)->root_input_mask)
-#define ScreenNumberOfScreen(s)	((s)->screen_number)
 
 /*
  * Extensions need a way to hang private data on some structures.
@@ -239,7 +238,6 @@ typedef struct {
 	int backing_store;	/* Never, WhenMapped, Always */
 	Bool save_unders;	
 	long root_input_mask;	/* initial root input mask */
-	int screen_number;	/* index of this screen in display */
 } Screen;
 
 /*

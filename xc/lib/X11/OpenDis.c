@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 1.11 89/03/24 18:25:20 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.83 89/03/28 18:14:04 jim Exp $
  */
 
 #include "copyright.h"
@@ -373,7 +373,6 @@ Display *XOpenDisplay (display)
 	    register Screen *sp = &dpy->screens[i];
 	    VisualID root_visualID = u.rp->rootVisualID;
 	    sp->display	    = dpy;
-	    sp->screen_number = i;
 	    sp->root 	    = u.rp->windowId;
 	    sp->cmap 	    = u.rp->defaultColormap;
 	    sp->white_pixel = u.rp->whitePixel;
