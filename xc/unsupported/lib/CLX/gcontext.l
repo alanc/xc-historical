@@ -309,7 +309,7 @@
 		     (setf (gcontext-internal-clip-mask server-state) nil))
 		   (list (pixmap-id clip-mask)))
 		  ((member :none) '(0))
-		  (sequence (list nil clip-mask))
+		  (sequence (list nil (copy-seq clip-mask)))
 		  (otherwise (x-type-error clip-mask '(or (member :none) pixmap rect-seq))))))
     clip-mask))
 
@@ -331,7 +331,7 @@
 	  (if (type? dashes 'sequence)
 	      (if (zerop (length dashes))
 		  (x-type-error dashes '(or card8 sequence) "non-empty sequence")
-		(list nil (or dashes (vector))))
+		(list nil (or (copy-seq dashes) (vector))))
 	      (list (encode-type card8 dashes))))
     dashes))
 
@@ -445,8 +445,8 @@
 	    (setf (svref server-state i) local)))
 
 	;; Update clipping rectangles
-	(unless (eq (third local-clip)
-		    (third (gcontext-internal-clip server-state)))
+	(unless (equalp (third local-clip)
+			(third (gcontext-internal-clip server-state)))
 	  (setf (gcontext-internal-clip server-state) local-clip)
 	  (with-buffer-request (display *x-setcliprectangles*)
 	    (data (first local-clip))
@@ -458,8 +458,8 @@
 	    ((sequence :format int16) (third local-clip))))
 
 	;; Update dashes
-	(unless (eq (second local-dash)
-		    (second (gcontext-internal-dash server-state)))
+	(unless (equalp (second local-dash)
+			(second (gcontext-internal-dash server-state)))
 	  (setf (gcontext-internal-dash server-state) local-dash)
 	  (with-buffer-request (display *x-setdashes*)
 	    (gcontext gcontext)
