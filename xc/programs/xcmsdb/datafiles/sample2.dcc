@@ -42,7 +42,7 @@
  *		X workstation and X terminal vendors must provide screen
  *		characterization data for their own monitors.
  */
-SCREENDATA_BEGIN        0.2
+SCREENDATA_BEGIN        0.3
 
     NAME                Tektronix 19" (Panasonic) CRT
     PART_NUMBER         119-3916-00
@@ -52,9 +52,9 @@ SCREENDATA_BEGIN        0.2
 
     COLORIMETRIC_BEGIN
         XYZtoRGB_MATRIX_BEGIN
-            3.69383    -1.14978   -0.6143620
-           -1.07972     1.89523    0.0365928
-            0.599438   -1.15372    0.867434
+            4.075911   -1.820444  -0.627311
+           -1.102477    1.935176   0.037364
+            0.059967   -0.206788   0.885717
         XYZtoRGB_MATRIX_END
         RGBtoXYZ_MATRIX_BEGIN
             0.333300    0.337244   0.221834
@@ -63,7 +63,7 @@ SCREENDATA_BEGIN        0.2
         RGBtoXYZ_MATRIX_END
     COLORIMETRIC_END
 
-    INTENSITY_PROFILE_BEGIN    0    2
+    INTENSITY_PROFILE_BEGIN    0    3
         INTENSITY_TBL_BEGIN    RED    256
           0x0    0.000000
           0x100    0.000000

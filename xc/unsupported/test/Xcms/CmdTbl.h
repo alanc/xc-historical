@@ -76,7 +76,7 @@ Cmd_ShortestValueChroma();
 extern int
 Cmd_PrefixOfId();
 extern int
-Cmd_IdOfPrefix();
+Cmd_FormatOfPrefix();
 extern int
 Cmd_AddDIColorSpace();
 extern int

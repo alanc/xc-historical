@@ -27,7 +27,7 @@
  *		X Device Color Characterization Convention (XDCCC).
  *
  *	REVISION
- *		$Header: SCCDFile.h,v 1.1 91/02/06 16:12:49 dave Exp $
+ *		$Header: SCCDFile.h,v 1.2 91/04/30 22:19:14 alt Exp $
  */
 #ifndef SCCDFILE_H
 #define SCCDFILE_H
@@ -39,7 +39,7 @@
  */
 
 #define	READABLE_SD_SUFFIX		".txt"
-#define TXT_FORMAT_VERSION		"0.2"
+#define TXT_FORMAT_VERSION		"0.3"
 
 #define	DATA_DELIMS			" "	/* space */
 
@@ -67,7 +67,9 @@
 #define WHITEPT_XYZ_END_KEYWORD		"WHITEPT_XYZ_END"
 
 #define VIDEO_RGB_KEYWORD		"VIDEO_RGB"
+#ifdef GRAY
 #define VIDEO_GRAY_KEYWORD		"VIDEO_GRAY"
+#endif
 
 #define DATA				-1
 #define SC_BEGIN			1
@@ -95,9 +97,9 @@
 #define CORR_TYPE_NONE  -1
 #define CORR_TYPE_0	0
 #define CORR_TYPE_1	1
-#define CORR_TABLE_1	0
-#define CORR_TABLE_3	2
 
 #define VIDEO_RGB	0
+#ifdef GRAY
 #define VIDEO_GRAY	1
+#endif
 #endif /* SCCDFILE_H */

@@ -1,14 +1,14 @@
-/* $XConsortium: CmdTbl.h,v 1.4 91/02/16 17:14:10 rws Exp $ */
+/* $XConsortum: TekCMS_LT.h,v 1.1 91/02/11 19:40:54 dave Exp $ */
 
 #ifndef TEKCMS_LT
 #define TEKCMS_LT
 
-#define LIBTEST_CMDTBL	LibTstCmdTbl 
+#define LIBTEST_CMDTBL	LibTstCmdTbl
 #define LIBTEST_COMMENT_CHAR    '#'
-#define LIBTEST_PROMPT	"XCMS > "
+#define LIBTEST_PROMPT	"TekCMS > "
 
 
-extern FuncTableEntry LibTstCmdTbl [];
+extern FuncTableEntry LibTstCmdTbl[] ;
 
 
 
@@ -76,7 +76,7 @@ Cmd_ShortestValueChroma();
 extern int
 Cmd_PrefixOfId();
 extern int
-Cmd_IdOfPrefix();
+Cmd_FormatOfPrefix();
 extern int
 Cmd_AddDIColorSpace();
 extern int

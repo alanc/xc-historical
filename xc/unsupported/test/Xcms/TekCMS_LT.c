@@ -46,6 +46,7 @@
  *              program using this package.
  */
 #include "LibTest.h"
+#include <X11/Xlib.h>
 
 
 /*
@@ -81,14 +82,15 @@
 #define NO_COMP_FLAG 0
 #define COMP_FLAG    1
 
-extern XcmsColorSpace XcmsCIELab_ColorSpace;
-extern XcmsColorSpace XcmsCIELuv_ColorSpace;
-extern XcmsColorSpace XcmsTekHVC_ColorSpace;
+extern void exit();
+extern char *calloc();
+extern XcmsColorSpace XcmsCIELabColorSpace;
+extern XcmsColorSpace XcmsCIELuvColorSpace;
+extern XcmsColorSpace XcmsTekHVCColorSpace;
 extern int EchoInput;
 extern int atoi();
 extern double atof();
 extern void TestInit();
-extern void TestCleanup();
 Status Cmd_AddDIColorSpace();
 Status Cmd_AdjustValue();
 Status Cmd_AllocColor();
@@ -99,7 +101,7 @@ Status Cmd_FreeColormap();
 Status Cmd_GetInputDir();
 Status Cmd_GetResultDir();
 Status Cmd_GetVerificationDir();
-Status Cmd_IdOfPrefix();
+Status Cmd_FormatOfPrefix();
 Status Cmd_init();
 Status Cmd_List();
 Status Cmd_LookupColor();
@@ -133,7 +135,7 @@ typedef struct {
 
 CmapTblEntry CmapTbl[MAXCMAPS];
 int	Initialized = 0;
-XcmsCCC  *_pTest_CCC = NULL;
+XcmsCCC  _test_ccc = NULL;
 
 
 /*
@@ -281,46 +283,46 @@ FuncTableEntry LibTstCmdTbl[] = {
      * Color Space Extension
      */
 
-	"XcmsAddDIColorSpace",	Cmd_AddDIColorSpace,
+	"XcmsAddColorSpace",	Cmd_AddDIColorSpace,
 	"AddDIColorSpace",	Cmd_AddDIColorSpace,
-	"XcmsIDofPrefix",	Cmd_IdOfPrefix,
-	"IdOfPrefix",		Cmd_IdOfPrefix,
-	"XcmsPrefixOfID",	Cmd_PrefixOfId,
+	"XcmsFormatOfPrefix",	Cmd_FormatOfPrefix,
+	"FormatOfPrefix",		Cmd_FormatOfPrefix,
+	"XcmsPrefixOfFormat",	Cmd_PrefixOfId,
 	"PrefixOfId",		Cmd_PrefixOfId,
     /*
      * Query Gamut Boundaries
      */
 
 	/* TekHVC MaxChroma */
-	"XcmsTekHVC_MaxChroma",		Cmd_MaxChroma,
+	"XcmsTekHVCQueryMaxC",		Cmd_MaxChroma,
 	"MaxChroma",			Cmd_MaxChroma,
 
 	/* TekHVC MaxValue */
-	"XcmsTekHVC_MaxValue",	Cmd_MaxValue,
+	"XcmsTekHVCQueryMaxV",	Cmd_MaxValue,
 	"MaxValue",			Cmd_MaxValue,
 
 	/* TekHVC MaxValueSamples */
-	"XcmsTekHVC_MaxValueSamples", 	Cmd_MaxValueSamples,
+	"XcmsTekHVCQueryMaxVSamples", 	Cmd_MaxValueSamples,
 	"MaxValueSamples",		Cmd_MaxValueSamples,
 
 	/* TekHVC MaxValueChroma */
-	"XcmsTekHVC_MaxValueChroma", Cmd_MaxValueChroma,
+	"XcmsTekHVCQueryMaxVC", Cmd_MaxValueChroma,
 	"MaxValueChroma",		Cmd_MaxValueChroma,
 
 	/* TekHVC MinValue */
-	"XcmsTekHVC_MinValue",		Cmd_MinValue,
+	"XcmsTekHVCQueryMinV",		Cmd_MinValue,
 	"MinValue",			Cmd_MinValue,
 
 	/* TekHVC AdjustValue */
-	"XcmsTekHVC_AdjustValue",	Cmd_AdjustValue,
+	"XcmsTekHVCClipV",	Cmd_AdjustValue,
 	"AdjustValue",			Cmd_AdjustValue,
 
 	/* TekHVC ReduceChroma */
-	"XcmsTekHVC_ReduceChroma",	Cmd_ReduceChroma,
+	"XcmsTekHVCClipC",	Cmd_ReduceChroma,
 	"ReduceChroma",			Cmd_ReduceChroma,
 
 	/* TekHVC ShortestValueChroma */
-	"XcmsTekHVC_ShortestValueChroma",	Cmd_ShortestValueChroma,
+	"XcmsTekHVCClipVC",	Cmd_ShortestValueChroma,
 	"ShortestValueChroma",		Cmd_ShortestValueChroma,
 	"ShortestVC",			Cmd_ShortestValueChroma,
 	"Shortest",			Cmd_ShortestValueChroma,
@@ -432,15 +434,15 @@ CheckPrintRetVal (pWord, retval, compFlag)
 {
     if (compFlag) {
 	printf ("\t%s() returned %s", pWord, 
-	        (retval == XCMS_FAILURE) ? "XCMS_FAILURE" :
-		 ((retval == XCMS_SUCCESS) ? "XCMS_SUCCESS" :
-		 ((retval == XCMS_SUCCESS_WITH_COMPRESSION) ? 
-		  "XCMS_SUCCESS_WITH_COMPRESSION" : "invalid value ")));
-	if (retval == XCMS_SUCCESS ||
-	    retval == XCMS_SUCCESS_WITH_COMPRESSION) {
+	        (retval == XcmsFailure) ? "XcmsFailure" :
+		 ((retval == XcmsSuccess) ? "XcmsSuccess" :
+		 ((retval == XcmsSuccessWithCompression) ? 
+		  "XcmsSuccessWithCompression" : "invalid value ")));
+	if (retval == XcmsSuccess ||
+	    retval == XcmsSuccessWithCompression) {
 		printf ("\n");
 		return(1);
-	} else if (retval != XCMS_FAILURE) {
+	} else if (retval != XcmsFailure) {
 	    printf ("%d\n");
 	} else {
 	    printf ("\n");
@@ -448,12 +450,12 @@ CheckPrintRetVal (pWord, retval, compFlag)
 	return(0);
     } else {
 	printf ("\t%s() returned %s", pWord,
-		(retval == XCMS_FAILURE) ? "XCMS_FAILURE" :
-		((retval == XCMS_SUCCESS) ? "XCMS_SUCCESS" : "invalid value"));
-	if (retval == XCMS_SUCCESS) {
+		(retval == XcmsFailure) ? "XcmsFailure" :
+		((retval == XcmsSuccess) ? "XcmsSuccess" : "invalid value"));
+	if (retval == XcmsSuccess) {
 	    printf ("\n");
 	    return(1);
-	} else if (retval != XCMS_FAILURE) {
+	} else if (retval != XcmsFailure) {
 	    printf ("%d\n");
 	} else {
 	    printf ("\n");
@@ -495,7 +497,7 @@ Check_init()
 #else
     TekCMS_idir[0] = TekCMS_vdir[0] = TekCMS_rdir[0] = '\0';
     TestInit();
-    _pTest_CCC = XcmsDefaultCCC(pDpy, DefaultScreen(pDpy));
+    _test_ccc = XcmsDefaultCCC(pDpy, DefaultScreen(pDpy));
     Initialized = 1;
     if ((Cmd_CreateColormap("TstCmap_AllocColor AllocNone") == 0) ||
 	    (Cmd_CreateColormap("TstCmap_StoreColor AllocAll") == 0)) {
@@ -569,7 +571,6 @@ Cmd_SetInputDir(argbuf)
  */
 {
     char tmpstr[BUFSIZ];
-    int retval;
     struct stat statbuf;
 
     if ((sscanf(argbuf, "%s", tmpstr) < 1) || (strcmp("-help", tmpstr) == 0)) {
@@ -614,7 +615,6 @@ Cmd_SetVerificationDir(argbuf)
  */
 {
     char tmpstr[BUFSIZ];
-    int retval;
     struct stat statbuf;
 
     if ((sscanf(argbuf, "%s", tmpstr) < 1) || (strcmp("-help", tmpstr) == 0)) {
@@ -659,7 +659,6 @@ Cmd_SetResultDir(argbuf)
  */
 {
     char tmpstr[BUFSIZ];
-    int retval;
     struct stat statbuf;
 
     if ((sscanf(argbuf, "%s", tmpstr) < 1) || (strcmp("-help", tmpstr) == 0)) {
@@ -893,6 +892,7 @@ FreeColormap_Usage:
 *
 *	SYNOPSIS
 */
+/* ARGSUSED */
 int
 Cmd_init(buf)
     char *buf;
@@ -932,6 +932,7 @@ Cmd_init(buf)
  *
  *	SYNOPSIS
  */
+/* ARGSUSED */
 int
 Cmd_quit(buf)
     char *buf;
@@ -953,7 +954,6 @@ Cmd_quit(buf)
 		XSync(pDpy, False);
 	    }
 	}
-	TestCleanup();
     }
     exit(1);
 }
@@ -1042,7 +1042,7 @@ Cmd_AllocColor(buf)
     XcmsColor color;
     char formatStr[BUFSIZ];
     char resultFormatStr[BUFSIZ];
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
     char cmapname[BUFSIZ];
     char stim1[BUFSIZ];
     char stim2[BUFSIZ];
@@ -1089,7 +1089,7 @@ AllocColor_Usage:
     }
     color.format = LtStrToDefine(FormatTbl, formatStr);
     result_format = LtStrToDefine(FormatTbl, resultFormatStr);
-    if (color.format == XCMS_RGB_FORMAT) {
+    if (color.format == XcmsRGBFormat) {
 	color.spec.RGB.red = atoi(stim1);
 	color.spec.RGB.green = atoi(stim2);
 	color.spec.RGB.blue = atoi(stim3);
@@ -1185,7 +1185,7 @@ StoreColor_Usage:
 	return(0);
     }
     color.format = LtStrToDefine(FormatTbl, formatStr);
-    if (color.format == XCMS_RGB_FORMAT) {
+    if (color.format == XcmsRGBFormat) {
 	color.spec.RGB.red = atoi(stim1);
 	color.spec.RGB.green = atoi(stim2);
 	color.spec.RGB.blue = atoi(stim3);
@@ -1235,7 +1235,7 @@ Cmd_QueryColor(buf)
     Colormap cmap;
     XcmsColor color;
     char formatStr[BUFSIZ];
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
     char cmapname[BUFSIZ];
     char stim1[BUFSIZ];
     char stim2[BUFSIZ];
@@ -1319,10 +1319,10 @@ Cmd_QueryColors(buf)
     Colormap cmap;
     XcmsColor color[MAXCOLORS];
     char resultFormatStr[BUFSIZ];
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
     char cmapname[BUFSIZ];
     char tmpstr[BUFSIZ];
-    int nargs, begin, ncolors;
+    int begin, ncolors;
     Status retval;
 
     if (!Check_init()) {
@@ -1336,7 +1336,7 @@ Cmd_QueryColors(buf)
 	goto QueryColors_Usage;
     }
 
-    if ((nargs = sscanf(buf, "%s %s", resultFormatStr, cmapname)) < 2) {
+    if (sscanf(buf, "%s %s", resultFormatStr, cmapname) < 2) {
 	strcpy(cmapname, "TstCmap_AllocColor");
     }
     result_format = LtStrToDefine(FormatTbl, resultFormatStr);
@@ -1374,9 +1374,9 @@ Cmd_QueryColors(buf)
 	if (!begin) {
 	    goto QueryColors_Usage;
 	} 
-	if ((nargs = sscanf(buf, "%d",
+	if (sscanf(buf, "%d",
 		&color[ncolors].pixel
-		)) < 1) {
+		) < 1) {
 	    printf("Invalid argument(s): %s\n", buf);
 QueryColors_Usage:
 	    printf("Usage:\n");
@@ -1433,8 +1433,7 @@ Cmd_ConvertColor(buf)
     char stim2[BUFSIZ];
     char stim3[BUFSIZ];
     char tmpstr[BUFSIZ];
-    int nargs;
-    XcmsSpecFmt	toFormat;
+    XcmsColorFormat	toFormat;
     Bool compressed;
     Status retval;
 
@@ -1453,13 +1452,13 @@ Cmd_ConvertColor(buf)
 	goto ConvertColor_Usage;
     }
 
-    if ((nargs = sscanf(buf, "%s %s %s %s %s",
+    if (sscanf(buf, "%s %s %s %s %s",
 	    fromFormatStr,
 	    stim1,
 	    stim2,
 	    stim3,
 	    toFormatStr
-	    )) != 5) {
+	    ) != 5) {
 	printf("Invalid argument(s): %s\n", buf);
 ConvertColor_Usage:
 	printf("Usage:\n");
@@ -1471,7 +1470,7 @@ ConvertColor_Usage:
 	return(0);
     }
     color.format = LtStrToDefine(FormatTbl, fromFormatStr);
-    if (color.format == XCMS_RGB_FORMAT) {
+    if (color.format == XcmsRGBFormat) {
 	color.spec.RGB.red = atoi(stim1);
 	color.spec.RGB.green = atoi(stim2);
 	color.spec.RGB.blue = atoi(stim3);
@@ -1484,7 +1483,7 @@ ConvertColor_Usage:
 
     printf("    FROM:\n");
     PrintXcmsColorSpec(&color);
-    retval = XcmsConvertColors(_pTest_CCC, &color, 1, toFormat, &compressed);
+    retval = XcmsConvertColors(_test_ccc, &color, 1, toFormat, &compressed);
     if (!CheckPrintRetVal ("XcmsConvertColors", retval, COMP_FLAG))
 	return(0);
     printf("    TO:\n");
@@ -1518,7 +1517,7 @@ Cmd_LookupColor(buf)
     char resultFormatStr[BUFSIZ];
     int nargs;
     Status retval;
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
 
     if (!Check_init()) {
 	return(0);
@@ -1597,7 +1596,7 @@ Cmd_AllocNamedColor(buf)
     Colormap cmap;
     int nargs;
     char colorStr[BUFSIZ], cmapname[BUFSIZ];
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
     char resultFormatStr[BUFSIZ];
     char tmpstr[BUFSIZ];
     Status retval;
@@ -1705,12 +1704,15 @@ MaxChroma_Usage:
 	return(0);
     }
     HVC_return.spec.TekHVC.C = 0;
-    HVC_return.format = XCMS_TekHVC_FORMAT;
+    HVC_return.format = XcmsTekHVCFormat;
     HVC_return.pixel = 0;
     printf("\tHUE VALUE IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsTekHVC_MaxChroma(_pTest_CCC, &HVC_return, 1)) == 0) {
-	printf("\tXcmsTekHVC_MaxChroma() returned FAIL\n");
+    if ((XcmsTekHVCQueryMaxC(_test_ccc,
+	    HVC_return.spec.TekHVC.H,
+	    HVC_return.spec.TekHVC.V,
+	    &HVC_return)) == 0) {
+	printf("\tXcmsTekHVCQueryMaxC() returned FAIL\n");
 	return(0);
     }
     printf("\tRESULT:\n");
@@ -1761,12 +1763,15 @@ MaxValue_Usage:
 	return(0);
     }
     HVC_return.spec.TekHVC.V = 0;
-    HVC_return.format = XCMS_TekHVC_FORMAT;
+    HVC_return.format = XcmsTekHVCFormat;
     HVC_return.pixel = 0;
     printf("\tHUE CHROMA IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsTekHVC_MaxValue(_pTest_CCC, &HVC_return, 1)) == 0) {
-	printf("\tXcmsTekHVC_MaxValue() returned FAIL\n");
+    if ((XcmsTekHVCQueryMaxV(_test_ccc,
+	    HVC_return.spec.TekHVC.H,
+	    HVC_return.spec.TekHVC.C,
+	    &HVC_return)) == 0) {
+	printf("\tXcmsTekHVCQueryMaxV() returned FAIL\n");
 	return(0);
     }
     printf("\tRESULT:\n");
@@ -1793,10 +1798,10 @@ Cmd_MaxValueSamples(buf)
  *
  */
 {
-    XcmsColor *pHVC, *pHVC_return;
+    XcmsColor *pHVC_return;
     XcmsFloat hue;
     char tmpstr[BUFSIZ];
-    int nSamples, n;
+    int nSamples;
 
     if (!Check_init()) {
 	return(0);
@@ -1821,9 +1826,8 @@ MaxValueSamples_Usage:
     printf("\tHUE IN:\n");
     printf("\t    %lf\n", hue);
     pHVC_return = (XcmsColor *)calloc(nSamples, sizeof(XcmsColor));
-    pHVC = pHVC_return;
-    if (XcmsTekHVC_MaxValueSamples(_pTest_CCC, hue, pHVC_return, nSamples) == 0) {
-	printf("\tXcmsTekHVC_MaxValueSamples() returned FAIL\n");
+    if (XcmsTekHVCQueryMaxVSamples(_test_ccc, hue, pHVC_return, nSamples) == 0) {
+	printf("\tXcmsTekHVCQueryMaxVSamples() returned FAIL\n");
 	free(pHVC_return);
 	return(0);
     }
@@ -1875,12 +1879,13 @@ MaxValueChroma_Usage:
 	return(0);
     }
     HVC_return.spec.TekHVC.V = HVC_return.spec.TekHVC.C = 0;
-    HVC_return.format = XCMS_TekHVC_FORMAT;
+    HVC_return.format = XcmsTekHVCFormat;
     HVC_return.pixel = 0;
     printf("\tHUE IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsTekHVC_MaxValueChroma(_pTest_CCC, &HVC_return, 1)) == 0) {
-	printf("\tXcmsTekHVC_MaxValueChroma() returned FAIL\n");
+    if ((XcmsTekHVCQueryMaxVC(_test_ccc, HVC_return.spec.TekHVC.H,
+	    &HVC_return)) == 0) {
+	printf("\tXcmsTekHVCQueryMaxVC() returned FAIL\n");
 	return(0);
     }
     printf("\tRESULT:\n");
@@ -1931,12 +1936,15 @@ MinValue_Usage:
 	return(0);
     }
     HVC_return.spec.TekHVC.V = 0;
-    HVC_return.format = XCMS_TekHVC_FORMAT;
+    HVC_return.format = XcmsTekHVCFormat;
     HVC_return.pixel = 0;
     printf("\tHUE CHROMA IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsTekHVC_MinValue(_pTest_CCC, &HVC_return, 1)) == 0) {
-	printf("\tXcmsTekHVC_MinValue() returned FAIL\n");
+    if ((XcmsTekHVCQueryMinV(_test_ccc,
+	    HVC_return.spec.TekHVC.H,
+	    HVC_return.spec.TekHVC.C,
+	    &HVC_return)) == 0) {
+	printf("\tXcmsTekHVCQueryMinV() returned FAIL\n");
 	return(0);
     }
     printf("\tRESULT:\n");
@@ -1988,28 +1996,28 @@ AdjustValue_Usage:
 	printf("    AdjustValue <Hue> <Value> <Chroma>\n\n");
 	return(0);
     }
-    HVC_return.format = XCMS_TekHVC_FORMAT;
+    HVC_return.format = XcmsTekHVCFormat;
     HVC_return.pixel = 0;
     printf("\tHUE CHROMA IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsConvertColors(_pTest_CCC, &HVC_return, 1, 
-			   XCMS_CIEXYZ_FORMAT, NULL))
-	== XCMS_FAILURE) {
+    if ((XcmsConvertColors(_test_ccc, &HVC_return, 1, 
+			   XcmsCIEXYZFormat, NULL))
+	== XcmsFailure) {
 	printf("\tXcmsConvertColors returned FAIL\n");
 	return(0);
     }
     printf("\t  CIEXYZ IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsTekHVC_AdjustValue(_pTest_CCC, &HVC_return, 1, 0, &compressed)) == 0) {
-	printf("\tXcmsTekHVC_AdjustValue() returned FAIL\n");
+    if ((XcmsTekHVCClipV(_test_ccc, &HVC_return, 1, 0, &compressed)) == 0) {
+	printf("\tXcmsTekHVCClipV() returned FAIL\n");
 	return(0);
     }
     printf("\tRESULT:\n");
     printf("\t  CIEXYZ RETURN:\n");
     PrintXcmsColorSpec(&HVC_return);
     printf("\t  TekHVC RETURN:\n");
-    if ((XcmsConvertColors(_pTest_CCC, &HVC_return, 1, XCMS_TekHVC_FORMAT, NULL))
-	== XCMS_FAILURE) {
+    if ((XcmsConvertColors(_test_ccc, &HVC_return, 1, XcmsTekHVCFormat, NULL))
+	== XcmsFailure) {
 	printf("\tXcmsConvertColors returned FAIL\n");
 	return(0);
     }
@@ -2061,26 +2069,26 @@ ReduceChroma_Usage:
 	printf("    ReduceChroma <Hue> <Value> <Chroma>\n\n");
 	return(0);
     }
-    HVC_return.format = XCMS_TekHVC_FORMAT;
+    HVC_return.format = XcmsTekHVCFormat;
     HVC_return.pixel = 0;
     printf("\tHUE CHROMA IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsConvertColors(_pTest_CCC, &HVC_return, 1, XCMS_CIEXYZ_FORMAT, NULL))
-	== XCMS_FAILURE) {
+    if ((XcmsConvertColors(_test_ccc, &HVC_return, 1, XcmsCIEXYZFormat, NULL))
+	== XcmsFailure) {
 	printf("\tXcmsConvertColors returned FAIL\n");
 	return(0);
     }
     printf("\t  CIEXYZ IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsTekHVC_ReduceChroma(_pTest_CCC, &HVC_return, 1, 0, &compressed)) == 0) {
-	printf("\tXcmsTekHVC_ReduceChroma() returned FAIL\n");
+    if ((XcmsTekHVCClipC(_test_ccc, &HVC_return, 1, 0, &compressed)) == 0) {
+	printf("\tXcmsTekHVCClipC() returned FAIL\n");
 	return(0);
     }
     printf("\tRESULT:\n");
     printf("\t    CIEXYZ RETURN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsConvertColors(_pTest_CCC, &HVC_return, 1, XCMS_TekHVC_FORMAT, NULL))
-	== XCMS_FAILURE) {
+    if ((XcmsConvertColors(_test_ccc, &HVC_return, 1, XcmsTekHVCFormat, NULL))
+	== XcmsFailure) {
 	printf("\tXcmsConvertColors returned FAIL\n");
 	return(0);
     }
@@ -2133,27 +2141,27 @@ ShortestValueChroma_Usage:
 	printf("    ShortestValueChroma <Hue> <Value> <Chroma>\n\n");
 	return(0);
     }
-    HVC_return.format = XCMS_TekHVC_FORMAT;
+    HVC_return.format = XcmsTekHVCFormat;
     HVC_return.pixel = 0;
     printf("\tHUE CHROMA IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsConvertColors(_pTest_CCC, &HVC_return, 1, XCMS_CIEXYZ_FORMAT, NULL))
-	== XCMS_FAILURE) {
+    if ((XcmsConvertColors(_test_ccc, &HVC_return, 1, XcmsCIEXYZFormat, NULL))
+	== XcmsFailure) {
 	printf("\tXcmsConvertColors returned FAIL\n");
 	return(0);
     }
     printf("\t  CIEXYZ IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsTekHVC_ShortestValueChroma(_pTest_CCC, &HVC_return, 1, 0,
+    if ((XcmsTekHVCClipVC(_test_ccc, &HVC_return, 1, 0,
 	&compressed)) == 0) {
-	printf("\tXcmsTekHVC_ShortestValueChroma() returned FAIL\n");
+	printf("\tXcmsTekHVCClipVC() returned FAIL\n");
 	return(0);
     }
     printf("\tRESULT:\n");
     printf("\t    CIEXYZ RETURN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsConvertColors(_pTest_CCC, &HVC_return, 1, XCMS_TekHVC_FORMAT, NULL))
-	== XCMS_FAILURE) {
+    if ((XcmsConvertColors(_test_ccc, &HVC_return, 1, XcmsTekHVCFormat, NULL))
+	== XcmsFailure) {
 	printf("\tXcmsConvertColors returned FAIL\n");
 	return(0);
     }
@@ -2187,11 +2195,10 @@ Cmd_PrefixOfId(buf)
  *
  */
 {
-    int nargs;
     char tmpstr[BUFSIZ];
     char formatStr[BUFSIZ];
     char *prefix;
-    XcmsSpecFmt formatID;
+    XcmsColorFormat formatID;
 
     tmpstr[0] = '\0';
     formatStr[0] = '\0';
@@ -2204,7 +2211,7 @@ Cmd_PrefixOfId(buf)
 	goto PrefixOfId_Usage;
     }
 
-    if ((nargs = sscanf(buf, "%s", formatStr)) < 1) {
+    if (sscanf(buf, "%s", formatStr) < 1) {
 	printf("Invalid argument(s): %s\n", buf);
 PrefixOfId_Usage:
 	printf("Usage:\n");
@@ -2220,36 +2227,35 @@ PrefixOfId_Usage:
     printf("\tFormat:\t%s\n", formatStr);
 
     printf("    RESULT:\n");
-    if ((prefix = XcmsPrefixOfID(formatID)) == NULL) {
-	printf("\tXcmsPrefixOfID() returned NULL\n");
+    if ((prefix = XcmsPrefixOfFormat(formatID)) == NULL) {
+	printf("\tXcmsPrefixOfFormat() returned NULL\n");
 	return(0);
     }
-    printf("\tXcmsPrefixOfID() returned %s\n", prefix);
+    printf("\tXcmsPrefixOfFormat() returned %s\n", prefix);
     return(1);
 }
 
 /*
  *	NAME
- *		Cmd_IdOfPrefix - LibTest "IdOfPrefix" command
+ *		Cmd_FormatOfPrefix - LibTest "FormatOfPrefix" command
  *
  *	SYNOPSIS
  */
 int
-Cmd_IdOfPrefix(buf)
+Cmd_FormatOfPrefix(buf)
     char *buf;
 /*
  *	DESCRIPTION
- *		"IdOfPrefix" command for LibTest.
+ *		"FormatOfPrefix" command for LibTest.
  *
  *	RETURNS
  *		0=fail, 1=Success
  *
  */
 {
-    int nargs;
     char tmpstr[BUFSIZ];
     char prefix[BUFSIZ];
-    XcmsSpecFmt formatID;
+    XcmsColorFormat formatID;
 
     tmpstr[0] = '\0';
     prefix[0] = '\0';
@@ -2259,14 +2265,14 @@ Cmd_IdOfPrefix(buf)
     }
 
     if (sscanf(buf, "%s", tmpstr) && (strcmp("-help", tmpstr) == 0)) {
-	goto IdOfPrefix_Usage;
+	goto FormatOfPrefix_Usage;
     }
 
-    if ((nargs = sscanf(buf, "%s", prefix)) < 1) {
+    if (sscanf(buf, "%s", prefix) < 1) {
 	printf("Invalid argument(s): %s\n", buf);
-IdOfPrefix_Usage:
+FormatOfPrefix_Usage:
 	printf("Usage:\n");
-	printf("    IdOfPrefix <prefix>\n\n");
+	printf("    FormatOfPrefix <prefix>\n\n");
 	printf("    Where:\n");
 	printf("\tprefix :== string\n");
 	return(0);
@@ -2276,9 +2282,9 @@ IdOfPrefix_Usage:
     printf("\tprefix:\t%s\n", prefix);
 
     printf("    RESULT:\n");
-    formatID = XcmsIDofPrefix(prefix);
-    printf("\tXcmsIDofPrefix() returned %u\n", formatID);
-    printf("\t    %s\n", LtDefineToStr(FormatTbl, formatID));
+    formatID = XcmsFormatOfPrefix(prefix);
+    printf("\tXcmsFormatOfPrefix() returned %u\n", formatID);
+    printf("\t    %s\n", LtDefineToStr(FormatTbl, (int)formatID));
     return(1);
 }
 
@@ -2300,10 +2306,8 @@ Cmd_AddDIColorSpace(buf)
  *
  */
 {
-    int nargs;
     char tmpstr[BUFSIZ];
     char colorspaceStr[BUFSIZ];
-    char *prefix;
     XcmsColorSpace *pSCCFuncSet = NULL;
     Status retval;
 
@@ -2318,7 +2322,7 @@ Cmd_AddDIColorSpace(buf)
 	goto AddDIColorSpace_Usage;
     }
 
-    if ((nargs = sscanf(buf, "%s", colorspaceStr)) < 1) {
+    if (sscanf(buf, "%s", colorspaceStr) < 1) {
 	printf("Invalid argument(s): %s\n", buf);
 AddDIColorSpace_Usage:
 	printf("Usage:\n");
@@ -2328,19 +2332,19 @@ AddDIColorSpace_Usage:
 	return(0);
     }
     if (strcmp(colorspaceStr, "CIELab") == 0) {
-	pSCCFuncSet = &XcmsCIELab_ColorSpace;
+	pSCCFuncSet = &XcmsCIELabColorSpace;
     } else if (strcmp(colorspaceStr, "CIELuv") == 0) {
-	pSCCFuncSet = &XcmsCIELuv_ColorSpace;
+	pSCCFuncSet = &XcmsCIELuvColorSpace;
     } else if (strcmp(colorspaceStr, "TekHVC") == 0) {
-	pSCCFuncSet = &XcmsTekHVC_ColorSpace;
+	pSCCFuncSet = &XcmsTekHVCColorSpace;
     }
 
     printf("    REQUESTED:\n");
     printf("\tFormat:\t%s\n", colorspaceStr);
 
     printf("    RESULT:\n");
-    retval = XcmsAddDIColorSpace(pSCCFuncSet);
-    return(CheckPrintRetVal("XcmsAddDIColorSpace", retval, NO_COMP_FLAG));
+    retval = XcmsAddColorSpace(pSCCFuncSet);
+    return(CheckPrintRetVal("XcmsAddColorSpace", retval, NO_COMP_FLAG));
 }
 
 /*
@@ -2587,8 +2591,6 @@ Cmd_XStoreNamedColor(buf)
     char colorStr[BUFSIZ], cmapname[BUFSIZ];
     char tmpstr[BUFSIZ];
     unsigned long pixel;
-    Status retval;
-    XColor exactSpec;
 
     colorStr[0] = '\0';
     cmapname[0] = '\0';
@@ -2665,7 +2667,7 @@ Cmd_StoreColors(buf)
     char stim2[BUFSIZ];
     char stim3[BUFSIZ];
     char tmpstr[BUFSIZ];
-    int nargs, begin;
+    int begin;
     Status retval;
     int ncolors;
 
@@ -2685,7 +2687,7 @@ Cmd_StoreColors(buf)
 	goto StoreColors_Usage;
     }
 
-    if ((nargs = sscanf(buf, "%s", cmapname)) < 1) {
+    if (sscanf(buf, "%s", cmapname) < 1) {
 	strcpy(cmapname, "TstCmap_StoreColor");
     }
     if (StrToCmap(CmapTbl, cmapname, &cmap) == 0) {
@@ -2719,13 +2721,13 @@ Cmd_StoreColors(buf)
 	if (!begin) {
 	    goto StoreColors_Usage;
 	} 
-	if ((nargs = sscanf(buf, "%d %s %s %s %s",
+	if (sscanf(buf, "%d %s %s %s %s",
 		&color[ncolors].pixel,
 		formatStr,
 		stim1,
 		stim2,
 		stim3
-		)) < 5) {
+		) < 5) {
 	    printf("Invalid argument(s): %s\n", buf);
 StoreColors_Usage:
 	    printf("Usage:\n");
@@ -2746,7 +2748,7 @@ StoreColors_Usage:
 	    return(0);
 	}
 	color[ncolors].format = LtStrToDefine(FormatTbl, formatStr);
-	if (color[ncolors].format == XCMS_RGB_FORMAT) {
+	if (color[ncolors].format == XcmsRGBFormat) {
 	    color[ncolors].spec.RGB.red = atoi(stim1);
 	    color[ncolors].spec.RGB.green = atoi(stim2);
 	    color[ncolors].spec.RGB.blue = atoi(stim3);

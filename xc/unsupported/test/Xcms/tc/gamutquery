@@ -7,3 +7,5 @@ MaxValue 25 80
 MaxValueSamples 25 5
 
 MinValue 25 79
+
+quit

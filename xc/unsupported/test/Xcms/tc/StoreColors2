@@ -11,8 +11,8 @@ BEGIN
 6  RGB    32767    32767    32767
 7  RGB    49151    0        16384
 8  CIExyY 0.399960 0.506334 0.887844
-9  CIELuv 0.954938 0.061521 1.295631
-10 CIELab 0.526524 0.728736 0.688501
+9  CIELuv 95.4938 0.061521 1.295631
+10 CIELab 52.6524 0.728736 0.688501
 END
 
 QueryColors TekHVC TstCmap_StoreColor
@@ -44,3 +44,5 @@ QueryColor 8 CIExyY TstCmap_StoreColor
 QueryColor 9 CIELuv TstCmap_StoreColor
 
 QueryColor 10 CIELab TstCmap_StoreColor
+
+quit

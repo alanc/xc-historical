@@ -27,10 +27,6 @@
  *		Utility routines for the TekCMS testing interface.
  */
 
-#ifndef LINT
-static char *copy_notice = "(c) Copyright 1990 Tektronix, Inc., All Rights Reserved.";
-#endif /* LINT */
-
 /*
  *      EXTERNAL INCLUDES
  *              Include files that must be exported to any package or
@@ -95,56 +91,56 @@ fPrintXcmsColorSpec(fp, pColor)
  */
 {
     switch (pColor->format) {
-      case XCMS_RGBi_FORMAT:
-	fprintf(fp, "\t    format = XCMS_RGBi_FORMAT\n");
+      case XcmsRGBiFormat:
+	fprintf(fp, "\t    format = XcmsRGBiFormat\n");
 	fprintf(fp, "\t    spec.RGBi.red   = %f\n", pColor->spec.RGBi.red);
 	fprintf(fp, "\t    spec.RGBi.green = %f\n", pColor->spec.RGBi.green);
 	fprintf(fp, "\t    spec.RGBi.blue  = %f\n", pColor->spec.RGBi.blue);
 	break;
-      case XCMS_RGB_FORMAT:
-	fprintf(fp, "\t    format = XCMS_RGB_FORMAT\n");
+      case XcmsRGBFormat:
+	fprintf(fp, "\t    format = XcmsRGBFormat\n");
 	fprintf(fp, "\t    spec.RGB.red   = 0x%x\n", pColor->spec.RGB.red);
 	fprintf(fp, "\t    spec.RGB.green = 0x%x\n", pColor->spec.RGB.green);
 	fprintf(fp, "\t    spec.RGB.blue  = 0x%x\n", pColor->spec.RGB.blue);
 	break;
-      case XCMS_UNDEFINED_FORMAT:
-	fprintf(fp, "\t    format = XCMS_UNDEFINED_FORMAT\n");
+      case XcmsUndefinedFormat:
+	fprintf(fp, "\t    format = XcmsUndefinedFormat\n");
 	fprintf(fp, "\t    spec.UND.U = %f\n", pColor->spec.CIEXYZ.X);
 	fprintf(fp, "\t    spec.UND.N = %f\n", pColor->spec.CIEXYZ.Y);
 	fprintf(fp, "\t    spec.UND.D = %f\n", pColor->spec.CIEXYZ.Z);
 	break;
-      case XCMS_CIEXYZ_FORMAT:
-	fprintf(fp, "\t    format = XCMS_CIEXYZ_FORMAT\n");
+      case XcmsCIEXYZFormat:
+	fprintf(fp, "\t    format = XcmsCIEXYZFormat\n");
 	fprintf(fp, "\t    spec.CIEXYZ.X = %f\n", pColor->spec.CIEXYZ.X);
 	fprintf(fp, "\t    spec.CIEXYZ.Y = %f\n", pColor->spec.CIEXYZ.Y);
 	fprintf(fp, "\t    spec.CIEXYZ.Z = %f\n", pColor->spec.CIEXYZ.Z);
 	break;
-      case XCMS_CIExyY_FORMAT:
-	fprintf(fp, "\t    format = XCMS_CIExyY_FORMAT\n");
+      case XcmsCIExyYFormat:
+	fprintf(fp, "\t    format = XcmsCIExyYFormat\n");
 	fprintf(fp, "\t    spec.CIExyY.x = %f\n", pColor->spec.CIExyY.x);
 	fprintf(fp, "\t    spec.CIExyY.y = %f\n", pColor->spec.CIExyY.y);
 	fprintf(fp, "\t    spec.CIExyY.Y = %f\n", pColor->spec.CIExyY.Y);
 	break;
-      case XCMS_CIEuvY_FORMAT:
-	fprintf(fp, "\t    format = XCMS_CIEuvY_FORMAT\n");
-	fprintf(fp, "\t    spec.CIEuvY.u = %f\n", pColor->spec.CIEuvY.u);
-	fprintf(fp, "\t    spec.CIEuvY.v = %f\n", pColor->spec.CIEuvY.v);
+      case XcmsCIEuvYFormat:
+	fprintf(fp, "\t    format = XcmsCIEuvYFormat\n");
+	fprintf(fp, "\t    spec.CIEuvY.u_prime = %f\n", pColor->spec.CIEuvY.u_prime);
+	fprintf(fp, "\t    spec.CIEuvY.v_prime = %f\n", pColor->spec.CIEuvY.v_prime);
 	fprintf(fp, "\t    spec.CIEuvY.Y = %f\n", pColor->spec.CIEuvY.Y);
 	break;
-      case XCMS_CIELab_FORMAT:
-	fprintf(fp, "\t    format = XCMS_CIELab_FORMAT\n");
-	fprintf(fp, "\t    spec.CIELab.L = %f\n", pColor->spec.CIELab.L);
-	fprintf(fp, "\t    spec.CIELab.a = %f\n", pColor->spec.CIELab.a);
-	fprintf(fp, "\t    spec.CIELab.b = %f\n", pColor->spec.CIELab.b);
+      case XcmsCIELabFormat:
+	fprintf(fp, "\t    format = XcmsCIELabFormat\n");
+	fprintf(fp, "\t    spec.CIELab.L_star = %f\n", pColor->spec.CIELab.L_star);
+	fprintf(fp, "\t    spec.CIELab.a_star = %f\n", pColor->spec.CIELab.a_star);
+	fprintf(fp, "\t    spec.CIELab.b_star = %f\n", pColor->spec.CIELab.b_star);
 	break;
-    case XCMS_CIELuv_FORMAT:
-	fprintf(fp, "\t    format = XCMS_CIELuv_FORMAT\n");
-	fprintf(fp, "\t    spec.CIELuv.L = %f\n", pColor->spec.CIELuv.L);
-	fprintf(fp, "\t    spec.CIELuv.u = %f\n", pColor->spec.CIELuv.u);
-	fprintf(fp, "\t    spec.CIELuv.v = %f\n", pColor->spec.CIELuv.v);
+    case XcmsCIELuvFormat:
+	fprintf(fp, "\t    format = XcmsCIELuvFormat\n");
+	fprintf(fp, "\t    spec.CIELuv.L_star = %f\n", pColor->spec.CIELuv.L_star);
+	fprintf(fp, "\t    spec.CIELuv.u_star = %f\n", pColor->spec.CIELuv.u_star);
+	fprintf(fp, "\t    spec.CIELuv.v_star = %f\n", pColor->spec.CIELuv.v_star);
 	break;
-      case XCMS_TekHVC_FORMAT:
-	fprintf(fp, "\t    format = XCMS_TekHVC_FORMAT\n");
+      case XcmsTekHVCFormat:
+	fprintf(fp, "\t    format = XcmsTekHVCFormat\n");
 	fprintf(fp, "\t    spec.TekHVC.H = %f\n", pColor->spec.TekHVC.H);
 	fprintf(fp, "\t    spec.TekHVC.V = %f\n", pColor->spec.TekHVC.V);
 	fprintf(fp, "\t    spec.TekHVC.C = %f\n", pColor->spec.TekHVC.C);

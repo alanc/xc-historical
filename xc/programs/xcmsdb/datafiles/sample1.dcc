@@ -42,7 +42,7 @@
  *		X workstation and X terminal vendors must provide screen
  *		characterization data for their own monitors.
  */
-SCREENDATA_BEGIN        0.2
+SCREENDATA_BEGIN        0.3
 
     NAME                Tektronix 19" (Sony) CRT
     PART_NUMBER         119-2451-00
@@ -63,7 +63,7 @@ SCREENDATA_BEGIN        0.2
         RGBtoXYZ_MATRIX_END
     COLORIMETRIC_END
 
-    INTENSITY_PROFILE_BEGIN    0    2
+    INTENSITY_PROFILE_BEGIN    0    3
         INTENSITY_TBL_BEGIN    RED    256
             0x0       0.000000
             0x100     0.000000

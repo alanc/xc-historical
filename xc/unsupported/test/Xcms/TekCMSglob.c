@@ -84,14 +84,14 @@ LtDefineEntry AllocTbl[] = {
 };
 
 LtDefineEntry FormatTbl[] = {
-    "RGBi",		XCMS_RGBi_FORMAT,
-    "RGB",		XCMS_RGB_FORMAT,
-    "UNDEFINED",	XCMS_UNDEFINED_FORMAT,
-    "CIEXYZ",		XCMS_CIEXYZ_FORMAT,
-    "CIExyY",		XCMS_CIExyY_FORMAT,
-    "CIEuvY",		XCMS_CIEuvY_FORMAT,
-    "CIELab",		XCMS_CIELab_FORMAT,
-    "CIELuv",		XCMS_CIELuv_FORMAT,
-    "TekHVC",		XCMS_TekHVC_FORMAT,
+    "RGBi",		XcmsRGBiFormat,
+    "RGB",		XcmsRGBFormat,
+    "UNDEFINED",	XcmsUndefinedFormat,
+    "CIEXYZ",		XcmsCIEXYZFormat,
+    "CIExyY",		XcmsCIExyYFormat,
+    "CIEuvY",		XcmsCIEuvYFormat,
+    "CIELab",		XcmsCIELabFormat,
+    "CIELuv",		XcmsCIELuvFormat,
+    "TekHVC",		XcmsTekHVCFormat,
     "",			0
 };

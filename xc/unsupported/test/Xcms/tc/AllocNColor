@@ -9,3 +9,5 @@ AllocNamedColor green RGB
 AllocNamedColor blue UNDEFINED
 
 AllocNamedColor blue RGB
+
+quit

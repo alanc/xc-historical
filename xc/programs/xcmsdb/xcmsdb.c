@@ -60,8 +60,10 @@ void Syntax ()
 	     "    -remove                      remove Screen Color Characterization Data\n");
     fprintf (stderr, 
 	     "    -color                       use color as def<ault\n");
+#ifdef GRAY
     fprintf (stderr, 
 	     "    -gray                        use gray-scale as default\n");
+#endif /* GRAY */
     fprintf (stderr, 
 	     "\n");
     exit (1);
@@ -127,9 +129,11 @@ main (argc, argv)
 	    } else if (optionmatch ("-color", arg, 1)) {
 		color = 1;
 		continue;
+#ifdef GRAY
 	    } else if (optionmatch ("-gray", arg, 1)) {
 		color = 0;
 		continue;
+#endif /* GRAY */
 	    }
 	    Syntax ();
 	} else {
@@ -159,8 +163,10 @@ main (argc, argv)
     if (query) {
 	if (color != 0)
 	    QuerySCCDataRGB(dpy, RootWindow(dpy, DefaultScreen(dpy)));
+#ifdef GRAY
 	if (color != 1)
 	    QuerySCCDataGray(dpy, RootWindow(dpy, DefaultScreen(dpy)));
+#endif /* GRAY */
     }
 
     if (remove) {
@@ -207,7 +213,7 @@ QuerySCCDataRGB(dpy, root)
     MatricesAtom = ParseAtom (dpy, XDCCC_MATRIX_ATOM_NAME, True);
     if (MatricesAtom != None) {
 	if (_XcmsGetProperty (dpy, root, MatricesAtom, &ret_format, &ret_len,
-			  &ret_nbytes, &ret_prop) == XCMS_FAILURE) {
+			  &ret_nbytes, &ret_prop) == XcmsFailure) {
 	    ret_format = 0;
 	} else if (ret_len != 18) {
 	    printf ("Property %s had invalid length of %d\n",
@@ -249,7 +255,7 @@ QuerySCCDataRGB(dpy, root)
     CorrectAtom = XInternAtom (dpy, XDCCC_CORRECT_ATOM_NAME, True);
     if (CorrectAtom != None) {
 	if (_XcmsGetProperty (dpy, root, CorrectAtom, &ret_format, &ret_len,
-			  &ret_nbytes, &ret_prop) == XCMS_FAILURE) {
+			  &ret_nbytes, &ret_prop) == XcmsFailure) {
 	    ret_format = 0;
 	} else if (ret_len <= 0) {
             printf ("Property %s had invalid length of %d\n",
@@ -267,11 +273,11 @@ QuerySCCDataRGB(dpy, root)
 	pChar = ret_prop;
 	cType = (int)_XcmsGetElement(ret_format, &pChar);
 	nTables = (int)_XcmsGetElement(ret_format, &pChar);
-	nElements = (int)_XcmsGetElement(ret_format, &pChar);
 
 	if (cType == 0) {
 	    /* Red Table should always exist */
 	    printf ("\tRed Conversion Table:\n");
+	    nElements = (int)_XcmsGetElement(ret_format, &pChar);
 	    for (i = 0; i < nElements; i++) {
 		hValue = (int) _XcmsGetElement(ret_format, &pChar);
 		fValue = (XcmsFloat) _XcmsGetElement(ret_format, &pChar) /
@@ -280,6 +286,7 @@ QuerySCCDataRGB(dpy, root)
 	    }
 	    if (nTables > 1) {
 		printf ("\tGreen Conversion Table:\n");
+		nElements = (int)_XcmsGetElement(ret_format, &pChar);
 		for (i = 0; i < nElements; i++) {
 		    hValue = (int) _XcmsGetElement(ret_format, &pChar);
 		    fValue = (XcmsFloat)_XcmsGetElement(ret_format, &pChar)/
@@ -287,6 +294,7 @@ QuerySCCDataRGB(dpy, root)
 		    printf ("\t\t0x%4x\t%8.5lf\n", hValue, fValue);
 		}
 		printf ("\tBlue Conversion Table:\n");
+		nElements = (int)_XcmsGetElement(ret_format, &pChar);
 		for (i = 0; i < nElements; i++) {
 		    hValue = (int) _XcmsGetElement(ret_format, &pChar);
 		    fValue = (XcmsFloat)_XcmsGetElement(ret_format, &pChar)/
@@ -297,6 +305,7 @@ QuerySCCDataRGB(dpy, root)
 	} else {
 	    /* Red Table should always exist */
 	    printf ("\tRed Conversion Table:\n");
+	    nElements = (int)_XcmsGetElement(ret_format, &pChar);
 	    for (i = 0; i < nElements; i++) {
 		fValue = (XcmsFloat) _XcmsGetElement(ret_format, &pChar) /
 			     (XcmsFloat) XDCCC_NUMBER;
@@ -304,12 +313,14 @@ QuerySCCDataRGB(dpy, root)
 	    }
 	    if (nTables > 1) {
 		printf ("\tGreen Conversion Table:\n");
+		nElements = (int)_XcmsGetElement(ret_format, &pChar);
 		for (i = 0; i < nElements; i++) {
 		    fValue = (XcmsFloat)_XcmsGetElement(ret_format, &pChar)/
 			     (XcmsFloat) XDCCC_NUMBER;
 		    printf ("\t\t%d\t%8.5lf\n", i, fValue);
 		}
 		printf ("\tBlue Conversion Table:\n");
+		nElements = (int)_XcmsGetElement(ret_format, &pChar);
 		for (i = 0; i < nElements; i++) {
 		    fValue = (XcmsFloat)_XcmsGetElement(ret_format, &pChar)/
 			     (XcmsFloat) XDCCC_NUMBER;
@@ -320,10 +331,11 @@ QuerySCCDataRGB(dpy, root)
 	XFree (ret_prop);
     }    
 }
+#ifdef GRAY
 
 /*
  *      NAME
- *		QuerySCCData - Query for the SCC data on the root window
+ *		QuerySCCDataGray - Query for the SCC data on the root window
  *
  *      SYNOPSIS
  */
@@ -347,7 +359,7 @@ QuerySCCDataGray(dpy, root)
     MatricesAtom = ParseAtom (dpy, XDCCC_SCREENWHITEPT_ATOM_NAME, True);
     if (MatricesAtom != None) {
 	if (_XcmsGetProperty (dpy, root, MatricesAtom, &ret_format, &ret_len,
-			  &ret_nbytes, &ret_prop)  == XCMS_FAILURE) {
+			  &ret_nbytes, &ret_prop)  == XcmsFailure) {
 	    ret_format = 0;
 	} else if (ret_len != 3) {
 	    printf ("Property %s had invalid length of %d\n",
@@ -377,7 +389,7 @@ QuerySCCDataGray(dpy, root)
     CorrectAtom = XInternAtom (dpy, XDCCC_GRAY_CORRECT_ATOM_NAME, True);
     if (CorrectAtom != None) {
 	if (_XcmsGetProperty (dpy, root, CorrectAtom, &ret_format, &ret_len,
-			  &ret_nbytes, &ret_prop) == XCMS_FAILURE) {
+			  &ret_nbytes, &ret_prop) == XcmsFailure) {
 	    ret_format = 0;
 	} else if (ret_len <= 0) {
             printf ("Property %s had invalid length of %d\n",
@@ -417,6 +429,8 @@ QuerySCCDataGray(dpy, root)
 	XFree (ret_prop);
     }    
 }
+#endif /* GRAY */
+
 
 /*
  *      NAME
@@ -470,6 +484,7 @@ RemoveSCCData(dpy, root, colorFlag)
 	    XFree ((char *)ret_prop);
 	}
     }
+#ifdef GRAY
     if (colorFlag != 1) {
 	MatricesAtom = ParseAtom (dpy, XDCCC_SCREENWHITEPT_ATOM_NAME, True);
 	if (MatricesAtom != None) {
@@ -499,4 +514,5 @@ RemoveSCCData(dpy, root, colorFlag)
 	    XFree ((char *)ret_prop);
 	}
     }
+#endif /* GRAY */
 }

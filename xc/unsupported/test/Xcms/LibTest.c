@@ -1,4 +1,4 @@
-/* $XConsortium: cmstest.c,v 1.1 91/02/11 19:36:08 dave Exp $ */
+/* $XConsortium: LibTest.c,v 1.2 91/02/15 18:38:03 dave Exp $ */
 
 /*
  *	Copyright 1989 1990, Tektronix, Inc.

@@ -6,7 +6,7 @@ LookupColor CIEuvY:0.244/0.478/0.281 UNDEFINED
 
 LookupColor CIExyY:0.4868/0.3656/0.0441 UNDEFINED
 
-LookupColor CIELuv:0.244/0.478/0.281 UNDEFINED
+LookupColor CIELuv:24.4/0.478/0.281 UNDEFINED
 
 LookupColor TekHVC:25/60.2/29.0 UNDEFINED
 
@@ -29,3 +29,5 @@ LookupColor rgb:ff/0/0 CIELab
 LookupColor rgb:ff/ff/0 CIELuv
 
 LookupColor rgb:ff/ff/0 CIExyY
+
+quit
