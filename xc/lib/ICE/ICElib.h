@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.4 93/09/08 20:00:53 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.5 93/09/10 14:15:04 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -335,6 +335,14 @@ struct _IceConn {
 
 
     /*
+     * If we know the connection was terminated by the other side, we
+     * want to skip sending a WantToClose in IceCloseConnection.
+     */
+
+    char			skip_want_to_close;
+
+
+    /*
      * Did we send a WantToClose message?  This will get cancelled if we
      * receive a NoClose or a ProtocolSetup.  If this is the case, the
      * other side will be responsible for sending a WantToClose.
@@ -427,6 +435,18 @@ extern Status IceListenForConnections (
 extern IceConn IceAcceptConnection (
 #if NeedFunctionPrototypes
     int			/* fd */
+#endif
+);
+
+extern void IceSkipShutdownNegotiation (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
+#endif
+);
+
+extern Bool IceCheckShutdownNegotiation (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.7 93/09/08 20:44:30 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.1 93/09/10 14:13:52 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -25,7 +25,8 @@ IceConn iceConn;
 int	majorOpcode;
 
 {
-    if (iceConn->proto_ref_count == 0)
+    if (majorOpcode < 1 || majorOpcode > _IceLastMajorOpcode ||
+        iceConn->proto_ref_count == 0)
     {
 	return (0);
     }
@@ -41,6 +42,28 @@ int	majorOpcode;
 
 	return (1);
     }
+}
+
+
+
+void
+IceSkipShutdownNegotiation (iceConn)
+
+IceConn     iceConn;
+
+{
+    iceConn->skip_want_to_close = True;
+}
+
+
+
+Bool
+IceCheckShutdownNegotiation (iceConn)
+
+IceConn     iceConn;
+
+{
+    return (iceConn->skip_want_to_close ? False : True);
 }
 
 
@@ -79,10 +102,17 @@ IceConn     iceConn;
 
     if (iceConn->open_ref_count == 0 && iceConn->proto_ref_count == 0)
     {
-	iceConn->want_to_close = 1;
+	if (iceConn->skip_want_to_close)
+	{
+	    _IceFreeConnection (iceConn, False);
+	}
+	else
+	{
+	    IceSimpleMessage (iceConn, 0, ICE_WantToClose);
+	    IceFlush (iceConn);
 
-	IceSimpleMessage (iceConn, 0, ICE_WantToClose);
-	IceFlush (iceConn);
+	    iceConn->want_to_close = 1;
+	}
     }
 }
 
