@@ -130,7 +130,7 @@ file without damaging preprocessor commands.
 .TP 8
 .B \-load
 This option indicates that the input should be loaded as the new value
-of the RESOURCE_MANAGER property, replacing whatever what there (i.e.
+of the RESOURCE_MANAGER property, replacing whatever was there (i.e.
 the old contents are removed).  This is the default action.
 .TP 8
 .B \-merge
