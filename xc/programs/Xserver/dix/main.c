@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.149 89/03/20 11:09:59 rws Exp $ */
+/* $XConsortium: main.c,v 1.150 89/03/20 11:51:13 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -215,7 +215,6 @@ main(argc, argv)
 	InitInput(argc, argv);
 	if (InitAndStartDevices(argc, argv) != Success)
 	    FatalError("failed to initialize core devices");
-        DefineInitialRootWindow(WindowTable[0]);
 
 	if (SetDefaultFontPath(defaultFontPath) != Success)
 	    ErrorF("failed to set default font path\n");
@@ -226,6 +225,7 @@ main(argc, argv)
 		       defaultCursorFont);
 	for (i = 0; i < screenInfo.numScreens; i++)
 	    InitRootWindow(WindowTable[i]);
+        DefineInitialRootWindow(WindowTable[0]);
 
 	if (!CreateConnectionBlock())
 	    FatalError("could not create connection block info");
