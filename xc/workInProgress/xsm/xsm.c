@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.71 94/12/14 17:03:34 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.72 94/12/16 17:35:51 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -64,6 +64,7 @@ in this Software without prior written authorization from the X Consortium.
 
 jmp_buf JumpHere;
 Atom wmStateAtom;
+Atom wmDeleteAtom;
 static char *cmd_line_display = NULL;
 
 /*
@@ -140,7 +141,10 @@ char **argv;
 	XtNwindowRole, "xsm main window",
 	NULL);
 	
-    wmStateAtom = XInternAtom (XtDisplay (topLevel), "WM_STATE", False);
+    wmStateAtom = XInternAtom (
+	XtDisplay (topLevel), "WM_STATE", False);
+    wmDeleteAtom = XInternAtom (
+	XtDisplay (topLevel), "WM_DELETE_WINDOW", False);
 
     register_signals ();
 
@@ -336,6 +340,24 @@ Boolean *continue_to_dispatch;
 
 
 void
+SetWM_DELETE_WINDOW (widget, delAction)
+
+Widget widget;
+String delAction;
+
+{
+    char translation[64];
+
+    sprintf (translation, "<Message>WM_PROTOCOLS: %s", delAction);
+    XtOverrideTranslations (widget, XtParseTranslationTable (translation));
+
+    XSetWMProtocols (XtDisplay(widget), XtWindow (widget),
+	&wmDeleteAtom, 1);
+}
+
+
+
+void
 GetEnvironment ()
 
 {
@@ -475,6 +497,14 @@ Bool use_default;
 	NULL);
 
     XtRealizeWidget (topLevel);
+
+
+    /*
+     * Set WM_DELETE_WINDOW support on main window.  If the user tries
+     * to delete the main window, the shutdown prompt will come up.
+     */
+
+    SetWM_DELETE_WINDOW (topLevel, "DelMainWinAction()");
 
 
     /*
