@@ -11,6 +11,45 @@ the following strings: \fB\\$1\fP.
 .if 'AsciiText'\\$1' This is an AsciiSrc resource. 
 ..
 
+\" Object Resources
+.de Dc \"destroyCallback
+.IP destroyCallback 1.5i
+All functions on this list are called when this widget is destroyed.
+..
+
+\" RectObj Resources
+.de As \"ancestorSensitive
+.IP ancestorSensitive 1.5i
+The sensitivity state of the ancestors of this widget.  A widget is
+insensitive if either it or any of its ancestors is insensitive.
+This resource should not be changed with \fBXtSetValues\fP, although it
+may be queried.
+..
+.de Bw \"borderWidth
+.IP borderWidth 1.5i
+The width of this widget's window border.
+..
+.de Hw \"height
+.IP height 1.5i
+.br
+.ns
+.IP width 1.5i
+The height and width of this widget in pixels.
+..
+.de Se \"sensitive
+.IP sensitive 1.5i
+Whether or not the toolkit should pass user events to this widget.  The
+widget will not get input events if either \fBancestorSensitive\fP or
+\fBsensitive\fP is \fBFalse\fP.
+..
+.de Xy \"x
+.IP x 1.5i
+.br
+.ns
+.IP y 1.5i
+The location of the upper left outside corner of this widget in its parent.
+..
+
 \" Core Resources
 
 .de Ac \"accelerators
@@ -18,13 +57,6 @@ the following strings: \fB\\$1\fP.
 A list of event to action bindings to be executed by this widget, even
 though the event occurred in another widget.  (See the \fI\*(xT\fP for
 details).
-..
-.de As \"ancestorSensitive
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP, although it
-may be queried.
 ..
 .de Bg \"background
 .ie 'Bold'\\$1' .IP \fBbackground\fP 1.5i
@@ -49,10 +81,6 @@ The border pixmap of this widget's window.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the border color.
 ..
-.de Bw \"borderWidth
-.IP borderWidth 1.5i
-The width of this widget's window border.
-..
 .de Cm \"colormap
 .IP colormap 1.5i
 The colormap that this widget will use.
@@ -60,17 +88,6 @@ The colormap that this widget will use.
 .de Dp \"depth
 .IP depth 1.5i
 The depth of this widget's window.
-..
-.de Dc \"destroyCallback
-.IP destroyCallback 1.5i
-All functions on this list are called when this widget is destroyed.
-..
-.de Hw \"height
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
 ..
 .de Mm \"mappedWhenManaged
 .IP mappedWhenManaged 1.5i
@@ -82,22 +99,9 @@ automatically be mapped by the Toolkit when it is realized and managed.
 The screen on which this widget is displayed.  This is not a settable
 resource.
 ..
-.de Se \"sensitive
-.IP sensitive 1.5i
-Whether or not the toolkit should pass user events to this widget.  The
-widget will not get input events if either \fBancestorSensitive\fP or
-\fBsensitive\fP is \fBFalse\fP.
-..
 .de Tr \"Translations
 .IP translations 1.5i
 The event bindings associated with this widget.
-..
-.de Xy \"x
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left outside corner of this widget in its parent.
 ..
 
 \" Simple Widget Resource Definitions
@@ -248,6 +252,11 @@ supported: \fBXmuShapeRectangle\fP, \fBXmuShapeOval\fP,
 .IP children 1.5i
 A list of all this composite widget's current children.
 ..
+.de Ip \"Insert Position
+.IP insertPosition 1.5i
+A function which allows the application programmer to specify the position
+of a new child.
+...
 .de Nc \"Number of Children
 .IP numChildren 1.5i
 The number of children in this composite widget.
