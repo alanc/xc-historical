@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: MenuEntry.c,v 1.1 89/09/28 16:44:49 kit Exp $";
+static char Xrcsid[] = "$XConsortium: LineMenuEn.c,v 1.1 89/09/29 19:04:03 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -152,6 +152,11 @@ static void
 Initialize(request, new)
 Widget request, new;
 {
+    LineMenuEntryObject entry = (LineMenuEntryObject) new;
+
+    if (entry->rectangle.height == 0)
+	entry->rectangle.height = entry->line_entry.line_width;
+
     CreateGC(new);
 }
 
