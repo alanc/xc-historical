@@ -38,7 +38,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef sgi
 #define	NEED_UPDATE_INDICATORS		0
 #define	NEED_INIT_DEVICE		0
-#define	NEED_CHANGE_XKB_CONTROLS	0
 #define	NEED_KEY_CLICK			0
 #endif
 
@@ -55,7 +54,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	NEED_FAKE_POINTER_BUTTON	1
 #endif
 #ifndef NEED_CHANGE_XKB_CONTROLS
+#ifdef XKB_USE_HARDWARE_REPEAT
+#define	NEED_CHANGE_XKB_CONTROLS	0
+#else
 #define	NEED_CHANGE_XKB_CONTROLS	1
+#endif
 #endif
 #ifndef NEED_TERMINATE_SERVER
 #define NEED_TERMINATE_SERVER		1
@@ -158,7 +161,25 @@ DDXChangeXkbControls(dev,old,new)
     XkbControlsRec *old;
     XkbControlsRec *new;
 {
-    /* 8/11/93 (ef) -- XXX! IMPLEMENT THIS */
+unsigned	changed;
+
+    changed= new->enabled_ctrls^old->enabled_ctrls;
+    if (changed&XkbRepeatKeysMask) {
+	if (dev->kbdfeed) {
+	    int realRepeat;
+
+	    if (new->enabled_ctrls&XkbRepeatKeysMask)
+		 dev->kbdfeed->ctrl.autoRepeat= realRepeat= 1;
+	    else dev->kbdfeed->ctrl.autoRepeat= realRepeat= 0;
+
+	    if (XkbUsesSoftRepeat(dev))
+		dev->kbdfeed->ctrl.autoRepeat= FALSE;
+	    if (dev->kbdfeed->CtrlProc)
+		(*dev->kbdfeed->CtrlProc)(dev,&dev->kbdfeed->ctrl);
+	    dev->kbdfeed->ctrl.autoRepeat= realRepeat;
+	}
+    }
+    return;
 }
 #endif
 
