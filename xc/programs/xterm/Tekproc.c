@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.21 88/02/19 08:41:02 jim Exp $
+ * $Header: Tekproc.c,v 1.22 88/02/20 15:28:11 swick Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.21 88/02/19 08:41:02 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.22 88/02/20 15:28:11 swick Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1311,7 +1311,6 @@ static void TekRealize (gw, valuemaskp, values)
     TekUnselect ();
 
     {	/* there's gotta be a better way... */
-	extern Widget toplevel;
 	static Arg args[] = {
 	    {XtNtitle, NULL},
 	    {XtNiconName, NULL},
@@ -1320,7 +1319,7 @@ static void TekRealize (gw, valuemaskp, values)
 
 	args[0].value = (XtArgVal)&icon_name;
 	args[1].value = (XtArgVal)&title;
-	XtGetValues( toplevel, args, 2 );
+	XtGetValues (tw->core.parent, args, 2);
 	tek_icon_name = XtMalloc(strlen(icon_name)+7);
 	strcpy(tek_icon_name, icon_name);
 	strcat(tek_icon_name, "(Tek)");
@@ -1329,7 +1328,7 @@ static void TekRealize (gw, valuemaskp, values)
 	strcat(tek_title, "(Tek)");
 	args[0].value = (XtArgVal)tek_icon_name;
 	args[1].value = (XtArgVal)tek_title;
-	XtSetValues( toplevel, args, 2 );
+	XtSetValues (tw->core.parent, args, 2);
 	XtFree( tek_icon_name );
 	XtFree( tek_title );
     }
