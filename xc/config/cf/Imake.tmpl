@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.118 91/05/06 12:01:02 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.119 91/05/06 19:01:20 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -348,7 +348,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define NeedNestedPrototypes	NO
 #endif
 #ifndef NeedFunctionPrototypes
-#define NeedFunctionPrototypes NeedVarargsPrototypes
+#define NeedFunctionPrototypes (NeedVarargsPrototypes || NeedNestedPrototypes)
 #endif
 #ifndef NeedWidePrototypes
 #define NeedWidePrototypes	YES	/* mix and match ANSI-C, non-ANSI */
