@@ -182,6 +182,10 @@ sunQueryBestSize (class, pwidth, pheight, pScreen)
 	    *pwidth = pCurPriv->width;
 	if (*pheight > pCurPriv->height)
 	    *pheight = pCurPriv->height;
+	if (*pwidth > pScreen->width)
+	    *pwidth = pScreen->width;
+	if (*pheight > pScreen->height)
+	    *pheight = pScreen->height;
 	break;
     default:
 	mfbQueryBestSize (class, pwidth, pheight, pScreen);
