@@ -287,7 +287,7 @@ Bool
 cfbCreateDefColormap(pScreen)
     ScreenPtr pScreen;
 {
-    unsigned short	zero = 0, ones = ~0;
+    unsigned short	zero = 0, ones = 0xFFFF;
     VisualPtr	pVisual;
     ColormapPtr	cmap;
     
