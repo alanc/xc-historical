@@ -4,6 +4,9 @@ xeyes \- watch over your shoulder
 .SH SYNOPSIS
 .B xeyes
 [-option ...]
+.SH DESCRIPTION
+.I Xeyes
+watches what you do and reports to the Boss.
 .SH OPTIONS
 .TP 8
 .B \-fg \fIforeground color\fB
@@ -32,14 +35,11 @@ choose a different color for the window border.
 .TP 8
 .B \-bw \fIborder width\fB
 choose a different width for the window border.
-.SH DESCRIPTION
-.I Xeyes
-watches what you do and reports to the Boss.
 .SH "SEE ALSO"
-X(1)
-.SH BUGS
-Simple wiretap.
+X(1), X Toolkit documentation
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
+Keith Packard, MIT X Consortium
