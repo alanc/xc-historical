@@ -121,7 +121,9 @@ cfbCreateGC(pGC)
 	    pPriv->pRotatedStipple = NullPixmap;
 #endif
 	    pPriv->pAbsClientRegion = (*pGC->pScreen->RegionCreate) (NULL, 1);
-	    pPriv->pCompositeClip = (*pGC->pScreen->RegionCreate) (NULL, 1);
+	    /* since freeCompClip isn't FREE_CC, we don't need to create
+	       a null region -- no one will try to free the field.
+	    */
 	    pPriv->freeCompClip = REPLACE_CC;
 	}
     }
@@ -183,7 +185,7 @@ cfbDestroyGC(pGC, pQ)
     if (pPriv->pRotatedStipple)
 	cfbDestroyPixmap(pPriv->pRotatedStipple);
 #endif
-    if (pPriv->freeCompClip == FREE_CC && pPriv->pCompositeClip)
+    if (pPriv->freeCompClip == FREE_CC)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
     if(pPriv->pAbsClientRegion)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pAbsClientRegion);
@@ -333,18 +335,18 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 		}
 		else if ((freeTmpClip == REPLACE_CC) &&
 			 (freeCompClip == FREE_CC)) {
-		    devPriv->pCompositeClip = pregWin;
 		    (*pGC->pScreen->Intersect) (
 						devPriv->pCompositeClip,
-						devPriv->pCompositeClip,
+						pregWin,
 					      devPriv->pAbsClientRegion);
 		}
 		else if ((freeTmpClip == FREE_CC) &&
 			 (freeCompClip == REPLACE_CC)) {
 		    (*pGC->pScreen->Intersect) (
-						devPriv->pCompositeClip,
+						pregWin,
 						pregWin,
 					      devPriv->pAbsClientRegion);
+		    devPriv->pCompositeClip = pregWin;
 		}
 		else if ((freeTmpClip == REPLACE_CC) &&
 			 (freeCompClip == REPLACE_CC)) {
@@ -355,6 +357,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 						pregWin,
 					      devPriv->pAbsClientRegion);
 		}
+		devPriv->freeCompClip = FREE_CC;
 	    }
 	}			/* end of composite clip for a window */
 	else {
