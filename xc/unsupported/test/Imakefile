@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.23 92/01/27 10:35:10 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.24 92/01/27 11:20:39 rws Exp $
 
 #if BuildXInputLib
 #define IHaveSubdirs
@@ -11,20 +11,22 @@ XCOMM $XConsortium: Imakefile,v 1.23 92/01/27 10:35:10 rws Exp $
 #if HasShm
     SHMSRCS = shmtest.c
     SHMOBJS = shmtest.o
+    SHMPROG = shmtest
 #endif
    MBUFSRCS = xmbufinfo.c
    MBUFOBJS = xmbufinfo.o
   XTESTSRCS = xtesttest.c
   XTESTOBJS = xtesttest.o
-   INCLUDES = -I../include
-       SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS) $(XTESTSRCS)
-       OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS) $(XTESTOBJS)
-
-#if HasShm
-all:: shapetest shmtest xmbufinfo xtesttest
-#else
-all:: shapetest xmbufinfo xtesttest
+#if BuildScreenSaverLib
+  SAVERSRCS = savertest.c
+  SAVEROBJS = savertest.o
+  SAVERPROG = savertest
 #endif
+   INCLUDES = -I../include
+       SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS) $(XTESTSRCS) $(SAVERSRCS)
+       OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS) $(XTESTOBJS) $(SAVEROBJS)
+
+all:: shapetest $(SHMPROG) xmbufinfo xtesttest $(SAVERPROG)
 
 NormalProgramTarget(xmbufinfo,$(MBUFOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB),NullParameter)
@@ -32,6 +34,7 @@ NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 NormalProgramTarget(shmtest,$(SHMOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 #endif
 NormalProgramTarget(xtesttest,$(XTESTOBJS),$(DEPXTESTLIB) $(DEPXLIB),$(XTESTLIB) $(XLIB),NullParameter)
+NormalProgramTarget(savertest,$(SAVEROBJS),$(DEPXLIB),$(XLIB),NullParameter)
 
 DependTarget()
 
