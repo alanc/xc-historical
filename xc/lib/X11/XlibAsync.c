@@ -1,4 +1,4 @@
-/* $XConsortium: XlibAsync.c,v 1.3 92/01/21 17:06:50 rws Exp $ */
+/* $XConsortium: XlibAsync.c,v 1.4 93/09/07 21:33:04 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -109,4 +109,32 @@ _XGetAsyncReply(dpy, replbuf, rep, buf, len, extra, discard)
 	_XEatData (dpy, (rep->generic.length << 2) - len);
     _XIOError (dpy);
     return (char *)rep;
+}
+
+void
+_XGetAsyncData(dpy, data, buf, len, skip, datalen, discardtotal)
+    Display *dpy;
+    char *data;
+    char *buf;
+    int len;
+    int skip;
+    int datalen;
+    int discardtotal;
+{
+    buf += skip;
+    len -= skip;
+    if (!data) {
+	if (datalen > len)
+	    _XEatData(dpy, datalen - len);
+    } else if (datalen <= len) {
+	memcpy(data, buf, datalen);
+    } else {
+	memcpy(data, buf, len);
+	_XRead(dpy, data + len, datalen - len);
+    }
+    if (discardtotal > len) {
+	if (datalen > len)
+	    len = datalen;
+	_XEatData(dpy, discardtotal - len);
+    }
 }
