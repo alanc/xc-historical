@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.35 90/03/15 11:05:15 jim Exp $
+ * $XConsortium: Panner.c,v 1.36 90/04/11 17:05:13 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -174,10 +174,29 @@ static void reset_shadow_gc (pw)	/* used when resources change */
 {
     XtGCMask valuemask = GCForeground;
     XGCValues values;
+    unsigned long   pixels[3];
 
     if (pw->panner.shadow_gc) XtReleaseGC ((Widget) pw, pw->panner.shadow_gc);
 
-    values.foreground = pw->panner.shadow_color;
+    pixels[0] = pw->panner.shadow_color;
+    pixels[1] = pw->panner.foreground;
+    pixels[2] = pw->core.background_pixel;
+    if (!pw->panner.stipple_name &&
+	!XmuDistinguishablePixels (XtDisplay (pw), pw->core.colormap,
+				    pixels, 3))
+    {
+	valuemask = GCTile | GCFillStyle;
+	values.fill_style = FillTiled;
+	values.tile = XmuCreateStippledPixmap(XtScreen((Widget)pw),
+					      pw->panner.foreground,
+					      pw->core.background_pixel,
+					      pw->core.depth);
+    }
+    else
+    {
+	valuemask = GCForeground;
+	values.foreground = pw->panner.shadow_color;
+    }
     if (pw->panner.line_width > 0) {
 	values.line_width = pw->panner.line_width;
 	valuemask |= GCLineWidth;
