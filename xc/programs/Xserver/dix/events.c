@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.134 88/01/02 18:11:28 rws Exp $ */
+/* $Header: events.c,v 1.135 88/01/18 17:56:34 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3678,11 +3678,12 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 	        focusTraceGood = 0;
 		break;
 	    case RevertToParent:
-		for (
-		    parent = pWin->parent; 
-		    !parent->realized; 
-		    parent = parent->parent)
+		parent = pWin;
+		do
+		{
+		    parent = parent->parent;
 		    focusTraceGood--;
+		} while (!parent->realized);
 		DoFocusEvents(pWin, parent, focusEventMode);
 		focus->win = parent;
 		focus->revert = RevertToNone;
