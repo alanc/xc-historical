@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.154 91/07/21 18:52:37 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.155 91/07/23 14:14:55 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1995,6 +1995,7 @@ XtTranslations _XtGetTranslationValue(w)
 }
 
 
+/*ARGSUSED*/
 static void RemoveStateTree(tree)
     TMStateTree	tree;
 {
