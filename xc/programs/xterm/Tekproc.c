@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.75 89/12/15 19:07:39 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.76 89/12/22 11:35:42 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.75 89/12/15 19:07:39 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.76 89/12/22 11:35:42 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -161,7 +161,7 @@ extern void HandleLeaveWindow();
 extern void HandleFocusChange();
 extern void HandleSecure();
 extern void HandleGINInput();
-extern void HandleCreateMenu();
+extern void HandleCreateMenu(), HandlePopupMenu();
 
 static char defaultTranslations[] = "\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
@@ -184,6 +184,7 @@ static XtActionsRec actionsList[] = {
     { "gin-press",		HandleGINInput },
     { "secure", 		HandleSecure },
     { "create-menu",		HandleCreateMenu },
+    { "popup-menu",		HandlePopupMenu },
     /* menu actions */
     { "allow-send-events",	HandleAllowSends },
     { "set-visual-bell",	HandleVisualBell },
