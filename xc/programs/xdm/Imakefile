@@ -50,6 +50,7 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
           OBJS3 = chooser.o
 #endif
        DEPLIBS3 = XawClientDepLibs $(TOP)/lib/Xdmcp/libXdmcp.a
+          LIBS3 = XawClientLibs $(TOP)/lib/Xdmcp/libXdmcp.a
        
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
@@ -87,6 +88,7 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DDEF_SYSTEM_SHELL="$(BOURNE_SHELL)"' \
 		  '-DDEF_FAILSAFE_CLIENT="$(BINDIR)/xterm"' \
 		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"' \
+		  '-DDEF_CHOOSER="$(XDMDIR)/chooser"' \
 		  '-DDEF_AUTH_DIR="$(XDMDIR)"' \
 		  '-DDEF_KEY_FILE="$(XDMDIR)/Xkeys"' \
 		  '-DDEF_ACCESS_FILE="$(XDMDIR)/Xaccess"' \
@@ -95,8 +97,13 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES), /**/)
 SingleProgramTarget(xdmshell,$(OBJS2), /**/, /**/)
 SingleProgramTarget(sessreg,$(OBJS4), /**/, /**/)
+#ifdef IHaveSubdirs
+MakeDirectories(install,$(XDMDIR))
+#endif
 #if !SystemV
-ComplexProgramTarget_3(chooser,XawClientLibs $(TOP)/lib/Xdmcp/libXdmcp.a, /**/)
+NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3), /**/)
+SaberProgramTarget(chooser,$(SRCS3),$(OBJS3),$(LIBS3), /**/)
+InstallProgram(chooser,$(XDMDIR))
 #endif
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
@@ -105,7 +112,6 @@ SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
 auth.o policy.o: $(ICONFIGFILES)
 
 #ifdef IHaveSubdirs
-MakeDirectories(install,$(XDMDIR))
 MakeSubdirs($(SUBDIRS))
 #endif
 
