@@ -74,8 +74,7 @@ compute_sp_data_size(pfont, mappad, scanlinepad, start, end)
 	}
 	break;
     case BitmapFormatImageRectMaxWidth:
-	bpr = GLWIDTHBYTESPADDED(pinfo->ink_maxbounds.rightSideBearing
-			- pinfo->ink_minbounds.leftSideBearing, scanlinepad);
+	bpr = GLWIDTHBYTESPADDED(FONT_MAX_WIDTH(pinfo), scanlinepad);
 	cfv->bpr = bpr;
 	for (ch = start; ch <= end; ch++) {
 	    ci = &spf->encoding[ch - firstChar];
@@ -87,12 +86,9 @@ compute_sp_data_size(pfont, mappad, scanlinepad, start, end)
 	}
 	break;
     case BitmapFormatImageRectMax:
-	bpr = GLWIDTHBYTESPADDED(pinfo->ink_maxbounds.rightSideBearing
-			- pinfo->ink_minbounds.leftSideBearing, scanlinepad);
+	bpr = GLWIDTHBYTESPADDED(FONT_MAX_WIDTH(pinfo, scanlinepad);
 	cfv->bpr = bpr;
-	size = (end - start + 1) * bpr
-	    * (pinfo->ink_maxbounds.ascent +
-	       pinfo->ink_maxbounds.descent);
+	size = (end - start + 1) * bpr * FONT_MAX_HEIGHT(pinfo);
 	break;
     default:
 	assert(0);
