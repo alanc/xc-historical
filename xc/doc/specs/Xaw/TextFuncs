@@ -121,6 +121,7 @@ typedef struct {
 .LP
 .IN "XawTextBlock" ""
 .IN "TextBlockPtr" ""
+.IN "TextBlock" ""
 .IP \fIfirstPos\fP 1.0i
 The starting point to use within the ptr field.
 The value is usually zero.  

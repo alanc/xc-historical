@@ -20,7 +20,7 @@
 .XS
 Chapter 7 - Creating New Widgets (Subclassing)
 .XE
-.IN "Subclasing" "" "@DEF@"
+.IN "Subclassing" "" "@DEF@"
 .IN "Creating New Widgets" "" "@DEF@"
 .LP
 Although the task of creating a new widget may at first appear a little

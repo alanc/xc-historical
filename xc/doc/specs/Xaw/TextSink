@@ -4,7 +4,7 @@ TextSink Object
 .XS
 	TextSink Object
 .XE
-.IN "TextSink" "" "@DEF@"
+.IN "TextSink object" "" "@DEF@"
 .LP
 .Ds 0
 .TA 2.0i
@@ -16,7 +16,7 @@ Class Header file	<X11/Xaw/TextSinkP.h>
 Class		textSinkObjectClass
 .IN "textSinkObjectClass" ""
 Class Name	TextSink
-.IN "TextSink" "class name"
+.IN "TextSink object" "class name"
 Superclass	Object
 .sp 1
 .LP
@@ -65,7 +65,7 @@ One foreground color is provided in TextSink.
 .Sg Bold
 .NH 3
 Subclassing the TextSink
-.IN "TextSink" "Subclassing" "@DEF@"
+.IN "TextSink object" "Subclassing" "@DEF@"
 .LP
 The only purpose of the TextSink Object is to be subclassed.  It
 contains the minimum set of class methods that all text sinks must have.
@@ -130,7 +130,7 @@ Displaying Text
 .LP
 To display a section of the text buffer contained in the text source
 use the function \fBDisplayText\fP:
-.IN "TextSink" "DisplayText" "@DEF@"
+.IN "TextSink object" "DisplayText" "@DEF@"
 .FD 0
 void DisplayText(\fIw\fP, \fIx\fP, \fIy\fP, \fIpos1\fP, \fIpos2\fP, \fIhighlight\fP)
 .br
@@ -170,7 +170,7 @@ The function that controls the display of the text cursor is
 widget desires to change the state of, or move the insert point.
 .FD 0
 void InsertCursor(\fIw\fP, \fIx\fP, \fIy\fP, \fIstate\fP)
-.IN "TextSink" "InsertCursor" "@DEF@"
+.IN "TextSink object" "InsertCursor" "@DEF@"
 .br
       Widget \fIw\fP;
 .br
@@ -198,7 +198,7 @@ defines this function as calling \fBXClearArea\fP on the region passed.
 This behavior will be used if you specify
 \fBXtInheritClearToBackground\fP for this method.
 .IN "XtInheritClearToBackground" ""
-.IN "TextSink" "ClearToBackground" "@DEF@"
+.IN "TextSink object" "ClearToBackground" "@DEF@"
 .FD 0
 void ClearToBackground(\fIw\fP, \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP)
 .br
@@ -225,7 +225,7 @@ Finding a Text Position Given Pixel Values
 .LP
 To find the text character position that will be rendered at a given x
 location the Text widget uses the function \fBFindPosition\fP:
-.IN "TextSink" "FindPosition" "@DEF@"
+.IN "TextSink object" "FindPosition" "@DEF@"
 .FD 0
 void FindPosition(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIstopAtWordBreak\fP, \fIpos_return\fP, \fIwidth_return\fP, \fIheight_return\fP)
 .br
@@ -272,7 +272,7 @@ widget will only call it one line at a time.
 .sp
 Another means of finding a text position is provided by the \fBResolve\fP
 function:
-.IN "TextSink" "Resolve" "@DEF@"
+.IN "TextSink object" "Resolve" "@DEF@"
 .FD 0
 void Resolve(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIpos_return\fP)
 .br
@@ -311,7 +311,7 @@ Finding the Distance Between two Text Positions
 .LP
 To find the distance in pixels between two text positions on the same
 line use the function \fBFindDistance\fP.
-.IN "TextSink" "FindDistance" "@DEF@"
+.IN "TextSink object" "FindDistance" "@DEF@"
 .FD 0
 void FindDistance(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fItoPos\fP, \fIwidth_return\fP, \fIpos_return\fP, \fIheight_return\fP)
 .br
@@ -356,7 +356,7 @@ To find the maximum number of lines that will fit into the current Text
 widget, use the function \fBMaxLines\fP.  The TextSink already defines
 this function to compute the maximum number of lines by using the height
 of \fBfont\fP.
-.IN "TextSink" "MaxLines" "@DEF@"
+.IN "TextSink object" "MaxLines" "@DEF@"
 .FD 0
 int MaxLines(\fIw\fP, \fIheight\fP)
 .br
@@ -376,7 +376,7 @@ To find the height required for a given number of text lines, use
 the function \fBMaxHeight\fP.  The TextSink already defines this
 function to compute the maximum height of the window by using the
 height of \fBfont\fP. 
-.IN "TextSink" "MaxHeight" "@DEF@"
+.IN "TextSink object" "MaxHeight" "@DEF@"
 .FD 0
 int MaxHeight(\fIw\fP, \fIlines\fP)
 .br
@@ -397,7 +397,7 @@ To set the tab stops for a text sink use the \fBSetTabs\fP function.
 The TextSink already defines this function to set the tab x location in
 pixels to be the number of characters times the figure width of
 \fBfont\fP.
-.IN "TextSink" "SetTabs" "@DEF@"
+.IN "TextSink object" "SetTabs" "@DEF@"
 .FD 0
 void SetTabs(\fIw\fP, \fItab_count\fP, \fItabs\fP)
 .br
@@ -419,7 +419,7 @@ Getting the Insert Point's Size and Location
 .LP
 To get the size and location of the insert point use the
 \fBGetCursorBounds\fP function.
-.IN "TextSink" "GetCursorBounds" "@DEF@"
+.IN "TextSink object" "GetCursorBounds" "@DEF@"
 .FD 0
 void GetCursorBounds(\fIw\fP, \fIrect_return\fP)
 .br

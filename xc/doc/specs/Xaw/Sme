@@ -80,13 +80,13 @@ There are three new class methods defined by the Sme Object.  All of
 these methods may be inherited from the Sme object, although the default
 semantics are not very interesting.
 .IP \fBHighlight\fP(\|) 1i
-.IN "Sme" "Highlight routine"
+.IN "Sme object" "Highlight routine"
 Called to put the menu entry into the highlighted state.
 .IP \fBUnhighlight\fP(\|) 1i
-.IN "Sme" "Unhighlight routine"
+.IN "Sme object" "Unhighlight routine"
 Called to return the widget to its normal (unhighlighted) state.
 .IP \fBNotify\fP(\|) 
-.IN "Sme" "Notify routine"
+.IN "Sme object" "Notify routine"
 Called when the user selects this menu entry.
 .LP
 .sp

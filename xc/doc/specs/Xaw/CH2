@@ -168,7 +168,7 @@ Common Resources
 .XS
 	Common Resources
 .XE
-.IN "Resources" "" ""
+.IN "Resource" ""
 .LP
 Although a widget can have unique arguments that it understands, all
 widgets have common arguments that provide some regularity of operation.
@@ -439,10 +439,9 @@ void XtSetMappedWhenManaged(\fIw\fP, \fImap_when_managed\fP)
 Specifies the widget.
 .IP \fImap_when_managed\fP 1i
 Specifies the new value.
-If map_when_managed is
-.PN True ,
-the widget is mapped automatically when it is realized.  If
-map_when_managed is \fBFalse\fP, the client must call
+If map_when_managed is \fBTrue\fP, the widget is mapped automatically
+when it is realized.  If map_when_managed is \fBFalse\fP, the client
+must call
 .PN XtMapWidget
 or make a second call to
 .PN XtSetMappedWhenManaged
@@ -794,7 +793,7 @@ cc -o \fIapplication\fP \fIapplication\fP.c \-lXaw \-lXmu \-lXt \
 .De
 .NH 3
 Changing Resource Values
-.IN "Resources"
+.IN "Resource" ""
 .LP
 The \*(xI support two methods of changing the default resource
 values; the resource manager, and an argument list passed into

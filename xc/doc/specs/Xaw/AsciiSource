@@ -5,7 +5,6 @@ Ascii Source Object
 	AsciiSrc Object
 .XE
 .IN "AsciiSrc object" "" "@DEF@"
-.IN "AsciiSrc" "" "@DEF@"
 .LP
 .Ds 0
 .TA 2.0i

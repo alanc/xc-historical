@@ -218,7 +218,7 @@ pointer as a percentage of the scroll bar length.
 .LP
 .sp
 The default bindings for Scrollbar are:
-.IN "Scrollbar widget" "default translation tables"
+.IN "Scrollbar widget" "default translation table"
 .LP
 .Ds 0
 .TA .5i 1.75i

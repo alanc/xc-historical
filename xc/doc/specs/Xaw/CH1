@@ -56,7 +56,7 @@ Introduction to the \*(tk
 .XS
 	Introduction to the \*(tk
 .XE
-.IN "Introduction" "" "@DEF@"
+.IN "introduction" "" "@DEF@"
 The \*(tk provides tools that simplify the design of
 application user interfaces in the X Window System programming environment.
 It assists application programmers by providing a set of common
@@ -107,49 +107,49 @@ the following terms are specific to the \*(xI and Athena widget set
 and used throughout this document. 
 .LP
 \fBApplication programmer\fP
-.IN "Application programmer" "" "@DEF@"
+.IN "application programmer" "" "@DEF@"
 .IP
 A programmer who uses the \*(tk to produce an application user interface.
 .LP
 .PN Child
-.IN "Child" "" "@DEF"
+.IN "child" "" "@DEF"
 .IP
 A widget that is contained within another "parent" widget.
 .LP
 \fBClass\fP
-.IN "Class" "" "@DEF@"
+.IN "class" "" "@DEF@"
 .IP
 The general group to which a specific object belongs.
 .LP
 \fBClient\fP
-.IN "Client" "" "@DEF@"
+.IN "client" "" "@DEF@"
 .IP
 A function that uses a widget in an application or for composing
 other widgets.
 .LP
-.PN "Full\ Name"
-.IN "Full Name" "" "@DEF"
+\fBFullName\fP
+.IN "FullName" "" "@DEF"
 .IP
 The name of a widget instance appended to the full name of its parent.
 .LP
 \fBInstance\fP
-.IN "Instance" "" "@DEF@"
+.IN "instance" "" "@DEF@"
 .IP
 A specific widget object as opposed to a general widget class.
 .LP
 \fBMethod\fP
-.IN "Method" "" "@DEF@"
+.IN "method" "" "@DEF@"
 .IP
 A function or procedure implemented by a widget class.
 .LP
 \fBName\fP
-.IN "Name" "" "@DEF@"
+.IN "name" "" "@DEF@"
 .IP
 The name that is specific to an instance of a widget for a given client.
 This name is specified at creation time and cannot be modified.
 .LP
 \fBObject\fP
-.IN "Object" "" "@DEF@"
+.IN "object" "" "@DEF@"
 .IP
 A data abstraction consisting of private data and private and public
 functions that operate on the private data.
@@ -166,42 +166,42 @@ If a function is unique to a single widget type,
 the widget exports the function.
 .LP
 .PN Parent
-.IN "Parent" "" "@DEF@"
+.IN "parent" "" "@DEF@"
 .IP
 A widget that contains at least one other ("child") widget.
 A parent widget is also known as a composite widget.
 .LP
 \fBResource\fP
-.IN "Resource" "" "@DEF@"
+.IN "resource" "" "@DEF@"
 .IP
 A named piece of data in a widget that can be set by a client,
 by an application, or by user defaults.
 .LP
 .PN Superclass
-.IN "Superclass" "" "@DEF@"
+.IN "superclass" "" "@DEF@"
 .IP
 A larger class of which a specific class is a member.
 All members of a class are also members of the superclass.
 .LP
 \fBUser\fP
-.IN "User" "" "@DEF@"
+.IN "user" "" "@DEF@"
 .IP
 A person interacting with a workstation.
 .LP
 \fBWidget\fP
-.IN "Widget" "" "@DEF@"
+.IN "widget" "" "@DEF@"
 .IP
 An object providing a user-interface abstraction (for example, a Scrollbar
 widget).
 .LP
 \fBWidget class\fP
-.IN "Widget class" "" "@DEF@"
+.IN "widget class" "" "@DEF@"
 .IP
 The general group to which a specific widget belongs,
 otherwise known as the type of the widget.
 .LP
 \fBWidget programmer\fP
-.IN "Widget programmer" "" "@DEF@"
+.IN "widget programmer" "" "@DEF@"
 .IP
 A programmer who adds new widgets to the \*(tk.
 .NH 2
@@ -210,7 +210,7 @@ Underlying Model
 .XS
 	Underlying Model
 .XE
-.IN "Underlying Model" "" "@DEF@"
+.IN "underlying model" "" "@DEF@"
 The underlying architectural model is based on the following premises:
 .KS
 .IP "Widgets are X windows"
@@ -242,7 +242,7 @@ suggestions about their own geometry.
 .NH 2
 Conventions Used in this Manual
 .IP \(bu 5
-.IN "Conventions" "Used in Manual" "@DEF@"
+.IN "conventions" "used in manual" "@DEF@"
 All resources available to the widgets are listed with each widget.  Many
 of these are available to more than one widget class due to the object
 oriented nature of the \*(xI.  The new resources for each widget are
@@ -279,8 +279,8 @@ suffix.
 .NH 2
 Format of the Widget Reference Chapters
 .LP
-.IN "Conventions" "Chapter Format" "@DEF@"
-.IN "Chapter Format" "" "@DEF@"
+.IN "conventions" "chapter format" "@DEF@"
+.IN "chapter format" "" "@DEF@"
 The majority of this document is a reference guide for the Athena
 widget set.  Chapters three through six give the programmer all
 information necessary to use the widgets.  The layout of the chapters
@@ -317,25 +317,25 @@ Superclass	Composite
 .sp
 .De
 .IP "\fBApplication Header File\fP" 2.0i
-.IN "Application Header File" "" "@DEF@"
+.IN "application header file" "" "@DEF@"
 This file must be included when an application uses this widget
 it usually contains the class definition, and some resource macros.
 This is often called the ``public'' header file.
-.IN "Class Header File" "" "@DEF@"
+.IN "class header file" "" "@DEF@"
 .IP "\fBClass Header File\fP" 2.0i
 This file will only be used by widget programmers.  It will need to be
 included by any widget that subclasses this widget.  This is often
 called the ``private'' header file.
-.IN "Class" "" "@DEF@"
+.IN "class" "" "@DEF@"
 .IP \fBClass\fP 2.0i
 This is the widget class of this widget.  This global symbol is passed to
 \fBXtCreateWidget\fP so that the \(*xI will know which type of widget
 to create.
-.IN "Class Header" "" "@DEF@"
+.IN "class header" "" "@DEF@"
 .IP "\fBClass Name\fP" 2.0i
 This is the resource name of this class.  This name can be used in
 a resource file to match any widget of this class. 
-.IN "Superclass" "" "@DEF@"
+.IN "superclass" ""
 .IP \fBSuperclass\fP 2.0i
 This is the superclass that this widget class is descended from.  If
 you understand how the superclass works it will allow you to more quickly
@@ -351,11 +351,11 @@ The next section is a table showing the
 name, class, type and default value of each resource that is available
 to this widget.  There is also a column containing notes describing
 special restrictions placed upon individual resources. 
-.IN "Notes" "" "@DEF@"
-.IN "A" "" "@DEF@"
-.IN "D" "" "@DEF@"
-.IN "C" "" "@DEF@"
-.IN "R" "" "@DEF@"
+.IN "notes" "" "@DEF@"
+.IN "A, note" "" "@DEF@"
+.IN "D, note" "" "@DEF@"
+.IN "C, note" "" "@DEF@"
+.IN "R, note" "" "@DEF@"
 .IP A .5i
 This resource may be automatically adjusted when another
 resource is changed.
@@ -391,7 +391,7 @@ Input Focus
 .XS
 	Input Focus
 .XE
-.IN "Input Focus" "" "@DEF@"
+.IN "input focus" "" "@DEF@"
 .IN "input" "" "@DEF@"
 .IN "XtNinput" "" "@DEF@"
 .LP
