@@ -484,10 +484,10 @@
 		 ,(when predicate
 		    #+allegro
 		    `(progn
-		       (defmethod ,predicate (object)
+		       (,(closintern 'defmethod) ,predicate (object)
 			 (declare (ignore object))
 			 nil)
-		       (defmethod ,predicate ((object ,name))
+		       (,(closintern 'defmethod) ,predicate ((object ,name))
 			 t))
 		    #-allegro
 		    `(defun ,predicate (object)
