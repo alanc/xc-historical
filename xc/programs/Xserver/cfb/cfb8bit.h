@@ -18,7 +18,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.1 89/07/28 12:52:01 keith Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.2 89/07/31 19:06:51 keith Exp $ */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define GetFourBits(x)		(((x) >> 28) & 0xf)
@@ -37,8 +37,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 extern unsigned long		cfb8Pixels[16];
 extern unsigned long		cfb8Pixelsfg;
 extern unsigned long		cfb8Pixelsbg;
+extern unsigned long		cfb8PixelMasks[16];
 
 extern void			cfb8SetPixels ();
+
 
 #define cfb8CheckPixels(fg, bg) \
     (((fg) & 0xff) == cfb8Pixelsfg && ((bg) & 0xff) == cfb8Pixelsbg)
@@ -72,8 +74,6 @@ extern void			cfb8SetPixels ();
  */
 
 #ifndef AVOID_SCREEN_READ
-
-extern unsigned long	cfb8PixelMasks[16];
 
 #define WriteFourBits(dst,pixel,bits)				\
     {								\
