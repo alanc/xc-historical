@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.24 90/03/01 16:13:44 jim Exp $
+ * $XConsortium: Panner.c,v 1.25 90/03/01 17:05:07 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -815,6 +815,20 @@ static void ActionNotify (gw, event, params, num_params)
 				      pw->panner.haspect + 0.5);
     pw->panner.slider_y = (Position) (((double) pw->panner.knob_y) /
 				      pw->panner.vaspect + 0.5);
+    if (!pw->panner.allow_off) {
+	Position tmp;
+	
+	if (pw->panner.slider_x >
+	    (tmp = (((Position) pw->panner.canvas_width) - 
+		    ((Position) pw->panner.slider_width))))
+	  pw->panner.slider_x = tmp;
+	if (pw->panner.slider_x < 0) pw->panner.slider_x = 0;
+	if (pw->panner.slider_y >
+	    (tmp = (((Position) pw->panner.canvas_height) - 
+		    ((Position) pw->panner.slider_height))))
+	  pw->panner.slider_y = tmp;
+	if (pw->panner.slider_y < 0) pw->panner.slider_y = 0;
+    }
 
     if (pw->panner.last_x != pw->panner.knob_x ||
 	pw->panner.last_y != pw->panner.knob_y) {
