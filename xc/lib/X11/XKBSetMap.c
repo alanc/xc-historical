@@ -373,13 +373,13 @@ CARD16 totalSyms,totalActs;
     req->length+= _XkbSizeKeySyms(xkb,req->firstKeySym,req->nKeySyms,
 						    	&totalSyms)/4;
     req->length+= _XkbSizeKeyActions(xkb,req->firstKeyAction,req->nKeyActions,
-						    	&totalActions)/4;
+						    	&totalActs)/4;
     req->length+= _XkbSizeKeyBehaviors(xkb,req,pChanges)/4;
     szMods= _XkbSizeVirtualMods(xkb,req->virtualMods);
     req->length+= szMods/4;
     req->length+= _XkbSizeKeyExplicit(xkb,req,pChanges)/4;
     req->totalSyms= totalSyms;
-    req->totalActs= totalActs;
+    req->totalActions= totalActs;
 
     tmp= *req;
     if ( tmp.nTypes>0 )
