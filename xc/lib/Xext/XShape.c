@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: XShape.c,v 1.4 89/03/28 14:19:12 keith Exp $ */
+/* $XConsortium: XShape.c,v 1.6 89/03/31 13:16:59 keith Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -181,6 +181,8 @@ queryExtension (dpy)
 	}
     }
     lastChecked = dpyHas;
+    if (!dpyHas->gotit)
+	return (XExtCodes *) 0;
     return &dpyHas->codes;
 }
 
