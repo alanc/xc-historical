@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.64 91/07/26 14:46:23 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.65 91/07/26 21:08:04 keith Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -37,22 +37,24 @@ XCOMM operating system:  OSName
 
 #if HasGcc
 
-#if HasSharedLibraries
-#define LibraryCcCmd cc
-#endif
-
+#define SharedLibraryCcCmd cc
 #define ExtraLoadFlags -B/usr/bin/
+#define AllocateLocalDefines /**/
 
 .c.o:
 	$(CC) -c $(CFLAGS) $*.c
 
 #else
 
+#define AllocateLocalDefines -DINCLUDE_ALLOCA_H
+
 #ifdef mc68000
 #define DefaultCCOptions -f68881 -pipe
 #else
 #define DefaultCCOptions -pipe
 #endif
+
+#define PexCCOptions DefaultCCOptions
 
 #endif
 
@@ -66,12 +68,6 @@ XCOMM operating system:  OSName
 #define SunWindowsDefines -DSUN_WINDOWS
 #else
 #define SunWindowsDefines /* as nothing */
-#endif
-
-#if HasGcc
-#define AllocateLocalDefines /**/
-#else
-#define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 #endif
 
 #define ServerOSDefines SunWindowsDefines AllocateLocalDefines
