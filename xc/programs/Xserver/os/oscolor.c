@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: oscolor.c,v 1.13 88/08/31 10:09:47 rws Exp $ */
+/* $XConsortium: oscolor.c,v 1.14 88/09/06 15:50:49 jim Exp $ */
 #include <dbm.h>
 #include "rgb.h"
 #include "os.h"
@@ -33,6 +33,8 @@ SOFTWARE.
  * one database open at a time.
  */
 extern int havergb;
+
+extern void CopyISOLatin1Lowered();
 
 /*ARGSUSED*/
 int

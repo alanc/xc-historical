@@ -60,6 +60,7 @@ extern Bool AnyClientsWriteBlocked;
 
 extern void CheckConnections();
 extern void EstablishNewConnections();
+extern void SaveScreens();
 
 extern int errno;
 
@@ -184,7 +185,7 @@ WaitForSomething(pClientsReady)
 	    }
 #endif MULTI_X_HACK
 	    COPYBITS(AllSockets, LastSelectMask);
-	    BlockHandler(&wt, LastSelectMask);
+	    BlockHandler((pointer)&wt, (pointer)LastSelectMask);
 	    if (NewOutputPending)
 	    	FlushAllOutput();
 #ifdef XTESTEXT1
@@ -200,14 +201,14 @@ WaitForSomething(pClientsReady)
 	    else if (AnyClientsWriteBlocked)
 	    {
 		COPYBITS(ClientsWriteBlocked, clientsWritable);
-		i = select (MAXSOCKS, LastSelectMask, clientsWritable,
-			    (int *) NULL, wt);
+		i = select (MAXSOCKS, (int *)LastSelectMask,
+			    (int *)clientsWritable, (int *) NULL, wt);
 	    }
 	    else
-		i = select (MAXSOCKS, LastSelectMask,
+		i = select (MAXSOCKS, (int *)LastSelectMask,
 			    (int *) NULL, (int *) NULL, wt);
 	    selecterr = errno;
-	    WakeupHandler(i, LastSelectMask);
+	    WakeupHandler((unsigned long)i, (pointer)LastSelectMask);
 #ifdef XTESTEXT1
 	    if (playback_on) {
 		i = XTestProcessInputAction (i, &waittime);
