@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.11 88/07/25 11:18:08 toddb Exp $
+.\" $Header: ddx.doc.tbl.ms,v 1.12 88/08/09 18:25:29 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -585,8 +585,8 @@ response with a reason string.
 If the information never comes, or comes much too slowly, the connection will
 be broken off silently.
 The connection timeout can be set from the command line.
-(The sample server on the distribution tape chooses to ignore the authorization,
-letting everyone in.)
+(The sample server on the distribution tape chooses to ignore the
+authorization.)
 .LP
 All of the above happens while the server is in WaitForSomething().
 At this point, WaitForSomething() calls NextAvailableClient(),
@@ -4247,16 +4247,48 @@ Shutdown Procedures
 .LP
 .nf
 	void AbortDDX()
+	void ddxGiveUp()
 .fi
 .LP
 Some hardware may require special work to be done before the server
 exits so that it is not left in an intermediate state.
 As explained in the OS layer, FatalError() will call AbortDDX() just
-before terminating the server.
-What AbortDDX() does is left unspecified,
-only that a stub must exist in the ddx layer.
-It is up to local implementors as to what it should accomplish before
+before terminating the server.  In addition, ddxGiveUp() will be
+called just before terminating the server on a "clean" death,
+right after calling KillServerResources().
+What AbortDDX() and ddxGiveUP do is left unspecified,
+only that stubs must exist in the ddx layer.
+It is up to local implementors as to what they should accomplish before
 termination.
+
+.NH 3
+Command Line Procedures
+.XS
+Command Line Procedures
+.XE
+.LP
+.nf
+	int ddxProcessArgument(argc, argv, i)
+	    int argc;
+	    char *argv[];
+	    int i;
+
+	void
+	ddxUseMsg()
+.fi
+.LP
+You should write these routines to deal with device-dependent command line
+arguments.  The routine ddxProcessArgument() is called with the command line,
+and the current index into argv; you should return zero if the argument
+is not a device-dependent one, and otherwise return a count of the number
+of elements of argv that are part of this one argument.  For a typical
+option (e.g., "-realtime"), you should return the value one.  This
+routine gets called before checks are made against device-independent
+arguments, so it is possible to peek at all arguments or to override
+device-independent argument processing.  You can document the
+device-dependent arguments in ddxUseMsg(), which will be
+called from UseMsg() after printing out the device-independent arguments.
+
 .bp
 .NH 1
 Summary of Routines
