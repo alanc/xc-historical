@@ -1,4 +1,4 @@
-/* $XConsortium: XTextExt.c,v 11.14 89/02/01 13:46:35 rws Exp $ */
+/* $XConsortium: XTextExt.c,v 11.15 89/02/01 15:06:35 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -123,8 +123,8 @@ XTextExtents (fontstruct, string, nchars, dir, font_ascent, font_descent,
     unsigned int n;
 
     *dir = fontstruct->direction;
-    *font_ascent = fontstruct->max_bounds.ascent;
-    *font_descent = fontstruct->max_bounds.descent;
+    *font_ascent = fontstruct->ascent;
+    *font_descent = fontstruct->descent;
 
     {
 	XCharStruct **charstruct =
