@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: extension.h,v 1.1 87/09/08 12:22:50 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -101,6 +101,6 @@ SOFTWARE.
     }\
     if (pGC->serialNumber != pDraw->serialNumber)\
     { \
-	(ValidateGC)(pDraw, pGC);\
+	ValidateGC(pDraw, pGC);\
     }
 #endif /* EXTENSION_H */
