@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: CloseHook.c,v 1.1 89/03/31 16:32:43 jim Exp $
  *
  * CloseDisplayHook package - provide callback on XCloseDisplay
  *
@@ -23,6 +23,27 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Jim Fulton, MIT X Consortium
+ * 
+ * 
+ *			      Public Entry Points
+ * 
+ * CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
+ *     Display *dpy;
+ *     int (*func)();
+ *     caddr_t arg;
+ * 
+ * Bool XmuRemoveCloseDisplayHook (dpy, hook, func, arg)
+ *     Display *dpy;
+ *     CloseHook hook;
+ *     int (*func)();
+ *     caddr_t arg;
+ * 
+ * Bool XmuLookupCloseDisplayHook (dpy, hook, func, arg)
+ *     Display *dpy;
+ *     CloseHook hook;
+ *     int (*func)();
+ *     caddr_t arg;
+ * 
  */
 
 #include <X11/Xos.h>
@@ -31,38 +52,177 @@
 
 
 /*
- * There is a list of display queues, each of which has a list of callbacks.
+ *				 Private data
+ *
+ * This is a list of display entries, each of which contains a list of callback
+ * records.
  */
 
-typedef struct _CallbackHook {
-    struct _CallbackHook *next;		/* next link in chain */
+typedef struct _CallbackRec {
+    struct _CallbackRec *next;		/* next link in chain */
     int (*func)();			/* function to call */
     caddr_t arg;			/* argument to pass with function */
-} CallbackHook;
+} CallbackRec;
 
 
-typedef struct _DisplayQueue {
-    struct _DisplayQueue *next;		/* next link in chain */
+typedef struct _DisplayEntry {
+    struct _DisplayEntry *next;		/* next link in chain */
     Display *dpy;			/* the display this represents */
     int extension;			/* from XAddExtension */
-    struct _CallbackHook *start, *end;	/* linked list of callbacks */
-} DisplayQueue;
+    struct _CallbackRec *start, *end;	/* linked list of callbacks */
+} DisplayEntry;
 
 
-static DisplayQueue *topq = NULL;
-static Bool _Initialize();
+static DisplayEntry *elist = NULL;
+static Bool _MakeExtension();
+static DisplayEntry *_FindDisplayEntry();
 
 
 /*
- * Find the given display
+ *****************************************************************************
+ *			      Public Entry Points                            *
+ *****************************************************************************
  */
-static DisplayQueue *_FindDisplayQueue (dpy, prevp)
-    register Display *dpy;
-    DisplayQueue **prevp;
-{
-    register DisplayQueue *d, *prev;
 
-    for (d = topq, prev = NULL; d; d = d->next) {
+/*
+ * Add - add a callback for the given display.  When the display is closed,
+ * the given function will be called as:
+ *
+ *         (*func) (dpy, arg)
+ *
+ * The function is declared to return an int even though the value is ignored
+ * because some compilers have problems with functions returning void.
+ * 
+ * This routine returns NULL if it was unable to add the callback, otherwise
+ * it returns an untyped pointer that can be used with Remove or Lookup, but
+ * not dereferenced.
+ */
+CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
+    Display *dpy;
+    int (*func)();			/* function to call on close display */
+    caddr_t arg;			/* arg to pass */
+{
+    DisplayEntry *de;
+    CallbackRec *cb;
+
+    /* allocate ahead of time so that we can fail atomically */
+    cb = (CallbackRec *) malloc (sizeof (CallbackRec));
+    if (!cb) return ((caddr_t) NULL);
+
+    de = _FindDisplayEntry (dpy, NULL);
+    if (!de) {
+	if ((de = (DisplayEntry *) malloc (sizeof (DisplayEntry))) == NULL ||
+	    !_MakeExtension (dpy, &de->extension)) {
+	    free ((char *) cb);
+	    if (de) free ((char *) de);
+	    return ((CloseHook) NULL);
+	}
+	de->dpy = dpy;
+	de->start = de->end = NULL;
+	de->next = elist;
+	elist = de;
+    }
+
+    /* add to end of list of callback recordss */
+    cb->func = func;
+    cb->arg = arg;
+    cb->next = NULL;
+    if (de->end) {
+	de->end->next = cb;
+    } else {
+	de->start = cb;
+    }
+    de->end = cb;
+
+    return ((CloseHook) cb);
+}
+
+
+/*
+ * Remove - get rid of a callback.  If handle is non-null, use that to compare
+ * entries.  Otherwise, remove first instance of the function/argument pair.
+ */
+Bool XmuRemoveCloseDisplayHook (dpy, handle, func, arg)
+    Display *dpy;
+    CloseHook handle;			/* value from XmuAddCloseDisplayHook */
+    int (*func)();			/* function to call on close display */
+    caddr_t arg;			/* arg to pass */
+{
+    DisplayEntry *de = _FindDisplayEntry (dpy, NULL);
+    register CallbackRec *h, *prev;
+
+    if (!de) return False;
+
+    /* look for handle or function/argument pair */
+    for (h = de->start, prev = NULL; h; h = h->next) {
+	if (handle) {
+	    if (h == (CallbackRec *) handle) break;
+	} else {
+	    if (h->func == func && h->arg == arg) break;
+	}
+	prev = h;
+    }
+    if (!h) return False;
+
+
+    /* remove from list, watch head and tail */
+    if (de->start == h) {
+	de->start = h->next;
+    } else {
+	prev->next = h->next;
+    }
+    if (de->end == h) de->end = prev;
+    free ((char *) h);
+    return True;
+}
+
+
+/*
+ * Lookup - see whether or not a handle has been installed.  If handle is 
+ * non-NULL, look for an entry that matches it; otherwise look for an entry 
+ * with the same function/argument pair.
+ */
+Bool XmuLookupCloseDisplayHook (dpy, handle, func, arg)
+    Display *dpy;
+    CloseHook handle;			/* value from XmuAddCloseDisplayHook */
+    int (*func)();			/* function to call on close display */
+    caddr_t arg;			/* arg to pass */
+{
+    DisplayEntry *de = _FindDisplayEntry (dpy, NULL);
+    register CallbackRec *h;
+
+    if (!de) return False;
+
+    for (h = de->start; h; h = h->next) {
+	if (handle) {
+	    if (h == (CallbackRec *) handle) break;
+	} else {
+	    if (h->func == func && h->arg == arg) break;
+	}
+    }
+    return (h ? True : False);
+}
+
+
+/*
+ *****************************************************************************
+ *			       internal routines                             *
+ *****************************************************************************
+ */
+
+
+/*
+ * Find the specified display on the linked list of displays.  Also return
+ * the preceeding link so that the display can be unlinked without having
+ * back pointers.
+ */
+static DisplayEntry *_FindDisplayEntry (dpy, prevp)
+    register Display *dpy;
+    DisplayEntry **prevp;
+{
+    register DisplayEntry *d, *prev;
+
+    for (d = elist, prev = NULL; d; d = d->next) {
 	if (d->dpy == dpy) {
 	    if (prevp) *prevp = prev;
 	    return d;
@@ -73,147 +233,44 @@ static DisplayQueue *_FindDisplayQueue (dpy, prevp)
 }
 
 
-/*
- * Add - add a callback for the given display
- */
-caddr_t XmuAddCloseDisplayHook (dpy, func, arg)
-    Display *dpy;
-    int (*func)();			/* function to call on close display */
-    caddr_t arg;			/* arg to pass */
-{
-    DisplayQueue *dq;
-    CallbackHook *hook;
-
-    /* allocate ahead of time */
-    hook = (CallbackHook *) malloc (sizeof (CallbackHook));
-    if (!hook) return ((caddr_t) NULL);
-
-    dq = _FindDisplayQueue (dpy, NULL);
-    if (!dq) {
-	if ((dq = (DisplayQueue *) malloc (sizeof (DisplayQueue))) == NULL ||
-	    !_Initialize(dpy, &dq->extension)) {
-	    free ((char *) hook);
-	    if (dq) free ((char *) dq);
-	    return ((caddr_t) NULL);
-	}
-	dq->next = NULL;
-	dq->dpy = dpy;
-	dq->start = dq->end = NULL;
-	dq->next = topq;
-	topq = dq;
-    }
-
-    /* add to end of list of hooks */
-    hook->func = func;
-    hook->arg = arg;
-    hook->next = NULL;
-    if (dq->end) {
-	dq->end->next = hook;
-    } else {
-	dq->start = hook;
-    }
-    dq->end = hook;
-
-    return ((caddr_t) hook);
-}
-
 
 /*
- * Remove - get rid of a callback
+ * _DoCallbacks - process all of the callbacks for this display and free
+ * the associated callback data (callback records and display entries).
  */
-Bool XmuRemoveCloseDisplayHook (dpy, hook, func, arg)
-    Display *dpy;
-    caddr_t hook;			/* value from XmuAddCloseDisplayHook */
-    int (*func)();			/* function to call on close display */
-    caddr_t arg;			/* arg to pass */
-{
-    DisplayQueue *dq = _FindDisplayQueue (dpy, NULL);
-    register CallbackHook *h, *prev;
-
-    if (!dq) return False;
-
-    /* look for hook or function/argument pair */
-    for (h = dq->start, prev = NULL; h; h = h->next) {
-	if (hook) {
-	    if (h == (CallbackHook *) hook) break;
-	} else {
-	    if (h->func == func && h->arg == arg) break;
-	}
-	prev = h;
-    }
-    if (!h) return False;
-
-
-    /* remove from list, watch head */
-    if (dq->start == h) {
-	dq->start = h->next;
-    } else {
-	prev->next = h->next;
-    }
-    if (dq->end == h) dq->end = prev;
-    free ((char *) h);
-    return True;
-}
-
-
-/*
- * Lookup - see whether or not a hook has been installed
- */
-Bool XmuLookupCloseDisplayHook (dpy, hook, func, arg)
-    Display *dpy;
-    caddr_t hook;			/* value from XmuAddCloseDisplayHook */
-    int (*func)();			/* function to call on close display */
-    caddr_t arg;			/* arg to pass */
-{
-    DisplayQueue *dq = _FindDisplayQueue (dpy, NULL);
-    register CallbackHook *h;
-
-    if (!dq) return False;
-
-    for (h = dq->start; h; h = h->next) {
-	if (hook) {
-	    if (h == (CallbackHook *) hook) break;
-	} else {
-	    if (h->func == func && h->arg == arg) break;
-	}
-    }
-    return (h ? True : False);
-}
-
-
-/*
- * internal routines
- */
-
-static int _close_display (dpy, codes)
+static int _DoCallbacks (dpy, codes)
     Display *dpy;
     XExtCodes *codes;
 {
-    DisplayQueue *prev;
-    DisplayQueue *dq = _FindDisplayQueue (dpy, &prev);
-    CallbackHook *h;
+    register CallbackRec *h;
+    DisplayEntry *prev;
+    DisplayEntry *de = _FindDisplayEntry (dpy, &prev);
 
-    if (!dq) return 0;
+    if (!de) return 0;
 
     /* walk the list doing the callbacks and freeing callback record */
-    for (h = dq->start; h;) {
-	register CallbackHook *oldh = h;
+    for (h = de->start; h;) {
+	register CallbackRec *oldh = h;
 	(*(h->func)) (dpy, h->arg);
 	free ((char *) h);
 	h = oldh->next;
     }
 
     /* unlink this display from chain */
-    if (topq == dq) {
-	topq = dq->next;
+    if (elist == de) {
+	elist = de->next;
     } else {
-	prev->next = dq->next;
+	prev->next = de->next;
     }
-    free ((char *) dq);
+    free ((char *) de);
     return 1;
 }
 
-static Bool _Initialize (dpy, extensionp)
+
+/*
+ * _MakeExtension - create an extension for this display; done once per display
+ */
+static Bool _MakeExtension (dpy, extensionp)
     Display *dpy;
     int *extensionp;
 {
@@ -222,7 +279,7 @@ static Bool _Initialize (dpy, extensionp)
     codes = XAddExtension (dpy);
     if (!codes) return False;
 
-    (void) XESetCloseDisplay (dpy, codes->extension, _close_display);
+    (void) XESetCloseDisplay (dpy, codes->extension, _DoCallbacks);
 
     *extensionp = codes->extension;
     return True;
