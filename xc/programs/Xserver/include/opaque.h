@@ -1,4 +1,4 @@
-/* $XConsortium: opaque.h,v 1.5 88/09/06 15:48:51 jim Exp $ */
+/* $XConsortium: opaque.h,v 1.6 89/01/16 13:45:36 rws Exp $ */
 
 extern char *defaultFontPath;
 extern char *defaultTextFont;
@@ -11,7 +11,7 @@ extern int CloseFont();
 extern unsigned long *Xalloc();
 extern unsigned long *Xrealloc();
 extern void Xfree();
-extern void AddResource();
+extern Bool AddResource();
 extern void FreeResource();
 extern pointer LookupID();
 extern long TimeOutValue;
