@@ -1,4 +1,4 @@
-/* $XConsortium: sync.c,v 1.4 93/09/18 13:49:54 dpw Exp $ */
+/* $XConsortium: sync.c,v 1.5 93/09/20 20:17:55 dpw Exp $ */
 /***********************************************************
 Copyright 1991, 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -239,8 +239,10 @@ SyncInitTrigger(client, pTrigger, counter, changes)
 
     if (changes & XSyncCATestType)
     {
-	if (pTrigger->test_type > XSyncNegativeComparison ||
-	    pTrigger->test_type < XSyncPositiveTransition)
+	if (pTrigger->test_type != XSyncPositiveTransition &&
+	    pTrigger->test_type != XSyncNegativeComparison &&
+	    pTrigger->test_type != XSyncPositiveComparison &&
+	    pTrigger->test_type != XSyncNegativeComparison)
 	{
 	    client->errorValue = pTrigger->test_type;
 	    return BadValue;
@@ -400,6 +402,7 @@ SyncAlarmCounterDestroyed(pTrigger)
 
     pAlarm->state = XSyncAlarmInactive;
     SyncSendAlarmNotifyEvents(pAlarm);
+    pTrigger->pCounter = NULL;
 }
 
 
@@ -1004,7 +1007,6 @@ FreeCounter(env, id)
     for (ptl = pCounter->pTriglist; ptl; ptl = pnext)
     {
 	(*ptl->pTrigger->CounterDestroyed)(ptl->pTrigger);
-	ptl->pTrigger->pCounter = NULL;
 	pnext = ptl->next;
 	xfree(ptl); /* destroy the trigger list as we go */
     }
