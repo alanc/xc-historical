@@ -1,5 +1,5 @@
 /* Copyright 	Massachusetts Institute of Technology  1985, 1986, 1987 */
-/* $XConsortium: XParseGeom.c,v 11.15 90/12/12 09:18:52 rws Exp $ */
+/* $XConsortium: XParseGeom.c,v 11.16 91/01/06 11:47:12 rws Exp $ */
 
 /*
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -46,7 +46,7 @@ char *search, *what;
  *   not found, the corresponding argument is left unchanged. 
  */
 
-int
+static int
 ReadInteger(string, NextString)
 register char *string;
 char **NextString;
