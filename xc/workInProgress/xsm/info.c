@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.7 94/07/25 11:51:24 mor Exp $ */
+/* $XConsortium: info.c,v 1.8 94/07/26 14:17:54 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -238,9 +238,11 @@ UpdateClientList ()
 
 {
     ClientRec *client;
-    char *progName;
+    char *progName, *hostname, *tmp1, *tmp2;
+    String clientInfo;
     int maxlen1, maxlen2;
     char extraBuf1[80], extraBuf2[80];
+    char *restart_service_prop;
     int i, j, k;
 
     if (clientNames)
@@ -260,19 +262,37 @@ UpdateClientList ()
 
     for (i = 0; i < numClients; i++, client = client->next)
     {
+	restart_service_prop = NULL;
+
 	for (j = 0; j < client->numProps; j++)
+	{
 	    if (strcmp (client->props[j]->name, SmProgram) == 0)
 	    {
 		char *temp = GetProgramName (client->props[j]->vals[0].value);
 
 		if (strlen (temp) > maxlen1)
 		    maxlen1 = strlen (temp);
-
-		if (strlen (client->clientHostname) > maxlen2)
-		    maxlen2 = strlen (client->clientHostname);
-
-		break;
 	    }
+	    else if (strcmp (client->props[j]->name,
+		"_XC_RestartService") == 0)
+	    {
+		restart_service_prop =
+		    (char *) client->props[j]->vals[0].value;
+	    }
+	}
+
+	if (restart_service_prop)
+	    tmp1 = restart_service_prop;
+	else
+	    tmp1 = client->clientHostname;
+
+	if ((tmp2 = (char *) strchr (tmp1, '/')) == NULL)
+	    hostname = tmp1;
+	else
+	    hostname = tmp2 + 1;
+
+	if (strlen (hostname) > maxlen2)
+	    maxlen2 = strlen (hostname);
     }
 
     clientNames = (String *) malloc (numClients * sizeof (String));
@@ -283,33 +303,60 @@ UpdateClientList ()
     for (i = 0; i < numClients; i++, client = client->next)
     {
 	progName = NULL;
+	restart_service_prop = NULL;
 
-	for (j = 0; j < client->numProps && !progName; j++)
+	for (j = 0; j < client->numProps; j++)
+	{
 	    if (strcmp (client->props[j]->name, SmProgram) == 0)
 	    {
-		char *temp = GetProgramName (client->props[j]->vals[0].value);
-		int extra1 = maxlen1 - strlen (temp);
-		int extra2 = maxlen2 - strlen (client->clientHostname);
-
-		progName = (String) XtMalloc (strlen (temp) +
-		    extra1 + extra2 + 4 + strlen (client->clientHostname));
-
-		for (k = 0; k < extra1; k++)
-		    extraBuf1[k] = ' ';
-		extraBuf1[extra1] = '\0';
-
-		for (k = 0; k < extra2; k++)
-		    extraBuf2[k] = ' ';
-		extraBuf2[extra2] = '\0';
-
-		sprintf (progName, "%s%s (%s%s)", temp, extraBuf1,
-		    client->clientHostname, extraBuf2);
+		progName = GetProgramName (client->props[j]->vals[0].value);
 	    }
+	    else if (strcmp (client->props[j]->name,
+		"_XC_RestartService") == 0)
+	    {
+		restart_service_prop =
+		    (char *) client->props[j]->vals[0].value;
+	    }
+	    
+	}
 
 	if (!progName)
-	    progName = XtNewString ("???????????");
+	{
+	    clientInfo = XtNewString ("???????????");
+	}
+	else
+	{
+	    int extra1, extra2;
 
-	clientNames[i] = progName;
+	    if (restart_service_prop)
+		tmp1 = restart_service_prop;
+	    else
+		tmp1 = client->clientHostname;
+
+	    if ((tmp2 = (char *) strchr (tmp1, '/')) == NULL)
+		hostname = tmp1;
+	    else
+		hostname = tmp2 + 1;
+
+	    extra1 = maxlen1 - strlen (progName) + 5;
+	    extra2 = maxlen2 - strlen (hostname);
+
+	    clientInfo = (String) XtMalloc (strlen (progName) +
+		extra1 + extra2 + 4 + strlen (hostname));
+
+	    for (k = 0; k < extra1; k++)
+		extraBuf1[k] = ' ';
+	    extraBuf1[extra1] = '\0';
+
+	    for (k = 0; k < extra2; k++)
+		extraBuf2[k] = ' ';
+	    extraBuf2[extra2] = '\0';
+
+	    sprintf (clientInfo, "%s%s (%s%s)", progName, extraBuf1,
+		    hostname, extraBuf2);
+	}
+
+	clientNames[i] = clientInfo;
     }
 
     XawListChange (clientListWidget, clientNames, numClients, 0, True);
