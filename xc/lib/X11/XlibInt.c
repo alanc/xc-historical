@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.106 89/06/15 18:44:37 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.107 89/06/15 19:14:19 jim Exp $
  */
 
 #include "copyright.h"
@@ -20,6 +20,11 @@ static void _EatData32();
 #if defined(CRAY) || defined(att)
 static int readv(), write();
 #endif 
+
+#if defined(STREAMSCONN) && (!defined(EWOULDBLOCK)) && defined(EAGAIN)
+#define EWOULDBLOCK EAGAIN
+#endif
+
 
 /*
  * The following routines are internal routines used by Xlib for protocol
