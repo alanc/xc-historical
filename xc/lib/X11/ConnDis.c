@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.24 88/01/30 10:14:50 rws Exp $ */
+/* $Header: XConnDis.c,v 11.25 88/03/16 16:38:32 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -10,6 +10,7 @@
 #include "Xlibint.h"
 #include <X11/Xos.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 
 #ifdef UNIXCONN
 #include <sys/un.h>
@@ -199,7 +200,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 		/* make sure to turn off TCP coalescence */
 #ifdef TCP_NODELAY
 		{
-		int mi;
+		int mi = 1;
 		setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &mi, sizeof (int));
 		}
 #endif
