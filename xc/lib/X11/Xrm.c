@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.40 90/06/29 13:51:15 kit Exp $
+ * $XConsortium: Xrm.c,v 1.41 90/07/21 17:37:08 rws Exp $
  */
 
 /***********************************************************
@@ -553,46 +553,37 @@ static Bool DumpEntry(bindings, quarks, type, value, stream)
 {
 
     register unsigned int	i;
+    register char		*s;
+    register char		c;
 
+    if (type != XrmQString)
+	(void) putc('!', stream);
     PrintBindingQuarkList(bindings, quarks, stream);
+    s = value->addr;
+    i = value->size;
     if (type == XrmQString) {
-	if (index(value->addr, '\n') == NULL)
-	    (void) fprintf(stream, ":\t%s\n", value->addr);
-	else {
-	    register char *s1, *s2;
-	    (void) fprintf(stream, ":\t\\\n");
-	    s1 = value->addr;
-	    while ((s2 = index(s1, '\n')) != NULL) {
-		*s2 = '\0';
-		if (s2[1] == '\0') {
-		    (void) fprintf(stream, "%s\\n\n", s1);
-		} else {
-		    (void) fprintf(stream, "%s\\n\\\n", s1);
-		}
-		*s2 = '\n';
-		s1 = s2 + 1;
-	    }		
-	    (void) fprintf(stream, "%s\\n\n", s1);
-	}
-    } else {
-	(void) fprintf(stream, "!%s:\t", XrmRepresentationToString(type));
-	for (i = 0; i < value->size; i++)
-	    (void) fprintf(stream, "%02x", (int) value->addr[i]);
-        if (index(value->addr, '\n')) {
-           (void) fprintf(stream, ":\t\\\n");
-           for (i = 0; value->addr[i]; i++) {
-               if (value->addr[i] == '\n') {
-                   (void) fprintf(stream, "\\n");
-                   if (value->addr[i+1]) (void) fprintf(stream, "\\");
-                   (void) fprintf(stream, "\n");
-               } else {
-                   (void) putc(value->addr[i], stream);
-               }
-           }
-        } else {
-           (void) fprintf(stream, ":\t%s\n", value->addr);
-        }
-     }
+	(void) fputs(":\t", stream);
+	if (i)
+	    i--;
+    }
+    else
+	fprintf(stream, "=%s:\t", XrmRepresentationToString(type));
+    while (i--) {
+	c = *s++;
+	if (c == '\n') {
+	    if (i)
+		(void) fputs("\\n\\\n", stream);
+	    else
+		(void) fputs("\\n", stream);
+	} else if (c == '\\')
+	    (void) fputs("\\\\", stream);
+	else if ((c < ' ' && c != '\t') ||
+		 ((unsigned char)c >= 0x7f && (unsigned char)c < 0xa0))
+	    (void) fprintf(stream, "\\%03o", (unsigned char)c);
+	else
+	    (void) putc(c, stream);
+    }
+    (void) putc('\n', stream);
     return False;
 }
 
