@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.35 93/09/04 17:18:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.36 94/03/11 18:28:00 dpw Exp $
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -31,7 +31,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 INCLUDES = -I. -I../mi -I../include -I$(INCLUDESRC) -I$(FONTINCSRC)
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
-	   -DEQWHOLEWORD=EQWHOLEWORD_WHITE -DOPEQ=OPEQ_WHITE
+	   -DEQWHOLEWORD=MFB_EQWHOLEWORD_WHITE -DMFB_OPEQ=OPEQ_WHITE
 
 LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln ../mi/llib-lmi.ln
 
