@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miSC.c,v 5.1 91/02/16 09:56:02 rws Exp $ */
 
 
 /***********************************************************
@@ -73,6 +73,8 @@ SearchNetwork(pSC, pNumRefs, pBuffer)
 	trav_state.p_curr_pick_el = (ddPickPath *) NULL;
 	trav_state.p_curr_sc_el = (ddElementRef *) pSC->startPath->pList;
 	trav_state.max_depth = 0;
+        trav_state.pickId = 0;
+        trav_state.ROCoffset =  0;
     } else
 	return (PEXERR(PEXPathError));
 

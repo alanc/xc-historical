@@ -1,4 +1,4 @@
-/* $XConsortium: miPick.c,v 5.5 92/04/15 15:51:19 hersh Exp $ */
+/* $XConsortium: miPick.c,v 5.6 92/08/12 15:24:05 hersh Exp $ */
 
 
 
@@ -463,6 +463,8 @@ UpdatePickMeasure(pPM, size, pInput)
 	/* reset for each structure */
 	trav_state.max_depth = 0;
 	trav_state.pickId = 0;
+        trav_state.ROCoffset =  0;
+
 	if (MISTR_NUM_EL((miStructPtr) pstr->deviceData)) {
 	    BeginStructure(pwks->pRend, pstr->id);
 

@@ -1,4 +1,4 @@
-/* $XConsortium: miTraverse.c,v 5.3 92/10/05 17:02:37 hersh Exp $ */
+/* $XConsortium: miTraverse.c,v 5.4 92/10/15 16:14:02 hersh Exp $ */
 
 
 
@@ -139,6 +139,8 @@ miTraverse(pWks )
 	/* reset for each structure */
 	trav_state.max_depth = 0;	
 	trav_state.pickId = 0;	
+        trav_state.ROCoffset =  0;
+
 
 	if (MISTR_NUM_EL((miStructPtr) pos->pstruct->deviceData)) {
 	    BeginStructure(pwks->pRend, pos->pstruct->id);
@@ -197,7 +199,7 @@ miTraverserState    *p_trav_state;
     ddPointer		ddElement;	/* imp. dep. parsed element */
     diStructHandle	p_next_str;	/* execute structure structure */
     ddSHORT		depth;		/* how far down in structures */
-    ddULONG		pickId;
+    ddULONG		pickId, ROCoffset;
     miStructPtr		pstruct = (miStructPtr)(pStruct->deviceData);
     ddUSHORT		pickStatus, searchStatus;
     ddpex2rtn		err;
@@ -221,9 +223,16 @@ miTraverserState    *p_trav_state;
     depth = p_trav_state->max_depth;
     /* same for pick id */
     pickId = p_trav_state->pickId;
-
     MISTR_FIND_EL(pstruct, startel, p_element);
     currOffset = startel;
+
+    /* when calling traverser from ROC ROCoffset may be non-zero
+       to account for prior ROCs, all other times this should
+       be 0 and we set it to 0 here so recursion doesn't mess
+       up the offsets when processing execute structure
+    */
+    ROCoffset = p_trav_state->ROCoffset;
+    p_trav_state->ROCoffset = 0;
 
     /* do stuff for following search start path */
     if (pSC) {
@@ -277,7 +286,7 @@ miTraverserState    *p_trav_state;
 		    if (pPM) {
 			myPickLevel.up = p_trav_state->p_pick_path;
 			myPickLevel.pp.structure = pStruct;
-			myPickLevel.pp.offset = currOffset;
+			myPickLevel.pp.offset = currOffset + ROCoffset;
 			myPickLevel.pp.pickid = pickId;
 			p_trav_state->p_pick_path = &myPickLevel;
 		    }
@@ -409,7 +418,7 @@ miTraverserState    *p_trav_state;
                           if (pRend->pickstr.state == DD_PICK_ALL) {
 			      myPickLevel.up = p_trav_state->p_pick_path;
 			      myPickLevel.pp.structure = pStruct;
-			      myPickLevel.pp.offset = currOffset;
+			      myPickLevel.pp.offset = currOffset + ROCoffset;
 			      myPickLevel.pp.pickid = pickId;
 
 			      AddPickPathToList( pRend, depth, &myPickLevel);
@@ -443,13 +452,13 @@ miTraverserState    *p_trav_state;
 			     * depending on whether the top/bottom part was
 			     * requested
 			     */
-			    if (ppm->pathOrder == PEXTopPart)
+			    if (ppm->pathOrder == PEXTopFirst)
 				zap = depth - 1;
 			    else	
 				zap = p_trav_state->max_depth - depth;
 
 			    pl[zap].structure = pStruct;
-			    pl[zap].offset = currOffset;
+			    pl[zap].offset = currOffset + ROCoffset;
 			    pl[zap].pickid = pickId;
 
 			    /*
@@ -459,7 +468,7 @@ miTraverserState    *p_trav_state;
 			     */
 			    pp = p_trav_state->p_pick_path;
 			    for (i = depth-1; i > 0; i-- ) {		
-			       if (ppm->pathOrder == PEXTopPart)
+			       if (ppm->pathOrder == PEXTopFirst)
 				   zap = i - 1;
 			       else	
 				   zap = p_trav_state->max_depth - i;
@@ -554,6 +563,9 @@ pexExecuteStructure	*pOC;
 	trav_state.p_curr_pick_el = NULL;
 	trav_state.p_curr_sc_el = NULL;
 	trav_state.max_depth = 0;
+        trav_state.pickId = 0;
+        trav_state.ROCoffset =  0;
+
 	err = traverser(    pRend, pstruct, (ddULONG)0, 
 			    MISTR_NUM_EL((miStructPtr)pstruct->deviceData), 
 			    (diPMHandle)NULL, (ddSCStr *)NULL, &trav_state);
