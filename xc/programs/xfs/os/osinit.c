@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: osinit.c,v 1.3 91/05/13 16:51:14 gildea Exp $ */
 /*
  * os init code
  */
@@ -35,4 +35,5 @@ extern long LastReapTime;
 OsInit()
 {
     LastReapTime = GetTimeInMillis();
+    OsInitAllocator ();
 }
