@@ -3,7 +3,8 @@
 xfd - X window system font displayer
 .SH SYNOPSIS
 .B xfd
-[ =\fIgeometry\fP ] [ \fIhost\fP:\fInumber\fP ] [ options ] [ fontname ]
+[ -geometry \fIgeometry\fP ] [ -display \fIhost\fP:\fInumber\fP ] 
+[ options ] [ fontname ]
 .SH DESCRIPTION
 .I Xfd
 creates a window which displays the characters in the named font.  The
@@ -65,7 +66,7 @@ window.
 .SH "OPTIONS"
 .PP
 .TP 8
-.B \fIhost\fP:\fIdisplay\fP
+.B \-display \fIhost\fP:\fIdisplay\fP
 Normally,
 .I xfd
 gets the host and display number to use from the environment
@@ -136,7 +137,7 @@ Specifies that character number \fIcharnum\fP should be the first character
 displayed.
 .PP
 .TP 8
-.B \=\fIgeometry\fP
+.B \-geometry \fIgeometry\fP
 .I Xfd
 will also take a standard geometry specification (see X(1)).
 .SH "X DEFAULTS"
