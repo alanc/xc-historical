@@ -1,4 +1,4 @@
-/* $XConsortium: XKBproto.h,v 1.8 94/02/05 17:44:53 rws Exp $ */
+/* $XConsortium: XKBproto.h,v 1.9 94/02/05 18:13:26 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -682,8 +682,9 @@ typedef struct _xkbAnyEvent {
     CARD32	pad4 B32;
     CARD32	pad5 B32;
     CARD32	pad6 B32;
+    CARD32	pad7 B32;
 } xkbAnyEvent;
-#define	sz_xkbAnyEvent;
+#define	sz_xkbAnyEvent			32
 
 typedef	struct _xkbStateNotify {
     BYTE	type;
