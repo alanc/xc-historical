@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.31 88/09/30 16:19:36 jim Exp $
+ * $XConsortium: XErrDes.c,v 11.32 89/02/01 16:34:25 rws Exp $
  */
 
 /***********************************************************
@@ -35,7 +35,11 @@ SOFTWARE.
 #define ERRORDB "/usr/lib/X11/XErrorDB"
 #endif
 
-char *XErrorList[] = {
+/*
+ * descriptions of errors in Section 4 of Protocol doc (pp. 350-351)
+ */
+
+static char *_XErrorList[] = {
 	/* No error	*/	"",
 	/* BadRequest	*/	"BadRequest, invalid request code or no such operation",
 	/* BadValue	*/	"BadValue, integer parameter out of range for operation",
@@ -55,7 +59,7 @@ char *XErrorList[] = {
 	/* BadLength	*/	"BadLength, poly request too large or internal Xlib length error",
 	/* BadImplementation */	"BadImplementation, server does not implement operation",
 };
-int XErrorListSize = sizeof(XErrorList);
+static int _XErrorListSize = sizeof(_XErrorList);
 
 
 XGetErrorText(dpy, code, buffer, nbytes)
@@ -71,8 +75,8 @@ XGetErrorText(dpy, code, buffer, nbytes)
 
     if (nbytes == 0) return;
     sprintf(buf, "%d", code);
-    if (code <= (XErrorListSize/ sizeof (char *)) && code > 0) {
-	defaultp =  XErrorList[code];
+    if (code <= (_XErrorListSize/ sizeof (char *)) && code > 0) {
+	defaultp =  _XErrorList[code];
 	XGetErrorDatabaseText(dpy, "XProtoError", buf, defaultp, buffer, nbytes);
 	}
     ext = dpy->ext_procs;
