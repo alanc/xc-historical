@@ -29,42 +29,76 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "X.h"
 #include "scrnintstr.h"
-#include "colormap.h"
 #include "colormapst.h"
 #include "resource.h"
+
+#ifdef	STATIC_COLOR
+
+static ColormapPtr InstalledMaps[MAXSCREENS];
 
 int
 cfbListInstalledColormaps(pScreen, pmaps)
     ScreenPtr	pScreen;
     Colormap	*pmaps;
 {
-    *pmaps = pScreen->defColormap;
+    /* By the time we are processing requests, we can guarantee that there
+     * is always a colormap installed */
+    *pmaps = InstalledMaps[pScreen->myNum]->mid;
     return (1);
 }
 
-#ifdef	STATIC_COLOR
+
+void
+cfbInstallColormap(pmap)
+    ColormapPtr	pmap;
+{
+    int index = pmap->pScreen->myNum;
+    ColormapPtr oldpmap = InstalledMaps[index];
+
+    if(pmap != oldpmap)
+    {
+	/* Uninstall pInstalledMap. No hardware changes required, just
+	 * notify all interested parties. */
+	if(oldpmap != (ColormapPtr)None)
+	    WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
+	/* Install pmap */
+	InstalledMaps[index] = pmap;
+	WalkTree(pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
+
+    }
+}
+
+void
+cfbUninstallColormap(pmap)
+    ColormapPtr	pmap;
+{
+    int index = pmap->pScreen->myNum;
+    ColormapPtr curpmap = InstalledMaps[index];
+
+    if(pmap == curpmap)
+    {
+        /* Uninstall pmap */
+	WalkTree(pmap->pScreen, TellLostMap, (char *)&pmap->mid);
+	curpmap = (ColormapPtr) LookupID(pmap->pScreen->defColormap,
+					 RT_COLORMAP, RC_CORE);
+	/* Install default map */
+	InstalledMaps[index] = curpmap;
+	WalkTree(pmap->pScreen, TellGainedMap, (char *)&curpmap->mid);
+    }
+	
+}
+
 void
 cfbResolveStaticColor(pred, pgreen, pblue, pVisual)
     unsigned short	*pred, *pgreen, *pblue;
     VisualPtr		pVisual;
 {
-    /* XXX - this works for the StaticColor visual ONLY */
     *pred &= 0xe000;
     *pgreen &= 0xe000;
     *pblue &= 0xc000;
 }
-#endif
 
-ColormapPtr
-cfbGetStaticColormap(pVisual)
-    VisualPtr	pVisual;
-{
-    return (
-	    (ColormapPtr)
-		LookupID(screenInfo.screen[pVisual->screen].defColormap,
-			 RT_COLORMAP, RC_CORE)
-	    );
-}
+#endif
 
 void
 cfbInitialize332Colormap(pmap)
