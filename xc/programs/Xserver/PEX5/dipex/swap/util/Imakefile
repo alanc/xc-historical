@@ -22,4 +22,4 @@ Requests.ci:
 
 clean:
 	rm -f cOCTables.ci uOCTables.ci Requests.h Requests.ci
-	rm -f OCTables.temp OCReduce.temp
+	rm -f cOCTables.temp uOCTables.temp
