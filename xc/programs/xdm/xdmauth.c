@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.3 90/09/14 17:51:55 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.4 90/09/27 20:07:47 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -215,7 +215,7 @@ XdmGetKey (pdpy, displayID)
 	    continue;
 	Debug ("Key entry \"%s\" \"%s\"\n", id, key);
 	if (strlen (id) == displayID->length &&
-	    !strncmp (id, displayID->data, displayID->length))
+	    !strncmp (id, (char *)displayID->data, displayID->length))
 	{
 	    if (!strncmp (key, "0x", 2) || !strncmp (key, "0X", 2))
 		if (!HexToBinary (key))
