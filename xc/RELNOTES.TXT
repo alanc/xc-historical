@@ -11,11 +11,11 @@
 Copyright (C) 1994 X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software" deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is fur-
-nished to do so, subject to the following conditions:
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -309,7 +309,23 @@ For each tar file contrib-*.tar.Z, execute this:
 
      zcat ftp-dir/contrib-N.tar.Z | tar xpf -
 
-3.1.2.  Unpacking a Split Compressed FTP Distribution
+3.1.2.  Unpacking a gzipped FTP Distribution
+
+If you have obtained gzipped tar files over the network, create a directory
+to hold the sources and cd into it:
+
+     mkdir sourcedir
+     cd sourcedir
+
+Then for each tar file xc-*.tar.gz, execute this:
+
+     gunzip -c ftp-dir/xc-N.tar.gz | tar xpf -
+
+For each tar file contrib-*.tar.gz, execute this:
+
+     gunzip -c ftp-dir/contrib-N.tar.gz | tar xpf -
+
+3.1.3.  Unpacking a Split Compressed FTP Distribution
 
 If you have obtained compressed and split tar files over the network, create
 a directory to hold the sources:
@@ -326,7 +342,7 @@ For each directory contrib-*, execute this:
      cd ftp-dir/contrib-N
      cat contrib-N.?? | uncompress | (cd sourcedir; tar xpf -)
 
-3.1.3.  Unpacking the Tape Distribution
+3.1.4.  Unpacking the Tape Distribution
 
 If you have obtained a tape, create a directory to hold the sources and
 untar everything into that directory:
@@ -335,7 +351,7 @@ untar everything into that directory:
      cd sourcedir
      tar xpf tape-device
 
-3.1.4.  Using the CD-ROM
+3.1.5.  Using the CD-ROM
 
 If you have obtained a CD-ROM, you don't have to do anything to unpack it.
 However, you will have to create a symbolic link tree to build X.  See the
@@ -434,7 +450,6 @@ InstallServerSetUID
      Some systems require the X server to run as root to access the devices
      it needs.  If you are on such a system and will not be using xdm, you
      can set this variable to YES to install the X server setuid to root.
-
      Note that the X server has not been analyzed by the X Consortium for
      security in such an installation; talk to your system manager before
      setting this variable.
@@ -511,6 +526,7 @@ Thus to build the server, you will have to compile these files by hand with
 the -g flag:
 
      % cd xc/programs/Xserver/cfb16
+
      % make CDEBUGFLAGS="-g" cfbgetsp.o cfbfillsp.o
      % cd ../cfb
      % make CDEBUGFLAGS="-g" cfbgetsp.o
@@ -601,9 +617,10 @@ trator add them.  This is commonly done by running the MAKEDEV script in the
 3.10.  Starting Servers at System Boot
 
 The xfs and xdm programs are designed to be run automatically at system
-startup.  Please read the manual pages for details on setting up configura-
-tion files; reasonable sample files are in xc/programs/xdm/config/ and
-xc/programs/xfs/.
+startup.  Please read the manual pages for details on setting up
+
+configuration files; reasonable sample files are in xc/programs/xdm/config/
+and xc/programs/xfs/.
 
 If your system uses an /etc/rc file at boot time, you can usually enable
 these programs by placing the following at or near the end of the file:
@@ -652,6 +669,7 @@ keypad to generate R5 style keysyms using the following xmodmap commands:
      keysym KP_Up = Up
      keysym KP_Prior = F29
      keysym KP_Left = Left
+
      keycode 100 = F31
      keysym KP_Right = Right
      keysym KP_End = F33
@@ -671,9 +689,8 @@ do.  Thus the procedure here is only an overview of the types of commands
 that might be necessary to rebuild X after changing it.
 
 If you are building from CD-ROM, apply the patches to the symbolic link
-tree.  The links to changed files will be replaced with a local file
-
-containing the new contents.
+tree.  The links to changed files will be replaced with a local file con-
+taining the new contents.
 
 If only source files are changed, you should be able to rebuild just by
 going to the xc directory in your build tree and typing:
@@ -746,6 +763,7 @@ described in its own section below.
 4.2.  XIE (X Image Extension)
 
 The sample implementation in Release 6 is a complete implementation of full
+
 XIE 5.0 protocol, except for the following techniques that are excluded from
 the SI:
 
@@ -767,7 +785,6 @@ Huffman DCT encoding as defined by ISO/IEC DIS 10918-1, "Digital Compression
 and Coding of Continuous-tone Still Images, Part 1: Requirements and guide-
 lines", and was chosen as a basis for our implementation of JPEG compression
 and decompression primarily because the IJG's design goals matched ours for
-
 the implementation of the XIE SI: achieve portability and flexibility with-
 out sacrificing performance.  Less than half of the files distributed by the
 IJG have been incorporated into the XIE SI.  The IJG's software is made
@@ -816,7 +833,6 @@ provide services to other clients.  Version 2.0 also specifies that window
 managers should hold a manager selection.  At present, the only service
 defined for window managers is to report the ICCCM version number to which
 the window manager complies.  Now that this facility is in place, additional
-
 services can be added in the future.
 
 4.3.3.  Resource Sharing
@@ -842,11 +858,12 @@ properties for session management have been defined.
 
 4.4.  ICE (Inter-Client Exchange)
 
-ICE provides a common framework to build protocols on.  It supplies authen-
-tication, byte order negotiation, version negotiation, and error reporting
-conventions.  It supports multiplexing multiple protocols over a single
-transport connection.  ICElib provides a common interface to these mecha-
-nisms so that protocol implementors need not reinvent them.
+ICE provides a common framework to build protocols on.  It supplies
+
+authentication, byte order negotiation, version negotiation, and error
+reporting conventions.  It supports multiplexing multiple protocols over a
+single transport connection.  ICElib provides a common interface to these
+mechanisms so that protocol implementors need not reinvent them.
 
 An iceauth program was written to manipulate an ICE authority file; it is
 very similar to the xauth program.
@@ -863,7 +880,6 @@ A simple session manager, xsm is included in xc/workInProgress/xsm.
 A new protocol, rstart, greatly simplifies the task of starting applications
 on remote machines.  It is built upon already existing remote execution pro-
 tocols such as rsh.  The most important feature that it adds is the ability
-
 to pass environment variables and authentication data to the applications
 being started.
 
@@ -1246,6 +1262,7 @@ because of these changes.
 
 The name AsciiText is now a misnomer, but has been retained for backward
 compatibility.  A new resource, XtNinternational, has been added.  If the
+
 value of the XtNinternational resource is False (the default) AsciiSrc and
 AsciiSink source and sink widgets are created, and the widget behaves as it
 did for R5.  If the value is True, MultiSrc and MultiSink source and sink
@@ -1263,7 +1280,6 @@ removed from the implementation.  See the Xaw manual for details.
 4.19.2.  Command, Label, List, MenuButton, Repeater, SmeBSB, and Toggle
 
 Two new resources have been added, XtNinternational and XtNfontSet.  If
-
 XtNinternational is set to True the widget displays its text using the spec-
 ified fontset.  See the Xaw manual for details.
 
@@ -1296,12 +1312,13 @@ The API now provided with the PEX-SI is called PEXlib.  This is a change
 from R5 which shipped an API based upon the ISO IS PHIGS and PHIGS PLUS
 Bindings.  That API has been moved to contrib in favor of the PEXlib API
 based upon the PEXlib 5.1 binding, which itself is an X Consortium standard.
-The PEXlib binding is a lower-level interface than the previous PHIGS bind-
-ing was and maps more closely to the PEX protocol itself.  It supports imme-
-diate mode rendering functionality as well as the previous PHIGS workstation
-modes and is therefore suited to a wider range of applications.  It is also
-suited for the development of higher level APIs.  There are in fact commer-
-cial implementations of the PHIGS API which utilize the PEXlib API.
+The PEXlib binding is a lower-level interface than the previous PHIGS
+
+binding was and maps more closely to the PEX protocol itself.  It supports
+immediate mode rendering functionality as well as the previous PHIGS work-
+station modes and is therefore suited to a wider range of applications.  It
+is also suited for the development of higher level APIs.  There are in fact
+commercial implementations of the PHIGS API which utilize the PEXlib API.
 
 The PHIGS API based verification tool called InsPEX is moved to contrib.  A
 prototype of a possible new tool called suspex is in the directory con-
@@ -1348,6 +1365,7 @@ in Chapter 6, all of Chapter 7); new Escape requests to allow vendors to
 support optional functionality; a Match Rendering Targets request to return
 information about visuals, depth and drawables the server can support; a
 noop Output command; Hierarchical HLHSR control (i.e., during traversals);
+
 and renderer clearing controls are the most important features.
 
 4.21.  Header Files
@@ -1395,6 +1413,7 @@ fonts.alias files.
 A sample font authorization protocol, "hp-hostname-1" has been added.  It is
 based on host names and is non-authenticating.  The client requesting a font
 from a font server provides (or passes through from its client) the host
+
 name of the ultimate client of the font.  There is no check that this host
 name is accurate, as this is a sample protocol only.
 
@@ -1445,6 +1464,7 @@ xc/programs/Xserver/Xext/sync.c.  As part of this work, client priorities
 have also been implemented; see the tail end of WaitForSomething() in Wait-
 For.c.  The priority scheme is strict in that the client(s) with the highest
 priority always runs.  twm has been modified to provide simple facilities
+
 for setting client priorities.
 
 The server can now fetch font glyphs on demand instead of loading them all
@@ -1461,10 +1481,9 @@ os/WaitFor.c.  This interface is used by XKB, but we haven't tried to use it
 anywhere else (such as Xext/sleepuntil.c) yet.
 
 Redundant code for GC funcs was moved from cfbgc.c and mfbgc.c to migc.c.
-This file also contains a few utility functions such as
-
-miComputeCompositeClip, which replaces the chunk of code that used to appear
-near the top of most versions of ValidateGC.
+This file also contains a few utility functions such as miComputeComposite-
+Clip, which replaces the chunk of code that used to appear near the top of
+most versions of ValidateGC.
 
 The cfb code can now be compiled multiple times to provide support for mul-
 tiple depths in the same server, e.g., 8, 12, and 24.  See Imakefile and
@@ -1514,7 +1533,6 @@ ties that had previously been duplicated in a number of places.
 4.25.1.  Xnest
 
 A new server, Xnest, uses Xlib to implement ddx rendering.  See
-
 xc/programs/Xserver/hw/xnest.  Xnest lets you run an X server in a window on
 another X server.  Uses include testing dix and extensions, debugging client
 protocol errors, debugging grabs, and testing interactive programs in a
@@ -1560,7 +1578,6 @@ xc/config/util/mkshadow/, a replacement for lndir.
 
 We have dropped support for the following libraries and programs and have
 moved them to contrib: CLX library, PHIGS library, MacFS, auto_box,
-
 beach_ball, gpc, ico, listres, maze, puzzle, showfont, viewres, xbiff,
 xcalc, xditview, xedit, xev, xeyes, xfontsel, xgas, xgc, xload, xman, and
 xpr.
@@ -1704,7 +1721,6 @@ guage.
 Fresco has been built with the following platforms and C++ compilers:
 
      SPARCstation     SunOS 4.1.3  CenterLine C++
-
      SPARCstation     Solaris 2.3  CenterLine C++ (requires v2.0.6)
      SPARCstation     Solaris 2.3  SPARCCompiler C++ v4.0
      HP 9000/700      HPUX 9.0.1   CenterLine C++
@@ -1739,6 +1755,7 @@ the X server by default only on Sun and Omron Luna machines.  You can com-
 pile it in by setting
 
      #define BuildXKB YES          /* for support in the X server */
+
      #define BuildXKBLib YES       /* for support in the X library */
 
 in the file xc/config/cf/site.def.  Note that enabling XKB in the X server
@@ -1840,6 +1857,7 @@ A simple session manager has been developed to test the new Session Manage-
 ment protocol.  At the moment, it does not exercise the complete XSMP proto-
 col and the user interface is rather simple.  While it does have enough
 functionality to make it useful, it needs more work before we would want
+
 people to depend on it or use it as a good example of how to implement the
 session protocol.
 
@@ -1954,19 +1972,21 @@ bill.
 Many companies and individuals have cooperated and worked extremely hard to
 make this release a reality, and our thanks go out to them.  You will find
 many of them listed in the acknowledgements in the individual specifica-
-tions.  Major implementation contributions come from Digital, Fujitsu, HP,
-NCD, NCR, Omron, SGI, Sony, and SunSoft.
+tions.  Major implementation contributions come from Data General, Digital,
+Fujitsu, HP, NCD, NCR, Omron, SGI, Sony, SunSoft, and XFree86.
 
 Contributions were received from the follow people at various X Consortium
 member companies.  Each X Window System release is the work of many, many
 people, and this list is surely incomplete.
 
 Fresco
-     Mark Linton; Steven C. Bilow; Chuck Price (SunSoft); Steve Churchill;
-     Steve Tang; Douglas Pan
+     Mark Linton (Silicon Graphics); Chuck Price (SunSoft); Steve Churchill
+     (Fujitsu); Steve Tang (Stanford University); Douglas Pan (Fujitsu);
+     Jean-Daniel Fekete (2001 S.A.)
 
 Xlib
-     Courtney Loomis (Hewlett-Packard Company); Daniel Dardailler
+     Courtney Loomis (Hewlett-Packard Company); Daniel Dardailler (Open
+     Software Foundation)
 
 Xlib internationalization
      The manager of the internationalization project is Masahiko Narita
@@ -1983,6 +2003,7 @@ Xlib internationalization
      Wakao (IBM), Shigeru Yamada (Fujitsu OSSI) and Katsuhisa Yano
      (Toshiba).  The coordinators of the integration, testing, and release
      of this implementation are Nobuyuki Tanaka (Sony) and Makoto Wakamatsu
+
      (Sony).  Others who have contributed on the architectural design or the
      testing of sample implementation are Hector Chan (Digital), Michael
      Kung (IBM), Joseph Kwok (Digital), Hiroyuki Machida (Sony), Nelson Ng
@@ -1993,98 +2014,133 @@ Xlib internationalization
 Xt Intrinsics
      Douglas Rand (Open Software Foundation), parameterized selections; Paul
      Asente (Adobe Systems Incorporated), extension event handling; Ajay
-     Vohra, support for multithreading; Sam Chang (Novell), widget caching
-     research; Larry Cable (SunSoft), object allocation and change managed
-     set; Vania Joloboff; Courtney Loomis (Hewlett-Packard Company); and
-     Daniel Dardailler.  The following people at Georgia Tech contributed
-
-     the extensions for disability access: Keith Edwards, Susan Liebeskind,
-     Beth Mynatt, and Tom Rodriguez.
+     Vohra (SunSoft), support for multithreading; Sam Chang (Novell), widget
+     caching research; Larry Cable (SunSoft), object allocation and change
+     managed set; Vania Joloboff (Open Software Foundation); Courtney Loomis
+     (Hewlett-Packard Company); Daniel Dardailler (Open Software Founda-
+     tion); and Ellis Cohen (Open Software Foundation).  The following peo-
+     ple at Georgia Tech contributed the extensions for disability access:
+     Keith Edwards, Susan Liebeskind, Beth Mynatt, and Tom Rodriguez.
 
 Athena Widget Set
      Frank Sheeran (Omron Data General)
 
 X Logical Font Description
-     Paul Asente (Adobe Systems Incorporated), extensions design; Nathan
-     Meyers (Hewlett-Packard Company), implementation of Matrix enhancement,
-     glyph caching, scalable aliases, sample authorization protocol; Perry
-     A. Caro (Adobe Systems Incorporated)
+     Paul Asente (Adobe Systems Incorporated); Nathan Meyers (Hewlett-
+     Packard Company); Jim Graham (Sun); Perry A. Caro (Adobe Systems Incor-
+     porated)
 
 Font Support Enhancments
-     Nathan Meyers (Hewlett-Packard Company)
+     Nathan Meyers (Hewlett-Packard Company), implementation of matrix
+     enhancement, glyph caching, scalable aliases, sample authorization pro-
+     tocol
 
 X Transport Library
      Stuart R. Anderson (AT&T Global Information Solutions)
 
-X Keyboard Extention
-     Erik Fortune, design and sample implementation; Jordan Brown; Will
-     Walker (Digital Equipment Corporation), AccessX portion; Mark Novak
-     (Trace Center), AccessX portion
+X Keyboard Extension
+     Erik Fortune (Silicon Graphics), design and sample implementation; Jor-
+     dan Brown (Quarterdeck Office Systems); Will Walker (Digital Equipment
+     Corporation), AccessX portion; Mark Novak (Trace Center), AccessX por-
+     tion
 
 Low-Bandwidth X
-     Chris Kantarjiev, design; Jim Fulton (Network Computing Devices); Dave
-     Lemke (Network Computing Devices); Dale Tonogai (Network Computing
-     Devices); Keith Packard (Network Computing Devices)
+     Jim Fulton (Network Computing Devices); Dave Lemke (Network Computing
+     Devices); Dale Tonogai (Network Computing Devices); Keith Packard (Net-
+     work Computing Devices); Chris Kantarjiev (Xerox PARC)
 
 X Image Extension
-     Bob Shelley; Larry Hare; Dean Verheiden; Syd Logan; Gary Rogers; Ben
-     Fahy
+     Bob Shelley (AGE Logic), protocol architect, lead implementation archi-
+     tect; Larry Hare (AGE Logic), server implementation; Dean Verheiden
+     (AGE Logic), server implementation; Syd Logan (AGE Logic), xieperf;
+     Gary Rogers (AGE Logic), JPEG code, XIElib documentation; Ben Fahy (AGE
+     Logic), client and server implementation
 
 ICCCM
-     Stuart Marks; Larry Cable (SunSoft); Jordan Brown; Vania Joloboff;
-     Andrew deBlois
+     Stuart Marks (SunSoft); Gabe Beged-Dov (Hewlett-Packard Company); Chan
+
+     Benson (Hewlett-Packard Company); Jordan Brown (Quarterdeck Office Sys-
+     tems); Larry Cable (SunSoft); Ellis Cohen (Open Software Foundation);
+     Brian Cripe (Hewlett-Packard Company); Susan Dahlberg (Silicon Graph-
+     ics); Peter Daifuku (Silicon Graphics); Andrew deBlois (Open Software
+     Foundation); Clive Feather (IXI); Christian Jacobi (Xerox PARC); Bill
+     Janssen (Xerox PARC); Vania Joloboff (Open Software Foundation); Phil
+     Karlton (Silicon Graphics); Mark Manasse (Digital Equipment Corpora-
+     tion); Todd Newman (Silicon Graphics); Keith Taylor (Hewlett-Packard
+     Company); Jim VanGilder (Digital Equipment Corporation); Mike Wexler
+     (Kubota Pacific); Michael Yee (Apple Computer)
 
 ICE
-     Jordan Brown; Vania Joloboff
+     Jordan Brown (Quarterdeck Office Systems); Vania Joloboff (Open Soft-
+     ware Foundation); Stuart Marks (SunSoft)
 
 XSMP
-     Jordan Brown; Vania Joloboff; Mike Wexler
+     Mike Wexler (Kubota Pacific); Jordan Brown (Quarterdeck Office Sys-
+     tems); Ellis Cohen (Open Software Foundation); Vania Joloboff (Open
+     Software Foundation); Stuart Marks (SunSoft)
 
 SYNC Extension
-     Tim Glauert (Olivetti Research Limited); Dave Carver; Jim Gettys; Pete
-     Snider (Digital Equipment Corporation)
+     Tim Glauert (Olivetti Research Limited); Dave Carver (Digital Equipment
+     Corporation); Jim Gettys (Digital Equipment Corporation); Pete Snider
+     (Digital Equipment Corporation)
 
 RECORD
-     Yochanan Slonim (Mercury Interactive Corp.); Martha Zimet; Ken Miller
+     Martha Zimet (Network Computing Devices); Robert Chesler (Absol-puter);
+     Kieron Drake (UniSoft); Marc Evans (Synergytics); Jim Fulton (Network
+     Computing Devices); Ken Miller (Digital Equipment Corporation)
 
 X Input Extension tests
      George Sachs (Hewlett-Packard Company)
 
-PEX  Jeff Stevenson (Hewlett-Packard Company)
+PEX  Ken Garnett (Shographics); Cheryl Huntington (Sun Microsystems); Karl
+     Schultz (IBM); Jeff Stevenson (Hewlett-Packard Company); Paula Womack
+     (Digital Equipment Corporation)
 
 Multi-Buffering Extension
-     John Marks (Hewlett-Packard Company); Ian Elliott (Hewlett-Packard Com-
-     pany)
+     Eng-Shien Wu (IBM); John Marks (Hewlett-Packard Company); Ian Elliott
+     (Hewlett-Packard Company)
 
 X server
-     Milind Pansare (SunSoft); Peter Daifuku (SGI); David Lister (Adobe Sys-
-     tems Incorporated); Ken Whaley (Kubota Pacific); Joel McCormack (Digi-
-     tal Equipment Corporation); Rob Lembree (Digital Equipment Corpora-
-     tion); Davor Matic (MIT); Nathan Meyers (Hewlett-Packard Company); Jor-
-     dan Brown
+     Milind Pansare (SunSoft), pixmap privates; Peter Daifuku (SGI), layered
+     window support; David Lister (Adobe Systems Incorporated), callback
+     manager; Ken Whaley (Kubota Pacific), thin line pixelization; Joel
+     McCormack (Digital Equipment Corporation), 64-bit mfb and cfb; Rob Lem-
+     bree (Digital Equipment Corporation), 64-bit mfb and cfb; Davor Matic
+     (MIT), xnest ddx; Nathan Meyers (Hewlett-Packard Company), font sup-
+     port; Jordan Brown (Quarterdeck Office Systems), -config option;
+     Michael Brenner (Apple Computer), macII ddx; Thomas Roell, svga ddx
 
 Multi-Threaded X Server
-     H. Chiba (Omron); Akeio Harada (Omron); Mike Haynes (Data General);
-     Hidenobu Kanaoka (Omron); Paul Layne (Data General); Takayuki Miyake
-     (Omron); Keith Packard (Network Computing Devices); Richard Potts (Data
-     General); John A. Smith (while at Data General); Sid Manning (IBM); Rob
-     Chesler
+     John A. Smith (while at Data General), team leader; H. Chiba (Omron),
+     ddx; Akeio Harada (Omron), ddx; Mike Haynes (Data General), dix;
+
+     Hidenobu Kanaoka (Omron), ddx; Paul Layne (Data General), dix and ddx;
+     Takayuki Miyake (Omron), ddx; Keith Packard (Network Computing
+     Devices), design; Richard Potts (Data General), dix; Sid Manning (IBM),
+     integration with core server; Rob Chesler (Absol-puter), integration
+     with core server
 
 xdm modular loadable greeter
      Peter Derr (Digital Equipment Corporation)
 
 x11perf
-     Joel McCormack
+     Joel McCormack (Digital Equipment Corporation); Graeme Gill (Labtam
+     Australia); Mark Martin (CETIA)
 
-Motorola port
-     Patrick E. Kane
+config
+     Stuart R. Anderson (AT&T Global Information Solutions); David Brooks
+     (Open Software Foundation); Kendall Collett (Motorola); John Freeman
+     (Cray); John Freitas (Digital Equipment Corporation); Patrick E. Kane
+     (Motorola); Mark Kilgard (Silicon Graphics); Akira Kon (NEC); Masahiko
+     Narita (Fujitsu); Paul Shearer (Sequent); Mark Snitily (SGCS)
 
 XFree86 port
-     Stuart R. Anderson (AT&T Global Information Solutions), and the
-     XFree86, Inc. team.
-
-macII ddx
-     Michael Brenner
+     Stuart R. Anderson (AT&T Global Information Solutions); Doug Anson;
+     Gertjan Akkerman; Mike Bernson; David Dawes; Marc Evans; Pascal Haible;
+     Matthieu Herrb; Dirk Hohndel; David Holland; Alan Hourihane; Jeffrey
+     Hsu; Glenn Lai; Ted Lemon; Rich Murphey; Hans Nasten; Mark Snitily;
+     Randy Terbush; Jon Tombs; Kees Verstoep; Paul Vixie; Mark Weaver; David
+     Wexelblat; Philip Wheatley; Thomas Wolfram; Orest Zborowski
 
 fonts
      Under xc/fonts/, the misc/ directory contains a family of fixed-width
