@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSink.c,v 1.1 94/01/31 09:50:35 kaleb Exp $ */
+/* $XConsortium: MultiSink.c,v 1.2 94/03/08 12:18:43 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -154,9 +154,9 @@ CharWidth (w, x, c)
     XFontSet fontset = sink->multi_sink.fontset;
     Position *tab;
 
-    if ( c == _Xawatowc(XawLF) ) return(0);
+    if ( c == _Xaw_atowc(XawLF) ) return(0);
 
-    if (c == _Xawatowc(XawTAB)) {
+    if (c == _Xaw_atowc(XawTAB)) {
 	/* Adjust for Left Margin. */
 	x -= ((TextWidget) XtParent(w))->text.margin.left;
 
@@ -175,9 +175,9 @@ CharWidth (w, x, c)
 
     if ( (nonPrinting = !iswprint(c)) )
 	if (sink->multi_sink.display_nonprinting)
-	    c += _Xawatowc('@');
+	    c += _Xaw_atowc('@');
 	else {
-	    c = _Xawatowc(XawSP);
+	    c = _Xaw_atowc(XawSP);
 	    nonPrinting = False;
 	}
 
@@ -195,7 +195,7 @@ CharWidth (w, x, c)
     width = XwcTextEscapement(fontset, &c, 1);
 
     if (nonPrinting)
-        width += CharWidth(w, x, _Xawatowc('^'));
+        width += CharWidth(w, x, _Xaw_atowc('^'));
 
     return width;
 }
@@ -281,10 +281,10 @@ DisplayText(w, x, y, pos1, pos2, highlight)
 		j = 0;
 	    }
 	    buf[j] = ((wchar_t *)blk.ptr)[k];
-	    if (buf[j] == _Xawatowc(XawLF))
+	    if (buf[j] == _Xaw_atowc(XawLF))
 	        continue;
 
-	    else if (buf[j] == _Xawatowc(XawTAB)) {
+	    else if (buf[j] == _Xaw_atowc(XawTAB)) {
 	        Position temp = 0;
 		Dimension width;
 
@@ -292,7 +292,7 @@ DisplayText(w, x, y, pos1, pos2, highlight)
 		  return;
 
 	        x += temp;
-                width = CharWidth(w, x, _Xawatowc(XawTAB));
+                width = CharWidth(w, x, _Xaw_atowc(XawTAB));
 		XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
 			       invgc, (int) x,
                                (int) y - abs(ext->max_logical_extent.y),
@@ -304,12 +304,12 @@ DisplayText(w, x, y, pos1, pos2, highlight)
             else if (!iswprint(buf[j])) {
                 if (sink->multi_sink.display_nonprinting) {
                     /* DP10646 control function: C PAD PAD PAD */
-                    buf[j + 1] = (buf[j] & 0x7F) + _Xawatowc('@');
-                    buf[j] = _Xawatowc('^');
+                    buf[j + 1] = (buf[j] & 0x7F) + _Xaw_atowc('@');
+                    buf[j] = _Xaw_atowc('^');
                     j++;
                 }
                 else
-                    buf[j] = _Xawatowc(' ');
+                    buf[j] = _Xaw_atowc(' ');
             }
 	    j++;
 	}
@@ -408,7 +408,7 @@ FindDistance (w, fromPos, fromx, toPos, resWidth, resPos, resHeight)
 	    XawTextSourceRead(source, index, &blk, (int) toPos - fromPos);
         c = ((wchar_t *)blk.ptr)[index - blk.firstPos];
 	*resWidth += CharWidth(w, fromx + *resWidth, c);
-	if (c == _Xawatowc(XawLF)) {
+	if (c == _Xaw_atowc(XawLF)) {
 	    index++;
 	    break;
 	}
@@ -453,13 +453,13 @@ FindPosition(w, fromPos, fromx, width, stopAtWordBreak, resPos, resWidth, resHei
         c = ((wchar_t *)blk.ptr)[index - blk.firstPos];
         *resWidth += CharWidth(w, fromx + *resWidth, c);
 
-        if ((c == _Xawatowc(XawSP) || c == _Xawatowc(XawTAB)) && 
+        if ((c == _Xaw_atowc(XawSP) || c == _Xaw_atowc(XawTAB)) && 
 	    *resWidth <= width) {
 	    whiteSpaceSeen = TRUE;
 	    whiteSpacePosition = index;
 	    whiteSpaceWidth = *resWidth;
 	}
-	if (c == _Xawatowc(XawLF)) {
+	if (c == _Xaw_atowc(XawLF)) {
 	    index++;
 	    break;
 	}
@@ -472,7 +472,7 @@ FindPosition(w, fromPos, fromx, width, stopAtWordBreak, resPos, resWidth, resHei
 	    *resWidth = whiteSpaceWidth;
 	}
     }
-    if (index == lastPos && c != _Xawatowc(XawLF)) index = lastPos + 1;
+    if (index == lastPos && c != _Xaw_atowc(XawLF)) index = lastPos + 1;
     *resPos = index;
     *resHeight = ext->max_logical_extent.height;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSrc.c,v 1.2 94/02/06 14:39:43 rws Exp $ */
+/* $XConsortium: MultiSrc.c,v 1.3 94/03/08 12:19:13 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -216,7 +216,7 @@ Initialize(request, new, args, num_args)
   LoadPieces(src, file, NULL);
 
   if (file != NULL) fclose(file);
-  src->text_src.text_format = _XawFMTWIDE;
+  src->text_src.text_format = XawFmtWide;
 
 }
 
@@ -240,7 +240,7 @@ ReadText(w, pos, text, length)
   XawTextPosition count, start;
   MultiPiece * piece = FindPiece(src, pos, &start);
     
-  text->format = _XawFMTWIDE;
+  text->format = XawFmtWide;
   text->firstPos = pos;
   text->ptr = (char *)(piece->text + (pos - start));
   count = piece->used - (pos - start);
@@ -279,7 +279,7 @@ ReplaceText( w, startPos, endPos, u_text_p)
   if ( u_text_p->length == 0 )	/* if so, the block contents never ref'd. */
       text.length = 0;
 
-  else if ( u_text_p->format == _XawFMTWIDE) {
+  else if ( u_text_p->format == XawFmtWide) {
       local_artificial_block = False;		/* ie, don't have to free it ourselves*/
       text.firstPos = u_text_p->firstPos;
       text.length =   u_text_p->length;
@@ -506,17 +506,17 @@ Scan( w, position, type, dir, count, include )
 	    non_space = TRUE;
 	}
 	else if (type == XawstEOL) {
-          if (c == _Xawatowc(XawLF)) break;
+          if (c == _Xaw_atowc(XawLF)) break;
 	}
 	else { /* XawstParagraph */
 	  if (first_eol) {
-            if (c == _Xawatowc(XawLF)) {
+            if (c == _Xaw_atowc(XawLF)) {
 	      first_eol_position = position;
 	      first_eol = FALSE;
 	    }
 	  }
 	  else
-            if ( c == _Xawatowc(XawLF))
+            if ( c == _Xaw_atowc(XawLF))
               break;
             else if ( !iswspace(c) )
 	      first_eol = TRUE;
@@ -608,7 +608,7 @@ Search(w, position, dir, text )
   /*if the block was FMT8BIT, length will convert to REAL wchar count below */
   wtarget_len = text->length;
 
-  if ( text->format == _XawFMTWIDE )
+  if ( text->format == XawFmtWide )
       wtarget = &( ((wchar_t*)text->ptr) [text->firstPos] );
   else
   {

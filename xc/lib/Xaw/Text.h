@@ -1,4 +1,4 @@
-/* $XConsortium: Text.h,v 1.42 94/01/31 10:55:05 kaleb Exp $ */
+/* $XConsortium: Text.h,v 1.43 94/03/08 12:19:18 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -135,7 +135,8 @@ typedef struct {
 #define XawPositionError	2
 
 extern unsigned long FMT8BIT;
-extern unsigned long _XawFMTWIDE;
+extern unsigned long XawFmt8Bit;
+extern unsigned long XawFmtWide;
 
 /* Class record constants */
 

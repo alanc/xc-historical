@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.47 94/01/31 10:55:06 kaleb Exp $ */
+/* $XConsortium: TextAction.c,v 1.48 94/03/08 12:19:20 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -216,7 +216,7 @@ and if it is we can only assume the sending client is using the same locale as
 we are, and convert it.  I also warn the user that the other client is evil. */
 
   StartAction( ctx, (XEvent*) NULL );
-  if (_XawTextFormat(ctx) == _XawFMTWIDE) {
+  if (_XawTextFormat(ctx) == XawFmtWide) {
       XTextProperty textprop;
       Display *d = XtDisplay((Widget)ctx);
       wchar_t **wlist;
@@ -260,9 +260,9 @@ we are, and convert it.  I also warn the user that the other client is evil. */
 
       *length = wcslen(wlist[0]);
       XtFree((XtPointer)wlist);
-      text.format = _XawFMTWIDE;
+      text.format = XawFmtWide;
   } else
-      text.format = FMT8BIT;
+      text.format = XawFmt8Bit;
   text.ptr = (char*)value;
   text.firstPos = 0;
   text.length = *length;
@@ -711,7 +711,7 @@ ConvertSelection(w, selection, target, type, value, length, format)
       *target == XA_TEXT(d) ||
       *target == XA_COMPOUND_TEXT(d)) {
 	if (*target == XA_TEXT(d)) {
-	    if (_XawTextFormat(ctx) == _XawFMTWIDE)
+	    if (_XawTextFormat(ctx) == XawFmtWide)
 		*type = XA_COMPOUND_TEXT(d);
 	    else
 		*type = XA_STRING;
@@ -727,7 +727,7 @@ ConvertSelection(w, selection, target, type, value, length, format)
 	 */
 	if (!salt) {
 	    *value = (char *)_XawTextGetSTRING(ctx, s->left, s->right);
-	    if (_XawTextFormat(ctx) == _XawFMTWIDE) {
+	    if (_XawTextFormat(ctx) == XawFmtWide) {
 		XTextProperty textprop;
 		if (XwcTextListToTextProperty(d, (wchar_t**)value, 1,
 					      XCompoundTextStyle, &textprop)
@@ -746,7 +746,7 @@ ConvertSelection(w, selection, target, type, value, length, format)
 	    strcpy (*value, salt->contents);
 	    *length = salt->length;
 	}
-	if (_XawTextFormat(ctx) == _XawFMTWIDE && *type == XA_STRING) {
+	if (_XawTextFormat(ctx) == XawFmtWide && *type == XA_STRING) {
 	    XTextProperty textprop;
 	    wchar_t** wlist;
 	    int count;
@@ -903,7 +903,7 @@ Boolean	kill;
     salt->s.left = from;
     salt->s.right = to;
     salt->contents = (char *)_XawTextGetSTRING(ctx, from, to);
-    if (_XawTextFormat(ctx) == _XawFMTWIDE) {
+    if (_XawTextFormat(ctx) == XawFmtWide) {
 	XTextProperty textprop;
 	if (XwcTextListToTextProperty(XtDisplay((Widget)ctx),
 			(wchar_t**)(&(salt->contents)), 1, XCompoundTextStyle,
@@ -1133,12 +1133,12 @@ TextWidget ctx;
   text.length = ctx->text.mult;
   text.firstPos = 0;
 
-  if ( text.format == _XawFMTWIDE ) {
+  if ( text.format == XawFmtWide ) {
       wchar_t* wptr;
       text.ptr =  XtMalloc(sizeof(wchar_t) * ctx->text.mult);
       wptr = (wchar_t *)text.ptr;
       for (count = 0; count < ctx->text.mult; count++ )
-          wptr[count] = _Xawatowc(XawLF);
+          wptr[count] = _Xaw_atowc(XawLF);
   }
   else {
       text.ptr = XtMalloc(sizeof(char) * ctx->text.mult);
@@ -1220,16 +1220,16 @@ Cardinal *n;
   text.format = _XawTextFormat(ctx);
   text.firstPos = 0;
 
-  if ( text.format == _XawFMTWIDE ) {
+  if ( text.format == XawFmtWide ) {
      wchar_t* ptr;
      text.ptr = XtMalloc( ( 1 + wcslen((wchar_t*)line_to_ip) ) * sizeof(wchar_t) );
 
      ptr = (wchar_t*)text.ptr;
-     ptr[0] = _Xawatowc( XawLF );
+     ptr[0] = _Xaw_atowc( XawLF );
      wcscpy( (wchar_t*) ++ptr, (wchar_t*) line_to_ip );
 
      length = wcslen((wchar_t*)text.ptr);
-     while ( length && ( iswspace(*ptr) || ( *ptr == _Xawatowc(XawTAB) ) ) )
+     while ( length && ( iswspace(*ptr) || ( *ptr == _Xaw_atowc(XawTAB) ) ) )
          ptr++, length--;
      *ptr = (wchar_t)NULL;
      text.length = wcslen((wchar_t*)text.ptr);
@@ -1527,11 +1527,11 @@ TextWidget ctx;
   if ( ret_pos >= ctx->text.insertPos )
     return;
   
-  text.format = FMT8BIT;
-  if (_XawTextFormat(ctx) == _XawFMTWIDE) {
-    text.format = _XawFMTWIDE;
+  text.format = XawFmt8Bit;
+  if (_XawTextFormat(ctx) == XawFmtWide) {
+    text.format = XawFmtWide;
     text.ptr =  (char *)XtMalloc(sizeof(wchar_t) * 2);
-    ((wchar_t*)text.ptr)[0] = _Xawatowc(XawLF);
+    ((wchar_t*)text.ptr)[0] = _Xaw_atowc(XawLF);
     ((wchar_t*)text.ptr)[1] = 0;
   } else
     text.ptr = "\n";
@@ -1566,14 +1566,14 @@ Cardinal* n;
       return;
 
   text.format = _XawTextFormat( ctx );
-  if ( text.format == _XawFMTWIDE ) {
+  if ( text.format == XawFmtWide ) {
       text.ptr = ptr = XtMalloc(sizeof(wchar_t) * text.length * ctx->text.mult );
       for (count = 0; count < ctx->text.mult; count++ ) {
           memcpy((char*) ptr, (char *)strbuf, sizeof(wchar_t) * text.length );
           ptr += sizeof(wchar_t) * text.length;
       }
 
-  } else { /* == FMT8BIT */
+  } else { /* == XawFmt8Bit */
       text.ptr = ptr = XtMalloc( sizeof(char) * text.length * ctx->text.mult );
       for ( count = 0; count < ctx->text.mult; count++ ) {
           strncpy( ptr, strbuf, text.length );
@@ -1718,7 +1718,7 @@ Cardinal* num_params;
 
       if ( text.length == 0 ) continue;
 
-      if ( _XawTextFormat( ctx ) == _XawFMTWIDE ) { /* convert to WC */
+      if ( _XawTextFormat( ctx ) == XawFmtWide ) { /* convert to WC */
 
           int temp_len;
           text.ptr = (char*) _XawTextMBToWC( XtDisplay(w), text.ptr,
@@ -1872,11 +1872,11 @@ XawTextPosition from, to;
 
   text.firstPos = 0;
   text.format = _XawTextFormat(ctx);
-  if ( text.format == FMT8BIT )
+  if ( text.format == XawFmt8Bit )
       text.ptr= "  ";
   else {
-      wc_two_spaces[0] = _Xawatowc(XawSP);
-      wc_two_spaces[1] = _Xawatowc(XawSP);
+      wc_two_spaces[0] = _Xaw_atowc(XawSP);
+      wc_two_spaces[1] = _Xaw_atowc(XawSP);
       wc_two_spaces[2] = 0;
       text.ptr = (char*) wc_two_spaces;
   }
@@ -1913,8 +1913,8 @@ XawTextPosition from, to;
 
       text.length = 1;
       buf = _XawTextGetText(ctx, periodPos, next_word);
-      if (text.format == _XawFMTWIDE) {
-        if ( (periodPos < endPos) && (((wchar_t*)buf)[0] == _Xawatowc('.')))
+      if (text.format == XawFmtWide) {
+        if ( (periodPos < endPos) && (((wchar_t*)buf)[0] == _Xaw_atowc('.')))
           text.length++;
       } else
         if ( (periodPos < endPos) && (buf[0] == '.') )
@@ -1925,7 +1925,7 @@ XawTextPosition from, to;
        */
 
       for (i = 1 ; i < len; i++) 
-        if (text.format ==  _XawFMTWIDE) {
+        if (text.format ==  XawFmtWide) {
           if ( !iswspace(((wchar_t*)buf)[i]) || ((periodPos + i) >= to) ) {
              break;
           }
@@ -1966,10 +1966,10 @@ XawTextPosition from, to;
   text.length = 1;
   text.format = _XawTextFormat( ctx );
 
-  if ( text.format == FMT8BIT )
+  if ( text.format == XawFmt8Bit )
       text.ptr = "\n";
   else {
-      wide_CR[0] = _Xawatowc(XawLF);
+      wide_CR[0] = _Xaw_atowc(XawLF);
       wide_CR[1] = 0;
       text.ptr = (char*) wide_CR;
   }
@@ -1994,7 +1994,7 @@ XawTextPosition from, to;
       len = (int) (space - eol);
       buf = _XawTextGetText(ctx, eol, space);
       for ( i = 0 ; i < len ; i++)
-      if (text.format == _XawFMTWIDE) {
+      if (text.format == XawFmtWide) {
           if (!iswspace(((wchar_t*)buf)[i]))
               break;
       } else
@@ -2114,7 +2114,7 @@ Cardinal* num_params;
 
   /* Retrieve text and swap the characters. */
     
-  if ( text.format == _XawFMTWIDE) {
+  if ( text.format == XawFmtWide) {
       wchar_t wc;
       wchar_t* wbuf;
 
@@ -2126,7 +2126,7 @@ Cardinal* num_params;
       wbuf[ i-1 ] = wc;
       buf = (char*) wbuf; /* so that it gets assigned and freed */
 
-  } else { /* thus text.format == FMT8BIT */
+  } else { /* thus text.format == XawFmt8Bit */
       char c;
       buf = _XawTextGetText( ctx, start, end );
       text.length = strlen( buf );

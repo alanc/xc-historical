@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.62 94/01/31 10:48:02 kaleb Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.63 94/02/06 11:07:35 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -208,7 +208,7 @@ Cardinal *num_args;
  * Set correct flags (override resources) depending upon widget class.
  */
 
-  src->text_src.text_format = FMT8BIT;	/* data format. */
+  src->text_src.text_format = XawFmt8Bit;	/* data format. */
 
 #ifdef ASCII_DISK
   if (XtIsSubclass(XtParent(new), asciiDiskWidgetClass)) {

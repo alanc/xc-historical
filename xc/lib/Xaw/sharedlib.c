@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.3 94/01/31 10:50:40 kaleb Exp $
+ * $XConsortium: sharedlib.c,v 1.4 94/03/08 12:19:29 kaleb Exp $
  * 
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -137,7 +137,8 @@ extern TextClassRec textClassRec;
 WidgetClass textWidgetClass = (WidgetClass)&textClassRec;
 
 unsigned long FMT8BIT = 0L;
-unsigned long _XawFMTWIDE = 0L;
+unsigned long XawFmt8Bit = 0L;
+unsigned long XawFmtWide = 0L;
 
 extern TextSinkClassRec textSinkClassRec;
 WidgetClass textSinkObjectClass = (WidgetClass)&textSinkClassRec;

@@ -1,4 +1,4 @@
-/* $XConsortium: XawIm.c,v 1.1 94/01/31 09:57:00 kaleb Exp $ */
+/* $XConsortium: XawIm.c,v 1.2 94/03/09 09:23:25 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -419,26 +419,32 @@ static void OpenIM(ve)
     if (ve->im.open_im == False) return;
     ve->im.xim = NULL;
     if (!strcmp(setlocale(LC_ALL, NULL), "C")) return;
-    if (ve->im.im_list_num <= 0) XSetLocaleModifiers("@im=None");
-    for (i = 0; i < ve->im.im_list_num; i++) {
-	strcpy(modifiers, "@im=");
-	strcat(modifiers, ve->im.im_list[i]);
-	XSetLocaleModifiers(modifiers);
-	if (xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL))
-	    break;
+    if (ve->im.im_list_num <= 0) {
+	if ((p = XSetLocaleModifiers("@im=none")) != NULL && *p)
+	    xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL);
+    } else {
+	for (i = 0; i < ve->im.im_list_num; i++) {
+	    strcpy(modifiers, "@im=");
+	    strcat(modifiers, ve->im.im_list[i]);
+	    if ((p = XSetLocaleModifiers(modifiers)) != NULL && *p &&
+		(xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL)) != NULL)
+		break;
+	}
     }
-    if (!xim) {
-	if ((p = XSetLocaleModifiers("")) && *p) {
+    if (xim == NULL) {
+	if ((p = XSetLocaleModifiers("")) != NULL && *p) {
 	    xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL);
 	}
     }
-    if (!xim) {
-	XtWarning("we can not open any input method");
+    if (xim == NULL) {
+	XtAppWarning(XtWidgetToApplicationContext(ve->parent),
+	    "we can not open any input method");
 	return;
     }
     if (XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL)
 	|| !xim_styles) {
-	XtWarning("input method doesn't support any style");
+	XtAppWarning(XtWidgetToApplicationContext(ve->parent), 
+	    "input method doesn't support any style");
 	XCloseIM(xim);
 	return;
     }
@@ -457,7 +463,8 @@ static void OpenIM(ve)
 	}
     }
     XCloseIM(xim);
-    XtWarning("input method doesn't support my input style");
+    XtAppWarning(XtWidgetToApplicationContext(ve->parent),
+	"input method doesn't support my input style");
     XFree(xim_styles);
 }
 
@@ -1673,7 +1680,7 @@ _XawImWcLookupString( inwidg, event, buffer_return, bytes_buffer,
     ret = XLookupString( event, tmp_buf, 64, keysym_return,
 		         (XComposeStatus*) status_return );
     for ( i = 0, tmp_p = tmp_buf, buf_p = buffer_return; i < ret; i++ ) {
-	*buf_p++ = _Xawatowc(*tmp_p++);
+	*buf_p++ = _Xaw_atowc(*tmp_p++);
     }
     return( ret );
 }
