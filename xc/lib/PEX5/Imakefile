@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 93/08/23 13:50:28 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 93/09/04 16:27:30 rws Exp $
 
 #define DoNormalLib NormalLibPex
 #define DoSharedLib SharedLibPex
@@ -40,7 +40,7 @@ SRCS =  pl_convert.c \
 	pl_oc_dec.c \
 	pl_oc_enc.c \
 	pl_oc_prim.c \
-	pl_oc_struct.c \
+	pl_oc_str.c \
 	pl_oc_util.c \
 	pl_pc.c\
 	pl_pick.c \
@@ -61,7 +61,7 @@ OBJS =  pl_convert.o \
 	pl_oc_dec.o \
 	pl_oc_enc.o \
 	pl_oc_prim.o \
-	pl_oc_struct.o \
+	pl_oc_str.o \
 	pl_oc_util.o \
 	pl_pc.o\
 	pl_pick.o \
