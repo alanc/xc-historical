@@ -136,9 +136,9 @@ the window should have a width of W and height of H (usually measured in
 pixels or characters, depending on the application),
 and the upper left corner X pixels to the right and Y pixels below the
 upper left corner of the screen (origin (0,0)).  ``WxH'' can be omitted
-to obtain the default application size, and ``+X+Y'' can be omitted
-to obtain the default application position (which is usually left up
-to the window manager).
+to obtain the default application size, or ``+X+Y'' can be omitted
+to obtain the default application position (which is usually then left up
+to the window manager or user to choose).
 The X and Y values may be negative to
 position the window off the screen.  In addition, if minus signs are used
 instead of plus signs (e.g. WxH-X-Y), then (X,Y) represents the location
