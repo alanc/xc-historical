@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.31 94/04/08 13:44:19 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.32 94/04/08 14:33:32 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -1776,7 +1776,9 @@ if (CAP_HEIGHT undefined) then
    if (Latin font) then
       CAP_HEIGHT = XCharStruct.ascent[glyph X]
    else if (capitals exist) then
-       CAP_HEIGHT = XCharStruct.ascent[some capital glyph]
+.sC
+       CAP_HEIGHT = XCharStruct.ascent[some unaccented capital glyph]
+.eC
    else CAP_HEIGHT undefined
 .DE
 .NH 3
@@ -1806,7 +1808,9 @@ if (X_HEIGHT undefined) then
    if (Latin font) then
       X_HEIGHT = XCharStruct.ascent[glyph x]
    else if (lowercase exists) then
-        X_HEIGHT = XCharStruct.ascent[some lowercase glyph without an ascender]
+.sC
+        X_HEIGHT = XCharStruct.ascent[some unaccented lc glyph without an ascender]
+.eC
    else X_HEIGHT undefined
 .DE
 .NH 3
