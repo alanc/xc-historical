@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpolypnt.c,v 5.0 89/06/09 15:06:59 keith Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 5.1 89/07/09 16:02:07 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -36,29 +36,17 @@ SOFTWARE.
 #include "mfb.h"
 #include "maskbits.h"
 
-/* macro for checking a point in a box 
-   note that this also tosses out negative coordinates
-*/
-#define PointInBox(pbox, x, y) \
-    (((x) >= (pbox)->x1) && ((x) < (pbox)->x2) && \
-     ((y) >= (pbox)->y1) && ((y) < (pbox)->y2)) \
-    ? 1 : 0
-
 void
 mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
+    register DrawablePtr pDrawable;
     GCPtr	pGC;
     int		mode;		/* Origin or Previous */
     int		npt;
     xPoint 	*pptInit;
 {
 
-    BoxPtr pboxInit;
-    int nboxInit;
     register BoxPtr pbox;
     register int nbox;
-    int xorg;
-    int yorg;
 
     int *addrlBase;
     register int *addrl;
@@ -76,12 +64,8 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	return;
 
     pGCPriv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
-    pboxInit = REGION_RECTS(pGCPriv->pCompositeClip);
-    nboxInit = REGION_NUM_RECTS(pGCPriv->pCompositeClip);
     rop = pGCPriv->rop;
 
-    xorg = pDrawable->x;
-    yorg = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	addrlBase = (int *)
@@ -95,73 +79,34 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    /* translate the point list
-       do this here rather than in the loop because there are
-       two cases to deal with
-    */
-    ppt = pptInit;
-    nptTmp = npt;
-    if (mode == CoordModeOrigin)
+    if ((mode == CoordModePrevious) && (npt > 1))
     {
-#ifndef PURDUE
-	while(nptTmp--)
+	for (ppt = pptInit + 1, nptTmp = npt - 1; --nptTmp >= 0; ppt++)
 	{
-	    ppt->x += xorg;
-	    ppt++->y += yorg;
-	}
-#else
-	Duff(nptTmp, ppt->x += xorg; ppt++->y += yorg );
-#endif
-    }
-    else
-    {
-	ppt->x += xorg;
-	ppt->y += yorg;
-	nptTmp--;
-#ifndef PURDUE
-	while(nptTmp--)
-	{
-	    ppt++;
 	    ppt->x += (ppt-1)->x;
 	    ppt->y += (ppt-1)->y;
 	}
-#else
-	Duff(nptTmp, ppt++; ppt->x += (ppt-1)->x; ppt->y += (ppt-1)->y);
-#endif
     }
 
-    ppt = pptInit;
-/* NOTE
-   the if(rop) could be moved outside of the loop, at
-   the cost of having three times as much code.
-*/
-    while (npt--)
+    nbox = REGION_NUM_RECTS(pGCPriv->pCompositeClip);
+    pbox = REGION_RECTS(pGCPriv->pCompositeClip);
+    for (; --nbox >= 0; pbox++)
     {
- 	nbox = nboxInit;
-	pbox = pboxInit;
-	x = ppt->x;
-	y = ppt++->y;
-
-	while(nbox--)
+	for (ppt = pptInit, nptTmp = npt; --nptTmp >= 0; ppt++)
 	{
-	    if (PointInBox(pbox, x, y))
+	    x = ppt->x + pDrawable->x;
+	    y = ppt->y + pDrawable->y;
+	    if ((x >= pbox->x1) && (x < pbox->x2) &&
+		(y >= pbox->y1) && (y < pbox->y2))
 	    {
-	        addrl = addrlBase +
-		        (y * nlwidth) +
-		        (x >> 5);
-
+	        addrl = addrlBase + (y * nlwidth) + (x >> 5);
 	        if (rop == RROP_BLACK)
 		    *addrl &= rmask[x & 0x1f];
 	        else if (rop == RROP_WHITE)
 		    *addrl |= mask[x & 0x1f];
 	        else if (rop == RROP_INVERT)
 		    *addrl ^= mask[x & 0x1f];
-
-	        break;
 	    }
-	    else
-	        pbox++;
 	}
     }
 }
-
