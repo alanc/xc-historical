@@ -91,6 +91,7 @@ static int		autoRepeatReady;
 static int		autoRepeatFirst;
 static struct timeval	autoRepeatLastKeyDownTv;
 static struct timeval	autoRepeatDeltaTv;
+static KeybdCtrl*	pKbdCtrl;
 
 static KbPrivRec  	sysKbPriv = {
     -1,			/* Type of keyboard */
@@ -291,12 +292,14 @@ sunKbdProc (pKeyboard, what)
 	    /*
 	     * Create and initialize the modifier map.
 	     */
-	    workingModMap=(CARD8 *)xalloc(MAP_LENGTH);
-	    (void) bzero(workingModMap, MAP_LENGTH);
-	    for(i=0; sunModMaps[sysKbPriv.type][i].key != 0; i++)
-		workingModMap[sunModMaps[sysKbPriv.type][i].key + 
-			     MIN_KEYCODE - workingKeySyms->minKeyCode] = 
-		    sunModMaps[sysKbPriv.type][i].modifiers;
+	    if (!workingModMap) {
+		workingModMap=(CARD8 *)xalloc(MAP_LENGTH);
+		(void) memset(workingModMap, 0, MAP_LENGTH);
+		for(i=0; sunModMaps[sysKbPriv.type][i].key != 0; i++)
+		    workingModMap[sunModMaps[sysKbPriv.type][i].key + 
+				  MIN_KEYCODE - workingKeySyms->minKeyCode] = 
+			sunModMaps[sysKbPriv.type][i].modifiers;
+	    }
 
 	    if (sysKbPriv.type == KB_SUN4 && sunSwapLkeys)
 		SwapKeys(workingKeySyms);
@@ -323,7 +326,7 @@ sunKbdProc (pKeyboard, what)
     case DEVICE_ON:
 	pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 	kbdFd = pPriv->fd;
-
+	pKbdCtrl = &((DeviceIntPtr) pKeyboard)->kbdfeed->ctrl;
 	/*
 	 * Set the keyboard into "direct" mode and turn on
 	 * event translation.
@@ -338,6 +341,7 @@ sunKbdProc (pKeyboard, what)
     case DEVICE_OFF:
 	pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 	kbdFd = pPriv->fd;
+	pKbdCtrl = NULL;
 	/*
 	 * Restore original keyboard directness and translation.
 	 */
@@ -375,7 +379,6 @@ static void bell (loudness, pKeyboard, ctrl, unused)
     KbPrivPtr	  pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
     int	  	  kbdCmd;   	    /* Command to give keyboard */
     int	 	  kbdOpenedHere; 
-    DeviceIntPtr  dev = (DeviceIntPtr)pKeyboard;
  
     if (loudness == 0 || ctrl->bell == 0)
  	return;
@@ -411,12 +414,12 @@ bad:
     }
 }
 
-static void SetLights (fd, ctrl)
+static void SetLights (fd)
     int fd;
-    KeybdCtrl*	ctrl;
 {
+    char request = pKbdCtrl->leds;
 #ifdef KIOCSLED /* { */
-    if (ioctl (fd, KIOCSLED, &ctrl->leds) == -1)
+    if (ioctl (fd, KIOCSLED, &request) == -1)
 	Error("Failed to set keyboard lights");
 #endif /* } */
 }
@@ -437,7 +440,7 @@ static void SetLights (fd, ctrl)
 
 static void kbdCtrl (pKeyboard, ctrl)
     DevicePtr	  pKeyboard;	    /* Keyboard to alter */
-    KeybdCtrl     *ctrl;
+    KeybdCtrl*    ctrl;
 {
     KbPrivPtr	  pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
     int	 	  kbdOpenedHere; 
@@ -462,7 +465,7 @@ static void kbdCtrl (pKeyboard, ctrl)
  
     if (ctrl->leds != pPriv->leds) {
 	pPriv->leds = ctrl->leds & SUN_LED_MASK;
-	SetLights (pPriv->fd, ctrl);
+	SetLights (pPriv->fd);
     }
 
     if ( kbdOpenedHere ) {
@@ -471,17 +474,16 @@ static void kbdCtrl (pKeyboard, ctrl)
     }
 }
 
-static void ModLight (fd, ctrl, on, led)
+static void ModLight (fd, on, led)
     int		fd;
-    KeybdCtrl*	ctrl;
     Bool	on;
     int		led;
 {
     if(on)
-	ctrl->leds |= led;
+	pKbdCtrl->leds |= led;
     else
-	ctrl->leds &= ~led;
-    SetLights (fd, ctrl);
+	pKbdCtrl->leds &= ~led;
+    SetLights (fd);
 }
 
 /*-
@@ -543,12 +545,10 @@ static void kbdEnqueueEvent (pKeyboard, fe)
     KeySym		ksym;
     int			map_index;
     DeviceIntPtr	dev;
-    KeybdCtrl*		ctrl;
 
     pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
     key = (fe->id & 0x7f) + pPriv->offset;
     dev = (DeviceIntPtr) pKeyboard;
-    ctrl = &dev->kbdfeed->ctrl;
 
     keyModifiers = dev->key->modifierMap[key];
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
@@ -582,20 +582,20 @@ static void kbdEnqueueEvent (pKeyboard, fe)
 	|| (keyModifiers & LockMask))) 
 	return;
 
-    if ((ksym == XK_Num_Lock && ctrl->leds & LED_NUM_LOCK) 
-	|| (ksym == XK_Scroll_Lock && ctrl->leds & LED_SCROLL_LOCK) 
-	|| (ksym == SunXK_Compose && ctrl->leds & LED_COMPOSE)
-	|| ((keyModifiers & LockMask) && ctrl->leds & LED_CAPS_LOCK))
+    if ((ksym == XK_Num_Lock && pKbdCtrl->leds & LED_NUM_LOCK) 
+	|| (ksym == XK_Scroll_Lock && pKbdCtrl->leds & LED_SCROLL_LOCK) 
+	|| (ksym == SunXK_Compose && pKbdCtrl->leds & LED_COMPOSE)
+	|| ((keyModifiers & LockMask) && pKbdCtrl->leds & LED_CAPS_LOCK))
 	xE.u.u.type = KeyRelease;
 
     if (ksym == XK_Num_Lock)
-	ModLight (pPriv->fd, ctrl, xE.u.u.type == KeyPress, LED_NUM_LOCK);
+	ModLight (pPriv->fd, xE.u.u.type == KeyPress, LED_NUM_LOCK);
     else if (ksym == XK_Scroll_Lock)
-	ModLight (pPriv->fd, ctrl, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
+	ModLight (pPriv->fd, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
     else if (ksym == SunXK_Compose)
-	ModLight (pPriv->fd, ctrl, xE.u.u.type == KeyPress, LED_COMPOSE);
+	ModLight (pPriv->fd, xE.u.u.type == KeyPress, LED_COMPOSE);
     else if (keyModifiers & LockMask)
-	ModLight (pPriv->fd, ctrl, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
+	ModLight (pPriv->fd, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
     else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
 	autoRepeatEvent = xE;
@@ -606,7 +606,6 @@ static void kbdEnqueueEvent (pKeyboard, fe)
     mieqEnqueue (&xE);
 }
 
-static KeybdCtrl *pKbdCtrl = (KeybdCtrl *) 0;
 
 void sunEnqueueAutoRepeat ()
 {
@@ -795,9 +794,6 @@ void sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
     if (!autoRepeatKeyDown)
 	return;
 
-    if (pKbdCtrl == (KeybdCtrl *) 0)
-	pKbdCtrl = &((DeviceIntPtr) LookupKeyboardDevice())->kbdfeed->ctrl;
-
     if (pKbdCtrl->autoRepeat != AutoRepeatModeOn)
 	return;
 
@@ -817,9 +813,6 @@ void sunWakeupHandler(nscreen, pbdata, err, pReadmask)
     pointer pReadmask;
 {
     struct timeval tv;
-
-    if (pKbdCtrl == (KeybdCtrl *) 0)
-	pKbdCtrl = &((DeviceIntPtr) LookupKeyboardDevice())->kbdfeed->ctrl;
 
     if (pKbdCtrl->autoRepeat != AutoRepeatModeOn)
 	return;
