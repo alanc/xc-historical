@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: omGeneric.c,v 1.1 93/09/17 13:32:12 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -498,16 +498,16 @@ _XomGenericCreateFontSet(lcd, dpy, base_name, name_list, count,
 	    font_data = gen->font_data;
 	    font_data_num = gen->font_data_num;
 
+	    dash_num = 0;
+	    name_tmp = buf;
+	    while (name_tmp = strchr(name_tmp, '-')) {
+		name_tmp++;
+		dash_num++;
+	    }
 	    for ( ; font_data_num-- > 0; font_data++) {
  		if (font_data->font_name)
  		    continue;
 
-		dash_num = 0;
-		name_tmp = buf;
-		while (name_tmp = strchr(name_tmp, '-')) {
-		  name_tmp++;
-		  dash_num++;
-		}
  		if (length > 2 && name[length - 3] == '*')
 		    (void) strcpy(buf + length - ((dash_num==14)?3:1), 
 				  font_data->charset_name);
