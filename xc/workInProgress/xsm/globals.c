@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.18 94/12/12 19:58:35 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.19 94/12/12 22:44:28 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -37,6 +37,7 @@ List		*WaitForPhase2List;
 
 Bool		wantShutdown = False;
 Bool		shutdownInProgress = False;
+Bool		phase2InProgress = False;
 Bool		saveInProgress = False;
 Bool		shutdownCancelled = False;
 jmp_buf		JumpHere;
@@ -62,8 +63,9 @@ int		numClientListNames = 0;
 int		current_client_selected;
 
 int		sessionNameCount = 0;
-String		*sessionNames = NULL;
-Bool		*sessionLocked = NULL;
+String		*sessionNamesShort = NULL;
+String		*sessionNamesLong = NULL;
+Bool		*sessionsLocked = NULL;
 
 int		num_clients_in_last_session = -1;
 
