@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.1 89/09/28 16:44:46 kit Exp $";
+static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.2 89/09/29 19:03:56 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -159,6 +159,8 @@ Widget request, new;
 
     if (entry->bsb_entry.label == NULL) 
 	entry->bsb_entry.label = XtName(new);
+    else
+	entry->bsb_entry.label = XtNewString( entry->bsb_entry.label );
 
     GetDefaultSize(new, &(entry->rectangle.width), &(entry->rectangle.height));
     CreateGCs(new);
@@ -244,7 +246,20 @@ Widget current, request, new;
     BSBMenuEntryObject entry = (BSBMenuEntryObject) new;
     BSBMenuEntryObject old_entry = (BSBMenuEntryObject) current;
     Boolean ret_val = FALSE;
-  
+
+    if (old_entry->bsb_entry.label != entry->bsb_entry.label) {
+        if (old_entry->bsb_entry.label != XtName( new ) )
+	    XtFree( (char *) old_entry->bsb_entry.label );
+
+	if (entry->bsb_entry.label != XtName(new) ) 
+	    entry->bsb_entry.label = XtNewString( entry->bsb_entry.label );
+
+	ret_val = True;
+    }
+
+    if (entry->rectangle.sensitive != old_entry->rectangle.sensitive )
+	ret_val = TRUE;
+
     if (entry->bsb_entry.left_bitmap != old_entry->bsb_entry.left_bitmap) {
 	GetBitmapInfo(new, TRUE);
 	ret_val = TRUE;
@@ -255,13 +270,8 @@ Widget current, request, new;
 	ret_val = TRUE;
     }
 
-    if ( old_entry->bsb_entry.font != entry->bsb_entry.font ) {
-	DestroyGCs(current);
-	CreateGCs(new);
-	ret_val = TRUE;
-    }
-  
-    if ( old_entry->bsb_entry.foreground != entry->bsb_entry.foreground ) {
+    if ( (old_entry->bsb_entry.font != entry->bsb_entry.font) ||
+	 (old_entry->bsb_entry.foreground != entry->bsb_entry.foreground) ) {
 	DestroyGCs(current);
 	CreateGCs(new);
 	ret_val = TRUE;
