@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.18 90/10/22 14:41:32 converse Exp $
+ * $XConsortium: MailboxP.h,v 1.19 90/12/01 13:00:31 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,7 +25,11 @@
 #ifdef SYSV
 #define MAILBOX_DIRECTORY "/usr/mail"
 #else
+#ifdef SVR4
+#define MAILBOX_DIRECTORY "/var/mail"
+#else
 #define MAILBOX_DIRECTORY "/usr/spool/mail"
+#endif
 #endif
 
 typedef struct {			/* new fields for mailbox widget */
