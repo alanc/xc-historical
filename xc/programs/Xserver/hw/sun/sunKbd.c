@@ -53,6 +53,7 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include "Xproto.h"
 #include "keysym.h"
 #include "inputstr.h"
+#include <signal.h>
 
 typedef struct {
     int	    	  trans;          	/* Original translation form */
@@ -638,6 +639,7 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
     int 	kbdFd;
     int 	tmp;
     int		kbdOpenedHere;
+    int		old_mask;
 
     static struct timeval lastChngKbdTransTv;
     struct timeval tv;
@@ -648,6 +650,7 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
      * Workaround for SS1 serial driver kernel bug when KIOCTRANS ioctl()s
      * occur too closely together in time.
      */
+    old_mask = sigblock (~0);
     gettimeofday(&tv, (struct timezone *) NULL);
     tvminus(lastChngKbdDeltaTv, tv, lastChngKbdTransTv);
     lastChngKbdDelta = TVTOMILLI(lastChngKbdDeltaTv);
@@ -664,7 +667,6 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
         gettimeofday(&tv, (struct timezone *) NULL);
     }
     lastChngKbdTransTv = tv;
-    
 
     kbdFd = -1;
     if (pKeyboard)
@@ -711,8 +713,9 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
 	if ( ! sunUseSunWindows() ) {
 	    tmp = 0;
 	    (void)ioctl (kbdFd, KIOCSDIRECT, &tmp);
+	    tmp = TR_ASCII;
 	}
-	if (pKeyboard && pPriv && pPriv->devPrivate)
+	else if (pKeyboard && pPriv && pPriv->devPrivate)
 	    tmp = ((SunKbPrivPtr)pPriv->devPrivate)->trans;
 	else
 	    tmp = TR_ASCII;
@@ -721,11 +724,13 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
 
     if ( kbdOpenedHere )
 	(void) close( kbdFd );
+    sigsetmask (old_mask);
     return(0);
 
 bad:
     if ( kbdOpenedHere && kbdFd >= 0 )
 	(void) close( kbdFd );
+    sigsetmask (old_mask);
     return(-1);
 }
 
