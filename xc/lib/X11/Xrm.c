@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.65 91/05/04 14:00:45 rws Exp $
+ * $XConsortium: Xrm.c,v 1.66 91/05/06 20:35:39 rws Exp $
  */
 
 /***********************************************************
@@ -1728,6 +1728,33 @@ static Bool EnumNTable(table, names, classes, level, closure)
 	    leaf = 1;
 	    bilevel = False;
 	}
+	if (table->hasloose && closure->mode == XrmEnumAllLevels) {
+	    NTable *bucket;
+	    int i;
+	    XrmQuark empty = NULLQUARK;
+
+	    for (i = table->mask, bucket = NodeBuckets(table);
+		 i >= 0;
+		 i--, bucket++) {
+		q = NULLQUARK;
+		for (entry = *bucket; entry; entry = entry->next) {
+		    if (!entry->tight && entry->name != q &&
+			entry->name != *names && entry->name != *classes) {
+			q = entry->name;
+			if (entry->leaf) {
+			    if (EnumLTable((LTable)entry, &empty, &empty,
+					   level, closure))
+				return True;
+			} else {
+			    if (EnumNTable(entry, &empty, &empty,
+					   level, closure))
+				return True;
+			}
+		    }
+		}
+	    }
+	}
+
 	ITIGHTLOOSE(*names);   /* do name, tight and loose */
 	ITIGHTLOOSE(*classes); /* do class, tight and loose */
 	if (table->hasany) {
@@ -1901,9 +1928,9 @@ void PrintTable(table, file)
     closure.quarks = quarks;
     closure.mode = XrmEnumAllLevels;
     if (table->leaf)
-	EnumAllNTable((LTable)table, &empty, &empty, 0, &closure);
+	EnumLTable((LTable)table, &empty, &empty, 0, &closure);
     else
-	EnumLTable(table, &empty, &empty, 0, &closure);
+	EnumNTable(table, &empty, &empty, 0, &closure);
 }
 
 #endif /* DEBUG */
