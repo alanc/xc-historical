@@ -1494,4 +1494,5 @@ or publicity pertaining to distribution of the software without specific,
 written prior permission.
 .SH AUTHORS
 Tom LaStrange, Solbourne Computer; Jim Fulton, MIT X Consortium;
+Steve Pitschke, Stardent Computer;
 Dave Payne, Apple Computer; Keith Packard, MIT X Consortium
