@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.102 89/11/06 14:19:13 jim Exp $
+ * $XConsortium: events.c,v 1.103 89/11/06 14:29:32 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.102 89/11/06 14:19:13 jim Exp $";
+"$XConsortium: events.c,v 1.103 89/11/06 14:29:32 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1402,8 +1402,11 @@ static do_menu (menu, w)
     } else {
 	center = True;
     }
-    PopUpMenu (menu, x, y, center);
-    UpdateMenu();
+    if (PopUpMenu (menu, x, y, center)) {
+	UpdateMenu();
+    } else {
+	XBell (dpy, 0);
+    }
 }
 
 

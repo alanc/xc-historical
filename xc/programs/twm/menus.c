@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.113 89/11/06 14:19:22 jim Exp $
+ * $XConsortium: menus.c,v 1.114 89/11/06 16:09:10 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.113 89/11/06 14:19:22 jim Exp $";
+"$XConsortium: menus.c,v 1.114 89/11/06 16:09:10 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -512,9 +512,6 @@ UpdateMenu()
 	    PopUpMenu (ActiveItem->sub, (savex + (ActiveMenu->width >> 1)),
 		       (savey + ActiveItem->item_num * Scr->EntryHeight +
 			(Scr->EntryHeight >> 1)), False);
-/*
-	    PopUpMenu(ActiveItem->sub, x_root, y_root, False);
- */
 
 	    /* if the menu did get popped up, unhighlight the active item */
 	    if (save != ActiveMenu && ActiveItem->state)
@@ -912,7 +909,7 @@ MenuRoot *mr;
  ***********************************************************************
  */
 
-void PopUpMenu (menu, x, y, center)
+Bool PopUpMenu (menu, x, y, center)
     MenuRoot *menu;
     int x, y;
     Bool center;
@@ -922,8 +919,7 @@ void PopUpMenu (menu, x, y, center)
     MenuItem *tmp, *tmp1;
     TwmWindow *tmp_win;
 
-    if (menu == NULL)
-	return;
+    if (!menu) return False;
 
     if (menu == Scr->Windows)
     {
@@ -962,12 +958,10 @@ void PopUpMenu (menu, x, y, center)
 	MakeMenu(menu);
     }
 
-    if (menu->items == 0)
-	return;
+    if (menu->w == None || menu->items == 0) return False;
 
     /* Prevent recursively bringing up menus. */
-    if (menu->mapped == MAPPED)
-	return;
+    if (menu->mapped == MAPPED) return False;
 
     /*
      * Dynamically set the parent;  this allows pull-ups to also be main
@@ -1018,6 +1012,7 @@ void PopUpMenu (menu, x, y, center)
 	XMapWindow (dpy, menu->shadow);
     }
     XSync(dpy, 0);
+    return True;
 }
 
 /***********************************************************************
