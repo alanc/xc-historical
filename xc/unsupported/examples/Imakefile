@@ -1,19 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/02/10 20:20:52 matt Exp $
-
-#if BuildFresco
-
-#define IHaveSubdirs
-#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
-
-SUBDIRS = Fresco
-
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-
-#else	/* BuildFresco */
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 20:42:10 matt Exp matt $
 
 all::
 depend::
 clean::
-
-#endif	/* BuildFresco */
