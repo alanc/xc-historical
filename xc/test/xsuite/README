@@ -1,7 +1,7 @@
-$XConsortium: README,v 1.10 92/07/01 12:19:02 rws Exp $
+$XConsortium: README,v 1.11 92/07/03 18:48:37 rws Exp $
 
-This file describes the software in Release 1.2 of the
-Xlib and X Protocol Test Suite from the MIT X Consortium.
+This file describes the software in X11 Release 6 of the
+Xlib and X Protocol Test Suite from the X Consortium.
 
 The main directories to be aware of initially are:
 
