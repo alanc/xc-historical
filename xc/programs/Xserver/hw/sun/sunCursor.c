@@ -1,4 +1,4 @@
-/* $XConsortium: sunCursor.c,v 5.9 91/11/14 13:57:03 keith Exp $ */
+/* $XConsortium: sunCursor.c,v 5.10 91/11/15 18:28:35 gildea Exp $ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...
@@ -22,11 +22,22 @@
 #define GetCursorPrivate(s) (&(GetScreenPrivate(s)->hardwareCursor))
 #define SetupCursor(s)	    sunCursorPtr pCurPriv = GetCursorPrivate(s)
 
+static void sunLoadCursor();
+
 static Bool
 sunRealizeCursor (pScreen, pCursor)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
 {
+    SetupCursor(pScreen);
+    int	    x, y;
+
+    /* miRecolorCursor does this */
+    if (pCurPriv->pCursor == pCursor)
+    {
+	miPointerPosition (&x, &y);
+	sunLoadCursor (pScreen, pCursor, x, y);
+    }
     return TRUE;
 }
 
@@ -149,6 +160,7 @@ sunSetCursor (pScreen, pCursor, x, y)
     	sunLoadCursor (pScreen, pCursor, x, y);
     else
 	sunDisableCursor (pScreen);
+    pCurPriv->pCursor = pCursor;
 }
 
 static void
@@ -226,6 +238,7 @@ sunCursorInitialize (pScreen)
 			 &sunPointerScreenFuncs,
 			 FALSE);
     pCurPriv->has_cursor = TRUE;
+    pCurPriv->pCursor = NULL;
     return TRUE;
 #else
     return FALSE;
@@ -244,6 +257,7 @@ sunDisableCursor (pScreen)
     	fbcursor.set = FB_CUR_SETCUR;
     	fbcursor.enable = 0;
     	(void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
+	pCurPriv->pCursor = NULL;
     }
 #endif
 }
