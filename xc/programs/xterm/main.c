@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.35 88/05/16 16:34:17 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.36 88/05/17 12:02:17 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -382,6 +382,7 @@ char **argv;
 		t_ptydev[strlen(t_ptydev) - 1] =
 			t_ttydev[strlen(t_ttydev) - 1] =
 			get_ty[strlen(get_ty) - 1];
+		loginpty = open( t_ptydev, O_RDWR, 0 );
 #ifdef SYSV
 #ifdef broken
 		/* use the same tty name that everyone else will use
@@ -390,7 +391,7 @@ char **argv;
 		{
 			char *ptr;
 
-			if (ptr = ttyname(t_ptydev)) {
+			if (ptr = ttyname(loginpty)) {
 				/* it may be bigger! */
 				t_ptydev = malloc((unsigned) (strlen(ptr) + 1));
 				(void) strcpy(t_ptydev, ptr);
@@ -537,8 +538,20 @@ char **argv;
 #endif	/* DEBUG */
 	if(get_ty)
 		i = open("/dev/console", O_WRONLY, 0);
-	if(i >= 0)
+	if(i >= 0) {
+#ifdef SYSV
+		/* SYSV has another pointer which should be part of the
+		** FILE structure but is actually a seperate array.
+		*/
+		unsigned char *old_bufend;
+
+		old_bufend = (unsigned char *) _bufend(stderr);
 		fileno(stderr) = i;
+		(unsigned char *) _bufend(stderr) = old_bufend;
+#else	/* SYSV */
+		fileno(stderr) = i;
+#endif	/* SYSV */
+	}
 	if(fileno(stderr) != (NOFILE - 1)) {
 #ifdef SYSV
 		/* SYSV has another pointer which should be part of the
@@ -795,6 +808,7 @@ spawn ()
 	int i, no_dev_tty = FALSE;
 #ifdef SYSV
 	char *dev_tty_name = (char *) 0;
+	int fd;			/* for /etc/wtmp */
 #endif	/* SYSV */
 	char **envnew;		/* new environment */
 	char buf[32];
@@ -1043,38 +1057,12 @@ spawn ()
 #endif	/* !SYSV */
 #ifdef UTMP
 #ifdef SYSV
-		if(pw = getpwuid(screen->uid)) {
-			(void) setutent ();
-
-			/* set up entry to search for */
-			(void) strncpy(utmp.ut_id,ttydev + strlen(ttydev) - 2,
-			 sizeof (utmp.ut_id));
-			utmp.ut_type = DEAD_PROCESS;
-
-			/* position to entry in utmp file */
-			(void) getutid(&utmp);
-
-			/* set up the new entry */
-			utmp.ut_type = USER_PROCESS;
-			utmp.ut_exit.e_exit = 2;
-			(void) strncpy(utmp.ut_user, pw->pw_name,
-			 sizeof(utmp.ut_user));
-			(void) strncmp(utmp.ut_id, ttydev + strlen(ttydev) - 2,
-			 sizeof(utmp.ut_id));
-
-			(void) strncpy (utmp.ut_line,
-			 ttydev + strlen("/dev/"), sizeof (utmp.ut_line));
-			utmp.ut_pid = getpid();
-			utmp.ut_time = time ((long *) 0);
-
-			/* write out the entry */
-			(void) pututline(&utmp);
-			added_utmp_entry = True;
-
-			/* close the file */
-			(void) endutent();
-		}
-#else	/* !SYSV */
+		/* If we have gotten this far, we can only assume that
+		** we have (will have) set the utmp entry.  Anyway,
+		** we won't reset it later if the pid's don't match.
+		*/
+		added_utmp_entry = True;
+#else	/* SYSV */
 		if((pw = getpwuid(screen->uid)) &&
 		 (i = open(etc_utmp, O_WRONLY)) >= 0) {
 			bzero((char *)&utmp, sizeof(struct utmp));
@@ -1218,8 +1206,71 @@ spawn ()
 		setpgrp (0, pgrp);
 #endif	/* !defined(SYSV) || defined(JOBCONTROL) */
 
+#ifdef SYSV
+		/* Set up our utmp entry now.  We need to do it here
+		** for the following reasons:
+		**   - It needs to have our correct process id (for
+		**     login).
+		**   - If our parent was to set it after the fork(),
+		**     it might make it out before we need it.
+		**   - We need to do it before we go and change our
+		**     user and group id's.
+		*/
+
+		(void) setutent ();
+		/* set up entry to search for */
+		(void) strncpy(utmp.ut_id,ttydev + strlen(ttydev) - 2,
+		 sizeof (utmp.ut_id));
+		utmp.ut_type = DEAD_PROCESS;
+
+		/* position to entry in utmp file */
+		(void) getutid(&utmp);
+
+		/* set up the new entry */
+		if (get_ty) {
+		    utmp.ut_type = LOGIN_PROCESS;
+		    utmp.ut_exit.e_exit = 0;
+		    (void) strncpy(utmp.ut_user, "GETTY",
+		    	    sizeof(utmp.ut_user));
+		} else {
+		    pw = getpwuid(screen->uid);
+		    utmp.ut_type = USER_PROCESS;
+		    utmp.ut_exit.e_exit = 2;
+		    (void) strncpy(utmp.ut_user,
+			    (pw && pw->pw_name) ? pw->pw_name : "????",
+			    sizeof(utmp.ut_user));
+		}
+		    
+		(void) strncmp(utmp.ut_id, ttydev + strlen(ttydev) - 2,
+			sizeof(utmp.ut_id));
+		(void) strncpy (utmp.ut_line,
+			ttydev + strlen("/dev/"), sizeof (utmp.ut_line));
+		utmp.ut_pid = getpid();
+		utmp.ut_time = time ((long *) 0);
+
+#ifdef UTMP
+		/* write out the entry */
+		(void) pututline(&utmp);
+#endif	/* UTMP */
+
+		/* close the file */
+		(void) endutent();
+
+		if (get_ty) {
+		    /* set wtmp entry if wtmp file exists */
+		    if (fd = open("/etc/wtmp", O_WRONLY | O_APPEND)) {
+			(void) write(fd, &utmp, sizeof(utmp));
+			(void) close(fd);
+		    }
+		}
+#endif	/* SYSV */
+
 		setgid (screen->gid);
 		setuid (screen->uid);
+
+		/* close any extra open (stray) file descriptors */
+		for (i = 3; i < NOFILE; i++)
+			(void) close(i);
 
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
@@ -1229,42 +1280,8 @@ spawn ()
 		}
 		signal(SIGHUP, SIG_IGN);
 		if (get_ty) {
+
 #ifdef SYSV
-			int fd;
-
-			(void) setutent ();
-			/* set up entry to search for */
-			(void) strncpy(utmp.ut_id,ttydev + strlen(ttydev) - 2,
-			 sizeof (utmp.ut_id));
-			utmp.ut_type = DEAD_PROCESS;
-
-			/* position to entry in utmp file */
-			(void) getutid(&utmp);
-
-			/* set up the new entry */
-			utmp.ut_type = LOGIN_PROCESS;
-			(void) strncpy(utmp.ut_user, "GETTY",
-			 sizeof(utmp.ut_user));
-			(void) strncmp(utmp.ut_id, ttydev + strlen(ttydev) - 2,
-			 sizeof(utmp.ut_id));
-			(void) strncpy (utmp.ut_line,
-			 ttydev + strlen("/dev/"), sizeof (utmp.ut_line));
-			utmp.ut_pid = getpid();
-			utmp.ut_time = time ((long *) 0);
-
-			/* write out the entry */
-			(void) pututline(&utmp);
-			added_utmp_entry = True;
-
-			/* close the file */
-			(void) endutent();
-
-			/* set wtmp entry if wtmp file exists */
-			if (fd = open("/etc/wtmp", O_WRONLY | O_APPEND)) {
-				(void) write(fd, &utmp, sizeof(utmp));
-				(void) close(fd);
-			}
-
 			ioctl (0, TIOCTTY, &zero);
 			execlp ("/etc/getty", "getty", get_ty, "Xwindow", 0);
 
@@ -1343,18 +1360,20 @@ int n;
 	struct utmp *utptr;
 
 	/* cleanup the utmp entry we forged earlier */
-	/* unlike BSD, go ahead and cream any entries we didn't make */
-	utmp.ut_type = USER_PROCESS;
-	(void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - 2,
-	 sizeof(utmp.ut_id));
-	(void) setutent();
-	utptr = getutid(&utmp);
-	if (utptr) {
-		utptr->ut_type = DEAD_PROCESS;
-		utptr->ut_time = time((long *) 0);
-		(void) pututline(utptr);
+	if (added_utmp_entry) {
+	    utmp.ut_type = USER_PROCESS;
+	    (void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - 2,
+		    sizeof(utmp.ut_id));
+	    (void) setutent();
+	    utptr = getutid(&utmp);
+	    /* write it out only if it exists, and the pid's match */
+	    if (utptr && (utptr->ut_pid = screen->pid)) {
+		    utptr->ut_type = DEAD_PROCESS;
+		    utptr->ut_time = time((long *) 0);
+		    (void) pututline(utptr);
+	    }
+	    (void) endutent();
 	}
-	(void) endutent();
 #else	/* !SYSV */
 	register int i;
 	struct utmp utmp;
@@ -1433,8 +1452,10 @@ static reapchild ()
 	int status, pid;
 
 	pid = wait(&status);
-	if (pid == -1)
+	if (pid == -1) {
+		(void) signal(SIGCHLD, reapchild);
 		return;
+	}
 #else	/* defined(SYSV) && !defined(JOBCONTROL) */
 	union wait status;
 	register int pid;
@@ -1443,9 +1464,19 @@ static reapchild ()
 	if (debug) fputs ("Exiting\n", stderr);
 #endif	/* DEBUG */
 	pid  = wait3 (&status, WNOHANG, (struct rusage *)NULL);
-	if (!pid) return;
+	if (!pid) {
+#ifdef SYSV
+		(void) signal(SIGCHLD, reapchild);
+#endif	/* SYSV */
+		return;
+	}
 #endif	/* defined(SYSV) && !defined(JOBCONTROL) */
-	if (pid != term->screen.pid) return;
+	if (pid != term->screen.pid) {
+#ifdef SYSV
+		(void) signal(SIGCHLD, reapchild);
+#endif	/* SYSV */
+		return;
+	}
 	
 	Cleanup(0);
 }
