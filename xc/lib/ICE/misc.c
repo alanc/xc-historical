@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.7 93/09/23 11:52:43 mor Exp $ */
+/* $XConsortium: misc.c,v 1.8 93/11/02 11:03:46 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -17,13 +17,52 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
 #include <stdio.h>
+#include <sys/types.h>
 
-#ifdef WIN32
-#include <errno.h>
-#undef close
-#define close closesocket
+
+#ifndef WIN32
+
+#include <sys/socket.h>
+
+#ifdef UNIXCONN
+#include <sys/un.h>
 #endif
 
+#ifdef TCPCONN
+# include <sys/param.h>
+# include <netinet/in.h>
+# ifndef hpux
+#  ifdef apollo
+#   ifndef NO_TCP_H
+#    include <netinet/tcp.h>
+#   endif
+#  else
+#   include <netinet/tcp.h>
+#  endif
+# endif
+#endif
+
+#ifdef DNETCONN
+#include <netdnet/dn.h>
+#endif
+
+#else /* WIN32 */
+
+#include <errno.h>
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#undef close
+#define close closesocket
+
+#endif
+
+
+
 /*
  * scratch buffer
  */
@@ -430,4 +469,65 @@ int 	myOpcode;
 
     iceConn->process_msg_info[hisOpcode -
 	iceConn->his_min_opcode].protocol = &_IceProtocols[myOpcode - 1];
+}
+
+
+
+char *
+_IceGetPeerName (iceConn)
+
+IceConn iceConn;
+
+{
+    char *name = NULL;
+    char *temp;
+
+    union {
+	struct sockaddr sa;
+#ifdef TCPCONN
+	struct sockaddr_in in;
+#endif /* TCPCONN */
+#ifdef DNETCONN
+	struct sockaddr_dn dn;
+#endif /* DNETCONN */
+    } from;
+    int	fromlen = sizeof (from);
+
+#ifdef UNIXCONN
+    if (iceConn->iceConn_type == ICE_CONN_FROM_LOCAL_ACCEPT)
+    {
+	name = "local";
+    }
+    else
+#endif
+    {
+	if (getpeername (iceConn->fd, &from.sa, &fromlen) == -1)
+	    return (NULL);
+
+	switch (from.sa.sa_family)
+	{
+#ifdef TCPCONN
+	case AF_INET:
+	    temp = (char *) inet_ntoa (from.in.sin_addr);
+	    name = (char *) malloc (strlen (temp) + 1);
+	    if (name)
+		strcpy (name, temp);
+	    break;
+#endif
+
+#ifdef DNETCONN
+	case AF_DECnet:
+	    temp = (char *) dnet_ntoa (&from.dn.sdn_add);
+	    name = (char *) malloc (strlen (temp) + 1);
+	    if (name)
+		strcpy (name, temp);
+	    break;
+#endif
+
+	default:
+	    break;
+	}
+    }
+
+    return (name);
 }
