@@ -13,9 +13,13 @@ char		*title;
 Xtransaddr	*addr;
 int		addrlen;
 {
+int family;
+
 fprintf(stderr,"%s address: (%d)\n", title, addrlen);
 
-switch( addr->family )
+family = ((struct sockaddr *) addr)->sa_family;
+
+switch( family )
 	{
 	case AF_UNIX:
 		{
@@ -32,7 +36,7 @@ switch( addr->family )
 		break;
 		}
 	default:
-		fprintf(stderr,"**Got unknown family %d\n", addr->family );
+		fprintf(stderr,"**Got unknown family %d\n", family );
 		break;
 	}
 }
@@ -43,11 +47,11 @@ int	i;
 int	family;
 int	addrlen;
 Xtransaddr	*addr;
-int	count;
+int	count, max;
 XtransConnInfo *ciptrs;
 
 /* bind to any port */
-if (_TESTTransMakeAllCOTSServerListeners(NULL,&count,&ciptrs) < 0)
+if (_TESTTransMakeAllCOTSServerListeners(NULL,&max,&count,&ciptrs) < 0)
     exit (1);
 
 for(i=0;i<count;i++)
