@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.7 88/10/15 19:07:00 keith Exp $
+ * $XConsortium: Login.c,v 1.8 88/10/20 17:34:55 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,8 +28,6 @@
 # include <X11/StringDefs.h>
 # include <X11/Xmu.h>
 # include "LoginP.h"
-
-char	defaultLoginTranslations[];
 
 #define offset(field) XtOffset(LoginWidget,login.field)
 #define goffset(field) XtOffset(Widget,core.field)
