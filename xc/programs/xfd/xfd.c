@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.28 91/05/20 16:45:38 gildea Exp $
+ * $XConsortium: xfd.c,v 1.29 91/05/22 19:12:02 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -64,11 +64,11 @@ static Atom wm_delete_window;
 Widget quitButton, prevButton, nextButton;
 
 
-#define DEF_SELECT_FORMAT "character 0x%02x%02x (%d,%d)"
+#define DEF_SELECT_FORMAT "character 0x%02x%02x (%u,%u) (%#o,%#o)"
 #define DEF_METRICS_FORMAT "width %d; left %d, right %d; ascent %d, descent %d (font %d, %d)"
 #define DEF_RANGE_FORMAT "range:  0x%02x%02x (%u,%u) thru 0x%02x%02x (%u,%u)"
 #define DEF_START_FORMAT "upper left:  0x%04x (%d,%d)"
-#define DEF_NOCHAR_FORMAT "no such character 0x%02x%02x (%u,%u)"
+#define DEF_NOCHAR_FORMAT "no such character 0x%02x%02x (%u,%u) (%#o,%#o)"
 
 static struct _xfd_resources {
   char *select_format;
@@ -257,6 +257,7 @@ static void SelectChar (w, closure, data)
 	 p->thechar.byte2 > fs->max_char_or_byte2)) {
 	sprintf (buf, xfd_resources.nochar_format,
 		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
+		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
 	XtSetValues (selectLabel, &arg, ONE);
 	buf[0] = '\0';
@@ -267,6 +268,7 @@ static void SelectChar (w, closure, data)
     XTextExtents16 (fs, &p->thechar, 1, &direction, &fontascent, &fontdescent,
 		    &metrics);
     sprintf (buf, xfd_resources.select_format,
+	     (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 	     (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 	     (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
     XtSetValues (selectLabel, &arg, ONE);
