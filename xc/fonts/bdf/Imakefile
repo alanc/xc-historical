@@ -1,0 +1,12 @@
+#define IHaveSubdirs
+#define PassCDebugFlags /* as nothing */
+
+        SUBDIRS = misc 75dpi 100dpi
+
+MakeSubdirs($(SUBDIRS))
+
+install::
+	-mkdir $(FONTDIR)/misc
+	-mkdir $(FONTDIR)/75dpi
+	-mkdir $(FONTDIR)/100dpi
+
