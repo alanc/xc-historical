@@ -1,4 +1,4 @@
-#	$XConsortium: locale.alias,v 1.6 94/04/01 19:34:36 kaleb Exp $
+#	$XConsortium: locale.alias,v 1.7 94/05/05 14:32:17 kaleb Exp $
 #
 #	This file contains alias name of locale.
 #	Each alias name is described within one line.
@@ -30,6 +30,8 @@ De_DE		de_DE.ISO8859-1
 De_DE.IBM-850	de_DE.ISO8859-1
 de_DE.88591	de_DE.ISO8859-1
 de_DE.88591.en	de_DE.ISO8859-1
+GER_DE.8859	de_DE.ISO8859-1
+GER_DE.8859.in	de_DE.ISO8859-1
 de_AT		de_AT.ISO8859-1
 de_CH		de_CH.ISO8859-1
 Du_BE		du_BE.ISO8859-1
@@ -40,6 +42,8 @@ en		en_US.ISO8859-1
 en_GB		en_GB.ISO8859-1
 en_GB.88591	en_GB.ISO8859-1
 en_GB.88591.en	en_GB.ISO8859-1
+ENG_GB.8859	en_GB.ISO8859-1
+ENG_GB.8859.in	en_GB.ISO8859-1
 en_AU		en_AU.ISO8859-1
 en_CA		en_CA.ISO8859-1
 en_US		en_US.ISO8859-1
@@ -76,6 +80,8 @@ fr_CH.88591.en	fr_CH.ISO8859-1
 fr_FR		fr_FR.ISO8859-1
 fr_FR.88591	fr_FR.ISO8859-1
 fr_FR.88591.en	fr_FR.ISO8859-1
+FRE_FR.8859	fr_FR.ISO8859-1
+FRE_FR.8859.in	fr_FR.ISO8859-1
 Gr_GR		el_GR.ISO8859-7
 hr		hr_HR.ISO8859-2
 hr_HR		hr_HR.ISO8859-2
