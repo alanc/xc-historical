@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.62 89/07/21 18:30:37 jim Exp $
+ * $XConsortium: twm.c,v 1.63 89/07/26 11:02:50 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.62 89/07/21 18:30:37 jim Exp $";
+"$XConsortium: twm.c,v 1.63 89/07/26 11:02:50 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -366,6 +366,7 @@ main(argc, argv, environ)
 
 	/* Parse it once for each screen. */
 	ParseTwmrc(InitFile);
+	if (!Scr->HaveFonts) CreateFonts();
 	CreateGCs();
 	MakeMenus();
 
@@ -612,25 +613,40 @@ InitVariables()
     Scr->FirstRegion = NULL;
     Scr->LastRegion = NULL;
     Scr->FirstTime = TRUE;
+    Scr->HaveFonts = FALSE;		/* i.e. not loaded yet */
 
     /* setup default fonts */
     Scr->TitleBarFont.font = NULL;
-    Scr->TitleBarFont.name = "8x13";		GetFont(&Scr->TitleBarFont);
+    Scr->TitleBarFont.name = "8x13";
     Scr->MenuFont.font = NULL;
-    Scr->MenuFont.name = "8x13";		GetFont(&Scr->MenuFont);
+    Scr->MenuFont.name = "8x13";
     Scr->IconFont.font = NULL;
-    Scr->IconFont.name = "8x13";		GetFont(&Scr->IconFont);
+    Scr->IconFont.name = "8x13";
     Scr->SizeFont.font = NULL;
-    Scr->SizeFont.name = "fixed";		GetFont(&Scr->SizeFont);
+    Scr->SizeFont.name = "fixed";
     Scr->VersionFont.font = NULL;
-    Scr->VersionFont.name = "8x13";		GetFont(&Scr->VersionFont);
+    Scr->VersionFont.name = "8x13";
     Scr->InitialFont.font = NULL;
-    Scr->InitialFont.name = "9x15";		GetFont(&Scr->InitialFont);
+    Scr->InitialFont.name = "9x15";
     Scr->IconManagerFont.font = NULL;
-    Scr->IconManagerFont.name = "8x13";		GetFont(&Scr->IconManagerFont);
+    Scr->IconManagerFont.name = "8x13";
     Scr->DefaultFont.font = NULL;
-    Scr->DefaultFont.name = "fixed";		GetFont(&Scr->DefaultFont);
+    Scr->DefaultFont.name = "fixed";
 
+}
+
+
+CreateFonts ()
+{
+    GetFont(&Scr->TitleBarFont);
+    GetFont(&Scr->MenuFont);
+    GetFont(&Scr->IconFont);
+    GetFont(&Scr->SizeFont);
+    GetFont(&Scr->VersionFont);
+    GetFont(&Scr->InitialFont);
+    GetFont(&Scr->IconManagerFont);
+    GetFont(&Scr->DefaultFont);
+    Scr->HaveFonts = TRUE;
 }
 
 

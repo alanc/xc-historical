@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.20 89/07/07 13:15:22 jim Exp $
+ * $XConsortium: util.c,v 1.21 89/07/18 17:15:35 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.20 89/07/07 13:15:22 jim Exp $";
+"$XConsortium: util.c,v 1.21 89/07/18 17:15:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -433,6 +433,7 @@ int *what;
 char *name;
 {
     XColor color, junkcolor;
+    Status stat;
 
 #ifndef TOM
     if (!Scr->FirstTime)
@@ -442,15 +443,14 @@ char *name;
     if (Scr->Monochrome != kind)
 	return;
 
-    if (!XParseColor(dpy, Scr->CMap, name, &color))
-    {
-	fprintf(stderr, "twm: invalid color \"%s\"\n", name);
-	return;
-    }
-
-    if (!XAllocColor(dpy, Scr->CMap, &color))
-    {
-	fprintf(stderr, "twm: invalid color \"%s\"\n", name);
+    /*
+     * small hack to avoid extra roundtrip for color allocation
+     */
+    if (!((name[0] == '#')
+	  ? (XParseColor (dpy, Scr->CMap, name, &color) &&
+	     XAllocColor (dpy, Scr->CMap, &color))
+	  : XAllocNamedColor (dpy, Scr->CMap, name, &color, &junkcolor))) {
+	fprintf (stderr, "twm: invalid color \"%s\"\n", name);
 	return;
     }
 
@@ -461,10 +461,6 @@ GetFont(font)
 MyFont *font;
 {
     char *deffontname = "fixed";
-#ifndef TOM
-    if (!Scr->FirstTime)
-	return;
-#endif
 
     if (font->font != NULL)
 	XFreeFont(dpy, font->font);

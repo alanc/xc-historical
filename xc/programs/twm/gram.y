@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.55 89/07/21 19:57:17 jim Exp $
+ * $XConsortium: gram.y,v 1.56 89/07/26 11:02:28 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.55 89/07/21 19:57:17 jim Exp $";
+"$XConsortium: gram.y,v 1.56 89/07/26 11:02:28 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -134,21 +134,16 @@ stmt		: error
 		| FORCE_ICON		{ if (Scr->FirstTime) Scr->ForceIcon = TRUE; }
 		| ICON_REGION string grav grav number number
 					{ AddIconRegion($2, $3, $4, $5, $6); }
-		| ICON_FONT string	{   Scr->IconFont.name = $2;
-					    GetFont(&Scr->IconFont);
-					}
-		| RESIZE_FONT string	{   Scr->SizeFont.name = $2;
-					    GetFont(&Scr->SizeFont);
-					}
-		| MENU_FONT string	{   Scr->MenuFont.name = $2;
-					    GetFont(&Scr->MenuFont);
-					}
-		| TITLE_FONT string	{   Scr->TitleBarFont.name = $2;
-					    GetFont(&Scr->TitleBarFont);
-					}
-		| ICONMGR_FONT string	{   Scr->IconManagerFont.name=$2;
-					    GetFont(&Scr->IconManagerFont);
-					}
+		| ICON_FONT string	{ if (!Scr->HaveFonts)
+					     Scr->IconFont.name = $2; }
+		| RESIZE_FONT string	{ if (!Scr->HaveFonts)
+					     Scr->SizeFont.name = $2; }
+		| MENU_FONT string	{ if (!Scr->HaveFonts)
+					     Scr->MenuFont.name = $2; }
+		| TITLE_FONT string	{ if (!Scr->HaveFonts)
+					     Scr->TitleBarFont.name = $2; }
+		| ICONMGR_FONT string	{ if (!Scr->HaveFonts)
+					     Scr->IconManagerFont.name=$2; }
 		| ICONMGR_GEOMETRY string number{ if (Scr->FirstTime)
 						  {
 						    Scr->iconmgr.geometry=$2;

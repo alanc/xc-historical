@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.87 89/07/24 14:11:42 jim Exp $
+ * $XConsortium: menus.c,v 1.88 89/07/26 11:02:35 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.87 89/07/24 14:11:42 jim Exp $";
+"$XConsortium: menus.c,v 1.88 89/07/26 11:02:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -559,6 +559,7 @@ AddToMenu(menu, item, action, sub, func, fore, back)
     tmp->state = 0;
     tmp->func = func;
 
+    if (!Scr->HaveFonts) CreateFonts();
     width = XTextWidth(Scr->MenuFont.font, item, tmp->strlen);
     if (width <= 0)
 	width = 1;
