@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: att.cf,v 1.18 93/06/27 17:00:44 rws Exp $
+XCOMM platform:  $XConsortium: usl.cf,v 1.19 93/07/13 11:37:25 rws Exp $
 
 #define OSName			UNIX System V/386 Release 4.2 Version 1
 XCOMM operating system:  OSName
@@ -13,7 +13,7 @@ XCOMM operating system:  OSName
  * still depend on sockets being around, so we always link with -lsocket.
  */
 #define ExtraLibraries		-lsocket -lnsl
-#define BootstrapCFlags		-Datt
+#define BootstrapCFlags		-DUSL
 #define NeedWidePrototypes	NO	/* experimental */
 #define PatheticCpp		YES
 #define DefaultCCOptions	-Xc
