@@ -15,12 +15,14 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
+/* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: XShm.h,v 1.3 89/08/21 08:58:06 rws Exp $ */
+/* $XConsortium: XShm.h,v 1.4 89/08/31 12:58:22 rws Exp $ */
 
 #ifndef _XSHM_H_
 #define _XSHM_H_
+
+#include <X11/Xfuncproto.h>
 
 #define X_ShmQueryVersion		0
 #define X_ShmAttach			1
@@ -57,10 +59,90 @@ typedef struct {
     Bool readOnly;	/* how the server should attach it */
 } XShmSegmentInfo;
 
-Bool XShmQueryVersion();
-Status XShmAttach(), XShmDetach(), XShmPutImage(), XShmGetImage();
-XImage *XShmCreateImage();
-Pixmap XShmCreatePixmap();
+_XFUNCPROTOBEGIN
+
+Bool XShmQueryVersion(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int*		/* majorVersion */,
+    int*		/* minorVersion */,
+    Bool*		/* sharedPixmaps */
+#endif
+);
+
+int XShmPixmapFormat(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */
+#endif
+);
+
+Status XShmAttach(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XShmSegmentInfo*	/* shminfo */
+#endif
+);
+
+Status XShmDetach(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XShmSegmentInfo*	/* shminfo */
+#endif
+);
+
+Status XShmPutImage(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Drawable		/* d */,
+    GC			/* gc */,
+    XImage*		/* image */,
+    int			/* src_x */,
+    int			/* src_y */,
+    int			/* dst_x */,
+    int			/* dst_y */,
+    unsigned int	/* src_width */,
+    unsigned int	/* src_height */,
+    Bool		/* send_event */
+#endif
+);
+
+Status XShmGetImage(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Drawable		/* d */,
+    XImage*		/* image */,
+    int			/* x */,
+    int			/* y */,
+    unsigned long	/* plane_mask */
+#endif
+);
+
+XImage *XShmCreateImage(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Visual*		/* visual */,
+    unsigned int	/* depth */,
+    int			/* format */,
+    char*		/* data */,
+    XShmSegmentInfo*	/* shminfo */,
+    unsigned int	/* width */,
+    unsigned int	/* height */
+#endif
+);
+
+Pixmap XShmCreatePixmap(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Drawable		/* d */,
+    char*		/* data */,
+    XShmSegmentInfo*	/* shminfo */,
+    unsigned int	/* width */,
+    unsigned int	/* height */,
+    unsigned int	/* depth */
+#endif
+);
+
+_XFUNCPROTOEND
 
 #endif
 
