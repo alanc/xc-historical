@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.30 88/02/05 19:10:43 swick Exp $";
+static char rcsid[] = "$Header: Command.c,v 1.31 88/02/14 13:58:53 rws Exp $";
 #endif lint
 
 /*
@@ -40,6 +40,7 @@ static char rcsid[] = "$Header: Command.c,v 1.30 88/02/05 19:10:43 swick Exp $";
 #include <ctype.h>
 #include <X11/Atoms.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Misc.h>
 #include <X11/CommandP.h>
 #include "CommandI.h"
 
@@ -55,7 +56,7 @@ static char defaultTranslations[] =
     "<Btn1Down>:	set() \n\
      <Btn1Up>:		notify() unset() \n\
      <EnterWindow>:	highlight() \n\
-     <LeaveWindow>:	unhighlight()";
+     <LeaveWindow>:	unset(NoRedisplay) unhighlight()";
 
 static int defHighlight = 2;
 
@@ -172,7 +173,8 @@ static void Get_highlightGC(cbw)
        line width for the highlight border */
 
     values.foreground   = ComWforeground;
-    values.line_width   = ComWhighlightThickness;
+    values.line_width   = ComWhighlightThickness > 1
+			  ? ComWhighlightThickness : 0;
 
     ComWhighlightGC = XtGetGC((Widget)cbw,
     	(unsigned) GCForeground | GCLineWidth, &values);
@@ -212,7 +214,7 @@ static void Set(w,event,params,num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWset = TRUE;
-  Redisplay(w, event);
+  Redisplay(w, event, NULL);
 }
 
 /* ARGSUSED */
@@ -220,11 +222,12 @@ static void Unset(w,event,params,num_params)
      Widget w;
      XEvent *event;
      String *params;		/* unused */
-     Cardinal *num_params;	/* unused */
+     Cardinal *num_params;
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWset = FALSE;
-  Redisplay(w, event);
+  if (*num_params == 0)
+      Redisplay(w, event, NULL);
 }
 
 /* ARGSUSED */
@@ -236,7 +239,7 @@ static void Highlight(w,event,params,num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWhighlighted = TRUE;
-  Redisplay(w, event);
+  Redisplay(w, event, NULL);
 }
 
 /* ARGSUSED */
@@ -248,7 +251,7 @@ static void Unhighlight(w,event,params,num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWhighlighted = FALSE;
-  Redisplay(w, event);
+  Redisplay(w, event, NULL);
 }
 
 /* ARGSUSED */
@@ -258,7 +261,9 @@ static void Notify(w,event,params,num_params)
      String *params;		/* unused */
      Cardinal *num_params;	/* unused */
 {
-  XtCallCallbacks(w, XtNcallback, NULL);
+  CommandWidget cbw = (CommandWidget)w;
+  if (ComWset)
+      XtCallCallbacks(w, XtNcallback, NULL);
 }
 /*
  * Repaint the widget window
@@ -271,11 +276,13 @@ static void Notify(w,event,params,num_params)
 ************************/
 
 /* ARGSUSED */
-static void Redisplay(w, event)
+static void Redisplay(w, event, region)
     Widget w;
-    XEvent *event;
+    XEvent *event;		/* unused */
+    Region region;		/* unused */
 {
    CommandWidget cbw = (CommandWidget) w;
+   Boolean very_thick = ComWhighlightThickness > Min(ComWwidth,ComWheight)/2;
 
    /* Here's the scoop:  If the command button button is normal,
       you show the text.  If the command button is highlighted but 
@@ -292,22 +299,31 @@ static void Redisplay(w, event)
        (!ComWset && ComWdisplaySet))
      XClearWindow(XtDisplay(w),XtWindow(w));
      /* Don't clear the window if the button's in a set condition;
-	instead, fill it with black to avoid flicker. (Must fil
+	instead, fill it with black to avoid flicker. (Must fill
 	with black in case it was an expose */
-   else if (ComWset) /* && ComWdisplaySet) ||  (ComWset && !ComWdisplaySet))*/
+   else if (ComWset)
      XFillRectangle(XtDisplay(w),XtWindow(w), ComWinverseGC,
 		    0,0,ComWwidth,ComWheight);
 
-     /* check whether border is taken out of size of rectangle or
-	is outside of rectangle */
-   if (ComWhighlighted)
-     XDrawRectangle(XtDisplay(w),XtWindow(w), ComWhighlightGC,
-		    0,0,ComWwidth,ComWheight);
+   if (ComWhighlighted && ComWhighlightThickness > 0) {
+       if (very_thick)
+	   XFillRectangle(XtDisplay(w),XtWindow(w), ComWinverseGC,
+			  0,0,ComWwidth,ComWheight);
+       else {
+	   /* wide lines are centered on the path, so indent it */
+	   int offset = ComWhighlightThickness/2;
+	   XDrawRectangle(XtDisplay(w),XtWindow(w), ComWhighlightGC,
+			  offset, offset,
+			  ComWwidth - ComWhighlightThickness,
+			  ComWheight - ComWhighlightThickness);
+       }
+   }
 
      /* draw the string:  there are three different "styles" for it,
 	all in separate GCs */
    XDrawString(XtDisplay(w),XtWindow(w),
-	       (ComWset ?  ComWinverseTextGC : 
+	       (ComWset || (ComWhighlighted && very_thick)
+		  ?  ComWinverseTextGC : 
 		    (ComWsensitive ? ComWnormalGC : ComWgrayGC)),
 		ComWlabelX, ComWlabelY, ComWlabel, (int) ComWlabelLen);
 
