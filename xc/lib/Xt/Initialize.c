@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Initialize.c,v 1.39 87/09/11 21:19:15 swick Locked $";
 #endif lint
 
 /*
@@ -503,8 +503,11 @@ CompositeWidget wid;
 			w->core.border_width);
 		}
 	    }
-	    if (childwid->core.x != 0 || childwid->core.y != 0) {
-		XtMoveWidget (childwid, 0, 0);
+	    if (childwid->core.x != -(w->core.border_width) ||
+		childwid->core.y != -(w->core.border_width)) {
+		XtMoveWidget (childwid,
+			      -(w->core.border_width),
+			      -(w->core.border_width));
 	    }
 	}
     }
