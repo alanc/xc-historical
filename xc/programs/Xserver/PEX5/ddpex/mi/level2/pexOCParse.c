@@ -1,4 +1,4 @@
-/* $XConsortium: pexOCParse.c,v 5.5 92/05/07 17:06:46 hersh Exp $ */
+/* $XConsortium: pexOCParse.c,v 5.6 92/11/25 10:24:08 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -72,11 +72,11 @@ SOFTWARE.
  **	copy and inquire routines (see miCopy.c and miInquire.c).
  **/
 
-#ifdef __STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b
-#endif	/* __STDC__ */
+#endif
 
 #define OC_PARSER_FUNC_HEADER(suffix)		    \
     ddpex2rtn CAT(parse,suffix)(pPEXOC, ppExecuteOC)\

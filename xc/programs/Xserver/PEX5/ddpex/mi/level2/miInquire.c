@@ -1,4 +1,4 @@
-/* $XConsortium: miInquire.c,v 5.4 92/06/02 19:40:07 hersh Exp $ */
+/* $XConsortium: miInquire.c,v 5.5 92/11/16 11:17:29 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -46,11 +46,11 @@ SOFTWARE.
     a corresponding modification to the level function tables (miTables.c)
  */
 
-#ifdef __STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b
-#endif	/* __STDC__ */
+#endif
 
 #define OC_INQ_FUNC_HEADER(suffix)		    \
     ddpex2rtn CAT(inquire,suffix)(pExecuteOC, pBuf, ppPEXOC) \

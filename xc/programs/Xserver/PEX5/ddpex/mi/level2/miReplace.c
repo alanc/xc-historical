@@ -1,4 +1,4 @@
-/* $XConsortium: miReplace.c,v 5.1 91/02/16 09:55:40 rws Exp $ */
+/* $XConsortium: miReplace.c,v 5.2 91/07/12 17:53:46 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -54,11 +54,11 @@ extern void ParseVertexData();
 extern int  CountFacetOptData();
 extern int  CountVertexData();
 
-#ifdef __STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b
-#endif	/* __STDC__ */
+#endif
 
 #define OC_REPLACE_FUNC_HEADER(suffix)				    \
     ddpex2rtn CAT(replace,suffix)(pPEXOC, ppExecuteOC)		    \

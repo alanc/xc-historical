@@ -1,4 +1,4 @@
-/* $XConsortium: miCopy.c,v 5.4 91/09/06 14:36:15 hersh Exp $ */
+/* $XConsortium: miCopy.c,v 5.5 91/12/26 18:00:39 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -48,11 +48,11 @@ SOFTWARE.
     happen during freeing of storage.
  */
 
-#ifdef __STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b
-#endif	/* __STDC__ */
+#endif
 
 #define OC_COPY_FUNC_HEADER(suffix)   \
     ddpex2rtn CAT(copy,suffix)(pSrc, ppDst) \

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miDestroy.c,v 5.1 91/02/16 09:55:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -41,7 +41,7 @@ SOFTWARE.
  ****Note that these functions may be replaced by PEX server porters.
  **/
 
-#ifdef __STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b

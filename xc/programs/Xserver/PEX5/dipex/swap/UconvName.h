@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: UconvName.h,v 5.1 91/02/16 09:57:17 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -24,7 +24,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#if defined (__STDC__)
+#if (__STDC__&& !defined(UNIXCPP)) || defined(ANSICPP)
 #define SWAP_FUNC_PREFIX(nm)	u##nm
 #define SWAP_FUNC_PEX_PFX(nm)	uPEX##nm
 #else
