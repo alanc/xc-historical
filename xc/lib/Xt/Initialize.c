@@ -52,30 +52,32 @@ SOFTWARE.
 */
 
 static XrmOptionDescRec opTable[] = {
-{"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
-{"-g",		".geometry",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-geometry",	".geometry",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bd",		"*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bordercolor","*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bg",		"*background",	XrmoptionSepArg,	(caddr_t) NULL},
+{"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
+{"+synchronize","*synchronize",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-background",	"*background",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bw",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bd",		"*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bg",		"*background",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bordercolor","*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-borderwidth",".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bw",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-display",	".display",     XrmoptionSepArg,	(caddr_t) NULL},
 {"-fg",		"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-fn",		"*font",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-font",	"*font",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
-{"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
-{"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
-{"-n",		".name",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-geometry",	".geometry",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-iconic",	".TopLevelShell.iconic",   XrmoptionNoArg,  (caddr_t) "on"},
 {"-name",	".name",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
+{"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
 {"-selectionTimeout",
 		".selectionTimeout", XrmoptionSepArg,	(caddr_t) NULL},
 {"-synchronize","*synchronize",	XrmoptionNoArg,		(caddr_t) "on"},
-{"+synchronize","*synchronize",	XrmoptionNoArg,		(caddr_t) "off"},
-{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-t",		".title",	XrmoptionSepArg,	(caddr_t) NULL}
+{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL}
+{"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
+#ifdef EQUALGEOMETRY
+{"=",		".TopLevelShell.geometry", XrmoptionIsArg, (caddr_t) NULL},
+#endif
 };
 
 void XtToolkitInitialize()
