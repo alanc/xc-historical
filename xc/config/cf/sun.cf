@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.95 93/09/05 10:28:22 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.96 93/09/05 17:15:38 rws Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.2
@@ -55,11 +55,6 @@ XCOMM operating system:  OSName
 #include <sunLib.rules>
 #endif
 
-#define HasCodeCenter	  YES
-#if defined(SparcArchitecture) && OSMajorVersion == 4
-#define HasPurify	  YES
-#define HasTestCenter	  YES
-#endif
 #define HasNdbm		  YES
 #define HasShm		  YES
 #define HasSecureRPC	  YES
