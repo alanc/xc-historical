@@ -1,7 +1,8 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.3 91/07/16 22:51:01 gildea Exp $
 SRCS = Berklib.c
 OBJS = Berklib.o
 
-all:: Berklib.o
+NormalLibraryTarget(Xbsd,$(OBJS))
+InstallLibrary(Xbsd,$(USRLIBDIR))
 
 DependTarget()
