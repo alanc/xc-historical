@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.69 91/01/09 17:12:38 rws Exp $
+ * $XConsortium: twm.h,v 1.70 91/01/10 10:13:27 rws Exp $
  *
  * twm include file
  *
@@ -289,7 +289,8 @@ typedef struct TwmWindow
 #define TBPM_QUESTION ":question"	/* name of unknown titlebar pixmap */
 #define TBPM_MENU ":menu"	/* name of titlebar pixmap for menus */
 
-#if __STDC__ && !defined(NOSTDHDRS)
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
 extern char *malloc(), *calloc(), *realloc(), *getenv();
