@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Atoms.h,v 1.4 90/12/19 18:09:36 converse Exp $
+ * $XConsortium: Atoms.h,v 1.5 90/12/19 19:55:25 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -21,6 +21,8 @@
 
 #ifndef _XMU_ATOMS_H_
 #define _XMU_ATOMS_H_
+
+#include <X11/Intrinsic.h>
 
 typedef struct _AtomRec *AtomPtr;
 
