@@ -1,10 +1,10 @@
-.\" $XConsortium: appres.man,v 1.8 93/08/02 11:13:55 gildea Exp $
+.\" $XConsortium: appres.man,v 1.9 94/04/11 14:28:43 gildea Exp $
 .TH APPRES 1 "Release 6" "X Version 11"
 .SH NAME
-appres - list application resource database
+appres \- list X application resource database
 .SH SYNOPSIS
 .B "appres"
-[[class [instance]] [-1] [toolkitoptions] 
+[[class [instance]] [\-1] [toolkitoptions] 
 .SH DESCRIPTION
 .PP
 The \fIappres\fP program prints the resources seen by an application
@@ -14,7 +14,7 @@ resources a particular program will load.  For example,
 .sp 1
 .in +.5i
 .nf
-% appres XTerm
+% appres  XTerm
 .fi
 .in -.5i
 .sp 1
@@ -27,13 +27,13 @@ For example,
 .sp 1
 .in +.5i
 .nf
-% appres XTerm myxterm
+% appres  XTerm  myxterm
 .fi
 .in -.5i
 or
 .in +.5i
 .nf
-% appres XTerm -name myxterm
+% appres  XTerm  \-name  myxterm
 .fi
 .in -.5i
 .PP
@@ -44,7 +44,7 @@ specified with a toolkit option.  For example,
 .sp 1
 .in +.5i
 .nf
-% appres Xman.TopLevelShell.Form xman.topBox.form
+% appres  Xman.TopLevelShell.Form  xman.topBox.form
 .fi
 .in -.5i
 .sp 1
@@ -54,7 +54,7 @@ use the \-1 option.  For example,
 .sp 1
 .in +.5i
 .nf
-% appres XTerm.VT100 xterm.vt100 -1
+% appres  XTerm.VT100  xterm.vt100  \-1
 .fi
 .in -.5i
 .sp 1
