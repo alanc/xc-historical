@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.42 88/07/20 14:19:02 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.43 88/07/29 12:07:59 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -43,6 +43,25 @@ static char rcsid[] =
 #include    "region.h"
 
 static RegionPtr	exposed = NullRegion;
+
+static void	(*clipNotify)() = 0;
+
+/*
+ * miClipNotify --
+ *	Hook to let DDX request notification when the clipList of
+ *	a window is recomputed.
+ *
+ *	clipNotify is expected to be a function receiving three arguments,
+ *	a window, and an x and y offset -- the amount the window has
+ *	been moved.
+ */
+
+void
+miClipNotify (func)
+void	(*func)();
+{
+	clipNotify = func;
+}
 
 /*-
  *-----------------------------------------------------------------------
@@ -337,6 +356,9 @@ miComputeClips (pParent, pScreen, universe)
 
     pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pParent->marked = 0;
+
+    if (clipNotify)
+	clipNotify (pParent, dx, dy);
 
     /*
      * If the parent isn't viewable, there's nothing to be exposed....
