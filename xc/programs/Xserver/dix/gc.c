@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.103 88/01/02 15:40:20 rws Exp $ */
+/* $Header: gc.c,v 1.104 88/01/02 18:04:55 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -419,7 +419,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     /* if the client hasn't provided a tile, build one and fill it with
        the foreground pixel
     */
-    if(!mask & GCTile)
+    if(!(mask & GCTile))
     {
 	XID		tmpval[3];
 	PixmapPtr 	pTile;
