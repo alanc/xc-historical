@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.6 91/04/10 11:42:08 keith Exp $ */
+/* $XConsortium: cfbblt.c,v 1.7 91/05/06 15:13:21 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -39,6 +39,11 @@ Author: Keith Packard
 #define DO_UNALIGNED_BITBLT
 #endif
 #endif
+
+#if defined(FAST_MEMCPY) && (MROP == Mcopy) && (PPW == 4)
+#define DO_MEMCPY
+#endif
+
 
 MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
@@ -226,6 +231,23 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	{
 	    maskbits(pbox->x1, w, startmask, endmask, nlMiddle);
 	}
+
+#ifdef DO_MEMCPY
+	/* If the src and dst scanline don't overlap, do forward case.  */
+
+	if ((xdir == 1) || (pptSrc->y != pbox->y1)
+		|| (pptSrc->x + w <= pbox->x1))
+	{
+	    char *psrc = (char *) psrcLine + pptSrc->x;
+	    char *pdst = (char *) pdstLine + pbox->x1;
+	    while (h--)
+	    {
+	    	memcpy(pdst, psrc, w);
+		pdst += widthDst << 2;
+		psrc += widthSrc << 2;
+	    }
+	}
+#else /* ! DO_MEMCPY */
 	if (xdir == 1)
 	{
 	    xoffSrc = pptSrc->x & PIM;
@@ -406,6 +428,7 @@ pdst++;
 	    }
 #endif /* DO_UNALIGNED_BITBLT */
 	}
+#endif /* ! DO_MEMCPY */
 	else	/* xdir == -1 */
 	{
 	    xoffSrc = (pptSrc->x + w - 1) & PIM;
