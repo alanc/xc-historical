@@ -1,36 +1,54 @@
 .TH RESIZE 1 "1 Nov 1986" "X Version 10"
 .SH NAME
-resize - reset TERMCAP with current size of a window
+resize - utility to set TERMCAP and terminal settings to current window size
 .SH SYNOPSIS
 .B resize
 [-u] [\-s [row col]]
 .SH DESCRIPTION
 .I Resize
-prints on its standard output the TERM and TERMCAP commands for
-the C-shell of the current size of a window.  It is never executed directly,
-but should be aliased similarly to
-.IR tset (1)
-to cause the C-shell to execute the commands.
-.PP
-Normally, VT102 escape sequences are used.
-With the
-.B \-s
-option, Sun tty escape sequences are used, which has the advantage that
-a new row and column size may be specified and the window will
-resize appropriately.
-.PP
-For example, the following alias when executed as a command will reset
-the environment of the current shell:
+prints a shell command for setting the TERM and TERMCAP environment variables
+to indiciate the current size of \fIxterm\fP window from which the command
+is run.  For this output to take effect, \fIresize\fP must either be evaluated
+as part of the command line (usually done with a shell alias or function) or
+else redirected to a file which can then be read in.  From the C shell (usually
+known as \fI/bin/csh\fP), the following alias could be defined in the 
+user's \fI.cshrc\fP:
 .sp
-	alias xs	\'set noglob; eval \`resize\`\'
-.br
-	alias xrs	\'set noglob; eval \`resize \-s \e!\e*\`\'
-.br
-.PP
-The
+.nf
+        %  alias rs 'set noglob; `eval resize`'
+.fi
+.sp
+After resizing the window, the user would type:
+.sp
+.nf
+        %  rs
+.fi
+.sp
+Users of versions of the Bourne shell (usually known as \fI/bin/sh\fP) that 
+don't have command
+functions will need to send the output to a temporary file and the read it back
+in with the ``.'' command:
+.sp
+.nf
+        $  resize >/tmp/out
+        $  . /tmp/out
+.fi
+.SH OPTIONS
+The following options may be used with \fIresize\fP:
+.TP 8
 .B \-u
-option will cause the commands to be formed appropriately for sh
-(the Bourne shell) rather than csh.
+This option indicates that Bourne shell commands should be generated even if 
+the user's current shell isn't \fI/bin/sh\fP.
+.TP 8
+.B \-c
+This option indicates that C shell commands should be generated even if the
+user's current shell isn't \fI/bin/csh\fP.
+.TP 8
+.B \-s \fR[\fIrows columns\fP]
+This option indicates that that Sun console escape sequences will be used 
+instead of the special \fIxterm\fP escape code.  If \fIrows\fP and
+\fIcolumns\fP are given, \fIresize\fP will ask the \fIxterm\fP to resize
+itself.  However, the window manager may choose to disallow the change.
 .SH FILES
 /etc/termcap	for the base termcap entry to modify.
 .br
@@ -46,7 +64,8 @@ See
 .IR X (1)
 for a complete copyright notice.
 .SH BUGS
-``-u'' must appear to the left of ``-s'' if both are specified.
+The \fI-u\fP or \fI-c\fP must appear to the left of \fI-s\fP if both are 
+specified.
 .PP
 There should be some global notion of display size; termcap and
 terminfo need to be rethought in the context of window systems.
