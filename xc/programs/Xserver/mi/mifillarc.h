@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.h,v 5.6 94/02/23 15:50:04 dpw Exp $ */
+/* $XConsortium: mifillarc.h,v 5.7 94/04/17 20:27:34 dpw Exp kaleb $ */
 
 #define FULLCIRCLE (360 * 64)
 
@@ -36,6 +36,15 @@ typedef struct _miFillArc {
     int e;
     int ym, yk, xm, xk;
 } miFillArcRec;
+
+/* could use 64-bit integers */
+typedef struct _miFillArcD {
+    int xorg, yorg;
+    int y;
+    int dx, dy;
+    double e;
+    double ym, yk, xm, xk;
+} miFillArcDRec;
 
 #define miFillArcEmpty(arc) (!(arc)->angle2 || \
 			     !(arc)->width || !(arc)->height || \
@@ -180,6 +189,13 @@ extern struct finalSpan *realAllocSpan(
 );
 
 extern void miFillArcSetup(
+#if NeedFunctionPrototypes
+    xArc * /*arc*/,
+    miFillArcRec * /*info*/
+#endif
+);
+
+extern void miFillArcDSetup(
 #if NeedFunctionPrototypes
     xArc * /*arc*/,
     miFillArcRec * /*info*/
