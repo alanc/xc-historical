@@ -1,4 +1,4 @@
-/* $XConsortium: pl_wks.c,v 1.5 92/06/12 10:24:53 mor Exp $ */
+/* $XConsortium: pl_wks.c,v 1.6 92/07/16 10:57:17 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -566,17 +566,17 @@ OUTPUT PEXViewRep	*curViewReturn;
 }
 
 
-PEXWorkstation *
-PEXGetWorkstationPostings (display, structure, numWksReturn)
+Status
+PEXGetWorkstationPostings (display, structure, numWksReturn, wksReturn)
 
 INPUT Display		*display;
 INPUT PEXStructure	structure;
 OUTPUT unsigned long	*numWksReturn;
+OUTPUT PEXWorkstation	**wksReturn;
 
 {
     pexGetWorkstationPostingsReq	*req;
     pexGetWorkstationPostingsReply	rep;
-    PEXWorkstation			*wsp;
 
 
     /*
@@ -597,7 +597,8 @@ OUTPUT unsigned long	*numWksReturn;
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
-        return (NULL);            /* return an error */
+	*wksReturn = NULL;
+        return (0);            /* return an error */
     }
 
     *numWksReturn = rep.length;
@@ -607,9 +608,10 @@ OUTPUT unsigned long	*numWksReturn;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    wsp = (PEXWorkstation *) PEXAllocBuf ((unsigned) (rep.length << 2));
+    *wksReturn = (PEXWorkstation *) PEXAllocBuf (
+	(unsigned) (rep.length << 2));
 
-    _XRead (display, (char *) wsp, (long) (rep.length << 2));
+    _XRead (display, (char *) *wksReturn, (long) (rep.length << 2));
 
 
     /*
@@ -619,7 +621,7 @@ OUTPUT unsigned long	*numWksReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (wsp);
+    return (1);
 }
 
 
@@ -995,9 +997,9 @@ INPUT PEXWorkstation	wks;
 }
 
 
-PEXCoord *
+Status
 PEXMapDCToWC (display, wks, dc_count, dc_points,
-    view_index_return, wc_count_return)
+    view_index_return, wc_count_return, wc_points_return)
 
 INPUT Display			*display;
 INPUT PEXWorkstation		wks;
@@ -1005,11 +1007,11 @@ INPUT unsigned long		dc_count;
 INPUT PEXDeviceCoord		*dc_points;
 OUTPUT unsigned int		*view_index_return;
 OUTPUT unsigned long		*wc_count_return;
+OUTPUT PEXCoord			**wc_points_return;
 
 {
     pexMapDCtoWCReq	*req;
     pexMapDCtoWCReply	rep;
-    PEXCoord		*pwcp;
     int			size;
     int			convertFP;
 
@@ -1038,7 +1040,8 @@ OUTPUT unsigned long		*wc_count_return;
         UnlockDisplay (display);
         PEXSyncHandle (display);
 	*wc_count_return = 0;
-        return (NULL);            /* return an error */
+	*wc_points_return = NULL;
+        return (0);            /* return an error */
     }
 
     *view_index_return = rep.viewIndex;
@@ -1049,9 +1052,10 @@ OUTPUT unsigned long		*wc_count_return;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    pwcp = (PEXCoord *) PEXAllocBuf ((unsigned) (rep.length << 2));
+    *wc_points_return = (PEXCoord *) PEXAllocBuf (
+	(unsigned) (rep.length << 2));
 
-    _XRead (display, (char *) pwcp, (long) (rep.length << 2));
+    _XRead (display, (char *) *wc_points_return, (long) (rep.length << 2));
 
 
     /*
@@ -1061,13 +1065,13 @@ OUTPUT unsigned long		*wc_count_return;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pwcp);
+    return (1);
 }
 
 
-PEXDeviceCoord *
+Status
 PEXMapWCToDC (display, wks, wc_count, wc_points,
-    view_index, dc_count_return)
+    view_index, dc_count_return, dc_points_return)
 
 INPUT Display			*display;
 INPUT PEXWorkstation		wks;
@@ -1075,11 +1079,11 @@ INPUT unsigned long		wc_count;
 INPUT PEXCoord			*wc_points;
 INPUT unsigned int		view_index;
 OUTPUT unsigned long		*dc_count_return;
+OUTPUT PEXDeviceCoord		**dc_points_return;
 
 {
     pexMapWCtoDCReq	*req;
     pexMapWCtoDCReply	rep;
-    PEXDeviceCoord	*pdcp;
     int			size;
     int			convertFP;
 
@@ -1109,7 +1113,8 @@ OUTPUT unsigned long		*dc_count_return;
         UnlockDisplay (display);
         PEXSyncHandle (display);
 	*dc_count_return = 0;
-        return (NULL);            /* return an error */
+	*dc_points_return = NULL;
+        return (0);            /* return an error */
     }
 
     *dc_count_return = rep.numCoords;
@@ -1119,9 +1124,10 @@ OUTPUT unsigned long		*dc_count_return;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    pdcp = (PEXDeviceCoord *) PEXAllocBuf ((unsigned) (rep.length << 2));
+    *dc_points_return = (PEXDeviceCoord *) PEXAllocBuf (
+	(unsigned) (rep.length << 2));
 
-    _XRead (display, (char *) pdcp, (long) (rep.length << 2));
+    _XRead (display, (char *) *dc_points_return, (long) (rep.length << 2));
 
 
     /*
@@ -1131,7 +1137,7 @@ OUTPUT unsigned long		*dc_count_return;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pdcp);
+    return (1);
 }
 
 
