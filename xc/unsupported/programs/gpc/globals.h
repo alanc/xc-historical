@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 5.1 91/02/16 10:07:37 rws Exp $ */
+/* $XConsortium: globals.h,v 5.2 91/04/03 10:29:19 rws Exp $ */
 
 /*
  */
@@ -155,7 +155,7 @@ VGLOBAL XrmOptionDescRec opTable[] = {
     {"-bg",		".background", 	XrmoptionSepArg, (caddr_t)NULL},
     {"-bw",		".borderWidth",	XrmoptionSepArg, (caddr_t)NULL},
     {"-hlhsr",		".hlhsrMode",	XrmoptionSepArg, (caddr_t)NULL},
-    {"-buff",		".bufferMode",	XrmoptionSepArg, (caddr_t)NULL},
+    {"-buff",		".bufMode",	XrmoptionSepArg, (caddr_t)NULL},
 };
 #else
 VGLOBAL XrmOptionDescRec opTable[];
