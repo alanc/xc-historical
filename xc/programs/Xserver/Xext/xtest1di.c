@@ -1,4 +1,4 @@
-/* $XConsortium: mbuf.c,v 1.20 94/01/07 09:45:59 dpw Exp $ */
+/* $XConsortium: xtest1di.c,v 1.10 94/02/23 16:55:45 dpw Exp $ */
 /*
  *	File:  xtest1di.c
  *
@@ -844,7 +844,7 @@ SEventXTestDispatch(from, to)
 		/*
 		 * byte-swap the input actions in the "to" event
 		 */
-		for (i = 0; i < XTestACTIONS_SIZE;)
+		for (i = 0; i < XTestACTIONS_SIZE; i++)
 		{
 			/*
 			 * point to the next input action in the event
