@@ -168,7 +168,7 @@ Copyright 1988, Massachusetts Institute of Technology.
 Copyright 1986, Marvin Solomon and the University of Wisconsin.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
-.SH AUTHOR
+.SH AUTHORS
 Michael R. Gretzinger, MIT Project Athena, 
 Jose Capo, MIT Project Athena (PP3812 support),
 Marvin Solomon (University of Wisconsin).
