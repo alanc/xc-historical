@@ -1,12 +1,12 @@
 \&
 .sp 1
+.XS
+Appendix A \- Input Extension Protocol Encoding
+.XE
 .ce 2
 .ps 11
 .nr PS 11
 .ps +2
-.XS
-Appendix A \- Input Extension Protocol Encoding
-.XE
 \fBAppendix A\fP
 
 \fBInput Extension Protocol Encoding\fP
