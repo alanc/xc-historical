@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.35 91/12/10 11:32:26 rws Exp $ */
+/* $XConsortium: swapreq.c,v 1.36 93/07/12 09:23:58 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -479,7 +479,7 @@ SProcSetInputFocus(client)
     return((* ProcVector[X_SetInputFocus])(client));
 }
 
-
+int
 SProcOpenFont(client)
     register ClientPtr client;
 {
@@ -884,6 +884,18 @@ SProcFreeColors          (client)
 
 }
 
+void
+SwapColorItem(pItem)
+    xColorItem	*pItem;
+{
+    register char n;
+
+    swapl(&pItem->pixel, n);
+    swaps(&pItem->red, n);
+    swaps(&pItem->green, n);
+    swaps(&pItem->blue, n);
+}
+
 int
 SProcStoreColors               (client)
     register ClientPtr client;
@@ -1125,6 +1137,7 @@ SProcNoOperation(client)
     return ((* ProcVector[X_NoOperation])(client));
 }
 
+void
 SwapTimecoord(pCoord)
     xTimecoord *pCoord;
 {
@@ -1135,7 +1148,7 @@ SwapTimecoord(pCoord)
     swaps(&pCoord->y, n);
 }
 
-
+void
 SwapRGB(prgb)
     xrgb	*prgb;
 {
@@ -1146,17 +1159,7 @@ SwapRGB(prgb)
     swaps(&prgb->blue, n);
 }
 
-SwapColorItem(pItem)
-    xColorItem	*pItem;
-{
-    register char n;
-
-    swapl(&pItem->pixel, n);
-    swaps(&pItem->red, n);
-    swaps(&pItem->green, n);
-    swaps(&pItem->blue, n);
-}
-
+void
 SwapConnClientPrefix(pCCP)
     xConnClientPrefix	*pCCP;
 {
