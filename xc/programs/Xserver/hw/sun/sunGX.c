@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.25 94/02/21 10:20:58 kaleb Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.26 94/04/17 20:29:38 kaleb Exp dpw $";
 #endif /* lint */
 /*
 Copyright (c) 1991  X Consortium
@@ -1483,8 +1483,8 @@ sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
 		saveAddr = 0;
 	    else
 		save = *saveAddr;
-	    gx->alinex = x;
 	    gx->aliney = y;
+	    gx->alinex = x;
 	    GXDrawDone(gx,r);
 	    GXWait(gx,r);
 	    if (saveAddr)
