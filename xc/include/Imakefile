@@ -11,7 +11,7 @@ EXPORTS = \
 	keysymdef.h \
 	DECkeysym.h
 
-IMPORTS = \
+IMPORTS1 = \
 	$(OLDXLIBSRC)/X10.h \
 	$(XLIBSRC)/Xlib.h \
 	$(XLIBSRC)/Xresource.h \
@@ -34,7 +34,9 @@ IMPORTS = \
 	$(TOOLKITSRC)/StringDefs.h \
 	$(TOOLKITSRC)/TM.h \
 	$(TOOLKITSRC)/Vendor.h \
-	$(TOOLKITSRC)/VendorP.h \
+	$(TOOLKITSRC)/VendorP.h
+
+IMPORTS2 = \
 	$(AWIDGETSRC)/AsciiText.h \
 	$(AWIDGETSRC)/AsciiTextP.h \
 	$(AWIDGETSRC)/Box.h \
@@ -69,6 +71,8 @@ IMPORTS = \
 	$(AWIDGETSRC)/VPanedP.h \
 	$(AWIDGETSRC)/Viewport.h \
 	$(AWIDGETSRC)/ViewportP.h
+
+IMPORTS = $(IMPORTS1) $(IMPORTS2)
 
 SUBIMPORTS = \
 	$(EXTENSIONSRC)/include/zoid.h \
