@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.102 91/01/10 14:11:45 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.103 91/01/10 17:16:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -425,7 +425,7 @@ static Cardinal LookupTMEventType(eventStr,error)
     register XrmQuark	signature;
 
     signature = StringToQuark(eventStr);
-    for (i = 0; events[i].signature != NULL; i++)
+    for (i = 0; events[i].signature; i++)
         if (events[i].signature == signature) return i;
 
     Syntax("Unknown event type :  ",eventStr);
@@ -475,10 +475,10 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
     if (lateBindings != NULL){
         temp = *lateBindings;
         if (temp != NULL) {
-            for (count = 0; temp[count].keysym != NULL; count++){/*EMPTY*/}
+            for (count = 0; temp[count].keysym; count++){/*EMPTY*/}
         }
         else count = 0;
-        if (keysymR == NULL){
+        if (! keysymR){
              number = 1;pair = FALSE;
         } else{
              number = 2;pair = TRUE;
@@ -490,13 +490,13 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
         temp[count].knot = notL;
         temp[count].pair = pair;
         temp[count++].keysym = keysymL;
-        if (keysymR != NULL){
+        if (keysymR){
             temp[count].knot = notR;
             temp[count].pair = FALSE;
             temp[count++].keysym = keysymR;
         }
         temp[count].knot = FALSE;
-        temp[count].keysym = NULL;
+        temp[count].keysym = 0;
     }
     
 } 
@@ -716,7 +716,7 @@ static unsigned long StrToHex(str)
     register char   c;
     register unsigned long    val = 0;
 
-    while ((c = *str) != NULL) {
+    while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*16+c-'0';
 	else if ('a' <= c && c <= 'z') val = val*16+c-'a'+10;
 	else if ('A' <= c && c <= 'Z') val = val*16+c-'A'+10;
@@ -733,7 +733,7 @@ static unsigned long StrToOct(str)
     register char c;
     register unsigned long  val = 0;
 
-    while ((c = *str) != NULL) {
+    while (c = *str) {
         if ('0' <= c && c <= '7') val = val*8+c-'0'; else return 0;
 	str++;
     }
@@ -753,7 +753,7 @@ static unsigned long StrToNum(str)
 	else return StrToOct(str);
     }
 
-    while ((c = *str) != NULL) {
+    while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*10+c-'0';
 	else return 0;
 	str++;
