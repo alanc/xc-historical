@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.23 91/03/28 19:17:52 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.24 91/05/06 19:57:06 rws Exp $
 
 #ifdef bsd43
 #define OSName                  NEWS-OS 3.3
@@ -15,7 +15,6 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.23 91/03/28 19:17:52 rws Exp $
 #define OSMinorVersion          0
 #define BootstrapCFlags		-Dsony
 #define SystemV4		YES
-#define BootstrapCFlags		-Dsony
 #define CcCmd                   /usr/bin/cc
 #define HasSockets		YES
 #define DefaultCCOptions        -Wf,-XNp6000,-XNd6000
