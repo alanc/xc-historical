@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.23 90/08/20 10:10:16 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.24 90/08/20 19:10:14 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -261,11 +261,11 @@ miFillWideCircle(pDraw, pGC, parc)
     xArc	*parc;
 {
     int doinner;
-    register int x, y, e, ex;
-    int xk, dx, dy, xorg, yorg;
+    register int x, y, e;
+    int xk, yk, xm, ym, dx, dy, xorg, yorg;
     int slw;
-    int inx, iny, ine, inex;
-    int inxk;
+    int inx, iny, ine;
+    int inxk, inyk, inxm, inym;
     int inslw;
     DDXPointPtr points;
     register DDXPointPtr pts;
@@ -285,16 +285,16 @@ miFillWideCircle(pDraw, pGC, parc)
 	DEALLOCATE_LOCAL(points);
 	return;
     }
-    y = parc->width >> 1;
-    dy = parc->width & 1;
+    y = parc->height >> 1;
+    dy = parc->height & 1;
     yorg = parc->y + y;
     xorg = parc->x + y + dy;
     dx = 1 - dy;
-    MIWIDEARCSETUP(x, y, dy, slw, e, xk, ex);
+    MIWIDEARCSETUP(x, y, dy, slw, e, xk, xm, yk, ym);
     inslw = parc->width + doinner;
     if (inslw > 0)
     {
-	MIWIDEARCSETUP(inx, iny, dy, inslw, ine, inxk, inex);
+	MIWIDEARCSETUP(inx, iny, dy, inslw, ine, inxk, inxm, inyk, inym);
     } else
 	doinner--;
     if (pGC->miTranslate)
@@ -306,10 +306,10 @@ miFillWideCircle(pDraw, pGC, parc)
     wids = widths;
     while (y)
     {
-	MIFILLCIRCSTEP(slw);
+	MIFILLARCSTEP(slw);
 	if (++doinner > 0)
 	{
-	    MIFILLINCIRCSTEP(inslw);
+	    MIFILLINARCSTEP(inslw);
 	    pts->x = xorg - x;
 	    pts->y = yorg - y;
 	    *wids++ = x - inx;
