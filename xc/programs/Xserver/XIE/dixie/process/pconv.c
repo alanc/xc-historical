@@ -1,4 +1,4 @@
-/* $XConsortium: pconv.c,v 1.1 93/10/26 10:00:45 rws Exp $ */
+/* $XConsortium: pconv.c,v 1.2 93/10/31 09:40:31 dpw Exp $ */
 /**** module pconv.c ****/
 /******************************************************************************
 				NOTICE
@@ -207,7 +207,7 @@ Bool CopyConvolveConstant(flo, ped, sparms, rparms, tsize, isDefault)
 
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
-     if (!(ped->techPvt=(void *)XieMalloc(sizeof(pTecConvolveConstantDefRec))))
+     if (!(ped->techPvt=(pointer )XieMalloc(sizeof(pTecConvolveConstantDefRec))))
 	     FloAllocError(flo, ped->phototag, xieElemConvolve, return(TRUE));
 
      pvt = (pTecConvolveConstantDefPtr)ped->techPvt;
@@ -234,7 +234,7 @@ Bool CopyConvolveConstant(flo, ped, sparms, rparms, tsize, isDefault)
 Bool CopyConvolveReplicate(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *sparms, *rparms;
+     pointer sparms, rparms;
      CARD16	tsize;
      Bool	isDefault;
 {
@@ -289,7 +289,7 @@ static Bool PrepConvolve(flo,ped)
 Bool PrepConvolveStandard(flo, ped, raw, tec) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *raw, *tec;
+     pointer raw, tec;
 {
   return(TRUE);
 }
