@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.16 87/09/01 14:53:11 toddb Locked $ */
+/* $Header: XImUtil.c,v 11.17 87/09/01 14:53:59 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -483,8 +483,8 @@ XImage *_XSubImage (ximage, x, y, width, height)
     XImage *ximage;
     register int x;	/* starting x coordinate in existing image */
     register int y;	/* starting y coordinate in existing image */
-    int width;		/* width in pixels of new subimage */
-    int height;		/* height in pixels of new subimage */
+    unsigned int width;	/* width in pixels of new subimage */
+    unsigned int height;/* height in pixels of new subimage */
 
 {
 	register XImage *subimage;

@@ -24,7 +24,7 @@ int XReadBitmapFile(display, d, filename, width, height, bitmap, x_hot, y_hot)
      Display *display;
      Drawable d;
      char *filename;
-     int *width, *height;   /* RETURNED */
+     unsigned int *width, *height;   /* RETURNED */
      Pixmap *bitmap;        /* RETURNED */
      int *x_hot, *y_hot;    /* RETURNED */
 {

@@ -61,7 +61,7 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
      Display *display;
      char *filename;
      Pixmap bitmap;
-     int width, height;
+     unsigned int width, height;
      int x_hot, y_hot;
 {
   char *data, *ptr;

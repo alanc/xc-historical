@@ -23,7 +23,7 @@ Pixmap XCreateBitmapFromData(display, d, data, width, height)
      Display *display;
      Drawable d;
      char *data;
-     int width, height;
+     unsigned int width, height;
 {
     XImage ximage;
     GC gc;
