@@ -421,17 +421,27 @@ Display_Stats_Info(window)
 {
   XWindowAttributes win_attributes;
   int dw = DisplayWidth (dpy, screen), dh = DisplayHeight (dpy, screen);
-  int xright, ybelow;
+  int xright, ybelow, rx, ry;
+  Window dummywin;
 
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
 
-  xright = (dw - win_attributes.x - win_attributes.border_width * 2 -
+  rx = win_attributes.x;
+  ry = win_attributes.y;
+  (void) XTranslateCoordinates (dpy, window, win_attributes.root, 
+				win_attributes.x, win_attributes.y, 
+				&rx, &ry, &dummywin);
+				
+  xright = (dw - rx - win_attributes.border_width * 2 -
 	    win_attributes.width);
-  ybelow = (dh - win_attributes.y - win_attributes.border_width * 2 -
+  ybelow = (dh - ry - win_attributes.border_width * 2 -
 	    win_attributes.height);
 
-  printf("\n         ==> Upper left X: %s\n", xscale(win_attributes.x));
+  printf("\n");
+  printf("         ==> Absolute left X:  %s\n", xscale(rx));
+  printf("         ==> Absolute left Y:  %s\n", yscale(ry));
+  printf("         ==> Upper left X: %s\n", xscale(win_attributes.x));
   printf("         ==> Upper left Y: %s\n", yscale(win_attributes.y));
   printf("         ==> Width: %s\n", xscale(win_attributes.width));
   printf("         ==> Height: %s\n", yscale(win_attributes.height));
@@ -453,8 +463,7 @@ Display_Stats_Info(window)
   printf("         ==> Window Override Redirect State: %s\n",
   	 win_attributes.override_redirect ? "yes" : "no");
   printf("         ==> Corners:  +%d+%d  -%d+%d  -%d-%d  +%d-%d\n",
-	 win_attributes.x, win_attributes.y, xright, win_attributes.y, 
-	 xright, ybelow, win_attributes.x, ybelow);
+	 rx, ry, xright, ry, xright, ybelow, rx, ybelow);
 }
 
 
