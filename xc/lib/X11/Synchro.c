@@ -1,4 +1,4 @@
-/* $XConsortium: Synchro.c,v 11.11 93/10/20 19:22:04 rws Exp $ */
+/* $XConsortium: Synchro.c,v 11.12 93/10/21 10:51:31 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -38,7 +38,8 @@ int (*XSynchronize(dpy,onoff))()
 	    func = _XSyncFunction;
 
 	LockDisplay(dpy);
-	if (temp = dpy->savedsynchandler) {
+	if (dpy->flags & XlibDisplayPrivSync) {
+	    temp = dpy->savedsynchandler;
 	    dpy->savedsynchandler = func;
 	} else {
 	    temp = dpy->synchandler;
@@ -70,7 +71,8 @@ int (*XSetAfterFunction(dpy,func))()
         int (*temp)();
 
 	LockDisplay(dpy);
-	if (temp = dpy->savedsynchandler) {
+	if (dpy->flags & XlibDisplayPrivSync) {
+	    temp = dpy->savedsynchandler;
 	    dpy->savedsynchandler = func;
 	} else {
 	    temp = dpy->synchandler;
