@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 5.1 89/07/09 16:01:44 rws Exp $ */
+/* $XConsortium: mfbclip.c,v 5.2 89/11/30 14:21:50 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -77,20 +77,26 @@ mfbPixmapToRegion(pPix)
     BoxPtr		FirstRect, rects, prectLineStart;
     Bool		fInBox, fSame;
     register unsigned	mask0 = mask[0];
-
+    unsigned		*pwLine;
+    int			nWidth;
 
     pReg = (*pPix->drawable.pScreen->RegionCreate)(NULL, 1);
     if(!pReg)
 	return NullRegion;
     FirstRect = REGION_BOXPTR(pReg);
     rects = FirstRect;
+
+    pwLine = (unsigned *) pPix->devPrivate.ptr;
+    nWidth = pPix->devKind / sizeof (unsigned);
+
     width = pPix->drawable.width;
     pReg->extents.x1 = width - 1;
     pReg->extents.x2 = 0;
-    pw = (unsigned int  *)pPix->devPrivate.ptr;
     irectPrevStart = -1;
     for(h = 0; h < pPix->drawable.height; h++)
     {
+	pw = pwLine;
+	pwLine += nWidth;
 	irectLineStart = rects - FirstRect;
 	/* If the Screen left most bit of the word is set, we're starting in
 	 * a box */
