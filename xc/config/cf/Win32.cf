@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.6 93/08/13 16:38:51 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.7 93/08/14 13:08:46 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1beta
 XCOMM operating system:  OSName
@@ -13,6 +13,7 @@ XCOMM operating system:  OSName
 #define MvCmd ren
 #define RmCmd del
 #define CcCmd cl
+#define HasCppCmd		NO
 #define ArCmdBase lib32
 #define ArCmd ArCmdBase
 #define MkdirHierCmd mkdir
@@ -22,6 +23,7 @@ XCOMM operating system:  OSName
 #define LdCmd link32
 #define HasSymLinks		NO
 #define HasPutenv		YES
+#define Osuf obj
 #define BuildServer		NO
 #define ConnectionFlags		-DTCPCONN
 #ifndef UseInstalled
