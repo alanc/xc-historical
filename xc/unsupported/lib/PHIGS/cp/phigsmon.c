@@ -1,4 +1,4 @@
-/* $XConsortium: phigsmon.c,v 5.5 91/04/04 15:50:40 gildea Exp $ */
+/* $XConsortium: phigsmon.c,v 5.6 91/05/10 19:45:07 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,6 +39,9 @@ SOFTWARE.
 #include <fcntl.h>
 #include <signal.h>
 #include "version.h"
+#ifdef AIXV3
+#include <sys/ioctl.h>
+#endif
 
 #define CPR_CMD_TIMEOUT		250000
 
@@ -208,6 +211,15 @@ set_up( s, es)
 	    tcph->data.monitor.cmd_timeout.it_interval.tv_usec =
 		CPR_CMD_TIMEOUT;
 
+#ifdef AIXV3
+	    /* 
+	     * AIX has a different Non-blocking IO call
+	     */	
+            {
+                int fdflags = 1;
+                ioctl (s, FIONBIO, &fdflags);
+            }
+#else /* AIXV3 */
 	    /* ultrix reads hang on Unix sockets, hpux reads fail */
 #if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
 	    (void)fcntl(s, F_SETFL, O_NONBLOCK);
@@ -221,6 +233,7 @@ set_up( s, es)
 	    (void)fcntl(s, F_SETFL, FNDELAY);
 #endif
 #endif
+#endif /* AIXV3 */
 	    if ( getenv( "PEX_SI_API_SYNC" ) )
 		tcph->flags.err_sync = 1;
 
