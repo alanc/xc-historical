@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.26 89/11/17 18:42:55 keith Exp $
+ * $XConsortium: dm.c,v 1.27 89/11/18 12:43:16 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -264,8 +264,7 @@ WaitForChild ()
 	Debug ("Manager wait returns pid: %d\n", pid);
 	if (autoRescan)
 	    RescanIfMod ();
-	d = FindDisplayByPid (pid);
-	if (d) {
+	if ((d = FindDisplayByPid (pid))) {
 	    d->status = notRunning;
 	    switch (waitVal (status)) {
 	    case UNMANAGE_DISPLAY:
@@ -314,22 +313,24 @@ WaitForChild ()
 		break;
 	    }
 	}
+	else if (d = FindDisplayByServerPid (pid))
+	{
+	    Debug ("Server for display %s terminated unexpectedly, status %d\n", d->name, waitVal (status));
+	    LogError ("Server for display %s terminated unexpectedly\n", d->name);
+	    d->serverPid = -1;
+	    /*
+	     * nuke the session; it won't be much use anymore
+	     * anyhow.  When it exits, the appropriate stuff
+	     * will occur
+	     */
+	    kill (d->pid, SIGTERM);
+#ifdef SIGCONT
+	    kill (d->pid, SIGCONT);
+#endif
+	}
 	else
 	{
-	    d = FindDisplayByServerPid (pid);
-	    if (d) {
-		LogError ("Server for display %s terminated unexpectedly\n", d->name);
-		d->serverPid = -1;
-		/*
-		 * nuke the session; it won't be much use anymore
-		 * anyhow.  When it exits, the appropriate stuff
-		 * will occur
-		 */
-		kill (d->pid, SIGTERM);
-#ifdef SIGCONT
-		kill (d->pid, SIGCONT);
-#endif
-	    }
+	    Debug ("Unknown child termination, status %d\n", waitVal (status));
 	}
     }
     StartDisplays ();
