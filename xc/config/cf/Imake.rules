@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.53 89/08/28 14:33:08 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.54 89/08/31 17:29:39 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -401,25 +401,25 @@ install:: file								@@\
 
 
 /*
- * InstallProgram - generate rules to install an executable program using any
- * special install flags set in $(INSTALLFLAGS).
- */
-#ifndef InstallProgram
-#define	InstallProgram(program,dest)					@@\
-install:: program							@@\
-	$(INSTALL) -c $(INSTALLFLAGS) program dest
-#endif /* InstallProgram */
-
-
-/*
  * InstallProgramWithFlags - generate rules to install an executable program
  * using given install flags.
  */
 #ifndef InstallProgramWithFlags
 #define InstallProgramWithFlags(program,dest,flags)			@@\
 install:: program							@@\
-	$(INSTALL) -c flags program dest
+	$(INSTALL) -c $(INSTPGMFLAGS) flags program dest
 #endif /* InstallProgramWithFlags */
+
+
+/*
+ * InstallProgram - generate rules to install an executable program using any
+ * special install flags set in $(INSTALLFLAGS).
+ */
+#ifndef InstallProgram
+#define	InstallProgram(program,dest)					@@\
+InstallProgramWithFlags(program,dest,/**/)
+#endif /* InstallProgram */
+
 
 
 /*
