@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.7 89/08/21 10:10:38 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.8 89/08/24 10:42:05 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -79,4 +79,6 @@
 #ifndef SharedLibXmu
 #define SharedLibXmu NO
 #endif
-
+#ifndef SharedLibXext
+#define SharedLibXext NO
+#endif
