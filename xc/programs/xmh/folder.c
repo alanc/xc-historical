@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: folder.c,v 2.2 88/01/25 20:10:13 swick Locked $";
+static char rcs_id[] = "$Header: folder.c,v 2.3 88/01/25 20:16:35 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -39,6 +39,7 @@ Scrn scrn;
     extern void exit();
     Toc toc;
     int i, count;
+    Display *dpy;
     count = 0;
     for (i=0 ; i<numScrns ; i++)
 	if (scrnList[i]->kind == STtocAndView && scrnList[i]->mapped)
@@ -63,6 +64,9 @@ Scrn scrn;
 		CmdSetSequence(toc, "cur", MakeSingleMsgList(toc->curmsg));
 	}
 */
+	dpy = XtDisplay(scrn->parent);
+	XtUnmapWidget(scrn->parent);
+	XCloseDisplay(dpy);
 	exit(0);
     }
     else {
