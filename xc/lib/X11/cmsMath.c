@@ -1,7 +1,7 @@
 /*
  * square and cube roots by Newton's method
  *
- * $XConsortium: XcmsMath.c,v 1.6 91/05/05 21:16:26 rws Exp $
+ * $XConsortium: XcmsMath.c,v 1.7 91/06/27 10:52:38 dave Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -28,7 +28,7 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !defined(sun))
+#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !(defined(sun) || (defined(sony) && !defined(SYSTYPE_SYSV))))
 #include <float.h>
 #endif
 #ifndef DBL_EPSILON
