@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.16 93/11/22 16:30:12 mor Exp $ */
+/* $XConsortium: connect.c,v 1.17 93/11/22 19:07:44 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -50,11 +50,9 @@ char *errorStringRet;
     char			*pData;
     IceReplyWaitInfo 		replyWait;
     _IceReply		 	reply;
-    unsigned			afNameCount;
-    unsigned			*afNamesLengths;
-    char			**afNames;
-    char			authUsableFlags[MAX_ICE_AUTH_NAMES];
     int				authUsableCount;
+    int				authUsableFlags[MAX_ICE_AUTH_NAMES];
+    int				authIndices[MAX_ICE_AUTH_NAMES];
 
     if (errorStringRet && errorLength > 0)
 	*errorStringRet = '\0';
@@ -129,7 +127,7 @@ char *errorStringRet;
 
     iceConn->process_msg_info = NULL;
 
-    iceConn->iceConn_type = ICE_CONN_FROM_CONNECT;
+    iceConn->listen_obj = NULL;
 
     iceConn->open_ref_count = 1;
     iceConn->proto_ref_count = 0;
@@ -191,30 +189,18 @@ char *errorStringRet;
 
     /*
      * Determine which authentication methods are available for
-     * the Connection Setup authentication.  The .ICEauthority
-     * file is checked for all ICE authentication methods that
-     * match the connection string we have.  We then check against
-     * the actual methods supported by the ICE library.
+     * the Connection Setup authentication.
      */
 
-    IceGetAuthNamesFromAuthFile (
-	strlen (iceConn->connection_string), iceConn->connection_string,
-	&afNameCount, &afNamesLengths, &afNames);
+    IceGetValidAuthIndicesFromAuthFile ("ICE", iceConn->connection_string,
+	_IceAuthCount, _IceAuthNames, &authUsableCount, authIndices);
 
     for (i = 0; i < _IceAuthCount; i++)
     {
 	authUsableFlags[i] = 0;
-	for (j = 0; j < afNameCount && !authUsableFlags[i]; j++)
-	    authUsableFlags[i] = (strlen (_IcePoAuthRecs[i].auth_name) ==
-		afNamesLengths[j] && strncmp (_IcePoAuthRecs[i].auth_name,
-		afNames[j], afNamesLengths[j]) == 0);
+	for (j = 0; j < authUsableCount && !authUsableFlags[i]; j++)
+	    authUsableFlags[i] = (authIndices[j] == i);
     }
-
-    if (afNames)
-	IceFreeAuthNames (afNameCount, afNames);
-
-    if (afNamesLengths)
-	free ((char *) afNamesLengths);
 
 
     /*
@@ -222,13 +208,11 @@ char *errorStringRet;
      */
 
     extra = XPCS_BYTES (IceVendorString) + XPCS_BYTES (IceReleaseString);
-    authUsableCount = 0;
 
     for (i = 0; i < _IceAuthCount; i++)
 	if (authUsableFlags[i])
 	{
-	    extra += XPCS_BYTES (_IcePoAuthRecs[i].auth_name);
-	    authUsableCount++;
+	    extra += XPCS_BYTES (_IceAuthNames[i]);
 	}
 
     extra += (_IceVersionCount * 4);
@@ -249,7 +233,7 @@ char *errorStringRet;
     for (i = 0; i < _IceAuthCount; i++)
 	if (authUsableFlags[i])
 	{
-	    STORE_XPCS (pData, _IcePoAuthRecs[i].auth_name);
+	    STORE_XPCS (pData, _IceAuthNames[i]);
 	}
 
     for (i = 0; i < _IceVersionCount; i++)
