@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.51 91/12/26 09:46:14 rws Exp $ */
+/* $XConsortium: events.c,v 5.52 92/03/13 15:42:27 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2964,6 +2964,7 @@ InitEvents()
     syncEvents.time.milliseconds = 0;	/* hardly matters */
     currentTime.months = 0;
     currentTime.milliseconds = GetTimeInMillis();
+    lastDeviceEventTime = currentTime;
     for (i = 0; i < DNPMCOUNT; i++)
     {
 	DontPropagateMasks[i] = 0;
