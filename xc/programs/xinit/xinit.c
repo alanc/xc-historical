@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.20 88/08/29 19:24:32 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.21 88/08/30 20:54:23 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -24,6 +24,10 @@ extern int sys_nerr;
 extern char *getenv();
 extern char **environ;
 char **newenviron = NULL;
+
+#ifndef SHELL
+#define SHELL "sh"
+#endif
 
 #ifdef macII
 #define vfork() fork()
@@ -208,19 +212,17 @@ register char **argv;
 		(void) sprintf (xinitrcbuf, "%s/%s", cp, xinitrc);
 	    }
 	    if (xinitrcbuf[0]) {
-		if (access (xinitrcbuf, X_OK) == 0) {		/* execute */
-		    client[0] = xinitrcbuf;
-		    client[1] = NULL;
-		} else if (access (xinitrcbuf, R_OK) == 0) {	/* read */
-		    client[0] = "sh";
+		if (access (xinitrcbuf, R_OK) == 0) {		/* read */
+		    client[0] = SHELL;
 		    client[1] = xinitrcbuf;
 		    client[2] = NULL;
 		} else if (access (xinitrcbuf, F_OK) == 0) {	/* exists */
 		    fprintf (stderr,
-			     "%s:  can't execute or read init file \"%s\"\n",
+			     "%s:  warning, can't read init file \"%s\"\n",
 			     program, xinitrcbuf);
 		} else if (required) {			/* doesn't exist */
-		    fprintf (stderr, "%s:  no such init file \"%s\"\n",
+		    fprintf (stderr, 
+			     "%s:  warning, no such init file \"%s\"\n",
 			     program, xinitrcbuf);
 		}
 	    }
