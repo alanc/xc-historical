@@ -7,3 +7,12 @@ variable     *-helvetica-bold-r-normal-*-*-140-*
 8x13         -misc-fixed-medium-r-normal--13-120-75-75-c-80-iso8859-1
 8x13bold     -misc-fixed-bold-r-normal--13-120-75-75-c-80-iso8859-1
 9x15         -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso8859-1
+
+-misc-fixed-medium-r-normal--8-60-100-100-c-50-iso8859-1 -misc-fixed-medium-r-normal--8-80-75-75-c-50-iso8859-1
+-misc-fixed-medium-r-normal--10-80-75-75-c-60-iso8859-1 -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1
+-misc-fixed-medium-r-semicondensed--12-90-75-75-c-60-iso8859-1 -misc-fixed-medium-r-semicondensed--12-110-75-75-c-60-iso8859-1
+-misc-fixed-medium-r-semicondensed--13-100-75-75-c-60-iso8859-1 -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso8859-1
+-misc-fixed-medium-r-normal--13-100-75-75-c-80-iso8859-1 -misc-fixed-medium-r-normal--13-120-75-75-c-80-iso8859-1
+-misc-fixed-bold-r-normal--13-100-75-75-c-80-iso8859-1 -misc-fixed-bold-r-normal--13-120-75-75-c-80-iso8859-1
+-misc-fixed-medium-r-normal--15-120-75-75-c-90-iso8859-1 -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso8859-1
+
