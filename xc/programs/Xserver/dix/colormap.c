@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.7 90/01/13 17:31:38 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.8 90/01/23 10:57:32 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -866,7 +866,7 @@ FakeAllocColor (pmap, pred, pgreen, pblue, pPix, read_only)
     xrgb	rgb;
     int		class;
     VisualPtr	pVisual;
-
+    static Pixel lastPix = 0;
 
     pVisual = pmap->pVisual;
     (*pmap->pScreen->ResolveColor) (pred, pgreen, pblue, pVisual);
@@ -875,6 +875,12 @@ FakeAllocColor (pmap, pred, pgreen, pblue, pPix, read_only)
     rgb.blue = *pblue;
     class = pmap->class;
     entries = pVisual->ColormapEntries;
+    /* kludge to avoid duplicate allocations most of the time */
+    lastPix++;
+    if (lastPix >= entries)
+	lastPix = 0;
+    *pPix = lastPix;
+    
 
     /* If this is one of the static storage classes, and we're not initializing
      * it, the best we can do is to find the closest color entry to the
