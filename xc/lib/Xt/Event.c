@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.144 93/08/12 20:28:41 converse Exp $ */
+/* $XConsortium: Event.c,v 1.144 93/08/12 20:32:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1271,7 +1271,7 @@ Boolean XtDispatchEvent (event)
     int starting_count = app->destroy_count;
     XtPerDisplay pd = _XtGetPerDisplay(event->xany.display);
     Time	time = 0;
-    XtEventDispatchProc dispatch;
+    XtEventDispatchProc dispatch = DecideToDispatch;
     void _XtRefreshMapping();
 
     switch (event->xany.type & 0x7f) {
@@ -1290,9 +1290,10 @@ Boolean XtDispatchEvent (event)
     if (time) pd->last_timestamp = time;
     pd->last_event = *event;
 
-    dispatch = DecideToDispatch;
-    if (pd->dispatcher_list)
+    if (pd->dispatcher_list) {
 	dispatch = pd->dispatcher_list[event->xany.type & 0x7f];
+	if (dispatch == NULL) dispatch = DecideToDispatch;
+    }
     was_dispatched = (*dispatch)(event);
 
     /*
@@ -1521,7 +1522,7 @@ void _XtSendFocusEvent(child, type)
 static XtEventDispatchProc* NewDispatcherList()
 {
     XtEventDispatchProc* l =
-	(XtEventDispatchProc*) XtCalloc((Cardinal)0x7f,
+	(XtEventDispatchProc*) XtCalloc((Cardinal) 128,
 					(Cardinal)sizeof(XtEventDispatchProc));
     return l;
 }
@@ -1540,24 +1541,22 @@ XtEventDispatchProc XtSetEventDispatcher(dpy, event_type, proc)
 #endif
 {
     XtEventDispatchProc *list;
-    XtEventDispatchProc old_proc = NULL;
-    XtEventDispatchProc DefaultDispatcher = DecideToDispatch;
+    XtEventDispatchProc old_proc;
     register XtPerDisplay pd;
 
-    if (event_type > 0x7f) return (XtEventDispatchProc) DefaultDispatcher;
+    if (event_type > 0x7f) return DecideToDispatch;
 
     pd = _XtGetPerDisplay(dpy);
 
     list = pd->dispatcher_list;
     if (!list) {
 	if (proc) list = pd->dispatcher_list = NewDispatcherList();
-	else return (XtEventDispatchProc) DefaultDispatcher;
+	else return DecideToDispatch;
     }
     old_proc = list[event_type];
     list[event_type] = proc;
-    return (old_proc == NULL 
-		? (XtEventDispatchProc) DefaultDispatcher 
-		: old_proc);
+    if (old_proc == NULL) old_proc = DecideToDispatch;
+    return old_proc;
 }
 
 #if NeedFunctionPrototypes
