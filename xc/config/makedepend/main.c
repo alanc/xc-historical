@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.55 91/07/09 14:44:20 rws Exp $
+ * $XConsortium: main.c,v 1.56 91/07/25 11:50:59 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -302,7 +302,7 @@ main(argc, argv)
 
 		find_includes(filecontent, ip, ip, 0, FALSE);
 		freefile(filecontent);
-		recursive_pr_include(ip, ip->i_file, basename(*fp));
+		recursive_pr_include(ip, ip->i_file, base_name(*fp));
 		inc_clean();
 	}
 	if (printed)
@@ -420,7 +420,7 @@ done:
 	return(bol);
 }
 
-char *basename(file)
+char *base_name(file)
 	register char	*file;
 {
 	register char	*p;

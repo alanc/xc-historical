@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.16 91/04/25 15:58:44 gildea Exp $
+ * $XConsortium: def.h,v 1.17 91/05/13 10:23:29 rws Exp $
  */
 #include <X11/Xosdefs.h>
 #include <stdio.h>
@@ -100,7 +100,7 @@ char			*realloc();
 #endif
 
 char			*copy();
-char			*basename();
+char			*base_name();
 char			*getline();
 struct symtab		*slookup();
 struct symtab		*isdefined();
