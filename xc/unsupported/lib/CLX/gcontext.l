@@ -152,7 +152,7 @@
 	   (progn
 	     (fill (the gcontext-state state) nil)
 	     state)
-	 (make-array length)))))
+	 (make-array length :initial-element nil)))))
 
 (defun deallocate-gcontext-state (state)
   (atomic-push state *gcontext-local-state-cache*))
@@ -888,7 +888,7 @@
   (let* ((gc-name (intern (concatenate 'string
 				       (string 'gcontext-)
 				       (string name)))) ;; in current package
-	 (key-name (intern (string name) 'keyword))
+	 (key-name (kintern name))
 	 (setfer (xintern "Set-" gc-name))
 	 (internal-set-function (xintern "Internal-Set-" gc-name))
 	 (internal-copy-function (xintern "Internal-Copy-" gc-name))

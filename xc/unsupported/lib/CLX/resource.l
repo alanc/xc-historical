@@ -133,8 +133,8 @@
   ;; Ensure STRINGABLE is a keyword.
   (declare (type stringable stringable))
   (if (symbolp stringable)
-      (intern (symbol-name stringable) '#,(find-package 'keyword))
-    (intern (string-upcase (the string stringable)) '#,(find-package 'keyword))))
+      (kintern stringable)
+    (kintern (string-upcase (the string stringable)))))
 
 ;; This is in the inner-loop of the resource search.
 ;; Try to be as fast as possible.
