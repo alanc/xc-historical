@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium$
+# $XConsortium: Makefile,v 1.30 92/06/11 15:42:05 rws Exp $
 #
 
 ##########################################################################
@@ -39,7 +39,7 @@ CFILES =	startup.c ex_startup.c \
 	tpstartup.c nondepth1pix.c gcinclude.c regid.c openfonts.c checkfont.c \
 	badcmap.c makecolmap.c makecur.c makeimg.c checkimg.c opendisp.c \
 	bitcount.c config.c makewin2.c block.c winh.c pointer.c events.c \
-	gettime.c maxsize.c buildtree.c exposecheck.c \
+	gettime.c maxsize.c buildtree.c exposechk.c \
 	settimeout.c makeregion.c xthost.c pfcount.c XTestExt.c devcntl.c \
 	extenavail.c environ.c cursor.c
 OFILES =	startup.o ex_startup.o \
@@ -53,7 +53,7 @@ OFILES =	startup.o ex_startup.o \
 	tpstartup.o nondepth1pix.o gcinclude.o regid.o openfonts.o checkfont.o \
 	badcmap.o makecolmap.o makecur.o makeimg.o checkimg.o opendisp.o \
 	bitcount.o config.o makewin2.o block.o winh.o pointer.o events.o \
-	gettime.o maxsize.o buildtree.o exposecheck.o \
+	gettime.o maxsize.o buildtree.o exposechk.o \
 	settimeout.o makeregion.o xthost.o pfcount.o XTestExt.o devcntl.o \
 	extenavail.o environ.o cursor.o
 
