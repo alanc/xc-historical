@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.12 94/02/05 14:42:03 rws Exp $ */
+/* $XConsortium: record.c,v 1.13 94/02/23 15:52:29 dpw Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -425,7 +425,7 @@ RecordRequest(client)
                     rep.nReplies	= 1;
                     rep.client_swapped 	= client->swapped;
                     rep.client_seq     	= client->sequence;
-               	    rep.direction	= FromClient;
+               	    rep.direction	= XRecordFromClient;
 	
 #ifdef VERBOSE
      		    ErrorF("%s:  Client: 0x%lx Config: 0x%lx RecordRequest[%d] (%d - %d)\n",
@@ -493,7 +493,7 @@ RecordEvents(pcbl, nulldata, pinfo)
 			    rep.id_base		= pCur->intercept_id;
 			    rep.client_swapped	= client->swapped;
 			    rep.client_seq      = client->sequence;
-			    rep.direction	= FromServer;
+			    rep.direction	= XRecordFromServer;
 #ifdef VERBOSE
 			    ErrorF("%s:  Client: 0x%lx Config: 0x%lx RecordEvents[%d]  (%d - %d)\n",
 				   XRecordExtName,

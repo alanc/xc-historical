@@ -1,4 +1,4 @@
-/* $XConsortium: recordstr.h,v 1.3 94/01/30 23:48:01 rws Exp $ */
+/* $XConsortium: recordstr.h,v 1.4 94/02/05 17:28:29 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -24,11 +24,11 @@
 
 #include <X11/Xmd.h>
 
-#define globaldef
-#define globalref extern
+#define XRecordGlobaldef
+#define XRecordGlobalref extern
 
-typedef int  (*int_function)();
-typedef void (*void_function)();
+typedef int  (*XRecord_int_function)();
+typedef void (*XRecord_void_function)();
 
 #define XRecordMaxEvent                 (128L-1L)
 #define XRecordMaxError                 (256L-1L)
@@ -43,8 +43,8 @@ typedef void (*void_function)();
 #define RecordEvent                     (1L<<4L)
 #define RecordError                     (1L<<5L)
 
-#define FromClient                    0
-#define FromServer                    1
+#define XRecordFromClient               0
+#define XRecordFromServer               1
 
 #define XRecordConfig CARD32
 
