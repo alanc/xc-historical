@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_simple.c,v 2.9 1994/02/06 20:17:26 rws Exp dpw $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -56,6 +56,7 @@ void DoGetAtom(xp, p, reps)
 
     for (i = 0; i != reps; i++) {
 	atom = XGetAtomName (xp->d, 1);
+ 	XFree(atom); /* fix XBUG 6480 */
     }
 }
 
