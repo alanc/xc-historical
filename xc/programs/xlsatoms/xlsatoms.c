@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsatoms.c,v 1.1 89/08/22 09:28:26 jim Exp $
+ * $XConsortium: xlsatoms.c,v 1.2 89/08/22 10:15:08 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -55,6 +55,7 @@ main (argc, argv)
     char *displayname = NULL;
     char *format = "%lu\t%s";
     int i, doit;
+    int didit = 0;
     Display *dpy = NULL;
 
     ProgramName = argv[0];
@@ -75,11 +76,17 @@ main (argc, argv)
 		    continue;
 		  case 'r':			/* -range num-[num] */
 		    if (++i >= argc) usage ();
-		    if (doit) do_range (dpy, format, argv[i]);
+		    if (doit) {
+			do_range (dpy, format, argv[i]);
+			didit = 1;
+		    }
 		    continue;
 		  case 'n':			/* -name string */
 		    if (++i >= argc) usage ();
-		    if (doit) do_name (dpy, format, argv[i]);
+		    if (doit) {
+			do_name (dpy, format, argv[i]);
+			didit = 1;
+		    }
 		    continue;
 		}
 	    }
@@ -92,7 +99,9 @@ main (argc, argv)
 			 ProgramName, XDisplayName (displayname));
 		exit (1);
 	    }
-	}
+	} else
+	    if (!didit)		/* no options, default is list all */
+		list_atoms(dpy, format, 0, 0, 0);
     }
 
     XCloseDisplay (dpy);
