@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.17 89/05/15 16:50:59 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.18 89/05/17 15:41:55 kit Exp $";
 #endif
 
 /***********************************************************
@@ -242,23 +242,49 @@ ChangeSize(w, width, height)
 Widget w;
 Dimension width, height;
 {
-    Dimension w_ret, h_ret;
+    XtWidgetGeometry request, reply;
 
-    (void) Layout(w, FALSE, FALSE, &width, &height);
+    request.request_mode = CWWidth | CWHeight;
+    request.width = width;
+    request.height = height;
+    
+/*    (void) Layout(w, FALSE, FALSE, &width, &height); */
 
-    switch ( XtMakeResizeRequest(w, width,height, &w_ret, &h_ret) ) {
+    switch ( XtMakeGeometryRequest(w, &request, &reply) ) {
     case XtGeometryYes:
     case XtGeometryNo:
         break;
     case XtGeometryAlmost:
-        if (Layout(w, FALSE, FALSE, &width, &height)) {
-            XtWarning("Size Changed when it shouldn't have...");
-	    XtWarning("when initializing the List Widget");
+	Layout(w, (request.height != reply.height),
+	          (request.width != reply.width),
+	       &(reply.width), &(reply.height));
+	request = reply;
+	switch (XtMakeGeometryRequest(w, &request, &reply) ) {
+	case XtGeometryYes:
+	case XtGeometryNo:
+	    break;
+	case XtGeometryAlmost:
+	    request = reply;
+	    if (Layout(w, FALSE, FALSE,
+		       &(request.width), &(request.height))) {
+	      char buf[BUFSIZ];
+	      sprintf(buf, "List Widget: %s %s",
+		      "Size Changed when it shouldn't have",
+		      "when computing layout");
+	      XtAppWarning(XtWidgetToApplicationContext(w), buf);
+	    }
+	    request.request_mode = CWWidth | CWHeight;
+	    XtMakeGeometryRequest(w, &request, &reply);
+	    break;
+	default:
+	  XtAppWarning(XtWidgetToApplicationContext(w),
+		       "List Widget: Unknown geometry return.");
+	  break;
 	}
-	(void) XtMakeResizeRequest(w, w_ret, h_ret, NULL, NULL);
 	break;
     default:
-	XtWarning("Unknown geometry return in List Widget");
+	XtAppWarning(XtWidgetToApplicationContext(w),
+		     "List Widget: Unknown geometry return.");
 	break;
     }
 }
@@ -288,8 +314,6 @@ Widget junk, new;
 			+ lw->list.font->max_bounds.descent
 			+ lw->list.row_space;
 
-    ResetList(new, (new->core.width == 0), (new->core.height == 0));
-
 /*
  * Default to the name of the widget as the entire list.
  */
@@ -298,6 +322,8 @@ Widget junk, new;
       lw->list.list = &(lw->core.name);
       lw->list.nitems = 1;
     }
+
+    ResetList(new, (new->core.width == 0), (new->core.height == 0));
 
     lw->list.highlight = lw->list.is_highlighted = NO_HIGHLIGHT;
 
@@ -596,8 +622,8 @@ Widget w;
   height = w->core.height;
 
   if (Layout(w, FALSE, FALSE, &width, &height))
-    XtWarning(
-      "Size Changed when it shouldn't have in Resizing the List Widget");
+    XtAppWarning(XtWidgetToApplicationContext(w),
+	    "List Widget: Size changed when it shouldn't have when resising.");
 }
 
 /*	Function Name: Layout
