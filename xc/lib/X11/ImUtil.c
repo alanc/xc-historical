@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.25 88/05/16 11:33:26 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.26 88/09/06 16:08:41 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -626,6 +626,13 @@ _XAddPixel (ximage, value)
 		    }
 		}
 	  } else if (ximage->format == ZPixmap) {
+#ifdef broken
+		/* 
+		 * This has stupid little-endian assumptions; to fix it you
+		 * would need to make sure that it copies the right nbytes
+		 * into and out of the variable "pixel".  Later.
+		 */
+
 		/* If the bits_per_pixel makes the alignment occur on even
 		 * byte boundaries, perform the addition by stepping thru
 		 * the data one pixel at a time.  Otherwise, do it the slow
@@ -647,7 +654,9 @@ _XAddPixel (ximage, value)
 			    for (i = 0; i < nbytes; i++) *dst++ = *tmp++;
 			}
 		    }			    
-		} else {
+		} else 
+#endif /* broken */
+		{
 		    for (y = 0; y < ximage->height; y++) {
 			for (x = 0; x < ximage->width; x++) {
 			    pixel = XGetPixel(ximage, x, y);
