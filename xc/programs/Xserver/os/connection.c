@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.92 89/01/16 17:12:47 rws Exp $ */
+/* $XConsortium: connection.c,v 1.93 89/01/17 07:24:12 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -428,7 +428,7 @@ EstablishNewConnections()
 	    if (client = clients[i])
 	    {
 		oc = (OsCommPtr)(client->osPrivate);
-		if ((oc->conn_time != 0) &&
+		if (oc && (oc->conn_time != 0) &&
 		    (connect_time - oc->conn_time) >= TimeOutValue)
 		    CloseDownClient(client);     
 	    }
