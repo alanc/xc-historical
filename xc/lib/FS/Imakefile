@@ -1,4 +1,4 @@
-INCLUDES = -I. -I../include -I$(FONTSRC)/include
+INCLUDES = -I. -I$(FONTSRC)/include
 
 SRCS =	FSlibInt.c FSOpenServ.c  FSClServ.c FSConnServ.c FSServName.c	\
 	FSSynchro.c FSErrDis.c FSSync.c FSFlush.c 	\
@@ -24,7 +24,7 @@ OBJS =	FSlibInt.o FSOpenServ.o  FSClServ.o FSConnServ.o FSServName.o	\
 	FSQGlyphs.o				\
 	FSErrHndlr.o
 
-NormalLibraryTarget(FS, $(OBJS))
+NormalLibraryTarget(FS,$(OBJS))
 
 DependTarget()
 

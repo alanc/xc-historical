@@ -1,11 +1,7 @@
-#
-# Make file for font handling routines
-#
 #include <Server.tmpl>
 
-      FONTLIBSRC = $(FONTSRC)/lib
-   FONTSERVERSRC = $(FONTSRC)/tools/fontserver
-        INCLUDES = -I$(FONTSRC)/include -I$(FONTLIBSRC)/include -I$(FONTSERVERSRC)/include
+   FONTSERVERSRC = $(FONTSRC)/server
+        INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
          HEADERS = 
 #ifdef FontFormatDefines
      FORMAT_DEFS = FontFormatDefines
