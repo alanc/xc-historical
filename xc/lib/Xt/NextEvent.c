@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.53 88/09/06 09:51:39 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.54 88/09/06 16:28:18 jim Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -252,7 +252,7 @@ static void TeCallProc(ptr)
 XtIntervalId XtAddTimeOut(interval, proc, closure)
 	unsigned long interval;
 	XtTimerCallbackProc proc;
-	Opaque closure;
+	caddr_t closure;
 {
 	return XtAppAddTimeOut(_XtDefaultAppContext(), 
 		interval, proc, closure); 
@@ -263,7 +263,7 @@ XtIntervalId XtAppAddTimeOut(app, interval, proc, closure)
 	XtAppContext app;
 	unsigned long interval;
 	XtTimerCallbackProc proc;
-	Opaque closure;
+	caddr_t closure;
 {
 	TimerEventRec *tptr;
         struct timeval current_time;
@@ -304,7 +304,7 @@ void  XtRemoveTimeOut(id)
 
 XtWorkProcId XtAddWorkProc(proc, closure)
 	XtWorkProc proc;
-	Opaque closure;
+	caddr_t closure;
 {
 	return XtAppAddWorkProc(_XtDefaultAppContext(), proc, closure);
 }
@@ -312,7 +312,7 @@ XtWorkProcId XtAddWorkProc(proc, closure)
 XtWorkProcId XtAppAddWorkProc(app, proc, closure)
 	XtAppContext app;
 	XtWorkProc proc;
-	Opaque closure;
+	caddr_t closure;
 {
 	WorkProcRec *wptr;
 
@@ -344,9 +344,9 @@ void  XtRemoveWorkProc(id)
 
 XtInputId XtAddInput( source, Condition, proc, closure)
 	int source;
-	Opaque Condition;
+	caddr_t Condition;
 	XtInputCallbackProc proc;
-	Opaque closure;
+	caddr_t closure;
 {
 	return XtAppAddInput(_XtDefaultAppContext(),
 		source, Condition, proc, closure);
@@ -355,9 +355,9 @@ XtInputId XtAddInput( source, Condition, proc, closure)
 XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	XtAppContext app;
 	int source;
-	Opaque Condition;
+	caddr_t Condition;
 	XtInputCallbackProc proc;
-	Opaque closure;
+	caddr_t closure;
 {
 	InputEvent *sptr;
 	XtInputMask condition = (XtInputMask) Condition;
