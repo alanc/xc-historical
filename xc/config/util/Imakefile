@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/03/24 18:16:46 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/03/29 15:54:11 gildea Exp kaleb $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
-         PROGRAMS = xmkmf $(MDEP_PROG) mergelib
+         PROGRAMS = xmkmf $(MDEP_PROG) mergelib makestrs
           DEPLIBS =
   EXTRA_LIBRARIES =
 
@@ -19,6 +19,8 @@ SimpleHostProgramTarget(lndir)
 SimpleProgramTarget(lndir)
 #endif
 #endif
+
+NormalProgramTarget(makestrs,makestrs.o,,,)
 
 InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallManPage(xmkmf,$(MANDIR))
