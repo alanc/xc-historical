@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.9 90/02/02 15:56:28 jim Exp $
+ * $XConsortium: viewres.c,v 1.10 90/02/02 17:59:11 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -75,13 +75,15 @@ static XtResource Resources[] = {
     { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
 	offset(show_variable), XtRImmediate, (caddr_t) FALSE },
     { "labelVariable", "LabelVariable", XtRString, sizeof(String),
-	offset(label_variable), XtRString, (caddr_t) "Variable Names" },
+	offset(label_variable), XtRString, 
+	(caddr_t) "Show Variable Names" },
     { "labelClass", "LabelClass", XtRString, sizeof(String),
-	offset(label_class), XtRString, (caddr_t) "Class Names" },
+	offset(label_class), XtRString, 
+	(caddr_t) "Show Class Names" },
     { "labelHorizontal", "LabelHorizontal", XtRString, sizeof(String),
-	offset(label_horizontal), XtRString, (caddr_t) "Horizontal Layout" },
+	offset(label_horizontal), XtRString, (caddr_t) "Layout Horizontal" },
     { "labelVertical", "LabelVertical", XtRString, sizeof(String),
-	offset(label_vertical), XtRString, (caddr_t) "Vertical Layout" },
+	offset(label_vertical), XtRString, (caddr_t) "Layout Vertical" },
 #undef offset
 };
 
