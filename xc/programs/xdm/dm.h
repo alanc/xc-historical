@@ -1,4 +1,4 @@
-/* $XConsortium: dm.h,v 1.63 94/04/17 20:03:37 gildea Exp converse $ */
+/* $XConsortium: dm.h,v 1.64 94/10/07 19:43:37 converse Exp kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -247,7 +247,7 @@ struct greet_info {
 };
 
 /* setgroups is not covered by POSIX, arg type varies */
-#if defined(SYSV) || defined(SVR4) || defined(__osf__)
+#if defined(SYSV) || defined(SVR4) || defined(__osf__) || defined(linux)
 #define GID_T gid_t
 #else
 #define GID_T int
