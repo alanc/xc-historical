@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: resource.c,v 1.63 87/10/21 09:25:11 rws Exp $ */
+/* $Header: resource.c,v 1.64 88/01/01 17:12:35 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -186,7 +186,7 @@ AddResource(id, type, value, func, class)
         FatalError("No delete function given to AddResource \n");
     }
     if ((clientTable[client].elements >= 4*clientTable[client].buckets) &&
-	(clientTable[client].hashsize <= MAXHASHSIZE))
+	(clientTable[client].hashsize < MAXHASHSIZE))
     {
 	register ResourcePtr *resources = (ResourcePtr *)
 	    xalloc(2*clientTable[client].buckets*sizeof(ResourcePtr));
