@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: dispupst3.pi,v 5.1 91/02/16 10:02:15 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -80,8 +80,8 @@ foreach @defmode (
 			"failed: state of visual rep = %d, expected PVISUAL_ST_CORRECT\n");
 	#  Verify the current workstation window has old values,
 	#  the requested workstation window has new values, and
-	#  update state is PUPD_NOT_PENDING
-	im_confirm_wsxform(PUPD_NOT_PENDING,newwin,newwin,vport,vport,
+	#  update state is PUPD_NOT_PEND
+	im_confirm_wsxform(PUPD_NOT_PEND,newwin,newwin,vport,vport,
 		"before updatews");
 
 	#  Verify the picture by sampling pixels at the expected locations. 
@@ -91,7 +91,7 @@ foreach @defmode (
 	#CLEANUP: set ws window to default values
 
 		pset_ws_win(1, &oldwin);
-		pupd_ws(1,PUPD_PERFORM);
+		pupd_ws(1,PFLAG_PERFORM);
 
 		end
 	end

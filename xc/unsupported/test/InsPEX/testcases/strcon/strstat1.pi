@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: strstat1.pi,v 5.1 91/02/16 10:01:00 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -52,7 +52,7 @@ im_confirm_struct_status(2, PSTRUCT_STATUS_EMPTY, "failed: status was %d, expect
 pset_line_colr_ind(3);
 ppolyline(&lines1);
 pclose_struct();
-im_confirm_struct_status(2, PSTRUCT_STATUS_NON_EMPTY, "failed: struct status %d should have been PSTRUCT_STATUS_NON_EMPTY\n");
+im_confirm_struct_status(2, PSTRUCT_STATUS_NOT_EMPTY, "failed: struct status %d should have been PSTRUCT_STATUS_NOT_EMPTY\n");
 
 
 tendtest();

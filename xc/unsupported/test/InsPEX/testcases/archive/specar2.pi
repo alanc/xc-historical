@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: specar2.pi,v 5.1 91/02/16 10:02:03 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -100,7 +100,7 @@ im_confirm_openstructid(1,
 "failed: open str is %d expected 1 after retrieving the str with PRES_UPD\n");
 
 # verify the contents of str 1 have been updated
-im_confirm_status_content(1,PSTRUCT_STATUS_NON_EMPTY,PELEM_LABEL,NULL, 
+im_confirm_status_content(1,PSTRUCT_STATUS_NOT_EMPTY,PELEM_LABEL,NULL, 
 	"failed: after retrieving the str with PRES_UPD, ");
 
 tendtest();

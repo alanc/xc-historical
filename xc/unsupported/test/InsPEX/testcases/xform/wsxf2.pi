@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsxf2.pi,v 5.1 91/02/16 10:01:40 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -57,13 +57,13 @@ popen_ws(1,&conn1,wstype);
 # set 2D and inquire 3D ws transformation 
 pset_ws_win(1,&wswindow1);
 pset_ws_vp(1,&wsviewport1);
-im_confirm_wsxform3(PUPD_NOT_PENDING,wswindow31,wswindow31,wsviewport31,wsviewport31,
+im_confirm_wsxform3(PUPD_NOT_PEND,wswindow31,wswindow31,wsviewport31,wsviewport31,
 	"failed: set(2D) and inquire(3D) ws window,viewport != exp\n");
 
 # set 3D and inquire 2D ws transformation 
 pset_ws_win3(1,&wswindow32);
 pset_ws_vp3(1,&wsviewport32);
-im_confirm_wsxform(PUPD_NOT_PENDING,wswindow2,wswindow2,wsviewport2,wsviewport2,
+im_confirm_wsxform(PUPD_NOT_PEND,wswindow2,wswindow2,wsviewport2,wsviewport2,
 	"failed: set(3D) and inquire(2D) ws window,viewport != exp\n");
 
 tendtest()

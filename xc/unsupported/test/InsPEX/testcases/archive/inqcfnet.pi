@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: inqcfnet.pi,v 5.1 91/02/16 10:01:56 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -122,19 +122,19 @@ im_conflict_strs_innet_test(PNET_CSS,3, 1, 3,    NULL, NULL, "case2", "(3)");
 
 # case 3: same structures in archive and in CSS, src is archive
 
-im_conflict_strs_innet_test(PNET_ARCHIVE,0,3,0,1,    2,    "case 3", "(0,1,2)");
-im_conflict_strs_innet_test(PNET_ARCHIVE,1,2,1,2,    NULL, "case 3", "(1,2)");
-im_conflict_strs_innet_test(PNET_ARCHIVE,2,1,2,NULL, NULL, "case 3", "(2)");
-im_conflict_strs_innet_test(PNET_ARCHIVE,3,1,3,NULL, NULL, "case 3", "(3)");
+im_conflict_strs_innet_test(PNET_AR,0,3,0,1,    2,    "case 3", "(0,1,2)");
+im_conflict_strs_innet_test(PNET_AR,1,2,1,2,    NULL, "case 3", "(1,2)");
+im_conflict_strs_innet_test(PNET_AR,2,1,2,NULL, NULL, "case 3", "(2)");
+im_conflict_strs_innet_test(PNET_AR,3,1,3,NULL, NULL, "case 3", "(3)");
 
 # case 4: some structures in archive, none in CSS, src is archive
 
 pdel_all_structs();
 
-im_conflict_strs_innet_test(PNET_ARCHIVE,0, 0, NULL, NULL, NULL, "case 4", "NULL");
-im_conflict_strs_innet_test(PNET_ARCHIVE,1, 0, NULL, NULL, NULL, "case 4", "NULL");
-im_conflict_strs_innet_test(PNET_ARCHIVE,2, 0, NULL, NULL, NULL, "case 4", "NULL");
-im_conflict_strs_innet_test(PNET_ARCHIVE,3, 0, NULL, NULL, NULL, "case 4", "NULL");
+im_conflict_strs_innet_test(PNET_AR,0, 0, NULL, NULL, NULL, "case 4", "NULL");
+im_conflict_strs_innet_test(PNET_AR,1, 0, NULL, NULL, NULL, "case 4", "NULL");
+im_conflict_strs_innet_test(PNET_AR,2, 0, NULL, NULL, NULL, "case 4", "NULL");
+im_conflict_strs_innet_test(PNET_AR,3, 0, NULL, NULL, NULL, "case 4", "NULL");
 
 # case 5: structures in CSS different from structures in archive, src is archive
 
@@ -143,10 +143,10 @@ im_buildstr3_();
 popen_struct(4);
 pclose_struct();
 
-im_conflict_strs_innet_test(PNET_ARCHIVE,0, 1, 2,    NULL, NULL, "case 5", "(2)");
-im_conflict_strs_innet_test(PNET_ARCHIVE,1, 1, 2,    NULL, NULL, "case 5", "(2)");
-im_conflict_strs_innet_test(PNET_ARCHIVE,2, 1, 2,    NULL, NULL, "case 5", "(2)");
-im_conflict_strs_innet_test(PNET_ARCHIVE,3, 1, 3,    NULL, NULL, "case 5", "(3)");
+im_conflict_strs_innet_test(PNET_AR,0, 1, 2,    NULL, NULL, "case 5", "(2)");
+im_conflict_strs_innet_test(PNET_AR,1, 1, 2,    NULL, NULL, "case 5", "(2)");
+im_conflict_strs_innet_test(PNET_AR,2, 1, 2,    NULL, NULL, "case 5", "(2)");
+im_conflict_strs_innet_test(PNET_AR,3, 1, 3,    NULL, NULL, "case 5", "(3)");
 
 
 # CLEANUP: remove created archive files

@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: polyline4.pi,v 5.1 91/02/16 10:00:36 rws Exp $
 ## polyline4- test ppolyline with all combinations of widths and
 ## line types - based on polyline2, but ordering differently to
 ## work around bug.
@@ -18,7 +18,7 @@ ppost_struct(1,1,1.0);
 
 foreach @linetype @typename (PLINE_DASH;  "dash";
 			     PLINE_DOT;   "dot";
-			     PLINE_DOT_DASH; "dotdash";
+			     PLINE_DASH_DOT; "dotdash";
 			     PLINE_SOLID; "solid";)
 
 	pset_linetype(@linetype);

@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: dcviewrep.pi,v 5.1 91/02/16 10:02:13 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -86,7 +86,7 @@ pset_view_rep3(1,1,&newviewrep3);
 dynmod = i_get_ws_dyn_mod(1,"view representation modification");
 if (dynmod == PDYN_IRG) # if reference mod's dynamic modification is IRG
 	# verify that view rep 
-	im_confirm_viewrep(PUPD_PENDING,oldviewrep3,newviewrep3,"before updatews");
+	im_confirm_viewrep(PUPD_PEND,oldviewrep3,newviewrep3,"before updatews");
 	# verify that visual rep state is PVISUAL_ST_DEFER
 	im_confirm_visual_rep(1,PVISUAL_ST_DEFER,
   		"failed: visual rep=%d,expected PVISUAL_ST_DEFER before updatews\n");
@@ -97,7 +97,7 @@ endif
 
 if (dynmod == PDYN_CBS) # if reference mod's dynamic modification is CBS
 	# verify that view rep 
-	im_confirm_viewrep(PUPD_PENDING,oldviewrep3,newviewrep3,"before updatews");
+	im_confirm_viewrep(PUPD_PEND,oldviewrep3,newviewrep3,"before updatews");
 	# verify that visual rep state is PVISUAL_ST_SIMULATED
 	im_confirm_visual_rep(1,PVISUAL_ST_SIMULATED,
   		"failed: visual rep=%d,expected PVISUAL_ST_SIMULATED before updatews\n");
@@ -105,7 +105,7 @@ endif
 
 if (dynmod == PDYN_IMM) # if reference mod's dynamic modification is IMM
 	# verify that view rep 
-	im_confirm_viewrep(PUPD_NOT_PENDING,newviewrep3,newviewrep3,"before updatews");
+	im_confirm_viewrep(PUPD_NOT_PEND,newviewrep3,newviewrep3,"before updatews");
 	# verify that visual rep state is PVISUAL_ST_CORRECT
 	im_confirm_visual_rep(1,PVISUAL_ST_CORRECT,
   		"failed: visual rep=%d,expected PVISUAL_ST_CORRECT before updatews\n");
@@ -117,11 +117,11 @@ tvprintf(2,"before updatews\n");
 i_pause();
 
 #OPERATION: update workstation with PERFORM
-pupd_ws(1,PUPD_PERFORM);
+pupd_ws(1,PFLAG_PERFORM);
 
 #VERIFICATION: 
 # verify that view rep 
-im_confirm_viewrep(PUPD_NOT_PENDING,newviewrep3,newviewrep3,"after updatews");
+im_confirm_viewrep(PUPD_NOT_PEND,newviewrep3,newviewrep3,"after updatews");
 
 #verify visual rep state is PVISUAL_ST_CORRECT
 im_confirm_visual_rep(1,PVISUAL_ST_CORRECT,

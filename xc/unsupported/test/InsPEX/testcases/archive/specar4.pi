@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: specar4.pi,v 5.1 91/02/16 10:02:05 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -102,9 +102,9 @@ pdel_all_structs();
 pret_all_structs(1);
 
 # verify the contents of the retrieved strs 
-im_confirm_status_content(1,PSTRUCT_STATUS_NON_EMPTY,PELEM_LABEL,NULL,
+im_confirm_status_content(1,PSTRUCT_STATUS_NOT_EMPTY,PELEM_LABEL,NULL,
                 "failed: content of str 1 != expected");
-im_confirm_status_content(3,PSTRUCT_STATUS_NON_EMPTY,PELEM_LABEL,NULL,
+im_confirm_status_content(3,PSTRUCT_STATUS_NOT_EMPTY,PELEM_LABEL,NULL,
                 "failed: content of str 3 != expected");
 
 im_confirm_elemtype(2,1,PELEM_LABEL,

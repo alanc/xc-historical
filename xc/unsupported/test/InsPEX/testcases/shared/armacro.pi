@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: armacro.pi,v 5.1 91/02/16 10:02:49 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -78,7 +78,7 @@ macro im_confirm_status_content(@str,@status,@elemtype,@flagstring,@formatstring
 	#
 	# verify type of first element in structure
 	#
-	if (structstatus == PSTRUCT_STATUS_NON_EMPTY)
+	if (structstatus == PSTRUCT_STATUS_NOT_EMPTY)
 		err = i_bogus_error();
         	pinq_elem_type_size(@str, 1, &err, &actualtype, &elemsize);
 		im_ifneq(err,0,"ERROR: %d in pinq_elem_type_size\n",err);

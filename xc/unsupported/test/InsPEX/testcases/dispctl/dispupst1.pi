@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: dispupst1.pi,v 5.1 91/02/16 10:02:14 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -42,7 +42,7 @@ i_open_x_ws(1,&xdisplay,&xwindow,0,0,200,200);
 pinq_disp_upd_st(1, &err, &defmode, &modmode, &sur, &vis);
 
 foreach @defmode (
-	PDEFER_ASAP;PDEFER_WAIT;PASIT;PDEFER_BNIG;PDEFER_BNIL;
+	PDEFER_ASAP;PDEFER_WAIT;PDEFER_ASTI;PDEFER_BNIG;PDEFER_BNIL;
 	)
 	foreach @modmode (
 		PMODE_UQUM;PMODE_NIVE;PMODE_UWOR;

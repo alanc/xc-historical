@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: delnetar.pi,v 5.1 91/02/16 10:01:54 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -70,7 +70,7 @@ foreach @N @A @B @C @D
 	PSTRUCT_STATUS_NON_EXISTENT; NULL; 
 	PSTRUCT_STATUS_NON_EXISTENT; NULL; 
 	PSTRUCT_STATUS_NON_EXISTENT; NULL; 
-	PSTRUCT_STATUS_NON_EMPTY; PELEM_LABEL; 
+	PSTRUCT_STATUS_NOT_EMPTY; PELEM_LABEL; 
 	)
 
 

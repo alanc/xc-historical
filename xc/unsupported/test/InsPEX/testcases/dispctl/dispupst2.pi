@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: dispupst2.pi,v 5.1 91/02/16 10:02:14 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -70,8 +70,8 @@ foreach @modmode (
 
 	#  Verify the current workstation window has old values,
 	#  the requested workstation window has new values, and
-	#  update state is PUPD_PENDING
-	im_confirm_wsxform(PUPD_PENDING,
+	#  update state is PUPD_PEND
+	im_confirm_wsxform(PUPD_PEND,
 		newwin,oldwin,vport,vport,"before updatews");
 
 	if (dynmod == PDYN_IRG) # if the ws xform's dynamic modification is IRG
@@ -102,7 +102,7 @@ foreach @modmode (
 
 	#OPERATIONS: update display
 
-	pupd_ws(1, PUPD_PERFORM );
+	pupd_ws(1, PFLAG_PERFORM );
 
 	#VERIFICATIONS: 
 
@@ -112,8 +112,8 @@ foreach @modmode (
 
 	#  Verify the current workstation window has new values,
 	#  the requested workstation window has new values, and
-	#  update state is PUPD_NOT_PENDING
-	im_confirm_wsxform(PUPD_NOT_PENDING,
+	#  update state is PUPD_NOT_PEND
+	im_confirm_wsxform(PUPD_NOT_PEND,
 		newwin,newwin,vport,vport,"after updatews");
 
 	#  Verify the picture by sampling pixels at the expected locations. 
@@ -123,7 +123,7 @@ foreach @modmode (
 	i_pause();
 	#CLEANUP: set ws window to default values
 	pset_ws_win(1, &oldwin);
-	pupd_ws(1, PUPD_PERFORM );
+	pupd_ws(1, PFLAG_PERFORM );
 
 end
 

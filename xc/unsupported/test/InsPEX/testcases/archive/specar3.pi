@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: specar3.pi,v 5.1 91/02/16 10:02:04 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -86,9 +86,9 @@ pret_all_structs(1);
 pret_all_structs(2);
 
 # verify the contents of the retrieved strs 
-im_confirm_status_content(1,PSTRUCT_STATUS_NON_EMPTY,PELEM_LABEL,NULL, 
+im_confirm_status_content(1,PSTRUCT_STATUS_NOT_EMPTY,PELEM_LABEL,NULL, 
 	"failed: after retrieving str 1 from archive file 1, ");
-im_confirm_status_content(2,PSTRUCT_STATUS_NON_EMPTY,PELEM_MARKER_TYPE,NULL, 
+im_confirm_status_content(2,PSTRUCT_STATUS_NOT_EMPTY,PELEM_MARKER_TYPE,NULL, 
 	"failed: after retrieving str 2 from archive file 2, ");
 
 # CLEANUP: remove created archive files

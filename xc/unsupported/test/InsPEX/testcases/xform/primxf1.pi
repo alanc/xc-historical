@@ -1,5 +1,5 @@
 
-/* $XConsortium: primxf1.pi,v 5.1 91/02/16 10:01:44 rws Exp $ */
+/* $XConsortium: primxf1.pi,v 5.2 91/07/24 18:47:42 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -70,7 +70,7 @@ win = I_Plimit(0.0,1.0,0.0,1.0);
 view = I_Plimit3(0.0,1.0,0.0,1.0,0.0,1.0);
 cliplimit = I_Plimit3(0.0,1.0,0.0,1.0,0.0,1.0);
 prp = I_Ppoint3(0.0,0.0,4.0);
-viewmap = I_Pview_map3(win,view,PPERPECTIVE,prp,0.0,0.0,1.0);
+viewmap = I_Pview_map3(win,view,PTYPE_PERSPECT,prp,0.0,0.0,1.0);
 peval_view_map_matrix3(&viewmap,&err,mapmtx);
 im_ifneq(err,0,"ERROR: %d in pevalviewmappingtrix3\n",err);
 viewrep = I_Pview_rep3(xlate_mtx,mapmtx,cliplimit,PIND_CLIP,PIND_CLIP,PIND_CLIP);

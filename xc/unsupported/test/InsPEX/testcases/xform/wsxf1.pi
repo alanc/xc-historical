@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsxf1.pi,v 5.1 91/02/16 10:01:39 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -52,13 +52,13 @@ popen_ws(1,&conn1,wstype);
 # OPERATION and VERIFICATION begins:
 # testing 2D case
 # verify default ws transformation
-im_confirm_wsxform(PUPD_NOT_PENDING,wswindow,wswindow,wsviewport,wsviewport,
+im_confirm_wsxform(PUPD_NOT_PEND,wswindow,wswindow,wsviewport,wsviewport,
 	"failed: default ws window,viewport(2D) != exp\n");
 
 # set and inquire ws transformation 
 pset_ws_win(1,&wswindow);
 pset_ws_vp(1,&wsviewport);
-im_confirm_wsxform(PUPD_NOT_PENDING,wswindow,wswindow,wsviewport,wsviewport,
+im_confirm_wsxform(PUPD_NOT_PEND,wswindow,wswindow,wsviewport,wsviewport,
 	"failed: set and inquire ws window,viewport(2D) != exp\n");
 
 # CLEANUP and re-SETUP: close ws and re-open ws
@@ -70,13 +70,13 @@ popen_ws(1,&conn1,wstype);
 
 # testing 3D case
 # verify default ws transformation3
-im_confirm_wsxform3(PUPD_NOT_PENDING,wswindow3,wswindow3,wsviewport3,wsviewport3,
+im_confirm_wsxform3(PUPD_NOT_PEND,wswindow3,wswindow3,wsviewport3,wsviewport3,
 	"failed: default ws window,viewport(3D) != exp\n");
 
 # set and inquire ws transformation3 
 pset_ws_win3(1,&wswindow3);
 pset_ws_vp3(1,&wsviewport3);
-im_confirm_wsxform3(PUPD_NOT_PENDING,wswindow3,wswindow3,wsviewport3,wsviewport3,
+im_confirm_wsxform3(PUPD_NOT_PEND,wswindow3,wswindow3,wsviewport3,wsviewport3,
 	"failed: set and inquire ws window,viewport(3D): inq != exp\n");
 
 tendtest()

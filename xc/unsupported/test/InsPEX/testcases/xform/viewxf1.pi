@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: viewxf1.pi,v 5.1 91/02/16 10:01:36 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -70,7 +70,7 @@ macro im_confirm_viewrep3(@viewrp,@viewup,@viewpn,@text)
 	im_ifneq(err,0,"ERROR: %d in peval_view_ori_matrix3\n",err);
 	viewrep3 = I_Pview_rep3(orientmtx3,mapmtx3,cliplimit3,PIND_CLIP,PIND_CLIP,PIND_CLIP);
 	pset_view_rep3(1,1,&viewrep3);
-pupd_ws(1,PUPD_PERFORM);
+pupd_ws(1,PFLAG_PERFORM);
 	im_confirm_line3(xdisplay,xwindow,1,1,xaxis3,5,1,
 		"failed: 3D: %s, a line is missing\n",@text);
 	im_confirm_line3(xdisplay,xwindow,1,1,yaxis3,5,1,

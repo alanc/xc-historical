@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: delstrar.pi,v 5.1 91/02/16 10:01:54 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -67,8 +67,8 @@ unlink("archfile1");
 foreach @N @A @B @C @D @st0 @ct0 @st1 @ct1 @st2 @ct2 @st3 @ct3 (
 	2; 1; 2; NULL; NULL;
 	PSTRUCT_STATUS_NON_EXISTENT; NULL; 
-	PSTRUCT_STATUS_NON_EMPTY; PELEM_EXEC_STRUCT;
-	PSTRUCT_STATUS_NON_EMPTY; PELEM_LABEL;
+	PSTRUCT_STATUS_NOT_EMPTY; PELEM_EXEC_STRUCT;
+	PSTRUCT_STATUS_NOT_EMPTY; PELEM_LABEL;
 	PSTRUCT_STATUS_NON_EXISTENT; NULL; 
 	)
 

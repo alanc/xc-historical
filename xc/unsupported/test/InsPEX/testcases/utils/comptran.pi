@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: comptran.pi,v 5.1 91/02/16 10:01:03 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -59,6 +59,8 @@ foreach @rx @ry @rz @tx @ty @tz @sx @sy @sz @xang @yang @zang (
 	# INITIALIZE: 2D scale and translate vectors
 	xlate = I_Pvec(@tx,@ty);
 	scale = I_Pvec(@sx,@sy);
+        ref   = I_Ppoint(@rx,@ry);
+
 
 	# OPERATION: pbuild_tran_matrix
 	err = i_bogus_error();
@@ -79,6 +81,7 @@ foreach @rx @ry @rz @tx @ty @tz @sx @sy @sz @xang @yang @zang (
 	# INITIALIZE: 3D scale and translate vectors
 	xlate3 = I_Pvec3(@tx,@ty,@tz);
 	scale3 = I_Pvec3(@sx,@sy,@sz);
+        ref3   = I_Ppoint3(@rx,@ry,@rz);
 
 	# OPERATION: pbuild_tran_matrix3
 	err = i_bogus_error();
