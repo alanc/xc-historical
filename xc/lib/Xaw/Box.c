@@ -71,9 +71,10 @@ static void ClassInitialize();
 
 ButtonBoxClassRec buttonBoxClassRec = {
   {
+/* core_class fields      */
     /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "ButtonBox",
-    /* size               */    sizeof(ButtonBoxRec),
+    /* widget_size        */    sizeof(ButtonBoxRec),
     /* class_initialize   */    ClassInitialize,
     /* class_inited       */	FALSE,
     /* initialize         */    Initialize,
@@ -81,7 +82,7 @@ ButtonBoxClassRec buttonBoxClassRec = {
     /* actions            */    NULL,
     /* num_actions	  */	0,
     /* resources          */    resources,
-    /* resource_count     */    XtNumber(resources),
+    /* num_resources      */    XtNumber(resources),
     /* xrm_class          */    NULLQUARK,
     /* compress_motion	  */	TRUE,
     /* compress_exposure  */	TRUE,
@@ -92,6 +93,7 @@ ButtonBoxClassRec buttonBoxClassRec = {
     /* set_values         */    SetValues,
     /* accept_focus       */    NULL
   },{
+/* composite_class fields */
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
     /* insert_child	  */	NULL,	/* Inherit from superclass */

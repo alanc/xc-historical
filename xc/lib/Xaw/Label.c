@@ -81,29 +81,29 @@ static void SetValues();
 static void ClassInitialize();
 
 LabelClassRec labelClassRec = {
-/* core fields */	
-    /* superclass	*/	(WidgetClass) &widgetClassRec,
-    /* class_name	*/	"Label",
-    /* size		*/	sizeof(LabelRec),
-    /* class init proc  */      ClassInitialize,
-    /* class init'ed    */	FALSE,
-    /* initialize	*/	Initialize,
-    /* realize		*/	Realize,
-    /* actions		*/	NULL,
-				0,
-    /* resources	*/	resources,
-    /* resource_count	*/	XtNumber(resources),
-
-    /* xrm_class	*/	NULLQUARK,
-				FALSE,
-				FALSE,
-    /* visible_interest	*/	FALSE,
-    /* destroy		*/	NULL,
-    /* resize		*/	Resize,
-    /* expose		*/	Redisplay,
-    /* set_values	*/	SetValues,
-    /* accepts_focus	*/	FALSE,
-    /* accept_focus	*/	NULL,
+  {
+/* core_class fields */	
+    /* superclass	  */	(WidgetClass) &widgetClassRec,
+    /* class_name	  */	"Label",
+    /* widget_size	  */	sizeof(LabelRec),
+    /* class_initialize   */    ClassInitialize,
+    /* class_inited       */	FALSE,
+    /* initialize	  */	Initialize,
+    /* realize		  */	Realize,
+    /* actions		  */	NULL,
+    /* num_actions	  */	0,
+    /* resources	  */	resources,
+    /* num_resources	  */	XtNumber(resources),
+    /* xrm_class	  */	NULLQUARK,
+    /* compress_motion	  */	TRUE,
+    /* compress_exposure  */	TRUE,
+    /* visible_interest	  */	FALSE,
+    /* destroy		  */	NULL,
+    /* resize		  */	Resize,
+    /* expose		  */	Redisplay,
+    /* set_values	  */	SetValues,
+    /* accept_focus	  */	NULL,
+  }
 };
 WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
 /****************************************************************
