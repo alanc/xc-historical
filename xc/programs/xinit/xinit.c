@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.50 91/07/18 12:23:36 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.51 91/07/20 10:41:04 rws Exp $";
 #endif /* lint */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
@@ -49,7 +49,7 @@ char **newenviron = NULL;
 #define vfork() fork()
 #endif /* SYSV and not hpux */
 
-#if defined(SVR4) || defined(sgi) || defined(_POSIX_SOURCE)
+#ifndef X_NOT_POSIX
 #define setpgrp setpgid
 #endif
 
@@ -499,7 +499,7 @@ startClient(client)
 	return (clientpid);
 }
 
-#if defined(SYSV) || defined(SVR4) || defined(_POSIX_SOURCE)
+#if !defined(X_NOT_POSIX) || defined(SYSV)
 #define killpg(pgrp, sig) kill(-(pgrp), sig)
 #endif
 
