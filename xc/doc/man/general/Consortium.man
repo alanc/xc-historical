@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.31 94/04/09 18:26:46 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.32 94/04/13 17:23:36 gildea Exp $
 .\" Copyright 1993 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -28,7 +28,8 @@ Institute of Technology.  In 1988, MIT formed a member-funded consortium to
 provide the technical and administrative leadership necessary to support
 further development of the X Window System.  In 1992, MIT and the membership
 decided it was in their best interests to move the consortium out of MIT and
-create an independent, stand-alone organization.
+create an independent, stand-alone organization.  All rights to the
+X Window System were assigned by MIT to X Consortium, Inc. on January 1, 1994.
 .PP
 The X Consortium is financially self-supporting through membership fees.
 There are no license fees associated with the use of X Window System standards
