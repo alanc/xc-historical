@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.47 91/11/08 15:18:18 eswu Exp $
+ * $XConsortium: auth.c,v 1.48 93/09/20 18:03:11 hersh Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -84,6 +84,11 @@ extern int	SecureRPCInitAuth ();
 extern Xauth	*SecureRPCGetAuth ();
 #endif
 
+#ifdef K5AUTH
+extern int	Krb5InitAuth ();
+extern Xauth	*Krb5GetAuth ();
+#endif
+
 struct AuthProtocol {
     unsigned short  name_length;
     char	    *name;
@@ -105,6 +110,11 @@ static struct AuthProtocol AuthProtocols[] = {
 #ifdef SECURE_RPC
 { (unsigned short) 9, "SUN-DES-1",
     SecureRPCInitAuth, SecureRPCGetAuth, NULL,
+},
+#endif
+#ifdef K5AUTH
+{ (unsigned short) 13, "KERBEROS-V5-1",
+    Krb5InitAuth, Krb5GetAuth, NULL,
 },
 #endif
 };
@@ -304,15 +314,21 @@ SaveServerAuthorizations (d, auths, count)
 	ret = TRUE;
 	for (i = 0; i < count; i++)
 	{
-	    if (!XauWriteAuth (auth_file, auths[i]) ||
-		fflush (auth_file) == EOF)
-	    {
-		LogError ("Cannot write server authorization file %s\n",
-			  d->authFile);
-		ret = FALSE;
-		free (d->authFile);
-		d->authFile = NULL;
-	    }
+	    /*
+	     * User-based auths may not have data until
+	     * a user logs in.  In which case don't write
+	     * to the auth file so xrdb and setup programs don't fail.
+	     */
+	    if (auths[i]->data_length > 0)
+		if (!XauWriteAuth (auth_file, auths[i]) ||
+		    fflush (auth_file) == EOF)
+		{
+		    LogError ("Cannot write server authorization file %s\n",
+			      d->authFile);
+		    ret = FALSE;
+		    free (d->authFile);
+		    d->authFile = NULL;
+		}
     	}
 	fclose (auth_file);
     }
@@ -369,15 +385,31 @@ SetLocalAuthorization (d)
     }
 }
 
+/*
+ * Set the authorization to use for xdm's initial connection
+ * to the X server.  Cannot use user-based authorizations
+ * because no one has logged in yet, so we don't have any
+ * user credentials.
+ * Well, actually we could use SUN-DES-1 because we tell the server
+ * to allow root in.  This is bogus and should be fixed.
+ */
 SetAuthorization (d)
     struct display  *d;
 {
-    Xauth   **auth;
+    register Xauth **auth = d->authorizations;
+    int i;
 
-    auth = d->authorizations;
-    if (auth && *auth)
-	XSetAuthorization ((*auth)->name, (int) (*auth)->name_length,
-			   (*auth)->data, (int) (*auth)->data_length);
+    for (i = 0; i < d->authNum; i++)
+    {
+	if (auth[i]->name_length == 9 &&
+	    memcmp(auth[i]->name, "SUN-DES-1", 9) == 0)
+	    continue;
+	if (auth[i]->name_length == 13 &&
+	    memcmp(auth[i]->name, "KERBEROS-V5-1", 13) == 0)
+	    continue;
+	XSetAuthorization (auth[i]->name, (int) auth[i]->name_length,
+			   auth[i]->data, (int) auth[i]->data_length);
+    }
 }
 
 static
@@ -858,6 +890,7 @@ struct verify_info	*verify;
     struct stat	statb;
     int		i;
     int		magicCookie;
+    int		data_len;
 
     Debug ("SetUserAuthorization\n");
     auths = d->authorizations;
@@ -934,12 +967,20 @@ struct verify_info	*verify;
 	{
 	    if (i != magicCookie)
 	    {
+		data_len = auths[i]->data_length;
+		/* client will just use default Kerberos cache, so don't
+		 * even write cache info into the authority file.
+		 */
+		if (auths[i]->name_length == 13 &&
+		    !strncmp (auths[i]->name, "KERBEROS-V5-1", 13))
+		    auths[i]->data_length = 0;
 	    	if (d->displayType.location == Local)
 	    	    writeLocalAuth (new, auths[i], d->name);
 #ifdef XDMCP
 	    	else
 	    	    writeRemoteAuth (new, auths[i], d->peer, d->peerlen, d->name);
 #endif
+		auths[i]->data_length = data_len;
 	    }
 	}
 	if (old) {
