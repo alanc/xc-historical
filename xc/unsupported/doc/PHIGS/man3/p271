@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p271,v 5.1 91/02/16 09:42:03 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -66,8 +66,8 @@ Pin_status is defined in phigs.h as:
 .nf
 typedef enum {
 .sp .2
-	PIN_STATUS_OK,
 	PIN_STATUS_NONE,
+	PIN_STATUS_OK,
 	PIN_STATUS_NO_IN
 .sp .2
 } Pin_status;
