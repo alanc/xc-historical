@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.41 91/01/31 22:03:33 gildea Exp $
+ * $XConsortium: session.c,v 1.42 91/02/04 19:18:28 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -333,6 +333,7 @@ SessionExit (d, status, removeAuth)
 	setuid (verify.uid);
 	RemoveUserAuthorization (d, &verify);
     }
+    Debug ("Display %s exiting with status %d\n", d->name, status);
     exit (status);
 }
 

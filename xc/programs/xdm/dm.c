@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.48 91/01/31 22:03:08 gildea Exp $
+ * $XConsortium: dm.c,v 1.49 91/02/04 19:18:04 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -355,7 +355,8 @@ WaitForChild ()
     while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) > 0)
 #endif
     {
-	Debug ("Manager wait returns pid: %d\n", pid);
+	Debug ("Manager wait returns pid: %d sig %d core %d code %d\n",
+	       pid, waitSig(status), waitCore(status), waitCode(status));
 	if (autoRescan)
 	    RescanIfMod ();
 	/* SUPPRESS 560 */
