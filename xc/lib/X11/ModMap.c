@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XModMap.c,v 11.9 89/12/09 21:24:47 rws Exp $ */
+/* $XConsortium: XModMap.c,v 11.10 89/12/10 10:15:22 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -131,8 +131,8 @@ XInsertModifiermapEntry(map, keycode, modifier)
     if ((newmap = XNewModifiermap(map->max_keypermod+1)) == NULL)
 	return (XModifierKeymap *) NULL;
     newrow = row = 0;
-    lastrow = map->max_keypermod * 8;
-    while (row < lastrow) {
+    lastrow = newmap->max_keypermod * 8;
+    while (newrow < lastrow) {
 	for (i=0; i<map->max_keypermod; i++)
 	    newmap->modifiermap[ newrow+i ] = map->modifiermap[ row+i ];
 	newmap->modifiermap[ newrow+i ] = 0;
