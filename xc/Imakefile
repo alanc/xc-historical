@@ -12,7 +12,7 @@ BOOTSTRAPCFLAGS =
 		$(INCLUDESRC) \
 		$(LIBSRC) \
 		$(EXTENSIONSRC) 
-#ifndef ClientSideOnly
+#if BuildServer
 SERVERDIRSTOMAKE = \
 		$(SERVERSRC) \
 		$(FONTSRC) 
@@ -56,7 +56,7 @@ DependSubdirs($(SUBDIRS))
 /**/# install stuff; create the directories that we're going to need
 /**/# 
 
-#ifndef ClientSideOnly
+#if BuildServer
   DIRS_SERVER = $(FONTDIR) /* $(ADMDIR) */
 #endif
 #if InstallxinitConfig
