@@ -1,301 +1,293 @@
-/************************************************************
-Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
+/*
+ * xmodmap - program for loading keymap definitions into server
+ *
+ * $Source: /usr.MC68020/expo.lcs.mit.edu/jim/X11/xmodmap/RCS/xmodmap.c,v $
+ * $Header: xmodmap.c,v 1.3 88/02/08 18:30:46 jim Exp $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Jim Fulton, MIT X Consortium
+ */
 
-                    All Rights Reserved
-
-Permission  to  use,  copy,  modify,  and  distribute   this
-software  and  its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright no-
-tice  appear  in all copies and that both that copyright no-
-tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or MIT not be used in
-advertising or publicity pertaining to distribution  of  the
-software  without specific prior written permission. Sun and
-M.I.T. make no representations about the suitability of this
-software for any purpose. It is provided "as is" without any
-express or implied warranty.
-
-SUN DISCLAIMS ALL WARRANTIES WITH REGARD TO  THIS  SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-
-NESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SUN BE  LI-
-ABLE  FOR  ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,  DATA  OR
-PROFITS,  WHETHER  IN  AN  ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
-THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-********************************************************/
-
-/* $Header: xmodmap.c,v 1.6 88/02/05 17:16:17 jim Locked $ */
+#include <X11/Xos.h>
+#include <X11/Xlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "X11/Xlib.h"
-#include "X11/Xutil.h"
-#include "X11/Xatom.h"
+#include "xmodmap.h"
 
 char *ProgramName;
+Display *dpy = NULL;
+Bool verbose = False;
+Bool dontExecute = False;
 
-extern char *XKeysymToString();
-
-Display *dpy;
-
-static update_map = 0;
-static output_map = 0;
-static FILE *fout = stdout;
-
-usage () 
+void Exit (status)
+    int status;
 {
-    fprintf (stderr,
-	"usage:  %s [-display host:dpy] [-options ...]\n\n", ProgramName);
-    fprintf (stderr,
-	"where options include:\n");
-    fprintf (stderr,
-	"    -S, -L, -C,         remove all keys for Shift, Lock, Control\n");
-    fprintf (stderr,
-	"    -[12345]            remove all keys for indicated ModN\n");
-    fprintf (stderr,
-	"    -s keysym, -l keysym, -c keysym,     remove indicated keysym\n");
-    fprintf (stderr,
-	"    +s keysym, +l keysym, +c keysym,     added indicated keysym\n");
-    fprintf (stderr,
-	"    +[12345] keysym     add keysym to modifier\n");
-    fprintf (stderr,
-	"\n");
-    exit (1);
-}
-
-
-StartConnectionToServer(argc, argv)
-int	argc;
-char	*argv[];
-{
-    char *display;
-    int i;
-
-    display = NULL;
-    for(i = 1; i < argc; i++)
-    {
-	if (strcmp ("-display", argv[i]) == 0 || strcmp ("-d", argv[i]) == 0) {
-	    if (++i >= argc) usage ();
-	    display = argv[i];
-	    continue;
-	} else if (index(argv[i], ':') != NULL)		/* obsolete */
-	    display = argv[i];
+    if (dpy) {
+	XCloseDisplay (dpy);
+	dpy = NULL;
     }
-    if (!(dpy = XOpenDisplay(display)))
-    {
-       perror("Cannot open display\n");
-       exit(1);
-   }
+    exit (status);
 }
-UpdateModifierMapping(map)
-    XModifierKeymap *map;
+
+
+static char *help_message[] = {
+"\nwhere options include:",
+"    -display host:dpy            X server to use",
+"    -verbose, -quiet             turn logging on or off",
+"    -n                           don't execute changes, just show like make",
+"    -e expression                execute string",
+"    -p                           print modifier map",
+"    -grammar                     print out short help on allowable input",
+"    -                            read standard input",
+"",
+"The following options are included for compatibility with the old version:",
+"    -[SLC#]                      clear shift, lock, control, or mod#",
+"    -[slc] keysym                remove shift, lock, or control = keysym",
+"    +[slc#] keysym               add shift, lock, control, or mod# = keysym",
+NULL};
+
+
+void usage ()
 {
-    int i = 5, res, tim = 2;
+    char **cpp;
 
-    while (i--) {
-	res = XSetModifierMapping(dpy, map);
-	fprintf(stderr, "res %d\n", res);
-	switch (res) {
-	    case MappingSuccess:	/* Success */
-	        return (0);
-	    case MappingBusy:		/* Busy */
-	        fprintf (stderr, "You have %d seconds to lift your hands\n",
-			 tim);
-		sleep(tim);
-		tim <<= 1;
-	        break;
-	    case MappingFailed:
-	        fprintf(stderr, "Re-map failed\n");
-		return (1);
-	    default:
-	    fprintf(stderr, "bad return %d\n", res);
-	}
+    fprintf (stderr, "usage:  %s [-options ...] [filename]\n", ProgramName);
+    for (cpp = help_message; *cpp; cpp++) {
+	fprintf (stderr, "%s\n", *cpp);
     }
-    fprintf(stderr,  "I warned you\n");
-    return (1);
+    fprintf (stderr, "\n");
+    Exit (1);
 }
 
-SetMod(argc, argv, map, mod)
+static char *grammar_message[] = {
+"    keycode NUMBER = KEYSYM ...    assign keysyms to the given keycode",
+"    keysym KEYSYM = KEYSYM ...     look up keysym and do a keycode line",
+"    clear MODIFIER                 remove all keys for this modifier",
+"    add MODIFIER = KEYSYM ...      add the keysyms to the modifier",
+"    remove MODIFIER = KEYSYM ...   remove the keysyms from the modifier",
+"",
+"where NUMBER is a decimal, octal, or hex constant; KEYSYM is a valid",
+"Key Symbol name; and MODIFIER is one of the eight modifier names:  Shift",
+"Lock, Control, Mod1, Mod2, Mod3, Mod4, or Mod5.  Lines beginning with",
+"an exclamation mark (!) are taken as comments.  Case is significant except",
+"for MODIFIER names.",
+"",
+"Keysyms on the left hand side of the = sign are looked up before any changes",
+"are made; keysyms on the right are looked up after all of those on the left",
+"have been resolved.  This makes it possible to swap modifier keys.",
+"",
+"Eventually, the program will be smart enough to generate \"add\" and",
+"\"remove\" command automatically whenever a keycode that is already bound",
+"to a modifier is changed.",
+NULL };
+
+
+void grammar_usage ()
+{
+    char **cpp;
+
+    fprintf (stderr, "%s accepts the following input expressions:\n\n",
+	     ProgramName);
+    for (cpp = grammar_message; *cpp; cpp++) {
+	fprintf (stderr, "%s\n", *cpp);
+    }
+    fprintf (stderr, "\n");
+    Exit (0);
+}
+
+main (argc, argv)
     int argc;
     char **argv;
-    XModifierKeymap **map;
-    int mod;
-{
-    if (argc) {
-	int keycode = 0;
-
-	argv++;
-	if (isdigit(**argv)) {
-	    keycode = atoi(*argv);
-	} else {
-	    KeySym ks = XStringToKeysym(*argv);
-
-	    if (ks != NoSymbol)
-		keycode = XKeysymToKeycode(dpy, ks);
-	}
-	fprintf(stderr, "%s: 0x%x\n", *argv, keycode);
-	if (keycode)
-	    *map = XInsertModifiermapEntry(*map, keycode, mod);
-    }
-    return (0);
-}
-
-ClearMod(map, mod)
-    register XModifierKeymap **map;
-    int mod;
 {
     int i;
-
-    for (i = 0; i < (*map)->max_keypermod; i++)
-	(*map)->modifiermap[mod * (*map)->max_keypermod + i] = '\0';
-}
-
-DecodeArgs(argc, argv, map)
-    int argc;
-    char **argv;
-    XModifierKeymap **map;
-{
-    while (--argc > 0) {
-	argv++;
-	if (**argv == '-') {
-	    switch (*++*argv) {
-		case 'd':		/* display */
-		    --argc, argv++;
-		    continue;
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		    ClearMod(map, **argv - '0' + 2);
-		    update_map++;
-		    fout = NULL;
-		    break;
-		case 'S':
-		case 's':
-		    ClearMod(map, 0);
-		    update_map++;
-		    fout = NULL;
-		    break;
-		case 'C':
-		case 'c':
-		    ClearMod(map, 2);
-		    update_map++;
-		    fout = NULL;
-		    break;
-		case 'L':
-		case 'l':
-		    ClearMod(map, 1);
-		    update_map++;
-		    fout = NULL;
-		    break;
-		default:
-		    usage ();
-	    }
-	}
-	else if (**argv == '+') {
-	    switch (*++*argv) {
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		    SetMod(argc, argv, map, **argv - '0' + 2);
-		    argc--; argv++;
-		    update_map++;
-		    fout = NULL;
-		    break;
-		case 'S':
-		case 's':
-		    SetMod(argc, argv, map, 0);
-		    argc--; argv++;
-		    update_map++;
-		    fout = NULL;
-		    break;
-		case 'C':
-		case 'c':
-		    SetMod(argc, argv, map, 2);
-		    argc--; argv++;
-		    update_map++;
-		    fout = NULL;
-		    break;
-		case 'L':
-		case 'l':
-		    SetMod(argc, argv, map, 1);
-		    argc--; argv++;
-		    update_map++;
-		    fout = NULL;
-		    break;
-		default:
-		    usage ();
-	    }
-	} else {
-	    usage ();
-	}
-    }
-}
-
-static char *modType[] = {
-    "Shift",
-    "Lock",
-    "Ctrl",
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-};
-
-PrintModifierMapping(map, fout)
-    XModifierKeymap *map;
-    FILE *fout;
-{
-    int i, k = 0;
-
-    fprintf(fout, "Currently max %d keys/mod\n", map->max_keypermod);
-    for (i = 0; i < 8; i++) {
-	int j;
-
-	fprintf(fout, "%s:", modType[i]);
-	for (j = 0; j < map->max_keypermod; j++) {
-	    if (map->modifiermap[k]) {
-		KeySym ks = XKeycodeToKeysym(dpy, map->modifiermap[k], 0);
-		char *nm = XKeysymToString(ks);
-
-		if (nm) {
-		    fprintf(fout, "\t%s", nm);
-		} else {
-		    fprintf(fout, "\tBadKey");
-		}
-	    }
-	    k++;
-	}
-	fprintf(fout, "\n");
-    }
-}
-
-main(argc, argv)
-    int argc;
-    char **argv;
-{
-    XModifierKeymap *map;
+    char *displayname = NULL;
+    char *filename = NULL;
+    int status, errors;
+    Bool printMap = False;
+    Bool didAnything = False;
 
     ProgramName = argv[0];
 
-    StartConnectionToServer(argc, argv);
+    /*
+     * scan the arg list once to find out which display to use
+     */
 
-    map = XGetModifierMapping(dpy);
+    for (i = 1; i < argc; i++) {
+	if (strncmp (argv[i], "-d", 2) == 0) {
+	    if (++i >= argc) usage ();
+	    displayname = argv[i];
+	}
+    }
 
-    DecodeArgs(argc, argv, &map);
+    dpy = XOpenDisplay (displayname);
+    if (!dpy) {
+	fprintf (stderr, "%s:  unable to open display '%s'\n",
+		 ProgramName, XDisplayName (displayname));
+	Exit (1);
+    }
 
-    if (fout)
-	PrintModifierMapping(map, fout);
+    initialize_map ();
 
-    if (update_map)
-	UpdateModifierMapping(map);
+    /*
+     * scan the arg list again to do the actual work (since it requires
+     * the display being open.
+     */
 
-    XCloseDisplay (dpy);
-    exit (0);
+    status = 0;
+    errors = 0;
+    for (i = 1; i < argc; i++) {
+	char *arg = argv[i];
+
+	if (arg[0] == '-') {
+	    switch (arg[1]) {
+	      case 'd':			/* -display host:dpy */
+		++i;			/* handled above */
+		continue;
+	      case 'v':			/* -verbose */
+		verbose = True;
+		continue;
+	      case 'q':			/* -quiet */
+		verbose = False;
+		continue;
+	      case 'n':			/* -n (like make) */
+		dontExecute = True;
+		continue;
+	      case 'e':			/* -e expression */
+		didAnything = True;
+		if (++i >= argc) usage ();
+		if (process_line (argv[i]) != 0) errors++;
+		continue;
+	      case 'p':			/* -p */
+		printMap = True;
+		continue;
+	      case 'g':			/* -grammar */
+		grammar_usage ();
+		/*NOTREACHED*/
+	      case '\0':		/* - (use standard input) */
+		didAnything = True;
+		if (process_file (NULL) != 0) errors++;
+		continue;
+
+	      /*
+	       * provide old xmodmap args
+	       */
+	      case 'S':
+		didAnything = True;
+		if (process_line ("clear shift") != 0) errors++;
+		continue;
+	      case 'L':
+		didAnything = True;
+		if (process_line ("clear lock") != 0) errors++;
+		continue;
+	      case 'C':
+		didAnything = True;
+		if (process_line ("clear control") != 0) errors++;
+		continue;
+	      case '1':
+	      case '2':
+	      case '3':
+	      case '4':
+	      case '5': {
+		  char *cmd = "clear modX";
+		  cmd[9] = arg[1];
+		  if (process_line (cmd) != 0) errors++;
+		  continue;
+	      }
+	      case 's':
+	      case 'l':
+	      case 'c': {
+		  char cmd[80];		/* big enough to hold line */
+		  didAnything = True;
+		  if (++i >= argc) usage ();
+		  (void) sprintf (cmd, "remove %s = %s",
+				  ((arg[1] == 's') ? "shift" :
+				   ((arg[1] == 'l') ? "lock" :
+				    "control")), argv[i]);
+		  if (process_line (cmd) != 0) errors++;
+		  continue;
+	      }
+	      default:
+		usage ();
+		/*NOTREACHED*/
+	    }
+	} else if (arg[0] == '+') {	/* old xmodmap args */
+	    switch (arg[1]) {
+	      case '1':
+	      case '2':
+	      case '3':
+	      case '4':
+	      case '5': {
+		  char cmd[80];		/* big enough to hold line */
+		  didAnything = True;
+		  if (++i >= argc) usage ();
+
+		  (void) sprintf (cmd, "add mod%c = %s", arg[1], argv[i]);
+		  if (process_line (cmd) != 0) errors++;
+		  continue;
+	      }
+	      case 'S':
+	      case 'L':
+	      case 'C':
+		arg[1] = tolower (arg[1]);
+		/* fall through to handler below */
+	      case 's':
+	      case 'l':
+	      case 'c': {
+		  char cmd[80];		/* big enough to hold line */
+		  didAnything = True;
+		  if (++i >= argc) usage ();
+		  (void) sprintf (cmd, "add %s = %s",
+				  ((arg[1] == 's') ? "shift" :
+				   ((arg[1] == 'l') ? "lock" :
+				    "control")), argv[i]);
+		  if (process_line (cmd) != 0) errors++;
+		  continue;
+	      }
+	      default:
+		usage ();
+	    }
+	} else {
+	    didAnything = True;
+	    if (process_file (arg) != 0) errors++;
+	    continue;
+	}
+    }					/* end for loop */
+
+    /* for compatibility */
+    if (!didAnything) printMap = True;
+
+    /*
+     * at this point, the work list has been built and we can view it or
+     * execute it
+     */
+
+    if (dontExecute) {
+	print_work_queue ();
+	Exit (0);
+    }
+
+    if (errors != 0) {
+	fprintf (stderr, "%s:  %d errors encountered, aborting.\n",
+		 ProgramName, errors);
+    } else {
+	status = execute_work_queue ();
+    }
+
+    if (printMap) {
+	print_modifier_map ();
+    }
+
+    Exit (status < 0 ? 1 : 0);
 }
 
