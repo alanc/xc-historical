@@ -1,4 +1,4 @@
-/* $XConsortium: region.h,v 11.11 89/11/14 18:12:08 rws Exp $ */
+/* $XConsortium: region.h,v 11.12 91/01/12 11:20:56 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -144,9 +144,9 @@ typedef struct _XRegion {
 #define REGION_NOT_EMPTY(pReg) pReg->numRects
 
 #define INBOX(r, x, y) \
-      ( ( ((r).x2 >= x)) && \
+      ( ( ((r).x2 >  x)) && \
         ( ((r).x1 <= x)) && \
-        ( ((r).y2 >= y)) && \
+        ( ((r).y2 >  y)) && \
         ( ((r).y1 <= y)) )
 
 /*
