@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.3 89/10/03 17:24:41 jim Exp $
+ * $XConsortium: extutil.c,v 1.4 89/10/05 11:18:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,10 @@
  * 		       Xlib Extension-Writing Utilities
  * 
  * This package contains utilities for writing the client API for various
- * protocol extensions.  Routines include:
+ * protocol extensions.  THESE INTERFACES ARE NOT PART OF THE X STANDARD AND
+ * ARE SUBJECT TO CHANGE!
+ * 
+ *  Routines include:
  * 
  *         XextCreateExtension		called once per extension
  *         XextDestroyExtension		if no longer using extension
