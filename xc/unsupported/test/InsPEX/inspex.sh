@@ -1,5 +1,5 @@
 #!/bin/sh 
-# $XConsortium: inspex.sh,v 5.4 91/02/19 20:41:31 hersh Exp $
+# $XConsortium: inspex.sh,v 5.5 91/05/10 19:52:35 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -557,16 +557,16 @@ i_compile()
 
 	# don't crowd the log file with successful make commands
 	pwd
-	make_cmd="make $test_basename $* PEXINCDIR=$PEXINCDIR PEXLIBDIR=$PEXLIBDIR XINCDIR=$XINCDIR XLIBDIR=$XLIBDIR I_CFLAGS=$I_CFLAGS I_LDFLAGS=$I_LDFLAGS"
+	make_cmd="make $CDEBUGFLAGS $test_basename $* PEXINCDIR=$PEXINCDIR PEXLIBDIR=$PEXLIBDIR XINCDIR=$XINCDIR XLIBDIR=$XLIBDIR I_CFLAGS=$I_CFLAGS I_LDFLAGS=$I_LDFLAGS "
 	echo "cd $INSPEXDEST/tmp ; $make_cmd"
 	if sh -c "$make_cmd" > make.out 2>&1
 	then
-		rm -f make.out ${test_basename}.o ${test_basename}.c
+		#rm -f make.out ${test_basename}.o ${test_basename}.c
 		cd $startdir
 	else
 		echolog "Make of $test_basename FAILED, with output:"
 		cat make.out | tee -a $INSPEXLOG
-		rm -f $test_basename.o $test_basename.c $test_basename
+		#rm -f $test_basename.o $test_basename.c $test_basename
 		cd $startdir
 		return 1
 	fi
@@ -585,11 +585,11 @@ i_run_executable()
 	$* 2>&1 | tee -a $INSPEXLOG
 
 	# remove the .o and .c file, and the executable if required
-	rm -f $1.o $1.c 
-	if [ $I_KEEP_EXEC = 0 ]
-	then
-		rm -f $1
-	fi
+	# rm -f $1.o $1.c 
+	#if [ $I_KEEP_EXEC = 0 ]
+	#then
+	#	rm -f $1
+	#fi
 
 	# test for existence of core file
 	if [ -f core ]
@@ -662,10 +662,10 @@ i_individual_test()
 	    # C test with specified path
 	    if [ -f $indtest ]
 	    then   # path was complete
-		i_comp_and_run $indtest   
+		i_comp_and_run $indtest   "CPPFLAGS=-DPHIGS_WS_TYPE_X_TOOL"
 	    elif [ -f $INSPEXHOME/testcases/$indtest ]
 	    then   # was in form areaname/testname
-		i_comp_and_run $INSPEXHOME/testcases/$indtest
+		i_comp_and_run $INSPEXHOME/testcases/$indtest "CPPFLAGS=-DPHIGS_WS_TYPE_X_TOOL"
 	    else
 		echolog ERROR: could not find test $indtest - skipping
 	    fi
@@ -674,10 +674,10 @@ i_individual_test()
 	    # C prog with no path: find it here or in testcases dir
 	    if [ -f $indtest ]
 	    then   # was in current directory
-	       i_comp_and_run $indtest  
+	       i_comp_and_run $indtest  "CPPFLAGS=-DPHIGS_WS_TYPE_X_TOOL"
 	    elif i_testfind $INSPEXHOME/testcases/*/$indtest
 	    then   # was in a testcase directory
-		i_comp_and_run $INSPEXHOME/testcases/*/$indtest
+		i_comp_and_run $INSPEXHOME/testcases/*/$indtest "CPPFLAGS=-DPHIGS_WS_TYPE_X_TOOL"
 	    else
 		echolog ERROR: could not find test $indtest - skipping
 	    fi	   
@@ -697,7 +697,7 @@ i_individual_test()
 		i_exec $INSPEXHOME/testcases/${indtest}.pi
 	    elif [ -f $INSPEXHOME/testcases/${indtest}.c ]
 	    then   # C program in areaname/testcase form
-		i_comp_and_run $INSPEXHOME/testcases/${indtest}.c
+		i_comp_and_run $INSPEXHOME/testcases/${indtest}.c "CPPFLAGS=-DPHIGS_WS_TYPE_X_TOOL"
 	    elif i_testfind $INSPEXHOME/testcases/*/${indtest}.pi
 	    then   # script in testcase dir
 		i_exec $INSPEXHOME/testcases/*/${indtest}.pi
@@ -706,7 +706,7 @@ i_individual_test()
 		echolog ERROR: skipping ambiguous test $indtest
 	    elif i_testfind $INSPEXHOME/testcases/*/${indtest}.c 
 	    then   # C program in testcase dir
-		i_comp_and_run $INSPEXHOME/testcases/*/${indtest}.c
+		i_comp_and_run $INSPEXHOME/testcases/*/${indtest}.c "CPPFLAGS=-DPHIGS_WS_TYPE_X_TOOL"
 	    elif [ $? = 2 ]
 	    then
 		echolog ERROR: skipping ambiguous test $indtest
