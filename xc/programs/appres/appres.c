@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.9 91/07/13 20:54:21 rws Exp $
+ * $XConsortium: appres.c,v 1.10 91/07/13 21:44:58 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@ XrmQuark XrmQString;
 static void usage ()
 {
     fprintf (stderr,
-	     "usage:  %s  [classprefix [instanceprefix]] [-1] [toolkitoptions]\n",
+	     "usage:  %s  [class [instance]] [-1] [toolkitoptions]\n",
 	     ProgramName);
     fprintf (stderr,
 	     "-1      list resources only at the specified level\n");
