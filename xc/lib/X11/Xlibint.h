@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.87 91/02/20 21:17:17 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.88 91/03/20 09:30:31 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -49,10 +49,63 @@ typedef struct _XSQEvent {
 #endif
 #include <X11/Xproto.h>
 #include <errno.h>
-#include <X11/Xlibos.h>
+#define _XBCOPYFUNC _Xbcopy
+#include <X11/Xfuncs.h>
+#include <X11/Xosdefs.h>
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {					/* for C++ V2.0 */
+/* Utek leaves kernel macros around in include files (bleah) */
+#ifdef dirty
+#undef dirty
+#endif
+
+#ifdef CRAY
+#define WORD64
+#endif
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#include <string.h>
+#else
+char *malloc(), *realloc(), *calloc();
+void exit();
+#ifdef SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+#endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc(), *realloc(), *calloc();
+#endif /* macII */
+
+/*
+ * The following definitions can be used for locking requests in multi-threaded
+ * address spaces.
+ */
+#define LockDisplay(dis)
+#define LockMutex(mutex)
+#define UnlockMutex(mutex)
+#define UnlockDisplay(dis)
+#define Xfree(ptr) free((ptr))
+
+/*
+ * Note that some machines do not return a valid pointer for malloc(0), in
+ * which case we provide an alternate under the control of the
+ * define MALLOC_0_RETURNS_NULL.  This is necessary because some
+ * Xlib code expects malloc(0) to return a valid pointer to storage.
+ */
+#ifdef MALLOC_0_RETURNS_NULL
+
+# define Xmalloc(size) malloc(((size) > 0 ? (size) : 1))
+# define Xrealloc(ptr, size) realloc((ptr), ((size) > 0 ? (size) : 1))
+# define Xcalloc(nelem, elsize) calloc(((nelem) > 0 ? (nelem) : 1), (elsize))
+
+#else
+
+# define Xmalloc(size) malloc((size))
+# define Xrealloc(ptr, size) realloc((ptr), (size))
+# define Xcalloc(nelem, elsize) calloc((nelem), (elsize))
+
 #endif
 
 #ifndef NULL
@@ -62,17 +115,6 @@ extern "C" {					/* for C++ V2.0 */
 #define UNLOCKED 0
 
 extern int errno;			/* Internal system error number. */
-
-extern int _XError();			/* prepare to upcall user handler */
-extern int _XIOError();			/* prepare to upcall user handler */
-extern int (*_XIOErrorFunction)();	/* X system error reporting routine. */
-extern int (*_XErrorFunction)();	/* X_Error event reporting routine. */
-extern void _XEatData();		/* swallow data from server */
-extern char *_XAllocScratch();		/* fast memory allocator */
-extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
-extern unsigned long _XSetLastRequestRead();	/* update dpy->last_request_read */
-extern int _XGetHostname();		/* get name of this machine */
-extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
 
 #ifndef BUFSIZE
 #define BUFSIZE 2048			/* X output buffer size. */
@@ -262,9 +304,7 @@ extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
  * "len" is the length of the data buffer.
  * we can presume buffer less than 2^16 bytes, so bcopy can be used safely.
  */
-#ifdef DataRoutineIsProcedure
-extern void Data();
-#else
+#ifndef DataRoutineIsProcedure
 #define Data(dpy, data, len) \
 	if (dpy->bufptr + (len) <= dpy->bufmax) {\
 		bcopy(data, dpy->bufptr, (int)len);\
@@ -435,6 +475,21 @@ typedef struct _XExten {	/* private to extension mechanism */
 
 /* extension hooks */
 
+_XFUNCPROTOBEGIN
+
+#ifdef DataRoutineIsProcedure
+extern void Data();
+#endif
+extern int _XError();			/* prepare to upcall user handler */
+extern int _XIOError();			/* prepare to upcall user handler */
+extern int (*_XIOErrorFunction)();	/* X system error reporting routine. */
+extern int (*_XErrorFunction)();	/* X_Error event reporting routine. */
+extern void _XEatData();		/* swallow data from server */
+extern char *_XAllocScratch();		/* fast memory allocator */
+extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
+extern unsigned long _XSetLastRequestRead();	/* update dpy->last_request_read */
+extern int _XGetHostname();		/* get name of this machine */
+extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
 
 extern int (*XESetCreateGC(
 #if NeedFunctionPrototypes
@@ -672,8 +727,4 @@ extern Status (*XESetWireToError(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
-
-
+_XFUNCPROTOEND
