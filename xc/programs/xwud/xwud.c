@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.38 90/12/05 14:44:34 dave Exp $ */
+/* $XConsortium: xwud.c,v 1.39 91/01/06 12:17:27 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -648,9 +648,9 @@ Do_StdGray(dpy, stdmap, ncolors, colors, in_image, out_image)
     lim = stdmap->red_max + 1;
     for (i = 0, color = colors; i < ncolors; i++, color++)
 	color->pixel = stdmap->base_pixel +
-		       (((((30L * color->red +
-			    59L * color->green +
-			    11L * color->blue) / 100)
+		       (((((int)(30L * color->red +
+			         59L * color->green +
+			         11L * color->blue) / 100)
 			  * lim) >> 16) * stdmap->red_mult);
     for (y = 0; y < in_image->height; y++) {
 	for (x = 0; x < in_image->width; x++) {
