@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.c,v 1.63 91/02/17 16:51:51 converse Exp $ */
+/* $XConsortium: Viewport.c,v 1.64 91/05/13 17:28:25 dave Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
