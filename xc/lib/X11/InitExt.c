@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.17 88/10/22 11:15:09 rws Exp $ */
+/* $XConsortium: XInitExt.c,v 11.18 89/02/01 18:11:05 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -72,6 +72,14 @@ XExtData **XEHeadOfExtensionList(object)
     XEDataObject object;
 {
     return *(XExtData ***)&object;
+}
+
+XAddToExtensionList(structure, ext_data)
+    XExtData **structure;
+    XExtData *ext_data;
+{
+    ext_data->next = *structure;
+    *structure = ext_data;
 }
 
 XExtData *XFindOnExtensionList(structure, number)
