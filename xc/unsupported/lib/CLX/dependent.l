@@ -162,7 +162,7 @@
 
 (proclaim '(inline aref-card8 aset-card8 aref-int8 aset-int8))
 
-#-Genera
+#-(or Genera lcl3.0)
 (progn
 
 (defun aref-card8 (a i)
@@ -209,6 +209,40 @@
 
 (defun aset-int8 (v a i)
   (zl:aset (int8->card8 v) a i))
+
+)
+
+#+lcl3.0 ;in lcl2.1 these symbols are in different packages and making too
+         ;many conditionalizations makes my brain hurt.
+(progn
+
+(defun aref-card8 (a i)
+  (declare (type buffer-bytes a)
+	   (type array-index i))
+  (declare (values card8))
+  #.(declare-buffun)
+  (the card8 (sys:svref-8bit a i)))
+
+(defun aset-card8 (v a i)
+  (declare (type card8 v)
+	   (type buffer-bytes a)
+	   (type array-index i))
+  #.(declare-buffun)
+  (setf (sys:svref-8bit a i) v))
+
+(defun aref-int8 (a i)
+  (declare (type buffer-bytes a)
+	   (type array-index i))
+  (declare (values int8))
+  #.(declare-buffun)
+  (the int8 (sys:svref-signed-8bit a i)))
+
+(defun aset-int8 (v a i)
+  (declare (type int8 v)
+	   (type buffer-bytes a)
+	   (type array-index i))
+  #.(declare-buffun)
+  (setf (sys:svref-signed-8bit a i) v))
 
 )
 
@@ -375,7 +409,74 @@
   
 )
 
-#-(or excl clx-overlapping-arrays)
+#+lcl3.0
+(progn ;; all these lucid optimizations need to be compiled to work.
+
+(defun aref-card16 (a i)
+  #.(declare-buffun)
+  (the card16 (sys:svref-16bit (the buffer-bytes a)
+			       (lucid:ash& (the array-index i) -1))))
+  
+(defun aset-card16 (v a i)
+  #.(declare-buffun)
+  (setf (sys:svref-16bit (the buffer-bytes a)
+			 (lucid:ash& (the array-index i) -1))
+	(the card16 v)))
+  
+(defun aref-int16 (a i)
+  #.(declare-buffun)
+  (the int16 
+       (sys:svref-signed-16bit (the buffer-bytes a)
+			       (lucid:ash& (the array-index i) -1))))
+  
+(defun aset-int16 (v a i)
+  #.(declare-buffun)
+  (setf (sys:svref-signed-16bit (the buffer-bytes a)
+				(lucid:ash& (the array-index i) -1))
+	(the int16 v)))
+
+(defun aref-card32 (a i)
+  #.(declare-buffun)
+  (the card32
+       (sys:svref-32bit (the buffer-bytes a)
+			(lucid:ash& (the array-index i) -2))))
+    
+(defun aset-card32 (v a i)
+  #.(declare-buffun)
+  (setf (sys:svref-32bit (the buffer-bytes a)
+			 (lucid:ash& (the array-index i) -2))
+	(the card32 v)))
+
+(defun aref-int32 (a i)
+  #.(declare-buffun)
+  (the int32
+       (sys:svref-signed-32bit (the buffer-bytes a)
+			       (lucid:ash& (the array-index i) -2))))
+    
+(defun aset-int32 (v a i)
+  #.(declare-buffun)
+  (setf (sys:svref-signed-32bit (the buffer-bytes a)
+				(lucid:ash& (the array-index i) -2))
+	(the int32 v)))
+
+(defun aref-card29 (a i)
+  ;; Don't need to mask bits here since X protocol guarantees top bits zero
+  #.(declare-buffun)
+  (the card29
+       (sys:svref-32bit (the buffer-bytes a)
+			(lucid:ash& (the array-index i) -2))))
+
+(defun aset-card29 (v a i)
+  ;; I also assume here Lisp is passing a number that fits in 29 bits.
+  #.(declare-buffun)
+  (setf (sys:svref-32bit (the buffer-bytes a)
+			 (lucid:ash& (the array-index i) -2))
+	(the card29 v)))
+)
+
+
+
+#-(or excl lcl3.0 clx-overlapping-arrays)
 (progn
 
 (defun aref-card16 (a i)
@@ -1176,27 +1277,22 @@
   ;;;input stream structure.
   `(or (getf (display-plist ,display) ,direction)
        (setf (getf (display-plist ,display) ,direction)
-	     (lucid::underlying-stream
+	     (lcl:underlying-stream
 	       ,stream (if (eq ,direction 'input) :input :output)))))
 
 #+lcl3.0
 (defun buffer-read-default (display vector start end timeout)
   ;;Note that LISTEN must still be done on "slow stream" or the I/O system
   ;;gets confused.  But reading should be done from "fast stream" for speed.
-  ;;We inhibit scheduling when reading because there seem to be races in 
-  ;;Lucid's multitasking implementation.
+  ;;We used to inhibit scheduling because there were races in Lucid's 
+  ;;multitasking system.  Empirical evidence suggests they may be gone now.
+  ;;Should you decide you need to inhibit scheduling, do it around the do*.
   (declare (type display display)
 	   (type buffer-bytes vector)
 	   (type array-index start end)
 	   (type (or null number) timeout)
 	   (optimize (speed 3)
 		     (safety 0)))
-  
-  ;;negative timeout means try once, Jerry's hack.  Zerop seems
-  ;;to *also* mean try once; don't understand why Jerry wanted -1.
-  (when (and timeout (minusp timeout))
-    (setq timeout 0))
-
   (let ((stream (display-input-stream display)))
     (declare (type (or null stream) stream))
     (or (cond ((null stream))
@@ -1204,15 +1300,15 @@
 	      ((eql timeout 0) :timeout)
 	      ((buffer-input-wait-default display timeout)))
 	(let ((stream (extract-underlying-stream stream display 'input)))
-	  (lcl:with-scheduling-inhibited
-	    (do* ((index start (index1+ index)))
-		 ((index>= index end) nil)
-	      (declare (type array-index index))
-	      (let ((c (lcl:fast-read-byte stream (unsigned-byte 8) nil nil)))
-		(declare (type (or null card8) c))
-		(if (null c)
-		    (return t)
-		  (setf (aref vector index) (the card8 c))))))))))
+	  (do* ((index start (index1+ index)))
+	       ((index>= index end) nil)
+	    (declare (type array-index index))
+	    (let ((c (lcl:fast-read-byte stream (unsigned-byte 8) nil nil)))
+	      (declare (type (or null card8) c))
+	      (if (null c)
+		  (return t)
+		  (setf (aref vector index) (the card8 c)))))))))
+
 
 
 ;;; WARNING:
@@ -1491,7 +1587,7 @@
 	  ((eql timeout 0) :timeout)
 	  ((let ((stream (extract-underlying-stream stream display 'input)))
 	     (lucid::waiting-for-input-from-stream stream
-               (lucid::with-io-unlocked
+               (sys:with-io-unlocked
 		 (if (null timeout)
 		     (lcl:process-wait "CLX Input" #'listen stream)
 		   (lcl:process-wait-with-timeout
@@ -1595,13 +1691,25 @@
 	      (setf (aref target-sequence target-index)
 		(aref source-sequence source-index))))))
 
+#+lucid
+;;;The compiler is *supposed* to optimize calls to replace, but in actual
+;;;fact it does not.
+(defun buffer-replace (buf1 buf2 start1 end1 &optional (start2 0))
+  (declare (type buffer-bytes buf1 buf2)
+	   (type array-index start1 end1 start2))
+  #.(declare-buffun)
+  (let ((end2 (lucid::%simple-8bit-vector-length buf2)))
+    (declare (type array-index end2))
+    (lucid::simple-8bit-vector-replace-internal
+      buf1 buf2 start1 end1 start2 end2)))
+
 #+(and clx-overlapping-arrays (not (or lispm excl)))
 (defun buffer-replace (buf1 buf2 start1 end1 &optional (start2 0))
   (declare (type vector buf1 buf2)
 	   (type array-index start1 end1 start2))
   (replace buf1 buf2 :start1 start1 :end1 end1 :start2 start2))
 
-#-(or lispm excl clx-overlapping-arrays)
+#-(or lispm lucid excl clx-overlapping-arrays)
 (defun buffer-replace (buf1 buf2 start1 end1 &optional (start2 0))
   (declare (type buffer-bytes buf1 buf2)
 	   (type array-index start1 end1 start2))
