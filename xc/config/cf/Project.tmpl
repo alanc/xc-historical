@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.45 89/10/17 10:47:58 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.46 89/10/17 12:41:39 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -20,6 +20,9 @@
 #endif
 #ifndef BuildExamples
 #define BuildExamples		YES	/* but they do take a lot of space */
+#endif
+#ifndef BuildXawBC
+#define BuildXawBC		NO	/* be pure */
 #endif
 #ifndef InstallXinitConfig
 #define InstallXinitConfig	NO	/* install sample xinit config */
@@ -316,7 +319,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.45 89/10/17 10:47:58 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.46 89/10/17 12:41:39 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
