@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.29 91/05/04 22:54:24 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.30 91/07/13 16:35:50 rws Exp $
 
 #define OSName			UNICOS 5.1
 XCOMM operating system:  OSName
@@ -14,7 +14,6 @@ XCOMM operating system:  OSName
 #define ExecableScripts		NO
 #define BuildServer		NO
 #define BuildPex		NO
-#define BuildXInputLib		NO
 #define CcCmd			scc
 #define ConnectionFlags		-DTCPCONN 
 #define HasShm			NO
