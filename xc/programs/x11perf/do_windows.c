@@ -53,6 +53,7 @@ void CreateParents(xp, p)
     parentcolumns = WIDTH / parentwidth;
     parentrows = HEIGHT / parentheight;
     parentwindows = parentcolumns * parentrows; /* Max reps we can fit */
+
     if (parentwindows > p->reps) {
 	parentwindows = p->reps;
     } else {
