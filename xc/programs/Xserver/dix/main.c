@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.124 87/09/07 18:17:41 rws Locked $ */
+/* $Header: main.c,v 1.125 87/11/09 13:42:22 rws Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -220,15 +220,16 @@ main(argc, argv)
 	/* Now free up whatever must be freed */
 	CloseDownExtensions();
 	FreeAllResources();
-	for ( i = 0; i < screenInfo.numScreens; i++)
-        {
+	CloseDownDevices(argc, argv);
+	for (i = screenInfo.numScreens - 1; i >= 0; i--)
+	{
 	    FreeGCperDepth(i);
 	    FreeDefaultStipple(i);
-	}
-	CloseDownDevices(argc, argv);
-	for (i = 0; i < screenInfo.numScreens; i++)
 	    (* screenInfo.screen[i].CloseScreen)(i, &screenInfo.screen[i]);
+	    screenInfo.numScreens = i;
+	}
 	Xfree(screenInfo.screen);
+	screenInfo.screen = (ScreenPtr)NULL;
 
         CloseFont(defaultFont);
         defaultFont = (FontPtr)NULL;
