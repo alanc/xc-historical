@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.13 93/11/22 16:29:18 mor Exp $ */
+/* $XConsortium: listen.c,v 1.1 93/11/24 15:05:58 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -253,6 +253,36 @@ IceListenObj	*listenObjs;
 	list[strlen (list)] = '\0';
 
 	return (list);
+    }
+}
+
+
+
+void
+IceFreeListenObj (listenObj)
+
+IceListenObj listenObj;
+
+{
+    if (listenObj)
+    {
+	free (listenObj->network_id);
+
+	if (listenObj->auth_data_entries)
+	{
+	    int i;
+
+	    for (i = 0; i < listenObj->auth_data_entry_count; i++)
+	    {
+		free (listenObj->auth_data_entries[i].protocol_name);
+		free (listenObj->auth_data_entries[i].auth_name);
+		free (listenObj->auth_data_entries[i].auth_data);
+	    }
+
+	    free ((char *) listenObj->auth_data_entries);
+	}
+
+	free ((char *) listenObj);
     }
 }
 
