@@ -54,33 +54,33 @@ static char *defaultTranslationTable[] = {
 /* grodyness needed because Xrm wants pointer to thing, not thing... */
 static caddr_t defaultTranslations = (caddr_t)defaultTranslationTable;
 
-static Resource resources[] = {
+static XtResource resources[] = {
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
-     Offset(ScrollbarWidget, scrollbar.orientation), XtRString, "vertical"},
-  {XtNscrollProc, XtCScrollProc, XtRFunction, sizeof(CallbackProc),
-     Offset(ScrollbarWidget, scrollbar.scrollProc), XtRFunction, NULL},
-  {XtNthumbProc, XtCScrollProc, XtRFunction, sizeof(CallbackProc),
-     Offset(ScrollbarWidget, scrollbar.thumbProc), XtRFunction, NULL},
+     XtOffset(ScrollbarWidget, scrollbar.orientation), XtRString, "vertical"},
+  {XtNscrollProc, XtCScrollProc, XtRFunction, sizeof(XtCallbackProc),
+     XtOffset(ScrollbarWidget, scrollbar.scrollProc), XtRFunction, NULL},
+  {XtNthumbProc, XtCScrollProc, XtRFunction, sizeof(XtCallbackProc),
+     XtOffset(ScrollbarWidget, scrollbar.thumbProc), XtRFunction, NULL},
   {XtNparameter, XtCParameter, XtRPointer, sizeof(caddr_t),
-     Offset(ScrollbarWidget, scrollbar.closure), XtRPointer, NULL},
+     XtOffset(ScrollbarWidget, scrollbar.closure), XtRPointer, NULL},
   {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
-     Offset(ScrollbarWidget, scrollbar.thumb), XtRPixmap, NULL},
+     XtOffset(ScrollbarWidget, scrollbar.thumb), XtRPixmap, NULL},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-     Offset(ScrollbarWidget, scrollbar.foreground), XtRString, "black"},
+     XtOffset(ScrollbarWidget, scrollbar.foreground), XtRString, "black"},
   {XtNscrollVCursor, XtCScrollVCursor, XtRCursor, sizeof(Cursor),
-     Offset(ScrollbarWidget, scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
+     XtOffset(ScrollbarWidget, scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
   {XtNscrollHCursor, XtCScrollHCursor, XtRCursor, sizeof(Cursor),
-     Offset(ScrollbarWidget, scrollbar.horCursor), XtRString, "sb_h_double_arrow"},
+     XtOffset(ScrollbarWidget, scrollbar.horCursor), XtRString, "sb_h_double_arrow"},
   {XtNscrollUCursor, XtCScrollUCursor, XtRCursor, sizeof(Cursor),
-     Offset(ScrollbarWidget, scrollbar.upCursor), XtRString, "sb_up_arrow"},
+     XtOffset(ScrollbarWidget, scrollbar.upCursor), XtRString, "sb_up_arrow"},
   {XtNscrollDCursor, XtCScrollDCursor, XtRCursor, sizeof(Cursor),
-     Offset(ScrollbarWidget, scrollbar.downCursor), XtRString, "sb_down_arrow"},
+     XtOffset(ScrollbarWidget, scrollbar.downCursor), XtRString, "sb_down_arrow"},
   {XtNscrollLCursor, XtCScrollLCursor, XtRCursor, sizeof(Cursor),
-     Offset(ScrollbarWidget, scrollbar.leftCursor), XtRString, "sb_left_arrow"},
+     XtOffset(ScrollbarWidget, scrollbar.leftCursor), XtRString, "sb_left_arrow"},
   {XtNscrollRCursor, XtCScrollRCursor, XtRCursor, sizeof(Cursor),
-     Offset(ScrollbarWidget, scrollbar.rightCursor), XtRString, "sb_right_arrow"},
-  {XtNeventBindings, XtCEventBindings, XtRStringTable, sizeof(Translations),
-     Offset(ScrollbarWidget, core.translations), XtRStringTable, (caddr_t)&defaultTranslations},
+     XtOffset(ScrollbarWidget, scrollbar.rightCursor), XtRString, "sb_right_arrow"},
+  {XtNeventBindings, XtCEventBindings, XtRStringTable, sizeof(_XtTranslations),
+     XtOffset(ScrollbarWidget, core.translations), XtRStringTable, (caddr_t)&defaultTranslations},
 };
 
 static void ClassInitialize();
@@ -114,7 +114,7 @@ static ScrollbarClassRec scrollbarClassRec = {
 /* core fields */
     /* superclass       */      (WidgetClass) &widgetClassRec,
     /* class_name       */      "Scroll",
-    /* size             */      sizeof(ScrollbarClassRec),
+    /* size             */      sizeof(ScrollbarRec),
     /* class_initialize	*/	ClassInitialize,
     /* class_inited	*/	FALSE,
     /* initialize       */      Initialize,
@@ -186,7 +186,7 @@ static void ClassInitialize()
 {
     XtQEhorizontal = XrmAtomToQuark(XtEhorizontal);
     XtQEvertical   = XrmAtomToQuark(XtEvertical);
-    XrmRegisterTypeConverter(XtRString, XtROrientation, CvtStringToOrientation);
+    XrmRegisterTypeConverter(XrmRString, XtROrientation, CvtStringToOrientation);
 }
 
 
@@ -384,7 +384,7 @@ static void SetValues( gw, desired )
 /* ARGSUSED */
 static void Resize( gw, geometry )
    Widget gw;
-   WidgetGeometry geometry;
+   XtWidgetGeometry geometry;
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
 
