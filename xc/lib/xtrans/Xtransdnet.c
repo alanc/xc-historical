@@ -2,9 +2,42 @@
 #include <netdnet/dnetdb.h>
 #include <sys/ioctl.h>
 
+#if defined(X11_t)
+#define DNETOBJ X$X
+#endif
+#if defined(XIM_t)
+#define DNETOBJ IMSERVER$
+#endif
+#if defined(FS_t) || defined(FONT_t)
+#define DNETOBJ X$FONT
+#endif
+#if defined(ICE_t)
+#define DNETOBJ X$ICE
+#endif
+#if defined(TEST_t)
+#define DNETOBJ X$TEST
+#endif
+
+
 /*
  * This is the DNET implementation of the X Transport service layer
  */
+
+static int
+is_numeric (str)
+
+char *str;
+
+{
+    int i;
+
+    for (i = 0; i < (int) strlen (str); i++)
+	if (!isdigit (str[i]))
+	    return (0);
+
+    return (1);
+}
+
 
 /*
  * This function gets the local address of the socket and stores it in the
@@ -17,7 +50,7 @@ TRANS(DNETGetAddr) (ciptr)
 XtransConnInfo ciptr;
 
 {
-    Xtransaddr	sockname;
+    sockaddr_dn	sockname;
     int		namelen = sizeof(sockname);
 
     PRMSG (3,"TRANS(DNETGetAddr) (%x)\n", ciptr, 0, 0);
@@ -41,7 +74,7 @@ XtransConnInfo ciptr;
         return -1;
     }
 
-    ciptr->family = sockname.family;
+    ciptr->family = sockname.sdn_family;
     ciptr->addrlen = namelen;
     memcpy (ciptr->addr, &sockname, ciptr->addrlen);
 
@@ -60,7 +93,7 @@ TRANS(DNETGetPeerAddr) (ciptr)
 XtransConnInfo ciptr;
 
 {
-    Xtransaddr	sockname;
+    sockaddr_dn	sockname;
     int		namelen = sizeof(sockname);
 
     PRMSG (3,"TRANS(DNETGetPeerAddr) (%x)\n", ciptr, 0, 0);
@@ -126,11 +159,24 @@ char		*host;
 char		*port;
 
 {
-    /* NEED TO IMPLEMENT */
+    XtransConnInfo	ciptr;
 
     PRMSG (2,"TRANS(DNETOpenCOTSServer) (%s,%s,%s)\n", protocol, host, port);
 
-    return NULL;
+    if ((ciptr = (XtransConnInfo) calloc (
+	1, sizeof(struct _XtransConnInfo))) == NULL)
+    {
+	PRMSG (1, "TRANS(DNETOpenCOTSServer): malloc failed\n", 0, 0, 0);
+	return NULL;
+    }
+
+    if ((ciptr->fd = socket (AF_DECnet, SOCK_STREAM, 0)) < 0)
+    {
+	free ((char *) ciptr);
+	return NULL;
+    }
+
+    return (ciptr);
 }
 
 
@@ -197,11 +243,43 @@ XtransConnInfo	ciptr;
 char		*port;
 
 {
-    /* NEED TO IMPLEMENT */
-
-    int	fd = ciptr->fd;
+    struct sockaddr_dn  dnsock;
+    int			fd = ciptr->fd;
 
     PRMSG (3, "TRANS(DNETCreateListener) (%x,%d)\n", ciptr, fd, 0);
+
+    bzero ((char *) &dnsock, sizeof (dnsock));
+    dnsock.sdn_family = AF_DECnet;
+
+    if (port && *port )
+	sprintf (dnsock.sdn_objname, "%s%s", DNETOBJ, port);
+    else
+#ifdef X11_t
+	return -1;
+#else
+	sprintf (dnsock.sdn_objname, "%s%d", DNETOBJ, getpid ());
+#endif
+
+    dnsock.sdn_objnamel = strlen (dnsock.sdn_objname);
+
+    if (bind (fd, (struct sockaddr *) &dnsock, sizeof (dnsock)))
+    {
+	close (fd);
+	return -1;
+    }
+
+    if (listen (fd, 5))
+    {
+	close (fd);
+	return (-1);
+    }
+
+
+    /* Set a flag to indicate that this connection is a listener */
+
+    ciptr->flags = 1;
+
+    return 0;
 }
 
 
@@ -211,11 +289,54 @@ TRANS(DNETAccept) (ciptr)
 XtransConnInfo	ciptr;
 
 {
-    /* NEED TO IMPLEMENT */
+    XtransConnInfo	newciptr;
+    sockaddr_dn		sockname;
+    int			namelen = sizeof(sockname);
 
     PRMSG (2, "TRANS(DNETAccept) (%x,%d)\n", ciptr, ciptr->fd, 0);
 
-    return NULL;
+    if ((newciptr = (XtransConnInfo) calloc(
+	1, sizeof (struct _XtransConnInfo))) == NULL)
+    {
+	PRMSG (1, "TRANS(DNETAccept): malloc failed\n", 0, 0, 0);
+	return NULL;
+    }
+
+    if((newciptr->fd = accept (ciptr->fd,
+	(struct sockaddr *) &sockname, &namelen)) < 0)
+    {
+	PRMSG (1, "TRANS(DNETAccept): accept() failed\n", 0, 0, 0);
+
+	free (newciptr);
+	return NULL;
+    }
+
+    /*
+     * Get this address again because the transport may give a more 
+     * specific address now that a connection is established.
+     */
+
+    if (TRANS(DNETGetAddr) (newciptr) < 0)
+    {
+	PRMSG(1,
+	"TRANS(DNETAccept): TRANS(DNETGetAddr)() failed:\n", 0, 0, 0);
+	close (newciptr->fd);
+	free (newciptr);
+        return NULL;
+    }
+
+    if (TRANS(DNETGetPeerAddr) (newciptr) < 0)
+    {
+	PRMSG(1,
+	"TRANS(DNETAccept): TRANS(DNETGetPeerAddr)() failed:\n", 0, 0, 0);
+
+	close (newciptr->fd);
+	if (newciptr->addr) free (newciptr->addr);
+	free (newciptr);
+        return NULL;
+    }
+
+    return newciptr;
 }
 
 
@@ -235,7 +356,7 @@ char		*port;
     
     PRMSG (2,"TRANS(DNETConnect) (%d,%s,%s)\n", ciptr->fd, host, port);
 
-#ifdef X11
+#ifdef X11_t
     /*
      * X has a well known port, that is transport dependent. It is easier
      * to handle it here, than try and come up with a transport independent
@@ -243,24 +364,13 @@ char		*port;
      *
      * The port that is passed here is really a string containing the idisplay
      * from ConnectDisplay().
-     *
-     * Xlib may be calling this for either X11 or IM. Assume that
-     * if port < IP_RESERVE, then is is a display number. Otherwise, it is a
-     * regular port number for IM.
      */
 
     if (is_numeric (port))
     {
 	short tmpport = (short) atoi (port);
 
-#if 0
-	if (tmpport < 1024) /* IP_RESERVED */
-#endif
-	    sprintf (objname, "X$X%d", tmpport);
-#if 0
-	else
-	    strncpy (objname, port, OBJBUFSIZE);
-#endif
+	sprintf (objname, "X$X%d", tmpport);
     }
     else
 #endif
@@ -425,6 +535,7 @@ Xtransport	TRANS(DNETFuncs) = {
     TRANS(DNETOpenCLTSServer),
     TRANS(DNETSetOption),
     TRANS(DNETCreateListener),
+    NULL,		       			/* ResetListener */
     TRANS(DNETAccept),
     TRANS(DNETConnect),
     TRANS(DNETBytesReadable),
