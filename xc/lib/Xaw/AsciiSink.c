@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.33 89/08/15 12:43:26 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.34 89/08/17 16:44:55 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -383,16 +383,16 @@ static AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak,
 	if (index - blk.firstPos >= blk.length)
 	    (*source->Read)(source, index, &blk, bufferSize);
 	c = blk.ptr[index - blk.firstPos];
-	if (c == LF) {
-	    *resWidth += CharWidth(w, fromx + *resWidth, SP);
-	    index++;
-	    break;
-	}
 	*resWidth += CharWidth(w, fromx + *resWidth, c);
+
 	if ((c == SP || c == TAB) && *resWidth <= width) {
 	    whiteSpaceSeen = TRUE;
 	    whiteSpacePosition = index;
 	    whiteSpaceWidth = *resWidth;
+	}
+	if (c == LF) {
+	    index++;
+	    break;
 	}
     }
     if (*resWidth > width && index > fromPos) {

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.6 89/08/15 12:41:25 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.7 89/08/17 17:46:26 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -920,13 +920,10 @@ TextWidget ctx;
 
   x = ctx->text.margin.left;
   (*FindPosition) ( (Widget) ctx, ctx->text.lt.info[line_num].position, x, 
-		   max_width, FALSE, &ret_pos, &width, &height);
-  
-  if ( ret_pos != ctx->text.insertPos )
-    return;
-
-  (*FindPosition) ( (Widget) ctx, ctx->text.lt.info[line_num].position, x, 
 		   max_width, TRUE, &ret_pos, &width, &height);
+  
+  if ( ret_pos >= ctx->text.insertPos )
+    return;
   
   /*
    * Do not make any changes if we could not find a word break.
