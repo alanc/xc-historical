@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: GCManager.c,v 1.11 87/09/11 21:19:10 newman Locked $";
 #endif lint
 
 /*
@@ -160,16 +160,15 @@ GC XtGetGC(widget, valueMask, values)
     return cur->gc;
 }
 
-void  XtDestroyGC(widget, gc)
-    Widget widget;
+void  XtDestroyGC(gc)
     GC gc;
 {
     GCptr first=GClist;
     GCptr cur;
     
     for (cur = first; cur != NULL; cur = cur->next) 
-      if (cur->gc = gc) 
-         if (--(cur->ref_count) == 0) XFreeGC(XtDisplay(widget), gc);     
+      if (cur->gc == gc) 
+         if (--(cur->ref_count) == 0) XFreeGC(cur->dpy, gc);     
     return;
 }
 

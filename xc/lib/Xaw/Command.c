@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.20 87/09/13 13:12:52 swick Locked $";
+static char rcsid[] = "$Header: Command.c,v 1.21 87/09/13 13:16:53 newman Locked $";
 #endif lint
 
 /*
@@ -403,20 +403,20 @@ static void SetValues(old, new)
 
      if (XtLField(newcbw,foreground) != ComWforeground)
        {
-         XtDestroyGC((Widget)cbw, ComWinverseGC);
+         XtDestroyGC(ComWinverseGC);
 	 Get_inverseGC(newcbw);
-         XtDestroyGC((Widget)cbw, ComWhighlightGC);
+         XtDestroyGC(ComWhighlightGC);
 	 Get_highlightGC(newcbw);
        }
     else 
       {
 	if (XtCField(newcbw,background_pixel) != ComWbackground ||
 	     XtLField(newcbw,font) != ComWfont) {
-	     XtDestroyGC((Widget)cbw, ComWinverseTextGC);
+	     XtDestroyGC(ComWinverseTextGC);
 	     Get_inverseTextGC(newcbw);
 	     }
 	if (XtCBField(newcbw,highlight_thickness) != ComWhighlightThickness) {
-	    XtDestroyGC((Widget)cbw, ComWhighlightGC);
+	    XtDestroyGC(ComWhighlightGC);
 	    Get_highlightGC(newcbw);
 	}
       }

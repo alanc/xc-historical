@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.11 87/09/13 03:16:01 swick Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.12 87/09/13 13:11:10 newman Locked $";
 #endif lint
 
 /*
@@ -192,10 +192,10 @@ static void Destroy (gw)
 {
      ClockWidget w = (ClockWidget) gw;
      XtRemoveTimeOut (w->clock.interval_id);
-     XtDestroyGC (gw, w->clock.myGC);
-     XtDestroyGC (gw, w->clock.HighGC);
-     XtDestroyGC (gw, w->clock.HandGC);
-     XtDestroyGC (gw, w->clock.EraseGC);
+     XtDestroyGC (w->clock.myGC);
+     XtDestroyGC (w->clock.HighGC);
+     XtDestroyGC (w->clock.HandGC);
+     XtDestroyGC (w->clock.EraseGC);
 }
 
 static void Resize (gw) 
@@ -653,7 +653,7 @@ static void SetValues (gw, gnewvals)
 	  myXGCV.background = w->core.background_pixel;
           myXGCV.font = w->clock.font->fid;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (gw, w->clock.myGC);
+	  XtDestroyGC (w->clock.myGC);
 	  newvals->clock.myGC = XtGetGC(w, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -663,7 +663,7 @@ static void SetValues (gw, gnewvals)
 	  myXGCV.foreground = w->clock.fgpixel;
           myXGCV.font = w->clock.font->fid;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (gw, w->clock.HighGC);
+	  XtDestroyGC (w->clock.HighGC);
 	  newvals->clock.HighGC = XtGetGC(w, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -671,7 +671,7 @@ static void SetValues (gw, gnewvals)
       if (newvals->clock.Hdpixel != w->clock.Hdpixel) {
           valuemask = GCForeground;
 	  myXGCV.foreground = w->clock.fgpixel;
-	  XtDestroyGC (gw, w->clock.HandGC);
+	  XtDestroyGC (w->clock.HandGC);
 	  newvals->clock.HandGC = XtGetGC(w, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -680,7 +680,7 @@ static void SetValues (gw, gnewvals)
           valuemask = GCForeground | GCLineWidth;
 	  myXGCV.foreground = w->core.background_pixel;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (gw, w->clock.EraseGC);
+	  XtDestroyGC (w->clock.EraseGC);
 	  newvals->clock.EraseGC = XtGetGC(w, valuemask, &myXGCV);
 	  redisplay = TRUE;
 	  }

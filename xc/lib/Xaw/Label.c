@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.20 87/09/11 21:21:45 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.21 87/09/13 13:17:29 newman Locked $";
 #endif lint
 
 /*
@@ -427,7 +427,7 @@ static void SetValues(old, new)
     if (oldlw->label.foreground != newlw->label.foreground
 	|| oldlw->label.font->fid != newlw->label.font->fid) {
 
-	XtDestroyGC((Widget)oldlw, oldlw->label.normal_GC);
+	XtDestroyGC(oldlw->label.normal_GC);
 	GetnormalGC(newlw);
 	GetgrayGC(newlw);
     }
