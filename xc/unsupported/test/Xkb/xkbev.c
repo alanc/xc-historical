@@ -1,7 +1,7 @@
 /*
  * xkbev - event diagnostics for the X Keyboard Extension
  *
- * $XConsortium: xkbev.c,v 1.4 94/04/01 18:50:12 erik Exp $
+ * $XConsortium: xkbev.c,v 1.2 93/09/28 23:51:40 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -318,13 +318,13 @@ do_XkbCompatMapNotify(xkbev)
     if (map->changed_vmods)
 	printf("    maps for virtual modifiers in 0x%04x changed\n",
 						map->changed_vmods);
-    if (map->num_si>0) {
+    if (map->num_syms>0) {
 	printf("    symbol interpretations %d..%d (of %d) changed\n",
-				map->first_si,map->first_si+map->num_si-1,
-							map->num_total_si);
+				map->first_sym,map->first_sym+map->num_syms-1,
+							map->num_total_syms);
     }
     else printf("   keyboard has %d symbol interpretations\n",
-							map->num_total_si);
+							map->num_total_syms);
     return;
 }
 
