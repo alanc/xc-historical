@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.49 90/01/22 15:18:20 rws Exp $ */
+/* $XConsortium: window.c,v 5.50 90/02/28 16:09:42 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2239,11 +2239,11 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    pRegion = &pWin->clipList; /* a convenient empty region */
 	if (pWin->bitGravity == ForgetGravity)
 	    bsExposed = (* pScreen->TranslateBackingStore)
-				(pWin, 0, 0, NullRegion);
+				(pWin, 0, 0, NullRegion, oldx, oldy);
 	else
 	{
 	    bsExposed = (* pScreen->TranslateBackingStore)
-				(pWin, nx - x, ny - y, pRegion);
+			     (pWin, nx - x, ny - y, pRegion, oldx, oldy);
 	}
     }
 
