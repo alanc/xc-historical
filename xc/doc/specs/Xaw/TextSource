@@ -1,0 +1,526 @@
+.NH 2
+Ascii Source Object
+.LP
+.XS
+\*(SN AsciiSource Object
+.XE
+.IN "AsciiSource object" "" "@DEF@"
+.IN "AsciiSrc" "" "@DEF@"
+.LP
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+Header file	AsciiSrc.h
+Class		asciiSrcObjectClass
+Class Name	AsciiSrc
+.sp 1
+.LP
+The AsciiSource object is used by a text widget to read the text from
+a file or string in memory.  It understands all Latin1 characters plus
+Tab and Carriage Return.
+.LP
+The AsciiSource can be either of two types:
+.IP \fBXawAsciiFile\fP 1.25i
+AsciiSource objects of this type read the text from a file and store it
+into an internal buffer.  This buffer may then be modified (provided
+the text widget is in the correct edit mode) just as if it were a
+source of type \fBXawAsciiString\fP.  Unlike previous versions of the
+AsciiSource it is now possible to specify an editable disk source.
+The file is never updated, however, until a call to \fBXawAsciiSave\fP
+is made.  When the source is in this mode the \fBuseStringInPlace\fP resource
+is ignored.
+.IP \fBXawAsciiString\fP 1.25i
+With AsciiSource objects of this type the text buffer is passed as a
+string.   This buffer normally will be copied and managed internally.
+It is also possible to use the string in place, by setting the
+\fBuseStringInPlace\fP resource, and specifying the length of the
+allocated buffer in the \fBlength\fP resource. 
+.LP
+If the application chooses to allow the AsciiSource to manage the
+string internally (the default - \fBuseStringInPlace\fP is
+\fBfalse\fP) then it need not worry about running out of buffer space
+(subject to the total memory avaliable to the application, of course).
+The performance
+does not decay linearly as the buffer grows large, as is ncessarily the
+case when the text buffer is used in place.  If this mode is used, the
+string passed to the AsciiSource at startup is not updated as the user
+types.  The only ways to get the latest version of the text string is
+with \fBXtSetValues\fP.
+.De
+.sp 1
+.LP
+.IN "AsciiSource object" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Class	Type	Default Value
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+callback	Callback	Callback	NULL
+dataCompression	DataCompression	Boolean	True
+destroyCallback	Callback	Callback	NULL
+editType	EditType	EditMode	XawtextRead
+length	Length	Int	length of \fBstring\fP
+pieceSize	PieceSize	Int	BUFSIZ
+string	String	String	NULL
+type	Type	AsciiType	XawAsciiString
+useStringInPlace	UseStringInPlace	Boolean	False
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.IP \fBcallback\fP 1.5i
+The callbacks registered on this resource will be called everytime the
+text buffer changes.
+.IP destroyCallback 1.5i
+All callback functions on this list are called when this widget is destroyed.
+.IP editType 1.5i
+This is the type of editing that will be allowed in this text widget.
+Acceptable values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
+\fBXawtextAppend\fP.  A type converter is registered that will convert
+the strings \fBread\fP, \fBedit\fP, and \fBappend\fP to the proper
+\fBXawEditType\fP. 
+.IP \fBlength\fP 1.5i
+If the \fBuseStringInPlace\fP resource is \fBfalse\fP this attribute has no
+effect.  If that resource is \fBtrue\fP, however, then the \fBlength\fP
+resource specifies the length of the buffer passed to the text widget
+in the \fBstring\fP resource.
+.IP \fBpieceSize\fP 1.5i
+This is the size of the internal chunks that the text is broken down
+into for memory management.  The larger this value the less segmented
+your memory will be, but the slower your editing will be.  The text
+widgets will always allocate a chunk of memory this size to stuff the
+\fBstring\fP into, so when using small strings, having this buffer
+large can waste memory.  This resource has no effect if
+\fBuseStringInPlace\fP is \fBtrue\fP. 
+.IP \fBstring\fP 1.5i
+If the AsciiText widget is of type \fBXawAsciiString\fP then this string
+contains the buffer to be displayed in the AsciiText widget. 
+If the AsciiText widget is of type \fBXawAsciiFile\fP then the
+string contains the name of the file to be displayed.  This string is
+normally copied by the text widget into internal memory, but
+may be used in place by setting the \fBuseStringInPlace\fP resource.
+As of X11R4 this is a settable resource.
+.IP \fBtype\fP 1.5i
+This resource may be either \fBXawAsciiString\fP or
+\fBXawAsciiFile\fP.  The value of this resource determines whether the
+\fBstring\fP contains the name of a file to be opened or a buffer to
+be displayed by the text widget.  A converter has been registered for
+this resource and accepts the values \fBstring\fP and \fBfile\fP.
+.IP \fBuseStringInPlace\fP 1.5i
+While having the AsciiText widget perform dynamic memory management
+makes the programers job much easier, and is very helpful for most
+tasks there are times when it just gets in the way.
+In these cases by setting this resource to \fBtrue\fP the AsciiText
+widget will use the \fBstring\fP in place.  Be
+sure to set the \fBtype\fP resource to size of the buffer allocated
+by the application.  If the \fBstring\fP is used in place then it must
+exist for the lifetime of the text widget, or until it has been reset.
+.NH 3
+Convience Routines
+.LP
+The AsciiSource has a few convience routines that allow the
+application programmer quicker or more convient access to some of the
+commonly used functionality of the AsciiSource.
+.NH 4
+Conserving Memory
+.LP
+When the AsciiSource widget is not in \fBuseStringInPlace\fP mode
+space must be allocated whenever the file is saved, or the string is 
+requested with a call to \fBXtGetValues\fP.  This memory is allocated on the
+fly, and remains valid until the next time a string needs to be allocated.
+You may save memory by freeing this string as soon as you are done
+with it by calling \fBXawAsciiSourceFreeString\fP.
+.FD 0
+void XawAsciiSourceFreeString(\fIw\fP)
+.br
+Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the AsciiSource object.
+.LP
+This function will free the memory that contains the string pointer returned
+by \fBXtGetValues\fP.  This will normally happen automatically when
+the next call to \fBXtGetValues\fP occures, or when the widget is destroyed.
+.NH 4
+Saving Files
+.LP
+To save the changes made in the current text source into a file use
+\fBXawAsciiSave\fP.
+.FD 0
+Boolean XawAsciiSave(\fIw\fP)
+.br
+Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the AsciiSource object.
+.LP
+\fBXawAsciiSave\fP returns \fBtrue\fP if the save was successful.
+It will update the file named in the \fBstring\fP resource.
+If the buffer has not been changed, no action will be taken.  This function
+only works on an AsciiSource of type \fBXawAsciiFile\fP.
+.LP
+.sp 1
+To save the contents of the current text buffer into a named file use 
+\fBXawAsciiSaveAsFile\fP.
+.FD 0
+Boolean XawAsciiSaveAsFile(\fIw\fP, \fIname\fP)
+.br
+Widget \fIw\fP;
+.br
+String \fIname\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the AsciiSource object.
+.IP \fIname\fP 1i
+The name of the file to save the current buffer into.
+.LP
+This function returns \fBtrue\fP if the save was successful.
+\fBXawAsciiSaveAsFile\fP will work with a buffer of either type
+\fBXawAsciiString\fP or type \fBXawAsciiFile\fP. If the buffer has not been
+changed, no action will be taken. 
+.NH 4
+Seeing if the Source has Changed
+.LP
+To find out if a the text buffer in an AsciiSource oject has changed
+since the last time it was saved or queried use \fXawAsciiSourceChanged\fP.
+.FD 0
+Boolean XawAsciiSourceChanged(\fIw\fP)
+.br
+Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the AsciiSource object.
+.LP
+This function will return \fBtrue\fP if the source has changed since
+the last time it was saved or queried.  The internal change flag is
+reset whenever the string is queried via \fBXtGetValues\fP or the
+buffer is saved with one of the convience functions described above.
+.NH 2
+TextSource Object
+.LP
+.XS
+\*(SN TextSource Object
+.XE
+.IN "TextSource object" "" "@DEF@"
+.IN "TextSrc" "" "@DEF@"
+.LP
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+Header file	TextSrc.h
+Class		textSrcObjectClass
+Class Name	TextSrc
+.sp 1
+.LP
+The TextSource object is the root object for all text sources.  Any new text
+source widgets should be subclasses of the TextSource Object.  The
+TextSource Class contains all methods the Text widget expects a Text
+source to export.
+.LP
+Since all text sources will have some resources in common the
+TextSource defines a few new resources.  
+.De
+.sp 1
+.LP
+.IN "TextSource object" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Class	Type	Default Value
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+destroyCallback	Callback	XtCallbackList	NULL
+editType	EditType	EditMode	NULL
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.IP destroyCallback 1.5i
+All callback functions on this list are called when this object is destroyed.
+.IP \fBeditType\fP 1.5i
+This is the type of editing that will be allowed in this text widget.
+Acceptable values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
+\fBXawtextAppend\fP.  A type converter is registered that will convert
+the strings \fBread\fP, \fBedit\fP, and \fBappend\fP to the proper
+\fBXawEditType\fP. 
+.NH 3
+Subclassing the TextSource
+.IN "TextSource object" "Subclassing" "@DEF@"
+.LP
+The only purpose of the TextSource Object is to be subclassed.  It
+contains the minium set of class methods that all text sources must have.
+All class methods defined by the TextSource must be defined, as the Text
+widget uses them all.  While all may be inherited, the direct
+descendant of TextSource \fBmust specify\fP some of them as TextSource
+does not contain enough smarts to be a valid text source by itself.
+Do not try to use the TextSource as a valid source for the Text
+widget, it is not intended to be used as a source by itself and bad
+things will probabally happen. 
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1i) lw(1.5i) lw(2i) lw(1i).
+_
+.sp 3p
+.TB
+Function	Inherit with	Public Interface	must specify
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+.sp 1
+Read	XtInheritRead	XawTextSourceRead	yes
+Replace	XtInheritReplace	XawTextSourceReplace	no
+Scan	XtInheritScan	XawTextSourceScan	yes
+Search	XtInheritSearch	XawTextSourceSearch	no
+SetSelection	XtInheritSetSelection	XawTextSourceSetSelection	no
+ConvertSelection	XtInheritConvertSelection	XawTextSourceConvertSelection	no
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.NH 4
+Reading Text.
+.LP
+To read the text in a text source use the 
+\fBRead\fP function.
+.IN "TextSource" "Read" "@DEF@"
+.FD 0
+XawTextPosition Read(\fIw\fP, \fIpos\fP, \fItext\fP, \fIlength\fP)
+.br
+Widget \fIw\fP;
+.br
+XawTextPosition \fIpos\fP;
+.br
+XawTextBlock \fI*text\fP;
+.br
+int \fIlength\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the TextSource object.
+.IP \fIpos\fP 1i
+The position of the first character to be read from the text buffer.
+.IP \fItext\fP 1i
+A properly allocated text block.  This text block will contain the 
+text read from the source.
+.IP \fIlength\fP 1i
+The maximum number of characters to read from the text buffer.
+.LP
+This function returns the actual number of characters read from the
+text buffer.  The function is not required to return \fIlength\fP
+characters if that many characters are in the file, is may break at
+any point that is convient to the internal structure of the
+source.  It may take several calls to \fBRead\fP before the desired
+portion of the text buffer is fully retreived.
+.NH 4
+Replacing Text.
+.LP
+The replace or edit the text in a text buffer use the \fBReplace\fP function.
+.FD 0
+XawTextPosition Replace(\fIw\fP, \fIstart\fP, \fIend\fP, \fItext\fP)
+.br
+Widget \fIw\fP;
+.br
+XawTextPosition \fIstart\fP, \fIend\fP;
+.br
+XawTextBlock \fI*text\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the TextSource object.
+.IP \fIstart\fP 1i
+The position of the first character to be removed from the text
+buffer.  This is also the location to begin inserting the new text.
+.IP \fIend\fP 1i
+The position immediately after the last character to be removed from the
+text buffer. 
+.IP \fItext\fP 1i
+A properly allocated text block.  This text block should contain the buffer
+to be added to the text source.
+.LP
+This function can return any of the following values:
+.IP \fBXawEditDone\fP 1.25i
+The text replacement was successful.
+.IP \fBXawPositionError\fP 1.25i
+The edit mode is \fBXawtextAppend\fP and \fIstart\fP is not the last
+character of the source.
+.IP \fBXawEditError\fP 1.25i
+Either the Source was read-only or the range to be deleted is larger
+than the length of the Source. 
+.LP
+The \fBReplace\fP arguments \fIstart\fP and \fIend\fP represent the
+text source character positions for the existing text that is to be
+replaced by the text in the text block.  The characters from
+\fIstart\fP up to but not including \fIend\fP are deleted, and the
+buffer specified by the text block is inserted in their
+place.  If \fIstart\fP and \fIend\fP are equal, no text is deleted and
+the new text is inserted after \fIstart\fP.
+.NH 4
+Scanning the TextSource
+.LP
+To search the text source for one of the predefined boundry types is 
+done with the \fBScan\fP function.
+.FD 0
+XawTextPosition Scan(\fIw\fP, \fIposition\fP, \fItype\fP, \fIdir\fP, \fIcount\fP, \fIinclude\fP)
+.br
+Widget \fIw\fP;
+.br
+XawTextPosition \fIposition\fP;
+.br
+XawTextScanType \fItype\fP;
+.br
+XawTextScanDirection \fIdir\fP;
+.br
+int \fIcount\fP;
+.br
+Boolean \fIinclude\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the TextSource object.
+.IP \fIposition\fP 1i
+The position to begin scanning the source.
+.IP \fItype\f 1i
+The type of boundry to scan for, may be one of: \fBXawstPosition\fP,
+\fBXawstWhiteSpace\fP, \fBXawstEOL\fP, \fBXawstParagraph\fP, \fBXawstAll\fP.
+The exact defintion of these types is left up to the individual text source.
+.IP \fIdir\f 1i
+The direction to scan, may be either \fBXawsdLeft\fP to search
+backward, or \fBXawsdRight\fP to search forward.
+.IP \fIcount\fP 1i
+The number of boundries to scan for.
+.IP \finclude\fP 1i
+Once a boundry has been found this specifies whether to include the
+last boundry in position that is returned.
+.LP
+The \fBScan\fP function returns the position in the text source of the desired
+boundry.  It is expected to return a valid address for
+all calls made to it, thus if a particular request is made that would take
+the text widget beyond an end of the source it must just return the
+position of that end, and not go off into space.
+.NH 4
+Searching through a TextSource
+.LP
+To search for a particular string use the \fBSearch\fP function.
+.FD 0
+XawTextPosition Search(\fIw\fP, \fIposition\fP, \fIdir\fP, \fItext\fP)
+.br
+Widget \fIw\fP;
+.br
+XawTextPosition \fIposition\fP;
+.br
+XawTextScanDirection \fIdir\fP;
+.br
+XawTextBlock \fI*count\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the TextSource object.
+.IP \fIposition\fP 1i
+The position to begin the search.
+.IP \fIdir\f 1i
+The direction to search, may be either \fBXawsdLeft\fP to search
+backward, or \fBXawsdRight\fP to search forward.
+.IP \fItext\fP 1i
+A text block containing the text to search for.
+.LP
+This function will search through the text buffer attempting to find a
+match for the string in the text block.  If a match is found in the
+direction specified, then the character location of the first character
+in the string is returned.  If no text was found then
+\fBXawTextSearchError\fP is returned.
+.NH 4
+Text Selections
+.LP
+While many of the default selection types are handled by the Text
+widget many text sources will have special types of text that wish to
+handle selection types not defined by the Text widget.  When a selection
+conversion is requested by the X Server the text widget will first
+call the \fBConvertSelection\fP function, to attempt the selection conversion.
+.FD 0
+Boolean ConvertSelections(\fIw\fP, \fIselection\fP, \fItarget\fP, \fItype\fP, \fIvalue\fP, \fIlength\fP, \fIformat\fP)
+.br
+Widget \fIw\fP;
+.br
+Atom \fI*selection\fP, \fI*target\fP, \fI*type\fP;
+.br
+caddr_t \fI*value\fP;
+.br
+unsigned long \fI*length\fP;
+.br
+int \fI*format\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the TextSource object.
+.IP \fIselection\fP 1i
+Specifies the type of selection that was requested (e.g. \fBPRIMARY\fP).
+.IP \fItarget\fP 1i
+Specifies the type of the selection that has been requested, which
+indicates the desired information about the seletion (e.g. Filename,
+Text, Window).
+.IP \fItype\fP 1i
+A pointer  to an atome into which the property type of the converted
+value of the selection is to be stored.  For instance, either file
+name or text might have property type \fBXA_STRING\fP.
+.IP \fIvalue\fP 1i
+A pointer into which a pointer ot the vonverted value of the selection
+is to be stored.  The selection owner is responsible for allocationg
+this storage.  The memory is considered owned by the toolkit, and is
+freed by XtFree when the Intrinsics selection mechanism is done with it.
+.IP \fIlength\fP 1i
+A pointer into which the number of elements in value is to be stored.
+The size of each element is determined by \fIformat\fP.
+.IP \fIformat\fP 1i
+A pointer into which the size in bits of the data elements of the
+selection value is to be stored.
+.LP
+If this function returns \fBtrue\fP then the Text widget will assume
+that the source has taken care of converting the selection, Otherwise the
+text widget will attempt to convert the selection itself.
+.LP
+.sp
+If the source needs to know when the text selection is modified it
+should define a \fBSetSelection\fP procedure.
+.FD 0
+void SetSelection(\fIw\fP, \fIstart\fP, \fIend\fP, \fIselection\fP)
+Widget \fIw\fP;
+.br
+XawTextPosition \fIstart\fP, \fIend\fP;
+.br
+Atom \fIselection\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the TextSource object.
+.IP \fIstart\fP 1i
+The character position of the beginning of the new text selection.
+.IP \fIend\fP
+The character position of the end of the new text selection.
+.IP \fIselection\fP 1i
+Specifies the type of selection that was requested (e.g. \fBPRIMARY\fP).

@@ -1,0 +1,125 @@
+.NH 2
+SmeBSB Object
+.LP
+.XS
+\*(SN SmeBSB Object
+.XE
+.IN "SmeBSB object" "" "@DEF@"
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+Header file	SmeBSB.h
+Class		smeBSBObjectClass
+Class Name	SmeBSB
+SuperClass	Sme Object
+.De
+.LP
+The SmeBSB object is used to create
+a menu entry that contains a string, and optional bitmaps in its
+margins.  Since each menu entry is an independant object.  The
+application is able to change the font, color, height, and other
+attributes of the menu entries, on an individual basis.
+.NH 3
+Resources
+.IN "SmeBSB object" "resources"
+.LP
+The resources associated with the SmeBSB object are defined in this section,
+and effect only the single menu entry specified by this object.
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Class	Type	Default Value
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+ancestorSensitive	AncestorSensitive	Boolean	True
+callback	Callback	Callback	NULL
+destroyCallback	Callback	XtCallbackList	NULL
+font	Font	FontStruct	XtDefaultFont
+foreground	Foreground	Pixel	XtDefaultForeground
+height	Height	Dimension	Font height + \fBvertSpace\fP
+justify	Justify	Justify	XtjustifyLeft
+label	Label	String	NULL
+leftBitmap	LeftBitmap	Pixmap	XtUnspecifiedPixmap
+leftMargin	leftMargin	Dimension	4
+rightBitmap	RightBitmap	Pixmap	XtUnspecifiedPixmap
+rightMargin	rightMargin	Dimension	4
+sensitive	Sensitive	Boolean	True
+vertSpace	VertSpace	Int	25
+width	Width	Dimension	TextWidth + margins
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.IP ancestorSensitive 1.5i
+The sensitivity state of the ancestors of this object.  A object is
+insensitive if either it or any of its ancestors is insensitive.
+This resource is not settable with \fBXtSetValues\fP.  It may
+however be queried.
+.IP \fBcallback\fP 1.5i
+All callback functions on this list are called when the SimpleMenu
+\fInotifies\fP this entry that the user has selected it.
+.IP destroyCallback 1.5i
+All callback functions on this list are called when this object is destroyed.
+.IP \fBfont\fP 1.5i
+The font used to display the text label.
+.IP \fBforeground\fP 1.5i
+The color to render the label, and all 1's in the bitmap.
+.IP height 1.5i
+.br
+.ns
+.IP width 1.5i
+The height and width of this object in pixels.   Keep in mind that the
+SimpleMenu widget will force the width of all menu entries to be the 
+width of the longest entry.
+.IP \fBjustify\fP 1.5i
+How the label is to be rendered between the left and right margins when
+the space is wider than the actual text.  This resource may be
+specified with the values \fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP,
+or \fBXtJustifyRight\fP.  When specifying the justification from a
+resource file the values \fBleft\fP, \fBcenter\fP, or \fBright\fP may be
+used.
+.IP \fBlabel\fP 1.5i
+This is a the string that will be displayed in the menu entry.  The exact
+location of this string within the bounds of the menu entry is
+controlled by the \fBleftMargin\fP, \fBrightMargin\fP,
+\fBvertSpace\fP, and \fBjustify\fP resources.
+.IP \fBleftBitmap\fP 1.5i
+.br
+.ns
+.IP \fBrightBitmap\fP 1.5i
+This is a name of a bitmap to display in the left or right margin of the
+menu entry.  All 1's in the bitmap will be rendered in the foreground
+color, and all 0's will be drawn in the background color of the
+SimpleMenu widget.  It is the
+programmers responsibility to make sure that the menu entry is tall
+enough, and the apropriate margin wide enough to accept the bitmap.
+If care is not taken the bitmap may extend into another menu entry, or
+into this entry's label.
+.IP \fBleftMargin\fP 1.5i
+.br
+.ns
+.IP \fBrightMargin\fP 1.5i
+This is the amount of space (in pixels) that will be left between the
+edge of the menu entry and the label string.
+.IP sensitive 1.5i
+Whether of not this menu entry may be selected.  When a menu entry is
+not sensitive its label will be painted through a grey stipple.
+.IP \fBvertSpace\fP 1.5i
+This is the amount of extra space, as a percentage of the font height,
+that is to be added to the font height to determine the default height
+of the menu entry. The label and bitmaps are always vertically
+rendered in the center of the menu.  The default value for this
+resource (25) causes the default height to be 125% of the height of the
+font.  Negative numbers may be specified. 

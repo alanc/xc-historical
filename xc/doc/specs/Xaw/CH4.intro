@@ -1,0 +1,74 @@
+.bp
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 7\fP\s-1
+
+\s+1\fBMenus\fP\s-1
+.sp 2
+.nr H1 7
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.na
+.LP
+.XS
+Chapter 7 - Menus
+.XE
+.LP
+The Athena widget set provides support for single paned non-hierarchal
+popup and pulldown menus.  We realized the support for menus must be
+provided in even  
+the most basic of widget sets, and that this has long been perceived as
+a serious flaw in the Athena widget set.  Since the resources
+avaliable for this task were limited we decided to provide only the
+basic functionality, and deliberately not attempt to solve the entire problem.
+.LP
+Menus in the Athena widget set implement a Menu container (the
+SimpleMenu widget) and a collection of objects that will comprise the
+menu entries.  The SimpleMenu widget is itself a direct subclass of the
+OverrideShell widget class.  No other shell is necessary when
+creating a menu.  The managed children of a SimpleMenu must be
+subclasses of the Sme (Simple Menu Entry) object.
+.LP
+The Athena widget set provides three classes of Sme Objects that may
+be used to build menus.
+.IP Sme 1i
+The base class of all menu entries, it may be used as a menu
+entry itself to provide blank space in a menu.
+.IP SmeBSE 1i
+Provides support for a menu string, as well as a bitmap in each of the
+margins. 
+.IP SmeLine 1i
+A seperator line may be placed in a menu by using this object class.
+.LP
+The SimpleMenu widget sets the \fBOverrider Redirect\fP flag to
+tell the window manager to ignore its window.  This behavior is fine
+for the click-drag-release style of menu operation, but if you desire
+click-move-click or \fIpinable\fP menues you should be sure to set up
+the resources to allow the window manager to \fIsee\fP the menu.
+.LP
+To allow easy creation of pulldown menus a MenuButton widget is
+also provided as part of the Athena widget set.
+.NH 2
+Using the Menus
+.LP
+The default configuration for the menus is click-move-release, and it is
+this interface that I will describe.  The menus will
+typically be activated by clicking the mouse while the pointer is over
+a menu button, causing the menu to appear in a fixed location 
+relative to that button; this is a \fBpulldown\fP menu.  Menus also are often
+activated when a specific mouse and key sequence is used anywhere in
+the application; this is a \fBpopup\fP menu (e.g. clicking Ctrl-<left
+mouse button> in xterm).  In 
+this case the menu will position itself under the cursor. Typically
+the cursor will be on the first menu entry, or on the last entry the
+user selected.  
+.LP
+The menu will remain on the screen as long as the mouse button is held
+down.  Moving the mouse will select (highlight) different menu items.
+If the mouse pointer leaves the menu, or moves over an entry that cannot
+be selected then no menu entry will selected.  When the desired menu
+entry has been selected, release the mouse button to remove the menu,
+and cause the function associated with this entry to be invoked.

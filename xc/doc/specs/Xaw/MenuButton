@@ -1,0 +1,255 @@
+.NH 2
+MenuButton Widget
+.XS
+\*(SN MenuButton Widget
+.XE
+.IN "MenuButton widget" "" "@DEF@"
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+Header file	MenuButton.h
+Class		menuButtonWidgetClass
+Class Name	MenuButton
+SuperClass	Command Widget
+.De
+.LP
+The MenuButton widget is an area of the display, often rectangular,
+that contains a text label or bitmap image.  When the mouse pointer
+is on the button, the button becomes highlighted by drawing a
+rectangle around its perimeter.  This highlighting indicates that the button
+is ready for selection.  When a mouse button is pressed the menu button
+widget will pop up the menu that has been named in its \fBmenuName\fP
+resource.  
+.LP
+When creating a MenuButton widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Class	Type	Default Value
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+accelerators	Acceleratore	AcceleratorTable	NULL
+ancestorSensitive	AncestorSensitive	Boolean	True
+background	Background	Pixel	XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+bitmap	Bitmap	Pixmap	None
+borderColor	BorderColor	Pixel	XtDefaultForeground
+borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension	1
+callback	Callback	XtCallbackList	NULL
+colormap	Colormap	Pointer	Parent's Colormap
+cornerRoundPercent	CornerRoundPercent	Dimension	25
+cursor	Cursor	Cursor	XC_xterm
+depth	Depth	int	Parent's Depth
+destroyCallback	Callback	XtCallbackList	NULL
+font	Font	XFontStruct	XtDefaultFont
+foreground	Foreground	Pixel	XtDefaultForeground
+height	Height	Dimension	Font height + margins
+highlightThickness	Thickness	Dimension 2	(0 if Shaped)
+insensitiveBorder	Insensitive	Pixmap	GreyPixmap
+internalHeight	Height	Dimension	2
+internalWidth	Width	Dimension	4
+justify	Justify	Justify	XtJustifyCenter (center)
+label	Label	String	NULL (name of widget)
+menuName	MenuName	String	"menu"	
+mappedWhenManaged	MappedWhenManaged	Boolean	True
+resize	Resize	Boolean	True
+screen	Screen	Pointer	Parent's Screen
+sensitive	Sensitive	Boolean	True
+shapeStype	ShapeStyle	ShapeStyle	Rectangle
+translations	Translations	TranslationTable	See above
+width	Width	Dimension	100
+x	X	Position	0
+y	Y	Position	0
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.IP accelerators 1.5i
+A list of actions to be executed by this widget, even though the
+event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
+.IP ancestorSensitive 1.5i
+The sensitivity state of the ancestors of this widget.  A widget is
+insensitive if either it or any of its ancestors is insensitive.
+This resource is not settable with \fBXtSetValues\fP.  It may
+however be queried.
+.IP background 1.5i
+The background color of this widget.
+.IP backgroundPixmap 1.5i
+The background pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP bitmap 1.5i
+A bitmap to display instead of a label.  The default size of the
+MenuButton will be just large enough to contain the bitmap and the buttons
+internal width and height.  The resource converter for this resource
+converts a filename into a bitmap.  See \fBConverting Bitmaps\fP for
+details on the string to bitmap conversion.
+.IP borderColor 1.5i
+The color of this widget's border.
+.IP borderPixmap 1.5i
+The border pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP borderWidth 1.5i
+This is the width of the border of this widget's window.
+.IP callback 1.5i
+A list of routines to be called when the notify action is invoked.
+.IP colormap 1.5i
+The colormap that this widget will use to display all of its colors.
+.IP cornerRoundPercent 1.5i
+When a \fBShapeStyle\fP of \fBroundedRectangle\fP is used this
+resource controls the radius of the rounded corder.  The radius of the
+rounded corders is specified as a percentage of the length of the
+shortest side of the widget.  This must be a positive value.
+.IP cursor 1.5i
+The cursor that will be displayed as the mouse pointer, whenever the mouse
+pointer is in this widget.
+.IP depth 1.5i
+The depth of this widgets window.
+.IP destroyCallback 1.5i
+All callback functions on this list are called when this widget is destroyed.
+.IP font 1.5i
+The text font to use when displaying the \fBlabel\fP.
+.IP foreground 1.5i
+The color to used to draw the \fBlabel\fP.  This color is also used to render
+all 1's in the \fBbitmap\fP.
+.IP height 1.5i
+.br
+.ns
+.IP width 1.5i
+The height and width of this widget in pixels.
+.IP highlightThickness
+The thickness of the rectangle that is used to highlight a the button
+alerting the user that it is ready to be selected.  The default value is
+2 pixels if the \fBshapeStyle\fP is \fBrectangle\fP, and 0 Pixels (no
+highlighting) othersize.
+.IP insensitiveBorder 1.5i
+This pixmap will be tiled into the widget's border if it becomes insensitive.
+.IP internalHeight 1.5i
+.br
+.ns
+.IP internalWidth 1.5i
+The minum amount of space to leave between the label or bitmap and the
+vertical or horizontal edges of the window.
+.IP justify 1.5i
+Specifies left, center, or right alignment of the label string
+within the Label widget.  This resource may be
+specified with the values \fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP,
+or \fBXtJustifyRight\fP.  When specifying the justification from a
+resource file the values \fBleft\fP, \fBcenter\fP, or \fBright\fP may be
+used.
+.IP label 1.5i
+This is a Latin1 text string to be displayed in the MenuButtons window.
+.IP mappedWhenManaged 1.5i
+If this resource is \fBtrue\fP then the widget will automatically be
+mapped by the Toolkit when it is realized and managed.
+.IP \fBmenuName\fP 1.5i
+Specifies the name of a popup shell to popup as a menu.  The MenuButton
+will search for this name using \fBXtNameToWidget\fP starting with itself
+as the reference widget.  If it is unsucessful it will run up the widget
+tree using each of its ancestors as the reference widget.  If it is still
+unsuccessful it will print a warning message and give up.  Once the
+menu is found it will pop it up exclusive and spring_loaded.
+.IP resize 1.5i
+Specifies whether the MenuButton widget should attempt to resize to its
+preferred dimensions whenever \fBXtSetValues\fP is called for it.  This
+attempt at a resize is subject to the dictates of the parent of this
+widget which is free to resize the MenuButton reguardless of the state
+of this resource. 
+.IP shapeStyle 1.5i
+Non rectangular MenuButtons may be created using this resource.  Non
+rectangular buttons may only be used on a server that supports the
+\fBShape Extension\fP.  The
+MenuButton currently supports the following shapes: \fBXmuShapeRectangle\fP,
+\fBXmuShapeOval\fP, \fBXmuShapeEllipse\fP, and \fBXmuShapeRoundedRectangle\fP.
+A resource conveter is registered to convert the following string
+values to shape styles: \fBrectangle\fP, \fBoval\fP, \fPellipse\fP,
+\fBroundedRectangle\fP. 
+.IP screen 1.5i
+The screen that this widget is displayed on.  This is not a settable resource.
+.IP sensitive 1.5i
+Whether or not the toolkit will pass events to this widget.  The
+widget will not get events if either \fBancestorSensitive\fP or 
+\fBsensitive\fP is \fBfalse\fP.
+.IP translation 1.5i
+The translations associated with this widget.
+.IP x 1.5i
+.br
+.ns
+.IP y 1.5i
+The location of the upper lefthand corner of this widget in its parent.
+.NH 3
+MenuButton Actions
+The MenuButton widget supports the following actions:
+.IP \(bu 5
+Switching the button between the foreground and background
+colors with \fBset\fP and \fBunset\fP
+.IP \(bu 5
+Processing application callbacks with \fBnotify\fP
+.IP \(bu 5
+Switching the internal border between highlighted
+and unhighlighted states with \fBhighlight\fP and \fBunhighlight\fP
+.IP \(bu 5
+Popping up a menu with \fBPopupMenu\fP
+.LE
+.LP
+The following are the default translation bindings used by the
+MenuButton widget: 
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+	<EnterWindow>:	highlight(\|)
+	<LeaveWindow>:	reset(\|)
+	<BtnDown>:	reset(\|) PopupMenu(\)
+.De
+.NH 3
+MenuButton Actions
+.LP
+The full list of actions supported by MenuButton is:
+.IP \fBhighlight\fP(\fIcondition\fP) 1.5i
+Displays the internal highlight border in the color (\fBforeground\fP
+or \fBbackground\fP ) that contrasts with the interior color of the
+MenuButton widget.  The conditions \fBWhenUnset\fP or \fBAlways\fP are
+understood by this action procedure.  If no argument is passed then
+\fBWhenUnset\fP is assumed, maintaining backwards compatibility.
+.IP \fBunhighlight\fP(\|) 1.5i
+Displays the internal highlight border in the color (\fBXtNforeground\fP
+or \fBbackground\fP ) that matches the interior color of the
+MenuButton widget.  
+.IP \fBset\fP(\|) 1.5i
+Enters the \fIset\fP state, in which \fBnotify\fP is possible.  This
+action causes the botton to display its interior in the
+\fBforeground\fP color.  The label or bitmap is displayed in the
+\fBbackground\fP color. 
+.IP \fBunset\fP(\|) 1.5i
+Cancels the \fIset\fP state and displays the interior of the button in the
+\fBbackground\fP color.  The label or bitmap is displayed in the
+\fBforeground\fP color.
+.IP \fBreset\fP(\|) 1.5i
+Cancels any \fBset\fP or \fBhighlight\fP and displays the interior of the
+button in the \fBbackground\fP color, with the label displayed in the 
+\fBforeground\fP color.
+.IP \fBnotify\fP(\|) 1.5i
+When the button is in the \fBset\fP state this action calls all functions in
+the callback list named by the \fBcallback\fP resource.  The value of
+the call_data argument in these callback functions is undefined. 
+.IP \fBPopupMenu\fP(\|) 1.5i
+Pops up the menu specified by the \fBmenuName\fP resource.
+
+
