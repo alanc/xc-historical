@@ -1,4 +1,4 @@
-/* $XConsortium: init_bench.c,v 5.2 91/02/18 16:02:08 rws Exp $ */
+/* $XConsortium: init_bench.c,v 5.3 91/04/04 13:33:00 gildea Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -509,7 +509,7 @@ Status ICCM_XGetStandardColormap (display, w, cmap, property)
 	    int i;
 
 	    if (!sp) {
-		if (stdcmaps) Xfree ((char *) stdcmaps);
+		if (stdcmaps) XFree ((char *) stdcmaps);
 		return FALSE;
 	    }
 	    vid = sp->root_visual->visualid;
@@ -519,7 +519,7 @@ Status ICCM_XGetStandardColormap (display, w, cmap, property)
 	    }
 
 	    if (i == nstdcmaps) {	/* not found */
-		Xfree ((char *) stdcmaps);
+		XFree ((char *) stdcmaps);
 		return FALSE;
 	    }
 	    use = &stdcmaps[i];
@@ -538,7 +538,7 @@ Status ICCM_XGetStandardColormap (display, w, cmap, property)
 	cmap->visualid   = use->visualid;
 	cmap->killid     = use->killid;
 
-	Xfree ((char *) stdcmaps);	/* don't need alloced memory */
+	XFree ((char *) stdcmaps);	/* don't need alloced memory */
     }
     return stat;
 }
