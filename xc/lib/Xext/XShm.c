@@ -1,19 +1,27 @@
-/************************************************************
-Copyright 1989 by the Massachusetts Institute of Technology
-
-Permission  to  use,  copy,  modify,  and  distribute   this
-software  and  its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright no-
-tice  appear  in all copies and that both that copyright no-
-tice and this permission notice appear in  supporting  docu-
-mentation,  and  that  the name of MIT not be used in adver-
-tising  or publicity pertaining to distribution of the soft-
-ware without specific prior written permission. M.I.T. makes
-no representation about the suitability of this software for
-any  purpose.  It is provided "as is" without any express or
-implied warranty.
-
-********************************************************/
+/*
+ * $XConsortium$
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Bob Scheifler and Keith Packard, MIT X Consortium
+ */
 
 /* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
@@ -24,72 +32,44 @@ implied warranty.
 #include "Xlibint.h"
 #include "XShm.h"
 #include "shmstr.h"
+#include "Xext.h"
+#include "extutil.h"
 
-/* $XConsortium: XShm.c,v 1.4 89/08/21 08:58:48 rws Exp $ */
+static XExtensionInfo *shm_info;
+static /* const */ char *shm_extension_name = SHMNAME;
 
-struct DpyHasShm {
-    struct DpyHasShm	*next;
-    Display		*dpy;
-    Bool		gotit;
-    XExtCodes		codes;
-};
+#define ShmCheckExtension(dpy,i,val) \
+  XextCheckExtension (dpy, i, shm_extension_name, val)
 
-static struct DpyHasShm *lastChecked, *dpysHaveShm;
+/*****************************************************************************
+ *                                                                           *
+ *			   private utility routines                          *
+ *                                                                           *
+ *****************************************************************************/
 
-static XExtCodes *queryExtension();
+/*
+ * find_display - locate the display info block
+ */
+static int close_display(), wire_to_event(), event_to_wire();
+static XEXT_GENERATE_FIND_DISPLAY (find_display, shm_info, shm_extension_name, 
+				   close_display, wire_to_event, event_to_wire,
+				   ShmNumberEvents, NULL)
 
-static XExtCodes *
-CheckExtension(dpy)
-    Display *dpy;
-{
-    if (lastChecked && lastChecked->dpy == dpy) {
-	if (lastChecked->gotit == 0)
-	    return 0;
-	return &lastChecked->codes;
-    }
-    return queryExtension(dpy);
-}
-				    
-/*ARGSUSED*/
-static int
-shmCloseDisplay(dpy, codes)
-    Display	*dpy;
-    XExtCodes	*codes;
-{
-    struct DpyHasShm *dpyHas, *prev;
+static XEXT_GENERATE_CLOSE_DISPLAY (close_display, shm_info)
 
-    prev = 0;
-    for (dpyHas = dpysHaveShm; dpyHas; dpyHas = dpyHas->next) {
-	if (dpyHas->dpy == dpy)
-	    break;
-	prev = dpyHas;
-    }
-    if (!dpyHas)
-	return 0;
-    if (prev)
-	prev->next = dpyHas->next;
-    else
-	dpysHaveShm = dpyHas->next;
-    if (dpyHas == lastChecked)
-	lastChecked = (struct DpyHasShm *) NULL;
-    Xfree(dpyHas);
-    return 0;
-}
 
-static int
-shmWireToEvent (dpy, re, event)
+static int wire_to_event (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     XShmCompletionEvent	*se;
     xShmCompletionEvent	*sevent;
-    XExtCodes		*codes;
 
-    codes = CheckExtension(dpy);
-    if (!codes)
-	return False;
-    switch ((event->u.u.type & 0x7f) - codes->first_event) {
+    ShmCheckExtension (dpy, info, 0);
+
+    switch ((event->u.u.type & 0x7f) - info->codes->first_event) {
     case ShmCompletion:
 	se = (XShmCompletionEvent *) re;
 	sevent = (xShmCompletionEvent *) event;
@@ -107,20 +87,18 @@ shmWireToEvent (dpy, re, event)
     return False;
 }
 
-static int
-shmEventToWire (dpy, re, event)
+static int event_to_wire (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     XShmCompletionEvent	*se;
     xShmCompletionEvent	*sevent;
-    XExtCodes		*codes;
 
-    codes = CheckExtension(dpy);
-    if (!codes)
-	return False;
-    switch ((re->type & 0x7f) - codes->first_event) {
+    ShmCheckExtension (dpy, info, 0);
+
+    switch ((re->type & 0x7f) - info->codes->first_event) {
     case ShmCompletion:
     	se = (XShmCompletionEvent *) re;
 	sevent = (xShmCompletionEvent *) event;
@@ -136,78 +114,55 @@ shmEventToWire (dpy, re, event)
     return False;
 }
 
-static XExtCodes *
-queryExtension (dpy)
-    register Display *dpy;
+/*****************************************************************************
+ *                                                                           *
+ *		    public Shared Memory Extension routines                  *
+ *                                                                           *
+ *****************************************************************************/
+
+Bool XShmQueryExtension (dpy /* event_basep, error_basep */)
+    Display *dpy;
+/*  int *event_basep, *error_basep; */
 {
-    struct DpyHasShm	*dpyHas;
-    XExtCodes		*codes;
-    int			i;
+    XExtDisplayInfo *info = find_display (dpy);
 
-    for (dpyHas = dpysHaveShm; dpyHas; dpyHas = dpyHas->next) {
-	if (dpyHas->dpy == dpy)
-	    break;
+    if (XextHasExtension(info)) {
+/*	*event_basep = info->codes->first_event;
+	*error_basep = info->codes->error_event; */
+	return True;
+    } else {
+	return False;
     }
-    if (!dpyHas) {
-	dpyHas = (struct DpyHasShm *) Xmalloc(sizeof(struct DpyHasShm));
-	if (!dpyHas)
-	    return 0;
-	dpyHas->next = dpysHaveShm;
-	dpysHaveShm = dpyHas;
-
-	dpyHas->dpy = dpy;
-	if (dpyHas->gotit = (codes = XInitExtension(dpy, SHMNAME)) != 0) {
-	    dpyHas->codes = *codes;
-	    /*
-	     * initialize the various Xlib function vectors
-	     */
-	    XESetCloseDisplay(dpy, codes->extension, shmCloseDisplay);
-	    for (i = 0; i < ShmNumberEvents; i++) {
-		XESetWireToEvent(dpy, codes->first_event + i, shmWireToEvent);
-		XESetEventToWire(dpy, codes->first_event + i, shmEventToWire);
-	    }
-	}
-    }
-    lastChecked = dpyHas;
-    if (!dpyHas->gotit)
-	return (XExtCodes *) 0;
-    return &dpyHas->codes;
 }
 
-Bool
-XShmQueryExtension(dpy)
+
+int XShmGetEventBase(dpy)
     Display *dpy;
 {
-    return CheckExtension(dpy) != 0;
-}
+    XExtDisplayInfo *info = find_display (dpy);
 
-int
-XShmGetEventBase(dpy)
-    Display *dpy;
-{
-    XExtCodes	*codes;
-
-    codes = CheckExtension(dpy);
-    if (!codes)
+    if (XextHasExtension(info)) {
+	return info->codes->first_event;
+    } else {
 	return -1;
-    return codes->first_event;
+    }
 }
 
-Bool
-XShmQueryVersion(dpy, majorVersion, minorVersion, sharedPixmaps)
+
+Bool XShmQueryVersion(dpy, majorVersion, minorVersion, sharedPixmaps)
     Display *dpy;
     int	    *majorVersion, *minorVersion;
     Bool    *sharedPixmaps;
 {
-    XExtCodes *codes;
+    XExtDisplayInfo *info = find_display (dpy);
     xShmQueryVersionReply rep;
     register xShmQueryVersionReq *req;
 
-    if (!(codes = CheckExtension(dpy)))
-	return False;
+    ShmCheckExtension (dpy, info, False);
+
     LockDisplay(dpy);
     GetReq(ShmQueryVersion, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shmReqType = X_ShmQueryVersion;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
@@ -222,51 +177,50 @@ XShmQueryVersion(dpy, majorVersion, minorVersion, sharedPixmaps)
     return True;
 }
 
-Status
-XShmAttach(dpy, info)
-    Display *dpy;
-    XShmSegmentInfo *info;
-{
-    register xShmAttachReq *req;
-    XExtCodes *codes;
 
-    if (!(codes = CheckExtension(dpy)))
-	return 0;
-    info->shmseg = XAllocID(dpy);
+Status XShmAttach(dpy, shminfo)
+    Display *dpy;
+    XShmSegmentInfo *shminfo;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xShmAttachReq *req;
+
+    ShmCheckExtension (dpy, info, 0);
+
+    shminfo->shmseg = XAllocID(dpy);
     LockDisplay(dpy);
     GetReq(ShmAttach, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shmReqType = X_ShmAttach;
-    req->shmseg = info->shmseg;
-    req->shmid = info->shmid;
-    req->readOnly = info->readOnly ? xTrue : xFalse;
+    req->shmseg = shminfo->shmseg;
+    req->shmid = shminfo->shmid;
+    req->readOnly = shminfo->readOnly ? xTrue : xFalse;
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
 }
 
-Status
-XShmDetach(dpy, info)
-    Display *dpy;
-    XShmSegmentInfo *info;
-{
-    register xShmDetachReq *req;
-    XExtCodes *codes;
 
-    if (!(codes = CheckExtension(dpy)))
-	return 0;
+Status XShmDetach(dpy, shminfo)
+    Display *dpy;
+    XShmSegmentInfo *shminfo;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xShmDetachReq *req;
+
+    ShmCheckExtension (dpy, info, 0);
+
     LockDisplay(dpy);
     GetReq(ShmDetach, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shmReqType = X_ShmDetach;
-    req->shmseg = info->shmseg;
+    req->shmseg = shminfo->shmseg;
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
 }
 
-static int
-_XShmDestroyImage (ximage)
+static int _XShmDestroyImage (ximage)
     XImage *ximage;
 
 {
@@ -276,14 +230,14 @@ _XShmDestroyImage (ximage)
 
 #define ROUNDUP(nbytes, pad) ((((nbytes) + ((pad) - 1)) / (pad)) * (pad))
 
-XImage *
-XShmCreateImage(dpy, visual, depth, format, data, info, width, height)
+XImage *XShmCreateImage (dpy, visual, depth, format, data, shminfo,
+			 width, height)
     register Display *dpy;
     register Visual *visual;
     unsigned int depth;
     int format;
     char *data;
-    XShmSegmentInfo *info;
+    XShmSegmentInfo *shminfo;
     unsigned int width;
     unsigned int height;
 {
@@ -293,7 +247,7 @@ XShmCreateImage(dpy, visual, depth, format, data, info, width, height)
     if (!image)
 	return image;
     image->data = data;
-    image->obdata = (char *)info;
+    image->obdata = (char *)shminfo;
     image->width = width;
     image->height = height;
     image->depth = depth;
@@ -321,9 +275,8 @@ XShmCreateImage(dpy, visual, depth, format, data, info, width, height)
     return image;
 }
 
-Status
-XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
-	      src_width, src_height, send_event)
+Status XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
+		     src_width, src_height, send_event)
     register Display *dpy;
     Drawable d;
     GC gc;
@@ -332,15 +285,16 @@ XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
     unsigned int src_width, src_height;
     Bool send_event;
 {
-    XShmSegmentInfo *info = (XShmSegmentInfo *)image->obdata;
+    XExtDisplayInfo *info = find_display (dpy);
+    XShmSegmentInfo *shminfo = (XShmSegmentInfo *)image->obdata;
     register xShmPutImageReq *req;
-    XExtCodes *codes;
 
-    if (!info || !(codes = CheckExtension(dpy)))
-	return 0;
+    ShmCheckExtension (dpy, info, 0);
+    if (!shminfo) return 0;
+
     LockDisplay(dpy);
     GetReq(ShmPutImage, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shmReqType = X_ShmPutImage;
     req->drawable = d;
     req->gc = gc->gid;
@@ -355,32 +309,33 @@ XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
     req->depth = image->depth;
     req->format = image->format;
     req->sendEvent = send_event;
-    req->shmseg = info->shmseg;
-    req->offset = info->shmaddr - image->data;
+    req->shmseg = shminfo->shmseg;
+    req->offset = shminfo->shmaddr - image->data;
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
 }
 
-Status
-XShmGetImage(dpy, d, image, x, y, plane_mask)
+
+Status XShmGetImage(dpy, d, image, x, y, plane_mask)
     register Display *dpy;
     Drawable d;
     XImage *image;
     int x, y;
     unsigned long plane_mask;
 {
-    XShmSegmentInfo *info = (XShmSegmentInfo *)image->obdata;
+    XExtDisplayInfo *info = find_display (dpy);
+    XShmSegmentInfo *shminfo = (XShmSegmentInfo *)image->obdata;
     register xShmGetImageReq *req;
     xShmGetImageReply rep;
-    XExtCodes *codes;
     register Visual *visual;
 
-    if (!info || !(codes = CheckExtension(dpy)))
-	return 0;
+    ShmCheckExtension (dpy, info, 0);
+    if (!shminfo) return 0;
+
     LockDisplay(dpy);
     GetReq(ShmGetImage, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shmReqType = X_ShmGetImage;
     req->drawable = d;
     req->x = x;
@@ -389,8 +344,8 @@ XShmGetImage(dpy, d, image, x, y, plane_mask)
     req->height = image->height;
     req->planeMask = plane_mask;
     req->format = image->format;
-    req->shmseg = info->shmseg;
-    req->offset = info->shmaddr - image->data;
+    req->shmseg = shminfo->shmseg;
+    req->offset = shminfo->shmaddr - image->data;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
@@ -405,30 +360,29 @@ XShmGetImage(dpy, d, image, x, y, plane_mask)
     return 1;
 }
 
-Pixmap
-XShmCreatePixmap (dpy, d, data, info, width, height, depth)
+Pixmap XShmCreatePixmap (dpy, d, data, shminfo, width, height, depth)
     register Display *dpy;
     Drawable d;
     char *data;
-    XShmSegmentInfo *info;
+    XShmSegmentInfo *shminfo;
     unsigned int width, height, depth;
 {
+    XExtDisplayInfo *info = find_display (dpy);
     Pixmap pid;
     register xShmCreatePixmapReq *req;
-    XExtCodes *codes;
 
-    if (!(codes = CheckExtension(dpy)))
-	return 0;
+    ShmCheckExtension (dpy, info, 0);
+
     LockDisplay(dpy);
     GetReq(ShmCreatePixmap, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->shmReqType = X_ShmCreatePixmap;
     req->drawable = d;
     req->width = width;
     req->height = height;
     req->depth = depth;
-    req->shmseg = info->shmseg;
-    req->offset = data - info->shmaddr;
+    req->shmseg = shminfo->shmseg;
+    req->offset = data - shminfo->shmaddr;
     pid = req->pid = XAllocID(dpy);
     UnlockDisplay(dpy);
     SyncHandle();
