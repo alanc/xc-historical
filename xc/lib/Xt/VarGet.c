@@ -144,9 +144,15 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
     XtConvert(widget, from_type, &from_val, typed_arg->type, &to_val);
 
     if (to_val.addr == NULL) {
+	String params[3];
+	Cardinal num_params = 3;
+	params[0] = from_type;
+	params[1] = typed_arg->type;
+	params[2] = XtName(widget);
         XtAppWarningMsg(XtDisplayToApplicationContext(XtDisplay(widget)),
             "conversionFailed", "xtGetTypedArg", "XtToolkitError",
-            "Type conversion failed", (String *)NULL, (Cardinal *)NULL);
+            "Type conversion (%s to %s) failed for widget '%s'",
+	    params, &num_params);
 	return;
     }
 
