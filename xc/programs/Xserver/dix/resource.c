@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.67 88/12/22 16:58:58 rws Exp $ */
+/* $XConsortium: resource.c,v 1.68 88/12/22 18:59:35 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -249,7 +249,7 @@ int skipDeleteFuncClass;
     int		elements;
     Bool	gotOne = FALSE;
 
-    if (((cid = CLIENT_ID(id)) < MaxClients) && clientTable[cid].buckets)
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	head = &clientTable[cid].resources[Hash(cid, id)];
 	eltptr = &clientTable[cid].elements;
@@ -352,7 +352,7 @@ LookupID(id, rType, class)
     int    cid;
     register    ResourcePtr res;
 
-    if (((cid = CLIENT_ID(id)) < MaxClients) && clientTable[cid].buckets)
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	res = clientTable[cid].resources[Hash(cid, id)];
 
