@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.134 90/03/19 10:35:59 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.135 90/04/03 10:50:13 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -1000,6 +1000,9 @@ extern void XtConvertCase(
  *
  ****************************************************************/
 
+/* XtAllEvents is valid only for XtRemoveEventHandler and
+ * XtRemoveRawEventHandler; don't use it to select events!
+ */
 #define XtAllEvents ((EventMask) -1L)
 
 extern void XtInsertEventHandler(
