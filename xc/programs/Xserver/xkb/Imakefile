@@ -1,0 +1,16 @@
+XCOMM $XConsortium: Imakefile,v 5.37 94/04/08 16:11:07 erik Exp $
+#include <Server.tmpl>
+
+   SRCS = xkb.c xkbUtils.c xkbEvents.c xkbAccessX.c xkbStubs.c xkbSwap.c \
+            xkbInit.c xkbPrKeyEv.c xkbReadXkm.c
+   OBJS = xkb.o xkbUtils.o xkbEvents.o xkbAccessX.o xkbStubs.o xkbSwap.o \
+            xkbInit.o xkbPrKeyEv.o xkbReadXkm.o
+   INCLUDES = -I../include -I$(INCLUDESRC) -I$(EXTINCSRC)
+   LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(xkb,$(OBJS))
+LintLibraryTarget(xkb,$(SRCS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
