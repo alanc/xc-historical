@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.13 93/09/26 15:40:59 gildea Exp $
+ * $XConsortium: Xauth.h,v 1.14 93/09/29 19:14:22 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -140,14 +140,14 @@ Xauth*		/* auth */
 #undef BITS32
 #undef xfree
 
-XauKrb5Encode(
+int XauKrb5Encode(
 #if NeedFunctionPrototypes
      krb5_principal	/* princ */,
      krb5_data *	/* outbuf */
 #endif
 );
 
-XauKrb5Decode(
+int XauKrb5Decode(
 #if NeedFunctionPrototypes
      krb5_data		/* inbuf */,
      krb5_principal *	/* princ */
