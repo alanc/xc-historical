@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: XGetDflt.c,v 1.8 88/02/14 11:55:30 rws Exp $";
+static char rcsid[] = "$Header: XGetDflt.c,v 1.9 88/02/26 12:56:49 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -121,7 +121,16 @@ char *XGetDefault(dpy, prog, name)
 	char temp[BUFSIZ];
 	XrmString type;
 	XrmValue result;
+	char *progname;
 
+	/*
+	 * strip path off of program name
+	 */
+	progname = rindex (prog, '/');
+	if (progname)
+	    progname++;
+	else
+	    progname = prog;
 
 	/*
 	 * see if database has ever been initialized.  Lookups can be done
@@ -133,7 +142,7 @@ char *XGetDefault(dpy, prog, name)
 		}
 	UnlockDisplay(dpy);
 
-	sprintf(temp, "%s.%s", prog, name);
+	sprintf(temp, "%s.%s", progname, name);
 	XrmGetResource(dpy->db, temp, "Program.Name", &type, &result);
 
 	return (result.addr);
