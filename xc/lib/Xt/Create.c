@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: Create.c,v 1.4 88/08/22 14:33:08 asente Exp $";
+static char rcsid[] =
+    "$XConsortium: Create.c,v 1.4 88/08/22 14:33:08 asente Exp $";
 /* $oHeader: Create.c,v 1.4 88/08/22 14:33:08 asente Exp $ */
 #endif lint
 
@@ -320,10 +321,13 @@ Widget XtAppCreateShell(name, class, widgetClass, display, args, num_args)
 
 {
     if (widgetClass == NULL) {
-	XtErrorMsg("invalidClass","xtCreateApplicationShell","XtToolkitError",
-               "XtCreateApplicationShell requires non-NULL widget class",
+	XtErrorMsg("invalidClass","xtAppCreateShell","XtToolkitError",
+               "XtAppCreateShell requires non-NULL widget class",
                  (String *)NULL, (Cardinal *)NULL);
     }
+
+    if (name == NULL)
+	name = XrmNameToString(_XtGetPerDisplay(display)->name);
 
     return _XtCreate(name, class, widgetClass, (Widget)NULL,
 	    DefaultScreenOfDisplay(display),
@@ -331,14 +335,14 @@ Widget XtAppCreateShell(name, class, widgetClass, display, args, num_args)
 } /* XtAppCreateShell */
 
 Widget XtCreateApplicationShell(name, widgetClass, args, num_args)
-    String      name;
+    String      name;		/* unused in R3 */
     WidgetClass widgetClass;
     ArgList     args;
     Cardinal    num_args;
 {
     XtAppContext app = _XtDefaultAppContext();
 
-    return XtAppCreateShell(name, widgetClass->core_class.class_name,
+    return XtAppCreateShell(NULL, widgetClass->core_class.class_name,
 	    widgetClass, app->list[0], args, num_args);
 }
 
