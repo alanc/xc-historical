@@ -1,4 +1,4 @@
-! $XConsortium: string.list,v 1.1 91/05/04 16:51:40 rws Exp $
+! $XConsortium: string.list,v 1.2 91/05/04 20:03:26 rws Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
 
@@ -217,6 +217,7 @@ Extdefaultfont
 NfontSet
 RFontSet
 CFontSet
+RGravity
 
 :ShellStr.h XtShellStrings
 
