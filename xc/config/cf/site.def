@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.78 93/07/29 09:36:47 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.79 93/07/29 11:40:47 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -47,6 +47,8 @@ XCOMM #define HasGcc2 YES
 #endif /* BeforeVendorCF */
 
 #ifdef AfterVendorCF
+
+#define ProjectRoot /X11
 
 #if HasGcc2
 #ifdef Sun3Architecture
@@ -116,14 +118,12 @@ clean::									@@\
 #undef ServerOSDefines
 #undef X386Server
 #define XnestServer YES
-#define ProjectRoot /mit/X11
 #endif
 
 #ifdef BSD386Architecture
 #undef BuildServer
 #define BuildServer YES
 #define XnestServer YES
-#define ProjectRoot /mit/X11
 #endif
 
 #ifdef i860SVR4Architecture
