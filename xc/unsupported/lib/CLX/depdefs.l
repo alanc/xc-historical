@@ -145,21 +145,12 @@
   #+excl '#'equal
   #-excl '#'eq)
 
+;;; You must define this to match the real byte order.  It is used by
+;;; overlapping array and image code.
 
-;;; If you use overlapping-arrays, you must define this to match the
-;;; real byte order (which probably means uncommenting it).  Otherwise,
-;;; you can choose the byte order to match the byte order of the servers
-;;; you talk to most frequently.
-
-#+(or explorer genera)
+#+(or lispm vax little-endian)
 (eval-when (eval compile load)
   (pushnew :clx-little-endian *features*))
-
-#+excl
-(eval-when (eval compile load)
-  (if (member :little-endian *features*)
-      (pushnew :clx-little-endian *features*)))
-
 
 ;;; Steele's Common-Lisp states:  "It is an error if the array specified
 ;;; as the :displaced-to argument  does not have the same :element-type
@@ -207,56 +198,54 @@
 (progn
 
 (defun make-index-typed (form)
-  (if (integerp form)
-      form
-      `(the array-index ,form)))
+  (if (constantp form) form `(the array-index ,form)))
 
-(defmacro index+ (&rest numbers)
-  `(the array-index (+ ,@(mapcar #'make-index-typed numbers))))
-(defmacro index-logand (&rest numbers)
-  `(the array-index (logand ,@(mapcar #'make-index-typed numbers))))
-(defmacro index-logior (&rest numbers)
-  `(the array-index (logior ,@(mapcar #'make-index-typed numbers))))
-(defmacro index- (&rest numbers)
-  `(the array-index (- ,@(mapcar #'make-index-typed numbers))))
-(defmacro index* (&rest numbers)
-  `(the array-index (* ,@(mapcar #'make-index-typed numbers))))
+(defun make-index-op (operator args)
+  `(the array-index
+	,(case (length args)
+	   (0 `(,operator))
+	   (1 `(,operator
+		,(make-index-typed (first args))))
+	   (2 `(,operator
+		,(make-index-typed (first args))
+		,(make-index-typed (second args))))
+	   (otherwise
+	     `(,operator
+	       ,(make-index-op operator (subseq args 0 (1- (length args))))
+	       ,(make-index-typed (first (last args))))))))
 
-(defmacro index1+ (number)
-  `(the array-index (1+ (the array-index ,number))))
-(defmacro index1- (number)
-  `(the array-index (1- (the array-index ,number))))
+(defmacro index+ (&rest numbers) (make-index-op '+ numbers))
+(defmacro index-logand (&rest numbers) (make-index-op 'logand numbers))
+(defmacro index-logior (&rest numbers) (make-index-op 'logior numbers))
+(defmacro index- (&rest numbers) (make-index-op '- numbers))
+(defmacro index* (&rest numbers) (make-index-op '* numbers))
 
-;;; CLtL Page 96 -Slyme loses
+(defmacro index1+ (number) (make-index-op '1+ (list number)))
+(defmacro index1- (number) (make-index-op '1- (list number)))
+
 (defmacro index-incf (place &optional (delta 1))
-  `(incf (the array-index ,place) (the array-index ,delta)))
+  (make-index-op 'incf (list place delta)))
 (defmacro index-decf (place &optional (delta 1))
-  `(decf (the array-index ,place) (the array-index ,delta)))
+  (make-index-op 'decf (list place delta)))
 
-(defmacro index-min (&rest numbers)
-  `(the array-index (min ,@(mapcar #'make-index-typed numbers))))
-(defmacro index-max (&rest numbers)
-  `(the array-index (max ,@(mapcar #'make-index-typed numbers))))
+(defmacro index-min (&rest numbers) (make-index-op 'min numbers))
+(defmacro index-max (&rest numbers) (make-index-op 'max numbers))
 
 (defmacro index-floor (number divisor)
-  `(the array-index (values (floor (the array-index ,number) (the array-index ,divisor)))))
-
+  (make-index-op 'floor (list number divisor)))
 (defmacro index-ceiling (number divisor)
-  `(the array-index (values (ceiling (the array-index ,number) (the array-index ,divisor)))))
-
+  (make-index-op 'ceiling (list number divisor)))
 (defmacro index-truncate (number divisor)
-  `(the array-index (values (truncate (the array-index ,number) (the array-index ,divisor)))))
+  (make-index-op 'truncate (list number divisor)))
 
 (defmacro index-mod (number divisor)
-  `(the array-index (mod (the array-index ,number) (the array-index ,divisor))))
+  (make-index-op 'mod (list number divisor)))
 
 (defmacro index-ash (number count)
-  `(the array-index (ash (the array-index ,number) (the fixnum ,count))))
+  (make-index-op 'ash (list number count)))
 
-(defmacro index-plusp (number)
-  `(plusp (the array-index ,number)))
-(defmacro index-zerop (number)
-  `(zerop (the array-index ,number)))
+(defmacro index-plusp (number) `(plusp (the array-index ,number)))
+(defmacro index-zerop (number) `(zerop (the array-index ,number)))
 
 (defmacro index> (&rest numbers)
   `(> ,@(mapcar #'make-index-typed numbers)))
