@@ -1,4 +1,4 @@
-XCOMM $XConsortium: hpLib.tmpl,v 1.1 92/05/05 10:45:07 rws Exp $
+XCOMM $XConsortium: hpLib.tmpl,v 1.2 92/05/09 13:44:45 rws Exp $
 
 /*
  * HP shared library template
@@ -48,7 +48,8 @@ PICFLAGS = PositionIndependentCFlags
 #endif
 #if SharedLibX
           DEPXLIB = $(DEPEXTENSIONLIB) /* _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.sl.$(SOXLIBREV)) */
-             XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
+         XLIBONLY = _Use(-lX11,-L$(XLIBSRC) -lX11)
+             XLIB = $(EXTENSIONLIB) $(XLIBONLY)
 #endif
 #if SharedLibXmu
         DEPXMULIB = /* _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sl.$(SOXMUREV)) */
