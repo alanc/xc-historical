@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -1717,7 +1718,7 @@ Ringing a Bell on an Input Device
 To ring a bell on a extension input device, use \fBXDeviceBell\fP.
 .DS
 \f(C
-void
+int
 XDeviceBell (display, device, feedbackclass, feedbackid, percent)
         Display *display;
         XDevice *device;
@@ -3321,7 +3322,7 @@ Status
 XChangeDeviceControl (display, device, control, value)
 	Display *display;
 	XDevice *device;
-	XID control;
+	int control;
 	XDeviceControl *value;
 \fP
 .DE
@@ -3825,7 +3826,7 @@ header file:
 \f(C
 .ps 8
 
-/* $Header: library.ms,v 1.5 91/07/26 18:59:09 rws Exp $ */
+/* $Header: library.ms,v 1.6 91/07/28 15:58:08 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -4508,7 +4509,7 @@ XExtensionVersion      *XGetExtensionVersion();
 XDeviceState           *XQueryDeviceState();
 XEventClass            *XGetDeviceDontPropagateList();
 #endif /* _XINPUT_H_ */
-/* $Header: library.ms,v 1.5 91/07/26 18:59:09 rws Exp $ */
+/* $Header: library.ms,v 1.6 91/07/28 15:58:08 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
