@@ -66,13 +66,13 @@ extern void		(* EventSwapVector[128]) ();
 /*
  * id of client using XTestGetInput
  *
- * defined in xtestext1dd.c
+ * defined in xtest1dd.c
  */
-extern ClientPtr	current_client;
+extern ClientPtr	current_xtest_client;
 /*
  * id of client using XTestFakeInput
  *
- * defined in xtestext1dd.c
+ * defined in xtest1dd.c
  */
 extern ClientPtr	playback_client;
 
@@ -623,7 +623,7 @@ ProcTestStopInput(client)
 {
 	REQUEST(xTestStopInputReq);
 	REQUEST_SIZE_MATCH(xTestStopInputReq);
-	if (on_steal_input && (current_client == client)) 
+	if (on_steal_input && (current_xtest_client == client)) 
 	{ 
 		on_steal_input = FALSE;
 		exclusive_steal = FALSE;
@@ -665,11 +665,11 @@ ProcTestReset(client)
 	on_steal_input = FALSE;
 	exclusive_steal = FALSE;
 	/*
-	 * defined in xtestext1dd.c
+	 * defined in xtest1dd.c
 	 */
 	stop_stealing_input();	
 	/*
-	 * defined in xtestext1dd.c
+	 * defined in xtest1dd.c
 	 */
 	abort_play_back();
 	return(Success);
@@ -688,7 +688,7 @@ ProcTestQueryInputSize(client)
 	REQUEST(xTestQueryInputSizeReq);
 	REQUEST_SIZE_MATCH(xTestQueryInputSizeReq);
 	/*
-	 * defined in xtestext1dd.c
+	 * defined in xtest1dd.c
 	 */
 	return_input_array_size(client);
 	return(Success);
@@ -741,13 +741,13 @@ XTestCurrentClientGone(value, id)
 	XID	id;
 {
 	/*
-	 * defined in xtestext1dd.c
+	 * defined in xtest1dd.c
 	 */
 	flush_input_actions();
 	on_steal_input = FALSE;
 	exclusive_steal = FALSE;
 	/*
-	 * defined in xtestext1dd.c
+	 * defined in xtestdd.c
 	 */
 	stop_stealing_input();	
 }
