@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.13 87/06/11 00:50:59 dkk Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.14 87/06/17 13:48:33 toddb Locked $";
 #endif
 
 #include <sys/types.h>
@@ -42,7 +42,7 @@ static char *rcsid_xpr_c = "$Header: xpr.c,v 1.13 87/06/11 00:50:59 dkk Locked $
 #include <stdio.h>
 #include <pwd.h>
 #include "lncmd.h"
-#include "XWDFile.h"
+#include "X11/XWDFile.h"
 
 int debug = 0;
 
