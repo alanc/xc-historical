@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.c,v 1.8 89/04/10 14:01:06 jim Exp $ */
+/* $XConsortium: dsimple.c,v 1.9 89/12/10 16:48:30 rws Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -18,6 +18,8 @@ Window Select_Window();
 void out();
 void blip();
 Window Window_With_Name();
+void Fatal_Error();
+
 /*
  * Just_display: A group of routines designed to make the writting of simple
  *               X11 applications which open a display but do not open
@@ -35,23 +37,6 @@ Window Window_With_Name();
 extern char *program_name;
 extern Display *dpy;
 extern int screen;
-
-
-/*
- * Standard fatal error routine - call like printf but maximum of 7 arguments.
- * Does not require dpy or screen defined.
- */
-void Fatal_Error(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
-char *msg;
-char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
-{
-	fflush(stdout);
-	fflush(stderr);
-	fprintf(stderr, "%s: error: ", program_name);
-	fprintf(stderr, msg, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-	fprintf(stderr, "\n");
-	exit(1);
-}
 
 
 /*
@@ -394,23 +379,6 @@ Pixmap Bitmap_To_Pixmap(dpy, d, gc, bitmap, width, height)
 
 
 /*
- * outl: a debugging routine.  Flushes stdout then prints a message on stderr
- *       and flushes stderr.  Used to print messages when past certain points
- *       in code so we can tell where we are.  Outl may be invoked like
- *       printf with up to 7 arguments.
- */
-outl(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
-     char *msg;
-     char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
-{
-	fflush(stdout);
-	fprintf(stderr, msg, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-	fprintf(stderr, "\n");
-	fflush(stderr);
-}
-
-
-/*
  * blip: a debugging routine.  Prints Blip! on stderr with flushing. 
  */
 void blip()
@@ -498,4 +466,37 @@ Window Window_With_Name(dpy, top, name)
 	}
 	if (children) XFree ((char *)children);
 	return(w);
+}
+
+/*
+ * outl: a debugging routine.  Flushes stdout then prints a message on stderr
+ *       and flushes stderr.  Used to print messages when past certain points
+ *       in code so we can tell where we are.  Outl may be invoked like
+ *       printf with up to 7 arguments.
+ */
+outl(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
+     char *msg;
+     char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
+{
+	fflush(stdout);
+	fprintf(stderr, msg, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+	fprintf(stderr, "\n");
+	fflush(stderr);
+}
+
+
+/*
+ * Standard fatal error routine - call like printf but maximum of 7 arguments.
+ * Does not require dpy or screen defined.
+ */
+void Fatal_Error(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
+char *msg;
+char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
+{
+	fflush(stdout);
+	fflush(stderr);
+	fprintf(stderr, "%s: error: ", program_name);
+	fprintf(stderr, msg, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+	fprintf(stderr, "\n");
+	exit(1);
 }
