@@ -65,17 +65,6 @@
 .LP
 .KE
 ..
-.\" For some reason, my groff doesn't like I.  I've not tried to
-.\" figure out why yet.
-.ie t \{
-.fp 6 CI
-.fp 7 C
-.fp 8 CB \}
-.el \{
-.fp 6 B
-.fp 7 R
-.fp 8 B
-\}
 .ps 10
 .nr PS 10
 \&
@@ -85,6 +74,8 @@
 Version 1.0
 .sp
 X Consortium Standard
+.sp
+X Version 11, Release 6
 .AU
 Robert Scheifler
 .AI
@@ -864,6 +855,7 @@ or
 (none)
 .Me
 Received a message with an unknown minor opcode.
+.bp
 .Ms BadState
 .Mf offending-minor-opcode
 <any>
@@ -1014,6 +1006,7 @@ the authentication for some other reason.  (For instance, it
 may have been unable to contact an authentication server.)
 The reason field will give a human-interpretable message
 providing further detail.
+.bp
 .Ms ProtocolDuplicate
 .Mf offending-minor-opcode
 .PN ProtocolSetup
@@ -1077,6 +1070,7 @@ connect to other end, send
 .St "receive" Error quit
 .St "receive <other>, send" Error quit
 .Se
+.sp 1
 Here are top-level state transitions for the party that accepts connections.
 .Ss listener
 .\" .St "accept connection" "" init_wait
@@ -1114,6 +1108,7 @@ send
 .St "if good auth data, send" AuthenticationNextPhase auth_wait
 .St "if bad auth data, send" Error quit
 .Se
+.sp 1
 Here are the top-level state transitions for all parties after the initial
 connection establishment subprotocol.
 .LP
@@ -1216,6 +1211,7 @@ give up on this protocol \(-> \fCstasis\fP
 \(-> close connection
 .RE
 .Se
+.sp 1
 Here are the state transitions for shutting down the connection:
 .Ss shutdown_attempt
 .St "if want to stay alive anyway, send" NoClose stasis
