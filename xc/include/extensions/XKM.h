@@ -27,6 +27,8 @@
 #ifndef XKM_H
 #define	XKM_H 1
 
+#define	XkmFileVersion		0
+
 #define	XkmSemanticsFile	20
 #define	XkmLayoutFile		21
 #define	XkmKeymapFile		22
