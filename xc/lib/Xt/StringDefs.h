@@ -188,6 +188,7 @@
 #define XtRPixmap		XrmRPixmap
 #define XtRPointer		XrmRPointer
 #define XtRString               XrmRString
+#define XtRStringTable		"StringTable"
 #define XtRTextPosition 	"XtTextPosition"
 #define XtRWindow		XrmRWindow
 
