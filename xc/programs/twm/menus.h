@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.21 89/11/10 15:54:35 jim Exp $
+ * $XConsortium: menus.h,v 1.22 89/11/14 16:36:50 jim Exp $
  *
  * twm menus include file
  *
@@ -123,8 +123,9 @@ extern int ConstMoveXL;
 extern int ConstMoveXR;
 extern int ConstMoveYT;
 extern int ConstMoveYB;
-extern int StartingX, StartingY;
- 
+
+#define MAXMENUDEPTH	10	/* max number of nested menus */
+extern int MenuDepth;
 
 #define MOVE_NONE	0	/* modes of constrained move */
 #define MOVE_VERT	1

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.107 89/11/14 15:02:36 jim Exp $
+ * $XConsortium: events.c,v 1.108 89/11/15 14:27:37 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.107 89/11/14 15:02:36 jim Exp $";
+"$XConsortium: events.c,v 1.108 89/11/15 14:27:37 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1719,6 +1719,7 @@ HandleEnterNotify()
 	    ActiveItem->state = 0;
 	ActiveItem = NULL;
 	ActiveMenu = mr;
+	MenuDepth--;
     }
 }
 

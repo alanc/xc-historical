@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.115 89/11/10 15:54:30 jim Exp $
+ * $XConsortium: menus.c,v 1.116 89/11/13 18:11:24 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.115 89/11/10 15:54:30 jim Exp $";
+"$XConsortium: menus.c,v 1.116 89/11/13 18:11:24 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -86,7 +86,11 @@ int ConstMoveXR;
 int ConstMoveYT;
 int ConstMoveYB;
  
-int StartingX, StartingY;
+int MenuDepth = 0;		/* number of menus up */
+static struct {
+    int x;
+    int y;
+} MenuOrigins[MAXMENUDEPTH];
 static Cursor LastCursor;
 
 extern char *Action;
@@ -425,6 +429,8 @@ UpdateMenu()
     int done;
     int first = TRUE;
     int save_x, save_y;
+    Bool badmenus = False;
+    MenuItem *badItem = NULL;
 
     while (TRUE)
     {
@@ -508,11 +514,17 @@ UpdateMenu()
 	    ((ActiveMenu->width - x) < (ActiveMenu->width >> 1)))
 	{
 	    MenuRoot *save = ActiveMenu;
-	    int savex = StartingX, savey = StartingY;
+	    int savex = MenuOrigins[MenuDepth - 1].x;
+	    int savey = MenuOrigins[MenuDepth - 1].y;
 
-	    PopUpMenu (ActiveItem->sub, (savex + (ActiveMenu->width >> 1)),
-		       (savey + ActiveItem->item_num * Scr->EntryHeight +
-			(Scr->EntryHeight >> 1)), False);
+	    if (MenuDepth < MAXMENUDEPTH) {
+		PopUpMenu (ActiveItem->sub, (savex + (ActiveMenu->width >> 1)),
+			   (savey + ActiveItem->item_num * Scr->EntryHeight +
+			    (Scr->EntryHeight >> 1)), False);
+	    } else if (!badItem) {
+		XBell (dpy, 0);
+		badItem = ActiveItem;
+	    }
 
 	    /* if the menu did get popped up, unhighlight the active item */
 	    if (save != ActiveMenu && ActiveItem->state)
@@ -522,6 +534,7 @@ UpdateMenu()
 		ActiveItem = NULL;
 	    }
 	}
+	if (badItem != ActiveItem) badItem = NULL;
 	XFlush(dpy);
     }
 }
@@ -996,10 +1009,9 @@ Bool PopUpMenu (menu, x, y, center)
     }
     if (y < 0) y = 0;
 
-    if (!menu->prev) {
-	StartingX = x;
-	StartingY = y;
-    }
+    MenuOrigins[MenuDepth].x = x;
+    MenuOrigins[MenuDepth].y = y;
+    MenuDepth++;
 
     XMoveWindow(dpy, menu->w, x, y);
     if (Scr->Shadow) {
@@ -1049,6 +1061,7 @@ PopDownMenu()
     XFlush(dpy);
     ActiveMenu = NULL;
     ActiveItem = NULL;
+    MenuDepth = 0;
 }
 
 /***********************************************************************
