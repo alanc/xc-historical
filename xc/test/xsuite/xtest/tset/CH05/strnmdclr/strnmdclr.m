@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: strnmdclr.m,v 1.9 92/06/11 16:19:31 rws Exp $
  */
 >>TITLE XStoreNamedColor CH05
 void
@@ -110,6 +110,8 @@ For each supported visual class DirectColor, PseudoColor and GrayScale:
   Create a colormap with XCreateColormap.
   Store XT_GOOD_COLOR_NAME r, g and b values in cell 0 with XStoreNamedColor.
   Obtain the r,g and b values with XQueryColor.
+  Complement the rgb values and store the value in cell 0 with XStoreColor.
+  Obtain the bitwise complemented rgb values using XQueryColor.
   For each possible combination DoRed, DoGreen and DoBlue in flags:
     Store the bitwise complementary rgb values in the same cell with XStoreColor.
     Store the XT_GOOD_COLOR_NAME values in the colourmap cell using XStoreNamedColor.
@@ -133,7 +135,6 @@ unsigned short	redval, greenval, blueval;
 		return;
 	}
 
-	flags = DoRed|DoGreen|DoBlue;
 	color = goodname;
 	pixel = 0L;
 	storedcol.pixel = 0L;
@@ -143,6 +144,7 @@ unsigned short	redval, greenval, blueval;
 	for(resetsupvis(vmask); nextsupvis(&vp); ) {
 		trace("Attempting XStoreNamedColor() for class %s, color %s", displayclassname(vp->class), goodname);
 		colormap = makecolmap(display, vp -> visual, AllocAll);
+		flags = DoRed|DoGreen|DoBlue;
 		XCALL;
 		XQueryColor(display, colormap, &namedcol);
 
@@ -151,6 +153,9 @@ unsigned short	redval, greenval, blueval;
 		testcol.green ^= 0xffff;
 		testcol.blue ^= 0xffff;
 		testcol.flags = DoRed | DoGreen | DoBlue;
+
+		XStoreColor(display, colormap, &testcol);
+		XQueryColor(display, colormap, &testcol);
 
 		for(i=0; i<8; i++) {
 
@@ -172,7 +177,7 @@ unsigned short	redval, greenval, blueval;
 				flags |= DoBlue;
 				blueval = namedcol.blue;
 			} else
-				blueval = testcol.green;
+				blueval = testcol.blue;
 
 			XStoreColor(display, colormap, &testcol);
 			XCALL;
