@@ -1,4 +1,4 @@
-/* $XConsortium: floman.c,v 1.3 93/11/06 15:24:18 rws Exp $ */
+/* $XConsortium: floman.c,v 1.4 94/01/12 20:06:48 rws Exp $ */
 /**** module floman.c ****/
 /******************************************************************************
 				NOTICE
@@ -92,20 +92,20 @@ void    ResetBand();
 
 /* routines used internal to this module
  */
-static int link();
-static int startup();
-static int resume();
-static int shutdown();
-static int destroy();
+static int flo_link();
+static int flo_startup();
+static int flo_resume();
+static int flo_shutdown();
+static int flo_destroy();
 
 /* DIXIE to DDXIE photoflo management entry points
  */
 static floVecRec floManagerVec = {
-  link,
-  startup,
-  resume,
-  shutdown,
-  destroy
+  flo_link,
+  flo_startup,
+  flo_resume,
+  flo_shutdown,
+  flo_destroy
   };
 
 /*------------------------------------------------------------------------
@@ -377,7 +377,7 @@ void ResetBand(bnd)
 /*------------------------------------------------------------------------
 -------------------------------- Link -----------------------------------
 ------------------------------------------------------------------------*/
-static int link(flo)
+static int flo_link(flo)
      floDefPtr flo;
 {
   peDefPtr ped;
@@ -402,13 +402,13 @@ static int link(flo)
         return(FALSE);
     }
   return(TRUE);
-}                               /* end link */
+}                               /* end flo_link */
 
 
 /*------------------------------------------------------------------------
 -------------------------------- Startup -----------------------------------
 ------------------------------------------------------------------------*/
-static int startup(flo)
+static int flo_startup(flo)
      floDefPtr flo;
 {
   peDefPtr ped;
@@ -439,31 +439,31 @@ static int startup(flo)
   /* Call the scheduler -- there are no ImportClient elements the first time
    */
   if(ferrCode(flo)) {
-    shutdown(flo);
+    flo_shutdown(flo);
     status = FALSE;
   } else {
     status = Execute(flo, NULL);
   }
   return(status);
-}                               /* end startup */
+}                               /* end flo_startup */
 
 
 /*------------------------------------------------------------------------
 -------------------------------- Resume -----------------------------------
 ------------------------------------------------------------------------*/
-static int resume(flo)
+static int flo_resume(flo)
      floDefPtr flo;
 {
   /* not implemented in the SI */
   
   FloImplementationError(flo,0,0, return(FALSE));
-}                               /* end resume */
+}                               /* end flo_resume */
 
 
 /*------------------------------------------------------------------------
 ------------------------------ Shutdown ----------------------------------
 ------------------------------------------------------------------------*/
-static int shutdown(flo)
+static int flo_shutdown(flo)
      floDefPtr flo;
 {
   peDefPtr ped;
@@ -492,13 +492,13 @@ static int shutdown(flo)
     flo->flags.active = FALSE;
   }        
   return(TRUE);
-}                               /* end shutdown */
+}                               /* end flo_shutdown */
 
 
 /*------------------------------------------------------------------------
 -------------------------------- Destroy ---------------------------------
 ------------------------------------------------------------------------*/
-static int destroy(flo)
+static int flo_destroy(flo)
      floDefPtr flo;
 {
   peDefPtr ped;
@@ -518,6 +518,6 @@ static int destroy(flo)
   flo->stripVec = NULL;
   
   return(TRUE);
-}                               /* end destroy */
+}                               /* end flo_destroy */
 
 /* end module floman.c */
