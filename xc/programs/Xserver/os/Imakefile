@@ -63,9 +63,9 @@ BOOTSTRAPCFLAGS =
     DBM_DEFINES = NdbmDefines
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
         DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
-       INCLUDES = -I.  -I../../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
+       INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
-       LINTLIBS = ../../dix/llib-ldix.ln
+       LINTLIBS = ../dix/llib-ldix.ln
 
 #ifdef HPArchitecture
          DBMLIB = /usr/lib/libdbm.a
