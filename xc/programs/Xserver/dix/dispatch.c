@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.43 88/02/21 18:48:06 rws Exp $ */
+/* $Header: dispatch.c,v 1.43 88/02/21 18:54:06 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2686,7 +2686,7 @@ ProcCreateCursor( client)
     mskbits = (unsigned char *)xalloc(n);
 
     (* src->drawable.pScreen->GetImage)( src, 0, 0, width, height,
-					 XYBitmap, 1, srcbits);
+					 XYPixmap, 1, srcbits);
     if ( msk == (PixmapPtr)NULL)
     {
 	register unsigned char *bits = mskbits;
@@ -2695,7 +2695,7 @@ ProcCreateCursor( client)
     }
     else
 	(* msk->drawable.pScreen->GetImage)( msk, 0, 0, width, height,
-					     XYBitmap, 1, mskbits);
+					     XYPixmap, 1, mskbits);
     cm.width = width;
     cm.height = height;
     cm.xhot = stuff->x;
