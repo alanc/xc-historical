@@ -212,6 +212,26 @@ XmfbpmaxDIRS = $(PMAXMFBDIRS)
 ServerTarget(Xmfbpmax,$(EXTDIR) $(FONTUTILDIR) $(PMAXMFBDIRS),$(PMAXMFBOBJS),$(PMAXMFBLIBS),$(SYSLIBS))
 #endif /* domfbpmaxServer */
 
+#ifdef docfbpmaxServer
+/**/#
+/**/# cfbpmax server
+/**/#
+#define need_dix
+#define need_ddx_snf
+#define need_ddx_mi
+#define need_ddx_mfb
+#define need_ddx_cfb
+#define need_ddx_dec_lk201
+#define need_ddx_dec_cfbpmax
+#define need_os_42bsd
+PMAXCFBDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/dec/lk201 ddx/dec/cfbpmax os/4.2bsd
+PMAXCFBOBJS = ddx/dec/cfbpmax/init.o ddx/dec/cfbpmax/cfbpmax_io.o\
+	ddx/dec/cfbpmax/cfbpmaxcolor.o ddx/dec/lk201/lk201.o $(FONTUTIL)
+PMAXCFBLIBS = $(DIX) $(BSD) $(SNF) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
+XcfbpmaxDIRS = $(PMAXCFBDIRS)
+
+ServerTarget(Xcfbpmax,$(EXTDIR) $(FONTUTILDIR) $(PMAXCFBDIRS),$(PMAXCFBOBJS),$(PMAXCFBLIBS),$(SYSLIBS))
+#endif /* docfbpmaxServer */
 
 #ifdef dosunServer
 /**/#
