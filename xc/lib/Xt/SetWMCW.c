@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SetWMCW.c,v 1.3 90/07/16 14:44:19 swick Exp $ */
 /*
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -49,6 +49,7 @@ Cardinal count;
     Widget *checked, *top, *temp;
     register Cardinal i, j, checked_count;
     register Boolean match;
+    Atom xa_wm_colormap_windows;
 
     if ( !XtIsRealized(widget) || (count == 0) ) return;
 
@@ -102,26 +103,20 @@ Cardinal count;
 	data[i] = XtWindow(top[i]);
 
 /*
- * Stuffing the atom into the per_display info saves interning it
- * each time this function is called, and thus saves a server round trip.
+ * Relax, there's an atom cache in Xlib.
  */
 
-    {
-	XtPerDisplay pd = _XtGetPerDisplay(XtDisplay(widget));
-
-	if (pd->xa_wm_colormap_windows == None)
-	    pd->xa_wm_colormap_windows = XInternAtom(XtDisplay(widget),
-						"WM_COLORMAP_WINDOWS", FALSE);
+    xa_wm_colormap_windows = XInternAtom(XtDisplay(widget),
+					 "WM_COLORMAP_WINDOWS", FALSE);
 
 /*
  * No need to check return from XInternAtom() since the atom will be
  * created if it doesn't exist.
  */
 
-	XChangeProperty(XtDisplay(widget), XtWindow(widget), 
-			pd->xa_wm_colormap_windows, XA_WINDOW, 32,
-			PropModeReplace, (unsigned char *) data, (int) i);
-    }
+    XChangeProperty(XtDisplay(widget), XtWindow(widget), 
+		    xa_wm_colormap_windows, XA_WINDOW, 32,
+		    PropModeReplace, (unsigned char *) data, (int) i);
 
     XtFree( (char *) data);
     XtFree( (char *) top);

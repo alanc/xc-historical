@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.41 90/12/27 14:34:51 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.42 90/12/28 17:48:00 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -234,9 +234,6 @@ typedef struct _XtPerDisplayStruct {
     struct _GCrec *GClist;	       /* support for XtGetGC */
     Drawable **pixmap_tab;             /* ditto for XtGetGC */
     String language;		       /* XPG language string */
-    Atom xa_wm_colormap_windows;       /* the WM_COLORMAP_WINDOWS atom.
-					  this is currently only used in 
-					  XtSetColormapWindows. */
     Time last_timestamp;	       /* from last event dispatched */
     int multi_click_time;	       /* for XtSetMultiClickTime */
     struct _TMContext* tm_context;     /* for XtGetActionKeysym */
