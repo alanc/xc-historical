@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.213 88/09/06 15:41:34 jim Exp $ */
+/* $XConsortium: window.c,v 1.214 88/10/04 11:47:53 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3154,7 +3154,7 @@ UnrealizeChildren(pWin)
 	    (* RegionEmpty)(pSib->borderClip);
 	    (* RegionEmpty)(pSib->borderExposed);
 	    (* RegionEmpty)(pSib->exposed);
-	    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	    pSib->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	}
         pSib = pSib->nextSib;
     }
