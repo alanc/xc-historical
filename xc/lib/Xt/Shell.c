@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.51 89/06/01 13:37:00 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.52 89/06/01 15:59:25 jim Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -695,7 +695,7 @@ static void SetWindowGroups(widget, window)
 	    if (pop->core.num_popups > 0) SetWindowGroups(pop, window);
 	    if (XtIsSubclass(pop, wmShellWidgetClass) &&
 		    ((WMShellWidget) pop)->wm.wm_hints.window_group == None) {
-		XtSetValues(pop, &a, 1);
+		XtSetValues(pop, &a, (Cardinal)1);
 	    }
 	}
 }
@@ -935,7 +935,7 @@ static void EventHandler(wid, closure, event)
 	Window tmproot, tmpchild;
 
 	if(w->core.window != event->xany.window) {
-		XtAppErrorMsg(XtWidgetToApplicationContext(w),
+		XtAppErrorMsg(XtWidgetToApplicationContext(wid),
 			"invalidWindow","eventHandler","XtToolkitError",
                         "Event with wrong window",
 			(String *)NULL, (Cardinal *)NULL);
@@ -1297,7 +1297,7 @@ static _wait_for_response(w, values, event)
 		for (; q.others > 0; q.others--) {
 		    if (!XCheckIfEvent(XtDisplay(w), &junkevent,
 			    findOthers, (char *) &q)) {
-			XtAppErrorMsg(XtWidgetToApplicationContext(w),
+			XtAppErrorMsg(XtWidgetToApplicationContext((Widget)w),
 				"missingEvent","shell","XtToolkitError",
 				"Events are disappearing from under Shell",
 				(String *)NULL, (Cardinal *)NULL);
@@ -1422,7 +1422,7 @@ Cardinal mask;
 			w->core.y = event.xclient.data.s[1];
 			w->shell.client_specified |= _XtShellPositionValid;
 			return TRUE;
-		} else XtAppErrorMsg(XtWidgetToApplicationContext(w),
+		} else XtAppErrorMsg(XtWidgetToApplicationContext((Widget)w),
 				"internalError","shell","XtToolkitError",
                              "Shell's window manager interaction is broken",
 			     (String *)NULL, (Cardinal *)NULL);

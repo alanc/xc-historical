@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.90 88/10/21 08:43:10 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.91 89/03/10 17:52:26 rws Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -312,7 +312,7 @@ static void ExpandTable()
     unsigned int i;
 
     i = oldTable->size * 2;
-    table = (HashTable) XtCalloc(1,
+    table = (HashTable) XtCalloc((Cardinal)1,
 	    (unsigned) sizeof(HashTableRec)+i*sizeof(HashPtr));
 
     table->size = i;
@@ -558,7 +558,7 @@ static Widget FindFocusWidget(widget)
 
     /* First time in, allocate the ancestor list */
     if (anc == NULL) {
-	anc = (Widget *) XtMalloc(CACHESIZE * sizeof(Widget));
+	anc = (Widget *) XtMalloc((Cardinal)CACHESIZE * sizeof(Widget));
 	ancSize = CACHESIZE;
     }
 
@@ -572,7 +572,8 @@ static Widget FindFocusWidget(widget)
 		/* This should rarely happen, but if it does it'll probably
 		   happen again, so grow the ancestor list */
 		ancSize += CACHESIZE;
-		anc = (Widget *) XtRealloc(anc, sizeof(Widget) * ancSize);
+		anc = (Widget*)XtRealloc((char*)anc,
+					 (Cardinal)sizeof(Widget) * ancSize);
 	    }
 	    anc[i] = w;
 	}
@@ -639,7 +640,6 @@ static void DecideToDispatch(event)
     register    Widget widget;
     EventMask   mask;
     GrabType    grabType;
-    GrabList    gl;
     Widget	dspWidget;
 
     widget = XtWindowToWidget (event->xany.display, event->xany.window);
@@ -847,7 +847,7 @@ static Boolean RemoveGrab(widget, keyboard_focus)
     /* returns False if no grab entry was found, True otherwise */
 {
     GrabList *whichList;
-    register GrabList gl, prev, next;
+    register GrabList gl, prev;
     register Boolean done;
 
     if (keyboard_focus) whichList = &focusList;
@@ -991,12 +991,13 @@ void XtSetAsyncEventHandler(handler, closure)
 extern void _XtRegisterAsyncHandlers(widget)
     Widget widget;
 {
+#ifdef notdef
     EventMask mask;
 
     if (asyncHandler == NULL) return;
 
     mask = XtBuildEventMask(widget);
-#ifdef notdef
+
     XSelectAsyncInput(
 	XtDisplay(widget), XtWindow(widget), mask,
 	asyncHandler, (unsigned long)XtDisplay(widget));
@@ -1176,7 +1177,7 @@ void XtSetKeyboardFocus(widget, descendant)
     /* If his translations aren't installed, we'll have to wait 'till later */
 
     if (XtIsRealized(descendant)) AddForwardingHandler(widget, descendant);
-    else AddEventHandler(descendant, StructureNotifyMask, False,
+    else AddEventHandler(descendant, (EventMask)StructureNotifyMask, False,
 		QueryEventMask, (caddr_t)widget, FALSE, FALSE);
 }
 
