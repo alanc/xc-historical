@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.44 91/01/06 12:39:18 rws Exp $
+ *	$XConsortium: ptyx.h,v 1.45 91/01/09 16:51:38 rws Exp $
  */
 
 /*
@@ -31,7 +31,6 @@
 #include <X11/IntrinsicP.h>
 #include <X11/Xmu/Misc.h>	/* For Max() and Min(). */
 #include <X11/Xfuncs.h>
-#include <signal.h>		/* for SIGTSTP */
 
 /* Extra Xlib definitions */
 #define AllButtonsUp(detail, ignore)  (\

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: menu.c,v 1.48 91/01/24 19:32:18 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -22,6 +22,7 @@ without express or implied warranty.
 #include <X11/Xaw/SmeLine.h>
 #include "ptyx.h"
 #include <setjmp.h>			/* for data.h */
+#include <signal.h>
 #include "data.h"
 #include "menu.h"
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.21 91/01/09 16:52:27 rws Exp $
+ *	$XConsortium: screen.c,v 1.22 91/01/24 19:32:35 gildea Exp $
  */
 
 /*
@@ -29,6 +29,7 @@
 
 #include <X11/Xlib.h>
 #include <stdio.h>
+#include <signal.h>
 #include <sys/ioctl.h>
 #include "ptyx.h"
 #include "error.h"
@@ -546,7 +547,7 @@ unsigned *flags;
 		int	pgrp;
 		
 		if (ioctl (screen->respond, TIOCGPGRP, &pgrp) != -1)
-			killpg(pgrp, SIGWINCH);
+		    kill_process_group(pgrp, SIGWINCH);
 	}
 #endif	/* SIGWINCH */
 #endif	/* TIOCSWINSZ */

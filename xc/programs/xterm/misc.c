@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.69 91/01/06 12:48:17 rws Exp $
+ *	$XConsortium: misc.c,v 1.70 91/01/24 19:32:25 gildea Exp $
  */
 
 /*
@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 #include <setjmp.h>
+#include <signal.h>
 #include <ctype.h>
 #include <pwd.h>
 
