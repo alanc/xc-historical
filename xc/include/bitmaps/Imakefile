@@ -18,10 +18,12 @@ SRCS = \
 	icon \
 	left_ptr \
 	left_ptrmsk \
+	letters \
 	light_gray \
 	mailempty \
 	mailfull \
 	mensetmanus \
+	noletters \
 	opendot \
 	opendotMask \
 	plaid \
