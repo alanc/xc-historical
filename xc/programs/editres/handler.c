@@ -7,6 +7,7 @@
 #include <X11/Xaw/List.h>
 #include <X11/Xaw/Panner.h>
 #include <X11/Xaw/Toggle.h>
+#include <X11/Xfuncs.h>
 
 #include "editresP.h"
 

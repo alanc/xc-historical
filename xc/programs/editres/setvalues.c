@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: setvalues.c,v 1.1 90/06/28 12:10:42 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,7 +30,7 @@
 
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Cardinals.h>	
-
+#include <X11/Xfuncs.h>
 #include "editresP.h"
 
 extern WNode * FindNode();
