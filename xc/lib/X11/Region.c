@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.23 89/10/08 14:41:49 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.24 89/11/08 17:08:07 converse Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -275,13 +275,13 @@ Compress(r, s, t, dx, xdir, grow)
     ZCopyRegion(r, s);
     while (dx) {
         if (dx & shift) {
-            ZShiftRegion(r, -shift);
+            ZShiftRegion(r, -(int)shift);
             ZOpRegion(r, s, r);
             dx -= shift;
             if (!dx) break;
         }
         ZCopyRegion(s, t);
-        ZShiftRegion(s, -shift);
+        ZShiftRegion(s, -(int)shift);
         ZOpRegion(s, t, s);
         shift <<= 1;
     }

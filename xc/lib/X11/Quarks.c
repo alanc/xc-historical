@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.14 89/06/15 18:44:34 jim Exp $
+ * $XConsortium: Quarks.c,v 1.15 89/11/08 17:06:24 converse Exp $
  */
 
 /***********************************************************
@@ -85,35 +85,6 @@ typedef struct _NodeRec {
 #define HASHTABLESIZE 1024
 #define HASHTABLEMASK 1023
 static Node nodeTable[HASHTABLESIZE];
-
-/* predefined quarks */
-
-/* Representation types */
-
-static XrmQuark  XrmQBoolean;
-static XrmQuark  XrmQColor;
-static XrmQuark  XrmQCursor;
-static XrmQuark  XrmQDims;
-static XrmQuark  XrmQDisplay;
-static XrmQuark  XrmQFile;
-static XrmQuark  XrmQFont;
-static XrmQuark  XrmQFontStruct;
-static XrmQuark  XrmQGeometry;
-static XrmQuark  XrmQInt;
-static XrmQuark  XrmQPixel;
-static XrmQuark  XrmQPixmap;
-static XrmQuark  XrmQPointer;
-static XrmQuark  XrmQString;
-static XrmQuark  XrmQWindow;
-
-/* "Enumeration" constants */
-
-static XrmQuark  XrmQEfalse;
-static XrmQuark  XrmQEno;
-static XrmQuark  XrmQEoff;
-static XrmQuark  XrmQEon;
-static XrmQuark  XrmQEtrue;
-static XrmQuark  XrmQEyes;
 
 static int XrmAllocMoreQuarkToStringTable()
 {
