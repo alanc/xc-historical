@@ -33,7 +33,7 @@
     (if (rationalp x)
 	x
 	(lisp:rational x)))
-  (deftype rational () 'lisp:rational))
+  (deftype rational (&optional l u) `(lisp:rational ,l ,u)))
 
 ;;; DECLAIM
 
