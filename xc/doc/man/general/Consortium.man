@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.27 92/07/10 11:09:11 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.28 92/08/15 11:29:57 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -187,6 +187,7 @@ VisionWare Ltd.
 Visix Software, Inc.
 Visual Information Technologies, Inc.
 Visual Technology, Inc.
+Walker Richer & Quinn, Inc.
 Widget, Inc.
 X/Open Company Ltd.
 .fi
