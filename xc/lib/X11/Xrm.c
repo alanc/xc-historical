@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.38 90/06/15 11:21:35 rws Exp $
+ * $XConsortium: Xrm.c,v 1.39 90/06/15 17:19:26 rws Exp $
  */
 
 /***********************************************************
@@ -1136,6 +1136,16 @@ register char * str;
 		}
 
 		/*
+		 * "\\" completes to just one backslash.
+		 */
+
+		if (xrm_is_backslash(bits)) {
+		    *ptr++ = c;	                /* we know that c == '\'. */
+		    bits = get_next_char(c, str);
+		    continue;
+		}
+
+		/*
 		 * pick up to three octal digits after the '\'.
 		 */
 		
@@ -1151,7 +1161,7 @@ register char * str;
 		 * into the value string as a character.
 		 */
 		
-		if (count == 2) {
+		if (count == 3) {
 		    *ptr++ = (unsigned char) ((temp[0] - ZERO) * 0100 +
 					      (temp[1] - ZERO) * 010 +
 					      (temp[2] - ZERO));
@@ -1161,14 +1171,13 @@ register char * str;
 
 		    /* 
 		     * Otherwise just insert those characters into the 
-		     * string.
+		     * string, since no special processing is needed on
+		     * numerics we can skip the special processing.
 		     */
 
-		    *ptr++ = BACKSLASH;
 		    for (tcount = 0; tcount < count; tcount++) {
 			*ptr++ = temp[tcount]; /* print them in 
 						  the correct order */
-			count--;
 		    }
 		}
 	    }
