@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.74 90/11/30 10:36:32 keith Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.75 90/11/30 11:16:39 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -339,7 +339,8 @@ install:: Concat(lib,libname.so.rev) 					@@\
 #ifndef InstallSharedLibraryData
 #define	InstallSharedLibraryData(libname,rev,dest)			@@\
 install:: Concat(lib,libname.sa.rev)					@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.sa.rev) dest
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.sa.rev) dest	@@\
+	$(RANLIB) $(RANLIBINSTFLAGS) Concat(dest/lib,libname.sa.rev)
 
 #endif /* InstallSharedLibraryData */
 
