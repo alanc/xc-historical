@@ -1,8 +1,9 @@
 /**/#!/bin/sh
 
 /**/#
-/**/# generate a Makefile from an Imakefile from inside or outside the sources!
+/**/# generate a Makefile from an Imakefile from inside or outside the sources
 /**/# 
+/**/# $XConsortium$
 
 usage="usage:  $0 [-a] [top_of_sources_pathname [current_directory]]"
 
@@ -45,6 +46,8 @@ yes)
     imake $args && 
     echo "make Makefiles" &&
     make Makefiles &&
+    echo "make includes" &&
+    make includes &&
     echo "make depend" &&
     make depend
     ;;

@@ -1,4 +1,4 @@
-.\" $XConsortium: xmkmf.man,v 1.1 91/07/29 20:48:54 gildea Exp $
+.\" $XConsortium: xmkmf.man,v 1.2 91/07/31 14:03:01 rws Exp $
 .TH XMKMF 1 "Release 5" "X Version 11"
 .SH NAME
 xmkmf \- create a Makefile from an Imakefile
@@ -35,7 +35,8 @@ option,
 builds the
 .I Makefile
 in the current directory, and then automatically executes
-``make Makefiles'' (in case there are subdirectories)
+``make Makefiles'' (in case there are subdirectories),
+``make includes'',
 and ``make depend'' for you.
 This is the normal way to configure software that is outside
 the MIT X build tree.
