@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.154 91/05/04 18:21:38 gildea Exp $
+ * $XConsortium: charproc.c,v 1.154 91/05/04 19:38:29 gildea Exp $
  */
 
 /*
@@ -1943,6 +1943,7 @@ SwitchBufs(screen)
 		HideCursor();
 	rows = screen->max_row + 1;
 	SwitchBufPtrs(screen);
+	TrackText(0, 0, 0, 0);	/* remove any highlighting */
 	if((top = -screen->topline) <= screen->max_row) {
 		if(screen->scroll_amt)
 			FlushScroll(screen);

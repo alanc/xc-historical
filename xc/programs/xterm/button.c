@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.61 91/04/15 13:53:24 gildea Exp $ */
+/* $XConsortium: button.c,v 1.62 91/04/22 13:43:44 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -67,7 +67,6 @@ static void ExtendExtend();
 static void ReHiliteText();
 static void SelectSet();
 static void StartSelect();
-static void TrackText();
 static int Length();
 static char *SaveText();
 
@@ -958,7 +957,6 @@ ComputeSelect(startRow, startCol, endRow, endCol, extend)
 }
 
 
-static void
 TrackText(frow, fcol, trow, tcol)
     register int frow, fcol, trow, tcol;
     /* Guaranteed (frow, fcol) <= (trow, tcol) */
