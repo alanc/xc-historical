@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.12 89/10/09 15:52:22 rws Exp $ */
+/* $XConsortium: events.c,v 5.13 89/10/10 14:59:12 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2684,7 +2684,7 @@ ProcUngrabPointer(client)
 
 int
 GrabDevice(client, dev, this_mode, other_mode, grabWindow, ownerEvents, ctime,
-	   mask)
+	   mask, status)
     register ClientPtr client;
     register DeviceIntPtr dev;
     unsigned this_mode;
@@ -2693,8 +2693,8 @@ GrabDevice(client, dev, this_mode, other_mode, grabWindow, ownerEvents, ctime,
     unsigned ownerEvents;
     Time ctime;
     Mask mask;
+    CARD8 *status;
 {
-    int status;
     register WindowPtr pWin;
     register GrabPtr grab = dev->grab;
     TimeStamp time;
@@ -2703,36 +2703,36 @@ GrabDevice(client, dev, this_mode, other_mode, grabWindow, ownerEvents, ctime,
     if ((this_mode != GrabModeSync) && (this_mode != GrabModeAsync))
     {
 	client->errorValue = this_mode;
-        return -1;
+        return BadValue;
     }
     if ((other_mode != GrabModeSync) && (other_mode != GrabModeAsync))
     {
 	client->errorValue = other_mode;
-        return -1;
+        return BadValue;
     }
     if ((ownerEvents != xFalse) && (ownerEvents != xTrue))
     {
 	client->errorValue = ownerEvents;
-        return -1;
+        return BadValue;
     }
     pWin = LookupWindow(grabWindow, client);
     if (!pWin)
 	return BadWindow;
     time = ClientTimeToServerTime(ctime);
     if (grab && !SameClient(grab, client))
-	status = AlreadyGrabbed;
+	*status = AlreadyGrabbed;
     else if (!pWin->realized)
-	status = GrabNotViewable;
+	*status = GrabNotViewable;
     else if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	     (dev->grab &&
 	      (CompareTimeStamps(time, dev->grabTime) == EARLIER)))
-	status = GrabInvalidTime;
+	*status = GrabInvalidTime;
     else if (dev->sync.frozen &&
 	     ((dev->sync.other &&
 	       !SameClient(dev->sync.other, client)) ||
 	     ((dev->sync.state >= FROZEN) &&
 	      !SameClient(dev->grab, client))))
-	status = GrabFrozen;
+	*status = GrabFrozen;
     else
     {
 	GrabRec tempGrab;
@@ -2745,9 +2745,9 @@ GrabDevice(client, dev, this_mode, other_mode, grabWindow, ownerEvents, ctime,
 	tempGrab.eventMask = mask;
 	tempGrab.device = dev;
 	(*dev->ActivateGrab)(dev, &tempGrab, time, FALSE);
-	status = GrabSuccess;
+	*status = GrabSuccess;
     }
-    return status;
+    return Success;
 }
 
 int
@@ -2756,19 +2756,18 @@ ProcGrabKeyboard(client)
 {
     xGrabKeyboardReply rep;
     REQUEST(xGrabKeyboardReq);
-    int status;
+    int result;
 
     REQUEST_SIZE_MATCH(xGrabKeyboardReq);
-    status = GrabDevice(client, inputInfo.keyboard, stuff->keyboardMode,
+    result = GrabDevice(client, inputInfo.keyboard, stuff->keyboardMode,
 			stuff->pointerMode, stuff->grabWindow,
 			stuff->ownerEvents, stuff->time,
-			KeyPressMask | KeyReleaseMask);
-    if (status < 0)
-	return BadValue;
+			KeyPressMask | KeyReleaseMask, &rep.status);
+    if (result != Success)
+	return result;
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.length = 0;
-    rep.status = status;
     WriteReplyToClient(client, sizeof(xGrabKeyboardReply), &rep);
     return Success;
 }
