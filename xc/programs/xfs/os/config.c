@@ -27,7 +27,6 @@
 #include	<stdio.h>
 #include	<ctype.h>
 #include	<X11/Xos.h>
-#include	<strings.h>
 #include	"misc.h"
 #include	"configstr.h"
 #include	"osdep.h"
