@@ -56,7 +56,9 @@
     (setf (event-display event) display)
     (macrolet ((set-event (&rest parameters)
 		 `(progn ,@(mapcar #'(lambda (parm)
-				       `(setf (,(intern (concatenate 'string "EVENT-" (string parm)))
+				       `(setf (,(intern (concatenate 'string
+							  (string 'event-)
+							  (string parm)))
 					       event) ,parm))
 				   parameters)))
 	       (dispatch (contact)
