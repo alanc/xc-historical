@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.22 90/03/08 11:27:15 rws Exp $ */
+/* $XConsortium: events.c,v 5.23 90/03/16 17:17:26 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3216,7 +3216,17 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 	    {
 		parent = parent->parent;
 		focus->traceGood--;
-	    } while (!parent->realized);
+	    } while (!parent->realized
+/* This would be a good protocol change -- windows being reparented
+   during SaveSet processing would cause the focus to revert to the
+   nearest enclosing window which will survive the death of the exiting
+   client, instead of ending up reverting to a dying window and thence
+   to None
+ */
+#ifdef NOTDEF
+ 	      || clients[CLIENT_ID(parent->drawable.id)]->clientGone
+#endif
+		);
 	    DoFocusEvents(keybd, pWin, parent, focusEventMode);
 	    focus->win = parent;
 	    focus->revert = RevertToNone;
