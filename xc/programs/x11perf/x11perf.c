@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.45 93/09/19 13:02:39 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.46 94/01/17 16:39:18 kaleb Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -34,6 +34,13 @@ SOFTWARE.
 #endif
 #include "x11perf.h"
 #include <X11/Xmu/SysUtil.h>
+#ifdef X_NOT_STDC_ENV
+#define TIME_T long
+extern TIME_T time ();
+#else
+#include <time.h>
+#define TIME_T time_t
+#endif
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
@@ -162,11 +169,6 @@ static struct  timeval start;
 
 void PrintTime()
 {
-#if defined(sony) || defined(luna)
-#define TIME_T long
-#else
-#define TIME_T time_t
-#endif
     TIME_T t;
 
     t = time((TIME_T *)NULL);
