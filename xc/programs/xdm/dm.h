@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.40 91/01/31 22:03:14 gildea Exp $
+ * $XConsortium: dm.h,v 1.41 91/02/04 19:17:33 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -286,7 +286,6 @@ extern char		*localHostname ();
 #include <stdlib.h>
 #else
 extern char	*malloc (), *realloc ();
-extern void	free (), exit ();
 #endif
 
 #ifdef SIGNALRETURNSINT
@@ -294,3 +293,14 @@ extern void	free (), exit ();
 #else
 #define SIGVAL void
 #endif
+
+#ifdef SYSV
+#define SIGNALS_RESET_WHEN_CAUGHT
+#define UNRELIABLE_SIGNALS
+#endif
+
+#if defined(SVR4) || defined(_POSIX_SOURCE)
+#define POSIXSIG
+#endif
+
+SIGVAL (*Signal())();
