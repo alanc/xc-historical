@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.35 89/10/02 08:10:16 rws Exp $ */
+/* $XConsortium: window.c,v 5.36 89/10/04 14:18:57 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -472,7 +472,7 @@ HandleExposures(pWin)
 						    &val->after.borderExposed,
 						    PW_BORDER);
 	    (*RegionUninit)(&val->after.borderExposed);
-	    (*WindowExposures)(pChild, &val->after.exposed);
+	    (*WindowExposures)(pChild, &val->after.exposed, NullRegion);
 	    (*RegionUninit)(&val->after.exposed);
 	    xfree(val);
 	    pChild->valdata = (ValidatePtr)NULL;
@@ -2080,6 +2080,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     RegionPtr	destClip;	/* portions of destination already written */
     RegionPtr	oldWinClip;	/* old clip list for window */
     RegionPtr	borderVisible = NullRegion; /* visible area of the border */
+    RegionPtr	bsExposed = NullRegion;	    /* backing store exposures */
     Bool	shrunk = FALSE; /* shrunk in an inner dimension */
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
@@ -2202,10 +2203,11 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	if (!WasViewable)
 	    pRegion = &pWin->clipList; /* a convenient empty region */
 	if (pWin->bitGravity == ForgetGravity)
-	    (* pScreen->TranslateBackingStore) (pWin, 0, 0, NullRegion);
+	    bsExposed = (* pScreen->TranslateBackingStore)
+				(pWin, 0, 0, NullRegion);
 	else
-	    (* pScreen->TranslateBackingStore) (pWin, x - oldx, y - oldy,
-						pRegion);
+	    bsExposed = (* pScreen->TranslateBackingStore)
+				(pWin, x - oldx, y - oldy, pRegion);
     }
 
     if (WasViewable)
@@ -2317,12 +2319,28 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	(*pScreen->RegionDestroy) (pRegion);
 	if (destClip)
 	    (*pScreen->RegionDestroy) (destClip);
+	if (bsExposed)
+	{
+	    RegionPtr	valExposed = NullRegion;
+
+	    if (pWin->valdata)
+		valExposed = &pWin->valdata->after.exposed;
+	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
+	    if (valExposed)
+		(*pScreen->RegionEmpty) (valExposed);
+	    (*pScreen->RegionDestroy) (bsExposed);
+	}
 	if (anyMarked)
 	    HandleExposures(pParent);
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
 	    DoChangeSaveUnder(pParent, pFirstChange);
 #endif /* DO_SAVE_UNDERS */
+    }
+    else if (bsExposed)
+    {
+	(*pScreen->WindowExposures) (pWin, NullRegion, bsExposed);
+	(*pScreen->RegionDestroy) (bsExposed);
     }
     if (pWin->realized)
 	WindowsRestructured ();
