@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.1 88/09/23 14:21:53 keith Exp $
+ * $XConsortium: daemon.c,v 1.2 88/09/23 14:29:02 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,9 +24,6 @@
 #include <sys/ptyio.h>
 #endif
 
-char *root = "/";			/* have only one copy of string */
-char *devtty = "/dev/tty";		/* ditto */
-
 BecomeDaemon ()
 {
     register int i;
@@ -44,16 +41,22 @@ BecomeDaemon ()
      * Close standard file descriptors and get rid of controlling tty
      */
 
+#ifdef SYSV
+    setpgrp ();
+#else
     setpgrp (0, getpid());
+#endif
 
-    close (0); close (1); close (2);
+    close (0); 
+    close (1);
+    close (2);
 
-    if ((i = open (devtty, O_RDWR)) >= 0) {	/* did open succeed? */
+    if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #ifdef SYSV
 	int zero = 0;
 	(void) ioctl (i, TIOCTTY, &zero);
 #else
-	(void) ioctl (i, TIOCNOTTY, 0);		/* detach */
+	(void) ioctl (i, TIOCNOTTY, 0);		/* detach, BSD style */
 #endif
 	(void) close (i);
     }
@@ -61,7 +64,6 @@ BecomeDaemon ()
     /*
      * Set up the standard file descriptors.
      */
-
     (void) open ("/", O_RDONLY);	/* root inode already in core */
     (void) dup2 (0, 1);
     (void) dup2 (0, 2);
