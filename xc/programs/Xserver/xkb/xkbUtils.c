@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c,v 1.4 93/09/28 21:12:09 rws Exp $ */
+/* $XConsortium: xkbUtils.c,v 1.5 93/09/28 21:28:48 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1819,8 +1819,9 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
 	    case XkbSASetPtrDflt:
 		{
 		    XkbControlsRec	*ctrls= xkb->desc.controls;
-		    XkbControlsRec	old= *ctrls;
+		    XkbControlsRec	old;
 		    xkbControlsNotify	cn;
+		    old= *ctrls;
 		    switch (XkbActionDataHigh(*pAction)) {
 			case XkbSASetDfltBtn:
 			    ctrls->mouseKeysDfltBtn= XkbActionDataLow(*pAction);
@@ -1867,9 +1868,10 @@ _XkbFilterControls(xkb,filter,keycode,pAction)
     CARD8		 keycode;
     XkbAction		*pAction;
 {
-XkbControlsRec	old= *xkb->desc.controls;
+XkbControlsRec	old;
 CARD16		change;
 
+    old= *xkb->desc.controls;
     if (filter->keycode==0) {		/* initial press */
 	filter->keycode = keycode;
 	filter->active = 1;
