@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.14 88/02/01 17:19:59 jim Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.15 88/02/01 17:30:46 jim Locked $";
 #endif
 
 /*
@@ -55,7 +55,7 @@ extern FILE *popen();
 
 typedef struct _Entry {
     char *tag, *value;
-    int usable;
+    Bool usable;
 } Entry;
 typedef struct _Buffer {
     char *buff;
@@ -352,14 +352,14 @@ Entry *FindEntry(db, b)
     Entries phoney;
     Entry entry;
 
-    entry.usable = 0;
+    entry.usable = False;
     entry.tag = NULL;
     entry.value = NULL;
     phoney.used = 0;
     phoney.room = 1;
     phoney.entry = &entry;
     GetEntries(&phoney, b);
-    if (!entry.usable)
+    if (phoney.used < 1)
 	return (NULL);
     for (i = 0; i < db->used; i++) {
 	e = &db->entry[i];
