@@ -1,8 +1,5 @@
 /*
- * $XConsortium: Imake.file,v 1.2 89/03/14 11:43:07 jim Exp $
- *
- * This Imakefile has a special name because cpp would otherwise always
- * include it instead of the Imakefile in the individual directories.
+ * $XConsortium: Imakefile,v 1.3 89/03/14 12:17:56 jim Exp $
  */
 
 CONFIG_FILES = Imake.rules Imake.tmpl Project.tmpl site.def *.bac *.cf 
@@ -11,8 +8,5 @@ all::
 
 MakeDirectories(install,$(CONFIGDIR))
 InstallMultipleDestFlags(install,$(CONFIG_FILES),$(CONFIGDIR),$(INSTDATFLAGS))
-
-#define IHaveSpecialMakefileTarget
-BuildMakefileTarget(Imake.file, -fImake.file)
 
 depend::
