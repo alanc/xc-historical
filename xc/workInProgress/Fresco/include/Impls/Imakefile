@@ -1,29 +1,21 @@
-XCOMM
-XCOMM Implementation header files
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.1 93/12/31 15:12:57 kaleb Exp $
 
-HEADERS = *.h
+HEADERS = \
+  Xdefs.h      Xraster.h       XtfViewerP.h   fobjects.h      transform.h \
+  Xdisplay.h   Xscreen.h       Xundefs.h      fresco-impl.h   traversal.h \
+  Xdrawing.h   XtIntrinsic.h   Xutil.h        glyphs.h        viewers.h \
+  Xevent.h     Xtf-impl.h      Xwindow.h      polyglyph.h     widgetkit.h \
+  Xlib.h       XtfFresco.h     action.h       region.h \
+  Xpainter.h   XtfViewer.h     charstr.h      styles.h
+
 DEST = $(INCDIR)/Fresco/Impls
 
-I = ../Interfaces
+all::
 
-EditImplHeader(action,$(I)/types.idl)
-EditImplHeader(charstr,$(I)/types.idl)
-EditImplHeader(fresco-impl,$(I)/types.idl)
-EditImplHeader(glyphs,$(I)/glyph.idl)
-EditImplHeader(polyglyph,$(I)/glyph.idl)
-EditImplHeader(region,$(I)/types.idl)
-EditImplHeader(styles,$(I)/types.idl)
-EditImplHeader(transform,$(I)/types.idl)
-EditImplHeader(traversal,$(I)/glyph.idl)
-EditImplHeader(viewers,$(I)/viewer.idl)
-EditImplHeader(widgetkit,$(I)/widgets.idl)
-EditImplHeader(Xdisplay,$(I)/display.idl)
-EditImplHeader(Xdrawing,$(I)/drawing.idl)
-EditImplHeader(Xevent,$(I)/viewer.idl)
-EditImplHeader(Xpainter,$(I)/drawing.idl)
-EditImplHeader(Xraster,$(I)/drawing.idl)
-EditImplHeader(Xscreen,$(I)/display.idl)
-EditImplHeader(Xwindow,$(I)/display.idl $(I)/glyph.idl)
+BuildIncludes($(HEADERS),Fresco/Impls,../..)
 
 InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))
+
+depend::
+
+clean::
