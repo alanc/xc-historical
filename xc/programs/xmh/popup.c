@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.30 91/07/05 15:10:58 converse Exp $
+/* $XConsortium: popup.c,v 2.31 91/07/05 18:15:50 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -30,8 +30,9 @@
 #include <X11/Xaw/Cardinals.h>
 
 typedef struct _PopupStatus {
-	Widget popup;
+	Widget popup;		/* order of fields same as CommandStatusRec */
 	struct _LastInput lastInput;
+	char*  shell_command;	/* NULL, or contains sh -c command */
 } PopupStatusRec, *PopupStatus;
 
 /* these are just strings which are used more than one place in the code */
@@ -317,6 +318,8 @@ static void FreePopupStatus( w, closure, call_data )
     PopupStatus popup = (PopupStatus)closure;
     XtPopdown(popup->popup);
     XtDestroyWidget(popup->popup);
+    if (popup->shell_command)
+	XtFree(popup->shell_command);
     XtFree((char *) closure);
 }
 
@@ -332,20 +335,28 @@ void PopupNotice(message, callback, closure)
     Widget value;
     Position x, y;
     Arg args[3];
-    char command[65], label[128];
+    char command[65], label[200];
 
     if (popup_status == (PopupStatus)NULL) {
 	popup_status = XtNew(PopupStatusRec);
 	popup_status->lastInput = lastInput;
+	popup_status->shell_command = (char*)NULL;
     }
-    if (sscanf( message, "%64s", command ) != 1)
-	(void) strcpy( command, "system" );
-    else {
-	int l = strlen(command);
-	if (l && command[--l] == ':')
-	    command[l] = '\0';
+    if (! popup_status->shell_command) {
+	/* MH command */
+	if (sscanf( message, "%64s", command ) != 1)
+	    (void) strcpy( command, "system" );
+	else {
+	    int l = strlen(command);
+	    if (l && command[--l] == ':')
+		command[l] = '\0';
+	}
+	(void) sprintf( label, "%.64s command returned:", command );
+    } else {
+	/* arbitrary shell command */
+	(void) sprintf(label, "%.170s\nshell command returned:",
+		      popup_status->shell_command);
     }
-    (void) sprintf( label, "%.64s command returned:", command );
 
     DeterminePopupPosition(&x, &y, &transientFor);
     XtSetArg( args[0], XtNallowShellResize, True );
