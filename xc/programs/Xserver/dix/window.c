@@ -1836,7 +1836,10 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
             return(pWin->parent->firstChild);
       case Below:
         if (pSib)
-            return(pSib->nextSib);
+	    if (pSib->nextSib != pWin)
+	        return(pSib->nextSib);
+	    else
+	        return(pWin->nextSib);
         else
             return((WindowPtr )NULL);
       case TopIf:
