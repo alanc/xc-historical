@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.5 93/12/15 20:18:32 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.6 93/12/30 11:11:51 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -207,7 +207,7 @@ PendingClient	*pendclient;
     client->numProps = index;
 
     ListFreeAll(pendclient->props);
-    free(pendclient->clientId);
+    XtFree(pendclient->clientId);
     free(pendclient);
 }
 
@@ -1147,8 +1147,8 @@ ClientRec *client;
     {
 	int i;
 
-	free (client->clientId);
-	free (client->clientHostname);
+	XtFree (client->clientId);
+	XtFree (client->clientHostname);
 
 	for (i = 0; i < client->numProps; i++)
 	    SmFreeProperty (client->props[i]);
@@ -1232,9 +1232,7 @@ read_save()
 		    c = (PendingClient *)malloc(sizeof *c);
 		    if(!c) nomem();
 
-		    c->clientId = strdup(p);
-		    if(!c->clientId) nomem();
-
+		    c->clientId = XtNewString(p);
 		    c->clientHostname = NULL;  /* set in next state */
 
 		    c->props = ListInit();
@@ -1246,9 +1244,7 @@ read_save()
 		    break;
 
 		case 1:
-		    c->clientHostname = strdup (p);
-                    if (!c->clientHostname) nomem();
-
+		    c->clientHostname = XtNewString(p);
                     state = 2;
                     break;
 
@@ -1257,9 +1253,7 @@ read_save()
 		    prop = (PendingProp *)malloc(sizeof *prop);
 		    if(!prop) nomem();
 
-		    prop->name = strdup(p);
-		    if(!prop->name) nomem();
-
+		    prop->name = XtNewString(p);
 		    prop->values = ListInit();
 		    if(!prop->values) nomem();
 
@@ -1271,9 +1265,7 @@ read_save()
 		    break;
 
 		case 3:
-		    prop->type = strdup(p);
-		    if(!prop->type) nomem();
-
+		    prop->type = XtNewString(p);
 		    state = 4;
 		    break;
 
@@ -1293,8 +1285,7 @@ read_save()
 
 	    val->length = strlen(p);
 	    /* NEEDSWORK:  Binary data */
-	    val->value = strdup(p);
-	    if(!val->value) nomem();
+	    val->value = XtNewString(p);
 
 	    if(!ListAddLast(prop->values, (void *)val)) nomem(); 
 	}
