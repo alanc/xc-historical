@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.44 89/09/19 14:19:57 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.45 89/10/03 19:47:14 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -133,9 +133,13 @@ SOFTWARE.
 #define GETLEFTBITS_ALIGNMENT	4
 
 #  else
-#   ifdef ibm032
+#   if defined(ibm032) || defined (ibm)
 
+#ifdef i386
+#define IMAGE_BYTE_ORDER	LSBFirst	/* Value for PS/2 only */
+#else
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the RT only*/
+#endif
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		1
 #define GETLEFTBITS_ALIGNMENT	4
@@ -209,7 +213,11 @@ SOFTWARE.
 #define IMAGE_BUFSIZE		8192
 
 /* pad scanline to a longword */
+#if defined(ibm) && defined(i386)
+#define BITMAP_SCANLINE_UNIT	8
+#else
 #define BITMAP_SCANLINE_UNIT	32
+#endif
 #define BITMAP_SCANLINE_PAD  32
 
 #define LOG2_BITMAP_PAD		5
