@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.17 92/12/29 17:16:33 mor Exp $ */
+/* $XConsortium: miRender.c,v 5.18 93/01/08 17:33:14 hersh Exp $ */
 
 
 /***********************************************************
@@ -810,6 +810,8 @@ ddAccStPtr          pAccSt;	  /* accumulate state handle */
     if (pRend->state == PEXIdle)
       return Success;
 
+    ValidateRenderer(pRend);
+
     /* The path has already been validated */
     
     elemRef = (ddElementRef *) pAccSt->Path->pList;
@@ -1022,6 +1024,7 @@ init_pipeline(pRend, pDrawable)
     /* this must be called before the rendering state is set 
      * and after the filters are set */
 
+    MI_SET_ALL_CHANGES(pRend);
     ValidateRenderer(pRend);
 
     /* 
@@ -1099,10 +1102,13 @@ BeginRendering(pRend, pDrawable)
       ddDeviceRect    *ddrects;
       ddLONG          numrects;
       int             i;
+      ddTableIndex    colourApproxIndex;
 
       pDraw = pRend->pDrawable;
-      miColourtoIndex(pRend, 0, &pRend->backgroundColour,
-                      &colorindex);
+      if ((!pRend->pPC) || (!pRend->pPC->pPCAttr)) colourApproxIndex = 0;
+      else colourApproxIndex = pRend->pPC->pPCAttr->colourApproxIndex;
+      miColourtoIndex(pRend, colourApproxIndex, 
+			&pRend->backgroundColour, &colorindex);
       pGC = CreateScratchGC(pDraw->pScreen, pDraw->depth);
       gcmask = GCForeground;
       ChangeGC(pGC, gcmask, &colorindex);
@@ -1305,6 +1311,8 @@ EndStructure(pRend)
     miStructPtr 	pheader; 
     diStructHandle      sh = 0;
     ddPickPath          *strpp;
+    miDDContext    *pddc = (miDDContext *) pRend->pDDContext;
+
 
 
 
@@ -1314,6 +1322,12 @@ EndStructure(pRend)
 
     /* if renderer idle ignore.... */
     if (pRend->state == PEXIdle)
+      return Success;
+
+    /* if there is no next then BeginStructure has not been
+       called so simply ignore this EndStructure call.... 
+    */
+    if (pddc->Dynamic->next == NULL)
       return Success;
 
     /*
