@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.58 91/01/11 09:29:31 rws Exp $ */
+/* $XConsortium: window.c,v 5.59 91/03/11 09:31:02 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -600,8 +600,8 @@ AllocateWindow(pScreen)
 	ppriv = (DevUnion *)(pWin + 1);
 	pWin->devPrivates = ppriv;
 	sizes = pScreen->WindowPrivateSizes;
-	ptr = (char *)(ppriv + windowPrivateCount);
-	for (i = windowPrivateCount; --i >= 0; ppriv++, sizes++)
+	ptr = (char *)(ppriv + pScreen->WindowPrivateLen);
+	for (i = pScreen->WindowPrivateLen; --i >= 0; ppriv++, sizes++)
 	{
 	    if (size = *sizes)
 	    {

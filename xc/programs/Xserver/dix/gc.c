@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.14 90/03/28 18:30:37 keith Exp $ */
+/* $XConsortium: gc.c,v 5.15 90/10/29 12:07:52 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -457,8 +457,8 @@ AllocateGC(pScreen)
 	ppriv = (DevUnion *)(pGC + 1);
 	pGC->devPrivates = ppriv;
 	sizes = pScreen->GCPrivateSizes;
-	ptr = (char *)(ppriv + gcPrivateCount);
-	for (i = gcPrivateCount; --i >= 0; ppriv++, sizes++)
+	ptr = (char *)(ppriv + pScreen->GCPrivateLen);
+	for (i = pScreen->GCPrivateLen; --i >= 0; ppriv++, sizes++)
 	{
 	    if (size = *sizes)
 	    {
