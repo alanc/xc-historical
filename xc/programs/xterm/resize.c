@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.19 91/03/28 16:26:26 gildea Exp $
+ *	$XConsortium: resize.c,v 1.20 91/04/03 17:47:55 gildea Exp $
  */
 
 /*
@@ -112,9 +112,8 @@ struct {
 	"sh",		SHELL_BOURNE,	/* vanilla Bourne shell */
 	"ksh",		SHELL_BOURNE,	/* Korn shell (from AT&T toolchest) */
 	"ksh-i",	SHELL_BOURNE,	/* other name for latest Korn shell */
-	(char *) 0,	SHELL_BOURNE,	/* last effort default (same as
-					 * xterm's)
-					 */
+	"bash",		SHELL_BOURNE,	/* GNU Bourne again shell */
+	NULL,		SHELL_BOURNE	/* default (same as xterm's) */
 };
 
 char *emuname[EMULATIONS] = {
@@ -129,7 +128,7 @@ char *getsize[EMULATIONS] = {
 };
 #ifndef sun
 #ifdef TIOCSWINSZ
-char *getwsize[EMULATIONS] = {
+char *getwsize[EMULATIONS] = {	/* size in pixels */
 	0,
 	"\033[14t",
 };
@@ -464,11 +463,11 @@ register char *str;
 }
 
 readstring(fp, buf, str)
-register FILE *fp;
-register char *buf;
-char *str;
+    register FILE *fp;
+    register char *buf;
+    char *str;
 {
-	register int i, last;
+	register int i, last, c;
 	SIGNAL_T timeout();
 #ifndef USG
 	struct itimerval it;
@@ -482,7 +481,12 @@ char *str;
 	it.it_value.tv_sec = TIMEOUT;
 	setitimer(ITIMER_REAL, &it, (struct itimerval *)NULL);
 #endif
-	if((*buf++ = getc(fp)) != *str) {
+	if ((c = getc(fp)) == 0233) {	/* meta-escape, CSI */
+		*buf++ = c = '\033';
+		*buf++ = '[';
+	} else
+		*buf++ = c;
+	if(c != *str) {
 		fprintf(stderr, "%s: unknown character, exiting.\r\n", myname);
 		onintr(0);
 	}
