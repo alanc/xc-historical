@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.9 91/07/26 20:59:58 keith Exp $ */
+/* $XConsortium: spglyph.c,v 1.10 91/07/31 01:08:59 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,10 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)spglyph.c,v 4.7 1991/06/24 16:55:40 lemke Exp $
- *
  * Author: Dave Lemke, Network Computing Devices Inc
- *
  */
 
 #include	<X11/X.h>	/* for bit order #defines */
@@ -34,8 +31,8 @@
 
 static CurrentFontValuesRec current_font_values;
 static CurrentFontValuesPtr cfv = &current_font_values;
-static int  bit,
-            byte,
+static int  bit_order,
+            byte_order,
             scan;
 
 unsigned long
@@ -165,7 +162,7 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
     nmiddle = (xbit2 >> 3);
     xbit1 &= 7;
     xbit2 &= 7;
-    if (bit == MSBFirst) {
+    if (bit_order == MSBFirst) {
 	startmask = ((CARD8) ~0) >> xbit1;
 	endmask = ~(((CARD8) ~0) >> xbit2);
     } else {
@@ -260,7 +257,7 @@ sp_close_bitmap()
 	finish_line(cur_spf);
 	cfv->last_y++;
     }
-    if (byte != bit) {
+    if (byte_order != bit_order) {
 	switch (scan) {
 	case 1:
 	    break;
@@ -293,7 +290,7 @@ build_all_sp_bitmaps(pfont, format, fmask)
 
     scan = 1;
     ret = CheckFSFormat(format, fmask,
-			&bit, &byte, &scan, &glyph, &image);
+			&bit_order, &byte_order, &scan, &glyph, &image);
 
     if (ret != Successful)
 	return BadFontFormat;

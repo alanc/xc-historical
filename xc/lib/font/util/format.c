@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: format.c,v 1.2 91/05/13 16:38:48 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -20,32 +20,31 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)format.c	4.1	91/05/02
- *
  */
 
 #include	"FSproto.h"
 #include	"font.h"
 
 int
-CheckFSFormat(format, fmask, bit, byte, scan, glyph, image)
+CheckFSFormat(format, fmask, bit_order, byte_order, scan, glyph, image)
     fsBitmapFormat format;
     fsBitmapFormatMask fmask;
-    int        *bit,
-               *byte,
+    int        *bit_order,
+               *byte_order,
                *scan,
                *glyph,
                *image;
 {
     /* convert format to what the low levels want */
     if (fmask & BitmapFormatMaskBit) {
-	*bit = format & BitmapFormatBitOrderMask;
-	*bit = (*bit == BitmapFormatBitOrderMSB) ? MSBFirst : LSBFirst;
+	*bit_order = format & BitmapFormatBitOrderMask;
+	*bit_order = (*bit_order == BitmapFormatBitOrderMSB)
+	    	     ? MSBFirst : LSBFirst;
     }
     if (fmask & BitmapFormatMaskByte) {
-	*byte = format & BitmapFormatByteOrderMask;
-	*byte = (*byte == BitmapFormatByteOrderMSB) ? MSBFirst : LSBFirst;
+	*byte_order = format & BitmapFormatByteOrderMask;
+	*byte_order = (*byte_order == BitmapFormatByteOrderMSB)
+	    	      ? MSBFirst : LSBFirst;
     }
     if (fmask & BitmapFormatMaskScanLineUnit) {
 	*scan = format & BitmapFormatScanlineUnitMask;
