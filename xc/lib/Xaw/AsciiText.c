@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.30 89/09/01 14:30:12 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.31 89/09/06 17:29:52 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -51,6 +51,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/AsciiSrc.h>
+#include <X11/Xaw/AsciiSink.h>
 #include <X11/Xaw/AsciiTextP.h>
 #include <X11/Xaw/Cardinals.h>
 

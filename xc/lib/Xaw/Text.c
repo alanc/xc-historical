@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.113 89/09/01 14:29:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.114 89/09/06 17:29:54 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1036,8 +1036,9 @@ int n;
 		0, y, (int)ctx->core.width, (int)ctx->core.height - y,
 		0, ctx->text.margin.top);
       SinkClearToBG(ctx->text.sink, 
-		    0, ctx->text.margin.top + ctx->core.height - y,
-		   (int) ctx->core.width, (int) ctx->core.height);
+		    (Position) 0,
+		    (Position) (ctx->text.margin.top + ctx->core.height - y),
+		   (Dimension) ctx->core.width, (Dimension) ctx->core.height);
 
       if (n < lt->lines) n++; /* update descenders at bottom */
       _XawTextNeedsUpdating(ctx, lt->info[lt->lines - n].position, 
@@ -1071,8 +1072,8 @@ int n;
     if ( updateTo == target ) {
       XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc, 
 		0, ctx->text.margin.top, (int) ctx->core.width, height, 0, y);
-      SinkClearToBG(ctx->text.sink, 0, ctx->text.margin.top,
-		   (unsigned int) ctx->core.width, clear_height);
+      SinkClearToBG(ctx->text.sink, (Position) 0, ctx->text.margin.top,
+		   (Dimension) ctx->core.width, (Dimension) clear_height);
       
       _XawTextNeedsUpdating(ctx, lt->info[0].position, updateTo);
       _XawTextSetScrollBars(ctx);
@@ -1140,8 +1141,8 @@ caddr_t callData;		/* #pixels */
     t_rect.y = rect.y;
     t_rect.height = rect.height;
       
-    SinkClearToBG(ctx->text.sink, (int) t_rect.x, (int) t_rect.y,
-		  (unsigned int) t_rect.width, (unsigned int) t_rect.height);
+    SinkClearToBG(ctx->text.sink, (Position) t_rect.x, (Position) t_rect.y,
+		  (Dimension) t_rect.width, (Dimension) t_rect.height);
     
     UpdateTextInRectangle(ctx, &t_rect);
   }
@@ -1151,8 +1152,8 @@ caddr_t callData;		/* #pixels */
  */
 
   if ( pixels != 0 ) {
-    SinkClearToBG(ctx->text.sink, (int) rect.x, (int) rect.y,
-		  (unsigned int) rect.width, (unsigned int) rect.height);
+    SinkClearToBG(ctx->text.sink, (Position) rect.x, (Position) rect.y,
+		  (Dimension) rect.width, (Dimension) rect.height);
     
     UpdateTextInRectangle(ctx, &rect);
   }
@@ -1685,7 +1686,8 @@ XawTextPosition pos1, pos2;
     if ( (endPos > startPos) ) {
       if ( (x == (Position) ctx->text.margin.left) && (x > 0) )
 	 SinkClearToBG (ctx->text.sink,
-			(Position) 0, y, ctx->text.margin.left, height); 
+			(Position) 0, y, 
+			(Dimension) ctx->text.margin.left, (Dimension)height); 
 
       if ( (startPos >= ctx->text.s.right) || (endPos <= ctx->text.s.left) ) 
 	XawTextSinkDisplayText(ctx->text.sink, x, y, startPos, endPos, FALSE);
@@ -1700,9 +1702,10 @@ XawTextPosition pos1, pos2;
     }
     startPos = endPos;
     if (clear_eol)
-      SinkClearToBG(ctx->text.sink, (int) (ctx->text.lt.info[i].textWidth +
-					   ctx->text.margin.left),
-		    y,(int)w->core.width, height);
+      SinkClearToBG(ctx->text.sink, 
+		    (Position) (ctx->text.lt.info[i].textWidth +
+				ctx->text.margin.left),
+		    (Position) y, w->core.width, (Dimension) height);
 
     x = (Position) ctx->text.margin.left;
     y = ctx->text.lt.info[i + 1].y;
@@ -1870,7 +1873,9 @@ Widget w;
   TextWidget ctx = (TextWidget) w;
 
   if (XtIsRealized(w))
-    SinkClearToBG(ctx->text.sink,0,0, (int)w->core.width, (int)w->core.height);
+    SinkClearToBG(ctx->text.sink, 
+		  (Position) 0, (Position) 0, 
+		  w->core.width, w->core.height);
 }
 
 /*	Function Name: _XawTextClearAndCenterDisplay
@@ -2132,8 +2137,8 @@ XEvent *event;
   UpdateTextInRectangle(ctx, &expose);
   XawTextSinkGetCursorBounds(ctx->text.sink, &cursor);
   if (RectanglesOverlap(&cursor, &expose)) {
-    SinkClearToBG(ctx->text.sink, (int) cursor.x, (int) cursor.y,
-		  (unsigned int) cursor.width, (unsigned int) cursor.height);
+    SinkClearToBG(ctx->text.sink, (Position) cursor.x, (Position) cursor.y,
+		  (Dimension) cursor.width, (Dimension) cursor.height);
     UpdateTextInRectangle(ctx, &cursor);
   }
   _XawTextExecuteUpdate(ctx);
