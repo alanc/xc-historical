@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.81 90/12/12 14:51:00 rws Exp $ */
+/* $XConsortium: Create.c,v 1.82 90/12/26 16:39:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -188,18 +188,20 @@ static Widget _XtCreate(
 
     if (! (widget_class->core_class.class_inited))
 	XtInitializeWidgetClass(widget_class);
-    widget = (Widget) XtMalloc((unsigned)widget_class->core_class.widget_size);
+    size = 0;
+    if (parent_constraint_class)
+	size = parent_constraint_class->constraint_class.constraint_size;
+    widget = (Widget) XtMalloc((unsigned)widget_class->core_class.widget_size
+			       + size);
     widget->core.self = widget;
     widget->core.parent = parent;
     widget->core.widget_class = widget_class;
     widget->core.xrm_name = StringToName((name != NULL) ? name : "");
     widget->core.being_destroyed =
 	(parent != NULL ? parent->core.being_destroyed : FALSE);
-    if (parent_constraint_class != NULL
-	&& parent_constraint_class->constraint_class.constraint_size > 0)
-       	widget->core.constraints = 
-	    (XtPointer) XtMalloc((unsigned)parent_constraint_class->
-                       constraint_class.constraint_size);
+    if (size)
+	widget->core.constraints = (XtPointer)((char *)widget +
+				       widget_class->core_class.widget_size);
     else
 	widget->core.constraints = NULL;
     if (XtIsWidget(widget)) {
