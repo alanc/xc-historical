@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.10 88/09/26 16:25:28 jim Exp $
+ * $XConsortium: xdpyinfo.c,v 1.11 89/02/20 10:02:03 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -25,11 +25,6 @@
 
 char *ProgramName;
 
-/*
- * There needs to be some sort of interface to the PixmapFormats in the
- * display structure.  But, since it is opaque, we aren't allowed to refer
- * to them.  Sigh.
- */
 
 static void usage ()
 {
@@ -87,6 +82,7 @@ print_display_info (dpy)
     char *cp;
     int minkeycode, maxkeycode;
     int i, n;
+    XPixmapFormatValues *pmf;
 
     printf ("name of display:    %s\n", DisplayString (dpy));
     printf ("version number:    %d.%d\n",
@@ -117,6 +113,18 @@ print_display_info (dpy)
 	break;
     }
     printf ("image byte order:    %s\n", cp);
+
+    pmf = XListPixmapFormats (dpy, &n);
+    printf ("number of supported pixmap formats:    %d\n", n);
+    if (pmf) {
+	printf ("supported pixmap formats:\n");
+	for (i = 0; i < n; i++) {
+	    printf ("    depth %d, bits_per_pixel %d, scanline_pad %d\n",
+		    pmf[i].depth, pmf[i].bits_per_pixel, pmf[i].scanline_pad);
+	}
+	XFree ((char *) pmf);
+    }
+
 
     /*
      * when we get interfaces to the PixmapFormat stuff, insert code here
