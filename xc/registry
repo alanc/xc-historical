@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.11 90/10/22 10:59:59 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.12 90/11/10 17:32:11 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -9,6 +9,7 @@ Name						Reference
 "APOLLO"					[1]
 "Apple"						[22]
 "ARDENT"					[2]
+"BBN"						[61]
 "CRUC"						[30]
 "DG"						[48]
 "FXD"						[55]
@@ -889,4 +890,9 @@ REFERENCES
 	Lewis, Trachtenberg & Associates
 	One Kendall Square	(Building 200, Fourth Floor)
 	Cambridge, MA 02139-1564
+
+[61]	James J Dempsey
+	Bolt Beranek and Newman Inc.
+	150 CambridgePark Drive
+	Cambridge MA 02140
 Sumitomo Electric Workstation Corp.	[77]
