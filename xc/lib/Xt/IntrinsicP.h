@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.37 89/09/08 17:35:00 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.38 89/09/13 13:32:32 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -127,19 +127,33 @@ typedef struct _XtTMRec {
 #include "ConstrainP.h"
 
 #ifdef notdef
-#define XtDisplay(widget)	((widget)->core.screen->display)
+#define XtDisplay(widget)	DisplayOfScreen((widget)->core.screen)
 #define XtScreen(widget)	((widget)->core.screen)
 #define XtWindow(widget)	((widget)->core.window)
 #endif /*notdef*/
+#define XtDisplay(widget)	XtDisplayOfObject(widget)
+#define XtScreen(widget)	XtScreenOfObject(widget)
+#define XtWindow(widget)	XtWindowOfObject(widget)
+
+#define XtDisplayOfObject(object) \
+    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
+     ->core.screen->display)
+#define XtScreenOfObject(object) \
+    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
+     ->core.screen)
+#define XtWindowOfObject(object) \
+    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
+     ->core.window)
 
 #define XtClass(widget)		((widget)->core.widget_class)
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
-#define XtIsManaged(widget)     ((widget)->core.managed)
-#define XtIsRealized(widget)	((widget)->core.window != NULL)
-#define XtIsSensitive(widget)	((widget)->core.sensitive && \
-				 (widget)->core.ancestor_sensitive)
+#define XtIsManaged(object)	(XtIsRectObj(object) ? (object)->core.managed : False)
+#define XtIsRealized(object)	(XtWindowOfObject(object) != NULL)
+#define XtIsSensitive(object) \
+    (XtIsRect(object) ? ((object)->core.sensitive && \
+			 (object)->core.ancestor_sensitive) : False)
 #define XtParent(widget)	((widget)->core.parent)
-#define XtName(widget)		(XrmQuarkToString((widget)->core.xrm_name))
+#define XtName(object)		(XtIsWidget(object) ? (object)->core.name : XrmQuarkToString((object)->core.xrm_name))
 
 #undef XtIsRectObj
 #define XtIsRectObj(obj) \
