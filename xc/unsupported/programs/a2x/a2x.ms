@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.30 93/02/01 18:48:56 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.31 93/02/02 09:21:55 rws Exp $
 .de Ds
 .RS
 .nf
@@ -991,9 +991,9 @@ to look at another screen to make corrections, but at the cost of dedicating
 some screen real estate to a window for menus.  You may also find the menu
 display slower going across the network.
 .LP
-[If you are trying to use DESQview/X with FTP Software's version 2.1, you may
-have trouble getting it configured.  You need to have IPCUST.SYS in your
-CONFIG.SYS for compatibility:
+[If you are trying to use DESQview/X version 1.0 with FTP Software's version
+2.1, you may have trouble getting it configured.  You need to have IPCUST.SYS
+in your CONFIG.SYS for compatibility:
 .Ds
 DEVICE=C:\\PCTCP\\IPCUST.SYS
 .De
@@ -1004,7 +1004,8 @@ IPCONFIG IPCUST.SYS HOSTNAME \fI<pc-hostname>\fP
 IPCONFIG IPCUST.SYS USERID \fI<your-userid>\fP
 .De
 .LP
-Reboot, and run DESQview/X's Setup again to configure the network.]
+Reboot, and run DESQview/X's Setup again to configure the network.
+Note that this is not necessary with DESQview/X version 1.1.]
 .LP
 To accomplish this, you start a DOS window on your X display, then start up
 DragonDictate in that DOS window.  If you have a version of \fBa2x\fP compiled
