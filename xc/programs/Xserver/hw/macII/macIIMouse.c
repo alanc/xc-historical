@@ -122,7 +122,7 @@ macIIMouseProc (pMouse, what)
 		return (!Success);
 	    }
 
-	    sysMousePriv.pScreen = &screenInfo.screen[0];
+	    sysMousePriv.pScreen = screenInfo.screens[0];
 	    sysMousePriv.x = sysMousePriv.pScreen->width / 2;
 	    sysMousePriv.y = sysMousePriv.pScreen->height / 2;
 
@@ -365,7 +365,7 @@ macIIMouseProcessEvent(pMouse,me)
              if (pPriv->pScreen->myNum != 0)
                 (pPriv->pScreen)--;
              else
-                 pPriv->pScreen = &screenInfo.screen[screenInfo.numScreens -1];
+                 pPriv->pScreen = screenInfo.screens[screenInfo.numScreens -1];
              pPriv->x += pPriv->pScreen->width;
         }
         else {
@@ -373,7 +373,7 @@ macIIMouseProcessEvent(pMouse,me)
             if (pPriv->pScreen->myNum != screenInfo.numScreens -1)
                 (pPriv->pScreen)++;
             else
-                 pPriv->pScreen = &screenInfo.screen[0];
+                 pPriv->pScreen = screenInfo.screens[0];
         }
     }
 

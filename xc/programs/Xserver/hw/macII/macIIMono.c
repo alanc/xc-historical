@@ -169,7 +169,7 @@ macIIMonoResolveColor(pred, pgreen, pblue, pVisual)
  *
  *-----------------------------------------------------------------------
  */
-void
+Bool
 macIIMonoCreateColormap(pmap)
     ColormapPtr	pmap;
 {
@@ -187,7 +187,7 @@ macIIMonoCreateColormap(pmap)
     /* this will be pixel 1 */
     red = green = blue = 0;
     AllocColor(pmap, &red, &green, &blue, &pix, 0);
-
+    return TRUE;
 }
 
 /*-
