@@ -426,3 +426,4 @@ void xf86OsMouseOption(int token, pointer lex_ptr)
 	 */
 }
 
+$XConsortium: $
