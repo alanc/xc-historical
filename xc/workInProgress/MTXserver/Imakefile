@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.140 92/05/15 13:50:28 eswu Exp $
+XCOMM $XConsortium: Imakefile,v 1.141 92/08/11 09:49:21 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -8,11 +8,14 @@ XCOMM $XConsortium: Imakefile,v 1.140 92/05/15 13:50:28 eswu Exp $
 #define StdSubdirs dix os ddx/mi
 #define MFBSubdirs StdSubdirs ddx/mfb
 #define CFBSubdirs MFBSubdirs ddx/cfb ddx/cfb16 ddx/cfb32
+#define CFB8Subdirs MFBSubdirs ddx/cfb
 #define StdLibs $(DIX) $(OS) $(MI) $(EXTENSIONS)
 #define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI)
 #define MFBLibs MFBBareLibs $(EXTENSIONS)
 #define CFBBareLibs $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI)
 #define CFBLibs CFBBareLibs $(EXTENSIONS)
+#define CFB8BareLibs $(DIX) $(OS) $(FONT) $(CFB8) $(MFB) $(MI)
+#define CFB8Libs CFB8BareLibs $(EXTENSIONS)
 
 #if BuildPexExt
    PEXTENSIONSRC = $(EXTENSIONSRC)/server/PEX
@@ -44,6 +47,7 @@ XCOMM $XConsortium: Imakefile,v 1.140 92/05/15 13:50:28 eswu Exp $
         BSDEMUL = $(LIBSRC)/Berk/Berklib.o
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a ddx/cfb16/libcfb.a ddx/cfb32/libcfb.a
+            CFB8 = ddx/cfb/libcfb.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(FONTSRC)/lib/font/libfont.a
@@ -224,7 +228,7 @@ SUBDIRS2 = ddx/dec/lk201
 PMAXCFBDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
 PMAXCFBOBJS = ddx/dec/cfbpmax/init.o ddx/dec/cfbpmax/cfbpmax_io.o \
 	ddx/dec/cfbpmax/cfbpmaxcolor.o ddx/dec/lk201/lk201.o
-PMAXCFBLIBS = CFBLibs
+PMAXCFBLIBS = CFB8Libs
 
 ServerTarget(Xcfbpmax,$(PMAXCFBDIRS),$(PMAXCFBOBJS),$(PMAXCFBLIBS),$(SYSLIBS))
 #endif /* XcfbpmaxServer */
@@ -276,10 +280,10 @@ IBMALLOCLIB = ddx/ibm/common/libibmalloc.a
 #else
 IBMALLOCLIB = 
 #endif
-SUBDIRS0 = CFBSubdirs ddx/ibm
+SUBDIRS0 = CFB8Subdirs ddx/ibm
 IBMDIRS = $(SUBDIRS0) $(DEPDIRS)
 IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmDate.o
-IBMLIBS = ddx/ibm/AIX/hft.o ddx/ibm/libibm.a $(IBMALLOCLIB) CFBLibs
+IBMLIBS = ddx/ibm/AIX/hft.o ddx/ibm/libibm.a $(IBMALLOCLIB) CFB8Libs
 
 ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
 #endif /* XibmServer */
@@ -289,10 +293,10 @@ ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
 XCOMM
 XCOMM Tektronix server
 XCOMM
-SUBDIRS0 = CFBSubdirs ddx/tek
+SUBDIRS0 = CFB8Subdirs ddx/tek
 TEKDIRS = $(SUBDIRS0) $(DEPDIRS)
 TEKOBJS = ddx/tek/pegInit.o
-TEKLIBS = ddx/tek/libtek.a CFBLibs
+TEKLIBS = ddx/tek/libtek.a CFB8Libs
 TEKSYSLIBS = $(CBRT) $(SYSLIBS)
 
 ServerTarget(Xtek,$(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(TEKSYSLIBS))
@@ -303,10 +307,10 @@ ServerTarget(Xtek,$(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(TEKSYSLIBS))
 XCOMM
 XCOMM Apple MacII server
 XCOMM
-SUBDIRS0 = CFBSubdirs ddx/macII
+SUBDIRS0 = CFB8Subdirs ddx/macII
 MACIIDIRS = $(SUBDIRS0) $(DEPDIRS)
 MACIIOBJS = ddx/macII/macIIInitS.o ddx/macII/macIIColor.o
-MACIILIBS = ddx/macII/libmacII.a CFBLibs
+MACIILIBS = ddx/macII/libmacII.a CFB8Libs
 MACIISYSLIBS = $(CBRT) $(SYSLIBS)
  
 ServerTarget(XmacII,$(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(MACIISYSLIBS))
@@ -334,10 +338,10 @@ ServerTarget(Xluna,$(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
 XCOMM
 XCOMM MIPS server
 XCOMM
-SUBDIRS0 = CFBSubdirs ddx/mips
+SUBDIRS0 = CFB8Subdirs ddx/mips
 MIPSDIRS = $(SUBDIRS0) $(DEPDIRS)
 MIPSOBJS = ddx/mips/mipsInit.o
-MIPSLIBS = ddx/mips/libmips.a CFBLibs
+MIPSLIBS = ddx/mips/libmips.a CFB8Libs
 MIPSSYSLIBS = $(SYSLIBS) -lc /usr/lib/libc.a
  
 ServerTarget(Xmips,$(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
@@ -388,11 +392,11 @@ ServerTarget(Xiris,$(IRISDIRS),$(IRISOBJS),$(IRISLIBS),$(IRISSYSLIBS))
 XCOMM
 XCOMM Hewlett Packard CFB Server
 XCOMM
-SUBDIRS0 = CFBSubdirs
+SUBDIRS0 = CFB8Subdirs
 SUBDIRS1 = ddx/hp
 HPSUBDIRS = $(SUBDIRS0) $(SUBDIRS1)
 HPOBJS = ddx/hp/hp.o
-HPLIBS = CFBLibs
+HPLIBS = CFB8Libs
 HPSYSLIBS = $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #endif	/* XhpServer */
