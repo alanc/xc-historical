@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.146 92/12/19 15:28:09 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.147 93/04/27 16:36:38 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -156,6 +156,10 @@ ALL1 = Xiris
 
 #if XhpServer
 ALL1 = Xhp
+#endif
+
+#if XnestServer
+ALL1 = Xnest
 #endif
 
 /* end ALL definitions */
@@ -434,6 +438,16 @@ HPLIBS = CFB8Libs
 HPSYSLIBS = $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #endif	/* XhpServer */
+
+#if XnestServer
+SUBDIRS0 = StdSubdirs ddx/xnest
+XNESTDIRS = $(SUBDIRS0)
+XNESTOBJS = 
+XNEST = ddx/xnest/libxnest.a
+XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(NONPEXEXTS) $(XLIB)
+
+ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(SYSLIBS))
+#endif /* XnestServer */
 
 #if XnonServer
 XCOMM
