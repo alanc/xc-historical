@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.25 88/09/06 16:45:14 jim Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.26 88/09/07 16:28:14 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -114,7 +114,7 @@ main(argc, argv)
 #endif
 		sethostent(1); /* don't close the data base each time */
 		list = XListHosts(dpy, &nhosts, &enabled);
-		printf ("access control %s.\n", 
+		printf ("access control %s\n", 
 			(enabled ? 
 			 "enabled (only the following hosts are allowed)": 
 			 "disabled (any host is allowed)"));
@@ -138,7 +138,7 @@ main(argc, argv)
 	    if (*arg == '-') {
 	    
 	        if (!argv[i][1] && ((i+1) == argc)) {
-		    printf ("all hosts being restricted (access control enabled).\n");
+		    printf ("all hosts being restricted (access control enabled)\n");
 		    XEnableAccessControl(dpy);
 		} else {
 		    arg = argv[i][1]? &argv[i][1] : argv[++i];
@@ -149,7 +149,7 @@ main(argc, argv)
 		}
 	    } else {
 	        if (*arg == '+' && !argv[i][1] && ((i+1) == argc)) {
-		    printf ("all hosts being allowed (access control disabled).\n");
+		    printf ("all hosts being allowed (access control disabled)\n");
 		    XDisableAccessControl(dpy);
 		} else {
 		    if (*arg == '+') {
