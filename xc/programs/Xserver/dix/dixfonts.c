@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.16 91/02/23 20:09:45 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.17 91/03/01 16:05:29 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -38,9 +38,39 @@ SOFTWARE.
 #include "osstruct.h"
 #include "closestr.h"
 
+#ifdef DEBUG
+#include	<stdio.h>
+#endif
+
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics
 
-static int FinishListFontsWithInfo();
+static Mask FontFormat = 
+#if IMAGE_BYTE_ORDER == LSBFirst
+    BitmapFormatByteOrderLSB |
+#else
+    BitmapFormatByteOrderMSB |
+#endif
+#if BITMAP_BIT_ORDER == LSBFirst
+    BitmapFormatBitOrderLSB |
+#else
+    BitmapFormatBitOrderMSB |
+#endif
+    BitmapFormatImageRectMin |
+#if GLYPHPADBYTES == 1
+    BitmapFormatScanlinePad8 |
+#endif
+#if GLYPHPADBYTES == 2
+    BitmapFormatScanlinePad16 |
+#endif
+#if GLYPHPADBYTES == 4
+    BitmapFormatScanlinePad32 |
+#endif
+#if GLYPHPADBYTES == 8
+    BitmapFormatScanlinePad64 |
+#endif
+    BitmapFormatScanlineUnit8;
+
+static int  FinishListFontsWithInfo();
 
 extern pointer fosNaturalParams;
 extern FontPtr defaultFont;
@@ -57,6 +87,27 @@ static int  num_slept_fpes = 0;
 static int  size_slept_fpes = 0;
 static FontPathElementPtr *slept_fpes = (FontPathElementPtr *) 0;
 
+int
+FontToXError(err)
+    int         err;
+{
+    switch (err) {
+    case Successful:
+	return Success;
+    case AllocError:
+	return BadAlloc;
+    case BadFontName:
+    case BadFontPath:
+	return BadName;
+    case BadFontFormat:	/* is there something better? */
+    case BadCharRange:
+	return BadValue;
+    default:
+	return err;
+    }
+}
+
+
 /*
  * adding RT_FONT prevents conflict with default cursor font
  */
@@ -65,7 +116,7 @@ SetDefaultFont(defaultfontname)
     char       *defaultfontname;
 {
     int         err;
-    FontPtr	pf;
+    FontPtr     pf;
     XID         fid;
 
     fid = FakeClientID(0);
@@ -148,7 +199,7 @@ FontWakeup(data, count, LastSelectMask)
     FontPathElementPtr fpe;
 
     if (count < 0)
-	return Success;	/* ignore -1 return from select XXX */
+	return Success;		/* ignore -1 return from select XXX */
     /* wake up any fpe's that may be waiting for information */
     for (i = 0; i < num_slept_fpes; i++) {
 	fpe = slept_fpes[i];
@@ -163,36 +214,41 @@ doOpenFont(client, c)
     ClientPtr   client;
     OFclosurePtr c;
 {
-    FontPtr pfont = NullFont;
+    FontPtr     pfont = NullFont;
     FontPathElementPtr fpe;
     int         err;
-    ScreenPtr	pScr;
-    int		i;
-    char	*alias, *newname;
-    int		newlen;
+    ScreenPtr   pScr;
+    int         i;
+    char       *alias,
+               *newname;
+    int         newlen;
 
     while (c->current_fpe < c->num_fpes) {
 	fpe = c->fpe_list[c->current_fpe];
 	err = (*fpe_functions[fpe->type].open_font)
 	    ((pointer) client, fpe, c->flags,
-	     c->fontname, c->fnamelen, c->fontid, &pfont, &alias,
-	     BITMAP_BIT_ORDER, IMAGE_BYTE_ORDER, GLYPHPADBYTES, 1);
+	     c->fontname, c->fnamelen, FontFormat,
+		BitmapFormatMaskByte |
+		BitmapFormatMaskBit |
+		BitmapFormatMaskImageRectangle |
+		BitmapFormatMaskScanLinePad |
+		BitmapFormatMaskScanLineUnit,
+		c->fontid, &pfont, &alias);
 
-	if (err == BadName && alias) {
-	    newlen = strlen (alias);
-	    newname = (char *) xrealloc (c->fontname, newlen);
-	    if (!newname)
-	    {
-		err = BadAlloc;
+	if (err == FontNameAlias && alias) {
+	    newlen = strlen(alias);
+	    newname = (char *) xrealloc(c->fontname, newlen);
+	    if (!newname) {
+		err = AllocError;
 		break;
 	    }
-	    bcopy (alias, newname, newlen);
+	    bcopy(alias, newname, newlen);
 	    c->fontname = newname;
 	    c->fnamelen = newlen;
 	    c->current_fpe = 0;
 	    continue;
 	}
-	if (err == BadName) {
+	if (err == BadFontName) {
 	    c->current_fpe++;
 	    continue;
 	}
@@ -205,20 +261,21 @@ doOpenFont(client, c)
 	}
 	break;
     }
-    if (err == BadName)
-    {
-	err = FontOpenScaled (c->num_fpes, c->fpe_list,
-	    c->fontname, c->fnamelen, &pfont,
-	    BITMAP_BIT_ORDER, IMAGE_BYTE_ORDER, GLYPHPADBYTES, 1);
+#ifdef kludge	 /* :-) */
+    if (err == BadFontName) {
+	err = FontOpenScaled(c->num_fpes, c->fpe_list,
+			     c->fontname, c->fnamelen, &pfont,
+		       BITMAP_BIT_ORDER, IMAGE_BYTE_ORDER, GLYPHPADBYTES, 1);
     }
-    if (err != Success)
+#endif
+    if (err != Successful)
 	goto dropout;
     if (!pfont) {
-	err = BadName;
+	err = BadFontName;
 	goto dropout;
     }
     if (!AddResource(c->fontid, RT_FONT, (pointer) pfont)) {
-	err = BadAlloc;
+	err = AllocError;
 	goto dropout;
     }
     if (pfont->refcnt == 0) {
@@ -228,13 +285,13 @@ doOpenFont(client, c)
 		(*pScr->RealizeFont) (pScr, pfont);
 	}
 	pfont->fpe = fpe;
-	UseFPE (pfont->fpe);
+	UseFPE(pfont->fpe);
     }
     pfont->refcnt++;
 dropout:
-    if (err != Success && c->client != serverClient) {
+    if (err != Successful && c->client != serverClient) {
 	SendErrorToClient(c->client, X_OpenFont, 0,
-			  c->fontid, err);
+			  c->fontid, FontToXError(err));
     }
     if (c->slept)
 	ClientWakeup(c->client);
@@ -300,12 +357,12 @@ OpenFont(client, fid, flags, lenfname, pfontname)
 /*ARGSUSED*/
 int
 CloseFont(pfont, fid)
-    FontPtr pfont;
+    FontPtr     pfont;
     Font        fid;
 {
-    int			nscr;
-    ScreenPtr		pscr;
-    FontPathElementPtr	fpe;
+    int         nscr;
+    ScreenPtr   pscr;
+    FontPathElementPtr fpe;
 
     if (pfont == NullFont)
 	return (Success);
@@ -323,8 +380,7 @@ CloseFont(pfont, fid)
 	    defaultFont = NULL;
 	fpe = pfont->fpe;
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
-	(*pfont->UnloadFont) (pfont);
-	FreeFPE (fpe);
+	FreeFPE(fpe);
     }
     return (Success);
 }
@@ -342,19 +398,22 @@ static xCharInfo xciNoSuchChar = {0, 0, 0, 0, 0, 0};
 
 void
 QueryFont(pFont, pReply, nProtoCCIStructs)
-    FontPtr	     pFont;
+    FontPtr     pFont;
     xQueryFontReply *pReply;	/* caller must allocate this storage */
-    int		    nProtoCCIStructs;
+    int         nProtoCCIStructs;
 {
     FontPropPtr pFP;
-    int         r, c, i;
-    xFontProp	*prFP;
-    xCharInfo	*prCI;
-    xCharInfo	*charInfos[256];
-    char	chars[512];
-    int		nrows, ncols;
-    int		ninfos;
-    int		count;
+    int         r,
+                c,
+                i;
+    xFontProp  *prFP;
+    xCharInfo  *prCI;
+    xCharInfo  *charInfos[256];
+    char        chars[512];
+    int         nrows,
+                ncols;
+    int         ninfos;
+    int         count;
 
     /* pr->length set in dispatch */
     pReply->minCharOrByte2 = pFont->info.firstCol;
@@ -384,20 +443,17 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
     ncols = pFont->info.lastCol - pFont->info.firstCol + 1;
     prCI = (xCharInfo *) (prFP);
     for (r = pFont->info.firstRow;
-	 ninfos < nProtoCCIStructs && r <= pFont->info.lastRow;
-	 r++)
-    {
+	    ninfos < nProtoCCIStructs && r <= pFont->info.lastRow;
+	    r++) {
 	i = 0;
-	for (c = pFont->info.firstCol; c <= pFont->info.lastCol; c++)
-	{
+	for (c = pFont->info.firstCol; c <= pFont->info.lastCol; c++) {
 	    chars[i++] = r;
 	    chars[i++] = c;
 	}
-	(*pFont->GetMetrics) (pFont, ncols, chars, TwoD16Bit,
-			      &count, charInfos);
+	(*pFont->get_metrics) (pFont, ncols, chars, TwoD16Bit,
+			       &count, charInfos);
 	i = 0;
-	for (i = 0;  i < count && ninfos < nProtoCCIStructs; i++)
-	{
+	for (i = 0; i < count && ninfos < nProtoCCIStructs; i++) {
 	    if (charInfos[i])
 		*prCI = *charInfos[i];
 	    else
@@ -411,20 +467,20 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 
 static int
 doListFontsHelper(client, c, func)
-    ClientPtr	    client;
-    LFclosurePtr    c;
-    Bool	    (*func)();
+    ClientPtr   client;
+    LFclosurePtr c;
+    Bool        (*func) ();
 {
-    FontPathElementPtr	fpe;
-    int			err;
+    FontPathElementPtr fpe;
+    int         err = Successful;
 
     /* try each fpe in turn, returning if one wants to be blocked */
-    while (c->current_fpe < c->num_fpes && c->names->nnames < c->maxnames) {
+    while (c->current_fpe < c->num_fpes && c->names->nnames < c->max_names) {
 	fpe = c->fpe_list[c->current_fpe];
 
 	err = (*fpe_functions[fpe->type].list_fonts)
-		    (fpe, c->client, c->patlen, c->pattern, 
-		     c->maxnames - c->names->nnames, c->names);
+	    (c->client, fpe, c->pattern, c->patlen,
+	     c->max_names - c->names->nnames, c->names);
 
 	if (err == Suspended) {
 	    if (!c->slept) {
@@ -433,7 +489,7 @@ doListFontsHelper(client, c, func)
 	    }
 	    return Suspended;
 	}
-	if (err != Success)
+	if (err != Successful)
 	    break;
 	c->current_fpe++;
     }
@@ -442,27 +498,26 @@ doListFontsHelper(client, c, func)
 
 static Bool
 doListFonts(client, c)
-    ClientPtr	    client;
-    LFclosurePtr    c;
+    ClientPtr   client;
+    LFclosurePtr c;
 {
-    int			err;
-    FontPathElementPtr	fpe;
-    xListFontsReply	reply;
-    FontNamesPtr	names;
-    int			stringLens,
-			i,
-			nnames;
-    char		*bufptr,
-			*bufferStart;
-    int			count;
+    int         err;
+    FontPathElementPtr fpe;
+    xListFontsReply reply;
+    FontNamesPtr names;
+    int         stringLens,
+                i,
+                nnames;
+    char       *bufptr,
+               *bufferStart;
+    int         count;
 
     err = doListFontsHelper(client, c, doListFonts);
     if (err == Suspended)
 	return TRUE;
 
-    if (err != Success)
-    {
-	SendErrorToClient(client, X_ListFonts, 0, 0, err);
+    if (err != Successful) {
+	SendErrorToClient(client, X_ListFonts, 0, 0, FontToXError(err));
 	goto bail;
     }
     names = c->names;
@@ -479,8 +534,7 @@ doListFonts(client, c)
 
     bufptr = bufferStart = (char *) ALLOCATE_LOCAL(reply.length << 2);
 
-    if (!bufptr && reply.length) 
-    {
+    if (!bufptr && reply.length) {
 	SendErrorToClient(client, X_ListFonts, 0, 0, BadAlloc);
 	goto bail;
     }
@@ -488,8 +542,7 @@ doListFonts(client, c)
      * since WriteToClient long word aligns things, copy to temp buffer and
      * write all at once
      */
-    for (i = 0; i < nnames; i++)
-    {
+    for (i = 0; i < nnames; i++) {
 	*bufptr++ = names->length[i];
 	bcopy(names->names[i], bufptr, names->length[i]);
 	bufptr += names->length[i];
@@ -503,50 +556,53 @@ bail:
     for (i = 0; i < c->num_fpes; i++)
 	FreeFPE(c->fpe_list[i]);
     xfree(c->fpe_list);
-    FreeFontNames (names);
+    FreeFontNames (c->names);
     xfree(c->pattern);
     xfree(c);
     return TRUE;
 }
 
-static LFclosurePtr
-MakeListFontsClosure (client, pattern, length, maxnames)
-    ClientPtr	    client;
-    unsigned char   *pattern;
-    unsigned int    length;
-    unsigned int    maxnames;
+static      LFclosurePtr
+MakeListFontsClosure(client, pattern, length, max_names)
+    ClientPtr   client;
+    unsigned char *pattern;
+    unsigned int length;
+    unsigned int max_names;
 {
-    LFclosurePtr    c;
-    int		    i;
-    FontNamesPtr    all_names;
+    LFclosurePtr c;
+    int         i;
+    FontNamesPtr all_names;
 
     c = (LFclosurePtr) xalloc(sizeof(LFclosureRec));
     if (!c)
 	return 0;
     c->pattern = (char *) xalloc(length);
-    if (!c->pattern) 
-    {
+    if (!c->pattern) {
 	xfree(c);
 	return 0;
     }
-    c->names = MakeFontNamesRecord (maxnames < 100 ? maxnames : 100);
-    if (!c->names)
-    {
-	xfree (c->pattern);
+    c->names = MakeFontNamesRecord(max_names < 100 ? max_names : 100);
+    if (!c->names) {
+	xfree(c->pattern);
 	xfree(c);
 	return 0;
     }
     c->fpe_list = (FontPathElementPtr *)
 	xalloc(sizeof(FontPathElementPtr) * num_fpes);
+    if (!c->fpe_list) {
+	FreeFontNames (c->names);
+	xfree (c->pattern);
+	xfree (c);
+	return 0;
+    }
     bcopy(pattern, c->pattern, length);
-    for (i = 0; i < num_fpes; i++) 
-    {
+    for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
     }
     c->patlen = length;
     c->client = client;
-    c->maxnames = maxnames;
+    c->max_names = max_names;
     c->current_fpe = 0;
     c->num_fpes = num_fpes;
     c->slept = FALSE;
@@ -554,15 +610,15 @@ MakeListFontsClosure (client, pattern, length, maxnames)
 }
 
 int
-ListFonts(client, pattern, length, maxnames)
-    ClientPtr	    client;
-    unsigned char   *pattern;
-    unsigned int    length;
-    unsigned int    maxnames;
+ListFonts(client, pattern, length, max_names)
+    ClientPtr   client;
+    unsigned char *pattern;
+    unsigned int length;
+    unsigned int max_names;
 {
-    LFclosurePtr    c;
+    LFclosurePtr c;
 
-    c = MakeListFontsClosure (client, pattern, length, maxnames);
+    c = MakeListFontsClosure(client, pattern, length, max_names);
     if (!c)
 	return BadAlloc;
 
@@ -570,245 +626,231 @@ ListFonts(client, pattern, length, maxnames)
     return Success;
 }
 
-doListFontsWithInfo (client, c)
-    ClientPtr	    client;
-    LFWIclosurePtr  c;
+doListFontsWithInfo(client, c)
+    ClientPtr   client;
+    LFWIclosurePtr c;
 {
     FontPathElementPtr	fpe;
-    FontNamesPtr	names;
-    int			err = Success;
+    int			err = Successful;
     char		*name;
     int			namelen;
     int			numFonts;
-    FontInfoRec		fontInfo, *pFontInfo;
+    FontInfoRec		fontInfo,
+			*pFontInfo;
     xListFontsWithInfoReply *reply;
     int			length;
     xFontProp		*pFP;
     int			i;
 
-    names = c->names;
-    while (c->current_name < names->nnames) 
+    while (c->current.current_fpe < c->num_fpes) 
     {
-	while (c->current_fpe < c->num_fpes) 
-	{
-	    fpe = c->fpe_list[c->current_fpe];
-	    err = Success;
-	    if (!c->list_started)
-	    {
-		err = (*fpe_functions[fpe->type].start_list_fonts_with_info)
-		    (fpe, client, c->namelen, c->name, 1, &c->private);
-		if (err == Suspended)
-		{
-		    if (!c->slept)
-		    {
-			ClientSleep(client, doListFontsWithInfo, c);
-			c->slept = TRUE;
-		    }
-		    return TRUE;
+	fpe = c->fpe_list[c->current.current_fpe];
+	err = Successful;
+	if (!c->current.list_started) {
+	    err = (*fpe_functions[fpe->type].start_list_fonts_with_info)
+		(client, fpe, c->current.pattern, c->current.patlen,
+ 		 c->current.max_names, &c->current.private);
+	    if (err == Suspended) {
+		if (!c->slept) {
+		    ClientSleep(client, doListFontsWithInfo, c);
+		    c->slept = TRUE;
 		}
-		if (err == Success)
-		    c->list_started = TRUE;
+		return TRUE;
 	    }
-	    if (err == Success)
-	    {
-	    	name = 0;
-		pFontInfo = &fontInfo;
-	    	err = (*fpe_functions[fpe->type].list_next_font_with_info)
-	       	   (fpe, client, &name, &namelen, &pFontInfo, &numFonts, c->private);
-	    	if (err == Suspended)
-	    	{
-		    if (!c->slept)
-		    {
-		    	ClientSleep(client, doListFontsWithInfo, c);
-		    	c->slept = TRUE;
-		    }
-		    return TRUE;
-	    	}
-	    	c->list_started = FALSE;
-	    }
-	    if (err == BadName && name)
-	    {
-		c->name = name;
-		c->namelen = namelen;
-		c->current_fpe = 0;
-		continue;
-	    }
-	    if (err == BadName)
-	    {
-		c->current_fpe++;
-		continue;
-	    }
-	    if (err == Success)
-	    {
-		name = names->names[c->current_name];
-		namelen = names->length[c->current_name];
-	    	length = sizeof (*reply) + pFontInfo->nprops * sizeof (xFontProp);
-	    	reply = c->reply;
-	    	if (c->length < length)
-	    	{
-	    	    reply = (xListFontsWithInfoReply *) xrealloc (c->reply, length);
-	    	    if (!reply)
-	    	    {
-		    	err = BadAlloc;
-		    	break;
-	    	    }
-	    	    c->reply = reply;
-	    	    c->length = length;
-	    	}
-	    	reply->type = X_Reply;
-	    	reply->length = (sizeof *reply - sizeof (xGenericReply) +
-			    	pFontInfo->nprops * sizeof (xFontProp) +
-			    	namelen + 3) >> 2;
-	    	reply->sequenceNumber = client->sequence;
-	    	reply->nameLength = namelen;
-	    	reply->minBounds = pFontInfo->ink_minbounds;
-	    	reply->maxBounds = pFontInfo->ink_maxbounds;
-	    	reply->minCharOrByte2 = pFontInfo->firstCol;
-	    	reply->maxCharOrByte2 = pFontInfo->lastCol;
-	    	reply->defaultChar = pFontInfo->defaultCh;
-	    	reply->nFontProps = pFontInfo->nprops;
-	    	reply->drawDirection = pFontInfo->drawDirection;
-	    	reply->minByte1 = pFontInfo->firstRow;
-	    	reply->maxByte1 = pFontInfo->lastRow;
-	    	reply->allCharsExist = pFontInfo->allExist;
-	    	reply->fontAscent = pFontInfo->fontAscent;
-	    	reply->fontDescent = pFontInfo->fontDescent;
-	    	reply->nReplies = names->nnames - (c->current_name + 1);
-	    	pFP = (xFontProp *) (reply + 1);
-	    	for (i = 0; i < pFontInfo->nprops; i++)
-	    	{
-	    	    pFP->name = pFontInfo->props[i].name;
-	    	    pFP->value = pFontInfo->props[i].value;
-	    	    pFP++;
-	    	}
-	    	WriteReplyToClient(client, length, reply);
-	    	(void) WriteToClient(client, namelen, name);
-		if (pFontInfo == &fontInfo)
-		{
-		    xfree (fontInfo.props);
-		    xfree (fontInfo.isStringProp);
+	    if (err == Successful)
+		c->current.list_started = TRUE;
+	}
+	if (err == Successful) {
+	    name = 0;
+	    pFontInfo = &fontInfo;
+	    err = (*fpe_functions[fpe->type].list_next_font_with_info)
+		(client, fpe, &name, &namelen, &pFontInfo, 
+		    &numFonts, c->current.private);
+	    if (err == Suspended) {
+		if (!c->slept) {
+		    ClientSleep(client, doListFontsWithInfo, c);
+		    c->slept = TRUE;
 		}
+		return TRUE;
 	    }
-	    break;
 	}
-	c->current_name++;
-	if (c->current_name < names->nnames)
+	/*
+	 * When we get an alias back, save our state and
+	 * reset back to the start of the FPE looking for
+	 * the specified name.  As soon as a real font is found
+	 * for the alias, pop back to the old state
+	 */
+	if (err == FontNameAlias)
 	{
-	    c->name = names->names[c->current_name];
-	    c->namelen = names->length[c->current_name];
+	    if (!c->haveSaved)
+		c->saved = c->current;
+	    c->current.pattern = name;
+	    c->current.patlen = namelen;
+	    c->current.max_names = 1;
+	    c->current.current_fpe = 0;
+	    c->current.private = 0;
+	    c->current.list_started = FALSE;
+	    c->haveSaved = TRUE;
+	    c->savedNumFonts = numFonts;
+	    c->savedName = (char *) pFontInfo;
 	}
-	c->current_fpe = 0;
-	if (err == BadName)
-	    continue;
-	if (err != Success)
-	    break;
+	/*
+	 * At the end of this FPE, step to the next.  If
+	 * we've finished processing an alias, pop state back.
+	 * If we've sent enough font names, quit.
+	 */
+	else if (err == BadFontName)
+	{
+	    c->current.list_started = FALSE;
+	    c->current.current_fpe++;
+	    err = Successful;
+	    if (c->haveSaved)
+	    {
+		if (c->current.max_names == 0 ||
+		    c->current.current_fpe == c->num_fpes)
+		{
+		    c->haveSaved = FALSE;
+		    c->saved.max_names -= (1 - c->current.max_names);
+		    c->current = c->saved;
+	    	}
+	    }
+	    if (c->current.max_names == 0)
+		break;
+	} else if (err == Successful) {
+	    length = sizeof(*reply) + pFontInfo->nprops * sizeof(xFontProp);
+	    reply = c->reply;
+	    if (c->length < length) {
+		reply = (xListFontsWithInfoReply *) xrealloc(c->reply, length);
+		if (!reply) {
+		    err = AllocError;
+		    break;
+		}
+		c->reply = reply;
+		c->length = length;
+	    }
+	    if (c->haveSaved)
+	    {
+		numFonts = c->savedNumFonts;
+		name = c->savedName;
+		namelen = strlen (name);
+	    }
+	    reply->type = X_Reply;
+	    reply->length = (sizeof *reply - sizeof(xGenericReply) +
+			     pFontInfo->nprops * sizeof(xFontProp) +
+			     namelen + 3) >> 2;
+	    reply->sequenceNumber = client->sequence;
+	    reply->nameLength = namelen;
+	    reply->minBounds = pFontInfo->ink_minbounds;
+	    reply->maxBounds = pFontInfo->ink_maxbounds;
+	    reply->minCharOrByte2 = pFontInfo->firstCol;
+	    reply->maxCharOrByte2 = pFontInfo->lastCol;
+	    reply->defaultChar = pFontInfo->defaultCh;
+	    reply->nFontProps = pFontInfo->nprops;
+	    reply->drawDirection = pFontInfo->drawDirection;
+	    reply->minByte1 = pFontInfo->firstRow;
+	    reply->maxByte1 = pFontInfo->lastRow;
+	    reply->allCharsExist = pFontInfo->allExist;
+	    reply->fontAscent = pFontInfo->fontAscent;
+	    reply->fontDescent = pFontInfo->fontDescent;
+	    reply->nReplies = numFonts;
+	    pFP = (xFontProp *) (reply + 1);
+	    for (i = 0; i < pFontInfo->nprops; i++) {
+		pFP->name = pFontInfo->props[i].name;
+		pFP->value = pFontInfo->props[i].value;
+		pFP++;
+	    }
+	    WriteReplyToClient(client, length, reply);
+	    (void) WriteToClient(client, namelen, name);
+	    if (pFontInfo == &fontInfo) {
+		xfree(fontInfo.props);
+		xfree(fontInfo.isStringProp);
+	    }
+	    --c->current.max_names;
+	    if (c->current.max_names < 0)
+		abort ();
+	}
     }
-    if (err == Success)
-    {
-    	reply = c->reply;
-	length = sizeof (xListFontsWithInfoReply);
-    	if (c->length < length);
-    	{
-	    reply = (xListFontsWithInfoReply *) xrealloc (c->reply, length);
-	    if (reply)
-	    {
-	    	c->reply = reply;
-	    	c->length = length;
-	    }
-	    else
-		err = BadAlloc;
-    	}
-	if (err == Success)
+    if (err == Successful) {
+	reply = c->reply;
+	length = sizeof(xListFontsWithInfoReply);
+	if (c->length < length);
 	{
-    	    bzero((char *) reply, sizeof(xListFontsWithInfoReply));
-    	    reply->type = X_Reply;
-    	    reply->sequenceNumber = client->sequence;
-    	    reply->length = (sizeof(xListFontsWithInfoReply)
+	    reply = (xListFontsWithInfoReply *) xrealloc(c->reply, length);
+	    if (reply) {
+		c->reply = reply;
+		c->length = length;
+	    } else
+		err = AllocError;
+	}
+	if (err == Successful) {
+	    bzero((char *) reply, sizeof(xListFontsWithInfoReply));
+	    reply->type = X_Reply;
+	    reply->sequenceNumber = client->sequence;
+	    reply->length = (sizeof(xListFontsWithInfoReply)
 			     - sizeof(xGenericReply)) >> 2;
-    	    WriteReplyToClient(client, length, reply);
+	    WriteReplyToClient(client, length, reply);
 	}
     }
-    if (err != Success)
-	SendErrorToClient (client, X_ListFontsWithInfo, 0, 0, err);
+    if (err != Successful)
+	SendErrorToClient(client, X_ListFontsWithInfo, 0, 0, FontToXError(err));
     if (c->slept)
-	ClientWakeup (client);
+	ClientWakeup(client);
     for (i = 0; i < c->num_fpes; i++)
-	FreeFPE (c->fpe_list[i]);
+	FreeFPE(c->fpe_list[i]);
     xfree (c->fpe_list);
-    FreeFontNames (names);
+    xfree (c->current.pattern);
     xfree (c);
     return TRUE;
 }
 
-doStartListFontsWithInfo (client, lfc)
-    ClientPtr	    client;
-    LFclosurePtr    lfc;
+int
+StartListFontsWithInfo(client, length, pattern, max_names)
+    ClientPtr   client;
+    int         length;
+    char       *pattern;
+    int         max_names;
 {
     int		    err;
     int		    i;
     LFWIclosurePtr  c;
 
-    err = doListFontsHelper(client, lfc, doStartListFontsWithInfo);
-    if (err == Suspended)
-	return TRUE;
-    if (err != Success)
+    if (!(c = (LFWIclosurePtr) xalloc(sizeof *c)))
+	goto badAlloc;
+    if (!(c->current.pattern = (char *) xalloc (length)))
     {
-	SendErrorToClient (client, X_ListFontsWithInfo, 0, 0, err);
-	goto bail;
+	xfree (c);
+	goto badAlloc;
     }
-    c = (LFWIclosurePtr) xalloc (sizeof *c);
-    if (!c)
+    c->fpe_list = (FontPathElementPtr *)
+	xalloc(sizeof(FontPathElementPtr) * num_fpes);
+    if (!c->fpe_list)
     {
-	SendErrorToClient (client, X_ListFontsWithInfo, 0, 0, BadAlloc);
-	goto bail;
+	xfree (c->current.pattern);
+	xfree (c);
+	goto badAlloc;
     }
-    c->current_fpe = 0;
-    c->num_fpes = lfc->num_fpes;
-    c->fpe_list = lfc->fpe_list;
-    c->names = lfc->names;
-    c->current_name = 0;
-    c->slept = lfc->slept;
-    if (c->slept)
-    {
-	ClientWakeup (client);
-	c->slept = FALSE;
+    bcopy (pattern, c->current.pattern, length);
+    for (i = 0; i < num_fpes; i++) {
+	c->fpe_list[i] = font_path_elements[i];
+	UseFPE(c->fpe_list[i]);
     }
-    c->name = c->names->names[0];
-    c->namelen = c->names->length[0];
+    c->client = client;
+    c->num_fpes = num_fpes;
     c->reply = 0;
     c->length = 0;
-    c->list_started = FALSE;
-    c->private = 0;
-    xfree (lfc->pattern);
-    doListFontsWithInfo (client, c);
+    c->current.patlen = length;
+    c->current.current_fpe = 0;
+    c->current.max_names = max_names;
+    c->current.list_started = FALSE;
+    c->current.private = 0;
+    c->savedNumFonts = 0;
+    c->haveSaved = FALSE;
+    c->slept = FALSE;
+    doListFontsWithInfo(client, c);
     return TRUE;
-bail:
-    if (lfc->slept)
-	ClientWakeup (client);
-    for (i = 0; i < lfc->num_fpes; i++)
-	FreeFPE(lfc->fpe_list[i]);
-    xfree(lfc->fpe_list);
-    FreeFontNames (lfc->names);
-    xfree(lfc->pattern);
-    xfree(lfc);
+badAlloc:
+    SendErrorToClient(client, X_ListFontsWithInfo, 0, 0, BadAlloc);
     return TRUE;
-}
-
-int
-StartListFontsWithInfo(client, length, pattern, maxNames)
-    ClientPtr   client;
-    int         length;
-    char       *pattern;
-    int         maxNames;
-{
-    LFclosurePtr    c;
-    int		    i;
-
-    c = MakeListFontsClosure (client, pattern, length, maxNames);
-    if (!c)
-	return BadAlloc;
-    (void) doStartListFontsWithInfo (client, c);
-    return Success;
 }
 
 /* does the necessary magic to figure out the fpe type */
@@ -839,11 +881,13 @@ FreeFontPath(list, n)
     xfree((char *) list);
 }
 
+/* XXX fix this to use reset_fpe() */
+
 static int
 SetFontPathElements(npaths, paths, bad)
     int         npaths;
     unsigned char *paths;
-    int		*bad;
+    int        *bad;
 {
     int         i,
                 err;
@@ -854,8 +898,7 @@ SetFontPathElements(npaths, paths, bad)
 
     fplist = (FontPathElementPtr *)
 	xalloc(sizeof(FontPathElementPtr) * npaths);
-    if (!fplist)
-    {
+    if (!fplist) {
 	*bad = 0;
 	return BadAlloc;
     }
@@ -880,18 +923,16 @@ SetFontPathElements(npaths, paths, bad)
 	    fpe->name[len] = '\0';
 	    fpe->name_length = len;
 	    fpe->type = DetermineFPEType(fpe->name);
-	    if (fpe->type == -1) 
-	    {
-		xfree (fpe);
-		xfree (fpe->name);
+	    if (fpe->type == -1) {
+		xfree(fpe->name);
+		xfree(fpe);
 		err = BadValue;
 		goto bail;
 	    }
-	    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
-	    if (err != Success)
-	    {
-		xfree (fpe);
-		xfree (fpe->name);
+	    err = (*fpe_functions[fpe->type].init_fpe) (fpe, FontFormat);
+	    if (err != Successful) {
+		xfree(fpe->name);
+		xfree(fpe);
 		err = BadValue;
 		goto bail;
 	    }
@@ -917,9 +958,9 @@ SetFontPath(client, npaths, paths, error)
     unsigned char *paths;
     int        *error;
 {
-    unsigned char   *new_font_path_string;
-    int		    len,
-		    err = Success;
+    unsigned char *new_font_path_string;
+    int         len,
+                err = Success;
 
     if (npaths == 0) {
 	if (!SetDefaultFontPath(defaultFontPath))
@@ -932,15 +973,12 @@ SetFontPath(client, npaths, paths, error)
 
 	err = SetFontPathElements(npaths, paths, error);
 
-	if (err == Success) 
-	{
+	if (err == Success) {
 	    bcopy(paths, new_font_path_string, len);
-	    xfree (font_path_string);
+	    xfree(font_path_string);
 	    font_path_string = new_font_path_string;
-	}
-	else
-	{
-	    xfree (new_font_path_string);
+	} else {
+	    xfree(new_font_path_string);
 	}
     }
     return err;
@@ -953,12 +991,12 @@ SetDefaultFontPath(path)
                *pp,
                *nump,
                *newpath,
-	       *new_font_path_string;
+               *new_font_path_string;
     int         num = 1,
                 len,
                 err,
                 size = 0,
-		bad;
+                bad;
 
     /* get enough for string, plus values -- use up commas */
     len = strlen(path) + 1;
@@ -987,14 +1025,12 @@ SetDefaultFontPath(path)
     err = SetFontPathElements(num, newpath, &bad);
 
     /* stash it for GetFontPath */
-    if (err == Success)
-    {
+    if (err == Success) {
 	bcopy(newpath, new_font_path_string, len);
-	xfree (font_path_string);
+	xfree(font_path_string);
 	font_path_string = new_font_path_string;
-    }
-    else
-	xfree (new_font_path_string);
+    } else
+	xfree(new_font_path_string);
 
     DEALLOCATE_LOCAL(newpath);
 
@@ -1028,6 +1064,7 @@ LoadGlyphs(client, pfont, nchars, item_size, data)
     int         item_size;
     unsigned char *data;
 {
+
 #ifdef NOTDEF
 /* under construction */
     /* either returns Success, ClientBlocked, or some nasty error */
@@ -1056,24 +1093,73 @@ FreeFPE(fpe)
     }
 }
 
+InitFonts ()
+{
+    FontFileRegisterFpeFunctions ();
+/*    SpeedoRegisterFpeFunctions (); */
+    fs_register_fpe_functions ();
+}
+
+GetDefaultPointSize ()
+{
+    return 120;
+}
+
+struct resolution {
+    CARD16	x_resolution B16;
+    CARD16	y_resolution B16;
+    CARD16	point_size B16;
+};
+
+struct resolution *
+GetClientResolutions (num)
+    int	*num;
+{
+    static struct resolution	res;
+    int	    mm, pix;
+    ScreenPtr	pScreen;
+
+    pScreen = screenInfo.screens[0];
+    res.x_resolution = (pScreen->width * 25.4) / pScreen->mmWidth;
+    /*
+     * XXX - we'll want this as long as bitmap instances are
+     * prevalent so that we can match them from scalable fonts
+     */
+    if (res.x_resolution < 88)
+	res.x_resolution = 75;
+    else
+	res.x_resolution = 100;
+    res.y_resolution = (pScreen->height * 25.4) / pScreen->mmHeight;
+    if (res.y_resolution < 88)
+	res.y_resolution = 75;
+    else
+	res.y_resolution = 100;
+    res.point_size = 120;
+    *num = 1;
+    return &res;
+}
+
 /*
  * returns the type index of the new fpe
  *
  * should be called (only once!) by each type of fpe when initialized
  */
+
 int
-register_fpe_functions(name_check, open_func, close_func, wakeup_func, list_func,
-		       start_list_info_func, list_next_info_func,
-		       init_func, free_fpe_func)
-    Bool        (*name_check) ();
-    int         (*open_func) ();
-    int		(*close_func) ();
-    int         (*wakeup_func) ();
-    int         (*list_func) ();
-    int         (*start_list_info_func) ();
-    int         (*list_next_info_func) ();
+RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
+	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
+		     wakeup_func, render_names)
+    Bool        (*name_func) ();
     int         (*init_func) ();
-    int         (*free_fpe_func) ();
+    int         (*free_func) ();
+    int         (*reset_func) ();
+    int         (*open_func) ();
+    int         (*close_func) ();
+    int         (*list_func) ();
+    int         (*start_lfwi_func) ();
+    int         (*next_lfwi_func) ();
+    int         (*wakeup_func) ();
+    FontNamesPtr render_names;
 {
     FPEFunctions *new;
 
@@ -1084,24 +1170,21 @@ register_fpe_functions(name_check, open_func, close_func, wakeup_func, list_func
 	return -1;
     fpe_functions = new;
 
-    fpe_functions[num_fpe_types].name_check = name_check;
+    fpe_functions[num_fpe_types].name_check = name_func;
     fpe_functions[num_fpe_types].open_font = open_func;
     fpe_functions[num_fpe_types].close_font = close_func;
     fpe_functions[num_fpe_types].wakeup_fpe = wakeup_func;
     fpe_functions[num_fpe_types].list_fonts = list_func;
     fpe_functions[num_fpe_types].start_list_fonts_with_info =
-	start_list_info_func;
+	start_lfwi_func;
     fpe_functions[num_fpe_types].list_next_font_with_info =
-	list_next_info_func;
+	next_lfwi_func;
     fpe_functions[num_fpe_types].init_fpe = init_func;
-    fpe_functions[num_fpe_types].free_fpe = free_fpe_func;
-    return num_fpe_types++;
-}
+    fpe_functions[num_fpe_types].free_fpe = free_func;
+    fpe_functions[num_fpe_types].reset_fpe = reset_func;
 
-InitFonts()
-{
-    fs_register_fpe_functions();
-    FontFileRegisterFpeFunctions();
+    fpe_functions[num_fpe_types].renderer_names = render_names;
+    return num_fpe_types++;
 }
 
 FreeFonts()
@@ -1113,11 +1196,13 @@ FreeFonts()
 
 /* convenience functions for FS interface */
 
+/* ARGSUSED */
 FontPtr
-find_old_font(id)
+find_old_font(client, id)
+    ClientPtr	client;
     XID         id;
 {
-    return (FontPtr) LookupIDByType(id);
+    return (FontPtr) LookupIDByType(id, RT_FONT);
 }
 
 static int  fs_handlers_installed = 0;
@@ -1140,11 +1225,11 @@ init_fs_handlers(fpe, block_handler)
 
 	if (!RegisterBlockAndWakeupHandlers(block_handler,
 					    FontWakeup, (pointer) 0))
-	    return BadAlloc;
+	    return AllocError;
 	fs_handlers_installed++;
     }
     QueueFontWakeup(fpe);
-    return Success;
+    return Successful;
 }
 
 remove_fs_handlers(fpe, block_handler, all)
