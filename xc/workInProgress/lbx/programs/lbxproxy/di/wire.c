@@ -1,4 +1,4 @@
-/* $XConsortium: wire.c,v 1.8 94/11/08 20:05:17 mor Exp mor $ */
+/* $XConsortium: wire.c,v 1.3 95/03/16 18:25:17 mor Exp $ */
 /*
  * $NCDOr: wire.c,v 1.1 1994/10/18 17:43:32 keithp Exp keithp $
  * $NCDId: @(#)wire.c,v 1.44 1994/11/18 20:39:50 lemke Exp $
@@ -42,6 +42,9 @@
 #include "assert.h"
 
 extern int  NewOutputPending;
+
+static lbxMotionCache _motionCache;
+static lbxMotionCache *motionCache = &_motionCache;
 
 #ifdef LBX_STATS
 extern int  delta_out_total;
@@ -539,6 +542,14 @@ ServerRequestLength(req, sc, gotnow, partp)
 	*partp = FALSE;
 	return req->length << 2;
     }
+    if (req->reqType == server->lbxEvent + LbxQuickMotionDeltaEvent) {
+	*partp = FALSE;
+	return 4;
+    }
+    if (req->reqType == server->lbxEvent + LbxMotionDeltaEvent) {
+	*partp = FALSE;
+	return 8;
+    }
     if (client->awaitingSetup) {
 	if (gotnow < 8) {
 	    *partp = TRUE;
@@ -568,6 +579,7 @@ ServerProcStandardEvent(sc)
     XServerPtr  server = servers[sc->lbxIndex];
     ClientPtr   client = server->recv;
     int         len;
+    int		lbxEventCode;
     Bool        part;
     Bool        cacheable = (server->initialized) ? TRUE : FALSE;
 
@@ -606,6 +618,7 @@ ServerProcStandardEvent(sc)
 	       rep->generic.data1 == LbxSwitchEvent) {
 	cacheable = FALSE;
     }
+
     /* stick in delta buffer before LBX code modified things */
     if (cacheable && DELTA_CACHEABLE(&server->indeltas, len)) {
 
@@ -615,42 +628,7 @@ ServerProcStandardEvent(sc)
 
 	LBXAddDeltaIn(&server->indeltas, (char *) rep, len);
     }
-    if (rep->generic.type != server->lbxEvent) {
-	if (!client->awaitingSetup && rep->generic.type == X_Reply) {
-	    /*
-	     * Xlib never sends more than one request after a synchronous one
-	     * (XGetWindowAttributes)
-	     */
-	    if (rep->generic.sequenceNumber != client->sequence &&
-		    rep->generic.sequenceNumber != client->sequence - 1) {
-		DBG(DBG_CLIENT, (stderr, "sequence number mismatch %d != %d\n",
-				 rep->generic.sequenceNumber,
-				 client->sequence));
-	    }
-	}
-	len = RequestLength(rep, sc, 8, &part);
-	DBG(DBG_IO, (stderr, "upstream %d len %d\n", client->index, len));
-	if (client->index == 0) {
-	    ServerReply(server, rep);
-	} else {
-	    if (!client->clientGone) {
-		xEvent      ev;
-		char       *rp;
-
-		if (!client->awaitingSetup &&
-			UnsquishEvent(rep, &ev, &len)) {
-		    rp = (char *) &ev;
-		} else {
-		    rp = (char *) rep;
-		}
-		if (DoLBXReply(client, (char *) rp, len))
-		    WriteToClient(client, len, rp);
-		/* flush out any delayed replies that follow this one */
-		FlushDelayedReply(client, rep->generic.sequenceNumber + 1);
-	    }
-	    client->awaitingSetup = FALSE;
-	}
-    } else {
+    if (rep->generic.type == server->lbxEvent) {
 	len = sizeof(xLbxEvent);
 	lbx = (xLbxEvent *) rep;
 	switch (lbx->lbxType) {
@@ -686,6 +664,189 @@ ServerProcStandardEvent(sc)
 	    DBG(DBG_CLIENT, (stderr, "listen to all clients\n"));
 	    LbxListenToAllClients();
 	    break;
+	}
+
+    } else if ((lbxEventCode = rep->generic.type - server->lbxEvent) &&
+	lbxEventCode == LbxQuickMotionDeltaEvent ||
+	lbxEventCode == LbxMotionDeltaEvent) {
+
+	/*
+	 * We use the motion delta event to generate a real MotionNotify event.
+	 *
+	 * The motion cache contains the last motion event we got from
+	 * the server.
+	 *
+	 * The following are always stored in the cache in the proxy's
+	 * byte order:
+	 *     sequenceNumber, time, rootX, rootY, eventX, eventY
+	 * This is because when constructing the MotionNotify event using
+	 * the delta event, we must do arithmetic in the proxy's byte order.
+	 *
+	 * The following are stored in the byte order of the latest client
+	 * receiving a motion event (indicated by motionCache->swapped):
+	 *     root, event, child, state
+	 * The assumption is that a client will receive a series of motion
+	 * events, and we don't want to unnecessarily swap these fields.
+	 * If the next motion event goes to a client with a byte order
+	 * different from the previous client, we will have to swap these
+	 * fields.
+	 */
+
+	if (!client->clientGone) {
+	    lbxQuickMotionDeltaEvent *qmev = (lbxQuickMotionDeltaEvent *) rep;
+	    lbxMotionDeltaEvent *mev = (lbxMotionDeltaEvent *) rep;
+	    xEvent ev;
+	    char *rp = (char *) &ev;
+	    Bool quick = (lbxEventCode == LbxQuickMotionDeltaEvent);
+
+	    if (motionCache->swapped != client->swapped)
+	    {
+		int n;
+
+		swapl (&motionCache->root, n);
+		swapl (&motionCache->event, n);
+		swapl (&motionCache->child, n);
+		swaps (&motionCache->state, n);
+
+		motionCache->swapped = !motionCache->swapped;
+	    }
+
+	    ev.u.u.type = MotionNotify;
+	    ev.u.u.detail = motionCache->detail;
+	    ev.u.keyButtonPointer.root = motionCache->root;
+	    ev.u.keyButtonPointer.event = motionCache->event;
+	    ev.u.keyButtonPointer.child = motionCache->child;
+	    ev.u.keyButtonPointer.state = motionCache->state;
+	    ev.u.keyButtonPointer.sameScreen = motionCache->sameScreen;
+
+	    if (quick)
+	    {
+		ev.u.u.sequenceNumber = motionCache->sequenceNumber;
+		ev.u.keyButtonPointer.time = motionCache->time +
+		    qmev->deltaTime;
+		ev.u.keyButtonPointer.rootX = motionCache->rootX +
+		    qmev->deltaX;
+		ev.u.keyButtonPointer.rootY = motionCache->rootY +
+		    qmev->deltaY;
+		ev.u.keyButtonPointer.eventX = motionCache->eventX +
+		    qmev->deltaX;
+		ev.u.keyButtonPointer.eventY = motionCache->eventY +
+		    qmev->deltaY;
+	    }
+	    else
+	    {
+		ev.u.u.sequenceNumber = motionCache->sequenceNumber +
+		    mev->deltaSequence;
+		ev.u.keyButtonPointer.time = motionCache->time +
+		    mev->deltaTime;
+		ev.u.keyButtonPointer.rootX = motionCache->rootX +
+		    mev->deltaX;
+		ev.u.keyButtonPointer.rootY = motionCache->rootY +
+		    mev->deltaY;
+		ev.u.keyButtonPointer.eventX = motionCache->eventX +
+		    mev->deltaX;
+		ev.u.keyButtonPointer.eventY = motionCache->eventY +
+		    mev->deltaY;
+	    }
+
+	    motionCache->sequenceNumber = ev.u.u.sequenceNumber;
+	    motionCache->time = ev.u.keyButtonPointer.time;
+	    motionCache->rootX = ev.u.keyButtonPointer.rootX;
+	    motionCache->rootY = ev.u.keyButtonPointer.rootY;
+	    motionCache->eventX = ev.u.keyButtonPointer.eventX;
+	    motionCache->eventY = ev.u.keyButtonPointer.eventY;
+
+	    if (client->swapped)
+	    {
+		int n;
+		swaps (&ev.u.keyButtonPointer.rootX, n);
+		swaps (&ev.u.keyButtonPointer.rootY, n);
+		swaps (&ev.u.keyButtonPointer.eventX, n);
+		swaps (&ev.u.keyButtonPointer.eventY, n);
+		swaps (&ev.u.u.sequenceNumber, n);
+		swapl (&ev.u.keyButtonPointer.time, n);
+	    }
+
+	    len = 32;
+
+	    if (DoLBXReply(client, (char *) rp, len))
+		WriteToClient(client, len, rp);
+	    /* flush out any delayed replies that follow this one */
+	    FlushDelayedReply(client, rep->generic.sequenceNumber + 1);
+	}
+
+    } else {
+	if (!client->awaitingSetup && rep->generic.type == X_Reply) {
+	    /*
+	     * Xlib never sends more than one request after a synchronous one
+	     * (XGetWindowAttributes)
+	     */
+	    if (rep->generic.sequenceNumber != client->sequence &&
+		    rep->generic.sequenceNumber != client->sequence - 1) {
+		DBG(DBG_CLIENT, (stderr, "sequence number mismatch %d != %d\n",
+				 rep->generic.sequenceNumber,
+				 client->sequence));
+	    }
+	}
+	len = RequestLength(rep, sc, 8, &part);
+	DBG(DBG_IO, (stderr, "upstream %d len %d\n", client->index, len));
+	if (client->index == 0) {
+	    ServerReply(server, rep);
+	} else {
+	    if (!client->clientGone) {
+		xEvent      ev;
+		char       *rp;
+
+		if (!client->awaitingSetup &&
+			UnsquishEvent(rep, &ev, &len)) {
+		    rp = (char *) &ev;
+		} else {
+		    rp = (char *) rep;
+		}
+
+		if (rep->generic.type == MotionNotify) {
+		    xEvent *mev = (xEvent *) rp;
+
+		    motionCache->swapped = client->swapped;
+		    motionCache->detail = mev->u.u.detail;
+		    motionCache->root = mev->u.keyButtonPointer.root;
+		    motionCache->event = mev->u.keyButtonPointer.event;
+		    motionCache->child = mev->u.keyButtonPointer.child;
+		    motionCache->state = mev->u.keyButtonPointer.state;
+		    motionCache->sameScreen=mev->u.keyButtonPointer.sameScreen;
+
+		    if (client->swapped)
+		    {
+			cpswaps (mev->u.keyButtonPointer.rootX,
+			    motionCache->rootX);
+			cpswaps (mev->u.keyButtonPointer.rootY,
+			    motionCache->rootY);
+			cpswaps (mev->u.keyButtonPointer.eventX,
+			    motionCache->eventX);
+			cpswaps (mev->u.keyButtonPointer.eventY,
+			    motionCache->eventY);
+			cpswaps (mev->u.u.sequenceNumber,
+			    motionCache->sequenceNumber);
+			cpswapl (mev->u.keyButtonPointer.time,
+			    motionCache->time);
+		    }
+		    else
+		    {
+			motionCache->rootX = mev->u.keyButtonPointer.rootX;
+			motionCache->rootY = mev->u.keyButtonPointer.rootY;
+			motionCache->eventX = mev->u.keyButtonPointer.eventX;
+			motionCache->eventY = mev->u.keyButtonPointer.eventY;
+			motionCache->sequenceNumber = mev->u.u.sequenceNumber;
+			motionCache->time = mev->u.keyButtonPointer.time;
+		    }
+		}
+
+		if (DoLBXReply(client, (char *) rp, len))
+		    WriteToClient(client, len, rp);
+		/* flush out any delayed replies that follow this one */
+		FlushDelayedReply(client, rep->generic.sequenceNumber + 1);
+	    }
+	    client->awaitingSetup = FALSE;
 	}
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.13 94/11/08 20:27:37 mor Exp mor $ */
+/* $XConsortium: lbxmain.c,v 1.3 95/03/16 18:22:03 mor Exp $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.61 1994/11/18 20:32:36 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -112,6 +112,15 @@ int lbxDebug = DBG_CLIENT|DBG_SWITCH;
 #define LbxSequence(i)	lbxClients[i]->client->sequence
 #endif
 
+#define ABS(_x) ((_x) < 0.0 ? -(_x) : (_x))
+
+/*
+ * XXX - The motion cache should be per-proxy.  But at the time this
+ *       code was written, the LBX SI did not have per-proxy data.
+ */
+
+static lbxMotionCache *motionCache;
+
 void
 LbxExtensionInit()
 {
@@ -129,6 +138,8 @@ LbxExtensionInit()
 	BadLbxClientCode = extEntry->errorBase;
 	EventSwapVector[LbxEventCode] = SLbxEvent;
         LbxDixInit();
+	motionCache = (lbxMotionCache *) malloc (sizeof (lbxMotionCache));
+	bzero (motionCache, sizeof (lbxMotionCache));
     }
 }
 
@@ -207,8 +218,15 @@ LbxComputeReplyLen(lbxClient, buf)
     else
     {
 	xReply    *reply = (xReply *) buf;
+	xEvent	  *ev = (xEvent *) buf;
 
-	lbxClient->reply_remaining = LbxEventLength(proxy, (xEvent *) buf);
+	if (ev->u.u.type == LbxEventCode + LbxQuickMotionDeltaEvent)
+	    lbxClient->reply_remaining = 4;
+	else if (ev->u.u.type == LbxEventCode + LbxMotionDeltaEvent)
+	    lbxClient->reply_remaining = 8;
+	else
+	    lbxClient->reply_remaining = LbxSquishedEventLength (proxy, ev);
+
 	if (reply->generic.type == X_Reply) {
 	    int   len = reply->generic.length;
 	    int	  n;
@@ -400,7 +418,11 @@ LbxWritev (connection, iov, num)
 		if (proxy->curSend->awaiting_setup) {
 		    swaps(&csp->length, n);
 		} else {
-		    swapl(&buf->length, n);
+		    if (buf->type != LbxEventCode + LbxQuickMotionDeltaEvent &&
+			buf->type != LbxEventCode + LbxMotionDeltaEvent)
+		    {
+			swapl(&buf->length, n);
+		    }
 		}
 	    }
 	    if (proxy->curSend->awaiting_setup)
@@ -962,6 +984,151 @@ LbxWriteEventToClient(client, ev)
 	lbxClient->bytes_in_reply -= sizeof(xEvent);
 	return Success;
     }
+
+    if (ev->u.u.type == MotionNotify) {
+	/*
+	 * Check if we can generate a motion delta event.
+	 *
+	 * The motion cache contains the last motion event the server sent.
+	 *
+	 * The following are always stored in the cache in the server's
+	 * byte order:
+	 *     sequenceNumber, time, rootX, rootY, eventX, eventY
+	 * This is because when determining if we can do a delta, all
+	 * arithmetic must be done using the server's byte order.
+	 *
+	 * The following are stored in the byte order of the latest client
+	 * receiving a motion event (indicated by motionCache->swapped):
+	 *     root, event, child, state
+	 * These fields do not need to be stored in the server's byte order
+	 * because we only use the '==' operator on them.
+	 */
+
+	Bool motionDeltaGenerated = 0;
+	Bool swapCache;
+	xEvent tev, *sev;
+
+	if (!lbxClient->client->swapped)
+	{
+	    swapCache = motionCache->swapped;
+	    sev = ev;
+	}
+	else
+	{
+	    swapCache = !motionCache->swapped;
+	    sev = &tev;
+	    cpswaps (ev->u.keyButtonPointer.rootX,
+	        sev->u.keyButtonPointer.rootX);
+	    cpswaps (ev->u.keyButtonPointer.rootY,
+		sev->u.keyButtonPointer.rootY);
+	    cpswaps (ev->u.keyButtonPointer.eventX,
+		sev->u.keyButtonPointer.eventX);
+	    cpswaps (ev->u.keyButtonPointer.eventY,
+		sev->u.keyButtonPointer.eventY);
+	    cpswaps (ev->u.u.sequenceNumber,
+		sev->u.u.sequenceNumber);
+	    cpswapl (ev->u.keyButtonPointer.time,
+		sev->u.keyButtonPointer.time);
+	}
+
+	if (swapCache)
+	{
+	    int n;
+
+	    swapl (&motionCache->root, n);
+	    swapl (&motionCache->event, n);
+	    swapl (&motionCache->child, n);
+	    swaps (&motionCache->state, n);
+
+	    motionCache->swapped = !motionCache->swapped;
+	}
+
+	if (ev->u.u.detail == motionCache->detail &&
+	    ev->u.keyButtonPointer.root == motionCache->root &&
+	    ev->u.keyButtonPointer.event == motionCache->event &&
+	    ev->u.keyButtonPointer.child == motionCache->child &&
+	    ev->u.keyButtonPointer.state == motionCache->state &&
+	    ev->u.keyButtonPointer.sameScreen == motionCache->sameScreen) {
+
+	    int root_delta_x =
+		sev->u.keyButtonPointer.rootX - motionCache->rootX;
+	    int root_delta_y =
+		sev->u.keyButtonPointer.rootY - motionCache->rootY;
+	    int event_delta_x =
+		sev->u.keyButtonPointer.eventX - motionCache->eventX;
+	    int event_delta_y =
+		sev->u.keyButtonPointer.eventY - motionCache->eventY;
+	    unsigned long sequence_delta =
+		sev->u.u.sequenceNumber - motionCache->sequenceNumber;
+	    unsigned long time_delta =
+		sev->u.keyButtonPointer.time - motionCache->time;
+
+	    if (root_delta_x == event_delta_x && ABS(event_delta_x) <= 128 &&
+		root_delta_y == event_delta_y && ABS(event_delta_y) <= 128) {
+
+		if (sequence_delta == 0 && time_delta <= 256) {
+
+		    lbxQuickMotionDeltaEvent *mev =
+			(lbxQuickMotionDeltaEvent *) evbuf;
+
+		    mev->type = LbxEventCode + LbxQuickMotionDeltaEvent;
+		    mev->deltaTime = time_delta;
+		    mev->deltaX = event_delta_x;
+		    mev->deltaY = event_delta_y;
+
+		    len = 4;
+		    bp = evbuf;
+
+		    motionDeltaGenerated = 1;
+
+		} else if (sequence_delta <= 65536 && time_delta <= 65536) {
+
+		    lbxMotionDeltaEvent *mev = (lbxMotionDeltaEvent *) evbuf;
+
+		    mev->type = LbxEventCode + LbxMotionDeltaEvent;
+		    mev->deltaTime = time_delta;
+		    mev->deltaSequence = sequence_delta;
+		    mev->deltaX = event_delta_x;
+		    mev->deltaY = event_delta_y;
+
+		    if (proxy->lbxClients[0]->client->swapped)
+		    {
+			int n;
+			swaps (&mev->deltaTime, n);
+			swaps (&mev->deltaSequence, n);
+		    }
+
+		    len = 8;
+		    bp = evbuf;
+
+		    motionDeltaGenerated = 1;
+		}
+	    }
+	}
+
+	motionCache->sequenceNumber = sev->u.u.sequenceNumber;
+	motionCache->time = sev->u.keyButtonPointer.time;
+	motionCache->rootX = sev->u.keyButtonPointer.rootX;
+	motionCache->rootY = sev->u.keyButtonPointer.rootY;
+	motionCache->eventX = sev->u.keyButtonPointer.eventX;
+	motionCache->eventY = sev->u.keyButtonPointer.eventY;
+
+	if (motionDeltaGenerated) {
+	    lbxClient->bytes_in_reply -= sizeof(xEvent);
+	    lbxAnyOutputPending = TRUE;
+
+	    return (*lbxClient->uncompressedWriteToClient) (client, len, bp);
+	}
+	else {
+	    motionCache->detail = ev->u.u.detail;
+	    motionCache->root = ev->u.keyButtonPointer.root;
+	    motionCache->event = ev->u.keyButtonPointer.event;
+	    motionCache->child = ev->u.keyButtonPointer.child;
+	    motionCache->state = ev->u.keyButtonPointer.state;
+	    motionCache->sameScreen = ev->u.keyButtonPointer.sameScreen;
+	}
+    }
+
     if (proxy->dosquishing) {
 	len = LbxSquishEvent(proxy, ev, evbuf);
 	bp = evbuf;
