@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $Header: xmodmap.c,v 1.3 87/09/10 18:53:16 sun Exp $ */
+/* $Header: xmodmap.c,v 1.4 87/09/13 22:03:20 swick Locked $ */
 #include <stdio.h>
 #include <ctype.h>
 #include "X11/Xlib.h"
@@ -91,7 +91,7 @@ UpdateModifierMapping(map)
 SetMod(argc, argv, map, mod)
     int argc;
     char **argv;
-    XModifierKeymap *map;
+    XModifierKeymap **map;
     int mod;
 {
     if (argc) {
@@ -107,35 +107,26 @@ SetMod(argc, argv, map, mod)
 		keycode = XKeysymToKeycode(dpy, ks);
 	}
 	fprintf(stderr, "%s: 0x%x\n", *argv, keycode);
-	if (keycode) {
-	    int i;
-	    
-	    for (i = 0; i < map->max_keypermod; i++) {
-		int index = mod*map->max_keypermod + i;
-		if (map->modifiermap[index] == 0) {
-		    map->modifiermap[index] = (unsigned char) keycode;
-		    return (1);
-		}
-	    }
-	}
+	if (keycode)
+	    *map = XInsertModifiermapEntry(*map, keycode, mod);
     }
     return (0);
 }
 
 ClearMod(map, mod)
-    XModifierKeymap *map;
+    register XModifierKeymap **map;
     int mod;
 {
     int i;
 
-    for (i = 0; i < map->max_keypermod; i++)
-	map->modifiermap[mod * map->max_keypermod + i] = '\0';
+    for (i = 0; i < (*map)->max_keypermod; i++)
+	(*map)->modifiermap[mod * (*map)->max_keypermod + i] = '\0';
 }
 
 DecodeArgs(argc, argv, map)
     int argc;
     char **argv;
-    XModifierKeymap *map;
+    XModifierKeymap **map;
 {
     while (--argc > 0) {
 	argv++;
@@ -225,6 +216,7 @@ PrintModifierMapping(map, fout)
 {
     int i, k = 0;
 
+    fprintf(fout, "Currently max %d keys/mod\n", map->max_keypermod);
     for (i = 0; i < 8; i++) {
 	int j;
 
@@ -256,7 +248,7 @@ main(argc, argv)
 
     map = XGetModifierMapping(dpy);
 
-    DecodeArgs(argc, argv, map);
+    DecodeArgs(argc, argv, &map);
 
     if (fout)
 	PrintModifierMapping(map, fout);
