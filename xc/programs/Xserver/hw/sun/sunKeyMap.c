@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.13 93/08/13 14:34:18 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.14 93/08/31 18:19:05 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -728,9 +728,9 @@ static SunModmapRec Denmark4Modmap[] = {
 
 static KeySym Denmark5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -771,10 +771,10 @@ static KeySym Denmark5Keymap[] = {
 	XK_onehalf,	XK_section,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -878,9 +878,9 @@ static SunModmapRec Denmark5Modmap[] = {
 
 static KeySym France5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -921,10 +921,10 @@ static KeySym France5Keymap[] = {
 	XK_twosuperior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -1328,9 +1328,9 @@ static SunModmapRec Germany4Modmap[] = {
 
 static KeySym Germany5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -1371,10 +1371,10 @@ static KeySym Germany5Keymap[] = {
 	XK_asciicircum,	XK_degree,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Separator,NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -1628,9 +1628,9 @@ static SunModmapRec Italy4Modmap[] = {
 
 static KeySym Italy5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -1671,10 +1671,10 @@ static KeySym Italy5Keymap[] = {
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	XK_KP_Divide,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	XK_KP_Multiply,	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -1928,9 +1928,9 @@ static SunModmapRec Japan4Modmap[] = {
 
 static KeySym Japan5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	SunXK_Again,  	NoSymbol,  	XK_L2,	NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -1971,10 +1971,10 @@ static KeySym Japan5Keymap[] = {
 	XK_backslash,	XK_bar, 	XK_prolongedsound,NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -2228,9 +2228,9 @@ static SunModmapRec Korea4Modmap[] = {
 
 static KeySym Korea5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -2271,10 +2271,10 @@ static KeySym Korea5Keymap[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -2528,9 +2528,9 @@ static SunModmapRec Netherland4Modmap[] = {
 
 static KeySym Netherland5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -2571,10 +2571,10 @@ static KeySym Netherland5Keymap[] = {
 	XK_at,  	XK_section,	XK_notsign,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Separator,NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -2828,9 +2828,9 @@ static SunModmapRec Norway4Modmap[] = {
 
 static KeySym Norway5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -2871,10 +2871,10 @@ static KeySym Norway5Keymap[] = {
 	XK_bar, 	XK_section,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Separator,NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -3128,9 +3128,9 @@ static SunModmapRec Portugal4Modmap[] = {
 
 static KeySym Portugal5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -3171,10 +3171,10 @@ static KeySym Portugal5Keymap[] = {
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -3278,9 +3278,9 @@ static SunModmapRec Portugal5Modmap[] = {
 
 static KeySym Spain5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -3321,10 +3321,10 @@ static KeySym Spain5Keymap[] = {
 	XK_masculine,	XK_ordfeminine,	XK_backslash,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -3578,9 +3578,9 @@ static SunModmapRec SpainLatAm4Modmap[] = {
 
 static KeySym Sweden5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -3621,10 +3621,10 @@ static KeySym Sweden5Keymap[] = {
 	XK_section,	XK_onehalf,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Separator,NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -4028,9 +4028,9 @@ static SunModmapRec SwissFr4Modmap[] = {
 
 static KeySym SwissFr5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -4071,10 +4071,10 @@ static KeySym SwissFr5Keymap[] = {
 	XK_section,	XK_degree,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -4328,9 +4328,9 @@ static SunModmapRec SwissGe4Modmap[] = {
 
 static KeySym SwissGe5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -4371,10 +4371,10 @@ static KeySym SwissGe5Keymap[] = {
 	XK_section,	XK_degree,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -4628,9 +4628,9 @@ static SunModmapRec Taiwan4Modmap[] = {
 
 static KeySym Taiwan5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -4671,10 +4671,10 @@ static KeySym Taiwan5Keymap[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -4928,9 +4928,9 @@ static SunModmapRec UK4Modmap[] = {
 
 static KeySym UK5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -4971,10 +4971,10 @@ static KeySym UK5Keymap[] = {
 	XK_quoteleft,	XK_notsign,	XK_brokenbar,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -5376,9 +5376,9 @@ static SunModmapRec US4Modmap[] = {
 
 static KeySym US5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -5419,10 +5419,10 @@ static KeySym US5Keymap[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
@@ -5526,9 +5526,9 @@ static SunModmapRec US5Modmap[] = {
 
 static KeySym US_UNIX5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
+	SunXK_AudioLower,SunXK_VideoLower,NoSymbol,	NoSymbol,	/*  2*/
 	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
+	SunXK_AudioRaise,SunXK_VideoRaise,NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
@@ -5569,10 +5569,10 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
+	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
 	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
 	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
+	SunXK_PowerSwitch,NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
 	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
 	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
