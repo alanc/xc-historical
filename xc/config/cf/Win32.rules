@@ -1,4 +1,25 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.28 93/09/28 23:55:32 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.29 93/09/29 15:05:30 rws Exp $
+
+#ifndef HasSharedLibraries
+#define HasSharedLibraries NO
+#endif
+#define SharedLibICE NO
+#define SharedLibPex NO
+#define SharedLibSM NO
+#define SharedLibXaw NO
+#define SharedLibXext NO
+#define SharedLibXi NO
+#define SharedLibXie NO
+#define SharedLibXmu NO
+#define SharedLibXt NO
+#define SharedLibXtst NO
+#define SharedOldX NO
+#define SharedDataSeparation NO
+#define SharedCodeDef /**/
+#define SharedLibraryDef /**/
+#define ShLibIncludeFile <WinLib.tmpl>
+#define SharedLibraryLoadFlags -dll
+#define PositionIndependentCFlags /**/
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -357,3 +378,30 @@ InstallTarget(install,LibraryTargetName(libname),$(INSTLIBFLAGS),dest)
 #define	InstallNamedProg(srcname,dstname,dest)				@@\
 install:: srcname							@@\
 	@echo sorry, unable to make srcname
+
+#define	InstallSharedLibrary(libname,rev,dest)				@@\
+InstallTarget(install,LibraryTargetName(libname),$(INSTLIBFLAGS),dest)	@@\
+InstallTarget(install,libname.dll,$(INSTLIBFLAGS),dest)
+
+#define	InstallSharedLibraryData(libname,rev,dest)
+
+#define MakeDLL(libname,solist) $(LD) @<<				@@\
+SharedLibraryLoadFlags -out:libname.dll libname.exp solist		@@\
+<<
+
+#define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
+AllTarget(LibraryTargetName(libname))					@@\
+									@@\
+XVARdef0 = solist							@@\
+									@@\
+LibraryTargetName(libname): $(XVARuse0:.o=.obj)				@@\
+	RemoveFile($@)							@@\
+	MakeLibrary($@,-def:libname.def $(XVARuse0:.o=.obj))		@@\
+	RemoveFile(libname.dll)						@@\
+	MakeDLL(libname,$(XVARuse0:.o=.obj) $(REQUIREDLIBS) $(EXTRA_LIBRARIES)) @@\
+									@@\
+clean::									@@\
+	RemoveFile(LibraryTargetName(libname))				@@\
+	RemoveFile(libname.dll)
+
+#define SharedLibraryDataTarget(libname,rev,salist)
