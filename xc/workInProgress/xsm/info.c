@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.1 94/07/07 16:47:37 mor Exp $ */
+/* $XConsortium: info.c,v 1.2 94/07/12 12:35:09 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -185,6 +185,7 @@ UpdateClientList ()
 {
     ClientRec *client = ClientList;
     char *progName;
+    Dimension width;
     int i, j, k;
 
     if (clientNames)
@@ -232,6 +233,14 @@ UpdateClientList ()
 
     XawListChange (clientListWidget, clientNames, numClients, 0, True);
     XawListHighlight (clientListWidget, 0);
+
+    XtVaGetValues (clientInfoPopup,
+	XtNwidth, &width,
+	NULL);
+    
+    XtVaSetValues (clientListWidget,
+	XtNlongest, width,
+	NULL);
 }
 
 
@@ -247,6 +256,7 @@ ClientInfoXtProc (w, client_data, callData)
 
     if (!client_info_visible)
     {
+	XtRealizeWidget (clientInfoPopup);
 	UpdateClientList ();
 
 	if (!did_first_popup)
@@ -277,6 +287,7 @@ create_client_info_popup ()
 
     clientInfoPopup = XtVaCreatePopupShell (
 	"clientInfoPopup", transientShellWidgetClass, topLevel,
+        XtNmappedWhenManaged, False,
 	XtNallowShellResize, True,
 	NULL);
     
