@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsProp.c,v 1.6 91/02/12 16:13:32 dave Exp $" */
+/* $XConsortium: XcmsProp.c,v 1.7 91/05/13 23:27:26 rws Exp $" */
 
 /*
  *
@@ -50,10 +50,11 @@
  *
  *	SYNOPSIS
  */
-int
-_XcmsGetElement (format, pValue) 
+unsigned long
+_XcmsGetElement (format, pValue, pCount) 
     int             format;
     char            **pValue;
+    unsigned long   *pCount;
 /*
  *	DESCRIPTION
  *	    Get the next element from the property and return it.
@@ -63,23 +64,26 @@ _XcmsGetElement (format, pValue)
  *	    int
  */
 {
-    char      *pChar;
-    int       *pInt;
-    short int *pShort;
+    unsigned char      *pCard8;
+    unsigned short	*pCard16;
+    unsigned long       *pCard32;
 
     switch (format) {
       case 32:
-	pInt = (int *) *pValue;
+	pCard32 = (unsigned long *) *pValue;
 	*pValue += 4;
-	return((int) *pInt);
+	(*pCount)--;
+	return((unsigned long) *pCard32);
       case 16:
-	pShort = (short int *) *pValue;
+	pCard16 = (unsigned short *) *pValue;
 	*pValue += 2;
-	return((int) *pShort);
+	(*pCount)--;
+	return((unsigned long) *pCard16);
       case 8:
-	pChar = *pValue;
+	pCard8 = (unsigned char *) *pValue;
 	*pValue += 1;
-	return((int) *pChar);
+	(*pCount)--;
+	return((unsigned long) *pCard8);
       default:
 	break;
     }
