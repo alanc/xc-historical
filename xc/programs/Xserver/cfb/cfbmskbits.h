@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.10 89/04/27 19:39:07 keith Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.11 89/09/13 18:58:11 rws Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -286,7 +286,7 @@ else \
 	 : "=d" (dst) : "di" (PSZ*(x)), "di" (PSZ*(w)), "o" (*(char *)(psrc)))
 
 #define getbits(psrc,x,w,dst) \
-    FASTGETBITS(psrc, x, PPW, dst);\
+    FASTGETBITS(psrc, x, PPW, dst);
 
 #define FASTPUTBITS(src, x, w, pdst) \
     asm ("bfins %3,%0{%1:%2}" \
