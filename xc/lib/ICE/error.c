@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.1 93/08/19 18:25:24 mor Exp $ */
+/* $XConsortium: error.c,v 1.2 93/09/05 21:08:41 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -269,11 +269,12 @@ char	*protocolName;
 
 
 void
-_IceErrorBadMajor (iceConn, offendingMajor, offendingMinor)
+_IceErrorBadMajor (iceConn, offendingMajor, offendingMinor, severity)
 
 IceConn	iceConn;
 int     offendingMajor;
 int     offendingMinor;
+int	severity;
 
 {
     char maj = (char) offendingMajor;
@@ -281,7 +282,7 @@ int     offendingMinor;
     IceErrorHeader (iceConn,
 	0, offendingMinor,
 	iceConn->sequence - 1,
-	IceCanContinue,
+	severity,
 	IceBadMajor,
 	1 /* length */);
 
