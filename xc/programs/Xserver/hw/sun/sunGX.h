@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.h,v 1.1 91/06/27 17:16:33 keith Exp $
+ * $XConsortium: sunGX.h,v 1.1 91/06/28 16:17:27 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -230,7 +230,3 @@ typedef struct _sunGXPrivGC {
 #define sunGXSetWindowPrivate(w,p) (\
 	    (w)->devPrivates[sunGXWindowPrivateIndex].ptr = (pointer) p)
 
-extern int  sunGXDoBitblt ();
-extern void sunGXFillRectSolidAll ();
-extern void sunGXSolidSpansAll ();
-extern void sunGXFillBoxSolid ();
