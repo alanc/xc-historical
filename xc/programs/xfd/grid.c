@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.12 89/07/16 15:36:56 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.13 89/08/07 16:03:15 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,13 +44,13 @@ static XtResource resources[] = {
     { XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
 	offset(text_font), XtRString, (caddr_t) NULL },
     { XtNcellColumns, XtCCellColumns, XtRInt, sizeof(int),
-	offset(cell_cols), XtRString, (caddr_t) "16" },
+	offset(cell_cols), XtRString, (caddr_t) "0" },
     { XtNcellRows, XtCCellRows, XtRInt, sizeof(int),
-	offset(cell_rows), XtRString, (caddr_t) "16" },
+	offset(cell_rows), XtRString, (caddr_t) "0" },
     { XtNcellWidth, XtCCellWidth, XtRInt, sizeof(int),
-	offset(cell_width), XtRString, (caddr_t) "-1" },
+	offset(cell_width), XtRString, (caddr_t) "0" },
     { XtNcellHeight, XtCCellHeight, XtRInt, sizeof(int),
-	offset(cell_height), XtRString, (caddr_t) "-1" },
+	offset(cell_height), XtRString, (caddr_t) "0" },
     { XtNstartChar, XtCStartChar, XtRLong, sizeof(long),
 	offset(start_char), XtRString, (caddr_t) "-1" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -172,9 +172,23 @@ static void Initialize (request, new)
     FontGridWidget newfg = (FontGridWidget) new;
     int tcols = 0, nrows = 16;
 
-    if (reqfg->fontgrid.cell_width == -1)
+    if (reqfg->fontgrid.cell_cols <= 0)
+      newfg->fontgrid.cell_cols = 16;
+
+    if (reqfg->fontgrid.cell_rows <= 0) {
+	XFontStruct *fs = newfg->fontgrid.text_font;
+	if (fs && fs->max_byte1 == 0) {
+	    newfg->fontgrid.cell_rows = (fs->max_char_or_byte2 / 
+					 newfg->fontgrid.cell_cols) + 1;
+	    if (newfg->fontgrid.cell_rows > 16)
+	      newfg->fontgrid.cell_rows = 16;
+	} else
+	  newfg->fontgrid.cell_rows = 16;
+    }
+
+    if (reqfg->fontgrid.cell_width <= 0)
       newfg->fontgrid.cell_width = DefaultCellWidth (newfg);
-    if (reqfg->fontgrid.cell_height == -1)
+    if (reqfg->fontgrid.cell_height <= 0)
       newfg->fontgrid.cell_height = DefaultCellHeight (newfg);
 
     /* give a nice size that fits one screen full */
