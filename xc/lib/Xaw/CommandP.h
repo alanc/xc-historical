@@ -1,5 +1,5 @@
 /*
-* $Header: CommandP.h,v 1.13 88/01/28 07:57:44 swick Exp $
+* $Header: CommandP.h,v 1.14 88/02/14 13:58:59 rws Exp $
 */
 
 /*
@@ -88,7 +88,6 @@ typedef struct {
     Boolean     highlighted;
     Boolean     display_set;
     Boolean     display_highlighted;
-    Cursor	cursor;
 } CommandPart;
 
 
