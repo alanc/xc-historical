@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.100 92/10/02 10:17:02 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.101 92/10/02 16:10:52 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -2621,22 +2621,30 @@ main(argc, argv)
 	    process_events();
 	    continue;
 	}
-	FD_SET(Xfd, &fdmask);
 #ifndef MSDOS
+	FD_SET(Xfd, &fdmask);
 	FD_SET(0, &fdmask);
 	i = select(maxfd, &fdmask, NULL, NULL, moving_timeout);
 #else
-	FD_CLR(0, &fdmask);
 	while (1) {
-	    if (/*i16*/kbhit()) {
+	    if (kbhit()) {
 		i = 1;
 		FD_SET(0, &fdmask);
 		FD_CLR(Xfd, &fdmask);
 		break;
-	    } else if (i = select(maxfd, &fdmask, NULL, NULL, &notime))
-		break;
-	    else
-		apiPause();
+	    } else {
+		FD_SET(Xfd, &fdmask);
+		FD_CLR(0, &fdmask);
+		if (moving_timeout) {
+		    i = select(maxfd, &fdmask, NULL, NULL, moving_timeout);
+		    if (i || !kbhit())
+			break;
+		} else {
+		    if (i = select(maxfd, &fdmask, NULL, NULL, &notime))
+			break;
+		    apiPause();
+		}
+	    }
 	}
 #endif
 	if (i < 0)
