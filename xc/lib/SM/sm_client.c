@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.5 93/09/12 16:23:06 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.6 93/09/13 17:01:31 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,44 +19,13 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include "globals.h"
 #include <locale.h>
 
-Status
-SmcInitialize (callbacks)
 
-SmcCallbacks	*callbacks;
-
-{
-    if (!callbacks || !callbacks->save_yourself ||
-        !callbacks->die || !callbacks->shutdown_cancelled)
-    {
-	/* We need callbacks!  Otherwise, we can't do anything */
-
-	return (0);
-    }
-
-    if (!_SmcOpcode)
-    {
-	if ((_SmcOpcode = IceRegisterForProtocolSetup ("XSMP",
-	    SmVendorString, SmReleaseString, _SmVersionCount, _SmcVersions,
-            _SmAuthCount, _SmcAuthRecs, NULL)) < 0)
-	{
-	   return (0);
-	}
-    }
-
-    bcopy ((char *) callbacks,
-	(char *) &_SmcCallbacks, sizeof (SmcCallbacks));
-
-    return (1);
-}
-
-
-
 SmcConn
-SmcOpenConnection (networkIdsList, clientData,
+SmcOpenConnection (networkIdsList, callbacks,
     previousId, clientIdRet, errorLength, errorStringRet)
 
 char 		*networkIdsList;
-SmPointer	clientData;
+SmcCallbacks	*callbacks;
 char 		*previousId;
 char 		**clientIdRet;
 int  		errorLength;
@@ -73,7 +42,7 @@ char 		*errorStringRet;
     char			*release = NULL;
     smRegisterClientMsg 	*pMsg;
     char 			*pData;
-    int				extra;
+    int				extra, len;
     IceReplyWaitInfo		replyWait;
     _SmcRegisterClientReply	reply;
     Bool			gotReply;
@@ -83,10 +52,27 @@ char 		*errorStringRet;
     if (errorStringRet && errorLength > 0)
 	*errorStringRet = '\0';
 
+    if (!callbacks || !callbacks->save_yourself.callback ||
+        !callbacks->die.callback || !callbacks->shutdown_cancelled.callback)
+    {
+	/* We need callbacks!  Otherwise, we can't do anything */
+
+	strncpy (errorStringRet,
+	    "All of the callbacks must be specified", errorLength);
+	return (NULL);
+    }
+
     if (!_SmcOpcode)
     {
-	strncpy (errorStringRet, "SmcInitialize was not called", errorLength);
-	return (NULL);
+	if ((_SmcOpcode = IceRegisterForProtocolSetup ("XSMP",
+	    SmVendorString, SmReleaseString, _SmVersionCount, _SmcVersions,
+            _SmAuthCount, _SmcAuthRecs, NULL)) < 0)
+	{
+	    strncpy (errorStringRet,
+	        "Could not register XSMP protocol with ICE", errorLength);
+
+	    return (NULL);
+	}
     }
 
     if (networkIdsList == NULL || *networkIdsList == '\0')
@@ -157,9 +143,12 @@ char 		*errorStringRet;
     smcConn->proto_minor_version = minorVersion;
     smcConn->vendor = vendor;
     smcConn->release = release;
-    smcConn->client_data = clientData;
     smcConn->client_id = NULL;
-    smcConn->interact_cb = NULL;
+
+    bcopy ((char *) callbacks,
+	(char *) &smcConn->callbacks, sizeof (SmcCallbacks));
+
+    smcConn->interact_waits = NULL;
     smcConn->prop_reply_waits = NULL;
 
     _SmcConnectionObjs[_SmcConnectionCount++] = smcConn;
@@ -169,13 +158,15 @@ char 		*errorStringRet;
      * Now register the client
      */
 
-    extra = ARRAY8_BYTES (strlen (previousId));
+    len = previousId ? strlen (previousId) : 0;
+    extra = ARRAY8_BYTES (len);
 
     IceGetHeaderExtra (iceConn, _SmcOpcode, SM_RegisterClient,
 	SIZEOF (smRegisterClientMsg), WORD64COUNT (extra),
 	smRegisterClientMsg, pMsg, pData);
 
-    STORE_ARRAY8 (pData, strlen (previousId), previousId);
+    STORE_ARRAY8 (pData, len, previousId);
+
     IceFlush (iceConn);
 
     replyWait.sequence_of_request = IceLastSequenceNumber (iceConn);
@@ -337,17 +328,19 @@ SmProp       	*props;
 
 
 void
-SmcGetProperties (smcConn, propReplyCB)
+SmcGetProperties (smcConn, propReplyProc, clientData)
 
-SmcConn		smcConn;
-SmcPropReplyCB	propReplyCB;
+SmcConn		 smcConn;
+SmcPropReplyProc propReplyProc;
+SmPointer	 clientData;
 
 {
     IceConn		iceConn = smcConn->iceConn;
     _SmcPropReplyWait 	*wait, *ptr;
 
     wait = (_SmcPropReplyWait *) malloc (sizeof (_SmcPropReplyWait));
-    wait->prop_reply_cb = propReplyCB;
+    wait->prop_reply_proc = propReplyProc;
+    wait->client_data = clientData;
     wait->next = NULL;
 
     ptr = smcConn->prop_reply_waits;
@@ -366,15 +359,31 @@ SmcPropReplyCB	propReplyCB;
 
 
 void
-SmcInteractRequest (smcConn, dialogType, interactCB)
+SmcInteractRequest (smcConn, dialogType, interactProc, clientData)
 
 SmcConn 	smcConn;
 int		dialogType;
-SmcInteractCB	interactCB;
+SmcInteractProc	interactProc;
+SmPointer	clientData;
 
 {
     IceConn			iceConn = smcConn->iceConn;
     smInteractRequestMsg	*pMsg;
+    _SmcInteractWait 		*wait, *ptr;
+
+    wait = (_SmcInteractWait *) malloc (sizeof (_SmcInteractWait));
+    wait->interact_proc = interactProc;
+    wait->client_data = clientData;
+    wait->next = NULL;
+
+    ptr = smcConn->interact_waits;
+    while (ptr && ptr->next)
+	ptr = ptr->next;
+
+    if (ptr == NULL)
+	smcConn->interact_waits = wait;
+    else
+	ptr->next = wait;
 
     IceGetHeader (iceConn, _SmcOpcode, SM_InteractRequest,
 	SIZEOF (smInteractRequestMsg), smInteractRequestMsg, pMsg);
@@ -382,18 +391,6 @@ SmcInteractCB	interactCB;
     pMsg->dialogType = dialogType;
 
     IceFlush (iceConn);
-
-    if (!smcConn->interact_cb)
-    {
-	/*
-	 * There can only be one InteractRequest active for the client.
-	 * If InteractRequest was already called and the Interact message
-	 * has not arrived, then the client shouldn't have called this
-	 * function.  The session manager should send an error message.
-	 */
-
-	smcConn->interact_cb = interactCB;
-    }
 }
 
 
