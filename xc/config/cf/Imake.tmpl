@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.147 92/05/26 14:55:37 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.148 92/05/27 18:00:56 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -859,7 +859,7 @@ XCOMM the platform-specific parameters - edit site.def to change
         IMAKE_CMD = $(IMAKE) -DUseInstalled -I$(IRULESRC) $(IMAKE_DEFINES)
 #else
          IRULESRC = $(CONFIGSRC)
-        IMAKE_CMD = $(NEWTOP)$(IMAKE) -I$(NEWTOP)$(IRULESRC) $(IMAKE_DEFINES)
+        IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
 #endif
      ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Imake.rules \
 			$(IRULESRC)/Project.tmpl $(IRULESRC)/site.def \
