@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.66 88/12/08 16:50:48 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.67 88/12/09 13:25:56 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -158,9 +158,6 @@ miArcSegment(pDraw, pGC, tarc, right, left)
 	tarc.x += ((WindowPtr) pDraw)->absCorner.x;
 	tarc.y += ((WindowPtr) pDraw)->absCorner.y;
     }
-
-    if (l < 1)
-	l = 1;		/* for 0-width arcs */
 
     a0 = tarc.angle1;
     a1 = tarc.angle2;
@@ -389,6 +386,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 			++join[iphase];
 		    }
 		    if (fTricky) {
+			if (pGC->serialNumber != pDraw->serialNumber)
+			    ValidateGC (pDraw, pGC);
 		    	(*pGC->PushPixels) (pGC, pDrawTo, pDraw, dx,
 					    dy, xOrg, yOrg);
 			miClearDrawable ((DrawablePtr) pDrawTo, pGCTo);
@@ -713,6 +712,8 @@ miGetArcPts(parc, cpt, ppPts)
     cdt = fmax(parc->width, parc->height)/2.0;
     if(cdt <= 0)
 	return 0;
+    if (cdt < 1.0)
+	cdt = 1.0;
     dt = asin( 1.0 / cdt ); /* minimum step necessary */
     count = et/dt;
     count = abs(count) + 1;
@@ -1392,7 +1393,9 @@ double	a;
 #undef min
 #undef max
 
-extern double	ceil (), floor (), fabs (), sin (), cos (), sqrt (), pow ();
+extern double	ceil (), floor (), sin (), cos (), sqrt (), pow ();
+
+#define fabs(x)	((x) >= 0.0 ? (x) : -(x))
 
 /*
  * draw zero width/height arcs
@@ -1472,10 +1475,6 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 		rect.width = maxx - minx;
 		rect.height = maxy - miny;
 		(*pGC->PolyFillRect) (pDraw, pGC, 1, &rect);
-/*
-		for (y = miny; y < maxy; y++)
-			newFinalSpan (y, minx, maxx);
-*/
 	}
 	if (right) {
 		if (h != 0) {
@@ -1537,6 +1536,8 @@ struct arc_bound {
 	struct bound	left;
 };
 
+# define BINARY_TABLE_SIZE	(512)
+
 struct accelerators {
 	double		tail_y;
 	double		h2;
@@ -1547,6 +1548,10 @@ struct accelerators {
 	double		wh2mw2;
 	double		wh4;
 	struct line	left, right;
+	double		innerTable[BINARY_TABLE_SIZE+1];
+	double		outerTable[BINARY_TABLE_SIZE+1];
+	char		innerValid[BINARY_TABLE_SIZE+1];
+	char		outerValid[BINARY_TABLE_SIZE+1];
 };
 
 struct arc_def {
@@ -1744,6 +1749,8 @@ computeAcc (def, acc)
 	struct arc_def		*def;
 	struct accelerators	*acc;
 {
+	int	i;
+
 	acc->h2 = def->h * def->h;
 	acc->w2 = def->w * def->w;
 	acc->h4 = acc->h2 * acc->h2;
@@ -1752,6 +1759,8 @@ computeAcc (def, acc)
 	acc->wh2mw2 = def->w * acc->h2mw2;
 	acc->wh4 = def->w * acc->h4;
 	acc->tail_y = tailElipseY (def->w, def->h, def->l);
+	for (i = 0; i <= BINARY_TABLE_SIZE; i++)
+		acc->innerValid[i] = acc->outerValid[i] = 0;
 }
 		
 /*
@@ -1878,6 +1887,32 @@ computeBound (def, bound, acc, right, left)
  * the newtons method to fail.  This needs study.
  */
 
+# define binaryIndexFromY(y, def)	(((y) / (def)->h) * ((double) BINARY_TABLE_SIZE))
+# define yFromBinaryIndex(i, def)	((((double) i) / ((double) BINARY_TABLE_SIZE)) * (def)->h)
+
+#ifdef NOTDEF
+
+double
+binaryValue (i, def, acc, valid, table, f)
+	int			i;
+	struct arc_def		*def;
+	struct accelerators	*acc;
+	char			*valid;
+	double			*table;
+	double			(*f)();
+{
+	if (!valid[i]) {
+		valid[i] = 1;
+		table[i] = f (yFromBinaryIndex (i, def), def, acc);
+	}
+	return table[i];
+}
+#else
+
+# define binaryValue(i, def, acc, valid, table, f)\
+	(valid[i] ? table[i] : (valid[i] = 1, table[i] = f (yFromBinaryIndex (i, def), def, acc)))
+#endif
+
 double
 elipseY (edge_y, def, bound, acc, outer, y0, y1)
 	double			edge_y;
@@ -1893,34 +1928,47 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 	double		minY, maxY;
 	double		binarylimit;
 	double		(*f)();
+	int		index0, index1, newindex;
+	char		*valid;
+	double		*table;
 	
 	/*
 	 * compute some accelerators
 	 */
 	w = def->w;
 	h = def->h;
-	f = outer ? outerYfromY : innerYfromY;
-	l = outer ? def->l : -def->l;
+	if (outer) {
+		f = outerYfromY;
+		l = def->l;
+		table = acc->outerTable;
+		valid = acc->outerValid;
+	} else {
+		f = innerYfromY;
+		l = -def->l;
+		table = acc->innerTable;
+		valid = acc->innerValid;
+	}
 	h2 = acc->h2;
 	h4 = acc->h4;
 	w2 = acc->w2;
 	w4 = acc->w4;
 
-	value0 = f (y0, def, acc) - edge_y;
-	if (value0 == 0)
-		return y0;
-	value1 = f (y1, def, acc) - edge_y;
+	index0 = binaryIndexFromY (y0, def);
+	index1 = binaryIndexFromY (y1, def);
+	value0 = binaryValue (index0, def, acc, valid, table, f) - edge_y;
+	value1 = binaryValue (index1, def, acc, valid, table, f) - edge_y;
 	maxY = y1;
 	minY = y0;
 	if (y0 > y1) {
 		maxY = y0;
 		minY = y1;
 	}
-	if (value1 == 0)
-		return y1;
+	y0 = yFromBinaryIndex (index0, def);
+	y1 = yFromBinaryIndex (index1, def);
 	if (value1 > 0 == value0 > 0)
 		return -1.0;	/* an illegal value */
-	binarylimit = fabs ((value1 - value0) / 25.0);
+	binarylimit = (value1 - value0) / 25.0;
+	binarylimit = fabs (binarylimit);
 	if (binarylimit < BINARY_LIMIT)
 		binarylimit = BINARY_LIMIT;
 	/*
@@ -1929,28 +1977,37 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 	do {
 		if (y0 == y1 || value0 == value1)
 			return maxY+1;
-		binaryy = (y0 + y1) / 2;
 
-		/*
-		 * inline expansion of the function
-		 */
-
-		y2 = binaryy*binaryy;
-		x = w * Sqrt ((h2 - (y2)) / h2);
-
-		binaryvalue = ( binaryy + (binaryy * w2 * l) /
-			      (2 * Sqrt (x*x * h4 + y2 * w4))) - edge_y;
-
+		if (abs (index0 - index1) > 1) {
+			newindex = (index1 + index0) / 2;
+			binaryy = yFromBinaryIndex (newindex, def);
+			binaryvalue = binaryValue (newindex,
+				def, acc, valid, table, f) - edge_y;
+		} else {
+			binaryy = (y0 + y1) / 2;
+			/*
+		 	 * inline expansion of the function
+		 	 */
+	
+			y2 = binaryy*binaryy;
+			x = w * Sqrt ((h2 - (y2)) / h2);
+	
+			binaryvalue = ( binaryy + (binaryy * w2 * l) /
+			      	      (2 * Sqrt (x*x * h4 + y2 * w4))) - edge_y;
+			newindex = -1;
+		}
 		if (binaryvalue > 0 == value0 > 0) {
 			y0 = binaryy;
 			value0 = binaryvalue;
+			if (newindex > 0)
+				index0 = newindex;
 		} else {
 			y1 = binaryy;
 			value1 = binaryvalue;
+			if (newindex > 0)
+				index1 = newindex;
 		}
 	} while (fabs (value1) > binarylimit);
-	if (binaryvalue == 0)
-		return binaryy;
 
 	/*
 	 * clean up the estimate with newtons method
@@ -2599,6 +2656,8 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	arcXcenter = def.w;
 	arcYcenter = def.h;
 	def.l = (double) l;
+	if (l == 0)
+		def.l = 1.0;
 	if (a1 < a0)
 		a1 += 360 * 64;
 	startq = a0 / (90 * 64);
@@ -2759,7 +2818,7 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 				passLeft = left;
 		}
 		drawQuadrant (&def, &acc, sweep[j].a0, sweep[j].a1, mask, 
- 			      passRight, passLeft);
+ 			      passRight, passLeft, l == 0);
 	}
 	/*
 	 * mirror the coordinates generated for the
@@ -2791,12 +2850,13 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	}
 }
 
-drawQuadrant (def, acc, a0, a1, mask, right, left)
+drawQuadrant (def, acc, a0, a1, mask, right, left, isZero)
 	struct arc_def		*def;
 	struct accelerators	*acc;
 	int			a0, a1;
 	int			mask;
 	miArcFacePtr		right, left;
+	int			isZero;
 {
 	struct arc_bound	bound;
 	double			miny, maxy, y;
