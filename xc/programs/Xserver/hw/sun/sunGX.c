@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.14 92/05/19 12:16:59 keith Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.15 92/08/05 16:34:21 gildea Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -1115,7 +1115,8 @@ sunGXPolyFillArc (pDraw, pGC, narcs, parcs)
 			if (arc->width != old_width)
 			{
 			    int	    i;
-			    Uint    *sp, *dp;
+			    Uint    *sp;
+			    VUint   *dp;
 
 			    if (old_width != -arc->width)
 			    {

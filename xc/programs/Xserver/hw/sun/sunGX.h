@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.h,v 1.1 91/06/28 16:17:27 keith Exp $
+ * $XConsortium: sunGX.h,v 1.2 91/11/08 19:16:35 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,6 +24,11 @@
  */
 
 typedef unsigned int	Uint;
+#if __STDC__
+typedef volatile Uint VUint;
+#else
+typedef Uint VUint;
+#endif
 
 /* modes */
 #define GX_INDEX(n)	    ((n) << 4)
@@ -87,60 +92,60 @@ typedef unsigned int	Uint;
 
 typedef struct _sunGX {
 	Uint	junk0[1];
-	Uint	mode;
-	Uint	clip;
+	VUint	mode;
+	VUint	clip;
 	Uint	junk1[1];	    
-	Uint	s;
-	Uint	draw;
-	Uint	blit;
-	Uint	font;
+	VUint	s;
+	VUint	draw;
+	VUint	blit;
+	VUint	font;
 	Uint	junk2[24];
-	Uint	x0, y0, z0, color0;
-	Uint	x1, y1, z1, color1;
-	Uint	x2, y2, z2, color2;
-	Uint	x3, y3, z3, color3;
-	Uint	offx, offy;
+	VUint	x0, y0, z0, color0;
+	VUint	x1, y1, z1, color1;
+	VUint	x2, y2, z2, color2;
+	VUint	x3, y3, z3, color3;
+	VUint	offx, offy;
 	Uint	junk3[2];
-	Uint	incx, incy;
+	VUint	incx, incy;
 	Uint	junk4[2];
-	Uint	clipminx, clipminy;
+	VUint	clipminx, clipminy;
 	Uint	junk5[2];
-	Uint	clipmaxx, clipmaxy;
+	VUint	clipmaxx, clipmaxy;
 	Uint	junk6[2];
-	Uint	fg;
-	Uint	bg;
-	Uint	alu;
-	Uint	pm;
-	Uint	pixelm;
+	VUint	fg;
+	VUint	bg;
+	VUint	alu;
+	VUint	pm;
+	VUint	pixelm;
 	Uint	junk7[2];
-	Uint	patalign;
-	Uint	pattern[8];
+	VUint	patalign;
+	VUint	pattern[8];
 	Uint	junk8[432];
-	Uint	apointx, apointy, apointz;
+	VUint	apointx, apointy, apointz;
 	Uint	junk9[1];
-	Uint	rpointx, rpointy, rpointz;
+	VUint	rpointx, rpointy, rpointz;
 	Uint	junk10[5];
-	Uint	pointr, pointg, pointb, pointa;
-	Uint	alinex, aliney, alinez;
+	VUint	pointr, pointg, pointb, pointa;
+	VUint	alinex, aliney, alinez;
 	Uint	junk11[1];
-	Uint	rlinex, rliney, rlinez;
+	VUint	rlinex, rliney, rlinez;
 	Uint	junk12[5];
-	Uint	liner, lineg, lineb, linea;
-	Uint	atrix, atriy, atriz;
+	VUint	liner, lineg, lineb, linea;
+	VUint	atrix, atriy, atriz;
 	Uint	junk13[1];
-	Uint	rtrix, rtriy, rtriz;
+	VUint	rtrix, rtriy, rtriz;
 	Uint	junk14[5];
-	Uint	trir, trig, trib, tria;
-	Uint	aquadx, aquady, aquadz;
+	VUint	trir, trig, trib, tria;
+	VUint	aquadx, aquady, aquadz;
 	Uint	junk15[1];
-	Uint	rquadx, rquady, rquadz;
+	VUint	rquadx, rquady, rquadz;
 	Uint	junk16[5];
-	Uint	quadr, quadg, quadb, quada;
-	Uint	arectx, arecty, arectz;
+	VUint	quadr, quadg, quadb, quada;
+	VUint	arectx, arecty, arectz;
 	Uint	junk17[1];
-	Uint	rrectx, rrecty, rrectz;
+	VUint	rrectx, rrecty, rrectz;
 	Uint	junk18[5];
-	Uint	rectr, rectg, rectb, recta;
+	VUint	rectr, rectg, rectb, recta;
 } sunGX, *sunGXPtr;
 
 /* Macros */
@@ -189,7 +194,8 @@ typedef struct _sunGX {
 
 #define GXStippleInit(gx,stipple) {\
     int		_i; \
-    Uint	*sp, *dp; \
+    Uint	*sp; \
+    VUint	*dp; \
     _i = 8;  \
     sp = stipple->bits; \
     dp = gx->pattern; \
