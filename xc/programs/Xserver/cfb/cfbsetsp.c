@@ -143,16 +143,6 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     int			xStart, xEnd;
     int			yMax;
 
-    switch (pDrawable->depth) {
-	case 1:
-	    mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
-	    return;
-	case 8:
-	    break;
-	default:
-	    FatalError("cfbSetSpans: invalid depth\n");
-    }
-
     alu = pGC->alu;
     prgnDst = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
 

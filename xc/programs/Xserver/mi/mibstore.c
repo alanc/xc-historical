@@ -2357,7 +2357,7 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
 	    gcval[i++] = (XID) FillTiled;
 	    gcmask |= GCFillStyle;
 	}
-	if (pGC->tile != pixunion.pixmap)
+	if (pGC->tileIsPixel || pGC->tile.pixmap != pixunion.pixmap)
 	{
 	    gcval[i++] = (XID) pixunion.pixmap;
 	    gcmask |= GCTile;

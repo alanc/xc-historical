@@ -55,6 +55,8 @@ static GCFuncs cfbFuncs = {
     cfbCopyClip,
 };
 
+extern void mfbPushPixels();
+
 static GCOps	cfbTEOps = {
     cfbSolidFS,
     cfbSetSpans,
@@ -471,17 +473,17 @@ cfbValidateGC(pGC, changes, pDrawable)
 	case GCFillRule:
 	    break;
 	case GCTile:
-	    if (pGC->tile)
+	    if (!pGC->tileIsPixel)
 	    {
-		int width = pGC->tile->drawable.width * PSZ;
+		int width = pGC->tile.pixmap->drawable.width * PSZ;
 		PixmapPtr ntile;
 
 		if ((width <= 32) && !(width & (width - 1)) &&
-		    (ntile = cfbCopyPixmap(pGC->tile)))
+		    (ntile = cfbCopyPixmap(pGC->tile.pixmap)))
 		{
 		    (void)cfbPadPixmap(ntile);
-		    cfbDestroyPixmap(pGC->tile);
-		    pGC->tile = ntile;
+		    cfbDestroyPixmap(pGC->tile.pixmap);
+		    pGC->tile.pixmap = ntile;
 		}
 	    }
 #ifdef CFBROTPIX
@@ -656,8 +658,8 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    cfbDestroyPixmap(devPriv->pRotatedStipple);
 	    devPriv->pRotatedStipple = (PixmapPtr)NULL;
 	}
-	if (pGC->tile)
-	    devPriv->pRotatedTile = cfbCopyPixmap(pGC->tile);
+	if (!pGC->tileIsPixel)
+	    devPriv->pRotatedTile = cfbCopyPixmap(pGC->tile.pixmap);
 	if (pGC->stipple)
 	    devPriv->pRotatedStipple = cfbCopyPixmap(pGC->stipple);
 	/*
@@ -668,13 +670,13 @@ cfbValidateGC(pGC, changes, pDrawable)
 	xrot += pGC->patOrg.x;
 	yrot += pGC->patOrg.y;
 	if (xrot) {
-	    if (pGC->tile && devPriv->pRotatedTile)
+	    if (!pGC->tileIsPixel && devPriv->pRotatedTile)
 		cfbXRotatePixmap(devPriv->pRotatedTile, xrot);
 	    if (pGC->stipple && devPriv->pRotatedStipple)
 		cfbXRotatePixmap(devPriv->pRotatedStipple, xrot);
 	}
 	if (yrot) {
-	    if (pGC->tile && devPriv->pRotatedTile)
+	    if (!pGC->tileIsPixel && devPriv->pRotatedTile)
 		cfbYRotatePixmap(devPriv->pRotatedTile, yrot);
 	    if (pGC->stipple && devPriv->pRotatedStipple)
 		cfbYRotatePixmap(devPriv->pRotatedStipple, yrot);

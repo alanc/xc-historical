@@ -126,32 +126,6 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DDXPointPtr pptFree;
     int fill, rrop;
 
-    switch (pDrawable->depth) {
-	case 1:
-	    rrop = ReduceRop( pGC->alu, pGC->fgPixel );
-	    switch ( rrop ) {
-		case RROP_BLACK:
-		    mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, 
-			pwidthInit, fSorted);
-		    break;
-		case RROP_WHITE:
-		    mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, 
-			pwidthInit, fSorted);
-		    break;
-		case RROP_NOP:
-		    return;
-		case RROP_INVERT:
-		    mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, 
-			pwidthInit, fSorted);
-		    break;
-	    }
-	    return;
-	case 8:
-	    break;
-	default:
-	    FatalError("cfbSolidFS: invalid depth\n");
-    }
-
     if (!(pGC->planemask))
 	return;
 
@@ -260,16 +234,6 @@ int fSorted;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
-    switch (pDrawable->depth) {
-	case 1:
-	    mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
-	    return;
-	case 8:
-	    break;
-	default:
-	    FatalError("cfbUnnaturalTileFS: invalid depth\n");
-    }
-
     if (!(pGC->planemask))
 	return;
 
@@ -290,7 +254,7 @@ int fSorted;
 
     if (pGC->fillStyle == FillTiled)
     {
-	pTile = pGC->tile;
+	pTile = pGC->tile.pixmap;
 	tlwidth = pTile->devKind >> 2;
 	rop = pGC->alu;
     }
@@ -456,17 +420,6 @@ int fSorted;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
     unsigned int fgfill, bgfill;
-
-    switch (pDrawable->depth) {
-	case 1:
-	    mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, 
-		pwidthInit, fSorted);
-	    return;
-	case 8:
-	    break;
-	default:
-	    FatalError("cfbUnnaturalStippleFS: invalid depth\n");
-    }
 
     if (!(pGC->planemask))
 	return;

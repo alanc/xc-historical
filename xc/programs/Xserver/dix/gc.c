@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.125 89/06/09 14:55:57 keith Exp $ */
+/* $XConsortium: gc.c,v 5.0 89/06/09 14:59:18 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -117,6 +117,14 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		break;
 	    case GCForeground:
 		pGC->fgPixel = *pval++;
+		/*
+		 * this is for CreateGC
+		 */
+		if (!pGC->tileIsPixel && pGC->tile.pixmap == None)
+		{
+		    pGC->tileIsPixel = TRUE;
+		    pGC->tile.pixel = pGC->fgPixel;
+		}
 		break;
 	    case GCBackground:
 		pGC->bgPixel = *pval++;
@@ -195,8 +203,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    else
 		    {
 			pPixmap->refcnt++;
-			(* pGC->pScreen->DestroyPixmap)(pGC->tile);
-			pGC->tile = pPixmap;
+			if (!pGC->tileIsPixel)
+			    (* pGC->pScreen->DestroyPixmap)(pGC->tile.pixmap);
+			pGC->tileIsPixel = FALSE;
+			pGC->tile.pixmap = pPixmap;
 		    }
 		}
 		else
@@ -222,7 +232,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    else
 		    {
 			pPixmap->refcnt++;
-			(* pGC->pScreen->DestroyPixmap)(pGC->stipple);
+			if (pGC->stipple)
+			    (* pGC->pScreen->DestroyPixmap)(pGC->stipple);
 			pGC->stipple = pPixmap;
 		    }
 		}
@@ -385,6 +396,14 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		break;
 	}
     }
+    if (pGC->fillStyle == FillTiled && pGC->tileIsPixel)
+    {
+	if (!CreateDefaultTile (pGC))
+	{
+	    pGC->fillStyle = FillSolid;
+	    error = BadAlloc;
+	}
+    }
     (*pGC->funcs->ChangeGC)(pGC, maskQ);
     return error;
 }
@@ -460,7 +479,20 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->fillStyle = FillSolid;
     pGC->fillRule = EvenOddRule;
     pGC->arcMode = ArcPieSlice;
-    pGC->tile = NullPixmap;
+    if (mask & GCForeground)
+    {
+	/*
+	 * magic special case -- ChangeGC checks for this condition
+	 * and snags the Foreground value to create a pseudo default-tile
+	 */
+	pGC->tileIsPixel = FALSE;
+	pGC->tile.pixmap = NullPixmap;
+    }
+    else
+    {
+	pGC->tileIsPixel = TRUE;
+	pGC->tile.pixel = 0;
+    }
 
     pGC->patOrg.x = 0;
     pGC->patOrg.y = 0;
@@ -477,54 +509,6 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->lastWinOrg.x = 0;
     pGC->lastWinOrg.y = 0;
 
-    /* if the client hasn't provided a tile, build one and fill it with
-       the foreground pixel
-    */
-    if(!(mask & GCTile))
-    {
-	XID		tmpval[3];
-	PixmapPtr 	pTile;
-	GCPtr		pgcScratch;
-	xRectangle	rect;
-	short		w, h;
-
-	w = 16; /* XXX arbitrary */
-	h = 16;
-	(*pGC->pScreen->QueryBestSize)(TileShape, &w, &h);
-	pTile = (PixmapPtr)
-		(*pGC->pScreen->CreatePixmap)(pDrawable->pScreen,
-					      w, h, pGC->depth);
-	pgcScratch = GetScratchGC(pGC->depth, pGC->pScreen);
-	if (!pTile || !pgcScratch)
-	{
-	    if (pTile)
-		(*pTile->drawable.pScreen->DestroyPixmap)(pTile);
-	    if (pgcScratch)
-		FreeScratchGC(pgcScratch);
-	    xfree(pGC->dash);
-	    xfree(pGC);
-	    *pStatus = BadAlloc;
-	    return (GCPtr)NULL;
-	}
-	tmpval[0] = GXcopy;
-	tmpval[1] = (mask & GCForeground) ? 
-	    /* blech */
-	    pval[(mask & GCFunction) + ((mask & GCPlaneMask) == GCPlaneMask)] :
-	    pGC->fgPixel;
-	tmpval[2] = FillSolid;
-	(void)ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
-		       tmpval);
-	ValidateGC((DrawablePtr)pTile, pgcScratch);
-	rect.x = 0;
-	rect.y = 0;
-	rect.width = w;
-	rect.height = h;
-	(*pgcScratch->ops->PolyFillRect)(pTile, pgcScratch, 1, &rect);
-	/* Always remember to free the scratch graphics context after use. */
-	FreeScratchGC(pgcScratch);
-
-	pGC->tile = pTile;
-    }
     /* use the default font and stipple */
     pGC->font = defaultFont;
     defaultFont->refcnt++;
@@ -547,6 +531,49 @@ CreateGC(pDrawable, mask, pval, pStatus)
     return (pGC);
 }
 
+static Bool
+CreateDefaultTile (pGC)
+    GCPtr   pGC;
+{
+    XID		tmpval[3];
+    PixmapPtr 	pTile;
+    GCPtr	pgcScratch;
+    xRectangle	rect;
+    short	w, h;
+
+    w = 1;
+    h = 1;
+    (*pGC->pScreen->QueryBestSize)(TileShape, &w, &h);
+    pTile = (PixmapPtr)
+	    (*pGC->pScreen->CreatePixmap)(pGC->pScreen,
+					  w, h, pGC->depth);
+    pgcScratch = GetScratchGC(pGC->depth, pGC->pScreen);
+    if (!pTile || !pgcScratch)
+    {
+	if (pTile)
+	    (*pTile->drawable.pScreen->DestroyPixmap)(pTile);
+	if (pgcScratch)
+	    FreeScratchGC(pgcScratch);
+	return FALSE;
+    }
+    tmpval[0] = GXcopy;
+    tmpval[1] = pGC->tile.pixel;
+    tmpval[2] = FillSolid;
+    (void)ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
+		   tmpval);
+    ValidateGC((DrawablePtr)pTile, pgcScratch);
+    rect.x = 0;
+    rect.y = 0;
+    rect.width = w;
+    rect.height = h;
+    (*pgcScratch->ops->PolyFillRect)(pTile, pgcScratch, 1, &rect);
+    /* Always remember to free the scratch graphics context after use. */
+    FreeScratchGC(pgcScratch);
+
+    pGC->tileIsPixel = FALSE;
+    pGC->tile.pixmap = pTile;
+    return TRUE;
+}
 
 int
 CopyGC(pgcSrc, pgcDst, mask)
@@ -602,12 +629,19 @@ CopyGC(pgcSrc, pgcDst, mask)
 		break;
 	    case GCTile:
 		{
-		    if (pgcDst->tile == pgcSrc->tile)
+		    if (EqualPixUnion(pgcDst->tileIsPixel,
+				      pgcDst->tile,
+				      pgcSrc->tileIsPixel,
+				      pgcSrc->tile))
+		    {
 			break;
-		    (* pgcDst->pScreen->DestroyPixmap)(pgcDst->tile);
+		    }
+		    if (!pgcDst->tileIsPixel)
+			(* pgcDst->pScreen->DestroyPixmap)(pgcDst->tile.pixmap);
+		    pgcDst->tileIsPixel = pgcSrc->tileIsPixel;
 		    pgcDst->tile = pgcSrc->tile;
-		    if (IS_VALID_PIXMAP(pgcDst->tile))
-		       pgcDst->tile->refcnt ++;
+		    if (!pgcDst->tileIsPixel)
+		       pgcDst->tile.pixmap->refcnt++;
 		    break;
 		}
 	    case GCStipple:
@@ -616,8 +650,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 			break;
 		    (* pgcDst->pScreen->DestroyPixmap)(pgcDst->stipple);
 		    pgcDst->stipple = pgcSrc->stipple;
-		    if (IS_VALID_PIXMAP(pgcDst->stipple))
-    		        pgcDst->stipple->refcnt ++;
+    		    pgcDst->stipple->refcnt ++;
 		    break;
 		}
 	    case GCTileStipXOrigin:
@@ -679,6 +712,14 @@ CopyGC(pgcSrc, pgcDst, mask)
 		break;
 	}
     }
+    if (pgcDst->fillStyle == FillTiled && pgcDst->tileIsPixel)
+    {
+	if (!CreateDefaultTile (pgcDst))
+	{
+	    pgcDst->fillStyle = FillSolid;
+	    error = BadAlloc;
+	}
+    }
     (*pgcDst->funcs->CopyGC) (pgcSrc, maskQ, pgcDst);
     return error;
 }
@@ -697,7 +738,8 @@ FreeGC(pGC, gid)
     CloseFont(pGC->font, (Font)0);
     (* pGC->funcs->DestroyClip)(pGC);
 
-    (* pGC->pScreen->DestroyPixmap)(pGC->tile);
+    if (!pGC->tileIsPixel)
+	(* pGC->pScreen->DestroyPixmap)(pGC->tile.pixmap);
     (* pGC->pScreen->DestroyPixmap)(pGC->stipple);
 
     (*pGC->funcs->DestroyGC) (pGC);
@@ -782,7 +824,8 @@ CreateScratchGC(pScreen, depth)
     pGC->font = defaultFont;
     if ( pGC->font)  /* necessary, because open of default font could fail */
 	pGC->font->refcnt++;
-    pGC->tile = NullPixmap;
+    pGC->tileIsPixel = TRUE;
+    pGC->tile.pixel = 0;
     pGC->stipple = NullPixmap;
     pGC->patOrg.x = 0;
     pGC->patOrg.y = 0;

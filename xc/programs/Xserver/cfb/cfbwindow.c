@@ -88,9 +88,10 @@ cfbDestroyWindow(pWin)
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
 
-    /* cfbDestroyPixmap() deals with any NULL pointers */
-    cfbDestroyPixmap(pPrivWin->pRotatedBorder);
-    cfbDestroyPixmap(pPrivWin->pRotatedBackground);
+    if (pPrivWin->pRotatedBorder)
+	cfbDestroyPixmap(pPrivWin->pRotatedBorder);
+    if (pPrivWin->pRotatedBackground)
+	cfbDestroyPixmap(pPrivWin->pRotatedBackground);
     xfree(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
     return(TRUE);
 }

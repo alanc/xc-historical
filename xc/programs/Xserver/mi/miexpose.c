@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.45 89/04/05 09:32:27 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.0 89/06/09 15:08:19 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -681,7 +681,8 @@ int what;
 	    }
 	    break;
 	case GCTile:
-	    if ((XID) pGC->tile != newValues[TILE]) {
+	    if (pGC->tileIsPixel || (XID) pGC->tile.pixmap != newValues[TILE])
+ 	    {
 		gcmask |= index;
 		gcval[i++] = newValues[TILE];
 	    }

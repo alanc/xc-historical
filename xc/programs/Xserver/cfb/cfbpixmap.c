@@ -151,9 +151,6 @@ Bool
 cfbDestroyPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
-    if (!IS_VALID_PIXMAP(pPixmap))
-	return TRUE;
-
     if(--pPixmap->refcnt)
 	return TRUE;
     xfree(pPixmap->devPrivate.ptr);
