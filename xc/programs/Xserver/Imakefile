@@ -194,7 +194,7 @@ ServerTarget(Xibm,$(EXTDIR) $(FONTUTILDIR) $(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(IB
 # apollo server
 #
 APOLLODIRS = dix ddx/snf ddx/mi ddx/mfb ddx/apollo os/4.2bsd
-APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits
+APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits $(FONTUTIL)
 APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
@@ -224,7 +224,7 @@ ServerTarget(Xpeg,$(EXTDIR) $(FONTUTILDIR) $(PEGASUSDIRS),$(PEGASUSOBJS),$(PEGAS
 # macII server
 #
 MACIIDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/macII os/4.2bsd os/sysV
-MACIIOBJS = ddx/macII/macIIInit.o
+MACIIOBJS = ddx/macII/macIIInit.o $(FONTUTIL)
 MACIILIBS = $(MACII) $(CFB) $(DIX) $(UNIX) $(SNF) $(SYSV) $(MFB) $(MI) $(EXTENSIONS)
 MACIISYSLIBS = $(SYSLIBS)
 XmacIIDIRS = $(MACIIDIRS)
