@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.9 88/02/09 17:02:06 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.10 88/04/11 12:01:37 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -253,6 +253,16 @@ startServer(server)
 	case 0:
 		close(0);
 		close(1);
+
+		/*
+		 * don't hang on read/write to control tty
+		 */
+#ifdef SIGTTIN
+		(void) signal(SIGTTIN, SIG_IGN);
+#endif
+#ifdef SIGTTOU
+		(void) signal(SIGTTOU, SIG_IGN);
+#endif
 
 		/*
 		 * prevent server from getting sighup from vhangup()
