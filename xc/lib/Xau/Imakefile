@@ -1,6 +1,6 @@
 #include <Library.tmpl>
 
-       INCLUDES = -I. -I$(TOP)
+       INCLUDES = -I.
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
 

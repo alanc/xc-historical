@@ -1,6 +1,6 @@
 #include <Library.tmpl>
 
-       INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC)
+       INCLUDES = -I$(INCLUDESRC) -I$(XLIBSRC)
    INSTALLFLAGS = $(INSTINCFLAGS)
            SRCS = *.c
         HEADERS = X10.h

@@ -9,7 +9,7 @@
         DESOBJS =
         DESSRCS =
 #endif
-       INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
+       INCLUDES = -I. -I$(INCLUDESRC)
    CONN_DEFINES = ConnectionFlags
      EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
