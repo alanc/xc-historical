@@ -1,4 +1,4 @@
-.TH X 1 "31 December 1989"  "X Version 11"
+.TH X 1 "Release 4"  "X Version 11"
 .SH NAME
 X - a portable, network-transparent window system
 .SH SYNOPSIS
@@ -18,7 +18,7 @@ AOS-4.3 (IBM)
 UTEK 4.0 (Tektronix)
 NEWS-OS 3.2 (Sony; client only)
 UNICOS 5.0.1 (Cray; client only)
-UNIX System V, Release 3.2 (AT&T; client only)
+UNIX(TM) System V, Release 3.2 (AT&T; client only)
 .sp
 Commercial implementations are also available for a much wider range
 of platforms.
@@ -55,6 +55,7 @@ displays.
 For a full explanation of the functions that are available, see
 the \fIXlib - C Language X Interface\fP manual, 
 the \fIX Window System Protocol\fP specification,
+the \fIX Toolkit Intrinsics - C Language Interface\fP manual,
 and various toolkit documents.
 .PP
 The number of programs that use \fIX\fP is growing rapidly.  Of particular
@@ -68,22 +69,23 @@ a bitmap editor (\fIbitmap\fP),
 access control programs (\fIxauth\fP and \fIxhost\fP),
 user preference setting programs (\fIxrdb\fP, \fIxset\fP, \fIxsetroot\fP,
 and \fIxmodmap\fP),
-a load monitor (\fIxload\fP), clock (\fIxclock\fP),
+a load monitor (\fIxload\fP), clocks (\fIxclock\fP and \fIoclock\fP),
 a font displayer (\fIxfd\fP),
 utilities for listing information about fonts, windows, and displays
-(\fIxlsfonts\fP, \fIxlswins\fP, \fIxwininfo\fP, \fIxdpyinfo\fP, 
-and \fIxprop\fP),
+(\fIxlsfonts\fP, \fIxfontsel\fP, \fIxlswins\fP, \fIxwininfo\fP,
+\fIxlsclients\fP, \fIxdpyinfo\fP, and \fIxprop\fP),
 a diagnostic for seeing what events are generated and when (\fIxev\fP),
 screen image manipulation utilities (\fIxwd\fP, \fIxwud\fP, \fIxpr\fP, 
 and \fIxmag\fP),
-and various demos (\fIxeyes\fP, \fIico\fP, \fImuncher\fP, \fIpuzzle\fP, etc.).
+and various demos (\fIxeyes\fP, \fIico\fP, \fImuncher\fP, \fIpuzzle\fP,
+\fIxgc\fP, etc.).
 .PP
 Many other utilities, window managers, games, toolkits, etc. are available
-from the user-contributed distribution.  See your site administrator for
+from the user-contributed software.  See your site administrator for
 details.
 .SH STARTING UP
 .PP 
-There are currently 3 ways of getting the X server and an initial set of
+There are two main ways of getting the X server and an initial set of
 client applications started.  The particular method used depends on what
 operating system you are running and on whether or not you use other window
 systems in addition to X.
@@ -152,7 +154,7 @@ Since each monitor has its own set of windows, each screen is assigned a
 \fIscreen number\fP (beginning at 0) when the X server for that display is
 started.  If the screen number is not given, then screen 0 will be used.
 .PP
-On UNIX systems, the default display name is stored 
+On POSIX systems, the default display name is stored 
 in your DISPLAY environment variable.  This variable is set automatically
 by the \fIxterm\fP terminal emulator.  However, when you log into another
 machine on a network, you'll need to set DISPLAY by hand to point to your
@@ -186,17 +188,18 @@ type of channel
 (also called a transport layer) to be used.  The sample servers from MIT
 support the following types of connections:
 .TP 8
+.I "local"
+.br
+The hostname part of the display name should be the empty string.
+For example:  \fI:0\fP, \fI:1\fP, and \fI:0.1\fP.  The ``best''
+local transport will be chosen.
+.TP 8
 .I TCP\/IP
 .br
 The hostname part of the display name should be the server machine's
 IP address name.  Full Internet names, abbreviated names, and IP addresses
 are all allowed.  For example:  \fIexpo.lcs.mit.edu:0\fP, \fIexpo:0\fP,
 \fI18.30.0.212:0\fP, \fIbigmachine:1\fP, and \fIhydra:0.1\fP.
-.TP 8
-.I "UNIX domain sockets"
-.br
-The hostname part of the display name should be the string "unix" (in lower
-case letters).  For example:  \fIunix:0\fP, \fIunix:1\fP, and \fIunix:0.1\fP.
 .TP 8
 .I DECnet
 .br
@@ -206,26 +209,34 @@ For example:  \fImyws::0\fP, \fIbig::1\fP, and \fIhydra::0.1\fP.
 .PP
 .SH "ACCESS CONTROL"
 The sample server provides two types of access control:  an authorization
-protocol which provides a list of "magic cookies" clients can send to
+protocol which provides a list of ``magic cookies'' clients can send to
 request access, and a list of hosts from which connections are always
-accepted.  \fIXdm\fP initializes the server magic cookie list, and also places
+accepted.  \fIXdm\fP initializes magic cookies in the server, and also places
 them in a file accessable to the user.  Normally, the list of hosts from
-which connections are always accepted is empty.  When you add entries to
-this list (with \fIxhost\fP), the server no longer performs any
-authentication on connections from those machines.  Be careful with this.
+which connections are always accepted should be empty, so that only clients
+with are explicitly authorized can connect to the display.  When you add
+entries to the host list (with \fIxhost\fP), the server no longer performs any
+authorization on connections from those machines.  Be careful with this.
 .PP
-The file for authorization which both \fIxdm\fP and \fIXlib\fP use is
-specified either with the environment variable \fBXAUTHORITY\fP or in the home
-directory with the name \fB.Xauthority\fP.  \fIXdm\fP prefers
+The file for authorization which both \fIxdm\fP and \fIXlib\fP use can be
+specified with the environment variable \fBXAUTHORITY\fP, and defaults to
+the file \fB.Xauthority\fP in the home directory.  \fIXdm\fP uses
 \fB$HOME/.Xauthority\fP and will create it or merge in authorization records
-if it already exists.
+if it already exists when a user logs in.
 .PP
 To manage a collection of authorization files containing a collection of
 authorization records use \fIxauth\fP.  This program allows you to extract
 records and insert them into other files.  Using this, you can send
 authorization to remote machines when you login.  As the files are
 machine-independent, you can also simply copy the files or use NFS to share
-them.
+them.  If you use several machines, and share a common home directory with
+NFS, then you never really have to worry about authorization files, the
+system should work correctly by default.  Note that magic cookies transmitted
+``in the clear'' over NFS or using \fIftp\fP or \fIrcp\fP can be ``stolen''
+by a network eavesdropper, and as such may enable unauthorized access.
+In many environments this level of security is not a concern, but if it is,
+you need to know the exact semantics of the particular magic cookie to know
+if this is actually a problem.
 .PP
 .SH "GEOMETRY SPECIFICATIONS"
 One of the advantages of using window systems instead of
@@ -314,18 +325,7 @@ popup menus, point-and-click or click-to-type input models, title bars, nice
 icons (and an icon manager for those who don't like separate icon windows).
 .PP
 Several other window managers are available in the user-contributed
-distribution: 
-.TP 8
-.I awm
-This window manager is descended from \fIuwm\fP but provides optional title
-bars whose layout can be tailored by the user.
-.TP 8
-.I rtl
-This is a \fItiling\fP window manager that rearranges and resizes windows
-on the screen to prevent them from ever overlapping.
-.PP
-People who find that none of these window managers are acceptable are 
-encouraged to write their own.
+software: \fIgwm\fP, \fIm_swm\fP, \fIolwm\fP, \fItekwm\fP, and \fIuwm\fP.
 .SH "FONT NAMES"
 Collections of characters for displaying text and symbols in X are known as
 \fIfonts\fP.  A font typically contains images that share a common appearance
@@ -354,15 +354,20 @@ The default font path for
 the sample server contains three directories:
 .TP 8
 .I /usr/lib/X11/fonts/misc
-This directory contains several miscellaneous fonts that are useful on all
-systems.  It contains a very small family of fixed-width fonts (\fB6x10\fP, 
-\fB6x12\fP, \fB6x13\fP, \fB8x13\fP, \fB8x13bold\fP, and \fB9x15\fP) and the
-cursor font.  It also has font name aliases for the commonly used fonts
+This directory contains many miscellaneous fonts that are useful on all
+systems.  It contains a small family of fixed-width fonts in pixel heights
+5 through 10, a family of fixed-width fonts from Dale Schumacher in
+similar pixel heights, several Kana fonts from Sony Corporation,
+a Kanji font, the standard cursor font, two cursor fonts from
+Digital Equipment Corporation, and OPEN LOOK(TM) cursor and glyph fonts
+from Sun Microsystems.
+It also has font name aliases for the font names
 \fBfixed\fP and \fBvariable\fP.
 .TP 8
 .I /usr/lib/X11/fonts/75dpi
 This directory contains fonts contributed by Adobe Systems, Inc. and
-Digital Equipment Corporation and by Bitstream, Inc.
+Digital Equipment Corporation, by Bitstream, Inc.,
+and by Bigelow and Holmes and Sun Microsystems, Inc.,
 for 75 dots per inch displays.  An integrated selection of sizes, styles, 
 and weights are provided for each family.
 .TP 8
@@ -485,18 +490,17 @@ the various shift, control, and shift lock keys on the keyboard.
 .I "keymap table"
 Applications translate event keycodes and modifier masks into keysyms
 using a \fIkeysym table\fP which contains one row for each keycode and one
-column for each of the modifiers.  This table is initialized by the server
+column for various modifier states.  This table is initialized by the server
 to correspond to normal typewriter conventions, but is only used by
 client programs.  
 .PP
 Although most programs deal with keysyms directly (such as those written with
-the X Toolkit), most programming libraries provide routines for converting
-keysyms into the appropriate type of string (such as ISO Latin-1).  However,
-programs that use such routines are usually less portable and not as flexible.
+the X Toolkit Intrinsics), most programming libraries provide routines for
+converting keysyms into the appropriate type of string (such as ISO Latin-1).
 .SH "OPTIONS"
 Most X programs attempt to use the same names for command line options and
-arguments.  All applications written with the X Toolkit automatically accept
-the following options:
+arguments.  All applications written with the X Toolkit Intrinsics
+automatically accept the following options:
 .TP 8
 .B \-display \fIdisplay\fP
 This option specifies the name of the X server to use.
@@ -579,7 +583,7 @@ some programs that begin with the letter ``x'' also capitalize the second
 letter for historical reasons.
 The \fIXlib\fP routine
 .I XGetDefault(3X)
-and the resource utilities within the X Toolkit
+and the resource utilities within Xlib and the X Toolkit Intrinsics
 obtain resources from the following sources:
 .TP 8
 .B "RESOURCE_MANAGER root window property"
@@ -589,28 +593,25 @@ root window using the \fIxrdb\fP program.  This is frequently taken care
 of when the user starts up X through the display manager or \fIxinit\fP.
 .TP 8
 .B "application-specific files"
-Any application- or machine-specific resources can be stored in
-the class resource files located in the XAPPLOADDIR directory (this is a 
-configuration parameter that is /usr/lib/X11/app-defaults in the 
-standard distribution).  Programs that use the X Toolkit
-will also look in the directory named by the environment variable
-XAPPLRESDIR (default value is user's home directory)
-for files named \fIClass\fP where \fIClass\fP is the class
-name of the particular application.
-XAPPLOADDIR and XAPPLRESDIR configuration files are actually loaded
-\fIbefore\fP the RESOURCE_MANAGER property, so that the property
-can override the values.
+Programs that use the X Toolkit Intrinsics will also look in the directories
+named by the environment variable XUSERFILESEARCHPATH or the environment
+variable XAPPLRESDIR, plus directories in a standard place (usually under
+/usr/lib/X11/, but this can be overridden with the XFILESEARCHPATH
+environment variable) for application-specific resources.
+See the \fIX Toolkit Intrinsics - C Language Interface\fP manual for
+details.
 .TP 8
 .B XENVIRONMENT
 Any user- and machine-specific resources may be specified by setting
 the XENVIRONMENT environment variable to the name of a resource file
 to be loaded by all applications.  If this variable is not defined,
-the X Toolkit looks for a file named .Xdefaults-\fIhostname\fP,
+a file named .Xdefaults-\fIhostname\fP is looked for instead,
 where \fIhostname\fP is the name of the host where the application
 is executing.
 .TP 8
 .B \-xrm \fIresourcestring\fP
-Applications that use the X Toolkit can have resources specified from the 
+Applications that use the X Toolkit Intrinsics can have resources specified
+from the 
 command line.  The \fIresourcestring\fP is a single resource name and value as
 shown above.  Note that if the string contains characters interpreted by
 the shell (e.g., asterisk), they must be quoted.
@@ -624,7 +625,7 @@ can be set all at once.  By convention, the instance name of a resource
 begins with a lowercase letter and class name with an upper case letter.
 Multiple word resources are concatentated with the first letter of the 
 succeeding words capitalized.  Applications written with the X Toolkit
-will have at least the following resources:
+Intrinsics will have at least the following resources:
 .PP
 .TP 8
 .B background (\fPclass\fB Background)
@@ -638,7 +639,8 @@ This resource specifies the width in pixels of the window border.
 .B borderColor (\fPclass\fB BorderColor)
 This resource specifies the color to use for the window border.
 .PP
-Most X Toolkit applications also have the resource \fBforeground\fP
+Most applications using the X Toolkit Intrinsics also have the resource
+\fBforeground\fP
 (class \fBForeground\fP), specifying the color to use for text
 and graphics within the window.
 .PP
@@ -734,7 +736,8 @@ standard resources to construct diagnostic messages when errors occur.  The
 defaults for these messages are usually stored in \fI/usr/lib/X11/XErrorDB\fP.
 If this file is not present, error messages will be rather terse and cryptic.
 .PP
-When the X Toolkit encounters errors converting resource strings to the
+When the X Toolkit Intrinsics encounter errors converting resource strings to
+the
 appropriate internal format, no error messages are usually printed.  This is
 convenient when it is desirable to have one set of resources across a variety
 of displays (e.g. color vs. monochrome, lots of fonts vs. very few, etc.),
@@ -742,7 +745,8 @@ although it can pose problems for trying to determine why an application might
 be failing.  This behavior can be overridden by the setting the
 \fIStringConversionsWarning\fP resource.
 .PP
-To force the Toolkit to always print string conversion error messages,
+To force the X Toolkit Intrinsics to always print string conversion error
+messages,
 the following resource should be placed at the top of the file that gets
 loaded onto the RESOURCE_MANAGER property
 using the \fIxrdb\fP program (frequently called \fI.Xresources\fP
@@ -759,26 +763,33 @@ the appropriate instance name can be placed before the asterisk:
         xterm*StringConversionWarnings: on
 .fi
 .SH BUGS
-If you encounter a \fBrepeatable\fP bug, please contact your site 
+If you encounter a \fBrepeatable\fP bug, please contact your site
 administrator for instructions on how to submit an X Bug Report.
 .SH "SEE ALSO"
 .PP
-Xserver(1),
+XConsortium(1),
+XStandards(1),
+appres(1), bdftosnf(1), bitmap(1), imake(1), listres(1), maze(1),
 mkfontdir(1),
-bitmap(1), twm(1), xauth(1), xbiff(1), xcalc(1), xclock(1),
-xdpyinfo(1), xedit(1), xev(1), xfd(1), xhost(1), xinit(1), xkill(1), xload(1),
-xlogo(1), xlsfonts(1), xlswins(1), xmag(1), xman(1), xmh(1), xmodmap(1),
-xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1),
-resize(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
-Xapollo(1), Xqdss(1), Xqvss(1), Xsun(1), XmacII(1), Xplx(1), bdftosnf(1),
+muncher(1), oclock(1), puzzle(1), resize(1), showsnf(1), twm(1),
+xauth(1), xbiff(1),
+xcalc(1), xclipboard(1), xclock(1), xditview(1), xdm(1),
+xdpyinfo(1), xedit(1), xev(1), xeyes(1), xfd(1), xfontsel(1), xhost(1),
+xinit(1), xkill(1), xload(1),
+xlogo(1), xlsatoms(1), xlsclients(1), xlsfonts(1), xlswins(1), xmag(1),
+xman(1), xmh(1), xmodmap(1),
+xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1), xstdcmap(1),
+xterm(1), xwd(1), xwininfo(1), xwud(1),
+Xserver(1), Xapollo(1), Xqdss(1), Xqvss(1), Xsun(1), XmacII(1),
 kbd_mode(1), todm(1), tox(1), biff(1), init(8), ttys(5),
 .I "Xlib \- C Language X Interface\fR,\fP"
-.I "X Toolkit Intrinsics - C Language X Interface\fR,\fP"
+.I "X Toolkit Intrinsics - C Language Interface\fR,\fP"
 and
 .I "Using and Specifying X Resources"
 .SH COPYRIGHT
+.PP
 The following copyright and permission notice outlines the rights and
-restrictions covering most parts of the standard distribution of the X Window
+restrictions covering most parts of the core distribution of the X Window
 System from MIT.  Other parts have additional or different copyrights
 and permissions; see the individual source files.
 .sp
@@ -790,19 +801,25 @@ software and its documentation for any purpose is hereby granted without fee,
 provided that the above copyright
 notice appear in all copies and that both that copyright
 notice and this permission notice appear in supporting
-documentation, and that the name of M.I.T. not be used in
+documentation, and that the name of MIT not be used in
 advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.
-M.I.T. makes no representations about the suitability of
+MIT makes no representations about the suitability of
 this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 .sp
 This software is not subject to any license of the American
 Telephone and Telegraph Company or of the Regents of the
 University of California.
+.SH TRADEMARKS
+.PP
+UNIX is a trademark of AT&T Bell Laboratories.
+OPEN LOOK is a trademark of AT&T.
+X Window System is a trademark of MIT.
 .SH AUTHORS
 .PP
-A cast of thousands, literally.  The staff members at MIT responsible
+A cast of thousands, literally.  The X distribution is brought to
+you by the MIT X Consortium.  The staff members at MIT responsible
 for this release are:
 Donna Converse (MIT X Consortium),
 Jim Fulton (MIT X Consortium),
