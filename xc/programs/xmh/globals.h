@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.34 91/07/10 19:35:46 converse Exp $
+ *  $XConsortium: globals.h,v 2.35 91/07/12 17:05:34 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -64,8 +64,11 @@ ext struct _resources {
     int		toc_percentage;
     Boolean	new_mail_check;		/* Whether to check for new mail. */
     Boolean	make_checkpoints;     /* Whether to create checkpoint files. */
-    int		check_frequency;	/* in minutes, of new mail check */
+    int		check_frequency;	/* checkpoint and rescanning minutes */
     int		mail_waiting_flag;	/* If true, change icon on new mail */
+    int		mail_interval;		/* make check_frequency obsolete */
+    int		rescan_interval;
+    int		checkpoint_interval;
     Pixmap	flag_up;		/* folder has new mail */
     Pixmap	flag_down;		/* folder has no new mail */
     Pixmap	new_mail_icon;		/* new mail icon for wm hints */
