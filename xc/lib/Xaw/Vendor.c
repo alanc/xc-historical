@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.11 89/10/09 16:51:47 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.12 89/12/05 14:42:09 swick Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif /* lint */
 
@@ -135,6 +135,9 @@ static void _VendorShellClassInitialize()
 static void _VendorShellInitialize(req, new)
 	Widget req, new;
 {
+    void _EditResCheckMessages();
+
+    XtAddEventHandler(new, (EventMask) 0, TRUE, _EditResCheckMessages, NULL);
 }
 
 /* ARGSUSED */
