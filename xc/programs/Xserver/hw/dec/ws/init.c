@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: init.c,v 1.9 94/02/23 15:56:32 dpw Exp $ */
+/* $XConsortium: init.c,v 1.10 94/04/17 20:29:55 dpw Exp dpw $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -147,17 +147,17 @@ InitOutput(screenInfo, argc, argv)
 	ws_keyboard_control control;
         inited = TRUE;
         if ((wsFd = open("/dev/mouse",  O_RDWR, 0)) < 0) {
-		ErrorF("couldn't open device\n");
-		exit (1);
+		FatalError("couldn't open device /dev/mouse, errno %d (%s)\n",
+			   errno, strerror(errno));
 	}
 	if (ioctl (wsFd, GET_WORKSTATION_INFO, &wsinfo) != 0) {
-		ErrorF("GET_WORKSTATION_INFO failed \n");
-		exit(1);
+		FatalError("GET_WORKSTATION_INFO failed, errno %d (%s)\n",
+			   errno, strerror(errno));
 	}
 	control.device_number = wsinfo.console_keyboard;
 	if (ioctl(wsFd, GET_KEYBOARD_CONTROL, &control) == -1) {
-		ErrorF("GET_KEYBOARD_CONTROL failed\n");
-		exit(1);
+		FatalError("GET_KEYBOARD_CONTROL failed, errno %d (%s)\n",
+			   errno, strerror(errno));
 	}
 	defaultKeyboardControl.click = control.click;
 	defaultKeyboardControl.bell = control.bell;
@@ -248,8 +248,8 @@ InitOutput(screenInfo, argc, argv)
 	int j, DECaccelerator = FALSE;
 	screenDesc[si].screen = i;
 	if (ioctl(wsFd,	 GET_SCREEN_INFO, &screenDesc[si]) == -1) {
-	    ErrorF("GET_SCREEN_INFO failed\n");
-	    exit(1);
+	    FatalError("GET_SCREEN_INFO failed, errno %d (%s)\n",
+		       errno, strerror(errno));
 	}
 	if (si >= MAXSCREENS) {
 	    ErrorF ("Server configured for %d screens, can't configure screen %d\n", MAXSCREENS, si);
@@ -306,8 +306,8 @@ InitInput(argc, argv)
     if (!inited) {
 	inited = TRUE;
 	if (ioctl(wsFd,  GET_AND_MAP_EVENT_QUEUE, &queue) == -1)  {
-		ErrorF("GET_AND_MAP_EVENT_QUEUE failed\n");
-		exit(1);
+		FatalError("GET_AND_MAP_EVENT_QUEUE failed, errno %d (%s)\n",
+			   errno, strerror(errno));
 	}
     }
     SetTimeSinceLastInputEvent ();
