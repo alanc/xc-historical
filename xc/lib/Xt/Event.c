@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.52 88/02/04 09:09:53 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.53 88/02/04 18:58:26 swick Locked $";
 #endif lint
 
 /*
@@ -343,6 +343,13 @@ XtAddExposureToRegion(event, region)
 }
 
 
+/* %%% Multiple display support will require keeping an exposeRegion
+ *     for each open display
+ */
+
+static Region nullRegion;
+static Region exposeRegion;
+
 static void DispatchEvent(event, widget, mask)
     register XEvent    *event;
     Widget    widget;
@@ -353,7 +360,6 @@ static void DispatchEvent(event, widget, mask)
     caddr_t closure[100];
     int numprocs, i;
     XEvent nextEvent;
-    static Region exposeRegion = NULL;
 
     if (mask == ExposureMask) {
 	XtExposeProc expose = widget->core.widget_class->core_class.expose;
@@ -362,7 +368,6 @@ static void DispatchEvent(event, widget, mask)
 		(*expose)(widget, event, (Region)NULL);
 	    }
 	    else {
-		if (exposeRegion == NULL) exposeRegion = XCreateRegion();
 		XtAddExposureToRegion(event, exposeRegion);
 		if (event->xexpose.count == 0) {
 		    /* Patch event to have the new bounding box.  Unless
@@ -374,8 +379,7 @@ static void DispatchEvent(event, widget, mask)
 		    event->xexpose.width = rect.width;
 		    event->xexpose.height = rect.height;
 		    (*expose)(widget, event, exposeRegion);
-		    XDestroyRegion(exposeRegion);
-		    exposeRegion = NULL;
+		    XIntersectRegion( nullRegion, exposeRegion, exposeRegion );
 		}
 	    }
 	}
@@ -649,5 +653,7 @@ void _XtEventInitialize()
 {
     grabList = NULL;
     DestroyList = NULL;
+    nullRegion = XCreateRegion();
+    exposeRegion = XCreateRegion();
     InitializeHash();
 }
