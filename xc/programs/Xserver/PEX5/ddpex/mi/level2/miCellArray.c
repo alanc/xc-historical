@@ -1,4 +1,4 @@
-/* $XConsortium: miCellArray.c,v 5.1 91/02/16 09:55:42 rws Exp $ */
+/* $XConsortium: miCellArray.c,v 5.2 91/05/01 14:41:52 hersh Exp $ */
 
 
 /***********************************************************
@@ -37,7 +37,6 @@ SOFTWARE.
 
 #include <stdio.h>
 
-extern double       sqrt();
 /*++
  |
  |  Function Name:	miCellArray
