@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.13 91/04/16 09:06:26 rws Exp $
+ * $XConsortium: Graphics.c,v 1.14 91/06/27 16:10:45 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,13 +23,8 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-
-
-#include <X11/IntrinsicP.h>
-#include <X11/Xaw/XawInit.h>
-#include <X11/Xmu/Converters.h>
 #include <X11/StringDefs.h>
-#include <X11/Xatom.h>
+#include <X11/IntrinsicP.h>
 #include <X11/Xfuncs.h>
 #include "BitmapP.h"
     
@@ -37,7 +32,6 @@
 #include <string.h>
 #include <math.h>
 
-#define XtStrlen(s)                   ((s) ? strlen(s) : 0)
 #ifndef abs
 #define abs(x)                        (((x) > 0) ? (x) : -(x))
 #endif
