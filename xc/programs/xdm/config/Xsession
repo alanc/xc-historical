@@ -1,8 +1,8 @@
 #!/bin/sh
-# $XConsortium$
+# $XConsortium: Xsession,v 1.7 92/08/06 11:08:14 gildea Exp $
 
 # redirect errors to a file in user's home directory if we can
-for errfile in "$HOME/.xsession-errors" "/tmp/xses-$USER"
+for errfile in "$HOME/.xsession-errors" "${TMPDIR-/tmp}/xses-$USER" "/tmp/xses-$USER"
 do
 	if ( cp /dev/null "$errfile" 2> /dev/null )
 	then
