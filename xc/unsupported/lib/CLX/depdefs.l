@@ -384,10 +384,10 @@
 ;;; Pseudo-class mechanism.
 
 (defmacro def-clx-class ((name &rest options) &body slots)
-  (let ((clos-package (or (find-package 'pcl)
-			  (find-package 'clos)
+  (let ((clos-package (or (find-package 'clos)
+			  (find-package 'pcl)
 			  (let ((lisp-pkg (find-package 'lisp)))
-			    (and (find-symbol "DEFCLASS" lisp-pkg)
+			    (and (find-symbol (string 'defclass) lisp-pkg)
 				 lisp-pkg)))))
     (if #+Genera t #-Genera clos-package
 	(let ((constructor t)
@@ -409,18 +409,20 @@
 		(setf copier (pop option)))
 	      (:predicate
 		(setf predicate (pop option)))))
-	  (flet ((fintern (ctl &rest args)
-		   (intern (apply #'format nil ctl args) *package*))
+	  (flet ((cintern (&rest symbols)
+		   (intern (apply #'concatenate 'simple-string
+				  (mapcar #'symbol-name symbols))
+			   *package*))
 		 (kintern (name)
 		   (intern name (find-package 'keyword)))
 		 (closintern (name)
 		   (intern name clos-package)))
 	    (when (eq constructor t)
-	      (setf constructor (fintern "MAKE-~A" (symbol-name name))))
+	      (setf constructor (cintern 'make- name)))
 	    (when (eq copier t)
-	      (setf copier (fintern "COPY-~A" (symbol-name name))))
+	      (setf copier (cintern 'copy name)))
 	    (when (eq predicate t)
-	      (setf predicate (fintern "~A-P" (symbol-name name))))
+	      (setf predicate (cintern name '-p)))
 	    (when include
 	      (setf slots (append (get include 'def-clx-class) slots)))
 	    (let* ((n-slots (length slots))
@@ -442,15 +444,16 @@
 		 ,(cond #-Genera
 			(clos-package
 			 `(within-definition (,name def-clx-class)
-			    (,(closintern "DEFCLASS")
+			    (,(closintern (string 'defclass))
 			     ,name ,(and include `(,include))
 			     (,@(map 'list
 				     #'(lambda (slot-name slot-initform slot-type)
 					 `(,slot-name
 					   :initform ,slot-initform :type ,slot-type
-					   :accessor ,(fintern "~A-~A"
-							       (symbol-name name)
-							       (symbol-name slot-name))
+					   :accessor ,(cintern 
+							(symbol-name name)
+							'-
+							(symbol-name slot-name))
 					   ,@(when (and constructor
 							(or (eq constructor-args t)
 							    (member slot-name
@@ -461,9 +464,11 @@
 			    ,(when constructor
 			       (if (eq constructor-args t)
 				   `(defun ,constructor (&rest args)
-				      (apply #',(closintern "MAKE-INSTANCE") ',name args))
+				      (apply #',(closintern (string
+							     'make-instance))
+					     ',name args))
 				   `(defun ,constructor ,constructor-args
-				      (,(closintern "MAKE-INSTANCE") ',name
+				      (,(closintern (string 'make-instance)) ',name
 				       ,@(mapcan #'(lambda (slot-name)
 						     (and (member slot-name slot-names)
 							  `(,(kintern (symbol-name slot-name))
@@ -475,7 +480,8 @@
 			    ,(when copier
 			       (error ":COPIER not supported."))
 			    ,(when print-function
-			       `(,(closintern "DEFMETHOD") ,(closintern "PRINT-OBJECT")
+			       `(,(closintern (string 'defmethod))
+				 ,(closintern (string 'print-object))
 				 ((object ,name) stream)
 				 (,print-function object stream 0)))))
 
