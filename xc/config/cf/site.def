@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.22 90/11/30 11:18:02 keith Exp $
+XCOMM site:  $XConsortium: site.def,v 1.23 90/12/01 12:56:25 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -84,41 +84,10 @@ XCOMM site:  $XConsortium: site.def,v 1.22 90/11/30 11:18:02 keith Exp $
  *                                                                           *
  *****************************************************************************/
 
-/*
- * If you want to use GCC, set HasGcc in the appropriate .cf files.  This 
- * results in substantial improvements for the server.
- */
-#ifndef HasGcc
-#define HasGcc NO
-#endif
-
-#if HasGcc
-#ifndef CcCmd
-#ifdef UseInstalled		/* if outside the tree */
-#define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return -fwritable-strings -traditional
-#else				/* server won't compile with -traditional */
-#define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
-#endif
-#endif
-#endif
-
-
-#ifndef ExtensionDefines
-#if SystemV
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DMITMISC
-#else
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC
-#endif
-#endif
-
 #ifdef ATHENA
 #ifndef DoInstallExtensionsIntoXlib
 #define DoInstallExtensionsIntoXlib YES		/* for Makefile hosers */
 #endif
-#endif
-
-#ifndef SharedLibXext
-#define SharedLibXext NO	/* XXX - haven't made it sharable yet */
 #endif
 
 #ifndef HasDESLibrary
