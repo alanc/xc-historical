@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.11 88/10/08 15:38:37 jim Exp $
+ * $XConsortium: handle.c,v 1.12 88/10/08 15:41:35 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -63,11 +63,16 @@ char *copy_to_scratch (s, len)
     return (buf);
 }
 
+static badheader ()
+{
+    fprintf (stderr, "%s:  %s:%d:  bad ", ProgramName, inputFilename, lineno);
+}
+
 static void badmsg (what, arg)
     char *what;
     char *arg;
 {
-    fprintf (stderr, "%s:  %s:%d:  bad ", ProgramName, inputFilename, lineno);
+    badheader ();
     fprintf (stderr, what, arg);
     fprintf (stderr, "\n");
     return;
@@ -90,7 +95,7 @@ void initialize_map ()
 }
 
 static int do_keycode(), do_keysym(), finish_keycode(), get_keysym_list();
-static int do_add(), do_remove(), do_clear(), do_buttons();
+static int do_add(), do_remove(), do_clear(), do_pointer();
 
 int skip_word(), skip_space(), skip_chars();
 
@@ -104,7 +109,7 @@ static struct dt {
     { "add", 3, do_add },
     { "remove", 6, do_remove },
     { "clear", 5, do_clear },
-    { "pointer", 7, do_buttons },
+    { "pointer", 7, do_pointer },
     { NULL, 0, NULL }};
 
 /*
@@ -789,13 +794,13 @@ static int strncmp_nocase (a, b, n)
 
 
 /*
- * do_buttons = get list of numbers of the form
+ * do_pointer = get list of numbers of the form
  *
  *                 buttons = NUMBER ...
  *                         ^
  */
 
-static int do_buttons (line, len)
+static int do_pointer (line, len)
     char *line;
     int len;
 {
@@ -804,12 +809,14 @@ static int do_buttons (line, len)
     int val;
     struct op_pointer *opp;
     unsigned char buttons[MAXBUTTONCODES];
+    int nbuttons;
 
     if (len < 2 || !line || *line == '\0') {  /* =1 minimum */
 	badmsg ("buttons input line", NULL);
 	return (-1);
     }
 
+    nbuttons = XGetPointerMapping (dpy, buttons, MAXBUTTONCODES);
 
     n = skip_space (line, len);
     line += n, len -= n;
@@ -844,6 +851,13 @@ static int do_buttons (line, len)
 	}
     }
     
+    if (i > 0 && i != nbuttons) {
+	badheader ();
+	fprintf (stderr, "number of buttons, must have %d instead of %d\n",
+		 nbuttons, i);
+	return (-1);
+    }
+
     opp = AllocStruct (struct op_pointer);
     if (!opp) {
 	badmsg ("attempt to allocate a %ld byte pointer opcode",
