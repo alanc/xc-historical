@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.26 91/07/16 20:24:51 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.27 91/07/18 22:13:06 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1232,7 +1232,7 @@ GetClientResolutions (num)
 int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, render_names, client_died)
+		     wakeup_func, client_died)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1243,7 +1243,6 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*start_lfwi_func) ();
     int         (*next_lfwi_func) ();
     int         (*wakeup_func) ();
-    FontNamesPtr render_names;
     int		(*client_died) ();
 {
     FPEFunctions *new;
@@ -1269,7 +1268,6 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     fpe_functions[num_fpe_types].reset_fpe = reset_func;
     fpe_functions[num_fpe_types].client_died = client_died;
 
-    fpe_functions[num_fpe_types].renderer_names = render_names;
     return num_fpe_types++;
 }
 
