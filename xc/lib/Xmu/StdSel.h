@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
+ * $XConsortium: StdSel.h,v 1.1 89/07/14 17:51:56 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,7 +22,26 @@
 #ifndef _XMU_SELECTION_H_
 #define _XMU_SELECTION_H_
 
-Boolean XmuConvertStandardSelection( /* Widget, Time, Atom*, ... */ );
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern Boolean XmuConvertStandardSelection(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    Time		/* time */,
+    Atom*		/* selection */,
+    Atom*		/* target */,
+    Atom*		/* type_return */,
+    caddr_t *		/* value_return */,
+    unsigned long *	/* length_return */,
+    int *		/* format_return */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_SELECTION_H_ */
 

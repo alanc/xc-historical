@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WindowUtil.h,v 1.1 89/07/14 17:51:57 jim Exp $
+ * $XConsortium: CurUtil.h,v 1.1 89/07/19 15:40:17 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,6 +22,18 @@
 #ifndef _XMU_CURUTIL_H_
 #define _XMU_CURUTIL_H_
 
-extern int XmuCursorNameToIndex();
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern int XmuCursorNameToIndex(
+#if NeedFunctionPrototypes
+    _Xconst char*	/* name */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_CURUTIL_H_ */

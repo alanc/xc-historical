@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CvtCache.h,v 1.2 89/08/17 18:15:15 jim Exp $
+ * $XConsortium: CvtCache.h,v 1.3 89/11/30 18:21:42 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,6 +27,9 @@
  *     Display *dpy;
  */
 
+#ifndef _XMU_CVTCACHE_H_
+#define _XMU_CVTCACHE_H_
+
 #include <X11/Xmu/DisplayQue.h>
 
 typedef struct _XmuCvtCache {
@@ -36,4 +39,18 @@ typedef struct _XmuCvtCache {
     /* add other per-display data that needs to be cached */
 } XmuCvtCache;
 
-extern XmuCvtCache *_XmuCCLookupDisplay();
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern XmuCvtCache *_XmuCCLookupDisplay(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
+
+#endif _XMU_CVTCACHE_H_
