@@ -20,70 +20,6 @@
 
 (in-package :xlib)
 
-(export '(wm-name		;These are all setf'able accessor functions
-	  wm-icon-name
-	  wm-client-machine
-	  wm-command
-	  wm-hints
-	  wm-normal-hints
-	  icon-sizes
-	  wm-protocols
-	  wm-colormap-windows
-
-	  wm-size-hints
-	  wm-size-hints-p
-	  make-wm-size-hints
-	  wm-size-hints-user-specified-position-p
-	  wm-size-hints-user-specified-size-p
-	  wm-size-hints-min-width
-	  wm-size-hints-min-height
-	  wm-size-hints-max-width
-	  wm-size-hints-max-height
-	  wm-size-hints-width-inc
-	  wm-size-hints-height-inc
-	  wm-size-hints-min-aspect
-	  wm-size-hints-max-aspect
-	  wm-size-hints-base-width
-	  wm-size-hints-base-height
-	  wm-size-hints-win-gravity
-
-	  wm-hints
-	  wm-hints-p
-	  make-wm-hints
-	  wm-hints-input
-	  wm-hints-initial-state
-	  wm-hints-icon-pixmap
-	  wm-hints-icon-window
-	  wm-hints-icon-x
-	  wm-hints-icon-y
-	  wm-hints-icon-mask
-	  wm-hints-window-group
-	  wm-hints-flags
-
-	  transient-for
-
-	  set-wm-properties
-	  iconify-window
-	  withdraw-window
-
-	  get-wm-class
-	  set-wm-class
-	  rgb-colormaps
-
-	  cut-buffer   ;; Setf'able
-	  rotate-cut-buffers
-
-	  ;; Obsolete
-	  wm-zoom-hints
-	  wm-size-hints-x
-	  wm-size-hints-y
-	  wm-size-hints-width
-	  wm-size-hints-height
-	  set-standard-properties
-	  get-standard-colormap
-	  set-standard-colormap
-	  ))
-
 (defun wm-name (window)
   (declare (type window window))
   (declare (values string))
@@ -413,16 +349,15 @@
 	(pwingravity #b1000000000)	;Program specfied window gravity
 	)
     (let ((vector (make-array 18 :initial-element 0))
-	  (flags 0))
+	  (flags  (if (wm-size-hints-user-specified-position-p hints) usposition pposition)))
       (declare (type (simple-vector 18) vector)
-	       (type card16 flags))
-      (when (and (wm-size-hints-x hints) (wm-size-hints-y hints))
-	(setq flags (if (wm-size-hints-user-specified-position-p hints) usposition pposition))
+	       (type card16 flags)) 
+      (when (and (wm-size-hints-x hints) (wm-size-hints-y hints)) 
 	(setf (aref vector 1) (wm-size-hints-x hints)
 	      (aref vector 2) (wm-size-hints-y hints)))
+      (setf flags (logior flags (if (wm-size-hints-user-specified-position-p hints) ussize psize)))
       (when (and (wm-size-hints-width hints) (wm-size-hints-height hints))
-	(setf flags (logior flags (if (wm-size-hints-user-specified-position-p hints) ussize psize))
-	      (aref vector 3) (wm-size-hints-width hints)
+	(setf (aref vector 3) (wm-size-hints-width hints)
 	      (aref vector 4) (wm-size-hints-height hints)))
       
       (when (and (wm-size-hints-min-width hints) (wm-size-hints-min-height hints))

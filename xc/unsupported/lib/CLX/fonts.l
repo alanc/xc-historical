@@ -18,14 +18,6 @@
 
 (in-package :xlib)
 
-(export '(
-	  open-font
-	  discard-font-info
-	  close-font
-	  list-font-names
-	  list-fonts
-	  font-path))
-
 ;; The char-info stuff is here instead of CLX because of uses of int16->card16.
 
 ; To allow efficient storage representations, the type char-info is not

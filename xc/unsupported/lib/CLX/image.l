@@ -20,37 +20,6 @@
 
 (in-package :xlib)
 
-(export '(bitmap
-	  pixarray 
-	  image
-	  image-width
-	  image-height
-	  image-depth
-	  image-plist
-	  image-name
-	  image-x-hot
-	  image-y-hot
-	  image-red-mask
-	  image-blue-mask
-	  image-green-mask
-	  image-x
-	  image-xy
-	  image-z
-	  image-x-p
-	  image-xy-p
-	  image-z-p
-	  image-xy-bitmap-list
-	  image-z-bits-per-pixel
-	  image-z-pixarray
-	  create-image
-	  get-image
-	  put-image
-	  copy-image
-	  read-bitmap-file
-	  write-bitmap-file
-	  bitmap-image
-	  image-pixmap))
-
 (def-clx-class (image (:constructor nil) (:copier nil) (:predicate nil))
   ;; Public structure
   (width 0 :type card16 :read-only t)

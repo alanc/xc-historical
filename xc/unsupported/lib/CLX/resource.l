@@ -20,23 +20,6 @@
 
 (in-package :xlib)
 
-(export '(resource-database
-	   resource-database-timestamp
-	   make-resource-database
-	   resource-key
-	   get-resource
-	   get-search-table
-	   get-search-resource
-	   add-resource
-	   delete-resource 
-	   map-resource 
-	   merge-resources
-	   read-resources
-	   write-resources
-	   wm-resources
-	   set-wm-resources
-	   root-resources))
-
 #+clue ;; for CLUE only
 (defparameter *resource-subclassp* nil
   "When non-nil and no match found, search superclasses.")

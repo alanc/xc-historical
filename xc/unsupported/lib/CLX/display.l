@@ -20,22 +20,6 @@
 
 (in-package :xlib)
 
-(export '(
-	  with-display
-	  with-event-queue
-	  open-display
-	  display-force-output
-	  close-display
-	  display-protocol-version
-	  display-vendor
-	  display-roots
-	  display-motion-buffer-size
-	  display-max-request-length
-	  display-error-handler
-	  display-after-function
-	  display-invoke-after-function
-	  display-finish-output))
-
 ;;
 ;; Resource id management
 ;;

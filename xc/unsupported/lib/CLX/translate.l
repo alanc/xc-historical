@@ -18,24 +18,6 @@
 
 (in-package :xlib)
 
-(export '(define-keysym-set
-	  keysym-set
-	  define-keysym
-	  undefine-keysym
-	  default-keysym-translate
-	  keysym
-	  character->keysyms
-	  keycode->keysym 
-	  keysym->character
-	  default-keysym-index
-	  keycode->character
-	  state-keysym-p
-	  mapping-notify
-	  keysym-in-map-p
-	  character-in-map-p
-	  keysym->keycodes
-	  ))
-
 (defvar *keysym-sets* nil) ;; Alist of (name first-keysym last-keysym)
 
 (defun define-keysym-set (set first-keysym last-keysym)

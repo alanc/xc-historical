@@ -44,41 +44,6 @@
 
 (in-package :xlib)
 
-(export '(force-gcontext-changes
-	  with-gcontext
-	  create-gcontext
-	  copy-gcontext-components
-	  copy-gcontext
-	  free-gcontext
-	  
-	  gcontext-function
-	  gcontext-plane-mask
-	  gcontext-foreground
-	  gcontext-background
-	  gcontext-line-width
-	  gcontext-line-style
-	  gcontext-cap-style
-	  gcontext-join-style
-	  gcontext-fill-style
-	  gcontext-fill-rule
-	  gcontext-tile
-	  gcontext-stipple
-	  gcontext-ts-x
-	  gcontext-ts-y
-	  gcontext-font
-	  gcontext-subwindow-mode
-	  gcontext-exposures
-	  gcontext-clip-x
-	  gcontext-clip-y
-	  gcontext-clip-mask
-	  gcontext-dashes
-	  gcontext-arc-mode
-	  gcontext-dash-offset
-          gcontext-clip-ordering
-
-	  define-gcontext-accessor
-	  ))
-
 ;; GContext state accessors
 ;;	The state vector contains all card32s to speed server updating
 

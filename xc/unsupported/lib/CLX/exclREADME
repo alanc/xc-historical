@@ -10,9 +10,6 @@ moving files around.  In this directory, execute (assuming you using csh):
 % foreach i (*.l */*.l)
 ? mv $i $i:r.cl
 ? end
-% mkdir MIT
-% mv defsystem.cl MIT
-% mv excldefsys.cl defsystem.cl
 % mv exclMakefile Makefile
 
      The second is compiling the source files into fasl files.  The fasl files

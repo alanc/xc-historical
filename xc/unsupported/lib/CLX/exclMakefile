@@ -37,23 +37,23 @@ SAFETY	= 0
 C_SRC	= excldep.c socket.c
 C_OBJS	= excldep.o socket.o
 
-L_OBJS	= excldep.fasl defsystem.fasl depdefs.fasl clx.fasl dependent.fasl \
-	  exclcmac.fasl macros.fasl bufmac.fasl buffer.fasl display.fasl \
-	  gcontext.fasl requests.fasl input.fasl fonts.fasl graphics.fasl \
-	  text.fasl attributes.fasl translate.fasl keysyms.fasl manager.fasl \
-	  image.fasl resource.fasl
+L_OBJS	= defsystem.fasl package.fasl excldep.fasl depdefs.fasl clx.fasl \
+	dependent.fasl exclcmac.fasl macros.fasl bufmac.fasl buffer.fasl \
+	display.fasl gcontext.fasl requests.fasl input.fasl fonts.fasl \
+	graphics.fasl text.fasl attributes.fasl translate.fasl keysyms.fasl \
+	manager.fasl image.fasl resource.fasl
 
-L_NOMACROS_OBJS	= excldep.fasl depdefs.fasl clx.fasl dependent.fasl \
-	buffer.fasl display.fasl gcontext.fasl \
+L_NOMACROS_OBJS	= package.fasl excldep.fasl depdefs.fasl clx.fasl \
+	dependent.fasl buffer.fasl display.fasl gcontext.fasl \
 	requests.fasl input.fasl fonts.fasl graphics.fasl text.fasl \
 	attributes.fasl translate.fasl keysyms.fasl manager.fasl image.fasl \
 	resource.fasl
 
-L_SRC	= defsystem.cl depdefs.cl clx.cl dependent.cl exclcmac.cl \
-	  macros.cl bufmac.cl buffer.cl display.cl gcontext.cl \
-	  requests.cl input.cl fonts.cl graphics.cl text.cl \
-	  attributes.cl translate.cl keysyms.cl manager.cl image.cl \
-	  resource.cl
+L_SRC	= defsystem.cl package.cl excldep.cl depdefs.cl clx.cl \
+	dependent.cl exclcmac.cl macros.cl bufmac.cl buffer.cl \
+	display.cl gcontext.cl requests.cl input.cl fonts.cl \
+	graphics.cl text.cl attributes.cl translate.cl keysyms.cl \
+	manager.cl image.cl resource.cl
 
 
 all:	$(C_OBJS) compile-CLX cat
@@ -73,11 +73,10 @@ compile-CLX:	$(C_OBJS)
 	$(ECHO) " \
 		(set-case-mode :case-sensitive-lower) \
 		(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
-		(compile-file-if-needed \"excldep\") \
 		(compile-file-if-needed \"defsystem\") \
 		(load \"defsystem\") \
 		#+allegro (compile-system :clx) \
-		#-allegro (xlib::compile-clx) \
+		#-allegro (compile-clx) \
 		#+allegro (compile-system :clx-debug)" \
 		| $(CL) $(CLOPTS) -batch
 
@@ -93,11 +92,10 @@ compile-closified-CLX:	$(C_OBJS)
 		    (provide :pcl) \
 		    (gc) (gc) \
 		    (setf (sys:gsgc-parameter :generation-spread) spread))) \
-		(compile-file-if-needed \"excldep\") \
 		(compile-file-if-needed \"defsystem\") \
 		(load \"defsystem\") \
 		#+allegro (compile-system :clx) \
-		#-allegro (xlib::compile-clx) \
+		#-allegro (compile-clx) \
 		#+allegro (compile-system :clx-debug)" \
 		| $(CL) $(CLOPTS) -batch
 
@@ -111,7 +109,7 @@ load-CLX:
 		 "(let (#+allegro (spread (sys:gsgc-parameter :generation-spread)))" \
 		 "  #+allegro (setf (sys:gsgc-parameter :generation-spread) 1)" \
 		 "  #+allegro (load-system :clx)" \
-		 "  #-allegro (xlib::load-clx)" \
+		 "  #-allegro (load-clx)" \
 		 "  #+allegro (gc :tenure)" \
 		 "  #+allegro (setf (sys:gsgc-parameter :generation-spread) spread)" \
 		 ")" \

@@ -14,9 +14,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package :xlib :use '(:foreign-functions :lisp :excl))
-
-(import '(excl::defcmacro))
+(in-package :xlib)
 
 ;;
 ;; Type predicates

@@ -20,20 +20,6 @@
 
 (in-package :xlib)
 
-#+lcl3.0
-(import '(
-	  lcl:define-condition
-	  lcl:type-error
-	  lucid::type-error-datum
-	  lucid::type-error-expected-type
-	  sys:underlying-simple-vector))
-
-(export '(
-	  char->card8
-	  card8->char
-	  default-error-handler
-	  #-ansi-common-lisp define-condition))
-
 #+explorer
 (zwei:define-indentation event-case (1 1))
 
@@ -1914,6 +1900,14 @@
 ;; Where option is one of: (:documentation doc-string) (:conc-name symbol-or-string)
 ;; or (:report exp)
 
+#+lcl3.0 
+(defmacro define-condition (name (parent-type) &optional slots &rest args)
+  `(lcl:define-condition ,name (,parent-type) ,(mapcar #'car slots) ,@args))
+
+#+excl
+(defmacro define-condition (name (parent-type) &optional slots &rest args)
+  `(excl::define-condition ,name (,parent-type) ,(mapcar #'car slots) ,@args))
+
 #+(and lispm (not ansi-common-lisp))
 (defmacro define-condition (name parents &body options)
   (let ((slots (pop options))
@@ -1926,7 +1920,7 @@
 	(:conc-name (setq conc-name (string (second item))))
 	(:report (setq reporter (second item)))))
     `(within-definition (,name define-condition)
-       (zl:defflavor ,name ,slots ,parents
+       (zl:defflavor ,name ,(mapcar #'car slots) ,parents
 	 :initable-instance-variables
 	 #-Genera
 	 (:accessor-prefix ,conc-name)
@@ -2002,7 +1996,7 @@
 		     (:print-function condition-print)
 		     (:include ,(car parents)
 		      (report-function ',report-function)))
-	   ,@slots)
+	   ,@(mapcar #'car slots))
 	 ,(when documentation
 	    `(setf (documentation name 'type) ,documentation))
 	 ,(when reporter
@@ -2032,12 +2026,13 @@
 
 #-(or ansi-common-lisp excl lcl3.0)
 (define-condition type-error (x-error)
-  (datum
-   expected-type)
-  (:report (lambda (condition stream)
-	     (format stream "~s isn't a ~a"
-		     (type-error-datum condition)
-		     (type-error-expected-type condition)))))
+  ((datum :reader type-error-datum)
+   (expected-type :reader type-error-expected-type))
+  (:report
+    (lambda (condition stream)
+      (format stream "~s isn't a ~a"
+	      (type-error-datum condition)
+	      (type-error-expected-type condition)))))
 
 
 ;;-----------------------------------------------------------------------------

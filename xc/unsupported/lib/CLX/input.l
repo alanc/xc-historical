@@ -27,71 +27,6 @@
 
 (in-package :xlib)
 
-(export '(
-	  event-listen
-	  queue-event
-	  process-event
-	  make-event-handlers
-	  event-handler
-	  event-case
-	  event-cond
-	  discard-current-event
-	  request-error
-	  value-error
-	  window-error
-	  pixmap-error
-	  atom-error
-	  cursor-error
-	  font-error
-	  match-error
-	  drawable-error
-	  access-error
-	  alloc-error
-	  colormap-error
-	  gcontext-error
-	  id-choice-error
-	  name-error
-	  length-error
-	  implementation-error
-	  request-error
-	  resource-error
-	  unknown-error
-	  access-error
-	  alloc-error
-	  atom-error
-	  colormap-error
-	  cursor-error
-	  drawable-error
-	  font-error
-	  gcontext-error
-	  id-choice-error
-	  illegal-request-error
-	  length-error
-	  match-error
-	  name-error
-	  pixmap-error
-	  value-error
-	  window-error
-	  implementation-error
-	  #-ansi-common-lisp type-error
-	  closed-display
-	  lookup-error
-	  connection-failure
-	  reply-length-error
-	  reply-timeout
-	  sequence-error
-	  unexpected-reply
-	  missing-parameter
-	  invalid-font
-	  device-busy
-	  get-external-event-code
-	  define-extension
-	  extension-opcode
-	  define-error
-	  decode-core-error
-	  declare-event
-	  ))
-
 ;; Event Resource
 (defvar *event-free-list* nil) ;; List of unused (processed) events
 
@@ -1595,13 +1530,13 @@
 
 #-(or ansi-common-lisp excl lcl3.0)
 (define-condition request-error (x-error)
-  (display
-   error-key
-   major
-   minor
-   sequence
-   current-sequence
-   asynchronous)
+  ((display :reader request-error-display)
+   (error-key :reader request-error-error-key)
+   (major :reader request-error-major)
+   (minor :reader request-error-minor)
+   (sequence :reader request-error-sequence)
+   (current-sequence :reader request-error-current-sequence)
+   (asynchronous :reader request-error-asynchronous))
   (:report report-request-error))
 
 (defun report-request-error (condition stream)
@@ -1620,36 +1555,39 @@
 ;; define-condition must come after the function definition.
 #+(or ansi-common-lisp excl lcl3.0)
 (define-condition request-error (x-error)
-  (display
-   error-key
-   major
-   minor
-   sequence
-   current-sequence
-   asynchronous)
+  ((display :reader request-error-display)
+   (error-key :reader request-error-error-key)
+   (major :reader request-error-major)
+   (minor :reader request-error-minor)
+   (sequence :reader request-error-sequence)
+   (current-sequence :reader request-error-current-sequence)
+   (asynchronous :reader request-error-asynchronous))
   (:report report-request-error))
 
 (define-condition resource-error (request-error)
-  (resource-id)
-  (:report (lambda (condition stream)
-	     (report-request-error condition stream)
-	     (format stream " ID #x~x" (resource-error-resource-id condition)))))  
+  ((resource-id :reader resource-error-resource-id))
+  (:report
+    (lambda (condition stream)
+      (report-request-error condition stream)
+      (format stream " ID #x~x" (resource-error-resource-id condition)))))  
 
 (define-condition unknown-error (request-error)
-  (error-code)
-  (:report (lambda (condition stream)
-	     (report-request-error condition stream)
-	     (format stream " Error Code ~d." (unknown-error-error-code condition)))))
+  ((error-code :reader unknown-error-error-code))
+  (:report
+    (lambda (condition stream)
+      (report-request-error condition stream)
+      (format stream " Error Code ~d." (unknown-error-error-code condition)))))
 
 (define-condition access-error (request-error))
 
 (define-condition alloc-error (request-error))
 
 (define-condition atom-error (request-error)
-  (atom-id)
-  (:report (lambda (condition stream)
-	     (report-request-error condition stream)
-	     (format stream " Atom-ID #x~x" (atom-error-atom-id condition)))))
+  ((atom-id :reader atom-error-atom-id))
+  (:report
+    (lambda (condition stream)
+      (report-request-error condition stream)
+      (format stream " Atom-ID #x~x" (atom-error-atom-id condition)))))
 
 (define-condition colormap-error (resource-error))
 
@@ -1674,10 +1612,11 @@
 (define-condition pixmap-error (resource-error))
 
 (define-condition value-error (request-error)
-  (value)
-  (:report (lambda (condition stream)
-	     (report-request-error condition stream)
-	     (format stream " Value ~d." (value-error-value condition)))))
+  ((value :reader value-error-value))
+  (:report
+    (lambda (condition stream)
+      (report-request-error condition stream)
+      (format stream " Value ~d." (value-error-value condition)))))
 
 (define-condition window-error (resource-error))
 
@@ -1687,132 +1626,151 @@
 ;; Internal error conditions signaled by CLX
 
 (define-condition x-type-error (type-error)
-  (type-string)
-  (:report (lambda (condition stream)
-	     (format stream "~s isn't a ~a"
-		     (type-error-datum condition)
-		     (or (x-type-error-type-string condition)
-			 (type-error-expected-type condition))))))
+  ((type-string :reader x-type-error-type-string))
+  (:report
+    (lambda (condition stream)
+      (format stream "~s isn't a ~a"
+	      (type-error-datum condition)
+	      (or (x-type-error-type-string condition)
+		  (type-error-expected-type condition))))))
 
 (define-condition closed-display (x-error)
-  (display)
-  (:report (lambda (condition stream)
-	     (format stream "Attempt to use closed display ~s"
-		     (closed-display-display condition)))))
+  ((display :reader closed-display-display))
+  (:report
+    (lambda (condition stream)
+      (format stream "Attempt to use closed display ~s"
+	      (closed-display-display condition)))))
 
 (define-condition lookup-error (x-error)
-  (id display type object)
-  (:report (lambda (condition stream)
-	     (format stream "ID ~d from display ~s should have been a ~s, but was ~s"
-		     (lookup-error-id condition)
-		     (lookup-error-display condition)
-		     (lookup-error-type condition)
-		     (lookup-error-object condition)))))  
+  ((id :reader lookup-error-id)
+   (display :reader lookup-error-display)
+   (type :reader lookup-error-type)
+   (object :reader lookup-error-object))
+  (:report
+    (lambda (condition stream)
+      (format stream "ID ~d from display ~s should have been a ~s, but was ~s"
+	      (lookup-error-id condition)
+	      (lookup-error-display condition)
+	      (lookup-error-type condition)
+	      (lookup-error-object condition)))))  
 
 (define-condition connection-failure (x-error)
-  (major-version
-   minor-version
-   host
-   display
-   reason)
-  (:report (lambda (condition stream)
-	     (format stream "Connection failure to X~d.~d server ~a display ~d: ~a"
-		     (connection-failure-major-version condition)
-		     (connection-failure-minor-version condition)
-		     (connection-failure-host condition)
-		     (connection-failure-display condition)
-		     (connection-failure-reason condition)))))
+  ((major-version :reader connection-failure-major-version)
+   (minor-version :reader connection-failure-minor-version)
+   (host :reader connection-failure-host)
+   (display :reader connection-failure-display)
+   (reason :reader connection-failure-reason))
+  (:report
+    (lambda (condition stream)
+      (format stream "Connection failure to X~d.~d server ~a display ~d: ~a"
+	      (connection-failure-major-version condition)
+	      (connection-failure-minor-version condition)
+	      (connection-failure-host condition)
+	      (connection-failure-display condition)
+	      (connection-failure-reason condition)))))
   
 (define-condition reply-length-error (x-error)
-  (reply-length
-   expected-length
-   display)
-  (:report (lambda (condition stream)
-	     (format stream "Reply length was ~d when ~d words were expected for display ~s"
-		     (reply-length-error-reply-length condition)
-		     (reply-length-error-expected-length condition)
-		     (reply-length-error-display condition)))))  
+  ((reply-length :reader reply-length-error-reply-length)
+   (expected-length :reader reply-length-error-expected-length)
+   (display :reader reply-length-error-display))
+  (:report
+    (lambda (condition stream)
+      (format stream "Reply length was ~d when ~d words were expected for display ~s"
+	      (reply-length-error-reply-length condition)
+	      (reply-length-error-expected-length condition)
+	      (reply-length-error-display condition)))))  
 
 (define-condition reply-timeout (x-error)
-  (timeout
-   display)
-  (:report (lambda (condition stream)
-	     (format stream "Timeout after waiting ~d seconds for a reply for display ~s"
-		     (reply-timeout-timeout condition)
-		     (reply-timeout-display condition)))))  
+  ((timeout :reader reply-timeout-timeout)
+   (display :reader reply-timeout-display))
+  (:report
+    (lambda (condition stream)
+      (format stream "Timeout after waiting ~d seconds for a reply for display ~s"
+	      (reply-timeout-timeout condition)
+	      (reply-timeout-display condition)))))  
 
 (define-condition sequence-error (x-error)
-  (display
-   req-sequence
-   msg-sequence)
-  (:report (lambda (condition stream)
-	     (format stream "Reply out of sequence for display ~s.~%  Expected ~d, Got ~d"
-		     (sequence-error-display condition)
-		     (sequence-error-req-sequence condition)
-		     (sequence-error-msg-sequence condition)))))  
+  ((display :reader sequence-error-display)
+   (req-sequence :reader sequence-error-req-sequence)
+   (msg-sequence :reader sequence-error-msg-sequence))
+  (:report
+    (lambda (condition stream)
+      (format stream "Reply out of sequence for display ~s.~%  Expected ~d, Got ~d"
+	      (sequence-error-display condition)
+	      (sequence-error-req-sequence condition)
+	      (sequence-error-msg-sequence condition)))))  
 
 (define-condition unexpected-reply (x-error)
-  (display
-   msg-sequence
-   req-sequence
-   length)
-  (:report (lambda (condition stream)
-	     (format stream "Display ~s received a server reply when none was expected.~@
-		             Last request sequence ~d Reply Sequence ~d Reply Length ~d bytes."
-		  (unexpected-reply-display condition)
-		  (unexpected-reply-req-sequence condition)
-		  (unexpected-reply-msg-sequence condition)
-		  (unexpected-reply-length condition)))))
+  ((display :reader unexpected-reply-display)
+   (msg-sequence :reader unexpected-reply-msg-sequence)
+   (req-sequence :reader unexpected-reply-req-sequence)
+   (length :reader unexpected-reply-length))
+  (:report
+    (lambda (condition stream)
+      (format stream "Display ~s received a server reply when none was expected.~@
+		      Last request sequence ~d Reply Sequence ~d Reply Length ~d bytes."
+	      (unexpected-reply-display condition)
+	      (unexpected-reply-req-sequence condition)
+	      (unexpected-reply-msg-sequence condition)
+	      (unexpected-reply-length condition)))))
 
 (define-condition missing-parameter (x-error)
-  (parameter)
-  (:report (lambda (condition stream)
-	     (let ((parm (missing-parameter-parameter condition)))
-	       (if (consp parm)
-		   (format stream "One or more of the required parameters ~a is missing."
-			   parm)
-		 (format stream "Required parameter ~a is missing or null." parm))))))
+  ((parameter :reader missing-parameter-parameter))
+  (:report
+    (lambda (condition stream)
+      (let ((parm (missing-parameter-parameter condition)))
+	(if (consp parm)
+	    (format stream "One or more of the required parameters ~a is missing."
+		    parm)
+	  (format stream "Required parameter ~a is missing or null." parm))))))
 
 ;; This can be signalled anywhere a pseudo font access fails.
 (define-condition invalid-font (x-error)
-  (font)
-  (:report (lambda (condition stream)
-	     (format stream "Can't access font ~s" (invalid-font-font condition)))))
+  ((font :reader invalid-font-font))
+  (:report
+    (lambda (condition stream)
+      (format stream "Can't access font ~s" (invalid-font-font condition)))))
 
 (define-condition device-busy (x-error)
-  (display)
-  (:report (lambda (condition stream)
-	     (format stream "Device busy for display ~s"
-		     (device-busy-display condition)))))
+  ((display :reader device-busy-display))
+  (:report
+    (lambda (condition stream)
+      (format stream "Device busy for display ~s"
+	      (device-busy-display condition)))))
 
 (define-condition unimplemented-event (x-error)
-  (display
-   event-code)
-  (:report (lambda (condition stream)
-	     (format stream "Event code ~d not implemented for display ~s"
-		     (unimplemented-event-event-code condition)
-		     (unimplemented-event-display condition)))))
+  ((display :reader unimplemented-event-display)
+   (event-code :reader unimplemented-event-event-code))
+  (:report
+    (lambda (condition stream)
+      (format stream "Event code ~d not implemented for display ~s"
+	      (unimplemented-event-event-code condition)
+	      (unimplemented-event-display condition)))))
 
 (define-condition undefined-event (x-error)
-  (display
-   event-name)
-  (:report (lambda (condition stream)
-	     (format stream "Event code ~d undefined for display ~s"
-		     (undefined-event-event-name condition)
-		     (undefined-event-display condition)))))
+  ((display :reader undefined-event-display)
+   (event-name :reader undefined-event-event-name))
+  (:report
+    (lambda (condition stream)
+      (format stream "Event code ~d undefined for display ~s"
+	      (undefined-event-event-name condition)
+	      (undefined-event-display condition)))))
 
 (define-condition absent-extension (x-error)
-  (name display)
-  (:report (lambda (condition stream)
-	     (format stream "Extension ~a isn't defined for display ~s"
-		     (absent-extension-name condition)
-		     (absent-extension-display condition)))))
+  ((name :reader absent-extension-name)
+   (display :reader absent-extension-display))
+  (:report
+    (lambda (condition stream)
+      (format stream "Extension ~a isn't defined for display ~s"
+	      (absent-extension-name condition)
+	      (absent-extension-display condition)))))
 
 (define-condition inconsistent-parameters (x-error)
-  (parameters)
-  (:report (lambda (condition stream)
-	     (format stream "inconsistent-parameters:~{ ~s~}"
-		     (inconsistent-parameters-parameters condition)))))
+  ((parameters :reader inconsistent-parameters-parameters))
+  (:report
+    (lambda (condition stream)
+      (format stream "inconsistent-parameters:~{ ~s~}"
+	      (inconsistent-parameters-parameters condition)))))
 
 (defun get-error-key (display error-code)
   (declare (type display display)

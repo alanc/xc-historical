@@ -49,3 +49,14 @@ o Some ansi common lisp stuff.  If you have :ansi-common-lisp on *features*,
 o Code compiled with the R4 and R4.1 CLX will work with the R4.2 CLX, provided
   you don't have :ansi-common-lisp on your features list.  Code compiled with 
   the R4.2 CLX will NOT work with the R4 CLX.
+
+R4.3 changes:
+
+o A new package.l file has been introduced.  All the package operations that
+  were in the other files have been moved to package.l.  Because of this, 
+  the compile-clx and load-clx functions which are defined in the defsystem.l
+  file have been moved to the user package from the xlib package, since the xlib 
+  package isn;t defined when the defsystem.l file is loaded.
+
+o excldefsys.l has been merged into defsystem.l.  You don't have to rename
+  excldefsys.l to defsystem.l anymore.

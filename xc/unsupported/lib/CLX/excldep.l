@@ -13,10 +13,9 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package :xlib :use '(:foreign-functions :lisp :excl))
+(in-package :xlib)
 
 (eval-when (load)
-  (provide :clxexcldep)
   (provide :clx))
 
 (require :foreign)
@@ -24,12 +23,6 @@
 					; running.  (Must be able to make
 					; a process-lock.)
 
-(import '(excl::if*
-	  excl::type-error
-	  excl::type-error-datum
-	  excl::type-error-expected-type))
-#+allegro
-(import '(excl::without-interrupts))
 
 #-(or little-endian big-endian)
 (eval-when (eval compile load)
@@ -39,10 +32,6 @@
 				0 :unsigned-byte)))
 	(pushnew :little-endian *features*)
       (pushnew :big-endian *features*))))
-
-
-(defmacro define-condition (name (parent-type) &optional slots &rest args)
-  `(excl::define-condition ,name (,parent-type) ,slots ,@args))
 
 
 (defmacro correct-case (string)

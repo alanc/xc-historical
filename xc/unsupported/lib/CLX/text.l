@@ -20,24 +20,6 @@
 
 (in-package :xlib)
 
-(export '(
-	  translation-function
-	  translate-default
-	  text-extents
-	  text-width
-	  draw-glyph
-	  draw-glyphs
-	  draw-image-glyph
-	  draw-image-glyphs
-	  display-keycode-range
-	  set-modifier-mapping
-	  modifier-mapping
-	  keysym
-	  change-keyboard-mapping
-	  keyboard-mapping
-	  keyboard-mapping
-	  ))
-
 ;; Strings are broken up into chunks of this size
 (defparameter *max-string-size* 254)
 
