@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: check.c,v 5.1 91/02/16 09:57:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -45,6 +45,7 @@ SOFTWARE.
 	as a floating point specifier;
  */
 
+extern FLOAT SwapFLOAT();
 extern FLOAT SwapIEEEToVax();
 extern FLOAT SwapVaxToIEEE();
 extern FLOAT ConvertIEEEToVax();
@@ -108,7 +109,7 @@ checkStdHeader *strmPtr;
 	cntxtPtr->pexSwapReplyOC    =  uPEXOutputCmd;
 	swapshortc(strmPtr->fpFormat, fp);
 	if ( fp == SERVER_NATIVE_FP ) {
-	    cntxtPtr->swap->ConvertFLOAT =  0;
+	    cntxtPtr->swap->ConvertFLOAT =  (ConvFunction)SwapFLOAT;
 
 	} else {
 	    if (fp == PEXDEC_F_Floating)
@@ -162,7 +163,7 @@ RequestFunction set_tables[] = {
 /*  14	*/	CheckFloat,		/* PEXCreatePipelineContext */
 /*  15	*/	NoFloat,		/* PEXCopyPipelineContext */
 /*  16	*/	NoFloat,		/* PEXFreePipelineContext */
-/*  17	*/	NoFloat,		/* PEXGetPipelineContext */
+/*  17	*/	CheckFloat,		/* PEXGetPipelineContext */
 /*  18	*/	CheckFloat,		/* PEXChangePipelineContext */
 /*  19	*/	CheckFloat,		/* PEXCreateRenderer */
 /*  20	*/	NoFloat,		/* PEXFreeRenderer */
@@ -178,8 +179,8 @@ RequestFunction set_tables[] = {
 /*  30	*/	NoFloat,		/* PEXCreateStructure */
 /*  31	*/	NoFloat,		/* PEXCopyStructure */
 /*  32	*/	NoFloat,		/* PEXDestroyStructures */
-/*  33	*/	NoFloat,		/* PEXGetStructureInfo */
-/*  34	*/	NoFloat,		/* PEXGetElementInfo */
+/*  33	*/	CheckFloat,		/* PEXGetStructureInfo */
+/*  34	*/	CheckFloat,		/* PEXGetElementInfo */
 /*  35	*/	NoFloat,		/* PEXGetStructuresInNetwork */
 /*  36	*/	NoFloat,		/* PEXGetAncestors */
 /*  37	*/	NoFloat,		/* PEXGetDescendants */
@@ -223,7 +224,7 @@ RequestFunction set_tables[] = {
 /*  75	*/	CheckFloat,		/* PEXSetWksViewport */
 /*  76	*/	NoFloat,		/* PEXSetHlhsrMode */
 /*  77	*/	NoFloat,		/* PEXSetWksBufferMode */
-/*  78	*/	NoFloat,		/* PEXPostStructure */
+/*  78	*/	CheckFloat,		/* PEXPostStructure */
 /*  79	*/	NoFloat,		/* PEXUnpostStructure */
 /*  80	*/	NoFloat,		/* PEXUnpostAllStructures */
 /*  81	*/	NoFloat,		/* PEXGetWksPostings */
@@ -235,8 +236,8 @@ RequestFunction set_tables[] = {
 /*  87	*/	NoFloat,		/* PEXUpdatePickMeasure */
 /*  88	*/	NoFloat,		/* PEXOpenFont */
 /*  89	*/	NoFloat,		/* PEXCloseFont */
-/*  90	*/	CheckFloat,		/* PEXQueryFont */
+/*  90	*/	NoFloat,		/* PEXQueryFont */
 /*  91	*/	NoFloat,		/* PEXListFonts */
-/*  92	*/	CheckFloat,		/* PEXListFontsWithInfo */
+/*  92	*/	NoFloat,		/* PEXListFontsWithInfo */
 /*  93	*/	CheckFloat		/* PEXQueryTextExtents */
 };
