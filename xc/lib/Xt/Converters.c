@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.34 88/09/06 09:48:00 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.35 88/09/06 16:27:27 jim Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -42,13 +42,47 @@ SOFTWARE.
 void XtStringConversionWarning(from, toType)
     String from, toType;
 {
-    String params[2];
-    Cardinal num_params = 2;
-    params[0] = from;
-    params[1] = toType;
-    XtWarningMsg("conversionError","string","XtToolkitError",
-               "Cannot convert string \"%s\" to type %s",
-                params,&num_params);
+#ifdef notdef
+    static enum {Check, Report, Ignore} report_it = Check;
+
+    /* %%% aarrgghh.  We really want an app context handle! */
+    if (report_it == Check && _XtDefaultAppContext()->list[0] != NULL) {
+	XrmDatabase rdb = XtDatabase(_XtDefaultAppContext()->list[0]);
+	static void CvtStringToBoolean();
+	XrmName xrm_name[2];
+	XrmClass xrm_class[2];
+	XrmRepresentation rep_type;
+	XrmValue value;
+	xrm_name[0] = StringToName( "stringConversionWarnings" );
+	xrm_name[1] = NULL;
+	xrm_class[0] = StringToClass( "StringConversionWarnings" );
+	xrm_class[1] = NULL;
+	if (XrmQGetResource( rdb, xrm_name, xrm_class,
+			     &rep_type, &value ))
+	{
+	    if (rep_type == StringToQuark(XtRBoolean) && value.addr)
+		report_it = Report;
+	    else if (rep_type == StringToQuark(XtRString)) {
+		XrmValue toVal;
+		XtDirectConvert(CvtStringToBoolean, NULL, 0, &value, &toVal);
+		if (toVal.addr && *(Boolean*)toVal.addr)
+		    report_it = Report;
+	    }
+	}
+    }
+
+    if (report_it == Report) {
+#endif /*notdef*/
+	String params[2];
+	Cardinal num_params = 2;
+	params[0] = from;
+	params[1] = toType;
+	XtWarningMsg("conversionError","string","XtToolkitError",
+		   "Cannot convert string \"%s\" to type %s",
+		    params,&num_params);
+#ifdef notdef
+    }
+#endif /*notdef*/
 }
 
 static void CvtXColorToPixel();
