@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.c,v 1.6 94/03/27 13:35:25 dpw Exp mor $ */
+/* $XConsortium: colormap.c,v 1.7 94/12/01 20:40:50 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -44,16 +44,12 @@
  */
 
 #include	<stdio.h>
-#include	<X11/X.h>	/* for KeymapNotify */
-#define	NEED_REPLIES
-#include	<X11/Xproto.h>
-#include	"lbxdata.h"
-#include	"assert.h"
-#include	"resource.h"
-#include	"colormap.h"
-#include	"cmapst.h"
-#include	"util.h"
+#include	"misc.h"
 #include	"lbx.h"
+#include	"assert.h"
+#include	"colormap.h"
+#include	"util.h"
+#include	"resource.h"
 
 #define	NBUCKETS	16
 
@@ -63,6 +59,26 @@ typedef struct _RGBEntry {
 }           RGBCacheEntryRec, *RGBCacheEntryPtr;
 
 static RGBCacheEntryPtr rgb_cache[NBUCKETS];
+
+
+#define DynamicClass  1
+
+typedef struct _cmap {
+    Colormap    id;
+    int         class;
+    Window      window;
+    VisualID    visual;
+    int         size;
+    Entry      *red;
+    Entry      *green;
+    Entry      *blue;
+    int        *numPixelsRed;
+    int        *numPixelsGreen;
+    int        *numPixelsBlue;
+    Pixel     **clientPixelsRed;
+    Pixel     **clientPixelsGreen;
+    Pixel     **clientPixelsBlue;
+}           ColormapRec, *ColormapPtr;
 
 /*
  * colormap cache code
@@ -504,10 +520,10 @@ FreeCell(pmap, pixel, channel)
     }
 }
 
-int
+static void
 FreeAllClientPixels(pmap, client)
     ColormapPtr pmap;
-    int         client;
+    int		client;
 {
     Pixel      *ppix,
                *ppst;
@@ -528,10 +544,11 @@ FreeAllClientPixels(pmap, client)
 
 /* ARGSUSED */
 int
-FreeClientPixels(pcr, id)
-    colorResource *pcr;
-
+FreeClientPixels(value, id)
+    pointer	value;
+    XID		id;
 {
+    colorResource *pcr = (colorResource *)value;
     ColormapPtr pmap;
 
     pmap = (ColormapPtr) LookupIDByType(pcr->mid, RT_COLORMAP);
@@ -539,8 +556,10 @@ FreeClientPixels(pcr, id)
 	FreeAllClientPixels(pmap, pcr->client);
     }
     xfree(pcr);
+    return Success;
 }
 
+int
 IncrementPixel(pclient, cmap, pent)
     ClientPtr   pclient;
     Colormap    cmap;
@@ -717,13 +736,15 @@ CreateColormap(client, cmap, win, visual)
 
 /* ARGSUSED */
 int
-DestroyColormap(pmap, id)
-    ColormapPtr pmap;
-    Colormap    id;
+DestroyColormap(value, id)
+    pointer	value;
+    XID		id;
 {
+    ColormapPtr pmap = (ColormapPtr)value;
     xfree(pmap->blue);
     xfree(pmap->green);
     xfree(pmap);
+    return Success;
 }
 
 /* ARGSUSED */

@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.7 94/12/01 20:47:30 mor Exp $ */
+/* $XConsortium: dispatch.c,v 1.8 95/04/04 20:59:24 dpw Exp $ */
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
  * $NCDId: @(#)dispatch.c,v 1.27 1994/11/18 20:35:09 lemke Exp $
@@ -25,30 +25,20 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
-#include "X.h"
-#define NEED_REPLIES
-#define NEED_EVENTS
 #include "assert.h"
-#include "Xproto.h"
-#include "opaque.h"
 #include "lbx.h"
-#include "lbxdata.h"
 #include "wire.h"
-#include "dixstruct.h"
-#include "input.h"
-#include "servermd.h"
-#define _XLBX_SERVER_
-#include "lbxstr.h"
 #include "swap.h"
 #include "lbxext.h"
+#include "util.h"
+#include "resource.h"
 
 extern int (* InitialVector[3]) ();
-extern int (* ProcVector[256]) ();
-extern void WriteSConnSetupPrefix();
-extern char *ClientAuthorized();
-extern Bool InsertFakeRequest();
-static void KillAllClients();
-extern void ProcessWorkQueue();
+static void KillAllClients(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 extern Bool lbxUseTags;
 
 static int nextFreeClientID; /* always MIN free client ID */
@@ -187,8 +177,6 @@ SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
  * Returns NULL if there are no free clients.
  *************************/
 
-extern unsigned long	StandardRequestLength ();
-
 ClientPtr
 NextAvailableClient(ospriv)
     pointer ospriv;
@@ -200,13 +188,9 @@ NextAvailableClient(ospriv)
     i = nextFreeClientID;
     if (i == MAXCLIENTS)
 	return (ClientPtr)NULL;
-    clients[i] = client = (ClientPtr)xalloc(sizeof(ClientRec));
+    clients[i] = client = (ClientPtr)xcalloc(sizeof(ClientRec));
     if (!client)
 	return (ClientPtr)NULL;
-    if (!MakeLBXStuff(client)) {
-    	xfree(client);
-        return (ClientPtr)NULL;
-    }
     client->index = i;
     client->sequence = 0; 
     client->clientAsMask = ((Mask)i) << CLIENTOFFSET;
@@ -282,7 +266,6 @@ ProcEstablishConnection(client)
                *auth_proto,
                *auth_string;
     register xLbxConnClientPrefix *prefix;
-    register xWindowRoot *root;
     register int i;
     int         len;
 
@@ -393,7 +376,6 @@ CloseDownClient(client)
 		else
 		    dispatchException |= DE_RESET;
 	    }
-	    FreeLBXStuff(client);
 	    xfree(client);
 	}
 	else
@@ -412,7 +394,6 @@ CloseDownClient(client)
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
-	FreeLBXStuff(client);
 	DeleteClientExtensions(client);
         xfree(client);
 	if (nClients == 0)
@@ -442,6 +423,7 @@ KillAllClients()
     }
 }
 
+int
 ProcStandardRequest (client)
     ClientPtr	client;
 {
@@ -453,6 +435,7 @@ ProcStandardRequest (client)
 }
 
 /* ARGSUSED */
+int
 ProcBadRequest (client)
     ClientPtr	client;
 {
@@ -460,6 +443,7 @@ ProcBadRequest (client)
 }
 
 /* turn off optional features */
+void
 AdjustProcVector()
 {
     int         i;

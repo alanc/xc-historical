@@ -1,4 +1,4 @@
-/* $XConsortium: extensions.c,v 1.1 94/12/01 20:39:01 mor Exp $ */
+/* $XConsortium: extensions.c,v 1.2 95/04/04 21:15:16 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -25,18 +25,12 @@
 
 /* tracks server extensions, and provides hooks for supporting them */
 
-#include	"X.h"
-#define NEED_REPLIES
-#define NEED_EVENTS
-#include	"Xproto.h"
+#include	"lbx.h"
 #include	"assert.h"
 #include	"wire.h"
-#include	"lbxdata.h"
 #include	"lbxext.h"
-#include	"lbx.h"
 #include	"reqtype.h"
-#define _XLBX_SERVER_
-#include	"lbxstr.h"
+#include	"swap.h"
 
 /* XXX does this handle extension aliases properly? */
 typedef struct _extinfo {
@@ -86,8 +80,6 @@ static void
 remove_vectors(eip)
     ExtensionInfoPtr eip;
 {
-    extern int  ProcStandardRequest();
-
     ProcVector[eip->opcode] = ProcStandardRequest;
 }
 
@@ -95,7 +87,7 @@ Bool
 AddExtension(client, name, reply, rep_mask, ev_mask)
     ClientPtr   client;
     char       *name;
-    xLbxQueryExtensionReply *reply;
+    xLbxQueryExtensionReplyPtr reply;
     CARD8      *rep_mask,
                *ev_mask;
 {
@@ -171,21 +163,6 @@ AddExtension(client, name, reply, rep_mask, ev_mask)
 	add_vectors(eip);
 	return TRUE;
     }
-}
-
-static Bool
-known_extension(name)
-    char       *name;
-{
-    ExtensionInfoPtr eip;
-
-    eip = extension_list;
-    while (eip) {
-	if (strcmp(eip->name, name) == 0)
-	    return TRUE;
-	eip = eip->next;
-    }
-    return FALSE;
 }
 
 static Bool
@@ -323,17 +300,17 @@ HandleExtensionReply(client, reply, nr)
 }
 
 static Bool
-check_mask(mask, minor)
+check_mask(mask, minorop)
     CARD8      *mask;
-    int         minor;
+    int         minorop;
 {
     int         mword;
 
-    mword = minor / (8 * sizeof(CARD8));
-    if (mask[mword] & (1 << (minor % (8 * sizeof(CARD8)))))
+    mword = minorop / (8 * sizeof(CARD8));
+    if (mask[mword] & (1 << (minorop % (8 * sizeof(CARD8)))))
 	return REQ_TYPE_YES;
     else
-	REQ_TYPE_NO;
+	return REQ_TYPE_NO;
 }
 
 Bool
@@ -341,8 +318,7 @@ CheckExtensionForEvents(req)
     xReq       *req;
 {
     int         opcode = req->reqType;
-    int         minor = req->data;
-    int         mword;
+    int         minorop = req->data;
     ExtensionInfoPtr eip;
 
     eip = extension_list;
@@ -350,7 +326,7 @@ CheckExtensionForEvents(req)
 	if (eip->opcode == opcode) {
 	    if (!eip->ev_mask || eip->num_reqs == 0)
 		return TRUE;	/* assume worst */
-	    return check_mask(eip->ev_mask, minor);
+	    return check_mask(eip->ev_mask, minorop);
 	}
 	eip = eip->next;
     }
@@ -363,8 +339,7 @@ CheckExtensionForReplies(req)
     xReq       *req;
 {
     int         opcode = req->reqType;
-    int         minor = req->data;
-    int         mword;
+    int         minorop = req->data;
     ExtensionInfoPtr eip;
 
     eip = extension_list;
@@ -372,7 +347,7 @@ CheckExtensionForReplies(req)
 	if (eip->opcode == opcode) {
 	    if (!eip->rep_mask || eip->num_reqs == 0)
 		return REQ_TYPE_MAYBE;	/* assume worst */
-	    return check_mask(eip->rep_mask, minor);
+	    return check_mask(eip->rep_mask, minorop);
 	}
 	eip = eip->next;
     }
@@ -390,7 +365,7 @@ HandleLbxQueryExtensionReply(client, data)
     ReplyStuffPtr nr;
     char       *ename;
     int         req_mask_len;
-    char       *rep_mask = NULL,
+    CARD8       *rep_mask = NULL,
                *ev_mask = NULL;
 
     reply = (xLbxQueryExtensionReply *) data;
@@ -401,7 +376,7 @@ HandleLbxQueryExtensionReply(client, data)
     ename = nr->request_info.lbxqueryextension.name;
 
     if (reply->length) {
-	rep_mask = (char *) &reply[1];
+	rep_mask = (CARD8 *) &reply[1];
 	req_mask_len = (reply->numReqs / (8 * sizeof(CARD8))) + 1;
 	/* round to word size */
 	req_mask_len = (((req_mask_len + 3) >> 2) << 2);
@@ -436,7 +411,6 @@ query_extension_req(client, data)
     char        n;
     char       *ename;
     xLbxQueryExtensionReq req;
-    XServerPtr  server;
     CARD16      nlen;
     ReplyStuffPtr nr;
 

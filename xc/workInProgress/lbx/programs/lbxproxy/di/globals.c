@@ -46,21 +46,17 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.4 94/04/17 21:17:17 dpw Exp $ */
+/* $XConsortium: globals.c,v 1.5 95/04/04 21:00:43 dpw Exp $ */
 /* $NCDId: @(#)globals.c,v 1.3 1994/03/24 17:54:39 lemke Exp $ */
   
-#include "X.h"
-#include "Xmd.h"
 #include "misc.h"
-#include "input.h"
-#include "site.h"
-#include "dixstruct.h"
-#include "os.h"
 
 ClientPtr *clients;
 ClientPtr  serverClient;
 int  currentMaxClients;   /* current size of clients array */
 
 unsigned long serverGeneration = 0;
+
+#define DEFAULT_TIMEOUT           60       /* seconds */
 
 CARD32 TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;

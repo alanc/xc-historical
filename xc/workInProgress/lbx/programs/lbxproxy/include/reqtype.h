@@ -1,4 +1,4 @@
-/* $XConsortium: reqtype.h,v 1.3 94/02/20 11:14:14 dpw Exp mor $ */
+/* $XConsortium: reqtype.h,v 1.4 94/12/01 20:48:07 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -26,13 +26,26 @@
 #ifndef	_REQTYPE_H_
 #define	_REQTYPE_H_
 
-extern Bool GeneratesErrors();
-extern Bool GeneratesEvents();
-extern int  GeneratesReplies();
-
 #define	REQ_TYPE_NO	0
 #define	REQ_TYPE_YES	1
 #define	REQ_TYPE_MAYBE	2
 
+extern Bool GeneratesErrors(
+#if NeedFunctionPrototypes
+    xReq * /*req*/
+#endif
+);
+
+extern Bool GeneratesEvents(
+#if NeedFunctionPrototypes
+    xReq * /*req*/
+#endif
+);
+
+extern int GeneratesReplies(
+#if NeedFunctionPrototypes
+    xReq * /*req*/
+#endif
+);
 
 #endif				/* _REQTYPE_H_ */

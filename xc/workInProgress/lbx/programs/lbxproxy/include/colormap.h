@@ -26,10 +26,6 @@
 #ifndef COLORMAP_H_
 #define COLORMAP_H_
 
-#include	<X11/X.h>
-#include	<X11/Xproto.h>
-#include	"os.h"
-
 typedef struct _rgbentry {
     char       *name;
     int         namelen;
@@ -44,21 +40,156 @@ typedef struct _rgbentry {
 
 typedef CARD32 Pixel;
 
-extern RGBEntryPtr FindColorName();
-extern Bool AddColorName();
 
-extern int  CreateVisual();
+/* XXX may want to change this stuff to be a list of names & RGB values,
+ * to allow multiple user-values to map to the same pixel
+ */
+typedef struct _entry {
+    char       *name;
+    int         len;
+    int         red,			/* requested values */
+                green,
+                blue;
+    int         rep_red,		/* returned values */
+                rep_green,
+                rep_blue;
+    short       refcnt;
+    int         pixel;
+}           Entry;
 
-extern int  FindPixel();
-extern int  FindNamedPixel();
-extern int  StorePixel();
-extern int  StoreNamedPixel();
-extern int  FreePixels();
-extern int  CreateColormap();
-extern int  FreeColormap();
-extern int  CopyAndFreeColormap();
-extern void FreeColors();
-extern int DestroyColormap();
-extern int FreeClientPixels();
+extern RGBEntryPtr FindColorName(
+#if NeedFunctionPrototypes
+    char * /*name*/,
+    int /*len*/,
+    Colormap /*cmap*/
+#endif
+);
+
+extern Bool AddColorName(
+#if NeedFunctionPrototypes
+    char * /*name*/,
+    int /*len*/,
+    RGBEntryRec * /*rgbe*/
+#endif
+);
+
+extern int CreateVisual(
+#if NeedFunctionPrototypes
+    int /*depth*/,
+    xVisualType * /*vis*/
+#endif
+);
+
+extern int FindPixel(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Colormap /*cmap*/,
+    int /*red*/,
+    int /*green*/,
+    int /*blue*/,
+    Entry ** /*pent*/
+#endif
+);
+
+extern int FindNamedPixel(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Colormap /*cmap*/,
+    char * /*name*/,
+    int /*namelen*/,
+    Entry ** /*pent*/
+#endif
+);
+
+extern int StorePixel(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Colormap /*cmap*/,
+    int /*red*/,
+    int /*green*/,
+    int /*blue*/,
+    int /*rep_red*/,
+    int /*rep_green*/,
+    int /*rep_blue*/,
+    Pixel /*pixel*/
+#endif
+);
+
+extern int StoreNamedPixel(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Colormap /*cmap*/,
+    char * /*name*/,
+    int /*namelen*/,
+    int /*xred*/,
+    int /*xgreen*/,
+    int /*xblue*/,
+    int /*vred*/,
+    int /*vgreen*/,
+    int /*vblue*/,
+    Pixel /*pixel*/
+#endif
+);
+
+extern int FreeClientPixels(
+#if NeedFunctionPrototypes
+    pointer /*pcr*/,
+    XID /*id*/
+#endif
+);
+
+extern int IncrementPixel(
+#if NeedFunctionPrototypes
+    ClientPtr /*pclient*/,
+    Colormap /*cmap*/,
+    Entry * /*pent*/
+#endif
+);
+
+extern int FreePixels(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Colormap /*cmap*/,
+    int /*num*/,
+    Pixel /*pixels*/[]
+#endif
+);
+
+extern int CreateColormap(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Colormap /*cmap*/,
+    Window /*win*/,
+    VisualID /*visual*/
+#endif
+);
+
+extern int DestroyColormap(
+#if NeedFunctionPrototypes
+    pointer /*pmap*/,
+    XID /*id*/
+#endif
+);
+
+extern int FreeColormap(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Colormap /*cmap*/
+#endif
+);
+
+extern int CopyAndFreeColormap(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Colormap /*new*/,
+    Colormap /*old*/
+#endif
+);
+
+extern void FreeColors(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 #endif				/* COLORMAP_H_ */

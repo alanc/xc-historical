@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.6 94/04/17 21:17:12 dpw Exp kaleb $ */
+/* $XConsortium: connection.c,v 1.7 95/04/05 17:30:54 kaleb Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -86,8 +86,7 @@ SOFTWARE.
  *
  *****************************************************************/
 
-#include "X.h"
-#include "Xproto.h"
+#include "misc.h"
 #include "Xos.h"			/* for strings, file, time */
 #include <sys/param.h>
 #include <errno.h>
@@ -136,10 +135,10 @@ static int unixDomainConnection = -1;
 
 #include <stdio.h>
 #include <sys/uio.h>
-#include "misc.h"		/* for typedef of pointer */
 #include "osdep.h"
-#include "opaque.h"
-#include "dixstruct.h"
+#include "os.h"
+#include "lbx.h"
+#include "util.h"
 
 #ifdef DNETCONN
 #include <netdnet/dn.h>
@@ -168,7 +167,6 @@ extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */
 
 FdMask WellKnownConnections;	/* Listener mask */
-FdSet EnabledDevices;		/* mask for input devices that are on */
 FdSet AllSockets;		/* select on this */
 FdSet AllClients;		/* available clients */
 FdSet LastSelectMask;		/* mask returned from last select call */
@@ -196,8 +194,6 @@ int GrabInProgress = 0;
 int ConnectionTranslation[MAXSOCKS];
 int ConnectionOutputTranslation[MAXSOCKS];
 extern int auditTrailLevel;
-extern ClientPtr NextAvailableClient();
-extern XID CheckAuthorization();
 
 static void ErrorConnMax(
 #if NeedFunctionPrototypes
@@ -205,20 +201,9 @@ static void ErrorConnMax(
 #endif
 );
 
-void CloseDownFileDescriptor(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
-
 #ifdef XDMCP
 void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
 #endif
-
-extern int  StandardReadRequestFromClient();
-extern int  StandardWriteToClient ();
-extern unsigned long  StandardRequestLength ();
-extern int  StandardFlushClient ();
 
 #ifdef TCPCONN
 static int
@@ -1473,6 +1458,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     return((char *)NULL);
 }
 
+int
 ClientConnectionNumber (client)
     ClientPtr	client;
 {
@@ -1481,6 +1467,7 @@ ClientConnectionNumber (client)
     return oc->fd;
 }
 
+void
 AvailableClientInput (client)
     ClientPtr	client;
 {
@@ -1562,7 +1549,6 @@ StartOutputCompression(client, CompressOn, CompressOff)
     void	(*CompressOff)();
 {
     OsCommPtr	oc = (OsCommPtr) client->osPrivate;
-    extern int	LbxFlushClient();
 
     oc->compressOn = CompressOn;
     oc->compressOff = CompressOff;
@@ -1835,22 +1821,6 @@ CloseDownConnection(client)
 	AuditF("client %d disconnected\n", client->index);
 }
 
-
-AddEnabledDevice(fd)
-    int fd;
-{
-    BITSET(EnabledDevices, fd);
-    BITSET(AllSockets, fd);
-}
-
-
-RemoveEnabledDevice(fd)
-    int fd;
-{
-    BITCLEAR(EnabledDevices, fd);
-    BITCLEAR(AllSockets, fd);
-}
-
 /*****************
  * OnlyListenToOneClient:
  *    Only accept requests from  one client.  Continue to handle new
@@ -1861,6 +1831,7 @@ RemoveEnabledDevice(fd)
  *    This routine is "undone" by ListenToAllClients()
  *****************/
 
+void
 OnlyListenToOneClient(client)
     ClientPtr client;
 {
@@ -1893,6 +1864,7 @@ OnlyListenToOneClient(client)
  *    Undoes OnlyListentToOneClient()
  ****************/
 
+void
 ListenToAllClients()
 {
     if (GrabInProgress)
@@ -1910,6 +1882,7 @@ ListenToAllClients()
  *    Must have cooresponding call to AttendClient.
  ****************/
 
+void
 IgnoreClient (client)
     ClientPtr	client;
 {
@@ -1945,6 +1918,7 @@ IgnoreClient (client)
  *    Adds one client back into the input masks.
  ****************/
 
+void
 AttendClient (client)
     ClientPtr	client;
 {
@@ -1971,6 +1945,7 @@ AttendClient (client)
 
 /* make client impervious to grabs; assume only executing client calls this */
 
+void
 MakeClientGrabImpervious(client)
     ClientPtr client;
 {
@@ -1978,18 +1953,11 @@ MakeClientGrabImpervious(client)
     int connection = oc->fd;
 
     BITSET(GrabImperviousClients, connection);
-
-    if (ServerGrabCallback)
-    {
-	ServerGrabInfoRec grabinfo;
-	grabinfo.client = client;
-	grabinfo.grabstate  = CLIENT_IMPERVIOUS;
-	CallCallbacks(&ServerGrabCallback, &grabinfo);
-    }
 }
 
 /* make client pervious to grabs; assume only executing client calls this */
 
+void
 MakeClientGrabPervious(client)
     ClientPtr client;
 {
@@ -2008,71 +1976,4 @@ MakeClientGrabPervious(client)
 	BITCLEAR(AllClients, connection);
 	isItTimeToYield = TRUE;
     }
-
-    if (ServerGrabCallback)
-    {
-	ServerGrabInfoRec grabinfo;
-	grabinfo.client = client;
-	grabinfo.grabstate  = CLIENT_PERVIOUS;
-	CallCallbacks(&ServerGrabCallback, &grabinfo);
-    }
 }
-
-#ifdef AIXV3
-
-static FdSet pendingActiveClients;
-static BOOL reallyGrabbed;
-
-/****************
-* DontListenToAnybody:
-*   Don't listen to requests from any clients. Continue to handle new
-*   connections, but don't take any protocol requests from anybody.
-*   We have to take care if there is already a grab in progress, though.
-*   Undone by PayAttentionToClientsAgain. We also have to be careful
-*   not to accept any more input from the currently dispatched client.
-*   we do this be telling dispatch it is time to yield.
-
-*   We call this when the server loses access to the glass
-*   (user hot-keys away).  This looks like a grab by the 
-*   server itself, but gets a little tricky if there is already
-*   a grab in progress.
-******************/
-
-void
-DontListenToAnybody()
-{
-    if (!GrabInProgress)
-    {
-	COPYBITS(ClientsWithInput, SavedClientsWithInput);
-	COPYBITS(AllSockets, SavedAllSockets);
-	COPYBITS(AllClients, SavedAllClients);
-	GrabInProgress = TRUE;
-	reallyGrabbed = FALSE;
-    }
-    else
-    {
-	COPYBITS(AllClients, pendingActiveClients);
-	reallyGrabbed = TRUE;
-    }
-    CLEARBITS(ClientsWithInput);
-    UNSETBITS(AllSockets, AllClients);
-    CLEARBITS(AllClients);
-    isItTimeToYield = TRUE;
-}
-
-void
-PayAttentionToClientsAgain()
-{
-    if (reallyGrabbed)
-    {
-	ORBITS(AllSockets, AllSockets, pendingActiveClients);
-	ORBITS(AllClients, AllClients, pendingActiveClients);
-    }
-    else
-    {
-	ListenToAllClients();
-    }
-    reallyGrabbed = FALSE;
-}
-
-#endif

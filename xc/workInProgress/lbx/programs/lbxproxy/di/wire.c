@@ -1,4 +1,4 @@
-/* $XConsortium: wire.c,v 1.10 95/03/21 20:01:34 mor Exp $ */
+/* $XConsortium: wire.c,v 1.11 95/04/04 21:11:20 dpw Exp $ */
 /*
  * $NCDOr: wire.c,v 1.1 1994/10/18 17:43:32 keithp Exp keithp $
  * $NCDId: @(#)wire.c,v 1.44 1994/11/18 20:39:50 lemke Exp $
@@ -25,21 +25,14 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
-#include "X.h"
-#define NEED_REPLIES
-#define NEED_EVENTS
-#include "Xproto.h"
-#include "opaque.h"
-#include "input.h"
+#include "lbx.h"
 #include <stdio.h>
 #include "wire.h"
 #include <errno.h>
-#define _XLBX_SERVER_
-#include "lbxstr.h"
-#include "lbxdata.h"
 #include "proxyopts.h"
 #include "swap.h"
 #include "assert.h"
+#include "os.h"
 
 extern int  NewOutputPending;
 
@@ -68,6 +61,7 @@ static unsigned char tempdeltabuf[256];
 /*
  * Any request that could be delta compressed comes through here
  */
+void
 WriteReqToServer(client, len, buf)
     ClientPtr   client;
     int         len;
@@ -116,6 +110,7 @@ WriteReqToServer(client, len, buf)
 	WriteToServer(client, len, buf);
 }
 
+static void
 _write_to_server(client, compressed, len, buf)
     ClientPtr   client;
     Bool        compressed;
@@ -144,6 +139,7 @@ _write_to_server(client, compressed, len, buf)
 	UncompressWriteToClient(server->serverClient, len, buf);
 }
 
+void
 WriteToServer(client, len, buf)
     ClientPtr   client;
     int         len;
@@ -152,6 +148,7 @@ WriteToServer(client, len, buf)
     _write_to_server(client, TRUE, len, buf);
 }
 
+void
 WriteToServerUncompressed(client, len, buf)
     ClientPtr   client;
     int         len;
@@ -163,7 +160,7 @@ WriteToServerUncompressed(client, len, buf)
 /* all these requests may need to be swapped back to the order of
  * ther client they're being executed for
  */
-
+Bool
 NewClient(client, setuplen)
     ClientPtr   client;
     int         setuplen;
@@ -181,8 +178,10 @@ NewClient(client, setuplen)
     }
     WriteToServer(clients[0], sizeof(n), (char *) &n);
     ++server->serverClient->sequence;
+    return TRUE;
 }
 
+void
 CloseClient(client)
     ClientPtr   client;
 {
@@ -209,6 +208,7 @@ CloseClient(client)
     }
 }
 
+void
 ModifySequence(client, num)
     ClientPtr   client;
     int         num;
@@ -228,6 +228,7 @@ ModifySequence(client, num)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 AllowMotion(client, num)
     ClientPtr   client;
     int         num;
@@ -235,6 +236,7 @@ AllowMotion(client, num)
     client->server->motion_allowed += num;
 }
 
+void
 SendIncrementPixel(client, cmap, pixel)
     ClientPtr   client;
     XID         cmap;
@@ -257,6 +259,7 @@ SendIncrementPixel(client, cmap, pixel)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 SendGetModifierMapping(client)
     ClientPtr   client;
 {
@@ -275,6 +278,7 @@ SendGetModifierMapping(client)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 SendGetKeyboardMapping(client)
     ClientPtr   client;
 {
@@ -299,6 +303,7 @@ SendGetKeyboardMapping(client)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 SendQueryFont(client, fid)
     ClientPtr   client;
     XID         fid;
@@ -319,6 +324,7 @@ SendQueryFont(client, fid)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 SendChangeProperty(client, win, prop, type, format, mode, num)
     ClientPtr   client;
     Window      win;
@@ -349,6 +355,7 @@ SendChangeProperty(client, win, prop, type, format, mode, num)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 SendGetProperty(client, win, prop, type, delete, off, len)
     ClientPtr   client;
     Window      win;
@@ -379,6 +386,7 @@ SendGetProperty(client, win, prop, type, delete, off, len)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 SendQueryTag(client, tag)
     ClientPtr   client;
     XID         tag;
@@ -396,6 +404,7 @@ SendQueryTag(client, tag)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 SendInvalidateTag(client, tag)
     ClientPtr   client;
     XID         tag;
@@ -420,6 +429,7 @@ SendInvalidateTag(client, tag)
     WriteReqToServer(client, sizeof(req), (char *) &req);
 }
 
+void
 SendTagData(client, tag, len, data)
     ClientPtr   client;
     XID         tag;
@@ -460,7 +470,7 @@ SendTagData(client, tag, len, data)
     }
 }
 
-
+void
 SendGetImage(client, drawable, x, y, width, height, planeMask, format)
     ClientPtr   client;
     Drawable    drawable;
@@ -498,6 +508,7 @@ SendGetImage(client, drawable, x, y, width, height, planeMask, format)
 static unsigned long pendingServerReplySequence;
 static void (*serverReplyFunc) ();
 
+void
 ServerReply(server, rep)
     XServerPtr  server;
     xReply     *rep;
@@ -509,6 +520,7 @@ ServerReply(server, rep)
     }
 }
 
+void
 ExpectServerReply(server, func)
     XServerPtr  server;
     void        (*func) ();
@@ -566,11 +578,12 @@ ServerRequestLength(req, sc, gotnow, partp)
     *partp = FALSE;
     rep = (xReply *) req;
     if (rep->generic.type != X_Reply) {
-	return EventLength(rep);
+	return EventLength((xEvent *)rep);
     }
     return (8 + rep->generic.length) << 2;
 }
 
+int
 ServerProcStandardEvent(sc)
     ClientPtr   sc;
 {
@@ -860,7 +873,7 @@ extern int  GrabInProgress;
 static int  lbxIgnoringAll;
 static int  lbxGrabInProgress;
 
-int
+void
 LbxIgnoreAllClients(server)
     XServerPtr  server;
 {
@@ -875,7 +888,7 @@ LbxIgnoreAllClients(server)
 }
 
 /* ARGSUSED */
-int
+void
 LbxAttendAllClients(server)
     XServerPtr  server;
 {
@@ -889,7 +902,7 @@ LbxAttendAllClients(server)
     }
 }
 
-int
+void
 LbxOnlyListenToOneClient(client)
     ClientPtr   client;
 {
@@ -902,7 +915,7 @@ LbxOnlyListenToOneClient(client)
     }
 }
 
-int
+void
 LbxListenToAllClients()
 {
     if (lbxGrabInProgress)
@@ -993,13 +1006,13 @@ StartProxyReply(server, rep)
     xLbxStartReply *rep;
 {
     int         replylen;
-    int         nopts = rep->nOpts;
 
     replylen = (rep->length << 2) + sz_xLbxStartReply - sz_xLbxStartReplyHdr;
     if (rep->nOpts == 0xff) {
 	fprintf(stderr, "WARNING: option negotiation failed - using defaults\n");
 	LbxOptInit();
-    } else if (LbxOptParseReply(rep->nOpts, &rep->optDataStart, replylen) < 0) {
+    } else if (LbxOptParseReply(rep->nOpts,
+			(unsigned char *)&rep->optDataStart, replylen) < 0) {
 	FatalError("Bad options from server");
     }
 
@@ -1048,13 +1061,13 @@ StartProxyReply(server, rep)
     MakeClientGrabImpervious(server->serverClient);
 }
 
+void
 StartProxy(server)
     XServerPtr  server;
 {
     char        buf[1024];
     int         reqlen;
     xLbxStartProxyReq *n = (xLbxStartProxyReq *) buf;
-    extern Bool NewOutputPending;
 
     LbxOptInit();
     n->reqType = server->lbxReq;
@@ -1069,7 +1082,7 @@ StartProxy(server)
 	FlushAllOutput();
 }
 
-extern int  read(), writev();
+extern int writev();
 
 Bool
 ConnectToServer(dpy_name)
@@ -1081,8 +1094,7 @@ ConnectToServer(dpy_name)
                 error,
                 event;
     int         sequence;
-    ClientPtr   sc,
-                AllocNewConnection();
+    ClientPtr   sc;
 
     for (i = 0; i < MAX_SERVERS; i++)
 	if (!servers[i])

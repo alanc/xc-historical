@@ -1,4 +1,4 @@
-/* $XConsortium: tags.h,v 1.3 94/02/20 11:14:22 dpw Exp $ */
+/* $XConsortium: tags.h,v 1.4 94/03/08 20:51:35 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -26,10 +26,7 @@
 #ifndef _TAGS_H_
 #define _TAGS_H_
 
-#include	<X11/X.h>
-#include	<X11/Xproto.h>
 #include	"cache.h"
-#include	"resource.h"
 
 typedef struct _tagdata {
     XID         tid;
@@ -40,12 +37,49 @@ typedef struct _tagdata {
 
 typedef struct _tagdata *TagData;
 
-extern void TagsInit();
-extern void FreeTags();
-extern Bool TagStoreData();
-extern pointer TagGetData();
-extern TagData TagGetTag();
-extern void TagFreeData();
+extern void TagsInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void FreeTags(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern Bool TagStoreData(
+#if NeedFunctionPrototypes
+    Cache /*cache*/,
+    CacheID /*id*/,
+    int /*size*/,
+    int /*dtype*/,
+    pointer /*data*/
+#endif
+);
+
+extern TagData TagGetTag(
+#if NeedFunctionPrototypes
+    Cache /*cache*/,
+    CacheID /*id*/
+#endif
+);
+
+extern pointer TagGetData(
+#if NeedFunctionPrototypes
+    Cache /*cache*/,
+    CacheID /*id*/
+#endif
+);
+
+extern void TagFreeData(
+#if NeedFunctionPrototypes
+    Cache /*cache*/,
+    CacheID /*id*/,
+    Bool /*notify*/
+#endif
+);
 
 extern Cache global_cache;
 extern Cache prop_cache;

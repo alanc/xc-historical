@@ -1,4 +1,4 @@
-/* $XConsortium: options.c,v 1.1 94/12/01 20:39:01 mor Exp $ */
+/* $XConsortium: options.c,v 1.2 95/04/04 21:41:07 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -92,11 +92,11 @@ LbxOptInit()
 
 int
 LbxOptBuildReq(buf)
-    register unsigned char *buf;
+    register char *buf;
 {
     int		  i;
-    unsigned char *bufstart = buf;
-    unsigned char *pnopts = buf++;
+    char *bufstart = buf;
+    char *pnopts = buf++;
 
     optcount = 0;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.13 94/12/01 20:55:35 mor Exp $ */
+/* $XConsortium: gfx.c,v 1.14 95/04/04 21:12:01 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -27,20 +27,14 @@
  */
 
 #include	<stdio.h>
-#define NEED_REPLIES
-#define NEED_EVENTS
-#include	<X11/X.h>	/* for KeymapNotify */
-#include	<X11/Xproto.h>
 #include	"assert.h"
 #include	"misc.h"
-#include	"lbxdata.h"
+#include	"lbx.h"
 #include	"util.h"
-#include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
-#define _XLBX_SERVER_
-#include	"lbxstr.h"	/* gets dixstruct.h */
 #include        "lbximage.h"
+#include	"swap.h"
 
 static int  pad[4] = {0, 3, 2, 1};
 
@@ -664,6 +658,7 @@ bail:
     return ProcStandardRequest(client);
 }
 
+static int
 reencode_text_pos(client, in, out)
     ClientPtr   client;
     xPolyTextReq *in;
@@ -797,7 +792,9 @@ ProcLBXPutImage(client)
                 method,
                 compBytes,
                 status;
+#ifdef LBX_STATS
     float       percentCompression;
+#endif
 
     if (client->swapped)
 	SwapXPutImage(stuff);
@@ -977,7 +974,6 @@ GetLbxImageReply(client, data)
 {
     xLbxGetImageReply *rep;
     xGetImageReply reply;
-    int         len;
     pointer     imageData;
     ReplyStuffPtr nr;
     int         freeIt = 1;

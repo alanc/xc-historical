@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.10 95/05/03 21:12:38 mor Exp mor $ */
+/* $XConsortium: lbxfuncs.c,v 1.8 95/04/04 21:06:19 dpw Exp $ */
 
 /*
  * top level LBX request & reply handling
@@ -46,24 +46,16 @@
 
 
 #include	<stdio.h>
-#define NEED_REPLIES
-#define NEED_EVENTS
-#include	<X11/X.h>	/* for KeymapNotify */
-#include	<X11/Xproto.h>
 #include	"assert.h"
-#include	"lbxdata.h"
+#include	"lbx.h"
 #include	"atomcache.h"
 #include	"util.h"
 #include	"tags.h"
 #include	"colormap.h"
-#include	"cmapst.h"
-#include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
 #include	"swap.h"
 #include	"reqtype.h"
-#define _XLBX_SERVER_
-#include	"lbxstr.h"
 #include	"lbxext.h"
 
 #define reply_length(cp,rep) ((rep)->type==X_Reply ? \
@@ -1581,8 +1573,7 @@ FinishLBXRequest(client, yank)
 	    LBXCanDelayReply(client) = TRUE;
 	else
 	    LBXCanDelayReply(client) = FALSE;
-    } else {			/* always true if cacheable, so we get a
-				 * chance to write */
+    } else {	/* always true if cacheable, so we get a chance to write */
 	LBXCanDelayReply(client) = TRUE;
     }
     	
@@ -1746,7 +1737,7 @@ DoLBXReply(client, data, len)
 		}
 
 		FinishSetupReply (client, reply->length << 2,
-		    &prefix[1], NULL, majorVer, minorVer);
+		    (xConnSetup *)&prefix[1], NULL, majorVer, minorVer);
 
 		return FALSE;
 	    }
@@ -1814,7 +1805,9 @@ DoLBXReply(client, data, len)
 	if (reply->type == MotionNotify) {
 	    AllowMotion(client, 1);
 	}
-	HandleExtensionEvent(client, reply);
+	if (reply->type != X_Error) {
+	    HandleExtensionEvent(client, (xEvent *)reply);
+	}
 	if (client->swapped) {	/* put seq & length back */
 	    swaps(&reply->sequenceNumber, n);
 	    swapl(&reply->length, n);
@@ -1920,7 +1913,7 @@ DoLBXReply(client, data, len)
 	}
     } else {
 	/* XXX handle any other extensions we may know about */
-	remove_it = HandleExtensionReply(client, reply, nr);
+	remove_it = HandleExtensionReply(client, (xReply *)reply, nr);
     }
     if (remove_it)
 	RemoveReply(client, nr);

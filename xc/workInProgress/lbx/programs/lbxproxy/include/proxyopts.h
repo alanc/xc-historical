@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: proxyopts.h,v 1.1 94/12/01 20:39:01 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -45,5 +45,45 @@ typedef struct _LbxNegOpts {
 typedef LbxNegOptsRec *LbxNegOptsPtr;
 
 extern LbxNegOptsRec lbxNegOpt;
+
+/* options.c */
+
+extern void LbxOptInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int LbxOptBuildReq(
+#if NeedFunctionPrototypes
+    char * /*buf*/
+#endif
+);
+
+extern int LbxOptParseReply(
+#if NeedFunctionPrototypes
+    int /*nopts*/,
+    unsigned char * /*preply*/,
+    int /*replylen*/
+#endif
+);
+
+extern void LbxNoDelta(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void LbxNoComp(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void LbxNoSquish(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 #endif /* _LBX_PROXYOPTS_H_ */

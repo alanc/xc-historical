@@ -1,4 +1,4 @@
-/* $XConsortium: tags.c,v 1.4 94/03/08 20:51:34 dpw Exp $ */
+/* $XConsortium: tags.c,v 1.5 94/03/27 13:57:43 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -23,9 +23,12 @@
  * $NCDId: @(#)tags.c,v 1.10 1994/03/24 17:55:03 lemke Exp $
  */
 
+#include	"misc.h"
+#include	"util.h"
 #include	"cache.h"
 #include	"tags.h"
 #include	"assert.h"
+#include	"wire.h"
 
 Cache       global_cache;
 Cache       prop_cache;

@@ -1,4 +1,4 @@
-/* $XConsortium: atomcache.h,v 1.4 94/02/20 13:38:14 dpw Exp $ */
+/* $XConsortium: atomcache.h,v 1.5 94/03/08 20:51:09 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -25,22 +25,25 @@
 #ifndef _ATOMCACHE_H_
 #define _ATOMCACHE_H_
 
-#ifndef X_PROTOCOL
-typedef unsigned long   Atom;
-typedef unsigned long   XID;
+extern Atom LbxMakeAtom(
+#if NeedFunctionPrototypes
+    char * /*string*/,
+    unsigned /*len*/,
+    Atom /*atom*/,
+    int /*makeit*/
 #endif
+);
 
-#ifndef None
-#define None    0l
+extern char *NameForAtom(
+#if NeedFunctionPrototypes
+    Atom /*atom*/
 #endif
+);
 
-#ifndef TRUE
-#define TRUE 1
-#define FALSE 0
+extern void FreeAtoms(
+#if NeedFunctionPrototypes
+    void
 #endif
-
-extern char *NameForAtom();
-extern Atom LbxMakeAtom();
-extern void FreeAtoms();
+);
 
 #endif				/* _ATOMCACHE_H_ */

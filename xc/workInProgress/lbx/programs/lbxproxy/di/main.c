@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.6 94/03/27 13:44:50 dpw Exp mor $ */
+/* $XConsortium: main.c,v 1.7 94/12/01 20:43:25 mor Exp $ */
 /*
  * $NCDOr$
  * $NCDId: @(#)main.c,v 1.17 1994/11/16 02:27:55 lemke Exp $
@@ -25,30 +25,20 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
-#include "X.h"
-#include "Xproto.h"
-#include "input.h"
-#include "misc.h"
-#include "os.h"
-#include "resource.h"
 #include "lbx.h"
-#include "opaque.h"
-#include "servermd.h"
-#include "site.h"
 #include "wire.h"
 #include "atomcache.h"
 #include "colormap.h"
 #include "tags.h"
 #include "lbxext.h"
-
-char	*display = "10";
-
-extern Bool NoticeServer ();
+#include "os.h"
+#include "resource.h"
 
 XServerPtr  servers[MAX_SERVERS];
 
-extern char *display;
+char *display;
 
+int
 main (argc, argv)
     int	    argc;
     char    **argv;

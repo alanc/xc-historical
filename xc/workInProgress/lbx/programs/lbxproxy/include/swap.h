@@ -27,39 +27,235 @@
 #ifndef _SWAP_H_
 #define _SWAP_H_
 
-extern void SwapConnClientPrefix();
-extern void SwapNewClient();
-extern void SwapCloseClient();
-extern void SwapModifySequence();
-extern void SwapIncrementPixel();
-extern void SwapGetModifierMapping();
-extern void SwapGetKeyboardMapping();
-extern void SwapQueryFont();
-extern void SwapChangeProperty();
-extern void SwapGetProperty();
-extern void SwapInvalidateTag();
-extern void SwapQueryTag();
-extern void SwapQueryExtension();
-extern void SwapTagData();
-extern void SwapLbxConnSetupPrefix();
-extern void SwapConnSetupPrefix();
-extern void SwapConnectionInfo();
-extern void SwapPutImage();
-extern void SwapGetImage();
+extern void SwapConnSetup(
+#if NeedFunctionPrototypes
+    xConnSetup * /*pConnSetup*/,
+    xConnSetup * /*pConnSetupT*/
+#endif
+);
 
-extern void SwapGetPropertyReply();
-extern void SwapInternAtomReply();
-extern void SwapGetAtomNameReply();
-extern void SwapLookupColorReply();
-extern void SwapAllocColorReply();
-extern void SwapAllocNamedColorReply();
-extern void SwapModmapReply();
-extern void SwapKeymapReply();
-extern void SwapFont();
-extern void LbxSwapFontInfo();
-extern void SwapGetImageReply();
-extern void SwapQueryExtensionReply();
+extern void SwapWinRoot(
+#if NeedFunctionPrototypes
+    xWindowRoot * /*pRoot*/,
+    xWindowRoot * /*pRootT*/
+#endif
+);
 
-extern void WriteSConnectionInfo();
+extern void SwapVisual(
+#if NeedFunctionPrototypes
+    xVisualType * /*pVis*/,
+    xVisualType * /*pVisT*/
+#endif
+);
+
+extern void SwapConnectionInfo(
+#if NeedFunctionPrototypes
+    xConnSetup * /*pConnSetup*/
+#endif
+);
+
+extern void WriteSConnectionInfo(
+#if NeedFunctionPrototypes
+    ClientPtr /*pClient*/,
+    unsigned long /*size*/,
+    char * /*pInfo*/
+#endif
+);
+
+extern void SwapGetPropertyReply(
+#if NeedFunctionPrototypes
+    xGetPropertyReply * /*rep*/
+#endif
+);
+
+extern void SwapInternAtomReply(
+#if NeedFunctionPrototypes
+    xInternAtomReply * /*rep*/
+#endif
+);
+
+extern void SwapGetAtomNameReply(
+#if NeedFunctionPrototypes
+    xGetAtomNameReply * /*rep*/
+#endif
+);
+
+extern void SwapLookupColorReply(
+#if NeedFunctionPrototypes
+    xLookupColorReply * /*rep*/
+#endif
+);
+
+extern void SwapAllocColorReply(
+#if NeedFunctionPrototypes
+    xAllocColorReply * /*rep*/
+#endif
+);
+
+extern void SwapAllocNamedColorReply(
+#if NeedFunctionPrototypes
+    xAllocNamedColorReply * /*rep*/
+#endif
+);
+
+extern void SwapModmapReply(
+#if NeedFunctionPrototypes
+    xGetModifierMappingReply * /*rep*/
+#endif
+);
+
+extern void SwapKeymapReply(
+#if NeedFunctionPrototypes
+    xGetKeyboardMappingReply * /*rep*/
+#endif
+);
+
+extern void SwapGetImageReply(
+#if NeedFunctionPrototypes
+    xGetImageReply * /*rep*/
+#endif
+);
+
+extern void SwapQueryExtensionReply(
+#if NeedFunctionPrototypes
+    xQueryExtensionReply * /*rep*/
+#endif
+);
+
+extern void SwapFont(
+#if NeedFunctionPrototypes
+    xQueryFontReply * /*pr*/,
+    Bool /*native*/
+#endif
+);
+
+extern void LbxSwapFontInfo(
+#if NeedFunctionPrototypes
+    xLbxFontInfo * /*pr*/,
+    Bool /*compressed*/
+#endif
+);
+
+extern void SwapLongs(
+#if NeedFunctionPrototypes
+    CARD32 * /*list*/,
+    unsigned long /*count*/
+#endif
+);
+
+extern void SwapShorts(
+#if NeedFunctionPrototypes
+    short * /*list*/,
+    unsigned long /*count*/
+#endif
+);
+
+extern void SwapConnClientPrefix(
+#if NeedFunctionPrototypes
+    xConnClientPrefix * /*pCCP*/
+#endif
+);
+
+extern void SwapNewClient(
+#if NeedFunctionPrototypes
+    xLbxNewClientReq * /*r*/
+#endif
+);
+
+extern void SwapCloseClient(
+#if NeedFunctionPrototypes
+    xLbxCloseClientReq * /*r*/
+#endif
+);
+
+extern void SwapModifySequence(
+#if NeedFunctionPrototypes
+    xLbxModifySequenceReq * /*r*/
+#endif
+);
+
+extern void SwapIncrementPixel(
+#if NeedFunctionPrototypes
+    xLbxIncrementPixelReq * /*r*/
+#endif
+);
+
+extern void SwapGetModifierMapping(
+#if NeedFunctionPrototypes
+    xLbxGetModifierMappingReq * /*r*/
+#endif
+);
+
+extern void SwapGetKeyboardMapping(
+#if NeedFunctionPrototypes
+    xLbxGetKeyboardMappingReq * /*r*/
+#endif
+);
+
+extern void SwapQueryFont(
+#if NeedFunctionPrototypes
+    xLbxQueryFontReq * /*r*/
+#endif
+);
+
+extern void SwapChangeProperty(
+#if NeedFunctionPrototypes
+    xLbxChangePropertyReq * /*r*/
+#endif
+);
+
+extern void SwapGetProperty(
+#if NeedFunctionPrototypes
+    xLbxGetPropertyReq * /*r*/
+#endif
+);
+
+extern void SwapPutImage(
+#if NeedFunctionPrototypes
+    xLbxPutImageReq * /*r*/
+#endif
+);
+
+extern void SwapGetImage(
+#if NeedFunctionPrototypes
+    xLbxGetImageReq * /*r*/
+#endif
+);
+
+extern void SwapQueryTag(
+#if NeedFunctionPrototypes
+    xLbxQueryTagReq * /*r*/
+#endif
+);
+
+extern void SwapInvalidateTag(
+#if NeedFunctionPrototypes
+    xLbxInvalidateTagReq * /*r*/
+#endif
+);
+
+extern void SwapTagData(
+#if NeedFunctionPrototypes
+    xLbxTagDataReq * /*r*/
+#endif
+);
+
+extern void SwapQueryExtension(
+#if NeedFunctionPrototypes
+    xLbxQueryExtensionReq * /*r*/
+#endif
+);
+
+extern void SwapLbxConnSetupPrefix(
+#if NeedFunctionPrototypes
+    xLbxConnSetupPrefix * /*csp*/
+#endif
+);
+
+extern void SwapConnSetupPrefix(
+#if NeedFunctionPrototypes
+    xConnSetupPrefix * /*csp*/
+#endif
+);
 
 #endif				/* _SWAP_H_ */

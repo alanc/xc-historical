@@ -1,4 +1,4 @@
-/* $XConsortium: props.c,v 1.6 94/12/01 20:42:57 mor Exp mor $ */
+/* $XConsortium: props.c,v 1.6 94/12/01 20:42:57 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -28,19 +28,14 @@
 
 
 #include	<stdio.h>
-#define NEED_REPLIES
-#define NEED_EVENTS
-#include	<X11/Xproto.h>
+#include	"misc.h"
 #include	"assert.h"
-#include	"lbxdata.h"
+#include	"lbx.h"
 #include	"util.h"
 #include	"tags.h"
-#include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
 #include	"swap.h"
-#define _XLBX_SERVER_
-#include	"lbxstr.h"	/* gets dixstruct.h */
 
 /*
  * XXX
@@ -233,7 +228,8 @@ GetLbxChangePropertyReply(client, data)
     assert(nr);
     ptdp = &nr->request_info.lbxchangeprop.ptd;
     if (rep->tag) {
-	if (!propTagStoreData(rep->tag, ptdp->length, client->swapped, ptdp)) {
+	if (!propTagStoreData(rep->tag, (unsigned long)ptdp->length,
+			      client->swapped, ptdp)) {
 	    SendInvalidateTag(client, rep->tag);
 /* XXX is this good enough?  or should we try to send the data on to
  * the server?
@@ -347,7 +343,7 @@ GetLbxGetPropertyReply(client, data)
     char       *data;
 {
     xLbxGetPropertyReply *rep;
-    int         len;
+    unsigned long len;
     ReplyStuffPtr nr;
     PropertyTagDataRec ptd;
     PropertyTagDataPtr ptdp;

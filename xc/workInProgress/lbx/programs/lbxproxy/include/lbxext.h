@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lbxext.h,v 1.1 94/12/01 20:39:01 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -29,14 +29,46 @@
 /* number of extensions the proxy understands */
 #define	MAX_SUPPORTED_EXTENSIONS	10
 
-typedef int (*ExtensionRequests) ();
-typedef int (*ExtensionReplies) ();
-typedef int (*ExtensionEvents) ();
-typedef int (*ExtensionErrors) ();
-typedef int (*SExtensionRequests) ();
-typedef int (*SExtensionReplies) ();
-typedef int (*SExtensionEvents) ();
-typedef int (*SExtensionErrors) ();
+typedef int (*ExtensionRequests) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+typedef int (*ExtensionReplies) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+typedef int (*ExtensionEvents) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+typedef int (*ExtensionErrors) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+typedef int (*SExtensionRequests) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+typedef int (*SExtensionReplies) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+typedef int (*SExtensionEvents) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+typedef int (*SExtensionErrors) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
 
 typedef struct _vectors {
     char       *name;
@@ -47,25 +79,106 @@ typedef struct _vectors {
     SExtensionRequests sreq_vector;
 }           ExtensionVectors;
 
-extern int  (*ProcVector[256]) ();
-extern int  (*SwappedProcVector[256]) ();
+extern int  (*ProcVector[256]) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+extern int  (*SwappedProcVector[256]) (
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
 
-extern Bool AddExtension();
-extern void DeleteClientExtensions();
-extern void ShutdownExtensions();
-extern void InitExtensions();
+extern void RegisterExtension(
+#if NeedFunctionPrototypes
+    ExtensionVectors * /*new*/
+#endif
+);
 
-extern void RegisterExtension();
+typedef struct _LbxQueryExtensionReply *xLbxQueryExtensionReplyPtr;
 
-extern void RegisterAllExtensions();
+extern Bool AddExtension(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    char * /*name*/,
+    xLbxQueryExtensionReplyPtr /*reply*/,
+    CARD8 * /*rep_mask*/,
+    CARD8 * /*ev_mask*/
+#endif
+);
 
-extern void HandleExtensionError();
-extern void HandleExtensionEvent();
-extern Bool HandleExtensionReply();
+extern void DeleteClientExtensions(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
 
-extern Bool CheckExtensionForEvents();
-extern Bool CheckExtensionForReplies();
+extern void RegisterAllExtensions(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
-extern Bool HandleQueryExtensionReply();
+extern void InitExtensions(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ShutdownExtensions(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void HandleExtensionError(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    xError * /*err*/
+#endif
+);
+
+extern void HandleExtensionEvent(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    xEvent * /*ev*/
+#endif
+);
+
+typedef struct _replystuff *_ReplyStuffPtr;
+
+extern Bool HandleExtensionReply(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    xReply * /*reply*/,
+    _ReplyStuffPtr /*nr*/
+#endif
+);
+
+extern Bool CheckExtensionForEvents(
+#if NeedFunctionPrototypes
+    xReq * /*req*/
+#endif
+);
+
+extern Bool CheckExtensionForReplies(
+#if NeedFunctionPrototypes
+    xReq * /*req*/
+#endif
+);
+
+extern Bool HandleLbxQueryExtensionReply(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    char * /*data*/
+#endif
+);
+
+extern int ProcLBXQueryExtension(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
 
 #endif				/* _LBXEXT_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: util.h,v 1.3 94/02/20 11:14:24 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -25,6 +25,173 @@
 #ifndef	_UTIL_H_
 #define	_UTIL_H_
 
-extern char *strnalloc();
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+
+typedef SIGVAL (*OsSigHandlerPtr)(
+#if NeedFunctionPrototypes
+    int /* sig */
+#endif
+);
+
+extern OsSigHandlerPtr OsSignal(
+#if NeedFunctionPrototypes
+    int /*sig*/,
+    OsSigHandlerPtr /*handler*/
+#endif
+);
+
+extern void AutoResetServer(
+#if NeedFunctionPrototypes
+    int /*sig*/
+#endif
+);
+
+extern void GiveUp(
+#if NeedFunctionPrototypes
+    int /*sig*/
+#endif
+);
+
+extern void Error(
+#if NeedFunctionPrototypes
+    char * /*str*/
+#endif
+);
+
+extern CARD32 GetTimeInMillis(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int AdjustWaitForDelay(
+#if NeedFunctionPrototypes
+    pointer /*waitTime*/,
+    unsigned long /*newdelay*/
+#endif
+);
+
+extern void UseMsg(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ProcessCommandLine(
+#if NeedFunctionPrototypes
+    int /*argc*/,
+    char * /*argv*/[]
+#endif
+);
+
+#define xalloc(size) Xalloc((unsigned long)(size))
+#define xcalloc(size) Xcalloc((unsigned long)(size))
+#define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
+#define xfree(ptr) Xfree((pointer)(ptr))
+
+extern unsigned long *Xalloc(
+#if NeedFunctionPrototypes
+    unsigned long /*amount*/
+#endif
+);
+
+extern unsigned long *Xcalloc(
+#if NeedFunctionPrototypes
+    unsigned long /*amount*/
+#endif
+);
+
+extern unsigned long *Xrealloc(
+#if NeedFunctionPrototypes
+    pointer /*ptr*/,
+    unsigned long /*amount*/
+#endif
+);
+
+extern void Xfree(
+#if NeedFunctionPrototypes
+    pointer /*ptr*/
+#endif
+);
+
+extern void OsInitAllocator(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void AuditF(
+#if NeedVarargsPrototypes
+    char * /*f*/,
+    ...
+#endif
+);
+
+extern void FatalError(
+#if NeedVarargsPrototypes
+    char * /*f*/,
+    ...
+#endif
+);
+
+extern void ErrorF(
+#if NeedVarargsPrototypes
+    char * /*f*/,
+    ...
+#endif
+);
+
+extern char *strnalloc(
+#if NeedFunctionPrototypes
+    char * /*str*/,
+    int /*len*/
+#endif
+);
+
+typedef struct _WorkQueue	*WorkQueuePtr;
+
+extern void ProcessWorkQueue(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern Bool QueueWorkProc(
+#if NeedFunctionPrototypes
+    Bool (* /*function*/)(),
+    ClientPtr /*client*/,
+    pointer /*closure*/
+#endif
+);
+
+extern Bool ClientSleep(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Bool (* /*function*/)(),
+    pointer /*closure*/
+#endif
+);
+
+extern Bool ClientSignal(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern void ClientWakeup(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern Bool ClientIsAsleep(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
 
 #endif				/* _UTIL_H_ */

@@ -50,7 +50,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.5 94/04/17 21:17:19 dpw Exp mor $ */
+/* $XConsortium: resource.c,v 1.7 95/05/17 18:26:41 dpw Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -75,15 +75,10 @@ SOFTWARE.
  *      resource "owned" by the client.
  */
 
-#include <X11/X.h>
-#define	NEED_REPLIES
-#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "resource.h" 
-#include "lbxdata.h" 
 #include "lbx.h" 
-#include "opaque.h"
 #include "colormap.h"
 
 static void RebuildTable();
@@ -151,6 +146,7 @@ CreateNewResourceClass()
 
 ClientResourceRec clientTable[MAXCLIENTS];
 
+Bool
 InitDeleteFuncs()
 {
     lastResourceType = RT_LASTPREDEF;
