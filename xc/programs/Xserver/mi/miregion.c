@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.30 88/01/28 16:52:19 rws Exp $ */
+/* $Header: miregion.c,v 1.31 88/03/03 12:24:07 swick Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -1094,7 +1094,8 @@ miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
 		 * reset left fence to edge of new minuend.
 		 */
 		r1++;
-		x1 = r1->x1;
+		if (r1 != r1End)
+		    x1 = r1->x1;
 	    }
 	    else
 	    {
@@ -1129,7 +1130,8 @@ miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
 		 * Minuend used up: advance to new...
 		 */
 		r1++;
-		x1 = r1->x1;
+		if (r1 != r1End)
+		    x1 = r1->x1;
 	    }
 	    else
 	    {
@@ -1156,7 +1158,8 @@ miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
 		assert(pReg->numRects<=pReg->size);
 	    }
 	    r1++;
-	    x1 = r1->x1;
+	    if (r1 != r1End)
+		x1 = r1->x1;
 	}
     }
 
