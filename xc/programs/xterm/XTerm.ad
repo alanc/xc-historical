@@ -46,7 +46,7 @@
 *fontMenu*font1*Label:	Unreadable
 *VT100*font1:		nil2
 *fontMenu*font2*Label:	Tiny
-*VT100*font2:		5x8
+*VT100*font2:		5x7
 *fontMenu*font3*Label:	Small
 *VT100*font3:		6x10
 *fontMenu*font4*Label:	Medium
