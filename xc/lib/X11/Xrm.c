@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.82 93/12/03 16:48:11 kaleb Exp $
+ * $XConsortium: Xrm.c,v 1.83 93/12/09 15:01:43 kaleb Exp $
  */
 
 /***********************************************************
@@ -31,11 +31,11 @@ SOFTWARE.
 #include	<ctype.h>
 #include	"Xlibint.h"
 #include	<X11/Xresource.h>
-#include 	"XrmI.h"
 #include	"Xlcint.h"
 #ifdef XTHREADS
 #include	"locking.h"
 #endif
+#include 	"XrmI.h"
 
 #if __STDC__
 #define Const const
