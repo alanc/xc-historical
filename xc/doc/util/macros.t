@@ -67,8 +67,7 @@
 .de NT
 .ne 7
 .ds NO Note
-.if \\n(.$>$1 .if !'\\$2'C' .ds NO \\$2
-.if \\n(.$ .if !'\\$1'C' .ds NO \\$1
+.if \\n(.$ .ds NO \\$1
 .ie n .sp
 .el .sp 10p
 .TB
