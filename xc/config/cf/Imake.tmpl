@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.26 89/03/20 13:47:48 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.27 89/03/21 09:50:23 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -244,6 +244,15 @@
 #ifndef LibraryCDebugFlags
 #define LibraryCDebugFlags OptimizedCDebugFlags
 #endif
+#ifndef DefaultCCOptions
+#define DefaultCCOptions /* as nothing: this is for floating point, etc. */
+#endif
+#ifndef LibraryCCOptions
+#define LibraryCCOptions DefaultCCOptions
+#endif
+#ifndef ServerCCOptions
+#define ServerCCOptions DefaultCCOptions
+#endif
 #ifndef SignalReturnProcType
 #define SignalReturnProcType int
 #endif
@@ -418,9 +427,10 @@
          INCLUDES = -I$(TOP)
 #endif
       CDEBUGFLAGS = DefaultCDebugFlags
-           CFLAGS = $(CDEBUGFLAGS) $(INCLUDES) $(STD_DEFINES) $(DEFINES)
+        CCOPTIONS = DefaultCCOptions	/* to distinguish from param flags */
+           CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(STD_DEFINES) $(DEFINES)
         LINTFLAGS = $(LINTOPTS) $(INCLUDES) $(STD_DEFINES) $(DEFINES) -DLINT
-          LDFLAGS = $(CDEBUGFLAGS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
+          LDFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 
         MACROFILE = MacroFile
            RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a \

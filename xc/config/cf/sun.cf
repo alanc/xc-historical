@@ -23,28 +23,24 @@
 #define XsunServer Xsun
 
 #ifdef SparcArchitecture
-#define FloatingPointOptions -pipe
+#define DefaultCCOptions -pipe
 #else
-#define FloatingPointOptions -f68881 -pipe
+#define DefaultCCOptions -f68881 -pipe
 #endif
 
+#define LibraryCCOptions /* don't want special floating point */
+#define LibraryDefines  /**/
+/* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.11 89/04/07 10:25:39 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.12 89/04/10 09:22:28 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
-/*
- * SunOS-specific parameters
- */
+
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
 #define OptimizedCDebugFlags /* as nothing */
 #endif
-
-#define StandardDefines FloatingPointOptions
-#define LibraryDefines  /**/
-/* see below for ServerDefines */
-#define ExtraLoadFlags  FloatingPointOptions
 
 #define UseSunWindowsInServer	NO	/* link in SunWindows support? */
 
@@ -58,7 +54,7 @@
 #if OSMajorVersion >= 4 || defined(SparcArchitecture)
 #define ServerDefines SunWindowsDefines ExtensionDefines -DINCLUDE_ALLOCA_H
 #else
-#define ServerDefines SunWindowsDefines ExtensionDefines FloatingPointOptions -DPURDUE
+#define ServerDefines SunWindowsDefines ExtensionDefines -DPURDUE
 #endif
 
 #if OSMajorVersion >= 4 && OSMinorVersion >= 0
