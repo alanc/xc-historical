@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.12 91/02/05 11:57:48 swick Exp $ */
+/* $XConsortium: SetValues.c,v 1.13 91/05/02 16:11:33 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -25,6 +25,7 @@ SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
+#include "StringDefs.h"
 
 /*
  *	XtSetValues(), XtSetSubvalues()
@@ -222,6 +223,33 @@ void XtSetValues(w, args, num_args)
 	}
     
 	if (geoReq.request_mode != 0) {
+	    /* Pass on any requests for unchanged geometry values */
+	    if (geoReq.request_mode !=
+		(CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
+		for ( ; num_args != 0; num_args--, args++) {
+		    if (! (geoReq.request_mode & CWX) &&
+			strcmp(XtNx, args) == 0) {
+			geoReq.x = w->core.x;
+			geoReq.request_mode |= CWX;
+		    } else if (! (geoReq.request_mode & CWY) &&
+			       strcmp(XtNy, args) == 0) {
+			geoReq.y = w->core.y;
+			geoReq.request_mode |= CWY;
+		    } else if (! (geoReq.request_mode & CWWidth) &&
+			       strcmp(XtNwidth, args) == 0) {
+			geoReq.width = w->core.width;
+			geoReq.request_mode |= CWWidth;
+		    } else if (! (geoReq.request_mode & CWHeight) &&
+			       strcmp(XtNheight, args) == 0) {
+			geoReq.height = w->core.height;
+			geoReq.request_mode |= CWHeight;
+		    } else if (! (geoReq.request_mode & CWBorderWidth) &&
+			       strcmp(XtNborderWidth, args) == 0) {
+			geoReq.border_width = w->core.border_width;
+			geoReq.request_mode |= CWBorderWidth;
+		    }
+		}
+	    }
 	    do {
 		result = _XtMakeGeometryRequest(w, &geoReq, &geoReply, 
 						&cleared_rect_obj);
