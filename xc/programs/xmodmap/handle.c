@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.20 89/12/10 17:26:25 rws Exp $
+ * $XConsortium: handle.c,v 1.21 89/12/10 19:48:04 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -325,7 +325,7 @@ static int do_keycode (line, len)
 	return (-1);
     }
     keycode = (KeyCode) dummy;
-    if (keycode < min_keycode || keycode > max_keycode) {
+    if ((int)keycode < min_keycode || (int)keycode > max_keycode) {
 	badmsg ("keycode value (out of range)", NULL);
 	return (-1);
     }
@@ -372,7 +372,7 @@ static int do_keysym (line, len)
 	printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
 		tmpname, (long) keysym, keycode);
     }
-    if (keycode < min_keycode || keycode > max_keycode) {
+    if ((int)keycode < min_keycode || (int)keycode > max_keycode) {
 	if (!verbose) {
 	    printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
 		    tmpname, (long) keysym, keycode);
@@ -653,7 +653,7 @@ static int do_remove (line, len)
 	    printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
 		    tmpname ? tmpname : "?", (long) kslist[i], kc);
 	}
-	if (kc < min_keycode || kc > max_keycode) {
+	if ((int)kc < min_keycode || (int)kc > max_keycode) {
 	    char *tmpname = XKeysymToString (kslist[i]);
 	    printf ("! Keysym %s (0x%lx), keycode 0x%x, ",
 		    tmpname ? tmpname : "?", (long) kslist[i], kc);
