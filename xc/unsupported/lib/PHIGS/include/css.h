@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: css.h,v 5.1 91/02/16 09:49:35 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -98,7 +98,7 @@ typedef struct {
 
 typedef enum {					/* type of structure store */
     SSH_CSS,					/* central structure store */
-    SSH_AR,					/* archive structure store */
+    SSH_AR					/* archive structure store */
 } Css_ssh_type;
 
 typedef struct _Css_struct {
