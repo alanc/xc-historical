@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.119 94/03/27 14:19:59 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.120 94/04/17 20:14:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1111,6 +1111,7 @@ void XtGetSubresources (w, base, name, class, resources, num_resources,
 
     /* Get full name, class of subobject */
     GetNamesAndClasses(w, names, classes);
+    count -= 2;
     names[count] = StringToName(name);
     classes[count] = StringToClass(class);
     count++;
