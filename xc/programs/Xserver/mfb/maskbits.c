@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.6 89/11/13 09:37:34 rws Exp $ */
+/* $XConsortium: maskbits.c,v 1.7 90/02/22 18:46:24 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,7 +45,7 @@ lets us deal with a full first word in the middle loop, rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
-int starttab[32] =
+int starttab[33] =
     {
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x7FFFFFFF ),
@@ -78,10 +78,11 @@ int starttab[32] =
 	LONG2CHARS( 0x0000000F ),
 	LONG2CHARS( 0x00000007 ),
 	LONG2CHARS( 0x00000003 ),
-	LONG2CHARS( 0x00000001 )
+	LONG2CHARS( 0x00000001 ),
+	LONG2CHARS( 0x00000000 )
     };
 
-int endtab[32] =
+int endtab[33] =
     {
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x80000000 ),
@@ -114,7 +115,8 @@ int endtab[32] =
 	LONG2CHARS( 0xFFFFFFF0 ),
 	LONG2CHARS( 0xFFFFFFF8 ),
 	LONG2CHARS( 0xFFFFFFFC ),
-	LONG2CHARS( 0xFFFFFFFE )
+	LONG2CHARS( 0xFFFFFFFE ),
+	LONG2CHARS( 0xFFFFFFFF )
     };
 
 #if NEED_OLD_MFB_MASKS
@@ -123,7 +125,7 @@ int endtab[32] =
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
-int startpartial[32] =
+int startpartial[33] =
     {
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x7FFFFFFF ),
@@ -156,10 +158,11 @@ int startpartial[32] =
 	LONG2CHARS( 0x0000000F ),
 	LONG2CHARS( 0x00000007 ),
 	LONG2CHARS( 0x00000003 ),
-	LONG2CHARS( 0x00000001 )
+	LONG2CHARS( 0x00000001 ),
+	LONG2CHARS( 0x00000000 )
     };
 
-int endpartial[32] =
+int endpartial[33] =
     {
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x80000000 ),
@@ -192,7 +195,8 @@ int endpartial[32] =
 	LONG2CHARS( 0xFFFFFFF0 ),
 	LONG2CHARS( 0xFFFFFFF8 ),
 	LONG2CHARS( 0xFFFFFFFC ),
-	LONG2CHARS( 0xFFFFFFFE )
+	LONG2CHARS( 0xFFFFFFFE ),
+	LONG2CHARS( 0xFFFFFFFF )
     };
 #endif
 
@@ -462,7 +466,7 @@ lets us deal with a full first word in the middle loop ), rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
-int starttab[32] = 
+int starttab[33] = 
 	{
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0xFFFFFFFE ),
@@ -495,10 +499,11 @@ int starttab[32] =
 	LONG2CHARS( 0xF0000000 ),
 	LONG2CHARS( 0xE0000000 ),
 	LONG2CHARS( 0xC0000000 ),
-	LONG2CHARS( 0x80000000 )
+	LONG2CHARS( 0x80000000 ),
+	LONG2CHARS( 0x00000000 )
 	};
 
-int endtab[32] = 
+int endtab[33] = 
 	{
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x00000001 ),
@@ -531,7 +536,8 @@ int endtab[32] =
 	LONG2CHARS( 0x0FFFFFFF ),
 	LONG2CHARS( 0x1FFFFFFF ),
 	LONG2CHARS( 0x3FFFFFFF ),
-	LONG2CHARS( 0x7FFFFFFF )
+	LONG2CHARS( 0x7FFFFFFF ),
+	LONG2CHARS( 0xFFFFFFFF )
 	};
 
 #ifdef NEED_OLD_MFB_MASKS
@@ -540,7 +546,7 @@ int endtab[32] =
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
-int startpartial[32] = 
+int startpartial[33] = 
 	{
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0xFFFFFFFE ),
@@ -573,10 +579,11 @@ int startpartial[32] =
 	LONG2CHARS( 0xF0000000 ),
 	LONG2CHARS( 0xE0000000 ),
 	LONG2CHARS( 0xC0000000 ),
-	LONG2CHARS( 0x80000000 )
+	LONG2CHARS( 0x80000000 ),
+	LONG2CHARS( 0x00000000 )
 	};
 
-int endpartial[32] = 
+int endpartial[33] = 
 	{
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x00000001 ),
@@ -609,7 +616,8 @@ int endpartial[32] =
 	LONG2CHARS( 0x0FFFFFFF ),
 	LONG2CHARS( 0x1FFFFFFF ),
 	LONG2CHARS( 0x3FFFFFFF ),
-	LONG2CHARS( 0x7FFFFFFF )
+	LONG2CHARS( 0x7FFFFFFF ),
+	LONG2CHARS( 0xFFFFFFFF )
 	};
 #endif
 
