@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: cover,v 5.1 91/02/16 09:45:22 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -22,10 +22,10 @@
 .\"## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 .\"## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\"## PERFORMANCE OF THIS SOFTWARE.
-.EF ''29 February 1991''
-.OF ''29 February 1991''
+.EF ''X11R5''
+.OF ''X11R5''
 .TL
-PEX-SI Porting Guide v. \(*W
+PEX-SI Porting Guide
 .sp
 Preliminary Release
 .DA
