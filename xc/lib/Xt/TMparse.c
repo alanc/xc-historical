@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.116 91/05/09 16:27:51 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.117 91/05/10 16:58:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2032,11 +2032,11 @@ _XtAddTMConverters(table)
     ConverterTable table;
 {
      _XtTableAddConverter(table,
-	     XtQString,
+	     _XtQString,
 	     XrmPermStringToQuark(XtRTranslationTable), 
  	     XtCvtStringToTranslationTable, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
-     _XtTableAddConverter(table, XtQString,
+     _XtTableAddConverter(table, _XtQString,
 	     XrmPermStringToQuark(XtRAcceleratorTable),
  	     XtCvtStringToAcceleratorTable, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);

@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.74 91/05/06 11:34:32 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.75 91/05/09 19:26:25 swick Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -68,7 +68,7 @@ static XrmQuark  XtQFontStruct;
 static XrmQuark  XtQInt;
 static XrmQuark  XtQPixel;
 static XrmQuark  XtQPosition;
-XrmQuark  XtQString;
+XrmQuark  _XtQString;
 
 void _XtConvertInitialize()
 {
@@ -84,7 +84,7 @@ void _XtConvertInitialize()
     XtQBool		= XrmPermStringToQuark(XtRBool);
     XtQPixel		= XrmPermStringToQuark(XtRPixel);
     XtQPosition		= XrmPermStringToQuark(XtRPosition);
-    XtQString		= XrmPermStringToQuark(XtRString);
+    _XtQString		= XrmPermStringToQuark(XtRString);
 }
 
 #define	done(type, value) \
@@ -138,7 +138,7 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 	{
 	    if (rep_type == XtQBoolean)
 		report_it = *(Boolean*)value.addr ? Report : Ignore;
-	    else if (rep_type == XtQString) {
+	    else if (rep_type == _XtQString) {
 		XrmValue toVal;
 		Boolean report;
 		toVal.addr = (XPointer)&report;
@@ -803,7 +803,7 @@ Boolean XtCvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 	xrm_class[1] = 0;
 	if (XrmQGetResource(XtDatabase(display), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
-	    if (rep_type == XtQString) {
+	    if (rep_type == _XtQString) {
 		f = XLoadFont(display, (char *)value.addr);
 		if (f != 0)
 		    goto Done;
@@ -926,7 +926,7 @@ Boolean XtCvtStringToFontSet(dpy, args, num_args, fromVal, toVal, closure_ret)
       xrm_class[1] = 0;
       if (XrmQGetResource(XtDatabase(display), xrm_name, xrm_class, 
                           &rep_type, &value)) {
-          if (rep_type == XtQString) {
+          if (rep_type == _XtQString) {
               f = XCreateFontSet(display, (char *)value.addr,
 				 &missing_charset_list, &missing_charset_count,
 				 &def_string);
@@ -1062,7 +1062,7 @@ XtCvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 	xrm_class[1] = 0;
 	if (XrmQGetResource(XtDatabase(display), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
-	    if (rep_type == XtQString) {
+	    if (rep_type == _XtQString) {
 		f = XLoadQueryFont(display, (char*)value.addr);
 		if (f != NULL)
 		    goto Done;
@@ -1429,44 +1429,44 @@ _XtAddDefaultConverters(table)
     Add(XtQPixel, XtQColor,	  XtCvtIntToColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
 
-    Add(XtQString, XtQAtom,       XtCvtStringToAtom,
+    Add(_XtQString, XtQAtom,      XtCvtStringToAtom,
 	displayConvertArg, XtNumber(displayConvertArg), XtCacheNone);
-    Add(XtQString, XtQBoolean,    XtCvtStringToBoolean, NULL, 0, XtCacheNone);
-    Add(XtQString, XtQBool,       XtCvtStringToBool,    NULL, 0, XtCacheNone);
-   Add2(XtQString, XtQCursor,     XtCvtStringToCursor,
+    Add(_XtQString, XtQBoolean,   XtCvtStringToBoolean, NULL, 0, XtCacheNone);
+    Add(_XtQString, XtQBool,      XtCvtStringToBool,    NULL, 0, XtCacheNone);
+   Add2(_XtQString, XtQCursor,    XtCvtStringToCursor,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeCursor);
-    Add(XtQString, XtQDimension,  XtCvtStringToShort,   NULL, 0, XtCacheNone);
-    Add(XtQString, XtQDisplay,    XtCvtStringToDisplay, NULL, 0, XtCacheAll);
-   Add2(XtQString, XtQFile,       XtCvtStringToFile,    NULL, 0,
+    Add(_XtQString, XtQDimension, XtCvtStringToShort,   NULL, 0, XtCacheNone);
+    Add(_XtQString, XtQDisplay,   XtCvtStringToDisplay, NULL, 0, XtCacheAll);
+   Add2(_XtQString, XtQFile,      XtCvtStringToFile,    NULL, 0,
 	XtCacheAll | XtCacheRefCount, FreeFile);
-    Add(XtQString, XtQFloat,      XtCvtStringToFloat,   NULL, 0, XtCacheNone);
+    Add(_XtQString, XtQFloat,     XtCvtStringToFloat,   NULL, 0, XtCacheNone);
 
-   Add2(XtQString, XtQFont,       XtCvtStringToFont,
+   Add2(_XtQString, XtQFont,      XtCvtStringToFont,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFont);
-   Add2(XtQString, XtQFontSet,    XtCvtStringToFontSet,
+   Add2(_XtQString, XtQFontSet,   XtCvtStringToFontSet,
 	localeDisplayConvertArgs, XtNumber(localeDisplayConvertArgs),
 	XtCacheByDisplay, FreeFontSet);
-   Add2(XtQString, XtQFontStruct, XtCvtStringToFontStruct,
+   Add2(_XtQString, XtQFontStruct,XtCvtStringToFontStruct,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFontStruct);
 
 #ifdef STRING_TO_GEOMETRY /* Not in the specification */
-    Add(XtQString, XtQGeometry,   CvtStringToGeometry, NULL, 0, XtCacheNone);
+    Add(_XtQString, XtQGeometry,  CvtStringToGeometry, NULL, 0, XtCacheNone);
 #endif
 
-    Add(XtQString, XtQInt,	    XtCvtStringToInt,    NULL, 0, XtCacheAll);
-    Add(XtQString, XtQInitialState, XtCvtStringToInitialState, NULL, 0,
+    Add(_XtQString, XtQInt,	     XtCvtStringToInt,    NULL, 0, XtCacheAll);
+    Add(_XtQString, XtQInitialState, XtCvtStringToInitialState, NULL, 0,
 	XtCacheNone);
-   Add2(XtQString, XtQPixel,        XtCvtStringToPixel,
+   Add2(_XtQString, XtQPixel,        XtCvtStringToPixel,
 	colorConvertArgs, XtNumber(colorConvertArgs),
 	XtCacheByDisplay, FreePixel);
-    Add(XtQString, XtQPosition,     XtCvtStringToShort,  NULL, 0, XtCacheAll);
-    Add(XtQString, XtQShort,        XtCvtStringToShort,  NULL, 0, XtCacheAll);
-    Add(XtQString, XtQUnsignedChar, XtCvtStringToUnsignedChar,
+    Add(_XtQString, XtQPosition,     XtCvtStringToShort,  NULL, 0, XtCacheAll);
+    Add(_XtQString, XtQShort,        XtCvtStringToShort,  NULL, 0, XtCacheAll);
+    Add(_XtQString, XtQUnsignedChar, XtCvtStringToUnsignedChar,
 	NULL, 0, XtCacheAll);
-   Add2(XtQString, XtQVisual,       XtCvtStringToVisual,
+   Add2(_XtQString, XtQVisual,       XtCvtStringToVisual,
 	visualConvertArgs, XtNumber(visualConvertArgs),
 	XtCacheByDisplay, NULL);
 

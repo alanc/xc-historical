@@ -1,4 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.12 91/02/08 16:47:43 converse Exp $ */
+/* $XConsortium: ConvertI.h,v 1.13 91/04/30 12:27:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,7 +26,7 @@ SOFTWARE.
 
 /* Representation types */
 
-extern	XrmQuark  XtQString;
+extern	XrmQuark  _XtQString;
 
 /*
  * Resource conversions

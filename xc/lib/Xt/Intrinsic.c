@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.167 91/04/17 10:52:26 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.168 91/04/30 12:25:59 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1073,7 +1073,7 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     class_list[2] = NULLQUARK;
     if (XrmQGetResource(XrmGetDatabase(dpy), name_list, class_list,
 			&db_type, &value) &&
-	db_type == XtQString)
+	db_type == _XtQString)
 	merged_substitutions[3].substitution = (char *)value.addr;
     else
 	merged_substitutions[3].substitution = NULL;

@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.183 91/04/30 12:26:18 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.184 91/05/03 15:32:58 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -538,7 +538,7 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
 
     if (XrmQGetSearchResource(list, Qname, Qclass, &db_type, &db_value)) {
 	if (db_type == Qtype) {
-	    if (Qtype == XtQString)
+	    if (Qtype == _XtQString)
 		*(String*)value->addr = db_value.addr;
 	    else
 		bcopy( db_value.addr, value->addr, value->size );
