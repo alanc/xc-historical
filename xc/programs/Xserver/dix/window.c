@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.100 94/02/04 04:16:41 dpw Exp $ */
+/* $XConsortium: window.c,v 5.101 94/02/23 15:48:40 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -677,7 +677,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     if (!(*pScreen->CreateWindow)(pWin))
     {
 	*error = BadAlloc;
-	DeleteWindow(pWin, wid);
+	DeleteWindow(pWin, None);
 	return NullWindow;
     }
     /* We SHOULD check for an error value here XXX */
@@ -693,8 +693,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     if (*error != Success)
     {
-	(void)EventSelectForWindow(pWin, client, (Mask)0); /* can't fail */
-	DeleteWindow(pWin, wid);
+	DeleteWindow(pWin, None);
 	return NullWindow;
     }
     if (!(vmask & CWBackingStore) && (defaultBackingStore != NotUseful))
@@ -808,6 +807,7 @@ CrushTree(pWin)
 /*****
  *  DeleteWindow
  *	 Deletes child of window then window itself
+ *	 If wid is None, don't send any events
  *****/
 
 /*ARGSUSED*/
@@ -825,7 +825,7 @@ DeleteWindow(value, wid)
     CrushTree(pWin);
 
     pParent = pWin->parent;
-    if (pParent && SubStrSend(pWin, pParent))
+    if (wid && pParent && SubStrSend(pWin, pParent))
     {
 	event.u.u.type = DestroyNotify;
 	event.u.destroyNotify.window = pWin->drawable.id;
