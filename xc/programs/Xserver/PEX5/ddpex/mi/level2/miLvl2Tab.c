@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miLvl2Tab.c,v 5.1 91/02/16 09:55:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1000,7 +1000,7 @@ ocTableType	InquireOCTable[] = {
 
 extern ddpex2rtn
     replaceNurbSurface(),
-    replaceLightState();
+    replaceLightState(),
     replaceSOFAS();
 
 
