@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.27 88/12/08 16:39:43 keith Exp $ */
+/* $XConsortium: access.c,v 1.28 89/02/03 09:04:31 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -61,6 +61,8 @@ SOFTWARE.
 
 #define DONT_CHECK -1
 extern char	*index();
+
+static int XFamily(), UnixFamily();
 
 typedef struct _host {
 	short		family;
