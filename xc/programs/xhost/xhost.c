@@ -17,17 +17,46 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.31 89/09/09 19:08:24 keith Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.32 89/12/07 11:41:31 rws Exp $";
 #endif
  
+#ifdef TCPCONN
+#define NEEDSOCKETS
+#endif
+#ifdef UNIXCONN
+#define NEEDSOCKETS
+#endif
+#ifdef DNETCONN
+#define NEEDSOCKETS
+#endif
+#ifdef STREAMSCONN
+#define NEEDSOCKETS
+#endif
+
+#include <stdio.h>
+#include <X11/Xos.h>
+#include <X11/Xlib.h>
+#include <X11/Xproto.h>
+#include <X11/Xmu/Error.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <ctype.h>
-#include <sys/types.h>
+#ifdef NEEDSOCKETS
+#ifdef att
+typedef unsigned short unsign16;
+typedef unsigned long unsign32;
+typedef short sign16;
+typedef long sign32;
+#include <interlan/socket.h>
+#include <interlan/netdb.h>
+#include <interlan/in.h>
+#else
 #include <sys/socket.h>
-#include <stdio.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#endif
+#endif /* NEEDSOCKETS */
+
 #ifdef notdef
 #include <arpa/inet.h>
 	bogus definition of inet_makeaddr() in BSD 4.2 and Ultrix
@@ -40,46 +69,48 @@ extern unsigned long inet_makeaddr();
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #endif
-#include <X11/Xos.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xmu/Error.h>
  
 static int local_xerror();
 
+#ifdef SIGNALRETURNSINT
+typedef int signal_t;
+#else
+typedef void signal_t;
+#endif
+static signal_t nameserver_lost();
+
 #define NAMESERVER_TIMEOUT 5	/* time to wait for nameserver */
-
-typedef struct {
-	int af, xf;
-} FamilyMap;
-
-static FamilyMap familyMap[] = {
-#ifdef	AF_DECnet
-    {AF_DECnet, FamilyDECnet},
-#endif
-#ifdef	AF_CHAOS
-    {AF_CHAOS, FamilyChaos},
-#endif
-#ifdef	AF_INET
-    {AF_INET, FamilyInternet}
-#endif
-};
-
-#define FAMILIES ((sizeof familyMap)/(sizeof familyMap[0]))
 
 int nameserver_timedout;
  
 char *ProgramName;
 
+#ifdef NEEDSOCKETS
 static int XFamily(af)
     int af;
 {
     int i;
+    static struct _familyMap {
+	int af, xf;
+    } familyMap[] = {
+#ifdef	AF_DECnet
+        { AF_DECnet, FamilyDECnet },
+#endif
+#ifdef	AF_CHAOS
+        { AF_CHAOS, FamilyChaos },
+#endif
+#ifdef	AF_INET
+        { AF_INET, FamilyInternet },
+#endif
+};
+
+#define FAMILIES ((sizeof familyMap)/(sizeof familyMap[0]))
+
     for (i = 0; i < FAMILIES; i++)
-	if (familyMap[i].af == af)
-	    return familyMap[i].xf;
+	if (familyMap[i].af == af) return familyMap[i].xf;
     return -1;
 }
+#endif /* NEEDSOCKETS */
 
 
 main(argc, argv)
@@ -124,9 +155,14 @@ main(argc, argv)
 		if (nhosts != 0) {
 		    for (i = 0; i < nhosts; i++ )  {
 		      hostname = get_hostname(&list[i]);
-		      printf("%s\t", hostname);
+		      if (hostname) {
+			  printf ("%s", hostname);
+		      } else {
+			  printf ("<unknown address in family %d>",
+				  list[i].family);
+		      }
 		      if (nameserver_timedout)
-			printf("(nameserver did not respond in %d seconds)\n",
+			printf("\t(no nameserver response within %d seconds)\n",
 			        NAMESERVER_TIMEOUT);
 		      else printf("\n");
 		    }
@@ -228,6 +264,7 @@ int change_host (dpy, name, add)
     return 1;
   }
 #endif /* DNETCONN */
+#ifdef NEEDSOCKETS
   /*
    * First see if inet_addr() can grok the name; if so, then use it.
    */
@@ -278,7 +315,7 @@ int change_host (dpy, name, add)
     printf ("%s %s\n", name, add ? add_msg : remove_msg);
     return 1;
   }
-  /* NOTREACHED */
+#endif /* NEEDSOCKETS */
 }
 
 
@@ -294,13 +331,15 @@ char *get_hostname (ha)
 XHostAddress *ha;
 {
   struct hostent *hp = NULL;
-  int nameserver_lost();
+#ifdef TCPCONN
   char *inet_ntoa();
+#endif
 #ifdef DNETCONN
   struct nodeent *np;
   static char nodeaddr[16];
 #endif /* DNETCONN */
 
+#ifdef TCPCONN
   if (ha->family == FamilyInternet) {
     /* gethostbyaddr can take a LONG time if the host does not exist.
        Assume that if it does not respond in NAMESERVER_TIMEOUT seconds
@@ -319,6 +358,7 @@ XHostAddress *ha;
       return (hp->h_name);
     else return (inet_ntoa(*((struct in_addr *)(ha->address))));
   }
+#endif
 #ifdef DNETCONN
   if (ha->family == FamilyDECnet) {
     if (np = getnodebyaddr(ha->address, ha->length, AF_DECnet)) {
@@ -333,7 +373,7 @@ XHostAddress *ha;
   return (NULL);
 }
 
-nameserver_lost()
+static signal_t nameserver_lost()
 {
   nameserver_timedout = 1;
   longjmp(env, -1);
