@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.14 91/07/09 14:49:33 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.15 91/09/10 08:50:04 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -14,6 +14,7 @@
 #define WANT_BFUNCS
 #define WANT_FFS
 #define WANT_RANDOM
+#define WANT_QUE
 #endif
 
 #ifdef macII
