@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.5 89/07/17 17:22:25 rws Exp $ */
+/* $XConsortium: mi.h,v 1.6 89/09/02 15:13:19 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -84,6 +84,7 @@ extern Bool miRectAlloc();
 #ifdef DEBUG
 extern Bool miValidRegion();
 #endif
+extern void miSendExposures();
 extern void miWindowExposures();
 extern void miSendGraphicsExpose();
 extern RegionPtr miHandleExposures();
