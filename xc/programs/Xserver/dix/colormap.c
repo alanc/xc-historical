@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.4 89/07/21 14:44:59 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.5 89/07/22 15:01:22 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -396,16 +396,14 @@ CopyColormapAndFree (mid, pSrc, client)
 	return(Success);
     }
 
-    if (pmap->class & DynamicClass)
+    CopyFree(REDMAP, client, pSrc, pmap);
+    if ((pmap->class | DynamicClass) == DirectColor)
     {
-	CopyFree(REDMAP, client, pSrc, pmap);
-	if (pmap->class == DirectColor)
-	{
-	    CopyFree(GREENMAP, client, pSrc, pmap);
-	    CopyFree(BLUEMAP, client, pSrc, pmap);
-	}
-	UpdateColors(pmap);
+	CopyFree(GREENMAP, client, pSrc, pmap);
+	CopyFree(BLUEMAP, client, pSrc, pmap);
     }
+    if (pmap->class & DynamicClass)
+	UpdateColors(pmap);
     /* XXX should worry about removing any RT_CMAPENTRY resource */
     return(Success);
 }
@@ -423,7 +421,6 @@ CopyFree (channel, client, pmapSrc, pmapDst)
 
     switch(channel)
     {
-      case PSEUDOMAP:
       case REDMAP:
 	ppix = (pmapSrc->clientPixelsRed)[client];
 	npix = (pmapSrc->numPixelsRed)[client];
@@ -446,30 +443,32 @@ CopyFree (channel, client, pmapSrc, pmapDst)
 	oldFree = pmapSrc->freeBlue;
 	break;
     }
-    for(z = npix; --z >= 0; ppix++)
+    if (pmapSrc->class & DynamicClass)
     {
-        /* Copy entries */
-        pentSrc = pentSrcFirst + *ppix;
-        pentDst = pentDstFirst + *ppix;
-	if (pentDst->refcnt > 0)
+	for(z = npix; --z >= 0; ppix++)
 	{
-	    pentDst->refcnt++;
-	}
-	else
-	{
-	    *pentDst = *pentSrc;
-	    if (pentSrc->refcnt > 0)
-		pentDst->refcnt = 1;
+	    /* Copy entries */
+	    pentSrc = pentSrcFirst + *ppix;
+	    pentDst = pentDstFirst + *ppix;
+	    if (pentDst->refcnt > 0)
+	    {
+		pentDst->refcnt++;
+	    }
 	    else
-		pentSrc->fShared = FALSE;
+	    {
+		*pentDst = *pentSrc;
+		if (pentSrc->refcnt > 0)
+		    pentDst->refcnt = 1;
+		else
+		    pentSrc->fShared = FALSE;
+	    }
+	    FreeCell(pmapSrc, *ppix, channel);
 	}
-    	FreeCell(pmapSrc, *ppix, channel);
     }
 
     /* Note that FreeCell has already fixed pmapSrc->free{Color} */
     switch(channel)
     {
-      case PSEUDOMAP:
       case REDMAP:
         pmapDst->freeRed -= (pmapSrc->freeRed - oldFree);
         (pmapDst->clientPixelsRed)[client] =
@@ -612,7 +611,6 @@ UpdateColors (pmap)
 
 /* Get a read-only color from a ColorMap (probably slow for large maps)
  * Returns by changing the value in pred, pgreen, pblue and pPix
- * On Error sets Alloc
  */
 int
 AllocColor (pmap, pred, pgreen, pblue, pPix, client)
@@ -626,7 +624,8 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
     xrgb	rgb;
     int		class;
     VisualPtr	pVisual;
-
+    int		npix;
+    Pixel	*ppix;
 
     pVisual = pmap->pVisual;
     (*pmap->pScreen->ResolveColor) (pred, pgreen, pblue, pVisual);
@@ -648,15 +647,22 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
      * requested one and return that.
      */
     switch (class) {
-    /* If this is StaticColor or StaticGray, look up all three components
-     * in the same pmap */
     case StaticColor:
     case StaticGray:
+	/* Look up all three components in the same pmap */
 	*pPix = pixR = FindBestPixel(pmap->red, entries, &rgb, PSEUDOMAP);
 	*pred = pmap->red[pixR].co.local.red;
 	*pgreen = pmap->red[pixR].co.local.green;
 	*pblue = pmap->red[pixR].co.local.blue;
-	return(Success);
+	npix = pmap->numPixelsRed[client];
+	ppix = (Pixel *) xrealloc(pmap->clientPixelsRed[client],
+				  (npix + 1) * sizeof(Pixel));
+	if (!ppix)
+	    return (BadAlloc);
+	ppix[npix] = pixR;
+	pmap->clientPixelsRed[client] = ppix;
+	pmap->numPixelsRed[client]++;
+	break;
 
     case TrueColor:
 	/* Look up each component in its own map, then OR them together */
@@ -669,24 +675,44 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
 	*pred = pmap->red[pixR].co.local.red;
 	*pgreen = pmap->green[pixG].co.local.green;
 	*pblue = pmap->blue[pixB].co.local.blue;
-	return(Success);
+	npix = pmap->numPixelsRed[client];
+	ppix = (Pixel *) xrealloc(pmap->clientPixelsRed[client],
+				  (npix + 1) * sizeof(Pixel));
+	if (!ppix)
+	    return (BadAlloc);
+	ppix[npix] = pixR;
+	pmap->clientPixelsRed[client] = ppix;
+	npix = pmap->numPixelsGreen[client];
+	ppix = (Pixel *) xrealloc(pmap->clientPixelsGreen[client],
+				  (npix + 1) * sizeof(Pixel));
+	if (!ppix)
+	    return (BadAlloc);
+	ppix[npix] = pixG;
+	pmap->clientPixelsGreen[client] = ppix;
+	npix = pmap->numPixelsBlue[client];
+	ppix = (Pixel *) xrealloc(pmap->clientPixelsBlue[client],
+				  (npix + 1) * sizeof(Pixel));
+	if (!ppix)
+	    return (BadAlloc);
+	ppix[npix] = pixB;
+	pmap->clientPixelsBlue[client] = ppix;
+	pmap->numPixelsRed[client]++;
+	pmap->numPixelsGreen[client]++;
+	pmap->numPixelsBlue[client]++;
+	break;
 
     case GrayScale:
     case PseudoColor:
 	if (FindColor(pmap, pmap->red, entries, &rgb, pPix, PSEUDOMAP,
 		      client, AllComp) != Success)
-	{
 	    return (BadAlloc);
-	}
         break;
 
     case DirectColor:
 	pixR = (*pPix & pVisual->redMask) >> pVisual->offsetRed; 
 	if (FindColor(pmap, pmap->red, entries, &rgb, &pixR, REDMAP,
 		      client, RedComp) != Success)
-	{
 	    return (BadAlloc);
-	}
 	pixG = (*pPix & pVisual->greenMask) >> pVisual->offsetGreen; 
 	if (FindColor(pmap, pmap->green, entries, &rgb, &pixG, GREENMAP,
 		      client, GreenComp) != Success)
@@ -1174,28 +1200,27 @@ FreePixels(pmap, client)
     int				class;
 
     class = pmap->class;
-    ppix = pmap->clientPixelsRed[client];
-    ppixStart = ppix;
-    for (n = pmap->numPixelsRed[client]; --n >= 0; )
-	FreeCell(pmap, *ppix++, REDMAP);
+    ppixStart = pmap->clientPixelsRed[client];
+    if (class & DynamicClass)
+	for (ppix = ppixStart, n = pmap->numPixelsRed[client]; --n >= 0; )
+	    FreeCell(pmap, *ppix++, REDMAP);
     xfree(ppixStart);
     pmap->clientPixelsRed[client] = (Pixel *) NULL;
     pmap->numPixelsRed[client] = 0;
- 
     if ((class | DynamicClass) == DirectColor) 
     {
-        ppix = pmap->clientPixelsGreen[client];
-	ppixStart = ppix;
-	for (n = pmap->numPixelsGreen[client]; --n >= 0; )
-	    FreeCell(pmap, *ppix++, GREENMAP);
+        ppixStart = pmap->clientPixelsGreen[client];
+	if (class & DynamicClass)
+	    for (ppix = ppixStart, n = pmap->numPixelsGreen[client]; --n >= 0;)
+		FreeCell(pmap, *ppix++, GREENMAP);
 	xfree(ppixStart);
 	pmap->clientPixelsGreen[client] = (Pixel *) NULL;
 	pmap->numPixelsGreen[client] = 0;
 
-        ppix = pmap->clientPixelsBlue[client];
-	ppixStart = ppix;
-	for (n = pmap->numPixelsBlue[client]; --n >= 0; )
-	    FreeCell(pmap, *ppix++, BLUEMAP);
+        ppixStart = pmap->clientPixelsBlue[client];
+	if (class & DynamicClass)
+	    for (ppix = ppixStart, n = pmap->numPixelsBlue[client]; --n >= 0; )
+		FreeCell(pmap, *ppix++, BLUEMAP);
 	xfree(ppixStart);
 	pmap->clientPixelsBlue[client] = (Pixel *) NULL;
 	pmap->numPixelsBlue[client] = 0;
@@ -1857,11 +1882,9 @@ FreeColors (pmap, client, count, pixels, mask)
     Pixel	rmask;
 
     class = pmap->class;
-    if((pmap->flags & AllAllocated) || !(class & DynamicClass))
-    {
+    if (pmap->flags & AllAllocated)
 	return(BadAccess);
-    }
-    if (class == DirectColor)
+    if ((class | DynamicClass) == DirectColor)
     {
 	rmask = mask & (pmap->pVisual->redMask |
 			pmap->pVisual->greenMask |
@@ -1966,7 +1989,8 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 
 	    if (npix >= 0)
 	    {
-		FreeCell(pmap, pixTest, color);
+		if (pmap->class & DynamicClass)
+		    FreeCell(pmap, pixTest, color);
 		*cptr = ~((Pixel)0);
 		zapped++;
 	    }
@@ -1976,7 +2000,6 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
         /* generate next bits value */
 	GetNextBitsOrBreak(bits, mask, base);
     }
-
 
     /* delete freed pixels from client pixel list */
     if (zapped)
