@@ -1,4 +1,5 @@
-/* $XConsortium: miRender.c,v 5.6 92/04/23 16:08:07 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.7 92/04/30 14:50:28 hersh Exp $ */
+
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,6 +35,7 @@ SOFTWARE.
 #include "windowstr.h"
 #include "regionstr.h"
 #include "miscstruct.h"
+#include "dixstruct.h"
 #include "miRender.h"
 #include "miStruct.h"
 #include "miStrMacro.h"
@@ -308,69 +310,144 @@ RenderOCs(pRend, numOCs, pOCs)
 {
 	register ddElementInfo	*poc;
 	miGenericElementPtr	pexoc;
-	ddpex2rtn	err;
+	ddpex2rtn		err = Success;
+	XID			fakestr;
+	diStructHandle 		sh = 0, ph;
+	pexStructure 		*ps;
+	pexOutputCommandError 	*pErr;
+	ddULONG            	offset1, offset2, numberOCs;
+	miTraverserState      	trav_state;
+	diPMHandle            	pPM = (diPMHandle) NULL;
+	unsigned long 		PEXStructType;
+
 
 #ifdef DDTEST
     ErrorF( " RenderOCs\n");
 #endif
 
+    /* if renderer idle ignore.... */
+    if (pRend->state == PEXIdle)
+      return Success;
+
     ValidateRenderer(pRend);
 
-    for ( poc=pOCs; numOCs>0; numOCs-- )
-    {
-	switch( poc->elementType ) {
-         /* drawing primitives */
-          case PEXOCMarker:
-          case PEXOCMarker2D:
-          case PEXOCText:
-          case PEXOCText2D:
-          case PEXOCAnnotationText:
-          case PEXOCAnnotationText2D:
-          case PEXOCPolyline:
-          case PEXOCPolyline2D:
-          case PEXOCPolylineSet:
-          case PEXOCNurbCurve:
-          case PEXOCFillArea:
-          case PEXOCFillArea2D:
-          case PEXOCExtFillArea:
-          case PEXOCFillAreaSet:
-          case PEXOCFillAreaSet2D:
-          case PEXOCExtFillAreaSet:
-          case PEXOCTriangleStrip:
-          case PEXOCQuadrilateralMesh:
-          case PEXOCSOFAS:
-          case PEXOCNurbSurface:
-          case PEXOCCellArray:
-          case PEXOCCellArray2D:
-          case PEXOCExtCellArray:
-          case PEXOCGdp:
-          case PEXOCGdp2D:
+    if (pRend->state == PEXPicking) {
+    /* state == PEXPicking, call through traverser */
 
-		/* drop out if not doing primitives
-                 * otherwise fall through */
-                if (!MI_DDC_DO_PRIMS(pRend)) 
-                   break; 
+	sh = pRend->pickstr.fakeStr;
 
-          default:
-	    pexoc = 0;
-	    err = ParseOCTable[ (int)poc->elementType ]( (ddPointer)poc, &pexoc );
-	    if (err != Success)
-	    	return( PEXERR(PEXOutputCommandError) );
-	    
-	    /* add one to the current_path's element offset if a begin structure
-	     * has been done
-	     */
-	    if (pRend->curPath->numObj)
-	        ((ddElementRef *)pRend->curPath->pList)[pRend->curPath->numObj - 1].offset++;
-	    pRend->executeOCs[ (int)poc->elementType ]( pRend, &pexoc->element );
+	/* now do the work of storing stuff into the structure */
+	numberOCs = numOCs;
+	for ( poc=pOCs; numberOCs>0; numberOCs-- )
+	{
 
-	    DestroyOCTable[ (int)poc->elementType ](  pexoc );
+	    err = StoreElements( sh, 1, poc, &pErr);
+	    if (err != Success) return(err);
+
+	    poc += poc->length;	
 	}
 
-	poc += poc->length;	/* length is in four byte units & sizeof(poc) is 4 */
+	/* now call the traverser to traverse this structure */
+        /* set exec_str_flag */
+	trav_state.exec_str_flag = ES_YES;
+	trav_state.p_curr_pick_el = (ddPickPath *) NULL;
+	trav_state.p_curr_sc_el = (ddElementRef *) NULL;
+	trav_state.max_depth = 0;
+	trav_state.pickId = 0;
+	pPM = pRend->pickstr.pseudoPM;
+
+	offset1 = 1;
+	offset2 = numOCs;
+
+	err = traverser(pRend, sh, offset1, offset2, pPM, NULL, &trav_state);
+
+	/* clean up structure for next time */
+	{
+	  miStructPtr pheader = (miStructPtr) sh->deviceData;
+	  extern cssTableType DestroyCSSElementTable[];
+
+	  MISTR_DEL_ELS(sh, pheader, 1, numOCs);
+	  MISTR_CURR_EL_PTR(pheader) = MISTR_ZERO_EL(pheader);
+	  MISTR_CURR_EL_OFFSET(pheader) = 0;
+
+	}
+    }
+    else { 
+    /* state == PEXRendering, call directly to level 2 for efficiency */
+	for ( poc=pOCs; numOCs>0; numOCs-- )
+	{
+	    switch( poc->elementType ) {
+	     /* drawing primitives */
+	      case PEXOCMarker:
+	      case PEXOCMarker2D:
+	      case PEXOCText:
+	      case PEXOCText2D:
+	      case PEXOCAnnotationText:
+	      case PEXOCAnnotationText2D:
+	      case PEXOCPolyline:
+	      case PEXOCPolyline2D:
+	      case PEXOCPolylineSet:
+	      case PEXOCNurbCurve:
+	      case PEXOCFillArea:
+	      case PEXOCFillArea2D:
+	      case PEXOCExtFillArea:
+	      case PEXOCFillAreaSet:
+	      case PEXOCFillAreaSet2D:
+	      case PEXOCExtFillAreaSet:
+	      case PEXOCTriangleStrip:
+	      case PEXOCQuadrilateralMesh:
+	      case PEXOCSOFAS:
+	      case PEXOCNurbSurface:
+	      case PEXOCCellArray:
+	      case PEXOCCellArray2D:
+	      case PEXOCExtCellArray:
+	      case PEXOCGdp:
+	      case PEXOCGdp2D:
+
+		    /* drop out if not doing primitives
+		     * otherwise fall through */
+		    if (!MI_DDC_DO_PRIMS(pRend)) 
+		       break; 
+
+	      default:
+		/* if a Proprietary OC bump the counter and continue */
+		if (MI_HIGHBIT_ON((int)poc->elementType)) {
+		    ((ddElementRef *)pRend->curPath->pList)
+			[pRend->curPath->numObj - 1].offset++;
+		    break;
+		}
+		else {
+		    /* not Proprietary see if valid PEX OC */
+		    if (MI_IS_PEX_OC((int)poc->elementType)){
+
+			pexoc = 0;
+			err = ParseOCTable[ (int)poc->elementType ]
+					  ( (ddPointer)poc, &pexoc );
+		    }
+		    else
+			err = !Success;
+		  }
+		 
+		if (err != Success)
+		    return( PEXERR(PEXOutputCommandError) );
+	
+		/* If we make it here it is a valid OC no more checking to do */
+
+		/* add one to the current_path's element offset if a 
+		 * begin structure has been done
+		 */
+		if (pRend->curPath->numObj)
+		    ((ddElementRef *)pRend->curPath->pList)[pRend->curPath->numObj - 1].offset++;
+		pRend->executeOCs[ (int)poc->elementType ]( pRend, &pexoc->element );
+
+		DestroyOCTable[ (int)poc->elementType ](  pexoc );
+	    }
+
+	    poc += poc->length;	/* length is in four byte units & sizeof(poc) is 4 */
+	}
     }
 
-    return (Success);
+    return (err);
 }
 
 ddpex3rtn
@@ -444,9 +521,15 @@ RenderElements(pRend, pStr, range)
     miStructPtr         pstruct;
     miGenericElementPtr pel;
     ddULONG             offset1, offset2, i;
+    miTraverserState      trav_state;
+    diPMHandle            pPM = (diPMHandle) NULL;
+    miDDContext           *pddc = (miDDContext *) pRend->pDDContext;
     int                 eltype;
 
-    ValidateRenderer(pRend);
+
+    /* if renderer idle ignore.... */
+    if (pRend->state == PEXIdle)
+      return Success;
 
     pstruct = (miStructPtr) pStr->deviceData;
 
@@ -471,56 +554,87 @@ RenderElements(pRend, pStr, range)
 	else
 	      offset1 = 1;
 
-    for (i = offset1; i <= offset2; i++){
+    ValidateRenderer(pRend);
 
-	/* set the element pointer */
-	if ( i == offset1) {
-	    MISTR_FIND_EL(pstruct, offset1, pel);
-	}
-	else
-	    pel = MISTR_NEXT_EL(pel);
+    if (pRend->state == PEXPicking) {
+	/* set exec_str_flag */
+	trav_state.exec_str_flag = ES_YES;
+	trav_state.p_curr_pick_el = (ddPickPath *) NULL;
+	trav_state.p_curr_sc_el = (ddElementRef *) NULL;
+	trav_state.max_depth = 0;
+	trav_state.pickId = 0;
 
-	    eltype = MISTR_EL_TYPE (pel);
+	pPM = pRend->pickstr.pseudoPM;
 
-            switch (eltype) {
-	       /* drawing primitives */
-		case PEXOCMarker:
-		case PEXOCMarker2D:
-		case PEXOCText:
-		case PEXOCText2D:
-		case PEXOCAnnotationText:
-		case PEXOCAnnotationText2D:
-		case PEXOCPolyline:
-		case PEXOCPolyline2D:
-		case PEXOCPolylineSet:
-		case PEXOCNurbCurve:
-		case PEXOCFillArea:
-		case PEXOCFillArea2D:
-		case PEXOCExtFillArea:
-		case PEXOCFillAreaSet:
-		case PEXOCFillAreaSet2D:
-		case PEXOCExtFillAreaSet:
-		case PEXOCTriangleStrip:
-		case PEXOCQuadrilateralMesh:
-		case PEXOCSOFAS:
-		case PEXOCNurbSurface:
-		case PEXOCCellArray:
-		case PEXOCCellArray2D:
-		case PEXOCExtCellArray:
-		case PEXOCGdp:
-
-		/* drop out if not doing primitives
-		 * otherwise fall through */
-		 if (!MI_DDC_DO_PRIMS(pRend))
-		    break;
-	    default:
-		pRend->executeOCs[ eltype]( pRend,
-					(ddPointer)&(MISTR_EL_DATA (pel)));
-	}
+	err = traverser(pRend, pStr, offset1, offset2, pPM, NULL, &trav_state);
     }
+    else {
+    /* state == PEXRendering call directly into level 2 for efficiency */
+	for (i = offset1; i <= offset2; i++){
 
+		/* set the element pointer */
+		if ( i == offset1) {
+		    MISTR_FIND_EL(pstruct, offset1, pel);
+		}
+		else
+		    pel = MISTR_NEXT_EL(pel);
 
-  return(err);
+		eltype = MISTR_EL_TYPE (pel);
+
+		switch (eltype) {
+		   /* drawing primitives */
+		    case PEXOCMarker:
+		    case PEXOCMarker2D:
+		    case PEXOCText:
+		    case PEXOCText2D:
+		    case PEXOCAnnotationText:
+		    case PEXOCAnnotationText2D:
+		    case PEXOCPolyline:
+		    case PEXOCPolyline2D:
+		    case PEXOCPolylineSet:
+		    case PEXOCNurbCurve:
+		    case PEXOCFillArea:
+		    case PEXOCFillArea2D:
+		    case PEXOCExtFillArea:
+		    case PEXOCFillAreaSet:
+		    case PEXOCFillAreaSet2D:
+		    case PEXOCExtFillAreaSet:
+		    case PEXOCTriangleStrip:
+		    case PEXOCQuadrilateralMesh:
+		    case PEXOCSOFAS:
+		    case PEXOCNurbSurface:
+		    case PEXOCCellArray:
+		    case PEXOCCellArray2D:
+		    case PEXOCExtCellArray:
+		    case PEXOCGdp:
+
+		    /* drop out if not doing primitives
+		     * otherwise fall through */
+		     if (!MI_DDC_DO_PRIMS(pRend))
+			break;
+		default:
+		    /* if a Proprietary OC call the correct routine */
+		    if (MI_HIGHBIT_ON(eltype)) {
+			pRend->executeOCs[MI_OC_PROP]( pRend,
+					    (ddPointer)&(MISTR_EL_DATA (pel)));
+		    }
+		    else {
+			/* not Proprietary see if valid PEX OC */
+			if (MI_IS_PEX_OC(eltype))
+			    pRend->executeOCs[ eltype]( pRend,
+					    (ddPointer)&(MISTR_EL_DATA (pel)));
+			else
+			    err = !Success;
+		    }
+
+		    if (err != Success)
+			return( PEXERR(PEXOutputCommandError) );
+		 
+	    }
+	}
+    }	
+
+    return(err);
 }
 
 /*++
@@ -546,6 +660,10 @@ ddAccStPtr          pAccSt;	  /* accumulate state handle */
     ddElementRef	*elemRef;
     miStructPtr		structPtr;
     miGenericElementPtr	elemPtr;
+
+    /* if renderer idle ignore.... */
+    if (pRend->state == PEXIdle)
+      return Success;
 
     /* The path has already been validated */
     
@@ -629,8 +747,23 @@ ddAccStPtr          pAccSt;	  /* accumulate state handle */
 	    case PEXOCParaSurfCharacteristics:
 	    case PEXOCAddToNameSet:
 	    case PEXOCRemoveFromNameSet:
-		pRend->executeOCs[(int) MISTR_EL_TYPE (elemPtr)]
-		    (pRend, (ddPointer) &(MISTR_EL_DATA (elemPtr)));
+		/* if a Proprietary OC call the correct routine */
+		if (MI_HIGHBIT_ON(MISTR_EL_TYPE (elemPtr))) {
+		    pRend->executeOCs[MI_OC_PROP]( pRend,
+				    (ddPointer)&(MISTR_EL_DATA (elemPtr)));
+		}
+		else {
+		    /* not Proprietary see if valid PEX OC */
+		    if (MI_IS_PEX_OC(MISTR_EL_TYPE (elemPtr)))
+			pRend->executeOCs[(int) MISTR_EL_TYPE (elemPtr)]( pRend,
+				     (ddPointer)&(MISTR_EL_DATA (elemPtr)));
+		    else
+			err = !Success;
+		}
+
+		if (err != Success)
+		    return( PEXERR(PEXOutputCommandError) );
+		 
 		break;
 	    default:
 		break;
@@ -1295,6 +1428,7 @@ InquirePickStatus(pRend, pStatus, p_trav_state)
     miDDContext		*pddc = (miDDContext *) pRend->pDDContext;
 
 	*pStatus = pddc->Static.pick.status;
+	pddc->Static.pick.status = PEXNoPick;
 	return;
 }
 #endif
