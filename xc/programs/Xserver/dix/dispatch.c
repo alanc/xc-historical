@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.41 88/02/11 13:58:03 rws Exp $ */
+/* $Header: dispatch.c,v 1.43 88/02/21 18:48:06 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -60,6 +60,10 @@ extern long ScreenSaverTime;
 extern long ScreenSaverInterval;
 extern int  ScreenSaverBlanking;
 extern int  ScreenSaverAllowExposures;
+extern long defaultScreenSaverTime;
+extern long defaultScreenSaverInterval;
+extern int  defaultScreenSaverBlanking;
+extern int  defaultScreenSaverAllowExposures;
 static ClientPtr onlyClient;
 static Bool grabbingClient = FALSE;
 static long *checkForInput[2];
@@ -2860,17 +2864,23 @@ ProcSetScreenSaver            (client)
     if ((stuff->timeout < -1) || (stuff->interval < -1))
         return BadMatch;
 
-    ScreenSaverBlanking = blankingOption; 
-    ScreenSaverAllowExposures = exposureOption;
+    if (blankingOption == DefaultBlanking)
+	ScreenSaverBlanking = defaultScreenSaverBlanking;
+    else
+	ScreenSaverBlanking = blankingOption; 
+    if (exposureOption == DefaultExposures)
+	ScreenSaverAllowExposures = defaultScreenSaverAllowExposures;
+    else
+	ScreenSaverAllowExposures = exposureOption;
 
     if (stuff->timeout >= 0)
 	ScreenSaverTime = stuff->timeout * MILLI_PER_SECOND;
     else 
-	ScreenSaverTime = DEFAULT_SCREEN_SAVER_TIME;
-    if (stuff->interval > 0)
+	ScreenSaverTime = defaultScreenSaverTime;
+    if (stuff->interval >= 0)
 	ScreenSaverInterval = stuff->interval * MILLI_PER_SECOND;
     else
-	ScreenSaverInterval = DEFAULT_SCREEN_SAVER_TIME;
+	ScreenSaverInterval = defaultScreenSaverInterval;
     return (client->noClientException);
 }
 
