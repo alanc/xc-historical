@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.21 94/05/10 11:08:46 mor Exp $ */
+/* $XConsortium: Xtransint.h,v 1.22 94/07/20 10:36:03 mor Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -53,17 +53,18 @@ from the X Consortium.
  */
 
 /*
- * DEBUG will enable the PRMSG() macros used in the X Transport Interface code.
- * Each use of the PRMSG macro has a level associated with it. DEBUG is defined
- * to be a level. If the invocation level is =< the value of DEBUG, then the
- * message will be printed out to stderr. Recommended levels are:
+ * TRANSDEBUG will enable the PRMSG() macros used in the X Transport Interface 
+ * code. Each use of the PRMSG macro has a level associated with it. TRANSDEBUG 
+ * is defined to be a level. If the invocation level is =< the value of 
+ * TRANSDEBUG, then the message will be printed out to stderr. Recommended 
+ * levels are:
  *
- *	DEBUG=1	Error messages
- *	DEBUG=2 API Function Tracing
- *	DEBUG=3 All Function Tracing
- *	DEBUG=4 printing of intermediate values
- *	DEBUG=5 really detailed stuff
-#define DEBUG 2
+ *	TRANSDEBUG=1	Error messages
+ *	TRANSDEBUG=2 API Function Tracing
+ *	TRANSDEBUG=3 All Function Tracing
+ *	TRANSDEBUG=4 printing of intermediate values
+ *	TRANSDEBUG=5 really detailed stuff
+#define TRANSDEBUG 2
  */
 
 #ifndef _XTRANSINT_H_
@@ -75,9 +76,9 @@ from the X Consortium.
 
 #include "Xtrans.h"
 
-#ifdef DEBUG
+#ifdef TRANSDEBUG
 #include <stdio.h>
-#endif /* DEBUG */
+#endif /* TRANSDEBUG */
 
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
@@ -415,17 +416,17 @@ static int is_numeric (
 
 
 /*
- * Some DEBUG stuff
+ * Some TRANSDEBUG stuff
  */
 
-#if defined(DEBUG)
-#define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
+#if defined(TRANSDEBUG)
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= TRANSDEBUG){ \
 			int saveerrno=errno; \
 			fprintf(stderr, x,a,b,c); fflush(stderr); \
 			errno=saveerrno; \
 			}
 #else
 #define PRMSG(lvl,x,a,b,c)
-#endif /* DEBUG */
+#endif /* TRANSDEBUG */
 
 #endif /* _XTRANSINT_H_ */
