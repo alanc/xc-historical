@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.27 94/02/21 16:25:55 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.28 94/02/22 10:55:18 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -20,90 +20,16 @@ purpose.  It is provided "as is" without express or implied warranty.
  * Written by Ralph Mor, X Consortium.
  *        and Jordan Brown, Quarterdeck Office Systems
  *
- * This program needs lots of work!
- * Until it's cleaned up, please exuse the mess.
+ * This program needs a fair amount of work to make it robust.
+ * As it stands now, it serves as a useful test for session management.
  */
 
-#include <X11/StringDefs.h>
-#include <X11/Intrinsic.h>
-#include <X11/Xaw/Box.h>
-#include <X11/Xaw/Command.h>
-#include <X11/Xaw/Dialog.h>
-#include <X11/Xaw/Toggle.h>
-#include <X11/Xfuncs.h>
-#ifndef _POSIX_SOURCE
-#define _POSIX_SOURCE
-#include <stdio.h>
-#undef _POSIX_SOURCE
-#else
-#include <stdio.h>
-#endif
-#include <X11/Shell.h>
-#include <X11/SM/SMlib.h>
-#include <ctype.h>
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#endif
-#include <setjmp.h>
-#include <limits.h>
-#include <sys/param.h>
-#ifndef PATH_MAX
-#ifdef MAXPATHLEN
-#define PATH_MAX MAXPATHLEN
-#else
-#define PATH_MAX 1024
-#endif
-#endif
-#include <X11/Xos.h>
-
-/* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
-extern FILE *fdopen(int, char const *);
-#endif
-
-#include "list.h"
+#include "xsm.h"
 #include <signal.h>
 
-#define MAX_PROPS 50
+AppResources app_resources;
 
-extern Status XtInitializeICE ();
-
-typedef struct _ClientRec {
-    SmsConn	 	smsConn;
-    IceConn		ice_conn;
-    char 		*clientId;
-    char		*clientHostname;
-    Bool		interactPending;
-    int			numProps;
-    SmProp *		props[MAX_PROPS];
-    struct _ClientRec	*next;
-} ClientRec;
-
-typedef struct _PendingClient {
-    char		*clientId;
-    char		*clientHostname;
-    List		*props;
-} PendingClient;
-
-typedef struct _PendingProp {
-    char		*name;
-    char		*type;
-    List		*values;
-} PendingProp;
-
-typedef struct _PendingValue {
-    void		*value;
-    int			length;
-} PendingValue;
-
-void		FreeClientInfo ();
-
-struct _resources {
-    Boolean	verbose; /* whether to report protocol activity to stdout */
-    Boolean	debug;   /* whether to include extra options for debugging */
-} app_resources;
-
-#define Offset(field) XtOffsetOf(struct _resources, field)
+#define Offset(field) XtOffsetOf(struct _AppResources, field)
 static XtResource resources [] = {
     {"verbose",  "Verbose",  XtRBoolean, sizeof(Boolean), 
 	 Offset(verbose), XtRImmediate, (XtPointer) False},
@@ -118,7 +44,6 @@ static XrmOptionDescRec options[] = {
     {"-debug",		"*debug",	XrmoptionNoArg,		"TRUE"},
 };
 
-char		session_save_file[PATH_MAX];
 List		*PendingList;
 ClientRec	*ClientList = NULL;
 int		numClients = 0;
@@ -186,44 +111,19 @@ Widget			    shutdownOkButton;
 Widget			    shutdownCancelButton;
 
 
-static char *hex_table[] = {		/* for printing hex digits */
-    "00", "01", "02", "03", "04", "05", "06", "07", 
-    "08", "09", "0a", "0b", "0c", "0d", "0e", "0f", 
-    "10", "11", "12", "13", "14", "15", "16", "17", 
-    "18", "19", "1a", "1b", "1c", "1d", "1e", "1f", 
-    "20", "21", "22", "23", "24", "25", "26", "27", 
-    "28", "29", "2a", "2b", "2c", "2d", "2e", "2f", 
-    "30", "31", "32", "33", "34", "35", "36", "37", 
-    "38", "39", "3a", "3b", "3c", "3d", "3e", "3f", 
-    "40", "41", "42", "43", "44", "45", "46", "47", 
-    "48", "49", "4a", "4b", "4c", "4d", "4e", "4f", 
-    "50", "51", "52", "53", "54", "55", "56", "57", 
-    "58", "59", "5a", "5b", "5c", "5d", "5e", "5f", 
-    "60", "61", "62", "63", "64", "65", "66", "67", 
-    "68", "69", "6a", "6b", "6c", "6d", "6e", "6f", 
-    "70", "71", "72", "73", "74", "75", "76", "77", 
-    "78", "79", "7a", "7b", "7c", "7d", "7e", "7f", 
-    "80", "81", "82", "83", "84", "85", "86", "87", 
-    "88", "89", "8a", "8b", "8c", "8d", "8e", "8f", 
-    "90", "91", "92", "93", "94", "95", "96", "97", 
-    "98", "99", "9a", "9b", "9c", "9d", "9e", "9f", 
-    "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7", 
-    "a8", "a9", "aa", "ab", "ac", "ad", "ae", "af", 
-    "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7", 
-    "b8", "b9", "ba", "bb", "bc", "bd", "be", "bf", 
-    "c0", "c1", "c2", "c3", "c4", "c5", "c6", "c7", 
-    "c8", "c9", "ca", "cb", "cc", "cd", "ce", "cf", 
-    "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7", 
-    "d8", "d9", "da", "db", "dc", "dd", "de", "df", 
-    "e0", "e1", "e2", "e3", "e4", "e5", "e6", "e7", 
-    "e8", "e9", "ea", "eb", "ec", "ed", "ee", "ef", 
-    "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", 
-    "f8", "f9", "fa", "fb", "fc", "fd", "fe", "ff", 
-};
+void FreeClientInfo ();
+
+extern Status XtInitializeICE ();
+extern void restart_everything ();
+extern void read_save ();
+extern void write_save ();
+extern void remote_start ();
+extern Bool HostBasedProc ();
+extern Status set_auth ();
+extern void free_auth ();
 
 
 
-
 print_prop(prop)
 SmProp	*prop;
 {
@@ -245,21 +145,18 @@ SmProp	*prop;
     printf ("\n");
 }
 
-nomem()
-{
-    fprintf(stderr, "Insufficient memory.\n");
-    exit(255);
-}
 
+
 exit_sm ()
 {
     if (app_resources.verbose)
 	printf ("\nSESSION MANAGER GOING AWAY!\n");
-    system ("iceauth source .xsm-rem-auth");
+    free_auth (numTransports, authDataEntries);
     exit (0);
 }
 
 
+
 SetInitialProperties(client, pendclient)
 ClientRec	*client;
 PendingClient	*pendclient;
@@ -303,6 +200,8 @@ PendingClient	*pendclient;
     free(pendclient);
 }
 
+
+
 /*
  * Session Manager callbacks
  */
@@ -502,6 +401,8 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
 	exit_sm ();
     }
 }
+
+
 
 void
 SetProperty(client, prop)
@@ -530,6 +431,7 @@ SmProp		*prop;
 
     client->props[idx] = prop;
 }
+
 
 void
 SetPropertiesProc (smsConn, managerData, numProps, props)
@@ -1137,23 +1039,6 @@ IceConn 	ice_conn;
 }    
 
 
-/*
- * Host Based Authentication Callback.  This callback is invoked if
- * the connecting client can't offer any authentication methods that
- * we can accept.  We can accept/reject based on the hostname.
- */
-
-Bool
-HostBasedProc (hostname)
-
-char *hostname;
-
-{
-    printf ("Attempt to connect from: %s failed.\n", hostname);
-    return (0);
-}
-
-
 
 /*
  * Add toggle button
@@ -1215,738 +1100,6 @@ ClientRec *client;
 }
 
 
-
-Bool
-getline(pbuf, plen, f)
-char	**pbuf;
-int	*plen;
-FILE	*f;
-{
-	int c;
-	int i;
-
-	i = 0;
-	while(1) {
-	    if(i+2 > *plen) {
-		if(*plen) *plen *= 2;
-		else *plen = BUFSIZ;
-		if(*pbuf) *pbuf = realloc(*pbuf, *plen);
-		else *pbuf = malloc(*plen);
-	    }
-	    c = getc(f);
-	    if(c == EOF) break;
-	    (*pbuf)[i++] = c;
-	    if(c == '\n') break;
-	}
-	(*pbuf)[i] = '\0';
-	return i;
-}
-
-void
-read_save()
-{
-    char		*buf;
-    int			buflen;
-    char		*p;
-    char		*q;
-    PendingClient	*c;
-    PendingProp		*prop;
-    PendingValue	*val;
-    FILE		*f;
-    int			state;
-
-    PendingList = ListInit();
-    if(!PendingList) nomem();
-
-    p = getenv("HOME");
-    if(!p) p = ".";
-    strcpy(session_save_file, p);
-    strcat(session_save_file, "/.SM-save");
-
-    f = fopen(session_save_file, "r");
-    if(!f) {
-	if (app_resources.verbose)
-	    printf("No session save file.\n");
-	return;
-    }
-    if (app_resources.verbose)
-	printf("Reading session save file...\n");
-
-    buf = NULL;
-    buflen = 0;
-    state = 0;
-    while(getline(&buf, &buflen, f)) {
-	if(p = strchr(buf, '\n')) *p = '\0';
-	for(p = buf; *p && isspace(*p); p++) /* LOOP */;
-	if(*p == '#') continue;
-
-	if(!*p) {
-	    state = 0;
-	    continue;
-	}
-
-	if(!isspace(buf[0])) {
-	    switch(state) {
-		case 0:
-		    c = (PendingClient *)malloc(sizeof *c);
-		    if(!c) nomem();
-
-		    c->clientId = XtNewString(p);
-		    c->clientHostname = NULL;  /* set in next state */
-
-		    c->props = ListInit();
-		    if(!c->props) nomem();
-
-		    if(!ListAddLast(PendingList, (void *)c)) nomem();
-
-		    state = 1;
-		    break;
-
-		case 1:
-		    c->clientHostname = XtNewString(p);
-                    state = 2;
-                    break;
-
-		case 2:
-		case 4:
-		    prop = (PendingProp *)malloc(sizeof *prop);
-		    if(!prop) nomem();
-
-		    prop->name = XtNewString(p);
-		    prop->values = ListInit();
-		    if(!prop->values) nomem();
-
-		    prop->type = NULL;
-
-		    if(!ListAddLast(c->props, (void *)prop)) nomem();
-
-		    state = 3;
-		    break;
-
-		case 3:
-		    prop->type = XtNewString(p);
-		    state = 4;
-		    break;
-
-		default:
-		    fprintf(stderr, "state %d\n", state);
-		    fprintf(stderr,
-			    "Corrupt save file line ignored:\n%s\n", buf);
-		    continue;
-	    }
-	} else {
-	    if (state != 4) {
-		fprintf(stderr, "Corrupt save file line ignored:\n%s\n", buf);
-		continue;
-	    }
-	    val = (PendingValue *)malloc(sizeof *val);
-	    if(!val) nomem();
-
-	    val->length = strlen(p);
-	    /* NEEDSWORK:  Binary data */
-	    val->value = XtNewString(p);
-
-	    if(!ListAddLast(prop->values, (void *)val)) nomem(); 
-	}
-    }
-    fclose(f);
-}
-
-write_save()
-{
-    FILE *f;
-    ClientRec *client;
-    SmProp *prop;
-    int i, j;
-
-    f = fopen(session_save_file, "w");
-    if(!f)
-    {
-	perror("open session save file for write");
-    } else {
-	for(client = ClientList; client; client = client->next)
-	{
-	    fprintf(f, "%s\n", client->clientId);
-	    fprintf(f, "%s\n", client->clientHostname);
-	    for(i = 0; i < client->numProps; i++) {
-		prop = client->props[i];
-		fprintf(f, "%s\n", prop->name);
-		fprintf(f, "%s\n", prop->type);
-		if (strcmp (prop->type, SmCARD8) == 0)
-		{
-		    char *card8 = prop->vals->value;
-		    int value = *card8;
-		    fprintf(f, "\t%d\n", prop->vals[0].value);
-		}
-		else
-		{
-		    for(j = 0; j < prop->num_vals; j++)
-			fprintf(f, "\t%s\n", prop->vals[j].value);
-		}
-	    }
-	    fprintf(f, "\n");
-	}
-	fclose(f);
-    }
-}
-
-strbw(a, b)
-char *a;
-char *b;
-{
-	return !strncmp(a, b, strlen(b));
-}
-
-#ifndef X_NOT_STDC_ENV
-#define Strstr strstr
-#else
-char *Strstr(s1, s2)
-    char *s1, *s2;
-{
-    int n1, n2;
-
-    n1 = strlen(s1);
-    n2 = strlen(s2);
-    for ( ; n1 >= n2; s1++, n1--) {
-	if (!strncmp(s1, s2, n2))
-	    return s1;
-    }	
-    return NULL;
-}
-#endif
-
-
-/*
- * rstart requires that any spaces inside of a string be represented by
- * octal escape sequences.
- */
-
-static char *
-spaces_to_octal (str)
-
-char *str;
-
-{
-    int space_count = 0;
-    char *temp = str;
-
-    while (*temp != '\0')
-    {
-	if (*temp == ' ')
-	    space_count++;
-	temp++;
-    }
-
-    if (space_count == 0)
-	return (str);
-    else
-    {
-	int len = strlen (str) + 1 + (space_count * 4);
-	char *ret = malloc (len);
-	char *ptr = ret;
-
-	temp = str;
-	while (*temp != '\0')
-	{
-	    if (*temp != ' ')
-		*(ptr++) = *temp;
-	    else
-	    {
-		ptr[0] = '\\'; ptr[1] = '0'; ptr[2] = '4'; ptr[3] = '0';
-		ptr += 4;
-	    }
-	    temp++;
-	}
-
-	*ptr = '\0';
-	return (ret);
-    }
-}
-
-
-static void fprintfhex (fp, len, cp)
-    register FILE *fp;
-    unsigned int len;
-    char *cp;
-{
-    unsigned char *ucp = (unsigned char *) cp;
-
-    for (; len > 0; len--, ucp++) {
-	register char *s = hex_table[*ucp];
-	putc (s[0], fp);
-	putc (s[1], fp);
-    }
-    return;
-}
-
-
-
-restart_everything()
-{
-    List *cl;
-    List *pl;
-    List *vl;
-    PendingClient *c;
-    PendingProp *prop;
-    PendingValue *v;
-    char	*cwd;
-    char	*program;
-    char	**args;
-    char	**env;
-    char	**pp;
-    int		cnt;
-    extern char **environ;
-    char	*p, *temp;
-    static char	envDISPLAY[]="DISPLAY";
-    static char	envSESSION_MANAGER[]="SESSION_MANAGER";
-    static char	envAUDIOSERVER[]="AUDIOSERVER";
-    char	*display_env, *non_local_display_env;
-    char	*session_env, *non_local_session_env;
-    char	*audio_env;
-    int		remote_allowed = 1;
-
-    display_env = NULL;
-    if(p = getenv(envDISPLAY)) {
-	display_env = malloc(strlen(envDISPLAY)+1+strlen(p)+1);
-	if(!display_env) nomem();
-	sprintf(display_env, "%s=%s", envDISPLAY, p);
-
-	/*
-	 * When we restart a remote client, we have to make sure the
-	 * display environment we give it has the SM's hostname.
-	 */
-
-	if ((temp = strchr (p, '/')) == 0)
-	    temp = p;
-	else
-	    temp++;
-
-	if (*temp != ':')
-	{
-	    /* we have a host name */
-
-	    non_local_display_env = malloc (strlen (display_env) + 1);
-	    if (!non_local_display_env) nomem();
-
-	    strcpy (non_local_display_env, display_env);
-	}
-	else
-	{
-	    char hostnamebuf[256];
-
-	    gethostname (hostnamebuf, sizeof hostnamebuf);
-	    non_local_display_env = malloc (strlen (envDISPLAY) + 1 +
-		strlen (hostnamebuf) + strlen (temp) + 1);
-	    if (!non_local_display_env) nomem();
-	    sprintf(non_local_display_env, "%s=%s%s",
-		envDISPLAY, hostnamebuf, temp);
-	}
-    }
-
-    session_env = NULL;
-    if(p = getenv(envSESSION_MANAGER)) {
-	session_env = malloc(strlen(envSESSION_MANAGER)+1+strlen(p)+1);
-	if(!session_env) nomem();
-	sprintf(session_env, "%s=%s", envSESSION_MANAGER, p);
-
-	/*
-	 * When we restart a remote client, we have to make sure the
-	 * session environment does not have the SM's local connection port.
-	 */
-
-	non_local_session_env = malloc (strlen (session_env) + 1);
-	if (!non_local_session_env) nomem();
-	strcpy (non_local_session_env, session_env);
-
-	if ((temp = Strstr (non_local_session_env, "local/")) != NULL)
-	{
-	    char *delim = strchr (temp, ',');
-	    if (delim == NULL)
-	    {
-		if (temp == non_local_session_env +
-		    strlen (envSESSION_MANAGER) + 1)
-		{
-		    *temp = '\0';
-		    remote_allowed = 0;
-		}
-		else
-		    *(temp - 1) = '\0';
-	    }
-	    else
-	    {
-		int bytes = strlen (delim + 1);
-		memmove (temp, delim + 1, bytes);
-		*(temp + bytes) = '\0';
-	    }
-	}
-    }
-
-    audio_env = NULL;
-    if(p = getenv(envAUDIOSERVER)) {
-	audio_env = malloc(strlen(envAUDIOSERVER)+1+strlen(p)+1);
-	if(!audio_env) nomem();
-	sprintf(audio_env, "%s=%s", envAUDIOSERVER, p);
-    }
-
-    for(cl = ListFirst(PendingList); cl; cl = ListNext(cl)) {
-	c = (PendingClient *)cl->thing;
-
-	if (app_resources.verbose) {
-	    printf("Restarting id '%s'...\n", c->clientId);
-	    printf("Host = %s\n", c->clientHostname);
-	}
-	cwd = ".";
-	env = NULL;
-	program=NULL;
-	args=NULL;
-
-	for(pl = ListFirst(c->props); pl; pl = ListNext(pl)) {
-	    prop = (PendingProp *)pl->thing;
-	    if(!strcmp(prop->name, "Program")) {
-		vl = ListFirst(prop->values);
-		if(vl) program = ((PendingValue *)vl->thing)->value;
-	    } else if(!strcmp(prop->name, "CurrentDirectory")) {
-		vl = ListFirst(prop->values);
-		if(vl) cwd = ((PendingValue *)vl->thing)->value;
-	    } else if(!strcmp(prop->name, "RestartCommand")) {
-		cnt = ListCount(prop->values);
-		args = (char **)malloc((cnt+1) * sizeof(char *));
-		pp = args;
-		for(vl = ListFirst(prop->values); vl; vl = ListNext(vl)) {
-		    *pp++ = ((PendingValue *)vl->thing)->value;
-		}
-		*pp = NULL;
-	    } else if(!strcmp(prop->name, "Environment")) {
-		cnt = ListCount(prop->values);
-		env = (char **)malloc((cnt+3+1) * sizeof(char *));
-		pp = env;
-		for(vl = ListFirst(prop->values); vl; vl = ListNext(vl)) {
-		    p = ((PendingValue *)vl->thing)->value;
-		    if((display_env && strbw(p, "DISPLAY="))
-		    || (session_env && strbw(p, "SESSION_MANAGER="))
-		    || (audio_env && strbw(p, "AUDIOSERVER="))
-		        ) continue;
-		    *pp++ = p;
-		}
-		if(display_env) *pp++ = display_env;
-		if(session_env) *pp++ = session_env;
-		if(audio_env) *pp++ = audio_env;
-		*pp = NULL;
-	    }
-	}
-
-	if(program && args) {
-	    if (app_resources.verbose) {
-		printf("\t%s\n", program);
-		printf("\t");
-		for(pp = args; *pp; pp++) printf("%s ", *pp);
-		printf("\n");
-	    }
-
-	    if (!strncmp(c->clientHostname, "local/", 6))
-	    {
-		/*
-		 * The client is being restarted on the local machine.
-		 */
-
-		switch(fork()) {
-		case -1:
-		    perror("fork");
-		    break;
-		case 0:		/* kid */
-		    chdir(cwd);
-		    if(env) environ = env;
-		    execvp(program, args);
-		    perror("execve");
-		    _exit(255);
-		default:	/* parent */
-		    break;
-		}
-	    }
-	    else if (!remote_allowed)
-	    {
-		fprintf(stderr,
-		   "Can't remote start client ID '%s': only local supported\n",
-			c->clientId);
-	    }
-	    else
-	    {
-		/*
-		 * The client is being restarted on a remote machine.
-		 * Use the rstart protocol to do the restart.
-		 */
-
-		int pipefd[2], i;
-		char *hostname, *tmp;
-		FILE *fp;
-
-		if ((tmp = strchr (c->clientHostname, '/')) == NULL)
-		    hostname = c->clientHostname;
-		else
-		    hostname = tmp + 1;
-
-		if (app_resources.verbose)
-		{
-		    printf ("Attempting to restart remote client on %s\n",
-			hostname);
-		    printf ("execlp (%s, %s, rstartd 0)\n", RSHCMD, hostname);
-		}
-
-		if (pipe (pipefd) < 0)
-		{
-		    perror ("pipe error");
-		}
-		else
-		{
-		    switch(fork()) {
-		    case -1:
-			perror("fork");
-			break;
-		    case 0:		/* kid */
-			close (pipefd[1]);
-			close (0);
-			dup (pipefd[0]);
-			close (pipefd[0]);
-
-			execlp (RSHCMD, hostname, "rstartd", (char *) 0);
-
-			perror(
-			 "failed to start remote client with rstart protocol");
-			_exit(255);
-
-		    default:		/* parent */
-			close (pipefd[0]);
-			fp = fdopen (pipefd[1], "w");
-			fprintf (fp, "CONTEXT X\n");
-			fprintf (fp, "DIR %s\n", cwd);
-
-			/*
-			 * There may be spaces inside some of the environment
-			 * values, and rstartd will barf on spaces.  Need
-			 * to replace space characters with their equivalent
-			 * octal escape sequences.
-			 */
-
-			for (i = 0; env[i]; i++)
-			{
-			    char *temp = spaces_to_octal (env[i]);
-			    fprintf (fp, "MISC X %s\n", temp);
-			    if (temp != env[i])
-				free (temp);
-			}
-
-			fprintf (fp, "MISC X %s\n", non_local_display_env);
-			fprintf (fp, "MISC X %s\n", non_local_session_env);
-
-			/*
-			 * Pass the authentication data.
-			 * Each transport has auth data for ICE and XSMP.
-			 * Don't pass local auth data.
-			 */
-
-			for (i = 0; i < numTransports * 2; i++)
-			{
-			    if (Strstr (authDataEntries[i].address, "local/"))
-				continue;
-
-			    fprintf (fp, "AUTH ICE %s \"\" %s %s ",
-				authDataEntries[i].protocol_name,
-				authDataEntries[i].address,
-				authDataEntries[i].auth_name);
-
-			    fprintfhex (fp,
-				authDataEntries[i].auth_data_length,
-				authDataEntries[i].auth_data);
-
-			    fprintf (fp, "\n");
-			}
-
-			/*
-			 * And execute the program
-			 */
-
-			fprintf (fp, "EXEC %s %s", program, program);
-			for (i = 1; args[i]; i++)
-			    fprintf (fp, " %s", args[i]);
-			fprintf (fp, "\n\n");
-			fclose (fp);
-			break;
-		    }
-		}
-	    }
-	} else {
-	    fprintf(stderr, "Can't restart ID '%s':  no program or no args\n",
-		c->clientId);
-	}
-	if(args) free((char *)args);
-	if(env) free((char *)env);
-    }
-    if(display_env) free(display_env);
-    if(session_env) free(session_env);
-    if(non_local_display_env) free(non_local_display_env);
-    if(non_local_session_env) free(non_local_session_env);
-    if(audio_env) free(audio_env);
-}
-
-
-void
-write_iceauth (addfp, removefp, entry)
-
-FILE *addfp;
-FILE *removefp;
-IceAuthDataEntry *entry;
-
-{
-    fprintf (addfp,
-	"add %s \"\" %s %s ",
-	entry->protocol_name,
-        entry->address,
-        entry->auth_name);
-    fprintfhex (addfp, entry->auth_data_length, entry->auth_data);
-    fprintf (addfp, "\n");
-
-    fprintf (removefp,
-	"remove protoname=%s protodata=\"\" address=%s authname=%s\n",
-	entry->protocol_name,
-        entry->address,
-        entry->auth_name);
-}
-
-
-
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
-#include <time.h>
-#define Time_t time_t
-#endif
-
-# define MAGIC_COOKIE_LEN 16
-
-GenerateMagicCookie (auth, len)
-
-char		**auth;
-unsigned short 	*len;
-
-{
-    long    ldata[2];
-    int	    seed;
-    int	    value;
-    int	    i;
-    
-    *len = MAGIC_COOKIE_LEN;
-    *auth = (char *) malloc (MAGIC_COOKIE_LEN + 1);
-
-#ifdef ITIMER_REAL
-    {
-	struct timeval  now;
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-	gettimeofday (&now);
-#else
-	struct timezone zone;
-	gettimeofday (&now, &zone);
-#endif
-	ldata[0] = now.tv_sec;
-	ldata[1] = now.tv_usec;
-    }
-#else
-    {
-	long    time ();
-
-	ldata[0] = time ((long *) 0);
-	ldata[1] = getpid ();
-    }
-#endif
-    seed = (ldata[0]) + (ldata[1] << 16);
-    srand (seed);
-    for (i = 0; i < (int) *len; i++)
-    {
-	value = rand ();
-	(*auth)[i] = value & 0xff;
-    }
-    (*auth)[*len] = '\0';
-}
-
-
-Status
-set_auth (count, listenObjs, authDataEntries)
-
-int		count;
-IceListenObj	*listenObjs;
-IceAuthDataEntry **authDataEntries;
-
-{
-    FILE		*addfp;
-    FILE		*removefp;
-    int			i;
-
-    if (!(addfp = fopen (".xsm-add-auth", "w")))
-	return (0);
-
-    if (!(removefp = fopen (".xsm-rem-auth", "w")))
-	return (0);
-
-    *authDataEntries = (IceAuthDataEntry *) malloc (
-	count * 2 * sizeof (IceAuthDataEntry));
-
-    for (i = 0; i < count * 2; i += 2)
-    {
-	(*authDataEntries)[i].address =
-		IceGetListenNetworkId (listenObjs[i/2]);
-	(*authDataEntries)[i].protocol_name = "ICE";
-	(*authDataEntries)[i].auth_name = "MIT-MAGIC-COOKIE-1";
-
-	GenerateMagicCookie (&(*authDataEntries)[i].auth_data,
-	    &(*authDataEntries)[i].auth_data_length);
-
-
-	(*authDataEntries)[i+1].address =
-		IceGetListenNetworkId (listenObjs[i/2]);
-	(*authDataEntries)[i+1].protocol_name = "XSMP";
-	(*authDataEntries)[i+1].auth_name = "MIT-MAGIC-COOKIE-1";
-
-	GenerateMagicCookie (&(*authDataEntries)[i+1].auth_data,
-	    &(*authDataEntries)[i+1].auth_data_length);
-
-	write_iceauth (addfp, removefp, &(*authDataEntries)[i]);
-	write_iceauth (addfp, removefp, &(*authDataEntries)[i+1]);
-
-	IceSetPaAuthData (2, &(*authDataEntries)[i]);
-
-	IceSetHostBasedAuthProc (listenObjs[i/2], HostBasedProc);
-    }
-
-    fclose (addfp);
-    fclose (removefp);
-
-    system ("iceauth source .xsm-add-auth");
-
-    return (1);
-}
-
-
-void
-free_auth (count, authDataEntries)
-
-int		count;
-IceAuthDataEntry *authDataEntries;
-
-{
-    /* Each transport has entries for ICE and XSMP */
-
-    int i;
-
-    for (i = 0; i < count * 2; i++)
-    {
-	free (authDataEntries[i].address);
-	free (authDataEntries[i].auth_data);
-    }
-
-    free ((char *) authDataEntries);
-}
-
-
 static void Syntax(call)
     char *call;
 {
@@ -1954,6 +1107,8 @@ static void Syntax(call)
     exit(2);
 }
 
+
+
 main(argc, argv)
     int  argc;
     char **argv;
@@ -2293,8 +1448,6 @@ main(argc, argv)
     read_save();
     restart_everything();
 
-    free_auth (numTransports, authDataEntries);
-
     if (app_resources.verbose)
 	printf ("Waiting for connections...\n");
 
@@ -2302,68 +1455,3 @@ main(argc, argv)
     setjmp (JumpHere);
     XtAppMainLoop (appContext);
 }
-
-#ifdef NOPUTENV
-/*
- * define our own putenv() if the system doesn't have one.
- * putenv(s): place s (a string of the form "NAME=value") in
- * the environment; replacing any existing NAME.  s is placed in
- * environment, so if you change s, the environment changes (like
- * putenv on a sun).  Binding removed if you putenv something else
- * called NAME.
- */
-int
-putenv(s)
-    char *s;
-{
-    char *v;
-    int varlen, idx;
-    extern char **environ;
-    char **newenv;
-    static int virgin = 1; /* true while "environ" is a virgin */
-
-    v = strchr(s, '=');
-    if(v == 0)
-	return 0; /* punt if it's not of the right form */
-    varlen = (v + 1) - s;
-
-    for (idx = 0; environ[idx] != 0; idx++) {
-	if (strncmp(environ[idx], s, varlen) == 0) {
-	    if(v[1] != 0) { /* true if there's a value */
-		environ[idx] = s;
-		return 0;
-	    } else {
-		do {
-		    environ[idx] = environ[idx+1];
-		} while(environ[++idx] != 0);
-		return 0;
-	    }
-	}
-    }
-    
-    /* add to environment (unless no value; then just return) */
-    if(v[1] == 0)
-	return 0;
-    if(virgin) {
-	register i;
-
-	newenv = (char **) malloc((unsigned) ((idx + 2) * sizeof(char*)));
-	if(newenv == 0)
-	    return -1;
-	for(i = idx-1; i >= 0; --i)
-	    newenv[i] = environ[i];
-	virgin = 0;     /* you're not a virgin anymore, sweety */
-    } else {
-	newenv = (char **) realloc((char *) environ,
-				   (unsigned) ((idx + 2) * sizeof(char*)));
-	if (newenv == 0)
-	    return -1;
-    }
-
-    environ = newenv;
-    environ[idx] = s;
-    environ[idx+1] = 0;
-    
-    return 0;
-}
-#endif /* NOPUTENV */
