@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.56 88/08/15 11:36:29 jim Exp $ */
+/* $Header: Xlibint.h,v 11.57 88/08/15 12:08:04 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -21,6 +21,13 @@
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
+#endif /* CRAY */
+
+/*
+ * define the following if you want the Data macro to be a procedure instead
+ */
+#if defined(CRAY)
+#define DataRoutineIsProcedure
 #endif /* CRAY */
 
 #include "Xlib.h"
@@ -206,12 +213,16 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * "len" is the length of the data buffer.
  * we can presume buffer less than 2^16 bytes, so bcopy can be used safely.
  */
+#ifdef DataRoutineIsProcedure
+extern void Data();
+#else
 #define Data(dpy, data, len) \
 	if (dpy->bufptr + (len) <= dpy->bufmax) {\
 		bcopy(data, dpy->bufptr, (int)len);\
 		dpy->bufptr += ((len) + 3) & ~3;\
 	} else\
 		_XSend(dpy, data, len)
+#endif /* DataRoutineIsProcedure */
 
 
 /* Allocate bytes from the buffer.  No padding is done, so if

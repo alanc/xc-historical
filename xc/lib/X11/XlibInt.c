@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.75 88/08/12 17:03:52 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.76 88/08/15 12:08:52 jim Exp $";
 #endif
 
 /*
@@ -1259,6 +1259,22 @@ XFree (data)
 {
 	Xfree (data);
 }
+
+#ifdef DataRoutineIsProcedure
+void Data (dpy, data, len)
+	Display *dpy;
+	char *data;
+	long len;
+{
+	if (dpy->bufptr + (len) <= dpy->bufmax) {
+		bcopy(data, dpy->bufptr, (int)len);
+		dpy->bufptr += ((len) + 3) & ~3;
+	} else {
+		_XSend(dpy, data, len);
+	}
+}
+#endif /* DataRoutineIsProcedure */
+
 
 #ifdef WORD64
 
