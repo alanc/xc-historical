@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.19 94/04/17 20:29:43 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.20 94/05/04 15:36:29 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -239,10 +239,11 @@ static KeySym US2Keymap[] = {
 };
 
 static SunModmapRec US2Modmap[] = {
-	106,	ShiftMask,
-	117,	ShiftMask,
-	83,	ControlMask,
-	127,	Mod1Mask,
+	99,	ShiftMask,
+	110,	ShiftMask,
+	76,	ControlMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
 	0,	0
 };
 
@@ -386,11 +387,12 @@ static KeySym US3Keymap[] = {
 };
 
 static SunModmapRec US3Modmap[] = {
-	106,	ShiftMask,
-	117,	ShiftMask,
-	83,	ControlMask,
-	126,	LockMask,
-	127,	Mod1Mask,
+	99,	ShiftMask,
+	110,	ShiftMask,
+	76,	ControlMask,
+	119,	LockMask,
+	120,	Mod1Mask,
+	122,	Mod1Mask,
 	0,	0
 };
 
