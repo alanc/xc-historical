@@ -372,6 +372,7 @@ void EndText(xp, p)
 {
     int i;
 
+    if(font==NULL)return;
     for (i = 0; i != totalLines; i++)
 	free(charBuf[i]);
     free(charBuf);
@@ -388,6 +389,7 @@ void EndText16(xp, p)
 {
     int i;
 
+    if(font==NULL)return;
     if (p->special) {
 	for (i = 0; i < totalLines; i++) {
 	    free(items[i*SEGS+0].chars);
