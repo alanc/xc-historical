@@ -1,21 +1,21 @@
-/* $Header$ */
-/* popup.c -- Handle pop-up windows. */
+/* $Header: popup.c,v 1.2 88/01/19 14:39:40 swick Locked $ */
+/* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
 
 /*
-static Window confirmwindow = NULL;
+static Widget confirmwidget = NULL;
 static char *confirmstring;
 
-static Window confirmparent;
+static Widget confirmparent;
 static count = 0;
 
-static Window promptwindow;
+static Widget promptwidget;
 static int (*promptfunc)();
 static char promptstring[210];
 
 extern TellPrompt();
-extern DestroyPromptWindow();
+void DestroyPromptWidget();
 
 ArgList arglist, promptarglist;
 */
@@ -29,21 +29,31 @@ InitPopup()
 static Scrn lastscrn = NULL;
 static char laststr[500];
 
-static Window confirmwindow = NULL;
+static Widget confirmwidget = NULL;
 static int buttoncount = 0;
-static Window promptwindow = NULL;
+static Widget promptwidget = NULL;
 static void (*promptfunction)();
 
-void CenterWindow(parent, child)
-Window parent, child;
+
+void CenterWidget(parent, child)
+Widget parent, child;
 {
-    int x, y, parentwidth, parentheight, childwidth, childheight;
-    GetWindowSize(parent, &parentwidth, &parentheight);
-    GetWindowSize(child, &childwidth, &childheight);
-    x = (parentwidth - childwidth) / 2;
-    y = (parentheight - childheight) / 2;
+    int x, y;
+    x = (parent->core.width - child->core.width) / 2;
+    y = (parent->core.height - child->core.height) / 2;
     if (x < 0) x = 0;
-    QXMoveWindow(theDisplay, child, x, y);
+    XtMoveWidget(child, x, y);
+}
+
+
+void DestroyConfirmWidget()
+{
+    lastscrn = NULL;
+    *laststr = 0;
+    if (confirmwidget) {
+	XtDestroyWidget(confirmwidget);
+	confirmwidget = NULL;
+    }
 }
 
 
@@ -51,68 +61,53 @@ int Confirm(scrn, str)
 Scrn scrn;
 char *str;
 {
-    static Arg arglist[] = {
-	{XtNname, (XtArgVal)"confirm"}
-    };
+    Arg args[1];
     extern void RedoLastButton();
     if (lastscrn == scrn && strcmp(str, laststr) == 0) {
-	DestroyConfirmWindow();
+	DestroyConfirmWidget();
 	return TRUE;
     }
-    DestroyConfirmWindow();
+    DestroyConfirmWidget();
     lastscrn = scrn;
     scrn = LastButtonScreen();
     (void) strcpy(laststr, str);
-    confirmwindow = XtDialogCreate(DISPLAY scrn->window, str, (char *)NULL,
-				   arglist, XtNumber(arglist));
-    XtDialogAddButton(DISPLAY confirmwindow,
-		      "yes", RedoLastButton, (caddr_t)NULL);
-    XtDialogAddButton(DISPLAY confirmwindow,
-		      "no", DestroyConfirmWindow, (caddr_t)NULL);
-    CenterWindow(scrn->window, confirmwindow);
-    QXMapWindow(theDisplay, confirmwindow);
+    XtSetArg( args[0], XtNlabel, str );
+    confirmwidget = XtCreateWidget( "confirm", dialogWidgetClass,
+				    scrn->widget, args, XtNumber(args) );
+    XtDialogAddButton(confirmwidget, "yes", RedoLastButton, (caddr_t)NULL);
+    XtDialogAddButton(confirmwidget, "no", DestroyConfirmWidget,(caddr_t)NULL);
+    CenterWidget(scrn->widget, confirmwidget);
+    XtRealizeWidget( confirmwidget );
+    XtMapWidget( confirmwidget );
     buttoncount = 0;
     return FALSE;
-}
-
-
-DestroyConfirmWindow()
-{
-    lastscrn = NULL;
-    *laststr = 0;
-    if (confirmwindow) {
-	QXDestroyWindow(theDisplay, confirmwindow);
-	(void) XtSendDestroyNotify(DISPLAY confirmwindow);
-	confirmwindow = NULL;
-    }
 }
 
 
 HandleConfirmEvent(event)
 XEvent *event;
 {
-    if (confirmwindow &&
+    if (confirmwidget &&
 	    (event->type == ButtonRelease || event->type == KeyPress)) {
 	if (++buttoncount > 1)
-	    DestroyConfirmWindow();
+	    DestroyConfirmWidget();
     }
 }
 
 
-DestroyPromptWindow()
+void DestroyPromptWidget()
 {
-    if (promptwindow) {
-	(void) XtSendDestroyNotify(DISPLAY promptwindow);
-	QXDestroyWindow(theDisplay, promptwindow);
-	promptwindow = NULL;
+    if (promptwidget) {
+	XtDestroyWidget(promptwidget);
+	promptwidget = NULL;
     }
 }
 
 
-TellPrompt()
+void TellPrompt()
 {
-    (*promptfunction)(XtDialogGetValueString(DISPLAY promptwindow));
-    DestroyPromptWindow();
+    (*promptfunction)(XtDialogGetValueString(promptwidget));
+    DestroyPromptWidget();
 }
 
 MakePrompt(scrn, prompt, func)
@@ -120,18 +115,12 @@ Scrn scrn;
 char *prompt;
 void (*func)();
 {
-    static Arg arglist[] = {
-	{XtNname, (XtArgVal)"prompt"}
-    };
-    DestroyPromptWindow();
-    promptwindow = XtDialogCreate(DISPLAY scrn->window, prompt, "",
-				  arglist, XtNumber(arglist));
-    XtDialogAddButton(DISPLAY promptwindow,
-		      "goAhead", TellPrompt, (caddr_t)NULL);
-    XtDialogAddButton(DISPLAY promptwindow,
-		      "cancel", DestroyPromptWindow,
-		      (caddr_t)NULL);
-    CenterWindow(scrn->window, promptwindow);
-    QXMapWindow(theDisplay, promptwindow);
+    DestroyPromptWidget();
+    promptwidget = XtCreateWidget( "prompt", dialogWidgetClass, scrn->widget,
+				   NULL, (Cardinal)0 );
+    XtDialogAddButton(promptwidget, "goAhead", TellPrompt, (caddr_t)NULL);
+    XtDialogAddButton(promptwidget, "cancel", DestroyPromptWidget, (caddr_t)NULL);
+    CenterWidget(scrn->widget, promptwidget);
+    XtMapWidget( promptwidget );
     promptfunction = func;
 }
