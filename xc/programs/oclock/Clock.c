@@ -156,7 +156,7 @@ static void Initialize (greq, gnew)
     /* wait for Realize to add the timeout */
     w->clock.interval_id = 0;
 
-    if (w->clock.shape_window && !XQueryShapeExtension (XtDisplay (w)))
+    if (w->clock.shape_window && !XShapeQueryExtension (XtDisplay (w)))
 	w->clock.shape_window = False;
     w->clock.shape_mask = 0;
     w->clock.shapeGC = 0;
@@ -175,6 +175,7 @@ static void Shape (w)
     int		face_width, face_height;
     int		x, y;
     int		border_width;
+    int		face_x_extra, face_y_extra;
 
     if (w->core.width == w->clock.shape_width &&
         w->core.height == w->clock.shape_height)
@@ -194,19 +195,14 @@ static void Shape (w)
     face_width = abs (Xwidth (BORDER_WIDTH, BORDER_WIDTH, &w->clock.t));
     face_height = abs (Xheight (BORDER_WIDTH, BORDER_WIDTH, &w->clock.t));
     if (face_width > face_height)
-	face_width = face_height;
-    xwc.width = w->core.width - face_width * 2;
-    xwc.height = w->core.height - face_width * 2;
-    xwc.border_width = face_width;
+	xwc.border_width = face_height;
+    else
+	xwc.border_width = face_width;
+    xwc.width = w->core.width - xwc.border_width * 2;
+    xwc.height = w->core.height - xwc.border_width * 2;
     XConfigureWindow (XtDisplay (w), XtWindow (w),
 			CWWidth|CWHeight|CWBorderWidth,
 			&xwc);
-
-    SetTransform (&w->clock.t,
-	0, xwc.width,
-	xwc.height, 0,
-	-WINDOW_WIDTH/2, WINDOW_WIDTH/2,
-	-WINDOW_HEIGHT/2, WINDOW_HEIGHT/2);
 
     /*
      *  shape the windows and borders
@@ -249,9 +245,9 @@ static void Shape (w)
 			WINDOW_WIDTH, WINDOW_HEIGHT,
 			0, 360 * 64);
 
-	XShapeMask (XtDisplay (w), XtWindow (w), ShapeWindow, 
+	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeWindow, 
 		    w->clock.shape_mask, ShapeSet,
-		    -face_width, -face_width);
+		    -xwc.border_width, -xwc.border_width);
 
 	/*
 	 * draw the border shape
@@ -263,9 +259,9 @@ static void Shape (w)
 			2.0, 2.0,
 			0, 360 * 64);
 
-	XShapeMask (XtDisplay (w), XtWindow (w), ShapeBorder,
+	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeBorder,
 		w->clock.shape_mask, ShapeSet,
-		-face_width, -face_width);
+		-xwc.border_width, -xwc.border_width);
 
 	XFreePixmap (XtDisplay (w), w->clock.shape_mask);
 	w->clock.shape_mask = 0;
@@ -275,19 +271,36 @@ static void Shape (w)
 	 */
 
 	child = (Widget) w;
-	border_width = face_width;
+	border_width = xwc.border_width;
 	while (parent = XtParent (child)) {
-	    XShapeCombine (XtDisplay (parent), XtWindow (parent), ShapeWindow,
+#ifdef NOTDEF
+	    XShapeCombineShape (XtDisplay (parent), XtWindow (parent), ShapeWindow,
 			    XtWindow (child), ShapeBorder, ShapeSet,
 			    child->core.x + border_width,
 			    child->core.y + border_width);
-	    XShapeCombine (XtDisplay (parent), XtWindow (parent), ShapeBorder,
+#endif
+	    XShapeCombineShape (XtDisplay (parent), XtWindow (parent), ShapeBorder,
 			    XtWindow (child), ShapeBorder, ShapeSet,
 			    child->core.x + border_width,
 			    child->core.y + border_width);
 	    child = parent;
 	    border_width = child->core.border_width;
 	}
+	face_x_extra = face_width - xwc.border_width;
+	face_y_extra = face_height - xwc.border_width;
+	SetTransform (&w->clock.t,
+	    face_x_extra, xwc.width - face_x_extra,
+	    xwc.height - face_y_extra, face_y_extra,
+	    -WINDOW_WIDTH/2, WINDOW_WIDTH/2,
+	    -WINDOW_HEIGHT/2, WINDOW_HEIGHT/2);
+    
+    } else {
+    	SetTransform (&w->clock.t,
+	    0, xwc.width,
+	    xwc.height, 0,
+	    -WINDOW_WIDTH/2, WINDOW_WIDTH/2,
+	    -WINDOW_HEIGHT/2, WINDOW_HEIGHT/2);
+    
     }
     w->clock.shape_width = w->core.width;
     w->clock.shape_height = w->core.height;
