@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.60 93/08/17 18:02:18 rws Exp $
+ * $XConsortium: Mailbox.c,v 1.61 93/08/18 15:11:09 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -58,6 +58,8 @@ typedef int		waitType;
 #include <process.h>
 # define INTWAITTYPE
 typedef int		waitType;
+# define waitCode(w)	(w)
+# define waitSig(w)	(0)
 #else
 # include	<sys/wait.h>
 # define waitCode(w)	((w).w_T.w_Retcode)
